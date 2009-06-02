@@ -1,0 +1,36 @@
+Index: wild.c
+===================================================================
+--- wild.c	(revision 914)
++++ wild.c	(working copy)
+@@ -559,20 +559,22 @@
+    * with other languages.
+    */
+ 
+-  for (i = 0; i < nmatches && (int) i < subpatterns && (size_t) len > i; i++) {
++  for (i = 0; (i < nmatches) && ((int) i < subpatterns) &&
++      ((size_t) len > 0); i++) {
+     ssize_t sublen;
+     const char *submatch;
+ 
+-    pcre_get_substring(d, offsets, subpatterns, (int) i, &submatch);
+-    sublen = strlen(submatch);
++    if (pcre_get_substring(d, offsets, subpatterns, (int) i, &submatch) > 0) {
++      sublen = strlen(submatch);
+ 
+-    if (sublen >= len)
+-      break;
++      if (sublen >= len)
++        break;
+ 
+-    strcpy(data, submatch);
+-    matches[i] = data;
+-    data += sublen + 1;
+-    len -= sublen + 1;
++      strcpy(data, submatch);
++      matches[i] = data;
++      data += sublen + 1;
++      len -= sublen + 1;
++    }
+   }
+ 
+   mush_free(re, "pcre");

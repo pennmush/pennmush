@@ -1,0 +1,33 @@
+(cd ..; make)
+make[1]: Entering directory `/home/walker/penn/devel'
+/usr/bin/perl utils/mkcmds.pl switches
+Rebuilding command switch file and header.
+File hdrs/switches.h unchanged.
+File src/switchinc.c unchanged.
+Making all in src.
+(cd src; /usr/bin/make all "CC=gcc -std=gnu99" "CCFLAGS=-ggdb -O -W -Wall -pedantic -Wno-comment -fstack-protector -I/usr/include/ -I.. -I../hdrs  " \
+	"LDFLAGS=-L/usr/lib " "CLIBS=-lpcre -lcrypt -lm  -lssl -lcrypto -lpcre" "MAKE=/usr/bin/make" \
+	"MAKEFLAGS=w" "SQL_CFLAGS=-I/usr/include/mysql -DHAVE_ERRNO_AS_DEFINE=1 -I/usr/include/postgresql/libpq-4 -I/usr/include" \
+	"SQL_LDFLAGS=-rdynamic -L/usr/lib64/mysql -lmysqlclient -lz -lcrypt -lnsl -lm -L/usr/lib64 -lssl -lcrypto -L/usr/lib64 -lpq -L/usr/lib -lsqlite3")
+make[2]: Entering directory `/home/walker/penn/devel/src'
+rm -f ../hdrs/buildinf.h
+gcc -std=gnu99 -ggdb -O -W -Wall -pedantic -Wno-comment -fstack-protector -I/usr/include/ -I.. -I../hdrs   -I/usr/include/mysql -DHAVE_ERRNO_AS_DEFINE=1 -I/usr/include/postgresql/libpq-4 -I/usr/include -Wall   -c -o boolexp.o boolexp.c
+In file included from ../hdrs/conf.h:14,
+                 from boolexp.c:98:
+../options.h:96:33: warning: "/*" within comment
+../options.h:108:22: warning: "/*" within comment
+In file included from boolexp.c:102:
+../hdrs/externs.h:204:23: warning: "/*" within comment
+gcc -std=gnu99 -ggdb -O -W -Wall -pedantic -Wno-comment -fstack-protector -I/usr/include/ -I.. -I../hdrs   -I/usr/include/mysql -DHAVE_ERRNO_AS_DEFINE=1 -I/usr/include/postgresql/libpq-4 -I/usr/include -Wall   -c -o version.o version.c
+In file included from ../hdrs/conf.h:14,
+                 from version.c:14:
+../options.h:96:33: warning: "/*" within comment
+../options.h:108:22: warning: "/*" within comment
+In file included from version.c:15:
+../hdrs/externs.h:204:23: warning: "/*" within comment
+Making netmud.
+mv -f netmud netmud~
+gcc -std=gnu99 -ggdb -O -W -Wall -pedantic -Wno-comment -fstack-protector -I/usr/include/ -I.. -I../hdrs   -o netmud access.o atr_tab.o attrib.o boolexp.o bsd.o bufferq.o chunk.o cmdlocal.o cmds.o command.o compress.o conf.o cque.o create.o db.o destroy.o extchat.o extmail.o filecopy.o flaglocal.o flags.o funcrypt.o function.o fundb.o funlist.o funlocal.o funmath.o funmisc.o funstr.o funtime.o funufun.o game.o help.o htab.o ident.o intmap.o local.o lock.o log.o look.o malias.o markup.o match.o memcheck.o move.o mycrypt.o mymalloc.o mysocket.o myrlimit.o myssl.o notify.o parse.o pcre.o player.o plyrlist.o info_master.o predicat.o privtab.o ptab.o rob.o services.o set.o shs.o sig.o sort.o speech.o sql.o strdup.o strtree.o strutil.o tables.o timer.o unparse.o utils.o version.o wait.o warnings.o wild.o wiz.o -L/usr/lib  -rdynamic -L/usr/lib64/mysql -lmysqlclient -lz -lcrypt -lnsl -lm -L/usr/lib64 -lssl -lcrypto -L/usr/lib64 -lpq -L/usr/lib -lsqlite3 -lpcre -lcrypt -lm  -lssl -lcrypto -lpcre 
+make[2]: Leaving directory `/home/walker/penn/devel/src'
+If the make was successful, use 'make install' to install links.
+make[1]: Leaving directory `/home/walker/penn/devel'

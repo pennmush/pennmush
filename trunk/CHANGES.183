@@ -18,7 +18,7 @@ chronological order (most recent first)
 Version 1.8.3 patchlevel 10                     Apr ??, 2009
 
 Minor changes:
- * @search and lsearch() now only charge 100 ducats if an evaluating
+ * @search and lsearch() now only charge 100 pennies if an evaluating
    search (EVAL, EPLAYER, EROOM, ETHING, EOBJECT, EEXIT or ELOCK) or
    an exhaustive attribute search (COMMAND, LISTEN) is performed.
 

@@ -31,6 +31,7 @@ Fixes:
   * Added --disable-zlib configure option to turn off using
     zlib to work directly with compressed databases. Passing this to
     configure makes the game act like pre p8 ones. [SW]
+  * member() now ignores ANSI in matches. Reported by Minion. [MG]
 
 & 1.8.3p9
 Version 1.8.3 patchlevel 9                      Feb 28, 2009

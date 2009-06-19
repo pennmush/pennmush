@@ -457,7 +457,8 @@ See also: controls(), TRUST, MISTRUST, ZONES, SHARED PLAYERS
 See also: MONEY, money(), score
 & CREDITS
   Maintainer: Raevnos [SW]
-  Developers: Javelin, Ervin Hearn III [EEH], Greg Millam [GM]
+  Developers: Javelin, Ervin Hearn III [EEH], Greg Millam [GM],
+              Mike Griffiths [MG]
   Past Porters: Nick Gammon [NJG] (win32), Dan Williams [DW] (MacOS), 
            Sylvia (OS/2)
   Former developers: Rhyanna [RLM], Trivian [TN], Halatir [LdW], Talek [TAP]

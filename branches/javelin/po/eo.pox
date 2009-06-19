@@ -1,0 +1,14 @@
+#: look.c:205
+#, c-format
+msgid "%s is corrupt!"
+msgstr "%s estas dibo&#265;iga!"
+
+#: src/look.c:667 src/look.c:1306
+msgid "Garbage is garbage."
+msgstr "Rubo estas rubo."
+
+#: wiz.c:175 wiz.c:181 wiz.c:195
+#, c-format
+msgid "Objects: %d   Limit: %d"
+msgstr "Objektoj: %d   Limo: %d"
+

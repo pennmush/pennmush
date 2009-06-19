@@ -2103,6 +2103,7 @@ real_decompose_str(char *orig, char *buff, char **bp)
  * \param ovector the offset vectors
  * \param stringcount the number of subpatterns
  * \param stringnumber the number of the desired subpattern
+ * \param nonempty if true, copy empty registers as well.
  * \param buff buffer to copy the subpattern to
  * \param bp pointer to the end of buffer
  * \return size of subpattern, or -1 if unknown pattern
@@ -2131,6 +2132,7 @@ ansi_pcre_copy_substring(ansi_string *as, int *ovector,
  * \param ovector the offset vectors
  * \param stringcount the number of subpatterns
  * \param stringname the name of the desired subpattern
+ * \param nonempty if true, copy empty registers as well.
  * \param buff buffer to copy the subpattern to
  * \param bp pointer to the end of buffer
  * \return size of subpattern, or -1 if unknown pattern

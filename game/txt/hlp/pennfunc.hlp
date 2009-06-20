@@ -3144,6 +3144,7 @@ See also: @prompt, @nsprompt, PROMPT_NEWLINES
   has permission to see the process. 
   The <list of fields> is a space-separated list that may contain the
   following elements:
+	queue       the queue ("wait" or "semaphore") for the process
 	player      the queueing player
         time        remaining time for timed queued entries (or -1)
         object      the semaphore object for semaphores (or #-1)

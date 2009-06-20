@@ -3707,6 +3707,39 @@ FUNCTION(fun_lwho)
   }
 }
 
+#ifdef WIN32
+#pragma warning( disable : 4761)        /* Disable bogus conversion warning */
+#endif
+/* ARGSUSED */
+FUNCTION(fun_hidden)
+{
+  if (!See_All(executor)) {
+    notify(executor, T("Permission denied."));
+    safe_str("#-1", buff, bp);
+    return;
+  }
+  if (is_strict_integer(args[0])) {
+	  DESC *d = lookup_desc(executor, args[0]);
+	  if (!d) {
+		  notify(executor, T("Couldn't find that descriptor."));
+		  safe_str("#-1", buff, bp);
+		  return;
+	  }
+	  safe_boolean(Hidden(d), buff, bp);
+  } else {
+	dbref it = match_thing(executor, args[0]);
+    if ((it == NOTHING) || (!IsPlayer(it))) {
+	  notify(executor, T("Couldn't find that player."));
+      safe_str("#-1", buff, bp);
+      return;
+    }
+    safe_boolean(hidden(it), buff, bp);
+  }
+}
+
+#ifdef WIN32
+#pragma warning( default : 4761)        /* Re-enable conversion warning */
+#endif
 
 /** Look up a DESC by character name or file descriptor.
  * \param executor the dbref of the object calling the function calling this.

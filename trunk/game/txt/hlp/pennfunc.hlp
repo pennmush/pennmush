@@ -132,12 +132,13 @@ See also: DBREF
 
   alias()        andflags()     andlflags()    andlpowers()   config()
   controls()     ctime()        elock()        findable()     flags()
-  fullalias()    fullname()     hasattr()      hasattrp       hasflag()
-  haspower()     hastype()      iname()        lflags()       lock()
-  lstats()       money()        mtime()        mudname()      name()
-  nattr()        nearby()       objid()        objmem()       orflags()
-  orlflags()     orlpowers()    playermem()    poll()         powers()
-  quota()        restarts()     type()         version()      visible()
+  fullalias()    fullname()     getpids()      hasattr()      hasattrp       
+  hasflag()      haspower()     hastype()      iname()        lflags()       
+  lock()         lpids()        lstats()       money()        mtime()        
+  mudname()      name()         nattr()        nearby()       objid()        
+  objmem()       orflags()      orlflags()     orlpowers()    pidinfo()
+  playermem()    poll()         powers()       quota()        restarts()     
+  type()         version()      visible()
 
 & List functions
   List functions take at least one list of elements and return
@@ -1562,6 +1563,14 @@ See also: anonymous attributes
   attribute.  You may get the attributes of objects you control, the
   attributes you own on other objects, and publicly accessible
   attributes.
+& GETPIDS()
+  getpids(<object>[/<attribute>])
+
+  Returns a space-separated list of semaphore queue process ids waiting
+  on the given <object> and semaphore <attribute>. If <attribute> is
+  not given, it defaults to SEMAPHORE.
+
+See also: @ps, @wait, lpids(), pidinfo(), SEMAPHORES
 & GRAB()
 & REGRAB()
 & REGRABI()
@@ -3128,6 +3137,24 @@ See also: @prompt, @nsprompt, PROMPT_NEWLINES
   
   Returns the value of "pi" (3.14159265358979323846264338327, rounded
   to the game's float_precision setting).
+& PIDINFO()
+  pidinfo(<pid>[,<list of fields>[,<output separator>]])
+
+  This function returns information about a process id if the player
+  has permission to see the process. 
+  The <list of fields> is a space-separated list that may contain the
+  following elements:
+	queue       the queue ("wait" or "semaphore") for the process
+	player      the queueing player
+        time        remaining time for timed queued entries (or -1)
+        object      the semaphore object for semaphores (or #-1)
+        attribute   the semaphore attribute for semaphores (or #-1)
+        command     the queued command
+   If <list of fields> is not provided, all fields are returned.
+   If <output separator> is provided, the output is separated by
+   that delimiting character.
+
+See also: @ps, lpids(), getpids()
 & PLAYERMEM()
   playermem(<player>)
 
@@ -3164,6 +3191,15 @@ See also: lports(), ports()
   This function returns the current @poll. 
 
 See also: @poll, doing(), @doing 
+& LPIDS()
+  lpids(<object>[,<queue type>])
+
+  Returns a space-separated list of queue process ids enqueued by <object>,
+  typically a player. If <queue type> is "w", only wait queue
+  entries are returned; if <queue type> is "s", only semaphore queue
+  entries are returned; if <queue type> is absent, both are returned.
+
+See also: @ps, getpids(), pidinfo()
 & LPORTS()
 & PORTS()
   lports([<viewer>])

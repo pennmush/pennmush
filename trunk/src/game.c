@@ -1136,8 +1136,8 @@ process_command(dbref player, char *command, dbref cause, int from_port)
   strcpy(unp, command);
 
   cptr = command_parse(player, cause, command, from_port);
-  strcpy(global_eval_context.ucom, (cptr ? cptr : ""));
   if (cptr) {
+    mush_strncpy(global_eval_context.ucom, cptr, BUFFER_LEN);
     a = 0;
     if (!Gagged(player)) {
 

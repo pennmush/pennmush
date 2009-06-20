@@ -1672,7 +1672,7 @@ See also: string functions
     %! = the dbref number of the object the command is on (the EXECUTOR)
     %L = the dbref of the ENACTOR's location
     %c = text of the last command, _before_ evaluation
-    %u = text of the last $command, after evaluation, only available to locks
+    %u = text of the last command, after evaluation, available to locks/hooks
     %? = The current function invocation and depth counts
     %+ = The number of arguments passed to the current ufun.
     %qN = the equivalent of r(N), a register set by a setq() function.

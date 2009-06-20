@@ -1,4 +1,4 @@
 #!/bin/sh
 
-exec /usr/bin/perl runtest.pl $@ test*.pl
+exec /usr/local/bin/perl runtest.pl $@ test*.pl
 

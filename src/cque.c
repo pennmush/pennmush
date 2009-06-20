@@ -37,6 +37,8 @@
 #include "game.h"
 #include "attrib.h"
 #include "flags.h"
+#include "function.h"
+#include "case.h"
 #include "dbdefs.h"
 #include "log.h"
 #include "intmap.h"
@@ -50,17 +52,17 @@ EVAL_CONTEXT global_eval_context;
  * entries (a queue). It is used for all of the queues.
  */
 typedef struct bque {
-  struct bque *next;                    /**< pointer to next entry on queue */
-  dbref player;                 /**< player who will do command */
-  dbref queued;                 /**< object whose QUEUE gets incremented for this command */
-  dbref cause;                  /**< player causing command (for %N) */
-  dbref sem;                    /**< semaphore object to block on */
-  char *semattr;                /**< semaphore attribute to block on */
-  time_t left;                  /**< seconds left until execution */
-  char *env[10];                /**< environment, from wild match */
-  char *rval[NUMQ];             /**< environment, from setq() */
-  char *comm;                   /**< command to be executed */
-  uint32_t pid;                 /**< Process id of this entry */
+  struct bque *next;			/**< pointer to next entry on queue */
+  dbref player;			/**< player who will do command */
+  dbref queued;			/**< object whose QUEUE gets incremented for this command */
+  dbref cause;			/**< player causing command (for %N) */
+  dbref sem;			/**< semaphore object to block on */
+  char *semattr;		/**< semaphore attribute to block on */
+  time_t left;			/**< seconds left until execution */
+  char *env[10];		/**< environment, from wild match */
+  char *rval[NUMQ];		/**< environment, from setq() */
+  char *comm;			/**< command to be executed */
+  uint32_t pid;			/**< Process id of this entry */
 } BQUE;
 
 intmap *queue_map = NULL; /**< Intmap for looking up queue entries by pid */
@@ -72,24 +74,24 @@ static BQUE *qlfirst = NULL, *qllast = NULL;
 static BQUE *qsemfirst = NULL, *qsemlast = NULL;
 
 static int add_to_generic(dbref player, int am, const char *name,
-                          uint32_t flags);
+			  uint32_t flags);
 static int add_to(dbref player, int am);
 static int add_to_sem(dbref player, int am, const char *name);
 static int queue_limit(dbref player);
 void free_qentry(BQUE *point);
 static int pay_queue(dbref player, const char *command);
 void wait_que(dbref player, int waituntil, char *command,
-              dbref cause, dbref sem, const char *semattr, int until);
+	      dbref cause, dbref sem, const char *semattr, int until);
 int que_next(void);
 
 static void show_queue(dbref player, dbref victim, int q_type,
-                       int q_quiet, int q_all, BQUE *q_ptr, int *tot, int *self,
-                       int *del);
+		       int q_quiet, int q_all, BQUE *q_ptr, int *tot, int *self,
+		       int *del);
 static void do_raw_restart(dbref victim);
 static int waitable_attr(dbref thing, const char *atr);
 static void shutdown_a_queue(BQUE **head, BQUE **tail);
 
-extern sig_atomic_t cpu_time_limit_hit; /**< Have we used too much CPU? */
+extern sig_atomic_t cpu_time_limit_hit;	/**< Have we used too much CPU? */
 
 /** Attribute flags to be set or checked on attributes to be used
  * as semaphores.
@@ -115,23 +117,23 @@ waitable_attr(dbref thing, const char *atr)
   if (!atr || !*atr)
     return 0;
   a = atr_get_noparent(thing, atr);
-  if (!a) {                     /* Attribute isn't set */
+  if (!a) {			/* Attribute isn't set */
     a = atr_match(atr);
-    if (!a)                     /* It's not a built in attribute */
+    if (!a)			/* It's not a built in attribute */
       return 1;
-    return !strcmp(AL_NAME(a), "SEMAPHORE");    /* Only allow SEMAPHORE for now */
-  } else {                      /* Attribute is set. Check for proper owner and flags and value */
+    return !strcmp(AL_NAME(a), "SEMAPHORE");	/* Only allow SEMAPHORE for now */
+  } else {			/* Attribute is set. Check for proper owner and flags and value */
     if ((AL_CREATOR(a) == GOD) && (AL_FLAGS(a) == SEMAPHORE_FLAGS)) {
       char *v = atr_value(a);
       if (!*v || is_integer(v))
-        return 1;
+	return 1;
       else
-        return 0;
+	return 0;
     } else {
       return 0;
     }
   }
-  return 0;                     /* Not reached */
+  return 0;			/* Not reached */
 }
 
 static int
@@ -224,23 +226,23 @@ pay_queue(dbref player, const char *command)
     char *preserves[10];
     char *preserveq[NUMQ];
     save_global_nxt("pay_queue_save", preserve_wnxt, preserve_rnxt, val_wnxt,
-                    val_rnxt);
+		    val_rnxt);
     save_global_regs("pay_queue_save", preserveq);
     save_global_env("pay_queue_save", preserves);
     notify_format(Owner(player),
-                  T("GAME: Object %s(%s) lost a %s to queue loss."),
-                  Name(player), unparse_dbref(player), MONEY);
+		  T("GAME: Object %s(%s) lost a %s to queue loss."),
+		  Name(player), unparse_dbref(player), MONEY);
     restore_global_regs("pay_queue_save", preserveq);
     restore_global_env("pay_queue_save", preserves);
     restore_global_nxt("pay_queue_save", preserve_wnxt, preserve_rnxt, val_wnxt,
-                       val_rnxt);
+		       val_rnxt);
   }
   if (queue_limit(QUEUE_PER_OWNER ? Owner(player) : player)) {
     notify_format(Owner(player),
-                  T("Runaway object: %s(%s). Commands halted."),
-                  Name(player), unparse_dbref(player));
+		  T("Runaway object: %s(%s). Commands halted."),
+		  Name(player), unparse_dbref(player));
     do_log(LT_TRACE, player, player, T("Runaway object %s executing: %s"),
-           unparse_dbref(player), command);
+	   unparse_dbref(player), command);
     /* Refund the queue costs */
     giveto(player, QUEUE_COST);
     add_to(QUEUE_PER_OWNER ? Owner(player) : player, -1);
@@ -259,9 +261,9 @@ next_pid(void)
 
   if (im_count(queue_map) >= (int) MAX_PID) {
     do_rawlog(LT_ERR,
-              T
-              ("There are %ld queue entries! That's too many. Failing to add another."),
-              (long) im_count(queue_map));
+	      T
+	      ("There are %ld queue entries! That's too many. Failing to add another."),
+	      (long) im_count(queue_map));
     return 0;
   }
 
@@ -293,7 +295,7 @@ parse_que(dbref player, const char *command, dbref cause)
   int pid;
   if (!IsPlayer(player) && (Halted(player)))
     return;
-  if (!pay_queue(player, command))      /* make sure player can afford to do it */
+  if (!pay_queue(player, command))	/* make sure player can afford to do it */
     return;
   pid = next_pid();
   if (pid == 0) {
@@ -351,7 +353,7 @@ parse_que(dbref player, const char *command, dbref cause)
  */
 int
 queue_attribute_base(dbref executor, const char *atrname, dbref enactor,
-                     int noparent)
+		     int noparent)
 {
   ATTR *a;
 
@@ -366,7 +368,7 @@ ATTR *
 queue_attribute_getatr(dbref executor, const char *atrname, int noparent)
 {
   return (noparent ? atr_get_noparent(executor, strupper(atrname)) :
-          atr_get(executor, strupper(atrname)));
+	  atr_get(executor, strupper(atrname)));
 }
 
 int
@@ -408,7 +410,7 @@ queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor)
  */
 void
 wait_que(dbref player, int waittill, char *command, dbref cause, dbref sem,
-         const char *semattr, int until)
+	 const char *semattr, int until)
 {
   BQUE *tmp;
   int a;
@@ -419,7 +421,7 @@ wait_que(dbref player, int waittill, char *command, dbref cause, dbref sem,
     parse_que(player, command, cause);
     return;
   }
-  if (!pay_queue(player, command))      /* make sure player can afford to do it */
+  if (!pay_queue(player, command))	/* make sure player can afford to do it */
     return;
   pid = next_pid();
   if (pid == 0) {
@@ -455,7 +457,7 @@ wait_que(dbref player, int waittill, char *command, dbref cause, dbref sem,
     if (waittill >= 0)
       tmp->left = mudtime + waittill;
     else
-      tmp->left = 0;            /* semaphore wait without a timeout */
+      tmp->left = 0;		/* semaphore wait without a timeout */
   }
   tmp->sem = sem;
   if (sem == NOTHING) {
@@ -463,7 +465,7 @@ wait_que(dbref player, int waittill, char *command, dbref cause, dbref sem,
     BQUE *point, *trail = NULL;
 
     for (point = qwait;
-         point && (point->left <= tmp->left); point = point->next)
+	 point && (point->left <= tmp->left); point = point->next)
       trail = point;
 
     tmp->next = point;
@@ -519,16 +521,16 @@ do_second(void)
     point->left = 0;
     if (IsPlayer(point->cause)) {
       if (qlast) {
-        qlast->next = point;
-        qlast = point;
+	qlast->next = point;
+	qlast = point;
       } else
-        qlast = qfirst = point;
+	qlast = qfirst = point;
     } else {
       if (qllast) {
-        qllast->next = point;
-        qllast = point;
+	qllast->next = point;
+	qllast = point;
       } else
-        qllast = qlfirst = point;
+	qllast = qlfirst = point;
     }
   }
 
@@ -537,7 +539,7 @@ do_second(void)
   for (point = qsemfirst, trail = NULL; point; point = next) {
     if (point->left == 0 || point->left > mudtime) {
       next = (trail = point)->next;
-      continue;                 /* skip non-timed and those that haven't gone off yet */
+      continue;			/* skip non-timed and those that haven't gone off yet */
     }
     if (trail != NULL)
       trail->next = next = point->next;
@@ -550,16 +552,16 @@ do_second(void)
     point->next = NULL;
     if (IsPlayer(point->cause)) {
       if (qlast) {
-        qlast->next = point;
-        qlast = point;
+	qlast->next = point;
+	qlast = point;
       } else
-        qlast = qfirst = point;
+	qlast = qfirst = point;
     } else {
       if (qllast) {
-        qllast->next = point;
-        qllast = point;
+	qllast->next = point;
+	qllast = point;
       } else
-        qllast = qlfirst = point;
+	qllast = qlfirst = point;
     }
   }
 }
@@ -598,44 +600,44 @@ do_top(int ncom)
       add_to(entry->queued, -1);
       entry->player = 0;
       if (IsPlayer(global_eval_context.cplr)
-          || !Halted(global_eval_context.cplr)) {
-        for (a = 0; a < 10; a++)
-          global_eval_context.wenv[a] = entry->env[a];
-        for (a = 0; a < NUMQ; a++) {
-          if (entry->rval[a])
-            strcpy(global_eval_context.renv[a], entry->rval[a]);
-          else
-            global_eval_context.renv[a][0] = '\0';
-        }
-        global_eval_context.process_command_port = 0;
-        s = entry->comm;
-        global_eval_context.break_called = 0;
-        break_count = 100;
-        *(global_eval_context.break_replace) = '\0';
-        start_cpu_timer();
-        while (!cpu_time_limit_hit && *s) {
-          r = global_eval_context.ccom;
-          process_expression(global_eval_context.ccom, &r, &s,
-                             global_eval_context.cplr, entry->cause,
-                             entry->cause, PE_NOTHING, PT_SEMI, NULL);
-          *r = '\0';
-          if (*s == ';')
-            s++;
-          strcpy(tbuf, global_eval_context.ccom);
-          process_command(global_eval_context.cplr, tbuf, entry->cause, 0);
-          if (global_eval_context.break_called) {
-            global_eval_context.break_called = 0;
-            s = global_eval_context.break_replace;
-            if (!*global_eval_context.break_replace)
-              break;
-            break_count--;
-            if (!break_count) {
-              notify(global_eval_context.cplr, T("@break recursion exceeded."));
-              break;
-            }
-          }
-        }
-        reset_cpu_timer();
+	  || !Halted(global_eval_context.cplr)) {
+	for (a = 0; a < 10; a++)
+	  global_eval_context.wenv[a] = entry->env[a];
+	for (a = 0; a < NUMQ; a++) {
+	  if (entry->rval[a])
+	    strcpy(global_eval_context.renv[a], entry->rval[a]);
+	  else
+	    global_eval_context.renv[a][0] = '\0';
+	}
+	global_eval_context.process_command_port = 0;
+	s = entry->comm;
+	global_eval_context.break_called = 0;
+	break_count = 100;
+	*(global_eval_context.break_replace) = '\0';
+	start_cpu_timer();
+	while (!cpu_time_limit_hit && *s) {
+	  r = global_eval_context.ccom;
+	  process_expression(global_eval_context.ccom, &r, &s,
+			     global_eval_context.cplr, entry->cause,
+			     entry->cause, PE_NOTHING, PT_SEMI, NULL);
+	  *r = '\0';
+	  if (*s == ';')
+	    s++;
+	  strcpy(tbuf, global_eval_context.ccom);
+	  process_command(global_eval_context.cplr, tbuf, entry->cause, 0);
+	  if (global_eval_context.break_called) {
+	    global_eval_context.break_called = 0;
+	    s = global_eval_context.break_replace;
+	    if (!*global_eval_context.break_replace)
+	      break;
+	    break_count--;
+	    if (!break_count) {
+	      notify(global_eval_context.cplr, T("@break recursion exceeded."));
+	      break;
+	    }
+	  }
+	}
+	reset_cpu_timer();
       }
     }
     free_qentry(entry);
@@ -684,7 +686,7 @@ que_next(void)
   }
 
   for (point = qsemfirst; point; point = point->next) {
-    if (point->left == 0)       /* no timeout */
+    if (point->left == 0)	/* no timeout */
       continue;
     curr = (int) difftime(point->left, mudtime);
     if (curr <= 2)
@@ -699,9 +701,9 @@ que_next(void)
 
 static int
 drain_helper(dbref player __attribute__ ((__unused__)), dbref thing,
-             dbref parent __attribute__ ((__unused__)),
-             char const *pattern __attribute__ ((__unused__)), ATTR *atr,
-             void *args __attribute__ ((__unused__)))
+	     dbref parent __attribute__ ((__unused__)),
+	     char const *pattern __attribute__ ((__unused__)), ATTR *atr,
+	     void *args __attribute__ ((__unused__)))
 {
   if (waitable_attr(thing, AL_NAME(atr)))
     (void) atr_clr(thing, AL_NAME(atr), GOD);
@@ -719,7 +721,7 @@ drain_helper(dbref player __attribute__ ((__unused__)), dbref thing,
  */
 void
 dequeue_semaphores(dbref thing, char const *aname, int count, int all,
-                   int drain)
+		   int drain)
 {
   BQUE **point;
   BQUE *entry;
@@ -742,8 +744,8 @@ dequeue_semaphores(dbref thing, char const *aname, int count, int all,
     if (qsemlast == entry) {
       qsemlast = qsemfirst;
       if (qsemlast)
-        while (qsemlast->next)
-          qsemlast = qsemlast->next;
+	while (qsemlast->next)
+	  qsemlast = qsemlast->next;
     }
 
     /* Update bookkeeping */
@@ -758,17 +760,17 @@ dequeue_semaphores(dbref thing, char const *aname, int count, int all,
       free_qentry(entry);
     } else if (IsPlayer(entry->cause)) {
       if (qlast) {
-        qlast->next = entry;
-        qlast = entry;
+	qlast->next = entry;
+	qlast = entry;
       } else {
-        qlast = qfirst = entry;
+	qlast = qfirst = entry;
       }
     } else {
       if (qllast) {
-        qllast->next = entry;
-        qllast = entry;
+	qllast->next = entry;
+	qllast = entry;
       } else {
-        qllast = qlfirst = entry;
+	qllast = qlfirst = entry;
       }
     }
   }
@@ -788,8 +790,7 @@ dequeue_semaphores(dbref thing, char const *aname, int count, int all,
     add_to_sem(thing, -count, aname);
 }
 
-COMMAND(cmd_notify_drain)
-{
+COMMAND(cmd_notify_drain) {
   int drain;
   char *pos;
   char const *aname;
@@ -811,8 +812,8 @@ COMMAND(cmd_notify_drain)
   if (pos) {
     if (SW_ISSET(sw, SWITCH_ANY)) {
       notify(player,
-             T
-             ("You may not specify a semaphore attribute with the ANY switch."));
+	     T
+	     ("You may not specify a semaphore attribute with the ANY switch."));
       return;
     }
     *pos++ = '\0';
@@ -844,7 +845,7 @@ COMMAND(cmd_notify_drain)
   if (arg_right && *arg_right) {
     if (all) {
       notify(player,
-             T("You may not specify a semaphore count with the ALL switch."));
+	     T("You may not specify a semaphore count with the ALL switch."));
       return;
     }
     if (!is_uinteger(arg_right)) {
@@ -921,13 +922,13 @@ do_wait(dbref player, dbref cause, char *arg1, const char *cmd, bool until)
   if (aname) {
     tcount = strchr(aname, '/');
     if (!tcount) {
-      if (is_strict_integer(aname)) {   /* Timeout */
-        tcount = aname;
-        aname = (char *) "SEMAPHORE";
-      } else {                  /* Attribute */
-        upcasestr(aname);
+      if (is_strict_integer(aname)) {	/* Timeout */
+	tcount = aname;
+	aname = (char *) "SEMAPHORE";
+      } else {			/* Attribute */
+	upcasestr(aname);
       }
-    } else {                    /* attribute/timeout */
+    } else {			/* attribute/timeout */
       *tcount++ = '\0';
       upcasestr(aname);
     }
@@ -954,7 +955,7 @@ do_wait(dbref player, dbref cause, char *arg1, const char *cmd, bool until)
     num = 0;
   if (num <= 0) {
     thing = NOTHING;
-    waitfor = -1;               /* just in case there was a timeout given */
+    waitfor = -1;		/* just in case there was a timeout given */
   }
   wait_que(player, waitfor, arg2, cause, thing, aname, until);
   mush_free(arg2, "strip_braces.buff");
@@ -994,7 +995,7 @@ do_waitpid(dbref player, const char *pidstr, const char *timestr, bool until)
 
   if (q->sem != NOTHING && q->left == 0) {
     notify(player,
-           T("You cannot adjust the timeout of an indefinite semaphore."));
+	   T("You cannot adjust the timeout of an indefinite semaphore."));
     return;
   }
 
@@ -1034,9 +1035,9 @@ do_waitpid(dbref player, const char *pidstr, const char *timestr, bool until)
   for (tmp = qwait, last = NULL; tmp; last = tmp, tmp = tmp->next) {
     if (tmp == q) {
       if (last)
-        last->next = q->next;
+	last->next = q->next;
       else
-        qwait = qwait->next;
+	qwait = qwait->next;
       found = true;
       break;
     }
@@ -1045,22 +1046,22 @@ do_waitpid(dbref player, const char *pidstr, const char *timestr, bool until)
     found = false;
     for (tmp = qwait, last = NULL; tmp; last = tmp, tmp = tmp->next) {
       if (tmp->left > q->left) {
-        if (last) {
-          last->next = q;
-          q->next = tmp;
-        } else {
-          q->next = qwait;
-          qwait = q;
-        }
-        found = true;
-        break;
+	if (last) {
+	  last->next = q;
+	  q->next = tmp;
+	} else {
+	  q->next = qwait;
+	  qwait = q;
+	}
+	found = true;
+	break;
       }
     }
     if (!found) {
       if (last)
-        last->next = q;
+	last->next = q;
       else
-        qwait = q;
+	qwait = q;
       q->next = NULL;
     }
   }
@@ -1068,9 +1069,168 @@ do_waitpid(dbref player, const char *pidstr, const char *timestr, bool until)
   notify_format(player, T("Queue entry with pid %u updated."), pid);
 }
 
+FUNCTION(fun_pidinfo)
+{
+  char *r, *s;
+  char *osep, osepd[2] = { ' ', '\0' };
+  char *fields, field[80] = "queue player time object attribute command";
+  uint32_t pid;
+  BQUE *q;
+  bool first = true;
+
+  if (!is_uinteger(args[0])) {
+    safe_str(T(e_num), buff, bp);
+    return;
+  }
+
+  pid = parse_uint32(args[0], NULL, 10);
+  q = im_find(queue_map, pid);
+
+  if (!q) {
+    safe_str(T("#-1 INVALID PID"), buff, bp);
+    return;
+  }
+
+  if (!controls(executor, q->player) && !LookQueue(executor)) {
+    safe_str(T(e_perm), buff, bp);
+    return;
+  }
+
+  if ((nargs > 1) && args[1] && *args[1]) {
+    fields = args[1];
+  } else {
+    fields = field;
+  }
+
+  if (nargs == 3)
+    osep = args[2];
+  else {
+    osep = osepd;
+  }
+
+  s = trim_space_sep(fields, ' ');
+  do {
+    r = split_token(&s, ' ');
+    if (string_prefix("queue", r)) {
+      if (!first)
+	safe_str(osep, buff, bp);
+      first = false;
+      if (GoodObject(q->sem))
+	safe_str("semaphore", buff, bp);
+      else
+	safe_str("wait", buff, bp);
+    } else if (string_prefix("player", r)) {
+      if (!first)
+	safe_str(osep, buff, bp);
+      first = false;
+      safe_dbref(q->player, buff, bp);
+    } else if (string_prefix("time", r)) {
+      if (!first)
+	safe_str(osep, buff, bp);
+      first = false;
+      if (q->left == 0)
+	safe_integer(-1, buff, bp);
+      else
+	safe_integer(difftime(q->left, mudtime), buff, bp);
+    } else if (string_prefix("object", r)) {
+      if (!first)
+	safe_str(osep, buff, bp);
+      first = false;
+      safe_dbref(q->sem, buff, bp);
+    } else if (string_prefix("attribute", r)) {
+      if (!first)
+	safe_str(osep, buff, bp);
+      first = false;
+      if (GoodObject(q->sem)) {
+	safe_str(q->semattr, buff, bp);
+      } else {
+	safe_dbref(NOTHING, buff, bp);
+      }
+    } else if (string_prefix("command", r)) {
+      if (!first)
+	safe_str(osep, buff, bp);
+      first = false;
+      safe_str(q->comm, buff, bp);
+    }
+  } while (s);
+}
+
+FUNCTION(fun_lpids)
+{
+  /* Can be called as LPIDS or GETPIDS */
+  BQUE *tmp;
+  int qmask = 3;
+  dbref thing = -1;
+  dbref player = -1;
+  char *attr = NULL;
+  bool first = true;
+  if (string_prefix(called_as, "LPIDS")) {
+    /* lpids(player[,type]) */
+    if (args[0] && *args[0]) {
+      player = match_thing(executor, args[0]);
+      if (!GoodObject(player)) {
+	safe_str(T(e_notvis), buff, bp);
+	return;
+      }
+      if (!(LookQueue(executor) || (Owner(player) == executor))) {
+	safe_str(T(e_perm), buff, bp);
+	return;
+      }
+    } else if (!LookQueue(executor)) {
+      player = executor;
+    }
+    if ((nargs == 2) && args[1] && *args[1]) {
+      if (*args[1] == 'W' || *args[1] == 'w')
+	qmask = 1;
+      else if (*args[1] == 'S' || *args[1] == 's')
+	qmask = 2;
+    }
+  } else {
+    /* getpids(obj[/attrib]) */
+    qmask = 2;			/* semaphores only */
+    attr = strchr(args[0], '/');
+    if (attr)
+      *attr++ = '\0';
+    thing = match_thing(executor, args[0]);
+    if (!GoodObject(thing)) {
+      safe_str(T(e_notvis), buff, bp);
+      return;
+    }
+    if (!(LookQueue(executor) || (controls(executor, thing)))) {
+      safe_str(T(e_perm), buff, bp);
+      return;
+    }
+  }
+
+  if (qmask & 1) {
+    for (tmp = qwait; tmp; tmp = tmp->next) {
+      if (GoodObject(player) && (!Owns(tmp->player, player)))
+	continue;
+      if (!first)
+	safe_chr(' ', buff, bp);
+      safe_integer(tmp->pid, buff, bp);
+      first = false;
+    }
+  }
+  if (qmask & 2) {
+    for (tmp = qsemfirst; tmp; tmp = tmp->next) {
+      if (GoodObject(player) && (!Owns(tmp->player, player)))
+	continue;
+      if (GoodObject(thing) && (tmp->sem != thing))
+	continue;
+      if (attr && *attr && strcasecmp(tmp->semattr, attr))
+	continue;
+      if (!first)
+	safe_chr(' ', buff, bp);
+      safe_integer(tmp->pid, buff, bp);
+      first = false;
+    }
+  }
+}
+
 static void
-show_queue(dbref player, dbref victim, int q_type, int q_quiet, int q_all,
-           BQUE *q_ptr, int *tot, int *self, int *del)
+show_queue(dbref player, dbref victim, int q_type, int q_quiet,
+	   int q_all, BQUE *q_ptr, int *tot, int *self, int *del)
 {
   BQUE *tmp;
   for (tmp = q_ptr; tmp; tmp = tmp->next) {
@@ -1079,33 +1239,33 @@ show_queue(dbref player, dbref victim, int q_type, int q_quiet, int q_all,
       (*del)++;
     else if (q_all || (Owner(tmp->player) == victim)) {
       if ((LookQueue(player)
-           || Owns(tmp->player, player))) {
-        (*self)++;
-        if (q_quiet)
-          continue;
-        switch (q_type) {
-        case 1:                /* wait queue */
-          notify_format(player, "(Pid: %u) [%ld]%s: %s", tmp->pid,
-                        (long) difftime(tmp->left, mudtime),
-                        unparse_object(player, tmp->player), tmp->comm);
-          break;
-        case 2:                /* semaphore queue */
-          if (tmp->left != 0) {
-            notify_format(player, "(Pid: %u) [#%d/%s/%ld]%s: %s", tmp->pid,
-                          tmp->sem, tmp->semattr, (long) difftime(tmp->left,
-                                                                  mudtime),
-                          unparse_object(player, tmp->player), tmp->comm);
-          } else {
-            notify_format(player, "(Pid: %u) [#%d/%s]%s: %s", tmp->pid,
-                          tmp->sem, tmp->semattr, unparse_object(player,
-                                                                 tmp->player),
-                          tmp->comm);
-          }
-          break;
-        default:               /* player or object queue */
-          notify_format(player, "(Pid: %u) %s: %s", tmp->pid,
-                        unparse_object(player, tmp->player), tmp->comm);
-        }
+	   || Owns(tmp->player, player))) {
+	(*self)++;
+	if (q_quiet)
+	  continue;
+	switch (q_type) {
+	case 1:		/* wait queue */
+	  notify_format(player, "(Pid: %u) [%ld]%s: %s", tmp->pid,
+			(long) difftime(tmp->left, mudtime),
+			unparse_object(player, tmp->player), tmp->comm);
+	  break;
+	case 2:		/* semaphore queue */
+	  if (tmp->left != 0) {
+	    notify_format(player, "(Pid: %u) [#%d/%s/%ld]%s: %s", tmp->pid,
+			  tmp->sem, tmp->semattr, (long) difftime(tmp->left,
+								  mudtime),
+			  unparse_object(player, tmp->player), tmp->comm);
+	  } else {
+	    notify_format(player, "(Pid: %u) [#%d/%s]%s: %s", tmp->pid,
+			  tmp->sem, tmp->semattr, unparse_object(player,
+								 tmp->player),
+			  tmp->comm);
+	  }
+	  break;
+	default:		/* player or object queue */
+	  notify_format(player, "(Pid: %u) %s: %s", tmp->pid,
+			unparse_object(player, tmp->player), tmp->comm);
+	}
       }
     }
   }
@@ -1138,7 +1298,7 @@ do_queue(dbref player, const char *what, enum queue_type flag)
       victim = player;
     else {
       victim = match_result(player, what, TYPE_PLAYER,
-                            MAT_PLAYER | MAT_ABSOLUTE | MAT_ME);
+			    MAT_PLAYER | MAT_ABSOLUTE | MAT_ME);
     }
   } else {
     victim = player;
@@ -1155,9 +1315,9 @@ do_queue(dbref player, const char *what, enum queue_type flag)
 
     if (!quick) {
       if (all)
-        notify(player, T("Queue for : all"));
+	notify(player, T("Queue for : all"));
       else
-        notify_format(player, T("Queue for : %s"), Name(victim));
+	notify_format(player, T("Queue for : %s"), Name(victim));
     }
     victim = Owner(victim);
     if (!quick)
@@ -1175,9 +1335,9 @@ do_queue(dbref player, const char *what, enum queue_type flag)
     if (!quick)
       notify(player, T("------------  Queue Done  ------------"));
     notify_format(player,
-                  T
-                  ("Totals: Player...%d/%d[%ddel]  Object...%d/%d[%ddel]  Wait...%d/%d[%ddel]  Semaphore...%d/%d"),
-                  pq, tpq, dpq, oq, toq, doq, wq, twq, dwq, sq, tsq);
+		  T
+		  ("Totals: Player...%d/%d[%ddel]  Object...%d/%d[%ddel]  Wait...%d/%d[%ddel]  Semaphore...%d/%d"),
+		  pq, tpq, dpq, oq, toq, doq, wq, twq, dwq, sq, tsq);
   }
 }
 
@@ -1199,19 +1359,19 @@ do_halt(dbref owner, const char *ncom, dbref victim)
   else
     player = victim;
   quiet_notify(Owner(player),
-               tprintf("%s: %s(#%d).", T("Halted"), Name(player), player));
+	       tprintf("%s: %s(#%d).", T("Halted"), Name(player), player));
   for (tmp = qfirst; tmp; tmp = tmp->next)
     if (GoodObject(tmp->player)
-        && ((tmp->player == player)
-            || (Owner(tmp->player) == player))) {
+	&& ((tmp->player == player)
+	    || (Owner(tmp->player) == player))) {
       num--;
       giveto(player, QUEUE_COST);
       tmp->player = NOTHING;
     }
   for (tmp = qlfirst; tmp; tmp = tmp->next)
     if (GoodObject(tmp->player)
-        && ((tmp->player == player)
-            || (Owner(tmp->player) == player))) {
+	&& ((tmp->player == player)
+	    || (Owner(tmp->player) == player))) {
       num--;
       giveto(player, QUEUE_COST);
       tmp->player = NOTHING;
@@ -1219,13 +1379,13 @@ do_halt(dbref owner, const char *ncom, dbref victim)
   /* remove wait q stuff */
   for (point = qwait; point; point = next) {
     if (((point->player == player)
-         || (Owner(point->player) == player))) {
+	 || (Owner(point->player) == player))) {
       num--;
       giveto(player, QUEUE_COST);
       if (trail)
-        trail->next = next = point->next;
+	trail->next = next = point->next;
       else
-        qwait = next = point->next;
+	qwait = next = point->next;
       free_qentry(point);
     } else
       next = (trail = point)->next;
@@ -1235,15 +1395,15 @@ do_halt(dbref owner, const char *ncom, dbref victim)
 
   for (point = qsemfirst, trail = NULL; point; point = next) {
     if (((point->player == player)
-         || (Owner(point->player) == player))) {
+	 || (Owner(point->player) == player))) {
       num--;
       giveto(player, QUEUE_COST);
       if (trail)
-        trail->next = next = point->next;
+	trail->next = next = point->next;
       else
-        qsemfirst = next = point->next;
+	qsemfirst = next = point->next;
       if (point == qsemlast)
-        qsemlast = trail;
+	qsemlast = trail;
       add_to_sem(point->sem, -1, point->semattr);
       free_qentry(point);
     } else
@@ -1251,7 +1411,6 @@ do_halt(dbref owner, const char *ncom, dbref victim)
   }
 
   add_to(QUEUE_PER_OWNER ? Owner(player) : player, num);
-
   if (ncom && *ncom) {
     int j;
     for (j = 0; j < 10; j++)
@@ -1278,8 +1437,8 @@ do_halt1(dbref player, const char *arg1, const char *arg2)
     do_halt(player, "", player);
   else {
     if ((victim =
-         noisy_match_result(player, arg1, NOTYPE,
-                            MAT_OBJECTS | MAT_HERE)) == NOTHING)
+	 noisy_match_result(player, arg1, NOTYPE,
+			    MAT_OBJECTS | MAT_HERE)) == NOTHING)
       return;
     if (!Owns(player, victim) && !HaltAny(player)) {
       notify(player, T("Permission denied."));
@@ -1295,24 +1454,23 @@ do_halt1(dbref player, const char *arg1, const char *arg2)
     do_halt(player, arg2, victim);
     if (IsPlayer(victim)) {
       if (victim == player) {
-        notify(player, T("All of your objects have been halted."));
+	notify(player, T("All of your objects have been halted."));
       } else {
-        notify_format(player,
-                      T("All objects for %s have been halted."), Name(victim));
-        notify_format(victim,
-                      T("All of your objects have been halted by %s."),
-                      Name(player));
+	notify_format(player,
+		      T("All objects for %s have been halted."), Name(victim));
+	notify_format(victim,
+		      T("All of your objects have been halted by %s."),
+		      Name(player));
       }
     } else {
       if (Owner(victim) != player) {
-        notify_format(player, "%s: %s's %s(%s)", T("Halted"),
-                      Name(Owner(victim)), Name(victim), unparse_dbref(victim));
-        notify_format(Owner(victim),
-                      "%s: %s(%s), by %s", T("Halted"),
-                      Name(victim), unparse_dbref(victim), Name(player));
+	notify_format(player, "%s: %s's %s(%s)", T("Halted"),
+		      Name(Owner(victim)), Name(victim), unparse_dbref(victim));
+	notify_format(Owner(victim), "%s: %s(%s), by %s", T("Halted"),
+		      Name(victim), unparse_dbref(victim), Name(player));
       }
       if (*arg2 == '\0')
-        set_flag_internal(victim, "HALT");
+	set_flag_internal(victim, "HALT");
     }
   }
 }
@@ -1327,16 +1485,13 @@ do_haltpid(dbref player, const char *arg1)
   uint32_t pid;
   BQUE *q;
   dbref victim;
-
   if (!is_uinteger(arg1)) {
     notify(player, T("That is not a valid pid!"));
     return;
   }
 
   pid = parse_uint32(arg1, NULL, 10);
-
   q = im_find(queue_map, pid);
-
   if (!q) {
     notify(player, T("That is not a valid pid!"));
     return;
@@ -1353,21 +1508,17 @@ do_haltpid(dbref player, const char *arg1)
      turn comes up (Or show it in @ps, etc.).  Exception is for
      semaphores, which otherwise might wait forever. */
   q->player = NOTHING;
-
   if (q->semattr) {
     BQUE *last = NULL, *tmp;
-
     for (tmp = qsemfirst; tmp; last = tmp, tmp = tmp->next) {
       if (tmp == q) {
-        if (last)
-          last->next = tmp->next;
-        else
-          qsemfirst = tmp->next;
-
-        if (qsemlast == tmp)
-          qsemlast = last;
-
-        break;
+	if (last)
+	  last->next = tmp->next;
+	else
+	  qsemfirst = tmp->next;
+	if (qsemlast == tmp)
+	  qsemlast = last;
+	break;
       }
     }
 
@@ -1389,14 +1540,14 @@ do_allhalt(dbref player)
   dbref victim;
   if (!HaltAny(player)) {
     notify(player,
-           T("You do not have the power to bring the world to a halt."));
+	   T("You do not have the power to bring the world to a halt."));
     return;
   }
   for (victim = 0; victim < db_top; victim++) {
     if (IsPlayer(victim)) {
       notify_format(victim,
-                    T("Your objects have been globally halted by %s"),
-                    Name(player));
+		    T("Your objects have been globally halted by %s"),
+		    Name(player));
       do_halt(victim, "", victim);
     }
   }
@@ -1412,7 +1563,6 @@ void
 do_allrestart(dbref player)
 {
   dbref thing;
-
   if (!HaltAny(player)) {
     notify(player, T("You do not have the power to restart the world."));
     return;
@@ -1425,8 +1575,9 @@ do_allrestart(dbref player)
     }
     if (IsPlayer(thing)) {
       notify_format(thing,
-                    T("Your objects are being globally restarted by %s"),
-                    Name(player));
+		    T
+		    ("Your objects are being globally restarted by %s"),
+		    Name(player));
     }
   }
 }
@@ -1435,12 +1586,11 @@ static void
 do_raw_restart(dbref victim)
 {
   dbref thing;
-
   if (IsPlayer(victim)) {
     for (thing = 0; thing < db_top; thing++) {
       if ((Owner(thing) == victim) && !IsGarbage(thing)
-          && !(Halted(thing)))
-        (void) queue_attribute_noparent(thing, "STARTUP", thing);
+	  && !(Halted(thing)))
+	(void) queue_attribute_noparent(thing, "STARTUP", thing);
     }
   } else {
     /* A single object */
@@ -1462,7 +1612,7 @@ do_restart_com(dbref player, const char *arg1)
     do_raw_restart(player);
   } else {
     if ((victim =
-         noisy_match_result(player, arg1, NOTYPE, MAT_OBJECTS)) == NOTHING)
+	 noisy_match_result(player, arg1, NOTYPE, MAT_OBJECTS)) == NOTHING)
       return;
     if (!Owns(player, victim) && !HaltAny(player)) {
       notify(player, T("Permission denied."));
@@ -1470,26 +1620,26 @@ do_restart_com(dbref player, const char *arg1)
     }
     if (Owner(victim) != player) {
       if (IsPlayer(victim)) {
-        notify_format(player,
-                      T("All objects for %s are being restarted."),
-                      Name(victim));
-        notify_format(victim,
-                      T("All of your objects are being restarted by %s."),
-                      Name(player));
+	notify_format(player,
+		      T("All objects for %s are being restarted."),
+		      Name(victim));
+	notify_format(victim,
+		      T
+		      ("All of your objects are being restarted by %s."),
+		      Name(player));
       } else {
-        notify_format(player,
-                      "Restarting: %s's %s(%s)",
-                      Name(Owner(victim)), Name(victim), unparse_dbref(victim));
-        notify_format(Owner(victim),
-                      "Restarting: %s(%s), by %s",
-                      Name(victim), unparse_dbref(victim), Name(player));
+	notify_format(player,
+		      "Restarting: %s's %s(%s)",
+		      Name(Owner(victim)), Name(victim), unparse_dbref(victim));
+	notify_format(Owner(victim), "Restarting: %s(%s), by %s",
+		      Name(victim), unparse_dbref(victim), Name(player));
       }
     } else {
       if (victim == player)
-        notify(player, T("All of your objects are being restarted."));
+	notify(player, T("All of your objects are being restarted."));
       else
-        notify_format(player, "Restarting: %s(%s)", Name(victim),
-                      unparse_dbref(victim));
+	notify_format(player, "Restarting: %s(%s)", Name(victim),
+		      unparse_dbref(victim));
     }
     do_halt(player, "", victim);
     do_raw_restart(victim);

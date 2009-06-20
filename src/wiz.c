@@ -1378,32 +1378,6 @@ FUNCTION(fun_lsearch)
     mush_free(results, "search_results");
 }
 
-
-#ifdef WIN32
-#pragma warning( disable : 4761)        /* Disable bogus conversion warning */
-#endif
-/* ARGSUSED */
-FUNCTION(fun_hidden)
-{
-  dbref it = match_thing(executor, args[0]);
-  if (!See_All(executor)) {
-    notify(executor, T("Permission denied."));
-    safe_str("#-1", buff, bp);
-    return;
-  }
-  if ((it == NOTHING) || (!IsPlayer(it))) {
-    notify(executor, T("Couldn't find that player."));
-    safe_str("#-1", buff, bp);
-    return;
-  }
-  safe_boolean(hidden(it), buff, bp);
-  return;
-}
-
-#ifdef WIN32
-#pragma warning( default : 4761)        /* Re-enable conversion warning */
-#endif
-
 /* ARGSUSED */
 FUNCTION(fun_quota)
 {

@@ -23,6 +23,11 @@ Minor changes:
    search (EVAL, EPLAYER, EROOM, ETHING, EOBJECT, EEXIT or ELOCK) or
    an exhaustive attribute search (COMMAND, LISTEN) is performed.
 
+Functions:
+  * lpids(), getpids(), and pidinfo() provide information about
+    wait/semaphore process ids and processes. Suggested by
+    Yuriko@M*U*S*H, code by Javelin.
+
 Fixes:
   * @pcreate without a password would crash the game. Fixed. [GM]
   * DARK-disconnected on channels was turned into DARK-connected, on

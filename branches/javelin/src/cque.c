@@ -1071,6 +1071,88 @@ do_waitpid(dbref player, const char *pidstr, const char *timestr, bool until)
 
 FUNCTION(fun_pidinfo)
 {
+  char *r, *s;
+  char *osep, osepd[2] = { ' ', '\0' };
+  char *fields, field[80] = "queue player time object attribute command";
+  uint32_t pid;
+  BQUE *q;
+  bool first = true;
+
+  if (!is_uinteger(args[0])) {
+    safe_str(T(e_num), buff, bp);
+    return;
+  }
+
+  pid = parse_uint32(args[0], NULL, 10);
+  q = im_find(queue_map, pid);
+
+  if (!q) {
+    safe_str(T("#-1 INVALID PID"), buff, bp);
+    return;
+  }
+
+  if (!controls(executor, q->player) && !LookQueue(executor)) {
+    safe_str(T(e_perm), buff, bp);
+    return;
+  }
+
+  if ((nargs > 1) && args[1] && *args[1]) {
+    fields = args[1];
+  } else {
+    fields = field;
+  }
+
+  if (nargs == 3)
+    osep = args[2];
+  else {
+    osep = osepd;
+  }
+
+  s = trim_space_sep(fields, ' ');
+  do {
+    r = split_token(&s, ' ');
+    if (string_prefix("queue", r)) {
+      if (!first)
+	safe_str(osep, buff, bp);
+      first = false;
+      if (GoodObject(q->sem))
+	safe_str("semaphore", buff, bp);
+      else
+	safe_str("wait", buff, bp);
+    } else if (string_prefix("player", r)) {
+      if (!first)
+	safe_str(osep, buff, bp);
+      first = false;
+      safe_dbref(q->player, buff, bp);
+    } else if (string_prefix("time", r)) {
+      if (!first)
+	safe_str(osep, buff, bp);
+      first = false;
+      if (q->left == 0)
+	safe_integer(-1, buff, bp);
+      else
+	safe_integer(difftime(q->left, mudtime), buff, bp);
+    } else if (string_prefix("object", r)) {
+      if (!first)
+	safe_str(osep, buff, bp);
+      first = false;
+      safe_dbref(q->sem, buff, bp);
+    } else if (string_prefix("attribute", r)) {
+      if (!first)
+	safe_str(osep, buff, bp);
+      first = false;
+      if (GoodObject(q->sem)) {
+	safe_str(q->semattr, buff, bp);
+      } else {
+	safe_dbref(NOTHING, buff, bp);
+      }
+    } else if (string_prefix("command", r)) {
+      if (!first)
+	safe_str(osep, buff, bp);
+      first = false;
+      safe_str(q->comm, buff, bp);
+    }
+  } while (s);
 }
 
 FUNCTION(fun_lpids)
@@ -1081,68 +1163,67 @@ FUNCTION(fun_lpids)
   dbref thing = -1;
   dbref player = -1;
   char *attr = NULL;
-  static char *semaphore = "SEMAPHORE";
-  char type;
-  int first = 1;
+  bool first = true;
   if (string_prefix(called_as, "LPIDS")) {
     /* lpids(player[,type]) */
-    player = match_thing(executor, args[0]);
-    if (!GoodObject(player)) {
-      safe_str(T(e_notvis), buff, bp);
-      return;
-    }
-    if (!(LookQueue(executor) || (Owner(player) == executor))) {
-      safe_str(T(e_perm), buff, bp);
-      return;
-    }
-    if (nargs == 2) {
-      if (args[2] && *args[2]) {
-	type = UPCASE(*args[2]);
-	if (type == 'W')
-	  qmask = 1;
-	else if (type == 'S')
-	  qmask = 2;
+    if (args[0] && *args[0]) {
+      player = match_thing(executor, args[0]);
+      if (!GoodObject(player)) {
+	safe_str(T(e_notvis), buff, bp);
+	return;
       }
+      if (!(LookQueue(executor) || (Owner(player) == executor))) {
+	safe_str(T(e_perm), buff, bp);
+	return;
+      }
+    } else if (!LookQueue(executor)) {
+      player = executor;
+    }
+    if ((nargs == 2) && args[1] && *args[1]) {
+      if (*args[1] == 'W' || *args[1] == 'w')
+	qmask = 1;
+      else if (*args[1] == 'S' || *args[1] == 's')
+	qmask = 2;
     }
   } else {
     /* getpids(obj[/attrib]) */
     qmask = 2;			/* semaphores only */
     attr = strchr(args[0], '/');
-    if (attr) {
+    if (attr)
       *attr++ = '\0';
-    } else {
-      attr = semaphore;
-    }
     thing = match_thing(executor, args[0]);
     if (!GoodObject(thing)) {
       safe_str(T(e_notvis), buff, bp);
       return;
     }
-    if (!(LookQueue(executor) || (controls(executor, thing))))
+    if (!(LookQueue(executor) || (controls(executor, thing)))) {
       safe_str(T(e_perm), buff, bp);
-    return;
+      return;
+    }
   }
 
-  if (qmask | 1) {
+  if (qmask & 1) {
     for (tmp = qwait; tmp; tmp = tmp->next) {
       if (GoodObject(player) && (!Owns(tmp->player, player)))
 	continue;
       if (!first)
 	safe_chr(' ', buff, bp);
       safe_integer(tmp->pid, buff, bp);
+      first = false;
     }
   }
-  if (qmask | 2) {
+  if (qmask & 2) {
     for (tmp = qsemfirst; tmp; tmp = tmp->next) {
       if (GoodObject(player) && (!Owns(tmp->player, player)))
 	continue;
       if (GoodObject(thing) && (tmp->sem != thing))
 	continue;
-      if (attr && !strcmp(tmp->semattr, attr))
+      if (attr && *attr && strcasecmp(tmp->semattr, attr))
 	continue;
       if (!first)
 	safe_chr(' ', buff, bp);
       safe_integer(tmp->pid, buff, bp);
+      first = false;
     }
   }
 }

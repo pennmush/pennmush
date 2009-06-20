@@ -496,7 +496,7 @@ FUNTAB flist[] = {
   {"LOCKFLAGS", fun_lockflags, 0, 1, FN_REG},
   {"LOCKS", fun_locks, 1, 1, FN_REG},
   {"LPARENT", fun_lparent, 1, 1, FN_REG},
-  {"LPIDS", fun_lpids, 1, 2, FN_REG},
+  {"LPIDS", fun_lpids, 0, 2, FN_REG},
   {"LPLAYERS", fun_dbwalker, 1, 1, FN_REG},
   {"LPORTS", fun_lports, 0, 1, FN_REG},
   {"LPOS", fun_lpos, 2, 2, FN_REG},

@@ -545,6 +545,7 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
   pcre_extra *extra;
   size_t i;
   const char *errptr;
+  ansi_string *as;
   const char *d;
   size_t delenn;
   int erroffset;
@@ -564,13 +565,18 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
     return 0;
   }
   add_check("pcre");
-  d = remove_markup(val, &delenn);
+
+  /* The ansi string */
+  as = parse_ansi_string(val);
+  delenn = as->len;
+  d = as->text;
+
   extra = default_match_limit();
   /*
    * Now we try to match the pattern. The relevant fields will
    * automatically be filled in by this.
    */
-  if ((subpatterns = pcre_exec(re, extra, d, delenn - 1, 0, 0, offsets, 99))
+  if ((subpatterns = pcre_exec(re, extra, d, delenn, 0, 0, offsets, 99))
       < 0) {
     mush_free(re, "pcre");
     return 0;
@@ -587,18 +593,24 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
    * go from 1 to 9. We DO PRESERVE THIS PARADIGM, for consistency
    * with other languages.
    */
-
-  for (i = 0; i < nmatches && (int) i < subpatterns && (size_t) len > i; i++) {
-    ssize_t sublen;
-
-    sublen = pcre_copy_substring(d, offsets, subpatterns, (int) i, data, len);
-
-    if (sublen < 0)
-      break;
-
-    matches[i] = data;
-    data += sublen + 2;
-    len -= sublen + 2;
+  int totallen = 0;
+  for (i = 0; i < nmatches && (int) i < subpatterns && totallen < len; i++) {
+    // Current data match.
+    /* This is more annoying than a jumping flea up the nose. Since 
+     * ansi_pcre_copy_substring() uses buff, bp instead of char *, len,
+     * we have to mangle bp and 'buff' by hand. Sound easy? We also
+     * have to make sure that 'buff' + len < BUFFER_LEN. Particularly since
+     * matchspace is 2*BUFFER_LEN
+     */
+    char *buff = data + totallen;
+    char *bp = buff;
+    matches[i] = bp;
+    if ((len - totallen) < BUFFER_LEN) {
+      buff = data + len - BUFFER_LEN;
+    }
+    ansi_pcre_copy_substring(as, offsets, subpatterns, (int) i, 1, buff, &bp);
+    *(bp++) = '\0';
+    totallen = bp - data;
   }
 
   mush_free(re, "pcre");

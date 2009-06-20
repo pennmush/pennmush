@@ -65,7 +65,7 @@ hdrs/switches.h: src/SWITCHES Patchlevel
 src/switchinc.c: src/SWITCHES Patchlevel
 	@PERL@ utils/mkcmds.pl switches
 
-hdrs/funs.h: src/fun*.c src/bsd.c src/conf.c src/extmail.c src/help.c src/markup.c src/wiz.c src/sql.c Patchlevel
+hdrs/funs.h: src/fun*.c src/bsd.c src/conf.c src/extmail.c src/help.c src/markup.c src/wiz.c src/sql.c Patchlevel src/cque.c
 	@PERL@ utils/mkcmds.pl functions
 
 hdrs/patches.h: patches/*

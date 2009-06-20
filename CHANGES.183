@@ -22,6 +22,8 @@ Minor changes:
  * @search and lsearch() now only charge 100 pennies if an evaluating
    search (EVAL, EPLAYER, EROOM, ETHING, EOBJECT, EEXIT or ELOCK) or
    an exhaustive attribute search (COMMAND, LISTEN) is performed.
+ * The %u sub now works for built-in commands, as well as $-commands.
+   Useful for @hooks. [MG]
 
 Functions:
   * lpids(), getpids(), and pidinfo() provide information about
@@ -43,6 +45,7 @@ Fixes:
     configure makes the game act like pre p8 ones. [SW]
   * member() now ignores ANSI in matches. Reported by Minion. [MG]
   * Regexp $-commands are now ansi aware. As in: ansi is passed to %0-%9. [GM]
+  * hidden() now works on descriptors as advertised. Reported by Teal. [MG]
 
 Version 1.8.3 patchlevel 9                      Feb 28, 2009
 

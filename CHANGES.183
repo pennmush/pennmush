@@ -16,7 +16,11 @@ chronological order (most recent first)
 
 ==========================================================================
 
-Version 1.8.3 patchlevel 10                     Apr ??, 2009
+Version 1.8.3 patchlevel 10                     ??? ??, 2009
+
+Major changes:
+ * Switched project management (Bug tracking, revision control, etc.)
+   to Google Code. See http://code.google.com/p/pennmush
 
 Minor changes:
  * @search and lsearch() now only charge 100 pennies if an evaluating

@@ -440,10 +440,10 @@ See also: firstof(), BOOLEAN VALUES
   and(<boolean value 1>, <boolean value 2>[, ... , <boolean value N>])
   cand(<boolean value 1>, <boolean value 2>[, ... , <boolean value N>])
  
-  Takes boolean values, and returns 1 if all of them are equivalent to
-  true(1).  and() always evaluates all arguments (including side
-  effects), while cand() stops evaluation after the first argument
-  that evaluates to false.
+  Takes boolean values, and returns 1 if all of them are true.  and()
+  always evaluates all arguments (including side effects), while
+  cand() stops evaluation after the first argument that evaluates to
+  false.
 
 See also: BOOLEAN VALUES, or(), xor(), not()
 & ANDFLAGS()
@@ -3052,9 +3052,9 @@ See also: playermem()
   cor(<boolean value 1>, <boolean value 2>[, ... , <boolean value N>])
  
   Takes boolean values, and returns a 1 if at least one of the inputs
-  is equivalent to true(1).  or() always evaluates all arguments
-  (including side effects), while cor() stops evaluation after the
-  first argument that evaluates to true.
+  is true.  or() always evaluates all arguments (including side
+  effects), while cor() stops evaluation after the first argument that
+  evaluates to true.
 
 See also: BOOLEAN VALUES, and()
 & ORFLAGS()

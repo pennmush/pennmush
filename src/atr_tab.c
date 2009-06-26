@@ -382,6 +382,7 @@ list_attribs(void)
   int nptrs = 0, i;
 
   ap = (ATTR *) ptab_firstentry(&ptab_attrib);
+  ptrs[0] = "";
   while (ap) {
     ptrs[nptrs++] = AL_NAME(ap);
     ap = (ATTR *) ptab_nextentry(&ptab_attrib);

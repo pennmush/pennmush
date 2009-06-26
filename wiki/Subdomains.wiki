@@ -1,0 +1,47 @@
+#summary Manipulating Users and Domains for pennmush.org subdomains
+
+= Domains =
+
+PennMUSH users (And otherwise related sites) can request .pennmush.org subdomains. To do so, log onto M*U*S*H and ask Walker, Raevnos or Javelin to make a subdomain for you. (And point them to this page if they forget what to do).
+
+A subdomain request requires:
+   * An email address.
+   * A username. If not given, the username part of your email address.
+   * A list of one or more subdomain names.
+
+When your user is created, you will be emailed a randomly generated password (No, the person who made your account does not know it) by the Services system. Please change this when you log in =).
+
+Whether we grant domains is at our own discretion, but usually:
+
+1) Be a MUSH game or PennMUSH-related website.
+2) Just alphanumerics.
+3) No profanity/etc.
+4) Don't try and hijack, e.g, www, ftp, _, mail, etc ;).
+
+= Services =
+
+The way for users to manipulate their subdomains is through http://services.pennmush.org.
+
+On the Services page, after logging in, users are presented with a list of owned domains. They can set the address, MX and TXT records. The address field can be an IP address or a string. If it is a string, then it is considered to be a CNAME, and the MX and TXT fields are ignored.
+
+An address that looks like an IP will be treated as an A record, and MX and TXT entries will follow it.
+
+A CNAME address with at least one dot (e.g: foo.dyndns.com) is considered a remote CNAME, and a trailing "." will be added to it.
+
+A CNAME address without a dot will be considered to be a local CNAME, and must match another subdomain.
+
+The services.pennmush.org website sits on top of a database. Bind9 domain files are generated once an hour, at 13 minutes past the hour. So if you make a change, then the DNS server won't know about it until the next :13. (And your ISP or DNS server might also cache queries, so don't expect changes to propagate immediately at the next :13!)
+
+= Administration =
+
+The subdomains are administered by a command line tool, "penndns.rb". For people who have access to the Pennmush server (At this writing: Jav, Walker and Raev): Log into the server and run:
+
+/home/pennmush/services/penndns.rb
+
+== Adding a new user ==
+
+penndns.rb adduser < username > < email > # Will email a password and a link to the supplied address.
+
+== Adding a subdomain for a user ==
+
+penndns.rb newdomain < username > < subdomain > # For each subdomain.

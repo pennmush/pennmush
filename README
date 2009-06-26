@@ -27,16 +27,6 @@ PennMUSH uses a version-numbering system that includes version
 numbers (like 1.7.2) and patchlevels (like p32), usually written
 together (1.7.2p32).
 
-Starting with 1.7.2, version numbers that are even (like 1.7.2) are
-stable releases - patchlevels on the latest stable release will only be
-issued to fix serious bugs. Version numbers that are odd (like 1.7.3)
-are development releases - patchlevels on the latest development release
-may include new features as well as bugfixes, and development releases
-may not be as stable as stable releases. On the other hand, some new
-features may *increase* stability without fixing bugs per se, and it's
-quite likely that later patchlevels on the development version will be
-more stable than those on the "stable" version.
-
 PennMUSH is a TinyMUD derivative, and one of the branches along the MUSH
 line. "Vanilla" TinyMUSH, which added the "v" registers and functions to
 the basic TinyMUD building commands, was written by Larry Foard. The code
@@ -132,13 +122,14 @@ There are three places one could get help with a problem:
    informed of new patches, subscribe to pennmush-announce instead,
    at http://www.pennmush.org/mailman/listinfo/pennmush-announce)
 
-2. The PennMUSH bug-tracking site is http://dev.pennmush.org/
-   To file a new report, click on the 'New Ticket' link. If
-   you want to get emails about updates to the bug report, put your
-   email address in the appropriate field. For 'type', please select
-   the most appropriate category: Bug, suggested feature, documetation
-   issue, build/compliation problems, etc. Be sure to include what version
-   of PennMUSH you found the problem on.
+2. The PennMUSH bug-tracking site is
+   http://code.google.com/p/pennmush/issues/list To file a new report,
+   click on the 'New issue' link. If you want to get emails about
+   updates to the bug report, put your email address in the
+   appropriate field. For 'type', please select the most appropriate
+   category: Bug, suggested feature, documetation issue,
+   build/compliation problems, etc. Be sure to include what version of
+   PennMUSH you found the problem on.
 
    If the problem resulted in a crash and a core dump, a stack trace of
    the core dump (see the section above) should also be included.
@@ -150,10 +141,6 @@ There are three places one could get help with a problem:
    You can also search to see if anyone else has already reported the issue,'
    see what issues have been fixed for upcoming releases, and much more at
    the site.
-
-   The old way of emailing pennmush-bugs@pennmush.org still works, but using
-   the web interface allows you to specifically give an issue type when 
-   reporting something.
 
 ============================================================================
 

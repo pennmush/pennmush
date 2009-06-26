@@ -43,7 +43,7 @@ version is 1.8.3.
 1. How do I ask for help with a problem?
 
 Email to pennmush-developers@pennmush.org
-or visit http://www.pennmush.org/jitterbug/pennmush
+or visit http://code.google.com/p/pennmush
 
 When asking for help, please be as specific as you can about the
 problem. Include at least the following:
@@ -58,8 +58,7 @@ problem. Include at least the following:
 
 2. How do I report a bug?
 
-Email to pennmush-bugs@pennmush.org
-or visit http://www.pennmush.org/jitterbug/pennmush
+Visit http://code.google.com/p/pennmush/issues/list
 
 Include specific information as described in #3 above. If you know
 what's causing the bug, or how to fix it, or if you have a patch for

@@ -578,6 +578,7 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
    */
   if ((subpatterns = pcre_exec(re, extra, d, delenn, 0, 0, offsets, 99))
       < 0) {
+    free_ansi_string(as);
     mush_free(re, "pcre");
     return 0;
   }
@@ -613,6 +614,7 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
     totallen = bp - data;
   }
 
+  free_ansi_string(as);
   mush_free(re, "pcre");
   return 1;
 }

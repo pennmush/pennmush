@@ -51,6 +51,7 @@ Fixes:
   * Regexp $-commands are now ansi aware. As in: ansi is passed to %0-%9. [GM]
   * hidden() now works on descriptors as advertised. Reported by Teal. [MG]
   * @name could cause a crash. Fixed. Reported by Zedekiah@M*U*S*H [GM]
+  * @nscemit/silent didn't work. Reported by Paige. [MG]
 
 Version 1.8.3 patchlevel 9                      Feb 28, 2009
 

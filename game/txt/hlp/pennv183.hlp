@@ -11,12 +11,18 @@ help topics named for each release (e.g. 'help 1.7.2p30').
 A list of the patchlevels associated with each release can
 be read in 'help patchlevels'.
 
-Version 1.8.3 patchlevel 10                     Apr ??, 2009
+Version 1.8.3 patchlevel 10                     ??? ??, 2009
+
+Major changes:
+ * Switched project management (Bug tracking, revision control, etc.)
+   to Google Code. See http://code.google.com/p/pennmush
 
 Minor changes:
  * @search and lsearch() now only charge 100 pennies if an evaluating
    search (EVAL, EPLAYER, EROOM, ETHING, EOBJECT, EEXIT or ELOCK) or
    an exhaustive attribute search (COMMAND, LISTEN) is performed.
+ * The %u sub now works for built-in commands, as well as $-commands.
+   Useful for @hooks. [MG]
 
 Functions:
   * lpids(), getpids(), and pidinfo() provide information about
@@ -38,6 +44,8 @@ Fixes:
     configure makes the game act like pre p8 ones. [SW]
   * member() now ignores ANSI in matches. Reported by Minion. [MG]
   * Regexp $-commands are now ansi aware. As in: ansi is passed to %0-%9. [GM]
+  * hidden() now works on descriptors as advertised. Reported by Teal. [MG]
+  * @name could cause a crash. Fixed. [GM]
 
 & 1.8.3p9
 Version 1.8.3 patchlevel 9                      Feb 28, 2009

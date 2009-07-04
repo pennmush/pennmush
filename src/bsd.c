@@ -662,9 +662,8 @@ main(int argc, char **argv)
   shutdown_checkpoint();
 #endif
   WSACleanup();                 /* clean up */
-#else
-  exit(0);
 #endif
+  exit(0);
 }
 #endif                          /* BOOLEXP_DEBUGGING */
 

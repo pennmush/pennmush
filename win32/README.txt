@@ -3,14 +3,12 @@ How to compile PennMUSH 1.8.x under Windows (MSVC++/MS VS.NET)
 by Nick Gammon <nick@gammon.com.au> and Javelin and Luuk de Waard
 Updated by Ervin Hearn <ehearn@pennmush.org>
 
-Last update: Saturday, 11 November 2006
+Last update: Friday, 3 July 2009
 
 1. From the top-level pennmush directory,
    Copy the following files        to:
 
    For MSVC++ 6:
-   win32/msvc6/pennmush.dsw        pennmush.dsw
-   win32/msvc6/pennmush.dsp        pennmush.dsp
    win32/config.h                  config.h
    win32/confmagic.h               confmagic.h
    win32/options.h                 options.h
@@ -26,10 +24,8 @@ Last update: Saturday, 11 November 2006
    game/namescnf.dst               game/names.cnf
    game/restrictcnf.dst            game/restrict.cnf
 
-
-   For MS VS.NET:
-   win32/msvc.net/pennmush.vcproj  pennmush.vcproj
-   win32/msvc.net/pennmush.sln     pennmush.sln
+   For MS VS.NET 2005 and later:
+   No copying required!
 
    VS.NET has been configured to copy the .dst files automatically if they
    do not exist, and the header files each time the project is compiled. This
@@ -37,14 +33,13 @@ Last update: Saturday, 11 November 2006
    Configuration Properties -> Build Events -> Pre-Build Event and Post-Build
    Event.
 
-
    If you've already got src/*local.c files that you've modified,
    you'll just have to make sure that there are no new functions
    in src/*local.dst that are missing in your src/*local.c files
 
-2. Use supplied project files in the top-level pennmush directory.
+2. Open the appropriate Visual Studio project from the win32 subdirectory.
 
-3. Compile
+3. Compile.
 
 4. From the top-level pennmush directory, the binary is: game/pennmush.exe
 

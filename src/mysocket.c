@@ -319,7 +319,11 @@ make_socket(Port_t port, int socktype, union sockaddr_u *addr, socklen_t * len,
     if (bind(s, server->ai_addr, server->ai_addrlen) == 0)
       break;                    /* Success */
 
+#ifdef WIN32
+    if (WSAGetLastError() == WSAEADDRINUSE) {
+#else
     if (errno == EADDRINUSE) {
+#endif
       fprintf(stderr,
               "Another process (Possibly another copy of this mush?) appears to be using port %hu. Aborting.\n",
               port);

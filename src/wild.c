@@ -551,6 +551,7 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
   int erroffset;
   int offsets[99];
   int subpatterns;
+  int totallen = 0;
 
   for (i = 0; i < nmatches; i++)
     matches[i] = NULL;
@@ -594,7 +595,6 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
    * go from 1 to 9. We DO PRESERVE THIS PARADIGM, for consistency
    * with other languages.
    */
-  int totallen = 0;
   for (i = 0; i < nmatches && (int) i < subpatterns && totallen < len; i++) {
     // Current data match.
     /* This is more annoying than a jumping flea up the nose. Since 

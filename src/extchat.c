@@ -3430,9 +3430,9 @@ mogrify(dbref mogrifier, char *attrname,
         dbref player, int numargs, char *argv[], char *orig)
 {
   static char buff[BUFFER_LEN];
-  buff[0] = '\0';
   const char *wenv[10];
   int i;
+  buff[0] = '\0';
   memset(wenv, 0, sizeof(wenv));
   for (i = 0; i < numargs; i++) {
     wenv[i] = argv[i];
@@ -3483,9 +3483,8 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
   dbref mogrifier = NOTHING;
   char *ctype = NULL;
   char *argv[10];
-  memset(argv, 0, sizeof(argv));
-
   int override_chatformat = 0;
+  memset(argv, 0, sizeof(argv));
 
   /* Make sure we can write to the channel before doing anything */
   if (Channel_Disabled(channel))

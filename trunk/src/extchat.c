@@ -523,7 +523,7 @@ load_labeled_chanusers(PENNFILE *fp, CHAN *ch)
       /* But be sure to read (and discard) the player's info */
       do_log(LT_ERR, 0, 0, T("Bad object #%d removed from channel %s"),
              player, ChanName(ch));
-      db_read_this_labeled_int(fp, "type", &n);
+      db_read_this_labeled_int(fp, "flags", &n);
       db_read_this_labeled_string(fp, "title", &tmp);
       ChanNumUsers(ch) -= 1;
     }

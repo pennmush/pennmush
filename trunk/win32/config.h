@@ -282,6 +282,8 @@ typedef void Free_t;
 
 #define HAVE_SAFE_TOUPPER
 
+#define UINT32_MAX 0xffffffffU
+
 /* Optional language features */
 #define restrict
 #undef inline

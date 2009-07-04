@@ -44,13 +44,13 @@ RSC=rc.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "./game"
-# PROP Intermediate_Dir "./src"
+# PROP Output_Dir "../../game"
+# PROP Intermediate_Dir "../../src"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MD /W3 /GX /ZI /I "./win32" /I "./hdrs" /I "./" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
+# ADD BASE CPP /nologo /MD /W3 /GX /ZI /I "../../win32" /I "../../hdrs" /I "../../" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
 # SUBTRACT BASE CPP /Ox /Ot /Os
-# ADD CPP /nologo /MD /W3 /GX /ZI /I "./win32" /I "./hdrs" /I "./" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GX /ZI /I "../../win32" /I "../../hdrs" /I "../../" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
 # SUBTRACT CPP /Ox /Ot /Os
 # ADD BASE RSC /l 0xc09 /d "_DEBUG"
 # ADD RSC /l 0xc09 /d "_DEBUG"
@@ -71,12 +71,12 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "./game"
-# PROP Intermediate_Dir "./src"
+# PROP Output_Dir "../../game"
+# PROP Intermediate_Dir "../../src"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MD /W3 /GX /O2 /Ob0 /I "./hdrs" /I "./" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /I /Win32" " /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /Ob0 /I "./hdrs" /I "./" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /I /Win32" " /c
+# ADD BASE CPP /nologo /MD /W3 /GX /O2 /Ob0 /I "../../hdrs" /I "../../" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /I /Win32" " /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /Ob0 /I "../../hdrs" /I "../../" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /I /Win32" " /c
 # ADD BASE RSC /l 0xc09 /d "NDEBUG"
 # ADD RSC /l 0xc09 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -98,13 +98,13 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "./game"
-# PROP Intermediate_Dir "./src"
+# PROP Output_Dir "../../game"
+# PROP Intermediate_Dir "../../src"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MD /W3 /GX /ZI /I "./win32" /I "./hdrs" /I "./" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
+# ADD BASE CPP /nologo /MD /W3 /GX /ZI /I "../../win32" /I "../../hdrs" /I "../../" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
 # SUBTRACT BASE CPP /Ox /Ot /Os
-# ADD CPP /nologo /MD /W3 /GX /ZI /I "./win32" /I "./hdrs" /I "./" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GX /ZI /I "../../win32" /I "../../hdrs" /I "../../" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
 # SUBTRACT CPP /Ox /Ot /Os
 # ADD BASE RSC /l 0xc09 /d "_DEBUG"
 # ADD RSC /l 0xc09 /d "_DEBUG"
@@ -125,12 +125,12 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "./game"
-# PROP Intermediate_Dir "./src"
+# PROP Output_Dir "../../game"
+# PROP Intermediate_Dir "../../src"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MD /W3 /GX /O2 /Ob0 /I "./hdrs" /I "./" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /I /Win32" " /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /Ob0 /I "./hdrs" /I "./" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /I /Win32" " /c
+# ADD BASE CPP /nologo /MD /W3 /GX /O2 /Ob0 /I "../../hdrs" /I "../../" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /I /Win32" " /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /Ob0 /I "../../hdrs" /I "../../" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /I /Win32" " /c
 # ADD BASE RSC /l 0xc09 /d "NDEBUG"
 # ADD RSC /l 0xc09 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -150,13 +150,13 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "./game"
-# PROP Intermediate_Dir "./src"
+# PROP Output_Dir "../../game"
+# PROP Intermediate_Dir "../../src"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MD /W3 /GX /ZI /I "./win32" /I "./hdrs" /I "./" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
+# ADD BASE CPP /nologo /MD /W3 /GX /ZI /I "../../win32" /I "../../hdrs" /I "../../" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
 # SUBTRACT BASE CPP /Ox /Ot /Os
-# ADD CPP /nologo /MD /W3 /GX /ZI /I "./win32" /I "./hdrs" /I "./" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GX /ZI /I "../../win32" /I "../../hdrs" /I "../../" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
 # SUBTRACT CPP /Ox /Ot /Os
 # ADD BASE RSC /l 0xc09 /d "_DEBUG"
 # ADD RSC /l 0xc09 /d "_DEBUG"
@@ -177,12 +177,12 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "./game"
-# PROP Intermediate_Dir "./src"
+# PROP Output_Dir "../../game"
+# PROP Intermediate_Dir "../../src"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MD /W3 /GX /O2 /Ob0 /I "./hdrs" /I "./" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /I /Win32" " /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /Ob0 /I "./hdrs" /I "./" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /I /Win32" " /c
+# ADD BASE CPP /nologo /MD /W3 /GX /O2 /Ob0 /I "../../hdrs" /I "../../" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /I /Win32" " /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /Ob0 /I "../../hdrs" /I "../../" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /I /Win32" " /c
 # ADD BASE RSC /l 0xc09 /d "NDEBUG"
 # ADD RSC /l 0xc09 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -202,12 +202,12 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "./game"
-# PROP Intermediate_Dir "./src"
+# PROP Output_Dir "../../game"
+# PROP Intermediate_Dir "../../src"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /ZI /I "./win32" /I "./hdrs" /I "./" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GX /ZI /I "../../win32" /I "../../hdrs" /I "../../" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
 # SUBTRACT CPP /Ox /Ot /Os
 # ADD BASE RSC /l 0xc09 /d "_DEBUG"
 # ADD RSC /l 0xc09 /d "_DEBUG"
@@ -227,12 +227,12 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "./game"
-# PROP Intermediate_Dir "./src"
+# PROP Output_Dir "../../game"
+# PROP Intermediate_Dir "../../src"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /Ob0 /I "./hdrs" /I "./" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /I /Win32" " /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /Ob0 /I "../../hdrs" /I "../../" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /I /Win32" " /c
 # ADD BASE RSC /l 0xc09 /d "NDEBUG"
 # ADD RSC /l 0xc09 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -256,299 +256,303 @@ LINK32=link.exe
 # Name "pennmush - Win32 Release"
 # Begin Source File
 
-SOURCE=.\src\access.c
+SOURCE=..\..\src\access.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\atr_tab.c
+SOURCE=..\..\src\atr_tab.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\attrib.c
+SOURCE=..\..\src\attrib.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\boolexp.c
+SOURCE=..\..\src\boolexp.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\bsd.c
+SOURCE=..\..\src\bsd.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\bufferq.c
+SOURCE=..\..\src\bufferq.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\chunk.c
+SOURCE=..\..\src\chunk.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cmdlocal.c
+SOURCE=..\..\src\cmdlocal.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cmds.c
+SOURCE=..\..\src\cmds.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\command.c
+SOURCE=..\..\src\command.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\compress.c
+SOURCE=..\..\src\compress.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\conf.c
+SOURCE=..\..\src\conf.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cque.c
+SOURCE=..\..\src\cque.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\create.c
+SOURCE=..\..\src\create.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\db.c
+SOURCE=..\..\src\db.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\destroy.c
+SOURCE=..\..\src\destroy.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\extchat.c
+SOURCE=..\..\src\extchat.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\extmail.c
+SOURCE=..\..\src\extmail.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\filecopy.c
+SOURCE=..\..\src\filecopy.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\flaglocal.c
+SOURCE=..\..\src\flaglocal.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\flags.c
+SOURCE=..\..\src\flags.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\funcrypt.c
+SOURCE=..\..\src\funcrypt.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\function.c
+SOURCE=..\..\src\function.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\fundb.c
+SOURCE=..\..\src\fundb.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\funlist.c
+SOURCE=..\..\src\funlist.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\funlocal.c
+SOURCE=..\..\src\funlocal.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\funmath.c
+SOURCE=..\..\src\funmath.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\funmisc.c
+SOURCE=..\..\src\funmisc.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\funstr.c
+SOURCE=..\..\src\funstr.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\funtime.c
+SOURCE=..\..\src\funtime.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\funufun.c
+SOURCE=..\..\src\funufun.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\game.c
+SOURCE=..\..\src\game.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\help.c
+SOURCE=..\..\src\help.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\htab.c
+SOURCE=..\..\src\htab.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\ident.c
+SOURCE=..\..\src\ident.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\local.c
+SOURCE=..\..\src\local.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\lock.c
+SOURCE=..\..\src\lock.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\log.c
+SOURCE=..\..\src\log.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\look.c
+SOURCE=..\..\src\look.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\malias.c
+SOURCE=..\..\src\malias.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\match.c
+SOURCE=..\..\src\match.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\memcheck.c
+SOURCE=..\..\src\memcheck.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\move.c
+SOURCE=..\..\src\move.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\mycrypt.c
+SOURCE=..\..\src\mycrypt.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\mymalloc.c
+SOURCE=..\..\src\mymalloc.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\myrlimit.c
+SOURCE=..\..\src\myrlimit.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\mysocket.c
+SOURCE=..\..\src\mysocket.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\myssl.c
+SOURCE=..\..\src\myssl.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\notify.c
+SOURCE=..\..\src\notify.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\parse.c
+SOURCE=..\..\src\parse.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\pcre.c
+SOURCE=..\..\src\pcre.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\player.c
+SOURCE=..\..\src\player.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\plyrlist.c
+SOURCE=..\..\src\plyrlist.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\predicat.c
+SOURCE=..\..\src\predicat.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\privtab.c
+SOURCE=..\..\src\privtab.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\ptab.c
+SOURCE=..\..\src\ptab.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\rob.c
+SOURCE=..\..\src\rob.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\services.c
+SOURCE=..\..\src\services.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\set.c
+SOURCE=..\..\src\set.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\shs.c
+SOURCE=..\..\src\SFMT.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sig.c
+SOURCE=..\..\src\shs.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\speech.c
+SOURCE=..\..\src\sig.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sql.c
+SOURCE=..\..\src\speech.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\strdup.c
+SOURCE=..\..\src\sql.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\strtree.c
+SOURCE=..\..\src\strdup.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\strutil.c
+SOURCE=..\..\src\strtree.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\tables.c
+SOURCE=..\..\src\strutil.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\timer.c
+SOURCE=..\..\src\tables.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\unparse.c
+SOURCE=..\..\src\timer.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\utils.c
+SOURCE=..\..\src\unparse.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\version.c
+SOURCE=..\..\src\utils.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\warnings.c
+SOURCE=..\..\src\version.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wild.c
+SOURCE=..\..\src\warnings.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wiz.c
+SOURCE=..\..\src\wild.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\wiz.c
 # End Source File
 # End Target
 # End Project

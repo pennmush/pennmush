@@ -502,8 +502,6 @@ FUNCTION(fun_flags)
       return;
     }
     safe_str(privs_to_letters(attr_privs_view, AL_FLAGS(a)), buff, bp);
-    if (atr_sub_branch(a))
-      safe_chr('`', buff, bp);
   } else {
     /* Object flags, visible to all */
     safe_str(unparse_flags(thing, executor), buff, bp);

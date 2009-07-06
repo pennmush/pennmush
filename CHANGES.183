@@ -28,6 +28,8 @@ Minor changes:
    an exhaustive attribute search (COMMAND, LISTEN) is performed.
  * The %u sub now works for built-in commands, as well as $-commands.
    Useful for @hooks. [MG]
+ * The use command now understands english matching. Suggested by
+   Yuriko.
 
 Functions:
   * lpids(), getpids(), and pidinfo() provide information about
@@ -54,6 +56,8 @@ Fixes:
   * @nscemit/silent didn't work. Reported by Paige. [MG]
   * The chatdb failed to load when objects of the wrong type were listed
     as channel members. Reported by Teal. [MG]
+  * flags() on an attribute used as the root of a tree would include the
+    ` twice.
 
 Version 1.8.3 patchlevel 9                      Feb 28, 2009
 

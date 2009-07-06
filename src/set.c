@@ -1001,7 +1001,7 @@ do_use(dbref player, const char *what)
 
   if ((thing =
        noisy_match_result(player, what, TYPE_THING,
-                          MAT_NEAR_THINGS)) != NOTHING) {
+                          MAT_NEAR_THINGS | MAT_ENGLISH)) != NOTHING) {
     if (!eval_lock(player, thing, Use_Lock)) {
       fail_lock(player, thing, Use_Lock, T("Permission denied."), NOTHING);
       return;

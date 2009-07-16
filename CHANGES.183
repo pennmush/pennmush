@@ -30,6 +30,7 @@ Minor changes:
    Useful for @hooks. [MG]
  * The use command now understands english matching. Suggested by
    Yuriko.
+ * Rooms can now use @open/open(). [MG]
 
 Functions:
   * lpids(), getpids(), and pidinfo() provide information about

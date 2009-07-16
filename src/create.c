@@ -89,7 +89,7 @@ do_real_open(dbref player, const char *direction, const char *linkto,
 {
   dbref loc =
     (pseudo !=
-     NOTHING) ? pseudo : (IsExit(player) ? Source(player) : Location(player));
+     NOTHING) ? pseudo : (IsExit(player) ? Source(player) : (IsRoom(player) ? player : Location(player)));
   dbref new_exit;
   if (!command_check_byname(player, "@dig")) {
     notify(player, "Permission denied.");

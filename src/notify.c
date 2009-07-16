@@ -950,7 +950,7 @@ notify_anything_loc(dbref speaker, na_lookup func,
      *    * unlike normal @listen, don't pass the message on.
      *    */
 
-    if ((ThingListen(target) || RoomListen(target))
+    if (has_flag_by_name(target, "MONITOR", NOTYPE)
         && eval_lock(speaker, target, Listen_Lock)
       )
       atr_comm_match(target, speaker, '^', ':',

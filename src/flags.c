@@ -873,6 +873,9 @@ flag_add_additional(FLAGSPACE *n)
     add_flag("HEAVY", '\0', NOTYPE, F_ROYAL, F_ANY);
     add_flag("TRACK_MONEY", '\0', TYPE_PLAYER, F_ANY, F_ANY);
     add_flag("LOUD", '\0', NOTYPE, F_ROYAL, F_ANY);
+    add_flag("HEAR_CONNECT", '\0', TYPE_PLAYER, F_ROYAL , F_ANY);
+    if ((f = match_flag("LISTEN_PARENT")))
+      f->type |= TYPE_PLAYER;
     if ((f = match_flag("TERSE")))
       f->type |= TYPE_THING;
     if ((f = match_flag("PUPPET")))
@@ -1372,9 +1375,7 @@ can_set_flag(dbref player, dbref thing, FLAG *flagp, int negate)
     else
       return 1;
   }
-  /* You must be privileged to set/clear the MONITOR flag on a player */
-  if (IsPlayer(thing) && is_flag(flagp, "MONITOR") && !Hasprivs(player))
-    return 0;
+
   /* Checking for the ZONE flag. If you set this, the player had
    * better be zone-locked! 
    */

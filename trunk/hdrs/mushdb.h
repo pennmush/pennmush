@@ -154,6 +154,7 @@ bool unfindable(dbref);
 #define DBF_POWERS_LOGGED       0x80000
 #define DBF_LABELS              0x100000
 #define DBF_SPIFFY_AF_ANSI      0x200000
+#define DBF_HEAR_CONNECT        0x400000
 
 /* Reboot DB flag macros - these should be defined whether or not the
  * corresponding system option is defined 

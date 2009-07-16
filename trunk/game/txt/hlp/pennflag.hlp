@@ -330,6 +330,13 @@ See also: @halt, @restart
   If a room is set HAVEN, the 'kill' command cannot be used in that room.
 
 See also: @haven, kill
+& HEAR_CONNECT
+  Flag: HEAR_CONNECT (players)
+  
+  Players with this flag will received a message whenever a player
+  connects, disconnects, or is created. Mortals will not hear messages
+  for players connecting/disconnecting dark. Only royalty and wizards can
+  set this flag.
 & HEAVY
   Flag:  HEAVY (all types)
 
@@ -429,23 +436,20 @@ See also: DARK
 
   See @link, TRUST, @parent, PARENTS
 & MONITOR
-  Flag:  MONITOR  (players)
-  
-  When set on a player, this flag notifies that player when anyone connects
-  to or disconnects from the MUSH. It is valid only for players, and must be
-  set by a wizard (although royalty may set themselves MONITOR).
-
-  Flag:  MONITOR  (things, rooms)
+  Flag:  MONITOR  (players, things, rooms)
  
-  When set on a thing or room, this flag activates the ^ listen
-  patterns on the object. Objects which have ^ listen patterns but are
-  not set MONITOR do not check those patterns.
+  The MONITOR flag activates the ^ listen patterns on an object.
+  Objects which have ^ listen patterns but are not set MONITOR
+  do not check those patterns.
 
   When using the LISTEN Attribute Tree, you must set the Root
   Attribute !NO_COMMAND. By default this Attribute/Attribute Root has
   been set NO_COMMAND by the system. Attributes which are set HALT or
   NO_COMMAND will not be evaluated for purposes of the ^ listen
-  patterns
+  patterns.
+  
+  This flag used to allow players to hear when someone connected to
+  the game, but that is now controlled by the HEAR_CONNECT flag.  
 & MYOPIC
   Flag:  MYOPIC  (players)
 
@@ -771,11 +775,11 @@ See also: ZONES, ZONE MASTERS, @chzone, ZONE MASTER ROOMS
 
 See also: ZONE MASTERS
 & LISTEN_PARENT
-  Flag:  LISTEN_PARENT (things, rooms)
+  Flag:  LISTEN_PARENT (players, things, rooms)
   
-  When set on a thing or room which also has the MONITOR flag set,
-  this flag causes ^ listen patterns to be checked on the object's
-  parents as well as on the object.
+  When set on an object which also has the MONITOR flag set, this flag
+  causes ^ listen patterns to be checked on the object's parents as
+  well as on the object.
 
 See also: MONITOR, LISTENING
 

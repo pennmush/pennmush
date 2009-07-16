@@ -32,6 +32,13 @@ Minor changes:
    Yuriko.
  * Rooms can now use @open/open(). [MG]
 
+Flags:
+ * The HEAR_CONNECT flag is now used (instead of MONITOR) to allow
+   players to see 'GAME: Foo has [dis]connected.' messages. MONITOR
+   on players now enables ^-patterns, the same as on things/rooms.
+   Any players with the MONITOR flag will have it replaced with the
+   HEAR_CONNECT flag automatically. Requested by Malix@8BitMUSH. [MG]
+
 Functions:
   * lpids(), getpids(), and pidinfo() provide information about
     wait/semaphore process ids and processes. Suggested by

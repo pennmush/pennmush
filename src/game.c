@@ -1452,7 +1452,7 @@ Listener(dbref thing)
   /* If a monitor flag is set on a room or thing, it's a listener.
    * Otherwise not (even if ^patterns are present)
    */
-  return (ThingListen(thing) || RoomListen(thing));
+  return has_flag_by_name(thing, "MONITOR", NOTYPE);
 }
 
 /** Reset all players' money.

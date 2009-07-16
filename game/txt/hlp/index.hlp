@@ -387,7 +387,7 @@ For more, see Entries-19
  halt                      hasattr()                 hasattrp()               
  hasattrpval()             hasattrval()              hasflag()                
  haspower()                hastype()                 haven                    
- heavy                     height()                  help                     
+ hear_connect              heavy                     height()                 
  here                      hidden()                  home                     
  home()                    homes                     host()                   
  hostname()                html                      html functions           

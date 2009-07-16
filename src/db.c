@@ -719,6 +719,7 @@ db_write(PENNFILE *f, int flag)
   dbflag += DBF_POWERS_LOGGED;
   dbflag += DBF_LABELS;
   dbflag += DBF_SPIFFY_AF_ANSI;
+  dbflag += DBF_HEAR_CONNECT;
 
   penn_fprintf(f, "+V%d\n", dbflag * 256 + 2);
 
@@ -914,6 +915,7 @@ db_paranoid_write(PENNFILE *f, int flag)
   dbflag += DBF_POWERS_LOGGED;
   dbflag += DBF_LABELS;
   dbflag += DBF_SPIFFY_AF_ANSI;
+  dbflag += DBF_HEAR_CONNECT;
 
   do_rawlog(LT_CHECK, "PARANOID WRITE BEGINNING...\n");
 
@@ -1507,6 +1509,12 @@ db_read_oldstyle(PENNFILE *f)
       if (IsPlayer(i)) {
         add_player(i);
         clear_flag_internal(i, "CONNECTED");
+        /* If it has the MONITOR flag and the db predates HEAR_CONNECT, swap them over */
+        if (!(globals.indb_flags & DBF_HEAR_CONNECT) &&
+          has_flag_by_name(i, "MONITOR", NOTYPE)) {
+          clear_flag_internal(i, "MONITOR");
+          set_flag_internal(i, "HEAR_CONNECT");
+		}
       }
       break;
 
@@ -1773,6 +1781,12 @@ db_read(PENNFILE *f)
         if (IsPlayer(i)) {
           add_player(i);
           clear_flag_internal(i, "CONNECTED");
+          /* If it has the MONITOR flag and the db predates HEAR_CONNECT, swap them over */
+          if (!(globals.indb_flags & DBF_HEAR_CONNECT) &&
+            has_flag_by_name(i, "MONITOR", NOTYPE)) {
+              clear_flag_internal(i, "MONITOR");
+              set_flag_internal(i, "HEAR_CONNECT");
+		  }          
         }
       }
       break;

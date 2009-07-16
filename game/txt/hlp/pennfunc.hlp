@@ -355,11 +355,14 @@ See also: stripaccents(), NOACCENTS
 
 See also: before(), rest()
 & ALIGN()
+& LALIGN()
   align(<widths>,<col1>,...,<coln>[,<filler>[,<colsep>[,<rowsep>]]])
+  lalign(<widths>,<colList>[,<delim>[,<filler>[,<colsep>[,<rowsep>]]]])
 
   Creates columns of text, each column designated by <col1..coln>.
   Each column is individually wrapped inside its own column, allowing
-  for easy creation of book pages, newsletters, or the like.
+  for easy creation of book pages, newsletters, or the like. In lalign(),
+  <colList> is a <delim>-separated list of the columns.
 
   <widths> is a space-separated list of column widths. '10 10 10' for
   the widths argument specifies that there are 3 columns, each 10

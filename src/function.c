@@ -316,6 +316,7 @@ FUNTAB flist[] = {
   {"AFTER", fun_after, 2, 2, FN_REG},
   {"ALIAS", fun_alias, 1, 2, FN_REG},
   {"ALIGN", fun_align, 2, INT_MAX, FN_REG},
+  {"LALIGN", fun_align, 2, 6, FN_REG},
   {"ALLOF", fun_allof, 2, INT_MAX, FN_NOPARSE},
   {"ALPHAMAX", fun_alphamax, 1, INT_MAX, FN_REG},
   {"ALPHAMIN", fun_alphamin, 1, INT_MAX, FN_REG},

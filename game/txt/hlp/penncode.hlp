@@ -6,18 +6,16 @@ welcome.
 
 The main PennMUSH web page is at http://www.pennmush.org
 
-Report bugs and make suggestions at:  http://dev.pennmush.org
+Report bugs and make suggestions at:  http://code.google.com/p/pennmush
 
 The PennMUSH community page is at http://community.pennmush.org
 
 For information about downloading PennMUSH, see 'help download'.
 For information about changes in versions of the code, see 'help changes'.
 & download
-The latest version of this MUSH code is available at
-http://download.pennmush.org/Source.  It will be called something like
-pennmush-1.7.6p0.tar.Z, depending on the version number. You will also
-find files of translations of server messages into various languages
-in Source/translations/<version>. See help i18n for more.
+The latest version of this MUSH code is available from
+http://code.google.com/p/pennmush/downloads/list. It will be called
+something like pennmush-1.8.3p9.tar.bz2, depending on the version number.
 
 Also on that site is the MUSH manual, in /Manuals. It should be called
 mushman.2.008.tar.Z or something similar; you should attempt to get at

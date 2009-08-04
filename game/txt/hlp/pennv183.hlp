@@ -23,11 +23,23 @@ Minor changes:
    an exhaustive attribute search (COMMAND, LISTEN) is performed.
  * The %u sub now works for built-in commands, as well as $-commands.
    Useful for @hooks. [MG]
+ * The use command now understands english matching. Suggested by
+   Yuriko.
+ * Rooms can now use @open/open(). [MG]
+
+Flags:
+ * The HEAR_CONNECT flag is now used (instead of MONITOR) to allow
+   players to see 'GAME: Foo has [dis]connected.' messages. MONITOR
+   on players now enables ^-patterns, the same as on things/rooms.
+   Any players with the MONITOR flag will have it replaced with the
+   HEAR_CONNECT flag automatically. Requested by Malix@8BitMUSH. [MG]
 
 Functions:
   * lpids(), getpids(), and pidinfo() provide information about
     wait/semaphore process ids and processes. Suggested by
     Yuriko@M*U*S*H, code by Javelin.
+  * lalign() works like align(), but takes a single arg with a list of
+    columns, instead of one arg for each column. Suggested by Teal. [MG]
 
 Fixes:
   * @pcreate without a password would crash the game. Fixed. [GM]
@@ -46,6 +58,12 @@ Fixes:
   * Regexp $-commands are now ansi aware. As in: ansi is passed to %0-%9. [GM]
   * hidden() now works on descriptors as advertised. Reported by Teal. [MG]
   * @name could cause a crash. Fixed. Reported by Zedekiah@M*U*S*H [GM]
+  * @nscemit/silent didn't work. Reported by Paige. [MG]
+  * Win32 compile fixes and project file updates.
+  * The chatdb failed to load when objects of the wrong type were listed
+    as channel members. Reported by Teal. [MG]
+  * flags() on an attribute used as the root of a tree would include the
+    ` twice.
 
 & 1.8.3p9
 Version 1.8.3 patchlevel 9                      Feb 28, 2009

@@ -457,11 +457,12 @@ See also: controls(), TRUST, MISTRUST, ZONES, SHARED PLAYERS
 See also: MONEY, money(), score
 & CREDITS
   Maintainer: Raevnos [SW]
-  Developers: Javelin, Ervin Hearn III [EEH], Greg Millam [GM],
-              Mike Griffiths [MG]
+  Developers: Ervin Hearn III [EEH], Greg Millam [GM], Mike Griffiths [MG],
+              Intrevis
   Past Porters: Nick Gammon [NJG] (win32), Dan Williams [DW] (MacOS), 
            Sylvia (OS/2)
-  Former developers: Rhyanna [RLM], Trivian [TN], Halatir [LdW], Talek [TAP]
+  Former developers: Rhyanna [RLM], Trivian [TN], Halatir [LdW], Talek [TAP],
+           Javelin
  
   The original TinyMUSH 1.0 code was written by Lawrence Foard, and
   was based upon James Aspnes' TinyMUD server. Since then, the code

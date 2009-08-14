@@ -769,7 +769,7 @@ See also: accent(), @nameformat
   Example: Show the room's zone after its name.
   @nameformat here = %1 [if(isdbref(zone(%0)),<[name(zone(%0))]>)]
 
-See also: @exitformat, @conformat, @descformat
+See also: @exitformat, @conformat, @descformat, @nameaccent
 & @cost
   @cost <object> = <amount> 
 

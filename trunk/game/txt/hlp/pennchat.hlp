@@ -207,7 +207,7 @@ See also: chat
   can create a new channel, though there will be a cost associated
   with creation (see @config chat). Possible <priv> specifications:
   * "player" - players may use the channel
-  * "object" - objects may use the channel
+  * "thing" - things may use the channel
   * "admin" - only royalty/wizards/chat_privs may use the channel
   * "wizard" - only wizards may use the channel
   * "quiet" - channel will not show connection messages
@@ -337,11 +337,11 @@ On-channel language systems and more!
 Here's the legend for reading the @channel/list output:
 
 Channel Name               Num Users Num Msgs  Access Locks     Status  Buf
-Sample                             1        0 [DPOWQHo jsmvh*] [On  QH]   4
+Sample                             1        0 [DPTWQHo jsmvh*] [On  QH]   4
                                                ||||||| ||||||   |   ||    |
 Channel is DISABLED----------------------------/|||||| ||||||   |   ||    |
 Channel allows PLAYERS--------------------------/||||| ||||||   |   ||    |
-Channel allows OBJECTS---------------------------/|||| ||||||   |   ||    |
+Channel allows THINGS----------------------------/|||| ||||||   |   ||    |
 Channel is Wizard-only (W) or Admin-only (A)------/||| ||||||   |   ||    |
 Channel is QUIET-----------------------------------/|| ||||||   |   ||    |
 Channel is HIDE_OK----------------------------------/| ||||||   |   ||    |

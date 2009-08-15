@@ -33,6 +33,8 @@ Minor changes:
  * Rooms can now use @open/open(). [MG]
  * Mortals can now use '@attribute <attrib>' to see the default flags
    of a standard attribute. [MG]
+ * @channel/priv now uses 'thing' instead of 'object' for channels
+   which allow things to join. 'object' is kept as an alias. [MG]
 
 Flags:
  * The HEAR_CONNECT flag is now used (instead of MONITOR) to allow

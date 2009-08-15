@@ -2754,7 +2754,7 @@ See also: @pemit, @nsprompt, prompt(), nsprompt(), PROMPT_NEWLINES
   can be used to disable the newline and is recommended for users with
   these clients.
 
-See also: @prompt, prompt()
+See also: @prompt, prompt(), terminfo()
 & @pemit
   @pemit[/<switch>] <object> = <message>
   

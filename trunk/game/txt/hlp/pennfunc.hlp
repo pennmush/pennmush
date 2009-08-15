@@ -4468,6 +4468,7 @@ See also: @tel
   pueblo           present if the client is in Pueblo mode.
   telnet           present if the client understands the telnet protocol.
   ssl              present if the client is using an SSL/TLS connection.
+  prompt_newlines  see 'help prompt_newlines'
 
   Other fields may be added in the future, if, for example, MXP
   support is ever added.

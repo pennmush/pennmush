@@ -89,7 +89,7 @@ COMLIST commands[] = {
   {"@ATRCHOWN", NULL, cmd_atrchown, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
 
   {"@ATTRIBUTE", "ACCESS DELETE RENAME RETROACTIVE", cmd_attribute,
-   CMD_T_ANY | CMD_T_EQSPLIT, "WIZARD", 0},
+   CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@BOOT", "PORT ME SILENT", cmd_boot, CMD_T_ANY, 0, 0},
   {"@BREAK", NULL, cmd_break, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE, 0,
    0},

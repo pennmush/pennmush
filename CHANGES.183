@@ -31,6 +31,8 @@ Minor changes:
  * The use command now understands english matching. Suggested by
    Yuriko.
  * Rooms can now use @open/open(). [MG]
+ * Mortals can now use '@attribute <attrib>' to see the default flags
+   of a standard attribute. [MG]
 
 Flags:
  * The HEAR_CONNECT flag is now used (instead of MONITOR) to allow

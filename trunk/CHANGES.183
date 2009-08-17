@@ -35,6 +35,8 @@ Minor changes:
    of a standard attribute. [MG]
  * @channel/priv now uses 'thing' instead of 'object' for channels
    which allow things to join. 'object' is kept as an alias. [MG]
+ * The chatdb now saves channel buffers and mogrifier objects, so you
+   don't need to put @chan/buffer or @chan/mogrifier in @startup. [MG]
 
 Flags:
  * The HEAR_CONNECT flag is now used (instead of MONITOR) to allow

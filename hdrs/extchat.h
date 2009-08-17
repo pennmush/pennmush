@@ -263,4 +263,7 @@ enum chan_match_type {
 };
 
 
+/* Chat db flags */
+#define CDB_SPIFFY 0x01          /* Has mogrifier and buffer */
+
 #endif                          /* __EXTCHAT_H */

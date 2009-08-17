@@ -46,7 +46,7 @@ static void free_user(CHANUSER *u);
 static int load_chatdb_oldstyle(PENNFILE *fp);
 static int load_channel(PENNFILE *fp, CHAN *ch);
 static int load_chanusers(PENNFILE *fp, CHAN *ch);
-static int load_labeled_channel(PENNFILE *fp, CHAN *ch);
+static int load_labeled_channel(PENNFILE *fp, CHAN *ch, int dbflags);
 static int load_labeled_chanusers(PENNFILE *fp, CHAN *ch);
 static void insert_channel(CHAN **ch);
 static void remove_channel(CHAN *ch);
@@ -303,7 +303,7 @@ load_chatdb(PENNFILE *fp)
     ch = new_channel();
     if (!ch)
       return 0;
-    if (!load_labeled_channel(fp, ch)) {
+    if (!load_labeled_channel(fp, ch, flags)) {
       do_rawlog(LT_ERR, T("Unable to load channel %d."), i);
       free_channel(ch);
       return 0;
@@ -430,7 +430,7 @@ load_channel(PENNFILE *fp, CHAN *ch)
  * successful, 0 otherwise.
  */
 static int
-load_labeled_channel(PENNFILE *fp, CHAN *ch)
+load_labeled_channel(PENNFILE *fp, CHAN *ch, int dbflags)
 {
   char *tmp;
   int i;
@@ -447,6 +447,13 @@ load_labeled_channel(PENNFILE *fp, CHAN *ch)
   ChanCreator(ch) = d;
   db_read_this_labeled_int(fp, "cost", &i);
   ChanCost(ch) = i;
+  if (dbflags & CDB_SPIFFY) {
+    db_read_this_labeled_int(fp, "buffer", &i);
+    if (i)
+      ChanBufferQ(ch) = allocate_bufferq(i);
+    db_read_this_labeled_dbref(fp, "mogrifier", &d);
+    ChanMogrifier(ch) = d;
+  }
   ChanNumMsgs(ch) = 0;
   while (1) {
     db_read_labeled_string(fp, &label, &value);
@@ -791,6 +798,7 @@ save_chatdb(PENNFILE *fp)
 {
   CHAN *ch;
   int default_flags = 0;
+  default_flags += CDB_SPIFFY;
 
   /* How many channels? */
   penn_fprintf(fp, "+V%d\n", default_flags);
@@ -815,6 +823,8 @@ save_channel(PENNFILE *fp, CHAN *ch)
   db_write_labeled_int(fp, "  flags", ChanType(ch));
   db_write_labeled_dbref(fp, "  creator", ChanCreator(ch));
   db_write_labeled_int(fp, "  cost", ChanCost(ch));
+  db_write_labeled_int(fp, "  buffer", bufferq_blocks(ChanBufferQ(ch)));
+  db_write_labeled_dbref(fp, "  mogrifier", ChanMogrifier(ch));
   db_write_labeled_string(fp, "  lock", "join");
   putboolexp(fp, ChanJoinLock(ch));
   db_write_labeled_string(fp, "  lock", "speak");
@@ -2481,12 +2491,11 @@ do_chan_wipe(dbref player, const char *name)
 
 /** Change the mogrifier of a channel.
  * \verbatim
- * This is the top-level function for @channel/mogrifier, which changes
- * ownership of a channel.
+ * This is the top-level function for @channel/mogrifier
  * \endverbatim
  * \param player the enactor.
  * \param name name of the channel.
- * \param newobj name of the new owner for the channel.
+ * \param newobj name of the new mogrifier object.
  */
 void
 do_chan_set_mogrifier(dbref player, const char *name, const char *newobj)
@@ -2498,7 +2507,7 @@ do_chan_set_mogrifier(dbref player, const char *name, const char *newobj)
 
   /* Only a channel modifier can do this. */
   if (!Chan_Can_Modify(c, player)) {
-    notify(player, T("CHAT: Only a channel modifier can do hat."));
+    notify(player, T("CHAT: Only a channel modifier can do that."));
     return;
   }
 
@@ -2523,16 +2532,11 @@ do_chan_set_mogrifier(dbref player, const char *name, const char *newobj)
     return;
   }
 
-  /* The owner of the channel must be able to *control* the
-   * mogrifier.
-   */
+  /* The player must be able to *control* the mogrifier. */
   if (!controls(player, it)) {
     notify(player, T("CHAT: You must control the mogrifier."));
     return;
   }
-  /* We refund the original owner's money, but don't charge the
-   * new owner. 
-   */
   ChanMogrifier(c) = it;
   notify_format(player,
                 T("CHAT: Channel <%s> now mogrified by %s."), ChanName(c),

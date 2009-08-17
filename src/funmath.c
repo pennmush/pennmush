@@ -1919,6 +1919,7 @@ FUNCTION(fun_baseconv)
   while (ptr && *ptr) {
     if (*ptr == '-') {
       isnegative = 1;
+      ptr++;
       continue;
     }
     n *= from;

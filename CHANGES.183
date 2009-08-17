@@ -75,6 +75,8 @@ Fixes:
     as channel members. Reported by Teal. [MG]
   * flags() on an attribute used as the root of a tree would include the
     ` twice.
+  * baseconv() would hang the MUSH if passed a negative <number>. Reported
+    by Mercutio. [MG]
 
 Version 1.8.3 patchlevel 9                      Feb 28, 2009
 

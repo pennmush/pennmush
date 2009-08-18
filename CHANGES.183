@@ -51,6 +51,8 @@ Functions:
     Yuriko@M*U*S*H, code by Javelin.
   * lalign() works like align(), but takes a single arg with a list of
     columns, instead of one arg for each column. Suggested by Teal. [MG]
+  * New lockowner() function returns the owner of an @lock. Suggested
+    by Paige. [MG]
 
 Fixes:
   * @pcreate without a password would crash the game. Fixed. [GM]

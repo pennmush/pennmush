@@ -1270,6 +1270,35 @@ FUNCTION(fun_lockflags)
 }
 
 /* ARGSUSED */
+FUNCTION(fun_lockowner)
+{
+  dbref it;
+  char *p;
+  lock_type ltype;
+  lock_list *ll;
+  
+  if ((p = strchr(args[0], '/')))
+    *(p++) = '\0';
+  
+  it = match_thing(executor, args[0]);
+  if (!GoodObject(it)) {
+	  safe_str(T(e_notvis), buff, bp);
+	  return;
+  }
+  ltype = get_locktype(p);
+  if (ltype == NULL || !Can_Read_Lock(executor, it, ltype)) {
+	  safe_str(T("#-1 NO SUCH LOCK"), buff, bp);
+	  return;
+  }
+  ll = getlockstruct(it, ltype);
+  if (ll)
+    safe_dbref(L_CREATOR(ll), buff, bp);
+  else
+    safe_str(T("#-1 NO SUCH LOCK"), buff, bp);
+  
+}
+
+/* ARGSUSED */
 FUNCTION(fun_lset)
 {
   if (!FUNCTION_SIDE_EFFECTS) {

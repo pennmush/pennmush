@@ -2295,7 +2295,7 @@ an object named "Test", preferring a thing over other types.
   MUSHes.
  
 See also: @lock, locktypes, elock(), lockflags(), llockflags(), lset(),
-  llocks()
+  llocks(), lockowner()
 & LLOCKS()
 & LOCKS()
   llocks(<object>)
@@ -2310,7 +2310,7 @@ See also: @lock, locktypes, elock(), lockflags(), llockflags(), lset(),
   > th llocks(me)
   Basic USER:ITSME Use
 
-See also: lock(), lset(), lockflags(), llockflags()
+See also: lock(), lset(), lockflags(), llockflags(), lockowner()
 & LOCKFLAGS()
   lockflags(<object>[/<locktype>])
   lockflags()
@@ -2322,7 +2322,7 @@ See also: lock(), lset(), lockflags(), llockflags()
   Given no arguments, this function returns a string consisting of all
   the flag letters the server knows.
 
-See also: llockflags(), lset(), lock(), llocks()
+See also: llockflags(), lset(), lock(), llocks(), lockowner()
 & LLOCKFLAGS()
   llockflags(<object>[/<locktype>])
   llockflags()
@@ -2333,9 +2333,17 @@ See also: llockflags(), lset(), lock(), llocks()
   Given no arguments, this function returns a space-separated list of
   all flag names known to the server.
 
-See also: lockflags(), lset(), lock(), llocks()
+See also: lockflags(), lset(), lock(), llocks(), lockowner()
+& LOCKOWNER()
+  lockowner(<object>[/<locktype>])
+  
+  This function returns the dbref of the player who owns the <locktype>
+  lock on <object>, or the Basic lock if no <locktype> is given. You
+  must be able to examine the lock to use this function.
+  
+See also: lockflags(), llockflags(), lset(), lock(), llocks()
 & LSET()
-  lset(<object>/<lock type>,[!]<flag>)
+  lset(<object>/<locktype>,[!]<flag>)
   
   This functions sets or clears flags on locks.
   

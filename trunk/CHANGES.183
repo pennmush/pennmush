@@ -60,7 +60,7 @@ Fixes:
     disconnect. Reported by Paige@M*U*S*H, among others.
   * MOGRIFY`BLOCK wasn't being called, as help @channel6 said it was.
     Oops. [GM]
-  * Some help fixes. [GM]
+  * Help fixes, by Sketch and others. [GM]
   * @clone could mess up the names of the original and the clone. 
     Reported by qa'toq. [SW]
   * Crash bugs in rand() and randword(). [SW]

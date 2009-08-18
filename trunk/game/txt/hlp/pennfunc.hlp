@@ -928,18 +928,17 @@ See also: @pcreate
 & CTIME()
 & CSECS()
   ctime(<object>[, <utc>])
-  csecs(<objecct>)
+  csecs(<object>)
  
-  If creation times are enabled, this function will return the date
-  and time that the object was created. If the optional <utc> argument
-  is true, the time is returned for the UTC time zone, if false or
-  present, for the local time zone.
+  ctime() returns the date and time that <object> was created. The time
+  returned is in the server's local timezone, unless <utc> is true, in
+  which case the time is in the UTC timezone.
  
   csecs() returns the time as the number of seconds since the epoch.
 
   You must be able to examine an object to see its creation time.
 
-See also: mtime()
+See also: mtime(), time(), secs()
 & CTU()
   ctu(<angle>,<from>,<to>)
 
@@ -2726,18 +2725,17 @@ See also: div()
   mtime(<object>[, <utc>])
   msecs(<object>)
  
-  If creation times are enabled, this function will return the date
-  and time that one of the object's attributes was last added,
-  deleted, or modified. Only things, rooms, and exits have
-  modification times. If the optional <utc> argument is true, the time
-  is returned for the UTC time zone, if false or present, for the
-  local time zone.
- 
+  mtime() returns the date and time that one of <object>'s attributes or
+  locks was last added, deleted, or modified. The time returned is in the
+  server's local timezone, unless <utc> is true, in which case the time is
+  in the UTC timezone.
+  
   msecs() returns the time as the number of seconds since the epoch.
+  
+  Only things, rooms, and exits have modification times. You must be able to
+  examine an object to see its modification time.
 
-  You must be able to examine an object to see it's modification time.
-
-See also: ctime()
+See also: ctime(), time(), secs()
 & MUDNAME()
   mudname()
  

@@ -1378,7 +1378,8 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
     parent_depth = GoodObject(Parent(thing));
   } else {
     flag_mask = AF_LISTEN;
-    if (has_flag_by_name(thing, "LISTEN_PARENT", TYPE_PLAYER | TYPE_THING | TYPE_ROOM)) {
+    if (has_flag_by_name
+        (thing, "LISTEN_PARENT", TYPE_PLAYER | TYPE_THING | TYPE_ROOM)) {
       parent_depth = GoodObject(Parent(thing));
     } else {
       parent_depth = 0;

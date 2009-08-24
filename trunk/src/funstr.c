@@ -1956,7 +1956,7 @@ FUNCTION(fun_align)
     return;
   }
   if (strcmp(called_as, "LALIGN")) {
-	/* each column is a separate arg */
+    /* each column is a separate arg */
     if (nargs < (ncols + 1) || nargs > (ncols + 4)) {
       safe_str(T("#-1 INVALID NUMBER OF ARGUMENTS TO ALIGN"), buff, bp);
       return;
@@ -1967,7 +1967,7 @@ FUNCTION(fun_align)
         return;
       }
       if (*args[ncols + 1]) {
-       filler = *(args[ncols + 1]);
+        filler = *(args[ncols + 1]);
       }
     }
     if (nargs >= (ncols + 3)) {
@@ -1988,40 +1988,40 @@ FUNCTION(fun_align)
       ptrs[i] = as[i]->text;
     }
   } else {
-	/* columns are in args[1] as an args[2]-separated list */
+    /* columns are in args[1] as an args[2]-separated list */
     char delim, *s;
     if (!delim_check(buff, bp, nargs, args, 3, &delim))
       return;
     if (do_wordcount(args[1], delim) != ncols) {
-	  safe_str(T("#-1 INVALID NUMBER OF ARGUMENTS TO ALIGN"), buff, bp);
+      safe_str(T("#-1 INVALID NUMBER OF ARGUMENTS TO ALIGN"), buff, bp);
       return;
     }
     if (nargs > 3) {
-	  if (!args[3] || strlen(args[3]) > 1) {
-		safe_str(T("#-1 FILLER MUST BE ONE CHARACTER"), buff, bp);
+      if (!args[3] || strlen(args[3]) > 1) {
+        safe_str(T("#-1 FILLER MUST BE ONE CHARACTER"), buff, bp);
         return;
-	  }
-	  if (*args[3])
-	    filler = *(args[3]);
+      }
+      if (*args[3])
+        filler = *(args[3]);
     }
     if (nargs > 4)
       fieldsep = args[4];
     if (nargs > 5)
       linesep = args[5];
-    
+
     fslen = strlen(fieldsep);
     lslen = strlen(linesep);
-    
+
     for (i = 0; i < MAX_COLS; i++) {
-	  as[i] = NULL;
+      as[i] = NULL;
     }
     s = trim_space_sep(args[1], delim);
     for (i = 0; i < ncols; i++) {
-	  as[i] = parse_ansi_string(split_token(&s, delim));
-	  ptrs[i] = as[i]->text;
+      as[i] = parse_ansi_string(split_token(&s, delim));
+      ptrs[i] = as[i]->text;
     }
   }
-    
+
   nline = 0;
   while (1) {
     if (!align_one_line(buff, bp, ncols, cols, calign, ptrs,

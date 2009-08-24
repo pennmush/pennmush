@@ -1,0 +1,8 @@
+#: src/fundb.c:1645 src/funlist.c:362 src/funlist.c:446
+msgid "#-1 NOT FOUND"
+msgstr "#-1 NOT FOUND"
+
+#: src/wiz.c:1742
+msgid "Unknown flag."
+msgstr "Unknown flag."
+

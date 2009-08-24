@@ -11,7 +11,7 @@ help topics named for each release (e.g. 'help 1.7.2p30').
 A list of the patchlevels associated with each release can
 be read in 'help patchlevels'.
 
-Version 1.8.3 patchlevel 10                     ??? ??, 2009
+Version 1.8.3 patchlevel 10                     Aug 24, 2009
 
 Major changes:
  * Switched project management (Bug tracking, revision control, etc.)
@@ -26,6 +26,12 @@ Minor changes:
  * The use command now understands english matching. Suggested by
    Yuriko.
  * Rooms can now use @open/open(). [MG]
+ * Mortals can now use '@attribute <attrib>' to see the default flags
+   of a standard attribute. [MG]
+ * @channel/priv now uses 'thing' instead of 'object' for channels
+   which allow things to join. 'object' is kept as an alias. [MG]
+ * The chatdb now saves channel buffers and mogrifier objects, so you
+   don't need to put @chan/buffer or @chan/mogrifier in @startup. [MG]
 
 Flags:
  * The HEAR_CONNECT flag is now used (instead of MONITOR) to allow
@@ -40,6 +46,8 @@ Functions:
     Yuriko@M*U*S*H, code by Javelin.
   * lalign() works like align(), but takes a single arg with a list of
     columns, instead of one arg for each column. Suggested by Teal. [MG]
+  * New lockowner() function returns the owner of an @lock. Suggested
+    by Paige. [MG]
 
 Fixes:
   * @pcreate without a password would crash the game. Fixed. [GM]
@@ -47,7 +55,7 @@ Fixes:
     disconnect. Reported by Paige@M*U*S*H, among others.
   * MOGRIFY`BLOCK wasn't being called, as help @channel6 said it was.
     Oops. [GM]
-  * Some help fixes. [GM]
+  * Help fixes, by Sketch and others. [GM]
   * @clone could mess up the names of the original and the clone. 
     Reported by qa'toq. [SW]
   * Crash bugs in rand() and randword(). [SW]
@@ -64,6 +72,8 @@ Fixes:
     as channel members. Reported by Teal. [MG]
   * flags() on an attribute used as the root of a tree would include the
     ` twice.
+  * baseconv() would hang the MUSH if passed a negative <number>. Reported
+    by Mercutio. [MG]
 
 & 1.8.3p9
 Version 1.8.3 patchlevel 9                      Feb 28, 2009

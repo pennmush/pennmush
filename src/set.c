@@ -88,11 +88,11 @@ do_name(dbref player, const char *name, char *newname_)
       if (*bon == '"') {
         bon++;
         eon = bon;
-        while ( *eon && *eon != '"') {
+        while (*eon && *eon != '"') {
           eon++;
         }
         if (*eon) {
-         *eon = '\0';
+          *eon = '\0';
         }
       } else {
         eon = bon;
@@ -103,7 +103,7 @@ do_name(dbref player, const char *name, char *newname_)
       }
       if (!ok_player_name(bon, player, thing)) {
         notify(player, T("You can't give a player that name."));
-	mush_free(newname, "name.newname");
+        mush_free(newname, "name.newname");
         return;
       }
       /* everything ok, notify */
@@ -118,7 +118,7 @@ do_name(dbref player, const char *name, char *newname_)
       bon = newname;
       if (!ok_name(newname)) {
         notify(player, T("That is not a reasonable name."));
-	mush_free(newname, "name.newname");
+        mush_free(newname, "name.newname");
         return;
       }
     }

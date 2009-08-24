@@ -1511,10 +1511,10 @@ db_read_oldstyle(PENNFILE *f)
         clear_flag_internal(i, "CONNECTED");
         /* If it has the MONITOR flag and the db predates HEAR_CONNECT, swap them over */
         if (!(globals.indb_flags & DBF_HEAR_CONNECT) &&
-          has_flag_by_name(i, "MONITOR", NOTYPE)) {
+            has_flag_by_name(i, "MONITOR", NOTYPE)) {
           clear_flag_internal(i, "MONITOR");
           set_flag_internal(i, "HEAR_CONNECT");
-		}
+        }
       }
       break;
 
@@ -1783,10 +1783,10 @@ db_read(PENNFILE *f)
           clear_flag_internal(i, "CONNECTED");
           /* If it has the MONITOR flag and the db predates HEAR_CONNECT, swap them over */
           if (!(globals.indb_flags & DBF_HEAR_CONNECT) &&
-            has_flag_by_name(i, "MONITOR", NOTYPE)) {
-              clear_flag_internal(i, "MONITOR");
-              set_flag_internal(i, "HEAR_CONNECT");
-		  }          
+              has_flag_by_name(i, "MONITOR", NOTYPE)) {
+            clear_flag_internal(i, "MONITOR");
+            set_flag_internal(i, "HEAR_CONNECT");
+          }
         }
       }
       break;

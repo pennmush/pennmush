@@ -2047,10 +2047,10 @@ FUNCTION(fun_member)
     safe_str(T("#-1 CAN ONLY TEST ONE ELEMENT"), buff, bp);
     return;
   }
-  
+
   strncpy(haystack, remove_markup(args[0], NULL), BUFFER_LEN);
   strncpy(needle, remove_markup(args[1], NULL), BUFFER_LEN);
-  
+
   s = trim_space_sep(haystack, sep);
   el = 1;
 

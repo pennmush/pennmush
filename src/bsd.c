@@ -3164,7 +3164,8 @@ announce_connect(dbref player, int isnew, int num)
     flag_broadcast("WIZARD", 0, T("GAME: Suspect %s"), tbuf1);
 
   if (Dark(player)) {
-    flag_broadcast("ROYALTY WIZARD", "HEAR_CONNECT", "%s %s", T("GAME:"), tbuf1);
+    flag_broadcast("ROYALTY WIZARD", "HEAR_CONNECT", "%s %s", T("GAME:"),
+                   tbuf1);
   } else
     flag_broadcast(0, "HEAR_CONNECT", "%s %s", T("GAME:"), tbuf1);
 
@@ -3381,7 +3382,8 @@ announce_disconnect(DESC *saved)
   if (Suspect(player))
     flag_broadcast("WIZARD", 0, T("GAME: Suspect %s"), tbuf1);
   if (Dark(player)) {
-    flag_broadcast("ROYALTY WIZARD", "HEAR_CONNECT", "%s %s", T("GAME:"), tbuf1);
+    flag_broadcast("ROYALTY WIZARD", "HEAR_CONNECT", "%s %s", T("GAME:"),
+                   tbuf1);
   } else
     flag_broadcast(0, "HEAR_CONNECT", "%s %s", T("GAME:"), tbuf1);
 
@@ -3718,17 +3720,17 @@ FUNCTION(fun_hidden)
     return;
   }
   if (is_strict_integer(args[0])) {
-	  DESC *d = lookup_desc(executor, args[0]);
-	  if (!d) {
-		  notify(executor, T("Couldn't find that descriptor."));
-		  safe_str("#-1", buff, bp);
-		  return;
-	  }
-	  safe_boolean(Hidden(d), buff, bp);
+    DESC *d = lookup_desc(executor, args[0]);
+    if (!d) {
+      notify(executor, T("Couldn't find that descriptor."));
+      safe_str("#-1", buff, bp);
+      return;
+    }
+    safe_boolean(Hidden(d), buff, bp);
   } else {
-	dbref it = match_thing(executor, args[0]);
+    dbref it = match_thing(executor, args[0]);
     if ((it == NOTHING) || (!IsPlayer(it))) {
-	  notify(executor, T("Couldn't find that player."));
+      notify(executor, T("Couldn't find that player."));
       safe_str("#-1", buff, bp);
       return;
     }

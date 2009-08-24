@@ -829,7 +829,7 @@ init_game_dbs(void)
       create_minimal_db();
       return 0;
     }
-    
+
     penn_ungetc(c, f);
   }
 
@@ -2214,7 +2214,8 @@ db_open(const char *fname)
     pf->type = PFT_GZFILE;
     pf->handle.g = gzopen(filename, "rb");
     if (!pf->handle.g) {
-      do_rawlog(LT_ERR, "Unable to open %s with libz: %s\n", filename, strerror(errno));
+      do_rawlog(LT_ERR, "Unable to open %s with libz: %s\n", filename,
+                strerror(errno));
       mush_free(pf, "pennfile");
       longjmp(db_err, 1);
     }
@@ -2302,7 +2303,8 @@ db_open_write(const char *fname)
     pf->type = PFT_GZFILE;
     pf->handle.g = gzopen(filename, "wb");
     if (!pf->handle.g) {
-      do_rawlog(LT_ERR, "Unable to open %s with libz: %s\n", filename, strerror(errno));
+      do_rawlog(LT_ERR, "Unable to open %s with libz: %s\n", filename,
+                strerror(errno));
       mush_free(pf, "pennfile");
       longjmp(db_err, 1);
     }

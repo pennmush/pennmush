@@ -1,0 +1,8 @@
+Penn will compile and run out of the box on OpenBSD, with the caveats
+below:
+
+* OpenBSD (4.2, probably other releases as well) will not forward IPv4
+  connection to a listening IPv6 port by default, and the sysctl
+  invocation that should change this fails with an 'Operation not
+  supported' error. Pass --disable-ipv6 to configure.
+

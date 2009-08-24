@@ -1,0 +1,405 @@
+#: src/filecopy.c:100
+#, c-format
+msgid "    Copying file: %s, %ld byte%s\n"
+msgstr "    Копирую файл %s, %ld байт%s\n"
+
+#: db.c:1207
+#, c-format
+msgid "  Last attribute read was: %s"
+msgstr "  оНЯКЕДМХИ ОПНВХРЮММШИ ЮРРПХАСР: %s"
+
+#: src/services.c:813
+#, c-format
+msgid " %s /help     - displays this information\n"
+msgstr " %-s  /help             - показывает текущую информацию\n"
+
+#: src/conf.c:1107
+msgid " Extended ANSI functions are not enabled."
+msgstr " Расширенный набор функций ANSI не включен."
+
+#: src/conf.c:948
+msgid " Passwords are encrypted with SHS."
+msgstr " оЮПНКХ ЬХТПСЧРЯЪ Я ОНЛНЫЭЧ SHS."
+
+#: src/conf.c:1011
+msgid " The built-in MUSH mailing system is not being used."
+msgstr " Встроенная почтовая система MUSH не используется."
+
+#: parse.c:87
+msgid "#-1 ARGUMENT MUST BE POSITIVE INTEGER"
+msgstr "#-1 АРГУМЕНТ ДОЛЖЕН БЫТЬ ПОЛОЖИТЕЛЬНЫМ ЦЕЛЫМ"
+
+#: src/funtime.c:110
+msgid "#-1 ARGUMENT MUST BE POSITIVE"
+msgstr "#-1 АГРУМЕНТ ДОЛЖЕН БЫТЬ ПОЛОЖИТЕЛЬНЫМ"
+
+#: src/funmath.c:218 src/funmath.c:250
+msgid "#-1 ARGUMENT MUST END IN AN INTEGER"
+msgstr "#-1 АРГУМЕНТ ДОЛЖЕН ЗАКАНЧИВАТСЯ ЦЕЛЫМ"
+
+#: src/fundb.c:61
+msgid "#-1 ATTRIBUTE LENGTH TOO LONG"
+msgstr "#-1 ДЛИНА АТТРИБУТА СЛИШКОМ БОЛЬШАЯ"
+
+#: src/funlist.c:1410
+msgid "#-1 CAN ONLY DELETE ONE ELEMENT"
+msgstr "#-1 МОГУ УДАЛИТЬ ТОЛЬКО ОДИН ЭЛЕМЕНТ"
+
+#: src/parse.c:671 src/parse.c:759
+msgid "#-1 FUNCTION ("
+msgstr "#-1 тсмйжхъ ("
+
+#: src/fundb.c:663 src/fundb.c:690
+msgid "#-1 INVALID SECOND ARGUMENT"
+msgstr "#-1 НЕВЕРЕН ВТОРОЙ АРГУМЕНТ"
+
+#: src/fundb.c:118 src/fundb.c:137 src/fundb.c:460 src/funstr.c:118\nsrc/funstr.c:131 src/funstr.c:144 src/funstr.c:157
+msgid "#-1 NO MATCH"
+msgstr "#-1 НЕТ СОВПАДЕНИЙ"
+
+#: src/fundb.c:1828
+msgid "#-1 NO SUCH CHANNEL"
+msgstr "#-1 НЕТ ТАКОГО КАНАЛА"
+
+#: src/conf.c:901
+msgid "#-1 NO SUCH OPTION"
+msgstr "#-1 НЕТ ТАКОЙ ОПЦИИ"
+
+#: src/fundb.c:907
+msgid "#-1 NO SUCH TYPE"
+msgstr "#-1 НЕТ ТАКОГО ТИПА"
+
+#: src/bsd.c:4485 src/bsd.c:4498
+msgid "#-1 NOT CONNECTED"
+msgstr "#-1 НЕТ СОЕДИНЕНИЯ"
+
+#: src/funmath.c:1385
+msgid "#-1 UNKNOWN OPERATION"
+msgstr "#-1 НЕИЗВЕСТНАЯ ОПЕРАЦИЯ"
+
+#: src/funmath.c:420 src/funmath.c:462 src/funmath.c:501 src/funmath.c:540\nsrc/funmath.c:598 src/funmath.c:632
+msgid "#-1 VECTORS MUST BE SAME DIMENSIONS"
+msgstr "#-1 ВЕКТОРЫ ДОЛЖНЫ БЫТЬ РАВНОМАССИВНЫМИ"
+
+#: src/wiz.c:1044
+#, c-format
+msgid "%d commands executed."
+msgstr "БШОНКМЕМН %d ЙНЛЛЮМД."
+
+#: src/extmail.c:1370
+#, c-format
+msgid "%d messages received, %d unread, %d cleared."
+msgstr "%d ЯННАЫЕМХИ ОНКСВЕМН, %d МЕ ОПНВХРЮМН, %d ОНДЦНРНБКЕМН Й СДЮКЕМХЧ."
+
+#: src/bsd.c:3405
+#, c-format
+msgid "%ld failed connections since last login."
+msgstr "%ld разорванных соединений со времени последнего входа."
+
+#: src/destroy.c:352
+#, c-format
+msgid "%s and all their objects are scheduled to be destroyed."
+msgstr "%s и принадлежащие ему объекты будут уничтожены в соответствии со значениями таймера."
+
+#: src/bsd.c:3978
+#, c-format
+msgid "%s created."
+msgstr "Создано: %s."
+
+#: src/move.c:332
+#, c-format
+msgid "%s goes home."
+msgstr "%s СУНДХР ДНЛНИ."
+
+#: src/attrib.c:953
+#, c-format
+msgid "%s grows ears and can now hear."
+msgstr "У %s выросли уши, теперь он может слышать."
+
+#: src/rob.c:47
+#, c-format
+msgid "%s has no %s."
+msgstr "У %s нет %s."
+
+#: src/destroy.c:344
+#, c-format
+msgid "%s has scheduled your room %s to be destroyed."
+msgstr "%s установил таймер на уничтожение комнаты %s."
+
+#: src/look.c:1057
+#, c-format
+msgid "%s is at: %s."
+msgstr "%s находится в: %s."
+
+#: src/predicat.c:760
+#, c-format
+msgid "%s message from %s: %s"
+msgstr "%s сообщение от %s: %s"
+
+#: src/rob.c:288
+#, c-format
+msgid "%s took %d %s from you!"
+msgstr "%s ГЮАПЮК %d %s С РЕАЪ!"
+
+#: src/rob.c:156
+#, c-format
+msgid "%s tried to kill you!"
+msgstr "%s ОНОШРЮКЯЪ САХРЭ РЕАЪ!"
+
+#: src/look.c:1053
+#, c-format
+msgid "%s tried to locate you and failed."
+msgstr "%s ОНОШРЮКЯЪ БЮЯ НАМЮПСФХРЭ Х МЕ ОПЕСЯОЕК."
+
+#: speech.c:395 speech.c:372
+#, c-format
+msgid "%s whispers to %s."
+msgstr "%s шепчет %s."
+
+#: src/extmail.c:1260 src/extmail.c:1668 src/wiz.c:673 src/wiz.c:1277
+#, c-format
+msgid "%s: No such player."
+msgstr "%s: мЕР РЮЙНЦН ХЦПНЙЮ."
+
+#: src/wiz.c:1417
+#, c-format
+msgid "%s: unknown type."
+msgstr "%s: МЕХГБЕЯРМШИ РХО."
+
+#: src/look.c:911
+#, c-format
+msgid "*** %d objects found ***"
+msgstr "*** %d объектов найдено ***"
+
+#: src/services.c:134
+msgid "Attempting to start PennMUSH as a service ...\n"
+msgstr "Пытаюсь запустить PennMUSH как серверный процесс... \n"
+
+#: src/extchat.c:1443
+#, c-format
+msgid "CHAT: %s has removed all users from <%s>."
+msgstr "%s удалил всех пользователей из <%s>"
+
+#: src/bsd.c:3082
+#, c-format
+msgid "Can't open index file %s for reading"
+msgstr "Не могу открыть индексный файл %s на чтение"
+
+#: create.c:565
+#, c-format
+msgid "Cloned: Object %s."
+msgstr "йКНМХПНБЮМ: НАЗЕЙР %s."
+
+#: src/game.c:1514
+#, c-format
+msgid "Disk I/O:    %10ld reads  %10ld writes"
+msgstr "Операции ввода/вывода диска:           %10ld прочитано   %10ld записано"
+
+#: src/set.c:131
+msgid "E.g.: name player = newname password"
+msgstr "мЮОПХЛЕП: name ХЦПНЙ = ХЛЪ ОЮПНКЭ"
+
+#: src/db.c:1236
+#, c-format
+msgid "ERROR: Bad format on new attributes. object #%d\n"
+msgstr "ОШИБКА: Неверный формат новых атрибутов. объект #%d\n"
+
+#: src/player.c:261
+#, c-format
+msgid "Failed registration (bad email: %s) from %s"
+msgstr "Регистрация невозможна (неверный email: %s) от %s"
+
+#: src/player.c:225
+#, c-format
+msgid "Failed registration (bad name) from %s"
+msgstr "Регистрация отменена (неверное имя) для %s"
+
+#: filecopy.c:196
+msgid "File is too small to be a MUSH database."
+msgstr "тЮИК ЯКХЬЙНЛ ЛЮКЕМЭЙХИ ДКЪ АЮГШ ДЮММШУ MUSH."
+
+#: src/extmail.c:1274 src/extmail.c:1682
+#, c-format
+msgid "Finding mail stats costs %d %s."
+msgstr "Поиск почтовой статистики стоит %d %s."
+
+#: src/destroy.c:636 src/destroy.c:1040
+#, c-format
+msgid "Found a destroyed exit #%d in room #%d"
+msgstr "мЮИДЕМ СМХВРНФЕММШИ БШУНД #%d Б ЙНЛМЮРЕ #%d"
+
+#: src/extchat.c:1334
+msgid "Gag status must be 'yes' or 'no'."
+msgstr "Статус затычки может быть только 'yes' ('да) или 'no' ('нет')."
+
+#: src/boolexp.c:261
+#, c-format
+msgid "I don't see %s here."
+msgstr "Не видно здесь %s."
+
+#: src/bsd.c:2378
+#, c-format
+msgid "Listening on port %d\n"
+msgstr "Прослушиваю порт %d\n"
+
+#: src/extmail.c:990
+#, c-format
+msgid "MAIL: %s's mailbox is full. Can't send."
+msgstr "онврю: оНВРНБШИ ЪЫХЙ %s ОНКНМ. мЕБНГЛНФМН ОНЯКЮРЭ ЯННАЫЕМХЕ."
+
+#: src/malias.c:264
+#, c-format
+msgid "MAIL: Alias set '%s' defined."
+msgstr "ПОЧТА: Псевдоним '%s' создан."
+
+#: src/extmail.c:1316
+#, c-format
+msgid "MAIL: There are %d new msgs in the mail spool, totalling %d characters."
+msgstr "ПОЧТА: Всего %d новых сообщений от %d героев."
+
+#: src/extmail.c:378
+#, c-format
+msgid "MAIL: Unread Msg #%d:%d cleared! Use @mail/unclear %d:%d to recover."
+msgstr "Непрочитанное сообщение #%d:%d удалено! Используйте @mail/unclear %d:%d для восстановления."
+
+#: src/extmail.c:1365
+#, c-format
+msgid "Mail statistics for %s:"
+msgstr "Почтовая статистика для %s:"
+
+#: src/set.c:143
+#, c-format
+msgid "Name change by %s(#%d) to %s"
+msgstr "Имя изменено %s(#%d) для %s"
+
+#: src/wiz.c:131
+#, c-format
+msgid "New player '%s' (#%d) created with password '%s'"
+msgstr "Создан новый игрок '%s' (#%d) с паролем '%s'"
+
+#: src/access.c:192
+#, c-format
+msgid "No %s file found."
+msgstr "Файл %s не найден."
+
+#: src/extmail.c:747 src/extmail.c:859
+#, c-format
+msgid "No such unique player: %s."
+msgstr "Нет такого игрока: %s."
+
+#: src/speech.c:606
+msgid "Only players and things can hear @pemits."
+msgstr "рНКЭЙН ХЦПНЙХ Х БЕЫХ ЛНЦСР ЯКШЬЮРЭ @pemit-Ш."
+
+#: look.c:815
+#, c-format
+msgid "Source: %s"
+msgstr "Источник: %s"
+
+#: src/destroy.c:238
+msgid "That object is set SAFE. You must set it !SAFE before destroying it."
+msgstr "Этот объект установлен как SAFE. Перед уничтожением его необходимо разблокировать с помщью !SAFE."
+
+#: src/atr_tab.c:273
+#, c-format
+msgid "The name %s is already used in the attribute table."
+msgstr "Имя %s уже используется в таблице аттрибутов."
+
+#: src/access.c:261
+#, c-format
+msgid "Unable to open %s."
+msgstr "мЕБНГЛНФМН НРЙПШРЭ %s."
+
+#: filecopy.c:204
+#, c-format
+msgid "Unable to open file %s"
+msgstr "мЕ ЛНЦС НРЙПШРЭ ТЮИК %s"
+
+#: src/access.c:547
+#, c-format
+msgid "Unknown access option: %s"
+msgstr "мЕХГБЕЯРМЮЪ НОЖХЪ ДНЯРСОЮ: %s"
+
+#: src/move.c:771
+#, c-format
+msgid "You are followed by: %s"
+msgstr "За тобой следует: %s"
+
+#: src/extchat.c:1119
+#, c-format
+msgid "You can't afford the %d %s."
+msgstr "Ты не можешь позволить себе %d %s."
+
+#: src/look.c:1097
+#, c-format
+msgid "You don't have enough %d %s to do that."
+msgstr "с БЮЯ МЕДНЯРЮРНВМН %d %s ДКЪ ЩРНЦН ДЕИЯРБХЪ."
+
+#: src/attrib.c:1114
+msgid "You don't have the permission to chown that."
+msgstr "У вас нет прав на использование команды chown."
+
+#: src/rob.c:276
+#, c-format
+msgid "You give %d %s to %s."
+msgstr "рШ ДЮЕЬЭ %d %s %s."
+
+#: look.c:959
+#, c-format
+msgid "You may give unlimited %s"
+msgstr "бШ ЛНФЕРЕ ДЮРЭ МЕНЦПЮМХВЕММШИ/МСЧ/МНЕ/МШЕ %s\""
+
+#: src/rob.c:230
+#, c-format
+msgid "You must specify a positive number of %s."
+msgstr "бШ ДНКФМШ СЙЮГЮРЭ ОНКНФХРЕКЭМНЕ ВХЯКН %s."
+
+#: src/extchat.c:1305
+#, c-format
+msgid "You now appear on channel <%s>'s who list."
+msgstr "Теперь ты в списке присутствующих в канале <%s>."
+
+#: src/destroy.c:1103
+#, c-format
+msgid "You own a disconnected room, %s"
+msgstr "У вас в подчинении отключенная комната %s."
+
+#: src/extchat.c:1322
+#, c-format
+msgid "You will no longer hear messages on channel <%s>."
+msgstr "С данного момента вы не будете читать сообщения в канале <%s>."
+
+#: src/rob.c:143
+#, c-format
+msgid "Your insurance policy pays %d %s."
+msgstr "По страховке вам выплачено %d %s."
+
+#: src/player.c:298
+#, c-format
+msgid "Your requested player, %s, has been created.\n"
+msgstr "рБНИ ОЕПЯНМЮФ, %s, АШК ЯНГДЮМ.\n"
+
+#: src/bsd.c:3444 src/bsd.c:3459 src/bsd.c:3479 src/bsd.c:3498
+#, c-format
+msgid "[%d/%s/%s] Failed connect to '%s'."
+msgstr "[%d/%s/%s] Не могу соединиться с '%s'."
+
+#: src/bsd.c:5241
+#, c-format
+msgid "[%d/%s] Connection opened."
+msgstr "[%d/%s] Соединение открыто."
+
+#: src/game.c:1494
+#, c-format
+msgid ""
+"\n"
+"Process ID:  %10d"
+msgstr ""
+"\n"
+"Номер процесса: %10d"
+
+#: move.c:608
+#, c-format
+msgid "drops %s."
+msgstr "ЙКЮДЕР %s."
+

@@ -190,11 +190,11 @@ COMMAND(cmd_config)
     {
       int source = SW_ISSET(sw, SWITCH_SAVE) ? 2 : 1;
       if (source == 2) {
-	if (!God(player)) {
-	/* Only god can alter the original config file. */
-	  notify(player, T("You can't remake the world in your image."));
-	  return;
-	}     
+        if (!God(player)) {
+          /* Only god can alter the original config file. */
+          notify(player, T("You can't remake the world in your image."));
+          return;
+        }
       }
       if (!config_set(arg_left, arg_right, source, 0)
           && !config_set(arg_left, arg_right, source, 1))

@@ -1969,9 +1969,7 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
   /* make sure player has money to do the search -
    * But only if this does an eval or lock search. */
   if ((spec.lock != TRUE_BOOLEXP) ||
-      spec.cmdstring[0] ||
-      spec.listenstring[0] ||
-      spec.eval[0]) {
+      spec.cmdstring[0] || spec.listenstring[0] || spec.eval[0]) {
     if (!payfor(player, FIND_COST)) {
       notify_format(player, T("Searches cost %d %s."), FIND_COST,
                     ((FIND_COST == 1) ? MONEY : MONIES));

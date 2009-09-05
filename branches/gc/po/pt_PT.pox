@@ -1,0 +1,144 @@
+#: conf.c:1498
+msgid " CPU usage limiting is NOT supported."
+msgstr " \" Limitação da utilização do CPU não é suportada.\""
+
+#: src/fundb.c:784 src/fundb.c:1001
+msgid "#-1 ARG1 NOT FOUND"
+msgstr "#-1 ARG1 NÃO ENCONTRADO"
+
+#: src/funlist.c:194 src/funlist.c:2088
+msgid "#-1 LISTS MUST BE OF EQUAL SIZE"
+msgstr "#-1 LISTAS DEVEM SER DE TAMANHO IGUAL"
+
+#: src/funmath.c:1385
+msgid "#-1 UNKNOWN OPERATION"
+msgstr "#-1 OPERAÇÃO DESCONHECIDA"
+
+#: src/look.c:1057
+#, c-format
+msgid "%s is at: %s."
+msgstr "%s está em: %s."
+
+#: src/look.c:1053
+#, c-format
+msgid "%s tried to locate you and failed."
+msgstr "%s tentou localizar-te e falhou."
+
+#: src/extmail.c:1129
+#, c-format
+msgid "** MAIL PURGE ** done by %s(#%d)."
+msgstr "** LIMPEZA DE MAIL ** feito por %s(#%d)."
+
+#: src/wiz.c:1096
+msgid "Bad object type."
+msgstr "Tipo de objecto inválido."
+
+#: src/extchat.c:1731
+#, c-format
+msgid "CHAT: Channel <%s> title cleared."
+msgstr "CHAT: Titulo do canal <%s> apagado."
+
+#: src/create.c:374
+msgid "Dig what?"
+msgstr "Escavar o quê?"
+
+#: src/create.c:341
+msgid "Dropto set."
+msgstr "Dropto configurado."
+
+#: src/wiz.c:2097
+msgid "Error writing to file."
+msgstr "Erro ao escrever no ficheiro."
+
+#: extchat.c:1000
+msgid "Guests are not allowed to leave channels."
+msgstr "Não é permitido a guests abandonar canais."
+
+#: src/destroy.c:1291
+#, c-format
+msgid "Incorrect source on exit %s. Reset to #%d."
+msgstr "Código de origem incorrecto da saida %s. Reconfigurar para #%d."
+
+#: speech.c:835
+#, c-format
+msgid "Long distance to %s%s: %s%s%s"
+msgstr "\"Longa distancia para %s%s: %s%s%s\""
+
+#: src/malias.c:223 src/malias.c:679
+#, c-format
+msgid "MAIL: %s added to alias %s"
+msgstr "MAIL: %s adicionado á lista de contactos"
+
+#: src/malias.c:239 src/malias.c:696
+msgid "MAIL: Alias list is restricted to maximal 100 entries!"
+msgstr "MAIL: A lista de contactos é restricta ao maximo de 100 entradas!"
+
+#: src/extmail.c:233
+#, c-format
+msgid "MAIL: Current folder is %d [%s]."
+msgstr "MAIL: A pasta actual é %d [%s]"
+
+#: src/extmail.c:1312
+#, c-format
+msgid "MAIL: There are %d old msgs in the mail spool, totalling %d characters."
+msgstr "MAIL:  Há %d mensagens antigas no quadro de mensagens, totalizando %d caracteres."
+
+#: src/extmail.c:1174
+#, c-format
+msgid "Mail database top is %d, actual message count is %d. Fixing."
+msgstr "O topo da base de dados de mail é %d, conta da mensagem actual é %d. Actualizando."
+
+#: src/wiz.c:2069
+msgid "Name removed."
+msgstr "Nome removido."
+
+#: src/access.c:192
+#, c-format
+msgid "No %s file found."
+msgstr "Ficheiro %s não encontrado."
+
+#: look.c:707
+#, c-format
+msgid "Parent: %s"
+msgstr "Pais: %s"
+
+#: src/wiz.c:503
+msgid "Teleports are not allowed in this room."
+msgstr "Teleportações não são permitidas nesta sala."
+
+#: db.c:1313
+msgid "Unrecognized database format!"
+msgstr "Formato de base de dados desconhecido!"
+
+#: create.c:623
+msgid "Warning: @CLONE/PRESERVE on an room with WIZ, ROY, @powers, or @warnings."
+msgstr "Aviso: @CLONE/PRESERVE numa sala com WIZ, ROY, @powers, ou @warnings"
+
+#: src/services.c:139
+msgid "You can save time on the next invocation by specifying: pennmush /run\n"
+msgstr "Podes guardar o tempo no próximo pedido especificando: pennmush /run\n"
+
+#: src/rob.c:207
+msgid "You can't give that away."
+msgstr "Não podes dar esse away."
+
+#: src/set.c:214
+msgid "You cannot @CHOWN/PRESERVE. Use normal @CHOWN."
+msgstr "Não podes @CHOWN/PRESERVE. Usa normal @CHOWN."
+
+#: src/set.c:367
+msgid "You shouldn't zone objects to themselves!"
+msgstr "Não deverias definir a zona de objectos a eles mesmos!"
+
+#: src/move.c:763
+msgid "You're not allowed to follow them."
+msgstr "Não podes seguir esse grupo."
+
+#: src/funmath.c:1974 src/funmath.c:1979 src/funmath.c:1986
+msgid "median list"
+msgstr "lista de intermediário"
+
+#: bsd.c:2078
+msgid "remote port"
+msgstr "porto distante"
+

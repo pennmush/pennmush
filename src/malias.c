@@ -508,7 +508,7 @@ do_malias_destroy(dbref player, char *alias)
   if (Wizard(player) || (m->owner == player)) {
     notify(player, T("MAIL: Alias Destroyed."));
     if (m->members)
-      mush_free((Malloc_t) m->members, "malias_members");
+      mush_free(m->members, "malias_members");
     if (m->name)
       mush_free(m->name, "malias_name");
     if (m->desc)
@@ -698,9 +698,9 @@ do_malias_nuke(dbref player)
       if (m->desc)
         mush_free(m->desc, "malias_desc");
       if (m->members)
-        mush_free((Malloc_t) m->members, "malias_members");
+        mush_free(m->members, "malias_members");
     }
-    mush_free((Malloc_t) malias, "malias_list");
+    mush_free(malias, "malias_list");
   }
   ma_size = ma_top = 0;
   notify(player, T("MAIL: All mail aliases destroyed!"));

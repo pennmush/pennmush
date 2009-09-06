@@ -1344,7 +1344,7 @@ process_expression(char *buff, char **bp, char const **str,
            * Special case: zero args is recognized as one null arg.
            */
           if ((fp->minargs == 0) && (nfargs == 1) && !*fargs[0]) {
-            mush_free((Malloc_t) fargs[0],
+            mush_free(fargs[0],
                       "process_expression.function_argument");
             fargs[0] = NULL;
             arglens[0] = 0;
@@ -1430,12 +1430,12 @@ process_expression(char *buff, char **bp, char const **str,
       free_func_args:
         for (j = 0; j < nfargs; j++)
           if (fargs[j])
-            mush_free((Malloc_t) fargs[j],
+            mush_free(fargs[j],
                       "process_expression.function_argument");
         if (fargs != sargs)
-          mush_free((Malloc_t) fargs, "process_expression.function_arglist");
+          mush_free(fargs, "process_expression.function_arglist");
         if (arglens != sarglens)
-          mush_free((Malloc_t) arglens, "process_expression.function_arglens");
+          mush_free(arglens, "process_expression.function_arglens");
       }
       break;
       /* Space compression */
@@ -1492,10 +1492,10 @@ exit_sequence:
             notify_list(executor, executor, "DEBUGFORWARDLIST", dbuf,
                         NA_NOLISTEN | NA_NOPREFIX);
             pe_info->debug_strings = pe_info->debug_strings->next;
-            mush_free((Malloc_t) pe_info->debug_strings->prev,
+            mush_free(pe_info->debug_strings->prev,
                       "process_expression.debug_node");
           }
-          mush_free((Malloc_t) pe_info->debug_strings,
+          mush_free(pe_info->debug_strings,
                     "process_expression.debug_node");
           pe_info->debug_strings = NULL;
         }
@@ -1514,23 +1514,23 @@ exit_sequence:
           pe_info->debug_strings = node->prev;
           if (node->prev)
             node->prev->next = NULL;
-          mush_free((Malloc_t) node, "process_expression.debug_node");
+          mush_free(node, "process_expression.debug_node");
         }
       }
-      mush_free((Malloc_t) debugstr, "process_expression.debug_source");
+      mush_free(debugstr, "process_expression.debug_source");
     }
     if (realbuff) {
       **bp = '\0';
       *bp = realbp;
       safe_str(buff, realbuff, bp);
-      mush_free((Malloc_t) buff, "process_expression.buffer_extension");
+      mush_free(buff, "process_expression.buffer_extension");
     }
   }
   /* Once we cross call limit, we stay in error */
   if (pe_info && CALL_LIMIT && pe_info->call_depth <= CALL_LIMIT)
     pe_info->call_depth--;
   if (made_info)
-    mush_free((Malloc_t) pe_info, "process_expression.pe_info");
+    mush_free(pe_info, "process_expression.pe_info");
   if (old_iter_limit != -1) {
     inum_limit = old_iter_limit;
   }

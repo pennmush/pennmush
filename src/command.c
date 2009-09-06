@@ -982,11 +982,11 @@ command_isattr(char *command)
 
 /** A handy macro to free up the command_parse-allocated variables */
 #define command_parse_free_args \
-    mush_free((Malloc_t) command, "string"); \
-    mush_free((Malloc_t) swtch, "string"); \
-    mush_free((Malloc_t) ls, "string"); \
-    mush_free((Malloc_t) rs, "string"); \
-    mush_free((Malloc_t) switches, "string")
+    mush_free(command, "string"); \
+    mush_free(swtch, "string"); \
+    mush_free(ls, "string"); \
+    mush_free(rs, "string"); \
+    mush_free(switches, "string")
 
 /** Parse commands.
  * Parse the commands. This is the big one!

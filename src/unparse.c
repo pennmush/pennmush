@@ -195,7 +195,8 @@ nameformat(dbref player, dbref loc, char *tbuf1, char *defname)
   ATTR *a;
   char *wsave[10], *rsave[NUMQ];
   char *arg, *bp, *arg2;
-  char const *sp, *save;
+  char const *sp;
+  char *save;
 
   int j;
   a = atr_get(loc, "NAMEFORMAT");
@@ -220,13 +221,13 @@ nameformat(dbref player, dbref loc, char *tbuf1, char *defname)
     process_expression(tbuf1, &bp, &sp, loc, player, player,
                        PE_DEFAULT, PT_DEFAULT, NULL);
     *bp = '\0';
-    free((Malloc_t) save);
+    free(save);
     for (j = 0; j < 10; j++) {
       global_eval_context.wenv[j] = wsave[j];
     }
     restore_global_regs("nameformat", rsave);
-    mush_free((Malloc_t) arg, "string");
-    mush_free((Malloc_t) arg2, "string");
+    mush_free(arg, "string");
+    mush_free(arg2, "string");
     return 1;
   } else {
     /* No @nameformat attribute */

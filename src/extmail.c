@@ -1015,7 +1015,7 @@ send_mail(dbref player, dbref target, char *subject, char *message,
                         fwd);
       }
     }
-    free((Malloc_t) orig);
+    free(orig);
   }
   if (!silent) {
     if (good)
@@ -2297,11 +2297,11 @@ add_folder_name(dbref player, int fld, const char *name)
   /* put the attrib back */
   (void) atr_add(player, "MAILFOLDERS", res, GOD,
                  AF_WIZARD | AF_NOPROG | AF_LOCKED);
-  mush_free((Malloc_t) res, "replace_string.buff");
-  mush_free((Malloc_t) new, "string");
-  mush_free((Malloc_t) pat, "string");
-  mush_free((Malloc_t) str, "string");
-  mush_free((Malloc_t) tbuf, "string");
+  mush_free(res, "replace_string.buff");
+  mush_free(new, "string");
+  mush_free(pat, "string");
+  mush_free(str, "string");
+  mush_free(tbuf, "string");
 }
 
 static int

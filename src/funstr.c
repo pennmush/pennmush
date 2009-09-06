@@ -1203,7 +1203,7 @@ FUNCTION(fun_foreach)
 
     if (!tmp) {
       safe_str(lp, buff, bp);
-      free((Malloc_t) asave);
+      free(asave);
       free_anon_attrib(attrib);
       global_eval_context.wenv[1] = tptr[1];
       return;
@@ -1238,7 +1238,7 @@ FUNCTION(fun_foreach)
   }
   if (*lp)
     safe_str(lp + 1, buff, bp);
-  free((Malloc_t) asave);
+  free(asave);
   free_anon_attrib(attrib);
   global_eval_context.wenv[0] = tptr[0];
   global_eval_context.wenv[1] = tptr[1];

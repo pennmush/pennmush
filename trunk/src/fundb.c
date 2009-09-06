@@ -337,7 +337,7 @@ FUNCTION(fun_eval)
     add_check("fun_eval.attr_value");
     process_expression(buff, bp, &tp, thing, executor, executor,
                        PE_DEFAULT, PT_DEFAULT, pe_info);
-    mush_free((Malloc_t) tbuf, "fun_eval.attr_value");
+    mush_free(tbuf, "fun_eval.attr_value");
     return;
   } else if (a || !Can_Examine(executor, thing)) {
     safe_str(T(e_atrperm), buff, bp);
@@ -377,7 +377,7 @@ FUNCTION(fun_get_eval)
     add_check("fun_eval.attr_value");
     process_expression(buff, bp, &tp, thing, executor, executor,
                        PE_DEFAULT, PT_DEFAULT, pe_info);
-    mush_free((Malloc_t) tbuf, "fun_eval.attr_value");
+    mush_free(tbuf, "fun_eval.attr_value");
     return;
   } else if (a || !Can_Examine(executor, thing)) {
     safe_str(T(e_atrperm), buff, bp);
@@ -414,7 +414,7 @@ FUNCTION(fun_edefault)
     add_check("fun_edefault.attr_value");
     process_expression(buff, bp, &sp, thing, executor, executor,
                        PE_DEFAULT, PT_DEFAULT, pe_info);
-    mush_free((Malloc_t) sbuf, "fun_edefault.attr_value");
+    mush_free(sbuf, "fun_edefault.attr_value");
     return;
   }
   /* We couldn't get it. Evaluate args[1] and return it */

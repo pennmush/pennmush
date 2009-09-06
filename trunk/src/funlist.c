@@ -242,9 +242,9 @@ FUNCTION(fun_munge)
     safe_str(T("#-1 LISTS MUST BE OF EQUAL SIZE"), buff, bp);
     freearr(ptrs1, nptrs1);
     freearr(ptrs2, nptrs2);
-    mush_free((Malloc_t) ptrs1, "ptrarray");
-    mush_free((Malloc_t) ptrs2, "ptrarray");
-    mush_free((Malloc_t) ptrs3, "ptrarray");
+    mush_free(ptrs1, "ptrarray");
+    mush_free(ptrs2, "ptrarray");
+    mush_free(ptrs3, "ptrarray");
     free_anon_attrib(attrib);
     return;
   }
@@ -285,10 +285,10 @@ FUNCTION(fun_munge)
   freearr(ptrs1, nptrs1);
   freearr(ptrs2, nptrs2);
   freearr(results, nresults);
-  mush_free((Malloc_t) ptrs1, "ptrarray");
-  mush_free((Malloc_t) ptrs2, "ptrarray");
-  mush_free((Malloc_t) ptrs3, "ptrarray");
-  mush_free((Malloc_t) results, "ptrarray");
+  mush_free(ptrs1, "ptrarray");
+  mush_free(ptrs2, "ptrarray");
+  mush_free(ptrs3, "ptrarray");
+  mush_free(results, "ptrarray");
   free_anon_attrib(attrib);
 }
 
@@ -344,8 +344,8 @@ FUNCTION(fun_elements)
     }
   }
   freearr(ptrs, nwords);
-  mush_free((Malloc_t) ptrs, "ptrarray");
-  mush_free((Malloc_t) wordlist, "string");
+  mush_free(ptrs, "ptrarray");
+  mush_free(wordlist, "string");
 }
 
 /* ARGSUSED */
@@ -829,8 +829,8 @@ FUNCTION(fun_setinter)
       if (x1 >= n1) {
         freearr(a1, n1);
         freearr(a2, n2);
-        mush_free((Malloc_t) a1, "ptrarray");
-        mush_free((Malloc_t) a2, "ptrarray");
+        mush_free(a1, "ptrarray");
+        mush_free(a2, "ptrarray");
         return;
       }
     } else {
@@ -838,8 +838,8 @@ FUNCTION(fun_setinter)
       if (x2 >= n2) {
         freearr(a1, n1);
         freearr(a2, n2);
-        mush_free((Malloc_t) a1, "ptrarray");
-        mush_free((Malloc_t) a2, "ptrarray");
+        mush_free(a1, "ptrarray");
+        mush_free(a2, "ptrarray");
         return;
       }
     }
@@ -850,8 +850,8 @@ FUNCTION(fun_setinter)
     if (x1 >= n1) {
       freearr(a1, n1);
       freearr(a2, n2);
-      mush_free((Malloc_t) a1, "ptrarray");
-      mush_free((Malloc_t) a2, "ptrarray");
+      mush_free(a1, "ptrarray");
+      mush_free(a2, "ptrarray");
       return;
     }
   }
@@ -864,8 +864,8 @@ FUNCTION(fun_setinter)
         if (x1 >= n1) {
           freearr(a1, n1);
           freearr(a2, n2);
-          mush_free((Malloc_t) a1, "ptrarray");
-          mush_free((Malloc_t) a2, "ptrarray");
+          mush_free(a1, "ptrarray");
+          mush_free(a2, "ptrarray");
           return;
         }
       } else {
@@ -873,8 +873,8 @@ FUNCTION(fun_setinter)
         if (x2 >= n2) {
           freearr(a1, n1);
           freearr(a2, n2);
-          mush_free((Malloc_t) a1, "ptrarray");
-          mush_free((Malloc_t) a2, "ptrarray");
+          mush_free(a1, "ptrarray");
+          mush_free(a2, "ptrarray");
           return;
         }
       }
@@ -886,16 +886,16 @@ FUNCTION(fun_setinter)
       if (x1 >= n1) {
         freearr(a1, n1);
         freearr(a2, n2);
-        mush_free((Malloc_t) a1, "ptrarray");
-        mush_free((Malloc_t) a2, "ptrarray");
+        mush_free(a1, "ptrarray");
+        mush_free(a2, "ptrarray");
         return;
       }
     }
   }
   freearr(a1, n1);
   freearr(a2, n2);
-  mush_free((Malloc_t) a1, "ptrarray");
-  mush_free((Malloc_t) a2, "ptrarray");
+  mush_free(a1, "ptrarray");
+  mush_free(a2, "ptrarray");
 }
 
 /* ARGSUSED */
@@ -1033,8 +1033,8 @@ FUNCTION(fun_setunion)
   }
   freearr(a1, orign1);
   freearr(a2, orign2);
-  mush_free((Malloc_t) a1, "ptrarray");
-  mush_free((Malloc_t) a2, "ptrarray");
+  mush_free(a1, "ptrarray");
+  mush_free(a2, "ptrarray");
 }
 
 /* ARGSUSED */
@@ -1103,8 +1103,8 @@ FUNCTION(fun_setdiff)
       if (x1 >= n1) {
         freearr(a1, n1);
         freearr(a2, n2);
-        mush_free((Malloc_t) a1, "ptrarray");
-        mush_free((Malloc_t) a2, "ptrarray");
+        mush_free(a1, "ptrarray");
+        mush_free(a2, "ptrarray");
         return;
       }
     }
@@ -1115,8 +1115,8 @@ FUNCTION(fun_setdiff)
     if (x1 >= n1) {
       freearr(a1, n1);
       freearr(a2, n2);
-      mush_free((Malloc_t) a1, "ptrarray");
-      mush_free((Malloc_t) a2, "ptrarray");
+      mush_free(a1, "ptrarray");
+      mush_free(a2, "ptrarray");
       return;
     }
   } while (!gencomp(executor, a1[x1], a1[x1 - 1], sort_type));
@@ -1133,8 +1133,8 @@ FUNCTION(fun_setdiff)
         if (x1 >= n1) {
           freearr(a1, n1);
           freearr(a2, n2);
-          mush_free((Malloc_t) a1, "ptrarray");
-          mush_free((Malloc_t) a2, "ptrarray");
+          mush_free(a1, "ptrarray");
+          mush_free(a2, "ptrarray");
           return;
         }
       } while (!gencomp(executor, a1[x1], a1[x1 - 1], sort_type));
@@ -1153,8 +1153,8 @@ FUNCTION(fun_setdiff)
   }
   freearr(a1, n1);
   freearr(a2, n2);
-  mush_free((Malloc_t) a1, "ptrarray");
-  mush_free((Malloc_t) a2, "ptrarray");
+  mush_free(a1, "ptrarray");
+  mush_free(a2, "ptrarray");
 }
 
 #define CACHE_SIZE 8  /**< Maximum size of the lnum cache */
@@ -2012,8 +2012,8 @@ FUNCTION(fun_ldelete)
   }
 
   freearr(ptrs, nwords);
-  mush_free((Malloc_t) ptrs, "ptrarray");
-  mush_free((Malloc_t) wordlist, "string");
+  mush_free(ptrs, "ptrarray");
+  mush_free(wordlist, "string");
 }
 
 /* ARGSUSED */
@@ -2184,21 +2184,21 @@ FUNCTION(fun_splice)
   strncpy(haystack, remove_markup(args[2], NULL), BUFFER_LEN);
   if (!*haystack) {
     safe_str(T("#-1 NEED A WORD"), buff, bp);
-    mush_free((Malloc_t) orig, "ptrarray");
-    mush_free((Malloc_t) repl, "ptrarray");
+    mush_free(orig, "ptrarray");
+    mush_free(repl, "ptrarray");
     return;
   }
   if (do_wordcount(haystack, sep) != 1) {
     safe_str(T("#-1 TOO MANY WORDS"), buff, bp);
-    mush_free((Malloc_t) orig, "ptrarray");
-    mush_free((Malloc_t) repl, "ptrarray");
+    mush_free(orig, "ptrarray");
+    mush_free(repl, "ptrarray");
     return;
   }
 
   if (ocount != rcount) {
     safe_str(T("#-1 NUMBER OF WORDS MUST BE EQUAL"), buff, bp);
-    mush_free((Malloc_t) orig, "ptrarray");
-    mush_free((Malloc_t) repl, "ptrarray");
+    mush_free(orig, "ptrarray");
+    mush_free(repl, "ptrarray");
     return;
   }
 
@@ -2210,8 +2210,8 @@ FUNCTION(fun_splice)
 
   arr2list(orig, ocount, buff, bp, osep);
 
-  mush_free((Malloc_t) orig, "ptrarray");
-  mush_free((Malloc_t) repl, "ptrarray");
+  mush_free(orig, "ptrarray");
+  mush_free(repl, "ptrarray");
 }
 
 /* ARGSUSED */
@@ -2272,8 +2272,8 @@ FUNCTION(fun_iter)
   *lp = '\0';
   lp = trim_space_sep(list, sep);
   if (!*lp) {
-    mush_free((Malloc_t) outsep, "string");
-    mush_free((Malloc_t) list, "string");
+    mush_free(outsep, "string");
+    mush_free(list, "string");
     return;
   }
 
@@ -2294,22 +2294,22 @@ FUNCTION(fun_iter)
     sp = tbuf2;
     if (process_expression(buff, bp, &sp, executor, caller, enactor,
                            PE_DEFAULT, PT_DEFAULT, pe_info)) {
-      mush_free((Malloc_t) tbuf2, "replace_string.buff");
+      mush_free(tbuf2, "replace_string.buff");
       break;
     }
     if (*bp == (buff + BUFFER_LEN - 1) && pe_info->fun_invocations == funccount) {
-      mush_free((Malloc_t) tbuf2, "replace_string.buff");
+      mush_free(tbuf2, "replace_string.buff");
       break;
     }
     funccount = pe_info->fun_invocations;
     oldbp = *bp;
-    mush_free((Malloc_t) tbuf2, "replace_string.buff");
+    mush_free(tbuf2, "replace_string.buff");
   }
   *place = 0;
   iter_rep[inum] = NULL;
   inum--;
-  mush_free((Malloc_t) outsep, "string");
-  mush_free((Malloc_t) list, "string");
+  mush_free(outsep, "string");
+  mush_free(list, "string");
 }
 
 /* ARGSUSED */
@@ -2457,7 +2457,7 @@ FUNCTION(fun_step)
     funccount = pe_info->fun_invocations;
   }
 
-  free((Malloc_t) asave);
+  free(asave);
   free_anon_attrib(attrib);
   restore_global_env("step", preserve);
 }

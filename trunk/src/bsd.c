@@ -1195,11 +1195,11 @@ static void
 clearstrings(DESC *d)
 {
   if (d->output_prefix) {
-    mush_free((Malloc_t) d->output_prefix, "userstring");
+    mush_free(d->output_prefix, "userstring");
     d->output_prefix = 0;
   }
   if (d->output_suffix) {
-    mush_free((Malloc_t) d->output_suffix, "userstring");
+    mush_free(d->output_suffix, "userstring");
     d->output_suffix = 0;
   }
 }
@@ -2034,7 +2034,7 @@ process_input_helper(DESC *d, char *tbuf1, int got)
   if (p > d->raw_input) {
     d->raw_input_at = p;
   } else {
-    mush_free((Malloc_t) d->raw_input, "descriptor_raw_input");
+    mush_free(d->raw_input, "descriptor_raw_input");
     d->raw_input = 0;
     d->raw_input_at = 0;
   }
@@ -2120,7 +2120,7 @@ static void
 set_userstring(unsigned char **userstring, const char *command)
 {
   if (*userstring) {
-    mush_free((Malloc_t) * userstring, "userstring");
+    mush_free(* userstring, "userstring");
     *userstring = NULL;
   }
   while (*command && isspace((unsigned char) *command))

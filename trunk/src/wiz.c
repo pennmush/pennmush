@@ -2048,7 +2048,7 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
       bp = tbuf1;
       process_expression(tbuf1, &bp, &ebuf2, player, player, player,
                          PE_DEFAULT, PT_DEFAULT, pe_info);
-      mush_free((Malloc_t) ebuf1, "replace_string.buff");
+      mush_free(ebuf1, "replace_string.buff");
       *bp = '\0';
       if (!parse_boolean(tbuf1))
         continue;

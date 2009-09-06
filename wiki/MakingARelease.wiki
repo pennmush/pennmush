@@ -1,0 +1,22 @@
+#summary Steps to release a new patchlevel
+#labels Phase-Deploy
+
+Here's what I do when putting out a new release:
+
+  * Tell people with SVN commit access to stop making commits for a while.
+  * Run a `make indent` and commit.
+  * Bump the version numbers and release dates in _Makefile.in_, _Patchevel_, _hdrs/version.h_, _CHANGES.183_, and commit.
+  * Create a new release candidate tag: `svn copy https://pennmush.googlecode.com/svn/trunk https://pennmush.googlecode.com/svn/tags/183pXXrcN -m "PennMUSH 1.8.3pXX release candidate N"`.
+  * Wait a few days, getting people to test it and fix any last-minute bugs.
+  * Possibly repeat the above steps a few times.
+  * Do a final updating of release dates in the files if the date has slipped, and commit.
+  * Tag the release: `svn copy https://pennmush.googlecode.com/svn/trunk https://pennmush.googlecode.com/svn/tags/183pXX -m "PennMUSH 1.8.3pXX Release"`.
+  * Check out a clean copy: `svn export http://pennmush.googlecode.com/svn/tags/183pXX pennmush-1.8.3pXX`.
+  * Create gzipped and pbzip2'ed tarballs from this copy.
+  * Create a patch: `svn diff --diff-cmd=diff -x '-uNd --speed-large-files' http://pennmush.googlecode.com/svn/tags/183pYY http://pennmush.googlecode.com/svn/tags/183pXX > 1.8.3-patchXX`.
+  * Append patch instructions (Bumping version as needed), changelog, and the results of running diffstat on the patchfile.
+  * If it's a big file, create a compressed version of the patch.
+  * Create a readme file using the standard template, bumping version numbers as needed.
+  * Create checksums of the tarballs and patchfile(s): `openssl dgst -sha1 pennmush-1.8.3pXX.tar.gz ... > pennmush-1.8.3pXX.checksums`
+  * Upload the files to the download server and the googlecode project.
+

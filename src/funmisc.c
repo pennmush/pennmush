@@ -433,7 +433,7 @@ FUNCTION(fun_switch)
                                executor, caller, enactor,
                                PE_DEFAULT, PT_DEFAULT, pe_info);
       if (!exact)
-        mush_free((Malloc_t) tbuf1, "replace_string.buff");
+        mush_free(tbuf1, "replace_string.buff");
       found = 1;
       if (per || first)
         return;
@@ -450,7 +450,7 @@ FUNCTION(fun_switch)
     process_expression(buff, bp, &sp, executor, caller, enactor,
                        PE_DEFAULT, PT_DEFAULT, pe_info);
     if (!exact)
-      mush_free((Malloc_t) tbuf1, "replace_string.buff");
+      mush_free(tbuf1, "replace_string.buff");
   }
 }
 
@@ -497,7 +497,7 @@ FUNCTION(fun_reswitch)
       per = process_expression(buff, bp, &sp,
                                executor, caller, enactor,
                                PE_DEFAULT, PT_DEFAULT, pe_info);
-      mush_free((Malloc_t) tbuf1, "replace_string.buff");
+      mush_free(tbuf1, "replace_string.buff");
       found = 1;
       if (per || first)
         return;
@@ -510,7 +510,7 @@ FUNCTION(fun_reswitch)
     sp = tbuf1;
     process_expression(buff, bp, &sp, executor, caller, enactor,
                        PE_DEFAULT, PT_DEFAULT, pe_info);
-    mush_free((Malloc_t) tbuf1, "replace_string.buff");
+    mush_free(tbuf1, "replace_string.buff");
   }
 }
 

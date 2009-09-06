@@ -969,19 +969,19 @@ notify_anything_loc(dbref speaker, na_lookup func,
 
   for (i = 0; i < MESSAGE_TYPES; i++) {
     if (messages[i].message)
-      mush_free((Malloc_t) messages[i].message, "string");
+      mush_free(messages[i].message, "string");
     if (nospoofs[i].message)
-      mush_free((Malloc_t) nospoofs[i].message, "string");
+      mush_free(nospoofs[i].message, "string");
     if (paranoids[i].message)
-      mush_free((Malloc_t) paranoids[i].message, "string");
+      mush_free(paranoids[i].message, "string");
   }
   if (nospoof)
-    mush_free((Malloc_t) nospoof, "string");
+    mush_free(nospoof, "string");
   if (paranoid)
-    mush_free((Malloc_t) paranoid, "string");
+    mush_free(paranoid, "string");
   if (tbuf1)
-    mush_free((Malloc_t) tbuf1, "string");
-  mush_free((Malloc_t) msgbuf, "string");
+    mush_free(tbuf1, "string");
+  mush_free(msgbuf, "string");
   na_depth--;
 }
 
@@ -1134,7 +1134,7 @@ notify_list(dbref speaker, dbref thing, const char *atr, const char *msg,
       }
     }
   }
-  free((Malloc_t) orig);
+  free(orig);
 }
 
 /** Wrapper to notify a single player with a message, unconditionally.
@@ -1220,7 +1220,7 @@ free_text_block(struct text_block *t)
 {
   if (t) {
     if (t->buf)
-      mush_free((Malloc_t) t->buf, "text_block_buff");
+      mush_free(t->buf, "text_block_buff");
     slab_free(text_block_slab, t);
   }
 }
@@ -1457,7 +1457,7 @@ freeqs(DESC *d)
   d->input.tail = &d->input.head;
 
   if (d->raw_input) {
-    mush_free((Malloc_t) d->raw_input, "descriptor_raw_input");
+    mush_free(d->raw_input, "descriptor_raw_input");
   }
   d->raw_input = 0;
   d->raw_input_at = 0;

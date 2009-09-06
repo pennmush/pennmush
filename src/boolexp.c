@@ -610,7 +610,7 @@ eval_boolexp(dbref player /* The player trying to pass */ ,
               break;
             }
           }
-          free((Malloc_t) orig);
+          free(orig);
         }
         break;
       default:
@@ -897,7 +897,7 @@ free_boolexp_node(struct boolexp_node *b)
       if (b->data.atr_lock) {
         if (b->data.atr_lock->name)
           st_delete(b->data.atr_lock->name, &atr_names);
-        mush_free((Malloc_t) b->data.atr_lock, "boolatr");
+        mush_free(b->data.atr_lock, "boolatr");
       }
       free_bool(b);
       break;

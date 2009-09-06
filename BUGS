@@ -25,6 +25,14 @@ Modern:
    
   Then do a full @shutdown of the game and run restart.
 
+* The configure script sometimes detects functions that aren't seen
+  when the mush itself is compiled. Some linux distributions seem to
+  be very prone to this, probably due to customizations of their glibc
+  packages. For now, just comment out the relevant HAVE_FOO lines from
+  config.h. You'll have to redo this every time you re-run
+  configure. If you can figure out how to make the relevant prototypes
+  and macros visible to Penn, let us know! Some functions known to
+  cause this include posix_fadvise() and posix_fallocate().
 
 You can browse the bug and suggestion database at
 http://code.google.com/p/pennmush/issues/list to see more.

@@ -88,6 +88,9 @@
 #ifdef HAVE_FAM_H
 #include <fam.h>
 #endif
+#ifdef HAVE_POLL_H
+#include <poll.h>
+#endif
 
 #include "conf.h"
 
@@ -1584,6 +1587,15 @@ process_output(DESC *d)
      * We need to know if the descriptor is waiting on input, though.
      * So let's find out
      */
+
+#ifdef HAVE_POLL
+    struct pollfd p;
+
+    p.fd = d->descriptor;
+    p.events = POLLIN;
+    p.revents = 0;
+    input_ready = poll(&p, 1, 0);   
+#else
     struct timeval pad;
     fd_set input_set;
 
@@ -1592,6 +1604,7 @@ process_output(DESC *d)
     FD_ZERO(&input_set);
     FD_SET(d->descriptor, &input_set);
     input_ready = select(d->descriptor + 1, &input_set, NULL, NULL, &pad);
+#endif
     if (input_ready < 0) {
       /* Well, shoot, we have no idea. Guess and proceed. */
       penn_perror("select in process_output");

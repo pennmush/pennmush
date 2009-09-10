@@ -16,7 +16,7 @@
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory="..\..\game"
-			IntermediateDirectory="..\..\src"
+			IntermediateDirectory="..\..\obj"
 			ConfigurationType="1"
 			>
 			<Tool
@@ -89,8 +89,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\game"
-			IntermediateDirectory=".\src"
+			OutputDirectory="..\..\game"
+			IntermediateDirectory="..\..\obj"
 			ConfigurationType="1"
 			>
 			<Tool

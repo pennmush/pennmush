@@ -56,7 +56,7 @@ foreach my $file (@files) {
     my $vmatches = 0;
     while (<CHANGELOG>) {
 	if (/^Version (\d[\d.]+ patchlevel \d+)/) {
-	    print "Found $vmatches occurances in $version\n" if $vmatches > 0 && !$opt_p;
+	    print "Found $vmatches occurrences in $version\n" if $vmatches > 0 && !$opt_p;
 	    $version = $1;
 	    $vmatches = 0;
 	    next;
@@ -65,7 +65,7 @@ foreach my $file (@files) {
 	    $matches++;
 	    $vmatches++;
 	    if ($opt_p) {
-		print "Version $version:\n" if $vmatches == 1;
+		print "In version $version:\n" if $vmatches == 1;
 		print;
 	    }
 	}	

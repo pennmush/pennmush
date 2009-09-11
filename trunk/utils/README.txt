@@ -19,6 +19,8 @@ separators to Unix-style ones.
   
 gentables.c:  Compiles into a program used to make src/tables.c
 
+grep-cl.pl: Perl script to search for strings in changelogs.
+
 ln-dir.sh:    A manual alternative to make customize. Kinda.
 
 make_access_cnf.sh: Script used to update ancient versions of Penn

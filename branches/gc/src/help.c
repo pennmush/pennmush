@@ -36,7 +36,6 @@ static const char *string_spitfile(help_file *help_dat, char *arg1);
 static help_indx *help_find_entry(help_file *help_dat, const char *the_topic);
 static char **list_matching_entries(const char *pattern,
                                     help_file *help_dat, int *len);
-static void free_entry_list(char **);
 static const char *normalize_entry(help_file *help_dat, const char *arg1);
 
 static void help_build_index(help_file *h, int restricted);
@@ -91,7 +90,6 @@ COMMAND(cmd_helpcmd)
       notify_format(player, T("Here are the entries which match '%s':\n%s"),
                     arg_left, buff);
     }
-    free_entry_list(entries);
   } else
     do_new_spitfile(player, arg_left, h);
 }
@@ -132,19 +130,15 @@ add_help_file(const char *command_name, const char *filename, int admin)
     return;
   }
 
-  h = mush_malloc(sizeof *h, "help_file.entry");
-  h->command = mush_strdup(strupper(command_name), "help_file.command");
-  h->file = mush_strdup(filename, "help_file.filename");
+  h = GC_MALLOC(sizeof *h);
+  h->command = strupper(command_name);
+  h->file = GC_STRDUP(filename);
   h->entries = 0;
   h->indx = NULL;
   h->admin = admin;
   help_build_index(h, h->admin);
-  if (!h->indx) {
-    mush_free(h->command, "help_file.command");
-    mush_free(h->file, "help_file.filename");
-    mush_free(h, "help_file.entry");
+  if (!h->indx)
     return;
-  }
   (void) command_add(h->command, CMD_T_ANY | CMD_T_NOPARSE, NULL, 0, NULL,
                      cmd_helpcmd);
   hashadd(h->command, h, &help_files);
@@ -164,7 +158,6 @@ help_reindex(dbref player)
   for (curr = hash_firstentry(&help_files);
        curr; curr = hash_nextentry(&help_files)) {
     if (curr->indx) {
-      mush_free(curr->indx, "help_index");
       curr->indx = NULL;
       curr->entries = 0;
     }
@@ -325,9 +318,9 @@ write_topic(long int p)
     if (num_topics >= top_topics) {
       top_topics += top_topics / 2 + 20;
       if (topics)
-        topics = (help_indx *) realloc(topics, top_topics * sizeof(help_indx));
+        topics = GC_REALLOC(topics, top_topics * sizeof(help_indx));
       else
-        topics = (help_indx *) malloc(top_topics * sizeof(help_indx));
+        topics = GC_MALLOC_ATOMIC(top_topics * sizeof(help_indx));
       if (!topics) {
         mush_panic(T("Out of memory"));
       }
@@ -335,7 +328,6 @@ write_topic(long int p)
     temp = &topics[num_topics++];
     temp->pos = p;
     strcpy(temp->topic, cur->topic);
-    free(cur);
   }
   top = NULL;
 }
@@ -439,7 +431,7 @@ help_build_index(help_file *h, int restricted)
       if ((restricted && the_topic[0] == '&')
           || (!restricted && the_topic[0] != '&')) {
         the_topic[++i] = '\0';
-        cur = (tlist *) malloc(sizeof(tlist));
+        cur = GC_MALLOC(sizeof(tlist));
         strcpy(cur->topic, the_topic);
         cur->next = top;
         top = cur;
@@ -458,7 +450,6 @@ help_build_index(help_file *h, int restricted)
   qsort(topics, num_topics, sizeof(help_indx), topic_cmp);
   h->entries = num_topics;
   h->indx = topics;
-  add_check("help_index");
   fclose(rfp);
   do_rawlog(LT_WIZ, T("%d topics indexed."), num_topics);
   return;
@@ -487,7 +478,6 @@ FUNCTION(fun_textfile)
       safe_str(T("No matching help topics."), buff, bp);
     else
       arr2list(entries, len, buff, bp, ", ");
-    free_entry_list(entries);
   } else
     safe_str(string_spitfile(h, args[1]), buff, bp);
 }
@@ -515,7 +505,6 @@ FUNCTION(fun_textentries)
   entries = list_matching_entries(args[1], h, &len);
   if (entries) {
     arr2list(entries, len, buff, bp, sep);
-    free_entry_list(entries);
   }
 }
 
@@ -603,13 +592,13 @@ list_matching_entries(const char *pattern, help_file *help_dat, int *len)
       return NULL;
     } else {
       *len = 1;
-      buff = mush_malloc(sizeof(char **), "help.search");
+      buff = GC_MALLOC(sizeof(char **));
       *buff = entry->topic + offset;
       return buff;
     }
   }
 
-  buff = mush_calloc(help_dat->entries, sizeof(char *), "help.search");
+  buff = GC_MALLOC(help_dat->entries * sizeof(char *));
   *len = 0;
 
   for (n = 0; n < help_dat->entries; n++)
@@ -621,9 +610,3 @@ list_matching_entries(const char *pattern, help_file *help_dat, int *len)
   return buff;
 }
 
-static void
-free_entry_list(char **entries)
-{
-  if (entries)
-    mush_free(entries, "help.search");
-}

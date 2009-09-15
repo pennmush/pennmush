@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <limits.h>
+#include <string.h>
 #include <assert.h>
 #include <errno.h>
 #include <string.h>
@@ -40,6 +41,7 @@
 #ifdef WIN32
 #include <windows.h>
 #endif
+#include <gc/gc.h>
 #include "options.h"
 #include "conf.h"
 #include "dbdefs.h"
@@ -48,90 +50,6 @@
 #include "getpgsiz.h"
 #include "mymalloc.h"
 #include "confmagic.h"
-
-/** A malloc wrapper that tracks type of allocation.
- * This should be used in preference to malloc() when possible,
- * to enable memory leak tracing with MEM_CHECK.
- * \param size bytes to allocate.
- * \param check string to label allocation with.
- * \return allocated block of memory or NULL.
- */
-void *
-mush_malloc(size_t bytes, const char *check)
-{
-  void *ptr;
-  ptr = malloc(bytes);
-  if (!ptr)
-    do_rawlog(LT_TRACE, "mush_malloc failed to malloc %lu bytes for %s",
-              (unsigned long) bytes, check);
-  add_check(check);
-  return ptr;
-}
-
-/** A calloc wrapper that tracks type of allocation.
- * Use in preference to calloc() when possible to enable
- * memory leak checking.
- * \param count number of elements to allocate
- * \param size size of each element
- * \param check string to label allocation with
- * \return allocated zeroed out block or NULL
- */
-void *
-mush_calloc(size_t count, size_t size, const char *check)
-{
-  void *ptr;
-
-  ptr = calloc(count, size);
-  if (!ptr)
-    do_rawlog(LT_TRACE, "mush_calloc failed to allocate %lu bytes for %s",
-              (unsigned long) (size * count), check);
-  add_check(check);
-  return ptr;
-}
-
-/** A realloc wrapper that tracks type of allocation.
- * Use in preference to realloc() when possible to enable
- * memory leak checking.
- * \param ptr pointer to resize
- * \param newsize what to resize it to
- * \param check string to label with
- * \param filename file name it was called from
- * \param line line it called from
- * \param new pointer or NULL
- */
-void *
-mush_realloc_where(void *restrict ptr, size_t newsize,
-                   const char *restrict check, const char *restrict filename,
-                   int line)
-{
-  void *newptr;
-
-  newptr = realloc(ptr, newsize);
-
-  if (!ptr)
-    add_check(check);
-  else if (newsize == 0)
-    del_check(check, filename, line);
-
-  return newptr;
-}
-
-/** A free wrapper that tracks type of allocation.
- * If mush_malloc() gets the memory, mush_free() should free it
- * to enable memory leak tracing with MEM_CHECK.
- * \param ptr pointer to block of member to free.
- * \param check string to label allocation with.
- * \param filename file name it was called from
- * \param line line it called from
- */
-void
-mush_free_where(void *restrict ptr, const char *restrict check,
-                const char *restrict filename, int line)
-{
-  del_check(check, filename, line);
-  free(ptr);
-  return;
-}
 
 /** Turn on lots of noisy debug info in log/trace.log */
 /* #define SLAB_DEBUG */
@@ -165,6 +83,7 @@ struct slab {
                            only allocated page. */
   int hintless_threshold; /**< See documentation for
                              SLAB_HINTLESS_THRESHOLD option */
+  bool atomic; /**< SLAB_NO_EXT_POINTERS */
   struct slab_page *slabs; /**< Pointer to the head of the list of
                               allocated pages. */
 };
@@ -182,7 +101,7 @@ slab_create(const char *name, size_t item_size)
   struct slab *sl;
   size_t pgsize, offset;
 
-  sl = malloc(sizeof(struct slab));
+  sl = GC_MALLOC_UNCOLLECTABLE(sizeof(struct slab));
   pgsize = getpagesize();
   offset = sizeof(struct slab_page);
   /* Start the objects 16-byte aligned */
@@ -192,6 +111,7 @@ slab_create(const char *name, size_t item_size)
   sl->fill_strategy = 1;
   sl->keep_last_empty = 0;
   sl->hintless_threshold = 0;
+  sl->atomic = 0;
   sl->slabs = NULL;
   if (item_size < SIZEOF_VOID_P)
     item_size = SIZEOF_VOID_P;
@@ -235,6 +155,9 @@ slab_set_opt(slab *sl, enum slab_options opt, int val
   case SLAB_HINTLESS_THRESHOLD:
     sl->hintless_threshold = val;
     break;
+  case SLAB_NO_EXT_POINTERS:
+    sl->atomic = val;
+    break;
   default:
     /* Unknown option */
     break;
@@ -251,24 +174,8 @@ slab_alloc_page(struct slab *sl)
   struct slab_page *sp;
   uint8_t *page = NULL;
   int n;
-  int pgsize;
 
-  pgsize = getpagesize();
-
-#ifdef HAVE_POSIX_MEMALIGN
-  /* Used to use valloc() here, but on some systems, memory returned by
-     valloc() can't be passed to free(). Those same systems probably won't have
-     posix_memalign. Deal.
-   */
-  if (posix_memalign((void **) &page, pgsize, pgsize) < 0) {
-    do_rawlog(LT_ERR, "Unable to allocate %d bytes via posix_memalign: %s",
-              pgsize, strerror(errno));
-    page = malloc(pgsize);
-  }
-#else
-  page = malloc(pgsize);
-#endif
-
+  page = GC_MALLOC(getpagesize());
   sp = (struct slab_page *) page;
   sp->nfree = sl->items_per_page;
   sp->nalloced = 0;
@@ -325,7 +232,11 @@ slab_malloc(slab *sl, const void *hint)
 
   /* If objects are too big to fit in a single page, use plain malloc */
   if (sl->items_per_page == 0)
-    return malloc(sl->item_size);
+    return GC_MALLOC(sl->item_size);
+
+  /* If atomic. just allocate it. Consider always doing this. */
+  if (sl->atomic)
+    return GC_MALLOC_ATOMIC(sl->item_size);
 
   /* If no pages have been allocated, make one and use it. */
   if (!sl->slabs) {
@@ -406,10 +317,11 @@ slab_free(slab *sl, void *obj)
   ptrdiff_t pgsize;
 
   /* If objects are too big to fit in a single page, use plain free */
-  if (sl->items_per_page == 0) {
-    free(obj);
-    return;
-  }
+  if (sl->items_per_page == 0 || sl->atomic)
+    GC_FREE(obj);
+
+  /* Zero out the object to release external pointers. */
+  memset(obj, 0, sl->item_size);
 
   /* Find the page the object is on and push it into that page's free list */
   pgsize = getpagesize();
@@ -449,7 +361,7 @@ slab_free(slab *sl, void *obj)
         do_rawlog(LT_TRACE, "Freeing empty page %p of slab(%s)", (void *) page,
                   sl->name);
 #endif
-        free(page);
+        GC_FREE(page);
       }
       return;
     }
@@ -469,12 +381,7 @@ slab_free(slab *sl, void *obj)
 void
 slab_destroy(slab *sl)
 {
-  struct slab_page *page, *next;
-  for (page = sl->slabs; page; page = next) {
-    next = page->next;
-    free(page);
-  }
-  free(sl);
+  GC_FREE(sl);
 }
 
 /** Describe a slab for @list allocations
@@ -543,8 +450,8 @@ slab_describe(dbref player, slab *sl)
 }
 
 
-extern slab *attrib_slab, *lock_slab, *boolexp_slab, *bvm_asmnode_slab,
-  *bvm_strnode_slab, *flag_slab, *player_dbref_slab,
+extern slab *attrib_slab, *boolexp_slab, *bvm_asmnode_slab,
+  *bvm_strnode_slab, *lock_slab,
   *command_slab, *channel_slab, *chanuser_slab, *chanlist_slab, *mail_slab,
   *text_block_slab, *function_slab, *memcheck_slab, *intmap_slab;
 
@@ -572,22 +479,22 @@ do_list_allocations(dbref player)
   slab_describe(player, chanlist_slab);
   slab_describe(player, chanuser_slab);
   slab_describe(player, command_slab);
-  slab_describe(player, flag_slab);
+  slab_describe(player, lock_slab);
   slab_describe(player, function_slab);
 #if COMPRESSION_TYPE == 1 || COMPRESSION_TYPE == 2
   slab_describe(player, huffman_slab);
 #endif
-  slab_describe(player, lock_slab);
   slab_describe(player, mail_slab);
-  slab_describe(player, memcheck_slab);
   slab_describe(player, text_block_slab);
-  slab_describe(player, player_dbref_slab);
   slab_describe(player, intmap_slab);
 
-  if (options.mem_check) {
-    notify(player, "malloc allocations:");
-    list_mem_check(player);
-  }
+
+  notify(player, T("GC Stats:"));
+  notify_format(player, T("Collector version: %d.%d"), GC_VERSION_MAJOR, GC_VERSION_MINOR);
+  notify_format(player, T("Heap size: %lu bytes. Free space: %lu bytes."), (unsigned long)GC_get_heap_size(),
+		(unsigned long)GC_get_free_bytes());
+  notify_format(player, T("GC cycles: %u. Memory allocated since last GC: %lu bytes."),
+		(unsigned int) GC_gc_no, (unsigned long)GC_get_bytes_since_gc());
 }
 
 #ifdef WIN32

@@ -168,12 +168,11 @@ do_malias_create(dbref player, char *alias, char *tolist)
   }
   if (!ma_size) {
     ma_size = MA_INC;
-    malias = mush_calloc(ma_size, sizeof(struct mail_alias), "malias_list");
+    malias = GC_MALLOC(ma_size * sizeof(struct mail_alias));
   } else if (ma_top >= ma_size) {
     ma_size += MA_INC;
-    m = mush_calloc(ma_size, sizeof(struct mail_alias), "malias_list");
+    m = GC_MALLOC(ma_size * sizeof(struct mail_alias));
     memcpy(m, malias, sizeof(struct mail_alias) * ma_top);
-    mush_free(malias, "malias_list");
     malias = m;
   }
   i = 0;
@@ -237,15 +236,14 @@ do_malias_create(dbref player, char *alias, char *tolist)
     return;
   }
   m = &malias[ma_top];
-  m->members = mush_calloc(i, sizeof(dbref), "malias_members");
+  m->members = GC_MALLOC_ATOMIC(i * sizeof(dbref));
   memcpy(m->members, alist, sizeof(dbref) * i);
 
   na = alias + 1;
   m->size = i;
   m->owner = player;
-  m->name = mush_strdup(na, "malias_name");
+  m->name = GC_STRDUP(na);
   m->desc = compress(na);
-  add_check("malias_desc");
   m->nflags = ALIAS_OWNER | ALIAS_MEMBERS;
   m->mflags = ALIAS_OWNER;
   ma_top++;
@@ -403,8 +401,6 @@ do_malias_desc(dbref player, char *alias, char *desc)
     notify_format(player, T("MAIL: Alias %s not found."), alias);
     return;
   } else if (Wizard(player) || (player == m->owner)) {
-    if (m->desc)
-      free(m->desc);            /* No need to update MEM_CHECK records here */
     m->desc = compress(desc);
     notify(player, T("MAIL: Description changed."));
   } else
@@ -479,8 +475,7 @@ do_malias_rename(dbref player, char *alias, char *newname)
     return;
   }
 
-  free(m->name);                /* No need to update MEM_CHECK records here. */
-  m->name = strdup(newname + 1);
+  m->name = GC_STRDUP(newname + 1);
 
   notify(player, T("MAIL: Mail Alias renamed."));
 }
@@ -507,12 +502,6 @@ do_malias_destroy(dbref player, char *alias)
   }
   if (Wizard(player) || (m->owner == player)) {
     notify(player, T("MAIL: Alias Destroyed."));
-    if (m->members)
-      mush_free((Malloc_t) m->members, "malias_members");
-    if (m->name)
-      mush_free(m->name, "malias_name");
-    if (m->desc)
-      mush_free(m->desc, "malias_desc");
     *m = malias[--ma_top];
   } else {
     notify(player, T("MAIL: Permission denied!"));
@@ -613,9 +602,7 @@ do_malias_set(dbref player, char *alias, char *tolist)
     notify(player, T("MAIL: No valid recipients for alias-list!"));
     return;
   }
-  if (m->members)
-    mush_free(m->members, "malias_members");
-  m->members = mush_calloc(i, sizeof(dbref), "malias_members");
+  m->members = GC_MALLOC_ATOMIC(i * sizeof(dbref));
   memcpy(m->members, alist, sizeof(dbref) * i);
   m->size = i;
   notify(player, T("MAIL: Alias list set."));
@@ -683,26 +670,12 @@ do_malias_stats(dbref player)
 void
 do_malias_nuke(dbref player)
 {
-  struct mail_alias *m;
-  int i;
-
   if (!God(player)) {
     notify(player, T("MAIL: Only god can do that!"));
     return;
   }
-  if (ma_size) {                /* aliases defined ? */
-    for (i = 0; i < ma_top; i++) {
-      m = &malias[i];
-      if (m->name)
-        mush_free(m->name, "malias_name");
-      if (m->desc)
-        mush_free(m->desc, "malias_desc");
-      if (m->members)
-        mush_free((Malloc_t) m->members, "malias_members");
-    }
-    mush_free((Malloc_t) malias, "malias_list");
-  }
   ma_size = ma_top = 0;
+  malias = NULL;
   notify(player, T("MAIL: All mail aliases destroyed!"));
 }
 
@@ -829,11 +802,10 @@ do_malias_add(dbref player, char *alias, char *tolist)
     notify(player, T("MAIL: No valid recipients for alias-list!"));
     return;
   }
-  members = mush_calloc(i + m->size, sizeof(dbref), "malias_members");
+  members = GC_MALLOC_ATOMIC((i + m->size) * sizeof(dbref));
 
   memcpy(members, m->members, sizeof(dbref) * m->size);
   memcpy(&members[m->size], alist, sizeof(dbref) * i);
-  mush_free(m->members, "malias_members");
   m->members = members;
 
   m->size += i;
@@ -1057,7 +1029,7 @@ load_malias(PENNFILE *fp)
   ma_size = ma_top;
 
   if (ma_top > 0)
-    malias = mush_calloc(ma_size, sizeof(struct mail_alias), "malias_list");
+    malias = GC_MALLOC(ma_size * sizeof(struct mail_alias));
   else
     malias = NULL;
 
@@ -1065,16 +1037,15 @@ load_malias(PENNFILE *fp)
     m = &malias[i];
 
     m->owner = getref(fp);
-    m->name = mush_strdup(getstring_noalloc(fp), "malias_name");
+    m->name = GC_STRDUP(getstring_noalloc(fp));
     m->desc = compress(getstring_noalloc(fp));
-    add_check("malias_desc");
 
     m->nflags = getref(fp);
     m->mflags = getref(fp);
     m->size = getref(fp);
 
     if (m->size > 0) {
-      m->members = mush_calloc(m->size, sizeof(dbref), "malias_members");
+      m->members = GC_MALLOC_ATOMIC(m->size * sizeof(dbref));
       for (j = 0; j < m->size; j++) {
         m->members[j] = getref(fp);
       }

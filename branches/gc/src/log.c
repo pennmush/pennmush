@@ -36,7 +36,7 @@
 #include "log.h"
 #include "confmagic.h"
 
-static char *quick_unparse(dbref object);
+static const char *quick_unparse(dbref object);
 static void start_log(FILE ** fp, const char *filename);
 static void end_log(const char *filename);
 
@@ -55,29 +55,23 @@ FILE *cmdlog_fp;   /**< Command log */
 int lock_file(FILE *);
 int unlock_file(FILE *);
 
-static char *
+static const char *
 quick_unparse(dbref object)
 {
-  static char buff[BUFFER_LEN], *bp;
-
   switch (object) {
   case NOTHING:
-    strcpy(buff, T("*NOTHING*"));
+    return T("*NOTHING*");
     break;
   case AMBIGUOUS:
-    strcpy(buff, T("*VARIABLE*"));
+    return T("*VARIABLE*");
     break;
   case HOME:
-    strcpy(buff, T("*HOME*"));
+    return T("*HOME*");
     break;
   default:
-    bp = buff;
-    safe_format(buff, &bp, "%s(#%d%s)",
+    return tprintf("%s(#%d%s)",
                 Name(object), object, unparse_flags(object, GOD));
-    *bp = '\0';
   }
-
-  return buff;
 }
 
 static void
@@ -262,7 +256,7 @@ do_log(int logtype, dbref player, dbref object, const char *fmt, ...)
    */
   char tbuf1[BUFFER_LEN + 50];
   va_list args;
-  char unp1[BUFFER_LEN], unp2[BUFFER_LEN];
+  const char *unp1, *unp2;
 
   va_start(args, fmt);
 
@@ -278,21 +272,21 @@ do_log(int logtype, dbref player, dbref object, const char *fmt, ...)
     do_rawlog(logtype, "RPT: %s", tbuf1);
     break;
   case LT_CMD:
-    strcpy(unp1, quick_unparse(player));
+    unp1 = quick_unparse(player);
     if (GoodObject(object)) {
-      strcpy(unp2, quick_unparse(object));
+      unp2 = quick_unparse(object);
       do_rawlog(logtype, T("CMD: %s %s / %s: %s"),
                 (Suspect(player) ? "SUSPECT" : ""), unp1, unp2, tbuf1);
     } else {
-      strcpy(unp2, quick_unparse(Location(player)));
+      unp2 = quick_unparse(Location(player));
       do_rawlog(logtype, T("CMD: %s %s in %s: %s"),
                 (Suspect(player) ? "SUSPECT" : ""), unp1, unp2, tbuf1);
     }
     break;
   case LT_WIZ:
-    strcpy(unp1, quick_unparse(player));
+    unp1 = quick_unparse(player);
     if (GoodObject(object)) {
-      strcpy(unp2, quick_unparse(object));
+      unp2 = quick_unparse(object);
       do_rawlog(logtype, "WIZ: %s --> %s: %s", unp1, unp2, tbuf1);
     } else {
       do_rawlog(logtype, "WIZ: %s: %s", unp1, tbuf1);
@@ -309,8 +303,8 @@ do_log(int logtype, dbref player, dbref object, const char *fmt, ...)
     break;
   case LT_HUH:
     if (!controls(player, Location(player))) {
-      strcpy(unp1, quick_unparse(player));
-      strcpy(unp2, quick_unparse(Location(player)));
+      unp1 = quick_unparse(player);
+      unp2 = quick_unparse(Location(player));
       do_rawlog(logtype, T("HUH: %s in %s [%s]: %s"),
                 unp1, unp2,
                 (GoodObject(Location(player))) ?

@@ -79,7 +79,6 @@ extern object_flag_type clone_flag_bitmask(const char *ns,
                                            object_flag_type given);
 extern void copy_flag_bitmask(const char *ns, object_flag_type dest,
                               object_flag_type given);
-extern void destroy_flag_bitmask(object_flag_type bitmask);
 extern void set_flag_bitmask(object_flag_type bitmask, int bit);
 extern void clear_flag_bitmask(object_flag_type bitmask, int bit);
 extern int has_bit(object_flag_type bitmask, int bitpos);
@@ -180,17 +179,6 @@ extern void decompile_flags_generic(dbref player, dbref thing, const char *name,
 #define F_LOG           0x8000U  /**< Log when the flag is set/cleared */
 
 #define F_MAX           0x00800000U /**< Largest allowed flag bit */
-
-
-/* Flags can be in the flaglist multiple times, thanks to aliases. Keep
-   a reference count of how many times, and free memory when it goes to 0. */
-#define F_REF_MASK      0xFF000000U /**< Mask to get the reference count */
-#define F_REF_NOT       0x00FFFFFFU /**< Everything but */
-#define FLAG_REF(r)     (((r) & F_REF_MASK) >> 30)
-#define ZERO_FLAG_REF(r) ((r) & F_REF_NOT)
-#define INCR_FLAG_REF(r) ((r) + (1 << 30))
-#define DECR_FLAG_REF(r) ((r) - (1 << 30))
-
 
 /*--------------------------------------------------------------------------
  * Powers table

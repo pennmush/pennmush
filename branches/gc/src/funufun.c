@@ -164,7 +164,6 @@ do_userfn(char *buff, char **bp, dbref obj, ATTR *attrib, int nargs,
     pe_flags |= PE_DEBUG;
   process_expression(buff, bp, &tp, obj, executor, enactor, pe_flags,
                      PT_DEFAULT, pe_info);
-  free(tbuf);
 
   /* restore the stack */
   for (j = 0; j < 10; j++)
@@ -265,9 +264,9 @@ FUNCTION(fun_uldefault)
      * pass them to the function */
     xargs = NULL;
     if (nargs > 2) {
-      xargs = mush_calloc(nargs - 2, sizeof(char *), "udefault.xargs");
+      xargs = GC_MALLOC((nargs - 2) * sizeof(char *));
       for (i = 0; i < nargs - 2; i++) {
-        xargs[i] = mush_malloc(BUFFER_LEN, "udefault");
+        xargs[i] = GC_MALLOC_ATOMIC(BUFFER_LEN);
         dp = xargs[i];
         sp = args[i + 2];
         process_expression(xargs[i], &dp, &sp, executor, caller, enactor,
@@ -282,12 +281,6 @@ FUNCTION(fun_uldefault)
     if (called_as[1] == 'L')
       restore_global_regs("uldefault.save", preserve);
 
-    /* Free the xargs */
-    if (nargs > 2) {
-      for (i = 0; i < nargs - 2; i++)
-        mush_free(xargs[i], "udefault");
-      mush_free(xargs, "udefault.xargs");
-    }
     return;
   }
   /* We couldn't get it. Evaluate args[1] and return it */

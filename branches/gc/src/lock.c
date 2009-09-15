@@ -292,8 +292,8 @@ define_lock(lock_type name, privbits flags)
 {
   lock_list *newlock;
 
-  newlock = mush_malloc(sizeof *newlock, "lock");
-  newlock->type = mush_strdup(strupper(name), "lock.name");
+  newlock = GC_MALLOC(sizeof *newlock);
+  newlock->type = strupper(name);
   newlock->flags = flags;
   newlock->creator = GOD;
   newlock->key = TRUE_BOOLEXP;

@@ -122,8 +122,8 @@ allocate_bufferq(int lines)
 {
   BUFFERQ *bq;
   int bytes = lines * (BUFFER_LEN + BUFFERQLINEOVERHEAD);
-  bq = mush_malloc(sizeof(BUFFERQ), "bufferq");
-  bq->buffer = mush_malloc(bytes, "bufferq.buffer");
+  bq = GC_MALLOC(sizeof(BUFFERQ));
+  bq->buffer = GC_MALLOC_ATOMIC(bytes);
   *bq->buffer = '\0';
   bq->buffer_end = bq->buffer;
   bq->num_buffered = 0;
@@ -137,13 +137,8 @@ allocate_bufferq(int lines)
  * \param bq pointer to buffer queue.
  */
 void
-free_bufferq(BUFFERQ *bq)
+free_bufferq(BUFFERQ *bq __attribute__((__unused__)))
 {
-  if (!bq)
-    return;
-  if (bq->buffer)
-    mush_free(bq->buffer, "bufferq.buffer");
-  mush_free(bq, "bufferq");
 }
 
 /** Reallocate a buffer queue (to change its size)
@@ -170,7 +165,7 @@ reallocate_bufferq(BUFFERQ *bq, int lines)
       shift_bufferq(bq, bq->buffer_end - bq->buffer - bytes);
   }
   bufflen = bq->buffer_end - bq->buffer;
-  newbuff = realloc(bq->buffer, bytes);
+  newbuff = GC_REALLOC(bq->buffer, bytes);
   if (newbuff) {
     bq->buffer = newbuff;
     bq->buffer_end = bq->buffer + bufflen;

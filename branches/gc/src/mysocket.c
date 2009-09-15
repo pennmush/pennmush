@@ -1169,7 +1169,7 @@ getaddrinfo(const char *hostname, const char *servname,
     /* 4save canonical name first time */
     if (hostname != NULL && hostname[0] != '\0' &&
         (hints.ai_flags & AI_CANONNAME) && canon == NULL) {
-      if ((canon = strdup(hptr->h_name)) == NULL)
+      if ((canon = GC_STRDUP(hptr->h_name)) == NULL)
         error(EAI_MEMORY);
     }
 
@@ -1190,7 +1190,7 @@ getaddrinfo(const char *hostname, const char *servname,
     if (canon != NULL)
       aihead->ai_canonname = canon;     /* strdup'ed earlier */
     else {
-      if ((aihead->ai_canonname = strdup(search[0].host)) == NULL)
+      if ((aihead->ai_canonname = GC_STRDUP(search[0].host)) == NULL)
         error(EAI_MEMORY);
     }
   }
@@ -1385,7 +1385,7 @@ ga_aistruct(struct addrinfo ***paipnext, const struct addrinfo *hintsp,
 {
   struct addrinfo *ai;
 
-  if ((ai = calloc(1, sizeof(struct addrinfo))) == NULL)
+  if ((ai = GC_MALLOC(sizeof(struct addrinfo)) == NULL)
     return (EAI_MEMORY);
   ai->ai_next = NULL;
   ai->ai_canonname = NULL;
@@ -1405,8 +1405,8 @@ ga_aistruct(struct addrinfo ***paipnext, const struct addrinfo *hintsp,
       struct sockaddr_in *sinptr;
 
       /* 4allocate sockaddr_in{} and fill in all but port */
-      if ((sinptr = calloc(1, sizeof(struct sockaddr_in))) == NULL)
-        return (EAI_MEMORY);
+      if ((sinptr = GC_MALLOC(sizeof(struct sockaddr_in))) == NULL)
+        return EAI_MEMORY;
 #ifdef  HAVE_SOCKADDR_SA_LEN
       sinptr->sin_len = sizeof(struct sockaddr_in);
 #endif
@@ -1422,8 +1422,8 @@ ga_aistruct(struct addrinfo ***paipnext, const struct addrinfo *hintsp,
       struct sockaddr_in6 *sin6ptr;
 
       /* 4allocate sockaddr_in6{} and fill in all but port */
-      if ((sin6ptr = calloc(1, sizeof(struct sockaddr_in6))) == NULL)
-        return (EAI_MEMORY);
+      if ((sin6ptr = GC_MALLOC(sizeof(struct sockaddr_in6))) == NULL)
+        return EAI_MEMORY;
 #ifdef  HAVE_SOCKADDR_SA_LEN
       sin6ptr->sin6_len = sizeof(struct sockaddr_in6);
 #endif
@@ -1559,7 +1559,7 @@ ga_clone(struct addrinfo *ai)
 {
   struct addrinfo *new;
 
-  if ((new = calloc(1, sizeof(struct addrinfo))) == NULL)
+  if ((new = GC_MALLOC(sizeof(struct addrinfo))) == NULL)
     return (NULL);
 
   new->ai_next = ai->ai_next;
@@ -1571,7 +1571,7 @@ ga_clone(struct addrinfo *ai)
   new->ai_protocol = ai->ai_protocol;
   new->ai_canonname = NULL;
   new->ai_addrlen = ai->ai_addrlen;
-  if ((new->ai_addr = malloc(ai->ai_addrlen)) == NULL)
+  if ((new->ai_addr = GC_MALLOC(ai->ai_addrlen)) == NULL)
     return (NULL);
   memcpy(new->ai_addr, ai->ai_addr, ai->ai_addrlen);
 
@@ -1625,18 +1625,6 @@ gai_strerror(int err)
 void
 freeaddrinfo(struct addrinfo *aihead)
 {
-  struct addrinfo *ai, *ainext;
-
-  for (ai = aihead; ai != NULL; ai = ainext) {
-    if (ai->ai_addr != NULL)
-      free(ai->ai_addr);        /* socket address structure */
-
-    if (ai->ai_canonname != NULL)
-      free(ai->ai_canonname);
-
-    ainext = ai->ai_next;       /* can't fetch ai_next after free() */
-    free(ai);                   /* the addrinfo{} itself */
-  }
 }
 
 /* end freeaddrinfo */

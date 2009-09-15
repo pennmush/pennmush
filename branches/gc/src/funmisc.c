@@ -26,8 +26,9 @@
 #include "command.h"
 #include "game.h"
 #include "attrib.h"
-#include "confmagic.h"
+#include "mymalloc.h"
 #include "ansi.h"
+#include "confmagic.h"
 
 #ifdef WIN32
 #pragma warning( disable : 4761)        /* NJG: disable warning re conversion */
@@ -230,16 +231,15 @@ FUNCTION(fun_letq)
     preserve[n] = NULL;
 
   if (npairs) {
-    values = mush_calloc(npairs, sizeof(char *), "letq.values");
+    values = GC_MALLOC(npairs * sizeof(char *));
     if (!values) {
       safe_str(T("#-1 UNABLE TO ALLOCATE MEMORY"), buff, bp);
       return;
     }
 
-    regs = mush_calloc(npairs, sizeof(int), "letq.registers");
+    regs = GC_MALLOC_ATOMIC(npairs * sizeof(int));
     if (!regs) {
       safe_str(T("#-1 UNABLE TO ALLOCATE MEMORY"), buff, bp);
-      mush_free(values, "letq.values");
       return;
     }
 
@@ -262,7 +262,7 @@ FUNCTION(fun_letq)
       process_expression(tbuf, &tbp, &p, executor, caller, enactor, PE_DEFAULT,
                          PT_DEFAULT, pe_info);
       *tbp = '\0';
-      values[n] = mush_strdup(tbuf, "letq.value");
+      values[n] = GC_STRDUP(tbuf);
       if (!values[n]) {
         safe_str(T("#-1 UNABLE TO ALLOCATE MEMORY"), buff, bp);
         goto cleanup;
@@ -279,13 +279,8 @@ FUNCTION(fun_letq)
                      PT_DEFAULT, pe_info);
 
 cleanup:
-  if (regs)
-    mush_free(regs, "letq.registers");
   if (values) {
     restore_partial_global_regs("letq", preserve);
-    for (n = 0; n < npairs; n++)
-      mush_free(values[n], "letq.value");
-    mush_free(values, "letq.values");
   }
 }
 
@@ -432,8 +427,6 @@ FUNCTION(fun_switch)
       per = process_expression(buff, bp, &sp,
                                executor, caller, enactor,
                                PE_DEFAULT, PT_DEFAULT, pe_info);
-      if (!exact)
-        mush_free((Malloc_t) tbuf1, "replace_string.buff");
       found = 1;
       if (per || first)
         return;
@@ -449,8 +442,6 @@ FUNCTION(fun_switch)
       sp = args[nargs - 1];
     process_expression(buff, bp, &sp, executor, caller, enactor,
                        PE_DEFAULT, PT_DEFAULT, pe_info);
-    if (!exact)
-      mush_free((Malloc_t) tbuf1, "replace_string.buff");
   }
 }
 
@@ -497,7 +488,6 @@ FUNCTION(fun_reswitch)
       per = process_expression(buff, bp, &sp,
                                executor, caller, enactor,
                                PE_DEFAULT, PT_DEFAULT, pe_info);
-      mush_free((Malloc_t) tbuf1, "replace_string.buff");
       found = 1;
       if (per || first)
         return;
@@ -510,7 +500,6 @@ FUNCTION(fun_reswitch)
     sp = tbuf1;
     process_expression(buff, bp, &sp, executor, caller, enactor,
                        PE_DEFAULT, PT_DEFAULT, pe_info);
-    mush_free((Malloc_t) tbuf1, "replace_string.buff");
   }
 }
 
@@ -598,11 +587,15 @@ extern char soundex_val[UCHAR_MAX + 1];
 static char *
 soundex(char *str)
 {
-  static char tbuf1[BUFFER_LEN];
+  char *tbuf1;
   char *p, *q;
+  size_t len;
 
-  q = remove_markup(str, NULL);
-  memset(tbuf1, '\0', 4);
+  q = remove_markup(str, &len);
+  if (len < 4)
+    len = 4;
+  tbuf1 = GC_MALLOC_ATOMIC(len + 1);
+  memset(tbuf1, '0', 4);
 
   p = tbuf1;
 
@@ -673,7 +666,7 @@ FUNCTION(fun_soundlike)
    * This can be optimized to go character-by-character, but
    * I deem the modularity to be more important. So there.
    */
-  char tbuf1[5];
+  char *code1, *code2;
   if (!*args[0] || !*args[1] || !isalpha((unsigned char) *args[0])
       || !isalpha((unsigned char) *args[1]) || strchr(args[0], ' ')
       || strchr(args[1], ' ')) {
@@ -682,8 +675,9 @@ FUNCTION(fun_soundlike)
     return;
   }
   /* soundex uses a static buffer, so we need to save it */
-  strcpy(tbuf1, soundex(args[0]));
-  safe_boolean(!strcmp(tbuf1, soundex(args[1])), buff, bp);
+  code1 = soundex(args[0]);
+  code2 = soundex(args[1]);
+  safe_boolean(!strcmp(code1, code2), buff, bp);
 }
 
 /* ARGSUSED */

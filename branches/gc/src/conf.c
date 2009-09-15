@@ -39,6 +39,7 @@
 #include "attrib.h"
 #include "help.h"
 #include "function.h"
+#include "mymalloc.h"
 #include "confmagic.h"
 
 time_t mudtime;                 /**< game time, in seconds */
@@ -567,7 +568,7 @@ PENNCONFGROUP dummy[] = {
 PENNCONF *
 new_config(void)
 {
-  return ((PENNCONF *) mush_malloc(sizeof(PENNCONF), "config"));
+  return GC_MALLOC(sizeof(PENNCONF));
 }
 
 /** Add a new local runtime configuration parameter to local_options.
@@ -589,7 +590,7 @@ add_config(const char *name, config_func handler, void *loc, int max,
     return cnf;
   if ((cnf = new_config()) == NULL)
     return NULL;
-  cnf->name = mush_strdup(strupper(name), "config name");
+  cnf->name = strupper(name);
   cnf->handler = handler;
   cnf->loc = loc;
   cnf->max = max;
@@ -609,7 +610,7 @@ add_config(const char *name, config_func handler, void *loc, int max,
 PENNCONF *
 get_config(const char *name)
 {
-  return ((PENNCONF *) hashfind(name, &local_options));
+  return hashfind(name, &local_options);
 }
 
 /** Parse a boolean configuration option.
@@ -1346,6 +1347,11 @@ config_file_startup(const char *conf, int restrictions)
   static char cfile[BUFFER_LEN];        /* Remember the last one */
 
   if (conf_recursion == 0) {
+    /*    GC_exclude_static_roots(&options, &options + sizeof(options) + 1);
+       GC_exclude_static_roots(conftable,
+       conftable + sizeof(conftable) + 1);
+     */
+
     if (conf && *conf)
       strcpy(cfile, conf);
     fp = fopen(cfile, FOPEN_READ);
@@ -1355,7 +1361,7 @@ config_file_startup(const char *conf, int restrictions)
     }
     do_rawlog(LT_ERR, "Reading %s", cfile);
     if (toplevel_cfile == NULL)
-      toplevel_cfile = mush_strdup(cfile, "config.file");
+      toplevel_cfile = GC_STRDUP(cfile);
   } else {
     if (conf && *conf)
       fp = fopen(conf, FOPEN_READ);

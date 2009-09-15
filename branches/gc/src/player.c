@@ -79,7 +79,7 @@ password_check(dbref player, const char *password)
   if (!(a = atr_get_noparent(player, pword_attr)))
     return 1;                   /* No password attribute */
 
-  saved = strdup(atr_value(a));
+  saved = GC_STRDUP(atr_value(a));
 
   if (!saved)
     return 0;
@@ -99,13 +99,11 @@ password_check(dbref player, const char *password)
           || (strlen(password) < 4)
           || ((password[0] == 'X') && (password[1] == 'X'))) {
         /* Nothing worked. You lose. */
-        free(saved);
         return 0;
       }
     /* Something worked. Change password to SHS-encrypted */
     (void) atr_add(player, pword_attr, passwd, GOD, 0);
   }
-  free(saved);
   return 1;
 }
 

@@ -73,7 +73,7 @@ void Win32MUSH_setup(void);
 #include "wait.h"
 #endif
 #include "ansi.h"
-
+#include "mymalloc.h"
 #ifdef hpux
 #include <sys/syscall.h>
 #define getrusage(x,p)   syscall(SYS_GETRUSAGE,x,p)
@@ -728,6 +728,7 @@ init_game_config(const char *conf)
   init_locks();
   init_names();
   init_pronouns();
+  command_init_preconfig();
 
   memset(&current_state, 0, sizeof current_state);
 
@@ -765,7 +766,6 @@ init_game_postdb(const char *conf)
   /* set up signal handlers for the timer */
   init_timer();
   /* Commands and functions require the flag table for restrictions */
-  command_init_preconfig();
   command_init_postconfig();
   function_init_postconfig();
   attr_init_postconfig();
@@ -987,8 +987,7 @@ passwd_filter(const char *cmd)
 {
   static int initialized = 0;
   static pcre *pass_ptn, *newpass_ptn;
-  static char buff[BUFFER_LEN];
-  char *bp = buff;
+  char *buff, *bp;
   int ovec[20];
   size_t cmdlen;
   int matched;
@@ -1007,6 +1006,8 @@ passwd_filter(const char *cmd)
       do_log(LT_ERR, GOD, GOD, "pcre_compile: %s", errptr);
     initialized = 1;
   }
+
+  bp = buff = alloc_buf();
 
   cmdlen = strlen(cmd);
 
@@ -1064,7 +1065,7 @@ process_command(dbref player, char *command, dbref cause, int from_port)
   dbref check_loc;
 
   if (!errdblist)
-    if (!(errdblist = mush_calloc(errdbsize, sizeof(dbref), "errdblist")))
+    if (!(errdblist = GC_MALLOC_ATOMIC(errdbsize * sizeof(dbref))))
       mush_panic("Unable to allocate memory in process_command()!");
 
   errdbtail = errdblist;
@@ -1240,7 +1241,6 @@ process_command(dbref player, char *command, dbref cause, int from_port)
   /* command has been executed. Free up memory. */
 
 done:
-  mush_free(errdblist, "errdblist");
   errdblist = errdbtail = NULL;
   errdbsize = ERRDB_INITIAL_SIZE;
 }
@@ -1526,11 +1526,7 @@ bind_and_queue(dbref player, dbref cause, char *action,
 
   command = strip_braces(repl);
 
-  mush_free(repl, "replace_string.buff");
-
   parse_que(player, command, cause);
-
-  mush_free(command, "strip_braces.buff");
 }
 
 /** Would the scan command find an matching attribute on x for player p? */
@@ -1549,12 +1545,13 @@ bind_and_queue(dbref player, dbref cause, char *action,
 char *
 scan_list(dbref player, char *command)
 {
-  static char tbuf[BUFFER_LEN];
-  char *tp;
+  char *tbuf, *tp;
   dbref thing;
   char atrname[BUFFER_LEN];
   char *ptr;
   int num;
+
+  tbuf = tp = alloc_buf();
 
   if (!GoodObject(Location(player))) {
     strcpy(tbuf, T("#-1 INVALID LOCATION"));
@@ -1863,7 +1860,6 @@ do_dolist(dbref player, char *list, char *command, dbref cause,
       ebufptr = ebuf = replace_string2(standard_tokens, replace, command);
       process_expression(outbuf, &bp, (char const **) &ebuf, player,
                          cause, cause, PE_DEFAULT, PT_DEFAULT, NULL);
-      mush_free(ebufptr, "replace_string.buff");
     }
   }
 
@@ -2207,7 +2203,7 @@ db_open(const char *fname)
 
   snprintf(filename, sizeof filename, "%s%s", fname, options.compresssuff);
 
-  pf = mush_malloc(sizeof *pf, "pennfile");
+  pf = GC_MALLOC(sizeof *pf);
 
 #ifdef HAVE_LIBZ
   if (*options.uncompressprog && strcmp(options.uncompressprog, "gunzip") == 0) {
@@ -2216,7 +2212,7 @@ db_open(const char *fname)
     if (!pf->handle.g) {
       do_rawlog(LT_ERR, "Unable to open %s with libz: %s\n", filename,
                 strerror(errno));
-      mush_free(pf, "pennfile");
+      GC_FREE(pf);
       longjmp(db_err, 1);
     }
     return pf;
@@ -2243,7 +2239,7 @@ db_open(const char *fname)
         do_rawlog(LT_ERR, "Unable to run '%s < %s': %s",
                   options.uncompressprog, filename, strerror(errno));
     } else {
-      mush_free(pf, "pennfile");
+      GC_FREE(pf);
       longjmp(db_err, 1);
     }
   } else
@@ -2260,7 +2256,7 @@ db_open(const char *fname)
 
   }
   if (!pf->handle.f) {
-    mush_free(pf, "pennfile");
+    GC_FREE(pf);
     longjmp(db_err, 1);
   }
   return pf;
@@ -2296,7 +2292,7 @@ db_open_write(const char *fname)
             errno, strerror(errno));
   }
 
-  pf = mush_malloc(sizeof *pf, "pennfile");
+  pf = GC_MALLOC(sizeof *pf);
 
 #ifdef HAVE_LIBZ
   if (*options.compressprog && strcmp(options.compressprog, "gzip") == 0) {
@@ -2305,7 +2301,7 @@ db_open_write(const char *fname)
     if (!pf->handle.g) {
       do_rawlog(LT_ERR, "Unable to open %s with libz: %s\n", filename,
                 strerror(errno));
-      mush_free(pf, "pennfile");
+      GC_FREE(pf);
       longjmp(db_err, 1);
     }
     return pf;
@@ -2336,7 +2332,7 @@ db_open_write(const char *fname)
       do_rawlog(LT_ERR, "Unable to open %s: %s\n", filename, strerror(errno));
   }
   if (!pf->handle.f) {
-    mush_free(pf, "pennfile");
+    GC_FREE(pf);
     longjmp(db_err, 1);
   }
   return pf;
@@ -2496,8 +2492,7 @@ errdb_grow(void)
   dbref *newerrdb;
   if (errdbsize >= 50)
     return;                     /* That's it, no more, forget it */
-  newerrdb = mush_realloc(errdblist, (errdbsize + 1) * sizeof(dbref),
-                          "errdblist");
+  newerrdb = GC_REALLOC(errdblist, (errdbsize + 1) * sizeof(dbref));
   if (newerrdb) {
     errdblist = newerrdb;
     errdbtail = errdblist + errdbsize;

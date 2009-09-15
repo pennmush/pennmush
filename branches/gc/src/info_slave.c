@@ -55,6 +55,7 @@
 #include "wait.h"
 #include "ident.h"
 #include "mysocket.h"
+#include "mymalloc.h"
 #include "lookup.h"
 
 #include "confmagic.h"
@@ -93,6 +94,8 @@ main(void)
   ssize_t len;
   pid_t child, netmush = -2;
   char localport[NI_MAXSERV];
+
+  GC_INIT();
 
   if (new_process_group() < 0)
     penn_perror("making new process group");
@@ -196,8 +199,6 @@ main(void)
         resp.ident[(sizeof resp.ident) - 1] = '\0';
       }
 
-      if (ident_result)
-        ident_free(ident_result);
     }
 
     if (req.use_dns) {
@@ -277,7 +278,7 @@ eventwait_init(void)
     unlock_file(stderr);
     penn_perror("error");
   } else {
-    fputs("ok. Using kqueue!\n", stderr);
+    fputerr("ok. Using kqueue!\n");
     unlock_file(stderr);
   }
 
@@ -334,7 +335,10 @@ eventwait_watch_fd_read(int fd)
 #endif
 #ifdef HAVE_POLL
   case METHOD_POLL:
-    poll_fds = realloc(poll_fds, sizeof(struct pollfd) * (pollfd_len + 1));
+    if (!poll_fds)
+      poll_fds = GC_MALLOC_ATOMIC(sizeof(struct pollfd));
+    else
+      poll_fds = GC_REALLOC(poll_fds, sizeof(struct pollfd) * (pollfd_len + 1));
     poll_fds[pollfd_len].fd = fd;
     poll_fds[pollfd_len].events = POLLIN;
     pollfd_len += 1;

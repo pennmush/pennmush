@@ -114,20 +114,8 @@ static acsflag acslist[] = {
 };
 
 static struct access *access_top;
-static void free_access_list(void);
 
 extern const unsigned char *tables;
-
-static void
-sitelock_free(struct access *ap)
-{
-  mush_free(ap->host, "sitelock.rule.pattern");
-  if (ap->comment)
-    mush_free(ap->comment, "sitelock.rule.comment");
-  if (ap->re)
-    free(ap);
-  mush_free(ap, "sitelock.rule");
-}
 
 static struct access *
 sitelock_alloc(const char *host, dbref who,
@@ -141,7 +129,8 @@ sitelock_alloc(const char *host, dbref who,
                                          const char **errptr)
 {
   struct access *tmp;
-  tmp = mush_malloc(sizeof(struct access), "sitelock.rule");
+
+  tmp = GC_MALLOC(sizeof(struct access));
   if (!tmp) {
     static const char *memerr = "unable to allocate memory";
     if (errptr)
@@ -151,9 +140,9 @@ sitelock_alloc(const char *host, dbref who,
   tmp->who = who;
   tmp->can = can;
   tmp->cant = cant;
-  tmp->host = mush_strdup(host, "sitelock.rule.pattern");
+  tmp->host = GC_STRDUP(host);
   if (comment && *comment)
-    tmp->comment = mush_strdup(comment, "sitelock.rule.comment");
+    tmp->comment = GC_STRDUP(comment);
   else
     tmp->comment = NULL;
   tmp->next = NULL;
@@ -161,10 +150,8 @@ sitelock_alloc(const char *host, dbref who,
   if (can & ACS_REGEXP) {
     int erroffset = 0;
     tmp->re = pcre_compile(host, 0, errptr, &erroffset, tables);
-    if (!tmp->re) {
-      sitelock_free(tmp);
+    if (!tmp->re)
       return NULL;
-    }
   } else
     tmp->re = NULL;
 
@@ -214,7 +201,7 @@ read_access_file(void)
     /* We're reloading the file, so we've got to delete any current 
      * entries
      */
-    free_access_list();
+    access_top = NULL;
   }
   access_top = NULL;
   /* Be sure we have a file descriptor */
@@ -528,7 +515,6 @@ add_access_sitelock(dbref player, const char *host, dbref who, uint32_t can,
   struct access *tmp;
   const char *errptr = NULL;
 
-
   tmp = sitelock_alloc(host, who, can, cant, "", &errptr);
 
   if (!tmp) {
@@ -599,7 +585,6 @@ remove_access_sitelock(const char *pattern)
     if (deletethis == -1 ? (strcasecmp(pattern, ap->host) == 0)
         : deletethis == rulenum) {
       n++;
-      sitelock_free(ap);
       if (prev)
         prev->next = next;
       else
@@ -614,21 +599,6 @@ remove_access_sitelock(const char *pattern)
 
   return n;
 }
-
-/* Free the entire access list */
-static void
-free_access_list(void)
-{
-  struct access *ap, *next;
-  ap = access_top;
-  while (ap) {
-    next = ap->next;
-    sitelock_free(ap);
-    ap = next;
-  }
-  access_top = NULL;
-}
-
 
 /** Display the access list.
  * \param player enactor.

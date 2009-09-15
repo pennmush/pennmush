@@ -25,6 +25,7 @@
 #include "ansi.h"
 #include "pueblo.h"
 #include "parse.h"
+#include "mymalloc.h"
 #include "confmagic.h"
 
 /* Hack added by Thorvald for object_header Pueblo */
@@ -41,14 +42,14 @@ static int couldunparse;
 const char *
 unparse_object(dbref player, dbref loc)
 {
-  static PUEBLOBUFF;
+  PUEBLOBUFF;
   const char *result;
   result = real_unparse(player, loc, 0, 0, 0);
   if (couldunparse) {
     PUSE;
     tag_wrap("A", tprintf("XCH_CMD=\"examine #%d\"", loc), result);
     PEND;
-    return pbuff;
+    return GC_STRDUP(pbuff);
   } else {
     return result;
   }
@@ -121,8 +122,8 @@ const char *
 real_unparse(dbref player, dbref loc, int obey_myopic, int use_nameformat,
              int use_nameaccent)
 {
-  static char buf[BUFFER_LEN], *bp;
-  static char tbuf1[BUFFER_LEN];
+  char *buf;
+  char *tbuf1;
   char *p;
 
   couldunparse = 0;
@@ -138,9 +139,9 @@ real_unparse(dbref player, dbref loc, int obey_myopic, int use_nameformat,
     return T("*HOME*");
   default:
     if (use_nameaccent)
-      strcpy(tbuf1, accented_name(loc));
+      tbuf1 = accented_name(loc);
     else
-      strcpy(tbuf1, Name(loc));
+      tbuf1 = GC_STRDUP(Name(loc));
     if (IsExit(loc) && obey_myopic) {
       if ((p = strchr(tbuf1, ';')))
         *p = '\0';
@@ -151,22 +152,18 @@ real_unparse(dbref player, dbref loc, int obey_myopic, int use_nameformat,
       /* show everything */
       if (SUPPORT_PUEBLO)
         couldunparse = 1;
-      bp = buf;
       if (ANSI_NAMES && ShowAnsi(player))
-        safe_format(buf, &bp, "%s%s%s(#%d%s)", ANSI_HILITE, tbuf1,
-                    ANSI_END, loc, unparse_flags(loc, player));
+        buf = tprintf("%s%s%s(#%d%s)", ANSI_HILITE, tbuf1,
+		      ANSI_END, loc, unparse_flags(loc, player));
       else
-        safe_format(buf, &bp, "%s(#%d%s)", tbuf1, loc,
-                    unparse_flags(loc, player));
-      *bp = '\0';
+        buf = tprintf("%s(#%d%s)", tbuf1, loc,
+		      unparse_flags(loc, player));
     } else {
       /* show only the name */
       if (ANSI_NAMES && ShowAnsi(player)) {
-        bp = buf;
-        safe_format(buf, &bp, "%s%s%s", ANSI_HILITE, tbuf1, ANSI_END);
-        *bp = '\0';
+        buf = tprintf("%s%s%s", ANSI_HILITE, tbuf1, ANSI_END);
       } else
-        strcpy(buf, tbuf1);
+        buf = tbuf1;
     }
   }
   /* buf now contains the default formatting of the name. If we
@@ -200,8 +197,8 @@ nameformat(dbref player, dbref loc, char *tbuf1, char *defname)
   int j;
   a = atr_get(loc, "NAMEFORMAT");
   if (a) {
-    arg = (char *) mush_malloc(BUFFER_LEN, "string");
-    arg2 = (char *) mush_malloc(BUFFER_LEN, "string");
+    arg = GC_MALLOC_ATOMIC(BUFFER_LEN);
+    arg2 = GC_MALLOC_ATOMIC(BUFFER_LEN);
     if (!arg)
       mush_panic("Unable to allocate memory in nameformat");
     save_global_regs("nameformat", rsave);
@@ -220,13 +217,10 @@ nameformat(dbref player, dbref loc, char *tbuf1, char *defname)
     process_expression(tbuf1, &bp, &sp, loc, player, player,
                        PE_DEFAULT, PT_DEFAULT, NULL);
     *bp = '\0';
-    free((Malloc_t) save);
     for (j = 0; j < 10; j++) {
       global_eval_context.wenv[j] = wsave[j];
     }
     restore_global_regs("nameformat", rsave);
-    mush_free((Malloc_t) arg, "string");
-    mush_free((Malloc_t) arg2, "string");
     return 1;
   } else {
     /* No @nameformat attribute */
@@ -236,61 +230,61 @@ nameformat(dbref player, dbref loc, char *tbuf1, char *defname)
 
 /** Give a string representation of a dbref.
  * \param num value to stringify
- * \return address of static buffer containing stringified value.
+ * \return pointer to stringified value.
  */
 char *
 unparse_dbref(dbref num)
 {
   /* Not BUFFER_LEN, but no dbref will come near this long */
-  static char str[SBUF_LEN];
+  char str[SBUF_LEN];
   char *strp;
 
   strp = str;
   safe_dbref(num, str, &strp);
   *strp = '\0';
-  return str;
+  return GC_STRDUP(str);
 }
 
 /** Give a string representation of an integer.
  * \param num value to stringify
- * \return address of static buffer containing stringified value.
+ * \return pointer to stringified value.
  */
 char *
 unparse_integer(intmax_t num)
 {
-  static char str[SBUF_LEN];
+  char str[SBUF_LEN];
   char *strp;
 
   strp = str;
   safe_integer_sbuf(num, str, &strp);
   *strp = '\0';
-  return str;
+  return GC_STRDUP(str);
 }
 
 /** Give a string representation of an unsigned integer.
  * \param num value to stringify
- * \return address of static buffer containing stringified value.
+ * \return address of stringified value.
  */
 char *
 unparse_uinteger(uintmax_t num)
 {
-  static char str[128];
+  char str[128];
 #ifndef PRIuMAX
   /* Probably not right */
 #define PRIuMAX "lld"
 #endif
   sprintf(str, "%" PRIuMAX, num);
-  return str;
+  return GC_STRDUP(str);
 }
 
 /** Give a string representation of a number.
  * \param num value to stringify
- * \return address of static buffer containing stringified value.
+ * \return address of stringified value.
  */
 char *
 unparse_number(NVAL num)
 {
-  static char str[100];         /* Should be large enough for even the HUGE floats */
+  char str[100];                /* Should be large enough for even the HUGE floats */
   char *p;
   sprintf(str, "%.*f", FLOAT_PRECISION, num);
 
@@ -302,7 +296,7 @@ unparse_number(NVAL num)
       p--;
     *p = '\0';
   }
-  return str;
+  return GC_STRDUP(str);
 }
 
 /** Return the name of an object, applying NAMEACCENT if set.
@@ -310,15 +304,15 @@ unparse_number(NVAL num)
  * \return address of static buffer containing object name, with accents
  * if object has a valid NAMEACCENT attribute.
  */
-const char *
+char *
 accented_name(dbref thing)
 {
   ATTR *na;
-  static char fbuf[BUFFER_LEN];
+  char fbuf[BUFFER_LEN];
 
   na = atr_get(thing, "NAMEACCENT");
   if (!na)
-    return Name(thing);
+    return GC_STRDUP(Name(thing));
   else {
     char tbuf[BUFFER_LEN];
     char *bp = fbuf;
@@ -329,11 +323,11 @@ accented_name(dbref thing)
     len = strlen(Name(thing));
 
     if (len != strlen(tbuf))
-      return Name(thing);
+      return GC_STRDUP(Name(thing));
 
     safe_accent(Name(thing), tbuf, len, fbuf, &bp);
     *bp = '\0';
 
-    return fbuf;
+    return GC_STRDUP(fbuf);
   }
 }

@@ -190,21 +190,8 @@ queue_limit(dbref player)
 void
 free_qentry(BQUE *point)
 {
-  int a;
-  for (a = 0; a < 10; a++)
-    if (point->env[a]) {
-      mush_free(point->env[a], "cqueue.env");
-    }
-  for (a = 0; a < NUMQ; a++)
-    if (point->rval[a]) {
-      mush_free(point->rval[a], "cqueue.rval");
-    }
-  if (point->semattr)
-    mush_free(point->semattr, "cqueue.semattr");
-  if (point->comm)
-    mush_free(point->comm, "cqueue.comm");
   im_delete(queue_map, point->pid);
-  mush_free(point, "cqueue");
+  GC_FREE(point);
 }
 
 static int
@@ -303,9 +290,9 @@ parse_que(dbref player, const char *command, dbref cause)
     notify(player, T("Queue entry table full. Try again later."));
     return;
   }
-  tmp = mush_malloc(sizeof *tmp, "cqueue");
+  tmp = GC_MALLOC(sizeof *tmp);
   tmp->pid = pid;
-  tmp->comm = mush_strdup(command, "cqueue.comm");
+  tmp->comm = GC_STRDUP(command);
   tmp->semattr = NULL;
   tmp->player = player;
   tmp->queued = QUEUE_PER_OWNER ? Owner(player) : player;
@@ -316,13 +303,13 @@ parse_que(dbref player, const char *command, dbref cause)
     if (!global_eval_context.wnxt[a])
       tmp->env[a] = NULL;
     else {
-      tmp->env[a] = mush_strdup(global_eval_context.wnxt[a], "cqueue.env");
+      tmp->env[a] = GC_STRDUP(global_eval_context.wnxt[a]);
     }
   for (a = 0; a < NUMQ; a++)
     if (!global_eval_context.rnxt[a] || !global_eval_context.rnxt[a][0])
       tmp->rval[a] = NULL;
     else {
-      tmp->rval[a] = mush_strdup(global_eval_context.rnxt[a], "cqueue.rval");
+      tmp->rval[a] = GC_STRDUP(global_eval_context.rnxt[a]);
     }
   if (IsPlayer(cause)) {
     if (qlast) {
@@ -390,7 +377,6 @@ queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor)
       command++;
   }
   parse_que(executor, command, enactor);
-  free(start);
   return 1;
 }
 
@@ -428,8 +414,8 @@ wait_que(dbref player, int waittill, char *command, dbref cause, dbref sem,
     notify(player, T("Queue entry table full. Try again later."));
     return;
   }
-  tmp = mush_malloc(sizeof *tmp, "cqueue");
-  tmp->comm = mush_strdup(command, "cqueue.comm");
+  tmp = GC_MALLOC(sizeof *tmp);
+  tmp->comm = GC_STRDUP(command);
   tmp->pid = pid;
   tmp->player = player;
   tmp->queued = QUEUE_PER_OWNER ? Owner(player) : player;
@@ -440,14 +426,14 @@ wait_que(dbref player, int waittill, char *command, dbref cause, dbref sem,
     if (!global_eval_context.wnxt[a])
       tmp->env[a] = NULL;
     else {
-      tmp->env[a] = mush_strdup(global_eval_context.wnxt[a], "cqueue.env");
+      tmp->env[a] = GC_STRDUP(global_eval_context.wnxt[a]);
     }
   }
   for (a = 0; a < NUMQ; a++) {
     if (!global_eval_context.rnxt[a] || !global_eval_context.rnxt[a][0])
       tmp->rval[a] = NULL;
     else {
-      tmp->rval[a] = mush_strdup(global_eval_context.rnxt[a], "cqueue.rval");
+      tmp->rval[a] = GC_STRDUP(global_eval_context.rnxt[a]);
     }
   }
 
@@ -477,7 +463,7 @@ wait_que(dbref player, int waittill, char *command, dbref cause, dbref sem,
 
     /* Put it on the end of the semaphore queue */
     tmp->semattr =
-      mush_strdup(semattr ? semattr : "SEMAPHORE", "cqueue.semattr");
+      GC_STRDUP(semattr ? semattr : "SEMAPHORE");
     if (qsemlast != NULL) {
       qsemlast->next = tmp;
       qsemlast = tmp;
@@ -900,7 +886,6 @@ do_wait(dbref player, dbref cause, char *arg1, const char *cmd, bool until)
   if (is_strict_integer(arg1)) {
     /* normal wait */
     wait_que(player, parse_integer(arg1), arg2, cause, NOTHING, NULL, until);
-    mush_free(arg2, "strip_braces.buff");
     return;
   }
   /* semaphore wait with optional timeout */
@@ -911,7 +896,6 @@ do_wait(dbref player, dbref cause, char *arg1, const char *cmd, bool until)
     *aname++ = '\0';
   if ((thing =
        noisy_match_result(player, arg1, NOTYPE, MAT_EVERYTHING)) == NOTHING) {
-    mush_free(arg2, "strip_braces.buff");
     return;
   }
 
@@ -940,7 +924,6 @@ do_wait(dbref player, dbref cause, char *arg1, const char *cmd, bool until)
   if ((!controls(player, thing) && !LinkOk(thing))
       || (aname && !waitable_attr(thing, aname))) {
     notify(player, T("Permission denied."));
-    mush_free(arg2, "strip_braces.buff");
     return;
   }
   /* get timeout, default of -1 */
@@ -959,7 +942,6 @@ do_wait(dbref player, dbref cause, char *arg1, const char *cmd, bool until)
     waitfor = -1;               /* just in case there was a timeout given */
   }
   wait_que(player, waitfor, arg2, cause, thing, aname, until);
-  mush_free(arg2, "strip_braces.buff");
 }
 
 /** Interface to @wait/pid; modifies the wait times of queue

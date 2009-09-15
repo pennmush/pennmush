@@ -264,7 +264,6 @@ safe_get_bytecode(boolexp b)
     static struct boolatr *alloc_atr(const char *name,
                                      const char *s) __attribute_malloc__;
     static void skip_whitespace(void);
-    static void free_bool(struct boolexp_node *b);
     static struct boolexp_node *test_atr(char *s, char c);
     static struct boolexp_node *parse_boolexp_R(void);
     static struct boolexp_node *parse_boolexp_L(void);
@@ -277,7 +276,6 @@ safe_get_bytecode(boolexp b)
     static struct boolexp_node *parse_boolexp_E(void);
     static int check_attrib_lock(dbref player, dbref target,
                                  const char *atrname, const char *str);
-    static void free_boolexp_node(struct boolexp_node *b);
     static int gen_label_id(struct bvm_asm *a);
     static void append_insn(struct bvm_asm *a, bvm_opcode op, int arg,
                             const char *s);
@@ -291,7 +289,7 @@ safe_get_bytecode(boolexp b)
     static void opt_thread_jumps(struct bvm_asm *a);
     static void optimize_bvm_asm(struct bvm_asm *a);
     static boolexp emit_bytecode(struct bvm_asm *a, int derefs);
-    static void free_bvm_asm(struct bvm_asm *a);
+    static void free_bvm_asm(void);
 #ifdef DEBUG_BYTECODE
     static int sizeof_boolexp_node(struct boolexp_node *b);
     static void print_bytecode(boolexp b);
@@ -324,7 +322,7 @@ safe_get_bytecode(boolexp b)
   uint16_t len;
 
   len = chunk_len(b);
-  bytecode = mush_malloc(len, "boolexp.bytecode");
+  bytecode = GC_MALLOC_ATOMIC(len);
   chunk_fetch(b, bytecode, len);
   return bytecode;
 }
@@ -499,8 +497,7 @@ eval_boolexp(dbref player /* The player trying to pass */ ,
         if (!a || !Can_Read_Attr(target, player, a))
           r = 0;
         else {
-          char tbuf[BUFFER_LEN];
-          strcpy(tbuf, atr_value(a));
+          char *tbuf = safe_atr_value(a);
           r = local_wild_match((char *) bytecode + arg, tbuf);
         }
         boolexp_recursion--;
@@ -610,7 +607,6 @@ eval_boolexp(dbref player /* The player trying to pass */ ,
               break;
             }
           }
-          free((Malloc_t) orig);
         }
         break;
       default:
@@ -621,7 +617,6 @@ eval_boolexp(dbref player /* The player trying to pass */ ,
       }
     }
   done:
-    mush_free(bytecode, "boolexp.bytecode");
     return r;
   }
 }
@@ -659,16 +654,17 @@ int unparsing_boolexp = 0;
  * \param player The object wanting the decompiled boolexp.
  * \param b The boolexp to decompile.
  * \param flag How to format objects in the result.
- * \return a static string with the decompiled boolexp.
+ * \return a string with the decompiled boolexp.
  */
 char *
 unparse_boolexp(dbref player, boolexp b, enum u_b_f flag)
 {
-  static char boolexp_buf[BUFFER_LEN];
-  char *buftop = boolexp_buf;
+  char *boolexp_buf, *buftop;
   unsigned char *bytecode = NULL;
 
   unparsing_boolexp = 1;
+
+  buftop = boolexp_buf = GC_MALLOC_ATOMIC(BUFFER_LEN);
 
   if (b == TRUE_BOOLEXP)
     safe_str("*UNLOCKED*", boolexp_buf, &buftop);
@@ -817,13 +813,11 @@ alloc_atr(const char *name, const char *s)
   else
     len = 1;
 
-  a = (struct boolatr *)
-    mush_malloc(sizeof(struct boolatr) - BUFFER_LEN + len, "boolatr");
+  a = GC_MALLOC(sizeof(struct boolatr) - BUFFER_LEN + len);
   if (!a)
     return NULL;
   a->name = st_insert(strupper(name), &atr_names);
   if (!a->name) {
-    mush_free(a, "boolatr");
     return NULL;
   }
   if (s)
@@ -841,68 +835,13 @@ alloc_bool(void)
 {
   struct boolexp_node *b;
 
-  b = mush_malloc(sizeof *b, "boolexp.node");
+  b = GC_MALLOC(sizeof *b);
 
   b->data.sub.a = NULL;
   b->data.sub.b = NULL;
   b->thing = NOTHING;
 
   return b;
-}
-
-/** Frees a boolexp node.
- * \param b the boolexp_node to deallocate.
- */
-static void
-free_bool(struct boolexp_node *b)
-{
-  mush_free(b, "boolexp.node");
-}
-
-/** Free a boolexp ast node.
- * This function frees a boolexp, including all subexpressions,
- * recursively.
- * \param b boolexp to free.
- */
-static void
-free_boolexp_node(struct boolexp_node *b)
-{
-  if (b) {
-    switch (b->type) {
-    case BOOLEXP_AND:
-    case BOOLEXP_OR:
-      free_boolexp_node(b->data.sub.a);
-      free_boolexp_node(b->data.sub.b);
-      free_bool(b);
-      break;
-    case BOOLEXP_NOT:
-      free_boolexp_node(b->data.n);
-      free_bool(b);
-      break;
-    case BOOLEXP_CONST:
-    case BOOLEXP_CARRY:
-    case BOOLEXP_IS:
-    case BOOLEXP_OWNER:
-    case BOOLEXP_BOOL:
-      free_bool(b);
-      break;
-    case BOOLEXP_IND:
-      if (b->data.ind_lock)
-        st_delete(b->data.ind_lock, &lock_names);
-      free_bool(b);
-      break;
-    case BOOLEXP_ATR:
-    case BOOLEXP_EVAL:
-    case BOOLEXP_FLAG:
-      if (b->data.atr_lock) {
-        if (b->data.atr_lock->name)
-          st_delete(b->data.atr_lock->name, &atr_names);
-        mush_free((Malloc_t) b->data.atr_lock, "boolatr");
-      }
-      free_bool(b);
-      break;
-    }
-  }
 }
 
 /** Skip over leading whitespace characters in parsebuf */
@@ -917,8 +856,7 @@ static struct boolexp_node *
 test_atr(char *s, char c)
 {
   struct boolexp_node *b;
-  char tbuf1[BUFFER_LEN];
-  strcpy(tbuf1, strupper(s));
+  char *tbuf1 = strupper(s);
   for (s = tbuf1; *s && (*s != c); s++) ;
   if (!*s)
     return 0;
@@ -978,7 +916,6 @@ parse_boolexp_R(void)
       }
     } else {
       /* Ooog. Dealing with a malformed lock in the database. */
-      free_bool(b);
       return NULL;
     }
     return b;
@@ -998,11 +935,9 @@ parse_boolexp_R(void)
     b->thing = match_result(parse_player, tbuf1, TYPE_THING, MAT_EVERYTHING);
     if (b->thing == NOTHING) {
       notify_format(parse_player, T("I don't see %s here."), tbuf1);
-      free_bool(b);
       return NULL;
     } else if (b->thing == AMBIGUOUS) {
       notify_format(parse_player, T("I don't know which %s you mean!"), tbuf1);
-      free_bool(b);
       return NULL;
     } else {
       return b;
@@ -1025,7 +960,6 @@ parse_boolexp_L(void)
     b = parse_boolexp_E();
     skip_whitespace();
     if (b == NULL || *parsebuf++ != ')') {
-      free_boolexp_node(b);
       return NULL;
     } else {
       return b;
@@ -1075,11 +1009,9 @@ parse_boolexp_O(void)
     b2->type = BOOLEXP_OWNER;
     t = parse_boolexp_R();
     if (t == NULL) {
-      free_boolexp_node(b2);
       return NULL;
     } else {
       b2->thing = t->thing;
-      free_boolexp_node(t);
       return b2;
     }
   }
@@ -1098,11 +1030,9 @@ parse_boolexp_C(void)
     b2->type = BOOLEXP_CARRY;
     t = parse_boolexp_R();
     if (t == NULL) {
-      free_boolexp_node(b2);
       return NULL;
     } else {
       b2->thing = t->thing;
-      free_boolexp_node(t);
       return b2;
     }
   }
@@ -1121,11 +1051,9 @@ parse_boolexp_I(void)
     b2->type = BOOLEXP_IS;
     t = parse_boolexp_R();
     if (t == NULL) {
-      free_boolexp_node(b2);
       return NULL;
     } else {
       b2->thing = t->thing;
-      free_boolexp_node(t);
       return b2;
     }
   }
@@ -1144,11 +1072,9 @@ parse_boolexp_A(void)
     b2->type = BOOLEXP_IND;
     t = parse_boolexp_R();
     if (t == NULL) {
-      free_boolexp_node(b2);
       return NULL;
     }
     b2->thing = t->thing;
-    free_boolexp_node(t);
     if (*parsebuf == '/') {
       char tbuf1[BUFFER_LEN], *p;
       const char *m;
@@ -1165,13 +1091,12 @@ parse_boolexp_A(void)
         *p-- = '\0';
       upcasestr(tbuf1);
       if (!good_atr_name(tbuf1)) {
-        free_boolexp_node(b2);
         return NULL;
       }
       m = match_lock(tbuf1);
-      b2->data.ind_lock = st_insert(m ? m : tbuf1, &lock_names);
+      b2->data.ind_lock = GC_STRDUP(m ? m : tbuf1);
     } else {
-      b2->data.ind_lock = st_insert(parse_ltype, &lock_names);
+      b2->data.ind_lock = GC_STRDUP(parse_ltype);
     }
     return b2;
   }
@@ -1189,7 +1114,6 @@ parse_boolexp_F(void)
     b2 = alloc_bool();
     b2->type = BOOLEXP_NOT;
     if ((b2->data.n = parse_boolexp_F()) == NULL) {
-      free_boolexp_node(b2);
       return NULL;
     } else
       return b2;
@@ -1214,7 +1138,6 @@ parse_boolexp_T(void)
       b2->type = BOOLEXP_AND;
       b2->data.sub.a = b;
       if ((b2->data.sub.b = parse_boolexp_T()) == NULL) {
-        free_boolexp_node(b2);
         return NULL;
       } else {
         return b2;
@@ -1241,7 +1164,6 @@ parse_boolexp_E(void)
       b2->type = BOOLEXP_OR;
       b2->data.sub.a = b;
       if ((b2->data.sub.b = parse_boolexp_E()) == NULL) {
-        free_boolexp_node(b2);
         return NULL;
       } else {
         return b2;
@@ -1294,10 +1216,10 @@ append_insn(struct bvm_asm *a, bvm_opcode op, int arg, const char *s)
     }
     /* Allocate a new string if needed. */
     if (!found) {
-      newstr = mush_malloc(sizeof *newstr, "bvm.strnode");
+      newstr = GC_MALLOC(sizeof *newstr);
       if (!s)
         mush_panic(T("Unable to allocate memory for boolexp string node!"));
-      newstr->s = mush_strdup(s, "bvm.string");
+      newstr->s = GC_STRDUP(s);
       if (!newstr->s)
         mush_panic(T("Unable to allocate memory for boolexp string!"));
       newstr->len = strlen(s) + 1;
@@ -1422,7 +1344,7 @@ generate_bvm_asm(struct boolexp_node *b)
   if (!b)
     return NULL;
 
-  a = mush_malloc(sizeof *a, "bvm.asm");
+  a = GC_MALLOC(sizeof *a);
   if (!a)
     return NULL;
 
@@ -1440,22 +1362,10 @@ generate_bvm_asm(struct boolexp_node *b)
  * \param a the assembler list to deallocate.
  */
 static void
-free_bvm_asm(struct bvm_asm *a)
+free_bvm_asm(void)
 {
-  struct bvm_strnode *s, *tmp2;
-
-  if (!a)
-    return;
-
   slab_destroy(bvm_asmnode_slab);
   bvm_asmnode_slab = NULL;
-
-  for (s = a->shead; s; s = tmp2) {
-    tmp2 = s->next;
-    mush_free(s->s, "bvm.string");
-    mush_free(s, "bvm.strnode");
-  }
-  mush_free(a, "bvm.asm");
 }
 
 /** Find the position of a labeled instruction.
@@ -1605,7 +1515,7 @@ emit_bytecode(struct bvm_asm *a, int derefs)
   for (s = a->shead; s; s = s->next)
     len += s->len;
 
-  pc = bytecode = mush_malloc(len, "boolexp.bytecode");
+  pc = bytecode = GC_MALLOC_ATOMIC(len);
   if (!pc)
     return TRUE_BOOLEXP;
 
@@ -1647,7 +1557,6 @@ emit_bytecode(struct bvm_asm *a, int derefs)
   }
 
   b = chunk_create(bytecode, len, derefs);
-  mush_free(bytecode, "boolexp.bytecode");
   return b;
 }
 
@@ -1676,7 +1585,6 @@ parse_boolexp_d(dbref player, const char *buf, lock_type ltype, int derefs)
     return TRUE_BOOLEXP;
   bvasm = generate_bvm_asm(ast);
   if (!bvasm) {
-    free_boolexp_node(ast);
     return TRUE_BOOLEXP;
   }
   optimize_bvm_asm(bvasm);
@@ -1686,8 +1594,7 @@ parse_boolexp_d(dbref player, const char *buf, lock_type ltype, int derefs)
   printf("Parse tree size: %d bytes\n", sizeof_boolexp_node(ast));
   print_bytecode(bytecode);
 #endif
-  free_boolexp_node(ast);
-  free_bvm_asm(bvasm);
+  free_bvm_asm();
   return bytecode;
 }
 
@@ -1741,7 +1648,6 @@ check_attrib_lock(dbref player, dbref target,
                      player, PE_DEFAULT, PT_DEFAULT, NULL);
   *bp = '\0';
   restore_global_regs("check_attrib_lock_save", preserve);
-  free(asave);
 
   return !strcasecmp(buff, str);
 }

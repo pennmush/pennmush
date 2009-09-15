@@ -66,11 +66,11 @@ uint32_t parse_uint32(const char *, char **, int);
 
 #define unparse_boolean(x) ((x) ? "1" : "0")
 
-char *unparse_dbref(dbref num);
-char *unparse_integer(intmax_t num);
-char *unparse_uinteger(uintmax_t num);
-char *unparse_number(NVAL num);
-char *unparse_types(int type);
+char *unparse_dbref(dbref num) __attribute_malloc__;
+char *unparse_integer(intmax_t num) __attribute_malloc__;
+char *unparse_uinteger(uintmax_t num) __attribute_malloc__;
+char *unparse_number(NVAL num) __attribute_malloc__;
+char *unparse_types(int type) __attribute_malloc__;
 
 /* The following routines all take strings as arguments, and return
  * true if the string is a valid representation of the appropriate type.

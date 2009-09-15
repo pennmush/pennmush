@@ -41,7 +41,7 @@
 #include <string.h>
 #include "conf.h"
 #include "externs.h"
-
+#include "mymalloc.h"
 #include "strtree.h"
 #include "confmagic.h"
 
@@ -79,7 +79,6 @@ static void st_traverse_stats
 
 void st_stats_header(dbref player);
 void st_stats(dbref player, StrTree *root, const char *name);
-static void delete_node(StrNode *node);
 
 /** Initialize a string tree.
  * \param root pointer to root of string tree.
@@ -93,17 +92,6 @@ st_init(StrTree *root)
   root->mem = 0;
 }
 
-static void
-delete_node(StrNode *node)
-{
-  if (node->left)
-    delete_node(node->left);
-  if (node->right)
-    delete_node(node->right);
-  mush_free(node, "StrNode");
-}
-
-
 /** Clear a string tree.
  * \param root pointer to root of string tree.
  */
@@ -112,7 +100,6 @@ st_flush(StrTree *root)
 {
   if (!root->root)
     return;
-  delete_node(root->root);
   root->root = NULL;
   root->count = 0;
   root->mem = 0;
@@ -232,7 +219,7 @@ st_insert(char const *s, StrTree *root)
 
   /* Need a new node.  Allocate and initialize it. */
   keylen = strlen(s) + 1;
-  n = mush_malloc(sizeof(StrNode) - BUFFER_LEN + keylen, "StrNode");
+  n = GC_MALLOC(sizeof(StrNode) - BUFFER_LEN + keylen);
   if (!n)
     return NULL;
   memcpy(n->string, s, keylen);
@@ -526,7 +513,6 @@ st_delete(char const *s, StrTree *root)
       x->info &= ~ST_RED;
   }
   root->mem -= strlen(s) + 1;
-  mush_free(y, "StrNode");
   root->count--;
 }
 

@@ -13,6 +13,7 @@
 #include "conf.h"
 #include "externs.h"
 #include "ptab.h"
+#include "mymalloc.h"
 #include "confmagic.h"
 
 static int ptab_find_exact_nun(PTAB *tab, const char *key);
@@ -48,12 +49,6 @@ ptab_free(PTAB *tab)
 {
   if (!tab)
     return;
-  if (tab->tab) {
-    size_t n;
-    for (n = 0; n < tab->len; n++)
-      mush_free(tab->tab[n], "ptab.entry");
-    mush_free(tab->tab, "ptab");
-  }
   tab->tab = NULL;
   tab->state = 0;
   tab->maxlen = tab->len = tab->current = 0;
@@ -205,7 +200,7 @@ ptab_find_exact_nun(PTAB *tab, const char *key)
 static void
 delete_entry(PTAB *tab, size_t n)
 {
-  mush_free(tab->tab[n], "ptab.entry");
+  tab->tab[n] = NULL;
   if (tab->len == 0)
     return;
 
@@ -266,7 +261,7 @@ ptab_end_inserts(PTAB *tab)
   tab->state = 0;
   qsort(tab->tab, tab->len, sizeof(struct ptab_entry *), ptab_cmp);
 
-  tmp = realloc(tab->tab, (tab->len + 10) * sizeof(struct ptab_entry *));
+  tmp = GC_REALLOC(tab->tab, (tab->len + 10) * sizeof(struct ptab_entry *));
   if (!tmp)
     return;
   tab->tab = tmp;
@@ -289,9 +284,7 @@ ptab_grow(PTAB *tab)
     tab->maxlen = 200;
   else
     tab->maxlen *= 2;
-  tmp = realloc(tab->tab, tab->maxlen * sizeof(struct ptab_entry **));
-  if (tab->tab == NULL)
-    add_check("ptab");
+  tmp = GC_REALLOC(tab->tab, tab->maxlen * sizeof(struct ptab_entry **));
   if (!tmp) {
     tab->maxlen = oldmaxlen;
     return;
@@ -321,7 +314,7 @@ ptab_insert(PTAB *tab, const char *key, void *data)
 
   lamed = strlen(key) + 1;
 
-  tab->tab[tab->len] = mush_malloc(PTAB_SIZE + lamed, "ptab.entry");
+  tab->tab[tab->len] = GC_MALLOC(PTAB_SIZE + lamed);
 
   tab->tab[tab->len]->data = data;
   memcpy(tab->tab[tab->len]->key, key, lamed);
@@ -373,7 +366,7 @@ ptab_insert_one(PTAB *tab, const char *key, void *data)
 
   /* And splice in the new one */
   len = strlen(key) + 1;
-  tab->tab[n] = mush_malloc(PTAB_SIZE + len, "ptab.entry");
+  tab->tab[n] = GC_MALLOC(PTAB_SIZE + len);
   tab->tab[n]->data = data;
   memcpy(tab->tab[n]->key, key, len);
   tab->len++;

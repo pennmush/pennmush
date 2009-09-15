@@ -476,7 +476,6 @@ do_give(dbref player, char *recipient, char *amnt, int silent)
       process_expression(fbuff, &fbp, &ap, who, player, player,
                          PE_DEFAULT, PT_DEFAULT, NULL);
       *fbp = '\0';
-      free((Malloc_t) asave);
       restore_global_regs("give_save", preserveq);
       restore_global_env("give_save", preserves);
       if (amount < (cost = atoi(fbuff))) {

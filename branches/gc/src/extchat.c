@@ -545,8 +545,8 @@ static void
 insert_channel(CHAN **ch)
 {
   CHAN *p;
-  char cleanname[CHAN_NAME_LEN];
-  char cleanp[CHAN_NAME_LEN];
+  char *cleanname;
+  char *cleanp;
 
   if (!ch || !*ch)
     return;
@@ -561,8 +561,8 @@ insert_channel(CHAN **ch)
   }
   p = channels;
   /* First channel? */
-  strcpy(cleanp, remove_markup(ChanName(p), NULL));
-  strcpy(cleanname, remove_markup(ChanName(*ch), NULL));
+  cleanp = remove_markup(ChanName(p), NULL);
+  cleanname = remove_markup(ChanName(*ch), NULL);
   if (strcasecoll(cleanp, cleanname) > 0) {
     channels = *ch;
     channels->next = p;
@@ -570,7 +570,7 @@ insert_channel(CHAN **ch)
   }
   /* Otherwise, find which user this user should be inserted after */
   while (p->next) {
-    strcpy(cleanp, remove_markup(ChanName(p->next), NULL));
+    cleanp = remove_markup(ChanName(p->next), NULL);
     if (strcasecoll(cleanp, cleanname) > 0)
       break;
     p = p->next;
@@ -868,15 +868,14 @@ save_chanuser(PENNFILE *fp, CHANUSER *user)
 static char *
 normalize_channel_name(const char *name)
 {
-  static char cleanname[BUFFER_LEN];
+  char *cleanname;
   size_t len;
 
-  cleanname[0] = '\0';
 
   if (!name || !*name)
-    return cleanname;
+    return "";
 
-  strcpy(cleanname, remove_markup(name, &len));
+  cleanname = remove_markup(name, &len);
   len--;
 
   if (!*cleanname)
@@ -908,7 +907,7 @@ find_channel(const char *name, CHAN **chan, dbref player)
   CHAN *p;
   int count = 0;
   char *cleanname;
-  char cleanp[CHAN_NAME_LEN];
+  char *cleanp;
 
   *chan = NULL;
   if (!name || !*name)
@@ -916,7 +915,7 @@ find_channel(const char *name, CHAN **chan, dbref player)
 
   cleanname = normalize_channel_name(name);
   for (p = channels; p; p = p->next) {
-    strcpy(cleanp, remove_markup(ChanName(p), NULL));
+    cleanp = remove_markup(ChanName(p), NULL);
     if (!strcasecmp(cleanname, cleanp)) {
       *chan = p;
       if (Chan_Can_See(*chan, player) || onchannel(player, *chan))
@@ -963,14 +962,14 @@ find_channel_partial(const char *name, CHAN **chan, dbref player)
   CHAN *p;
   int count = 0;
   char *cleanname;
-  char cleanp[CHAN_NAME_LEN];
+  char *cleanp;
 
   *chan = NULL;
   if (!name || !*name)
     return CMATCH_NONE;
   cleanname = normalize_channel_name(name);
   for (p = channels; p; p = p->next) {
-    strcpy(cleanp, remove_markup(ChanName(p), NULL));
+    cleanp = remove_markup(ChanName(p), NULL);
     if (!strcasecmp(cleanname, cleanp)) {
       *chan = p;
       return CMATCH_EXACT;
@@ -999,7 +998,7 @@ list_partial_matches(dbref player, const char *name, enum chan_match_type type)
 {
   CHAN *p;
   char *cleanname;
-  char cleanp[CHAN_NAME_LEN];
+  char *cleanp;
   char buff[BUFFER_LEN], *bp;
   bp = buff;
 
@@ -1014,7 +1013,7 @@ list_partial_matches(dbref player, const char *name, enum chan_match_type type)
     if ((type == PMATCH_ALL) || ((type == PMATCH_ON)
                                  ? !!onchannel(player, p)
                                  : !onchannel(player, p))) {
-      strcpy(cleanp, remove_markup(ChanName(p), NULL));
+      cleanp = remove_markup(ChanName(p), NULL);
       if (string_prefix(cleanp, cleanname)) {
         safe_chr(' ', buff, &bp);
         safe_str(ChanName(p), buff, &bp);
@@ -1050,7 +1049,7 @@ find_channel_partial_on(const char *name, CHAN **chan, dbref player)
   CHAN *p;
   int count = 0;
   char *cleanname;
-  char cleanp[CHAN_NAME_LEN];
+  char *cleanp;
 
   *chan = NULL;
   if (!name || !*name)
@@ -1058,7 +1057,7 @@ find_channel_partial_on(const char *name, CHAN **chan, dbref player)
   cleanname = normalize_channel_name(name);
   for (p = channels; p; p = p->next) {
     if (onchannel(player, p)) {
-      strcpy(cleanp, remove_markup(ChanName(p), NULL));
+      cleanp = remove_markup(ChanName(p), NULL);
       if (!strcasecmp(cleanname, cleanp)) {
         *chan = p;
         return CMATCH_EXACT;
@@ -1099,7 +1098,7 @@ find_channel_partial_off(const char *name, CHAN **chan, dbref player)
   CHAN *p;
   int count = 0;
   char *cleanname;
-  char cleanp[CHAN_NAME_LEN];
+  char *cleanp;
 
   *chan = NULL;
   if (!name || !*name)
@@ -1107,7 +1106,7 @@ find_channel_partial_off(const char *name, CHAN **chan, dbref player)
   cleanname = normalize_channel_name(name);
   for (p = channels; p; p = p->next) {
     if (!onchannel(player, p)) {
-      strcpy(cleanp, remove_markup(ChanName(p), NULL));
+      cleanp = remove_markup(ChanName(p), NULL);
       if (!strcasecmp(cleanname, cleanp)) {
         *chan = p;
         return CMATCH_EXACT;
@@ -1844,12 +1843,12 @@ ok_channel_name(const char *n)
 {
   /* is name valid for a channel? */
   const char *p;
-  char name[BUFFER_LEN];
+  char *name;
 
   if (!n || !*n)
     return 0;
 
-  mush_strncpy(name, remove_markup(n, NULL), BUFFER_LEN);
+  name = remove_markup(n, NULL);
 
   /* No leading spaces */
   if (isspace((unsigned char) *name))
@@ -2075,8 +2074,8 @@ do_channel_list(dbref player, const char *partname)
 {
   CHAN *c;
   CHANUSER *u;
-  char numusers[BUFFER_LEN];
-  char cleanname[CHAN_NAME_LEN];
+  char *numusers;
+  char *cleanname;
   char blanks[CHAN_NAME_LEN];
   size_t len;
   int numblanks;
@@ -2087,16 +2086,15 @@ do_channel_list(dbref player, const char *partname)
                 T("Name"), T("Users"), T("Msgs"), T("Chan Type"), T("Status"),
                 T("Buf"));
   for (c = channels; c; c = c->next) {
-    strcpy(cleanname, remove_markup(ChanName(c), NULL));
+    cleanname = remove_markup(ChanName(c), NULL);
     if (Chan_Can_See(c, player) && string_prefix(cleanname, partname)) {
       u = onchannel(player, c);
       if (SUPPORT_PUEBLO)
-        snprintf(numusers, BUFFER_LEN,
-                 "%c%cA XCH_CMD=\"@channel/who %s\" XCH_HINT=\"See who's on this channel now\"%c%5d%c%c/A%c",
+        numusers = tprintf("%c%cA XCH_CMD=\"@channel/who %s\" XCH_HINT=\"See who's on this channel now\"%c%5d%c%c/A%c",
                  TAG_START, MARKUP_HTML, cleanname, TAG_END, ChanNumUsers(c),
                  TAG_START, MARKUP_HTML, TAG_END);
       else
-        sprintf(numusers, "%5d", ChanNumUsers(c));
+        numusers = tprintf("%5d", ChanNumUsers(c));
       /* Display length is strlen(cleanname), but actual length is
        * strlen(ChanName(c)). There are two different cases:
        * 1. actual length <= 30. No problems.
@@ -2717,11 +2715,11 @@ do_chan_what(dbref player, const char *partname)
   CHAN *c;
   int found = 0;
   char *cleanname;
-  char cleanp[CHAN_NAME_LEN];
+  char *cleanp;
 
   cleanname = normalize_channel_name(partname);
   for (c = channels; c; c = c->next) {
-    strcpy(cleanp, remove_markup(ChanName(c), NULL));
+    cleanp = remove_markup(ChanName(c), NULL);
     if (Chan_Can_See(c, player) && string_prefix(cleanp, cleanname)) {
       notify(player, ChanName(c));
       notify_format(player, T("Description: %s"), ChanTitle(c));
@@ -2760,13 +2758,13 @@ do_chan_decompile(dbref player, const char *name, int brief)
   CHAN *c;
   CHANUSER *u;
   int found;
-  char cleanname[BUFFER_LEN];
-  char cleanp[CHAN_NAME_LEN];
+  char *cleanname;
+  char *cleanp;
 
   found = 0;
-  strcpy(cleanname, remove_markup(name, NULL));
+  cleanname = remove_markup(name, NULL);
   for (c = channels; c; c = c->next) {
-    strcpy(cleanp, remove_markup(ChanName(c), NULL));
+    cleanp = remove_markup(ChanName(c), NULL);
     if (string_prefix(cleanp, cleanname)) {
       found++;
       if (!(See_All(player) || Chan_Can_Modify(c, player)
@@ -3020,11 +3018,11 @@ chat_player_announce(dbref player, char *msg, int ungag)
 const char *
 channel_description(dbref player)
 {
-  static char buf[BUFFER_LEN];
+  char *buf;
   char *bp;
   CHANLIST *c;
 
-  bp = buf;
+  bp = buf = GC_MALLOC_ATOMIC(BUFFER_LEN);
 
   if (Chanlist(player)) {
     safe_str(T("Channels:"), buf, &bp);
@@ -3294,7 +3292,6 @@ FUNCTION(fun_crecall)
         stamp = show_time(timestamp, 0);
         safe_format(buff, bp, T("[%s] %s %s"), stamp, nsmsg, buf);
       }
-      mush_free(nsmsg, "string");
     } else {
       if (!showstamp)
         safe_str(buf, buff, bp);
@@ -3645,7 +3642,6 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
 
   for (u = ChanUsers(channel); u; u = u->next) {
     current = CUdbref(u);
-
     if (!(((flags & CB_CHECKQUIET) && Chanuser_Quiet(u)) ||
           Chanuser_Gag(u) || (IsPlayer(current) && !Connected(current)))) {
       if (override_chatformat
@@ -3784,7 +3780,6 @@ do_chan_recall(dbref player, const char *name, char *lineinfo[], int quiet)
         stamp = show_time(timestamp, 0);
         notify_format(player, T("[%s] %s %s"), stamp, nsmsg, buf);
       }
-      mush_free(nsmsg, "string");
     } else {
       if (quiet)
         notify(player, buf);

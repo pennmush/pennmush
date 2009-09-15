@@ -27,6 +27,7 @@
 #include "game.h"
 #include "mypcre.h"
 #include "sort.h"
+#include "mymalloc.h"
 #include "confmagic.h"
 
 int okay_pemit(dbref player, dbref target);
@@ -133,9 +134,8 @@ do_teach(dbref player, dbref cause, const char *tbuf1)
   notify_except(Contents(loc), NOTHING,
                 tprintf(T("%s types --> %s%s%s"), spname(player),
                         ANSI_HILITE, tbuf1, ANSI_END), NA_INTER_HEAR);
-  command = mush_strdup(tbuf1, "string");       /* process_command is destructive */
+  command = GC_STRDUP(tbuf1);       /* process_command is destructive */
   process_command(player, command, cause, 1);
-  mush_free(command, "string");
   recurse = 0;                  /* Ok, we can be called again safely */
 }
 
@@ -299,7 +299,7 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy)
     notify(player, T("Whisper what?"));
     return;
   }
-  tp = tbuf = (char *) mush_malloc(BUFFER_LEN, "string");
+  tp = tbuf = GC_MALLOC_ATOMIC(BUFFER_LEN);
   if (!tbuf)
     mush_panic("Unable to allocate memory in do_whisper_list");
 
@@ -346,7 +346,6 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy)
     notify_format(player, T("Unable to whisper to:%s"), tbuf);
 
   if (!gcount) {
-    mush_free(tbuf, "string");
     return;
   }
 
@@ -397,7 +396,6 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy)
         notify_noecho(first, p);
     }
   }
-  mush_free(tbuf, "string");
 }
 
 /** Send an @message to a list of dbrefs, using <attr> to format it
@@ -490,7 +488,7 @@ do_pemit_list(dbref player, char *list, const char *message, int flags)
       if (nospoof && Nospoof(who)) {
         if (Paranoid(who)) {
           if (!nspbuf) {
-            bp = nspbuf = mush_malloc(BUFFER_LEN, "string");
+            bp = nspbuf = GC_MALLOC_ATOMIC(BUFFER_LEN);
             if (player == Owner(player))
               safe_format(nspbuf, &bp, "[%s(#%d)->] %s", Name(player),
                           player, message);
@@ -506,7 +504,7 @@ do_pemit_list(dbref player, char *list, const char *message, int flags)
             notify(who, nspbuf);
         } else {
           if (!nsbuf) {
-            bp = nsbuf = mush_malloc(BUFFER_LEN, "string");
+            bp = nsbuf = GC_MALLOC_ATOMIC(BUFFER_LEN);
             safe_format(nsbuf, &bp, "[%s->] %s", Name(player), message);
             *bp = '\0';
           }
@@ -523,11 +521,6 @@ do_pemit_list(dbref player, char *list, const char *message, int flags)
       }
     }
   }
-  if (nsbuf)
-    mush_free(nsbuf, "string");
-  if (nspbuf)
-    mush_free(nspbuf, "string");
-
 }
 
 /** Send a message to an object.
@@ -779,7 +772,7 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
   ATTR *a;
   char *alias;
 
-  tp2 = tbuf2 = (char *) mush_malloc(BUFFER_LEN, "page_buff");
+  tp2 = tbuf2 = GC_MALLOC_ATOMIC(BUFFER_LEN);
   if (!tbuf2)
     mush_panic("Unable to allocate memory in do_page");
 
@@ -803,19 +796,15 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
     a = atr_get_noparent(player, "LASTPAGED");
     if (!a || !*((hp = head = safe_atr_value(a)))) {
       notify(player, T("You haven't paged anyone since connecting."));
-      mush_free((Malloc_t) tbuf2, "page_buff");
       return;
     }
     if (!message || !*message) {
       notify_format(player, T("You last paged %s."), head);
-      mush_free((Malloc_t) tbuf2, "page_buff");
-      if (hp)
-        free((Malloc_t) hp);
       return;
     }
   }
 
-  tp = tbuf = (char *) mush_malloc(BUFFER_LEN, "page_buff");
+  tp = tbuf = GC_MALLOC_ATOMIC(BUFFER_LEN);
   if (!tbuf)
     mush_panic("Unable to allocate memory in do_page");
 
@@ -884,10 +873,6 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
    * anyone, this looks like a spam attack. */
   if (gcount == 99) {
     notify(player, T("You're trying to page too many people at once."));
-    mush_free((Malloc_t) tbuf, "page_buff");
-    mush_free((Malloc_t) tbuf2, "page_buff");
-    if (hp)
-      free((Malloc_t) hp);
     return;
   }
 
@@ -901,20 +886,12 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
 
   if (!gcount) {
     /* Well, that was a total waste of time. */
-    mush_free((Malloc_t) tbuf, "page_buff");
-    mush_free((Malloc_t) tbuf2, "page_buff");
-    if (hp)
-      free((Malloc_t) hp);
     return;
   }
 
   /* Can the player afford to pay for this thing? */
   if (!payfor(player, PAGE_COST * gcount)) {
     notify_format(player, T("You don't have enough %s."), MONIES);
-    mush_free((Malloc_t) tbuf, "page_buff");
-    mush_free((Malloc_t) tbuf2, "page_buff");
-    if (hp)
-      free((Malloc_t) hp);
     return;
   }
 
@@ -925,7 +902,7 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
   if (noeval) {
     msgbuf = NULL;
   } else {
-    mb = msgbuf = (char *) mush_malloc(BUFFER_LEN, "page_buff");
+    mb = msgbuf = GC_MALLOC_ATOMIC(BUFFER_LEN);
     if (!msgbuf)
       mush_panic("Unable to allocate memory in do_page");
 
@@ -1030,9 +1007,8 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
   *tp2 = '\0';
   for (i = 0; i < gcount; i++) {
     if (!IsPlayer(player) && Nospoof(good[i])) {
-      if (msgbuf == NULL) {
-        msgbuf = mush_malloc(BUFFER_LEN, "page buffer");
-      }
+      if (msgbuf == NULL)
+        msgbuf = GC_MALLOC_ATOMIC(BUFFER_LEN);
       snprintf(msgbuf, BUFFER_LEN, "[#%d] %s", player, tbuf);
       /* Swap tbuf and msgbuf */
       tp = tbuf;
@@ -1048,13 +1024,6 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
 
     page_return(player, good[i], "Idle", "IDLE", NULL);
   }
-
-  mush_free((Malloc_t) tbuf, "page_buff");
-  mush_free((Malloc_t) tbuf2, "page_buff");
-  if (msgbuf)
-    mush_free((Malloc_t) msgbuf, "page_buff");
-  if (hp)
-    free((Malloc_t) hp);
 }
 
 
@@ -1103,8 +1072,6 @@ filter_found(dbref thing, const char *msg, int flag)
     else
       matched = local_wild_match_case(p, msg, AF_Case(a));
   }
-
-  free((Malloc_t) temp);
   return matched;
 }
 
@@ -1141,7 +1108,6 @@ make_prefixstr(dbref thing, const char *msg, char *tbuf1)
     ap = asave;
     process_expression(tbuf1, &bp, &ap, thing, orator, orator,
                        PE_DEFAULT, PT_DEFAULT, NULL);
-    free((Malloc_t) asave);
     restore_global_regs("prefix_save", preserve);
     for (j = 0; j < 10; j++)
       global_eval_context.wenv[j] = wsave[j];

@@ -181,7 +181,6 @@ struct notify_strings {
 };
 
 static enum na_type notify_type(DESC *d);
-static void free_strings(struct notify_strings messages[]);
 static void zero_strings(struct notify_strings messages[]);
 static int output_ansichange(ansi_data *states, int *ansi_ptr,
                              const unsigned char **ptr, char *buff, char **bp);
@@ -198,15 +197,6 @@ zero_strings(struct notify_strings messages[])
     messages[n].len = 0;
     messages[n].made = 0;
   }
-}
-
-static void
-free_strings(struct notify_strings messages[])
-{
-  int n;
-  for (n = 0; n < MESSAGE_TYPES; n++)
-    if (messages[n].message)
-      mush_free(messages[n].message, "string");
 }
 
 static int
@@ -324,7 +314,7 @@ notify_makestring(const char *message, struct notify_strings messages[],
       p++;
     }
     *o = '\0';
-    messages[type].message = (unsigned char *) mush_strdup(tbuf, "string");
+    messages[type].message = (unsigned char *) GC_STRDUP(tbuf);
     messages[type].len = o - tbuf;
     if (flags & NA_PROMPT) {
       bp = tbuf;
@@ -374,7 +364,7 @@ notify_makestring(const char *message, struct notify_strings messages[],
       p++;
     }
     *o = '\0';
-    messages[type].message = (unsigned char *) mush_strdup(tbuf, "string");
+    messages[type].message = (unsigned char *) GC_STRDUP(tbuf);
     messages[type].len = o - tbuf;
     if (flags & NA_PROMPT) {
       bp = tbuf;
@@ -500,7 +490,7 @@ notify_makestring(const char *message, struct notify_strings messages[],
   }
 
   *o = '\0';
-  messages[type].message = (unsigned char *) mush_strdup(tbuf, "string");
+  messages[type].message = (unsigned char *) GC_STRDUP(tbuf);
   messages[type].len = o - tbuf;
   if (flags & NA_PROMPT) {
     bp = tbuf;
@@ -757,7 +747,7 @@ notify_anything_loc(dbref speaker, na_lookup func,
     paranoids[i].made = 0;
   }
 
-  msgbuf = mush_strdup(message, "string");
+  msgbuf = GC_STRDUP(message);
 
   target = NOTHING;
 
@@ -858,7 +848,7 @@ notify_anything_loc(dbref speaker, na_lookup func,
 
       puppet = target;
       if (!tbuf1)
-        tbuf1 = (char *) mush_malloc(BUFFER_LEN, "string");
+        tbuf1 = GC_MALLOC_ATOMIC(BUFFER_LEN);
       bp = tbuf1;
       safe_str(Name(target), tbuf1, &bp);
       safe_str("> ", tbuf1, &bp);
@@ -890,7 +880,7 @@ notify_anything_loc(dbref speaker, na_lookup func,
       ssize_t match_space_len = BUFFER_LEN * 2;
 
       if (!tbuf1)
-        tbuf1 = (char *) mush_malloc(BUFFER_LEN, "string");
+        tbuf1 = GC_MALLOC_ATOMIC(BUFFER_LEN);
       strcpy(tbuf1, atr_value(a));
       if (AF_Regexp(a)
           ? regexp_match_case_r(tbuf1,
@@ -935,7 +925,6 @@ notify_anything_loc(dbref speaker, na_lookup func,
               safe_chr(' ', tbuf1, &bp);
             safe_str(msgbuf, tbuf1, &bp);
             *bp = 0;
-            free(asave);
             restore_global_regs("inprefix_save", preserve);
             for (j = 0; j < 10; j++)
               global_eval_context.wenv[j] = wsave[j];
@@ -967,21 +956,6 @@ notify_anything_loc(dbref speaker, na_lookup func,
     }
   }
 
-  for (i = 0; i < MESSAGE_TYPES; i++) {
-    if (messages[i].message)
-      mush_free((Malloc_t) messages[i].message, "string");
-    if (nospoofs[i].message)
-      mush_free((Malloc_t) nospoofs[i].message, "string");
-    if (paranoids[i].message)
-      mush_free((Malloc_t) paranoids[i].message, "string");
-  }
-  if (nospoof)
-    mush_free((Malloc_t) nospoof, "string");
-  if (paranoid)
-    mush_free((Malloc_t) paranoid, "string");
-  if (tbuf1)
-    mush_free((Malloc_t) tbuf1, "string");
-  mush_free((Malloc_t) msgbuf, "string");
   na_depth--;
 }
 
@@ -1134,7 +1108,6 @@ notify_list(dbref speaker, dbref thing, const char *atr, const char *msg,
       }
     }
   }
-  free((Malloc_t) orig);
 }
 
 /** Wrapper to notify a single player with a message, unconditionally.
@@ -1201,7 +1174,7 @@ make_text_block(const unsigned char *s, int n)
   p = slab_malloc(text_block_slab, NULL);
   if (!p)
     mush_panic("Out of memory");
-  p->buf = mush_malloc(n, "text_block_buff");
+  p->buf = GC_MALLOC_ATOMIC(n);
   if (!p->buf)
     mush_panic("Out of memory");
 
@@ -1219,8 +1192,6 @@ void
 free_text_block(struct text_block *t)
 {
   if (t) {
-    if (t->buf)
-      mush_free((Malloc_t) t->buf, "text_block_buff");
     slab_free(text_block_slab, t);
   }
 }
@@ -1335,7 +1306,6 @@ queue_write(DESC *d, const unsigned char *b, int n)
     len = messages[notify_type(d)].len;
   }
   queue_newwrite(d, s, len);
-  free_strings(messages);
   return n;
 }
 
@@ -1420,7 +1390,6 @@ queue_string(DESC *d, const char *s)
 
   n = notify_makestring(s, messages, poutput, 0);
   ret = queue_newwrite(d, n, messages[poutput].len);
-  free_strings(messages);
   return ret;
 }
 
@@ -1456,26 +1425,23 @@ freeqs(DESC *d)
   d->input.head = 0;
   d->input.tail = &d->input.head;
 
-  if (d->raw_input) {
-    mush_free((Malloc_t) d->raw_input, "descriptor_raw_input");
-  }
   d->raw_input = 0;
   d->raw_input_at = 0;
 }
 
 /** A notify_anything function for formatting speaker data for NOSPOOF.
- *  * \param speaker the speaker.
- *   * \param func unused.
- *    * \param fdata unused.
- *     * \param para if 1, format for paranoid nospoof; if 0, normal nospoof.
- *      * \return formatted string.
- *       */
+ * \param speaker the speaker.
+ * \param func unused.
+ * \param fdata unused.
+ * \param para if 1, format for paranoid nospoof; if 0, normal nospoof.
+ * \return formatted string.
+ */
 char *
 ns_esnotify(dbref speaker, na_lookup func __attribute__ ((__unused__)),
             void *fdata __attribute__ ((__unused__)), int para)
 {
   char *dest, *bp;
-  bp = dest = mush_malloc(BUFFER_LEN, "string");
+  bp = dest = GC_MALLOC_ATOMIC(BUFFER_LEN);
 
   if (!GoodObject(speaker))
     *dest = '\0';

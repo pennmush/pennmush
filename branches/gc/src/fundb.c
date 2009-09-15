@@ -25,6 +25,7 @@
 #include "log.h"
 #include "attrib.h"
 #include "function.h"
+#include "mymalloc.h"
 #include "confmagic.h"
 
 #ifdef WIN32
@@ -37,13 +38,6 @@ extern struct db_stat_info *get_stats(dbref owner);
 static int lattr_helper(dbref player, dbref thing, dbref parent,
                         char const *pattern, ATTR *atr, void *args);
 static dbref
-
-
-
-
-
-
-
 dbwalk(char *buff, char **bp, dbref executor, dbref enactor,
        int type, dbref loc, dbref after, int skipdark,
        int start, int count, int *retcount);
@@ -301,7 +295,6 @@ FUNCTION(fun_default)
       /* Ok, we've got it */
       dp = safe_atr_value(attrib);
       safe_str(dp, buff, bp);
-      free(dp);
       return;
     }
   }
@@ -334,10 +327,8 @@ FUNCTION(fun_eval)
       return;
     }
     tp = tbuf = safe_atr_value(a);
-    add_check("fun_eval.attr_value");
     process_expression(buff, bp, &tp, thing, executor, executor,
                        PE_DEFAULT, PT_DEFAULT, pe_info);
-    mush_free((Malloc_t) tbuf, "fun_eval.attr_value");
     return;
   } else if (a || !Can_Examine(executor, thing)) {
     safe_str(T(e_atrperm), buff, bp);
@@ -374,10 +365,8 @@ FUNCTION(fun_get_eval)
       return;
     }
     tp = tbuf = safe_atr_value(a);
-    add_check("fun_eval.attr_value");
     process_expression(buff, bp, &tp, thing, executor, executor,
                        PE_DEFAULT, PT_DEFAULT, pe_info);
-    mush_free((Malloc_t) tbuf, "fun_eval.attr_value");
     return;
   } else if (a || !Can_Examine(executor, thing)) {
     safe_str(T(e_atrperm), buff, bp);
@@ -411,10 +400,8 @@ FUNCTION(fun_edefault)
     }
     /* Ok, we've got it */
     sp = sbuf = safe_atr_value(attrib);
-    add_check("fun_edefault.attr_value");
     process_expression(buff, bp, &sp, thing, executor, executor,
                        PE_DEFAULT, PT_DEFAULT, pe_info);
-    mush_free((Malloc_t) sbuf, "fun_edefault.attr_value");
     return;
   }
   /* We couldn't get it. Evaluate args[1] and return it */
@@ -2226,7 +2213,6 @@ FUNCTION(fun_grep)
   wild = !strcmp(called_as, "WILDGREPI") || !strcmp(called_as, "WILDGREP");
   tp = grep_util(executor, it, args[1], args[2], sensitive, wild);
   safe_str(tp, buff, bp);
-  mush_free(tp, "grep_util.buff");
 }
 
 /* Get database size statistics */

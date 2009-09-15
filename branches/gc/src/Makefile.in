@@ -18,13 +18,12 @@ C_FILES=access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c chunk.c	\
 	flags.c funcrypt.c function.c fundb.c funlist.c funlocal.c	\
 	funmath.c funmisc.c funstr.c funtime.c funufun.c game.c help.c	\
 	htab.c ident.c intmap.c local.c lock.c log.c look.c malias.c	\
-	markup.c match.c memcheck.c move.c mycrypt.c mymalloc.c		\
-	mysocket.c myrlimit.c myssl.c notify.c parse.c pcre.c player.c	\
-	plyrlist.c predicat.c privtab.c info_master.c ptab.c rob.c	\
-	services.c set.c SFMT.c shs.c sig.c sort.c speech.c sql.c strdup.c	\
-	strtree.c strutil.c tables.c timer.c unparse.c utils.c		\
-	version.c wait.c warnings.c wild.c wiz.c
-
+	markup.c match.c move.c mycrypt.c mymalloc.c mysocket.c		\
+	myrlimit.c myssl.c notify.c parse.c pcre.c player.c plyrlist.c	\
+	predicat.c privtab.c info_master.c ptab.c rob.c services.c	\
+	set.c SFMT.c shs.c sig.c sort.c speech.c sql.c strtree.c	\
+	strutil.c tables.c timer.c unparse.c utils.c version.c wait.c	\
+	warnings.c wild.c wiz.c
 
 # .o versions of above - these are used in the build
 O_FILES=access.o atr_tab.o attrib.o boolexp.o bsd.o bufferq.o chunk.o	\
@@ -33,12 +32,12 @@ O_FILES=access.o atr_tab.o attrib.o boolexp.o bsd.o bufferq.o chunk.o	\
 	flags.o funcrypt.o function.o fundb.o funlist.o funlocal.o	\
 	funmath.o funmisc.o funstr.o funtime.o funufun.o game.o help.o	\
 	htab.o ident.o intmap.o local.o lock.o log.o look.o malias.o	\
-	markup.o match.o memcheck.o move.o mycrypt.o mymalloc.o		\
-	mysocket.o myrlimit.o myssl.o notify.o parse.o pcre.o player.o	\
-	plyrlist.o info_master.o predicat.o privtab.o ptab.o rob.o	\
-	services.o set.o SFMT.o shs.o sig.o sort.o speech.o sql.o strdup.o	\
-	strtree.o strutil.o tables.o timer.o unparse.o utils.o		\
-	version.o wait.o warnings.o wild.o wiz.o
+	markup.o match.o move.o mycrypt.o mymalloc.o mysocket.o		\
+	myrlimit.o myssl.o notify.o parse.o pcre.o player.o plyrlist.o	\
+	info_master.o predicat.o privtab.o ptab.o rob.o services.o	\
+	set.o SFMT.o shs.o sig.o sort.o speech.o sql.o strtree.o	\
+	strutil.o tables.o timer.o unparse.o utils.o version.o wait.o	\
+	warnings.o wild.o wiz.o
 
 # This is a dummy target, in case you type 'make' in the source
 # directory (likely for emacs users who M-x compile.)
@@ -55,13 +54,13 @@ netmud: $(O_FILES)
 
 # We recompile mysocket.c instead of reusing mysocket.o because we
 # want to do some error handing differently for info_slave.
-info_slave: info_slave.c ident.o strdup.o sig.o wait.o mysocket.c ../hdrs/lookup.h
+info_slave: info_slave.c ident.o sig.o wait.o mysocket.c ../hdrs/lookup.h
 	@echo "Making info_slave."
 	$(CC) $(CCFLAGS) -c info_slave.c
 	$(CC) $(CCFLAGS) -DINFOSLAVE -o info_slave info_slave.o \
-	ident.o strdup.o sig.o wait.o mysocket.c $(LDFLAGS) $(LIBS)
+	ident.o sig.o wait.o mysocket.c $(LDFLAGS) $(LIBS)
 
-SSL_SLAVE_OBJS = strdup.o sig.o mymalloc.o mysocket.o myssl.o notify.o myrlimit.o strutil.o ident.o utils.o
+SSL_SLAVE_OBJS = sig.o mymalloc.o mysocket.o myssl.o notify.o myrlimit.o strutil.o ident.o utils.o
 ssl_slave: ssl_slave.c $(SSL_SLAVE_OBJS)
 	@echo "Making ssl_slave."
 	$(CC) $(CCFLAGS) -c ssl_slave.c
@@ -491,6 +490,7 @@ conf.o: ../hdrs/game.h
 conf.o: ../hdrs/attrib.h
 conf.o: ../hdrs/help.h
 conf.o: ../hdrs/function.h
+conf.o: ../hdrs/mymalloc.h
 cque.o: ../hdrs/copyrite.h
 cque.o: ../config.h
 cque.o: ../hdrs/conf.h
@@ -806,6 +806,7 @@ fundb.o: ../hdrs/boolexp.h
 fundb.o: ../hdrs/log.h
 fundb.o: ../hdrs/attrib.h
 fundb.o: ../hdrs/function.h
+fundb.o: ../hdrs/mymalloc.h
 funlist.o: ../hdrs/copyrite.h
 funlist.o: ../config.h
 funlist.o: ../hdrs/conf.h
@@ -870,6 +871,7 @@ funmath.o: ../confmagic.h
 funmath.o: ../hdrs/mypcre.h
 funmath.o: ../hdrs/sort.h
 funmath.o: ../hdrs/parse.h
+funmath.o: ../hdrs/mymalloc.h
 funmath.o: lmathtab.c
 funmisc.o: ../hdrs/copyrite.h
 funmisc.o: ../config.h
@@ -898,6 +900,7 @@ funmisc.o: ../hdrs/command.h
 funmisc.o: ../hdrs/switches.h
 funmisc.o: ../hdrs/game.h
 funmisc.o: ../hdrs/attrib.h
+funmisc.o: ../hdrs/mymalloc.h
 funmisc.o: ../hdrs/ansi.h
 funstr.o: ../hdrs/copyrite.h
 funstr.o: ../config.h
@@ -924,6 +927,7 @@ funstr.o: ../hdrs/attrib.h
 funstr.o: ../hdrs/lock.h
 funstr.o: ../hdrs/boolexp.h
 funstr.o: ../hdrs/sort.h
+funstr.o: ../hdrs/mymalloc.h
 funtime.o: ../hdrs/copyrite.h
 funtime.o: ../config.h
 funtime.o: ../hdrs/conf.h
@@ -1004,6 +1008,7 @@ game.o: ../hdrs/lock.h
 game.o: ../hdrs/function.h
 game.o: ../hdrs/help.h
 game.o: ../hdrs/ansi.h
+game.o: ../hdrs/mymalloc.h
 help.o: ../config.h
 help.o: ../hdrs/conf.h
 help.o: ../hdrs/copyrite.h
@@ -1176,6 +1181,7 @@ look.o: ../hdrs/command.h
 look.o: ../hdrs/switches.h
 look.o: ../hdrs/parse.h
 look.o: ../hdrs/privtab.h
+look.o: ../hdrs/mymalloc.h
 look.o: ../hdrs/log.h
 malias.o: ../config.h
 malias.o: ../hdrs/copyrite.h
@@ -1243,24 +1249,7 @@ match.o: ../hdrs/mypcre.h
 match.o: ../hdrs/case.h
 match.o: ../hdrs/match.h
 match.o: ../hdrs/parse.h
-memcheck.o: ../config.h
-memcheck.o: ../hdrs/conf.h
-memcheck.o: ../hdrs/copyrite.h
-memcheck.o: ../options.h
-memcheck.o: ../hdrs/mushtype.h
-memcheck.o: ../hdrs/htab.h
-memcheck.o: ../hdrs/externs.h
-memcheck.o: ../hdrs/compile.h
-memcheck.o: ../hdrs/dbdefs.h
-memcheck.o: ../hdrs/mushdb.h
-memcheck.o: ../hdrs/flags.h
-memcheck.o: ../hdrs/ptab.h
-memcheck.o: ../hdrs/dbio.h
-memcheck.o: ../hdrs/chunk.h
-memcheck.o: ../confmagic.h
-memcheck.o: ../hdrs/mypcre.h
-memcheck.o: ../hdrs/mymalloc.h
-memcheck.o: ../hdrs/log.h
+match.o: ../hdrs/mymalloc.h
 move.o: ../hdrs/copyrite.h
 move.o: ../config.h
 move.o: ../hdrs/conf.h
@@ -1552,6 +1541,7 @@ ptab.o: ../hdrs/dbio.h
 ptab.o: ../hdrs/chunk.h
 ptab.o: ../confmagic.h
 ptab.o: ../hdrs/mypcre.h
+ptab.o: ../hdrs/mymalloc.h
 rob.o: ../config.h
 rob.o: ../hdrs/copyrite.h
 rob.o: ../hdrs/conf.h
@@ -1647,6 +1637,7 @@ sort.o: ../hdrs/ansi.h
 sort.o: ../hdrs/command.h
 sort.o: ../hdrs/switches.h
 sort.o: ../hdrs/sort.h
+sort.o: ../hdrs/mymalloc.h
 speech.o: ../hdrs/copyrite.h
 speech.o: ../config.h
 speech.o: ../hdrs/conf.h
@@ -1672,6 +1663,7 @@ speech.o: ../hdrs/attrib.h
 speech.o: ../hdrs/parse.h
 speech.o: ../hdrs/game.h
 speech.o: ../hdrs/sort.h
+speech.o: ../hdrs/mymalloc.h
 sql.o: ../hdrs/copyrite.h
 sql.o: ../config.h
 sql.o: ../hdrs/conf.h
@@ -1694,14 +1686,6 @@ sql.o: ../hdrs/command.h
 sql.o: ../hdrs/switches.h
 sql.o: ../hdrs/function.h
 sql.o: ../hdrs/ansi.h
-strdup.o: ../config.h
-strdup.o: ../hdrs/conf.h
-strdup.o: ../hdrs/copyrite.h
-strdup.o: ../options.h
-strdup.o: ../hdrs/mushtype.h
-strdup.o: ../hdrs/htab.h
-strdup.o: ../hdrs/mymalloc.h
-strdup.o: ../confmagic.h
 strtree.o: ../hdrs/copyrite.h
 strtree.o: ../config.h
 strtree.o: ../hdrs/conf.h
@@ -1718,6 +1702,7 @@ strtree.o: ../hdrs/dbio.h
 strtree.o: ../hdrs/chunk.h
 strtree.o: ../confmagic.h
 strtree.o: ../hdrs/mypcre.h
+strtree.o: ../hdrs/mymalloc.h
 strtree.o: ../hdrs/strtree.h
 strutil.o: ../config.h
 strutil.o: ../hdrs/copyrite.h
@@ -1767,6 +1752,7 @@ timer.o: ../hdrs/game.h
 timer.o: ../hdrs/help.h
 timer.o: ../hdrs/parse.h
 timer.o: ../hdrs/attrib.h
+timer.o: ../hdrs/mymalloc.h
 unparse.o: ../hdrs/copyrite.h
 unparse.o: ../config.h
 unparse.o: ../hdrs/conf.h
@@ -1789,6 +1775,7 @@ unparse.o: ../hdrs/attrib.h
 unparse.o: ../hdrs/ansi.h
 unparse.o: ../hdrs/pueblo.h
 unparse.o: ../hdrs/parse.h
+unparse.o: ../hdrs/mymalloc.h
 utils.o: ../hdrs/copyrite.h
 utils.o: ../config.h
 utils.o: ../hdrs/conf.h

@@ -70,13 +70,12 @@ do_name(dbref player, const char *name, char *newname_)
   char *newname;
 
   if ((thing = match_controlled(player, name)) != NOTHING) {
-    newname = mush_strdup(trim_space_sep(newname_, ' '), "name.newname");
+    newname = GC_STRDUP(trim_space_sep(newname_, ' '));
     bon = newname;
 
     /* check for bad name */
     if ((*newname == '\0') || strchr(newname, '[')) {
       notify(player, T("Give it what new name?"));
-      mush_free(newname, "name.newname");
       return;
     }
     /* check for renaming a player */
@@ -103,7 +102,6 @@ do_name(dbref player, const char *name, char *newname_)
       }
       if (!ok_player_name(bon, player, thing)) {
         notify(player, T("You can't give a player that name."));
-        mush_free(newname, "name.newname");
         return;
       }
       /* everything ok, notify */
@@ -118,14 +116,13 @@ do_name(dbref player, const char *name, char *newname_)
       bon = newname;
       if (!ok_name(newname)) {
         notify(player, T("That is not a reasonable name."));
-        mush_free(newname, "name.newname");
         return;
       }
     }
 
     /* everything ok, change the name */
-    myenv[0] = (char *) mush_malloc(BUFFER_LEN, "string");
-    myenv[1] = (char *) mush_malloc(BUFFER_LEN, "string");
+    myenv[0] = GC_MALLOC_ATOMIC(BUFFER_LEN);
+    myenv[1] = GC_MALLOC_ATOMIC(BUFFER_LEN);
     mush_strncpy(myenv[0], Name(thing), BUFFER_LEN);
     strcpy(myenv[1], bon);
     for (i = 2; i < 10; i++)
@@ -139,9 +136,6 @@ do_name(dbref player, const char *name, char *newname_)
       notify(player, T("Name set."));
     real_did_it(player, thing, NULL, NULL, "ONAME", NULL, "ANAME", NOTHING,
                 myenv, NA_INTER_PRESENCE);
-    mush_free(newname, "name.newname");
-    mush_free(myenv[0], "string");
-    mush_free(myenv[1], "string");
   }
 }
 
@@ -315,7 +309,6 @@ chown_object(dbref player, dbref thing, dbref newowner, int preserve)
     clear_flag_internal(thing, "ROYALTY");
     clear_flag_internal(thing, "TRUST");
     set_flag_internal(thing, "HALT");
-    destroy_flag_bitmask(Powers(thing));
     Powers(thing) = new_flag_bitmask("POWER");
     do_halt(thing, "", thing);
   } else {
@@ -442,7 +435,6 @@ do_chzone(dbref player, char const *name, char const *newobj, int noisy)
     clear_flag_internal(thing, "WIZARD");
     clear_flag_internal(thing, "ROYALTY");
     clear_flag_internal(thing, "TRUST");
-    destroy_flag_bitmask(Powers(thing));
     Powers(thing) = new_flag_bitmask("POWER");
   } else {
     if (noisy && (zone != NOTHING)) {
@@ -461,8 +453,8 @@ do_chzone(dbref player, char const *name, char const *newobj, int noisy)
 struct af_args {
   privbits setf;        /**< flag bits to set */
   privbits clrf;        /**< flag bits to clear */
-  char *setflags;       /**< list of names of flags to set */
-  char *clrflags;       /**< list of names of flags to clear */
+  const char *setflags;       /**< list of names of flags to set */
+  const char *clrflags;       /**< list of names of flags to clear */
 };
 
 static int
@@ -548,12 +540,10 @@ do_attrib_flags(dbref player, const char *obj, const char *atrname,
     notify(player, T("Unrecognized attribute flag."));
     return;
   }
-  af.clrflags = mush_strdup(atrflag_to_string(af.clrf), "af_flag list");
-  af.setflags = mush_strdup(atrflag_to_string(af.setf), "af_flag list");
+  af.clrflags = atrflag_to_string(af.clrf);
+  af.setflags = atrflag_to_string(af.setf);
   if (!atr_iter_get(player, thing, atrname, 0, af_helper, &af))
     notify(player, T("No attribute found to change."));
-  mush_free((Malloc_t) af.clrflags, "af_flag list");
-  mush_free((Malloc_t) af.setflags, "af_flag list");
 }
 
 
@@ -584,22 +574,18 @@ do_set(dbref player, const char *xname, char *flag)
     return 0;
   }
 
-  name = mush_strdup(xname, "ds.string");
+  name = GC_STRDUP(xname);
 
   /* check for attribute flag set first */
   if ((p = strchr(name, '/')) != NULL) {
     *p++ = '\0';
     do_attrib_flags(player, name, p, flag);
-    mush_free(name, "ds.string");
     return 1;
   }
   /* find thing */
   if ((thing = match_controlled(player, name)) == NOTHING) {
-    mush_free(name, "ds.string");
     return 0;
   }
-
-  mush_free(name, "ds.string");
 
   if (God(thing) && !God(player)) {
     notify(player, T("Only God can set himself!"));
@@ -716,7 +702,6 @@ do_cpattr(dbref player, char *oldpair, char **newpair, int move, int noflagcopy)
     }
   }
 
-  free((Malloc_t) text);        /* safe_uncompress malloc()s memory */
   if (copies) {
     notify_format(player, T("Attribute %s (%d copies)"),
                   (move ? T("moved") : T("copied")), copies);

@@ -168,26 +168,8 @@ ident_id(int fd, int *timeout)
     *timeout = 0;
   ident = ident_lookup(fd, timeout);
   if (ident && ident->identifier && *ident->identifier)
-    id = strdup(ident->identifier);
-  ident_free(ident);
+    id = GC_STRDUP(ident->identifier);
   return id;
-}
-
-/** Free an IDENT structure and all elements.
- * \param id pointer to IDENT structure to free.
- */
-void
-ident_free(IDENT * id)
-{
-  if (!id)
-    return;
-  if (id->identifier)
-    free(id->identifier);
-  if (id->opsys)
-    free(id->opsys);
-  if (id->charset)
-    free(id->charset);
-  free(id);
 }
 
 /* id_open.c Establish/initiate a connection to an IDENT server
@@ -206,7 +188,7 @@ id_open(struct sockaddr *faddr, socklen_t flen,
   int tmperrno;
 #endif
 
-  if ((id = malloc(sizeof *id)) == NULL)
+  if ((id = GC_MALLOC(sizeof *id)) == NULL)
     return NULL;
 
   memset(id, 0, sizeof *id);
@@ -214,7 +196,6 @@ id_open(struct sockaddr *faddr, socklen_t flen,
   if (getnameinfo(faddr, flen, host, sizeof host, NULL, 0,
                   NI_NUMERICHOST | NI_NUMERICSERV) != 0) {
     penn_perror("id_open: getnameinfo");
-    free(id);
     return NULL;
   }
 
@@ -256,7 +237,6 @@ static void
 id_close(ident_t *id)
 {
   closesocket(id->fd);
-  free(id);
 }
 
 
@@ -403,7 +383,7 @@ id_parse(ident_t *id, int *timeout, IDENT ** ident)
   if (!id || !ident)
     return -1;
 
-  *ident = malloc(sizeof(IDENT));
+  *ident = GC_MALLOC(sizeof(IDENT));
 
   if (!*ident)
     return -1;
@@ -464,7 +444,7 @@ id_parse(ident_t *id, int *timeout, IDENT ** ident)
   }
 
   if ((res = sscanf(cp, " %d , %d", &lp, &fp)) != 2) {
-    (*ident)->identifier = strdup(cp);
+    (*ident)->identifier = GC_STRDUP(cp);
     return -2;
   }
   /* Get second field (USERID or ERROR) */
@@ -477,7 +457,7 @@ id_parse(ident_t *id, int *timeout, IDENT ** ident)
     if (!cp)
       return -2;
 
-    (*ident)->identifier = strdup(cp);
+    (*ident)->identifier = GC_STRDUP(cp);
 
     return 2;
   } else if (strcmp(cp, "USERID") == 0) {
@@ -486,7 +466,7 @@ id_parse(ident_t *id, int *timeout, IDENT ** ident)
     if (!cp) {
       return -2;
     }
-    (*ident)->opsys = strdup(cp);
+    (*ident)->opsys = GC_STRDUP(cp);
 
     /* We have a second subfield (<charset>) */
     if (c == ',') {
@@ -496,7 +476,7 @@ id_parse(ident_t *id, int *timeout, IDENT ** ident)
 
       tmp_charset = cp;
 
-      (*ident)->charset = strdup(cp);
+      (*ident)->charset = GC_STRDUP(cp);
 
       /* We have even more subfields - ignore them */
       if (c == ',')
@@ -507,10 +487,10 @@ id_parse(ident_t *id, int *timeout, IDENT ** ident)
     else
       cp = xstrtok(NULL, "\n\r", &c);
 
-    (*ident)->identifier = strdup(cp);
+    (*ident)->identifier = GC_STRDUP(cp);
     return 1;
   } else {
-    (*ident)->identifier = strdup(cp);
+    (*ident)->identifier = GC_STRDUP(cp);
     return -3;
   }
 }

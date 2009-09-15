@@ -423,14 +423,13 @@ next_prime_after(unsigned int val)
  * \param data_size size of an individual datum to store in the table.
  */
 void
-hash_init(HASHTAB *htab, int size, void (*free_data) (void *))
+hash_init(HASHTAB *htab, int size)
 {
   size = next_prime_after(size);
   htab->last_index = -1;
-  htab->free_data = free_data;
   htab->hashsize = size;
   htab->hashfunc_offset = 0;
-  htab->buckets = mush_calloc(size, sizeof(struct hash_bucket), "hash.buckets");
+  htab->buckets = GC_MALLOC(size * sizeof(struct hash_bucket));
 }
 
 /** Return a hashtable entry given a key.
@@ -551,7 +550,7 @@ real_hash_resize(HASHTAB *htab, int newsize, int hashfunc_offset)
   oldarr = htab->buckets;
 
   htab->buckets =
-    mush_calloc(newsize, sizeof(struct hash_bucket), "hash.buckets");
+    GC_MALLOC(newsize * sizeof(struct hash_bucket));
   htab->hashsize = newsize;
   htab->hashfunc_offset = hashfunc_offset;
   for (i = 0; i < oldsize; i++) {
@@ -560,7 +559,6 @@ real_hash_resize(HASHTAB *htab, int newsize, int hashfunc_offset)
 
       if (!hash_insert(htab, oldarr[i].key, oldarr[i].data)) {
         /* Couldn't fit an element in. Try with different hash functions. */
-        mush_free(htab->buckets, "hash.buckets");
         htab->buckets = oldarr;
         htab->hashsize = oldsize;
         htab->hashfunc_offset = oldoffset;
@@ -572,7 +570,6 @@ real_hash_resize(HASHTAB *htab, int newsize, int hashfunc_offset)
     }
   }
 
-  mush_free(oldarr, "hash.buckets");
   return true;
 }
 
@@ -611,7 +608,7 @@ hash_add(HASHTAB *htab, const char *key, void *hashdata)
 
   htab->entries += 1;
 
-  keycopy = mush_strdup(key, "hash.key");
+  keycopy = GC_STRDUP(key);
 
   if (!hash_insert(htab, keycopy, hashdata)) {
     first_offset = -1;
@@ -635,9 +632,6 @@ hash_delete(HASHTAB *htab, HASHENT *entry)
   if (!entry)
     return;
 
-  if (htab->free_data)
-    htab->free_data(entry->data);
-  mush_free((void *) entry->key, "hash.key");
   memset(entry, 0, sizeof *entry);
   htab->entries -= 1;
 }
@@ -649,26 +643,10 @@ hash_delete(HASHTAB *htab, HASHENT *entry)
 void
 hash_flush(HASHTAB *htab, int size)
 {
-  int i;
-  struct hash_bucket *resized;
-
-  if (htab->entries) {
-    for (i = 0; i < htab->hashsize; i++) {
-      if (htab->buckets[i].key) {
-        mush_free((void *) htab->buckets[i].key, "hash.key");
-        if (htab->free_data)
-          htab->free_data(htab->buckets[i].data);
-      }
-    }
-  }
   htab->entries = 0;
   size = next_prime_after(size);
-  resized = mush_realloc(htab->buckets, size, "hash.buckets");
-  if (resized) {
-    htab->buckets = resized;
-    htab->hashsize = size;
-  }
-  memset(htab->buckets, 0, sizeof(struct hash_bucket) * htab->hashsize);
+  htab->buckets = GC_MALLOC(size);
+  htab->hashsize = size;
 }
 
 /** Return the first entry of a hash table.

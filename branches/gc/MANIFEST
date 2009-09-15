@@ -226,7 +226,6 @@ src/sig.c
 src/sort.c
 src/speech.c
 src/sql.c
-src/strdup.c
 src/strtree.c
 src/strutil.c
 src/switchinc.c

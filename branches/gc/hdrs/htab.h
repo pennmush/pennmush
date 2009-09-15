@@ -19,20 +19,18 @@ struct hashtable {
   int hashfunc_offset;          /**< Which pair of hash functions to use */
   struct hash_bucket *buckets;  /**< Buckets */
   int last_index;              /**< State for hashfirst & hashnext. */
-  void (*free_data) (void *);   /**< Function to call on data when deleting
-                                   a entry. */
 };
 
 typedef struct hash_bucket HASHENT;
 
-#define hashinit(tab, size) hash_init((tab), (size), NULL)
+#define hashinit(tab, size) hash_init((tab), (size))
 #define hashfind(key,tab) hash_value(hash_find(tab,key))
 #define hashadd(key,data,tab) hash_add(tab,key,data)
 #define hashdelete(key,tab) hash_delete(tab,hash_find(tab,key))
 #define hashflush(tab, size) hash_flush(tab,size)
 #define hashfree(tab) hash_flush(tab, 0)
 int hash_getmask(int *size);
-void hash_init(HASHTAB *htab, int size, void (*)(void *));
+void hash_init(HASHTAB *htab, int size);
 HASHENT *hash_find(HASHTAB *htab, const char *key);
 #define hash_value(entry) (entry) ? (entry)->data : NULL
 #define hash_key(entry) (entry) ? (entry)->key : NULL

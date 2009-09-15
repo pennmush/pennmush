@@ -1214,10 +1214,10 @@ do_search(dbref player, const char *arg1, char **arg3)
     int nthings = 0, nexits = 0, nrooms = 0, nplayers = 0;
     dbref *things, *exits, *rooms, *players;
 
-    things = mush_calloc(nresults, sizeof(dbref), "dbref_list");
-    exits = mush_calloc(nresults, sizeof(dbref), "dbref_list");
-    rooms = mush_calloc(nresults, sizeof(dbref), "dbref_list");
-    players = mush_calloc(nresults, sizeof(dbref), "dbref_list");
+    things = GC_MALLOC_ATOMIC(nresults * sizeof(dbref));
+    exits = GC_MALLOC_ATOMIC(nresults * sizeof(dbref));
+    rooms = GC_MALLOC_ATOMIC(nresults * sizeof(dbref));
+    players = GC_MALLOC_ATOMIC(nresults * sizeof(dbref));
 
     for (n = 0; n < nresults; n++) {
       switch (Typeof(results[n])) {
@@ -1309,13 +1309,7 @@ do_search(dbref player, const char *arg1, char **arg3)
                   T
                   ("Totals: Rooms...%d  Exits...%d  Things...%d  Players...%d"),
                   nrooms, nexits, nthings, nplayers);
-    mush_free(rooms, "dbref_list");
-    mush_free(exits, "dbref_list");
-    mush_free(things, "dbref_list");
-    mush_free(players, "dbref_list");
   }
-  if (results)
-    mush_free(results, "search_results");
 }
 
 FUNCTION(fun_lsearch)
@@ -1374,8 +1368,6 @@ FUNCTION(fun_lsearch)
       }
     }
   }
-  if (results)
-    mush_free(results, "search_results");
 }
 
 /* ARGSUSED */
@@ -1990,7 +1982,7 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
   }
 
   result_size = (db_top / 4) + 1;
-  *result = mush_calloc(result_size, sizeof(dbref), "search_results");
+  *result = GC_MALLOC_ATOMIC(result_size * sizeof(dbref));
   if (!*result)
     mush_panic(T("Couldn't allocate memory in search!"));
 
@@ -2048,7 +2040,6 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
       bp = tbuf1;
       process_expression(tbuf1, &bp, &ebuf2, player, player, player,
                          PE_DEFAULT, PT_DEFAULT, pe_info);
-      mush_free((Malloc_t) ebuf1, "replace_string.buff");
       *bp = '\0';
       if (!parse_boolean(tbuf1))
         continue;
@@ -2066,7 +2057,7 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
     if (nresults >= result_size) {
       dbref *newresults;
       result_size *= 2;
-      newresults = (dbref *) realloc(*result, sizeof(dbref) * result_size);
+      newresults = GC_REALLOC(*result, sizeof(dbref) * result_size);
       if (!newresults)
         mush_panic(T("Couldn't reallocate memory in search!"));
       *result = newresults;

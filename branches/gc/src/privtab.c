@@ -18,6 +18,7 @@
 #include "mushtype.h"
 #include "privtab.h"
 #include "externs.h"
+#include "mymalloc.h"
 #include "confmagic.h"
 
 
@@ -244,13 +245,13 @@ letter_to_privs(PRIV *table, const char *str, privbits origprivs)
 /** Given a table and a bitmask, return a privs string (static allocation).
  * \param table pointer to a privtab.
  * \param privs bitmask of privileges.
- * \return statically allocated space-separated string of priv names.
+ * \return allocated space-separated string of priv names.
  */
 const char *
 privs_to_string(PRIV *table, privbits privs)
 {
   PRIV *c;
-  static char buf[BUFFER_LEN];
+  char buf[BUFFER_LEN];
   char *bp;
 
   bp = buf;
@@ -263,7 +264,7 @@ privs_to_string(PRIV *table, privbits privs)
     }
   }
   *bp = '\0';
-  return buf;
+  return GC_STRDUP(buf);
 }
 
 
@@ -276,7 +277,7 @@ const char *
 privs_to_letters(PRIV *table, privbits privs)
 {
   PRIV *c;
-  static char buf[BUFFER_LEN];
+  char buf[BUFFER_LEN];
   char *bp;
 
   bp = buf;
@@ -287,5 +288,5 @@ privs_to_letters(PRIV *table, privbits privs)
     }
   }
   *bp = '\0';
-  return buf;
+  return GC_STRDUP(buf);
 }

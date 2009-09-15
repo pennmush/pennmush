@@ -1,0 +1,23 @@
+This is a version of PennMUSH that relies on the Boehm-Demers-Weiser C
+garbage collection library for its memory management instead of
+manually keeping track of when allocated memory has to be freed.
+
+Get the library at http://www.hpl.hp.com/personal/Hans_Boehm/gc/ or
+through your OS'es package manager. Version 7.0 or greater is
+recommended.
+
+It MUST be installed; there are no configure checks for the library.
+Yet.
+
+This is not just plugging in a different malloc package; changes go
+much further. For example, many functions that return a pointer to a
+static buffer in normal Penn will return a newly allocated chunk of
+memory instead. This eliminates many problems we've had in the past
+where such buffers get overwritten by a second call to the function
+before the first is done with the result. We've fixed those as we've
+found them, but that doesn't mean that there aren't more cases
+left. Garbage collection also means no memory leaks. I know of at
+least one elusive, hard to trigger one that we haven't tracked down
+and fixed yet. This version of Penn doesn't get things like that. The
+downside is that it takes up a bit more space in memory. But these
+days, who cares?

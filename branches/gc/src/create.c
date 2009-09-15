@@ -564,7 +564,7 @@ dbref
 do_clone(dbref player, char *name, char *newname, int preserve)
 {
   dbref clone, thing;
-  char dbnum[BUFFER_LEN];
+  const char *dbnum;
 
   if (newname && *newname && !ok_name(newname)) {
     notify(player, T("That is not a reasonable name."));
@@ -628,16 +628,16 @@ do_clone(dbref player, char *name, char *newname, int preserve)
      */
     switch (Location(thing)) {
     case NOTHING:
-      strcpy(dbnum, "#-1");
+      dbnum = "#-1";
       break;
     case HOME:
-      strcpy(dbnum, "home");
+      dbnum = "home";
       break;
     case AMBIGUOUS:
-      strcpy(dbnum, "variable");
+      dbnum = "variable";
       break;
     default:
-      strcpy(dbnum, unparse_dbref(Location(thing)));
+      dbnum = unparse_dbref(Location(thing));
     }
     if (newname && *newname)
       clone = do_real_open(player, newname, dbnum, NOTHING);

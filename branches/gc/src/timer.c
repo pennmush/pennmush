@@ -42,6 +42,7 @@
 #include "help.h"
 #include "parse.h"
 #include "attrib.h"
+#include "mymalloc.h"
 #include "confmagic.h"
 
 
@@ -143,11 +144,8 @@ migrate_stuff(int amount)
     return;
 
   if (!refs || actual > refs_size) {
-    if (refs)
-      mush_free(refs, "migration reference array");
     refs =
-      mush_calloc(actual, sizeof(chunk_reference_t *),
-                  "migration reference array");
+      GC_MALLOC(actual * sizeof(chunk_reference_t *));
     refs_size = actual;
     if (!refs)
       mush_panic("Could not allocate migration reference array");
@@ -247,7 +245,6 @@ dispatch(void)
 
   /* Database dump routines */
   if (options.dump_counter <= mudtime) {
-    log_mem_check();
     options.dump_counter = options.dump_interval + mudtime;
     strcpy(global_eval_context.ccom, "dump");
     fork_and_dump(1);

@@ -28,6 +28,7 @@
 #include "parse.h"
 #include "privtab.h"
 #include "confmagic.h"
+#include "mymalloc.h"
 #include "log.h"
 
 static void look_exits(dbref player, dbref loc, const char *exit_name);
@@ -70,9 +71,9 @@ look_exits(dbref player, dbref loc, const char *exit_name)
   if (!IsRoom(loc))
     return;
 
-  tbuf1 = (char *) mush_malloc(BUFFER_LEN, "string");
-  tbuf2 = (char *) mush_malloc(BUFFER_LEN, "string");
-  nbuf = (char *) mush_malloc(BUFFER_LEN, "string");
+  tbuf1 = GC_MALLOC_ATOMIC(BUFFER_LEN);
+  tbuf2 = GC_MALLOC_ATOMIC(BUFFER_LEN);
+  nbuf = GC_MALLOC_ATOMIC(BUFFER_LEN);
   if (!tbuf1 || !tbuf2 || !nbuf)
     mush_panic("Unable to allocate memory in look_exits");
   s1 = tbuf1;
@@ -87,8 +88,8 @@ look_exits(dbref player, dbref loc, const char *exit_name)
     char const *sp;
     int j;
 
-    arg = (char *) mush_malloc(BUFFER_LEN, "string");
-    buff = (char *) mush_malloc(BUFFER_LEN, "string");
+    arg = GC_MALLOC_ATOMIC(BUFFER_LEN);
+    buff = GC_MALLOC_ATOMIC(BUFFER_LEN);
     if (!arg || !buff)
       mush_panic("Unable to allocate memory in look_exits");
     save_global_regs("look_exits", rsave);
@@ -114,17 +115,11 @@ look_exits(dbref player, dbref loc, const char *exit_name)
     process_expression(buff, &bp, &sp, loc, player, player,
                        PE_DEFAULT, PT_DEFAULT, NULL);
     *bp = '\0';
-    free((Malloc_t) save);
     notify_by(loc, player, buff);
     for (j = 0; j < 10; j++) {
       global_eval_context.wenv[j] = wsave[j];
     }
     restore_global_regs("look_exits", rsave);
-    mush_free((Malloc_t) tbuf1, "string");
-    mush_free((Malloc_t) tbuf2, "string");
-    mush_free((Malloc_t) nbuf, "string");
-    mush_free((Malloc_t) arg, "string");
-    mush_free((Malloc_t) buff, "string");
     return;
   }
   /* Scan the room and see if there are any visible exits */
@@ -154,9 +149,6 @@ look_exits(dbref player, dbref loc, const char *exit_name)
   }
   if (total_count == 0) {
     /* No visible exits. We are outta here */
-    mush_free((Malloc_t) tbuf1, "string");
-    mush_free((Malloc_t) tbuf2, "string");
-    mush_free((Malloc_t) nbuf, "string");
     return;
   }
 
@@ -218,9 +210,6 @@ look_exits(dbref player, dbref loc, const char *exit_name)
   }
   *s2 = '\0';
   notify_by(loc, player, tbuf2);
-  mush_free((Malloc_t) tbuf1, "string");
-  mush_free((Malloc_t) tbuf2, "string");
-  mush_free((Malloc_t) nbuf, "string");
 }
 
 
@@ -246,9 +235,9 @@ look_contents(dbref player, dbref loc, const char *contents_name)
     char const *sp;
     int j;
 
-    arg = (char *) mush_malloc(BUFFER_LEN, "string");
-    arg2 = (char *) mush_malloc(BUFFER_LEN, "string");
-    buff = (char *) mush_malloc(BUFFER_LEN, "string");
+    arg = GC_MALLOC_ATOMIC(BUFFER_LEN);
+    arg2 = GC_MALLOC_ATOMIC(BUFFER_LEN);
+    buff = GC_MALLOC_ATOMIC(BUFFER_LEN);
     if (!arg || !buff || !arg2)
       mush_panic("Unable to allocate memory in look_contents");
     save_global_regs("look_contents", rsave);
@@ -279,15 +268,11 @@ look_contents(dbref player, dbref loc, const char *contents_name)
     process_expression(buff, &bp, &sp, loc, player, player,
                        PE_DEFAULT, PT_DEFAULT, NULL);
     *bp = '\0';
-    free((Malloc_t) save);
     notify_by(loc, player, buff);
     for (j = 0; j < 10; j++) {
       global_eval_context.wenv[j] = wsave[j];
     }
     restore_global_regs("look_contents", rsave);
-    mush_free((Malloc_t) arg, "string");
-    mush_free((Malloc_t) arg2, "string");
-    mush_free((Malloc_t) buff, "string");
     return;
   }
   /* check to see if there is anything there */
@@ -324,7 +309,7 @@ look_helper_veiled(dbref player, dbref thing __attribute__ ((__unused__)),
                    char const *pattern, ATTR *atr, void *args
                    __attribute__ ((__unused__)))
 {
-  char fbuf[BUFFER_LEN];
+  const char *fbuf;
   char const *r;
 
   if (EX_PUBLIC_ATTRIBS &&
@@ -332,7 +317,7 @@ look_helper_veiled(dbref player, dbref thing __attribute__ ((__unused__)),
     return 0;
   if (parent == thing || !GoodObject(parent))
     parent = NOTHING;
-  strcpy(fbuf, privs_to_letters(attr_privs_view, AL_FLAGS(atr)));
+  fbuf = privs_to_letters(attr_privs_view, AL_FLAGS(atr));
   if (AF_Veiled(atr)) {
     if (ShowAnsi(player)) {
       if (GoodObject(parent))
@@ -372,7 +357,6 @@ look_helper_veiled(dbref player, dbref thing __attribute__ ((__unused__)),
         notify_format(player, "%s [#%d%s]: %s", AL_NAME(atr),
                       Owner(AL_CREATOR(atr)), fbuf, r);
     }
-    free((Malloc_t) r);
   }
   return 1;
 }
@@ -383,7 +367,7 @@ look_helper(dbref player, dbref thing __attribute__ ((__unused__)),
             char const *pattern, ATTR *atr, void *args
             __attribute__ ((__unused__)))
 {
-  char fbuf[BUFFER_LEN];
+  const char *fbuf;
   char const *r;
 
   if (EX_PUBLIC_ATTRIBS &&
@@ -391,7 +375,7 @@ look_helper(dbref player, dbref thing __attribute__ ((__unused__)),
     return 0;
   if (parent == thing || !GoodObject(parent))
     parent = NOTHING;
-  strcpy(fbuf, privs_to_letters(attr_privs_view, AL_FLAGS(atr)));
+  fbuf =  privs_to_letters(attr_privs_view, AL_FLAGS(atr));
   r = safe_atr_value(atr);
   if (ShowAnsi(player)) {
     if (GoodObject(parent))
@@ -410,7 +394,6 @@ look_helper(dbref player, dbref thing __attribute__ ((__unused__)),
       notify_format(player, "%s [#%d%s]: %s", AL_NAME(atr),
                     Owner(AL_CREATOR(atr)), fbuf, r);
   }
-  free((Malloc_t) r);
   return 1;
 }
 
@@ -583,7 +566,6 @@ look_description(dbref player, dbref thing, const char *def,
     process_expression(buff, &bp, &ap, thing, player, player,
                        PE_DEFAULT, PT_DEFAULT, NULL);
     *bp = '\0';
-    free((Malloc_t) asave);
   }
   f = atr_get(thing, descformatname);
   if (f) {
@@ -596,7 +578,6 @@ look_description(dbref player, dbref thing, const char *def,
     process_expression(fbuff, &fbp, &ap, thing, player, player,
                        PE_DEFAULT, PT_DEFAULT, NULL);
     *fbp = '\0';
-    free((Malloc_t) asave);
     notify_by(thing, player, fbuff);
   } else if (a) {
     /* DESCRIBE only */
@@ -759,7 +740,7 @@ do_examine(dbref player, const char *xname, enum exam_type flag, int all,
     if ((thing = Location(player)) == NOTHING)
       return;
   } else {
-    name = mush_strdup(xname, "de.string");
+    name = GC_STRDUP(xname);
     if ((attrib_name = strchr(name, '/')) != NULL) {
       *attrib_name = '\0';
       attrib_name++;
@@ -769,22 +750,17 @@ do_examine(dbref player, const char *xname, enum exam_type flag, int all,
     if ((thing =
          noisy_match_result(player, real_name, NOTYPE,
                             MAT_EVERYTHING)) == NOTHING) {
-      mush_free(name, "de.string");
       return;
     }
   }
   /*  can't examine destructed objects  */
   if (IsGarbage(thing)) {
     notify(player, T("Garbage is garbage."));
-    if (name)
-      mush_free(name, "de.string");
     return;
   }
   /*  only look at some of the attributes */
   if (attrib_name && *attrib_name) {
     look_atrs(player, thing, attrib_name, all, 0, parent);
-    if (name)
-      mush_free(name, "de.string");
     return;
   }
   if (flag == EXAM_MORTAL) {
@@ -793,7 +769,7 @@ do_examine(dbref player, const char *xname, enum exam_type flag, int all,
     ok = Can_Examine(player, thing);
   }
 
-  tbuf = (char *) mush_malloc(BUFFER_LEN, "string");
+  tbuf = GC_MALLOC_ATOMIC(BUFFER_LEN);
   if (!ok && (!EX_PUBLIC_ATTRIBS || !nearby(player, thing))) {
     /* if it's not examinable and we're not near it, we can only get the
      * name and the owner.
@@ -804,9 +780,6 @@ do_examine(dbref player, const char *xname, enum exam_type flag, int all,
     safe_str(object_header(player, Owner(thing)), tbuf, &tp);
     *tp = '\0';
     notify(player, tbuf);
-    mush_free(tbuf, "string");
-    if (name)
-      mush_free(name, "de.string");
     return;
   }
   if (ok) {
@@ -822,12 +795,10 @@ do_examine(dbref player, const char *xname, enum exam_type flag, int all,
     if (a) {
       r = safe_atr_value(a);
       notify(player, r);
-      free((Malloc_t) r);
     }
   }
   if (ok) {
-    char tbuf1[BUFFER_LEN];
-    strcpy(tbuf1, object_header(player, Zone(thing)));
+    const char *tbuf1 = object_header(player, Zone(thing));
     notify_format(player,
                   T("Owner: %s  Zone: %s  %s: %d"),
                   object_header(player, Owner(thing)),
@@ -892,9 +863,6 @@ do_examine(dbref player, const char *xname, enum exam_type flag, int all,
     safe_str(object_header(player, Owner(thing)), tbuf, &tp);
     *tp = '\0';
     notify(player, tbuf);
-    mush_free(tbuf, "string");
-    if (name)
-      mush_free(name, "de.string");
     return;
   }
   switch (Typeof(thing)) {
@@ -965,9 +933,6 @@ do_examine(dbref player, const char *xname, enum exam_type flag, int all,
     /* do nothing */
     break;
   }
-  mush_free(tbuf, "string");
-  if (name)
-    mush_free(name, "de.string");
 }
 
 /** The score command: check a player's money.
@@ -1004,9 +969,9 @@ do_inventory(dbref player)
     char const *sp;
     int j;
 
-    arg = (char *) mush_malloc(BUFFER_LEN, "string");
-    arg2 = (char *) mush_malloc(BUFFER_LEN, "string");
-    buff = (char *) mush_malloc(BUFFER_LEN, "string");
+    arg = GC_MALLOC_ATOMIC(BUFFER_LEN);
+    arg2 = GC_MALLOC_ATOMIC(BUFFER_LEN);
+    buff = GC_MALLOC_ATOMIC(BUFFER_LEN);
     if (!arg || !buff || !arg2)
       mush_panic("Unable to allocate memory in do_inventory");
     save_global_regs("do_inventory", rsave);
@@ -1035,15 +1000,11 @@ do_inventory(dbref player)
     process_expression(buff, &bp, &sp, player, player, player,
                        PE_DEFAULT, PT_DEFAULT, NULL);
     *bp = '\0';
-    free((Malloc_t) save);
     notify(player, buff);
     for (j = 0; j < 10; j++) {
       global_eval_context.wenv[j] = wsave[j];
     }
     restore_global_regs("do_inventory", rsave);
-    mush_free((Malloc_t) arg, "string");
-    mush_free((Malloc_t) arg2, "string");
-    mush_free((Malloc_t) buff, "string");
     return;
   }
 
@@ -1563,7 +1524,7 @@ do_decompile(dbref player, const char *xname, const char *prefix,
     notify(player, T("What do you want to @decompile?"));
     return;
   }
-  name = mush_strdup(xname, "dd.string");
+  name = GC_STRDUP(xname);
   attrib = strchr(name, '/');
   if (attrib)
     *attrib++ = '\0';
@@ -1571,13 +1532,11 @@ do_decompile(dbref player, const char *xname, const char *prefix,
   /* find object */
   if ((thing = noisy_match_result(player, name, NOTYPE, MAT_EVERYTHING)) ==
       NOTHING) {
-    mush_free(name, "dd.string");
     return;
   }
 
   if (IsGarbage(thing)) {
     notify(player, T("Garbage is garbage."));
-    mush_free(name, "dd.string");
     return;
   }
   sprintf(dbnum, "#%d", thing);
@@ -1595,13 +1554,11 @@ do_decompile(dbref player, const char *xname, const char *prefix,
         decompile_atrs(player, thing, Name(thing), attrib, prefix, skipdef);
       break;
     }
-    mush_free(name, "dd.string");
     return;
   }
   /* else we have a full decompile */
   if (!Can_Examine(player, thing)) {
     notify(player, T("Permission denied."));
-    mush_free(name, "dd.string");
     return;
   }
   /* determine creation and what we call the object */
@@ -1671,7 +1628,6 @@ do_decompile(dbref player, const char *xname, const char *prefix,
   if (dbflag != DEC_FLAG) {
     decompile_atrs(player, thing, object, "**", prefix, skipdef);
   }
-  mush_free(name, "dd.string");
 }
 
 static char *

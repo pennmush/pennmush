@@ -90,7 +90,7 @@ void get_new_locks(dbref i, PENNFILE *f, int c);
 void db_read_attrs(PENNFILE *f, dbref i, int c);
 int get_list(PENNFILE *f, dbref i);
 void db_free(void);
-static void init_objdata_htab(int size, void (*free_data) (void *));
+static void init_objdata_htab(int size);
 static void db_write_flags(PENNFILE *f);
 static dbref db_read_oldstyle(PENNFILE *f);
 
@@ -152,8 +152,8 @@ db_grow(dbref newtop)
       db_size = (db_init) ? db_init : DB_INITIAL_SIZE;
       while (db_top > db_size)
         db_size *= 2;
-      if ((db = (struct object *)
-           malloc(db_size * sizeof(struct object))) == NULL) {
+      if ((db = GC_MALLOC_IGNORE_OFF_PAGE(db_size * sizeof(struct object)))
+          == NULL) {
         do_rawlog(LT_ERR, "ERROR: out of memory while creating database!");
         abort();
       }
@@ -164,7 +164,7 @@ db_grow(dbref newtop)
       while (db_top > db_size)
         db_size *= 2;
       if ((newdb = (struct object *)
-           realloc(db, db_size * sizeof(struct object))) == NULL) {
+           GC_REALLOC(db, db_size * sizeof(struct object))) == NULL) {
         do_rawlog(LT_ERR, "ERROR: out of memory while extending database!");
         abort();
       }
@@ -1156,7 +1156,6 @@ db_free(void)
       free_locks(Locks(i));
     }
 
-    free((char *) db);
     db = NULL;
     db_init = db_top = 0;
   }
@@ -1349,7 +1348,7 @@ db_read_oldstyle(PENNFILE *f)
       /* make sure database is at least this big *1.5 */
     case '~':
       db_init = (getref(f) * 3) / 2;
-      init_objdata_htab(db_init / 8, NULL);
+      init_objdata_htab(db_init / 8);
       break;
       /* Use the MUSH 2.0 header stuff to see what's in this db */
     case '+':
@@ -1531,7 +1530,6 @@ db_read_oldstyle(PENNFILE *f)
           loading_db = 0;
           fix_free_list();
           dbck();
-          log_mem_check();
           return db_top;
         }
       }
@@ -1558,8 +1556,6 @@ db_read(PENNFILE *f)
   int minimum_flags =
     DBF_NEW_STRINGS | DBF_TYPE_GARBAGE | DBF_SPLIT_IMMORTAL | DBF_NO_TEMPLE |
     DBF_SPIFFY_LOCKS;
-
-  log_mem_check();
 
   loading_db = 1;
 
@@ -1612,7 +1608,7 @@ db_read(PENNFILE *f)
       break;
     case '~':
       db_init = (getref(f) * 3) / 2;
-      init_objdata_htab(db_init / 8, NULL);
+      init_objdata_htab(db_init / 8);
       break;
     case '!':
       /* Read an object */
@@ -1803,7 +1799,6 @@ db_read(PENNFILE *f)
           loading_db = 0;
           fix_free_list();
           dbck();
-          log_mem_check();
           return db_top;
         }
       }
@@ -1816,11 +1811,11 @@ db_read(PENNFILE *f)
 }
 
 static void
-init_objdata_htab(int size, void (*free_data) (void *))
+init_objdata_htab(int size)
 {
   if (size < 10)
     size = 10;
-  hash_init(&htab_objdata, size, free_data);
+  hash_init(&htab_objdata, size);
   hashinit(&htab_objdata_keys, 8);
 }
 
@@ -1840,15 +1835,15 @@ init_objdata_htab(int size, void (*free_data) (void *))
 void *
 set_objdata(dbref thing, const char *keybase, void *data)
 {
-  char keyname[BUFFER_LEN];
+  char *keyname;
 
-  mush_strncpy(keyname, tprintf("%s_#%d", keybase, thing), BUFFER_LEN);
+  keyname = tprintf("%s_#%d", keybase, thing);
   hashdelete(keyname, &htab_objdata);
   if (data) {
     if (!hashadd(keyname, data, &htab_objdata))
       return NULL;
     if (hash_find(&htab_objdata_keys, keybase) == NULL) {
-      char *newkey = mush_strdup(keyname, "objdata.key");
+      char *newkey = keyname;
       hashadd(keybase, newkey, &htab_objdata_keys);
     }
   }
@@ -1893,7 +1888,7 @@ create_minimal_db(void)
   god = new_object();           /* #1 */
   master_room = new_object();   /* #2 */
 
-  init_objdata_htab(128, NULL);
+  init_objdata_htab(128);
 
   set_name(start_room, "Room Zero");
   Type(start_room) = TYPE_ROOM;
@@ -1950,13 +1945,13 @@ penn_fopen(const char *filename, const char *mode)
 {
   PENNFILE *pf;
 
-  pf = mush_malloc(sizeof *pf, "pennfile");
+  pf = GC_MALLOC(sizeof *pf);
   pf->type = PFT_FILE;
   pf->handle.f = fopen(filename, mode);
   if (!pf->handle.f) {
     do_rawlog(LT_ERR, "Unable to open %s in mode '%s': %s",
               filename, mode, strerror(errno));
-    mush_free(pf, "pennfile");
+    GC_FREE(pf);
     return NULL;
   }
   return pf;
@@ -1981,7 +1976,7 @@ penn_fclose(PENNFILE *pf)
 #endif
     break;
   }
-  mush_free(pf, "pennfile");
+  GC_FREE(pf);
 }
 
 

@@ -24,6 +24,7 @@
 #include "externs.h"
 #include "sort.h"
 #include "parse.h"
+#include "mymalloc.h"
 #include "confmagic.h"
 
 #ifdef WIN32
@@ -1204,6 +1205,7 @@ FUNCTION(fun_log)
     safe_number(log10(num), buff, bp);
 }
 
+
 /* ARGSUSED */
 FUNCTION(fun_sqrt)
 {
@@ -1811,7 +1813,7 @@ FUNCTION(fun_lmath)
   }
 
   /* Allocate memory */
-  ptr = mush_calloc(BUFFER_LEN, sizeof(char *), "string");
+  ptr = GC_MALLOC_ATOMIC(BUFFER_LEN);
 
   nptr = list2arr(ptr, BUFFER_LEN, args[1], sep);
 
@@ -1819,12 +1821,9 @@ FUNCTION(fun_lmath)
 
   if (!op) {
     safe_str(T("#-1 UNKNOWN OPERATION"), buff, bp);
-    mush_free(ptr, "string");
     return;
   }
   op->func(ptr, nptr, buff, bp);
-
-  mush_free(ptr, "string");
 }
 
 /* Walker probably needs to convert from_base_XX arrays to a form
@@ -2519,19 +2518,17 @@ MATH_FUNC(math_median)
   NVAL *numbers;
   int n;
 
-  numbers = mush_malloc(nptr * sizeof(NVAL), "number_array");
+  numbers = GC_MALLOC_ATOMIC(nptr * sizeof(NVAL));
 
   for (n = 0; n < nptr; n++) {
     if (!is_number(ptr[n])) {
       safe_str(T(e_nums), buff, bp);
-      mush_free(numbers, "number_array");
       return;
     }
     numbers[n] = parse_number(ptr[n]);
   }
 
   median = find_median(numbers, nptr);
-  mush_free(numbers, "number_array");
   safe_number(median, buff, bp);
 }
 

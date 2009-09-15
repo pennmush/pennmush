@@ -90,7 +90,7 @@ int can_read_attr_internal(dbref player, dbref obj, ATTR *attr);
 int can_write_attr_internal(dbref player, dbref obj, ATTR *attr, int safe);
 bool can_edit_attr(dbref player, dbref thing, const char *attrname);
 unsigned const char *atr_get_compressed_data(ATTR *atr);
-char *atr_value(ATTR *atr);
+#define atr_value(a) safe_atr_value((a))
 char *
 safe_atr_value(ATTR *atr)
   __attribute_malloc__;

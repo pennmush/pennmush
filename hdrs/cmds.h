@@ -149,4 +149,4 @@ COMMAND_PROTO(cmd_wizmotd);
 COMMAND_PROTO(cmd_wizwall);
 COMMAND_PROTO(cmd_zemit);
 COMMAND_PROTO(command_atrset);
-#endif                          /* CMDS_H */
+#endif /* CMDS_H */

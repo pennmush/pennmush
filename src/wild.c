@@ -565,7 +565,6 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
      */
     return 0;
   }
-  add_check("pcre");
 
   /* The ansi string */
   as = parse_ansi_string(val);
@@ -580,7 +579,6 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
   if ((subpatterns = pcre_exec(re, extra, d, delenn, 0, 0, offsets, 99))
       < 0) {
     free_ansi_string(as);
-    mush_free(re, "pcre");
     return 0;
   }
   /* If we had too many subpatterns for the offsets vector, set the number
@@ -615,7 +613,6 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
   }
 
   free_ansi_string(as);
-  mush_free(re, "pcre");
   return 1;
 }
 
@@ -657,7 +654,6 @@ quick_regexp_match(const char *restrict s, const char *restrict d, bool cs)
      */
     return 0;
   }
-  add_check("pcre");
   sptr = remove_markup(d, &slen);
   extra = default_match_limit();
   /*
@@ -665,8 +661,6 @@ quick_regexp_match(const char *restrict s, const char *restrict d, bool cs)
    * automatically be filled in by this.
    */
   r = pcre_exec(re, extra, sptr, slen - 1, 0, 0, offsets, 99);
-
-  mush_free(re, "pcre");
 
   return r >= 0;
 }
@@ -746,15 +740,13 @@ check_literals(const char *restrict tstr, const char *restrict dstr, bool cs)
    * or no match can happen. That is, tstr is the pattern and dstr
    * is the string-to-match
    */
-  char tbuf1[BUFFER_LEN];
-  char dbuf1[BUFFER_LEN];
+  char *tbuf1, *dbuf1;
   const char delims[] = "?*";
   char *sp, *dp;
-  size_t len = 0;
 
-  dp = remove_markup(dstr, &len);
-  memcpy(dbuf1, dp, len);
-  mush_strncpy(tbuf1, strip_backslashes(tstr), BUFFER_LEN);
+  dbuf1 = remove_markup(dstr, NULL);
+  tbuf1 = strip_backslashes(tstr);
+
   if (!cs) {
     upcasestr(tbuf1);
     upcasestr(dbuf1);
@@ -777,8 +769,10 @@ static char *
 strip_backslashes(const char *str)
 {
   /* Remove backslashes from a string, and return it in a static buffer */
-  static char buf[BUFFER_LEN];
+  char *buf;
   int i = 0;
+
+  buf = GC_MALLOC_ATOMIC(BUFFER_LEN);
 
   while (*str && (i < BUFFER_LEN - 1)) {
     if (*str == '\\' && *(str + 1))

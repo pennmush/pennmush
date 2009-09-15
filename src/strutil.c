@@ -31,55 +31,6 @@
 char *next_token(char *str, char sep);
 int format_long(intmax_t val, char *buff, char **bp, int maxlen, int base);
 
-char *
-mush_strndup(const char *src, size_t len, const char *check)
-  __attribute_malloc__;
-
-/* Duplicate the first len characters of s */
-    char *mush_strndup(const char *src, size_t len, const char *check)
-{
-  char *copy;
-  size_t rlen = strlen(src);
-
-  if (rlen < len)
-    len = rlen;
-
-  copy = mush_malloc(len + 1, check);
-  if (copy) {
-    memcpy(copy, src, len);
-    copy[len] = '\0';
-  }
-
-  return copy;
-}
-
-
-/** Our version of strdup, with memory leak checking.
- * This should be used in preference to strdup, and in assocation
- * with mush_free().
- * \param s string to duplicate.
- * \param check label for memory checking.
- * \return newly allocated copy of s.
- */
-char *
-mush_strdup(const char *s, const char *check __attribute__ ((__unused__)))
-{
-  char *x;
-
-#ifdef HAVE_STRDUP
-  x = strdup(s);
-  if (x)
-    add_check(check);
-#else
-
-  size_t len = strlen(s) + 1;
-  x = mush_malloc(len, check);
-  if (x)
-    memcpy(x, s, len);
-#endif
-  return x;
-}
-
 #ifdef HAVE__VSNPRINTF_S
 /** Wrapper for the Win32 _snprintf_s() function */
 int
@@ -103,12 +54,14 @@ sane_snprintf_s(char *str, size_t len, const char *fmt, ...)
 char *
 chopstr(const char *str, size_t lim)
 {
-  static char tbuf1[BUFFER_LEN];
+  char *tbuf1;
   if (strlen(str) <= lim)
     return (char *) str;
   if (lim >= BUFFER_LEN)
     lim = BUFFER_LEN;
-  mush_strncpy(tbuf1, str, lim);
+  tbuf1 = GC_MALLOC_ATOMIC(lim + 1);
+  memcpy(tbuf1, str, lim);
+  tbuf1[lim] = '\0';
   return tbuf1;
 }
 
@@ -202,14 +155,13 @@ string_match(const char *src, const char *sub)
 char *
 strinitial(const char *s)
 {
-  static char buf1[BUFFER_LEN];
+  char *buf1;
   char *p;
 
-  if (!s || !*s) {
-    buf1[0] = '\0';
-    return buf1;
-  }
-  strcpy(buf1, s);
+  if (!s || !*s)
+    return "";
+
+  buf1 = GC_STRDUP(s);
   for (p = buf1; *p; p++)
     *p = DOWNCASE(*p);
   buf1[0] = UPCASE(buf1[0]);
@@ -218,19 +170,17 @@ strinitial(const char *s)
 
 /** Return an uppercased version of a string in a static buffer.
  * \param s string to uppercase.
- * \return pointer to a static buffer containing the uppercased version.
+ * \return pointer to a buffer containing the uppercased version.
  */
 char *
 strupper(const char *s)
 {
-  static char buf1[BUFFER_LEN];
-  char *p;
+  char *p, *buf1;
 
-  if (!s || !*s) {
-    buf1[0] = '\0';
-    return buf1;
-  }
-  mush_strncpy(buf1, s, BUFFER_LEN);
+  if (!s || !*s)
+    return "";
+
+  buf1 = GC_STRDUP(s);
   for (p = buf1; *p; p++)
     *p = UPCASE(*p);
   return buf1;
@@ -238,19 +188,17 @@ strupper(const char *s)
 
 /** Return a lowercased version of a string in a static buffer.
  * \param s string to lowercase.
- * \return pointer to a static buffer containing the lowercased version.
+ * \return pointer to a buffer containing the lowercased version.
  */
 char *
 strlower(const char *s)
 {
-  static char buf1[BUFFER_LEN];
-  char *p;
+  char *p, *buf1;
 
-  if (!s || !*s) {
-    buf1[0] = '\0';
-    return buf1;
-  }
-  mush_strncpy(buf1, s, BUFFER_LEN);
+  if (!s || !*s)
+    return "";
+
+  buf1 = GC_STRDUP(s);
   for (p = buf1; *p; p++)
     *p = DOWNCASE(*p);
   return buf1;
@@ -918,7 +866,7 @@ replace_string(const char *restrict old, const char *restrict newbit,
   char *result, *r;
   size_t len, newlen;
 
-  r = result = mush_malloc(BUFFER_LEN, "replace_string.buff");
+  r = result = GC_MALLOC_ATOMIC(BUFFER_LEN);
   if (!result)
     mush_panic(T("Couldn't allocate memory in replace_string!"));
 
@@ -965,7 +913,7 @@ replace_string2(const char *old[2], const char *newbits[2],
   if (!string)
     return NULL;
 
-  rp = result = mush_malloc(BUFFER_LEN, "replace_string.buff");
+  rp = result = GC_MALLOC_ATOMIC(BUFFER_LEN);
   if (!result)
     mush_panic(T("Couldn't allocate memory in replace_string2!"));
 
@@ -1126,9 +1074,9 @@ remove_word(char *list, char *word, char sep)
 {
   char *sp;
   char *bp;
-  static char buff[BUFFER_LEN];
+  char *buff;
 
-  bp = buff;
+  bp = buff = GC_MALLOC_ATOMIC(BUFFER_LEN);
   sp = split_token(&list, sep);
   if (!strcmp(sp, word)) {
     sp = split_token(&list, sep);
@@ -1159,8 +1107,10 @@ char *
 next_in_list(const char **head)
 {
   int paren = 0;
-  static char buf[BUFFER_LEN];
-  char *p = buf;
+  char *buf;
+  char *p;
+
+  p = buf = GC_MALLOC_ATOMIC(BUFFER_LEN);
 
   while (**head == ' ')
     (*head)++;
@@ -1347,8 +1297,8 @@ strncoll(const char *s1, const char *s2, size_t t)
   int result;
   size_t s1_len, s2_len;
 
-  ns1 = mush_malloc(t + 1, "string");
-  ns2 = mush_malloc(t + 1, "string");
+  ns1 = GC_MALLOC_ATOMIC(t + 1);
+  ns2 = GC_MALLOC_ATOMIC(t + 1);
   memcpy(ns1, s1, t);
   ns1[t] = '\0';
   memcpy(ns2, s2, t);
@@ -1356,15 +1306,11 @@ strncoll(const char *s1, const char *s2, size_t t)
   s1_len = strxfrm(NULL, ns1, 0) + 1;
   s2_len = strxfrm(NULL, ns2, 0) + 1;
 
-  d1 = mush_malloc(s1_len + 1, "string");
-  d2 = mush_malloc(s2_len + 1, "string");
+  d1 = GC_MALLOC_ATOMIC(s1_len + 1);
+  d2 = GC_MALLOC_ATOMIC(s2_len + 1);
   (void) strxfrm(d1, ns1, s1_len);
   (void) strxfrm(d2, ns2, s2_len);
   result = strcmp(d1, d2);
-  mush_free(ns1, "string");
-  mush_free(ns2, "string");
-  mush_free(d1, "string");
-  mush_free(d2, "string");
   return result;
 #else
   return strncmp(s1, s2, t);
@@ -1391,13 +1337,11 @@ strcasecoll(const char *s1, const char *s2)
   s1_len = strxfrm(NULL, s1, 0) + 1;
   s2_len = strxfrm(NULL, s2, 0) + 1;
 
-  d1 = mush_malloc(s1_len, "string");
-  d2 = mush_malloc(s2_len, "string");
+  d1 = GC_MALLOC_ATOMIC(s1_len);
+  d2 = GC_MALLOC_ATOMIC(s2_len);
   (void) strxfrm(d1, strupper(s1), s1_len);
   (void) strxfrm(d2, strupper(s2), s2_len);
   result = strcmp(d1, d2);
-  mush_free(d1, "string");
-  mush_free(d2, "string");
   return result;
 #else
   return strcasecmp(s1, s2);
@@ -1422,8 +1366,8 @@ strncasecoll(const char *s1, const char *s2, size_t t)
   int result;
   size_t s1_len, s2_len;
 
-  ns1 = mush_malloc(t + 1, "string");
-  ns2 = mush_malloc(t + 1, "string");
+  ns1 = GC_MALLOC_ATOMIC(t + 1);
+  ns2 = GC_MALLOC_ATOMIC(t + 1);
   memcpy(ns1, s1, t);
   ns1[t] = '\0';
   memcpy(ns2, s2, t);
@@ -1431,15 +1375,11 @@ strncasecoll(const char *s1, const char *s2, size_t t)
   s1_len = strxfrm(NULL, ns1, 0) + 1;
   s2_len = strxfrm(NULL, ns2, 0) + 1;
 
-  d1 = mush_malloc(s1_len, "string");
-  d2 = mush_malloc(s2_len, "string");
+  d1 = GC_MALLOC_ATOMIC(s1_len);
+  d2 = GC_MALLOC_ATOMIC(s2_len);
   (void) strxfrm(d1, strupper(ns1), s1_len);
   (void) strxfrm(d2, strupper(ns2), s2_len);
   result = strcmp(d1, d2);
-  mush_free(ns1, "string");
-  mush_free(ns2, "string");
-  mush_free(d1, "string");
-  mush_free(d2, "string");
   return result;
 #else
   return strncasecmp(s1, s2, t);
@@ -1535,18 +1475,18 @@ show_time(time_t t, bool utc)
 /** Return a stringified time in a static buffer
  * Just like asctime() except without the trailing newlines.
  * \param when the time to format.
- * \return a pointer to a static buffer with the stringified time.
+ * \return a pointer to a buffer with the stringified time.
  */
 char *
 show_tm(struct tm *when)
 {
-  static char buffer[BUFFER_LEN];
+  char *buffer;
   int p;
 
   if (!when)
     return NULL;
 
-  strcpy(buffer, asctime(when));
+  buffer = GC_STRDUP(asctime(when));
 
   p = strlen(buffer) - 1;
   if (buffer[p] == '\n')

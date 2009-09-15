@@ -53,6 +53,7 @@
 #include "parse.h"
 #include "flags.h"
 #include "dbdefs.h"
+#include "mymalloc.h"
 #include "confmagic.h"
 
 static dbref match_result_internal
@@ -240,7 +241,7 @@ match_result_internal(dbref who, const char *xname, int type, long flags)
   if (GoodObject(match))
     return match;
 
-  sname = name = mush_strdup(xname, "mri.string");
+  sname = name = GC_STRDUP(xname);
 
   if (flags & MAT_ENGLISH) {
     /* Check for adjective phrases */
@@ -301,7 +302,6 @@ finished:
 
   /* Handle noisy_match_result */
   if (flags & MAT_NOISY) {
-    mush_free(sname, "mri.string");
     switch (match) {
     case NOTHING:
       notify(who, T("I can't see that here."));
@@ -313,7 +313,6 @@ finished:
       return match;
     }
   }
-  mush_free(sname, "mri.string");
   return match;
 }
 

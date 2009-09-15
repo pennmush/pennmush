@@ -95,7 +95,7 @@ text_compress(const char *s)
 
   /* Part 2 - Actually get around to compressing the data... */
   p = (const unsigned char *) s;
-  b = buf = (unsigned char *) malloc(needed_length);
+  b = buf = GC_MALLOC_ATOMIC(needed_length);
   stage = 0;
   bits = 0;
 
@@ -211,7 +211,7 @@ text_uncompress(const unsigned char *s)
 char *
 safe_uncompress(unsigned char const *s)
 {
-  return (char *) strdup((char *) uncompress(s));
+  return GC_STRDUP((char *) uncompress(s));
 }
 
 

@@ -208,7 +208,7 @@ output_previous_word(void)
       *b++ = *p++;
     return;
   }
-  words[i] = malloc(wordpos);
+  words[i] = GC_MALLOC_ATOMIC(wordpos);
 
   if (!words[i])
     mush_panic("Out of memory in string compression routine");
@@ -351,7 +351,7 @@ text_uncompress(unsigned char const *s)
 char *
 safe_uncompress(unsigned char const *s)
 {
-  return (char *) strdup((char *) uncompress(s));
+  return GC_STRDUP((char *) uncompress(s));
 }
 
 

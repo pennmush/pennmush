@@ -27,25 +27,12 @@
 
 /** Hash table of player names */
 HASHTAB htab_player_list;
-slab *player_dbref_slab = NULL;
-
-static int hft_initialized = 0;
-static void init_hft(void);
-static void delete_dbref(void *);
-
-/** Free a player_dbref struct. */
-static void
-delete_dbref(void *data)
-{
-  slab_free(player_dbref_slab, data);
-}
-
+static bool hft_initialized = 0;
 
 static void
 init_hft(void)
 {
-  hash_init(&htab_player_list, 256, delete_dbref);
-  player_dbref_slab = slab_create("player list dbrefs", sizeof(dbref));
+  hash_init(&htab_player_list, 256);
   hft_initialized = 1;
 }
 
@@ -69,7 +56,7 @@ add_player(dbref player)
   dbref *p;
   if (!hft_initialized)
     init_hft();
-  p = slab_malloc(player_dbref_slab, NULL);
+  p = GC_MALLOC_ATOMIC(sizeof *p);
   if (!p)
     mush_panic(T("Unable to allocate memory in plyrlist!"));
   *p = player;
@@ -85,8 +72,10 @@ void
 add_player_alias(dbref player, const char *alias)
 {
   char tbuf1[BUFFER_LEN], *s, *sp;
+
   if (!hft_initialized)
     init_hft();
+
   if (!alias) {
     add_player(player);
     return;
@@ -99,7 +88,7 @@ add_player_alias(dbref player, const char *alias)
       sp++;
     if (sp && *sp) {
       dbref *p;
-      p = slab_malloc(player_dbref_slab, NULL);
+      p = GC_MALLOC_ATOMIC(sizeof *p);
       if (!p)
         mush_panic(T("Unable to allocate memory in plyrlist!"));
       *p = player;
@@ -157,6 +146,7 @@ delete_player(dbref player, const char *alias)
     init_hft();
     return;
   }
+
   if (alias) {
     /* This could be a compound alias, in which case we need to delete
      * them all, but we shouldn't delete the player's own name!

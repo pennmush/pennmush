@@ -46,9 +46,6 @@ static char missing_name[ATTRIBUTE_NAME_LIMIT + 1];
 
 /*======================================================================*/
 
-/** How many attributes go in a "page" of attribute memory? */
-#define ATTRS_PER_PAGE (200)
-
 slab *attrib_slab = NULL;
 
 static int real_atr_clr(dbref thinking, char const *atr, dbref player,
@@ -629,7 +626,6 @@ atr_new_add(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
           mush_panic(T("Unable to allocate memory in atr_new_add()!"));
         }
         root->data = chunk_create(t, u_strlen(t), 0);
-        free(t);
       }
     } else {
       if (!(AL_FLAGS(root) & AF_ROOT))  /* Upgrading old database */
@@ -650,7 +646,6 @@ atr_new_add(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
       return;
 
     ptr->data = chunk_create(t, u_strlen(t), derefs);
-    free(t);
 
     if (*s == '$')
       AL_FLAGS(ptr) |= AF_COMMAND;
@@ -727,7 +722,6 @@ atr_add(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
           if (!t)
             mush_panic(T("Unable to allocate memory in atr_add()!"));
           root->data = chunk_create(t, u_strlen(t), 0);
-          free(t);
         }
       } else
         AL_FLAGS(root) |= AF_ROOT;
@@ -763,7 +757,6 @@ atr_add(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
       return AE_ERROR;
     }
     ptr->data = chunk_create(t, u_strlen(t), 0);
-    free(t);
 
     if (*s == '$')
       AL_FLAGS(ptr) |= AF_COMMAND;
@@ -1314,7 +1307,7 @@ use_attr(UsedAttr **prev, char const *name, uint32_t no_prog)
 
   found = find_attr(&prev, name);
   if (!found) {
-    used = mush_malloc(sizeof *used, "used_attr");
+    used = GC_MALLOC(sizeof *used);
     used->next = *prev;
     used->name = name;
     used->no_prog = 0;
@@ -1354,7 +1347,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
   uint32_t flag_mask;
   ATTR *ptr;
   int parent_depth;
-  char tbuf1[BUFFER_LEN];
+  char *tbuf1;
   char tbuf2[BUFFER_LEN];
   char *s;
   int match, match_found;
@@ -1413,8 +1406,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
     }
     if (!(AL_FLAGS(ptr) & flag_mask))
       continue;
-    strcpy(tbuf1, atr_value(ptr));
-    s = tbuf1;
+    s = tbuf1 = atr_value(ptr);
     do {
       s = strchr(s + 1, end);
     } while (s && s[-1] == '\\');
@@ -1535,8 +1527,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
       }
       if (!(AL_FLAGS(ptr) & flag_mask))
         continue;
-      strcpy(tbuf1, atr_value(ptr));
-      s = tbuf1;
+      s = tbuf1 = atr_value(ptr);
       do {
         s = strchr(s + 1, end);
       } while (s && s[-1] == '\\');
@@ -1618,7 +1609,6 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
 exit_sequence:
   while (used_list) {
     UsedAttr *temp = used_list->next;
-    mush_free(used_list, "used_attr");
     used_list = temp;
   }
   return match;
@@ -1638,7 +1628,7 @@ int
 one_comm_match(dbref thing, dbref player, const char *atr, const char *str)
 {
   ATTR *ptr;
-  char tbuf1[BUFFER_LEN];
+  char *tbuf1;
   char tbuf2[BUFFER_LEN];
   char *s;
   char match_space[BUFFER_LEN * 2];
@@ -1654,8 +1644,7 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str)
   if (AF_Noprog(ptr) || !AF_Command(ptr))
     return 0;
 
-  strcpy(tbuf1, atr_value(ptr));
-  s = tbuf1;
+  s = tbuf1 = atr_value(ptr);
   do {
     s = strchr(s + 1, ':');
   } while (s && s[-1] == '\\');
@@ -1713,8 +1702,7 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
            dbref player, uint32_t flags)
 {
   ATTR *old;
-  char name[BUFFER_LEN];
-  char tbuf1[BUFFER_LEN];
+  char *name, *oldalias = NULL;
   atr_err res;
   int was_hearer;
   int was_listener;
@@ -1727,19 +1715,17 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
   }
   if (!controls(player, thing))
     return 0;
-  strcpy(name, atr);
-  upcasestr(name);
+  name = strupper(atr);
   if (!strcmp(name, "ALIAS") && IsPlayer(thing)) {
     old = atr_get_noparent(thing, "ALIAS");
-    tbuf1[0] = '\0';
     if (old) {
       /* Old alias - we're allowed to change to a different case */
-      strcpy(tbuf1, atr_value(old));
+      oldalias = atr_value(old);
       if (s && !*s) {
         notify_format(player, T("'%s' is not a valid alias."), s);
         return -1;
       }
-      if (s && strcasecmp(s, tbuf1)) {
+      if (s && strcasecmp(s, oldalias)) {
         int opae_res = ok_player_alias(s, player, thing);
         switch (opae_res) {
         case OPAE_INVALID:
@@ -1780,9 +1766,9 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
     /* You can only set this to dbrefs of things you're allowed to
      * forward to. If you get one wrong, we puke.
      */
-    char *fwdstr, *curr;
+    char *fwdstr, *curr, *tbuf1;
     dbref fwd;
-    strcpy(tbuf1, s);
+    tbuf1  = GC_STRDUP(s);
     fwdstr = trim_space_sep(tbuf1, ' ');
     while ((curr = split_token(&fwdstr, ' ')) != NULL) {
       if (!is_objid(curr)) {
@@ -1857,7 +1843,7 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
     break;
   }
   if (!strcmp(name, "ALIAS") && IsPlayer(thing)) {
-    reset_player_list(thing, NULL, tbuf1, NULL, s);
+    reset_player_list(thing, NULL, oldalias, NULL, s);
     if (s && *s)
       notify(player, T("Alias set."));
     else
@@ -1920,22 +1906,19 @@ do_atrlock(dbref player, const char *xarg1, const char *arg2)
     return;
   }
 
-  arg1 = mush_strdup(xarg1, "atrlock.string");
+  arg1 = GC_STRDUP(xarg1);
 
   if (!(p = strchr(arg1, '/')) || !(*(p + 1))) {
     notify(player, T("You need to give an object/attribute pair."));
-    mush_free(arg1, "atrlock.string");
     return;
   }
   *p++ = '\0';
   if ((thing = noisy_match_result(player, arg1, NOTYPE, MAT_EVERYTHING)) ==
       NOTHING) {
-    mush_free(arg1, "atrlock.string");
     return;
   }
   if (!controls(player, thing)) {
     notify(player, T("Permission denied."));
-    mush_free(arg1, "atrlock.string");
     return;
   }
 
@@ -1944,34 +1927,28 @@ do_atrlock(dbref player, const char *xarg1, const char *arg2)
     if (!status) {
       notify_format(player, T("That attribute is %slocked."),
                     AF_Locked(ptr) ? "" : "un");
-      mush_free(arg1, "atrlock.string");
       return;
     } else if (!Can_Write_Attr(player, thing, ptr)) {
       notify(player,
              T("You need to be able to set the attribute to change its lock."));
-      mush_free(arg1, "atrlock.string");
       return;
     } else {
       if (status == 1) {
         AL_FLAGS(ptr) |= AF_LOCKED;
         AL_CREATOR(ptr) = Owner(player);
         notify(player, T("Attribute locked."));
-        mush_free(arg1, "atrlock.string");
         return;
       } else if (status == 2) {
         AL_FLAGS(ptr) &= ~AF_LOCKED;
         notify(player, T("Attribute unlocked."));
-        mush_free(arg1, "atrlock.string");
         return;
       } else {
         notify(player, T("Invalid status on atrlock.. Notify god."));
-        mush_free(arg1, "atrlock.string");
         return;
       }
     }
   } else
     notify(player, T("No such attribute."));
-  mush_free(arg1, "atrlock.string");
 }
 
 /** Change ownership of an attribute.
@@ -1993,22 +1970,19 @@ do_atrchown(dbref player, const char *xarg1, const char *arg2)
     return;
   }
 
-  arg1 = mush_strdup(xarg1, "atrchown.string");
+  arg1 = GC_STRDUP(xarg1);
 
   if (!(p = strchr(arg1, '/')) || !(*(p + 1))) {
     notify(player, T("You need to give an object/attribute pair."));
-    mush_free(arg1, "atrchown.string");
     return;
   }
   *p++ = '\0';
   if ((thing = noisy_match_result(player, arg1, NOTYPE, MAT_EVERYTHING)) ==
       NOTHING) {
-    mush_free(arg1, "atrchown.string");
     return;
   }
   if (!controls(player, thing)) {
     notify(player, T("Permission denied."));
-    mush_free(arg1, "atrchown.string");
     return;
   }
 
@@ -2018,7 +1992,6 @@ do_atrchown(dbref player, const char *xarg1, const char *arg2)
     new_owner = lookup_player(arg2);
   if (new_owner == NOTHING) {
     notify(player, T("I can't find that player"));
-    mush_free(arg1, "atrchown.string");
     return;
   }
 
@@ -2027,21 +2000,17 @@ do_atrchown(dbref player, const char *xarg1, const char *arg2)
     if (Can_Write_Attr(player, thing, ptr)) {
       if (new_owner != Owner(player) && !Wizard(player)) {
         notify(player, T("You can only chown an attribute to yourself."));
-        mush_free(arg1, "atrchown.string");
         return;
       }
       AL_CREATOR(ptr) = Owner(new_owner);
       notify(player, T("Attribute owner changed."));
-      mush_free(arg1, "atrchown.string");
       return;
     } else {
       notify(player, T("You don't have the permission to chown that."));
-      mush_free(arg1, "atrchown.string");
       return;
     }
   } else
     notify(player, T("No such attribute."));
-  mush_free(arg1, "atrchown.string");
 }
 
 
@@ -2096,28 +2065,16 @@ atr_free_one(ATTR *a)
 unsigned char const *
 atr_get_compressed_data(ATTR *atr)
 {
-  static unsigned char buffer[BUFFER_LEN * 2];
-  static unsigned char const empty_string[] = { 0 };
+  unsigned char *buffer;
   size_t len;
+
   if (!atr->data)
-    return empty_string;
-  len = chunk_fetch(atr->data, buffer, sizeof(buffer));
-  if (len > sizeof(buffer))
-    return empty_string;
+    return (const unsigned char *)"";
+  len = chunk_len(atr->data);
+  buffer = GC_MALLOC_ATOMIC(len + 1);
+  chunk_fetch(atr->data, buffer, len);
   buffer[len] = '\0';
   return buffer;
-}
-
-/** Return the uncompressed data for an attribute in a static buffer.
- * This is a wrapper function, to centralize the use of compression/
- * decompression on attributes.
- * \param atr the attribute struct from which to get the data reference.
- * \return a pointer to the uncompressed data, in a static buffer.
- */
-char *
-atr_value(ATTR *atr)
-{
-  return uncompress(atr_get_compressed_data(atr));
 }
 
 /** Return the uncompressed data for an attribute in a dynamic buffer.

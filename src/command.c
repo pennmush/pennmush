@@ -576,9 +576,7 @@ COMMAND_INFO *
 command_find(const char *name)
 {
 
-  char cmdname[BUFFER_LEN];
-  strcpy(cmdname, name);
-  upcasestr(cmdname);
+  char *cmdname = strupper(name);
   if (hash_find(&htab_reserved_aliases, cmdname))
     return NULL;
   return (COMMAND_INFO *) ptab_find(&ptab_command, cmdname);
@@ -654,7 +652,7 @@ switchmask(const char *switches)
   int switchnum;
 
   if (sm_bytes < switch_bytes) {
-    sw = mush_realloc(sw, switch_bytes, "cmd.switch.vector");
+    sw = GC_REALLOC(sw, switch_bytes);
     sm_bytes = switch_bytes;
   }
 
@@ -773,7 +771,7 @@ build_switch_table(const char *sw, int count __attribute__ ((__unused__)),
   }
   /* Not in switchinc.c table */
   data->table[data->n].value = data->start++;
-  data->table[data->n++].name = mush_strdup(sw, "switch.name");
+  data->table[data->n++].name = GC_STRDUP(sw);
 }
 
 /** Initialize commands (after reading config file).
@@ -791,8 +789,7 @@ command_init_postconfig(void)
   command_state = CMD_LOAD_DONE;
 
   /* First make the switch table */
-  dyn_switch_list = mush_calloc(switch_names.count + 2, sizeof(SWITCH_VALUE),
-                                "cmd_switch_table");
+  dyn_switch_list = GC_MALLOC((switch_names.count + 2) * sizeof(SWITCH_VALUE));
   if (!dyn_switch_list)
     mush_panic(T("Unable to allocate command switch table"));
   sw_data.table = dyn_switch_list;
@@ -980,14 +977,6 @@ command_isattr(char *command)
   return NULL;
 }
 
-/** A handy macro to free up the command_parse-allocated variables */
-#define command_parse_free_args \
-    mush_free((Malloc_t) command, "string"); \
-    mush_free((Malloc_t) swtch, "string"); \
-    mush_free((Malloc_t) ls, "string"); \
-    mush_free((Malloc_t) rs, "string"); \
-    mush_free((Malloc_t) switches, "string")
-
 /** Parse commands.
  * Parse the commands. This is the big one!
  * We distinguish parsing of input sent from a player at a socket
@@ -1025,11 +1014,11 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
 
   rhs_present = 0;
 
-  command = mush_malloc(BUFFER_LEN, "string");
-  swtch = mush_malloc(BUFFER_LEN, "string");
-  ls = mush_malloc(BUFFER_LEN, "string");
-  rs = mush_malloc(BUFFER_LEN, "string");
-  switches = mush_malloc(BUFFER_LEN, "string");
+  command = GC_MALLOC_ATOMIC(BUFFER_LEN);
+  swtch = GC_MALLOC_ATOMIC(BUFFER_LEN);
+  ls = GC_MALLOC_ATOMIC(BUFFER_LEN);
+  rs = GC_MALLOC_ATOMIC(BUFFER_LEN);
+  switches = GC_MALLOC_ATOMIC(BUFFER_LEN);
   if (!command || !swtch || !ls || !rs || !switches)
     mush_panic("Couldn't allocate memory in command_parse");
   p = string;
@@ -1051,7 +1040,6 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
     if ((cmd = command_find("WARN_ON_MISSING"))) {
       if (!(cmd->type & CMD_T_DISABLED)) {
         cmd->func(cmd, player, cause, sw, string, NULL, NULL, ls, lsa, rs, rsa);
-        command_parse_free_args;
         return NULL;
       }
     }
@@ -1059,7 +1047,6 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
   switch (*p) {
   case '\0':
     /* Just in case. You never know */
-    command_parse_free_args;
     return NULL;
   case SAY_TOKEN:
     replacer = "SAY";
@@ -1201,16 +1188,15 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
                           PE_COMMAND_BRACES), PT_DEFAULT, NULL);
     }
     *c2 = '\0';
-    command_parse_free_args;
     return commandraw;
   }
   /* Check the permissions */
   if (!command_check(player, cmd)) {
-    command_parse_free_args;
     return NULL;
   }
   /* Parse out any switches */
   sw = SW_ALLOC();
+  SW_ZERO(sw);
   swp = switches;
   *swp = '\0';
   se = switch_err;
@@ -1344,7 +1330,6 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
   retval = NULL;
   if (cmd->func == NULL) {
     do_rawlog(LT_ERR, T("No command vector on command %s."), cmd->name);
-    command_parse_free_args;
     return NULL;
   } else {
     char *saveregs[NUMQ];
@@ -1358,7 +1343,6 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
         if (*switch_err) {
           notify(player, switch_err);
           free_global_regs("hook.regs", saveregs);
-          command_parse_free_args;
           return NULL;
         }
         run_hook(player, cause, &cmd->hooks.before, saveregs, 1);
@@ -1376,12 +1360,9 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
     free_global_regs("hook.regs", saveregs);
   }
 
-  SW_FREE(sw);
-  command_parse_free_args;
   return retval;
 }
 
-#undef command_parse_free_args
 
 /** Execute the huh_command when no command is matched.
  * \param player the enactor.
@@ -1457,15 +1438,14 @@ restrict_command(const char *name, const char *xrestriction)
     return 0;
 
   if (command->restrict_message) {
-    mush_free((void *) command->restrict_message, "cmd_restrict_message");
     command->restrict_message = NULL;
   }
-  rsave = restriction = mush_strdup(xrestriction, "rc.string");
+  rsave = restriction = GC_STRDUP(xrestriction);
   message = strchr(restriction, '"');
   if (message) {
     *(message++) = '\0';
     if ((message = trim_space_sep(message, ' ')) && *message)
-      command->restrict_message = mush_strdup(message, "cmd_restrict_message");
+      command->restrict_message = GC_STRDUP(message);
   }
 
   while (restriction && *restriction) {
@@ -1521,7 +1501,6 @@ restrict_command(const char *name, const char *xrestriction)
     }
     restriction = tp;
   }
-  mush_free(rsave, "rc.string");
   return 1;
 }
 
@@ -1584,7 +1563,7 @@ do_command_add(dbref player, char *name, int flags)
     if (!ok_command_name(name)) {
       notify(player, T("Bad command name."));
     } else {
-      command_add(mush_strdup(name, "command_add"),
+      command_add(GC_STRDUP(name),
                   flags, NULL,
                   0, (flags & CMD_T_NOPARSE ? NULL : "NOEVAL"),
                   cmd_unimplemented);
@@ -1639,7 +1618,6 @@ do_command_delete(dbref player, char *name)
         } else
           cptr = ptab_nextentry_new(&ptab_command, alias);
       }
-      mush_free((void *) command->name, "command_add");
       slab_free(command_slab, command);
       if (acount > 1)
         notify_format(player, T("Removed %s and aliases from command table."),
@@ -1992,7 +1970,6 @@ run_hook(dbref player, dbref cause, struct hook_data *hook, char *saveregs[],
   code = safe_atr_value(atr);
   if (!code)
     return 1;
-  add_check("hook.code");
 
   save_global_regs("run_hook", origregs);
   restore_global_regs("hook.regs", saveregs);
@@ -2008,7 +1985,6 @@ run_hook(dbref player, dbref cause, struct hook_data *hook, char *saveregs[],
     save_global_regs("hook.regs", saveregs);
   restore_global_regs("run_hook", origregs);
 
-  mush_free(code, "hook.code");
   return parse_boolean(buff);
 }
 
@@ -2072,7 +2048,6 @@ do_hook(dbref player, char *command, char *obj, char *attrname,
   if (!obj && !attrname) {
     notify_format(player, T("Hook removed from %s."), cmd->name);
     h->obj = NOTHING;
-    mush_free(h->attrname, "hook.attr");
     h->attrname = NULL;
   } else if (!obj || !*obj
              || (flag != HOOK_OVERRIDE && (!attrname || !*attrname))) {
@@ -2088,12 +2063,10 @@ do_hook(dbref player, char *command, char *obj, char *attrname,
       return;
     }
     h->obj = objdb;
-    if (h->attrname)
-      mush_free(h->attrname, "hook.attr");
     if (!attrname || !*attrname) {
       h->attrname = NULL;
     } else {
-      h->attrname = mush_strdup(strupper(attrname), "hook.attr");
+      h->attrname = strupper(attrname);
     }
     notify_format(player, T("Hook set for %s"), cmd->name);
   }

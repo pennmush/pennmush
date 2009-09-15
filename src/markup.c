@@ -326,8 +326,7 @@ ansi_isnull(const ansi_data a)
 char *
 remove_markup(const char *orig, size_t * s_len)
 {
-  static char buff[BUFFER_LEN];
-  char *bp = buff;
+  char *buff, *bp;
   const char *q;
   size_t len = 0;
 
@@ -336,6 +335,8 @@ remove_markup(const char *orig, size_t * s_len)
       *s_len = 0;
     return NULL;
   }
+
+  bp = buff = GC_MALLOC_ATOMIC(BUFFER_LEN);
 
   for (q = orig; *q;) {
     switch (*q) {
@@ -726,11 +727,9 @@ free_markup_info(markup_information *info)
 {
   if (info) {
     if (info->start_code) {
-      mush_free(info->start_code, "markup_code");
       info->start_code = NULL;
     }
     if (info->stop_code) {
-      mush_free(info->stop_code, "markup_code");
       info->stop_code = NULL;
     }
   }
@@ -784,7 +783,7 @@ real_parse_ansi_string(const char *source)
   safe_str(source, src, &sptr);
   *sptr = '\0';
 
-  data = mush_malloc(sizeof(ansi_string), "ansi_string");
+  data = GC_MALLOC(sizeof(ansi_string));
   if (!data)
     return NULL;
 
@@ -835,9 +834,9 @@ real_parse_ansi_string(const char *source)
         if (*ptr && *ptr != '/') {
           /* We're at the start tag. */
           info = &(data->markup[data->nmarkups++]);
-          info->start_code = mush_strdup(ptr, "markup_code");
+          info->start_code = GC_STRDUP(ptr);
           snprintf(tagbuff, BUFFER_LEN, "/%s", parse_tagname(ptr));
-          info->stop_code = mush_strdup(tagbuff, "markup_code");
+          info->stop_code = GC_STRDUP(tagbuff);
           info->type = MARKUP_HTML;
           info->start = pos;
           info->end = -1;
@@ -857,7 +856,7 @@ real_parse_ansi_string(const char *source)
              * Consider this a standalone tag with no close tag. */
             info = &(data->markup[data->nmarkups++]);
             /* Start code is where we are */
-            info->stop_code = mush_strdup(ptr, "markup_code");
+            info->stop_code = GC_STRDUP(ptr);
             info->type = MARKUP_HTML;
             info->priority = priority++;
             info->start = -1;
@@ -927,7 +926,6 @@ real_parse_ansi_string(const char *source)
       /* If it's HTML, we treat it as standalone (<IMG>, <BR>, etc)
        * This is ugly - it's not a "start" but a "stop" */
       if (info->end < 0) {
-        mush_free(info->stop_code, "markup_code");
         info->stop_code = info->start_code;
         info->start_code = NULL;
         info->end = info->start;
@@ -1006,7 +1004,6 @@ free_ansi_string(ansi_string *as)
   for (i = as->nmarkups - 1; i >= 0; i--) {
     free_markup_info(&(as->markup[i]));
   }
-  mush_free(as, "ansi_string");
 }
 
 
@@ -1234,9 +1231,9 @@ ansi_string_delete(ansi_string *as, int start, int count)
 do { \
   x.type = y.type; \
   x.priority = y.priority; \
-  if (y.start_code) x.start_code = mush_strdup(y.start_code,"markup_code"); \
+  if (y.start_code) x.start_code = GC_STRDUP(y.start_code); \
   else (x.start_code = NULL); \
-  if (y.stop_code) x.stop_code = mush_strdup(y.stop_code,"markup_code"); \
+  if (y.stop_code) x.stop_code = GC_STRDUP(y.stop_code); \
   else (x.stop_code = NULL); \
 } while (0)
 
@@ -1575,7 +1572,7 @@ scramble_ansi_string(ansi_string *as)
 
   optimize_ansi_string(as);
 
-  tmp = mush_malloc(sizeof(ansi_string), "ansi_string");
+  tmp = GC_MALLOC(sizeof(ansi_string));
   if (!tmp)
     return NULL;
 
@@ -1979,7 +1976,7 @@ real_decompose_str(char *orig, char *buff, char **bp)
           if (*str != '/') {
             pueblotop++;
             snprintf(tagbuff, BUFFER_LEN, "%s", parse_tagname(str));
-            pueblostack[pueblotop] = mush_strdup(tagbuff, "markup_code");
+            pueblostack[pueblotop] = GC_STRDUP(tagbuff);
 
             retval += safe_str("[tag(", buff, bp);
             retval += safe_str(tagbuff, buff, bp);
@@ -2026,7 +2023,6 @@ real_decompose_str(char *orig, char *buff, char **bp)
                 retval += safe_str("[endtag(", buff, bp);
                 retval += safe_str(pueblostack[pueblotop], buff, bp);
                 retval += safe_str(")]", buff, bp);
-                mush_free(pueblostack[pueblotop], "markup_code");
               }
             }
           }

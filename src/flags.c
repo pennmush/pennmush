@@ -73,7 +73,6 @@ static FLAG *match_flag_ns(FLAGSPACE *n, const char *name);
 PTAB ptab_flag;                 /**< Table of flags by name, inc. aliases */
 PTAB ptab_power;                /**< Table of powers by name, inc. aliases */
 HASHTAB htab_flagspaces;                /**< Hash of flagspaces */
-slab *flag_slab = NULL;
 extern PTAB ptab_command;       /* Uses flag bitmasks */
 
 /** Attempt to find a flagspace from its name */
@@ -359,9 +358,7 @@ new_flag(void)
 {
   FLAG *f;
 
-  if (flag_slab == NULL)
-    flag_slab = slab_create("flags", sizeof(FLAG));
-  f = slab_malloc(flag_slab, NULL);
+  f = GC_MALLOC(sizeof *f);
   if (!f)
     mush_panic("Unable to allocate memory for a new flag!\n");
   return f;
@@ -371,31 +368,16 @@ new_flag(void)
 static void
 clear_all_flags(FLAGSPACE *n)
 {
-  FLAG *f;
-
-  for (f = ptab_firstentry(n->tab); f; f = ptab_nextentry(n->tab)) {
-    f->perms = DECR_FLAG_REF(f->perms);
-    if (FLAG_REF(f->perms) == 0) {
-      mush_free((void *) f->name, "flag.name");
-      slab_free(flag_slab, f);
-    }
-  }
-
   ptab_free(n->tab);
-
-  /* Finally, the flags array */
-  if (n->flags)
-    mush_free(n->flags, "flagspace.flags");
   n->flags = NULL;
   n->flagbits = 0;
-
 }
 
 static FLAG *
 clone_flag(FLAG *f)
 {
   FLAG *clone = new_flag();
-  clone->name = mush_strdup(f->name, "flag.name");
+  clone->name = GC_STRDUP(f->name);
   clone->letter = f->letter;
   clone->type = f->type;
   clone->bitpos = f->bitpos;
@@ -417,15 +399,8 @@ flag_add(FLAGSPACE *n, const char *name, FLAG *f)
    * We could improve this algorithm to use the next available
    * slot after deletions, too, but this will do for now.
    */
-
-  /* Can't have more than 255 references to the same flag */
-  if (FLAG_REF(f->perms) == 0xFFU)
-    return;
-
   if (f->bitpos < 0)
     f->bitpos = n->flagbits;
-
-  f->perms = INCR_FLAG_REF(f->perms);
 
   /* Insert the flag in the ptab by the given name (maybe an alias) */
   ptab_insert_one(n->tab, name, f);
@@ -443,8 +418,7 @@ flag_add(FLAGSPACE *n, const char *name, FLAG *f)
     if (f->bitpos >= n->flagbits) {
       /* Oops, we need a bigger array */
       n->flags =
-        mush_realloc(n->flags, (f->bitpos + 1) * sizeof(FLAG *),
-                     "flagspace.flags");
+        GC_REALLOC(n->flags, (f->bitpos + 1) * sizeof(FLAG *));
       if (!n->flags)
         mush_panic("Unable to reallocate flags array!\n");
 
@@ -475,10 +449,10 @@ realloc_object_flag_bitmasks(FLAGSPACE *n)
 
   for (it = 0; it < db_top; it++) {
     if (n->tab == &ptab_flag) {
-      Flags(it) = (object_flag_type) realloc(Flags(it), numbytes);
+      Flags(it) = GC_REALLOC(Flags(it), numbytes);
       p = Flags(it) + numbytes - 1;
     } else {
-      Powers(it) = (object_flag_type) realloc(Powers(it), numbytes);
+      Powers(it) = GC_REALLOC(Powers(it), numbytes);
       p = Powers(it) + numbytes - 1;
     }
     /* Zero them out */
@@ -490,14 +464,13 @@ realloc_object_flag_bitmasks(FLAGSPACE *n)
   command = (COMMAND_INFO *) ptab_firstentry(&ptab_command);
   while (command) {
     if (n->tab == &ptab_flag && command->flagmask) {
-      command->flagmask =
-        (object_flag_type) realloc(command->flagmask, numbytes);
+      command->flagmask = GC_REALLOC(command->flagmask, numbytes);
       /* Zero them out */
       p = command->flagmask + numbytes - 1;
       memset(p, 0, 1);
     }
     if (n->tab == &ptab_power && command->powers) {
-      command->powers = (object_flag_type) realloc(command->powers, numbytes);
+      command->powers = GC_REALLOC(command->powers, numbytes);
       /* Zero them out */
       p = command->powers + numbytes - 1;
       memset(p, 0, 1);
@@ -513,9 +486,8 @@ flag_read_oldstyle(PENNFILE *in)
 {
   FLAG *f;
   char *c;
-  c = mush_strdup(getstring_noalloc(in), "flag.name");
+  c = GC_STRDUP(getstring_noalloc(in));
   if (!strcmp(c, "FLAG ALIASES")) {
-    mush_free(c, "flag.name");
     return NULL;                /* We're done */
   }
   f = new_flag();
@@ -535,9 +507,8 @@ flag_alias_read_oldstyle(PENNFILE *in, char *alias, FLAGSPACE *n)
   FLAG *f;
   char *c;
   /* Real name first */
-  c = mush_strdup(getstring_noalloc(in), "flag alias");
+  c = GC_STRDUP(getstring_noalloc(in));
   if (!strcmp(c, "END OF FLAGS")) {
-    mush_free(c, "flag alias");
     return NULL;                /* We're done */
   }
   f = match_flag_ns(n, c);
@@ -547,13 +518,11 @@ flag_alias_read_oldstyle(PENNFILE *in, char *alias, FLAGSPACE *n)
               T
               ("FLAG READ: flag alias %s matches no known flag. Skipping aliases."),
               c);
-    mush_free(c, "flag alias");
     do {
       c = (char *) getstring_noalloc(in);
     } while (strcmp(c, "END OF FLAGS"));
     return NULL;
-  } else
-    mush_free(c, "flag alias");
+  } 
 
   /* Get the alias name */
   strcpy(alias, getstring_noalloc(in));
@@ -600,7 +569,7 @@ flag_read(PENNFILE *in)
   char *tmp;
 
   db_read_this_labeled_string(in, "name", &tmp);
-  c = mush_strdup(tmp, "flag.name");
+  c = GC_STRDUP(tmp);
   f = new_flag();
   f->name = c;
   db_read_this_labeled_string(in, "letter", &tmp);
@@ -609,7 +578,7 @@ flag_read(PENNFILE *in)
   db_read_this_labeled_string(in, "type", &tmp);
   f->type = string_to_privs(type_privs, tmp, 0);
   db_read_this_labeled_string(in, "perms", &tmp);
-  f->perms = F_REF_NOT & string_to_privs(flag_privs, tmp, 0);
+  f->perms = string_to_privs(flag_privs, tmp, 0);
   db_read_this_labeled_string(in, "negate_perms", &tmp);
   f->negate_perms = string_to_privs(flag_privs, tmp, 0);
   return f;
@@ -623,7 +592,7 @@ flag_alias_read(PENNFILE *in, char *alias, FLAGSPACE *n)
   char *tmp;
   /* Real name first */
   db_read_this_labeled_string(in, "name", &tmp);
-  c = mush_strdup(tmp, "flag alias");
+  c = GC_STRDUP(tmp);
   f = match_flag_ns(n, c);
   if (!f) {
     /* Corrupt db. Recover as well as we can. */
@@ -631,11 +600,9 @@ flag_alias_read(PENNFILE *in, char *alias, FLAGSPACE *n)
               T
               ("FLAG READ: flag alias %s matches no known flag. Skipping this alias."),
               c);
-    mush_free(c, "flag alias");
     (void) getstring_noalloc(in);
     return NULL;
-  } else
-    mush_free(c, "flag alias");
+  } 
 
   /* Get the alias name */
   db_read_this_labeled_string(in, "alias", &tmp);
@@ -726,7 +693,7 @@ flag_write(PENNFILE *out, FLAG *f, const char *name)
   db_write_labeled_string(out, "  letter", tprintf("%c", f->letter));
   db_write_labeled_string(out, "  type", privs_to_string(type_privs, f->type));
   db_write_labeled_string(out, "  perms",
-                          privs_to_string(flag_privs, F_REF_NOT & f->perms));
+                          privs_to_string(flag_privs, f->perms));
   db_write_labeled_string(out, "  negate_perms",
                           privs_to_string(flag_privs, f->negate_perms));
 }
@@ -798,8 +765,8 @@ init_flagspaces(void)
   FLAGSPACE *flags;
 
   hashinit(&htab_flagspaces, 4);
-  flags = mush_malloc(sizeof(FLAGSPACE), "flagspace");
-  flags->name = strdup("FLAG");
+  flags = GC_MALLOC(sizeof(FLAGSPACE));
+  flags->name = GC_STRDUP("FLAG");
   flags->tab = &ptab_flag;
   ptab_init(&ptab_flag);
   flags->flagbits = 0;
@@ -807,8 +774,8 @@ init_flagspaces(void)
   flags->flag_table = flag_table;
   flags->flag_alias_table = flag_alias_tab;
   hashadd("FLAG", (void *) flags, &htab_flagspaces);
-  flags = (FLAGSPACE *) mush_malloc(sizeof(FLAGSPACE), "flagspace");
-  flags->name = strdup("POWER");
+  flags = GC_MALLOC(sizeof(FLAGSPACE));
+  flags->name = GC_STRDUP("POWER");
   flags->tab = &ptab_power;
   ptab_init(&ptab_power);
   flags->flagbits = 0;
@@ -1046,7 +1013,7 @@ new_flag_bitmask(const char *ns)
   object_flag_type bitmask;
   FLAGSPACE *n;
   Flagspace_Lookup(n, ns);
-  bitmask = mush_malloc(FlagBytes(n), "flag_bitmask");
+  bitmask = GC_MALLOC_ATOMIC(FlagBytes(n));
   if (!bitmask)
     mush_panic("Unable to allocate memory for flag bitmask");
   memset(bitmask, 0, FlagBytes(n));
@@ -1067,7 +1034,7 @@ clone_flag_bitmask(const char *ns, object_flag_type given)
   object_flag_type bitmask;
   FLAGSPACE *n;
   Flagspace_Lookup(n, ns);
-  bitmask = (object_flag_type) mush_malloc(FlagBytes(n), "flag_bitmask");
+  bitmask = GC_MALLOC_ATOMIC(FlagBytes(n));
   if (!bitmask)
     mush_panic("Unable to allocate memory for flag bitmask");
   memcpy(bitmask, given, FlagBytes(n));
@@ -1087,15 +1054,6 @@ copy_flag_bitmask(const char *ns, object_flag_type dest, object_flag_type given)
   FLAGSPACE *n;
   Flagspace_Lookup(n, ns);
   memcpy((void *) dest, (void *) given, FlagBytes(n));
-}
-
-/** Deallocate a flag bitmask.
- * \param bitmask a flag bitmask to free.
- */
-void
-destroy_flag_bitmask(object_flag_type bitmask)
-{
-  mush_free((Malloc_t) bitmask, "flag_bitmask");
 }
 
 /** Add a bit into a bitmask.
@@ -1271,7 +1229,7 @@ string_to_bits(const char *ns, const char *str)
   }
   if (!str)
     return bitmask;             /* We're done, then */
-  copy = mush_strdup(str, "flagstring");
+  copy = GC_STRDUP(str);
   s = trim_space_sep(copy, ' ');
   while (s) {
     sp = split_token(&s, ' ');
@@ -1280,7 +1238,6 @@ string_to_bits(const char *ns, const char *str)
       continue;
     set_flag_bitmask(bitmask, f->bitpos);
   }
-  mush_free(copy, "flagstring");
   return bitmask;
 }
 
@@ -1864,7 +1821,7 @@ flaglist_check_long(const char *ns, dbref player, dbref it, const char *fstr,
     do_rawlog(LT_ERR, T("FLAG: Unable to locate flagspace %s"), ns);
     return 0;
   }
-  copy = mush_strdup(fstr, "flaglistlong");
+  copy = GC_STRDUP(fstr);
   sp = trim_space_sep(copy, ' ');
   while (sp) {
     s = split_token(&sp, ' ');
@@ -1929,7 +1886,6 @@ flaglist_check_long(const char *ns, dbref player, dbref it, const char *fstr,
       /* Otherwise, we don't need to do anything. */
     }
   }
-  mush_free(copy, "flaglistlong");
   return ret;
 }
 
@@ -1982,7 +1938,7 @@ add_flag_generic(const char *ns, const char *name, const char letter, int type,
       return f;
   }
   f = new_flag();
-  f->name = mush_strdup(strupper(name), "flag.name");
+  f->name = GC_STRDUP(strupper(name));
   f->letter = letter;
   f->type = type;
   f->perms = perms;
@@ -2387,11 +2343,6 @@ alias_flag_generic(const char *ns, const char *name, const char *alias)
     return 0;                   /* a flag called 'alias' already exists */
   }
 
-  if (FLAG_REF(f->perms) == 0xFFU)
-    return 0;                   /* Too many copies already */
-
-  f->perms = INCR_FLAG_REF(f->perms);
-
   ptab_insert_one(n->tab, strupper(alias), f);
 
   return ((f = match_flag_ns(n, alias)) ? 1 : 0);
@@ -2540,9 +2491,6 @@ do_flag_delete(const char *ns, dbref player, const char *name)
   /* Remove the flag from the ptab */
   ptab_delete(n->tab, f->name);
   notify_format(player, T("%s %s deleted."), strinitial(ns), f->name);
-  /* Free the flag. */
-  mush_free((void *) f->name, "flag.name");
-  slab_free(flag_slab, f);
 }
 
 /** Enable a disabled flag.
@@ -2626,7 +2574,7 @@ list_all_flags(const char *ns, const char *name, dbref privs, int which)
   disallowed = God(privs) ? F_INTERNAL : (F_INTERNAL | F_DISABLED);
   if (!Hasprivs(privs))
     disallowed |= (F_DARK | F_MDARK);
-  ptrs = (char **) malloc(n->flagbits * sizeof(char *));
+  ptrs = GC_MALLOC_ATOMIC(n->flagbits * sizeof(char *));
   for (i = 0; i < n->flagbits; i++) {
     if ((f = n->flags[i]) && !(f->perms & disallowed)) {
       if (!name || !*name || quick_wild(name, f->name))
@@ -2662,7 +2610,6 @@ list_all_flags(const char *ns, const char *name, dbref privs, int which)
     }
   }
   *bp = '\0';
-  free(ptrs);
   return buf;
 }
 

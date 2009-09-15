@@ -43,5 +43,6 @@ do_version(dbref player)
   notify_format(player, T("Build date: %s"), BUILDDATE);
   notify_format(player, T("Compiler: %s"), COMPILER);
   notify_format(player, T("Compilation flags: %s"), CCFLAGS);
+  notify(player, T("Malloc package: Garbage Collection"));
 #endif
 }

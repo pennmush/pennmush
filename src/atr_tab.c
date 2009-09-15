@@ -206,13 +206,13 @@ do_attribute_access(dbref player, char *name, char *perms, int retroactive)
       return;
     }
     insert = 1;
-    ap = (ATTR *) mush_malloc(sizeof(ATTR), "ATTR");
+    ap = GC_MALLOC(sizeof(ATTR));
     if (!ap) {
       notify(player, "Critical memory failure - Alert God!");
       do_log(LT_ERR, 0, 0, "do_attribute_access: unable to malloc ATTR");
       return;
     }
-    AL_NAME(ap) = strdup(name);
+    AL_NAME(ap) = GC_STRDUP(name);
     ap->data = NULL_CHUNK_REFERENCE;
   }
   AL_FLAGS(ap) = flags;
@@ -310,10 +310,7 @@ do_attribute_rename(dbref player, char *old, char *newname)
   }
   /* Ok, take it out and put it back under the new name */
   ptab_delete(&ptab_attrib, old);
-  /*  This causes a slight memory leak if you rename an attribute
-     added via /access. But that doesn't happen often. Will fix
-     someday.  */
-  AL_NAME(ap) = strdup(newname);
+  AL_NAME(ap) = GC_STRDUP(newname);
   ptab_insert_one(&ptab_attrib, newname, ap);
   notify_format(player,
                 T("Renamed %s to %s in attribute table."), old, newname);

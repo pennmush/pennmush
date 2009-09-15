@@ -52,9 +52,7 @@ void do_grep(dbref player, char *obj, char *lookfor, int flag, int insensitive);
 static int pay_quota(dbref, int);
 extern PRIV attr_privs_view[];
 
-/** A generic function to generate a formatted string. The
- * return value is a statically allocated buffer.
- *
+/** A generic function to generate a formatted string.
  * \param fmt format string.
  * \return formatted string.
  */
@@ -78,7 +76,7 @@ tprintf(const char *fmt, ...)
 
   buff[BUFFER_LEN - 1] = '\0';
   va_end(args);
-  return (buff);
+  return GC_STRDUP(buff);
 }
 
 /** lock evaluation -- determines if player passes lock on thing, for
@@ -284,7 +282,6 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
                            PE_DEFAULT, PT_DEFAULT, NULL);
         *bp = '\0';
         notify_by(thing, player, buff);
-        free((Malloc_t) asave);
       } else if (def && *def)
         notify_by(thing, player, def);
     }
@@ -314,7 +311,6 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
           *bp = '\0';
           if (bp != sp)
             notify_except2(Contents(loc), player, thing, buff, flags);
-          free((Malloc_t) asave);
         } else {
           if (odef && *odef) {
             notify_except2(Contents(loc), player, thing,
@@ -1035,7 +1031,6 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
       any = 1;
       tbuf1 = replace_string("#$", expression, argv[a + 1]);
       parse_que(player, tbuf1, cause);
-      mush_free(tbuf1, "replace_string.buff");
     }
   }
 
@@ -1043,7 +1038,6 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
   if ((a < MAX_ARG) && !any && argv[a]) {
     tbuf1 = replace_string("#$", expression, argv[a]);
     parse_que(player, tbuf1, cause);
-    mush_free(tbuf1, "replace_string.buff");
   }
 
   /* Pop on @notify me, if requested */
@@ -1111,7 +1105,6 @@ page_return(dbref player, dbref target, const char *type,
       process_expression(buff, &bp, &ap, target, player, player,
                          PE_DEFAULT, PT_DEFAULT, NULL);
       *bp = '\0';
-      free((Malloc_t) asave);
       if (*buff) {
         ptr = (struct tm *) localtime(&mudtime);
         notify_format(player, T("%s message from %s: %s"), type,
@@ -1329,7 +1322,7 @@ grep_util(dbref player, dbref thing, char *pattern, char *lookfor,
 {
   struct guh_args guh;
 
-  guh.buff = (char *) mush_malloc(BUFFER_LEN + 1, "grep_util.buff");
+  guh.buff = GC_MALLOC_ATOMIC(BUFFER_LEN + 1);
   guh.bp = guh.buff;
   guh.lookfor = lookfor;
   guh.sensitive = sensitive;
@@ -1437,6 +1430,5 @@ do_grep(dbref player, char *obj, char *lookfor, int flag, int insensitive)
     tp = grep_util(player, thing, pattern, lookfor, !insensitive, 0);
     notify_format(player, T("Matches of '%s' on %s(#%d): %s"), lookfor,
                   Name(thing), thing, tp);
-    mush_free((Malloc_t) tp, "grep_util.buff");
   }
 }

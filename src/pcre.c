@@ -58,6 +58,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "mymalloc.h"
 #include "confmagic.h"
 #undef min
 #undef max
@@ -1252,13 +1253,6 @@ Returns:         if successful: 0
 */
 
 int
-
-
-
-
-
-
-
 pcre_get_substring_list(const char *subject, int *ovector, int stringcount,
                         const char ***listptr);
 
@@ -1275,7 +1269,7 @@ pcre_get_substring_list(const char *subject, int *ovector, int stringcount,
   for (i = 0; i < double_count; i += 2)
     size += sizeof(char *) + ovector[i + 1] - ovector[i] + 1;
 
-  stringlist = (char **) malloc(size);
+  stringlist = (char **) GC_MALLOC(size);
   if (stringlist == NULL)
     return PCRE_ERROR_NOMEMORY;
 
@@ -1301,7 +1295,7 @@ pcre_get_substring_list(const char *subject, int *ovector, int stringcount,
 *************************************************/
 
 /* This function exists for the benefit of people calling PCRE from non-C
-programs that can call its functions, but not free() or free() directly.
+programs that can call its functions, but not GC_FREE() or GC_FREE() directly.
 
 Argument:   the result of a previous pcre_get_substring_list()
 Returns:    nothing
@@ -1312,7 +1306,7 @@ void
 void
 pcre_free_substring_list(const char **pointer)
 {
-  free((void *) pointer);
+  GC_FREE((void *) pointer);
 }
 
 
@@ -1363,7 +1357,7 @@ pcre_get_substring(const char *subject, int *ovector, int stringcount,
     return PCRE_ERROR_NOSUBSTRING;
   stringnumber *= 2;
   yield = ovector[stringnumber + 1] - ovector[stringnumber];
-  substring = (char *) malloc(yield + 1);
+  substring = (char *) GC_MALLOC(yield + 1);
   if (substring == NULL)
     return PCRE_ERROR_NOMEMORY;
   memcpy(substring, subject + ovector[stringnumber], yield);
@@ -1401,13 +1395,6 @@ Returns:         if successful:
 */
 
 int
-
-
-
-
-
-
-
 pcre_get_named_substring(const pcre * code, const char *subject, int *ovector,
                          int stringcount, const char *stringname,
                          const char **stringptr);
@@ -1431,19 +1418,18 @@ pcre_get_named_substring(const pcre * code, const char *subject, int *ovector,
 *************************************************/
 
 /* This function exists for the benefit of people calling PCRE from non-C
-programs that can call its functions, but not free() or free() directly.
+programs that can call its functions, but not GC_FREE() or GC_FREE() directly.
 
 Argument:   the result of a previous pcre_get_substring()
 Returns:    nothing
 */
 
-void
- pcre_free_substring(const char *pointer);
+void pcre_free_substring(const char *pointer);
 
 void
 pcre_free_substring(const char *pointer)
 {
-  free((void *) pointer);
+  GC_FREE((void *) pointer);
 }
 
 /* End of pcre_get.c */
@@ -1463,8 +1449,8 @@ compilation of dftables.c, in which case the macro DFTABLES is defined. */
 /* This function builds a set of character tables for use by PCRE and returns
 a pointer to them. They are build using the ctype functions, and consequently
 their contents will depend upon the current locale setting. When compiled as
-part of the library, the store is obtained via pcre_malloc(), but when compiled
-inside dftables, use malloc().
+part of the library, the store is obtained via pcre_GC_MALLOC(), but when compiled
+inside dftables, use GC_MALLOC().
 
 Arguments:   none
 Returns:     pointer to the contiguous block of data
@@ -1476,7 +1462,7 @@ pcre_maketables(void)
   unsigned char *yield, *p;
   int i;
 
-  yield = (unsigned char *) malloc(tables_length);
+  yield = (unsigned char *) GC_MALLOC(tables_length);
 
   if (yield == NULL)
     return NULL;
@@ -1973,7 +1959,8 @@ pcre_study_data is fixed. We nevertheless save it in a field for returning via
 the pcre_fullinfo() function so that if it becomes variable in the future, we
 don't have to change that code. */
 
-  extra = (pcre_extra *) malloc(sizeof(pcre_extra) + sizeof(pcre_study_data));
+  extra =
+    (pcre_extra *) GC_MALLOC(sizeof(pcre_extra) + sizeof(pcre_study_data));
 
   if (extra == NULL) {
     *errorptr = "failed to get memory";
@@ -2288,15 +2275,7 @@ static const unsigned char ebcdic_chartab[] = { /* chartable partial dup */
 
 /* Definition to allow mutual recursion */
 
-static BOOL
-
-
-
-
-
-
-
-compile_regex(int, int, int *, uschar **, const uschar **, int *, BOOL, int,
+static BOOL compile_regex(int, int, int *, uschar **, const uschar **, int *, BOOL, int,
               int *, int *, branch_chain *, compile_data *);
 
 
@@ -6336,7 +6315,7 @@ pattern. We can't be so clever for #-comments. */
 externally provided function. */
 
   size = length + sizeof(real_pcre) + name_count * (max_name_size + 3);
-  re = (real_pcre *) malloc(size);
+  re = (real_pcre *) GC_MALLOC(size);
 
   if (re == NULL) {
     errorcode = ERR21;
@@ -6410,7 +6389,7 @@ subpattern. */
 /* Failed to compile, or error while post-processing */
 
   if (errorcode != 0) {
-    free(re);
+    GC_FREE(re);
   PCRE_ERROR_RETURN:
     *erroroffset = ptr - (const uschar *) pattern;
   PCRE_EARLY_ERROR_RETURN:
@@ -6603,7 +6582,7 @@ match(), which never changes. */
 
 #define RMATCH(rx,ra,rb,rc,rd,re,rf,rg)\
   {\
-  heapframe *newframe = malloc(sizeof(heapframe));\
+  heapframe *newframe = GC_MALLOC(sizeof(heapframe));\
   if (setjmp(frame->Xwhere) == 0)\
     {\
     newframe->Xeptr = ra;\
@@ -6627,7 +6606,7 @@ match(), which never changes. */
   {\
   heapframe *newframe = frame;\
   frame = newframe->Xprevframe;\
-  free(newframe);\
+  GC_FREE(newframe);\
   if (frame != NULL)\
     {\
     frame->Xresult = ra;\
@@ -6765,7 +6744,7 @@ heap storage. Set up the top-level frame here; others are obtained from the
 heap whenever RMATCH() does a "recursion". See the macro definitions above. */
 
 #ifdef NO_RECURSE
-  heapframe *frame = malloc(sizeof(heapframe));
+  heapframe *frame = GC_MALLOC(sizeof(heapframe));
   frame->Xprevframe = NULL;     /* Marks the top level */
 
 /* Copy in the original argument variables */
@@ -7228,7 +7207,7 @@ this stack. */
           new_recursive.offset_save = stacksave;
         else {
           new_recursive.offset_save =
-            (int *) malloc(new_recursive.saved_max * sizeof(int));
+            (int *) GC_MALLOC(new_recursive.saved_max * sizeof(int));
           if (new_recursive.offset_save == NULL)
             RRETURN(PCRE_ERROR_NOMEMORY);
         }
@@ -7247,7 +7226,7 @@ this stack. */
           if (rrc == MATCH_MATCH) {
             md->recursive = new_recursive.prevrec;
             if (new_recursive.offset_save != stacksave)
-              free(new_recursive.offset_save);
+              GC_FREE(new_recursive.offset_save);
             RRETURN(MATCH_MATCH);
           } else if (rrc != MATCH_NOMATCH)
             RRETURN(rrc);
@@ -7261,7 +7240,7 @@ this stack. */
 
         md->recursive = new_recursive.prevrec;
         if (new_recursive.offset_save != stacksave)
-          free(new_recursive.offset_save);
+          GC_FREE(new_recursive.offset_save);
         RRETURN(MATCH_NOMATCH);
       }
       /* Control never reaches here */
@@ -8995,7 +8974,7 @@ of 3. */
 
   if (re->top_backref > 0 && re->top_backref >= ocount / 3) {
     ocount = re->top_backref * 3 + 3;
-    match_block.offset_vector = (int *) malloc(ocount * sizeof(int));
+    match_block.offset_vector = (int *) GC_MALLOC(ocount * sizeof(int));
     if (match_block.offset_vector == NULL)
       return PCRE_ERROR_NOMEMORY;
     using_temporary_offsets = TRUE;
@@ -9220,7 +9199,7 @@ the loop runs just once. */
       if (match_block.end_offset_top > offsetcount)
         match_block.offset_overflow = TRUE;
 
-      free(match_block.offset_vector);
+      GC_FREE(match_block.offset_vector);
     }
 
     rc = match_block.offset_overflow ? 0 : match_block.end_offset_top / 2;
@@ -9240,7 +9219,7 @@ the loop runs just once. */
   while (!anchored && start_match <= end_subject);
 
   if (using_temporary_offsets) {
-    free(match_block.offset_vector);
+    GC_FREE(match_block.offset_vector);
   }
 
   if (match_block.partial && match_block.hitend) {

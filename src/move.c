@@ -25,6 +25,7 @@
 #include "command.h"
 #include "cmds.h"
 #include "game.h"
+#include "mymalloc.h"
 #include "confmagic.h"
 
 void moveit(dbref what, dbref where, int nomovemsgs);
@@ -339,7 +340,6 @@ find_var_dest(dbref player, dbref exit_obj)
   if (!abuf)
     return NOTHING;
   if (!*abuf) {
-    free((Malloc_t) abuf);
     return NOTHING;
   }
   ap = abuf;
@@ -348,7 +348,6 @@ find_var_dest(dbref player, dbref exit_obj)
                      PE_DEFAULT, PT_DEFAULT, NULL);
   *bp = '\0';
   dest_room = parse_objid(buff);
-  free((Malloc_t) abuf);
   return (dest_room);
 }
 
@@ -1157,11 +1156,10 @@ add_following(dbref follower, dbref leader)
 static void
 add_follow(dbref leader, dbref follower, int noisy)
 {
-  char msg[BUFFER_LEN];
   add_follower(leader, follower);
   add_following(follower, leader);
   if (noisy) {
-    strcpy(msg, tprintf(T("You begin following %s."), Name(leader)));
+    char *msg = tprintf(T("You begin following %s."), Name(leader));
     notify_format(leader, T("%s begins following you."), Name(follower));
     did_it(follower, leader, "FOLLOW", msg, "OFOLLOW", NULL,
            "AFOLLOW", NOTHING);
@@ -1175,12 +1173,12 @@ del_follower(dbref leader, dbref follower)
 {
   ATTR *a;
   char tbuf1[BUFFER_LEN];
-  char flwr[BUFFER_LEN];
+  char *flwr;
   a = atr_get_noparent(leader, "FOLLOWERS");
   if (!a)
     return;                     /* No followers, so no deletion */
   /* Let's take it apart and put it back together w/o follower */
-  strcpy(flwr, unparse_dbref(follower));
+  flwr = unparse_dbref(follower);
   strcpy(tbuf1, atr_value(a));
   (void) atr_add(leader, "FOLLOWERS", remove_word(tbuf1, flwr, ' '), GOD, 0);
 }
@@ -1191,12 +1189,12 @@ del_following(dbref follower, dbref leader)
 {
   ATTR *a;
   char tbuf1[BUFFER_LEN];
-  char ldr[BUFFER_LEN];
+  char *ldr;
   a = atr_get_noparent(follower, "FOLLOWING");
   if (!a)
     return;                     /* Not following, so no deletion */
   /* Let's take it apart and put it back together w/o leader */
-  strcpy(ldr, unparse_dbref(leader));
+  ldr = unparse_dbref(leader);
   strcpy(tbuf1, atr_value(a));
   (void) atr_add(follower, "FOLLOWING", remove_word(tbuf1, ldr, ' '), GOD, 0);
 }
@@ -1204,11 +1202,10 @@ del_following(dbref follower, dbref leader)
 static void
 del_follow(dbref leader, dbref follower, int noisy)
 {
-  char msg[BUFFER_LEN];
   del_follower(leader, follower);
   del_following(follower, leader);
   if (noisy) {
-    strcpy(msg, tprintf(T("You stop following %s."), Name(leader)));
+    char *msg = tprintf(T("You stop following %s."), Name(leader));
     notify_format(leader, T("%s stops following you."), Name(follower));
     did_it(follower, leader, "UNFOLLOW", msg, "OUNFOLLOW",
            NULL, "AUNFOLLOW", NOTHING);
@@ -1222,7 +1219,7 @@ list_followers(dbref player)
   ATTR *a;
   char tbuf1[BUFFER_LEN];
   char *s, *sp;
-  static char buff[BUFFER_LEN];
+  char *buff;
   char *bp;
   dbref who;
   int first = 1;
@@ -1230,7 +1227,7 @@ list_followers(dbref player)
   if (!a)
     return (char *) "";
   strcpy(tbuf1, atr_value(a));
-  bp = buff;
+  bp = buff = GC_MALLOC_ATOMIC(BUFFER_LEN);
   s = trim_space_sep(tbuf1, ' ');
   while (s) {
     sp = split_token(&s, ' ');
@@ -1253,7 +1250,7 @@ list_following(dbref player)
   ATTR *a;
   char tbuf1[BUFFER_LEN];
   char *s, *sp;
-  static char buff[BUFFER_LEN];
+  char *buff;
   char *bp;
   dbref who;
   int first = 1;
@@ -1261,7 +1258,7 @@ list_following(dbref player)
   if (!a)
     return (char *) "";
   strcpy(tbuf1, atr_value(a));
-  bp = buff;
+  bp = buff = GC_MALLOC_ATOMIC(BUFFER_LEN);
   s = trim_space_sep(tbuf1, ' ');
   while (s) {
     sp = split_token(&s, ' ');

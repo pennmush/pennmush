@@ -213,9 +213,9 @@ text_compress(char const *s)
 #else
 extern char ucbuff[];
 #define init_compress(f) 0
-#define compress(s) ((unsigned char *)strdup(s))
+#define compress(s) ((unsigned char *)GC_STRDUP(s))
 #define uncompress(s) (strcpy(ucbuff, (char *) s))
-#define safe_uncompress(s) (strdup((char *) s))
+#define safe_uncompress(s) (GC_STRDUP((char *) s))
 #endif
 
 /* From cque.c */
@@ -302,12 +302,6 @@ void do_look_around(dbref player);
 void do_look_at(dbref player, const char *name, int key);
 char *decompose_str(char *what);
 
-/* From memcheck.c */
-void add_check(const char *ref);
-void del_check(const char *ref, const char *filename, int line);
-void list_mem_check(dbref player);
-void log_mem_check(void);
-
 /* From move.c */
 void enter_room(dbref player, dbref loc, int nomovemsgs);
 int can_move(dbref player, const char *direction);
@@ -361,7 +355,7 @@ void reset_player_list(dbref player, const char *oldname, const char *oldalias,
 
 /* From predicat.c */
 char *WIN32_CDECL tprintf(const char *fmt, ...)
-  __attribute__ ((__format__(__printf__, 1, 2)));
+  __attribute__ ((__format__(__printf__, 1, 2))) __attribute_malloc__;
 
 int could_doit(dbref player, dbref thing);
 int did_it(dbref player, dbref thing, const char *what,
@@ -445,30 +439,24 @@ unsigned char *u_strncpy
 
 
 /** Unsigned char strdup. Why is this a macro when the others functions? */
-#define u_strdup(x) (unsigned char *)strdup((const char *) x)
-#ifndef HAVE_STRDUP
-char *
-strdup(const char *s)
-  __attribute_malloc__;
-#endif
-    char *mush_strdup(const char *s, const char *check) __attribute_malloc__;
+#define u_strdup(x) (unsigned char *)GC_STRDUP((const char *) x)
 
 #ifdef HAVE__STRNCOLL
 #define strncoll(s1,s2,n) _strncoll((s1), (s2), (n))
 #else
-    int strncoll(const char *s1, const char *s2, size_t t);
+int strncoll(const char *s1, const char *s2, size_t t);
 #endif
 
 #ifdef HAVE__STRICOLL
 #define strcasecoll(s1,s2) _stricoll((s1), (s2))
 #else
-    int strcasecoll(const char *s1, const char *s2);
+int strcasecoll(const char *s1, const char *s2);
 #endif
 
 #ifdef HAVE__STRNICOLL
 #define strncasecoll(s1,s2,n) _strnicoll((s1), (s2), (n))
 #else
-    int strncasecoll(const char *s1, const char *s2, size_t t);
+int strncasecoll(const char *s1, const char *s2, size_t t);
 #endif
 
 /** Append a character to the end of a BUFFER_LEN long string.
@@ -478,42 +466,43 @@ strdup(const char *s)
                     ((*(bp) - (buf) >= BUFFER_LEN - 1) ? \
                         1 : (*(*(bp))++ = (x), 0))
 /* Like sprintf */
-    int safe_format(char *buff, char **bp, const char *restrict fmt, ...)
+int safe_format(char *buff, char **bp, const char *restrict fmt, ...)
   __attribute__ ((__format__(__printf__, 3, 4)));
 /* Append an int to the end of a buffer */
-    int safe_integer(intmax_t i, char *buff, char **bp);
-    int safe_uinteger(uintmax_t, char *buff, char **bp);
+int safe_integer(intmax_t i, char *buff, char **bp);
+int safe_uinteger(uintmax_t, char *buff, char **bp);
 /* Same, but for a SBUF_LEN buffer, not BUFFER_LEN */
 #define SBUF_LEN 128    /**< A short buffer */
-    int safe_integer_sbuf(intmax_t i, char *buff, char **bp);
+int safe_integer_sbuf(intmax_t i, char *buff, char **bp);
 /* Append a NVAL to a string */
-    int safe_number(NVAL n, char *buff, char **bp);
+int safe_number(NVAL n, char *buff, char **bp);
 /* Append a dbref to a buffer */
-    int safe_dbref(dbref d, char *buff, char **bp);
+int safe_dbref(dbref d, char *buff, char **bp);
 /* Append a string to a buffer */
-    int safe_str(const char *s, char *buff, char **bp);
+int safe_str(const char *s, char *buff, char **bp);
 /* Append a string to a buffer, sticking it in quotes if there's a space */
-    int safe_str_space(const char *s, char *buff, char **bp);
+int safe_str_space(const char *s, char *buff, char **bp);
 /* Append len characters of a string to a buffer */
-    int safe_strl(const char *s, size_t len, char *buff, char **bp);
+int safe_strl(const char *s, size_t len, char *buff, char **bp);
 /** Append a boolean to the end of a string */
 #define safe_boolean(x, buf, bufp) \
                 safe_chr((x) ? '1' : '0', (buf), (bufp))
 /* Append N copies of the character X to the end of a string */
-    int safe_fill(char x, size_t n, char *buff, char **bp);
+int safe_fill(char x, size_t n, char *buff, char **bp);
 /* Append an accented string */
-    int safe_accent(const char *restrict base,
-                    const char *restrict tmplate, size_t len, char *buff,
-                    char **bp);
+int safe_accent(const char *restrict base,
+                const char *restrict tmplate, size_t len, char *buff,
+                char **bp);
 
-    char *mush_strncpy(char *restrict, const char *, size_t);
+char *mush_strncpy(char *restrict, const char *, size_t);
 
-    char *replace_string
-      (const char *restrict old, const char *restrict newbit,
-       const char *restrict string) __attribute_malloc__;
-    char *replace_string2(const char *old[2], const char *newbits[2],
-                          const char *restrict string)
- __attribute_malloc__;
+char *replace_string
+  (const char *restrict old, const char *restrict newbit,
+   const char *restrict string) __attribute_malloc__;
+char *
+replace_string2(const char *old[2], const char *newbits[2],
+                const char *restrict string)
+  __attribute_malloc__;
     extern const char *standard_tokens[2];      /* ## and #@ */
     char *trim_space_sep(char *str, char sep);
     int do_wordcount(char *str, char sep);
@@ -547,7 +536,7 @@ strdup(const char *s)
     const char *unparse_object_myopic(dbref player, dbref loc);
     const char *unparse_room(dbref player, dbref loc);
     int nameformat(dbref player, dbref loc, char *tbuf1, char *defname);
-    const char *accented_name(dbref thing);
+    char *accented_name(dbref thing) __attribute_malloc__;
 
 /* From utils.c */
     void parse_attrib(dbref player, char *str, dbref *thing, ATTR **attrib);
@@ -571,17 +560,6 @@ strdup(const char *s)
     bool recursive_member(dbref disallow, dbref from, int count);
     dbref remove_first(dbref first, dbref what);
     dbref reverse(dbref list);
-    void *mush_malloc(size_t bytes, const char *check) __attribute_malloc__;
-    void *mush_calloc(size_t count, size_t size,
-                      const char *check) __attribute_malloc__;
-#define mush_realloc(ptr, size, tag) \
-  mush_realloc_where((ptr), (size), (tag), __FILE__, __LINE__)
-    void *mush_realloc_where(void *restrict ptr, size_t newsize,
-                             const char *restrict check,
-                             const char *restrict filename, int line);
-#define mush_free(ptr,tag) mush_free_where((ptr), (tag), __FILE__, __LINE__)
-    void mush_free_where(void *restrict ptr, const char *restrict check,
-                         const char *restrict filename, int line);
     uint32_t get_random32(uint32_t low, uint32_t high);
     char *fullalias(dbref it);
     char *shortalias(dbref it);

@@ -14,6 +14,7 @@
 #include "ansi.h"
 #include "command.h"
 #include "sort.h"
+#include "mymalloc.h"
 #include "confmagic.h"
 
 
@@ -251,7 +252,7 @@ GENRECORD(gen_alphanum)
 {
   size_t len;
   if (strchr(rec->val, ESC_CHAR) || strchr(rec->val, TAG_START)) {
-    rec->memo.str.s = mush_strdup(remove_markup(rec->val, &len), "genrecord");
+    rec->memo.str.s = GC_STRDUP(remove_markup(rec->val, &len));
     rec->memo.str.freestr = 1;
   } else {
     rec->memo.str.s = rec->val;
@@ -340,7 +341,7 @@ GENRECORD(gen_magic)
       s++;
   }
   *bp = '\0';
-  rec->memo.str.s = mush_strdup(buff, "genrecord");
+  rec->memo.str.s = GC_STRDUP(buff);
   rec->memo.str.freestr = 1;
 }
 
@@ -420,7 +421,7 @@ GENRECORD(gen_db_attr)
   rec->memo.str.freestr = 0;
   if (RealGoodObject(rec->db) && sortflags && *sortflags &&
       (ptr = do_get_attrib(player, rec->db, sortflags)) != NULL) {
-    rec->memo.str.s = mush_strdup(ptr, "genrecord");
+    rec->memo.str.s = GC_STRDUP(ptr);
     rec->memo.str.freestr = 1;
   }
 }
@@ -670,12 +671,6 @@ gencomp(dbref player, char *a, char *b, char *sort_type)
   ltypelist[i].make_record(&s1, player, ptr);
   ltypelist[i].make_record(&s2, player, ptr);
   result = ltypelist[i].sorter((const void *) &s1, (const void *) &s2);
-  if (ltypelist[i].flags & IS_STRING) {
-    if (s1.memo.str.freestr)
-      mush_free(s1.memo.str.s, "genrecord");
-    if (s2.memo.str.freestr)
-      mush_free(s2.memo.str.s, "genrecord");
-  }
   return result;
 }
 
@@ -712,7 +707,7 @@ do_gensort(dbref player, char *keys[], char *strs[], int n, char *sort_type)
          ltypelist[sorti].name && strcasecmp(ltypelist[sorti].name, sort_type);
          sorti++) ;
   }
-  sp = mush_calloc(n, sizeof(s_rec), "do_gensort");
+  sp = GC_MALLOC(n * sizeof(s_rec));
   for (i = 0; i < n; i++) {
     /* Elements are 0 by default thanks to calloc. Only need to touch
        those that need other values. */
@@ -733,10 +728,7 @@ do_gensort(dbref player, char *keys[], char *strs[], int n, char *sort_type)
     if (strs) {
       strs[i] = sp[i].ptr;
     }
-    if ((ltypelist[sorti].flags & IS_STRING) && sp[i].memo.str.freestr)
-      mush_free(sp[i].memo.str.s, "genrecord");
   }
-  mush_free(sp, "do_gensort");
 }
 
 typedef enum {

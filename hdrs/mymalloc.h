@@ -7,6 +7,11 @@
 
 #include "options.h"
 
+/* GC functions */
+#include <gc/gc.h>
+
+#define alloc_buf() GC_MALLOC_ATOMIC(BUFFER_LEN)
+
 typedef struct slab slab;
 slab *slab_create(const char *name, size_t item_size);
 void slab_destroy(slab *);
@@ -25,13 +30,16 @@ enum slab_options {
                              page if it is the only page allocated for
                              that slab. Defaults to 0. */
 
-  SLAB_HINTLESS_THRESHOLD /**< The number of free objects that must
+  SLAB_HINTLESS_THRESHOLD, /**< The number of free objects that must
                               exist in a page for a hintless object to
                               be allocated from it. Defaults to
                               1. Raise for cases where you'll have a
                               lot of allocations using hints and
                               deletions, to improve caching -- e.g.,
                               attributes. */
+
+  SLAB_NO_EXT_POINTERS /**< Objects allocated through this slab have
+			  no pointers to other objects. */
 };
 
 void slab_set_opt(slab *sl, enum slab_options opt, int val);

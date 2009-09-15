@@ -1405,7 +1405,7 @@ find_available_cache_region(void)
 #ifdef DEBUG_CHUNK_MALLOC
     do_rawlog(LT_TRACE, "CHUNK: malloc()ing a cache region");
 #endif
-    rhp = mush_malloc(REGION_SIZE, "chunk region cache buffer");
+    rhp = GC_MALLOC(REGION_SIZE);
     if (!rhp) {
       mush_panic("chunk region cache buffer allocation failure");
     }
@@ -1525,7 +1525,7 @@ create_region(void)
 #ifdef DEBUG_CHUNK_MALLOC
       do_rawlog(LT_TRACE, "CHUNK: realloc()ing region array");
 #endif
-      regions = (Region *) realloc(regions, region_array_len * sizeof(Region));
+      regions = GC_REALLOC(regions, region_array_len * sizeof(Region));
       if (!regions)
         mush_panic("chunk: region array realloc failure");
     }
@@ -2369,7 +2369,7 @@ chunk_init(void)
 #ifdef DEBUG_CHUNK_MALLOC
   do_rawlog(LT_TRACE, "CHUNK: malloc()ing initial region array");
 #endif
-  regions = mush_calloc(region_array_len, sizeof(Region), "chunk region list");
+  regions = GC_MALLOC_IGNORE_OFF_PAGE(region_array_len * sizeof(Region));
   if (!regions)
     mush_panic("cannot malloc space for chunk region list");
 

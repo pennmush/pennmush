@@ -680,8 +680,7 @@ process_expression(char *buff, char **bp, char const **str,
     old_iter_limit = inum_limit;
     inum_limit = inum;
     made_info = 1;
-    pe_info = (PE_Info *) mush_malloc(sizeof(PE_Info),
-                                      "process_expression.pe_info");
+    pe_info = GC_MALLOC(sizeof(PE_Info));
     pe_info->fun_invocations = 0;
     pe_info->fun_depth = 0;
     pe_info->nest_depth = 0;
@@ -705,8 +704,7 @@ process_expression(char *buff, char **bp, char const **str,
     if (((*bp) - buff) > (BUFFER_LEN - SBUF_LEN)) {
       realbuff = buff;
       realbp = *bp;
-      buff = (char *) mush_malloc(BUFFER_LEN,
-                                  "process_expression.buffer_extension");
+      buff = GC_MALLOC_ATOMIC(BUFFER_LEN);
       *bp = buff;
       startpos = buff;
     }
@@ -732,8 +730,7 @@ process_expression(char *buff, char **bp, char const **str,
       char const *mark;
       Debug_Info *node;
 
-      debugstr = (char *) mush_malloc(BUFFER_LEN,
-                                      "process_expression.debug_source");
+      debugstr = GC_MALLOC_ATOMIC(BUFFER_LEN);
       debugp = debugstr;
       safe_dbref(executor, debugstr, &debugp);
       safe_chr('!', debugstr, &debugp);
@@ -749,8 +746,7 @@ process_expression(char *buff, char **bp, char const **str,
         while ((debugp > sourcestr) && (debugp[-1] == ' '))
           debugp--;
       *debugp = '\0';
-      node = (Debug_Info *) mush_malloc(sizeof(Debug_Info),
-                                        "process_expression.debug_node");
+      node = GC_MALLOC(sizeof(Debug_Info));
       node->string = debugstr;
       node->prev = pe_info->debug_strings;
       node->next = NULL;
@@ -1296,24 +1292,17 @@ process_expression(char *buff, char **bp, char const **str,
           if (nfargs >= args_alloced) {
             char **nargs;
             int *narglens;
-            nargs = mush_calloc(nfargs + 10, sizeof(char *),
-                                "process_expression.function_arglist");
-            narglens = mush_calloc(nfargs + 10, sizeof(int),
-                                   "process_expression.function_arglens");
+            nargs = GC_MALLOC((nfargs + 10) * sizeof(char *));
+            narglens = GC_MALLOC((nfargs + 10) * sizeof(int));
             for (j = 0; j < nfargs; j++) {
               nargs[j] = fargs[j];
               narglens[j] = arglens[j];
             }
-            if (fargs != sargs)
-              mush_free(fargs, "process_expression.function_arglist");
-            if (arglens != sarglens)
-              mush_free(arglens, "process_expression.function_arglens");
             fargs = nargs;
             arglens = narglens;
             args_alloced += 10;
           }
-          fargs[nfargs] = (char *) mush_malloc(BUFFER_LEN,
-                                               "process_expression.function_argument");
+          fargs[nfargs] = GC_MALLOC_ATOMIC(BUFFER_LEN);
           argp = fargs[nfargs];
           if (process_expression(fargs[nfargs], &argp, str,
                                  executor, caller, enactor,
@@ -1344,8 +1333,6 @@ process_expression(char *buff, char **bp, char const **str,
            * Special case: zero args is recognized as one null arg.
            */
           if ((fp->minargs == 0) && (nfargs == 1) && !*fargs[0]) {
-            mush_free((Malloc_t) fargs[0],
-                      "process_expression.function_argument");
             fargs[0] = NULL;
             arglens[0] = 0;
             nfargs = 0;
@@ -1428,14 +1415,7 @@ process_expression(char *buff, char **bp, char const **str,
         }
         /* Free up the space allocated for the args */
       free_func_args:
-        for (j = 0; j < nfargs; j++)
-          if (fargs[j])
-            mush_free((Malloc_t) fargs[j],
-                      "process_expression.function_argument");
-        if (fargs != sargs)
-          mush_free((Malloc_t) fargs, "process_expression.function_arglist");
-        if (arglens != sarglens)
-          mush_free((Malloc_t) arglens, "process_expression.function_arglens");
+	(void)0;
       }
       break;
       /* Space compression */
@@ -1492,11 +1472,7 @@ exit_sequence:
             notify_list(executor, executor, "DEBUGFORWARDLIST", dbuf,
                         NA_NOLISTEN | NA_NOPREFIX);
             pe_info->debug_strings = pe_info->debug_strings->next;
-            mush_free((Malloc_t) pe_info->debug_strings->prev,
-                      "process_expression.debug_node");
           }
-          mush_free((Malloc_t) pe_info->debug_strings,
-                    "process_expression.debug_node");
           pe_info->debug_strings = NULL;
         }
         dbp = dbuf;
@@ -1514,23 +1490,18 @@ exit_sequence:
           pe_info->debug_strings = node->prev;
           if (node->prev)
             node->prev->next = NULL;
-          mush_free((Malloc_t) node, "process_expression.debug_node");
         }
       }
-      mush_free((Malloc_t) debugstr, "process_expression.debug_source");
     }
     if (realbuff) {
       **bp = '\0';
       *bp = realbp;
       safe_str(buff, realbuff, bp);
-      mush_free((Malloc_t) buff, "process_expression.buffer_extension");
     }
   }
   /* Once we cross call limit, we stay in error */
   if (pe_info && CALL_LIMIT && pe_info->call_depth <= CALL_LIMIT)
     pe_info->call_depth--;
-  if (made_info)
-    mush_free((Malloc_t) pe_info, "process_expression.pe_info");
   if (old_iter_limit != -1) {
     inum_limit = old_iter_limit;
   }

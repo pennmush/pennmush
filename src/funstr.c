@@ -27,6 +27,7 @@
 #include "htab.h"
 #include "lock.h"
 #include "sort.h"
+#include "mymalloc.h"
 #include "confmagic.h"
 
 
@@ -88,7 +89,7 @@ char *obj[4];   /**< Objective pronouns */
 char *absp[4];  /**< Absolute possessive pronouns */
 
 /** Macro to set a pronoun entry based on whether we're translating or not */
-#define SET_PRONOUN(p,v,u)  p = strdup((translate) ? (v) : (u))
+#define SET_PRONOUN(p,v,u)  p = GC_STRDUP((translate) ? (v) : (u))
 
 /** Initialize the pronoun translation strings.
  * This function sets up the values of the arrays of subjective,
@@ -239,17 +240,14 @@ FUNCTION(fun_aposs)
 /* ARGSUSED */
 FUNCTION(fun_alphamax)
 {
-  char amax[BUFFER_LEN];
-  char *c;
+  char *amax, *c;
   int j, m = 0;
-  size_t len;
 
-  c = remove_markup(args[0], &len);
-  memcpy(amax, c, len);
+  amax = remove_markup(args[0], NULL);
   for (j = 1; j < nargs; j++) {
-    c = remove_markup(args[j], &len);
+    c = remove_markup(args[j], NULL);
     if (strcoll(amax, c) < 0) {
-      memcpy(amax, c, len);
+      amax = c;
       m = j;
     }
   }
@@ -259,17 +257,14 @@ FUNCTION(fun_alphamax)
 /* ARGSUSED */
 FUNCTION(fun_alphamin)
 {
-  char amin[BUFFER_LEN];
-  char *c;
+  char *amin, *c;
   int j, m = 0;
-  size_t len;
 
-  c = remove_markup(args[0], &len);
-  memcpy(amin, c, len);
+  amin = remove_markup(args[0], NULL);
   for (j = 1; j < nargs; j++) {
-    c = remove_markup(args[j], &len);
+    c = remove_markup(args[j], NULL);
     if (strcoll(amin, c) > 0) {
-      memcpy(amin, c, len);
+      amin = c;
       m = j;
     }
   }
@@ -489,24 +484,18 @@ FUNCTION(fun_comp)
   switch (type) {
   case 'A':                    /* Case-sensitive lexicographic */
     {
-      char left[BUFFER_LEN], right[BUFFER_LEN], *l, *r;
-      size_t llen, rlen;
-      l = remove_markup(args[0], &llen);
-      memcpy(left, l, llen);
-      r = remove_markup(args[1], &rlen);
-      memcpy(right, r, rlen);
+      char *left, *right;
+      left = remove_markup(args[0], NULL);
+      right = remove_markup(args[1], NULL);
       safe_integer(comp_gencomp(executor, left, right, ALPHANUM_LIST), buff,
                    bp);
       return;
     }
   case 'I':                    /* Case-insensitive lexicographic */
     {
-      char left[BUFFER_LEN], right[BUFFER_LEN], *l, *r;
-      size_t llen, rlen;
-      l = remove_markup(args[0], &llen);
-      memcpy(left, l, llen);
-      r = remove_markup(args[1], &rlen);
-      memcpy(right, r, rlen);
+      char *left, *right;
+      left = remove_markup(args[0], NULL);
+      right = remove_markup(args[1], NULL);
       safe_integer(comp_gencomp(executor, left, right, INSENS_ALPHANUM_LIST),
                    buff, bp);
       return;
@@ -549,12 +538,10 @@ FUNCTION(fun_comp)
 /* ARGSUSED */
 FUNCTION(fun_pos)
 {
-  char tbuf[BUFFER_LEN];
+  char *tbuf;
   char *pos;
-  size_t len;
 
-  pos = remove_markup(args[1], &len);
-  memcpy(tbuf, pos, len);
+  tbuf = remove_markup(args[1], NULL);
   pos = strstr(tbuf, remove_markup(args[0], NULL));
   if (pos)
     safe_integer(pos - tbuf + 1, buff, bp);
@@ -571,7 +558,7 @@ FUNCTION(fun_lpos)
   int first = 1;
 
   if (args[1][0])
-    c = remove_markup(args[1], &len)[0];
+    c = remove_markup(args[1], NULL)[0];
 
   pos = remove_markup(args[0], &len);
   for (n = 0; n < len; n++)
@@ -588,11 +575,9 @@ FUNCTION(fun_lpos)
 /* ARGSUSED */
 FUNCTION(fun_strmatch)
 {
-  char tbuf[BUFFER_LEN];
-  char pattern[BUFFER_LEN];
+  char *tbuf;
+  char *pattern;
   char *ret[36];
-  char *t;
-  size_t len;
   int matches;
   int i;
   char *qregs[NUMQ];
@@ -603,10 +588,8 @@ FUNCTION(fun_strmatch)
 
   /* matches a wildcard pattern for an _entire_ string */
 
-  t = remove_markup(args[0], &len);
-  memcpy(tbuf, t, len);
-  t = remove_markup(args[1], &len);
-  memcpy(pattern, t, len);
+  tbuf = remove_markup(args[0], NULL);
+  pattern = remove_markup(args[1], NULL);
   memset(ret, 0, 36);
   matches = wild_match_case_r(pattern, tbuf, 0, ret,
                               NUMQ, match_space, match_space_len);
@@ -656,7 +639,6 @@ FUNCTION(fun_merge)
    */
 
   int i, j;
-  size_t len;
   char *ptr = args[0];
   char matched[UCHAR_MAX + 1];
   ansi_string *as;
@@ -668,7 +650,7 @@ FUNCTION(fun_merge)
     matched[(unsigned char) ' '] = 1;
   else {
     unsigned char *p;
-    for (p = (unsigned char *) remove_markup(args[2], &len); p && *p; p++)
+    for (p = (unsigned char *) remove_markup(args[2], NULL); p && *p; p++)
       matched[*p] = 1;
   }
 
@@ -1165,8 +1147,7 @@ FUNCTION(fun_foreach)
   int funccount;
   char *oldbp;
   char start, end;
-  char letters[BUFFER_LEN];
-  size_t len;
+  char *letters;
 
   if (nargs >= 3) {
     if (!delim_check(buff, bp, nargs, args, 3, &start))
@@ -1194,8 +1175,7 @@ FUNCTION(fun_foreach)
   tptr[1] = global_eval_context.wenv[1];
   global_eval_context.wenv[1] = place;
 
-  ap = remove_markup(args[1], &len);
-  memcpy(letters, ap, len);
+  letters = remove_markup(args[1], NULL);
 
   lp = trim_space_sep(letters, ' ');
   if (nargs >= 3) {
@@ -1203,7 +1183,6 @@ FUNCTION(fun_foreach)
 
     if (!tmp) {
       safe_str(lp, buff, bp);
-      free((Malloc_t) asave);
       free_anon_attrib(attrib);
       global_eval_context.wenv[1] = tptr[1];
       return;
@@ -1238,7 +1217,6 @@ FUNCTION(fun_foreach)
   }
   if (*lp)
     safe_str(lp + 1, buff, bp);
-  free((Malloc_t) asave);
   free_anon_attrib(attrib);
   global_eval_context.wenv[0] = tptr[0];
   global_eval_context.wenv[1] = tptr[1];

@@ -65,21 +65,20 @@ restore_regexp_context(struct re_save *save)
 /** Save a single q-register
  */
 void
-save_partial_global_reg(const char *funcname, char *preserve[], int i)
+save_partial_global_reg(const char *funcname __attribute__((__unused__)), char *preserve[], int i)
 {
-  preserve[i] = mush_strdup(global_eval_context.renv[i], funcname);
+  preserve[i] = GC_STRDUP(global_eval_context.renv[i]);
 }
 
 /** Restore q-registers saved with save_partial_global_reg()
  */
 void
-restore_partial_global_regs(const char *funcname, char *preserve[])
+restore_partial_global_regs(const char *funcname __attribute__((__unused__)), char *preserve[])
 {
   int i;
   for (i = 0; i < NUMQ; i++) {
     if (preserve[i]) {
       mush_strncpy(global_eval_context.renv[i], preserve[i], BUFFER_LEN);
-      mush_free(preserve[i], funcname);
     }
   }
 }
@@ -89,14 +88,14 @@ restore_partial_global_regs(const char *funcname, char *preserve[])
  * \param preserve pointer to array to store the q-registers in.
  */
 void
-save_global_regs(const char *funcname, char *preserve[])
+save_global_regs(const char *funcname __attribute__((__unused__)), char *preserve[])
 {
   int i;
   for (i = 0; i < NUMQ; i++) {
     if (!global_eval_context.renv[i][0])
       preserve[i] = NULL;
     else {
-      preserve[i] = mush_strdup(global_eval_context.renv[i], funcname);
+      preserve[i] = GC_STRDUP(global_eval_context.renv[i]);
     }
   }
 }
@@ -106,13 +105,12 @@ save_global_regs(const char *funcname, char *preserve[])
  * \param preserve pointer to array to restore the q-registers from.
  */
 void
-restore_global_regs(const char *funcname, char *preserve[])
+restore_global_regs(const char *funcname __attribute__((__unused__)), char *preserve[])
 {
   int i;
   for (i = 0; i < NUMQ; i++) {
     if (preserve[i]) {
       mush_strncpy(global_eval_context.renv[i], preserve[i], BUFFER_LEN);
-      mush_free(preserve[i], funcname);
       preserve[i] = NULL;
     } else {
       global_eval_context.renv[i][0] = '\0';
@@ -125,13 +123,11 @@ restore_global_regs(const char *funcname, char *preserve[])
  * \param preserve pointer to array to free q-registers from.
  */
 void
-free_global_regs(const char *funcname, char *preserve[])
+free_global_regs(const char *funcname __attribute__((__unused__)), char *preserve[])
 {
   int i;
-  for (i = 0; i < NUMQ; i++) {
-    if (preserve[i])
-      mush_free(preserve[i], funcname);
-  }
+  for (i = 0; i < NUMQ; i++)
+    preserve[i] = NULL;
 }
 
 /** Initilalize an array for the q-registers, setting all NULL.
@@ -141,9 +137,8 @@ void
 init_global_regs(char *preserve[])
 {
   int i;
-  for (i = 0; i < NUMQ; i++) {
+  for (i = 0; i < NUMQ; i++)
     preserve[i] = NULL;
-  }
 }
 
 /** Restore the q-registers, without freeing the storage array.
@@ -199,7 +194,7 @@ restore_global_env(const char *funcname __attribute__ ((__unused__)),
  * \param valr pointer to array to store the rnxt value in.
  */
 void
-save_global_nxt(const char *funcname, char *preservew[], char *preserver[],
+save_global_nxt(const char *funcname __attribute__((__unused__)), char *preservew[], char *preserver[],
                 char *valw[], char *valr[])
 {
   int i;
@@ -208,7 +203,7 @@ save_global_nxt(const char *funcname, char *preservew[], char *preserver[],
     if (!global_eval_context.rnxt[i])
       valr[i] = NULL;
     else {
-      valr[i] = mush_strdup(global_eval_context.rnxt[i], funcname);
+      valr[i] = GC_STRDUP(global_eval_context.rnxt[i]);
     }
   }
   for (i = 0; i < 10; i++) {
@@ -216,7 +211,7 @@ save_global_nxt(const char *funcname, char *preservew[], char *preserver[],
     if (!global_eval_context.wnxt[i])
       valw[i] = NULL;
     else {
-      valw[i] = mush_strdup(global_eval_context.wnxt[i], funcname);
+      valw[i] = GC_STRDUP(global_eval_context.wnxt[i]);
     }
   }
 }
@@ -229,7 +224,7 @@ save_global_nxt(const char *funcname, char *preservew[], char *preserver[],
  * \param valr pointer to array to restore the rnxt value from.
  */
 void
-restore_global_nxt(const char *funcname, char *preservew[], char *preserver[],
+restore_global_nxt(const char *funcname __attribute__((__unused__)), char *preservew[], char *preserver[],
                    char *valw[], char *valr[])
 {
   int i;
@@ -238,7 +233,6 @@ restore_global_nxt(const char *funcname, char *preservew[], char *preserver[],
     if (preserver[i]) {
       /* There was a former address, so we can restore to it */
       mush_strncpy(global_eval_context.rnxt[i], valr[i], BUFFER_LEN);
-      mush_free(valr[i], funcname);
       valr[i] = NULL;
     }
   }
@@ -247,7 +241,6 @@ restore_global_nxt(const char *funcname, char *preservew[], char *preserver[],
     if (preservew[i]) {
       /* There was a former address, so we can restore to it */
       mush_strncpy(global_eval_context.wnxt[i], valw[i], BUFFER_LEN);
-      mush_free(valw[i], funcname);
       valw[i] = NULL;
     }
   }
@@ -816,11 +809,14 @@ list_functions(const char *type)
 {
   FUN *fp;
   const char *ptrs[BUFFER_LEN / 2];
-  static char buff[BUFFER_LEN];
+  char *buff;
   char *bp;
   int nptrs = 0, i;
   int which = 0;
   /* 0x1 for builtin, 0x2 for @function */
+
+  buff = GC_MALLOC_ATOMIC(BUFFER_LEN);
+  bp = buff;
 
   if (!type)
     which = 0x3;
@@ -853,7 +849,6 @@ list_functions(const char *type)
   /* do_gensort needs a dbref now, but only for sort types that aren't
    * used here anyway */
   do_gensort(0, (char **) ptrs, NULL, nptrs, ALPHANUM_LIST);
-  bp = buff;
   if (nptrs > 0) {
     safe_str(ptrs[0], buff, &bp);
     for (i = 1; i < nptrs; i++) {
@@ -902,8 +897,6 @@ func_hash_insert(const char *name, FUN *func)
   hashadd(name, (void *) func, &htab_function);
 }
 
-static void delete_function(void *);
-
 /** Initialize the function hash table.
  */
 void
@@ -912,7 +905,7 @@ init_func_hashtab(void)
   FUNTAB *ftp;
 
   hashinit(&htab_function, 512);
-  hash_init(&htab_user_function, 32, delete_function);
+  hashinit(&htab_user_function, 32);
   function_slab = slab_create("functions", sizeof(FUN));
   for (ftp = flist; ftp->name; ftp++) {
     function_add(ftp->name, ftp->fun, ftp->minargs, ftp->maxargs, ftp->flags);
@@ -985,7 +978,7 @@ alias_function(const char *function, const char *alias)
   if (!(fp->flags & FN_BUILTIN))
     return 0;
 
-  function_add(strdup(strupper(alias)), fp->where.fun,
+  function_add(GC_STRDUP(strupper(alias)), fp->where.fun,
                fp->minargs, fp->maxargs, fp->flags);
   return 1;
 }
@@ -1032,7 +1025,7 @@ strip_braces(const char *str)
   char *buff;
   char *bufc;
 
-  buff = (char *) mush_malloc(BUFFER_LEN, "strip_braces.buff");
+  buff = GC_MALLOC_ATOMIC(BUFFER_LEN);
   bufc = buff;
 
   while (isspace((unsigned char) *str)) /* eat spaces at the beginning */
@@ -1065,7 +1058,7 @@ apply_restrictions(unsigned int result, const char *xres)
   if (!xres || !*xres)
     return 0;
 
-  rsave = restriction = mush_strdup(xres, "ar.string");
+  rsave = restriction = GC_STRDUP(xres);
 
   while (restriction && *restriction) {
     if ((tp = strchr(restriction, ' ')))
@@ -1108,7 +1101,6 @@ apply_restrictions(unsigned int result, const char *xres)
       result |= flag;
     restriction = tp;
   }
-  mush_free(rsave, "ar.string");
   return result;
 }
 
@@ -1259,7 +1251,7 @@ do_function(dbref player, char *name, char *argv[], int preserve)
       FUN **funclist;
       int n = 0;
 
-      funclist = mush_calloc(userfn_count, sizeof(FUN *), "function.fp.list");
+      funclist = GC_MALLOC(userfn_count * sizeof(FUN *));
       notify(player, T("Function Name                   Dbref #    Attrib"));
       for (fp = (FUN *) hash_firstentry(&htab_user_function);
            fp; fp = (FUN *) hash_nextentry(&htab_user_function)) {
@@ -1273,13 +1265,12 @@ do_function(dbref player, char *name, char *argv[], int preserve)
                       "%-32s %6d    %s", fp->name,
                       fp->where.ufun->thing, fp->where.ufun->name);
       }
-      mush_free(funclist, "function.fp.list");
     } else {
       const char **funcnames;
       int n = 0;
       /* just print out the list of available functions */
       safe_str(T("User functions:"), tbuf1, &bp);
-      funcnames = mush_calloc(userfn_count, sizeof(char *), "function.list");
+      funcnames = GC_MALLOC(userfn_count * sizeof(char *));
       for (fp = (FUN *) hash_firstentry(&htab_user_function);
            fp; fp = (FUN *) hash_nextentry(&htab_user_function)) {
         funcnames[n] = fp->name;
@@ -1290,7 +1281,6 @@ do_function(dbref player, char *name, char *argv[], int preserve)
         safe_chr(' ', tbuf1, &bp);
         safe_str(funcnames[n], tbuf1, &bp);
       }
-      mush_free(funcnames, "function.list");
       *bp = '\0';
       notify(player, tbuf1);
     }
@@ -1339,27 +1329,27 @@ do_function(dbref player, char *name, char *argv[], int preserve)
    */
 
   fp = func_hash_lookup(upcasestr(name));
+  if (argv[6] && *argv[6]) {
+    notify(player, T("Expected between 1 and 5 arguments."));
+    return;
+  }
   if (!fp) {
-    if (argv[6] && *argv[6]) {
-      notify(player, T("Expected between 1 and 5 arguments."));
-      return;
-    }
     /* a completely new entry. First, insert it into general hash table */
     fp = slab_malloc(function_slab, NULL);
-    fp->name = mush_strdup(name, "func_hash.name");
+    fp->name = GC_STRDUP(name);
     if (argv[3] && *argv[3]) {
       fp->minargs = parse_integer(argv[3]);
       if (fp->minargs < 0)
-        fp->minargs = 0;
+	fp->minargs = 0;
       else if (fp->minargs > 10)
-        fp->minargs = 10;
+	fp->minargs = 10;
     } else
       fp->minargs = 0;
-
+    
     if (argv[4] && *argv[4]) {
       fp->maxargs = parse_integer(argv[4]);
       if (fp->maxargs < -10)
-        fp->maxargs = -10;
+	fp->maxargs = -10;
       else if (fp->maxargs > 10)
         fp->maxargs = 10;
     } else
@@ -1370,17 +1360,17 @@ do_function(dbref player, char *name, char *argv[], int preserve)
       fp->flags = 0;
     if (preserve)
       fp->flags |= FN_LOCALIZE;
-    hashadd(name, fp, &htab_user_function);
 
-    /* now add it to the user function table */
-    fp->where.ufun = mush_malloc(sizeof(USERFN_ENTRY), "userfn");
+    fp->where.ufun = GC_MALLOC(sizeof(USERFN_ENTRY));
     fp->where.ufun->thing = thing;
-    fp->where.ufun->name = mush_strdup(upcasestr(argv[2]), "userfn.name");
+    fp->where.ufun->name = strupper(argv[2]);
+
+    hashadd(name, fp, &htab_user_function);
 
     notify(player, T("Function added."));
     return;
   } else {
-
+    
     /* we are modifying an old entry */
     if ((fp->flags & FN_BUILTIN) && !(fp->flags & FN_OVERRIDE)) {
       notify(player, T("You cannot change that built-in function."));
@@ -1388,15 +1378,13 @@ do_function(dbref player, char *name, char *argv[], int preserve)
     }
     if (fp->flags & FN_BUILTIN) {       /* Overriding a built in function */
       fp = slab_malloc(function_slab, NULL);
-      fp->name = mush_strdup(name, "func_hash.name");
-      fp->where.ufun = mush_malloc(sizeof(USERFN_ENTRY), "userfn");
+      fp->name = GC_STRDUP(name);
+      fp->where.ufun = GC_MALLOC(sizeof(USERFN_ENTRY));
       fp->flags = 0;
       hashadd(name, fp, &htab_user_function);
     }
     fp->where.ufun->thing = thing;
-    if (fp->where.ufun->name)
-      mush_free(fp->where.ufun->name, "userfn.name");
-    fp->where.ufun->name = mush_strdup(upcasestr(argv[2]), "userfn.name");
+    fp->where.ufun->name = strupper(argv[2]);
     if (argv[3] && *argv[3]) {
       fp->minargs = parse_integer(argv[3]);
       if (fp->minargs < 0)
@@ -1427,18 +1415,6 @@ do_function(dbref player, char *name, char *argv[], int preserve)
   }
 }
 
-/** Free a @function pointer when it's removed from the hash table */
-static void
-delete_function(void *data)
-{
-  FUN *fp = data;
-
-  mush_free((void *) fp->name, "func_hash.name");
-  mush_free(fp->where.ufun->name, "userfn.name");
-  mush_free(fp->where.ufun, "userfn");
-  slab_free(function_slab, fp);
-}
-
 /** Restore an overridden built-in function.
  * \verbatim
  * If a built-in function is deleted with @function/delete, it can be
@@ -1453,6 +1429,7 @@ void
 do_function_restore(dbref player, const char *name)
 {
   FUN *fp;
+  char *upname;
 
   if (!Wizard(player)) {
     notify(player, T("Permission denied."));
@@ -1480,7 +1457,11 @@ do_function_restore(dbref player, const char *name)
   notify(player, T("Restored."));
 
   /* Delete any @function with the same name */
-  hashdelete(strupper(name), &htab_user_function);
+  upname = strupper(name);
+  fp = hashfind(upname, &htab_user_function);
+  if (fp) {
+    hashdelete(upname, &htab_user_function);
+  }
 }
 
 /** Delete a function.
@@ -1591,11 +1572,14 @@ build_function_report(dbref player, FUN *fp)
 {
   char tbuf[BUFFER_LEN];
   char *tp = tbuf;
-  static char buff[BUFFER_LEN];
-  char *bp = buff;
+  char *buff;
+  char *bp;
   const char *state, *state2;
   int first = 1;
   int maxargs;
+
+  buff = GC_MALLOC_ATOMIC(BUFFER_LEN);
+  bp = buff;
 
   if (fp->flags & FN_BUILTIN)
     state2 = " builtin";

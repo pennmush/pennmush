@@ -106,12 +106,11 @@ parse_anon_attrib(dbref player, char *str, dbref *thing, ATTR **attrib)
       *attrib = NULL;
       *thing = NOTHING;
     } else {
-      *attrib = mush_malloc(sizeof(ATTR), "anon_attr");
+      *attrib = GC_MALLOC(sizeof(ATTR));
       AL_CREATOR(*attrib) = player;
-      AL_NAME(*attrib) = mush_strdup("#lambda", "anon_attr.lambda");
+      AL_NAME(*attrib) = GC_STRDUP("#lambda");
       t = compress(str);
       (*attrib)->data = chunk_create(t, u_strlen(t), 0);
-      free(t);
       AL_FLAGS(*attrib) = AF_ANON;
       AL_NEXT(*attrib) = NULL;
       *thing = player;
@@ -128,9 +127,7 @@ void
 free_anon_attrib(ATTR *attrib)
 {
   if (attrib && (AL_FLAGS(attrib) & AF_ANON)) {
-    mush_free((void *) AL_NAME(attrib), "anon_attr.lambda");
     chunk_delete(attrib->data);
-    mush_free(attrib, "anon_attr");
   }
 }
 
@@ -628,17 +625,13 @@ get_random32(uint32_t low, uint32_t high)
 char *
 fullalias(dbref it)
 {
-  static char n[BUFFER_LEN];    /* STATIC */
   ATTR *a = atr_get_noparent(it, "ALIAS");
 
   if (!a) {
-    n[0] = '\0';
-    return n;
+    return "";
   }
 
-  mush_strncpy(n, atr_value(a), BUFFER_LEN);
-
-  return n;
+  return GC_STRDUP(atr_value(a));
 }
 
 /** Return only the first component of an object's alias. We expect
@@ -649,16 +642,12 @@ fullalias(dbref it)
 char *
 shortalias(dbref it)
 {
-  static char n[BUFFER_LEN];    /* STATIC */
-  char *s;
+  char *n, *s;
 
-  s = fullalias(it);
-  if (!(s && *s)) {
-    n[0] = '\0';
-    return n;
-  }
+  n = fullalias(it);
+  if (!(n && *n))
+    return "";
 
-  mush_strncpy(n, s, BUFFER_LEN);
   if ((s = strchr(n, ';')))
     *s = '\0';
 
@@ -673,10 +662,9 @@ shortalias(dbref it)
 char *
 shortname(dbref it)
 {
-  static char n[BUFFER_LEN];    /* STATIC */
-  char *s;
+  char *n, *s;
 
-  mush_strncpy(n, Name(it), BUFFER_LEN);
+  n = GC_STRDUP(Name(it));
 
   if (IsExit(it)) {
     if ((s = strchr(n, ';')))

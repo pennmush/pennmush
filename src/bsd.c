@@ -412,6 +412,17 @@ main(int argc, char **argv)
   FILE *newerr;
   bool detach_session = 1;
 
+  GC_INIT();
+
+#if 0                           /* TODO: Make this a config/options.h setting */
+  GC_enable_incremental();
+#endif
+
+#ifdef HAVE_PCRE
+  pcre_malloc = GC_malloc;
+  pcre_free = GC_free;
+#endif
+
 /* disallow running as root on unix.
  * This is done as early as possible, before translation is initialized.
  * Hence, no T()s around messages.
@@ -606,8 +617,10 @@ main(int argc, char **argv)
 
   descs_by_fd = im_new();
 
-  /* go do it */
   load_reboot_db();
+
+  /* Ready to roll. Tidy up memory first, though. */
+  GC_gcollect();
 
   shovechars((Port_t) TINYPORT, (Port_t) SSLPORT);
 
@@ -1163,7 +1176,6 @@ new_connection(int oldsock, int *result, bool use_ssl)
       *chp = '\0';
       safe_str(socket_ident, tbuf1, &bp);
       safe_chr('@', tbuf1, &bp);
-      free(socket_ident);
     }
   }
   hi = hostname_convert(&addr.addr, addr_len);
@@ -1192,11 +1204,9 @@ static void
 clearstrings(DESC *d)
 {
   if (d->output_prefix) {
-    mush_free((Malloc_t) d->output_prefix, "userstring");
     d->output_prefix = 0;
   }
   if (d->output_suffix) {
-    mush_free((Malloc_t) d->output_suffix, "userstring");
     d->output_suffix = 0;
   }
 }
@@ -1232,11 +1242,6 @@ fcache_read(FBLOCK *fb, const char *filename)
   if (!fb || !filename)
     return -1;
 
-  /* Free prior cache */
-  if (fb->buff) {
-    mush_free(fb->buff, "fcache_data");
-  }
-
   fb->buff = NULL;
   fb->len = 0;
 
@@ -1259,14 +1264,13 @@ fcache_read(FBLOCK *fb, const char *filename)
 
     fb->len = sb.nFileSizeLow;
 
-    if (!(fb->buff = mush_malloc(sb.nFileSizeLow, "fcache_data"))) {
+    if (!(fb->buff = GC_MALLOC_ATOMIC(sb.nFileSizeLow))) {
       CloseHandle(fh);
       return -1;
     }
 
     if (!ReadFile(fh, fb->buff, sb.nFileSizeLow, &r, NULL) || fb->len != r) {
       CloseHandle(fh);
-      mush_free(fb->buff, "fcache_data");
       fb->buff = NULL;
       return -1;
     }
@@ -1297,7 +1301,7 @@ fcache_read(FBLOCK *fb, const char *filename)
     }
 
 
-    if (!(fb->buff = mush_malloc(sb.st_size, "fcache_data"))) {
+    if (!(fb->buff = GC_MALLOC_ATOMIC(sb.st_size))) {
       do_rawlog(LT_ERR, T("Couldn't allocate %d bytes of memory for '%s'!"),
                 (int) sb.st_size, filename);
       close(fd);
@@ -1308,7 +1312,6 @@ fcache_read(FBLOCK *fb, const char *filename)
     if ((n = read(fd, fb->buff, sb.st_size)) != sb.st_size) {
       do_rawlog(LT_ERR, T("Couldn't read all of '%s'"), filename);
       close(fd);
-      mush_free(fb->buff, "fcache_data");
       fb->buff = NULL;
       reserve_fd();
       return -1;
@@ -1461,8 +1464,6 @@ shutdownsock(DESC *d)
 
   {
     freeqs(d);
-    mush_free(d->ttype, "terminal description");
-    mush_free(d, "descriptor");
   }
 
   ndescriptors--;
@@ -1474,7 +1475,7 @@ initializesock(int s, char *addr, char *ip, int use_ssl
                __attribute__ ((__unused__)))
 {
   DESC *d;
-  d = (DESC *) mush_malloc(sizeof(DESC), "descriptor");
+  d = GC_MALLOC(sizeof(DESC));
   if (!d)
     mush_panic("Out of memory.");
   d->descriptor = s;
@@ -1505,7 +1506,7 @@ initializesock(int s, char *addr, char *ip, int use_ssl
   d->output_chars = 0;
   d->width = 78;
   d->height = 24;
-  d->ttype = mush_strdup("unknown", "terminal description");
+  d->ttype = GC_STRDUP("unknown");
   d->checksum[0] = '\0';
 #ifdef HAS_OPENSSL
   d->ssl = NULL;
@@ -1872,8 +1873,7 @@ handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
       while (*q < qend && **q != SE)
         (*q)++;
       *bp = '\0';
-      mush_free(d->ttype, "terminal description");
-      d->ttype = mush_strdup(tbuf, "terminal description");
+      d->ttype = GC_STRDUP(tbuf);
     } else {
       while (*q < qend && **q != SE)
         (*q)++;
@@ -1978,7 +1978,7 @@ process_input_helper(DESC *d, char *tbuf1, int got)
   unsigned char *p, *pend, *q, *qend;
 
   if (!d->raw_input) {
-    d->raw_input = mush_malloc(MAX_COMMAND_LEN, "descriptor_raw_input");
+    d->raw_input = GC_MALLOC_ATOMIC(MAX_COMMAND_LEN);
     if (!d->raw_input)
       mush_panic("Out of memory");
     d->raw_input_at = d->raw_input;
@@ -2021,7 +2021,6 @@ process_input_helper(DESC *d, char *tbuf1, int got)
   if (p > d->raw_input) {
     d->raw_input_at = p;
   } else {
-    mush_free((Malloc_t) d->raw_input, "descriptor_raw_input");
     d->raw_input = 0;
     d->raw_input_at = 0;
   }
@@ -2107,13 +2106,12 @@ static void
 set_userstring(unsigned char **userstring, const char *command)
 {
   if (*userstring) {
-    mush_free((Malloc_t) * userstring, "userstring");
     *userstring = NULL;
   }
   while (*command && isspace((unsigned char) *command))
     command++;
   if (*command)
-    *userstring = (unsigned char *) mush_strdup(command, "userstring");
+    *userstring = (unsigned char *) GC_STRDUP(command);
 }
 
 static void
@@ -2604,6 +2602,12 @@ close_sockets(void)
       offset = 0;
       ssl_write(d->ssl, d->ssl_state, 0, 1, (uint8_t *) shutmsg,
                 shutlen, &offset);
+      offset = 0;
+      ssl_write(d->ssl, d->ssl_state, 0, 1, (uint8_t *) "\r\n", 2, &offset);
+      const char *shutmsg = T(shutdown_message);
+      offset = 0;
+      ssl_write(d->ssl, d->ssl_state, 0, 1, (uint8_t *) shutmsg,
+                strlen(shutmsg), &offset);
       offset = 0;
       ssl_write(d->ssl, d->ssl_state, 0, 1, (uint8_t *) "\r\n", 2, &offset);
       ssl_close_connection(d->ssl);
@@ -3208,7 +3212,7 @@ announce_connect(dbref player, int isnew, int num)
    * %1 (number of connections after connect)
    */
   myenv[0] = NULL;
-  myenv[1] = mush_strdup(unparse_integer(num), "myenv");
+  myenv[1] = unparse_integer(num);
   for (j = 0; j < 2; j++)
     global_eval_context.wnxt[j] = myenv[j];
 
@@ -3242,9 +3246,6 @@ announce_connect(dbref player, int isnew, int num)
   DOLIST(obj, Contents(MASTER_ROOM)) {
     (void) queue_attribute(obj, "ACONNECT", player);
   }
-  for (j = 0; j < 2; j++)
-    if (myenv[j])
-      mush_free(myenv[j], "myenv");
   for (j = 0; j < 10; j++)
     global_eval_context.wnxt[j] = NULL;
   strcpy(global_eval_context.ccom, "");
@@ -3290,10 +3291,10 @@ announce_disconnect(DESC *saved)
    * %4 (commands queued)
    */
   myenv[0] = NULL;
-  myenv[1] = mush_strdup(unparse_integer(num - 1), "myenv");
-  myenv[2] = mush_strdup(unparse_integer(saved->input_chars), "myenv");
-  myenv[3] = mush_strdup(unparse_integer(saved->output_chars), "myenv");
-  myenv[4] = mush_strdup(unparse_integer(saved->cmds), "myenv");
+  myenv[1] = unparse_integer(num - 1);
+  myenv[2] = unparse_integer(saved->input_chars);
+  myenv[3] = unparse_integer(saved->output_chars);
+  myenv[4] = unparse_integer(saved->cmds);
   for (j = 0; j < 5; j++)
     global_eval_context.wnxt[j] = myenv[j];
 
@@ -3349,9 +3350,6 @@ announce_disconnect(DESC *saved)
     }
   }
 
-  for (j = 0; j < 5; j++)
-    if (myenv[j])
-      mush_free(myenv[j], "myenv");
   for (j = 0; j < 10; j++)
     global_eval_context.wnxt[j] = NULL;
   strcpy(global_eval_context.ccom, "");
@@ -4562,7 +4560,7 @@ load_reboot_db(void)
 
   while ((val = getref(f)) != 0) {
     ndescriptors++;
-    d = (DESC *) mush_malloc(sizeof(DESC), "descriptor");
+    d = GC_MALLOC(sizeof(DESC));
     d->descriptor = val;
     d->connected_at = getref(f);
     d->hide = getref(f);
@@ -4590,9 +4588,9 @@ load_reboot_db(void)
       d->height = 24;
     }
     if (flags & RDBF_TTYPE)
-      d->ttype = mush_strdup(getstring_noalloc(f), "terminal description");
+      d->ttype = GC_STRDUP(getstring_noalloc(f));
     else
-      d->ttype = mush_strdup("unknown", "terminal description");
+      d->ttype = GC_STRDUP("unknown");
     if (flags & RDBF_PUEBLO_CHECKSUM)
       strcpy(d->checksum, getstring_noalloc(f));
     else
@@ -4643,8 +4641,6 @@ load_reboot_db(void)
   while (closed) {
     nextclosed = closed->next;
     announce_disconnect(closed);
-    mush_free(closed->ttype, "terminal description");
-    mush_free(closed, "descriptor");
     closed = nextclosed;
   }
 
@@ -4751,7 +4747,6 @@ do_reboot(dbref player, int flag)
           strerror(errno));
   exit(1);
 }
-
 
 /* File modification watching code. Linux-specific for now. 
  * Future directions include: kqueue() for BSD, fam for linux, irix, others?

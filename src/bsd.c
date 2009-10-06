@@ -2672,25 +2672,42 @@ player_desc(dbref player)
  * \param message message to send.
  */
 void
-do_page_port(dbref player, const char *pc, const char *message)
+do_page_port(dbref player, dbref cause, const char *pc, const char *message, bool eval_msg)
 {
   int p, key;
   DESC *d;
   const char *gap;
   char tbuf[BUFFER_LEN], *tbp = tbuf;
+  char mbuf[BUFFER_LEN], *mbp = mbuf;
   dbref target = NOTHING;
 
   if (!Hasprivs(player)) {
     notify(player, T("Permission denied."));
     return;
   }
-  p = atoi(pc);
+
+  process_expression(tbuf, &tbp, &pc, player, cause, cause, PE_DEFAULT, PT_DEFAULT, NULL);
+  *tbp = '\0';
+  p = atoi(tbuf);
+  tbp = tbuf;
+
   if (p <= 0) {
     notify(player, T("That's not a port number."));
     return;
   }
 
-  if (!message || !*message) {
+  if (!message) {
+    notify(player, T("What do you want to page with?"));
+    return;
+  }
+
+  if (eval_msg) {
+    process_expression(mbuf, &mbp, &message, player, cause, cause, PE_DEFAULT, PT_DEFAULT, NULL);
+    *mbp = '\0';
+    message = mbuf;
+  }
+
+  if (!*message) {
     notify(player, T("What do you want to page with?"));
     return;
   }

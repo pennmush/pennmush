@@ -4214,9 +4214,9 @@ See also: OPAQUE, FLAGS, @describe, @adescribe, @odescribe, DARK, LIGHT
   The /noeval switch prevents the MUSH from evaluating the message.
   The /override switch is admin-only, and overrides pagelocks and
   HAVEN.
-  The /port switch is admin-only, and will page a port descriptor
-  directly, including connections that have not yet logged into a
-  player.
+  The /port switch is admin-only, and will page a single port
+  descriptor directly, including connections that have not yet logged
+  into a player.
   
 See also: @lock, @alias, @pageformat, pose, :, ;, HAVEN, NOSPOOF, FLAGS
 & :

@@ -1300,7 +1300,7 @@ COMMAND(cmd_leave)
 COMMAND(cmd_page)
 {
   if (SW_ISSET(sw, SWITCH_PORT))
-    do_page_port(player, arg_left, arg_right);
+    do_page_port(player, cause, arg_left, arg_right, !SW_ISSET(sw, SWITCH_NOEVAL));
   else
     do_page(player, arg_left, arg_right, cause, SW_ISSET(sw, SWITCH_NOEVAL),
             !(SW_ISSET(sw, SWITCH_BLIND) ||

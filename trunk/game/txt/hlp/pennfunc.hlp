@@ -1248,9 +1248,10 @@ See also: decrypt(), encode64()
   You can also limit the range of the dbrefs searched by giving
   <begin> and <end>.
 & EQ()
-  eq(<number1>, <number2>)
+  eq(<number1>, <number2>[, <number3>])
 
-  Takes two numbers, and returns 1 if they are equal, 0 otherwise.
+  Takes two or more numbers, and returns 1 if they are all equal,
+  0 otherwise.
   
 See also: neq()
 & ESCAPE()
@@ -1637,15 +1638,15 @@ See also: match(), matchall(), grab(), regmatch()
   grep()/wildgrep()/regrep() are case-sensitive. 
   grepi()/wildgrepi()/regrepi() are case-insensitive.
 & GT()
-  gt(<num>, <num>)
+  gt(<num>, <num>[, <num>])
 
-  Takes two numbers, and returns 1 if and only if the first is greater
-  than the second, and 0 otherwise.
+  Takes two or more numbers, and returns 1 if and only if each number
+  is greater than to the number after it. 0 otherwise
 & GTE()
-  gte(<num>, <num>)
+  gte(<num>, <num>[, <num>])
 
-  Takes two numbers, and returns 1 if and only if the first is greater
-  than or equal to the second, and 0 otherwise.
+  Takes two or more numbers, and returns 1 if and only if each number
+  is greater than or equal to the number after it. 0 otherwise
 & HASATTR()
 & HASATTRP()
 & HASATTRVAL()
@@ -2465,15 +2466,23 @@ See also: pos()
 
   stats() is an alias for lstats().
 & LT()
-  lt(<num>, <num>)
+  lt(<num>, <num>[, <num>])
 
-  Takes two numbers, and returns 1 if and only if the first is less
-  than the second, and 0 otherwise.
+  Takes two or more numbers, and returns 1 if and only if each number
+  is less than the number after it. 0 otherwise
+
+  Examples:
+  > th lt(1,2)
+  1
+  > th lt(1,2,3)
+  1
+  > th lt(1,3,2)
+  0
 & LTE()
-  lte(<num>, <num>)
+  lt(<num>, <num>[, <num>])
 
-  Takes two numbers, and returns 1 if and only if the first is less
-  than or equal to the second, and 0 otherwise.
+  Takes two or more numbers, and returns 1 if and only if each number
+  is less than or equal to the number after it. 0 otherwise
 & LVCON()
   lvcon(<object>)
 
@@ -2881,9 +2890,9 @@ See also: anonymous attributes
   object 1 is carrying object 2.
   You must control at least one of the objects.
 & NEQ()
-  neq(<num1>, <num2>)
+  neq(<num1>, <num2>[, <num2>, ...])
 
-  Basically the same as [not(eq(<num1>,<num2>))].
+  Basically the same as [not(eq(<num1>,<num2>[,<num3>, ...]))].
 
 See also: eq(), not()
 & NEXT()

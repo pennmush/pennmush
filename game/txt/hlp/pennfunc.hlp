@@ -2183,8 +2183,9 @@ See also: align(), center(), rjust()
   3).  Using @function, one can easily write ladd, lsub, etc as per
   TinyMUSH.
 
-  Supported <op>'s are: add and band bor bxor dist2d dist3d div fdiv
-  max mean median min modulo mul nand nor or remainder stddev sub xor
+  Supported <op>'s are:
+  add and band bor bxor dist2d dist3d div eq fdiv gt gte lt lte max mean
+  median min modulo mul nand neq nor or remainder stddev sub xor
 
   Examples:
   >think lmath(add, 1|2|3, |)

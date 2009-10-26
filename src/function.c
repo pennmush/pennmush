@@ -699,6 +699,7 @@ FUNTAB flist[] = {
   {"TABLE", fun_table, 1, 5, FN_REG},
   {"TEL", fun_tel, 2, 4, FN_REG},
   {"TERMINFO", fun_terminfo, 1, 1, FN_REG},
+  {"TESTLOCK", fun_testlock, 2, 2, FN_REG},
   {"TEXTENTRIES", fun_textentries, 2, 3, FN_REG},
   {"TEXTFILE", fun_textfile, 2, 2, FN_REG},
   {"TIME", fun_time, 0, 1, FN_REG},

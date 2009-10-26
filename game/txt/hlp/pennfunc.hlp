@@ -4491,6 +4491,21 @@ See also: @tel
 
   Players can use terminfo() on their own connections. Using it on
   other players is restricted to see_all objects.  
+& TESTLOCK()
+  testlock(<lock>, <victim>)
+
+  testlock() returns 1 if the <victim> would pass the lock defined in <lock>
+  as run by the executor, and 0 if it would fail.
+
+  testlock() evaluates the lock from executor's perspective.
+
+  For example:
+      think testlock(TYPE^PLAYER&FLAG^WIZARD, *Gandalf)
+      > 1
+      think testlock(TYPE^PLAYER&FLAG^WIZARD, *Bilbo)
+      > 0
+  
+See also: @lock, locktypes
 & TEXTFILE()
 & TEXTENTRIES()
 & dynhelp()

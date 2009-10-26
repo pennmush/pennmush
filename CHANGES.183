@@ -22,6 +22,8 @@ Functions:
     Suggested by Mercutio@M*U*S*H. [GM]
 
 Fixes:
+ * fun_merge() was eating characters when ansi was present. Reported
+   by Nammyung. Fixed. [GM]
  * Windows compile fixes.
  * page/port didn't evaluate its arguments properly. Reported
    by adkins@drigon.com. [SW]

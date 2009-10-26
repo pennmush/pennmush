@@ -580,73 +580,73 @@ For more, see Entries-28
  table()                   tag()                     tagwrap()                
  take                      tan()                     teach                    
  tel()                     @teleport                 tel_ok                   
- terminfo()                terse                     textentries()            
- textfile()                think                     time()                   
- timefmt()                 timefmt2                  time functions           
- timestring()              topics                    topics2                  
+ terminfo()                terse                     testlock()               
+ textentries()             textfile()                think                    
+ time()                    timefmt()                 timefmt2                 
+ time functions            timestring()              topics                   
 
 For more, see Entries-29
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-29
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- @tport                    tr()                      track_money              
- translation               transparent               transparent2             
- @trigger                  @trigger2                 trim()                   
- trimpenn()                trimtiny()                trunc()                  
- trust                     trust2                    type()                   
- types2                    types of objects          u()                      
- u2                        u3                        ucstr()                  
- udefault()                @ufail                    ufun()                   
- ufun2                     ufun3                     ulambda()                
- uldefault()               ulocal()                  ulocal2                  
- @ulock                    @undestroy                unfindable               
- @unfollow                 unfollow                  uninspected              
- unique()                  @unlink                   @unlock                  
- @unrecycle                unregistered              @uptime                  
- @uptime2                  @use                      use                      
- user-defined2             user-defined commands     utctime()                
+ topics2                   @tport                    tr()                     
+ track_money               translation               transparent              
+ transparent2              @trigger                  @trigger2                
+ trim()                    trimpenn()                trimtiny()               
+ trunc()                   trust                     trust2                   
+ type()                    types2                    types of objects         
+ u()                       u2                        u3                       
+ ucstr()                   udefault()                @ufail                   
+ ufun()                    ufun2                     ufun3                    
+ ulambda()                 uldefault()               ulocal()                 
+ ulocal2                   @ulock                    @undestroy               
+ unfindable                @unfollow                 unfollow                 
+ uninspected               unique()                  @unlink                  
+ @unlock                   @unrecycle                unregistered             
+ @uptime                   @uptime2                  @use                     
+ use                       user-defined2             user-defined commands    
 
 For more, see Entries-30
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-30
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- utility functions         @uunlock                  v()                      
- vadd()                    val()                     valid()                  
- vcross()                  vdim()                    vdot()                   
- @verb                     @verb2                    @verb3                   
- @verb4                    verbose                   verbs                    
- @version                  version()                 v-function               
- visible()                 visual                    vmag()                   
- vmax()                    vmin()                    vmul()                   
- vrml                      @vrml_url                 vsub()                   
- vunit()                   @wait                     @wait2                   
- @wait3                    @wall                     @warnings                
- warnings                  @warnings2                @warnings3               
- warnings list             warnings list2            @wcheck                  
- where()                   @whereis                  whisper                  
- whisper2                  who                       width()                  
- wildcards                 wildgrep()                wildgrepi()              
+ utctime()                 utility functions         @uunlock                 
+ v()                       vadd()                    val()                    
+ valid()                   vcross()                  vdim()                   
+ vdot()                    @verb                     @verb2                   
+ @verb3                    @verb4                    verbose                  
+ verbs                     @version                  version()                
+ v-function                visible()                 visual                   
+ vmag()                    vmax()                    vmin()                   
+ vmul()                    vrml                      @vrml_url                
+ vsub()                    vunit()                   @wait                    
+ @wait2                    @wait3                    @wall                    
+ @warnings                 warnings                  @warnings2               
+ @warnings3                warnings list             warnings list2           
+ @wcheck                   where()                   @whereis                 
+ whisper                   whisper2                  who                      
+ width()                   wildcards                 wildgrep()               
 
 For more, see Entries-31
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-31
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- @wipe                     wipe()                    with                     
- @-wizard                  wizard                    @wizmotd                 
- @wizwall                  wordpos()                 words()                  
- wrap()                    xattr()                   xattrp()                 
- xcon()                    xexits()                  xget()                   
- xmwho()                   xmwhoid()                 xor()                    
- xplayers()                xthings()                 xvcon()                  
- xvexits()                 xvplayers()               xvthings()               
- xwho()                    xwhoid()                  @zemit                   
- zemit()                   @zenter                   zfun()                   
- @zleave                   zmo                       zmp                      
- zmr                       zmt                       zmwho()                  
- zone                      zone()                    zone master objects      
- zone master rooms         zone masters              zone objects             
- zones                     zones2                    z_tel                    
- zwho()                                                                       
+ wildgrepi()               @wipe                     wipe()                   
+ with                      @-wizard                  wizard                   
+ @wizmotd                  @wizwall                  wordpos()                
+ words()                   wrap()                    xattr()                  
+ xattrp()                  xcon()                    xexits()                 
+ xget()                    xmwho()                   xmwhoid()                
+ xor()                     xplayers()                xthings()                
+ xvcon()                   xvexits()                 xvplayers()              
+ xvthings()                xwho()                    xwhoid()                 
+ @zemit                    zemit()                   @zenter                  
+ zfun()                    @zleave                   zmo                      
+ zmp                       zmr                       zmt                      
+ zmwho()                   zone                      zone()                   
+ zone master objects       zone master rooms         zone masters             
+ zone objects              zones                     zones2                   
+ z_tel                     zwho()                                             
 
 For more, see Entries-32
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-

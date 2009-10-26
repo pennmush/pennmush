@@ -36,18 +36,9 @@ static lock_type get_locktype(char *str);
 extern struct db_stat_info *get_stats(dbref owner);
 static int lattr_helper(dbref player, dbref thing, dbref parent,
                         char const *pattern, ATTR *atr, void *args);
-static dbref
-
-
-
-
-
-
-
-dbwalk(char *buff, char **bp, dbref executor, dbref enactor,
-       int type, dbref loc, dbref after, int skipdark,
-       int start, int count, int *retcount);
-
+static dbref dbwalk(char *buff, char **bp, dbref executor, dbref enactor,
+                    int type, dbref loc, dbref after, int skipdark,
+                    int start, int count, int *retcount);
 
 const char *
 do_get_attrib(dbref executor, dbref thing, const char *attrib)
@@ -1374,6 +1365,27 @@ FUNCTION(fun_elock)
     safe_boolean(eval_lock(victim, it, ltype), buff, bp);
   else
     safe_str("#-1", buff, bp);
+  return;
+}
+
+/* ARGSUSED */
+FUNCTION(fun_testlock)
+{
+  dbref victim = match_thing(executor, args[1]);
+  boolexp elock = TRUE_BOOLEXP;
+
+  elock = parse_boolexp(executor, args[0], "Search");
+
+  if (!GoodObject(victim)) {
+    safe_str("#-1", buff, bp);
+    return;
+  }
+  if (Can_Locate(executor, victim)) {
+    safe_boolean(eval_boolexp(victim, elock, executor), buff, bp);
+  } else {
+    safe_str("#-1", buff, bp);
+  }
+  free_boolexp(elock);
   return;
 }
 

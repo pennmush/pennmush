@@ -693,6 +693,7 @@ FUNCTION(fun_merge)
       safe_chr(*(ptr++), buff, bp);
       break;
     case TAG_START:
+    case TAG_END:
       while (*ptr && *ptr != TAG_END) {
         safe_chr(*(ptr++), buff, bp);
       }
@@ -704,22 +705,6 @@ FUNCTION(fun_merge)
         while (*ptr && matched[(unsigned char) *ptr]) {
           ptr++;
           j++;
-          switch (*ptr) {
-          case ESC_CHAR:
-            safe_ansi_string(as, i, j, buff, bp);
-            i += j;
-            j = 0;
-            while (*ptr && *ptr != 'm')
-              safe_chr(*(ptr++), buff, bp);
-            break;
-          case TAG_START:
-            safe_ansi_string(as, i, j, buff, bp);
-            i += j;
-            j = 0;
-            while (*ptr && *ptr != TAG_END)
-              safe_chr(*(ptr++), buff, bp);
-            break;
-          }
         }
         if (j != 0) {
           safe_ansi_string(as, i, j, buff, bp);

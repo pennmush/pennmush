@@ -1376,6 +1376,11 @@ FUNCTION(fun_testlock)
 
   elock = parse_boolexp(executor, args[0], "Search");
 
+  if (elock == TRUE_BOOLEXP) {
+    safe_str("#-1 INVALID BOOLEXP", buff, bp);
+    return;
+  }
+
   if (!GoodObject(victim)) {
     safe_str("#-1", buff, bp);
     return;

@@ -1587,7 +1587,7 @@ do_decompile(dbref player, const char *xname, const char *prefix,
   /* if we have an attribute arg specified, wild match on it */
   if (attrib && *attrib) {
     attrname = attrib;
-    while (attrib = split_token(&attrname, ' ')) {
+    while ((attrib = split_token(&attrname, ' ')) != NULL) {
       switch (dbflag) {
       case DEC_DB:
         decompile_atrs(player, thing, dbnum, attrib, prefix, skipdef);

@@ -17,6 +17,9 @@ chronological order (most recent first)
 ==========================================================================
 
 Version 1.8.3 patchlevel 11                     ??? ??, 2009
+Commands:
+  * @decompile now takes multiple attribute patterns after the /
+    (@dec obj/attr attr2) [GM]
 Functions:
   * testlock(<boolexp>, <victim>) tests a lock without setting it.
     Suggested by Mercutio@M*U*S*H. [GM]

@@ -868,8 +868,8 @@ See also: give, @quota, MONEY
 
 See also: kill, BEING KILLED, @odeath, @adeath
 & @decompile
-  @decompile[</switch>] <object>[/<attribute-pattern>]
-  @decompile/prefix <object>[/<attribute-pattern>]=<prefix>
+  @decompile[</switch>] <object>[/<attribute-patterns>]
+  @decompile/prefix <object>[/<attribute-patterns>]=<prefix>
 
   This command produces a list of the commands that you would have to
   enter in order to recreate <object>. Useful for either copying objects
@@ -883,10 +883,10 @@ See also: kill, BEING KILLED, @odeath, @adeath
   You can either @decompile an entire object, or just certain parts of it.
   To @decompile just a few attributes, for example, you could type:
 
-      @decompile <object>/<attribute name>
+      @decompile <object>/<attribute name> <attribute name2>
 
-  for each attribute. You can also use wildcards in <attribute name> to
-  @decompile a list of similarly-named attributes.
+  including each attribute. You can also use wildcards in
+  <attribute name(s)> to @decompile a list of similarly-named attributes.
 
 (continued in help @decompile2)
 & @decompile2

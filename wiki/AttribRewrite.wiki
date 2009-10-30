@@ -1,0 +1,20 @@
+#summary Design Document for redoing attributes
+#labels Phase-Requirements
+
+= Introduction =
+
+Attributes are currently stored on a per-object linked list. There are advantages and disadvantages to this. Raevnos is working on a rewrite that keeps the advantages and eliminates some of the disadvantages, hopefully without introducing too many new ones.
+
+= Details =
+
+== History ==
+
+Once upon a time, the linked lists used for holding attributes were very very simple. Adding a new attribute involved pushing a new node onto the head of the list for that object. The order of the attributes as they showed up in `example` and `lattr()` and the like changed each time the game was `@shutdown` and restarted. Iterating through all the attributes on an object was very simple; just walking the list. Looking up specific attributes involved O(N) time; every attribute had to be checked before you could tell that it wasn't on an object.
+
+Then Raevnos changed things so that the list was sorted. This looks nicer on examine, and improves the performance  slightly when looking up a nonexistent attribute. If you're looking for an attribute named *DOG*, you can stop looking when you find you're at *EMU*. Code was slightly more complicated by this.
+
+Then Talek added attribute trees. Attributes are still stored in a sorted linked list, but displayed differently. Code was vastly more complicated by this, and some things like @mvattr and @cpattr that seem like they should work on an entire tree at once don't.
+
+Clearly, something must be done. We want fast iteration through all attributes, as well as faster lookup of individual attributes, especially on objects with lots of them.
+
+== To be continued ==

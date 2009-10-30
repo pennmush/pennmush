@@ -1360,12 +1360,6 @@ FUNCTION(fun_randword)
 
   if (word_count == 0)
     return;
-#if 0
-  else if (word_count == 1) {
-    safe_str(s, buff, bp);
-    return;
-  }
-#endif
 
   word_index = get_random32(0, word_count - 1);
 

@@ -20,6 +20,7 @@ Version 1.8.3 patchlevel 11                     ??? ??, 2009
 Commands:
   * @decompile now takes multiple attribute patterns after the /
     (@dec obj/attr attr2) [GM]
+
 Functions:
   * testlock(<boolexp>, <victim>) tests a lock without setting it.
     Suggested by Mercutio@M*U*S*H. [GM]
@@ -30,6 +31,8 @@ Fixes:
  * Windows compile fixes.
  * page/port didn't evaluate its arguments properly. Reported
    by adkins@drigon.com. [SW]
+ * randword() with a single element list wasn't dealing correctly
+   with extra spaces. Reported by Widdis. [SW]
 
 Tools:
  * New script in utils/ for searching change logs: grep-cl.pl [SW]

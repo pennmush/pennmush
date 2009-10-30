@@ -17,4 +17,20 @@ Then Talek added attribute trees. Attributes are still stored in a sorted linked
 
 Clearly, something must be done. We want fast iteration through all attributes, as well as faster lookup of individual attributes, especially on objects with lots of them.
 
-== To be continued ==
+== How should it be done? ==
+
+=== The Competition ===
+
+Other mushish code bases tend to store attributes in a disk-based hashtable. This results in fast lookups, but slower iteration. The lookups might not also be fast -- memory is so much faster than disks that if looking up an attribute involves a disk seek and read, it can be much slower than walking a list (Penn has this problem too to a lesser extent, since attribute contents can be on disk.) Anyways, that's not an approach we're really interested in taking.
+
+=== Some Considerations ===
+
+Once upon a time, I scraped a bunch of typical databases for some statistics. One of the more notable things I found was that most objects have 5 or fewer attributes: A description for rooms, a description and messages for exits. It's code and data objects that have tons. Think Kieran's BB system.
+
+If our solution involves a lot of extra memory per object, we actually loose. Looking at every attribute on an object with 3 of them isn't worth optimizing. To me, this rules out trees.
+
+=== The Solution ===
+
+Here's what I've settled on: For objects with only a few attributes, just keep the current sorted linked lists. When the object acquires more than *X* attributes, where *X* is semi-arbitrarily set as 6, the list turned into a [http://en.wikipedia.org/wiki/Skip_list skip list].  This can be done seamlessly, without having to touch the current attributes, or even adding extra fields to the attribute struct.  The bookkeeping needed can be stored in the bitfield used for attribute flags, at a cost of having fewer than 32 flags. This shouldn't be a problem.
+
+I haven't quite settled on a way to represent attribute trees. I'm leaning towards something tree-like instead of the current inline representation.

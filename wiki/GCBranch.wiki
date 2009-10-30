@@ -1,0 +1,27 @@
+#summary Notes on the GC branch
+#labels Phase-Design
+
+= Introduction =
+
+The garbage collection branch is a port of Penn that uses the [http://www.hpl.hp.com/personal/Hans_Boehm/gc/ Boehm Garbage Collector] for memory management. From a player's point of view, there's no difference between it and stock Penn.
+
+It serves two main purposes:
+
+ * Eliminates any potential memory leaks.
+ * Eliminates a whole class of bugs where static memory gets overwritten unexpectedly.
+
+The port is fairly stable, and will be updated with each new official release of Penn. To use it, make sure the GC library is installed (Through your OS's package manager, or manually. See link above.), and check out the source (`svn co http://pennmush.googlecode.com/svn/branches/gc pennmush`). Configure and compile as usual.
+
+= Details =
+
+Normally, Penn uses malloc package that is part of the host OS's libc (Or wrappers over it, for example, the slab allocator used for space-efficient management of small objects.) The GC branch tears that all out and uses a garbage collector instead. Memory doesn't have to be explicitly freed when it's no longer needed; it will be reclaimed by the system at some other point.
+
+Besides changing calls to malloc to use the GC library's allocation functions, and eliminating calls to free, there are a few other more significant changes.
+
+Functions that return a pointer to a static string now return a freshly allocated string instead. This prevents bugs caused by that string getting overwritten by a later call to the function before the original calling code is done with it. In normal Penn, places where this becomes a problem get bandaided in the form of copying the returned data; that copying is now now needed, simplifying code.
+
+Data structures that have to walk through lots of nodes, freeing data on the way, can now just set a top-level pointer to NULL and let all the memory get automatically reclaimed. Again, simplifying code.
+
+There are some other changes along these lines; getting rid of manual memory management to instead let the GC system do the work for us.
+
+Notice a trend? GC just makes life easier; most modern languages include it for a reason. Sadly, C's not modern. Taking the approach I did is much less work than rewriting Penn in a better language.

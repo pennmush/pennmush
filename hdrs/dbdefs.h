@@ -316,7 +316,8 @@ typedef struct mail MAIL;
 extern const char *EOD;
 
 #define SPOOF(player, cause, sw) \
-  if (SW_ISSET(sw, SWITCH_SPOOF) && (controls(player, cause) || Can_Nspemit(player))) \
-    player = cause;
+  if (SW_ISSET(sw, SWITCH_SPOOF) && (controls(player, cause) || Can_Nspemit(player))) {\
+    player = cause; orator = cause; \
+  }
 
 #endif                          /* __DBDEFS_H */

@@ -33,6 +33,9 @@ Fixes:
    by adkins@drigon.com. [SW]
  * randword() with a single element list wasn't dealing correctly
    with extra spaces. Reported by Widdis. [SW]
+ * @listen/^-listens should now be triggered with the object being
+   spoofed as %#, not the object doing the spoofing, when @message/spoof
+   (and @pemit/spoof, etc) are used. Reported by Mercutio@M*U*S*H. [MG]
 
 Tools:
  * New script in utils/ for searching change logs: grep-cl.pl [SW]

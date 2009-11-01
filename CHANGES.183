@@ -36,6 +36,9 @@ Fixes:
  * @listen/^-listens should now be triggered with the object being
    spoofed as %#, not the object doing the spoofing, when @message/spoof
    (and @pemit/spoof, etc) are used. Reported by Mercutio@M*U*S*H. [MG]
+   
+ Minor changes:
+ * @listen/^-listens now carry over ANSI. Requested by Mercutio. [MG]
 
 Tools:
  * New script in utils/ for searching change logs: grep-cl.pl [SW]

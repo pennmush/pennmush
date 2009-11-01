@@ -717,6 +717,8 @@ COMMAND(cmd_message)
   if (!(SW_ISSET(sw, SWITCH_SPOOF) && (controls(player, cause)
                                        || Can_Nspemit(player)))) {
     cause = player;
+  } else {
+	orator = cause;
   }
 
   for (numargs = 1; args_right[numargs] && numargs < 13; numargs++) ;

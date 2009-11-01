@@ -443,10 +443,13 @@ specific indirect lock instead of the default one:
 
   This function is only usable by objects that pass the channel's @clock/mod.
 & CWHO()
-  cwho(<channel>)
+  cwho(<channel>[, <status>])
  
-  This returns a list of connected dbrefs who are on <channel>. 
-  When used by mortals, hidden/DARK players do not appear on the list.
+  This function returns the dbrefs of objects which are on <channel>.
+  <status> can be one of "on", "off" or "all" to control whether
+  online players, offline players, or all players are returned; it
+  defaults to "on". (Things are always returned.) When used by mortals,
+  hidden/dark players are shown as being offline.
 & CEMIT()
   cemit(<channel>, <message>[, <noisy>])
 

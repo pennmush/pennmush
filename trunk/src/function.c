@@ -361,7 +361,7 @@ FUNTAB flist[] = {
   {"CSTATUS", fun_cstatus, 2, 2, FN_REG},
   {"CTITLE", fun_ctitle, 2, 2, FN_REG},
   {"CUSERS", fun_cinfo, 1, 1, FN_REG},
-  {"CWHO", fun_cwho, 1, 1, FN_REG},
+  {"CWHO", fun_cwho, 1, 2, FN_REG},
   {"CENTER", fun_center, 2, 4, FN_REG},
   {"CHILDREN", fun_lsearch, 1, 1, FN_REG},
   {"CHR", fun_chr, 1, 1, FN_REG},
@@ -1053,7 +1053,7 @@ strip_braces(const char *str)
 }
 
 /*------------------------------------------------------------------------
- * User-defined global function handlers 
+ * User-defined global function handlers
  */
 
 static int
@@ -1297,7 +1297,7 @@ do_function(dbref player, char *name, char *argv[], int preserve)
     }
     return;
   }
-  /* otherwise, we are adding a user function. 
+  /* otherwise, we are adding a user function.
    * Only those with the Global_Funcs power may add stuff.
    * If you add a function that is already a user-defined function,
    * the old function gets over-written.
@@ -1495,7 +1495,7 @@ do_function_restore(dbref player, const char *name)
 void
 do_function_delete(dbref player, char *name)
 {
-  /* Deletes a user-defined function. 
+  /* Deletes a user-defined function.
    * For security, you must control the object the function uses
    * to delete the function.
    */

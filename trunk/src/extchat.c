@@ -168,7 +168,7 @@ onchannel(dbref who, CHAN *ch)
      } \
     } while (0)
 
-/** A macro to test if a channel exists and player's on it, and, 
+/** A macro to test if a channel exists and player's on it, and,
  * if not, to notify. */
 #define test_channel_on(player,name,chan) \
    do { \
@@ -855,7 +855,7 @@ save_chanuser(PENNFILE *fp, CHANUSER *user)
  * Some utility functions:
  *  find_channel - given a name and a player, return a channel
  *  find_channel_partial - given a name and a player, return
- *    the first channel that matches name 
+ *    the first channel that matches name
  *  find_channel_partial_on - given a name and a player, return
  *    the first channel that matches name that player is on.
  *  onchannel - is player on channel?
@@ -863,7 +863,7 @@ save_chanuser(PENNFILE *fp, CHANUSER *user)
 
 /** Removes markup and <>'s in channel names.
  * \param name The name to normalize.
- * \retval a pointer to a static buffer with the normalized name. 
+ * \retval a pointer to a static buffer with the normalized name.
  */
 static char *
 normalize_channel_name(const char *name)
@@ -1032,9 +1032,9 @@ list_partial_matches(dbref player, const char *name, enum chan_match_type type)
 
 /** Attempt to match a channel name for a player.
  * Given name and a chan pointer, set chan pointer to point to
- * channel if found and player is on the channel (NULL otherwise), 
- * and return an indication of how good the match was. If the player is 
- * not able to see the channel, fail to match. If the match is ambiguous, 
+ * channel if found and player is on the channel (NULL otherwise),
+ * and return an indication of how good the match was. If the player is
+ * not able to see the channel, fail to match. If the match is ambiguous,
  * return the first channel matched.
  * \param name name of channel to find.
  * \param chan pointer to address of channel structure to return.
@@ -1081,9 +1081,9 @@ find_channel_partial_on(const char *name, CHAN **chan, dbref player)
 
 /** Attempt to match a channel name for a player.
  * Given name and a chan pointer, set chan pointer to point to
- * channel if found and player is NOT on the channel (NULL otherwise), 
- * and return an indication of how good the match was. If the player is 
- * not able to see the channel, fail to match. If the match is ambiguous, 
+ * channel if found and player is NOT on the channel (NULL otherwise),
+ * and return an indication of how good the match was. If the player is
+ * not able to see the channel, fail to match. If the match is ambiguous,
  * return the first channel matched.
  * \param name name of channel to find.
  * \param chan pointer to address of channel structure to return.
@@ -1789,7 +1789,7 @@ do_chan_admin(dbref player, char *name, const char *perms, int flag)
     /* make sure the channel name is unique */
     if (find_channel(perms, &temp, GOD)) {
       /* But allow renaming a channel to a differently-cased version of
-       * itself 
+       * itself
        */
       if (temp != chan) {
         notify(player, T("The channel needs a more unique new name."));
@@ -1919,7 +1919,7 @@ do_chan_user_flags(dbref player, char *name, const char *isyn, int flag,
 
   /* channel loop */
   do {
-    /* If we have a channel list at the start, 
+    /* If we have a channel list at the start,
      * that means they didn't gave us a channel name,
      * so we now figure out c. */
     if (p != NULL) {
@@ -2168,7 +2168,7 @@ list_cuflags(CHANUSER *u, int verbose)
 /* ARGSUSED */
 FUNCTION(fun_cflags)
 {
-  /* With one channel arg, returns list of set flags, as per 
+  /* With one channel arg, returns list of set flags, as per
    * do_channel_list. Sample output: PQ, Oo, etc.
    * With two args (channel,object) return channel-user flags
    * for that object on that channel (a subset of GQH).
@@ -2318,7 +2318,7 @@ FUNCTION(fun_ctitle)
    * either you must either be able to examine <object>, or
    * <object> must not be hidden, and either
    *   a) You must be on <channel>, or
-   *   b) You must pass the join-lock 
+   *   b) You must pass the join-lock
    */
   CHAN *c;
   CHANUSER *u;
@@ -2441,7 +2441,7 @@ FUNCTION(fun_cowner)
 
 }
 
-/* Remove all players from a channel, notifying them. This is the 
+/* Remove all players from a channel, notifying them. This is the
  * utility routine for handling it. The command @channel/wipe
  * calls do_chan_wipe, below
  */
@@ -2571,7 +2571,7 @@ do_chan_chown(dbref player, const char *name, const char *newowner)
     return;
   }
   /* We refund the original owner's money, but don't charge the
-   * new owner. 
+   * new owner.
    */
   chan_chown(c, victim);
   notify_format(player,
@@ -2580,7 +2580,7 @@ do_chan_chown(dbref player, const char *name, const char *newowner)
   return;
 }
 
-/** Chown all of a player's channels. 
+/** Chown all of a player's channels.
  * This function changes ownership of all of a player's channels. It's
  * usually used before destroying the player.
  * \param old dbref of old channel owner.
@@ -2858,6 +2858,9 @@ do_channel_who(dbref player, CHAN *chan)
 FUNCTION(fun_cwho)
 {
   int first = 1;
+  int matchcond = 0;
+  int priv = 0;
+  int show;
   CHAN *chan = NULL;
   CHANUSER *u;
   dbref who;
@@ -2871,6 +2874,19 @@ FUNCTION(fun_cwho)
     return;
   default:
     break;
+  }
+
+  if (nargs == 2) {
+    if (!strcasecmp(args[1], "on"))
+      matchcond = 0;
+    else if (!strcasecmp(args[1], "off"))
+      matchcond = 1;
+    else if (!strcasecmp(args[1], "all"))
+      matchcond = 2;
+    else {
+      safe_str(T("#-1 INVALID ARGUMENT"), buff, bp);
+      return;
+    }
   }
 
   /* Feh. We need to do some sort of privilege checking, so that
@@ -2890,16 +2906,25 @@ FUNCTION(fun_cwho)
     safe_str(T("#-1 NO PERMISSIONS FOR CHANNEL"), buff, bp);
     return;
   }
+
+  priv = Priv_Who(executor);
+
   for (u = ChanUsers(chan); u; u = u->next) {
     who = CUdbref(u);
-    if ((IsThing(who) || Connected(who)) &&
-        (!Chanuser_Hide(u) || Priv_Who(executor))) {
-      if (first)
-        first = 0;
+    show = 1;
+    if (!IsThing(who) && matchcond != 2) {
+	  if (matchcond)
+        show = !Connected(who) || (Chanuser_Hide(u) && !priv);
       else
-        safe_chr(' ', buff, bp);
-      safe_dbref(who, buff, bp);
+        show = Connected(who) && (!Chanuser_Hide(u) || priv);
     }
+    if (!show)
+      continue;
+    if (first)
+      first = 0;
+    else
+      safe_chr(' ', buff, bp);
+    safe_dbref(who, buff, bp);
   }
 }
 
@@ -3617,7 +3642,7 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
   }
   *bp = '\0';
 
-  // @chatformat 
+  // @chatformat
   if (flags & CB_PRESENCE) {
     snprintf(title, BUFFER_LEN, "%s", message);
     snprintf(message, BUFFER_LEN, "%s %s", Name(player), title);

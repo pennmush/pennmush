@@ -2781,8 +2781,8 @@ do_chan_decompile(dbref player, const char *name, int brief)
       notify_format(player, "@channel/chown %s = %s", ChanName(c),
                     Name(ChanCreator(c)));
       if (ChanMogrifier(c) != NOTHING) {
-        notify_format(player, "@channel/mogrifier %s = %s", ChanName(c),
-                      Name(ChanMogrifier(c)));
+        notify_format(player, "@channel/mogrifier %s = #%d", ChanName(c),
+                      ChanMogrifier(c));
       }
       if (ChanModLock(c) != TRUE_BOOLEXP)
         notify_format(player, "@clock/mod %s = %s", ChanName(c),

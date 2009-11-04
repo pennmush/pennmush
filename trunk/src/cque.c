@@ -108,7 +108,7 @@ init_queue(void)
 }
 
 /* Returns true if the attribute on thing can be used as a semaphore.
- * atr should be given in UPPERCASE. 
+ * atr should be given in UPPERCASE.
  */
 static int
 waitable_attr(dbref thing, const char *atr)
@@ -342,7 +342,7 @@ parse_que(dbref player, const char *command, dbref cause)
 
 
 /** Enqueue the action part of an attribute.
- * This function is a front-end to parse_que() that takes an attribute, 
+ * This function is a front-end to parse_que() that takes an attribute,
  * removes ^....: or $....: from its value, and queues what's left.
  * \param executor object containing the attribute.
  * \param atrname attribute name.
@@ -498,10 +498,10 @@ void
 do_second(void)
 {
   BQUE *trail = NULL, *point, *next;
-  /* move contents of low priority queue onto end of normal one 
-   * this helps to keep objects from getting out of control since 
-   * its effects on other objects happen only after one second 
-   * this should allow @halt to be typed before getting blown away 
+  /* move contents of low priority queue onto end of normal one
+   * this helps to keep objects from getting out of control since
+   * its effects on other objects happen only after one second
+   * this should allow @halt to be typed before getting blown away
    * by scrolling text.
    */
   if (qlfirst) {
@@ -832,7 +832,7 @@ COMMAND(cmd_notify_drain)
   thing = noisy_match_result(player, arg_left, NOTYPE, MAT_EVERYTHING);
   if (!GoodObject(thing))
     return;
-  /* must control something or have it link_ok in order to use it as 
+  /* must control something or have it link_ok in order to use it as
    * as a semaphore.
    */
   if ((!controls(player, thing) && !LinkOk(thing))
@@ -1019,7 +1019,7 @@ do_waitpid(dbref player, const char *pidstr, const char *timestr, bool until)
     int offset = parse_integer(timestr);
 
     /* If timestr looks like +NNN or -NNN, add or subtract a number
-       of seconds to the current timeout. Otherwise, change timeout. 
+       of seconds to the current timeout. Otherwise, change timeout.
      */
     if (timestr[0] == '+' || timestr[0] == '-')
       q->left += offset;
@@ -1067,7 +1067,7 @@ do_waitpid(dbref player, const char *pidstr, const char *timestr, bool until)
     }
   }
 
-  notify_format(player, T("Queue entry with pid %u updated."), pid);
+  notify_format(player, T("Queue entry with pid %u updated."), (unsigned int) pid);
 }
 
 FUNCTION(fun_pidinfo)
@@ -1246,25 +1246,25 @@ show_queue(dbref player, dbref victim, int q_type, int q_quiet,
           continue;
         switch (q_type) {
         case 1:                /* wait queue */
-          notify_format(player, "(Pid: %u) [%ld]%s: %s", tmp->pid,
+          notify_format(player, "(Pid: %u) [%ld]%s: %s", (unsigned int) tmp->pid,
                         (long) difftime(tmp->left, mudtime),
                         unparse_object(player, tmp->player), tmp->comm);
           break;
         case 2:                /* semaphore queue */
           if (tmp->left != 0) {
-            notify_format(player, "(Pid: %u) [#%d/%s/%ld]%s: %s", tmp->pid,
+            notify_format(player, "(Pid: %u) [#%d/%s/%ld]%s: %s", (unsigned int) tmp->pid,
                           tmp->sem, tmp->semattr, (long) difftime(tmp->left,
                                                                   mudtime),
                           unparse_object(player, tmp->player), tmp->comm);
           } else {
-            notify_format(player, "(Pid: %u) [#%d/%s]%s: %s", tmp->pid,
+            notify_format(player, "(Pid: %u) [#%d/%s]%s: %s", (unsigned int) tmp->pid,
                           tmp->sem, tmp->semattr, unparse_object(player,
                                                                  tmp->player),
                           tmp->comm);
           }
           break;
         default:               /* player or object queue */
-          notify_format(player, "(Pid: %u) %s: %s", tmp->pid,
+          notify_format(player, "(Pid: %u) %s: %s", (unsigned int) tmp->pid,
                         unparse_object(player, tmp->player), tmp->comm);
         }
       }
@@ -1528,7 +1528,7 @@ do_haltpid(dbref player, const char *arg1)
     free_qentry(q);
   }
 
-  notify_format(player, T("Queue entry with pid %u halted."), pid);
+  notify_format(player, T("Queue entry with pid %u halted."), (unsigned int) pid);
 }
 
 
@@ -1647,7 +1647,7 @@ do_restart_com(dbref player, const char *arg1)
   }
 }
 
-/** Dequeue all queue entries, refunding deposits. 
+/** Dequeue all queue entries, refunding deposits.
  * This function dequeues all entries in all queues, without executing
  * them and refunds queue deposits. It's called at shutdown.
  */

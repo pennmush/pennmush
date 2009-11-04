@@ -186,12 +186,12 @@ char errlog[BUFFER_LEN] = { '\0' };      /**< Name of the error log file */
  * option negotiation code for setting client-side line-editing mode
  * to it. If it gets a reply, a flag in the descriptor struct is
  * turned on indicated telnet-awareness.
- * 
+ *
  * If the reply indicates that the client supports linemode, further
  * instructions as to what linemode options are to be used is sent.
  * Those options: Client-side line editing, and expanding literal
  * client-side-entered tabs into spaces.
- * 
+ *
  * Option negotation requests sent by the client are processed,
  * with the only one we confirm rather than refuse outright being
  * suppress-go-ahead, since a number of telnet clients try it.
@@ -432,7 +432,7 @@ main(int argc, char **argv)
   if (geteuid() == 0) {
     fprintf(stderr, "The  %s binary is set suid and owned by root.\n", argv[0]);
 #ifdef HAVE_SETEUID
-    fprintf(stderr, "Changing effective user to %d.\n", getuid());
+    fprintf(stderr, "Changing effective user to %d.\n", (int)getuid());
     seteuid(getuid());
     in_suid_root_mode = 1;
 #endif
@@ -706,7 +706,7 @@ set_signals(void)
   install_sig_handler(SIGTERM, bailout);
   install_sig_handler(SIGCHLD, reaper);
 #else
-  /* Win32 stuff: 
+  /* Win32 stuff:
    *   No support for SIGUSR2 or SIGINT.
    *   SIGTERM is never generated on NT-based Windows (according to MSDN)
    *   MSVC++ will let you get away with installing a handler anyway,
@@ -1594,7 +1594,7 @@ process_output(DESC *d)
     p.fd = d->descriptor;
     p.events = POLLIN;
     p.revents = 0;
-    input_ready = poll(&p, 1, 0);   
+    input_ready = poll(&p, 1, 0);
 #else
     struct timeval pad;
     fd_set input_set;
@@ -3567,7 +3567,7 @@ do_poll(dbref player, const char *message, int clear)
 
 /** Match the partial name of a connected player.
  * \param match string to match.
- * \return dbref of a unique connected player whose name partial-matches, 
+ * \return dbref of a unique connected player whose name partial-matches,
  * AMBIGUOUS, or NOTHING.
  */
 dbref
@@ -3604,7 +3604,7 @@ short_page(const char *match)
 /** Match the partial name of a connected player the enactor can see.
  * \param player the enactor
  * \param match string to match.
- * \return dbref of a unique connected player whose name partial-matches, 
+ * \return dbref of a unique connected player whose name partial-matches,
  * AMBIGUOUS, or NOTHING.
  */
 dbref
@@ -4233,7 +4233,7 @@ FUNCTION(fun_lports)
 FUNCTION(fun_ports)
 {
   /* returns a list of the network descriptors that a player is
-   * connected to 
+   * connected to
    */
 
   dbref target;
@@ -4296,7 +4296,7 @@ hide_player(dbref player, int hide)
     notify(player, T("You now appear on the WHO list."));
 }
 
-/** Perform the periodic check of inactive descriptors, and 
+/** Perform the periodic check of inactive descriptors, and
  * disconnect them or autohide them as appropriate.
  */
 void
@@ -4783,7 +4783,7 @@ do_reboot(dbref player, int flag)
 }
 
 
-/* File modification watching code. Linux-specific for now. 
+/* File modification watching code. Linux-specific for now.
  * Future directions include: kqueue() for BSD, fam for linux, irix, others?
  *
  * The idea to watch help.txt and motd.txt and friends to avoid having
@@ -4957,7 +4957,7 @@ file_watch_event_fam(void)
 
 #endif
 
-/** Start monitoring various useful files for changes. 
+/** Start monitoring various useful files for changes.
  * \return descriptor of the notification service, or -1 on error
  */
 int
@@ -4972,7 +4972,7 @@ file_watch_init(void)
 #endif
 }
 
-/** Test for modified files and re-read them if indicated. 
+/** Test for modified files and re-read them if indicated.
  * \param fd the notification monitorh descriptor
  */
 void

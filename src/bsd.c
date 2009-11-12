@@ -320,6 +320,7 @@ static void clearstrings(DESC *d);
 typedef struct fblock {
   unsigned char *buff;    /**< Pointer to the block as a string */
   size_t len;             /**< Length of buff */
+  dbref thing;               /**< If NOTHING, display buff as raw text. Otherwise, buff is an attrname on thing to eval and display */
 } FBLOCK;
 
 /** The complete collection of cached text files. */
@@ -337,6 +338,7 @@ struct fcache_entries {
 
 static struct fcache_entries fcache;
 static void fcache_dump(DESC *d, FBLOCK fp[2], const unsigned char *prefix);
+static int fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html, const unsigned char *prefix);
 static int fcache_read(FBLOCK *cp, const char *filename);
 static void logout_sock(DESC *d);
 static void shutdownsock(DESC *d);
@@ -1204,6 +1206,63 @@ clearstrings(DESC *d)
   }
 }
 
+static int
+fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html, const unsigned char *prefix)
+{
+  ATTR *a;
+  char *wsave[10], *rsave[NUMQ];
+  char arg[BUFFER_LEN], *save, *buff, *bp;
+  char const *sp;
+  int j;
+
+  if (!GoodObject(thing) || IsGarbage(thing))
+	  return 0;
+
+  a = atr_get(thing, attr);
+  if (!a)
+  	return -1;
+
+	bp = arg;
+	safe_integer(d->descriptor, arg, &bp);
+	*bp = '\0';
+	buff = (char *) mush_malloc(BUFFER_LEN, "string");
+	if (!buff) {
+	  mush_panic("Unable to allocate memory in look_contents");
+	  return -2;
+  }
+	save_global_regs("send_txt", rsave);
+	for (j = 0; j < 10; j++) {
+	  wsave[j] = global_eval_context.wenv[j];
+	  global_eval_context.wenv[j] = NULL;
+	}
+	for (j = 0; j < NUMQ; j++)
+	  global_eval_context.renv[j][0] = '\0';
+	global_eval_context.wenv[0] = arg;
+	sp = save = safe_atr_value(a);
+	bp = buff;
+	process_expression(buff, &bp, &sp, GOD, NOTHING, NOTHING,
+										PE_DEFAULT, PT_DEFAULT, NULL);
+	safe_chr('\n', buff, &bp);
+	*bp = '\0';
+	free((void*) save);
+	if (prefix) {
+	 queue_newwrite(d, prefix, u_strlen(prefix));
+	 queue_eol(d);
+	}
+	if (html)
+	  queue_newwrite(d, (unsigned char *) buff, strlen(buff));
+	else
+	  queue_write(d, (unsigned char *) buff, strlen(buff));
+	for (j = 0; j < 10; j++) {
+	  global_eval_context.wenv[j] = wsave[j];
+	}
+	restore_global_regs("send_txt", rsave);
+	mush_free((void*) buff, "string");
+
+	return 1;
+}
+
+
 /* Display a cached text file. If a prefix line was given,
  * display that line before the text file, but only if we've
  * got a text file to display
@@ -1211,30 +1270,59 @@ clearstrings(DESC *d)
 static void
 fcache_dump(DESC *d, FBLOCK fb[2], const unsigned char *prefix)
 {
+	int i;
+
   /* If we've got nothing nice to say, don't say anything */
   if (!fb[0].buff && !((d->conn_flags & CONN_HTML) && fb[1].buff))
     return;
-  /* We've got something to say */
-  if (prefix) {
-    queue_newwrite(d, prefix, u_strlen(prefix));
-    queue_eol(d);
+
+  for (i = ((d->conn_flags & CONN_HTML) && fb[1].buff); i >=0 ; i--) {
+		if (fb[i].thing != NOTHING) {
+			if (fcache_dump_attr(d, fb[i].thing, (char *) fb[i].buff, i, prefix) == 1) {
+				/* Attr successfully evaluated and displayed */
+				return;
+			}
+		} else {
+			 /* Output static text from the cached file */
+  		if (prefix) {
+    		queue_newwrite(d, prefix, u_strlen(prefix));
+    		queue_eol(d);
+			}
+			if (i)
+				queue_newwrite(d, fb[1].buff, fb[1].len);
+			else
+				queue_write(d, fb[0].buff, fb[0].len);
+			return;
+		}
   }
-  if (d->conn_flags & CONN_HTML) {
-    if (fb[1].buff)
-      queue_newwrite(d, fb[1].buff, fb[1].len);
-    else
-      queue_write(d, fb[0].buff, fb[0].len);
-  } else
-    queue_write(d, fb[0].buff, fb[0].len);
 }
 
 
 static int
 fcache_read(FBLOCK *fb, const char *filename)
 {
+	char objname[BUFFER_LEN];
+	char *attr;
+	dbref thing;
+
   if (!fb || !filename)
     return -1;
 
+  /* Check for #dbref/attr */
+  strcpy(objname, filename);
+  if ((attr = strchr(objname, '/')) != NULL) {
+	    *attr++ = '\0';
+	    if ((thing = qparse_dbref(objname)) != NOTHING) {
+				/* we have #dbref/attr */
+				fb->thing = thing;
+				if (!(fb->buff = mush_malloc(BUFFER_LEN, "fcache_data"))) {
+					return -1;
+				}
+				memcpy(fb->buff, (unsigned char *) upcasestr(attr), strlen(attr));
+				fb->len = -2;
+				return fb->len;
+			}
+	}
   /* Free prior cache */
   if (fb->buff) {
     mush_free(fb->buff, "fcache_data");
@@ -1242,6 +1330,7 @@ fcache_read(FBLOCK *fb, const char *filename)
 
   fb->buff = NULL;
   fb->len = 0;
+  fb->thing = NOTHING;
 
 #ifdef WIN32
   /* Win32 read code here */

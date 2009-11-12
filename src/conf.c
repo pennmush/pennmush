@@ -120,7 +120,7 @@ PENNCONF conftable[] = {
    "messages"}
   ,
   {"motd_html_file", cf_str, options.motd_file[1],
-   sizeof options.connect_file[1], 0,
+   sizeof options.motd_file[1], 0,
    "messages"}
   ,
   {"wizmotd_html_file", cf_str, options.wizmotd_file[1],
@@ -747,7 +747,7 @@ cf_int(const char *opt, const char *val, void *loc, int maxval, int from_cmd)
 }
 
 
-/** Parse an time configuration option with a default unit of seconds 
+/** Parse an time configuration option with a default unit of seconds
  * \param opt name of the configuration option.
  * \param val value of the option.
  * \param loc address to store the value.
@@ -1372,9 +1372,9 @@ config_file_startup(const char *conf, int restrictions)
     while (*p && isspace((unsigned char)*p))
       p++;
 
-    if (*p == '\0' || *p == '#')  
+    if (*p == '\0' || *p == '#')
       continue; /* comment or blank line */
-    
+
     /* this is a real line. Strip the end-of-line and characters following it.
      * Split the line into command and argument portions. If it exists,
      * also strip off the trailing comment. We try to make this work

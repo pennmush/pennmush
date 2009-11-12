@@ -17,6 +17,13 @@ chronological order (most recent first)
 ==========================================================================
 
 Version 1.8.3 patchlevel 11                     ??? ??, 2009
+
+Configuration:
+  * The *_file options (connect_file, motd_file, etc) can now be a
+    #dbref/attribute instead of a filename, in which case the given
+    attribute is evaluated and the result shown in place of the text file.
+    Based on patches by Nathan Baum and Mercutio@M*U*S*H. [MG]
+
 Commands:
   * @decompile now takes multiple attribute patterns after the /
     (@dec obj/attr attr2) [GM]

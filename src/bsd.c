@@ -1227,7 +1227,7 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html, const unsigne
 	*bp = '\0';
 	buff = (char *) mush_malloc(BUFFER_LEN, "string");
 	if (!buff) {
-	  mush_panic("Unable to allocate memory in look_contents");
+	  mush_panic("Unable to allocate memory in fcache_dump_attr");
 	  return -2;
   }
 	save_global_regs("send_txt", rsave);

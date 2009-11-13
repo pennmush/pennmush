@@ -1240,7 +1240,7 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html, const unsigne
 	global_eval_context.wenv[0] = arg;
 	sp = save = safe_atr_value(a);
 	bp = buff;
-	process_expression(buff, &bp, &sp, GOD, NOTHING, NOTHING,
+	process_expression(buff, &bp, &sp, thing, NOTHING, NOTHING,
 										PE_DEFAULT, PT_DEFAULT, NULL);
 	safe_chr('\n', buff, &bp);
 	*bp = '\0';
@@ -1308,6 +1308,15 @@ fcache_read(FBLOCK *fb, const char *filename)
   if (!fb || !filename)
     return -1;
 
+  /* Free prior cache */
+  if (fb->buff) {
+    mush_free(fb->buff, "fcache_data");
+  }
+
+  fb->buff = NULL;
+  fb->len = 0;
+  fb->thing = NOTHING;
+
   /* Check for #dbref/attr */
   strcpy(objname, filename);
   if ((attr = strchr(objname, '/')) != NULL) {
@@ -1323,14 +1332,7 @@ fcache_read(FBLOCK *fb, const char *filename)
 				return fb->len;
 			}
 	}
-  /* Free prior cache */
-  if (fb->buff) {
-    mush_free(fb->buff, "fcache_data");
-  }
 
-  fb->buff = NULL;
-  fb->len = 0;
-  fb->thing = NOTHING;
 
 #ifdef WIN32
   /* Win32 read code here */

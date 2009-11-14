@@ -1304,6 +1304,7 @@ fcache_read(FBLOCK *fb, const char *filename)
 	char objname[BUFFER_LEN];
 	char *attr;
 	dbref thing;
+	size_t len;
 
   if (!fb || !filename)
     return -1;
@@ -1316,21 +1317,24 @@ fcache_read(FBLOCK *fb, const char *filename)
   fb->buff = NULL;
   fb->len = 0;
   fb->thing = NOTHING;
-
   /* Check for #dbref/attr */
-  strcpy(objname, filename);
-  if ((attr = strchr(objname, '/')) != NULL) {
-	    *attr++ = '\0';
-	    if ((thing = qparse_dbref(objname)) != NOTHING) {
-				/* we have #dbref/attr */
-				fb->thing = thing;
-				if (!(fb->buff = mush_malloc(BUFFER_LEN, "fcache_data"))) {
-					return -1;
+  if (*filename == NUMBER_TOKEN) {
+		strcpy(objname, filename);
+		if ((attr = strchr(objname, '/')) != NULL) {
+				*attr++ = '\0';
+				if ((thing = qparse_dbref(objname)) != NOTHING) {
+					/* we have #dbref/attr */
+					if (!(fb->buff = mush_malloc(BUFFER_LEN, "fcache_data"))) {
+						return -1;
+					}
+					len = strlen(attr);
+					fb->thing = thing;
+					fb->len = len;
+					memcpy(fb->buff, (unsigned char *) upcasestr(attr), len);
+					*((char *) fb->buff + len) = '\0';
+					return fb->len;
 				}
-				memcpy(fb->buff, (unsigned char *) upcasestr(attr), strlen(attr));
-				fb->len = -2;
-				return fb->len;
-			}
+		}
 	}
 
 

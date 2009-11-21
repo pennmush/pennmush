@@ -12,6 +12,13 @@ A list of the patchlevels associated with each release can
 be read in 'help patchlevels'.
 
 Version 1.8.3 patchlevel 11                     ??? ??, 2009
+
+Configuration:
+  * The *_file options (connect_file, motd_file, etc) can now be a
+    #dbref/attribute instead of a filename, in which case the given
+    attribute is evaluated and the result shown in place of the text file.
+    Based on patches by Nathan Baum and Mercutio@M*U*S*H. [MG]
+
 Commands:
   * @decompile now takes multiple attribute patterns after the /
     (@dec obj/attr attr2) [GM]
@@ -24,6 +31,9 @@ Functions:
   * cwho() now takes an optional second argument, to control whether
     online, offline or all players are returned. Suggested by Mercutio,
     based on a patch by Ifrit. [MG]
+  * room(<room>) now returns <room>, instead of #-1. Also, room(<exit>)
+    returns the exit's source room, rather than the destination. Suggested
+    by Null@M*U*S*H. [MG]
 
 Fixes:
  * fun_merge() was eating characters when ansi was present. Reported
@@ -36,6 +46,7 @@ Fixes:
  * @listen/^-listens should now be triggered with the object being
    spoofed as %#, not the object doing the spoofing, when @message/spoof
    (and @pemit/spoof, etc) are used. Reported by Mercutio@M*U*S*H. [MG]
+ * Fixed some minor type-related warnings when compiling on cygwin. [MG]
    
  Minor changes:
  * @listen/^-listens now carry over ANSI. Requested by Mercutio. [MG]

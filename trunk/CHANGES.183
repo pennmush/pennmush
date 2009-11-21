@@ -36,6 +36,9 @@ Functions:
   * cwho() now takes an optional second argument, to control whether
     online, offline or all players are returned. Suggested by Mercutio,
     based on a patch by Ifrit. [MG]
+  * room(<room>) now returns <room>, instead of #-1. Also, room(<exit>)
+    returns the exit's source room, rather than the destination. Suggested
+    by Null@M*U*S*H. [MG]
 
 Fixes:
  * fun_merge() was eating characters when ansi was present. Reported

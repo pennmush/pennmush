@@ -33,6 +33,7 @@ Commands:
 Functions:
   * testlock(<boolexp>, <victim>) tests a lock without setting it.
     Suggested by Mercutio@M*U*S*H. [GM]
+  * lnum() now takes a fourth argument: A step. [GM]
   * cwho() now takes an optional second argument, to control whether
     online, offline or all players are returned. Suggested by Mercutio,
     based on a patch by Ifrit. [MG]

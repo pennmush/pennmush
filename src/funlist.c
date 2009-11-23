@@ -1232,12 +1232,14 @@ FUNCTION(fun_lnum)
   NVAL j;
   NVAL start;
   NVAL end;
-  int istart, iend, k;
+  NVAL step = 1.0;
+  int istart, iend, k, istep;
   char const *osep = " ";
   static NVAL cstart[CACHE_SIZE];
   static NVAL cend[CACHE_SIZE];
   static char csep[CACHE_SIZE][BUFFER_LEN];
   static char cresult[CACHE_SIZE][BUFFER_LEN];
+  static int  cstep[CACHE_SIZE];
   static int cpos;
   char *cp;
 
@@ -1250,6 +1252,9 @@ FUNCTION(fun_lnum)
     if (!is_number(args[1])) {
       safe_str(T(e_num), buff, bp);
       return;
+    }
+    if (nargs > 3 && is_number(args[3])) {
+      step = parse_number(args[3]);
     }
     start = end;
     end = parse_number(args[1]);
@@ -1275,7 +1280,8 @@ FUNCTION(fun_lnum)
     osep = args[2];
   }
   for (k = 0; k < CACHE_SIZE; k++) {
-    if (cstart[k] == start && cend[k] == end && !strcmp(csep[k], osep)) {
+    if (cstart[k] == start && cend[k] == end && !strcmp(csep[k], osep) &&
+        cstep[k] == step) {
       safe_str(cresult[k], buff, bp);
       return;
     }
@@ -1288,16 +1294,17 @@ FUNCTION(fun_lnum)
 
   istart = (int) start;
   iend = (int) end;
-  if (istart == start && iend == end) {
+  istep = (int) step;
+  if (istart == start && iend == end && istep == step) {
     safe_integer(istart, cresult[cpos], &cp);
     if (istart <= iend) {
-      for (k = istart + 1; k <= iend; k++) {
+      for (k = istart + istep; k <= iend; k += istep) {
         safe_str(osep, cresult[cpos], &cp);
         if (safe_integer(k, cresult[cpos], &cp))
           break;
       }
     } else {
-      for (k = istart - 1; k >= iend; k--) {
+      for (k = istart - istep; k >= iend; k -= istep) {
         safe_str(osep, cresult[cpos], &cp);
         if (safe_integer(k, cresult[cpos], &cp))
           break;
@@ -1306,13 +1313,13 @@ FUNCTION(fun_lnum)
   } else {
     safe_number(start, cresult[cpos], &cp);
     if (start <= end) {
-      for (j = start + 1; j <= end; j++) {
+      for (j = start + step; j <= end; j += step) {
         safe_str(osep, cresult[cpos], &cp);
         if (safe_number(j, cresult[cpos], &cp))
           break;
       }
     } else {
-      for (j = start - 1; j >= end; j--) {
+      for (j = start - step; j >= end; j -= step) {
         safe_str(osep, cresult[cpos], &cp);
         if (safe_number(j, cresult[cpos], &cp))
           break;

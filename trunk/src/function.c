@@ -489,7 +489,7 @@ FUNTAB flist[] = {
   {"LLOCKFLAGS", fun_lockflags, 0, 1, FN_REG},
   {"LLOCKS", fun_locks, 1, 1, FN_REG},
   {"LMATH", fun_lmath, 2, 3, FN_REG},
-  {"LNUM", fun_lnum, 1, 3, FN_REG},
+  {"LNUM", fun_lnum, 1, 4, FN_REG},
   {"LOC", fun_loc, 1, 1, FN_REG},
   {"LOCALIZE", fun_localize, 1, 1, FN_NOPARSE},
   {"LOCATE", fun_locate, 3, 3, FN_REG},

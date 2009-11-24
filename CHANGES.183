@@ -40,6 +40,8 @@ Functions:
   * room(<room>) now returns <room>, instead of #-1. Also, room(<exit>)
     returns the exit's source room, rather than the destination. Suggested
     by Null@M*U*S*H. [MG]
+  * Fixed a bug in how align() strips spaces when wrapping text. Reported
+    by Paige@M*U*S*H. [MG]
 
 Fixes:
  * fun_merge() was eating characters when ansi was present. Reported

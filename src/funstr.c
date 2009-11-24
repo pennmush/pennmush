@@ -1794,9 +1794,6 @@ align_one_line(char *buff, char **bp, int ncols,
       }
       ptrs[i] = ptr;
     } else if (*ptr == '\n') {
-      for (tptr = ptr;
-           *tptr && tptr >= ptrs[i] && isspace((unsigned char) *tptr); tptr--) ;
-      len = (tptr - ptrs[i]) + 1;
       if (len > 0) {
         safe_ansi_string(as[i], ptrs[i] - (as[i]->text), len, segment, &sp);
       }

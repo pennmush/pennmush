@@ -39,6 +39,8 @@ Functions:
     by Paige@M*U*S*H. [MG]
 
 Fixes:
+ * lsearch() with invalid syntax was failing to report it as such, causing
+   confusion when lsearch(me,exits) returned the same as lsearch(me). [GM]
  * fun_merge() was eating characters when ansi was present. Reported
    by Nammyung. Fixed. [GM]
  * Windows compile fixes.

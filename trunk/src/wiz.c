@@ -1756,6 +1756,12 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
     return -1;
   }
 
+  // An odd number of search classes is invalid.
+  if (nargs % 2) {
+    notify(player, T("Invalid search class+restriction format."));
+    return -1;
+  }
+
   for (n = 0; n < nargs - 1; n += 2) {
     class = args[n];
     restriction = args[n + 1];

@@ -200,6 +200,7 @@ See also: @describe, @aidescribe, look, SUBSTITUTION, ACTION LISTS
   %2 = bytes received by the disconnecting descriptor
   %3 = bytes sent by the disconnecting descriptor
   %4 = commands issued by the disconnecting descriptor
+  %5 = 1 if the descriptor was hidden on disconnect, 0 otherwise
 
 See also: @aconnect, ACTION LISTS, recv(), sent(), cmds()
 & @adrop

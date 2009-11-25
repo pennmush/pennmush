@@ -3413,14 +3413,17 @@ announce_disconnect(DESC *saved)
    * %2 (bytes received)
    * %3 (bytes sent)
    * %4 (commands queued)
+   * %5 (hidden)
    */
   myenv[0] = NULL;
   myenv[1] = mush_strdup(unparse_integer(num - 1), "myenv");
   myenv[2] = mush_strdup(unparse_integer(saved->input_chars), "myenv");
   myenv[3] = mush_strdup(unparse_integer(saved->output_chars), "myenv");
   myenv[4] = mush_strdup(unparse_integer(saved->cmds), "myenv");
-  for (j = 0; j < 5; j++)
+  myenv[5] = mush_strdup(unparse_integer(Hidden(saved)), "myenv");
+  for (j = 0; j < 6; j++) {
     global_eval_context.wnxt[j] = myenv[j];
+  }
 
   (void) queue_attribute(player, "ADISCONNECT", player);
   if (ROOM_CONNECTS)
@@ -3474,7 +3477,7 @@ announce_disconnect(DESC *saved)
     }
   }
 
-  for (j = 0; j < 5; j++)
+  for (j = 0; j < 6; j++)
     if (myenv[j])
       mush_free(myenv[j], "myenv");
   for (j = 0; j < 10; j++)

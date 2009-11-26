@@ -2780,6 +2780,8 @@ See also: @prompt, prompt(), terminfo()
     /spoof     -- the enactor's dbref will be used for nospoof notifications
                   instead of the executor's dbref. Requires control
                   over enactor or Can_nspemit power. 
+    /port      -- <object> is taken to be a port number, instead of a dbref,
+                  and the message is only sent to that port. Wiz/roy only.
 
   Note that page-lock and the HAVEN flag will block @pemits as well, 
   except from Wizards or those with the pemit_all power.

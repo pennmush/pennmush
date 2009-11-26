@@ -2761,10 +2761,50 @@ player_desc(dbref player)
   return (DESC *) NULL;
 }
 
-/** Page a specified socket.
+/** Pemit to a specified socket.
  * \param player the enactor.
  * \param pc string containing port number to send message to.
  * \param message message to send.
+ * \param flags PEMIT_* flags
+ */
+void
+do_pemit_port(dbref player, const char *pc, const char *message, int flags) {
+	DESC *d;
+	int port;
+
+	if (!Hasprivs(player)) {
+		notify(player, T("Permission denied."));
+		return;
+	}
+
+	port = atoi(pc);
+	if (port <= 0) {
+		notify(player, T("That's not a port number."));
+		return;
+	}
+
+	if (!*message) {
+		return;
+	}
+
+	d = port_desc(port);
+	if (!d) {
+		notify(player, T("That port is not active."));
+		return;
+	}
+
+	if (!(flags & PEMIT_SILENT))
+		notify_format(player, T("You pemit \"%s\" to %s."), message, (d->connected ? Name(d->player) : T("a connecting player")));
+	queue_string_eol(d, message);
+
+}
+
+/** Page a specified socket.
+ * \param player the enactor.
+ * \param cause the cause.
+ * \param pc string containing port number to send message to.
+ * \param message message to send.
+ * \param eval_msg Should the message be evaluated?
  */
 void
 do_page_port(dbref player, dbref cause, const char *pc, const char *message, bool eval_msg)

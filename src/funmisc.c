@@ -68,7 +68,7 @@ FUNCTION(fun_valid)
 FUNCTION(fun_pemit)
 {
   int ns = string_prefix(called_as, "NS");
-  int flags = PEMIT_LIST;
+  int flags = PEMIT_LIST | PEMIT_SILENT;
   dbref saved_orator = orator;
   if (!command_check_byname(executor, ns ? "@nspemit" : "@pemit") ||
       fun->flags & FN_NOSIDEFX) {
@@ -78,7 +78,10 @@ FUNCTION(fun_pemit)
   orator = executor;
   if (ns)
     flags |= PEMIT_SPOOF;
-  do_pemit_list(executor, args[0], args[1], flags);
+  if (is_strict_integer(args[0]))
+  	do_pemit_port(executor, args[0], args[1], flags);
+  else
+  	do_pemit_list(executor, args[0], args[1], flags);
   orator = saved_orator;
 }
 

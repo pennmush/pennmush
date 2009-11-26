@@ -242,7 +242,7 @@ COMLIST commands[] = {
   {"@PCREATE", NULL, cmd_pcreate, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0,
    0},
 
-  {"@PEMIT", "LIST CONTENTS SILENT NOISY NOEVAL SPOOF", cmd_pemit,
+  {"@PEMIT", "LIST CONTENTS SILENT NOISY NOEVAL PORT SPOOF", cmd_pemit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@POLL", "CLEAR", cmd_poll, CMD_T_ANY, 0, 0},
   {"@POOR", NULL, cmd_poor, CMD_T_ANY, 0, 0},
@@ -1114,8 +1114,8 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
     if (*p != NUMBER_TOKEN)
       p++;
   } else {
-    /* At this point, we have not done a replacer, so we continue with the 
-     * usual processing. Exits have next priority.  We still pass them 
+    /* At this point, we have not done a replacer, so we continue with the
+     * usual processing. Exits have next priority.  We still pass them
      * through the parser so @hook on GOTO can work on them.
      */
     if (strcasecmp(p, "home") && can_move(player, p)) {

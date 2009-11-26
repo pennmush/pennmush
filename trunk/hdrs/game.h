@@ -26,6 +26,8 @@ void hide_player(dbref player, int hide);
 enum motd_type { MOTD_MOTD, MOTD_WIZ, MOTD_DOWN, MOTD_FULL, MOTD_LIST };
 void do_motd(dbref player, enum motd_type key, const char *message);
 void do_poll(dbref player, const char *message, int clear);
+void do_page_port(dbref player, dbref cause, const char *pc, const char *msg, bool eval_msg);
+void do_pemit_port(dbref player, const char *pc, const char *msg, int flags);
 /* From cque.c */
 void do_wait
   (dbref player, dbref cause, char *arg1, const char *cmd, bool until);
@@ -131,7 +133,6 @@ void do_wall(dbref player, const char *message, enum wall_type target,
 void do_page(dbref player, const char *arg1, const char *arg2,
              dbref cause, int noeval, int multipage, int override,
              int has_eq);
-void do_page_port(dbref player, dbref cause, const char *arg1, const char *arg2, bool noeval_msg);
 void do_think(dbref player, const char *message);
 #define PEMIT_SILENT 0x1
 #define PEMIT_LIST   0x2

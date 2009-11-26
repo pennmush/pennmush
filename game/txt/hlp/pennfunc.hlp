@@ -3139,14 +3139,15 @@ See also: BOOLEAN VALUES, and()
 & NSPEMIT()
 & PROMPT()
 & NSPROMPT()
-  pemit(<object list>, <message>)
-  nspemit(<object list>, <message>)
+  pemit(<object list|port number>, <message>)
+  nspemit(<object list|port number>, <message>)
   prompt(<object list>, <message>)
   nsprompt(<object list>, <message>)
 
-  pemit() will send each object on the list a message, as per the
-  @pemit/list command. It returns nothing. It respects page-locks and
-  HAVEN flags on players.
+  With an <object list>, pemit() will send each object on the list a message,
+  as per the @pemit/list command. It returns nothing. It respects page-locks
+  and HAVEN flags on players. With a <port number>, pemit() sends the
+  message to the specified port only, like @pemit/port.
 
   nspemit() is a wizard-only variation that works like @nspemit/list.
 

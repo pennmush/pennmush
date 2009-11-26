@@ -820,13 +820,19 @@ COMMAND(cmd_pemit)
 {
   int flags;
 
-  SPOOF(player, cause, sw);
   if (SW_ISSET(sw, SWITCH_SILENT))
     flags = PEMIT_SILENT;
   else if (SW_ISSET(sw, SWITCH_NOISY))
     flags = 0;
   else
     flags = SILENT_PEMIT ? PEMIT_SILENT : 0;
+
+	if(SW_ISSET(sw, SWITCH_PORT)) {
+		do_pemit_port(player, arg_left, arg_right, flags);
+		return;
+	}
+
+  SPOOF(player, cause, sw);
 
   if (!strcmp(cmd->name, "@NSPEMIT"))
     flags |= PEMIT_SPOOF;

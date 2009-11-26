@@ -24,6 +24,8 @@ Commands:
     (@dec obj/attr attr2) [GM]
   * @channel/decompile now shows the dbref of the channel mogrifier,
     instead of its name. [SW]
+  * @pemit now takes a /port switch, which sends the message to the
+    specified port. Suggested by Mercutio. [MG]
 
 Functions:
   * testlock(<boolexp>, <victim>) tests a lock without setting it.
@@ -37,6 +39,8 @@ Functions:
     by Null@M*U*S*H. [MG]
   * Fixed a bug in how align() strips spaces when wrapping text. Reported
     by Paige@M*U*S*H. [MG]
+  * pemit(<port number>, <message>) sends <message> to the specified
+    port, like @pemit/port. Suggested by Mercutio. [MG]
 
 Fixes:
  * lsearch() with invalid syntax was failing to report it as such, causing

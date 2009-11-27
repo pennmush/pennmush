@@ -2518,18 +2518,21 @@ See also: lexits()
   function.
 & LWHO()
 & LWHOID()
-  lwho()
-  lwho(<viewer>)
-  lwhoid(<viewer>)
+  lwho([<viewer>[, <status>]])
+  lwhoid([<viewer>[, <status>]])
 
-  lwho() returns a list of the dbref numbers for all
-  currently-connected players. When mortals use this function, the
-  dbref numbers of DARK wizards or royalty do NOT appear on the dbref
-  list.
+  lwho() returns a list of the dbref numbers for all currently-connected
+  players. When mortals use this function, the dbref numbers of DARK
+  wizards or royalty do NOT appear on the dbref list.
 
-  If lwho() is given an argument, and used by an object that can see
-  DARK and Hidden players, lwho() returns the output of lwho() from
-  <viewer>'s point of view.
+  If a <viewer> is given, and used by an object that can see DARK and
+  Hidden players, lwho() returns the output of lwho() from <viewer>'s
+  point of view.
+  
+  <status> can be used to include "#-1" dbrefs for unconnected ports, and
+  must be one of "all", "online" or "offline". It is primarily useful when
+  using a <status> with lports(), to make the dbrefs and ports match up.
+  Only See_All players can see offline dbrefs.
 
   lwhoid() returns a list of objid's instead.
 
@@ -3226,10 +3229,10 @@ See also: @poll, doing(), @doing
 See also: @ps, getpids(), pidinfo()
 & LPORTS()
 & PORTS()
-  lports([<viewer>])
+  lports([<viewer>[, <status>]])
   ports(<player name>)
  
-  These function returns the list of descriptors ("ports") that are
+  These functions return the list of descriptors ("ports") that are
   used by connected players. lports() returns all ports, in the same
   order as lwho() returns dbrefs, and ports() returns those a specific
   player is connected to, from most recent to least recent. Only
@@ -3239,6 +3242,11 @@ See also: @ps, getpids(), pidinfo()
   given a <viewer>, only the ports of connections which <viewer> can
   see are returned (in the same order as dbrefs returned by
   lwho(<viewer>)).
+  
+  The <status> argument for lports() controls whether or not ports which
+  are not connected to (ie, at the login screen) are included, and must be
+  one of "all", "online" or "offline". Only See_All players can see
+  unconnected ports.
 
   These port numbers also appear in the wizard WHO, and can be used
   with @boot/port, page/port, and the functions that return

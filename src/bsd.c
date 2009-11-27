@@ -227,6 +227,9 @@ static int handle_telnet(DESC *d, unsigned char **q, unsigned char *qend);
         for(d = descriptor_list;(d);d=(d)->next) \
           if((d)->connected)
 
+#define DESC_ITER(d) \
+				for(d = descriptor_list;(d);d=(d)->next) \
+
 /** Is a descriptor hidden? */
 #define Hidden(d)        ((d->hide == 1) && Can_Hide(d->player))
 
@@ -3838,12 +3841,12 @@ FUNCTION(fun_nwho)
 FUNCTION(fun_lwho)
 {
   DESC *d;
-  int first;
+  int first = 1;
   dbref victim;
   int powered = ((*called_as == 'L') && Priv_Who(executor));
   int objid = (strchr(called_as, 'D') != NULL);
-
-  first = 1;
+  int online = 1;
+  int offline = 0;
 
   if (nargs && args[0] && *args[0]) {
     /* An argument was given. Find the victim and choose the lowest
@@ -3861,19 +3864,46 @@ FUNCTION(fun_lwho)
       powered = 0;
   }
 
-  DESC_ITER_CONN(d) {
-    if (!Hidden(d) || powered) {
-      if (first)
-        first = 0;
-      else
-        safe_chr(' ', buff, bp);
-      safe_dbref(d->player, buff, bp);
-      if (objid) {
-        safe_chr(':', buff, bp);
-        safe_integer(CreTime(d->player), buff, bp);
-      }
-    }
-  }
+  if (nargs > 1 && args[1] && *args[1]) {
+		if (string_prefix("all", args[1])) {
+			offline = online = 1;
+		} else if (strlen(args[1]) < 2) {
+			safe_str(T("#-1 INVALID SECOND ARGUMENT"), buff, bp);
+			return;
+		} else if (string_prefix("online", args[1])) {
+			online = 1;
+			offline = 0;
+		} else if (string_prefix("offline", args[1])) {
+			online = 0;
+			offline = 1;
+		} else {
+			safe_str(T("#-1 INVALID SECOND ARGUMENT"), buff, bp);
+			return;
+		}
+		if (offline && !powered) {
+			safe_str(T("#-1 PERMISSION DENIED"), buff, bp);
+			return;
+		}
+	}
+
+	DESC_ITER(d) {
+		if ((d->connected && !online) || (!d->connected && !offline))
+			continue;
+		if (!powered && (d->connected && Hidden(d)))
+			continue;
+		if (first)
+			first = 0;
+		else
+			safe_chr(' ', buff, bp);
+		if (d->connected) {
+			safe_dbref(d->player, buff, bp);
+			if (objid) {
+				safe_chr(':', buff, bp);
+				safe_integer(CreTime(d->player), buff, bp);
+			}
+		} else
+			safe_dbref(-1, buff, bp);
+	}
 }
 
 #ifdef WIN32
@@ -4339,6 +4369,8 @@ FUNCTION(fun_lports)
   int first = 1;
   dbref victim;
   int powered = 1;
+  int online = 1;
+  int offline = 0;
 
   if (!Priv_Who(executor)) {
     safe_str(T(e_perm), buff, bp);
@@ -4356,15 +4388,39 @@ FUNCTION(fun_lports)
       powered = 0;
   }
 
-  DESC_ITER_CONN(d) {
-    if (powered || !Hidden(d)) {
-      if (first)
-        first = 0;
-      else
-        safe_chr(' ', buff, bp);
-      safe_integer(d->descriptor, buff, bp);
-    }
-  }
+  if (nargs > 1 && args[1] && *args[1]) {
+		if (string_prefix("all", args[1])) {
+			offline = online = 1;
+		} else if (strlen(args[1]) < 2) {
+			safe_str(T("#-1 INVALID SECOND ARGUMENT"), buff, bp);
+			return;
+		} else if (string_prefix("online", args[1])) {
+			online = 1;
+			offline = 0;
+		} else if (string_prefix("offline", args[1])) {
+			online = 0;
+			offline = 1;
+		} else {
+			safe_str(T("#-1 INVALID SECOND ARGUMENT"), buff, bp);
+			return;
+		}
+		if (offline && !powered) {
+			safe_str(T("#-1 PERMISSION DENIED"), buff, bp);
+			return;
+		}
+	}
+
+	DESC_ITER(d) {
+		if ((d->connected && !online) || (!d->connected && !offline))
+			continue;
+		if (!powered && (d->connected && Hidden(d)))
+			continue;
+		if (first)
+			first = 0;
+		else
+			safe_chr(' ', buff, bp);
+		safe_integer(d->descriptor, buff, bp);
+	}
 }
 
 /* ARGSUSED */

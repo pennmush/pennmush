@@ -542,6 +542,9 @@ do_pemit(dbref player, const char *arg1, const char *arg2, int flags)
   dbref who;
   int silent, nospoof;
 
+  if (!arg2 || !*arg2)
+  	return;
+
   silent = (flags & PEMIT_SILENT) ? 1 : 0;
   nospoof = (flags & PEMIT_SPOOF) ? 0 : 1;
 

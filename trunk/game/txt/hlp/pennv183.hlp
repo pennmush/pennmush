@@ -61,6 +61,8 @@ Fixes:
  * @listen/^-listens now carry over ANSI. Requested by Mercutio. [MG]
  * @adisconnect now has %5, which is true if the disconnecting descriptor
    was @hide. Suggested by Minion@M*U*S*H [GM]
+ * @pemit <name>= would show nospoof info if <name> was set Nospoof. Now,
+   it does nothing at all. [MG]
 
 Tools:
  * New script in utils/ for searching change logs: grep-cl.pl [SW]

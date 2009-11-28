@@ -3779,16 +3779,6 @@ See also: examine
   cv is a variant that forces a non-dark, non-hidden connection.
 
 See also: DARK, @hide
-& DOING
-  DOING
-
-  This command displays the list of players currently connected to the
-  MUSH. For mortals, it is identical to WHO. For wizards, it displays
-  the WHO in the format mortals see. The wizard WHO shows location and
-  host, but does not show @doing messages. DOING shows @doing messages
-  but not location or host.
-
-See also: WHO, @poll, @doing
 & OUTPUTPREFIX
 & OUTPUTSUFFIX
   OUTPUTPREFIX <string>
@@ -3808,18 +3798,6 @@ See also: WHO, @poll, @doing
   NAT connection won't time out (but you won't appear, to other players,
   to be active).
 
-& SESSION
-  SESSION
-
-  This admin-only form of WHO includes information on how much text
-  has been received and sent to the connections. It has three fields:
-
-  Sent, which is the number of characters sent TO the mush from that
-  connection. Recv, the number of characters sent FROM the mush to that
-  connection, and Pend, the number of characters still waiting to be sent
-  from the mush to the connection.
-
-See also: WHO, DOING
 & teach
   teach <command>
 
@@ -4349,13 +4327,38 @@ See also: @use, @ouse, @ause, @charges, @runout
   persons should be space-separated, and names with spaces should be
   enclosed in double-quotes.
 & WHO
-  WHO   
+& DOING
+  WHO [<prefix>]
+  DOING [<prefix>]
+  
+  For mortals, the WHO command displays a list of players currently
+  connected to the MUSH, the amount of time they've been connected,
+  their idle time, and their @doing. Dark/hidden players are not shown.
+  
+  For admin, WHO shows the names of online players, their location,
+  connection/idle times, the number of commands typed through the
+  connection, the descriptor/port number, and the host the player is 
+  connected from. It also includes dark/hidden players, and connections
+  which are at the login screen, but have not yet connected to a player.
+  
+  Admin can use the DOING command to see the same output mortals see with
+  WHO, with the exception that dark/hidden players are included.
+  
+  If a <prefix> is given for either command, only connected players whose
+  names start with <prefix> are shown.
+  
+  Note: The in-game WHO is a normal game command, and is completely separate
+  from the WHO command which can be used at the connect screen.
 
-  Displays a list of players currently connected to the MUSH.  The WHO
-  tells you how long a player has been on and how long they have been
-  inactive. Unlike most commands, it is case sensitive.
+See also: @doing, @poll, SESSION
+& SESSION
+  SESSION [<prefix>]
 
-See also: @doing, @poll, DOING
+  The SESSION command is the same as the admin WHO, but instead of showing
+  the hostname, it shows the number of bytes sent to, received from, and
+  pending for each connection.
+
+See also: WHO
 & with
   with[/room] <obj>=<command>
 
@@ -4370,10 +4373,12 @@ See also: @doing, @poll, DOING
   connection and would be meaningless if run by an object or
   disconnected player.
 
-  DOING	    IDLE      LOGOUT     OUTPUTPREFIX OUTPUTSUFFIX QUIT
-  SESSION   WHO
+  IDLE      LOGOUT     OUTPUTPREFIX OUTPUTSUFFIX QUIT
 
   In addition, the following commands can only be used at the login
   screen:
 
-  cd ch connect create 
+  cd ch connect create
+  
+  The WHO command can also be used at the login screen. Please note that
+  this is different to the in-game WHO command.

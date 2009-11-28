@@ -360,6 +360,10 @@ COMLIST commands[] = {
   {"WITH", "NOEVAL ROOM", cmd_with, CMD_T_PLAYER | CMD_T_THING | CMD_T_EQSPLIT,
    0, 0},
 
+  {"WHO", NULL, cmd_who, CMD_T_ANY, 0, 0},
+  {"DOING", NULL, cmd_who_doing, CMD_T_ANY, 0, 0},
+  {"SESSION", NULL, cmd_session, CMD_T_ANY, 0, 0},
+
 /* ATTRIB_SET is an undocumented command - it's sugar to make it possible
  * enable/disable attribute setting with &XX or @XX
  */

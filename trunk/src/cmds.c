@@ -1392,3 +1392,23 @@ COMMAND(cmd_warn_on_missing)
                 unparse_dbref(player));
   return;
 }
+
+COMMAND(cmd_who_doing)
+{
+	do_who_mortal(player, arg_left);
+}
+
+COMMAND(cmd_session) {
+	if (Priv_Who(player))
+		do_who_session(player, arg_left);
+	else
+		do_who_mortal(player, arg_left);
+}
+
+COMMAND(cmd_who) {
+	if (Priv_Who(player))
+		do_who_admin(player, arg_left);
+	else
+		do_who_mortal(player, arg_left);
+}
+

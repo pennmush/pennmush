@@ -13,6 +13,13 @@ be read in 'help patchlevels'.
 
 Version 1.8.3 patchlevel 11                     ??? ??, 2009
 
+Major changes:
+  * The WHO, DOING and SESSION commands are now normal game commands,
+    and can be @hook'd, typed in lower-case, etc. (The WHO at the login
+    screen is separate.) If you have a softcoded 'who' command, you will
+    need to @hook/override WHO for it to continue working. Suggested by
+    Bane. [MG]
+
 Configuration:
   * The *_file options (connect_file, motd_file, etc) can now be a
     #dbref/attribute instead of a filename, in which case the given

@@ -3224,6 +3224,7 @@ do_who_admin(dbref player, char *name)
 	DESC *d;
 	int count = 0;
 	time_t now = mudtime;
+	char tbuf[BUFFER_LEN];
 	PUEBLOBUFF;
 
   if (SUPPORT_PUEBLO) {
@@ -3241,7 +3242,7 @@ do_who_admin(dbref player, char *name)
 		if ((name && *name) && (!d->connected || !string_prefix(Name(d->player), name)))
 			continue;
 		if (d->connected) {
-			notify_format(player, "%-16s %6s %9s %5s  %4d %3d%c %s%s", Name(d->player),
+			sprintf(tbuf, "%-16s %6s %9s %5s  %4d %3d%c %s", Name(d->player),
                 unparse_dbref(Location(d->player)),
                 time_format_1(now - d->connected_at),
                 time_format_2(now - d->last_time), d->cmds, d->descriptor,
@@ -3250,9 +3251,18 @@ do_who_admin(dbref player, char *name)
 #else
                 ' ',
 #endif
-                d->addr, (Dark(d->player) ? " (Dark)" : (Hidden(d) ? " (Hide)" : "")));
+                d->addr);
+			if (Dark(d->player)) {
+				tbuf[71] = '\0';
+				strcat(tbuf, " (Dark)");
+			} else if (Hidden(d)) {
+				tbuf[71] = '\0';
+				strcat(tbuf, " (Hide)");
+			} else {
+				tbuf[78] = '\0';
+			}
 		} else {
-			notify_format(player, "%-16s %6s %9s %5s  %4d %3d%c %s", T("Connecting..."), "#-1",
+			sprintf(tbuf, "%-16s %6s %9s %5s  %4d %3d%c %s", T("Connecting..."), "#-1",
                  time_format_1(now - d->connected_at),
                  time_format_2(now - d->last_time), d->cmds, d->descriptor,
 #ifdef HAS_OPENSSL
@@ -3261,7 +3271,9 @@ do_who_admin(dbref player, char *name)
                  ' ',
 #endif
                  d->addr);
+			tbuf[78] = '\0';
 		}
+		notify(player, tbuf);
 	}
 
 	switch (count) {

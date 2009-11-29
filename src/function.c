@@ -548,7 +548,7 @@ FUNTAB flist[] = {
   {"MWHO", fun_lwho, 0, 0, FN_REG},
   {"MWHOID", fun_lwho, 0, 0, FN_REG},
   {"NAME", fun_name, 0, 2, FN_REG},
-  {"NAMELIST", fun_namelist, 1, 1, FN_REG},
+  {"NAMELIST", fun_namelist, 1, 2, FN_REG},
   {"NAMEGRAB", fun_namegrab, 2, 3, FN_REG},
   {"NAMEGRABALL", fun_namegraball, 2, 3, FN_REG},
   {"NAND", fun_nand, 1, INT_MAX, FN_REG},

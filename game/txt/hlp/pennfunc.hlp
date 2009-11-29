@@ -2856,12 +2856,18 @@ See also: anonymous attributes
 
   Related functions: FULLNAME(), ACCNAME(), INAME() 
 & NAMELIST()
-  namelist(<player-list>)
+  namelist(<player-list>[,[<object>/]<attribute>])
 
-  Namelist takes a list of players of the form used by the page
+  namelist() takes a list of players of the form used by the page
   command and returns a corresponding list of dbrefs.
+  
+  If an <object>/<attribute> is given, the specified attribute will be
+  called once for each invalid name, with the name as %0 and the dbref
+  returned (#-1 for an unmatched name, #-2 for an ambiguous one) as %1.
 
-  >"[namelist(#1 Javelin "ringo spar" bogus)]
+  > &test me=pemit(%#,Bad name "%0")
+  > say [namelist(#1 Javelin "ringo spar" bogus, test)]
+  Bad name "bogus"
   You say, "#1 #7 #56 #-1"
 
 & NAMEGRAB()

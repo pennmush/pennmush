@@ -235,7 +235,7 @@ See also: PARENTS, ORPHAN
   The following functions support anonymous attributes:
   
   filter()    filterbool()   fold()      foreach()   map()      mapsql()
-  mix()       munge()        sortby()    sortkey()   step()
+  mix()       munge()        namelist()  sortby()    sortkey()  step()
 & ATTRIB-OWNERSHIP
   ATTRIBUTE OWNERSHIP
   

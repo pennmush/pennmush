@@ -50,6 +50,8 @@ Functions:
     port, like @pemit/port. Suggested by Mercutio. [MG]
   * lports() and lwho() take an optional second argument to include
     connections at the login screen. Suggested by Mercutio. [MG]
+  * namelist() now takes an optional #dbref/attr, called for each invalid
+    name in the first argument. [MG]
 
 Fixes:
  * lsearch() with invalid syntax was failing to report it as such, causing

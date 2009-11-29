@@ -443,6 +443,7 @@ dump_complete GAME: Save complete.
 # when logins are disabled, when player creation is disabled,
 # and when a guest logs in. These must either be the path to
 # a text file, or a #dbref/attrname to be evaluated and shown.
+# dbref/attrs are passed the port/descriptor as %0.
 connect_file txt/connect.txt
 motd_file txt/motd.txt
 wizmotd_file txt/wizmotd.txt

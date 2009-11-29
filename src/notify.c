@@ -662,14 +662,11 @@ notify_type(DESC *d)
 
   if (!d->connected) {
     /* These are the settings used at, e.g., the connect screen,
-     * when there's no connected player yet. If you want to use
-     * ansified connect screens, you'd probably change NA_NPASCII
-     * to NA_NCOLOR (for no accents) or NA_COLOR (for accents).
-     * We don't recommend it. If you want to use accented characters,
-     * change NA_NPUEBLO and NA_NPASCII to NA_PUEBLO and NA_PASCII,
-     * respectively. That's not so bad.
+     * when there's no connected player yet. If you want to use accented
+     * characters, change NA_NPUEBLO and NA_NCOLOR to NA_PUEBLO and
+     * NA_COLOR, respectively.
      */
-    return (d->conn_flags & CONN_HTML) ? NA_NPUEBLO : NA_NPASCII;
+    return (d->conn_flags & CONN_HTML) ? NA_NPUEBLO : NA_NCOLOR;
   }
 
   /* At this point, we have a connected player on the descriptor */

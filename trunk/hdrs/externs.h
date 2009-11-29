@@ -117,7 +117,7 @@ char *least_idle_ip(dbref player);
 char *least_idle_hostname(dbref player);
 void do_who_mortal(dbref player, char *name);
 void do_who_admin(dbref player, char *name);
-void do_session(dbref player, char *name);
+void do_who_session(dbref player, char *name);
 /* sql.c */
 void sql_shutdown(void);
 

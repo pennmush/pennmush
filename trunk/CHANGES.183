@@ -38,6 +38,8 @@ Commands:
     instead of its name. [SW]
   * @pemit now takes a /port switch, which sends the message to the
     specified port. Suggested by Mercutio. [MG]
+  * @hook/list without a <command> now shows all commands which have hooks.
+    Based on a patch by Trinsec. [MG]
 
 Functions:
   * testlock(<boolexp>, <victim>) tests a lock without setting it.

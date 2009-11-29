@@ -2117,23 +2117,57 @@ do_hook_list(dbref player, char *command)
 {
   COMMAND_INFO *cmd;
 
-  cmd = command_find(command);
-  if (!cmd) {
-    notify(player, T("No such command."));
-    return;
-  }
-  if (Wizard(player) || has_power_by_name(player, "HOOK", NOTYPE)) {
-    if (GoodObject(cmd->hooks.before.obj))
-      notify_format(player, T("@hook/before: #%d/%s"),
-                    cmd->hooks.before.obj, cmd->hooks.before.attrname);
-    if (GoodObject(cmd->hooks.after.obj))
-      notify_format(player, T("@hook/after: #%d/%s"), cmd->hooks.after.obj,
-                    cmd->hooks.after.attrname);
-    if (GoodObject(cmd->hooks.ignore.obj))
-      notify_format(player, T("@hook/ignore: #%d/%s"),
-                    cmd->hooks.ignore.obj, cmd->hooks.ignore.attrname);
-    if (GoodObject(cmd->hooks.override.obj))
-      notify_format(player, T("@hook/override: #%d/%s"),
-                    cmd->hooks.override.obj, cmd->hooks.override.attrname);
-  }
+	if (!command || !*command) {
+    /* Show all commands with hooks */
+    char *ptrs[BUFFER_LEN / 2];
+    static char buff[BUFFER_LEN];
+    char *bp;
+    int i, count = 0;
+
+    for (cmd = (COMMAND_INFO *) ptab_firstentry(&ptab_command); cmd; cmd = (COMMAND_INFO *) ptab_nextentry(&ptab_command)) {
+      if (has_hook(&cmd->hooks.ignore) || has_hook(&cmd->hooks.override)
+          || has_hook(&cmd->hooks.before) || has_hook(&cmd->hooks.after)) {
+        ptrs[count] = (char *) cmd->name;
+        count++;
+      }
+    }
+    if (count == 0) {
+      notify(player, T("There are no hooks currently set."));
+      return;
+    }
+    do_gensort(0, ptrs, NULL, count, ALPHANUM_LIST);
+    bp = buff;
+   	safe_str(T("The following commands have hooks: "), buff, &bp);
+    for (i = 0; i < count; i++) {
+      if (gencomp((dbref) 0, ptrs[i], ptrs[i - 1], ALPHANUM_LIST) <= 0)
+      	continue;
+			if (i == (count - 1) && i)
+			  safe_str(" and ", buff, &bp);
+			else if (i)
+       	safe_str(", ", buff, &bp);
+       safe_str(ptrs[i], buff, &bp);
+    }
+   	*bp = '\0';
+   	notify(player, buff);
+	} else {
+		cmd = command_find(command);
+		if (!cmd) {
+			notify(player, T("No such command."));
+			return;
+		}
+		if (Wizard(player) || has_power_by_name(player, "HOOK", NOTYPE)) {
+			if (GoodObject(cmd->hooks.before.obj))
+				notify_format(player, T("@hook/before: #%d/%s"),
+											cmd->hooks.before.obj, cmd->hooks.before.attrname);
+			if (GoodObject(cmd->hooks.after.obj))
+				notify_format(player, T("@hook/after: #%d/%s"), cmd->hooks.after.obj,
+											cmd->hooks.after.attrname);
+			if (GoodObject(cmd->hooks.ignore.obj))
+				notify_format(player, T("@hook/ignore: #%d/%s"),
+											cmd->hooks.ignore.obj, cmd->hooks.ignore.attrname);
+			if (GoodObject(cmd->hooks.override.obj))
+				notify_format(player, T("@hook/override: #%d/%s"),
+											cmd->hooks.override.obj, cmd->hooks.override.attrname);
+		}
+	}
 }

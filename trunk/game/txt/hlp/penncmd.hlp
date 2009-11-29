@@ -1694,7 +1694,7 @@ See also: HAVEN, page, @lock, @away
 See also: enter, @enter, ENTER_OK, @describe, look, @idescformat
 & @hook
   @hook/<switch> <command>[=<object>, <attribute>]
-  @hook/list <command>
+  @hook/list [<command>]
 
   @hook tells the command parser to evaluate given attributes at certain points
   in command evaluation. The possible points, indicated by the proper switch:

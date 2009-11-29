@@ -2139,9 +2139,9 @@ do_hook_list(dbref player, char *command)
     bp = buff;
    	safe_str(T("The following commands have hooks: "), buff, &bp);
     for (i = 0; i < count; i++) {
-      if (gencomp((dbref) 0, ptrs[i], ptrs[i - 1], ALPHANUM_LIST) <= 0)
+      if (i > 0 && gencomp((dbref) 0, ptrs[i], ptrs[i - 1], ALPHANUM_LIST) <= 0)
       	continue;
-			if (i == (count - 1) && i)
+			if (i && i == (count - 1))
 			  safe_str(" and ", buff, &bp);
 			else if (i)
        	safe_str(", ", buff, &bp);

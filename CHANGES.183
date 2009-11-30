@@ -40,6 +40,7 @@ Commands:
     specified port. Suggested by Mercutio. [MG]
   * @hook/list without a <command> now shows all commands which have hooks.
     Based on a patch by Trinsec. [MG]
+  * @search now takes multiple <class>=<restriction> pairs. [MG]
 
 Functions:
   * testlock(<boolexp>, <victim>) tests a lock without setting it.

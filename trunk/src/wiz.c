@@ -1158,6 +1158,7 @@ do_search(dbref player, const char *arg1, char **arg3)
 {
   char tbuf[BUFFER_LEN], *arg2 = tbuf, *tbp;
   dbref *results = NULL;
+  char *s;
   int nresults;
 
   /* parse first argument into two */
@@ -1198,12 +1199,22 @@ do_search(dbref player, const char *arg1, char **arg3)
     }
   }
   {
-    const char *myargs[4];
+    const char *myargs[MAX_ARG];
+    int i;
+    int j = 2;
+
     myargs[0] = arg2;
     myargs[1] = arg3[1];
-    myargs[2] = arg3[2];
-    myargs[3] = arg3[3];
-    nresults = raw_search(player, tbuf, 4, myargs, &results, NULL);
+    for (i = 2; i < INT_MAX && (arg3[i] != NULL); i++) {
+			if ((s = strchr(arg3[i], '='))) {
+				*s++ = '\0';
+				myargs[j++] = arg3[i];
+				myargs[j++] = s;
+			} else {
+				myargs[j++] = arg3[i];
+			}
+		}
+    nresults = raw_search(player, tbuf, j, myargs, &results, NULL);
   }
 
   if (nresults == 0) {

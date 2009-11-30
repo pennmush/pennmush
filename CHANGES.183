@@ -82,6 +82,7 @@ Fixes:
  * @pemit <name>= would show nospoof info if <name> was set Nospoof. Now,
    it does nothing at all. [MG]
  * The connect screen can now contain ANSI color. Patch by Mercutio.
+ * Small bug fix in @search. [MG]
 
 Tools:
  * New script in utils/ for searching change logs: grep-cl.pl [SW]

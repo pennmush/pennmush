@@ -190,7 +190,7 @@ do_quota(dbref player, const char *arg1, const char *arg2, int set_q)
     notify_format(player, T("Objects: %d   Limit: UNLIMITED"), owned);
     return;
   }
-  /* if we're not doing a change, determine the mortal's quota limit. 
+  /* if we're not doing a change, determine the mortal's quota limit.
    * RQUOTA is the objects _left_, not the quota itself.
    */
 
@@ -382,8 +382,8 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
   /* get destination */
 
   if (!strcasecmp(to, "home")) {
-    /* If the object is @tel'ing itself home, treat it the way we'd  
-     * treat a 'home' command 
+    /* If the object is @tel'ing itself home, treat it the way we'd
+     * treat a 'home' command
      */
     if (player == victim) {
       if (command_check_byname(victim, "HOME"))
@@ -435,7 +435,7 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
         loc = find_entrance(victim);
       else
         loc = Home(victim);
-      /* Unlike normal teleport, you must control the destination 
+      /* Unlike normal teleport, you must control the destination
        * or have the open_anywhere power
        */
       if (!(tport_control_ok(player, victim, loc) &&
@@ -1966,7 +1966,6 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
   char lbuff[BUFFER_LEN];
 
   if (fill_search_spec(player, owner, nargs, args, &spec) < 0) {
-    giveto(player, FIND_COST);
     if (spec.lock != TRUE_BOOLEXP)
       free_boolexp(spec.lock);
     return -1;

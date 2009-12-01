@@ -172,8 +172,7 @@ db_grow(dbref newtop)
     }
     while (initialized < db_top) {
       o = db + initialized;
-      o->name = 0;
-      o->list = 0;
+      o->name = NULL;
       o->location = NOTHING;
       o->contents = NOTHING;
       o->exits = NOTHING;
@@ -188,7 +187,8 @@ db_grow(dbref newtop)
       o->powers = NULL;
       o->warnings = 0;
       o->modification_time = o->creation_time = mudtime;
-      o->attrcount = 0;
+      o->list.nattrs = 0;
+      o->list.attrs = NULL;
       initialized++;
     }
   }
@@ -213,8 +213,9 @@ new_object(void)
   }
   /* clear it out */
   o = db + newobj;
-  o->name = 0;
-  o->list = 0;
+  o->name = NULL;
+  o->list.attrs = NULL;
+  o->list.nattrs = 0;
   o->location = NOTHING;
   o->contents = NOTHING;
   o->exits = NOTHING;
@@ -226,8 +227,7 @@ new_object(void)
   o->penn = 0;
   o->type = TYPE_GARBAGE;
   o->warnings = 0;
-  o->modification_time = o->creation_time = mudtime;
-  o->attrcount = 0;
+  o->modification_time = o->creation_time = mudtime; 
   /* Flags are set by the functions that call this */
   o->powers = new_flag_bitmask("POWER");
   if (current_state.garbage)
@@ -643,7 +643,7 @@ int
 db_write_object(PENNFILE *f, dbref i)
 {
   struct object *o;
-  ALIST *list;
+  ATTR  *list;
   int count = 0;
 
   o = db + i;
@@ -652,14 +652,14 @@ db_write_object(PENNFILE *f, dbref i)
   /* write the attribute list */
 
   /* Don't trust AttrCount(thing) for number of attributes to write. */
-  for (list = o->list; list; list = AL_NEXT(list)) {
+  for (list = o->list.attrs; list; list = AL_NEXT(list)) {
     if (AF_Nodump(list))
       continue;
     count++;
   }
   db_write_labeled_int(f, "attrcount", count);
 
-  for (list = o->list; list; list = AL_NEXT(list)) {
+  for (list = o->list.attrs; list; list = AL_NEXT(list)) {
     if (AF_Nodump(list))
       continue;
     db_write_labeled_string(f, " name", AL_NAME(list));
@@ -766,7 +766,7 @@ int
 db_paranoid_write_object(PENNFILE *f, dbref i, int flag)
 {
   struct object *o;
-  ALIST *list, *next;
+  ATTR *list, *next;
   char name[BUFFER_LEN];
   char tbuf1[BUFFER_LEN];
   int err = 0;
@@ -782,7 +782,7 @@ db_paranoid_write_object(PENNFILE *f, dbref i, int flag)
   /* fflush(f); */
 
   /* write the attribute list, scanning */
-  for (list = o->list; list; list = AL_NEXT(list)) {
+  for (list = o->list.attrs; list; list = AL_NEXT(list)) {
     if (AF_Nodump(list))
       continue;
     attrcount++;
@@ -790,7 +790,7 @@ db_paranoid_write_object(PENNFILE *f, dbref i, int flag)
 
   db_write_labeled_int(f, "attrcount", attrcount);
 
-  for (list = o->list; list; list = next) {
+  for (list = o->list.attrs; list; list = next) {
     next = AL_NEXT(list);
     if (AF_Nodump(list))
       continue;
@@ -1496,7 +1496,7 @@ db_read_oldstyle(PENNFILE *f)
         o->modification_time = o->creation_time;
 
       /* read attribute list for item */
-      if ((o->attrcount = get_list(f, i)) < 0) {
+      if ((o->list.nattrs = get_list(f, i)) < 0) {
         do_rawlog(LT_ERR, T("ERROR: bad attribute list object %d"), i);
         return -1;
       }

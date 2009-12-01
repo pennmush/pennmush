@@ -37,7 +37,7 @@ extern dbref first_free;        /* pointer to free list */
 #define Next(x)     (db[(x)].next)
 #define Home(x)     (db[(x)].exits)
 #define Exits(x)    (db[(x)].exits)
-#define List(x)     (db[(x)].list)
+#define List(x)     (db[(x)].list.attrs)
 
 /* These are only for exits */
 #define Source(x)   (db[(x)].exits)
@@ -48,7 +48,7 @@ extern dbref first_free;        /* pointer to free list */
 #define CreTime(x)      (db[(x)].creation_time)
 #define ModTime(x)      (db[(x)].modification_time)
 
-#define AttrCount(x)    (db[(x)].attrcount)
+#define AttrCount(x)    (db[(x)].list.nattrs)
 
 /* Moved from warnings.c because create.c needs it. */
 #define Warnings(x)      (db[(x)].warnings)
@@ -255,11 +255,10 @@ struct object {
    * For other objects, the time/date of last modification to its attributes.
    */
   time_t modification_time;
-  int attrcount;                /**< Number of attribs on the object */
   int type;                     /**< Object's type */
   object_flag_type flags;       /**< Pointer to flag bit array */
   object_flag_type powers;      /**< Pointer to power bit array */
-  ALIST *list;                  /**< list of attributes on the object */
+  ALIST list;                  /**< list of attributes on the object */
 };
 
 /** A structure to hold database statistics.

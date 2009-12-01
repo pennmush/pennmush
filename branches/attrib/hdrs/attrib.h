@@ -19,7 +19,8 @@ struct attr {
   uint32_t flags;               /**< Attribute flags */
   chunk_reference_t data;       /**< The attribute's value, compressed */
   dbref creator;                /**< The attribute's creator's dbref */
-  ATTR *next;                   /**< Pointer to next attribute in list */
+  int nlinks;                    /**< Number of skip list nodes to point forward to. */
+  ATTR *links;                   /**< Pointer to next attributes in skip list */
 };
 
 
@@ -138,7 +139,12 @@ safe_atr_value(ATTR *atr)
 #define AL_ATTR(alist)          (alist)
 #define AL_NAME(alist)          ((alist)->name)
 #define AL_STR(alist)           (atr_get_compressed_data((alist)))
-#define AL_NEXT(alist)          ((alist)->next)
+#define AL_NEXT(alist)          ((alist)->links)
+static inline ATTR *
+AL_NTH(ATTR *alist, int n) {
+  return alist->links + n;
+}
+#define AL_NODES(alist)         ((alist)->nlinks)
 #define AL_CREATOR(alist)       ((alist)->creator)
 #define AL_FLAGS(alist)         ((alist)->flags)
 #define AL_DEREFS(alist)        ((alist)->data?chunk_derefs((alist)->data):0)

@@ -68,7 +68,6 @@ COMMAND_PROTO(cmd_lemit);
 COMMAND_PROTO(cmd_link);
 COMMAND_PROTO(cmd_list);
 COMMAND_PROTO(cmd_listmotd);
-COMMAND_PROTO(cmd_local_silly);
 COMMAND_PROTO(cmd_lock);
 COMMAND_PROTO(cmd_log);
 COMMAND_PROTO(cmd_logwipe);
@@ -149,4 +148,4 @@ COMMAND_PROTO(cmd_wizmotd);
 COMMAND_PROTO(cmd_wizwall);
 COMMAND_PROTO(cmd_zemit);
 COMMAND_PROTO(command_atrset);
-#endif                          /* CMDS_H */
+#endif /* CMDS_H */

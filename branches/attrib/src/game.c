@@ -1402,7 +1402,7 @@ loc_alias_check(dbref loc, const char *command, const char *type)
 int
 Hearer(dbref thing)
 {
-  ALIST *ptr;
+  ATTR *ptr;
   int cmp;
 
   if (Connected(thing) || Puppet(thing))
@@ -1430,7 +1430,7 @@ Hearer(dbref thing)
 int
 Commer(dbref thing)
 {
-  ALIST *ptr;
+  ATTR *ptr;
 
   for (ptr = List(thing); ptr; ptr = AL_NEXT(ptr)) {
     if (AF_Command(ptr) && !AF_Noprog(ptr))

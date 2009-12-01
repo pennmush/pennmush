@@ -69,7 +69,12 @@ struct pe_info {
 
 /* new attribute foo */
 typedef struct attr ATTR;
-typedef ATTR ALIST;
+struct attrlist {
+  int nattrs;
+  ATTR *attrs;
+};
+
+typedef struct attrlist ALIST;
 
 /** A text block
  */

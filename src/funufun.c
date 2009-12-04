@@ -191,24 +191,6 @@ FUNCTION(fun_ufun)
   return;
 }
 
-/* ARGSUSED */
-FUNCTION(fun_ulambda)
-{
-  char rbuff[BUFFER_LEN];
-  ufun_attrib ufun;
-
-  if (!fetch_ufun_attrib(args[0], executor, &ufun, 1)) {
-    safe_str(T(ufun.errmess), buff, bp);
-    return;
-  }
-
-  call_ufun(&ufun, args + 1, nargs - 1, rbuff, executor, enactor, pe_info);
-
-  safe_str(rbuff, buff, bp);
-
-  return;
-}
-
 /* Like fun_ufun, but takes as second argument a default message
  * to use if the attribute isn't there.
  */

@@ -55,6 +55,8 @@ Functions:
     connections at the login screen. Suggested by Mercutio. [MG]
   * namelist() now takes an optional #dbref/attr, called for each invalid
     name in the first argument. [MG]
+  * lmath() can now do lt, lte, gt, gte, eq and neq. Also, lt(), lte(),
+    etc, can all take more than 2 arguments. [GM]
 
 Fixes:
  * lsearch() with invalid syntax was failing to report it as such, causing
@@ -65,7 +67,7 @@ Fixes:
  * page/port didn't evaluate its arguments properly. Reported
    by adkins@drigon.com. [SW]
  * randword() with a single element list wasn't dealing correctly
-   with extra spaces. Reported by Widdis. [SW]
+   with extra spaces. Reported by Minion. [SW]
  * @listen/^-listens should now be triggered with the object being
    spoofed as %#, not the object doing the spoofing, when @message/spoof
    (and @pemit/spoof, etc) are used. Reported by Mercutio@M*U*S*H. [MG]
@@ -76,7 +78,7 @@ Fixes:
  * @adisconnect now has %5, which is true if the disconnecting descriptor
    was @hide. Suggested by Minion@M*U*S*H [GM]
  * @pemit <name>= would show nospoof info if <name> was set Nospoof. Now,
-   it does nothing at all. [MG]
+   it does nothing at all. Reported by Minion. [MG]
  * The connect screen can now contain ANSI color. Patch by Mercutio.
  * Small bug fix in @search. [MG]
 

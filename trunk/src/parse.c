@@ -175,7 +175,7 @@ parse_objid(char const *str)
  * a non-zero number is true, and everything else is false.
  * To PennMUSH, negative dbrefs are false, non-negative dbrefs are true,
  * 0 is false, all other numbers are true, empty or blank strings are false,
- * and all other strings are true. 
+ * and all other strings are true.
  * \param str string to parse.
  * \retval 1 str represents a true value.
  * \retval 0 str represents a false value.
@@ -247,7 +247,7 @@ is_dbref(char const *str)
 
 /** Is a string an objid?
  * An objid is a string starting with a #, optionally followed by a -,
- * and then followed by at least one digit, then optionally followed 
+ * and then followed by at least one digit, then optionally followed
  * by a : and at least one digit, and nothing else.
  * In regex: ^#-?\d+(:\d+)?$
  * \param str string to check.
@@ -592,7 +592,7 @@ extern signed char qreg_indexes[UCHAR_MAX + 1];
  * place to be filled (ala safe_str() and safe_chr()).  Be very
  * careful about not overflowing buff; use of safe_str() and safe_chr()
  * for all writes into buff is highly recommended.
- * 
+ *
  * nargs is the count of the number of arguments passed to the function,
  * and args is an array of pointers to them.  args will have at least
  * nargs elements, or 10 elements, whichever is greater.  The first ten
@@ -601,7 +601,7 @@ extern signed char qreg_indexes[UCHAR_MAX + 1];
  * The argument strings are stored in BUFFER_LEN buffers, but reliance
  * on that size is also considered bad form.  The argument strings may
  * be modified, but modifying the pointers to the argument strings will
- * cause crashes. 
+ * cause crashes.
  *
  * executor corresponds to %!, the object invoking the function.
  * caller   corresponds to %@, the last object to do a U() or similar.
@@ -1370,8 +1370,11 @@ process_expression(char *buff, char **bp, char const **str,
             safe_str(T(" ARGUMENTS BUT GOT "), buff, bp);
             safe_integer(nfargs, buff, bp);
           } else {
+            char *preserve[NUMQ];
             global_fun_recursions++;
             pe_info->fun_depth++;
+            if (fp->flags & FN_LOCALIZE)
+              save_global_regs("@function.save", preserve);
             if (fp->flags & FN_BUILTIN) {
               global_fun_invocations++;
               pe_info->fun_invocations++;
@@ -1413,15 +1416,12 @@ process_expression(char *buff, char **bp, char const **str,
                 safe_str(fp->where.ufun->name, buff, bp);
                 safe_chr(')', buff, bp);
               } else {
-                char *preserve[NUMQ];
-                if (fp->flags & FN_LOCALIZE)
-                  save_global_regs("@function.save", preserve);
                 do_userfn(buff, bp, thing, attrib, nfargs, fargs,
                           executor, caller, enactor, pe_info, PE_USERFN);
-                if (fp->flags & FN_LOCALIZE)
-                  restore_global_regs("@function.save", preserve);
               }
             }
+            if (fp->flags & FN_LOCALIZE)
+              restore_global_regs("@function.save", preserve);
             pe_info->fun_depth--;
             global_fun_recursions--;
           }

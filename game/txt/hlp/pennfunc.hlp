@@ -1248,10 +1248,10 @@ See also: decrypt(), encode64()
   You can also limit the range of the dbrefs searched by giving
   <begin> and <end>.
 & EQ()
-  eq(<number1>, <number2>[, <number3>])
+  eq(<number1>, <number2>[, <numberN>, ...])
 
   Takes two or more numbers, and returns 1 if they are all equal,
-  0 otherwise.
+  and 0 otherwise.
   
 See also: neq()
 & ESCAPE()
@@ -1638,15 +1638,15 @@ See also: match(), matchall(), grab(), regmatch()
   grep()/wildgrep()/regrep() are case-sensitive. 
   grepi()/wildgrepi()/regrepi() are case-insensitive.
 & GT()
-  gt(<num>, <num>[, <num>])
+  gt(<number1>, <number2>[, <numberN>, ...])
 
   Takes two or more numbers, and returns 1 if and only if each number
-  is greater than to the number after it. 0 otherwise
+  is greater than to the number after it, and 0 otherwise.
 & GTE()
-  gte(<num>, <num>[, <num>])
+  gte(<number1>, <number2>[, <numberN>, ...])
 
   Takes two or more numbers, and returns 1 if and only if each number
-  is greater than or equal to the number after it. 0 otherwise
+  is greater than or equal to the number after it, and 0 otherwise.
 & HASATTR()
 & HASATTRP()
 & HASATTRVAL()
@@ -2471,10 +2471,10 @@ See also: pos()
 
   stats() is an alias for lstats().
 & LT()
-  lt(<num>, <num>[, <num>])
+  lt(<number1>, <number2>[, <numberN>, ...])
 
   Takes two or more numbers, and returns 1 if and only if each number
-  is less than the number after it. 0 otherwise
+  is less than the number after it, and 0 otherwise.
 
   Examples:
   > th lt(1,2)
@@ -2484,10 +2484,10 @@ See also: pos()
   > th lt(1,3,2)
   0
 & LTE()
-  lt(<num>, <num>[, <num>])
+  lte(<number1>, <number2>[, <numberN>, ...])
 
   Takes two or more numbers, and returns 1 if and only if each number
-  is less than or equal to the number after it. 0 otherwise
+  is less than or equal to the number after it, and 0 otherwise.
 & LVCON()
   lvcon(<object>)
 
@@ -2904,9 +2904,9 @@ See also: anonymous attributes
   object 1 is carrying object 2.
   You must control at least one of the objects.
 & NEQ()
-  neq(<num1>, <num2>[, <num2>, ...])
+  neq(<number1>, <number2>[, <numberN>, ...])
 
-  Basically the same as [not(eq(<num1>,<num2>[,<num3>, ...]))].
+  Basically the same as [not(eq(<num1>,<num2>[,<numN>, ...]))].
 
 See also: eq(), not()
 & NEXT()

@@ -1445,8 +1445,6 @@ FUNCTION(fun_ctime)
 
   if (!GoodObject(it) || IsGarbage(it))
     safe_str(T(e_notvis), buff, bp);
-  else if (!Can_Examine(executor, it))
-    safe_str(T(e_perm), buff, bp);
   else
     safe_str(show_time(CreTime(it), utc), buff, bp);
 }
@@ -1457,8 +1455,6 @@ FUNCTION(fun_csecs)
 
   if (!GoodObject(it) || IsGarbage(it))
     safe_str(T(e_notvis), buff, bp);
-  else if (!Can_Examine(executor, it))
-    safe_str(T(e_perm), buff, bp);
   else
     safe_integer((intmax_t) CreTime(it), buff, bp);
 }

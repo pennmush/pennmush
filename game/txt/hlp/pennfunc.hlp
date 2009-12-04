@@ -935,10 +935,9 @@ See also: @pcreate
   which case the time is in the UTC timezone.
  
   csecs() returns the time as the number of seconds since the epoch.
+  Anyone can get the creation time of any object in the game.
 
-  You must be able to examine an object to see its creation time.
-
-See also: mtime(), time(), secs()
+See also: mtime(), time(), secs(), objid()
 & CTU()
   ctu(<angle>,<from>,<to>)
 

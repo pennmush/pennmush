@@ -73,6 +73,8 @@ Fixes:
    spoofed as %#, not the object doing the spoofing, when @message/spoof
    (and @pemit/spoof, etc) are used. Reported by Mercutio@M*U*S*H. [MG]
  * Fixed some minor type-related warnings when compiling on cygwin. [MG]
+ * @functions which were set "localize" would report being set "Userfn"
+   as well, and functions set "Userfn" weren't reported as such. [MG]
    
  Minor changes:
  * @listen/^-listens now carry over ANSI. Requested by Mercutio. [MG]
@@ -82,6 +84,8 @@ Fixes:
    it does nothing at all. Reported by Minion. [MG]
  * The connect screen can now contain ANSI color. Patch by Mercutio.
  * Small bug fix in @search. [MG]
+ * Built-in functions can be set FN_LOCALIZE to preserve %q-regs. [MG]
+ * Refactoring of ufun(), ulocal(), u[l]default() and ulambda(). [MG]
 
 Tools:
  * New script in utils/ for searching change logs: grep-cl.pl [SW]

@@ -712,11 +712,11 @@ FUNTAB flist[] = {
   {"TRUNC", fun_trunc, 1, 1, FN_REG},
   {"TYPE", fun_type, 1, 1, FN_REG},
   {"UCSTR", fun_ucstr, 1, -1, FN_REG},
-  {"UDEFAULT", fun_uldefault, 2, 12, FN_NOPARSE},
+  {"UDEFAULT", fun_udefault, 2, 12, FN_NOPARSE},
   {"UFUN", fun_ufun, 1, 11, FN_REG},
-  {"ULAMBDA", fun_ulambda, 1, 11, FN_REG},
-  {"ULDEFAULT", fun_uldefault, 1, 12, FN_NOPARSE},
-  {"ULOCAL", fun_ulocal, 1, 11, FN_REG},
+  {"ULAMBDA", fun_ufun, 1, 11, FN_REG},
+  {"ULDEFAULT", fun_udefault, 1, 12, FN_NOPARSE | FN_LOCALIZE},
+  {"ULOCAL", fun_ufun, 1, 11, FN_REG | FN_LOCALIZE},
   {"UNIQUE", fun_unique, 1, 4, FN_REG},
   {"UTCTIME", fun_time, 0, 0, FN_REG},
   {"U", fun_ufun, 1, 11, FN_REG},
@@ -1627,7 +1627,7 @@ build_function_report(dbref player, FUN *fp)
     first = 0;
   }
 
-  if (fp->flags & FN_LOCALIZE) {
+  if (fp->flags & FN_USERFN) {
     if (first == 0)
       safe_strl(", ", 2, tbuf, &tp);
     safe_str("Userfn", tbuf, &tp);

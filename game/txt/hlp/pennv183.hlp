@@ -57,6 +57,7 @@ Functions:
     name in the first argument. [MG]
   * lmath() can now do lt, lte, gt, gte, eq and neq. Also, lt(), lte(),
     etc, can all take more than 2 arguments. [GM]
+  * Anyone can now use ctime() on any object. [MG]
 
 Fixes:
  * lsearch() with invalid syntax was failing to report it as such, causing

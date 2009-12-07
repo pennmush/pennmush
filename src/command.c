@@ -346,8 +346,6 @@ COMLIST commands[] = {
   {"SEMIPOSE", "NOEVAL", cmd_semipose, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"SLAY", NULL, cmd_slay, CMD_T_ANY, 0, 0},
 
-  {"TAKE", NULL, cmd_take, CMD_T_PLAYER | CMD_T_THING | CMD_T_NOGAGGED,
-   0, 0},
   {"TEACH", NULL, cmd_teach, CMD_T_ANY | CMD_T_NOPARSE, 0, 0},
   {"THINK", "NOEVAL", cmd_think, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
 

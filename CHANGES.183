@@ -24,6 +24,9 @@ Major changes:
     screen is separate.) If you have a softcoded 'who' command, you will
     need to @hook/override WHO for it to continue working. Suggested by
     Bane. [MG]
+  * The "take" command has been moved from the hardcode into alias.cnf.
+    If you want to keep it as an alias for "get", you should add the line
+    "command_alias get take" into your alias.cnf. [MG]
 
 Configuration:
   * The *_file options (connect_file, motd_file, etc) can now be a

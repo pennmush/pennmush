@@ -1341,11 +1341,6 @@ COMMAND(cmd_slay)
   do_kill(player, arg_left, 0, 1);
 }
 
-COMMAND(cmd_take)
-{
-  do_get(player, arg_left);
-}
-
 COMMAND(cmd_think)
 {
   do_think(player, arg_left);

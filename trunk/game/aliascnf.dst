@@ -36,6 +36,7 @@ command_alias whisper w
 command_alias goto move
 command_alias @atrlock @attrlock
 command_alias @atrchown @attrchown
+command_alias get take
 
 # As well as commands, functions can be aliased. Same syntax,
 # just function_alias instead of command_alias. Note that many

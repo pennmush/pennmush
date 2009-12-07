@@ -6,8 +6,8 @@ Help is available for the following MUSH commands:
   give           go             index          kill           leave          
   LOGOUT         look           move           news           page           
   pose           QUIT           read           rules          say
-  score          slay           take           teach          think          
-  unfollow       use            whisper        WHO            with
+  score          slay           teach          think          unfollow
+  use            whisper        WHO            with
   "              :              ;              +              ]
  
   In addition to these, there are several types of '@' commands. @-commands 
@@ -3934,14 +3934,20 @@ See also: get, drop
 & get
 & take
   get <object>
-  take <object>
+  get <box>'s <object>
 
-  You pick up object, if you pass the object's @lock and the
-  container's @lock/take (if set). You can also do get <thing>'s
-  <object>, which will fail if thing is not ENTER_OK, thing has a
-  take-lock that blocks you, or object is locked against you. Some
-  MUSHes choose to disable the ability to take an object in someone
-  else's inventory.
+  The first form of this command lets you pick up <object> from your
+  current location. The second form allows you to take <object> from
+  inside <box>'s inventory.
+  
+  In both cases, you must pass <object>'s Basic @lock, and the
+  @lock/take of it's location.
+  
+  To get an object from someone else's inventory, the possessive_get
+  @config option must be true (and, if <box> is a disconnected player,
+  so must possessive_get_d). <box> must also be set ENTER_OK.
+  
+  'take' is usually an alias for the 'get' command.
 
 See also: @lock, ENTER_OK, give, drop, @success, inventory
 & @abuy

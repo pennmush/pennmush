@@ -2285,11 +2285,18 @@ do_command(DESC *d, char *command)
 {
   int j;
 
-  (d->cmds)++;
-
-  if (!strcmp(command, IDLE_COMMAND))
+  if (!strncmp(command, IDLE_COMMAND, strlen(IDLE_COMMAND))) {
+		j = strlen(IDLE_COMMAND);
+		if ((int) strlen(command) > j) {
+			if (*(command + j) == ' ')
+			  j++;
+			queue_write(d, (unsigned char *) command + j, strlen(command) - j);
+			queue_eol(d);
+		}
     return 1;
+  }
   d->last_time = mudtime;
+  (d->cmds)++;
   if (!strcmp(command, QUIT_COMMAND)) {
     return 0;
   } else if (!strcmp(command, LOGOUT_COMMAND)) {

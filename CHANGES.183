@@ -44,6 +44,9 @@ Commands:
   * @hook/list without a <command> now shows all commands which have hooks.
     Based on a patch by Trinsec. [MG]
   * @search now takes multiple <class>=<restriction> pairs. [MG]
+  * The IDLE command now takes an optional argument, which it prints back
+    to the descriptor which sent the command. [MG]
+  * IDLE no longer increases the cmds() for a descriptor. [MG]
 
 Functions:
   * testlock(<boolexp>, <victim>) tests a lock without setting it.

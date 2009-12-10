@@ -81,6 +81,9 @@ Fixes:
  * Fixed some minor type-related warnings when compiling on cygwin. [MG]
  * @functions which were set "localize" would report being set "Userfn"
    as well, and functions set "Userfn" weren't reported as such. [MG]
+ * Objects could be set with flags which weren't valid for their object
+   type, if such flags were in the <type>_flags config option. Found by
+   Kitai. [MG]
    
  Minor changes:
  * @listen/^-listens now carry over ANSI. Requested by Mercutio. [MG]

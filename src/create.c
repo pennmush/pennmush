@@ -93,6 +93,9 @@ do_real_open(dbref player, const char *direction, const char *linkto,
                                                              player :
                                                              Location(player)));
   dbref new_exit;
+  char *flaglist, *flagname;
+  char flagbuff[BUFFER_LEN];
+
   if (!command_check_byname(player, "@dig")) {
     notify(player, "Permission denied.");
     return NOTHING;
@@ -124,7 +127,16 @@ do_real_open(dbref player, const char *direction, const char *linkto,
     Zone(new_exit) = Zone(player);
     Source(new_exit) = loc;
     Type(new_exit) = TYPE_EXIT;
-    Flags(new_exit) = string_to_bits("FLAG", options.exit_flags);
+    Flags(new_exit) = new_flag_bitmask("FLAG");
+    strcpy(flagbuff, options.exit_flags);
+    flaglist = trim_space_sep(flagbuff, ' ');
+    if (*flaglist != '\0') {
+      while (flaglist) {
+  	    flagname = split_token(&flaglist, ' ');
+  	    twiddle_flag_internal("FLAG", new_exit, flagname, 0);
+      }
+  	}
+
 
     /* link it in */
     PUSH(new_exit, Exits(loc));
@@ -223,7 +235,7 @@ do_unlink(dbref player, const char *name)
 /** Link an exit, room, player, or thing.
  * \verbatim
  * This is the top-level function for @link, which is used to link an
- * exit to a destination, set a player or thing's home, or set a 
+ * exit to a destination, set a player or thing's home, or set a
  * drop-to on a room.
  *
  * Linking an exit usually seizes ownership of the exit and costs 1 penny.
@@ -237,7 +249,7 @@ do_unlink(dbref player, const char *name)
 void
 do_link(dbref player, const char *name, const char *room_name, int preserve)
 {
-  /* Use this to link to a room that you own. 
+  /* Use this to link to a room that you own.
    * It usually seizes ownership of the exit and costs 1 penny,
    * plus a penny transferred to the exit owner if they aren't you.
    * You must own the linked-to room AND specify it by room number.
@@ -380,6 +392,8 @@ dbref
 do_dig(dbref player, const char *name, char **argv, int tport)
 {
   dbref room;
+  char *flaglist, *flagname;
+  char flagbuff[BUFFER_LEN];
 
   /* we don't need to know player's location!  hooray! */
   if (*name == '\0') {
@@ -394,7 +408,15 @@ do_dig(dbref player, const char *name, char **argv, int tport)
     Owner(room) = Owner(player);
     Zone(room) = Zone(player);
     Type(room) = TYPE_ROOM;
-    Flags(room) = string_to_bits("FLAG", options.room_flags);
+    Flags(room) = new_flag_bitmask("FLAG");
+    strcpy(flagbuff, options.room_flags);
+    flaglist = trim_space_sep(flagbuff, ' ');
+    if (*flaglist != '\0') {
+      while (flaglist) {
+  	    flagname = split_token(&flaglist, ' ');
+  	    twiddle_flag_internal("FLAG", room, flagname, 0);
+      }
+  	}
 
     notify_format(player, T("%s created with room number %d."), name, room);
     if (argv[1] && *argv[1]) {
@@ -434,6 +456,8 @@ do_create(dbref player, char *name, int cost, char *newdbref)
 {
   dbref loc;
   dbref thing;
+  char *flaglist, *flagname;
+  char flagbuff[BUFFER_LEN];
 
   if (*name == '\0') {
     notify(player, T("Create what?"));
@@ -477,7 +501,16 @@ do_create(dbref player, char *name, int cost, char *newdbref)
     Zone(thing) = Zone(player);
     s_Pennies(thing, cost);
     Type(thing) = TYPE_THING;
-    Flags(thing) = string_to_bits("FLAG", options.thing_flags);
+    Flags(thing) = new_flag_bitmask("FLAG");
+    strcpy(flagbuff, options.thing_flags);
+    flaglist = trim_space_sep(flagbuff, ' ');
+    if (*flaglist != '\0') {
+      while (flaglist) {
+  	    flagname = split_token(&flaglist, ' ');
+  	    twiddle_flag_internal("FLAG", thing, flagname, 0);
+      }
+  	}
+
 
     /* home is here (if we can link to it) or player's home */
     if ((loc = Location(player)) != NOTHING &&
@@ -624,7 +657,7 @@ do_clone(dbref player, char *name, char *newname, int preserve)
     break;
   case TYPE_EXIT:
     /* For exits, we don't want people to be able to link it to
-       a location they can't with @open. So, all this stuff. 
+       a location they can't with @open. So, all this stuff.
      */
     switch (Location(thing)) {
     case NOTHING:

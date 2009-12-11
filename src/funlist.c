@@ -2593,6 +2593,8 @@ FUNCTION(fun_table)
   size_t col = 0;
   size_t offset, col_len;
   char sep, osep, *cp, *t;
+  char aligntype = '<';
+  char *fwidth;
   ansi_string *as;
 
   if (!delim_check(buff, bp, nargs, args, 5, &osep))
@@ -2613,11 +2615,17 @@ FUNCTION(fun_table)
       line_length = 2;
   }
   if (nargs > 1) {
-    if (!is_integer(args[1])) {
+    fwidth = args[1];
+    if ((*fwidth) == '<' ||
+        (*fwidth) == '>' ||
+        (*fwidth) == '-') {
+      aligntype = *(fwidth++);
+    }
+    if (!is_integer(fwidth)) {
       safe_str(T(e_ints), buff, bp);
       return;
     }
-    field_width = parse_integer(args[1]);
+    field_width = parse_integer(fwidth);
     if (field_width < 1)
       field_width = 1;
     if (field_width >= BUFFER_LEN)
@@ -2644,10 +2652,29 @@ FUNCTION(fun_table)
   col_len = strlen(t);
   if (col_len > field_width)
     col_len = field_width;
-  safe_ansi_string(as, offset, col_len, buff, bp);
-  if (safe_fill(' ', field_width - col_len, buff, bp)) {
-    free_ansi_string(as);
-    return;
+  switch (aligntype) {
+  case '<':
+    safe_ansi_string(as, offset, col_len, buff, bp);
+    if (safe_fill(' ', field_width - col_len, buff, bp)) {
+      free_ansi_string(as);
+      return;
+    }
+    break;
+  case '>':
+    safe_fill(' ', field_width - col_len, buff, bp);
+    if (safe_ansi_string(as, offset, col_len, buff, bp)) {
+      free_ansi_string(as);
+      return;
+    }
+    break;
+  case '-':
+    safe_fill(' ', (field_width - col_len) / 2, buff, bp);
+    safe_ansi_string(as, offset, col_len, buff, bp);
+    if (safe_fill(' ', (field_width - col_len + 1) / 2, buff, bp)) {
+      free_ansi_string(as);
+      return;
+    }
+    break;
   }
   col = field_width + (osep != '\0');
   while (cp) {
@@ -2669,9 +2696,30 @@ FUNCTION(fun_table)
     col_len = strlen(t);
     if (col_len > field_width)
       col_len = field_width;
-    safe_ansi_string(as, offset, col_len, buff, bp);
-    if (safe_fill(' ', field_width - col_len, buff, bp))
+    switch (aligntype) {
+    case '<':
+      safe_ansi_string(as, offset, col_len, buff, bp);
+      if (safe_fill(' ', field_width - col_len, buff, bp)) {
+        free_ansi_string(as);
+        return;
+      }
       break;
+    case '>':
+      safe_fill(' ', field_width - col_len, buff, bp);
+      if (safe_ansi_string(as, offset, col_len, buff, bp)) {
+        free_ansi_string(as);
+        return;
+      }
+      break;
+    case '-':
+      safe_fill(' ', (field_width - col_len) / 2, buff, bp);
+      safe_ansi_string(as, offset, col_len, buff, bp);
+      if (safe_fill(' ', (field_width - col_len + 1) / 2, buff, bp)) {
+        free_ansi_string(as);
+        return;
+      }
+      break;
+    }
   }
   free_ansi_string(as);
 }

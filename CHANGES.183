@@ -49,6 +49,7 @@ Commands:
   * IDLE no longer increases the cmds() for a descriptor. [MG]
 
 Functions:
+  * table() now supports <, > and - as alignment parameters to field width.
   * testlock(<boolexp>, <victim>) tests a lock without setting it.
     Suggested by Mercutio@M*U*S*H. [GM]
   * lnum() now takes a fourth argument: A step. [GM]

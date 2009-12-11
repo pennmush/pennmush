@@ -4553,7 +4553,9 @@ See also: WILDCARDS
   This function returns the elements of <list> in a tabular format.
   All other parameters are optional.
   <field width> specifies how wide each table entry is allowed to be.
-  It defaults to 10 characters
+  It defaults to 10 characters. If <field width> begins with a
+  <, it is left-aligned. > makes it right-aligned, and - makes it
+  centered.
   <line length> is how wide a table row can be. Default is 78 chars.
   <delimiter> is the delimiter used in <list>. Default is white space.
   <output separator> is a single character to be used between entries

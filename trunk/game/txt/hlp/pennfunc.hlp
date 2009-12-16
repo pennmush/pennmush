@@ -3493,10 +3493,10 @@ See also: regrab()
 
   nsremit() is a wizard-only variation that works like @nsremit.
 & REMOVE()
-  remove(<list>, <word>[,<delimiter>])
+  remove(<list>, <words>[,<delimiter>])
 
   Remove takes a list and a word, and returns the list, with the first
-  occurrence of the word deleted from it.
+  occurrence of each word in <words> deleted from it.
 
   A word is defined as a string which contains no interior spaces (or
   <delimiter>'s if <delimiter> is used).  If the word is not in the

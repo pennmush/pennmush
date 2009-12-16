@@ -1688,16 +1688,21 @@ FUNCTION(fun_cat)
 FUNCTION(fun_remove)
 {
   char sep;
+  char lbuff[BUFFER_LEN];
+  char *r, *s;
 
   /* zap word from string */
 
   if (!delim_check(buff, bp, nargs, args, 3, &sep))
     return;
-  if (strchr(args[1], sep)) {
-    safe_str(T("#-1 CAN ONLY DELETE ONE ELEMENT"), buff, bp);
-    return;
+  r = lbuff;
+  safe_str(args[0], lbuff, &r);
+
+  s = args[1];
+  while ((r = split_token(&s, ' ')) != NULL) {
+    memcpy(lbuff, remove_word(lbuff, r, sep), BUFFER_LEN);
   }
-  safe_str(remove_word(args[0], args[1], sep), buff, bp);
+  safe_str(lbuff, buff, bp);
 }
 
 /* ARGSUSED */

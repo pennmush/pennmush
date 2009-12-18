@@ -1697,6 +1697,7 @@ FUNCTION(fun_remove)
     return;
   r = lbuff;
   safe_str(args[0], lbuff, &r);
+  *r = '\0';
 
   s = args[1];
   while ((r = split_token(&s, sep)) != NULL) {

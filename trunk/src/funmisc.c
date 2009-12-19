@@ -362,7 +362,7 @@ FUNCTION(fun_die)
   if (nargs == 3)
     show_all = parse_boolean(args[2]);
 
-  if (n == 0 || n > 20) {
+  if (n == 0 || n > 700) {
     safe_str(T("#-1 NUMBER OUT OF RANGE"), buff, bp);
     return;
   }

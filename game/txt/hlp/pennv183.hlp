@@ -44,6 +44,7 @@ Commands:
   * IDLE no longer increases the cmds() for a descriptor. [MG]
 
 Functions:
+  * die() now takes up to 700 dice.
   * remove() will now remove a list of words.
   * table() now supports <, > and - as alignment parameters to field width.
   * testlock(<boolexp>, <victim>) tests a lock without setting it.
@@ -68,6 +69,7 @@ Functions:
   * Anyone can now use ctime() on any object. [MG]
 
 Fixes:
+ * Help fixes by various folks.
  * lsearch() with invalid syntax was failing to report it as such, causing
    confusion when lsearch(me,exits) returned the same as lsearch(me). [GM]
  * fun_merge() was eating characters when ansi was present. Reported

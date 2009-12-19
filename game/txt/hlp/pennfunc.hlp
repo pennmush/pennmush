@@ -619,7 +619,11 @@ See also: BITWISE FUNCTIONS
   Converts <number>, which is in base <from base> into base <to base>.
   The bases can be between 2 (binary) and 64, inclusive.
 
-  All bases over 64 use base64 url string:
+  Numbers 36 and under use the standard numbers:
+
+  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+  All bases over 36 use base64 url string:
 
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
 
@@ -1107,7 +1111,7 @@ See also: strreplace()
   number of sides, a certain number of times, and adds the results.
   For example, DIE(2, 6) would roll "2d6" - two six-sided dice,
   generating a result in the range 2-12. The maximum number of dice
-  this function will roll in a single call is 20.  If <show> is true,
+  this function will roll in a single call is 700.  If <show> is true,
   the result will be a space-seperated list of the individual rolls rather
   than their sum.
 

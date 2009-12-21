@@ -4,7 +4,7 @@
 #
 # REQUIRED: You must set this to the path to your game directory.
 # E.g.: /home/mush/game
-GAMEDIR=
+GAMEDIR=/cygdrive/e/penngc/game
 
 # OPTIONAL things that you may want to tweak.
 

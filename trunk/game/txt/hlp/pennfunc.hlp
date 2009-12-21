@@ -392,7 +392,7 @@ See also: before(), rest()
   inserted between every line. By default, <filler> and <colsep> are a
   space, and <rowsep> is a newline.
 
-  Continued in HELP ALIGN2
+  Continued in 'help align2'
 & ALIGN2
   Examples:
   
@@ -1547,8 +1547,7 @@ See also: fdiv(), div(), mod()
   element of list is passed as %1, to the user-defined function. The
   process for the no-base-case fold() is then used.
   
-  See 'help FOLD2' for examples.
- 
+  See 'help fold2' for examples.
 & FOLD2
  
   Examples:
@@ -2011,57 +2010,55 @@ See also: words()
     You say, "eggs; bacon; & spam"
 & ITER()
 & PARSE()
-  iter(<list>, <pattern>[,<delimiter>[, <output separator>]])
-  parse(<list>, <pattern>[,<delimiter>[, <output separator>]])
+  iter(<list>, <pattern>[, <delimiter>[, <output separator>]])
   
-  This works in a manner very similar to @map, except that it returns
-  a string directly.  <list> is a space-separated list of words, and
-  <pattern> is what will be "mapped" onto each element of the list,
-  with the token "##" being replaced successively by the next word in
-  the list, and the token "#@" being replaced by the word's position
-  in the list (also see 'help itext()' and see 'help inum()').  The
-  result is concatenated and returned as a space separated list.  This
-  is similar to @dolist, but the results are made into a list rather
-  than executed.
+  For each word in <list>, iter() evaluates <pattern> once, and returns a
+  list of the results of those evaluations. Words in <list> are separated
+  by <delimiter>, if given, and spaces if not. Words in the resulting list
+  are separated by the given <ouput separator>, or the delimiter if no
+  output separator is used.
+  
+  Prior to each evaluation, every occurrence of the string "##" in <pattern>
+  is replaced with the current word from <list>. However, because this 
+  replacement occurs before substitution, it cannot be used well in nested
+  iter()s, and should not be used on user input or untrusted <list>s, as the
+  word will be evaluated. Instead, you can use the %iX substitution, or the 
+  itext() function.
+  
+  The string "#@" will be replaced with the position of the current word
+  in <list>. Like "##", the replacement occurs before substitution. Use
+  the inum() function for nested iter()s.
+  
+  If you nest iter()s, ## and #@ refer to the first/outermost iter(). The
+  ilev() function can be used to get the current iter() nesting level.
 
-  The list may be <delimiter>-separated.
-
-  By default, the return list will be space-separated. However, by
-  including the output separator (which requires explicitly including
-  the delimiter), you can have it separated by any string.
-
-Continued in HELP ITER2
+  See 'help iter2' for examples.
 & ITER2   
-  parse() is a synonym for iter(). If you nest iters, ## and #@ refer
-  to the first iter(). See 'help ITEXT()' and 'help INUM()' for how to
-  retrieve their values for any nested iter. See 'help MAP()' for a
-  similar function.
 
-  Note that ## and #@ are replaced before evaluation, so the word will
-  be evaluated, which can be a problem when iter()ing on an untrusted
-  list.  iter-with-itext or map() should be preferred to iter-with-##
-  whenever you're iterating over user-provided values.
-
-  > say [iter(This is a test string., [strlen(##)])]
+  > say iter(This is a test string., strlen(%i0))
   You say, "4 2 1 4 7"
   
-  > say [iter(lnum(5), mul(add(##,##),2))]
-  You say, "0 4 8 12 16"
+  > say iter(lnum(5), mul(add(##,#@),2))
+  You say, "2 6 10 14 18"
   
-  > say [iter(lexits(here), [name(##)] (owned by [name(owner(##))]))]
+  > say iter(lexits(here), name(##) (owned by [name(owner(##))]))
   You say, "South (owned by Claudia) North (owned by Roy)"
   
-  > &STRLEN_FN me=[strlen(%0)]
-  > say [iter(This is a test string., [u(STRLEN_FN, ##)])]
+  > &STRLEN_FN me=strlen(%0)
+  > say [iter(This is a test string., u(STRLEN_FN, %i0))
   You say, "4 2 1 4 7"
 
- This example could be replaced by the use of map() like so:
+  This example could be replaced by the use of map() like so:
   > say [map(strlen_fun, This is a test string)]
 
   > say [iter(lnum(3), ##, ,%r)]
   You say, "0
   1
   2"
+  
+  parse() is an alias for iter().
+  
+See also: itext(), inum(), ilev(), map(), @dolist
 & ILEV()
 & ITEXT()
 & INUM()
@@ -2072,10 +2069,10 @@ Continued in HELP ITER2
   inum(<n>)
 
   These functions, when called within an iter(), return the equivalent
-  of ## (itext) or #@ (inum), with reference to the nth more outermost
-  iter(), where n=0 refers to the current iter(), n=1 to an iter() in
-  which the current iter() is nested, etc. %iX is shorthand for
-  itext(X) (up to itext(9).  ilev() returns the current nesting depth,
+  of ## (itext) or #@ (inum), with reference to the <n>th more outermost
+  iter(), where <n>=0 refers to the current iter(), <n>=1 to an iter() in
+  which the current iter() is nested, etc. %i<n> is shorthand for
+  itext(<n>) (up to itext(9)).  ilev() returns the current nesting depth,
   or -1 if it is outside an iter().  Thus, itext(ilev()) will return
   the ## of the outermost iter().
 
@@ -2090,6 +2087,8 @@ Continued in HELP ITER2
   
   > say [iter(red blue green,iter(fish shoe, %i1:%i0))]
   You say, "red:fish red:shoe blue:fish blue:shoe green:fish green:shoe"
+  
+See also: iter()
 & IPADDR()
   ipaddr(<player|descriptor>)
 
@@ -2103,97 +2102,101 @@ Continued in HELP ITER2
 
 See also: Connection Functions, hostname(), ports(), lports()
 & LAST()
-  last(<list>[,<delimiter>])
+  last(<list>[, <delimiter>])
   
-  Returns the last element of a list.
+  Returns the last element of a list. Elements in <list> are separated by
+  <delimiter>, if given, or by a space if not.
 
-See also: first(), rest()
+See also: first(), rest(), before(), after()
 & LATTR()
 & LATTRP()
-  lattr(<object>[/<attribute pattern>][, <delim>])
-  lattrp(<object>[/<attribute pattern>][, <delim>])
+  lattr(<object>[/<attribute pattern>][, <output separator>])
+  lattrp(<object>[/<attribute pattern>][, <output separator>])
  
-  Returns a delim-separated list of the attribute names on the object
-  that you are permitted to examine. To see the complete list, you
-  must either be a Wizard or Royalty, own the object, have the See_All
-  power, or have the object set VISUAL in order to use this function
-  on the object. The delimiter defaults to space if not given.
+  Returns a list of all the attributes on <object> which you can see, and
+  which match the wildcard <attribute pattern>. If no <attribute pattern> is
+  given, it defaults to "*". Note that this does not include branches in
+  attribute trees; you must use the "**" wildcard to include those.
   
-  If a wildcarded attribute pattern is provided, only attribute names
-  matching that pattern will be returned. lattr() uses the same
-  wildcards as examine (?, *, **).
+  The resulting list will be separated by <output separator>, or a space if
+  no separator is given.
 
   lattrp() also includes attributes inherited from parents.
 
-See also: nattr(), examine
+See also: nattr(), hasattr(), examine, wildcards
 & NATTR()
 & NATTRP()
 & ATTRCNT()
 & ATTRPCNT()
-  nattr(<object>[/<attribute-pattern>])
-  nattrp(<object>[/<attribute-pattern>])
-  attrcnt(<object>[/<attribute-pattern>]) 
-  attrpcnt(<object>[/<attribute-pattern>]) 
+  nattr(<object>[/<attribute pattern>])
+  nattrp(<object>[/<attribute pattern>])
 
-  This function (known by two names) returns the number of attributes
-  on the object that you are permitted to examine.  This function is
-  considerably faster than words(lattr()) and doesn't suffer from
-  buffer length constraints.  It's designed primarily for statistical
-  purposes.
+  nattr() returns the number of attributes on <object> that you can see
+  which match the given <attribute pattern>. It is considerably faster
+  than words(lattr()) and doesn't suffer from buffer length constraints.
+  It's designed primarily for statistical purposes.
 
-  nattrp() and attrpcnt() also count matching attributes on the parent.
+  nattrp() also counts matching attributes on the parent. attrcnt() and
+  attrpcnt() are aliases.
 
-See also: lattr()
+See also: lattr(), hasattr()
 & LCON()
   lcon(<object>)
 
-  Returns a list of the dbrefs of contents in a container.
+  Returns a list of the dbrefs of objects which are located in <object>.
 
-  You can get the complete contents of any container you may examine,
+  You can get the complete contents of any object you may examine,
   regardless of whether or not objects are dark.  You can get the
   partial contents (obeying DARK/LIGHT/etc.) of your current location
   or the enactor (%#).  You CANNOT get the contents of anything else,
   regardless of whether or not you have objects in it.
+  
+  When used on exits, this function returns #-1.
 
 See also: lexits(), lplayers(), con(), next(), lvcon()
 & LCSTR()
   lcstr(<string>)
 
   Returns <string> with all letters converted to lowercase.
-  Example: lcstr(Foo BAR bAz) returns "foo bar baz"
+  
+  Example:
+  > say lcstr(Foo BAR bAz)
+  You say, "foo bar baz"
 
 See also: capstr(), ucstr()
 & LDELETE()
-  Ldelete(<list>, <position(s)>[,<single-character separator>])
+  Ldelete(<list>, <position(s)>[, <delimiter>])
   
-  This deletes the item(s) at <position(s)> in the list. If a
-  separator character is not given, a space is assumed. Null items are
-  counted, as in 'items()'. Positions are numeric and must be
-  separated by spaces.
+  This deletes the item(s) at <position(s)> in the list. If a delimiter is
+  not given, a space is assumed. Null items are counted, as in 'items()'.
+  Positions are numeric and must be separated by spaces.
   
   Examples:
-    > say [ldelete(This is a long test string,4)]
+    > say ldelete(This is a long test string,4)
     You say, "This is a test string"
-    > say [ldelete(lemon|orange|apple,2,|)]
+    > say ldelete(lemon|orange|pear|apple,2 3,|)
     You say, "lemon|apple"
+See also: delete(), remove()
 & LEFT()
   left(<string>, <length>)
 
-  Returns the first <length> characters from string.
+  Returns the first <length> characters from <string>.
 
-See also: right(), mid()
+See also: right(), mid(), ljust()
 & NSLEMIT()
 & LEMIT()
   lemit(<message>)
   nslemit(<message>)
 
-  Sends a message to the outermost room, as per @lemit.
+  lemit() emits a message in the caller's outermost room, as per @lemit.
 
   nslemit() is a wizard-only variation that works like @nslemit.
+  
+See also: @lemit, remit()
 & LETQ()
-  letq([<reg1>, <value1>,...<regN>, <valueN>,] <expr>)
+  letq([<reg1>, <value1>[, ..., <regN>, <valueN>,] <expr>)
 
-  letq() saves the current values of the given q-registers, sets them
+  letq() saves the current values of the given q-<reg>isters, sets them
   to new values, evaluates <expr> and then restores the saved
   registers.  It does not restore registers that are not listed. None
   of the values can see the updated contents of the registers -- they
@@ -2203,12 +2206,12 @@ See also: right(), mid()
 
   Example:
 
-    > think [setr(A, 1)]:[letq(A, 2, %qA)]:%qA
+    > think setr(A, 1):[letq(A, 2, %qA)]:%qA
     1:2:1
 
 See also: setq(), setr(), localize(), ulocal()
 & LEXITS()
-  lexits(<object>)
+  lexits(<room>)
 
   Returns a list of the dbrefs of exits in a room.
 
@@ -2220,44 +2223,48 @@ See also: setq(), setr(), localize(), ulocal()
 
 See also: lcon(), exit(), next(), lvexits()
 & LJUST()
-  ljust(<string>, <length>[,<fill>])
+  ljust(<string>, <length>[, <fill>])
   
-  This function pads a string with trailing characters
-  ("left-justifies") so it is <length> long. If <string> is longer
-  than <length>, the <string> is returned; it is not truncated. If
-  <fill> is not specified, a space is used.
+  This function pads a string with trailing characters ("left-justifies") 
+  so it is <length> long. If <string> is longer than <length>, the <string>
+  is returned; it is not truncated. If <fill> is not specified, a space is
+  used. <fill> can be more than one character in length.
   
   Examples:
   
-    > say [ljust(foo,6)]
+    > say ljust(foo,6)
     You say, "foo   "
   
     > say %r0[ljust(foo,6,-)]7%r01234567
     You say, "
     0foo---7
     01234567"
+    
+    > say ljust(foo,12,=+)
+    You say, "foo=+=+=+=+="
 
-See also: align(), center(), rjust()
+See also: align(), center(), rjust(), left()
 & LINK()
-  link(<name>, <destination>[, <preserve>])
+  link(<object>, <destination>[, <preserve>])
  
-  This function links object <name> to <destination>. While normally
-  used on exits, it has all of the other capabilities of @link as
-  well.  It returns nothing. If the optional third argument is true,
-  acts like @link/preserve.
+  This function links <object> to <destination>. While normally used on
+  exits, it has all of the other capabilities of @link as well.  It returns
+  nothing. If the optional third argument is true, acts like @link/preserve.
 
-  This is a side-effect function and may not be enabled on some MUSHes.
+See also: @link, open()
 & LIST()
   list(<option>)
  
   This function takes the same arguments as the @list command, and
   returns the same things.
+  
+See also: @list, flags(), lflags(), config(), functions()
 & LIT()
   lit(<string>)
 
-  This function returns the string literally - without even squishing
-  spaces, and without evaluating *anything*. This can be useful for
-  writing ASCII maps with spaces or whatever.
+  This function returns <string> literally - without even squishing spaces, 
+  and without evaluating *anything*. This can be useful for writing ASCII 
+  maps with spaces or whatever.
 
   It can be a bit tricky to get a literal string with spaces into an
   attrib, however, since spaces are usually squished in setting an
@@ -2271,8 +2278,10 @@ See also: align(), center(), rjust()
     near       far
 
   Leaving out the {}'s will not work in the above.
+  
+See also: decompose()
 & LMATH()
-  lmath(<op>, <list>[,<delim>])
+  lmath(<op>, <list>[, <delim>])
 
   This function performs generic math operations on <list>, returning
   the result. Each element of the list is treated as one argument to
@@ -2285,17 +2294,19 @@ See also: align(), center(), rjust()
   median min modulo mul nand neq nor or remainder stddev sub xor
 
   Examples:
-  >think lmath(add, 1|2|3, |)
+  > think lmath(add, 1|2|3, |)
   6
-  >think lmath(max, 1 2 3)
+  > think lmath(max, 1 2 3)
   3
-  >&FUN_FACTORIAL me=[lmath(mul,lnum(1,%0))]
-  >think u(fun_factorial,5)
+  > &FUN_FACTORIAL me=lmath(mul,lnum(1,%0))
+  > think u(fun_factorial,5)
   120
 & LN()
   ln(<number>)
  
   Returns the natural log of <number>.
+  
+See also: log()
 & LNUM()
   lnum(<number>)
   lnum(<start number>, <end number>[, <output separator> [, <step>]])
@@ -2317,84 +2328,112 @@ See also: align(), center(), rjust()
 & LOC()
   loc(<object>)
   
-  Loc returns the dbref of the location that object is at.  The object
-  has to either be yours or be in the same room as you to work. The
-  location of an exit is its destination (the source of an exit is its
-  home). The location of a room is its drop-to (if one is not set,
-  then the location is #-1).
+  For things and players, loc() returns the dbref of the object which
+  contains <object>. For exits, it returns the destination (the source is
+  an exits home()). For rooms, it returns the drop-to, if one is set, or 
+  #-1 otherwise.
+  
+  You must be able to examine <object>, or be near it, for this function
+  to work.
+  
+  You can also get the location of the enactor using the %L substitution,
+  whether you are near to/can examine it or not.
+  
+See also: locate(), rloc(), home()
 & LOCALIZE()
   localize(<code>)
 
-  Localize() saves the q-registers, evaluates its argument, and restores
-  the registers afterwards. It has much the same relation to s() that
-  ulocal() does to u(), except localize()'s argument is only evaluated
-  once, instead of twice like s()'s. Useful in @functions or to wrap around
-  fragments of code too small to go into another attribute.
+  localize() saves the q-registers, evaluates its argument, and restores
+  the registers afterwards. It has the same effect as ulocal(), but doesn't
+  require setting the code into an attribute. 
 
   Example:
-  > say [setr(0, Outside)]-[s(\[setr(0, Inside)\])]-%q0
+  > say [setr(0, Outside)]-[setr(0, Inside)]-%q0
   You say, "Outside-Inside-Inside"
+  
+  > &INSIDE me=setr(0,Inside)
+  > say [setr(0, Outside)]-[ulocal(INSIDE)]-%q0
+  You say, "Outside-Inside-Outside"
+
   > say [setr(0, Outside)]-[localize(setr(0, Inside))]-%q0
   You say, "Outside-Inside-Outside"
 
-See also: letq(), setq(), setr(), r(), ulocal(), uldefault(), s()
+See also: letq(), setq(), setr(), r(), ulocal(), uldefault()
 & LOCATE()
   locate(<looker>, <name>, <parameters>)
  
-  This function attempts to find the number called <name> relative to
-  <looker>. You must control <looker> or have the See_All power.  This
-  is a bit like the NUM() function, but with a wider, controllable
-  "range".
- 
+  This function attemps to find an object called <name>, relative to
+  the object <looker>. It's similar to the num() function, but you can
+  be more specific about which type of object to find, and where to look
+  for it. You must control <looker> or have the See_All power to use this
+  function.
+  
+  <parameters> is a string of characters which control the type of the object
+  to find, and where (relative to <looker>) to look for it.
+  
   You can control the preferred type of the match with:
-    E   -   Exits
-    L   -   Unlocked exits preferred over locked exits
-    N   -   No type (this is the default)
-    P   -   Players
-    R   -   Rooms
-    T   -   Things
-    F   -   Return #-1 if what's found is of a different type than the
-            preferred one.
-    X   -   Never return #-2. Use the last dbref found if the match is  
-            ambiguous.
- 
- If you specify more than one type, any will be preferred. Unless you
-  specify an F option, if an object of a different type is found and
-  none of the preferred type are, the found object will be returned.
- 
-  (Read "help locate2" for more.)
- 
+    E - Exits
+    L - Unlocked exits preferred over locked exits
+    N - No type (this is the default)
+    P - Players
+    R - Rooms
+    T - Things
+    F - Return #-1 if what's found is of a different type than the
+        preferred one.
+    X - Never return #-2. Use the last dbref found if the match is  
+        ambiguous.
+
+  If type(s) are given, locate() will attempt to find an object with one of
+  the given types first. If none are found, it will attempt to find any type
+  of object, unless 'F' is specified, in which case it will return #-1.
+  
+  Continued in 'help locate2'.
 & LOCATE2
  
   You can control where to look with:
-    a   -   Absolute match (look for #<object>)
-    c   -   Exits carried by <looker>
-    e   -   Exits in <looker>'s location
-    h   -   "here"  (the location of <looker>)
-    i   -   Inventory of <looker>
-    l   -   Location (container) of <looker>
-    m   -   "me"  (<looker> itself)
-    n   -   Neighbors (other objects in same location as <looker>)
-    p   -   Player names prefixed by '*'
-    y   -   Player names with or without a '*' prefix
-    z   -   English-style matching (my 2nd book) of <name>
-    *   -   All of the above (try a complete match)
+    a - Absolute match (check to see if <name> is a dbref)
+    e - Exits in <looker>'s location
+    h - If <name> is "here", return <looker>'s location
+    i - Match <name> against the names of objects in <looker>'s inventory
+    l - Match <name> against the name of <looker>'s location
+    m - If <name> is "me", return <looker>'s dbref
+    n - Match <name> against the names of objects in <looker>'s location
+    p - If <name> begins with a *, match the rest against player names
+    y - Match <name> against player names whether it begins with a * or not
+    z - English-style matching (my 2nd book) of <name> (see 'help matching')
+    * - All of the above (try a complete match)
  
-Just string all the parameters together, without separating them by
-spaces, i.e.  LOCATE(#100, Test, Tn) would check #100's neighbors for
-an object named "Test", preferring a thing over other types.
- 
+  Just string all the parameters together, without separating them by spaces.
+  
+  See 'help locate3' for examples.
+& LOCATE3
+
+  Examples:
+  Find the dbref of the player whose name matches %0, or %#'s dbref if %0 is
+  "me".
+  > think locate(%#, %0, PFym)
+  'PF' matches objects of type 'player' and nothing else, 'm' checks for the
+  string "me", and 'y' matches the names of players.
+  
+  
+  Find the dbref of an object near %# called %0, including %# himself and his
+  location. Prefer players or things, but accept rooms or exits if no players
+  or things are found.
+  > think locate(%#, %0, PThmlni)
+  This prefers 'P'layers or 'T'hings, and compares %0 against the strings
+  "here" and "me", and the names of %#'s location, his neighbours, and his
+  inventory.
+
+See also: num(), rnum() 
 & LOCK()
   lock(<object>[/<locktype>][, <new value>])
 
-  lock() returns the text string equivalent of the lock on an object
-  that you control. You can also provide a locktype (e.g. "enter",
-  "use", etc.)  switch after the object, if you want to check
-  something other than the regular lock.  If a new value is specified,
-  it will attempt to change the lock before reporting it.
-
-  This is a side-effect function and may not be enabled on some
-  MUSHes.
+  lock() returns the text string equivalent of the @lock on <object>.
+  <locktype> can be any valid switch for @lock ("Enter", "user:foo", etc)
+  and defaults to "Basic". You must be able to examine the lock.
+  
+  If a <new value> is given, lock() attempts to change the lock as @lock
+  would. You must control the object..
  
 See also: @lock, locktypes, elock(), lockflags(), llockflags(), lset(),
   llocks(), lockowner()
@@ -2417,10 +2456,11 @@ See also: lock(), lset(), lockflags(), llockflags(), lockowner()
   lockflags(<object>[/<locktype>])
   lockflags()
 
-  lockflags() returns a string consisting of the flags attached to the
-  specified lock on the object. The string is a single word made up of
-  all the appropriate flag letters.
-
+  If an <object> is given, lockflags() returns a string consisting of the
+  one-character abbreviations for all the lock flags on <object>'s <locktype>
+  lock, or Basic lock if no locktype is given. You must be able to examine
+  the lock.
+  
   Given no arguments, this function returns a string consisting of all
   the flag letters the server knows.
 
@@ -2429,11 +2469,12 @@ See also: llockflags(), lset(), lock(), llocks(), lockowner()
   llockflags(<object>[/<locktype>])
   llockflags()
 
-  llockflags returns a space-separated list consisting of the names of
-  flags attached to the specified lock on the object.
-
+  If an <object> is given, llockflags() returns a space-separated list of
+  the lock flags on <object>'s <locktype> lock, or Basic lock if no
+  locktype is given. You must be able to examine the lock.
+  
   Given no arguments, this function returns a space-separated list of
-  all flag names known to the server.
+  all the names of all lock flags known to the server.
 
 See also: lockflags(), lset(), lock(), llocks(), lockowner()
 & LOCKOWNER()
@@ -2450,6 +2491,8 @@ See also: lockflags(), llockflags(), lset(), lock(), llocks()
   This functions sets or clears flags on locks.
   
   See 'help @lset' for more information on what flags are available.
+  
+See also: lockflags(), llockflags(), lock(), lockowner()  
 & LOG()
   log(<number>[, <base>])
  
@@ -2461,10 +2504,12 @@ See also: ln()
 & LPARENT()
   lparent(<object>)
   
-  This function returns a list consisting of the object's db# (as per
-  num()), the db# of its parent, grandparent, greatgrandparent, etc.
+  This function returns a list consisting of <object>'s dbref (as per
+  num()), the dbref of its parent, grandparent, greatgrandparent, etc.
   The list will not, however, show parents of objects which the player
-  is not privileged to examine.
+  is not privileged to examine. Ancestor objects are not included.
+  
+See also: parent(), children(), PARENTS, ANCESTORS
 & LPLAYERS()
   lplayers(<object>)
 
@@ -2485,7 +2530,7 @@ See also: lvthings(), lcon()
   lpos(<string>, <character>)
 
   This function returns a list of the positions where <character>
-  occupies in <string>, with the first character of the string being
+  appears in <string>, with the first character of the string being
   0. Note that this differs from the pos() function, but is consistent
   with other string functions like mid() and delete().
 
@@ -2496,7 +2541,7 @@ See also: lvthings(), lcon()
   > say lpos(a-bc-def-g, -)
   You say, "1 4 8"
 
-See also: pos()
+See also: pos(), member(), match()
 & LSEARCH()
 & NLSEARCH()
 & SEARCH()
@@ -2511,11 +2556,12 @@ See also: pos()
   nchildren(<object>)
  
   This function is similar to the @search command, except it returns
-  just a list of dbref numbers. It is computationally expensive, and
-  costs 100 pennies to perform. The function must have at least three
-  arguments.  Wizards can specify "all" or <player> for the <player>
-  field; mortals must use "me". If you do not want to restrict
-  something, use "none" for <class> and/or <restriction>.
+  just a list of dbref numbers. Some uses are computationally expensive,
+  and cost 100 pennies; see 'help @search' for details. The function must
+  have at least three arguments.  Wizards can specify "all" or <player>
+  for the <player> field; mortals must use "me" or a ZMP whose @lock/zone
+  they pass. If you do not want to restrict something, use "none" for
+  <class> and <restriction>.
 
   The possible <class>es and <restriction>s are the same as those
   accepted by @search. lsearch() can accept multiple class/restriction
@@ -2529,18 +2575,16 @@ See also: pos()
   nlsearch(...) and nchildren(...) return the count of results that
   would be returned by lsearch() or children() with the same args.
     
-  See 'help lsearch2' for more details.
+  Continued in 'help lsearch2'.
 & LSEARCH2
 & SEARCH2 
    
-  If <class> is one of the eval ones (EVAL, EEXITS, EROOMS, EOBJECTS
+  If <class> is one of the eval classes (EVAL, EEXITS, EROOMS, ETHINGS
   or EPLAYERS), note that any brackets, percent signs, or other
   special characters should be escaped, as the code in <restriction>
-  will be evaluated twice - Once as an argument to lsearch(), and then
-  again for each object looked at in the search.
-
-  <class> can be 'NONE' to make lsearch() act like a @search without a
-  class.
+  will be evaluated twice - once as an argument to lsearch(), and then
+  again for each object looked at in the search. Before the per-object
+  evaluation, the string "##" is replaced with the object dbref.
 
   lsearchr() is like an lsearch() run through revwords(). Results are
   returned from highest dbref to lowest.  search() is an alias for
@@ -2557,18 +2601,19 @@ See also: pos()
 & LSTATS()
 & STATS()
   lstats(<player>)
-  stats(<player>)
  
   This function returns the breakdown of objects in the database, in a
   format similar to "@stats". If <player> is "all", a breakdown is
   done for the entire database. Otherwise, the breakdown is returned
-  for that particular player. Only wizards can LSTATS() other players.
-  The list returned is in the format: <Total objects> <Rooms> <Exits>
-  <Things> <Players> <Garbage>
+  for that particular player.
+  
+  Only wizards and those with the Search power can LSTATS() other players.
+  The list returned is in the format: 
+  <Total objects> <Rooms> <Exits> <Things> <Players> <Garbage>
 
   stats() is an alias for lstats().
 & LT()
-  lt(<number1>, <number2>[, <numberN>, ...])
+  lt(<number1>, <number2>[, ..., <numberN>])
 
   Takes two or more numbers, and returns 1 if and only if each number
   is less than the number after it, and 0 otherwise.
@@ -2580,11 +2625,15 @@ See also: pos()
   1
   > th lt(1,3,2)
   0
+  
+See also: lte(), gt(), gte(), lnum()
 & LTE()
-  lte(<number1>, <number2>[, <numberN>, ...])
+  lte(<number1>, <number2>[, ..., <numberN>])
 
   Takes two or more numbers, and returns 1 if and only if each number
   is less than or equal to the number after it, and 0 otherwise.
+  
+See also: lt(), gt(), gte(), lnum()
 & LVCON()
   lvcon(<object>)
 
@@ -2592,7 +2641,7 @@ See also: pos()
   <object> and visible (non-dark). You must be in <object> or control
   it to use this function.
 
-See also: lcon()
+See also: lcon(), lvplayers(), lvthings(), lvexits()
 & LVEXITS()
   lvexits(<room>)
 
@@ -2600,19 +2649,23 @@ See also: lcon()
   from <room>. You must be in the room or control it to use this
   function.
 
-See also: lexits()
+See also: lexits(), lvcon(), lvplayers(), lvthings()
 & LVPLAYERS()
   lvplayers(<object>)
 
   This function returns the dbrefs of all connected and non-dark players
   in an object. You must be in the object or control it to use this 
   function.
+  
+See also: lplayers(), lvcon(), lvthings(), lvexits()
 & LVTHINGS()
   lvthings(<object>)
 
   This function returns the dbrefs of all non-dark things inside an
   object. You must be in the object or control it to use this
   function.
+  
+See also: lthings(), lvplayers(), lvcon(), lvexits()
 & LWHO()
 & LWHOID()
   lwho([<viewer>[, <status>]])
@@ -2635,30 +2688,30 @@ See also: lexits()
 
 See also: mwho(), nwho(), xwho()
 & MAP()
-  map([<object>/]<attribute>, <list>[,<delim>[, <osep>]])
+  map([<object>/]<attribute>, <list>[, <delim>[, <osep>]])
   
-  Maps a function onto a list.
- 
-  This function works much like ITER(). Each element of <list> has the
-  user-defined function of the first argument performed on it; the
-  element is passed to the function as %0, and its position in <list>
-  as %1. <delim> is used as the element delimiter; if it is not
-  specified, a space is used. The resulting output is delimited by
-  <osep>, if given, or else by the delimiter
- 
+  This function works much like ITER(). The given <attribute> is evaluated 
+  once for each element of <list>, and the results of the evaluations are
+  returned. For each evaluation, the current list element is passed to the
+  attribute as %0, and it's position in the list as %1. Elements of <list>
+  are separated by <delim>, or a space if none is given, and the results are
+  returned separated by <osep>, if given, or the delimiter otherwise.
+  
+  This is roughly equivilent to:
+  iter(<list>, ufun(<object>/<attribute>, %i0, inum(0)), <delim>, <osep>)
+  
   Examples:
-  
-    > &times_two me=[mul(%0,2)]
- 
-    > say [map(times_two, 5 4 3 2 1)]
-    You say, "10 8 6 4 2"
- 
-    > say [map(times_two,1;2;3;4;5,;)]
-    You say, "2;4;6;8;10"
+  > &times_two me=mul(%0,2)
 
-See also: anonymous attributes
+  > say map(times_two, 5 4 3 2 1)
+  You say, "10 8 6 4 2"
+ 
+  > say [map(times_two,1;2;3;4;5,;)]
+  You say, "2;4;6;8;10"
+
+See also: anonymous attributes, iter(), @dolist
 & MATCH()
-  match(<list>, <pattern>[,<delimiter>])
+  match(<list>, <pattern>[, <delimiter>])
 
   This function tests if the pattern matches an element of the list.
   The pattern can contain the wildcards * and ?.  ? matches to any one

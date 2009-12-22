@@ -75,6 +75,7 @@ Fixes:
  * fun_merge() was eating characters when ansi was present. Reported
    by Nammyung. Fixed. [GM]
  * Windows compile fixes.
+ * Math-y crashbug fixed. Reported by Ghost@M*U*S*H. [GM]
  * page/port didn't evaluate its arguments properly. Reported
    by adkins@drigon.com. [SW]
  * randword() with a single element list wasn't dealing correctly

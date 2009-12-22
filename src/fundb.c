@@ -595,7 +595,7 @@ FUNCTION(fun_rnum)
       safe_str(T(e_match), buff, bp);
       break;
     case AMBIGUOUS:
-      safe_str(T("#-1 AMBIGUOUS MATCH"), buff, bp);
+      safe_str("#-2", buff, bp);
       break;
     default:
       safe_dbref(thing, buff, bp);

@@ -291,9 +291,10 @@ unparse_uinteger(uintmax_t num)
 char *
 unparse_number(NVAL num)
 {
-  static char str[100];         /* Should be large enough for even the HUGE floats */
+  /* 100 is NOT large enough for even the huge floats */
+  static char str[1000];  /* Should be large enough for even the HUGE floats */
   char *p;
-  sprintf(str, "%.*f", FLOAT_PRECISION, num);
+  snprintf(str, 1000, "%.*f", FLOAT_PRECISION, num);
 
   if ((p = strchr(str, '.'))) {
     p += strlen(p);

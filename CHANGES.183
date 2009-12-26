@@ -72,6 +72,7 @@ Functions:
   * lmath() can now do lt, lte, gt, gte, eq and neq. Also, lt(), lte(),
     etc, can all take more than 2 arguments. [GM]
   * Anyone can now use ctime() on any object. [MG]
+  * locks() reported built-in locks as being user: locks. [MG]
 
 Fixes:
  * Help fixes by various folks.
@@ -105,6 +106,8 @@ Fixes:
  * Small bug fix in @search. [MG]
  * Built-in functions can be set FN_LOCALIZE to preserve %q-regs. [MG]
  * Refactoring of ufun(), ulocal(), u[l]default() and ulambda(). [MG]
+ * The "Not enough money to queue command" message tells you which object
+   was attempting to queue the command. Suggested by Daniel Powell. [MG]
 
 Tools:
  * New script in utils/ for searching change logs: grep-cl.pl [SW]

@@ -215,7 +215,7 @@ pay_queue(dbref player, const char *command)
     QUEUE_COST +
     (QUEUE_LOSS ? ((get_random32(0, QUEUE_LOSS - 1) == 0) ? 1 : 0) : 0);
   if (!quiet_payfor(player, estcost)) {
-    notify(Owner(player), T("Not enough money to queue command."));
+    notify_format(Owner(player), T("Not enough money to queue command for %s(#%d)."), Name(player), player);
     return 0;
   }
   if (!NoPay(player) && (estcost != QUEUE_COST) && Track_Money(Owner(player))) {

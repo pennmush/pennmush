@@ -1,0 +1,219 @@
+& 1.8.2p8
+Version 1.8.2 patchlevel 8                     Jan 01, 2008
+
+Minor changes:
+ * 'make versions' now provides some feedback.
+
+Fixes:
+ * width() and height() do not return 0 when set to invalid input.
+   By Talvo.
+ * Array underflow bug found by running under Valgrind.
+ * Crash bug when too many objects are nested. Reported by Paige, fixed
+   by Javelin and Intervis.
+
+& 1.8.2p7
+Version 1.8.2 patchlevel 7                     October 6, 2007
+
+Minor changes:
+  * nwho() now takes an optional viewer argument like lwho(). By Sketch.
+
+Fixes:
+  * Clarified the behavior of eval() and get_eval() in help. Suggested by
+    Talvo and Javelin.
+  * A failed db save no longer broadcasts a success message in addition to a
+    failure one. Reported by Cooee.
+  * The open database file wasn't getting closed on a failed save.
+  * Crash bug in sortkey(). Fix by Nathan Baum.
+  * Crash bug in pathological container cases reported by Paige@M*U*S*H
+    fixed by Javelin.
+  * 'help @desc' brings up @describe instead of @descformat.
+    Suggested by Nymeria.
+  * Removed mention of Win32 requiring a particular attribute
+    compression algorithm. Any will work, and always have.
+    Reported by Andrew Klein.
+  * Crash bug in @purge. Javelin.  
+
+& 1.8.2p6
+Version 1.8.2 patchlevel 6                       July 9, 2007
+
+Development team changes:
+  * After many years of valuable work, Talek has retired from
+    development.  
+
+Minor changes:
+  * Removed the gmalloc malloc option. [SW]
+  * KEEPALIVE flag makes the server send a telnet NOP after
+    a short period of inactivity; helps prevent timeouts from
+    NAT/router devices with a short timeout. [MUX]
+
+Fixes:
+  * Fixed assorted small memory leaks. [SW]
+  * Fix to fraction() when dealing with numbers that can't
+    be fractioned. Discovered by Ashen-Shugar. [GM]
+  * Fixed handling of telnet NOPs sent by clients. [SW]
+  * The OpenSSL random number pool wasn't getting adequately
+    initialized on systems without /dev/urandom [SW]
+  * Infinite loop in math code. Reported by Ashen-Sugar. [GM]
+  * mkvershlp.pl skips over emacs backup files.
+
+& 1.8.2p5
+Version 1.8.2 patchlevel 5                      June 13, 2007
+
+Minor changes:
+  * Assorted gcc warning fixes. [SW]
+
+Fixes:
+  * Cleaned up some unsafe signal handler functions. [SW]
+
+Help files:
+  * Mention examine lock in help lattr(). Talvo.
+
+& 1.8.2p4
+Version 1.8.2 patchlevel 4                      May 16, 2007
+
+Minor changes:
+  * speak() uses accented names. Sketch.
+  * config() no longer lists options that can't be set
+    with @config/set. Suggested by Trispis. [SW]
+  * 'page foo\=bar' pages the last person you paged. Fix by Nathan
+    Baum.
+  * Receipt of a SIGUSR1 (Causing a shutdown/reboot) is explictly
+    logged. Suggested by Interloper. [SW]
+  * @wipe reports the number of attributes deleted. [183]
+
+Fixes:
+  * You can no longer save objects slated to be destroyed
+    by using @set foo=!GOING (The help file for GOING now tells
+    the truth) Reported by Cooee. [SW] 
+  * Useless variable in real_unparse() removed. Reported by
+    Taladan. [SW]
+  * 'make portmsg' works, and portmsg.c rewritten to current
+    Penn standards. [SW]
+  * case() would replace #$ in the default argument, contrary
+    to the help file. Reported by Talvo. [SW]
+  * Memory leak in grep(). [SW]
+  * Quotes can be around the player name on the login screen
+    always, instead of just when player_name_spaces was
+    on. Suggested by Dan Widdis. [SW]
+  * '{think foo} bar' exhibited odd behavior. [GM]
+  * 'make test' wouldn't work right unless '.' was in you path.
+     Fix by Nathan Baum.
+  * stdin and stdout weren't getting closed, potentially causing
+    problems when trying to log out of a shell after starting
+    a mush. Reported by K Moon. [SW]
+  * NetBSD compile and general warning fixes. [SW]
+  * Favor difftime(3) over subtraction of time_t variables. [SW]
+  * Clarification of attribute trees in HELP @WIPE. Suggested by
+    Talvo.
+  * Loading a db with empty attributes used as the roots of
+    attribute trees didn't work if empty_attrs is set to no.
+    Reported by Kevin. [SW]
+  * Bugs in wiping attribute trees with attributes the wiper
+    doesn't have permission to delete fixed. [SW]
+ 
+& 1.8.2p3
+Version 1.8.2 patchlevel 3                      March 11, 2007
+
+Fixes:
+  * Unterminated buffer in sortkey() fixed. Reported by Balerion.
+    Patch by Javelin.
+  * Memory leaks in setunion() and revwords() fixed by Javelin.
+  * Crash bug in speak() fixed. Reported by Trinsec. Patch by Javelin.
+  * Crash bug in buy fixed. Reported by Amy. Patch by Javelin.
+  * If we should fail to clear a semaphore attribute for some
+    reason (e.g., it's the branch of an attribute tree), reset
+    the semaphore count on the attribute to 0. Patch by Javelin.
+  * iter() dealt badly with freeing buffers when CPU_LIMIT or
+    function_invocation_limit was hit. Found by Ashen-Shugar. [GM]
+  * @ps/all displayed the wrong  queue entry count for mortals.
+    Reported by Cheetah. [SW]
+  * @hook/override of say would get an extra leading " if that was
+    used instead of the literal say command. Reported by Tuxedo Ian.
+    [SW]
+  * Fixed a bug where speech seemed to come from the wrong 
+    object for nospoof information. Reported by Jules. [SW]
+  * The help entry for @poll failed to mention @poll/clear.
+    Reported by Cooee. [SW]
+
+& 1.8.2p2
+Version 1.8.2 patchlevel 2                      January 27, 2007
+
+Fixes:
+  * Vector functions with an empty vector didn't return anything.
+    Reported by Talvo. [SW]
+  * Several typos in server messages. Fixed by Sketch, Stoko.
+  * Help fixes by Malix, [GM], Talvo, Sketch, and others.
+  * Crash bug in lmath() fixed. [GM]
+  * Crash bug in list functions fixed. [GM]
+  * list2arr in C now removes markup. list2arr_ansi() was added. [GM]
+  * Compilation problems on IRIX and similar OSes. [SW]
+  * Matcher bug with multiple wildcards fixed. Reported by Ian. [SW]
+  * Garbled output of locks from examine. Reported by Intrevis. [SW].
+  * regraballi() couldn't use its output seperator argument. Reported
+    by Jules. [SW]
+  * Looking at an object used the looker, not the lookee, as the origin
+    of the name for @ahear/@aahear/@amhear. [SW]
+  * Fixed the distribution of random numbers with a huge range. Reported
+    by Luke. 
+
+& 1.8.2p1
+Version 1.8.2 patchlevel 1                      November 26, 2006
+
+Fixes:
+  * Corrected inadvertent breakage of null comparisons. Patched by
+    Javelin.
+  * Added overview since 1.8.0 to help 1.8.2p0. [EEH]
+
+
+& 1.8.2p0
+Version 1.8.2 patchlevel 0                      November 26, 2006
+
+Major Changes (since 1.8.0):
+  * Players may have multiple aliases.
+  * 'home' is now a standard command.
+  * Errors in matching switches to commands are ignored when the command
+    is hook/ignored or hook/overriden.
+  * @attrib/access no longer treats one-word flag lists that don't match
+    a single flag as a set of flag characters.
+  * pcre updated to 6.4.
+  * NT_TCP code has been removed from the server.
+  * The FIXED flag's restriction on 'home' has been moved to restrict.cnf.
+  * New commands: @edit/check, @function/preserve, @hook/list, @prompt,
+    @nsprompt, @list/locks, UNIMPLEMENTED_COMMAND, PROMPT_NEWLINES,
+    @poll/clear.
+  * New functions: alias, fullalias, attrib_set, sortkey, namegrab/all,
+    ns/prompt, textentries, cdesc, cusers, cmsgs, cbuffer, cstatus,
+    clflags, numversion, nl/nsearch, nchildren, decompose, mapsql,
+    wildgrep/i, ordinal, ulambda, speak, unique, nextdbref, namelist,
+    crecall, l/m/x/xmwhoid, stringsecs
+  * New attributes: invformat, mailforwardlist, mailfilter
+  * New substitutions: %+, %  (percent-space), %i0-%i9, %u
+  * New locks: mailforward, take
+  * New behaviors: @flag/alias, @attribute/access, flip(), reverse(),
+    lsearch(), extract(), center(), setq(), setr(), page, align(),
+    regedit(), delete(), @search, @pemit/list, @poll, width(), height(),
+    locate(), @chan/recall, insert(), default(), @conformat, link().
+  * New flags: loud, track_money.
+  * New powers: pueblo_send, many_attribs.
+  * New attribute flags: aahear, amhear.
+  * New config directives: channel_flags.
+  * New function restriction "localize" causes q-registers to be
+    saved and restored around the function as if localize() or
+    ulocal() were used; handy for @functions.
+  * New DBREFLIST^<attrib> lock key checks to see if the enactor
+    appears in a list of dbrefs/objids stored on an attribute of
+    the object.
+  * The LIGHT flag now overrides the DARK flag consistently.
+
+Minor Changes (since 1.8.1):
+ * decompose() now properly handles all manner of spaces, as well as
+   replacing 5 or more spaces with [space(<count>)]. Report by Malix. [GM]
+
+Fixes (since 1.8.1):
+ * Fix crash bug in decompose(). Report by Malix.
+ * The mush can listen to ports above 32000. Suggested by Nathan Baum.
+ * Fix the mix() bug that prepends the separator to the list. [GM]
+ * Win32 experienced erratic time behavior when compiled with MSVC++ 8
+   or higher. Reported by Intrevis@M*U*S*H.
+ * Win32 project and readme files for MSVC++ 6 and .Net updated. [EEH]
+ * Help fixes by Kevin@M*U*S*H.

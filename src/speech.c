@@ -543,7 +543,7 @@ do_pemit(dbref player, const char *arg1, const char *arg2, int flags)
   int silent, nospoof;
 
   if (!arg2 || !*arg2)
-  	return;
+    return;
 
   silent = (flags & PEMIT_SILENT) ? 1 : 0;
   nospoof = (flags & PEMIT_SPOOF) ? 0 : 1;
@@ -827,7 +827,7 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
     override = 0;
   }
 
-  start = (const char **)&head;
+  start = (const char **) &head;
   while (head && *head && (gcount < 99)) {
     current = next_in_list(start);
     target = lookup_player(current);
@@ -1402,7 +1402,7 @@ do_lemit(dbref player, const char *tbuf1, int flags)
   if (!Mobile(player))
     return;
 
-	room = absolute_room(player);
+  room = absolute_room(player);
   if (!GoodObject(room) || !IsRoom(room)) {
     notify(player, T("Too many containers."));
     return;

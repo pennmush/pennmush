@@ -1369,11 +1369,11 @@ config_file_startup(const char *conf, int restrictions)
 
   while ((p = fgets(tbuf1, BUFFER_LEN, fp)) != NULL) {
 
-    while (*p && isspace((unsigned char)*p))
+    while (*p && isspace((unsigned char) *p))
       p++;
 
     if (*p == '\0' || *p == '#')
-      continue; /* comment or blank line */
+      continue;                 /* comment or blank line */
 
     /* this is a real line. Strip the end-of-line and characters following it.
      * Split the line into command and argument portions. If it exists,

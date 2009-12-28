@@ -292,7 +292,7 @@ char *
 unparse_number(NVAL num)
 {
   /* 100 is NOT large enough for even the huge floats */
-  static char str[1000];  /* Should be large enough for even the HUGE floats */
+  static char str[1000];        /* Should be large enough for even the HUGE floats */
   char *p;
   snprintf(str, 1000, "%.*f", FLOAT_PRECISION, num);
 

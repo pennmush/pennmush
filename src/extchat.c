@@ -2913,7 +2913,7 @@ FUNCTION(fun_cwho)
     who = CUdbref(u);
     show = 1;
     if (!IsThing(who) && matchcond != 2) {
-	  if (matchcond)
+      if (matchcond)
         show = !Connected(who) || (Chanuser_Hide(u) && !priv);
       else
         show = Connected(who) && (!Chanuser_Hide(u) || priv);

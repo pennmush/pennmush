@@ -70,42 +70,43 @@ Functions:
   * locks() reported built-in locks as being user: locks. [MG]
 
 Fixes:
- * Help fixes by various folks.
- * lsearch() with invalid syntax was failing to report it as such, causing
-   confusion when lsearch(me,exits) returned the same as lsearch(me). [GM]
- * fun_merge() was eating characters when ansi was present. Reported
-   by Nammyung. Fixed. [GM]
- * Windows compile fixes.
- * Math-y crashbug fixed. Reported by Ghost@M*U*S*H. [GM]
- * page/port didn't evaluate its arguments properly. Reported
-   by adkins@drigon.com. [SW]
- * randword() with a single element list wasn't dealing correctly
-   with extra spaces. Reported by Minion. [SW]
- * @listen/^-listens should now be triggered with the object being
-   spoofed as %#, not the object doing the spoofing, when @message/spoof
-   (and @pemit/spoof, etc) are used. Reported by Mercutio@M*U*S*H. [MG]
- * Fixed some minor type-related warnings when compiling on cygwin. [MG]
- * @functions which were set "localize" would report being set "Userfn"
-   as well, and functions set "Userfn" weren't reported as such. [MG]
- * Objects could be set with flags which weren't valid for their object
-   type, if such flags were in the <type>_flags config option. Found by
-   Kitai. [MG]
+  * Help fixes by various folks.
+  * lsearch() with invalid syntax was failing to report it as such, causing
+    confusion when lsearch(me,exits) returned the same as lsearch(me). [GM]
+  * fun_merge() was eating characters when ansi was present. Reported
+    by Nammyung. Fixed. [GM]
+  * Windows compile fixes.
+  * Math-y crashbug fixed. Reported by Ghost@M*U*S*H. [GM]
+  * page/port didn't evaluate its arguments properly. Reported
+    by adkins@drigon.com. [SW]
+  * randword() with a single element list wasn't dealing correctly
+    with extra spaces. Reported by Minion. [SW]
+  * @listen/^-listens should now be triggered with the object being
+    spoofed as %#, not the object doing the spoofing, when @message/spoof
+    (and @pemit/spoof, etc) are used. Reported by Mercutio@M*U*S*H. [MG]
+  * Fixed some minor type-related warnings when compiling on cygwin. [MG]
+  * @functions which were set "localize" would report being set "Userfn"
+    as well, and functions set "Userfn" weren't reported as such. [MG]
+  * Objects could be set with flags which weren't valid for their object
+    type, if such flags were in the <type>_flags config option. Found by
+    Kitai. [MG]
+  * Crashbug in the command parser fixed. Found by Freon, patch by Javelin.
    
  Minor changes:
- * @listen/^-listens now carry over ANSI. Requested by Mercutio. [MG]
- * @adisconnect now has %5, which is true if the disconnecting descriptor
-   was @hide. Suggested by Minion@M*U*S*H [GM]
- * @pemit <name>= would show nospoof info if <name> was set Nospoof. Now,
-   it does nothing at all. Reported by Minion. [MG]
- * The connect screen can now contain ANSI color. Patch by Mercutio.
- * Small bug fix in @search. [MG]
- * Built-in functions can be set FN_LOCALIZE to preserve %q-regs. [MG]
- * Refactoring of ufun(), ulocal(), u[l]default() and ulambda(). [MG]
- * The "Not enough money to queue command" message tells you which object
-   was attempting to queue the command. Suggested by Daniel Powell. [MG]
+  * @listen/^-listens now carry over ANSI. Requested by Mercutio. [MG]
+  * @adisconnect now has %5, which is true if the disconnecting descriptor
+    was @hide. Suggested by Minion@M*U*S*H [GM]
+  * @pemit <name>= would show nospoof info if <name> was set Nospoof. Now,
+    it does nothing at all. Reported by Minion. [MG]
+  * The connect screen can now contain ANSI color. Patch by Mercutio.
+  * Small bug fix in @search. [MG]
+  * Built-in functions can be set FN_LOCALIZE to preserve %q-regs. [MG]
+  * Refactoring of ufun(), ulocal(), u[l]default() and ulambda(). [MG]
+  * The "Not enough money to queue command" message tells you which object
+    was attempting to queue the command. Suggested by Daniel Powell. [MG]
 
 Tools:
- * New script in utils/ for searching change logs: grep-cl.pl [SW]
+  * New script in utils/ for searching change logs: grep-cl.pl [SW]
 
 & 1.8.3p10
 Version 1.8.3 patchlevel 10                     Aug 24, 2009

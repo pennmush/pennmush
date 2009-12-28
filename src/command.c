@@ -1306,7 +1306,7 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
     int lsa_index;
     if (lsa[1]) {
       safe_str(lsa[1], commandraw, &c2);
-      for (lsa_index = 2; lsa[lsa_index]; lsa_index++) {
+      for (lsa_index = 2; (lsa_index < MAX_ARG) && lsa[lsa_index]; lsa_index++) {
         safe_chr(',', commandraw, &c2);
         safe_str(lsa[lsa_index], commandraw, &c2);
       }
@@ -1323,7 +1323,7 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
          * starts at 1. */
         if (rsa[1]) {
           safe_str(rsa[1], commandraw, &c2);
-          for (rsa_index = 2; rsa[rsa_index]; rsa_index++) {
+          for (rsa_index = 2; (rsa_index < MAX_ARG) && rsa[rsa_index]; rsa_index++) {
             safe_chr(',', commandraw, &c2);
             safe_str(rsa[rsa_index], commandraw, &c2);
           }

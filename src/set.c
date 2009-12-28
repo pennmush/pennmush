@@ -716,7 +716,7 @@ do_cpattr(dbref player, char *oldpair, char **newpair, int move, int noflagcopy)
     }
   }
 
-  free(text);        /* safe_uncompress malloc()s memory */
+  free(text);                   /* safe_uncompress malloc()s memory */
   if (copies) {
     notify_format(player, T("Attribute %s (%d copies)"),
                   (move ? T("moved") : T("copied")), copies);

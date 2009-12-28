@@ -389,7 +389,8 @@ pat_list_nodes(patricia *node, FILE * fp)
 
   fprintf(fp,
           "node%u [label=\"{ <key> key = 0b%s (%u) | bit = %d | { <b0> 0 | <b1> 1 } }\", ",
-          (unsigned int) node->key, tmpbuf, (unsigned int) node->key, node->bit);
+          (unsigned int) node->key, tmpbuf, (unsigned int) node->key,
+          node->bit);
   if (node->links[0]->bit > node->bit && node->links[1]->bit > node->bit)
     fputs("fillcolor=1", fp);
   else if (node->links[0]->bit <= node->bit && node->links[1]->bit <= node->bit)
@@ -418,8 +419,8 @@ pat_list_links(patricia *node, FILE * fp)
 
   for (i = 0; i < 2; i++) {
     if (node->links[i]) {
-      fprintf(fp, "node%u:b%d -> node%u:key [%s];\n", (unsigned int) node->key, i,
-              (unsigned int) node->links[i]->key,
+      fprintf(fp, "node%u:b%d -> node%u:key [%s];\n", (unsigned int) node->key,
+              i, (unsigned int) node->links[i]->key,
               edge_styles[node->links[i]->bit > node->bit]);
       if (node->links[i]->bit > node->bit)
         pat_list_links(node->links[i], fp);

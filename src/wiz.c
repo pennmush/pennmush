@@ -1206,14 +1206,14 @@ do_search(dbref player, const char *arg1, char **arg3)
     myargs[0] = arg2;
     myargs[1] = arg3[1];
     for (i = 2; i < INT_MAX && (arg3[i] != NULL); i++) {
-			if ((s = strchr(arg3[i], '='))) {
-				*s++ = '\0';
-				myargs[j++] = arg3[i];
-				myargs[j++] = s;
-			} else {
-				myargs[j++] = arg3[i];
-			}
-		}
+      if ((s = strchr(arg3[i], '='))) {
+        *s++ = '\0';
+        myargs[j++] = arg3[i];
+        myargs[j++] = s;
+      } else {
+        myargs[j++] = arg3[i];
+      }
+    }
     nresults = raw_search(player, tbuf, j, myargs, &results, NULL);
   }
 
@@ -1766,7 +1766,6 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
     notify(player, T("Unknown owner."));
     return -1;
   }
-
   // An odd number of search classes is invalid.
   if (nargs % 2) {
     notify(player, T("Invalid search class+restriction format."));

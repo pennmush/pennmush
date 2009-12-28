@@ -718,7 +718,7 @@ COMMAND(cmd_message)
                                        || Can_Nspemit(player)))) {
     cause = player;
   } else {
-	orator = cause;
+    orator = cause;
   }
 
   for (numargs = 1; args_right[numargs] && numargs < 13; numargs++) ;
@@ -827,10 +827,10 @@ COMMAND(cmd_pemit)
   else
     flags = SILENT_PEMIT ? PEMIT_SILENT : 0;
 
-	if(SW_ISSET(sw, SWITCH_PORT)) {
-		do_pemit_port(player, arg_left, arg_right, flags);
-		return;
-	}
+  if (SW_ISSET(sw, SWITCH_PORT)) {
+    do_pemit_port(player, arg_left, arg_right, flags);
+    return;
+  }
 
   SPOOF(player, cause, sw);
 
@@ -1308,7 +1308,8 @@ COMMAND(cmd_leave)
 COMMAND(cmd_page)
 {
   if (SW_ISSET(sw, SWITCH_PORT))
-    do_page_port(player, cause, arg_left, arg_right, !SW_ISSET(sw, SWITCH_NOEVAL));
+    do_page_port(player, cause, arg_left, arg_right,
+                 !SW_ISSET(sw, SWITCH_NOEVAL));
   else
     do_page(player, arg_left, arg_right, cause, SW_ISSET(sw, SWITCH_NOEVAL),
             !(SW_ISSET(sw, SWITCH_BLIND) ||
@@ -1390,20 +1391,21 @@ COMMAND(cmd_warn_on_missing)
 
 COMMAND(cmd_who_doing)
 {
-	do_who_mortal(player, arg_left);
+  do_who_mortal(player, arg_left);
 }
 
-COMMAND(cmd_session) {
-	if (Priv_Who(player))
-		do_who_session(player, arg_left);
-	else
-		do_who_mortal(player, arg_left);
+COMMAND(cmd_session)
+{
+  if (Priv_Who(player))
+    do_who_session(player, arg_left);
+  else
+    do_who_mortal(player, arg_left);
 }
 
-COMMAND(cmd_who) {
-	if (Priv_Who(player))
-		do_who_admin(player, arg_left);
-	else
-		do_who_mortal(player, arg_left);
+COMMAND(cmd_who)
+{
+  if (Priv_Who(player))
+    do_who_admin(player, arg_left);
+  else
+    do_who_mortal(player, arg_left);
 }
-

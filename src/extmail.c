@@ -548,8 +548,8 @@ do_mail_read(dbref player, char *msglist)
           notify_noenter(player, open_tag("SAMP"));
           snprintf(folderheader, BUFFER_LEN,
                    "%c%cA XCH_HINT=\"List messages in this folder\" XCH_CMD=\"@mail/list %d:1-\"%c%s%c%c/A%c",
-                   TAG_START, MARKUP_HTML, (int) Folder(mp), TAG_END, T("Folder:"),
-                   TAG_START, MARKUP_HTML, TAG_END);
+                   TAG_START, MARKUP_HTML, (int) Folder(mp), TAG_END,
+                   T("Folder:"), TAG_START, MARKUP_HTML, TAG_END);
         } else
           mush_strncpy(folderheader, T("Folder:"), BUFFER_LEN);
         notify(player, DASH_LINE);
@@ -624,8 +624,9 @@ do_mail_list(dbref player, const char *msglist)
           notify_noenter(player,
                          tprintf
                          ("%c%cA XCH_CMD=\"@mail/read %d:%d\" XCH_HINT=\"Read message %d in folder %d\"%c",
-                          TAG_START, MARKUP_HTML, (int) Folder(mp), i[Folder(mp)],
-                          i[Folder(mp)], (int) Folder(mp), TAG_END));
+                          TAG_START, MARKUP_HTML, (int) Folder(mp),
+                          i[Folder(mp)], i[Folder(mp)], (int) Folder(mp),
+                          TAG_END));
         strcpy(subj, chopstr(get_subject(mp), 28));
         strcpy(sender, chopstr(get_sender(mp, 0), 12));
         notify_format(player, "[%s] %2d:%-3d %c%-12s  %-*s %s",

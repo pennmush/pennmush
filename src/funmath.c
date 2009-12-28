@@ -2457,23 +2457,28 @@ MATH_FUNC(math_xor)
     safe_chr('0', buff, bp);
 }
 
-MATH_FUNC(math_lt) {
+MATH_FUNC(math_lt)
+{
   lmathcomp(ptr, nptr, buff, bp, 0, 0);
 }
 
-MATH_FUNC(math_gt) {
+MATH_FUNC(math_gt)
+{
   lmathcomp(ptr, nptr, buff, bp, 0, 1);
 }
 
-MATH_FUNC(math_lte) {
+MATH_FUNC(math_lte)
+{
   lmathcomp(ptr, nptr, buff, bp, 1, 0);
 }
 
-MATH_FUNC(math_gte) {
+MATH_FUNC(math_gte)
+{
   lmathcomp(ptr, nptr, buff, bp, 1, 1);
 }
 
-MATH_FUNC(math_eq) {
+MATH_FUNC(math_eq)
+{
   // Yes, I'm evil. :D
   lmathcomp(ptr, nptr, buff, bp, 1, -1);
 }
@@ -2504,7 +2509,8 @@ lmathcomp(char **ptr, int nptr, char *buff, char **bp, int eqokay, int isgt)
     next = parse_number(ptr[n]);
     // Is eqok?
     if (EQ(next, prev)) {
-      if (eqokay) continue;
+      if (eqokay)
+        continue;
       safe_chr('0', buff, bp);
       return;
     }
@@ -2517,7 +2523,8 @@ lmathcomp(char **ptr, int nptr, char *buff, char **bp, int eqokay, int isgt)
   safe_chr('1', buff, bp);
 }
 
-MATH_FUNC(math_neq) {
+MATH_FUNC(math_neq)
+{
   NVAL prev = 0;
   NVAL next = 0;
   int n;
@@ -2538,7 +2545,7 @@ MATH_FUNC(math_neq) {
       return;
     }
     next = parse_number(ptr[n]);
-    if (!EQ(next,prev)) {
+    if (!EQ(next, prev)) {
       safe_chr('1', buff, bp);
       return;
     }

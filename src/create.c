@@ -132,10 +132,10 @@ do_real_open(dbref player, const char *direction, const char *linkto,
     flaglist = trim_space_sep(flagbuff, ' ');
     if (*flaglist != '\0') {
       while (flaglist) {
-  	    flagname = split_token(&flaglist, ' ');
-  	    twiddle_flag_internal("FLAG", new_exit, flagname, 0);
+        flagname = split_token(&flaglist, ' ');
+        twiddle_flag_internal("FLAG", new_exit, flagname, 0);
       }
-  	}
+    }
 
 
     /* link it in */
@@ -413,10 +413,10 @@ do_dig(dbref player, const char *name, char **argv, int tport)
     flaglist = trim_space_sep(flagbuff, ' ');
     if (*flaglist != '\0') {
       while (flaglist) {
-  	    flagname = split_token(&flaglist, ' ');
-  	    twiddle_flag_internal("FLAG", room, flagname, 0);
+        flagname = split_token(&flaglist, ' ');
+        twiddle_flag_internal("FLAG", room, flagname, 0);
       }
-  	}
+    }
 
     notify_format(player, T("%s created with room number %d."), name, room);
     if (argv[1] && *argv[1]) {
@@ -506,10 +506,10 @@ do_create(dbref player, char *name, int cost, char *newdbref)
     flaglist = trim_space_sep(flagbuff, ' ');
     if (*flaglist != '\0') {
       while (flaglist) {
-  	    flagname = split_token(&flaglist, ' ');
-  	    twiddle_flag_internal("FLAG", thing, flagname, 0);
+        flagname = split_token(&flaglist, ' ');
+        twiddle_flag_internal("FLAG", thing, flagname, 0);
       }
-  	}
+    }
 
 
     /* home is here (if we can link to it) or player's home */

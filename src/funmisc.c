@@ -79,9 +79,9 @@ FUNCTION(fun_pemit)
   if (ns)
     flags |= PEMIT_SPOOF;
   if (is_strict_integer(args[0]))
-  	do_pemit_port(executor, args[0], args[1], flags);
+    do_pemit_port(executor, args[0], args[1], flags);
   else
-  	do_pemit_list(executor, args[0], args[1], flags);
+    do_pemit_list(executor, args[0], args[1], flags);
   orator = saved_orator;
 }
 

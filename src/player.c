@@ -387,10 +387,10 @@ make_player(const char *name, const char *password, const char *host,
   flaglist = trim_space_sep(flagbuff, ' ');
   if (*flaglist != '\0') {
     while (flaglist) {
-	    flagname = split_token(&flaglist, ' ');
-	    twiddle_flag_internal("FLAG", player, flagname, 0);
+      flagname = split_token(&flaglist, ' ');
+      twiddle_flag_internal("FLAG", player, flagname, 0);
     }
-	}
+  }
   if (Suspect_Site(host, player) || Suspect_Site(ip, player))
     set_flag_internal(player, "SUSPECT");
   set_initial_warnings(player);

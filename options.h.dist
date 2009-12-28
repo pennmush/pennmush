@@ -1,25 +1,26 @@
-/* options.h */
+/* options.h -*- c -*- */
 
 #ifndef __OPTIONS_H
 #define __OPTIONS_H
 
 /* *********** READ THIS BEFORE YOU MODIFY ANYTHING IN THIS FILE *********** */
-/* WARNING:  All options in this file have the ability to significantly change
- * the look and feel and sometimes even internal behavior of the program.
- * The ones shipped as the default have been extensively tested.  Others have
- * been tested to a (usually) lesser degree, and therefore might still have
- * latent bugs.  If you change any of them from the default, PLEASE check
- * to make sure that you know the full effects of what you are changing. And
- * if you encounter any errors or compile time problems with any options
- * other than the default settings, PLEASE inform 
- * pennmush-bugs@pennmush.org
- * immediately, so that they can be fixed.  The same goes for any other bug
- * you might find in using this software.  All efforts will be made to fix
- * errors encountered, but unless given a FULL description of the error,
- * (IE telling me that logging in doesn't work is insufficient.  telling
- * me that logging in with WCREAT undefined still gives you the registration
- * message is a lot better.  MOST effective would be a full dbx trace, or a
- * patch for the bug.)  Enjoy using the program.
+/* WARNING: All options in this file have the ability to significantly
+ * change the look and feel and sometimes even internal behavior of
+ * the program.  The ones shipped as the default have been extensively
+ * tested.  Others have been tested to a (usually) lesser degree, and
+ * therefore might still have latent bugs.  If you change any of them
+ * from the default, PLEASE check to make sure that you know the full
+ * effects of what you are changing. And if you encounter any errors
+ * or compile time problems with any options other than the default
+ * settings, PLEASE file a ticket at
+ * http://code.google.com/p/pennmush/issues/list immediately, so that
+ * they can be fixed.  The same goes for any other bug you might find
+ * in using this software.  All efforts will be made to fix errors
+ * encountered, but unless given a FULL description of the error, (IE
+ * telling me that logging in doesn't work is insufficient.  telling
+ * me that logging in with WCREAT undefined still gives you the
+ * registration message is a lot better.  MOST effective would be a
+ * full gdb trace, or a patch for the bug.)  Enjoy using the program.
  */
 /***************************************************************************/
 

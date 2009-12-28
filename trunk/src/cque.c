@@ -215,7 +215,9 @@ pay_queue(dbref player, const char *command)
     QUEUE_COST +
     (QUEUE_LOSS ? ((get_random32(0, QUEUE_LOSS - 1) == 0) ? 1 : 0) : 0);
   if (!quiet_payfor(player, estcost)) {
-    notify_format(Owner(player), T("Not enough money to queue command for %s(#%d)."), Name(player), player);
+    notify_format(Owner(player),
+                  T("Not enough money to queue command for %s(#%d)."),
+                  Name(player), player);
     return 0;
   }
   if (!NoPay(player) && (estcost != QUEUE_COST) && Track_Money(Owner(player))) {
@@ -1067,7 +1069,8 @@ do_waitpid(dbref player, const char *pidstr, const char *timestr, bool until)
     }
   }
 
-  notify_format(player, T("Queue entry with pid %u updated."), (unsigned int) pid);
+  notify_format(player, T("Queue entry with pid %u updated."),
+                (unsigned int) pid);
 }
 
 FUNCTION(fun_pidinfo)
@@ -1246,21 +1249,21 @@ show_queue(dbref player, dbref victim, int q_type, int q_quiet,
           continue;
         switch (q_type) {
         case 1:                /* wait queue */
-          notify_format(player, "(Pid: %u) [%ld]%s: %s", (unsigned int) tmp->pid,
-                        (long) difftime(tmp->left, mudtime),
+          notify_format(player, "(Pid: %u) [%ld]%s: %s",
+                        (unsigned int) tmp->pid, (long) difftime(tmp->left,
+                                                                 mudtime),
                         unparse_object(player, tmp->player), tmp->comm);
           break;
         case 2:                /* semaphore queue */
           if (tmp->left != 0) {
-            notify_format(player, "(Pid: %u) [#%d/%s/%ld]%s: %s", (unsigned int) tmp->pid,
-                          tmp->sem, tmp->semattr, (long) difftime(tmp->left,
-                                                                  mudtime),
+            notify_format(player, "(Pid: %u) [#%d/%s/%ld]%s: %s",
+                          (unsigned int) tmp->pid, tmp->sem, tmp->semattr,
+                          (long) difftime(tmp->left, mudtime),
                           unparse_object(player, tmp->player), tmp->comm);
           } else {
-            notify_format(player, "(Pid: %u) [#%d/%s]%s: %s", (unsigned int) tmp->pid,
-                          tmp->sem, tmp->semattr, unparse_object(player,
-                                                                 tmp->player),
-                          tmp->comm);
+            notify_format(player, "(Pid: %u) [#%d/%s]%s: %s",
+                          (unsigned int) tmp->pid, tmp->sem, tmp->semattr,
+                          unparse_object(player, tmp->player), tmp->comm);
           }
           break;
         default:               /* player or object queue */
@@ -1528,7 +1531,8 @@ do_haltpid(dbref player, const char *arg1)
     free_qentry(q);
   }
 
-  notify_format(player, T("Queue entry with pid %u halted."), (unsigned int) pid);
+  notify_format(player, T("Queue entry with pid %u halted."),
+                (unsigned int) pid);
 }
 
 

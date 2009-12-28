@@ -699,7 +699,7 @@ absolute_room(dbref it)
   if (!GoodObject(it))
     return NOTHING;
   if (IsRoom(it))
-  	return it;
+    return it;
   room = IsExit(it) ? Home(it) : Location(it);
   if (!GoodObject(room))
     return NOTHING;

@@ -1239,7 +1239,7 @@ FUNCTION(fun_lnum)
   static NVAL cend[CACHE_SIZE];
   static char csep[CACHE_SIZE][BUFFER_LEN];
   static char cresult[CACHE_SIZE][BUFFER_LEN];
-  static int  cstep[CACHE_SIZE];
+  static int cstep[CACHE_SIZE];
   static int cpos;
   char *cp;
 
@@ -2622,9 +2622,7 @@ FUNCTION(fun_table)
   }
   if (nargs > 1) {
     fwidth = args[1];
-    if ((*fwidth) == '<' ||
-        (*fwidth) == '>' ||
-        (*fwidth) == '-') {
+    if ((*fwidth) == '<' || (*fwidth) == '>' || (*fwidth) == '-') {
       aligntype = *(fwidth++);
     }
     if (!is_integer(fwidth)) {

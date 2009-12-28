@@ -179,7 +179,8 @@ FUNCTION(fun_ufun)
   char rbuff[BUFFER_LEN];
   ufun_attrib ufun;
 
-  if (!fetch_ufun_attrib(args[0], executor, &ufun, (!strcmp(called_as, "ULAMBDA")))) {
+  if (!fetch_ufun_attrib
+      (args[0], executor, &ufun, (!strcmp(called_as, "ULAMBDA")))) {
     safe_str(T(ufun.errmess), buff, bp);
     return;
   }

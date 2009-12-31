@@ -1259,7 +1259,7 @@ do_channel(dbref player, const char *name, const char *target, const char *com)
       if (!Channel_Quiet(chan) && !DarkLegal(victim)) {
         channel_send(chan, victim,
                      CB_CHECKQUIET | CB_PRESENCE | CB_POSE,
-                     T("has joined this channel"));
+                     T("has joined this channel."));
       }
     } else {
       notify_format(player,
@@ -1284,7 +1284,7 @@ do_channel(dbref player, const char *name, const char *target, const char *com)
       if (!Channel_Quiet(chan) && !DarkLegal(victim)) {
         channel_send(chan, victim,
                      CB_CHECKQUIET | CB_PRESENCE | CB_POSE,
-                     T("has left this channel"));
+                     T("has left this channel."));
       }
       notify_format(victim,
                     T("CHAT: %s removes you from channel <%s>."),
@@ -1805,7 +1805,7 @@ do_chan_admin(dbref player, char *name, const char *perms, int flag)
     remove_channel(chan);
     strcpy(ChanName(chan), perms);
     insert_channel(&chan);
-    snprintf(announcebuff, BUFFER_LEN, T("has renamed %s to %s"),
+    snprintf(announcebuff, BUFFER_LEN, T("has renamed %s to %s."),
              old, ChanName(chan));
     channel_send(chan, player,
                  CB_CHECKQUIET | CB_PRESENCE | CB_POSE, announcebuff);

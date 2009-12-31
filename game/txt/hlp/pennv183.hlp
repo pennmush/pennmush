@@ -91,6 +91,8 @@ Fixes:
     type, if such flags were in the <type>_flags config option. Found by
     Kitai. [MG]
   * Crashbug in the command parser fixed. Found by Freon, patch by Javelin.
+  * Added some missing punctuation in channel messages. Reported by Stoko.
+
    
  Minor changes:
   * @listen/^-listens now carry over ANSI. Requested by Mercutio. [MG]

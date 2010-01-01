@@ -1,0 +1,84 @@
+How to compile PennMUSH 1.7.x under Windows (MinGW32 and MSys)
+--------------------------------------------------------------
+by Ervin Hearn III <noltar@korongil.net>
+
+Last update: Monday, 28 January 2008
+
+A note on install locations:
+The entire process goes much more smoothly if you install
+all of the required packages in directories that do not have
+spaces anywhere in the path name. So Program Files is not
+the best location.
+
+
+ 1. Download and install the MinGW GNU Toolsets for Windows
+    from http://www.mingw.org/
+
+ 2. Download and install ActiveState Perl for Windows from
+    http://www.activestate.com/ActivePerl/
+
+ 3. Download and install the MSys package for Windows from
+    http://www.mingw.org/ This should be installed after
+    you have installed MinGW and ActivePerl
+
+ 4. Make certain that your MinGW and Perl locations are
+    properly moutned in your MSys /etc/fstab
+
+    An example fstab content is:
+
+    #Win32_Path		Mount_Point
+    c:/mingw		/mingw
+    c:/perl		/perl
+
+ 5. `cd' to the desired install location with the .tar.gz file
+    and unpack the downloaded <version> with:
+
+    tar xzf pennmush-<version>.tar.gz
+
+ 6. cd pennmush then type:
+
+    ./configure 
+
+ 7. Now type:
+
+    cp options.h.dist options.h
+
+    and edit options.h as desired, keeping the following
+    suggestions in mind:
+
+    a. Use MALLOC_PACKAGE 0
+    b. Do *NOT* define INFO_SLAVE 
+
+    Hopefully the last be changed in the future.
+    Also, 'make update' does not currently work correctly with
+    Msys (due to Msys problems), and this will also hopefully get
+    worked around in the future. 
+
+ 8. Also, cp game/mushcnf.dist game/mush.cnf and edit.
+
+ 9. Do a `make install' This will build the necessary files and
+    install the necessary symbolic links. You can ignore the
+    warnings regarding the redefinition of BYTE and LONG which
+    are given for funcrypt.c mycrypt.c and/or shs.c.
+
+10. Read game/README and follow those instructions. For MinGW
+    you will also need to edit game/restart and explicitly
+    set the GAMEDIR variable to your installation path, an
+    example is:
+    
+    /home/noltar/pennmush/game
+
+
+
+Raevnos has had some success cross-compiling a win32 pennmush on linux
+using mingw32. Briefly:
+
+ * Install the mingw32 cross compilation tools using your package
+   manager.
+ * Configure like so (The name of the cross-compiler might vary):
+   % CC=i486-mingw32-gcc ./configure --host --without-ssl --without-mysql \
+     			 --without-sqlite3 --without-postgresql --without-pcre
+ * Add -lwsock32 to the LIBS= line in Makefile
+ * make update; make netmud
+ * cp src/netmud netmush.exe
+ * Use netmush.exe and the game/ directory on a Windows computer like usual.

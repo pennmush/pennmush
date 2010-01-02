@@ -98,28 +98,15 @@ These '@' commands are only usable by wizards or privileged players:
   set attributes to contain unevaluated code.
 
 & @@
+  @@ [<text>]
  
-  The "@@" command is a special kind of command; it signals the start
-  of a comment. The comment lasts until a semi-colon is found, just
-  like other MUSH programming statements terminate with a semi-colon.
-  It cannot be put into the middle of a statement, like
-  @va me = $testing:@emit Test. @@ Just a test @@; @vb me=Testing.
-  That will result in the object emitting "Test. @@ Just a test. @@"
-  The correct usage is to make the comment a statement by itself:
-  @va me = $testing:@emit Test.; @@ Just a test @@; @vb me=Testing.
- 
-  It is not necessary to use a closing '@@', but doing so makes the
-  comment stand out much more clearly. A space between the first
-  '@@' and the word following it is necessary.
-& @aahear
-  @aahear <object> = <action list>
-
-  An aahear on an object is activated whenever the object's listen pattern 
-  is matched by anything done/said by either anything else in the room OR 
-  the object itself. In contrast, an ahear on an object cannot be activated 
-  by anything the object itself does.
-
-See also: @listen, @ahear, @amhear, LISTENING
+  The "@@" command does nothing; it does not evaluate its input or show
+  any messages to the executor. It can be used for commenting code.
+  
+  Example:
+  > @va me=$testing: @emit Test ; @@ Just a test ; @vb me=Testing
+  
+See also: @@(), null()
 & @aclone
   @aclone <object> = <action list>
 
@@ -134,157 +121,209 @@ See also: @clone, @create, ACTION LISTS
 & @aconnect
   @aconnect <object> = <action list>
 
-  Sets the actions to be taken by a player right after connecting to
-  the game.
-
-  Example: @aconnect me = :stretches luxuriously, as if waking from a nap.
+  Sets the actions to be taken by <object> when a player connects to the game.
+  @aconnects are triggered on connecting players, their locations (if the
+  room_connects @config option is true), their zone object/objects in their
+  zone master room, and objects in the Master Room.
 
   Note that long and spammy @aconnect messages, whether in your room or
   on a channel, are frequently found annoying by other players.
 
-  The player's location, and zone object/objects in the zone parent
-  room of the location, as well as objects in the master room, are
-  also checked for an @aconnect. If one is found, it will be executed
-  when a player connects in that location or zone (or, in the case of
-  the master room, anywhere). This is only done if the room_connects
-  config option is enabled.
-
-  One descriptor variable is passed to @aconnect:
+  One argument is passed to @aconnect:
   %1 = number of player connections (1 if this is an initial connect)
+  
+  Example:
+  > @aconnect me=:stretches luxuriously, as if waking from a nap.
 
 See also: @adisconnect, ACTION LISTS
+& @death
 & @adeath
-  @adeath <object> = <action list>
-
-  Sets the actions to be taken after <object> is killed. 
- 
-See also: @odeath, @death, kill, BEING KILLED, ACTION LISTS
-& @adescribe
-  @adescribe <object> = <action list>
+& @odeath
+  @death <object>[=<message>]
+  @odeath <object>[=<message>]
+  @adeath <object>[=<action list>]
   
-  Sets the actions to be taken when  <object> is looked at. 
-  A common use of this command is:
+  These attributes contain the message shown to the killer, the message
+  shown to others in the room, and the actions to be taken when <object>
+  is killed.
 
-    @adesc me=think %N just looked at you.
+  Example:
+   > @death me=You have just slain Cyclonus!
+   > @odeath me=falls to the ground and vanishes.
 
-  which will inform you whenever someone looks at you. %N will be 
+See also: kill, BEING KILLED, ACTION LISTS
+& @adescribe
+  @adescribe <object>[=<action list>]
+   
+  Sets the adescribe attribute on <object>, which is triggered whenever
+  someone looks at it. A common use of this command is:
+ 
+    @adescribe me=think %n just looked at you.
+ 
+  which will inform you whenever someone looks at you. %n will be 
   replaced by the name of the person who looked. While it is possible to
   set a message to be broadcasted to everyone in the area when someone
   looks at you, this is strongly discouraged, as many people find it 
   annoying.
-
-See also: @describe, @aidescribe, look, SUBSTITUTION, ACTION LISTS
+ 
+See also: @describe, @aidescribe, look, ACTION LISTS
 & @adestroy
-  @adestroy <object> = <action list>
-
-  Sets the actions to be taken by the object when it is destroyed
-  (via @rec or @nuke). This can only be set by a Wizard.
-  If @adestroy doesn't work, try &adestroy. :)
+  @adestroy <object>[=<action list>]
+ 
+  The adestroy attribute is triggered when <object> is destroyed. It can
+  only be set by wizards.
+See also: @destroy, @nuke
 & @adisconnect
-  @adisconnect <object> = <action list>
+  @adisconnect <object>[=<action list>]
 
-  Sets the actions to be taken by a player right after disconnecting
-  from the game.
-
-  Example: @adisconnect me = home
-
-  The player's location, and zone object/objects in the zone parent
-  room of the location, as well as objects in the master room, are
-  checked for an @adisconnect. If one is found, it will be executed
-  when a player disconnects in that location or zone (or, in the case of
-  the master room, anywhere). This is only done if the room_connects
-  config option is enabled.
-
-  Several descriptor variables are passed to @adisconnect:
-  %1 = number of remaining connections (0 if a full disconnect)
-  %2 = bytes received by the disconnecting descriptor
-  %3 = bytes sent by the disconnecting descriptor
-  %4 = commands issued by the disconnecting descriptor
-  %5 = 1 if the descriptor was hidden on disconnect, 0 otherwise
-
+  Sets the actions to be taken by <object> when a player disconnects
+  from the game. @adisconnects are triggered on disconnecting players,
+  their locations (if the room_connects @config option is true),
+  their zone object/objects in their zone master room, and objects in
+  the Master Room.
+ 
+  Several arguments are passed to @adisconnect:
+   %1 = number of remaining connections (0 if a full disconnect)
+   %2 = bytes received by the disconnecting descriptor
+   %3 = bytes sent by the disconnecting descriptor
+   %4 = commands issued by the disconnecting descriptor
+  
+  Example:
+  > @adisconnect me = home
+ 
 See also: @aconnect, ACTION LISTS, recv(), sent(), cmds()
 & @adrop
-  @adrop <object> = <action list>
-
-  Sets the actions to be taken when <object> is dropped. 
-  If <object> is an exit, sets an action to be done after a player
-  has passed through the exit.
-
-See also: @odrop, @drop, drop, ACTION LISTS
+& @odrop
+& @drop
+  @drop <object>[=<message>]
+  @odrop <object>[=<message>]
+  @adrop <object>[=<action list>]
+  
+  When <object> is a player or thing, the @drop attribute is shown to whoever
+  drops <object>, and @odrop to others in the location <object> is dropped
+  in. The @adrop attribute is triggered when <object> is dropped.
+  
+  When <object> is an exit, @drop is shown to objects going through <object>,
+  and @odrop is shown to objects in the exit's location. @adrop is triggered
+  when someone passes through the exit.
+  
+  The name of the person dropping/passing through <object> is added to the
+  beginning of @odrop.
+  
+See also: drop, empty, ACTION LISTS
 & @aefail
-  @aefail <object> = <action list>
-
-  Sets the actions to be taken by the object when someone fails to enter
-  it.
-
-See also: enter, FAILURE, ACTION LISTS
-& @aenter
-  @aenter <object> = <action list>
-
-  Sets the actions taken by the object whenever someone enters it.
-
-See also: @enter, @oenter, enter, ACTION LISTS
+& @oefail
+& @efail
+  @efail <object>[=<message>]
+  @oefail <object>[=<message>]
+  @aefail <object>[=<action list>]
+  
+  These attributes contain the message shown to someone who fails to enter
+  <object>, the message shown to others when someone fails to enter <object>,
+  and the actions to be taken when someone fails to enter it, respectively.
+ 
+See also: enter, @enter, FAILURE, ACTION LISTS
 & @aufail
 & @oufail
 & @ufail
-  @ufail <object> = <message>
-  @oufail <object> = <message>
-  @aufail <object> = <action>
-
+  @ufail <object>=[<message>]
+  @oufail <object>=[<message>]
+  @aufail <object>=[<action list>]
+ 
   Sets message shown to a player who fails to use an object via
   the 'use' command (@ufail), message shown to others in the room
-  (@oufail), and action for the object to take (@aufail).
 
   Note that these attributes are @ufail, NOT @ufailure, for
   TinyMUSH compatibility.
 
 & @afailure
+& @ofailure
+& @failure
+  @failure <object>[=<message>]
+  @ofailure <object>[=<message>]
   @afailure <object> = <action list>
 
-  Sets the actions to be taken on failure to pass the @lock on an
-  object. For players and things, this means failure to pick them up
-  with get/take. For exits, this means failure to go through an exit.
+  @failure contains the message shown to someone who fails to pass <object>'s
+  Basic @lock. @ofailure contains the message shown to others, and @afailure
+  contains the actions to be taken by <object>.
   
-  May be abbreviated @afail. 
+  For players and things, this means failure to get/take. For exits, it means
+  failure to go through the exit. For rooms the lock is checked when objects
+  "look" inside the room, though failure to pass the lock does not prevent
+  the object from looking.
 
-See also: @fail, @ofail, get, EXITS, @lock, ACTION LISTS
+See also: get, move, EXITS, @lock, ACTION LISTS
+& @follow
+& @ofollow
 & @afollow
-  @afollow <object> = <action list>
-
-  Sets the actions to be taken after someone or something begins 
-  following the object. 
-
-See also: follow, unfollow, followers(), @follow, @ofollow, ACTION LISTS
-& @aunfollow
-  @aunfollow <object> = <action list>
-
-  Sets the actions to be taken after someone or something stops 
-  following the object. 
-
-See also: follow, unfollow, followers(), @unfollow, @ounfollow, ACTION LISTS
-& @ahear
-  @ahear <object> = <actions>
-
-  Sets the actions to be taken after the object's @listen is matched. 
-  Note that @ahear ignores any messages that the object itself creates, 
-  so it can only be triggered by other things. If you want the object to
-  be able to trigger itself, try using @amhear or @aahear.
+  @follow <object>[=<message>]
+  @ofollow <object>[= <message>]
+  @aunfollow <object>[=<action list>]
   
-See also: @aahear, @amhear, @listen, ACTION LISTS, LISTENING
+  Sets the message shown to someone who begins following <object>,
+  the message shown to others in the room, and the actions to be taken
+  by <object> when someone begins following it, respectively. The name
+  of the person following <object> is automatically prepended to the
+  @ofollow message.
+
+See also: follow, unfollow, @unfollow, followers(), ACTION LISTS
+& @unfollow
+& @ounfollow
+& @aunfollow
+  @unfollow <object>[=<message>]
+  @ounfollow <object>[=<message>]
+  @aunfollow <object>[=<action list>]
+  
+  Sets the message shown to someone who stops following <object>,
+  the message shown to others in the room, and the actions to be taken
+  by <object> when someone stops following it, respectively. The name
+  of the person stopping following <object> is automatically prepended
+  to the @ounfollow message.
+
+See also: follow, unfollow, @follow, followers(), ACTION LISTS
+& @ahear
+& @aahear
+& @amhear
+  @ahear <object>[=<action list>]
+  @aahear <object>[=<action list>]
+  @amhear <object>[=<action list>]
+
+  Sets the actions to be taken after the object's @listen is matched.
+  @ahear will only be triggered by sound made by other objects, and
+  @amhear is only triggered by sound made by <object> itself. @amhear 
+  will be triggered by all matching sound, regardless of the source.
+  
+See also: @listen, LISTENING, ACTION LISTS
+& @leave
+& @oleave
 & @aleave
-  @aleave <object> = <action list>
-
-  Sets the actions to be taken whenever someone leaves the object.
-
-See also: leave, @leave, @oleave, ACTION LISTS
+  @leave <object>[=<message>]
+  @oleave <object>[=<message>]
+  @aleave <object>[=<action list>]
+  
+  These attributes contain the message shown to anyone leaving <object>,
+  the message shown to others inside <object> when someone leaves it,
+  and the actions to be taken by <object> when someone leaves it, respectively.
+  The name of the object leaving is automatically added to the beginning of
+  the @oleave message.
+  
+See also: leave, @oxleave, @lfail, ACTION LISTS,
+& @lfail
+& @olfail
 & @alfail
-  @alfail <object> = <action list>
+  @lfail <object>[=<message>]
+  @olfail <object>[=<message>]
+  @alfail <object>[=<action list>]
 
-  Sets the actions to be taken whenever someone tries to leave the 
-  object and fails (because the object is set NO_LEAVE or because
-  the person fails the @lock/leave on the object). 
+  These attributes contain the message shown to objects who try to leave
+  <object> and fail, the message shown to others inside <object> when
+  someone fails to leave, and the actions to be taken by <object> when
+  someone attempts to leave it and fails.
+  
+  Such a failure usually occurs because <object> is set NO_LEAVE, or
+  because the person trying to leave does not pass <object>'s @lock/leave.
 
-See also: leave, @lfail, @olfail, ACTION LISTS
+See also: leave, @leave, NO_LEAVE, locktypes, ACTION LISTS
 & @alias
   @alias <player>=<name>;<alias>[;<alias2>[;<alias3>[...]]]
  
@@ -300,48 +339,50 @@ See also: leave, @lfail, @olfail, ACTION LISTS
   the game's administrators through the 'max_aliases' @config parameter.
 
   If the page_aliases config directive is on, the first alias in the
-  list is returned along with the player's name.
+  list is shown along with the player's name when they page others.
   
-  Each alias cannot be longer than the limit allowed for player names, 
-  cannot contain spaces, and must be unique -- no other player may
-  have the same alias or name as any other player's alias or name.
+  The same rules that apply to player names apply to aliases.
 
-  @alias has no effect on non-players.
+  @alias has no effect on non-players. (An exit's alias is part of
+  its @name.)
 
 See also: @name, alias(), fullalias()
-& @allhalt
-  @allhalt
-
-  This command halts all objects in the game in an effort to free up 
-  the queue. Wizard-only command.
-  
-  This command is equivalent to "@halt/all".
-
-See also: QUEUE, @ps
 & @allquota
   @allquota[/quiet] [<limit>]
 
-  This is a God level command that is only available if the quota
-  system is being used.  It displays the current max and owned objects
-  of every player (unless the /quiet switch is used) and resets their 
-  quota left to the new limit minus the current number owned if a limit 
-  is given.
-& @amhear
-  @amhear <object> = <action list>
-
-  Sets the actions to be taken whenever the @listen on the object is
-  matched by something that the object itself does. It will not react
-  if anyone else in the area does anything that matches the @listen
-  pattern. If you want other objects to be able to set off the action
-  list, try using @ahear or @aahear.
-
-See also: @listen, @ahear, @aahear, LISTENING, ACTION LISTS
+  This is a God-only command which is only available if the use_quota @config
+  option is true. If /quiet is not given, it displays a list of all players,
+  showing how many objects they own and how many more they can create. If a
+  <limit> is given, every players quota is altered either to <limit> or to
+  the number of objects they currently own, whichever is higher.
+  
+See also: @quota 
+& @move
+& @omove
 & @amove
-  @amove <object> = <action list>
+  @move <object>[=<message>]
+  @omove <object>[=<message>]
+  @amove <object>[=<action list>]
+  
+  These attributes contain the message shown to <object> immediately after it
+  moves, the message shown to others in the room <object> moves into, and
+  the actions to be taken when <object> moves, respectively. <object>'s name
+  is added automatically to the beginning of the @omove message. Please note
+  that long @omoves are frequently found annoying.
 
-  This is the action to be taken whenever an object moves.
+  Example:
+   > @move me=You moved! You are now in the room: [name(loc(me))].
+   > @omove me=stalks into the room wearing a malevolent expression.
 
-See also: @move, @omove, @oxmove, ACTION LISTS, go
+See also: goto, @oxmove, ACTION LISTS
+& @aenter
+  @aenter <object> = <action list>
+
+  Sets the actions taken by the object whenever someone enters it.
+
+See also: @enter, @oenter, enter, ACTION LISTS
+
+
 & @apayment
   @apayment <object> = <action list>
 
@@ -854,20 +895,6 @@ See also: give, @quota, MONEY
   @dbck no longer performs an @purge. The results of @dbck are written
   to the game's error log, and not reported to the Wizard.
 
-& @death
-  @death <player> [=<message>]
-
-  This command sets the message displayed to the killer when <player>
-  is killed. Typing just '@death <player>' or '@death <player>=' 
-  without a message will clear the currently set message.
-
-  Example:
-   @death me=You have just slain Cyclonus!
-
-  Note that some MUSHes choose to disable the KILL command, which makes
-  this attribute rather pointless.
-
-See also: kill, BEING KILLED, @odeath, @adeath
 & @decompile
   @decompile[</switch>] <object>[/<attribute-patterns>]
   @decompile/prefix <object>[/<attribute-patterns>]=<prefix>
@@ -1070,17 +1097,6 @@ See also: @poll, WHO, DOING
   Similarly, you may not specify both the /all switch and a number.
 
   See also the help for: SEMAPHORES, @notify, @wait
-& @drop
-  @drop <object> [=<message>]. <object> can be a thing, player, exit,
-  or room, specified as <name> or #<number> or 'me' or 'here'. Sets 
-  the drop message for <object>. The message is displayed when a 
-  player drops <object>. Without a message argument, it clears the 
-  message. 
-
-  On an exit, this message is sent to a player after they pass through
-  the exit.
-
-See also: drop, @odrop, @adrop.
 & @dump
   @dump [/paranoid] [check interval]
  
@@ -1132,9 +1148,6 @@ See also: drop, @odrop, @adrop.
   was performed.
   
   See also ATTRIBUTES, edit()
-& @efail
-  @efail <object> = <message>
-  This is the message shown to the player who fails to enter the object.
 & @elock
   @elock <object> = <key>
   Enter-locks an object, restricting who is allowed to enter it. Special
@@ -1273,20 +1286,6 @@ See also: @lock, locktypes, @elock
   '@exitformat here = Exits: [iter(%0,name(##))]', for example.
 
 See also: TRANSPARENT, @conformat, @nameformat, @descformat
-& @failure
-  @failure <object> [=<message>]
-
-  Sets the message shown to someone who fails to pass the object's
-  basic @lock. For a thing or player, this would be when someone tries
-  to pick the object up and fails. For an exit, this occurs when someone
-  tries to go through the exit and fails.
-
-  If [=<message>] is omitted, any currently set message will be reset.
-
-  Can be abbreviated @fail. It is recommended that you put an @fail message
-  on any locked object.
-
-See also: FAILURE, @ofailure, @afailure
 & @firstexit
   @firstexit <name of exit>
 
@@ -1347,20 +1346,6 @@ See also: AUDIBLE, @infilter, LISTENING
   limited more effectively.
 
 See also: @search
-& @follow
-  @follow <object> = <message>
-
-  Sets the message shown to someone after they begin following 
-  the object (using the 'follow' command). 
-
-See also: follow, unfollow, followers(), @ofollow, @afollow
-& @unfollow
-  @unfollow <object> = <message>
-
-  Sets the message shown to someone after they stop following 
-  the object (using the 'unfollow' command). 
-
-See also: follow, unfollow, followers(), @ounfollow, @aunfollow
 & @FORWARDLIST
   @forwardlist <object> [=<list of dbrefs>]
 
@@ -1625,9 +1610,11 @@ See also: RESTRICT, FUNCTIONS, @startup, fn()
   patterns containing '*', '?', etc.  Also, <pattern> is NOT PARSED,
   so '[v(0)]' and the like can be searched for.
 & @halt
+& @allhalt
   @halt <object> [=<new_command>] 
   @halt/pid <pid>
   @halt/all
+  @allhalt
  
   The @halt command removes all queued actions for <object>.  If <new
   command> is specified, that new command is placed in the queue for
@@ -1646,9 +1633,8 @@ See also: RESTRICT, FUNCTIONS, @startup, fn()
   number in parenthesis before it in @ps). You must control the object
   that queued the command or have the halt power to do this.
 
-  @halt/all is a synonym for @allhalt and is a wizard-only command.
-
-See also: HALT, QUEUE, @ps
+  @halt/all is a synonym for @allhalt and is a wizard-only command
+  which halts all objects in the game in an effort to free up the queue.
 & @haven
   @haven <player> = <message>
 
@@ -1805,12 +1791,6 @@ See also: @ps, QUEUE
       @lalias chair=stand up;stand;get up;rise
 
 See also: @ealias, leave, @leave, @lfail
-& @leave
-  @leave <object> = <message>
-  
-  Sets the message that is displayed to anyone leaving <object>. 
-  
-See also: leave, @lfail
 & @lemit
   @lemit[/<switch>] <message>
 
@@ -1824,14 +1804,6 @@ See also: leave, @lfail
   The /spoof switch causes nospoof notifications to show the enactor's
     dbref instead of the executor's dbref, and requires control over
     the enactor or the Can_nspemit power.
-& @lfail
-  @lfail <object> = <message>
-
-  This is the message shown to the player who fails to leave the object,
-  either because the object is set NO_LEAVE or because the person leaving
-  fails the leave-lock.
-
-See also: leave, @leave, NO_LEAVE, locktypes
 & @list
   @list/<switch>[/lowercase]
   @list[/lowercase] <switch>
@@ -2284,14 +2256,6 @@ See also: message(), @chatformat, @pageformat
   /down   : sets the logins-off message (like @rejectmotd)
   /full   : sets the max-players-logged-in message
   /list   : list the MOTDs (like @listmotd, can be used by anyone)
-& @move
-  @move <object> = <movement message>
-
-  This sets the message that is shown to <object> whenever it moves.
-  Example:
-       @move me=You moved! You are now in the room: [name(loc(me))].
-
-See also: go, @omove, @oxmove, @amove
 & @name
   @name <object>=<new name>
 
@@ -2367,21 +2331,6 @@ See also: SEMAPHORES, @drain, @wait
 See also: @emit, @lemit, @pemit, @prompt, @remit, @oemit, @zemit, nsemit(),
   nslemit(), nspemit(), nsprompt(), nsremit(), nsoemit(), nszemit(),
   PROMPT_NEWLINES
-& @odeath
-  @odeath <player> [=<message>]
-
-  This sets the ODEATH attribute on the player, which contains the
-  message that will be shown to others when s/he is killed. The
-  @odeath message will automatically have the player's name included.
-
-Example:
-     @odeath me=falls to the ground and vanishes.
-     (if I am killed, others in the room then see:)
-     > Cyclonus falls to the ground and vanishes.
-
-  If the =<message> part is omitted, the ODEATH attribute will be reset.
-
-See also: @death, @adeath, kill
 & @odescribe
   @odescribe <object> [=<message>]
 
@@ -2393,28 +2342,6 @@ See also: @death, @adeath, kill
   If the =<message> part is omitted, the message will be reset.
 
 See also: look, @describe, @idescribe
-& @odrop
-  @odrop <object> [=<message>]
-
-  This sets the message that will be shown to others whenever anyone drops
-  <object>. The name of the person dropping the object will be added to the
-  beginning of the message automatically.
-
-  If set on an exit, the @odrop is shown in the exit's destination room
-  when someone goes through the exit.
-
-  If the =<message> part is omitted, the message will be reset.
-
-See also: drop, @drop, @adrop, NONAME, NOSPACE
-& @oefail
-  @oefail <object> [= <message>]
-
-  This sets the message that will be show to others whenever anyone tries
-  to enter <object> and fails, usually because they fail the enter-lock.
-
-  If the =<message> part is omitted, the message will be reset.
-
-See also: enter, @efail, @aefail, @lock
 & @oemit
   @oemit[/<switch>] [<room>/]<object> [<object>...] = <message>
  
@@ -2447,83 +2374,6 @@ See also: @emit, @pemit, NOSPOOF and SPOOFING.
   -outside- the object, use @oxenter.
 
 See also: enter, @enter, @oxenter
-& @ofailure
-  @ofailure <object> [=<message>]
-
-  This sets the message that will be show to others whenever anyone
-  fails to pass <object>'s basic lock. For players and things, this means
-  failing to pick them up. For exits, this means failing to go through 
-  the exit. It automatically prefixes the name of the player.
-
-Example:
-  @ofail Locked Door=tries to open the door, but it seems to be locked.
-
-  If the =<message> part is omitted, the message will be reset.
-
-See also: FAILURE, @lock, @failure, @afailure, NONAME, NOSPACE
-& @ofollow
-  @ofollow <object> [= <message>]
-
-  Sets the message shown to others in the room after someone
-  begins following the object (using the 'follow' command). 
-  Similar to @omove or @osucc, this command prepends the name
-  of the person doing the following.
-
-  If the =<message> part is omitted, the message will be reset.
-
-Ex: @ofollow me=falls into step behind Cyclonus.
-
-See also: follow, unfollow, followers(), @follow, @afollow
-& @ounfollow
-  @ounfollow <object> [= <message>]
-
-  Sets the message shown to others in the room after someone
-  stops following the object (using the 'unfollow' command). 
-  Similar to @omove or @osucc, this command prepends the name
-  of the person doing the unfollowing.
-
-  If the =<message> part is omitted, the message will be reset.
-
-Ex: @ounfollow me=stops following [name(me)].
-
-See also: follow, unfollow, followers(), @unfollow, @aunfollow
-& @oleave
-  @oleave <object> [= <message>]
-  
-  This sets the message that will be displayed to the people inside
-  <object> whenever someone leaves <object>. If you want to set a 
-  message to be displayed to people outside the object, use @oxleave.
-  This command automatically inserts the name of the person leaving
-  at the start of the message.
-
-  If the =<message> part is omitted, the message will be reset.
-
-See also: leave, @leave, @aleave, @oxleave
-& @olfail
-  @olfail <object> [= <message>]
-  
-  This sets the message that will be shown to others whenever someone
-  tries to leave <object> and fails (usually if the person fails the
-  leave-lock, or if <object> is set NO_LEAVE). It automatically inserts
-  the name of the person trying to leave at the start of the message.
-
-  If the =<message> part is omitted, the message will be reset.
-
-See also: leave, @lfail, @alfail, @lock
-& @omove
-  @omove <object> [= <message>]
-
-  Sets the message that will be shown to others whenever <object> moves.
-  It is shown in the destination room or object and automatically inserts
-  the name of the <object> at the beginning. Please note that long @omoves
-  are frequently found annoying.
-
-Example:
- @omove me=stalks into the room wearing the latest in malevolent expressions.
-  
-  If the =<message> part is omitted, the message will be reset.
-
-See also: go, @move, @amove, @oxmove
 & @oxmove
   @oxmove <object> [= <message>]
 
@@ -4388,13 +4238,14 @@ See also: WHO
   their client. They generally do things that only affect a specific
   connection and would be meaningless if run by an object or
   disconnected player.
-
-  IDLE      LOGOUT     OUTPUTPREFIX OUTPUTSUFFIX QUIT
+  
+  IDLE    INFO    LOGOUT  OUTPUTPREFIX    OUTPUTSUFFIX
+  PROMPT_NEWLINES QUIT    SCREENWIDTH     SCREENHEIGHT
 
   In addition, the following commands can only be used at the login
   screen:
 
-  cd ch connect create
+  cd ch connect create register
   
   The WHO command can also be used at the login screen. Please note that
   this is different to the in-game WHO command.

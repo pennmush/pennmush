@@ -1142,12 +1142,14 @@ FUNCTION(fun_lnum)
   NVAL j;
   NVAL start;
   NVAL end;
-  int istart, iend, k;
+  NVAL step = 1.0;
+  int istart, iend, k, istep;
   char const *osep = " ";
   static NVAL cstart[CACHE_SIZE];
   static NVAL cend[CACHE_SIZE];
   static char csep[CACHE_SIZE][BUFFER_LEN];
   static char cresult[CACHE_SIZE][BUFFER_LEN];
+  static int cstep[CACHE_SIZE];
   static int cpos;
   char *cp;
 
@@ -1160,6 +1162,9 @@ FUNCTION(fun_lnum)
     if (!is_number(args[1])) {
       safe_str(T(e_num), buff, bp);
       return;
+    }
+    if (nargs > 3 && is_number(args[3])) {
+      step = parse_number(args[3]);
     }
     start = end;
     end = parse_number(args[1]);
@@ -1185,7 +1190,8 @@ FUNCTION(fun_lnum)
     osep = args[2];
   }
   for (k = 0; k < CACHE_SIZE; k++) {
-    if (cstart[k] == start && cend[k] == end && !strcmp(csep[k], osep)) {
+    if (cstart[k] == start && cend[k] == end && !strcmp(csep[k], osep) &&
+        cstep[k] == step) {
       safe_str(cresult[k], buff, bp);
       return;
     }
@@ -1198,16 +1204,17 @@ FUNCTION(fun_lnum)
 
   istart = (int) start;
   iend = (int) end;
-  if (istart == start && iend == end) {
+  istep = (int) step;
+  if (istart == start && iend == end && istep == step) {
     safe_integer(istart, cresult[cpos], &cp);
     if (istart <= iend) {
-      for (k = istart + 1; k <= iend; k++) {
+      for (k = istart + istep; k <= iend; k += istep) {
         safe_str(osep, cresult[cpos], &cp);
         if (safe_integer(k, cresult[cpos], &cp))
           break;
       }
     } else {
-      for (k = istart - 1; k >= iend; k--) {
+      for (k = istart - istep; k >= iend; k -= istep) {
         safe_str(osep, cresult[cpos], &cp);
         if (safe_integer(k, cresult[cpos], &cp))
           break;
@@ -1216,13 +1223,13 @@ FUNCTION(fun_lnum)
   } else {
     safe_number(start, cresult[cpos], &cp);
     if (start <= end) {
-      for (j = start + 1; j <= end; j++) {
+      for (j = start + step; j <= end; j += step) {
         safe_str(osep, cresult[cpos], &cp);
         if (safe_number(j, cresult[cpos], &cp))
           break;
       }
     } else {
-      for (j = start - 1; j >= end; j--) {
+      for (j = start - step; j >= end; j -= step) {
         safe_str(osep, cresult[cpos], &cp);
         if (safe_number(j, cresult[cpos], &cp))
           break;
@@ -1270,10 +1277,6 @@ FUNCTION(fun_randword)
 
   if (word_count == 0)
     return;
-  else if (word_count == 1) {
-    safe_strl(args[0], arglens[0], buff, bp);
-    return;
-  }
 
   word_index = get_random32(0, word_count - 1);
 
@@ -1595,16 +1598,22 @@ FUNCTION(fun_cat)
 FUNCTION(fun_remove)
 {
   char sep;
+  char lbuff[BUFFER_LEN];
+  char *r, *s;
 
   /* zap word from string */
 
   if (!delim_check(buff, bp, nargs, args, 3, &sep))
     return;
-  if (strchr(args[1], sep)) {
-    safe_str(T("#-1 CAN ONLY DELETE ONE ELEMENT"), buff, bp);
-    return;
+  r = lbuff;
+  safe_str(args[0], lbuff, &r);
+  *r = '\0';
+
+  s = args[1];
+  while ((r = split_token(&s, sep)) != NULL) {
+    memcpy(lbuff, remove_word(lbuff, r, sep), BUFFER_LEN);
   }
-  safe_str(remove_word(args[0], args[1], sep), buff, bp);
+  safe_str(lbuff, buff, bp);
 }
 
 /* ARGSUSED */
@@ -2475,6 +2484,8 @@ FUNCTION(fun_table)
   size_t col = 0;
   size_t offset, col_len;
   char sep, osep, *cp, *t;
+  char aligntype = '<';
+  char *fwidth;
   ansi_string *as;
 
   if (!delim_check(buff, bp, nargs, args, 5, &osep))
@@ -2495,11 +2506,15 @@ FUNCTION(fun_table)
       line_length = 2;
   }
   if (nargs > 1) {
-    if (!is_integer(args[1])) {
+    fwidth = args[1];
+    if ((*fwidth) == '<' || (*fwidth) == '>' || (*fwidth) == '-') {
+      aligntype = *(fwidth++);
+    }
+    if (!is_integer(fwidth)) {
       safe_str(T(e_ints), buff, bp);
       return;
     }
-    field_width = parse_integer(args[1]);
+    field_width = parse_integer(fwidth);
     if (field_width < 1)
       field_width = 1;
     if (field_width >= BUFFER_LEN)
@@ -2526,10 +2541,29 @@ FUNCTION(fun_table)
   col_len = strlen(t);
   if (col_len > field_width)
     col_len = field_width;
-  safe_ansi_string(as, offset, col_len, buff, bp);
-  if (safe_fill(' ', field_width - col_len, buff, bp)) {
-    free_ansi_string(as);
-    return;
+  switch (aligntype) {
+  case '<':
+    safe_ansi_string(as, offset, col_len, buff, bp);
+    if (safe_fill(' ', field_width - col_len, buff, bp)) {
+      free_ansi_string(as);
+      return;
+    }
+    break;
+  case '>':
+    safe_fill(' ', field_width - col_len, buff, bp);
+    if (safe_ansi_string(as, offset, col_len, buff, bp)) {
+      free_ansi_string(as);
+      return;
+    }
+    break;
+  case '-':
+    safe_fill(' ', (field_width - col_len) / 2, buff, bp);
+    safe_ansi_string(as, offset, col_len, buff, bp);
+    if (safe_fill(' ', (field_width - col_len + 1) / 2, buff, bp)) {
+      free_ansi_string(as);
+      return;
+    }
+    break;
   }
   col = field_width + (osep != '\0');
   while (cp) {
@@ -2551,9 +2585,30 @@ FUNCTION(fun_table)
     col_len = strlen(t);
     if (col_len > field_width)
       col_len = field_width;
-    safe_ansi_string(as, offset, col_len, buff, bp);
-    if (safe_fill(' ', field_width - col_len, buff, bp))
+    switch (aligntype) {
+    case '<':
+      safe_ansi_string(as, offset, col_len, buff, bp);
+      if (safe_fill(' ', field_width - col_len, buff, bp)) {
+        free_ansi_string(as);
+        return;
+      }
       break;
+    case '>':
+      safe_fill(' ', field_width - col_len, buff, bp);
+      if (safe_ansi_string(as, offset, col_len, buff, bp)) {
+        free_ansi_string(as);
+        return;
+      }
+      break;
+    case '-':
+      safe_fill(' ', (field_width - col_len) / 2, buff, bp);
+      safe_ansi_string(as, offset, col_len, buff, bp);
+      if (safe_fill(' ', (field_width - col_len + 1) / 2, buff, bp)) {
+        free_ansi_string(as);
+        return;
+      }
+      break;
+    }
   }
   free_ansi_string(as);
 }

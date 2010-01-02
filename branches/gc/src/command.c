@@ -242,7 +242,7 @@ COMLIST commands[] = {
   {"@PCREATE", NULL, cmd_pcreate, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0,
    0},
 
-  {"@PEMIT", "LIST CONTENTS SILENT NOISY NOEVAL SPOOF", cmd_pemit,
+  {"@PEMIT", "LIST CONTENTS SILENT NOISY NOEVAL PORT SPOOF", cmd_pemit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@POLL", "CLEAR", cmd_poll, CMD_T_ANY, 0, 0},
   {"@POOR", NULL, cmd_poor, CMD_T_ANY, 0, 0},
@@ -346,8 +346,6 @@ COMLIST commands[] = {
   {"SEMIPOSE", "NOEVAL", cmd_semipose, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"SLAY", NULL, cmd_slay, CMD_T_ANY, 0, 0},
 
-  {"TAKE", NULL, cmd_take, CMD_T_PLAYER | CMD_T_THING | CMD_T_NOGAGGED,
-   0, 0},
   {"TEACH", NULL, cmd_teach, CMD_T_ANY | CMD_T_NOPARSE, 0, 0},
   {"THINK", "NOEVAL", cmd_think, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
 
@@ -359,6 +357,10 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"WITH", "NOEVAL ROOM", cmd_with, CMD_T_PLAYER | CMD_T_THING | CMD_T_EQSPLIT,
    0, 0},
+
+  {"WHO", NULL, cmd_who, CMD_T_ANY, 0, 0},
+  {"DOING", NULL, cmd_who_doing, CMD_T_ANY, 0, 0},
+  {"SESSION", NULL, cmd_session, CMD_T_ANY, 0, 0},
 
 /* ATTRIB_SET is an undocumented command - it's sugar to make it possible
  * enable/disable attribute setting with &XX or @XX
@@ -1101,8 +1103,8 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
     if (*p != NUMBER_TOKEN)
       p++;
   } else {
-    /* At this point, we have not done a replacer, so we continue with the 
-     * usual processing. Exits have next priority.  We still pass them 
+    /* At this point, we have not done a replacer, so we continue with the
+     * usual processing. Exits have next priority.  We still pass them
      * through the parser so @hook on GOTO can work on them.
      */
     if (strcasecmp(p, "home") && can_move(player, p)) {
@@ -1290,7 +1292,7 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
     int lsa_index;
     if (lsa[1]) {
       safe_str(lsa[1], commandraw, &c2);
-      for (lsa_index = 2; lsa[lsa_index]; lsa_index++) {
+      for (lsa_index = 2; (lsa_index < MAX_ARG) && lsa[lsa_index]; lsa_index++) {
         safe_chr(',', commandraw, &c2);
         safe_str(lsa[lsa_index], commandraw, &c2);
       }
@@ -1307,7 +1309,8 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
          * starts at 1. */
         if (rsa[1]) {
           safe_str(rsa[1], commandraw, &c2);
-          for (rsa_index = 2; rsa[rsa_index]; rsa_index++) {
+          for (rsa_index = 2; (rsa_index < MAX_ARG) && rsa[rsa_index];
+               rsa_index++) {
             safe_chr(',', commandraw, &c2);
             safe_str(rsa[rsa_index], commandraw, &c2);
           }
@@ -2086,23 +2089,58 @@ do_hook_list(dbref player, char *command)
 {
   COMMAND_INFO *cmd;
 
-  cmd = command_find(command);
-  if (!cmd) {
-    notify(player, T("No such command."));
-    return;
-  }
-  if (Wizard(player) || has_power_by_name(player, "HOOK", NOTYPE)) {
-    if (GoodObject(cmd->hooks.before.obj))
-      notify_format(player, T("@hook/before: #%d/%s"),
-                    cmd->hooks.before.obj, cmd->hooks.before.attrname);
-    if (GoodObject(cmd->hooks.after.obj))
-      notify_format(player, T("@hook/after: #%d/%s"), cmd->hooks.after.obj,
-                    cmd->hooks.after.attrname);
-    if (GoodObject(cmd->hooks.ignore.obj))
-      notify_format(player, T("@hook/ignore: #%d/%s"),
-                    cmd->hooks.ignore.obj, cmd->hooks.ignore.attrname);
-    if (GoodObject(cmd->hooks.override.obj))
-      notify_format(player, T("@hook/override: #%d/%s"),
-                    cmd->hooks.override.obj, cmd->hooks.override.attrname);
+  if (!command || !*command) {
+    /* Show all commands with hooks */
+    char *ptrs[BUFFER_LEN / 2];
+    static char buff[BUFFER_LEN];
+    char *bp;
+    int i, count = 0;
+
+    for (cmd = (COMMAND_INFO *) ptab_firstentry(&ptab_command); cmd;
+         cmd = (COMMAND_INFO *) ptab_nextentry(&ptab_command)) {
+      if (has_hook(&cmd->hooks.ignore) || has_hook(&cmd->hooks.override)
+          || has_hook(&cmd->hooks.before) || has_hook(&cmd->hooks.after)) {
+        ptrs[count] = (char *) cmd->name;
+        count++;
+      }
+    }
+    if (count == 0) {
+      notify(player, T("There are no hooks currently set."));
+      return;
+    }
+    do_gensort(0, ptrs, NULL, count, ALPHANUM_LIST);
+    bp = buff;
+    safe_str(T("The following commands have hooks: "), buff, &bp);
+    for (i = 0; i < count; i++) {
+      if (i > 0 && gencomp((dbref) 0, ptrs[i], ptrs[i - 1], ALPHANUM_LIST) <= 0)
+        continue;
+      if (i && i == (count - 1))
+        safe_str(" and ", buff, &bp);
+      else if (i)
+        safe_str(", ", buff, &bp);
+      safe_str(ptrs[i], buff, &bp);
+    }
+    *bp = '\0';
+    notify(player, buff);
+  } else {
+    cmd = command_find(command);
+    if (!cmd) {
+      notify(player, T("No such command."));
+      return;
+    }
+    if (Wizard(player) || has_power_by_name(player, "HOOK", NOTYPE)) {
+      if (GoodObject(cmd->hooks.before.obj))
+        notify_format(player, T("@hook/before: #%d/%s"),
+                      cmd->hooks.before.obj, cmd->hooks.before.attrname);
+      if (GoodObject(cmd->hooks.after.obj))
+        notify_format(player, T("@hook/after: #%d/%s"), cmd->hooks.after.obj,
+                      cmd->hooks.after.attrname);
+      if (GoodObject(cmd->hooks.ignore.obj))
+        notify_format(player, T("@hook/ignore: #%d/%s"),
+                      cmd->hooks.ignore.obj, cmd->hooks.ignore.attrname);
+      if (GoodObject(cmd->hooks.override.obj))
+        notify_format(player, T("@hook/override: #%d/%s"),
+                      cmd->hooks.override.obj, cmd->hooks.override.attrname);
+    }
   }
 }

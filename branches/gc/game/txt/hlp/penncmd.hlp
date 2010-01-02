@@ -6,8 +6,8 @@ Help is available for the following MUSH commands:
   give           go             index          kill           leave          
   LOGOUT         look           move           news           page           
   pose           QUIT           read           rules          say
-  score          slay           take           teach          think          
-  unfollow       use            whisper        WHO            with
+  score          slay           teach          think          unfollow
+  use            whisper        WHO            with
   "              :              ;              +              ]
  
   In addition to these, there are several types of '@' commands. @-commands 
@@ -200,6 +200,7 @@ See also: @describe, @aidescribe, look, SUBSTITUTION, ACTION LISTS
   %2 = bytes received by the disconnecting descriptor
   %3 = bytes sent by the disconnecting descriptor
   %4 = commands issued by the disconnecting descriptor
+  %5 = 1 if the descriptor was hidden on disconnect, 0 otherwise
 
 See also: @aconnect, ACTION LISTS, recv(), sent(), cmds()
 & @adrop
@@ -868,8 +869,8 @@ See also: give, @quota, MONEY
 
 See also: kill, BEING KILLED, @odeath, @adeath
 & @decompile
-  @decompile[</switch>] <object>[/<attribute-pattern>]
-  @decompile/prefix <object>[/<attribute-pattern>]=<prefix>
+  @decompile[</switch>] <object>[/<attribute-patterns>]
+  @decompile/prefix <object>[/<attribute-patterns>]=<prefix>
 
   This command produces a list of the commands that you would have to
   enter in order to recreate <object>. Useful for either copying objects
@@ -883,10 +884,10 @@ See also: kill, BEING KILLED, @odeath, @adeath
   You can either @decompile an entire object, or just certain parts of it.
   To @decompile just a few attributes, for example, you could type:
 
-      @decompile <object>/<attribute name>
+      @decompile <object>/<attribute name> <attribute name2>
 
-  for each attribute. You can also use wildcards in <attribute name> to
-  @decompile a list of similarly-named attributes.
+  including each attribute. You can also use wildcards in
+  <attribute name(s)> to @decompile a list of similarly-named attributes.
 
 (continued in help @decompile2)
 & @decompile2
@@ -1693,7 +1694,7 @@ See also: HAVEN, page, @lock, @away
 See also: enter, @enter, ENTER_OK, @describe, look, @idescformat
 & @hook
   @hook/<switch> <command>[=<object>, <attribute>]
-  @hook/list <command>
+  @hook/list [<command>]
 
   @hook tells the command parser to evaluate given attributes at certain points
   in command evaluation. The possible points, indicated by the proper switch:
@@ -2779,6 +2780,8 @@ See also: @prompt, prompt(), terminfo()
     /spoof     -- the enactor's dbref will be used for nospoof notifications
                   instead of the executor's dbref. Requires control
                   over enactor or Can_nspemit power. 
+    /port      -- <object> is taken to be a port number, instead of a dbref,
+                  and the message is only sent to that port. Wiz/roy only.
 
   Note that page-lock and the HAVEN flag will block @pemits as well, 
   except from Wizards or those with the pemit_all power.
@@ -3002,41 +3005,44 @@ See also: @wall, @wizwall
      /zone     --   just matches on zones of your location and yourself.
      /globals  --   just matches on objects in the master room.
 & @search
-  @search [<player>] [<class>=<restriction>] [,<begin>,<end>]
+  @search [<player>] [<classN>=<restrictionN>[,...]][,<begin>,<end>]
   
   This command searches the database and lists objects which meet user
   specified search criteria.  You can limit the scope of the search by
   specifying <begin> and <end> as the first and last dbrefs to search.
   
   If a <player> argument is supplied, only objects owned by that player
-  will be listed. If a <class> argument is supplied only objects of a
-  certain class will  be listed. Possible <class>es include TYPE, NAME,
-  ZONE, PARENT, EXITS, OBJECTS (Or THINGS), ROOMS, PLAYERS, FLAGS, LFLAGS,
-  POWERS, ELOCK, COMMAND, LISTEN, EVAL, EPLAYER, EROOM, EEXIT, and EOBJECT
-  (Or ETHING).
+  will be listed.  Mortals can only search themselves or a ZMP whose
+  @lock/zone they pass. Those with the Search power can also specify "all"
+  to search all players. Defaults to "me" for mortals, and "all" for
+  players with the Search power.
+  
+  <class> and <restriction> arguments can be given to filter the match
+  results. Possible <class>es include TYPE, NAME, ZONE, PARENT, EXITS,
+  THINGS (or OBJECTS), ROOMS, PLAYERS, FLAGS, LFLAGS, POWERS, ELOCK,
+  COMMAND, LISTEN, EVAL, EPLAYER, EROOM, EEXIT, and ETHING (or EOBJECT).
 
-  If <class>=TYPE, possible <restriction>s include OBJECT (Or THING), ROOM,
+  If <class>=TYPE, possible <restriction>s include THING (or OBJECT), ROOM,
   EXIT, PLAYER, GARBAGE. This shows all objects of the specified type.
   
   If <class>=NAME, only objects whose name begin with the string <restriction>
-  will be listed. If <class>=ZONE, only objects in the zone <restriction>
-  will be listed. If <class>=PARENT, only children of parent <restriction>
-  will be listed. For ZONE and PARENT, <restriction> must be specified as a
-  dbref number.
+  will be listed. If <class>=EXITS, OBJECTS, ROOMS or PLAYERS, only objects
+  of that type whose name begins with <restriction> are listed.
+  
+  If <class>=ZONE, only objects in the zone <restriction> will be listed.
+  If <class>=PARENT, only children of parent <restriction> will be listed.
+  For ZONE and PARENT, <restriction> must be specified as a dbref number.
   
   'help @search2' for more.
 & @search2
-  If <class>=EXITS, OBJECTS, ROOMS, or PLAYERS, only objects of that type
-  will be listed.
-
   If <class>=FLAGS or LFLAGS, only objects with the list of flags
   specified by <restriction> will be listed. For FLAGS, flags to match
   should be given as a string of single flag letters, with appropriate
   case. For LFLAGS, flags to match should be given as a space-separated
   list of flag names.
 
-  If <class>=POWERS, only objects with the given power are listed. Only
-  one power may be specified.
+  If <class>=POWERS, only objects with the given powers are listed.
+  <restriction> should be a space-separated list of power names.
 
   If <class>=ELOCK, only objects that pass the given lock string (as in
   help @lock) are listed. For purposes of indirect locks (@#123), 'search'
@@ -3045,7 +3051,7 @@ See also: @wall, @wizwall
   If <class>=EVAL, only objects for which <restriction> evaluates to a
   true boolean value will be listed. The token '##' in <restriction>, which
   is a function, is replaced by each dbref sequentially. Classes EPLAYER,
-  EROOM, EEXIT, and EOBJECT work like EVAL but are restricted to a single type.
+  EROOM, EEXIT, and ETHING work like EVAL but are restricted to a single type.
   
   See "help @search3" for more.
 & @search3
@@ -3072,18 +3078,20 @@ See also: @wall, @wizwall
   obtain information about other players, and players who pass a ZMP's
   zone-lock may obtain information about the ZMP.
 
-  Only one of any class can be specified. EVAL, EPLAYER, etc. all override
-  each other.
+  If multiple <class> and <restrictions> are given, objects must meet all
+  criteria in order to match successfully. The exception to this is that if
+  multiple 'type' searches (PLAYER, EROOM, etc) are used, only the last
+  type given is used in the search.
 
   @search is only mildly computationally expensive for most of the search
   classes.  computationally expensive searches are the evaluating searches
-  (EVAL, EPLAYER, ETHING/EOBJECT, EROOM, EEXIT) or the attribute pattern
+  (EVAL, EPLAYER, ETHING, EROOM, EEXIT) or the attribute pattern
   searches (COMMAND, LISTEN)
   
   See "help @search5" for some examples.
 & @search5
   Examples:  
-    @search flags=Wc      <-- search for connected wizards.
+    @search all type=player,flags=W      <-- list all Wizard players
     @search type=room     <-- list all rooms owned by me.
     @search zone=#50      <-- list all objects belong to zone #50.
     @search Joe eval=1,100,200   <-- list objects from #100-#200 owned by Joe.
@@ -3776,16 +3784,6 @@ See also: examine
   cv is a variant that forces a non-dark, non-hidden connection.
 
 See also: DARK, @hide
-& DOING
-  DOING
-
-  This command displays the list of players currently connected to the
-  MUSH. For mortals, it is identical to WHO. For wizards, it displays
-  the WHO in the format mortals see. The wizard WHO shows location and
-  host, but does not show @doing messages. DOING shows @doing messages
-  but not location or host.
-
-See also: WHO, @poll, @doing
 & OUTPUTPREFIX
 & OUTPUTSUFFIX
   OUTPUTPREFIX <string>
@@ -3796,7 +3794,7 @@ See also: WHO, @poll, @doing
   respectively. They are primarily useful for bots and the like.
 
 & IDLE
-  IDLE
+  IDLE [<string>]
 
   This command does nothing. It does not reset a connection's
   idle time. It is useful for people who are connecting from behind
@@ -3804,19 +3802,12 @@ See also: WHO, @poll, @doing
   have your client send the IDLE command every minute or so, and the 
   NAT connection won't time out (but you won't appear, to other players,
   to be active).
-
-& SESSION
-  SESSION
-
-  This admin-only form of WHO includes information on how much text
-  has been received and sent to the connections. It has three fields:
-
-  Sent, which is the number of characters sent TO the mush from that
-  connection. Recv, the number of characters sent FROM the mush to that
-  connection, and Pend, the number of characters still waiting to be sent
-  from the mush to the connection.
-
-See also: WHO, DOING
+  
+  Some routers will only consider a connection alive if text is received,
+  as well as sent. If you give a <string> with the IDLE command, that same
+  <string> will be sent back to you for this purpose.
+  
+See also: KEEPALIVE, @idle
 & teach
   teach <command>
 
@@ -3948,14 +3939,20 @@ See also: get, drop
 & get
 & take
   get <object>
-  take <object>
+  get <box>'s <object>
 
-  You pick up object, if you pass the object's @lock and the
-  container's @lock/take (if set). You can also do get <thing>'s
-  <object>, which will fail if thing is not ENTER_OK, thing has a
-  take-lock that blocks you, or object is locked against you. Some
-  MUSHes choose to disable the ability to take an object in someone
-  else's inventory.
+  The first form of this command lets you pick up <object> from your
+  current location. The second form allows you to take <object> from
+  inside <box>'s inventory.
+  
+  In both cases, you must pass <object>'s Basic @lock, and the
+  @lock/take of it's location.
+  
+  To get an object from someone else's inventory, the possessive_get
+  @config option must be true (and, if <box> is a disconnected player,
+  so must possessive_get_d). <box> must also be set ENTER_OK.
+  
+  'take' is usually an alias for the 'get' command.
 
 See also: @lock, ENTER_OK, give, drop, @success, inventory
 & @abuy
@@ -4214,9 +4211,9 @@ See also: OPAQUE, FLAGS, @describe, @adescribe, @odescribe, DARK, LIGHT
   The /noeval switch prevents the MUSH from evaluating the message.
   The /override switch is admin-only, and overrides pagelocks and
   HAVEN.
-  The /port switch is admin-only, and will page a port descriptor
-  directly, including connections that have not yet logged into a
-  player.
+  The /port switch is admin-only, and will page a single port
+  descriptor directly, including connections that have not yet logged
+  into a player.
   
 See also: @lock, @alias, @pageformat, pose, :, ;, HAVEN, NOSPOOF, FLAGS
 & :
@@ -4346,13 +4343,38 @@ See also: @use, @ouse, @ause, @charges, @runout
   persons should be space-separated, and names with spaces should be
   enclosed in double-quotes.
 & WHO
-  WHO   
+& DOING
+  WHO [<prefix>]
+  DOING [<prefix>]
+  
+  For mortals, the WHO command displays a list of players currently
+  connected to the MUSH, the amount of time they've been connected,
+  their idle time, and their @doing. Dark/hidden players are not shown.
+  
+  For admin, WHO shows the names of online players, their location,
+  connection/idle times, the number of commands typed through the
+  connection, the descriptor/port number, and the host the player is 
+  connected from. It also includes dark/hidden players, and connections
+  which are at the login screen, but have not yet connected to a player.
+  
+  Admin can use the DOING command to see the same output mortals see with
+  WHO, with the exception that dark/hidden players are included.
+  
+  If a <prefix> is given for either command, only connected players whose
+  names start with <prefix> are shown.
+  
+  Note: The in-game WHO is a normal game command, and is completely separate
+  from the WHO command which can be used at the connect screen.
 
-  Displays a list of players currently connected to the MUSH.  The WHO
-  tells you how long a player has been on and how long they have been
-  inactive. Unlike most commands, it is case sensitive.
+See also: @doing, @poll, SESSION
+& SESSION
+  SESSION [<prefix>]
 
-See also: @doing, @poll, DOING
+  The SESSION command is the same as the admin WHO, but instead of showing
+  the hostname, it shows the number of bytes sent to, received from, and
+  pending for each connection.
+
+See also: WHO
 & with
   with[/room] <obj>=<command>
 
@@ -4367,10 +4389,12 @@ See also: @doing, @poll, DOING
   connection and would be meaningless if run by an object or
   disconnected player.
 
-  DOING	    IDLE      LOGOUT     OUTPUTPREFIX OUTPUTSUFFIX QUIT
-  SESSION   WHO
+  IDLE      LOGOUT     OUTPUTPREFIX OUTPUTSUFFIX QUIT
 
   In addition, the following commands can only be used at the login
   screen:
 
-  cd ch connect create 
+  cd ch connect create
+  
+  The WHO command can also be used at the login screen. Please note that
+  this is different to the in-game WHO command.

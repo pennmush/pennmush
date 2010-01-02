@@ -2098,7 +2098,7 @@ EVALUATION LOCKS
     @lock <object>=objid^<object id>
 
   You can test to see if the enactor is a member of a space-separated
-  list of dbrefs or objids on an atrribute on the object, with:
+  list of dbrefs or objids on an attribute on the object, with:
 
     @lock <object>=dbreflist^<attributename>
 

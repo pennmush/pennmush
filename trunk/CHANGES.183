@@ -20,6 +20,7 @@ Version 1.8.3 patchlevel 12                     ??? ??, 2010
 
 Minor Changes:
  * Helpfile cleanup by Talvo.
+ * Expand the @lock key optimizer. Try '@lock me=!!=me'.
 
 Fixes:
  * English matching works better with possessive get

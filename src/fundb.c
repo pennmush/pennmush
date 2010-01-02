@@ -1189,13 +1189,30 @@ get_locktype(char *str)
   return upcasestr(str);
 }
 
+extern lock_list lock_types[];
 /* ARGSUSED */
 FUNCTION(fun_locks)
 {
-  dbref thing = match_thing(executor, args[0]);
+  dbref thing;
   lock_list *ll;
   const lock_list *p;
-  int first = 1;
+  bool first = 1;
+
+  if (nargs == 0) {
+    /* List all builtin lock names */
+    int n;
+
+    for (n = 0; lock_types[n].type; n++) {
+      if (!first)
+	safe_chr(' ', buff, bp);
+      else
+	first = 0;
+      safe_str(lock_types[n].type, buff, bp);
+    }
+    return;
+  }
+
+  thing = match_thing(executor, args[0]);
 
   if (!GoodObject(thing)) {
     safe_str(T(e_notvis), buff, bp);

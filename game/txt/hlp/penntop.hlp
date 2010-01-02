@@ -16,10 +16,11 @@ This is the index to the MUSH online help files.
 
   On many MUSHes, list local commands with:       +help
 
-If there are any errors in the help text, please notify a wizard in
-the game, or send mail to pennmush-bugs@pennmush.org, which is the
-address of the team who develop PennMUSH (and its distributed help
-files) but probably have no relation to this MUSH in particular.
+  If there are any errors in the help text, please notify a wizard in
+  the game, or file a report at
+  http://code.google.com/p/pennmush/issues/list, which is the
+  bug-tracking site for PennMUSH (and its distributed help files) but
+  probably has no relation to this MUSH in particular.
 
 & newbie
 
@@ -235,7 +236,7 @@ See also: PARENTS, ORPHAN
   The following functions support anonymous attributes:
   
   filter()    filterbool()   fold()      foreach()   map()      mapsql()
-  mix()       munge()        sortby()    sortkey()   step()
+  mix()       munge()        namelist()  sortby()    sortkey()  step()
 & ATTRIB-OWNERSHIP
   ATTRIBUTE OWNERSHIP
   

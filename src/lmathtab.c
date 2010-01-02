@@ -1,4 +1,4 @@
-/* ANSI-C code produced by gperf version 3.0.3p1 */
+/* ANSI-C code produced by gperf version 3.0.3 */
 /* Command-line: gperf --output-file lmathtab.c lmathtab.gperf  */
 /* Computed positions: -k'1-2,5' */
 
@@ -60,14 +60,20 @@ MATH_PROTO(math_median);
 MATH_PROTO(math_stddev);
 MATH_PROTO(math_dist2d);
 MATH_PROTO(math_dist3d);
+MATH_PROTO(math_lt);
+MATH_PROTO(math_lte);
+MATH_PROTO(math_gt);
+MATH_PROTO(math_gte);
+MATH_PROTO(math_eq);
+MATH_PROTO(math_neq);
 
 /** A math function. */
-#line 44 "lmathtab.gperf"
+#line 50 "lmathtab.gperf"
 struct math {
   const char *name;     /**< Name of the function. */
   void (*func) (char **, int, char *, char **); /**< Pointer to function code. */
 };
-/* maximum key range = 46, duplicates = 0 */
+/* maximum key range = 63, duplicates = 0 */
 
 #ifndef GPERF_DOWNCASE
 #define GPERF_DOWNCASE 1
@@ -114,40 +120,41 @@ gperf_case_memcmp(register const char *s1, register const char *s2,
 
 #ifdef __GNUC__
 __inline
-#ifdef __GNUC_STDC_INLINE__
-  __attribute__ ((__gnu_inline__))
+#else
+#ifdef __cplusplus
+inline
 #endif
 #endif
-    static unsigned int
-     math_hash(register const char *str, register unsigned int len)
+  static unsigned int
+math_hash(register const char *str, register unsigned int len)
 {
   static unsigned char asso_values[] = {
-    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
-    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
-    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
-    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
-    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
-    5, 0, 49, 49, 49, 49, 49, 49, 49, 49,
-    49, 49, 49, 49, 49, 0, 25, 49, 25, 0,
-    18, 49, 49, 10, 49, 49, 0, 10, 0, 5,
-    49, 49, 0, 15, 10, 30, 49, 49, 3, 49,
-    49, 49, 49, 49, 49, 49, 49, 0, 25, 49,
-    25, 0, 18, 49, 49, 10, 49, 49, 0, 10,
-    0, 5, 49, 49, 0, 15, 10, 30, 49, 49,
-    3, 49, 49, 49, 49, 49, 49, 49, 49, 49,
-    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
-    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
-    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
-    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
-    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
-    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
-    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
-    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
-    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
-    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
-    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
-    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
-    49, 49, 49, 49, 49, 49
+    65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+    65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+    65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+    65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+    65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+    10, 5, 65, 65, 65, 65, 65, 65, 65, 65,
+    65, 65, 65, 65, 65, 10, 15, 65, 30, 0,
+    30, 0, 65, 0, 65, 65, 5, 5, 0, 20,
+    65, 0, 10, 15, 3, 8, 65, 65, 25, 65,
+    65, 65, 65, 65, 65, 65, 65, 10, 15, 65,
+    30, 0, 30, 0, 65, 0, 65, 65, 5, 5,
+    0, 20, 65, 0, 10, 15, 3, 8, 65, 65,
+    25, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+    65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+    65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+    65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+    65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+    65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+    65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+    65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+    65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+    65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+    65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+    65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+    65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+    65, 65, 65, 65, 65, 65
   };
   register int hval = len;
 
@@ -175,84 +182,102 @@ __inline
                                   register unsigned int len)
 {
   enum {
-    TOTAL_KEYWORDS = 25,
+    TOTAL_KEYWORDS = 31,
     MIN_WORD_LENGTH = 2,
     MAX_WORD_LENGTH = 9,
-    MIN_HASH_VALUE = 3,
-    MAX_HASH_VALUE = 48
+    MIN_HASH_VALUE = 2,
+    MAX_HASH_VALUE = 64
   };
 
   static unsigned char lengthtable[] = {
-    0, 0, 0, 3, 4, 0, 0, 2, 3, 0, 0, 3, 0, 3,
-    4, 0, 6, 0, 3, 9, 0, 6, 7, 3, 0, 0, 8, 0,
-    3, 4, 0, 6, 4, 3, 0, 0, 0, 0, 3, 0, 0, 6,
-    0, 3, 0, 0, 6, 4, 3
+    0, 0, 2, 3, 0, 2, 3, 0, 3, 4, 2, 3, 0, 3,
+    4, 0, 3, 0, 3, 9, 0, 6, 0, 3, 6, 0, 3, 0,
+    3, 4, 0, 0, 2, 3, 0, 0, 6, 7, 3, 0, 0, 6,
+    0, 3, 4, 0, 6, 0, 3, 0, 0, 0, 0, 8, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 4
   };
   static struct math wordlist[] = {
-    {"", NULL}, {"", NULL}, {"", NULL},
-#line 60 "lmathtab.gperf"
-    {"AND", math_and},
-#line 61 "lmathtab.gperf"
-    {"NAND", math_nand},
     {"", NULL}, {"", NULL},
-#line 62 "lmathtab.gperf"
-    {"OR", math_or},
-#line 63 "lmathtab.gperf"
-    {"NOR", math_nor},
-    {"", NULL}, {"", NULL},
+#line 84 "lmathtab.gperf"
+    {"EQ", math_eq},
+#line 85 "lmathtab.gperf"
+    {"NEQ", math_neq},
+    {"", NULL},
+#line 82 "lmathtab.gperf"
+    {"GT", math_gt},
+#line 83 "lmathtab.gperf"
+    {"GTE", math_gte},
+    {"", NULL},
 #line 64 "lmathtab.gperf"
-    {"XOR", math_xor},
-    {"", NULL},
-#line 59 "lmathtab.gperf"
-    {"MAX", math_max},
-#line 69 "lmathtab.gperf"
+    {"MIN", math_min},
+#line 75 "lmathtab.gperf"
     {"MEAN", math_mean},
+#line 80 "lmathtab.gperf"
+    {"LT", math_lt},
+#line 81 "lmathtab.gperf"
+    {"LTE", math_lte},
     {"", NULL},
-#line 70 "lmathtab.gperf"
-    {"MEDIAN", math_median},
+#line 66 "lmathtab.gperf"
+    {"AND", math_and},
+#line 67 "lmathtab.gperf"
+    {"NAND", math_nand},
     {"", NULL},
-#line 54 "lmathtab.gperf"
-    {"MOD", math_modulo},
 #line 57 "lmathtab.gperf"
+    {"MUL", math_mul},
+    {"", NULL},
+#line 65 "lmathtab.gperf"
+    {"MAX", math_max},
+#line 63 "lmathtab.gperf"
     {"REMAINDER", math_remainder},
     {"", NULL},
-#line 55 "lmathtab.gperf"
-    {"MODULO", math_modulo},
-#line 56 "lmathtab.gperf"
-    {"MODULUS", math_modulo},
-#line 58 "lmathtab.gperf"
-    {"MIN", math_min},
-    {"", NULL}, {"", NULL},
-#line 53 "lmathtab.gperf"
-    {"FLOORDIV", math_floordiv},
+#line 76 "lmathtab.gperf"
+    {"MEDIAN", math_median},
     {"", NULL},
-#line 49 "lmathtab.gperf"
-    {"ADD", math_add},
-#line 65 "lmathtab.gperf"
-    {"BAND", math_band},
-    {"", NULL},
-#line 71 "lmathtab.gperf"
+#line 69 "lmathtab.gperf"
+    {"NOR", math_nor},
+#line 77 "lmathtab.gperf"
     {"STDDEV", math_stddev},
-#line 67 "lmathtab.gperf"
-    {"BXOR", math_bxor},
-#line 66 "lmathtab.gperf"
-    {"BOR", math_bor},
-    {"", NULL}, {"", NULL}, {"", NULL}, {"", NULL},
-#line 52 "lmathtab.gperf"
+    {"", NULL},
+#line 56 "lmathtab.gperf"
+    {"SUB", math_sub},
+    {"", NULL},
+#line 60 "lmathtab.gperf"
+    {"MOD", math_modulo},
+#line 71 "lmathtab.gperf"
+    {"BAND", math_band},
+    {"", NULL}, {"", NULL},
+#line 68 "lmathtab.gperf"
+    {"OR", math_or},
+#line 58 "lmathtab.gperf"
     {"DIV", math_div},
     {"", NULL}, {"", NULL},
-#line 73 "lmathtab.gperf"
+#line 61 "lmathtab.gperf"
+    {"MODULO", math_modulo},
+#line 62 "lmathtab.gperf"
+    {"MODULUS", math_modulo},
+#line 72 "lmathtab.gperf"
+    {"BOR", math_bor},
+    {"", NULL}, {"", NULL},
+#line 79 "lmathtab.gperf"
     {"DIST3D", math_dist3d},
     {"", NULL},
-#line 51 "lmathtab.gperf"
-    {"MUL", math_mul},
-    {"", NULL}, {"", NULL},
-#line 72 "lmathtab.gperf"
+#line 55 "lmathtab.gperf"
+    {"ADD", math_add},
+#line 73 "lmathtab.gperf"
+    {"BXOR", math_bxor},
+    {"", NULL},
+#line 78 "lmathtab.gperf"
     {"DIST2D", math_dist2d},
-#line 68 "lmathtab.gperf"
-    {"FDIV", math_fdiv},
-#line 50 "lmathtab.gperf"
-    {"SUB", math_sub}
+    {"", NULL},
+#line 70 "lmathtab.gperf"
+    {"XOR", math_xor},
+    {"", NULL}, {"", NULL}, {"", NULL}, {"", NULL},
+#line 59 "lmathtab.gperf"
+    {"FLOORDIV", math_floordiv},
+    {"", NULL}, {"", NULL}, {"", NULL}, {"", NULL}, {"", NULL},
+    {"", NULL}, {"", NULL}, {"", NULL}, {"", NULL}, {"", NULL},
+#line 74 "lmathtab.gperf"
+    {"FDIV", math_fdiv}
   };
 
   if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH) {
@@ -270,7 +295,7 @@ __inline
   return 0;
 }
 
-#line 74 "lmathtab.gperf"
+#line 86 "lmathtab.gperf"
 
 
 typedef struct math MATH;

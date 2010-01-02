@@ -38,6 +38,12 @@ MATH_PROTO(math_median);
 MATH_PROTO(math_stddev);
 MATH_PROTO(math_dist2d);
 MATH_PROTO(math_dist3d);
+MATH_PROTO(math_lt);
+MATH_PROTO(math_lte);
+MATH_PROTO(math_gt);
+MATH_PROTO(math_gte);
+MATH_PROTO(math_eq);
+MATH_PROTO(math_neq);
 
 /** A math function. */
 %}
@@ -71,6 +77,12 @@ MEDIAN, math_median
 STDDEV, math_stddev
 DIST2D, math_dist2d
 DIST3D, math_dist3d
+LT, math_lt
+LTE, math_lte
+GT, math_gt
+GTE, math_gte
+EQ, math_eq
+NEQ, math_neq
 %%
 
 typedef struct math MATH;

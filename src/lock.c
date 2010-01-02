@@ -351,7 +351,7 @@ getlock(dbref thing, lock_type type)
     return L_KEY(ll);
 }
 
-/** Given a lock type, find a lock without checking parents. 
+/** Given a lock type, find a lock without checking parents.
  * \param thing object on which lock is to be found.
  * \param type type of lock to find.
  * \return pointer to boolexp of lock.
@@ -436,7 +436,7 @@ match_lock(lock_type type)
 const lock_list *
 get_lockproto(lock_type type)
 {
-  return hashfind(type, &htab_locks);
+  return hashfind(strupper(type), &htab_locks);
 }
 
 /** Add a lock to an object (primitive).

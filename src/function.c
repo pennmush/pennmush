@@ -354,7 +354,7 @@ FUNTAB flist[] = {
   {"CSTATUS", fun_cstatus, 2, 2, FN_REG},
   {"CTITLE", fun_ctitle, 2, 2, FN_REG},
   {"CUSERS", fun_cinfo, 1, 1, FN_REG},
-  {"CWHO", fun_cwho, 1, 1, FN_REG},
+  {"CWHO", fun_cwho, 1, 2, FN_REG},
   {"CENTER", fun_center, 2, 4, FN_REG},
   {"CHILDREN", fun_lsearch, 1, 1, FN_REG},
   {"CHR", fun_chr, 1, 1, FN_REG},
@@ -399,7 +399,7 @@ FUNTAB flist[] = {
   {"ENCRYPT", fun_encrypt, 2, 3, FN_REG},
   {"ENTRANCES", fun_entrances, 0, 4, FN_REG},
   {"ETIMEFMT", fun_etimefmt, 2, 2, FN_REG},
-  {"EQ", fun_eq, 2, 2, FN_REG},
+  {"EQ", fun_eq, 2, INT_MAX, FN_REG},
   {"EVAL", fun_eval, 2, 2, FN_REG},
   {"ESCAPE", fun_escape, 1, -1, FN_REG},
   {"EXIT", fun_exit, 1, 1, FN_REG},
@@ -429,8 +429,8 @@ FUNTAB flist[] = {
   {"GRABALL", fun_graball, 2, 4, FN_REG},
   {"GREP", fun_grep, 3, 3, FN_REG},
   {"GREPI", fun_grep, 3, 3, FN_REG},
-  {"GT", fun_gt, 2, 2, FN_REG},
-  {"GTE", fun_gte, 2, 2, FN_REG},
+  {"GT", fun_gt, 2, INT_MAX, FN_REG},
+  {"GTE", fun_gte, 2, INT_MAX, FN_REG},
   {"HASATTR", fun_hasattr, 1, 2, FN_REG},
   {"HASATTRP", fun_hasattr, 1, 2, FN_REG},
   {"HASATTRPVAL", fun_hasattr, 1, 2, FN_REG},
@@ -482,7 +482,7 @@ FUNTAB flist[] = {
   {"LLOCKFLAGS", fun_lockflags, 0, 1, FN_REG},
   {"LLOCKS", fun_locks, 1, 1, FN_REG},
   {"LMATH", fun_lmath, 2, 3, FN_REG},
-  {"LNUM", fun_lnum, 1, 3, FN_REG},
+  {"LNUM", fun_lnum, 1, 4, FN_REG},
   {"LOC", fun_loc, 1, 1, FN_REG},
   {"LOCALIZE", fun_localize, 1, 1, FN_NOPARSE},
   {"LOCATE", fun_locate, 3, 3, FN_REG},
@@ -493,20 +493,20 @@ FUNTAB flist[] = {
   {"LPARENT", fun_lparent, 1, 1, FN_REG},
   {"LPIDS", fun_lpids, 0, 2, FN_REG},
   {"LPLAYERS", fun_dbwalker, 1, 1, FN_REG},
-  {"LPORTS", fun_lports, 0, 1, FN_REG},
+  {"LPORTS", fun_lports, 0, 2, FN_REG},
   {"LPOS", fun_lpos, 2, 2, FN_REG},
   {"LSEARCH", fun_lsearch, 1, INT_MAX, FN_REG},
   {"LSEARCHR", fun_lsearch, 1, INT_MAX, FN_REG},
   {"LSET", fun_lset, 2, 2, FN_REG},
   {"LSTATS", fun_lstats, 0, 1, FN_REG},
-  {"LT", fun_lt, 2, 2, FN_REG},
-  {"LTE", fun_lte, 2, 2, FN_REG},
+  {"LT", fun_lt, 2, INT_MAX, FN_REG},
+  {"LTE", fun_lte, 2, INT_MAX, FN_REG},
   {"LTHINGS", fun_dbwalker, 1, 1, FN_REG},
   {"LVCON", fun_dbwalker, 1, 1, FN_REG},
   {"LVEXITS", fun_dbwalker, 1, 1, FN_REG},
   {"LVPLAYERS", fun_dbwalker, 1, 1, FN_REG},
   {"LVTHINGS", fun_dbwalker, 1, 1, FN_REG},
-  {"LWHO", fun_lwho, 0, 1, FN_REG},
+  {"LWHO", fun_lwho, 0, 2, FN_REG},
   {"LWHOID", fun_lwho, 0, 1, FN_REG},
   {"MAIL", fun_mail, 0, 2, FN_REG},
   {"MAILFROM", fun_mailfrom, 1, 2, FN_REG},
@@ -541,7 +541,7 @@ FUNTAB flist[] = {
   {"MWHO", fun_lwho, 0, 0, FN_REG},
   {"MWHOID", fun_lwho, 0, 0, FN_REG},
   {"NAME", fun_name, 0, 2, FN_REG},
-  {"NAMELIST", fun_namelist, 1, 1, FN_REG},
+  {"NAMELIST", fun_namelist, 1, 2, FN_REG},
   {"NAMEGRAB", fun_namegrab, 2, 3, FN_REG},
   {"NAMEGRABALL", fun_namegraball, 2, 3, FN_REG},
   {"NAND", fun_nand, 1, INT_MAX, FN_REG},
@@ -554,7 +554,7 @@ FUNTAB flist[] = {
   {"NEXITS", fun_dbwalker, 1, 1, FN_REG},
   {"NPLAYERS", fun_dbwalker, 1, 1, FN_REG},
   {"NEARBY", fun_nearby, 2, 2, FN_REG},
-  {"NEQ", fun_neq, 2, 2, FN_REG},
+  {"NEQ", fun_neq, 2, INT_MAX, FN_REG},
   {"NEXT", fun_next, 1, 1, FN_REG},
   {"NEXTDBREF", fun_nextdbref, 0, 0, FN_REG},
   {"NLSEARCH", fun_lsearch, 1, INT_MAX, FN_REG},
@@ -692,6 +692,7 @@ FUNTAB flist[] = {
   {"TABLE", fun_table, 1, 5, FN_REG},
   {"TEL", fun_tel, 2, 4, FN_REG},
   {"TERMINFO", fun_terminfo, 1, 1, FN_REG},
+  {"TESTLOCK", fun_testlock, 2, 2, FN_REG},
   {"TEXTENTRIES", fun_textentries, 2, 3, FN_REG},
   {"TEXTFILE", fun_textfile, 2, 2, FN_REG},
   {"TIME", fun_time, 0, 1, FN_REG},
@@ -704,11 +705,11 @@ FUNTAB flist[] = {
   {"TRUNC", fun_trunc, 1, 1, FN_REG},
   {"TYPE", fun_type, 1, 1, FN_REG},
   {"UCSTR", fun_ucstr, 1, -1, FN_REG},
-  {"UDEFAULT", fun_uldefault, 2, 12, FN_NOPARSE},
+  {"UDEFAULT", fun_udefault, 2, 12, FN_NOPARSE},
   {"UFUN", fun_ufun, 1, 11, FN_REG},
-  {"ULAMBDA", fun_ulambda, 1, 11, FN_REG},
-  {"ULDEFAULT", fun_uldefault, 1, 12, FN_NOPARSE},
-  {"ULOCAL", fun_ulocal, 1, 11, FN_REG},
+  {"ULAMBDA", fun_ufun, 1, 11, FN_REG},
+  {"ULDEFAULT", fun_udefault, 1, 12, FN_NOPARSE | FN_LOCALIZE},
+  {"ULOCAL", fun_ufun, 1, 11, FN_REG | FN_LOCALIZE},
   {"UNIQUE", fun_unique, 1, 4, FN_REG},
   {"UTCTIME", fun_time, 0, 0, FN_REG},
   {"U", fun_ufun, 1, 11, FN_REG},
@@ -1045,7 +1046,7 @@ strip_braces(const char *str)
 }
 
 /*------------------------------------------------------------------------
- * User-defined global function handlers 
+ * User-defined global function handlers
  */
 
 static int
@@ -1286,7 +1287,7 @@ do_function(dbref player, char *name, char *argv[], int preserve)
     }
     return;
   }
-  /* otherwise, we are adding a user function. 
+  /* otherwise, we are adding a user function.
    * Only those with the Global_Funcs power may add stuff.
    * If you add a function that is already a user-defined function,
    * the old function gets over-written.
@@ -1475,7 +1476,7 @@ do_function_restore(dbref player, const char *name)
 void
 do_function_delete(dbref player, char *name)
 {
-  /* Deletes a user-defined function. 
+  /* Deletes a user-defined function.
    * For security, you must control the object the function uses
    * to delete the function.
    */
@@ -1610,7 +1611,7 @@ build_function_report(dbref player, FUN *fp)
     first = 0;
   }
 
-  if (fp->flags & FN_LOCALIZE) {
+  if (fp->flags & FN_USERFN) {
     if (first == 0)
       safe_strl(", ", 2, tbuf, &tp);
     safe_str("Userfn", tbuf, &tp);

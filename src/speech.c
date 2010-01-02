@@ -253,7 +253,7 @@ do_oemit_list(dbref player, char *list, const char *message, int flags)
     }
   }
 
-  /* Sort the list of rooms to oemit to so we don't oemit to the same           
+  /* Sort the list of rooms to oemit to so we don't oemit to the same
    * room twice */
   qsort((void *) locs, pass[0], sizeof(locs[0]), dbref_comp);
 
@@ -535,6 +535,9 @@ do_pemit(dbref player, const char *arg1, const char *arg2, int flags)
   dbref who;
   int silent, nospoof;
 
+  if (!arg2 || !*arg2)
+    return;
+
   silent = (flags & PEMIT_SILENT) ? 1 : 0;
   nospoof = (flags & PEMIT_SPOOF) ? 0 : 1;
 
@@ -761,8 +764,8 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
   dbref good[100];
   int gcount = 0;
   char *msgbuf, *mb;
-  const char *head;
-  const char *hp = NULL;
+  char *head;
+  char *hp = NULL;
   const char **start;
   char *current;
   int i;
@@ -813,7 +816,7 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
     override = 0;
   }
 
-  start = &head;
+  start = (const char **) &head;
   while (head && *head && (gcount < 99)) {
     current = next_in_list(start);
     target = lookup_player(current);
@@ -1040,7 +1043,7 @@ filter_found(dbref thing, const char *msg, int flag)
   char *filter;
   ATTR *a;
   char *p, *bp;
-  char *temp;                   /* need this so we don't leak memory     
+  char *temp;                   /* need this so we don't leak memory
                                  * by failing to free the storage
                                  * allocated by safe_uncompress
                                  */
@@ -1358,7 +1361,6 @@ do_lemit(dbref player, const char *tbuf1, int flags)
 {
   /* give a message to the "absolute" location of an object */
   dbref room;
-  int rec = 0;
   int na_flags = NA_INTER_HEAR;
   int silent = (flags & PEMIT_SILENT) ? 1 : 0;
 
@@ -1366,18 +1368,8 @@ do_lemit(dbref player, const char *tbuf1, int flags)
   if (!Mobile(player))
     return;
 
-  /* prevent infinite loop if player is inside himself */
-  if (((room = Location(player)) == player) || !GoodObject(room)) {
-    notify(player, T("Invalid container object."));
-    do_rawlog(LT_ERR, T("** BAD CONTAINER **  #%d is inside #%d."), player,
-              room);
-    return;
-  }
-  while (!IsRoom(room) && (rec < 15)) {
-    room = Location(room);
-    rec++;
-  }
-  if (rec > 15) {
+  room = absolute_room(player);
+  if (!GoodObject(room) || !IsRoom(room)) {
     notify(player, T("Too many containers."));
     return;
   } else if (!Loud(player) && !eval_lock(player, room, Speech_Lock)) {

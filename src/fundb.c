@@ -591,7 +591,7 @@ FUNCTION(fun_rnum)
       safe_str(T(e_match), buff, bp);
       break;
     case AMBIGUOUS:
-      safe_str(T("#-1 AMBIGUOUS MATCH"), buff, bp);
+      safe_str("#-2", buff, bp);
       break;
     default:
       safe_dbref(thing, buff, bp);
@@ -995,7 +995,7 @@ FUNCTION(fun_visible)
    * then we want to know about the whole object; otherwise, we're
    * just interested in a single attribute.
    * If we encounter an error, we return 0 rather than an error
-   * code, since if it doesn't exist, it obviously can't see 
+   * code, since if it doesn't exist, it obviously can't see
    * anything or be seen.
    */
 
@@ -1365,6 +1365,32 @@ FUNCTION(fun_elock)
 }
 
 /* ARGSUSED */
+FUNCTION(fun_testlock)
+{
+  dbref victim = match_thing(executor, args[1]);
+  boolexp elock = TRUE_BOOLEXP;
+
+  elock = parse_boolexp(executor, args[0], "Search");
+
+  if (elock == TRUE_BOOLEXP) {
+    safe_str("#-1 INVALID BOOLEXP", buff, bp);
+    return;
+  }
+
+  if (!GoodObject(victim)) {
+    safe_str("#-1", buff, bp);
+    return;
+  }
+  if (Can_Locate(executor, victim)) {
+    safe_boolean(eval_boolexp(victim, elock, executor), buff, bp);
+  } else {
+    safe_str("#-1", buff, bp);
+  }
+  free_boolexp(elock);
+  return;
+}
+
+/* ARGSUSED */
 FUNCTION(fun_findable)
 {
   dbref obj = match_thing(executor, args[0]);
@@ -1415,8 +1441,6 @@ FUNCTION(fun_ctime)
 
   if (!GoodObject(it) || IsGarbage(it))
     safe_str(T(e_notvis), buff, bp);
-  else if (!Can_Examine(executor, it))
-    safe_str(T(e_perm), buff, bp);
   else
     safe_str(show_time(CreTime(it), utc), buff, bp);
 }
@@ -1427,8 +1451,6 @@ FUNCTION(fun_csecs)
 
   if (!GoodObject(it) || IsGarbage(it))
     safe_str(T(e_notvis), buff, bp);
-  else if (!Can_Examine(executor, it))
-    safe_str(T(e_perm), buff, bp);
   else
     safe_integer((intmax_t) CreTime(it), buff, bp);
 }
@@ -1637,7 +1659,7 @@ FUNCTION(fun_money)
   /* If the thing in question has unlimited money, respond with the
    * max money possible. We don't use the NoPay macro, though, because
    * we want to return the amount of money stored in an object, even
-   * if its owner is no_pay. Softcode can check money(owner(XX)) if 
+   * if its owner is no_pay. Softcode can check money(owner(XX)) if
    * they want to allow objects to pay like their owners.
    */
   if (has_power_by_name(it, "NO_PAY", NOTYPE))
@@ -1823,6 +1845,18 @@ FUNCTION(fun_namelist)
   char *current;
   dbref target;
   const char *start;
+  int report = 0;
+  ufun_attrib ufun;
+  char *wenv[2];
+
+  if (nargs > 1 && args[1] && *args[1]) {
+    if (fetch_ufun_attrib(args[1], executor, &ufun, 1)) {
+      report = 1;
+    } else {
+      safe_str(ufun.errmess, buff, bp);
+      return;
+    }
+  }
 
   start = args[0];
   while (start && *start) {
@@ -1835,12 +1869,14 @@ FUNCTION(fun_namelist)
     target = lookup_player(current);
     if (!GoodObject(target))
       target = visible_short_page(executor, current);
-    if (target == NOTHING) {
-      safe_str("#-1", buff, bp);
-    } else if (target == AMBIGUOUS) {
-      safe_str("#-2", buff, bp);
-    } else {
-      safe_dbref(target, buff, bp);
+    safe_dbref(target, buff, bp);
+    if (target == NOTHING || target == AMBIGUOUS) {
+      if (report) {
+        wenv[0] = current;
+        wenv[1] = unparse_dbref(target);
+        if (call_ufun(&ufun, wenv, 2, NULL, executor, enactor, pe_info))
+          report = 0;
+      }
     }
   }
 }

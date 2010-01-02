@@ -190,7 +190,7 @@ do_quota(dbref player, const char *arg1, const char *arg2, int set_q)
     notify_format(player, T("Objects: %d   Limit: UNLIMITED"), owned);
     return;
   }
-  /* if we're not doing a change, determine the mortal's quota limit. 
+  /* if we're not doing a change, determine the mortal's quota limit.
    * RQUOTA is the objects _left_, not the quota itself.
    */
 
@@ -382,8 +382,8 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
   /* get destination */
 
   if (!strcasecmp(to, "home")) {
-    /* If the object is @tel'ing itself home, treat it the way we'd  
-     * treat a 'home' command 
+    /* If the object is @tel'ing itself home, treat it the way we'd
+     * treat a 'home' command
      */
     if (player == victim) {
       if (command_check_byname(victim, "HOME"))
@@ -435,7 +435,7 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
         loc = find_entrance(victim);
       else
         loc = Home(victim);
-      /* Unlike normal teleport, you must control the destination 
+      /* Unlike normal teleport, you must control the destination
        * or have the open_anywhere power
        */
       if (!(tport_control_ok(player, victim, loc) &&
@@ -1158,6 +1158,7 @@ do_search(dbref player, const char *arg1, char **arg3)
 {
   char tbuf[BUFFER_LEN], *arg2 = tbuf, *tbp;
   dbref *results = NULL;
+  char *s;
   int nresults;
 
   /* parse first argument into two */
@@ -1198,12 +1199,22 @@ do_search(dbref player, const char *arg1, char **arg3)
     }
   }
   {
-    const char *myargs[4];
+    const char *myargs[MAX_ARG];
+    int i;
+    int j = 2;
+
     myargs[0] = arg2;
     myargs[1] = arg3[1];
-    myargs[2] = arg3[2];
-    myargs[3] = arg3[3];
-    nresults = raw_search(player, tbuf, 4, myargs, &results, NULL);
+    for (i = 2; i < INT_MAX && (arg3[i] != NULL); i++) {
+      if ((s = strchr(arg3[i], '='))) {
+        *s++ = '\0';
+        myargs[j++] = arg3[i];
+        myargs[j++] = s;
+      } else {
+        myargs[j++] = arg3[i];
+      }
+    }
+    nresults = raw_search(player, tbuf, j, myargs, &results, NULL);
   }
 
   if (nresults == 0) {
@@ -1747,6 +1758,11 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
     notify(player, T("Unknown owner."));
     return -1;
   }
+  // An odd number of search classes is invalid.
+  if (nargs % 2) {
+    notify(player, T("Invalid search class+restriction format."));
+    return -1;
+  }
 
   for (n = 0; n < nargs - 1; n += 2) {
     class = args[n];
@@ -1952,7 +1968,6 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
   char lbuff[BUFFER_LEN];
 
   if (fill_search_spec(player, owner, nargs, args, &spec) < 0) {
-    giveto(player, FIND_COST);
     if (spec.lock != TRUE_BOOLEXP)
       free_boolexp(spec.lock);
     return -1;

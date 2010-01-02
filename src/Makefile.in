@@ -515,6 +515,8 @@ cque.o: ../hdrs/strtree.h
 cque.o: ../hdrs/mymalloc.h
 cque.o: ../hdrs/game.h
 cque.o: ../hdrs/attrib.h
+cque.o: ../hdrs/function.h
+cque.o: ../hdrs/case.h
 cque.o: ../hdrs/log.h
 cque.o: ../hdrs/intmap.h
 create.o: ../hdrs/copyrite.h

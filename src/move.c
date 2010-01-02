@@ -11,6 +11,7 @@
 
 #include <ctype.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "conf.h"
 #include "externs.h"
@@ -324,7 +325,8 @@ find_var_dest(dbref player, dbref exit_obj)
    * a VARIABLE (ambiguous) link.
    */
 
-  char const *abuf, *ap;
+  char *abuf;
+  const char *ap;
   char buff[BUFFER_LEN], *bp;
   ATTR *a;
   dbref dest_room;

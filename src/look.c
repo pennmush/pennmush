@@ -11,6 +11,7 @@
 #define _GNU_SOURCE
 #include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
 
 #include "conf.h"
 #include "externs.h"
@@ -1517,6 +1518,7 @@ do_decompile(dbref player, const char *xname, const char *prefix,
   dbref thing;
   const char *object = NULL;
   char *attrib, *name;
+  char *attrname;
   char dbnum[40];
 
   /* @decompile must always have an argument */
@@ -1543,16 +1545,19 @@ do_decompile(dbref player, const char *xname, const char *prefix,
 
   /* if we have an attribute arg specified, wild match on it */
   if (attrib && *attrib) {
-    switch (dbflag) {
-    case DEC_DB:
-      decompile_atrs(player, thing, dbnum, attrib, prefix, skipdef);
-      break;
-    default:
-      if (IsRoom(thing))
-        decompile_atrs(player, thing, "here", attrib, prefix, skipdef);
-      else
-        decompile_atrs(player, thing, Name(thing), attrib, prefix, skipdef);
-      break;
+    attrname = attrib;
+    while ((attrib = split_token(&attrname, ' ')) != NULL) {
+      switch (dbflag) {
+      case DEC_DB:
+        decompile_atrs(player, thing, dbnum, attrib, prefix, skipdef);
+        break;
+      default:
+        if (IsRoom(thing))
+          decompile_atrs(player, thing, "here", attrib, prefix, skipdef);
+        else
+          decompile_atrs(player, thing, Name(thing), attrib, prefix, skipdef);
+        break;
+      }
     }
     return;
   }

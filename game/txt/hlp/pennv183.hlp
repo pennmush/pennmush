@@ -1,4 +1,4 @@
-& 1.8.3p10
+& 1.8.3p11
 & changes
 This is a list of changes in this patchlevel which are probably of
 interest to players. More information about new commands and functions
@@ -11,6 +11,106 @@ help topics named for each release (e.g. 'help 1.7.2p30').
 A list of the patchlevels associated with each release can
 be read in 'help patchlevels'.
 
+Version 1.8.3 patchlevel 11                     Jan 01, 2010
+
+Major changes:
+  * The WHO, DOING and SESSION commands are now normal game commands,
+    and can be @hook'd, typed in lower-case, etc. (The WHO at the login
+    screen is separate.) If you have a softcoded 'who' command, you will
+    need to @hook/override WHO for it to continue working. Suggested by
+    Bane. [MG]
+  * The "take" command has been moved from the hardcode into alias.cnf.
+    If you want to keep it as an alias for "get", you should add the line
+    "command_alias get take" into your alias.cnf. [MG]
+
+Configuration:
+  * The *_file options (connect_file, motd_file, etc) can now be a
+    #dbref/attribute instead of a filename, in which case the given
+    attribute is evaluated and the result shown in place of the text file.
+    Based on patches by Nathan Baum and Mercutio@M*U*S*H. [MG]
+
+Commands:
+  * @decompile now takes multiple attribute patterns after the /
+    (@dec obj/attr attr2) [GM]
+  * @channel/decompile now shows the dbref of the channel mogrifier,
+    instead of its name. [SW]
+  * @pemit now takes a /port switch, which sends the message to the
+    specified port. Suggested by Mercutio. [MG]
+  * @hook/list without a <command> now shows all commands which have hooks.
+    Based on a patch by Trinsec. [MG]
+  * @search now takes multiple <class>=<restriction> pairs. [MG]
+  * The IDLE command now takes an optional argument, which it prints back
+    to the descriptor which sent the command. [MG]
+  * IDLE no longer increases the cmds() for a descriptor. [MG]
+
+Functions:
+  * die() now takes up to 700 dice.
+  * remove() will now remove a list of words.
+  * table() now supports <, > and - as alignment parameters to field width.
+  * testlock(<boolexp>, <victim>) tests a lock without setting it.
+    Suggested by Mercutio@M*U*S*H. [GM]
+  * lnum() now takes a fourth argument: A step. [GM]
+  * cwho() now takes an optional second argument, to control whether
+    online, offline or all players are returned. Suggested by Mercutio,
+    based on a patch by Ifrit. [MG]
+  * room(<room>) now returns <room>, instead of #-1. Also, room(<exit>)
+    returns the exit's source room, rather than the destination. Suggested
+    by Null@M*U*S*H. [MG]
+  * Fixed a bug in how align() strips spaces when wrapping text. Reported
+    by Paige@M*U*S*H. [MG]
+  * pemit(<port number>, <message>) sends <message> to the specified
+    port, like @pemit/port. Suggested by Mercutio. [MG]
+  * lports() and lwho() take an optional second argument to include
+    connections at the login screen. Suggested by Mercutio. [MG]
+  * namelist() now takes an optional #dbref/attr, called for each invalid
+    name in the first argument. [MG]
+  * lmath() can now do lt, lte, gt, gte, eq and neq. Also, lt(), lte(),
+    etc, can all take more than 2 arguments. [GM]
+  * Anyone can now use ctime() on any object. [MG]
+  * locks() reported built-in locks as being user: locks. [MG]
+
+Fixes:
+  * Help fixes by various folks.
+  * lsearch() with invalid syntax was failing to report it as such, causing
+    confusion when lsearch(me,exits) returned the same as lsearch(me). [GM]
+  * fun_merge() was eating characters when ansi was present. Reported
+    by Nammyung. Fixed. [GM]
+  * Windows compile fixes.
+  * Math-y crashbug fixed. Reported by Ghost@M*U*S*H. [GM]
+  * page/port didn't evaluate its arguments properly. Reported
+    by adkins@drigon.com. [SW]
+  * randword() with a single element list wasn't dealing correctly
+    with extra spaces. Reported by Minion. [SW]
+  * @listen/^-listens should now be triggered with the object being
+    spoofed as %#, not the object doing the spoofing, when @message/spoof
+    (and @pemit/spoof, etc) are used. Reported by Mercutio@M*U*S*H. [MG]
+  * Fixed some minor type-related warnings when compiling on cygwin. [MG]
+  * @functions which were set "localize" would report being set "Userfn"
+    as well, and functions set "Userfn" weren't reported as such. [MG]
+  * Objects could be set with flags which weren't valid for their object
+    type, if such flags were in the <type>_flags config option. Found by
+    Kitai. [MG]
+  * Crashbug in the command parser fixed. Found by Freon, patch by Javelin.
+  * Added some missing punctuation in channel messages. Reported by Stoko.
+
+   
+ Minor changes:
+  * @listen/^-listens now carry over ANSI. Requested by Mercutio. [MG]
+  * @adisconnect now has %5, which is true if the disconnecting descriptor
+    was @hide. Suggested by Minion@M*U*S*H [GM]
+  * @pemit <name>= would show nospoof info if <name> was set Nospoof. Now,
+    it does nothing at all. Reported by Minion. [MG]
+  * The connect screen can now contain ANSI color. Patch by Mercutio.
+  * Small bug fix in @search. [MG]
+  * Built-in functions can be set FN_LOCALIZE to preserve %q-regs. [MG]
+  * Refactoring of ufun(), ulocal(), u[l]default() and ulambda(). [MG]
+  * The "Not enough money to queue command" message tells you which object
+    was attempting to queue the command. Suggested by Daniel Powell. [MG]
+
+Tools:
+  * New script in utils/ for searching change logs: grep-cl.pl [SW]
+
+& 1.8.3p10
 Version 1.8.3 patchlevel 10                     Aug 24, 2009
 
 Major changes:

@@ -192,7 +192,8 @@ nameformat(dbref player, dbref loc, char *tbuf1, char *defname)
   ATTR *a;
   char *wsave[10], *rsave[NUMQ];
   char *arg, *bp, *arg2;
-  char const *sp, *save;
+  char const *sp;
+  char *save;
 
   int j;
   a = atr_get(loc, "NAMEFORMAT");
@@ -284,9 +285,9 @@ unparse_uinteger(uintmax_t num)
 char *
 unparse_number(NVAL num)
 {
-  char str[100];                /* Should be large enough for even the HUGE floats */
+  char str[1000];                /* Should be large enough for even the HUGE floats */
   char *p;
-  sprintf(str, "%.*f", FLOAT_PRECISION, num);
+  snprintf(str, 1000, "%.*f", FLOAT_PRECISION, num);
 
   if ((p = strchr(str, '.'))) {
     p += strlen(p);

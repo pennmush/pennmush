@@ -1793,12 +1793,12 @@ chunk_statistics(dbref player)
   STAT_OUT(tprintf("Storage:   %10d total (%2d%% saturation)",
                    overhead, used_bytes * 100 / overhead));
   STAT_OUT(tprintf("Regions:   %10d total, %8d cached",
-                   region_count, cached_region_count));
+                   (int) region_count, (int) cached_region_count));
   STAT_OUT(tprintf("Paging:    %10d out, %10d in",
                    stat_page_out, stat_page_in));
   STAT_OUT(" ");
   STAT_OUT(tprintf("Period:    %10d (%10d accesses so far, %10d chunks at max)",
-                   curr_period, stat_deref_count, stat_deref_maxxed));
+                   (int) curr_period, stat_deref_count, stat_deref_maxxed));
   STAT_OUT(tprintf("Activity:  %10d creates, %10d deletes this period",
                    stat_create, stat_delete));
   STAT_OUT(tprintf("Migration: %10d moves this period",
@@ -1839,7 +1839,7 @@ chunk_region_statistics(dbref player)
               "fbytes:%04x  largest:%04x  deref:%3d",
               rid, regions[rid].used_count, regions[rid].free_count,
               regions[rid].free_bytes, regions[rid].largest_free_chunk,
-              RegionDerefs(rid)));
+              (int) RegionDerefs(rid)));
   }
 }
 

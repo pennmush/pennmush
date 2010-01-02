@@ -88,6 +88,9 @@
 #ifdef HAVE_FAM_H
 #include <fam.h>
 #endif
+#ifdef HAVE_POLL_H
+#include <poll.h>
+#endif
 
 #include "conf.h"
 
@@ -183,12 +186,12 @@ char errlog[BUFFER_LEN] = { '\0' };      /**< Name of the error log file */
  * option negotiation code for setting client-side line-editing mode
  * to it. If it gets a reply, a flag in the descriptor struct is
  * turned on indicated telnet-awareness.
- * 
+ *
  * If the reply indicates that the client supports linemode, further
  * instructions as to what linemode options are to be used is sent.
  * Those options: Client-side line editing, and expanding literal
  * client-side-entered tabs into spaces.
- * 
+ *
  * Option negotation requests sent by the client are processed,
  * with the only one we confirm rather than refuse outright being
  * suppress-go-ahead, since a number of telnet clients try it.
@@ -223,6 +226,9 @@ static int handle_telnet(DESC *d, unsigned char **q, unsigned char *qend);
 #define DESC_ITER_CONN(d) \
         for(d = descriptor_list;(d);d=(d)->next) \
           if((d)->connected)
+
+#define DESC_ITER(d) \
+				for(d = descriptor_list;(d);d=(d)->next) \
 
 /** Is a descriptor hidden? */
 #define Hidden(d)        ((d->hide == 1) && Can_Hide(d->player))
@@ -317,6 +323,7 @@ static void clearstrings(DESC *d);
 typedef struct fblock {
   unsigned char *buff;    /**< Pointer to the block as a string */
   size_t len;             /**< Length of buff */
+  dbref thing;               /**< If NOTHING, display buff as raw text. Otherwise, buff is an attrname on thing to eval and display */
 } FBLOCK;
 
 /** The complete collection of cached text files. */
@@ -334,6 +341,8 @@ struct fcache_entries {
 
 static struct fcache_entries fcache;
 static void fcache_dump(DESC *d, FBLOCK fp[2], const unsigned char *prefix);
+static int fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
+                            const unsigned char *prefix);
 static int fcache_read(FBLOCK *cp, const char *filename);
 static void logout_sock(DESC *d);
 static void shutdownsock(DESC *d);
@@ -376,7 +385,7 @@ sig_atomic_t slave_error = 0;
 #endif
 #endif
 extern pid_t forked_dump_pid;   /**< Process id of forking dump process */
-static void dump_users(DESC *call_by, char *match, int doing);
+static void dump_users(DESC *call_by, char *match);
 static const char *time_format_1(time_t dt);
 static const char *time_format_2(time_t dt);
 static void announce_connect(dbref player, int isnew, int num);
@@ -440,7 +449,7 @@ main(int argc, char **argv)
   if (geteuid() == 0) {
     fprintf(stderr, "The  %s binary is set suid and owned by root.\n", argv[0]);
 #ifdef HAVE_SETEUID
-    fprintf(stderr, "Changing effective user to %d.\n", getuid());
+    fprintf(stderr, "Changing effective user to %d.\n", (int) getuid());
     seteuid(getuid());
     in_suid_root_mode = 1;
 #endif
@@ -716,7 +725,7 @@ set_signals(void)
   install_sig_handler(SIGTERM, bailout);
   install_sig_handler(SIGCHLD, reaper);
 #else
-  /* Win32 stuff: 
+  /* Win32 stuff:
    *   No support for SIGUSR2 or SIGINT.
    *   SIGTERM is never generated on NT-based Windows (according to MSDN)
    *   MSVC++ will let you get away with installing a handler anyway,
@@ -1211,6 +1220,62 @@ clearstrings(DESC *d)
   }
 }
 
+static int
+fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
+                 const unsigned char *prefix)
+{
+  ATTR *a;
+  char *wsave[10], *rsave[NUMQ];
+  char arg[BUFFER_LEN], *save, *buff, *bp;
+  char const *sp;
+  int j;
+
+  if (!GoodObject(thing) || IsGarbage(thing))
+    return 0;
+
+  a = atr_get(thing, attr);
+  if (!a)
+    return -1;
+
+  bp = arg;
+  safe_integer(d->descriptor, arg, &bp);
+  *bp = '\0';
+  buff = GC_MALLOC_ATOMIC(BUFFER_LEN);
+  if (!buff) {
+    mush_panic("Unable to allocate memory in fcache_dump_attr");
+    return -2;
+  }
+  save_global_regs("send_txt", rsave);
+  for (j = 0; j < 10; j++) {
+    wsave[j] = global_eval_context.wenv[j];
+    global_eval_context.wenv[j] = NULL;
+  }
+  for (j = 0; j < NUMQ; j++)
+    global_eval_context.renv[j][0] = '\0';
+  global_eval_context.wenv[0] = arg;
+  sp = save = safe_atr_value(a);
+  bp = buff;
+  process_expression(buff, &bp, &sp, thing, NOTHING, NOTHING,
+                     PE_DEFAULT, PT_DEFAULT, NULL);
+  safe_chr('\n', buff, &bp);
+  *bp = '\0';
+  if (prefix) {
+    queue_newwrite(d, prefix, u_strlen(prefix));
+    queue_eol(d);
+  }
+  if (html)
+    queue_newwrite(d, (unsigned char *) buff, strlen(buff));
+  else
+    queue_write(d, (unsigned char *) buff, strlen(buff));
+  for (j = 0; j < 10; j++) {
+    global_eval_context.wenv[j] = wsave[j];
+  }
+  restore_global_regs("send_txt", rsave);
+
+  return 1;
+}
+
+
 /* Display a cached text file. If a prefix line was given,
  * display that line before the text file, but only if we've
  * got a text file to display
@@ -1218,32 +1283,67 @@ clearstrings(DESC *d)
 static void
 fcache_dump(DESC *d, FBLOCK fb[2], const unsigned char *prefix)
 {
+  int i;
+
   /* If we've got nothing nice to say, don't say anything */
   if (!fb[0].buff && !((d->conn_flags & CONN_HTML) && fb[1].buff))
     return;
-  /* We've got something to say */
-  if (prefix) {
-    queue_newwrite(d, prefix, u_strlen(prefix));
-    queue_eol(d);
+
+  for (i = ((d->conn_flags & CONN_HTML) && fb[1].buff); i >= 0; i--) {
+    if (fb[i].thing != NOTHING) {
+      if (fcache_dump_attr(d, fb[i].thing, (char *) fb[i].buff, i, prefix) == 1) {
+        /* Attr successfully evaluated and displayed */
+        return;
+      }
+    } else {
+      /* Output static text from the cached file */
+      if (prefix) {
+        queue_newwrite(d, prefix, u_strlen(prefix));
+        queue_eol(d);
+      }
+      if (i)
+        queue_newwrite(d, fb[1].buff, fb[1].len);
+      else
+        queue_write(d, fb[0].buff, fb[0].len);
+      return;
+    }
   }
-  if (d->conn_flags & CONN_HTML) {
-    if (fb[1].buff)
-      queue_newwrite(d, fb[1].buff, fb[1].len);
-    else
-      queue_write(d, fb[0].buff, fb[0].len);
-  } else
-    queue_write(d, fb[0].buff, fb[0].len);
 }
 
 
 static int
 fcache_read(FBLOCK *fb, const char *filename)
 {
+  char objname[BUFFER_LEN];
+  char *attr;
+  dbref thing;
+  size_t len;
+
   if (!fb || !filename)
     return -1;
 
   fb->buff = NULL;
   fb->len = 0;
+  fb->thing = NOTHING;
+  /* Check for #dbref/attr */
+  if (*filename == NUMBER_TOKEN) {
+    strcpy(objname, filename);
+    if ((attr = strchr(objname, '/')) != NULL) {
+      *attr++ = '\0';
+      if ((thing = qparse_dbref(objname)) != NOTHING) {
+        /* we have #dbref/attr */
+        if (!(fb->buff = GC_MALLOC_ATOMIC(BUFFER_LEN))) {
+          return -1;
+        }
+        len = strlen(attr);
+        fb->thing = thing;
+        fb->len = len;
+        memcpy(fb->buff, (unsigned char *) upcasestr(attr), len);
+        *((char *) fb->buff + len) = '\0';
+        return fb->len;
+      }
+    }
+  }
 
 #ifdef WIN32
   /* Win32 read code here */
@@ -1585,6 +1685,15 @@ process_output(DESC *d)
      * We need to know if the descriptor is waiting on input, though.
      * So let's find out
      */
+
+#ifdef HAVE_POLL
+    struct pollfd p;
+
+    p.fd = d->descriptor;
+    p.events = POLLIN;
+    p.revents = 0;
+    input_ready = poll(&p, 1, 0);
+#else
     struct timeval pad;
     fd_set input_set;
 
@@ -1593,6 +1702,7 @@ process_output(DESC *d)
     FD_ZERO(&input_set);
     FD_SET(d->descriptor, &input_set);
     input_ready = select(d->descriptor + 1, &input_set, NULL, NULL, &pad);
+#endif
     if (input_ready < 0) {
       /* Well, shoot, we have no idea. Guess and proceed. */
       penn_perror("select in process_output");
@@ -2172,11 +2282,18 @@ do_command(DESC *d, char *command)
 {
   int j;
 
-  (d->cmds)++;
-
-  if (!strcmp(command, IDLE_COMMAND))
+  if (!strncmp(command, IDLE_COMMAND, strlen(IDLE_COMMAND))) {
+    j = strlen(IDLE_COMMAND);
+    if ((int) strlen(command) > j) {
+      if (*(command + j) == ' ')
+        j++;
+      queue_write(d, (unsigned char *) command + j, strlen(command) - j);
+      queue_eol(d);
+    }
     return 1;
+  }
   d->last_time = mudtime;
+  (d->cmds)++;
   if (!strcmp(command, QUIT_COMMAND)) {
     return 0;
   } else if (!strcmp(command, LOGOUT_COMMAND)) {
@@ -2184,18 +2301,6 @@ do_command(DESC *d, char *command)
   } else if (!strcmp(command, INFO_COMMAND)) {
     send_prefix(d);
     dump_info(d);
-    send_suffix(d);
-  } else if (!strncmp(command, WHO_COMMAND, strlen(WHO_COMMAND))) {
-    send_prefix(d);
-    dump_users(d, command + strlen(WHO_COMMAND), 0);
-    send_suffix(d);
-  } else if (!strncmp(command, DOING_COMMAND, strlen(DOING_COMMAND))) {
-    send_prefix(d);
-    dump_users(d, command + strlen(DOING_COMMAND), 1);
-    send_suffix(d);
-  } else if (!strncmp(command, SESSION_COMMAND, strlen(SESSION_COMMAND))) {
-    send_prefix(d);
-    dump_users(d, command + strlen(SESSION_COMMAND), 2);
     send_suffix(d);
   } else if (!strncmp(command, PREFIX_COMMAND, strlen(PREFIX_COMMAND))) {
     set_userstring(&d->output_prefix, command + strlen(PREFIX_COMMAND));
@@ -2243,7 +2348,18 @@ do_command(DESC *d, char *command)
       strcpy(global_eval_context.ucom, "");
       global_eval_context.cplr = NOTHING;
     } else {
-      if (!check_connect(d, command))
+      j = 0;
+      if (!strncmp(command, WHO_COMMAND, strlen(WHO_COMMAND)))
+        j = strlen(WHO_COMMAND);
+      else if (!strncmp(command, DOING_COMMAND, strlen(DOING_COMMAND)))
+        j = strlen(DOING_COMMAND);
+      else if (!strncmp(command, SESSION_COMMAND, strlen(SESSION_COMMAND)))
+        j = strlen(SESSION_COMMAND);
+      if (j) {
+        send_prefix(d);
+        dump_users(d, command + j);
+        send_suffix(d);
+      } else if (!check_connect(d, command))
         return 0;
     }
   }
@@ -2657,31 +2773,93 @@ player_desc(dbref player)
   return (DESC *) NULL;
 }
 
-/** Page a specified socket.
+/** Pemit to a specified socket.
  * \param player the enactor.
  * \param pc string containing port number to send message to.
  * \param message message to send.
+ * \param flags PEMIT_* flags
  */
 void
-do_page_port(dbref player, const char *pc, const char *message)
+do_pemit_port(dbref player, const char *pc, const char *message, int flags)
+{
+  DESC *d;
+  int port;
+
+  if (!Hasprivs(player)) {
+    notify(player, T("Permission denied."));
+    return;
+  }
+
+  port = atoi(pc);
+  if (port <= 0) {
+    notify(player, T("That's not a port number."));
+    return;
+  }
+
+  if (!*message) {
+    return;
+  }
+
+  d = port_desc(port);
+  if (!d) {
+    notify(player, T("That port is not active."));
+    return;
+  }
+
+  if (!(flags & PEMIT_SILENT))
+    notify_format(player, T("You pemit \"%s\" to %s."), message,
+                  (d->connected ? Name(d->player) : T("a connecting player")));
+  queue_string_eol(d, message);
+
+}
+
+/** Page a specified socket.
+ * \param player the enactor.
+ * \param cause the cause.
+ * \param pc string containing port number to send message to.
+ * \param message message to send.
+ * \param eval_msg Should the message be evaluated?
+ */
+void
+do_page_port(dbref player, dbref cause, const char *pc, const char *message,
+             bool eval_msg)
 {
   int p, key;
   DESC *d;
   const char *gap;
   char tbuf[BUFFER_LEN], *tbp = tbuf;
+  char mbuf[BUFFER_LEN], *mbp = mbuf;
   dbref target = NOTHING;
 
   if (!Hasprivs(player)) {
     notify(player, T("Permission denied."));
     return;
   }
-  p = atoi(pc);
+
+  process_expression(tbuf, &tbp, &pc, player, cause, cause, PE_DEFAULT,
+                     PT_DEFAULT, NULL);
+  *tbp = '\0';
+  p = atoi(tbuf);
+  tbp = tbuf;
+
   if (p <= 0) {
     notify(player, T("That's not a port number."));
     return;
   }
 
-  if (!message || !*message) {
+  if (!message) {
+    notify(player, T("What do you want to page with?"));
+    return;
+  }
+
+  if (eval_msg) {
+    process_expression(mbuf, &mbp, &message, player, cause, cause, PE_DEFAULT,
+                       PT_DEFAULT, NULL);
+    *mbp = '\0';
+    message = mbuf;
+  }
+
+  if (!*message) {
     notify(player, T("What do you want to page with?"));
     return;
   }
@@ -2933,8 +3111,7 @@ guest_to_connect(dbref player)
 
 
 static void
-dump_users(DESC *call_by, char *match, int doing)
-    /* doing: 0 if normal WHO, 1 if DOING, 2 if SESSION */
+dump_users(DESC *call_by, char *match)
 {
   DESC *d;
   int count = 0;
@@ -2950,124 +3127,32 @@ dump_users(DESC *call_by, char *match, int doing)
     match++;
   now = mudtime;
 
-  /* If a wizard/royal types "DOING" it gives him the normal player WHO,
-   * BUT flags are not shown. Wizard/royal WHO does not show @doings.
-   */
-
   if (SUPPORT_PUEBLO && (call_by->conn_flags & CONN_HTML)) {
     queue_newwrite(call_by, (const unsigned char *) "<img xch_mode=html>", 19);
     queue_newwrite(call_by, (const unsigned char *) "<PRE>", 5);
   }
 
-  if ((doing == 1) || !call_by->player || !Priv_Who(call_by->player)) {
-    if (poll_msg[0] == '\0')
-      strcpy(poll_msg, "Doing");
-    if (ShowAnsi(call_by->player))
-      snprintf(tbuf2, BUFFER_LEN, "%-16s %10s %6s  %s%s\n",
-               T("Player Name"), T("On For"), T("Idle"), poll_msg, ANSI_END);
-    else
-      snprintf(tbuf2, BUFFER_LEN, "%-16s %10s %6s  %s\n",
-               T("Player Name"), T("On For"), T("Idle"), poll_msg);
-    queue_string(call_by, tbuf2);
-  } else if (doing == 2) {
-    snprintf(tbuf2, BUFFER_LEN,
-             "%-16s %6s %9s %5s %5s Des  Sent    Recv  Pend\n",
-             T("Player Name"), T("Loc #"), T("On For"), T("Idle"), T("Cmds"));
-    queue_string(call_by, tbuf2);
-  } else {
-    snprintf(tbuf2, BUFFER_LEN, "%-16s %6s %9s %5s %5s Des  Host\n",
-             T("Player Name"), T("Loc #"), T("On For"), T("Idle"), T("Cmds"));
-    queue_string(call_by, tbuf2);
-  }
+  if (poll_msg[0] == '\0')
+    strcpy(poll_msg, "Doing");
+  snprintf(tbuf2, BUFFER_LEN, "%-16s %10s %6s  %s\n",
+           T("Player Name"), T("On For"), T("Idle"), poll_msg);
+  queue_string(call_by, tbuf2);
 
   for (d = descriptor_list; d; d = d->next) {
-    if (d->connected) {
-      if (!GoodObject(d->player))
-        continue;
-      if (COUNT_ALL || (!Hidden(d)
-                        || (call_by->player && Priv_Who(call_by->player))))
-        count++;
-      if (match && !(string_prefix(Name(d->player), match)))
-        continue;
+    if (!d->connected || !GoodObject(d->player))
+      continue;
+    if (COUNT_ALL || !Hidden(d))
+      count++;
+    if (Hidden(d) || (match && !(string_prefix(Name(d->player), match))))
+      continue;
 
-      if (call_by->connected && doing == 0 && call_by->player
-          && Priv_Who(call_by->player)) {
-        sprintf(tbuf1, "%-16s %6s %9s %5s  %4d %3d%c %s", Name(d->player),
-                unparse_dbref(Location(d->player)),
-                time_format_1(now - d->connected_at),
-                time_format_2(now - d->last_time), d->cmds, d->descriptor,
-#ifdef HAS_OPENSSL
-                d->ssl ? 'S' : ' ',
-#else
-                ' ',
-#endif
-                d->addr);
-        tbuf1[78] = '\0';
-        if (Dark(d->player)) {
-          tbuf1[71] = '\0';
-          strcat(tbuf1, " (Dark)");
-        } else if (Hidden(d)) {
-          tbuf1[71] = '\0';
-          strcat(tbuf1, " (Hide)");
-        }
-      } else if (call_by->connected && doing == 2 && call_by->player
-                 && Priv_Who(call_by->player)) {
-        sprintf(tbuf1, "%-16s %6s %9s %5s %5d %3d%c %5lu %7lu %5d",
-                Name(d->player), unparse_dbref(Location(d->player)),
-                time_format_1(now - d->connected_at),
-                time_format_2(now - d->last_time), d->cmds, d->descriptor,
-#ifdef HAS_OPENSSL
-                d->ssl ? 'S' : ' ',
-#else
-                ' ',
-#endif
-                d->input_chars, d->output_chars, d->output_size);
-      } else {
-        if (!Hidden(d)
-            || (call_by->player && Priv_Who(call_by->player) && (doing))) {
-          sprintf(tbuf1, "%-16s %10s   %4s%c %s", Name(d->player),
-                  time_format_1(now - d->connected_at),
-                  time_format_2(now - d->last_time),
-                  (Dark(d->player) ? 'D' : (Hidden(d) ? 'H' : ' '))
-                  , d->doing);
-        }
-      }
-
-      if (!Hidden(d) || (call_by->player && Priv_Who(call_by->player))) {
-        queue_string(call_by, tbuf1);
-        queue_newwrite(call_by, (const unsigned char *) "\r\n", 2);
-      }
-    } else if (call_by->player && Priv_Who(call_by->player) && doing != 1
-               && (!match || !*match)) {
-      if (doing == 0) {
-        /* Wizard WHO for non-logged in connections */
-        snprintf(tbuf1, BUFFER_LEN, "%-16s %6s %9s %5s  %4d %3d%c %s",
-                 T("Connecting..."), "#-1",
-                 time_format_1(now - d->connected_at),
-                 time_format_2(now - d->last_time), d->cmds, d->descriptor,
-#ifdef HAS_OPENSSL
-                 d->ssl ? 'S' : ' ',
-#else
-                 ' ',
-#endif
-                 d->addr);
-        tbuf1[78] = '\0';
-      } else {
-        /* SESSION for non-logged in connections */
-        snprintf(tbuf1, BUFFER_LEN, "%-16s %5s %9s %5s %5d %3d%c %5lu %7lu %5d",
-                 T("Connecting..."), "#-1",
-                 time_format_1(now - d->connected_at),
-                 time_format_2(now - d->last_time), d->cmds, d->descriptor,
-#ifdef HAS_OPENSSL
-                 d->ssl ? 'S' : ' ',
-#else
-                 ' ',
-#endif
-                 d->input_chars, d->output_chars, d->output_size);
-      }
-      queue_string(call_by, tbuf1);
-      queue_newwrite(call_by, (const unsigned char *) "\r\n", 2);
-    }
+    sprintf(tbuf1, "%-16s %10s   %4s%c %s", Name(d->player),
+            time_format_1(now - d->connected_at),
+            time_format_2(now - d->last_time),
+            (Dark(d->player) ? 'D' : (Hidden(d) ? 'H' : ' '))
+            , d->doing);
+    queue_string(call_by, tbuf1);
+    queue_newwrite(call_by, (const unsigned char *) "\r\n", 2);
   }
   switch (count) {
   case 0:
@@ -3087,6 +3172,221 @@ dump_users(DESC *call_by, char *match, int doing)
                    23);
   } else
     queue_newwrite(call_by, (const unsigned char *) "\r\n", 2);
+}
+
+void
+do_who_mortal(dbref player, char *name)
+{
+  DESC *d;
+  int count = 0;
+  time_t now = mudtime;
+  int privs = Priv_Who(player);
+  PUEBLOBUFF;
+
+  if (poll_msg[0] == '\0')
+    strcpy(poll_msg, "Doing");
+
+  if (SUPPORT_PUEBLO) {
+    PUSE;
+    tag("img xch_mod=html");
+    notify_noenter(player, open_tag("PRE"));
+    PEND;
+    notify_noenter(player, pbuff);
+  }
+
+
+  notify_format(player, "%-16s %10s %6s  %s", T("Player Name"), T("On For"),
+                T("Idle"), poll_msg);
+  for (d = descriptor_list; d; d = d->next) {
+    if (!d->connected)
+      continue;
+    if (COUNT_ALL || (!Hidden(d) || privs))
+      count++;
+    if (name && !string_prefix(Name(d->player), name))
+      continue;
+    if (Hidden(d) && !privs)
+      continue;
+    notify_format(player, "%-16s %10s   %4s%c %s", Name(d->player),
+                  time_format_1(now - d->connected_at),
+                  time_format_2(now - d->last_time),
+                  (Dark(d->player) ? 'D' : (Hidden(d) ? 'H' : ' '))
+                  , d->doing);
+  }
+  switch (count) {
+  case 0:
+    notify(player, T("There are no players connected."));
+    break;
+  case 1:
+    notify(player, T("There is one player connected."));
+    break;
+  default:
+    notify_format(player, T("There are %d players connected."), count);
+    break;
+  }
+
+  if (SUPPORT_PUEBLO) {
+    PUSE;
+    notify_noenter(player, close_tag("PRE"));
+    tag("img xch_mode=purehtml");
+    PEND;
+    notify_noenter(player, pbuff);
+  }
+
+}
+
+void
+do_who_admin(dbref player, char *name)
+{
+  DESC *d;
+  int count = 0;
+  time_t now = mudtime;
+  char tbuf[BUFFER_LEN];
+  PUEBLOBUFF;
+
+  if (SUPPORT_PUEBLO) {
+    PUSE;
+    tag("img xch_mod=html");
+    notify_noenter(player, open_tag("PRE"));
+    PEND;
+    notify_noenter(player, pbuff);
+  }
+
+  notify_format(player, "%-16s %6s %9s %5s %5s Des  Host", T("Player Name"),
+                T("Loc #"), T("On For"), T("Idle"), T("Cmds"));
+  for (d = descriptor_list; d; d = d->next) {
+    if (d->connected)
+      count++;
+    if ((name && *name)
+        && (!d->connected || !string_prefix(Name(d->player), name)))
+      continue;
+    if (d->connected) {
+      sprintf(tbuf, "%-16s %6s %9s %5s  %4d %3d%c %s", Name(d->player),
+              unparse_dbref(Location(d->player)),
+              time_format_1(now - d->connected_at),
+              time_format_2(now - d->last_time), d->cmds, d->descriptor,
+#ifdef HAS_OPENSSL
+              d->ssl ? 'S' : ' ',
+#else
+              ' ',
+#endif
+              d->addr);
+      if (Dark(d->player)) {
+        tbuf[71] = '\0';
+        strcat(tbuf, " (Dark)");
+      } else if (Hidden(d)) {
+        tbuf[71] = '\0';
+        strcat(tbuf, " (Hide)");
+      } else {
+        tbuf[78] = '\0';
+      }
+    } else {
+      sprintf(tbuf, "%-16s %6s %9s %5s  %4d %3d%c %s", T("Connecting..."),
+              "#-1", time_format_1(now - d->connected_at),
+              time_format_2(now - d->last_time), d->cmds, d->descriptor,
+#ifdef HAS_OPENSSL
+              d->ssl ? 'S' : ' ',
+#else
+              ' ',
+#endif
+              d->addr);
+      tbuf[78] = '\0';
+    }
+    notify(player, tbuf);
+  }
+
+  switch (count) {
+  case 0:
+    notify(player, T("There are no players connected."));
+    break;
+  case 1:
+    notify(player, T("There is one player connected."));
+    break;
+  default:
+    notify_format(player, T("There are %d players connected."), count);
+    break;
+  }
+
+  if (SUPPORT_PUEBLO) {
+    PUSE;
+    notify_noenter(player, close_tag("PRE"));
+    tag("img xch_mode=purehtml");
+    PEND;
+    notify_noenter(player, pbuff);
+  }
+
+}
+
+void
+do_who_session(dbref player, char *name)
+{
+  DESC *d;
+  int count = 0;
+  time_t now = mudtime;
+  PUEBLOBUFF;
+
+  if (SUPPORT_PUEBLO) {
+    PUSE;
+    tag("img xch_mod=html");
+    notify_noenter(player, open_tag("PRE"));
+    PEND;
+    notify_noenter(player, pbuff);
+  }
+
+  notify_format(player, "%-16s %6s %9s %5s %5s %4s %7s %7s %7s",
+                T("Player Name"), T("Loc #"), T("On For"), T("Idle"), T("Cmds"),
+                T("Des"), T("Sent"), T("Recv"), T("Pend"));
+
+  for (d = descriptor_list; d; d = d->next) {
+    if (d->connected)
+      count++;
+    if ((name && *name)
+        && (!d->connected || !string_prefix(Name(d->player), name)))
+      continue;
+    if (d->connected) {
+      notify_format(player, "%-16s %6s %9s %5s %5d %3d%c %7lu %7lu %7d",
+                    Name(d->player), unparse_dbref(Location(d->player)),
+                    time_format_1(now - d->connected_at),
+                    time_format_2(now - d->last_time), d->cmds, d->descriptor,
+#ifdef HAS_OPENSSL
+                    d->ssl ? 'S' : ' ',
+#else
+                    ' ',
+#endif
+                    d->input_chars, d->output_chars, d->output_size);
+    } else {
+      notify_format(player, "%-16s %6s %9s %5s %5d %3d%c %7lu %7lu %7d",
+                    T("Connecting..."), "#-1",
+                    time_format_1(now - d->connected_at),
+                    time_format_2(now - d->last_time), d->cmds, d->descriptor,
+#ifdef HAS_OPENSSL
+                    d->ssl ? 'S' : ' ',
+#else
+                    ' ',
+#endif
+                    d->input_chars, d->output_chars, d->output_size);
+    }
+  }
+
+  switch (count) {
+  case 0:
+    notify(player, T("There are no players connected."));
+    break;
+  case 1:
+    notify(player, T("There is one player connected."));
+    break;
+  default:
+    notify_format(player, T("There are %d players connected."), count);
+    break;
+  }
+
+  if (SUPPORT_PUEBLO) {
+    PUSE;
+    notify_noenter(player, close_tag("PRE"));
+    tag("img xch_mode=purehtml");
+    PEND;
+    notify_noenter(player, pbuff);
+  }
+
 }
 
 static const char *
@@ -3289,14 +3589,17 @@ announce_disconnect(DESC *saved)
    * %2 (bytes received)
    * %3 (bytes sent)
    * %4 (commands queued)
+   * %5 (hidden)
    */
   myenv[0] = NULL;
   myenv[1] = unparse_integer(num - 1);
   myenv[2] = unparse_integer(saved->input_chars);
   myenv[3] = unparse_integer(saved->output_chars);
   myenv[4] = unparse_integer(saved->cmds);
-  for (j = 0; j < 5; j++)
-    global_eval_context.wnxt[j] = myenv[j];
+  myenv[5] = unparse_integer(Hidden(saved));
+  for (j = 0; j < 6; j++) {
+     global_eval_context.wnxt[j] = myenv[j];
+  }
 
   (void) queue_attribute(player, "ADISCONNECT", player);
   if (ROOM_CONNECTS)
@@ -3535,7 +3838,7 @@ do_poll(dbref player, const char *message, int clear)
 
 /** Match the partial name of a connected player.
  * \param match string to match.
- * \return dbref of a unique connected player whose name partial-matches, 
+ * \return dbref of a unique connected player whose name partial-matches,
  * AMBIGUOUS, or NOTHING.
  */
 dbref
@@ -3572,7 +3875,7 @@ short_page(const char *match)
 /** Match the partial name of a connected player the enactor can see.
  * \param player the enactor
  * \param match string to match.
- * \return dbref of a unique connected player whose name partial-matches, 
+ * \return dbref of a unique connected player whose name partial-matches,
  * AMBIGUOUS, or NOTHING.
  */
 dbref
@@ -3668,12 +3971,12 @@ FUNCTION(fun_nwho)
 FUNCTION(fun_lwho)
 {
   DESC *d;
-  int first;
+  int first = 1;
   dbref victim;
   int powered = ((*called_as == 'L') && Priv_Who(executor));
   int objid = (strchr(called_as, 'D') != NULL);
-
-  first = 1;
+  int online = 1;
+  int offline = 0;
 
   if (nargs && args[0] && *args[0]) {
     /* An argument was given. Find the victim and choose the lowest
@@ -3691,18 +3994,45 @@ FUNCTION(fun_lwho)
       powered = 0;
   }
 
-  DESC_ITER_CONN(d) {
-    if (!Hidden(d) || powered) {
-      if (first)
-        first = 0;
-      else
-        safe_chr(' ', buff, bp);
+  if (nargs > 1 && args[1] && *args[1]) {
+    if (string_prefix("all", args[1])) {
+      offline = online = 1;
+    } else if (strlen(args[1]) < 2) {
+      safe_str(T("#-1 INVALID SECOND ARGUMENT"), buff, bp);
+      return;
+    } else if (string_prefix("online", args[1])) {
+      online = 1;
+      offline = 0;
+    } else if (string_prefix("offline", args[1])) {
+      online = 0;
+      offline = 1;
+    } else {
+      safe_str(T("#-1 INVALID SECOND ARGUMENT"), buff, bp);
+      return;
+    }
+    if (offline && !powered) {
+      safe_str(T("#-1 PERMISSION DENIED"), buff, bp);
+      return;
+    }
+  }
+
+  DESC_ITER(d) {
+    if ((d->connected && !online) || (!d->connected && !offline))
+      continue;
+    if (!powered && (d->connected && Hidden(d)))
+      continue;
+    if (first)
+      first = 0;
+    else
+      safe_chr(' ', buff, bp);
+    if (d->connected) {
       safe_dbref(d->player, buff, bp);
       if (objid) {
         safe_chr(':', buff, bp);
         safe_integer(CreTime(d->player), buff, bp);
       }
-    }
+    } else
+      safe_dbref(-1, buff, bp);
   }
 }
 
@@ -4169,6 +4499,8 @@ FUNCTION(fun_lports)
   int first = 1;
   dbref victim;
   int powered = 1;
+  int online = 1;
+  int offline = 0;
 
   if (!Priv_Who(executor)) {
     safe_str(T(e_perm), buff, bp);
@@ -4186,14 +4518,38 @@ FUNCTION(fun_lports)
       powered = 0;
   }
 
-  DESC_ITER_CONN(d) {
-    if (powered || !Hidden(d)) {
-      if (first)
-        first = 0;
-      else
-        safe_chr(' ', buff, bp);
-      safe_integer(d->descriptor, buff, bp);
+  if (nargs > 1 && args[1] && *args[1]) {
+    if (string_prefix("all", args[1])) {
+      offline = online = 1;
+    } else if (strlen(args[1]) < 2) {
+      safe_str(T("#-1 INVALID SECOND ARGUMENT"), buff, bp);
+      return;
+    } else if (string_prefix("online", args[1])) {
+      online = 1;
+      offline = 0;
+    } else if (string_prefix("offline", args[1])) {
+      online = 0;
+      offline = 1;
+    } else {
+      safe_str(T("#-1 INVALID SECOND ARGUMENT"), buff, bp);
+      return;
     }
+    if (offline && !powered) {
+      safe_str(T("#-1 PERMISSION DENIED"), buff, bp);
+      return;
+    }
+  }
+
+  DESC_ITER(d) {
+    if ((d->connected && !online) || (!d->connected && !offline))
+      continue;
+    if (!powered && (d->connected && Hidden(d)))
+      continue;
+    if (first)
+      first = 0;
+    else
+      safe_chr(' ', buff, bp);
+    safe_integer(d->descriptor, buff, bp);
   }
 }
 
@@ -4201,7 +4557,7 @@ FUNCTION(fun_lports)
 FUNCTION(fun_ports)
 {
   /* returns a list of the network descriptors that a player is
-   * connected to 
+   * connected to
    */
 
   dbref target;
@@ -4264,7 +4620,7 @@ hide_player(dbref player, int hide)
     notify(player, T("You now appear on the WHO list."));
 }
 
-/** Perform the periodic check of inactive descriptors, and 
+/** Perform the periodic check of inactive descriptors, and
  * disconnect them or autohide them as appropriate.
  */
 void
@@ -4748,7 +5104,7 @@ do_reboot(dbref player, int flag)
   exit(1);
 }
 
-/* File modification watching code. Linux-specific for now. 
+/* File modification watching code. Linux-specific for now.
  * Future directions include: kqueue() for BSD, fam for linux, irix, others?
  *
  * The idea to watch help.txt and motd.txt and friends to avoid having
@@ -4922,7 +5278,7 @@ file_watch_event_fam(void)
 
 #endif
 
-/** Start monitoring various useful files for changes. 
+/** Start monitoring various useful files for changes.
  * \return descriptor of the notification service, or -1 on error
  */
 int
@@ -4937,7 +5293,7 @@ file_watch_init(void)
 #endif
 }
 
-/** Test for modified files and re-read them if indicated. 
+/** Test for modified files and re-read them if indicated.
  * \param fd the notification monitorh descriptor
  */
 void

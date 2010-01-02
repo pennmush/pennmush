@@ -173,11 +173,6 @@ typedef bool _Bool;
 # define __bool_true_false_are_defined 1
 #endif
 
-/* Someday work to get rid of these. They're left over from the
-pre-void days */ 
-typedef void* Malloc_t; 
-typedef void Free_t;
-
 /* Functions */
 #undef HAS_BINDTEXTDOMAIN
 

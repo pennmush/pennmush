@@ -22,6 +22,10 @@ Minor Changes:
  * Helpfile cleanup by Talvo.
  * Expand the @lock key optimizer. Try '@lock me=!!=me'.
 
+Functions
+ * llocks() without any arguments returns a list of the
+   standard locks. Suggested by Talvo.
+
 Fixes:
  * English matching works better with possessive get
    (get box's 2nd thing). Reported by israphel.

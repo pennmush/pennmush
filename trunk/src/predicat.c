@@ -1082,7 +1082,7 @@ parse_match_possessor(dbref player, char **str)
   *str = obj;
 
   /* we already have a terminating null, so we're okay to just do matches */
-  return match_result(player, box, NOTYPE, MAT_NEIGHBOR | MAT_POSSESSION);
+  return match_result(player, box, NOTYPE, MAT_NEIGHBOR | MAT_POSSESSION | MAT_ENGLISH);
 }
 
 

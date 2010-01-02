@@ -552,8 +552,8 @@ do_attrib_flags(dbref player, const char *obj, const char *atrname,
   af.setflags = mush_strdup(atrflag_to_string(af.setf), "af_flag list");
   if (!atr_iter_get(player, thing, atrname, 0, af_helper, &af))
     notify(player, T("No attribute found to change."));
-  mush_free((Malloc_t) af.clrflags, "af_flag list");
-  mush_free((Malloc_t) af.setflags, "af_flag list");
+  mush_free(af.clrflags, "af_flag list");
+  mush_free(af.setflags, "af_flag list");
 }
 
 
@@ -716,7 +716,7 @@ do_cpattr(dbref player, char *oldpair, char **newpair, int move, int noflagcopy)
     }
   }
 
-  free((Malloc_t) text);        /* safe_uncompress malloc()s memory */
+  free(text);                   /* safe_uncompress malloc()s memory */
   if (copies) {
     notify_format(player, T("Attribute %s (%d copies)"),
                   (move ? T("moved") : T("copied")), copies);

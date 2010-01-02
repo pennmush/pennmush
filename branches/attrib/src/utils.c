@@ -85,8 +85,8 @@ parse_attrib(dbref player, char *str, dbref *thing, ATTR **attrib)
 }
 
 /** Parse an attribute or anonymous attribute into dbref and pointer.
- * This function takes a string which is of the format #lambda/code, 
- * <obj>/<attr> or <attr>,  and returns the dbref of the object, 
+ * This function takes a string which is of the format #lambda/code,
+ * <obj>/<attr> or <attr>,  and returns the dbref of the object,
  * and a pointer to the attribute.
  * \param player the executor, for permissions checks.
  * \param str string to parse.
@@ -465,8 +465,8 @@ member(dbref thing, dbref list)
 
 
 /** Is an object inside another, at any level of depth?
- * That is, we check if disallow is inside of from, i.e., if 
- * loc(disallow) = from, or loc(loc(disallow)) = from, etc., with a 
+ * That is, we check if disallow is inside of from, i.e., if
+ * loc(disallow) = from, or loc(loc(disallow)) = from, etc., with a
  * depth limit of 50.
  * Despite the name of this function, it's not recursive any more.
  * \param disallow interior object to check.
@@ -536,7 +536,7 @@ reverse(dbref list)
 
 
 
-/** Wrapper to choose a seed and initialize the Mersenne Twister PRNG. 
+/** Wrapper to choose a seed and initialize the Mersenne Twister PRNG.
  * The actual MT code lives in SFMT.c and hdrs/SFMT*.h */
 void
 initialize_mt(void)
@@ -698,7 +698,9 @@ absolute_room(dbref it)
   dbref room;
   if (!GoodObject(it))
     return NOTHING;
-  room = Location(it);
+  if (IsRoom(it))
+    return it;
+  room = IsExit(it) ? Home(it) : Location(it);
   if (!GoodObject(room))
     return NOTHING;
   while (!IsRoom(room)) {
@@ -717,7 +719,7 @@ absolute_room(dbref it)
  * INTERACT_SEE (will light rays from 'from' reach 'to'?), INTERACT_HEAR
  * (will sound from 'from' reach 'to'?), INTERACT_MATCH (can 'to'
  * match the name of 'from'?), and INTERACT_PRESENCE (will the arrival/
- * departure/connection/disconnection/growing ears/losing ears of 
+ * departure/connection/disconnection/growing ears/losing ears of
  * 'from' be noticed by 'to'?).
  * \param from object of interaction.
  * \param to subject of interaction, attempting to interact with from.

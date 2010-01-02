@@ -96,12 +96,12 @@ static int under_limit = 1;
  * option negotiation code for setting client-side line-editing mode
  * to it. If it gets a reply, a flag in the descriptor struct is
  * turned on indicated telnet-awareness.
- * 
+ *
  * If the reply indicates that the client supports linemode, further
  * instructions as to what linemode options are to be used is sent.
  * Those options: Client-side line editing, and expanding literal
  * client-side-entered tabs into spaces.
- * 
+ *
  * Option negotation requests sent by the client are processed,
  * with the only one we confirm rather than refuse outright being
  * suppress-go-ahead, since a number of telnet clients try it.
@@ -662,14 +662,11 @@ notify_type(DESC *d)
 
   if (!d->connected) {
     /* These are the settings used at, e.g., the connect screen,
-     * when there's no connected player yet. If you want to use
-     * ansified connect screens, you'd probably change NA_NPASCII
-     * to NA_NCOLOR (for no accents) or NA_COLOR (for accents). 
-     * We don't recommend it. If you want to use accented characters,
-     * change NA_NPUEBLO and NA_NPASCII to NA_PUEBLO and NA_PASCII,
-     * respectively. That's not so bad.
+     * when there's no connected player yet. If you want to use accented
+     * characters, change NA_NPUEBLO and NA_NCOLOR to NA_PUEBLO and
+     * NA_COLOR, respectively.
      */
-    return (d->conn_flags & CONN_HTML) ? NA_NPUEBLO : NA_NPASCII;
+    return (d->conn_flags & CONN_HTML) ? NA_NPUEBLO : NA_NCOLOR;
   }
 
   /* At this point, we have a connected player on the descriptor */
@@ -895,12 +892,12 @@ notify_anything_loc(dbref speaker, na_lookup func,
       if (AF_Regexp(a)
           ? regexp_match_case_r(tbuf1,
                                 (char *) notify_makestring(msgbuf, messages,
-                                                           NA_ASCII, 0),
+                                                           NA_COLOR, 0),
                                 AF_Case(a), global_eval_context.wnxt, 10,
                                 match_space, match_space_len)
           : wild_match_case_r(tbuf1,
                               (char *) notify_makestring(msgbuf, messages,
-                                                         NA_ASCII, 0),
+                                                         NA_COLOR, 0),
                               AF_Case(a), global_eval_context.wnxt, 10,
                               match_space, match_space_len)) {
         if (eval_lock(speaker, target, Listen_Lock))
@@ -914,7 +911,7 @@ notify_anything_loc(dbref speaker, na_lookup func,
         if (!(flags & NA_NORELAY) && (loc != target) &&
             !filter_found(target,
                           (char *) notify_makestring(msgbuf, messages,
-                                                     NA_ASCII, 0), 1)) {
+                                                     NA_COLOR, 0), 1)) {
           passalong[0] = target;
           passalong[1] = target;
           passalong[2] = Owner(target);
@@ -954,7 +951,7 @@ notify_anything_loc(dbref speaker, na_lookup func,
         && eval_lock(speaker, target, Listen_Lock)
       )
       atr_comm_match(target, speaker, '^', ':',
-                     (char *) notify_makestring(msgbuf, messages, NA_ASCII, 0),
+                     (char *) notify_makestring(msgbuf, messages, NA_COLOR, 0),
                      0, 1, NULL, NULL, NULL);
 
     /* If object is flagged AUDIBLE and has a @FORWARDLIST, send
@@ -969,19 +966,19 @@ notify_anything_loc(dbref speaker, na_lookup func,
 
   for (i = 0; i < MESSAGE_TYPES; i++) {
     if (messages[i].message)
-      mush_free((Malloc_t) messages[i].message, "string");
+      mush_free(messages[i].message, "string");
     if (nospoofs[i].message)
-      mush_free((Malloc_t) nospoofs[i].message, "string");
+      mush_free(nospoofs[i].message, "string");
     if (paranoids[i].message)
-      mush_free((Malloc_t) paranoids[i].message, "string");
+      mush_free(paranoids[i].message, "string");
   }
   if (nospoof)
-    mush_free((Malloc_t) nospoof, "string");
+    mush_free(nospoof, "string");
   if (paranoid)
-    mush_free((Malloc_t) paranoid, "string");
+    mush_free(paranoid, "string");
   if (tbuf1)
-    mush_free((Malloc_t) tbuf1, "string");
-  mush_free((Malloc_t) msgbuf, "string");
+    mush_free(tbuf1, "string");
+  mush_free(msgbuf, "string");
   na_depth--;
 }
 
@@ -1134,7 +1131,7 @@ notify_list(dbref speaker, dbref thing, const char *atr, const char *msg,
       }
     }
   }
-  free((Malloc_t) orig);
+  free(orig);
 }
 
 /** Wrapper to notify a single player with a message, unconditionally.
@@ -1149,7 +1146,7 @@ raw_notify(dbref player, const char *msg)
 
 /** Notify all connected players with the given flag(s).
  * If no flags are given, everyone is notified. If one flag list is given,
- * all connected players with some flag in that list are notified. 
+ * all connected players with some flag in that list are notified.
  * If two flag lists are given, all connected players with at least one flag
  * in each list are notified.
  * \param flag1 first required flag list or NULL
@@ -1220,7 +1217,7 @@ free_text_block(struct text_block *t)
 {
   if (t) {
     if (t->buf)
-      mush_free((Malloc_t) t->buf, "text_block_buff");
+      mush_free(t->buf, "text_block_buff");
     slab_free(text_block_slab, t);
   }
 }
@@ -1457,7 +1454,7 @@ freeqs(DESC *d)
   d->input.tail = &d->input.head;
 
   if (d->raw_input) {
-    mush_free((Malloc_t) d->raw_input, "descriptor_raw_input");
+    mush_free(d->raw_input, "descriptor_raw_input");
   }
   d->raw_input = 0;
   d->raw_input_at = 0;

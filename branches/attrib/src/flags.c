@@ -1095,7 +1095,7 @@ copy_flag_bitmask(const char *ns, object_flag_type dest, object_flag_type given)
 void
 destroy_flag_bitmask(object_flag_type bitmask)
 {
-  mush_free((Malloc_t) bitmask, "flag_bitmask");
+  mush_free(bitmask, "flag_bitmask");
 }
 
 /** Add a bit into a bitmask.

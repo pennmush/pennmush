@@ -68,7 +68,7 @@ FUNCTION(fun_valid)
 FUNCTION(fun_pemit)
 {
   int ns = string_prefix(called_as, "NS");
-  int flags = PEMIT_LIST;
+  int flags = PEMIT_LIST | PEMIT_SILENT;
   dbref saved_orator = orator;
   if (!command_check_byname(executor, ns ? "@nspemit" : "@pemit") ||
       fun->flags & FN_NOSIDEFX) {
@@ -78,7 +78,10 @@ FUNCTION(fun_pemit)
   orator = executor;
   if (ns)
     flags |= PEMIT_SPOOF;
-  do_pemit_list(executor, args[0], args[1], flags);
+  if (is_strict_integer(args[0]))
+    do_pemit_port(executor, args[0], args[1], flags);
+  else
+    do_pemit_list(executor, args[0], args[1], flags);
   orator = saved_orator;
 }
 
@@ -359,7 +362,7 @@ FUNCTION(fun_die)
   if (nargs == 3)
     show_all = parse_boolean(args[2]);
 
-  if (n == 0 || n > 20) {
+  if (n == 0 || n > 700) {
     safe_str(T("#-1 NUMBER OUT OF RANGE"), buff, bp);
     return;
   }
@@ -433,7 +436,7 @@ FUNCTION(fun_switch)
                                executor, caller, enactor,
                                PE_DEFAULT, PT_DEFAULT, pe_info);
       if (!exact)
-        mush_free((Malloc_t) tbuf1, "replace_string.buff");
+        mush_free(tbuf1, "replace_string.buff");
       found = 1;
       if (per || first)
         return;
@@ -450,7 +453,7 @@ FUNCTION(fun_switch)
     process_expression(buff, bp, &sp, executor, caller, enactor,
                        PE_DEFAULT, PT_DEFAULT, pe_info);
     if (!exact)
-      mush_free((Malloc_t) tbuf1, "replace_string.buff");
+      mush_free(tbuf1, "replace_string.buff");
   }
 }
 
@@ -497,7 +500,7 @@ FUNCTION(fun_reswitch)
       per = process_expression(buff, bp, &sp,
                                executor, caller, enactor,
                                PE_DEFAULT, PT_DEFAULT, pe_info);
-      mush_free((Malloc_t) tbuf1, "replace_string.buff");
+      mush_free(tbuf1, "replace_string.buff");
       found = 1;
       if (per || first)
         return;
@@ -510,7 +513,7 @@ FUNCTION(fun_reswitch)
     sp = tbuf1;
     process_expression(buff, bp, &sp, executor, caller, enactor,
                        PE_DEFAULT, PT_DEFAULT, pe_info);
-    mush_free((Malloc_t) tbuf1, "replace_string.buff");
+    mush_free(tbuf1, "replace_string.buff");
   }
 }
 

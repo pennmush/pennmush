@@ -284,7 +284,7 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
                            PE_DEFAULT, PT_DEFAULT, NULL);
         *bp = '\0';
         notify_by(thing, player, buff);
-        free((Malloc_t) asave);
+        free(asave);
       } else if (def && *def)
         notify_by(thing, player, def);
     }
@@ -314,7 +314,7 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
           *bp = '\0';
           if (bp != sp)
             notify_except2(Contents(loc), player, thing, buff, flags);
-          free((Malloc_t) asave);
+          free(asave);
         } else {
           if (odef && *odef) {
             notify_except2(Contents(loc), player, thing,
@@ -1111,7 +1111,7 @@ page_return(dbref player, dbref target, const char *type,
       process_expression(buff, &bp, &ap, target, player, player,
                          PE_DEFAULT, PT_DEFAULT, NULL);
       *bp = '\0';
-      free((Malloc_t) asave);
+      free(asave);
       if (*buff) {
         ptr = (struct tm *) localtime(&mudtime);
         notify_format(player, T("%s message from %s: %s"), type,
@@ -1437,6 +1437,6 @@ do_grep(dbref player, char *obj, char *lookfor, int flag, int insensitive)
     tp = grep_util(player, thing, pattern, lookfor, !insensitive, 0);
     notify_format(player, T("Matches of '%s' on %s(#%d): %s"), lookfor,
                   Name(thing), thing, tp);
-    mush_free((Malloc_t) tp, "grep_util.buff");
+    mush_free(tp, "grep_util.buff");
   }
 }

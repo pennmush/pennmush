@@ -120,7 +120,7 @@ PENNCONF conftable[] = {
    "messages"}
   ,
   {"motd_html_file", cf_str, options.motd_file[1],
-   sizeof options.connect_file[1], 0,
+   sizeof options.motd_file[1], 0,
    "messages"}
   ,
   {"wizmotd_html_file", cf_str, options.wizmotd_file[1],
@@ -747,7 +747,7 @@ cf_int(const char *opt, const char *val, void *loc, int maxval, int from_cmd)
 }
 
 
-/** Parse an time configuration option with a default unit of seconds 
+/** Parse an time configuration option with a default unit of seconds
  * \param opt name of the configuration option.
  * \param val value of the option.
  * \param loc address to store the value.
@@ -1367,16 +1367,14 @@ config_file_startup(const char *conf, int restrictions)
     do_rawlog(LT_ERR, "Reading %s", conf);
   }
 
-  fgets(tbuf1, BUFFER_LEN, fp);
-  while (!feof(fp)) {
+  while ((p = fgets(tbuf1, BUFFER_LEN, fp)) != NULL) {
 
-    p = tbuf1;
+    while (*p && isspace((unsigned char) *p))
+      p++;
 
-    if (*p == '#') {
-      /* comment line */
-      fgets(tbuf1, BUFFER_LEN, fp);
-      continue;
-    }
+    if (*p == '\0' || *p == '#')
+      continue;                 /* comment or blank line */
+
     /* this is a real line. Strip the end-of-line and characters following it.
      * Split the line into command and argument portions. If it exists,
      * also strip off the trailing comment. We try to make this work
@@ -1423,7 +1421,6 @@ config_file_startup(const char *conf, int restrictions)
       } else
         config_set(p, q, 0, restrictions);
     }
-    fgets(tbuf1, BUFFER_LEN, fp);
   }
 
   /* Warn about any config options that aren't overridden by the

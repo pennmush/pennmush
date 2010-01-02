@@ -195,7 +195,8 @@ nameformat(dbref player, dbref loc, char *tbuf1, char *defname)
   ATTR *a;
   char *wsave[10], *rsave[NUMQ];
   char *arg, *bp, *arg2;
-  char const *sp, *save;
+  char const *sp;
+  char *save;
 
   int j;
   a = atr_get(loc, "NAMEFORMAT");
@@ -220,13 +221,13 @@ nameformat(dbref player, dbref loc, char *tbuf1, char *defname)
     process_expression(tbuf1, &bp, &sp, loc, player, player,
                        PE_DEFAULT, PT_DEFAULT, NULL);
     *bp = '\0';
-    free((Malloc_t) save);
+    free(save);
     for (j = 0; j < 10; j++) {
       global_eval_context.wenv[j] = wsave[j];
     }
     restore_global_regs("nameformat", rsave);
-    mush_free((Malloc_t) arg, "string");
-    mush_free((Malloc_t) arg2, "string");
+    mush_free(arg, "string");
+    mush_free(arg2, "string");
     return 1;
   } else {
     /* No @nameformat attribute */
@@ -290,9 +291,10 @@ unparse_uinteger(uintmax_t num)
 char *
 unparse_number(NVAL num)
 {
-  static char str[100];         /* Should be large enough for even the HUGE floats */
+  /* 100 is NOT large enough for even the huge floats */
+  static char str[1000];        /* Should be large enough for even the HUGE floats */
   char *p;
-  sprintf(str, "%.*f", FLOAT_PRECISION, num);
+  snprintf(str, 1000, "%.*f", FLOAT_PRECISION, num);
 
   if ((p = strchr(str, '.'))) {
     p += strlen(p);

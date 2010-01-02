@@ -93,7 +93,7 @@ password_check(dbref player, const char *password)
     if (strcmp(crypt(password, "XX"), saved) != 0)
       /* Nope */
 #endif                          /* HAS_CRYPT */
-      /* crypt() didn't work. Try plaintext, being sure to not 
+      /* crypt() didn't work. Try plaintext, being sure to not
        * allow unencrypted entry of encrypted password */
       if ((strcmp(saved, password) != 0)
           || (strlen(password) < 4)
@@ -363,10 +363,10 @@ static dbref
 make_player(const char *name, const char *password, const char *host,
             const char *ip, dbref try_dbref)
 {
-
   dbref player;
   char temp[SBUF_LEN];
-
+  char *flaglist, *flagname;
+  char flagbuff[BUFFER_LEN];
 
   if (try_dbref != NOTHING && GoodObject(try_dbref) && IsGarbage(try_dbref)) {
     if (!make_first_free(try_dbref))
@@ -382,7 +382,15 @@ make_player(const char *name, const char *password, const char *host,
   Owner(player) = player;
   Parent(player) = NOTHING;
   Type(player) = TYPE_PLAYER;
-  Flags(player) = string_to_bits("FLAG", options.player_flags);
+  Flags(player) = new_flag_bitmask("FLAG");
+  strcpy(flagbuff, options.player_flags);
+  flaglist = trim_space_sep(flagbuff, ' ');
+  if (*flaglist != '\0') {
+    while (flaglist) {
+      flagname = split_token(&flaglist, ' ');
+      twiddle_flag_internal("FLAG", player, flagname, 0);
+    }
+  }
   if (Suspect_Site(host, player) || Suspect_Site(ip, player))
     set_flag_internal(player, "SUSPECT");
   set_initial_warnings(player);

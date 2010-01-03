@@ -2749,7 +2749,7 @@ msgstr "Gewist "
 
 #: attrib.c:942
 msgid "Cleared"
-msgstr "Gewist"
+msgstr "Vrijgemaakt"
 
 #: create.c:680
 #, c-format
@@ -3604,12 +3604,12 @@ msgstr "Kon time locale niet instellen vanuit omgeving.\n"
 #: wiz.c:109
 #, c-format
 msgid "Failure creating '%s' (bad name)"
-msgstr "Niet geslaagd '%s' te creëren (ongeldige naam)"
+msgstr "Niet gelukt '%s' te creëren (foute naam)"
 
 #: wiz.c:113
 #, c-format
 msgid "Failure creating '%s' (bad password)"
-msgstr "Niet geslaagd '%s' te creëren (ongeldig wachtwoord)"
+msgstr "Niet geslaagd '%s' te creëren (fout wachtwoord)"
 
 #: src/rob.c:254
 msgid "Feeling poor today?"
@@ -8767,7 +8767,7 @@ msgstr "verwijderd"
 #: src/bsd.c:2021
 #, c-format
 msgid "couldn't open cached text file '%s'"
-msgstr "Gecached tekst bestand tekstbestand '%s' niet openen."
+msgstr "Kon in cache opgeslagen tekstbestand '%s' niet openen."
 
 #: move.c:608
 #, c-format
@@ -8794,12 +8794,12 @@ msgstr "uitgang is niet gekoppeld; iedereen kan hem stelen"
 #: src/wiz.c:122
 #, c-format
 msgid "failure creating '%s' (bad name)"
-msgstr "fout bij creëren '%s' (ongeldige naam)"
+msgstr "niet gelukt '%s' te maken (verkeerde naam)"
 
 #: src/wiz.c:127
 #, c-format
 msgid "failure creating '%s' (bad password)"
-msgstr "fout bij creëren '%s' (ongeldig wachtwoord)"
+msgstr "Niet geslaagd '%s' te creëren (fout wachtwoord)"
 
 #: filecopy.c:153
 msgid "file"

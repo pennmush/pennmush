@@ -2326,7 +2326,7 @@ msgstr "Effac\351 "
 
 #: attrib.c:942
 msgid "Cleared"
-msgstr "Effac\351"
+msgstr "Effacé"
 
 #: create.c:680
 #, c-format
@@ -7506,7 +7506,7 @@ msgstr "octets"
 
 #: extchat.c:1377
 msgid "cleared"
-msgstr "effac\351"
+msgstr "OK."
 
 #: src/bsd.c:2021
 #, c-format

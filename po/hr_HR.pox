@@ -124,6 +124,14 @@ msgstr " * Los tekst u atributu %s na #%d. Promijenio sam ga u:\n"
 msgid " * Name of #%d is longer than the maximum, truncating.\n"
 msgstr " * Ime objekta #%d je duze od maksimuma, skracujem ga.\n"
 
+#: conf.c:1786
+msgid " @config/save is disabled."
+msgstr " @config/save je iskljucen."
+
+#: conf.c:1784
+msgid " @config/save is enabled."
+msgstr " @config/save je ukljucen."
+
 #: parse.c:1332
 msgid " AND "
 msgstr " I "
@@ -131,6 +139,10 @@ msgstr " I "
 #: parse.c:1335
 msgid " ARGUMENTS BUT GOT "
 msgstr " ARGUMENATA, A DOBILA JE "
+
+#: conf.c:1780
+msgid " Altivec instructions are being used."
+msgstr " Koristi se Altivec."
 
 #: conf.c:1044
 msgid " Attributes are 8-bit word compressed in memory."
@@ -187,6 +199,14 @@ msgstr " Poruke bez napisanog naslova imaju naslov (bez naslova)"
 #: parse.c:1324
 msgid " OR "
 msgstr " ILI "
+
+#: conf.c:1772
+msgid " SSE2 instructions are being used."
+msgstr " Koristi se SSE2."
+
+#: conf.c:1776
+msgid " SSE3 instructions are being used."
+msgstr " Koristi se SSE3."
 
 #: src/conf.c:992
 msgid " Side effect functions are enabled."
@@ -370,6 +390,11 @@ msgstr "#-1 ARGUMENTI MORAJU BITI POZITIVNI CIJELI BROJEVI"
 msgid "#-1 ATTRIBUTE LENGTH TOO LONG"
 msgstr "#-1 IME ATRIBUTA PREDUGACKO"
 
+#: fundb.c:204
+#, c-format
+msgid "#-1 BAD ARGUMENT FORMAT TO %s"
+msgstr "#-1 LOS FORMAT ARGUMENATA ZA %s"
+
 #: fundb.c:1998
 msgid "#-1 BAD ARGUMENT FORMAT TO ATTRIB_SET"
 msgstr "#-1 LOS FORMAT ARGUMENATA ZA ATTRIB_SET"
@@ -413,6 +438,14 @@ msgstr "#-1 STUPCI NE MOGU IMATI NEGATIVNU VELICINU"
 #: funstr.c:1897 funstr.c:1903
 msgid "#-1 CANNOT HAVE COLUMNS THAT LARGE"
 msgstr "#-1 STUPCI NE MOGU BITI TOLIKO VELIKI"
+
+#: extchat.c:2307
+msgid "#-1 CHANNEL DOES NOT HAVE A BUFFER"
+msgstr "#-1 KANAL NEMA BUFFER"
+
+#: funmath.c:2490 funmath.c:2526
+msgid "#-1 COMPARISON REQUIRES 2 OR MORE NUMBERS"
+msgstr "#-1 ZA USPOREDBU SU POTREBNA BAREM 2 BROJA"
 
 #: funcrypt.c:69 funcrypt.c:134 funcrypt.c:141 funcrypt.c:154
 msgid "#-1 CONVERSION ERROR"
@@ -557,6 +590,10 @@ msgstr "#-1 NEISPRAVAN BROJ ARGUMENATA ZA ALIGN"
 msgid "#-1 INVALID OBJECT"
 msgstr "#-1 NEISPRAVNI OBJEKT"
 
+#: cque.c:1091
+msgid "#-1 INVALID PID"
+msgstr "#-1 NEISPRAVAN PID"
+
 #: src/fundb.c:663 src/fundb.c:690
 msgid "#-1 INVALID SECOND ARGUMENT"
 msgstr "#-1 NEISPRAVNI DRUGI ARGUMENT"
@@ -649,6 +686,10 @@ msgstr "#-1 TAJ FILE NE POSTOJI"
 msgid "#-1 NO SUCH LOCK TYPE"
 msgstr "#-1 TA VRSTA BRAVE NE POSTOJI"
 
+#: fundb.c:1282 fundb.c:1289
+msgid "#-1 NO SUCH LOCK"
+msgstr "#-1 TA BRAVA NE POSTOJI"
+
 #: src/fundb.c:155 src/fundb.c:189 src/fundb.c:205 src/fundb.c:255\nsrc/fundb.c:297 src/fundb.c:1609 src/funlist.c:2315 src/funlist.c:2358
 msgid "#-1 NO SUCH OBJECT VISIBLE"
 msgstr "#-1 TAKAV OBJEKT NIJE VIDLJIV"
@@ -668,6 +709,10 @@ msgstr "#-1 TAJ TIP NE POSTOJI"
 #: src/funufun.c:310
 msgid "#-1 NO SUCH USER FUNCTION"
 msgstr "#-1 TA KORISNICKA FUNKCIJA NE POSTOJI"
+
+#: extchat.c:2279
+msgid "#-1 NO TEXT GIVEN"
+msgstr "#-1 NIJE ZADAN TEKST"
 
 #: src/bsd.c:4485 src/bsd.c:4498
 msgid "#-1 NOT CONNECTED"
@@ -1938,6 +1983,21 @@ msgstr "CHAT: Opis kanala <%s> obrisan."
 msgid "CHAT: Channel <%s> description set."
 msgstr "CHAT: Opis kanala <%s> postavljen."
 
+#: extchat.c:2531
+#, c-format
+msgid "CHAT: Channel <%s> isn't being mogrified."
+msgstr "CHAT: Kanal <%s> nije mogrificiran."
+
+#: extchat.c:2525
+#, c-format
+msgid "CHAT: Channel <%s> no longer mogrified by %s."
+msgstr "CHAT: %2$s vise ne mogrificira kanal <%1$s>."
+
+#: extchat.c:2542
+#, c-format
+msgid "CHAT: Channel <%s> now mogrified by %s."
+msgstr "CHAT: %2$s sada mogrificira kanal <%1$s>."
+
 #: src/extchat.c:1496
 #, c-format
 msgid "CHAT: Channel <%s> now owned by %s."
@@ -2050,6 +2110,10 @@ msgstr "CHAT: Nema zabiljezenih prethodnih poruka."
 msgid "CHAT: Only a Wizard can do that."
 msgstr "CHAT: To moze samo administrator."
 
+#: extchat.c:2510
+msgid "CHAT: Only a channel modifier can do that."
+msgstr "CHAT: To moze samo modifikator kanala."
+
 #: extchat.c:797
 msgid "CHAT: Partial matches are:"
 msgstr "CHAT: Djelomicna podudaranja su:"
@@ -2146,6 +2210,14 @@ msgstr "CHAT: Napustis kanal <%s>."
 #: extchat.c:1433
 msgid "CHAT: You may wish to set the CHAN_USEFIRSTMATCH flag on yourself."
 msgstr "CHAT: Mozda ce ti dobro doci da na sebe stavis flag CHAN_USEFIRSTMATCH."
+
+#: extchat.c:3772
+msgid "CHAT: You must be able to join a channel to recall from it."
+msgstr "CHAT: Ne mozes vidjeti prijasnje poruke na kanalu ako nemas sposobnost spojiti se na njega."
+
+#: extchat.c:2537
+msgid "CHAT: You must control the mogrifier."
+msgstr "CHAT: Moras moci kontrolirati mogrifikator."
 
 #: extchat.c:2935
 msgid "CHAT: You must join a channel to recall from it."
@@ -2600,6 +2672,10 @@ msgstr "Ne mogu alocirati memoriju za replace_string2!"
 msgid "Couldn't allocate memory in search!"
 msgstr "Ne mogu alocirati memoriju za search!"
 
+#: bsd.c:4045
+msgid "Couldn't find that descriptor."
+msgstr "Ne mogu pronaci taj deskriptor."
+
 #: src/wiz.c:1635 src/wiz.c:1929
 msgid "Couldn't find that player."
 msgstr "Nisam mogao naci tog korisnika."
@@ -2709,6 +2785,10 @@ msgstr "Defaultni flagovi za nove objekte"
 msgid "Denied connections are not logged"
 msgstr "Odbijena spajanja se ne biljeze u log"
 
+#: bsd.c:3324
+msgid "Des"
+msgstr "Des"
+
 #: extchat.c:2186
 #, c-format
 msgid "Description: %s"
@@ -2750,6 +2830,10 @@ msgstr "Sto da iskopam?"
 #: wiz.c:1011
 msgid "Disabled."
 msgstr "Onemoguceno."
+
+#: info_master.c:123
+msgid "Disabling info_slave due to too many errors."
+msgstr "Iskljucujem info_slave zbog prevelikog broja gresaka."
 
 #: src/destroy.c:1232
 msgid "Disconnected room. So what?"
@@ -2825,6 +2909,11 @@ msgstr "GRESKA DBCK: Premjesten objekt %d"
 #: game.c:309
 msgid "ERROR! Database save failed."
 msgstr "GRESKA! Snimanje baze podataka nije uspjelo."
+
+#: bsd.c:939
+#, c-format
+msgid "ERROR! forking dump exited with exit code %d"
+msgstr "GRESKA! forkirano snimanje baze podataka se zaustavilo sa izlaznim kodom %d"
 
 #: bsd.c:4241
 #, c-format
@@ -3918,6 +4007,10 @@ msgstr "Neispravan parametar."
 msgid "Invalid range argument"
 msgstr "Argument nije u ispravnom rasponu"
 
+#: wiz.c:1772
+msgid "Invalid search class+restriction format."
+msgstr "Neispravan format klase i ogranicenja za pretragu."
+
 #: wiz.c:1918
 msgid "Invalid start index"
 msgstr "Neispravan start indeks."
@@ -4065,6 +4158,11 @@ msgstr "Lok #"
 #, c-format
 msgid "Location  : #%d/%s"
 msgstr "Lokacija  : #%d/%s"
+
+#: function.c:1711
+#, c-format
+msgid "Location  : #%d/%s\n"
+msgstr "Lokacija  : #%d/%s\n"
 
 #: look.c:791
 #, c-format
@@ -4613,6 +4711,11 @@ msgstr "Tekstualni fileovi koje MUSH salje"
 msgid "Missing root attribute '%s' on object #%d!\n"
 msgstr "Na objektu #%2$d nedostaje korijenski atribut '%1$s!\n"
 
+#: extchat.c:2730
+#, c-format
+msgid "Mogrifier: %s (#%d)"
+msgstr "Mogrifikator: %s (#%d)"
+
 #: bsd.c:3449
 #, c-format
 msgid "Motd %s."
@@ -4837,6 +4940,11 @@ msgstr "Zona nije navedena."
 msgid "None of your connections are idle."
 msgstr "Nijedna tvoja veza nije neaktivna."
 
+#: cque.c:218
+#, c-format
+msgid "Not enough money to queue command for %s(#%d)."
+msgstr "Nedovoljno novca da bi se u queue dodala naredba za %s(#%d)."
+
 #: src/cque.c:182
 msgid "Not enough money to queue command."
 msgstr "Nema dovoljno novca da se naredba queuea."
@@ -4939,6 +5047,14 @@ msgstr "Prema kamo da otvorim izlaz?"
 msgid "Opened exit %s"
 msgstr "Izlaz %s otvoren"
 
+#: cmds.c:205
+msgid "Option set and saved."
+msgstr "Opcija postavljena i snimljena."
+
+#: cmds.c:207
+msgid "Option set but not saved (Saves disabled.)"
+msgstr "Opcija je postavljena, ali nije snimljena (Snimanje iskljuceno.)"
+
 #: src/cmds.c:195
 msgid "Option set."
 msgstr "Opcija postavljena."
@@ -5034,6 +5150,10 @@ msgstr "Sifra korisnika '%s' promijenjena."
 #: src/set.c:842
 msgid "Pemission denied."
 msgstr "Odobrenje uskraceno."
+
+#: bsd.c:3324
+msgid "Pend"
+msgstr "Ceka"
 
 #: game.c:2159
 #, c-format
@@ -5156,6 +5276,10 @@ msgstr "Programi ne ubijaju ljude; ljudi ubijaju ljude!"
 msgid "Purge complete."
 msgstr "Ciscenje gotovo."
 
+#: cque.c:303 cque.c:428
+msgid "Queue entry table full. Try again later."
+msgstr "Tablica s queueovim predmetima je puna. Probaj opet kasnije."
+
 #: cque.c:1368
 #, c-format
 msgid "Queue entry with pid %u halted."
@@ -5187,6 +5311,10 @@ msgstr "Procitano "
 #, c-format
 msgid "Recall buffer: %dk, with %d lines stored."
 msgstr "Recall buffer: %dk, s %d pohranjenih linija."
+
+#: bsd.c:3324
+msgid "Recv"
+msgstr "Prim"
 
 #: log.c:133
 #, c-format
@@ -5299,6 +5427,10 @@ msgstr "Trazi gresku u fileu %s"
 #: src/cque.c:803
 msgid "Semaphore Queue:"
 msgstr "Semaforski queue:"
+
+#: bsd.c:3324
+msgid "Sent"
+msgstr "Posl"
 
 #: game.c:1408
 msgid "Separator must be one character."
@@ -5567,6 +5699,10 @@ msgstr "To nije ispravan alias."
 msgid "That is not a valid channel."
 msgstr "To nije ispravan kanal."
 
+#: create.c:480
+msgid "That is not a valid dbref."
+msgstr "To nije ispravan dbref."
+
 #: lock.c:326
 msgid "That is not a valid lock name."
 msgstr "To nije ispravno ime brave."
@@ -5652,6 +5788,10 @@ msgstr "Taj igrac nije spojen!"
 msgid "That player wishes to have some privacy."
 msgstr "Taj igrac zeli malo privatnosti."
 
+#: bsd.c:2801
+msgid "That port is not active."
+msgstr "Taj port nije aktivan."
+
 #: bsd.c:4116
 msgid "That port's not active."
 msgstr "Taj port nije aktivan."
@@ -5713,6 +5853,10 @@ msgstr "Trenutna anketa je: %s"
 #: src/destroy.c:705
 msgid "The floor disappears under your feet, you fall through NOTHINGness and then:"
 msgstr "Tlo ti nestane pod nogama, padas kroz nistavilo, i tada:"
+
+#: command.c:2138
+msgid "The following commands have hooks: "
+msgstr "Sljedece naredbe imaju hookove: "
 
 #: src/game.c:1163
 #, c-format
@@ -5819,6 +5963,11 @@ msgstr "Broj poruka u postanskom spoolu: %d."
 msgid "There are %d players connected."
 msgstr "%d igraca je spojeno."
 
+#: cque.c:265
+#, c-format
+msgid "There are %ld queue entries! That's too many. Failing to add another."
+msgstr "U queueu je %ld predmeta! To je previse. Ne mogu dodati jos jedan."
+
 #: access.c:687
 msgid "There are no access rules."
 msgstr "Ne postoje pravila za pristup."
@@ -5826,6 +5975,10 @@ msgstr "Ne postoje pravila za pristup."
 #: src/bsd.c:4788
 msgid "There are no connected players on that channel."
 msgstr "Na tom kanalu nema spojenih igraca."
+
+#: command.c:2133
+msgid "There are no hooks currently set."
+msgstr "Trenutno nema definiranih hookova."
 
 #: bsd.c:3919
 msgid "There are no players connected."
@@ -5842,6 +5995,10 @@ msgstr "U tome ne moze biti nicega!"
 #: bsd.c:3922
 msgid "There is 1 player connected."
 msgstr "1 igrac je spojen."
+
+#: bsd.c:3211 bsd.c:3291 bsd.c:3361
+msgid "There is one player connected."
+msgstr "Jedan korisnik je spojen."
 
 #: src/move.c:335 src/move.c:336 src/move.c:337
 msgid "There's no place like home..."
@@ -5898,6 +6055,11 @@ msgstr "Titula predugacka."
 #, c-format
 msgid "To access this character, connect to %s and type:\n"
 msgstr "Da dobijes pristup ovom liku, spoji se na korisnika '%s' i napisi:\n"
+
+#: extchat.c:3693
+#, c-format
+msgid "To channel %s: %s"
+msgstr "Na kanal %s: %s"
 
 #: extchat.c:1368
 #, c-format
@@ -6030,6 +6192,10 @@ msgstr "Ne mogu alocirati memoriju u plyrlist-u!"
 msgid "Unable to check file %s"
 msgstr "Ne mogu provjeriti file %s"
 
+#: create.c:485
+msgid "Unable to create object with that dbref."
+msgstr "Ne mogu stvoriti objekt s tim dbrefom."
+
 #: src/services.c:625
 msgid "Unable to create service"
 msgstr "Ne mogu stvoriti uslugu"
@@ -6090,6 +6256,11 @@ msgstr "Ne mogu poslati poruku igracima:%s"
 #, c-format
 msgid "Unable to read last part of file %s"
 msgstr "Ne mogu procitati zadnji dio filea %s"
+
+#: bsd.c:5033
+#, c-format
+msgid "Unable to reboot using executable '%s': %s"
+msgstr "Ne mogu rebootati pomocu izvrsivog filea '%s': %s"
 
 #: bsd.c:274
 msgid "Unable to register that player with that email address."
@@ -7079,6 +7250,11 @@ msgstr "Postedjelo te se od unistenja."
 msgid "You have changed your password."
 msgstr "Promijenis svoju sifru."
 
+#: extchat.c:2034
+#, c-format
+msgid "You have no title set on <%s>."
+msgstr "Nemas titulu na kanalu <%s>."
+
 #: look.c:953
 #, c-format
 msgid "You have unlimited %s."
@@ -7540,6 +7716,11 @@ msgstr "%s promijeni tvoju sifru."
 msgid "Your requested player, %s, has been created.\n"
 msgstr "Korisnik %s je stvoren po tvom zahtjevu.\n"
 
+#: extchat.c:2036
+#, c-format
+msgid "Your title on <%s> is '%s'."
+msgstr "Tvoja titula na kanalu <%s> je '%s'."
+
 #: lock.c:888
 #, c-format
 msgid "Zone %s really should have a more secure zone-lock."
@@ -7816,13 +7997,87 @@ msgstr "file"
 msgid "files"
 msgstr "fileova"
 
+#: bsd.c:3443
+msgid "has DARK-connected."
+msgstr "se spoji s flagom DARK."
+
+#: bsd.c:3655
+msgid "has DARK-disconnected."
+msgstr "prekine vezu s flagom DARK."
+
+#: bsd.c:3443
+msgid "has DARK-reconnected."
+msgstr "se ponovo spoji s flagom DARK."
+
+#: bsd.c:3446
+msgid "has HIDDEN-connected."
+msgstr "se spoji s flagom HIDDEN."
+
+#: bsd.c:3658
+msgid "has HIDDEN-disconnected."
+msgstr "prekine vezu s flagom HIDDEN."
+
+#: bsd.c:3445
+msgid "has HIDDEN-reconnected."
+msgstr "se ponovo spoji s flagom HIDDEN."
+
 #: src/move.c:101
 msgid "has arrived."
 msgstr "dodje."
 
+#: bsd.c:3448
+msgid "has connected."
+msgstr "se spoji."
+
+#: bsd.c:3661
+msgid "has disconnected."
+msgstr "prekine vezu."
+
+#: extchat.c:1262 extchat.c:1361
+msgid "has joined this channel"
+msgstr "se spoji na ovaj kanal"
+
+#: extchat.c:1262
+msgid "has joined this channel."
+msgstr "se spoji na ovaj kanal."
+
+#: extchat.c:1287 extchat.c:1403
+msgid "has left this channel"
+msgstr "ode s ovog kanala"
+
+#: extchat.c:1287
+msgid "has left this channel."
+msgstr "ode s ovog kanala."
+
 #: src/move.c:96
 msgid "has left."
 msgstr "ode."
+
+#: bsd.c:3654
+msgid "has partially DARK-disconnected."
+msgstr "djelomicno prekine vezu s flagom DARK."
+
+#: bsd.c:3657
+msgid "has partially HIDDEN-disconnected."
+msgstr "djelomicno prekine vezu s flagom HIDDEN."
+
+#: bsd.c:3660
+msgid "has partially disconnected."
+msgstr "djelomicno prekine vezu."
+
+#: bsd.c:3448
+msgid "has reconnected."
+msgstr "se ponovo spoji."
+
+#: extchat.c:1808
+#, c-format
+msgid "has renamed %s to %s"
+msgstr "preimenuje %s u %s"
+
+#: extchat.c:1808
+#, c-format
+msgid "has renamed %s to %s."
+msgstr "preimenuje %s u %s."
 
 #: bsd.c:957
 #, c-format

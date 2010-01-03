@@ -1375,7 +1375,7 @@ msgstr "\"%s/%s - %s приложено.\""
 #: src/extmail.c:1260 src/extmail.c:1668 src/wiz.c:673 src/wiz.c:1277
 #, c-format
 msgid "%s: No such player."
-msgstr "%s: ���� ����� �����."
+msgstr "%s: Не съществува такъв играч."
 
 #: src/extmail.c:1156
 #, c-format
@@ -2720,7 +2720,7 @@ msgstr "Неуспешно автоматично задаване на мест
 #: wiz.c:109
 #, c-format
 msgid "Failure creating '%s' (bad name)"
-msgstr "��������� ��������� �� '%s' (������ ���)"
+msgstr "Провалено създаване за '%s' (грешно име)."
 
 #: wiz.c:113
 #, c-format

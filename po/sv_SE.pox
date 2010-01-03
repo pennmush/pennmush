@@ -1380,7 +1380,7 @@ msgstr "%s/%s - %s satt."
 #: src/extmail.c:1260 src/extmail.c:1668 src/wiz.c:673 src/wiz.c:1277
 #, c-format
 msgid "%s: No such player."
-msgstr "%s: Ingen s\345dan spelare."
+msgstr "%s: Ingen sådan spelare."
 
 #: src/extmail.c:1156
 #, c-format
@@ -3157,12 +3157,12 @@ msgstr "Kunde inte sätta tids-lokalisering från omgivning.\n"
 #: wiz.c:109
 #, c-format
 msgid "Failure creating '%s' (bad name)"
-msgstr "Fel vid f\366rs\366k att skapa '%s' (felaktigt namn)"
+msgstr "Fel vid försök att skapa '%s' (felaktigt namn)"
 
 #: wiz.c:113
 #, c-format
 msgid "Failure creating '%s' (bad password)"
-msgstr "Fel vid f\366rs\366k att skapa '%s' (felaktigt l\366senord)"
+msgstr "Fel vid försök att skapa '%s' (felaktigt lösenord)"
 
 #: src/rob.c:254
 msgid "Feeling poor today?"

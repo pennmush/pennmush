@@ -729,6 +729,8 @@ See also: @create
                    help @config parameters for available ones.
   /save       --   Like /set, but also modifies the config file so the
                    change persists over reboots. God only.
+
+  For information about parameters, see: @config parameters
 & @conformat
   @conformat <object> [=<format>]
 

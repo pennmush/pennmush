@@ -774,11 +774,11 @@ verify_used_chunk(uint16_t region, uint16_t offset)
        pos < REGION_SIZE; pos += ChunkFullLen(region, pos)) {
     if (pos == offset) {
       if (ChunkIsFree(region, pos))
-        mush_panic("Invalid reference to free chunk as used");
+        mush_panic(T("Invalid reference to free chunk as used"));
       return;
     }
   }
-  mush_panic("Invalid reference to non-chunk as used");
+  mush_panic(T("Invalid reference to non-chunk as used"));
 }
 
 /** Verify that a region is sane.
@@ -1260,9 +1260,9 @@ read_cache_region(fd_type fd, RegionHeader *rhp, uint16_t region)
 #endif
   if (j >= 3)
 #ifdef WIN32
-    mush_panicf("chunk swap file seek, GetLastError %d", GetLastError());
+    mush_panicf(T("chunk swap file seek, GetLastError %d"), GetLastError());
 #else
-    mush_panicf("chunk swap file seek, errno %d: %s", errno, strerror(errno));
+    mush_panicf(T("chunk swap file seek, errno %d: %s"), errno, strerror(errno));
 #endif
 #endif                          /* !HAVE_PREAD */
   pos = (char *) rhp;
@@ -1286,10 +1286,10 @@ read_cache_region(fd_type fd, RegionHeader *rhp, uint16_t region)
     }
   }
 #ifdef WIN32
-  mush_panicf("chunk swap file read, %lu remaining, GetLastError %d",
+  mush_panicf(T("chunk swap file read, %lu remaining, GetLastError %d"),
               (unsigned long) remaining, GetLastError());
 #else
-  mush_panicf("chunk swap file read, %lu remaining, errno %d: %s",
+  mush_panicf(T("chunk swap file read, %lu remaining, errno %d: %s"),
               (unsigned long) remaining, errno, strerror(errno));
 #endif
 }
@@ -1322,9 +1322,9 @@ write_cache_region(fd_type fd, RegionHeader *rhp, uint16_t region)
 #endif
   if (j >= 3)
 #ifdef WIN32
-    mush_panicf("chunk swap file seek, GetLastError %d", GetLastError());
+    mush_panicf(T("chunk swap file seek, GetLastError %d"), GetLastError());
 #else
-    mush_panicf("chunk swap file seek, errno %d: %s", errno, strerror(errno));
+    mush_panicf(T("chunk swap file seek, errno %d: %s"), errno, strerror(errno));
 #endif
 #endif                          /* !HAVE_PWRITE */
   pos = (char *) rhp;
@@ -1354,10 +1354,10 @@ write_cache_region(fd_type fd, RegionHeader *rhp, uint16_t region)
     }
   }
 #ifdef WIN32
-  mush_panicf("chunk swap file write, %lu remaining, GetLastError %d",
+  mush_panicf(T("chunk swap file write, %lu remaining, GetLastError %d"),
               (unsigned long) remaining, GetLastError());
 #else
-  mush_panicf("chunk swap file write, %lu remaining, errno %d: %s",
+  mush_panicf(T("chunk swap file write, %lu remaining, errno %d: %s"),
               (unsigned long) remaining, errno, strerror(errno));
 #endif
 }
@@ -1407,7 +1407,7 @@ find_available_cache_region(void)
 #endif
     rhp = mush_malloc(REGION_SIZE, "chunk region cache buffer");
     if (!rhp) {
-      mush_panic("chunk region cache buffer allocation failure");
+      mush_panic(T("chunk region cache buffer allocation failure"));
     }
     cached_region_count++;
     rhp->region_id = INVALID_REGION_ID;
@@ -1527,7 +1527,7 @@ create_region(void)
 #endif
       regions = (Region *) realloc(regions, region_array_len * sizeof(Region));
       if (!regions)
-        mush_panic("chunk: region array realloc failure");
+        mush_panic(T("chunk: region array realloc failure"));
     }
     region = region_count;
     region_count++;
@@ -2015,7 +2015,7 @@ migrate_slide(uint16_t region, uint16_t offset, int which)
     do_rawlog(LT_TRACE, "Chunk length %04x into hole length %04x", o_len, len);
     debug_dump_region(region, tracelog_fp);
     dump_debug_log(tracelog_fp);
-    mush_panic("Invalid region after migrate_slide!");
+    mush_panic(T("Invalid region after migrate_slide!"));
   }
 #endif
 }
@@ -2057,7 +2057,7 @@ migrate_move(uint16_t region, uint16_t offset, int which, int align)
 #ifdef CHUNK_PARANOID
   if (!FitsInSpace(s_len, ChunkFullLen(region, offset))) {
     dump_debug_log(tracelog_fp);
-    mush_panicf("Trying to migrate into too small a hole: %04x into %04x!",
+    mush_panicf(T("Trying to migrate into too small a hole: %04x into %04x!"),
                 s_len, length);
   }
 #endif
@@ -2083,7 +2083,7 @@ migrate_move(uint16_t region, uint16_t offset, int which, int align)
     do_rawlog(LT_TRACE, "Chunk length %04x into hole length %04x, alignment %d",
               s_len, length, align);
     debug_dump_region(region, tracelog_fp);
-    mush_panic("Invalid region after migrate_move!");
+    mush_panic(T("Invalid region after migrate_move!"));
   }
 #endif
 }
@@ -2133,7 +2133,7 @@ chunk_create(unsigned char const *data, uint16_t len, uint8_t derefs)
   uint16_t full_len, region, offset;
 
   if (len < MIN_CHUNK_LEN || len > MAX_CHUNK_LEN)
-    mush_panicf("Illegal chunk length requested: %d bytes", len);
+    mush_panicf(T("Illegal chunk length requested: %d bytes"), len);
 
   full_len = LenToFullLen(len);
   region = find_best_region(full_len, derefs, INVALID_REGION_ID);
@@ -2151,7 +2151,7 @@ chunk_create(unsigned char const *data, uint16_t len, uint8_t derefs)
   touch_cache_region(regions[region].in_memory);
 #ifdef CHUNK_PARANOID
   if (!region_is_valid(region))
-    mush_panic("Invalid region after chunk_create!");
+    mush_panic(T("Invalid region after chunk_create!"));
 #endif
   stat_create++;
   return ChunkReference(region, offset);
@@ -2175,7 +2175,7 @@ chunk_delete(chunk_reference_t reference)
   touch_cache_region(regions[region].in_memory);
 #ifdef CHUNK_PARANOID
   if (!region_is_valid(region))
-    mush_panic("Invalid region after chunk_delete!");
+    mush_panic(T("Invalid region after chunk_delete!"));
 #endif
   stat_delete++;
 }
@@ -2346,11 +2346,11 @@ chunk_init(void)
   swap_fd = CreateFile(CHUNK_SWAP_FILE, GENERIC_READ | GENERIC_WRITE,
                        0, NULL, CREATE_ALWAYS, FILE_FLAG_DELETE_ON_CLOSE, NULL);
   if (swap_fd == INVALID_HANDLE_VALUE)
-    mush_panicf("Cannot open swap file: %d", GetLastError());
+    mush_panicf(T("Cannot open swap file: %d"), GetLastError());
 #else
   swap_fd = open(CHUNK_SWAP_FILE, O_RDWR | O_TRUNC | O_CREAT, 0600);
   if (swap_fd < 0)
-    mush_panicf("Cannot open swap file: %s", strerror(errno));
+    mush_panicf(T("Cannot open swap file: %s"), strerror(errno));
 #endif
   curr_period = 0;
 
@@ -2371,7 +2371,7 @@ chunk_init(void)
 #endif
   regions = mush_calloc(region_array_len, sizeof(Region), "chunk region list");
   if (!regions)
-    mush_panic("cannot malloc space for chunk region list");
+    mush_panic(T("cannot malloc space for chunk region list"));
 
 /*
   command_add("@DEBUGCHUNK", CMD_T_ANY | CMD_T_GOD, 0, 0, 0,

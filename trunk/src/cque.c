@@ -1634,16 +1634,16 @@ do_restart_com(dbref player, const char *arg1)
                       Name(player));
       } else {
         notify_format(player,
-                      "Restarting: %s's %s(%s)",
+                      T("Restarting: %s's %s(%s)"),
                       Name(Owner(victim)), Name(victim), unparse_dbref(victim));
-        notify_format(Owner(victim), "Restarting: %s(%s), by %s",
+        notify_format(Owner(victim), T("Restarting: %s(%s), by %s"),
                       Name(victim), unparse_dbref(victim), Name(player));
       }
     } else {
       if (victim == player)
         notify(player, T("All of your objects are being restarted."));
       else
-        notify_format(player, "Restarting: %s(%s)", Name(victim),
+        notify_format(player, T("Restarting: %s(%s)"), Name(victim),
                       unparse_dbref(victim));
     }
     do_halt(player, "", victim);

@@ -361,7 +361,7 @@ new_user(dbref who, const void *hint)
   CHANUSER *u;
   u = slab_malloc(chanuser_slab, hint);
   if (!u)
-    mush_panic("Couldn't allocate memory in new_user in extchat.c");
+    mush_panic(T("Couldn't allocate memory in new_user in extchat.c"));
   CUdbref(u) = who;
   CUtype(u) = CU_DEFAULT_FLAGS;
   u->title[0] = '\0';

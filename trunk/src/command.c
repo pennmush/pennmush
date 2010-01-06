@@ -1033,7 +1033,7 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
   rs = mush_malloc(BUFFER_LEN, "string");
   switches = mush_malloc(BUFFER_LEN, "string");
   if (!command || !swtch || !ls || !rs || !switches)
-    mush_panic("Couldn't allocate memory in command_parse");
+    mush_panic(T("Couldn't allocate memory in command_parse"));
   p = string;
   replacer = NULL;
   attrib = NULL;
@@ -1530,7 +1530,7 @@ restrict_command(const char *name, const char *xrestriction)
 
 /** Command stub for \@command/add-ed commands.
  * This does nothing more than notify the player
- * with "This command has not been implemented"
+ * with "This command has not been implemented."
  */
 COMMAND(cmd_unimplemented)
 {
@@ -1559,7 +1559,7 @@ COMMAND(cmd_unimplemented)
   }
 
   /* Either we were already in UNIMPLEMENTED_COMMAND, or we couldn't find it */
-  notify(player, "This command has not been implemented");
+  notify(player, T("This command has not been implemented."));
 }
 
 /** Adds a user-added command
@@ -1594,7 +1594,7 @@ do_command_add(dbref player, char *name, int flags)
       notify_format(player, T("Command %s added."), name);
     }
   } else {
-    notify_format(player, T("Command %s already exists"), command->name);
+    notify_format(player, T("Command %s already exists."), command->name);
   }
 }
 
@@ -1689,12 +1689,12 @@ COMMAND(cmd_command)
   if (SW_ISSET(sw, SWITCH_ALIAS)) {
     if (Wizard(player)) {
       if (!ok_command_name(upcasestr(arg_right))) {
-        notify(player, "I can't alias a command to that!");
+        notify(player, T("I can't alias a command to that!"));
       } else if (!alias_command(arg_left, arg_right)) {
-        notify(player, "Unable to set alias.");
+        notify(player, T("Unable to set alias."));
       } else {
         if (!SW_ISSET(sw, SWITCH_QUIET))
-          notify(player, "Alias set.");
+          notify(player, T("Alias set."));
       }
     } else {
       notify(player, T("Permission denied."));
@@ -1734,7 +1734,7 @@ COMMAND(cmd_command)
   }
   if (!SW_ISSET(sw, SWITCH_QUIET)) {
     notify_format(player,
-                  "Name       : %s (%s)", command->name,
+                  T("Name       : %s (%s)"), command->name,
                   (command->type & CMD_T_DISABLED) ? "Disabled" : "Enabled");
     if ((command->type & CMD_T_ANY) == CMD_T_ANY)
       safe_strl("Any", 3, buff, &bp);
@@ -1750,7 +1750,7 @@ COMMAND(cmd_command)
         strccat(buff, &bp, "Player");
     }
     *bp = '\0';
-    notify_format(player, "Types      : %s", buff);
+    notify_format(player, T("Types      : %s"), buff);
     buff[0] = '\0';
     bp = buff;
     if (command->type & CMD_T_SWITCHES)
@@ -1770,7 +1770,7 @@ COMMAND(cmd_command)
     else if (command->type & CMD_T_LOGNAME)
       strccat(buff, &bp, "LogName");
     *bp = '\0';
-    notify_format(player, "Restrict   : %s", buff);
+    notify_format(player, T("Restrict   : %s"), buff);
     buff[0] = '\0';
     notify(player, show_command_flags(command->flagmask, command->powers));
     if (command->sw.mask) {
@@ -1779,9 +1779,9 @@ COMMAND(cmd_command)
         if (SW_ISSET(command->sw.mask, sw_val->value))
           strccat(buff, &bp, sw_val->name);
       *bp = '\0';
-      notify_format(player, "Switches   : %s", buff);
+      notify_format(player, T("Switches   : %s"), buff);
     } else
-      notify(player, "Switches   :");
+      notify(player, T("Switches   :"));
     buff[0] = '\0';
     bp = buff;
     if (command->type & CMD_T_LS_ARGS) {
@@ -1794,7 +1794,7 @@ COMMAND(cmd_command)
       strccat(buff, &bp, "Noparse");
     if (command->type & CMD_T_EQSPLIT) {
       *bp = '\0';
-      notify_format(player, "Leftside   : %s", buff);
+      notify_format(player, T("Leftside   : %s"), buff);
       buff[0] = '\0';
       bp = buff;
       if (command->type & CMD_T_RS_ARGS) {
@@ -1806,10 +1806,10 @@ COMMAND(cmd_command)
       if (command->type & CMD_T_RS_NOPARSE)
         strccat(buff, &bp, "Noparse");
       *bp = '\0';
-      notify_format(player, "Rightside  : %s", buff);
+      notify_format(player, T("Rightside  : %s"), buff);
     } else {
       *bp = '\0';
-      notify_format(player, "Arguments  : %s", buff);
+      notify_format(player, T("Arguments  : %s"), buff);
     }
     do_hook_list(player, arg_left);
   }

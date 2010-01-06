@@ -468,7 +468,7 @@ im_dump_graph(intmap *im, const char *filename)
 void
 im_stats_header(dbref player)
 {
-  notify(player, "Map         Entries ~Memory");
+  notify(player, T("Map         Entries ~Memory"));
 }
 
 /** @stats/tables line */

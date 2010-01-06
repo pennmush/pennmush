@@ -204,7 +204,7 @@ nameformat(dbref player, dbref loc, char *tbuf1, char *defname)
     arg = (char *) mush_malloc(BUFFER_LEN, "string");
     arg2 = (char *) mush_malloc(BUFFER_LEN, "string");
     if (!arg)
-      mush_panic("Unable to allocate memory in nameformat");
+      mush_panic(T("Unable to allocate memory in nameformat"));
     save_global_regs("nameformat", rsave);
     for (j = 0; j < 10; j++) {
       wsave[j] = global_eval_context.wenv[j];

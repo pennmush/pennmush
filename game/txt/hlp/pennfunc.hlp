@@ -3864,25 +3864,32 @@ See also: setinter(), setunion()
 See also: setdiff(), setunion()
 & SETQ()
 & SETR()
+& UNSETQ()
   setq(<register>, <string>[, ... ,<registerN>, <stringN>])
   setr(<register>, <string>[, ... ,<registerN>, <stringN>])
+  unsetq(<register> [<reg2> ...])
   
-  The setq() and setr() functions are used to copy strings into local 
-  registers. setq() returns a null string; it is a purely "side effect" 
-  function. setr() returns the value stored. Multiple registers can be 
-  assigned with a single setq() or setr(), with additional pairs of 
-  registers and values in the function's arguments. In this case, setr() 
-  returns the value stored in the first register listed. All arguments are 
-  evaluated before any registers are set; if you want to use the result of 
-  setting one register in setting another, use multiple setq()s.
+  The setq() and setr() functions are used to copy strings into local
+  registers. setq() returns a null string; it is a purely "side
+  effect" function. setr() returns the value stored. Multiple
+  registers can be assigned with a single setq() or setr(), with
+  additional pairs of registers and values in the function's
+  arguments. In this case, setr() returns the value stored in the
+  first register listed. All arguments are evaluated before any
+  registers are set; if you want to use the result of setting one
+  register in setting another, use multiple setq()s.
 
-  There are thirty-six local registers, numbered 0 through 9 and A through Z.
-  They are cleared at the start of each new queue cycle (i.e. whenever a new 
-  command is evaluated). They are most useful for storing complex function 
-  evaluations which are used repeatedly within a single command.
+  There are thirty-six local registers, numbered 0 through 9 and A
+  through Z.  They are cleared at the start of each new queue cycle
+  (i.e. whenever a new command is evaluated). They are most useful for
+  storing complex function evaluations which are used repeatedly
+  within a single command.
 
-  Registers set via setq() or setr() can be accessed via the r() function,
-  or via the %qN percent-substitution.
+  Registers set via setq() or setr() can be accessed via the r()
+  function, or via the %qN percent-substitution.
+
+  unsetq() without arguments clears all registers. unsetq() with
+  arguments clears the specified registers.
 
   See 'help setq2' for examples.
 & SETQ2

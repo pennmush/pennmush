@@ -293,6 +293,30 @@ cleanup:
 }
 
 /* ARGSUSED */
+FUNCTION(fun_unsetq)
+{
+  /* sets a variable into a local register */
+  char *ptr;
+  int qindex;
+  int i;
+
+  if (nargs == 0 || args[0][0] == '\0') {
+    for (i=0; i < NUMQ; i++) {
+      *(global_eval_context.renv[i]) = '\0';
+    }
+    return;
+  }
+
+  for (ptr = args[0];*ptr;ptr++) {
+    if ((qindex = qreg_indexes[(unsigned char) *ptr]) != -1) {
+        *(global_eval_context.renv[qindex]) = '\0';
+    } else if (!isspace(*ptr)) {
+      safe_str(T("#-1 REGISTER OUT OF RANGE"), buff, bp);
+    }
+  }
+}
+
+/* ARGSUSED */
 FUNCTION(fun_r)
 {
   /* returns a local register */

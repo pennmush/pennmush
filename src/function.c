@@ -718,6 +718,7 @@ FUNTAB flist[] = {
   {"ULDEFAULT", fun_udefault, 1, 12, FN_NOPARSE | FN_LOCALIZE},
   {"ULOCAL", fun_ufun, 1, 11, FN_REG | FN_LOCALIZE},
   {"UNIQUE", fun_unique, 1, 4, FN_REG},
+  {"UNSETQ", fun_unsetq, 0, 1, FN_REG},
   {"UTCTIME", fun_time, 0, 0, FN_REG},
   {"U", fun_ufun, 1, 11, FN_REG},
   {"V", fun_v, 1, 1, FN_REG},

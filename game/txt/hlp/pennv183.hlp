@@ -14,12 +14,13 @@ be read in 'help patchlevels'.
 Version 1.8.3 patchlevel 12                     ??? ??, 2010
 
 Minor Changes:
- * Helpfile cleanup by Talvo.
+ * Helpfile cleanup. [MG]
  * Expand the @lock key optimizer. Try '@lock me=!!=me'.
+ * locate() now ignores spaces in its 3rd argument. [MG]
 
 Functions
  * llocks() without any arguments returns a list of the
-   standard locks. Suggested by Talvo.
+   standard locks.
 
 Fixes:
  * English matching works better with possessive get

@@ -853,9 +853,18 @@ do_mail_send(dbref player, char *tolist, char *message, mail_flag flags,
   }
   sb = sbuf;
   mb = message;                 /* Save the message pointer */
-  while (*message && (i < SUBJECT_LEN) && *message != SUBJECT_COOKIE) {
-    *sb++ = *message++;
-    i++;
+  while (*message && (i < SUBJECT_LEN)) {
+    if (*message == SUBJECT_COOKIE) {
+      if (*(message + 1) == SUBJECT_COOKIE) {
+	*sb++ = *message;
+	message += 2;
+	i += 1;
+      } else
+	break;
+    } else {
+      *sb++ = *message++;
+      i += 1;
+    }
   }
   *sb = '\0';
   if (*message && (*message == SUBJECT_COOKIE)) {

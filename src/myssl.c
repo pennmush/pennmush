@@ -220,11 +220,11 @@ client_verify_callback(int preverify_ok, X509_STORE_CTX * x509_ctx)
 
   X509_NAME_oneline(X509_get_subject_name(err_cert), buf, 256);
   if (!preverify_ok) {
-    do_log(LT_ERR, 0, 0, "verify error:num=%d:%s:depth=%d:%s\n", err,
+    do_log(LT_ERR, 0, 0, T("verify error:num=%d:%s:depth=%d:%s\n"), err,
            X509_verify_cert_error_string(err), depth, buf);
     if (err == X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT) {
       X509_NAME_oneline(X509_get_issuer_name(x509_ctx->current_cert), buf, 256);
-      do_log(LT_ERR, 0, 0, "issuer= %s\n", buf);
+      do_log(LT_ERR, 0, 0, T("issuer= %s\n"), buf);
     }
     return preverify_ok;
   }
@@ -462,7 +462,7 @@ ssl_accept(SSL * ssl)
       if (SSL_get_verify_result(ssl) == X509_V_OK) {
         /* The client sent a certificate which verified OK */
         X509_NAME_oneline(X509_get_subject_name(peer), buf, 256);
-        do_log(LT_CONN, 0, 0, "SSL client certificate accepted: %s", buf);
+        do_log(LT_CONN, 0, 0, T("SSL client certificate accepted: %s"), buf);
         state |= MYSSL_VERIFIED;
       }
     }

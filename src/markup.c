@@ -1145,19 +1145,19 @@ inspect_ansi_string(ansi_string *as, dbref who)
   markup_information *info;
   int count = 0;
   int j;
-  notify_format(who, "Inspecting ansi string");
-  notify_format(who, "  Text: %s", as->text);
-  notify_format(who, "  Nmarkups: %d", as->nmarkups);
+  notify_format(who, T("Inspecting ansi string"));
+  notify_format(who, T("  Text: %s"), as->text);
+  notify_format(who, T("  Nmarkups: %d"), as->nmarkups);
   for (j = 0; j < as->nmarkups; j++) {
     info = &(as->markup[j]);
     if (info->type == MARKUP_HTML) {
       notify_format(who,
-                    "    %d (%s): (start: %d end: %d) start_code: %s stop_code: %s",
+                    T("    %d (%s): (start: %d end: %d) start_code: %s stop_code: %s"),
                     count++, (info->type == MARKUP_HTML ? "html" : "ansi"),
                     info->start, info->end, info->start_code, info->stop_code);
     }
   }
-  notify_format(who, "Inspecting ansi string complete");
+  notify_format(who, T("Inspecting ansi string complete"));
 }
 #endif
 

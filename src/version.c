@@ -32,10 +32,10 @@ do_version(dbref player)
   notify_format(player, T("You are connected to %s"), MUDNAME);
   notify_format(player, T("Last restarted: %s"),
                 show_time(globals.start_time, 0));
-  notify_format(player, "PennMUSH version %s patchlevel %s %s", VERSION,
+  notify_format(player, T("PennMUSH version %s patchlevel %s %s"), VERSION,
                 PATCHLEVEL, PATCHDATE);
 #ifdef PATCHES
-  notify_format(player, "Patches: %s", PATCHES);
+  notify_format(player, T("Patches: %s"), PATCHES);
 #endif
 #ifdef WIN32
   notify_format(player, T("Build date: %s"), __DATE__);

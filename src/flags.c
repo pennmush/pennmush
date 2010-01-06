@@ -77,7 +77,7 @@ slab *flag_slab = NULL;
 extern PTAB ptab_command;       /* Uses flag bitmasks */
 
 /** Attempt to find a flagspace from its name */
-#define Flagspace_Lookup(n,ns)  if (!(n = (FLAGSPACE *)hashfind(ns,&htab_flagspaces))) mush_panic("Unable to locate flagspace");
+#define Flagspace_Lookup(n,ns)  if (!(n = (FLAGSPACE *)hashfind(ns,&htab_flagspaces))) mush_panic(T("Unable to locate flagspace"));
 
 /** This is the old default flag table. We still use it when we have to
  * convert old dbs, but once you have a converted db, it's the flag
@@ -363,7 +363,7 @@ new_flag(void)
     flag_slab = slab_create("flags", sizeof(FLAG));
   f = slab_malloc(flag_slab, NULL);
   if (!f)
-    mush_panic("Unable to allocate memory for a new flag!\n");
+    mush_panic(T("Unable to allocate memory for a new flag!\n"));
   return f;
 }
 
@@ -446,7 +446,7 @@ flag_add(FLAGSPACE *n, const char *name, FLAG *f)
         mush_realloc(n->flags, (f->bitpos + 1) * sizeof(FLAG *),
                      "flagspace.flags");
       if (!n->flags)
-        mush_panic("Unable to reallocate flags array!\n");
+        mush_panic(T("Unable to reallocate flags array!\n"));
 
       /* Make sure the new space is full of NULLs */
       for (i = n->flagbits; i <= f->bitpos; i++)
@@ -1048,7 +1048,7 @@ new_flag_bitmask(const char *ns)
   Flagspace_Lookup(n, ns);
   bitmask = mush_malloc(FlagBytes(n), "flag_bitmask");
   if (!bitmask)
-    mush_panic("Unable to allocate memory for flag bitmask");
+    mush_panic(T("Unable to allocate memory for flag bitmask"));
   memset(bitmask, 0, FlagBytes(n));
   return bitmask;
 }
@@ -1069,7 +1069,7 @@ clone_flag_bitmask(const char *ns, object_flag_type given)
   Flagspace_Lookup(n, ns);
   bitmask = (object_flag_type) mush_malloc(FlagBytes(n), "flag_bitmask");
   if (!bitmask)
-    mush_panic("Unable to allocate memory for flag bitmask");
+    mush_panic(T("Unable to allocate memory for flag bitmask"));
   memcpy(bitmask, given, FlagBytes(n));
   return bitmask;
 }
@@ -1569,7 +1569,7 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
   if (negate) {
     /* log if necessary */
     if (f->perms & F_LOG)
-      do_log(LT_WIZ, player, thing, "%s FLAG CLEARED", f->name);
+      do_log(LT_WIZ, player, thing, T("%s FLAG CLEARED"), f->name);
     /* those who unDARK return to the WHO */
     if (is_flag(f, "DARK") && IsPlayer(thing))
       hide_player(thing, 0);
@@ -1630,7 +1630,7 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
 
     /* log if necessary */
     if (f->perms & F_LOG)
-      do_log(LT_WIZ, player, thing, "%s FLAG SET", f->name);
+      do_log(LT_WIZ, player, thing, T("%s FLAG SET"), f->name);
     if (is_flag(f, "TRUST") && GoodObject(Zone(thing)))
       notify(player, T("Warning: Setting trust flag on zoned object"));
     if (is_flag(f, "SHARED"))
@@ -1734,8 +1734,8 @@ set_power(dbref player, dbref thing, const char *flag, int negate)
     notify(player, tbuf1);
   }
   if (f->perms & F_LOG)
-    do_log(LT_WIZ, player, thing, "%s POWER %s", f->name,
-           negate ? "CLEARED" : "SET");
+    do_log(LT_WIZ, player, thing, T("%s POWER %s"), f->name,
+           negate ? T("CLEARED") : T("SET"));
 }
 
 /** Check if an object has one or all of a list of flag characters.
@@ -2042,12 +2042,12 @@ do_flag_info(const char *ns, dbref player, const char *name)
     notify_format(player, T("No such %s."), strlower(ns));
     return;
   }
-  notify_format(player, "     Name: %s", f->name);
-  notify_format(player, "Character: %c", f->letter);
-  notify_format(player, "  Aliases: %s", list_aliases(n, f));
-  notify_format(player, "  Type(s): %s", privs_to_string(type_privs, f->type));
-  notify_format(player, "    Perms: %s", privs_to_string(flag_privs, f->perms));
-  notify_format(player, "ResetPrms: %s",
+  notify_format(player, T("     Name: %s"), f->name);
+  notify_format(player, T("Character: %c"), f->letter);
+  notify_format(player, T("  Aliases: %s"), list_aliases(n, f));
+  notify_format(player, T("  Type(s): %s"), privs_to_string(type_privs, f->type));
+  notify_format(player, T("    Perms: %s"), privs_to_string(flag_privs, f->perms));
+  notify_format(player, T("ResetPrms: %s"),
                 privs_to_string(flag_privs, f->negate_perms));
 }
 

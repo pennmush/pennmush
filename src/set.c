@@ -881,9 +881,9 @@ gedit_helper(dbref player, dbref thing,
   } else {
     /* We don't do it - we just pemit it. */
     if (!ansi_long_flag && ShowAnsi(player))
-      notify_format(player, "%s - Set: %s", AL_NAME(a), tbuf_ansi);
+      notify_format(player, T("%s - Set: %s"), AL_NAME(a), tbuf_ansi);
     else
-      notify_format(player, "%s - Set: %s", AL_NAME(a), tbuf1);
+      notify_format(player, T("%s - Set: %s"), AL_NAME(a), tbuf1);
   }
 
   return 1;

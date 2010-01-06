@@ -266,13 +266,13 @@ do_allquota(dbref player, const char *arg1, int quiet)
 
     if (NoQuota(who)) {
       if (!quiet)
-        notify_format(player, "%s: Objects: %d   Limit: UNLIMITED",
+        notify_format(player, T("%s: Objects: %d   Limit: UNLIMITED"),
                       Name(who), owned);
       continue;
     }
     if (!quiet) {
       oldlimit = get_current_quota(who);
-      notify_format(player, "%s: Objects: %d   Limit: %d",
+      notify_format(player, T("%s: Objects: %d   Limit: %d"),
                     Name(who), owned, oldlimit);
     }
     if (limit != -1) {
@@ -606,12 +606,12 @@ do_force(dbref player, const char *what, char *command)
     if (Wizard(player)) {
       /* Log forces by wizards */
       if (Owner(victim) != Owner(player))
-        do_log(LT_WIZ, player, victim, "** FORCE: %s", command);
+        do_log(LT_WIZ, player, victim, T("** FORCE: %s"), command);
       else
-        do_log(LT_WIZ, player, victim, "FORCE: %s", command);
+        do_log(LT_WIZ, player, victim, T("FORCE: %s"), command);
     } else if (Wizard(Owner(victim))) {
       /* Log forces of wizards */
-      do_log(LT_WIZ, player, victim, "** FORCE WIZ-OWNED: %s", command);
+      do_log(LT_WIZ, player, victim, T("** FORCE WIZ-OWNED: %s"), command);
     }
   }
   if (God(victim) && !God(player)) {
@@ -792,7 +792,7 @@ do_newpassword(dbref player, dbref cause,
     notify_format(player, T("Password for %s changed."), Name(victim));
     notify_format(victim, T("Your password has been changed by %s."),
                   Name(player));
-    do_log(LT_WIZ, player, victim, "*** NEWPASSWORD ***");
+    do_log(LT_WIZ, player, victim, T("*** NEWPASSWORD ***"));
   }
 }
 
@@ -877,7 +877,7 @@ do_boot(dbref player, const char *name, enum boot_type flag)
     else
       notify(player, T("That player isn't connected!"));
   } else {
-    do_log(LT_WIZ, player, victim, "*** BOOT ***");
+    do_log(LT_WIZ, player, victim, T("*** BOOT ***"));
     if (flag == BOOT_SELF)
       notify(player, T("You boot an idle self."));
     else if (victim == AMBIGUOUS)
@@ -1057,24 +1057,24 @@ do_debug_examine(dbref player, const char *name)
   notify_format(player, T("Powers value: %s"),
                 bits_to_string("POWER", Powers(thing), GOD, NOTHING));
 
-  notify_format(player, "Next: %d", Next(thing));
-  notify_format(player, "Contents: %d", Contents(thing));
-  notify_format(player, "Pennies: %d", Pennies(thing));
+  notify_format(player, T("Next: %d"), Next(thing));
+  notify_format(player, T("Contents: %d"), Contents(thing));
+  notify_format(player, T("Pennies: %d"), Pennies(thing));
 
   switch (Typeof(thing)) {
   case TYPE_PLAYER:
     break;
   case TYPE_THING:
-    notify_format(player, "Location: %d", Location(thing));
-    notify_format(player, "Home: %d", Home(thing));
+    notify_format(player, T("Location: %d"), Location(thing));
+    notify_format(player, T("Home: %d"), Home(thing));
     break;
   case TYPE_EXIT:
-    notify_format(player, "Destination: %d", Location(thing));
-    notify_format(player, "Source: %d", Source(thing));
+    notify_format(player, T("Destination: %d"), Location(thing));
+    notify_format(player, T("Source: %d"), Source(thing));
     break;
   case TYPE_ROOM:
-    notify_format(player, "Drop-to: %d", Location(thing));
-    notify_format(player, "Exits: %d", Exits(thing));
+    notify_format(player, T("Drop-to: %d"), Location(thing));
+    notify_format(player, T("Exits: %d"), Exits(thing));
     break;
   case TYPE_GARBAGE:
     break;
@@ -1476,7 +1476,7 @@ do_sitelock(dbref player, const char *site, const char *opts, const char *who,
       } else {
         notify_format(player, T("Site %s access options set to %s"), site,
                       opts);
-        do_log(LT_WIZ, player, NOTHING, "*** SITELOCK *** %s --> %s", site,
+        do_log(LT_WIZ, player, NOTHING, T("*** SITELOCK *** %s --> %s"), site,
                opts);
       }
       return;
@@ -1494,14 +1494,14 @@ do_sitelock(dbref player, const char *site, const char *opts, const char *who,
       if (add_access_sitelock(player, site, AMBIGUOUS, 0, ACS_CREATE)) {
         write_access_file();
         notify_format(player, T("Site %s locked"), site);
-        do_log(LT_WIZ, player, NOTHING, "*** SITELOCK *** %s", site);
+        do_log(LT_WIZ, player, NOTHING, T("*** SITELOCK *** %s"), site);
       }
       break;
     case SITELOCK_BAN:
       if (add_access_sitelock(player, site, AMBIGUOUS, 0, ACS_DEFAULT)) {
         write_access_file();
         notify_format(player, T("Site %s banned"), site);
-        do_log(LT_WIZ, player, NOTHING, "*** SITELOCK *** %s", site);
+        do_log(LT_WIZ, player, NOTHING, T("*** SITELOCK *** %s"), site);
       }
       break;
     case SITELOCK_CHECK:{
@@ -1589,7 +1589,7 @@ do_sitelock_name(dbref player, const char *name)
         fclose(fptmp);
         if (rename_file("tmp.tmp", NAMES_FILE) == 0) {
           notify(player, T("Name removed."));
-          do_log(LT_WIZ, player, NOTHING, "*** UNLOCKED NAME *** %s", name + 1);
+          do_log(LT_WIZ, player, NOTHING, T("*** UNLOCKED NAME *** %s"), name + 1);
         } else {
           notify(player, T("Unable to delete name."));
         }
@@ -1629,7 +1629,7 @@ do_sitelock_name(dbref player, const char *name)
 
         if (rename_file("tmp.tmp", NAMES_FILE) == 0) {
           notify_format(player, T("Name %s locked."), name);
-          do_log(LT_WIZ, player, NOTHING, "*** NAMELOCK *** %s", name);
+          do_log(LT_WIZ, player, NOTHING, T("*** NAMELOCK *** %s"), name);
         } else
           notify(player, T("Unable to lock name."));
       }

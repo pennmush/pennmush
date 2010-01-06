@@ -288,7 +288,7 @@ FUNCTION(fun_sql_escape)
   if (!sql_connected()) {
     sql_init();
     if (!sql_connected()) {
-      notify(executor, "No SQL database connection.");
+      notify(executor, T("No SQL database connection."));
       safe_str("#-1", buff, bp);
       return;
     }
@@ -345,11 +345,11 @@ COMMAND(cmd_sql)
 
   if (!qres) {
     if (affected_rows >= 0) {
-      notify_format(player, "SQL: %d rows affected.", affected_rows);
+      notify_format(player, T("SQL: %d rows affected."), affected_rows);
     } else if (!sql_connected()) {
-      notify(player, "No SQL database connection.");
+      notify(player, T("No SQL database connection."));
     } else {
-      notify_format(player, "SQL: Error: %s", sql_error());
+      notify_format(player, T("SQL: Error: %s"), sql_error());
     }
     return;
   }
@@ -438,11 +438,11 @@ COMMAND(cmd_sql)
             cell = tbuf;
           }
         }
-        notify_format(player, "Row %d, Field %s: %s",
+        notify_format(player, T("Row %d, Field %s: %s"),
                       rownum + 1, name, (cell && *cell) ? cell : "NULL");
       }
     } else
-      notify_format(player, "Row %d: NULL", rownum + 1);
+      notify_format(player, T("Row %d: NULL"), rownum + 1);
   }
 
 finished:

@@ -662,9 +662,9 @@ do_list_access(dbref player)
       }
       *bp = '\0';
       notify_format(player,
-                    "%3d SITE: %-20s  DBREF: %-6s FLAGS:%s", rulenum,
+                    T("%3d SITE: %-20s  DBREF: %-6s FLAGS:%s"), rulenum,
                     ap->host, unparse_dbref(ap->who), flaglist);
-      notify_format(player, " COMMENT: %s", ap->comment ? ap->comment : "");
+      notify_format(player, T(" COMMENT: %s"), ap->comment ? ap->comment : "");
     } else {
       notify(player,
              T

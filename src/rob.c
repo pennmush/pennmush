@@ -68,7 +68,7 @@ do_kill(dbref player, const char *what, int cost, int slay)
     return;
   }
   if (slay)
-    do_log(LT_WIZ, player, victim, "SLAY");
+    do_log(LT_WIZ, player, victim, T("SLAY"));
 
   switch (victim) {
   case NOTHING:
@@ -88,7 +88,7 @@ do_kill(dbref player, const char *what, int cost, int slay)
                 !Wizard(player)) ||
                (controls(victim, Location(victim)) &&
                 !controls(player, Location(victim)))) {
-      notify(player, "Sorry.");
+      notify(player, T("Sorry."));
     } else if (NoKill(victim) && !Wizard(player) && (Owner(victim) != player)) {
       notify(player, T("That object cannot be killed."));
     } else {

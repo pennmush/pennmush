@@ -2836,7 +2836,7 @@ filter_mail(dbref from, dbref player, char *subject,
   arg3 = mush_malloc(BUFFER_LEN, "string");
   arg4 = mush_malloc(BUFFER_LEN, "string");
   if (!arg4)
-    mush_panic("Unable to allocate memory in mailfilter");
+    mush_panic(T("Unable to allocate memory in mailfilter"));
   save_global_regs("filter_mail", rsave);
   save_global_env("filter_mail", wsave);
   for (j = 0; j < 10; j++)

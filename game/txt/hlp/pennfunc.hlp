@@ -1358,8 +1358,11 @@ See also: decompose(), secure()
   use u() instead, which hides the caller's stack.
 
   Example:
-    > &TEST me=%B%B%B-[name(me)]
-    think eval(me,test)
+    > &TEST Foo=%b%b%b-[name(me)] (%n)
+    > &CMD Foo=$test: @emit ufun(me/test) ; @emit eval(me, test)
+    > test
+       -Foo (Mike)
+       -Foo (Foo)
 
 See also: get(), u(), xget(), edefault()
 & EXIT()
@@ -2417,7 +2420,8 @@ See also: letq(), setq(), setr(), r(), ulocal(), uldefault()
     z - English-style matching (my 2nd book) of <name> (see 'help matching')
     * - All of the above (try a complete match)
  
-  Just string all the parameters together, without separating them by spaces.
+  Just string all the parameters together. Spaces are ignored, so you can
+  use spaces between paramaters for clarity if you wish.
   
   See 'help locate3' for examples.
 & LOCATE3
@@ -4149,6 +4153,7 @@ See also: soundex()
 
 See also: repeat()
 & SPEAK()
+& SPEAKPENN()
   speak(<speaker>, <string>[, <say string>
                   [, [<transform obj>/]<transform attr>
                   [, [<isnull obj>/]<isnull attr>[, <open>[, <close>]]]]])
@@ -4290,8 +4295,8 @@ See also: repeat()
   rather than 1 -- if the speech fragment number is 0, we know we
   haven't given any output yet.
  
-  > &MUTTER_FN me = [ifelse(rand(2),"%0",)]
-  > &NONE_FN me = [switch(%1,0,name(%0),capstr(subj(%0)))] mutters something.
+  > &MUTTER_FN me=if(rand(2),"%0")
+  > &NONE_FN me=switch(%1,0,name(%0),capstr(subj(%0)))] mutters something.
   > @emit speak(me, Hello there., mutters:, MUTTER_FN, NONE_FN)
   Wizard mutters: "Hello there."
   OR
@@ -4316,31 +4321,34 @@ See also: repeat()
   spellnum(<number>)
 
   Given a number, return its written-out representation in words.
+  
+  Example:
+    > think spellnum(12345)
+    twelve thousand three hundred forty-five
 
 See also: ordinal()
 & ORDINAL()
   ordinal(<integer>)
 
-  Given an integer, return its written-out ordinal representation in
-  words.
+  Given an integer, return its written-out ordinal representation in words.
 
   Example:
-  > think ordinal(1)
-  first
+    > think ordinal(1)
+    first
 
 See also: spellnum()
 & SPLICE()
-  splice(<list1>, <list2>, <word>[,<delimiter>])
+  splice(<list1>, <list2>, <word>[, <delimiter>])
   
-  This function splices <list1> and <list2> together. <list1> and
-  <list2> are space-separated lists of words
+  This function splices <list1> and <list2> together. <list1> and <list2> 
+  are space-separated lists of words.
   
-  If a word in <list1> is the same as <word>, it is replaced by the
-  word in the corresponding position in <list2>.  Both lists must have
-  the same number of words.
+  If a word in <list1> is the same as <word>, it is replaced by the word in
+  the corresponding position in <list2>.  Both lists must have the same 
+  number of words.
   
   Example:
-    > say [splice(foo bar baz,eek moof gleep,bar)]
+    > say splice(foo bar baz,eek moof gleep,bar)
     You say, "foo moof baz"
 
 See also: merge()
@@ -4348,19 +4356,18 @@ See also: merge()
   mapsql([<object>/]<attribute>, <query>[, <osep>[, <dofieldnames>]])
 
   Performs an SQL query if the MUSH is configured to connect to an SQL
-  database server. This function requires a WIZARD flag or the Sql_Ok
-  power.
+  database server. This function requires a WIZARD flag or the Sql_Ok power.
 
-  <query string> is evaluated, so it's useful to either read it from
-  another attribute with u() or use lit() to protect commas. If you
-  will be interpolating user-provided values into the query, be
-  careful to escape them with sqlescape().
+  <query> is evaluated, so it's useful to either read it from another
+  attribute with u() or use lit() to protect commas. If you will be 
+  interpolating user-provided values into the query, be careful to escape
+  them with sqlescape().
 
-  Each row of the result is passed to <attribute>, with columns
-  as %1-%9. %0 is set to the row number, which will start with 1.
+  Each row of the result is passed to <attribute>, with columns as %1-%9.
+  %0 is set to the row number, which will start with 1.
 
-  If <dofieldnames> evaluates to a true boolean, then the first call
-  will be with row number 0 and %1-%9 will be set to the field names.
+  If <dofieldnames> evaluates to a true boolean, then the first call will be
+  with row number 0 and %1-%9 will be set to the field names.
 
   See 'help mapsql2' for examples.
 
@@ -4370,43 +4377,41 @@ See also: anonymous attributes, sqlescape(), sql(), @sql
   > @@ Field, Type, Null?, Key?, Default, Extra
   > &each_row me=align(<15 <15 <5 <5 <10 <14,%1,%2,%3,%4,%5,%6)
   > &tabledesc me=mapsql(each_row,describe %0,%r,1)
-  > th u(tabledesc,quotes)
+  > think u(tabledesc,quotes)
   Field           Type            Null  Key   Default    Extra
   quoteid         int(11)               PRI              auto_increment
   quote           text
 
   > &each_bb me=(%0) - %1 (%2)
-  > &q me=SELECT bbname, count(*) from bbs group by bbname order by bbname
-  > th mapsql(each_bb,v(q),%r)
+  > &query me=SELECT name, count(*) FROM bbs GROUP BY name ORDER BY name
+  > think mapsql(each_bb, v(query), %r)
   (1) - Announcements (5)
   (2) - Advertisements (20)
   ... etc
 
 & SQL()
-  sql(<query string>[,<row delimiter>[,<field delimiter>]])
+  sql(<query>[, <row separator>[, <field separator>]])
 
   Performs an SQL query if the MUSH is configured to connect to an SQL
-  database server. This function requires a WIZARD flag or the Sql_Ok
-  power.
+  database server. This function requires a WIZARD flag or the Sql_Ok power.
 
   By default, SELECT queries will return their data space-separated.
-  Usually, it's more useful to specify a character to delimit rows
-  returned (and sometimes another character to delimit the
-  fields/columns returned, if they may contain spaces).
+  Usually, it's more useful to specify a character to delimit rows returned
+  (and sometimes another character to delimit the fields/columns returned,
+  if they may contain spaces).
 
-  <query string> is evaluated, so it's useful to either read it from
-  another attribute with u() or use lit() to protect commas. If you
-  will be interpolating user-provided values into the query, be
-  careful to escape them with sqlescape(), like this:
+  <query> is evaluated, so it's useful to either read it from another
+  attribute with u() or use lit() to protect commas. If you will be 
+  interpolating user-provided values into the query, be careful to escape 
+  them with sqlescape(), like this:
 
-     &SEL_GETID obj = SELECT id FROM mytable WHERE name = '[sqlescape(%0)]'
-     &DOIT obj = $do *: ... [setq(0,sql(u(SEL_GETID,%0),~,|))] ...
+    > &SEL_GETID obj = SELECT id FROM mytable WHERE name = '[sqlescape(%0)]'
+    > &DOIT obj = $do *: ... [setq(0,sql(u(SEL_GETID,%0),~,|))] ...
 
   A query that doesn't return any rows, such as a UPDATE or SELECT that
   has no matches will return a null string. 
 
 See also: sqlescape(), mapsql(), @sql
-
 & SQLESCAPE()
   sqlescape(<string>)
 
@@ -5440,16 +5445,16 @@ See also: nexits(), lexits(), lvexits()
   xplayers(<object>, <start>, <count>)
   xvplayers(<object>, <start>, <count>)
 
-  xplayers() fetches <count> or fewer player dbrefs from <object>
-  starting at position <start>. It is useful when the number of
-  players in a container causes lplayers() to exceed the buffer limit.
+  xplayers() fetches <count> or fewer player dbrefs from <object>'s contents
+  starting at position <start>. It is useful when the number of players in a
+  container causes lplayers() to exceed the buffer limit. It is equivalent to
+  
+    extract(lplayers(<object>),<start>,<count>)
 
-  It is equivalent to extract(lplayers(<object>),<start>,<count>)
+  xvplayers() is identical, except it follows the restrictions of 
+  lvplayers().
 
-  xvplayers() is identical, except it follows the restrictions of
-  lvplayers()
-
-See also: nplayers(), lplayers(), lvplayers()
+See also: nplayers(), lplayers(), lvplayers(), xthings(), xexits()
 & XVTHINGS()
 & XTHINGS()
   xthings(<object>, <start>, <count>)
@@ -5457,15 +5462,14 @@ See also: nplayers(), lplayers(), lvplayers()
 
   xthings() fetches <count> or fewer non-player dbrefs from <object>'s
   contents starting at position <start>. It is useful when the number
-  of players in a container causes lthings() to exceed the buffer
-  limit.
+  of things in a container causes lthings() to exceed the buffer
+  limit. It is equivalent to:
+  
+    extract(lthings(<object>), <start>, <count>)
 
-  It is equivalent to extract(lthings(<object>),<start>,<count>)
+  xvthings() is identical, except it follows the restrictions of lvthings().
 
-  xvthings() is identical, except it follows the restrictions of
-  lvthings()
-
-See also: nthings(), lthings(), lvthings()
+See also: nthings(), lthings(), lvthings(), xplayers(), xexits()
 & XWHO()
 & XWHOID()
 & XMWHO()
@@ -5475,75 +5479,59 @@ See also: nthings(), lthings(), lvthings()
   xwhoid(<start>, <count>)
   xmwhoid(<start>, <count>)
 
-  xwho() fetches <count> or fewer player dbrefs from the list of
-  connected players. It is useful when the number of players connected
-  causes lwho() or pemits in +who $-commands to exceed buffer limits.
+  xwho() fetches <count> or fewer player dbrefs from the list of connected 
+  players. It is useful when the number of players connected causes lwho() 
+  or pemits in +who $-commands to exceed buffer limits. It is equivalent to:
+  
+    extract(lwho(), <start>, <count>)
 
-  It is equivalent to extract(lwho(),<start>,<count>).
-
-  xmwho() is identical, except it is limited to non-DARK and non-HIDE
-  players.
+  xmwho() does not include dark or hidden players (like mwho()).
 
   xwhoid() and xmwhoid() return objids instead of dbrefs.
 
 See also: lwho(), mwho(), nwho()
-
+& ZWHO()
 & ZMWHO()
+  zwho(<object>[, <viewer>])
   zmwho(<object>)
 
-  This returns a list of the dbref numbers for all current-connected,
-  non-hidden players within a location belonging to the specified
-  zone.  It's exactly the same as zwho() used by a mortal, and is
-  suitable for use on privileged global objects who need an
-  unprivileged zwho-list.  The viewer must either have see_all
-  privileges or pass the zone lock of the zone to use the function.
-
-See also: zwho()
-
-& ZWHO()
-  zwho(<object>[, <viewer>])
-
-  This returns a list of the dbref numbers for all currently-connected
-  players within a location belonging to the specified zone. When
-  mortals use this function, the dbref numbers of DARK wizards or
-  hidden royalty do NOT appear on the dbref list. The viewer must
-  either have see_all privileges or pass the zone lock of the zone to
-  use the function.
+  These functions return the dbrefs of all currently-connected players in
+  locations @chzone'd to <object>. zmwho() does not include dark or hidden
+  players, while zwho() returns all players that the caller can see are
+  online. You must be See_All or pass <object>'s @lock/zone to use these
+  functions.
   
-  If <viewer> is given by a privileged user, zwho() returns a dbref
-  list using <viewer>'s privileges.
+  See_All players can pass a <viewer> argument to zwho() to get only those
+  players that <viewer> can see is online.
 
-See also: zmwho()
+See also: lwho(), nwho(), zone(), zfun()
 & ZEMIT()
 & NSZEMIT()
   zemit(<zone>, <message>)
   nszemit(<zone>, <message>)
 
-  Sends a message to everything zoned to <zone>, as per @zemit.  Costs
-  apply.
+  zemit() emits <message> in every room @chzone'd to <zone>, as per @zemit.
+  It is computationally expensive, and costs the same as @search.
 
   nszemit() is a wizard-only variation that works like @nszemit.
 
+See also: @zemit, zone(), zfun(), zwho(), ZONES
 & ZFUN()
-  zfun(<user function name>[, <arg 0>[, <arg1>[, ... <arg9>]]])
+  zfun(<attribute>[, <arg0>[, <arg1>[, ... , <arg9>]]])
  
-  This is essentially identical to UFUN(), but the attribute
-  corresponding to the user function name is read from the ZMO of the
-  object instead of from the object itself. In order to read the
-  attribute from the ZMO, one of the following criteria must be met:
- 
-  1. The object is set WIZARD or ROYALTY.
-  2. The object controls the ZMO.
-  3. The object's owner owns the attribute on the ZMO.
-  4. The ZMO is set VISUAL.
-  5. The attribute being checked is set VISUAL.
- 
-  See 'help UFUN()' for more details on user-defined functions.
+  This function evaluates an attribute on the caller's Zone object. It is
+  essentially identical to
+  
+  ufun(zone(me)/<attribute>[, <arg0>[, ... , <arg9>]])
+
+See also: ufun(), get(), zone(), zemit(), ZONES
 & ZONE()
   zone(<object>[, <new zone>])
  
-  Returns the object's 'zone'. This is the dbref of the master object
-  which defines the zone.  If the second argument is specified, the
-  function tries to change the zone on the object before reporting it.
-
-See also: ZONES
+  Returns <object>'s zone, or #-1 if it has no zone. You must be able to
+  examine the object; if you can't, zone() returns #-1.
+  
+  If a <new zone> is given, zone() attempts to change the zone of <object>
+  to <new zone> first.
+  
+See also: @chzone, zfun(), zwho(), zemit() ZONES

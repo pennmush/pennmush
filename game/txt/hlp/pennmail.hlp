@@ -50,15 +50,20 @@
 & mail-sending 
   @mail[/switch] <player-list> = [<subject>]/<msg>
         This sends the message <msg> to all players in <player-list>.
+
         If no subject is given, the message subject is the beginning
-        of the message itself.
+        of the message itself. To include a literal / in the subject,
+        double it up (//).
+
         All function substitutions are valid in <msg> including mail(#) which
         will allow you to forward mail you have received to other users.
+
         The following switches are available:
                 /send   - same as no switch
                 /urgent - mail is marked as "Urgent"
                 /silent - no notification to sender that mail was sent
                 /nosig  - no mail signature
+
         If you have an @mailsignature attribute set on yourself, its
         contents will be evaluated and appended to the message unless
         the /nosig switch is given.

@@ -1989,6 +1989,8 @@ FUNCTION(fun_locate)
     case 'X':
       ambig_ok = 1;             /* okay to pick last match */
       break;
+    case ' ':
+      break;                    /* skip over spaces */
     default:
       notify_format(executor, T("I don't understand switch '%c'."), *p);
       break;

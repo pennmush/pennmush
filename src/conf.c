@@ -1138,7 +1138,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
 void
 conf_default_set(void)
 {
-  strcpy(options.mud_name, "TinyMUSH");
+  strcpy(options.mud_name, "PennMUSH");
   options.port = 4201;
   options.ssl_port = 0;
   strcpy(options.input_db, "data/indb");

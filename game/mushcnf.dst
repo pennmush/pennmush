@@ -12,7 +12,7 @@
 ####
 
 # Name of your MUSH. Please change this.
-mud_name TinyMUSH
+mud_name PennMUSH
 
 # The port it's running on. See also ssl_port, later.
 port 4201

@@ -614,7 +614,7 @@ eval_boolexp(dbref player /* The player trying to pass */ ,
         }
         break;
       default:
-        do_log(LT_ERR, 0, 0, "Bad boolexp opcode %d %d in object #%d",
+        do_log(LT_ERR, 0, 0, T("Bad boolexp opcode %d %d in object #%d"),
                op, arg, target);
         report();
         r = 0;

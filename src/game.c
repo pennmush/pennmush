@@ -210,7 +210,7 @@ do_dump(dbref player, char *num, enum dump_type flag)
     } else {
       /* normal dump */
       globals.paranoid_dump = 0;        /* just to be safe */
-      notify(player, "Dumping...");
+      notify(player, T("Dumping..."));
       do_rawlog(LT_CHECK, "** DUMP ** done by %s(#%d) at %s",
                 Name(player), player, show_time(mudtime, 0));
     }
@@ -293,7 +293,7 @@ do_shutdown(dbref player, enum shutdown_type flag)
            Name(player), unparse_dbref(player));
 
     if (flag == SHUT_PANIC) {
-      mush_panic("@shutdown/panic");
+      mush_panic(T("@shutdown/panic"));
     } else {
       if (flag == SHUT_PARANOID) {
         globals.paranoid_checkpt = db_top / 5;
@@ -443,7 +443,7 @@ mush_panic(const char *message)
   already_panicking = 1;
   do_rawlog(LT_ERR, "PANIC: %s", message);
   report();
-  flag_broadcast(0, 0, "EMERGENCY SHUTDOWN: %s", message);
+  flag_broadcast(0, 0, T("EMERGENCY SHUTDOWN: %s"), message);
 
   /* turn off signals */
   block_signals();
@@ -555,9 +555,9 @@ fork_and_dump(int forking)
     } else {
       /* Ack, can't fork, 'cause we have stuff on disk... */
       do_log(LT_ERR, 0, 0,
-             "fork_and_dump: Data are swapped to disk, so nonforking dumps will be used.");
+             T("fork_and_dump: Data are swapped to disk, so nonforking dumps will be used."));
       flag_broadcast("WIZARD", 0,
-                     "DUMP: Data are swapped to disk, so nonforking dumps will be used.");
+                     T("DUMP: Data are swapped to disk, so nonforking dumps will be used."));
       nofork = 1;
     }
 #endif
@@ -574,7 +574,7 @@ fork_and_dump(int forking)
     if (child < 0) {
       /* Oops, fork failed. Let's do a nofork dump */
       do_log(LT_ERR, 0, 0,
-             "fork_and_dump: fork() failed! Dumping nofork instead.");
+             T("fork_and_dump: fork() failed! Dumping nofork instead."));
       if (DUMP_NOFORK_MESSAGE && *DUMP_NOFORK_MESSAGE)
         flag_broadcast(0, 0, "%s", DUMP_NOFORK_MESSAGE);
       child = 0;
@@ -1065,7 +1065,7 @@ process_command(dbref player, char *command, dbref cause, int from_port)
 
   if (!errdblist)
     if (!(errdblist = mush_calloc(errdbsize, sizeof(dbref), "errdblist")))
-      mush_panic("Unable to allocate memory in process_command()!");
+      mush_panic(T("Unable to allocate memory in process_command()!"));
 
   errdbtail = errdblist;
   errdb = NOTHING;
@@ -1499,10 +1499,10 @@ do_writelog(dbref player, char *str, int ltype)
     notify(player, T("Permission denied."));
     return;
   }
-  do_rawlog(ltype, "LOG: %s(#%d%s): %s", Name(player), player,
+  do_rawlog(ltype, T("LOG: %s(#%d%s): %s"), Name(player), player,
             unparse_flags(player, GOD), str);
 
-  notify(player, "Logged.");
+  notify(player, T("Logged."));
 }
 
 /** Bind occurences of '##' in "action" to "arg", then run "action".
@@ -2049,10 +2049,10 @@ unix_uptime(dbref player __attribute__ ((__unused__)))
   getrusage(RUSAGE_SELF, &usage);
   notify_format(player, T("Time used:   %10ld user   %10ld sys"),
                 (long) usage.ru_utime.tv_sec, (long) usage.ru_stime.tv_sec);
-  notify_format(player, "Max res mem: %10ld pages  %10ld bytes",
+  notify_format(player, T("Max res mem: %10ld pages  %10ld bytes"),
                 usage.ru_maxrss, (usage.ru_maxrss * psize));
   notify_format(player,
-                "Integral mem:%10ld shared %10ld private %10ld stack",
+                T("Integral mem:%10ld shared %10ld private %10ld stack"),
                 usage.ru_ixrss, usage.ru_idrss, usage.ru_isrss);
   notify_format(player,
                 T
@@ -2064,7 +2064,7 @@ unix_uptime(dbref player __attribute__ ((__unused__)))
                 usage.ru_msgrcv, usage.ru_msgsnd);
   notify_format(player, T("Context swi: %10ld vol    %10ld forced"),
                 usage.ru_nvcsw, usage.ru_nivcsw);
-  notify_format(player, "Signals:     %10ld", usage.ru_nsignals);
+  notify_format(player, T("Signals:     %10ld"), usage.ru_nsignals);
 #endif                          /* HAS_GETRUSAGE */
 #endif
 }
@@ -2077,16 +2077,16 @@ win32_uptime(dbref player __attribute__ ((__unused__)))
   double mem;
   memstat.dwLength = sizeof(memstat);
   GlobalMemoryStatus(&memstat);
-  notify(player, "---------- Windows memory usage ------------");
-  notify_format(player, "%10ld %% memory in use", memstat.dwMemoryLoad);
+  notify(player, T("---------- Windows memory usage ------------"));
+  notify_format(player, T("%10ld %% memory in use"), memstat.dwMemoryLoad);
   mem = memstat.dwAvailPhys / 1024.0 / 1024.0;
-  notify_format(player, "%10.3f Mb free physical memory", mem);
+  notify_format(player, T("%10.3f Mb free physical memory"), mem);
   mem = memstat.dwTotalPhys / 1024.0 / 1024.0;
-  notify_format(player, "%10.3f Mb total physical memory", mem);
+  notify_format(player, T("%10.3f Mb total physical memory"), mem);
   mem = memstat.dwAvailPageFile / 1024.0 / 1024.0;
-  notify_format(player, "%10.3f Mb available in the paging file ", mem);
+  notify_format(player, T("%10.3f Mb available in the paging file "), mem);
   mem = memstat.dwTotalPageFile / 1024.0 / 1024.0;
-  notify_format(player, "%10.3f Mb total paging file size", mem);
+  notify_format(player, T("%10.3f Mb total paging file size"), mem);
 #endif
 }
 
@@ -2399,7 +2399,7 @@ extern intmap *queue_map, *descs_by_fd;
 void
 do_list_memstats(dbref player)
 {
-  notify(player, "Hash Tables:");
+  notify(player, T("Hash Tables:"));
   hash_stats_header(player);
   hash_stats(player, &htab_function, "Functions");
   hash_stats(player, &htab_user_function, "@Functions");
@@ -2410,17 +2410,17 @@ do_list_memstats(dbref player)
   hash_stats(player, &htab_objdata_keys, "ObjDataKeys");
   hash_stats(player, &htab_locks, "@locks");
   hash_stats(player, &local_options, "ConfigOpts");
-  notify(player, "Prefix Trees:");
+  notify(player, T("Prefix Trees:"));
   ptab_stats_header(player);
   ptab_stats(player, &ptab_attrib, "AttrPerms");
   ptab_stats(player, &ptab_command, "Commands");
   ptab_stats(player, &ptab_flag, "Flags");
-  notify(player, "String Trees:");
+  notify(player, T("String Trees:"));
   st_stats_header(player);
   st_stats(player, &atr_names, "AttrNames");
   st_stats(player, &object_names, "ObjNames");
   st_stats(player, &lock_names, "LockNames");
-  notify(player, "Integer Maps:");
+  notify(player, T("Integer Maps:"));
   im_stats_header(player);
   im_stats(player, queue_map, "Queue IDs");
   im_stats(player, descs_by_fd, "Connections");
@@ -2430,23 +2430,23 @@ do_list_memstats(dbref player)
     long items, used, total_comp, total_uncomp;
     double percent;
     compress_stats(&items, &used, &total_uncomp, &total_comp);
-    notify(player, "---------- Internal attribute compression  ----------");
+    notify(player, T("---------- Internal attribute compression  ----------"));
     notify_format(player,
-                  "%10ld compression table items used, "
-                  "taking %ld bytes.", items, used);
-    notify_format(player, "%10ld bytes in text before compression. ",
+                  T("%10ld compression table items used, "
+                  "taking %ld bytes."), items, used);
+    notify_format(player, T("%10ld bytes in text before compression. "),
                   total_uncomp);
-    notify_format(player, "%10ld bytes in text AFTER  compression. ",
+    notify_format(player, T("%10ld bytes in text AFTER  compression. "),
                   total_comp);
     percent = ((float) (total_comp)) / ((float) total_uncomp) * 100.0;
     notify_format(player,
-                  "%10.0f %% text    compression ratio (lower is better). ",
+                  T("%10.0f %% text    compression ratio (lower is better). "),
                   percent);
     percent =
       ((float) (total_comp + used + (32768L * sizeof(char *)))) /
       ((float) total_uncomp) * 100.0;
     notify_format(player,
-                  "%10.0f %% OVERALL compression ratio (lower is better). ",
+                  T("%10.0f %% OVERALL compression ratio (lower is better). "),
                   percent);
     notify_format(player,
                   T
@@ -2454,7 +2454,7 @@ do_list_memstats(dbref player)
                   32768L * sizeof(char *));
     if (percent >= 100.0)
       notify(player,
-             "          " "(Compression ratio improves with larger database)");
+             T("          " "(Compression ratio improves with larger database)"));
   }
 #endif
 }

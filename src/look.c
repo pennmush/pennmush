@@ -75,7 +75,7 @@ look_exits(dbref player, dbref loc, const char *exit_name)
   tbuf2 = (char *) mush_malloc(BUFFER_LEN, "string");
   nbuf = (char *) mush_malloc(BUFFER_LEN, "string");
   if (!tbuf1 || !tbuf2 || !nbuf)
-    mush_panic("Unable to allocate memory in look_exits");
+    mush_panic(T("Unable to allocate memory in look_exits"));
   s1 = tbuf1;
   s2 = tbuf2;
   texits = exit_count = total_count = 0;
@@ -91,7 +91,7 @@ look_exits(dbref player, dbref loc, const char *exit_name)
     arg = (char *) mush_malloc(BUFFER_LEN, "string");
     buff = (char *) mush_malloc(BUFFER_LEN, "string");
     if (!arg || !buff)
-      mush_panic("Unable to allocate memory in look_exits");
+      mush_panic(T("Unable to allocate memory in look_exits"));
     save_global_regs("look_exits", rsave);
     for (j = 0; j < 10; j++) {
       wsave[j] = global_eval_context.wenv[j];
@@ -251,7 +251,7 @@ look_contents(dbref player, dbref loc, const char *contents_name)
     arg2 = (char *) mush_malloc(BUFFER_LEN, "string");
     buff = (char *) mush_malloc(BUFFER_LEN, "string");
     if (!arg || !buff || !arg2)
-      mush_panic("Unable to allocate memory in look_contents");
+      mush_panic(T("Unable to allocate memory in look_contents"));
     save_global_regs("look_contents", rsave);
     for (j = 0; j < 10; j++) {
       wsave[j] = global_eval_context.wenv[j];
@@ -338,20 +338,20 @@ look_helper_veiled(dbref player, dbref thing __attribute__ ((__unused__)),
     if (ShowAnsi(player)) {
       if (GoodObject(parent))
         notify_format(player,
-                      "%s#%d/%s [#%d%s]%s is veiled", ANSI_HILITE, parent,
+                      T("%s#%d/%s [#%d%s]%s is veiled"), ANSI_HILITE, parent,
                       AL_NAME(atr), Owner(AL_CREATOR(atr)), fbuf, ANSI_END);
       else
         notify_format(player,
-                      "%s%s [#%d%s]%s is veiled", ANSI_HILITE, AL_NAME(atr),
+                      T("%s%s [#%d%s]%s is veiled"), ANSI_HILITE, AL_NAME(atr),
                       Owner(AL_CREATOR(atr)), fbuf, ANSI_END);
     } else {
       if (GoodObject(parent))
         notify_format(player,
-                      "#%d/%s [#%d%s] is veiled", parent, AL_NAME(atr),
+                      T("#%d/%s [#%d%s] is veiled"), parent, AL_NAME(atr),
                       Owner(AL_CREATOR(atr)), fbuf);
       else
         notify_format(player,
-                      "%s [#%d%s] is veiled", AL_NAME(atr),
+                      T("%s [#%d%s] is veiled"), AL_NAME(atr),
                       Owner(AL_CREATOR(atr)), fbuf);
     }
   } else {
@@ -1009,7 +1009,7 @@ do_inventory(dbref player)
     arg2 = (char *) mush_malloc(BUFFER_LEN, "string");
     buff = (char *) mush_malloc(BUFFER_LEN, "string");
     if (!arg || !buff || !arg2)
-      mush_panic("Unable to allocate memory in do_inventory");
+      mush_panic(T("Unable to allocate memory in do_inventory"));
     save_global_regs("do_inventory", rsave);
     for (j = 0; j < 10; j++) {
       wsave[j] = global_eval_context.wenv[j];

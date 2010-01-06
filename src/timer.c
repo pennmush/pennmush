@@ -150,7 +150,7 @@ migrate_stuff(int amount)
                   "migration reference array");
     refs_size = actual;
     if (!refs)
-      mush_panic("Could not allocate migration reference array");
+      mush_panic(T("Could not allocate migration reference array"));
   }
 #ifdef DEBUG_MIGRATE
   do_rawlog(LT_TRACE, "Migrate asked %d, actual objects #%d to #%d for %d",

@@ -480,7 +480,7 @@ add_lock(dbref player, dbref thing, lock_type type, boolexp key, privbits flags)
     ll = next_free_lock(Locks(thing));
     if (!ll) {
       /* Oh, this sucks */
-      do_log(LT_ERR, 0, 0, "Unable to malloc memory for lock_list!");
+      do_log(LT_ERR, 0, 0, T("Unable to malloc memory for lock_list!"));
     } else {
       real_type = st_insert(type, &lock_names);
       ll->type = real_type;
@@ -539,7 +539,7 @@ add_lock_raw(dbref player, dbref thing, lock_type type, boolexp key,
   ll = next_free_lock(Locks(thing));
   if (!ll) {
     /* Oh, this sucks */
-    do_log(LT_ERR, 0, 0, "Unable to malloc memory for lock_list!");
+    do_log(LT_ERR, 0, 0, T("Unable to malloc memory for lock_list!"));
   } else {
     real_type = st_insert(type, &lock_names);
     ll->type = real_type;

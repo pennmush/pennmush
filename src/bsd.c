@@ -1232,7 +1232,7 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
   *bp = '\0';
   buff = (char *) mush_malloc(BUFFER_LEN, "string");
   if (!buff) {
-    mush_panic("Unable to allocate memory in fcache_dump_attr");
+    mush_panic(T("Unable to allocate memory in fcache_dump_attr"));
     return -2;
   }
   save_global_regs("send_txt", rsave);
@@ -1578,7 +1578,7 @@ initializesock(int s, char *addr, char *ip, int use_ssl
   DESC *d;
   d = (DESC *) mush_malloc(sizeof(DESC), "descriptor");
   if (!d)
-    mush_panic("Out of memory.");
+    mush_panic(T("Out of memory."));
   d->descriptor = s;
   d->connected = 0;
   d->connected_at = mudtime;
@@ -2092,7 +2092,7 @@ process_input_helper(DESC *d, char *tbuf1, int got)
   if (!d->raw_input) {
     d->raw_input = mush_malloc(MAX_COMMAND_LEN, "descriptor_raw_input");
     if (!d->raw_input)
-      mush_panic("Out of memory");
+      mush_panic(T("Out of memory"));
     d->raw_input_at = d->raw_input;
   }
   p = d->raw_input_at;

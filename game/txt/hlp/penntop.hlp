@@ -685,9 +685,7 @@ See also: @link, @open, link_ok, CLOUDY, TRANSPARENT, @firstexit
   Other failures (&<locktype>_LOCK`FAILURE, &<locktype>_LOCK`OFAILURE, 
     &<locktype>_LOCK`AFAILURE)
 
-  Many other things can also be locked -- see @lock and locktypes for
-  more information. However, there are failure messages at this time
-  only for the above.
+  See @lock and locktypes for more information on lock types.
 
 See also: @lock, @fail, @efail, @lfail
 & GENDER

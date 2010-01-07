@@ -682,8 +682,8 @@ See also: @link, @open, link_ok, CLOUDY, TRANSPARENT, @firstexit
   Failing to enter an object (@efail, @oefail, @aefail)
   Failing to leave an object (@lfail, @olfail, @alfail)
   Failing to use an object (@ufail, @oufail, @aufail)
-  Other failures (&<lock>`FAILURE, &<lock>`OFAILURE, &<lock>`AFAILURE)
-    where the <lock> can be: FOLLOW_LOCK, PAGE_LOCK
+  Other failures (&<locktype>_LOCK`FAILURE, &<locktype>_LOCK`OFAILURE, 
+    &<locktype>_LOCK`AFAILURE)
 
   Many other things can also be locked -- see @lock and locktypes for
   more information. However, there are failure messages at this time

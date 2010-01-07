@@ -571,7 +571,7 @@ See also: EXECUTOR, SUBSTITUTION, DBREF
   program attempts to match it against a valid game command in the
   following order of possible commands:
 
-    Special game commands: WHO, QUIT, etc.
+    Special game commands: QUIT, SCREENWIDTH, etc.
     Single-token commands: ", :, ;, +, \, #
     Exits in the room
     @-commands and &attribute setting

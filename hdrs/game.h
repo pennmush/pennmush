@@ -85,7 +85,7 @@ extern void do_drop(dbref player, const char *name);
 extern void do_enter(dbref player, const char *what);
 extern void do_leave(dbref player);
 extern void do_empty(dbref player, const char *what);
-extern void do_firstexit(dbref player, const char *what);
+extern void do_firstexit(dbref player, const char **what);
 
 /* From player.c */
 extern void do_password(dbref player, dbref cause,

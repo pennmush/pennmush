@@ -1,3 +1,7 @@
+#: game.c:2457
+msgid "          (Compression ratio improves with larger database)"
+msgstr "          (Omjer kompresije je bolji kod vece baze podataka)"
+
 #: src/wiz.c:2259
 #, c-format
 msgid "          (Includes table items, and table of words pointers of %ld bytes)"
@@ -7,6 +11,21 @@ msgstr "          (Ukljucuje tablicne predmete i tablicu pointera na rijeci od %
 #, c-format
 msgid "        Time until next purge: %ld minutes %ld seconds, at %s."
 msgstr "        Vrijeme do sljedeceg ciscenja: %ld minuta %ld sekundi, u %s."
+
+#: mymalloc.c:523
+#, c-format
+msgid "       allocated pages: %-6d      objects added via: %s"
+msgstr "       alocirani pageovi: %-6d      objekti dodani sa: %s"
+
+#: mymalloc.c:540
+#, c-format
+msgid "       pages >25%% full: %-6d        pages <25%% full: %d"
+msgstr "       pageovi >25%% puni: %-6d      pageovi <25%% puni: %d"
+
+#: mymalloc.c:537
+#, c-format
+msgid "       pages >75%% full: %-6d        pages >50%% full: %-6d"
+msgstr "       pageovi >75%% puni: %-6d      pageovi >50%% puni: %-6d"
 
 #: flags.c:2045
 #, c-format
@@ -20,6 +39,16 @@ msgstr "     Vrijeme: %a %b %d %X %Z %Y"
 #: game.c:1889
 msgid "     Up since %a %b %d %X %Z %Y"
 msgstr "     Radi od %a %b %d %X %Z %Y"
+
+#: mymalloc.c:526
+#, c-format
+msgid "     allocated objects: %-6ld           free objects: %-6ld"
+msgstr "     alocirani objekti: %-6ld       slobodni objekti: %-6ld"
+
+#: markup.c:1155
+#, c-format
+msgid "    %d (%s): (start: %d end: %d) start_code: %s stop_code: %s"
+msgstr "    %d (%s): (pocetak: %d kraj: %d) start_code: %s stop_code: %s"
 
 #: filecopy.c:110
 #, c-format
@@ -45,6 +74,11 @@ msgstr "    Dozvole: %s"
 msgid "    Time until next @warnings: %ld minutes %ld seconds, at %s."
 msgstr "    Vrijeme do sljedecih @warninga: %ld minuta %ld sekundi, u %s."
 
+#: mymalloc.c:533
+#, c-format
+msgid "    allocation average:%6.2f%%        pages 100%% full: %-6d"
+msgstr "    prosjecna alokacija:%6.2f%%      pageovi 100%% puni: %-6d"
+
 #: game.c:1905
 msgid "   Time of last database save: %a %b %d %X %Z %Y"
 msgstr "   Vrijeme zadnjeg snimanja baze podataka: %a %b %d %X %Z %Y"
@@ -53,6 +87,11 @@ msgstr "   Vrijeme zadnjeg snimanja baze podataka: %a %b %d %X %Z %Y"
 #, c-format
 msgid "   Time until next dbck check: %ld minutes %ld seconds, at %s."
 msgstr "   Vrijeme do sljedece dbck provjere: %ld minuta %ld sekundi, u %s."
+
+#: mymalloc.c:520
+#, c-format
+msgid "   object size (bytes): %-6d       objects per page: %-6d"
+msgstr "   vel.objekata (bajtovi): %-6d      objekata po pageu: %-6d"
 
 #: db.c:1205
 msgid "  (expecting ], >, or < as first character of the line.)"
@@ -325,6 +364,11 @@ msgstr " [lokacija: %s]"
 msgid " convtime() is stricter."
 msgstr " convtime() je strozi."
 
+#: mymalloc.c:530
+#, c-format
+msgid " fewest allocs in page: %-6d    most allocs in page: %-6d"
+msgstr " najmanje alok. u pageu: %-6d  najvise alok. u pageu: %-6d"
+
 #: flags.c:1531
 msgid " granted."
 msgstr " - dano."
@@ -360,6 +404,11 @@ msgstr " prema "
 #: speech.c:975
 msgid " with "
 msgstr " sa "
+
+#: look.c:350
+#, c-format
+msgid "#%d/%s [#%d%s] is veiled"
+msgstr "#%d/%s [#%d%s] je pod velom"
 
 #: funcrypt.c:53 funcrypt.c:61 funcrypt.c:100 funcrypt.c:107
 msgid "#-1 ALLOCATION ERROR"
@@ -873,6 +922,61 @@ msgstr "#-1 SIRINA PREMALA"
 msgid "#-? fun_mailstats called with invalid called_as!"
 msgstr "#-? fun_mailstats pozvan s neispravnim called_as!"
 
+#: game.c:2449
+#, c-format
+msgid "%10.0f %% OVERALL compression ratio (lower is better). "
+msgstr "%10.0f %% je UKUPAN  omjer kompresije (manji je bolji). "
+
+#: game.c:2443
+#, c-format
+msgid "%10.0f %% text    compression ratio (lower is better). "
+msgstr "%10.0f %% je tekstov omjer kompresije (manji je bolji). "
+
+#: game.c:2087
+#, c-format
+msgid "%10.3f Mb available in the paging file "
+msgstr "%10.3f Mb je na raspolaganju u virtualnoj memoriji "
+
+#: game.c:2083
+#, c-format
+msgid "%10.3f Mb free physical memory"
+msgstr "%10.3f Mb je slobodna fizicka memorija"
+
+#: game.c:2089
+#, c-format
+msgid "%10.3f Mb total paging file size"
+msgstr "%10.3f Mb je ukupna virtualna memorija"
+
+#: game.c:2085
+#, c-format
+msgid "%10.3f Mb total physical memory"
+msgstr "%10.3f Mb je ukupna fizicka memorija"
+
+#: game.c:2081
+#, c-format
+msgid "%10ld %% memory in use"
+msgstr "%10ld %% memorije je u upotrebi"
+
+#: game.c:2439
+#, c-format
+msgid "%10ld bytes in text AFTER  compression. "
+msgstr "%10ld bajtova teksta NAKON kompresije. "
+
+#: game.c:2437
+#, c-format
+msgid "%10ld bytes in text before compression. "
+msgstr "%10ld bajtova teksta prije kompresije. "
+
+#: game.c:2435
+#, c-format
+msgid "%10ld compression table items used, taking %ld bytes."
+msgstr "%10ld predmeta se koristi u kompresijskoj tablici, i zauzimaju %ld bajtova."
+
+#: access.c:665
+#, c-format
+msgid "%3d SITE: %-20s  DBREF: %-6s FLAGS:%s"
+msgstr "%3d ADRESA: %-20s  DBREF: %-6s FLAGOVI:%s"
+
 #: set.c:1145
 #, c-format
 msgid "%d attributes wiped."
@@ -1012,6 +1116,11 @@ msgstr "%s-brava [#%d%s]: %s"
 #, c-format
 msgid "%s POWER %s"
 msgstr "MOC %s %s"
+
+#: look.c:354
+#, c-format
+msgid "%s [#%d%s] is veiled"
+msgstr "%s [#%d%s] je pod velom"
 
 #: look.c:1206
 #, c-format
@@ -1473,6 +1582,16 @@ msgstr "%s sapne%s."
 msgid "%s whispers%s: %s"
 msgstr "%s sapne%s: %s"
 
+#: look.c:341
+#, c-format
+msgid "%s#%d/%s [#%d%s]%s is veiled"
+msgstr "%s#%d/%s [#%d%s]%s je pod velom"
+
+#: look.c:345
+#, c-format
+msgid "%s%s [#%d%s]%s is veiled"
+msgstr "%s%s [#%d%s]%s je pod velom"
+
 #: destroy.c:412
 #, c-format
 msgid "%s's %s has been spared from destruction."
@@ -1574,6 +1693,16 @@ msgstr "** LOS SPREMNIK **  #%d se nalazi u objektu #%d."
 msgid "** ERROR ** popen for @uptime returned NULL."
 msgstr "** GRESKA ** popen za @uptime je vratio NULL."
 
+#: wiz.c:614
+#, c-format
+msgid "** FORCE WIZ-OWNED: %s"
+msgstr "** PRISILA ADMINISTRATORSKOG: %s"
+
+#: wiz.c:609
+#, c-format
+msgid "** FORCE: %s"
+msgstr "** PRISILA: %s"
+
 #: src/extmail.c:1129
 #, c-format
 msgid "** MAIL PURGE ** done by %s(#%d)."
@@ -1604,10 +1733,38 @@ msgstr "*** BLEAH *** Cudan izlaz %s(#%d) na lokaciji #%d s polazistem DOM."
 msgid "*** BLEAH *** Weird exit %s(#%d) in #%d with source NOTHING."
 msgstr "*** BLEAH *** Cudan izlaz %s(#%d) na lokaciji #%d s polazistem NISTA."
 
+#: wiz.c:880
+msgid "*** BOOT ***"
+msgstr "*** BOOT ***"
+
+#: wiz.c:1632
+#, c-format
+msgid "*** NAMELOCK *** %s"
+msgstr "*** ZAKLJUCAVANJE IMENA *** %s"
+
+#: wiz.c:795
+msgid "*** NEWPASSWORD ***"
+msgstr "*** NOVA SIFRA ***"
+
+#: wiz.c:1479
+#, c-format
+msgid "*** SITELOCK *** %s --> %s"
+msgstr "*** ZAKLJUCAVANJE INTERNET ADRESE *** %s --> %s"
+
 #: src/wiz.c:2001
 #, c-format
 msgid "*** SITELOCK *** %s for %s(%s) --> %s"
 msgstr "*** SITELOCK *** %s za %s(%s) --> %s"
+
+#: wiz.c:1497 wiz.c:1504
+#, c-format
+msgid "*** SITELOCK *** %s"
+msgstr "*** ZAKLJUCAVANJE INTERNET ADRESE *** %s"
+
+#: wiz.c:1592
+#, c-format
+msgid "*** UNLOCKED NAME *** %s"
+msgstr "*** OTKLJUCAVANJE IMENA *** %s"
 
 #: src/malias.c:300
 msgid "*****  End of Mail Aliases *****"
@@ -1640,6 +1797,14 @@ msgstr "-----------  Ulazi gotovi  -----------"
 #: src/wiz.c:1606
 msgid "----------  Search Done  ----------"
 msgstr "----------  Pretraga zavrsena  ----------"
+
+#: game.c:2433
+msgid "---------- Internal attribute compression  ----------"
+msgstr "----------- Unutarnja kompresija atributa -----------"
+
+#: game.c:2080
+msgid "---------- Windows memory usage ------------"
+msgstr "------- Windowsovo zauzece memorije --------"
 
 #: src/cque.c:807
 msgid "------------  Queue Done  ------------"
@@ -2561,6 +2726,16 @@ msgstr "Ne mogu pristupiti definiciji usluge"
 msgid "Cannot locate full filename"
 msgstr "Ne mogu pronaci potpuno ime filea"
 
+#: chunk.c:2349
+#, c-format
+msgid "Cannot open swap file: %d"
+msgstr "Ne mogu otvoriti swap file: %d"
+
+#: chunk.c:2353
+#, c-format
+msgid "Cannot open swap file: %s"
+msgstr "Ne mogu otvoriti swap file: %s"
+
 #: src/services.c:664
 msgid "Cannot remove service"
 msgstr "Ne mogu ukloniti uslugu"
@@ -2753,6 +2928,10 @@ msgstr "Kozmeticke opcije"
 msgid "Costs"
 msgstr "Cijene"
 
+#: timer.c:153
+msgid "Could not allocate migration reference array"
+msgstr "Nisam mogao alocirati referencijski niz za migraciju"
+
 #: bsd.c:2382
 #, c-format
 msgid "Couldn't allocate %d bytes of memory for '%s'!"
@@ -2836,6 +3015,10 @@ msgstr "Kreacija NIJE dozvoljena"
 msgid "Creation is allowed"
 msgstr "Kreacija je dozvoljena"
 
+#: atr_tab.c:211
+msgid "Critical memory failure - Alert God!"
+msgstr "Memorija je kriticno zakazala - Upozori Boga!"
+
 #: db.c:337
 #, c-format
 msgid "DB: Missing value for '%s' at line %d"
@@ -2858,6 +3041,10 @@ msgstr "DBCK gotov."
 #: conf.c:1710
 msgid "DISABLED"
 msgstr "ISKLJUCENO"
+
+#: game.c:560
+msgid "DUMP: Data are swapped to disk, so nonforking dumps will be used."
+msgstr "SNIMANJE: Podaci se spremaju u swap file na disku, pa ce se koristiti neforkirano snimanje."
 
 #: game.c:439
 #, c-format
@@ -3355,6 +3542,11 @@ msgstr "FLAG: Ne mogu locirati flagspace %s."
 msgid "FLAG: Unable to locate flagspace %s."
 msgstr "FLAG: Ne mogu locirati flagspace %s."
 
+#: wiz.c:611
+#, c-format
+msgid "FORCE: %s"
+msgstr "PRISILA: %s"
+
 #: extmail.c:997
 #, c-format
 msgid "Failed attempt to forward @mail to #%d"
@@ -3777,6 +3969,10 @@ msgstr "HA?: %s u %s [%s]: %s"
 msgid "Halted"
 msgstr "Zaustavljeno"
 
+#: game.c:2402
+msgid "Hash Tables:"
+msgstr "Hash tablice:"
+
 #: help.c:123
 #, c-format
 msgid "Help files reindexed by %s(#%d)"
@@ -3851,6 +4047,10 @@ msgstr "Koliko linija zelis da ti se ispise?"
 #: src/game.c:999
 msgid "Huh?  (Type \"help\" for help.)"
 msgstr "Ha?  (Napisi \"help\" za pomoc.)"
+
+#: command.c:1692
+msgid "I can't alias a command to that!"
+msgstr "Ne mogu to postaviti kao alias za naredbu!"
 
 #: rob.c:321
 msgid "I can't find that item here."
@@ -4062,6 +4262,11 @@ msgstr "Neak"
 msgid "If you want to quit, use QUIT."
 msgstr "Ako zelis prekinuti vezu, napisi QUIT."
 
+#: chunk.c:2136
+#, c-format
+msgid "Illegal chunk length requested: %d bytes"
+msgstr "Zatrazena je nedozvoljena duzina chunka: %d bajtova"
+
 #: src/destroy.c:1272
 #, c-format
 msgid "Incorrect location on object %s. Reset to #%d."
@@ -4089,6 +4294,22 @@ msgstr "Indeksiram file %s"
 #: filecopy.c:320
 msgid "Input database verified. Proceeding to analysis."
 msgstr "Ulazna baza podataka verificirana. Pocinjem s analizom."
+
+#: markup.c:1160
+msgid "Inspecting ansi string complete"
+msgstr "Provjera ansi teksta gotova"
+
+#: markup.c:1148
+msgid "Inspecting ansi string"
+msgstr "Provjeravam ansi tekst"
+
+#: game.c:2423
+msgid "Integer Maps:"
+msgstr "Mape cijelih brojeva:"
+
+#: create.c:373
+msgid "Internal error: weird object type."
+msgstr "Unutarnja greska: cudan tip objekta."
 
 #: src/log.c:320
 #, c-format
@@ -4149,6 +4370,22 @@ msgstr "Neispravan parametar."
 #: src/wiz.c:1458 src/wiz.c:1465 src/wiz.c:1681 src/wiz.c:1689
 msgid "Invalid range argument"
 msgstr "Argument nije u ispravnom rasponu"
+
+#: chunk.c:2154
+msgid "Invalid region after chunk_create!"
+msgstr "Neispravna regija nakon chunk_create!"
+
+#: chunk.c:2178
+msgid "Invalid region after chunk_delete!"
+msgstr "Neispravna regija nakon chunk_delete!"
+
+#: chunk.c:2086
+msgid "Invalid region after migrate_move!"
+msgstr "Neispravna regija nakon migrate_move!"
+
+#: chunk.c:2018
+msgid "Invalid region after migrate_slide!"
+msgstr "Neispravna regija nakon migrate_slide!"
 
 #: wiz.c:1772
 msgid "Invalid search class+restriction format."
@@ -4805,6 +5042,10 @@ msgstr "Malformirani help file %s ne pocinje s &"
 msgid "Malloc package: %d"
 msgstr "Malloc paket: %d"
 
+#: intmap.c:471
+msgid "Map         Entries ~Memory"
+msgstr "Mapa         Zapisi ~Memorija"
+
 #: extmail.c:2477
 msgid "Mass "
 msgstr "Masa "
@@ -4858,6 +5099,11 @@ msgstr "Podudaranja na osobnom zonskom master roomu:"
 #: src/game.c:1276
 msgid "Matches on zone master room of location:"
 msgstr "Podudaranja na master roomu lokacijine zone:"
+
+#: game.c:2052
+#, c-format
+msgid "Max res mem: %10ld pages  %10ld bytes"
+msgstr "Maks rez mem: %10ld pageova  %10ld bajtova"
 
 #: extchat.c:2007
 #, c-format
@@ -4951,10 +5197,19 @@ msgstr "Opcije za mrezu i spajanje"
 msgid "New player '%s' (#%d) created with password '%s'"
 msgstr "Novi korisnik '%s' (#%d) stvoren sa sifrom '%s'"
 
+#: wiz.c:1060
+#, c-format
+msgid "Next: %d"
+msgstr "Sljedeci: %d"
+
 #: src/access.c:192
 #, c-format
 msgid "No %s file found."
 msgstr "File %s nije pronadjen."
+
+#: sql.c:291 sql.c:350
+msgid "No SQL database connection."
+msgstr "Ne postoji veza sa SQL bazom podataka."
 
 #: set.c:525
 msgid "No attribute found to change."
@@ -5250,6 +5505,10 @@ msgstr "Izlaz-siroce unisten."
 msgid "Out of memory"
 msgstr "Ponestalo je memorije"
 
+#: bsd.c:1581
+msgid "Out of memory."
+msgstr "Ponestalo je memorije."
+
 #: set.c:317
 msgid "Overly deep zone chain broken."
 msgstr "Predubok lanac zona razbijen."
@@ -5313,6 +5572,11 @@ msgstr "Sifra promijenjena."
 #, c-format
 msgid "Password for %s changed."
 msgstr "Sifra korisnika '%s' promijenjena."
+
+#: version.c:38
+#, c-format
+msgid "Patches: %s"
+msgstr "Patchevi: %s"
 
 #: src/set.c:842
 msgid "Pemission denied."
@@ -5441,6 +5705,10 @@ msgstr "Moci"
 msgid "Powers: %s"
 msgstr "Moci: %s"
 
+#: game.c:2413
+msgid "Prefix Trees:"
+msgstr "Drva s prefiksima:"
+
 #: game.c:233
 msgid "Process statistics:"
 msgstr "Statistike procesa:"
@@ -5531,6 +5799,11 @@ msgstr "%s preimenovan u %s u tablici atributa."
 msgid "Requested character: '%s'. Email address: %s\n"
 msgstr "Trazeni lik: '%s'. E-mail adresa: %s\n"
 
+#: flags.c:2050
+#, c-format
+msgid "ResetPrms: %s"
+msgstr "ResetPrms: %s"
+
 #: cque.c:1637
 #, c-format
 msgid "Restarting: %s's %s(%s)"
@@ -5553,6 +5826,11 @@ msgstr "Sto da restoream?"
 #: function.c:933
 msgid "Restored."
 msgstr "Restoreano."
+
+#: command.c:1773
+#, c-format
+msgid "Restrict   : %s"
+msgstr "Ogranicenje: %s"
 
 #: src/command.c:1114
 msgid "Restrict attempt failed."
@@ -5817,6 +6095,10 @@ msgstr "Stanje"
 #: src/services.c:737
 msgid "Stop request sent to service\n"
 msgstr "Zahtjev za zaustavljanje poslan usluzi\n"
+
+#: game.c:2418
+msgid "String Trees:"
+msgstr "Drva sa stringovima:"
 
 #: extmail.c:482
 #, c-format
@@ -6384,6 +6666,11 @@ msgstr "Probaj prvo pitati za dopustenje!"
 msgid "Trying to link..."
 msgstr "Pokusavam povezati..."
 
+#: chunk.c:2060
+#, c-format
+msgid "Trying to migrate into too small a hole: %04x into %04x!"
+msgstr "Pokusaj migriranja u premalu rupu: %04x u %04x!"
+
 #: flags.c:1971
 #, c-format
 msgid "Type of %s %s set."
@@ -6436,6 +6723,10 @@ msgstr "Ne mogu alocirati memoriju za boolexp string cvor!"
 #: boolexp.c:1252
 msgid "Unable to allocate memory for boolexp string!"
 msgstr "Ne mogu alocirati memoriju za boolexp string!"
+
+#: flags.c:1051 flags.c:1072
+msgid "Unable to allocate memory for flag bitmask"
+msgstr "Ne mogu alocirati memoriju za flagovski bitmask"
 
 #: attrib.c:673
 msgid "Unable to allocate memory in atr_add()!"
@@ -6540,9 +6831,17 @@ msgstr "Ne mogu odrediti tip od #%d\n"
 msgid "Unable to load channel %d."
 msgstr "Ne mogu ucitati kanal %d."
 
+#: flags.c:80
+msgid "Unable to locate flagspace"
+msgstr "Ne mogu locirati flagovski prostor"
+
 #: wiz.c:1858 wiz.c:1886 wiz.c:1893
 msgid "Unable to lock name."
 msgstr "Ne mogu zakljucati ime."
+
+#: lock.c:483 lock.c:542
+msgid "Unable to malloc memory for lock_list!"
+msgstr "Ne mogu mallocati memoriju za lock_list!"
 
 #: src/bsd.c:758
 #, c-format
@@ -6582,6 +6881,10 @@ msgstr "Ne mogu poslati poruku igracima:%s"
 #, c-format
 msgid "Unable to read last part of file %s"
 msgstr "Ne mogu procitati zadnji dio filea %s"
+
+#: flags.c:449
+msgid "Unable to reallocate flags array!\n"
+msgstr "Ne mogu realocirati flagovski niz!\n"
 
 #: bsd.c:5033
 #, c-format
@@ -8285,6 +8588,40 @@ msgstr "byte"
 msgid "bytes"
 msgstr "byteova"
 
+#: chunk.c:2374
+msgid "cannot malloc space for chunk region list"
+msgstr "ne mogu mallocati prostor za popis chunk-regija"
+
+#: chunk.c:1289
+#, c-format
+msgid "chunk swap file read, %lu remaining, GetLastError %d"
+msgstr "citanje chunk swap filea, %lu preostalo, GetLastError je %d"
+
+#: chunk.c:1292
+#, c-format
+msgid "chunk swap file read, %lu remaining, errno %d: %s"
+msgstr "citanje chunk swap filea, %lu preostalo, greska broj %d: %s"
+
+#: chunk.c:1263 chunk.c:1325
+#, c-format
+msgid "chunk swap file seek, GetLastError %d"
+msgstr "pretraga chunk swap filea, GetLastError je %d"
+
+#: chunk.c:1265 chunk.c:1327
+#, c-format
+msgid "chunk swap file seek, errno %d: %s"
+msgstr "pretraga chunk swap filea, greska broj %d: %s"
+
+#: chunk.c:1357
+#, c-format
+msgid "chunk swap file write, %lu remaining, GetLastError %d"
+msgstr "pisanje u chunk swap file, %lu preostalo, GetLastError je %d"
+
+#: chunk.c:1360
+#, c-format
+msgid "chunk swap file write, %lu remaining, errno %d: %s"
+msgstr "pisanje u chunk swap file, %lu preostalo, greska broj %d: %s"
+
 #: extchat.c:1377
 msgid "cleared"
 msgstr "obrisano"
@@ -8296,6 +8633,10 @@ msgstr "kopiran"
 #: set.c:739
 msgid "copy"
 msgstr "kopirati"
+
+#: atr_tab.c:212
+msgid "do_attribute_access: unable to malloc ATTR"
+msgstr "do_attribute_access: ne mogu mallocati ATTR"
 
 #: move.c:608
 #, c-format
@@ -8326,6 +8667,14 @@ msgstr "file"
 #: filecopy.c:153
 msgid "files"
 msgstr "fileova"
+
+#: game.c:558
+msgid "fork_and_dump: Data are swapped to disk, so nonforking dumps will be used."
+msgstr "fork_and_dump: Podaci se snimaju u swap file na disku, pa ce se koristiti neforkirano snimanje."
+
+#: game.c:577
+msgid "fork_and_dump: fork() failed! Dumping nofork instead."
+msgstr "fork_and_dump: fork() nije uspio! Umjesto toga snimam nofork"
 
 #: bsd.c:3443
 msgid "has DARK-connected."
@@ -8419,6 +8768,11 @@ msgstr "info_slave na pid-u %d je neocekivano izasao!"
 msgid "info_slave on pid %d exited!"
 msgstr "info_slave na pidu %d se zaustavio!"
 
+#: myssl.c:227
+#, c-format
+msgid "issuer= %s\n"
+msgstr "izdavatelj= %s\n"
+
 #: lock.c:685
 msgid "lock flags set"
 msgstr "flagovi stavljeni na brave"
@@ -8426,6 +8780,10 @@ msgstr "flagovi stavljeni na brave"
 #: lock.c:685
 msgid "lock flags unset"
 msgstr "flagovi maknuti s brava"
+
+#: mymalloc.c:588
+msgid "malloc allocations:"
+msgstr "malloc alokacije:"
 
 #: set.c:739
 msgid "move"

@@ -379,7 +379,7 @@ COMMAND(cmd_find)
 
 COMMAND(cmd_firstexit)
 {
-  do_firstexit(player, arg_left);
+  do_firstexit(player, args_left);
 }
 
 COMMAND(cmd_flag)

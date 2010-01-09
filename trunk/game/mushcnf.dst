@@ -248,7 +248,7 @@ max_logins 120
 # -1 = limited to the number of guests in the database. To allow more guests
 #      to log in, create more guest characters.
 # Any other number = the number of guest connections allowed at once.
-max_guests 0
+max_guests -1
 
 # How much MUSH money do players get when they're created?
 starting_money 150
@@ -282,7 +282,7 @@ active_queue_chunk 1
 function_recursion_limit 50
 
 # the maximum number of functions that can be invoked
-function_invocation_limit 2500
+function_invocation_limit 25000
 
 # the maximum depth we're allowed to recursively call the parser
 # for a single expression. This limits how much the stack size can increase,
@@ -562,7 +562,7 @@ reverse_shs yes
 
 # trigger @aconnect/@adisconnect in a connecting player's location
 # if the location is a room or thing?
-room_connects no
+room_connects yes
 
 ###
 ### SQL connectivity
@@ -667,7 +667,7 @@ tiny_booleans no
 # PennMUSH's trim function has been:
 #    trim(<string>[,<character to trim>[,<trim style>]])
 # Should we emulate TinyMUSH? [+ for new MUSHes]
-tiny_trim_fun yes
+tiny_trim_fun no
 
 # In Tiny, strings used in math expressions evaluate to 0,
 # so eq(asdfa,0) = 1, gt(asdf,0) = 0, etc.
@@ -719,7 +719,7 @@ read_remote_desc no
 ansi_names yes
 
 # show exit lists with commas (a, b, and c)?
-comma_exit_list no
+comma_exit_list yes
 
 # count hidden players when WHO reports total connected?
 count_all no
@@ -756,7 +756,7 @@ ex_public_attribs yes
 # pages with no evidence that it was a multipage). If blind_page is no,
 # page defaults to page/list (a single page goes to a,b,c and they can
 # see that they all received it.
-blind_page yes
+blind_page no
 
 # Should we show the pager's alias, in parentheses, after their name?
 # That is, should recipients see:

@@ -24,6 +24,7 @@ Minor Changes:
    to PennMUSH. Suggested by many people over the years.
  * @firstexit can now take multiple exits, and can affect exits in other
    rooms. Suggested by AnneLions. [MG]
+ * Changed some default mush.cnf options. [MG]
 
 Functions
  * llocks() without any arguments returns a list of the

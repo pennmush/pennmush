@@ -495,23 +495,27 @@ do_move(dbref player, const char *direction, enum move_type type)
  * \param what name of exit to promote.
  */
 void
-do_firstexit(dbref player, const char *what)
+do_firstexit(dbref player, const char **what)
 {
   dbref thing;
   dbref loc;
-  if ((thing =
-       noisy_match_result(player, what, TYPE_EXIT,
-                          MAT_ENGLISH | MAT_EXIT)) == NOTHING)
-    return;
-  loc = Home(thing);
-  if (!controls(player, loc)) {
-    notify(player, T("You cannot modify exits in that room."));
-    return;
+  int i;
+
+  for (i = 1; i < MAX_ARG && what[i]; i++) {
+    if ((thing =
+      noisy_match_result(player, what[i], TYPE_EXIT,
+                         MAT_ENGLISH | MAT_EXIT | MAT_ABSOLUTE)) == NOTHING)
+ 	  continue;
+ 	  loc = Home(thing);
+ 	  if (!controls(player, loc)) {
+ 	    notify(player, T("You cannot modify exits in that room."));
+ 	    continue;
+ 	  }
+ 	  Exits(loc) = remove_first(Exits(loc), thing);
+ 	  Source(thing) = loc;
+ 	  PUSH(thing, Exits(loc));
+ 	  notify_format(player, T("%s is now the first exit in %s."), Name(thing), unparse_object(player, loc));
   }
-  Exits(loc) = remove_first(Exits(loc), thing);
-  Source(thing) = loc;
-  PUSH(thing, Exits(loc));
-  notify_format(player, T("%s is now the first exit."), Name(thing));
 }
 
 
@@ -716,10 +720,10 @@ do_drop(dbref player, const char *name)
  * (b) thing is next to player, player is allowed to get thing's item,
  *     and player is allowed to drop item in player's location.
  * We do not consider the cases of forcing the object to drop the items,
- * teleporting the items out, or forcing the items to leave; 
+ * teleporting the items out, or forcing the items to leave;
  * 'empty' implies that the items pass through the player's hands.
  *
- * There is a choice to be made here with regard to locks - do we 
+ * There is a choice to be made here with regard to locks - do we
  * check locks on the thing (e.g. enter locks) and its location
  * (e.g. drop locks) once or each time? If we choose once, we break
  * locks that might make decisions based on the number of items there.
@@ -1010,7 +1014,7 @@ do_follow(dbref player, const char *arg)
 
 /** The unfollow command.
  * \verbatim
- * unfollow <arg> removes someone from your following list 
+ * unfollow <arg> removes someone from your following list
  * unfollow alone removes everyone from your following list.
  * \endverbatim
  * \param player the enactor.
@@ -1048,7 +1052,7 @@ do_unfollow(dbref player, const char *arg)
 
 /** The dismiss command.
  * \verbatim
- * dismiss <arg> removes someone from your followers list 
+ * dismiss <arg> removes someone from your followers list
  * dismiss alone removes everyone from your followers list.
  * \endverbatim
  * \param player the enactor.
@@ -1081,7 +1085,7 @@ do_dismiss(dbref player, const char *arg)
 
 /** The desert command.
  * \verbatim
- * desert <arg> removes someone from your followers and following list 
+ * desert <arg> removes someone from your followers and following list
  * desert alone removes everyone from both lists
  * \endverbatim
  * \param player the enactor.

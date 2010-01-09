@@ -27,6 +27,8 @@ Minor Changes:
  * locate() now ignores spaces in its 3rd argument. [MG]
  * Change the default mud_name in mush.cnf from TinyMUSH
    to PennMUSH. Suggested by many people over the years.
+ * @firstexit can now take multiple exits, and can affect exits in other
+   rooms. Suggested by AnneLions. [MG]
 
 Functions
  * llocks() without any arguments returns a list of the

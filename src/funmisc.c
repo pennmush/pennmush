@@ -589,6 +589,12 @@ FUNCTION(fun_mudname)
 }
 
 /* ARGSUSED */
+FUNCTION(fun_mudurl)
+{
+  safe_str(MUDURL, buff, bp);
+}
+
+/* ARGSUSED */
 FUNCTION(fun_version)
 {
   safe_format(buff, bp, "PennMUSH version %s patchlevel %s %s",

@@ -47,7 +47,7 @@ HASHTAB htab_reserved_aliases;  /**< Hash table for reserved command aliases */
 slab *command_slab = NULL; /**< slab for command_info structs */
 
 static const char *command_isattr(char *command);
-static int command_check(dbref player, COMMAND_INFO *cmd);
+static int command_check(dbref player, COMMAND_INFO *cmd, int noisy);
 static int switch_find(COMMAND_INFO *cmd, const char *sw);
 static void strccat(char *buff, char **bp, const char *from);
 static int has_hook(struct hook_data *hook);
@@ -1207,7 +1207,7 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
     return commandraw;
   }
   /* Check the permissions */
-  if (!command_check(player, cmd)) {
+  if (!command_check(player, cmd, 1)) {
     command_parse_free_args;
     return NULL;
   }
@@ -1864,7 +1864,7 @@ list_commands(void)
  * 0 otherwise, and maybe be noisy about it.
  */
 static int
-command_check(dbref player, COMMAND_INFO *cmd)
+command_check(dbref player, COMMAND_INFO *cmd, int noisy)
 {
   int ok;
   const char *mess = NULL;
@@ -1930,10 +1930,12 @@ command_check(dbref player, COMMAND_INFO *cmd)
   return ok;
 
 send_error:
-  if (cmd->restrict_message)
-    notify(player, cmd->restrict_message);
-  else if (mess)
-    notify(player, mess);
+  if (noisy) {
+    if (cmd->restrict_message)
+      notify(player, cmd->restrict_message);
+    else if (mess)
+      notify(player, mess);
+  }
   return 0;
 }
 
@@ -1952,7 +1954,25 @@ command_check_byname(dbref player, const char *name)
   cmd = command_find(name);
   if (!cmd)
     return 0;
-  return command_check(player, cmd);
+  return command_check(player, cmd, 1);
+}
+
+/** Determine whether a player can use a command.
+ * This function checks whether a player can use a command.
+ * If the command is disallowed, the player is informed.
+ * \param player player whose privileges are checked.
+ * \param name name of command.
+ * \retval 0 player may not use command.
+ * \retval 1 player may use command.
+ */
+int
+command_check_byname_quiet(dbref player, const char *name)
+{
+  COMMAND_INFO *cmd;
+  cmd = command_find(name);
+  if (!cmd)
+    return 0;
+  return command_check(player, cmd, 0);
 }
 
 static int

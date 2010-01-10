@@ -224,6 +224,7 @@ char *command_parse(dbref player, dbref cause, char *string, int fromport);
 void do_list_commands(dbref player, int lc);
 char *list_commands(void);
 int command_check_byname(dbref player, const char *name);
+int command_check_byname_quiet(dbref player, const char *name);
 int restrict_command(const char *name, const char *restriction);
 void reserve_aliases(void);
 void local_commands(void);

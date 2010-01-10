@@ -14,6 +14,11 @@
 # Name of your MUSH. Please change this.
 mud_name PennMUSH
 
+# The web address of your MUSH. If this is nonempty, then all login
+# screens will be prefixed with <!--  and suffixed with -->
+# Any HTTP clients trying to access it will be redirected to this url.
+# mud_url http://www.pennmush.org
+
 # The port it's running on. See also ssl_port, later.
 port 4201
 

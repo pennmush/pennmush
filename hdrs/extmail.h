@@ -78,6 +78,7 @@ int dump_mail(PENNFILE *fp);
 int load_mail(PENNFILE *fp);
 extern void mail_init(void);
 extern int mdb_top;
+extern int can_mail(dbref player);
 extern void do_mail(dbref player, char *arg1, char *arg2);
 enum mail_stats_type { MSTATS_COUNT, MSTATS_READ, MSTATS_SIZE };
 extern void do_mail_stats(dbref player, char *name, enum mail_stats_type full);

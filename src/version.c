@@ -30,6 +30,7 @@ do_version(dbref player)
 {
 
   notify_format(player, T("You are connected to %s"), MUDNAME);
+  notify_format(player, T("Address: %s"), MUDURL);
   notify_format(player, T("Last restarted: %s"),
                 show_time(globals.start_time, 0));
   notify_format(player, T("PennMUSH version %s patchlevel %s %s"), VERSION,

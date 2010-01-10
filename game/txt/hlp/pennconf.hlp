@@ -225,6 +225,9 @@ Continued in help @config limits4
  
   mud_name=<string>: The name of the mush for mudname() and @version and
    the like.
+  mud_url=<string>: If this is set, the welcome message for the mush is
+   bracketed in <!-- ... --> for all clients, and web browsers are
+   redirected to the url described in mud_url.
   use_dns=<boolean>: Are IP addresses resolved into hostnames?
   use_ident=<boolean>: Is ident information looked up for connections?
   ident_timeout=<time>: How many seconds does the mush wait before an ident

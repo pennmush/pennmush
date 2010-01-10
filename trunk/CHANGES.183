@@ -18,7 +18,14 @@ chronological order (most recent first)
 
 Version 1.8.3 patchlevel 12                     ??? ??, 2010
 
+Major Changes:
+ * 'mud_url' @config. If this is enabled, accessing the mush with an HTTP
+   browser will redirect the user to the selected mud_url. (This may need
+   some work and testing by a public place with many clients.) [GM]
+
 Minor Changes:
+ * Guests will no longer see "Guests can't do that" if @mail is restricted
+   to noguest. [GM]
  * Helpfile cleanup. [MG]
  * Expand the @lock key optimizer. Try '@lock me=!!=me'.
  * /'s can now be included in the subject of a @mail 

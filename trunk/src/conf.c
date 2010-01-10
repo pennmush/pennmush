@@ -173,6 +173,8 @@ PENNCONF conftable[] = {
   ,
   {"mud_name", cf_str, options.mud_name, 128, 0, "net"}
   ,
+  {"mud_url", cf_str, options.mud_url, 256, 0, "net"}
+  ,
   {"ip_addr", cf_str, options.ip_addr, 64, 0, "net"}
   ,
   {"ssl_ip_addr", cf_str, options.ssl_ip_addr, 64, 0, "net"}
@@ -1139,6 +1141,7 @@ void
 conf_default_set(void)
 {
   strcpy(options.mud_name, "PennMUSH");
+  strcpy(options.mud_url, "");
   options.port = 4201;
   options.ssl_port = 0;
   strcpy(options.input_db, "data/indb");

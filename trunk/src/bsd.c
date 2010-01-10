@@ -357,7 +357,7 @@ extern int queue_newwrite(DESC *d, const unsigned char *b, int n);
 extern int queue_string(DESC *d, const char *s);
 extern int queue_string_eol(DESC *d, const char *s);
 extern void freeqs(DESC *d);
-static void welcome_user(DESC *d);
+static void welcome_user(DESC *d, int telnet);
 static void dump_info(DESC *call_by);
 static void save_command(DESC *d, const unsigned char *command);
 static int process_input(DESC *d, int output_ready);
@@ -1475,7 +1475,9 @@ logout_sock(DESC *d)
               T("[%d/%s/%s] Logout by %s(#%d) <Connection not dropped>"),
               d->descriptor, d->addr, d->ip, Name(d->player), d->player);
     announce_disconnect(d);
-    do_mail_purge(d->player);
+    if (can_mail(d->player)) {
+      do_mail_purge(d->player);
+    }
     login_number--;
     if (MAX_LOGINS) {
       if (!under_limit && (login_number < MAX_LOGINS)) {
@@ -1508,7 +1510,7 @@ logout_sock(DESC *d)
   d->cmds = 0;
   d->hide = 0;
   d->doing[0] = '\0';
-  welcome_user(d);
+  welcome_user(d, 0);
 }
 
 /** Disconnect a descriptor.
@@ -1526,7 +1528,9 @@ shutdownsock(DESC *d)
       fcache_dump(d, fcache.quit_fcache, NULL);
       /* Player was not allowed to log in from the connect screen */
       announce_disconnect(d);
-      do_mail_purge(d->player);
+      if (can_mail(d->player)) {
+        do_mail_purge(d->player);
+      }
     }
     login_number--;
     if (MAX_LOGINS) {
@@ -1630,8 +1634,7 @@ initializesock(int s, char *addr, char *ip, int use_ssl
   }
 #endif
   im_insert(descs_by_fd, d->descriptor, d);
-  test_telnet(d);
-  welcome_user(d);
+  welcome_user(d, 1);
   return d;
 }
 
@@ -1831,12 +1834,23 @@ process_output(DESC *d)
 }
 
 static void
-welcome_user(DESC *d)
+welcome_user(DESC *d, int telnet)
 {
+  // If MUDURL exists, we send <!-- ... -->
+  if (telnet && MUDURL[0]) {
+    queue_newwrite(d, "<!--", 4);
+    queue_eol(d);
+    test_telnet(d);
+  }
   if (SUPPORT_PUEBLO && !(d->conn_flags & CONN_HTML))
     queue_newwrite(d, (const unsigned char *) PUEBLO_HELLO,
                    strlen(PUEBLO_HELLO));
   fcache_dump(d, fcache.connect_fcache, NULL);
+  if (telnet && MUDURL[0]) {
+      queue_eol(d);
+      queue_newwrite(d, "-->", 3);
+      queue_eol(d);
+  }
 }
 
 static void
@@ -2330,7 +2344,7 @@ do_command(DESC *d, char *command)
                 d->descriptor, d->addr, d->ip);
       d->conn_flags |= CONN_HTML;
       if (!d->connected)
-        welcome_user(d);
+        welcome_user(d, 0);
     }
   } else {
     if (d->connected) {
@@ -2353,12 +2367,28 @@ do_command(DESC *d, char *command)
       global_eval_context.cplr = NOTHING;
     } else {
       j = 0;
-      if (!strncmp(command, WHO_COMMAND, strlen(WHO_COMMAND)))
+      if (!strncmp(command, WHO_COMMAND, strlen(WHO_COMMAND))) {
         j = strlen(WHO_COMMAND);
-      else if (!strncmp(command, DOING_COMMAND, strlen(DOING_COMMAND)))
+      } else if (!strncmp(command, DOING_COMMAND, strlen(DOING_COMMAND))) {
         j = strlen(DOING_COMMAND);
-      else if (!strncmp(command, SESSION_COMMAND, strlen(SESSION_COMMAND)))
+      } else if (!strncmp(command, SESSION_COMMAND, strlen(SESSION_COMMAND))) {
         j = strlen(SESSION_COMMAND);
+      } else if (!strncmp(command, GET_COMMAND, strlen(GET_COMMAND)) ||
+                 !strncmp(command, POST_COMMAND, strlen(POST_COMMAND))) {
+        char buf[BUFFER_LEN];
+        snprintf(buf, BUFFER_LEN,
+           "<HTML><HEAD>"
+           "<TITLE>Welcome to %s!</TITLE>"
+           "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\">"
+           "</HEAD><BODY>"
+           "<meta http-equiv=\"refresh\" content=\"0;%s\">"
+           "Please click <a href=\"%s\">%s</a> to go to the website for %s."
+           "</BODY></HEAD>",
+           MUDNAME, MUDURL, MUDURL, MUDURL, MUDNAME);
+        queue_write(d, (unsigned char *) buf, strlen(buf));
+        queue_eol(d);
+        return 0;
+      }
       if (j) {
         send_prefix(d);
         dump_users(d, command + j);
@@ -2457,8 +2487,9 @@ dump_messages(DESC *d, dbref player, int isnew)
   check_last(player, d->addr, d->ip);   /* set Last, Lastsite, give paycheck */
   /* Check all mail folders. If empty, report lack of mail. */
   queue_eol(d);
-  if (command_check_byname(player, "@MAIL"))
+  if (can_mail(player)) {
     check_all_mail(player);
+  }
   set_player_folder(player, 0);
   do_look_around(player);
   if (Haven(player))
@@ -2640,7 +2671,7 @@ check_connect(DESC *d, const char *msg)
 
   } else {
     /* invalid command, just repeat login screen */
-    welcome_user(d);
+    welcome_user(d, 0);
   }
   return 1;
 }
@@ -3044,6 +3075,7 @@ dump_info(DESC *call_by)
     }
   }
   queue_string_eol(call_by, tprintf("Name: %s", options.mud_name));
+  queue_string_eol(call_by, tprintf("Address: %s", options.mud_url));
   queue_string_eol(call_by,
                    tprintf("Uptime: %s",
                            show_time(globals.first_start_time, 0)));

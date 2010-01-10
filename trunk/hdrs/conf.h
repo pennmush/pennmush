@@ -51,6 +51,9 @@
 #define SESSION_COMMAND "SESSION"
 #define IDLE_COMMAND "IDLE"
 
+#define GET_COMMAND "GET"
+#define POST_COMMAND "POST"
+
 #define PREFIX_COMMAND "OUTPUTPREFIX"
 #define SUFFIX_COMMAND "OUTPUTSUFFIX"
 #define PUEBLO_COMMAND "PUEBLOCLIENT "
@@ -103,6 +106,7 @@ typedef struct confparm {
  */
 struct options_table {
   char mud_name[128];   /**< The name of the mush */
+  char mud_url[256];   /**< The name of the mush */
   int port;             /**< The port to listen for connections */
   int ssl_port;         /**< The port to listen for SSL connections */
   char input_db[256];   /**< Name of the input database file */
@@ -346,6 +350,7 @@ int cf_time(const char *opt, const char *val, void *loc, int maxval,
 #define QUEUE_QUOTA      (options.player_queue_limit)
 
 #define MUDNAME          (options.mud_name)
+#define MUDURL           (options.mud_url)
 #define DEF_DB_IN        (options.input_db)
 #define DEF_DB_OUT       (options.output_db)
 

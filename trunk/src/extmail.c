@@ -256,6 +256,15 @@ was_sender(dbref player, MAIL *mp)
   return (mp->from_ctime == CreTime(player));
 }
 
+/** Check if player can use the @mail command without sending an error
+ *  message. This is purely for use when forced by bsd.c so it won't send
+ *  "Guests can't do that" to guests if @mail is noguest.
+ */
+int
+can_mail(dbref player) {
+  return command_check_byname_quiet(player, "@MAIL");
+}
+
 /** Change folders or rename a folder.
  * \verbatim
  * This implements @mail/folder

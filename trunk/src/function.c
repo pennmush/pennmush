@@ -543,6 +543,7 @@ FUNTAB flist[] = {
   {"MSECS", fun_msecs, 1, 1, FN_REG},
   {"MTIME", fun_mtime, 1, 2, FN_REG},
   {"MUDNAME", fun_mudname, 0, 0, FN_REG},
+  {"MUDURL", fun_mudurl, 0, 0, FN_REG},
   {"MUL", fun_mul, 2, INT_MAX, FN_REG},
   {"MUNGE", fun_munge, 3, 5, FN_REG},
   {"MWHO", fun_lwho, 0, 0, FN_REG},

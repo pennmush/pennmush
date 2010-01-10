@@ -1173,9 +1173,9 @@ flag_broadcast(const char *flag1, const char *flag2, const char *fmt, ...)
   DESC_ITER_CONN(d) {
     ok = 1;
     if (flag1)
-      ok = ok && flaglist_check_long("FLAG", GOD, d->player, flag1, 0);
+      ok = ok && (flaglist_check_long("FLAG", GOD, d->player, flag1, 0) == 1);
     if (flag2)
-      ok = ok && flaglist_check_long("FLAG", GOD, d->player, flag2, 0);
+      ok = ok && (flaglist_check_long("FLAG", GOD, d->player, flag2, 0) == 1);
     if (ok) {
       queue_string_eol(d, tbuf1);
       process_output(d);

@@ -1137,44 +1137,60 @@ FUNCTION(fun_hastype)
 FUNCTION(fun_orflags)
 {
   dbref it = match_thing(executor, args[0]);
-  if (!strcmp(called_as, "ORPOWERS"))
-    safe_boolean(flaglist_check("POWER", executor, it, args[1], 0), buff, bp);
+  int hasflag;
+  hasflag = flaglist_check("FLAG", executor, it, args[1], 0);
+  if (hasflag == -1)
+    safe_str(T("#-1 INVALID FLAG"), buff, bp);
   else
-    safe_boolean(flaglist_check("FLAG", executor, it, args[1], 0), buff, bp);
+    safe_boolean(hasflag, buff, bp);
 }
 
 /* ARGSUSED */
 FUNCTION(fun_andflags)
 {
   dbref it = match_thing(executor, args[0]);
-  if (!strcmp(called_as, "ANDPOWERS"))
-    safe_boolean(flaglist_check("POWER", executor, it, args[1], 1), buff, bp);
+  int hasflag;
+  hasflag = flaglist_check("FLAG", executor, it, args[1], 1);
+  if (hasflag == -1)
+    safe_str(T("#-1 INVALID FLAG"), buff, bp);
   else
-    safe_boolean(flaglist_check("FLAG", executor, it, args[1], 1), buff, bp);
+    safe_boolean(hasflag, buff, bp);
 }
 
 /* ARGSUSED */
 FUNCTION(fun_orlflags)
 {
   dbref it = match_thing(executor, args[0]);
+  int hasflag;
   if (!strcmp(called_as, "ORLPOWERS"))
-    safe_boolean(flaglist_check_long("POWER", executor, it, args[1], 0), buff,
-                 bp);
+    hasflag = flaglist_check_long("POWER", executor, it, args[1], 0);
   else
-    safe_boolean(flaglist_check_long("FLAG", executor, it, args[1], 0), buff,
-                 bp);
+    hasflag = flaglist_check_long("FLAG", executor, it, args[1], 0);
+  if (hasflag == -1)
+    if (!strcmp(called_as, "ORLPOWERS"))
+	    safe_str(T("#-1 INVALID POWER"), buff, bp);
+	  else
+	    safe_str(T("#-1 INVALID FLAG"), buff, bp);
+	else
+	  safe_boolean(hasflag, buff, bp);
 }
 
 /* ARGSUSED */
 FUNCTION(fun_andlflags)
 {
   dbref it = match_thing(executor, args[0]);
+  int hasflag;
   if (!strcmp(called_as, "ANDLPOWERS"))
-    safe_boolean(flaglist_check_long("POWER", executor, it, args[1], 1), buff,
-                 bp);
+    hasflag = flaglist_check_long("POWER", executor, it, args[1], 1);
   else
-    safe_boolean(flaglist_check_long("FLAG", executor, it, args[1], 1), buff,
-                 bp);
+    hasflag = flaglist_check_long("FLAG", executor, it, args[1], 1);
+  if (hasflag == -1)
+    if (!strcmp(called_as, "ANDLPOWERS"))
+	    safe_str(T("#-1 INVALID POWER"), buff, bp);
+	  else
+	    safe_str(T("#-1 INVALID FLAG"), buff, bp);
+  else
+    safe_boolean(hasflag, buff, bp);
 }
 
 static lock_type

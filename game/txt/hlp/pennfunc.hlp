@@ -476,8 +476,8 @@ See also: BOOLEAN VALUES, or(), xor(), not()
   andlflags() takes a space-separated list of flag names. In both cases, a
   ! before the flag means "not flag".
   
-  If any of the flags given are invalid, <object> cannot have them, so the
-  functions return 0.
+  If any of the flags given are invalid, both functions return 
+  "#-1 INVALID FLAG".
   
   Example: Check to see if %# is set Wizard and Dark, but not Ansi.
     > say andflags(%#, WD!A)
@@ -495,9 +495,8 @@ See also: orflags(), flags(), lflags()
   powered no_quota and no_pay.  ANDLPOWERS(me, poll !guest) would
   return 1 if I had the poll power but not the guest power.
 
-  If a name does not correspond to any power, <object> doesn't have
-  it, so the function returns 0. There can be an arbitrary number of
-  powers.
+  If a name does not correspond to any power, andlpowers() returns 
+  "#-1 INVALID POWER".
 
 See also: powers(), orlpowers(), POWERS LIST, @power
 & ANSI()
@@ -3295,8 +3294,8 @@ See also: BOOLEAN VALUES, and(), nor(), firstof(), allof()
   orlflags() takes a space-separated list of flag names. In both cases, a
   ! before the flag means "not flag".
   
-  If any of the flags given are invalid, <object> cannot have them, and it
-  is ignored.
+  If any of the flags given are invalid, both functions return 
+  "#-1 INVALID FLAG".
   
   Example: Check to see if %# is set Wizard, Dark, or not set Ansi.
     > say orflags(%#, WD!A)
@@ -3315,9 +3314,8 @@ See also: andflags(), flags(), lflags()
   and login powers.  ORLFLAGS(me, functions !guest) would return 1 if
   I have the functions power or are not a guest.
 
-  If a name does not correspond to any power, <object> doesn't have
-  it, so it is simply ignored. There can be an arbitrary number of
-  powers.
+  If a name does not correspond to any power, orlpowers() returns 
+  "#-1 INVALID POWER".
   
 See also: powers(), andlpowers(), POWERS LIST, @power
 & OWNER()

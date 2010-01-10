@@ -35,6 +35,8 @@ Functions
  * llocks() without any arguments returns a list of the
    standard locks.
  * unsetq(), to erase queue registers. [GM]
+ * and[l]flags(), or[l]flags(), andlpowers() and orlpowers() now all return
+   #-1 if an invalid flag/power is given. Suggested by AnneLions. [MG]
 
 Fixes:
  * English matching works better with possessive get

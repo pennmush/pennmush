@@ -2022,12 +2022,12 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
       continue;
     if (*spec.name && !string_match(Name(n), spec.name))
       continue;
-    if (*spec.flags && !flaglist_check("FLAG", player, n, spec.flags, 1))
+    if (*spec.flags && (flaglist_check("FLAG", player, n, spec.flags, 1) != 1))
       continue;
-    if (*spec.lflags && !flaglist_check_long("FLAG", player, n, spec.lflags, 1))
+    if (*spec.lflags && (flaglist_check_long("FLAG", player, n, spec.lflags, 1) != 1))
       continue;
     if (*spec.powers
-        && !flaglist_check_long("POWER", player, n, spec.powers, 1))
+        && (flaglist_check_long("POWER", player, n, spec.powers, 1) != 1))
       continue;
     if (spec.lock != TRUE_BOOLEXP && !eval_boolexp(n, spec.lock, player))
       continue;

@@ -149,7 +149,7 @@ static FLAG flag_table[] = {
   {NULL, '\0', 0, 0, 0, 0}
 };
 
-/** The old table to kludge multi-type toggles. Now used only 
+/** The old table to kludge multi-type toggles. Now used only
  * for conversion.
  */
 static FLAG hack_table[] = {
@@ -277,7 +277,7 @@ static PRIV flag_privs[] = {
 
 
 /*---------------------------------------------------------------------------
- * Flag definition functions, including flag hash table handlers 
+ * Flag definition functions, including flag hash table handlers
  */
 
 /** Convenience function to return a pointer to a flag struct
@@ -434,7 +434,7 @@ flag_add(FLAGSPACE *n, const char *name, FLAG *f)
    * If it's an alias, we're done.
    * A canonical flag has either been given a new bitpos
    * or has not yet been stored in the flags array.
-   * (An alias would have a previously used bitpos that's already 
+   * (An alias would have a previously used bitpos that's already
    * indexing a flag in the flags array)
    */
   if ((f->bitpos >= n->flagbits) || (n->flags[f->bitpos] == NULL)) {
@@ -820,7 +820,7 @@ init_flagspaces(void)
 
 
 /** Initialize a flag table with defaults.
- * This function loads the standard flags as a baseline 
+ * This function loads the standard flags as a baseline
  * (and for dbs that haven't yet converted).
  * \param ns name of flagspace to initialize.
  */
@@ -1099,7 +1099,7 @@ destroy_flag_bitmask(object_flag_type bitmask)
 }
 
 /** Add a bit into a bitmask.
- * This function sets a particular bit in a bitmask (e.g. bit 42), 
+ * This function sets a particular bit in a bitmask (e.g. bit 42),
  * by computing the appropriate byte, and the appropriate bit within the byte,
  * and setting it.
  * \param bitmask a flag bitmask.
@@ -1116,7 +1116,7 @@ set_flag_bitmask(object_flag_type bitmask, int bit)
 }
 
 /** Add a bit into a bitmask.
- * This function clears a particular bit in a bitmask (e.g. bit 42), 
+ * This function clears a particular bit in a bitmask (e.g. bit 42),
  * by computing the appropriate byte, and the appropriate bit within the byte,
  * and clearing it.
  * \param bitmask a flag bitmask.
@@ -1133,7 +1133,7 @@ clear_flag_bitmask(object_flag_type bitmask, int bit)
 }
 
 /** Test a bit in a bitmask.
- * This function tests a particular bit in a bitmask (e.g. bit 42), 
+ * This function tests a particular bit in a bitmask (e.g. bit 42),
  * by computing the appropriate byte, and the appropriate bit within the byte,
  * and testing it.
  * \param bitmask a flag bitmask.
@@ -1377,7 +1377,7 @@ can_set_flag(dbref player, dbref thing, FLAG *flagp, int negate)
   }
 
   /* Checking for the ZONE flag. If you set this, the player had
-   * better be zone-locked! 
+   * better be zone-locked!
    */
   if (!negate && is_flag(flagp, "ZONE") &&
       (getlock(thing, Zone_Lock) == TRUE_BOOLEXP)) {
@@ -1749,6 +1749,7 @@ set_power(dbref player, dbref thing, const char *flag, int negate)
  * \param type 0=orflags, 1=andflags.
  * \retval 1 object has any (or all) flags.
  * \retval 0 object has no (or not all) flags.
+ * \retval -1 invalid flag specified
  */
 int
 flaglist_check(const char *ns, dbref player, dbref it, const char *fstr,
@@ -1768,7 +1769,7 @@ flaglist_check(const char *ns, dbref player, dbref it, const char *fstr,
     return 0;
   }
   for (s = (char *) fstr; *s; s++) {
-    /* Check for a negation sign. If we find it, we note it and 
+    /* Check for a negation sign. If we find it, we note it and
      * increment the pointer to the next character.
      */
     if (*s == '!') {
@@ -1781,7 +1782,7 @@ flaglist_check(const char *ns, dbref player, dbref it, const char *fstr,
     if (!*s)
       /* We got a '!' that wasn't followed by a letter.
        * Fail the check. */
-      return (type == 1) ? 0 : ret;
+      return -1;
     /* Find the flag. */
     fp = letter_to_flagptr(n, *s, Typeof(it));
     if (!fp) {
@@ -1803,10 +1804,7 @@ flaglist_check(const char *ns, dbref player, dbref it, const char *fstr,
            * we couldn't find that flag. For AND, since we've failed
            * a check, we can return false. Otherwise we just go on.
            */
-          if (type == 1)
-            return 0;
-          else
-            continue;
+          return -1;
         }
       } else {
         if (type == 1)
@@ -1823,7 +1821,7 @@ flaglist_check(const char *ns, dbref player, dbref it, const char *fstr,
          * it, or we don't have a flag and we want it. Since it's
          * AND, we return false.
          */
-        return 0;
+        ret = 0;
       } else if ((type == 0) && ((!negate && temp) || (negate && !temp))) {
         /* We've found something we want, in an OR. We OR a
          * true with the current value.
@@ -1847,6 +1845,7 @@ flaglist_check(const char *ns, dbref player, dbref it, const char *fstr,
  * \param type 0=orlflags, 1=andlflags.
  * \retval 1 object has any (or all) flags.
  * \retval 0 object has no (or not all) flags.
+ * \retval -1 invalid flag specified
  */
 int
 flaglist_check_long(const char *ns, dbref player, dbref it, const char *fstr,
@@ -1868,7 +1867,7 @@ flaglist_check_long(const char *ns, dbref player, dbref it, const char *fstr,
   sp = trim_space_sep(copy, ' ');
   while (sp) {
     s = split_token(&sp, ' ');
-    /* Check for a negation sign. If we find it, we note it and 
+    /* Check for a negation sign. If we find it, we note it and
      * increment the pointer to the next character.
      */
     if (*s == '!') {
@@ -1881,8 +1880,7 @@ flaglist_check_long(const char *ns, dbref player, dbref it, const char *fstr,
     if (!*s) {
       /* We got a '!' that wasn't followed by a string.
        * Fail the check. */
-      if (type == 1)
-        ret = 0;
+      ret = -1;
       break;
     }
     /* Find the flag. */
@@ -1891,11 +1889,8 @@ flaglist_check_long(const char *ns, dbref player, dbref it, const char *fstr,
        * we couldn't find that flag. For AND, since we've failed
        * a check, we can return false. Otherwise we just go on.
        */
-      if (type == 1) {
-        ret = 0;
-        break;
-      } else
-        continue;
+      ret = -1;
+      break;
     } else {
       /* does the object have this flag? There's a special case
        * here, as we want (for consistency with flaglist_check)
@@ -1919,7 +1914,6 @@ flaglist_check_long(const char *ns, dbref player, dbref it, const char *fstr,
          * AND, we return false.
          */
         ret = 0;
-        break;
       } else if ((type == 0) && ((!negate && temp) || (negate && !temp))) {
         /* We've found something we want, in an OR. We OR a
          * true with the current value.
@@ -2051,11 +2045,11 @@ do_flag_info(const char *ns, dbref player, const char *name)
                 privs_to_string(flag_privs, f->negate_perms));
 }
 
-/** Change the permissions on a flag. 
+/** Change the permissions on a flag.
  * \verbatim
  * This is the user-interface to @flag/restrict, which uses this syntax:
  *
- * @flag/restrict <flag> = <perms>, <negate_perms> 
+ * @flag/restrict <flag> = <perms>, <negate_perms>
  *
  * If no comma is given, use <perms> for both.
  * \endverbatim
@@ -2178,7 +2172,7 @@ do_flag_type(const char *ns, dbref player, const char *name, char *type_string)
  * \verbatim
  * This function implements @flag/add, which uses this syntax:
  *
- * @flag/add <flag> = <letter>, <type(s)>, <perms>, <negate_perms> 
+ * @flag/add <flag> = <letter>, <type(s)>, <perms>, <negate_perms>
  *
  * <letter> defaults to none. If given, it must not match an existing
  *   flag character that could apply to the given type
@@ -2398,7 +2392,7 @@ alias_flag_generic(const char *ns, const char *name, const char *alias)
 }
 
 
-/** Change a flag's letter. 
+/** Change a flag's letter.
  * \param ns name of the flagspace to use.
  * \param player the enactor.
  * \param name name of the flag.
@@ -2447,7 +2441,7 @@ do_flag_letter(const char *ns, dbref player, const char *name,
 }
 
 
-/** Disable a flag. 
+/** Disable a flag.
  * \verbatim
  * This function implements @flag/disable.
  * Only God can do this, and it makes the flag effectively
@@ -2482,7 +2476,7 @@ do_flag_disable(const char *ns, dbref player, const char *name)
   notify_format(player, T("%s %s disabled."), strinitial(ns), f->name);
 }
 
-/** Delete a flag. 
+/** Delete a flag.
  * \verbatim
  * This function implements @flag/delete.
  * Only God can do this, and clears the flag on everyone

@@ -111,6 +111,11 @@ msgstr "  Zadnji procitani atribut je: %s"
 msgid "  Last reboot: %a %b %d %X %Z %Y"
 msgstr "  Zadnje rebootanje: %a %b %d %X %Z %Y"
 
+#: markup.c:1150
+#, c-format
+msgid "  Nmarkups: %d"
+msgstr "  Nmarkups: %d"
+
 #: db.c:1209
 msgid "  No attributes had been read yet."
 msgstr "  Nijedan atribut dosad nije bio procitan."
@@ -2103,6 +2108,11 @@ msgstr "IZMEDJU "
 #, c-format
 msgid "Bad attribute name %s on object %s"
 msgstr "Lose ime atributa %s na objektu %s"
+
+#: boolexp.c:617
+#, c-format
+msgid "Bad boolexp opcode %d %d in object #%d"
+msgstr "Los opcode za Booleovski izraz %d %d u objektu #%d"
 
 #: command.c:1312
 msgid "Bad command name."
@@ -4307,6 +4317,11 @@ msgstr "Provjeravam ansi tekst"
 msgid "Integer Maps:"
 msgstr "Mape cijelih brojeva:"
 
+#: game.c:2055
+#, c-format
+msgid "Integral mem:%10ld shared %10ld private %10ld stack"
+msgstr "Ukupna memorija:%10ld zajednicke %10ld privatne %10ld stack"
+
 #: create.c:373
 msgid "Internal error: weird object type."
 msgstr "Unutarnja greska: cudan tip objekta."
@@ -4370,6 +4385,14 @@ msgstr "Neispravan parametar."
 #: src/wiz.c:1458 src/wiz.c:1465 src/wiz.c:1681 src/wiz.c:1689
 msgid "Invalid range argument"
 msgstr "Argument nije u ispravnom rasponu"
+
+#: chunk.c:777
+msgid "Invalid reference to free chunk as used"
+msgstr "Neispravno referiranje na slobodni chunk kao na koristeni"
+
+#: chunk.c:781
+msgid "Invalid reference to non-chunk as used"
+msgstr "Neispravno referiranje na ne-chunk kao na koristeni chunk"
 
 #: chunk.c:2154
 msgid "Invalid region after chunk_create!"
@@ -8592,6 +8615,10 @@ msgstr "byteova"
 msgid "cannot malloc space for chunk region list"
 msgstr "ne mogu mallocati prostor za popis chunk-regija"
 
+#: chunk.c:1410
+msgid "chunk region cache buffer allocation failure"
+msgstr "neuspjeh pri alokaciji cache buffera sa chunk regijama"
+
 #: chunk.c:1289
 #, c-format
 msgid "chunk swap file read, %lu remaining, GetLastError %d"
@@ -8621,6 +8648,10 @@ msgstr "pisanje u chunk swap file, %lu preostalo, GetLastError je %d"
 #, c-format
 msgid "chunk swap file write, %lu remaining, errno %d: %s"
 msgstr "pisanje u chunk swap file, %lu preostalo, greska broj %d: %s"
+
+#: chunk.c:1530
+msgid "chunk: region array realloc failure"
+msgstr "chunk: neuspjeh pri realociranju niza regija"
 
 #: extchat.c:1377
 msgid "cleared"
@@ -8919,4 +8950,9 @@ msgstr "uzme %s."
 #: src/warnings.c:219
 msgid "thing is missing description"
 msgstr "predmet nema opis"
+
+#: myssl.c:223
+#, c-format
+msgid "verify error:num=%d:%s:depth=%d:%s\n"
+msgstr "greska u potvrdi:num=%d:%s:depth=%d:%s\n"
 

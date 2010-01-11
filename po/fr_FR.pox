@@ -6,7 +6,7 @@ msgstr "          (Inclus: tableaux, et table de pointeurs de %ld bytes)"
 #: src/game.c:1447
 #, c-format
 msgid "        Time until next purge: %ld minutes %ld seconds."
-msgstr "        Prochaine purge dans : %ld minutes %ld secondes."
+msgstr "         Prochaine purge dans : %ld minutes %ld secondes."
 
 #: src/malias.c:565
 msgid "      to set, add, remove permissions, respectively."
@@ -15,7 +15,7 @@ msgstr "      pour régler, ajouter, et retirer des permissions, respectivement."
 #: game.c:1437
 #, c-format
 msgid "     Up since: %s"
-msgstr "     Le mush a démarré le : %s"
+msgstr " Le mush a démarré le : %s"
 
 #: filecopy.c:110
 #, c-format
@@ -39,22 +39,22 @@ msgstr "    Copie du fichier: %s, %ld octet%s\n"
 #: src/game.c:1452
 #, c-format
 msgid "    Time until next @warnings: %ld minutes %ld seconds."
-msgstr "    Prochains @warnings dans : %ld minutes %ld secondes."
+msgstr "     Prochains @warnings dans : %ld minutes %ld secondes."
 
 #: src/game.c:1432
 #, c-format
 msgid "   Time now: %s"
-msgstr "   Heure actuelle : %s"
+msgstr "        Heure actuelle : %s"
 
 #: src/game.c:1443
 #, c-format
 msgid "   Time until next dbck check: %ld minutes %ld seconds."
-msgstr "   Prochaine vérification DB : %ld minutes %ld secondes."
+msgstr "    Prochaine vérification DB : %ld minutes %ld secondes."
 
 #: src/game.c:1422
 #, c-format
 msgid "   Up since: %s"
-msgstr "   Le mush a démarré le : %s"
+msgstr " Le mush a démarré le : %s"
 
 #: db.c:1205
 msgid "  (expecting ], >, or < as first character of the line.)"
@@ -129,7 +129,7 @@ msgstr " %s /stop     - arr\352te ce service\n"
 
 #: speech.c:856
 msgid " (to "
-msgstr " \" (a \" "
+msgstr "\" (a \""
 
 #: src/db.c:567
 #, c-format
@@ -209,11 +209,11 @@ msgstr " Les sockets BSD sont en utilisation."
 
 #: conf.c:1498
 msgid " CPU usage limiting is NOT supported."
-msgstr " \" La limitation du temps de calcul du processeur n'est PAS implémentée.\""
+msgstr "\" La limitation du temps de calcul du processeur n'est PAS implémentée.\""
 
 #: conf.c:1496
 msgid " CPU usage limiting is supported."
-msgstr " \" Limitation de l'usage de CPU supportée\""
+msgstr "\" Limitation de l'usage de CPU supportée\""
 
 #: src/conf.c:1044
 msgid " Creation/modification times for objects are enabled."
@@ -269,7 +269,7 @@ msgstr " La fonction convtime() \351tendue est impl\351ment\351e."
 
 #: flags.c:917
 msgid " Flags: "
-msgstr " \" Flags: \" "
+msgstr "\" Flags: \""
 
 #: flags.c:706
 msgid " Flags:"
@@ -277,7 +277,7 @@ msgstr " Flags:"
 
 #: src/conf.c:988
 msgid " Floating point functions are disabled."
-msgstr " Les fonctions de calcul à virgule flottante sont désactivées."
+msgstr "Les fonctions de calcul à virgule flottante sont désactivées."
 
 #: src/conf.c:986
 msgid " Floating point functions are enabled."
@@ -411,7 +411,7 @@ msgstr " [Salle: %s]"
 
 #: speech.c:816
 msgid " and "
-msgstr " \" et \" "
+msgstr "\" et \""
 
 #: src/conf.c:1113
 msgid " convtime() is stricter."
@@ -447,11 +447,11 @@ msgstr " page"
 
 #: flags.c:764
 msgid " reset."
-msgstr " \" remis à zéro.\""
+msgstr "\" remis à zéro.\""
 
 #: flags.c:831
 msgid " set."
-msgstr " \" configuré.\""
+msgstr "\" configuré.\""
 
 #: src/speech.c:475
 msgid " whispers to "
@@ -3679,7 +3679,7 @@ msgstr "\"Je ne sais pas trop à qui vous voulez pager ce texte: %s\""
 
 #: src/speech.c:886
 msgid "I'm not sure who you want to page!"
-msgstr "Destinataire imprécis, qui voulez-vous pager?"
+msgstr "Destinataire imprécis, qui voulez-vous pager? "
 
 #: src/speech.c:611 src/speech.c:1371
 #, c-format
@@ -7486,7 +7486,7 @@ msgstr "\"un joueur en cours de connection\""
 
 #: speech.c:822
 msgid "and "
-msgstr "\"et \" "
+msgstr "\"et \""
 
 #: extchat.c:2150 look.c:209 speech.c:372 speech.c:806
 msgid "and"
@@ -7613,7 +7613,7 @@ msgstr "\"son\""
 
 #: funstr.c:94
 msgid "pronoun:plural,absolute possessive "
-msgstr "\"leur\" "
+msgstr "\"leur\""
 
 #: funstr.c:86
 msgid "pronoun:plural,possessive"
@@ -7659,5 +7659,5 @@ msgstr "Cet objet n'a pas de description."
 
 #: src/match.c:529
 msgid "this here "
-msgstr "ça ici "
+msgstr "ça ici"
 

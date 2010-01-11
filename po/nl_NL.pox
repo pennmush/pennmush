@@ -193,11 +193,11 @@ msgstr " * Naam van #%d is langer dan het maximum, bezig met inkorten.\n"
 
 #: conf.c:1786
 msgid " @config/save is disabled."
-msgstr " @config/save is uitgeschakeld."
+msgstr "@config/save is uitgeschakeld."
 
 #: conf.c:1784
 msgid " @config/save is enabled."
-msgstr " @config/save is ingeschakeld."
+msgstr "@config/save is ingeschakeld."
 
 #: src/conf.c:1098
 msgid " @lock/drop is available."
@@ -746,7 +746,7 @@ msgstr "#-1 FUNCTIE ("
 #: parse.c:1319
 #, c-format
 msgid "#-1 FUNCTION (%s) EXPECTS "
-msgstr "#-1 FUNCTIE (%s) VERWACHT "
+msgstr "#-1 FUNCTIE (%s) VERWACHT"
 
 #: funmisc.c:163
 #, c-format
@@ -5214,7 +5214,7 @@ msgstr "Log opties"
 
 #: src/speech.c:981
 msgid "Long distance to "
-msgstr "Lange afstand naar "
+msgstr "Lange afstand naar"
 
 #: speech.c:835
 #, c-format
@@ -7178,7 +7178,7 @@ msgstr "De vloer onder je voeten verdwijnt, je valt in het niets en dan:"
 
 #: command.c:2138
 msgid "The following commands have hooks: "
-msgstr "De volgende commando's hebben hooks: "
+msgstr "De volgende commando's hebben hooks:"
 
 #: src/game.c:1525
 #, c-format
@@ -9927,7 +9927,7 @@ msgstr "het"
 
 #: funstr.c:94
 msgid "pronoun:plural,absolute possessive "
-msgstr "hen "
+msgstr "hen"
 
 #: funstr.c:98
 msgid "pronoun:plural,objective"
@@ -9985,5 +9985,5 @@ msgstr "ding mist beschrijving"
 
 #: src/match.c:529
 msgid "this here "
-msgstr "dit hier "
+msgstr "dit hier"
 

@@ -10,27 +10,27 @@ msgstr "          (Ukljucuje tablicne predmete i tablicu pointera na rijeci od %
 #: game.c:1930
 #, c-format
 msgid "        Time until next purge: %ld minutes %ld seconds, at %s."
-msgstr "        Vrijeme do sljedeceg ciscenja: %ld minuta %ld sekundi, u %s."
+msgstr "Vrijeme do sljedeceg ciscenja: %ld minuta %ld sekundi, u %s."
 
 #: mymalloc.c:523
 #, c-format
 msgid "       allocated pages: %-6d      objects added via: %s"
-msgstr "       alocirani pageovi: %-6d      objekti dodani sa: %s"
+msgstr "     alocirani pageovi: %-6d      objekti dodani sa: %s"
 
 #: mymalloc.c:540
 #, c-format
 msgid "       pages >25%% full: %-6d        pages <25%% full: %d"
-msgstr "       pageovi >25%% puni: %-6d      pageovi <25%% puni: %d"
+msgstr "     pageovi >25%% puni: %-6d      pageovi <25%% puni: %d"
 
 #: mymalloc.c:537
 #, c-format
 msgid "       pages >75%% full: %-6d        pages >50%% full: %-6d"
-msgstr "       pageovi >75%% puni: %-6d      pageovi >50%% puni: %-6d"
+msgstr "     pageovi >75%% puni: %-6d      pageovi >50%% puni: %-6d"
 
 #: flags.c:2045
 #, c-format
 msgid "     Name: %s"
-msgstr "     Ime: %s"
+msgstr "      Ime: %s"
 
 #: game.c:1899
 msgid "     Time now: %a %b %d %X %Z %Y"
@@ -48,7 +48,7 @@ msgstr "     alocirani objekti: %-6ld       slobodni objekti: %-6ld"
 #: markup.c:1155
 #, c-format
 msgid "    %d (%s): (start: %d end: %d) start_code: %s stop_code: %s"
-msgstr "    %d (%s): (pocetak: %d kraj: %d) start_code: %s stop_code: %s"
+msgstr " %d (%s): (pocetak: %d kraj: %d) start_code: %s stop_code: %s"
 
 #: filecopy.c:110
 #, c-format
@@ -62,22 +62,22 @@ msgstr "    Kopiram file"
 #: atr_tab.c:351
 #, c-format
 msgid "    Flags: %s"
-msgstr "    Flagovi: %s"
+msgstr "  Flagovi: %s"
 
 #: flags.c:2049
 #, c-format
 msgid "    Perms: %s"
-msgstr "    Dozvole: %s"
+msgstr "  Dozvole: %s"
 
 #: game.c:1939
 #, c-format
 msgid "    Time until next @warnings: %ld minutes %ld seconds, at %s."
-msgstr "    Vrijeme do sljedecih @warninga: %ld minuta %ld sekundi, u %s."
+msgstr "Vrijeme do sljedecih @warninga: %ld minuta %ld sekundi, u %s."
 
 #: mymalloc.c:533
 #, c-format
 msgid "    allocation average:%6.2f%%        pages 100%% full: %-6d"
-msgstr "    prosjecna alokacija:%6.2f%%      pageovi 100%% puni: %-6d"
+msgstr "   prosjecna alokacija:%6.2f%%      pageovi 100%% puni: %-6d"
 
 #: game.c:1905
 msgid "   Time of last database save: %a %b %d %X %Z %Y"
@@ -86,12 +86,12 @@ msgstr "   Vrijeme zadnjeg snimanja baze podataka: %a %b %d %X %Z %Y"
 #: game.c:1922
 #, c-format
 msgid "   Time until next dbck check: %ld minutes %ld seconds, at %s."
-msgstr "   Vrijeme do sljedece dbck provjere: %ld minuta %ld sekundi, u %s."
+msgstr "Vrijeme do sljedece dbck provjere: %ld minuta %ld sekundi, u %s."
 
 #: mymalloc.c:520
 #, c-format
 msgid "   object size (bytes): %-6d       objects per page: %-6d"
-msgstr "   vel.objekata (bajtovi): %-6d      objekata po pageu: %-6d"
+msgstr "vel.objekata (bajtovi): %-6d      objekata po pageu: %-6d"
 
 #: db.c:1205
 msgid "  (expecting ], >, or < as first character of the line.)"
@@ -100,7 +100,7 @@ msgstr "  (ocekujem ], > ili < kao prvi znak u retku.)"
 #: flags.c:2047
 #, c-format
 msgid "  Aliases: %s"
-msgstr "  Aliasi: %s"
+msgstr "   Aliasi: %s"
 
 #: db.c:1207
 #, c-format
@@ -123,12 +123,12 @@ msgstr "  Nijedan atribut dosad nije bio procitan."
 #: markup.c:1149
 #, c-format
 msgid "  Text: %s"
-msgstr "  Tekst: %s"
+msgstr " Tekst: %s"
 
 #: flags.c:2048
 #, c-format
 msgid "  Type(s): %s"
-msgstr "  Tip(ovi): %s"
+msgstr " Tip(ovi): %s"
 
 #: src/services.c:803
 #, c-format
@@ -241,7 +241,7 @@ msgstr " Koristi se BSD sockets networking."
 #: access.c:667
 #, c-format
 msgid " COMMENT: %s"
-msgstr " KOMENTAR: %s"
+msgstr "KOMENTAR: %s"
 
 #: conf.c:1498
 msgid " CPU usage limiting is NOT supported."
@@ -372,7 +372,7 @@ msgstr " convtime() je strozi."
 #: mymalloc.c:530
 #, c-format
 msgid " fewest allocs in page: %-6d    most allocs in page: %-6d"
-msgstr " najmanje alok. u pageu: %-6d  najvise alok. u pageu: %-6d"
+msgstr "najmanje alok. u pageu: %-6d  najvise alok. u pageu: %-6d"
 
 #: flags.c:1531
 msgid " granted."
@@ -380,7 +380,7 @@ msgstr " - dano."
 
 #: src/look.c:688 src/look.c:770
 msgid " is owned by "
-msgstr " je vlasnistvo igraca koji se zove "
+msgstr "je vlasnistvo igraca koji se zove "
 
 #: src/look.c:199
 msgid " leads nowhere."
@@ -849,7 +849,7 @@ msgstr "#-1 ODOBRENJE USKRACENO."
 
 #: src/funlist.c:2256 src/funlist.c:2335 src/funlist.c:2378 src/funlist.c:2437\nsrc/funlist.c:2478
 msgid "#-1 REGEXP ERROR: "
-msgstr "#-1 GRESKA U REGEXPU: "
+msgstr "#-1 GRESKA U REGEXPU:"
 
 #: src/funmisc.c:158 src/funmisc.c:178
 msgid "#-1 REGISTER OUT OF RANGE"
@@ -938,17 +938,17 @@ msgstr "#-? fun_mailstats pozvan s neispravnim called_as!"
 #: game.c:2449
 #, c-format
 msgid "%10.0f %% OVERALL compression ratio (lower is better). "
-msgstr "%10.0f %% je UKUPAN  omjer kompresije (manji je bolji). "
+msgstr "%10.0f %% je UKUPAN  omjer kompresije (manji je bolji)."
 
 #: game.c:2443
 #, c-format
 msgid "%10.0f %% text    compression ratio (lower is better). "
-msgstr "%10.0f %% je tekstov omjer kompresije (manji je bolji). "
+msgstr "%10.0f %% je tekstov omjer kompresije (manji je bolji)."
 
 #: game.c:2087
 #, c-format
 msgid "%10.3f Mb available in the paging file "
-msgstr "%10.3f Mb je na raspolaganju u virtualnoj memoriji "
+msgstr "%10.3f Mb je na raspolaganju u virtualnoj memoriji"
 
 #: game.c:2083
 #, c-format
@@ -973,12 +973,12 @@ msgstr "%10ld %% memorije je u upotrebi"
 #: game.c:2439
 #, c-format
 msgid "%10ld bytes in text AFTER  compression. "
-msgstr "%10ld bajtova teksta NAKON kompresije. "
+msgstr "%10ld bajtova teksta NAKON kompresije."
 
 #: game.c:2437
 #, c-format
 msgid "%10ld bytes in text before compression. "
-msgstr "%10ld bajtova teksta prije kompresije. "
+msgstr "%10ld bajtova teksta prije kompresije."
 
 #: game.c:2435
 #, c-format
@@ -2094,7 +2094,7 @@ msgstr "Atribut otkljucan."
 #: atr_tab.c:349
 #, c-format
 msgid "Attribute: %s"
-msgstr "Atribut: %s"
+msgstr "  Atribut: %s"
 
 #: src/set.c:962
 msgid "Attributes wiped."
@@ -2803,7 +2803,7 @@ msgstr "Kanali:"
 #: flags.c:2046
 #, c-format
 msgid "Character: %c"
-msgstr "Znak: %c"
+msgstr "    Znak: %c"
 
 #: conf.c:544
 msgid "Chat system options"
@@ -2819,7 +2819,7 @@ msgstr "Kruzna zona razbijena."
 
 #: extmail.c:2473
 msgid "Cleared "
-msgstr "Obrisano "
+msgstr "Obrisano"
 
 #: attrib.c:942
 msgid "Cleared"
@@ -3167,7 +3167,7 @@ msgstr "Nepovezana soba. Pa sto onda?"
 #: src/game.c:1514
 #, c-format
 msgid "Disk I/O:    %10ld reads  %10ld writes"
-msgstr "Disk I/O:    broj citanja - %10ld   broj pisanja - %10ld"
+msgstr "Disk I/O:    broj citanja - %10ld   broj pisanja - %10ld "
 
 #: function.c:735
 msgid "Do what with the function?"
@@ -3802,7 +3802,7 @@ msgstr "Funkcije: %s"
 
 #: extmail.c:2479
 msgid "Fwd "
-msgstr "Fwd "
+msgstr "Fwd"
 
 #: predicat.c:545
 #, c-format
@@ -4663,7 +4663,7 @@ msgstr "POSTA: Postanski sanducic igraca '%s' je pun. Ne mogu poslati poruku."
 #: malias.c:315
 #, c-format
 msgid "MAIL: Alias %c%s: "
-msgstr "POSTA: Alias %c%s: "
+msgstr "POSTA: Alias %c%s:"
 
 #: src/malias.c:348 src/malias.c:370
 #, c-format
@@ -5084,7 +5084,7 @@ msgstr "Mapa         Zapisi ~Memorija"
 
 #: extmail.c:2477
 msgid "Mass "
-msgstr "Masa "
+msgstr "Masa"
 
 #: src/game.c:1253
 #, c-format
@@ -5786,7 +5786,7 @@ msgstr "Quote nepromijenjene."
 
 #: extmail.c:2469
 msgid "Read "
-msgstr "Procitano "
+msgstr "Procitano"
 
 #: extchat.c:2192
 #, c-format
@@ -6714,7 +6714,7 @@ msgstr "Tip za %2$s %1$s postavljen."
 
 #: flags.c:688
 msgid "Type: "
-msgstr "Tip: "
+msgstr "Tip:"
 
 #: command.c:1753
 #, c-format
@@ -7050,7 +7050,7 @@ msgstr "Otkljucana zona %s - automatski se zone-zakljucava na samu sebe"
 
 #: extmail.c:2471
 msgid "Unread "
-msgstr "Neprocitano "
+msgstr "Neprocitano"
 
 #: src/services.c:784
 msgid "Unrecognised status."
@@ -7075,7 +7075,7 @@ msgstr "Neprepoznat flag za bravu."
 
 #: extmail.c:2475
 msgid "Urgent "
-msgstr "Hitno "
+msgstr "Hitno"
 
 #: src/services.c:802
 msgid "Usage is :-\n"
@@ -8207,7 +8207,7 @@ msgstr "Ne vidis nista posebno."
 
 #: src/speech.c:464
 msgid "You sense: "
-msgstr "Osjecas: "
+msgstr "Osjecas:"
 
 #: extmail.c:2685
 #, c-format
@@ -8912,7 +8912,7 @@ msgstr "ono"
 
 #: funstr.c:94
 msgid "pronoun:plural,absolute possessive "
-msgstr "njihov "
+msgstr "njihov"
 
 #: funstr.c:98
 msgid "pronoun:plural,objective"

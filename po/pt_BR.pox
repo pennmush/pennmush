@@ -6,7 +6,7 @@ msgstr "          (Inclui objetos de tabela e tabela de ponteiros de palavras co
 #: src/game.c:1447
 #, c-format
 msgid "        Time until next purge: %ld minutes %ld seconds."
-msgstr "        Tempo até próxima limpeza: %ld minutos e %ld segundos."
+msgstr "       Tempo até próxima limpeza: %ld minutos e %ld segundos."
 
 #: src/malias.c:565
 msgid "      to set, add, remove permissions, respectively."
@@ -44,17 +44,17 @@ msgstr "    Tempo até próximo @warnings: %ld minutos e %ld segundos."
 #: src/game.c:1432
 #, c-format
 msgid "   Time now: %s"
-msgstr "   Hora agora: %s"
+msgstr "    Hora agora: %s"
 
 #: src/game.c:1443
 #, c-format
 msgid "   Time until next dbck check: %ld minutes %ld seconds."
-msgstr "   Tempo até próxima verificação dbck: %ld minutos e %ld segundos."
+msgstr "    Tempo até próxima verificação dbck: %ld minutos e %ld segundos."
 
 #: src/game.c:1422
 #, c-format
 msgid "   Up since: %s"
-msgstr "   Em funcionamento desde %s"
+msgstr "    Em funcionamento desde %s"
 
 #: db.c:1205
 msgid "  (expecting ], >, or < as first character of the line.)"
@@ -62,7 +62,7 @@ msgstr "  (esperado ], > ou < como primeiro caractere da linha.)"
 
 #: src/db.c:1309
 msgid "  (expecting ], >, or < as first character of the line.)\n"
-msgstr "  (esperado ], > ou < como primeiro caractere da linha.)\n"
+msgstr "(esperado ], > ou < como primeiro caractere da linha.)\n"
 
 #: db.c:1207
 #, c-format
@@ -144,27 +144,27 @@ msgstr " * Texto inv\341lido no atributo %s de #%d. Modificado para\n"
 
 #: src/conf.c:1098
 msgid " @lock/drop is available."
-msgstr " @lock/drop está disponível."
+msgstr "@lock/drop está disponível."
 
 #: src/conf.c:1101
 msgid " @lock/give is available."
-msgstr " @lock/give está disponível."
+msgstr "@lock/give está disponível."
 
 #: src/conf.c:1095
 msgid " @lock/leave is available."
-msgstr " @lock/leave está disponível."
+msgstr "@lock/leave está disponível."
 
 #: src/conf.c:1092
 msgid " @lock/speech is available."
-msgstr " @lock/speech está disponível."
+msgstr "@lock/speech está disponível."
 
 #: src/conf.c:1008
 msgid " @mail messages do not have subject lines."
-msgstr " mensagens @mail não têm linhas de Assunto."
+msgstr "mensagens @mail não têm linhas de Assunto."
 
 #: src/conf.c:1000
 msgid " @mail messages have subject lines."
-msgstr " mensagens @mail têm linhas de Assunto."
+msgstr "mensagens @mail têm linhas de Assunto."
 
 #: conf.c:1044
 msgid " Attributes are 8-bit word compressed in memory."
@@ -184,19 +184,19 @@ msgstr " Atributos vazios n\343o s\343o despejados."
 
 #: src/conf.c:1063
 msgid " Attributes can be deleted."
-msgstr " Atributos podem ser apagados."
+msgstr "Atributos podem ser apagados."
 
 #: src/conf.c:1065
 msgid " Attributes cannot be deleted."
-msgstr " Atributos não podem ser apagados."
+msgstr "Atributos não podem ser apagados."
 
 #: src/conf.c:1044
 msgid " Creation/modification times for objects are enabled."
-msgstr " Horas de criação/modificação de objetos estão ativadas."
+msgstr "Horas de criação/modificação de objetos estão ativadas."
 
 #: src/conf.c:1046
 msgid " Creation/modification times for objects are not enabled."
-msgstr " Horas de criação/modificação de objetos não estão ativadas."
+msgstr "Horas de criação/modificação de objetos não estão ativadas."
 
 #: src/conf.c:980
 msgid " DNS and ident lookups are handled by a slave process."
@@ -208,35 +208,35 @@ msgstr " Buscas DNS e ident s\343o realizadas pelos processos MUSH"
 
 #: src/conf.c:1068
 msgid " Empty attributes are deleted."
-msgstr " Atributos vazios são deletados."
+msgstr "Atributos vazios são deletados."
 
 #: src/conf.c:1058
 msgid " Empty attributes are dumped."
-msgstr " Atributos vazios são despejados."
+msgstr "Atributos vazios são despejados."
 
 #: src/conf.c:1051
 msgid " Empty attributes are kept."
-msgstr " Atributos vazios são mantidos."
+msgstr "Atributos vazios são mantidos."
 
 #: src/conf.c:1060
 msgid " Empty attributes are not dumped."
-msgstr " Atributos vazios não são despejados."
+msgstr "Atributos vazios não são despejados."
 
 #: src/conf.c:1055
 msgid " Empty attributes are not visible."
-msgstr " Atributos vazios não são visíveis."
+msgstr "Atributos vazios não são visíveis."
 
 #: src/conf.c:1053
 msgid " Empty attributes are visible."
-msgstr " Atributos vazios são visíveis."
+msgstr "Atributos vazios são visíveis."
 
 #: src/conf.c:1105
 msgid " Extended ANSI functions are enabled."
-msgstr " Funções ANSI estendidas estão ativadas."
+msgstr "Funções ANSI estendidas estão ativadas."
 
 #: src/conf.c:1107
 msgid " Extended ANSI functions are not enabled."
-msgstr " Funções ANSI estendidas estão desativadas."
+msgstr "Funções ANSI estendidas estão desativadas."
 
 #: src/conf.c:1111
 msgid " Extended convtime() is supported."
@@ -244,128 +244,128 @@ msgstr " convtime() estendido est\341 suportado."
 
 #: flags.c:706
 msgid " Flags:"
-msgstr " Flags:"
+msgstr "Flags:"
 
 #: src/conf.c:988
 msgid " Floating point functions are disabled."
-msgstr " Funções de ponto flutuante estão desativadas."
+msgstr "Funções de ponto flutuante estão desativadas."
 
 #: src/conf.c:986
 msgid " Floating point functions are enabled."
-msgstr " Funções de ponto flutuante estão ativadas."
+msgstr "Funções de ponto flutuante estão ativadas."
 
 #: src/conf.c:1072
 msgid " Garbage objects are not dumped to disk."
-msgstr " Objetos lixo não são despejados no disco."
+msgstr "Objetos lixo não são despejados no disco."
 
 #: src/conf.c:970
 msgid " Logging is to a single log file."
-msgstr " O relatório utiliza um único arquivo."
+msgstr "O relatório utiliza um único arquivo."
 
 #: src/conf.c:972
 msgid " Logging is to multiple log files."
-msgstr " O relatório utiliza vários arquivos."
+msgstr "O relatório utiliza vários arquivos."
 
 #: src/conf.c:1002
 msgid " Messages without subject lines have subject (no subject)"
-msgstr " Mensagens sem linhas Assunto têm assunto (sem assunto)"
+msgstr "Mensagens sem linhas Assunto têm assunto (sem assunto)"
 
 #: src/conf.c:1005
 msgid " Messages without subject lines use the beginning of the message as subject"
-msgstr " Mensagens sem linhas Assunto usam o início da mensagem como assunto"
+msgstr "Mensagens sem linhas Assunto usam o início da mensagem como assunto"
 
 #: src/conf.c:954
 msgid " Passwords are convereted from plaintext to SHS"
-msgstr " Senhas são convertidas de texto para SHS"
+msgstr "Senhas são convertidas de texto para SHS"
 
 #: src/conf.c:951
 msgid " Passwords are converted from system crypt to SHS"
-msgstr " Senhas são convertidas do crypt do sistema para SHS."
+msgstr "Senhas são convertidas do crypt do sistema para SHS."
 
 #: src/conf.c:948
 msgid " Passwords are encrypted with SHS."
-msgstr " Senhas são encriptadas com SHS."
+msgstr "Senhas são encriptadas com SHS."
 
 #: src/conf.c:945
 msgid " Passwords are encrypted with the operating system's crypt function."
-msgstr " Senhas são encriptadas com a função crypt do sistema operacional."
+msgstr "Senhas são encriptadas com a função crypt do sistema operacional."
 
 #: src/conf.c:941
 msgid " Passwords are not stored encrypted."
-msgstr " Senhas não são armazenadas de forma encriptada."
+msgstr "Senhas não são armazenadas de forma encriptada."
 
 #: src/conf.c:1021
 msgid " Quota restrictions are being enforced."
-msgstr " Restrições de quota estão sendo aplicadas."
+msgstr "Restrições de quota estão sendo aplicadas."
 
 #: src/conf.c:994
 msgid " Side effect functions are disabled."
-msgstr " Funções de efeitos colaterais estão desativadas."
+msgstr "Funções de efeitos colaterais estão desativadas."
 
 #: src/conf.c:992
 msgid " Side effect functions are enabled."
-msgstr " Funções de efeitos colaterais estão ativadas."
+msgstr "Funções de efeitos colaterais estão ativadas."
 
 #: src/conf.c:1078
 msgid " The FIXED flag is disabled."
-msgstr " A flag FIXED está desativada."
+msgstr "A flag FIXED está desativada."
 
 #: src/conf.c:1076
 msgid " The FIXED flag is enabled."
-msgstr " A flag FIXED está ativada."
+msgstr "A flag FIXED está ativada."
 
 #: src/conf.c:1040
 msgid " The MUSH building warning system is disabled."
-msgstr " O sistema de avisos de construção do MUSH está desativado."
+msgstr "O sistema de avisos de construção do MUSH está desativado."
 
 #: src/conf.c:1031
 msgid " The MUSH building warning system is enabled."
-msgstr " O sistema de avisos de construção do MUSH está ativado."
+msgstr "O sistema de avisos de construção do MUSH está ativado."
 
 #: src/conf.c:1088
 msgid " The UNINSPECTED flag is enabled."
-msgstr " A flag UNINSPECTED está ativada."
+msgstr "A flag UNINSPECTED está ativada."
 
 #: src/conf.c:1082
 msgid " The UNREGISTERED flag is enabled."
-msgstr " A flag UNREGISTERED está ativada."
+msgstr "A flag UNREGISTERED está ativada."
 
 #: src/conf.c:1085
 msgid " The VACATION flag is enabled."
-msgstr " a flag VACATION está ativada."
+msgstr "a flag VACATION está ativada."
 
 #: src/conf.c:1011
 msgid " The built-in MUSH mailing system is not being used."
-msgstr " o sistema embutido de correio do MUSH não está em uso."
+msgstr "o sistema embutido de correio do MUSH não está em uso."
 
 #: src/conf.c:1017
 msgid " The chat system is disabled."
-msgstr " O sistema de chat está desativado."
+msgstr "O sistema de chat está desativado."
 
 #: src/conf.c:998
 msgid " The extended built-in MUSH mailing system is being used."
-msgstr " O sistema embutido de correio estendido está em uso."
+msgstr "O sistema embutido de correio estendido está em uso."
 
 #: src/conf.c:1015
 msgid " The extended chat system is enabled."
-msgstr " O sistema estendido de chat está ativado."
+msgstr "O sistema estendido de chat está ativado."
 
 #: src/conf.c:1027
 msgid " The royalty flag is disabled."
-msgstr " A flag de realeza está desativada."
+msgstr "A flag de realeza está desativada."
 
 #: src/conf.c:1025
 msgid " The royalty flag is enabled."
-msgstr " A flag de realeza está ativada."
+msgstr "A flag de realeza está ativada."
 
 #: src/conf.c:1035
 #, c-format
 msgid " Warnings will be automatically given every %d minutes"
-msgstr " Avisos serão emitidos automaticamente a cada %d minutos."
+msgstr "Avisos serão emitidos automaticamente a cada %d minutos."
 
 #: src/conf.c:1038
 msgid " Warnings will not be automatically given."
-msgstr " Avisos não serão emitidos automaticamente."
+msgstr "Avisos não serão emitidos automaticamente."
 
 #: wiz.c:1605
 #, c-format
@@ -621,7 +621,7 @@ msgstr "%s tomou %d %s de voc\352!"
 
 #: src/look.c:1256
 msgid "@@ No attributes found. @@"
-msgstr "Nenhum atributo foi lido ainda."
+msgstr "  Nenhum atributo foi lido ainda."
 
 #: src/command.c:1118
 msgid "@command is ALWAYS enabled."
@@ -837,7 +837,7 @@ msgstr "Eu n\343o consigo encontrar isso."
 
 #: extmail.c:2473
 msgid "Cleared "
-msgstr "Criar o qu\352? "
+msgstr "Criar o qu\352?"
 
 #: src/version.c:48
 #, c-format

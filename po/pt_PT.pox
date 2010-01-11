@@ -1,6 +1,6 @@
 #: conf.c:1498
 msgid " CPU usage limiting is NOT supported."
-msgstr " \" Limitação da utilização do CPU não é suportada.\""
+msgstr "\" Limitação da utilização do CPU não é suportada.\""
 
 #: src/fundb.c:784 src/fundb.c:1001
 msgid "#-1 ARG1 NOT FOUND"

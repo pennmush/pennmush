@@ -2049,3 +2049,48 @@ check_lock(dbref player, dbref i, const char *name, boolexp be)
     }
   }
 }
+
+/* Replace tests of garbage objects with #FALSE */
+boolexp
+cleanup_boolexp(boolexp b)
+{
+  unsigned char *pc, *bytecode;
+  uint16_t bytecode_len = 0;
+  bvm_opcode op;
+  int arg;
+  bool revised = 0;
+  unsigned char false_op[INSN_LEN] = { OP_LOADR, 0 };
+
+  if (b == TRUE_BOOLEXP)
+    return b;
+
+  bytecode = pc = get_bytecode(b, &bytecode_len);
+  while (1) {
+    op = (bvm_opcode) *pc;
+    memcpy(&arg, pc + 1, sizeof arg);
+    switch (op) {
+    case OP_RET:
+      goto done; /* Oh, for named loops */
+    case OP_TCONST:
+    case OP_TCARRY:
+    case OP_TIS:
+    case OP_TOWNER:
+    case OP_TIND:
+      if (IsGarbage(arg)) {
+	revised = 1;
+	memcpy(pc, false_op, INSN_LEN);
+      }
+      break;
+    default:
+      (void)0; /* Do nothing for other opcodes */
+    }
+    pc += INSN_LEN;
+  }
+ done:
+  if (revised) {
+    boolexp copy = chunk_create(bytecode, bytecode_len, chunk_derefs(b));
+    chunk_delete(b);
+    return copy;
+  } else
+    return b;
+}

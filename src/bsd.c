@@ -1836,9 +1836,9 @@ process_output(DESC *d)
 static void
 welcome_user(DESC *d, int telnet)
 {
-  // If MUDURL exists, we send <!-- ... -->
+  /* If MUDURL exists, we send <!-- ... --> */
   if (telnet && MUDURL[0]) {
-    queue_newwrite(d, "<!--", 4);
+    queue_newwrite(d, (const unsigned char *)"<!--", 4);
     queue_eol(d);
     test_telnet(d);
   }
@@ -1848,7 +1848,7 @@ welcome_user(DESC *d, int telnet)
   fcache_dump(d, fcache.connect_fcache, NULL);
   if (telnet && MUDURL[0]) {
       queue_eol(d);
-      queue_newwrite(d, "-->", 3);
+      queue_newwrite(d, (const unsigned char *)"-->", 3);
       queue_eol(d);
   }
 }

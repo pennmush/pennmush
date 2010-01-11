@@ -1,29 +1,29 @@
 #: src/filecopy.c:100
 #, c-format
 msgid "    Copying file: %s, %ld byte%s\n"
-msgstr "    Копирую файл %s, %ld байт%s\n"
+msgstr "        Копирую файл %s, %ld байт%s\n"
 
 #: db.c:1207
 #, c-format
 msgid "  Last attribute read was: %s"
-msgstr "  оНЯКЕДМХИ ОПНВХРЮММШИ ЮРРПХАСР: %s"
+msgstr "оНЯКЕДМХИ ОПНВХРЮММШИ ЮРРПХАСР: %s"
 
 #: src/services.c:813
 #, c-format
 msgid " %s /help     - displays this information\n"
-msgstr " %-s  /help             - показывает текущую информацию\n"
+msgstr "%-s  /help             - показывает текущую информацию\n"
 
 #: src/conf.c:1107
 msgid " Extended ANSI functions are not enabled."
-msgstr " Расширенный набор функций ANSI не включен."
+msgstr "Расширенный набор функций ANSI не включен."
 
 #: src/conf.c:948
 msgid " Passwords are encrypted with SHS."
-msgstr " оЮПНКХ ЬХТПСЧРЯЪ Я ОНЛНЫЭЧ SHS."
+msgstr "оЮПНКХ ЬХТПСЧРЯЪ Я ОНЛНЫЭЧ SHS."
 
 #: src/conf.c:1011
 msgid " The built-in MUSH mailing system is not being used."
-msgstr " Встроенная почтовая система MUSH не используется."
+msgstr "Встроенная почтовая система MUSH не используется."
 
 #: parse.c:87
 msgid "#-1 ARGUMENT MUST BE POSITIVE INTEGER"

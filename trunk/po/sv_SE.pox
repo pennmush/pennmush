@@ -6,7 +6,7 @@ msgstr "          (Inkluderar tabell-objekt och en tabell med ord-pekare p\345 %
 #: game.c:1930
 #, c-format
 msgid "        Time until next purge: %ld minutes %ld seconds, at %s."
-msgstr "        Tid till nästa rensning: %ld minuter %ld sekunder, vid %s."
+msgstr "Tid till nästa rensning: %ld minuter %ld sekunder, vid %s."
 
 #: src/game.c:1447
 #, c-format
@@ -19,26 +19,26 @@ msgstr "      för att sätta, lägga till, respektive ta bort rättigheter."
 
 #: game.c:1899
 msgid "     Time now: %a %b %d %X %Z %Y"
-msgstr "     Nuvarande tid: %a %b %d %X %Z %Y"
+msgstr "Nuvarande tid: %a %b %d %X %Z %Y"
 
 #: game.c:1889
 msgid "     Up since %a %b %d %X %Z %Y"
-msgstr "     Uppe sedan %a %b %d %X %Z %Y"
+msgstr "Uppe sedan %a %b %d %X %Z %Y"
 
 #: game.c:1437
 #, c-format
 msgid "     Up since: %s"
-msgstr "     Uppe sedan: %s"
+msgstr "Uppe sedan: %s"
 
 #: filecopy.c:110
 #, c-format
 msgid "    ** Unable to open file: %s"
-msgstr "    ** Kunde ej \366ppna fil: %s"
+msgstr "** Kunde ej \366ppna fil: %s"
 
 #: src/filecopy.c:112
 #, c-format
 msgid "    ** Unable to open file: %s\n"
-msgstr "    ** Kunde ej öppna fil: %s\n"
+msgstr "** Kunde ej öppna fil: %s\n"
 
 #: filecopy.c:101
 msgid "    Copying file"
@@ -47,27 +47,27 @@ msgstr "    Kopierar fil"
 #: src/filecopy.c:100
 #, c-format
 msgid "    Copying file: %s, %ld byte%s\n"
-msgstr "    Kopierar fil: %s, %ld byte%s\n"
+msgstr "Kopierar fil: %s, %ld byte%s\n"
 
 #: src/game.c:1452
 #, c-format
 msgid "    Time until next @warnings: %ld minutes %ld seconds."
-msgstr "    Tid till nästa @warning: %ld minuter %ld sekunder."
+msgstr "Tid till nästa @warning: %ld minuter %ld sekunder."
 
 #: src/game.c:1432
 #, c-format
 msgid "   Time now: %s"
-msgstr "   Nuvarande tid: %s"
+msgstr "Nuvarande tid: %s"
 
 #: src/game.c:1443
 #, c-format
 msgid "   Time until next dbck check: %ld minutes %ld seconds."
-msgstr "   Tid till nästa dbck kontroll: %ld minuter %ld sekunder."
+msgstr "Tid till nästa dbck kontroll: %ld minuter %ld sekunder."
 
 #: src/game.c:1422
 #, c-format
 msgid "   Up since: %s"
-msgstr "   Uppe sedan: %s"
+msgstr "Uppe sedan: %s"
 
 #: db.c:1205
 msgid "  (expecting ], >, or < as first character of the line.)"
@@ -75,7 +75,7 @@ msgstr "  (f\366rv\344ntar ], > eller < som f\366rsta tecken p\345 raden.)"
 
 #: src/db.c:1309
 msgid "  (expecting ], >, or < as first character of the line.)\n"
-msgstr "  (förväntar ], > eller < som första tecken på raden.)\n"
+msgstr "(förväntar ], > eller < som första tecken på raden.)\n"
 
 #: db.c:1207
 #, c-format
@@ -85,12 +85,12 @@ msgstr "  Senaste l\344sta attribut var: %s"
 #: src/db.c:1311
 #, c-format
 msgid "  Last attribute read was: %s\n"
-msgstr "  Senast lästa attribut var: %s\n"
+msgstr "Senast lästa attribut var: %s\n"
 
 #: game.c:1442
 #, c-format
 msgid "  Last reboot: %s"
-msgstr "  Senaste omstart: %s"
+msgstr "Senaste omstart: %s"
 
 #: db.c:1209
 msgid "  No attributes had been read yet."
@@ -98,7 +98,7 @@ msgstr "  Inga attribut har blivit l\344sta \344n."
 
 #: src/db.c:1313
 msgid "  No attributes had been read yet.\n"
-msgstr "  Inga attribut har blivit lästa än.\n"
+msgstr "Inga attribut har blivit lästa än.\n"
 
 #: src/services.c:803
 #, c-format
@@ -162,27 +162,27 @@ msgstr " * Namn p\345 #%d \344r l\344ngre \344n max, trunkerar.\n"
 
 #: src/conf.c:1098
 msgid " @lock/drop is available."
-msgstr " @lock/drop är tillgänglig."
+msgstr "@lock/drop är tillgänglig."
 
 #: src/conf.c:1101
 msgid " @lock/give is available."
-msgstr " @lock/give är tillgänglig."
+msgstr "@lock/give är tillgänglig."
 
 #: src/conf.c:1095
 msgid " @lock/leave is available."
-msgstr " @lock/leave är tillgängligt."
+msgstr "@lock/leave är tillgängligt."
 
 #: src/conf.c:1092
 msgid " @lock/speech is available."
-msgstr " @lock/speech är tillgänglig."
+msgstr "@lock/speech är tillgänglig."
 
 #: src/conf.c:1008
 msgid " @mail messages do not have subject lines."
-msgstr " @mail meddelanden kan inte ha 'subject' rader."
+msgstr "@mail meddelanden kan inte ha 'subject' rader."
 
 #: src/conf.c:1000
 msgid " @mail messages have subject lines."
-msgstr " @mail meddelanden har ämnesrader."
+msgstr "@mail meddelanden har ämnesrader."
 
 #: conf.c:1044
 msgid " Attributes are 8-bit word compressed in memory."
@@ -194,7 +194,7 @@ msgstr " Attribut \344r Huffman-komprimerade i minnet."
 
 #: conf.c:1038
 msgid " Attributes are bigram compressed in memory."
-msgstr " Attribut är bigram komprimerade i minnet."
+msgstr "Attribut är bigram komprimerade i minnet."
 
 #: conf.c:1032
 msgid " Attributes are not compressed in memory."
@@ -206,31 +206,31 @@ msgstr " Attribut \344r ord-komprimerade i minnet."
 
 #: src/conf.c:1063
 msgid " Attributes can be deleted."
-msgstr " Attribut kan tas bort."
+msgstr "Attribut kan tas bort."
 
 #: src/conf.c:1065
 msgid " Attributes cannot be deleted."
-msgstr " Attribut kan inte raderas."
+msgstr "Attribut kan inte raderas."
 
 #: conf.c:1214
 msgid " BSD sockets networking in use."
-msgstr " BSD sockelnätverk används."
+msgstr "BSD sockelnätverk används."
 
 #: conf.c:1498
 msgid " CPU usage limiting is NOT supported."
-msgstr " Användbarhetsbegränsning av CPU stöds EJ."
+msgstr "Användbarhetsbegränsning av CPU stöds EJ."
 
 #: conf.c:1496
 msgid " CPU usage limiting is supported."
-msgstr " Användbarhetsbegränsning av CPU stöds."
+msgstr "Användbarhetsbegränsning av CPU stöds."
 
 #: src/conf.c:1044
 msgid " Creation/modification times for objects are enabled."
-msgstr " Skapande- och modifikationstider för objekt är tillgängliga."
+msgstr "Skapande- och modifikationstider för objekt är tillgängliga."
 
 #: src/conf.c:1046
 msgid " Creation/modification times for objects are not enabled."
-msgstr " Skapande- och modifikationstider för objekt är ej tillgängliga."
+msgstr "Skapande- och modifikationstider för objekt är ej tillgängliga."
 
 #: src/conf.c:980
 msgid " DNS and ident lookups are handled by a slave process."
@@ -242,35 +242,35 @@ msgstr " DNS och ident kontroller hanteras av MUSHprocessen."
 
 #: src/conf.c:1068
 msgid " Empty attributes are deleted."
-msgstr " Tomma attribut raderas."
+msgstr "Tomma attribut raderas."
 
 #: src/conf.c:1058
 msgid " Empty attributes are dumped."
-msgstr " Tomma attribut dumpas."
+msgstr "Tomma attribut dumpas."
 
 #: src/conf.c:1051
 msgid " Empty attributes are kept."
-msgstr " Tomma attribut behålls."
+msgstr "Tomma attribut behålls."
 
 #: src/conf.c:1060
 msgid " Empty attributes are not dumped."
-msgstr " Tomma attribut dumpas ej."
+msgstr "Tomma attribut dumpas ej."
 
 #: src/conf.c:1055
 msgid " Empty attributes are not visible."
-msgstr " Tomma attribut är inte synliga."
+msgstr "Tomma attribut är inte synliga."
 
 #: src/conf.c:1053
 msgid " Empty attributes are visible."
-msgstr " Tomma attribut är synliga."
+msgstr "Tomma attribut är synliga."
 
 #: src/conf.c:1105
 msgid " Extended ANSI functions are enabled."
-msgstr " Utökade ANSI funktioner är tillgängliga."
+msgstr "Utökade ANSI funktioner är tillgängliga."
 
 #: src/conf.c:1107
 msgid " Extended ANSI functions are not enabled."
-msgstr " Utökade ANSI funktioner är ej tillgängliga."
+msgstr "Utökade ANSI funktioner är ej tillgängliga."
 
 #: src/conf.c:1111
 msgid " Extended convtime() is supported."
@@ -278,27 +278,27 @@ msgstr " Ut\366kad convtime() st\366ds."
 
 #: flags.c:917
 msgid " Flags: "
-msgstr " Flaggor: "
+msgstr " Flaggor:"
 
 #: flags.c:706
 msgid " Flags:"
-msgstr " Flaggor:"
+msgstr "Flaggor:"
 
 #: src/conf.c:988
 msgid " Floating point functions are disabled."
-msgstr " Flyttalsfunktioner är ej tillgängliga."
+msgstr "Flyttalsfunktioner är ej tillgängliga."
 
 #: src/conf.c:986
 msgid " Floating point functions are enabled."
-msgstr " Flyttalsfunktioner är tillgängliga."
+msgstr "Flyttalsfunktioner är tillgängliga."
 
 #: src/conf.c:1072
 msgid " Garbage objects are not dumped to disk."
-msgstr " Skräp object dumpas inte till disk."
+msgstr "Skräp object dumpas inte till disk."
 
 #: src/conf.c:970
 msgid " Logging is to a single log file."
-msgstr " Logging sker till en logg-fil."
+msgstr "Logging sker till en logg-fil."
 
 #: src/conf.c:972
 msgid " Logging is to multiple log files."
@@ -306,31 +306,31 @@ msgstr " Loggning sker till flera logg-filer."
 
 #: src/conf.c:1002
 msgid " Messages without subject lines have subject (no subject)"
-msgstr " Meddelanden utan ämnes-rader har ämnet (inget ämne)"
+msgstr "Meddelanden utan ämnes-rader har ämnet (inget ämne)"
 
 #: src/conf.c:1005
 msgid " Messages without subject lines use the beginning of the message as subject"
-msgstr " Meddelanden utan ämnes-rader använder början på meddelandet som ämne"
+msgstr "Meddelanden utan ämnes-rader använder början på meddelandet som ämne"
 
 #: src/conf.c:954
 msgid " Passwords are convereted from plaintext to SHS"
-msgstr " Lösenord konverteras från klartext till SHS"
+msgstr "Lösenord konverteras från klartext till SHS"
 
 #: conf.c:1179
 msgid " Passwords are converted from plaintext to SHS"
-msgstr " Lösenord konverteras från klartext till SHS"
+msgstr "Lösenord konverteras från klartext till SHS"
 
 #: src/conf.c:951
 msgid " Passwords are converted from system crypt to SHS"
-msgstr " Lösenord är konverterade från system-crypt till SHS"
+msgstr "Lösenord är konverterade från system-crypt till SHS"
 
 #: src/conf.c:948
 msgid " Passwords are encrypted with SHS."
-msgstr " Lösenorden är krypterade med SHS."
+msgstr "Lösenorden är krypterade med SHS."
 
 #: src/conf.c:945
 msgid " Passwords are encrypted with the operating system's crypt function."
-msgstr " Lösenord är krypterade med operativsystemets crypt funktion."
+msgstr "Lösenord är krypterade med operativsystemets crypt funktion."
 
 #: src/conf.c:941
 msgid " Passwords are not stored encrypted."
@@ -338,84 +338,84 @@ msgstr " Lösenord sparas inte krypterade."
 
 #: src/conf.c:1021
 msgid " Quota restrictions are being enforced."
-msgstr " Kvot restriktioner följs."
+msgstr "Kvot restriktioner följs."
 
 #: src/conf.c:994
 msgid " Side effect functions are disabled."
-msgstr " Sidoeffektsfunktioner är ej tillgängliga."
+msgstr "Sidoeffektsfunktioner är ej tillgängliga."
 
 #: src/conf.c:992
 msgid " Side effect functions are enabled."
-msgstr " Sidoeffekts funktioner är tillgängliga."
+msgstr "Sidoeffekts funktioner är tillgängliga."
 
 #: src/conf.c:1078
 msgid " The FIXED flag is disabled."
-msgstr " FIXED flaggan är ej tillgänglig."
+msgstr "FIXED flaggan är ej tillgänglig."
 
 #: src/conf.c:1076
 msgid " The FIXED flag is enabled."
-msgstr " FIXED flaggan är tillgänglig."
+msgstr "FIXED flaggan är tillgänglig."
 
 #: src/conf.c:1040
 msgid " The MUSH building warning system is disabled."
-msgstr " MUSHets bygg-varnings system är ej tillgängligt."
+msgstr "MUSHets bygg-varnings system är ej tillgängligt."
 
 #: src/conf.c:1031
 msgid " The MUSH building warning system is enabled."
-msgstr " MUSHets bygg-varnings system är tillgängligt."
+msgstr "MUSHets bygg-varnings system är tillgängligt."
 
 #: conf.c:1594
 msgid " The MUSH was compiled with SSL support."
-msgstr " MUSHen kompilerades med stöd för SSL."
+msgstr "MUSHen kompilerades med stöd för SSL."
 
 #: src/conf.c:1088
 msgid " The UNINSPECTED flag is enabled."
-msgstr " UNINSPECTED flaggan är tillgänglig."
+msgstr "UNINSPECTED flaggan är tillgänglig."
 
 #: src/conf.c:1082
 msgid " The UNREGISTERED flag is enabled."
-msgstr " UNREGISTERED flaggan är tillgänglig."
+msgstr "UNREGISTERED flaggan är tillgänglig."
 
 #: src/conf.c:1085
 msgid " The VACATION flag is enabled."
-msgstr " VACATION flaggan är tillgänglig."
+msgstr "VACATION flaggan är tillgänglig."
 
 #: src/conf.c:1011
 msgid " The built-in MUSH mailing system is not being used."
-msgstr " Det inbyggda MUSH brev systemet används inte."
+msgstr "Det inbyggda MUSH brev systemet används inte."
 
 #: src/conf.c:1017
 msgid " The chat system is disabled."
-msgstr " Chat-systemet är ej tillgängligt."
+msgstr "Chat-systemet är ej tillgängligt."
 
 #: src/conf.c:998
 msgid " The extended built-in MUSH mailing system is being used."
-msgstr " Det utökade inbyggda MUSH brev systemet används."
+msgstr "Det utökade inbyggda MUSH brev systemet används."
 
 #: src/conf.c:1015
 msgid " The extended chat system is enabled."
-msgstr " Det utökade chat-systemet är tillgängligt."
+msgstr "Det utökade chat-systemet är tillgängligt."
 
 #: src/conf.c:1027
 msgid " The royalty flag is disabled."
-msgstr " Royalty-flaggan är ej tillgänglig."
+msgstr "Royalty-flaggan är ej tillgänglig."
 
 #: src/conf.c:1025
 msgid " The royalty flag is enabled."
-msgstr " Royalty-flaggan är tillgänglig."
+msgstr "Royalty-flaggan är tillgänglig."
 
 #: src/conf.c:1035
 #, c-format
 msgid " Warnings will be automatically given every %d minutes"
-msgstr " Varningar kommer att ges automatiskt varje %d minuter"
+msgstr "Varningar kommer att ges automatiskt varje %d minuter"
 
 #: src/conf.c:1038
 msgid " Warnings will not be automatically given."
-msgstr " Varningar kommer inte att ges automatiskt."
+msgstr "Varningar kommer inte att ges automatiskt."
 
 #: conf.c:1212
 msgid " Windows NT native TCP/IP networking functions in use."
-msgstr " Windows NT TCP/IP funktioner används."
+msgstr "Windows NT TCP/IP funktioner används."
 
 #: wiz.c:1605
 #, c-format
@@ -424,7 +424,7 @@ msgstr " [plats: %s]"
 
 #: speech.c:816
 msgid " and "
-msgstr " och "
+msgstr " och"
 
 #: src/conf.c:1113
 msgid " convtime() is stricter."
@@ -436,7 +436,7 @@ msgstr " beviljas."
 
 #: src/look.c:205
 msgid " is corrupt!"
-msgstr " är korrupt!"
+msgstr "är korrupt!"
 
 #: src/look.c:688 src/look.c:770
 msgid " is owned by "
@@ -444,19 +444,19 @@ msgstr " \344gs av "
 
 #: src/look.c:201
 msgid " leads home."
-msgstr " leder hem."
+msgstr "leder hem."
 
 #: src/look.c:199
 msgid " leads nowhere."
-msgstr " leder ingenstans."
+msgstr "leder ingenstans."
 
 #: src/look.c:207
 msgid " leads to "
-msgstr " leder till "
+msgstr "leder till"
 
 #: src/look.c:203
 msgid " leads to a variable location."
-msgstr " leder till en varierande plats."
+msgstr "leder till en varierande plats."
 
 #: speech.c:1021
 msgid " pages"
@@ -472,11 +472,11 @@ msgstr " satt."
 
 #: src/speech.c:475
 msgid " whispers to "
-msgstr " viskar till "
+msgstr "viskar till"
 
 #: speech.c:975
 msgid " with "
-msgstr " med "
+msgstr "med"
 
 # SOME DESCRIPTIVE TITLE.\nCopyright (C) YEAR Free Software Foundation, Inc.\nFIRST AUTHOR <EMAIL@ADDRESS>, YEAR.\n
 #, fuzzy
@@ -1275,7 +1275,7 @@ msgstr "%s slutar f\366lja efter dig."
 #: src/wiz.c:1576
 #, c-format
 msgid "%s to "
-msgstr "%s till "
+msgstr "%s till"
 
 #: src/rob.c:288
 #, c-format
@@ -3363,7 +3363,7 @@ msgstr "Funktion updaterad."
 
 #: extmail.c:2479
 msgid "Fwd "
-msgstr "Fwd "
+msgstr "Fwd"
 
 #: src/destroy.c:1325
 msgid "GAME: Database consistency check complete."
@@ -4096,7 +4096,7 @@ msgstr "Logg rensad."
 
 #: src/speech.c:981
 msgid "Long distance to "
-msgstr "Långdistans till "
+msgstr "Långdistans till"
 
 #: speech.c:835
 #, c-format
@@ -7050,7 +7050,7 @@ msgstr "Du \344ger ett objekt utan @lock/zone som anv\344nds som zon: %s"
 
 #: src/speech.c:991
 msgid "You paged "
-msgstr "Du kallade "
+msgstr "Du kallade"
 
 #: src/rob.c:263
 #, c-format
@@ -7078,7 +7078,7 @@ msgstr "Du ser inget s\344rskilt."
 
 #: src/speech.c:464
 msgid "You sense: "
-msgstr "Du känner: "
+msgstr "Du känner:"
 
 #: extmail.c:2685
 #, c-format
@@ -7668,5 +7668,5 @@ msgstr "föremål saknar beskrivning"
 
 #: src/match.c:529
 msgid "this here "
-msgstr "det här "
+msgstr "det här"
 

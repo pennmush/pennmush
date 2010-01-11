@@ -1,16 +1,16 @@
 #: src/wiz.c:2259
 #, c-format
 msgid "          (Includes table items, and table of words pointers of %ld bytes)"
-msgstr "          (schließt Tabelle Einzelteile und Tabelle der Wortzeiger der %ld Bytes mit ein)"
+msgstr "(schließt Tabelle Einzelteile und Tabelle der Wortzeiger der %ld Bytes mit ein)"
 
 #: src/game.c:1447
 #, c-format
 msgid "        Time until next purge: %ld minutes %ld seconds."
-msgstr "        Zeit bis zum nächsten Löschvorgang: %ld Minuten, %ld Sekunden."
+msgstr "Zeit bis zum nächsten Löschvorgang: %ld Minuten, %ld Sekunden."
 
 #: src/malias.c:565
 msgid "      to set, add, remove permissions, respectively."
-msgstr "      um Rechte zu setzen, hinzuzufügen oder zu löschen."
+msgstr "um Rechte zu setzen, hinzuzufügen oder zu löschen."
 
 #: game.c:1899
 msgid "     Time now: %a %b %d %X %Z %Y"
@@ -19,121 +19,123 @@ msgstr "     Aktuelle Zeit: %a %b %d %X %Z %Y"
 #: game.c:1437
 #, c-format
 msgid "     Up since: %s"
-msgstr "     Läuft seit: %s"
+msgstr "Läuft seit: %s"
 
 #: filecopy.c:110
 #, c-format
 msgid "    ** Unable to open file: %s"
-msgstr "    ** Kann Datei %s nicht öffnen"
+msgstr "** Kann Datei %s nicht öffnen"
 
 #: src/filecopy.c:112
 #, c-format
 msgid "    ** Unable to open file: %s\n"
-msgstr "    ** Datei %s kann nicht geöffnet werden \n"
+msgstr "** Datei %s kann nicht geöffnet werden \n"
 
 #: filecopy.c:101
 msgid "    Copying file"
-msgstr "    Datei wird kopiert"
+msgstr "Datei wird kopiert"
 
 #: src/filecopy.c:100
 #, c-format
 msgid "    Copying file: %s, %ld byte%s\n"
-msgstr "    Kopiere Datei: %s, %ld Bytes%s\n"
+msgstr "Kopiere Datei: %s, %ld Bytes%s\n"
 
 #: src/game.c:1452
 #, c-format
 msgid "    Time until next @warnings: %ld minutes %ld seconds."
-msgstr "    Zeit bis zum nächsten @warnings: %ld Minuten %ld Sekunden."
+msgstr "Zeit bis zum nächsten @warnings: %ld Minuten %ld Sekunden."
 
 #: src/game.c:1432
 #, c-format
 msgid "   Time now: %s"
-msgstr "   aktuelle Zeit: %s"
+msgstr "aktuelle Zeit: %s"
 
 #: src/game.c:1443
 #, c-format
 msgid "   Time until next dbck check: %ld minutes %ld seconds."
-msgstr "   Zeit bis zum nächsten dbck -Check: %ld Minuten %ld Sekunden."
+msgstr "Zeit bis zum nächsten dbck -Check: %ld Minuten %ld Sekunden."
 
 #: src/game.c:1422
 #, c-format
 msgid "   Up since: %s"
-msgstr "   Läuft seit: %s"
+msgstr "Läuft seit: %s"
 
 #: db.c:1205
 msgid "  (expecting ], >, or < as first character of the line.)"
-msgstr "  (erwarte ], > oder < als erstes Zeichen der Zeile.)"
+msgstr "(erwarte ], > oder < als erstes Zeichen der Zeile.)"
 
 #: src/db.c:1309
 msgid "  (expecting ], >, or < as first character of the line.)\n"
-msgstr "  (erwarte ], > oder < als erstes Zeichen der Zeile.)\n"
+msgstr "(erwarte ], > oder < als erstes Zeichen der Zeile.)\n"
 
 #: db.c:1207
 #, c-format
 msgid "  Last attribute read was: %s"
-msgstr "  Letztes gelesene Attribut: %s"
+msgstr "Letztes gelesene Attribut: %s"
 
 #: src/db.c:1311
 #, c-format
 msgid "  Last attribute read was: %s\n"
-msgstr "  Letztes gelesene Attribut: %s\n"
+msgstr "Letztes gelesene Attribut: %s\n"
 
 #: game.c:1893
 msgid "  Last reboot: %a %b %d %X %Z %Y"
-msgstr "  Letzter Neustart: %a %b %d %X %Z %Y"
+msgstr " Letzter Neustart: %a %b %d %X %Z %Y"
 
 #: game.c:1442
 #, c-format
 msgid "  Last reboot: %s"
-msgstr "  Letzter Reboot: %s"
+msgstr "Letzter Reboot: %s"
 
 #: db.c:1209
 msgid "  No attributes had been read yet."
-msgstr "  Es wurden noch keine Attribute gelesen."
+msgstr "Es wurden noch keine Attribute gelesen."
 
 #: src/db.c:1313
 msgid "  No attributes had been read yet.\n"
-msgstr "  Es wurden noch keine Attribute gelesen.\n"
+msgstr "Es wurden noch keine Attribute gelesen.\n"
 
 #: src/services.c:803
 #, c-format
 msgid " %s           - runs as a service, or stand-alone\n"
-msgstr " %s - läuft eigenständig od. als Service\n"
+msgstr "%s - läuft eigenständig od. als Service\n"
 
 #: src/services.c:813
 #, c-format
 msgid " %s /help     - displays this information\n"
-msgstr " %s /help         - zeigt diese Information an\n"
+msgstr "%s /help         - zeigt diese Information an\n"
 
 #: src/services.c:808
 #, c-format
 msgid " %s /install  - installs this service\n"
-msgstr " %s /install       - installiert diesen Service\n"
+msgstr ""
+"%s /install       - installiert diesen Service\n"
+"   \n"
 
 #: src/services.c:809
 #, c-format
 msgid " %s /remove   - removes (un-installs) this service\n"
-msgstr " %s /remove    - entfernt (de-installiert) diesen Service\n"
+msgstr "%s /remove    - entfernt (de-installiert) diesen Service\n"
 
 #: src/services.c:805
 #, c-format
 msgid " %s /run      - runs stand-alone\n"
-msgstr " %s /run               -   als eigenes Programm aufrufen\n"
+msgstr "%s /run               -   als eigenes Programm aufrufen\n"
 
 #: src/services.c:806
 #, c-format
 msgid " %s /start    - starts this service\n"
-msgstr " %s /start            - startet diesen Service\n"
+msgstr "%s /start            - startet diesen Service\n"
 
 #: src/services.c:811
 #, c-format
 msgid " %s /status   - displays the status of this service\n"
-msgstr " %s /status         - zeigt den Status dieses Services an\n"
+msgstr "%s /status         - zeigt den Status dieses Services an\n"
 
 #: src/services.c:807
 #, c-format
 msgid " %s /stop     - stops this service\n"
-msgstr " %s /stop             - hält diesen Service an\n"
+msgstr "%s /stop             - hält diesen Service an\n"
 
 #: flags.c:2391
 msgid " (disabled)"
@@ -146,46 +148,46 @@ msgstr " (zu "
 #: src/db.c:567
 #, c-format
 msgid " * Bad attribute name on #%d. Changing name to %s.\n"
-msgstr " * Ungültiger Attributname in #%d. Attributname wird auf %s gesetzt.\n"
+msgstr "* Ungültiger Attributname in #%d. Attributname wird auf %s gesetzt.\n"
 
 #: src/db.c:574
 #, c-format
 msgid " * Bad owner on attribute %s on #%d.\n"
-msgstr " * Ungültiger Eigentümer auf Attribut %s auf #%d.\n"
+msgstr "* Ungültiger Eigentümer auf Attribut %s auf #%d.\n"
 
 #: src/db.c:608
 #, c-format
 msgid " * Bad text in attribute %s on #%d. Changed to:\n"
-msgstr " * Ungültiger Text in Attribut %s auf #%d. Gesetzt auf:\n"
+msgstr "* Ungültiger Text in Attribut %s auf #%d. Gesetzt auf:\n"
 
 #: db.c:1285 db.c:1293
 #, c-format
 msgid " * Name of #%d is longer than the maximum, truncating.\n"
-msgstr " * Name von #%d ist länger als erlaubt und wird am Ende abgeschnitten.\n"
+msgstr "* Name von #%d ist länger als erlaubt und wird am Ende abgeschnitten.\n"
 
 #: src/conf.c:1098
 msgid " @lock/drop is available."
-msgstr " @lock/drop ist verfügbar."
+msgstr "@lock/drop ist verfügbar."
 
 #: src/conf.c:1101
 msgid " @lock/give is available."
-msgstr " @lock/give ist verfügbar."
+msgstr "@lock/give ist verfügbar."
 
 #: src/conf.c:1095
 msgid " @lock/leave is available."
-msgstr " @lock/leave ist verfügbar."
+msgstr "@lock/leave ist verfügbar."
 
 #: src/conf.c:1092
 msgid " @lock/speech is available."
-msgstr " @lock/speech ist verfügbar."
+msgstr "@lock/speech ist verfügbar."
 
 #: src/conf.c:1008
 msgid " @mail messages do not have subject lines."
-msgstr " @mail Nachrichten benötigen keine Betreff-Zeilen."
+msgstr "@mail Nachrichten benötigen keine Betreff-Zeilen."
 
 #: src/conf.c:1000
 msgid " @mail messages have subject lines."
-msgstr " @mail Nachrichten benötgen Betreff-Zeilen."
+msgstr "@mail Nachrichten benötgen Betreff-Zeilen."
 
 #: parse.c:1332
 msgid " AND "
@@ -193,148 +195,148 @@ msgstr " UND "
 
 #: conf.c:1044
 msgid " Attributes are 8-bit word compressed in memory."
-msgstr " Attribute werden im Arbeitsspeicher 8-Bit-Wort-komprimiert."
+msgstr "Attribute werden im Arbeitsspeicher 8-Bit-Wort-komprimiert."
 
 #: conf.c:1035
 msgid " Attributes are Huffman compressed in memory."
-msgstr " Attribute werden im Arbeitsspeicher nach Huffman komprimiert."
+msgstr "Attribute werden im Arbeitsspeicher nach Huffman komprimiert."
 
 #: conf.c:1038
 msgid " Attributes are bigram compressed in memory."
-msgstr " Attribute werden im Arbeitsspeicher bigram komprimiert."
+msgstr "Attribute werden im Arbeitsspeicher bigram komprimiert."
 
 #: conf.c:1032
 msgid " Attributes are not compressed in memory."
-msgstr " Attribute werden im Speicher nicht komprimiert."
+msgstr "Attribute werden im Speicher nicht komprimiert."
 
 #: conf.c:1041
 msgid " Attributes are word compressed in memory."
-msgstr " Attribute werden im Arbeitsspeicher word komprimiert."
+msgstr "Attribute werden im Arbeitsspeicher word komprimiert."
 
 #: src/conf.c:1063
 msgid " Attributes can be deleted."
-msgstr " Attribute können gelöscht werden."
+msgstr "Attribute können gelöscht werden."
 
 #: src/conf.c:1065
 msgid " Attributes cannot be deleted."
-msgstr " Attribute können nicht gelöscht werden."
+msgstr "Attribute können nicht gelöscht werden."
 
 #: conf.c:1214
 msgid " BSD sockets networking in use."
-msgstr " BSD-Socket-Networking wird benutzt."
+msgstr "BSD-Socket-Networking wird benutzt."
 
 #: src/conf.c:1044
 msgid " Creation/modification times for objects are enabled."
-msgstr " Erstell- / Modifikationszeit für Objekte ist eingeschaltet."
+msgstr "Erstell- / Modifikationszeit für Objekte ist eingeschaltet."
 
 #: src/conf.c:1046
 msgid " Creation/modification times for objects are not enabled."
-msgstr " Erstell- / Modifikationszeit für Objekte ist nicht eingeschaltet."
+msgstr "Erstell- / Modifikationszeit für Objekte ist nicht eingeschaltet."
 
 #: src/conf.c:1068
 msgid " Empty attributes are deleted."
-msgstr " Leere Attribute werden gelöscht."
+msgstr "Leere Attribute werden gelöscht."
 
 #: src/conf.c:1051
 msgid " Empty attributes are kept."
-msgstr " Leere Attribute werden behalten."
+msgstr "Leere Attribute werden behalten."
 
 #: src/conf.c:1055
 msgid " Empty attributes are not visible."
-msgstr " Leere Attribute sind nicht sichtbar."
+msgstr "Leere Attribute sind nicht sichtbar."
 
 #: src/conf.c:1053
 msgid " Empty attributes are visible."
-msgstr " Leere Attribute sind sichtbar."
+msgstr "Leere Attribute sind sichtbar."
 
 #: src/conf.c:1105
 msgid " Extended ANSI functions are enabled."
-msgstr " Erweiterte ANSI Funktionen sind eingeschaltet."
+msgstr "Erweiterte ANSI Funktionen sind eingeschaltet."
 
 #: src/conf.c:1107
 msgid " Extended ANSI functions are not enabled."
-msgstr " Erweiterte ANSI Funktionen sind nicht eingeschaltet."
+msgstr "Erweiterte ANSI Funktionen sind nicht eingeschaltet."
 
 #: flags.c:706
 msgid " Flags:"
-msgstr " Flags:"
+msgstr "Flags:"
 
 #: src/conf.c:1002
 msgid " Messages without subject lines have subject (no subject)"
-msgstr " Nachrichten ohne Betreff Zeile benutzen als Standard (kein Betreff)"
+msgstr "Nachrichten ohne Betreff Zeile benutzen als Standard (kein Betreff)"
 
 #: src/conf.c:1005
 msgid " Messages without subject lines use the beginning of the message as subject"
-msgstr " Nachrichten ohne Betreff Zeile benutzen den Anfang der Nachricht als Betreff"
+msgstr "Nachrichten ohne Betreff Zeile benutzen den Anfang der Nachricht als Betreff"
 
 #: src/conf.c:954
 msgid " Passwords are convereted from plaintext to SHS"
-msgstr " Passwörter werden von Klartext zu SHS konvertiert."
+msgstr "Passwörter werden von Klartext zu SHS konvertiert."
 
 #: conf.c:1179
 msgid " Passwords are converted from plaintext to SHS"
-msgstr " Passwörter werden von Klartext zu SHS konvertiert."
+msgstr "Passwörter werden von Klartext zu SHS konvertiert."
 
 #: src/conf.c:951
 msgid " Passwords are converted from system crypt to SHS"
-msgstr " #-1 KANN NUR EIN ELEMENT TESTEN"
+msgstr "#-1 KANN NUR EIN ELEMENT TESTEN"
 
 #: src/conf.c:948
 msgid " Passwords are encrypted with SHS."
-msgstr " Passwörter werden mit SHS verschlüsselt."
+msgstr "Passwörter werden mit SHS verschlüsselt."
 
 #: src/conf.c:941
 msgid " Passwords are not stored encrypted."
-msgstr " Passwörter werden nicht verschlüsselt gespeichert."
+msgstr "Passwörter werden nicht verschlüsselt gespeichert."
 
 #: src/conf.c:1021
 msgid " Quota restrictions are being enforced."
-msgstr " Quota-Restriktionen werden durchgeführt."
+msgstr "Quota-Restriktionen werden durchgeführt."
 
 #: src/conf.c:1078
 msgid " The FIXED flag is disabled."
-msgstr " Das FIXED Flag ist ausgeschaltet."
+msgstr "Das FIXED Flag ist ausgeschaltet."
 
 #: src/conf.c:1040
 msgid " The MUSH building warning system is disabled."
-msgstr " @@ Keine Attribute gefunden. @@"
+msgstr "@@ Keine Attribute gefunden. @@"
 
 #: conf.c:1690
 msgid " The MUSH was compiled with Sqlite3 support."
-msgstr " Das MUSH wurde mit Sqlite3-Unterstützung kompiliert."
+msgstr "Das MUSH wurde mit Sqlite3-Unterstützung kompiliert."
 
 #: src/conf.c:1085
 msgid " The VACATION flag is enabled."
-msgstr " Die URLAUB-Flagge ist aktivier."
+msgstr "Die URLAUB-Flagge ist aktivier."
 
 #: src/conf.c:1011
 msgid " The built-in MUSH mailing system is not being used."
-msgstr " Das eingebaute MUSH Mailsystem wird nicht benutzt."
+msgstr "Das eingebaute MUSH Mailsystem wird nicht benutzt."
 
 #: src/conf.c:1017
 msgid " The chat system is disabled."
-msgstr " Das Chat-System ist abgeschaltet."
+msgstr "Das Chat-System ist abgeschaltet."
 
 #: src/conf.c:1015
 msgid " The extended chat system is enabled."
-msgstr " Das erweiterte Chatsystem ist aktiviert."
+msgstr "Das erweiterte Chatsystem ist aktiviert."
 
 #: src/conf.c:1025
 msgid " The royalty flag is enabled."
-msgstr " Das ROYALTY Flag ist verfügbar."
+msgstr "Das ROYALTY Flag ist verfügbar."
 
 #: src/conf.c:1035
 #, c-format
 msgid " Warnings will be automatically given every %d minutes"
-msgstr " Warnungen werden alle %d Minuten ausgegeben"
+msgstr "Warnungen werden alle %d Minuten ausgegeben"
 
 #: src/conf.c:1038
 msgid " Warnings will not be automatically given."
-msgstr " Warnungen werden nicht automatisch ausgegeben."
+msgstr "Warnungen werden nicht automatisch ausgegeben."
 
 #: src/conf.c:1113
 msgid " convtime() is stricter."
-msgstr " Titel %s für Kanal <%s>."
+msgstr "Titel %s für Kanal <%s>."
 
 #: flags.c:1531
 msgid " granted."
@@ -342,35 +344,35 @@ msgstr " erteilt."
 
 #: src/look.c:205
 msgid " is corrupt!"
-msgstr " is defekt!"
+msgstr "is defekt!"
 
 #: src/look.c:688 src/look.c:770
 msgid " is owned by "
-msgstr " gehört "
+msgstr "gehört"
 
 #: src/look.c:201
 msgid " leads home."
-msgstr " führt nach Hause."
+msgstr "führt nach Hause."
 
 #: src/look.c:199
 msgid " leads nowhere."
-msgstr " fuehrt nirgendswo hin."
+msgstr "fuehrt nirgendswo hin."
 
 #: src/look.c:207
 msgid " leads to "
-msgstr " führt nach "
+msgstr " führt nach"
 
 #: speech.c:1021
 msgid " pages"
-msgstr " teilt dir mit:"
+msgstr "teilt dir mit:"
 
 #: src/speech.c:475
 msgid " whispers to "
-msgstr " flüstert zu: "
+msgstr "flüstert zu:"
 
 #: speech.c:975
 msgid " with "
-msgstr " mit "
+msgstr "mit"
 
 #: src/fundb.c:784 src/fundb.c:1001
 msgid "#-1 ARG1 NOT FOUND"
@@ -598,7 +600,7 @@ msgstr "#-1 ZUGRIFF VERWEIGERT."
 
 #: src/funlist.c:2256 src/funlist.c:2335 src/funlist.c:2378 src/funlist.c:2437\nsrc/funlist.c:2478
 msgid "#-1 REGEXP ERROR: "
-msgstr "#-1 REGEXP FEHLER: "
+msgstr "#-1 REGEXP FEHLER:"
 
 #: src/funmath.c:1005
 msgid "#-1 SQUARE ROOT OF NEGATIVE"
@@ -1026,7 +1028,7 @@ msgstr "----------  Suche abgeschlossen  ----------"
 
 #: src/cque.c:807
 msgid "------------  Queue Done  ------------"
-msgstr "------------  Warteschleife beendet ------------"
+msgstr "------------  Warteschleife beendet ------------  "
 
 #: extmail.c:532
 #, c-format
@@ -1447,7 +1449,7 @@ msgstr "Checkpoint-Log gelöscht."
 
 #: extmail.c:2473
 msgid "Cleared "
-msgstr "Gelöscht "
+msgstr "Gelöscht"
 
 #: attrib.c:942
 msgid "Cleared"
@@ -1790,7 +1792,7 @@ msgstr "Zerstörter Ausgang #%d in Raum #%d gefunden"
 
 #: src/speech.c:1010
 msgid "From afar"
-msgstr "Von weitem"
+msgstr "Von weitem "
 
 #: src/bsd.c:4281
 #, c-format
@@ -2114,7 +2116,7 @@ msgstr "Eingabedatenbank überprüft. Analysiere."
 #: src/log.c:320
 #, c-format
 msgid "Invalid attempt to wipe the %s log, password %s"
-msgstr "Ungültiger Versuch das %s Log zu leeren, Passwort %s"
+msgstr "Ungültiger Versuch das %s Log zu leeren, Passwort %s "
 
 #: src/speech.c:1407
 msgid "Invalid container object."
@@ -2235,7 +2237,7 @@ msgstr "Logging-Optionen"
 
 #: src/speech.c:981
 msgid "Long distance to "
-msgstr "%s ist korrupt! "
+msgstr "%s ist korrupt!"
 
 #: src/extmail.c:763
 #, c-format
@@ -2490,7 +2492,7 @@ msgstr "Malloc Packet: %d"
 
 #: extmail.c:2477
 msgid "Mass "
-msgstr "Masse "
+msgstr "Masse"
 
 #: src/game.c:1253
 #, c-format
@@ -2834,7 +2836,7 @@ msgstr "Reihe fuer : %s"
 
 #: extmail.c:2469
 msgid "Read "
-msgstr "Lesen "
+msgstr "Lesen"
 
 #: bsd.c:275
 msgid "Registration successful! You will receive your password by email."
@@ -3329,7 +3331,7 @@ msgstr "Versuche zu verbinden ..."
 
 #: flags.c:688
 msgid "Type: "
-msgstr "Typ: "
+msgstr "Typ:"
 
 #: filecopy.c:208
 #, c-format
@@ -3441,7 +3443,7 @@ msgstr "Es sind keine Spieler angemeldet."
 
 #: extmail.c:2471
 msgid "Unread "
-msgstr "Nicht gelesen. "
+msgstr "Nicht gelesen."
 
 #: src/set.c:498
 msgid "Unrecognized attribute flag."
@@ -3453,7 +3455,7 @@ msgstr "Unbekanntes Datenbankformat!"
 
 #: extmail.c:2475
 msgid "Urgent "
-msgstr "Wichtig "
+msgstr "Wichtig"
 
 #: src/function.c:644
 msgid "User functions:"
@@ -4111,7 +4113,7 @@ msgstr "Du siehst eigentlich nix Besonderes."
 
 #: src/speech.c:464
 msgid "You sense: "
-msgstr "Du nimmst wahr: "
+msgstr "Du nimmst wahr:"
 
 #: extmail.c:2685
 #, c-format
@@ -4386,7 +4388,7 @@ msgstr "Raum hat keine Beschreibung."
 
 #: speech.c:710
 msgid "says,"
-msgstr "sagt,"
+msgstr "sagt, "
 
 #: speech.c:712
 msgid "shouts,"
@@ -4399,5 +4401,5 @@ msgstr "nimmt %s."
 
 #: src/match.c:529
 msgid "this here "
-msgstr "dieses hier "
+msgstr "dieses hier"
 

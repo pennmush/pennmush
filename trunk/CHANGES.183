@@ -28,6 +28,9 @@ Minor Changes:
    to noguest. [GM]
  * Helpfile cleanup. [MG]
  * Expand the @lock key optimizer. Try '@lock me=!!=me'.
+ * When objects are destroyed, references to them in locks
+   are replaced by #FALSE, so that a newly created object reusing
+   some dbref won't pass locks it shouldn't.
  * /'s can now be included in the subject of a @mail 
    message via doubling it up -- @mail foo=a//s//l/What's up? 
    Suggested by paige.

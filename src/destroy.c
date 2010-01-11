@@ -326,6 +326,7 @@ do_destroy(dbref player, char *name, int confirm)
    */
   if (Going(thing)) {
     free_object(thing);
+    purge_locks();
     notify(player, T("Destroyed."));
     return;
   }
@@ -979,6 +980,7 @@ purge(void)
       continue;
     }
   }
+  purge_locks();
 }
 
 

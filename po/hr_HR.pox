@@ -659,6 +659,10 @@ msgstr "#-1 NEISPRAVAN TEKST"
 msgid "#-1 INVALID ESCAPE CODE '$%c'"
 msgstr "#-1 NEISPRAVNA ESCAPE SIFRA '$%c'"
 
+#: fundb.c:1143 fundb.c:1155 fundb.c:1173 fundb.c:1191
+msgid "#-1 INVALID FLAG"
+msgstr "#-1 NEISPRAVAN FLAG"
+
 #: src/fundb.c:1618 src/funlist.c:2324 src/funlist.c:2367
 msgid "#-1 INVALID GREP PATTERN"
 msgstr "#-1 NEISPRAVAN UZORAK ZA GREP"
@@ -682,6 +686,10 @@ msgstr "#-1 NEISPRAVNI OBJEKT"
 #: cque.c:1091
 msgid "#-1 INVALID PID"
 msgstr "#-1 NEISPRAVAN PID"
+
+#: fundb.c:1171 fundb.c:1189
+msgid "#-1 INVALID POWER"
+msgstr "#-1 NEISPRAVNA MOC"
 
 #: src/fundb.c:663 src/fundb.c:690
 msgid "#-1 INVALID SECOND ARGUMENT"
@@ -1396,6 +1404,11 @@ msgstr "%s nije na kanalu <%s>."
 #, c-format
 msgid "%s is now listening."
 msgstr "%s sada slusa."
+
+#: move.c:517
+#, c-format
+msgid "%s is now the first exit in %s."
+msgstr "%s je sada prvi izlaz u sobi %s."
 
 #: src/move.c:456
 #, c-format

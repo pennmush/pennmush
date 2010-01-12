@@ -1702,12 +1702,16 @@ FUNCTION(fun_wrap)
 
 #undef initint
 
+// Alignment types.
 #define AL_LEFT 1    /**< Align left */
 #define AL_RIGHT 2   /**< Align right */
 #define AL_CENTER 3  /**< Align center */
-#define AL_REPEAT 4  /**< Repeat column */
-#define AL_COALESCE_LEFT 8  /**< Coalesce empty column with column to left */
-#define AL_COALESCE_RIGHT 16  /**< Coalesce empty column with column to right */
+#define AL_FULL 4  /**< Fully-justify */
+#define AL_WPFULL 5  /**< Fully-justify */
+/* Flags */
+#define AL_REPEAT 0x100  /**< Repeat column */
+#define AL_COALESCE_LEFT 0x200  /**< Coalesce empty column with column to left */
+#define AL_COALESCE_RIGHT 0x400  /**< Coalesce empty column with column to right */
 
 static int
 align_one_line(char *buff, char **bp, int ncols,
@@ -1722,7 +1726,9 @@ align_one_line(char *buff, char **bp, int ncols,
   char *ptr, *tptr;
   char *lp;
   char *lastspace;
-  int i, j;
+  int i, j, k;
+  int spacesneeded, numspaces, spacecount;
+  int iswpfull;
   int len;
   int cols_done;
   int skipspace;
@@ -1753,12 +1759,12 @@ align_one_line(char *buff, char **bp, int ncols,
     if (!ptrs[i] || !*ptrs[i]) {
       if (calign[i] & AL_REPEAT) {
         ptrs[i] = as[i]->text;
+      } else if (calign[i] & AL_COALESCE_RIGHT) {
         /* To coalesce right on this line,
          * modify the current column's width to 0, modify the right
          * column's width, and continue on to processing the next
          * column
          */
-      } else if (calign[i] & AL_COALESCE_RIGHT) {
         for (j = i + 1; j < ncols; j++) {
           if (cols[j] > 0) {
             cols[j] += cols[i] + fslen;
@@ -1817,17 +1823,55 @@ align_one_line(char *buff, char **bp, int ncols,
     }
     *sp = '\0';
 
-    if ((calign[i] & 3) == AL_LEFT) {
+    switch (calign[i] & 0xF) {
+    case AL_FULL:
+    case AL_WPFULL:
+      // This is stupid: If it's full justify and not a hard break, then
+      // we stretch spaces. If it is a hard break, then we fall through
+      // to left-align.
+      iswpfull = (calign[i] & 0xF) == AL_WPFULL;
+      // For a word processor full justify, # of spaces needed needs to be
+      // less than half of the lenth.
+      spacesneeded = cols[i] - len;
+      numspaces = 0;
+      if (!iswpfull || (cols[i]/spacesneeded) >= 2) {
+        for (j = 0; segment[j]; j++) {
+          if (isspace(segment[j])) {
+            numspaces++;
+          }
+        }
+        spacecount = 0;
+        for (j = 0; segment[j]; j++) {
+          // Copy the char over.
+          safe_chr(segment[j], line, &lp);
+          // If it's a space, expand it.
+          if (isspace(segment[j])) {
+            k = (spacesneeded / numspaces);
+            if (spacecount < (spacesneeded % numspaces)) {
+              k++;
+              spacecount++;
+            }
+            for (; k > 0; k--) {
+              safe_chr(segment[j], line, &lp);
+            }
+          }
+        }
+        break;
+      }
+    default: // Left-align
       safe_str(segment, line, &lp);
       lp += cols[i] - len;
-    } else if ((calign[i] & 3) == AL_RIGHT) {
+      break;
+    case AL_RIGHT:
       lp += cols[i] - len;
       safe_str(segment, line, &lp);
-    } else if ((calign[i] & 3) == AL_CENTER) {
+      break;
+    case AL_CENTER:
       j = cols[i] - len;
       lp += j >> 1;
       safe_str(segment, line, &lp);
       lp += (j >> 1) + (j & 1);
+      break;
     }
     if ((lp - line) > BUFFER_LEN)
       lp = (line + BUFFER_LEN - 1);
@@ -1884,6 +1928,12 @@ FUNCTION(fun_align)
       ptr++;
     } else if (*ptr == '<') {
       calign[ncols] = AL_LEFT;
+      ptr++;
+    } else if (*ptr == '_') {
+      calign[ncols] = AL_FULL;
+      ptr++;
+    } else if (*ptr == '=') {
+      calign[ncols] = AL_WPFULL;
       ptr++;
     } else if (isdigit((unsigned char) *ptr)) {
       calign[ncols] = AL_LEFT;

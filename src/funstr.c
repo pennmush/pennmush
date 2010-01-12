@@ -1834,12 +1834,12 @@ align_one_line(char *buff, char **bp, int ncols,
       // less than half of the lenth.
       spacesneeded = cols[i] - len;
       numspaces = 0;
-      if (!iswpfull || (cols[i]/spacesneeded) >= 2) {
-        for (j = 0; segment[j]; j++) {
-          if (isspace(segment[j])) {
-            numspaces++;
-          }
+      for (j = 0; segment[j]; j++) {
+        if (isspace(segment[j])) {
+          numspaces++;
         }
+      }
+      if ((!iswpfull || (cols[i]/spacesneeded) >= 2) && numspaces > 0) {
         spacecount = 0;
         for (j = 0; segment[j]; j++) {
           // Copy the char over.

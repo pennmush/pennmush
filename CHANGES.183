@@ -24,6 +24,7 @@ Major Changes:
    some work and testing by a public place with many clients.) [GM]
 
 Minor Changes:
+ * align() can now do full justification. Suggested by Trinsec@M*U*S*H [GM]
  * Guests will no longer see "Guests can't do that" if @mail is restricted
    to noguest. [GM]
  * Helpfile cleanup. [MG]

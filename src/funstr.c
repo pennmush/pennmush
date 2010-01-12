@@ -1792,6 +1792,10 @@ align_one_line(char *buff, char **bp, int ncols,
         lastspace = ptr;
       }
     }
+    // Fixes align(3,123 1 1 1 1)
+    if (isspace(*ptr)) {
+      lastspace = ptr;
+    }
     skipspace = 0;
     sp = segment;
     if (!*ptr) {
@@ -1839,7 +1843,9 @@ align_one_line(char *buff, char **bp, int ncols,
           numspaces++;
         }
       }
-      if ((!iswpfull || (cols[i]/spacesneeded) >= 2) && numspaces > 0) {
+      if (spacesneeded > 0 &&
+          (!iswpfull || (cols[i]/spacesneeded) >= 2) &&
+          numspaces > 0) {
         spacecount = 0;
         for (j = 0; segment[j]; j++) {
           // Copy the char over.

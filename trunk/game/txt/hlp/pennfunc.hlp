@@ -378,15 +378,19 @@ See also: before(), rest()
 
   <widths> is a space-separated list of column widths. '10 10 10' for
   the widths argument specifies that there are 3 columns, each 10
-  spaces wide.  < before a number causes the field to be left-aligned
-  (the default). A '-' causes it to be centered, and '>' makes it
-  right-aligned.  A '.' after the number implies the column is to be
-  repeated for as long as there is text remaining in a non-repeating
-  column. A ` (left tick) after the number implies that if the column
-  runs out of text, it should merge with the next leftmost column
-  (making that column flow around).  A ' (right tick) after the number
-  implies that if the column runs out of text, it should merge with
-  the next rightmost column.
+  spaces wide. You can alter the behavior of a column in two ways:
+
+  Justification: Placing one of these characters before the width alters
+  the spacing for this column. (e.g: <30)
+    < Left-justify       - Center-justify        > Right-justify
+    _ Full-justify.      = Paragraph-justify.
+ 
+  Runout: Placing one of these characters after the width alters what
+  happens when the column runs out of text before the other columns.
+  (e.g: 30`)
+    . Repeat
+    ` Merge with the column on the left.
+    ' Merge with the column on the right.
 
   <filler> is a single character that, if given, is the character used
   to fill empty columns and remaining spaces. <colsep>, if given, is

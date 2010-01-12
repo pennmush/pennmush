@@ -1930,6 +1930,11 @@ msgstr "File za zakljucavanje pristupa %s nije pronadjen."
 msgid "Ack!  Failed reopening stderr!"
 msgstr "Gnj!  Nisam uspio ponovo otvoriti stderr!"
 
+#: version.c:33
+#, c-format
+msgid "Address: %s"
+msgstr "Adresa: %s"
+
 #: src/destroy.c:405
 msgid "Alas, your efforts of mercy are in vain."
 msgstr "Nazalost, tvoj pokusaj milosrdja je uzaludan."

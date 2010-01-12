@@ -19,10 +19,15 @@ Major Changes:
    some work and testing by a public place with many clients.) [GM]
 
 Minor Changes:
+ * align() can now do full justification. Suggested by Trinsec@M*U*S*H [GM]
+ * Wrapping fixes in align(). Reported by Trinsec@M*U*S*H [GM]
  * Guests will no longer see "Guests can't do that" if @mail is restricted
    to noguest. [GM]
  * Helpfile cleanup. [MG]
  * Expand the @lock key optimizer. Try '@lock me=!!=me'.
+ * When objects are destroyed, references to them in locks
+   are replaced by #FALSE, so that a newly created object reusing
+   some dbref won't pass locks it shouldn't.
  * /'s can now be included in the subject of a @mail 
    message via doubling it up -- @mail foo=a//s//l/What's up? 
    Suggested by paige.

@@ -153,9 +153,7 @@ See also: mail-folders
     @mail/debug <action>[=<player>]
     @mail/nuke
   
-  Only wizards may stats players other than themselves. The mail
-  statistics commands are computationally expensive and cost the same
-  as @find.
+  Only wizards may stats players other than themselves.
   
   The /debug switch does sanity checking on the mail database, and may
   only be used by a wizard. "@mail/debug sanity" just does the check;

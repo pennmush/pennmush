@@ -1364,11 +1364,6 @@ do_mail_stats(dbref player, char *name, enum mail_stats_type full)
   }
   /* this comand is computationally expensive */
 
-  if (!payfor(player, FIND_COST)) {
-    notify_format(player, T("Finding mail stats costs %d %s."), FIND_COST,
-                  (FIND_COST == 1) ? MONEY : MONIES);
-    return;
-  }
   if (target == AMBIGUOUS) {    /* stats for all */
     if (full == MSTATS_COUNT) {
       notify_format(player,
@@ -1768,13 +1763,7 @@ FUNCTION(fun_mailstats)
     notify(executor, T("The post office protects privacy!"));
     return;
   }
-  /* this comand is computationally expensive */
 
-  if (!payfor(executor, FIND_COST)) {
-    notify_format(executor, T("Finding mail stats costs %d %s."), FIND_COST,
-                  (FIND_COST == 1) ? MONEY : MONIES);
-    return;
-  }
   if (target == AMBIGUOUS) {    /* stats for all */
     if (full == 0) {
       /* FORMAT

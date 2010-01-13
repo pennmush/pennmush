@@ -1073,11 +1073,6 @@ do_find(dbref player, const char *name, char *argv[])
   int bot = 0;
   int top = db_top;
 
-  if (!payfor(player, FIND_COST)) {
-    notify_format(player, T("Finds cost %d %s."), FIND_COST,
-                  ((FIND_COST == 1) ? MONEY : MONIES));
-    return;
-  }
   /* determinte range */
   if (argv[1] && *argv[1]) {
     size_t offset = 0;
@@ -1305,11 +1300,7 @@ do_entrances(dbref player, const char *where, char *argv[], enum ent_type val)
     notify(player, T("Permission denied."));
     return;
   }
-  if (!payfor(player, FIND_COST)) {
-    notify_format(player, T("You don't have enough %d %s to do that."),
-                  FIND_COST, ((FIND_COST == 1) ? MONEY : MONIES));
-    return;
-  }
+
   /* figure out what we're looking for */
   switch (val) {
   case ENT_EXITS:

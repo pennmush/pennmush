@@ -1570,9 +1570,6 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
     /* log if necessary */
     if (f->perms & F_LOG)
       do_log(LT_WIZ, player, thing, T("%s FLAG CLEARED"), f->name);
-    /* those who unDARK return to the WHO */
-    if (is_flag(f, "DARK") && IsPlayer(thing))
-      hide_player(thing, 0);
     /* notify the area if something stops listening, but only if it
        wasn't listening before */
     if (!IsPlayer(thing) && (hear || listener) &&
@@ -1635,9 +1632,6 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
       notify(player, T("Warning: Setting trust flag on zoned object"));
     if (is_flag(f, "SHARED"))
       check_zone_lock(player, thing, 1);
-    /* DARK players should be treated as logged out */
-    if (is_flag(f, "DARK") && IsPlayer(thing))
-      hide_player(thing, 1);
     /* notify area if something starts listening */
     if (!IsPlayer(thing) &&
         (is_flag(f, "PUPPET") || is_flag(f, "MONITOR")) && !hear && !listener) {

@@ -18,6 +18,7 @@ Major Changes:
    browser will redirect the user to the selected mud_url. (This may need
    some work and testing by a public place with many clients.) [GM]
 
+
 Minor Changes:
  * align() can now do full justification. Suggested by Trinsec@M*U*S*H [GM]
  * Wrapping fixes in align(). Reported by Trinsec@M*U*S*H [GM]
@@ -41,10 +42,14 @@ Minor Changes:
    broken and rarely used anyways.
  * Removed the little-used "page_cost" @config option. [MG]
  * Removed costs for @find, @zemit, @entrances and @mail/stats. [MG]
+ * @hide can now affect a single descriptor, rather than all of a player's
+   connections. A player is only considered hidden if all his connections
+   are hidden. Wizards can also @hide other players. [MG]
+ * Wizards no longer automatically @hide when set DARK (but are hidden when
+   connecting dark with "cd"). [MG]
 
 Functions
- * llocks() without any arguments returns a list of the
-   standard locks.
+ * llocks() without any arguments returns a list of the  standard locks.
  * unsetq(), to erase queue registers. [GM]
  * and[l]flags(), or[l]flags(), andlpowers() and orlpowers() now all return
    #-1 if an invalid flag/power is given. Suggested by AnneLions. [MG]

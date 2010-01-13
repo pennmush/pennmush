@@ -209,12 +209,11 @@ See also: conn(), lwho(), mwho()
   See 'help DARK2' for more.
 
 & DARK2
-  Players who can hide from the WHO list should use @hide/on and
-  @hide/off to control this, not the DARK flag. While any player can
-  turn off their DARK flag, only Wizards can set their DARK flag.
+  In the past, players set DARK were automatically hidden from the WHO list
+  via @hide, but this no longer happens. If you wish to disappear completely,
+  you must use @hide after setting yourself DARK.
 
-  Wizards who are DARK "disappear" completely -- they are not on the
-  WHO list, do not announce connects and disconnects, etc.
+See also: LIGHT, @hide
 & DEBUG
   Flag: DEBUG  (all types)
   

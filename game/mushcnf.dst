@@ -354,9 +354,8 @@ kill_default_cost 10
 # percentage of the amount you spent to kill them. The usual is 50%.
 kill_bonus 50
 
-# How much to various commands cost:
+# How much @search costs
 find_cost 100
-page_cost 0
 
 # How many objects are equal to 1 quota, if quotas are used
 quota_cost 1

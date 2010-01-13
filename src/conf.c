@@ -464,8 +464,6 @@ PENNCONF conftable[] = {
   ,
   {"find_cost", cf_int, &options.find_cost, 10000, 0, "costs"}
   ,
-  {"page_cost", cf_int, &options.page_cost, 10000, 0, "costs"}
-  ,
   {"kill_default_cost", cf_int, &options.kill_default_cost, 10000, 0,
    "costs"}
   ,
@@ -1283,7 +1281,6 @@ conf_default_set(void)
   options.queue_cost = 10;
   options.quota_cost = 1;
   options.find_cost = 100;
-  options.page_cost = 0;
   options.kill_default_cost = 100;
   options.kill_min_cost = 10;
   options.kill_bonus = 50;

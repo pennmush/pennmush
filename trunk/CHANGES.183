@@ -36,7 +36,7 @@ Minor Changes:
    some dbref won't pass locks it shouldn't.
  * /'s can now be included in the subject of a @mail 
    message via doubling it up -- @mail foo=a//s//l/What's up? 
-   Suggested by paige.
+   Suggested by Paige.
  * locate() now ignores spaces in its 3rd argument. [MG]
  * Change the default mud_name in mush.cnf from TinyMUSH
    to PennMUSH. Suggested by many people over the years.
@@ -52,6 +52,8 @@ Minor Changes:
    are hidden. Wizards can also @hide other players. [MG]
  * Wizards no longer automatically @hide when set DARK (but are hidden when
    connecting dark with "cd"). [MG]
+ * sql() now takes a fourth argument, to return the number of affected rows.
+   Suggested by Mercutio.
 
 Functions
  * llocks() without any arguments returns a list of the  standard locks.

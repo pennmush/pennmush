@@ -613,18 +613,14 @@ hash_add(HASHTAB *htab, const char *key, void *hashdata)
 
   keycopy = mush_strdup(key, "hash.key");
 
-
-  while (1) {
-    if (!hash_insert(htab, keycopy, hashdata)) {
-      first_offset = -1;
-      resize_calls = 0;
-      if (!real_hash_resize(htab, htab->hashsize,
-			    (htab->hashfunc_offset + 1) % NHASH_MOD)) {
-	htab->entries -= 1;
-	return false;
-      }
-    } else
-      break;
+  if (!hash_insert(htab, keycopy, hashdata)) {
+    first_offset = -1;
+    resize_calls = 0;
+    if (!real_hash_resize(htab, htab->hashsize,
+                          (htab->hashfunc_offset + 1) % NHASH_MOD)) {
+      htab->entries -= 1;
+      return false;
+    }
   }
   return true;
 }

@@ -230,7 +230,7 @@ static int handle_telnet(DESC *d, unsigned char **q, unsigned char *qend);
 				for(d = descriptor_list;(d);d=(d)->next) \
 
 /** Is a descriptor hidden? */
-#define Hidden(d)        ((d->hide == 1) && Can_Hide(d->player))
+#define Hidden(d)        ((d->hide == 1))
 
 static const char *create_fail =
   "Either there is already a player with that name, or that name is illegal.";
@@ -387,7 +387,7 @@ extern pid_t forked_dump_pid;   /**< Process id of forking dump process */
 static void dump_users(DESC *call_by, char *match);
 static const char *time_format_1(time_t dt);
 static const char *time_format_2(time_t dt);
-static void announce_connect(dbref player, int isnew, int num);
+static void announce_connect(DESC *d, int isnew, int num);
 static void announce_disconnect(DESC *saved);
 void inactivity_check(void);
 void reopen_logs(void);
@@ -2484,7 +2484,7 @@ dump_messages(DESC *d, dbref player, int isnew)
     notify_format(player, T("%ld failed connections since last login."),
                   (long) ModTime(player));
   ModTime(player) = (time_t) 0;
-  announce_connect(player, isnew, num); /* broadcast connect message */
+  announce_connect(d, isnew, num); /* broadcast connect message */
   check_last(player, d->addr, d->ip);   /* set Last, Lastsite, give paycheck */
   /* Check all mail folders. If empty, report lack of mail. */
   queue_eol(d);
@@ -2544,6 +2544,7 @@ check_connect(DESC *d, const char *msg)
                 Name(Location(player)), Location(player));
       /* Set player dark */
       d->connected = 1;
+      d->hide = 1;
       d->player = player;
       set_flag(player, player, "DARK", 0, 0, 0);
       if ((dump_messages(d, player, 0)) == 0) {
@@ -3460,7 +3461,7 @@ time_format_2(time_t dt)
  * num: how many times connected?
  */
 static void
-announce_connect(dbref player, int isnew, int num)
+announce_connect(DESC *d, int isnew, int num)
 {
   dbref loc;
   char tbuf1[BUFFER_LEN];
@@ -3469,6 +3470,8 @@ announce_connect(dbref player, int isnew, int num)
   dbref zone;
   dbref obj;
   int j;
+
+  dbref player = d->player;
 
   set_flag_internal(player, "CONNECTED");
 
@@ -3483,7 +3486,7 @@ announce_connect(dbref player, int isnew, int num)
   /* Redundant, but better for translators */
   if (Dark(player)) {
     message = (num > 1) ? T("has DARK-reconnected.") : T("has DARK-connected.");
-  } else if (hidden(player)) {
+  } else if (Hidden(d)) {
     message = (num > 1) ? T("has HIDDEN-reconnected.") :
       T("has HIDDEN-connected.");
   } else {
@@ -4632,26 +4635,67 @@ FUNCTION(fun_ports)
  * \param hide if 1, hide; if 0, unhide.
  */
 void
-hide_player(dbref player, int hide)
+hide_player(dbref player, int hide, char *victim)
 {
   DESC *d;
+  dbref thing;
+
   if (!Connected(player))
     return;
   if (!Can_Hide(player)) {
     notify(player, T("Permission denied."));
     return;
   }
-  /* change status on WHO */
-  if (Can_Hide(player)) {
-    DESC_ITER_CONN(d) {
-      if (d->player == player)
-        d->hide = hide;
-    }
-  }
-  if (hide)
-    notify(player, T("You no longer appear on the WHO list."));
-  else
-    notify(player, T("You now appear on the WHO list."));
+  if (!victim || !*victim) {
+		thing = player;
+	} else {
+		if (is_strict_integer(victim)) {
+			d = lookup_desc(player, victim);
+			if (!d) {
+				if (See_All(player))
+				  notify(player, T("Couldn't find that descriptor."));
+				else
+				  notify(player, T("Permission denied."));
+				return;
+			}
+			thing = d->player;
+			if (!Wizard(player) && thing != player) {
+				notify(player, T("Permission denied."));
+				return;
+			}
+			if (!d->connected) {
+				notify(player, T("Noone is connected to that descriptor."));
+				return;
+			}
+			d->hide = hide;
+			if (hide) {
+			  notify(player, T("Connection hidden."));
+			} else {
+				notify(player, T("Connection unhidden."));
+			}
+			return;
+		} else {
+			thing = noisy_match_result(player, victim, TYPE_PLAYER, MAT_ABSOLUTE | MAT_PLAYER | MAT_PMATCH | MAT_ME);
+			if (!GoodObject(thing)) {
+				return;
+			}
+		}
+	}
+	DESC_ITER_CONN(d) {
+		if (d->player == thing)
+			d->hide = hide;
+	}
+	if (hide) {
+		if (player == thing)
+		  notify(player, T("You no longer appear on the WHO list."));
+		else
+		  notify_format(player, T("%s no longer appears on the WHO list."), Name(thing));
+	} else {
+		if (player == thing)
+		  notify(player, T("You now appear on the WHO list."));
+		else
+		  notify_format(player, T("%s now appears on the WHO list."), Name(thing));
+	}
 }
 
 /** Perform the periodic check of inactive descriptors, and
@@ -4720,15 +4764,16 @@ int
 hidden(dbref player)
 {
   DESC *d;
+  int i = 0;
   DESC_ITER_CONN(d) {
     if (d->player == player) {
-      if (Hidden(d))
-        return 1;
-      else
+      if (!Hidden(d))
         return 0;
+      else
+        i++;
     }
   }
-  return 0;
+  return (i > 0);
 }
 
 

@@ -473,7 +473,7 @@ COMMAND(cmd_halt)
 
 COMMAND(cmd_hide)
 {
-  hide_player(player, !(SW_ISSET(sw, SWITCH_NO) || SW_ISSET(sw, SWITCH_OFF)));
+  hide_player(player, !(SW_ISSET(sw, SWITCH_NO) || SW_ISSET(sw, SWITCH_OFF)), arg_left);
 }
 
 COMMAND(cmd_hook)

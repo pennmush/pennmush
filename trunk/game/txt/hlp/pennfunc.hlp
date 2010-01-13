@@ -4399,7 +4399,7 @@ See also: anonymous attributes, sqlescape(), sql(), @sql
   ... etc
 
 & SQL()
-  sql(<query>[, <row separator>[, <field separator>]])
+  sql(<query>[, <row separator>[, <field separator>[, <register>]]])
 
   Performs an SQL query if the MUSH is configured to connect to an SQL
   database server. This function requires a WIZARD flag or the Sql_Ok power.
@@ -4419,6 +4419,9 @@ See also: anonymous attributes, sqlescape(), sql(), @sql
 
   A query that doesn't return any rows, such as a UPDATE or SELECT that
   has no matches will return a null string. 
+
+  If <register> is specified, there is a side-effect: the number of affected
+  rows is stored into the specified q-register.
 
 See also: sqlescape(), mapsql(), @sql
 & SQLESCAPE()

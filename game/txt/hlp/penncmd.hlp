@@ -1659,16 +1659,23 @@ See also: RESTRICT, FUNCTIONS, @startup, fn()
 
 See also: HAVEN, page, @lock, @away
 & @hide
-  @hide[/<switch>]
-  
-  This command enables a royalty, wizard, or player with the Hide
-  power to disappear from the WHO list for mortals. "@hide/yes" or "@hide/on"
-  hides the player, "@hide/no" or "@hide/off" unhides the player.
-  Hidden players are marked as "(Hide)" in the privileged WHO listing.
- 
-  Mortals can not use the CONN(), IDLE(), or LWHO() functions to find 
-  hidden players.
+  @hide[/<switch>] <descriptor>
+  @hide[/<switch>] [<player>]
 
+  This command allows players to hide their online status. Hidden connections
+  don't show up on WHO, in lwho(), etc, when used by players without see_all.
+  
+  The first form of this command affects the single connection specified by
+  <descriptor> (as returned by ports(), or shown on the admin WHO). The 
+  second affects all connections for the given <player>, or the enactor if 
+  no <player> is given. You must be a Wizard, Royalty, or have the Hide
+  @power to affect your own connections; only Wizards can affect other
+  players' connections.
+  
+  The /on and /yes switches (which are the default, if no <switch> is given)
+  hide a connection, while /off and /no unhide the connection.
+
+See also: hidden(), WHO, lwho(), lports(), ports()
 & @idescribe
 & @oidescribe
 & @aidescribe

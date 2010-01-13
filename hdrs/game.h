@@ -22,7 +22,7 @@ extern void init_pronouns(void);        /* funstr.c */
 /* From bsd.c */
 void fcache_init(void);
 void fcache_load(dbref player);
-void hide_player(dbref player, int hide);
+void hide_player(dbref player, int hide, char *victim);
 enum motd_type { MOTD_MOTD, MOTD_WIZ, MOTD_DOWN, MOTD_FULL, MOTD_LIST };
 void do_motd(dbref player, enum motd_type key, const char *message);
 void do_poll(dbref player, const char *message, int clear);

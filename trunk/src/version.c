@@ -14,7 +14,6 @@
 #include "conf.h"
 #include "externs.h"
 #include "version.h"
-#include "patches.h"
 #ifndef WIN32
 #include "buildinf.h"
 #endif
@@ -35,9 +34,6 @@ do_version(dbref player)
                 show_time(globals.start_time, 0));
   notify_format(player, T("PennMUSH version %s patchlevel %s %s"), VERSION,
                 PATCHLEVEL, PATCHDATE);
-#ifdef PATCHES
-  notify_format(player, T("Patches: %s"), PATCHES);
-#endif
 #ifdef WIN32
   notify_format(player, T("Build date: %s"), __DATE__);
 #else

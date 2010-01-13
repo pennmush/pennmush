@@ -42,6 +42,8 @@ Minor Changes:
  * @firstexit can now take multiple exits, and can affect exits in other
    rooms. Suggested by AnneLions. [MG]
  * Changed some default mush.cnf options. [MG]
+ * Remove the old patches.h way of showing installed patches. It was 
+   broken and rarely used anyways.
 
 Functions
  * llocks() without any arguments returns a list of the

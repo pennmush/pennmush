@@ -5171,10 +5171,11 @@ watch_files_in(int fd)
   help_file *h;
 
 #define WATCH(name) do { \
-    if (inotify_add_watch(fd, (name),					\
-			  IN_MODIFY | IN_DELETE_SELF | IN_MOVE_SELF) < 0) \
-      do_rawlog(LT_TRACE, "file_watch_init:inotify_add_watch(\"%s\"): %s", \
-		(name), strerror(errno));				\
+    if (*name != NUMBER_TOKEN) \
+      if (inotify_add_watch(fd, (name),					\
+		  	  IN_MODIFY | IN_DELETE_SELF | IN_MOVE_SELF) < 0) \
+        do_rawlog(LT_TRACE, "file_watch_init:inotify_add_watch(\"%s\"): %s", \
+		  (name), strerror(errno));				\
   } while (0)
 
   do_rawlog(LT_TRACE,

@@ -911,16 +911,6 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
     return;
   }
 
-  /* Can the player afford to pay for this thing? */
-  if (!payfor(player, PAGE_COST * gcount)) {
-    notify_format(player, T("You don't have enough %s."), MONIES);
-    mush_free(tbuf, "page_buff");
-    mush_free(tbuf2, "page_buff");
-    if (hp)
-      free(hp);
-    return;
-  }
-
   /* Okay, we have a real page, the player can pay for it, and it's
    * actually going to someone. We're in this for keeps now. */
 

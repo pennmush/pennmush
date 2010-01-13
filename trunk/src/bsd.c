@@ -1837,9 +1837,11 @@ static void
 welcome_user(DESC *d, int telnet)
 {
   /* If MUDURL exists, we send <!-- ... --> */
-  if (telnet && MUDURL[0]) {
-    queue_newwrite(d, (const unsigned char *)"<!--", 4);
-    queue_eol(d);
+  if (telnet) {
+    if (MUDURL[0]) {
+      queue_newwrite(d, (const unsigned char *)"<!--", 4);
+      queue_eol(d);
+    }
     test_telnet(d);
   }
   if (SUPPORT_PUEBLO && !(d->conn_flags & CONN_HTML))

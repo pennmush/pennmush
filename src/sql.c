@@ -60,6 +60,8 @@ static sqlite3 *sqlite3_connp = NULL;
 #include "confmagic.h"
 #include "ansi.h"
 
+extern signed char qreg_indexes[UCHAR_MAX + 1];
+
 /* Supported platforms */
 typedef enum { SQL_PLATFORM_DISABLED = -1,
   SQL_PLATFORM_MYSQL = 1,
@@ -635,6 +637,7 @@ FUNCTION(fun_sql)
   int i;
   int numfields, numrows;
   ansi_string *as;
+  int qindex = -1;
   if (sql_platform() == SQL_PLATFORM_DISABLED) {
     safe_str(T(e_disabled), buff, bp);
     return;
@@ -654,7 +657,17 @@ FUNCTION(fun_sql)
     fieldsep = args[2];
   }
 
+  if (nargs >= 4) {
+    /* return affected rows to the qreg in args[3]. */
+    if (args[3][0] && !args[3][1]) {
+      qindex = qreg_indexes[(unsigned char) args[3][0]];
+    }
+  }
+
   qres = sql_query(args[0], &affected_rows);
+  if (affected_rows >= 0 && qindex >= 0) {
+    strcpy(global_eval_context.renv[qindex], unparse_number(affected_rows));
+  }
   sql_test_result(qres);
   /* Get results. A silent query (INSERT, UPDATE, etc.) will return NULL */
   switch (sql_platform()) {

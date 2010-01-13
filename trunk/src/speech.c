@@ -1469,11 +1469,7 @@ do_zemit(dbref player, const char *arg1, const char *arg2, int flags)
     notify(player, T("Permission denied."));
     return;
   }
-  /* this command is computationally expensive */
-  if (!payfor(player, FIND_COST)) {
-    notify(player, T("Sorry, you don't have enough money to do that."));
-    return;
-  }
+
   where = unparse_object(player, zone);
   notify_format(player, T("You zemit, \"%s\" in zone %s"), arg2, where);
 

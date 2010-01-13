@@ -40,6 +40,7 @@ Minor Changes:
  * Remove the old patches.h way of showing installed patches. It was 
    broken and rarely used anyways.
  * Removed the little-used "page_cost" @config option. [MG]
+ * Removed costs for @find, @zemit, @entrances and @mail/stats. [MG]
 
 Functions
  * llocks() without any arguments returns a list of the

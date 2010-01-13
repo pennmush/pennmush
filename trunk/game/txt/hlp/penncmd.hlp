@@ -1255,9 +1255,8 @@ See also: @oenter, @oxenter, enter
   @entrances[/<switch>] <object> [=<begin>,<end>]
   
   This command will show you all exits linked to the object you use the
-  command on, as well as where the exit originates.  This command is
-  computationally expensive and costs the same as @find. You can limit
-  the range of the dbrefs searched by specifying <begin> and <end>.
+  command on, as well as where the exit originates. You can limit the range
+  of the dbrefs searched by specifying <begin> and <end>.
   
   It takes four switches:
   
@@ -1352,17 +1351,16 @@ See also: AUDIBLE, @infilter, LISTENING
 & @find
   @find [<name>] [=<begin>,<end>]
 
-  Displays the name and number of every room, thing, or
-  player that you control whose name matches <name>. Because the
-  command is computationally expensive, this costs 100 pennies.
-  You can limit the range of the @find by specifying <begin> and
-  <end>, where these are the first and last dbrefs to examine.
+  Displays the name and number of every room, thing, or player that you 
+  control whose name matches <name>. You can limit the range of the @find 
+  by specifying <begin> and <end>, where these are the first and last
+  dbrefs to examine.
 
   Some MUSHes may choose to restrict @find only to Royalty. Even if 
   not, it is recommended that you use @search instead, as it can be
   limited more effectively.
 
-See also: @search
+See also: @search, lsearch()
 & @FORWARDLIST
   @forwardlist <object> [=<list of dbrefs>]
 
@@ -3611,8 +3609,9 @@ See also: @wall, @rwall
   @zemit <zone> = <message>
 
   Emits a message to all rooms in <zone>. You must have control in that
-  zone in order to use this command. Because it is computationally
-  expensive, it costs 100 pennies.
+  zone in order to use this command.
+  
+See also: @nszemit, zemit(), zone(), zwho(), ZONES
 & ahelp
   ahelp [<topic>]
 

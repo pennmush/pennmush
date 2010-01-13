@@ -233,7 +233,6 @@ struct options_table {
   int queue_cost;       /**< Deposit to queue a command */
   int quota_cost;       /**< Number of objects per quota unit */
   int find_cost;        /**< Cost to create an object */
-  int page_cost;        /**< Cost to create an object */
   int kill_default_cost;        /**< Default cost to use 'kill' */
   int kill_min_cost;    /**< Minimum cost to use 'kill' */
   int kill_bonus;       /**< Percentage of cost paid to victim of 'kill' */
@@ -370,7 +369,6 @@ int cf_time(const char *opt, const char *val, void *loc, int maxval,
 #define KILL_MIN_COST (options.kill_min_cost)
 #define KILL_BASE_COST (options.kill_default_cost)
 #define FIND_COST (options.find_cost)
-#define PAGE_COST (options.page_cost)
 #define QUOTA_COST (options.quota_cost)
 #define QUEUE_COST (options.queue_cost)
 #define ROOM_COST (options.room_cost)

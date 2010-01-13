@@ -108,7 +108,6 @@
 #include "access.h"
 #include "command.h"
 #include "version.h"
-#include "patches.h"
 #include "mysocket.h"
 #include "ident.h"
 #include "htab.h"
@@ -3085,9 +3084,6 @@ dump_info(DESC *call_by)
   queue_string_eol(call_by, tprintf("Size: %d", db_top));
   queue_string_eol(call_by,
                    tprintf("Version: PennMUSH %sp%s", VERSION, PATCHLEVEL));
-#ifdef PATCHES
-  queue_string_eol(call_by, tprintf("Patches: %s", PATCHES));
-#endif
   queue_string_eol(call_by, "### End INFO");
 }
 

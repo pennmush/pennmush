@@ -2420,7 +2420,6 @@ parse_puebloclient(DESC *d, char *command)
 static int
 dump_messages(DESC *d, dbref player, int isnew)
 {
-  int is_hidden;
   int num = 0;
   DESC *tmpd;
 
@@ -2460,13 +2459,10 @@ dump_messages(DESC *d, dbref player, int isnew)
     }
   }
 
-  /* check to see if this is a reconnect and also set DARK status */
-  is_hidden = Can_Hide(player) && Dark(player);
+  /* check to see if this is a reconnect */
   DESC_ITER_CONN(tmpd) {
     if (tmpd->player == player) {
       num++;
-      if (is_hidden)
-        tmpd->hide = 1;
     }
   }
   /* give permanent text messages */
@@ -2544,7 +2540,8 @@ check_connect(DESC *d, const char *msg)
                 Name(Location(player)), Location(player));
       /* Set player dark */
       d->connected = 1;
-      d->hide = 1;
+      if (Can_Hide(player))
+        d->hide = 1;
       d->player = player;
       set_flag(player, player, "DARK", 0, 0, 0);
       if ((dump_messages(d, player, 0)) == 0) {
@@ -4640,14 +4637,12 @@ hide_player(dbref player, int hide, char *victim)
   DESC *d;
   dbref thing;
 
-  if (!Connected(player))
-    return;
   if (!Can_Hide(player)) {
     notify(player, T("Permission denied."));
     return;
   }
   if (!victim || !*victim) {
-		thing = player;
+		thing = Owner(player);
 	} else {
 		if (is_strict_integer(victim)) {
 			d = lookup_desc(player, victim);

@@ -1894,20 +1894,22 @@ FUNCTION(fun_baseconv)
   /* Parse it. */
   ptr = trim_space_sep(args[0], ' ');
   n = 0;
-  /* Hyphen-minus are always treated as digits in base 63/base 64. */
-  if (from < 63 && to < 63 && ptr && *ptr == '-') {
-    isnegative = 1;
-    ptr++;
-  }
-  while (ptr && *ptr) {
-    n *= from;
-    if (frombase[(unsigned char) *ptr] >= 0 &&
-        frombase[(unsigned char) *ptr] < from) {
-      n += frombase[(unsigned char) *ptr];
+  if (ptr) {
+    /* Hyphen-minus are always treated as digits in base 63/base 64. */
+    if (from < 63 && to < 63 && *ptr == '-') {
+      isnegative = 1;
       ptr++;
-    } else {
-      safe_str(T("#-1 MALFORMED NUMBER"), buff, bp);
-      return;
+    }
+    while (*ptr) {
+      n *= from;
+      if (frombase[(unsigned char) *ptr] >= 0 &&
+          frombase[(unsigned char) *ptr] < (int) from) {
+        n += frombase[(unsigned char) *ptr];
+        ptr++;
+      } else {
+        safe_str(T("#-1 MALFORMED NUMBER"), buff, bp);
+        return;
+      }
     }
   }
 

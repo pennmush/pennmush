@@ -4676,6 +4676,11 @@ hide_player(dbref player, int hide, char *victim)
 			}
 		}
 	}
+
+	if (!Connected(thing)) {
+		notify(player, T("That player is not online."));
+		return;
+	}
 	DESC_ITER_CONN(d) {
 		if (d->player == thing)
 			d->hide = hide;

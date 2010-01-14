@@ -49,6 +49,8 @@ Minor Changes:
    connecting dark with "cd"). [MG]
  * sql() now takes a fourth argument, to return the number of affected rows.
    Suggested by Mercutio.
+ * baseconv() fixes for malformed input, "-" ambiguity in base 63/64, and
+   missing "-" sign for single-digit output.
 
 Functions
  * llocks() without any arguments returns a list of the  standard locks.

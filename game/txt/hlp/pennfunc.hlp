@@ -616,7 +616,8 @@ See also: BITWISE FUNCTIONS
 
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
 
-  But using base64 as a 'from' will also understand + as 61 and / as 62.
+  In base 63 and base 64, - is always treated as a digit.
+  Using base64 as a 'from' will also treat + as 62 and / as 63.
 & BEEP()
   beep([<number>])
  

@@ -1894,20 +1894,25 @@ FUNCTION(fun_baseconv)
   /* Parse it. */
   ptr = trim_space_sep(args[0], ' ');
   n = 0;
+  /* Hyphen-minus are always treated as digits in base 63/base 64. */
+  if (from < 63 && to < 63 && ptr && *ptr == '-') {
+    isnegative = 1;
+    ptr++;
+  }
   while (ptr && *ptr) {
-    if (*ptr == '-') {
-      isnegative = 1;
-      ptr++;
-      continue;
-    }
     n *= from;
-    if (frombase[(unsigned char) *ptr] >= 0) {
+    if (frombase[(unsigned char) *ptr] >= 0 &&
+        frombase[(unsigned char) *ptr] < from) {
       n += frombase[(unsigned char) *ptr];
       ptr++;
     } else {
       safe_str(T("#-1 MALFORMED NUMBER"), buff, bp);
       return;
     }
+  }
+
+  if (isnegative) {
+    safe_chr('-', buff, bp);
   }
 
   /* Handle the 0-case. (And quickly handle < to_base case, too!) */
@@ -1927,9 +1932,6 @@ FUNCTION(fun_baseconv)
 
   /* Reverse back onto buff. */
   nbp--;
-  if (isnegative) {
-    safe_chr('-', buff, bp);
-  }
   while (nbp >= numbuff) {
     safe_chr(*nbp, buff, bp);
     nbp--;

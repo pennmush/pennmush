@@ -1244,7 +1244,12 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
   global_eval_context.wenv[0] = arg;
   sp = save = safe_atr_value(a);
   bp = buff;
-  process_expression(buff, &bp, &sp, thing, NOTHING, NOTHING,
+  // A disconnected descriptor has dbref of 0. Not right at all, but ...
+  // Nothing to do about it?
+  process_expression(buff, &bp, &sp,
+                     thing,
+                     d->player ? d->player : -1,
+                     d->player ? d->player : -1,
                      PE_DEFAULT, PT_DEFAULT, NULL);
   safe_chr('\n', buff, &bp);
   *bp = '\0';

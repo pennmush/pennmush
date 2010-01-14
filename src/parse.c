@@ -949,9 +949,13 @@ process_expression(char *buff, char **bp, char const **str,
           safe_dbref(enactor, buff, bp);
           break;
         case ':':              /* enactor unique id */
-          safe_dbref(enactor, buff, bp);
-          safe_chr(':', buff, bp);
-          safe_integer(CreTime(enactor), buff, bp);
+          if (GoodObject(enactor)) {
+            safe_dbref(enactor, buff, bp);
+            safe_chr(':', buff, bp);
+            safe_integer(CreTime(enactor), buff, bp);
+          } else {
+            safe_str("#-1 NO SUCH OBJECT VISIBLE", buff, bp);
+          }
           break;
         case '?':              /* function limits */
           if (pe_info) {
@@ -963,7 +967,11 @@ process_expression(char *buff, char **bp, char const **str,
           }
           break;
         case '~':              /* enactor accented name */
-          safe_str(accented_name(enactor), buff, bp);
+          if (GoodObject(enactor)) {
+            safe_str(accented_name(enactor), buff, bp);
+          } else {
+            safe_str("Nothing", buff, bp);
+          }
           break;
         case '+':              /* argument count */
           if (pe_info)
@@ -986,9 +994,13 @@ process_expression(char *buff, char **bp, char const **str,
           break;
         case 'A':
         case 'a':              /* enactor absolute possessive pronoun */
-          if (gender < 0)
-            gender = get_gender(enactor);
-          safe_str(absp[gender], buff, bp);
+          if (GoodObject(enactor)) {
+            if (gender < 0)
+              gender = get_gender(enactor);
+            safe_str(absp[gender], buff, bp);
+          } else {
+            safe_str("#-1 NO SUCH OBJECT VISIBLE", buff, bp);
+          }
           break;
         case 'B':
         case 'b':              /* blank space */
@@ -1022,25 +1034,41 @@ process_expression(char *buff, char **bp, char const **str,
           break;
         case 'L':
         case 'l':              /* enactor location dbref */
-          /* The security implications of this have
-           * already been talked to death.  Deal. */
-          safe_dbref(Location(enactor), buff, bp);
+          if (GoodObject(enactor)) {
+            /* The security implications of this have
+             * already been talked to death.  Deal. */
+            safe_dbref(Location(enactor), buff, bp);
+          } else {
+            safe_str("#-1", buff, bp);
+          }
           break;
         case 'N':
         case 'n':              /* enactor name */
-          safe_str(Name(enactor), buff, bp);
+          if (GoodObject(enactor)) {
+            safe_str(Name(enactor), buff, bp);
+          } else {
+            safe_str("#-1 NO SUCH OBJECT VISIBLE", buff, bp);
+          }
           break;
         case 'O':
         case 'o':              /* enactor objective pronoun */
-          if (gender < 0)
-            gender = get_gender(enactor);
-          safe_str(obj[gender], buff, bp);
+          if (GoodObject(enactor)) {
+            if (gender < 0)
+              gender = get_gender(enactor);
+            safe_str(obj[gender], buff, bp);
+          } else {
+            safe_str("#-1 NO SUCH OBJECT VISIBLE", buff, bp);
+          }
           break;
         case 'P':
         case 'p':              /* enactor possessive pronoun */
-          if (gender < 0)
-            gender = get_gender(enactor);
-          safe_str(poss[gender], buff, bp);
+          if (GoodObject(enactor)) {
+            if (gender < 0)
+              gender = get_gender(enactor);
+            safe_str(poss[gender], buff, bp);
+          } else {
+            safe_str("#-1 NO SUCH OBJECT VISIBLE", buff, bp);
+          }
           break;
         case 'Q':
         case 'q':              /* temporary storage */
@@ -1062,9 +1090,13 @@ process_expression(char *buff, char **bp, char const **str,
           break;
         case 'S':
         case 's':              /* enactor subjective pronoun */
-          if (gender < 0)
-            gender = get_gender(enactor);
-          safe_str(subj[gender], buff, bp);
+          if (GoodObject(enactor)) {
+            if (gender < 0)
+              gender = get_gender(enactor);
+            safe_str(subj[gender], buff, bp);
+          } else {
+            safe_str("#-1 NO SUCH OBJECT VISIBLE", buff, bp);
+          }
           break;
         case 'T':
         case 't':              /* tab */

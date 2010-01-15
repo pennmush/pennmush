@@ -903,7 +903,8 @@ FUNCTION(fun_benchmark) {
     elapsed = get_microtimestamp() - start;
     if (elapsed < min) {
       min = elapsed;
-    } else if (elapsed > max) {
+    }
+    if (elapsed > max) {
       max = elapsed;
     }
     total += elapsed;

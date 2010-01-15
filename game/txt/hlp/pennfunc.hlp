@@ -224,15 +224,15 @@ See also: STRINGS
 & Utility functions
   These functions don't quite fit into any other category.
 
-  allof()       ansi()        atrlock()     beep()        checkpass()
-  clone()       create()      die()         dig()         firstof()
-  functions()   isdbref()     isint()       isnum()       isobjid()
-  isword()      letq()        localize()    link()        list()
-  lnum()        null()        numversion()  objeval()     open()
-  pcreate()     r-function    rand()        s-function    scan()
-  set()         setq()        setr()        soundex()     soundslike()
-  speak()       tel()         textentries() textfile()    valid()
-  wipe()        @@()
+  allof()       ansi()        atrlock()     beep()        benchmark()
+  checkpass()   clone()       create()      die()         dig()
+  firstof()     functions()   isdbref()     isint()       isnum()
+  isobjid()     isword()      letq()        localize()    link()
+  list()        lnum()        null()        numversion()  objeval()
+  open()        pcreate()     r-function    rand()        s-function
+  scan()        set()         setq()        setr()        soundex()
+  soundslike()  speak()       tel()         textentries() textfile()
+  valid()       wipe()        @@()
 
 & @@()
 & NULL()
@@ -639,6 +639,17 @@ See also: BITWISE FUNCTIONS
      You say, "foo ba"
 
 See also: after(), first()
+& BENCHMARK()
+  benchmark(<expression>, <number>)
+
+  Evaluates <expression> <number> times, and returns the average, minimum,
+  and maximum time it took to evaluate <expression> in microseconds.
+
+  Example:
+    > think benchmark(iter(lnum(1,100), ##), 200)
+    Average: 520.47   Min: 340   Max: 1382
+    > think benchmark(iter(lnum(1,100), %i0), 200)
+    Average: 110.27   Min: 106   Max: 281
 & BRACKETS()
   brackets(<string>)
 

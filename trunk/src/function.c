@@ -336,7 +336,7 @@ FUNTAB flist[] = {
   {"BASECONV", fun_baseconv, 3, 3, FN_REG},
   {"BEEP", fun_beep, 0, 1, FN_REG},
   {"BEFORE", fun_before, 2, 2, FN_REG},
-  {"BENCHMARK", fun_benchmark, 2, 2, FN_NOPARSE},
+  {"BENCHMARK", fun_benchmark, 2, 3, FN_NOPARSE},
   {"BNAND", fun_bnand, 2, 2, FN_REG},
   {"BNOT", fun_bnot, 1, 1, FN_REG},
   {"BOR", fun_bor, 1, INT_MAX, FN_REG},

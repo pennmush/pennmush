@@ -411,6 +411,7 @@ void s_Pennies(dbref thing, int amount);
 void chown_object(dbref player, dbref thing, dbref newowner, int preserve);
 
 /* From speech.c */
+int okay_pemit(dbref player, dbref target);
 int vmessageformat(dbref player, const char *attribute,
                    dbref executor, int flags, int nargs, ...);
 int messageformat(dbref player, const char *attribute,

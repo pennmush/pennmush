@@ -29,7 +29,6 @@
 #include "sort.h"
 #include "confmagic.h"
 
-int okay_pemit(dbref player, dbref target);
 static dbref speech_loc(dbref thing);
 void propagate_sound(dbref thing, const char *msg);
 static void do_audible_stuff(dbref loc, dbref *excs, int numexcs,

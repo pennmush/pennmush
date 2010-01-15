@@ -3597,7 +3597,7 @@ announce_disconnect(DESC *saved)
   char *message;
   dbref zone, obj;
   int j;
-  char *myenv[5];
+  char *myenv[6];
   dbref player;
   ATTR *a;
 

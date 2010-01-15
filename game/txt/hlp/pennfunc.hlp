@@ -2151,8 +2151,12 @@ See also: first(), rest(), before(), after()
   no separator is given.
 
   lattrp() also includes attributes inherited from parents.
+  
+  When returning large numbers of attributes, the results may be truncated
+  due to buffer limits. In these cases, you can use nattr() and xattr() to
+  retrieve the results in smaller pieces.
 
-See also: nattr(), hasattr(), examine, wildcards
+See also: nattr(), xattr(), hasattr(), examine, wildcards
 & NATTR()
 & NATTRP()
 & ATTRCNT()
@@ -3061,7 +3065,7 @@ See also: fullname()
   behavior that it will continue to do this for the time being. Don't
   rely on it.
 
-Related functions: fullname(), accname(), iname(), alias()
+See also: fullname(), accname(), iname(), alias()
 & NAMELIST()
   namelist(<player-list>[, [<object>/]<attribute>])
 

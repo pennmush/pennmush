@@ -229,7 +229,7 @@ See also: STRINGS
   firstof()     functions()   isdbref()     isint()       isnum()
   isobjid()     isword()      letq()        localize()    link()
   list()        lnum()        null()        numversion()  objeval()
-  open()        pcreate()     r-function    rand()        s-function
+  open()        pcreate()     r()           rand()        s()
   scan()        set()         setq()        setr()        soundex()
   soundslike()  speak()       tel()         textentries() textfile()
   valid()       wipe()        @@()
@@ -1299,7 +1299,7 @@ See also: @lock, locktypes, testlock()
 
   Sends a message to the room, as per @emit.
 
-  nsemit() is a wizard-only variation that works like @nsemit.
+  nsemit() works like @nsemit.
   
 See also: pemit(), remit(), lemit(), oemit(), zemit()
 & ENCODE64()
@@ -2226,7 +2226,7 @@ See also: right(), mid(), ljust()
 
   lemit() emits a message in the caller's outermost room, as per @lemit.
 
-  nslemit() is a wizard-only variation that works like @nslemit.
+  nslemit() like @nslemit.
   
 See also: @lemit, remit()
 & LETQ()
@@ -3286,7 +3286,7 @@ See also: playermem()
   Sends <message> to all objects in <room> (default is the location 
   of <object>(s)) except <object>(s), as per @oemit.
 
-  nsoemit() is a wizard-only variation that works like @nsoemit.
+  nsoemit() works like @nsoemit.
 
 & OPEN()
   open(<exit name>, <room>)
@@ -3371,11 +3371,10 @@ See also: @parent, ancestors
   and HAVEN flags on players. With a <port number>, pemit() sends the
   message to the specified port only, like @pemit/port.
 
-  nspemit() is a wizard-only variation that works like @nspemit/list.
+  nspemit() works like @nspemit/list.
 
   prompt() adds a telnet GOAHEAD to the end of the message, as per the
-  @prompt command. nsprompt() is a wizard-only variation that works
-  like @nsprompt.
+  @prompt command. nsprompt() that works like @nsprompt.
  
 See also: @prompt, @nsprompt, PROMPT_NEWLINES 
 & PI()
@@ -3616,7 +3615,7 @@ See also: regrab(), regedit()
 
   Sends a message to the contents of <object>, as per @remit.
 
-  nsremit() is a wizard-only variation that works like @nsremit.
+  nsremit() works like @nsremit.
 & REMOVE()
   remove(<list>, <words>[, <delimiter>])
 
@@ -5012,7 +5011,7 @@ See also: ceil(), floor(), bound(), round()
 & U()
 & UFUN()
 & ULAMBDA()
-  u([<object>/]<user function name>[, <arg0>[, ... , <arg 9>]])
+  u([<object>/]<user function name>[, <arg0>[, ... , <arg9>]])
   ufun([<object>/]<user function name>[, <arg0>[, ... , <arg9>]])
   ulambda([<object>/]<user function name>[, <arg0>[, ... , <arg9>]])
  
@@ -5545,7 +5544,7 @@ See also: lwho(), nwho(), zone(), zfun()
   zemit() emits <message> in every room @chzone'd to <zone>, as per @zemit.
   It is computationally expensive, and costs the same as @search.
 
-  nszemit() is a wizard-only variation that works like @nszemit.
+  nszemit() works like @nszemit.
 
 See also: @zemit, zone(), zfun(), zwho(), ZONES
 & ZFUN()

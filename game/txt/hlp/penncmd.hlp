@@ -2373,11 +2373,11 @@ See also: SEMAPHORES, @drain, @wait
   @nsoemit[/<switch>] [<room>/]<object> [<object>...] = <message>
   @nszemit <zone> = <message>
 
-  These wizard-only commands work like @emit, @lemit, @pemit, @prompt, @remit,
-  @oemit, and @zemit, respectively, but will not include nospoof information.
-  They are meant to be used by commands in the master room where the
-  nospoof information is just useless noise. They take all switches
-  of their respective commands.
+  These commands work like @emit, @lemit, @pemit, @prompt, @remit, @oemit, 
+  and @zemit, respectively, but will not include nospoof information if used
+  by Wizards or someone with the Can_Nspemit @power. They are meant to be
+  used by commands in the master room where the nospoof information is just
+  useless noise. They take all switches of their respective commands.
 
 See also: @emit, @lemit, @pemit, @prompt, @remit, @oemit, @zemit, nsemit(),
   nslemit(), nspemit(), nsprompt(), nsremit(), nsoemit(), nszemit(),

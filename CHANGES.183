@@ -57,6 +57,9 @@ Minor Changes:
  * baseconv() fixes for malformed input, "-" ambiguity in base 63/64, and
    missing "-" sign for single-digit output.
  * Flag names now have similar restrictions to attribute names. [MG]
+ * The @ns*emit commands and ns*emit() functions are no longer restricted;
+   when used by mortals, they work exactly the same as the non-ns versions.
+   Suggested by Michael Blackburn. [MG]
 
 Functions
  * llocks() without any arguments returns a list of the standard locks.

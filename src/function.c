@@ -819,7 +819,7 @@ char *
 list_functions(const char *type)
 {
   FUN *fp;
-  const char *ptrs[BUFFER_LEN / 2];
+  const char **ptrs;
   static char buff[BUFFER_LEN];
   char *bp;
   int nptrs = 0, i;
@@ -838,6 +838,9 @@ list_functions(const char *type)
     mush_strncpy(buff, T("#-1 INVALID ARGUMENT"), BUFFER_LEN);
     return buff;
   }
+
+  ptrs = mush_calloc(sizeof(char *), htab_function.entries + htab_user_function.entries,
+		     "function.list");
 
   if (which & 0x1) {
     for (fp = hash_firstentry(&htab_function);
@@ -866,6 +869,7 @@ list_functions(const char *type)
     }
   }
   *bp = '\0';
+  mush_free(ptrs, "function.list");
   return buff;
 }
 

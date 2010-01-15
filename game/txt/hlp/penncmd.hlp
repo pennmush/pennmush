@@ -78,8 +78,9 @@ These '@' commands are only usable by wizards or privileged players:
   cv
  
 & ]
-  The "]" command-prefix instructs the MUSH that the rest of the command
-  input that follows should not be evaluated. Here's an example:
+  "]" is a special prefix which can be used before any command. It instructs
+  the MUSH that it shouldn't evaluate the arguments to the command (similar
+  to the "/noeval" switch available on some commands). For example:
 
   > say [add(1,1)]
   You say, "2"
@@ -108,18 +109,17 @@ These '@' commands are only usable by wizards or privileged players:
   
 See also: @@(), null()
 & @aclone
-  @aclone <object> = <action list>
+  @aclone <object>=<action list>
 
-  Sets the actions to be taken whenever <object> is @cloned. This command 
-  can be useful for notifying the owner of a vending machine or parent 
-  object when someone uses the machine.
+  Sets the actions to be taken by <object> whenever it's @cloned. This 
+  command can be useful for notifying the owner of a vending machine or
+  parent object when someone uses the machine.
 
-  Please note that there is no @oclone, and that @clone is always a
-  command, not an attribute.
-
+  Please note that there are no @clone or @oclone attributes.
+  
 See also: @clone, @create, ACTION LISTS
 & @aconnect
-  @aconnect <object> = <action list>
+  @aconnect <object>=<action list>
 
   Sets the actions to be taken by <object> when a player connects to the game.
   @aconnects are triggered on connecting players, their locations (if the
@@ -133,7 +133,7 @@ See also: @clone, @create, ACTION LISTS
   %1 = number of player connections (1 if this is an initial connect)
   
   Example:
-  > @aconnect me=:stretches luxuriously, as if waking from a nap.
+    > @aconnect me=+who ; +bbscan
 
 See also: @adisconnect, ACTION LISTS
 & @death
@@ -160,11 +160,9 @@ See also: kill, BEING KILLED, ACTION LISTS
  
     @adescribe me=think %n just looked at you.
  
-  which will inform you whenever someone looks at you. %n will be 
-  replaced by the name of the person who looked. While it is possible to
-  set a message to be broadcasted to everyone in the area when someone
-  looks at you, this is strongly discouraged, as many people find it 
-  annoying.
+  which will inform you whenever someone looks at you. While it is possible to
+  set a message to be broadcasted to everyone in the area when someone looks 
+  at you, this is strongly discouraged, as many people find it annoying.
  
 See also: @describe, @aidescribe, look, ACTION LISTS
 & @adestroy
@@ -172,6 +170,7 @@ See also: @describe, @aidescribe, look, ACTION LISTS
  
   The adestroy attribute is triggered when <object> is destroyed. It can
   only be set by wizards.
+  
 See also: @destroy, @nuke
 & @adisconnect
   @adisconnect <object>[=<action list>]
@@ -187,6 +186,7 @@ See also: @destroy, @nuke
    %2 = bytes received by the disconnecting descriptor
    %3 = bytes sent by the disconnecting descriptor
    %4 = commands issued by the disconnecting descriptor
+   %5 = 1 if the descriptor was hidden on disconnect, 0 otherwise
   
   Example:
   > @adisconnect me = home
@@ -241,7 +241,7 @@ See also: enter, @enter, FAILURE, ACTION LISTS
 & @failure
   @failure <object>[=<message>]
   @ofailure <object>[=<message>]
-  @afailure <object> = <action list>
+  @afailure <object>[=<action list>]
 
   @failure contains the message shown to someone who fails to pass <object>'s
   Basic @lock. @ofailure contains the message shown to others, and @afailure
@@ -325,26 +325,28 @@ See also: leave, @oxleave, @lfail, ACTION LISTS,
 
 See also: leave, @leave, NO_LEAVE, locktypes, ACTION LISTS
 & @alias
-  @alias <player>=<name>;<alias>[;<alias2>[;<alias3>[...]]]
+  @alias <player>[=<name1>[;<name2>[; ... ; <nameN>]]]
  
-  @alias is a special attribute that lists a player's names; players
+  @alias is a special attribute that lists a player's aliases; players
   can be paged by their aliases, matched with *<alias>, and all other game 
   functions which look up player names will also accept an alias. 
   The attribute is visible to all players.
 
-  A list of aliases, separated by semicolons, may be provided.
-  Players should include their usual @name in the alias list, because
-  the @name command allows setting name to any alias in the list.
-  The number of aliases allowed in the list may be limited by
-  the game's administrators through the 'max_aliases' @config parameter.
-
+  Players can have more than one alias, separated by semicolons. It's
+  recommended that you include your normal @name in your alias; because you
+  can @name yourself to one of your aliases, it ensures that, if you change
+  your name, others can still refer to you by your normal/original name.
+  
+  The maximum number of aliases a player may have is controlled by the
+  'max_aliases' @config option.
+  
   If the page_aliases config directive is on, the first alias in the
   list is shown along with the player's name when they page others.
   
   The same rules that apply to player names apply to aliases.
 
-  @alias has no effect on non-players. (An exit's alias is part of
-  its @name.)
+  @alias only has an effect on players, though you can set them on other
+  types as well. (An exit's aliases are part of its name; see 'help @name'.)
 
 See also: @name, alias(), fullalias()
 & @allquota
@@ -371,25 +373,49 @@ See also: @quota
   that long @omoves are frequently found annoying.
 
   Example:
-   > @move me=You moved! You are now in the room: [name(loc(me))].
+   > @move me=You moved! You are now in the room: [name(here)].
    > @omove me=stalks into the room wearing a malevolent expression.
 
 See also: goto, @oxmove, ACTION LISTS
 & @aenter
-  @aenter <object> = <action list>
-
-  Sets the actions taken by the object whenever someone enters it.
-
-See also: @enter, @oenter, enter, ACTION LISTS
-
-
+& @enter
+& @oenter
+& @oxenter
+  @enter <object>[=<message>]
+  @oenter <object>[=<message>]
+  @oxenter <object>[=<message>]
+  @aenter <object>[=<action list>]
+  
+  These attributes contain the messages shown to someone who enters <object>,
+  the message shown to others inside <object> when someone enters it, the
+  message shown to those in <object>'s location when someone enters it, and
+  the actions to be taken by <object> when someone enters it, respectively.
+  
+  Example:
+    > @enter Sofa=You sit on the comfy sofa.
+    > @oenter Sofa=sits with you on the sofa.
+    > @oxenter Sofa=sits down on the sofa. It looks comfy.
+    > @aenter Sofa=@pemit/silent owner(me)=%n sat down on [name(me)]!
+    
+See also: enter, @ealias, leave, ACTION LISTS
 & @apayment
-  @apayment <object> = <action list>
+& @payment
+& @opayment
+  @payment <object>[=<message>]
+  @opayment <object>[=<message>]
+  @apayment <object>[=<action list>]
+  
+  These attributes contain the messages shown to someone who pays <object> 
+  pennies with the "give" command, the message shown to others when someone
+  pays <object>, and the actions to be taken by <object> when it's paid. Each
+  attribute is passed the number of pennies paid as %0.
 
-  Sets the actions to be taken after a player gives an object some
-  amount of pennies. The amount paid is passed in as %0.
+  Example:
+    > @payment Collecting Tin=Thank you for your donation!
+    > @opayment Collecting Tin=makes a donation to charity.
+    > @apayment Collecting Tin=&%# me=%0 at [time()]
 
-See also: give, @pay, @opay, @cost, MONEY, ACTION LISTS
+See also: give, @cost, buy, MONEY, ACTION LISTS
 & @atport
   @atport <object>=<action list>
 
@@ -1239,18 +1265,6 @@ See also: @zleave, @ozleave, @azleave, ZONES
   triggered after the room's @[oa]leave.
 
 See also: @zenter, @ozenter, @azenter, ZONES
-& @enter
-  @enter <object> = <message>
-
-  This sets the message that is displayed to anyone entering the 
-  object. Works just as @success on an exit does.
-
-  Example:
-    @enter Chair = You sit down on the comfy chair.
-    enter chair
-    > You sit down on the comfy chair.
-
-See also: @oenter, @oxenter, enter
 & @entrances
   @entrances[/<switch>] <object> [=<begin>,<end>]
   
@@ -2263,7 +2277,7 @@ See also: @log
 
 See also: message(), @chatformat, @pageformat
 & @motd
-  @motd [/<switch>] [<message>].  
+  @motd[/<switch>] [<message>].  
  
   The default for this command (and with the /connect) switch, is a
   wizard only command that will set a temporary message that 
@@ -2280,24 +2294,39 @@ See also: message(), @chatformat, @pageformat
   /list   : list the MOTDs (like @listmotd, can be used by anyone)
 & @name
   @name <object>=<new name>
+  @name <exit>=<new name>[;<alias1>[;<alias2>[;...;<aliasN>]]]
 
-  Changes the name of <object>, which can be a thing, player, exit,
-  or room. You can refer to object by name, DBREF number, or as "me"
-  or "here".
+  Changes the name of <object> to <new name>.
 
   When changing a player's name on games that support multi-word player
-  names, the name should be enclosed in quotes:
-    @name me = "James Bond"
+  names, the name should be enclosed in quotes. For example:
+    > @name me="James Bond"
 
-  Players can change their name to any name not in use by another
-  player; players may "reserve" a set of names for their use by
-  setting them in their @alias.
+  Players can change their name to anything valid which is not currently in
+  use by another player, as a name or alias. (They can change their name to
+  something from their own @alias.)
 
-  Changing the name of <object> will cause object to execute its
-  ONAME and ANAME. The old name will be passed at %0 to these;
-  the new name will be passed as %1.
+  An exit can have many names/aliases, each separated by a semicolon. The
+  exit can be referred to by any of these names in all commands. For example:
+    > @name exit=East <e>;east;e
 
-See also: @alias
+See also: @alias, @oname, name(), fullname()
+& @ONAME
+& @ANAME
+  @oname <object>[=<message>]
+  @aname <object>[=<action list>]
+  
+  Whenever <object>'s name is changed (via @name), others in the same
+  location will see the contents of <object>'s ONAME attribute, prepended
+  with <object>'s new name. At the same time, <object>'s ANAME attribute
+  will be triggered. Both attributes receive the old name as %0, and the new
+  name as %1.
+  
+    Example:
+      > @oname me=has regenerated from %0!
+      > @aname me=think >> Renamed from %0 to %1 at [time()] by %n(%#).
+
+See also: @name, name()
 & @newpassword
   @newpassword <player> = <password>
 
@@ -2386,16 +2415,6 @@ See also: look, @describe, @idescribe
     the enactor or the Can_nspemit power.
  
 See also: @emit, @pemit, NOSPOOF and SPOOFING.
-& @oenter
-  @oenter <object> [= <message>]
-
-  This sets the message that will be show to others whenever anyone
-  enters the object. It will be seen by those already -inside- the
-  object and will automatically add the name of the person entering
-  at the beginning. If you wish to set a message to be seen by those
-  -outside- the object, use @oxenter.
-
-See also: enter, @enter, @oxenter
 & @oxmove
   @oxmove <object> [= <message>]
 
@@ -2409,19 +2428,6 @@ See also: enter, @enter, @oxenter
   If the =<message> is omitted, the message is cleared.
   
 See also: go, @move, @omove, @amove
-& @opayment
-  @opayment <object> [=<message>]
-
-  Sets the message that will be show to others whenever someone "pays"
-  <object> (by giving the object a certain amount of MUSH money). The
-  name of the person giving the money will be automatically inserted at
-  the beginning of the message.
-  
-  If the =<message> part is omitted, the message will be reset.
-
-  Ex: @opay Vending Machine=sticks a quarter in the vending machine.
-
-See also: give, @cost, @payment, @apayment, MONEY
 & @open
   @open <exit name>
   @open <exit name>;<exit aliases>=<destination>
@@ -2484,17 +2490,6 @@ See also: @teleport, @oxtport
   If the =<message> part is omitted, the message will be reset.
 
 See also: use, @use, @ause, @charges, @runout
-& @oxenter
-  @oxenter <object> [= <message>]
-
-  Sets the message that will be shown to others outside the object whenever
-  someone enters the object. The name of the person entering will be
-  inserted at the beginning of the message automatically. If you want
-  to show a message to everyone inside the object, use @oenter.
-
-  If the =<message> part is omitted, the message will be reset.
-
-See also: enter, @oenter, leave
 & @oxleave
   @oxleave <object> [= <message>]
 
@@ -2554,14 +2549,6 @@ See also: PARENTS, parent(), lparent()
      [if(%q1,%b(to %q1))]\, %n %0,From afar[if(%q1,%b(to %q1))]\, %n%0)]
   
 See also: page, speak()
-& @payment
-  @payment <object> [=<message>]
-
-  Sets the message that is shown to anyone who pays the object, by giving
-  it a certain amount of MUSH money. If =<message> is omitted, the message
-  is reset to nothing. May be abbreviated @pay. 
-
-See also: give, @apay, @opay, @cost.
 & @receive
 & @oreceive
 & @areceive

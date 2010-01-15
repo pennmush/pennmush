@@ -1500,6 +1500,16 @@ msgstr "%s ne moze imati razmake u imenu."
 msgid "%s names must be longer than one character."
 msgstr "%s mora imati ime koje je duze od jednog znaka."
 
+#: bsd.c:4692
+#, c-format
+msgid "%s no longer appears on the WHO list."
+msgstr "%s se vise ne pojavljuje na WHO listi."
+
+#: bsd.c:4697
+#, c-format
+msgid "%s now appears on the WHO list."
+msgstr "%s se sada pojavljuje na WHO listi."
+
 #: src/player.c:486
 #, c-format
 msgid "%s on %s"
@@ -2910,6 +2920,10 @@ msgstr "Spajanje u tijeku..."
 msgid "Connection from Suspect site. Setting %s(#%d) suspect."
 msgstr "Spajanje sa sumnjive internet adrese. %s(#%d) dobije flag SUSPECT."
 
+#: bsd.c:4667
+msgid "Connection hidden."
+msgstr "Veza je sada skrivena."
+
 #: src/player.c:129
 #, c-format
 msgid "Connection to %s (GUEST) not allowed from %s (%s)"
@@ -2924,6 +2938,10 @@ msgstr "Spajanje na %s (ne-GUEST) nije dozvoljeno sa %s (%s)"
 #, c-format
 msgid "Connection to GOING player %s not allowed from %s (%s)"
 msgstr "Spajanje na igraca %s s flagom GOING nije dozvoljeno sa %s (%s)"
+
+#: bsd.c:4669
+msgid "Connection unhidden."
+msgstr "Veza vise nije skrivena."
 
 #: access.c:402
 msgid "Connections allowed by: "
@@ -5403,6 +5421,10 @@ msgstr "Zona nije navedena."
 msgid "None of your connections are idle."
 msgstr "Nijedna tvoja veza nije neaktivna."
 
+#: bsd.c:4662
+msgid "Noone is connected to that descriptor."
+msgstr "Nitko nije spojen na taj deskriptor."
+
 #: cque.c:218
 #, c-format
 msgid "Not enough money to queue command for %s(#%d)."
@@ -6351,6 +6373,10 @@ msgstr "Tom korisniku nedostaje ili novac ili quota, pa ne moze primiti taj obje
 #: src/speech.c:898 src/speech.c:911
 msgid "That player is not connected."
 msgstr "Taj igrac nije spojen."
+
+#: bsd.c:4681
+msgid "That player is not online."
+msgstr "Taj igrac nije online."
 
 #: src/wiz.c:827
 msgid "That player isn't connected!"

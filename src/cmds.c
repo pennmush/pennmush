@@ -338,7 +338,7 @@ COMMAND(cmd_elock)
 
 COMMAND(cmd_emit)
 {
-  int spflags = !strcmp(cmd->name, "@NSEMIT") ? PEMIT_SPOOF : 0;
+  int spflags = (!strcmp(cmd->name, "@NSEMIT") && Can_Nspemit(player) ? PEMIT_SPOOF : 0);
   SPOOF(player, cause, sw);
 
   if (SW_ISSET(sw, SWITCH_ROOM))
@@ -522,7 +522,7 @@ COMMAND(cmd_kick)
 
 COMMAND(cmd_lemit)
 {
-  int spflags = !strcmp(cmd->name, "@NSLEMIT") ? PEMIT_SPOOF : 0;
+  int spflags = (!strcmp(cmd->name, "@NSLEMIT")  && Can_Nspemit(player) ? PEMIT_SPOOF : 0);
   SPOOF(player, cause, sw);
   do_lemit(player, arg_left,
            (SW_ISSET(sw, SWITCH_SILENT) * PEMIT_SILENT) | spflags);
@@ -784,7 +784,7 @@ COMMAND(cmd_nuke)
 
 COMMAND(cmd_oemit)
 {
-  int spflags = !strcmp(cmd->name, "@NSOEMIT") ? PEMIT_SPOOF : 0;
+  int spflags = (!strcmp(cmd->name, "@NSOEMIT")  && Can_Nspemit(player) ? PEMIT_SPOOF : 0);
   SPOOF(player, cause, sw);
   do_oemit_list(player, arg_left, arg_right, spflags);
 }
@@ -834,7 +834,7 @@ COMMAND(cmd_pemit)
 
   SPOOF(player, cause, sw);
 
-  if (!strcmp(cmd->name, "@NSPEMIT"))
+  if (!strcmp(cmd->name, "@NSPEMIT") && Can_Nspemit(player))
     flags |= PEMIT_SPOOF;
   if (SW_ISSET(sw, SWITCH_LIST))
     do_pemit_list(player, arg_left, arg_right, flags);
@@ -854,7 +854,7 @@ COMMAND(cmd_prompt)
     flags = 0;
   else
     flags = SILENT_PEMIT ? PEMIT_SILENT : 0;
-  if (!strcmp(cmd->name, "@NSPEMIT"))
+  if (!strcmp(cmd->name, "@NSPEMIT") && Can_Nspemit(player))
     flags |= PEMIT_SPOOF;
   do_pemit_list(player, arg_left, arg_right, flags | PEMIT_PROMPT);
 }
@@ -937,7 +937,7 @@ COMMAND(cmd_remit)
     flags = SILENT_PEMIT ? PEMIT_SILENT : 0;
   if (SW_ISSET(sw, SWITCH_LIST))
     flags |= PEMIT_LIST;
-  if (!strcmp(cmd->name, "@NSREMIT"))
+  if (!strcmp(cmd->name, "@NSREMIT") && Can_Nspemit(player))
     flags |= PEMIT_SPOOF;
   do_remit(player, arg_left, arg_right, flags);
 }
@@ -1178,7 +1178,7 @@ COMMAND(cmd_wizmotd)
 
 COMMAND(cmd_zemit)
 {
-  int flags = !strcmp(cmd->name, "@NSZEMIT") ? PEMIT_SPOOF : 0;
+  int flags = (!strcmp(cmd->name, "@NSZEMIT") && Can_Nspemit(player) ? PEMIT_SPOOF : 0);
   do_zemit(player, arg_left, arg_right, flags);
 }
 

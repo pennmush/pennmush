@@ -56,3 +56,14 @@ Your server account might be set up with a non-english language as the
 default. If so, and you don't set LANG in the restart script, that
 default language will be used.
 
+3. Development - tips
+
+Generally, the rules that the devteam use to decide what strings
+should be made translatable in the source code (tagged with T()) are:
+
+- tag in-game messages (stuff shown to players) with T(), except:
+  - panic messages
+  - very technical output like @list alloc and @stats/table
+- don't tag log messages with T()
+- don't tag console messages with T()
+

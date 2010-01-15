@@ -173,487 +173,487 @@ For more, see Entries-9
  @aufail                   @aunfollow                @ause                    
  @away                     @azenter                  @azleave                 
  band()                    baseconv()                beep()                   
- before()                  being killed              bitwise functions        
- bnand()                   bnot()                    boolean2                 
- boolean3                  boolean functions         boolean values           
- @boot                     bor()                     bound()                  
- brackets()                @break                    brief                    
- builder                   @-building                @buy                     
- buy                       bxor()                    cand()                   
- capstr()                  case()                    caseall()                
- cat()                     cbuffer()                 cbufferadd()             
- cd                        cdesc()                   ceil()                   
- @cemit                    cemit()                   center()                 
- cflags()                  ch                        changes                  
+ before()                  being killed              benchmark()              
+ bitwise functions         bnand()                   bnot()                   
+ boolean2                  boolean3                  boolean functions        
+ boolean values            @boot                     bor()                    
+ bound()                   brackets()                @break                   
+ brief                     builder                   @-building               
+ @buy                      buy                       bxor()                   
+ cand()                    capstr()                  case()                   
+ caseall()                 cat()                     cbuffer()                
+ cbufferadd()              cd                        cdesc()                  
+ ceil()                    @cemit                    cemit()                  
+ center()                  cflags()                  ch                       
 
 For more, see Entries-10
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-10
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- @channel                  @channel2                 @channel3                
- @channel4                 @channel5                 @channel6                
- channel functions         channel-list              channels()               
- chan_usefirstmatch        @charges                  @chat                    
- chat                      @chatformat               @chatformat2             
- @chatformat3              @chat mogrifying          @chat mogrifying2        
- @chat mogrifying3         checkpass()               children()               
- @chown                    @chownall                 chown_ok                 
- chr()                     @chzone                   @chzone2                 
- @chzoneall                clflags()                 clients                  
- @clock                    clock()                   @clock2                  
- @clone                    clone()                   cloudy                   
- cmds()                    cmsgs()                   code                     
- color                     @command                  @command2                
- @command3                 $-commands                commands                 
- $-commands2               @comment                  communication functions  
+ changes                   @channel                  @channel2                
+ @channel3                 @channel4                 @channel5                
+ @channel6                 channel functions         channel-list             
+ channels()                chan_usefirstmatch        @charges                 
+ @chat                     chat                      @chatformat              
+ @chatformat2              @chatformat3              @chat mogrifying         
+ @chat mogrifying2         @chat mogrifying3         checkpass()              
+ children()                @chown                    @chownall                
+ chown_ok                  chr()                     @chzone                  
+ @chzone2                  @chzoneall                clflags()                
+ clients                   @clock                    clock()                  
+ @clock2                   @clone                    clone()                  
+ cloudy                    cmds()                    cmsgs()                  
+ code                      color                     @command                 
+ @command2                 @command3                 $-commands               
+ commands                  $-commands2               @comment                 
 
 For more, see Entries-11
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-11
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- comp()                    comsys                    con()                    
- cond()                    condall()                 @config                  
- config()                  @config attribs           @config chat             
- @config cmds              @config cosmetic          @config cosmetic2        
- @config costs             @config db                @config dump             
- @config flags             @config funcs             @config limits           
- @config limits2           @config limits3           @config limits4          
- @config log               @config net               @config parameters       
- @config tiny              @conformat                conn()                   
- connected                 connection functions      contact                  
- control                   controls()                convsecs()               
- convtime()                convutcsecs()             copyright                
- copyrite                  cor()                     cos()                    
- @cost                     costs                     cowner()                 
- @cpattr                   @create                   create()                 
- crecall()                 credits                   csecs()                  
+ communication functions   comp()                    comsys                   
+ con()                     cond()                    condall()                
+ @config                   config()                  @config attribs          
+ @config chat              @config cmds              @config cosmetic         
+ @config cosmetic2         @config costs             @config db               
+ @config dump              @config flags             @config funcs            
+ @config limits            @config limits2           @config limits3          
+ @config limits4           @config log               @config net              
+ @config parameters        @config tiny              @conformat               
+ conn()                    connected                 connection functions     
+ contact                   control                   controls()               
+ convsecs()                convtime()                convutcsecs()            
+ copyright                 copyrite                  cor()                    
+ cos()                     @cost                     costs                    
+ cowner()                  @cpattr                   @create                  
+ create()                  crecall()                 credits                  
 
 For more, see Entries-12
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-12
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- cstatus()                 ctime()                   ctitle()                 
- ctu()                     cusers()                  cv                       
- cwho()                    dark                      dark2                    
- database                  @dbck                     dbref #                  
- dbref2                    dbref functions           dbref number             
- dbrefs                    @death                    debug                    
- debug2                    @debugforwardlist         debugforwardlist         
- dec()                     decode64()                @decompile               
- @decompile2               @decompile3               decompose()              
- decrypt()                 default()                 delete()                 
- @desc                     @descformat               @describe                
- desert                    @destroy                  @destroy2                
- destroy_ok                die()                     @dig                     
- dig()                     @dig2                     digest()                 
- @disable                  dismiss                   dist2d()                 
- dist3d()                  div()                     @doing                   
+ csecs()                   cstatus()                 ctime()                  
+ ctitle()                  ctu()                     cusers()                 
+ cv                        cwho()                    dark                     
+ dark2                     database                  @dbck                    
+ dbref #                   dbref2                    dbref functions          
+ dbref number              dbrefs                    @death                   
+ debug                     debug2                    @debugforwardlist        
+ debugforwardlist          dec()                     decode64()               
+ @decompile                @decompile2               @decompile3              
+ decompose()               decrypt()                 default()                
+ delete()                  @desc                     @descformat              
+ @describe                 desert                    @destroy                 
+ @destroy2                 destroy_ok                die()                    
+ @dig                      dig()                     @dig2                    
+ digest()                  @disable                  dismiss                  
+ dist2d()                  dist3d()                  div()                    
 
 For more, see Entries-13
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-13
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- doing                     doing()                   @dolist                  
- download                  @drain                    @drop                    
- drop                      drop-tos                  @dump                    
- dynhelp()                 e()                       @ealias                  
- edefault()                @edit                     edit()                   
- @efail                    element()                 elements()               
- elist()                   @elock                    elock()                  
- @emit                     emit()                    empty                    
- @enable                   enactor                   encode64()               
- encrypt()                 endtag()                  @enter                   
- enter                     enter_ok                  @entrances               
- entrances()               eq()                      escape()                 
- etimefmt()                etimefmt2                 etimefmt3                
- @eunlock                  eval()                    evaluation2              
- evaluation order          events                    examine                  
- executor                  exit()                    @exitformat              
+ @doing                    doing                     doing()                  
+ @dolist                   download                  @drain                   
+ @drop                     drop                      drop-tos                 
+ @dump                     dynhelp()                 e()                      
+ @ealias                   edefault()                @edit                    
+ edit()                    @efail                    element()                
+ elements()                elist()                   @elock                   
+ elock()                   @emit                     emit()                   
+ empty                     @enable                   enactor                  
+ encode64()                encrypt()                 endtag()                 
+ @enter                    enter                     enter_ok                 
+ @entrances                entrances()               eq()                     
+ escape()                  etimefmt()                etimefmt2                
+ etimefmt3                 @eunlock                  eval()                   
+ evaluation2               evaluation order          events                   
+ examine                   executor                  exit()                   
 
 For more, see Entries-14
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-14
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- exits                     exits2                    exp()                    
- extract()                 @failure                  failure                  
- fdiv()                    @filter                   filter()                 
- @filter2                  filterbool()              @find                    
- findable()                first()                   @firstexit               
- firstof()                 fixed                     @flag                    
- @flag2                    flag list                 flag permissions         
- flags                     flags()                   flags2                   
- flags list                flip()                    floating                 
- floor()                   floordiv()                fmod()                   
- fn()                      fold()                    fold2                    
- folderstats()             @follow                   follow                   
- followers()               following()               @force                   
- @force2                   foreach()                 foreach2                 
- @forwardlist              fraction()                fullalias()              
- fullname()                @function                 @function2               
+ @exitformat               exits                     exits2                   
+ exp()                     extract()                 @failure                 
+ failure                   fdiv()                    @filter                  
+ filter()                  @filter2                  filterbool()             
+ @find                     findable()                first()                  
+ @firstexit                firstof()                 fixed                    
+ @flag                     @flag2                    flag list                
+ flag permissions          flags                     flags()                  
+ flags2                    flags list                flip()                   
+ floating                  floor()                   floordiv()               
+ fmod()                    fn()                      fold()                   
+ fold2                     folderstats()             @follow                  
+ follow                    followers()               following()              
+ @force                    @force2                   foreach()                
+ foreach2                  @forwardlist              fraction()               
+ fullalias()               fullname()                @function                
 
 For more, see Entries-15
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-15
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- @function3                @function4                function list            
- functions                 functions()               functions2               
- gagged                    @gedit                    gender                   
- @-general                 get                       get()                    
- get_eval()                getpids()                 @give                    
- give                      global commands           globals                  
- go                        going                     goto                     
- grab()                    graball()                 @grep2                   
- @grep                     grep()                    grepi()                  
- gt()                      gte()                     @halt                    
- halt                      hasattr()                 hasattrp()               
- hasattrpval()             hasattrval()              hasflag()                
- haspower()                hastype()                 @haven                   
- haven                     hear_connect              heavy                    
- height()                  help                      here                     
- hidden()                  @hide                     home                     
+ @function2                @function3                @function4               
+ function list             functions                 functions()              
+ functions2                gagged                    @gedit                   
+ gender                    @-general                 get                      
+ get()                     get_eval()                getpids()                
+ @give                     give                      global commands          
+ globals                   go                        going                    
+ goto                      grab()                    graball()                
+ @grep2                    @grep                     grep()                   
+ grepi()                   gt()                      gte()                    
+ @halt                     halt                      hasattr()                
+ hasattrp()                hasattrpval()             hasattrval()             
+ hasflag()                 haspower()                hastype()                
+ @haven                    haven                     hear_connect             
+ heavy                     height()                  help                     
+ here                      hidden()                  @hide                    
 
 For more, see Entries-16
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-16
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- home()                    homes                     @hook                    
- @hook2                    host()                    hostname()               
- html                      html()                    html functions           
- %i                        i18n                      @idescformat             
- @idescribe                @idle                     idle                     
- idle()                    idlesecs()                if()                     
- ifelse()                  ilev()                    iname()                  
- inc()                     index                     index()                  
- @infilter                 info                      information functions    
- inherit                   inherit2                  @inprefix                
- insert()                  interiors                 interiors2               
- internationalization      inum()                    inventory                
- @invformat                ipaddr()                  isdaylight()             
- isdbref()                 isint()                   isnum()                  
- isobjid()                 isword()                  itemize()                
- items()                   iter()                    iter2                    
+ home                      home()                    homes                    
+ @hook                     @hook2                    host()                   
+ hostname()                html                      html()                   
+ html functions            %i                        i18n                     
+ @idescformat              @idescribe                @idle                    
+ idle                      idle()                    idlesecs()               
+ if()                      ifelse()                  ilev()                   
+ iname()                   inc()                     index                    
+ index()                   @infilter                 info                     
+ information functions     inherit                   inherit2                 
+ @inprefix                 insert()                  interiors                
+ interiors2                internationalization      inum()                   
+ inventory                 @invformat                ipaddr()                 
+ isdaylight()              isdbref()                 isint()                  
+ isnum()                   isobjid()                 isword()                 
+ itemize()                 items()                   iter()                   
 
 For more, see Entries-17
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-17
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- itext()                   judge                     jump_ok                  
- jury_ok                   keepalive                 @kick                    
- kill                      @lalias                   lalign()                 
- #lambda                   lambda                    last                     
- last()                    lastip                    last & lastlogout        
- lastlogout                lastsite                  lattr()                  
- lattrp()                  lcon()                    lcstr()                  
- ldelete()                 @leave                    leave                    
- left()                    @lemit                    lemit()                  
- letq()                    lexits()                  @lfail                   
- lflags()                  license                   light                    
- @link                     link()                    linking                  
- link_ok                   @list                     list()                   
- @listen                   @listen2                  listening                
- listening2                listening3                listen_parent            
- list functions            @listmotd                 lists                    
+ iter2                     itext()                   judge                    
+ jump_ok                   jury_ok                   keepalive                
+ @kick                     kill                      @lalias                  
+ lalign()                  #lambda                   lambda                   
+ last                      last()                    lastip                   
+ last & lastlogout         lastlogout                lastsite                 
+ lattr()                   lattrp()                  lcon()                   
+ lcstr()                   ldelete()                 @leave                   
+ leave                     left()                    @lemit                   
+ lemit()                   letq()                    lexits()                 
+ @lfail                    lflags()                  license                  
+ light                     @link                     link()                   
+ linking                   link_ok                   @list                    
+ list()                    @listen                   @listen2                 
+ listening                 listening2                listening3               
+ listen_parent             list functions            @listmotd                
 
 For more, see Entries-18
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-18
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- lit()                     ljust()                   llockflags()             
- llocks()                  lmath()                   ln()                     
- lnum()                    loc()                     locale                   
- localize()                locate()                  locate2                  
- locate3                   @lock                     lock()                   
- @lock10                   @lock2                    @lock3                   
- @lock4                    @lock5                    @lock6                   
- @lock7                    @lock8                    @lock9                   
- lockflags()               locking                   lock list                
- locklist                  lockowner()               locks                    
- locks()                   lock types                locktypes                
- lock types2               locktypes2                @log                     
- log()                     logout                    @logwipe                 
- look                      look2                     looping                  
- loud                      lparent()                 lpids()                  
- lplayers()                lports()                  lpos()                   
+ lists                     lit()                     ljust()                  
+ llockflags()              llocks()                  lmath()                  
+ ln()                      lnum()                    loc()                    
+ locale                    localize()                locate()                 
+ locate2                   locate3                   @lock                    
+ lock()                    @lock10                   @lock2                   
+ @lock3                    @lock4                    @lock5                   
+ @lock6                    @lock7                    @lock8                   
+ @lock9                    lockflags()               locking                  
+ lock list                 locklist                  lockowner()              
+ locks                     locks()                   lock types               
+ locktypes                 lock types2               locktypes2               
+ @log                      log()                     logout                   
+ @logwipe                  look                      look2                    
+ looping                   loud                      lparent()                
+ lpids()                   lplayers()                lports()                 
 
 For more, see Entries-19
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-19
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- lsearch()                 lsearch2                  lsearchr()               
- @lset                     lset()                    lstats()                 
- lt()                      lte()                     lthings()                
- lvcon()                   lvexits()                 lvplayers()              
- lvthings()                lwho()                    lwhoid()                 
- @map2                     macros                    macros2                  
- @mail                     mail                      mail()                   
- mail-admin                maildstats()              @mailfilter              
- mailfilter                mail-folders              mail-forward             
- @mailforwardlist          mailfrom()                mailfstats()             
- mail functions            mail-other                mail-reading             
- mailsend()                mail-sending              mailstats()              
- mailstatus()              mailsubject()             mailtime()               
- @malias                   malias()                  @malias2                 
- @malias3                  @malias4                  @malias5                 
- @map                      map()                     mapsql()                 
+ lpos()                    lsearch()                 lsearch2                 
+ lsearchr()                @lset                     lset()                   
+ lstats()                  lt()                      lte()                    
+ lthings()                 lvcon()                   lvexits()                
+ lvplayers()               lvthings()                lwho()                   
+ lwhoid()                  @map2                     macros                   
+ macros2                   @mail                     mail                     
+ mail()                    mail-admin                maildstats()             
+ @mailfilter               mailfilter                mail-folders             
+ mail-forward              @mailforwardlist          mailfrom()               
+ mailfstats()              mail functions            mail-other               
+ mail-reading              mailsend()                mail-sending             
+ mailstats()               mailstatus()              mailsubject()            
+ mailtime()                @malias                   malias()                 
+ @malias2                  @malias3                  @malias4                 
+ @malias5                  @map                      map()                    
 
 For more, see Entries-20
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-20
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- mapsql2                   master room               match()                  
- matchall()                matching                  math functions           
- max()                     me                        mean()                   
- median()                  member()                  merge()                  
- @message                  message()                 mid()                    
- min()                     mistrust                  mix()                    
- mix2                      mod()                     modulo()                 
- modulus()                 money                     money()                  
- monitor                   @motd                     @move                    
- move                      msecs()                   mtime()                  
- mudname()                 mul()                     munge()                  
- munge2                    munge3                    mushcode                 
- mushcode2                 @mvattr                   mwho()                   
- mwhoid()                  myopic                    %n                       
- @name                     name()                    @nameaccent              
- @nameformat               namegrab()                namegraball()            
+ mapsql()                  mapsql2                   master room              
+ match()                   matchall()                matching                 
+ math functions            max()                     me                       
+ mean()                    median()                  member()                 
+ merge()                   @message                  message()                
+ mid()                     min()                     mistrust                 
+ mix()                     mix2                      mod()                    
+ modulo()                  modulus()                 money                    
+ money()                   monitor                   @motd                    
+ @move                     move                      msecs()                  
+ mtime()                   mudname()                 mul()                    
+ munge()                   munge2                    munge3                   
+ mushcode                  mushcode2                 @mvattr                  
+ mwho()                    mwhoid()                  myopic                   
+ %n                        @name                     name()                   
+ @nameaccent               @nameformat               namegrab()               
 
 For more, see Entries-21
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-21
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- namelist()                nand()                    nattr()                  
- nattrp()                  nchildren()               ncon()                   
- ncond()                   ncondall()                nearby()                 
- neq()                     newbie                    newbie2                  
- newbie3                   @newpassword              news                     
- nexits()                  next()                    nextdbref()              
- nlsearch()                nmwho()                   noaccents                
- no_command                no_leave                  noleave                  
- noname                    non-standard attributes   nor()                    
- nospace                   nospoof                   not()                    
- no_tel                    @notify                   no_warn                  
- nowarn                    nplayers()                @nscemit                 
- nsearch()                 @nsemit                   nsemit()                 
- @nslemit                  nslemit()                 @nsoemit                 
- nsoemit()                 @nspemit                  nspemit()                
- @nsprompt                 nsprompt()                @nsremit                 
+ namegraball()             namelist()                nand()                   
+ nattr()                   nattrp()                  nchildren()              
+ ncon()                    ncond()                   ncondall()               
+ nearby()                  neq()                     newbie                   
+ newbie2                   newbie3                   @newpassword             
+ news                      nexits()                  next()                   
+ nextdbref()               nlsearch()                nmwho()                  
+ noaccents                 no_command                no_leave                 
+ noleave                   noname                    non-standard attributes  
+ nor()                     nospace                   nospoof                  
+ not()                     no_tel                    @notify                  
+ no_warn                   nowarn                    nplayers()               
+ @nscemit                  nsearch()                 @nsemit                  
+ nsemit()                  @nslemit                  nslemit()                
+ @nsoemit                  nsoemit()                 @nspemit                 
+ nspemit()                 @nsprompt                 nsprompt()               
 
 For more, see Entries-22
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-22
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- nsremit()                 @nszemit                  nszemit()                
- nthings()                 @nuke                     null()                   
- num()                     numversion()              nvcon()                  
- nvexits()                 nvplayers()               nvthings()               
- nwho()                    %o                        obj()                    
- object parents            objeval()                 objid()                  
- objmem()                  @obuy                     @odeath                  
- @odescribe                @odrop                    @oefail                  
- @oemit                    oemit()                   @oenter                  
- @ofailure                 @ofollow                  @ogive                   
- @oidescribe               @oleave                   @olfail                  
- @omove                    on-vacation               opaque                   
- @opayment                 @open                     open()                   
- or()                      ord()                     ordinal()                
- @oreceive                 orflags()                 orlflags()               
- orlpowers()               orphan                    @osuccess                
+ @nsremit                  nsremit()                 @nszemit                 
+ nszemit()                 nthings()                 @nuke                    
+ null()                    num()                     numversion()             
+ nvcon()                   nvexits()                 nvplayers()              
+ nvthings()                nwho()                    %o                       
+ obj()                     object parents            objeval()                
+ objid()                   objmem()                  @obuy                    
+ @odeath                   @odescribe                @odrop                   
+ @oefail                   @oemit                    oemit()                  
+ @oenter                   @ofailure                 @ofollow                 
+ @ogive                    @oidescribe               @oleave                  
+ @olfail                   @omove                    on-vacation              
+ opaque                    @opayment                 @open                    
+ open()                    or()                      ord()                    
+ ordinal()                 @oreceive                 orflags()                
+ orlflags()                orlpowers()               orphan                   
 
 For more, see Entries-23
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-23
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- @otport                   @oufail                   @ounfollow               
- @ouse                     outputprefix              outputsuffix             
- owner()                   @oxenter                  @oxleave                 
- @oxmove                   @oxtport                  @ozenter                 
- @ozleave                  %p                        page                     
- page2                     @pageformat               paranoid                 
- @parent                   parent                    parent()                 
- parents                   parents2                  parents3                 
- parents4                  parents5                  parse()                  
- @password                 patchlevels               @payment                 
- @pcreate                  pcreate()                 @pemit                   
- pemit()                   @pemit2                   pi()                     
- pickrand()                pidinfo()                 player                   
- player()                  playermem()               pmatch()                 
- @poll                     poll()                    @poor                    
- ports()                   pos()                     pose                     
+ @osuccess                 @otport                   @oufail                  
+ @ounfollow                @ouse                     outputprefix             
+ outputsuffix              owner()                   @oxenter                 
+ @oxleave                  @oxmove                   @oxtport                 
+ @ozenter                  @ozleave                  %p                       
+ page                      page2                     @pageformat              
+ paranoid                  @parent                   parent                   
+ parent()                  parents                   parents2                 
+ parents3                  parents4                  parents5                 
+ parse()                   @password                 patchlevels              
+ @payment                  @pcreate                  pcreate()                
+ @pemit                    pemit()                   @pemit2                  
+ pi()                      pickrand()                pidinfo()                
+ player                    player()                  playermem()              
+ pmatch()                  @poll                     poll()                   
+ @poor                     ports()                   pos()                    
 
 For more, see Entries-24
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-24
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- pose2                     poss()                    @power                   
- power()                   @power2                   @power3                  
- powers()                  powers2                   powers list              
- powers list2              @prefix                   @pricelist               
- @prompt                   prompt()                  prompt_newlines          
- @ps                       pueblo                    pueblo()                 
- pueblo features           puppet                    puppets                  
- puppets2                  @purge                    queue                    
- quiet                     quit                      @quota                   
- quota()                   r()                       rand()                   
- randword()                read                      @readcache               
- @receive                  recv()                    @recycle                 
- regedit()                 regeditall()              regeditalli()            
- regediti()                regexp                    regexp classes           
- regexp classes2           regexp examples           regexps                  
- regexps2                  regexp syntax             regexp syntax2           
+ pose                      pose2                     poss()                   
+ @power                    power()                   @power2                  
+ @power3                   powers()                  powers2                  
+ powers list               powers list2              @prefix                  
+ @pricelist                @prompt                   prompt()                 
+ prompt_newlines           @ps                       pueblo                   
+ pueblo()                  pueblo features           puppet                   
+ puppets                   puppets2                  @purge                   
+ queue                     quiet                     quit                     
+ @quota                    quota()                   r()                      
+ rand()                    randword()                read                     
+ @readcache                @receive                  recv()                   
+ @recycle                  regedit()                 regeditall()             
+ regeditalli()             regediti()                regexp                   
+ regexp classes            regexp classes2           regexp examples          
+ regexps                   regexps2                  regexp syntax            
 
 For more, see Entries-25
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-25
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- regexp syntax3            regexp syntax4            regexp syntax5           
- regexp syntax6            regexp syntax7            regexp syntax8           
- registers                 registers2                regmatch()               
- regmatchi()               regrab()                  regraball()              
- regraballi()              regrabi()                 regrep()                 
- regrepi()                 regular expression functions                       
- @rejectmotd               remainder()               @remit                   
- remit()                   remove()                  repeat()                 
- replace()                 rest()                    @restart                 
- restarts()                restarttime()             restrict                 
- restrict2                 restrict3                 reswitch()               
- reswitchall()             reswitchalli()            reswitchi()              
- reverse()                 revwords()                r-function               
- right()                   rjust()                   rloc()                   
- rnum()                    room                      room()                   
- root()                    round()                   royalty                  
+ regexp syntax2            regexp syntax3            regexp syntax4           
+ regexp syntax5            regexp syntax6            regexp syntax7           
+ regexp syntax8            registers                 registers2               
+ regmatch()                regmatchi()               regrab()                 
+ regraball()               regraballi()              regrabi()                
+ regrep()                  regrepi()                                          
+ regular expression functions                        @rejectmotd              
+ remainder()               @remit                    remit()                  
+ remove()                  repeat()                  replace()                
+ rest()                    @restart                  restarts()               
+ restarttime()             restrict                  restrict2                
+ restrict3                 reswitch()                reswitchall()            
+ reswitchalli()            reswitchi()               reverse()                
+ revwords()                r-function                right()                  
+ rjust()                   rloc()                    rnum()                   
+ room                      room()                    root()                   
 
 For more, see Entries-26
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-26
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- rquota                    rules                     @runout                  
- @rwall                    %s                        s()                      
- safe                      say                       @scan                    
- scan()                    score                     scramble()               
- screenheight              screenwidth               @search                  
- search()                  @search2                  search2                  
- @search3                  @search4                  @search5                 
- secs()                    secure()                  @select                  
- semaphores                semaphores2               semaphores3              
- semaphores4               semaphores5               semaphores6              
- semipose                  sent()                    session                  
- @set                      set()                     setdiff()                
- setinter()                setq()                    setq2                    
- setq3                     setr()                    setting-attributes       
- setunion()                @sex                      sex                      
- s-function                sha0()                    shared                   
+ round()                   royalty                   rquota                   
+ rules                     @runout                   @rwall                   
+ %s                        s()                       safe                     
+ say                       @scan                     scan()                   
+ score                     scramble()                screenheight             
+ screenwidth               @search                   search()                 
+ @search2                  search2                   @search3                 
+ @search4                  @search5                  secs()                   
+ secure()                  @select                   semaphores               
+ semaphores2               semaphores3               semaphores4              
+ semaphores5               semaphores6               semipose                 
+ sent()                    session                   @set                     
+ set()                     setdiff()                 setinter()               
+ setq()                    setq2                     setq3                    
+ setr()                    setting-attributes        setunion()               
+ @sex                      sex                       s-function               
 
 For more, see Entries-27
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-27
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- shared players            shared players2           shl()                    
- shr()                     shuffle()                 @shutdown                
- sign()                    sin()                     @sitelock                
- @sitelock2                @sitelock3                slay                     
- socket commands           softcode                  sort()                   
- sortby()                  sorting                   sortkey()                
- soundex()                 soundex2                  soundlike()              
- soundslike()              space()                   speak()                  
- speak2                    speak3                    speak4                   
- speak5                    speak6                    speak7                   
- speakpenn()               spellnum()                splice()                 
- spoofing                  @sql                      sql()                    
- sqlescape()               sql functions             sqrt()                   
- squish()                  @squota                   ssl()                    
- stack                     starttime()               @startup                 
- @stats                    stats()                   stddev()                 
+ sha0()                    shared                    shared players           
+ shared players2           shl()                     shr()                    
+ shuffle()                 @shutdown                 sign()                   
+ sin()                     @sitelock                 @sitelock2               
+ @sitelock3                slay                      socket commands          
+ softcode                  sort()                    sortby()                 
+ sorting                   sortkey()                 soundex()                
+ soundex2                  soundlike()               soundslike()             
+ space()                   speak()                   speak2                   
+ speak3                    speak4                    speak5                   
+ speak6                    speak7                    speakpenn()              
+ spellnum()                splice()                  spoofing                 
+ @sql                      sql()                     sqlescape()              
+ sql functions             sqrt()                    squish()                 
+ @squota                   ssl()                     stack                    
+ starttime()               @startup                  @stats                   
 
 For more, see Entries-28
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-28
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- step2                     step()                    sticky                   
- strcat()                  string functions          strings                  
- stringsecs()              strinsert()               stripaccents()           
- stripansi()               strlen()                  strmatch()               
- strreplace()              sub()                     subj()                   
- substitutions             substitutions2            substitutions3           
- substitutions4            @success                  success                  
- suspect                   @sweep                    @switch                  
- switch()                  @switch2                  switch2                  
- switchall()               switches                  switch wildcards         
- t()                       table()                   tag()                    
- tagwrap()                 take                      tan()                    
- teach                     tel()                     @teleport                
- tel_ok                    terminfo()                terse                    
- testlock()                textentries()             textfile()               
- think                     time()                    timefmt()                
+ stats()                   stddev()                  step2                    
+ step()                    sticky                    strcat()                 
+ string functions          strings                   stringsecs()             
+ strinsert()               stripaccents()            stripansi()              
+ strlen()                  strmatch()                strreplace()             
+ sub()                     subj()                    substitutions            
+ substitutions2            substitutions3            substitutions4           
+ @success                  success                   suspect                  
+ @sweep                    @switch                   switch()                 
+ @switch2                  switch2                   switchall()              
+ switches                  switch wildcards          t()                      
+ table()                   tag()                     tagwrap()                
+ take                      tan()                     teach                    
+ tel()                     @teleport                 tel_ok                   
+ terminfo()                terse                     testlock()               
+ textentries()             textfile()                think                    
 
 For more, see Entries-29
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-29
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- timefmt2                  time functions            timestring()             
- topics                    topics2                   @tport                   
- tr()                      track_money               translation              
- transparent               transparent2              @trigger                 
- @trigger2                 trim()                    trimpenn()               
- trimtiny()                trunc()                   trust                    
- trust2                    type()                    types2                   
- types of objects          u()                       u2                       
- u3                        ucstr()                   udefault()               
- @ufail                    ufun()                    ufun2                    
- ufun3                     ulambda()                 uldefault()              
- ulocal()                  ulocal2                   @ulock                   
- @undestroy                unfindable                @unfollow                
- unfollow                  uninspected               unique()                 
- @unlink                   @unlock                   @unrecycle               
- unregistered              unsetq()                  @uptime                  
+ time()                    timefmt()                 timefmt2                 
+ time functions            timestring()              topics                   
+ topics2                   @tport                    tr()                     
+ track_money               translation               transparent              
+ transparent2              @trigger                  @trigger2                
+ trim()                    trimpenn()                trimtiny()               
+ trunc()                   trust                     trust2                   
+ type()                    types2                    types of objects         
+ u()                       u2                        u3                       
+ ucstr()                   udefault()                @ufail                   
+ ufun()                    ufun2                     ufun3                    
+ ulambda()                 uldefault()               ulocal()                 
+ ulocal2                   @ulock                    @undestroy               
+ unfindable                @unfollow                 unfollow                 
+ uninspected               unique()                  @unlink                  
+ @unlock                   @unrecycle                unregistered             
 
 For more, see Entries-30
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-30
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- @uptime2                  @use                      use                      
- user-defined2             user-defined commands     utctime()                
- utility functions         @uunlock                  v()                      
- vadd()                    val()                     valid()                  
- vcross()                  vdim()                    vdot()                   
- @verb                     @verb2                    @verb3                   
- @verb4                    verbose                   verbs                    
- @version                  version()                 v-function               
- visible()                 visual                    vmag()                   
- vmax()                    vmin()                    vmul()                   
- vrml                      @vrml_url                 vsub()                   
- vunit()                   @wait                     @wait2                   
- @wait3                    @wall                     @warnings                
- warnings                  @warnings2                @warnings3               
- warnings list             warnings list2            @wcheck                  
- where()                   @whereis                  whisper                  
+ unsetq()                  @uptime                   @uptime2                 
+ @use                      use                       user-defined2            
+ user-defined commands     utctime()                 utility functions        
+ @uunlock                  v()                       vadd()                   
+ val()                     valid()                   vcross()                 
+ vdim()                    vdot()                    @verb                    
+ @verb2                    @verb3                    @verb4                   
+ verbose                   verbs                     @version                 
+ version()                 v-function                visible()                
+ visual                    vmag()                    vmax()                   
+ vmin()                    vmul()                    vrml                     
+ @vrml_url                 vsub()                    vunit()                  
+ @wait                     @wait2                    @wait3                   
+ @wall                     @warnings                 warnings                 
+ @warnings2                @warnings3                warnings list            
+ warnings list2            @wcheck                   where()                  
 
 For more, see Entries-31
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-31
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- whisper2                  who                       width()                  
- wildcards                 wildgrep()                wildgrepi()              
- @wipe                     wipe()                    with                     
- @-wizard                  wizard                    @wizmotd                 
- @wizwall                  wordpos()                 words()                  
- wrap()                    xattr()                   xattrp()                 
- xcon()                    xexits()                  xget()                   
- xmwho()                   xmwhoid()                 xor()                    
- xplayers()                xthings()                 xvcon()                  
- xvexits()                 xvplayers()               xvthings()               
- xwho()                    xwhoid()                  @zemit                   
- zemit()                   @zenter                   zfun()                   
- @zleave                   zmo                       zmp                      
- zmr                       zmt                       zmwho()                  
- zone                      zone()                    zone master objects      
- zone master rooms         zone masters              zone objects             
+ @whereis                  whisper                   whisper2                 
+ who                       width()                   wildcards                
+ wildgrep()                wildgrepi()               @wipe                    
+ wipe()                    with                      @-wizard                 
+ wizard                    @wizmotd                  @wizwall                 
+ wordpos()                 words()                   wrap()                   
+ xattr()                   xattrp()                  xcon()                   
+ xexits()                  xget()                    xmwho()                  
+ xmwhoid()                 xor()                     xplayers()               
+ xthings()                 xvcon()                   xvexits()                
+ xvplayers()               xvthings()                xwho()                   
+ xwhoid()                  @zemit                    zemit()                  
+ @zenter                   zfun()                    @zleave                  
+ zmo                       zmp                       zmr                      
+ zmt                       zmwho()                   zone                     
+ zone()                    zone master objects       zone master rooms        
 
 For more, see Entries-32
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-32
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- zones                     zones2                    z_tel                    
- zwho()                                                                       
+ zone masters              zone objects              zones                    
+ zones2                    z_tel                     zwho()                   
 
 & &Entries
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-

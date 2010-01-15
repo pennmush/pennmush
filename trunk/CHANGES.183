@@ -58,10 +58,11 @@ Minor Changes:
    missing "-" sign for single-digit output.
 
 Functions
- * llocks() without any arguments returns a list of the  standard locks.
+ * llocks() without any arguments returns a list of the standard locks.
  * unsetq(), to erase queue registers. [GM]
  * and[l]flags(), or[l]flags(), andlpowers() and orlpowers() now all return
    #-1 if an invalid flag/power is given. Suggested by AnneLions. [MG]
+ * benchmark(), to benchmark softcode.
 
 Fixes:
  * Using some substitutions on the connect/motd/etc attributes introduced

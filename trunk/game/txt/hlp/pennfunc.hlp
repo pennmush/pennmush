@@ -5218,6 +5218,7 @@ See also: SUBSTITUTIONS, get(), ATTRIBUTES
    password    Test for a valid password.
    command     Test for a valid command name for @command/add
    function    Test for a valid function name for @function
+   flag        Test for a valid flag/power name for @flag/add and @power/add
 
   > think valid(name,Foobar)
   1 

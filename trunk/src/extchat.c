@@ -3193,7 +3193,7 @@ FUNCTION(fun_clock)
 /* ARGSUSED */
 FUNCTION(fun_cemit)
 {
-  int ns = string_prefix(called_as, "NS");
+  int ns = (string_prefix(called_as, "NS")  && Can_Nspemit(executor));
   int flags = PEMIT_SILENT;
   flags |= (ns ? PEMIT_SPOOF : 0);
   if (!command_check_byname(executor, ns ? "@nscemit" : "@cemit") ||
@@ -3336,7 +3336,7 @@ FUNCTION(fun_crecall)
 
 COMMAND(cmd_cemit)
 {
-  int spflags = !strcmp(cmd->name, "@NSCEMIT") ? PEMIT_SPOOF : 0;
+  int spflags = (!strcmp(cmd->name, "@NSCEMIT") && Can_Nspemit(player) ? PEMIT_SPOOF : 0);
   SPOOF(player, cause, sw);
   if (SW_ISSET(sw, SWITCH_SILENT))
     spflags |= PEMIT_SILENT;

@@ -70,7 +70,7 @@ FUNCTION(fun_valid)
 /* ARGSUSED */
 FUNCTION(fun_pemit)
 {
-  int ns = string_prefix(called_as, "NS");
+  int ns = (string_prefix(called_as, "NS")  && Can_Nspemit(executor));
   int flags = PEMIT_LIST | PEMIT_SILENT;
   dbref saved_orator = orator;
   if (!command_check_byname(executor, ns ? "@nspemit" : "@pemit") ||
@@ -103,7 +103,7 @@ FUNCTION(fun_message)
 /* ARGSUSED */
 FUNCTION(fun_oemit)
 {
-  int ns = string_prefix(called_as, "NS");
+  int ns = (string_prefix(called_as, "NS")  && Can_Nspemit(executor));
   int flags = ns ? PEMIT_SPOOF : 0;
   if (!command_check_byname(executor, ns ? "@nsoemit" : "@oemit") ||
       fun->flags & FN_NOSIDEFX) {
@@ -117,7 +117,7 @@ FUNCTION(fun_oemit)
 /* ARGSUSED */
 FUNCTION(fun_emit)
 {
-  int ns = string_prefix(called_as, "NS");
+  int ns = (string_prefix(called_as, "NS")  && Can_Nspemit(executor));
   int flags = ns ? PEMIT_SPOOF : 0;
   if (!command_check_byname(executor, ns ? "@nsemit" : "@emit") ||
       fun->flags & FN_NOSIDEFX) {
@@ -131,7 +131,7 @@ FUNCTION(fun_emit)
 /* ARGSUSED */
 FUNCTION(fun_remit)
 {
-  int ns = string_prefix(called_as, "NS");
+  int ns = (string_prefix(called_as, "NS")  && Can_Nspemit(executor));
   int flags = ns ? PEMIT_SPOOF : 0;
   if (!command_check_byname(executor, ns ? "@nsremit" : "@remit") ||
       fun->flags & FN_NOSIDEFX) {
@@ -145,7 +145,7 @@ FUNCTION(fun_remit)
 /* ARGSUSED */
 FUNCTION(fun_lemit)
 {
-  int ns = string_prefix(called_as, "NS");
+  int ns = (string_prefix(called_as, "NS")  && Can_Nspemit(executor));
   int flags = ns ? PEMIT_SPOOF : 0;
   if (!command_check_byname(executor, ns ? "@nslemit" : "@lemit") ||
       fun->flags & FN_NOSIDEFX) {
@@ -159,7 +159,7 @@ FUNCTION(fun_lemit)
 /* ARGSUSED */
 FUNCTION(fun_zemit)
 {
-  int ns = string_prefix(called_as, "NS");
+  int ns = (string_prefix(called_as, "NS")  && Can_Nspemit(executor));
   int flags = ns ? PEMIT_SPOOF : 0;
   if (!command_check_byname(executor, ns ? "@nszemit" : "@zemit") ||
       fun->flags & FN_NOSIDEFX) {
@@ -173,7 +173,7 @@ FUNCTION(fun_zemit)
 /* ARGSUSED */
 FUNCTION(fun_prompt)
 {
-  int ns = string_prefix(called_as, "NS");
+  int ns = (string_prefix(called_as, "NS")  && Can_Nspemit(executor));
   int flags = PEMIT_LIST | PEMIT_PROMPT;
   if (!command_check_byname(executor, ns ? "@nspemit" : "@pemit") ||
       fun->flags & FN_NOSIDEFX) {

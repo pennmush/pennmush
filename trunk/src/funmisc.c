@@ -30,6 +30,7 @@
 #include "ansi.h"
 
 #ifdef WIN32
+#include <windows.h>
 #pragma warning( disable : 4761)        /* NJG: disable warning re conversion */
 #endif
 
@@ -881,6 +882,7 @@ FUNCTION(fun_benchmark) {
   unsigned int min = UINT_MAX;
   unsigned int max = 0;
   unsigned int total = 0;
+  int i;
 
   if (!is_number(args[1])) {
     safe_str(T(e_nums), buff, bp);
@@ -892,7 +894,7 @@ FUNCTION(fun_benchmark) {
     return;
   }
 
-  for (int i = 0; i < n; i++) {
+  for (i = 0; i < n; i++) {
     uint64_t start;
     unsigned int elapsed;
     tp = tbuf;

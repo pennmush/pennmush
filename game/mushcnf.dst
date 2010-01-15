@@ -18,6 +18,7 @@ mud_name PennMUSH
 # screens will be prefixed with <!--  and suffixed with -->
 # Any HTTP clients trying to access it will be redirected to this url.
 # mud_url http://www.pennmush.org
+mud_url
 
 # The port it's running on. See also ssl_port, later.
 port 4201

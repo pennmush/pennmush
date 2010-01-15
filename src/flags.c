@@ -2208,6 +2208,10 @@ do_flag_add(const char *ns, dbref player, const char *name, char *args_right[])
                   strinitial(ns));
     return;
   }
+  if (!good_flag_name(strupper(name))) {
+    notify_format(player, T("That's not a valid %s name."), strlower(ns));
+    return;
+  }
   Flagspace_Lookup(n, ns);
   /* Do we have a letter? */
   if (!args_right) {
@@ -2705,3 +2709,28 @@ show_command_flags(object_flag_type flagmask, object_flag_type powers)
   *bp = '\0';
   return fbuf;
 }
+
+/** Lookup table for good_flag_name */
+extern char atr_name_table[UCHAR_MAX + 1];
+
+/** Is s a good flag name? We allow the same characters we do in attribute
+ *  names, and the same size limit.
+ * \param s a string to test
+ * \return 1 valid name
+ * \return 0 invalid name
+ */
+int
+good_flag_name(char const *s)
+{
+  const unsigned char *a;
+  int len = 0;
+  if (!s || !*s)
+    return 0;
+  for (a = (const unsigned char *) s; *a; a++, len++)
+    if (!atr_name_table[*a])
+      return 0;
+  if (*(s + len - 1) == '`')
+    return 0;
+  return len <= ATTRIBUTE_NAME_LIMIT;
+}
+

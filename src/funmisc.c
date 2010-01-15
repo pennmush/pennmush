@@ -859,3 +859,58 @@ FUNCTION(fun_allof)
   do_whichof(args, nargs, DO_ALLOF, buff, bp, executor,
              caller, enactor, pe_info);
 }
+
+/* Returns a platform-specific timestamp with microsecond resolution. */
+static uint64_t get_microtimestamp() {
+#ifdef WIN32
+  FILETIME ft;
+  GetSystemTimeAsFileTime(&ft);
+  return (((uint64_t) ft.dwHighDateTime << 32) | ft.dwLowDateTime) / 10;
+#else
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return 1000000ULL * tv.tv_sec + tv.tv_usec;
+#endif
+}
+
+/* ARGSUSED */
+FUNCTION(fun_benchmark) {
+  char tbuf[BUFFER_LEN], *tp;
+  char const *sp;
+  int n;
+  unsigned int min = UINT_MAX;
+  unsigned int max = 0;
+  unsigned int total = 0;
+
+  if (!is_number(args[1])) {
+    safe_str(T(e_nums), buff, bp);
+    return;
+  }
+  n = parse_number(args[1]);
+  if (n < 1) {
+    safe_str(T(e_range), buff, bp);
+    return;
+  }
+
+  for (int i = 0; i < n; i++) {
+    uint64_t start;
+    unsigned int elapsed;
+    tp = tbuf;
+    sp = args[0];
+    start = get_microtimestamp();
+    process_expression(tbuf, &tp, &sp, executor, caller, enactor,
+                       PE_DEFAULT, PT_DEFAULT, pe_info);
+    elapsed = get_microtimestamp() - start;
+    if (elapsed < min) {
+      min = elapsed;
+    } else if (elapsed > max) {
+      max = elapsed;
+    }
+    total += elapsed;
+  }
+
+  safe_format(buff, bp, T("Average: %.2f   Min: %u   Max: %u"),
+              ((double) total) / n, min, max);
+
+  return;
+}

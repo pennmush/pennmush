@@ -896,23 +896,23 @@ FUNCTION(fun_benchmark) {
   }
 
   if (nargs > 2) {
-		/* Evaluate <sendto> argument */
-		tp = tbuf;
-		sp = args[2];
-		process_expression(tbuf, &tp, &sp, executor, caller, enactor,
-		                       PE_DEFAULT, PT_DEFAULT, pe_info);
+    /* Evaluate <sendto> argument */
+    tp = tbuf;
+    sp = args[2];
+    process_expression(tbuf, &tp, &sp, executor, caller, enactor,
+                       PE_DEFAULT, PT_DEFAULT, pe_info);
     *tp = '\0';
-		thing = noisy_match_result(executor, tbuf, NOTYPE, MAT_EVERYTHING);
-		if (!GoodObject(thing)) {
-		  safe_dbref(thing, buff, bp);
-		  return;
-		}
-		if (!okay_pemit(executor, thing)) {
-			notify_format(executor, T("I don't think #%d wants to hear from you."), thing);
-			safe_str("#-1", buff, bp);
-			return;
-		}
-	}
+    thing = noisy_match_result(executor, tbuf, NOTYPE, MAT_EVERYTHING);
+    if (!GoodObject(thing)) {
+      safe_dbref(thing, buff, bp);
+      return;
+    }
+    if (!okay_pemit(executor, thing)) {
+      notify_format(executor, T("I don't think #%d wants to hear from you."), thing);
+      safe_str("#-1", buff, bp);
+      return;
+    }
+  }
 
   for (i = 0; i < n; i++) {
     uint64_t start;
@@ -934,13 +934,13 @@ FUNCTION(fun_benchmark) {
   }
 
   if (thing != NOTHING) {
-		safe_str(tbuf, buff, bp);
-		notify_format(thing, T("Average: %.2f   Min: %u   Max: %u"),
+    safe_str(tbuf, buff, bp);
+    notify_format(thing, T("Average: %.2f   Min: %u   Max: %u"),
               ((double) total) / n, min, max);
-	} else {
+  } else {
     safe_format(buff, bp, T("Average: %.2f   Min: %u   Max: %u"),
               ((double) total) / n, min, max);
-	}
+  }
 
   return;
 }

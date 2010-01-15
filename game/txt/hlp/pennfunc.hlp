@@ -66,7 +66,7 @@ See also: MUSHCODE
   hasattrval()   lattr()        nattr()        obj()          poss()
   regrep()       regrepi()      subj()         udefault()     ufun()
   uldefault()    ulocal()       v()            wildgrep()     wildgrepi()
-  xget()         zfun()         
+  xattr()        xget()         zfun()         
 
 See also: ATTRIBUTES, NON-STANDARD ATTRIBUTES
 & Bitwise functions
@@ -640,10 +640,13 @@ See also: BITWISE FUNCTIONS
 
 See also: after(), first()
 & BENCHMARK()
-  benchmark(<expression>, <number>)
+  benchmark(<expression>, <number>[, <sendto>])
 
   Evaluates <expression> <number> times, and returns the average, minimum,
-  and maximum time it took to evaluate <expression> in microseconds.
+  and maximum time it took to evaluate <expression> in microseconds. If a
+  <sendto> argument is given, benchmark() instead pemits the times to the
+  object <sendto>, and returns the result of the last evaluation of 
+  <expression>.
 
   Example:
     > think benchmark(iter(lnum(1,100), ##), 200)

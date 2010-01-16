@@ -2230,13 +2230,12 @@ See also: right(), mid(), ljust()
   
 See also: @lemit, remit()
 & LETQ()
-  letq([<reg1>, <value1>[, ... , <regN>, <valueN>,] <expr>)
+  letq([<reg1>, <value1>[, ... , <regN>, <valueN>], <expr>)
 
-  letq() saves the current values of the given q-<reg>isters, sets them
-  to new values, evaluates <expr> and then restores the saved
-  registers.  It does not restore registers that are not listed. None
-  of the values can see the updated contents of the registers -- they
-  are only visible to <expr>.
+  letq() saves the current values of the given q-<reg>isters, sets them to 
+  new <value>s, evaluates <expr> and then restores the saved registers. It
+  does not restore registers that are not listed. None of the values can see
+  the updated contents of the registers -- they are only visible to <expr>.
 
   It returns the result of <expr>.
 
@@ -2245,7 +2244,7 @@ See also: @lemit, remit()
     > think setr(A, 1):[letq(A, 2, %qA)]:%qA
     1:2:1
 
-See also: setq(), setr(), localize(), ulocal()
+See also: setq(), setr(), localize(), ulocal(), r()
 & LEXITS()
   lexits(<room>)
 

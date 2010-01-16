@@ -204,13 +204,16 @@ See also: @aconnect, ACTION LISTS, recv(), sent(), cmds()
   in. The @adrop attribute is triggered when <object> is dropped.
   
   When <object> is an exit, @drop is shown to objects going through <object>,
-  and @odrop is shown to objects in the exit's location. @adrop is triggered
+  and @odrop is shown to objects in the exit's destination. @adrop is triggered
   when someone passes through the exit.
   
-  The name of the person dropping/passing through <object> is added to the
-  beginning of @odrop.
+  Example:
+    > @drop Box=You put the box down gently.
+    > @odrop Box=puts the box down gently.
+    
+    > @odrop South=arrives from the North.
   
-See also: drop, empty, ACTION LISTS
+See also: drop, empty, ACTION LISTS, @success
 & @aefail
 & @oefail
 & @efail
@@ -329,8 +332,8 @@ See also: leave, @leave, NO_LEAVE, locktypes, ACTION LISTS
  
   @alias is a special attribute that lists a player's aliases; players
   can be paged by their aliases, matched with *<alias>, and all other game 
-  functions which look up player names will also accept an alias. 
-  The attribute is visible to all players.
+  functions which look up player names will also accept an alias. The 
+  attribute is visible to all players.
 
   Players can have more than one alias, separated by semicolons. It's
   recommended that you include your normal @name in your alias; because you
@@ -340,8 +343,8 @@ See also: leave, @leave, NO_LEAVE, locktypes, ACTION LISTS
   The maximum number of aliases a player may have is controlled by the
   'max_aliases' @config option.
   
-  If the page_aliases config directive is on, the first alias in the
-  list is shown along with the player's name when they page others.
+  If the page_aliases @config option is on, the first alias in the list is 
+  shown along with the player's name when they page others.
   
   The same rules that apply to player names apply to aliases.
 
@@ -358,7 +361,7 @@ See also: @name, alias(), fullalias()
   <limit> is given, every players quota is altered either to <limit> or to
   the number of objects they currently own, whichever is higher.
   
-See also: @quota 
+See also: @quota, @squota
 & @move
 & @omove
 & @amove
@@ -417,122 +420,175 @@ See also: enter, @ealias, leave, ACTION LISTS
 
 See also: give, @cost, buy, MONEY, ACTION LISTS
 & @atport
-  @atport <object>=<action list>
+& @tport
+& @otport
+& @oxtport
+  @tport <object>[=<message>]
+  @otport <object>[=<message>]
+  @oxtport <object> [=<message>]
+  @atport <object>[=<action list>]
 
-  Sets the list of actions that <object> will perform when it is
-  teleported. These actions are done after <object> has arrived
-  in its new location.
-
-  %0 is the object causing the teleport, and %1 is the old location
-  of the teleported object.
-
-See also: @tel, ACTION LISTS, @tport, @otport, @oxtport
+  These attributes contain the message shown to <object> when it is
+  teleported, the message shown to others in the room <object> is teleported
+  to, the message shown to others in the room <object> is teleported from,
+  and the actions to be taken by <object> when it disappears, respectively.
+  
+  In all of these attributes, %0 is the object which teleported <object>,
+  and %1 is <object>'s old location.
+  
+  Example:
+  > @tport me=name(%0) has teleported you from [name(%1)] to [name(here)].
+  > @otport me=appears in a puff of smoke.
+  > @oxtport me=disappears in a puff of smoke.
+  
+See also: @teleport, ACTION LISTS
 & @atrchown
-  @atrchown <object>/<attribute> = <new_owner>.
-  Like @chown except it changes the control of an attribute from one person
-  to another. You may only @atrchown attributes that you can normally set,
-  and unless you're a wizard, you can only @atrchown attributes to yourself.
+  @atrchown <object>/<attribute>=<new owner>
+  
+  These command changes the ownership of the attribute <attribute> on
+  <object> to <new owner>. You can only @atrchown attributes which you can
+  set. Wizards can @atrchown to any player, while mortals can only @atrchown
+  attributes to themselves. Only players can own attributes; if <new owner>
+  is not a player, <new owner>'s owner is used instead.
 
 See also: @atrlock, ATTRIBUTES, NON-STANDARD ATTRIBUTES
 & @atrlock
-  @atrlock <object>/<attribute> = [on|off].
-
-  If 'on' is specified, it 'locks' the specified attribute on the object.
-  If the attribute is owned by someone other than you, you will gain
-  ownership of it.  If an attribute is unlocked, then anyone who controls
-  the object may change it.  If it is locked, only wizards and the attribute's
-  owner (Assuming the owner controls the object) can change it. Wizards may
-  lock/unlock anyones attributes.  If you specify 'off' it will unlock a
-  locked attribute. Specifying neither will return the current value of the
-  lock. You can only lock or unlock attributes you can normally set.
+  @atrlock <object>/<attribute>
+  @atrlock <object>/<attribute=[on|off]
+  
+  The first form of this command tells you whether or not the given attribute
+  is locked.
+  
+  The second form attempts to lock (for 'on') or unlock (for 'off') the given
+  attribute. You automatically gain ownership of the attribute (as per 
+  @atrchown) when you lock it. Locked attributes cannot be altered by anyone
+  but Wizards and the attribute's owner (though the owner may be unable to
+  alter the attribute for other reasons, such as not controlling <object>).
+  You must be able to set an attribute in order to lock it.
 
 See also: @atrchown, ATTRIBUTES, NON-STANDARD ATTRIBUTES
 & @asuccess
-  @asuccess <object> = <action list>
+& @success
+& @osuccess
+  @success <object>[=<message>] 
+  @osuccess <object>[=<message>]
+  @asuccess <object>[=<action list>]
+  
+  For players and things, these attributes contain the message shown to
+  someone who picks up <object> with the "get" command, the message shown
+  to others when someone gets <object>, and the actions to be taken by
+  <object> when someone gets it, respectively.
+  
+  For exits, they contain the message shown to an object passing through the
+  exit <object>, the message shown in the exit's source when someone passes
+  through it, and the actions to be taken by the exit when someone passes
+  through it, respectively.
+  
+  Example:
+    > @success Door=You open the door and step inside.
+    > @osuccess Door=opens the door and steps inside.
+    
+    > @success Box=You pick up the box.
+    > @osuccess Box=picks up the box.
 
-  Sets the actions to be taken when the @lock of an object is passed.
-  For things/players, this means picking them up. For exits, this means
-  going through them. 
-
-See also: @success, @osuccess, get, @lock, EXITS, ACTION LISTS
+See also: get, goto, @lock, SUCCESS, FAILURE, @odrop, ACTION LISTS
 & @attribute
   @attribute <attrib>
-  @attribute/access[/retroactive] <attrib> = <flag list or "none">
+  @attribute/access[/retroactive] <attrib>=<flag list>
   @attribute/delete <attrib>
-  @attribute/rename <attrib> = <new name>
+  @attribute/rename <attrib>=<new name>
 
-  @attribute is a wizard-only command which modify's the MUSH's
-  table of standard attributes (use @list/attribs to list them).
-  A standard attribute is one that can be set with @<attrib> instead
-  of &<attrib>, and which, when set, has a predefined set of
-  initial permissions.
+  The @attribute command displays and modifies the MUSH's standard
+  attributes (see "@list/attributes" for a list of them).
+  
+  *** Unlike TinyMUSH, changes to the PennMUSH attribute table are not saved 
+  *** across shutdowns. Use these commands from God's @startup to ensure
+  *** they are run at each startup.
 
-  *** Unlike TinyMUSH, changes to the PennMUSH attribute table
-  *** are not saved across shutdowns. Use these commands from
-  *** God's @startup to insure they are run at each startup.
-
-  Used without switches, @attribute shows info about a standard attrib.
-
-  @attribute/access adds a new standard attribute into the table,
-  associating it with the given space-separated list of full flag names.
-  See 'help attribute flags' for possible flags. A flag list of "none" removes
-  all flag associations.
-  If the /retroactive switch is added, the flags are assigned to every copy
-  of the attribute that already exists in the database.
-
+  The first form of the command displays the full name of the attribute
+  <attrib>, along with the its attribute flags, and the dbref of the player 
+  who added it to the attribute table.
+  
+  @attribute/access adds <attrib> as a new standard attribute, with the
+  default attribute flags <flag list>. If <attrib> is already a standard
+  attribute, this command modifies its default attribute flags. Use "none"
+  for <flag list> if you don't want any default attribute flags. If the
+  /retroactive switch is given, all existing copies of the attribute will be
+  @atrchown'd to the player running the command, and will have its flags
+  changed to <flag list>.
+  
   @attribute/delete removes a standard attribute from the table.
   @attribute/rename renames a standard attribute. 
-& @ause
-  @ause <object> = <action list>
-
-  Sets the actions to be taken when an object is successfully "used".
   
-See also: use, @use, ACTION LISTS, @charges, @runout
+See also: ATTRIBUTEs, STANDARD ATTRIBUTES, attribute flags, @set, @atrchown
+& @ause
+& @use
+& @ouse
+  @use <object>[=<message>]
+  @ouse <object>[=<message>]
+  @ause <object>[=<action list>]
+  
+  These attributes contain the message shown to someone who successfully uses
+  <object>, the message shown to others when someone uses <object>, and the
+  actions to be taken by <object> when it is used, respectively.
+  
+  Example:
+    > @use Jack-In-The-Box=You wind the handle.
+    > @ouse Jack-In-The-Box=winds the handle.
+    > @ause Jack-In-The-Box=@wait 3=POSE pops up with a bang!
+    > use Jack-In-The-Box
+    
+See also: use, @charges, @runout, ACTION LISTS
 & @away
-  @away <player> = <message>
+  @away <player>[=<message>]
 
-  This message is sent to a player who tries to page you when you are
-  not connected, if it evaluates to something non-null.
+  If <message> evaluates to something non-null, it will be shown to anyone
+  who pages <player> when she is not connected.
+  
+  Example: 
+    > @away me=I'm not here, please send me @mail instead.
 
-  Example: @away me=I'm not here, please send me @mail instead.
-
+See also: @idle, @haven
 & @boot
   @boot[/silent] <player>
-  @boot/port[/silent] <descriptor number>
+  @boot/port <descriptor number>
   @boot/me
 
-  Disconnects the player from the game, with a standard message unless
-  the /silent switch is given. 
+  The first form of this command disconnects <player>'s latest connection
+  from the game. If the /silent switch is given, the message telling <player>
+  he was booted is suppressed.
+  
+  The /port switch disconnects a particular descriptor (as shown under "Des"
+  in the Wizard WHO, returned by lports(), etc).
 
-  The /port switch takes a descriptor number instead (the "Port" number
-  in WHO for wizards).
+  The /me switch boots any single descriptor for the player using the command
+  which has been idle for over 1 minute. Players can use this command to 
+  terminate hung connections.
 
-  The /me switch boots any single descriptor for the same player which
-  has been idle for at least 1 minute. Players can use this command
-  to terminate hung connections.
+  Only admin and those with the "boot" power can @boot other players.
 
-  Only admin and those with the "boot" power can @boot other players. 
-
+See also: QUIT, LOGOUT
 & @BREAK
 & @ASSERT
-  @break  <boolean>[=<command list>]
-  @assert <boolean>[=<command list>]
+  @break  <boolean>[=<action list>]
+  @assert <boolean>[=<action list>]
 
   @break stops the execution of further commands in the current action
   list if <boolean> is a true value. It doesn't affect new queue entries
   made by previous commands in the action list. Very useful to people who
-  don't like @switch. If <command> is given, it is executed instead of
-  the rest of the commands in the current queue.
+  don't like @switch. If <action list> is given, it is executed instead of
+  the rest of the commands in the current action list.
 
   @assert does the inverse: it stops execution if <boolean> evaluates to false.
 
   Examples:
-  > @va obj=$testme *:@pemit %#=You try a test;
-                      @break [lt(%0,10)] = @pemit %#=But you're too low!;
-		      @pemit %#=And you succeed!
+  > @va obj=$testme *:@pemit %#=You try a test ;
+                      @break lt(%0,10)=@pemit %#=But you're too low! ;
+		                  @pemit %#=And you succeed!
   > testme 0
   You try a test
   But you're too low!
+  
   > testme 10
   You try a test
   And you succeed!
@@ -546,9 +602,9 @@ See also: use, @use, ACTION LISTS, @charges, @runout
    Third. If you figured that out, you have a very good understanding
    of the PennMUSH queue. :)
 
-See also: ACTION LISTS, QUEUE, BOOLEAN VALUES
+See also: ACTION LISTS, QUEUE, BOOLEAN VALUES, @switch
 & @charges
-  @charges <object> = <integer>
+  @charges <object>[=<integer>]
 
   Allows you to limit the number of times an object can be "used". 
   The "charges" attribute will be decreased by one each time the
@@ -559,55 +615,52 @@ See also: use, @runout, @ause
 & @chown
   @chown[/preserve] <object>=<player>
 
-  Changes the ownership of <object> to <player>. You can chown things,
-  rooms, or exits. To chown a thing, you have to be carrying it. 
-  If you do not own an object, you can only chown it if it is CHOWN_OK.
-  If you're not a Wizard, you can only @chown objects to yourself or
-  to a Zone Master whose zone-lock you pass.
+  Changes the ownership of <object> to <player>. You can chown things, rooms
+  or exits. Players can't be @chown'd - they always own themselves. To chown 
+  a thing, you have to be carrying it. If you do not own an object, you can 
+  only chown it if it has the CHOWN_OK flag. If you're not a Wizard, you can 
+  only @chown objects to yourself or a Zone Master whose zone-lock you pass.
 
-  Normally, @chown'ing an object clears privileged flags and powers,
-  and sets the object halt.  Wizards may use @chown/preserve to chown
-  an object, preserving these privileges and not setting the object
-  halt. Doing this to an active object with queued commands is not
-  recommended, and may have strange and insecure effects.
+  Normally, @chown'ing an object clears privileged flags and powers, and sets
+  the object halt. Wizards can use @chown/preserve to avoid this. Doing this 
+  to an active object with queued commands is not recommended, and may have 
+  strange and insecure effects.
 
   Examples:
-    (for a room)    @chown here=me
-    (for an object) @chown box=Soundwave
-  
-  Players can't be @chowned; they always own themselves.
+    > @chown here=me (for a room)
+    > @chown box=Soundwave (for a thing)
 
-See also: CHOWN_OK, Zone Masters
+See also: CHOWN_OK, Zone Masters, @chownall
 & @chownall
-  @chownall[/preserve] <player> [= <target_player>]
+  @chownall[/preserve] <player>[=<new owner>]
 
-  Transfers ownership of all the objects that the player owns to 
-  <target_player>. If the target player is not included, then all 
-  the objects are chowned to the person executing the command. 
-  This is a wizard-only command. The /preserve switch keeps privileged
-  flags and powers instead of clearing them, and doesn't halt them.
+  This command @chowns all objects currently owned by <player> to the player
+  <new owner>, or to the person running the command if no <new owner> is
+  given. All the objects will have priviledged flags and powers cleared, and 
+  be set halt, unless the /preserve switch is given.
+  
+  This command can only be used by Wizards.
 
 See also: @chown
 & @chzone
-  @chzone <object>=<zone master> 
+  @chzone <object>=<zone> 
   @chzone <object>=none
 
-  The first form of this command changes the ZONE of <object> to
-  <zone master>. This puts the object on that zone and may (if the
-  zone_control_zmp_only option is off) allow anyone who passes the
-  zone-lock of the zone master to make changes to the object. Any
-  kind of object can be @chzoned, and any kind of object can be used
-  as the zone master.
+  The first form of this command changes the zone of <object> to <zone>. 
+  This puts the object on that zone and may (if the zone_control_zmp_only 
+  @config option is off) allow anyone who passes the Zone @lock of <zone> to
+  control <object>. Any kind of object can be @chzoned, and any kind of 
+  object can be used as a zone.
 
-  The second form of this command resets the zone of <object> to *NOTHING*.
-  Anyone can reset the zone of an object s/he owns.
+  The second form of this command removes <object> from its current zone, 
+  leaving it unzoned. Anyone can reset the zone of an object he owns.
 
-  If a player is @chzoned, anything s/he makes afterwards will start out
-  with that Zone, but none of the objects that s/he presently owns will
-  have their Zone changed. Players can @chzone themselves to a master if
-  they own it. Otherwise, only wizards can @chzone players.
-
-(continued in help @chzone2)
+  If a player is @chzoned, anything objects he creates from that point on 
+  will automatically be on the same zone. Objects the player already owns
+  are not affected. Players can only @chzone themselves to a zone if they
+  own it, though wizards can @chzone players to any zone.
+  
+  Continued in 'help @chzone2'.  
 & @chzone2
 
   To see the Zone of an object, you can use either 'brief' or 'examine'
@@ -624,7 +677,7 @@ See also: @chown
   that you do not @chzone admin- or wizard-owned objects to any zone
   that less privileged players have access to.
 
-See also: ZONES, @chzoneall
+See also: ZONES, @chzoneall, zone()
 & @chzoneall
   @chzoneall <player>=<zone master>
 
@@ -2448,48 +2501,6 @@ See also: go, @move, @omove, @amove
   Ex: @open Up;u;climb = #255, Down;dow;do;d;fall
 
 See also: EXITS, @link, @dig
-& @osuccess
-  @osuccess <object> [=<message>]
-
-  Sets the message that is shown to others whenever someone passes the 
-  object's Basic lock. For players and things, this means picking them up.
-  For exits, this means going through the exit, and the osuccess message
-  is shown to those in the room the player has just left. This message 
-  automatically inserts the name of the person at the beginning.
-
-  @osucc's are very useful for allowing people to follow someone around
-  if the name of the exit is included in the message. It is recommended 
-  that you put @osuccs on all exits and all takeable objects.
-
-  Ex: @osucc North=heads north into the catacombs.
-  
-  If the =<message> part is omitted, the message will be reset.
-
-See also: take, @success, @asuccess, @lock, FAILURE, NONAME, NOSPACE
-& @otport
-  @otport <object> [=<message>]
-
-  Sets the <message>, which will be prefixed by <object>'s name,
-  that will be shown to the others in the room that the <object>
-  is teleported to. If you want to set a message that will be shown
-  to the room that the object is teleported OUT of, use @oxtport.
-
-  %0 is the object causing the teleport, and %1 is the old location
-  of the teleported object.
-
-  If the =<message> part is omitted, the message will be reset.
-
-See also: @teleport, @oxtport
-& @ouse
-  @ouse <object> [=<message>]
-
-  Sets the message that will be shown to others whenever someone successfully
-  uses <object>. The name of the person using the object will automatically
-  be inserted at the beginning.
-
-  If the =<message> part is omitted, the message will be reset.
-
-See also: use, @use, @ause, @charges, @runout
 & @oxleave
   @oxleave <object> [= <message>]
 
@@ -2500,17 +2511,6 @@ See also: use, @use, @ause, @charges, @runout
   If the =<message> part is omitted, the message will be reset.
 
 See also: leave, @leave, @oleave, @aleave
-& @oxtport
-  @oxtport <object> [=<message>]
-  
-  Sets the <message>, which will be prefixed by <object>'s name,
-  that will be shown to those in the room that the object has
-  left via @teleport. If you want to show a message to the room the
-  object has arrived in, use @otport.
-
-  If the =<message> part is omitted, the message will be reset.
-
-See also: @teleport, @otport, @atport
 & @parent
   @parent <object> = <parent>
  
@@ -3157,17 +3157,6 @@ See also: @function, ACTION LISTS
 
   In the remaining forms, display statistics or histograms about the
   chunk (attribute) memory system.
-& @success
-  @success <object> [=<message>]. 
-
-  Sets the message that is shown to someone who successfully passes
-  the basic lock of <object>. For things and players, this means picking
-  them up. For exits, this means going through the exit.
-
-  Ex.: @succ Box=You pick up the box.
-       @succ Door=You walk through the door.
-
-See also: @osuccess, @asuccess
 & @sweep
   @sweep [connected | here | inventory | exits ]
  
@@ -3256,15 +3245,6 @@ See also: switch wildcards, @select, switch()
   the home command, and does not act like a normal teleport.
 
 See also: JUMP_OK, NO_TEL, @oxtport, @tport, @otport, @atport, @lock
-& @tport
-  @tport <object> [=<message>]
-
-  Sets the <message> shown to <object> when <object> is teleported.
-
-  %0 is the object causing the teleport, and %1 is the old location
-  of the teleported object.
-
-See also: @otport, @atport, @oxtport
 & @trigger
   @trigger <object>/<attribute> [=<value 0>,<val. 1>,...,<val 9>]
 
@@ -3347,13 +3327,6 @@ See also: @link, DROP-TO
   Removes the lock on <object>. It can take as many switches as @lock can. 
 
 See also: @lock, locktypes
-& @use
-  @use <object> [=<message>]
-
-  Sets the message that is displayed to someone who successfully uses 
-  <object>. If =<message> is omitted, the message is reset to nothing.
-
-See also: use, @ouse, @ause, @charges, @runout
 & @uunlock
   @uunlock <object>
 

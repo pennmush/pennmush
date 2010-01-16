@@ -66,6 +66,8 @@ Functions
    @flag/add and @power/add. [MG]
 
 Fixes:
+ * Bug caused by silly assumptions in list2arr() regarding remove_markup
+   fixed. Reported by Stoko@M*U*S*H. [GM]
  * Using some substitutions on the connect/motd/etc attributes introduced
    in p11 could cause a crash. Reported by Minion@M*U*S*H. [GM]
  * Substitions on the connect/motd/etc attributes now work as expected

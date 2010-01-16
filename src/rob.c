@@ -234,21 +234,16 @@ do_buy(dbref player, char *item, char *from, int price)
     for (i = 0; i < count; i++) {
       if (!strncasecmp(finditem, r[i], len)) {
         /* Check cost */
-        cost = strchr(r[i], ':');
-        if (!cost)
-          continue;
-        cost++;
+        cost = r[i] + len;
         if (!*cost)
           continue;
-        do_log(LT_WIZ, player, player, "Log. %s Cost: %s\n", finditem, cost);
         costcount = list2arr(c, BUFFER_LEN / 2, cost, ',');
         for (ci = 0; ci < costcount; ci++) {
           cost = c[ci];
-          do_log(LT_WIZ, player, player, "Log. %s ci: %d, cost: %s\n", finditem, ci, cost);
           /* Formats:
            * 10,2000+,10-100
            */
-          if ((plus = strchr(cost, '-')) != NULL) {
+          if ((plus = strchr(cost, '-'))) {
             *(plus++) = '\0';
             if (!is_strict_integer(cost))
               continue;
@@ -261,7 +256,7 @@ do_buy(dbref player, char *item, char *from, int price)
             } else if (price >= low && price <= high) {
               boughtit = price;
             }
-          } else if ((plus = strchr(cost, '+')) != NULL) {
+          } else if ((plus = strchr(cost, '+'))) {
             *(plus++) = '\0';
             if (!is_strict_integer(cost))
               continue;
@@ -282,7 +277,6 @@ do_buy(dbref player, char *item, char *from, int price)
             continue;
           }
           if (boughtit >= 0) {
-            do_log(LT_WIZ, player, player, "Log. %s bought it!\n", Name(player));
             if (!payfor(player, boughtit)) {
               affordable = 0;
               boughtit = 0;
@@ -293,13 +287,11 @@ do_buy(dbref player, char *item, char *from, int price)
               *bp = '\0';
             for (bp = finditem; *bp; bp++)
               *bp = DOWNCASE(*bp);
-            do_log(LT_WIZ, player, player, "Log. Formatting buff.\n");
             bp = buff;
             safe_format(buff, &bp, "You buy a %s from %s.",
                         finditem, Name(vendor));
             *bp = '\0';
             bp = obuff;
-            do_log(LT_WIZ, player, player, "Log. Formatting obuff.\n");
             safe_format(obuff, &bp, "buys a %s from %s.",
                         finditem, Name(vendor));
             buy_env[0] = finditem;
@@ -307,10 +299,8 @@ do_buy(dbref player, char *item, char *from, int price)
             bp = buycost;
             safe_integer(boughtit, buycost, &bp);
             *bp = '\0';
-            do_log(LT_WIZ, player, player, "Calling real_did_it.\n");
             real_did_it(player, vendor, "BUY", buff, "OBUY", obuff, "ABUY",
                         NOTHING, buy_env, NA_INTER_SEE);
-            do_log(LT_WIZ, player, player, "Returning.");
             return;
           }
         }

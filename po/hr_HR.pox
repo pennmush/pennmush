@@ -2123,6 +2123,11 @@ msgstr "Izlazi s flagom AUDIBLE u ovoj sobi su aktivirani."
 msgid "Audible exits in this room have been deactivated."
 msgstr "Izlazi s flagom AUDIBLE u ovoj sobi su deaktivirani."
 
+#: funmisc.c:915
+#, c-format
+msgid "Average: %.2f   Min: %u   Max: %u"
+msgstr "Prosjek: %.2f   Min: %u   Max: %u"
+
 #: src/bsd.c:3747
 #, c-format
 msgid "BAILOUT: caught signal %d"

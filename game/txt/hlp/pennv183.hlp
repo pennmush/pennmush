@@ -18,7 +18,6 @@ Major Changes:
    browser will redirect the user to the selected mud_url. (This may need
    some work and testing by a public place with many clients.) [GM]
 
-
 Minor Changes:
  * align() can now do full justification. Suggested by Trinsec@M*U*S*H [GM]
  * Wrapping fixes in align(). Reported by Trinsec@M*U*S*H [GM]
@@ -55,6 +54,7 @@ Minor Changes:
  * The @ns*emit commands and ns*emit() functions are no longer restricted;
    when used by mortals, they work exactly the same as the non-ns versions.
    Suggested by Michael Blackburn. [MG]
+ * Update autoconf to 2.65.
    
 Commands:
  * Removed the /functions, /attribs, /commands and /flags switches from
@@ -85,6 +85,11 @@ Fixes:
  * Some cygwin C library versions define the imaxdiv_t type but not the
    associated imaxdiv() function. Split them up into 2 configure checks.
    Reported by Rankard.
+ * Several math functions didn't complain if their first argument wasn't
+   a valid number. Reported by Jules. [MG]
+ * @wipe would incorrectly set the attribute list for an object in some 
+   cases, making some attributes appear to be deleted. Reported by
+   Cooee@M*U*S*H. [MG]
 
 & 1.8.3p11
 Version 1.8.3 patchlevel 11                     Jan 01, 2010

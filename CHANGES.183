@@ -83,6 +83,9 @@ Fixes:
    marked as translatable. By Stoko.
  * 'No such file' messages were logged by mistake when connect_file and
    similar options were set to a dbref/attr. Reported by Zalethon. [MG]
+ * Some cygwin C library versions define the imaxdiv_t type but not the
+   associated imaxdiv() function. Split them up into 2 configure checks.
+   Reported by Rankard.
 
 Version 1.8.3 patchlevel 11                     Jan 01, 2010
 

@@ -1186,12 +1186,14 @@ next_in_list(const char **head)
 
 }
 
-#ifndef HAVE_IMAXDIV
+#ifndef HAVE_IMAXDIV_T
 typedef struct imaxdiv_t {
   intmax_t rem;
   intmax_t quot;
 } imaxdiv_t;
+#endif
 
+#ifndef HAVE_IMAXDIV
 imaxdiv_t
 imaxdiv(intmax_t num, intmax_t denom)
 {

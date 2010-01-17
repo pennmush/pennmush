@@ -59,6 +59,7 @@ Minor Changes:
  * The @ns*emit commands and ns*emit() functions are no longer restricted;
    when used by mortals, they work exactly the same as the non-ns versions.
    Suggested by Michael Blackburn. [MG]
+ * Update autoconf to 2.65.
    
 Commands:
  * Removed the /functions, /attribs, /commands and /flags switches from

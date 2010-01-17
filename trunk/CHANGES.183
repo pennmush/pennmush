@@ -60,8 +60,12 @@ Minor Changes:
  * The @ns*emit commands and ns*emit() functions are no longer restricted;
    when used by mortals, they work exactly the same as the non-ns versions.
    Suggested by Michael Blackburn. [MG]
+   
+Commands:
+ * Removed the /functions, /attribs, /commands and /flags switches from
+   @config. Use @list/<switch> instead. [MG]
 
-Functions
+Functions:
  * llocks() without any arguments returns a list of the standard locks.
  * unsetq(), to erase queue registers. [GM]
  * and[l]flags(), or[l]flags(), andlpowers() and orlpowers() now all return

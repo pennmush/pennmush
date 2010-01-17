@@ -158,27 +158,7 @@ COMMAND(cmd_chzone)
 
 COMMAND(cmd_config)
 {
-  int lc;
-  lc = SW_ISSET(sw, SWITCH_LOWERCASE);
-  if (SW_ISSET(sw, SWITCH_GLOBALS))
-    do_config_list(player, NULL, lc);
-  else if (SW_ISSET(sw, SWITCH_DEFAULTS))
-    do_config_list(player, NULL, lc);
-  else if (SW_ISSET(sw, SWITCH_COSTS))
-    do_config_list(player, NULL, lc);
-  else if (SW_ISSET(sw, SWITCH_FUNCTIONS))
-    do_list_functions(player, lc);
-  else if (SW_ISSET(sw, SWITCH_COMMANDS))
-    do_list_commands(player, lc);
-  else if (SW_ISSET(sw, SWITCH_ATTRIBS))
-    do_list_attribs(player, lc);
-  else if (SW_ISSET(sw, SWITCH_LIST))
-    do_config_list(player, arg_left, lc);
-  else if (SW_ISSET(sw, SWITCH_FLAGS))
-    do_list_flags("FLAG", player, arg_left, lc, T("Flags"));
-  else if (SW_ISSET(sw, SWITCH_POWERS))
-    do_list_flags("POWER", player, arg_left, lc, T("Powers"));
-  else if (SW_ISSET(sw, SWITCH_SET) || SW_ISSET(sw, SWITCH_SAVE)) {
+  if (SW_ISSET(sw, SWITCH_SET) || SW_ISSET(sw, SWITCH_SAVE)) {
     if (!Wizard(player)) {
       notify(player, T("You can't remake the world in your image."));
       return;
@@ -211,7 +191,7 @@ COMMAND(cmd_config)
       }
     }
   } else
-    do_config_list(player, arg_left, lc);
+    do_config_list(player, arg_left, SW_ISSET(sw, SWITCH_LOWERCASE));
 }
 
 COMMAND(cmd_cpattr)

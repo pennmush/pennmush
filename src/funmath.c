@@ -2,7 +2,7 @@
  * \file funmath.c
  *
  * \brief Mathematical functions for mushcode.
- * 
+ *
  *
  */
 
@@ -57,14 +57,14 @@ static void lmathcomp(char **ptr, int nptr, char *buff, char **bp,
 /* Functions for testing and parsing IVALs and UIVALs, the types of
  * arguments to math functions that work on integers instead of
  *  floating-point numbers. No matter what IVAL is (32-bit or 64-bit),
- *  they can be passed to safe_integer()/safe_uinteger(). 
+ *  they can be passed to safe_integer()/safe_uinteger().
  *
  * Math functions that operate on IVALs: div(), floordiv(), modulo(),
  *  remainder()
  * Math functions that operate on UIVALS: shl(), shr(), band(), bnot(), bor()
  *  bxor(), bnand()
  *
- * Other functions work on NVALs or accept plain ints 
+ * Other functions work on NVALs or accept plain ints
  */
 
 static IVAL
@@ -1275,7 +1275,7 @@ FUNCTION(fun_root)
 
 /** Calculates the numerator and denominator for a fraction representing
  *  a floating point number. Only works for positive numbers!
- * \param v the number 
+ * \param v the number
  * \param n pointer to the numerator
  * \param d pointer to the denominator
  * \param error accuracy to which the fraction should represent the original number
@@ -1286,7 +1286,7 @@ frac(double v, double *RESTRICT n, double *RESTRICT d, double error)
 {
 
 /* Based on a routine found in netlib (http://www.netlib.org) by
-   
+
                         Robert J. Craig
                         AT&T Bell Laboratories
                         1200 East Naperville Road
@@ -1565,7 +1565,7 @@ do_ordinalize(char **buff, char ***bp)
 }
 
 
-/** adds zeros to the beginning of the string, untill its length is 
+/** adds zeros to the beginning of the string, untill its length is
  * a multiple of 3.
  */
 #define add_zeros(p) \
@@ -1611,8 +1611,8 @@ FUNCTION(fun_spellnum)
 
   pnum1 = number = pnumber;
 
-  /* Is it a number? 
-   * If so, devide the number in two parts: pnum1.pnum2 
+  /* Is it a number?
+   * If so, devide the number in two parts: pnum1.pnum2
    */
   len = strlen(number);
   for (m = 0; m < len; m++) {
@@ -1774,7 +1774,7 @@ FUNCTION(fun_lmath)
 *
 * &op me=<op>(%0, %1)
 * fold(me/op, <list>, <sep>)
-* 
+*
 * but a lot more efficient. The Tiny l-OP functions
 * can be simulated with @function if needed.
 */
@@ -2500,7 +2500,7 @@ lmathcomp(char **ptr, int nptr, char *buff, char **bp, int eqokay, int isgt)
     return;
   }
 
-  if (!is_number(ptr[1])) {
+  if (!is_number(ptr[0])) {
     safe_str(T(e_nums), buff, bp);
     return;
   }

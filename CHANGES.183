@@ -92,6 +92,9 @@ Fixes:
    Reported by Rankard.
  * Several math functions didn't complain if their first argument wasn't
    a valid number. Reported by Jules. [MG]
+ * @wipe would incorrectly set the attribute list for an object in some 
+   cases, making some attributes appear to be deleted. Reported by
+   Cooee@M*U*S*H. [MG]
 
 Version 1.8.3 patchlevel 11                     Jan 01, 2010
 

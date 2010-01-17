@@ -51,6 +51,7 @@ typedef enum {
 extern int good_atr_name(char const *s);
 extern ATTR *atr_match(char const *string);
 extern ATTR *atr_sub_branch(ATTR *branch);
+extern ATTR *atr_sub_branch_prev(ATTR *branch);
 extern void atr_new_add(dbref thing, char const *RESTRICT atr,
                         char const *RESTRICT s, dbref player, uint32_t flags,
                         uint8_t derefs);

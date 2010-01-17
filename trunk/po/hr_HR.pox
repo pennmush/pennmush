@@ -4254,6 +4254,11 @@ msgstr "Mislim da #%d ne zeli postu korisnika '%s'."
 msgid "I don't think #%d wants to hear from %s."
 msgstr "Mislim da #%d ne zeli imati posla s korisnikom '%s'."
 
+#: attrib.c:935
+#, c-format
+msgid "I don't think #%d wants to hear from you."
+msgstr "Mislim da #%d ne zeli imati posla s tobom."
+
 #: src/fundb.c:1412
 #, c-format
 msgid "I don't understand switch '%c'."
@@ -6422,6 +6427,11 @@ msgstr "To nije ugradjena funkcija."
 #: bsd.c:4093
 msgid "That's not a port number."
 msgstr "To nije port."
+
+#: flags.c:2212
+#, c-format
+msgid "That's not a valid %s name."
+msgstr "To nije ispravno ime za %s."
 
 #: attrib.c:930
 msgid "That's not a very good name for an attribute."

@@ -818,11 +818,19 @@ atr_clear_children(dbref player, dbref thing, ATTR *root)
 {
   ATTR *sub, *next = NULL, *prev;
   int skipped = 0;
+  size_t len;
+  const char *name, *n2;
 
   prev = atr_sub_branch_prev(root);
+  if (!prev)
+    return 1;
 
-  for (sub = atr_sub_branch(root);
-       sub && string_prefix(AL_NAME(sub), AL_NAME(root)); sub = next) {
+  name = AL_NAME(root);
+  len = strlen(name);
+  for (sub = AL_NEXT(prev); sub; sub = next) {
+    n2 = AL_NAME(sub);
+    if (strlen(n2) < (len + 1) || n2[len] != '`' || strncmp(n2, name, len))
+      break;
     if (AL_FLAGS(sub) & AF_ROOT) {
       if (!atr_clear_children(player, thing, sub)) {
         skipped++;

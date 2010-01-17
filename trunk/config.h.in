@@ -288,6 +288,8 @@ typedef bool _Bool;
 
 #undef UNION_WAIT
 
+#undef HAVE_IMAXDIV_T
+
 #undef HAVE_IMAXDIV
 
 #undef HAVE_GETPID

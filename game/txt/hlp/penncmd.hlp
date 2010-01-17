@@ -687,69 +687,74 @@ See also: ZONES, @chzoneall, zone()
   
 See also: @chzone, ZONES
 & @clone
-  @clone <thing, room, or exit>[=<new name>]
-  @clone/preserve <thing, room, or exit>[=<new name>]
+  @clone <object>[=<new name>]
+  @clone/preserve <object>[=<new name>]
 
-  For things, creates an exact duplicate of it and puts it in the
-  current room. For exits, it creates an exact duplicate of that
-  exit, except the clone's source is the current room rather than
-  whatever the original exit's source was. For rooms, creates an
-  exact duplicate of the room, without contents or exits. The name
-  of the duplicate object can be provided; it defaults to the same
-  as the name of the original object.
+  This command creates a copy of <object>. The clone will have the same name
+  as the original unless a <new name> is given for it. You can only clone
+  things, rooms and exits, not players. You must control <object>. The new
+  object will be owned by the player who performs the @clone, not the owner
+  of the original <object>.
+  
+  When cloning things and exits, the clone will be placed in your current
+  location, not the location of <object>. When cloning rooms, the exits and
+  contents in the room are not cloned as well.
 
-  The thing to be cloned must be controlled by the @cloning player.
-  The clone will be owned by the @cloning player.
-
-  If creation times are enabled, a clone will have a different creation
-  time than the object it was cloned from, but will have the same
-  modification time, to make tracking revisions of code easier.
-
-  A wizard may use @clone/preserve, which has the effect of preserving
-  all the bits, powers, and warnings of the original object.
+  The cloned object will have the same modification time as the original
+  object, to make tracking revisions easier, but will have a different 
+  creation time.
+  
+  Normally, the Wizard and Royalty flags, @powers and @warnings are stripped
+  from the cloned object, but Wizards may use the /preserve flag to prevent
+  this.
 
   To clone a room and all its exits, use code like:
-    @tel [setq(0,%l)][clone(here)]; @dol lexits(%q0)=@clone ##
+    > @teleport setq(0,%L)[clone(here)]
+    > @dolist lexits(%q0)=@clone ##
 
-See also: @create
+See also: @create, clone(), create(), @cpattr
 & @command
   @command <command>
   @command/<switch> <command>
-  @command/alias <command>=<new command name>
+  @command/alias <command>=<alias>
+  @command/restrict <command>=<restriction>
 
-  @command provides information about and controls the availability 
-  of other commands.
+  @command can be used for adding new built-in commands, altering the way
+  a built-in command works, and displaying information about how commands
+  currently work.
 
   With no switches, @command shows all sorts of interesting information
   about how a command is parsed.
+  
+  The /alias switch creates an alias for <command>, allowing players to type
+  <alias> to run <command>.
+
+  @command/restrict can be used to restrict who can use <command>. See 'help
+  restrict' for more information.
 
   Switches include:
-  /disable   : Disable the <command>
-  /off       : Synonym for /disable
-  /enable    : Enable the <command>
-  /on        : Synonym for /enable
-  /alias     : Creates an alias for a command.
-  /quiet     : Don't make noisy output when doing one of the above
-  /add       : Creates a useless command. @hook/override it.
-  /delete    : Deletes a command added by @command/add, or aliases.
+  /add       : Add a new command that does nothing, but can be @hook'd
+  /delete    : Delete a command added with @command/add or @command/alias
+  /disable   : Disable a command added in the hardcode
+  /enable    : Re-enable a command disabled with @command/disable
 
-  See HELP RESTRICT for more.
-(continued in help @command2)  
+  The /quiet switch can be used to suppress output from @command.
+
+  Continued in 'help @command2'.
 & @command2
-  @command/add and @command/delete are powerful tools in that they let
-  you write $-commands which may or may not parse their arguments, and
-  have the precedence of a built-in command, being checked before
-  $-commands on objects. Only God may use these switches.
+  @command/add is a powerful tool that lets you create new commands which
+  are matched before normal $-commands, and which can be set not to parse
+  their arguments, but (via @hook) can still execute softcode like an
+  $-command. Only God can @command/add or @command/delete.
 
-  Additional switches are used in @command that only apply when used
-  with @command/add. These switches are:
+  You can use these additional switches, along with @command/add, to control
+  how the new command parses its arguments:
 
   /noparse   : The command does not evaluate arguments passed to it.
   /eqsplit   : The parser parses leftside and rightside around =
   /lsargs    : Comma-separated arguments on the left side are parsed.
-  /rsargs    : In conjunction with eqsplit, the right-side arguments,
-               comma-separated, are parsed individually and passed
-               to the $-command in @hook/override.
+  /rsargs    : When used with /eqsplit, the right-side arguments are
+               comma-separated and are parsed individually
 
   Any command added without the /noparse switch is provided with a
   /noeval switch itself, so if you @command/add foo, then foo's arguments
@@ -757,207 +762,231 @@ See also: @create
   needs to make allowances for the /noeval switch in it's matching.
 
   Commands added with @command/add, like other standard commands,
-  are never case-sensitive (regardless of CASE flag on the attribute).
+  are never case-sensitive.
 
-(examples in help @command3)
+  See 'help @command3' for examples.
 & @command3
   Examples:
+    > @create Dining Machine
+    > &eat dining=$eat *:@remit %L=%n takes a bite of %0.
+    > @command/add/noeval eat
+    > @hook/override eat=dining machine,eat
+    > eat meat loaf
+    Walker takes a bite of meat loaf.
+    > eat randword(apple tomato pear)
+    Walker takes a bite of randword(apple tomato pear)
 
-  > @create Dining Machine
-  > &eat dining=$eat *:@remit %L=%N takes a bite of %0.
-  > @command/add/noeval eat
-  > @hook/override eat=dining machine,eat
-  > eat meat loaf
-  Walker takes a bite of meat loaf.
-  > eat randword(apple tomato pear)
-  Walker takes a bite of randword(apple tomato pear)
+    > &drink dining=$^drink(/noeval)? (.*)$:@remit %L=%n drinks %1.
+    > @set dining/drink=regexp
+    > @command/add drink
+    > @hook/override drink=dining machine,drink
+    > drink reverse(tea)
+    Walker drinks aet.
+    > drink/noeval reverse(tea)
+    Walker drinks reverse(tea).
 
-  > &drink dining=$^drink(/noeval)? (.*)$:@remit %L=%N drinks %1.
-  > @set dining/drink=regexp
-  > @command/add drink
-  > @hook/override drink=dining machine,drink
-  > drink reverse(tea)
-  Walker drinks aet.
-  > drink/noeval reverse(tea)
-  Walker drinks reverse(tea).
-
+See also: @hook, RESTRICT, EVALUATION ORDER
 & @comment
-  @comment <object> = <comment>
+  @comment <object>[=<comment>]
 
   This is a wizard-only command which sets a COMMENT attribute on
   <object>. The comment can only be seen by other wizards and royalty.
-& @config
-  @config/functions
-  @config/commands
-  @config/attribs
-  @config/flags
-  @config/list[/lowercase] [<option|option-type>]
-  @config/set|save option=value
   
-  This command lists the MUSH configuration parameters, indicating what
-  special things are enabled, and the cost of certain commands.
-  Switches include:
+See also: @@, @@()
+& @config
+  @config
+  @config [<category>|<option>]
+  @config/set <option>=<value>
+  @config/save <option>=<value>
+  
+  With no arguments, @config lists the categories of configuration options
+  for the MUSH. With an argument, @config lists the options in the given
+  <category>, or shows the current value of the given <option>.
+  
+  The wizard-only /set switch changes the value of <option> to <value>. This
+  change does not last across reboots. God can also use the /save switch,
+  which attempts to save the new <value> in the mush.cnf configuration file,
+  as well as changing it in-game.
 
-  /functions  --   Lists all functions.
-  /commands   --   Lists all commands.
-  /flags      --   Lists all flags.
-  /attribs    --   Lists all standard attributes.
-  /list       --   Lists the value of a particular <option> or <option-type>
-                   if given one; lists the option-types if not.
-  /set        --   Wizard only, changes parameters from the mush. See
-                   help @config parameters for available ones.
-  /save       --   Like /set, but also modifies the config file so the
-                   change persists over reboots. God only.
-
-  For information about parameters, see: @config parameters
+  For information about parameters, see 'help @config parameters'
 & @conformat
-  @conformat <object> [=<format>]
+  @conformat <object>[=<format>]
 
-  Replaces the usual "Contents:" or "Carrying:" format when an object
-  is looked at, by a player-specified contents format. This is evaluated
-  as if it were a description or other similar message on the room.
-  The objects that the looker would normally be able to see is passed
-  as a dbref list in %0; all contents can be acquired through 'lcon(me)'.
-  A |-delimited list of all the unparsed object names is passed 
-  in %1 (so iter(%1,itext(0),|,%r) produces the standard list)
- 
-  One could change the format to 'Contents: Object1 Object2 Object3'
-  through '@conformat here = Contents: [iter(%0,name(##))]',
-  for example. More complex things are, obviously, possible.
- 
-See also: @exitformat, @nameformat, @descformat
+  When set, the CONFORMAT attribute is evaluated when <object> is looked at,
+  and the result is displayed instead of the usual "Contents:" (for rooms)
+  or "Carrying:" (for players and things) list of contents.
+  
+  The dbrefs of the objects which would appear in the normal contents list
+  are passed to the attribute as %0 (you can use lcon(me) for a full contents
+  list). A list of the names of these objects as they would appear in the
+  default contents list is passed as %1, |-delimited.
+  
+  Examples:
+    Show the normal contents list, but in upper-case:
+    > @conformat here=edit(ucstr(%1), |, %r)
+    
+    Show just the object names (with no ansi) in a table:
+    > @conformat here=table(iter(%0, name(%i0), %b, |),  20, width(%#), |)
+
+See also: look, @exitformat, @nameformat, @descformat, @invformat,
+    @idescformat
 & @invformat
-  @invformat <object> [=<format>]
+  @invformat <object>[=<format>]
 
-  Replaces the usual "You are carrying:" format when an object uses the
-  "inventory" command, by a player-specified format. This is evaluated
-  as if it were a description or other similar message on the object.
-  The objects carried are passed as a dbref list in %0.
-  A |-delimited list of all the unparsed object names is passed 
-  in %1 (so iter(%1,itext(0),|,%r) produces the standard list)
+  When set, this attribute is evaluated and displayed instead of the usual
+  "You are carrying:" list of objects when <object> uses the "inventory"
+  command. The list of objects that would normally appear in the inventory
+  is passed as %0, and a list of the names as they would appear in the
+  default display, |-delimited, is passed as %1.
 
-  One could change the format to 'You've got: Object1 Object2 Object3'
-  through '@invformat me = You've got: [iter(%0,name(##))]',
-  for example. More complex things are, obviously, possible.
+  Example:
+    > @invformat me=You're holding: [itemize(iter(%0, name(%i0), %b, |), |)]
+    > inventory
+    You're holding: Red Ball, Pickle, and Piano
  
-See also: inventory
+See also: inventory, @conformat, @exitformat, @nameformat, @descformat,
+    @idescformat
 & @descformat
-  @descformat <object> [=<text>]
+  @descformat <object>[=<format>]
 
-  Replaces the usual description of the object when it is looked at
-  by player-specified text. The evaluated DESCRIBE attribute is
-  passed as %0; the unevaluated DESCRIBE can be acquired through
-  v(DESCRIBE).
+  When set, this attribute is evaluated and displayed instead of <object>'s
+  @describe, when someone looks at <object>. The evaluated @describe, which
+  would be shown if no @descformat were set, is passed to the @descformt
+  as %0; use v(describe) to get the unevaluted description.
+  
+  This is primarily useful for room parents, to enforce a consistent look
+  for all rooms without having to apply formatting to ever @describe. Note 
+  that this object is only used with @describe - to format the @idescribe, 
+  use @idescformat.
+  
+  Example:
+    > @descformat Room Parent=repeat(=, width(%#))%r%0[repeat(=, width(%#))]
 
-  This is useful for things like room parents that enforce a consistent
-  "look" for each room's @desc.
-
-See also: @exitformat, @nameformat, @conformat, @idescformat
+See also: look, @exitformat, @nameformat, @conformat, @idescformat,
+    @invformat
 & @idescformat
-  @idescformat <object> [=<text>]
+  @idescformat <object>[=<format>]
 
-  Replaces the usual description of the object when it is looked at from
-  within by player-specified text. The evaluated IDESCRIBE attribute
-  is passed as %0; the unevaluated IDESCRIBE can be acquired through
-  v(IDESCRIBE).
+  When set, this attribute is evaluated and displayed instead of <object>'s
+  @idescribe, when someone looks at <object> while inside it. The evaluated 
+  @idescribe, which would be shown if no @idescformat were set, is passed to
+  the @idescformt as %0; use v(idescribe) to get the unevaluted description.
+  
+  Note that this attribute is only used when an @idescribe is set. When no
+  @idescribe is set, the @descformat (and @describe) attributes are used,
+  even when someone "look"s inside <object>.
 
   This is useful for things like object parents that enforce a consistent
-  "look" for each object's @idesc.
+  "look" for each object's @idescribe, without having to place formatting
+  into every @idescribe.
+  
+  Example:
+    > @idescribe Vehicle Parent=repeat(*, width(%#))%r%0
 
-See also: @exitformat, @nameformat, @conformat, @descformat
+See also: look, @exitformat, @nameformat, @conformat, @descformat, 
+    @invformat
 & @nameaccent
-  @nameaccent <object> [=<accent template>]
+  @nameaccent <object>[=<accent template>]
 
-  When this attribute holds an accent template that has the same
-  length as the object's name, it is used to change the object's name
-  in some situations (How it shows up in speech, look, and a few other
+  When this attribute holds an accent template that is the same
+  length as <object>'s @name, it is used to change the object's name
+  in some situations (how it shows up in speech, look, and a few other
   commands). This allows for accented names without having to use the 
   accented characters directly in a name, which can make it harder for
   people to type.
+  
+  The <accent template> is explained in 'help accent2'.
 
   If a container has both a @nameaccent and a @nameformat, the
   @nameformat is used.
 
-See also: accent(), @nameformat
+See also: accent(), @nameformat, accname(), stripaccents()
 & @nameformat
-  @nameformat <object> [=<format>]
+  @nameformat <object>[=<format>]
 
-  Customizes the usual display of the object's name to people who
-  are inside it and 'look'. It is evaluated as if it were a description
-  or similar message on the room. The room's dbref is passed as %0,
-  and the default-formatted name as %1.
+  When set, this attribute is evaluated and displayed in place of <object>'s
+  name, when objects inside <object> "look". The room's dbref is passed as
+  %0, and the default-formatted name (as it would be displayed with no
+  @nameformat set) is passed as %1.
+  
+  @nameformat is not used when people who are outside the object look at it.
+  
+  Example:
+    Show the room's zone after its name.
+    > @nameformat here = %1 [if(isdbref(zone(%0)),<[name(zone(%0))]>)]
 
-  @nameformat is not used when people outside the object look at it.
-
-  Example: Show the room's zone after its name.
-  @nameformat here = %1 [if(isdbref(zone(%0)),<[name(zone(%0))]>)]
-
-See also: @exitformat, @conformat, @descformat, @nameaccent
+See also: look, @exitformat, @conformat, @descformat, @nameaccent, 
+    @invformat, @idescformat
 & @cost
-  @cost <object> = <amount> 
-
-  This sets the number of pennies that need to be given to an object to
-  trigger its @pay/@opay/@apay attributes. It is evaluated, so you
-  may use functions as well as simple integers; the amount given by
-  the player is passed as %0.
+  @cost <object>[=<amount>]
+  
+  The COST attribute contains the number of pennies that must be given to
+  <object> to trigger its @pay/@opay/@apay attributes. If less than this
+  amount is given, the money will be refused, and if more is given, the
+  difference is refunded.
+  
+  This attribute is evaluated, with the amount being given passed as %0.
 
   Example:
-    @cost exit-machine=10
-    @apay exit-machine=@open %N-exit 
-    @pay exit-machine=Your exit has been created.  
+    > @cost Exit Machine=10
+    > @apay Exit Machine=@open %n-exit 
+    > @pay Exit Machine=Your exit has been created.  
  
-    give exit-machine=10
+    give Exit Machine=10
     > Your exit has been created.
     (The exit will also have been opened by the machine.)
 
-    @cost charity=%0
-    @pay charity=Thanks for your donation of %0.
+    > @cost charity=%0
+    > @pay charity=Thanks for your donation of %0.
 
-See also: give, MONEY, @pay, money()
+See also: give, MONEY, @pay, money(), buy
 & @cpattr
 & @mvattr
-  @cpattr[/noflagcopy] <obj>/<attr> = <obj1>[/<attr1>] [,<obj2>/<attr2>,...]
-  @mvattr[/noflagcopy] <obj>/<attr> = <obj1>[/<attr1>] [,<obj2>/<attr2>,...]
+  @cpattr[/noflagcopy] <obj>/<attr>=<obj1>[/<attr1>][, ..., <objN>[/<attrN>]]
+  @mvattr[/noflagcopy] <obj>/<attr>=<obj1>[/<attr1>][, ..., <objN>[/<attrN>]]
   
-  @cpattr copies an attribute from one object to another, or several 
-  others. @mvattr does the same thing, except it also removes the original
-  attribute from the original object. Attribute flags ARE copied as well,
-  unless you use the /noflagcopy switch, which you probably want if you're
-  copying from a non-standard attribute to a standard one.
+  @cpattr copies the <attr> attribute from <obj> to <obj1> (and any other
+  objects given). By default, the new attributes will have the same name as
+  the original, but you can specify a different name to be used on each
+  object if you wish.
+  
+  @mvattr works the same, but also attempts to remove the original attribute
+  after copying it.
+  
+  Attribute flags are copied as well, unless the /noflagcopy switch is given.
+  This is recommended when copying from a non-standard attribute to a
+  standard one.
 
-  For example:
-    @cpattr box/test = box/test1, cube/random, tribble/describe
-
+  Example:
+    > @cpattr box/test=box/test1, cube/random, tribble/describe
   would check the object "box" for an attribute named TEST and then
   copy it to the attributes TEST1 on "box", RANDOM on the object named
   "cube", and DESCRIBE on the object named "tribble".
 
-  If you leave out the destination attribute, the attribute is copied
-  to one of the same name on the new object. For example:
-    @cpattr box/test=cube
+    > @cpattr box/test=cube
   would copy the TEST attribute from "box" to TEST on "cube".
 
-See also: ATTRIBUTES, NON-STANDARD ATTRIBUTES
+See also: ATTRIBUTES, NON-STANDARD ATTRIBUTES, @set
 & @create
   @create <name>[=<cost>[,<dbref>]]
 
   Creates a thing with the specified name. Creating a thing costs
-  a certain amount of MUSH money, which usually defaults to 10 pennies.
-  You can specify a higher cost if you wish, but not a lower one.
-  This cost is refunded if you @destroy/@recycle the thing.
+  a certain amount of MUSH money, which usually defaults to 10 pennies (see
+  '@config object_cost'). You can specify a higher cost if you wish, but not
+  a lower one. This cost is refunded if you @destroy the thing.
 
-  Once you have created a thing, you can use it as a PUPPET, to store
-  USER-DEFINED COMMANDS, or just as a prop. Some MUSHes choose to limit 
-  the number of objects that players can create by setting a QUOTA.
+  Some MUSHes choose to limit the number of objects you can create by setting
+  a quota.
   
-  Wizards can also specify the dbref of a garbage object to use when
+  Wizards can also specify the <dbref> of a garbage object to use when
   creating the object. Otherwise, the object is given the next
   available dbref.
  
 See also: give, @quota, MONEY
 & @dbck
   @dbck
-  This is a wizard only command.  It forces the database to perform a
+  
+  This is a wizard only command. It forces the database to perform a
   series of internal cleanup and consistency checks that normally run 
   approximately every 10 minutes:
 

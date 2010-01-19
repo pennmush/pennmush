@@ -1491,7 +1491,7 @@ decompile_atrs(dbref player, dbref thing, const char *name, const char *pattern,
   dh.skipdef = skipdef;
   /* Comment complaints if none are found */
   if (!atr_iter_get(player, thing, pattern, 0, decompile_helper, &dh))
-    notify(player, T("@@ No attributes found. @@"));
+    notify_format(player, T("@@ No attributes match '%s'. @@"), pattern);
 }
 
 /** Decompile locks on an object.
@@ -1538,25 +1538,23 @@ decompile_locks(dbref player, dbref thing, const char *name,
  * \endverbatim
  * \param player the enactor.
  * \param name name of object to decompile.
- * \param dbflag flag for type of decompile to perform.
- * \param skipdef if true, skip showing default flags on attributes/locks.
+ * \param prefix the prefix to show before each line of output
+ * \param dec_type flags for what to show in decompile, and how to show it
  */
 void
-do_decompile(dbref player, const char *xname, const char *prefix,
-             enum dec_type dbflag, int skipdef)
+do_decompile(dbref player, const char *name, const char *prefix, int dec_type)
 {
   dbref thing;
-  const char *object = NULL;
-  char *attrib, *name;
-  char *attrname;
-  char dbnum[40];
+  char object[BUFFER_LEN];
+  char *objp, *attrib, *attrname;
+
+  int skipdef = (dec_type & DEC_SKIPDEF);
 
   /* @decompile must always have an argument */
-  if (!xname || !*xname) {
+  if (!name || !*name) {
     notify(player, T("What do you want to @decompile?"));
     return;
   }
-  name = mush_strdup(xname, "dd.string");
   attrib = strchr(name, '/');
   if (attrib)
     *attrib++ = '\0';
@@ -1564,110 +1562,98 @@ do_decompile(dbref player, const char *xname, const char *prefix,
   /* find object */
   if ((thing = noisy_match_result(player, name, NOTYPE, MAT_EVERYTHING)) ==
       NOTHING) {
-    mush_free(name, "dd.string");
     return;
   }
 
-  if (IsGarbage(thing)) {
+  if (!GoodObject(thing) || IsGarbage(thing)) {
     notify(player, T("Garbage is garbage."));
-    mush_free(name, "dd.string");
     return;
   }
-  sprintf(dbnum, "#%d", thing);
+
+  objp = object;
+  /* determine what we call the object */
+  if (dec_type & DEC_DB)
+    safe_dbref(thing, object, &objp);
+  else {
+    switch (Typeof(thing)) {
+    case TYPE_PLAYER:
+      if (!strcasecmp(name, "me"))
+        safe_str("me", object, &objp);
+      else {
+        safe_chr('*', object, &objp);
+        safe_str(Name(thing), object, &objp);
+      }
+      break;
+    case TYPE_THING:
+      safe_str(Name(thing), object, &objp);
+      break;
+    case TYPE_EXIT:
+      safe_str(shortname(thing), object, &objp);
+      break;
+    case TYPE_ROOM:
+      safe_str("here", object, &objp);
+      break;
+    }
+  }
+  *objp = '\0';
 
   /* if we have an attribute arg specified, wild match on it */
   if (attrib && *attrib) {
     attrname = attrib;
     while ((attrib = split_token(&attrname, ' ')) != NULL) {
-      switch (dbflag) {
-      case DEC_DB:
-        decompile_atrs(player, thing, dbnum, attrib, prefix, skipdef);
-        break;
-      default:
-        if (IsRoom(thing))
-          decompile_atrs(player, thing, "here", attrib, prefix, skipdef);
-        else
-          decompile_atrs(player, thing, Name(thing), attrib, prefix, skipdef);
-        break;
-      }
+      decompile_atrs(player, thing, object, attrib, prefix, skipdef);
     }
-    mush_free(name, "dd.string");
+    return;
+  } else if (!(dec_type & DEC_FLAG)) {
+    /* Show all attrs, nothing else */
+    decompile_atrs(player, thing, object, "**", prefix, skipdef);
     return;
   }
+
   /* else we have a full decompile */
   if (!Can_Examine(player, thing)) {
     notify(player, T("Permission denied."));
-    mush_free(name, "dd.string");
     return;
   }
-  /* determine creation and what we call the object */
+
   switch (Typeof(thing)) {
-  case TYPE_PLAYER:
-    if (!strcasecmp(name, "me"))
-      object = "me";
-    else if (dbflag == DEC_DB)
-      object = dbnum;
-    else
-      object = Name(thing);
-    break;
   case TYPE_THING:
-    if (dbflag == DEC_DB) {
-      object = dbnum;
-      break;
-    } else
-      object = Name(thing);
-    if (dbflag != DEC_ATTR)
-      notify_format(player, "%s@create %s", prefix, object);
+    notify_format(player, "%s@create %s", prefix, object);
     break;
   case TYPE_ROOM:
-    if (dbflag == DEC_DB) {
-      object = dbnum;
-      break;
-    } else
-      object = "here";
-    if (dbflag != DEC_ATTR)
-      notify_format(player, "%s@dig/teleport %s", prefix, Name(thing));
+    notify_format(player, "%s@dig/teleport %s", prefix, Name(thing));
     break;
   case TYPE_EXIT:
-    if (dbflag == DEC_DB) {
-      object = dbnum;
-    } else {
-      object = shortname(thing);
-      if (dbflag != DEC_ATTR)
-        notify_format(player, "%s@open %s", prefix, Name(thing));
-    }
+    notify_format(player, "%s@open %s", prefix, Name(thing));
     break;
   }
-
-  if (dbflag != DEC_ATTR) {
-    if (Mobile(thing)) {
-      if (GoodObject(Home(thing)))
-        notify_format(player, "%s@link %s = #%d", prefix, object, Home(thing));
-      else if (Home(thing) == HOME)
-        notify_format(player, "%s@link %s = HOME", prefix, object);
-    } else {
-      if (GoodObject(Destination(thing)))
-        notify_format(player, "%s@link %s = #%d", prefix, object,
-                      Destination(thing));
-      else if (Destination(thing) == AMBIGUOUS)
-        notify_format(player, "%s@link %s = VARIABLE", prefix, object);
-      else if (Destination(thing) == HOME)
-        notify_format(player, "%s@link %s = HOME", prefix, object);
-    }
-
-    if (GoodObject(Zone(thing)))
-      notify_format(player, "%s@chzone %s = #%d", prefix, object, Zone(thing));
-    if (GoodObject(Parent(thing)))
-      notify_format(player, "%s@parent %s=#%d", prefix, object, Parent(thing));
-
-    decompile_locks(player, thing, object, skipdef, prefix);
-    decompile_flags(player, thing, object, prefix);
-    decompile_powers(player, thing, object, prefix);
+  if (Mobile(thing)) {
+    if (GoodObject(Home(thing)))
+      notify_format(player, "%s@link %s = #%d", prefix, object, Home(thing));
+    else if (Home(thing) == HOME)
+      notify_format(player, "%s@link %s = HOME", prefix, object);
+  } else {
+    if (GoodObject(Destination(thing)))
+      notify_format(player, "%s@link %s = #%d", prefix, object,
+                    Destination(thing));
+    else if (Destination(thing) == AMBIGUOUS)
+      notify_format(player, "%s@link %s = VARIABLE", prefix, object);
+    else if (Destination(thing) == HOME)
+      notify_format(player, "%s@link %s = HOME", prefix, object);
   }
-  if (dbflag != DEC_FLAG) {
+  if (GoodObject(Zone(thing)))
+    notify_format(player, "%s@chzone %s = #%d", prefix, object, Zone(thing));
+  if (GoodObject(Parent(thing)))
+    notify_format(player, "%s@parent %s=#%d", prefix, object, Parent(thing));
+  decompile_locks(player, thing, object, skipdef, prefix);
+  decompile_flags(player, thing, object, prefix);
+  decompile_powers(player, thing, object, prefix);
+
+  /* Show attrs as well */
+  if (dec_type & DEC_ATTR) {
     decompile_atrs(player, thing, object, "**", prefix, skipdef);
   }
-  mush_free(name, "dd.string");
+
 }
 
 static char *

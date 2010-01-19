@@ -232,10 +232,13 @@ COMMAND(cmd_dbck)
 COMMAND(cmd_decompile)
 {
   char prefix[BUFFER_LEN];
-  int sd = SW_ISSET(sw, SWITCH_SKIPDEFAULTS);
+  int flags = 0, dbflags = 0;
+  //int sd = SW_ISSET(sw, SWITCH_SKIPDEFAULTS);
   *prefix = '\0';
+  if (SW_ISSET(sw, SWITCH_SKIPDEFAULTS))
+    flags |= DEC_SKIPDEF;
   if (SW_ISSET(sw, SWITCH_TF)) {
-    /* @dec/tf overrides @dec/prefix */
+    /* @dec/tf overrides =<prefix> */
     ATTR *a;
     if (((a = atr_get_noparent(player, "TFPREFIX")) != NULL) &&
         AL_STR(a) && *AL_STR(a)) {
@@ -243,17 +246,22 @@ COMMAND(cmd_decompile)
     } else {
       strcpy(prefix, "FugueEdit > ");
     }
-  } else if (SW_ISSET(sw, SWITCH_PREFIX)) {
+  } else {
     strcpy(prefix, arg_right);
   }
+
   if (SW_ISSET(sw, SWITCH_DB) || SW_ISSET(sw, SWITCH_TF))
-    do_decompile(player, arg_left, prefix, DEC_DB, sd);
-  else if (SW_ISSET(sw, SWITCH_FLAGS))
-    do_decompile(player, arg_left, prefix, DEC_FLAG, sd);
-  else if (SW_ISSET(sw, SWITCH_ATTRIBS))
-    do_decompile(player, arg_left, prefix, DEC_ATTR, sd);
-  else
-    do_decompile(player, arg_left, prefix, DEC_NORMAL, sd);
+    flags |= DEC_DB;
+  if (SW_ISSET(sw, SWITCH_NAME))
+    flags = ~DEC_DB;
+  if (SW_ISSET(sw, SWITCH_FLAGS))
+    dbflags |= DEC_FLAG;
+  if (SW_ISSET(sw, SWITCH_ATTRIBS))
+    dbflags |= DEC_ATTR;
+  if (!dbflags)
+    dbflags = DEC_FLAG | DEC_ATTR;
+
+  do_decompile(player, arg_left, prefix, flags | dbflags);
 }
 
 COMMAND(cmd_teach)

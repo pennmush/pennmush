@@ -124,7 +124,7 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@DBCK", NULL, cmd_dbck, CMD_T_ANY, "WIZARD", 0},
 
-  {"@DECOMPILE", "DB PREFIX TF FLAGS ATTRIBS SKIPDEFAULTS", cmd_decompile,
+  {"@DECOMPILE", "DB NAME PREFIX TF FLAGS ATTRIBS SKIPDEFAULTS", cmd_decompile,
    CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@DESTROY", "OVERRIDE", cmd_destroy, CMD_T_ANY, 0, 0},
 

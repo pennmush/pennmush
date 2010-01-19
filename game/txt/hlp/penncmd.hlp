@@ -582,9 +582,9 @@ See also: QUIT, LOGOUT
   @assert does the inverse: it stops execution if <boolean> evaluates to false.
 
   Examples:
-  > @va obj=$testme *:@pemit %#=You try a test ;
-                      @break lt(%0,10)=@pemit %#=But you're too low! ;
-		                  @pemit %#=And you succeed!
+  > @va obj=$testme *: @pemit %#=You try a test ;
+                       @break lt(%0,10)=@pemit %#=But you're too low! ;
+                       @pemit %#=And you succeed!
   > testme 0
   You try a test
   But you're too low!
@@ -937,7 +937,7 @@ See also: look, @exitformat, @conformat, @descformat, @nameaccent,
     (The exit will also have been opened by the machine.)
 
     > @cost charity=%0
-    > @pay charity=Thanks for your donation of %0.
+    > @pay charity=Thanks for your donation of %0 [money(%0)].
 
 See also: give, MONEY, @pay, money(), buy
 & @cpattr
@@ -1006,64 +1006,64 @@ See also: give, @quota, MONEY
   to the game's error log, and not reported to the Wizard.
 
 & @decompile
-  @decompile[</switch>] <object>[/<attribute-patterns>]
-  @decompile/prefix <object>[/<attribute-patterns>]=<prefix>
+  @decompile[/<switches>] <object>[=<prefix>]
+  @decompile[/<switches>] <object>/<attribute patterns>[=<prefix>]
 
   This command produces a list of the commands that you would have to
   enter in order to recreate <object>. Useful for either copying objects
   from one MUSH to another, or for making logs of important objects to
   protect against an accidental @nuke or a crash.
 
-  When the /prefix switch is specified, and a prefix given, all output
-  lines will be prefixed with <prefix>. Good for creating client-side
-  scripts to edit code with.
+  If a <prefix> is given, all output lines will be prefixed with <prefix>.
+  This is useful for creating client-side scripts for editting code.
 
   You can either @decompile an entire object, or just certain parts of it.
   To @decompile just a few attributes, for example, you could type:
 
-      @decompile <object>/<attribute name> <attribute name2>
+      @decompile <object>/<attribute pattern> [ ... <attribute patternN>]
 
-  including each attribute. You can also use wildcards in
-  <attribute name(s)> to @decompile a list of similarly-named attributes.
+  including each attribute. Attribute patterns can be wildcards.
 
-(continued in help @decompile2)
+  Continued in 'help @decompile2'.
 & @decompile2
-  @decompile takes five switches: /db, /flags, /attribs, /tf, /skipdefault
-  Multiple switches may be usefully combined (other than /tf).
+  @decompile takes the following switches, which can be combined:
 
+  @decompile/name
+    This switch causes @decompile to use the object's name, instead of its
+    dbref. This is the default.
   @decompile/db
-    This command makes @decompile use the object's DBREF # instead of its
-    name, which is useful for editing code off-MUSH.
+    This switch makes @decompile use the object's dbref instead of its name, 
+    which is useful for editing code off-MUSH.
   @decompile/flags
     Only the code to @create the object and set flags/powers/locks is printed.
+    When an <attribute pattern> is given, this switch is ignored, and
+    @decompile only prints the matching attributes.
   @decompile/attribs
-    Only the code to set the object's attributes is printed.
-  @decompile/skipdefault
+    Only the code to set the object's attributes is printed. Same as
+    @decompile <object>/**
+  @decompile/skipdefaults
     Don't output commands to set attribute flags if those flags are the
     defaults for that attribute on that MUSH.
+  @decompile/tf
+    Explained in 'help @decompile3'.
   
-  If an attribute contains special characters, such as %r or %t, ansi, pueblo,
-  or begins or ends with spaces, then the command sent will be an @set command
-  that has its special characters escaped, and with such %rs, %ts, and %bs as
-  to exactly duplicate the attribute as it is currently set.
-
-(continued in help @decompile3)
+  Continued in 'help @decompile3'.
 & @decompile3
 
   @decompile/tf <object>[/<attribute>]
 
-  Supplying the /tf switch makes @decompile act exactly as if you typed:
-  @decompile/prefix <object>[/<attribute>]=FugueEdit >%b
+  The /tf works the same as if you'd typed:
+    @decompile/db <obj>[/<attrs>]=[default(me/TFPREFIX, FugueEdit >%b)]
+    
+  If you have a TFPREFIX attribute set, the (unevaluated) contents of that
+  attribute is used as the prefix. Otherwise, the string "FugueEdit > " is
+  used. It's useful for automatically copying @decompile output into your
+  client to alter. It is highly recommended  that you set a TFPREFIX
+  attribute, to prevent others from maliciously placing code in your client's
+  command line.
 
-  You can use a string other than "FugueEdit > " by setting your TFPREFIX
-  attribute.  You are strongly urged to do so. Using @decompile/tf with
-  the default prefix presents the opportunity for a malicious player
-  to load your TinyFugue command line with a harmful command for you to
-  execute inadvertantly.
-
-  The /tf switch is handy for grabbing code and placing it right
-  into your input window. To do this:
-
+  To set up @decompile/tf:
+  
     In TinyFugue:
       /def -ag -mglob -p100 -t"FugueEdit > *" fe = /grab %-2
 
@@ -1074,54 +1074,73 @@ See also: give, @quota, MONEY
 See also: CLIENTS, ATTRIBUTES, WILDCARDS, MUSHCODE
 & @describe
 & @desc
-  @describe <object> [=<description>]
+  @describe <object>[=<description>]
 
   This command sets the description of the object, which will be seen 
-  whenever something looks at the object with the command 'look <object>'.
-  Every object should have a description, even if just a short one 
-  describing its purpose. If the [=<description>] is left out, the desc.
-  on the object will be reset to nothing. When you look at something that
-  has no desc., you are told, "You see nothing special."
+  whenever something looks at the object with the 'look' command. Every 
+  object should have a description, even if just a short one describing its 
+  purpose. When looking at a thing, player or exit which has no description,
+  you will see the message "You see nothing special.". A room with no desc
+  set shows nothing.
+
+  The description can be formatted using the @descformat attribute. This is
+  particularly useful for @parents and ancestors.
+  
+  When inside a thing or player, you will see it's @idescribe instead, if
+  one is set.
 
   @describe can be abbreviated as @desc
 
-See also: look, @adescribe
+See also: look, @adescribe, @idescribe, @descformat
 & @destroy
 & @recycle
 & @nuke
 & @undestroy
 & @unrecycle
-  @destroy[/override] <object>  OR   @recycle[/override] <object>
-  @undestroy <object>           OR   @unrecycle <object>
+
+  @destroy[/override] <object>
   @nuke <object>
+  @undestroy <object>
 
-  NOTE: @destroy and @recycle are the same command - some MUSHes
-  choose to use @recycle instead of @destroy to avoid the typo of
-  '@dest obj' for '@desc obj'. Others use @destroy. @nuke is an alias
-  for @dest/override.
-
-  Recycles <object> and returns the player's investment (the cost of
-  @create). You should always @destroy objects you no longer need;
-  this keeps the database down to a manageable size.  When an object
-  is @destroyed, it is set GOING, its queue is cleared and any
-  semaphores are drained, and its ADESTROY attribute is immediately
-  triggered. 
-
-(continued in help @destroy2)
+  The @destroy command marks <object> for destruction by setting the GOING
+  flag on it. If <object> is a room, all the exits in the room are marked
+  for destruction as well. If <object> is a player, and the @config option
+  destroy_possessions is on, everything he owns is marked for destruction as 
+  well. (If really_safe is also on, his SAFE objects will not be destroyed.)
+  If the adestroy @config option is on, the ADESTROY attribute will be triggered
+  when the object is first @destroy'd.
+  
+  The MUSH checks for GOING objects every ten minutes or so (see '@config
+  purge_interval'); each one is set with the GOING_TWICE flag, and will be
+  destroyed totally on the next cycle. You can save it from destruction
+  during this period using the @undestroy command, or @destroy it again to
+  destroy it instantly.
+  
+  When an object is destroyed, any commands, @waits and semaphores it has
+  queued are drained, and the object's owner has the quota for the object,
+  and the cost of creating it initially, refunded.
+  
+  Continued in 'help @destroy2'.
 & @destroy2
 
-  GOING objects are actually removed from the db approximately every
-  10-20 minutes. Until then, you may use the @undestroy/@unrecycle
-  command to abort the destruction sequence. If you @undestroy an
-  object, its STARTUP attribute is triggered. If you @destroy a
-  GOING object, it is purged immediately.
+  To destroy an object, you must either control it, control its source or
+  destination room (for exits), or it must be set DESTROY_OK and you must
+  pass its @lock/destroy.
+  
+  To destroy objects set SAFE, you must use @destroy/override or @nuke. If 
+  the really_safe @config option is on, even @nuke can't destroy SAFE 
+  objects, and you must clear the safe flag first.
+  
+  Players can only be @destroyed when they are not connected, and even then
+  can only be destroyed by a Wizard player. If the destroy_possessions
+  @config option is on, anything the player owns is @destroyed. If the 
+  really_safe option is also on, his SAFE possessions are @chown'd to God
+  instead. If the option is off, all their possessions are @chown'd to God.
 
-  Wizards may @nuke players. If the destroy_possessions config option
-  is set (see @config), destroying a player destroys all non-SAFE
-  things the player owns, and @chowns SAFE things to God. If not,
-  destroying a player @chowns all their objects to God.
-
-See also: SAFE, GOING, DESTROY_OK  
+  @recycle is an alias for @destroy. Some MUSHes disable @destroy and only
+  use @recycle, to avoid players mistyping.
+  
+See also: @create, @dig, @open, DESTROY_OK, SAFE
 & @dig
   @dig[/teleport] <room name>[=<exit name>;<alias>*,<exit name>;<alias>*]
   
@@ -1396,12 +1415,12 @@ See also: TRANSPARENT, @conformat, @nameformat, @descformat
     > @open Two ; @open Three ; @open One
     > look
     Test Room(#3Rn)
-		Obvious exits:
+    Obvious exits:
     One, Three, and Two
     > @firstexit two, one
     > look
     Test Room(#3Rn)
-		Obvious exits:
+    Obvious exits:
     One, Two, and Three
 
 See also: EXITS, @open, @link
@@ -2261,9 +2280,9 @@ See also: locktypes, @clock, elock(), lock(), objid()
   @lock/examine         Who can examine this object if it's VISUAL
   @lock/chzone          Who can @chzone to this object if it's a ZMO
   @lock/forward         Who can @forwardlist a message to this object 
-  @lock/control	        Who can control this object (only if set)
-  @lock/dropto	        Who can trigger this container's drop-to.
-  @lock/destroy	        Who can destroy this object if it's DESTROY_OK
+  @lock/control         Who can control this object (only if set)
+  @lock/dropto          Who can trigger this container's drop-to.
+  @lock/destroy         Who can destroy this object if it's DESTROY_OK
   @lock/interact        Who can send sound (say/pose/emit/etc) to this object
   @lock/take            Who can get things contained in this object
 

@@ -565,7 +565,21 @@ See also: @link, STICKY, LINK_OK, @lock
   replaced with the name of the enactor (the person who typed 'get
   <object>' in this case).
   
-See also: EXECUTOR, SUBSTITUTION, DBREF
+See also: EXECUTOR, CALLER, SUBSTITUTION, DBREF
+& %@
+& CALLER
+  In functions, the caller is the object which ran the function. The caller's
+  dbref is available using the %@ substitute, and is useful in code which is
+  evaluated using ufun() or similar functions, to tell who is evaluating the
+  attribute.
+  
+  Example:
+    > &cmd_test Foo=$test: @emit ufun(Bar/fun_test)
+    > &fun_test Bar=%n(%#) typed 'test', and [name(%@)](%@) ufun()'d this!
+    > test
+    Mike(#5) typed 'test', and Foo(#6) ufun()'d this!
+    
+See also: ENACTOR, EXECUTOR
 & EVALUATION ORDER
   Whenever some text is entered by an object or thing, the MUSH
   program attempts to match it against a valid game command in the

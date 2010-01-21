@@ -3460,10 +3460,9 @@ mogrify(dbref mogrifier, char *attrname,
         dbref player, int numargs, char *argv[], char *orig)
 {
   static char buff[BUFFER_LEN];
-  const char *wenv[10];
+  const char *wenv[10] = {0};
   int i;
   buff[0] = '\0';
-  memset(wenv, 0, sizeof(wenv));
   for (i = 0; i < numargs; i++) {
     wenv[i] = argv[i];
   }

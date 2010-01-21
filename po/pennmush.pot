@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-01-20 02:00-0600\n"
+"POT-Creation-Date: 2010-01-21 02:00-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -345,13 +345,13 @@ msgstr ""
 msgid "You need to give an object/attribute pair."
 msgstr ""
 
-#: attrib.c:1978 attrib.c:2051 bsd.c:2822 bsd.c:2868 bsd.c:4085 bsd.c:4613
-#: bsd.c:4646 bsd.c:4658 bsd.c:4663 cmds.c:77 cmds.c:82 cmds.c:87
+#: attrib.c:1978 attrib.c:2051 bsd.c:2822 bsd.c:2868 bsd.c:4086 bsd.c:4614
+#: bsd.c:4647 bsd.c:4659 bsd.c:4664 cmds.c:77 cmds.c:82 cmds.c:87
 #: command.c:1577 command.c:1615 command.c:1697 command.c:1924 cque.c:842
 #: cque.c:944 cque.c:995 cque.c:1448 cque.c:1506 cque.c:1623 create.c:100
 #: create.c:119 create.c:214 create.c:279 create.c:288 create.c:292
 #: create.c:343 create.c:347 create.c:365 create.c:475 create.c:614
-#: destroy.c:233 extchat.c:1769 extchat.c:1786 extchat.c:1817 extchat.c:3859
+#: destroy.c:233 extchat.c:1769 extchat.c:1786 extchat.c:1817 extchat.c:3858
 #: flags.c:1557 flags.c:1562 flags.c:1715 function.c:1179 function.c:1314
 #: function.c:1466 function.c:1512 function.c:1553 funmisc.c:791 game.c:956
 #: game.c:1499 lock.c:709 lock.c:773 lock.c:969 look.c:1300 look.c:1615
@@ -803,7 +803,7 @@ msgstr ""
 msgid "%s created."
 msgstr ""
 
-#: bsd.c:3483 bsd.c:3504 bsd.c:3507 bsd.c:3725 bsd.c:3728
+#: bsd.c:3483 bsd.c:3505 bsd.c:3508 bsd.c:3726 bsd.c:3729
 msgid "GAME:"
 msgstr ""
 
@@ -820,256 +820,256 @@ msgstr ""
 msgid "has DARK-connected."
 msgstr ""
 
-#: bsd.c:3492
+#: bsd.c:3493
 msgid "has HIDDEN-reconnected."
 msgstr ""
 
-#: bsd.c:3493
+#: bsd.c:3494
 msgid "has HIDDEN-connected."
 msgstr ""
 
-#: bsd.c:3495
+#: bsd.c:3496
 msgid "has reconnected."
 msgstr ""
 
-#: bsd.c:3495
+#: bsd.c:3496
 msgid "has connected."
 msgstr ""
 
-#: bsd.c:3501 bsd.c:3723
+#: bsd.c:3502 bsd.c:3724
 #, c-format
 msgid "GAME: Suspect %s"
 msgstr ""
 
-#: bsd.c:3514
+#: bsd.c:3515
 msgid "You are nowhere!"
 msgstr ""
 
-#: bsd.c:3574 bsd.c:3677
+#: bsd.c:3575 bsd.c:3678
 #, c-format
 msgid "Invalid zone #%d for %s(#%d) has bad type %d"
 msgstr ""
 
-#: bsd.c:3701
+#: bsd.c:3702
 msgid "has partially DARK-disconnected."
 msgstr ""
 
-#: bsd.c:3702
+#: bsd.c:3703
 msgid "has DARK-disconnected."
 msgstr ""
 
-#: bsd.c:3704
+#: bsd.c:3705
 msgid "has partially HIDDEN-disconnected."
 msgstr ""
 
-#: bsd.c:3705
+#: bsd.c:3706
 msgid "has HIDDEN-disconnected."
 msgstr ""
 
-#: bsd.c:3707
+#: bsd.c:3708
 msgid "has partially disconnected."
 msgstr ""
 
-#: bsd.c:3708
+#: bsd.c:3709
 msgid "has disconnected."
 msgstr ""
 
-#: bsd.c:3753
+#: bsd.c:3754
 msgid "You may get 15 minutes of fame and glory in life, but not right now."
 msgstr ""
 
-#: bsd.c:3758 extchat.c:2060
+#: bsd.c:3759 extchat.c:2060
 msgid "cleared"
 msgstr ""
 
-#: bsd.c:3760 extchat.c:2060
+#: bsd.c:3761 extchat.c:2060
 msgid "set"
 msgstr ""
 
-#: bsd.c:3765
+#: bsd.c:3766
 #, c-format
 msgid "Motd %s."
 msgstr ""
 
-#: bsd.c:3769
+#: bsd.c:3770
 #, c-format
 msgid "Wizard motd %s."
 msgstr ""
 
-#: bsd.c:3773
+#: bsd.c:3774
 #, c-format
 msgid "Down motd %s."
 msgstr ""
 
-#: bsd.c:3777
+#: bsd.c:3778
 #, c-format
 msgid "Full motd %s."
 msgstr ""
 
-#: bsd.c:3780
+#: bsd.c:3781
 #, c-format
 msgid "MOTD: %s"
 msgstr ""
 
-#: bsd.c:3782
+#: bsd.c:3783
 #, c-format
 msgid "Wiz MOTD: %s"
 msgstr ""
 
-#: bsd.c:3783
+#: bsd.c:3784
 #, c-format
 msgid "Down MOTD: %s"
 msgstr ""
 
-#: bsd.c:3784
+#: bsd.c:3785
 #, c-format
 msgid "Full MOTD: %s"
 msgstr ""
 
-#: bsd.c:3805
+#: bsd.c:3806
 msgid "Why would you want to do that?"
 msgstr ""
 
-#: bsd.c:3824
+#: bsd.c:3825
 #, c-format
 msgid "Doing set. %d characters lost."
 msgstr ""
 
-#: bsd.c:3827
+#: bsd.c:3828
 msgid "Doing set."
 msgstr ""
 
-#: bsd.c:3845
+#: bsd.c:3846
 #, c-format
 msgid "The current poll is: %s"
 msgstr ""
 
-#: bsd.c:3850
+#: bsd.c:3851
 msgid "Who do you think you are, Gallup?"
 msgstr ""
 
-#: bsd.c:3856
+#: bsd.c:3857
 msgid "Poll reset."
 msgstr ""
 
-#: bsd.c:3871
+#: bsd.c:3872
 #, c-format
 msgid "Poll set to '%s'. %d characters lost."
 msgstr ""
 
-#: bsd.c:3874
+#: bsd.c:3875
 #, c-format
 msgid "Poll set to: %s"
 msgstr ""
 
-#: bsd.c:3875
+#: bsd.c:3876
 #, c-format
 msgid "Poll Set to '%s'."
 msgstr ""
 
-#: bsd.c:3951 fundb.c:156 fundb.c:733 funlist.c:2345 funlist.c:2364
+#: bsd.c:3952 fundb.c:156 fundb.c:733 funlist.c:2345 funlist.c:2364
 #: parse.c:1026
 msgid "#-1 ARGUMENT OUT OF RANGE"
 msgstr ""
 
-#: bsd.c:4040 bsd.c:4049 bsd.c:4564 bsd.c:4573 cmds.c:424 fundb.c:852
+#: bsd.c:4041 bsd.c:4050 bsd.c:4565 bsd.c:4574 cmds.c:424 fundb.c:852
 #: fundb.c:879
 msgid "#-1 INVALID SECOND ARGUMENT"
 msgstr ""
 
-#: bsd.c:4053 bsd.c:4577 extchat.c:2357 extchat.c:2362 parse.c:97
+#: bsd.c:4054 bsd.c:4578 extchat.c:2357 extchat.c:2362 parse.c:97
 msgid "#-1 PERMISSION DENIED"
 msgstr ""
 
-#: bsd.c:4092 bsd.c:4656
+#: bsd.c:4093 bsd.c:4657
 msgid "Couldn't find that descriptor."
 msgstr ""
 
-#: bsd.c:4100 wiz.c:1400
+#: bsd.c:4101 wiz.c:1400
 msgid "Couldn't find that player."
 msgstr ""
 
-#: bsd.c:4312
+#: bsd.c:4313
 msgid "#-1 INVALID ZONE."
 msgstr ""
 
-#: bsd.c:4429 bsd.c:4450 bsd.c:4503
+#: bsd.c:4430 bsd.c:4451 bsd.c:4504
 msgid "#-1 NOT CONNECTED"
 msgstr ""
 
-#: bsd.c:4460 bsd.c:4473 bsd.c:4486
+#: bsd.c:4461 bsd.c:4474 bsd.c:4487
 msgid "#-1 FUNCTION REQUIRES ONE ARGUMENT"
 msgstr ""
 
-#: bsd.c:4667
+#: bsd.c:4668
 msgid "Noone is connected to that descriptor."
 msgstr ""
 
-#: bsd.c:4672
+#: bsd.c:4673
 msgid "Connection hidden."
 msgstr ""
 
-#: bsd.c:4674
+#: bsd.c:4675
 msgid "Connection unhidden."
 msgstr ""
 
-#: bsd.c:4686
+#: bsd.c:4687
 msgid "That player is not online."
 msgstr ""
 
-#: bsd.c:4695
+#: bsd.c:4696
 msgid "You no longer appear on the WHO list."
 msgstr ""
 
-#: bsd.c:4697
+#: bsd.c:4698
 #, c-format
 msgid "%s no longer appears on the WHO list."
 msgstr ""
 
-#: bsd.c:4700
+#: bsd.c:4701
 msgid "You now appear on the WHO list."
 msgstr ""
 
-#: bsd.c:4702
+#: bsd.c:4703
 #, c-format
 msgid "%s now appears on the WHO list."
 msgstr ""
 
-#: bsd.c:4744
+#: bsd.c:4745
 msgid ""
 "\n"
 "*** Inactivity timeout ***\n"
 msgstr ""
 
-#: bsd.c:4746
+#: bsd.c:4747
 #, c-format
 msgid "[%d/%s/%s] Logout by %s(#%d) <Inactivity Timeout>"
 msgstr ""
 
-#: bsd.c:4754
+#: bsd.c:4755
 msgid ""
 "\n"
 "*** Inactivity limit reached. You are now HIDDEN. ***\n"
 msgstr ""
 
-#: bsd.c:4909 bsd.c:4916
+#: bsd.c:4910 bsd.c:4917
 msgid "GAME: Error writing reboot database!"
 msgstr ""
 
-#: bsd.c:5103
+#: bsd.c:5104
 msgid "GAME: Reboot finished."
 msgstr ""
 
-#: bsd.c:5125
+#: bsd.c:5126
 #, c-format
 msgid "Unable to reboot using executable '%s': %s"
 msgstr ""
 
-#: bsd.c:5134
+#: bsd.c:5135
 msgid "GAME: Reboot w/o disconnect from game account, please wait."
 msgstr ""
 
-#: bsd.c:5138
+#: bsd.c:5139
 #, c-format
 msgid "GAME: Reboot w/o disconnect by %s, please wait."
 msgstr ""
@@ -2636,7 +2636,7 @@ msgid "GAME: Database consistency check complete."
 msgstr ""
 
 #: extchat.c:158 extchat.c:178 extchat.c:1188 extchat.c:1323 extchat.c:1333
-#: extchat.c:1388 extchat.c:1615 extchat.c:2744 extchat.c:3766
+#: extchat.c:1388 extchat.c:1615 extchat.c:2744 extchat.c:3765
 msgid "CHAT: I don't recognize that channel."
 msgstr ""
 
@@ -2678,7 +2678,7 @@ msgstr ""
 msgid "CHAT: Partial matches are:"
 msgstr ""
 
-#: extchat.c:1162 extchat.c:3726 extchat.c:3845
+#: extchat.c:1162 extchat.c:3725 extchat.c:3844
 msgid "You need to specify a channel."
 msgstr ""
 
@@ -2686,7 +2686,7 @@ msgstr ""
 msgid "What do you want to do with that channel?"
 msgstr ""
 
-#: extchat.c:1185 extchat.c:3763
+#: extchat.c:1185 extchat.c:3762
 #, c-format
 msgid "CHAT: You can't do that with channel <%s>."
 msgstr ""
@@ -3313,17 +3313,17 @@ msgstr ""
 msgid "#-1 NO RECALL BUFFER"
 msgstr ""
 
-#: extchat.c:3317 extchat.c:3807
+#: extchat.c:3317 extchat.c:3806
 #, c-format
 msgid "%s %s"
 msgstr ""
 
-#: extchat.c:3320 extchat.c:3810
+#: extchat.c:3320 extchat.c:3809
 #, c-format
 msgid "[%s] %s %s"
 msgstr ""
 
-#: extchat.c:3328 extchat.c:3818
+#: extchat.c:3328 extchat.c:3817
 #, c-format
 msgid "[%s] %s"
 msgstr ""
@@ -3332,69 +3332,69 @@ msgstr ""
 msgid "You must specify a type of lock"
 msgstr ""
 
-#: extchat.c:3693
+#: extchat.c:3692
 #, c-format
 msgid "To channel %s: %s"
 msgstr ""
 
-#: extchat.c:3733
+#: extchat.c:3732
 msgid "Which line do you want to start recall from?"
 msgstr ""
 
-#: extchat.c:3747 extchat.c:3755
+#: extchat.c:3746 extchat.c:3754
 msgid "How many lines did you want to recall?"
 msgstr ""
 
-#: extchat.c:3772
+#: extchat.c:3771
 msgid "CHAT: You must be able to join a channel to recall from it."
 msgstr ""
 
-#: extchat.c:3776
+#: extchat.c:3775
 msgid "CHAT: That channel doesn't have a recall buffer."
 msgstr ""
 
-#: extchat.c:3792
+#: extchat.c:3791
 msgid "CHAT: Nothing to recall."
 msgstr ""
 
-#: extchat.c:3796
+#: extchat.c:3795
 #, c-format
 msgid "CHAT: Recall from channel <%s>"
 msgstr ""
 
-#: extchat.c:3823
+#: extchat.c:3822
 msgid "CHAT: End recall"
 msgstr ""
 
-#: extchat.c:3827
+#: extchat.c:3826
 #, c-format
 msgid "CHAT: To recall the entire buffer, use @chan/recall %s=0"
 msgstr ""
 
-#: extchat.c:3849
+#: extchat.c:3848
 msgid "You need to specify the number of lines to buffer."
 msgstr ""
 
-#: extchat.c:3854
+#: extchat.c:3853
 msgid "Invalid buffer size."
 msgstr ""
 
-#: extchat.c:3869
+#: extchat.c:3868
 #, c-format
 msgid "CHAT: Channel buffering disabled for channel <%s>."
 msgstr ""
 
-#: extchat.c:3874
+#: extchat.c:3873
 #, c-format
 msgid "CHAT: Channel buffering already disabled for channel <%s>."
 msgstr ""
 
-#: extchat.c:3882
+#: extchat.c:3881
 #, c-format
 msgid "CHAT: Resizing buffer of channel <%s>"
 msgstr ""
 
-#: extchat.c:3887
+#: extchat.c:3886
 #, c-format
 msgid "CHAT: Buffering enabled on channel <%s>."
 msgstr ""
@@ -4719,12 +4719,12 @@ msgstr ""
 msgid "#-1 FUNCTION (SOUNDLIKE) REQUIRES TWO ONE-WORD ARGUMENTS"
 msgstr ""
 
-#: funmisc.c:913
+#: funmisc.c:923
 #, c-format
 msgid "I don't think #%d wants to hear from you."
 msgstr ""
 
-#: funmisc.c:940 funmisc.c:943
+#: funmisc.c:950 funmisc.c:953
 #, c-format
 msgid "Average: %.2f   Min: %u   Max: %u"
 msgstr ""

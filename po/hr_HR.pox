@@ -1862,6 +1862,11 @@ msgstr "<%s> %s%s%s%s kaze, \"%s\""
 msgid "@@ No attributes found. @@"
 msgstr "@@ Nema pronadjenih atributa. @@"
 
+#: look.c:1494
+#, c-format
+msgid "@@ No attributes match '%s'. @@"
+msgstr "@@ Nijedan atribut se ne podudara sa '%s'. @@"
+
 #: cque.c:551
 msgid "@break recursion exceeded."
 msgstr "Prekoraceno ogranicenje rekurzije @break naredbe."

@@ -863,16 +863,26 @@ FUNCTION(fun_allof)
              caller, enactor, pe_info);
 }
 
-/* Returns a platform-specific timestamp with microsecond resolution. */
-static uint64_t get_microtimestamp() {
+/* Returns a platform-specific timestamp with platform-dependent resolution. */
+static uint64_t get_tsc() {
 #ifdef WIN32
-  FILETIME ft;
-  GetSystemTimeAsFileTime(&ft);
-  return (((uint64_t) ft.dwHighDateTime << 32) | ft.dwLowDateTime) / 10;
+  LARGE_INTEGER li;
+  QueryPerformanceCounter(&li);
+  return li.QuadPart;
 #else
   struct timeval tv;
   gettimeofday(&tv, NULL);
   return 1000000ULL * tv.tv_sec + tv.tv_usec;
+#endif
+}
+
+static uint64_t tsc_diff_to_microseconds(uint64_t start, uint64_t end) {
+#ifdef WIN32
+  LARGE_INTEGER frequency;
+  QueryPerformanceFrequency(&frequency);
+  return (end - start) * 1000000.0 / frequency.QuadPart;
+#else
+  return end - start;
 #endif
 }
 
@@ -921,11 +931,11 @@ FUNCTION(fun_benchmark) {
     unsigned int elapsed;
     tp = tbuf;
     sp = args[0];
-    start = get_microtimestamp();
+    start = get_tsc();
     process_expression(tbuf, &tp, &sp, executor, caller, enactor,
                        PE_DEFAULT, PT_DEFAULT, pe_info);
     *tp = '\0';
-    elapsed = get_microtimestamp() - start;
+    elapsed = tsc_diff_to_microseconds(start, get_tsc());
     if (elapsed < min) {
       min = elapsed;
     }

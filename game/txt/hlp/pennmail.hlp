@@ -1,7 +1,7 @@
 & mail
 & @mail
-  @mail[/<switches>] [<msg-list> [= <target>]]
-  @mail[/<switches>] <player-list> = [<subject>/]<message>
+  @mail[/<switches>] [<msg-list>[=<target>]]
+  @mail[/<switches>] <player-list>=[<subject>/]<message>
  
   @mail invokes the built-in MUSH mailer, which allows players to send
   and receive mail. Pronoun/function substitution is performed on any

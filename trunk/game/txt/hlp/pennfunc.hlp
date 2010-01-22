@@ -2390,7 +2390,7 @@ See also: log()
   You can also get the location of the enactor using the %L substitution,
   whether you are near to/can examine it or not.
   
-See also: locate(), rloc(), home()
+See also: locate(), rloc(), home(), where(), rnum(), room()
 & LOCALIZE()
   localize(<code>)
 
@@ -2477,7 +2477,7 @@ See also: letq(), setq(), setr(), r(), ulocal(), uldefault()
   "here" and "me", and the names of %#'s location, his neighbours, and his
   inventory.
 
-See also: num(), rnum() 
+See also: num(), rnum(), pmatch(), room(), where(), rloc()
 & LOCK()
   lock(<object>[/<locktype>][, <new value>])
 
@@ -3750,7 +3750,7 @@ See also: locate(), num(), rloc(), room()
   players; if <object> is a player, the ROOM() function may be used to find 
   the player's absolute location if the player is not set UNFINDABLE.
 
-See also: loc(), rloc(), rnum()
+See also: loc(), rloc(), rnum(), where()
 & ROOT()
   root(<number>, <n>)
 
@@ -4454,7 +4454,7 @@ See also: anonymous attributes, sqlescape(), sql(), @sql
   If <register> is specified, there is a side-effect: the number of affected
   rows is stored into the specified q-register.
 
-See also: sqlescape(), mapsql(), @sql
+See also: sqlescape(), mapsql(), @sql, setq(), r()
 & SQLESCAPE()
   sqlescape(<string>)
 
@@ -5126,16 +5126,6 @@ See also: lcstr(), capstr()
     You say "-- BOOM --"
  
 See also: get(), eval(), ufun(), default(), edefault(), ulocal(), localize()
-& ULDEFAULT()
-  uldefault([<object>/]<attribute>, <default case>[, <arg0>[, ... <arg9>]])
-
-  This function returns the evaluated contents of [<object>/]<attribute>,
-  passing up to ten <arg>s, if the attribute is set. If the attribute can't
-  be read, <default case> is returned instead. Global registers (%q0-%q9 and
-  %qa-%qz) are saved before the attribute is evaluated, and restored
-  afterwards, as per ulocal().
-
-See also: u(), udefault(), default(), ulocal(), setq(), localize()
 & ULOCAL()
   ulocal([<object>/]<attribute>[, <arg0>[, ... , <arg9>]])
  

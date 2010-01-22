@@ -932,8 +932,10 @@ FUNCTION(fun_benchmark) {
     tp = tbuf;
     sp = args[0];
     start = get_tsc();
-    process_expression(tbuf, &tp, &sp, executor, caller, enactor,
-                       PE_DEFAULT, PT_DEFAULT, pe_info);
+    if (process_expression(tbuf, &tp, &sp, executor, caller, enactor,
+                           PE_DEFAULT, PT_DEFAULT, pe_info)) {
+      break;
+    }
     *tp = '\0';
     elapsed = tsc_diff_to_microseconds(start, get_tsc());
     if (elapsed < min) {

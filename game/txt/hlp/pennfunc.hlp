@@ -547,7 +547,7 @@ See also: obj(), poss(), subj()
   This function returns the proper article, "a" or "an", based on
   whether or not <string> begins with a vowel.
 & ASIN()
-  asin(<sine>[,<angle type>])
+  asin(<sine>[, <angle type>])
  
   Returns the angle with the given <sine> (arc-sine), with the angle
   expressed in the given <angle type>, or radians by default.
@@ -817,7 +817,7 @@ See also: Connection Functions
 
 See also: Connection Functions
 & COMP()
-  comp(<value1>, <value2>[,<type>])
+  comp(<value1>, <value2>[, <type>])
 
   comp() compares two values.  It returns 0 if they are the same, -1 if
   <value1> is less than/precedes alphabetically <value2>, and 1 otherwise.
@@ -1328,7 +1328,7 @@ See also: decode64(), encrypt(), decrypt()
 
 See also: decrypt(), encode64()
 & ENTRANCES()
-  entrances([<object> [,<type>[, <begin>[, <end>]]]])
+  entrances([<object> [, <type>[, <begin>[, <end>]]]])
 
   With no arguments, the entrances() function returns a list of all
   exits, things, players, and rooms linked to your location, like
@@ -1407,7 +1407,7 @@ See also: lexits(), next()
   
 See also: e(), power()
 & EXTRACT()
-  extract(<list>[, <first>[, <length>[,<delimiter>]]])
+  extract(<list>[, <first>[, <length>[, <delimiter>]]])
 
   This function returns <length> elements of <list>, counting from the
   <first>th element. If <length> is not specified, the default is 1, so
@@ -2626,7 +2626,7 @@ See also: pos(), member(), match()
   dbrefs that fulfill all restrictions. See 'help @search' for
   information about them.
 
-  children() is exactly the same as lsearch(<me|all>,parent,<object>),
+  children() is exactly the same as lsearch([me|all], parent, <object>),
   using "all" for See_All/Search_All players and "me" for others.
 
   nlsearch(...) and nchildren(...) return the count of results that
@@ -3898,9 +3898,9 @@ See also: setdiff(), setunion()
 & SETQ()
 & SETR()
 & UNSETQ()
-  setq(<register>, <string>[, ... ,<registerN>, <stringN>])
-  setr(<register>, <string>[, ... ,<registerN>, <stringN>])
-  unsetq(<register> [<reg2> ...])
+  setq(<register1>, <string1>[, ... , <registerN>, <stringN>])
+  setr(<register1>, <string1>[, ... , <registerN>, <stringN>])
+  unsetq([<register1> [ ... <registerN>]])
   
   The setq() and setr() functions are used to copy strings into local
   registers. setq() returns a null string; it is a purely "side
@@ -3993,14 +3993,14 @@ See also: setdiff(), setinter()
   shl(<number>, <count>)
 
   Performs a leftwards bit-shift on <number>, shifting it <count> times. 
-  This is equivalent to mul(<number>,power(2,<count>), but much faster.
+  This is equivalent to mul(<number>, power(2, <count>), but much faster.
   
 See also: shr()
 & SHR()
   shr(<number>, <count>)
 
   Performs a rightwards bit-shift on <number>, shifting it <count> times.
-  This is equivalent to div(<number>,power(2,<count>), but much faster.
+  This is equivalent to div(<number>, power(2, <count>), but much faster.
   
 See also: shl()
 & SHUFFLE()
@@ -4091,8 +4091,8 @@ See also: anonymous attributes, sorting, sort(), sortkey()
   'help sorting').
 
   This is equivalent to:
-    > &munge_sort me=sort(%0,<sort type>)
-    > munge(munge_sort, map(<attrib>, <list>), <list>)
+    > &munge_sort me=sort(%0[, <sort type>])
+    > say munge(munge_sort, map(<attrib>, <list>), <list>)
 
   Only there is no risk with delimiters ocurring within the list.
 
@@ -4760,7 +4760,7 @@ See also: not, if(), cond()
 
 See also: align()
 & TAN()
-  tan(<angle>[,<angle type>])
+  tan(<angle>[, <angle type>])
  
   Returns the tangent of <angle>, which should be expressed in the given 
   angle type, or radians by default. See HELP ANGLES for more information.
@@ -5486,7 +5486,7 @@ See also: BOOLEAN VALUES, and(), or(), not(), nor()
   starting at position <start>. It is useful when the number of
   objects in a container causes lcon() to exceed the buffer limit.
 
-  It is equivalent to extract(lcon(<object>),<start>,<count>)
+  It is equivalent to extract(lcon(<object>), <start>, <count>)
 
   xvcon() is identical, but follows the restrictions of lvcon().
 
@@ -5500,7 +5500,7 @@ See also: ncon(), lcon(), lvcon()
   at position <start>. It is useful when the number of exits in a
   container causes lexits() to exceed the buffer limit.
 
-  It is equivalent to extract(lexits(<room>),<start>,<count>)
+  It is equivalent to extract(lexits(<room>), <start>, <count>)
 
   xvexits() is identical, but follows the restrictions of lvexits().
 
@@ -5514,7 +5514,7 @@ See also: nexits(), lexits(), lvexits()
   starting at position <start>. It is useful when the number of players in a
   container causes lplayers() to exceed the buffer limit. It is equivalent to
   
-    extract(lplayers(<object>),<start>,<count>)
+    extract(lplayers(<object>), <start>, <count>)
 
   xvplayers() is identical, but follows the restrictions of lvplayers().
 

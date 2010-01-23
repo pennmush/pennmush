@@ -1241,7 +1241,7 @@ do_channel(dbref player, const char *name, const char *target, const char *com)
         /* Wizards can override join locks */
         notify(player,
                T
-               ("CHAT: Warning: Target does not meet channel join permissions (joining anyway)"));
+               ("CHAT: Warning: Target does not meet channel join permissions! (joining anyway)"));
       } else {
         notify(player, T("Permission to join denied."));
         return;
@@ -1345,7 +1345,7 @@ channel_join_self(dbref player, const char *name)
       /* Wizards can override join locks */
       notify(player,
              T
-             ("CHAT: Warning: You don't meet channel join permissions (joining anyway)"));
+             ("CHAT: Warning: You don't meet channel join permissions! (joining anyway)"));
     } else {
       notify(player, T("Permission to join denied."));
       return;
@@ -1358,7 +1358,7 @@ channel_join_self(dbref player, const char *name)
     if (!Channel_Quiet(chan) && !DarkLegal(player))
       channel_send(chan, player,
                    CB_CHECKQUIET | CB_PRESENCE | CB_POSE,
-                   T("has joined this channel"));
+                   T("has joined this channel."));
   } else {
     /* Should never happen */
     notify_format(player,
@@ -1382,7 +1382,7 @@ channel_leave_self(dbref player, const char *name)
   case CMATCH_NONE:
     if (find_channel_partial_off(name, &chan, player)
         && Chan_Can_See(chan, player))
-      notify_format(player, T("CHAT: You are not on channel <%s>"),
+      notify_format(player, T("CHAT: You are not on channel <%s>."),
                     ChanName(chan));
     else
       notify(player, T("CHAT: I don't recognize that channel."));
@@ -1400,7 +1400,7 @@ channel_leave_self(dbref player, const char *name)
     if (!Channel_Quiet(chan) && !DarkLegal(player))
       channel_send(chan, player,
                    CB_CHECKQUIET | CB_PRESENCE | CB_POSE,
-                   T("has left this channel"));
+                   T("has left this channel."));
     notify_format(player, T("CHAT: You leave channel <%s>."), ChanName(chan));
   } else {
     /* Should never happen */
@@ -2772,7 +2772,7 @@ do_chan_decompile(dbref player, const char *name, int brief)
       if (!(See_All(player) || Chan_Can_Modify(c, player)
             || (ChanCreator(c) == player))) {
         if (Chan_Can_See(c, player))
-          notify_format(player, T("CHAT: No permission to decompile <%s>"),
+          notify_format(player, T("CHAT: You don't have permission to decompile <%s>."),
                         ChanName(c));
         continue;
       }
@@ -3413,7 +3413,7 @@ COMMAND(cmd_clock)
   else if (SW_ISSET(sw, SWITCH_HIDE))
     do_chan_lock(player, arg_left, arg_right, CL_HIDE);
   else
-    notify(player, T("You must specify a type of lock"));
+    notify(player, T("You must specify a type of lock!"));
 }
 
 /** Find the next player on a channel to notify.

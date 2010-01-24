@@ -2461,9 +2461,17 @@ msgstr "CHAT: Odvozim smece iz chatove baze podataka."
 msgid "CHAT: Warning: Target does not meet channel join permissions (joining anyway)"
 msgstr "CHAT: Upozorenje: Meta ne zadovoljava uvjete za spajanje na kanal (ipak se spaja)"
 
+#: extchat.c:1244
+msgid "CHAT: Warning: Target does not meet channel join permissions! (joining anyway)"
+msgstr "CHAT: Upozorenje: Meta ne zadovoljava uvjete za spajanje na kanal! (ipak se spaja)"
+
 #: extchat.c:974
 msgid "CHAT: Warning: You don't meet channel join permissions (joining anyway)"
 msgstr "CHAT: Upozorenje: Ne zadovoljavas uvjete za spajanje na kanal (svejedno se spajas)"
+
+#: extchat.c:1348
+msgid "CHAT: Warning: You don't meet channel join permissions! (joining anyway)"
+msgstr "CHAT: Upozorenje: Ne zadovoljavas uvjete za spajanje na kanal! (svejedno se spajas)"
 
 #: src/extchat.c:1461
 msgid "CHAT: Wipe that silly grin off your face instead."
@@ -2479,10 +2487,20 @@ msgstr "CHAT: Vec jesi na kanalu <%s>"
 msgid "CHAT: You are not on channel <%s>"
 msgstr "CHAT: Nisi na kanalu <%s>"
 
+#: extchat.c:1385
+#, c-format
+msgid "CHAT: You are not on channel <%s>."
+msgstr "CHAT: Nisi na kanalu <%s>."
+
 #: src/extchat.c:757
 #, c-format
 msgid "CHAT: You can't do that with channel <%s>."
 msgstr "CHAT: Ne mozes to napraviti s kanalom <%s>."
+
+#: extchat.c:2775
+#, c-format
+msgid "CHAT: You don't have permission to decompile <%s>."
+msgstr "CHAT: Nemas dopustenje za dekompajliranje kanala <%s>."
 
 #: src/extchat.c:824
 #, c-format
@@ -8118,6 +8136,10 @@ msgstr "Moras navesti pozitivan broj %s."
 #: wiz.c:1067
 msgid "You must specify a power to set."
 msgstr "Moras navesti koju moc zelis dati."
+
+#: extchat.c:3416
+msgid "You must specify a type of lock!"
+msgstr "Moras navesti vrstu brave!"
 
 #: src/cmds.c:228
 msgid "You must specify a type of lock"

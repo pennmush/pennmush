@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-01-21 02:00-0600\n"
+"POT-Creation-Date: 2010-01-24 02:00-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -235,7 +235,7 @@ msgstr ""
 msgid "Attribute %s on object #%d lacks a parent!"
 msgstr ""
 
-#: attrib.c:1766 look.c:779 look.c:1569
+#: attrib.c:1766 look.c:779 look.c:1540
 msgid "Garbage is garbage."
 msgstr ""
 
@@ -315,7 +315,7 @@ msgstr ""
 msgid "No such attribute to reset."
 msgstr ""
 
-#: attrib.c:1903 command.c:1694
+#: attrib.c:1903 command.c:1693
 msgid "Alias set."
 msgstr ""
 
@@ -347,14 +347,14 @@ msgstr ""
 
 #: attrib.c:1978 attrib.c:2051 bsd.c:2822 bsd.c:2868 bsd.c:4086 bsd.c:4614
 #: bsd.c:4647 bsd.c:4659 bsd.c:4664 cmds.c:77 cmds.c:82 cmds.c:87
-#: command.c:1577 command.c:1615 command.c:1697 command.c:1924 cque.c:842
+#: command.c:1576 command.c:1614 command.c:1696 command.c:1923 cque.c:842
 #: cque.c:944 cque.c:995 cque.c:1448 cque.c:1506 cque.c:1623 create.c:100
 #: create.c:119 create.c:214 create.c:279 create.c:288 create.c:292
 #: create.c:343 create.c:347 create.c:365 create.c:475 create.c:614
 #: destroy.c:233 extchat.c:1769 extchat.c:1786 extchat.c:1817 extchat.c:3858
 #: flags.c:1557 flags.c:1562 flags.c:1715 function.c:1179 function.c:1314
 #: function.c:1466 function.c:1512 function.c:1553 funmisc.c:791 game.c:956
-#: game.c:1499 lock.c:709 lock.c:773 lock.c:969 look.c:1300 look.c:1615
+#: game.c:1499 lock.c:709 lock.c:773 lock.c:969 look.c:1301 look.c:1586
 #: malias.c:763 malias.c:868 match.c:139 move.c:536 move.c:859 move.c:874
 #: predicat.c:1232 predicat.c:1426 rob.c:423 set.c:192 set.c:923 set.c:970
 #: set.c:1006 set.c:1040 set.c:1053 set.c:1138 speech.c:1468 warnings.c:294
@@ -972,8 +972,8 @@ msgstr ""
 msgid "#-1 ARGUMENT OUT OF RANGE"
 msgstr ""
 
-#: bsd.c:4041 bsd.c:4050 bsd.c:4565 bsd.c:4574 cmds.c:424 fundb.c:852
-#: fundb.c:879
+#: bsd.c:4041 bsd.c:4050 bsd.c:4565 bsd.c:4574 cmds.c:427 fundb.c:851
+#: fundb.c:878
 msgid "#-1 INVALID SECOND ARGUMENT"
 msgstr ""
 
@@ -1184,63 +1184,63 @@ msgstr ""
 msgid "Option set."
 msgstr ""
 
-#: cmds.c:376 cmds.c:544 game.c:2368
+#: cmds.c:379 cmds.c:547 game.c:2368
 msgid "Flags"
 msgstr ""
 
-#: cmds.c:472
+#: cmds.c:475
 msgid "You need a fishing license to use that hook."
 msgstr ""
 
-#: cmds.c:488
+#: cmds.c:491
 msgid "You must give a switch for @hook"
 msgstr ""
 
-#: cmds.c:496
+#: cmds.c:499
 msgid "Huh?  (Type \"help\" for help.)"
 msgstr ""
 
-#: cmds.c:542 game.c:2372
+#: cmds.c:545 game.c:2372
 msgid "Locks"
 msgstr ""
 
-#: cmds.c:546 cmds.c:863 game.c:2370
+#: cmds.c:549 cmds.c:866 game.c:2370
 msgid "Powers"
 msgstr ""
 
-#: cmds.c:638 command.c:1874 extmail.c:1521
+#: cmds.c:641 command.c:1873 extmail.c:1521
 msgid "You cannot do that while gagged."
 msgstr ""
 
-#: cmds.c:716
+#: cmds.c:719
 msgid "@message them with what?"
 msgstr ""
 
-#: cmds.c:719
+#: cmds.c:722
 msgid "Use what attribute for the @message?"
 msgstr ""
 
-#: cmds.c:723
+#: cmds.c:726
 msgid "@message who?"
 msgstr ""
 
-#: cmds.c:987
+#: cmds.c:990
 msgid "You don't have the authority to do that!"
 msgstr ""
 
-#: cmds.c:1065
+#: cmds.c:1068
 msgid "You can't teleport to nothing!"
 msgstr ""
 
-#: cmds.c:1251
+#: cmds.c:1254
 msgid "Buy for WHAT price?"
 msgstr ""
 
-#: cmds.c:1256
+#: cmds.c:1259
 msgid "You can't buy things by taking money."
 msgstr ""
 
-#: cmds.c:1375
+#: cmds.c:1378
 #, c-format
 msgid "No command found in code by %s - don't start code with functions."
 msgstr ""
@@ -1253,196 +1253,196 @@ msgstr ""
 msgid "Couldn't allocate memory in command_parse"
 msgstr ""
 
-#: command.c:1236
+#: command.c:1235
 #, c-format
 msgid "%s doesn't know switch %s."
 msgstr ""
 
-#: command.c:1346
+#: command.c:1345
 #, c-format
 msgid "No command vector on command %s."
 msgstr ""
 
-#: command.c:1559
+#: command.c:1558
 msgid "This command has not been implemented."
 msgstr ""
 
-#: command.c:1585
+#: command.c:1584
 msgid "Bad command name."
 msgstr ""
 
-#: command.c:1591
+#: command.c:1590
 #, c-format
 msgid "Command %s added."
 msgstr ""
 
-#: command.c:1594
+#: command.c:1593
 #, c-format
 msgid "Command %s already exists."
 msgstr ""
 
-#: command.c:1621 command.c:1708 command.c:2071 command.c:2172
+#: command.c:1620 command.c:1707 command.c:2070 command.c:2171
 msgid "No such command."
 msgstr ""
 
-#: command.c:1629
+#: command.c:1628
 msgid "You can't delete built-in commands. @command/disable instead."
 msgstr ""
 
-#: command.c:1645
+#: command.c:1644
 #, c-format
 msgid "Removed %s and aliases from command table."
 msgstr ""
 
-#: command.c:1648 command.c:1653
+#: command.c:1647 command.c:1652
 #, c-format
 msgid "Removed %s from command table."
 msgstr ""
 
-#: command.c:1669
+#: command.c:1668
 msgid "You must specify a command."
 msgstr ""
 
-#: command.c:1682
+#: command.c:1681
 msgid ""
 "WARNING: /NOEVAL no longer creates a Noparse command.\n"
 "         Use /NOPARSE if that's what you meant."
 msgstr ""
 
-#: command.c:1689
+#: command.c:1688
 msgid "I can't alias a command to that!"
 msgstr ""
 
-#: command.c:1691
+#: command.c:1690
 msgid "Unable to set alias."
 msgstr ""
 
-#: command.c:1719
+#: command.c:1718
 msgid "How do you want to restrict the command?"
 msgstr ""
 
-#: command.c:1724
+#: command.c:1723
 msgid "Restrict attempt failed."
 msgstr ""
 
-#: command.c:1728
+#: command.c:1727
 msgid "@command is ALWAYS enabled."
 msgstr ""
 
-#: command.c:1734
+#: command.c:1733
 #, c-format
 msgid "Name       : %s (%s)"
 msgstr ""
 
-#: command.c:1750
+#: command.c:1749
 #, c-format
 msgid "Types      : %s"
 msgstr ""
 
-#: command.c:1770
+#: command.c:1769
 #, c-format
 msgid "Restrict   : %s"
 msgstr ""
 
-#: command.c:1779
+#: command.c:1778
 #, c-format
 msgid "Switches   : %s"
 msgstr ""
 
-#: command.c:1781
+#: command.c:1780
 msgid "Switches   :"
 msgstr ""
 
-#: command.c:1794
+#: command.c:1793
 #, c-format
 msgid "Leftside   : %s"
 msgstr ""
 
-#: command.c:1806
+#: command.c:1805
 #, c-format
 msgid "Rightside  : %s"
 msgstr ""
 
-#: command.c:1809
+#: command.c:1808
 #, c-format
 msgid "Arguments  : %s"
 msgstr ""
 
-#: command.c:1825
+#: command.c:1824
 #, c-format
 msgid "Commands: %s"
 msgstr ""
 
-#: command.c:1878
+#: command.c:1877
 msgid "You cannot do that while fixed."
 msgstr ""
 
-#: command.c:1882
+#: command.c:1881
 msgid "Guests cannot do that."
 msgstr ""
 
-#: command.c:1886
+#: command.c:1885
 msgid "Only God can do that."
 msgstr ""
 
-#: command.c:1906
+#: command.c:1905
 msgid "Permission denied, command is type-restricted."
 msgstr ""
 
-#: command.c:2075
+#: command.c:2074
 msgid "Hooks not allowed with that command."
 msgstr ""
 
-#: command.c:2088
+#: command.c:2087
 msgid "Unknown hook type"
 msgstr ""
 
-#: command.c:2093
+#: command.c:2092
 #, c-format
 msgid "Hook removed from %s."
 msgstr ""
 
-#: command.c:2100
+#: command.c:2099
 msgid "You must give an object."
 msgstr ""
 
-#: command.c:2102
+#: command.c:2101
 msgid "You must give both an object and attribute."
 msgstr ""
 
-#: command.c:2107
+#: command.c:2106
 msgid "Invalid hook object."
 msgstr ""
 
-#: command.c:2118
+#: command.c:2117
 #, c-format
 msgid "Hook set for %s"
 msgstr ""
 
-#: command.c:2152
+#: command.c:2151
 msgid "There are no hooks currently set."
 msgstr ""
 
-#: command.c:2157
+#: command.c:2156
 msgid "The following commands have hooks: "
 msgstr ""
 
-#: command.c:2177
+#: command.c:2176
 #, c-format
 msgid "@hook/before: #%d/%s"
 msgstr ""
 
-#: command.c:2180
+#: command.c:2179
 #, c-format
 msgid "@hook/after: #%d/%s"
 msgstr ""
 
-#: command.c:2183
+#: command.c:2182
 #, c-format
 msgid "@hook/ignore: #%d/%s"
 msgstr ""
 
-#: command.c:2186
+#: command.c:2185
 #, c-format
 msgid "@hook/override: #%d/%s"
 msgstr ""
@@ -2045,7 +2045,7 @@ msgstr ""
 msgid "Linked exit #%d to %s"
 msgstr ""
 
-#: create.c:330 fundb.c:1848 fundb.c:1865 wiz.c:400
+#: create.c:330 fundb.c:1845 fundb.c:1862 wiz.c:400
 msgid "No match."
 msgstr ""
 
@@ -2715,7 +2715,8 @@ msgstr ""
 
 #: extchat.c:1244
 msgid ""
-"CHAT: Warning: Target does not meet channel join permissions (joining anyway)"
+"CHAT: Warning: Target does not meet channel join permissions! (joining "
+"anyway)"
 msgstr ""
 
 #: extchat.c:1246 extchat.c:1350
@@ -2732,7 +2733,7 @@ msgstr ""
 msgid "CHAT: You join %s to channel <%s>."
 msgstr ""
 
-#: extchat.c:1262
+#: extchat.c:1262 extchat.c:1361
 msgid "has joined this channel."
 msgstr ""
 
@@ -2740,7 +2741,7 @@ msgstr ""
 msgid "Guests may not leave channels."
 msgstr ""
 
-#: extchat.c:1287
+#: extchat.c:1287 extchat.c:1403
 msgid "has left this channel."
 msgstr ""
 
@@ -2765,16 +2766,13 @@ msgid "CHAT: You are already on channel <%s>"
 msgstr ""
 
 #: extchat.c:1348
-msgid "CHAT: Warning: You don't meet channel join permissions (joining anyway)"
+msgid ""
+"CHAT: Warning: You don't meet channel join permissions! (joining anyway)"
 msgstr ""
 
 #: extchat.c:1355
 #, c-format
 msgid "CHAT: You join channel <%s>."
-msgstr ""
-
-#: extchat.c:1361
-msgid "has joined this channel"
 msgstr ""
 
 #: extchat.c:1378
@@ -2783,11 +2781,7 @@ msgstr ""
 
 #: extchat.c:1385
 #, c-format
-msgid "CHAT: You are not on channel <%s>"
-msgstr ""
-
-#: extchat.c:1403
-msgid "has left this channel"
+msgid "CHAT: You are not on channel <%s>."
 msgstr ""
 
 #: extchat.c:1404
@@ -3251,7 +3245,7 @@ msgstr ""
 
 #: extchat.c:2775
 #, c-format
-msgid "CHAT: No permission to decompile <%s>"
+msgid "CHAT: You don't have permission to decompile <%s>."
 msgstr ""
 
 #: extchat.c:2819
@@ -3329,7 +3323,7 @@ msgid "[%s] %s"
 msgstr ""
 
 #: extchat.c:3416
-msgid "You must specify a type of lock"
+msgid "You must specify a type of lock!"
 msgstr ""
 
 #: extchat.c:3692
@@ -4483,69 +4477,69 @@ msgstr ""
 msgid "#-1 INVALID LOCATION"
 msgstr ""
 
-#: fundb.c:953
+#: fundb.c:950
 msgid "#-1 NO OBJECTS CONTROLLED"
 msgstr ""
 
-#: fundb.c:971 fundb.c:1437
+#: fundb.c:968 fundb.c:1434
 msgid "#-1 ARG1 NOT FOUND"
 msgstr ""
 
-#: fundb.c:979 fundb.c:1439
+#: fundb.c:976 fundb.c:1436
 msgid "#-1 ARG2 NOT FOUND"
 msgstr ""
 
-#: fundb.c:987
+#: fundb.c:984
 msgid "#-1 BAD ATTR NAME"
 msgstr ""
 
-#: fundb.c:1056
+#: fundb.c:1053
 #, c-format
 msgid "WARNING: Weird object #%d (type %d)\n"
 msgstr ""
 
-#: fundb.c:1125
+#: fundb.c:1122
 msgid "#-1 NO SUCH TYPE"
 msgstr ""
 
-#: fundb.c:1143 fundb.c:1155 fundb.c:1173 fundb.c:1191
+#: fundb.c:1140 fundb.c:1152 fundb.c:1170 fundb.c:1188
 msgid "#-1 INVALID FLAG"
 msgstr ""
 
-#: fundb.c:1171 fundb.c:1189
+#: fundb.c:1168 fundb.c:1186
 msgid "#-1 INVALID POWER"
 msgstr ""
 
-#: fundb.c:1315 fundb.c:1322
+#: fundb.c:1312 fundb.c:1319
 msgid "#-1 NO SUCH LOCK"
 msgstr ""
 
-#: fundb.c:1869
+#: fundb.c:1866
 msgid "I'm not sure who you mean."
 msgstr ""
 
-#: fundb.c:2011
+#: fundb.c:2008
 #, c-format
 msgid "I don't understand switch '%c'."
 msgstr ""
 
-#: fundb.c:2209
+#: fundb.c:2206
 msgid "#-1 BAD ARGUMENT FORMAT TO ATTRIB_SET"
 msgstr ""
 
-#: fundb.c:2279 funlist.c:3174
+#: fundb.c:2276 funlist.c:3174
 msgid "#-1 NO SUCH ATTRIBUTE"
 msgstr ""
 
-#: fundb.c:2283 funlist.c:3178
+#: fundb.c:2280 funlist.c:3178
 msgid "#-1 INVALID GREP PATTERN"
 msgstr ""
 
-#: fundb.c:2357 fundb.c:2361
+#: fundb.c:2354 fundb.c:2358
 msgid "#-1 ARGUMENT MUST BE OBJ/ATTR"
 msgstr ""
 
-#: fundb.c:2390 fundb.c:2412
+#: fundb.c:2387 fundb.c:2409
 msgid "#-1 INVALID OBJECT"
 msgstr ""
 
@@ -4724,7 +4718,7 @@ msgstr ""
 msgid "I don't think #%d wants to hear from you."
 msgstr ""
 
-#: funmisc.c:950 funmisc.c:953
+#: funmisc.c:952 funmisc.c:955
 #, c-format
 msgid "Average: %.2f   Min: %u   Max: %u"
 msgstr ""
@@ -5994,40 +5988,40 @@ msgstr ""
 msgid "%s has just located your position."
 msgstr ""
 
-#: look.c:1343
+#: look.c:1323
 #, c-format
 msgid "%s(#%d) [from: %s(#%d)]"
 msgstr ""
 
-#: look.c:1352
+#: look.c:1330
 #, c-format
 msgid "%s(#%d) [dropto]"
 msgstr ""
 
-#: look.c:1361 look.c:1369
+#: look.c:1338
 #, c-format
 msgid "%s(#%d) [home]"
 msgstr ""
 
-#: look.c:1379 wiz.c:1221 wiz.c:1365
+#: look.c:1350 wiz.c:1221 wiz.c:1365
 msgid "Nothing found."
 msgstr ""
 
-#: look.c:1382
+#: look.c:1353
 msgid "----------  Entrances Done  ----------"
 msgstr ""
 
-#: look.c:1385
+#: look.c:1356 wiz.c:1321
 #, c-format
-msgid "Totals: Rooms...%d  Exits...%d  Objects...%d  Players...%d"
+msgid "Totals: Rooms...%d  Exits...%d  Things...%d  Players...%d"
 msgstr ""
 
-#: look.c:1494
+#: look.c:1465
 #, c-format
 msgid "@@ No attributes match '%s'. @@"
 msgstr ""
 
-#: look.c:1555
+#: look.c:1526
 msgid "What do you want to @decompile?"
 msgstr ""
 
@@ -8374,11 +8368,6 @@ msgstr ""
 
 #: wiz.c:1318
 msgid "----------  Search Done  ----------"
-msgstr ""
-
-#: wiz.c:1321
-#, c-format
-msgid "Totals: Rooms...%d  Exits...%d  Things...%d  Players...%d"
 msgstr ""
 
 #: wiz.c:1406

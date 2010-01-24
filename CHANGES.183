@@ -69,6 +69,7 @@ Commands:
  * @decompile changes: added /name, the opposite of /db. You can now give a
    '=<prefix>' without needing the /prefix switch, and can use other
    switches with /tf, like @decomp/tf/flags <obj>. Suggestedby Trinsec. [MG]
+ * @entrances can now take multiple switches, to show multiple types. [MG]
 
 Functions:
  * llocks() without any arguments returns a list of the standard locks.

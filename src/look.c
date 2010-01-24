@@ -1276,16 +1276,16 @@ do_whereis(dbref player, const char *name)
  * \param val what type of 'entrances' to find.
  */
 void
-do_entrances(dbref player, const char *where, char *argv[], enum ent_type val)
+do_entrances(dbref player, const char *where, char *argv[], int types)
 {
   dbref place;
   dbref counter;
-  int exc, tc, pc, rc;          /* how many we've found */
-  int exd, td, pd, rd;          /* what we're looking for */
+  int rooms, things, exits, players;
   int bot = 0;
   int top = db_top;
+  int controlsplace;
 
-  exc = tc = pc = rc = exd = td = pd = rd = 0;
+  rooms = things = exits = players = 0;
 
   if (!where || !*where) {
     if ((place = Location(player)) == NOTHING)
@@ -1296,31 +1296,10 @@ do_entrances(dbref player, const char *where, char *argv[], enum ent_type val)
       return;
   }
 
-  if (!controls(player, place) && !Search_All(player)) {
+  controlsplace = controls(player, place);
+  if (!controlsplace && !Search_All(player)) {
     notify(player, T("Permission denied."));
     return;
-  }
-
-  /* figure out what we're looking for */
-  switch (val) {
-  case ENT_EXITS:
-    exd = 1;
-    td = pd = rd = 0;
-    break;
-  case ENT_THINGS:
-    td = 1;
-    exd = pd = rd = 0;
-    break;
-  case ENT_PLAYERS:
-    pd = 1;
-    exd = td = rd = 0;
-    break;
-  case ENT_ROOMS:
-    rd = 1;
-    exd = td = pd = 0;
-    break;
-  case ENT_ALL:
-    exd = td = pd = rd = 1;
   }
 
   /* determine range */
@@ -1334,56 +1313,48 @@ do_entrances(dbref player, const char *where, char *argv[], enum ent_type val)
     top = db_top;
 
   for (counter = bot; counter < top; counter++) {
-    if (controls(player, place) || controls(player, counter)) {
+    if (controlsplace || controls(player, counter)) {
+      if (!(types & Typeof(counter)))
+        continue;
       switch (Typeof(counter)) {
       case TYPE_EXIT:
-        if (exd) {
-          if (Location(counter) == place) {
-            notify_format(player,
-                          T("%s(#%d) [from: %s(#%d)]"), Name(counter),
-                          counter, Name(Source(counter)), Source(counter));
-            exc++;
-          }
+        if (Location(counter) == place) {
+          notify_format(player,
+                        T("%s(#%d) [from: %s(#%d)]"), Name(counter),
+                        counter, Name(Source(counter)), Source(counter));
+          exits++;
         }
         break;
       case TYPE_ROOM:
-        if (rd) {
-          if (Location(counter) == place) {
-            notify_format(player, T("%s(#%d) [dropto]"), Name(counter),
-                          counter);
-            rc++;
-          }
+        if (Location(counter) == place) {
+          notify_format(player, T("%s(#%d) [dropto]"), Name(counter),
+                        counter);
+          rooms++;
         }
         break;
       case TYPE_THING:
-        if (td) {
-          if (Home(counter) == place) {
-            notify_format(player, T("%s(#%d) [home]"), Name(counter), counter);
-            tc++;
-          }
-        }
-        break;
       case TYPE_PLAYER:
-        if (pd) {
-          if (Home(counter) == place) {
-            notify_format(player, T("%s(#%d) [home]"), Name(counter), counter);
-            pc++;
-          }
+        if (Home(counter) == place) {
+          notify_format(player, T("%s(#%d) [home]"), Name(counter), counter);
+          if (IsThing(counter))
+            things++;
+          else
+            players++;
         }
         break;
       }
     }
   }
 
-  if (!exc && !tc && !pc && !rc) {
+  if (!exits && !things && !players && !rooms) {
     notify(player, T("Nothing found."));
     return;
   } else {
     notify(player, T("----------  Entrances Done  ----------"));
     notify_format(player,
                   T
-                  ("Totals: Rooms...%d  Exits...%d  Objects...%d  Players...%d"),
-                  rc, exc, tc, pc);
+                  ("Totals: Rooms...%d  Exits...%d  Things...%d  Players...%d"),
+                  rooms, exits, things, players);
     return;
   }
 }

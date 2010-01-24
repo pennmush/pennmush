@@ -343,16 +343,19 @@ COMMAND(cmd_enable)
 
 COMMAND(cmd_entrances)
 {
+  int types = 0;
+
   if (SW_ISSET(sw, SWITCH_EXITS))
-    do_entrances(player, arg_left, args_right, ENT_EXITS);
-  else if (SW_ISSET(sw, SWITCH_THINGS))
-    do_entrances(player, arg_left, args_right, ENT_THINGS);
-  else if (SW_ISSET(sw, SWITCH_PLAYERS))
-    do_entrances(player, arg_left, args_right, ENT_PLAYERS);
-  else if (SW_ISSET(sw, SWITCH_ROOMS))
-    do_entrances(player, arg_left, args_right, ENT_ROOMS);
-  else
-    do_entrances(player, arg_left, args_right, ENT_ALL);
+    types |= TYPE_EXIT;
+  if (SW_ISSET(sw, SWITCH_THINGS))
+    types |= TYPE_THING;
+  if (SW_ISSET(sw, SWITCH_PLAYERS))
+    types |= TYPE_PLAYER;
+  if (SW_ISSET(sw, SWITCH_ROOMS))
+    types |= TYPE_ROOM;
+  if (!types)
+    types = NOTYPE;
+  do_entrances(player, arg_left, args_right, types);
 }
 
 COMMAND(cmd_eunlock)

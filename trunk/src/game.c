@@ -645,7 +645,7 @@ do_restart(void)
     }
   }
 
-  /* Once we load all that, then we can trigger the startups and 
+  /* Once we load all that, then we can trigger the startups and
    * begin queueing commands. Also, let's make sure that we get
    * rid of null names.
    */
@@ -682,7 +682,7 @@ void init_queue(void);
 
 /** Initialize game structures and read the most of the configuration file.
  * This function runs before we read in the databases. It is responsible
- * for recording the MUSH start time, setting up all the hash and 
+ * for recording the MUSH start time, setting up all the hash and
  * prefix tables and similar structures, and reading the portions of the
  * config file that don't require database load.
  * \param conf file name of the configuration file.
@@ -751,8 +751,8 @@ init_game_config(const char *conf)
 }
 
 /** Post-db-load configuration.
- * This function contains code that should be run after dbs are loaded 
- * (usually because we need to have the flag table loaded, or because they 
+ * This function contains code that should be run after dbs are loaded
+ * (usually because we need to have the flag table loaded, or because they
  * run last). It reads in the portions of the config file that rely
  * on flags being defined.
  * \param conf file name of the configuration file.
@@ -1229,7 +1229,7 @@ process_command(dbref player, char *command, dbref cause, int from_port)
     }                           /* end of special checks */
     if (!a) {
       /* Do we have any error dbs queued up, and if so, do any
-       * have associated failure messages? 
+       * have associated failure messages?
        */
       if ((errdblist == errdbtail) || (!fail_commands(player)))
         /* Nope. This is totally unmatched, run generic failure */
@@ -1424,7 +1424,7 @@ Hearer(dbref thing)
  * That is, if it has any attributes with $commands on them that are
  * not set no_command.
  * \param thing object to check.
- * \retval 1 object responds to commands. 
+ * \retval 1 object responds to commands.
  * \retval 0 object doesn't respond to commands.
  */
 int
@@ -1457,7 +1457,7 @@ Listener(dbref thing)
 
 /** Reset all players' money.
  * \verbatim
- * This function implements the @poor command. It probably belongs in 
+ * This function implements the @poor command. It probably belongs in
  * rob.c, though.
  * \endverbatim
  * \param player the enactor, for permission checking.
@@ -1786,7 +1786,6 @@ do_scan(dbref player, char *command, int flag)
   strcpy(global_eval_context.ccom, save_ccom);
 }
 
-#define DOL_MAP 1      /**< The map command */
 #define DOL_NOTIFY 2   /**< Add a notify after a dolist */
 #define DOL_DELIM 4    /**< Specify a delimiter to a dolist */
 
@@ -1849,30 +1848,10 @@ do_dolist(dbref player, char *list, char *command, dbref cause,
     curr = split_token(&objstring, delim);
     place++;
     sprintf(placestr, "%d", place);
-    if (!(flags & DOL_MAP)) {
-      /* @dolist, queue command */
-      bind_and_queue(player, cause, command, curr, placestr);
-    } else {
-      const char *replace[2];
-      char *ebuf, *ebufptr;
-      /* it's @map, add to the output list */
-      if (bp != outbuf)
-        safe_chr(delim, outbuf, &bp);
-      replace[0] = curr;
-      replace[1] = placestr;
-      ebufptr = ebuf = replace_string2(standard_tokens, replace, command);
-      process_expression(outbuf, &bp, (char const **) &ebuf, player,
-                         cause, cause, PE_DEFAULT, PT_DEFAULT, NULL);
-      mush_free(ebufptr, "replace_string.buff");
-    }
+    bind_and_queue(player, cause, command, curr, placestr);
   }
 
   *bp = '\0';
-  if (flags & DOL_MAP) {
-    /* if we're doing a @map, copy the list to an attribute */
-    (void) atr_add(player, "MAPLIST", outbuf, GOD, 0);
-    notify(player, T("Function mapped onto list."));
-  }
   if (flags & DOL_NOTIFY) {
     /*  Execute a '@notify me' so the object knows we're done
      *  with the list execution. We don't execute dequeue_semaphores()
@@ -2197,7 +2176,7 @@ do_uptime(dbref player, int mortal)
 }
 
 
-/* Open a db file, which may be compressed, and return a file pointer. These probably should be moved into db.c or 
+/* Open a db file, which may be compressed, and return a file pointer. These probably should be moved into db.c or
  a new dbio.c */
 static PENNFILE *
 db_open(const char *fname)

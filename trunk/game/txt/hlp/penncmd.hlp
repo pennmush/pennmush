@@ -57,13 +57,13 @@ These '@' commands are general utility and programming commands:
   @cemit         @command       @config        @decompile     @doing
   @dolist        @drain         @edit          @emit          @entrances
   @find          @force         @function      @gedit         @grep
-  @halt          @lemit         @listmotd      @mail          @map
-  @notify        @nsemit        @nslemit       @nsoemit       @nspemit
-  @nsprompt      @nsremit       @nszemit       @oemit         @password      
-  @pemit         @prompt        @ps            @remit         @restart       
-  @scan          @search        @select        @stats         @sweep         
-  @switch        @teleport      @trigger       @verb          @version       
-  @wait          @whereis       @zemit
+  @halt          @lemit         @listmotd      @mail          @notify
+  @nsemit        @nslemit       @nsoemit       @nspemit       @nsprompt      
+  @nsremit       @nszemit       @oemit         @password      @pemit         
+  @prompt        @ps            @remit         @restart       @scan          
+  @search        @select        @stats         @sweep         @switch        
+  @teleport      @trigger       @verb          @version       @wait          
+  @whereis       @zemit
 
 & @-WIZARD
 These '@' commands are only usable by wizards or privileged players:
@@ -2319,44 +2319,6 @@ See also: @logwipe
   command.
 
 See also: @log
-& @map
-  @map[/delim] [<delim>] <list> = <function or pattern>
- 
-  This command takes a space-separated list of words, and performs
-  pronoun/pattern substitution on each word, returning a list - 
-  "mapping" the function onto each item in the list. It returns the
-  list in a MAPLIST attribute, automatically set on the object executing
-  the @map. The set is always performed before any actions further
-  actions are executed. 
-  
-  If the /delim switch is given, the first character of the list is
-  used as the delimiter, instead of space.
-
-  Brackets are generally necessary in order to make the function
-  substitutions evaluate correctly.
-  
-  @map is an obsolete command provided for backwards compatibility;
-  the ITER() or MAP() functions should probably be used instead.
- 
-  See "help @map2" for examples of @map.
- 
-& @map2
- 
-  Examples of @map:
-    @map foobar baz blech=[strlen(##)]
-      Returns "6 3 5" in MAPLIST.
-    @map testing map-test=[strlen(before(##, est)]
-      Returns "1 5" in MAPLIST
-    @map Joe Bob Ann=I know ##.
-      Returns "I know Joe. I know Bob. I know Ann." in MAPLIST
- 
-  >  @va Object=$test * * *:@map %0 %1 %2=[strlen(##)];
-           @dolist [v(maplist)] = say ##
-  Object - Set.
-  >  test aaa bb c
-  Object says, "3"
-  Object says, "2"
-  Object says, "1"
 & @message
   @message[/switch] <player list>=<message>,<attribute>[,<arg1>,...]
 

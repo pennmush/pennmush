@@ -1390,11 +1390,14 @@ See also: @zenter, ZONES, @zemit, zwho()
   specify an <object>, your current location is used. You can limit the
   range of the dbrefs searched by specifying <begin> and <end>.
   
-  It takes four switches:
+  You can use any combination of switches to limit the types of objects:
     /exits       show only exits linked to <object>
     /things      show only things which have their homes in <object>
     /players     show only players who have their homes in <object>
     /rooms       show only rooms which have a drop-to of <object>
+    
+  If you don't control <object>, you must have the Search_All power, and will
+  only see objects you control.
     
 See also: @link, @search, entrances()
 & @exitformat

@@ -831,7 +831,7 @@ FUNCTION(fun_entrances)
   dbref counter;
   dbref entrance;
   int found;
-  int exd, td, pd, rd;          /* what we're looking for */
+  int types = 0;
   char *p;
   int controlswhere = 0;
 
@@ -846,7 +846,6 @@ FUNCTION(fun_entrances)
     safe_str(T("#-1 INVALID LOCATION"), buff, bp);
     return;
   }
-  exd = td = pd = rd = 0;
   if (nargs > 1) {
     if (!args[1] || !*args[1]) {
       safe_str(T("#-1 INVALID SECOND ARGUMENT"), buff, bp);
@@ -857,23 +856,23 @@ FUNCTION(fun_entrances)
       switch (*p) {
       case 'a':
       case 'A':
-        exd = td = pd = rd = 1;
+        types = NOTYPE;
         break;
       case 'e':
       case 'E':
-        exd = 1;
+        types |= TYPE_EXIT;
         break;
       case 't':
       case 'T':
-        td = 1;
+        types |= TYPE_THING;
         break;
       case 'p':
       case 'P':
-        pd = 1;
+        types |= TYPE_PLAYER;
         break;
       case 'r':
       case 'R':
-        rd = 1;
+        types |= TYPE_ROOM;
         break;
       default:
         safe_str(T("#-1 INVALID SECOND ARGUMENT"), buff, bp);
@@ -882,9 +881,9 @@ FUNCTION(fun_entrances)
       p++;
     }
   }
-  if (!exd && !td && !pd && !rd) {
-    exd = td = pd = rd = 1;
-  }
+  if (!types)
+    types = NOTYPE;
+
   if (nargs > 2) {
     if (is_integer(args[2])) {
       low = parse_integer(args[2]);
@@ -919,9 +918,7 @@ FUNCTION(fun_entrances)
   found = 0;
   for (counter = low; counter <= high; counter++) {
     if (GoodObject(counter)) {
-      if ((exd && IsExit(counter)) ||
-          (td && IsThing(counter)) ||
-          (pd && IsPlayer(counter)) || (rd && IsRoom(counter))) {
+      if (types & Typeof(counter)) {
         if (Mobile(counter))
           entrance = Home(counter);
         else

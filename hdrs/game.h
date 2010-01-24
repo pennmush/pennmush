@@ -72,9 +72,7 @@ extern void do_find(dbref player, const char *name, char **argv);
 extern void do_whereis(dbref player, const char *name);
 extern void do_score(dbref player);
 extern void do_sweep(dbref player, const char *arg1);
-enum ent_type { ENT_EXITS, ENT_THINGS, ENT_PLAYERS, ENT_ROOMS, ENT_ALL };
-extern void do_entrances(dbref player, const char *where, char **argv,
-                         enum ent_type val);
+extern void do_entrances(dbref player, const char *where, char **argv, int types);
 enum dec_type { DEC_NORMAL, DEC_DB = 1, DEC_FLAG = 2, DEC_ATTR = 4, DEC_SKIPDEF = 8};
 extern void do_decompile(dbref player, const char *name, const char *prefix, int dec_type);
 

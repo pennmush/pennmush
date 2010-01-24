@@ -1330,20 +1330,22 @@ See also: decrypt(), encode64()
 & ENTRANCES()
   entrances([<object> [, <type>[, <begin>[, <end>]]]])
 
-  With no arguments, the entrances() function returns a list of all
-  exits, things, players, and rooms linked to your location, like
-  @entrances. You can specify an object other than your current
-  location with <object>. You can limit the type of objects found by
-  specifying <type> as follows:
-
+  With no arguments, the entrances() function returns a list of all exits, 
+  things, players, and rooms linked to your location, like @entrances. You 
+  can specify an object other than your current location with <object>. You 
+  can limit the type of objects found by specifying one or more of the 
+  following for <type>:
         a        all (default)
         e        exits
         t        things
         p        players
         r        rooms
 
-  You can also limit the range of the dbrefs searched by giving
-  <begin> and <end>.
+  You can also limit the range of the dbrefs searched by giving <begin> and 
+  <end>. If you don't control <object>, you must have the Search_All power,
+  and will only see objects you control.
+  
+See also: lsearch(), @entrances
 & EQ()
   eq(<number>, <number>[, ... , <numberN>])
 

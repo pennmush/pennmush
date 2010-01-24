@@ -428,7 +428,7 @@ can_see(dbref player, dbref thing, int can_see_loc)
  *   Wizards control everything else.
  *   Nothing else controls a wizard, and only royalty control royalty.
  *   Mistrusted objects control only themselves.
- *   Objects with the same owner control each other, unless the 
+ *   Objects with the same owner control each other, unless the
  *     target object is TRUST and the would-be controller isn't.
  *   If ZMOs allow control, and you pass the ZMO, you control.
  *   If the owner is a Zone Master, and you pass the ZM, you control.
@@ -947,7 +947,7 @@ ok_function_name(const char *name)
  * Right now, this means: filter out SEND and XCH_CMD if
  * the player isn't privileged. Params may contain a space-separated
  * list of tag=value pairs. It's probably possible to fool this
- * checking. Needs more work, or removing HTML support. 
+ * checking. Needs more work, or removing HTML support.
  * \param player player using the attribute, or NOTHING for internal.
  * \param params the attributes to use.
  * \retval 1 params is acceptable.
@@ -1126,8 +1126,8 @@ page_return(dbref player, dbref target, const char *type,
   }
 }
 
-/** Returns the apparent location of object. 
- * This is the location for players and things, source for exits, and 
+/** Returns the apparent location of object.
+ * This is the location for players and things, source for exits, and
  * NOTHING for rooms.
  * \param thing object to get location of.
  * \return apparent location of object (NOTHING for rooms).
@@ -1149,9 +1149,9 @@ where_is(dbref thing)
 
 /** Are two objects near each other?
  * Returns 1 if obj1 is "nearby" object2. "Nearby" is a commutative
- * relation defined as:  
- *   obj1 is in the same room as obj2, obj1 is being carried by   
- *   obj2, or obj1 is carrying obj2. 
+ * relation defined as:
+ *   obj1 is in the same room as obj2, obj1 is being carried by
+ *   obj2, or obj1 is carrying obj2.
  * Returns 0 if object isn't nearby or the input is invalid.
  * \param obj1 first object.
  * \param obj2 second object.
@@ -1216,9 +1216,9 @@ do_verb(dbref player, dbref cause, char *arg1, char **argv)
     notify(player, T("What do you want to do the verb?"));
     return;
   }
-  /* Control check is fascist. 
+  /* Control check is fascist.
    * First check: we don't want <actor> to do something involuntarily.
-   *   Both victim and actor have to be controlled by the thing which did 
+   *   Both victim and actor have to be controlled by the thing which did
    *   the @verb (for speed we do a WIZARD check first), or: cause controls
    *   actor plus the second check is passed.
    * Second check: we need read access to the attributes.
@@ -1380,7 +1380,7 @@ grep_helper(dbref player, dbref thing __attribute__ ((__unused__)),
 
   /* if we got it, display it */
   if (found)
-    notify_format(player, "%s%s [#%d%s]%s %s",
+    notify_format(player, "%s%s [#%d%s]:%s %s",
                   ANSI_HILITE, AL_NAME(atr),
                   Owner(AL_CREATOR(atr)),
                   privs_to_letters(attr_privs_view, AL_FLAGS(atr)),

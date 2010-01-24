@@ -36,7 +36,6 @@
 void do_poor(dbref player, char *arg1);
 void do_list_memstats(dbref player);
 
-#define DOL_MAP 1               /**< dolist/map bitflag */
 #define DOL_NOTIFY 2            /**< dolist/notify bitflag */
 #define DOL_DELIM 4             /**< dolist/delim bitflag */
 
@@ -687,14 +686,6 @@ COMMAND(cmd_malias)
     do_malias_nuke(player);
   else
     do_malias(player, arg_left, arg_right);
-}
-
-COMMAND(cmd_map)
-{
-  unsigned int flags = DOL_MAP;
-  if (SW_ISSET(sw, SWITCH_DELIMIT))
-    flags |= DOL_DELIM;
-  do_dolist(player, arg_left, arg_right, cause, flags);
 }
 
 COMMAND(cmd_message)

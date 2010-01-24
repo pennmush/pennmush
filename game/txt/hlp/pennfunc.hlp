@@ -1328,7 +1328,7 @@ See also: decode64(), encrypt(), decrypt()
 
 See also: decrypt(), encode64()
 & ENTRANCES()
-  entrances([<object> [, <type>[, <begin>[, <end>]]]])
+  entrances([<object>[, <type>[, <begin>[, <end>]]]])
 
   With no arguments, the entrances() function returns a list of all exits, 
   things, players, and rooms linked to your location, like @entrances. You 
@@ -2362,7 +2362,7 @@ See also: decompose()
 See also: log()
 & LNUM()
   lnum(<number>)
-  lnum(<start number>, <end number>[, <output separator> [, <step>]])
+  lnum(<start number>, <end number>[, <output separator>[, <step>]])
 
   With one argument, lnum returns a list of numbers, from 0 to <number
   - 1>.  For example, lnum(4) returns the list "0 1 2 3". This is

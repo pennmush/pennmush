@@ -1142,70 +1142,71 @@ See also: look, @adescribe, @idescribe, @descformat
   
 See also: @create, @dig, @open, DESTROY_OK, SAFE
 & @dig
-  @dig[/teleport] <room name>[=<exit name>;<alias>*,<exit name>;<alias>*]
+  @dig[/teleport] <room name>[=<exit to>[, <exit from>]]
   
-  This command is used to create a new room, possibly with exits linking
-  it to the room you are standing in. This command normally costs 10 pennies,
-  although some MUSHes may have different amounts or may restrict this 
-  command to those with the builder @power.
+  This command creates a new room named <room name>. Creating a room costs
+  some pennies (see '@config room_cost' for exactly how many). If the
+  /teleport switch is given, you will be teleported to the room after it's
+  created, as per the @teleport command.
   
-  @dig/teleport will automatically @tel the digger to the new room.
-
-  If you use the long form of this command, an exit to the new room
-  from the one you are standing in and an exit back from the new room
-  will both be automatically @open'ed and @link'ed. You may have as 
-  many or as few exit aliases for an exit as you like, separated in the
-  command by semicolons. The exit leading to the new room is separated
-  from the exit leading back by a single comma.
-
-(continued in help @dig2)
+  If <exit to> is given, the MUSH will automatically open an exit named from your
+  current location to the new room named <exit to>, if you have permission.
+  You can also specify <exit from>, to create an exit from the new room back
+  to your current location. Opening exists also costs pennies; see '@config 
+  exit_cost'. The exit names may contain multiple aliases, separated with
+  semicolons.
+  
+  See 'help @dig2' for examples.
 & @dig2
   Examples: 
-  @dig Kitchen
-    This command will create a new room named 'Kitchen'. You will be informed
-    what the dbref # of this room is.
+    >@dig Kitchen
+  This command will create a new room named 'Kitchen'. You will be informed
+  what the dbref# of this room is.
 
-  @dig Kitchen = Kitchen <N>;n;north;kitchen;k
-    This will create the room as above and also open an exit leading
-    to it named "Kitchen <N>;n;north;kitchen;k". It will appear in the 
-    list of Obvious exits as just "Kitchen <N>", but you will be able to
-    go through it by typing any of the following: n, k, north, kitchen
-    It will NOT create an exit coming back from the Kitchen room.
+  > @dig Kitchen=Kitchen <N>;n;north;kitchen;k
+  This will create the room as above, and also open an exit leading to it 
+  named "Kitchen <N>" with the aliases n, north, kitchen and k. It will NOT 
+  create an exit coming back from the Kitchen room.
 
-  @dig Kitchen = Kitchen <N>;n;north;kitchen;k,Out <S>;s;south;out;o
-    This will do just the same as the above, except it will also create
-    an exit named "Out <S>;s;south;out;o" coming back from the kitchen
-    to whatever room you are currently in.
+  > @dig Kitchen=Kitchen <N>;n;north;kitchen;k, Out <S>;s;south;out;o
+  This will do just the same as the above, except it will also create an 
+  exit named "Out <S>" with the aliases s, south, out and o coming back from
+  the kitchen to whatever room you are currently in.
 
 See also: @open, @link, EXITS, @create, DBREF
 & @doing
   @doing <message>
   @doing/header <message>
 
-  This command sets a short message that shows up in the WHO/DOING listing
-  next to your name. @doing/header <message> works exactly like @poll and
-  can only be used by Wizards or those with the poll power.
+  The first form of this command sets a message which shows up next to your
+  name in the output of the WHO/DOING commands.
+  
+  @doing/header is an alias for @poll, and can only be used by Wizards or
+  those with the Poll @power.
 
-See also: @poll, WHO, DOING
+See also: @poll, WHO, doing()
 & @dolist
-  @dolist[/notify][/delimit] [<delim>] <list> = <action>
+  @dolist[/notify][/delimit <delim>] <list>=<action list>
   
-  @dolist executes the <action> for each element in <list>. If <list> is a
-  function, it will be evaluated to obtain the necessary list to use. It
-  may be any space-separated list of strings, which can be object numbers,
-  attributes, or arbitrary words. If the /delimit switch is given, the first
-  character of the list is used as the separator, instead of space.
+  @dolist queues the <action list> for execution once for each element in 
+  <list>. <list> is space-separated, unless the /delimit switch is given, 
+  in which case it is a <delim>-separated list.
   
-  <action> is a command or list of commands enclosed in braces { }
-  and is performed once for every item in <list>. The special symbol "##"
-  is replaced by the corresponding item from <list>.  The special symbol
-  "#@" is replaced by the position of that item in the list.
+  If the string "##" appears anywhere in <action list>, it will be replaced
+  with the current element of <list>. The string "##" is replaced with the
+  position of the current element in the list.
  
-  If the /notify switch is used, a "@notify me" is queued after all the
-  list commands. This is useful for object synchronization with semaphores.
-   
-  Example: @dolist [lcon(here)] = "[name(##)]
-    would cause you to say the name of all objects in the room.
+  If the /notify switch is given, the command "@notify me" is queued after 
+  all copies of <action list> have been queued. This is useful for object
+  synchronization with semaphores.
+  
+  Example:
+    > @dolist a b c=say ## is number #@
+    You say, "a is number 1"
+    You say, "b is number 2"
+    You say, "c is number 3"
+    
+See also: iter(), map(), @notify, SEMAPHORES, ACTION LISTS
 & @drain
   @drain[/any][/all] <object>[/<attribute>][=<number>]
   
@@ -1213,105 +1214,118 @@ See also: @poll, WHO, DOING
   executing them.
 
   If the /any switch is given, then all semaphores associated with
-  <object> are @drained.  Otherwise, the only the specified semaphore
-  attribute (or SEMAPHORE if no attribute is specified) is @drained.
+  <object> are @drained.  Otherwise, only the specified semaphore
+  attribute (or SEMAPHORE if no <attribute> is specified) is @drained.
 
-  If the /all switch is given, then all queue entries associated
-  with the selected semaphore(s) are discarded, and the semaphore
-  attribute(s) are cleared.  Otherwise, only the indicated <number>
-  of queue entries are discarded.  If no <number> is given, then
-  the /all switch is assumed.
+  If the /all switch is given, then all queue entries associated with the
+  selected semaphore(s) are discarded, and the semaphore attribute(s)
+  are cleared.  Otherwise, only the indicated <number> of queue entries are
+  discarded.  If no <number> is given, then the /all switch is assumed.
 
   You may not specify both the /any switch and a specific attribute.
   Similarly, you may not specify both the /all switch and a number.
 
-  See also the help for: SEMAPHORES, @notify, @wait
+See also: SEMAPHORES, @wait, @notify
 & @dump
-  @dump [/paranoid] [check interval]
+  @dump[/paranoid [<check interval>]]
  
-  This is a wizard only command that saves a copy of the current memory
-  database out to a save file.  This preempts the normal regular dumping
-  that the mud performs on its own.
+  This is a wizard-only command which saves a copy of the database from
+  memory into the outdb file on disk. The MUSH saves the game automatically
+  at a regular interval, controlled by the "dump_interval" @config option.
  
-  If the /paranoid switch is used, the game performs additional consistency
+  If the /paranoid switch is given, the game performs additional consistency
   checking which corrects possible data corruption. If a check interval
   is specified, the game writes confirmation of the dump to the checkpoint
   log file every <interval> objects. If no interval is specified, it is
   taken to be the size of the database, divided by 5.
+  
   This switch should ONLY be used if a normal @dump is not being done
   correctly. Paranoid dumps should generally only be done by wizards with 
   access to the account on which the MUSH is running, since others will
   not have access to the checkpoint log file.
-& @ealias
-  @ealias <object> = <enter alias>
 
-  This allows a player to type the enter alias instead of "enter <object>"
-  If you have a chair, you could "@ealias chair = sit down" and then just
-  type "sit down" instead of "enter chair" - using the object name is
-  not necessary. Note that the enter alias is checked after normal exits.
-  Like an exit, it may have a semicolon separated list of words,
-  i.e. sit down;sit;sit on chair
+See also: @shutdown
+& @ealias
+& @lalias
+  @ealias <object>[=<enter alias1>[; ... ; <enter aliasN>]]
+  @lalias <object>[=<leave alias1>[; ... ; <leave aliasN>]]
+  
+  These attributes contain lists of "enter aliases" and "leave aliases" for 
+  <object> - any of the aliases can be used in place of "enter <object>" and
+  "leave <object>" to enter/leave the object.
+  
+  These attributes only have meaning for players and things (as rooms/exits
+  cannot be "enter"ed) - the aliases for exits are part of their @name.
+  
+  Example:
+    > @ealias Chair=Sit down;sit
+    > @lalias Chair=Stand up;stand
+
+See also: enter, leave, goto, ENTER_OK
 & @edit
 & @gedit
-  @edit[/first][/check] <object>/<pattern> = <search>,<replace> 
-  @edit[/check] <object>/<pattern> = $,<string to append>
-  @edit[/check] <object>/<pattern> = ^,<string to prepend>
+  @edit[/first][/check] <object>/<attributes>=<search>, <replace> 
+  @edit[/check] <object>/<attributes> = $,<string to append>
+  @edit[/check] <object>/<attributes> = ^,<string to prepend>
 
-  This is useful when you don't want to have to retype those obnoxiously 
-  long descriptions just to make one little change.  Instead, search and 
-  replace via @edit.  
+  This command allows you to edit the contents of attributes, without having
+  to retype the entire attribute.
   
-  <pattern> is a pattern, optionally containing wildcards, for the attribute 
-  names you wish to edit. Only attributes already defined on <object> may be 
-  edited. <search> and <replace> are two strings. It's also possible to use 
-  "$" and "^" to signal appending and prepending text, respectively.
+  All the attributes on <object> whose names match the wildcard pattern
+  <attributes> will be searched for the string <search>, and each occurrence
+  of it will be replaced with the string <replace>.
   
-  If the text contains commas, percent signs, or similar special characters,
-  it usually must be enclosed in curly braces.
-
-  If the /first switch is used, only the first occurrence of <search>
-  is replaced.
-
-  If the /check switch is used, the editing is not actually done, but the
-  results are shown to you (with changes hilighted) as if a normal @edit
-  was performed.
+  If <search> is "$", then <replace> will be added to the end of the
+  attributes. When <search> is "^", <replace> will be added to the beginning
+  of the attributes. (It is not possible to replace a single $ or ^ using
+  the @edit command.)
   
-  See also ATTRIBUTES, edit()
+  If the /first switch is given, only the first occurrence of <search> in
+  each attribute is replaced. If the /check switch is given, the attributes
+  are not altered, you'll just be shown what would be changed (with the
+  changes ansi-highlighted).
+  
+  <search> and <replace> are not evaluated, so you don't need to escape
+  special characters. If either contains commas, however, you may need to
+  wrap the string in {curly braces}.
+  
+See also: edit(), regedit(), ATTRIBUTES,
 & @elock
-  @elock <object> = <key>
-  Enter-locks an object, restricting who is allowed to enter it. Special
-  lock types are supported (see "help @lock" for details). Only objects
-  which are ENTER_OK may be entered, regardless of the key.
- 
-  Rooms don't use ENTER_OK or @elock; they use @lock/teleport
-  instead. Only people who pass the room's teleport lock, are wizards
-  or royalty, or control the room, will be allowed to @teleport into the
-  room. (Note that this is different from NO_TEL, which prevents people
-  from teleporting out of a room).  The teleport lock is evaluated even
-  if the room is JUMP_OK - in other words, if you are trying to teleport
-  into a room you don't control, the room must be JUMP_OK, and you must
-  pass the teleport lock.
+& @eunlock
+  @eunlock <object>
 
+  @elock <object>[=<key>]
+  @eunlock <object>
+  
+  @elock sets the Enter @lock for <object> to <key>, or clears the the lock
+  if no <key. is given. @eunlock removes the Enter @lock for <object>.
+  
+  @elock is an alias for
+    @lock/enter <object>[=<key>]
+  and @eunlock is an alias for
+    @lock/enter <object>
+
+See also: @lock, locktypes, enter, ENTER_OK
 & @emit
 & \  
-  @emit[/<switch>] [<message>]
+  @emit[/<switch>] <message>
   \<message>
 
-  This sends <message> to every person in the current room. However, no
-  identifier marking it as being sent by you is shown.  For example,
-  @emit foo would show 'foo' to every object in the room. 
+  This sends <message> to everyone in your location. Nothing is added to the
+  message, not even your name.
 
-  The /room switch makes this command equivalent to "@lemit". 
-  The /silent switch in combination with /room suppresses the
-   @lemit confirmation. It has no effect without /room.
-  The /noeval switch prevents the MUSH from evaluating the message.
+  If the /room switch is given, this command acts like @lemit instead. The
+  /silent switch can be used with it to suppress the confirmation for @lemit.
+
+  The /noeval switch prevents the MUSH from evaluating <message>.
   The /spoof switch causes nospoof notifications to show the enactor's
     dbref instead of the executor's dbref, and requires control over
     the enactor or the Can_nspemit power.
 
   @emit can be abbreviated "\"
 
-  See also @pemit, @remit, @oemit, @lemit, NOSPOOF and SPOOFING.
+See also: @nsemit, emit(), @pemit, @remit, @oemit, @lemit, @zemit, @cemit, 
+    NOSPOOF and SPOOFING.
 & @enable
 & @disable
   @enable <option>
@@ -1327,88 +1341,82 @@ See also: @config
 & @zenter
 & @ozenter
 & @azenter
-  @zenter <ZMO> = <message>
-  @ozenter <ZMO> = <message>
-  @azenter <ZMO> = <action>
+  @zenter <object>[=<message>]
+  @ozenter <object>[=<message>]
+  @azenter <object>[=<action list>]
   
-  These attributes set the message shown to a player who enters a room in
-  a new zone (@zenter), the message shown to others in the room in the
-  new zone when the player enters (@ozenter), and the action triggered
-  by the entry (@azenter).
+  These attributes set the message shown to a player when he enters the zone
+  <object>, the message shown to others in the room the player enters when
+  he enters the zone, and the action to be taken by the zone <object> when 
+  the player moves into an area zoned to it.
 
-  Entry into a new zone is said to occur when a player goes from 
-  a room not in the zone to a room in the zone. "Room" in this context
-  means the player's absolute room (outermost container), so entering
-  and leaving unzoned objects within a zoned room doesn't trigger these.
+  Entry into a new zone is said to occur when a player goes from a room not 
+  in the zone to a room in the zone. "Room" in this context means the 
+  player's absolute room (outermost container), so entering and leaving 
+  unzoned objects within a zoned room doesn't trigger these.
 
   Zone entry is assumed to occur before room entry, so these are
   triggered before the room's @[oa]enter.
 
-See also: @zleave, @ozleave, @azleave, ZONES
+See also: @zleave, ZONES, @zemit, zwho()
 & @zleave
 & @ozleave
 & @azleave
-  @zleave <ZMO> = <message>
-  @ozleave <ZMO> = <message>
-  @azleave <ZMO> = <action>
+  @zleave <object>[=<message>]
+  @ozleave <object>[=<message>]
+  @azleave <object>[=<action list>]
   
-  These attributes set the message shown to a player who leaves a room in
+  These attributes set the message shown to a player when he leaves the zone
+  <object>, the message shown to others in the room he left when leaving
+  the zone, and the actions to be taken by <object> with a player leaves
+  an area zoned to it.
   a zone (@zleave), the message shown to others in the room in the
   old zone when the player leaves (@ozleave), and the action triggered
   by the leave-taking (@azleave).
 
-  Leaving a zone is said to occur when a player goes from a room in
-  the zone to a room not in the zone. "Room" in this context means the
-  player's absolute room (outermost container), so entering and leaving
-  unzoned objects within a zoned room doesn't trigger these.
+  Leaving a zone is said to occur when a player goes from a room in the zone
+  to a room not in the zone. "Room" in this context means the player's
+  absolute room (outermost container), so entering and leaving unzoned 
+  objects within a zoned room doesn't trigger these.
 
   Zone leaving is assumed to occur after room leaving, so these are
   triggered after the room's @[oa]leave.
 
-See also: @zenter, @ozenter, @azenter, ZONES
+See also: @zenter, ZONES, @zemit, zwho()
 & @entrances
-  @entrances[/<switch>] <object> [=<begin>,<end>]
+  @entrances[/<switch>] [<object>][=<begin>[, <end>]]
   
-  This command will show you all exits linked to the object you use the
-  command on, as well as where the exit originates. You can limit the range
-  of the dbrefs searched by specifying <begin> and <end>.
+  This command will show you all objects linked to <object>. If you don't
+  specify an <object>, your current location is used. You can limit the
+  range of the dbrefs searched by specifying <begin> and <end>.
   
   It takes four switches:
-  
-  /exits       show only exits linked to <object>
-  /things      show only things which have their homes in <object>
-  /players     show only players who have their homes in <object>
-  /rooms       show only rooms which have a drop-to of <object>
-& @eunlock
-  @eunlock <object>
-
-  Enter-unlocks an object, in a fashion similar to @unlock. For anyone
-  to be able to enter an object, it must be both @eunlocked and ENTER_OK.
-  You can also simply type 
-    @lock/enter <object> 
-  to unlock an object.
-
-See also: @lock, locktypes, @elock
+    /exits       show only exits linked to <object>
+    /things      show only things which have their homes in <object>
+    /players     show only players who have their homes in <object>
+    /rooms       show only rooms which have a drop-to of <object>
+    
+See also: @link, @search, entrances()
 & @exitformat
-  @exitformat <object> [=<format>].
+  @exitformat <object>[=<format>].
 
-  Replaces the usual "Obvious Exits:" format when an object is looked
-  at, by a player-specified exits format. This is evaluated as if it
-  were a description or similar message on the room.  The objects that
-  the looker would normally be able to see is passed as a dbref list
-  in %0; all exits can be acquired through 'lexits(me)'.
- 
-  One could change the format to 'Exits: Exit1 Exit2 Exit3' through
-  '@exitformat here = Exits: [iter(%0,name(##))]', for example.
+  When set, the exitformat attribute is evaluated and shown in place of the
+  "Obvious exits" list for a room. (It has no meaning when set on other types
+  of object.) The dbrefs of the exits which would appear in the default
+  "Obvious exits" list is passed to the attribute as %0 as a space-separated
+  list; you can use lexits(me) to get all the exits in the room.
+
+  Example:
+    > @exitformat here=Exits: [itemize(iter(%0, name(%i0)))]
 
 See also: TRANSPARENT, @conformat, @nameformat, @descformat
 & @firstexit
   @firstexit <exit1>[, ... , <exitN>]
   
-  Normally, exits appear in a room's Obvious Exits list in the order they
+  Normally, exits appear in a room's Obvious exits list in the order they
   were created, most recent first. You can use this command to rearrange
   them. @firstexit moves each exit, in the order given, to the top of the
-  Obvious Exits list for its source room. You must control the room.
+  Obvious exits list for its source room. You must control the room.
   
   Example:
     > @dig/teleport Test Room
@@ -1425,121 +1433,110 @@ See also: TRANSPARENT, @conformat, @nameformat, @descformat
 
 See also: EXITS, @open, @link
 & @filter
-  @filter <object> = <pattern 1>, <pattern 2>, <pattern 3>, ...
+  @filter <object>[=<pattern1>[, <pattern2>[, ..., <patternN>]]
  
-  This attribute is meant to be used in conjunction with the AUDIBLE
-  flag. The @filter of an object is a comma-separated list of wildcard
-  patterns (like @switch patterns). Any messages which match one of the 
-  patterns is suppressed and not propagated through the AUDIBLE object
-  with the @filter set. (Note: @filter on rooms has no effect!)
- 
-  Please note that you should NOT use curly brackets {} in an @filter
-  pattern. If you want to filter a message containing a comma, you
-  need to put a \ before it. Also note that AUDIBLE exits will not
-  take effect unless the room they lead from is also set AUDIBLE.
+  The filter attribute is used in conjunction with the AUDIBLE flag. When
+  set, sound which matches any of the comma-separated list of wildcard
+  patterns in this attribute is not propagated through the audible object.
 
-  See 'help @filter2' for more.
-& @filter2
- If the @filter attribute is flagged REGEXP, the patterns are considered
- regular expressions, not wildcards. The CASE attribute flag is also
- respected. 
+  If you need to use a comma in one of the patterns, put a \ before it,
+  do not use {} curly braces.
 
-Example: 
-  An exit leads from the room where Wizard is standing to another
-  room where the puppet "Wiztoy" is standing. The exit is set AUDIBLE.
+  You can set the regexp flag on the filter attribute to use regular 
+  expressions instead of wildcard patterns, and can set the case flag to make
+  the patterns case-sensitive.
   
-    @prefix exit=From inside,
-    :tests.
-    > Wizard tests.
+  See 'help @filter2' for an example.
+  
+See also: AUDIBLE, @infilter, attribute flags, LISTENING, @forwardlist
+& @filter2
+
+  Example: 
+  An audible exit leads from the room where Wizard is standing to another
+  room where the puppet "Wiztoy" is standing.
+  
+    > @prefix exit=From inside,
+    > :tests.
+    Wizard tests.
     Wiztoy> From inside, Wizard tests.
-    @filter exit=* jumps.,* tests.
-    :jumps.
-    > Wizard jumps.
-    :tests.
-    > Wizard tests.
-  (Wiztoy doesn't hear anything, because it is filtered out.)
-    :tests again.
-    > Wizard tests again.
+
+    > @filter exit=* jumps.,* tests.
+    > :jumps.
+    Wizard jumps.
+    > :tests.
+    Wizard tests.
+
+    > :tests again.
+    Wizard tests again.
     Wiztoy> From inside, Wizard tests again.
-
-See also: AUDIBLE, @infilter, LISTENING
 & @find
-  @find [<name>] [=<begin>,<end>]
+  @find [<name>][=<begin>, <end>]
 
-  Displays the name and number of every room, thing, or player that you 
-  control whose name matches <name>. You can limit the range of the @find 
-  by specifying <begin> and <end>, where these are the first and last
-  dbrefs to examine.
+  Displays the name and dbref of every room, thing, or player you control
+  whose name matches <name>. If <begin> and <end> are given, @find will start
+  at the <begin>th object in the database, and will not search past the
+  <end>th object.
 
-  Some MUSHes may choose to restrict @find only to Royalty. Even if 
-  not, it is recommended that you use @search instead, as it can be
-  limited more effectively.
+  You may wish to use the @search command instead, which can filter the
+  results more complexly.
 
-See also: @search, lsearch()
+See also: @search, lsearch(), @entrances
 & @FORWARDLIST
-  @forwardlist <object> [=<list of dbrefs>]
+  @forwardlist <object>[=<list of dbrefs>]
 
-  When an object set AUDIBLE hears sound that passes its @filter, its
-  @forwardlist attribute is checked, and if present, the sound (Prefixed
-  by the object's @prefix attribute) is forwarded to all the dbrefs in the
-  @forwardlist, like puppets do to their owners.
+  If <object> is set AUDIBLE, any sound it hears which passes its @filter
+  will be forwarded (prefixed with its @prefix) to each of the dbrefs given
+  in its @forwardlist attribute, in much the same way as puppets forward
+  sound to their owners.
 
-  The @forwardlist must be a space-seperated list of dbrefs. 
-  In order to forward to an object, you must either control it,
-  have the pemit_all power, or, if it has a @lock/forward set,  pass 
-  its @lock/forward.  (If you want to allow all objects you own to
-  forward to you, regardless of whether or not they control you, use
-  @lock/forward me=$me)
+  In order to forward to an object, you must either control it, have the 
+  pemit_all power, or pass its @lock/forward. (If you want to allow all
+  objects you own to forward to you, regardless of whether or not they
+  control you, use @lock/forward me=$me)
 
-See also: @filter, @prefix, AUDIBLE, PUPPET
+See also: @filter, @prefix, AUDIBLE, PUPPET, @debugforwardlist, @lock
 & @DEBUGFORWARDLIST
 & DEBUGFORWARDLIST
-  @debugforwardlist <object> [=<list of dbrefs>]
+  @debugforwardlist <object>[=<list of dbrefs>]
 
-  When an object is set DEBUG, its @debugforwardlist attribute is checked,
-  and if present, the debug output is forwarded to all the dbrefs in
-  the @debugforwardlist.
+  When <object> is set DEBUG, the debug output is forwarded to all the dbrefs
+  in its @debugforwardlist attribute.
 
-  The @debugforwardlist must be a space-seperated list of dbrefs.
-  In order to forward to an object, you must either control it,
-  have the pemit_all power, or, if it has a @lock/forward set,  pass
-  its @lock/forward.  (If you want to allow all objects you own to
-  forward to you, regardless of whether or not they control you, use
-  @lock/forward me=$me)
+  The @debugforwardlist must be a space-seperated list of dbrefs. In order to 
+  forward to an object, you must either control it, have the pemit_all power, 
+  or pass its @lock/forward.
 
-See also: DEBUG
+See also: DEBUG, @forwardlist, @lock
 & @force
-  @force[/noeval] <object>=<command>
+  @force[/noeval] <object>=<action list>
 
-  This forces the object to perform the command just as if it had
-  typed it in itself. Only wizards may @force other players. You
-  can @force any object which you own or control. Useful for
-  manipulating puppets. If <object> is not in the same room as you,
-  you can instead use the object's dbref number. 
+  This command forces <object> to queue the given action list, as if the
+  object had entered the action list itself. You must control <object> to
+  @force it. @force is useful for manipulating puppets. 
 
-  @force can be shortened to @fo or @for, or abbreviated as:
-    <dbref #> <command>
+  @force can be abbreviated as
+    <dbref#> <action list>
 
-(continued in help @force2)
+  Continued in 'help @force2'.
 & @force2
 
-  Normally, the command is parsed for function evaluation and 
-  substitutions twice - once when @force is run, once when
-  the forcee runs the command. @force/noeval will only
-  evaluate the command when the forcee runs it.
+  Normally, the action list is parsed for function evaluation and
+  substitutions twice - once when @force is run, once when <object> runs the 
+  action list. If the /noeval switch is given, <action list> is not evaluated
+  until it is run by <object>.
 
-Examples:
-  @create Lackey
-  > Created: Object #103 
-  @fo Lackey = go east
-  > Lackey goes east.
-  > Lackey has left.
-  @fo #103 = page Cyclonus = Hi there!
-  > Lackey pages: Hi there!
-  #103 page Cyclonus = Whee
-  > Lackey pages: Whee
+  Examples:
+    > @create Lackey
+    Created: Object #103 
+    > @force Lackey=go east
+    Lackey goes east.
+    Lackey has left.
+    > @force #103=page Cyclonus=Hi there!
+    Lackey pages: Hi there!
+    > #103 page Cyclonus=Whee
+    Lackey pages: Whee
 
-See also: PUPPET, DBREF 
+See also: PUPPET, DBREF
 & @flag
   @flag <flag name>
   @flag/list [<flag name pattern>]
@@ -4235,13 +4232,13 @@ See also: @use, @ouse, @ause, @charges, @runout
   
   For mortals, the WHO command displays a list of players currently
   connected to the MUSH, the amount of time they've been connected,
-  their idle time, and their @doing. Dark/hidden players are not shown.
+  their idle time, and their @doing. Hidden players are not shown.
   
   For admin, WHO shows the names of online players, their location,
   connection/idle times, the number of commands typed through the
   connection, the descriptor/port number, and the host the player is 
-  connected from. It also includes dark/hidden players, and connections
-  which are at the login screen, but have not yet connected to a player.
+  connected from. It also includes hidden players, and connections which 
+  are at the login screen, but have not yet connected to a player.
   
   Admin can use the DOING command to see the same output mortals see with
   WHO, with the exception that dark/hidden players are included.

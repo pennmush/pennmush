@@ -96,42 +96,34 @@ could_doit(dbref player, dbref thing)
   return (eval_lock(player, thing, Basic_Lock));
 }
 
-/** Execute an action on an object, and handle objects with limited charges.
- * \param player the enactor.
+/** Check for CHARGES on thing and, if present, lower.
  * \param thing object being used.
- * \param awhat action attribute on object to be triggered.
- * \retval 0 no action taken.
- * \retval 1 action taken.
+ * \retval 0 charges was set to 0
+ * \retval 1 charges not set, or was > 0
  */
 int
-charge_action(dbref player, dbref thing, const char *awhat)
+charge_action(dbref thing)
 {
   ATTR *b;
   char tbuf2[BUFFER_LEN];
   int num;
 
-  if (!awhat || !*awhat)
-    return 0;
-
   /* check if object has # of charges */
   b = atr_get_noparent(thing, "CHARGES");
 
   if (!b) {
-    /* no charges set, just execute the action */
-    return queue_attribute(thing, awhat, player);
+    return 1; /* no CHARGES */
   } else {
     strcpy(tbuf2, atr_value(b));
     num = atoi(tbuf2);
-    if (num) {
+    if (num > 0) {
       /* charges left, decrement and execute */
-      int res;
-      if ((res = queue_attribute(thing, awhat, player)))
-        (void) atr_add(thing, "CHARGES", tprintf("%d", num - 1),
-                       Owner(b->creator), 0);
-      return res;
+      (void) atr_add(thing, "CHARGES", tprintf("%d", num - 1),
+                     Owner(b->creator), 0);
+      return 1;
     } else {
       /* no charges left, try to execute runout */
-      return queue_attribute(thing, "RUNOUT", player);
+      return 0;
     }
   }
 }
@@ -332,7 +324,8 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
     global_eval_context.wnxt[j] = myenv[j];
   for (j = 0; j < NUMQ; j++)
     global_eval_context.rnxt[j] = NULL;
-  attribs_used = charge_action(player, thing, awhat) || attribs_used;
+  if (awhat && *awhat)
+    attribs_used = queue_attribute(thing, awhat, player) || attribs_used;
   orator = preserve_orator;
   return attribs_used;
 }
@@ -1251,7 +1244,8 @@ do_verb(dbref player, dbref cause, char *arg1, char **argv)
   for (i = 0; i < 10; i++)
     global_eval_context.wnxt[i] = argv[i + 7];
 
-  charge_action(actor, victim, upcasestr(argv[6]));
+  if (argv[6] && *argv[6])
+    queue_attribute(victim, upcasestr(argv[6]), actor);
 }
 
 /** Structure for passing arguments to grep_util_helper().

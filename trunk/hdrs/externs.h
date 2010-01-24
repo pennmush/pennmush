@@ -401,7 +401,7 @@ void page_return(dbref player, dbref target, const char *type,
 char *grep_util(dbref player, dbref thing, char *pattern,
                 char *lookfor, int sensitive, int wild);
 dbref where_is(dbref thing);
-int charge_action(dbref player, dbref thing, const char *awhat);
+int charge_action(dbref thing);
 dbref first_visible(dbref player, dbref thing);
 
 /* From rob.c */

@@ -55,6 +55,8 @@ Minor Changes:
    when used by mortals, they work exactly the same as the non-ns versions.
    Suggested by Michael Blackburn. [MG]
  * Update autoconf to 2.65.
+ * @grep/print now shows a : before the attribute contents, the same as
+   examine. Suggested by Cheetah. [MG]
    
 Commands:
  * Removed the /functions, /attribs, /commands and /flags switches from

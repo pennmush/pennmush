@@ -1097,8 +1097,7 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
     break;
   case NUMBER_TOKEN:
     /* parse_force() destructively modifies the command to replace
-     * the first space with a '=' if the command is an actual
-     * chat command */
+     * the first space with a '=' if the command is an actual @force */
     if (Mobile(player) && parse_force(p)) {
       /* This is a "#obj foo" force style
        * We set noevtoken to keep its noeval way, and

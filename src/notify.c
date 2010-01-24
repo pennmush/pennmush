@@ -902,10 +902,10 @@ notify_anything_loc(dbref speaker, na_lookup func,
         if (eval_lock(speaker, target, Listen_Lock))
           if (PLAYER_AHEAR || (!IsPlayer(target))) {
             if (speaker != target)
-              charge_action(speaker, target, "AHEAR");
+              queue_attribute(target, "AHEAR", speaker);
             else
-              charge_action(speaker, target, "AMHEAR");
-            charge_action(speaker, target, "AAHEAR");
+              queue_attribute(target, "AMHEAR", speaker);
+            queue_attribute(target, "AAHEAR", speaker);
           }
         if (!(flags & NA_NORELAY) && (loc != target) &&
             !filter_found(target,

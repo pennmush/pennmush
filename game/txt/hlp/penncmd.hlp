@@ -532,6 +532,10 @@ See also: ATTRIBUTEs, STANDARD ATTRIBUTES, attribute flags, @set, @atrchown
   <object>, the message shown to others when someone uses <object>, and the
   actions to be taken by <object> when it is used, respectively.
   
+  Note that, if <object> has a CHARGES attribute set and it does not contain
+  a number greater than 0, the RUNOUT attribute is triggered instead of the
+  AUSE attribute. See 'help @charges' for more information.
+  
   Example:
     > @use Jack-In-The-Box=You wind the handle.
     > @ouse Jack-In-The-Box=winds the handle.
@@ -604,14 +608,50 @@ See also: QUIT, LOGOUT
 
 See also: ACTION LISTS, QUEUE, BOOLEAN VALUES, @switch
 & @charges
+& @runout 
   @charges <object>[=<integer>]
+  @runout <object>[=<action list>]
 
-  Allows you to limit the number of times an object can be "used". 
-  The "charges" attribute will be decreased by one each time the
-  object's @ause is triggered, and once it reaches zero, the object 
-  cannot be used anymore.
+  These attributes can limit how many times an object can be successfully
+  "use"d. When you "use" an object with a CHARGES attribute set, the object's
+  AUSE attribute is only triggered if CHARGES is a positive integer. When
+  CHARGES is less than 1 (or not a number), the object's RUNOUT attribute is
+  triggered instead.
+  
+  When the CHARGES attribute is present and AUSE is triggered, the value of
+  the CHARGES attribute is automatically decreased by 1. When no CHARGES 
+  attribute is set, AUSE is always triggered.
+  
+  See 'help charges2' for an example.
 
-See also: use, @runout, @ause
+See also: use, @ause, ACTION LISTS
+& charges2
+& runout2
+  
+  Example:
+    > @create Revolver
+    > @use Revolver=You pull the trigger.
+    > @ouse Revolver=pulls the trigger.
+    > @charges Revolver=6
+    > @ause Revolver=POSE fires into the air.
+    > @runout Revolver=POSE clicks, but is out of bullets.
+    
+    > use revolver
+    You pull the trigger.
+    Revolver fires into the air.
+    > ex revolver/charges
+    CHARGES [#6$]: 5
+    
+  The next 5 "use revolver"s work the same way, decrementing CHARGES
+  each time.
+  
+    > ex revolver/charges
+    CHARGES [#6$]: 0
+    > use revolver
+    You pull the trigger.
+    Revolver clicks, but is out of bullets.
+    > ex revolver/charges
+    CHARGES [#6$]: 0
 & @chown
   @chown[/preserve] <object>=<player>
 
@@ -2840,13 +2880,6 @@ See also: @emit, @pemit, @oemit, SPOOFING, NOSPOOF, CONTROL.
 
 
 See also: @halt, @startup
-& @runout 
-  @runout <object> = <action list> 
-
-  Sets the actions to be taken when the charges of the object reaches
-  zero. 
-
-See also: @charges, use, ACTION LISTS
 & @rwall
   @rwall[/emit] <message>
 
@@ -4151,16 +4184,15 @@ See also: follow, dismiss, desert, followers(), @follow, @ofollow, @afollow
 & use
   use <object>
 
-  Attempts to use an object, triggering its @use/@ouse/@ause
-  attributes.  The person using the object must pass its uselock; no
-  inheritance check is necessary. This is may be done remotely by
-  using a dbref number; it provides an easy way for non-TRUST objects
-  to perform commands on TRUST objects.
+  This command attempts to "use" <object>. If you do not pass <object>'s
+  @lock/use, the UFAIL/OUFAIL/AUFAIL attributes are triggered.
+  
+  If you pass the lock, you will see <object>'s USE attribute, and others in
+  your location will see <object>'s OUSE. Depending on <object>'s CHARGES
+  attribute, one of <object>'s AUSE or RUNOUT attributes will be triggered -
+  see 'help @charges' for more information.
 
-  If the person fails to pass the object's uselock, the object's
-  @ufail/@oufail/@aufail attributes are triggered.
-
-See also: @use, @ouse, @ause, @charges, @runout
+See also: @use, @charges, @lock, @ufail
 & whisper 
   whisper <player>=<message>
   whisper/silent <player>=<message>

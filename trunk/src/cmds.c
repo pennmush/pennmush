@@ -95,14 +95,16 @@ COMMAND(cmd_atrchown)
 
 COMMAND(cmd_boot)
 {
-  if (SW_ISSET(sw, SWITCH_PORT))
-    do_boot(player, arg_left, BOOT_DESC);
-  else if (SW_ISSET(sw, SWITCH_ME))
-    do_boot(player, (char *) NULL, BOOT_SELF);
-  else if (SW_ISSET(sw, SWITCH_SILENT))
-    do_boot(player, arg_left, BOOT_SILENT);
+
+  int silent = (SW_ISSET(sw, SWITCH_SILENT));
+
+  if (SW_ISSET(sw, SWITCH_ME))
+    do_boot(player, (char *) NULL, BOOT_SELF, silent);
+  else if (SW_ISSET(sw, SWITCH_PORT))
+    do_boot(player, arg_left, BOOT_DESC, silent);
   else
-    do_boot(player, arg_left, BOOT_NAME);
+    do_boot(player, arg_left, BOOT_NAME, silent);
+
 }
 
 COMMAND(cmd_break)

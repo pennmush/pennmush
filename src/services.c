@@ -830,3 +830,11 @@ convert_error(DWORD error)
 
 #endif                          /* WIN32SERVICES */
 #endif                          /* WIN32 */
+
+static void dummy(void) __attribute__((__unused__));
+static void
+dummy(void)
+{
+  /* This function exists solely to supress a warning on non-Windows
+     systems about an empty source file. */
+}

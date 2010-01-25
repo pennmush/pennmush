@@ -300,7 +300,7 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy)
   }
   tp = tbuf = (char *) mush_malloc(BUFFER_LEN, "string");
   if (!tbuf)
-    mush_panic(T("Unable to allocate memory in do_whisper_list"));
+    mush_panic("Unable to allocate memory in do_whisper_list");
 
   overheard = 0;
   head = arg1;
@@ -783,7 +783,7 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
 
   tp2 = tbuf2 = (char *) mush_malloc(BUFFER_LEN, "page_buff");
   if (!tbuf2)
-    mush_panic(T("Unable to allocate memory in do_page"));
+    mush_panic("Unable to allocate memory in do_page");
 
   if (*arg1 && has_eq) {
     /* page to=[msg]. Always evaluate to, maybe evaluate msg */
@@ -819,10 +819,10 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
 
   tp = tbuf = (char *) mush_malloc(BUFFER_LEN, "page_buff");
   if (!tbuf)
-    mush_panic(T("Unable to allocate memory in do_page"));
+    mush_panic("Unable to allocate memory in do_page");
 
   if (override && !Pemit_All(player)) {
-    notify(player, "Try again after you get the pemit_all power.");
+    notify(player, T("Try again after you get the pemit_all power."));
     override = 0;
   }
 
@@ -919,7 +919,7 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
   } else {
     mb = msgbuf = (char *) mush_malloc(BUFFER_LEN, "page_buff");
     if (!msgbuf)
-      mush_panic(T("Unable to allocate memory in do_page"));
+      mush_panic("Unable to allocate memory in do_page");
 
     process_expression(msgbuf, &mb, &message, player, cause, cause,
                        PE_DEFAULT, PT_DEFAULT, NULL);
@@ -1119,7 +1119,7 @@ make_prefixstr(dbref thing, const char *msg, char *tbuf1)
   bp = tbuf1;
 
   if (!a) {
-    safe_str("From ", tbuf1, &bp);
+    safe_str(T("From "), tbuf1, &bp);
     safe_str(Name(IsExit(thing) ? Source(thing) : thing), tbuf1, &bp);
     safe_str(", ", tbuf1, &bp);
   } else {

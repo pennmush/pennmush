@@ -211,7 +211,7 @@ output_previous_word(void)
   words[i] = malloc(wordpos);
 
   if (!words[i])
-    mush_panic(T("Out of memory in string compression routine"));
+    mush_panic("Out of memory in string compression routine");
 
 #ifdef COMP_STATS
   total_mallocs += wordpos;
@@ -317,7 +317,7 @@ text_uncompress(unsigned char const *s)
         } else {
           panicking = 1;        /* don't panic from within panic */
           do_rawlog(LT_ERR, "Error in string decompression, i = %i", i);
-          mush_panic(T("Fatal error in decompression"));
+          mush_panic("Fatal error in decompression");
         }
       }
       strncpy((char *) b, words[i], words_len[i]);

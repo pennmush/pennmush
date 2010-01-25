@@ -137,7 +137,7 @@ do_pcreate(dbref creator, const char *player_name, const char *player_password,
   }
   notify_format(creator, T("New player '%s' (#%d) created with password '%s'"),
                 player_name, player, player_password);
-  do_log(LT_WIZ, creator, player, T("Player creation"));
+  do_log(LT_WIZ, creator, player, "Player creation");
   return player;
 }
 
@@ -606,12 +606,12 @@ do_force(dbref player, const char *what, char *command)
     if (Wizard(player)) {
       /* Log forces by wizards */
       if (Owner(victim) != Owner(player))
-        do_log(LT_WIZ, player, victim, T("** FORCE: %s"), command);
+        do_log(LT_WIZ, player, victim, "** FORCE: %s", command);
       else
-        do_log(LT_WIZ, player, victim, T("FORCE: %s"), command);
+        do_log(LT_WIZ, player, victim, "FORCE: %s", command);
     } else if (Wizard(Owner(victim))) {
       /* Log forces of wizards */
-      do_log(LT_WIZ, player, victim, T("** FORCE WIZ-OWNED: %s"), command);
+      do_log(LT_WIZ, player, victim, "** FORCE WIZ-OWNED: %s", command);
     }
   }
   if (God(victim) && !God(player)) {
@@ -792,7 +792,7 @@ do_newpassword(dbref player, dbref cause,
     notify_format(player, T("Password for %s changed."), Name(victim));
     notify_format(victim, T("Your password has been changed by %s."),
                   Name(player));
-    do_log(LT_WIZ, player, victim, T("*** NEWPASSWORD ***"));
+    do_log(LT_WIZ, player, victim, "*** NEWPASSWORD ***");
   }
 }
 
@@ -868,7 +868,7 @@ do_boot(dbref player, const char *name, enum boot_type flag, int silent)
     } else {
       notify_format(player, T("You booted unconnected port %s!"), name);
     }
-    do_log(LT_WIZ, player, victim, T("*** BOOT ***"));
+    do_log(LT_WIZ, player, victim, "*** BOOT ***");
     boot_desc(d);
     return;
   }
@@ -877,7 +877,7 @@ do_boot(dbref player, const char *name, enum boot_type flag, int silent)
   count = boot_player(victim, (flag == BOOT_SELF), silent);
   if (count) {
     if (flag != BOOT_SELF) {
-      do_log(LT_WIZ, player, victim, T("*** BOOT ***"));
+      do_log(LT_WIZ, player, victim, "*** BOOT ***");
       notify_format(player, T("You booted %s off!"), Name(victim));
     }
   } else {
@@ -1242,7 +1242,7 @@ do_search(dbref player, const char *arg1, char **arg3)
         break;
       default:
         /* Unknown type. Ignore. */
-        do_rawlog(LT_ERR, T("Weird type for dbref #%d"), results[n]);
+        do_rawlog(LT_ERR, "Weird type for dbref #%d", results[n]);
       }
     }
 
@@ -1467,12 +1467,12 @@ do_sitelock(dbref player, const char *site, const char *opts, const char *who,
                       T("Site %s access options for %s(%s) set to %s"),
                       site, Name(whod), unparse_dbref(whod), opts);
         do_log(LT_WIZ, player, NOTHING,
-               T("*** SITELOCK *** %s for %s(%s) --> %s"), site,
+               "*** SITELOCK *** %s for %s(%s) --> %s", site,
                Name(whod), unparse_dbref(whod), opts);
       } else {
         notify_format(player, T("Site %s access options set to %s"), site,
                       opts);
-        do_log(LT_WIZ, player, NOTHING, T("*** SITELOCK *** %s --> %s"), site,
+        do_log(LT_WIZ, player, NOTHING, "*** SITELOCK *** %s --> %s", site,
                opts);
       }
       return;
@@ -1490,14 +1490,14 @@ do_sitelock(dbref player, const char *site, const char *opts, const char *who,
       if (add_access_sitelock(player, site, AMBIGUOUS, 0, ACS_CREATE)) {
         write_access_file();
         notify_format(player, T("Site %s locked"), site);
-        do_log(LT_WIZ, player, NOTHING, T("*** SITELOCK *** %s"), site);
+        do_log(LT_WIZ, player, NOTHING, "*** SITELOCK *** %s", site);
       }
       break;
     case SITELOCK_BAN:
       if (add_access_sitelock(player, site, AMBIGUOUS, 0, ACS_DEFAULT)) {
         write_access_file();
         notify_format(player, T("Site %s banned"), site);
-        do_log(LT_WIZ, player, NOTHING, T("*** SITELOCK *** %s"), site);
+        do_log(LT_WIZ, player, NOTHING, "*** SITELOCK *** %s", site);
       }
       break;
     case SITELOCK_CHECK:{
@@ -1585,7 +1585,7 @@ do_sitelock_name(dbref player, const char *name)
         fclose(fptmp);
         if (rename_file("tmp.tmp", NAMES_FILE) == 0) {
           notify(player, T("Name removed."));
-          do_log(LT_WIZ, player, NOTHING, T("*** UNLOCKED NAME *** %s"), name + 1);
+          do_log(LT_WIZ, player, NOTHING, "*** UNLOCKED NAME *** %s", name + 1);
         } else {
           notify(player, T("Unable to delete name."));
         }
@@ -1625,7 +1625,7 @@ do_sitelock_name(dbref player, const char *name)
 
         if (rename_file("tmp.tmp", NAMES_FILE) == 0) {
           notify_format(player, T("Name %s locked."), name);
-          do_log(LT_WIZ, player, NOTHING, T("*** NAMELOCK *** %s"), name);
+          do_log(LT_WIZ, player, NOTHING, "*** NAMELOCK *** %s", name);
         } else
           notify(player, T("Unable to lock name."));
       }
@@ -2003,7 +2003,7 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
   result_size = (db_top / 4) + 1;
   *result = mush_calloc(result_size, sizeof(dbref), "search_results");
   if (!*result)
-    mush_panic(T("Couldn't allocate memory in search!"));
+    mush_panic("Couldn't allocate memory in search!");
 
   for (n = spec.low; n <= spec.high; n++) {
     if (IsGarbage(n) && spec.type != TYPE_GARBAGE)
@@ -2079,7 +2079,7 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
       result_size *= 2;
       newresults = (dbref *) realloc(*result, sizeof(dbref) * result_size);
       if (!newresults)
-        mush_panic(T("Couldn't reallocate memory in search!"));
+        mush_panic("Couldn't reallocate memory in search!");
       *result = newresults;
     }
 

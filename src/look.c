@@ -75,7 +75,7 @@ look_exits(dbref player, dbref loc, const char *exit_name)
   tbuf2 = (char *) mush_malloc(BUFFER_LEN, "string");
   nbuf = (char *) mush_malloc(BUFFER_LEN, "string");
   if (!tbuf1 || !tbuf2 || !nbuf)
-    mush_panic(T("Unable to allocate memory in look_exits"));
+    mush_panic("Unable to allocate memory in look_exits");
   s1 = tbuf1;
   s2 = tbuf2;
   texits = exit_count = total_count = 0;
@@ -91,7 +91,7 @@ look_exits(dbref player, dbref loc, const char *exit_name)
     arg = (char *) mush_malloc(BUFFER_LEN, "string");
     buff = (char *) mush_malloc(BUFFER_LEN, "string");
     if (!arg || !buff)
-      mush_panic(T("Unable to allocate memory in look_exits"));
+      mush_panic("Unable to allocate memory in look_exits");
     save_global_regs("look_exits", rsave);
     for (j = 0; j < 10; j++) {
       wsave[j] = global_eval_context.wenv[j];
@@ -251,7 +251,7 @@ look_contents(dbref player, dbref loc, const char *contents_name)
     arg2 = (char *) mush_malloc(BUFFER_LEN, "string");
     buff = (char *) mush_malloc(BUFFER_LEN, "string");
     if (!arg || !buff || !arg2)
-      mush_panic(T("Unable to allocate memory in look_contents"));
+      mush_panic("Unable to allocate memory in look_contents");
     save_global_regs("look_contents", rsave);
     for (j = 0; j < 10; j++) {
       wsave[j] = global_eval_context.wenv[j];
@@ -928,18 +928,17 @@ do_examine(dbref player, const char *xname, enum exam_type flag, int all,
     switch (Source(thing)) {
     case NOTHING:
       do_rawlog(LT_ERR,
-                T
-                ("*** BLEAH *** Weird exit %s(#%d) in #%d with source NOTHING."),
+                "*** BLEAH *** Weird exit %s(#%d) in #%d with source NOTHING.",
                 Name(thing), thing, Destination(thing));
       break;
     case AMBIGUOUS:
       do_rawlog(LT_ERR,
-                T("*** BLEAH *** Weird exit %s(#%d) in #%d with source AMBIG."),
+                "*** BLEAH *** Weird exit %s(#%d) in #%d with source AMBIG.",
                 Name(thing), thing, Destination(thing));
       break;
     case HOME:
       do_rawlog(LT_ERR,
-                T("*** BLEAH *** Weird exit %s(#%d) in #%d with source HOME."),
+                "*** BLEAH *** Weird exit %s(#%d) in #%d with source HOME.",
                 Name(thing), thing, Destination(thing));
       break;
     default:
@@ -1009,7 +1008,7 @@ do_inventory(dbref player)
     arg2 = (char *) mush_malloc(BUFFER_LEN, "string");
     buff = (char *) mush_malloc(BUFFER_LEN, "string");
     if (!arg || !buff || !arg2)
-      mush_panic(T("Unable to allocate memory in do_inventory"));
+      mush_panic("Unable to allocate memory in do_inventory");
     save_global_regs("do_inventory", rsave);
     for (j = 0; j < 10; j++) {
       wsave[j] = global_eval_context.wenv[j];

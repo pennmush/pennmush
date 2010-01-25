@@ -791,7 +791,7 @@ command_init_postconfig(void)
   dyn_switch_list = mush_calloc(switch_names.count + 2, sizeof(SWITCH_VALUE),
                                 "cmd_switch_table");
   if (!dyn_switch_list)
-    mush_panic(T("Unable to allocate command switch table"));
+    mush_panic("Unable to allocate command switch table");
   sw_data.table = dyn_switch_list;
   sw_data.n = 0;
   sw_data.start = sizeof switch_list / sizeof(SWITCH_VALUE);
@@ -1028,7 +1028,7 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
   rs = mush_malloc(BUFFER_LEN, "string");
   switches = mush_malloc(BUFFER_LEN, "string");
   if (!command || !swtch || !ls || !rs || !switches)
-    mush_panic(T("Couldn't allocate memory in command_parse"));
+    mush_panic("Couldn't allocate memory in command_parse");
   p = string;
   replacer = NULL;
   attrib = NULL;
@@ -1340,7 +1340,7 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
 
   retval = NULL;
   if (cmd->func == NULL) {
-    do_rawlog(LT_ERR, T("No command vector on command %s."), cmd->name);
+    do_rawlog(LT_ERR, "No command vector on command %s.", cmd->name);
     command_parse_free_args;
     return NULL;
   } else {

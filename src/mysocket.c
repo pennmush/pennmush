@@ -364,7 +364,7 @@ make_nonblocking(int s)
   unsigned long arg = 1;
   if (ioctlsocket(s, FIONBIO, &arg) == -1) {
     penn_perror("make_nonblocking: ioctlsocket");
-    mush_panic(T("Fatal network error!"));
+    mush_panic("Fatal network error!");
   }
 #else
   int flags;
@@ -372,7 +372,7 @@ make_nonblocking(int s)
   if ((flags = fcntl(s, F_GETFL, 0)) == -1) {
     penn_perror("make_nonblocking: fcntl");
 #ifndef INFOSLAVE
-    mush_panic(T("Fatal network error!"));
+    mush_panic("Fatal network error!");
 #else
     exit(1);
 #endif
@@ -383,7 +383,7 @@ make_nonblocking(int s)
   if (fcntl(s, F_SETFL, flags) == -1) {
     penn_perror("make_nonblocking: fcntl");
 #ifndef INFOSLAVE
-    mush_panic(T("Fatal network error!"));
+    mush_panic("Fatal network error!");
 #else
     exit(1);
 #endif
@@ -401,7 +401,7 @@ make_blocking(int s)
   unsigned long arg = 0;
   if (ioctlsocket(s, FIONBIO, &arg) == -1) {
     penn_perror("make_blocking: ioctlsocket");
-    mush_panic(T("Fatal network error"));
+    mush_panic("Fatal network error");
   }
 #else
   int flags;
@@ -409,7 +409,7 @@ make_blocking(int s)
   if ((flags = fcntl(s, F_GETFL, 0)) == -1) {
     penn_perror("make_blocking: fcntl");
 #ifndef INFOSLAVE
-    mush_panic(T("Fatal network error!"));
+    mush_panic("Fatal network error!");
 #else
     exit(1);
 #endif
@@ -419,7 +419,7 @@ make_blocking(int s)
   if (fcntl(s, F_SETFL, flags) == -1) {
     penn_perror("make_nonblocking: fcntl");
 #ifndef INFOSLAVE
-    mush_panic(T("Fatal network error!"));
+    mush_panic("Fatal network error!");
 #else
     exit(1);
 #endif

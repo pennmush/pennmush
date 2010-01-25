@@ -236,7 +236,7 @@ load_chatdb_oldstyle(PENNFILE *fp)
     if (!ch)
       return 0;
     if (!load_channel(fp, ch)) {
-      do_rawlog(LT_ERR, T("Unable to load channel %d."), i);
+      do_rawlog(LT_ERR, "Unable to load channel %d.", i);
       free_channel(ch);
       return 0;
     }
@@ -246,9 +246,9 @@ load_chatdb_oldstyle(PENNFILE *fp)
 
   /* Check for **END OF DUMP*** */
   if (!penn_fgets(buff, sizeof buff, fp))
-    do_rawlog(LT_ERR, T("CHAT: No end-of-dump marker in the chat database."));
+    do_rawlog(LT_ERR, "CHAT: No end-of-dump marker in the chat database.");
   else if (strcmp(buff, EOD) != 0)
-    do_rawlog(LT_ERR, T("CHAT: Trailing garbage in the chat database."));
+    do_rawlog(LT_ERR, "CHAT: Trailing garbage in the chat database.");
 
   return 1;
 }
@@ -270,7 +270,7 @@ load_chatdb(PENNFILE *fp)
 
   i = penn_fgetc(fp);
   if (i == EOF) {
-    do_rawlog(LT_ERR, T("CHAT: Invalid database format!"));
+    do_rawlog(LT_ERR, "CHAT: Invalid database format!");
     longjmp(db_err, 1);
   } else if (i != '+') {
     penn_ungetc(i, fp);
@@ -280,7 +280,7 @@ load_chatdb(PENNFILE *fp)
   i = penn_fgetc(fp);
 
   if (i != 'V') {
-    do_rawlog(LT_ERR, T("CHAT: Invalid database format!"));
+    do_rawlog(LT_ERR, "CHAT: Invalid database format!");
     longjmp(db_err, 1);
   }
 
@@ -290,8 +290,7 @@ load_chatdb(PENNFILE *fp)
 
   if (strcmp(chat_timestamp, db_timestamp))
     do_rawlog(LT_ERR,
-              T
-              ("CHAT: warning: chatdb and game db were saved at different times!"));
+              "CHAT: warning: chatdb and game db were saved at different times!");
 
   /* How many channels? */
   db_read_this_labeled_int(fp, "channels", &num_channels);
@@ -304,7 +303,7 @@ load_chatdb(PENNFILE *fp)
     if (!ch)
       return 0;
     if (!load_labeled_channel(fp, ch, flags)) {
-      do_rawlog(LT_ERR, T("Unable to load channel %d."), i);
+      do_rawlog(LT_ERR, "Unable to load channel %d.", i);
       free_channel(ch);
       return 0;
     }
@@ -314,9 +313,9 @@ load_chatdb(PENNFILE *fp)
 
   /* Check for **END OF DUMP*** */
   if (!penn_fgets(buff, sizeof buff, fp))
-    do_rawlog(LT_ERR, T("CHAT: No end-of-dump marker in the chat database."));
+    do_rawlog(LT_ERR, "CHAT: No end-of-dump marker in the chat database.");
   else if (strcmp(buff, EOD) != 0)
-    do_rawlog(LT_ERR, T("CHAT: Trailing garbage in the chat database."));
+    do_rawlog(LT_ERR, "CHAT: Trailing garbage in the chat database.");
 
   return 1;
 }
@@ -361,7 +360,7 @@ new_user(dbref who, const void *hint)
   CHANUSER *u;
   u = slab_malloc(chanuser_slab, hint);
   if (!u)
-    mush_panic(T("Couldn't allocate memory in new_user in extchat.c"));
+    mush_panic("Couldn't allocate memory in new_user in extchat.c");
   CUdbref(u) = who;
   CUtype(u) = CU_DEFAULT_FLAGS;
   u->title[0] = '\0';
@@ -498,7 +497,7 @@ load_chanusers(PENNFILE *fp, CHAN *ch)
         num++;
     } else {
       /* But be sure to read (and discard) the player's info */
-      do_log(LT_ERR, 0, 0, T("Bad object #%d removed from channel %s"),
+      do_log(LT_ERR, 0, 0, "Bad object #%d removed from channel %s",
              player, ChanName(ch));
       (void) getref(fp);
       (void) getstring_noalloc(fp);
@@ -529,7 +528,7 @@ load_labeled_chanusers(PENNFILE *fp, CHAN *ch)
         num++;
     } else {
       /* But be sure to read (and discard) the player's info */
-      do_log(LT_ERR, 0, 0, T("Bad object #%d removed from channel %s"),
+      do_log(LT_ERR, 0, 0, "Bad object #%d removed from channel %s",
              player, ChanName(ch));
       db_read_this_labeled_int(fp, "flags", &n);
       db_read_this_labeled_string(fp, "title", &tmp);
@@ -3142,7 +3141,7 @@ FUNCTION(fun_clock)
     safe_str(T("#-1 NO SUCH CHANNEL"), buff, bp);
     return;
   case CMATCH_AMBIG:
-    safe_str("#-2 AMBIGUOUS CHANNEL MATCH", buff, bp);
+    safe_str(T("#-2 AMBIGUOUS CHANNEL MATCH"), buff, bp);
     return;
   default:
     break;

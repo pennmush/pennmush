@@ -100,7 +100,7 @@ start_log(FILE ** fp, const char *filename)
 
       *fp = fopen(filename, "a");
       if (*fp == NULL) {
-        fprintf(stderr, T("WARNING: cannot open log %s\n"), filename);
+        fprintf(stderr, "WARNING: cannot open log %s\n", filename);
         *fp = stderr;
       } else {
         hashadd(strupper(filename), (void *) *fp, &htab_logfiles);
@@ -132,10 +132,10 @@ redirect_streams(void)
 {
   FILE *errlog_fp;
 
-  fprintf(stderr, T("Redirecting stderr to %s\n"), ERRLOG);
+  fprintf(stderr, "Redirecting stderr to %s\n", ERRLOG);
   errlog_fp = fopen(ERRLOG, "a");
   if (!errlog_fp) {
-    fprintf(stderr, T("Unable to open %s. Error output to stderr.\n"), ERRLOG);
+    fprintf(stderr, "Unable to open %s. Error output to stderr.\n", ERRLOG);
   } else {
     fclose(errlog_fp);
     if (!freopen(ERRLOG, "a", stderr)) {
@@ -281,11 +281,11 @@ do_log(int logtype, dbref player, dbref object, const char *fmt, ...)
     strcpy(unp1, quick_unparse(player));
     if (GoodObject(object)) {
       strcpy(unp2, quick_unparse(object));
-      do_rawlog(logtype, T("CMD: %s %s / %s: %s"),
+      do_rawlog(logtype, "CMD: %s %s / %s: %s",
                 (Suspect(player) ? "SUSPECT" : ""), unp1, unp2, tbuf1);
     } else {
       strcpy(unp2, quick_unparse(Location(player)));
-      do_rawlog(logtype, T("CMD: %s %s in %s: %s"),
+      do_rawlog(logtype, "CMD: %s %s in %s: %s",
                 (Suspect(player) ? "SUSPECT" : ""), unp1, unp2, tbuf1);
     }
     break;
@@ -311,7 +311,7 @@ do_log(int logtype, dbref player, dbref object, const char *fmt, ...)
     if (!controls(player, Location(player))) {
       strcpy(unp1, quick_unparse(player));
       strcpy(unp2, quick_unparse(Location(player)));
-      do_rawlog(logtype, T("HUH: %s in %s [%s]: %s"),
+      do_rawlog(logtype, "HUH: %s in %s [%s]: %s",
                 unp1, unp2,
                 (GoodObject(Location(player))) ?
                 Name(Owner(Location(player))) : T("bad object"), tbuf1);
@@ -357,7 +357,7 @@ do_logwipe(dbref player, int logtype, char *str)
     }
     notify(player, T("Wrong password."));
     do_log(LT_WIZ, player, NOTHING,
-           T("Invalid attempt to wipe the %s log, password %s"), lname, str);
+           "Invalid attempt to wipe the %s log, password %s", lname, str);
     return;
   }
   switch (logtype) {
@@ -365,31 +365,31 @@ do_logwipe(dbref player, int logtype, char *str)
     end_log(CONNLOG);
     unlink(CONNLOG);
     start_log(&connlog_fp, CONNLOG);
-    do_log(LT_ERR, player, NOTHING, T("Connect log wiped."));
+    do_log(LT_ERR, player, NOTHING, "Connect log wiped.");
     break;
   case LT_CHECK:
     end_log(CHECKLOG);
     unlink(CHECKLOG);
     start_log(&checklog_fp, CHECKLOG);
-    do_log(LT_ERR, player, NOTHING, T("Checkpoint log wiped."));
+    do_log(LT_ERR, player, NOTHING, "Checkpoint log wiped.");
     break;
   case LT_CMD:
     end_log(CMDLOG);
     unlink(CMDLOG);
     start_log(&cmdlog_fp, CMDLOG);
-    do_log(LT_ERR, player, NOTHING, T("Command log wiped."));
+    do_log(LT_ERR, player, NOTHING, "Command log wiped.");
     break;
   case LT_TRACE:
     end_log(TRACELOG);
     unlink(TRACELOG);
     start_log(&tracelog_fp, TRACELOG);
-    do_log(LT_ERR, player, NOTHING, T("Trace log wiped."));
+    do_log(LT_ERR, player, NOTHING, "Trace log wiped.");
     break;
   case LT_WIZ:
     end_log(WIZLOG);
     unlink(WIZLOG);
     start_log(&wizlog_fp, WIZLOG);
-    do_log(LT_ERR, player, NOTHING, T("Wizard log wiped."));
+    do_log(LT_ERR, player, NOTHING, "Wizard log wiped.");
     break;
   default:
     notify(player, T("That is not a valid log."));

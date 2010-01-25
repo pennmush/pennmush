@@ -107,7 +107,7 @@ do_name(dbref player, const char *name, char *newname_)
         return;
       }
       /* everything ok, notify */
-      do_log(LT_CONN, 0, 0, T("Name change by %s(#%d) to %s"),
+      do_log(LT_CONN, 0, 0, "Name change by %s(#%d) to %s",
              Name(thing), thing, bon);
       if (Suspect(thing))
         flag_broadcast("WIZARD", 0,
@@ -980,7 +980,7 @@ do_trigger(dbref player, char *object, char **argv)
 
   if (queue_attribute(thing, upcasestr(s), player)) {
     if (!AreQuiet(player, thing))
-      notify_format(player, "%s - Triggered.", Name(thing));
+      notify_format(player, T("%s - Triggered."), Name(thing));
   } else {
     notify(player, T("No such attribute."));
   }

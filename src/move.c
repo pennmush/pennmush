@@ -210,24 +210,24 @@ enter_room(dbref player, dbref loc, int nomovemsgs)
     loc = Home(player);
 
   if (!Mobile(player)) {
-    do_rawlog(LT_ERR, T("ERROR: Non object moved!! %d\n"), player);
+    do_rawlog(LT_ERR, "ERROR: Non object moved!! %d\n", player);
     deep--;
     return;
   }
   if (IsExit(loc)) {
-    do_rawlog(LT_ERR, T("ERROR: Attempt to move %d to exit %d\n"), player, loc);
+    do_rawlog(LT_ERR, "ERROR: Attempt to move %d to exit %d\n", player, loc);
     deep--;
     return;
   }
   if (loc == player) {
-    do_rawlog(LT_ERR, T("ERROR: Attempt to move player %d into itself\n"),
+    do_rawlog(LT_ERR, "ERROR: Attempt to move player %d into itself\n",
               player);
     deep--;
     return;
   }
   if (recursive_member(loc, player, 0)) {
     do_rawlog(LT_ERR,
-              T("ERROR: Attempt to move player %d into carried object %d\n"),
+              "ERROR: Attempt to move player %d into carried object %d\n",
               player, loc);
     deep--;
     return;
@@ -436,7 +436,7 @@ do_move(dbref player, const char *direction, enum move_type type)
 
         if (!GoodObject(var_dest)) {
           do_rawlog(LT_ERR,
-                    T("Exit #%d destination became %d during move.\n"),
+                    "Exit #%d destination became %d during move.\n",
                     exit_m, var_dest);
           notify(player, T("Exit destination is invalid."));
           return;

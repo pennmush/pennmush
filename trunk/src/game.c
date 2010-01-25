@@ -2083,24 +2083,24 @@ do_uptime(dbref player, int mortal)
   ldiv_t secs;
 
   when = localtime(&globals.first_start_time);
-  strftime(tbuf1, sizeof tbuf1, T("     Up since %a %b %d %X %Z %Y"), when);
-  notify(player, tbuf1);
+  strftime(tbuf1, sizeof tbuf1, "%a %b %d %X %Z %Y", when);
+  notify_format(player, T("%13s: %s"), T("Up since"), tbuf1);
 
   when = localtime(&globals.start_time);
-  strftime(tbuf1, sizeof tbuf1, T("  Last reboot: %a %b %d %X %Z %Y"), when);
-  notify(player, tbuf1);
+  strftime(tbuf1, sizeof tbuf1, "%a %b %d %X %Z %Y", when);
+  notify_format(player, "%13s: %s", T("Last reboot"), tbuf1);
 
-  notify_format(player, T("Total reboots: %d"), globals.reboot_count);
+  notify_format(player, T("%13s: %d"), T("Total reboots"), globals.reboot_count);
 
   when = localtime(&mudtime);
-  strftime(tbuf1, sizeof tbuf1, T("     Time now: %a %b %d %X %Z %Y"), when);
-  notify(player, tbuf1);
+  strftime(tbuf1, sizeof tbuf1, "%a %b %d %X %Z %Y", when);
+  notify_format(player, "%13s: %s", T("Time now"), tbuf1);
 
   if (globals.last_dump_time > 0) {
     when = localtime(&globals.last_dump_time);
     strftime(tbuf1, sizeof tbuf1,
-             T("   Time of last database save: %a %b %d %X %Z %Y"), when);
-    notify(player, tbuf1);
+             "%a %b %d %X %Z %Y", when);
+    notify_format(player, "%29s: %s", T("Time of last database save"), tbuf1);
   }
 
   /* calculate times until various events */
@@ -2108,24 +2108,24 @@ do_uptime(dbref player, int mortal)
   strftime(tbuf1, sizeof tbuf1, "%X", when);
   secs = ldiv((long) difftime(options.dump_counter, mudtime), 60);
   notify_format(player,
-                T
-                ("Time until next database save: %ld minutes %ld seconds, at %s"),
+                T("%29s: %ld minutes %ld seconds, at %s."),
+		T("Time until next database save"),
                 secs.quot, secs.rem, tbuf1);
 
   when = localtime(&options.dbck_counter);
   strftime(tbuf1, sizeof tbuf1, "%X", when);
   secs = ldiv((long) difftime(options.dbck_counter, mudtime), 60);
   notify_format(player,
-                T
-                ("   Time until next dbck check: %ld minutes %ld seconds, at %s."),
+                T("%29s: %ld minutes %ld seconds, at %s."),
+		T("Time until next dbck check"),
                 secs.quot, secs.rem, tbuf1);
 
   when = localtime(&options.purge_counter);
   strftime(tbuf1, sizeof tbuf1, "%X", when);
   secs = ldiv((long) difftime(options.purge_counter, mudtime), 60);
   notify_format(player,
-                T
-                ("        Time until next purge: %ld minutes %ld seconds, at %s."),
+                T("%29s: %ld minutes %ld seconds, at %s."),
+		T("Time until next purge"),
                 secs.quot, secs.rem, tbuf1);
 
   if (options.warn_interval) {
@@ -2133,8 +2133,8 @@ do_uptime(dbref player, int mortal)
     strftime(tbuf1, sizeof tbuf1, "%X", when);
     secs = ldiv((long) difftime(options.warn_counter, mudtime), 60);
     notify_format(player,
-                  T
-                  ("    Time until next @warnings: %ld minutes %ld seconds, at %s."),
+                  T("%29s: %ld minutes %ld seconds, at %s."),
+		  T("Time until next @warnings"),
                   secs.quot, secs.rem, tbuf1);
   }
 

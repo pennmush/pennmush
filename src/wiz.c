@@ -805,92 +805,88 @@ do_newpassword(dbref player, dbref cause,
  * \param flag the type of booting to do.
  */
 void
-do_boot(dbref player, const char *name, enum boot_type flag)
+do_boot(dbref player, const char *name, enum boot_type flag, int silent)
 {
   dbref victim;
   DESC *d = NULL;
+  int count = 0;
+  int priv = Can_Boot(player);
 
-  victim = NOTHING;
   switch (flag) {
-  case BOOT_SELF:
-    /* self boot */
-    victim = player;
-    break;
-  case BOOT_DESC:
-    /* boot by descriptor */
-    victim = find_player_by_desc(atoi(name));
-    if (victim == NOTHING) {
-      d = port_desc(atoi(name));
-      if (!d && Can_Boot(player)) {
-        notify(player, "There is no one connected on that descriptor.");
+    case BOOT_NAME:
+      victim = noisy_match_result(player, name, TYPE_PLAYER,
+                   MAT_PMATCH | MAT_PLAYER | MAT_ME);
+      if (victim == NOTHING) {
+        notify(player, T("No such connected player."));
         return;
-      } else
-        victim = AMBIGUOUS;
-    }
-    break;
-  case BOOT_SILENT:
-  case BOOT_NAME:
-    /* boot by name */
-    if ((victim =
-         noisy_match_result(player, name, TYPE_PLAYER,
-                            MAT_LIMITED | MAT_ME)) == NOTHING) {
-      notify(player, T("No such connected player."));
-      return;
-    }
-    if (victim == player)
-      flag = BOOT_SELF;
-    break;
+      } else if (victim == player) {
+        flag = BOOT_SELF;
+      }
+      break;
+    case BOOT_SELF:
+      victim = player;
+      break;
+    case BOOT_DESC:
+      if (!is_strict_integer(name)) {
+        notify(player, T("Invalid port."));
+        return;
+      }
+      d = port_desc(parse_integer(name));
+      if (!d || (!priv && d->player != player)) {
+        if (priv)
+          notify(player, T("There is noone connected on that descriptor."));
+        else
+          notify(player, T("You can't boot other people!"));
+        return;
+      }
+      victim = (d->connected ? d->player : AMBIGUOUS);
+      if (d->descriptor == global_eval_context.process_command_port) {
+        notify(player, T("If you want to quit, use QUIT."));
+        return;
+      }
+      break;
   }
 
-  if ((victim != player) && !Can_Boot(player)) {
+  if (God(victim) && !God(player)) {
+    notify(player, T("Permission denied."));
+    return;
+  }
+
+  if (victim != player && !priv) {
     notify(player, T("You can't boot other people!"));
     return;
   }
-  if (God(victim) && !God(player)) {
-    notify(player, T("You're good.  That's spelled with two 'o's."));
-    return;
-  }
-  /* look up descriptor */
-  switch (flag) {
-  case BOOT_SILENT:
-  case BOOT_NAME:
-    d = player_desc(victim);
-    break;
-  case BOOT_DESC:
-    d = port_desc(atoi(name));
-    break;
-  case BOOT_SELF:
-    d = inactive_desc(victim);
-    break;
-  }
 
-  if (victim == player
-      && (!d || d->descriptor == global_eval_context.process_command_port)) {
-    notify(player, T("If you want to quit, use QUIT."));
-    return;
-  }
-
-  /* check for more errors */
-  if (!d) {
-    if (flag == BOOT_SELF)
-      notify(player, T("None of your connections are idle."));
-    else
-      notify(player, T("That player isn't connected!"));
-  } else {
-    do_log(LT_WIZ, player, victim, T("*** BOOT ***"));
-    if (flag == BOOT_SELF)
-      notify(player, T("You boot an idle self."));
-    else if (victim == AMBIGUOUS)
-      notify_format(player, T("You booted unconnected port %s!"), name);
-    else if (victim == player)
-      notify(player, T("You boot a duplicate self."));
-    else {
-      notify_format(player, T("You booted %s off!"), Name(victim));
-      if (flag != BOOT_SILENT)
+  if (flag == BOOT_DESC) {
+    if (GoodObject(victim)) {
+      if (!silent)
         notify(victim, T("You are politely shown to the door."));
+      if (player == victim)
+        notify(player, T("You boot a duplicate self."));
+      else
+        notify_format(player, T("You booted %s off!"), Name(victim));
+    } else {
+      notify_format(player, T("You booted unconnected port %s!"), name);
     }
+    do_log(LT_WIZ, player, victim, T("*** BOOT ***"));
     boot_desc(d);
+    return;
   }
+
+  /* Doing @boot <player>, or @boot/me */
+  count = boot_player(victim, (flag == BOOT_SELF), silent);
+  if (count) {
+    if (flag != BOOT_SELF) {
+      do_log(LT_WIZ, player, victim, T("*** BOOT ***"));
+      notify_format(player, T("You booted %s off!"), Name(victim));
+    }
+  } else {
+    if (flag == BOOT_SELF)
+      notify(player, T("None of your connections are idle. If you want to quit, use QUIT."));
+    else
+      notify(player, T("That player is not online."));
+  }
+
 }
 
 /** Chown all of a player's objects.

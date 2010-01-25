@@ -2781,6 +2781,42 @@ emergency_shutdown(void)
 #endif
 }
 
+/** Boot a player.
+ * Boot all connections associated with victim, or all idle connections if idleonly is true
+ * \param player the player being booted
+ * \param idleonly only boot idle connections?
+ * \param silent suppress notice to player that he's being booted?
+ * \return number of descriptors booted
+ */
+int
+boot_player(dbref player, int idleonly, int silent)
+{
+  DESC *d, *ignore = NULL;
+  int count = 0;
+  time_t now = mudtime;
+
+  if (idleonly)
+    ignore = least_idle_desc(player, 1);
+
+  DESC_ITER_CONN(d) {
+    if (d->player == player && (!ignore || (d != ignore && difftime(now, d->last_time) > 60.0))) {
+      if (!idleonly && !silent && !count)
+        notify(player, T("You are politely shown to the door."));
+      count++;
+      boot_desc(d);
+    }
+  }
+  if (count && idleonly) {
+    if (count == 1)
+      notify(player, T("You boot an idle self."));
+    else
+      notify_format(player, T("You boot %d idle selves."), count);;
+  }
+
+  return count;
+
+}
+
 /** Disconnect a descriptor.
  * \param d pointer to descriptor to disconnect.
  */
@@ -2798,6 +2834,7 @@ DESC *
 player_desc(dbref player)
 {
   DESC *d;
+
   for (d = descriptor_list; d; d = d->next) {
     if (d->connected && (d->player == player)) {
       return d;
@@ -4151,6 +4188,25 @@ lookup_desc(dbref executor, const char *name)
   }
 }
 
+/** Return the least idle descriptor of a player.
+ * Ignores hidden connections unless priv is true.
+ * \param player dbref of the player to find the descriptor for
+ * \param priv include hidden descriptors?
+ * \return pointer to the player's least idle descriptor, or NULL
+ */
+DESC *
+least_idle_desc(dbref player, int priv)
+{
+  DESC *d, *match = NULL;
+  DESC_ITER_CONN(d) {
+    if ((d->player == player) && (priv || !Hidden(d)) &&
+        (!match || (d->last_time > match->last_time)))
+      match = d;
+  }
+
+  return match;
+}
+
 /** Return the conn time of the longest-connected connection of a player.
  * This function treats hidden connectios as nonexistent.
  * \param player dbref of player to get ip for.
@@ -4202,14 +4258,10 @@ most_conn_time_priv(dbref player)
 int
 least_idle_time(dbref player)
 {
-  DESC *d, *match = NULL;
-  DESC_ITER_CONN(d) {
-    if ((d->player == player) && !Hidden(d) &&
-        (!match || (d->last_time > match->last_time)))
-      match = d;
-  }
-  if (match) {
-    double result = difftime(mudtime, match->last_time);
+  DESC *d;
+  d = least_idle_desc(player, 0);
+  if (d) {
+    double result = difftime(mudtime, d->last_time);
     return (int) result;
   } else
     return -1;
@@ -4223,13 +4275,10 @@ least_idle_time(dbref player)
 int
 least_idle_time_priv(dbref player)
 {
-  DESC *d, *match = NULL;
-  DESC_ITER_CONN(d) {
-    if ((d->player == player) && (!match || (d->last_time > match->last_time)))
-      match = d;
-  }
-  if (match) {
-    double result = difftime(mudtime, match->last_time);
+  DESC *d;
+  d = least_idle_desc(player, 1);
+  if (d) {
+    double result = difftime(mudtime, d->last_time);
     return (int) result;
   } else
     return -1;
@@ -4244,12 +4293,9 @@ least_idle_time_priv(dbref player)
 char *
 least_idle_ip(dbref player)
 {
-  DESC *d, *match = NULL;
-  DESC_ITER_CONN(d) {
-    if ((d->player == player) && (!match || (d->last_time > match->last_time)))
-      match = d;
-  }
-  return match ? (match->ip) : NULL;
+  DESC *d;
+  d = least_idle_desc(player, 1);
+  return d ? (d->ip) : NULL;
 }
 
 /** Return the hostname of the least-idle connection of a player.
@@ -4261,17 +4307,14 @@ least_idle_ip(dbref player)
 char *
 least_idle_hostname(dbref player)
 {
-  DESC *d, *match = NULL;
+  DESC *d;
   static char hostname[101];
   char *p;
 
-  DESC_ITER_CONN(d) {
-    if ((d->player == player) && (!match || (d->last_time > match->last_time)))
-      match = d;
-  }
-  if (!match)
+  d = least_idle_desc(player, 0);
+  if (!d)
     return NULL;
-  strcpy(hostname, match->addr);
+  strcpy(hostname, d->addr);
   if ((p = strchr(hostname, '@'))) {
     p++;
     return p;

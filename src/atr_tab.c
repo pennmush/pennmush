@@ -346,11 +346,11 @@ do_attribute_info(dbref player, char *name)
     notify(player, T("That attribute isn't in the attribute table"));
     return;
   }
-  notify_format(player, T("Attribute: %s"), AL_NAME(ap));
+  notify_format(player, "%9s: %s", T("Attribute"), AL_NAME(ap));
   notify_format(player,
-                T("    Flags: %s"), privs_to_string(attr_privs_view,
+                "%9s: %s", T("Flags"), privs_to_string(attr_privs_view,
                                                  AL_FLAGS(ap)));
-  notify_format(player, T("  Creator: %s"), unparse_dbref(AL_CREATOR(ap)));
+  notify_format(player, "%9s: %s", T("Creator"), unparse_dbref(AL_CREATOR(ap)));
   return;
 }
 

@@ -192,6 +192,48 @@ FUNCTION(fun_ufun)
   return;
 }
 
+/* ARGSUSED */
+FUNCTION(fun_pfun)
+{
+
+  char rbuff[BUFFER_LEN];
+  ATTR *a;
+  int pe_flags = PE_UDEFAULT;
+  dbref parent;
+  ufun_attrib ufun;
+
+  parent = Parent(executor);
+
+  if (!GoodObject(parent))
+    return;
+
+  /* This is a stripped down version of fetch_ufun_attrib that gets
+     the atr value directly from the parent */
+
+  a = atr_get(parent, upcasestr(args[0]));
+  if (!a)
+    return; /* no attr */
+
+  if(AF_Internal(a) || AF_Private(a))
+    return; /* attr isn't inheritable */
+
+  /* DEBUG attributes */
+  if (AF_Debug(a))
+    pe_flags |= PE_DEBUG;
+
+  ufun.thing = executor;
+  mush_strncpy(ufun.contents, atr_value(a), BUFFER_LEN);
+  ufun.pe_flags = pe_flags;
+  ufun.errmess = (char *) "";
+
+  call_ufun(&ufun, args + 1, nargs - 1, rbuff, executor, enactor, pe_info);
+
+  safe_str(rbuff, buff, bp);
+
+  return;
+}
+
+
 /* Like fun_ufun, but takes as second argument a default message
  * to use if the attribute isn't there.
  */

@@ -17,6 +17,10 @@ Major Changes:
  * 'mud_url' @config. If this is enabled, accessing the mush with an HTTP
    browser will redirect the user to the selected mud_url. (This may need
    some work and testing by a public place with many clients.) [GM]
+ * The u(), host() and idle() aliases (for ufun, hostname and idlesecs)
+   have been moved from the hardcode into aliascnf.dst. PLEASE COPY the
+   appropriate function_alias lines into your alias.cnf to ensure your
+   softcode continues to work correctly. [MG]
 
 Minor Changes:
  * align() can now do full justification. Suggested by Trinsec@M*U*S*H [GM]
@@ -78,6 +82,8 @@ Functions:
  * benchmark(), to benchmark softcode.
  * Added "flag" as a category to valid(), to check for valid names for
    @flag/add and @power/add. [MG]
+ * New pfun() function, which evaluates attributes from your parent as if
+   you were inheriting them, even if you have your own copy of the attr. [MG]
 
 Fixes:
  * Bug caused by silly assumptions in list2arr() regarding remove_markup

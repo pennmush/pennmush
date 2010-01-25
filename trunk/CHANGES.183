@@ -73,6 +73,7 @@ Commands:
  * Removed the obsolete @map command. [MG]
  * @boot <player> now boots all of <player>'s connections, not just the
    first. Similarly, @boot/me boots all your idle connections. [MG]
+ * @dump/debug was broken and undocumented. [MG]
 
 Functions:
  * llocks() without any arguments returns a list of the standard locks.

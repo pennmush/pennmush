@@ -176,7 +176,7 @@ do_dump(dbref player, char *num, enum dump_type flag)
     if (flag != DUMP_NORMAL) {
 #endif
       /* want to do a scan before dumping each object */
-      globals.paranoid_dump = 1;
+      globals.paranoid_dump = (flag == DUMP_DEBUG ? 2 : 1);
       if (num && *num) {
         /* checkpoint interval given */
         globals.paranoid_checkpt = atoi(num);

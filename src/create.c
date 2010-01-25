@@ -372,7 +372,7 @@ do_link(dbref player, const char *name, const char *room_name, int preserve)
     default:
       notify(player, T("Internal error: weird object type."));
       do_log(LT_ERR, NOTHING, NOTHING,
-             T("Weird object! Type of #%d is %d"), thing, Typeof(thing));
+             "Weird object! Type of #%d is %d", thing, Typeof(thing));
       break;
     }
   }

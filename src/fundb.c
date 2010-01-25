@@ -1050,7 +1050,7 @@ FUNCTION(fun_type)
     break;
   default:
     safe_str("WEIRD OBJECT", buff, bp);
-    do_rawlog(LT_ERR, T("WARNING: Weird object #%d (type %d)\n"), it,
+    do_rawlog(LT_ERR, "WARNING: Weird object #%d (type %d)\n", it,
               Typeof(it));
   }
 }
@@ -1284,11 +1284,11 @@ FUNCTION(fun_lockflags)
         safe_str(lock_flags(ll), buff, bp);
       return;
     } else {
-      safe_str("#-1 NO SUCH LOCK", buff, bp);
+      safe_str(T("#-1 NO SUCH LOCK"), buff, bp);
       return;
     }
   }
-  safe_str("#-1 NO SUCH LOCK", buff, bp);
+  safe_str(T("#-1 NO SUCH LOCK"), buff, bp);
 }
 
 /* ARGSUSED */
@@ -1407,7 +1407,7 @@ FUNCTION(fun_testlock)
   elock = parse_boolexp(executor, args[0], "Search");
 
   if (elock == TRUE_BOOLEXP) {
-    safe_str("#-1 INVALID BOOLEXP", buff, bp);
+    safe_str(T("#-1 INVALID BOOLEXP"), buff, bp);
     return;
   }
 

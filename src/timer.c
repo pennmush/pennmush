@@ -150,7 +150,7 @@ migrate_stuff(int amount)
                   "migration reference array");
     refs_size = actual;
     if (!refs)
-      mush_panic(T("Could not allocate migration reference array"));
+      mush_panic("Could not allocate migration reference array");
   }
 #ifdef DEBUG_MIGRATE
   do_rawlog(LT_TRACE, "Migrate asked %d, actual objects #%d to #%d for %d",
@@ -196,7 +196,7 @@ dispatch(void)
 
   /* A HUP reloads configuration and reopens logs */
   if (hup_triggered) {
-    do_rawlog(LT_ERR, T("SIGHUP received: reloading .txt and .cnf files"));
+    do_rawlog(LT_ERR, "SIGHUP received: reloading .txt and .cnf files");
     config_file_startup(NULL, 0);
     config_file_startup(NULL, 1);
     fcache_load(NOTHING);
@@ -207,7 +207,7 @@ dispatch(void)
   }
   /* A USR1 does a shutdown/reboot */
   if (usr1_triggered) {
-    do_rawlog(LT_ERR, T("SIGUSR1 received. Rebooting."));
+    do_rawlog(LT_ERR, "SIGUSR1 received. Rebooting.");
     do_reboot(NOTHING, 0);      /* We don't return from this */
     usr1_triggered = 0;         /* But just in case */
   }

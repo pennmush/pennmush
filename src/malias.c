@@ -1085,7 +1085,7 @@ load_malias(PENNFILE *fp)
   s = penn_fgets(buffer, sizeof(buffer), fp);
 
   if (!s || strcmp(buffer, "\"*** End of MALIAS ***\"\n") != 0) {
-    do_rawlog(LT_ERR, T("MAIL: Error reading MALIAS list"));
+    do_rawlog(LT_ERR, "MAIL: Error reading MALIAS list");
   }
 }
 

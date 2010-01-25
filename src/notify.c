@@ -1196,10 +1196,10 @@ make_text_block(const unsigned char *s, int n)
   }
   p = slab_malloc(text_block_slab, NULL);
   if (!p)
-    mush_panic(T("Out of memory"));
+    mush_panic("Out of memory");
   p->buf = mush_malloc(n, "text_block_buff");
   if (!p->buf)
-    mush_panic(T("Out of memory"));
+    mush_panic("Out of memory");
 
   memcpy(p->buf, s, n);
   p->nchars = n;
@@ -1479,7 +1479,7 @@ ns_esnotify(dbref speaker, na_lookup func __attribute__ ((__unused__)),
     if (speaker == Owner(speaker))
       safe_format(dest, &bp, "[%s(#%d)] ", Name(speaker), speaker);
     else
-      safe_format(dest, &bp, "[%s(#%d)'s %s(#%d)] ", Name(Owner(speaker)),
+      safe_format(dest, &bp, T("[%s(#%d)'s %s(#%d)] "), Name(Owner(speaker)),
                   Owner(speaker), Name(speaker), speaker);
   } else
     safe_format(dest, &bp, "[%s:] ", spname(speaker));

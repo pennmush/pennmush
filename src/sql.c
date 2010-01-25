@@ -76,9 +76,9 @@ typedef enum { SQL_PLATFORM_DISABLED = -1,
   if (!qres) { \
     if (affected_rows >= 0) { \
     } else if (!sql_connected()) { \
-      safe_str("#-1 SQL ERROR: NO DATABASE CONNECTED", buff, bp);	\
+      safe_str(T("#-1 SQL ERROR: NO DATABASE CONNECTED"), buff, bp);	\
     } else { \
-      safe_format(buff, bp, "#-1 SQL ERROR: %s", sql_error()); \
+      safe_format(buff, bp, T("#-1 SQL ERROR: %s"), sql_error()); \
     } \
     return; \
   }
@@ -322,7 +322,7 @@ FUNCTION(fun_sql_escape)
   if (chars_written < BUFFER_LEN)
     safe_str(bigbuff, buff, bp);
   else
-    safe_str("#-1 TOO LONG", buff, bp);
+    safe_str(T("#-1 TOO LONG"), buff, bp);
 }
 
 
@@ -398,7 +398,7 @@ COMMAND(cmd_sql)
       if (retcode == SQLITE_DONE)
         break;
       else if (retcode != SQLITE_ROW) {
-        notify_format(player, "SQL: Error: %s", sql_error());
+        notify_format(player, T("SQL: Error: %s"), sql_error());
         break;
       }
     }

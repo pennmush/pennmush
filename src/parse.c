@@ -662,8 +662,7 @@ process_expression(char *buff, char **bp, char const **str,
       if (!Quiet(enactor))
         notify(enactor, T("CPU usage exceeded."));
       do_rawlog(LT_TRACE,
-                T
-                ("CPU time limit exceeded. enactor=#%d executor=#%d caller=#%d code=%s"),
+                "CPU time limit exceeded. enactor=#%d executor=#%d caller=#%d code=%s",
                 enactor, executor, caller, *str);
     }
     return 1;
@@ -1244,7 +1243,7 @@ process_expression(char *buff, char **bp, char const **str,
             *bp = startpos;
             safe_str(T("#-1 FUNCTION ("), buff, bp);
             safe_str(name, buff, bp);
-            safe_str(") NOT FOUND", buff, bp);
+            safe_str(T(") NOT FOUND"), buff, bp);
             if (process_expression(name, &tp, str,
                                    executor, caller, enactor,
                                    PE_NOTHING, PT_PAREN, pe_info))
@@ -1437,11 +1436,11 @@ process_expression(char *buff, char **bp, char const **str,
               attrib = atr_get(thing, fp->where.ufun->name);
               if (!attrib) {
                 do_rawlog(LT_ERR,
-                          T("ERROR: @function (%s) without attribute (#%d/%s)"),
+                          "ERROR: @function (%s) without attribute (#%d/%s)",
                           fp->name, thing, fp->where.ufun->name);
-                safe_str("#-1 @FUNCTION (", buff, bp);
+                safe_str(T("#-1 @FUNCTION ("), buff, bp);
                 safe_str(fp->name, buff, bp);
-                safe_str(") MISSING ATTRIBUTE (", buff, bp);
+                safe_str(T(") MISSING ATTRIBUTE ("), buff, bp);
                 safe_dbref(thing, buff, bp);
                 safe_chr('/', buff, bp);
                 safe_str(fp->where.ufun->name, buff, bp);

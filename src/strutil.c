@@ -920,7 +920,7 @@ replace_string(const char *restrict old, const char *restrict newbit,
 
   r = result = mush_malloc(BUFFER_LEN, "replace_string.buff");
   if (!result)
-    mush_panic(T("Couldn't allocate memory in replace_string!"));
+    mush_panic("Couldn't allocate memory in replace_string!");
 
   len = strlen(old);
   newlen = strlen(newbit);
@@ -967,7 +967,7 @@ replace_string2(const char *old[2], const char *newbits[2],
 
   rp = result = mush_malloc(BUFFER_LEN, "replace_string.buff");
   if (!result)
-    mush_panic(T("Couldn't allocate memory in replace_string2!"));
+    mush_panic("Couldn't allocate memory in replace_string2!");
 
   firsts[0] = old[0][0];
   firsts[1] = old[1][0];

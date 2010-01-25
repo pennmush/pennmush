@@ -329,7 +329,7 @@ GENRECORD(gen_magic)
         if (GoodObject(victim)) {
           safe_str(Name(victim), buff, &bp);
         } else {
-          safe_str("#-1 NO SUCH OBJECT VISIBLE", buff, &bp);
+          safe_str(T("#-1 NO SUCH OBJECT VISIBLE"), buff, &bp);
         }
         break;
       }

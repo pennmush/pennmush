@@ -63,10 +63,10 @@ See also: MUSHCODE
 
   aposs()        attrib_set()   default()      edefault()     eval()
   get()          grep()         grepi()        hasattr()      hasattrp()
-  hasattrval()   lattr()        nattr()        obj()          poss()
-  regrep()       regrepi()      subj()         udefault()     ufun()
-  uldefault()    ulocal()       v()            wildgrep()     wildgrepi()
-  xattr()        xget()         zfun()         
+  hasattrval()   lattr()        nattr()        obj()          pfun()
+  poss()         regrep()       regrepi()      subj()         udefault()     
+  ufun()         uldefault()    ulocal()       v()            wildgrep()     
+  wildgrepi()    xattr()        xget()         zfun()         
 
 See also: ATTRIBUTES, NON-STANDARD ATTRIBUTES
 & Bitwise functions
@@ -3371,7 +3371,7 @@ See also: lockowner()
   second argument, parent() attempts to change the parent first.
   You must control <object>, and be allowed to @parent to <new parent>.
   
-See also: @parent, ancestors
+See also: @parent, ancestors, pfun()
 & PEMIT()
 & NSPEMIT()
 & PROMPT()
@@ -5048,6 +5048,70 @@ See also: ceil(), floor(), bound(), round(), left()
     ROOM
   
 See also: hastype(), TYPES OF OBJECTS
+& PFUN()
+  pfun(<attribute>[, <arg0>[, ... , <arg9>]])
+  
+  This function evaluates <attribute> from the caller's @parent, passing up 
+  to ten <arg>s as %0-%9. When the caller doesn't have an <attribute>
+  attribute set, this is the same as
+  
+    ufun(me/<attribute>[, <args>])
+    
+  It differs from ufun() when the caller does have the attribute set - pfun()
+  will ignore the attribute on the child, and evaluate the attribute as it
+  would be inherited from the parent.
+  
+  Example:
+    > @create ParentObject
+    > @parent me=ParentObject
+    > &foo me=ChildFoo
+    > &foo ParentObject=ParentFoo
+    > think ufun(me/foo)
+    ChildFoo
+    > think pfun(foo)
+    ParentFoo
+  
+  Continued in 'help pfun2'.
+& pfun2
+
+  This function does not have the security problems of using 
+  
+    ufun(parent(me)/<attribute>)
+    
+  as the attribute is inherited (and evaluated by you, not the parent) -
+  you don't need to be able to examine the parent object, and safer_ufun
+  does not stop the evaluation. Note that no_inherit attribute flags are 
+  still checked, as with normal attribute inheritence.
+    
+  This function is particularly useful when you want to inherit an attribute
+  tree from a parent, but add further branches.
+  
+  See 'help pfun3' for an example.
+  
+See also: ufun(), get(), parent(), zfun(), PARENTS
+& pfun2
+
+  Example:
+  
+    > &root Parent=ParentRoot
+    > &root`foo parent=ParentRoot`foo
+    > think ufun(me/root) / [ufun(me/root`foo)]
+    ParentRoot / ParentRoot`foo
+    > &root`bar me=ChildRoot`bar
+    > think ufun(me/root) / [ufun(me/root`foo)]
+     / ParentRoot`foo
+     
+  Setting a ROOT`FOO attribute on the child automatically creates an empty
+  ROOT attribute, which blocks the inherited ROOT attribute. The pfun()
+  function allows you to get around this:
+  
+    > &root me=pfun(root)
+    > think ufun(me/root) / [ufun(me/root`foo)] / [ufun(me/root`bar)]
+    ParentRoot / ParentRoot`foo / ChildRoot`bar
+    
+  Good for inherited @chatformats which use CHATFORMAT`<channel> leaf attrs
+  to store channel-specific formats and the like. Note that no_inherit flags
+  are still checked, as with normal attribute inheritance.
 & U()
 & UFUN()
 & ULAMBDA()
@@ -5093,7 +5157,7 @@ See also: hastype(), TYPES OF OBJECTS
   may be configured in the MUSH.
 
 See also: anonymous attributes, udefault(), get(), ATTRIBUTES, ulocal(),
-    attribute flags
+    pfun(), attribute flags
 & UCSTR()
   ucstr(<string>)
 

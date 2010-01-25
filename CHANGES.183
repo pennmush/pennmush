@@ -87,6 +87,8 @@ Functions:
  * benchmark(), to benchmark softcode.
  * Added "flag" as a category to valid(), to check for valid names for
    @flag/add and @power/add. [MG]
+ * New pfun() function, which evaluates attributes from your parent as if
+   you were inheriting them, even if you have your own copy of the attr. [MG]
 
 Fixes:
  * Bug caused by silly assumptions in list2arr() regarding remove_markup

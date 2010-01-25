@@ -1998,18 +1998,23 @@ See also: @ealias, leave, @leave, @lfail
 
   Switches include:
   /motd      : Alias for @listmotd, shows current messages of the day.
-  /functions : Alias for @config/functions, shows all functions
-  /commands  : Alias for @config/commands, shows all commands
-  /attribs   : Alias for @config/attribs, shows all standard attribs
-  /locks     : Shows all global (non-user) locks.
+  /functions : Lists all built-in functions and @functions
+  /commands  : Lists all built-in commands
+  /attribs   : Lists all standard attributes
+  /locks     : Lists the built-in lock types
   /flags     : Alias for @flag/list, shows all flags
   /powers    : Alias for @powers/list, shows all powers
-  /lowercase : Show whatever you're showing in lowercase, rather than upper.
+  
+  By default, information is shown in upper-case. Add the /lowercase switch
+  to show output in lowercase instead.
 
-  Some commands that require the use of '@list <what>' and don't work as
-  '@list/<what>':
+  These admin-only commands require the use of '@list <what>' and don't work
+  as '@list/<what>':
 
   allocations : Information about memory allocations.
+  
+See also: list(), @config, config(), functions(), @stats, @command,
+    @function, @flag, @power, @attribute, @listmotd, @motd, locktypes
 & @listmotd
   @listmotd
 

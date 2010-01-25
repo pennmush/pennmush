@@ -165,8 +165,8 @@ extern void do_force(dbref player, const char *what, char *command);
 extern void do_stats(dbref player, const char *name);
 extern void do_newpassword
   (dbref player, dbref cause, const char *name, const char *password);
-enum boot_type { BOOT_NAME, BOOT_DESC, BOOT_SELF, BOOT_SILENT };
-extern void do_boot(dbref player, const char *name, enum boot_type flag);
+enum boot_type { BOOT_NAME, BOOT_DESC, BOOT_SELF };
+extern void do_boot(dbref player, const char *name, enum boot_type flag, int silent);
 extern void do_chzoneall(dbref player, const char *name, const char *target);
 extern int parse_force(char *command);
 extern void do_power(dbref player, const char *name, const char *power);

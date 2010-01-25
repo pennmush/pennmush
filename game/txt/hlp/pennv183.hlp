@@ -66,6 +66,8 @@ Commands:
    switches with /tf, like @decomp/tf/flags <obj>. Suggestedby Trinsec. [MG]
  * @entrances can now take multiple switches, to show multiple types. [MG]
  * Removed the obsolete @map command. [MG]
+ * @boot <player> now boots all of <player>'s connections, not just the
+   first. Similarly, @boot/me boots all your idle connections. [MG]
 
 Functions:
  * llocks() without any arguments returns a list of the standard locks.

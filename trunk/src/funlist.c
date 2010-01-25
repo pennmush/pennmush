@@ -236,7 +236,7 @@ FUNCTION(fun_munge)
   ptrs3 = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
 
   if (!ptrs1 || !ptrs2)
-    mush_panic(T("Unable to allocate memory in fun_munge"));
+    mush_panic("Unable to allocate memory in fun_munge");
   nptrs1 = list2arr_ansi(ptrs1, MAX_SORTSIZE, args[1], sep);
   nptrs2 = list2arr_ansi(ptrs2, MAX_SORTSIZE, args[2], sep);
   memcpy(ptrs3, ptrs2, MAX_SORTSIZE * sizeof(char *));
@@ -268,7 +268,7 @@ FUNCTION(fun_munge)
    */
   results = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
   if (!results)
-    mush_panic(T("Unable to allocate memory in fun_munge"));
+    mush_panic("Unable to allocate memory in fun_munge");
   nresults = list2arr_ansi(results, MAX_SORTSIZE, rlist, sep);
 
   first = 1;
@@ -322,7 +322,7 @@ FUNCTION(fun_elements)
   ptrs = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
   wordlist = mush_malloc(BUFFER_LEN, "string");
   if (!ptrs || !wordlist)
-    mush_panic(T("Unable to allocate memory in fun_elements"));
+    mush_panic("Unable to allocate memory in fun_elements");
 
   /* Turn the first list into an array. */
   strcpy(wordlist, args[0]);
@@ -792,7 +792,7 @@ FUNCTION(fun_setinter)
   a1 = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
   a2 = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
   if (!a1 || !a2)
-    mush_panic(T("Unable to allocate memory in fun_inter"));
+    mush_panic("Unable to allocate memory in fun_inter");
 
   /* make arrays out of the lists */
   n1 = list2arr_ansi(a1, MAX_SORTSIZE, args[0], sep);
@@ -922,7 +922,7 @@ FUNCTION(fun_setunion)
   a1 = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
   a2 = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
   if (!a1 || !a2)
-    mush_panic(T("Unable to allocate memory in fun_setunion"));
+    mush_panic("Unable to allocate memory in fun_setunion");
 
   /* make arrays out of the lists */
   orign1 = n1 = list2arr_ansi(a1, MAX_SORTSIZE, args[0], sep);
@@ -1060,7 +1060,7 @@ FUNCTION(fun_setdiff)
   a1 = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
   a2 = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
   if (!a1 || !a2)
-    mush_panic(T("Unable to allocate memory in fun_diff"));
+    mush_panic("Unable to allocate memory in fun_diff");
 
   /* make arrays out of the lists */
   n1 = list2arr_ansi(a1, MAX_SORTSIZE, args[0], sep);
@@ -1181,14 +1181,14 @@ FUNCTION(fun_unique)
   a1 = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
 
   if (!a1)
-    mush_panic(T("Unable to allocate memory in fun_unique"));
+    mush_panic("Unable to allocate memory in fun_unique");
 
   /* make array out of the list */
   n1 = list2arr_ansi(a1, MAX_SORTSIZE, args[0], sep);
 
   a2 = mush_calloc(n1, sizeof(char *), "ptrarray");
   if (!a2)
-    mush_panic(T("Unable to allocate memory in fun_unique"));
+    mush_panic("Unable to allocate memory in fun_unique");
 
   if (nargs >= 2)
     sort_type = get_list_type_noauto(args, nargs, 2);
@@ -1995,7 +1995,7 @@ FUNCTION(fun_ldelete)
   ptrs = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
   wordlist = mush_malloc(BUFFER_LEN, "string");
   if (!ptrs || !wordlist)
-    mush_panic(T("Unable to allocate memory in fun_elements"));
+    mush_panic("Unable to allocate memory in fun_elements");
 
   /* Turn the first list into an array. */
   strcpy(wordlist, args[0]);
@@ -2267,7 +2267,7 @@ FUNCTION(fun_iter)
   outsep = (char *) mush_malloc(BUFFER_LEN, "string");
   list = (char *) mush_malloc(BUFFER_LEN, "string");
   if (!outsep || !list)
-    mush_panic(T("Unable to allocate memory in fun_iter"));
+    mush_panic("Unable to allocate memory in fun_iter");
   if (nargs < 4)
     strcpy(outsep, " ");
   else {

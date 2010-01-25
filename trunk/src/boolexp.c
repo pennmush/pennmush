@@ -614,7 +614,7 @@ eval_boolexp(dbref player /* The player trying to pass */ ,
         }
         break;
       default:
-        do_log(LT_ERR, 0, 0, T("Bad boolexp opcode %d %d in object #%d"),
+        do_log(LT_ERR, 0, 0, "Bad boolexp opcode %d %d in object #%d",
                op, arg, target);
         report();
         r = 0;
@@ -1296,10 +1296,10 @@ append_insn(struct bvm_asm *a, bvm_opcode op, int arg, const char *s)
     if (!found) {
       newstr = mush_malloc(sizeof *newstr, "bvm.strnode");
       if (!s)
-        mush_panic(T("Unable to allocate memory for boolexp string node!"));
+        mush_panic("Unable to allocate memory for boolexp string node!");
       newstr->s = mush_strdup(s, "bvm.string");
       if (!newstr->s)
-        mush_panic(T("Unable to allocate memory for boolexp string!"));
+        mush_panic("Unable to allocate memory for boolexp string!");
       newstr->len = strlen(s) + 1;
       newstr->next = NULL;
       if (a->shead == NULL)
@@ -1317,7 +1317,7 @@ append_insn(struct bvm_asm *a, bvm_opcode op, int arg, const char *s)
     bvm_asmnode_slab = slab_create("bvm.asmnode", sizeof *newop);
   newop = slab_malloc(bvm_asmnode_slab, NULL);
   if (!newop)
-    mush_panic(T("Unable to allocate memory for boolexp asm node!"));
+    mush_panic("Unable to allocate memory for boolexp asm node!");
   newop->op = op;
   newop->arg = arg;
   newop->next = NULL;
@@ -1635,7 +1635,7 @@ optimize_bvm_asm(struct bvm_asm *a)
           struct bvm_asmnode *newlbl;
           newlbl = slab_malloc(bvm_asmnode_slab, NULL);
           if (!newlbl)
-            mush_panic(T("Unable to allocate memory for boolexp asm node!"));
+            mush_panic("Unable to allocate memory for boolexp asm node!");
           newlbl->op = OP_LABEL;
           n->arg = newlbl->arg = gen_label_id(a);
           if (target->next)

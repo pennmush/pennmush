@@ -598,7 +598,7 @@ main(int argc, char **argv)
   }
 
   if (init_game_dbs() < 0) {
-    do_rawlog(LT_ERR, T("ERROR: Couldn't load databases! Exiting."));
+    do_rawlog(LT_ERR, "ERROR: Couldn't load databases! Exiting.");
     exit(2);
   }
 
@@ -662,7 +662,7 @@ main(int argc, char **argv)
   rusage_stats();
 #endif                          /* HAS_RUSAGE */
 
-  do_rawlog(LT_ERR, T("MUSH shutdown completed."));
+  do_rawlog(LT_ERR, "MUSH shutdown completed.");
 
   closesocket(sock);
 #ifdef WIN32
@@ -926,7 +926,7 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
 
     if (dump_error) {
       if (WIFSIGNALED(dump_status)) {
-        do_rawlog(LT_ERR, T("ERROR! forking dump exited with signal %d"),
+        do_rawlog(LT_ERR, "ERROR! forking dump exited with signal %d",
                   WTERMSIG(dump_status));
         flag_broadcast("ROYALTY WIZARD", 0,
                        T("GAME: ERROR! Forking database save failed!"));
@@ -936,7 +936,7 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
           if (DUMP_NOFORK_COMPLETE && *DUMP_NOFORK_COMPLETE)
             flag_broadcast(0, 0, "%s", DUMP_NOFORK_COMPLETE);
         } else {
-          do_rawlog(LT_ERR, T("ERROR! forking dump exited with exit code %d"),
+          do_rawlog(LT_ERR, "ERROR! forking dump exited with exit code %d",
                     WEXITSTATUS(dump_status));
           flag_broadcast("ROYALTY WIZARD", 0,
                          T("GAME: ERROR! Forking database save failed!"));
@@ -947,7 +947,7 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
     }
 #ifdef INFO_SLAVE
     if (slave_error) {
-      do_rawlog(LT_ERR, T("info_slave on pid %d exited unexpectedly!"),
+      do_rawlog(LT_ERR, "info_slave on pid %d exited unexpectedly!",
                 slave_error);
       slave_error = 0;
     }
@@ -957,7 +957,7 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
 
     if (signal_shutdown_flag) {
       flag_broadcast(0, 0, T("GAME: Shutdown by external signal"));
-      do_rawlog(LT_ERR, T("SHUTDOWN by external signal"));
+      do_rawlog(LT_ERR, "SHUTDOWN by external signal");
       shutdown_flag = 1;
     }
 
@@ -1181,8 +1181,8 @@ new_connection(int oldsock, int *result, bool use_ssl)
     if (!Deny_Silent_Site(tbuf1, AMBIGUOUS)
         || !Deny_Silent_Site(tbuf2, AMBIGUOUS)) {
       do_rawlog(LT_CONN, "[%d/%s/%s] %s (%s %s)", newsock, tbuf1, tbuf2,
-                T("Refused connection"), T("remote port"),
-                hi ? hi->port : T("(unknown)"));
+                "Refused connection", "remote port",
+                hi ? hi->port : "(unknown)");
     }
     shutdown(newsock, 2);
     closesocket(newsock);
@@ -1191,7 +1191,7 @@ new_connection(int oldsock, int *result, bool use_ssl)
 #endif
     return 0;
   }
-  do_rawlog(LT_CONN, T("[%d/%s/%s] Connection opened."), newsock, tbuf1, tbuf2);
+  do_rawlog(LT_CONN, "[%d/%s/%s] Connection opened.", newsock, tbuf1, tbuf2);
   set_keepalive(newsock);
   return initializesock(newsock, tbuf1, tbuf2, use_ssl);
 }
@@ -1231,7 +1231,7 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
   *bp = '\0';
   buff = (char *) mush_malloc(BUFFER_LEN, "string");
   if (!buff) {
-    mush_panic(T("Unable to allocate memory in fcache_dump_attr"));
+    mush_panic("Unable to allocate memory in fcache_dump_attr");
     return -2;
   }
   save_global_regs("send_txt", rsave);
@@ -1390,13 +1390,13 @@ fcache_read(FBLOCK *fb, const char *filename)
 
     release_fd();
     if ((fd = open(filename, O_RDONLY, 0)) < 0) {
-      do_rawlog(LT_ERR, T("Couldn't open cached text file '%s'"), filename);
+      do_rawlog(LT_ERR, "Couldn't open cached text file '%s'", filename);
       reserve_fd();
       return -1;
     }
 
     if (fstat(fd, &sb) < 0) {
-      do_rawlog(LT_ERR, T("Couldn't get the size of text file '%s'"), filename);
+      do_rawlog(LT_ERR, "Couldn't get the size of text file '%s'", filename);
       close(fd);
       reserve_fd();
       return -1;
@@ -1404,7 +1404,7 @@ fcache_read(FBLOCK *fb, const char *filename)
 
 
     if (!(fb->buff = mush_malloc(sb.st_size, "fcache_data"))) {
-      do_rawlog(LT_ERR, T("Couldn't allocate %d bytes of memory for '%s'!"),
+      do_rawlog(LT_ERR, "Couldn't allocate %d bytes of memory for '%s'!",
                 (int) sb.st_size, filename);
       close(fd);
       reserve_fd();
@@ -1412,7 +1412,7 @@ fcache_read(FBLOCK *fb, const char *filename)
     }
 
     if ((n = read(fd, fb->buff, sb.st_size)) != sb.st_size) {
-      do_rawlog(LT_ERR, T("Couldn't read all of '%s'"), filename);
+      do_rawlog(LT_ERR, "Couldn't read all of '%s'", filename);
       close(fd);
       mush_free(fb->buff, "fcache_data");
       fb->buff = NULL;
@@ -1476,7 +1476,7 @@ logout_sock(DESC *d)
   if (d->connected) {
     fcache_dump(d, fcache.quit_fcache, NULL);
     do_rawlog(LT_CONN,
-              T("[%d/%s/%s] Logout by %s(#%d) <Connection not dropped>"),
+              "[%d/%s/%s] Logout by %s(#%d) <Connection not dropped>",
               d->descriptor, d->addr, d->ip, Name(d->player), d->player);
     announce_disconnect(d);
     if (can_mail(d->player)) {
@@ -1487,13 +1487,13 @@ logout_sock(DESC *d)
       if (!under_limit && (login_number < MAX_LOGINS)) {
         under_limit = 1;
         do_rawlog(LT_CONN,
-                  T("Below maximum player limit of %d. Logins enabled."),
+                  "Below maximum player limit of %d. Logins enabled.",
                   MAX_LOGINS);
       }
     }
   } else {
     do_rawlog(LT_CONN,
-              T("[%d/%s/%s] Logout, never connected. <Connection not dropped>"),
+              "[%d/%s/%s] Logout, never connected. <Connection not dropped>",
               d->descriptor, d->addr, d->ip);
   }
   process_output(d);            /* flush our old output */
@@ -1526,7 +1526,7 @@ static void
 shutdownsock(DESC *d)
 {
   if (d->connected) {
-    do_rawlog(LT_CONN, T("[%d/%s/%s] Logout by %s(#%d)"),
+    do_rawlog(LT_CONN, "[%d/%s/%s] Logout by %s(#%d)",
               d->descriptor, d->addr, d->ip, Name(d->player), d->player);
     if (d->connected != 2) {
       fcache_dump(d, fcache.quit_fcache, NULL);
@@ -1541,12 +1541,12 @@ shutdownsock(DESC *d)
       if (!under_limit && (login_number < MAX_LOGINS)) {
         under_limit = 1;
         do_rawlog(LT_CONN,
-                  T("Below maximum player limit of %d. Logins enabled."),
+                  "Below maximum player limit of %d. Logins enabled.",
                   MAX_LOGINS);
       }
     }
   } else {
-    do_rawlog(LT_CONN, T("[%d/%s/%s] Connection closed, never connected."),
+    do_rawlog(LT_CONN, "[%d/%s/%s] Connection closed, never connected.",
               d->descriptor, d->addr, d->ip);
   }
   process_output(d);
@@ -1586,7 +1586,7 @@ initializesock(int s, char *addr, char *ip, int use_ssl
   DESC *d;
   d = (DESC *) mush_malloc(sizeof(DESC), "descriptor");
   if (!d)
-    mush_panic(T("Out of memory."));
+    mush_panic("Out of memory.");
   d->descriptor = s;
   d->connected = 0;
   d->connected_at = mudtime;
@@ -1890,7 +1890,7 @@ setup_telnet(DESC *d)
     /* IAC DO NAWS IAC DO TERMINAL-TYPE */
     unsigned char extra_options[6] = "\xFF\xFD\x1F" "\xFF\xFD\x18";
     d->conn_flags &= ~CONN_TELNET_QUERY;
-    do_rawlog(LT_CONN, T("[%d/%s/%s] Switching to Telnet mode."),
+    do_rawlog(LT_CONN, "[%d/%s/%s] Switching to Telnet mode.",
               d->descriptor, d->addr, d->ip);
     queue_newwrite(d, extra_options, 6);
     process_output(d);
@@ -2112,7 +2112,7 @@ process_input_helper(DESC *d, char *tbuf1, int got)
   if (!d->raw_input) {
     d->raw_input = mush_malloc(MAX_COMMAND_LEN, "descriptor_raw_input");
     if (!d->raw_input)
-      mush_panic(T("Out of memory"));
+      mush_panic("Out of memory");
     d->raw_input_at = d->raw_input;
   }
   p = d->raw_input_at;
@@ -2346,7 +2346,7 @@ do_command(DESC *d, char *command)
       queue_newwrite(d, (unsigned const char *) PUEBLO_SEND,
                      strlen(PUEBLO_SEND));
       process_output(d);
-      do_rawlog(LT_CONN, T("[%d/%s/%s] Switching to Pueblo mode."),
+      do_rawlog(LT_CONN, "[%d/%s/%s] Switching to Pueblo mode.",
                 d->descriptor, d->addr, d->ip);
       d->conn_flags |= CONN_HTML;
       if (!d->connected)
@@ -2439,7 +2439,7 @@ dump_messages(DESC *d, dbref player, int isnew)
     if (under_limit && (login_number > MAX_LOGINS)) {
       under_limit = 0;
       do_rawlog(LT_CONN,
-                T("Limit of %d players reached. Logins disabled.\n"),
+                "Limit of %d players reached. Logins disabled.\n",
                 MAX_LOGINS);
     }
   }
@@ -2520,10 +2520,10 @@ check_connect(DESC *d, const char *msg)
     if ((player =
          connect_player(user, password, d->addr, d->ip, errbuf)) == NOTHING) {
       queue_string_eol(d, errbuf);
-      do_rawlog(LT_CONN, T("[%d/%s/%s] Failed connect to '%s'."),
+      do_rawlog(LT_CONN, "[%d/%s/%s] Failed connect to '%s'.",
                 d->descriptor, d->addr, d->ip, user);
     } else {
-      do_rawlog(LT_CONN, T("[%d/%s/%s] Connected to %s(#%d) in %s(#%d)"),
+      do_rawlog(LT_CONN, "[%d/%s/%s] Connected to %s(#%d) in %s(#%d)",
                 d->descriptor, d->addr, d->ip, Name(player), player,
                 Name(Location(player)), Location(player));
       if ((dump_messages(d, player, 0)) == 0) {
@@ -2536,11 +2536,11 @@ check_connect(DESC *d, const char *msg)
     if ((player =
          connect_player(user, password, d->addr, d->ip, errbuf)) == NOTHING) {
       queue_string_eol(d, errbuf);
-      do_rawlog(LT_CONN, T("[%d/%s/%s] Failed connect to '%s'."),
+      do_rawlog(LT_CONN, "[%d/%s/%s] Failed connect to '%s'.",
                 d->descriptor, d->addr, d->ip, user);
     } else {
       do_rawlog(LT_CONN,
-                T("[%d/%s/%s] Connected dark to %s(#%d) in %s(#%d)"),
+                "[%d/%s/%s] Connected dark to %s(#%d) in %s(#%d)",
                 d->descriptor, d->addr, d->ip, Name(player), player,
                 Name(Location(player)), Location(player));
       /* Set player dark */
@@ -2559,10 +2559,10 @@ check_connect(DESC *d, const char *msg)
     if ((player =
          connect_player(user, password, d->addr, d->ip, errbuf)) == NOTHING) {
       queue_string_eol(d, errbuf);
-      do_rawlog(LT_CONN, T("[%d/%s/%s] Failed connect to '%s'."),
+      do_rawlog(LT_CONN, "[%d/%s/%s] Failed connect to '%s'.",
                 d->descriptor, d->addr, d->ip, user);
     } else {
-      do_rawlog(LT_CONN, T("[%d/%s/%s] Connected to %s(#%d) in %s(#%d)"),
+      do_rawlog(LT_CONN, "[%d/%s/%s] Connected to %s(#%d) in %s(#%d)",
                 d->descriptor, d->addr, d->ip, Name(player), player,
                 Name(Location(player)), Location(player));
       /* Set player !dark */
@@ -2579,11 +2579,11 @@ check_connect(DESC *d, const char *msg)
     if ((player =
          connect_player(user, password, d->addr, d->ip, errbuf)) == NOTHING) {
       queue_string_eol(d, errbuf);
-      do_rawlog(LT_CONN, T("[%d/%s/%s] Failed connect to '%s'."),
+      do_rawlog(LT_CONN, "[%d/%s/%s] Failed connect to '%s'.",
                 d->descriptor, d->addr, d->ip, user);
     } else {
       do_rawlog(LT_CONN,
-                T("[%d/%s/%s] Connected hidden to %s(#%d) in %s(#%d)"),
+                "[%d/%s/%s] Connected hidden to %s(#%d) in %s(#%d)",
                 d->descriptor, d->addr, d->ip, Name(player), player,
                 Name(Location(player)), Location(player));
       /* Set player hidden */
@@ -2602,7 +2602,7 @@ check_connect(DESC *d, const char *msg)
       fcache_dump(d, fcache.register_fcache, NULL);
       if (!Deny_Silent_Site(d->addr, AMBIGUOUS)
           && !Deny_Silent_Site(d->ip, AMBIGUOUS)) {
-        do_rawlog(LT_CONN, T("[%d/%s/%s] Refused create for '%s'."),
+        do_rawlog(LT_CONN, "[%d/%s/%s] Refused create for '%s'.",
                   d->descriptor, d->addr, d->ip, user);
       }
       return 0;
@@ -2627,12 +2627,12 @@ check_connect(DESC *d, const char *msg)
     if (player == NOTHING) {
       queue_string_eol(d, T(create_fail));
       do_rawlog(LT_CONN,
-                T("[%d/%s/%s] Failed create for '%s' (bad name)."),
+                "[%d/%s/%s] Failed create for '%s' (bad name).",
                 d->descriptor, d->addr, d->ip, user);
     } else if (player == AMBIGUOUS) {
       queue_string_eol(d, T(password_fail));
       do_rawlog(LT_CONN,
-                T("[%d/%s/%s] Failed create for '%s' (bad password)."),
+                "[%d/%s/%s] Failed create for '%s' (bad password).",
                 d->descriptor, d->addr, d->ip, user);
     } else {
       do_rawlog(LT_CONN, "[%d/%s/%s] Created %s(#%d)",
@@ -2649,7 +2649,7 @@ check_connect(DESC *d, const char *msg)
       if (!Deny_Silent_Site(d->addr, AMBIGUOUS)
           && !Deny_Silent_Site(d->ip, AMBIGUOUS)) {
         do_rawlog(LT_CONN,
-                  T("[%d/%s/%s] Refused registration (bad site) for '%s'."),
+                  "[%d/%s/%s] Refused registration (bad site) for '%s'.",
                   d->descriptor, d->addr, d->ip, user);
       }
       return 0;
@@ -2664,7 +2664,7 @@ check_connect(DESC *d, const char *msg)
     if ((player = email_register_player(user, password, d->addr, d->ip)) ==
         NOTHING) {
       queue_string_eol(d, T(register_fail));
-      do_rawlog(LT_CONN, T("[%d/%s/%s] Failed registration for '%s'."),
+      do_rawlog(LT_CONN, "[%d/%s/%s] Failed registration for '%s'.",
                 d->descriptor, d->addr, d->ip, user);
     } else {
       queue_string_eol(d, T(register_success));
@@ -3066,7 +3066,7 @@ signal_dump(int sig __attribute__ ((__unused__)))
 void
 bailout(int sig)
 {
-  mush_panicf(T("BAILOUT: caught signal %d"), sig);
+  mush_panicf("BAILOUT: caught signal %d", sig);
 }
 
 #ifndef WIN32
@@ -3173,7 +3173,7 @@ guest_to_connect(dbref player)
   if (MAX_GUESTS < 0)
     return NOTHING;
 
-  do_rawlog(LT_CONN, T("Multiple connection to Guest #%d"), player);
+  do_rawlog(LT_CONN, "Multiple connection to Guest #%d", player);
   return player;
 }
 
@@ -3188,7 +3188,7 @@ dump_users(DESC *call_by, char *match)
   char tbuf2[BUFFER_LEN];
 
   if (!GoodObject(call_by->player)) {
-    do_rawlog(LT_ERR, T("Bogus caller #%d of dump_users"), call_by->player);
+    do_rawlog(LT_ERR, "Bogus caller #%d of dump_users", call_by->player);
     return;
   }
   while (*match && *match == ' ')
@@ -3609,7 +3609,7 @@ announce_connect(DESC *d, int isnew, int num)
       break;
     default:
       do_rawlog(LT_ERR,
-                T("Invalid zone #%d for %s(#%d) has bad type %d"), zone,
+                "Invalid zone #%d for %s(#%d) has bad type %d", zone,
                 Name(player), player, Typeof(zone));
     }
   }
@@ -3712,7 +3712,7 @@ announce_disconnect(DESC *saved)
       break;
     default:
       do_rawlog(LT_ERR,
-                T("Invalid zone #%d for %s(#%d) has bad type %d"), zone,
+                "Invalid zone #%d for %s(#%d) has bad type %d", zone,
                 Name(player), player, Typeof(zone));
     }
   }
@@ -3910,7 +3910,7 @@ do_poll(dbref player, const char *message, int clear)
                   (int) strlen(message) - (DOING_LEN - 1));
   } else
     notify_format(player, T("Poll set to: %s"), poll_msg);
-  do_log(LT_WIZ, player, NOTHING, T("Poll Set to '%s'."), poll_msg);
+  do_log(LT_WIZ, player, NOTHING, "Poll Set to '%s'.", poll_msg);
 }
 
 /** Match the partial name of a connected player.
@@ -4787,7 +4787,7 @@ inactivity_check(void)
 
         queue_string(d, T("\n*** Inactivity timeout ***\n"));
         do_rawlog(LT_CONN,
-                  T("[%d/%s/%s] Logout by %s(#%d) <Inactivity Timeout>"),
+                  "[%d/%s/%s] Logout by %s(#%d) <Inactivity Timeout>",
                   d->descriptor, d->addr, d->ip, Name(d->player), d->player);
         boot_desc(d);
       } else if (Unfind(d->player)) {

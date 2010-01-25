@@ -209,7 +209,7 @@ do_attribute_access(dbref player, char *name, char *perms, int retroactive)
     ap = (ATTR *) mush_malloc(sizeof(ATTR), "ATTR");
     if (!ap) {
       notify(player, T("Critical memory failure - Alert God!"));
-      do_log(LT_ERR, 0, 0, T("do_attribute_access: unable to malloc ATTR"));
+      do_log(LT_ERR, 0, 0, "do_attribute_access: unable to malloc ATTR");
       return;
     }
     AL_NAME(ap) = strdup(name);
@@ -350,7 +350,7 @@ do_attribute_info(dbref player, char *name)
   notify_format(player,
                 T("    Flags: %s"), privs_to_string(attr_privs_view,
                                                  AL_FLAGS(ap)));
-  notify_format(player, "  Creator: %s", unparse_dbref(AL_CREATOR(ap)));
+  notify_format(player, T("  Creator: %s"), unparse_dbref(AL_CREATOR(ap)));
   return;
 }
 

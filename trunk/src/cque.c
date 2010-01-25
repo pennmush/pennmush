@@ -243,7 +243,7 @@ pay_queue(dbref player, const char *command)
     notify_format(Owner(player),
                   T("Runaway object: %s(%s). Commands halted."),
                   Name(player), unparse_dbref(player));
-    do_log(LT_TRACE, player, player, T("Runaway object %s executing: %s"),
+    do_log(LT_TRACE, player, player, "Runaway object %s executing: %s",
            unparse_dbref(player), command);
     /* Refund the queue costs */
     giveto(player, QUEUE_COST);
@@ -263,8 +263,7 @@ next_pid(void)
 
   if (im_count(queue_map) >= (int) MAX_PID) {
     do_rawlog(LT_ERR,
-              T
-              ("There are %ld queue entries! That's too many. Failing to add another."),
+              "There are %ld queue entries! That's too many. Failing to add another.",
               (long) im_count(queue_map));
     return 0;
   }

@@ -515,29 +515,29 @@ slab_describe(dbref player, slab *sl)
       under25 += 1;
   }
 
-  notify_format(player, T("Allocator for %s:"), sl->name);
+  notify_format(player, "Allocator for %s:", sl->name);
   notify_format(player,
-                T("   object size (bytes): %-6d       objects per page: %-6d"),
+                "   object size (bytes): %-6d       objects per page: %-6d",
                 sl->item_size, sl->items_per_page);
   notify_format(player,
-                T("       allocated pages: %-6d      objects added via: %s"), n,
+                "       allocated pages: %-6d      objects added via: %s", n,
                 sl->fill_strategy ? "first fit" : "best fit");
   notify_format(player,
-                T("     allocated objects: %-6ld           free objects: %-6ld"),
+                "     allocated objects: %-6ld           free objects: %-6ld",
                 (unsigned long) allocated, (unsigned long) freed);
   if (allocated > 0) {
     notify_format(player,
-                  T(" fewest allocs in page: %-6d    most allocs in page: %-6d"),
+                  " fewest allocs in page: %-6d    most allocs in page: %-6d",
                   min_fill, max_fill);
     notify_format(player,
-                  T("    allocation average:%6.2f%%        pages 100%% full: %-6d"),
+                  "    allocation average:%6.2f%%        pages 100%% full: %-6d",
                   (((double) allocated / ((double) allocated + (double) freed))
                    * 100.0), full);
     notify_format(player,
-                  T("       pages >75%% full: %-6d        pages >50%% full: %-6d"),
+                  "       pages >75%% full: %-6d        pages >50%% full: %-6d",
                   under100, under75);
     notify_format(player,
-                  T("       pages >25%% full: %-6d        pages <25%% full: %d"),
+                  "       pages >25%% full: %-6d        pages <25%% full: %d",
                   under50, under25);
   }
 }

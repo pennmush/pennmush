@@ -565,7 +565,7 @@ can_create_attr(dbref player, dbref obj, char const *atr_name, uint32_t flags)
   if ((AttrCount(obj) + num_new) >
       (Many_Attribs(obj) ? HARD_MAX_ATTRCOUNT : MAX_ATTRCOUNT)) {
     do_log(LT_ERR, player, obj,
-           T("Attempt by %s(%d) to create too many attributes on %s(%d)"),
+           "Attempt by %s(%d) to create too many attributes on %s(%d)",
            Name(player), player, Name(obj), obj);
     return AE_TOOMANY;
   }
@@ -637,7 +637,7 @@ atr_new_add(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
 
   /* Don't fail on a bad name, but do log it */
   if (!good_atr_name(atr))
-    do_rawlog(LT_ERR, T("Bad attribute name %s on object %s"), atr,
+    do_rawlog(LT_ERR, "Bad attribute name %s on object %s", atr,
               unparse_dbref(thing));
 
   ptr = create_atr(thing, atr, List(thing));
@@ -650,7 +650,7 @@ atr_new_add(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
     *p = '\0';
     root = find_atr_in_list(List(thing), root_name);
     if (!root) {
-      do_rawlog(LT_ERR, T("Missing root attribute '%s' on object #%d!\n"),
+      do_rawlog(LT_ERR, "Missing root attribute '%s' on object #%d!\n",
                 root_name, thing);
       root = create_atr(thing, root_name, ptr);
       set_default_flags(root, 0);
@@ -659,7 +659,7 @@ atr_new_add(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
       if (!EMPTY_ATTRS) {
         unsigned char *t = compress(" ");
         if (!t) {
-          mush_panic(T("Unable to allocate memory in atr_new_add()!"));
+          mush_panic("Unable to allocate memory in atr_new_add()!");
         }
         root->data = chunk_create(t, u_strlen(t), 0);
         free(t);
@@ -758,7 +758,7 @@ atr_add(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
         if (!EMPTY_ATTRS) {
           unsigned char *t = compress(" ");
           if (!t)
-            mush_panic(T("Unable to allocate memory in atr_add()!"));
+            mush_panic("Unable to allocate memory in atr_add()!");
           root->data = chunk_create(t, u_strlen(t), 0);
           free(t);
         }
@@ -914,7 +914,7 @@ real_atr_clr(dbref thing, char const *atr, dbref player, int we_are_wiping)
       *p = '`';
 
       if (!root) {
-        do_rawlog(LT_ERR, T("Attribute %s on object #%d lacks a parent!"),
+        do_rawlog(LT_ERR, "Attribute %s on object #%d lacks a parent!",
                   root_name, thing);
       } else {
         if (!atr_sub_branch(root))

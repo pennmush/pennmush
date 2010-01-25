@@ -394,7 +394,7 @@ do_destroy(dbref player, char *name, int confirm)
                     object_header(player, thing));
     break;
   default:
-    do_log(LT_ERR, NOTHING, NOTHING, T("Surprising type in do_destroy."));
+    do_log(LT_ERR, NOTHING, NOTHING, "Surprising type in do_destroy.");
     return;
   }
 
@@ -487,7 +487,7 @@ pre_destroy(dbref player, dbref thing)
     }
     break;
   default:
-    do_log(LT_ERR, NOTHING, NOTHING, T("Surprising type in pre_destroy."));
+    do_log(LT_ERR, NOTHING, NOTHING, "Surprising type in pre_destroy.");
     return;
   }
 
@@ -575,7 +575,7 @@ undestroy(dbref player, dbref thing)
     }
     break;
   default:
-    do_log(LT_ERR, NOTHING, NOTHING, T("Surprising type in un_destroy."));
+    do_log(LT_ERR, NOTHING, NOTHING, "Surprising type in un_destroy.");
     return 0;
   }
   return 1;
@@ -607,7 +607,7 @@ free_object(dbref thing)
     clear_room(thing);
     break;
   default:
-    do_log(LT_ERR, NOTHING, NOTHING, T("Unknown type on #%d in free_object."),
+    do_log(LT_ERR, NOTHING, NOTHING, "Unknown type on #%d in free_object.",
            thing);
     return;
   }
@@ -635,7 +635,7 @@ free_object(dbref thing)
         /* Huh.  An exit that claims to be from here, but wasn't linked
          * in properly. */
         do_rawlog(LT_ERR,
-                  T("ERROR: Exit %s leading from invalid room #%d destroyed."),
+                  "ERROR: Exit %s leading from invalid room #%d destroyed.",
                   unparse_object(GOD, i), thing);
         free_object(i);
         break;
@@ -643,7 +643,7 @@ free_object(dbref thing)
         /* Hrm.  It claims we're an exit from it, but we didn't agree.
          * Clean it up anyway. */
         do_log(LT_ERR, NOTHING, NOTHING,
-               T("Found a destroyed exit #%d in room #%d"), thing, i);
+               "Found a destroyed exit #%d in room #%d", thing, i);
         break;
       }
     }
@@ -925,12 +925,12 @@ free_get(void)
     if (nrecur++ == 20) {
       first_free = NOTHING;
       report();
-      do_rawlog(LT_ERR, T("ERROR: Removed free list and continued"));
+      do_rawlog(LT_ERR, "ERROR: Removed free list and continued");
       return (NOTHING);
     }
     report();
-    do_rawlog(LT_TRACE, T("ERROR: Object #%d should not be free"), newobj);
-    do_rawlog(LT_TRACE, T("ERROR: Corrupt free list, fixing"));
+    do_rawlog(LT_TRACE, "ERROR: Object #%d should not be free", newobj);
+    do_rawlog(LT_TRACE, "ERROR: Corrupt free list, fixing");
     fix_free_list();
     temp = free_get();
     nrecur--;
@@ -1031,7 +1031,7 @@ check_fields(void)
       dbref next;
       next = Next(thing);
       if ((!GoodObject(next) || !IsGarbage(next)) && (next != NOTHING)) {
-        do_rawlog(LT_ERR, T("ERROR: Invalid next pointer #%d from object %s"),
+        do_rawlog(LT_ERR, "ERROR: Invalid next pointer #%d from object %s",
                   next, unparse_object(GOD, thing));
         Next(thing) = NOTHING;
         fix_free_list();
@@ -1048,14 +1048,14 @@ check_fields(void)
         Parent(thing) = NOTHING;
       owner = Owner(thing);
       if (!GoodObject(owner) || IsGarbage(owner) || !IsPlayer(owner)) {
-        do_rawlog(LT_ERR, T("ERROR: Invalid object owner on %s(%d)"),
+        do_rawlog(LT_ERR, "ERROR: Invalid object owner on %s(%d)",
                   Name(thing), thing);
         report();
         Owner(thing) = GOD;
       }
       next = Next(thing);
       if ((!GoodObject(next) || IsGarbage(next)) && (next != NOTHING)) {
-        do_rawlog(LT_ERR, T("ERROR: Invalid next pointer #%d from object %s"),
+        do_rawlog(LT_ERR, "ERROR: Invalid next pointer #%d from object %s",
                   next, unparse_object(GOD, thing));
         Next(thing) = NOTHING;
       }
@@ -1077,7 +1077,7 @@ check_fields(void)
           /* Eww.. Exits can't have contents. Bad news */
           Contents(thing) = NOTHING;
           do_rawlog(LT_ERR,
-                    T("ERROR: Exit %s has a contents list. Wiping it out."),
+                    "ERROR: Exit %s has a contents list. Wiping it out.",
                     unparse_object(GOD, thing));
         }
         if (!GoodObject(loc)
@@ -1087,8 +1087,7 @@ check_fields(void)
            */
           Destination(thing) = Source(thing);
           do_rawlog(LT_ERR,
-                    T
-                    ("ERROR: Exit %s leading to invalid room #%d relinked to its source room."),
+                    "ERROR: Exit %s leading to invalid room #%d relinked to its source room.",
                     unparse_object(GOD, thing), home);
         } else if (GoodObject(loc) && IsGarbage(loc)) {
           /* If our destination is destroyed, then we relink to the
@@ -1099,16 +1098,14 @@ check_fields(void)
            */
           Destination(thing) = Source(thing);
           do_rawlog(LT_ERR,
-                    T
-                    ("ERROR: Exit %s leading to garbage room #%d relinked to its source room."),
+                    "ERROR: Exit %s leading to garbage room #%d relinked to its source room.",
                     unparse_object(GOD, thing), home);
         }
         /* This must come last */
         if (!GoodObject(home) || !IsRoom(home)) {
           /* If our source is destroyed, just destroy the exit. */
           do_rawlog(LT_ERR,
-                    T
-                    ("ERROR: Exit %s leading from invalid room #%d destroyed."),
+                    "ERROR: Exit %s leading from invalid room #%d destroyed.",
                     unparse_object(GOD, thing), home);
           free_object(thing);
         }
@@ -1117,7 +1114,7 @@ check_fields(void)
         if (GoodObject(home) && IsGarbage(home)) {
           /* Eww. Destroyed exit. This isn't supposed to happen. */
           do_log(LT_ERR, NOTHING, NOTHING,
-                 T("Found a destroyed exit #%d in room #%d"), home, thing);
+                 "Found a destroyed exit #%d in room #%d", home, thing);
         }
         if (GoodObject(loc) && (IsGarbage(loc) || IsExit(loc))) {
           /* Just remove a dropto. */
@@ -1178,7 +1175,7 @@ check_connected_marks(void)
       ClearMarked(loc);
     else if (IsRoom(loc)) {
       if (!Name(loc)) {
-        do_log(LT_ERR, NOTHING, NOTHING, T("ERROR: no name for room #%d."),
+        do_log(LT_ERR, NOTHING, NOTHING, "ERROR: no name for room #%d.",
                loc);
         set_name(loc, "XXXX");
       }
@@ -1281,7 +1278,7 @@ mark_contents(dbref thing)
     CHECK(Next(thing));
     break;
   default:
-    do_rawlog(LT_ERR, T("Bad object type found for %s in mark_contents"),
+    do_rawlog(LT_ERR, "Bad object type found for %s in mark_contents",
               unparse_object(GOD, thing));
     break;
   }
@@ -1304,7 +1301,7 @@ check_contents(void)
   }
   for (thing = 0; thing < db_top; thing++) {
     if (!IsRoom(thing) && !IsGarbage(thing) && !Marked(thing)) {
-      do_rawlog(LT_ERR, T("Object %s not pointed to by anything."),
+      do_rawlog(LT_ERR, "Object %s not pointed to by anything.",
                 unparse_object(GOD, thing));
       notify_format(Owner(thing),
                     T("You own an object %s that was \'orphaned\'."),
@@ -1338,7 +1335,7 @@ check_contents(void)
         mark_contents(Contents(thing));
         notify_format(Owner(thing), T("It was moved to %s."),
                       object_header(Owner(thing), Location(thing)));
-        do_rawlog(LT_ERR, T("Moved to %s."),
+        do_rawlog(LT_ERR, "Moved to %s.",
                   unparse_object(GOD, Location(thing)));
         break;
       case TYPE_EXIT:
@@ -1346,23 +1343,23 @@ check_contents(void)
           PUSH(thing, Exits(Source(thing)));
           notify_format(Owner(thing), T("It was moved to %s."),
                         object_header(Owner(thing), Source(thing)));
-          do_rawlog(LT_ERR, T("Moved to %s."),
+          do_rawlog(LT_ERR, "Moved to %s.",
                     unparse_object(GOD, Source(thing)));
         } else {
           /* Just destroy the exit. */
           Source(thing) = NOTHING;
           notify(Owner(thing), T("It was destroyed."));
-          do_rawlog(LT_ERR, T("Orphaned exit destroyed."));
+          do_rawlog(LT_ERR, "Orphaned exit destroyed.");
           free_object(thing);
         }
         break;
       case TYPE_ROOM:
         /* We should never get here. */
-        do_log(LT_ERR, NOTHING, NOTHING, T("Disconnected room. So what?"));
+        do_log(LT_ERR, NOTHING, NOTHING, "Disconnected room. So what?");
         break;
       default:
         do_log(LT_ERR, NOTHING, NOTHING,
-               T("Surprising type on #%d found in check_cycles."), thing);
+               "Surprising type on #%d found in check_cycles.", thing);
         break;
       }
     }
@@ -1387,8 +1384,7 @@ check_locations(void)
       for (thing = Contents(loc); thing != NOTHING; thing = Next(thing)) {
         if (!Mobile(thing)) {
           do_rawlog(LT_ERR,
-                    T
-                    ("ERROR: Contents of object %d corrupt at object %d cleared"),
+                    "ERROR: Contents of object %d corrupt at object %d cleared",
                     loc, thing);
           /* Remove this from the list and start over. */
           Contents(loc) = remove_first(Contents(loc), thing);
@@ -1400,7 +1396,7 @@ check_locations(void)
            * here.
            */
           do_rawlog(LT_ERR,
-                    T("Incorrect location on object %s. Reset to #%d."),
+                    "Incorrect location on object %s. Reset to #%d.",
                     unparse_object(GOD, thing), loc);
           Location(thing) = loc;
         }
@@ -1411,7 +1407,7 @@ check_locations(void)
       for (thing = Exits(loc); thing != NOTHING; thing = Next(thing)) {
         if (!IsExit(thing)) {
           do_rawlog(LT_ERR,
-                    T("ERROR: Exits of room %d corrupt at object %d cleared"),
+                    "ERROR: Exits of room %d corrupt at object %d cleared",
                     loc, thing);
           /* Remove this from the list and start over. */
           Exits(loc) = remove_first(Exits(loc), thing);
@@ -1419,7 +1415,7 @@ check_locations(void)
           continue;
         } else if (Source(thing) != loc) {
           do_rawlog(LT_ERR,
-                    T("Incorrect source on exit %s. Reset to #%d."),
+                    "Incorrect source on exit %s. Reset to #%d.",
                     unparse_object(GOD, thing), loc);
         }
       }
@@ -1431,7 +1427,7 @@ check_locations(void)
     if (!IsGarbage(thing) && Marked(thing))
       ClearMarked(thing);
     else if (Mobile(thing)) {
-      do_rawlog(LT_ERR, T("ERROR DBCK: Moved object %d"), thing);
+      do_rawlog(LT_ERR, "ERROR DBCK: Moved object %d", thing);
       moveto(thing, DEFAULT_HOME);
     }
 }
@@ -1452,7 +1448,7 @@ do_dbck(dbref player)
     return;
   }
   notify(player, T("GAME: Performing database consistency check."));
-  do_log(LT_WIZ, player, NOTHING, T("DBCK done."));
+  do_log(LT_WIZ, player, NOTHING, "DBCK done.");
   dbck();
   notify(player, T("GAME: Database consistency check complete."));
 }

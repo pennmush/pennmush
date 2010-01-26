@@ -652,9 +652,7 @@ do_look_at(dbref player, const char *name, int key)
       look_room(player, loc, LOOK_NORMAL);
       return;
     }
-    thing =
-      match_result(loc, name, NOTYPE,
-                   MAT_PLAYER | MAT_REMOTE_CONTENTS | MAT_EXIT | MAT_REMOTES);
+    thing = match_result(loc, name, NOTYPE, MAT_POSSESSION | MAT_CARRIED_EXIT);
     if (thing == NOTHING) {
       notify(player, T("I don't see that here."));
       return;

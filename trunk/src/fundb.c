@@ -1922,9 +1922,7 @@ FUNCTION(fun_locate)
   int pref_type;
   dbref item, loc;
   char *p;
-  int keys = 0;
   int ambig_ok = 0;
-  int force_type = 0;
   long match_flags = 0;
 
   /* find out what we're matching in relation to */
@@ -1958,10 +1956,10 @@ FUNCTION(fun_locate)
       pref_type |= TYPE_THING;
       break;
     case 'L':
-      keys = 1;
+      match_flags |= MAT_CHECK_KEYS;
       break;
     case 'F':
-      force_type = 1;
+      match_flags |= MAT_TYPE;
       break;
     case '*':
       match_flags |= MAT_EVERYTHING;
@@ -2012,11 +2010,8 @@ FUNCTION(fun_locate)
   if (!pref_type)
     pref_type = NOTYPE;
 
-  if (!match_flags)
-    match_flags = MAT_EVERYTHING;
-
-  if (keys)
-    match_flags = MAT_CHECK_KEYS;
+  if (!(match_flags & ~(MAT_CHECK_KEYS | MAT_TYPE)))
+    match_flags |= MAT_EVERYTHING;
 
   /* report the results */
   if (!ambig_ok)
@@ -2026,11 +2021,6 @@ FUNCTION(fun_locate)
 
   if (!GoodObject(item)) {
     safe_dbref(item, buff, bp);
-    return;
-  }
-
-  if (force_type && !(Typeof(item) & pref_type)) {
-    safe_dbref(NOTHING, buff, bp);
     return;
   }
 

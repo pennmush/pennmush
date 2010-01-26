@@ -530,14 +530,14 @@ do_get(dbref player, const char *what)
   dbref thing;
   char tbuf1[BUFFER_LEN], tbuf2[BUFFER_LEN], *tp;
   long match_flags =
-    MAT_NEIGHBOR | MAT_ABSOLUTE | MAT_CHECK_KEYS | MAT_NEAR | MAT_ENGLISH;
+    MAT_NEIGHBOR | MAT_CHECK_KEYS | MAT_NEAR | MAT_ENGLISH;
 
   if (!IsRoom(loc) && !EnterOk(loc) && !controls(player, loc)) {
     notify(player, T("Permission denied."));
     return;
   }
-  if (!Long_Fingers(player))
-    match_flags |= MAT_CONTROL;
+  if (Long_Fingers(player))
+    match_flags |= MAT_ABSOLUTE;
   if (match_result(player, what, TYPE_THING, match_flags) == NOTHING) {
     if (POSSESSIVE_GET) {
       dbref box;
@@ -666,7 +666,7 @@ do_drop(dbref player, const char *name)
     return;
   switch (thing =
           match_result(player, name, TYPE_THING,
-                       MAT_POSSESSION | MAT_ABSOLUTE | MAT_CONTROL |
+                       MAT_POSSESSION | MAT_ABSOLUTE |
                        MAT_ENGLISH)) {
   case NOTHING:
     notify(player, T("You don't have that!"));

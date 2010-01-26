@@ -26,6 +26,8 @@ Major Changes:
    have been moved from the hardcode into aliascnf.dst. PLEASE COPY the
    appropriate function_alias lines into your alias.cnf to ensure your
    softcode continues to work correctly. [MG]
+ * The internal code for object matching has been rewritten, hopefully
+   fixing a few bugs and improving match results in some cases. [MG]
 
 Minor Changes:
  * align() can now do full justification. Suggested by Trinsec@M*U*S*H [GM]

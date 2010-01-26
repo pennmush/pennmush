@@ -1,27 +1,27 @@
 #: src/game.c:1447
 #, c-format
 msgid "        Time until next purge: %ld minutes %ld seconds."
-msgstr "     Waktu hingga purge berikut: %ld menit %ld detik."
+msgstr "        Waktu hingga purge berikut: %ld menit %ld detik."
 
 #: game.c:1893
 msgid "  Last reboot: %a %b %d %X %Z %Y"
-msgstr "\"  Terakhir kali boot ulang: %a %b %d %X %Z %Y\""
+msgstr "  \"  Terakhir kali boot ulang: %a %b %d %X %Z %Y\""
 
 #: src/conf.c:1095
 msgid " @lock/leave is available."
-msgstr "@lock/leave tidak tersedia."
+msgstr " @lock/leave tidak tersedia."
 
 #: src/conf.c:1068
 msgid " Empty attributes are deleted."
-msgstr "Atribut-atribut kosong telah dihapus."
+msgstr " Atribut-atribut kosong telah dihapus."
 
 #: src/conf.c:1107
 msgid " Extended ANSI functions are not enabled."
-msgstr "Fungsi-fungsi extended ANSI  dimatikan."
+msgstr " Fungsi-fungsi extended ANSI  dimatikan."
 
 #: src/conf.c:988
 msgid " Floating point functions are disabled."
-msgstr "Fungsi floating point dimatikan."
+msgstr " Fungsi floating point dimatikan."
 
 #: extchat.c:1503
 msgid "#-1 AMBIGUOUS CHANNEL NAME"
@@ -206,7 +206,7 @@ msgstr "MAIL: set alias '%s' telah didefinisikan."
 
 #: src/malias.c:564
 msgid "MAIL: First character of permisisons must be one of '=', '+', '-',"
-msgstr "MAIL: karakter pertama dari permissions haruslah salah satu dari '=', '+', '-', "
+msgstr "MAIL: karakter pertama dari permissions haruslah salah satu dari '=', '+', '-',"
 
 #: src/extmail.c:788
 msgid "MAIL: I can't figure out who you want to mail to."

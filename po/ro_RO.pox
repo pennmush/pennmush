@@ -1,333 +1,333 @@
 #: src/wiz.c:2259
 #, c-format
 msgid "          (Includes table items, and table of words pointers of %ld bytes)"
-msgstr "Include obiecte tabelare, si tqbele de pointere word de %ld bytes)"
+msgstr "          Include obiecte tabelare, si tqbele de pointere word de %ld bytes)"
 
 #: src/game.c:1447
 #, c-format
 msgid "        Time until next purge: %ld minutes %ld seconds."
-msgstr "Timp ramas pana la urmatoarea curatare: %ld minute %ld secunde."
+msgstr "        Timp ramas pana la urmatoarea curatare: %ld minute %ld secunde."
 
 #: src/malias.c:565
 msgid "      to set, add, remove permissions, respectively."
-msgstr "pentru a seta, adauga, anula permisiuni."
+msgstr "      pentru a seta, adauga, anula permisiuni."
 
 #: game.c:1437
 #, c-format
 msgid "     Up since: %s"
-msgstr "Functionare neantrerupta din: %s"
+msgstr "     Functionare neantrerupta din: %s"
 
 #: filecopy.c:110
 #, c-format
 msgid "    ** Unable to open file: %s"
-msgstr "** Fisierul nu poate fi deschis: %s"
+msgstr "    ** Fisierul nu poate fi deschis: %s"
 
 #: src/filecopy.c:112
 #, c-format
 msgid "    ** Unable to open file: %s\n"
-msgstr "** Fisierul nu poate fi deschis: %s\n"
+msgstr "    ** Fisierul nu poate fi deschis: %s\n"
 
 #: filecopy.c:101
 msgid "    Copying file"
-msgstr "Fisierul se copiaza"
+msgstr "    Fisierul se copiaza"
 
 #: src/filecopy.c:100
 #, c-format
 msgid "    Copying file: %s, %ld byte%s\n"
-msgstr "Fisierul se copiaza: %s, %ld byte%s\n"
+msgstr "    Fisierul se copiaza: %s, %ld byte%s\n"
 
 #: src/game.c:1452
 #, c-format
 msgid "    Time until next @warnings: %ld minutes %ld seconds."
-msgstr "Timp ramas pana la urmatorul @warnings: %ld minute %ld secunde."
+msgstr "    Timp ramas pana la urmatorul @warnings: %ld minute %ld secunde."
 
 #: src/game.c:1432
 #, c-format
 msgid "   Time now: %s"
-msgstr "Timpul actual: %s"
+msgstr "   Timpul actual: %s"
 
 #: src/game.c:1443
 #, c-format
 msgid "   Time until next dbck check: %ld minutes %ld seconds."
-msgstr "Timp ramas pana la urmatoarea verificare dbck: %ld minute %ld secunde."
+msgstr "   Timp ramas pana la urmatoarea verificare dbck: %ld minute %ld secunde."
 
 #: src/game.c:1422
 #, c-format
 msgid "   Up since: %s"
-msgstr "Functionare neantrerupta din:"
+msgstr "   Functionare neantrerupta din:"
 
 #: db.c:1205
 msgid "  (expecting ], >, or < as first character of the line.)"
-msgstr "(se asteapta ], >, sau < ca prime caractere ale liniei.)"
+msgstr "  (se asteapta ], >, sau < ca prime caractere ale liniei.)"
 
 #: src/db.c:1309
 msgid "  (expecting ], >, or < as first character of the line.)\n"
 msgstr ""
-"(se asteapta ], >, sau < ca prime caractere ale liniei.)\n"
+"  (se asteapta ], >, sau < ca prime caractere ale liniei.)\n"
 ".\n"
 
 #: db.c:1207
 #, c-format
 msgid "  Last attribute read was: %s"
-msgstr "Ultimul atribut citit a fost: %s"
+msgstr "  Ultimul atribut citit a fost: %s"
 
 #: src/db.c:1311
 #, c-format
 msgid "  Last attribute read was: %s\n"
-msgstr "Ultimul atribut citit a fost: %s\n"
+msgstr "  Ultimul atribut citit a fost: %s\n"
 
 #: game.c:1442
 #, c-format
 msgid "  Last reboot: %s"
-msgstr "Ultimul reboot: %s"
+msgstr "  Ultimul reboot: %s"
 
 #: db.c:1209
 msgid "  No attributes had been read yet."
-msgstr "Inca nu a fost citit nici un atribut."
+msgstr "  Inca nu a fost citit nici un atribut."
 
 #: src/db.c:1313
 msgid "  No attributes had been read yet.\n"
-msgstr "Inca nu a fost citit nici un atribut.\n"
+msgstr "  Inca nu a fost citit nici un atribut.\n"
 
 #: src/services.c:803
 #, c-format
 msgid " %s           - runs as a service, or stand-alone\n"
-msgstr "%s           - ruleaza ca un serviciu, sau de sine statator\n"
+msgstr " %s           - ruleaza ca un serviciu, sau de sine statator\n"
 
 #: src/services.c:813
 #, c-format
 msgid " %s /help     - displays this information\n"
-msgstr "%s /help     - afiseaza aceasta informatie\n"
+msgstr " %s /help     - afiseaza aceasta informatie\n"
 
 #: src/services.c:808
 #, c-format
 msgid " %s /install  - installs this service\n"
-msgstr "%s /install       -instaleaza acest serviciu\n"
+msgstr " %s /install       -instaleaza acest serviciu\n"
 
 #: src/services.c:809
 #, c-format
 msgid " %s /remove   - removes (un-installs) this service\n"
-msgstr "%s /remove     -dezinstaleaza acest serviciu\n"
+msgstr " %s /remove     -dezinstaleaza acest serviciu\n"
 
 #: src/services.c:805
 #, c-format
 msgid " %s /run      - runs stand-alone\n"
-msgstr "%s /run     -functioneaza de sine statator\n"
+msgstr " %s /run     -functioneaza de sine statator\n"
 
 #: src/services.c:806
 #, c-format
 msgid " %s /start    - starts this service\n"
-msgstr "%s /start        -porneste acest serviciu\n"
+msgstr " %s /start        -porneste acest serviciu\n"
 
 #: src/services.c:811
 #, c-format
 msgid " %s /status   - displays the status of this service\n"
-msgstr "%s /status        -afiseaza starea acestui serviciu \n"
+msgstr " %s /status        -afiseaza starea acestui serviciu \n"
 
 #: src/services.c:807
 #, c-format
 msgid " %s /stop     - stops this service\n"
-msgstr "%s /stop          -opreste acest serviciu \n"
+msgstr " %s /stop          -opreste acest serviciu \n"
 
 #: src/db.c:567
 #, c-format
 msgid " * Bad attribute name on #%d. Changing name to %s.\n"
-msgstr "* Nume de atribut necorespunzator pe #%d. Se schimba numele in %s. \n"
+msgstr " * Nume de atribut necorespunzator pe #%d. Se schimba numele in %s. \n"
 
 #: src/db.c:574
 #, c-format
 msgid " * Bad owner on attribute %s on #%d.\n"
-msgstr "* Posesor necorespunzator pe atributul %s din #%d. \n"
+msgstr " * Posesor necorespunzator pe atributul %s din #%d. \n"
 
 #: src/db.c:608
 #, c-format
 msgid " * Bad text in attribute %s on #%d. Changed to:\n"
-msgstr "* Text necorespunzator pe atributul %s din #%d. Se schimba in: \n"
+msgstr " * Text necorespunzator pe atributul %s din #%d. Se schimba in: \n"
 
 #: db.c:1285 db.c:1293
 #, c-format
 msgid " * Name of #%d is longer than the maximum, truncating.\n"
-msgstr "* Numele lui #%d este mai lung decat maximul, se scurteaza. \n"
+msgstr " * Numele lui #%d este mai lung decat maximul, se scurteaza. \n"
 
 #: src/conf.c:1098
 msgid " @lock/drop is available."
-msgstr "@lock/drop este disponibil"
+msgstr " @lock/drop este disponibil"
 
 #: src/conf.c:1101
 msgid " @lock/give is available."
-msgstr "@lock/give este disponibil"
+msgstr " @lock/give este disponibil"
 
 #: src/conf.c:1095
 msgid " @lock/leave is available."
-msgstr "@lock/leave este disponibil"
+msgstr " @lock/leave este disponibil"
 
 #: src/conf.c:1092
 msgid " @lock/speech is available."
-msgstr "@lock/speech este disponibil"
+msgstr " @lock/speech este disponibil"
 
 #: src/conf.c:1008
 msgid " @mail messages do not have subject lines."
-msgstr "Mesajele @mail nu au linii de subiect."
+msgstr " Mesajele @mail nu au linii de subiect."
 
 #: src/conf.c:1000
 msgid " @mail messages have subject lines."
-msgstr "Mesajele @mail au linii de subiect."
+msgstr " Mesajele @mail au linii de subiect."
 
 #: conf.c:1044
 msgid " Attributes are 8-bit word compressed in memory."
-msgstr "Atributele sunt compresate in memorie prin metoda \"8-bit word \"."
+msgstr " Atributele sunt compresate in memorie prin metoda \"8-bit word \"."
 
 #: conf.c:1035
 msgid " Attributes are Huffman compressed in memory."
-msgstr "Atributele sunt compresate in memorie prin metoda Huffman."
+msgstr " Atributele sunt compresate in memorie prin metoda Huffman."
 
 #: conf.c:1038
 msgid " Attributes are bigram compressed in memory."
-msgstr "Atributele sunt compresate in memorie prin metoda bigram."
+msgstr " Atributele sunt compresate in memorie prin metoda bigram."
 
 #: conf.c:1032
 msgid " Attributes are not compressed in memory."
-msgstr "Atributele nu sunt compresate in memorie."
+msgstr " Atributele nu sunt compresate in memorie."
 
 #: conf.c:1041
 msgid " Attributes are word compressed in memory."
-msgstr "Atributele sunt compresate in memorie prin metoda \"word \"."
+msgstr " Atributele sunt compresate in memorie prin metoda \"word \"."
 
 #: src/conf.c:1063
 msgid " Attributes can be deleted."
-msgstr "Atributele pot fi sterse."
+msgstr " Atributele pot fi sterse."
 
 #: src/conf.c:1065
 msgid " Attributes cannot be deleted."
-msgstr "Atributele nu pot fi sterse."
+msgstr " Atributele nu pot fi sterse."
 
 #: conf.c:1214
 msgid " BSD sockets networking in use."
-msgstr "BSD sockets networking se utilizeaza."
+msgstr " BSD sockets networking se utilizeaza."
 
 #: src/conf.c:1044
 msgid " Creation/modification times for objects are enabled."
-msgstr "Timpii de creare/modificare pentru obiecte sunt activati."
+msgstr " Timpii de creare/modificare pentru obiecte sunt activati."
 
 #: src/conf.c:1046
 msgid " Creation/modification times for objects are not enabled."
-msgstr "Timpii de creare/modificare pentru obiecte nu sunt activati."
+msgstr " Timpii de creare/modificare pentru obiecte nu sunt activati."
 
 #: src/conf.c:980
 msgid " DNS and ident lookups are handled by a slave process."
-msgstr "Cautarile DNS si ident sunt realizate de procese slave."
+msgstr " Cautarile DNS si ident sunt realizate de procese slave."
 
 #: src/conf.c:982
 msgid " DNS and ident lookups are handled by the MUSH process."
-msgstr "Cautarile DNS si ident sunt realizate de procese MUSH."
+msgstr " Cautarile DNS si ident sunt realizate de procese MUSH."
 
 #: src/conf.c:1068
 msgid " Empty attributes are deleted."
-msgstr "Atributele goale sunt sterse."
+msgstr " Atributele goale sunt sterse."
 
 #: src/conf.c:1058
 msgid " Empty attributes are dumped."
-msgstr "Atributele goale sunt transferate."
+msgstr " Atributele goale sunt transferate."
 
 #: src/conf.c:1051
 msgid " Empty attributes are kept."
-msgstr "Atributele goale sunt pastrate."
+msgstr " Atributele goale sunt pastrate."
 
 #: src/conf.c:1060
 msgid " Empty attributes are not dumped."
-msgstr "Atributele goale nu sunt transferate."
+msgstr " Atributele goale nu sunt transferate."
 
 #: src/conf.c:1055
 msgid " Empty attributes are not visible."
-msgstr "Atributele goale nu sunt vizibile."
+msgstr " Atributele goale nu sunt vizibile."
 
 #: src/conf.c:1053
 msgid " Empty attributes are visible."
-msgstr "Atributele goale sunt vizibile."
+msgstr " Atributele goale sunt vizibile."
 
 #: src/conf.c:1105
 msgid " Extended ANSI functions are enabled."
-msgstr "Functiile ANSI extinse sunt activate."
+msgstr " Functiile ANSI extinse sunt activate."
 
 #: src/conf.c:1107
 msgid " Extended ANSI functions are not enabled."
-msgstr "Functiile ANSI extinse nu sunt activate."
+msgstr " Functiile ANSI extinse nu sunt activate."
 
 #: src/conf.c:1111
 msgid " Extended convtime() is supported."
-msgstr "Convtime() extins este suportat."
+msgstr " Convtime() extins este suportat."
 
 #: flags.c:706
 msgid " Flags:"
-msgstr "Steaguri:"
+msgstr " Steaguri:"
 
 #: src/conf.c:988
 msgid " Floating point functions are disabled."
-msgstr "Functiile de virgula mobila sunt dezactivate."
+msgstr " Functiile de virgula mobila sunt dezactivate."
 
 #: src/conf.c:986
 msgid " Floating point functions are enabled."
-msgstr "Functiile de virgula mobila sunt activate."
+msgstr " Functiile de virgula mobila sunt activate."
 
 #: src/conf.c:1072
 msgid " Garbage objects are not dumped to disk."
-msgstr "Obiectele de tip gunoi nu sunt transferate pe disc."
+msgstr " Obiectele de tip gunoi nu sunt transferate pe disc."
 
 #: src/conf.c:970
 msgid " Logging is to a single log file."
-msgstr "Logging-ul se realizeaza intr-un singur fisier."
+msgstr " Logging-ul se realizeaza intr-un singur fisier."
 
 #: src/conf.c:972
 msgid " Logging is to multiple log files."
-msgstr "Logging-ul se realizeaza in mai multe fisiere."
+msgstr " Logging-ul se realizeaza in mai multe fisiere."
 
 #: src/conf.c:1002
 msgid " Messages without subject lines have subject (no subject)"
-msgstr "Mesajele fara linie de subiect au subiectul (fara subiect)"
+msgstr " Mesajele fara linie de subiect au subiectul (fara subiect)"
 
 #: src/conf.c:1005
 msgid " Messages without subject lines use the beginning of the message as subject"
-msgstr "Mesajele fara linie de subiect utilizeaza inceputul mesajului ca subiect"
+msgstr " Mesajele fara linie de subiect utilizeaza inceputul mesajului ca subiect"
 
 #: src/conf.c:954
 msgid " Passwords are convereted from plaintext to SHS"
-msgstr "Parolele sunt convertite din text in SHS"
+msgstr " Parolele sunt convertite din text in SHS"
 
 #: conf.c:1179
 msgid " Passwords are converted from plaintext to SHS"
-msgstr "Parolele sunt convertite din text in SHS"
+msgstr " Parolele sunt convertite din text in SHS"
 
 #: src/conf.c:951
 msgid " Passwords are converted from system crypt to SHS"
-msgstr "Parolele sunt convertite din sistem criptat in SHS"
+msgstr " Parolele sunt convertite din sistem criptat in SHS"
 
 #: src/conf.c:948
 msgid " Passwords are encrypted with SHS."
-msgstr "Parolele sunt criptate cu SHS"
+msgstr " Parolele sunt criptate cu SHS"
 
 #: src/conf.c:945
 msgid " Passwords are encrypted with the operating system's crypt function."
-msgstr "Parolele sunt criptate cu functia de criptare a sistemului de operare."
+msgstr " Parolele sunt criptate cu functia de criptare a sistemului de operare."
 
 #: src/conf.c:941
 msgid " Passwords are not stored encrypted."
-msgstr "Parolele nu sunt stocate criptat."
+msgstr " Parolele nu sunt stocate criptat."
 
 #: src/conf.c:1021
 msgid " Quota restrictions are being enforced."
-msgstr "Restrictiile de cota sunt in functiune."
+msgstr " Restrictiile de cota sunt in functiune."
 
 #: src/conf.c:994
 msgid " Side effect functions are disabled."
-msgstr "Functiile de efect secundar sunt dezactivate."
+msgstr " Functiile de efect secundar sunt dezactivate."
 
 #: src/conf.c:992
 msgid " Side effect functions are enabled."
-msgstr "Functiile de efect secundar sunt activate."
+msgstr " Functiile de efect secundar sunt activate."
 
 #: src/conf.c:1078
 msgid " The FIXED flag is disabled."
-msgstr "Steagul FIXED este dezactivat."
+msgstr " Steagul FIXED este dezactivat."
 
 #: src/conf.c:1076
 msgid " The FIXED flag is enabled."
@@ -335,73 +335,73 @@ msgstr " Steagul FIXED este activat."
 
 #: src/conf.c:1040
 msgid " The MUSH building warning system is disabled."
-msgstr "Avertizarea sistemului de cladire al MUSH este dezactivata."
+msgstr " Avertizarea sistemului de cladire al MUSH este dezactivata."
 
 #: src/conf.c:1031
 msgid " The MUSH building warning system is enabled."
-msgstr "Avertizarea sistemului de cladire al MUSH este activata."
+msgstr " Avertizarea sistemului de cladire al MUSH este activata."
 
 #: src/conf.c:1088
 msgid " The UNINSPECTED flag is enabled."
-msgstr "Steagul UNINSPECTED este activat."
+msgstr " Steagul UNINSPECTED este activat."
 
 #: src/conf.c:1082
 msgid " The UNREGISTERED flag is enabled."
-msgstr "Steagul UNREGISTRED este activat."
+msgstr " Steagul UNREGISTRED este activat."
 
 #: src/conf.c:1085
 msgid " The VACATION flag is enabled."
-msgstr "Steagul VACATION este activat."
+msgstr " Steagul VACATION este activat."
 
 #: src/conf.c:1011
 msgid " The built-in MUSH mailing system is not being used."
-msgstr "Sistemul intern de mail al MUSH  nu este folosit."
+msgstr " Sistemul intern de mail al MUSH  nu este folosit."
 
 #: src/conf.c:1017
 msgid " The chat system is disabled."
-msgstr "Sistemul de chat este dezactivat."
+msgstr " Sistemul de chat este dezactivat."
 
 #: src/conf.c:998
 msgid " The extended built-in MUSH mailing system is being used."
-msgstr "Sistemul intern de mail extins al MUSH este folosit."
+msgstr " Sistemul intern de mail extins al MUSH este folosit."
 
 #: src/conf.c:1015
 msgid " The extended chat system is enabled."
-msgstr "Sistemul de chat extins este activat."
+msgstr " Sistemul de chat extins este activat."
 
 #: src/conf.c:1027
 msgid " The royalty flag is disabled."
-msgstr "Steagul royalty este dezactivat."
+msgstr " Steagul royalty este dezactivat."
 
 #: src/conf.c:1025
 msgid " The royalty flag is enabled."
-msgstr "Steagul royalty este activat."
+msgstr " Steagul royalty este activat."
 
 #: src/conf.c:1035
 #, c-format
 msgid " Warnings will be automatically given every %d minutes"
-msgstr "Se vor emite avertizari la fiecare %d minute."
+msgstr " Se vor emite avertizari la fiecare %d minute."
 
 #: src/conf.c:1038
 msgid " Warnings will not be automatically given."
-msgstr "Nu se vor emite avertizari automat."
+msgstr " Nu se vor emite avertizari automat."
 
 #: conf.c:1212
 msgid " Windows NT native TCP/IP networking functions in use."
-msgstr "Functiile de networking TCP/IP native ale sistemului Windows NT sunt utilizate."
+msgstr " Functiile de networking TCP/IP native ale sistemului Windows NT sunt utilizate."
 
 #: wiz.c:1605
 #, c-format
 msgid " [location: %s]"
-msgstr "[locatia: %s]"
+msgstr " [locatia: %s]"
 
 #: src/conf.c:1113
 msgid " convtime() is stricter."
-msgstr "convtime () este mai strict."
+msgstr " convtime () este mai strict."
 
 #: src/look.c:205
 msgid " is corrupt!"
-msgstr "este corupt!"
+msgstr " este corupt!"
 
 #: src/look.c:688 src/look.c:770
 msgid " is owned by "
@@ -409,7 +409,7 @@ msgstr " este proprietatea lui "
 
 #: src/look.c:201
 msgid " leads home."
-msgstr "conduce acasa."
+msgstr " conduce acasa."
 
 #: src/look.c:199
 msgid " leads nowhere."
@@ -417,23 +417,23 @@ msgstr " nu conduce nicaieri."
 
 #: src/look.c:207
 msgid " leads to "
-msgstr "conduce catre"
+msgstr " conduce catre "
 
 #: src/look.c:203
 msgid " leads to a variable location."
-msgstr "conduce catre o locatie variabila."
+msgstr " conduce catre o locatie variabila."
 
 #: speech.c:1021
 msgid " pages"
-msgstr "trimite page"
+msgstr " trimite page"
 
 #: src/speech.c:475
 msgid " whispers to "
-msgstr "sopteste catre"
+msgstr " sopteste catre "
 
 #: speech.c:975
 msgid " with "
-msgstr "cu"
+msgstr " cu "
 
 #: extchat.c:1503
 msgid "#-1 AMBIGUOUS CHANNEL NAME"
@@ -705,7 +705,7 @@ msgstr "#-1 INTERZIS"
 
 #: src/funlist.c:2256 src/funlist.c:2335 src/funlist.c:2378 src/funlist.c:2437\nsrc/funlist.c:2478
 msgid "#-1 REGEXP ERROR: "
-msgstr "#-1 EROARE REGEXP:"
+msgstr "#-1 EROARE REGEXP: "
 
 #: src/funmisc.c:158 src/funmisc.c:178
 msgid "#-1 REGISTER OUT OF RANGE"
@@ -846,12 +846,12 @@ msgstr "%s putere anulata."
 #: src/atr_tab.c:226
 #, c-format
 msgid "%s -- Attribute permissions now: %s"
-msgstr "%s - Permisiuni de atribute acum : %s "
+msgstr "%s - Permisiuni de atribute acum : %s"
 
 #: src/look.c:721
 #, c-format
 msgid "%s Lock: %s"
-msgstr "%s Incuie: %s "
+msgstr "%s Incuie: %s"
 
 #: wiz.c:1583
 #, c-format
@@ -896,17 +896,17 @@ msgstr "%s creat."
 #: src/command.c:960
 #, c-format
 msgid "%s doesn't know switch %s."
-msgstr "%s nu cunoaste switchul %s "
+msgstr "%s nu cunoaste switchul %s"
 
 #: src/rob.c:213
 #, c-format
 msgid "%s gave you %s."
-msgstr "%s ti-a dat %s "
+msgstr "%s ti-a dat %s"
 
 #: src/rob.c:215
 #, c-format
 msgid "%s gave you to %s."
-msgstr "%s te-a oferit catre %s "
+msgstr "%s te-a oferit catre %s"
 
 #: src/rob.c:285
 #, c-format
@@ -1111,7 +1111,7 @@ msgstr "%s isi pierde urechile si devine surd."
 #: src/predicat.c:760
 #, c-format
 msgid "%s message from %s: %s"
-msgstr "%s mesaj de la %s : %s "
+msgstr "%s mesaj de la %s : %s"
 
 #: src/player.c:486
 #, c-format
@@ -1156,7 +1156,7 @@ msgstr "%s nu te mai urmeaza."
 #: src/wiz.c:1576
 #, c-format
 msgid "%s to "
-msgstr "%s catre"
+msgstr "%s catre "
 
 #: src/rob.c:288
 #, c-format
@@ -1186,12 +1186,12 @@ msgstr "%s incearca sa isi impuna vointa asupra ta dar esueaza."
 #: src/speech.c:151
 #, c-format
 msgid "%s types --> %s%s%s"
-msgstr "%s tipareste -->%s %s %s "
+msgstr "%s tipareste -->%s %s %s"
 
 #: src/move.c:495
 #, c-format
 msgid "%s was taken from you."
-msgstr "Ti-a fost luat %s "
+msgstr "Ti-a fost luat %s"
 
 #: speech.c:395 speech.c:372
 #, c-format
@@ -1334,7 +1334,7 @@ msgstr "Incercare de catre %s(#d) de a crea prea multe atribute pe %s(%d)"
 
 #: src/attrib.c:274
 msgid "Attempt to create too many attributes"
-msgstr "Incercare de a crea prea multe atribute "
+msgstr "Incercare de a crea prea multe atribute"
 
 #: src/game.c:851
 #, c-format

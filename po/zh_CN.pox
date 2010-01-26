@@ -1,50 +1,50 @@
 #: src/filecopy.c:112
 #, c-format
 msgid "    ** Unable to open file: %s\n"
-msgstr "** 不能打开文件：%s\n"
+msgstr "    ** 不能打开文件：%s\n"
 
 #: src/game.c:1432
 #, c-format
 msgid "   Time now: %s"
-msgstr "现在的时间是：%s"
+msgstr "   现在的时间是：%s"
 
 #: src/game.c:1422
 #, c-format
 msgid "   Up since: %s"
-msgstr "系统启动时间：%s"
+msgstr "   系统启动时间：%s"
 
 #: src/db.c:1309
 msgid "  (expecting ], >, or < as first character of the line.)\n"
-msgstr "（这一行的首字符只能为]，>或者<。）\n"
+msgstr "  （这一行的首字符只能为]，>或者<。）\n"
 
 #: src/services.c:813
 #, c-format
 msgid " %s /help     - displays this information\n"
-msgstr "%s /help     - 显示本帮助信息\n"
+msgstr " %s /help     - 显示本帮助信息\n"
 
 #: src/conf.c:1105
 msgid " Extended ANSI functions are enabled."
-msgstr "允许扩展的ANSI函数。"
+msgstr " 允许扩展的ANSI函数。"
 
 #: src/conf.c:951
 msgid " Passwords are converted from system crypt to SHS"
-msgstr "口令加密方式由系统加密转为SHS"
+msgstr " 口令加密方式由系统加密转为SHS"
 
 #: src/conf.c:1078
 msgid " The FIXED flag is disabled."
-msgstr "FIXED标志被禁止。"
+msgstr " FIXED标志被禁止。"
 
 #: src/conf.c:1088
 msgid " The UNINSPECTED flag is enabled."
-msgstr "打开UNINSPECTED标志。"
+msgstr " 打开UNINSPECTED标志。"
 
 #: src/conf.c:1082
 msgid " The UNREGISTERED flag is enabled."
-msgstr "打开UNREGISTERED标记。"
+msgstr " 打开UNREGISTERED标记。"
 
 #: speech.c:1021
 msgid " pages"
-msgstr "&#39029;"
+msgstr " &#39029;"
 
 #: src/funmath.c:218 src/funmath.c:250
 msgid "#-1 ARGUMENT MUST END IN AN INTEGER"

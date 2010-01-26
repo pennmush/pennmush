@@ -1,7 +1,7 @@
 #: src/game.c:1447
 #, c-format
 msgid "        Time until next purge: %ld minutes %ld seconds."
-msgstr "     Czas przed nastepna czystka(purge): %ld minut %ld sekund."
+msgstr "        Czas przed nastepna czystka(purge): %ld minut %ld sekund."
 
 #: filecopy.c:110
 #, c-format
@@ -20,12 +20,12 @@ msgstr "    Kopiuje plik"
 #: src/game.c:1432
 #, c-format
 msgid "   Time now: %s"
-msgstr "Czas teraz: %s"
+msgstr "   Czas teraz: %s"
 
 #: db.c:1207
 #, c-format
 msgid "  Last attribute read was: %s"
-msgstr "Atrybut zablokowany."
+msgstr "  Atrybut zablokowany."
 
 #: db.c:1209
 msgid "  No attributes had been read yet."
@@ -102,11 +102,11 @@ msgstr " Atrybuty nie moga byc usuniete."
 
 #: src/conf.c:1068
 msgid " Empty attributes are deleted."
-msgstr "Puste atrybuty sa kasowane."
+msgstr " Puste atrybuty sa kasowane."
 
 #: src/conf.c:1060
 msgid " Empty attributes are not dumped."
-msgstr "Puste atrybuty nie sa zapisywane."
+msgstr " Puste atrybuty nie sa zapisywane."
 
 #: src/conf.c:1055
 msgid " Empty attributes are not visible."
@@ -114,39 +114,39 @@ msgstr " Puste atrybuty nie sa widoczne."
 
 #: src/conf.c:1053
 msgid " Empty attributes are visible."
-msgstr "Puste atrybuty sa widoczne."
+msgstr " Puste atrybuty sa widoczne."
 
 #: src/conf.c:1105
 msgid " Extended ANSI functions are enabled."
-msgstr "Rozszerzone funkcje ANSI wl/aczone."
+msgstr " Rozszerzone funkcje ANSI wl/aczone."
 
 #: flags.c:706
 msgid " Flags:"
-msgstr "Flagi:"
+msgstr " Flagi:"
 
 #: src/conf.c:988
 msgid " Floating point functions are disabled."
-msgstr "Funkcje argumentów zmiennoprzecinkowych s¹ wy³¹czone."
+msgstr " Funkcje argumentów zmiennoprzecinkowych s¹ wy³¹czone."
 
 #: src/conf.c:986
 msgid " Floating point functions are enabled."
-msgstr "Funkcje zmiennoprzecinkowe wlaczone."
+msgstr " Funkcje zmiennoprzecinkowe wlaczone."
 
 #: src/conf.c:1002
 msgid " Messages without subject lines have subject (no subject)"
-msgstr "Wiadomosci bez linii tematu beda mialy temat (no subject)."
+msgstr " Wiadomosci bez linii tematu beda mialy temat (no subject)."
 
 #: src/conf.c:1005
 msgid " Messages without subject lines use the beginning of the message as subject"
-msgstr "Wiadomosci bez tematu uzywaja pierwszej linii wiadomosci jako tematu"
+msgstr " Wiadomosci bez tematu uzywaja pierwszej linii wiadomosci jako tematu"
 
 #: src/conf.c:954
 msgid " Passwords are convereted from plaintext to SHS"
-msgstr "Hasl/a sa przekonwertowane ze zwykl/ego tekstu na SHS."
+msgstr " Hasl/a sa przekonwertowane ze zwykl/ego tekstu na SHS."
 
 #: src/conf.c:951
 msgid " Passwords are converted from system crypt to SHS"
-msgstr "Hasl/a sa przekonwertowane z systemowego szyfrowania na SHS"
+msgstr " Hasl/a sa przekonwertowane z systemowego szyfrowania na SHS"
 
 #: src/conf.c:945
 msgid " Passwords are encrypted with the operating system's crypt function."
@@ -154,36 +154,36 @@ msgstr " Hasla sa szyfrowane przez systemowe funkcje szyfrowania."
 
 #: src/conf.c:1076
 msgid " The FIXED flag is enabled."
-msgstr "Cecha FIXED jest wlaczona."
+msgstr " Cecha FIXED jest wlaczona."
 
 #: src/conf.c:1088
 msgid " The UNINSPECTED flag is enabled."
-msgstr "Cecha UNINSPECTED ustawiona."
+msgstr " Cecha UNINSPECTED ustawiona."
 
 #: src/conf.c:1082
 msgid " The UNREGISTERED flag is enabled."
-msgstr "Cecha UNREGISTERED nadana."
+msgstr " Cecha UNREGISTERED nadana."
 
 #: src/conf.c:1085
 msgid " The VACATION flag is enabled."
-msgstr "Flaga WAKACJE zostal/a wl/aczona."
+msgstr " Flaga WAKACJE zostal/a wl/aczona."
 
 #: src/conf.c:1011
 msgid " The built-in MUSH mailing system is not being used."
-msgstr "Wbudowany system poczty nie jest uzywany."
+msgstr " Wbudowany system poczty nie jest uzywany."
 
 #: src/conf.c:1027
 msgid " The royalty flag is disabled."
-msgstr "Cecha ROYALTY jest wylaczona."
+msgstr " Cecha ROYALTY jest wylaczona."
 
 #: src/conf.c:1035
 #, c-format
 msgid " Warnings will be automatically given every %d minutes"
-msgstr "Ostrzezenia beda automatycznie przekazywane co %d minut/y."
+msgstr " Ostrzezenia beda automatycznie przekazywane co %d minut/y."
 
 #: src/conf.c:1038
 msgid " Warnings will not be automatically given."
-msgstr "Ostrzezenia nie beda przekazywane automatycznie."
+msgstr " Ostrzezenia nie beda przekazywane automatycznie."
 
 #: conf.c:1212
 msgid " Windows NT native TCP/IP networking functions in use."
@@ -208,7 +208,7 @@ msgstr " prowadzi do "
 
 #: src/look.c:203
 msgid " leads to a variable location."
-msgstr "prowadzi do pewnej lokacji."
+msgstr " prowadzi do pewnej lokacji."
 
 #: speech.c:1021
 msgid " pages"
@@ -216,7 +216,7 @@ msgstr " wywoluje"
 
 #: flags.c:831
 msgid " set."
-msgstr "\" ustawione.\""
+msgstr " \" ustawione.\""
 
 #: src/speech.c:475
 msgid " whispers to "
@@ -224,20 +224,7 @@ msgstr " szepcze do "
 
 #: speech.c:975
 msgid " with "
-msgstr "z"
-
-# SOME DESCRIPTIVE TITLE.\nCopyright (C) YEAR Free Software Foundation, Inc.\nFIRST AUTHOR <EMAIL@ADDRESS>, YEAR.\n
-#, fuzzy
-msgid ""
-msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2004-11-04 13:52-0600\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
-"Content-Transfer-Encoding: 8bit"
+msgstr " z "
 
 #: extchat.c:1503
 msgid "#-1 AMBIGUOUS CHANNEL NAME"
@@ -3601,7 +3588,7 @@ msgstr "Nie mozna zarejestrowac gracza o takim adresie pocztowym."
 
 #: src/speech.c:389
 msgid "Unable to whisper to:"
-msgstr "Nie mozesz szeptac do: "
+msgstr "Nie mozesz szeptac do:"
 
 #: filecopy.c:125
 #, c-format
@@ -4772,7 +4759,7 @@ msgstr ""
 
 #: speech.c:822
 msgid "and "
-msgstr "\"i \""
+msgstr "\"i \" "
 
 #: extchat.c:2150 look.c:209 speech.c:372 speech.c:806
 msgid "and"

@@ -6,25 +6,25 @@ msgstr "          (������� ������� �� ���������� � ������� �� ����������� ���� �
 #: game.c:1930
 #, c-format
 msgid "        Time until next purge: %ld minutes %ld seconds, at %s."
-msgstr "\"        Време до следващото изпразване: %ld минути и %ld секунди, на %s.\" "
+msgstr "        \"        Време до следващото изпразване: %ld минути и %ld секунди, на %s.\""
 
 #: src/game.c:1447
 #, c-format
 msgid "        Time until next purge: %ld minutes %ld seconds."
-msgstr "Време до следващото изчистване: %ld минути и %ld секунди."
+msgstr "        Време до следващото изчистване: %ld минути и %ld секунди."
 
 #: game.c:1899
 msgid "     Time now: %a %b %d %X %Z %Y"
-msgstr "\"     Часът сега: %a %b %d %X %Z %Y\""
+msgstr "     \"     Часът сега: %a %b %d %X %Z %Y\""
 
 #: game.c:1889
 msgid "     Up since %a %b %d %X %Z %Y"
-msgstr "\"     Работи от %a %b %d %X %Z %Y\""
+msgstr "     \"     Работи от %a %b %d %X %Z %Y\""
 
 #: game.c:1437
 #, c-format
 msgid "     Up since: %s"
-msgstr "Работи от: %s"
+msgstr "     Работи от: %s"
 
 #: filecopy.c:110
 #, c-format
@@ -34,7 +34,7 @@ msgstr "    ** �� ���� �� ������ ����: %s"
 #: src/filecopy.c:112
 #, c-format
 msgid "    ** Unable to open file: %s\n"
-msgstr "** Невъзможно е да се отвори файл: %s\n"
+msgstr "    ** Невъзможно е да се отвори файл: %s\n"
 
 #: src/filecopy.c:100
 #, c-format
@@ -44,31 +44,31 @@ msgstr "    Копирам файл: %s, %ld байт%s\n"
 #: game.c:1939
 #, c-format
 msgid "    Time until next @warnings: %ld minutes %ld seconds, at %s."
-msgstr "\"    Време до следващото @warnings: %ld минути и %ld секунди, на %s.\""
+msgstr "    \"    Време до следващото @warnings: %ld минути и %ld секунди, на %s.\""
 
 #: src/game.c:1452
 #, c-format
 msgid "    Time until next @warnings: %ld minutes %ld seconds."
-msgstr "Време до следващото @warnings: %ld минути и %ld секунди."
+msgstr "    Време до следващото @warnings: %ld минути и %ld секунди."
 
 #: src/game.c:1432
 #, c-format
 msgid "   Time now: %s"
-msgstr "Времето сега е: %s"
+msgstr "   Времето сега е: %s"
 
 #: game.c:1905
 msgid "   Time of last database save: %a %b %d %X %Z %Y"
-msgstr "\"   Време от последното запазване на базата данни: %a %b %d %X %Z %Y\""
+msgstr "   \"   Време от последното запазване на базата данни: %a %b %d %X %Z %Y\""
 
 #: game.c:1922
 #, c-format
 msgid "   Time until next dbck check: %ld minutes %ld seconds, at %s."
-msgstr "\"   Време до следващата dbck проверка: %ld минути и %ld секунди, на %s.\" "
+msgstr "   \"   Време до следващата dbck проверка: %ld минути и %ld секунди, на %s.\""
 
 #: src/game.c:1443
 #, c-format
 msgid "   Time until next dbck check: %ld minutes %ld seconds."
-msgstr "Време до следващата dbck проверка: %ld минути и %ld секунди."
+msgstr "   Време до следващата dbck проверка: %ld минути и %ld секунди."
 
 #: src/game.c:1422
 #, c-format
@@ -77,7 +77,7 @@ msgstr "   Работи от: %s"
 
 #: src/db.c:1309
 msgid "  (expecting ], >, or < as first character of the line.)\n"
-msgstr "(очаква ], >, или < като първи символ в линията.)\n"
+msgstr "  (очаква ], >, или < като първи символ в линията.)\n"
 
 #: db.c:1207
 #, c-format
@@ -87,20 +87,20 @@ msgstr "  ���������� ������ �� �������� �: %s"
 #: src/db.c:1311
 #, c-format
 msgid "  Last attribute read was: %s\n"
-msgstr "Последният прочетен атрибут е: %s\n"
+msgstr "  Последният прочетен атрибут е: %s\n"
 
 #: game.c:1893
 msgid "  Last reboot: %a %b %d %X %Z %Y"
-msgstr "\"  Последно рестартиране: %a %b %d %X %Z %Y\""
+msgstr "  \"  Последно рестартиране: %a %b %d %X %Z %Y\""
 
 #: game.c:1442
 #, c-format
 msgid "  Last reboot: %s"
-msgstr "Последното рестартиране бе: %s"
+msgstr "  Последното рестартиране бе: %s"
 
 #: src/db.c:1313
 msgid "  No attributes had been read yet.\n"
-msgstr "Все още не са прочетени атрибутите.\n"
+msgstr "  Все още не са прочетени атрибутите.\n"
 
 #: src/services.c:803
 #, c-format
@@ -164,11 +164,11 @@ msgstr " * ����� �� #%d � ��-����� �� ���������� �����������, ����������.\n"
 
 #: src/conf.c:1098
 msgid " @lock/drop is available."
-msgstr "@lock/drop е готово за употреба."
+msgstr " @lock/drop е готово за употреба."
 
 #: src/conf.c:1101
 msgid " @lock/give is available."
-msgstr "@lock/give е достъпна"
+msgstr " @lock/give е достъпна"
 
 #: src/conf.c:1095
 msgid " @lock/leave is available."
@@ -180,11 +180,11 @@ msgstr " @lock/speech е достъпно."
 
 #: src/conf.c:1008
 msgid " @mail messages do not have subject lines."
-msgstr "@mail съобщения нямат поле \"относно\"."
+msgstr " @mail съобщения нямат поле \"относно\"."
 
 #: src/conf.c:1000
 msgid " @mail messages have subject lines."
-msgstr "@mail съобщенията имат поле \"относно\"."
+msgstr " @mail съобщенията имат поле \"относно\"."
 
 #: conf.c:1044
 msgid " Attributes are 8-bit word compressed in memory."
@@ -196,7 +196,7 @@ msgstr " ���������� �� Huffman ������������ � �������."
 
 #: conf.c:1038
 msgid " Attributes are bigram compressed in memory."
-msgstr "Атрибутите са bigram компресирани в паметта."
+msgstr " Атрибутите са bigram компресирани в паметта."
 
 #: conf.c:1041
 msgid " Attributes are word compressed in memory."
@@ -216,11 +216,11 @@ msgstr " DNS � ident ���������� �� ���������� �� MUSH ������."
 
 #: src/conf.c:1105
 msgid " Extended ANSI functions are enabled."
-msgstr "Разширените ANSI функции са включени."
+msgstr " Разширените ANSI функции са включени."
 
 #: src/conf.c:1107
 msgid " Extended ANSI functions are not enabled."
-msgstr "Разширените ANSI функции не са включени."
+msgstr " Разширените ANSI функции не са включени."
 
 #: src/conf.c:1111
 msgid " Extended convtime() is supported."
@@ -228,56 +228,56 @@ msgstr " �������� �� ��������� convtime()."
 
 #: src/conf.c:954
 msgid " Passwords are convereted from plaintext to SHS"
-msgstr "Паролите се конвертират от чист текст на SHS"
+msgstr " Паролите се конвертират от чист текст на SHS"
 
 #: conf.c:1179
 msgid " Passwords are converted from plaintext to SHS"
-msgstr "Паролите се конвертират от plaintext на SHS"
+msgstr " Паролите се конвертират от plaintext на SHS"
 
 #: src/conf.c:951
 msgid " Passwords are converted from system crypt to SHS"
-msgstr "Паролите са конвертирани от системно криптиране на SHS"
+msgstr " Паролите са конвертирани от системно криптиране на SHS"
 
 #: src/conf.c:948
 msgid " Passwords are encrypted with SHS."
-msgstr "Паролите са криптирани с SHS."
+msgstr " Паролите са криптирани с SHS."
 
 #: src/conf.c:1078
 msgid " The FIXED flag is disabled."
-msgstr "Отметка FIXED е изключена."
+msgstr " Отметка FIXED е изключена."
 
 #: src/conf.c:1076
 msgid " The FIXED flag is enabled."
-msgstr "Отметката FIXED е включена."
+msgstr " Отметката FIXED е включена."
 
 #: conf.c:1594
 msgid " The MUSH was compiled with SSL support."
-msgstr "\" MUSH-ът е компилиран с поддръжка на SSL.\""
+msgstr " \" MUSH-ът е компилиран с поддръжка на SSL.\""
 
 #: src/conf.c:1088
 msgid " The UNINSPECTED flag is enabled."
-msgstr "Отметката UNINSPECTED е включена."
+msgstr " Отметката UNINSPECTED е включена."
 
 #: src/conf.c:1082
 msgid " The UNREGISTERED flag is enabled."
-msgstr "Отметката UNREGISTERED е включена."
+msgstr " Отметката UNREGISTERED е включена."
 
 #: src/conf.c:1085
 msgid " The VACATION flag is enabled."
-msgstr "Отметката за VACATION е включена."
+msgstr " Отметката за VACATION е включена."
 
 #: src/conf.c:1027
 msgid " The royalty flag is disabled."
-msgstr "Отметката royalty е изключена."
+msgstr " Отметката royalty е изключена."
 
 #: src/conf.c:1025
 msgid " The royalty flag is enabled."
-msgstr "Отметка royalty е включена."
+msgstr " Отметка royalty е включена."
 
 #: src/conf.c:1035
 #, c-format
 msgid " Warnings will be automatically given every %d minutes"
-msgstr "Предупреждения ще бъдат давани на всеки %d минути"
+msgstr " Предупреждения ще бъдат давани на всеки %d минути"
 
 #: conf.c:1212
 msgid " Windows NT native TCP/IP networking functions in use."
@@ -291,21 +291,6 @@ msgstr " [�������: %s]"
 #: src/conf.c:1113
 msgid " convtime() is stricter."
 msgstr " convtime() � ��-��������."
-
-# SOME DESCRIPTIVE TITLE.\nCopyright (C) YEAR Free Software Foundation, Inc.\nFIRST AUTHOR <EMAIL@ADDRESS>, YEAR.\n
-#, fuzzy
-msgid ""
-msgstr ""
-"Project-Id-Version: PennMUSH\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2005-04-02 20:48+0300\n"
-"PO-Revision-Date: 2005-04-09 01:18+0300\n"
-"Last-Translator: Vladislav Slavov <sysadmin@iskra21.net>\n"
-"Language-Team: Bulgarian\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CP1251\n"
-"Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.10"
 
 #: extchat.c:1503
 msgid "#-1 AMBIGUOUS CHANNEL NAME"
@@ -1270,7 +1255,7 @@ msgstr "%s ����� �� �� ������."
 #: src/wiz.c:1576
 #, c-format
 msgid "%s to "
-msgstr "%s на"
+msgstr "%s на "
 
 #: src/rob.c:288
 #, c-format
@@ -1952,7 +1937,7 @@ msgstr "������������: command_alias %s ������� ���������.\n"
 
 #: conf.c:899
 msgid "CONFIG: compression program is specified but not used in MacOS, ignoring"
-msgstr "КОНФИГУРАЦИЯ: компресиращата програма е зададена, но не се използва в MacOS, игнорира се "
+msgstr "КОНФИГУРАЦИЯ: компресиращата програма е зададена, но не се използва в MacOS, игнорира се"
 
 #: conf.c:782
 msgid "CONFIG: compression program is specified but not used in Win32, ignoring"
@@ -1960,13 +1945,11 @@ msgstr "������������: �������������� �������� � ����������, �� �� �� �������� � 
 
 #: conf.c:758
 msgid "CONFIG: compression program is specified but not used in Win32, ignoring\n"
-msgstr ""
-"КОНФИГУРАЦИЯ: компресиращата програма е зададена, но не се използва в Win32, игнорира се\n"
-" \n"
+msgstr "КОНФИГУРАЦИЯ: компресиращата програма е зададена, но не се използва в Win32, игнорира се\n"
 
 #: conf.c:906
 msgid "CONFIG: compression suffix is specified but not used in MacOS, ignoring"
-msgstr "&#1050;&#1054;&#1053;&#1060;&#1048;&#1043;&#1059;&#1056;&#1040;&#1062;&#1048;&#1071;: &#1087;&#1088;&#1080;&#1089;&#1090;&#1072;&#1074;&#1082;&#1072;&#1090;&#1072; &#1079;&#1072; &#1082;&#1086;&#1084;&#1087;&#1088;&#1077;&#1089;&#1080;&#1103; &#1077; &#1086;&#1087;&#1088;&#1077;&#1076;&#1077;&#1083;&#1077;&#1085;&#1072; &#1085;&#1086; &#1085;&#1077; &#1089;&#1077; &#1080;&#1079;&#1087;&#1086;&#1083;&#1079;&#1074;&#1072; &#1074; MacOS, &#1080;&#1075;&#1085;&#1086;&#1088;&#1080;&#1088;&#1072; &#1089;&#1077; "
+msgstr "&#1050;&#1054;&#1053;&#1060;&#1048;&#1043;&#1059;&#1056;&#1040;&#1062;&#1048;&#1071;: &#1087;&#1088;&#1080;&#1089;&#1090;&#1072;&#1074;&#1082;&#1072;&#1090;&#1072; &#1079;&#1072; &#1082;&#1086;&#1084;&#1087;&#1088;&#1077;&#1089;&#1080;&#1103; &#1077; &#1086;&#1087;&#1088;&#1077;&#1076;&#1077;&#1083;&#1077;&#1085;&#1072; &#1085;&#1086; &#1085;&#1077; &#1089;&#1077; &#1080;&#1079;&#1087;&#1086;&#1083;&#1079;&#1074;&#1072; &#1074; MacOS, &#1080;&#1075;&#1085;&#1086;&#1088;&#1080;&#1088;&#1072; &#1089;&#1077;"
 
 #: conf.c:789
 msgid "CONFIG: compression suffix is specified but not used in Win32, ignoring"
@@ -4399,7 +4382,7 @@ msgstr "Предупреждение: @CHOWN/PRESERVE на цел с WIZ, ROY, I
 
 #: set.c:323
 msgid "Warning: @CHOWN/PRESERVE on a target with WIZ, ROY, INHERIT, or @power privileges."
-msgstr "Предупреждение: @CHOWN/PRESERVE на цел с WIZ, ROY, INHERIT, или @power привилегии.   "
+msgstr "Предупреждение: @CHOWN/PRESERVE на цел с WIZ, ROY, INHERIT, или @power привилегии."
 
 #: src/create.c:609
 msgid "Warning: @CLONE/PRESERVE on an exit with WIZ, ROY, @Powers, or Warnings."
@@ -4448,12 +4431,12 @@ msgstr "\"Предупреждение: WIZ нулиране на отметка
 
 #: src/set.c:391
 msgid "Warning: ZMO may have loose zone lock. Lock ZMOs to =player, not player"
-msgstr "Предупреждение: ZMO-то може да изгуби звоя зонов ключ. Заключи ZMO-то към =player, не player "
+msgstr "Предупреждение: ZMO-то може да изгуби звоя зонов ключ. Заключи ZMO-то към =player, не player"
 
 #: lock.c:893
 #, c-format
 msgid "Warning: Zone %s may have loose zone lock. Lock zones to =player, not player"
-msgstr "\"Предупреждение: Зона %s може да изгуби своя зонов ключ. Заключвай зоните към =играч, не играч\" "
+msgstr "\"Предупреждение: Зона %s може да изгуби своя зонов ключ. Заключвай зоните към =играч, не играч\""
 
 #: src/look.c:733
 #, c-format

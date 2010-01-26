@@ -6,16 +6,16 @@ msgstr "          (Inkluderer tabellinnhold, og tabell med word-peker i st\370rr
 #: src/game.c:1447
 #, c-format
 msgid "        Time until next purge: %ld minutes %ld seconds."
-msgstr "      Tid til neste purge: %1d minutter %1d sekunder."
+msgstr "        Tid til neste purge: %1d minutter %1d sekunder."
 
 #: src/malias.c:565
 msgid "      to set, add, remove permissions, respectively."
-msgstr "    for å sette, legge til eller fjerne tillatelser, respektivt."
+msgstr "      for å sette, legge til eller fjerne tillatelser, respektivt."
 
 #: game.c:1437
 #, c-format
 msgid "     Up since: %s"
-msgstr "      Oppe siden: %s"
+msgstr "     Oppe siden: %s"
 
 #: filecopy.c:110
 #, c-format
@@ -25,7 +25,7 @@ msgstr "    ** Kan ikke \345pne fil: %s"
 #: src/filecopy.c:112
 #, c-format
 msgid "    ** Unable to open file: %s\n"
-msgstr "     ** Kunne ikke åpne fil: %s\n"
+msgstr "    ** Kunne ikke åpne fil: %s\n"
 
 #: filecopy.c:101
 msgid "    Copying file"
@@ -34,27 +34,27 @@ msgstr "    Kopierer fil"
 #: src/filecopy.c:100
 #, c-format
 msgid "    Copying file: %s, %ld byte%s\n"
-msgstr "     Kopierer fil: %s, %1d byte%s\n"
+msgstr "    Kopierer fil: %s, %1d byte%s\n"
 
 #: src/game.c:1452
 #, c-format
 msgid "    Time until next @warnings: %ld minutes %ld seconds."
-msgstr "     Tid til neste @warnings: %1d minutter %1d sekunder."
+msgstr "    Tid til neste @warnings: %1d minutter %1d sekunder."
 
 #: src/game.c:1432
 #, c-format
 msgid "   Time now: %s"
-msgstr "    Tid nå: %s"
+msgstr "   Tid nå: %s"
 
 #: src/game.c:1443
 #, c-format
 msgid "   Time until next dbck check: %ld minutes %ld seconds."
-msgstr "    Tid til neste dbck sjekk: %1d minutter, %1d sekunder."
+msgstr "   Tid til neste dbck sjekk: %1d minutter, %1d sekunder."
 
 #: src/game.c:1422
 #, c-format
 msgid "   Up since: %s"
-msgstr "    Oppe siden: %s"
+msgstr "   Oppe siden: %s"
 
 #: db.c:1205
 msgid "  (expecting ], >, or < as first character of the line.)"
@@ -62,7 +62,7 @@ msgstr "  (forventer ], >, eller < som f\370rste karakter p\345 linjen.)"
 
 #: src/db.c:1309
 msgid "  (expecting ], >, or < as first character of the line.)\n"
-msgstr " (forventer ], >, or < som første karakter på linjen.)\n"
+msgstr "  (forventer ], >, or < som første karakter på linjen.)\n"
 
 #: db.c:1207
 #, c-format
@@ -72,12 +72,12 @@ msgstr "  Siste attributt lest var: %s"
 #: src/db.c:1311
 #, c-format
 msgid "  Last attribute read was: %s\n"
-msgstr "   Siste attributt lest var: %s\n"
+msgstr "  Siste attributt lest var: %s\n"
 
 #: game.c:1442
 #, c-format
 msgid "  Last reboot: %s"
-msgstr "   Siste omstart: %s"
+msgstr "  Siste omstart: %s"
 
 #: db.c:1209
 msgid "  No attributes had been read yet."
@@ -85,7 +85,7 @@ msgstr "  Ingen attributter har blitt lest enda."
 
 #: src/db.c:1313
 msgid "  No attributes had been read yet.\n"
-msgstr " Ingen attributter har blitt lest enda.\n"
+msgstr "  Ingen attributter har blitt lest enda.\n"
 
 #: src/services.c:803
 #, c-format
@@ -153,7 +153,7 @@ msgstr " * Navnet for #%d er lengre enn maskimalt. Forkorter.\n"
 
 #: src/conf.c:1098
 msgid " @lock/drop is available."
-msgstr "@lock/drop er tilgjengelig."
+msgstr " @lock/drop er tilgjengelig."
 
 #: src/conf.c:1101
 msgid " @lock/give is available."
@@ -161,7 +161,7 @@ msgstr " @lock/give er tilgjengelig."
 
 #: src/conf.c:1095
 msgid " @lock/leave is available."
-msgstr "@lock/leave er tilgjengelig."
+msgstr " @lock/leave er tilgjengelig."
 
 #: src/conf.c:1092
 msgid " @lock/speech is available."
@@ -201,15 +201,15 @@ msgstr " Attributter kan bli slettet."
 
 #: src/conf.c:1065
 msgid " Attributes cannot be deleted."
-msgstr "  Attributter kan ikke bli slettet."
+msgstr " Attributter kan ikke bli slettet."
 
 #: src/conf.c:1044
 msgid " Creation/modification times for objects are enabled."
-msgstr "  Skaping/Modifiseringstider for objekter er på."
+msgstr " Skaping/Modifiseringstider for objekter er på."
 
 #: src/conf.c:1046
 msgid " Creation/modification times for objects are not enabled."
-msgstr "Lage/modifiserings-tider for objekter er ikke på."
+msgstr " Lage/modifiserings-tider for objekter er ikke på."
 
 #: src/conf.c:980
 msgid " DNS and ident lookups are handled by a slave process."
@@ -285,7 +285,7 @@ msgstr " Logging er til flere logfiler."
 
 #: src/conf.c:1002
 msgid " Messages without subject lines have subject (no subject)"
-msgstr "Meldinger uten emnelinjer har emne (intet emne)"
+msgstr " Meldinger uten emnelinjer har emne (intet emne)"
 
 #: src/conf.c:1005
 msgid " Messages without subject lines use the beginning of the message as subject"
@@ -317,11 +317,11 @@ msgstr " Passord er ikke lagret i kryptert format."
 
 #: src/conf.c:1021
 msgid " Quota restrictions are being enforced."
-msgstr "Kvoterestriksjoner blir fulgt."
+msgstr " Kvoterestriksjoner blir fulgt."
 
 #: src/conf.c:994
 msgid " Side effect functions are disabled."
-msgstr "Sideeffekter fra funksjoner er skrudd av."
+msgstr " Sideeffekter fra funksjoner er skrudd av."
 
 #: src/conf.c:992
 msgid " Side effect functions are enabled."
@@ -329,7 +329,7 @@ msgstr " Sideeffektfunksjoner er på."
 
 #: src/conf.c:1078
 msgid " The FIXED flag is disabled."
-msgstr "FIXED-flagget er skrudd av."
+msgstr " FIXED-flagget er skrudd av."
 
 #: src/conf.c:1076
 msgid " The FIXED flag is enabled."
@@ -361,7 +361,7 @@ msgstr " Det innebygde MUSH-mailingsystemet er ikke i bruk."
 
 #: src/conf.c:1017
 msgid " The chat system is disabled."
-msgstr "Chat-systemet er utilgjengelig."
+msgstr " Chat-systemet er utilgjengelig."
 
 #: src/conf.c:998
 msgid " The extended built-in MUSH mailing system is being used."
@@ -377,7 +377,7 @@ msgstr " Royaltyflagget er av."
 
 #: src/conf.c:1025
 msgid " The royalty flag is enabled."
-msgstr "Royalty-flagget er tilgjengelig."
+msgstr " Royalty-flagget er tilgjengelig."
 
 #: src/conf.c:1035
 #, c-format
@@ -423,20 +423,7 @@ msgstr " satt."
 
 #: speech.c:975
 msgid " with "
-msgstr " med"
-
-# SOME DESCRIPTIVE TITLE.\nCopyright (C) YEAR Free Software Foundation, Inc.\nFIRST AUTHOR <EMAIL@ADDRESS>, YEAR.\n
-#, fuzzy
-msgid ""
-msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2004-11-04 13:52-0600\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
-"Content-Transfer-Encoding: 8bit"
+msgstr " med "
 
 #: extchat.c:1503
 msgid "#-1 AMBIGUOUS CHANNEL NAME"
@@ -3484,7 +3471,7 @@ msgstr "Logg slettet."
 
 #: src/speech.c:981
 msgid "Long distance to "
-msgstr "Langdistanse til"
+msgstr "Langdistanse til "
 
 #: src/extmail.c:763
 #, c-format
@@ -6304,7 +6291,7 @@ msgstr "Du eier et objekt uten et @lock/zone som blir brukt som en sone: %s"
 
 #: src/speech.c:991
 msgid "You paged "
-msgstr "Du sendte"
+msgstr "Du sendte "
 
 #: speech.c:916
 #, c-format
@@ -6342,7 +6329,7 @@ msgstr "Du ser ikke noe spesielt."
 
 #: src/speech.c:464
 msgid "You sense: "
-msgstr "Du sanser:"
+msgstr "Du sanser: "
 
 #: extmail.c:2685
 #, c-format
@@ -6868,5 +6855,5 @@ msgstr "tingen mangler beskrivelse"
 
 #: src/match.c:529
 msgid "this here "
-msgstr "denne her"
+msgstr "denne her "
 

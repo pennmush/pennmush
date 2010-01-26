@@ -46,6 +46,11 @@ msgstr " 打开UNREGISTERED标记。"
 msgid " pages"
 msgstr " &#39029;"
 
+# SOME DESCRIPTIVE TITLE.\nCopyright (C) YEAR Free Software Foundation, Inc.\nFIRST AUTHOR <EMAIL@ADDRESS>, YEAR.\n
+#, fuzzy
+msgid ""
+msgstr "\Project-Id-Version: PACKAGE VERSION"
+
 #: src/funmath.c:218 src/funmath.c:250
 msgid "#-1 ARGUMENT MUST END IN AN INTEGER"
 msgstr "#-1 参数必须以一个整数结尾"

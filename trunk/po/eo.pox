@@ -1,3 +1,8 @@
+# SOME DESCRIPTIVE TITLE.\nCopyright (C) YEAR Free Software Foundation, Inc.\nFIRST AUTHOR <EMAIL@ADDRESS>, YEAR.\n
+#, fuzzy
+msgid ""
+msgstr "\Project-Id-Version: PACKAGE VERSION"
+
 #: look.c:205
 #, c-format
 msgid "%s is corrupt!"

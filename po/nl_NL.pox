@@ -565,6 +565,11 @@ msgstr " fluistert naar "
 msgid " with "
 msgstr " met "
 
+# SOME DESCRIPTIVE TITLE.\nCopyright (C) YEAR Free Software Foundation, Inc.\nFIRST AUTHOR <EMAIL@ADDRESS>, YEAR.\n
+#, fuzzy
+msgid ""
+msgstr "\Project-Id-Version: PACKAGE VERSION"
+
 #: funcrypt.c:53 funcrypt.c:61 funcrypt.c:100 funcrypt.c:107
 msgid "#-1 ALLOCATION ERROR"
 msgstr "#-1 ALLOCATIE FOUT"

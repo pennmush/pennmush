@@ -1963,20 +1963,6 @@ See also: @prefix, @listen, @infilter
   before using this command.
 
 See also: @ps, QUEUE
-& @lalias
-  @lalias <object> = <leave alias>
-
-  Sets the leave alias(es) of an object that is ENTER_OK. Setting a leave 
-  alias allows people to type the leave alias instead of the "leave"
-  command in order to get out of the object. Meaningless for exits and
-  rooms.
-
-  You can set multiple leave aliases on an object by separating them with
-  semi-colons.
-  Example:
-      @lalias chair=stand up;stand;get up;rise
-
-See also: @ealias, leave, @leave, @lfail
 & @lemit
   @lemit[/<switch>] <message>
 

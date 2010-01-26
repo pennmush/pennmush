@@ -1014,6 +1014,11 @@ msgstr "%10ld bajtova teksta prije kompresije. "
 msgid "%10ld compression table items used, taking %ld bytes."
 msgstr "%10ld predmeta se koristi u kompresijskoj tablici, i zauzimaju %ld bajtova."
 
+#: game.c:2111 game.c:2119 game.c:2127 game.c:2136
+#, c-format
+msgid "%29s: %ld minutes %ld seconds, at %s."
+msgstr "%29s: %ld minuta %ld sekundi, u %s."
+
 #: access.c:665
 #, c-format
 msgid "%3d SITE: %-20s  DBREF: %-6s FLAGS:%s"
@@ -2013,6 +2018,10 @@ msgstr "Alias obrisan."
 msgid "Alias set."
 msgstr "Alias postavljen."
 
+#: flags.c:2031
+msgid "Aliases"
+msgstr "Aliasi"
+
 #: access.c:410
 msgid "All but God"
 msgstr "Svi osim Boga"
@@ -2157,6 +2166,10 @@ msgstr "Vlasnik atributa promijenjen."
 #: src/attrib.c:1035
 msgid "Attribute unlocked."
 msgstr "Atribut otkljucan."
+
+#: atr_tab.c:349
+msgid "Attribute"
+msgstr "Atribut"
 
 #: atr_tab.c:349
 #, c-format
@@ -2890,6 +2903,10 @@ msgstr "Kanali: *NIJEDAN*"
 msgid "Channels:"
 msgstr "Kanali:"
 
+#: flags.c:2030
+msgid "Character"
+msgstr "Znak"
+
 #: flags.c:2046
 #, c-format
 msgid "Character: %c"
@@ -3135,6 +3152,10 @@ msgstr "Kreacija NIJE dozvoljena"
 #: access.c:422
 msgid "Creation is allowed"
 msgstr "Kreacija je dozvoljena"
+
+#: extchat.c:1626 extchat.c:1636
+msgid "Creator"
+msgstr "Tvorac"
 
 #: atr_tab.c:211
 msgid "Critical memory failure - Alert God!"
@@ -4616,6 +4637,10 @@ msgstr "Zadnje spajanje je bilo s %s u %s."
 msgid "Last is dated %s"
 msgstr "Zadnja poruka primljena u %s"
 
+#: game.c:2091
+msgid "Last reboot"
+msgstr "Zadnji reboot"
+
 #: src/version.c:37
 #, c-format
 msgid "Last restarted: %s"
@@ -5790,6 +5815,10 @@ msgstr "Dopustenja za %s %s postavljena."
 msgid "Permissions on channel <%s> changed."
 msgstr "Dopustenja za kanal <%s> promijenjena."
 
+#: flags.c:2033
+msgid "Perms"
+msgstr "Dozvole"
+
 #: bsd.c:3848 bsd.c:3851 bsd.c:3855 bsd.c:3859
 msgid "Player Name"
 msgstr "Ime igraca"
@@ -5953,6 +5982,10 @@ msgstr "%s preimenovan u %s u tablici atributa."
 #, c-format
 msgid "Requested character: '%s'. Email address: %s\n"
 msgstr "Trazeni lik: '%s'. E-mail adresa: %s\n"
+
+#: flags.c:2035
+msgid "ResetPrms"
+msgstr "UkloniDoz"
 
 #: flags.c:2050
 #, c-format
@@ -6731,10 +6764,34 @@ msgstr "Ova prostorija vise ne propusta zvuk prema van."
 msgid "This room is now broadcasting."
 msgstr "Ova prostorija sada propusta zvuk prema van."
 
+#: game.c:2097
+msgid "Time now"
+msgstr "Vrijeme"
+
+#: game.c:2103
+msgid "Time of last database save"
+msgstr "Zadnje snimanje baze podataka"
+
+#: game.c:2137
+msgid "Time until next @warnings"
+msgstr "Do sljedecih @warninga"
+
+#: game.c:2112
+msgid "Time until next database save"
+msgstr "Do sljedeceg snimanja"
+
 #: game.c:1914
 #, c-format
 msgid "Time until next database save: %ld minutes %ld seconds, at %s"
 msgstr "Vrijeme do sljedeceg snimanja baze podataka: %ld minuta %ld sekundi, u %s"
+
+#: game.c:2120
+msgid "Time until next dbck check"
+msgstr "Do sljedece dbck provjere"
+
+#: game.c:2128
+msgid "Time until next purge"
+msgstr "Do sljedeceg ciscenja"
 
 #: src/game.c:1499
 #, c-format
@@ -6802,6 +6859,10 @@ msgstr "Ne mozes saptati tolikom broju ljudi."
 msgid "Too much recursion in lock!"
 msgstr "Previse rekurzije u bravi!"
 
+#: game.c:2093
+msgid "Total reboots"
+msgstr "Uk. rebootova"
+
 #: game.c:1447
 #, c-format
 msgid "Total reboots: %d"
@@ -6847,6 +6908,10 @@ msgstr "Pokusaj migriranja u premalu rupu: %04x u %04x!"
 #, c-format
 msgid "Type of %s %s set."
 msgstr "Tip za %2$s %1$s postavljen."
+
+#: flags.c:2032
+msgid "Type(s)"
+msgstr "Tip(ovi)"
 
 #: flags.c:688
 msgid "Type: "
@@ -7208,6 +7273,10 @@ msgstr "Neprepoznato polje '%s' na objektu #%d"
 #: lock.c:620
 msgid "Unrecognized lock flag."
 msgstr "Neprepoznat flag za bravu."
+
+#: game.c:2087
+msgid "Up since"
+msgstr "Radi od"
 
 #: extmail.c:2475
 msgid "Urgent "

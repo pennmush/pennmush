@@ -20,6 +20,12 @@ example, "en_US" stands for English, United States dialect. The
 language codes are usually the same as a country's top level domain in
 URLs. Spanish is 'es', Russian is 'ru', and so on.
 
+You need to have appropriate locale files installed in your operating
+system to have everything work right (specifically, to get the
+right character sets). How you do this is system-specific; Unix/linux
+users should start with 'man -k locale' to find their system
+commands (often 'man locale' or 'man local-gen' will be helpful).
+
 There are two places where you have to use LANG: when you're
 compiling the MUSH (in order to compile the message translation files)
 and when you start up the MUSH (in order to set the locale for

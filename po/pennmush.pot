@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-01-25 23:23-0600\n"
+"POT-Creation-Date: 2010-01-26 02:00-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -180,7 +180,7 @@ msgstr ""
 msgid "Attribs: %s"
 msgstr ""
 
-#: attrib.c:1766 look.c:779 look.c:1539
+#: attrib.c:1766 look.c:777 look.c:1537
 msgid "Garbage is garbage."
 msgstr ""
 
@@ -297,10 +297,10 @@ msgstr ""
 #: create.c:119 create.c:214 create.c:279 create.c:288 create.c:292
 #: create.c:343 create.c:347 create.c:365 create.c:475 create.c:614
 #: destroy.c:233 extchat.c:1768 extchat.c:1785 extchat.c:1816 extchat.c:3857
-#: flags.c:1553 flags.c:1558 flags.c:1711 function.c:1177 function.c:1312
-#: function.c:1464 function.c:1510 function.c:1551 funmisc.c:791 game.c:955
-#: game.c:1498 lock.c:709 lock.c:773 lock.c:969 look.c:1300 look.c:1585
-#: malias.c:763 malias.c:868 match.c:139 move.c:536 move.c:859 move.c:874
+#: flags.c:1553 flags.c:1558 flags.c:1711 function.c:1178 function.c:1313
+#: function.c:1465 function.c:1511 function.c:1552 funmisc.c:791 game.c:955
+#: game.c:1498 lock.c:709 lock.c:773 lock.c:969 look.c:1298 look.c:1583
+#: malias.c:763 malias.c:868 match.c:448 move.c:536 move.c:859 move.c:874
 #: predicat.c:1225 predicat.c:1420 rob.c:423 set.c:192 set.c:923 set.c:970
 #: set.c:1006 set.c:1041 set.c:1054 set.c:1139 speech.c:1468 warnings.c:294
 #: warnings.c:515 wiz.c:443 wiz.c:566 wiz.c:577 wiz.c:851 wiz.c:1012
@@ -1187,11 +1187,11 @@ msgstr ""
 msgid "#-1 NO SUCH CONFIG OPTION"
 msgstr ""
 
-#: conf.c:1698 function.c:1566
+#: conf.c:1698 function.c:1567
 msgid "Disabled."
 msgstr ""
 
-#: conf.c:1700 function.c:1563
+#: conf.c:1700 function.c:1564
 msgid "Enabled."
 msgstr ""
 
@@ -1528,7 +1528,7 @@ msgstr ""
 msgid "Unlink what?"
 msgstr ""
 
-#: create.c:210 match.c:310 wiz.c:979
+#: create.c:210 match.c:446 wiz.c:979
 msgid "I don't know which one you mean!"
 msgstr ""
 
@@ -2317,7 +2317,7 @@ msgstr ""
 msgid "CHAT: Only a channel modifier can do that."
 msgstr ""
 
-#: extchat.c:2517 extchat.c:3107 match.c:307 set.c:579
+#: extchat.c:2517 extchat.c:3107 match.c:450 set.c:579
 msgid "I can't see that here."
 msgstr ""
 
@@ -2467,7 +2467,7 @@ msgstr ""
 msgid "I can't tell which channel you mean."
 msgstr ""
 
-#: extchat.c:2886 function.c:836
+#: extchat.c:2886 function.c:837
 msgid "#-1 INVALID ARGUMENT"
 msgstr ""
 
@@ -3117,11 +3117,6 @@ msgstr ""
 msgid "Type(s)"
 msgstr ""
 
-#: flags.c:2033 flags.c:2034
-#, c-format
-msgid "%9s: %s"
-msgstr ""
-
 #: flags.c:2033
 msgid "Perms"
 msgstr ""
@@ -3318,137 +3313,137 @@ msgstr ""
 msgid "#-1 SEPARATOR MUST BE ONE CHARACTER"
 msgstr ""
 
-#: function.c:807
+#: function.c:808
 #, c-format
 msgid "Functions: %s"
 msgstr ""
 
-#: function.c:1181
+#: function.c:1182
 msgid "Restrict what function?"
 msgstr ""
 
-#: function.c:1185
+#: function.c:1186
 msgid "Do what with the function?"
 msgstr ""
 
-#: function.c:1190 function.c:1515 function.c:1557 function.c:1585
+#: function.c:1191 function.c:1516 function.c:1558 function.c:1586
 msgid "No such function."
 msgstr ""
 
-#: function.c:1196
+#: function.c:1197
 msgid "Builtin function"
 msgstr ""
 
-#: function.c:1198
+#: function.c:1199
 msgid "@function"
 msgstr ""
 
-#: function.c:1201
+#: function.c:1202
 msgid "Restrictions unchanged."
 msgstr ""
 
-#: function.c:1203
+#: function.c:1204
 msgid "Restrictions modified."
 msgstr ""
 
-#: function.c:1258
+#: function.c:1259
 msgid "No global user-defined functions exist."
 msgstr ""
 
-#: function.c:1269
+#: function.c:1270
 msgid "Function Name                   Dbref #    Attrib"
 msgstr ""
 
-#: function.c:1287
+#: function.c:1288
 msgid "User functions:"
 msgstr ""
 
-#: function.c:1316
+#: function.c:1317
 msgid "You must specify an object and an attribute."
 msgstr ""
 
-#: function.c:1321
+#: function.c:1322
 msgid "Function name too long."
 msgstr ""
 
-#: function.c:1332
+#: function.c:1333
 msgid "No permission to control object."
 msgstr ""
 
-#: function.c:1336
+#: function.c:1337
 msgid "No permission to examine object."
 msgstr ""
 
-#: function.c:1350
+#: function.c:1351
 msgid "Expected between 1 and 5 arguments."
 msgstr ""
 
-#: function.c:1386
+#: function.c:1387
 msgid "Function added."
 msgstr ""
 
-#: function.c:1392
+#: function.c:1393
 msgid "You cannot change that built-in function."
 msgstr ""
 
-#: function.c:1432
+#: function.c:1433
 msgid "Function updated."
 msgstr ""
 
-#: function.c:1469
+#: function.c:1470
 msgid "Restore what?"
 msgstr ""
 
-#: function.c:1476
+#: function.c:1477
 msgid "That's not a builtin function."
 msgstr ""
 
-#: function.c:1481
+#: function.c:1482
 msgid "That function isn't deleted!"
 msgstr ""
 
-#: function.c:1486
+#: function.c:1487
 msgid "Restored."
 msgstr ""
 
-#: function.c:1520 function.c:1529
+#: function.c:1521 function.c:1530
 msgid "You can't delete that @function."
 msgstr ""
 
-#: function.c:1524 function.c:1534
+#: function.c:1525 function.c:1535
 msgid "Function deleted."
 msgstr ""
 
-#: function.c:1618
+#: function.c:1619
 #, c-format
 msgid "Name      : %s() (%s%s)"
 msgstr ""
 
-#: function.c:1712
+#: function.c:1713
 #, c-format
 msgid "Flags     : %s"
 msgstr ""
 
-#: function.c:1716
+#: function.c:1717
 #, c-format
 msgid "Location  : #%d/%s\n"
 msgstr ""
 
-#: function.c:1724
+#: function.c:1725
 msgid "(Commas okay in last argument)"
 msgstr ""
 
-#: function.c:1730
+#: function.c:1731
 #, c-format
 msgid "Arguments : %d %s"
 msgstr ""
 
-#: function.c:1732
+#: function.c:1733
 #, c-format
 msgid "Arguments : At least %d %s"
 msgstr ""
 
-#: function.c:1735
+#: function.c:1736
 #, c-format
 msgid "Arguments : %d to %d %s"
 msgstr ""
@@ -3514,28 +3509,28 @@ msgstr ""
 msgid "I'm not sure who you mean."
 msgstr ""
 
-#: fundb.c:2008
+#: fundb.c:2006
 #, c-format
 msgid "I don't understand switch '%c'."
 msgstr ""
 
-#: fundb.c:2209
+#: fundb.c:2199
 msgid "#-1 BAD ARGUMENT FORMAT TO ATTRIB_SET"
 msgstr ""
 
-#: fundb.c:2279 funlist.c:3174
+#: fundb.c:2269 funlist.c:3174
 msgid "#-1 NO SUCH ATTRIBUTE"
 msgstr ""
 
-#: fundb.c:2283 funlist.c:3178
+#: fundb.c:2273 funlist.c:3178
 msgid "#-1 INVALID GREP PATTERN"
 msgstr ""
 
-#: fundb.c:2357 fundb.c:2361
+#: fundb.c:2347 fundb.c:2351
 msgid "#-1 ARGUMENT MUST BE OBJ/ATTR"
 msgstr ""
 
-#: fundb.c:2390 fundb.c:2412
+#: fundb.c:2380 fundb.c:2402
 msgid "#-1 INVALID OBJECT"
 msgstr ""
 
@@ -4068,21 +4063,11 @@ msgid "%10.3f Mb total paging file size"
 msgstr ""
 
 #: game.c:2087
-#, c-format
-msgid "%13s: %s"
-msgstr ""
-
-#: game.c:2087
 msgid "Up since"
 msgstr ""
 
 #: game.c:2091
 msgid "Last reboot"
-msgstr ""
-
-#: game.c:2093
-#, c-format
-msgid "%13s: %d"
 msgstr ""
 
 #: game.c:2093
@@ -4369,11 +4354,11 @@ msgstr ""
 msgid "You see nothing special."
 msgstr ""
 
-#: look.c:556 look.c:881
+#: look.c:556 look.c:879
 msgid "Contents:"
 msgstr ""
 
-#: look.c:558 look.c:889
+#: look.c:558 look.c:887
 msgid "Obvious exits:"
 msgstr ""
 
@@ -4381,271 +4366,271 @@ msgstr ""
 msgid "You can't see through that."
 msgstr ""
 
-#: look.c:659 look.c:680 look.c:688 move.c:552 move.c:560 move.c:596
+#: look.c:657 look.c:678 look.c:686 move.c:552 move.c:560 move.c:596
 #: move.c:866 move.c:1035 rob.c:75 speech.c:553
 msgid "I don't see that here."
 msgstr ""
 
-#: look.c:662 warnings.c:290 warnings.c:511
+#: look.c:660 warnings.c:290 warnings.c:511
 msgid "I don't know which one you mean."
 msgstr ""
 
-#: look.c:683 look.c:691 move.c:555 move.c:563
+#: look.c:681 look.c:689 move.c:555 move.c:563
 #, c-format
 msgid "I can't tell which %s."
 msgstr ""
 
-#: look.c:697
+#: look.c:695
 msgid "You can't look at that from here."
 msgstr ""
 
-#: look.c:701
+#: look.c:699
 msgid "I can't tell which one you mean."
 msgstr ""
 
-#: look.c:725 look.c:879
+#: look.c:723 look.c:877
 msgid "Carrying:"
 msgstr ""
 
-#: look.c:804 look.c:892
+#: look.c:802 look.c:890
 msgid " is owned by "
 msgstr ""
 
-#: look.c:833
+#: look.c:831
 #, c-format
 msgid "Owner: %s  Zone: %s  %s: %d"
 msgstr ""
 
-#: look.c:836
+#: look.c:834
 #, c-format
 msgid "Parent: %s"
 msgstr ""
 
-#: look.c:840
+#: look.c:838
 #, c-format
 msgid "%s Lock [#%d%s]: %s"
 msgstr ""
 
-#: look.c:845
+#: look.c:843
 #, c-format
 msgid "Powers: %s"
 msgstr ""
 
-#: look.c:849
+#: look.c:847
 #, c-format
 msgid "Warnings checked: %s"
 msgstr ""
 
-#: look.c:852
+#: look.c:850
 #, c-format
 msgid "Created: %s"
 msgstr ""
 
-#: look.c:854
+#: look.c:852
 #, c-format
 msgid "Last Modification: %s"
 msgstr ""
 
-#: look.c:905
+#: look.c:903
 msgid "Exits:"
 msgstr ""
 
-#: look.c:909
+#: look.c:907
 msgid "No exits."
 msgstr ""
 
-#: look.c:913
+#: look.c:911
 #, c-format
 msgid "Dropped objects go to: %s"
 msgstr ""
 
-#: look.c:920
+#: look.c:918
 #, c-format
 msgid "Home: %s"
 msgstr ""
 
-#: look.c:924
+#: look.c:922
 #, c-format
 msgid "Location: %s"
 msgstr ""
 
-#: look.c:946
+#: look.c:944
 #, c-format
 msgid "Source: %s"
 msgstr ""
 
-#: look.c:952
+#: look.c:950
 msgid "Destination: *UNLINKED*"
 msgstr ""
 
-#: look.c:955
+#: look.c:953
 msgid "Destination: *HOME*"
 msgstr ""
 
-#: look.c:959
+#: look.c:957
 #, c-format
 msgid "Destination: %s"
 msgstr ""
 
-#: look.c:980
+#: look.c:978
 #, c-format
 msgid "You have unlimited %s."
 msgstr ""
 
-#: look.c:983
+#: look.c:981
 #, c-format
 msgid "You have %d %s."
 msgstr ""
 
-#: look.c:986
+#: look.c:984
 #, c-format
 msgid "You may give unlimited %s"
 msgstr ""
 
-#: look.c:1052
+#: look.c:1050
 msgid "You aren't carrying anything."
 msgstr ""
 
-#: look.c:1054
+#: look.c:1052
 msgid "You are carrying:"
 msgstr ""
 
-#: look.c:1082 look.c:1092
+#: look.c:1080 look.c:1090
 msgid "Invalid range argument"
 msgstr ""
 
-#: look.c:1104
+#: look.c:1102
 #, c-format
 msgid "*** %d objects found ***"
 msgstr ""
 
-#: look.c:1138
+#: look.c:1136
 msgid "Invalid parameter."
 msgstr ""
 
-#: look.c:1143
+#: look.c:1141
 msgid "Listening in ROOM:"
 msgstr ""
 
-#: look.c:1149 look.c:1174 look.c:1214
+#: look.c:1147 look.c:1172 look.c:1212
 #, c-format
 msgid "%s is listening."
 msgstr ""
 
-#: look.c:1151 look.c:1176 look.c:1216
+#: look.c:1149 look.c:1174 look.c:1214
 #, c-format
 msgid "%s [owner: %s] is listening."
 msgstr ""
 
-#: look.c:1158
+#: look.c:1156
 #, c-format
 msgid "%s (this room) [speech]. (connected)"
 msgstr ""
 
-#: look.c:1161
+#: look.c:1159
 #, c-format
 msgid "%s (this room) [speech]."
 msgstr ""
 
-#: look.c:1164
+#: look.c:1162
 #, c-format
 msgid "%s (this room) [commands]."
 msgstr ""
 
-#: look.c:1166
+#: look.c:1164
 #, c-format
 msgid "%s (this room) [broadcasting]."
 msgstr ""
 
-#: look.c:1183 look.c:1223
+#: look.c:1181 look.c:1221
 #, c-format
 msgid "%s [speech]. (connected)"
 msgstr ""
 
-#: look.c:1185 look.c:1225
+#: look.c:1183 look.c:1223
 #, c-format
 msgid "%s [speech]."
 msgstr ""
 
-#: look.c:1188 look.c:1228
+#: look.c:1186 look.c:1226
 #, c-format
 msgid "%s [commands]."
 msgstr ""
 
-#: look.c:1193
+#: look.c:1191
 msgid "Listening EXITS:"
 msgstr ""
 
-#: look.c:1201
+#: look.c:1199
 #, c-format
 msgid "%s [broadcasting]."
 msgstr ""
 
-#: look.c:1207
+#: look.c:1205
 msgid "Listening in your INVENTORY:"
 msgstr ""
 
-#: look.c:1246
+#: look.c:1244
 msgid "You must specify a valid player name."
 msgstr ""
 
-#: look.c:1250
+#: look.c:1248
 msgid "That player does not seem to exist."
 msgstr ""
 
-#: look.c:1254
+#: look.c:1252
 msgid "That player wishes to have some privacy."
 msgstr ""
 
-#: look.c:1255
+#: look.c:1253
 #, c-format
 msgid "%s tried to locate you and failed."
 msgstr ""
 
-#: look.c:1259
+#: look.c:1257
 #, c-format
 msgid "%s is at: %s."
 msgstr ""
 
-#: look.c:1262
+#: look.c:1260
 #, c-format
 msgid "%s has just located your position."
 msgstr ""
 
-#: look.c:1322
+#: look.c:1320
 #, c-format
 msgid "%s(#%d) [from: %s(#%d)]"
 msgstr ""
 
-#: look.c:1329
+#: look.c:1327
 #, c-format
 msgid "%s(#%d) [dropto]"
 msgstr ""
 
-#: look.c:1337
+#: look.c:1335
 #, c-format
 msgid "%s(#%d) [home]"
 msgstr ""
 
-#: look.c:1349 wiz.c:1217 wiz.c:1361
+#: look.c:1347 wiz.c:1217 wiz.c:1361
 msgid "Nothing found."
 msgstr ""
 
-#: look.c:1352
+#: look.c:1350
 msgid "----------  Entrances Done  ----------"
 msgstr ""
 
-#: look.c:1355 wiz.c:1317
+#: look.c:1353 wiz.c:1317
 #, c-format
 msgid "Totals: Rooms...%d  Exits...%d  Things...%d  Players...%d"
 msgstr ""
 
-#: look.c:1464
+#: look.c:1462
 #, c-format
 msgid "@@ No attributes match '%s'. @@"
 msgstr ""
 
-#: look.c:1525
+#: look.c:1523
 msgid "What do you want to @decompile?"
 msgstr ""
 

@@ -414,6 +414,11 @@ msgstr " sa "
 msgid "!Purged!"
 msgstr "!Obrisano!"
 
+# SOME DESCRIPTIVE TITLE.\nCopyright (C) YEAR Free Software Foundation, Inc.\nFIRST AUTHOR <EMAIL@ADDRESS>, YEAR.\n
+#, fuzzy
+msgid ""
+msgstr "\Project-Id-Version: PACKAGE VERSION"
+
 #: look.c:350
 #, c-format
 msgid "#%d/%s [#%d%s] is veiled"

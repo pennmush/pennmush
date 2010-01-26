@@ -1,3 +1,8 @@
+# SOME DESCRIPTIVE TITLE.\nCopyright (C) YEAR Free Software Foundation, Inc.\nFIRST AUTHOR <EMAIL@ADDRESS>, YEAR.\n
+#, fuzzy
+msgid ""
+msgstr "\Project-Id-Version: PACKAGE VERSION"
+
 #: src/fundb.c:1645 src/funlist.c:362 src/funlist.c:446
 msgid "#-1 NOT FOUND"
 msgstr "#-1 NOT FOUND"

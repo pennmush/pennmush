@@ -25,6 +25,11 @@ msgstr " ֿאנמכט רטפנף‏עסÿ ס ןמלמשü‏ SHS."
 msgid " The built-in MUSH mailing system is not being used."
 msgstr " ק׃װֵֿׂ־־ֱׁ ׀ֿÞװֿ׳ֱׁ ׃ֹ׃װֱֵֽ MUSH ־ֵ ֹ׃׀ּֿ״Úױֵװ׃ׁ."
 
+# SOME DESCRIPTIVE TITLE.\nCopyright (C) YEAR Free Software Foundation, Inc.\nFIRST AUTHOR <EMAIL@ADDRESS>, YEAR.\n
+#, fuzzy
+msgid ""
+msgstr "\Project-Id-Version: PACKAGE VERSION"
+
 #: parse.c:87
 msgid "#-1 ARGUMENT MUST BE POSITIVE INTEGER"
 msgstr "#-1 בעחץםומפ הןלצומ גשפר נןלןציפולרמשם דולשם"

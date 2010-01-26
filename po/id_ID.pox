@@ -23,6 +23,11 @@ msgstr " Fungsi-fungsi extended ANSI  dimatikan."
 msgid " Floating point functions are disabled."
 msgstr " Fungsi floating point dimatikan."
 
+# SOME DESCRIPTIVE TITLE.\nCopyright (C) YEAR Free Software Foundation, Inc.\nFIRST AUTHOR <EMAIL@ADDRESS>, YEAR.\n
+#, fuzzy
+msgid ""
+msgstr "\Project-Id-Version: PACKAGE VERSION"
+
 #: extchat.c:1503
 msgid "#-1 AMBIGUOUS CHANNEL NAME"
 msgstr "#-1 NAMA JALUR AMBIGU"

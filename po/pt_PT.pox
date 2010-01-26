@@ -2,6 +2,11 @@
 msgid " CPU usage limiting is NOT supported."
 msgstr " \" Limitação da utilização do CPU não é suportada.\""
 
+# SOME DESCRIPTIVE TITLE.\nCopyright (C) YEAR Free Software Foundation, Inc.\nFIRST AUTHOR <EMAIL@ADDRESS>, YEAR.\n
+#, fuzzy
+msgid ""
+msgstr "\Project-Id-Version: PACKAGE VERSION"
+
 #: src/fundb.c:784 src/fundb.c:1001
 msgid "#-1 ARG1 NOT FOUND"
 msgstr "#-1 ARG1 NÃO ENCONTRADO"

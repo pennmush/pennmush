@@ -384,6 +384,11 @@ msgstr " pertence a "
 msgid " pages"
 msgstr " chama"
 
+# SOME DESCRIPTIVE TITLE.\nCopyright (C) YEAR Free Software Foundation, Inc.\nFIRST AUTHOR <EMAIL@ADDRESS>, YEAR.\n
+#, fuzzy
+msgid ""
+msgstr "\Project-Id-Version: PACKAGE VERSION"
+
 #: extchat.c:1503
 msgid "#-1 AMBIGUOUS CHANNEL NAME"
 msgstr "#-1 AMB\315GUO"

@@ -2005,7 +2005,7 @@ unix_uptime(dbref player __attribute__ ((__unused__)))
     return;
   }
   /* print system uptime */
-  for (i = 0; (c = getc(fp)) != '\n'; i++)
+  for (i = 0; (c = getc(fp)) != '\n' && c != EOF; i++)
     tbuf1[i] = c;
   tbuf1[i] = '\0';
   pclose(fp);

@@ -2084,13 +2084,13 @@ do_uptime(dbref player, int mortal)
 
   when = localtime(&globals.first_start_time);
   strftime(tbuf1, sizeof tbuf1, "%a %b %d %X %Z %Y", when);
-  notify_format(player, T("%13s: %s"), T("Up since"), tbuf1);
+  notify_format(player, "%13s: %s", T("Up since"), tbuf1);
 
   when = localtime(&globals.start_time);
   strftime(tbuf1, sizeof tbuf1, "%a %b %d %X %Z %Y", when);
   notify_format(player, "%13s: %s", T("Last reboot"), tbuf1);
 
-  notify_format(player, T("%13s: %d"), T("Total reboots"), globals.reboot_count);
+  notify_format(player, "%13s: %d", T("Total reboots"), globals.reboot_count);
 
   when = localtime(&mudtime);
   strftime(tbuf1, sizeof tbuf1, "%a %b %d %X %Z %Y", when);

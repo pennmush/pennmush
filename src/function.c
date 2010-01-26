@@ -714,6 +714,7 @@ FUNTAB flist[] = {
   {"UCSTR", fun_ucstr, 1, -1, FN_REG},
   {"UDEFAULT", fun_udefault, 2, 12, FN_NOPARSE},
   {"UFUN", fun_ufun, 1, 11, FN_REG},
+  {"U", fun_ufun, 1, 11, FN_REG},
   {"PFUN", fun_pfun, 1, 11, FN_REG},
   {"ULAMBDA", fun_ufun, 1, 11, FN_REG},
   {"ULDEFAULT", fun_udefault, 1, 12, FN_NOPARSE | FN_LOCALIZE},

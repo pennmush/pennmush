@@ -62,7 +62,6 @@ function_alias nvthings nvobjects
 function_alias xthings xobjects
 function_alias xvthings xvobjects
 function_alias atrlock attrlock
-function_alias ufun u
 function_alias hostname host
 function_alias idlesecs idle
 

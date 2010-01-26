@@ -2012,6 +2012,9 @@ FUNCTION(fun_locate)
   if (!pref_type)
     pref_type = NOTYPE;
 
+  if (!match_flags)
+    match_flags = MAT_EVERYTHING;
+
   if (keys)
     match_flags = MAT_CHECK_KEYS;
 

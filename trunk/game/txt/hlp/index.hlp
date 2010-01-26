@@ -512,7 +512,8 @@ For more, see Entries-25
  parent                    parent()                  parents                  
  parents2                  parents3                  parents4                 
  parents5                  parse()                   patchlevels              
- pcreate()                 pemit()                   pi()                     
+ pcreate()                 pemit()                   pfun()                   
+ pfun2                     pfun2                     pi()                     
  pickrand()                pidinfo()                 player                   
  player()                  playermem()               pmatch()                 
  poll()                    ports()                   pos()                    
@@ -520,12 +521,12 @@ For more, see Entries-25
  power()                   powers list               powers list2             
  powers()                  powers2                   prompt()                 
  prompt_newlines           pueblo                    pueblo features          
- pueblo()                  puppet                    puppets                  
 
 For more, see Entries-26
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-26
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+ pueblo()                  puppet                    puppets                  
  puppets2                  queue                     quiet                    
  quit                      quota()                   r()                      
  r-function                rand()                    randword()               
@@ -541,12 +542,12 @@ For more, see Entries-26
  regrabi()                 regrep()                  regrepi()                
  regular expression functions                        remainder()              
  remit()                   remove()                  repeat()                 
- replace()                 rest()                    restarts()               
 
 For more, see Entries-27
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-27
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+ replace()                 rest()                    restarts()               
  restarttime()             restrict                  restrict2                
  restrict3                 reswitch()                reswitchall()            
  reswitchalli()            reswitchi()               reverse()                
@@ -562,12 +563,12 @@ For more, see Entries-27
  semaphores2               semaphores3               semaphores4              
  semaphores5               semaphores6               semipose                 
  sent()                    session                   set()                    
- setdiff()                 setinter()                setq()                   
 
 For more, see Entries-28
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-28
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+ setdiff()                 setinter()                setq()                   
  setq2                     setq3                     setr()                   
  setting-attributes        setunion()                sex                      
  sha0()                    shared                    shared players           
@@ -583,12 +584,12 @@ For more, see Entries-28
  splice()                  spoofing                  sql functions            
  sql()                     sqlescape()               sqrt()                   
  squish()                  ssl()                     stack                    
- starttime()               stats()                   stddev()                 
 
 For more, see Entries-29
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-29
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+ starttime()               stats()                   stddev()                 
  step()                    sticky                    strcat()                 
  string functions          strings                   stringsecs()             
  strinsert()               stripaccents()            stripansi()              
@@ -604,12 +605,12 @@ For more, see Entries-29
  testlock()                textentries()             textfile()               
  think                     time functions            time()                   
  timefmt()                 timefmt2                  timestring()             
- topics                    topics2                   tr()                     
 
 For more, see Entries-30
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-30
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+ topics                    topics2                   tr()                     
  track_money               translation               transparent              
  transparent2              trim()                    trimpenn()               
  trimtiny()                trunc()                   trust                    
@@ -625,12 +626,12 @@ For more, see Entries-30
  v()                       v-function                vadd()                   
  val()                     valid()                   vcross()                 
  vdim()                    vdot()                    vector functions         
- verbose                   verbs                     version()                
 
 For more, see Entries-31
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-31
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+ verbose                   verbs                     version()                
  visible()                 visual                    vmag()                   
  vmax()                    vmin()                    vmul()                   
  vrml                      vsub()                    vunit()                  
@@ -646,12 +647,12 @@ For more, see Entries-31
  xvcon()                   xvexits()                 xvplayers()              
  xvthings()                xwho()                    xwhoid()                 
  z_tel                     zemit()                   zfun()                   
- zmo                       zmp                       zmr                      
 
 For more, see Entries-32
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-32
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+ zmo                       zmp                       zmr                      
  zmt                       zmwho()                   zone                     
  zone master objects       zone master rooms         zone masters             
  zone objects              zone()                    zones                    

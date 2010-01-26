@@ -5,7 +5,15 @@ msgstr " \" Limitação da utilização do CPU não é suportada.\""
 # SOME DESCRIPTIVE TITLE.\nCopyright (C) YEAR Free Software Foundation, Inc.\nFIRST AUTHOR <EMAIL@ADDRESS>, YEAR.\n
 #, fuzzy
 msgid ""
-msgstr "\Project-Id-Version: PACKAGE VERSION"
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2004-11-04 13:52-0600\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=iso-8859-1\n"
+"Content-Transfer-Encoding: 8bit"
 
 #: src/fundb.c:784 src/fundb.c:1001
 msgid "#-1 ARG1 NOT FOUND"

@@ -2030,8 +2030,8 @@ do_flag_info(const char *ns, dbref player, const char *name)
   notify_format(player, "%9s: %c", T("Character"), f->letter);
   notify_format(player, "%9s: %s", T("Aliases"), list_aliases(n, f));
   notify_format(player, "%9s: %s", T("Type(s)"), privs_to_string(type_privs, f->type));
-  notify_format(player, T("%9s: %s"), T("Perms"), privs_to_string(flag_privs, f->perms));
-  notify_format(player, T("%9s: %s"),
+  notify_format(player, "%9s: %s", T("Perms"), privs_to_string(flag_privs, f->perms));
+  notify_format(player, "%9s: %s",
                 T("ResetPrms"), privs_to_string(flag_privs, f->negate_perms));
 }
 

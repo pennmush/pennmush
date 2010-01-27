@@ -8431,7 +8431,7 @@ msgstr "Maknes %d objekata iz objekta %2$s."
 #: src/speech.c:177
 #, c-format
 msgid "You say, \"%s\""
-msgstr "Kazes, \"%s\""
+msgstr "Kažeš, \"%s\""
 
 #: src/look.c:412
 msgid "You see nothing special."

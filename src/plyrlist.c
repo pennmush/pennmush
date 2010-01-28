@@ -139,10 +139,13 @@ dbref
 lookup_player_name(const char *name)
 {
   dbref *p;
-  p = hashfind(strupper(name), &htab_player_list);
-  if (!p)
-    return NOTHING;
-  return *p;
+  if (hft_initialized) {
+    p = hashfind(strupper(name), &htab_player_list);
+    if (!p)
+      return NOTHING;
+    return *p;
+  }
+  return NOTHING;
 }
 
 

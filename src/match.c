@@ -309,7 +309,6 @@ match_result(dbref who, const char *xname, int type, long flags)
 {
   dbref match, loc;
   dbref bestmatch = NOTHING;
-  dbref abs = parse_objid(xname);
   int curr = 0, final = 0, nocontrol = 0, exact = 0, done = 0;
   int goodwho = GoodObject(who);
   char *name, *sname;
@@ -335,8 +334,9 @@ match_result(dbref who, const char *xname, int type, long flags)
   }
 
   /* match *<player>, or <player> */
-  match = match_player(who, xname);
-  if (((flags & MAT_PMATCH) || ((flags & MAT_PLAYER) && *xname == LOOKUP_TOKEN)) && MATCH_TYPE) {
+  if (((flags & MAT_PMATCH) ||
+      ((flags & MAT_PLAYER) && *xname == LOOKUP_TOKEN)) && MATCH_TYPE) {
+    match = match_player(who, xname);
     if (GoodObject(match)) {
       if (MATCH_CONTROLS) {
         return match;
@@ -349,14 +349,16 @@ match_result(dbref who, const char *xname, int type, long flags)
   }
 
   /* dbref match */
-  match = abs;
-  if (GoodObject(match) && MATCH_TYPE) {
-    if (!(flags & MAT_NEAR) || Long_Fingers(who) || (nearby(who, match) || controls(who, match))) {
-      /* valid dbref match */
-      if (MATCH_CONTROLS) {
-        return match;
-      } else {
-        nocontrol = 1;
+  if (MATCH_TYPE) {
+    match = parse_objid(xname);
+    if (GoodObject(match)) {
+      if (!(flags & MAT_NEAR) || Long_Fingers(who) || (nearby(who, match) || controls(who, match))) {
+        /* valid dbref match */
+        if (MATCH_CONTROLS) {
+          return match;
+        } else {
+          nocontrol = 1;
+        }
       }
     }
   }

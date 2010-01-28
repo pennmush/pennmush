@@ -138,6 +138,12 @@ match_controlled(dbref player, const char *name)
 static dbref debugMatchTo = 1;
 #endif
 
+#define MATCH_CONTROLS (!(flags & MAT_CONTROL) || controls(who, match))
+
+#define MATCH_TYPE ((type & Typeof(match)) ? 1 : ((flags & MAT_TYPE) ? 0 : -1))
+
+#define BEST_MATCH choose_thing(who, type, flags, bestmatch, match)
+
 #define MATCHED(full) \
   { \
     if (!MATCH_CONTROLS) { \
@@ -200,12 +206,6 @@ static dbref debugMatchTo = 1;
       } \
     } \
   }
-
-#define MATCH_CONTROLS (!(flags & MAT_CONTROL) || controls(who, match))
-
-#define MATCH_TYPE ((type & Typeof(match)) ? 1 : ((flags & MAT_TYPE) ? 0 : -1))
-
-#define BEST_MATCH choose_thing(who, type, flags, bestmatch, match)
 
 static dbref
 choose_thing(const dbref who, const int preferred_type, long flags, dbref thing1, dbref thing2)
@@ -308,6 +308,7 @@ dbref
 match_result(dbref who, const char *xname, int type, long flags)
 {
   dbref match, loc;
+  dbref abs = -1;
   dbref bestmatch = NOTHING;
   int curr = 0, final = 0, nocontrol = 0, exact = 0, done = 0;
   int goodwho = GoodObject(who);
@@ -349,16 +350,14 @@ match_result(dbref who, const char *xname, int type, long flags)
   }
 
   /* dbref match */
-  if (MATCH_TYPE) {
-    match = parse_objid(xname);
-    if (GoodObject(match)) {
-      if (!(flags & MAT_NEAR) || Long_Fingers(who) || (nearby(who, match) || controls(who, match))) {
-        /* valid dbref match */
-        if (MATCH_CONTROLS) {
-          return match;
-        } else {
-          nocontrol = 1;
-        }
+  match = abs;
+  if (GoodObject(match) && MATCH_TYPE) {
+    if (!(flags & MAT_NEAR) || Long_Fingers(who) || (nearby(who, match) || controls(who, match))) {
+      /* valid dbref match */
+      if (MATCH_CONTROLS) {
+        return match;
+      } else {
+        nocontrol = 1;
       }
     }
   }

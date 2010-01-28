@@ -138,12 +138,6 @@ match_controlled(dbref player, const char *name)
 static dbref debugMatchTo = 1;
 #endif
 
-#define MATCH_CONTROLS (!(flags & MAT_CONTROL) || controls(who, match))
-
-#define MATCH_TYPE ((type & Typeof(match)) ? 1 : ((flags & MAT_TYPE) ? 0 : -1))
-
-#define BEST_MATCH choose_thing(who, type, flags, bestmatch, match)
-
 #define MATCHED(full) \
   { \
     if (!MATCH_CONTROLS) { \
@@ -206,6 +200,12 @@ static dbref debugMatchTo = 1;
       } \
     } \
   }
+
+#define MATCH_CONTROLS ((match >= 0) && (!(flags & MAT_CONTROL) || controls(who, match)))
+
+#define MATCH_TYPE ((match >= 0) && ((type & Typeof(match)) ? 1 : ((flags & MAT_TYPE) ? 0 : -1)))
+
+#define BEST_MATCH choose_thing(who, type, flags, bestmatch, match)
 
 static dbref
 choose_thing(const dbref who, const int preferred_type, long flags, dbref thing1, dbref thing2)
@@ -308,8 +308,8 @@ dbref
 match_result(dbref who, const char *xname, int type, long flags)
 {
   dbref match, loc;
-  dbref abs = -1;
   dbref bestmatch = NOTHING;
+  dbref abs = parse_objid(xname);
   int curr = 0, final = 0, nocontrol = 0, exact = 0, done = 0;
   int goodwho = GoodObject(who);
   char *name, *sname;
@@ -336,16 +336,18 @@ match_result(dbref who, const char *xname, int type, long flags)
 
   /* match *<player>, or <player> */
   if (((flags & MAT_PMATCH) ||
-      ((flags & MAT_PLAYER) && *xname == LOOKUP_TOKEN)) && MATCH_TYPE) {
+      ((flags & MAT_PLAYER) && *xname == LOOKUP_TOKEN))) {
     match = match_player(who, xname);
-    if (GoodObject(match)) {
-      if (MATCH_CONTROLS) {
-        return match;
+    if (MATCH_TYPE) {
+      if (GoodObject(match)) {
+        if (MATCH_CONTROLS) {
+          return match;
+        } else {
+          nocontrol = 1;
+        }
       } else {
-        nocontrol = 1;
+        bestmatch = BEST_MATCH;
       }
-    } else {
-      bestmatch = BEST_MATCH;
     }
   }
 

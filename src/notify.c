@@ -75,6 +75,7 @@
 #include "parse.h"
 #include "access.h"
 #include "version.h"
+#include "patches.h"
 #include "mysocket.h"
 #include "ident.h"
 #include "strtree.h"
@@ -902,10 +903,10 @@ notify_anything_loc(dbref speaker, na_lookup func,
         if (eval_lock(speaker, target, Listen_Lock))
           if (PLAYER_AHEAR || (!IsPlayer(target))) {
             if (speaker != target)
-              queue_attribute(target, "AHEAR", speaker);
+              charge_action(speaker, target, "AHEAR");
             else
-              queue_attribute(target, "AMHEAR", speaker);
-            queue_attribute(target, "AAHEAR", speaker);
+              charge_action(speaker, target, "AMHEAR");
+            charge_action(speaker, target, "AAHEAR");
           }
         if (!(flags & NA_NORELAY) && (loc != target) &&
             !filter_found(target,
@@ -1172,9 +1173,9 @@ flag_broadcast(const char *flag1, const char *flag2, const char *fmt, ...)
   DESC_ITER_CONN(d) {
     ok = 1;
     if (flag1)
-      ok = ok && (flaglist_check_long("FLAG", GOD, d->player, flag1, 0) == 1);
+      ok = ok && flaglist_check_long("FLAG", GOD, d->player, flag1, 0);
     if (flag2)
-      ok = ok && (flaglist_check_long("FLAG", GOD, d->player, flag2, 0) == 1);
+      ok = ok && flaglist_check_long("FLAG", GOD, d->player, flag2, 0);
     if (ok) {
       queue_string_eol(d, tbuf1);
       process_output(d);
@@ -1479,7 +1480,7 @@ ns_esnotify(dbref speaker, na_lookup func __attribute__ ((__unused__)),
     if (speaker == Owner(speaker))
       safe_format(dest, &bp, "[%s(#%d)] ", Name(speaker), speaker);
     else
-      safe_format(dest, &bp, T("[%s(#%d)'s %s(#%d)] "), Name(Owner(speaker)),
+      safe_format(dest, &bp, "[%s(#%d)'s %s(#%d)] ", Name(Owner(speaker)),
                   Owner(speaker), Name(speaker), speaker);
   } else
     safe_format(dest, &bp, "[%s:] ", spname(speaker));

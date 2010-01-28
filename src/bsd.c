@@ -108,6 +108,7 @@
 #include "access.h"
 #include "command.h"
 #include "version.h"
+#include "patches.h"
 #include "mysocket.h"
 #include "ident.h"
 #include "htab.h"
@@ -230,7 +231,7 @@ static int handle_telnet(DESC *d, unsigned char **q, unsigned char *qend);
 				for(d = descriptor_list;(d);d=(d)->next) \
 
 /** Is a descriptor hidden? */
-#define Hidden(d)        ((d->hide == 1))
+#define Hidden(d)        ((d->hide == 1) && Can_Hide(d->player))
 
 static const char *create_fail =
   "Either there is already a player with that name, or that name is illegal.";
@@ -356,7 +357,7 @@ extern int queue_newwrite(DESC *d, const unsigned char *b, int n);
 extern int queue_string(DESC *d, const char *s);
 extern int queue_string_eol(DESC *d, const char *s);
 extern void freeqs(DESC *d);
-static void welcome_user(DESC *d, int telnet);
+static void welcome_user(DESC *d);
 static void dump_info(DESC *call_by);
 static void save_command(DESC *d, const unsigned char *command);
 static int process_input(DESC *d, int output_ready);
@@ -387,7 +388,7 @@ extern pid_t forked_dump_pid;   /**< Process id of forking dump process */
 static void dump_users(DESC *call_by, char *match);
 static const char *time_format_1(time_t dt);
 static const char *time_format_2(time_t dt);
-static void announce_connect(DESC *d, int isnew, int num);
+static void announce_connect(dbref player, int isnew, int num);
 static void announce_disconnect(DESC *saved);
 void inactivity_check(void);
 void reopen_logs(void);
@@ -598,7 +599,7 @@ main(int argc, char **argv)
   }
 
   if (init_game_dbs() < 0) {
-    do_rawlog(LT_ERR, "ERROR: Couldn't load databases! Exiting.");
+    do_rawlog(LT_ERR, T("ERROR: Couldn't load databases! Exiting."));
     exit(2);
   }
 
@@ -662,7 +663,7 @@ main(int argc, char **argv)
   rusage_stats();
 #endif                          /* HAS_RUSAGE */
 
-  do_rawlog(LT_ERR, "MUSH shutdown completed.");
+  do_rawlog(LT_ERR, T("MUSH shutdown completed."));
 
   closesocket(sock);
 #ifdef WIN32
@@ -926,7 +927,7 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
 
     if (dump_error) {
       if (WIFSIGNALED(dump_status)) {
-        do_rawlog(LT_ERR, "ERROR! forking dump exited with signal %d",
+        do_rawlog(LT_ERR, T("ERROR! forking dump exited with signal %d"),
                   WTERMSIG(dump_status));
         flag_broadcast("ROYALTY WIZARD", 0,
                        T("GAME: ERROR! Forking database save failed!"));
@@ -936,7 +937,7 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
           if (DUMP_NOFORK_COMPLETE && *DUMP_NOFORK_COMPLETE)
             flag_broadcast(0, 0, "%s", DUMP_NOFORK_COMPLETE);
         } else {
-          do_rawlog(LT_ERR, "ERROR! forking dump exited with exit code %d",
+          do_rawlog(LT_ERR, T("ERROR! forking dump exited with exit code %d"),
                     WEXITSTATUS(dump_status));
           flag_broadcast("ROYALTY WIZARD", 0,
                          T("GAME: ERROR! Forking database save failed!"));
@@ -947,7 +948,7 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
     }
 #ifdef INFO_SLAVE
     if (slave_error) {
-      do_rawlog(LT_ERR, "info_slave on pid %d exited unexpectedly!",
+      do_rawlog(LT_ERR, T("info_slave on pid %d exited unexpectedly!"),
                 slave_error);
       slave_error = 0;
     }
@@ -957,7 +958,7 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
 
     if (signal_shutdown_flag) {
       flag_broadcast(0, 0, T("GAME: Shutdown by external signal"));
-      do_rawlog(LT_ERR, "SHUTDOWN by external signal");
+      do_rawlog(LT_ERR, T("SHUTDOWN by external signal"));
       shutdown_flag = 1;
     }
 
@@ -1181,8 +1182,8 @@ new_connection(int oldsock, int *result, bool use_ssl)
     if (!Deny_Silent_Site(tbuf1, AMBIGUOUS)
         || !Deny_Silent_Site(tbuf2, AMBIGUOUS)) {
       do_rawlog(LT_CONN, "[%d/%s/%s] %s (%s %s)", newsock, tbuf1, tbuf2,
-                "Refused connection", "remote port",
-                hi ? hi->port : "(unknown)");
+                T("Refused connection"), T("remote port"),
+                hi ? hi->port : T("(unknown)"));
     }
     shutdown(newsock, 2);
     closesocket(newsock);
@@ -1191,7 +1192,7 @@ new_connection(int oldsock, int *result, bool use_ssl)
 #endif
     return 0;
   }
-  do_rawlog(LT_CONN, "[%d/%s/%s] Connection opened.", newsock, tbuf1, tbuf2);
+  do_rawlog(LT_CONN, T("[%d/%s/%s] Connection opened."), newsock, tbuf1, tbuf2);
   set_keepalive(newsock);
   return initializesock(newsock, tbuf1, tbuf2, use_ssl);
 }
@@ -1244,12 +1245,7 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
   global_eval_context.wenv[0] = arg;
   sp = save = safe_atr_value(a);
   bp = buff;
-  // A disconnected descriptor has dbref of 0. Not right at all, but ...
-  // Nothing to do about it?
-  process_expression(buff, &bp, &sp,
-                     thing,
-                     d->player ? d->player : -1,
-                     d->player ? d->player : -1,
+  process_expression(buff, &bp, &sp, thing, NOTHING, NOTHING,
                      PE_DEFAULT, PT_DEFAULT, NULL);
   safe_chr('\n', buff, &bp);
   *bp = '\0';
@@ -1390,13 +1386,13 @@ fcache_read(FBLOCK *fb, const char *filename)
 
     release_fd();
     if ((fd = open(filename, O_RDONLY, 0)) < 0) {
-      do_rawlog(LT_ERR, "Couldn't open cached text file '%s'", filename);
+      do_rawlog(LT_ERR, T("Couldn't open cached text file '%s'"), filename);
       reserve_fd();
       return -1;
     }
 
     if (fstat(fd, &sb) < 0) {
-      do_rawlog(LT_ERR, "Couldn't get the size of text file '%s'", filename);
+      do_rawlog(LT_ERR, T("Couldn't get the size of text file '%s'"), filename);
       close(fd);
       reserve_fd();
       return -1;
@@ -1404,7 +1400,7 @@ fcache_read(FBLOCK *fb, const char *filename)
 
 
     if (!(fb->buff = mush_malloc(sb.st_size, "fcache_data"))) {
-      do_rawlog(LT_ERR, "Couldn't allocate %d bytes of memory for '%s'!",
+      do_rawlog(LT_ERR, T("Couldn't allocate %d bytes of memory for '%s'!"),
                 (int) sb.st_size, filename);
       close(fd);
       reserve_fd();
@@ -1412,7 +1408,7 @@ fcache_read(FBLOCK *fb, const char *filename)
     }
 
     if ((n = read(fd, fb->buff, sb.st_size)) != sb.st_size) {
-      do_rawlog(LT_ERR, "Couldn't read all of '%s'", filename);
+      do_rawlog(LT_ERR, T("Couldn't read all of '%s'"), filename);
       close(fd);
       mush_free(fb->buff, "fcache_data");
       fb->buff = NULL;
@@ -1476,24 +1472,22 @@ logout_sock(DESC *d)
   if (d->connected) {
     fcache_dump(d, fcache.quit_fcache, NULL);
     do_rawlog(LT_CONN,
-              "[%d/%s/%s] Logout by %s(#%d) <Connection not dropped>",
+              T("[%d/%s/%s] Logout by %s(#%d) <Connection not dropped>"),
               d->descriptor, d->addr, d->ip, Name(d->player), d->player);
     announce_disconnect(d);
-    if (can_mail(d->player)) {
-      do_mail_purge(d->player);
-    }
+    do_mail_purge(d->player);
     login_number--;
     if (MAX_LOGINS) {
       if (!under_limit && (login_number < MAX_LOGINS)) {
         under_limit = 1;
         do_rawlog(LT_CONN,
-                  "Below maximum player limit of %d. Logins enabled.",
+                  T("Below maximum player limit of %d. Logins enabled."),
                   MAX_LOGINS);
       }
     }
   } else {
     do_rawlog(LT_CONN,
-              "[%d/%s/%s] Logout, never connected. <Connection not dropped>",
+              T("[%d/%s/%s] Logout, never connected. <Connection not dropped>"),
               d->descriptor, d->addr, d->ip);
   }
   process_output(d);            /* flush our old output */
@@ -1514,7 +1508,7 @@ logout_sock(DESC *d)
   d->cmds = 0;
   d->hide = 0;
   d->doing[0] = '\0';
-  welcome_user(d, 0);
+  welcome_user(d);
 }
 
 /** Disconnect a descriptor.
@@ -1526,27 +1520,25 @@ static void
 shutdownsock(DESC *d)
 {
   if (d->connected) {
-    do_rawlog(LT_CONN, "[%d/%s/%s] Logout by %s(#%d)",
+    do_rawlog(LT_CONN, T("[%d/%s/%s] Logout by %s(#%d)"),
               d->descriptor, d->addr, d->ip, Name(d->player), d->player);
     if (d->connected != 2) {
       fcache_dump(d, fcache.quit_fcache, NULL);
       /* Player was not allowed to log in from the connect screen */
       announce_disconnect(d);
-      if (can_mail(d->player)) {
-        do_mail_purge(d->player);
-      }
+      do_mail_purge(d->player);
     }
     login_number--;
     if (MAX_LOGINS) {
       if (!under_limit && (login_number < MAX_LOGINS)) {
         under_limit = 1;
         do_rawlog(LT_CONN,
-                  "Below maximum player limit of %d. Logins enabled.",
+                  T("Below maximum player limit of %d. Logins enabled."),
                   MAX_LOGINS);
       }
     }
   } else {
-    do_rawlog(LT_CONN, "[%d/%s/%s] Connection closed, never connected.",
+    do_rawlog(LT_CONN, T("[%d/%s/%s] Connection closed, never connected."),
               d->descriptor, d->addr, d->ip);
   }
   process_output(d);
@@ -1638,7 +1630,8 @@ initializesock(int s, char *addr, char *ip, int use_ssl
   }
 #endif
   im_insert(descs_by_fd, d->descriptor, d);
-  welcome_user(d, 1);
+  test_telnet(d);
+  welcome_user(d);
   return d;
 }
 
@@ -1838,25 +1831,12 @@ process_output(DESC *d)
 }
 
 static void
-welcome_user(DESC *d, int telnet)
+welcome_user(DESC *d)
 {
-  /* If MUDURL exists, we send <!-- ... --> */
-  if (telnet) {
-    if (MUDURL[0]) {
-      queue_newwrite(d, (const unsigned char *)"<!--", 4);
-      queue_eol(d);
-    }
-    test_telnet(d);
-  }
   if (SUPPORT_PUEBLO && !(d->conn_flags & CONN_HTML))
     queue_newwrite(d, (const unsigned char *) PUEBLO_HELLO,
                    strlen(PUEBLO_HELLO));
   fcache_dump(d, fcache.connect_fcache, NULL);
-  if (telnet && MUDURL[0]) {
-      queue_eol(d);
-      queue_newwrite(d, (const unsigned char *)"-->", 3);
-      queue_eol(d);
-  }
 }
 
 static void
@@ -1890,7 +1870,7 @@ setup_telnet(DESC *d)
     /* IAC DO NAWS IAC DO TERMINAL-TYPE */
     unsigned char extra_options[6] = "\xFF\xFD\x1F" "\xFF\xFD\x18";
     d->conn_flags &= ~CONN_TELNET_QUERY;
-    do_rawlog(LT_CONN, "[%d/%s/%s] Switching to Telnet mode.",
+    do_rawlog(LT_CONN, T("[%d/%s/%s] Switching to Telnet mode."),
               d->descriptor, d->addr, d->ip);
     queue_newwrite(d, extra_options, 6);
     process_output(d);
@@ -2346,11 +2326,11 @@ do_command(DESC *d, char *command)
       queue_newwrite(d, (unsigned const char *) PUEBLO_SEND,
                      strlen(PUEBLO_SEND));
       process_output(d);
-      do_rawlog(LT_CONN, "[%d/%s/%s] Switching to Pueblo mode.",
+      do_rawlog(LT_CONN, T("[%d/%s/%s] Switching to Pueblo mode."),
                 d->descriptor, d->addr, d->ip);
       d->conn_flags |= CONN_HTML;
       if (!d->connected)
-        welcome_user(d, 0);
+        welcome_user(d);
     }
   } else {
     if (d->connected) {
@@ -2373,28 +2353,12 @@ do_command(DESC *d, char *command)
       global_eval_context.cplr = NOTHING;
     } else {
       j = 0;
-      if (!strncmp(command, WHO_COMMAND, strlen(WHO_COMMAND))) {
+      if (!strncmp(command, WHO_COMMAND, strlen(WHO_COMMAND)))
         j = strlen(WHO_COMMAND);
-      } else if (!strncmp(command, DOING_COMMAND, strlen(DOING_COMMAND))) {
+      else if (!strncmp(command, DOING_COMMAND, strlen(DOING_COMMAND)))
         j = strlen(DOING_COMMAND);
-      } else if (!strncmp(command, SESSION_COMMAND, strlen(SESSION_COMMAND))) {
+      else if (!strncmp(command, SESSION_COMMAND, strlen(SESSION_COMMAND)))
         j = strlen(SESSION_COMMAND);
-      } else if (!strncmp(command, GET_COMMAND, strlen(GET_COMMAND)) ||
-                 !strncmp(command, POST_COMMAND, strlen(POST_COMMAND))) {
-        char buf[BUFFER_LEN];
-        snprintf(buf, BUFFER_LEN,
-           "<HTML><HEAD>"
-           "<TITLE>Welcome to %s!</TITLE>"
-           "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\">"
-           "</HEAD><BODY>"
-           "<meta http-equiv=\"refresh\" content=\"0;%s\">"
-           "Please click <a href=\"%s\">%s</a> to go to the website for %s."
-           "</BODY></HEAD>",
-           MUDNAME, MUDURL, MUDURL, MUDURL, MUDNAME);
-        queue_write(d, (unsigned char *) buf, strlen(buf));
-        queue_eol(d);
-        return 0;
-      }
       if (j) {
         send_prefix(d);
         dump_users(d, command + j);
@@ -2425,6 +2389,7 @@ parse_puebloclient(DESC *d, char *command)
 static int
 dump_messages(DESC *d, dbref player, int isnew)
 {
+  int is_hidden;
   int num = 0;
   DESC *tmpd;
 
@@ -2439,7 +2404,7 @@ dump_messages(DESC *d, dbref player, int isnew)
     if (under_limit && (login_number > MAX_LOGINS)) {
       under_limit = 0;
       do_rawlog(LT_CONN,
-                "Limit of %d players reached. Logins disabled.\n",
+                T("Limit of %d players reached. Logins disabled.\n"),
                 MAX_LOGINS);
     }
   }
@@ -2464,10 +2429,13 @@ dump_messages(DESC *d, dbref player, int isnew)
     }
   }
 
-  /* check to see if this is a reconnect */
+  /* check to see if this is a reconnect and also set DARK status */
+  is_hidden = Can_Hide(player) && Dark(player);
   DESC_ITER_CONN(tmpd) {
     if (tmpd->player == player) {
       num++;
+      if (is_hidden)
+        tmpd->hide = 1;
     }
   }
   /* give permanent text messages */
@@ -2485,13 +2453,12 @@ dump_messages(DESC *d, dbref player, int isnew)
     notify_format(player, T("%ld failed connections since last login."),
                   (long) ModTime(player));
   ModTime(player) = (time_t) 0;
-  announce_connect(d, isnew, num); /* broadcast connect message */
+  announce_connect(player, isnew, num); /* broadcast connect message */
   check_last(player, d->addr, d->ip);   /* set Last, Lastsite, give paycheck */
   /* Check all mail folders. If empty, report lack of mail. */
   queue_eol(d);
-  if (can_mail(player)) {
+  if (command_check_byname(player, "@MAIL"))
     check_all_mail(player);
-  }
   set_player_folder(player, 0);
   do_look_around(player);
   if (Haven(player))
@@ -2520,10 +2487,10 @@ check_connect(DESC *d, const char *msg)
     if ((player =
          connect_player(user, password, d->addr, d->ip, errbuf)) == NOTHING) {
       queue_string_eol(d, errbuf);
-      do_rawlog(LT_CONN, "[%d/%s/%s] Failed connect to '%s'.",
+      do_rawlog(LT_CONN, T("[%d/%s/%s] Failed connect to '%s'."),
                 d->descriptor, d->addr, d->ip, user);
     } else {
-      do_rawlog(LT_CONN, "[%d/%s/%s] Connected to %s(#%d) in %s(#%d)",
+      do_rawlog(LT_CONN, T("[%d/%s/%s] Connected to %s(#%d) in %s(#%d)"),
                 d->descriptor, d->addr, d->ip, Name(player), player,
                 Name(Location(player)), Location(player));
       if ((dump_messages(d, player, 0)) == 0) {
@@ -2536,17 +2503,15 @@ check_connect(DESC *d, const char *msg)
     if ((player =
          connect_player(user, password, d->addr, d->ip, errbuf)) == NOTHING) {
       queue_string_eol(d, errbuf);
-      do_rawlog(LT_CONN, "[%d/%s/%s] Failed connect to '%s'.",
+      do_rawlog(LT_CONN, T("[%d/%s/%s] Failed connect to '%s'."),
                 d->descriptor, d->addr, d->ip, user);
     } else {
       do_rawlog(LT_CONN,
-                "[%d/%s/%s] Connected dark to %s(#%d) in %s(#%d)",
+                T("[%d/%s/%s] Connected dark to %s(#%d) in %s(#%d)"),
                 d->descriptor, d->addr, d->ip, Name(player), player,
                 Name(Location(player)), Location(player));
       /* Set player dark */
       d->connected = 1;
-      if (Can_Hide(player))
-        d->hide = 1;
       d->player = player;
       set_flag(player, player, "DARK", 0, 0, 0);
       if ((dump_messages(d, player, 0)) == 0) {
@@ -2559,10 +2524,10 @@ check_connect(DESC *d, const char *msg)
     if ((player =
          connect_player(user, password, d->addr, d->ip, errbuf)) == NOTHING) {
       queue_string_eol(d, errbuf);
-      do_rawlog(LT_CONN, "[%d/%s/%s] Failed connect to '%s'.",
+      do_rawlog(LT_CONN, T("[%d/%s/%s] Failed connect to '%s'."),
                 d->descriptor, d->addr, d->ip, user);
     } else {
-      do_rawlog(LT_CONN, "[%d/%s/%s] Connected to %s(#%d) in %s(#%d)",
+      do_rawlog(LT_CONN, T("[%d/%s/%s] Connected to %s(#%d) in %s(#%d)"),
                 d->descriptor, d->addr, d->ip, Name(player), player,
                 Name(Location(player)), Location(player));
       /* Set player !dark */
@@ -2579,11 +2544,11 @@ check_connect(DESC *d, const char *msg)
     if ((player =
          connect_player(user, password, d->addr, d->ip, errbuf)) == NOTHING) {
       queue_string_eol(d, errbuf);
-      do_rawlog(LT_CONN, "[%d/%s/%s] Failed connect to '%s'.",
+      do_rawlog(LT_CONN, T("[%d/%s/%s] Failed connect to '%s'."),
                 d->descriptor, d->addr, d->ip, user);
     } else {
       do_rawlog(LT_CONN,
-                "[%d/%s/%s] Connected hidden to %s(#%d) in %s(#%d)",
+                T("[%d/%s/%s] Connected hidden to %s(#%d) in %s(#%d)"),
                 d->descriptor, d->addr, d->ip, Name(player), player,
                 Name(Location(player)), Location(player));
       /* Set player hidden */
@@ -2602,7 +2567,7 @@ check_connect(DESC *d, const char *msg)
       fcache_dump(d, fcache.register_fcache, NULL);
       if (!Deny_Silent_Site(d->addr, AMBIGUOUS)
           && !Deny_Silent_Site(d->ip, AMBIGUOUS)) {
-        do_rawlog(LT_CONN, "[%d/%s/%s] Refused create for '%s'.",
+        do_rawlog(LT_CONN, T("[%d/%s/%s] Refused create for '%s'."),
                   d->descriptor, d->addr, d->ip, user);
       }
       return 0;
@@ -2627,12 +2592,12 @@ check_connect(DESC *d, const char *msg)
     if (player == NOTHING) {
       queue_string_eol(d, T(create_fail));
       do_rawlog(LT_CONN,
-                "[%d/%s/%s] Failed create for '%s' (bad name).",
+                T("[%d/%s/%s] Failed create for '%s' (bad name)."),
                 d->descriptor, d->addr, d->ip, user);
     } else if (player == AMBIGUOUS) {
       queue_string_eol(d, T(password_fail));
       do_rawlog(LT_CONN,
-                "[%d/%s/%s] Failed create for '%s' (bad password).",
+                T("[%d/%s/%s] Failed create for '%s' (bad password)."),
                 d->descriptor, d->addr, d->ip, user);
     } else {
       do_rawlog(LT_CONN, "[%d/%s/%s] Created %s(#%d)",
@@ -2649,7 +2614,7 @@ check_connect(DESC *d, const char *msg)
       if (!Deny_Silent_Site(d->addr, AMBIGUOUS)
           && !Deny_Silent_Site(d->ip, AMBIGUOUS)) {
         do_rawlog(LT_CONN,
-                  "[%d/%s/%s] Refused registration (bad site) for '%s'.",
+                  T("[%d/%s/%s] Refused registration (bad site) for '%s'."),
                   d->descriptor, d->addr, d->ip, user);
       }
       return 0;
@@ -2664,7 +2629,7 @@ check_connect(DESC *d, const char *msg)
     if ((player = email_register_player(user, password, d->addr, d->ip)) ==
         NOTHING) {
       queue_string_eol(d, T(register_fail));
-      do_rawlog(LT_CONN, "[%d/%s/%s] Failed registration for '%s'.",
+      do_rawlog(LT_CONN, T("[%d/%s/%s] Failed registration for '%s'."),
                 d->descriptor, d->addr, d->ip, user);
     } else {
       queue_string_eol(d, T(register_success));
@@ -2675,7 +2640,7 @@ check_connect(DESC *d, const char *msg)
 
   } else {
     /* invalid command, just repeat login screen */
-    welcome_user(d, 0);
+    welcome_user(d);
   }
   return 1;
 }
@@ -2781,42 +2746,6 @@ emergency_shutdown(void)
 #endif
 }
 
-/** Boot a player.
- * Boot all connections associated with victim, or all idle connections if idleonly is true
- * \param player the player being booted
- * \param idleonly only boot idle connections?
- * \param silent suppress notice to player that he's being booted?
- * \return number of descriptors booted
- */
-int
-boot_player(dbref player, int idleonly, int silent)
-{
-  DESC *d, *ignore = NULL;
-  int count = 0;
-  time_t now = mudtime;
-
-  if (idleonly)
-    ignore = least_idle_desc(player, 1);
-
-  DESC_ITER_CONN(d) {
-    if (d->player == player && (!ignore || (d != ignore && difftime(now, d->last_time) > 60.0))) {
-      if (!idleonly && !silent && !count)
-        notify(player, T("You are politely shown to the door."));
-      count++;
-      boot_desc(d);
-    }
-  }
-  if (count && idleonly) {
-    if (count == 1)
-      notify(player, T("You boot an idle self."));
-    else
-      notify_format(player, T("You boot %d idle selves."), count);;
-  }
-
-  return count;
-
-}
-
 /** Disconnect a descriptor.
  * \param d pointer to descriptor to disconnect.
  */
@@ -2834,7 +2763,6 @@ DESC *
 player_desc(dbref player)
 {
   DESC *d;
-
   for (d = descriptor_list; d; d = d->next) {
     if (d->connected && (d->player == player)) {
       return d;
@@ -3066,7 +2994,7 @@ signal_dump(int sig __attribute__ ((__unused__)))
 void
 bailout(int sig)
 {
-  mush_panicf("BAILOUT: caught signal %d", sig);
+  mush_panicf(T("BAILOUT: caught signal %d"), sig);
 }
 
 #ifndef WIN32
@@ -3116,7 +3044,6 @@ dump_info(DESC *call_by)
     }
   }
   queue_string_eol(call_by, tprintf("Name: %s", options.mud_name));
-  queue_string_eol(call_by, tprintf("Address: %s", options.mud_url));
   queue_string_eol(call_by,
                    tprintf("Uptime: %s",
                            show_time(globals.first_start_time, 0)));
@@ -3124,6 +3051,9 @@ dump_info(DESC *call_by)
   queue_string_eol(call_by, tprintf("Size: %d", db_top));
   queue_string_eol(call_by,
                    tprintf("Version: PennMUSH %sp%s", VERSION, PATCHLEVEL));
+#ifdef PATCHES
+  queue_string_eol(call_by, tprintf("Patches: %s", PATCHES));
+#endif
   queue_string_eol(call_by, "### End INFO");
 }
 
@@ -3173,7 +3103,7 @@ guest_to_connect(dbref player)
   if (MAX_GUESTS < 0)
     return NOTHING;
 
-  do_rawlog(LT_CONN, "Multiple connection to Guest #%d", player);
+  do_rawlog(LT_CONN, T("Multiple connection to Guest #%d"), player);
   return player;
 }
 
@@ -3188,7 +3118,7 @@ dump_users(DESC *call_by, char *match)
   char tbuf2[BUFFER_LEN];
 
   if (!GoodObject(call_by->player)) {
-    do_rawlog(LT_ERR, "Bogus caller #%d of dump_users", call_by->player);
+    do_rawlog(LT_ERR, T("Bogus caller #%d of dump_users"), call_by->player);
     return;
   }
   while (*match && *match == ' ')
@@ -3500,7 +3430,7 @@ time_format_2(time_t dt)
  * num: how many times connected?
  */
 static void
-announce_connect(DESC *d, int isnew, int num)
+announce_connect(dbref player, int isnew, int num)
 {
   dbref loc;
   char tbuf1[BUFFER_LEN];
@@ -3509,8 +3439,6 @@ announce_connect(DESC *d, int isnew, int num)
   dbref zone;
   dbref obj;
   int j;
-
-  dbref player = d->player;
 
   set_flag_internal(player, "CONNECTED");
 
@@ -3525,8 +3453,7 @@ announce_connect(DESC *d, int isnew, int num)
   /* Redundant, but better for translators */
   if (Dark(player)) {
     message = (num > 1) ? T("has DARK-reconnected.") : T("has DARK-connected.");
-    d->hide = 1;
-  } else if (Hidden(d)) {
+  } else if (hidden(player)) {
     message = (num > 1) ? T("has HIDDEN-reconnected.") :
       T("has HIDDEN-connected.");
   } else {
@@ -3609,7 +3536,7 @@ announce_connect(DESC *d, int isnew, int num)
       break;
     default:
       do_rawlog(LT_ERR,
-                "Invalid zone #%d for %s(#%d) has bad type %d", zone,
+                T("Invalid zone #%d for %s(#%d) has bad type %d"), zone,
                 Name(player), player, Typeof(zone));
     }
   }
@@ -3635,7 +3562,7 @@ announce_disconnect(DESC *saved)
   char *message;
   dbref zone, obj;
   int j;
-  char *myenv[6];
+  char *myenv[5];
   dbref player;
   ATTR *a;
 
@@ -3712,7 +3639,7 @@ announce_disconnect(DESC *saved)
       break;
     default:
       do_rawlog(LT_ERR,
-                "Invalid zone #%d for %s(#%d) has bad type %d", zone,
+                T("Invalid zone #%d for %s(#%d) has bad type %d"), zone,
                 Name(player), player, Typeof(zone));
     }
   }
@@ -3910,7 +3837,7 @@ do_poll(dbref player, const char *message, int clear)
                   (int) strlen(message) - (DOING_LEN - 1));
   } else
     notify_format(player, T("Poll set to: %s"), poll_msg);
-  do_log(LT_WIZ, player, NOTHING, "Poll Set to '%s'.", poll_msg);
+  do_log(LT_WIZ, player, NOTHING, T("Poll Set to '%s'."), poll_msg);
 }
 
 /** Match the partial name of a connected player.
@@ -4188,25 +4115,6 @@ lookup_desc(dbref executor, const char *name)
   }
 }
 
-/** Return the least idle descriptor of a player.
- * Ignores hidden connections unless priv is true.
- * \param player dbref of the player to find the descriptor for
- * \param priv include hidden descriptors?
- * \return pointer to the player's least idle descriptor, or NULL
- */
-DESC *
-least_idle_desc(dbref player, int priv)
-{
-  DESC *d, *match = NULL;
-  DESC_ITER_CONN(d) {
-    if ((d->player == player) && (priv || !Hidden(d)) &&
-        (!match || (d->last_time > match->last_time)))
-      match = d;
-  }
-
-  return match;
-}
-
 /** Return the conn time of the longest-connected connection of a player.
  * This function treats hidden connectios as nonexistent.
  * \param player dbref of player to get ip for.
@@ -4258,10 +4166,14 @@ most_conn_time_priv(dbref player)
 int
 least_idle_time(dbref player)
 {
-  DESC *d;
-  d = least_idle_desc(player, 0);
-  if (d) {
-    double result = difftime(mudtime, d->last_time);
+  DESC *d, *match = NULL;
+  DESC_ITER_CONN(d) {
+    if ((d->player == player) && !Hidden(d) &&
+        (!match || (d->last_time > match->last_time)))
+      match = d;
+  }
+  if (match) {
+    double result = difftime(mudtime, match->last_time);
     return (int) result;
   } else
     return -1;
@@ -4275,10 +4187,13 @@ least_idle_time(dbref player)
 int
 least_idle_time_priv(dbref player)
 {
-  DESC *d;
-  d = least_idle_desc(player, 1);
-  if (d) {
-    double result = difftime(mudtime, d->last_time);
+  DESC *d, *match = NULL;
+  DESC_ITER_CONN(d) {
+    if ((d->player == player) && (!match || (d->last_time > match->last_time)))
+      match = d;
+  }
+  if (match) {
+    double result = difftime(mudtime, match->last_time);
     return (int) result;
   } else
     return -1;
@@ -4293,9 +4208,12 @@ least_idle_time_priv(dbref player)
 char *
 least_idle_ip(dbref player)
 {
-  DESC *d;
-  d = least_idle_desc(player, 1);
-  return d ? (d->ip) : NULL;
+  DESC *d, *match = NULL;
+  DESC_ITER_CONN(d) {
+    if ((d->player == player) && (!match || (d->last_time > match->last_time)))
+      match = d;
+  }
+  return match ? (match->ip) : NULL;
 }
 
 /** Return the hostname of the least-idle connection of a player.
@@ -4307,14 +4225,17 @@ least_idle_ip(dbref player)
 char *
 least_idle_hostname(dbref player)
 {
-  DESC *d;
+  DESC *d, *match = NULL;
   static char hostname[101];
   char *p;
 
-  d = least_idle_desc(player, 0);
-  if (!d)
+  DESC_ITER_CONN(d) {
+    if ((d->player == player) && (!match || (d->last_time > match->last_time)))
+      match = d;
+  }
+  if (!match)
     return NULL;
-  strcpy(hostname, d->addr);
+  strcpy(hostname, match->addr);
   if ((p = strchr(hostname, '@'))) {
     p++;
     return p;
@@ -4681,70 +4602,26 @@ FUNCTION(fun_ports)
  * \param hide if 1, hide; if 0, unhide.
  */
 void
-hide_player(dbref player, int hide, char *victim)
+hide_player(dbref player, int hide)
 {
   DESC *d;
-  dbref thing;
-
+  if (!Connected(player))
+    return;
   if (!Can_Hide(player)) {
     notify(player, T("Permission denied."));
     return;
   }
-  if (!victim || !*victim) {
-		thing = Owner(player);
-	} else {
-		if (is_strict_integer(victim)) {
-			d = lookup_desc(player, victim);
-			if (!d) {
-				if (See_All(player))
-				  notify(player, T("Couldn't find that descriptor."));
-				else
-				  notify(player, T("Permission denied."));
-				return;
-			}
-			thing = d->player;
-			if (!Wizard(player) && thing != player) {
-				notify(player, T("Permission denied."));
-				return;
-			}
-			if (!d->connected) {
-				notify(player, T("Noone is connected to that descriptor."));
-				return;
-			}
-			d->hide = hide;
-			if (hide) {
-			  notify(player, T("Connection hidden."));
-			} else {
-				notify(player, T("Connection unhidden."));
-			}
-			return;
-		} else {
-			thing = noisy_match_result(player, victim, TYPE_PLAYER, MAT_ABSOLUTE | MAT_PLAYER | MAT_PMATCH | MAT_ME);
-			if (!GoodObject(thing)) {
-				return;
-			}
-		}
-	}
-
-	if (!Connected(thing)) {
-		notify(player, T("That player is not online."));
-		return;
-	}
-	DESC_ITER_CONN(d) {
-		if (d->player == thing)
-			d->hide = hide;
-	}
-	if (hide) {
-		if (player == thing)
-		  notify(player, T("You no longer appear on the WHO list."));
-		else
-		  notify_format(player, T("%s no longer appears on the WHO list."), Name(thing));
-	} else {
-		if (player == thing)
-		  notify(player, T("You now appear on the WHO list."));
-		else
-		  notify_format(player, T("%s now appears on the WHO list."), Name(thing));
-	}
+  /* change status on WHO */
+  if (Can_Hide(player)) {
+    DESC_ITER_CONN(d) {
+      if (d->player == player)
+        d->hide = hide;
+    }
+  }
+  if (hide)
+    notify(player, T("You no longer appear on the WHO list."));
+  else
+    notify(player, T("You now appear on the WHO list."));
 }
 
 /** Perform the periodic check of inactive descriptors, and
@@ -4787,7 +4664,7 @@ inactivity_check(void)
 
         queue_string(d, T("\n*** Inactivity timeout ***\n"));
         do_rawlog(LT_CONN,
-                  "[%d/%s/%s] Logout by %s(#%d) <Inactivity Timeout>",
+                  T("[%d/%s/%s] Logout by %s(#%d) <Inactivity Timeout>"),
                   d->descriptor, d->addr, d->ip, Name(d->player), d->player);
         boot_desc(d);
       } else if (Unfind(d->player)) {
@@ -4813,16 +4690,15 @@ int
 hidden(dbref player)
 {
   DESC *d;
-  int i = 0;
   DESC_ITER_CONN(d) {
     if (d->player == player) {
-      if (!Hidden(d))
-        return 0;
+      if (Hidden(d))
+        return 1;
       else
-        i++;
+        return 0;
     }
   }
-  return (i > 0);
+  return 0;
 }
 
 
@@ -5265,11 +5141,10 @@ watch_files_in(int fd)
   help_file *h;
 
 #define WATCH(name) do { \
-    if (*name != NUMBER_TOKEN) \
-      if (inotify_add_watch(fd, (name),					\
-		  	  IN_MODIFY | IN_DELETE_SELF | IN_MOVE_SELF) < 0) \
-        do_rawlog(LT_TRACE, "file_watch_init:inotify_add_watch(\"%s\"): %s", \
-		  (name), strerror(errno));				\
+    if (inotify_add_watch(fd, (name),					\
+			  IN_MODIFY | IN_DELETE_SELF | IN_MOVE_SELF) < 0) \
+      do_rawlog(LT_TRACE, "file_watch_init:inotify_add_watch(\"%s\"): %s", \
+		(name), strerror(errno));				\
   } while (0)
 
   do_rawlog(LT_TRACE,

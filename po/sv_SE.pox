@@ -488,7 +488,7 @@ msgstr ""
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=iso-8859-1\n"
+"Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit"
 
 #: extchat.c:1503
@@ -1380,7 +1380,7 @@ msgstr "%s/%s - %s satt."
 #: src/extmail.c:1260 src/extmail.c:1668 src/wiz.c:673 src/wiz.c:1277
 #, c-format
 msgid "%s: No such player."
-msgstr "%s: Ingen sådan spelare."
+msgstr "%s: Ingen s\345dan spelare."
 
 #: src/extmail.c:1156
 #, c-format
@@ -3157,12 +3157,12 @@ msgstr "Kunde inte sätta tids-lokalisering från omgivning.\n"
 #: wiz.c:109
 #, c-format
 msgid "Failure creating '%s' (bad name)"
-msgstr "Fel vid försök att skapa '%s' (felaktigt namn)"
+msgstr "Fel vid f\366rs\366k att skapa '%s' (felaktigt namn)"
 
 #: wiz.c:113
 #, c-format
 msgid "Failure creating '%s' (bad password)"
-msgstr "Fel vid försök att skapa '%s' (felaktigt lösenord)"
+msgstr "Fel vid f\366rs\366k att skapa '%s' (felaktigt l\366senord)"
 
 #: src/rob.c:254
 msgid "Feeling poor today?"

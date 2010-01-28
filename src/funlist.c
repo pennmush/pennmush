@@ -115,11 +115,8 @@ list2arr(char *r[], int max, char *list, char sep)
   int i;
   int first;
   char *aptr;
-  size_t len;
 
-  aptr = remove_markup(list, &len);
-
-  memcpy(list, aptr, len);
+  memcpy(list, remove_markup(list, NULL), BUFFER_LEN);
 
   aptr = trim_space_sep(list, sep);
 

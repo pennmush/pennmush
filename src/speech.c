@@ -29,6 +29,7 @@
 #include "sort.h"
 #include "confmagic.h"
 
+int okay_pemit(dbref player, dbref target);
 static dbref speech_loc(dbref thing);
 void propagate_sound(dbref thing, const char *msg);
 static void do_audible_stuff(dbref loc, dbref *excs, int numexcs,
@@ -822,7 +823,7 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
     mush_panic("Unable to allocate memory in do_page");
 
   if (override && !Pemit_All(player)) {
-    notify(player, T("Try again after you get the pemit_all power."));
+    notify(player, "Try again after you get the pemit_all power.");
     override = 0;
   }
 
@@ -903,6 +904,16 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
 
   if (!gcount) {
     /* Well, that was a total waste of time. */
+    mush_free(tbuf, "page_buff");
+    mush_free(tbuf2, "page_buff");
+    if (hp)
+      free(hp);
+    return;
+  }
+
+  /* Can the player afford to pay for this thing? */
+  if (!payfor(player, PAGE_COST * gcount)) {
+    notify_format(player, T("You don't have enough %s."), MONIES);
     mush_free(tbuf, "page_buff");
     mush_free(tbuf2, "page_buff");
     if (hp)
@@ -1119,7 +1130,7 @@ make_prefixstr(dbref thing, const char *msg, char *tbuf1)
   bp = tbuf1;
 
   if (!a) {
-    safe_str(T("From "), tbuf1, &bp);
+    safe_str("From ", tbuf1, &bp);
     safe_str(Name(IsExit(thing) ? Source(thing) : thing), tbuf1, &bp);
     safe_str(", ", tbuf1, &bp);
   } else {
@@ -1468,7 +1479,11 @@ do_zemit(dbref player, const char *arg1, const char *arg2, int flags)
     notify(player, T("Permission denied."));
     return;
   }
-
+  /* this command is computationally expensive */
+  if (!payfor(player, FIND_COST)) {
+    notify(player, T("Sorry, you don't have enough money to do that."));
+    return;
+  }
   where = unparse_object(player, zone);
   notify_format(player, T("You zemit, \"%s\" in zone %s"), arg2, where);
 

@@ -149,7 +149,7 @@ static FLAG flag_table[] = {
   {NULL, '\0', 0, 0, 0, 0}
 };
 
-/** The old table to kludge multi-type toggles. Now used only
+/** The old table to kludge multi-type toggles. Now used only 
  * for conversion.
  */
 static FLAG hack_table[] = {
@@ -277,7 +277,7 @@ static PRIV flag_privs[] = {
 
 
 /*---------------------------------------------------------------------------
- * Flag definition functions, including flag hash table handlers
+ * Flag definition functions, including flag hash table handlers 
  */
 
 /** Convenience function to return a pointer to a flag struct
@@ -434,7 +434,7 @@ flag_add(FLAGSPACE *n, const char *name, FLAG *f)
    * If it's an alias, we're done.
    * A canonical flag has either been given a new bitpos
    * or has not yet been stored in the flags array.
-   * (An alias would have a previously used bitpos that's already
+   * (An alias would have a previously used bitpos that's already 
    * indexing a flag in the flags array)
    */
   if ((f->bitpos >= n->flagbits) || (n->flags[f->bitpos] == NULL)) {
@@ -544,7 +544,8 @@ flag_alias_read_oldstyle(PENNFILE *in, char *alias, FLAGSPACE *n)
   if (!f) {
     /* Corrupt db. Recover as well as we can. */
     do_rawlog(LT_ERR,
-              "FLAG READ: flag alias %s matches no known flag. Skipping aliases.",
+              T
+              ("FLAG READ: flag alias %s matches no known flag. Skipping aliases."),
               c);
     mush_free(c, "flag alias");
     do {
@@ -575,7 +576,7 @@ flag_read_all_oldstyle(PENNFILE *in, const char *ns)
   char alias[BUFFER_LEN];
 
   if (!(n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces))) {
-    do_rawlog(LT_ERR, "FLAG READ: Unable to locate flagspace %s.", ns);
+    do_rawlog(LT_ERR, T("FLAG READ: Unable to locate flagspace %s."), ns);
     return;
   }
   /* If we are reading flags from the db, they are definitive. */
@@ -627,7 +628,8 @@ flag_alias_read(PENNFILE *in, char *alias, FLAGSPACE *n)
   if (!f) {
     /* Corrupt db. Recover as well as we can. */
     do_rawlog(LT_ERR,
-              "FLAG READ: flag alias %s matches no known flag. Skipping this alias.",
+              T
+              ("FLAG READ: flag alias %s matches no known flag. Skipping this alias."),
               c);
     mush_free(c, "flag alias");
     (void) getstring_noalloc(in);
@@ -663,7 +665,7 @@ flag_read_all(PENNFILE *in, const char *ns)
   }
 
   if (!(n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces))) {
-    do_rawlog(LT_ERR, "FLAG READ: Unable to locate flagspace %s.", ns);
+    do_rawlog(LT_ERR, T("FLAG READ: Unable to locate flagspace %s."), ns);
     return;
   }
   /* If we are reading flags from the db, they are definitive. */
@@ -686,7 +688,8 @@ flag_read_all(PENNFILE *in, const char *ns)
 
   if (found != count)
     do_rawlog(LT_ERR,
-              "WARNING: Actual number of flags (%d) different than expected count (%d).",
+              T
+              ("WARNING: Actual number of flags (%d) different than expected count (%d)."),
               found, count);
 
   /* Assumes we'll always have at least one alias */
@@ -707,7 +710,8 @@ flag_read_all(PENNFILE *in, const char *ns)
   }
   if (found != count)
     do_rawlog(LT_ERR,
-              "WARNING: Actual number of flag aliases (%d) different than expected count (%d).",
+              T
+              ("WARNING: Actual number of flag aliases (%d) different than expected count (%d)."),
               found, count);
 
   flag_add_additional(n);
@@ -750,7 +754,7 @@ flag_write_all(PENNFILE *out, const char *ns)
   char flagname[BUFFER_LEN];
 
   if (!(n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces))) {
-    do_rawlog(LT_ERR, "FLAG WRITE: Unable to locate flagspace %s.", ns);
+    do_rawlog(LT_ERR, T("FLAG WRITE: Unable to locate flagspace %s."), ns);
     return;
   }
   /* Write out canonical flags first */
@@ -816,7 +820,7 @@ init_flagspaces(void)
 
 
 /** Initialize a flag table with defaults.
- * This function loads the standard flags as a baseline
+ * This function loads the standard flags as a baseline 
  * (and for dbs that haven't yet converted).
  * \param ns name of flagspace to initialize.
  */
@@ -828,7 +832,7 @@ init_flag_table(const char *ns)
   FLAGSPACE *n;
 
   if (!(n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces))) {
-    do_rawlog(LT_ERR, "FLAG INIT: Unable to locate flagspace %s.", ns);
+    do_rawlog(LT_ERR, T("FLAG INIT: Unable to locate flagspace %s."), ns);
     return;
   }
 
@@ -846,7 +850,7 @@ init_flag_table(const char *ns)
       flag_add(n, a->alias, f);
     else
       do_rawlog(LT_ERR,
-                "FLAG INIT: flag alias %s matches no known flag.", a->alias);
+                T("FLAG INIT: flag alias %s matches no known flag."), a->alias);
   }
   flag_add_additional(n);
 }
@@ -1095,7 +1099,7 @@ destroy_flag_bitmask(object_flag_type bitmask)
 }
 
 /** Add a bit into a bitmask.
- * This function sets a particular bit in a bitmask (e.g. bit 42),
+ * This function sets a particular bit in a bitmask (e.g. bit 42), 
  * by computing the appropriate byte, and the appropriate bit within the byte,
  * and setting it.
  * \param bitmask a flag bitmask.
@@ -1112,7 +1116,7 @@ set_flag_bitmask(object_flag_type bitmask, int bit)
 }
 
 /** Add a bit into a bitmask.
- * This function clears a particular bit in a bitmask (e.g. bit 42),
+ * This function clears a particular bit in a bitmask (e.g. bit 42), 
  * by computing the appropriate byte, and the appropriate bit within the byte,
  * and clearing it.
  * \param bitmask a flag bitmask.
@@ -1129,7 +1133,7 @@ clear_flag_bitmask(object_flag_type bitmask, int bit)
 }
 
 /** Test a bit in a bitmask.
- * This function tests a particular bit in a bitmask (e.g. bit 42),
+ * This function tests a particular bit in a bitmask (e.g. bit 42), 
  * by computing the appropriate byte, and the appropriate bit within the byte,
  * and testing it.
  * \param bitmask a flag bitmask.
@@ -1262,7 +1266,7 @@ string_to_bits(const char *ns, const char *str)
 
   bitmask = new_flag_bitmask(ns);
   if (!(n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces))) {
-    do_rawlog(LT_ERR, "FLAG: Unable to locate flagspace %s.", ns);
+    do_rawlog(LT_ERR, T("FLAG: Unable to locate flagspace %s."), ns);
     return bitmask;
   }
   if (!str)
@@ -1373,7 +1377,7 @@ can_set_flag(dbref player, dbref thing, FLAG *flagp, int negate)
   }
 
   /* Checking for the ZONE flag. If you set this, the player had
-   * better be zone-locked!
+   * better be zone-locked! 
    */
   if (!negate && is_flag(flagp, "ZONE") &&
       (getlock(thing, Zone_Lock) == TRUE_BOOLEXP)) {
@@ -1566,6 +1570,9 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
     /* log if necessary */
     if (f->perms & F_LOG)
       do_log(LT_WIZ, player, thing, "%s FLAG CLEARED", f->name);
+    /* those who unDARK return to the WHO */
+    if (is_flag(f, "DARK") && IsPlayer(thing))
+      hide_player(thing, 0);
     /* notify the area if something stops listening, but only if it
        wasn't listening before */
     if (!IsPlayer(thing) && (hear || listener) &&
@@ -1628,6 +1635,9 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
       notify(player, T("Warning: Setting trust flag on zoned object"));
     if (is_flag(f, "SHARED"))
       check_zone_lock(player, thing, 1);
+    /* DARK players should be treated as logged out */
+    if (is_flag(f, "DARK") && IsPlayer(thing))
+      hide_player(thing, 1);
     /* notify area if something starts listening */
     if (!IsPlayer(thing) &&
         (is_flag(f, "PUPPET") || is_flag(f, "MONITOR")) && !hear && !listener) {
@@ -1725,7 +1735,7 @@ set_power(dbref player, dbref thing, const char *flag, int negate)
   }
   if (f->perms & F_LOG)
     do_log(LT_WIZ, player, thing, "%s POWER %s", f->name,
-           negate ? T("CLEARED") : T("SET"));
+           negate ? "CLEARED" : "SET");
 }
 
 /** Check if an object has one or all of a list of flag characters.
@@ -1739,7 +1749,6 @@ set_power(dbref player, dbref thing, const char *flag, int negate)
  * \param type 0=orflags, 1=andflags.
  * \retval 1 object has any (or all) flags.
  * \retval 0 object has no (or not all) flags.
- * \retval -1 invalid flag specified
  */
 int
 flaglist_check(const char *ns, dbref player, dbref it, const char *fstr,
@@ -1755,11 +1764,11 @@ flaglist_check(const char *ns, dbref player, dbref it, const char *fstr,
   if (!GoodObject(it))
     return 0;
   if (!(n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces))) {
-    do_rawlog(LT_ERR, "FLAG: Unable to locate flagspace %s", ns);
+    do_rawlog(LT_ERR, T("FLAG: Unable to locate flagspace %s"), ns);
     return 0;
   }
   for (s = (char *) fstr; *s; s++) {
-    /* Check for a negation sign. If we find it, we note it and
+    /* Check for a negation sign. If we find it, we note it and 
      * increment the pointer to the next character.
      */
     if (*s == '!') {
@@ -1772,7 +1781,7 @@ flaglist_check(const char *ns, dbref player, dbref it, const char *fstr,
     if (!*s)
       /* We got a '!' that wasn't followed by a letter.
        * Fail the check. */
-      return -1;
+      return (type == 1) ? 0 : ret;
     /* Find the flag. */
     fp = letter_to_flagptr(n, *s, Typeof(it));
     if (!fp) {
@@ -1794,7 +1803,10 @@ flaglist_check(const char *ns, dbref player, dbref it, const char *fstr,
            * we couldn't find that flag. For AND, since we've failed
            * a check, we can return false. Otherwise we just go on.
            */
-          return -1;
+          if (type == 1)
+            return 0;
+          else
+            continue;
         }
       } else {
         if (type == 1)
@@ -1811,7 +1823,7 @@ flaglist_check(const char *ns, dbref player, dbref it, const char *fstr,
          * it, or we don't have a flag and we want it. Since it's
          * AND, we return false.
          */
-        ret = 0;
+        return 0;
       } else if ((type == 0) && ((!negate && temp) || (negate && !temp))) {
         /* We've found something we want, in an OR. We OR a
          * true with the current value.
@@ -1835,7 +1847,6 @@ flaglist_check(const char *ns, dbref player, dbref it, const char *fstr,
  * \param type 0=orlflags, 1=andlflags.
  * \retval 1 object has any (or all) flags.
  * \retval 0 object has no (or not all) flags.
- * \retval -1 invalid flag specified
  */
 int
 flaglist_check_long(const char *ns, dbref player, dbref it, const char *fstr,
@@ -1850,14 +1861,14 @@ flaglist_check_long(const char *ns, dbref player, dbref it, const char *fstr,
   if (!GoodObject(it))
     return 0;
   if (!(n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces))) {
-    do_rawlog(LT_ERR, "FLAG: Unable to locate flagspace %s", ns);
+    do_rawlog(LT_ERR, T("FLAG: Unable to locate flagspace %s"), ns);
     return 0;
   }
   copy = mush_strdup(fstr, "flaglistlong");
   sp = trim_space_sep(copy, ' ');
   while (sp) {
     s = split_token(&sp, ' ');
-    /* Check for a negation sign. If we find it, we note it and
+    /* Check for a negation sign. If we find it, we note it and 
      * increment the pointer to the next character.
      */
     if (*s == '!') {
@@ -1870,7 +1881,8 @@ flaglist_check_long(const char *ns, dbref player, dbref it, const char *fstr,
     if (!*s) {
       /* We got a '!' that wasn't followed by a string.
        * Fail the check. */
-      ret = -1;
+      if (type == 1)
+        ret = 0;
       break;
     }
     /* Find the flag. */
@@ -1879,8 +1891,11 @@ flaglist_check_long(const char *ns, dbref player, dbref it, const char *fstr,
        * we couldn't find that flag. For AND, since we've failed
        * a check, we can return false. Otherwise we just go on.
        */
-      ret = -1;
-      break;
+      if (type == 1) {
+        ret = 0;
+        break;
+      } else
+        continue;
     } else {
       /* does the object have this flag? There's a special case
        * here, as we want (for consistency with flaglist_check)
@@ -1904,6 +1919,7 @@ flaglist_check_long(const char *ns, dbref player, dbref it, const char *fstr,
          * AND, we return false.
          */
         ret = 0;
+        break;
       } else if ((type == 0) && ((!negate && temp) || (negate && !temp))) {
         /* We've found something we want, in an OR. We OR a
          * true with the current value.
@@ -2014,7 +2030,7 @@ do_flag_info(const char *ns, dbref player, const char *name)
   FLAGSPACE *n;
   /* Find the flagspace */
   if (!(n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces))) {
-    do_rawlog(LT_ERR, "FLAG: Unable to locate flagspace %s", ns);
+    do_rawlog(LT_ERR, T("FLAG: Unable to locate flagspace %s"), ns);
     return;
   }
 
@@ -2026,20 +2042,20 @@ do_flag_info(const char *ns, dbref player, const char *name)
     notify_format(player, T("No such %s."), strlower(ns));
     return;
   }
-  notify_format(player, "%9s: %s", T("Name"), f->name);
-  notify_format(player, "%9s: %c", T("Character"), f->letter);
-  notify_format(player, "%9s: %s", T("Aliases"), list_aliases(n, f));
-  notify_format(player, "%9s: %s", T("Type(s)"), privs_to_string(type_privs, f->type));
-  notify_format(player, "%9s: %s", T("Perms"), privs_to_string(flag_privs, f->perms));
-  notify_format(player, "%9s: %s",
-                T("ResetPrms"), privs_to_string(flag_privs, f->negate_perms));
+  notify_format(player, "     Name: %s", f->name);
+  notify_format(player, "Character: %c", f->letter);
+  notify_format(player, "  Aliases: %s", list_aliases(n, f));
+  notify_format(player, "  Type(s): %s", privs_to_string(type_privs, f->type));
+  notify_format(player, "    Perms: %s", privs_to_string(flag_privs, f->perms));
+  notify_format(player, "ResetPrms: %s",
+                privs_to_string(flag_privs, f->negate_perms));
 }
 
-/** Change the permissions on a flag.
+/** Change the permissions on a flag. 
  * \verbatim
  * This is the user-interface to @flag/restrict, which uses this syntax:
  *
- * @flag/restrict <flag> = <perms>, <negate_perms>
+ * @flag/restrict <flag> = <perms>, <negate_perms> 
  *
  * If no comma is given, use <perms> for both.
  * \endverbatim
@@ -2162,7 +2178,7 @@ do_flag_type(const char *ns, dbref player, const char *name, char *type_string)
  * \verbatim
  * This function implements @flag/add, which uses this syntax:
  *
- * @flag/add <flag> = <letter>, <type(s)>, <perms>, <negate_perms>
+ * @flag/add <flag> = <letter>, <type(s)>, <perms>, <negate_perms> 
  *
  * <letter> defaults to none. If given, it must not match an existing
  *   flag character that could apply to the given type
@@ -2202,10 +2218,6 @@ do_flag_add(const char *ns, dbref player, const char *name, char *args_right[])
   if (strchr(name, ' ')) {
     notify_format(player, T("%s names may not contain spaces."),
                   strinitial(ns));
-    return;
-  }
-  if (!good_flag_name(strupper(name))) {
-    notify_format(player, T("That's not a valid %s name."), strlower(ns));
     return;
   }
   Flagspace_Lookup(n, ns);
@@ -2386,7 +2398,7 @@ alias_flag_generic(const char *ns, const char *name, const char *alias)
 }
 
 
-/** Change a flag's letter.
+/** Change a flag's letter. 
  * \param ns name of the flagspace to use.
  * \param player the enactor.
  * \param name name of the flag.
@@ -2435,7 +2447,7 @@ do_flag_letter(const char *ns, dbref player, const char *name,
 }
 
 
-/** Disable a flag.
+/** Disable a flag. 
  * \verbatim
  * This function implements @flag/disable.
  * Only God can do this, and it makes the flag effectively
@@ -2470,7 +2482,7 @@ do_flag_disable(const char *ns, dbref player, const char *name)
   notify_format(player, T("%s %s disabled."), strinitial(ns), f->name);
 }
 
-/** Delete a flag.
+/** Delete a flag. 
  * \verbatim
  * This function implements @flag/delete.
  * Only God can do this, and clears the flag on everyone
@@ -2705,28 +2717,3 @@ show_command_flags(object_flag_type flagmask, object_flag_type powers)
   *bp = '\0';
   return fbuf;
 }
-
-/** Lookup table for good_flag_name */
-extern char atr_name_table[UCHAR_MAX + 1];
-
-/** Is s a good flag name? We allow the same characters we do in attribute
- *  names, and the same size limit.
- * \param s a string to test
- * \return 1 valid name
- * \return 0 invalid name
- */
-int
-good_flag_name(char const *s)
-{
-  const unsigned char *a;
-  int len = 0;
-  if (!s || !*s)
-    return 0;
-  for (a = (const unsigned char *) s; *a; a++, len++)
-    if (!atr_name_table[*a])
-      return 0;
-  if (*(s + len - 1) == '`')
-    return 0;
-  return len <= ATTRIBUTE_NAME_LIMIT;
-}
-

@@ -96,34 +96,42 @@ could_doit(dbref player, dbref thing)
   return (eval_lock(player, thing, Basic_Lock));
 }
 
-/** Check for CHARGES on thing and, if present, lower.
+/** Execute an action on an object, and handle objects with limited charges.
+ * \param player the enactor.
  * \param thing object being used.
- * \retval 0 charges was set to 0
- * \retval 1 charges not set, or was > 0
+ * \param awhat action attribute on object to be triggered.
+ * \retval 0 no action taken.
+ * \retval 1 action taken.
  */
 int
-charge_action(dbref thing)
+charge_action(dbref player, dbref thing, const char *awhat)
 {
   ATTR *b;
   char tbuf2[BUFFER_LEN];
   int num;
 
+  if (!awhat || !*awhat)
+    return 0;
+
   /* check if object has # of charges */
   b = atr_get_noparent(thing, "CHARGES");
 
   if (!b) {
-    return 1; /* no CHARGES */
+    /* no charges set, just execute the action */
+    return queue_attribute(thing, awhat, player);
   } else {
     strcpy(tbuf2, atr_value(b));
     num = atoi(tbuf2);
-    if (num > 0) {
+    if (num) {
       /* charges left, decrement and execute */
-      (void) atr_add(thing, "CHARGES", tprintf("%d", num - 1),
-                     Owner(b->creator), 0);
-      return 1;
+      int res;
+      if ((res = queue_attribute(thing, awhat, player)))
+        (void) atr_add(thing, "CHARGES", tprintf("%d", num - 1),
+                       Owner(b->creator), 0);
+      return res;
     } else {
       /* no charges left, try to execute runout */
-      return 0;
+      return queue_attribute(thing, "RUNOUT", player);
     }
   }
 }
@@ -324,8 +332,7 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
     global_eval_context.wnxt[j] = myenv[j];
   for (j = 0; j < NUMQ; j++)
     global_eval_context.rnxt[j] = NULL;
-  if (awhat && *awhat)
-    attribs_used = queue_attribute(thing, awhat, player) || attribs_used;
+  attribs_used = charge_action(player, thing, awhat) || attribs_used;
   orator = preserve_orator;
   return attribs_used;
 }
@@ -421,7 +428,7 @@ can_see(dbref player, dbref thing, int can_see_loc)
  *   Wizards control everything else.
  *   Nothing else controls a wizard, and only royalty control royalty.
  *   Mistrusted objects control only themselves.
- *   Objects with the same owner control each other, unless the
+ *   Objects with the same owner control each other, unless the 
  *     target object is TRUST and the would-be controller isn't.
  *   If ZMOs allow control, and you pass the ZMO, you control.
  *   If the owner is a Zone Master, and you pass the ZM, you control.
@@ -940,7 +947,7 @@ ok_function_name(const char *name)
  * Right now, this means: filter out SEND and XCH_CMD if
  * the player isn't privileged. Params may contain a space-separated
  * list of tag=value pairs. It's probably possible to fool this
- * checking. Needs more work, or removing HTML support.
+ * checking. Needs more work, or removing HTML support. 
  * \param player player using the attribute, or NOTHING for internal.
  * \param params the attributes to use.
  * \retval 1 params is acceptable.
@@ -1075,7 +1082,7 @@ parse_match_possessor(dbref player, char **str)
   *str = obj;
 
   /* we already have a terminating null, so we're okay to just do matches */
-  return match_result(player, box, NOTYPE, MAT_NEIGHBOR | MAT_POSSESSION | MAT_ENGLISH);
+  return match_result(player, box, NOTYPE, MAT_NEIGHBOR | MAT_POSSESSION);
 }
 
 
@@ -1119,8 +1126,8 @@ page_return(dbref player, dbref target, const char *type,
   }
 }
 
-/** Returns the apparent location of object.
- * This is the location for players and things, source for exits, and
+/** Returns the apparent location of object. 
+ * This is the location for players and things, source for exits, and 
  * NOTHING for rooms.
  * \param thing object to get location of.
  * \return apparent location of object (NOTHING for rooms).
@@ -1142,9 +1149,9 @@ where_is(dbref thing)
 
 /** Are two objects near each other?
  * Returns 1 if obj1 is "nearby" object2. "Nearby" is a commutative
- * relation defined as:
- *   obj1 is in the same room as obj2, obj1 is being carried by
- *   obj2, or obj1 is carrying obj2.
+ * relation defined as:  
+ *   obj1 is in the same room as obj2, obj1 is being carried by   
+ *   obj2, or obj1 is carrying obj2. 
  * Returns 0 if object isn't nearby or the input is invalid.
  * \param obj1 first object.
  * \param obj2 second object.
@@ -1209,9 +1216,9 @@ do_verb(dbref player, dbref cause, char *arg1, char **argv)
     notify(player, T("What do you want to do the verb?"));
     return;
   }
-  /* Control check is fascist.
+  /* Control check is fascist. 
    * First check: we don't want <actor> to do something involuntarily.
-   *   Both victim and actor have to be controlled by the thing which did
+   *   Both victim and actor have to be controlled by the thing which did 
    *   the @verb (for speed we do a WIZARD check first), or: cause controls
    *   actor plus the second check is passed.
    * Second check: we need read access to the attributes.
@@ -1244,8 +1251,7 @@ do_verb(dbref player, dbref cause, char *arg1, char **argv)
   for (i = 0; i < 10; i++)
     global_eval_context.wnxt[i] = argv[i + 7];
 
-  if (argv[6] && *argv[6])
-    queue_attribute(victim, upcasestr(argv[6]), actor);
+  charge_action(actor, victim, upcasestr(argv[6]));
 }
 
 /** Structure for passing arguments to grep_util_helper().
@@ -1374,7 +1380,7 @@ grep_helper(dbref player, dbref thing __attribute__ ((__unused__)),
 
   /* if we got it, display it */
   if (found)
-    notify_format(player, "%s%s [#%d%s]:%s %s",
+    notify_format(player, "%s%s [#%d%s]%s %s",
                   ANSI_HILITE, AL_NAME(atr),
                   Owner(AL_CREATOR(atr)),
                   privs_to_letters(attr_privs_view, AL_FLAGS(atr)),

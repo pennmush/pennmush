@@ -471,7 +471,7 @@ msgstr ""
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=iso-8859-1\n"
+"Content-Type: text/plain; charset=ISO-8859-1\n"
 "Content-Transfer-Encoding: 8bit"
 
 #: extchat.c:1503
@@ -2326,7 +2326,7 @@ msgstr "Effac\351 "
 
 #: attrib.c:942
 msgid "Cleared"
-msgstr "Effacé"
+msgstr "Effac\351"
 
 #: create.c:680
 #, c-format
@@ -7506,7 +7506,7 @@ msgstr "octets"
 
 #: extchat.c:1377
 msgid "cleared"
-msgstr "OK."
+msgstr "effac\351"
 
 #: src/bsd.c:2021
 #, c-format

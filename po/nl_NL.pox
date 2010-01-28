@@ -118,11 +118,6 @@ msgstr "  Er waren nog geen attributen ingelezen."
 msgid "  No attributes had been read yet.\n"
 msgstr "  Er waren nog geen attributen ingelezen.\n"
 
-#: markup.c:1149
-#, c-format
-msgid "  Text: %s"
-msgstr "  Tekst: %s"
-
 #: src/services.c:803
 #, c-format
 msgid " %s           - runs as a service, or stand-alone\n"
@@ -191,14 +186,6 @@ msgstr " * Ongeldge text in attribuut %s op #%d. Veranderd naar:\n"
 msgid " * Name of #%d is longer than the maximum, truncating.\n"
 msgstr " * Naam van #%d is langer dan het maximum, bezig met inkorten.\n"
 
-#: conf.c:1786
-msgid " @config/save is disabled."
-msgstr " @config/save is uitgeschakeld."
-
-#: conf.c:1784
-msgid " @config/save is enabled."
-msgstr " @config/save is ingeschakeld."
-
 #: src/conf.c:1098
 msgid " @lock/drop is available."
 msgstr " @lock/drop is beschikbaar."
@@ -222,18 +209,6 @@ msgstr " @mail-boodschappen hebben geen onderwerplijn."
 #: src/conf.c:1000
 msgid " @mail messages have subject lines."
 msgstr " @mail-boodschappen hebben onderwerpregels."
-
-#: parse.c:1332
-msgid " AND "
-msgstr " EN "
-
-#: parse.c:1335
-msgid " ARGUMENTS BUT GOT "
-msgstr " ARGUMENTEN MAAR ONTVING ER "
-
-#: conf.c:1780
-msgid " Altivec instructions are being used."
-msgstr " Altivec instructies worden gebruikt."
 
 #: conf.c:1044
 msgid " Attributes are 8-bit word compressed in memory."
@@ -274,10 +249,6 @@ msgstr " CPU gebruikslimitaties worden NIET ondersteund."
 #: conf.c:1496
 msgid " CPU usage limiting is supported."
 msgstr " CPU gebruikslimitaties worden ondersteund."
-
-#: conf.c:1713
-msgid " Changed help files will be automatically reindexed."
-msgstr " Veranderde help bestanden worden automatisch herindexeerd."
 
 #: src/conf.c:1044
 msgid " Creation/modification times for objects are enabled."
@@ -367,10 +338,6 @@ msgstr " Boodschappen zonder onderwerpregel hebben als onderwerp (geen onderwerp
 msgid " Messages without subject lines use the beginning of the message as subject"
 msgstr " Boodschappen zonder onderwerpregel gebruiken het begin van de boodschap als onderwerp"
 
-#: parse.c:1324
-msgid " OR "
-msgstr " OF "
-
 #: src/conf.c:954
 msgid " Passwords are convereted from plaintext to SHS"
 msgstr " Wachtwoorden worden van gewone tekst naar SHS omgezet"
@@ -398,14 +365,6 @@ msgstr " Wachtwoorden worden niet gecodeerd opgeslagen."
 #: src/conf.c:1021
 msgid " Quota restrictions are being enforced."
 msgstr " Quota restricties worden gehandhaafd."
-
-#: conf.c:1772
-msgid " SSE2 instructions are being used."
-msgstr " SSE2 instructies worden gebruikt."
-
-#: conf.c:1776
-msgid " SSE3 instructions are being used."
-msgstr " SSE3 instructies worden gebruikt."
 
 #: src/conf.c:994
 msgid " Side effect functions are disabled."
@@ -435,17 +394,9 @@ msgstr " Het MUSH-bouwswaarschuwingssysteem is ingeschakeld."
 msgid " The MUSH was compiled with MySQL support."
 msgstr " De MUSH is gecompileerd met MySQL ondersteuning."
 
-#: conf.c:1687
-msgid " The MUSH was compiled with Postgresql support."
-msgstr " De MUSH is gecompileerd met Postgresql ondersteuning."
-
 #: conf.c:1594
 msgid " The MUSH was compiled with SSL support."
 msgstr " De MUSH is gecompileerd met SSL ondersteuning."
-
-#: conf.c:1690
-msgid " The MUSH was compiled with Sqlite3 support."
-msgstr " De MUSH is gecompileerd met Sqlite3 ondersteuning."
 
 #: src/conf.c:1088
 msgid " The UNINSPECTED flag is enabled."
@@ -553,10 +504,6 @@ msgstr " uitgezet."
 msgid " set."
 msgstr " aangezet."
 
-#: speech.c:359 wiz.c:1260
-msgid " to "
-msgstr " naar "
-
 #: src/speech.c:475
 msgid " whispers to "
 msgstr " fluistert naar "
@@ -575,12 +522,8 @@ msgstr ""
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=iso-8859-1\n"
+"Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit"
-
-#: funcrypt.c:53 funcrypt.c:61 funcrypt.c:100 funcrypt.c:107
-msgid "#-1 ALLOCATION ERROR"
-msgstr "#-1 ALLOCATIE FOUT"
 
 #: extchat.c:1503
 msgid "#-1 AMBIGUOUS CHANNEL NAME"
@@ -650,11 +593,6 @@ msgstr "#-1 ARGUMENTEN MOETEN POSITIEVE INTEGERS ZIJN"
 msgid "#-1 ATTRIBUTE LENGTH TOO LONG"
 msgstr "#-1 ATTRIBUUT TE LANG"
 
-#: fundb.c:204
-#, c-format
-msgid "#-1 BAD ARGUMENT FORMAT TO %s"
-msgstr "#-1 ONGELDIG ARGUMENT VOOR %s"
-
 #: fundb.c:1998
 msgid "#-1 BAD ARGUMENT FORMAT TO ATTRIB_SET"
 msgstr "#-1 ONGELDIG ARGUMENT FORMAAT VOOR ATTRIB_SET"
@@ -666,10 +604,6 @@ msgstr "#-1 ONGELDIG ARGUMENT FORMAAT VOOR GET"
 #: src/fundb.c:291
 msgid "#-1 BAD ARGUMENT FORMAT TO GET_EVAL"
 msgstr "#-1 ONGELDIG FORMAAT VOOR GET_EVAL"
-
-#: fundb.c:981
-msgid "#-1 BAD ATTR NAME"
-msgstr "#-1 ONGELDIGE ATTR NAAM"
 
 #: src/funmath.c:987
 msgid "#-1 BASE OUT OF RANGE"
@@ -690,30 +624,6 @@ msgstr "#-1 KAN SLECHTS ÉÉN ELEMENT TESTEN"
 #: funstr.c:1971
 msgid "#-1 CANNOT HAVE COLUMN OF SIZE 0"
 msgstr "#-1 CAN GEEN KOLOM HEBBEN VAN GROOTTE 0"
-
-#: funstr.c:1893
-msgid "#-1 CANNOT HAVE COLUMNS OF NEGATIVE SIZE"
-msgstr "#-1 KAN GEEN KOLOMMEN MET NEGATIEVE GROOTTE HEBBEN"
-
-#: funstr.c:1897 funstr.c:1903
-msgid "#-1 CANNOT HAVE COLUMNS THAT LARGE"
-msgstr "#-1 KAN NIET ZULKE GROTE KOLOMMEN HEBBEN"
-
-#: extchat.c:2307
-msgid "#-1 CHANNEL DOES NOT HAVE A BUFFER"
-msgstr "#-1 KANAAL HEEFT GEEN BUFFER"
-
-#: funmath.c:2490 funmath.c:2526
-msgid "#-1 COMPARISON REQUIRES 2 OR MORE NUMBERS"
-msgstr "#-1 2 OF MEER NUMMERS NODIG VOOR VERGELIJKING"
-
-#: funcrypt.c:69 funcrypt.c:134 funcrypt.c:141 funcrypt.c:154
-msgid "#-1 CONVERSION ERROR"
-msgstr "#-1 CONVERSIE FOUT"
-
-#: funtime.c:89
-msgid "#-1 COULDN'T FORMAT TIME"
-msgstr "#-1 KON GEEN TIJDSFORMAAT MAKEN"
 
 #: src/funmath.c:754 src/funmath.c:1584 src/funmath.c:1628 src/funmath.c:1673\nsrc/funmath.c:1707 src/funmath.c:1751
 msgid "#-1 DIVISION BY ZERO"
@@ -743,11 +653,6 @@ msgstr "#-1 FROM BASIS BUITEN BEREIK"
 msgid "#-1 FUNCTION ("
 msgstr "#-1 FUNCTIE ("
 
-#: parse.c:1319
-#, c-format
-msgid "#-1 FUNCTION (%s) EXPECTS "
-msgstr "#-1 FUNCTIE (%s) VERWACHT "
-
 #: funmisc.c:163
 #, c-format
 msgid "#-1 FUNCTION (%s) EXPECTS AN EVEN NUMBER OF ARGUMENTS"
@@ -764,18 +669,6 @@ msgstr "#-1 FUNCTIE (SOUNDEX) VEREIST EEN ENKEL WOORD ALS ARGUMENT"
 #: src/funmisc.c:424
 msgid "#-1 FUNCTION (SOUNDLIKE) REQUIRES TWO ONE-WORD ARGUMENTS"
 msgstr "#-1 FUNCTIE (SOUNDLIKE) VEREIST TWEE ENKELE WOORDEN ALS ARGUMENTEN"
-
-#: funmath.c:2423
-msgid "#-1 FUNCTION (dist2d) EXPECTS 4 ARGUMENTS"
-msgstr "#-1 FUNCTIE (dist2d) VERWACHT 4 ARGUMENTEN"
-
-#: funmath.c:2450
-msgid "#-1 FUNCTION (dist3d) expects 6 arguments"
-msgstr "#-1 FUNCTIE (dist3d) VERWACHT 6 ARGUMENTEN"
-
-#: funmisc.c:222
-msgid "#-1 FUNCTION (letq) EXPECTS AN ODD NUMBER OF ARGUMENTS"
-msgstr "#-1 FUNCTIE (letq) VERWACHT EEN ONEVEN AANTAL ARGUMENTEN"
 
 #: src/fundb.c:959 src/fundb.c:1120 src/fundb.c:1145 src/fundb.c:1254\nsrc/fundb.c:1549 src/fundb.c:1555 src/fundb.c:1561 src/fundb.c:1567\nsrc/fundb.c:1573 src/fundb.c:1579 src/fundb.c:1585 src/fundb.c:1591\nsrc/fundb.c:1864 src/funstr.c:901
 msgid "#-1 FUNCTION DISABLED"
@@ -813,10 +706,6 @@ msgstr "#-1 ONGELDIGE ALIGN SPECIFICATIE"
 msgid "#-1 INVALID ANGLE TYPE"
 msgstr "#-1 ONGELDIG HOEK TYPE"
 
-#: function.c:836
-msgid "#-1 INVALID ARGUMENT"
-msgstr "#-1 ONGELDIG ARGUMENT"
-
 #: funstr.c:418
 msgid "#-1 INVALID DBREF"
 msgstr "#-1 ONGELDIG DBREF"
@@ -849,10 +738,6 @@ msgstr "#-1 ONGELDIG AANTAL ARGUMENTEN VOOR ALIGN"
 #: src/fundb.c:1890 src/fundb.c:1912 src/funufun.c:113 src/funufun.c:144
 msgid "#-1 INVALID OBJECT"
 msgstr "#-1 ONGELDIG OBJECT"
-
-#: cque.c:1091
-msgid "#-1 INVALID PID"
-msgstr "#-1 ONGELDIG PID"
 
 #: src/fundb.c:663 src/fundb.c:690
 msgid "#-1 INVALID SECOND ARGUMENT"
@@ -950,10 +835,6 @@ msgstr "#-1BESTAND BESTAAT NIET"
 msgid "#-1 NO SUCH LOCK TYPE"
 msgstr "#-1 SLOT TYPE BESTAAT NIET"
 
-#: fundb.c:1282 fundb.c:1289
-msgid "#-1 NO SUCH LOCK"
-msgstr "#-1 SLOT BESTAAT NIET"
-
 #: src/fundb.c:155 src/fundb.c:189 src/fundb.c:205 src/fundb.c:255\nsrc/fundb.c:297 src/fundb.c:1609 src/funlist.c:2315 src/funlist.c:2358
 msgid "#-1 NO SUCH OBJECT VISIBLE"
 msgstr "#-1 OBJECT IS NIET ZICHTBAAR"
@@ -977,10 +858,6 @@ msgstr "#-1 TYPE BESTAAT NIET"
 #: src/funufun.c:310
 msgid "#-1 NO SUCH USER FUNCTION"
 msgstr "#-1 GEBRUIKER FUNCTIE BESTAAT NIET"
-
-#: extchat.c:2279
-msgid "#-1 NO TEXT GIVEN"
-msgstr "#-1 GEEN TEXT OPGEGEVEN"
 
 #: src/conf.c:905
 msgid "#-1 NO VALUE GIVEN"
@@ -1090,10 +967,6 @@ msgstr "#-1 TR KAN GEEN NIET-PRINTENDE KARAKTERS ACCEPTEREN"
 msgid "#-1 TWO-ARGUMENT FORM OF FUNCTION DISABLED"
 msgstr "#-1 TWEE ARGUMENTEN VORM VAN FUNCTIE UITGESCHAKELD"
 
-#: funmisc.c:235 funmisc.c:241 funmisc.c:267
-msgid "#-1 UNABLE TO ALLOCATE MEMORY"
-msgstr "#-1 KON GEEN GEHEUGEN TOEWIJZEN"
-
 #: src/conf.c:909
 msgid "#-1 UNABLE TO SET OPTION"
 msgstr "#-1 KAN OPTIE NIET INSTELLEN"
@@ -1133,11 +1006,6 @@ msgstr "#-1 BREEDTE TE KLEIN"
 #: src/extmail.c:1641
 msgid "#-? fun_mailstats called with invalid called_as!"
 msgstr "#-? fun_mailstats werd opgeroepen met ongeldige called_as!"
-
-#: game.c:2081
-#, c-format
-msgid "%10ld %% memory in use"
-msgstr "%10ld %% geheugen in gebruik"
 
 #: src/flags.c:967
 #, c-format
@@ -1249,11 +1117,6 @@ msgstr "%s - Ik herken die vlag niet."
 msgid "%s - I don't recognize that power."
 msgstr "%s - Ik herken die kracht niet."
 
-#: set.c:889 set.c:891
-#, c-format
-msgid "%s - Set: %s"
-msgstr "%s - Gezet: %s"
-
 #: src/wiz.c:1207
 #, c-format
 msgid "%s - power granted."
@@ -1279,30 +1142,10 @@ msgstr "%s Slot [%d%s]: %s"
 msgid "%s Lock: %s"
 msgstr "%s Slot: %s"
 
-#: look.c:1206
-#, c-format
-msgid "%s [broadcasting]."
-msgstr "%s [zendt uit]."
-
-#: look.c:1193 look.c:1233
-#, c-format
-msgid "%s [commands]."
-msgstr "%s [commando's]."
-
-#: wiz.c:1256
-#, c-format
-msgid "%s [from "
-msgstr "%s [van "
-
 #: wiz.c:1583
 #, c-format
 msgid "%s [from %s to %s]"
 msgstr "%s [van %s naar %s]"
-
-#: wiz.c:1236 wiz.c:1273
-#, c-format
-msgid "%s [owner: "
-msgstr "%s [eigenaar: "
 
 #: src/look.c:954 src/look.c:979 src/look.c:1019
 #, c-format
@@ -1313,16 +1156,6 @@ msgstr "%s [eigenaar: %s] luistert."
 #, c-format
 msgid "%s [owner: %s]"
 msgstr "%s [eigenaar: %s]"
-
-#: look.c:1188 look.c:1228
-#, c-format
-msgid "%s [speech]. (connected)"
-msgstr "%s [spraak]. (verbonden)"
-
-#: look.c:1190 look.c:1230
-#, c-format
-msgid "%s [speech]."
-msgstr "%s [spraak]."
 
 #: flags.c:2112
 #, c-format
@@ -1764,21 +1597,6 @@ msgstr "%s is van je afgepakt."
 msgid "%s whispers to %s."
 msgstr "%s fluisterd aan %s."
 
-#: speech.c:387
-#, c-format
-msgid "%s whispers%s."
-msgstr "%s fluistert%s."
-
-#: speech.c:374
-#, c-format
-msgid "%s whispers%s: %s"
-msgstr "%s fluistert%s: %s"
-
-#: look.c:341
-#, c-format
-msgid "%s#%d/%s [#%d%s]%s is veiled"
-msgstr "%s#%d/%s [#%d%s]%s is verhuld"
-
 #: destroy.c:412
 #, c-format
 msgid "%s's %s has been spared from destruction."
@@ -1788,21 +1606,6 @@ msgstr "%s's %s is gered van de vernietiging."
 #, c-format
 msgid "%s's %s is scheduled to be destroyed."
 msgstr "%s's %s is opgegeven voor vernietiging."
-
-#: look.c:1360
-#, c-format
-msgid "%s(#%d) [dropto]"
-msgstr "%s(#%d) [dropto]"
-
-#: look.c:1351
-#, c-format
-msgid "%s(#%d) [from: %s(#%d)]"
-msgstr "%s(#%d) [van: %s(#%d)]"
-
-#: look.c:1369 look.c:1377
-#, c-format
-msgid "%s(#%d) [home]"
-msgstr "%s(#%d) [home]"
 
 #: src/extmail.c:1168
 #, c-format
@@ -1964,20 +1767,10 @@ msgstr "*** BLEAH *** Vreemde uitgang %s (#%d) in #%d met als bron NIETS. \n"
 msgid "*** End of MALIAS ***"
 msgstr "*** Einde van MALIAS ***"
 
-#: wiz.c:1632
-#, c-format
-msgid "*** NAMELOCK *** %s"
-msgstr "*** NAAMSLOT *** %s"
-
 #: src/wiz.c:2001
 #, c-format
 msgid "*** SITELOCK *** %s for %s(%s) --> %s"
 msgstr "*** SITELOCK *** %s voor %s(%s) --> %s"
-
-#: wiz.c:1497 wiz.c:1504
-#, c-format
-msgid "*** SITELOCK *** %s"
-msgstr "*** SITELOCK *** %s"
 
 #: src/malias.c:300
 msgid "*****  End of Mail Aliases *****"
@@ -2061,38 +1854,6 @@ msgstr "@command is ALTIJD ingeschakeld."
 msgid "@forwardlist should contain only dbrefs."
 msgstr "@forwardlist hoort alleen dbrefs te bevatten."
 
-#: function.c:1195
-msgid "@function"
-msgstr "@function"
-
-#: command.c:2119
-#, c-format
-msgid "@hook/after: #%d/%s"
-msgstr "@hook/after: #%d/%s"
-
-#: command.c:2116
-#, c-format
-msgid "@hook/before: #%d/%s"
-msgstr "@hook/before: #%d/%s"
-
-#: command.c:2122
-#, c-format
-msgid "@hook/ignore: #%d/%s"
-msgstr "@hook/ignore: #%d/%s"
-
-#: command.c:2125
-#, c-format
-msgid "@hook/override: #%d/%s"
-msgstr "@hook/override: #%d/%s"
-
-#: cmds.c:687
-msgid "@message them with what?"
-msgstr "@message met wat?"
-
-#: cmds.c:694
-msgid "@message who?"
-msgstr "@message wie?"
-
 #: src/flags.c:1040
 msgid "@set !GOING has been disabled. Use @undestroy instead."
 msgstr "@set !GOING is uitgeschakeld. Gebruik @undestroy."
@@ -2128,10 +1889,6 @@ msgstr "Een ding kan niet z'n eigen voorouder zijn!"
 msgid "ALIAS : %s for nonexistant command %s"
 msgstr "ALIAS : %s voor niet bestaand commando %s"
 
-#: parse.c:1327
-msgid "AT LEAST "
-msgstr "TEN MINSTE "
-
 #: atr_tab.c:159
 #, c-format
 msgid "ATR INIT: attribute alias %s matches no known attribute."
@@ -2145,11 +1902,6 @@ msgstr "ATR INIT: attribuut alias %s komt met geen enkel bekend attribuut overee
 #: src/attrib.c:186 src/attrib.c:299 src/attrib.c:309 src/attrib.c:361\nsrc/attrib.c:582
 msgid "ATTR value"
 msgstr "ATTR waarde"
-
-#: access.c:213
-#, c-format
-msgid "Access file %s not found."
-msgstr "Toegangsbestand %s niet gevonden."
 
 #: src/bsd.c:559 src/bsd.c:761
 msgid "Ack!  Failed reopening stderr!"
@@ -2244,19 +1996,9 @@ msgstr "Alle quotas gezet op %d."
 msgid "All"
 msgstr "Alle"
 
-#: mymalloc.c:518
-#, c-format
-msgid "Allocator for %s:"
-msgstr "Allocator voor %s:"
-
 #: wiz.c:1810
 msgid "Any name matching these wildcard patterns is banned:"
 msgstr "Iedere naam die met deze wildcards overeenkomt is verboden:"
-
-#: command.c:1812
-#, c-format
-msgid "Arguments  : %s"
-msgstr "Argumenten : %s"
 
 #: function.c:910
 #, c-format
@@ -2295,30 +2037,15 @@ msgstr "Poging commando uit te voeren door stopgezet object #%d"
 msgid "Attempting to start PennMUSH as a service ...\n"
 msgstr "Poging om PennMUSH als service te starten ...\n"
 
-#: atr_tab.c:368
-#, c-format
-msgid "Attribs: %s"
-msgstr "Attribs: %s"
-
 #: src/set.c:633
 #, c-format
 msgid "Attribute %s (%d copies)"
 msgstr "Attribuut %s (%d kopieën)"
 
-#: set.c:1118
-#, c-format
-msgid "Attribute %s cannot be wiped because a child attribute cannot be wiped."
-msgstr "Attribuut %s kan niet gewist worden omdat een child attribuut niet gewist kan worden."
-
 #: attrib.c:1592
 #, c-format
 msgid "Attribute %s is SAFE. Set it !SAFE to modify it."
 msgstr "Attribuut %s is SAFE. Zet het !SAFE om het te wijzigen."
-
-#: attrib.c:821
-#, c-format
-msgid "Attribute %s on object #%d lacks a parent!"
-msgstr "Attribuut %s op object #%d heeft geen parent!"
 
 #: src/attrib.c:1031
 msgid "Attribute locked."
@@ -2349,19 +2076,10 @@ msgstr "Hoorbare uitgangen in deze kamer zijn uitgeschakeld."
 msgid "BAILOUT: caught signal %d"
 msgstr "BAILOUT: caught signal %d"
 
-#: parse.c:1330
-msgid "BETWEEN "
-msgstr "TUSSEN "
-
 #: attrib.c:158
 #, c-format
 msgid "Bad attribute name %s on object %s"
 msgstr "Ongeldige attribuutnaam %s op object %s."
-
-#: boolexp.c:617
-#, c-format
-msgid "Bad boolexp opcode %d %d in object #%d"
-msgstr "Ongeldige boolexp opcode %d %d op object #%d"
 
 #: command.c:1312
 msgid "Bad command name."
@@ -2438,18 +2156,10 @@ msgstr "Kapot slot op #%d in object aangeroepen door #%d"
 msgid "Broken lock type %s in object called by #%d"
 msgstr "Kapot slot type %s in object aangeroepen door #%d"
 
-#: extchat.c:2085
-msgid "Buf"
-msgstr "Buf"
-
 #: src/version.c:44 src/version.c:46
 #, c-format
 msgid "Build date: %s"
 msgstr "Bouwdatum: %s"
-
-#: function.c:1193
-msgid "Builtin function"
-msgstr "Ingebouwde functie"
 
 #: cmds.c:1036
 msgid "Buy for WHAT price?"
@@ -2758,10 +2468,6 @@ msgstr "CHAT: Je verlaat kanaal <%s>."
 msgid "CHAT: You may wish to set the CHAN_USEFIRSTMATCH flag on yourself."
 msgstr "CHAT: Wellicht wil je de CHAN_USEFIRSTMATCH op jezelf zetten."
 
-#: extchat.c:2537
-msgid "CHAT: You must control the mogrifier."
-msgstr "CHAT: Je moet de mogrifier beheren."
-
 #: extchat.c:2935
 msgid "CHAT: You must join a channel to recall from it."
 msgstr "CHAT: Je moet op een kanaal zitten om de berichtengeschiedenis te kunnen bekijken."
@@ -2774,10 +2480,6 @@ msgstr "CHAT: Je verwijdert %s van kanaal <%s>."
 #: extchat.c:252
 msgid "CHAT: warning: chatdb and game db were saved at different times!"
 msgstr "CHAT: waarschuwing: chatdb en spel db zijn op verschillende tijden opgeslagen!"
-
-#: flags.c:1738
-msgid "CLEARED"
-msgstr "GEWIST"
 
 #: log.c:276
 #, c-format
@@ -2799,30 +2501,15 @@ msgstr "CMD: %s in %s: %s"
 msgid "CMD: SUSPECT %s in %s: %s"
 msgstr "CMD: SUSPECT %s in %s: %s"
 
-#: conf.c:963 conf.c:983 conf.c:1003
-#, c-format
-msgid "CONFIG: Couldn't alias %s to %s."
-msgstr "CONFIG: Kon %s niet aliasen als %s."
-
 #: conf.c:484 conf.c:502
 #, c-format
 msgid "CONFIG: Couldn't alias %s to %s.\n"
 msgstr "CONFIG: Kon %2$s geen alias maken van %1$s \n"
 
-#: conf.c:913
-#, c-format
-msgid "CONFIG: Invalid command or restriction for %s."
-msgstr "CONFIG: Ongeldig commando of ongeldige restrictie voor %s."
-
 #: src/conf.c:442
 #, c-format
 msgid "CONFIG: Invalid command or restriction for %s.\n"
 msgstr "CONFIG: Ongeldig commando of ongeldige beperking voor %s. \n"
-
-#: conf.c:936
-#, c-format
-msgid "CONFIG: Invalid function or restriction for %s."
-msgstr "CONFIG: Ongeldige functie of restrictie voor %s."
 
 #: conf.c:453
 #, c-format
@@ -2839,20 +2526,10 @@ msgstr "CONFIG: Unbekende tijdsinterval in optie %s"
 msgid "CONFIG: attempt to set option %s to a bad dbref (#%d)"
 msgstr "CONFIG: poging om optie %s in te stellen op een een dbref (#%d)"
 
-#: conf.c:990
-#, c-format
-msgid "CONFIG: attribute_alias %s requires an alias."
-msgstr "CONFIG: attribute_alias vereist een alias."
-
 #: conf.c:689
 #, c-format
 msgid "CONFIG: attribute_alias %s requires an alias.\n"
 msgstr "CONFIG: attribute_alias %s vereist een alias.\n"
-
-#: conf.c:970
-#, c-format
-msgid "CONFIG: command_alias %s requires an alias."
-msgstr "CONFIG: command_alias vereist een alias."
 
 #: conf.c:491
 #, c-format
@@ -2883,11 +2560,6 @@ msgstr "CONFIG: compressie achtervoegsel is opgegeven maar wordt niet gebruikt o
 msgid "CONFIG: compression suffix is specified but not used in Win32, ignoring\n"
 msgstr "CONFIG: Compressie achtervoegsel is opgegeven maar wordt niet gebruikt onder Win32, wordt genegeerd\n"
 
-#: conf.c:1074
-#, c-format
-msgid "CONFIG: directive '%s' in cnf file ignored."
-msgstr "CONFIG: instructie '%s' in cnf bestand genegeerd."
-
 #: src/conf.c:474
 #, c-format
 msgid "CONFIG: directive '%s' in cnf file ignored.\n"
@@ -2913,19 +2585,10 @@ msgstr "CONFIG: vlag '%s' kan niet worden ingesteld. \n"
 msgid "CONFIG: flag '%s' for type not found.\n"
 msgstr "CONFIG: vlag '%s' voor type niet gevonden.\n"
 
-#: conf.c:1010
-#, c-format
-msgid "CONFIG: function_alias %s requires an alias."
-msgstr "CONFIG: function_alias %s vereist een alias."
-
 #: conf.c:509
 #, c-format
 msgid "CONFIG: function_alias %s requires an alias.\n"
 msgstr "CONFIG: function_alias %s vereist een alias.\n"
-
-#: conf.c:1027 conf.c:1039
-msgid "CONFIG: help_command requires a command name and file name."
-msgstr "CONFIG: help_command vereist een commando naam en een bestandsnaam."
 
 #: conf.c:478 conf.c:490
 msgid "CONFIG: help_command requires a command name and file name.\n"
@@ -2951,80 +2614,35 @@ msgstr "CONFIG: locale instructie '%s' mist uit cnf bestand. Standaard waarde ge
 msgid "CONFIG: local directive '%s' missing from cnf file. using default value."
 msgstr "CONFIG: locale instructie '%s' mist uit cnf bestand. standaard waarde gebruikt."
 
-#: conf.c:869
-#, c-format
-msgid "CONFIG: option %s not a valid dbref or -1!"
-msgstr "CONFIG: optie %s is niet een geldig dbref of -1!"
-
-#: conf.c:855
-#, c-format
-msgid "CONFIG: option %s not a valid room!"
-msgstr "CONFIG: optie %s is geen geldige kamer!"
-
-#: conf.c:637
-#, c-format
-msgid "CONFIG: option %s value %s invalid."
-msgstr "CONFIG: optie %s waarde %s is ongeldig."
-
 #: src/conf.c:304
 #, c-format
 msgid "CONFIG: option %s value %s invalid.\n"
 msgstr "CONFIG: optie %s waarde %s ongeldig.\n"
-
-#: conf.c:701
-#, c-format
-msgid "CONFIG: option %s value limited to #%d"
-msgstr "CONFIG: optie %s waarde gelimiteerd tot #%d"
 
 #: conf.c:348
 #, c-format
 msgid "CONFIG: option %s value limited to #%d\n"
 msgstr "CONFIG: optie %s waarde gelimiteerd tot #%d\n"
 
-#: conf.c:740 conf.c:804
-#, c-format
-msgid "CONFIG: option %s value limited to %d"
-msgstr "CONFIG: optie %s waarde gelimiteerd tot %d"
-
 #: src/conf.c:354
 #, c-format
 msgid "CONFIG: option %s value limited to %d\n"
 msgstr "CONFIG: optie %s waarde is gelimiteerd tot %d\n"
-
-#: conf.c:834
-#, c-format
-msgid "CONFIG: option %s value overflow"
-msgstr "CONFIG: optie %s waarde overflow"
 
 #: conf.c:585
 #, c-format
 msgid "CONFIG: option %s value overflow\n"
 msgstr "CONFIG: optie %s waarde overflow\n"
 
-#: conf.c:663 conf.c:838
-#, c-format
-msgid "CONFIG: option %s value truncated"
-msgstr "CONFIG: optie %s waarde afgekapt"
-
 #: src/conf.c:327
 #, c-format
 msgid "CONFIG: option %s value truncated\n"
 msgstr "CONFIG: optie %s waarde ingekort\n"
 
-#: conf.c:921
-#, c-format
-msgid "CONFIG: restrict_command %s requires a restriction value."
-msgstr "CONFIG: restrict_command %s vereist een restrictie waarde."
-
 #: src/conf.c:451
 #, c-format
 msgid "CONFIG: restrict_command %s requires a restriction value.\n"
 msgstr "CONFIG: restrict_command %s vereist een beperkingswaarde. \n"
-
-#: conf.c:944
-#, c-format
-msgid "CONFIG: restrict_function %s requires a restriction value."
-msgstr "CONFIG: restrict_function %s vereist een restrictie waarde."
 
 #: conf.c:462
 #, c-format
@@ -3053,11 +2671,6 @@ msgstr "Kan niet als gast inloggen (teveel al ingelogd)"
 #, c-format
 msgid "Can't open %s for reading"
 msgstr "Kan %s niet openen om uit te lezen"
-
-#: help.c:369
-#, c-format
-msgid "Can't open %s for reading: %s"
-msgstr "Kan %s niet openen om te lezen: %s"
 
 #: src/bsd.c:3082
 #, c-format
@@ -3122,11 +2735,6 @@ msgstr "Kanalen: *GEEN*"
 msgid "Channels:"
 msgstr "Kanalen:"
 
-#: flags.c:2046
-#, c-format
-msgid "Character: %c"
-msgstr "Karakter: %c"
-
 #: src/log.c:334
 msgid "Checkpoint log wiped."
 msgstr "Checkpoint log gewist."
@@ -3141,7 +2749,7 @@ msgstr "Gewist "
 
 #: attrib.c:942
 msgid "Cleared"
-msgstr "Vrijgemaakt"
+msgstr "Gewist"
 
 #: create.c:680
 #, c-format
@@ -3185,11 +2793,6 @@ msgstr "Commando is alleen voor bouwers."
 msgid "Command log wiped."
 msgstr "Commando log gewist."
 
-#: command.c:1818
-#, c-format
-msgid "Commands: %s"
-msgstr "Commando's: %s"
-
 #: access.c:400
 #, c-format
 msgid "Comment: %s"
@@ -3199,10 +2802,6 @@ msgstr "Commentaar: %s"
 #, c-format
 msgid "Compilation flags: %s"
 msgstr "Compilatie vlaggen: %s"
-
-#: conf.c:546
-msgid "Compile-time options"
-msgstr "Compile-time opties"
 
 #: version.c:47
 #, c-format
@@ -3250,11 +2849,6 @@ msgstr "Verbinding naar GOING speler niet toegestaan vanaf %s (%s)"
 msgid "Connections allowed by: "
 msgstr "Verbindingen toegestaan vanaf: "
 
-#: wiz.c:1061
-#, c-format
-msgid "Contents: %d"
-msgstr "Inhoud: %d"
-
 #: look.c:494 look.c:750
 msgid "Contents:"
 msgstr "Inhoud:"
@@ -3284,18 +2878,6 @@ msgstr "Gekopieerd %i %s, %ld %s\n"
 msgid "Copied %i file%s, %ld byte%s\n"
 msgstr "Gekopieerd %i file%s, %ld byte%s\n"
 
-#: conf.c:547
-msgid "Cosmetic options"
-msgstr "Kosmetische opties"
-
-#: conf.c:548
-msgid "Costs"
-msgstr "Kosten"
-
-#: timer.c:153
-msgid "Could not allocate migration reference array"
-msgstr "Kon migration reference array niet toewijzen"
-
 #: bsd.c:2382
 #, c-format
 msgid "Couldn't allocate %d bytes of memory for '%s'!"
@@ -3312,10 +2894,6 @@ msgstr "Kon geen geheugen toewijzen in replace_string2!"
 #: wiz.c:1517
 msgid "Couldn't allocate memory in search!"
 msgstr "Kon geen geheugen toewijzen in zoekopdracht!"
-
-#: bsd.c:4045
-msgid "Couldn't find that descriptor."
-msgstr "Kon die descriptor niet vinden."
 
 #: src/wiz.c:1635 src/wiz.c:1929
 msgid "Couldn't find that player."
@@ -3353,11 +2931,6 @@ msgstr "Wat maken?"
 msgid "Created: %s"
 msgstr "Aangemaakt: %s"
 
-#: create.c:475
-#, c-format
-msgid "Created: Object %s."
-msgstr "Gemaakt: Object %s."
-
 #: filecopy.c:72
 #, c-format
 msgid "Creating file: %s"
@@ -3384,10 +2957,6 @@ msgstr "Maker"
 #, c-format
 msgid "Creator: %s"
 msgstr "Maker: %s"
-
-#: atr_tab.c:211
-msgid "Critical memory failure - Alert God!"
-msgstr "Kritieke geheigen fout - Waarschuw God!"
 
 #: db.c:337
 #, c-format
@@ -3432,26 +3001,14 @@ msgstr "Database niet correct beëindigd, bestand %s"
 msgid "Database not terminated correctly, file %s\n"
 msgstr "Database niet correct beëindigd, bestand %s\n"
 
-#: conf.c:549
-msgid "Database options"
-msgstr "Database opties"
-
 #: src/game.c:188
 #, c-format
 msgid "Debug dumping, checkpoint interval %d."
 msgstr "Debug dump, checkpoint interval %d."
 
-#: conf.c:552
-msgid "Default flags for new objects"
-msgstr "Standaard vlaggen voor nieuwe objecten"
-
 #: access.c:429
 msgid "Denied connections are not logged"
 msgstr "Niet toegestane verbindingen worden niet gelogd"
-
-#: bsd.c:3324
-msgid "Des"
-msgstr "Des"
 
 #: extchat.c:2186
 #, c-format
@@ -3495,10 +3052,6 @@ msgstr "Wat uitgraven?"
 msgid "Disabled."
 msgstr "Uitgeschakeld."
 
-#: info_master.c:123
-msgid "Disabling info_slave due to too many errors."
-msgstr "Info_slave uitgeschakeld vanwege teveel fouten."
-
 #: src/destroy.c:1232
 msgid "Disconnected room. So what?"
 msgstr "Niet verbonden kamer. En dan?"
@@ -3539,11 +3092,6 @@ msgstr "Gereed."
 msgid "Down MOTD: %s"
 msgstr "Down MOTD: %s"
 
-#: bsd.c:3457
-#, c-format
-msgid "Down motd %s."
-msgstr "Down motd %s."
-
 #: src/bsd.c:4270
 msgid "Down motd set."
 msgstr "Down motd ingesteld."
@@ -3551,11 +3099,6 @@ msgstr "Down motd ingesteld."
 #: cque.c:710
 msgid "Drained."
 msgstr "Gedraind."
-
-#: wiz.c:1076
-#, c-format
-msgid "Drop-to: %d"
-msgstr "Drop-to: %d"
 
 #: src/look.c:789
 #, c-format
@@ -3587,11 +3130,6 @@ msgstr "Vb.: @name <speler> = <nieuwe naam> <wachtwoord>"
 msgid "E.g.: name player = newname password"
 msgstr "Vb.: name <speler> = <nieuwe naam> <wachtwoord>"
 
-#: game.c:446
-#, c-format
-msgid "EMERGENCY SHUTDOWN: %s"
-msgstr "NOODBEEINDIGING: %s"
-
 #: src/destroy.c:1303
 #, c-format
 msgid "ERROR DBCK: Moved object %d"
@@ -3600,11 +3138,6 @@ msgstr "DBCK FOUT: Object %d verplaatst"
 #: game.c:309
 msgid "ERROR! Database save failed."
 msgstr "FOUT! Opslaan database niet gelukt."
-
-#: bsd.c:939
-#, c-format
-msgid "ERROR! forking dump exited with exit code %d"
-msgstr "FOUT! dump met fork afgesloten met exit code %d"
 
 #: bsd.c:4241
 #, c-format
@@ -3676,10 +3209,6 @@ msgstr "FOUT: Can configuratie bestand %s niet openen. \n"
 msgid "ERROR: Contents of object %d corrupt at object %d cleared"
 msgstr "FOUT: Inhoud van object %d corrupt bij object %d gewist."
 
-#: destroy.c:906
-msgid "ERROR: Corrupt free list, fixing"
-msgstr "FOUT: Corrupte free list, bezig met repareren"
-
 #: src/destroy.c:864
 msgid "ERROR: Corrupt free list, fixing\n"
 msgstr "FOUT: Corrupte free lijst, bezig met repareren\n"
@@ -3691,16 +3220,6 @@ msgstr "FOUT: Kon databases niet laden! Bezig met afsluiten."
 #: src/bsd.c:606
 msgid "ERROR: Couldn't load databases! Exiting.\n"
 msgstr "FOUT: Kon database niet inladen. Bezig met afsluiten. \n"
-
-#: memcheck.c:99
-#, c-format
-msgid "ERROR: Deleting a check with a negative count: %s (At %s:%d)"
-msgstr "FOUT: Een check met negatieve teller aan het verwijderen: %s (Bij %s:%d)"
-
-#: memcheck.c:104
-#, c-format
-msgid "ERROR: Deleting a non-existant check: %s (At %s:%d)"
-msgstr "FOUT: Een check die niet bestaat aan het verwijderen: %s (Bij %s:%d)"
 
 #: src/destroy.c:1003
 #, c-format
@@ -3779,11 +3298,6 @@ msgstr "FOUT: Geen einde van dump na object #%d"
 msgid "ERROR: Non object moved!! %d\n"
 msgstr "FOUT: Niet-object verplaatst!! %d\n"
 
-#: destroy.c:905
-#, c-format
-msgid "ERROR: Object #%d should not be free"
-msgstr "FOUT: Object #%d hoort niet vrijgegeven te zijn"
-
 #: src/destroy.c:863
 #, c-format
 msgid "ERROR: Object #%d should not be free\n"
@@ -3797,10 +3311,6 @@ msgstr "FOUT: Oude database zonder vereiste dbflags."
 #, c-format
 msgid "ERROR: Old-style @lock on object #%d\n"
 msgstr "FOUT: Oude-stijl @lock op object %d\n"
-
-#: destroy.c:901
-msgid "ERROR: Removed free list and continued"
-msgstr "FOUT: Free lijst verwijderd en doorgegaan"
 
 #: src/destroy.c:859
 msgid "ERROR: Removed free list and continued\n"
@@ -3944,11 +3454,6 @@ msgstr "Bestemming van uitgang is ongeldig."
 msgid "Exits can only be teleported to other rooms."
 msgstr "Uitgangen kunnen alleen naar andere kamers geteleporteerd worden."
 
-#: wiz.c:1077
-#, c-format
-msgid "Exits: %d"
-msgstr "Uitgangen: %d"
-
 #: look.c:772
 msgid "Exits:"
 msgstr "Uitgangen:"
@@ -4018,11 +3523,6 @@ msgstr "FLAG: Kon flagspace %s niet vinden"
 msgid "FLAG: Unable to locate flagspace %s."
 msgstr "FLAG: Kon flagspace %s niet vinden."
 
-#: wiz.c:611
-#, c-format
-msgid "FORCE: %s"
-msgstr "FORCE: %s"
-
 #: extmail.c:997
 #, c-format
 msgid "Failed attempt to forward @mail to #%d"
@@ -4077,19 +3577,9 @@ msgstr "Registratie van %s door %s mislukt: niet in staat sendmail te openen."
 msgid "Failed to add access node!"
 msgstr "Niet geslaagd toegangs node toe te voegen!"
 
-#: access.c:251
-#, c-format
-msgid "Failed to add access node: %s"
-msgstr "Kon access node niet toevoegen: %s"
-
 #: access.c:207
 msgid "Failed to add sitelock node!"
 msgstr "Niet geslaagd sitelock node toe te voegen!"
-
-#: access.c:234
-#, c-format
-msgid "Failed to add sitelock node: %s"
-msgstr "Kon sitelock node niet toevoegen: %s"
 
 #: src/extmail.c:1023 src/extmail.c:1030
 msgid "Failed to allocate string in send_mail"
@@ -4114,20 +3604,12 @@ msgstr "Kon time locale niet instellen vanuit omgeving.\n"
 #: wiz.c:109
 #, c-format
 msgid "Failure creating '%s' (bad name)"
-msgstr "Niet gelukt '%s' te creëren (foute naam)"
+msgstr "Niet geslaagd '%s' te creëren (ongeldige naam)"
 
 #: wiz.c:113
 #, c-format
 msgid "Failure creating '%s' (bad password)"
-msgstr "Niet geslaagd '%s' te creëren (fout wachtwoord)"
-
-#: mysocket.c:347 mysocket.c:355 mysocket.c:366 mysocket.c:392 mysocket.c:402
-msgid "Fatal network error!"
-msgstr "Fatale netwerk fout!"
-
-#: mysocket.c:384
-msgid "Fatal network error"
-msgstr "Fatale netwerk fout"
+msgstr "Niet geslaagd '%s' te creëren (ongeldig wachtwoord)"
 
 #: src/rob.c:254
 msgid "Feeling poor today?"
@@ -4158,10 +3640,6 @@ msgstr "Bestand is te klein om een MUSH-databank te zijn."
 #: src/filecopy.c:198
 msgid "File is too small to be a MUSH database.\n"
 msgstr "Bestand is te klein om een MUSH database te zijn. \n"
-
-#: conf.c:551
-msgid "Files used by the MUSH"
-msgstr "Bestanden gebruikt door de MUSH"
 
 #: src/extmail.c:1274 src/extmail.c:1682
 #, c-format
@@ -4294,11 +3772,6 @@ msgstr ""
 msgid "Full MOTD: %s"
 msgstr "Vol MOTD: %s"
 
-#: bsd.c:3461
-#, c-format
-msgid "Full motd %s."
-msgstr "Vol motd: %s."
-
 #: src/bsd.c:4274
 msgid "Full motd set."
 msgstr "Vol MOTD ingesteld."
@@ -4334,11 +3807,6 @@ msgstr "Functietabel vol."
 #: src/function.c:741
 msgid "Function updated."
 msgstr "Functie vernieuwd."
-
-#: function.c:807
-#, c-format
-msgid "Functions: %s"
-msgstr "Functies: %s"
 
 #: extmail.c:2479
 msgid "Fwd "
@@ -4450,10 +3918,6 @@ msgstr "SPEL:"
 #: src/extchat.c:1334
 msgid "Gag status must be 'yes' or 'no'."
 msgstr "Tijdelijke afzet status moet 'yes' of 'no' zijn."
-
-#: extchat.c:2134
-msgid "Gag"
-msgstr "Gag"
 
 #: src/wiz.c:363
 msgid "Garbage belongs in the garbage dump."
@@ -4865,11 +4329,6 @@ msgstr "Idle"
 msgid "If you want to quit, use QUIT."
 msgstr "Als je wilt uitloggen, gebruik dan QUIT."
 
-#: chunk.c:2136
-#, c-format
-msgid "Illegal chunk length requested: %d bytes"
-msgstr "Ongeldige chunk lengte opgevraagd: %d bytes"
-
 #: src/destroy.c:1272
 #, c-format
 msgid "Incorrect location on object %s. Reset to #%d."
@@ -4970,22 +4429,6 @@ msgstr "Ongelding bereik argument"
 #: wiz.c:1390 wiz.c:1400
 msgid "Invalid range argument."
 msgstr "Ongelding bereik argument."
-
-#: chunk.c:2154
-msgid "Invalid region after chunk_create!"
-msgstr "Ongeldige region na chunk_create!"
-
-#: chunk.c:2178
-msgid "Invalid region after chunk_delete!"
-msgstr "Ongeldige region na chunk_delete!"
-
-#: chunk.c:2018
-msgid "Invalid region after migrate_slide!"
-msgstr "Ongeldige region na migrate_slide!"
-
-#: wiz.c:1772
-msgid "Invalid search class+restriction format."
-msgstr "Ongeldig zoek klasse+restrictie formaat."
 
 #: wiz.c:1918
 msgid "Invalid start index"
@@ -5117,10 +4560,6 @@ msgstr "Letter voor %s %s gezet op '%c'."
 msgid "Limit of %d players reached. Logins disabled.\n"
 msgstr "Limiet van %d spelers bereikt. Inloggen uitgeschakeld.\n"
 
-#: conf.c:554
-msgid "Limits and other constants"
-msgstr "Limieten en andere constanten"
-
 #: help.c:332
 #, c-format
 msgid "Line %d of %s: line too long"
@@ -5177,16 +4616,6 @@ msgstr "Loc #"
 msgid "Location  : #%d/%s"
 msgstr "Locatie   : #%d/%s"
 
-#: function.c:1711
-#, c-format
-msgid "Location  : #%d/%s\n"
-msgstr "Locatie   : #%d/%s\n"
-
-#: wiz.c:1068
-#, c-format
-msgid "Location: %d"
-msgstr "Locatie: %d"
-
 #: look.c:791
 #, c-format
 msgid "Location: %s"
@@ -5203,14 +4632,6 @@ msgstr "Sloten"
 #: src/log.c:358
 msgid "Log wiped."
 msgstr "Logbestand gewist."
-
-#: game.c:1505
-msgid "Logged."
-msgstr "Gelogd."
-
-#: conf.c:555
-msgid "Logging options"
-msgstr "Log opties"
 
 #: src/speech.c:981
 msgid "Long distance to "
@@ -5564,10 +4985,6 @@ msgstr "POST: Ongelezen boodschap #%d:%d verwijderd! Gebruik @mail/unclear %d:%d
 msgid "MAIL: Warning! Limit on inbox messages is %d!"
 msgstr "POST: Waarschuwing! Limiet op inbox berichten is %d!"
 
-#: malias.c:145
-msgid "MAIL: What alias do you want to create?"
-msgstr "POST: Welk alias wil je aanmaken?"
-
 #: src/malias.c:143
 msgid "MAIL: What alias do you want to create?."
 msgstr "POST: Welke alias wil je aanmaken?"
@@ -5658,11 +5075,6 @@ msgstr "POST: speler '%s' bestaat al in alias %s."
 #, c-format
 msgid "MAIL: player '%s' is not in alias %s."
 msgstr "POST: speler '%s' zit niet in alias %s."
-
-#: bsd.c:3464
-#, c-format
-msgid "MOTD: %s"
-msgstr "MOTD: %s"
 
 #: game.c:650
 #, c-format
@@ -5774,28 +5186,9 @@ msgstr "Overeenkomsten op objecten in de zone master room van locatie:"
 msgid "Members of channel <%s> are:"
 msgstr "Leden van kanaal <%s> zijn:"
 
-#: conf.c:556
-msgid "Message files sent by the MUSH"
-msgstr "Bericht bestanden gestuurd door de MUSH"
-
-#: attrib.c:565
-#, c-format
-msgid "Missing root attribute '%s' on object #%d!\n"
-msgstr "Niet gevonden root attribuut '%s' op object #%d!\n"
-
-#: extchat.c:2730
-#, c-format
-msgid "Mogrifier: %s (#%d)"
-msgstr "Mogrifier: %s (#%d)"
-
 #: src/fundb.c:1426
 msgid "More than one match found."
 msgstr "Meer dan een overeenkomst gevonden."
-
-#: bsd.c:3449
-#, c-format
-msgid "Motd %s."
-msgstr "Motd: %s."
 
 #: src/bsd.c:4262
 msgid "Motd set."
@@ -5805,10 +5198,6 @@ msgstr "Motd ingesteld."
 #, c-format
 msgid "Moved to %s."
 msgstr "Verplaatst naar %s."
-
-#: extchat.c:2084
-msgid "Msgs"
-msgstr "Msgs"
 
 #: src/player.c:165
 #, c-format
@@ -5822,10 +5211,6 @@ msgstr "Moet een van 'everyone', 'members', 'admin' of 'owner' zijn (mag afgekor
 #: src/extchat.c:1279
 msgid "Mute status must be 'yes' or 'no'."
 msgstr "Mute status moet 'yes' of 'no' zijn."
-
-#: wiz.c:1258 wiz.c:1261
-msgid "NOWHERE"
-msgstr "NERGENS"
 
 #: src/malias.c:284
 msgid "Name         Description                         Use See Owner"
@@ -5883,10 +5268,6 @@ msgstr "Netwerk I/O: %10ld in     %10ld out"
 msgid "Network I/O: %10ld in     %10ld out\n"
 msgstr "Netwerk I/O: %10ld in     %10ld out\n"
 
-#: conf.c:557
-msgid "Networking and connection-related options"
-msgstr "Netwerk en connectie-gerelateerde opties"
-
 #: src/wiz.c:131
 #, c-format
 msgid "New player '%s' (#%d) created with password '%s'"
@@ -5914,11 +5295,6 @@ msgstr "Geen commando gevonden in code door %s - begin code niet met functies."
 #, c-format
 msgid "No command vector on command %s."
 msgstr "Geen commando vector gevonden op commando %s."
-
-#: help.c:78
-#, c-format
-msgid "No entries matching '%s' were found."
-msgstr "Geen gegevens die voldoen aan '%s' gevonden."
 
 #: src/bsd.c:3090
 #, c-format
@@ -6068,11 +5444,6 @@ msgstr "Geen van je verbindingen is inactief."
 msgid "Not enough money to do search."
 msgstr "Niet genoeg geld om zoekopdracht uit te voeren."
 
-#: cque.c:218
-#, c-format
-msgid "Not enough money to queue command for %s(#%d)."
-msgstr "Niet genoeg geld om commando in de queue te zetten voor %s (#%d)."
-
 #: src/cque.c:182
 msgid "Not enough money to queue command."
 msgstr "Niet genoeg geld om commando in wachtrij te plaatsen."
@@ -6134,17 +5505,9 @@ msgstr "Objecten: %d     Limiet: ONGELIMITEERD"
 msgid "Obvious exits:"
 msgstr "Duidelijke uitgangen:"
 
-#: extchat.c:2134
-msgid "Off"
-msgstr "Uit"
-
 #: bsd.c:3848 bsd.c:3851 bsd.c:3855 bsd.c:3859
 msgid "On For"
 msgstr "Hier Gedurende"
-
-#: extchat.c:2134
-msgid "On"
-msgstr "Aan"
 
 #: set.c:1142
 msgid "One attribute wiped."
@@ -6200,33 +5563,9 @@ msgstr "Uitgang #%d geopend"
 msgid "Opened exit %s"
 msgstr "Uitgang %s geopend"
 
-#: cmds.c:205
-msgid "Option set and saved."
-msgstr "Optie gezet en opgeslagen."
-
-#: cmds.c:207
-msgid "Option set but not saved (Saves disabled.)"
-msgstr "Optie gezet maar niet opgeslagen (Opslaan uitgeschakeld.)"
-
 #: src/cmds.c:195
 msgid "Option set."
 msgstr "Optie ingesteld."
-
-#: conf.c:543
-msgid "Options affecting attributes"
-msgstr "Opties die attributen beinvloeden"
-
-#: conf.c:545
-msgid "Options affecting command behavior"
-msgstr "Optties die commando gedrag beinvloeden"
-
-#: conf.c:550
-msgid "Options affecting dumps and other periodic processes"
-msgstr "Opties die dumps en andere periodieke processen beinvloeden"
-
-#: conf.c:553
-msgid "Options affecting function behavior"
-msgstr "Opties die functie gedrag beinvloeden"
 
 #: src/destroy.c:1226
 msgid "Orphaned exit destroyed."
@@ -6309,19 +5648,10 @@ msgstr "Wachtwoord voor %s veranderd."
 msgid "Pemission denied."
 msgstr "Toestemming geweigerd."
 
-#: bsd.c:3324
-msgid "Pend"
-msgstr "Pend"
-
 #: game.c:2159
 #, c-format
 msgid "PennMUSH Uptime: %ld days %ld hours %ld minutes %ld seconds"
 msgstr "PennMUSH Uptime: %ld dagen %ld uur %ld minuten %ld seconden"
-
-#: wiz.c:1062
-#, c-format
-msgid "Pennies: %d"
-msgstr "Pennies: %d"
 
 #: src/extmail.c:1584
 msgid "Permission denied"
@@ -6463,20 +5793,6 @@ msgstr "Programma's doden geen mensen; mensen doden mensen!"
 msgid "Purge complete."
 msgstr "Opschoning voltooid."
 
-#: cque.c:303 cque.c:428
-msgid "Queue entry table full. Try again later."
-msgstr "Queue entry tabel vol. Probeer het later nog eens."
-
-#: cque.c:1368
-#, c-format
-msgid "Queue entry with pid %u halted."
-msgstr "Queue entry met pid %u gestopt."
-
-#: cque.c:1056
-#, c-format
-msgid "Queue entry with pid %u updated."
-msgstr "Queue entry met pid %u geupdate."
-
 #: src/cque.c:786
 #, c-format
 msgid "Queue for : %s"
@@ -6507,10 +5823,6 @@ msgstr "Gelezen "
 #, c-format
 msgid "Recall buffer: %dk, with %d lines stored."
 msgstr "Terugloopbuffer: %dk, met %d regels opgeslagen."
-
-#: bsd.c:3324
-msgid "Recv"
-msgstr "Recv"
 
 #: src/bsd.c:557
 #, c-format
@@ -6550,16 +5862,6 @@ msgstr "%s uit commandotabel verwijderd."
 msgid "Renamed %s to %s in attribute table."
 msgstr "%s in %s veranderd in attributen tabel."
 
-#: player.c:354
-#, c-format
-msgid "Requested character: '%s'. Email address: %s\n"
-msgstr "Aangevraagd karakter: '%s'. Email adres: %s\n"
-
-#: flags.c:2050
-#, c-format
-msgid "ResetPrms: %s"
-msgstr "ResetPrms: %s"
-
 #: function.c:916
 msgid "Restore what?"
 msgstr "Herstel wat?"
@@ -6588,19 +5890,9 @@ msgstr "Beperkingen veranderd."
 msgid "Restrictions unchanged."
 msgstr "Beperkingen onveranderd."
 
-#: command.c:1809
-#, c-format
-msgid "Rightside  : %s"
-msgstr "Rechterhand: %s"
-
 #: src/rob.c:38
 msgid "Rob whom?"
 msgstr "Wie wil je bestelen?"
-
-#: sql.c:445
-#, c-format
-msgid "Row %d: NULL"
-msgstr "Rij %d: NULL"
 
 #: cque.c:170
 #, c-format
@@ -6654,10 +5946,6 @@ msgstr "SIGHUP ontvangen: .txt en .cnf bestanden aan het herladen"
 msgid "SIGNAL_SHUTDOWN: caught signal %d"
 msgstr "SIGNAL_SHUTDOWN: Signaal %d opgevangen"
 
-#: timer.c:210
-msgid "SIGUSR1 received. Rebooting."
-msgstr "SIGUSR1 ontvangen. Aan het rebooten."
-
 #: src/wiz.c:1471
 #, c-format
 msgid "Searches cost %d %s."
@@ -6671,10 +5959,6 @@ msgstr "Zoek fout in bestand %s"
 #: src/cque.c:803
 msgid "Semaphore Queue:"
 msgstr "Semafoor Wachtrij:"
-
-#: bsd.c:3324
-msgid "Sent"
-msgstr "Sent"
 
 #: game.c:1408
 msgid "Separator must be one character."
@@ -6825,10 +6109,6 @@ msgstr "Sorry, je bent niet van het juiste type voor kanaal <%s>."
 msgid "Sorry, your building quota has run out."
 msgstr "Sorry, je bouwquotum is op."
 
-#: mymalloc.c:566 wiz.c:592
-msgid "Sorry."
-msgstr "Sorry."
-
 #: look.c:815
 #, c-format
 msgid "Source: %s"
@@ -6841,10 +6121,6 @@ msgstr "Start verzoek verstuurd naar service\n"
 #: src/bsd.c:5211
 msgid "Starting MUD listening thread ...\n"
 msgstr "Bezig met started van MUD luister thread ...\n"
-
-#: extchat.c:2084
-msgid "Status"
-msgstr "Status"
 
 #: src/services.c:737
 msgid "Stop request sent to service\n"
@@ -7013,10 +6289,6 @@ msgstr "Dat is geen geldige alias."
 msgid "That is not a valid channel."
 msgstr "Dat is geen geldig kanaal."
 
-#: create.c:480
-msgid "That is not a valid dbref."
-msgstr "Dat is geen geldig dbref."
-
 #: lock.c:326
 msgid "That is not a valid lock name."
 msgstr "Dat is geen geldige slot-naam."
@@ -7028,14 +6300,6 @@ msgstr "Dat is geen geldig log."
 #: src/create.c:54
 msgid "That is not a valid object."
 msgstr "Dat is geen geldig object."
-
-#: cque.c:966 cque.c:974 cque.c:1321 cque.c:1330
-msgid "That is not a valid pid!"
-msgstr "Dat is geen geldig pid!"
-
-#: cque.c:990
-msgid "That is not a valid timestamp."
-msgstr "Dat is geen geldige tijdsaanduiding."
 
 #: src/destroy.c:232
 msgid "That is too special to be destroyed."
@@ -7110,10 +6374,6 @@ msgstr "Die speler is niet ingelogd!"
 msgid "That player wishes to have some privacy."
 msgstr "Die speler wil graag wat privacy."
 
-#: bsd.c:2801
-msgid "That port is not active."
-msgstr "Die poort is niet actief."
-
 #: bsd.c:4116
 msgid "That port's not active."
 msgstr "Die poort is niet actief."
@@ -7175,10 +6435,6 @@ msgstr "De huidige poll is: %s"
 #: src/destroy.c:705
 msgid "The floor disappears under your feet, you fall through NOTHINGness and then:"
 msgstr "De vloer onder je voeten verdwijnt, je valt in het niets en dan:"
-
-#: command.c:2138
-msgid "The following commands have hooks: "
-msgstr "De volgende commando's hebben hooks: "
 
 #: src/game.c:1525
 #, c-format
@@ -7290,22 +6546,9 @@ msgstr "Er zijn %d berichten in de post spool."
 msgid "There are %d players connected."
 msgstr "Er zijn %d spelers ingelogd."
 
-#: cque.c:265
-#, c-format
-msgid "There are %ld queue entries! That's too many. Failing to add another."
-msgstr "Er zijn %ld queue entries! Dat zijn er te veel. Kan geen nieuwe toevoegen."
-
-#: access.c:687
-msgid "There are no access rules."
-msgstr "Er zijn geen access regels."
-
 #: src/bsd.c:4788
 msgid "There are no connected players on that channel."
 msgstr "Er zijn geen ingelogde spelers op dat kanaal."
-
-#: command.c:2133
-msgid "There are no hooks currently set."
-msgstr "Er zijn op moment geen hooks actief."
 
 #: bsd.c:3919
 msgid "There are no players connected."
@@ -7323,10 +6566,6 @@ msgstr "Daar kan niks in zitten!"
 msgid "There is 1 player connected."
 msgstr "Er is 1 speler ingelogd."
 
-#: bsd.c:3211 bsd.c:3291 bsd.c:3361
-msgid "There is one player connected."
-msgstr "Er is een speler verbonden."
-
 #: src/move.c:335 src/move.c:336 src/move.c:337
 msgid "There's no place like home..."
 msgstr "Oost west, thuis best..."
@@ -7338,10 +6577,6 @@ msgstr "Er is hier niemand om dingen van te kopen."
 #: src/create.c:496
 msgid "There's nothing left of it to clone!"
 msgstr "Er is niets meer over om te klonen!"
-
-#: command.c:1562
-msgid "This command has not been implemented."
-msgstr "Dit commando is niet geimplementeerd."
 
 #: src/move.c:426
 msgid "This feature coming soon."
@@ -7379,10 +6614,6 @@ msgstr "Tijd gebruikt:   %10ld gebruiker     %10ld sys"
 msgid "Time used:   %10ld user   %10ld sys\n"
 msgstr "Gebruikte tijd:   %10ld gebruiker   %10ld sys\n"
 
-#: conf.c:558
-msgid "TinyMUSH compatibility options"
-msgstr "TinyMUSH compatibiliteitsopties."
-
 #: extchat.c:1836
 #, c-format
 msgid "Title %s for %schannel <%s>."
@@ -7410,11 +6641,6 @@ msgstr "Om dit character te gebruiken, log in op %s en tik:\n"
 #, c-format
 msgid "To channel %s: %s says, \"%s\""
 msgstr "Naar kanaal %s: %s zegt, \"%s\""
-
-#: extchat.c:3693
-#, c-format
-msgid "To channel %s: %s"
-msgstr "Naar kanaal %s: %s"
 
 #: src/extchat.c:968
 #, c-format
@@ -7469,11 +6695,6 @@ msgstr "Te veel recursie in slot!"
 msgid "Total reboots: %d"
 msgstr "Laatste herstart: %s"
 
-#: cque.c:1168
-#, c-format
-msgid "Totals: Player...%d/%d[%ddel]  Object...%d/%d[%ddel]  Wait...%d/%d[%ddel]  Semaphore...%d/%d"
-msgstr "Totalen: Speler...%d/%d[%ddel]  Object...%d/%d[%ddel]  Wacht...%d/%d[%ddel]  Semaphore...%d/%d"
-
 #: wiz.c:1615
 #, c-format
 msgid "Totals: Rooms...%d  Exits...%d  Objects...%d  Players...%d"
@@ -7505,11 +6726,6 @@ msgstr "Probeer het \"rob\" commando eens."
 msgid "Trying to link..."
 msgstr "Probeert aan te sluiten..."
 
-#: chunk.c:2060
-#, c-format
-msgid "Trying to migrate into too small a hole: %04x into %04x!"
-msgstr "Poging om in een te klein gat te migreren: %04x naar %04x!"
-
 #: src/flags.c:955
 #, c-format
 msgid "Type conflict with flag '%c'."
@@ -7524,11 +6740,6 @@ msgstr "Type van %s %s ingesteld."
 msgid "Type: "
 msgstr "Type: "
 
-#: command.c:1753
-#, c-format
-msgid "Types      : %s"
-msgstr "Types      : %s"
-
 #: src/set.c:638
 #, c-format
 msgid "Unable to %s attribute."
@@ -7537,20 +6748,6 @@ msgstr "Niet in staat om attribuut te %s."
 #: src/services.c:649 src/services.c:689 src/services.c:723 src/services.c:759
 msgid "Unable to access service details"
 msgstr "Kan geen toegang krijgen tot service details"
-
-#: access.c:549 access.c:562
-#, c-format
-msgid "Unable to add @sitelock separator: %s"
-msgstr "Kon geen @sitelock separator toevoegen: %s"
-
-#: access.c:542
-#, c-format
-msgid "Unable to add sitelock entry: %s"
-msgstr "Kon geen sitelock toevoegen: %s"
-
-#: command.c:795
-msgid "Unable to allocate command switch table"
-msgstr "Kan geen command switch tabel toewijzen"
 
 #: boolexp.c:1268 boolexp.c:1499
 msgid "Unable to allocate memory for boolexp asm node!"
@@ -7563,26 +6760,6 @@ msgstr "Kan geen geheugen toewijzen voor boolexp string node!"
 #: boolexp.c:1252
 msgid "Unable to allocate memory for boolexp string!"
 msgstr "Kan geen geheugen toewijzen voor boolexp string!"
-
-#: attrib.c:673
-msgid "Unable to allocate memory in atr_add()!"
-msgstr "Kon geen geheugen toewijzen in attr_add()!"
-
-#: attrib.c:574
-msgid "Unable to allocate memory in atr_new_add()!"
-msgstr "Kon geen geheugen toewijzen in attr_new_add()!"
-
-#: funlist.c:2267
-msgid "Unable to allocate memory in fun_iter"
-msgstr "Kan geen geheugen toewijzen in fun_iter"
-
-#: extmail.c:2839
-msgid "Unable to allocate memory in mailfilter"
-msgstr "Kon geen geheugen toewijzen in mailfilter"
-
-#: unparse.c:207
-msgid "Unable to allocate memory in nameformat"
-msgstr "Kon geen geheugen toewijzen in nameformat"
 
 #: plyrlist.c:70 plyrlist.c:101
 msgid "Unable to allocate memory in plyrlist!"
@@ -7601,10 +6778,6 @@ msgstr "Niet in staat om bestand %s te controleren"
 #, c-format
 msgid "Unable to check file %s\n"
 msgstr "Niet in staat om bestand %s te controleren\n"
-
-#: create.c:485
-msgid "Unable to create object with that dbref."
-msgstr "Kon geen object met dat dbref maken."
 
 #: src/services.c:625
 msgid "Unable to create service"
@@ -7686,24 +6859,9 @@ msgstr "Niet in staat het laatste deel te lezen van bestand %s"
 msgid "Unable to read last part of file %s\n"
 msgstr "Niet in staat het laatste deel te lezen van bestand %s\n"
 
-#: bsd.c:5033
-#, c-format
-msgid "Unable to reboot using executable '%s': %s"
-msgstr "Kan niet rebooten met uitvoerbaar bestand '%s': %s"
-
 #: bsd.c:274
 msgid "Unable to register that player with that email address."
 msgstr "Niet in staat speler te registreren met dat email adres."
-
-#: attrib.c:1767
-#, c-format
-msgid "Unable to remove '%s' because of a protected tree attribute."
-msgstr "Kan '%s' niet weghalen vanwege een beschermd tree attribuut."
-
-#: attrib.c:1773
-#, c-format
-msgid "Unable to set '%s' because of a failure to create a needed parent attribute."
-msgstr "Kon '%s' niet zetten vanwege een probleem met het zetten van een benodigd parent attribuut."
 
 #: src/services.c:137
 msgid "Unable to start service, assuming running console-mode application.\n"
@@ -7879,25 +7037,13 @@ msgstr "Gebruik is :-\n"
 msgid "Use See"
 msgstr "Gebruik See"
 
-#: cmds.c:690
-msgid "Use what attribute for the @message?"
-msgstr "Welk attribuut gebruiken voor het @message?"
-
 #: src/conf.c:799
 msgid "Use: @config/list <type of options> where type is one of:"
 msgstr "Gebruik: @config/list <type optie> met als type een uit:"
 
-#: set.c:1021
-msgid "Used."
-msgstr "Gebruikt."
-
 #: src/function.c:644
 msgid "User functions:"
 msgstr "Gebruikers functies:"
-
-#: extchat.c:2084
-msgid "Users"
-msgstr "Gebruikers"
 
 #: move.c:423
 #, c-format
@@ -8200,10 +7346,6 @@ msgstr "Wat wil je op dat kanaal zeggen?"
 msgid "What do you want to set the quota to?"
 msgstr "Waar wil je het quota op zetten?"
 
-#: set.c:595
-msgid "What do you want to set?"
-msgstr "Wat wil je zetten?"
-
 #: src/set.c:491
 msgid "What flag do you want to set?"
 msgstr "Welke vlag wil je zetten?"
@@ -8298,11 +7440,6 @@ msgstr "Wiz MOTD: %s"
 #: src/log.c:352
 msgid "Wizard log wiped."
 msgstr "Wizard log gewist."
-
-#: bsd.c:3453
-#, c-format
-msgid "Wizard motd %s."
-msgstr "Wizard motd %s."
 
 #: src/bsd.c:4266
 msgid "Wizard motd set."
@@ -8633,10 +7770,6 @@ msgstr "Je kunt @CHOWN/PRESERVE niet gebruiken. Gebruik gewoon @CHOWN."
 msgid "You cannot @CLONE/PRESERVE.  Use normal @CLONE instead."
 msgstr "Je kunt @CLONE/PRESERVE niet gebruiken. Gebruik gewoon @CLONE."
 
-#: cque.c:985
-msgid "You cannot adjust the timeout of an indefinite semaphore."
-msgstr "Je kunt de timeout van een onbepaalde semaphore niet aanpassen."
-
 #: src/function.c:731
 msgid "You cannot change a built-in function."
 msgstr "Je kunt een ingebouwde functie niet veranderen."
@@ -8825,11 +7958,6 @@ msgstr "Je bent van de vernietiging gered."
 msgid "You have changed your password."
 msgstr "Je hebt je wachtwoord veranderd."
 
-#: extchat.c:2034
-#, c-format
-msgid "You have no title set on <%s>."
-msgstr "Je hebt geen titel ingesteld op <%s>."
-
 #: look.c:953
 #, c-format
 msgid "You have unlimited %s."
@@ -8930,10 +8058,6 @@ msgstr "Je moet een reeks vlag karakters opgeven."
 #: cmds.c:424
 msgid "You must give a switch for @hook"
 msgstr "Je moet een shakeloptie voor @hook gebruiken."
-
-#: command.c:2073
-msgid "You must give an object."
-msgstr "Je moet een object opgeven."
 
 #: command.c:1357
 msgid "You must give both an object and attribute."
@@ -9359,11 +8483,6 @@ msgstr "Je wachtwoord is veranderd door %s."
 msgid "Your requested player, %s, has been created.\n"
 msgstr "De door jou aangevraagde speler, %s, is aangemaakt. \n"
 
-#: extchat.c:2036
-#, c-format
-msgid "Your title on <%s> is '%s'."
-msgstr "Je titel op <%s> is '%s'."
-
 #: src/set.c:386
 msgid "ZMO requires a more secure zone-lock before you @chzone!"
 msgstr "ZMO moet een veiliger zone slot hebben voordat je @chzone gebruikt!"
@@ -9542,14 +8661,6 @@ msgstr ""
 "\n"
 "*** Inactiviteits timeout ***\n"
 
-#: wiz.c:1248
-msgid ""
-"\n"
-"EXITS:"
-msgstr ""
-"\n"
-"UITGANGEN:"
-
 #: src/extmail.c:2507
 msgid ""
 "\n"
@@ -9565,14 +8676,6 @@ msgid ""
 msgstr ""
 "\n"
 "MUSH uitschakeling voltooid. \n"
-
-#: wiz.c:1284
-msgid ""
-"\n"
-"PLAYERS:"
-msgstr ""
-"\n"
-"SPELERS:"
 
 #: src/game.c:1491
 #, c-format
@@ -9618,22 +8721,6 @@ msgstr ""
 "\n"
 "Proces statistieken:\n"
 
-#: wiz.c:1233
-msgid ""
-"\n"
-"ROOMS:"
-msgstr ""
-"\n"
-"KAMERS"
-
-#: wiz.c:1270
-msgid ""
-"\n"
-"THINGS:"
-msgstr ""
-"\n"
-"DINGEN:"
-
 #: src/db.c:689
 #, c-format
 msgid "\t...finished at object #%d\n"
@@ -9673,37 +8760,14 @@ msgstr "byte"
 msgid "bytes"
 msgstr "bytes"
 
-#: chunk.c:1289
-#, c-format
-msgid "chunk swap file read, %lu remaining, GetLastError %d"
-msgstr "chunk swap bestand leesactie, %lu te gaan, GetLastError %d"
-
-#: chunk.c:1357
-#, c-format
-msgid "chunk swap file write, %lu remaining, GetLastError %d"
-msgstr "chunk swap bestand schrijfactie, %lu te gaan, GetLastError %d"
-
-#: chunk.c:1360
-#, c-format
-msgid "chunk swap file write, %lu remaining, errno %d: %s"
-msgstr "chunk swap bestand schrijfactie, %lu te gaan, errno %d: %s"
-
 #: extchat.c:1377
 msgid "cleared"
 msgstr "verwijderd"
 
-#: set.c:734
-msgid "copied"
-msgstr "gekopieerd"
-
-#: set.c:739
-msgid "copy"
-msgstr "kopie"
-
 #: src/bsd.c:2021
 #, c-format
 msgid "couldn't open cached text file '%s'"
-msgstr "Kon in cache opgeslagen tekstbestand '%s' niet openen."
+msgstr "Gecached tekst bestand tekstbestand '%s' niet openen."
 
 #: move.c:608
 #, c-format
@@ -9730,12 +8794,12 @@ msgstr "uitgang is niet gekoppeld; iedereen kan hem stelen"
 #: src/wiz.c:122
 #, c-format
 msgid "failure creating '%s' (bad name)"
-msgstr "niet gelukt '%s' te maken (verkeerde naam)"
+msgstr "fout bij creëren '%s' (ongeldige naam)"
 
 #: src/wiz.c:127
 #, c-format
 msgid "failure creating '%s' (bad password)"
-msgstr "Niet geslaagd '%s' te creëren (fout wachtwoord)"
+msgstr "fout bij creëren '%s' (ongeldig wachtwoord)"
 
 #: filecopy.c:153
 msgid "file"
@@ -9745,87 +8809,13 @@ msgstr "bestand"
 msgid "files"
 msgstr "bestanden"
 
-#: bsd.c:3443
-msgid "has DARK-connected."
-msgstr "is DARK-ingelogd."
-
-#: bsd.c:3655
-msgid "has DARK-disconnected."
-msgstr "is DARK-uitgelogd."
-
-#: bsd.c:3443
-msgid "has DARK-reconnected."
-msgstr "is DARK-heringelogd."
-
-#: bsd.c:3446
-msgid "has HIDDEN-connected."
-msgstr "is HIDDEN-ingelogd."
-
-#: bsd.c:3658
-msgid "has HIDDEN-disconnected."
-msgstr "is HIDDEN-uitgelogd."
-
-#: bsd.c:3445
-msgid "has HIDDEN-reconnected."
-msgstr "is HIDDEN-heringelogd."
-
 #: src/move.c:101
 msgid "has arrived."
 msgstr "is gearriveerd."
 
-#: bsd.c:3448
-msgid "has connected."
-msgstr "is ingelogd."
-
-#: bsd.c:3661
-msgid "has disconnected."
-msgstr "is uitgelogd."
-
-#: extchat.c:1262 extchat.c:1361
-msgid "has joined this channel"
-msgstr "is het kanaal opgekomen"
-
-#: extchat.c:1262
-msgid "has joined this channel."
-msgstr "is het kanaal opgekomen."
-
-#: extchat.c:1287 extchat.c:1403
-msgid "has left this channel"
-msgstr "is het kanaal afgegaan"
-
-#: extchat.c:1287
-msgid "has left this channel."
-msgstr "is het kanaal afgegaan."
-
 #: src/move.c:96
 msgid "has left."
 msgstr "is vertrokken."
-
-#: bsd.c:3654
-msgid "has partially DARK-disconnected."
-msgstr "is gedeeltelijk DARK-uitgelogd."
-
-#: bsd.c:3657
-msgid "has partially HIDDEN-disconnected."
-msgstr "is gedeeltelijk HIDDEN-uitgelogd."
-
-#: bsd.c:3660
-msgid "has partially disconnected."
-msgstr "is gedeeltelijk uitgelogd."
-
-#: bsd.c:3448
-msgid "has reconnected."
-msgstr "is heringelogd."
-
-#: extchat.c:1808
-#, c-format
-msgid "has renamed %s to %s."
-msgstr "heeft %s hernoemd als %s."
-
-#: bsd.c:957
-#, c-format
-msgid "info_slave on pid %d exited unexpectedly!"
-msgstr "info_slave met pid %d is onverwacht beeindigd!"
 
 #: bsd.c:4233
 #, c-format
@@ -9843,14 +8833,6 @@ msgstr "sleutelvlaggen uitgezet"
 #: src/funmath.c:1974 src/funmath.c:1979 src/funmath.c:1986
 msgid "median list"
 msgstr "median list"
-
-#: set.c:739
-msgid "move"
-msgstr "verplaats"
-
-#: set.c:734
-msgid "moved"
-msgstr "verplaatst"
 
 #: src/warnings.c:202
 msgid "player is missing description"
@@ -9949,10 +8931,6 @@ msgstr "remote poort"
 msgid "room has no description"
 msgstr "kamer heeft geen omschrijving"
 
-#: speech.c:676
-msgid "says"
-msgstr "zegt"
-
 #: speech.c:710
 msgid "says,"
 msgstr "zegt,"
@@ -9960,10 +8938,6 @@ msgstr "zegt,"
 #: extchat.c:1377
 msgid "set"
 msgstr "ingesteld"
-
-#: speech.c:676
-msgid "shouts"
-msgstr "schreeuwt"
 
 #: speech.c:712
 msgid "shouts,"

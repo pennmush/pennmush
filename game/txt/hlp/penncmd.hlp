@@ -57,13 +57,13 @@ These '@' commands are general utility and programming commands:
   @cemit         @command       @config        @decompile     @doing
   @dolist        @drain         @edit          @emit          @entrances
   @find          @force         @function      @gedit         @grep
-  @halt          @lemit         @listmotd      @mail          @notify
-  @nsemit        @nslemit       @nsoemit       @nspemit       @nsprompt      
-  @nsremit       @nszemit       @oemit         @password      @pemit         
-  @prompt        @ps            @remit         @restart       @scan          
-  @search        @select        @stats         @sweep         @switch        
-  @teleport      @trigger       @verb          @version       @wait          
-  @whereis       @zemit
+  @halt          @lemit         @listmotd      @mail          @map
+  @notify        @nsemit        @nslemit       @nsoemit       @nspemit
+  @nsprompt      @nsremit       @nszemit       @oemit         @password      
+  @pemit         @prompt        @ps            @remit         @restart       
+  @scan          @search        @select        @stats         @sweep         
+  @switch        @teleport      @trigger       @verb          @version       
+  @wait          @whereis       @zemit
 
 & @-WIZARD
 These '@' commands are only usable by wizards or privileged players:
@@ -78,9 +78,8 @@ These '@' commands are only usable by wizards or privileged players:
   cv
  
 & ]
-  "]" is a special prefix which can be used before any command. It instructs
-  the MUSH that it shouldn't evaluate the arguments to the command (similar
-  to the "/noeval" switch available on some commands). For example:
+  The "]" command-prefix instructs the MUSH that the rest of the command
+  input that follows should not be evaluated. Here's an example:
 
   > say [add(1,1)]
   You say, "2"
@@ -99,502 +98,374 @@ These '@' commands are only usable by wizards or privileged players:
   set attributes to contain unevaluated code.
 
 & @@
-  @@ [<text>]
  
-  The "@@" command does nothing; it does not evaluate its input or show
-  any messages to the executor. It can be used for commenting code.
-  
-  Example:
-  > @va me=$testing: @emit Test ; @@ Just a test ; @vb me=Testing
-  
-See also: @@(), null()
+  The "@@" command is a special kind of command; it signals the start
+  of a comment. The comment lasts until a semi-colon is found, just
+  like other MUSH programming statements terminate with a semi-colon.
+  It cannot be put into the middle of a statement, like
+  @va me = $testing:@emit Test. @@ Just a test @@; @vb me=Testing.
+  That will result in the object emitting "Test. @@ Just a test. @@"
+  The correct usage is to make the comment a statement by itself:
+  @va me = $testing:@emit Test.; @@ Just a test @@; @vb me=Testing.
+ 
+  It is not necessary to use a closing '@@', but doing so makes the
+  comment stand out much more clearly. A space between the first
+  '@@' and the word following it is necessary.
+& @aahear
+  @aahear <object> = <action list>
+
+  An aahear on an object is activated whenever the object's listen pattern 
+  is matched by anything done/said by either anything else in the room OR 
+  the object itself. In contrast, an ahear on an object cannot be activated 
+  by anything the object itself does.
+
+See also: @listen, @ahear, @amhear, LISTENING
 & @aclone
-  @aclone <object>=<action list>
+  @aclone <object> = <action list>
 
-  Sets the actions to be taken by <object> whenever it's @cloned. This 
-  command can be useful for notifying the owner of a vending machine or
-  parent object when someone uses the machine.
+  Sets the actions to be taken whenever <object> is @cloned. This command 
+  can be useful for notifying the owner of a vending machine or parent 
+  object when someone uses the machine.
 
-  Please note that there are no @clone or @oclone attributes.
-  
+  Please note that there is no @oclone, and that @clone is always a
+  command, not an attribute.
+
 See also: @clone, @create, ACTION LISTS
 & @aconnect
-  @aconnect <object>=<action list>
+  @aconnect <object> = <action list>
 
-  Sets the actions to be taken by <object> when a player connects to the game.
-  @aconnects are triggered on connecting players, their locations (if the
-  room_connects @config option is true), their zone object/objects in their
-  zone master room, and objects in the Master Room.
+  Sets the actions to be taken by a player right after connecting to
+  the game.
+
+  Example: @aconnect me = :stretches luxuriously, as if waking from a nap.
 
   Note that long and spammy @aconnect messages, whether in your room or
   on a channel, are frequently found annoying by other players.
 
-  One argument is passed to @aconnect:
+  The player's location, and zone object/objects in the zone parent
+  room of the location, as well as objects in the master room, are
+  also checked for an @aconnect. If one is found, it will be executed
+  when a player connects in that location or zone (or, in the case of
+  the master room, anywhere). This is only done if the room_connects
+  config option is enabled.
+
+  One descriptor variable is passed to @aconnect:
   %1 = number of player connections (1 if this is an initial connect)
-  
-  Example:
-    > @aconnect me=+who ; +bbscan
 
 See also: @adisconnect, ACTION LISTS
-& @death
 & @adeath
-& @odeath
-  @death <object>[=<message>]
-  @odeath <object>[=<message>]
-  @adeath <object>[=<action list>]
-  
-  These attributes contain the message shown to the killer, the message
-  shown to others in the room, and the actions to be taken when <object>
-  is killed.
+  @adeath <object> = <action list>
 
-  Example:
-   > @death me=You have just slain Cyclonus!
-   > @odeath me=falls to the ground and vanishes.
-
-See also: kill, BEING KILLED, ACTION LISTS
+  Sets the actions to be taken after <object> is killed. 
+ 
+See also: @odeath, @death, kill, BEING KILLED, ACTION LISTS
 & @adescribe
-  @adescribe <object>[=<action list>]
-   
-  Sets the adescribe attribute on <object>, which is triggered whenever
-  someone looks at it. A common use of this command is:
- 
-    @adescribe me=think %n just looked at you.
- 
-  which will inform you whenever someone looks at you. While it is possible to
-  set a message to be broadcasted to everyone in the area when someone looks 
-  at you, this is strongly discouraged, as many people find it annoying.
- 
-See also: @describe, @aidescribe, look, ACTION LISTS
-& @adestroy
-  @adestroy <object>[=<action list>]
- 
-  The adestroy attribute is triggered when <object> is destroyed. It can
-  only be set by wizards.
+  @adescribe <object> = <action list>
   
-See also: @destroy, @nuke
-& @adisconnect
-  @adisconnect <object>[=<action list>]
+  Sets the actions to be taken when  <object> is looked at. 
+  A common use of this command is:
 
-  Sets the actions to be taken by <object> when a player disconnects
-  from the game. @adisconnects are triggered on disconnecting players,
-  their locations (if the room_connects @config option is true),
-  their zone object/objects in their zone master room, and objects in
-  the Master Room.
- 
-  Several arguments are passed to @adisconnect:
-   %1 = number of remaining connections (0 if a full disconnect)
-   %2 = bytes received by the disconnecting descriptor
-   %3 = bytes sent by the disconnecting descriptor
-   %4 = commands issued by the disconnecting descriptor
-   %5 = 1 if the descriptor was hidden on disconnect, 0 otherwise
-  
-  Example:
-  > @adisconnect me = home
- 
+    @adesc me=think %N just looked at you.
+
+  which will inform you whenever someone looks at you. %N will be 
+  replaced by the name of the person who looked. While it is possible to
+  set a message to be broadcasted to everyone in the area when someone
+  looks at you, this is strongly discouraged, as many people find it 
+  annoying.
+
+See also: @describe, @aidescribe, look, SUBSTITUTION, ACTION LISTS
+& @adestroy
+  @adestroy <object> = <action list>
+
+  Sets the actions to be taken by the object when it is destroyed
+  (via @rec or @nuke). This can only be set by a Wizard.
+  If @adestroy doesn't work, try &adestroy. :)
+& @adisconnect
+  @adisconnect <object> = <action list>
+
+  Sets the actions to be taken by a player right after disconnecting
+  from the game.
+
+  Example: @adisconnect me = home
+
+  The player's location, and zone object/objects in the zone parent
+  room of the location, as well as objects in the master room, are
+  checked for an @adisconnect. If one is found, it will be executed
+  when a player disconnects in that location or zone (or, in the case of
+  the master room, anywhere). This is only done if the room_connects
+  config option is enabled.
+
+  Several descriptor variables are passed to @adisconnect:
+  %1 = number of remaining connections (0 if a full disconnect)
+  %2 = bytes received by the disconnecting descriptor
+  %3 = bytes sent by the disconnecting descriptor
+  %4 = commands issued by the disconnecting descriptor
+  %5 = 1 if the descriptor was hidden on disconnect, 0 otherwise
+
 See also: @aconnect, ACTION LISTS, recv(), sent(), cmds()
 & @adrop
-& @odrop
-& @drop
-  @drop <object>[=<message>]
-  @odrop <object>[=<message>]
-  @adrop <object>[=<action list>]
-  
-  When <object> is a player or thing, the @drop attribute is shown to whoever
-  drops <object>, and @odrop to others in the location <object> is dropped
-  in. The @adrop attribute is triggered when <object> is dropped.
-  
-  When <object> is an exit, @drop is shown to objects going through <object>,
-  and @odrop is shown to objects in the exit's destination. @adrop is triggered
-  when someone passes through the exit.
-  
-  Example:
-    > @drop Box=You put the box down gently.
-    > @odrop Box=puts the box down gently.
-    
-    > @odrop South=arrives from the North.
-  
-See also: drop, empty, ACTION LISTS, @success
+  @adrop <object> = <action list>
+
+  Sets the actions to be taken when <object> is dropped. 
+  If <object> is an exit, sets an action to be done after a player
+  has passed through the exit.
+
+See also: @odrop, @drop, drop, ACTION LISTS
 & @aefail
-& @oefail
-& @efail
-  @efail <object>[=<message>]
-  @oefail <object>[=<message>]
-  @aefail <object>[=<action list>]
-  
-  These attributes contain the message shown to someone who fails to enter
-  <object>, the message shown to others when someone fails to enter <object>,
-  and the actions to be taken when someone fails to enter it, respectively.
- 
-See also: enter, @enter, FAILURE, ACTION LISTS
+  @aefail <object> = <action list>
+
+  Sets the actions to be taken by the object when someone fails to enter
+  it.
+
+See also: enter, FAILURE, ACTION LISTS
+& @aenter
+  @aenter <object> = <action list>
+
+  Sets the actions taken by the object whenever someone enters it.
+
+See also: @enter, @oenter, enter, ACTION LISTS
 & @aufail
 & @oufail
 & @ufail
-  @ufail <object>=[<message>]
-  @oufail <object>=[<message>]
-  @aufail <object>=[<action list>]
- 
+  @ufail <object> = <message>
+  @oufail <object> = <message>
+  @aufail <object> = <action>
+
   Sets message shown to a player who fails to use an object via
   the 'use' command (@ufail), message shown to others in the room
+  (@oufail), and action for the object to take (@aufail).
 
   Note that these attributes are @ufail, NOT @ufailure, for
   TinyMUSH compatibility.
 
 & @afailure
-& @ofailure
-& @failure
-  @failure <object>[=<message>]
-  @ofailure <object>[=<message>]
-  @afailure <object>[=<action list>]
+  @afailure <object> = <action list>
 
-  @failure contains the message shown to someone who fails to pass <object>'s
-  Basic @lock. @ofailure contains the message shown to others, and @afailure
-  contains the actions to be taken by <object>.
+  Sets the actions to be taken on failure to pass the @lock on an
+  object. For players and things, this means failure to pick them up
+  with get/take. For exits, this means failure to go through an exit.
   
-  For players and things, this means failure to get/take. For exits, it means
-  failure to go through the exit. For rooms the lock is checked when objects
-  "look" inside the room, though failure to pass the lock does not prevent
-  the object from looking.
+  May be abbreviated @afail. 
 
-See also: get, move, EXITS, @lock, ACTION LISTS
-& @follow
-& @ofollow
+See also: @fail, @ofail, get, EXITS, @lock, ACTION LISTS
 & @afollow
-  @follow <object>[=<message>]
-  @ofollow <object>[= <message>]
-  @aunfollow <object>[=<action list>]
-  
-  Sets the message shown to someone who begins following <object>,
-  the message shown to others in the room, and the actions to be taken
-  by <object> when someone begins following it, respectively. The name
-  of the person following <object> is automatically prepended to the
-  @ofollow message.
+  @afollow <object> = <action list>
 
-See also: follow, unfollow, @unfollow, followers(), ACTION LISTS
-& @unfollow
-& @ounfollow
+  Sets the actions to be taken after someone or something begins 
+  following the object. 
+
+See also: follow, unfollow, followers(), @follow, @ofollow, ACTION LISTS
 & @aunfollow
-  @unfollow <object>[=<message>]
-  @ounfollow <object>[=<message>]
-  @aunfollow <object>[=<action list>]
-  
-  Sets the message shown to someone who stops following <object>,
-  the message shown to others in the room, and the actions to be taken
-  by <object> when someone stops following it, respectively. The name
-  of the person stopping following <object> is automatically prepended
-  to the @ounfollow message.
+  @aunfollow <object> = <action list>
 
-See also: follow, unfollow, @follow, followers(), ACTION LISTS
+  Sets the actions to be taken after someone or something stops 
+  following the object. 
+
+See also: follow, unfollow, followers(), @unfollow, @ounfollow, ACTION LISTS
 & @ahear
-& @aahear
-& @amhear
-  @ahear <object>[=<action list>]
-  @aahear <object>[=<action list>]
-  @amhear <object>[=<action list>]
+  @ahear <object> = <actions>
 
-  Sets the actions to be taken after the object's @listen is matched.
-  @ahear will only be triggered by sound made by other objects, and
-  @amhear is only triggered by sound made by <object> itself. @amhear 
-  will be triggered by all matching sound, regardless of the source.
+  Sets the actions to be taken after the object's @listen is matched. 
+  Note that @ahear ignores any messages that the object itself creates, 
+  so it can only be triggered by other things. If you want the object to
+  be able to trigger itself, try using @amhear or @aahear.
   
-See also: @listen, LISTENING, ACTION LISTS
-& @leave
-& @oleave
+See also: @aahear, @amhear, @listen, ACTION LISTS, LISTENING
 & @aleave
-  @leave <object>[=<message>]
-  @oleave <object>[=<message>]
-  @aleave <object>[=<action list>]
-  
-  These attributes contain the message shown to anyone leaving <object>,
-  the message shown to others inside <object> when someone leaves it,
-  and the actions to be taken by <object> when someone leaves it, respectively.
-  The name of the object leaving is automatically added to the beginning of
-  the @oleave message.
-  
-See also: leave, @oxleave, @lfail, ACTION LISTS,
-& @lfail
-& @olfail
+  @aleave <object> = <action list>
+
+  Sets the actions to be taken whenever someone leaves the object.
+
+See also: leave, @leave, @oleave, ACTION LISTS
 & @alfail
-  @lfail <object>[=<message>]
-  @olfail <object>[=<message>]
-  @alfail <object>[=<action list>]
+  @alfail <object> = <action list>
 
-  These attributes contain the message shown to objects who try to leave
-  <object> and fail, the message shown to others inside <object> when
-  someone fails to leave, and the actions to be taken by <object> when
-  someone attempts to leave it and fails.
-  
-  Such a failure usually occurs because <object> is set NO_LEAVE, or
-  because the person trying to leave does not pass <object>'s @lock/leave.
+  Sets the actions to be taken whenever someone tries to leave the 
+  object and fails (because the object is set NO_LEAVE or because
+  the person fails the @lock/leave on the object). 
 
-See also: leave, @leave, NO_LEAVE, locktypes, ACTION LISTS
+See also: leave, @lfail, @olfail, ACTION LISTS
 & @alias
-  @alias <player>[=<name1>[;<name2>[; ... ; <nameN>]]]
+  @alias <player>=<name>;<alias>[;<alias2>[;<alias3>[...]]]
  
-  @alias is a special attribute that lists a player's aliases; players
+  @alias is a special attribute that lists a player's names; players
   can be paged by their aliases, matched with *<alias>, and all other game 
-  functions which look up player names will also accept an alias. The 
-  attribute is visible to all players.
+  functions which look up player names will also accept an alias. 
+  The attribute is visible to all players.
 
-  Players can have more than one alias, separated by semicolons. It's
-  recommended that you include your normal @name in your alias; because you
-  can @name yourself to one of your aliases, it ensures that, if you change
-  your name, others can still refer to you by your normal/original name.
-  
-  The maximum number of aliases a player may have is controlled by the
-  'max_aliases' @config option.
-  
-  If the page_aliases @config option is on, the first alias in the list is 
-  shown along with the player's name when they page others.
-  
-  The same rules that apply to player names apply to aliases.
+  A list of aliases, separated by semicolons, may be provided.
+  Players should include their usual @name in the alias list, because
+  the @name command allows setting name to any alias in the list.
+  The number of aliases allowed in the list may be limited by
+  the game's administrators through the 'max_aliases' @config parameter.
 
-  @alias only has an effect on players, though you can set them on other
-  types as well. (An exit's aliases are part of its name; see 'help @name'.)
+  If the page_aliases config directive is on, the first alias in the
+  list is returned along with the player's name.
+  
+  Each alias cannot be longer than the limit allowed for player names, 
+  cannot contain spaces, and must be unique -- no other player may
+  have the same alias or name as any other player's alias or name.
+
+  @alias has no effect on non-players.
 
 See also: @name, alias(), fullalias()
+& @allhalt
+  @allhalt
+
+  This command halts all objects in the game in an effort to free up 
+  the queue. Wizard-only command.
+  
+  This command is equivalent to "@halt/all".
+
+See also: QUEUE, @ps
 & @allquota
   @allquota[/quiet] [<limit>]
 
-  This is a God-only command which is only available if the use_quota @config
-  option is true. If /quiet is not given, it displays a list of all players,
-  showing how many objects they own and how many more they can create. If a
-  <limit> is given, every players quota is altered either to <limit> or to
-  the number of objects they currently own, whichever is higher.
-  
-See also: @quota, @squota
-& @move
-& @omove
+  This is a God level command that is only available if the quota
+  system is being used.  It displays the current max and owned objects
+  of every player (unless the /quiet switch is used) and resets their 
+  quota left to the new limit minus the current number owned if a limit 
+  is given.
+& @amhear
+  @amhear <object> = <action list>
+
+  Sets the actions to be taken whenever the @listen on the object is
+  matched by something that the object itself does. It will not react
+  if anyone else in the area does anything that matches the @listen
+  pattern. If you want other objects to be able to set off the action
+  list, try using @ahear or @aahear.
+
+See also: @listen, @ahear, @aahear, LISTENING, ACTION LISTS
 & @amove
-  @move <object>[=<message>]
-  @omove <object>[=<message>]
-  @amove <object>[=<action list>]
-  
-  These attributes contain the message shown to <object> immediately after it
-  moves, the message shown to others in the room <object> moves into, and
-  the actions to be taken when <object> moves, respectively. <object>'s name
-  is added automatically to the beginning of the @omove message. Please note
-  that long @omoves are frequently found annoying.
+  @amove <object> = <action list>
 
-  Example:
-   > @move me=You moved! You are now in the room: [name(here)].
-   > @omove me=stalks into the room wearing a malevolent expression.
+  This is the action to be taken whenever an object moves.
 
-See also: goto, @oxmove, ACTION LISTS
-& @aenter
-& @enter
-& @oenter
-& @oxenter
-  @enter <object>[=<message>]
-  @oenter <object>[=<message>]
-  @oxenter <object>[=<message>]
-  @aenter <object>[=<action list>]
-  
-  These attributes contain the messages shown to someone who enters <object>,
-  the message shown to others inside <object> when someone enters it, the
-  message shown to those in <object>'s location when someone enters it, and
-  the actions to be taken by <object> when someone enters it, respectively.
-  
-  Example:
-    > @enter Sofa=You sit on the comfy sofa.
-    > @oenter Sofa=sits with you on the sofa.
-    > @oxenter Sofa=sits down on the sofa. It looks comfy.
-    > @aenter Sofa=@pemit/silent owner(me)=%n sat down on [name(me)]!
-    
-See also: enter, @ealias, leave, ACTION LISTS
+See also: @move, @omove, @oxmove, ACTION LISTS, go
 & @apayment
-& @payment
-& @opayment
-  @payment <object>[=<message>]
-  @opayment <object>[=<message>]
-  @apayment <object>[=<action list>]
-  
-  These attributes contain the messages shown to someone who pays <object> 
-  pennies with the "give" command, the message shown to others when someone
-  pays <object>, and the actions to be taken by <object> when it's paid. Each
-  attribute is passed the number of pennies paid as %0.
+  @apayment <object> = <action list>
 
-  Example:
-    > @payment Collecting Tin=Thank you for your donation!
-    > @opayment Collecting Tin=makes a donation to charity.
-    > @apayment Collecting Tin=&%# me=%0 at [time()]
+  Sets the actions to be taken after a player gives an object some
+  amount of pennies. The amount paid is passed in as %0.
 
-See also: give, @cost, buy, MONEY, ACTION LISTS
+See also: give, @pay, @opay, @cost, MONEY, ACTION LISTS
 & @atport
-& @tport
-& @otport
-& @oxtport
-  @tport <object>[=<message>]
-  @otport <object>[=<message>]
-  @oxtport <object> [=<message>]
-  @atport <object>[=<action list>]
+  @atport <object>=<action list>
 
-  These attributes contain the message shown to <object> when it is
-  teleported, the message shown to others in the room <object> is teleported
-  to, the message shown to others in the room <object> is teleported from,
-  and the actions to be taken by <object> when it disappears, respectively.
-  
-  In all of these attributes, %0 is the object which teleported <object>,
-  and %1 is <object>'s old location.
-  
-  Example:
-  > @tport me=name(%0) has teleported you from [name(%1)] to [name(here)].
-  > @otport me=appears in a puff of smoke.
-  > @oxtport me=disappears in a puff of smoke.
-  
-See also: @teleport, ACTION LISTS
+  Sets the list of actions that <object> will perform when it is
+  teleported. These actions are done after <object> has arrived
+  in its new location.
+
+  %0 is the object causing the teleport, and %1 is the old location
+  of the teleported object.
+
+See also: @tel, ACTION LISTS, @tport, @otport, @oxtport
 & @atrchown
-  @atrchown <object>/<attribute>=<new owner>
-  
-  These command changes the ownership of the attribute <attribute> on
-  <object> to <new owner>. You can only @atrchown attributes which you can
-  set. Wizards can @atrchown to any player, while mortals can only @atrchown
-  attributes to themselves. Only players can own attributes; if <new owner>
-  is not a player, <new owner>'s owner is used instead.
+  @atrchown <object>/<attribute> = <new_owner>.
+  Like @chown except it changes the control of an attribute from one person
+  to another. You may only @atrchown attributes that you can normally set,
+  and unless you're a wizard, you can only @atrchown attributes to yourself.
 
 See also: @atrlock, ATTRIBUTES, NON-STANDARD ATTRIBUTES
 & @atrlock
-  @atrlock <object>/<attribute>
-  @atrlock <object>/<attribute=[on|off]
-  
-  The first form of this command tells you whether or not the given attribute
-  is locked.
-  
-  The second form attempts to lock (for 'on') or unlock (for 'off') the given
-  attribute. You automatically gain ownership of the attribute (as per 
-  @atrchown) when you lock it. Locked attributes cannot be altered by anyone
-  but Wizards and the attribute's owner (though the owner may be unable to
-  alter the attribute for other reasons, such as not controlling <object>).
-  You must be able to set an attribute in order to lock it.
+  @atrlock <object>/<attribute> = [on|off].
+
+  If 'on' is specified, it 'locks' the specified attribute on the object.
+  If the attribute is owned by someone other than you, you will gain
+  ownership of it.  If an attribute is unlocked, then anyone who controls
+  the object may change it.  If it is locked, only wizards and the attribute's
+  owner (Assuming the owner controls the object) can change it. Wizards may
+  lock/unlock anyones attributes.  If you specify 'off' it will unlock a
+  locked attribute. Specifying neither will return the current value of the
+  lock. You can only lock or unlock attributes you can normally set.
 
 See also: @atrchown, ATTRIBUTES, NON-STANDARD ATTRIBUTES
 & @asuccess
-& @success
-& @osuccess
-  @success <object>[=<message>] 
-  @osuccess <object>[=<message>]
-  @asuccess <object>[=<action list>]
-  
-  For players and things, these attributes contain the message shown to
-  someone who picks up <object> with the "get" command, the message shown
-  to others when someone gets <object>, and the actions to be taken by
-  <object> when someone gets it, respectively.
-  
-  For exits, they contain the message shown to an object passing through the
-  exit <object>, the message shown in the exit's source when someone passes
-  through it, and the actions to be taken by the exit when someone passes
-  through it, respectively.
-  
-  Example:
-    > @success Door=You open the door and step inside.
-    > @osuccess Door=opens the door and steps inside.
-    
-    > @success Box=You pick up the box.
-    > @osuccess Box=picks up the box.
+  @asuccess <object> = <action list>
 
-See also: get, goto, @lock, SUCCESS, FAILURE, @odrop, ACTION LISTS
+  Sets the actions to be taken when the @lock of an object is passed.
+  For things/players, this means picking them up. For exits, this means
+  going through them. 
+
+See also: @success, @osuccess, get, @lock, EXITS, ACTION LISTS
 & @attribute
   @attribute <attrib>
-  @attribute/access[/retroactive] <attrib>=<flag list>
+  @attribute/access[/retroactive] <attrib> = <flag list or "none">
   @attribute/delete <attrib>
-  @attribute/rename <attrib>=<new name>
+  @attribute/rename <attrib> = <new name>
 
-  The @attribute command displays and modifies the MUSH's standard
-  attributes (see "@list/attributes" for a list of them).
-  
-  *** Unlike TinyMUSH, changes to the PennMUSH attribute table are not saved 
-  *** across shutdowns. Use these commands from God's @startup to ensure
-  *** they are run at each startup.
+  @attribute is a wizard-only command which modify's the MUSH's
+  table of standard attributes (use @list/attribs to list them).
+  A standard attribute is one that can be set with @<attrib> instead
+  of &<attrib>, and which, when set, has a predefined set of
+  initial permissions.
 
-  The first form of the command displays the full name of the attribute
-  <attrib>, along with the its attribute flags, and the dbref of the player 
-  who added it to the attribute table.
-  
-  @attribute/access adds <attrib> as a new standard attribute, with the
-  default attribute flags <flag list>. If <attrib> is already a standard
-  attribute, this command modifies its default attribute flags. Use "none"
-  for <flag list> if you don't want any default attribute flags. If the
-  /retroactive switch is given, all existing copies of the attribute will be
-  @atrchown'd to the player running the command, and will have its flags
-  changed to <flag list>.
-  
+  *** Unlike TinyMUSH, changes to the PennMUSH attribute table
+  *** are not saved across shutdowns. Use these commands from
+  *** God's @startup to insure they are run at each startup.
+
+  Used without switches, @attribute shows info about a standard attrib.
+
+  @attribute/access adds a new standard attribute into the table,
+  associating it with the given space-separated list of full flag names.
+  See 'help attribute flags' for possible flags. A flag list of "none" removes
+  all flag associations.
+  If the /retroactive switch is added, the flags are assigned to every copy
+  of the attribute that already exists in the database.
+
   @attribute/delete removes a standard attribute from the table.
   @attribute/rename renames a standard attribute. 
-  
-See also: ATTRIBUTEs, STANDARD ATTRIBUTES, attribute flags, @set, @atrchown
 & @ause
-& @use
-& @ouse
-  @use <object>[=<message>]
-  @ouse <object>[=<message>]
-  @ause <object>[=<action list>]
+  @ause <object> = <action list>
+
+  Sets the actions to be taken when an object is successfully "used".
   
-  These attributes contain the message shown to someone who successfully uses
-  <object>, the message shown to others when someone uses <object>, and the
-  actions to be taken by <object> when it is used, respectively.
-  
-  Note that, if <object> has a CHARGES attribute set and it does not contain
-  a number greater than 0, the RUNOUT attribute is triggered instead of the
-  AUSE attribute. See 'help @charges' for more information.
-  
-  Example:
-    > @use Jack-In-The-Box=You wind the handle.
-    > @ouse Jack-In-The-Box=winds the handle.
-    > @ause Jack-In-The-Box=@wait 3=POSE pops up with a bang!
-    > use Jack-In-The-Box
-    
-See also: use, @charges, @runout, ACTION LISTS
+See also: use, @use, ACTION LISTS, @charges, @runout
 & @away
-  @away <player>[=<message>]
+  @away <player> = <message>
 
-  If <message> evaluates to something non-null, it will be shown to anyone
-  who pages <player> when she is not connected.
-  
-  Example: 
-    > @away me=I'm not here, please send me @mail instead.
+  This message is sent to a player who tries to page you when you are
+  not connected, if it evaluates to something non-null.
 
-See also: @idle, @haven
+  Example: @away me=I'm not here, please send me @mail instead.
+
 & @boot
   @boot[/silent] <player>
   @boot/port[/silent] <descriptor number>
   @boot/me
 
-  The first form of this command disconnects all of <player>'s connections
-  from the game.
-  
-  The /port switch disconnects a particular descriptor (as shown under "Des"
-  in the Wizard WHO, returned by lports() and ports(), etc).
-  
-  If the /silent switch is given, the message telling <player> he was booted 
-  is suppressed.
+  Disconnects the player from the game, with a standard message unless
+  the /silent switch is given. 
 
-  The /me switch boots all descriptors for the player using the command 
-  which have been idle for over 1 minute. Players can use this command to 
-  terminate hung connections.
+  The /port switch takes a descriptor number instead (the "Port" number
+  in WHO for wizards).
 
-  Only admin and those with the "boot" power can @boot other players.
+  The /me switch boots any single descriptor for the same player which
+  has been idle for at least 1 minute. Players can use this command
+  to terminate hung connections.
 
-See also: QUIT, LOGOUT
+  Only admin and those with the "boot" power can @boot other players. 
+
 & @BREAK
 & @ASSERT
-  @break  <boolean>[=<action list>]
-  @assert <boolean>[=<action list>]
+  @break  <boolean>[=<command list>]
+  @assert <boolean>[=<command list>]
 
   @break stops the execution of further commands in the current action
   list if <boolean> is a true value. It doesn't affect new queue entries
   made by previous commands in the action list. Very useful to people who
-  don't like @switch. If <action list> is given, it is executed instead of
-  the rest of the commands in the current action list.
+  don't like @switch. If <command> is given, it is executed instead of
+  the rest of the commands in the current queue.
 
   @assert does the inverse: it stops execution if <boolean> evaluates to false.
 
   Examples:
-  > @va obj=$testme *: @pemit %#=You try a test ;
-                       @break lt(%0,10)=@pemit %#=But you're too low! ;
-                       @pemit %#=And you succeed!
+  > @va obj=$testme *:@pemit %#=You try a test;
+                      @break [lt(%0,10)] = @pemit %#=But you're too low!;
+		      @pemit %#=And you succeed!
   > testme 0
   You try a test
   But you're too low!
-  
   > testme 10
   You try a test
   And you succeed!
@@ -608,101 +479,68 @@ See also: QUIT, LOGOUT
    Third. If you figured that out, you have a very good understanding
    of the PennMUSH queue. :)
 
-See also: ACTION LISTS, QUEUE, BOOLEAN VALUES, @switch
+See also: ACTION LISTS, QUEUE, BOOLEAN VALUES
 & @charges
-& @runout 
-  @charges <object>[=<integer>]
-  @runout <object>[=<action list>]
+  @charges <object> = <integer>
 
-  These attributes can limit how many times an object can be successfully
-  "use"d. When you "use" an object with a CHARGES attribute set, the object's
-  AUSE attribute is only triggered if CHARGES is a positive integer. When
-  CHARGES is less than 1 (or not a number), the object's RUNOUT attribute is
-  triggered instead.
-  
-  When the CHARGES attribute is present and AUSE is triggered, the value of
-  the CHARGES attribute is automatically decreased by 1. When no CHARGES 
-  attribute is set, AUSE is always triggered.
-  
-  See 'help charges2' for an example.
+  Allows you to limit the number of times an object can be "used". 
+  The "charges" attribute will be decreased by one each time the
+  object's @ause is triggered, and once it reaches zero, the object 
+  cannot be used anymore.
 
-See also: use, @ause, ACTION LISTS
-& charges2
-& runout2
-  
-  Example:
-    > @create Revolver
-    > @use Revolver=You pull the trigger.
-    > @ouse Revolver=pulls the trigger.
-    > @charges Revolver=6
-    > @ause Revolver=POSE fires into the air.
-    > @runout Revolver=POSE clicks, but is out of bullets.
-    
-    > use revolver
-    You pull the trigger.
-    Revolver fires into the air.
-    > ex revolver/charges
-    CHARGES [#6$]: 5
-    
-  The next 5 "use revolver"s work the same way, decrementing CHARGES
-  each time.
-  
-    > ex revolver/charges
-    CHARGES [#6$]: 0
-    > use revolver
-    You pull the trigger.
-    Revolver clicks, but is out of bullets.
-    > ex revolver/charges
-    CHARGES [#6$]: 0
+See also: use, @runout, @ause
 & @chown
   @chown[/preserve] <object>=<player>
 
-  Changes the ownership of <object> to <player>. You can chown things, rooms
-  or exits. Players can't be @chown'd - they always own themselves. To chown 
-  a thing, you have to be carrying it. If you do not own an object, you can 
-  only chown it if it has the CHOWN_OK flag. If you're not a Wizard, you can 
-  only @chown objects to yourself or a Zone Master whose zone-lock you pass.
+  Changes the ownership of <object> to <player>. You can chown things,
+  rooms, or exits. To chown a thing, you have to be carrying it. 
+  If you do not own an object, you can only chown it if it is CHOWN_OK.
+  If you're not a Wizard, you can only @chown objects to yourself or
+  to a Zone Master whose zone-lock you pass.
 
-  Normally, @chown'ing an object clears privileged flags and powers, and sets
-  the object halt. Wizards can use @chown/preserve to avoid this. Doing this 
-  to an active object with queued commands is not recommended, and may have 
-  strange and insecure effects.
+  Normally, @chown'ing an object clears privileged flags and powers,
+  and sets the object halt.  Wizards may use @chown/preserve to chown
+  an object, preserving these privileges and not setting the object
+  halt. Doing this to an active object with queued commands is not
+  recommended, and may have strange and insecure effects.
 
   Examples:
-    > @chown here=me (for a room)
-    > @chown box=Soundwave (for a thing)
-
-See also: CHOWN_OK, Zone Masters, @chownall
-& @chownall
-  @chownall[/preserve] <player>[=<new owner>]
-
-  This command @chowns all objects currently owned by <player> to the player
-  <new owner>, or to the person running the command if no <new owner> is
-  given. All the objects will have priviledged flags and powers cleared, and 
-  be set halt, unless the /preserve switch is given.
+    (for a room)    @chown here=me
+    (for an object) @chown box=Soundwave
   
-  This command can only be used by Wizards.
+  Players can't be @chowned; they always own themselves.
+
+See also: CHOWN_OK, Zone Masters
+& @chownall
+  @chownall[/preserve] <player> [= <target_player>]
+
+  Transfers ownership of all the objects that the player owns to 
+  <target_player>. If the target player is not included, then all 
+  the objects are chowned to the person executing the command. 
+  This is a wizard-only command. The /preserve switch keeps privileged
+  flags and powers instead of clearing them, and doesn't halt them.
 
 See also: @chown
 & @chzone
-  @chzone <object>=<zone> 
+  @chzone <object>=<zone master> 
   @chzone <object>=none
 
-  The first form of this command changes the zone of <object> to <zone>. 
-  This puts the object on that zone and may (if the zone_control_zmp_only 
-  @config option is off) allow anyone who passes the Zone @lock of <zone> to
-  control <object>. Any kind of object can be @chzoned, and any kind of 
-  object can be used as a zone.
+  The first form of this command changes the ZONE of <object> to
+  <zone master>. This puts the object on that zone and may (if the
+  zone_control_zmp_only option is off) allow anyone who passes the
+  zone-lock of the zone master to make changes to the object. Any
+  kind of object can be @chzoned, and any kind of object can be used
+  as the zone master.
 
-  The second form of this command removes <object> from its current zone, 
-  leaving it unzoned. Anyone can reset the zone of an object he owns.
+  The second form of this command resets the zone of <object> to *NOTHING*.
+  Anyone can reset the zone of an object s/he owns.
 
-  If a player is @chzoned, anything objects he creates from that point on 
-  will automatically be on the same zone. Objects the player already owns
-  are not affected. Players can only @chzone themselves to a zone if they
-  own it, though wizards can @chzone players to any zone.
-  
-  Continued in 'help @chzone2'.  
+  If a player is @chzoned, anything s/he makes afterwards will start out
+  with that Zone, but none of the objects that s/he presently owns will
+  have their Zone changed. Players can @chzone themselves to a master if
+  they own it. Otherwise, only wizards can @chzone players.
+
+(continued in help @chzone2)
 & @chzone2
 
   To see the Zone of an object, you can use either 'brief' or 'examine'
@@ -719,7 +557,7 @@ See also: @chown
   that you do not @chzone admin- or wizard-owned objects to any zone
   that less privileged players have access to.
 
-See also: ZONES, @chzoneall, zone()
+See also: ZONES, @chzoneall
 & @chzoneall
   @chzoneall <player>=<zone master>
 
@@ -729,74 +567,69 @@ See also: ZONES, @chzoneall, zone()
   
 See also: @chzone, ZONES
 & @clone
-  @clone <object>[=<new name>]
-  @clone/preserve <object>[=<new name>]
+  @clone <thing, room, or exit>[=<new name>]
+  @clone/preserve <thing, room, or exit>[=<new name>]
 
-  This command creates a copy of <object>. The clone will have the same name
-  as the original unless a <new name> is given for it. You can only clone
-  things, rooms and exits, not players. You must control <object>. The new
-  object will be owned by the player who performs the @clone, not the owner
-  of the original <object>.
-  
-  When cloning things and exits, the clone will be placed in your current
-  location, not the location of <object>. When cloning rooms, the exits and
-  contents in the room are not cloned as well.
+  For things, creates an exact duplicate of it and puts it in the
+  current room. For exits, it creates an exact duplicate of that
+  exit, except the clone's source is the current room rather than
+  whatever the original exit's source was. For rooms, creates an
+  exact duplicate of the room, without contents or exits. The name
+  of the duplicate object can be provided; it defaults to the same
+  as the name of the original object.
 
-  The cloned object will have the same modification time as the original
-  object, to make tracking revisions easier, but will have a different 
-  creation time.
-  
-  Normally, the Wizard and Royalty flags, @powers and @warnings are stripped
-  from the cloned object, but Wizards may use the /preserve flag to prevent
-  this.
+  The thing to be cloned must be controlled by the @cloning player.
+  The clone will be owned by the @cloning player.
+
+  If creation times are enabled, a clone will have a different creation
+  time than the object it was cloned from, but will have the same
+  modification time, to make tracking revisions of code easier.
+
+  A wizard may use @clone/preserve, which has the effect of preserving
+  all the bits, powers, and warnings of the original object.
 
   To clone a room and all its exits, use code like:
-    > @teleport setq(0,%L)[clone(here)]
-    > @dolist lexits(%q0)=@clone ##
+    @tel [setq(0,%l)][clone(here)]; @dol lexits(%q0)=@clone ##
 
-See also: @create, clone(), create(), @cpattr
+See also: @create
 & @command
   @command <command>
   @command/<switch> <command>
-  @command/alias <command>=<alias>
-  @command/restrict <command>=<restriction>
+  @command/alias <command>=<new command name>
 
-  @command can be used for adding new built-in commands, altering the way
-  a built-in command works, and displaying information about how commands
-  currently work.
+  @command provides information about and controls the availability 
+  of other commands.
 
   With no switches, @command shows all sorts of interesting information
   about how a command is parsed.
-  
-  The /alias switch creates an alias for <command>, allowing players to type
-  <alias> to run <command>.
-
-  @command/restrict can be used to restrict who can use <command>. See 'help
-  restrict' for more information.
 
   Switches include:
-  /add       : Add a new command that does nothing, but can be @hook'd
-  /delete    : Delete a command added with @command/add or @command/alias
-  /disable   : Disable a command added in the hardcode
-  /enable    : Re-enable a command disabled with @command/disable
+  /disable   : Disable the <command>
+  /off       : Synonym for /disable
+  /enable    : Enable the <command>
+  /on        : Synonym for /enable
+  /alias     : Creates an alias for a command.
+  /quiet     : Don't make noisy output when doing one of the above
+  /add       : Creates a useless command. @hook/override it.
+  /delete    : Deletes a command added by @command/add, or aliases.
 
-  The /quiet switch can be used to suppress output from @command.
-
-  Continued in 'help @command2'.
+  See HELP RESTRICT for more.
+(continued in help @command2)  
 & @command2
-  @command/add is a powerful tool that lets you create new commands which
-  are matched before normal $-commands, and which can be set not to parse
-  their arguments, but (via @hook) can still execute softcode like an
-  $-command. Only God can @command/add or @command/delete.
+  @command/add and @command/delete are powerful tools in that they let
+  you write $-commands which may or may not parse their arguments, and
+  have the precedence of a built-in command, being checked before
+  $-commands on objects. Only God may use these switches.
 
-  You can use these additional switches, along with @command/add, to control
-  how the new command parses its arguments:
+  Additional switches are used in @command that only apply when used
+  with @command/add. These switches are:
 
   /noparse   : The command does not evaluate arguments passed to it.
   /eqsplit   : The parser parses leftside and rightside around =
   /lsargs    : Comma-separated arguments on the left side are parsed.
-  /rsargs    : When used with /eqsplit, the right-side arguments are
-               comma-separated and are parsed individually
+  /rsargs    : In conjunction with eqsplit, the right-side arguments,
+               comma-separated, are parsed individually and passed
+               to the $-command in @hook/override.
 
   Any command added without the /noparse switch is provided with a
   /noeval switch itself, so if you @command/add foo, then foo's arguments
@@ -804,231 +637,205 @@ See also: @create, clone(), create(), @cpattr
   needs to make allowances for the /noeval switch in it's matching.
 
   Commands added with @command/add, like other standard commands,
-  are never case-sensitive.
+  are never case-sensitive (regardless of CASE flag on the attribute).
 
-  See 'help @command3' for examples.
+(examples in help @command3)
 & @command3
   Examples:
-    > @create Dining Machine
-    > &eat dining=$eat *:@remit %L=%n takes a bite of %0.
-    > @command/add/noeval eat
-    > @hook/override eat=dining machine,eat
-    > eat meat loaf
-    Walker takes a bite of meat loaf.
-    > eat randword(apple tomato pear)
-    Walker takes a bite of randword(apple tomato pear)
 
-    > &drink dining=$^drink(/noeval)? (.*)$:@remit %L=%n drinks %1.
-    > @set dining/drink=regexp
-    > @command/add drink
-    > @hook/override drink=dining machine,drink
-    > drink reverse(tea)
-    Walker drinks aet.
-    > drink/noeval reverse(tea)
-    Walker drinks reverse(tea).
+  > @create Dining Machine
+  > &eat dining=$eat *:@remit %L=%N takes a bite of %0.
+  > @command/add/noeval eat
+  > @hook/override eat=dining machine,eat
+  > eat meat loaf
+  Walker takes a bite of meat loaf.
+  > eat randword(apple tomato pear)
+  Walker takes a bite of randword(apple tomato pear)
 
-See also: @hook, RESTRICT, EVALUATION ORDER
+  > &drink dining=$^drink(/noeval)? (.*)$:@remit %L=%N drinks %1.
+  > @set dining/drink=regexp
+  > @command/add drink
+  > @hook/override drink=dining machine,drink
+  > drink reverse(tea)
+  Walker drinks aet.
+  > drink/noeval reverse(tea)
+  Walker drinks reverse(tea).
+
 & @comment
-  @comment <object>[=<comment>]
+  @comment <object> = <comment>
 
   This is a wizard-only command which sets a COMMENT attribute on
   <object>. The comment can only be seen by other wizards and royalty.
-  
-See also: @@, @@()
 & @config
-  @config
-  @config [<category>|<option>]
-  @config/set <option>=<value>
-  @config/save <option>=<value>
+  @config/functions
+  @config/commands
+  @config/attribs
+  @config/flags
+  @config/list[/lowercase] [<option|option-type>]
+  @config/set|save option=value
   
-  With no arguments, @config lists the categories of configuration options
-  for the MUSH. With an argument, @config lists the options in the given
-  <category>, or shows the current value of the given <option>.
-  
-  The wizard-only /set switch changes the value of <option> to <value>. This
-  change does not last across reboots. God can also use the /save switch,
-  which attempts to save the new <value> in the mush.cnf configuration file,
-  as well as changing it in-game.
+  This command lists the MUSH configuration parameters, indicating what
+  special things are enabled, and the cost of certain commands.
+  Switches include:
 
-  For information about parameters, see 'help @config parameters'
+  /functions  --   Lists all functions.
+  /commands   --   Lists all commands.
+  /flags      --   Lists all flags.
+  /attribs    --   Lists all standard attributes.
+  /list       --   Lists the value of a particular <option> or <option-type>
+                   if given one; lists the option-types if not.
+  /set        --   Wizard only, changes parameters from the mush. See
+                   help @config parameters for available ones.
+  /save       --   Like /set, but also modifies the config file so the
+                   change persists over reboots. God only.
 & @conformat
-  @conformat <object>[=<format>]
+  @conformat <object> [=<format>]
 
-  When set, the CONFORMAT attribute is evaluated when <object> is looked at,
-  and the result is displayed instead of the usual "Contents:" (for rooms)
-  or "Carrying:" (for players and things) list of contents.
-  
-  The dbrefs of the objects which would appear in the normal contents list
-  are passed to the attribute as %0 (you can use lcon(me) for a full contents
-  list). A list of the names of these objects as they would appear in the
-  default contents list is passed as %1, |-delimited.
-  
-  Examples:
-    Show the normal contents list, but in upper-case:
-    > @conformat here=edit(ucstr(%1), |, %r)
-    
-    Show just the object names (with no ansi) in a table:
-    > @conformat here=table(iter(%0, name(%i0), %b, |),  20, width(%#), |)
-
-See also: look, @exitformat, @nameformat, @descformat, @invformat,
-    @idescformat
-& @invformat
-  @invformat <object>[=<format>]
-
-  When set, this attribute is evaluated and displayed instead of the usual
-  "You are carrying:" list of objects when <object> uses the "inventory"
-  command. The list of objects that would normally appear in the inventory
-  is passed as %0, and a list of the names as they would appear in the
-  default display, |-delimited, is passed as %1.
-
-  Example:
-    > @invformat me=You're holding: [itemize(iter(%0, name(%i0), %b, |), |)]
-    > inventory
-    You're holding: Red Ball, Pickle, and Piano
+  Replaces the usual "Contents:" or "Carrying:" format when an object
+  is looked at, by a player-specified contents format. This is evaluated
+  as if it were a description or other similar message on the room.
+  The objects that the looker would normally be able to see is passed
+  as a dbref list in %0; all contents can be acquired through 'lcon(me)'.
+  A |-delimited list of all the unparsed object names is passed 
+  in %1 (so iter(%1,itext(0),|,%r) produces the standard list)
  
-See also: inventory, @conformat, @exitformat, @nameformat, @descformat,
-    @idescformat
+  One could change the format to 'Contents: Object1 Object2 Object3'
+  through '@conformat here = Contents: [iter(%0,name(##))]',
+  for example. More complex things are, obviously, possible.
+ 
+See also: @exitformat, @nameformat, @descformat
+& @invformat
+  @invformat <object> [=<format>]
+
+  Replaces the usual "You are carrying:" format when an object uses the
+  "inventory" command, by a player-specified format. This is evaluated
+  as if it were a description or other similar message on the object.
+  The objects carried are passed as a dbref list in %0.
+  A |-delimited list of all the unparsed object names is passed 
+  in %1 (so iter(%1,itext(0),|,%r) produces the standard list)
+
+  One could change the format to 'You've got: Object1 Object2 Object3'
+  through '@invformat me = You've got: [iter(%0,name(##))]',
+  for example. More complex things are, obviously, possible.
+ 
+See also: inventory
 & @descformat
-  @descformat <object>[=<format>]
+  @descformat <object> [=<text>]
 
-  When set, this attribute is evaluated and displayed instead of <object>'s
-  @describe, when someone looks at <object>. The evaluated @describe, which
-  would be shown if no @descformat were set, is passed to the @descformt
-  as %0; use v(describe) to get the unevaluted description.
-  
-  This is primarily useful for room parents, to enforce a consistent look
-  for all rooms without having to apply formatting to ever @describe. Note 
-  that this object is only used with @describe - to format the @idescribe, 
-  use @idescformat.
-  
-  Example:
-    > @descformat Room Parent=repeat(=, width(%#))%r%0[repeat(=, width(%#))]
+  Replaces the usual description of the object when it is looked at
+  by player-specified text. The evaluated DESCRIBE attribute is
+  passed as %0; the unevaluated DESCRIBE can be acquired through
+  v(DESCRIBE).
 
-See also: look, @exitformat, @nameformat, @conformat, @idescformat,
-    @invformat
+  This is useful for things like room parents that enforce a consistent
+  "look" for each room's @desc.
+
+See also: @exitformat, @nameformat, @conformat, @idescformat
 & @idescformat
-  @idescformat <object>[=<format>]
+  @idescformat <object> [=<text>]
 
-  When set, this attribute is evaluated and displayed instead of <object>'s
-  @idescribe, when someone looks at <object> while inside it. The evaluated 
-  @idescribe, which would be shown if no @idescformat were set, is passed to
-  the @idescformt as %0; use v(idescribe) to get the unevaluted description.
-  
-  Note that this attribute is only used when an @idescribe is set. When no
-  @idescribe is set, the @descformat (and @describe) attributes are used,
-  even when someone "look"s inside <object>.
+  Replaces the usual description of the object when it is looked at from
+  within by player-specified text. The evaluated IDESCRIBE attribute
+  is passed as %0; the unevaluated IDESCRIBE can be acquired through
+  v(IDESCRIBE).
 
   This is useful for things like object parents that enforce a consistent
-  "look" for each object's @idescribe, without having to place formatting
-  into every @idescribe.
-  
-  Example:
-    > @idescribe Vehicle Parent=repeat(*, width(%#))%r%0
+  "look" for each object's @idesc.
 
-See also: look, @exitformat, @nameformat, @conformat, @descformat, 
-    @invformat
+See also: @exitformat, @nameformat, @conformat, @descformat
 & @nameaccent
-  @nameaccent <object>[=<accent template>]
+  @nameaccent <object> [=<accent template>]
 
-  When this attribute holds an accent template that is the same
-  length as <object>'s @name, it is used to change the object's name
-  in some situations (how it shows up in speech, look, and a few other
+  When this attribute holds an accent template that has the same
+  length as the object's name, it is used to change the object's name
+  in some situations (How it shows up in speech, look, and a few other
   commands). This allows for accented names without having to use the 
   accented characters directly in a name, which can make it harder for
   people to type.
-  
-  The <accent template> is explained in 'help accent2'.
 
   If a container has both a @nameaccent and a @nameformat, the
   @nameformat is used.
 
-See also: accent(), @nameformat, accname(), stripaccents()
+See also: accent(), @nameformat
 & @nameformat
-  @nameformat <object>[=<format>]
+  @nameformat <object> [=<format>]
 
-  When set, this attribute is evaluated and displayed in place of <object>'s
-  name, when objects inside <object> "look". The room's dbref is passed as
-  %0, and the default-formatted name (as it would be displayed with no
-  @nameformat set) is passed as %1.
-  
-  @nameformat is not used when people who are outside the object look at it.
-  
-  Example:
-    Show the room's zone after its name.
-    > @nameformat here = %1 [if(isdbref(zone(%0)),<[name(zone(%0))]>)]
+  Customizes the usual display of the object's name to people who
+  are inside it and 'look'. It is evaluated as if it were a description
+  or similar message on the room. The room's dbref is passed as %0,
+  and the default-formatted name as %1.
 
-See also: look, @exitformat, @conformat, @descformat, @nameaccent, 
-    @invformat, @idescformat
+  @nameformat is not used when people outside the object look at it.
+
+  Example: Show the room's zone after its name.
+  @nameformat here = %1 [if(isdbref(zone(%0)),<[name(zone(%0))]>)]
+
+See also: @exitformat, @conformat, @descformat, @nameaccent
 & @cost
-  @cost <object>[=<amount>]
-  
-  The COST attribute contains the number of pennies that must be given to
-  <object> to trigger its @pay/@opay/@apay attributes. If less than this
-  amount is given, the money will be refused, and if more is given, the
-  difference is refunded.
-  
-  This attribute is evaluated, with the amount being given passed as %0.
+  @cost <object> = <amount> 
+
+  This sets the number of pennies that need to be given to an object to
+  trigger its @pay/@opay/@apay attributes. It is evaluated, so you
+  may use functions as well as simple integers; the amount given by
+  the player is passed as %0.
 
   Example:
-    > @cost Exit Machine=10
-    > @apay Exit Machine=@open %n-exit 
-    > @pay Exit Machine=Your exit has been created.  
+    @cost exit-machine=10
+    @apay exit-machine=@open %N-exit 
+    @pay exit-machine=Your exit has been created.  
  
-    give Exit Machine=10
+    give exit-machine=10
     > Your exit has been created.
     (The exit will also have been opened by the machine.)
 
-    > @cost charity=%0
-    > @pay charity=Thanks for your donation of %0 [money(%0)].
+    @cost charity=%0
+    @pay charity=Thanks for your donation of %0.
 
-See also: give, MONEY, @pay, money(), buy
+See also: give, MONEY, @pay, money()
 & @cpattr
 & @mvattr
-  @cpattr[/noflagcopy] <obj>/<attr>=<obj1>[/<attr1>][, ..., <objN>[/<attrN>]]
-  @mvattr[/noflagcopy] <obj>/<attr>=<obj1>[/<attr1>][, ..., <objN>[/<attrN>]]
+  @cpattr[/noflagcopy] <obj>/<attr> = <obj1>[/<attr1>] [,<obj2>/<attr2>,...]
+  @mvattr[/noflagcopy] <obj>/<attr> = <obj1>[/<attr1>] [,<obj2>/<attr2>,...]
   
-  @cpattr copies the <attr> attribute from <obj> to <obj1> (and any other
-  objects given). By default, the new attributes will have the same name as
-  the original, but you can specify a different name to be used on each
-  object if you wish.
-  
-  @mvattr works the same, but also attempts to remove the original attribute
-  after copying it.
-  
-  Attribute flags are copied as well, unless the /noflagcopy switch is given.
-  This is recommended when copying from a non-standard attribute to a
-  standard one.
+  @cpattr copies an attribute from one object to another, or several 
+  others. @mvattr does the same thing, except it also removes the original
+  attribute from the original object. Attribute flags ARE copied as well,
+  unless you use the /noflagcopy switch, which you probably want if you're
+  copying from a non-standard attribute to a standard one.
 
-  Example:
-    > @cpattr box/test=box/test1, cube/random, tribble/describe
+  For example:
+    @cpattr box/test = box/test1, cube/random, tribble/describe
+
   would check the object "box" for an attribute named TEST and then
   copy it to the attributes TEST1 on "box", RANDOM on the object named
   "cube", and DESCRIBE on the object named "tribble".
 
-    > @cpattr box/test=cube
+  If you leave out the destination attribute, the attribute is copied
+  to one of the same name on the new object. For example:
+    @cpattr box/test=cube
   would copy the TEST attribute from "box" to TEST on "cube".
 
-See also: ATTRIBUTES, NON-STANDARD ATTRIBUTES, @set
+See also: ATTRIBUTES, NON-STANDARD ATTRIBUTES
 & @create
   @create <name>[=<cost>[,<dbref>]]
 
   Creates a thing with the specified name. Creating a thing costs
-  a certain amount of MUSH money, which usually defaults to 10 pennies (see
-  '@config object_cost'). You can specify a higher cost if you wish, but not
-  a lower one. This cost is refunded if you @destroy the thing.
+  a certain amount of MUSH money, which usually defaults to 10 pennies.
+  You can specify a higher cost if you wish, but not a lower one.
+  This cost is refunded if you @destroy/@recycle the thing.
 
-  Some MUSHes choose to limit the number of objects you can create by setting
-  a quota.
+  Once you have created a thing, you can use it as a PUPPET, to store
+  USER-DEFINED COMMANDS, or just as a prop. Some MUSHes choose to limit 
+  the number of objects that players can create by setting a QUOTA.
   
-  Wizards can also specify the <dbref> of a garbage object to use when
+  Wizards can also specify the dbref of a garbage object to use when
   creating the object. Otherwise, the object is given the next
   available dbref.
  
 See also: give, @quota, MONEY
 & @dbck
   @dbck
-  
-  This is a wizard only command. It forces the database to perform a
+  This is a wizard only command.  It forces the database to perform a
   series of internal cleanup and consistency checks that normally run 
   approximately every 10 minutes:
 
@@ -1047,65 +854,79 @@ See also: give, @quota, MONEY
   @dbck no longer performs an @purge. The results of @dbck are written
   to the game's error log, and not reported to the Wizard.
 
+& @death
+  @death <player> [=<message>]
+
+  This command sets the message displayed to the killer when <player>
+  is killed. Typing just '@death <player>' or '@death <player>=' 
+  without a message will clear the currently set message.
+
+  Example:
+   @death me=You have just slain Cyclonus!
+
+  Note that some MUSHes choose to disable the KILL command, which makes
+  this attribute rather pointless.
+
+See also: kill, BEING KILLED, @odeath, @adeath
 & @decompile
-  @decompile[/<switches>] <object>[=<prefix>]
-  @decompile[/<switches>] <object>/<attribute patterns>[=<prefix>]
+  @decompile[</switch>] <object>[/<attribute-patterns>]
+  @decompile/prefix <object>[/<attribute-patterns>]=<prefix>
 
   This command produces a list of the commands that you would have to
   enter in order to recreate <object>. Useful for either copying objects
   from one MUSH to another, or for making logs of important objects to
   protect against an accidental @nuke or a crash.
 
-  If a <prefix> is given, all output lines will be prefixed with <prefix>.
-  This is useful for creating client-side scripts for editting code.
+  When the /prefix switch is specified, and a prefix given, all output
+  lines will be prefixed with <prefix>. Good for creating client-side
+  scripts to edit code with.
 
   You can either @decompile an entire object, or just certain parts of it.
   To @decompile just a few attributes, for example, you could type:
 
-      @decompile <object>/<attribute pattern> [ ... <attribute patternN>]
+      @decompile <object>/<attribute name> <attribute name2>
 
-  including each attribute. Attribute patterns can be wildcards.
+  including each attribute. You can also use wildcards in
+  <attribute name(s)> to @decompile a list of similarly-named attributes.
 
-  Continued in 'help @decompile2'.
+(continued in help @decompile2)
 & @decompile2
-  @decompile takes the following switches, which can be combined:
+  @decompile takes five switches: /db, /flags, /attribs, /tf, /skipdefault
+  Multiple switches may be usefully combined (other than /tf).
 
-  @decompile/name
-    This switch causes @decompile to use the object's name, instead of its
-    dbref. This is the default.
   @decompile/db
-    This switch makes @decompile use the object's dbref instead of its name, 
-    which is useful for editing code off-MUSH.
+    This command makes @decompile use the object's DBREF # instead of its
+    name, which is useful for editing code off-MUSH.
   @decompile/flags
     Only the code to @create the object and set flags/powers/locks is printed.
-    When an <attribute pattern> is given, this switch is ignored, and
-    @decompile only prints the matching attributes.
   @decompile/attribs
-    Only the code to set the object's attributes is printed. Same as
-    @decompile <object>/**
-  @decompile/skipdefaults
+    Only the code to set the object's attributes is printed.
+  @decompile/skipdefault
     Don't output commands to set attribute flags if those flags are the
     defaults for that attribute on that MUSH.
-  @decompile/tf
-    Explained in 'help @decompile3'.
   
-  Continued in 'help @decompile3'.
+  If an attribute contains special characters, such as %r or %t, ansi, pueblo,
+  or begins or ends with spaces, then the command sent will be an @set command
+  that has its special characters escaped, and with such %rs, %ts, and %bs as
+  to exactly duplicate the attribute as it is currently set.
+
+(continued in help @decompile3)
 & @decompile3
 
   @decompile/tf <object>[/<attribute>]
 
-  The /tf works the same as if you'd typed:
-    @decompile/db <obj>[/<attrs>]=[default(me/TFPREFIX, FugueEdit >%b)]
-    
-  If you have a TFPREFIX attribute set, the (unevaluated) contents of that
-  attribute is used as the prefix. Otherwise, the string "FugueEdit > " is
-  used. It's useful for automatically copying @decompile output into your
-  client to alter. It is highly recommended  that you set a TFPREFIX
-  attribute, to prevent others from maliciously placing code in your client's
-  command line.
+  Supplying the /tf switch makes @decompile act exactly as if you typed:
+  @decompile/prefix <object>[/<attribute>]=FugueEdit >%b
 
-  To set up @decompile/tf:
-  
+  You can use a string other than "FugueEdit > " by setting your TFPREFIX
+  attribute.  You are strongly urged to do so. Using @decompile/tf with
+  the default prefix presents the opportunity for a malicious player
+  to load your TinyFugue command line with a harmful command for you to
+  execute inadvertantly.
+
+  The /tf switch is handy for grabbing code and placing it right
+  into your input window. To do this:
+
     In TinyFugue:
       /def -ag -mglob -p100 -t"FugueEdit > *" fe = /grab %-2
 
@@ -1116,139 +937,119 @@ See also: give, @quota, MONEY
 See also: CLIENTS, ATTRIBUTES, WILDCARDS, MUSHCODE
 & @describe
 & @desc
-  @describe <object>[=<description>]
+  @describe <object> [=<description>]
 
   This command sets the description of the object, which will be seen 
-  whenever something looks at the object with the 'look' command. Every 
-  object should have a description, even if just a short one describing its 
-  purpose. When looking at a thing, player or exit which has no description,
-  you will see the message "You see nothing special.". A room with no desc
-  set shows nothing.
-
-  The description can be formatted using the @descformat attribute. This is
-  particularly useful for @parents and ancestors.
-  
-  When inside a thing or player, you will see it's @idescribe instead, if
-  one is set.
+  whenever something looks at the object with the command 'look <object>'.
+  Every object should have a description, even if just a short one 
+  describing its purpose. If the [=<description>] is left out, the desc.
+  on the object will be reset to nothing. When you look at something that
+  has no desc., you are told, "You see nothing special."
 
   @describe can be abbreviated as @desc
 
-See also: look, @adescribe, @idescribe, @descformat
+See also: look, @adescribe
 & @destroy
 & @recycle
 & @nuke
 & @undestroy
 & @unrecycle
-
-  @destroy[/override] <object>
+  @destroy[/override] <object>  OR   @recycle[/override] <object>
+  @undestroy <object>           OR   @unrecycle <object>
   @nuke <object>
-  @undestroy <object>
 
-  The @destroy command marks <object> for destruction by setting the GOING
-  flag on it. If <object> is a room, all the exits in the room are marked
-  for destruction as well. If <object> is a player, and the @config option
-  destroy_possessions is on, everything he owns is marked for destruction as 
-  well. (If really_safe is also on, his SAFE objects will not be destroyed.)
-  If the adestroy @config option is on, the ADESTROY attribute will be triggered
-  when the object is first @destroy'd.
-  
-  The MUSH checks for GOING objects every ten minutes or so (see '@config
-  purge_interval'); each one is set with the GOING_TWICE flag, and will be
-  destroyed totally on the next cycle. You can save it from destruction
-  during this period using the @undestroy command, or @destroy it again to
-  destroy it instantly.
-  
-  When an object is destroyed, any commands, @waits and semaphores it has
-  queued are drained, and the object's owner has the quota for the object,
-  and the cost of creating it initially, refunded.
-  
-  Continued in 'help @destroy2'.
+  NOTE: @destroy and @recycle are the same command - some MUSHes
+  choose to use @recycle instead of @destroy to avoid the typo of
+  '@dest obj' for '@desc obj'. Others use @destroy. @nuke is an alias
+  for @dest/override.
+
+  Recycles <object> and returns the player's investment (the cost of
+  @create). You should always @destroy objects you no longer need;
+  this keeps the database down to a manageable size.  When an object
+  is @destroyed, it is set GOING, its queue is cleared and any
+  semaphores are drained, and its ADESTROY attribute is immediately
+  triggered. 
+
+(continued in help @destroy2)
 & @destroy2
 
-  To destroy an object, you must either control it, control its source or
-  destination room (for exits), or it must be set DESTROY_OK and you must
-  pass its @lock/destroy.
-  
-  To destroy objects set SAFE, you must use @destroy/override or @nuke. If 
-  the really_safe @config option is on, even @nuke can't destroy SAFE 
-  objects, and you must clear the safe flag first.
-  
-  Players can only be @destroyed when they are not connected, and even then
-  can only be destroyed by a Wizard player. If the destroy_possessions
-  @config option is on, anything the player owns is @destroyed. If the 
-  really_safe option is also on, his SAFE possessions are @chown'd to God
-  instead. If the option is off, all their possessions are @chown'd to God.
+  GOING objects are actually removed from the db approximately every
+  10-20 minutes. Until then, you may use the @undestroy/@unrecycle
+  command to abort the destruction sequence. If you @undestroy an
+  object, its STARTUP attribute is triggered. If you @destroy a
+  GOING object, it is purged immediately.
 
-  @recycle is an alias for @destroy. Some MUSHes disable @destroy and only
-  use @recycle, to avoid players mistyping.
-  
-See also: @create, @dig, @open, DESTROY_OK, SAFE
+  Wizards may @nuke players. If the destroy_possessions config option
+  is set (see @config), destroying a player destroys all non-SAFE
+  things the player owns, and @chowns SAFE things to God. If not,
+  destroying a player @chowns all their objects to God.
+
+See also: SAFE, GOING, DESTROY_OK  
 & @dig
-  @dig[/teleport] <room name>[=<exit to>[, <exit from>]]
+  @dig[/teleport] <room name>[=<exit name>;<alias>*,<exit name>;<alias>*]
   
-  This command creates a new room named <room name>. Creating a room costs
-  some pennies (see '@config room_cost' for exactly how many). If the
-  /teleport switch is given, you will be teleported to the room after it's
-  created, as per the @teleport command.
+  This command is used to create a new room, possibly with exits linking
+  it to the room you are standing in. This command normally costs 10 pennies,
+  although some MUSHes may have different amounts or may restrict this 
+  command to those with the builder @power.
   
-  If <exit to> is given, the MUSH will automatically open an exit named from your
-  current location to the new room named <exit to>, if you have permission.
-  You can also specify <exit from>, to create an exit from the new room back
-  to your current location. Opening exists also costs pennies; see '@config 
-  exit_cost'. The exit names may contain multiple aliases, separated with
-  semicolons.
-  
-  See 'help @dig2' for examples.
+  @dig/teleport will automatically @tel the digger to the new room.
+
+  If you use the long form of this command, an exit to the new room
+  from the one you are standing in and an exit back from the new room
+  will both be automatically @open'ed and @link'ed. You may have as 
+  many or as few exit aliases for an exit as you like, separated in the
+  command by semicolons. The exit leading to the new room is separated
+  from the exit leading back by a single comma.
+
+(continued in help @dig2)
 & @dig2
   Examples: 
-    >@dig Kitchen
-  This command will create a new room named 'Kitchen'. You will be informed
-  what the dbref# of this room is.
+  @dig Kitchen
+    This command will create a new room named 'Kitchen'. You will be informed
+    what the dbref # of this room is.
 
-  > @dig Kitchen=Kitchen <N>;n;north;kitchen;k
-  This will create the room as above, and also open an exit leading to it 
-  named "Kitchen <N>" with the aliases n, north, kitchen and k. It will NOT 
-  create an exit coming back from the Kitchen room.
+  @dig Kitchen = Kitchen <N>;n;north;kitchen;k
+    This will create the room as above and also open an exit leading
+    to it named "Kitchen <N>;n;north;kitchen;k". It will appear in the 
+    list of Obvious exits as just "Kitchen <N>", but you will be able to
+    go through it by typing any of the following: n, k, north, kitchen
+    It will NOT create an exit coming back from the Kitchen room.
 
-  > @dig Kitchen=Kitchen <N>;n;north;kitchen;k, Out <S>;s;south;out;o
-  This will do just the same as the above, except it will also create an 
-  exit named "Out <S>" with the aliases s, south, out and o coming back from
-  the kitchen to whatever room you are currently in.
+  @dig Kitchen = Kitchen <N>;n;north;kitchen;k,Out <S>;s;south;out;o
+    This will do just the same as the above, except it will also create
+    an exit named "Out <S>;s;south;out;o" coming back from the kitchen
+    to whatever room you are currently in.
 
 See also: @open, @link, EXITS, @create, DBREF
 & @doing
   @doing <message>
   @doing/header <message>
 
-  The first form of this command sets a message which shows up next to your
-  name in the output of the WHO/DOING commands.
-  
-  @doing/header is an alias for @poll, and can only be used by Wizards or
-  those with the Poll @power.
+  This command sets a short message that shows up in the WHO/DOING listing
+  next to your name. @doing/header <message> works exactly like @poll and
+  can only be used by Wizards or those with the poll power.
 
-See also: @poll, WHO, doing()
+See also: @poll, WHO, DOING
 & @dolist
-  @dolist[/notify][/delimit <delim>] <list>=<action list>
+  @dolist[/notify][/delimit] [<delim>] <list> = <action>
   
-  @dolist queues the <action list> for execution once for each element in 
-  <list>. <list> is space-separated, unless the /delimit switch is given, 
-  in which case it is a <delim>-separated list.
+  @dolist executes the <action> for each element in <list>. If <list> is a
+  function, it will be evaluated to obtain the necessary list to use. It
+  may be any space-separated list of strings, which can be object numbers,
+  attributes, or arbitrary words. If the /delimit switch is given, the first
+  character of the list is used as the separator, instead of space.
   
-  If the string "##" appears anywhere in <action list>, it will be replaced
-  with the current element of <list>. The string "##" is replaced with the
-  position of the current element in the list.
+  <action> is a command or list of commands enclosed in braces { }
+  and is performed once for every item in <list>. The special symbol "##"
+  is replaced by the corresponding item from <list>.  The special symbol
+  "#@" is replaced by the position of that item in the list.
  
-  If the /notify switch is given, the command "@notify me" is queued after 
-  all copies of <action list> have been queued. This is useful for object
-  synchronization with semaphores.
-  
-  Example:
-    > @dolist a b c=say ## is number #@
-    You say, "a is number 1"
-    You say, "b is number 2"
-    You say, "c is number 3"
-    
-See also: iter(), map(), @notify, SEMAPHORES, ACTION LISTS
+  If the /notify switch is used, a "@notify me" is queued after all the
+  list commands. This is useful for object synchronization with semaphores.
+   
+  Example: @dolist [lcon(here)] = "[name(##)]
+    would cause you to say the name of all objects in the room.
 & @drain
   @drain[/any][/all] <object>[/<attribute>][=<number>]
   
@@ -1256,125 +1057,119 @@ See also: iter(), map(), @notify, SEMAPHORES, ACTION LISTS
   executing them.
 
   If the /any switch is given, then all semaphores associated with
-  <object> are @drained.  Otherwise, only the specified semaphore
-  attribute (or SEMAPHORE if no <attribute> is specified) is @drained.
+  <object> are @drained.  Otherwise, the only the specified semaphore
+  attribute (or SEMAPHORE if no attribute is specified) is @drained.
 
-  If the /all switch is given, then all queue entries associated with the
-  selected semaphore(s) are discarded, and the semaphore attribute(s)
-  are cleared.  Otherwise, only the indicated <number> of queue entries are
-  discarded.  If no <number> is given, then the /all switch is assumed.
+  If the /all switch is given, then all queue entries associated
+  with the selected semaphore(s) are discarded, and the semaphore
+  attribute(s) are cleared.  Otherwise, only the indicated <number>
+  of queue entries are discarded.  If no <number> is given, then
+  the /all switch is assumed.
 
   You may not specify both the /any switch and a specific attribute.
   Similarly, you may not specify both the /all switch and a number.
 
-See also: SEMAPHORES, @wait, @notify
+  See also the help for: SEMAPHORES, @notify, @wait
+& @drop
+  @drop <object> [=<message>]. <object> can be a thing, player, exit,
+  or room, specified as <name> or #<number> or 'me' or 'here'. Sets 
+  the drop message for <object>. The message is displayed when a 
+  player drops <object>. Without a message argument, it clears the 
+  message. 
+
+  On an exit, this message is sent to a player after they pass through
+  the exit.
+
+See also: drop, @odrop, @adrop.
 & @dump
-  @dump
-  @dump[/paranoid|/debug] [<check interval>]
+  @dump [/paranoid] [check interval]
  
-  This is a wizard-only command which saves a copy of the database from
-  memory into the outdb file on disk. The MUSH saves the game automatically
-  at a regular interval, controlled by the "dump_interval" @config option.
+  This is a wizard only command that saves a copy of the current memory
+  database out to a save file.  This preempts the normal regular dumping
+  that the mud performs on its own.
  
-  If the /paranoid switch is given, the game performs additional consistency
-  checking which corrects possible data corruption in the copy of the db 
-  written to disk. If a check interval is specified, the game writes 
-  confirmation of the dump to the checkpoint log file every <interval> 
-  objects. If no interval is specified, it is taken to be the size of the 
-  database, divided by 5.
-  
-  @dump/debug is the same as @dump/paranoid, but also attempts to fix any
-  errors found in the running (in-memory) copy of the database. In order to
-  do this safely, the dump will be a non-forking dump, even if the MUSH is
-  configured to do forking dumps (see "@config forking_dump").
-  
-  These switches should ONLY be used if a normal @dump is not being done
-  correctly. They should generally only be done by wizards with  access to 
-  the account on which the MUSH is running, since others will not have 
-  access to the checkpoint log file.
-
-See also: @shutdown
+  If the /paranoid switch is used, the game performs additional consistency
+  checking which corrects possible data corruption. If a check interval
+  is specified, the game writes confirmation of the dump to the checkpoint
+  log file every <interval> objects. If no interval is specified, it is
+  taken to be the size of the database, divided by 5.
+  This switch should ONLY be used if a normal @dump is not being done
+  correctly. Paranoid dumps should generally only be done by wizards with 
+  access to the account on which the MUSH is running, since others will
+  not have access to the checkpoint log file.
 & @ealias
-& @lalias
-  @ealias <object>[=<enter alias1>[; ... ; <enter aliasN>]]
-  @lalias <object>[=<leave alias1>[; ... ; <leave aliasN>]]
-  
-  These attributes contain lists of "enter aliases" and "leave aliases" for 
-  <object> - any of the aliases can be used in place of "enter <object>" and
-  "leave <object>" to enter/leave the object.
-  
-  These attributes only have meaning for players and things (as rooms/exits
-  cannot be "enter"ed) - the aliases for exits are part of their @name.
-  
-  Example:
-    > @ealias Chair=Sit down;sit
-    > @lalias Chair=Stand up;stand
+  @ealias <object> = <enter alias>
 
-See also: enter, leave, goto, ENTER_OK
+  This allows a player to type the enter alias instead of "enter <object>"
+  If you have a chair, you could "@ealias chair = sit down" and then just
+  type "sit down" instead of "enter chair" - using the object name is
+  not necessary. Note that the enter alias is checked after normal exits.
+  Like an exit, it may have a semicolon separated list of words,
+  i.e. sit down;sit;sit on chair
 & @edit
 & @gedit
-  @edit[/first][/check] <object>/<attributes>=<search>, <replace> 
-  @edit[/check] <object>/<attributes> = $,<string to append>
-  @edit[/check] <object>/<attributes> = ^,<string to prepend>
+  @edit[/first][/check] <object>/<pattern> = <search>,<replace> 
+  @edit[/check] <object>/<pattern> = $,<string to append>
+  @edit[/check] <object>/<pattern> = ^,<string to prepend>
 
-  This command allows you to edit the contents of attributes, without having
-  to retype the entire attribute.
+  This is useful when you don't want to have to retype those obnoxiously 
+  long descriptions just to make one little change.  Instead, search and 
+  replace via @edit.  
   
-  All the attributes on <object> whose names match the wildcard pattern
-  <attributes> will be searched for the string <search>, and each occurrence
-  of it will be replaced with the string <replace>.
+  <pattern> is a pattern, optionally containing wildcards, for the attribute 
+  names you wish to edit. Only attributes already defined on <object> may be 
+  edited. <search> and <replace> are two strings. It's also possible to use 
+  "$" and "^" to signal appending and prepending text, respectively.
   
-  If <search> is "$", then <replace> will be added to the end of the
-  attributes. When <search> is "^", <replace> will be added to the beginning
-  of the attributes. (It is not possible to replace a single $ or ^ using
-  the @edit command.)
+  If the text contains commas, percent signs, or similar special characters,
+  it usually must be enclosed in curly braces.
+
+  If the /first switch is used, only the first occurrence of <search>
+  is replaced.
+
+  If the /check switch is used, the editing is not actually done, but the
+  results are shown to you (with changes hilighted) as if a normal @edit
+  was performed.
   
-  If the /first switch is given, only the first occurrence of <search> in
-  each attribute is replaced. If the /check switch is given, the attributes
-  are not altered, you'll just be shown what would be changed (with the
-  changes ansi-highlighted).
-  
-  <search> and <replace> are not evaluated, so you don't need to escape
-  special characters. If either contains commas, however, you may need to
-  wrap the string in {curly braces}.
-  
-See also: edit(), regedit(), ATTRIBUTES,
+  See also ATTRIBUTES, edit()
+& @efail
+  @efail <object> = <message>
+  This is the message shown to the player who fails to enter the object.
 & @elock
-& @eunlock
-  @eunlock <object>
+  @elock <object> = <key>
+  Enter-locks an object, restricting who is allowed to enter it. Special
+  lock types are supported (see "help @lock" for details). Only objects
+  which are ENTER_OK may be entered, regardless of the key.
+ 
+  Rooms don't use ENTER_OK or @elock; they use @lock/teleport
+  instead. Only people who pass the room's teleport lock, are wizards
+  or royalty, or control the room, will be allowed to @teleport into the
+  room. (Note that this is different from NO_TEL, which prevents people
+  from teleporting out of a room).  The teleport lock is evaluated even
+  if the room is JUMP_OK - in other words, if you are trying to teleport
+  into a room you don't control, the room must be JUMP_OK, and you must
+  pass the teleport lock.
 
-  @elock <object>[=<key>]
-  @eunlock <object>
-  
-  @elock sets the Enter @lock for <object> to <key>, or clears the the lock
-  if no <key. is given. @eunlock removes the Enter @lock for <object>.
-  
-  @elock is an alias for
-    @lock/enter <object>[=<key>]
-  and @eunlock is an alias for
-    @lock/enter <object>
-
-See also: @lock, locktypes, enter, ENTER_OK
 & @emit
 & \  
-  @emit[/<switch>] <message>
+  @emit[/<switch>] [<message>]
   \<message>
 
-  This sends <message> to everyone in your location. Nothing is added to the
-  message, not even your name.
+  This sends <message> to every person in the current room. However, no
+  identifier marking it as being sent by you is shown.  For example,
+  @emit foo would show 'foo' to every object in the room. 
 
-  If the /room switch is given, this command acts like @lemit instead. The
-  /silent switch can be used with it to suppress the confirmation for @lemit.
-
-  The /noeval switch prevents the MUSH from evaluating <message>.
+  The /room switch makes this command equivalent to "@lemit". 
+  The /silent switch in combination with /room suppresses the
+   @lemit confirmation. It has no effect without /room.
+  The /noeval switch prevents the MUSH from evaluating the message.
   The /spoof switch causes nospoof notifications to show the enactor's
     dbref instead of the executor's dbref, and requires control over
     the enactor or the Can_nspemit power.
 
   @emit can be abbreviated "\"
 
-See also: @nsemit, emit(), @pemit, @remit, @oemit, @lemit, @zemit, @cemit, 
-    NOSPOOF and SPOOFING.
+  See also @pemit, @remit, @oemit, @lemit, NOSPOOF and SPOOFING.
 & @enable
 & @disable
   @enable <option>
@@ -1390,205 +1185,246 @@ See also: @config
 & @zenter
 & @ozenter
 & @azenter
-  @zenter <object>[=<message>]
-  @ozenter <object>[=<message>]
-  @azenter <object>[=<action list>]
+  @zenter <ZMO> = <message>
+  @ozenter <ZMO> = <message>
+  @azenter <ZMO> = <action>
   
-  These attributes set the message shown to a player when he enters the zone
-  <object>, the message shown to others in the room the player enters when
-  he enters the zone, and the action to be taken by the zone <object> when 
-  the player moves into an area zoned to it.
+  These attributes set the message shown to a player who enters a room in
+  a new zone (@zenter), the message shown to others in the room in the
+  new zone when the player enters (@ozenter), and the action triggered
+  by the entry (@azenter).
 
-  Entry into a new zone is said to occur when a player goes from a room not 
-  in the zone to a room in the zone. "Room" in this context means the 
-  player's absolute room (outermost container), so entering and leaving 
-  unzoned objects within a zoned room doesn't trigger these.
+  Entry into a new zone is said to occur when a player goes from 
+  a room not in the zone to a room in the zone. "Room" in this context
+  means the player's absolute room (outermost container), so entering
+  and leaving unzoned objects within a zoned room doesn't trigger these.
 
   Zone entry is assumed to occur before room entry, so these are
   triggered before the room's @[oa]enter.
 
-See also: @zleave, ZONES, @zemit, zwho()
+See also: @zleave, @ozleave, @azleave, ZONES
 & @zleave
 & @ozleave
 & @azleave
-  @zleave <object>[=<message>]
-  @ozleave <object>[=<message>]
-  @azleave <object>[=<action list>]
+  @zleave <ZMO> = <message>
+  @ozleave <ZMO> = <message>
+  @azleave <ZMO> = <action>
   
-  These attributes set the message shown to a player when he leaves the zone
-  <object>, the message shown to others in the room he left when leaving
-  the zone, and the actions to be taken by <object> with a player leaves
-  an area zoned to it.
+  These attributes set the message shown to a player who leaves a room in
   a zone (@zleave), the message shown to others in the room in the
   old zone when the player leaves (@ozleave), and the action triggered
   by the leave-taking (@azleave).
 
-  Leaving a zone is said to occur when a player goes from a room in the zone
-  to a room not in the zone. "Room" in this context means the player's
-  absolute room (outermost container), so entering and leaving unzoned 
-  objects within a zoned room doesn't trigger these.
+  Leaving a zone is said to occur when a player goes from a room in
+  the zone to a room not in the zone. "Room" in this context means the
+  player's absolute room (outermost container), so entering and leaving
+  unzoned objects within a zoned room doesn't trigger these.
 
   Zone leaving is assumed to occur after room leaving, so these are
   triggered after the room's @[oa]leave.
 
-See also: @zenter, ZONES, @zemit, zwho()
-& @entrances
-  @entrances[/<switch>] [<object>][=<begin>[, <end>]]
-  
-  This command will show you all objects linked to <object>. If you don't
-  specify an <object>, your current location is used. You can limit the
-  range of the dbrefs searched by specifying <begin> and <end>.
-  
-  You can use any combination of switches to limit the types of objects:
-    /exits       show only exits linked to <object>
-    /things      show only things which have their homes in <object>
-    /players     show only players who have their homes in <object>
-    /rooms       show only rooms which have a drop-to of <object>
-    
-  If you don't control <object>, you must have the Search_All power, and will
-  only see objects you control.
-    
-See also: @link, @search, entrances()
-& @exitformat
-  @exitformat <object>[=<format>].
+See also: @zenter, @ozenter, @azenter, ZONES
+& @enter
+  @enter <object> = <message>
 
-  When set, the exitformat attribute is evaluated and shown in place of the
-  "Obvious exits" list for a room. (It has no meaning when set on other types
-  of object.) The dbrefs of the exits which would appear in the default
-  "Obvious exits" list is passed to the attribute as %0 as a space-separated
-  list; you can use lexits(me) to get all the exits in the room.
+  This sets the message that is displayed to anyone entering the 
+  object. Works just as @success on an exit does.
 
   Example:
-    > @exitformat here=Exits: [itemize(iter(%0, name(%i0)))]
+    @enter Chair = You sit down on the comfy chair.
+    enter chair
+    > You sit down on the comfy chair.
+
+See also: @oenter, @oxenter, enter
+& @entrances
+  @entrances[/<switch>] <object> [=<begin>,<end>]
+  
+  This command will show you all exits linked to the object you use the
+  command on, as well as where the exit originates.  This command is
+  computationally expensive and costs the same as @find. You can limit
+  the range of the dbrefs searched by specifying <begin> and <end>.
+  
+  It takes four switches:
+  
+  /exits       show only exits linked to <object>
+  /things      show only things which have their homes in <object>
+  /players     show only players who have their homes in <object>
+  /rooms       show only rooms which have a drop-to of <object>
+& @eunlock
+  @eunlock <object>
+
+  Enter-unlocks an object, in a fashion similar to @unlock. For anyone
+  to be able to enter an object, it must be both @eunlocked and ENTER_OK.
+  You can also simply type 
+    @lock/enter <object> 
+  to unlock an object.
+
+See also: @lock, locktypes, @elock
+& @exitformat
+  @exitformat <object> [=<format>].
+
+  Replaces the usual "Obvious Exits:" format when an object is looked
+  at, by a player-specified exits format. This is evaluated as if it
+  were a description or similar message on the room.  The objects that
+  the looker would normally be able to see is passed as a dbref list
+  in %0; all exits can be acquired through 'lexits(me)'.
+ 
+  One could change the format to 'Exits: Exit1 Exit2 Exit3' through
+  '@exitformat here = Exits: [iter(%0,name(##))]', for example.
 
 See also: TRANSPARENT, @conformat, @nameformat, @descformat
+& @failure
+  @failure <object> [=<message>]
+
+  Sets the message shown to someone who fails to pass the object's
+  basic @lock. For a thing or player, this would be when someone tries
+  to pick the object up and fails. For an exit, this occurs when someone
+  tries to go through the exit and fails.
+
+  If [=<message>] is omitted, any currently set message will be reset.
+
+  Can be abbreviated @fail. It is recommended that you put an @fail message
+  on any locked object.
+
+See also: FAILURE, @ofailure, @afailure
 & @firstexit
-  @firstexit <exit1>[, ... , <exitN>]
-  
-  Normally, exits appear in a room's Obvious exits list in the order they
-  were created, most recent first. You can use this command to rearrange
-  them. @firstexit moves each exit, in the order given, to the top of the
-  Obvious exits list for its source room. You must control the room.
-  
-  Example:
-    > @dig/teleport Test Room
-    > @open Two ; @open Three ; @open One
-    > look
-    Test Room(#3Rn)
-    Obvious exits:
-    One, Three, and Two
-    > @firstexit two, one
-    > look
-    Test Room(#3Rn)
-    Obvious exits:
-    One, Two, and Three
+  @firstexit <name of exit>
+
+  Makes the named exit the first in the listing of Obvious Exits in a
+  room. You must control the room in order to use this command.
 
 See also: EXITS, @open, @link
 & @filter
-  @filter <object>[=<pattern1>[, <pattern2>[, ..., <patternN>]]
+  @filter <object> = <pattern 1>, <pattern 2>, <pattern 3>, ...
  
-  The filter attribute is used in conjunction with the AUDIBLE flag. When
-  set, sound which matches any of the comma-separated list of wildcard
-  patterns in this attribute is not propagated through the audible object.
+  This attribute is meant to be used in conjunction with the AUDIBLE
+  flag. The @filter of an object is a comma-separated list of wildcard
+  patterns (like @switch patterns). Any messages which match one of the 
+  patterns is suppressed and not propagated through the AUDIBLE object
+  with the @filter set. (Note: @filter on rooms has no effect!)
+ 
+  Please note that you should NOT use curly brackets {} in an @filter
+  pattern. If you want to filter a message containing a comma, you
+  need to put a \ before it. Also note that AUDIBLE exits will not
+  take effect unless the room they lead from is also set AUDIBLE.
 
-  If you need to use a comma in one of the patterns, put a \ before it,
-  do not use {} curly braces.
-
-  You can set the regexp flag on the filter attribute to use regular 
-  expressions instead of wildcard patterns, and can set the case flag to make
-  the patterns case-sensitive.
-  
-  See 'help @filter2' for an example.
-  
-See also: AUDIBLE, @infilter, attribute flags, LISTENING, @forwardlist
+  See 'help @filter2' for more.
 & @filter2
+ If the @filter attribute is flagged REGEXP, the patterns are considered
+ regular expressions, not wildcards. The CASE attribute flag is also
+ respected. 
 
-  Example: 
-  An audible exit leads from the room where Wizard is standing to another
-  room where the puppet "Wiztoy" is standing.
+Example: 
+  An exit leads from the room where Wizard is standing to another
+  room where the puppet "Wiztoy" is standing. The exit is set AUDIBLE.
   
-    > @prefix exit=From inside,
-    > :tests.
-    Wizard tests.
+    @prefix exit=From inside,
+    :tests.
+    > Wizard tests.
     Wiztoy> From inside, Wizard tests.
-
-    > @filter exit=* jumps.,* tests.
-    > :jumps.
-    Wizard jumps.
-    > :tests.
-    Wizard tests.
-
-    > :tests again.
-    Wizard tests again.
+    @filter exit=* jumps.,* tests.
+    :jumps.
+    > Wizard jumps.
+    :tests.
+    > Wizard tests.
+  (Wiztoy doesn't hear anything, because it is filtered out.)
+    :tests again.
+    > Wizard tests again.
     Wiztoy> From inside, Wizard tests again.
+
+See also: AUDIBLE, @infilter, LISTENING
 & @find
-  @find [<name>][=<begin>, <end>]
+  @find [<name>] [=<begin>,<end>]
 
-  Displays the name and dbref of every room, thing, or player you control
-  whose name matches <name>. If <begin> and <end> are given, @find will start
-  at the <begin>th object in the database, and will not search past the
-  <end>th object.
+  Displays the name and number of every room, thing, or
+  player that you control whose name matches <name>. Because the
+  command is computationally expensive, this costs 100 pennies.
+  You can limit the range of the @find by specifying <begin> and
+  <end>, where these are the first and last dbrefs to examine.
 
-  You may wish to use the @search command instead, which can filter the
-  results more complexly.
+  Some MUSHes may choose to restrict @find only to Royalty. Even if 
+  not, it is recommended that you use @search instead, as it can be
+  limited more effectively.
 
-See also: @search, lsearch(), @entrances
+See also: @search
+& @follow
+  @follow <object> = <message>
+
+  Sets the message shown to someone after they begin following 
+  the object (using the 'follow' command). 
+
+See also: follow, unfollow, followers(), @ofollow, @afollow
+& @unfollow
+  @unfollow <object> = <message>
+
+  Sets the message shown to someone after they stop following 
+  the object (using the 'unfollow' command). 
+
+See also: follow, unfollow, followers(), @ounfollow, @aunfollow
 & @FORWARDLIST
-  @forwardlist <object>[=<list of dbrefs>]
+  @forwardlist <object> [=<list of dbrefs>]
 
-  If <object> is set AUDIBLE, any sound it hears which passes its @filter
-  will be forwarded (prefixed with its @prefix) to each of the dbrefs given
-  in its @forwardlist attribute, in much the same way as puppets forward
-  sound to their owners.
+  When an object set AUDIBLE hears sound that passes its @filter, its
+  @forwardlist attribute is checked, and if present, the sound (Prefixed
+  by the object's @prefix attribute) is forwarded to all the dbrefs in the
+  @forwardlist, like puppets do to their owners.
 
-  In order to forward to an object, you must either control it, have the 
-  pemit_all power, or pass its @lock/forward. (If you want to allow all
-  objects you own to forward to you, regardless of whether or not they
-  control you, use @lock/forward me=$me)
+  The @forwardlist must be a space-seperated list of dbrefs. 
+  In order to forward to an object, you must either control it,
+  have the pemit_all power, or, if it has a @lock/forward set,  pass 
+  its @lock/forward.  (If you want to allow all objects you own to
+  forward to you, regardless of whether or not they control you, use
+  @lock/forward me=$me)
 
-See also: @filter, @prefix, AUDIBLE, PUPPET, @debugforwardlist, @lock
+See also: @filter, @prefix, AUDIBLE, PUPPET
 & @DEBUGFORWARDLIST
 & DEBUGFORWARDLIST
-  @debugforwardlist <object>[=<list of dbrefs>]
+  @debugforwardlist <object> [=<list of dbrefs>]
 
-  When <object> is set DEBUG, the debug output is forwarded to all the dbrefs
-  in its @debugforwardlist attribute.
+  When an object is set DEBUG, its @debugforwardlist attribute is checked,
+  and if present, the debug output is forwarded to all the dbrefs in
+  the @debugforwardlist.
 
-  The @debugforwardlist must be a space-seperated list of dbrefs. In order to 
-  forward to an object, you must either control it, have the pemit_all power, 
-  or pass its @lock/forward.
+  The @debugforwardlist must be a space-seperated list of dbrefs.
+  In order to forward to an object, you must either control it,
+  have the pemit_all power, or, if it has a @lock/forward set,  pass
+  its @lock/forward.  (If you want to allow all objects you own to
+  forward to you, regardless of whether or not they control you, use
+  @lock/forward me=$me)
 
-See also: DEBUG, @forwardlist, @lock
+See also: DEBUG
 & @force
-  @force[/noeval] <object>=<action list>
+  @force[/noeval] <object>=<command>
 
-  This command forces <object> to queue the given action list, as if the
-  object had entered the action list itself. You must control <object> to
-  @force it. @force is useful for manipulating puppets. 
+  This forces the object to perform the command just as if it had
+  typed it in itself. Only wizards may @force other players. You
+  can @force any object which you own or control. Useful for
+  manipulating puppets. If <object> is not in the same room as you,
+  you can instead use the object's dbref number. 
 
-  @force can be abbreviated as
-    <dbref#> <action list>
+  @force can be shortened to @fo or @for, or abbreviated as:
+    <dbref #> <command>
 
-  Continued in 'help @force2'.
+(continued in help @force2)
 & @force2
 
-  Normally, the action list is parsed for function evaluation and
-  substitutions twice - once when @force is run, once when <object> runs the 
-  action list. If the /noeval switch is given, <action list> is not evaluated
-  until it is run by <object>.
+  Normally, the command is parsed for function evaluation and 
+  substitutions twice - once when @force is run, once when
+  the forcee runs the command. @force/noeval will only
+  evaluate the command when the forcee runs it.
 
-  Examples:
-    > @create Lackey
-    Created: Object #103 
-    > @force Lackey=go east
-    Lackey goes east.
-    Lackey has left.
-    > @force #103=page Cyclonus=Hi there!
-    Lackey pages: Hi there!
-    > #103 page Cyclonus=Whee
-    Lackey pages: Whee
+Examples:
+  @create Lackey
+  > Created: Object #103 
+  @fo Lackey = go east
+  > Lackey goes east.
+  > Lackey has left.
+  @fo #103 = page Cyclonus = Hi there!
+  > Lackey pages: Hi there!
+  #103 page Cyclonus = Whee
+  > Lackey pages: Whee
 
-See also: PUPPET, DBREF
+See also: PUPPET, DBREF 
 & @flag
   @flag <flag name>
   @flag/list [<flag name pattern>]
@@ -1789,11 +1625,9 @@ See also: RESTRICT, FUNCTIONS, @startup, fn()
   patterns containing '*', '?', etc.  Also, <pattern> is NOT PARSED,
   so '[v(0)]' and the like can be searched for.
 & @halt
-& @allhalt
   @halt <object> [=<new_command>] 
   @halt/pid <pid>
   @halt/all
-  @allhalt
  
   The @halt command removes all queued actions for <object>.  If <new
   command> is specified, that new command is placed in the queue for
@@ -1812,8 +1646,9 @@ See also: RESTRICT, FUNCTIONS, @startup, fn()
   number in parenthesis before it in @ps). You must control the object
   that queued the command or have the halt power to do this.
 
-  @halt/all is a synonym for @allhalt and is a wizard-only command
-  which halts all objects in the game in an effort to free up the queue.
+  @halt/all is a synonym for @allhalt and is a wizard-only command.
+
+See also: HALT, QUEUE, @ps
 & @haven
   @haven <player> = <message>
 
@@ -1823,23 +1658,16 @@ See also: RESTRICT, FUNCTIONS, @startup, fn()
 
 See also: HAVEN, page, @lock, @away
 & @hide
-  @hide[/<switch>] <descriptor>
-  @hide[/<switch>] [<player>]
-
-  This command allows players to hide their online status. Hidden connections
-  don't show up on WHO, in lwho(), etc, when used by players without see_all.
+  @hide[/<switch>]
   
-  The first form of this command affects the single connection specified by
-  <descriptor> (as returned by ports(), or shown on the admin WHO). The 
-  second affects all connections for the given <player>, or the enactor if 
-  no <player> is given. You must be a Wizard, Royalty, or have the Hide
-  @power to affect your own connections; only Wizards can affect other
-  players' connections.
-  
-  The /on and /yes switches (which are the default, if no <switch> is given)
-  hide a connection, while /off and /no unhide the connection.
+  This command enables a royalty, wizard, or player with the Hide
+  power to disappear from the WHO list for mortals. "@hide/yes" or "@hide/on"
+  hides the player, "@hide/no" or "@hide/off" unhides the player.
+  Hidden players are marked as "(Hide)" in the privileged WHO listing.
+ 
+  Mortals can not use the CONN(), IDLE(), or LWHO() functions to find 
+  hidden players.
 
-See also: hidden(), WHO, lwho(), lports(), ports()
 & @idescribe
 & @oidescribe
 & @aidescribe
@@ -1963,6 +1791,26 @@ See also: @prefix, @listen, @infilter
   before using this command.
 
 See also: @ps, QUEUE
+& @lalias
+  @lalias <object> = <leave alias>
+
+  Sets the leave alias(es) of an object that is ENTER_OK. Setting a leave 
+  alias allows people to type the leave alias instead of the "leave"
+  command in order to get out of the object. Meaningless for exits and
+  rooms.
+
+  You can set multiple leave aliases on an object by separating them with
+  semi-colons.
+  Example:
+      @lalias chair=stand up;stand;get up;rise
+
+See also: @ealias, leave, @leave, @lfail
+& @leave
+  @leave <object> = <message>
+  
+  Sets the message that is displayed to anyone leaving <object>. 
+  
+See also: leave, @lfail
 & @lemit
   @lemit[/<switch>] <message>
 
@@ -1976,6 +1824,14 @@ See also: @ps, QUEUE
   The /spoof switch causes nospoof notifications to show the enactor's
     dbref instead of the executor's dbref, and requires control over
     the enactor or the Can_nspemit power.
+& @lfail
+  @lfail <object> = <message>
+
+  This is the message shown to the player who fails to leave the object,
+  either because the object is set NO_LEAVE or because the person leaving
+  fails the leave-lock.
+
+See also: leave, @leave, NO_LEAVE, locktypes
 & @list
   @list/<switch>[/lowercase]
   @list[/lowercase] <switch>
@@ -1984,23 +1840,18 @@ See also: @ps, QUEUE
 
   Switches include:
   /motd      : Alias for @listmotd, shows current messages of the day.
-  /functions : Lists all built-in functions and @functions
-  /commands  : Lists all built-in commands
-  /attribs   : Lists all standard attributes
-  /locks     : Lists the built-in lock types
+  /functions : Alias for @config/functions, shows all functions
+  /commands  : Alias for @config/commands, shows all commands
+  /attribs   : Alias for @config/attribs, shows all standard attribs
+  /locks     : Shows all global (non-user) locks.
   /flags     : Alias for @flag/list, shows all flags
   /powers    : Alias for @powers/list, shows all powers
-  
-  By default, information is shown in upper-case. Add the /lowercase switch
-  to show output in lowercase instead.
+  /lowercase : Show whatever you're showing in lowercase, rather than upper.
 
-  These admin-only commands require the use of '@list <what>' and don't work
-  as '@list/<what>':
+  Some commands that require the use of '@list <what>' and don't work as
+  '@list/<what>':
 
   allocations : Information about memory allocations.
-  
-See also: list(), @config, config(), functions(), @stats, @command,
-    @function, @flag, @power, @attribute, @listmotd, @motd, locktypes
 & @listmotd
   @listmotd
 
@@ -2275,7 +2126,7 @@ EVALUATION LOCKS
     @lock <object>=objid^<object id>
 
   You can test to see if the enactor is a member of a space-separated
-  list of dbrefs or objids on an attribute on the object, with:
+  list of dbrefs or objids on an atrribute on the object, with:
 
     @lock <object>=dbreflist^<attributename>
 
@@ -2320,9 +2171,9 @@ See also: locktypes, @clock, elock(), lock(), objid()
   @lock/examine         Who can examine this object if it's VISUAL
   @lock/chzone          Who can @chzone to this object if it's a ZMO
   @lock/forward         Who can @forwardlist a message to this object 
-  @lock/control         Who can control this object (only if set)
-  @lock/dropto          Who can trigger this container's drop-to.
-  @lock/destroy         Who can destroy this object if it's DESTROY_OK
+  @lock/control	        Who can control this object (only if set)
+  @lock/dropto	        Who can trigger this container's drop-to.
+  @lock/destroy	        Who can destroy this object if it's DESTROY_OK
   @lock/interact        Who can send sound (say/pose/emit/etc) to this object
   @lock/take            Who can get things contained in this object
 
@@ -2359,6 +2210,44 @@ See also: @logwipe
   command.
 
 See also: @log
+& @map
+  @map[/delim] [<delim>] <list> = <function or pattern>
+ 
+  This command takes a space-separated list of words, and performs
+  pronoun/pattern substitution on each word, returning a list - 
+  "mapping" the function onto each item in the list. It returns the
+  list in a MAPLIST attribute, automatically set on the object executing
+  the @map. The set is always performed before any actions further
+  actions are executed. 
+  
+  If the /delim switch is given, the first character of the list is
+  used as the delimiter, instead of space.
+
+  Brackets are generally necessary in order to make the function
+  substitutions evaluate correctly.
+  
+  @map is an obsolete command provided for backwards compatibility;
+  the ITER() or MAP() functions should probably be used instead.
+ 
+  See "help @map2" for examples of @map.
+ 
+& @map2
+ 
+  Examples of @map:
+    @map foobar baz blech=[strlen(##)]
+      Returns "6 3 5" in MAPLIST.
+    @map testing map-test=[strlen(before(##, est)]
+      Returns "1 5" in MAPLIST
+    @map Joe Bob Ann=I know ##.
+      Returns "I know Joe. I know Bob. I know Ann." in MAPLIST
+ 
+  >  @va Object=$test * * *:@map %0 %1 %2=[strlen(##)];
+           @dolist [v(maplist)] = say ##
+  Object - Set.
+  >  test aaa bb c
+  Object says, "3"
+  Object says, "2"
+  Object says, "1"
 & @message
   @message[/switch] <player list>=<message>,<attribute>[,<arg1>,...]
 
@@ -2380,7 +2269,7 @@ See also: @log
 
 See also: message(), @chatformat, @pageformat
 & @motd
-  @motd[/<switch>] [<message>].  
+  @motd [/<switch>] [<message>].  
  
   The default for this command (and with the /connect) switch, is a
   wizard only command that will set a temporary message that 
@@ -2395,41 +2284,34 @@ See also: message(), @chatformat, @pageformat
   /down   : sets the logins-off message (like @rejectmotd)
   /full   : sets the max-players-logged-in message
   /list   : list the MOTDs (like @listmotd, can be used by anyone)
+& @move
+  @move <object> = <movement message>
+
+  This sets the message that is shown to <object> whenever it moves.
+  Example:
+       @move me=You moved! You are now in the room: [name(loc(me))].
+
+See also: go, @omove, @oxmove, @amove
 & @name
   @name <object>=<new name>
-  @name <exit>=<new name>[;<alias1>[;<alias2>[;...;<aliasN>]]]
 
-  Changes the name of <object> to <new name>.
+  Changes the name of <object>, which can be a thing, player, exit,
+  or room. You can refer to object by name, DBREF number, or as "me"
+  or "here".
 
   When changing a player's name on games that support multi-word player
-  names, the name should be enclosed in quotes. For example:
-    > @name me="James Bond"
+  names, the name should be enclosed in quotes:
+    @name me = "James Bond"
 
-  Players can change their name to anything valid which is not currently in
-  use by another player, as a name or alias. (They can change their name to
-  something from their own @alias.)
+  Players can change their name to any name not in use by another
+  player; players may "reserve" a set of names for their use by
+  setting them in their @alias.
 
-  An exit can have many names/aliases, each separated by a semicolon. The
-  exit can be referred to by any of these names in all commands. For example:
-    > @name exit=East <e>;east;e
+  Changing the name of <object> will cause object to execute its
+  ONAME and ANAME. The old name will be passed at %0 to these;
+  the new name will be passed as %1.
 
-See also: @alias, @oname, name(), fullname()
-& @ONAME
-& @ANAME
-  @oname <object>[=<message>]
-  @aname <object>[=<action list>]
-  
-  Whenever <object>'s name is changed (via @name), others in the same
-  location will see the contents of <object>'s ONAME attribute, prepended
-  with <object>'s new name. At the same time, <object>'s ANAME attribute
-  will be triggered. Both attributes receive the old name as %0, and the new
-  name as %1.
-  
-    Example:
-      > @oname me=has regenerated from %0!
-      > @aname me=think >> Renamed from %0 to %1 at [time()] by %n(%#).
-
-See also: @name, name()
+See also: @alias
 & @newpassword
   @newpassword <player> = <password>
 
@@ -2476,15 +2358,30 @@ See also: SEMAPHORES, @drain, @wait
   @nsoemit[/<switch>] [<room>/]<object> [<object>...] = <message>
   @nszemit <zone> = <message>
 
-  These commands work like @emit, @lemit, @pemit, @prompt, @remit, @oemit, 
-  and @zemit, respectively, but will not include nospoof information if used
-  by Wizards or someone with the Can_Nspemit @power. They are meant to be
-  used by commands in the master room where the nospoof information is just
-  useless noise. They take all switches of their respective commands.
+  These wizard-only commands work like @emit, @lemit, @pemit, @prompt, @remit,
+  @oemit, and @zemit, respectively, but will not include nospoof information.
+  They are meant to be used by commands in the master room where the
+  nospoof information is just useless noise. They take all switches
+  of their respective commands.
 
 See also: @emit, @lemit, @pemit, @prompt, @remit, @oemit, @zemit, nsemit(),
   nslemit(), nspemit(), nsprompt(), nsremit(), nsoemit(), nszemit(),
   PROMPT_NEWLINES
+& @odeath
+  @odeath <player> [=<message>]
+
+  This sets the ODEATH attribute on the player, which contains the
+  message that will be shown to others when s/he is killed. The
+  @odeath message will automatically have the player's name included.
+
+Example:
+     @odeath me=falls to the ground and vanishes.
+     (if I am killed, others in the room then see:)
+     > Cyclonus falls to the ground and vanishes.
+
+  If the =<message> part is omitted, the ODEATH attribute will be reset.
+
+See also: @death, @adeath, kill
 & @odescribe
   @odescribe <object> [=<message>]
 
@@ -2496,6 +2393,28 @@ See also: @emit, @lemit, @pemit, @prompt, @remit, @oemit, @zemit, nsemit(),
   If the =<message> part is omitted, the message will be reset.
 
 See also: look, @describe, @idescribe
+& @odrop
+  @odrop <object> [=<message>]
+
+  This sets the message that will be shown to others whenever anyone drops
+  <object>. The name of the person dropping the object will be added to the
+  beginning of the message automatically.
+
+  If set on an exit, the @odrop is shown in the exit's destination room
+  when someone goes through the exit.
+
+  If the =<message> part is omitted, the message will be reset.
+
+See also: drop, @drop, @adrop, NONAME, NOSPACE
+& @oefail
+  @oefail <object> [= <message>]
+
+  This sets the message that will be show to others whenever anyone tries
+  to enter <object> and fails, usually because they fail the enter-lock.
+
+  If the =<message> part is omitted, the message will be reset.
+
+See also: enter, @efail, @aefail, @lock
 & @oemit
   @oemit[/<switch>] [<room>/]<object> [<object>...] = <message>
  
@@ -2518,6 +2437,93 @@ See also: look, @describe, @idescribe
     the enactor or the Can_nspemit power.
  
 See also: @emit, @pemit, NOSPOOF and SPOOFING.
+& @oenter
+  @oenter <object> [= <message>]
+
+  This sets the message that will be show to others whenever anyone
+  enters the object. It will be seen by those already -inside- the
+  object and will automatically add the name of the person entering
+  at the beginning. If you wish to set a message to be seen by those
+  -outside- the object, use @oxenter.
+
+See also: enter, @enter, @oxenter
+& @ofailure
+  @ofailure <object> [=<message>]
+
+  This sets the message that will be show to others whenever anyone
+  fails to pass <object>'s basic lock. For players and things, this means
+  failing to pick them up. For exits, this means failing to go through 
+  the exit. It automatically prefixes the name of the player.
+
+Example:
+  @ofail Locked Door=tries to open the door, but it seems to be locked.
+
+  If the =<message> part is omitted, the message will be reset.
+
+See also: FAILURE, @lock, @failure, @afailure, NONAME, NOSPACE
+& @ofollow
+  @ofollow <object> [= <message>]
+
+  Sets the message shown to others in the room after someone
+  begins following the object (using the 'follow' command). 
+  Similar to @omove or @osucc, this command prepends the name
+  of the person doing the following.
+
+  If the =<message> part is omitted, the message will be reset.
+
+Ex: @ofollow me=falls into step behind Cyclonus.
+
+See also: follow, unfollow, followers(), @follow, @afollow
+& @ounfollow
+  @ounfollow <object> [= <message>]
+
+  Sets the message shown to others in the room after someone
+  stops following the object (using the 'unfollow' command). 
+  Similar to @omove or @osucc, this command prepends the name
+  of the person doing the unfollowing.
+
+  If the =<message> part is omitted, the message will be reset.
+
+Ex: @ounfollow me=stops following [name(me)].
+
+See also: follow, unfollow, followers(), @unfollow, @aunfollow
+& @oleave
+  @oleave <object> [= <message>]
+  
+  This sets the message that will be displayed to the people inside
+  <object> whenever someone leaves <object>. If you want to set a 
+  message to be displayed to people outside the object, use @oxleave.
+  This command automatically inserts the name of the person leaving
+  at the start of the message.
+
+  If the =<message> part is omitted, the message will be reset.
+
+See also: leave, @leave, @aleave, @oxleave
+& @olfail
+  @olfail <object> [= <message>]
+  
+  This sets the message that will be shown to others whenever someone
+  tries to leave <object> and fails (usually if the person fails the
+  leave-lock, or if <object> is set NO_LEAVE). It automatically inserts
+  the name of the person trying to leave at the start of the message.
+
+  If the =<message> part is omitted, the message will be reset.
+
+See also: leave, @lfail, @alfail, @lock
+& @omove
+  @omove <object> [= <message>]
+
+  Sets the message that will be shown to others whenever <object> moves.
+  It is shown in the destination room or object and automatically inserts
+  the name of the <object> at the beginning. Please note that long @omoves
+  are frequently found annoying.
+
+Example:
+ @omove me=stalks into the room wearing the latest in malevolent expressions.
+  
+  If the =<message> part is omitted, the message will be reset.
+
+See also: go, @move, @amove, @oxmove
 & @oxmove
   @oxmove <object> [= <message>]
 
@@ -2531,6 +2537,19 @@ See also: @emit, @pemit, NOSPOOF and SPOOFING.
   If the =<message> is omitted, the message is cleared.
   
 See also: go, @move, @omove, @amove
+& @opayment
+  @opayment <object> [=<message>]
+
+  Sets the message that will be show to others whenever someone "pays"
+  <object> (by giving the object a certain amount of MUSH money). The
+  name of the person giving the money will be automatically inserted at
+  the beginning of the message.
+  
+  If the =<message> part is omitted, the message will be reset.
+
+  Ex: @opay Vending Machine=sticks a quarter in the vending machine.
+
+See also: give, @cost, @payment, @apayment, MONEY
 & @open
   @open <exit name>
   @open <exit name>;<exit aliases>=<destination>
@@ -2551,6 +2570,59 @@ See also: go, @move, @omove, @amove
   Ex: @open Up;u;climb = #255, Down;dow;do;d;fall
 
 See also: EXITS, @link, @dig
+& @osuccess
+  @osuccess <object> [=<message>]
+
+  Sets the message that is shown to others whenever someone passes the 
+  object's Basic lock. For players and things, this means picking them up.
+  For exits, this means going through the exit, and the osuccess message
+  is shown to those in the room the player has just left. This message 
+  automatically inserts the name of the person at the beginning.
+
+  @osucc's are very useful for allowing people to follow someone around
+  if the name of the exit is included in the message. It is recommended 
+  that you put @osuccs on all exits and all takeable objects.
+
+  Ex: @osucc North=heads north into the catacombs.
+  
+  If the =<message> part is omitted, the message will be reset.
+
+See also: take, @success, @asuccess, @lock, FAILURE, NONAME, NOSPACE
+& @otport
+  @otport <object> [=<message>]
+
+  Sets the <message>, which will be prefixed by <object>'s name,
+  that will be shown to the others in the room that the <object>
+  is teleported to. If you want to set a message that will be shown
+  to the room that the object is teleported OUT of, use @oxtport.
+
+  %0 is the object causing the teleport, and %1 is the old location
+  of the teleported object.
+
+  If the =<message> part is omitted, the message will be reset.
+
+See also: @teleport, @oxtport
+& @ouse
+  @ouse <object> [=<message>]
+
+  Sets the message that will be shown to others whenever someone successfully
+  uses <object>. The name of the person using the object will automatically
+  be inserted at the beginning.
+
+  If the =<message> part is omitted, the message will be reset.
+
+See also: use, @use, @ause, @charges, @runout
+& @oxenter
+  @oxenter <object> [= <message>]
+
+  Sets the message that will be shown to others outside the object whenever
+  someone enters the object. The name of the person entering will be
+  inserted at the beginning of the message automatically. If you want
+  to show a message to everyone inside the object, use @oenter.
+
+  If the =<message> part is omitted, the message will be reset.
+
+See also: enter, @oenter, leave
 & @oxleave
   @oxleave <object> [= <message>]
 
@@ -2561,6 +2633,17 @@ See also: EXITS, @link, @dig
   If the =<message> part is omitted, the message will be reset.
 
 See also: leave, @leave, @oleave, @aleave
+& @oxtport
+  @oxtport <object> [=<message>]
+  
+  Sets the <message>, which will be prefixed by <object>'s name,
+  that will be shown to those in the room that the object has
+  left via @teleport. If you want to show a message to the room the
+  object has arrived in, use @otport.
+
+  If the =<message> part is omitted, the message will be reset.
+
+See also: @teleport, @otport, @atport
 & @parent
   @parent <object> = <parent>
  
@@ -2599,6 +2682,14 @@ See also: PARENTS, parent(), lparent()
      [if(%q1,%b(to %q1))]\, %n %0,From afar[if(%q1,%b(to %q1))]\, %n%0)]
   
 See also: page, speak()
+& @payment
+  @payment <object> [=<message>]
+
+  Sets the message that is shown to anyone who pays the object, by giving
+  it a certain amount of MUSH money. If =<message> is omitted, the message
+  is reset to nothing. May be abbreviated @pay. 
+
+See also: give, @apay, @opay, @cost.
 & @receive
 & @oreceive
 & @areceive
@@ -2880,6 +2971,13 @@ See also: @emit, @pemit, @oemit, SPOOFING, NOSPOOF, CONTROL.
 
 
 See also: @halt, @startup
+& @runout 
+  @runout <object> = <action list> 
+
+  Sets the actions to be taken when the charges of the object reaches
+  zero. 
+
+See also: @charges, use, ACTION LISTS
 & @rwall
   @rwall[/emit] <message>
 
@@ -3200,6 +3298,17 @@ See also: @function, ACTION LISTS
 
   In the remaining forms, display statistics or histograms about the
   chunk (attribute) memory system.
+& @success
+  @success <object> [=<message>]. 
+
+  Sets the message that is shown to someone who successfully passes
+  the basic lock of <object>. For things and players, this means picking
+  them up. For exits, this means going through the exit.
+
+  Ex.: @succ Box=You pick up the box.
+       @succ Door=You walk through the door.
+
+See also: @osuccess, @asuccess
 & @sweep
   @sweep [connected | here | inventory | exits ]
  
@@ -3288,6 +3397,15 @@ See also: switch wildcards, @select, switch()
   the home command, and does not act like a normal teleport.
 
 See also: JUMP_OK, NO_TEL, @oxtport, @tport, @otport, @atport, @lock
+& @tport
+  @tport <object> [=<message>]
+
+  Sets the <message> shown to <object> when <object> is teleported.
+
+  %0 is the object causing the teleport, and %1 is the old location
+  of the teleported object.
+
+See also: @otport, @atport, @oxtport
 & @trigger
   @trigger <object>/<attribute> [=<value 0>,<val. 1>,...,<val 9>]
 
@@ -3370,6 +3488,13 @@ See also: @link, DROP-TO
   Removes the lock on <object>. It can take as many switches as @lock can. 
 
 See also: @lock, locktypes
+& @use
+  @use <object> [=<message>]
+
+  Sets the message that is displayed to someone who successfully uses 
+  <object>. If =<message> is omitted, the message is reset to nothing.
+
+See also: use, @ouse, @ause, @charges, @runout
 & @uunlock
   @uunlock <object>
 
@@ -3619,9 +3744,8 @@ See also: @wall, @rwall
   @zemit <zone> = <message>
 
   Emits a message to all rooms in <zone>. You must have control in that
-  zone in order to use this command.
-  
-See also: @nszemit, zemit(), zone(), zwho(), ZONES
+  zone in order to use this command. Because it is computationally
+  expensive, it costs 100 pennies.
 & ahelp
   ahelp [<topic>]
 
@@ -3650,21 +3774,16 @@ See also: examine
   ch <name> <password>
   cv <name> <password>
 
-  Not really MUSH commands, but commands available at the connect screen.
-  Wizards can use 'cd' instead of 'connect'; the new connection will be
-  hidden (as per @hide), and the player will be set DARK. Mortals set
-  HEAR_CONNECT will not hear dark wizards connect.
-  
-  Wizards, Royalty, and those with the Hide @power can use 'ch' to connect
-  with the new connection hidden (as per @hide).
-  
-  Connecting using 'cv' causes the Dark flag to be cleared prior to
-  connection messages being broadcast.
-  
-  None of those commands affect the hidden status of other connections, if
-  you're reconnecting.
-  
-  See also: DARK, @hide
+  Not really MUSH commands, but commands available at the connect
+  screen for Wizards. If enabled, Wizards who use 'cd' instead of
+  'connect' to connect will be set DARK as they connect, and will not
+  show arrival messages. Their arrival will, however, be broadcast
+  to other admin, but not to MONITOR-flagged mortals.
+
+  ch is a variant of cd that allows Royalty to connect @hidden.
+  cv is a variant that forces a non-dark, non-hidden connection.
+
+See also: DARK, @hide
 & OUTPUTPREFIX
 & OUTPUTSUFFIX
   OUTPUTPREFIX <string>
@@ -4184,15 +4303,16 @@ See also: follow, dismiss, desert, followers(), @follow, @ofollow, @afollow
 & use
   use <object>
 
-  This command attempts to "use" <object>. If you do not pass <object>'s
-  @lock/use, the UFAIL/OUFAIL/AUFAIL attributes are triggered.
-  
-  If you pass the lock, you will see <object>'s USE attribute, and others in
-  your location will see <object>'s OUSE. Depending on <object>'s CHARGES
-  attribute, one of <object>'s AUSE or RUNOUT attributes will be triggered -
-  see 'help @charges' for more information.
+  Attempts to use an object, triggering its @use/@ouse/@ause
+  attributes.  The person using the object must pass its uselock; no
+  inheritance check is necessary. This is may be done remotely by
+  using a dbref number; it provides an easy way for non-TRUST objects
+  to perform commands on TRUST objects.
 
-See also: @use, @charges, @lock, @ufail
+  If the person fails to pass the object's uselock, the object's
+  @ufail/@oufail/@aufail attributes are triggered.
+
+See also: @use, @ouse, @ause, @charges, @runout
 & whisper 
   whisper <player>=<message>
   whisper/silent <player>=<message>
@@ -4229,13 +4349,13 @@ See also: @use, @charges, @lock, @ufail
   
   For mortals, the WHO command displays a list of players currently
   connected to the MUSH, the amount of time they've been connected,
-  their idle time, and their @doing. Hidden players are not shown.
+  their idle time, and their @doing. Dark/hidden players are not shown.
   
   For admin, WHO shows the names of online players, their location,
   connection/idle times, the number of commands typed through the
   connection, the descriptor/port number, and the host the player is 
-  connected from. It also includes hidden players, and connections which 
-  are at the login screen, but have not yet connected to a player.
+  connected from. It also includes dark/hidden players, and connections
+  which are at the login screen, but have not yet connected to a player.
   
   Admin can use the DOING command to see the same output mortals see with
   WHO, with the exception that dark/hidden players are included.
@@ -4268,14 +4388,13 @@ See also: WHO
   their client. They generally do things that only affect a specific
   connection and would be meaningless if run by an object or
   disconnected player.
-  
-  IDLE    INFO    LOGOUT  OUTPUTPREFIX    OUTPUTSUFFIX
-  PROMPT_NEWLINES QUIT    SCREENWIDTH     SCREENHEIGHT
+
+  IDLE      LOGOUT     OUTPUTPREFIX OUTPUTSUFFIX QUIT
 
   In addition, the following commands can only be used at the login
   screen:
 
-  cd ch connect create register
+  cd ch connect create
   
   The WHO command can also be used at the login screen. Please note that
   this is different to the in-game WHO command.

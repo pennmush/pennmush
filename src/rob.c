@@ -88,7 +88,7 @@ do_kill(dbref player, const char *what, int cost, int slay)
                 !Wizard(player)) ||
                (controls(victim, Location(victim)) &&
                 !controls(player, Location(victim)))) {
-      notify(player, T("Sorry."));
+      notify(player, "Sorry.");
     } else if (NoKill(victim) && !Wizard(player) && (Owner(victim) != player)) {
       notify(player, T("That object cannot be killed."));
     } else {
@@ -112,7 +112,7 @@ do_kill(dbref player, const char *what, int cost, int slay)
         safe_format(tbuf1, &tp, T("You killed %s!"), Name(victim));
         *tp = '\0';
         tp = tbuf2;
-        safe_format(tbuf2, &tp, T("killed %s!"), Name(victim));
+        safe_format(tbuf2, &tp, "killed %s!", Name(victim));
         *tp = '\0';
         do_halt(victim, "", victim);
         did_it(player, victim, "DEATH", tbuf1, "ODEATH", tbuf2, "ADEATH",
@@ -288,11 +288,11 @@ do_buy(dbref player, char *item, char *from, int price)
             for (bp = finditem; *bp; bp++)
               *bp = DOWNCASE(*bp);
             bp = buff;
-            safe_format(buff, &bp, T("You buy a %s from %s."),
+            safe_format(buff, &bp, "You buy a %s from %s.",
                         finditem, Name(vendor));
             *bp = '\0';
             bp = obuff;
-            safe_format(obuff, &bp, T("buys a %s from %s."),
+            safe_format(obuff, &bp, "buys a %s from %s.",
                         finditem, Name(vendor));
             buy_env[0] = finditem;
             buy_env[1] = buycost;

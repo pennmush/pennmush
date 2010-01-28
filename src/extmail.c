@@ -230,13 +230,13 @@ get_sender(MAIL *mp, int full)
   static char tbuf1[BUFFER_LEN], *bp;
   bp = tbuf1;
   if (!GoodObject(mp->from))
-    safe_str(T("!Purged!"), tbuf1, &bp);
+    safe_str("!Purged!", tbuf1, &bp);
   else if (!was_sender(mp->from, mp))
-    safe_str(T("!Purged!"), tbuf1, &bp);
+    safe_str("!Purged!", tbuf1, &bp);
   else if (IsPlayer(mp->from) || !full)
     safe_str(Name(mp->from), tbuf1, &bp);
   else
-    safe_format(tbuf1, &bp, T("%s (owner: %s)"), Name(mp->from),
+    safe_format(tbuf1, &bp, "%s (owner: %s)", Name(mp->from),
                 Name(Owner(mp->from)));
   *bp = '\0';
   return tbuf1;
@@ -254,15 +254,6 @@ was_sender(dbref player, MAIL *mp)
     return 1;
   /* Succeed if and only if the creation times match. */
   return (mp->from_ctime == CreTime(player));
-}
-
-/** Check if player can use the @mail command without sending an error
- *  message. This is purely for use when forced by bsd.c so it won't send
- *  "Guests can't do that" to guests if @mail is noguest.
- */
-int
-can_mail(dbref player) {
-  return command_check_byname_quiet(player, "@MAIL");
 }
 
 /** Change folders or rename a folder.
@@ -862,18 +853,9 @@ do_mail_send(dbref player, char *tolist, char *message, mail_flag flags,
   }
   sb = sbuf;
   mb = message;                 /* Save the message pointer */
-  while (*message && (i < SUBJECT_LEN)) {
-    if (*message == SUBJECT_COOKIE) {
-      if (*(message + 1) == SUBJECT_COOKIE) {
-	*sb++ = *message;
-	message += 2;
-	i += 1;
-      } else
-	break;
-    } else {
-      *sb++ = *message++;
-      i += 1;
-    }
+  while (*message && (i < SUBJECT_LEN) && *message != SUBJECT_COOKIE) {
+    *sb++ = *message++;
+    i++;
   }
   *sb = '\0';
   if (*message && (*message == SUBJECT_COOKIE)) {
@@ -1124,14 +1106,14 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
     unsigned char *text;
     newmsg = mush_malloc(BUFFER_LEN, "string");
     if (!newmsg)
-      mush_panic("Failed to allocate string in send_mail");
+      mush_panic(T("Failed to allocate string in send_mail"));
     nm = newmsg;
     safe_str(message, newmsg, &nm);
     if (!nosig && ((a = atr_get_noparent(player, "MAILSIGNATURE")) != NULL)) {
       /* Append the MAILSIGNATURE to the mail - Cordin@Dune's idea */
       buff = mush_malloc(BUFFER_LEN, "string");
       if (!buff)
-        mush_panic("Failed to allocate string in send_mail");
+        mush_panic(T("Failed to allocate string in send_mail"));
       ms = mailsig = safe_atr_value(a);
       bp = buff;
       process_expression(buff, &bp, &ms, player, player, player,
@@ -1221,7 +1203,7 @@ do_mail_nuke(dbref player)
   HEAD = TAIL = NULL;
   mdb_top = 0;
 
-  do_log(LT_ERR, 0, 0, "** MAIL PURGE ** done by %s(#%d).",
+  do_log(LT_ERR, 0, 0, T("** MAIL PURGE ** done by %s(#%d)."),
          Name(player), player);
   notify(player, T("You annihilate the post office. All messages cleared."));
 }
@@ -1364,6 +1346,11 @@ do_mail_stats(dbref player, char *name, enum mail_stats_type full)
   }
   /* this comand is computationally expensive */
 
+  if (!payfor(player, FIND_COST)) {
+    notify_format(player, T("Finding mail stats costs %d %s."), FIND_COST,
+                  (FIND_COST == 1) ? MONEY : MONIES);
+    return;
+  }
   if (target == AMBIGUOUS) {    /* stats for all */
     if (full == MSTATS_COUNT) {
       notify_format(player,
@@ -1763,7 +1750,13 @@ FUNCTION(fun_mailstats)
     notify(executor, T("The post office protects privacy!"));
     return;
   }
+  /* this comand is computationally expensive */
 
+  if (!payfor(executor, FIND_COST)) {
+    notify_format(executor, T("Finding mail stats costs %d %s."), FIND_COST,
+                  (FIND_COST == 1) ? MONEY : MONIES);
+    return;
+  }
   if (target == AMBIGUOUS) {    /* stats for all */
     if (full == 0) {
       /* FORMAT
@@ -1947,7 +1940,7 @@ dump_mail(PENNFILE *fp)
   penn_fputs(EOD, fp);
 
   if (count != mdb_top) {
-    do_log(LT_ERR, 0, 0, "MAIL: Count of messages is %d, mdb_top is %d.",
+    do_log(LT_ERR, 0, 0, T("MAIL: Count of messages is %d, mdb_top is %d."),
            count, mdb_top);
     mdb_top = count;            /* Doesn't help if we forked, but oh well */
   }
@@ -2073,12 +2066,12 @@ load_mail(PENNFILE *fp)
       char buff[20];
       if (!penn_fgets(buff, sizeof buff, fp))
         do_rawlog(LT_ERR,
-                  "MAIL: Missing end-of-dump marker in mail database.");
+                  T("MAIL: Missing end-of-dump marker in mail database."));
       else if (strcmp(buff, (mail_flags & MDBF_NEW_EOD)
                       ? "***END OF DUMP***\n" : "*** END OF DUMP ***\n") == 0)
         return 1;
       else
-        do_rawlog(LT_ERR, "MAIL: Trailing garbage in the mail database.");
+        do_rawlog(LT_ERR, T("MAIL: Trailing garbage in the mail database."));
     }
     return 0;
   }
@@ -2173,7 +2166,7 @@ load_mail(PENNFILE *fp)
       }
       if (!done) {
         /* This is bad */
-        do_rawlog(LT_ERR, "MAIL: bad code.");
+        do_rawlog(LT_ERR, T("MAIL: bad code."));
       }
     }
   }
@@ -2181,18 +2174,18 @@ load_mail(PENNFILE *fp)
   mdb_top = i;
 
   if (i != mail_top) {
-    do_rawlog(LT_ERR, "MAIL: mail_top is %d, only read in %d messages.",
+    do_rawlog(LT_ERR, T("MAIL: mail_top is %d, only read in %d messages."),
               mail_top, i);
   }
   {
     char buff[20];
     if (!penn_fgets(buff, sizeof buff, fp))
       do_rawlog(LT_ERR,
-                "MAIL: Missing end-of-dump marker in mail database.");
+                T("MAIL: Missing end-of-dump marker in mail database."));
     else if (strcmp(buff, (mail_flags & MDBF_NEW_EOD)
                     ? EOD : "*** END OF DUMP ***\n") != 0)
       /* There's still stuff. Icky. */
-      do_rawlog(LT_ERR, "MAIL: Trailing garbage in the mail database.");
+      do_rawlog(LT_ERR, T("MAIL: Trailing garbage in the mail database."));
   }
 
   do_mail_debug(GOD, "fix", "");
@@ -2274,7 +2267,7 @@ add_folder_name(dbref player, int fld, const char *name)
   str = (char *) mush_malloc(BUFFER_LEN, "string");
   tbuf = (char *) mush_malloc(BUFFER_LEN, "string");
   if (!new || !pat || !str || !tbuf)
-    mush_panic("Failed to allocate strings in add_folder_name");
+    mush_panic(T("Failed to allocate strings in add_folder_name"));
 
   if (name && *name)
     snprintf(new, BUFFER_LEN, "%d:%s:%d ", fld, strupper(name), fld);

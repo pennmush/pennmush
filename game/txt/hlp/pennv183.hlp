@@ -1,4 +1,4 @@
-& 1.8.3p12
+& 1.8.3p11
 & changes
 This is a list of changes in this patchlevel which are probably of
 interest to players. More information about new commands and functions
@@ -11,108 +11,6 @@ help topics named for each release (e.g. 'help 1.7.2p30').
 A list of the patchlevels associated with each release can
 be read in 'help patchlevels'.
 
-Version 1.8.3 patchlevel 12                     ??? ??, 2010
-
-Major Changes:
- * 'mud_url' @config. If this is enabled, accessing the mush with an HTTP
-   browser will redirect the user to the selected mud_url. (This may need
-   some work and testing by a public place with many clients.) [GM]
- * The host() and idle() aliases (for hostname and idlesecs) have been
-   moved from the hardcode into aliascnf.dst. PLEASE COPY the appropriate
-   function_alias lines into your alias.cnf to ensure your softcode 
-   continues to work correctly. [MG]
- * The internal code for object matching has been rewritten, hopefully
-   fixing a few bugs and improving match results in some cases. [MG]
-
-Minor Changes:
- * align() can now do full justification. Suggested by Trinsec@M*U*S*H [GM]
- * Wrapping fixes in align(). Reported by Trinsec@M*U*S*H [GM]
- * Guests will no longer see "Guests can't do that" if @mail is restricted
-   to noguest. [GM]
- * Helpfile cleanup. [MG]
- * Expand the @lock key optimizer. Try '@lock me=!!=me'.
- * When objects are destroyed, references to them in locks
-   are replaced by #FALSE, so that a newly created object reusing
-   some dbref won't pass locks it shouldn't.
- * /'s can now be included in the subject of a @mail 
-   message via doubling it up -- @mail foo=a//s//l/What's up? 
-   Suggested by Paige.
- * locate() now ignores spaces in its 3rd argument. [MG]
- * Change the default mud_name in mush.cnf from TinyMUSH
-   to PennMUSH. Suggested by many people over the years.
- * @firstexit can now take multiple exits, and can affect exits in other
-   rooms. Suggested by AnneLions. [MG]
- * Changed some default mush.cnf options. [MG]
- * Remove the old patches.h way of showing installed patches. It was 
-   broken and rarely used anyways.
- * Removed the little-used "page_cost" @config option. [MG]
- * Removed costs for @find, @zemit, @entrances and @mail/stats. [MG]
- * @hide can now affect a single descriptor, rather than all of a player's
-   connections. A player is only considered hidden if all his connections
-   are hidden. Wizards can also @hide other players. [MG]
- * Wizards no longer automatically @hide when set DARK (but are hidden when
-   connecting dark with "cd"). [MG]
- * sql() now takes a fourth argument, to return the number of affected rows.
-   Suggested by Mercutio.
- * baseconv() fixes for malformed input, "-" ambiguity in base 63/64, and
-   missing "-" sign for single-digit output.
- * Flag names now have similar restrictions to attribute names. [MG]
- * The @ns*emit commands and ns*emit() functions are no longer restricted;
-   when used by mortals, they work exactly the same as the non-ns versions.
-   Suggested by Michael Blackburn. [MG]
- * Update autoconf to 2.65.
- * @grep/print now shows a : before the attribute contents, the same as
-   examine. Suggested by Cheetah. [MG]
-   
-Commands:
- * Removed the /functions, /attribs, /commands and /flags switches from
-   @config. Use @list/<switch> instead. [MG]
- * @decompile changes: added /name, the opposite of /db. You can now give a
-   '=<prefix>' without needing the /prefix switch, and can use other
-   switches with /tf, like @decomp/tf/flags <obj>. Suggestedby Trinsec. [MG]
- * @entrances can now take multiple switches, to show multiple types. [MG]
- * Removed the obsolete @map command. [MG]
- * @boot <player> now boots all of <player>'s connections, not just the
-   first. Similarly, @boot/me boots all your idle connections. [MG]
- * @dump/debug was broken and undocumented. [MG]
-
-Functions:
- * llocks() without any arguments returns a list of the standard locks.
- * unsetq(), to erase queue registers. [GM]
- * and[l]flags(), or[l]flags(), andlpowers() and orlpowers() now all return
-   #-1 if an invalid flag/power is given. Suggested by AnneLions. [MG]
- * benchmark(), to benchmark softcode.
- * Added "flag" as a category to valid(), to check for valid names for
-   @flag/add and @power/add. [MG]
- * New pfun() function, which evaluates attributes from your parent as if
-   you were inheriting them, even if you have your own copy of the attr. [MG]
-
-Fixes:
- * Bug caused by silly assumptions in list2arr() regarding remove_markup
-   fixed. Reported by Stoko@M*U*S*H. [GM]
- * Using some substitutions on the connect/motd/etc attributes introduced
-   in p11 could cause a crash. Reported by Minion@M*U*S*H. [GM]
- * Substitions on the connect/motd/etc attributes now work as expected
-   when a player is connected. Suggested by Minion@M*U*S*H. [GM]
- * English matching works better with possessive get
-   (get box's 2nd thing). Reported by israphel.
- * Various additions and changes to the translatable server messages by
-   Stoko. Also updated the I18N file, and added /po/pennmush.pot.
- * 'No such file' messages were logged by mistake when connect_file and
-   similar options were set to a dbref/attr. Reported by Zalethon. [MG]
- * Some cygwin C library versions define the imaxdiv_t type but not the
-   associated imaxdiv() function. Split them up into 2 configure checks.
-   Reported by Rankard.
- * Several math functions didn't complain if their first argument wasn't
-   a valid number. Reported by Jules. [MG]
- * @wipe would incorrectly set the attribute list for an object in some 
-   cases, making some attributes appear to be deleted. Reported by
-   Cooee@M*U*S*H. [MG]
- * The Pueblo_Send @power did not allow objects to send restricted HTML 
-   tags, just attributes. Reported by Daniel Powell. [MG]
- * Fixed a crashbug in @uptime. [MG]
-
-& 1.8.3p11
 Version 1.8.3 patchlevel 11                     Jan 01, 2010
 
 Major changes:

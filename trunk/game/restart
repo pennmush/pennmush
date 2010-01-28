@@ -2,9 +2,9 @@
 #
 # usage: restart
 #
-# REQUIRED: You must set this to the path to your game directory.
-# E.g.: /home/mush/game
-GAMEDIR=
+# REQUIRED (but only if the autodetect doesn't work): you must set this to the
+# path to your game directory, e.g. /home/mush/game
+GAMEDIR=`cd $(dirname $0); pwd`
 
 # OPTIONAL things that you may want to tweak.
 

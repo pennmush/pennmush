@@ -1,0 +1,18 @@
+JIT, or 'Just In Time' compilation means that something that would
+normally be interpreted at runtime is compiled into native machine code
+and executed directly by the processor, with the compilation happening
+at runtime instead of beforehand, like what happens with Penn
+source. It's a popular optimization for languages that target
+bytecode, such as java. Support in Penn is experimental and
+limited. Raevnos' current plans are to make lock keys use it, and
+possibly a few other things. Full conversion of softcode from purely
+interpreted to compiled -- either bytecode or native code, is far far
+off.
+
+This version depends on the dotgnu/pnet libjit to do all the hard
+work. Version 0.1.2 or recent checkout from the project's git
+repository is suggested. TODO: Insert links.
+
+To use it, install libjit, pass configure the --enable-jit option, and
+recompile. It's not turned on just by the presence of the library. You
+have to tell configure you want it. Experimental, remember?

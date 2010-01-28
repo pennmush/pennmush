@@ -1,0 +1,5 @@
+
+Yell at your local God to personalize this file, if GUEST_TEXTFILE
+is defined and it's being shown to Guests who connect!
+
+

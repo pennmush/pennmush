@@ -60,7 +60,7 @@
 static int parse_english(char **name, long *flags);
 static dbref match_player(dbref who, const char *name);
 extern int check_alias(const char *command, const char *list);  /* game.c */
-static int match_aliases(dbref who, const char *name);
+static int match_aliases(dbref match, const char *name);
 static dbref choose_thing(const dbref who, const int preferred_type, long flags, dbref thing1, dbref thing2);
 
 dbref
@@ -138,6 +138,9 @@ match_controlled(dbref player, const char *name)
 static dbref debugMatchTo = 1;
 #endif
 
+
+/* MATCHED() is called from inside the MATCH_LIST macro. full is 1 if the
+  match was full/exact, and 0 if it was partial */
 #define MATCHED(full) \
   { \
     if (!MATCH_CONTROLS) { \
@@ -175,7 +178,8 @@ static dbref debugMatchTo = 1;
     } \
   }
 
-
+/* MATCH_LIST is called from inside the match_result function. start is the
+  dbref to begin matching at (we loop through using DOLIST()) */
 #define MATCH_LIST(start) \
   { \
     if (done) \
@@ -201,9 +205,9 @@ static dbref debugMatchTo = 1;
     } \
   }
 
-#define MATCH_CONTROLS ((match >= 0) && (!(flags & MAT_CONTROL) || controls(who, match)))
+#define MATCH_CONTROLS (!(flags & MAT_CONTROL) || controls(who, match))
 
-#define MATCH_TYPE ((match >= 0) && ((type & Typeof(match)) ? 1 : ((flags & MAT_TYPE) ? 0 : -1)))
+#define MATCH_TYPE ((type & Typeof(match)) ? 1 : ((flags & MAT_TYPE) ? 0 : -1))
 
 #define BEST_MATCH choose_thing(who, type, flags, bestmatch, match)
 
@@ -212,17 +216,16 @@ choose_thing(const dbref who, const int preferred_type, long flags, dbref thing1
 {
   int key;
   /* If there's only one valid thing, return it */
-  /* Check == NOTHING, not GoodObject, to make sure we favour AMBIGUOUS over NOTHING */
+  /* Rather convoluted to ensure we always return AMBIGUOUS, not NOTHING, if we have one of each */
   /* (Apologies to Theodor Geisel) */
-  if (thing1 == NOTHING) {
-#ifdef DEBUG_OBJECT_MATCHING
-    notify_format(debugMatchTo,"Picking #%d over #%d (a nothing)", thing2, thing1);
-#endif
+  if (!GoodObject(thing1) && !GoodObject(thing2)) {
+    if (thing1 == NOTHING)
+      return thing2;
+    else
+      return thing1;
+  } else if (!GoodObject(thing1)) {
     return thing2;
-  } else if (thing2 == NOTHING) {
-#ifdef DEBUG_OBJECT_MATCHING
-    notify_format(debugMatchTo,"Picking #%d over #%d (a nothing)", thing1, thing2);
-#endif
+  } else if (!GoodObject(thing2)) {
     return thing1;
   }
 
@@ -280,21 +283,21 @@ match_player(dbref who, const char *name) {
   if (match != NOTHING) {
     return match;
   }
-  return visible_short_page(who, name);
+  return (GoodObject(who) ? visible_short_page(who, name) : NOTHING);
 }
 
 static int
-match_aliases(dbref who, const char *name) {
+match_aliases(dbref match, const char *name) {
 
-  if (!IsPlayer(who) && !IsExit(who)) {
+  if (!IsPlayer(match) && !IsExit(match)) {
     return 0;
   }
 
-  if (IsExit(who)) {
-    return check_alias(name, Name(who));
+  if (IsExit(match)) {
+    return check_alias(name, Name(match));
   } else {
     char tbuf1[BUFFER_LEN];
-    ATTR *a = atr_get_noparent(who, "ALIAS");
+    ATTR *a = atr_get_noparent(match, "ALIAS");
     if (!a) {
       return 0;
     }
@@ -307,12 +310,17 @@ match_aliases(dbref who, const char *name) {
 dbref
 match_result(dbref who, const char *xname, int type, long flags)
 {
-  dbref match, loc;
-  dbref bestmatch = NOTHING;
-  dbref abs = parse_objid(xname);
-  int curr = 0, final = 0, nocontrol = 0, exact = 0, done = 0;
+  dbref match; /* object we're currently checking for a match */
+  dbref loc; /* location of 'who' */
+  dbref bestmatch = NOTHING; /* the best match we've found so bar */
+  dbref abs = parse_objid(xname); /* try to match xname as a dbref/objid */
+  int final = 0; /* the Xth object we want, with english matching (5th foo) */
+  int curr = 0; /* the number of matches found so far, when 'final' is used */
+  int nocontrol = 0; /* set when we've matched an object, but don't control it and MAT_CONTROL is given */
+  int exact = 0; /* set to 1 when we've found an exact match, not just a partial one */
+  int done = 0; /* set to 1 when we're using final, and have found the Xth object */
   int goodwho = GoodObject(who);
-  char *name, *sname;
+  char *name, *sname; /* name contains the object name searched for, after english matching tokens are stripped from xname */
 #ifdef DEBUG_OBJECT_MATCHING
   debugMatchTo = (IsPlayer(who) ? who : 1);
   notify(debugMatchTo, "ENTERING MATCH_RESULT");
@@ -320,12 +328,12 @@ match_result(dbref who, const char *xname, int type, long flags)
 #endif
   /* match "me" */
   match = who;
-  if (MATCH_TYPE && (flags & MAT_ME) && !strcasecmp(xname, "me")) {
+  if (goodwho && MATCH_TYPE && (flags & MAT_ME) && !strcasecmp(xname, "me")) {
     return match;
   }
 
   /* match "here" */
-  match = Location(who);
+  match = (goodwho ? (IsRoom(who) ? NOTHING : Location(who)) : NOTHING);
   if ((flags & MAT_HERE) && !strcasecmp(xname, "here") && GoodObject(match) && MATCH_TYPE) {
     if(MATCH_CONTROLS) {
       return match;
@@ -336,18 +344,17 @@ match_result(dbref who, const char *xname, int type, long flags)
 
   /* match *<player>, or <player> */
   if (((flags & MAT_PMATCH) ||
-      ((flags & MAT_PLAYER) && *xname == LOOKUP_TOKEN))) {
+      ((flags & MAT_PLAYER) && *xname == LOOKUP_TOKEN)) &&
+      ((type & TYPE_PLAYER) || !(flags & MAT_TYPE))) {
     match = match_player(who, xname);
-    if (MATCH_TYPE) {
-      if (GoodObject(match)) {
-        if (MATCH_CONTROLS) {
-          return match;
-        } else {
-          nocontrol = 1;
-        }
+    if (GoodObject(match)) {
+      if (MATCH_CONTROLS) {
+        return match;
       } else {
-        bestmatch = BEST_MATCH;
+        nocontrol = 1;
       }
+    } else {
+      bestmatch = BEST_MATCH;
     }
   }
 

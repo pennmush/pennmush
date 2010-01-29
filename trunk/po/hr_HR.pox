@@ -8426,7 +8426,7 @@ msgstr "Remitiras, \"%s\" u prostoriju %s"
 #: move.c:811
 #, c-format
 msgid "You remove %d object%s from %s."
-msgstr "Maknes %d objekata iz objekta %2$s."
+msgstr "Maknes %1$d objekata iz objekta %3$s."
 
 #: src/speech.c:177
 #, c-format

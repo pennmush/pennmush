@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-01-26 02:00-0600\n"
+"POT-Creation-Date: 2010-01-29 02:00-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -300,7 +300,7 @@ msgstr ""
 #: flags.c:1553 flags.c:1558 flags.c:1711 function.c:1178 function.c:1313
 #: function.c:1465 function.c:1511 function.c:1552 funmisc.c:791 game.c:955
 #: game.c:1498 lock.c:709 lock.c:773 lock.c:969 look.c:1298 look.c:1583
-#: malias.c:763 malias.c:868 match.c:448 move.c:536 move.c:859 move.c:874
+#: malias.c:763 malias.c:868 match.c:458 move.c:536 move.c:859 move.c:874
 #: predicat.c:1225 predicat.c:1420 rob.c:423 set.c:192 set.c:923 set.c:970
 #: set.c:1006 set.c:1041 set.c:1054 set.c:1139 speech.c:1468 warnings.c:294
 #: warnings.c:515 wiz.c:443 wiz.c:566 wiz.c:577 wiz.c:851 wiz.c:1012
@@ -1528,7 +1528,7 @@ msgstr ""
 msgid "Unlink what?"
 msgstr ""
 
-#: create.c:210 match.c:446 wiz.c:979
+#: create.c:210 match.c:456 wiz.c:979
 msgid "I don't know which one you mean!"
 msgstr ""
 
@@ -2317,7 +2317,7 @@ msgstr ""
 msgid "CHAT: Only a channel modifier can do that."
 msgstr ""
 
-#: extchat.c:2517 extchat.c:3107 match.c:450 set.c:579
+#: extchat.c:2517 extchat.c:3107 match.c:460 set.c:579
 msgid "I can't see that here."
 msgstr ""
 

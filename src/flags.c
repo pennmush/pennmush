@@ -1614,7 +1614,7 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
       safe_str(" - ", tbuf1, &tp);
       safe_str(f->name, tbuf1, &tp);
       if (!current)
-        safe_str(" (already)", tbuf1, &tp);
+        safe_str(T(" (already)"), tbuf1, &tp);
       safe_str(T(" reset."), tbuf1, &tp);
       *tp = '\0';
       notify(player, tbuf1);
@@ -1675,7 +1675,7 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
       safe_str(" - ", tbuf1, &tp);
       safe_str(f->name, tbuf1, &tp);
       if (current)
-        safe_str(" (already)", tbuf1, &tp);
+        safe_str(T(" (already)"), tbuf1, &tp);
       safe_str(T(" set."), tbuf1, &tp);
       *tp = '\0';
       notify(player, tbuf1);

@@ -834,8 +834,12 @@ do_empty(dbref player, const char *what)
       }
     }
   }
-  notify_format(player, T("You remove %d object%s from %s."),
-                count, (count == 1) ? "" : "s", Name(thing));
+  if (count == 1)
+    notify_format(player, T("You remove 1 object from %s."), Name(thing));
+  else
+    notify_format(player, T("You remove %d objects from %s."),
+                count, Name(thing));
+
   return;
 }
 

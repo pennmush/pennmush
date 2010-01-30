@@ -569,7 +569,7 @@ do_mail_read(dbref player, char *msglist)
                       tbuf1, ((*tbuf1 != '!') && IsPlayer(mp->from)
                               && Connected(mp->from)
                               && (!hidden(mp->from)
-                                  || Priv_Who(player))) ? " (Conn)" : "      ",
+                                  || Priv_Who(player))) ? T(" (Conn)") : "      ",
                       show_time(mp->time, 0), folderheader, (int) Folder(mp),
                       i[Folder(mp)], status_string(mp));
         notify_format(player, T("Subject: %s"), get_subject(mp));

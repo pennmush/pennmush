@@ -753,13 +753,12 @@ messageformat(dbref player, const char *attribute, dbref enactor, int flags,
  * \param arg2 the message to page.
  * \param cause the object that caused the command to run.
  * \param noeval if 1, page/noeval.
- * \param multipage if 1, a page/list; if 0, a page/blind.
  * \param override if 1, page/override.
  * \param has_eq if 1, the command had an = in it.
  */
 void
 do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
-        int noeval, int multipage, int override, int has_eq)
+        int noeval, int override, int has_eq)
 {
   dbref target;
   const char *message;
@@ -970,12 +969,10 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
 
   /* Figure out the one success message, and send it */
   if (key == 1)
-    notify_format(player, T("Long distance to %s%s: %s%s%s"),
-                  ((gcount > 1) && (!multipage)) ? "(blind) " : "", tbuf2,
+    notify_format(player, T("Long distance to %s: %s%s%s"), tbuf2,
                   Name(player), gap, message);
   else
-    notify_format(player, T("You paged %s%s with '%s'"),
-                  ((gcount > 1) && (!multipage)) ? "(blind) " : "", tbuf2,
+    notify_format(player, T("You paged %s with '%s'"), tbuf2,
                   message);
 
   /* Figure out the 'name' of the player */
@@ -990,7 +987,7 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
   /* Build the header */
   if (key == 1) {
     safe_str(T("From afar"), tbuf, &tp);
-    if ((gcount > 1) && (multipage)) {
+    if (gcount > 1) {
       safe_str(T(" (to "), tbuf, &tp);
       safe_str(tbuf2, tbuf, &tp);
       safe_chr(')', tbuf, &tp);
@@ -1001,7 +998,7 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
   } else {
     safe_str(current, tbuf, &tp);
     safe_str(T(" pages"), tbuf, &tp);
-    if ((gcount > 1) && (multipage)) {
+    if (gcount > 1) {
       safe_chr(' ', tbuf, &tp);
       safe_str(tbuf2, tbuf, &tp);
     }
@@ -1012,12 +1009,10 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
   *tp = '\0';
 
   tp2 = tbuf2;
-  if (multipage) {
-    for (i = 0; i < gcount; i++) {
-      if (i)
-        safe_chr(' ', tbuf2, &tp2);
-      safe_dbref(good[i], tbuf2, &tp2);
-    }
+  for (i = 0; i < gcount; i++) {
+    if (i)
+      safe_chr(' ', tbuf2, &tp2);
+    safe_dbref(good[i], tbuf2, &tp2);
   }
   *tp2 = '\0';
   for (i = 0; i < gcount; i++) {

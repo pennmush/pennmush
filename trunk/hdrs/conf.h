@@ -130,7 +130,6 @@ struct options_table {
   int max_logins;       /**< Maximum total logins allowed at once */
   int max_guests;       /**< Maximum guests logins allowed at once */
   int whisper_loudness; /**< % chance that a noisy whisper is overheard */
-  int blind_page;       /**< Does page default to page/blind? */
   int page_aliases;     /**< Does page include aliases? */
   int paycheck;         /**< Number of pennies awarded each day of connection */
   int guest_paycheck;   /**< Paycheck for guest connections */
@@ -336,7 +335,6 @@ int cf_time(const char *opt, const char *val, void *loc, int maxval,
 #define MONEY            (options.money_singular)
 #define MONIES           (options.money_plural)
 #define WHISPER_LOUDNESS        (options.whisper_loudness)
-#define BLIND_PAGE      (options.blind_page)
 #define PAGE_ALIASES    (options.page_aliases)
 
 #define START_BONUS      (options.starting_money)

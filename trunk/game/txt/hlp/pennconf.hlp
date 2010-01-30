@@ -68,7 +68,6 @@
    or as North East West?
   count_all=<boolean>: Does the count of connected players in WHO include
    hidden connections for mortals?
-  blind_page=<boolean>: Does page default to page/blind?
 
 Continued in help @config cosmetic2
 & @config cosmetic2

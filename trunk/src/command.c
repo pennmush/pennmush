@@ -332,7 +332,7 @@ COMLIST commands[] = {
   {"LOOK", "OUTSIDE", cmd_look, CMD_T_ANY, 0, 0},
   {"LEAVE", NULL, cmd_leave, CMD_T_PLAYER | CMD_T_THING, 0, 0},
 
-  {"PAGE", "BLIND NOEVAL LIST PORT OVERRIDE", cmd_page,
+  {"PAGE", "LIST NOEVAL PORT OVERRIDE", cmd_page,
    CMD_T_ANY | CMD_T_RS_NOPARSE | CMD_T_NOPARSE | CMD_T_EQSPLIT |
    CMD_T_NOGAGGED, 0, 0},
   {"POSE", "NOEVAL NOSPACE", cmd_pose, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},

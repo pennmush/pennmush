@@ -1296,8 +1296,6 @@ COMMAND(cmd_page)
                  !SW_ISSET(sw, SWITCH_NOEVAL));
   else
     do_page(player, arg_left, arg_right, cause, SW_ISSET(sw, SWITCH_NOEVAL),
-            !(SW_ISSET(sw, SWITCH_BLIND) ||
-              (!(SW_ISSET(sw, SWITCH_LIST)) && (BLIND_PAGE))),
             SW_ISSET(sw, SWITCH_OVERRIDE), rhs_present);
 }
 

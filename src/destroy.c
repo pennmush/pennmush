@@ -679,8 +679,7 @@ free_object(dbref thing)
   List(thing) = NULL;
   /* don't eat name otherwise examine will crash */
 
-  free_locks(Locks(thing));
-  Locks(thing) = NULL;
+  free_locks(thing);
 
   s_Pennies(thing, 0);
   Owner(thing) = GOD;

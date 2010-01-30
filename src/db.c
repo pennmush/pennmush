@@ -1153,7 +1153,7 @@ db_free(void)
     for (i = 0; i < db_top; i++) {
       set_name(i, NULL);
       atr_free_all(i);
-      free_locks(Locks(i));
+      free_locks(i);
     }
 
     free((char *) db);

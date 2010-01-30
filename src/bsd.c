@@ -5246,6 +5246,8 @@ do_reboot(dbref player, int flag)
 
 extern HASHTAB help_files;
 
+static void reload_files(void) __attribute__((__unused__));
+
 static void
 reload_files(void)
 {

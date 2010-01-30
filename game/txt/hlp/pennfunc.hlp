@@ -464,7 +464,7 @@ See also: alphamin()
 See also: alphamax()
 & AND()
 & CAND()
-  and(<boolean>, <boolean>[, ... , <booleanN>])
+  and(<boolean1>, <boolean2>[, ... , <booleanN>])
   cand(<boolean1>, <boolean2>[, ... , <booleanN>])
  
   These functions take any number of boolean values, and return 1 if
@@ -472,7 +472,7 @@ See also: alphamax()
   arguments (including side effects), while cand() stops evaluation
   after the first false argument.
 
-See also: BOOLEAN VALUES, or(), xor(), not()
+See also: BOOLEAN VALUES, nand(), or(), xor(), not()
 & ANDFLAGS()
   andflags(<object>, <string of flag letters>)
   andlflags(<object>, <list of flag names>)
@@ -3125,10 +3125,15 @@ See also: namegrab(), name(), locate()
   
 See also: namelist(), locate(0
 & NAND()
+& NCAND()
   nand(<boolean1>[, ... , <booleanN>])
+  ncand(<boolean1>[, ... , <booleanN>])
 
-  Returns 1 if at least one of its arguments is false, 0 if all are
-  true. Equivalent to not(and()), but more efficient.
+  These functions return 1 if at least one of their arguments are false, and
+  0 if all are true. nand() always evaluates all of its arguments, while
+  ncand() stops evaluating after the first false value.
+  
+  Equivalent to not(and()) and not(cand()), but more efficient.
   
 See also: lmath(), and(), cand(), or(), nor()
 & NEARBY()
@@ -3172,10 +3177,15 @@ See also: lcon(), lexits(), con(), exit()
 
 See also: @stats, stats()
 & NOR()
-  nor(<boolean>[, ... , <booleanN>])
+& NCOR()
+  nor(<boolean1>[, ... , <booleanN>])
+  ncor(<boolean1>[, ... , <booleanN>])
 
-  Returns 1 if all its arguments are false, 0 if any are true.
-  Equivalent to not(or()), but more efficient.
+  These functions return 1 if all their arguments are false, and 0 if any
+  are true. nor() always evaluates all arguments, while ncor() stops
+  evaluating after the first true value.
+  
+  Equivalent to not(or()) and not(cor()), but more efficient.
 
 See also: and(), or(), xor(), not(), nand()
 & NOT()

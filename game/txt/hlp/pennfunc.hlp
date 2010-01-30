@@ -3498,7 +3498,7 @@ See also: player(), Connection Functions
   numbered 1, not 0. If <needle> is not present in <haystack>, pos() returns
   #-1.
   
-See also: member(), match()  
+See also: member(), match(), lpos()
 & POSS()
 & %p
   poss(<object>)

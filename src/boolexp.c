@@ -95,6 +95,10 @@
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
 #endif
+#ifdef HAVE_JIT_JIT_H
+#include <jit/jit.h>
+#endif
+
 #include "conf.h"
 #include "dbdefs.h"
 #include "mushdb.h"
@@ -1969,3 +1973,16 @@ check_lock(dbref player, dbref i, const char *name, boolexp be)
     }
   }
 }
+
+#ifdef USE_JIT
+/** Compile a boolexp into native code using libjit.
+ * \param thing the object the lock is on.
+ * \param b the boolexp
+ * \return a new function.
+ */
+jit_function_t
+compile_boolexp(dbref thing, boolexp b)
+{
+  return NULL;
+}
+#endif

@@ -636,8 +636,6 @@ free_locks(dbref thing)
     }
   }
 #endif
-
-  
 }
 
 
@@ -827,10 +825,33 @@ clone_locks(dbref player, dbref orig, dbref clone)
 int
 eval_lock(dbref player, dbref thing, lock_type ltype)
 {
-  boolexp b = getlock(thing, ltype);
+  boolexp b;
+  lock_list *ll = getlockstruct(thing, ltype);
+
+  if (!ll)
+    return 1;
+
+  b = L_KEY(ll);
+
   /* Prevent overwriting a static buffer in unparse_boolexp() */
   if (!unparsing_boolexp)
     log_activity(LA_LOCK, thing, unparse_boolexp(player, b, UB_DBREF));
+
+#ifdef USE_JIT
+  if (!ll->fun)
+    ll->fun = compile_boolexp(thing, b);
+
+  if (ll->fun) {
+    jit_int arg_player = player, arg_thing = thing, result;
+    void *args[2];
+      
+    args[0] = &arg_player;
+    args[1] = &arg_thing;
+    if (jit_function_apply(ll->fun, args, &result))
+      return result;
+  }
+#endif
+
   return eval_boolexp(player, b, thing);
 }
 

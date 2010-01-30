@@ -91,6 +91,9 @@
 #ifdef HAVE_POLL_H
 #include <poll.h>
 #endif
+#ifdef HAVE_JIT_JIT_H
+#include <jit/jit.h>
+#endif
 
 #include "conf.h"
 
@@ -527,6 +530,10 @@ main(int argc, char **argv)
     }
   }
 #endif                          /* WIN32 */
+
+#ifdef HAVE_LIBJIT
+  jit_init();
+#endif
 
 #ifdef HAS_GETRLIMIT
   init_rlimit();                /* unlimit file descriptors */

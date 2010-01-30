@@ -5,6 +5,16 @@
 #ifndef __LOCK_H
 #define __LOCK_H
 
+#ifdef USE_JIT
+
+#ifdef HAVE_JIT_JIT_H
+#include <jit/jit.h>
+#else
+#error "Missing libjit!"
+#endif
+
+#endif
+
 #include "mushtype.h"
 #include "conf.h"
 #include "boolexp.h"
@@ -24,6 +34,11 @@
 struct lock_list {
   lock_type type;               /**< Type of lock */
   boolexp key;          /**< Lock value ("key") */
+#ifdef USE_JIT
+  jit_function_t fun; /**< Compiled version of the lock. */
+#else
+  void *fun; /**< Placeholder */
+#endif
   dbref creator;                /**< Dbref of lock creator */
   privbits flags;                       /**< Lock flags */
   struct lock_list *next;       /**< Pointer to next lock in object's list */
@@ -60,7 +75,7 @@ int add_lock(dbref player, dbref thing, lock_type type, boolexp key,
              privbits flags);
 int add_lock_raw(dbref player, dbref thing, lock_type type,
                  boolexp key, privbits flags);
-void free_locks(lock_list *ll);
+void free_locks(dbref thing);
 int eval_lock(dbref player, dbref thing, lock_type ltype);
 int eval_lock_with(dbref player, dbref thing, lock_type ltype, dbref env0,
                    dbref env1);

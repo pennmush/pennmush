@@ -82,32 +82,32 @@ lock_type Take_Lock = "Take"; /**< Name of take lock */
 
  /** Table of lock names and permissions */
 lock_list lock_types[] = {
-  {"Basic", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
-  {"Enter", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
-  {"Use", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
-  {"Zone", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
-  {"Page", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
-  {"Teleport", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
-  {"Speech", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
-  {"Listen", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
-  {"Command", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
-  {"Parent", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
-  {"Link", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
-  {"Leave", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
-  {"Drop", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
-  {"Give", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
-  {"Mail", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
-  {"Follow", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
-  {"Examine", TRUE_BOOLEXP, GOD, LF_PRIVATE | LF_OWNER, NULL},
-  {"Chzone", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
-  {"Forward", TRUE_BOOLEXP, GOD, LF_PRIVATE | LF_OWNER, NULL},
-  {"Control", TRUE_BOOLEXP, GOD, LF_PRIVATE | LF_OWNER, NULL},
-  {"Dropto", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
-  {"Destroy", TRUE_BOOLEXP, GOD, LF_PRIVATE | LF_OWNER, NULL},
-  {"Interact", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
-  {"MailForward", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
-  {"Take", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
-  {NULL, TRUE_BOOLEXP, GOD, 0, NULL}
+  {"Basic", TRUE_BOOLEXP, NULL, GOD, LF_PRIVATE, NULL},
+  {"Enter", TRUE_BOOLEXP, NULL, GOD, LF_PRIVATE, NULL},
+  {"Use", TRUE_BOOLEXP, NULL, GOD, LF_PRIVATE, NULL},
+  {"Zone", TRUE_BOOLEXP, NULL, GOD, LF_PRIVATE, NULL},
+  {"Page", TRUE_BOOLEXP, NULL, GOD, LF_PRIVATE, NULL},
+  {"Teleport", TRUE_BOOLEXP, NULL, GOD, LF_PRIVATE, NULL},
+  {"Speech", TRUE_BOOLEXP, NULL, GOD, LF_PRIVATE, NULL},
+  {"Listen", TRUE_BOOLEXP, NULL, GOD, LF_PRIVATE, NULL},
+  {"Command", TRUE_BOOLEXP, NULL, GOD, LF_PRIVATE, NULL},
+  {"Parent", TRUE_BOOLEXP, NULL, GOD, LF_PRIVATE, NULL},
+  {"Link", TRUE_BOOLEXP, NULL, GOD, LF_PRIVATE, NULL},
+  {"Leave", TRUE_BOOLEXP, NULL, GOD, LF_PRIVATE, NULL},
+  {"Drop", TRUE_BOOLEXP, NULL, GOD, LF_PRIVATE, NULL},
+  {"Give", TRUE_BOOLEXP, NULL, GOD, LF_PRIVATE, NULL},
+  {"Mail", TRUE_BOOLEXP, NULL, GOD, LF_PRIVATE, NULL},
+  {"Follow", TRUE_BOOLEXP, NULL, GOD, LF_PRIVATE, NULL},
+  {"Examine", TRUE_BOOLEXP, NULL, GOD, LF_PRIVATE | LF_OWNER, NULL},
+  {"Chzone", TRUE_BOOLEXP, NULL, GOD, LF_PRIVATE, NULL},
+  {"Forward", TRUE_BOOLEXP, NULL, GOD, LF_PRIVATE | LF_OWNER, NULL},
+  {"Control", TRUE_BOOLEXP, NULL, GOD, LF_PRIVATE | LF_OWNER, NULL},
+  {"Dropto", TRUE_BOOLEXP, NULL, GOD, LF_PRIVATE, NULL},
+  {"Destroy", TRUE_BOOLEXP, NULL, GOD, LF_PRIVATE | LF_OWNER, NULL},
+  {"Interact", TRUE_BOOLEXP, NULL, GOD, LF_PRIVATE, NULL},
+  {"MailForward", TRUE_BOOLEXP, NULL, GOD, LF_PRIVATE, NULL},
+  {"Take", TRUE_BOOLEXP, NULL, GOD, LF_PRIVATE, NULL},
+  {NULL, TRUE_BOOLEXP, NULL, GOD, 0, NULL}
 };
 
 HASHTAB htab_locks;
@@ -297,6 +297,7 @@ define_lock(lock_type name, privbits flags)
   newlock->flags = flags;
   newlock->creator = GOD;
   newlock->key = TRUE_BOOLEXP;
+  newlock->fun = NULL;
   newlock->next = NULL;
   hashadd((char *) newlock->type, newlock, &htab_locks);
 }
@@ -472,6 +473,11 @@ add_lock(dbref player, dbref thing, lock_type type, boolexp key, privbits flags)
     }
     /* We're replacing an existing lock. */
     free_boolexp(ll->key);
+    /* Libjit doesn't seem to let you free an individual function
+       without keeping a seperate context object for each one.  I'm
+       leaning towards per-object contexts for now. Potential memory
+       leak here. */
+    ll->fun = NULL;
     ll->key = key;
     ll->creator = player;
     if (flags != LF_DEFAULT)
@@ -486,6 +492,7 @@ add_lock(dbref player, dbref thing, lock_type type, boolexp key, privbits flags)
       ll->type = real_type;
       ll->key = key;
       ll->creator = player;
+      ll->fun = NULL;
       if (flags == LF_DEFAULT) {
         const lock_list *l2 = get_lockproto(real_type);
         if (l2)
@@ -544,6 +551,7 @@ add_lock_raw(dbref player, dbref thing, lock_type type, boolexp key,
     real_type = st_insert(type, &lock_names);
     ll->type = real_type;
     ll->key = key;
+    ll->fun = NULL;
     ll->creator = player;
     if (flags == LF_DEFAULT) {
       const lock_list *l2 = get_lockproto(real_type);
@@ -570,6 +578,7 @@ free_one_lock_list(lock_list *ll)
   if (ll == NULL)
     return;
   free_boolexp(ll->key);
+  /* See comment in add_lock() about JITted function memory. */
   st_delete(ll->type, &lock_names);
   free_lock(ll);
 }
@@ -605,17 +614,30 @@ delete_lock(dbref player, dbref thing, lock_type type)
 
 /** Free all locks in a list.
  * Used by the object destruction routines.
- * \param ll pointer to list of locks.
+ * \param thing dbref of the object to free locks on.
  */
 void
-free_locks(lock_list *ll)
+free_locks(dbref thing)
 {
-  lock_list *ll2;
+  lock_list *ll = Locks(thing);
   while (ll) {
-    ll2 = ll->next;
+    lock_list *ll2 = ll->next;
     free_one_lock_list(ll);
     ll = ll2;
   }
+  Locks(thing) = NULL;
+#ifdef USE_JIT
+  {
+    jit_context_t context;
+    context = get_objdata(thing, "lock-jit");
+    if (context) {
+      jit_context_destroy(context);
+      set_objdata(thing, "lock-jit", NULL);
+    }
+  }
+#endif
+
+  
 }
 
 

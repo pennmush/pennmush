@@ -3122,6 +3122,10 @@ msgstr "Kanalen: *GEEN*"
 msgid "Channels:"
 msgstr "Kanalen:"
 
+#: flags.c:2030
+msgid "Character"
+msgstr "Karakter"
+
 #: flags.c:2046
 #, c-format
 msgid "Character: %c"
@@ -5082,6 +5086,10 @@ msgstr "Laatste verbinding was van %s op %s."
 msgid "Last is dated %s"
 msgstr "Laatste is gedateerd %s"
 
+#: game.c:2091
+msgid "Last reboot"
+msgstr "Laatste herstart"
+
 #: src/game.c:1427
 #, c-format
 msgid "Last reboot: %s"
@@ -6555,6 +6563,10 @@ msgstr "%s in %s veranderd in attributen tabel."
 msgid "Requested character: '%s'. Email address: %s\n"
 msgstr "Aangevraagd karakter: '%s'. Email adres: %s\n"
 
+#: flags.c:2035
+msgid "ResetPrms"
+msgstr "ResetPrms"
+
 #: flags.c:2050
 #, c-format
 msgid "ResetPrms: %s"
@@ -7359,6 +7371,22 @@ msgstr "Deze kamer zendt niet langer uit."
 msgid "This room is now broadcasting."
 msgstr "Deze kamer verzendt nu."
 
+#: game.c:2097
+msgid "Time now"
+msgstr "Huidige tijd"
+
+#: game.c:2103
+msgid "Time of last database save"
+msgstr "Tijd van laatste database opslag"
+
+#: game.c:2137
+msgid "Time until next @warnings"
+msgstr "Tijd tot volgende @warnings"
+
+#: game.c:2112
+msgid "Time until next database save"
+msgstr "Tijd tot de volgende keer dat database opgeslagen wordt"
+
 #: game.c:1914
 #, c-format
 msgid "Time until next database save: %ld minutes %ld seconds, at %s"
@@ -7368,6 +7396,14 @@ msgstr "Tijd tot de volgende keer dat database opgeslagen wordt: %ld minuten %ld
 #, c-format
 msgid "Time until next database save: %ld minutes %ld seconds."
 msgstr "Tijd tot de volgende keer dat database opgeslagen wordt: %ld minuten %ld seconden."
+
+#: game.c:2120
+msgid "Time until next dbck check"
+msgstr "Tijd tot volgende dbck check"
+
+#: game.c:2128
+msgid "Time until next purge"
+msgstr "Tijd tot volgende schoonmaak"
 
 #: src/game.c:1499
 #, c-format
@@ -7463,6 +7499,10 @@ msgstr "Teveel mensen om naar te fluisteren."
 #: boolexp.c:245
 msgid "Too much recursion in lock!"
 msgstr "Te veel recursie in slot!"
+
+#: game.c:2093
+msgid "Total reboots"
+msgstr "Laatste herstart"
 
 #: game.c:1447
 #, c-format
@@ -7866,6 +7906,10 @@ msgstr "Niet herkend veld '%s' in object #%d"
 #: lock.c:620
 msgid "Unrecognized lock flag."
 msgstr "Niet herkende slot vlag."
+
+#: game.c:2087
+msgid "Up since"
+msgstr "Draait sinds"
 
 #: extmail.c:2475
 msgid "Urgent "

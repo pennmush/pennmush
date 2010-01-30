@@ -1408,6 +1408,7 @@ FUNCTION(fun_cand)
   int j;
   char tbuf[BUFFER_LEN], *tp;
   char const *sp;
+  int negate = (called_as[0] == 'N');
 
   for (j = 0; j < nargs; j++) {
     tp = tbuf;
@@ -1416,11 +1417,11 @@ FUNCTION(fun_cand)
                        PE_DEFAULT, PT_DEFAULT, pe_info);
     *tp = '\0';
     if (!parse_boolean(tbuf)) {
-      safe_chr('0', buff, bp);
+      safe_integer(negate, buff, bp);
       return;
     }
   }
-  safe_chr('1', buff, bp);
+  safe_integer(!negate, buff, bp);
 }
 
 /* ARGSUSED */
@@ -1429,6 +1430,7 @@ FUNCTION(fun_cor)
   int j;
   char tbuf[BUFFER_LEN], *tp;
   char const *sp;
+  int negate = (called_as[0] == 'N');
 
   for (j = 0; j < nargs; j++) {
     tp = tbuf;
@@ -1437,11 +1439,11 @@ FUNCTION(fun_cor)
                        PE_DEFAULT, PT_DEFAULT, pe_info);
     *tp = '\0';
     if (parse_boolean(tbuf)) {
-      safe_chr('1', buff, bp);
+      safe_integer(!negate, buff, bp);
       return;
     }
   }
-  safe_chr('0', buff, bp);
+  safe_integer(negate, buff, bp);
 }
 
 /* ARGSUSED */

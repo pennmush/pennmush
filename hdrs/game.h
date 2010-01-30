@@ -129,7 +129,7 @@ enum wall_type { WALL_ALL, WALL_RW, WALL_WIZ };
 void do_wall(dbref player, const char *message, enum wall_type target,
              int emit);
 void do_page(dbref player, const char *arg1, const char *arg2,
-             dbref cause, int noeval, int multipage, int override, int has_eq);
+             dbref cause, int noeval, int override, int has_eq);
 void do_think(dbref player, const char *message);
 #define PEMIT_SILENT 0x1
 #define PEMIT_LIST   0x2

@@ -4044,7 +4044,7 @@ See also: OPAQUE, FLAGS, @describe, @adescribe, @odescribe, DARK, LIGHT
   commands of the particular MUSH. It is highly recommended that you
   read it regularly.
 & page 
-  page[/<switch>] [<player-list>=]<message>.
+  page[/<switch>] [<player-list>=]<message>
 
   This command sends a message to a player or list of players. If the
   player's name contains spaces, surround it with double-quotes.  If
@@ -4081,20 +4081,12 @@ See also: OPAQUE, FLAGS, @describe, @adescribe, @odescribe, DARK, LIGHT
   if exists, the page as viewed by the player is set to the results of
   calling PAGEFORMAT. See help @pageformat
 
-  Page takes five switches: /list, /blind, /noeval, /override, and
-  /port.
+  Page takes three switches: /noeval, /override, and /port.
 
-  The /list and /blind switches provide two different ways of handling
-  pages to lists of players. With /list, each paged player sees the
-  list of who was paged, and the paging player is notified only once.
-  With /blind, it's as if each player was individually paged.  The
-  default list behavior is set by the blind_page @config option.
   The /noeval switch prevents the MUSH from evaluating the message.
-  The /override switch is admin-only, and overrides pagelocks and
-  HAVEN.
-  The /port switch is admin-only, and will page a single port
-  descriptor directly, including connections that have not yet logged
-  into a player.
+  The /override switch is admin-only, and overrides pagelocks and HAVEN.
+  The /port switch is admin-only, and will page a single port descriptor 
+  directly, including connections that have not yet logged into a player.
   
 See also: @lock, @alias, @pageformat, pose, :, ;, HAVEN, NOSPOOF, FLAGS
 & :

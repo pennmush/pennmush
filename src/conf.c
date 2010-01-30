@@ -258,8 +258,6 @@ PENNCONF conftable[] = {
   ,
   {"count_all", cf_bool, &options.count_all, 2, 0, "cosmetic"}
   ,
-  {"blind_page", cf_bool, &options.blind_page, 2, 0, "cosmetic"}
-  ,
   {"page_aliases", cf_bool, &options.page_aliases, 2, 0, "cosmetic"}
   ,
   {"flags_on_examine", cf_bool, &options.flags_on_examine, 2, 0, "cosmetic"}
@@ -1166,7 +1164,6 @@ conf_default_set(void)
   options.max_logins = 128;
   options.max_guests = 0;
   options.whisper_loudness = 100;
-  options.blind_page = 1;
   options.page_aliases = 0;
   options.paycheck = 50;
   options.guest_paycheck = 0;

@@ -16,3 +16,10 @@ repository is suggested. TODO: Insert links.
 To use it, install libjit, pass configure the --enable-jit option, and
 recompile. It's not turned on just by the presence of the library. You
 have to tell configure you want it. Experimental, remember?
+
+
+TODO:
+
+* Write code to convert a bytecode boolexp into libjit instructions.
+* Figure out memory management -- freeing up compiled functions when
+  they're no longer going to be used.

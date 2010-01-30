@@ -998,7 +998,7 @@ gn_ipv46(char *host, size_t hostlen, char *serv, size_t servlen,
 
 /* include getnameinfo */
 int
-getnameinfo(const struct sockaddr *sa, socklen_t salen,
+getnameinfo(const struct sockaddr *sa, socklen_t salen __attribute__((__unused__)),
             char *host, size_t hostlen, char *serv, size_t servlen, int flags)
 {
 
@@ -1218,7 +1218,7 @@ bad:
 /* include ga_echeck */
 static int
 ga_echeck(const char *hostname, const char *servname,
-          int flags, int family, int socktype, int protocol)
+          int flags, int family, int socktype, int protocol __attribute__((__unused__)))
 {
   if (flags & ~(AI_PASSIVE | AI_CANONNAME))
     return (EAI_BADFLAGS);      /* unknown flag bits */

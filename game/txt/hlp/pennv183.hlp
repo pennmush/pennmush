@@ -87,6 +87,8 @@ Functions:
    @flag/add and @power/add. [MG]
  * New pfun() function, which evaluates attributes from your parent as if
    you were inheriting them, even if you have your own copy of the attr. [MG]
+ * locate() can take a new parameter, 'x', which causes it to only match 
+   exact object names, ignoring partial matches. Suggested by Minion. [MG]
 
 Fixes:
  * Bug caused by silly assumptions in list2arr() regarding remove_markup

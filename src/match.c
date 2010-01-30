@@ -33,6 +33,7 @@
  * MAT_REMOTE_CONTENTS  - match the contents of a remote location
  * MAT_ENGLISH          - match natural english 'my 2nd flower'
  * MAT_TYPE             - match only objects of the given type(s)
+ * MAT_EXACT            - only do full-name matching, no partial names
  * MAT_EVERYTHING       - me,here,absolute,player,neighbor,possession,exit
  * MAT_NEARBY           - everything near
  * MAT_OBJECTS          - me,absolute,player,neigbor,possession
@@ -58,7 +59,7 @@
 #include "attrib.h"
 
 static int parse_english(char **name, long *flags);
-static dbref match_player(dbref who, const char *name);
+static dbref match_player(dbref who, const char *name, int partial);
 extern int check_alias(const char *command, const char *list);  /* game.c */
 static int match_aliases(dbref match, const char *name);
 static dbref choose_thing(const dbref who, const int preferred_type, long flags, dbref thing1, dbref thing2);
@@ -198,7 +199,7 @@ static dbref debugMatchTo = 1;
       } else if (match_aliases(match, name) || (!IsExit(match) && !strcasecmp(Name(match), name))) { \
         /* exact name match */ \
         MATCHED(1); \
-      } else if ((!exact || !GoodObject(bestmatch)) && !IsExit(match) && string_match(Name(match), name)) { \
+      } else if (!(flags & MAT_EXACT) && (!exact || !GoodObject(bestmatch)) && !IsExit(match) && string_match(Name(match), name)) { \
         /* partial name match */ \
         MATCHED(0); \
       } \
@@ -268,7 +269,7 @@ choose_thing(const dbref who, const int preferred_type, long flags, dbref thing1
 }
 
 static dbref
-match_player(dbref who, const char *name) {
+match_player(dbref who, const char *name, int partial) {
   dbref match;
 
   if (*name == LOOKUP_TOKEN) {
@@ -283,7 +284,7 @@ match_player(dbref who, const char *name) {
   if (match != NOTHING) {
     return match;
   }
-  return (GoodObject(who) ? visible_short_page(who, name) : NOTHING);
+  return (GoodObject(who) && partial ? visible_short_page(who, name) : NOTHING);
 }
 
 static int
@@ -346,7 +347,7 @@ match_result(dbref who, const char *xname, int type, long flags)
   if (((flags & MAT_PMATCH) ||
       ((flags & MAT_PLAYER) && *xname == LOOKUP_TOKEN)) &&
       ((type & TYPE_PLAYER) || !(flags & MAT_TYPE))) {
-    match = match_player(who, xname);
+    match = match_player(who, xname, !(flags & MAT_EXACT));
     if (GoodObject(match)) {
       if (MATCH_CONTROLS) {
         return match;

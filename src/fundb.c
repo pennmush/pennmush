@@ -1997,6 +1997,9 @@ FUNCTION(fun_locate)
     case 'z':
       match_flags |= MAT_ENGLISH;
       break;
+    case 'x':
+      match_flags |= MAT_EXACT;
+      break;
     case 'X':
       ambig_ok = 1;             /* okay to pick last match */
       break;
@@ -2010,7 +2013,7 @@ FUNCTION(fun_locate)
   if (!pref_type)
     pref_type = NOTYPE;
 
-  if (!(match_flags & ~(MAT_CHECK_KEYS | MAT_TYPE)))
+  if (!(match_flags & ~(MAT_CHECK_KEYS | MAT_TYPE | MAT_EXACT)))
     match_flags |= MAT_EVERYTHING;
 
   /* report the results */

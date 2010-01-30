@@ -65,6 +65,7 @@ struct lock_msg_info {
 #define LF_NOFAILACTION 0x80U   /**< This lock doesn't have an @a-action for failure */
 #define LF_OWNER        0x100U  /**< Lock can only be set/unset by object's owner */
 #define LF_DEFAULT        0x200U  /**< Use default flags when setting lock */
+#define LF_JIT_FAIL       0x400U /**< Attempted and failed to JIT compile lock. */
 
 /* lock.c */
 boolexp getlock(dbref thing, lock_type type);

@@ -1975,6 +1975,87 @@ check_lock(dbref player, dbref i, const char *name, boolexp be)
 }
 
 #ifdef USE_JIT
+
+static bool types_initted = 0;
+static jit_value_t j_r;
+
+static void
+setup_jit_types(void)
+{
+  if (types_initted)
+    return;
+  
+  types_initted = 1;
+
+}
+
+static jit_value_t
+get_object_addr(jit_function_t fun, jit_value_t thing)
+{
+  jit_value_t j_db, j_objsize, j_objloc;
+
+  j_db = jit_value_create_nint_constant(fun, jit_type_void_ptr, (jit_nint) db);
+  j_objsize = jit_value_create_nint_constant(fun, jit_type_int, sizeof(struct object));
+  j_objloc = jit_insn_mul(fun, thing, j_objsize);
+  return jit_insn_add(fun, j_db, j_objloc);
+}
+
+static jit_value_t
+real_get_object_field(jit_function_t fun, jit_value_t thing, size_t offset)
+{
+  jit_value_t j_obj;
+
+  j_obj = get_object_addr(fun, thing);
+  return jit_insn_load_relative(fun, j_obj, offset, jit_type_int);
+}
+
+#define get_object_field(f,t,field) real_get_object_field((fun), (t), offsetof(struct object, field))
+
+static jit_value_t
+get_object_type(jit_function_t fun, jit_value_t thing)
+{
+  jit_value_t j_type, j_marked;
+
+  j_type = get_object_field(fun, thing, type);
+  j_marked = jit_value_create_nint_constant(fun, jit_type_uint, ~TYPE_MARKED);
+  return jit_insn_and(fun, j_type, j_marked);
+}
+
+static jit_value_t
+check_type(jit_function_t fun, jit_value_t thing, uint32_t type, int neg)
+{
+  jit_value_t j_otype, j_ttype, temp1;
+
+  j_otype = get_object_type(fun, thing);
+  j_ttype = jit_value_create_nint_constant(fun, jit_type_uint, type);
+  temp1 = jit_insn_and(fun, j_otype, j_ttype);
+  if (neg)
+    return jit_insn_ne(fun, temp1, j_ttype);
+  else
+    return jit_insn_eq(fun, temp1, j_ttype);
+}
+
+static void
+check_goodobject(jit_function_t fun, jit_value_t what, jit_label_t *lab_fail)
+{
+  jit_value_t j_zero, j_dbtop, temp;
+
+  j_zero = jit_value_create_nint_constant(fun, jit_type_int, 0);
+  j_dbtop = jit_value_create_nint_constant(fun, jit_type_int, db_top);
+
+  temp = jit_insn_ge(fun, what, j_zero);
+  jit_insn_store(fun, j_r, temp);
+  jit_insn_branch_if_not(fun, j_r, lab_fail);
+
+  temp = jit_insn_lt(fun, what, j_dbtop);
+  jit_insn_store(fun, j_r, temp);
+  jit_insn_branch_if_not(fun, j_r, lab_fail);
+
+  temp = check_type(fun, what, TYPE_GARBAGE, 1);
+  jit_insn_store(fun, j_r, temp);
+  jit_insn_branch_if_not(fun, j_r, lab_fail);
+}
+
 /** Compile a boolexp into native code using libjit.
  * \param thing the object the lock is on.
  * \param b the boolexp
@@ -1983,6 +2064,118 @@ check_lock(dbref player, dbref i, const char *name, boolexp be)
 jit_function_t
 compile_boolexp(dbref thing, boolexp b)
 {
-  return NULL;
+  bvm_opcode op;
+  int arg;
+  uint8_t *pc, *bytecode;
+  char *s;
+  jit_context_t context;
+  jit_function_t fun;
+  static jit_type_t sig = NULL, params[2] = { NULL, NULL };
+  jit_value_t j_arg, j_s, j_player, j_thing;
+  jit_value_t temp1, temp2, temp3, temp4;
+  jit_label_t j_lab_fail = jit_label_undefined;
+  int fail = 0;
+
+  setup_jit_types();
+
+  context = get_objdata(thing, "lock-jit");
+  if (!context) {
+    context = jit_context_create();
+    set_objdata(thing, "lock-jit", context);
+  }
+
+  jit_context_build_start(context);
+  
+
+  if (!sig) {
+    params[0] = jit_type_int;
+    params[1] = jit_type_int;
+    sig = jit_type_create_signature(jit_abi_cdecl, jit_type_int, params, 2, 1);
+  }
+
+
+  fun = jit_function_create(context, sig);
+  
+  if (!fun) {
+    jit_context_build_end(context);
+    return NULL;
+  }
+
+  bytecode = pc = safe_get_bytecode(b);
+
+  j_player = jit_value_get_param(fun, 0);
+  j_thing = jit_value_get_param(fun, 1);
+  j_arg = jit_value_create(fun, jit_type_int);
+  j_r = jit_value_create(fun, jit_type_int);
+  
+  /* r = 0 */
+  temp1 = jit_value_create_nint_constant(fun, jit_type_int, 0);
+  jit_insn_store(fun, j_r, temp1);
+
+  while (1) {
+    op = (bvm_opcode) *pc;
+    memcpy(&arg, pc + 1, sizeof arg);
+    pc += INSN_LEN;
+    switch (op) {
+    case OP_RET:
+      jit_insn_return(fun, j_r);
+      goto done;
+    case OP_LABEL:
+    case OP_PAREN:
+      break;
+    case OP_LOADR:
+      j_arg = jit_value_create_nint_constant(fun, jit_type_int, arg);
+      jit_insn_store(fun, j_r, j_arg);
+      break;
+    case OP_NEGR:
+      temp1 = jit_insn_neg(fun, j_r);
+      jit_insn_store(fun, j_r, temp1);
+      break;
+
+    case OP_TIS:
+      j_lab_fail = jit_label_undefined;
+      j_arg = jit_value_create_nint_constant(fun, jit_type_int, arg);
+      check_goodobject(fun, j_arg, &j_lab_fail);
+      temp1 = jit_insn_eq(fun, j_player, j_arg);
+      jit_insn_store(fun, j_r, temp1);
+      jit_insn_label(fun, &j_lab_fail);
+      break;
+
+    case OP_TTYPE:
+      switch (bytecode[arg]) {
+      case 'R':
+	temp1 = check_type(fun, j_player, TYPE_ROOM, 0);
+	jit_insn_store(fun, j_r, temp1);
+	break;
+      case 'E':
+	temp1 = check_type(fun, j_player, TYPE_EXIT, 0);
+	jit_insn_store(fun, j_r, temp1);
+	break;
+      case 'T':
+	temp1 = check_type(fun, j_player, TYPE_THING, 0);
+	jit_insn_store(fun, j_r, temp1);
+	break;
+      case 'P':
+	temp1 = check_type(fun, j_player, TYPE_PLAYER, 0);
+	jit_insn_store(fun, j_r, temp1);
+	break;
+      }
+      break;
+    default:
+      fail = 1;
+      goto done;
+    }
+  }
+
+ done:
+
+  if (fail || !jit_function_compile(fun)) {
+    jit_function_abandon(fun);
+    fun = NULL;
+  }
+
+  jit_context_build_end(context);
+  mush_free(bytecode, "boolexp.bytecode");
+  return fun;
 }
 #endif

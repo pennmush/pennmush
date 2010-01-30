@@ -478,6 +478,7 @@ add_lock(dbref player, dbref thing, lock_type type, boolexp key, privbits flags)
        leaning towards per-object contexts for now. Potential memory
        leak here. */
     ll->fun = NULL;
+    ll->flags &= ~LF_JIT_FAIL;
     ll->key = key;
     ll->creator = player;
     if (flags != LF_DEFAULT)
@@ -579,6 +580,7 @@ free_one_lock_list(lock_list *ll)
     return;
   free_boolexp(ll->key);
   /* See comment in add_lock() about JITted function memory. */
+  ll->fun = NULL;
   st_delete(ll->type, &lock_names);
   free_lock(ll);
 }
@@ -838,8 +840,13 @@ eval_lock(dbref player, dbref thing, lock_type ltype)
     log_activity(LA_LOCK, thing, unparse_boolexp(player, b, UB_DBREF));
 
 #ifdef USE_JIT
-  if (!ll->fun)
+  if (!ll->fun && !(L_FLAGS(ll) & LF_JIT_FAIL)) { 
     ll->fun = compile_boolexp(thing, b);
+    if (!ll->fun) {
+      do_rawlog(LT_TRACE, "Failed to compile lock #%d/%s", thing, ltype);
+      L_FLAGS(ll) |= LF_JIT_FAIL;
+    }
+  }
 
   if (ll->fun) {
     jit_int arg_player = player, arg_thing = thing, result;
@@ -847,6 +854,9 @@ eval_lock(dbref player, dbref thing, lock_type ltype)
       
     args[0] = &arg_player;
     args[1] = &arg_thing;
+
+    do_rawlog(LT_TRACE, "Evaluating JIT lock #%d/%s", thing, ltype);
+
     if (jit_function_apply(ll->fun, args, &result))
       return result;
   }

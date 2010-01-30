@@ -2029,7 +2029,7 @@ check_type(jit_function_t fun, jit_value_t thing, uint32_t type, int neg)
   j_otype = get_object_type(fun, thing);
   j_ttype = jit_value_create_nint_constant(fun, jit_type_uint, type);
   temp1 = jit_insn_and(fun, j_otype, j_ttype);
-  if (neg)
+  if (__builtin_expect(neg, 0))
     return jit_insn_ne(fun, temp1, j_ttype);
   else
     return jit_insn_eq(fun, temp1, j_ttype);
@@ -2056,6 +2056,30 @@ check_goodobject(jit_function_t fun, jit_value_t what, jit_label_t *lab_fail)
   jit_insn_branch_if_not(fun, j_r, lab_fail);
 }
 
+
+struct string_pool {
+  char *s;
+  struct string_pool *next;
+};
+
+void free_string_pool(struct string_pool *p)
+{
+  struct string_pool *tmp;
+
+  while (p) {
+    tmp = p->next;
+    mush_free(p->s, "lock.jit.constant.string");
+    mush_free(p, "lock.jit.constant");
+    p = tmp;
+  }
+}
+
+struct jump_list {
+  jit_label_t label;
+  const uint8_t *loc;
+  struct jump_list *next;
+};
+
 /** Compile a boolexp into native code using libjit.
  * \param thing the object the lock is on.
  * \param b the boolexp
@@ -2064,27 +2088,27 @@ check_goodobject(jit_function_t fun, jit_value_t what, jit_label_t *lab_fail)
 jit_function_t
 compile_boolexp(dbref thing, boolexp b)
 {
-  bvm_opcode op;
-  int arg;
   uint8_t *pc, *bytecode;
-  char *s;
-  jit_context_t context;
+  struct lock_jit_metadata *meta;
   jit_function_t fun;
   static jit_type_t sig = NULL, params[2] = { NULL, NULL };
   jit_value_t j_arg, j_s, j_player, j_thing;
   jit_value_t temp1, temp2, temp3, temp4;
-  jit_label_t j_lab_fail = jit_label_undefined;
   int fail = 0;
+  struct jump_list *jumps = NULL, *j;
 
   setup_jit_types();
 
-  context = get_objdata(thing, "lock-jit");
-  if (!context) {
-    context = jit_context_create();
-    set_objdata(thing, "lock-jit", context);
+  meta = get_objdata(thing, "lock-jit");
+  if (!meta) {
+    meta = mush_malloc(sizeof *meta, "lock.jit.metadata");
+    meta->context = jit_context_create();
+    meta->pool = NULL;
+    meta->nfuns = 0;
+    set_objdata(thing, "lock-jit", meta);
   }
 
-  jit_context_build_start(context);
+  jit_context_build_start(meta->context);
   
 
   if (!sig) {
@@ -2094,10 +2118,10 @@ compile_boolexp(dbref thing, boolexp b)
   }
 
 
-  fun = jit_function_create(context, sig);
+  fun = jit_function_create(meta->context, sig);
   
   if (!fun) {
-    jit_context_build_end(context);
+    jit_context_build_end(meta->context);
     return NULL;
   }
 
@@ -2107,19 +2131,52 @@ compile_boolexp(dbref thing, boolexp b)
   j_thing = jit_value_get_param(fun, 1);
   j_arg = jit_value_create(fun, jit_type_int);
   j_r = jit_value_create(fun, jit_type_int);
+  j_s = jit_value_create(fun, jit_type_void_ptr);
   
   /* r = 0 */
   temp1 = jit_value_create_nint_constant(fun, jit_type_int, 0);
   jit_insn_store(fun, j_r, temp1);
 
   while (1) {
+    bvm_opcode op;
+    int arg;
+    jit_label_t j_lab_fail = jit_label_undefined;
+
     op = (bvm_opcode) *pc;
     memcpy(&arg, pc + 1, sizeof arg);
+
+    j = jumps;
+    while (j) {
+      struct jump_list *jt;
+
+      jt = j->next;
+
+      if (j->loc == pc) {
+	jit_insn_label(fun, &j->label);
+	mush_free(j, "lock.jit.jump");
+      }
+      j  = jt;
+    }
+
     pc += INSN_LEN;
+
     switch (op) {
     case OP_RET:
       jit_insn_return(fun, j_r);
       goto done;
+    case OP_JMPT:
+    case OP_JMPF:
+      j = mush_malloc(sizeof *j, "lock.jit.jump");
+      j->next = jumps;
+      jumps = j;
+      j->loc = bytecode + arg;
+      j->label = jit_label_undefined;
+      
+      if (op == OP_JMPT)
+	jit_insn_branch_if(fun, j_r, &j->label);
+      else
+	jit_insn_branch_if_not(fun, j_r, &j->label);
+      break;     
     case OP_LABEL:
     case OP_PAREN:
       break;
@@ -2132,8 +2189,19 @@ compile_boolexp(dbref thing, boolexp b)
       jit_insn_store(fun, j_r, temp1);
       break;
 
+    case OP_LOADS:
+      {
+	struct string_pool *newstr;
+	newstr = mush_malloc(sizeof *newstr, "lock.jit.constant");
+	newstr->s = mush_strdup((char *) bytecode + arg, "lock.jit.constant.string");
+	newstr->next = meta->pool;
+	meta->pool = newstr;
+
+	temp1 = jit_value_create_nint_constant(fun, jit_type_void_ptr, (jit_nint)newstr->s);
+	jit_insn_store(fun, j_s, temp1);	
+      }
+
     case OP_TIS:
-      j_lab_fail = jit_label_undefined;
       j_arg = jit_value_create_nint_constant(fun, jit_type_int, arg);
       check_goodobject(fun, j_arg, &j_lab_fail);
       temp1 = jit_insn_eq(fun, j_player, j_arg);
@@ -2172,9 +2240,16 @@ compile_boolexp(dbref thing, boolexp b)
   if (fail || !jit_function_compile(fun)) {
     jit_function_abandon(fun);
     fun = NULL;
+  } else
+    meta->nfuns += 1;
+
+  while (jumps) {
+    j = jumps->next;
+    mush_free(jumps, "lock.jit.jump");
+    jumps = j;
   }
 
-  jit_context_build_end(context);
+  jit_context_build_end(meta->context);
   mush_free(bytecode, "boolexp.bytecode");
   return fun;
 }

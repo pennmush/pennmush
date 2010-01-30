@@ -630,10 +630,12 @@ free_locks(dbref thing)
   Locks(thing) = NULL;
 #ifdef USE_JIT
   {
-    jit_context_t context;
-    context = get_objdata(thing, "lock-jit");
-    if (context) {
-      jit_context_destroy(context);
+    struct lock_jit_metadata *meta;
+    meta = get_objdata(thing, "lock-jit");
+    if (meta) {
+      jit_context_destroy(meta->context);
+      free_string_pool(meta->pool);
+      mush_free(meta, "lock.jit.metadata");
       set_objdata(thing, "lock-jit", NULL);
     }
   }

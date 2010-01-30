@@ -42,5 +42,15 @@ char *unparse_boolexp(dbref player, boolexp b, enum u_b_f flag);
 
 #ifdef USE_JIT
 jit_function_t compile_boolexp(dbref thing, boolexp b);
+
+struct string_pool;
+struct lock_jit_metadata {
+  jit_context_t context;
+  struct string_pool *pool;
+  int nfuns;
+};
+
+void free_string_pool(struct string_pool *);
+
 #endif
 #endif                          /* BOOLEXP_H */

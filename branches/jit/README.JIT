@@ -9,6 +9,12 @@ possibly a few other things. Full conversion of softcode from purely
 interpreted to compiled -- either bytecode or native code, is far far
 off.
 
+The main advantage to doing this over using the normal lock bytecode
+VM is that it eliminates a lot of switching on opcodes. There are ways
+to do this without compiling to native code, too, but JIT is
+cooler. No love for threaded interpreters these days. And no reason
+both can't co-exist.
+
 This version depends on the dotgnu/pnet libjit to do all the hard
 work. Version 0.1.2 or recent checkout from the project's git
 repository is suggested. TODO: Insert links.
@@ -16,6 +22,7 @@ repository is suggested. TODO: Insert links.
 To use it, install libjit, pass configure the --enable-jit option, and
 recompile. It's not turned on just by the presence of the library. You
 have to tell configure you want it. Experimental, remember?
+
 
 
 TODO:

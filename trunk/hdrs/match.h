@@ -30,6 +30,7 @@
 #define MAT_NOISY                0x1000000
 #define MAT_LAST                 0x2000000
 #define MAT_TYPE                 0x4000000 /* don't accept objects of other types */
+#define MAT_EXACT                0x8000000 /* don't do partial name matches */
   /* groups of things to match */
 #define MAT_EVERYTHING   (MAT_ME|MAT_HERE|MAT_ABSOLUTE|MAT_PLAYER| \
                           MAT_NEIGHBOR|MAT_POSSESSION|MAT_EXIT|MAT_ENGLISH)

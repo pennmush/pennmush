@@ -94,6 +94,7 @@ Functions:
    you were inheriting them, even if you have your own copy of the attr. [MG]
  * locate() can take a new parameter, 'x', which causes it to only match 
    exact object names, ignoring partial matches. Suggested by Minion. [MG]
+ * ncand()/ncor(), short-circuit versions of nand()/nor(). Patch by Teal.
 
 Fixes:
  * Bug caused by silly assumptions in list2arr() regarding remove_markup

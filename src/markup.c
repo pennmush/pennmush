@@ -1129,7 +1129,7 @@ copy_stop_code(markup_information *info, char *buff, char **bp)
   save = *bp;
   if (info && info->stop_code) {
     retval += safe_chr(TAG_START, buff, bp);
-    retval += safe_chr(MARKUP_HTML, buff, bp);
+    retval += safe_chr(info->type, buff, bp);
     retval += safe_str(info->stop_code, buff, bp);
     retval += safe_chr(TAG_END, buff, bp);
   }

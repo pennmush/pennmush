@@ -327,7 +327,8 @@ email_register_player(const char *name, const char *email, const char *host,
     reserve_fd();
     return NOTHING;
   }
-  fprintf(fp, T("Subject: [%s] Registration of %s\n"), MUDNAME, name);
+  fprintf(fp, "Subject: ");
+  fprintf(fp, T("[%s] Registration of %s\n"), MUDNAME, name);
   fprintf(fp, "To: %s\n", email);
   fprintf(fp, "Precedence: junk\n");
   fprintf(fp, "\n");

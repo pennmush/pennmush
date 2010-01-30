@@ -2018,30 +2018,29 @@ unix_uptime(dbref player __attribute__ ((__unused__)))
   pid = getpid();
   psize = getpagesize();
   notify_format(player,
-                T("\nProcess ID:  %10u        %10d bytes per page"),
+                "\nProcess ID:  %10u        %10d bytes per page",
                 pid, psize);
 
 
 #ifdef HAS_GETRUSAGE
   getrusage(RUSAGE_SELF, &usage);
-  notify_format(player, T("Time used:   %10ld user   %10ld sys"),
+  notify_format(player, "Time used:   %10ld user   %10ld sys",
                 (long) usage.ru_utime.tv_sec, (long) usage.ru_stime.tv_sec);
-  notify_format(player, T("Max res mem: %10ld pages  %10ld bytes"),
+  notify_format(player, "Max res mem: %10ld pages  %10ld bytes",
                 usage.ru_maxrss, (usage.ru_maxrss * psize));
   notify_format(player,
-                T("Integral mem:%10ld shared %10ld private %10ld stack"),
+                "Integral mem:%10ld shared %10ld private %10ld stack",
                 usage.ru_ixrss, usage.ru_idrss, usage.ru_isrss);
   notify_format(player,
-                T
-                ("Page faults: %10ld hard   %10ld soft    %10ld swapouts"),
+                "Page faults: %10ld hard   %10ld soft    %10ld swapouts",
                 usage.ru_majflt, usage.ru_minflt, usage.ru_nswap);
-  notify_format(player, T("Disk I/O:    %10ld reads  %10ld writes"),
+  notify_format(player, "Disk I/O:    %10ld reads  %10ld writes",
                 usage.ru_inblock, usage.ru_oublock);
-  notify_format(player, T("Network I/O: %10ld in     %10ld out"),
+  notify_format(player, "Network I/O: %10ld in     %10ld out",
                 usage.ru_msgrcv, usage.ru_msgsnd);
-  notify_format(player, T("Context swi: %10ld vol    %10ld forced"),
+  notify_format(player, "Context swi: %10ld vol    %10ld forced",
                 usage.ru_nvcsw, usage.ru_nivcsw);
-  notify_format(player, T("Signals:     %10ld"), usage.ru_nsignals);
+  notify_format(player, "Signals:     %10ld", usage.ru_nsignals);
 #endif                          /* HAS_GETRUSAGE */
 #endif
 }
@@ -2054,16 +2053,16 @@ win32_uptime(dbref player __attribute__ ((__unused__)))
   double mem;
   memstat.dwLength = sizeof(memstat);
   GlobalMemoryStatus(&memstat);
-  notify(player, T("---------- Windows memory usage ------------"));
-  notify_format(player, T("%10ld %% memory in use"), memstat.dwMemoryLoad);
+  notify(player, "---------- Windows memory usage ------------");
+  notify_format(player, "%10ld %% memory in use", memstat.dwMemoryLoad);
   mem = memstat.dwAvailPhys / 1024.0 / 1024.0;
-  notify_format(player, T("%10.3f Mb free physical memory"), mem);
+  notify_format(player, "%10.3f Mb free physical memory", mem);
   mem = memstat.dwTotalPhys / 1024.0 / 1024.0;
-  notify_format(player, T("%10.3f Mb total physical memory"), mem);
+  notify_format(player, "%10.3f Mb total physical memory", mem);
   mem = memstat.dwAvailPageFile / 1024.0 / 1024.0;
-  notify_format(player, T("%10.3f Mb available in the paging file "), mem);
+  notify_format(player, "%10.3f Mb available in the paging file ", mem);
   mem = memstat.dwTotalPageFile / 1024.0 / 1024.0;
-  notify_format(player, T("%10.3f Mb total paging file size"), mem);
+  notify_format(player, "%10.3f Mb total paging file size", mem);
 #endif
 }
 

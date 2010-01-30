@@ -585,7 +585,7 @@ do_list_allocations(dbref player)
   slab_describe(player, intmap_slab);
 
   if (options.mem_check) {
-    notify(player, T("malloc allocations:"));
+    notify(player, "malloc allocations:");
     list_mem_check(player);
   }
 }

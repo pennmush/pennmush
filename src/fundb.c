@@ -1837,38 +1837,17 @@ FUNCTION(fun_pmatch)
 {
   dbref target;
 
-  if (*args[0] == '*')
-    target = lookup_player(args[0] + 1);
-  else if (*args[0] == NUMBER_TOKEN) {
-    target = parse_objid(args[0]);
-    if (!(GoodObject(target) && IsPlayer(target))) {
-      notify(executor, T("No match."));
-      safe_str("#-1", buff, bp);
-      return;
-    } else {
-      safe_dbref(target, buff, bp);
-      return;
-    }
-  } else
-    target = lookup_player(args[0]);
-  if (target == NOTHING) {
-    if (*args[0] == '*')
-      target = visible_short_page(executor, args[0] + 1);
-    else
-      target = visible_short_page(executor, args[0]);
-  }
+  target = match_result(executor, args[0], TYPE_PLAYER, MAT_PMATCH | MAT_TYPE | MAT_ABSOLUTE);
+  /* Not using MAT_NOISY, as #-1 gives a different error message */
   switch (target) {
   case NOTHING:
     notify(executor, T("No match."));
-    safe_str("#-1", buff, bp);
     break;
   case AMBIGUOUS:
     notify(executor, T("I'm not sure who you mean."));
-    safe_str("#-2", buff, bp);
     break;
-  default:
-    safe_dbref(target, buff, bp);
   }
+  safe_dbref(target, buff, bp);
 }
 
 /* ARGUSED */

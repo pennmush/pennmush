@@ -1461,6 +1461,10 @@ msgstr "FLAG INIT: alias-ul %s nu corespunde nici unui steag cunoscut."
 msgid "GAME:"
 msgstr "JOC:"
 
+#: game.c:2091
+msgid "Last reboot"
+msgstr "Ultimul reboot"
+
 #: src/malias.c:107
 msgid "MAIL: Invalid malias command."
 msgstr "MAIL: Comanda malias invalida."
@@ -1482,9 +1486,29 @@ msgstr "Camera %s a fost salvata de la distrugere."
 msgid "There are probably easier ways to crash your MUSH."
 msgstr "\"Probabil ca exista metode mai usoare de a-ti bloca MUSH ul.\""
 
+#: game.c:2097
+msgid "Time now"
+msgstr "Timpul actual"
+
+#: game.c:2137
+msgid "Time until next @warnings"
+msgstr "Timp ramas pana la urmatorul @warnings"
+
+#: game.c:2120
+msgid "Time until next dbck check"
+msgstr "Timp ramas pana la urmatoarea verificare dbck"
+
+#: game.c:2128
+msgid "Time until next purge"
+msgstr "Timp ramas pana la urmatoarea curatare"
+
 #: src/speech.c:402
 msgid "Too many people to whisper to."
 msgstr "Prea multe persoane catre care trebuie soptit."
+
+#: game.c:2087
+msgid "Up since"
+msgstr "Functionare neantrerupta din"
 
 #: warnings.c:227
 #, c-format

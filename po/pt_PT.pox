@@ -80,7 +80,7 @@ msgstr "\"Longa distancia para %s%s: %s%s%s\""
 #: src/malias.c:223 src/malias.c:679
 #, c-format
 msgid "MAIL: %s added to alias %s"
-msgstr "MAIL: %s adicionado á lista de contactos"
+msgstr "MAIL: %s adicionado á lista de contactos %s"
 
 #: src/malias.c:239 src/malias.c:696
 msgid "MAIL: Alias list is restricted to maximal 100 entries!"

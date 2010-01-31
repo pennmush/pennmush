@@ -814,7 +814,7 @@ msgstr "%d emner indeksert."
 #: src/bsd.c:3405
 #, c-format
 msgid "%ld failed connections since last login."
-msgstr "%1d mislykkede oppkoblinger siden siste innlogging."
+msgstr "%ld mislykkede oppkoblinger siden siste innlogging."
 
 #: flags.c:2223
 #, c-format
@@ -1637,7 +1637,7 @@ msgstr "CHAT: %s har fjernet alle brukere fra <%s>."
 #: src/extchat.c:821
 #, c-format
 msgid "CHAT: %s joins you to channel <%s>."
-msgstr "CHAT: %s har lagt deg til kanal <%d>."
+msgstr "CHAT: %s har lagt deg til kanal <%s>."
 
 #: src/extchat.c:856
 #, c-format
@@ -3408,6 +3408,10 @@ msgstr "Siste tilkobling var fra %s den %s."
 msgid "Last is dated %s"
 msgstr "Siste datert %s"
 
+#: game.c:2091
+msgid "Last reboot"
+msgstr "Siste omstart"
+
 #: src/game.c:1427
 #, c-format
 msgid "Last reboot: %s"
@@ -3590,7 +3594,7 @@ msgstr "MAIL: Antall meldinger er %d, mdb_top er %d"
 #: src/extmail.c:233
 #, c-format
 msgid "MAIL: Current folder is %d [%s]."
-msgstr "MAIL: N\345v\346rende folder er %d [%d]."
+msgstr "MAIL: N\345v\346rende folder er %d [%s]."
 
 #: src/extmail.c:260
 #, c-format
@@ -4306,7 +4310,7 @@ msgstr "PANIKK: Forsøk på panikk på grunn av '%s' mens panikk allerede er iverks
 #: src/game.c:1511
 #, c-format
 msgid "Page faults: %10ld hard   %10ld soft    %10ld swapouts"
-msgstr "Sidefeil: %10ld harde   \24410ld myke    %10ld swapouts"
+msgstr "Sidefeil: %10ld harde   %10ld myke    %10ld swapouts"
 
 #: src/game.c:250
 #, c-format
@@ -5090,10 +5094,30 @@ msgstr "Dette rommet kringkaster ikke lenger."
 msgid "This room is now broadcasting."
 msgstr "Dette rommet kringkaster fra n\345 av."
 
+#: game.c:2097
+msgid "Time now"
+msgstr "Tid nå"
+
+#: game.c:2137
+msgid "Time until next @warnings"
+msgstr "Tid til neste @warnings"
+
+#: game.c:2112
+msgid "Time until next database save"
+msgstr "Tid til neste databaselagring"
+
 #: src/game.c:1439
 #, c-format
 msgid "Time until next database save: %ld minutes %ld seconds."
 msgstr "Tid til neste databaselagring: %1d minutter %1d sekunder."
+
+#: game.c:2120
+msgid "Time until next dbck check"
+msgstr "Tid til neste dbck sjekk"
+
+#: game.c:2128
+msgid "Time until next purge"
+msgstr "Tid til neste purge"
 
 #: src/game.c:1499
 #, c-format
@@ -5157,6 +5181,10 @@ msgstr "For mange personer for oemit."
 #: src/speech.c:402
 msgid "Too many people to whisper to."
 msgstr "For mange folk \345 hviske til."
+
+#: game.c:2093
+msgid "Total reboots"
+msgstr "Totalt restartet"
 
 #: game.c:1447
 #, c-format
@@ -5374,6 +5402,10 @@ msgstr "Ukjent attributt-flagg."
 #: db.c:1313
 msgid "Unrecognized database format!"
 msgstr "Ukjent databaseformat!"
+
+#: game.c:2087
+msgid "Up since"
+msgstr "Oppe siden"
 
 #: extmail.c:2475
 msgid "Urgent "

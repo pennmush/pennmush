@@ -863,7 +863,7 @@ msgstr "%s (esta habitación) [habla]."
 #: flags.c:1515
 #, c-format
 msgid "%s - I don't recognize that power."
-msgstr "No identifico ese poder."
+msgstr "%s - No identifico ese poder."
 
 #: src/wiz.c:1207
 #, c-format
@@ -1223,12 +1223,12 @@ msgstr "%s susurra a %s."
 #: destroy.c:412
 #, c-format
 msgid "%s's %s has been spared from destruction."
-msgstr "%2$ de %1$ ha sido salvado de la destrucción."
+msgstr "%2$s de %1$s ha sido salvado de la destrucción."
 
 #: src/destroy.c:357 src/destroy.c:374
 #, c-format
 msgid "%s's %s is scheduled to be destroyed."
-msgstr "%2$ de %1$ ha sido agendado para ser destruido."
+msgstr "%2$s de %1$s ha sido agendado para ser destruido."
 
 #: src/extmail.c:1168
 #, c-format
@@ -3221,6 +3221,10 @@ msgstr "Última conexión fue desde %s en %s."
 msgid "Last is dated %s"
 msgstr "La última está fechada %s"
 
+#: game.c:2091
+msgid "Last reboot"
+msgstr "Último re-inicio"
+
 #: src/version.c:37
 #, c-format
 msgid "Last restarted: %s"
@@ -3796,7 +3800,7 @@ msgstr "Nombre"
 #: src/wiz.c:131
 #, c-format
 msgid "New player '%s' (#%d) created with password '%s'"
-msgstr "Creado el nuevo jugador '%s' con la contraseña '%s'"
+msgstr "Creado el nuevo jugador '%s' (#%d) con la contraseña '%s'"
 
 #: src/access.c:192
 #, c-format
@@ -4558,7 +4562,7 @@ msgstr "El servicio postal expide la autorización para tu arresto."
 #: src/destroy.c:548
 #, c-format
 msgid "The room %s has been spared from destruction by %s."
-msgstr "Esta habitación ha sido salvada de la destrucción por %s."
+msgstr "La habitación %s ha sido salvada de la destrucción por %s."
 
 #: src/destroy.c:543
 #, c-format
@@ -4655,10 +4659,30 @@ msgstr "Esta habitación ya no será anunciada."
 msgid "This room is now broadcasting."
 msgstr "Esta habitación es ahora difundida."
 
+#: game.c:2097
+msgid "Time now"
+msgstr "Tiempo ahora"
+
+#: game.c:2137
+msgid "Time until next @warnings"
+msgstr "Tiempo hasta la proxima @warning"
+
+#: game.c:2112
+msgid "Time until next database save"
+msgstr "Tiempo hasta que la siguiente base de datos grabe"
+
 #: src/game.c:1439
 #, c-format
 msgid "Time until next database save: %ld minutes %ld seconds."
 msgstr "Tiempo hasta que la siguiente base de datos grabe: %ld minutos %ld segundos."
+
+#: game.c:2120
+msgid "Time until next dbck check"
+msgstr "Tiempo que falta hasta el proximo chequeo con dbck"
+
+#: game.c:2128
+msgid "Time until next purge"
+msgstr "Tiempo hasta la proxima purga"
 
 #: extchat.c:1376
 #, c-format
@@ -4695,6 +4719,10 @@ msgstr "Demasiados recipientes."
 #: src/speech.c:402
 msgid "Too many people to whisper to."
 msgstr "Demasiada gente para susurrar."
+
+#: game.c:2093
+msgid "Total reboots"
+msgstr "Total de reinicios"
 
 #: game.c:1447
 #, c-format
@@ -4855,6 +4883,10 @@ msgstr "Atributo de señal no reconocido."
 #: db.c:1313
 msgid "Unrecognized database format!"
 msgstr "Formato de base de datos no reconocido."
+
+#: game.c:2087
+msgid "Up since"
+msgstr "En funcionamiento desde"
 
 #: extmail.c:2475
 msgid "Urgent "

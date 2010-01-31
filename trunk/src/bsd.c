@@ -3256,8 +3256,8 @@ do_who_mortal(dbref player, char *name)
 
   if (SUPPORT_PUEBLO) {
     PUSE;
-    tag("img xch_mod=html");
-    notify_noenter(player, open_tag("PRE"));
+    tag("img xch_mode=html");
+    tag("PRE");
     PEND;
     notify_noenter(player, pbuff);
   }
@@ -3294,7 +3294,7 @@ do_who_mortal(dbref player, char *name)
 
   if (SUPPORT_PUEBLO) {
     PUSE;
-    notify_noenter(player, close_tag("PRE"));
+    tag_cancel("PRE");
     tag("img xch_mode=purehtml");
     PEND;
     notify_noenter(player, pbuff);
@@ -3313,8 +3313,8 @@ do_who_admin(dbref player, char *name)
 
   if (SUPPORT_PUEBLO) {
     PUSE;
-    tag("img xch_mod=html");
-    notify_noenter(player, open_tag("PRE"));
+    tag("img xch_mode=html");
+    tag("PRE");
     PEND;
     notify_noenter(player, pbuff);
   }
@@ -3376,7 +3376,7 @@ do_who_admin(dbref player, char *name)
 
   if (SUPPORT_PUEBLO) {
     PUSE;
-    notify_noenter(player, close_tag("PRE"));
+    tag_cancel("PRE");
     tag("img xch_mode=purehtml");
     PEND;
     notify_noenter(player, pbuff);
@@ -3394,8 +3394,8 @@ do_who_session(dbref player, char *name)
 
   if (SUPPORT_PUEBLO) {
     PUSE;
-    tag("img xch_mod=html");
-    notify_noenter(player, open_tag("PRE"));
+    tag("img xch_mode=html");
+    tag("PRE");
     PEND;
     notify_noenter(player, pbuff);
   }
@@ -3449,7 +3449,7 @@ do_who_session(dbref player, char *name)
 
   if (SUPPORT_PUEBLO) {
     PUSE;
-    notify_noenter(player, close_tag("PRE"));
+    tag_cancel("PRE");
     tag("img xch_mode=purehtml");
     PEND;
     notify_noenter(player, pbuff);

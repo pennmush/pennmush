@@ -439,7 +439,7 @@ msgstr "#-1 ATTRIBUTLÄNGE ZU LANG"
 
 #: src/funmath.c:987
 msgid "#-1 BASE OUT OF RANGE"
-msgstr "@mail Nachrchten haben keine Betreff-Zeile."
+msgstr "#-1 BASIS AUSSERHALB DER REICHWEITE"
 
 #: src/funlist.c:1410
 msgid "#-1 CAN ONLY DELETE ONE ELEMENT"
@@ -479,7 +479,7 @@ msgstr "#-1 UNENDLICH"
 
 #: funstr.c:1953
 msgid "#-1 INVALID ALIGN STRING"
-msgstr "#-1 UNGUELTIGER ALIGN STRING"
+msgstr "#-1 UNGÜLTIGER ALIGN STRING"
 
 #: src/fundb.c:657
 msgid "#-1 INVALID LOCATION"
@@ -849,7 +849,7 @@ msgstr "%s hört zu."
 #: src/flags.c:1127 src/flags.c:1133
 #, c-format
 msgid "%s is now listening."
-msgstr "%h hört nun."
+msgstr "%s hört nun."
 
 #: src/move.c:456
 #, c-format
@@ -1483,7 +1483,7 @@ msgstr "Dieser Befehl kann nur von Erbauern benutzt werden."
 #: src/version.c:48
 #, c-format
 msgid "Compilation flags: %s"
-msgstr "Logge in mehrere Log-Files."
+msgstr "Kompilationsflaggen: %s"
 
 #: src/log.c:328
 msgid "Connect log wiped."
@@ -1833,6 +1833,10 @@ msgstr "Tabelle der Funktionen voll."
 #: src/function.c:741
 msgid "Function updated."
 msgstr "Funktion aktualisiert."
+
+#: src/destroy.c:1325
+msgid "GAME: Database consistency check complete."
+msgstr "SPIEL: Datenbankprüfung abgeschlossen."
 
 #: src/conf.c:572
 msgid "GAME: Database will be dumped in 5 minutes."
@@ -2205,6 +2209,10 @@ msgstr "Letzte Änderung: %s"
 msgid "Last connect was from %s on %s."
 msgstr "Letzte Anmeldung war von %s am %s."
 
+#: game.c:2091
+msgid "Last reboot"
+msgstr "Letzter Neustart"
+
 #: src/game.c:1427
 #, c-format
 msgid "Last reboot: %s"
@@ -2249,6 +2257,16 @@ msgstr "Logging-Optionen"
 #: src/speech.c:981
 msgid "Long distance to "
 msgstr "%s ist korrupt! "
+
+#: speech.c:835
+#, c-format
+msgid "Long distance to %s%s: %s%s%s"
+msgstr "Lange Entfernung bis %s%s: %s%s%s"
+
+#: bsd.c:4125
+#, c-format
+msgid "Long distance to %s: %s%s%s"
+msgstr "Lange Entfernung bis %s: %s%s%s"
 
 #: src/extmail.c:763
 #, c-format
@@ -2333,7 +2351,7 @@ msgstr "MAIL: Beschreibung geändert."
 #: src/extmail.c:255
 #, c-format
 msgid "MAIL: Folder %d now named '%s'"
-msgstr "MAIL: Ordner %s heißt jetzt '%s'"
+msgstr "MAIL: Ordner %d heißt jetzt '%s'"
 
 #: src/extmail.c:792
 msgid "MAIL: I can't figure out what you want to send."
@@ -2382,6 +2400,11 @@ msgstr "MAIL: Unültige Nachricht angegeben."
 #: src/extmail.c:2407 src/extmail.c:2412
 msgid "MAIL: Invalid player"
 msgstr "MAIL: Ungültiger Spieler"
+
+#: src/malias.c:164
+#, c-format
+msgid "MAIL: Mail Alias '%s' already exists."
+msgstr "MAIL: Mailalias '%s' existiert bereits."
 
 #: src/malias.c:629 src/malias.c:732
 #, c-format
@@ -2712,7 +2735,7 @@ msgstr "Nur Magiker dürfen die Quota ändern."
 
 #: src/wiz.c:1168
 msgid "Only wizards may grant powers."
-msgstr "SPIEL: Datenbankprüfung abgeschlossen."
+msgstr "Nur Magiker dürfen Kräfte vergeben."
 
 #: src/create.c:118
 msgid "Open where?"
@@ -2754,7 +2777,7 @@ msgstr "Besitzer"
 #: src/game.c:1511
 #, c-format
 msgid "Page faults: %10ld hard   %10ld soft    %10ld swapouts"
-msgstr "Seiten fehler: %1Hard (Alt)        %1Soft   (Alt)        %1Swapouts  (Alt)"
+msgstr "Seiten fehler: %10ld Hard   %10ld Soft    %10ld Swapouts"
 
 #: src/game.c:250
 #, c-format
@@ -3023,7 +3046,7 @@ msgstr "Kann keine Verbindung zum Service Control Manager herstellen."
 #: flags.c:2129
 #, c-format
 msgid "That %s is disabled."
-msgstr "Dieses ist inaktiv."
+msgstr "Dieses %s ist inaktiv."
 
 #: flags.c:2119
 #, c-format
@@ -3273,10 +3296,26 @@ msgstr "Dieser Raum verbreitet keine Nachrichten mehr."
 msgid "This room is now broadcasting."
 msgstr "Dieser Raum sendet nun."
 
+#: game.c:2097
+msgid "Time now"
+msgstr "Aktuelle Zeit"
+
+#: game.c:2137
+msgid "Time until next @warnings"
+msgstr "Zeit bis zum nächsten @warnings"
+
 #: src/game.c:1439
 #, c-format
 msgid "Time until next database save: %ld minutes %ld seconds."
 msgstr "Die Datenbank wird in %ld Minuten und %ld Sekunden das nächste mal gesichert."
+
+#: game.c:2120
+msgid "Time until next dbck check"
+msgstr "Zeit bis zum nächsten dbck -Check"
+
+#: game.c:2128
+msgid "Time until next purge"
+msgstr "Zeit bis zum nächsten Löschvorgang"
 
 #: src/game.c:1499
 #, c-format
@@ -3317,6 +3356,10 @@ msgstr "Zu viele personen fuer ein oemit."
 #: src/speech.c:402
 msgid "Too many people to whisper to."
 msgstr "Zu viele Leute um zu flüstern."
+
+#: game.c:2093
+msgid "Total reboots"
+msgstr "Ingesamte Reboot's"
 
 #: game.c:1447
 #, c-format
@@ -3464,6 +3507,10 @@ msgstr "Unbekanntes Attribut-Flag."
 msgid "Unrecognized database format!"
 msgstr "Unbekanntes Datenbankformat!"
 
+#: game.c:2087
+msgid "Up since"
+msgstr "Läuft seit"
+
 #: extmail.c:2475
 msgid "Urgent "
 msgstr "Wichtig "
@@ -3500,7 +3547,7 @@ msgstr "WARNUNG: Kann Log Datei %s nicht öffnen\n"
 #: warnings.c:119
 #, c-format
 msgid "Warning '%s' for %s:"
-msgstr "Lange Entfernung bis"
+msgstr "Warnung '%s' für %s:"
 
 #: src/warnings.c:417
 msgid "Warning checks complete."
@@ -3712,6 +3759,10 @@ msgstr "Du hast %s von den Socken gehauen!"
 #: create.c:689
 msgid "You can only clone things, rooms, and exits."
 msgstr "Du kannst nur Sachen, Räume od. Ausgänge klonen."
+
+#: src/move.c:749
+msgid "You can only follow players and things."
+msgstr "Du kannst nur Spielern und Dingen folgen."
 
 #: src/wiz.c:234
 msgid "You can only set quotas to a positive number."
@@ -4379,6 +4430,14 @@ msgstr "Dateien"
 #: src/move.c:101
 msgid "has arrived."
 msgstr "ist angekommen."
+
+#: bsd.c:3448
+msgid "has connected."
+msgstr "hat sich angemeldet."
+
+#: bsd.c:3661
+msgid "has disconnected."
+msgstr "hat sich abgemeldet."
 
 #: src/move.c:96
 msgid "has left."

@@ -4020,6 +4020,10 @@ msgstr "Senaste uppkoppling var fr\345n %s %s."
 msgid "Last is dated %s"
 msgstr "Senaste \344r daterad %s"
 
+#: game.c:2091
+msgid "Last reboot"
+msgstr "Senaste omstart"
+
 #: src/game.c:1427
 #, c-format
 msgid "Last reboot: %s"
@@ -5732,7 +5736,7 @@ msgstr "Tj\344nstepausen v\344ntar."
 #: src/destroy.c:341
 #, c-format
 msgid "The wrecking ball is on its way for %s's %s and its exits."
-msgstr "%s och dess utg\345ngar \344r p\345 v\344g att f\366rintas."
+msgstr "Rivningskulan är på väg att demolera %s %s och dess utgångar."
 
 #: src/extmail.c:1281
 #, c-format
@@ -5784,10 +5788,30 @@ msgstr "Detta rum s\344nder inte l\344ngre."
 msgid "This room is now broadcasting."
 msgstr "Detta rum s\344nder nu."
 
+#: game.c:2097
+msgid "Time now"
+msgstr "Nuvarande tid"
+
+#: game.c:2137
+msgid "Time until next @warnings"
+msgstr "Tid till nästa @warning"
+
+#: game.c:2112
+msgid "Time until next database save"
+msgstr "Tid innan nästa sparning av databas"
+
 #: src/game.c:1439
 #, c-format
 msgid "Time until next database save: %ld minutes %ld seconds."
 msgstr "Tid innan nästa sparning av databas: %ld minuter %ld sekunder."
+
+#: game.c:2120
+msgid "Time until next dbck check"
+msgstr "Tid till nästa dbck kontroll"
+
+#: game.c:2128
+msgid "Time until next purge"
+msgstr "Tid till nästa rensning"
 
 #: src/game.c:1499
 #, c-format
@@ -5847,6 +5871,10 @@ msgstr "F\366r m\345nga m\344nniskor att oemitta till."
 #: src/speech.c:402
 msgid "Too many people to whisper to."
 msgstr "F\366r m\345nga m\344nniskor att viska till."
+
+#: game.c:2093
+msgid "Total reboots"
+msgstr "Totalt antal omstarter"
 
 #: game.c:1447
 #, c-format
@@ -6087,6 +6115,10 @@ msgstr "Ok\344nd attributflagga."
 #: db.c:1313
 msgid "Unrecognized database format!"
 msgstr "Ok\344nt format p\345 databas!"
+
+#: game.c:2087
+msgid "Up since"
+msgstr "Uppe sedan"
 
 #: extmail.c:2475
 msgid "Urgent "
@@ -7060,7 +7092,7 @@ msgstr "Du betalade %d %s."
 #: src/speech.c:616
 #, c-format
 msgid "You pemit \"%s\" to %s."
-msgstr "Du pemittar \"%s\" till \"s."
+msgstr "Du pemittar \"%s\" till %s."
 
 #: src/speech.c:1383
 #, c-format

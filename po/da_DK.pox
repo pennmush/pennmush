@@ -774,7 +774,7 @@ msgstr "%c: ukendt flag."
 #: src/wiz.c:1044
 #, c-format
 msgid "%d commands executed."
-msgstr "%s kommandoer udf\370rt."
+msgstr "%d kommandoer udf\370rt."
 
 #: src/extmail.c:1379
 #, c-format
@@ -2344,6 +2344,10 @@ msgstr "[lokation: %s]"
 msgid "Last is dated %s"
 msgstr "Sidste reboot: %s"
 
+#: game.c:2091
+msgid "Last reboot"
+msgstr "Sidste reboot"
+
 #: src/version.c:37
 #, c-format
 msgid "Last restarted: %s"
@@ -3436,10 +3440,30 @@ msgstr "Udgangen %s broadcaster ikke l\346ngere."
 msgid "This room is now broadcasting."
 msgstr "%s (dette rum) [broadcasting]."
 
+#: game.c:2097
+msgid "Time now"
+msgstr "Tid nu"
+
+#: game.c:2137
+msgid "Time until next @warnings"
+msgstr "Tid til næste @warnings"
+
+#: game.c:2112
+msgid "Time until next database save"
+msgstr "Tid til næste gang databasen gemmes"
+
 #: src/game.c:1439
 #, c-format
 msgid "Time until next database save: %ld minutes %ld seconds."
 msgstr "Tid til næste gang databasen gemmes: %ld minutter %ld sekunder."
+
+#: game.c:2120
+msgid "Time until next dbck check"
+msgstr "Tid indtil næste dbck tjek"
+
+#: game.c:2128
+msgid "Time until next purge"
+msgstr "Tid inden næste oprydning"
 
 #: src/game.c:1499
 #, c-format
@@ -3449,6 +3473,10 @@ msgstr "Disk I/O:    %10ld l\346st  %10ld skrevet"
 #: src/extchat.c:1358
 msgid "Title too long."
 msgstr "Funktion tilf\370jet."
+
+#: game.c:2093
+msgid "Total reboots"
+msgstr "Sidste reboot"
 
 #: game.c:1447
 #, c-format
@@ -3552,6 +3580,10 @@ msgstr "Ikke genkendt status."
 #: db.c:1313
 msgid "Unrecognized database format!"
 msgstr "Ikke genkendt status."
+
+#: game.c:2087
+msgid "Up since"
+msgstr "Oppe siden"
 
 #: src/conf.c:799
 msgid "Use: @config/list <type of options> where type is one of:"

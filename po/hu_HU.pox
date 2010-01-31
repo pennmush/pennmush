@@ -2112,7 +2112,7 @@ msgstr "CSATI: A <%s> beszéd-zárja %s."
 #: extchat.c:1577
 #, c-format
 msgid "CHAT: Speaklock on <%s> reset."
-msgstr "CSATI:"
+msgstr "CSATI: A <%s> csatorna beszéd-zárja törölve."
 
 #: extchat.c:1578
 #, c-format
@@ -4019,6 +4019,10 @@ msgstr "Utolsó kapcsolat: %s, %s."
 msgid "Last is dated %s"
 msgstr "Utolsó üzenet idõpontja: %s"
 
+#: game.c:2091
+msgid "Last reboot"
+msgstr "Utolsó újraindítás"
+
 #: src/game.c:1427
 #, c-format
 msgid "Last reboot: %s"
@@ -5328,7 +5332,7 @@ msgstr "Dilis tyúkot a gyereknek!"
 #: src/wiz.c:1999
 #, c-format
 msgid "Site %s access options for %s(%s) set to %s"
-msgstr "A %2$s(%3$s) site %1$s elérési opcióinak új értéke %s"
+msgstr "A %2$s(%3$s) site %1$s elérési opcióinak új értéke %4$s"
 
 #: src/wiz.c:2004
 #, c-format
@@ -5421,7 +5425,7 @@ msgstr "Bocs, magad mellett kell maradnod!"
 #: src/extchat.c:927 src/extchat.c:1034
 #, c-format
 msgid "Sorry, you're not allowed to speak on channel <%s>."
-msgstr "Bocs, nem beszélhetsz a <%> csatornán."
+msgstr "Bocs, nem beszélhetsz a <%s> csatornán."
 
 #: src/extchat.c:916 src/extchat.c:1021
 #, c-format
@@ -5856,6 +5860,22 @@ msgstr "A szoba többé nem közvetít."
 msgid "This room is now broadcasting."
 msgstr "A szoba mostantól közvetít."
 
+#: game.c:2097
+msgid "Time now"
+msgstr "Idõ"
+
+#: game.c:2103
+msgid "Time of last database save"
+msgstr "Utolsó mentés"
+
+#: game.c:2137
+msgid "Time until next @warnings"
+msgstr "A következõ @warning-ig levõ idõ"
+
+#: game.c:2112
+msgid "Time until next database save"
+msgstr "Következõ mentésig lévõ idõ"
+
 #: game.c:1914
 #, c-format
 msgid "Time until next database save: %ld minutes %ld seconds, at %s"
@@ -5865,6 +5885,14 @@ msgstr "Következõ mentésig lévõ idõ: %ld perc %ld mp, %s idõben"
 #, c-format
 msgid "Time until next database save: %ld minutes %ld seconds."
 msgstr "Következõ mentésig fennamradt idõ: %ld perc, %ld másodperc."
+
+#: game.c:2120
+msgid "Time until next dbck check"
+msgstr "A következõ db-ellenõrzésig levõ idõ"
+
+#: game.c:2128
+msgid "Time until next purge"
+msgstr "A következõ purge-ig levõ idõ"
 
 #: src/game.c:1499
 #, c-format
@@ -5932,6 +5960,10 @@ msgstr "Túl sok embernek szeretnél súgni."
 #: boolexp.c:245
 msgid "Too much recursion in lock!"
 msgstr "Túl sok rekurzió a zár-ban!"
+
+#: game.c:2093
+msgid "Total reboots"
+msgstr "Össz. újraindítás"
 
 #: game.c:1447
 #, c-format
@@ -6203,6 +6235,10 @@ msgstr "Felismerhetetlen adatbázis formátum!"
 #: lock.c:620
 msgid "Unrecognized lock flag."
 msgstr "Azonosíthatatlan zár jelzõ."
+
+#: game.c:2087
+msgid "Up since"
+msgstr "Mûködési idõ"
 
 #: extmail.c:2475
 msgid "Urgent "

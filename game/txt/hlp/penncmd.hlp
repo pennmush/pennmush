@@ -4237,7 +4237,6 @@ See also: @use, @charges, @lock, @ufail
   
   Continued in 'help who2'.
 & WHO2
-& DOING2
 
   In earlier versions of PennMUSH, WHO was a socket command (meaning only
   players could use it, and that while it could not be overwritten, you 

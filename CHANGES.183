@@ -120,7 +120,7 @@ Fixes:
  * The Pueblo_Send @power did not allow objects to send restricted HTML 
    tags, just attributes. Reported by Daniel Powell. [MG]
  * Fixed a crashbug in @uptime. [MG]
- * Fix to internal markup code by Sketch.
+ * Various Pueblo fixes. By Sketch.
 
 Version 1.8.3 patchlevel 11                     Jan 01, 2010
 

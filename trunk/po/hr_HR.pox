@@ -6309,7 +6309,7 @@ msgstr "Naslov: %s"
 #: src/player.c:292
 #, c-format
 msgid "Subject: [%s] Registration of %s\n"
-msgstr "Naslov: [%s] Registracija korisnika '%s'\n"
+msgstr "Subject: [%s] Registracija korisnika '%s'\n"
 
 #: src/destroy.c:382
 msgid "Surprising type in do_destroy."
@@ -8426,7 +8426,7 @@ msgstr "Remitiras, \"%s\" u prostoriju %s"
 #: move.c:811
 #, c-format
 msgid "You remove %d object%s from %s."
-msgstr "Maknes %1$d objekata iz objekta %3$s."
+msgstr "Maknes %d objekt%s iz objekta %s."
 
 #: src/speech.c:177
 #, c-format

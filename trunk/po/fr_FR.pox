@@ -3857,6 +3857,10 @@ msgstr "La derni\350re connection venait de %s le %s."
 msgid "Last is dated %s"
 msgstr "Le dernier est dat\351 du %s"
 
+#: game.c:2091
+msgid "Last reboot"
+msgstr "Dernier redémarrage"
+
 #: src/game.c:1427
 #, c-format
 msgid "Last reboot: %s"
@@ -4024,7 +4028,7 @@ msgstr "MAIL: Tous les alias de courrier sont d\351truits!"
 #: src/extmail.c:432
 #, c-format
 msgid "MAIL: All messages filed in folder %d [%s]"
-msgstr "COURRIER: Tous les messages sont listes dans le dossier %d [%S]"
+msgstr "COURRIER: Tous les messages sont listes dans le dossier %d [%s]"
 
 #: src/extmail.c:357 src/extmail.c:370
 #, c-format
@@ -5646,10 +5650,30 @@ msgstr "Cette salle n'est plus en mode BROADCAST."
 msgid "This room is now broadcasting."
 msgstr "Cette salle est maintenant en mode 'broadcast': audible par tous."
 
+#: game.c:2097
+msgid "Time now"
+msgstr "Heure actuelle"
+
+#: game.c:2137
+msgid "Time until next @warnings"
+msgstr "Prochains @warnings dans"
+
+#: game.c:2112
+msgid "Time until next database save"
+msgstr "Temps restant avant la prochaine sauvegarde de la base de données"
+
 #: src/game.c:1439
 #, c-format
 msgid "Time until next database save: %ld minutes %ld seconds."
 msgstr "Temps restant avant la prochaine sauvegarde de la base de données: %ld minutes %ld secondes."
+
+#: game.c:2120
+msgid "Time until next dbck check"
+msgstr "Prochaine vérification DB"
+
+#: game.c:2128
+msgid "Time until next purge"
+msgstr "Prochaine purge dans"
 
 #: src/game.c:1499
 #, c-format
@@ -5713,6 +5737,10 @@ msgstr "Vous avez sp\351cifi\351 un trop grand nombre de personnes \340 qui murm
 #: boolexp.c:245
 msgid "Too much recursion in lock!"
 msgstr "\"Trop de récursion dans le verrou!\""
+
+#: game.c:2093
+msgid "Total reboots"
+msgstr "Total des red\351marrages"
 
 #: game.c:1447
 #, c-format
@@ -5975,6 +6003,10 @@ msgstr "Format de base de donn\351es non reconnu!"
 #: lock.c:620
 msgid "Unrecognized lock flag."
 msgstr "\"Flag de verrou inconnu.\""
+
+#: game.c:2087
+msgid "Up since"
+msgstr "Le mush a démarré le"
 
 #: extmail.c:2475
 msgid "Urgent "

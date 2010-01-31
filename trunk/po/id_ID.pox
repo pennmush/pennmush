@@ -65,7 +65,7 @@ msgstr "\"%s sedang mendengarkan.\""
 #: bsd.c:4130
 #, c-format
 msgid "%s pages: %s"
-msgstr "\"% memanggil: %s\""
+msgstr "\"%s memanggil: %s\""
 
 #: src/game.c:1166
 #, c-format
@@ -212,6 +212,10 @@ msgstr "Range argumen tidak valid"
 msgid "It takes a God to make me panic."
 msgstr "Hanya Tuhan yang bisa membuat saya panik."
 
+#: game.c:2091
+msgid "Last reboot"
+msgstr "Terakhir kali boot ulang"
+
 #: src/malias.c:264
 #, c-format
 msgid "MAIL: Alias set '%s' defined."
@@ -297,10 +301,18 @@ msgstr "Kantor Pos meminta pengadilan untuk mengeluarkan surat perintah penangka
 msgid "There are %d messages in the mail spool."
 msgstr "Ada %d pesan mail buat Anda."
 
+#: game.c:2112
+msgid "Time until next database save"
+msgstr "Waktu hingga penyimpanan database berikutnya"
+
 #: game.c:1914
 #, c-format
 msgid "Time until next database save: %ld minutes %ld seconds, at %s"
 msgstr "\"Waktu hingga penyimpanan database berikutnya: %ld menit %ld detik, pada %s\""
+
+#: game.c:2128
+msgid "Time until next purge"
+msgstr "Waktu hingga purge berikut"
 
 #: src/extchat.c:1358
 msgid "Title too long."

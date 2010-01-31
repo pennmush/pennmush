@@ -5137,12 +5137,12 @@ msgstr "Regel %d van %s: regel te lang"
 #: create.c:156 create.c:296
 #, c-format
 msgid "Linked exit #%d to #%d"
-msgstr "Uitgang #1$%d aan #2$%d gekoppeld."
+msgstr "Uitgang #%d aan #%d gekoppeld."
 
 #: create.c:309
 #, c-format
 msgid "Linked exit #%d to %s"
-msgstr "Uitgang #1$%s aan #2$%d gekoppeld."
+msgstr "Uitgang #%d aan %s gekoppeld."
 
 #: bsd.c:699
 #, c-format
@@ -7502,7 +7502,7 @@ msgstr "Te veel recursie in slot!"
 
 #: game.c:2093
 msgid "Total reboots"
-msgstr "Laatste herstart"
+msgstr "Herstart aantal"
 
 #: game.c:1447
 #, c-format
@@ -9173,7 +9173,7 @@ msgstr "Je remit \"%s\" in %s"
 #: move.c:811
 #, c-format
 msgid "You remove %d object%s from %s."
-msgstr "Je haalt %s object%s uit %s."
+msgstr "Je haalt %d object%s uit %s."
 
 #: src/speech.c:177
 #, c-format

@@ -4359,6 +4359,11 @@ msgstr "[%d/%s/%s] Schalt auf Telnet Modus."
 msgid "[%d/%s] Connection opened.\n"
 msgstr "[%d/%s] Verbindung geöffnet.\n"
 
+#: player.c:331
+#, c-format
+msgid "[%s] Registration of %s\n"
+msgstr "[%s] Registration von %s\n"
+
 #: src/bsd.c:4673
 msgid ""
 "\n"

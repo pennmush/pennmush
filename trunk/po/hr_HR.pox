@@ -183,6 +183,14 @@ msgstr " %s /status   - ispisuje stanje ove usluge\n"
 msgid " %s /stop     - stops this service\n"
 msgstr " %s /stop     - zaustavlja ovu uslugu\n"
 
+#: extmail.c:572
+msgid " (Conn)"
+msgstr " (Spoj)"
+
+#: flags.c:1617 flags.c:1678
+msgid " (already)"
+msgstr " (vec)"
+
 #: flags.c:2391
 msgid " (disabled)"
 msgstr " (iskljuceno)"
@@ -8398,6 +8406,11 @@ msgstr "Posjedujes objekt u kruznom zonskom lancu: %s"
 msgid "You own an object without a @lock/zone being used as a zone: %s"
 msgstr "Posjedujes objekt bez zonske brave koji je koristen kao zona: %s"
 
+#: speech.c:975
+#, c-format
+msgid "You paged %s with '%s'"
+msgstr "%s dobije tvoju poruku '%s'"
+
 #: bsd.c:4131
 #, c-format
 msgid "You paged %s with '%s'."
@@ -8427,6 +8440,16 @@ msgstr "Remitiras, \"%s\" u prostoriju %s"
 #, c-format
 msgid "You remove %d object%s from %s."
 msgstr "Maknes %d objekt%s iz objekta %s."
+
+#: move.c:840
+#, c-format
+msgid "You remove %d objects from %s."
+msgstr "Maknes %d objekata iz objekta %s."
+
+#: move.c:838
+#, c-format
+msgid "You remove 1 object from %s."
+msgstr "Maknes 1 objekt iz objekta %s."
 
 #: src/speech.c:177
 #, c-format
@@ -8760,6 +8783,11 @@ msgstr "[%s] %s %s"
 #, c-format
 msgid "[%s] %s"
 msgstr "[%s] %s"
+
+#: player.c:331
+#, c-format
+msgid "[%s] Registration of %s\n"
+msgstr "[%s] Registracija korisnika '%s'\n"
 
 #: src/bsd.c:4683
 msgid ""

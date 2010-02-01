@@ -176,6 +176,10 @@ msgstr " %s /status - toont de status van deze service\n"
 msgid " %s /stop     - stops this service\n"
 msgstr " %s /stop - beëndigt deze service\n"
 
+#: flags.c:1617 flags.c:1678
+msgid " (already)"
+msgstr " (al)"
+
 #: flags.c:2391
 msgid " (disabled)"
 msgstr " (uitgeschakeld)"
@@ -578,6 +582,19 @@ msgstr " fluistert naar "
 msgid " with "
 msgstr " met "
 
+#: extmail.c:233 extmail.c:235
+msgid "!Purged!"
+msgstr "!Vernietigd!"
+
+#: look.c:350
+#, c-format
+msgid "#%d/%s [#%d%s] is veiled"
+msgstr "#%d/%s [#%d%s] is versluierd"
+
+#: parse.c:1441
+msgid "#-1 @FUNCTION ("
+msgstr "#-1 @FUNCTIE ("
+
 #: funcrypt.c:53 funcrypt.c:61 funcrypt.c:100 funcrypt.c:107
 msgid "#-1 ALLOCATION ERROR"
 msgstr "#-1 ALLOCATIE FOUT"
@@ -817,6 +834,10 @@ msgstr "#-1 ONGELDIG HOEK TYPE"
 msgid "#-1 INVALID ARGUMENT"
 msgstr "#-1 ONGELDIG ARGUMENT"
 
+#: fundb.c:1410
+msgid "#-1 INVALID BOOLEXP"
+msgstr "#-1 ONGELDIFE BOOLEXP"
+
 #: funstr.c:418
 msgid "#-1 INVALID DBREF"
 msgstr "#-1 ONGELDIG DBREF"
@@ -829,6 +850,10 @@ msgstr "#-1 ONGELDIG ONDERWERP"
 #, c-format
 msgid "#-1 INVALID ESCAPE CODE '$%c'"
 msgstr "#-1 ONGELDIGE ESCAPE CODE '$%c'"
+
+#: fundb.c:1143 fundb.c:1155 fundb.c:1173 fundb.c:1191
+msgid "#-1 INVALID FLAG"
+msgstr "#-1 ONGELDIGE VLAG"
 
 #: src/fundb.c:1618 src/funlist.c:2324 src/funlist.c:2367
 msgid "#-1 INVALID GREP PATTERN"
@@ -1046,6 +1071,15 @@ msgstr "#-1 WORTEL BUITEN BEREIK"
 msgid "#-1 SEPARATOR MUST BE ONE CHARACTER"
 msgstr "#-1 SCHEIDINGSTEKEN MOET ÉÉN KARAKTER ZIJN"
 
+#: sql.c:81
+#, c-format
+msgid "#-1 SQL ERROR: %s"
+msgstr "#-1 SQL FOUT: %s"
+
+#: sql.c:79
+msgid "#-1 SQL ERROR: NO DATABASE CONNECTED"
+msgstr "#-1 SQL FOUT: GEEN DATABASE VERBONDEN"
+
 #: src/funmath.c:1005
 msgid "#-1 SQUARE ROOT OF NEGATIVE"
 msgstr "#-1 WORTEL VAN NEGATIEF GETAL"
@@ -1065,6 +1099,10 @@ msgstr "#-1 DIT IS NIET UNICODE"
 #: funmath.c:1636
 msgid "#-1 TO BASE OUT OF RANGE"
 msgstr "#-1 NAAR BASIS BUITEN BEREIK"
+
+#: sql.c:325
+msgid "#-1 TOO LONG"
+msgstr "#-1 TE LANG"
 
 #: src/funstr.c:357
 msgid "#-1 TOO MANY CHARACTERS"
@@ -1129,6 +1167,10 @@ msgstr "#-1 VECTOREN MOETEN DRIE-DIMENSIONAAL ZIJN"
 #: src/funstr.c:1097
 msgid "#-1 WIDTH TOO SMALL"
 msgstr "#-1 BREEDTE TE KLEIN"
+
+#: extchat.c:3144
+msgid "#-2 AMBIGUOUS CHANNEL MATCH"
+msgstr "#-2 GEEN UNIEKE KANAAL MATCH"
 
 #: src/extmail.c:1641
 msgid "#-? fun_mailstats called with invalid called_as!"
@@ -1219,6 +1261,11 @@ msgstr "%s %s ingeschakeld."
 msgid "%s %s"
 msgstr "%s %s"
 
+#: extmail.c:239
+#, c-format
+msgid "%s (owner: %s)"
+msgstr "%s (eigenaar: %s)"
+
 #: src/look.c:969
 #, c-format
 msgid "%s (this room) [broadcasting]."
@@ -1278,6 +1325,11 @@ msgstr "%s Slot [%d%s]: %s"
 #, c-format
 msgid "%s Lock: %s"
 msgstr "%s Slot: %s"
+
+#: look.c:354
+#, c-format
+msgid "%s [#%d%s] is veiled"
+msgstr "%s [#%d%s] is versluierd"
 
 #: look.c:1206
 #, c-format
@@ -1564,6 +1616,11 @@ msgstr "%s in niet op kanaal <%s> aanwezig."
 msgid "%s is now listening."
 msgstr "%s luistert nu."
 
+#: move.c:517
+#, c-format
+msgid "%s is now the first exit in %s."
+msgstr "%s is nu de eerste uitgang in in %s."
+
 #: src/move.c:456
 #, c-format
 msgid "%s is now the first exit."
@@ -1653,6 +1710,16 @@ msgstr "%s namen mogen geen spaties bevatten."
 #, c-format
 msgid "%s names must be longer than one character."
 msgstr "%s namen moeten langer dan één karakter zijn."
+
+#: bsd.c:4692
+#, c-format
+msgid "%s no longer appears on the WHO list."
+msgstr "%s verschijnt niet meer op de WHO lijst."
+
+#: bsd.c:4697
+#, c-format
+msgid "%s now appears on the WHO list."
+msgstr "%s verschijnt nu op de WHO lijst."
 
 #: src/player.c:486
 #, c-format
@@ -1779,6 +1846,11 @@ msgstr "%s fluistert%s: %s"
 msgid "%s#%d/%s [#%d%s]%s is veiled"
 msgstr "%s#%d/%s [#%d%s]%s is verhuld"
 
+#: look.c:345
+#, c-format
+msgid "%s%s [#%d%s]%s is veiled"
+msgstr "%s%s [#%d%s]%s is versluierd"
+
 #: destroy.c:412
 #, c-format
 msgid "%s's %s has been spared from destruction."
@@ -1890,6 +1962,14 @@ msgstr "(geen onderwerp)"
 #: bsd.c:2079
 msgid "(unknown)"
 msgstr "(onbekend)"
+
+#: parse.c:1443
+msgid ") MISSING ATTRIBUTE ("
+msgstr ") MISSEND ATTRIBUUT ("
+
+#: parse.c:1246
+msgid ") NOT FOUND"
+msgstr ") NIET GEVONDEN"
 
 #: speech.c:1403
 #, c-format
@@ -3176,6 +3256,11 @@ msgstr "Commando %s toegevoegd."
 msgid "Command %s already exists"
 msgstr "Commando %s bestaat al"
 
+#: command.c:1597
+#, c-format
+msgid "Command %s already exists."
+msgstr "Commando %s bestaat al."
+
 #: src/game.c:863
 #, c-format
 msgid "Command attempted by %s(#%d) in invalid location #%d."
@@ -3235,6 +3320,10 @@ msgstr "Bezig met inloggen..."
 msgid "Connection from Suspect site. Setting %s(#%d) suspect."
 msgstr "Verbinding vanaf Suspect site. %s(#%d) als suspect ingesteld."
 
+#: bsd.c:4667
+msgid "Connection hidden."
+msgstr "Connectie verborgen."
+
 #: src/player.c:129
 #, c-format
 msgid "Connection to %s (GUEST) not allowed from %s (%s)"
@@ -3249,6 +3338,10 @@ msgstr "Verbinding met %s (Niet-GAST) is niet toegestaan van (%s) (%s)"
 #, c-format
 msgid "Connection to GOING player %s not allowed from %s (%s)"
 msgstr "Verbinding naar GOING speler niet toegestaan vanaf %s (%s)"
+
+#: bsd.c:4669
+msgid "Connection unhidden."
+msgstr "Connectie niet meer verborgen."
 
 #: access.c:402
 msgid "Connections allowed by: "
@@ -3412,6 +3505,10 @@ msgstr "DB: fout: Heb label '%s', verwacht label '%s' op regel %d"
 msgid "DBCK done."
 msgstr "DBCK klaar."
 
+#: conf.c:1710
+msgid "DISABLED"
+msgstr "UITGESCHAKELD"
+
 #: game.c:439
 #, c-format
 msgid "DUMPING: %s (done)"
@@ -3461,6 +3558,11 @@ msgstr "Des"
 #, c-format
 msgid "Description: %s"
 msgstr "Omschrijving: %s"
+
+#: wiz.c:1072
+#, c-format
+msgid "Destination: %d"
+msgstr "Bestemming: %d"
 
 #: look.c:828
 #, c-format
@@ -3595,6 +3697,10 @@ msgstr "Vb.: name <speler> = <nieuwe naam> <wachtwoord>"
 #, c-format
 msgid "EMERGENCY SHUTDOWN: %s"
 msgstr "NOODBEEINDIGING: %s"
+
+#: conf.c:1710
+msgid "ENABLED"
+msgstr "INGESCHAKELD"
 
 #: src/destroy.c:1303
 #, c-format
@@ -4967,6 +5073,10 @@ msgstr "Ongeldige of zelfde toestemmingen op kanaal <%s>. Geen wijzigingen aange
 msgid "Invalid parameter."
 msgstr "Ongeldige parameter."
 
+#: wiz.c:831
+msgid "Invalid port."
+msgstr "Ongeldige poort."
+
 #: src/wiz.c:1458 src/wiz.c:1465 src/wiz.c:1681 src/wiz.c:1689
 msgid "Invalid range argument"
 msgstr "Ongelding bereik argument"
@@ -5904,6 +6014,10 @@ msgstr "Nieuwe speler '%s' (#%d) gecreëerd met als wachtwoord '%s'"
 #, c-format
 msgid "No %s file found."
 msgstr "Geen %s bestand gevonden."
+
+#: sql.c:291 sql.c:350
+msgid "No SQL database connection."
+msgstr "Geen SQL database connectie."
 
 #: set.c:525
 msgid "No attribute found to change."
@@ -7114,6 +7228,10 @@ msgstr "Die speler accepteert geen oproepen van jou."
 msgid "That player is not connected."
 msgstr "Die speler is niet ingelogd."
 
+#: bsd.c:4681
+msgid "That player is not online."
+msgstr "Die speler is niet online."
+
 #: src/wiz.c:827
 msgid "That player isn't connected!"
 msgstr "Die speler is niet ingelogd!"
@@ -7153,6 +7271,11 @@ msgstr "Dat is geen ingebouwde functie."
 #: bsd.c:4093
 msgid "That's not a port number."
 msgstr "Dat is geen poort nummer."
+
+#: flags.c:2212
+#, c-format
+msgid "That's not a valid %s name."
+msgstr "Dat is niet een geldige %s naam."
 
 #: attrib.c:930
 msgid "That's not a very good name for an attribute."
@@ -7334,6 +7457,10 @@ msgstr "Daar kan niks in zitten!"
 #: bsd.c:3922
 msgid "There is 1 player connected."
 msgstr "Er is 1 speler ingelogd."
+
+#: wiz.c:837
+msgid "There is noone connected on that descriptor."
+msgstr "Er is niemand verbonden op die descriptor."
 
 #: bsd.c:3211 bsd.c:3291 bsd.c:3361
 msgid "There is one player connected."
@@ -7532,6 +7659,10 @@ msgstr "Trace log gewist."
 #, c-format
 msgid "Try %s instead."
 msgstr "Probeer %s in plaats daarvan."
+
+#: speech.c:825
+msgid "Try again after you get the pemit_all power."
+msgstr "Probeer dat nog eens wanneer je de pemit_all power hebt."
 
 #: src/wiz.c:878
 msgid "Try asking them first!"
@@ -9140,6 +9271,11 @@ msgstr "Je bezit een voorwerp zonder een @lock/zone dat gebruikt wordt als een z
 msgid "You paged "
 msgstr "Je roept op "
 
+#: speech.c:975
+#, c-format
+msgid "You paged %s with '%s'"
+msgstr "Je roept %s op met '%s'"
+
 #: bsd.c:4131
 #, c-format
 msgid "You paged %s with '%s'."
@@ -9555,6 +9691,11 @@ msgstr "[%d/%s] Verbinding geweigerd (remote poort %s)"
 msgid "[%d:%02d] %s message sent to %s."
 msgstr "[%d:%02d] %s bericht verzonden naar %s."
 
+#: notify.c:1482
+#, c-format
+msgid "[%s(#%d)'s %s(#%d)] "
+msgstr "[%s(#%d)'s %s(#%d)] "
+
 #: src/extmail.c:573
 #, c-format
 msgid "[%s] %2d:%-3d (%4d) From: %-*s At: %s %s"
@@ -9569,6 +9710,11 @@ msgstr "[%s] %s %s"
 #, c-format
 msgid "[%s] %s"
 msgstr "[%s] %s"
+
+#: player.c:331
+#, c-format
+msgid "[%s] Registration of %s\n"
+msgstr "[%s] Registratie van %s\n"
 
 #: src/bsd.c:4683
 msgid ""
@@ -9875,6 +10021,11 @@ msgstr "info_slave met pid %d is onverwacht beeindigd!"
 #, c-format
 msgid "info_slave on pid %d exited!"
 msgstr "info_slave op pid %d beëindigd!"
+
+#: rob.c:115
+#, c-format
+msgid "killed %s!"
+msgstr "vermoordde %s!"
 
 #: lock.c:685
 msgid "lock flags set"

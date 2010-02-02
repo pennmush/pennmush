@@ -2029,10 +2029,12 @@ do_flag_info(const char *ns, dbref player, const char *name)
   notify_format(player, "%9s: %s", T("Name"), f->name);
   notify_format(player, "%9s: %c", T("Character"), f->letter);
   notify_format(player, "%9s: %s", T("Aliases"), list_aliases(n, f));
-  notify_format(player, "%9s: %s", T("Type(s)"), privs_to_string(type_privs, f->type));
-  notify_format(player, "%9s: %s", T("Perms"), privs_to_string(flag_privs, f->perms));
-  notify_format(player, "%9s: %s",
-                T("ResetPrms"), privs_to_string(flag_privs, f->negate_perms));
+  notify_format(player, "%9s: %s", T("Type(s)"),
+                privs_to_string(type_privs, f->type));
+  notify_format(player, "%9s: %s", T("Perms"),
+                privs_to_string(flag_privs, f->perms));
+  notify_format(player, "%9s: %s", T("ResetPrms"),
+                privs_to_string(flag_privs, f->negate_perms));
 }
 
 /** Change the permissions on a flag.
@@ -2729,4 +2731,3 @@ good_flag_name(char const *s)
     return 0;
   return len <= ATTRIBUTE_NAME_LIMIT;
 }
-

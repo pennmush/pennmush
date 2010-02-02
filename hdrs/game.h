@@ -72,9 +72,12 @@ extern void do_find(dbref player, const char *name, char **argv);
 extern void do_whereis(dbref player, const char *name);
 extern void do_score(dbref player);
 extern void do_sweep(dbref player, const char *arg1);
-extern void do_entrances(dbref player, const char *where, char **argv, int types);
-enum dec_type { DEC_NORMAL, DEC_DB = 1, DEC_FLAG = 2, DEC_ATTR = 4, DEC_SKIPDEF = 8};
-extern void do_decompile(dbref player, const char *name, const char *prefix, int dec_type);
+extern void do_entrances(dbref player, const char *where, char **argv,
+                         int types);
+enum dec_type { DEC_NORMAL, DEC_DB = 1, DEC_FLAG = 2, DEC_ATTR =
+    4, DEC_SKIPDEF = 8 };
+extern void do_decompile(dbref player, const char *name, const char *prefix,
+                         int dec_type);
 
 /* From move.c */
 extern void do_get(dbref player, const char *what);
@@ -166,7 +169,8 @@ extern void do_stats(dbref player, const char *name);
 extern void do_newpassword
   (dbref player, dbref cause, const char *name, const char *password);
 enum boot_type { BOOT_NAME, BOOT_DESC, BOOT_SELF };
-extern void do_boot(dbref player, const char *name, enum boot_type flag, int silent);
+extern void do_boot(dbref player, const char *name, enum boot_type flag,
+                    int silent);
 extern void do_chzoneall(dbref player, const char *name, const char *target);
 extern int parse_force(char *command);
 extern void do_power(dbref player, const char *name, const char *power);

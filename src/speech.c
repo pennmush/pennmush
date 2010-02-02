@@ -972,8 +972,7 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
     notify_format(player, T("Long distance to %s: %s%s%s"), tbuf2,
                   Name(player), gap, message);
   else
-    notify_format(player, T("You paged %s with '%s'"), tbuf2,
-                  message);
+    notify_format(player, T("You paged %s with '%s'"), tbuf2, message);
 
   /* Figure out the 'name' of the player */
   if ((alias = shortalias(player)) && *alias && PAGE_ALIASES)

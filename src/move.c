@@ -220,8 +220,7 @@ enter_room(dbref player, dbref loc, int nomovemsgs)
     return;
   }
   if (loc == player) {
-    do_rawlog(LT_ERR, "ERROR: Attempt to move player %d into itself\n",
-              player);
+    do_rawlog(LT_ERR, "ERROR: Attempt to move player %d into itself\n", player);
     deep--;
     return;
   }
@@ -503,18 +502,19 @@ do_firstexit(dbref player, const char **what)
 
   for (i = 1; i < MAX_ARG && what[i]; i++) {
     if ((thing =
-      noisy_match_result(player, what[i], TYPE_EXIT,
-                         MAT_ENGLISH | MAT_EXIT | MAT_ABSOLUTE)) == NOTHING)
- 	  continue;
- 	  loc = Home(thing);
- 	  if (!controls(player, loc)) {
- 	    notify(player, T("You cannot modify exits in that room."));
- 	    continue;
- 	  }
- 	  Exits(loc) = remove_first(Exits(loc), thing);
- 	  Source(thing) = loc;
- 	  PUSH(thing, Exits(loc));
- 	  notify_format(player, T("%s is now the first exit in %s."), Name(thing), unparse_object(player, loc));
+         noisy_match_result(player, what[i], TYPE_EXIT,
+                            MAT_ENGLISH | MAT_EXIT | MAT_ABSOLUTE)) == NOTHING)
+      continue;
+    loc = Home(thing);
+    if (!controls(player, loc)) {
+      notify(player, T("You cannot modify exits in that room."));
+      continue;
+    }
+    Exits(loc) = remove_first(Exits(loc), thing);
+    Source(thing) = loc;
+    PUSH(thing, Exits(loc));
+    notify_format(player, T("%s is now the first exit in %s."), Name(thing),
+                  unparse_object(player, loc));
   }
 }
 
@@ -529,8 +529,7 @@ do_get(dbref player, const char *what)
   dbref loc = Location(player);
   dbref thing;
   char tbuf1[BUFFER_LEN], tbuf2[BUFFER_LEN], *tp;
-  long match_flags =
-    MAT_NEIGHBOR | MAT_CHECK_KEYS | MAT_NEAR | MAT_ENGLISH;
+  long match_flags = MAT_NEIGHBOR | MAT_CHECK_KEYS | MAT_NEAR | MAT_ENGLISH;
 
   if (!IsRoom(loc) && !EnterOk(loc) && !controls(player, loc)) {
     notify(player, T("Permission denied."));
@@ -666,8 +665,7 @@ do_drop(dbref player, const char *name)
     return;
   switch (thing =
           match_result(player, name, TYPE_THING,
-                       MAT_POSSESSION | MAT_ABSOLUTE |
-                       MAT_ENGLISH)) {
+                       MAT_POSSESSION | MAT_ABSOLUTE | MAT_ENGLISH)) {
   case NOTHING:
     notify(player, T("You don't have that!"));
     return;
@@ -838,7 +836,7 @@ do_empty(dbref player, const char *what)
     notify_format(player, T("You remove 1 object from %s."), Name(thing));
   else
     notify_format(player, T("You remove %d objects from %s."),
-                count, Name(thing));
+                  count, Name(thing));
 
   return;
 }

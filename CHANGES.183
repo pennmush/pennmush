@@ -93,6 +93,8 @@ Functions:
  * ncand()/ncor(), short-circuit versions of nand()/nor(). [MG]
 
 Fixes:
+ * Bug in ansi() when no colors are given and buffer_len is reached has
+   been fixed. Reported by Paige@M*U*S*H. [GM]
  * Bug caused by silly assumptions in list2arr() regarding remove_markup
    fixed. Reported by Stoko@M*U*S*H. [GM]
  * Using some substitutions on the connect/motd/etc attributes introduced

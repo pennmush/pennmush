@@ -124,10 +124,11 @@ FUNCTION(fun_ansi)
 
   /* Populate the colors struct */
   define_ansi_data(&colors, args[0]);
+
+  /* If there are no colors designated at all, then just return args[1]. */
   if (!(colors.bits || colors.offbits || colors.fore || colors.back)) {
-    if (!safe_strl(args[1], arglens[1], buff, bp))
-      /* write_ansi_close(buff, bp); */
-      return;
+    safe_strl(args[1], arglens[1], buff, bp);
+    return;
   }
 
   /* Write the colors to buff */

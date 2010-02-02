@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-01-31 02:00-0600\n"
+"POT-Creation-Date: 2010-02-02 02:00-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -297,8 +297,8 @@ msgstr ""
 #: create.c:119 create.c:214 create.c:279 create.c:288 create.c:292
 #: create.c:343 create.c:347 create.c:365 create.c:475 create.c:614
 #: destroy.c:233 extchat.c:1768 extchat.c:1785 extchat.c:1816 extchat.c:3857
-#: flags.c:1553 flags.c:1558 flags.c:1711 function.c:1180 function.c:1315
-#: function.c:1467 function.c:1513 function.c:1554 funmisc.c:791 game.c:955
+#: flags.c:1553 flags.c:1558 flags.c:1711 function.c:1182 function.c:1317
+#: function.c:1469 function.c:1515 function.c:1556 funmisc.c:791 game.c:955
 #: game.c:1498 lock.c:709 lock.c:773 lock.c:969 look.c:1298 look.c:1583
 #: malias.c:763 malias.c:868 match.c:459 move.c:536 move.c:863 move.c:878
 #: predicat.c:1225 predicat.c:1420 rob.c:423 set.c:192 set.c:923 set.c:970
@@ -1187,11 +1187,11 @@ msgstr ""
 msgid "#-1 NO SUCH CONFIG OPTION"
 msgstr ""
 
-#: conf.c:1695 function.c:1569
+#: conf.c:1695 function.c:1571
 msgid "Disabled."
 msgstr ""
 
-#: conf.c:1697 function.c:1566
+#: conf.c:1697 function.c:1568
 msgid "Enabled."
 msgstr ""
 
@@ -2467,7 +2467,7 @@ msgstr ""
 msgid "I can't tell which channel you mean."
 msgstr ""
 
-#: extchat.c:2886 function.c:839
+#: extchat.c:2886 function.c:841
 msgid "#-1 INVALID ARGUMENT"
 msgstr ""
 
@@ -3321,137 +3321,137 @@ msgstr ""
 msgid "#-1 SEPARATOR MUST BE ONE CHARACTER"
 msgstr ""
 
-#: function.c:810
+#: function.c:812
 #, c-format
 msgid "Functions: %s"
 msgstr ""
 
-#: function.c:1184
+#: function.c:1186
 msgid "Restrict what function?"
 msgstr ""
 
-#: function.c:1188
+#: function.c:1190
 msgid "Do what with the function?"
 msgstr ""
 
-#: function.c:1193 function.c:1518 function.c:1560 function.c:1588
+#: function.c:1195 function.c:1520 function.c:1562 function.c:1590
 msgid "No such function."
 msgstr ""
 
-#: function.c:1199
+#: function.c:1201
 msgid "Builtin function"
 msgstr ""
 
-#: function.c:1201
+#: function.c:1203
 msgid "@function"
 msgstr ""
 
-#: function.c:1204
+#: function.c:1206
 msgid "Restrictions unchanged."
 msgstr ""
 
-#: function.c:1206
+#: function.c:1208
 msgid "Restrictions modified."
 msgstr ""
 
-#: function.c:1261
+#: function.c:1263
 msgid "No global user-defined functions exist."
 msgstr ""
 
-#: function.c:1272
+#: function.c:1274
 msgid "Function Name                   Dbref #    Attrib"
 msgstr ""
 
-#: function.c:1290
+#: function.c:1292
 msgid "User functions:"
 msgstr ""
 
-#: function.c:1319
+#: function.c:1321
 msgid "You must specify an object and an attribute."
 msgstr ""
 
-#: function.c:1324
+#: function.c:1326
 msgid "Function name too long."
 msgstr ""
 
-#: function.c:1335
+#: function.c:1337
 msgid "No permission to control object."
 msgstr ""
 
-#: function.c:1339
+#: function.c:1341
 msgid "No permission to examine object."
 msgstr ""
 
-#: function.c:1353
+#: function.c:1355
 msgid "Expected between 1 and 5 arguments."
 msgstr ""
 
-#: function.c:1389
+#: function.c:1391
 msgid "Function added."
 msgstr ""
 
-#: function.c:1395
+#: function.c:1397
 msgid "You cannot change that built-in function."
 msgstr ""
 
-#: function.c:1435
+#: function.c:1437
 msgid "Function updated."
 msgstr ""
 
-#: function.c:1472
+#: function.c:1474
 msgid "Restore what?"
 msgstr ""
 
-#: function.c:1479
+#: function.c:1481
 msgid "That's not a builtin function."
 msgstr ""
 
-#: function.c:1484
+#: function.c:1486
 msgid "That function isn't deleted!"
 msgstr ""
 
-#: function.c:1489
+#: function.c:1491
 msgid "Restored."
 msgstr ""
 
-#: function.c:1523 function.c:1532
+#: function.c:1525 function.c:1534
 msgid "You can't delete that @function."
 msgstr ""
 
-#: function.c:1527 function.c:1537
+#: function.c:1529 function.c:1539
 msgid "Function deleted."
 msgstr ""
 
-#: function.c:1621
+#: function.c:1623
 #, c-format
 msgid "Name      : %s() (%s%s)"
 msgstr ""
 
-#: function.c:1715
+#: function.c:1717
 #, c-format
 msgid "Flags     : %s"
 msgstr ""
 
-#: function.c:1719
+#: function.c:1721
 #, c-format
 msgid "Location  : #%d/%s\n"
 msgstr ""
 
-#: function.c:1727
+#: function.c:1729
 msgid "(Commas okay in last argument)"
-msgstr ""
-
-#: function.c:1733
-#, c-format
-msgid "Arguments : %d %s"
 msgstr ""
 
 #: function.c:1735
 #, c-format
+msgid "Arguments : %d %s"
+msgstr ""
+
+#: function.c:1737
+#, c-format
 msgid "Arguments : At least %d %s"
 msgstr ""
 
-#: function.c:1738
+#: function.c:1740
 #, c-format
 msgid "Arguments : %d to %d %s"
 msgstr ""

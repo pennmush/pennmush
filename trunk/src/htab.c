@@ -610,16 +610,16 @@ hash_add(HASHTAB *htab, const char *key, void *hashdata)
 
   keycopy = mush_strdup(key, "hash.key");
 
-  if (htab->entries == htab->hashsize) 
+  if (htab->entries == htab->hashsize)
     real_hash_resize(htab, next_prime_after(floor(htab->hashsize * 1.15)),
-		     htab->hashfunc_offset); 
+                     htab->hashfunc_offset);
 
   htab->entries += 1;
   if (!hash_insert(htab, keycopy, hashdata)) {
     first_offset = -1;
     resize_calls = 0;
     real_hash_resize(htab, htab->hashsize,
-		     (htab->hashfunc_offset + 1) % NHASH_MOD);
+                     (htab->hashfunc_offset + 1) % NHASH_MOD);
   }
   return true;
 }
@@ -636,7 +636,7 @@ hash_delete(HASHTAB *htab, HASHENT *entry)
 
   if (htab->free_data)
     htab->free_data(entry->data);
-  mush_free((void*) entry->key, "hash.key");
+  mush_free((void *) entry->key, "hash.key");
   memset(entry, 0, sizeof *entry);
   htab->entries -= 1;
 }
@@ -799,5 +799,6 @@ hash_stats(dbref player, HASHTAB *htab, const char *hname)
                 hname, htab->hashsize, htab->entries, compares[0], compares[1],
                 compares[2], (unsigned int) bytes);
   if (entries != htab->entries)
-    notify_format(player, "Mismatch in size: %d expected, %d found!", htab->entries, entries);
+    notify_format(player, "Mismatch in size: %d expected, %d found!",
+                  htab->entries, entries);
 }

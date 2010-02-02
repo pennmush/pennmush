@@ -289,7 +289,7 @@ safe_get_bytecode(boolexp b)
     static size_t offset_to_string(struct bvm_asm *a, int c);
     static struct bvm_asmnode *insn_after_label(struct bvm_asm *a, int label);
     static void optimize_bvm_asm(struct bvm_asm *a);
-static void optimize_bvm_ast(struct boolexp_node *);
+    static void optimize_bvm_ast(struct boolexp_node *);
     static boolexp emit_bytecode(struct bvm_asm *a, int derefs);
     static void free_bvm_asm(struct bvm_asm *a);
 #ifdef DEBUG_BYTECODE
@@ -1548,9 +1548,11 @@ optimize_bvm_ast(struct boolexp_node *ast)
     return;
   switch (ast->type) {
   case BOOLEXP_OR:
-    if (((ast->data.sub.a->type == BOOLEXP_IS && ast->data.sub.b->type == BOOLEXP_CARRY)
-	 || (ast->data.sub.a->type == BOOLEXP_CARRY && ast->data.sub.b->type == BOOLEXP_IS))
-	&& (ast->data.sub.a->thing == ast->data.sub.b->thing)) {
+    if (((ast->data.sub.a->type == BOOLEXP_IS
+          && ast->data.sub.b->type == BOOLEXP_CARRY)
+         || (ast->data.sub.a->type == BOOLEXP_CARRY
+             && ast->data.sub.b->type == BOOLEXP_IS))
+        && (ast->data.sub.a->thing == ast->data.sub.b->thing)) {
       /* Turn =#123|+#123 into #123 */
 
       dbref thing = ast->data.sub.a->thing;
@@ -1564,7 +1566,7 @@ optimize_bvm_ast(struct boolexp_node *ast)
       optimize_bvm_ast(ast->data.sub.a);
       optimize_bvm_ast(ast->data.sub.b);
     }
-    break;	
+    break;
   case BOOLEXP_AND:
     optimize_bvm_ast(ast->data.sub.a);
     optimize_bvm_ast(ast->data.sub.b);
@@ -1585,12 +1587,12 @@ optimize_bvm_ast(struct boolexp_node *ast)
       ast->type = BOOLEXP_BOOL;
       ast->thing = !temp->thing;
       ast->data.n = NULL;
-      free_bool(temp);      
+      free_bool(temp);
     } else
       optimize_bvm_ast(ast->data.n);
     break;
   default:
-    (void)0; /* Nothing to do. */
+    (void) 0;                   /* Nothing to do. */
   }
 }
 
@@ -1609,7 +1611,7 @@ static void
 optimize_bvm_asm(struct bvm_asm *a)
 {
   struct bvm_asmnode *n, *target;
-  
+
   if (!a)
     return;
 
@@ -2070,23 +2072,23 @@ cleanup_boolexp(boolexp b)
     memcpy(&arg, pc + 1, sizeof arg);
     switch (op) {
     case OP_RET:
-      goto done; /* Oh, for named loops */
+      goto done;                /* Oh, for named loops */
     case OP_TCONST:
     case OP_TCARRY:
     case OP_TIS:
     case OP_TOWNER:
     case OP_TIND:
       if (IsGarbage(arg)) {
-	revised = 1;
-	memcpy(pc, false_op, INSN_LEN);
+        revised = 1;
+        memcpy(pc, false_op, INSN_LEN);
       }
       break;
     default:
-      (void)0; /* Do nothing for other opcodes */
+      (void) 0;                 /* Do nothing for other opcodes */
     }
     pc += INSN_LEN;
   }
- done:
+done:
   if (revised) {
     boolexp copy = chunk_create(bytecode, bytecode_len, chunk_derefs(b));
     chunk_delete(b);

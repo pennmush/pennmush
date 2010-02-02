@@ -172,8 +172,7 @@ help_reindex(dbref player)
   }
   if (player != NOTHING) {
     notify(player, T("Help files reindexed."));
-    do_rawlog(LT_WIZ, "Help files reindexed by %s(#%d)", Name(player),
-              player);
+    do_rawlog(LT_WIZ, "Help files reindexed by %s(#%d)", Name(player), player);
   } else
     do_rawlog(LT_WIZ, "Help files reindexed.");
 }
@@ -220,8 +219,7 @@ do_new_spitfile(dbref player, char *arg1, help_file *help_dat)
 
   if ((fp = fopen(help_dat->file, FOPEN_READ)) == NULL) {
     notify(player, T("Sorry, that function is temporarily unavailable."));
-    do_log(LT_ERR, 0, 0, "Can't open text file %s for reading",
-           help_dat->file);
+    do_log(LT_ERR, 0, 0, "Can't open text file %s for reading", help_dat->file);
     return;
   }
   if (fseek(fp, entry->pos, 0) < 0L) {

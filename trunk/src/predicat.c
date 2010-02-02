@@ -112,7 +112,7 @@ charge_action(dbref thing)
   b = atr_get_noparent(thing, "CHARGES");
 
   if (!b) {
-    return 1; /* no CHARGES */
+    return 1;                   /* no CHARGES */
   } else {
     strcpy(tbuf2, atr_value(b));
     num = atoi(tbuf2);
@@ -1075,7 +1075,8 @@ parse_match_possessor(dbref player, char **str)
   *str = obj;
 
   /* we already have a terminating null, so we're okay to just do matches */
-  return match_result(player, box, NOTYPE, MAT_NEIGHBOR | MAT_POSSESSION | MAT_ENGLISH);
+  return match_result(player, box, NOTYPE,
+                      MAT_NEIGHBOR | MAT_POSSESSION | MAT_ENGLISH);
 }
 
 

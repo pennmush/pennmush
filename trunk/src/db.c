@@ -341,8 +341,7 @@ db_read_labeled_string(PENNFILE *f, char **label, char **value)
     if (c == EOF)
       do_rawlog(LT_ERR, "DB: Unexpected EOF at line %d", dbline);
     else
-      do_rawlog(LT_ERR, "DB: Missing value for '%s' at line %d", lbuf,
-                dbline);
+      do_rawlog(LT_ERR, "DB: Missing value for '%s' at line %d", lbuf, dbline);
     longjmp(db_err, 1);
   }
 
@@ -853,8 +852,7 @@ db_paranoid_write_object(PENNFILE *f, dbref i, int flag)
     if (err) {
       fixmemdb = 1;
       do_rawlog(LT_CHECK,
-                " * Bad text in attribute %s on #%d. Changed to:\n", name,
-                i);
+                " * Bad text in attribute %s on #%d. Changed to:\n", name, i);
       do_rawlog(LT_CHECK, "%s\n", tbuf1);
     }
     db_write_labeled_string(f, "  value", tbuf1);
@@ -1188,8 +1186,7 @@ get_list(PENNFILE *f, dbref i)
          disallowing " in attribute names. */
       penn_fgets(tbuf1, BUFFER_LEN + 150, f);
       if (!(p = strchr(tbuf1, '^'))) {
-        do_rawlog(LT_ERR, "ERROR: Bad format on new attributes. object #%d",
-                  i);
+        do_rawlog(LT_ERR, "ERROR: Bad format on new attributes. object #%d", i);
         return -1;
       }
       *p++ = '\0';

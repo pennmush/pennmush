@@ -556,7 +556,8 @@ fork_and_dump(int forking)
       do_log(LT_ERR, 0, 0,
              "fork_and_dump: Data are swapped to disk, so nonforking dumps will be used.");
       flag_broadcast("WIZARD", 0,
-                     T("DUMP: Data are swapped to disk, so nonforking dumps will be used."));
+                     T
+                     ("DUMP: Data are swapped to disk, so nonforking dumps will be used."));
       nofork = 1;
     }
 #endif
@@ -875,8 +876,7 @@ init_game_dbs(void)
       do_rawlog(LT_ERR, "WARNING: Master room (#%d) is NOT a room.",
                 MASTER_ROOM);
     if (!GoodObject(BASE_ROOM) || (!IsRoom(BASE_ROOM)))
-      do_rawlog(LT_ERR, "WARNING: Base room (#%d) is NOT a room.",
-                BASE_ROOM);
+      do_rawlog(LT_ERR, "WARNING: Base room (#%d) is NOT a room.", BASE_ROOM);
     if (!GoodObject(DEFAULT_HOME) || (!IsRoom(DEFAULT_HOME)))
       do_rawlog(LT_ERR, "WARNING: Default home (#%d) is NOT a room.",
                 DEFAULT_HOME);
@@ -1074,8 +1074,7 @@ process_command(dbref player, char *command, dbref cause, int from_port)
   }
   /* robustify player */
   if (!GoodObject(player)) {
-    do_log(LT_ERR, NOTHING, NOTHING, "process_command bad player #%d",
-           player);
+    do_log(LT_ERR, NOTHING, NOTHING, "process_command bad player #%d", player);
     return;
   }
 
@@ -1937,8 +1936,7 @@ linux_uptime(dbref player __attribute__ ((__unused__)))
   pid = getpid();
   psize = getpagesize();
   notify_format(player,
-                "\nProcess ID:  %10u        %10d bytes per page",
-                pid, psize);
+                "\nProcess ID:  %10u        %10d bytes per page", pid, psize);
 
   /* Linux's getrusage() is mostly unimplemented. Just has times, page faults
      and swapouts. We use /proc/self/status */
@@ -2018,8 +2016,7 @@ unix_uptime(dbref player __attribute__ ((__unused__)))
   pid = getpid();
   psize = getpagesize();
   notify_format(player,
-                "\nProcess ID:  %10u        %10d bytes per page",
-                pid, psize);
+                "\nProcess ID:  %10u        %10d bytes per page", pid, psize);
 
 
 #ifdef HAS_GETRUSAGE
@@ -2097,8 +2094,7 @@ do_uptime(dbref player, int mortal)
 
   if (globals.last_dump_time > 0) {
     when = localtime(&globals.last_dump_time);
-    strftime(tbuf1, sizeof tbuf1,
-             "%a %b %d %X %Z %Y", when);
+    strftime(tbuf1, sizeof tbuf1, "%a %b %d %X %Z %Y", when);
     notify_format(player, "%29s: %s", T("Time of last database save"), tbuf1);
   }
 
@@ -2108,24 +2104,21 @@ do_uptime(dbref player, int mortal)
   secs = ldiv((long) difftime(options.dump_counter, mudtime), 60);
   notify_format(player,
                 T("%29s: %ld minutes %ld seconds, at %s."),
-		T("Time until next database save"),
-                secs.quot, secs.rem, tbuf1);
+                T("Time until next database save"), secs.quot, secs.rem, tbuf1);
 
   when = localtime(&options.dbck_counter);
   strftime(tbuf1, sizeof tbuf1, "%X", when);
   secs = ldiv((long) difftime(options.dbck_counter, mudtime), 60);
   notify_format(player,
                 T("%29s: %ld minutes %ld seconds, at %s."),
-		T("Time until next dbck check"),
-                secs.quot, secs.rem, tbuf1);
+                T("Time until next dbck check"), secs.quot, secs.rem, tbuf1);
 
   when = localtime(&options.purge_counter);
   strftime(tbuf1, sizeof tbuf1, "%X", when);
   secs = ldiv((long) difftime(options.purge_counter, mudtime), 60);
   notify_format(player,
                 T("%29s: %ld minutes %ld seconds, at %s."),
-		T("Time until next purge"),
-                secs.quot, secs.rem, tbuf1);
+                T("Time until next purge"), secs.quot, secs.rem, tbuf1);
 
   if (options.warn_interval) {
     when = localtime(&options.warn_counter);
@@ -2133,8 +2126,7 @@ do_uptime(dbref player, int mortal)
     secs = ldiv((long) difftime(options.warn_counter, mudtime), 60);
     notify_format(player,
                   T("%29s: %ld minutes %ld seconds, at %s."),
-		  T("Time until next @warnings"),
-                  secs.quot, secs.rem, tbuf1);
+                  T("Time until next @warnings"), secs.quot, secs.rem, tbuf1);
   }
 
   {

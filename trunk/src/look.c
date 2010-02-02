@@ -1324,8 +1324,7 @@ do_entrances(dbref player, const char *where, char *argv[], int types)
         break;
       case TYPE_ROOM:
         if (Location(counter) == place) {
-          notify_format(player, T("%s(#%d) [dropto]"), Name(counter),
-                        counter);
+          notify_format(player, T("%s(#%d) [dropto]"), Name(counter), counter);
           rooms++;
         }
         break;

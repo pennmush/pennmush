@@ -424,7 +424,7 @@ shsFinal(SHS_INFO *shsInfo)
 #endif                          /* HAS_OPENSSL */
 
 
-static void dummy(void) __attribute__((__unused__));
+static void dummy(void) __attribute__ ((__unused__));
 static void
 dummy(void)
 {

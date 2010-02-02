@@ -23,7 +23,7 @@ int sizeof_boolexp(boolexp b);
 int eval_boolexp(dbref player, boolexp b, dbref target);
 boolexp parse_boolexp(dbref player, const char *buf, lock_type ltype);
 boolexp parse_boolexp_d(dbref player, const char *buf, lock_type ltype,
-                               int derefs);
+                        int derefs);
 void free_boolexp(boolexp b);
 boolexp getboolexp(PENNFILE *f, const char *ltype);
 void putboolexp(PENNFILE *f, boolexp b);

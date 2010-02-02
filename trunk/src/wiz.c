@@ -813,38 +813,38 @@ do_boot(dbref player, const char *name, enum boot_type flag, int silent)
   int priv = Can_Boot(player);
 
   switch (flag) {
-    case BOOT_NAME:
-      victim = noisy_match_result(player, name, TYPE_PLAYER,
-                   MAT_PMATCH | MAT_PLAYER | MAT_ME);
-      if (victim == NOTHING) {
-        notify(player, T("No such connected player."));
-        return;
-      } else if (victim == player) {
-        flag = BOOT_SELF;
-      }
-      break;
-    case BOOT_SELF:
-      victim = player;
-      break;
-    case BOOT_DESC:
-      if (!is_strict_integer(name)) {
-        notify(player, T("Invalid port."));
-        return;
-      }
-      d = port_desc(parse_integer(name));
-      if (!d || (!priv && d->player != player)) {
-        if (priv)
-          notify(player, T("There is noone connected on that descriptor."));
-        else
-          notify(player, T("You can't boot other people!"));
-        return;
-      }
-      victim = (d->connected ? d->player : AMBIGUOUS);
-      if (d->descriptor == global_eval_context.process_command_port) {
-        notify(player, T("If you want to quit, use QUIT."));
-        return;
-      }
-      break;
+  case BOOT_NAME:
+    victim = noisy_match_result(player, name, TYPE_PLAYER,
+                                MAT_PMATCH | MAT_PLAYER | MAT_ME);
+    if (victim == NOTHING) {
+      notify(player, T("No such connected player."));
+      return;
+    } else if (victim == player) {
+      flag = BOOT_SELF;
+    }
+    break;
+  case BOOT_SELF:
+    victim = player;
+    break;
+  case BOOT_DESC:
+    if (!is_strict_integer(name)) {
+      notify(player, T("Invalid port."));
+      return;
+    }
+    d = port_desc(parse_integer(name));
+    if (!d || (!priv && d->player != player)) {
+      if (priv)
+        notify(player, T("There is noone connected on that descriptor."));
+      else
+        notify(player, T("You can't boot other people!"));
+      return;
+    }
+    victim = (d->connected ? d->player : AMBIGUOUS);
+    if (d->descriptor == global_eval_context.process_command_port) {
+      notify(player, T("If you want to quit, use QUIT."));
+      return;
+    }
+    break;
   }
 
   if (God(victim) && !God(player)) {
@@ -882,7 +882,9 @@ do_boot(dbref player, const char *name, enum boot_type flag, int silent)
     }
   } else {
     if (flag == BOOT_SELF)
-      notify(player, T("None of your connections are idle. If you want to quit, use QUIT."));
+      notify(player,
+             T
+             ("None of your connections are idle. If you want to quit, use QUIT."));
     else
       notify(player, T("That player is not online."));
   }
@@ -2020,7 +2022,8 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
       continue;
     if (*spec.flags && (flaglist_check("FLAG", player, n, spec.flags, 1) != 1))
       continue;
-    if (*spec.lflags && (flaglist_check_long("FLAG", player, n, spec.lflags, 1) != 1))
+    if (*spec.lflags
+        && (flaglist_check_long("FLAG", player, n, spec.lflags, 1) != 1))
       continue;
     if (*spec.powers
         && (flaglist_check_long("POWER", player, n, spec.powers, 1) != 1))

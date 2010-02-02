@@ -1050,8 +1050,7 @@ FUNCTION(fun_type)
     break;
   default:
     safe_str("WEIRD OBJECT", buff, bp);
-    do_rawlog(LT_ERR, "WARNING: Weird object #%d (type %d)\n", it,
-              Typeof(it));
+    do_rawlog(LT_ERR, "WARNING: Weird object #%d (type %d)\n", it, Typeof(it));
   }
 }
 
@@ -1165,11 +1164,11 @@ FUNCTION(fun_orlflags)
     hasflag = flaglist_check_long("FLAG", executor, it, args[1], 0);
   if (hasflag == -1)
     if (!strcmp(called_as, "ORLPOWERS"))
-	    safe_str(T("#-1 INVALID POWER"), buff, bp);
-	  else
-	    safe_str(T("#-1 INVALID FLAG"), buff, bp);
-	else
-	  safe_boolean(hasflag, buff, bp);
+      safe_str(T("#-1 INVALID POWER"), buff, bp);
+    else
+      safe_str(T("#-1 INVALID FLAG"), buff, bp);
+  else
+    safe_boolean(hasflag, buff, bp);
 }
 
 /* ARGSUSED */
@@ -1183,9 +1182,9 @@ FUNCTION(fun_andlflags)
     hasflag = flaglist_check_long("FLAG", executor, it, args[1], 1);
   if (hasflag == -1)
     if (!strcmp(called_as, "ANDLPOWERS"))
-	    safe_str(T("#-1 INVALID POWER"), buff, bp);
-	  else
-	    safe_str(T("#-1 INVALID FLAG"), buff, bp);
+      safe_str(T("#-1 INVALID POWER"), buff, bp);
+    else
+      safe_str(T("#-1 INVALID FLAG"), buff, bp);
   else
     safe_boolean(hasflag, buff, bp);
 }
@@ -1217,9 +1216,9 @@ FUNCTION(fun_locks)
 
     for (n = 0; lock_types[n].type; n++) {
       if (!first)
-	safe_chr(' ', buff, bp);
+        safe_chr(' ', buff, bp);
       else
-	first = 0;
+        first = 0;
       safe_str(lock_types[n].type, buff, bp);
     }
     return;
@@ -1837,7 +1836,9 @@ FUNCTION(fun_pmatch)
 {
   dbref target;
 
-  target = match_result(executor, args[0], TYPE_PLAYER, MAT_PMATCH | MAT_TYPE | MAT_ABSOLUTE);
+  target =
+    match_result(executor, args[0], TYPE_PLAYER,
+                 MAT_PMATCH | MAT_TYPE | MAT_ABSOLUTE);
   /* Not using MAT_NOISY, as #-1 gives a different error message */
   switch (target) {
   case NOTHING:

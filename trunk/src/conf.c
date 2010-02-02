@@ -697,14 +697,12 @@ cf_dbref(const char *opt, const char *val, void *loc,
   if (n < NOTHING) {
     n = NOTHING;
     if (from_cmd == 0) {
-      do_rawlog(LT_ERR, "CONFIG: option %s value limited to #%d", opt,
-                maxval);
+      do_rawlog(LT_ERR, "CONFIG: option %s value limited to #%d", opt, maxval);
     }
   }
   if (from_cmd && ((!GoodObject(n) && n != NOTHING) || (n > 0 && IsGarbage(n)))) {
     do_rawlog(LT_ERR,
-              "CONFIG: attempt to set option %s to a bad dbref (#%d)",
-              opt, n);
+              "CONFIG: attempt to set option %s to a bad dbref (#%d)", opt, n);
     return 0;
   }
   *((dbref *) loc) = n;
@@ -736,8 +734,7 @@ cf_int(const char *opt, const char *val, void *loc, int maxval, int from_cmd)
   if ((maxval >= 0) && (n > maxval)) {
     n = maxval;
     if (from_cmd == 0) {
-      do_rawlog(LT_ERR, "CONFIG: option %s value limited to %d", opt,
-                maxval);
+      do_rawlog(LT_ERR, "CONFIG: option %s value limited to %d", opt, maxval);
     }
   }
   *((int *) loc) = n;
@@ -800,8 +797,7 @@ done:
   if ((maxval >= 0) && (secs > maxval)) {
     secs = maxval;
     if (from_cmd == 0) {
-      do_rawlog(LT_ERR, "CONFIG: option %s value limited to %d", opt,
-                maxval);
+      do_rawlog(LT_ERR, "CONFIG: option %s value limited to %d", opt, maxval);
     }
   }
   *((int *) loc) = secs;
@@ -1007,8 +1003,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
       }
     } else {
       if (source == 0) {
-        do_rawlog(LT_ERR,
-                  "CONFIG: command_alias %s requires an alias.", val);
+        do_rawlog(LT_ERR, "CONFIG: command_alias %s requires an alias.", val);
       }
       return 0;
     }
@@ -1029,8 +1024,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
       }
     } else {
       if (source == 0) {
-        do_rawlog(LT_ERR,
-                  "CONFIG: attribute_alias %s requires an alias.", val);
+        do_rawlog(LT_ERR, "CONFIG: attribute_alias %s requires an alias.", val);
       }
       return 0;
     }
@@ -1051,8 +1045,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
       }
     } else {
       if (source == 0) {
-        do_rawlog(LT_ERR,
-                  "CONFIG: function_alias %s requires an alias.", val);
+        do_rawlog(LT_ERR, "CONFIG: function_alias %s requires an alias.", val);
       }
       return 0;
     }
@@ -1405,8 +1398,7 @@ config_file_startup(const char *conf, int restrictions)
       if (strcasecmp(p, "include") == 0) {
         conf_recursion++;
         if (conf_recursion > 10) {
-          do_rawlog(LT_ERR, "CONFIG: include depth too deep in file %s",
-                    conf);
+          do_rawlog(LT_ERR, "CONFIG: include depth too deep in file %s", conf);
         } else {
           config_file_startup(q, restrictions);
         }

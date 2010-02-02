@@ -261,7 +261,8 @@ was_sender(dbref player, MAIL *mp)
  *  "Guests can't do that" to guests if @mail is noguest.
  */
 int
-can_mail(dbref player) {
+can_mail(dbref player)
+{
   return command_check_byname_quiet(player, "@MAIL");
 }
 
@@ -569,9 +570,9 @@ do_mail_read(dbref player, char *msglist)
                       tbuf1, ((*tbuf1 != '!') && IsPlayer(mp->from)
                               && Connected(mp->from)
                               && (!hidden(mp->from)
-                                  || Priv_Who(player))) ? T(" (Conn)") : "      ",
-                      show_time(mp->time, 0), folderheader, (int) Folder(mp),
-                      i[Folder(mp)], status_string(mp));
+                                  || Priv_Who(player))) ? T(" (Conn)") :
+                      "      ", show_time(mp->time, 0), folderheader,
+                      (int) Folder(mp), i[Folder(mp)], status_string(mp));
         notify_format(player, T("Subject: %s"), get_subject(mp));
         notify(player, DASH_LINE);
         if (SUPPORT_PUEBLO)
@@ -865,11 +866,11 @@ do_mail_send(dbref player, char *tolist, char *message, mail_flag flags,
   while (*message && (i < SUBJECT_LEN)) {
     if (*message == SUBJECT_COOKIE) {
       if (*(message + 1) == SUBJECT_COOKIE) {
-	*sb++ = *message;
-	message += 2;
-	i += 1;
+        *sb++ = *message;
+        message += 2;
+        i += 1;
       } else
-	break;
+        break;
     } else {
       *sb++ = *message++;
       i += 1;
@@ -2072,8 +2073,7 @@ load_mail(PENNFILE *fp)
     if (nbuf1[0] == '0' && nbuf1[1] == '\n') {
       char buff[20];
       if (!penn_fgets(buff, sizeof buff, fp))
-        do_rawlog(LT_ERR,
-                  "MAIL: Missing end-of-dump marker in mail database.");
+        do_rawlog(LT_ERR, "MAIL: Missing end-of-dump marker in mail database.");
       else if (strcmp(buff, (mail_flags & MDBF_NEW_EOD)
                       ? "***END OF DUMP***\n" : "*** END OF DUMP ***\n") == 0)
         return 1;
@@ -2187,8 +2187,7 @@ load_mail(PENNFILE *fp)
   {
     char buff[20];
     if (!penn_fgets(buff, sizeof buff, fp))
-      do_rawlog(LT_ERR,
-                "MAIL: Missing end-of-dump marker in mail database.");
+      do_rawlog(LT_ERR, "MAIL: Missing end-of-dump marker in mail database.");
     else if (strcmp(buff, (mail_flags & MDBF_NEW_EOD)
                     ? EOD : "*** END OF DUMP ***\n") != 0)
       /* There's still stuff. Icky. */

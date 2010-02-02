@@ -1006,7 +1006,8 @@ do_use(dbref player, const char *what)
       fail_lock(player, thing, Use_Lock, T("Permission denied."), NOTHING);
       return;
     } else {
-      did_it(player, thing, "USE", T("Used."), "OUSE", NULL, (charge_action(thing) ? "AUSE" : "RUNOUT"), NOTHING);
+      did_it(player, thing, "USE", T("Used."), "OUSE", NULL,
+             (charge_action(thing) ? "AUSE" : "RUNOUT"), NOTHING);
     }
   }
 }

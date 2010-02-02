@@ -212,10 +212,10 @@ FUNCTION(fun_pfun)
 
   a = atr_get(parent, upcasestr(args[0]));
   if (!a)
-    return; /* no attr */
+    return;                     /* no attr */
 
-  if(AF_Internal(a) || AF_Private(a))
-    return; /* attr isn't inheritable */
+  if (AF_Internal(a) || AF_Private(a))
+    return;                     /* attr isn't inheritable */
 
   /* DEBUG attributes */
   if (AF_Debug(a))

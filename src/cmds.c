@@ -327,7 +327,8 @@ COMMAND(cmd_elock)
 
 COMMAND(cmd_emit)
 {
-  int spflags = (!strcmp(cmd->name, "@NSEMIT") && Can_Nspemit(player) ? PEMIT_SPOOF : 0);
+  int spflags = (!strcmp(cmd->name, "@NSEMIT")
+                 && Can_Nspemit(player) ? PEMIT_SPOOF : 0);
   SPOOF(player, cause, sw);
 
   if (SW_ISSET(sw, SWITCH_ROOM))
@@ -371,7 +372,7 @@ COMMAND(cmd_find)
 
 COMMAND(cmd_firstexit)
 {
-  do_firstexit(player, (const char **)args_left);
+  do_firstexit(player, (const char **) args_left);
 }
 
 COMMAND(cmd_flag)
@@ -465,7 +466,8 @@ COMMAND(cmd_halt)
 
 COMMAND(cmd_hide)
 {
-  hide_player(player, !(SW_ISSET(sw, SWITCH_NO) || SW_ISSET(sw, SWITCH_OFF)), arg_left);
+  hide_player(player, !(SW_ISSET(sw, SWITCH_NO) || SW_ISSET(sw, SWITCH_OFF)),
+              arg_left);
 }
 
 COMMAND(cmd_hook)
@@ -514,7 +516,8 @@ COMMAND(cmd_kick)
 
 COMMAND(cmd_lemit)
 {
-  int spflags = (!strcmp(cmd->name, "@NSLEMIT")  && Can_Nspemit(player) ? PEMIT_SPOOF : 0);
+  int spflags = (!strcmp(cmd->name, "@NSLEMIT")
+                 && Can_Nspemit(player) ? PEMIT_SPOOF : 0);
   SPOOF(player, cause, sw);
   do_lemit(player, arg_left,
            (SW_ISSET(sw, SWITCH_SILENT) * PEMIT_SILENT) | spflags);
@@ -768,7 +771,8 @@ COMMAND(cmd_nuke)
 
 COMMAND(cmd_oemit)
 {
-  int spflags = (!strcmp(cmd->name, "@NSOEMIT")  && Can_Nspemit(player) ? PEMIT_SPOOF : 0);
+  int spflags = (!strcmp(cmd->name, "@NSOEMIT")
+                 && Can_Nspemit(player) ? PEMIT_SPOOF : 0);
   SPOOF(player, cause, sw);
   do_oemit_list(player, arg_left, arg_right, spflags);
 }
@@ -1162,7 +1166,8 @@ COMMAND(cmd_wizmotd)
 
 COMMAND(cmd_zemit)
 {
-  int flags = (!strcmp(cmd->name, "@NSZEMIT") && Can_Nspemit(player) ? PEMIT_SPOOF : 0);
+  int flags = (!strcmp(cmd->name, "@NSZEMIT")
+               && Can_Nspemit(player) ? PEMIT_SPOOF : 0);
   do_zemit(player, arg_left, arg_right, flags);
 }
 

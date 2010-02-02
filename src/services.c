@@ -805,8 +805,7 @@ CmdDisplayFormat(void)
           THIS_SERVICE);
   fprintf(stderr, " %s /status   - displays the status of this service\n",
           THIS_SERVICE);
-  fprintf(stderr, " %s /help     - displays this information\n",
-          THIS_SERVICE);
+  fprintf(stderr, " %s /help     - displays this information\n", THIS_SERVICE);
 }                               /*  end of CmdDisplayFormat */
 
 static char *
@@ -831,7 +830,7 @@ convert_error(DWORD error)
 #endif                          /* WIN32SERVICES */
 #endif                          /* WIN32 */
 
-static void dummy(void) __attribute__((__unused__));
+static void dummy(void) __attribute__ ((__unused__));
 static void
 dummy(void)
 {

@@ -1844,8 +1844,7 @@ align_one_line(char *buff, char **bp, int ncols,
         }
       }
       if (spacesneeded > 0 &&
-          (!iswpfull || (cols[i]/spacesneeded) >= 2) &&
-          numspaces > 0) {
+          (!iswpfull || (cols[i] / spacesneeded) >= 2) && numspaces > 0) {
         spacecount = 0;
         for (j = 0; segment[j]; j++) {
           // Copy the char over.
@@ -1864,7 +1863,7 @@ align_one_line(char *buff, char **bp, int ncols,
         }
         break;
       }
-    default: // Left-align
+    default:                   // Left-align
       safe_str(segment, line, &lp);
       lp += cols[i] - len;
       break;

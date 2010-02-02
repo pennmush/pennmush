@@ -1175,8 +1175,7 @@ check_connected_marks(void)
       ClearMarked(loc);
     else if (IsRoom(loc)) {
       if (!Name(loc)) {
-        do_log(LT_ERR, NOTHING, NOTHING, "ERROR: no name for room #%d.",
-               loc);
+        do_log(LT_ERR, NOTHING, NOTHING, "ERROR: no name for room #%d.", loc);
         set_name(loc, "XXXX");
       }
       if (!Going(loc) && !Floating(loc) && !NoWarnable(loc) &&
@@ -1335,16 +1334,14 @@ check_contents(void)
         mark_contents(Contents(thing));
         notify_format(Owner(thing), T("It was moved to %s."),
                       object_header(Owner(thing), Location(thing)));
-        do_rawlog(LT_ERR, "Moved to %s.",
-                  unparse_object(GOD, Location(thing)));
+        do_rawlog(LT_ERR, "Moved to %s.", unparse_object(GOD, Location(thing)));
         break;
       case TYPE_EXIT:
         if (GoodObject(Source(thing)) && IsRoom(Source(thing))) {
           PUSH(thing, Exits(Source(thing)));
           notify_format(Owner(thing), T("It was moved to %s."),
                         object_header(Owner(thing), Source(thing)));
-          do_rawlog(LT_ERR, "Moved to %s.",
-                    unparse_object(GOD, Source(thing)));
+          do_rawlog(LT_ERR, "Moved to %s.", unparse_object(GOD, Source(thing)));
         } else {
           /* Just destroy the exit. */
           Source(thing) = NOTHING;

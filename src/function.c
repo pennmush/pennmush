@@ -842,8 +842,10 @@ list_functions(const char *type)
     return buff;
   }
 
-  ptrs = mush_calloc(sizeof(char *), htab_function.entries + htab_user_function.entries,
-		     "function.list");
+  ptrs =
+    mush_calloc(sizeof(char *),
+                htab_function.entries + htab_user_function.entries,
+                "function.list");
 
   if (which & 0x1) {
     for (fp = hash_firstentry(&htab_function);

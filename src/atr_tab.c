@@ -349,7 +349,7 @@ do_attribute_info(dbref player, char *name)
   notify_format(player, "%9s: %s", T("Attribute"), AL_NAME(ap));
   notify_format(player,
                 "%9s: %s", T("Flags"), privs_to_string(attr_privs_view,
-                                                 AL_FLAGS(ap)));
+                                                       AL_FLAGS(ap)));
   notify_format(player, "%9s: %s", T("Creator"), unparse_dbref(AL_CREATOR(ap)));
   return;
 }

@@ -62,10 +62,12 @@ static int parse_english(char **name, long *flags);
 static dbref match_player(dbref who, const char *name, int partial);
 extern int check_alias(const char *command, const char *list);  /* game.c */
 static int match_aliases(dbref match, const char *name);
-static dbref choose_thing(const dbref who, const int preferred_type, long flags, dbref thing1, dbref thing2);
+static dbref choose_thing(const dbref who, const int preferred_type, long flags,
+                          dbref thing1, dbref thing2);
 
 dbref
-noisy_match_result(const dbref who, const char *name, const int type, const long flags)
+noisy_match_result(const dbref who, const char *name, const int type,
+                   const long flags)
 {
   dbref match;
 
@@ -77,7 +79,8 @@ noisy_match_result(const dbref who, const char *name, const int type, const long
 }
 
 dbref
-last_match_result(const dbref who, const char *name, const int type, const long flags)
+last_match_result(const dbref who, const char *name, const int type,
+                  const long flags)
 {
   return match_result(who, name, type, flags | MAT_LAST);
 }
@@ -213,7 +216,8 @@ static dbref debugMatchTo = 1;
 #define BEST_MATCH choose_thing(who, type, flags, bestmatch, match)
 
 static dbref
-choose_thing(const dbref who, const int preferred_type, long flags, dbref thing1, dbref thing2)
+choose_thing(const dbref who, const int preferred_type, long flags,
+             dbref thing1, dbref thing2)
 {
   int key;
   /* If there's only one valid thing, return it */
@@ -235,13 +239,15 @@ choose_thing(const dbref who, const int preferred_type, long flags, dbref thing1
     if (Typeof(thing1) & preferred_type) {
       if (!(Typeof(thing2) & preferred_type)) {
 #ifdef DEBUG_OBJECT_MATCHING
-      notify_format(debugMatchTo,"Picking #%d over #%d (type)", thing1, thing2);
+        notify_format(debugMatchTo, "Picking #%d over #%d (type)", thing1,
+                      thing2);
 #endif
         return thing1;
       }
     } else if (Typeof(thing2) & preferred_type) {
 #ifdef DEBUG_OBJECT_MATCHING
-    notify_format(debugMatchTo,"Picking #%d over #%d (type)", thing2, thing1);
+      notify_format(debugMatchTo, "Picking #%d over #%d (type)", thing2,
+                    thing1);
 #endif
       return thing2;
     }
@@ -251,32 +257,36 @@ choose_thing(const dbref who, const int preferred_type, long flags, dbref thing1
     key = could_doit(who, thing1);
     if (!key && could_doit(who, thing2)) {
 #ifdef DEBUG_OBJECT_MATCHING
-      notify_format(debugMatchTo,"Picking #%d over #%d (unlocked)", thing2, thing1);
+      notify_format(debugMatchTo, "Picking #%d over #%d (unlocked)", thing2,
+                    thing1);
 #endif
       return thing2;
     } else if (key && !could_doit(who, thing2)) {
 #ifdef DEBUG_OBJECT_MATCHING
-      notify_format(debugMatchTo,"Picking #%d over #%d (unlocked)", thing1, thing2);
+      notify_format(debugMatchTo, "Picking #%d over #%d (unlocked)", thing1,
+                    thing2);
 #endif
       return thing1;
     }
   }
 #ifdef DEBUG_OBJECT_MATCHING
-  notify_format(debugMatchTo,"Picking #%d over #%d (last matched)", thing2, thing1);
+  notify_format(debugMatchTo, "Picking #%d over #%d (last matched)", thing2,
+                thing1);
 #endif
   /* No luck. Return last match */
   return thing2;
 }
 
 static dbref
-match_player(dbref who, const char *name, int partial) {
+match_player(dbref who, const char *name, int partial)
+{
   dbref match;
 
   if (*name == LOOKUP_TOKEN) {
     name++;
   }
 
-  while(isspace((unsigned char) *name)) {
+  while (isspace((unsigned char) *name)) {
     name++;
   }
 
@@ -288,7 +298,8 @@ match_player(dbref who, const char *name, int partial) {
 }
 
 static int
-match_aliases(dbref match, const char *name) {
+match_aliases(dbref match, const char *name)
+{
 
   if (!IsPlayer(match) && !IsExit(match)) {
     return 0;
@@ -311,17 +322,17 @@ match_aliases(dbref match, const char *name) {
 dbref
 match_result(dbref who, const char *xname, int type, long flags)
 {
-  dbref match; /* object we're currently checking for a match */
-  dbref loc; /* location of 'who' */
-  dbref bestmatch = NOTHING; /* the best match we've found so bar */
-  dbref abs = parse_objid(xname); /* try to match xname as a dbref/objid */
-  int final = 0; /* the Xth object we want, with english matching (5th foo) */
-  int curr = 0; /* the number of matches found so far, when 'final' is used */
-  int nocontrol = 0; /* set when we've matched an object, but don't control it and MAT_CONTROL is given */
-  int exact = 0; /* set to 1 when we've found an exact match, not just a partial one */
-  int done = 0; /* set to 1 when we're using final, and have found the Xth object */
+  dbref match;                  /* object we're currently checking for a match */
+  dbref loc;                    /* location of 'who' */
+  dbref bestmatch = NOTHING;    /* the best match we've found so bar */
+  dbref abs = parse_objid(xname);       /* try to match xname as a dbref/objid */
+  int final = 0;                /* the Xth object we want, with english matching (5th foo) */
+  int curr = 0;                 /* the number of matches found so far, when 'final' is used */
+  int nocontrol = 0;            /* set when we've matched an object, but don't control it and MAT_CONTROL is given */
+  int exact = 0;                /* set to 1 when we've found an exact match, not just a partial one */
+  int done = 0;                 /* set to 1 when we're using final, and have found the Xth object */
   int goodwho = GoodObject(who);
-  char *name, *sname; /* name contains the object name searched for, after english matching tokens are stripped from xname */
+  char *name, *sname;           /* name contains the object name searched for, after english matching tokens are stripped from xname */
 #ifdef DEBUG_OBJECT_MATCHING
   debugMatchTo = (IsPlayer(who) ? who : 1);
   notify(debugMatchTo, "ENTERING MATCH_RESULT");
@@ -335,8 +346,9 @@ match_result(dbref who, const char *xname, int type, long flags)
 
   /* match "here" */
   match = (goodwho ? (IsRoom(who) ? NOTHING : Location(who)) : NOTHING);
-  if ((flags & MAT_HERE) && !strcasecmp(xname, "here") && GoodObject(match) && MATCH_TYPE) {
-    if(MATCH_CONTROLS) {
+  if ((flags & MAT_HERE) && !strcasecmp(xname, "here") && GoodObject(match)
+      && MATCH_TYPE) {
+    if (MATCH_CONTROLS) {
       return match;
     } else {
       nocontrol = 1;
@@ -345,7 +357,7 @@ match_result(dbref who, const char *xname, int type, long flags)
 
   /* match *<player>, or <player> */
   if (((flags & MAT_PMATCH) ||
-      ((flags & MAT_PLAYER) && *xname == LOOKUP_TOKEN)) &&
+       ((flags & MAT_PLAYER) && *xname == LOOKUP_TOKEN)) &&
       ((type & TYPE_PLAYER) || !(flags & MAT_TYPE))) {
     match = match_player(who, xname, !(flags & MAT_EXACT));
     if (GoodObject(match)) {
@@ -362,7 +374,8 @@ match_result(dbref who, const char *xname, int type, long flags)
   /* dbref match */
   match = abs;
   if (GoodObject(match) && MATCH_TYPE) {
-    if (!(flags & MAT_NEAR) || Long_Fingers(who) || (nearby(who, match) || controls(who, match))) {
+    if (!(flags & MAT_NEAR) || Long_Fingers(who)
+        || (nearby(who, match) || controls(who, match))) {
       /* valid dbref match */
       if (MATCH_CONTROLS) {
         return match;
@@ -378,7 +391,9 @@ match_result(dbref who, const char *xname, int type, long flags)
     final = parse_english(&name, &flags);
   }
 #ifdef DEBUG_OBJECT_MATCHING
-  notify_format(debugMatchTo, "AFTER ENGLISH, we have: name = %s, curr = %d, flags = %ld", name, curr, flags);
+  notify_format(debugMatchTo,
+                "AFTER ENGLISH, we have: name = %s, curr = %d, flags = %ld",
+                name, curr, flags);
 #endif
 
   while (1) {
@@ -440,7 +455,9 @@ match_result(dbref who, const char *xname, int type, long flags)
     break;
   }
 #ifdef DEBUG_OBJECT_MATCHING
-  notify_format(debugMatchTo, "AT END, we have: final = %d, curr = %d, bestmatch = %d", final, curr, bestmatch);
+  notify_format(debugMatchTo,
+                "AT END, we have: final = %d, curr = %d, bestmatch = %d", final,
+                curr, bestmatch);
 #endif
   if (!GoodObject(bestmatch) && final) {
     /* we never found the Nth item */
@@ -573,4 +590,3 @@ parse_english(char **name, long *flags)
     (*name)++;
   return count;
 }
-

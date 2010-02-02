@@ -242,8 +242,7 @@ read_access_file(void)
         if (!strncasecmp(p, "@sitelock", 9)) {
           if (!add_access_node("@sitelock", AMBIGUOUS, ACS_SITELOCK, 0, "",
                                &errptr))
-            do_log(LT_ERR, GOD, GOD, "Failed to add sitelock node: %s",
-                   errptr);
+            do_log(LT_ERR, GOD, GOD, "Failed to add sitelock node: %s", errptr);
         } else {
           if ((comment = strchr(p, '#'))) {
             *comment++ = '\0';
@@ -259,8 +258,7 @@ read_access_file(void)
             /* Nothing listed, so assume we can't do anything! */
             cant = ACS_DEFAULT;
           if (!add_access_node(buf, who, can, cant, comment, &errptr))
-            do_log(LT_ERR, GOD, GOD, "Failed to add access node: %s",
-                   errptr);
+            do_log(LT_ERR, GOD, GOD, "Failed to add access node: %s", errptr);
         }
       }
     }

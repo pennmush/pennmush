@@ -2771,7 +2771,8 @@ do_chan_decompile(dbref player, const char *name, int brief)
       if (!(See_All(player) || Chan_Can_Modify(c, player)
             || (ChanCreator(c) == player))) {
         if (Chan_Can_See(c, player))
-          notify_format(player, T("CHAT: You don't have permission to decompile <%s>."),
+          notify_format(player,
+                        T("CHAT: You don't have permission to decompile <%s>."),
                         ChanName(c));
         continue;
       }
@@ -3192,7 +3193,7 @@ FUNCTION(fun_clock)
 /* ARGSUSED */
 FUNCTION(fun_cemit)
 {
-  int ns = (string_prefix(called_as, "NS")  && Can_Nspemit(executor));
+  int ns = (string_prefix(called_as, "NS") && Can_Nspemit(executor));
   int flags = PEMIT_SILENT;
   flags |= (ns ? PEMIT_SPOOF : 0);
   if (!command_check_byname(executor, ns ? "@nscemit" : "@cemit") ||
@@ -3335,7 +3336,8 @@ FUNCTION(fun_crecall)
 
 COMMAND(cmd_cemit)
 {
-  int spflags = (!strcmp(cmd->name, "@NSCEMIT") && Can_Nspemit(player) ? PEMIT_SPOOF : 0);
+  int spflags = (!strcmp(cmd->name, "@NSCEMIT")
+                 && Can_Nspemit(player) ? PEMIT_SPOOF : 0);
   SPOOF(player, cause, sw);
   if (SW_ISSET(sw, SWITCH_SILENT))
     spflags |= PEMIT_SILENT;
@@ -3459,7 +3461,7 @@ mogrify(dbref mogrifier, char *attrname,
         dbref player, int numargs, char *argv[], char *orig)
 {
   static char buff[BUFFER_LEN];
-  const char *wenv[10] = {0};
+  const char *wenv[10] = { 0 };
   int i;
   buff[0] = '\0';
   for (i = 0; i < numargs; i++) {

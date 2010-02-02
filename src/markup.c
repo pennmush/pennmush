@@ -1153,7 +1153,8 @@ inspect_ansi_string(ansi_string *as, dbref who)
     info = &(as->markup[j]);
     if (info->type == MARKUP_HTML) {
       notify_format(who,
-                    T("    %d (%s): (start: %d end: %d) start_code: %s stop_code: %s"),
+                    T
+                    ("    %d (%s): (start: %d end: %d) start_code: %s stop_code: %s"),
                     count++, (info->type == MARKUP_HTML ? "html" : "ansi"),
                     info->start, info->end, info->start_code, info->stop_code);
     }

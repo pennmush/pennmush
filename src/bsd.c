@@ -1249,8 +1249,7 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
   process_expression(buff, &bp, &sp,
                      thing,
                      d->player ? d->player : -1,
-                     d->player ? d->player : -1,
-                     PE_DEFAULT, PT_DEFAULT, NULL);
+                     d->player ? d->player : -1, PE_DEFAULT, PT_DEFAULT, NULL);
   safe_chr('\n', buff, &bp);
   *bp = '\0';
   free((void *) save);
@@ -1345,7 +1344,6 @@ fcache_read(FBLOCK *fb, const char *filename)
       }
     }
   }
-
 #ifdef WIN32
   /* Win32 read code here */
   {
@@ -1843,7 +1841,7 @@ welcome_user(DESC *d, int telnet)
   /* If MUDURL exists, we send <!-- ... --> */
   if (telnet) {
     if (MUDURL[0]) {
-      queue_newwrite(d, (const unsigned char *)"<!--", 4);
+      queue_newwrite(d, (const unsigned char *) "<!--", 4);
       queue_eol(d);
     }
     test_telnet(d);
@@ -1853,9 +1851,9 @@ welcome_user(DESC *d, int telnet)
                    strlen(PUEBLO_HELLO));
   fcache_dump(d, fcache.connect_fcache, NULL);
   if (telnet && MUDURL[0]) {
-      queue_eol(d);
-      queue_newwrite(d, (const unsigned char *)"-->", 3);
-      queue_eol(d);
+    queue_eol(d);
+    queue_newwrite(d, (const unsigned char *) "-->", 3);
+    queue_eol(d);
   }
 }
 
@@ -2383,14 +2381,13 @@ do_command(DESC *d, char *command)
                  !strncmp(command, POST_COMMAND, strlen(POST_COMMAND))) {
         char buf[BUFFER_LEN];
         snprintf(buf, BUFFER_LEN,
-           "<HTML><HEAD>"
-           "<TITLE>Welcome to %s!</TITLE>"
-           "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\">"
-           "</HEAD><BODY>"
-           "<meta http-equiv=\"refresh\" content=\"0;%s\">"
-           "Please click <a href=\"%s\">%s</a> to go to the website for %s."
-           "</BODY></HEAD>",
-           MUDNAME, MUDURL, MUDURL, MUDURL, MUDNAME);
+                 "<HTML><HEAD>"
+                 "<TITLE>Welcome to %s!</TITLE>"
+                 "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\">"
+                 "</HEAD><BODY>"
+                 "<meta http-equiv=\"refresh\" content=\"0;%s\">"
+                 "Please click <a href=\"%s\">%s</a> to go to the website for %s."
+                 "</BODY></HEAD>", MUDNAME, MUDURL, MUDURL, MUDURL, MUDNAME);
         queue_write(d, (unsigned char *) buf, strlen(buf));
         queue_eol(d);
         return 0;
@@ -2439,8 +2436,7 @@ dump_messages(DESC *d, dbref player, int isnew)
     if (under_limit && (login_number > MAX_LOGINS)) {
       under_limit = 0;
       do_rawlog(LT_CONN,
-                "Limit of %d players reached. Logins disabled.\n",
-                MAX_LOGINS);
+                "Limit of %d players reached. Logins disabled.\n", MAX_LOGINS);
     }
   }
   /* give players a message on connection */
@@ -2485,7 +2481,7 @@ dump_messages(DESC *d, dbref player, int isnew)
     notify_format(player, T("%ld failed connections since last login."),
                   (long) ModTime(player));
   ModTime(player) = (time_t) 0;
-  announce_connect(d, isnew, num); /* broadcast connect message */
+  announce_connect(d, isnew, num);      /* broadcast connect message */
   check_last(player, d->addr, d->ip);   /* set Last, Lastsite, give paycheck */
   /* Check all mail folders. If empty, report lack of mail. */
   queue_eol(d);
@@ -2799,7 +2795,8 @@ boot_player(dbref player, int idleonly, int silent)
     ignore = least_idle_desc(player, 1);
 
   DESC_ITER_CONN(d) {
-    if (d->player == player && (!ignore || (d != ignore && difftime(now, d->last_time) > 60.0))) {
+    if (d->player == player
+        && (!ignore || (d != ignore && difftime(now, d->last_time) > 60.0))) {
       if (!idleonly && !silent && !count)
         notify(player, T("You are politely shown to the door."));
       count++;
@@ -4691,60 +4688,63 @@ hide_player(dbref player, int hide, char *victim)
     return;
   }
   if (!victim || !*victim) {
-		thing = Owner(player);
-	} else {
-		if (is_strict_integer(victim)) {
-			d = lookup_desc(player, victim);
-			if (!d) {
-				if (See_All(player))
-				  notify(player, T("Couldn't find that descriptor."));
-				else
-				  notify(player, T("Permission denied."));
-				return;
-			}
-			thing = d->player;
-			if (!Wizard(player) && thing != player) {
-				notify(player, T("Permission denied."));
-				return;
-			}
-			if (!d->connected) {
-				notify(player, T("Noone is connected to that descriptor."));
-				return;
-			}
-			d->hide = hide;
-			if (hide) {
-			  notify(player, T("Connection hidden."));
-			} else {
-				notify(player, T("Connection unhidden."));
-			}
-			return;
-		} else {
-			thing = noisy_match_result(player, victim, TYPE_PLAYER, MAT_ABSOLUTE | MAT_PLAYER | MAT_PMATCH | MAT_ME);
-			if (!GoodObject(thing)) {
-				return;
-			}
-		}
-	}
+    thing = Owner(player);
+  } else {
+    if (is_strict_integer(victim)) {
+      d = lookup_desc(player, victim);
+      if (!d) {
+        if (See_All(player))
+          notify(player, T("Couldn't find that descriptor."));
+        else
+          notify(player, T("Permission denied."));
+        return;
+      }
+      thing = d->player;
+      if (!Wizard(player) && thing != player) {
+        notify(player, T("Permission denied."));
+        return;
+      }
+      if (!d->connected) {
+        notify(player, T("Noone is connected to that descriptor."));
+        return;
+      }
+      d->hide = hide;
+      if (hide) {
+        notify(player, T("Connection hidden."));
+      } else {
+        notify(player, T("Connection unhidden."));
+      }
+      return;
+    } else {
+      thing =
+        noisy_match_result(player, victim, TYPE_PLAYER,
+                           MAT_ABSOLUTE | MAT_PLAYER | MAT_PMATCH | MAT_ME);
+      if (!GoodObject(thing)) {
+        return;
+      }
+    }
+  }
 
-	if (!Connected(thing)) {
-		notify(player, T("That player is not online."));
-		return;
-	}
-	DESC_ITER_CONN(d) {
-		if (d->player == thing)
-			d->hide = hide;
-	}
-	if (hide) {
-		if (player == thing)
-		  notify(player, T("You no longer appear on the WHO list."));
-		else
-		  notify_format(player, T("%s no longer appears on the WHO list."), Name(thing));
-	} else {
-		if (player == thing)
-		  notify(player, T("You now appear on the WHO list."));
-		else
-		  notify_format(player, T("%s now appears on the WHO list."), Name(thing));
-	}
+  if (!Connected(thing)) {
+    notify(player, T("That player is not online."));
+    return;
+  }
+  DESC_ITER_CONN(d) {
+    if (d->player == thing)
+      d->hide = hide;
+  }
+  if (hide) {
+    if (player == thing)
+      notify(player, T("You no longer appear on the WHO list."));
+    else
+      notify_format(player, T("%s no longer appears on the WHO list."),
+                    Name(thing));
+  } else {
+    if (player == thing)
+      notify(player, T("You now appear on the WHO list."));
+    else
+      notify_format(player, T("%s now appears on the WHO list."), Name(thing));
+  }
 }
 
 /** Perform the periodic check of inactive descriptors, and
@@ -5246,7 +5246,7 @@ do_reboot(dbref player, int flag)
 
 extern HASHTAB help_files;
 
-static void reload_files(void) __attribute__((__unused__));
+static void reload_files(void) __attribute__ ((__unused__));
 
 static void
 reload_files(void)

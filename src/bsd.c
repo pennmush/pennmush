@@ -3193,15 +3193,14 @@ dump_users(DESC *call_by, char *match)
   now = mudtime;
 
   if (SUPPORT_PUEBLO && (call_by->conn_flags & CONN_HTML)) {
-    queue_newwrite(call_by, (const unsigned char *) "<img xch_mode=html>", 19);
     queue_newwrite(call_by, (const unsigned char *) "<PRE>", 5);
   }
 
   if (poll_msg[0] == '\0')
     strcpy(poll_msg, "Doing");
-  snprintf(tbuf2, BUFFER_LEN, "%-16s %10s %6s  %s\n",
+  snprintf(tbuf2, BUFFER_LEN, "%-16s %10s %6s  %s",
            T("Player Name"), T("On For"), T("Idle"), poll_msg);
-  queue_string(call_by, tbuf2);
+  queue_string_eol(call_by, tbuf2);
 
   for (d = descriptor_list; d; d = d->next) {
     if (!d->connected || !GoodObject(d->player))
@@ -3216,8 +3215,7 @@ dump_users(DESC *call_by, char *match)
             time_format_2(now - d->last_time),
             (Dark(d->player) ? 'D' : (Hidden(d) ? 'H' : ' '))
             , d->doing);
-    queue_string(call_by, tbuf1);
-    queue_newwrite(call_by, (const unsigned char *) "\r\n", 2);
+    queue_string_eol(call_by, tbuf1);
   }
   switch (count) {
   case 0:
@@ -3230,13 +3228,9 @@ dump_users(DESC *call_by, char *match)
     snprintf(tbuf1, BUFFER_LEN, T("There are %d players connected."), count);
     break;
   }
-  queue_string(call_by, tbuf1);
-  if (SUPPORT_PUEBLO && (call_by->conn_flags & CONN_HTML)) {
-    queue_newwrite(call_by, (const unsigned char *) "\n</PRE>\n", 8);
-    queue_newwrite(call_by, (const unsigned char *) "<img xch_mode=purehtml>",
-                   23);
-  } else
-    queue_newwrite(call_by, (const unsigned char *) "\r\n", 2);
+  queue_string_eol(call_by, tbuf1);
+  if (SUPPORT_PUEBLO && (call_by->conn_flags & CONN_HTML))
+    queue_newwrite(call_by, (const unsigned char *) "</PRE>", 6);
 }
 
 void
@@ -3253,7 +3247,6 @@ do_who_mortal(dbref player, char *name)
 
   if (SUPPORT_PUEBLO) {
     PUSE;
-    tag("img xch_mode=html");
     tag("PRE");
     PEND;
     notify_noenter(player, pbuff);
@@ -3292,7 +3285,6 @@ do_who_mortal(dbref player, char *name)
   if (SUPPORT_PUEBLO) {
     PUSE;
     tag_cancel("PRE");
-    tag("img xch_mode=purehtml");
     PEND;
     notify_noenter(player, pbuff);
   }
@@ -3310,7 +3302,6 @@ do_who_admin(dbref player, char *name)
 
   if (SUPPORT_PUEBLO) {
     PUSE;
-    tag("img xch_mode=html");
     tag("PRE");
     PEND;
     notify_noenter(player, pbuff);
@@ -3374,7 +3365,6 @@ do_who_admin(dbref player, char *name)
   if (SUPPORT_PUEBLO) {
     PUSE;
     tag_cancel("PRE");
-    tag("img xch_mode=purehtml");
     PEND;
     notify_noenter(player, pbuff);
   }
@@ -3391,7 +3381,6 @@ do_who_session(dbref player, char *name)
 
   if (SUPPORT_PUEBLO) {
     PUSE;
-    tag("img xch_mode=html");
     tag("PRE");
     PEND;
     notify_noenter(player, pbuff);
@@ -3447,7 +3436,6 @@ do_who_session(dbref player, char *name)
   if (SUPPORT_PUEBLO) {
     PUSE;
     tag_cancel("PRE");
-    tag("img xch_mode=purehtml");
     PEND;
     notify_noenter(player, pbuff);
   }

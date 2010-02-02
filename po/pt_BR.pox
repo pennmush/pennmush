@@ -11,174 +11,6 @@ msgstr ""
 "Content-Type: text/plain; charset=iso-8859-1\n"
 "Content-Transfer-Encoding: 8bit"
 
-#: src/wiz.c:2259
-#, c-format
-msgid "          (Includes table items, and table of words pointers of %ld bytes)"
-msgstr "          (Inclui objetos de tabela e tabela de ponteiros de palavras com %ld bytes)"
-
-#: src/game.c:1447
-#, c-format
-msgid "        Time until next purge: %ld minutes %ld seconds."
-msgstr "        Tempo até próxima limpeza: %ld minutos e %ld segundos."
-
-#: src/malias.c:565
-msgid "      to set, add, remove permissions, respectively."
-msgstr "      respectivamente, para determinar, acrescentar e remover permissões."
-
-#: game.c:1437
-#, c-format
-msgid "     Up since: %s"
-msgstr "     Em funcionamento desde %s"
-
-#: filecopy.c:110
-#, c-format
-msgid "    ** Unable to open file: %s"
-msgstr "    ** Imposs\355vel abrir arquivo %s"
-
-#: src/filecopy.c:112
-#, c-format
-msgid "    ** Unable to open file: %s\n"
-msgstr "    ** Impossível abrir arquivo %s\n"
-
-#: filecopy.c:101
-msgid "    Copying file"
-msgstr "    Copiando arquivo"
-
-#: src/filecopy.c:100
-#, c-format
-msgid "    Copying file: %s, %ld byte%s\n"
-msgstr "    Copiando arquivo: 5s, %ld byte%s\n"
-
-#: src/game.c:1452
-#, c-format
-msgid "    Time until next @warnings: %ld minutes %ld seconds."
-msgstr "    Tempo até próximo @warnings: %ld minutos e %ld segundos."
-
-#: src/game.c:1432
-#, c-format
-msgid "   Time now: %s"
-msgstr "   Hora agora: %s"
-
-#: src/game.c:1443
-#, c-format
-msgid "   Time until next dbck check: %ld minutes %ld seconds."
-msgstr "   Tempo até próxima verificação dbck: %ld minutos e %ld segundos."
-
-#: src/game.c:1422
-#, c-format
-msgid "   Up since: %s"
-msgstr "   Em funcionamento desde %s"
-
-#: db.c:1205
-msgid "  (expecting ], >, or < as first character of the line.)"
-msgstr "  (esperado ], > ou < como primeiro caractere da linha.)"
-
-#: src/db.c:1309
-msgid "  (expecting ], >, or < as first character of the line.)\n"
-msgstr "  (esperado ], > ou < como primeiro caractere da linha.)\n"
-
-#: db.c:1207
-#, c-format
-msgid "  Last attribute read was: %s"
-msgstr "  \332ltimo atributo lido foi %s"
-
-#: src/db.c:1311
-#, c-format
-msgid "  Last attribute read was: %s\n"
-msgstr "  Último atributo lido foi %s\n"
-
-#: game.c:1442
-#, c-format
-msgid "  Last reboot: %s"
-msgstr "  Última reinicialização em %s"
-
-#: db.c:1209
-msgid "  No attributes had been read yet."
-msgstr "  Nenhum atributo foi lido ainda."
-
-#: src/db.c:1313
-msgid "  No attributes had been read yet.\n"
-msgstr "  Nenhum atributo foi lido ainda.\n"
-
-#: src/services.c:803
-#, c-format
-msgid " %s           - runs as a service, or stand-alone\n"
-msgstr " %s            - funciona como servi\347o ou independemente\n"
-
-#: src/services.c:813
-#, c-format
-msgid " %s /help     - displays this information\n"
-msgstr " %s /help      - exibe estas informa\347\365es\n"
-
-#: src/services.c:808
-#, c-format
-msgid " %s /install  - installs this service\n"
-msgstr " %s /install   - instala este servi\347o\n"
-
-#: src/services.c:809
-#, c-format
-msgid " %s /remove   - removes (un-installs) this service\n"
-msgstr " %s /remove    - remove (desinstala) este servi\347o\n"
-
-#: src/services.c:805
-#, c-format
-msgid " %s /run      - runs stand-alone\n"
-msgstr " %s /run       - executa independentemente\n"
-
-#: src/services.c:806
-#, c-format
-msgid " %s /start    - starts this service\n"
-msgstr " %s /start     - inicia este servi\347o\n"
-
-#: src/services.c:811
-#, c-format
-msgid " %s /status   - displays the status of this service\n"
-msgstr " %s /status    - exibe a situa\347\343o atual deste servi\347o\n"
-
-#: src/services.c:807
-#, c-format
-msgid " %s /stop     - stops this service\n"
-msgstr " %s /stop      - interrompe este servi\347o\n"
-
-#: src/db.c:567
-#, c-format
-msgid " * Bad attribute name on #%d. Changing name to %s.\n"
-msgstr " * Nome de atributo inv\341lido em #%d. Nome modificado para %s.\n"
-
-#: src/db.c:574
-#, c-format
-msgid " * Bad owner on attribute %s on #%d.\n"
-msgstr " * Propriet\341rio inv\341lido no atributo %s de #%d.\n"
-
-#: src/db.c:608
-#, c-format
-msgid " * Bad text in attribute %s on #%d. Changed to:\n"
-msgstr " * Texto inv\341lido no atributo %s de #%d. Modificado para\n"
-
-#: src/conf.c:1098
-msgid " @lock/drop is available."
-msgstr " @lock/drop está disponível."
-
-#: src/conf.c:1101
-msgid " @lock/give is available."
-msgstr " @lock/give está disponível."
-
-#: src/conf.c:1095
-msgid " @lock/leave is available."
-msgstr " @lock/leave está disponível."
-
-#: src/conf.c:1092
-msgid " @lock/speech is available."
-msgstr " @lock/speech está disponível."
-
-#: src/conf.c:1008
-msgid " @mail messages do not have subject lines."
-msgstr " mensagens @mail não têm linhas de Assunto."
-
-#: src/conf.c:1000
-msgid " @mail messages have subject lines."
-msgstr " mensagens @mail têm linhas de Assunto."
-
 #: conf.c:1044
 msgid " Attributes are 8-bit word compressed in memory."
 msgstr " Atributos vazios n\343o s\343o despejados."
@@ -195,22 +27,6 @@ msgstr " Atributos vazios n\343o s\343o despejados."
 msgid " Attributes are word compressed in memory."
 msgstr " Atributos vazios n\343o s\343o despejados."
 
-#: src/conf.c:1063
-msgid " Attributes can be deleted."
-msgstr " Atributos podem ser apagados."
-
-#: src/conf.c:1065
-msgid " Attributes cannot be deleted."
-msgstr " Atributos não podem ser apagados."
-
-#: src/conf.c:1044
-msgid " Creation/modification times for objects are enabled."
-msgstr " Horas de criação/modificação de objetos estão ativadas."
-
-#: src/conf.c:1046
-msgid " Creation/modification times for objects are not enabled."
-msgstr " Horas de criação/modificação de objetos não estão ativadas."
-
 #: src/conf.c:980
 msgid " DNS and ident lookups are handled by a slave process."
 msgstr " Buscas DNS e ident s\343o realizadas por um processo slave."
@@ -219,166 +35,9 @@ msgstr " Buscas DNS e ident s\343o realizadas por um processo slave."
 msgid " DNS and ident lookups are handled by the MUSH process."
 msgstr " Buscas DNS e ident s\343o realizadas pelos processos MUSH"
 
-#: src/conf.c:1068
-msgid " Empty attributes are deleted."
-msgstr " Atributos vazios são deletados."
-
-#: src/conf.c:1058
-msgid " Empty attributes are dumped."
-msgstr " Atributos vazios são despejados."
-
-#: src/conf.c:1051
-msgid " Empty attributes are kept."
-msgstr " Atributos vazios são mantidos."
-
-#: src/conf.c:1060
-msgid " Empty attributes are not dumped."
-msgstr " Atributos vazios não são despejados."
-
-#: src/conf.c:1055
-msgid " Empty attributes are not visible."
-msgstr " Atributos vazios não são visíveis."
-
-#: src/conf.c:1053
-msgid " Empty attributes are visible."
-msgstr " Atributos vazios são visíveis."
-
-#: src/conf.c:1105
-msgid " Extended ANSI functions are enabled."
-msgstr " Funções ANSI estendidas estão ativadas."
-
-#: src/conf.c:1107
-msgid " Extended ANSI functions are not enabled."
-msgstr " Funções ANSI estendidas estão desativadas."
-
 #: src/conf.c:1111
 msgid " Extended convtime() is supported."
 msgstr " convtime() estendido est\341 suportado."
-
-#: flags.c:706
-msgid " Flags:"
-msgstr " Flags:"
-
-#: src/conf.c:988
-msgid " Floating point functions are disabled."
-msgstr " Funções de ponto flutuante estão desativadas."
-
-#: src/conf.c:986
-msgid " Floating point functions are enabled."
-msgstr " Funções de ponto flutuante estão ativadas."
-
-#: src/conf.c:1072
-msgid " Garbage objects are not dumped to disk."
-msgstr " Objetos lixo não são despejados no disco."
-
-#: src/conf.c:970
-msgid " Logging is to a single log file."
-msgstr " O relatório utiliza um único arquivo."
-
-#: src/conf.c:972
-msgid " Logging is to multiple log files."
-msgstr " O relatório utiliza vários arquivos."
-
-#: src/conf.c:1002
-msgid " Messages without subject lines have subject (no subject)"
-msgstr " Mensagens sem linhas Assunto têm assunto (sem assunto)"
-
-#: src/conf.c:1005
-msgid " Messages without subject lines use the beginning of the message as subject"
-msgstr " Mensagens sem linhas Assunto usam o início da mensagem como assunto"
-
-#: src/conf.c:954
-msgid " Passwords are convereted from plaintext to SHS"
-msgstr " Senhas são convertidas de texto para SHS"
-
-#: src/conf.c:951
-msgid " Passwords are converted from system crypt to SHS"
-msgstr " Senhas são convertidas do crypt do sistema para SHS."
-
-#: src/conf.c:948
-msgid " Passwords are encrypted with SHS."
-msgstr " Senhas são encriptadas com SHS."
-
-#: src/conf.c:945
-msgid " Passwords are encrypted with the operating system's crypt function."
-msgstr " Senhas são encriptadas com a função crypt do sistema operacional."
-
-#: src/conf.c:941
-msgid " Passwords are not stored encrypted."
-msgstr " Senhas não são armazenadas de forma encriptada."
-
-#: src/conf.c:1021
-msgid " Quota restrictions are being enforced."
-msgstr " Restrições de quota estão sendo aplicadas."
-
-#: src/conf.c:994
-msgid " Side effect functions are disabled."
-msgstr " Funções de efeitos colaterais estão desativadas."
-
-#: src/conf.c:992
-msgid " Side effect functions are enabled."
-msgstr " Funções de efeitos colaterais estão ativadas."
-
-#: src/conf.c:1078
-msgid " The FIXED flag is disabled."
-msgstr " A flag FIXED está desativada."
-
-#: src/conf.c:1076
-msgid " The FIXED flag is enabled."
-msgstr " A flag FIXED está ativada."
-
-#: src/conf.c:1040
-msgid " The MUSH building warning system is disabled."
-msgstr " O sistema de avisos de construção do MUSH está desativado."
-
-#: src/conf.c:1031
-msgid " The MUSH building warning system is enabled."
-msgstr " O sistema de avisos de construção do MUSH está ativado."
-
-#: src/conf.c:1088
-msgid " The UNINSPECTED flag is enabled."
-msgstr " A flag UNINSPECTED está ativada."
-
-#: src/conf.c:1082
-msgid " The UNREGISTERED flag is enabled."
-msgstr " A flag UNREGISTERED está ativada."
-
-#: src/conf.c:1085
-msgid " The VACATION flag is enabled."
-msgstr " a flag VACATION está ativada."
-
-#: src/conf.c:1011
-msgid " The built-in MUSH mailing system is not being used."
-msgstr " o sistema embutido de correio do MUSH não está em uso."
-
-#: src/conf.c:1017
-msgid " The chat system is disabled."
-msgstr " O sistema de chat está desativado."
-
-#: src/conf.c:998
-msgid " The extended built-in MUSH mailing system is being used."
-msgstr " O sistema embutido de correio estendido está em uso."
-
-#: src/conf.c:1015
-msgid " The extended chat system is enabled."
-msgstr " O sistema estendido de chat está ativado."
-
-#: src/conf.c:1027
-msgid " The royalty flag is disabled."
-msgstr " A flag de realeza está desativada."
-
-#: src/conf.c:1025
-msgid " The royalty flag is enabled."
-msgstr " A flag de realeza está ativada."
-
-#: src/conf.c:1035
-#, c-format
-msgid " Warnings will be automatically given every %d minutes"
-msgstr " Avisos serão emitidos automaticamente a cada %d minutos."
-
-#: src/conf.c:1038
-msgid " Warnings will not be automatically given."
-msgstr " Avisos não serão emitidos automaticamente."
 
 #: wiz.c:1605
 #, c-format
@@ -399,10 +58,6 @@ msgstr " chama"
 
 #: extchat.c:1503
 msgid "#-1 AMBIGUOUS CHANNEL NAME"
-msgstr "#-1 AMB\315GUO"
-
-#: src/fundb.c:463
-msgid "#-1 AMBIGUOUS MATCH"
 msgstr "#-1 AMB\315GUO"
 
 #: src/fundb.c:784 src/fundb.c:1001
@@ -432,10 +87,6 @@ msgstr "#-1 ARGUMENTO DEVE SER OBJ/ATR"
 #: parse.c:87
 msgid "#-1 ARGUMENT MUST BE POSITIVE INTEGER"
 msgstr "#-1 ARGUMENTO DEVE SER INTEIRO POSITIVO"
-
-#: src/funtime.c:110
-msgid "#-1 ARGUMENT MUST BE POSITIVE"
-msgstr "#-1 ARGUMENTO DEVE SER POSITIVO"
 
 #: src/funmath.c:218 src/funmath.c:250
 msgid "#-1 ARGUMENT MUST END IN AN INTEGER"
@@ -619,10 +270,6 @@ msgstr "%s tomou %d %s de voc\352!"
 msgid "%s was taken from you."
 msgstr "%s tomou %d %s de voc\352!"
 
-#: src/look.c:1256
-msgid "@@ No attributes found. @@"
-msgstr "Nenhum atributo foi lido ainda."
-
 #: src/command.c:1118
 msgid "@command is ALWAYS enabled."
 msgstr "@lock/drop est\341 dispon\355vel."
@@ -671,15 +318,6 @@ msgstr "Atributos podem ser apagados."
 #: src/attrib.c:1035
 msgid "Attribute unlocked."
 msgstr "Atributos podem ser apagados."
-
-#: src/set.c:962
-msgid "Attributes wiped."
-msgstr "Atributos podem ser apagados."
-
-#: attrib.c:158
-#, c-format
-msgid "Bad attribute name %s on object %s"
-msgstr "* Nome de atributo inv\341lido em #%d. Nome modificado para %s."
 
 #: src/move.c:326 src/move.c:520 src/wiz.c:397 src/wiz.c:402 src/wiz.c:406
 msgid "Bad destination."
@@ -771,11 +409,6 @@ msgstr "BATE-PAPO: Seelock em <%s> %s."
 msgid "CHAT: Only a Wizard can do that."
 msgstr "Eu n\343o consigo encontrar isso."
 
-#: src/extchat.c:1579
-#, c-format
-msgid "CHAT: Seelock on <%s> %s."
-msgstr "BATE-PAPO: Seelock em <%s> %s."
-
 #: extchat.c:1586
 #, c-format
 msgid "CHAT: Seelock on <%s> reset."
@@ -799,11 +432,6 @@ msgstr "BATE-PAPO: Seelock em <%s> %s."
 #: extchat.c:952
 #, c-format
 msgid "CHAT: You are already on channel <%s>"
-msgstr "BATE-PAPO: Seelock em <%s> %s."
-
-#: extchat.c:1012
-#, c-format
-msgid "CHAT: You are not on channel <%s>"
 msgstr "BATE-PAPO: Seelock em <%s> %s."
 
 #: src/extchat.c:757
@@ -844,11 +472,6 @@ msgstr "Criar o qu\352? "
 msgid "Compilation flags: %s"
 msgstr "[localiza\347\343o: %s]"
 
-#: filecopy.c:147
-#, c-format
-msgid "Copied %i %s, %ld %s"
-msgstr "Copiando arquivo: 5s, %ld byte%s"
-
 #: src/wiz.c:1635 src/wiz.c:1929
 msgid "Couldn't find that player."
 msgstr "Eu n\343o consigo encontrar isso."
@@ -864,11 +487,6 @@ msgstr "Criar o qu\352?"
 #: look.c:730
 #, c-format
 msgid "Created: %s"
-msgstr "Criar o qu\352?"
-
-#: filecopy.c:72
-#, c-format
-msgid "Creating file: %s"
 msgstr "Criar o qu\352?"
 
 #: look.c:828
@@ -892,46 +510,6 @@ msgstr "Voc\352 n\343o pode fazer isso enquanto estiver fixo."
 msgid "Don't you have anything to say?"
 msgstr "Qual sinal voc\352 quer ativar?"
 
-#: db.c:1202
-#, c-format
-msgid "ERROR: Bad character %c (%d) in attribute list on object %d"
-msgstr "* Propriet\341rio inv\341lido no atributo %s de #%d."
-
-#: db.c:1136
-#, c-format
-msgid "ERROR: Bad format on new attribute %s. object #%d"
-msgstr "* Propriet\341rio inv\341lido no atributo %s de #%d."
-
-#: db.c:1129
-#, c-format
-msgid "ERROR: Bad format on new attributes. object #%d"
-msgstr "* Propriet\341rio inv\341lido no atributo %s de #%d."
-
-#: db.c:986
-#, c-format
-msgid "ERROR: Invalid lock format on object #%d"
-msgstr "* Propriet\341rio inv\341lido no atributo %s de #%d."
-
-#: db.c:1451
-#, c-format
-msgid "ERROR: No end of dump after object #%d"
-msgstr "* Propriet\341rio inv\341lido no atributo %s de #%d."
-
-#: db.c:1389
-#, c-format
-msgid "ERROR: bad attribute list object %d"
-msgstr "* Propriet\341rio inv\341lido no atributo %s de #%d."
-
-#: db.c:1421
-#, c-format
-msgid "ERROR: failed object %d"
-msgstr "* Propriet\341rio inv\341lido no atributo %s de #%d."
-
-#: db.c:1191
-#, c-format
-msgid "ERROR: no line feed after < on object %d"
-msgstr "* Propriet\341rio inv\341lido no atributo %s de #%d."
-
 #: src/destroy.c:271
 msgid "Even you can't do that!"
 msgstr "Eu n\343o consigo encontrar isso."
@@ -944,16 +522,8 @@ msgstr "Nome de fun\347\343o muito grande."
 msgid "Function deleted."
 msgstr "Nome de fun\347\343o muito grande."
 
-#: src/game.c:1390
-msgid "Function mapped onto list."
-msgstr "Nome de fun\347\343o muito grande."
-
 #: src/function.c:677
 msgid "Function name too long."
-msgstr "Nome de fun\347\343o muito grande."
-
-#: src/function.c:668
-msgid "Function table full."
 msgstr "Nome de fun\347\343o muito grande."
 
 #: src/function.c:741
@@ -971,11 +541,6 @@ msgstr "Eu n\343o consigo encontrar isso."
 #: src/extchat.c:1078
 msgid "Guests may not modify channels."
 msgstr "Eu n\343o consigo encontrar isso."
-
-#: src/log.c:270
-#, c-format
-msgid "HUH: %s in %s [%s]: %s"
-msgstr "COMO? %s em %s [%s]: %s"
 
 #: src/command.c:1109
 msgid "How do you want to restrict the command?"
@@ -1086,11 +651,6 @@ msgstr "\332ltima reinicializa\347\343o em %s"
 msgid "Last restarted: %s"
 msgstr "\332ltima reinicializa\347\343o em %s"
 
-#: function.c:917
-#, c-format
-msgid "Location  : #%d/%s"
-msgstr "[localiza\347\343o: %s]"
-
 #: look.c:791
 #, c-format
 msgid "Location: %s"
@@ -1118,11 +678,6 @@ msgstr "CORREIO: Todos os codinomes de correio devem come\347ar com '%c'."
 #, c-format
 msgid "MAIL: Bad alias. Aliases must start with '%c'."
 msgstr "CORREIO: Todos os codinomes de correio devem come\347ar com '%c'."
-
-#: src/extmail.c:1876
-#, c-format
-msgid "MAIL: Count of messages is %d, mdb_top is %d."
-msgstr "CORREIO: Voc\352 tem uma nova mensagem (%d) de %s."
 
 #: src/extmail.c:233
 #, c-format
@@ -1197,10 +752,6 @@ msgstr "Eu n\343o consigo encontrar isso."
 msgid "MAIL: To whom should I forward?"
 msgstr "CORREIO: Voc\352 tem uma nova mensagem (%d) de %s."
 
-#: src/malias.c:143
-msgid "MAIL: What alias do you want to create?."
-msgstr "Qual sinal voc\352 quer ativar?"
-
 #: src/extmail.c:726
 msgid "MAIL: You can't reply to nonexistant mail."
 msgstr "CORREIO: Voc\352 n\343o pode responder a uma mensagem inexistente."
@@ -1268,11 +819,6 @@ msgstr "Concord\342ncias encontradas no conte\372do desta sala:"
 msgid "Matches on zone master room of location:"
 msgstr "Concord\342ncias encontradas no conte\372do desta sala:"
 
-#: src/command.c:1017
-#, c-format
-msgid "No command vector on command %s."
-msgstr "Voc\352 precisa especificar um comando."
-
 #: src/create.c:303 src/fundb.c:1281 src/fundb.c:1300 src/wiz.c:386
 msgid "No match."
 msgstr "Voc\352 precisa especificar um comando."
@@ -1325,10 +871,6 @@ msgstr "Voc\352 precisa especificar um comando."
 msgid "No such player."
 msgstr "Voc\352 precisa especificar um comando."
 
-#: wiz.c:809
-msgid "None of your connections are idle."
-msgstr "Fun\347\365es de ponto flutuante est\343o desativadas."
-
 #: src/fundb.c:1424 src/look.c:1177 src/wiz.c:1553 src/wiz.c:1913
 msgid "Nothing found."
 msgstr "Voc\352 precisa especificar um comando."
@@ -1336,11 +878,6 @@ msgstr "Voc\352 precisa especificar um comando."
 #: src/set.c:684
 msgid "Nothing to do."
 msgstr "Voc\352 precisa especificar um comando."
-
-#: src/game.c:574
-#, c-format
-msgid "Null name on object #%d"
-msgstr "* Nome de atributo inv\341lido em #%d. Nome modificado para %s."
 
 #: src/command.c:1256
 msgid "Only God can do that."
@@ -1383,11 +920,6 @@ msgstr "Criar o qu\352?"
 #: function.c:731
 msgid "Restrict what function?"
 msgstr "Criar o qu\352?"
-
-#: help.c:224
-#, c-format
-msgid "Seek error in file %s"
-msgstr "** Imposs\355vel abrir arquivo %s"
 
 #: src/wiz.c:2026
 #, c-format
@@ -1488,70 +1020,18 @@ msgstr "Tempo até próxima limpeza"
 msgid "Title too long."
 msgstr "Nome de fun\347\343o muito grande."
 
-#: game.c:1447
-#, c-format
-msgid "Total reboots: %d"
-msgstr "\332ltima reinicializa\347\343o em %s"
-
 #: src/set.c:638
 #, c-format
 msgid "Unable to %s attribute."
-msgstr "** Imposs\355vel abrir arquivo %s"
-
-#: src/services.c:649 src/services.c:689 src/services.c:723 src/services.c:759
-msgid "Unable to access service details"
-msgstr "** Imposs\355vel abrir arquivo %s"
-
-#: filecopy.c:208
-#, c-format
-msgid "Unable to check file %s"
-msgstr "** Imposs\355vel abrir arquivo %s"
-
-#: src/services.c:625
-msgid "Unable to create service"
 msgstr "** Imposs\355vel abrir arquivo %s"
 
 #: src/wiz.c:2073 src/wiz.c:2076 src/wiz.c:2080
 msgid "Unable to delete name."
 msgstr "** Imposs\355vel abrir arquivo %s"
 
-#: src/extchat.c:145
-#, c-format
-msgid "Unable to load channel %d."
-msgstr "** Imposs\355vel abrir arquivo %s"
-
-#: src/access.c:261
-#, c-format
-msgid "Unable to open %s."
-msgstr "** Imposs\355vel abrir arquivo %s"
-
-#: filecopy.c:204
-#, c-format
-msgid "Unable to open file %s"
-msgstr "** Imposs\355vel abrir arquivo %s"
-
-#: filecopy.c:69
-#, c-format
-msgid "Unable to open file: %s"
-msgstr "** Imposs\355vel abrir arquivo %s"
-
 #: src/wiz.c:2036 src/wiz.c:2056
 msgid "Unable to open names file."
 msgstr "** Imposs\355vel abrir arquivo %s"
-
-#: filecopy.c:217
-#, c-format
-msgid "Unable to read last part of file %s"
-msgstr "** Imposs\355vel abrir arquivo %s"
-
-#: filecopy.c:125
-#, c-format
-msgid "Unable to write to file: %s"
-msgstr "** Imposs\355vel abrir arquivo %s"
-
-#: src/services.c:802
-msgid "Usage is :-\n"
-msgstr "Utiliza\347\343o: -\n"
 
 #: src/game.c:1239
 msgid "What command do you want to scan for?"
@@ -1713,10 +1193,6 @@ msgstr "Aparentemente voc\352 n\343o pode largar coisas aqui."
 msgid "You can't delete that @function."
 msgstr "Voc\352 n\343o pode fazer isso enquanto estiver fixo."
 
-#: src/game.c:899 src/move.c:710 src/wiz.c:374
-msgid "You can't do that IC!"
-msgstr "Eu n\343o consigo encontrar isso."
-
 #: src/move.c:576
 msgid "You can't drop that."
 msgstr "Eu n\343o consigo encontrar isso."
@@ -1853,16 +1329,6 @@ msgstr "Voc\352 n\343o pode fazer isso enquanto estiver fixo."
 msgid "You do not have such power."
 msgstr "Aparentemente voc\352 n\343o pode largar coisas aqui."
 
-#: src/fundb.c:729
-#, c-format
-msgid "You don't have %d %s to do that."
-msgstr "Aparentemente voc\352 n\343o pode largar coisas aqui."
-
-#: src/look.c:1097
-#, c-format
-msgid "You don't have enough %d %s to do that."
-msgstr "Aparentemente voc\352 n\343o pode largar coisas aqui."
-
 #: src/rob.c:120 src/speech.c:935
 #, c-format
 msgid "You don't have enough %s."
@@ -1941,10 +1407,6 @@ msgstr "Voc\352 precisa especificar um comando."
 #: src/rob.c:230
 #, c-format
 msgid "You must specify a positive number of %s."
-msgstr "Voc\352 precisa especificar um comando."
-
-#: src/cmds.c:228
-msgid "You must specify a type of lock"
 msgstr "Voc\352 precisa especificar um comando."
 
 #: src/look.c:1044
@@ -2030,22 +1492,4 @@ msgid ""
 msgstr ""
 "\n"
 "CORREIO: Voc\352 n\343o pode responder a uma mensagem inexistente.\n"
-
-#: src/game.c:1491
-#, c-format
-msgid ""
-"\n"
-"Process ID:  %10d        %10d bytes per page"
-msgstr ""
-"\n"
-" No. do processo:  %10d        %10d bytes por página"
-
-#: game.c:1530
-#, c-format
-msgid ""
-"\n"
-"Process ID:  %10u        %10d bytes per page"
-msgstr ""
-"\n"
-" No. do processo:  %10d        %10d bytes por p\341gina"
 

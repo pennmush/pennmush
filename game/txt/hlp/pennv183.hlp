@@ -17,10 +17,6 @@ Major Changes:
  * 'mud_url' @config. If this is enabled, accessing the mush with an HTTP
    browser will redirect the user to the selected mud_url. (This may need
    some work and testing by a public place with many clients.) [GM]
- * The host() and idle() aliases (for hostname and idlesecs) have been
-   moved from the hardcode into aliascnf.dst. PLEASE COPY the appropriate
-   function_alias lines into your alias.cnf to ensure your softcode 
-   continues to work correctly. [MG]
  * The internal code for object matching has been rewritten, hopefully
    fixing a few bugs and improving match results in some cases. [MG]
 

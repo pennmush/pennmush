@@ -1106,10 +1106,6 @@ msgstr "CHAT: Modl\345s p\345 <%s> nollst\344llt."
 msgid "CHAT: Modlock on <%s> set."
 msgstr "CHAT: Modl\345s p\345 <%s> satt."
 
-#: extchat.c:1985
-msgid "CHAT: New description too long."
-msgstr "CHAT: Kanal <%s> beskrivning \344ndrad."
-
 #: src/extchat.c:1703
 msgid "CHAT: No channel matches that string."
 msgstr "CHAT: Inga kanaler tr\344ffar den str\344ngen."
@@ -3635,10 +3631,6 @@ msgstr "Du f\366ljer efter: %s"
 #: src/set.c:901
 msgid "You are not allowed to be your own ancestor!"
 msgstr "Du kan inte vara din egen f\366rfader!"
-
-#: extchat.c:1430
-msgid "You are not on any channels."
-msgstr "Du \344r inte p\345 kanal <%s>."
 
 #: src/extchat.c:1254 src/extchat.c:1364
 #, c-format

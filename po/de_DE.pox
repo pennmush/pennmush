@@ -43,10 +43,6 @@ msgstr " Attribute werden im Arbeitsspeicher word komprimiert."
 msgid " The MUSH was compiled with Sqlite3 support."
 msgstr " Das MUSH wurde mit Sqlite3-Unterstützung kompiliert."
 
-#: src/conf.c:1113
-msgid " convtime() is stricter."
-msgstr " Titel %s für Kanal <%s>."
-
 #: flags.c:1531
 msgid " granted."
 msgstr " erteilt."
@@ -693,11 +689,6 @@ msgstr "CHAT: Channel <%s> ist jetzt im Besitz von %s."
 msgid "CHAT: Channel <%s> wiped."
 msgstr "CHAT: Kanal <%s> ausgelöscht."
 
-#: extchat.c:1596
-#, c-format
-msgid "CHAT: Hidelock on <%s> set."
-msgstr "Zugriff verweigert."
-
 #: extchat.c:955 extchat.c:1008
 msgid "CHAT: I don't know which channel you mean."
 msgstr "Du mußt einen Kanal angeben."
@@ -1253,11 +1244,6 @@ msgstr "Es wurde nach %s bewegt."
 #: src/move.c:516
 msgid "It's all around you!"
 msgstr "Es ist rund um dich herum!"
-
-#: src/player.c:460
-#, c-format
-msgid "Last FAILED connect was from %s."
-msgstr "Böses Passwort."
 
 #: src/look.c:743
 #, c-format
@@ -2698,18 +2684,9 @@ msgstr "Du mußt einen Kanal angeben."
 msgid "You must specify a command."
 msgstr "Du mußt einen Befehl angeben."
 
-#: src/rob.c:230
-#, c-format
-msgid "You must specify a positive number of %s."
-msgstr "Du must eine positive Anzahl an %'s angeben."
-
 #: src/look.c:1044
 msgid "You must specify a valid player name."
 msgstr "Du musst ein gueltigen Spieler Namen angeben."
-
-#: src/function.c:672
-msgid "You must specify an object and an attribute."
-msgstr "Warnung '%s' für %s:"
 
 #: src/destroy.c:280
 msgid "You must use @nuke to destroy a player."

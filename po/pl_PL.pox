@@ -2605,11 +2605,6 @@ msgstr "Nie s±dzê aby #%d chcia³ maile od %s."
 msgid "I don't think #%d wants to hear from %s."
 msgstr "Nie s±dzê aby #%d chcia³ s³uchaæ %s."
 
-#: attrib.c:935
-#, c-format
-msgid "I don't think #%d wants to hear from you."
-msgstr "Nie rozumiem co chcesz zrobic."
-
 #: src/fundb.c:1412
 #, c-format
 msgid "I don't understand switch '%c'."

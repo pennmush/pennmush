@@ -4571,11 +4571,6 @@ msgstr "törölve"
 msgid "drops %s."
 msgstr "eldobja %st."
 
-#: src/warnings.c:186
-#, c-format
-msgid "exit has multiple (%d) return exits"
-msgstr "A kijárat visszaútja duplikált."
-
 #: src/warnings.c:183
 msgid "exit has no return exit"
 msgstr "kijárat csak egy irányban létezik"

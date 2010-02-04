@@ -240,11 +240,6 @@ msgstr "#-1 AMB\315GUO"
 msgid "#-1 UNKNOWN OPERATION"
 msgstr "#-1 N\303O EXISTE ESTE TIPO"
 
-#: src/atr_tab.c:226
-#, c-format
-msgid "%s -- Attribute permissions now: %s"
-msgstr "Atributos n\343o podem ser apagados."
-
 #: src/extchat.c:803 src/extchat.c:835
 #, c-format
 msgid "%s is already on channel <%s>."
@@ -265,47 +260,17 @@ msgstr "BATE-PAPO: Seelock em <%s> %s."
 msgid "%s took %d %s from you!"
 msgstr "%s tomou %d %s de voc\352!"
 
-#: src/move.c:495
-#, c-format
-msgid "%s was taken from you."
-msgstr "%s tomou %d %s de voc\352!"
-
 #: src/command.c:1118
 msgid "@command is ALWAYS enabled."
 msgstr "@lock/drop est\341 dispon\355vel."
-
-#: src/cque.c:1045
-#, c-format
-msgid "All objects for %s are being restarted."
-msgstr "Restri\347\365es de quota est\343o sendo aplicadas."
-
-#: src/cque.c:924
-#, c-format
-msgid "All objects for %s have been halted."
-msgstr "Restri\347\365es de quota est\343o sendo aplicadas."
-
-#: src/cque.c:1048
-#, c-format
-msgid "All of your objects are being restarted by %s."
-msgstr "Restri\347\365es de quota est\343o sendo aplicadas."
 
 #: src/cque.c:1059
 msgid "All of your objects are being restarted."
 msgstr "Restri\347\365es de quota est\343o sendo aplicadas."
 
-#: src/cque.c:927
-#, c-format
-msgid "All of your objects have been halted by %s."
-msgstr "Restri\347\365es de quota est\343o sendo aplicadas."
-
 #: src/cque.c:922
 msgid "All of your objects have been halted."
 msgstr "Restri\347\365es de quota est\343o sendo aplicadas."
-
-#: src/set.c:633
-#, c-format
-msgid "Attribute %s (%d copies)"
-msgstr "Atributos podem ser apagados."
 
 #: src/attrib.c:1031
 msgid "Attribute locked."
@@ -319,10 +284,6 @@ msgstr "Atributos podem ser apagados."
 msgid "Attribute unlocked."
 msgstr "Atributos podem ser apagados."
 
-#: src/move.c:326 src/move.c:520 src/wiz.c:397 src/wiz.c:402 src/wiz.c:406
-msgid "Bad destination."
-msgstr "[localiza\347\343o: %s]"
-
 #: src/extchat.c:821
 #, c-format
 msgid "CHAT: %s joins you to channel <%s>."
@@ -333,44 +294,9 @@ msgstr "BATE-PAPO: Seelock em <%s> %s."
 msgid "CHAT: %s removes you from channel <%s>."
 msgstr "BATE-PAPO: Seelock em <%s> %s."
 
-#: extchat.c:1150
-#, c-format
-msgid "CHAT: Channel <%s> created."
-msgstr "BATE-PAPO: Seelock em <%s> %s."
-
-#: extchat.c:1998
-#, c-format
-msgid "CHAT: Channel <%s> description cleared."
-msgstr "BATE-PAPO: Seelock em <%s> %s."
-
-#: extchat.c:2001
-#, c-format
-msgid "CHAT: Channel <%s> description set."
-msgstr "BATE-PAPO: Seelock em <%s> %s."
-
 #: src/extchat.c:1496
 #, c-format
 msgid "CHAT: Channel <%s> now owned by %s."
-msgstr "BATE-PAPO: Seelock em <%s> %s."
-
-#: extchat.c:1548
-#, c-format
-msgid "CHAT: Channel <%s> resists."
-msgstr "BATE-PAPO: Seelock em <%s> %s."
-
-#: extchat.c:1742
-#, c-format
-msgid "CHAT: Channel <%s> wiped."
-msgstr "BATE-PAPO: Seelock em <%s> %s."
-
-#: extchat.c:1595
-#, c-format
-msgid "CHAT: Hidelock on <%s> reset."
-msgstr "BATE-PAPO: Seelock em <%s> %s."
-
-#: extchat.c:1596
-#, c-format
-msgid "CHAT: Hidelock on <%s> set."
 msgstr "BATE-PAPO: Seelock em <%s> %s."
 
 #: extchat.c:955 extchat.c:1008
@@ -385,73 +311,13 @@ msgstr "Voc\352 n\343o pode fazer isso enquanto estiver fixo."
 msgid "CHAT: I don't understand that key."
 msgstr "Eu n\343o consigo encontrar isso."
 
-#: extchat.c:1568
-#, c-format
-msgid "CHAT: Joinlock on <%s> reset."
-msgstr "BATE-PAPO: Seelock em <%s> %s."
-
-#: extchat.c:1569
-#, c-format
-msgid "CHAT: Joinlock on <%s> set."
-msgstr "BATE-PAPO: Seelock em <%s> %s."
-
-#: extchat.c:1604
-#, c-format
-msgid "CHAT: Modlock on <%s> reset."
-msgstr "BATE-PAPO: Seelock em <%s> %s."
-
-#: extchat.c:1605
-#, c-format
-msgid "CHAT: Modlock on <%s> set."
-msgstr "BATE-PAPO: Seelock em <%s> %s."
-
 #: src/extchat.c:1481
 msgid "CHAT: Only a Wizard can do that."
 msgstr "Eu n\343o consigo encontrar isso."
 
-#: extchat.c:1586
-#, c-format
-msgid "CHAT: Seelock on <%s> reset."
-msgstr "BATE-PAPO: Seelock em <%s> %s."
-
-#: extchat.c:1587
-#, c-format
-msgid "CHAT: Seelock on <%s> set."
-msgstr "BATE-PAPO: Seelock em <%s> %s."
-
-#: extchat.c:1577
-#, c-format
-msgid "CHAT: Speaklock on <%s> reset."
-msgstr "BATE-PAPO: Seelock em <%s> %s."
-
-#: extchat.c:1578
-#, c-format
-msgid "CHAT: Speaklock on <%s> set."
-msgstr "BATE-PAPO: Seelock em <%s> %s."
-
-#: extchat.c:952
-#, c-format
-msgid "CHAT: You are already on channel <%s>"
-msgstr "BATE-PAPO: Seelock em <%s> %s."
-
-#: src/extchat.c:757
-#, c-format
-msgid "CHAT: You can't do that with channel <%s>."
-msgstr "Voc\352 n\343o pode fazer isso enquanto estiver fixo."
-
 #: src/extchat.c:824
 #, c-format
 msgid "CHAT: You join %s to channel <%s>."
-msgstr "BATE-PAPO: Seelock em <%s> %s."
-
-#: src/extchat.c:827
-#, c-format
-msgid "CHAT: You join channel <%s>."
-msgstr "BATE-PAPO: Seelock em <%s> %s."
-
-#: src/extchat.c:863
-#, c-format
-msgid "CHAT: You leave channel <%s>."
 msgstr "BATE-PAPO: Seelock em <%s> %s."
 
 #: src/extchat.c:859
@@ -484,22 +350,9 @@ msgstr "Voc\352 n\343o pode fazer isso enquanto estiver fixo."
 msgid "Create what?"
 msgstr "Criar o qu\352?"
 
-#: look.c:730
-#, c-format
-msgid "Created: %s"
-msgstr "Criar o qu\352?"
-
 #: look.c:828
 #, c-format
 msgid "Destination: %s"
-msgstr "[localiza\347\343o: %s]"
-
-#: look.c:824
-msgid "Destination: *HOME*"
-msgstr "[localiza\347\343o: %s]"
-
-#: look.c:821
-msgid "Destination: *UNLINKED*"
 msgstr "[localiza\347\343o: %s]"
 
 #: function.c:735
@@ -590,11 +443,6 @@ msgstr "Qual sinal voc\352 quer ativar?"
 msgid "I don't recognize who you want to dismiss."
 msgstr "Qual sinal voc\352 quer ativar?"
 
-#: src/boolexp.c:261
-#, c-format
-msgid "I don't see %s here."
-msgstr "Eu n\343o consigo encontrar isso."
-
 #: src/fundb.c:1327 src/look.c:551 src/look.c:566 src/move.c:482\nsrc/move.c:505 src/rob.c:91 src/speech.c:599
 msgid "I don't see that here."
 msgstr "Eu n\343o consigo encontrar isso."
@@ -606,11 +454,6 @@ msgstr "Eu n\343o consigo encontrar isso."
 #: src/lock.c:362
 msgid "I don't see what you want to lock!"
 msgstr "Qual sinal voc\352 quer ativar?"
-
-#: src/fundb.c:1412
-#, c-format
-msgid "I don't understand switch '%c'."
-msgstr "Eu n\343o consigo encontrar isso."
 
 #: src/lock.c:383
 msgid "I don't understand that key."
@@ -656,22 +499,9 @@ msgstr "\332ltima reinicializa\347\343o em %s"
 msgid "Location: %s"
 msgstr "[localiza\347\343o: %s]"
 
-#: src/extmail.c:763
-#, c-format
-msgid "MAIL: %d messages forwarded."
-msgstr "CORREIO: Voc\352 tem uma nova mensagem (%d) de %s."
-
-#: src/malias.c:438
-msgid "MAIL: Alias Destroyed."
-msgstr "CORREIO: Todos os codinomes de correio devem come\347ar com '%c'."
-
 #: src/malias.c:148
 #, c-format
 msgid "MAIL: All Mail aliases must begin with '%c'."
-msgstr "CORREIO: Todos os codinomes de correio devem come\347ar com '%c'."
-
-#: src/malias.c:513
-msgid "MAIL: All mail aliases destroyed!"
 msgstr "CORREIO: Todos os codinomes de correio devem come\347ar com '%c'."
 
 #: src/malias.c:403
@@ -698,15 +528,6 @@ msgstr "Atributos podem ser apagados."
 msgid "MAIL: Folder %d now has no name"
 msgstr "CORREIO: A pasta %d agora n\343o tem nome."
 
-#: src/extmail.c:255
-#, c-format
-msgid "MAIL: Folder %d now named '%s'"
-msgstr "CORREIO: A pasta %d agora n\343o tem nome."
-
-#: src/extmail.c:245
-msgid "MAIL: Folder name too long"
-msgstr "CORREIO: A pasta %d agora n\343o tem nome."
-
 #: src/extmail.c:792
 msgid "MAIL: I can't figure out what you want to send."
 msgstr "CORREIO: Voc\352 n\343o pode responder a uma mensagem inexistente."
@@ -723,10 +544,6 @@ msgstr "Eu n\343o consigo encontrar isso."
 msgid "MAIL: I cannot find that player."
 msgstr "Eu n\343o consigo encontrar isso."
 
-#: src/extmail.c:250
-msgid "MAIL: Illegal folder name"
-msgstr "CORREIO: A pasta %d agora n\343o tem nome."
-
 #: src/malias.c:158
 msgid "MAIL: Invalid character in mail alias."
 msgstr "Eu n\343o consigo encontrar isso."
@@ -735,22 +552,9 @@ msgstr "Eu n\343o consigo encontrar isso."
 msgid "MAIL: Invalid player"
 msgstr "Eu n\343o consigo encontrar isso."
 
-#: src/malias.c:418
-msgid "MAIL: Mail Alias renamed."
-msgstr "CORREIO: Todos os codinomes de correio devem come\347ar com '%c'."
-
-#: src/malias.c:484
-#, c-format
-msgid "MAIL: Number of mail aliases defined: %d"
-msgstr "CORREIO: Todos os codinomes de correio devem come\347ar com '%c'."
-
 #: src/malias.c:497
 msgid "MAIL: Only god can do that!"
 msgstr "Eu n\343o consigo encontrar isso."
-
-#: src/extmail.c:695
-msgid "MAIL: To whom should I forward?"
-msgstr "CORREIO: Voc\352 tem uma nova mensagem (%d) de %s."
 
 #: src/extmail.c:726
 msgid "MAIL: You can't reply to nonexistant mail."
@@ -768,21 +572,9 @@ msgstr "Voc\352 n\343o pode fazer isso enquanto estiver fixo."
 msgid "MAIL: You cannot send mail to non-existent people."
 msgstr "CORREIO: Voc\352 n\343o pode responder a uma mensagem inexistente."
 
-#: src/extmail.c:393 src/extmail.c:446
-msgid "MAIL: You don't have any matching messages!"
-msgstr "CORREIO: Voc\352 tem uma nova mensagem (%d) de %s."
-
-#: src/extmail.c:518
-msgid "MAIL: You don't have that many matching messages!"
-msgstr "CORREIO: Voc\352 tem uma nova mensagem (%d) de %s."
-
 #: src/extmail.c:1091
 #, c-format
 msgid "MAIL: You have a new message (%d) from %s."
-msgstr "CORREIO: Voc\352 tem uma nova mensagem (%d) de %s."
-
-#: src/extmail.c:705
-msgid "MAIL: You have no messages to forward."
 msgstr "CORREIO: Voc\352 tem uma nova mensagem (%d) de %s."
 
 #: malias.c:447
@@ -792,16 +584,6 @@ msgstr "CORREIO: Voc\352 n\343o pode responder a uma mensagem inexistente."
 #: src/extmail.c:274
 msgid "MAIL: You must specify a folder name or number"
 msgstr "Voc\352 precisa especificar um comando."
-
-#: src/extmail.c:1090
-#, c-format
-msgid "MAIL: You sent your message to %s."
-msgstr "CORREIO: Voc\352 tem uma nova mensagem (%d) de %s."
-
-#: src/game.c:1288
-#, c-format
-msgid "Matched zone of location: %s  [%d:%s]"
-msgstr "Concord\342ncias encontradas no conte\372do desta sala:"
 
 #: src/game.c:1258
 msgid "Matches on carried objects:"
@@ -891,19 +673,9 @@ msgstr "Eu n\343o consigo encontrar isso."
 msgid "Owner changed."
 msgstr "Atributos podem ser apagados."
 
-#: look.c:704
-#, c-format
-msgid "Owner: %s  Zone: %s  %s: %d"
-msgstr "COMO? %s em %s [%s]: %s"
-
 #: src/set.c:912
 msgid "Parent changed."
 msgstr "Atributos podem ser apagados."
-
-#: look.c:707
-#, c-format
-msgid "Parent: %s"
-msgstr "Criar o qu\352?"
 
 #: src/wiz.c:271
 msgid "Quotas not changed."
@@ -920,11 +692,6 @@ msgstr "Criar o qu\352?"
 #: function.c:731
 msgid "Restrict what function?"
 msgstr "Criar o qu\352?"
-
-#: src/wiz.c:2026
-#, c-format
-msgid "Site %s locked"
-msgstr "Atributos podem ser apagados."
 
 #: src/create.c:102
 msgid "Sorry you can only make exits out of rooms."
@@ -949,11 +716,6 @@ msgstr "Voc\352 s\363 pode seguir jogadores e coisas."
 #: src/attrib.c:928
 msgid "That attribute cannot be changed by you."
 msgstr "Atributos n\343o podem ser apagados."
-
-#: src/attrib.c:1022
-#, c-format
-msgid "That attribute is %slocked."
-msgstr "Atributos podem ser apagados."
 
 #: src/atr_tab.c:246 src/atr_tab.c:280 src/atr_tab.c:307
 msgid "That attribute isn't in the attribute table"
@@ -991,11 +753,6 @@ msgstr "Atributos n\343o podem ser apagados."
 msgid "That's not a builtin function."
 msgstr "Voc\352 n\343o pode fazer isso enquanto estiver fixo."
 
-#: wiz.c:694
-#, c-format
-msgid "The next object to be created will be #%d."
-msgstr "Atributos n\343o podem ser apagados."
-
 #: src/speech.c:1368
 msgid "There can't be anything in that!"
 msgstr "Eu n\343o consigo encontrar isso."
@@ -1023,14 +780,6 @@ msgstr "Nome de fun\347\343o muito grande."
 #: src/set.c:638
 #, c-format
 msgid "Unable to %s attribute."
-msgstr "** Imposs\355vel abrir arquivo %s"
-
-#: src/wiz.c:2073 src/wiz.c:2076 src/wiz.c:2080
-msgid "Unable to delete name."
-msgstr "** Imposs\355vel abrir arquivo %s"
-
-#: src/wiz.c:2036 src/wiz.c:2056
-msgid "Unable to open names file."
 msgstr "** Imposs\355vel abrir arquivo %s"
 
 #: src/game.c:1239
@@ -1149,21 +898,6 @@ msgstr "Voc\352 aniquilou a ag\352ncia de correio. Todas as mensagens foram apag
 msgid "You are not on any channels."
 msgstr "Voc\352 precisa especificar um comando."
 
-#: src/extchat.c:1254 src/extchat.c:1364
-#, c-format
-msgid "You are not on channel <%s>."
-msgstr "BATE-PAPO: Seelock em <%s> %s."
-
-#: src/extchat.c:1291
-#, c-format
-msgid "You are not permitted to hide on channel <%s>."
-msgstr "Voc\352 n\343o pode fazer isso enquanto estiver fixo."
-
-#: src/wiz.c:835
-#, c-format
-msgid "You booted %s off!"
-msgstr "%s tomou %d %s de voc\352!"
-
 #: attrib.c:1078
 msgid "You can only chown an attribute to yourself."
 msgstr "Atributos vazios s\343o mantidos."
@@ -1175,11 +909,6 @@ msgstr "Voc\352 s\363 pode seguir jogadores e coisas."
 #: src/wiz.c:234
 msgid "You can only set quotas to a positive number."
 msgstr "Voc\352 precisa especificar um comando."
-
-#: src/extchat.c:1119
-#, c-format
-msgid "You can't afford the %d %s."
-msgstr "Voc\352 n\343o pode fazer isso enquanto estiver fixo."
 
 #: src/wiz.c:798
 msgid "You can't boot other people!"
@@ -1329,16 +1058,6 @@ msgstr "Voc\352 n\343o pode fazer isso enquanto estiver fixo."
 msgid "You do not have such power."
 msgstr "Aparentemente voc\352 n\343o pode largar coisas aqui."
 
-#: src/rob.c:120 src/speech.c:935
-#, c-format
-msgid "You don't have enough %s."
-msgstr "Aparentemente voc\352 n\343o pode largar coisas aqui."
-
-#: src/rob.c:246
-#, c-format
-msgid "You don't have that many %s to give!"
-msgstr "CORREIO: Voc\352 tem uma nova mensagem (%d) de %s."
-
 #: src/move.c:568 src/rob.c:191
 msgid "You don't have that!"
 msgstr "Eu n\343o consigo encontrar isso."
@@ -1358,11 +1077,6 @@ msgstr "Voc\352 n\343o pode fazer isso enquanto estiver fixo."
 #: src/move.c:745
 msgid "You don't see that here."
 msgstr "Aparentemente voc\352 n\343o pode largar coisas aqui."
-
-#: src/rob.c:276
-#, c-format
-msgid "You give %d %s to %s."
-msgstr "%s tomou %d %s de voc\352!"
 
 #: src/create.c:311
 msgid "You may not link something to itself."
@@ -1404,11 +1118,6 @@ msgstr "Voc\352 precisa especificar um comando."
 msgid "You must specify a flag to set."
 msgstr "Voc\352 precisa especificar um comando."
 
-#: src/rob.c:230
-#, c-format
-msgid "You must specify a positive number of %s."
-msgstr "Voc\352 precisa especificar um comando."
-
 #: src/look.c:1044
 msgid "You must specify a valid player name."
 msgstr "Voc\352 precisa especificar um comando."
@@ -1433,24 +1142,9 @@ msgstr "Nome de fun\347\343o muito grande."
 msgid "You now appear on the WHO list."
 msgstr "Nome de fun\347\343o muito grande."
 
-#: src/destroy.c:1181
-#, c-format
-msgid "You own an object %s that was 'orphaned'."
-msgstr "Voc\352 n\343o pode fazer isso enquanto estiver fixo."
-
 #: src/look.c:412
 msgid "You see nothing special."
 msgstr "Voc\352 precisa especificar um comando."
-
-#: extmail.c:2685
-#, c-format
-msgid "You sent your message to the '%s' alias"
-msgstr "CORREIO: Voc\352 tem uma nova mensagem (%d) de %s."
-
-#: src/rob.c:279
-#, c-format
-msgid "You took %d %s from %s!"
-msgstr "%s tomou %d %s de voc\352!"
 
 #: src/wiz.c:453
 msgid "You're in the Void. This is not a good thing."
@@ -1459,11 +1153,6 @@ msgstr "Voc\352 est\341 no Vazio. Isso n\343o \351 bom."
 #: src/wiz.c:479
 msgid "You're in the void - sending you home."
 msgstr "Voc\352 est\341 no Vazio. Isso n\343o \351 bom."
-
-#: src/cque.c:988
-#, c-format
-msgid "Your objects are being globally restarted by %s"
-msgstr "Restri\347\365es de quota est\343o sendo aplicadas."
 
 #: src/set.c:422
 msgid "Zone changed."

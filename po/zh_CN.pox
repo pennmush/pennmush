@@ -89,11 +89,6 @@ msgstr "%s开始跟随你。"
 msgid "%s gave you %s."
 msgstr "%s~{0Q~}%s~{8xAKDc!#~}"
 
-#: src/move.c:332
-#, c-format
-msgid "%s goes home."
-msgstr "亾s 夞壠"
-
 #: src/destroy.c:344
 #, c-format
 msgid "%s has scheduled your room %s to be destroyed."
@@ -207,11 +202,6 @@ msgstr "邮箱：%d封邮件在文件夹%d [%s](%d未读，%d删除)。"
 #, c-format
 msgid "MAIL: %s is not accepting mail from you right now."
 msgstr "邮箱：刚才%s没有收到你的邮件。"
-
-#: src/extmail.c:432
-#, c-format
-msgid "MAIL: All messages filed in folder %d [%s]"
-msgstr "邮箱：所有邮件归档到目录%s[%s]"
 
 #: src/malias.c:378
 msgid "MAIL: I cannot find that player."

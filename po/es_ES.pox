@@ -2651,11 +2651,6 @@ msgstr "No se permite teletransportarse en esta habitación."
 msgid "That attribute cannot be changed by you."
 msgstr "Ese atributo no puede ser cambiado por tí."
 
-#: src/attrib.c:1022
-#, c-format
-msgid "That attribute is %slocked."
-msgstr "El"
-
 #: src/atr_tab.c:246 src/atr_tab.c:280 src/atr_tab.c:307
 msgid "That attribute isn't in the attribute table"
 msgstr "Ese atributo no está en la lista de atributos."

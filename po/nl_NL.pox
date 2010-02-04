@@ -2721,11 +2721,6 @@ msgstr "Ik zie dat object niet."
 msgid "I don't see what you want to lock!"
 msgstr "Ik zie niet wat je op slot wilt doen!"
 
-#: attrib.c:1578
-#, c-format
-msgid "I don't think #%d wants %s's mail."
-msgstr "Ik denk niet dat #%d %'s post wil hebben."
-
 #: attrib.c:1573
 #, c-format
 msgid "I don't think #%d wants to hear from %s."

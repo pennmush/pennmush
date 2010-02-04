@@ -649,11 +649,6 @@ msgstr "%s types --> %s%s%s"
 msgid "%s was taken from you."
 msgstr "%s ble tatt fra deg."
 
-#: destroy.c:412
-#, c-format
-msgid "%s's %s has been spared from destruction."
-msgstr "%s har blitt reddet fra \370deleggelse."
-
 #: src/destroy.c:357 src/destroy.c:374
 #, c-format
 msgid "%s's %s is scheduled to be destroyed."
@@ -2446,11 +2441,6 @@ msgstr "Parent forandret."
 msgid "Parent: %s"
 msgstr "Forelder: %s"
 
-#: wiz.c:724
-#, c-format
-msgid "Password for %s changed."
-msgstr "Passord forandret."
-
 #: src/extmail.c:1584
 msgid "Permission denied"
 msgstr "Tillatelse nektes"
@@ -3342,10 +3332,6 @@ msgstr "Du f\370lger etter: %s"
 #: src/set.c:901
 msgid "You are not allowed to be your own ancestor!"
 msgstr "Du kan ikke v\346re dine egne foreldre."
-
-#: extchat.c:1430
-msgid "You are not on any channels."
-msgstr "Du er ikke p\345 kanal <%s>."
 
 #: src/extchat.c:1254 src/extchat.c:1364
 #, c-format

@@ -97,6 +97,7 @@
 #endif
 #ifdef HAVE_JIT_JIT_H
 #include <jit/jit.h>
+#include <jit/jit-dump.h>
 #endif
 
 #include "conf.h"
@@ -401,6 +402,8 @@ sizeof_boolexp(boolexp b)
     return (int) chunk_len(b);
 }
 
+static int boolexp_recursion = 0;
+
 /** Evaluate a boolexp.
  * This is the main function to be called by other hardcode. It
  * determines whether a player can pass a boolexp lock on a given
@@ -416,7 +419,6 @@ eval_boolexp(dbref player /* The player trying to pass */ ,
              boolexp b /* The boolexp */ ,
              dbref target /* The object with the lock */ )
 {
-  static int boolexp_recursion = 0;
 
   if (!GoodObject(player))
     return 0;
@@ -1978,6 +1980,8 @@ check_lock(dbref player, dbref i, const char *name, boolexp be)
 
 static bool types_initted = 0;
 static jit_value_t j_r;
+static jit_type_t jit_type_cstr = NULL, jit_type_pint = NULL;
+
 
 static void
 setup_jit_types(void)
@@ -1987,6 +1991,8 @@ setup_jit_types(void)
   
   types_initted = 1;
 
+  jit_type_cstr = jit_type_create_pointer(jit_type_sys_char, 1);
+  jit_type_pint = jit_type_create_pointer(jit_type_int, 1);
 }
 
 static jit_value_t
@@ -2075,6 +2081,31 @@ void free_string_pool(struct string_pool *p)
   }
 }
 
+void
+incr_recursion(jit_function_t fun)
+{
+  jit_value_t temp1, temp2, recr, one;
+
+  one = jit_value_create_nint_constant(fun, jit_type_int, 1);
+  recr = jit_value_create_nint_constant(fun, jit_type_pint, (jit_nint)&boolexp_recursion);
+  temp1 = jit_insn_load_relative(fun, recr, 0, jit_type_int);
+  temp2 = jit_insn_add(fun, temp1, one);
+  jit_insn_store_relative(fun, recr, 0, temp2);
+}
+
+void
+decr_recursion(jit_function_t fun)
+{
+  jit_value_t temp1, temp2, recr, one;
+
+  one = jit_value_create_nint_constant(fun, jit_type_int, 1);
+  recr = jit_value_create_nint_constant(fun, jit_type_pint, (jit_nint)&boolexp_recursion);
+  temp1 = jit_insn_load_relative(fun, recr, 0, jit_type_int);
+  temp2 = jit_insn_sub(fun, temp1, one);
+  jit_insn_store_relative(fun, recr, 0, temp2);
+}
+
+
 struct jump_list {
   jit_label_t label;
   const uint8_t *loc;
@@ -2092,11 +2123,11 @@ compile_boolexp(dbref thing, boolexp b)
   uint8_t *pc, *bytecode;
   struct lock_jit_metadata *meta;
   jit_function_t fun;
-  static jit_type_t sig = NULL, params[2] = { NULL, NULL };
-  static jit_type_t member_sig = NULL;
+  static jit_type_t sig = NULL, params[4] = { NULL };
+  static jit_type_t member_sig = NULL, eval_lock_sig = NULL;
   jit_value_t j_arg, j_s, j_player, j_thing;
   jit_value_t temp1, temp2, temp3, temp4;
-  jit_value_t func_args[2];
+  jit_value_t func_args[4] = { NULL };
   int fail = 0;
   struct jump_list *jumps = NULL, *j;
 
@@ -2123,6 +2154,12 @@ compile_boolexp(dbref thing, boolexp b)
     /* Sig for member() */
     member_sig = jit_type_create_signature(jit_abi_cdecl, jit_type_sys_bool, params, 2, 1);
 
+    /* Sig for check_attrib_lock */
+    params[0] = jit_type_int;
+    params[1] = jit_type_int;
+    params[2] = jit_type_cstr;
+    params[3] = jit_type_cstr;
+    eval_lock_sig = jit_type_create_signature(jit_abi_cdecl, jit_type_int, params, 4, 1);
   }
 
 
@@ -2139,7 +2176,7 @@ compile_boolexp(dbref thing, boolexp b)
   j_thing = jit_value_get_param(fun, 1);
   j_arg = jit_value_create(fun, jit_type_int);
   j_r = jit_value_create(fun, jit_type_int);
-  j_s = jit_value_create(fun, jit_type_void_ptr);
+  j_s = jit_value_create(fun, jit_type_cstr);
   
   /* r = 0 */
   temp1 = jit_value_create_nint_constant(fun, jit_type_int, 0);
@@ -2204,9 +2241,10 @@ compile_boolexp(dbref thing, boolexp b)
 	newstr->next = meta->pool;
 	meta->pool = newstr;
 
-	temp1 = jit_value_create_nint_constant(fun, jit_type_void_ptr, (jit_nint)newstr->s);
+	temp1 = jit_value_create_nint_constant(fun, jit_type_cstr, (jit_nint)newstr->s);
 	jit_insn_store(fun, j_s, temp1);	
       }
+      break;
     case OP_TCONST:
       j_arg = jit_value_create_nint_constant(fun, jit_type_int, arg);
       check_goodobject(fun, j_arg, &j_lab_end);
@@ -2236,6 +2274,35 @@ compile_boolexp(dbref thing, boolexp b)
       temp2 = jit_insn_call_native(fun, "member", (void*)member, member_sig, func_args, 2, 0);
       jit_insn_store(fun, j_r, temp2);
       jit_insn_label(fun, &j_lab_end);
+      break;
+    case OP_TOWNER:
+      j_arg = jit_value_create_nint_constant(fun, jit_type_int, arg);
+      check_goodobject(fun, j_arg, &j_lab_end);
+      temp1 = get_object_field(fun, j_player, owner);
+      temp2 = get_object_field(fun, j_arg, owner);
+      temp3 = jit_insn_eq(fun, temp1, temp2);
+      jit_insn_store(fun, j_r, temp3);
+      jit_insn_label(fun, &j_lab_end);
+      break;
+    case OP_TEVAL:
+      {
+	struct string_pool *newstr;
+	newstr = mush_malloc(sizeof *newstr, "lock.jit.constant");
+	newstr->s = mush_strdup((char *) bytecode + arg, "lock.jit.constant.string");
+	newstr->next = meta->pool;
+	meta->pool = newstr;
+
+	temp1 = jit_value_create_nint_constant(fun, jit_type_cstr, (jit_nint)newstr->s);
+
+	incr_recursion(fun);
+	func_args[0] = j_player;
+	func_args[1] = j_thing;
+	func_args[2] = j_s;
+	func_args[3] = temp1;
+	  temp2 = jit_insn_call_native(fun, "check_attrib_lock", (void*)check_attrib_lock, eval_lock_sig, func_args, 4, 0);
+	jit_insn_store(fun, j_r, temp2);
+	decr_recursion(fun);
+      }
       break;
     case OP_TTYPE:
       switch (bytecode[arg]) {

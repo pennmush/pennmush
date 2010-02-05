@@ -2041,12 +2041,14 @@ check_goodobject(jit_function_t fun, jit_value_t what, jit_label_t *lab_fail)
   jit_value_t j_zero, j_dbtop, temp;
 
   j_zero = jit_value_create_nint_constant(fun, jit_type_int, 0);
-  j_dbtop = jit_value_create_nint_constant(fun, jit_type_int, db_top);
+  j_dbtop = jit_value_create(fun, jit_type_int);
 
   temp = jit_insn_ge(fun, what, j_zero);
   jit_insn_store(fun, j_r, temp);
   jit_insn_branch_if_not(fun, j_r, lab_fail);
 
+  temp = jit_value_create_nint_constant(fun, jit_type_void_ptr, (jit_nint)&db_top);
+  j_dbtop = jit_insn_load_relative(fun, temp, 0, jit_type_int);
   temp = jit_insn_lt(fun, what, j_dbtop);
   jit_insn_store(fun, j_r, temp);
   jit_insn_branch_if_not(fun, j_r, lab_fail);
@@ -2055,7 +2057,6 @@ check_goodobject(jit_function_t fun, jit_value_t what, jit_label_t *lab_fail)
   jit_insn_store(fun, j_r, temp);
   jit_insn_branch_if_not(fun, j_r, lab_fail);
 }
-
 
 struct string_pool {
   char *s;
@@ -2092,8 +2093,10 @@ compile_boolexp(dbref thing, boolexp b)
   struct lock_jit_metadata *meta;
   jit_function_t fun;
   static jit_type_t sig = NULL, params[2] = { NULL, NULL };
+  static jit_type_t member_sig = NULL;
   jit_value_t j_arg, j_s, j_player, j_thing;
   jit_value_t temp1, temp2, temp3, temp4;
+  jit_value_t func_args[2];
   int fail = 0;
   struct jump_list *jumps = NULL, *j;
 
@@ -2112,9 +2115,14 @@ compile_boolexp(dbref thing, boolexp b)
   
 
   if (!sig) {
+    /* Sig for the lock function */
     params[0] = jit_type_int;
     params[1] = jit_type_int;
     sig = jit_type_create_signature(jit_abi_cdecl, jit_type_int, params, 2, 1);
+
+    /* Sig for member() */
+    member_sig = jit_type_create_signature(jit_abi_cdecl, jit_type_sys_bool, params, 2, 1);
+
   }
 
 
@@ -2140,7 +2148,7 @@ compile_boolexp(dbref thing, boolexp b)
   while (1) {
     bvm_opcode op;
     int arg;
-    jit_label_t j_lab_fail = jit_label_undefined;
+    jit_label_t j_lab_end = jit_label_undefined;
 
     op = (bvm_opcode) *pc;
     memcpy(&arg, pc + 1, sizeof arg);
@@ -2188,7 +2196,6 @@ compile_boolexp(dbref thing, boolexp b)
       temp1 = jit_insn_neg(fun, j_r);
       jit_insn_store(fun, j_r, temp1);
       break;
-
     case OP_LOADS:
       {
 	struct string_pool *newstr;
@@ -2200,15 +2207,36 @@ compile_boolexp(dbref thing, boolexp b)
 	temp1 = jit_value_create_nint_constant(fun, jit_type_void_ptr, (jit_nint)newstr->s);
 	jit_insn_store(fun, j_s, temp1);	
       }
-
-    case OP_TIS:
+    case OP_TCONST:
       j_arg = jit_value_create_nint_constant(fun, jit_type_int, arg);
-      check_goodobject(fun, j_arg, &j_lab_fail);
+      check_goodobject(fun, j_arg, &j_lab_end);
       temp1 = jit_insn_eq(fun, j_player, j_arg);
       jit_insn_store(fun, j_r, temp1);
-      jit_insn_label(fun, &j_lab_fail);
+      jit_insn_branch_if(fun, j_r, &j_lab_end);
+      temp1 = get_object_field(fun, j_player, contents);
+      func_args[0] = j_arg;
+      func_args[1] = temp1;
+      temp2 = jit_insn_call_native(fun, "member", (void*)member, member_sig, func_args, 2, 0);
+      jit_insn_store(fun, j_r, temp2);
+      jit_insn_label(fun, &j_lab_end);
       break;
-
+    case OP_TIS:
+      j_arg = jit_value_create_nint_constant(fun, jit_type_int, arg);
+      check_goodobject(fun, j_arg, &j_lab_end);
+      temp1 = jit_insn_eq(fun, j_player, j_arg);
+      jit_insn_store(fun, j_r, temp1);
+      jit_insn_label(fun, &j_lab_end);
+      break;
+    case OP_TCARRY:
+      j_arg = jit_value_create_nint_constant(fun, jit_type_int, arg);
+      check_goodobject(fun, j_arg, &j_lab_end);
+      temp1 = get_object_field(fun, j_player, contents);
+      func_args[0] = j_arg;
+      func_args[1] = temp1;
+      temp2 = jit_insn_call_native(fun, "member", (void*)member, member_sig, func_args, 2, 0);
+      jit_insn_store(fun, j_r, temp2);
+      jit_insn_label(fun, &j_lab_end);
+      break;
     case OP_TTYPE:
       switch (bytecode[arg]) {
       case 'R':
@@ -2236,6 +2264,12 @@ compile_boolexp(dbref thing, boolexp b)
   }
 
  done:
+
+  {
+    /* For debugging. */
+    extern FILE *tracelog_fp;
+    jit_dump_function(tracelog_fp, fun, "boolexp");
+  }
 
   if (fail || !jit_function_compile(fun)) {
     jit_function_abandon(fun);

@@ -4,8 +4,8 @@
 
 typedef uint8_t *switch_mask;
 extern int switch_bytes;
-#define SW_ALLOC()      mush_calloc(switch_bytes, 1, "cmd.switch.vector");
-#define SW_FREE(s)      mush_free((s), "cmd.switch.vector");
+#define SW_ALLOC()      mush_calloc(switch_bytes, 1, "cmd.switch.vector")
+#define SW_FREE(s)      mush_free((s), "cmd.switch.vector")
 #define SW_SET(m,n)     (m[(n) >> 3] |= (1 << ((n) & 0x7)))
 #define SW_CLR(m,n)     (m[(n) >> 3] &= ~(1 << ((n) & 0x7)))
 #define SW_ISSET(m,n)   (m[(n) >> 3] & (1 << ((n) & 0x7)))

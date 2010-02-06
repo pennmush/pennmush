@@ -58,8 +58,8 @@ static ATTR *alloc_atr(const void *hint);
 static void free_atr(ATTR *);
 static void atr_free_one(ATTR *);
 static ATTR *find_atr_pos_in_list(ATTR ***pos, char const *name);
-static int can_create_attr(dbref player, dbref obj, char const *atr_name,
-                           uint32_t flags);
+static atr_err can_create_attr(dbref player, dbref obj, char const *atr_name,
+                               uint32_t flags);
 static ATTR *find_atr_in_list(ATTR *atr, char const *name);
 static ATTR *atr_get_with_parent(dbref obj, char const *atrname, dbref *parent);
 
@@ -518,7 +518,7 @@ can_edit_attr(dbref player, dbref thing, const char *attrname)
  * \retval 0 if the player cannot write the attribute.
  * \retval 1 if the player can write the attribute.
  */
-static int
+static atr_err
 can_create_attr(dbref player, dbref obj, char const *atr_name, uint32_t flags)
 {
   char *p;

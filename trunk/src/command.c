@@ -687,8 +687,6 @@ reserve_alias(const char *a)
   hashadd(strupper(a), (void *) placeholder, &htab_reserved_aliases);
 }
 
-static StrTree switch_names;
-
 /** Initialize command tables (before reading config file).
  * This function performs command table initialization that should take place
  * before the configuration file has been read. It initializes the

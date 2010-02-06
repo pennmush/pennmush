@@ -152,16 +152,13 @@
 	     (else 'line-did-not-match))))))
   (set! process-line pl))
 
-(define-macro (prepend! val lst)
-  `(set! ,lst (cons ,val ,lst)))
-
 ; Read all typedefs from an inchannel or filename.
 (define (read-typedefs from)
   (let*
       ((typedefs '())
        (fl-proc (lambda (line) 
 		  (let ((res (process-line line)))
-		    (if (string? res) (prepend! res typedefs))))))
+		    (if (string? res) (set! typedefs (cons res typedefs)))))))
     (for-each-line fl-proc from)
     (delete-duplicates (sort typedefs string-ci<) string-ci=)))
 

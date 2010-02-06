@@ -93,7 +93,7 @@ start_log(FILE ** fp, const char *filename)
       hashinit(&htab_logfiles, 8);
       ht_initialized = 1;
     }
-    if ((f = (FILE *) hashfind(strupper(filename), &htab_logfiles))) {
+    if ((f = static_cast<FILE *>(hashfind(strupper(filename), &htab_logfiles)))) {
       /* We've already opened this file, so just use that pointer */
       *fp = f;
     } else {
@@ -157,7 +157,7 @@ end_log(const char *filename)
   FILE *fp;
   if (!filename || !*filename)
     return;
-  if ((fp = (FILE *) hashfind(strupper(filename), &htab_logfiles))) {
+  if ((fp = static_cast<FILE *>(hashfind(strupper(filename), &htab_logfiles)))) {
     lock_file(fp);
     fprintf(fp, "END OF LOG.\n");
     fflush(fp);

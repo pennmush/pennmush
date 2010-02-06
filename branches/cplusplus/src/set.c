@@ -471,7 +471,7 @@ af_helper(dbref player, dbref thing,
           char const *pattern
           __attribute__ ((__unused__)), ATTR *atr, void *args)
 {
-  struct af_args *af = args;
+  struct af_args *af = static_cast<af_args *>(args);
 
   /* We must be able to write to that attribute normally,
    * to prevent players from doing funky things to, say, LAST.
@@ -751,7 +751,7 @@ gedit_helper(dbref player, dbref thing,
   size_t rlen, vlen;
   struct gedit_args *gargs;
 
-  gargs = args;
+  gargs = static_cast<gedit_args *>(args);
 
   val = gargs->from;
   vlen = strlen(val);

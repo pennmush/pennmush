@@ -1223,10 +1223,10 @@ do_search(dbref player, const char *arg1, char **arg3)
     int nthings = 0, nexits = 0, nrooms = 0, nplayers = 0;
     dbref *things, *exits, *rooms, *players;
 
-    things = mush_calloc(nresults, sizeof(dbref), "dbref_list");
-    exits = mush_calloc(nresults, sizeof(dbref), "dbref_list");
-    rooms = mush_calloc(nresults, sizeof(dbref), "dbref_list");
-    players = mush_calloc(nresults, sizeof(dbref), "dbref_list");
+    things = static_cast<dbref *>(mush_calloc(nresults, sizeof(dbref), "dbref_list"));
+    exits = static_cast<dbref *>(mush_calloc(nresults, sizeof(dbref), "dbref_list"));
+    rooms = static_cast<dbref *>(mush_calloc(nresults, sizeof(dbref), "dbref_list"));
+    players = static_cast<dbref *>(mush_calloc(nresults, sizeof(dbref), "dbref_list"));
 
     for (n = 0; n < nresults; n++) {
       switch (Typeof(results[n])) {
@@ -1735,7 +1735,7 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
 {
   int n;
   int is_wiz;
-  const char *class, *restriction;
+  const char *search_class, *restriction;
 
   spec->zone = spec->parent = spec->owner = ANY_OWNER;
   spec->type = NOTYPE;
@@ -1771,10 +1771,10 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
   }
 
   for (n = 0; n < nargs - 1; n += 2) {
-    class = args[n];
+    search_class = args[n];
     restriction = args[n + 1];
     /* A special old-timey kludge */
-    if (class && !*class && restriction && *restriction) {
+    if (search_class && !*search_class && restriction && *restriction) {
       if (isdigit((unsigned char) *restriction)
           || ((*restriction == '#') && *(restriction + 1)
               && isdigit((unsigned char) *(restriction + 1)))) {
@@ -1787,15 +1787,15 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
         continue;
       }
     }
-    if (!class || !*class || !restriction)
+    if (!search_class || !*search_class || !restriction)
       continue;
-    if (isdigit((unsigned char) *class) || ((*class == '#') && *(class + 1)
+    if (isdigit((unsigned char) *search_class) || ((*search_class == '#') && *(search_class + 1)
                                             && isdigit((unsigned char)
-                                                       *(class + 1)))) {
+                                                       *(search_class + 1)))) {
       size_t offset = 0;
-      if (*class == '#')
+      if (*search_class == '#')
         offset = 1;
-      spec->low = parse_integer(class + offset);
+      spec->low = parse_integer(search_class + offset);
       if (!GoodObject(spec->low))
         spec->low = 0;
       if (isdigit((unsigned char) *restriction)
@@ -1813,9 +1813,9 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
     }
     /* Figure out the class */
     /* Old-fashioned way to select everything */
-    if (string_prefix("none", class))
+    if (string_prefix("none", search_class))
       continue;
-    if (string_prefix("mindb", class)) {
+    if (string_prefix("mindb", search_class)) {
       size_t offset = 0;
       if (*restriction == '#')
         offset = 1;
@@ -1823,7 +1823,7 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
       if (!GoodObject(spec->low))
         spec->low = 0;
       continue;
-    } else if (string_prefix("maxdb", class)) {
+    } else if (string_prefix("maxdb", search_class)) {
       size_t offset = 0;
       if (*restriction == '#')
         offset = 1;
@@ -1833,7 +1833,7 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
       continue;
     }
 
-    if (string_prefix("type", class)) {
+    if (string_prefix("type", search_class)) {
       if (string_prefix("things", restriction)
           || string_prefix("objects", restriction)) {
         spec->type = TYPE_THING;
@@ -1851,34 +1851,34 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
         notify(player, T("Unknown type."));
         return -1;
       }
-    } else if (string_prefix("things", class)
-               || string_prefix("objects", class)) {
+    } else if (string_prefix("things", search_class)
+               || string_prefix("objects", search_class)) {
       strcpy(spec->name, restriction);
       spec->type = TYPE_THING;
-    } else if (string_prefix("exits", class)) {
+    } else if (string_prefix("exits", search_class)) {
       strcpy(spec->name, restriction);
       spec->type = TYPE_EXIT;
-    } else if (string_prefix("rooms", class)) {
+    } else if (string_prefix("rooms", search_class)) {
       strcpy(spec->name, restriction);
       spec->type = TYPE_ROOM;
-    } else if (string_prefix("players", class)) {
+    } else if (string_prefix("players", search_class)) {
       strcpy(spec->name, restriction);
       spec->type = TYPE_PLAYER;
-    } else if (string_prefix("name", class)) {
+    } else if (string_prefix("name", search_class)) {
       strcpy(spec->name, restriction);
-    } else if (string_prefix("start", class)) {
+    } else if (string_prefix("start", search_class)) {
       spec->start = parse_integer(restriction);
       if (spec->start < 1) {
         notify(player, T("Invalid start index"));
         return -1;
       }
-    } else if (string_prefix("count", class)) {
+    } else if (string_prefix("count", search_class)) {
       spec->count = parse_integer(restriction);
       if (spec->count < 1) {
         notify(player, T("Invalid count index"));
         return -1;
       }
-    } else if (string_prefix("parent", class)) {
+    } else if (string_prefix("parent", search_class)) {
       if (!*restriction) {
         spec->parent = NOTHING;
         continue;
@@ -1892,7 +1892,7 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
         notify(player, T("Unknown parent."));
         return -1;
       }
-    } else if (string_prefix("zone", class)) {
+    } else if (string_prefix("zone", search_class)) {
       if (!*restriction) {
         spec->zone = NOTHING;
         continue;
@@ -1906,42 +1906,42 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
         notify(player, T("Unknown zone."));
         return -1;
       }
-    } else if (string_prefix("elock", class)) {
+    } else if (string_prefix("elock", search_class)) {
       spec->lock = parse_boolexp(player, restriction, "Search");
-    } else if (string_prefix("eval", class)) {
+    } else if (string_prefix("eval", search_class)) {
       strcpy(spec->eval, restriction);
-    } else if (string_prefix("command", class)) {
+    } else if (string_prefix("command", search_class)) {
       strcpy(spec->cmdstring, restriction);
-    } else if (string_prefix("listen", class)) {
+    } else if (string_prefix("listen", search_class)) {
       strcpy(spec->listenstring, restriction);
-    } else if (string_prefix("ethings", class) ||
-               string_prefix("eobjects", class)) {
+    } else if (string_prefix("ethings", search_class) ||
+               string_prefix("eobjects", search_class)) {
       strcpy(spec->eval, restriction);
       spec->type = TYPE_THING;
-    } else if (string_prefix("eexits", class)) {
+    } else if (string_prefix("eexits", search_class)) {
       strcpy(spec->eval, restriction);
       spec->type = TYPE_EXIT;
-    } else if (string_prefix("erooms", class)) {
+    } else if (string_prefix("erooms", search_class)) {
       strcpy(spec->eval, restriction);
       spec->type = TYPE_ROOM;
-    } else if (string_prefix("eplayers", class)) {
+    } else if (string_prefix("eplayers", search_class)) {
       strcpy(spec->eval, restriction);
       spec->type = TYPE_PLAYER;
-    } else if (string_prefix("powers", class)) {
+    } else if (string_prefix("powers", search_class)) {
       /* Handle the checking later.  */
       if (!restriction || !*restriction) {
         notify(player, T("You must give a list of power names."));
         return -1;
       }
       strcpy(spec->powers, restriction);
-    } else if (string_prefix("flags", class)) {
+    } else if (string_prefix("flags", search_class)) {
       /* Handle the checking later.  */
       if (!restriction || !*restriction) {
         notify(player, T("You must give a string of flag characters."));
         return -1;
       }
       strcpy(spec->flags, restriction);
-    } else if (string_prefix("lflags", class)) {
+    } else if (string_prefix("lflags", search_class)) {
       /* Handle the checking later.  */
       if (!restriction || !*restriction) {
         notify(player, T("You must give a list of flag names."));
@@ -2003,7 +2003,7 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
   }
 
   result_size = (db_top / 4) + 1;
-  *result = mush_calloc(result_size, sizeof(dbref), "search_results");
+  *result = static_cast<dbref *>(mush_calloc(result_size, sizeof(dbref), "search_results"));
   if (!*result)
     mush_panic("Couldn't allocate memory in search!");
 

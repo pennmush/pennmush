@@ -425,8 +425,8 @@ strccat(char *buff, char **bp, const char *from)
 static int
 switch_cmp(const void *a, const void *b)
 {
-  const char *name = a;
-  const SWITCH_VALUE *sw = b;
+  const char *name = static_cast<const char *>(a);
+  const SWITCH_VALUE *sw = static_cast<const SWITCH_VALUE *>(b);
   return strcmp(name, sw->name);
 }
 
@@ -440,8 +440,8 @@ switch_find(COMMAND_INFO *cmd, const char *sw)
     return 0;
 
   if (!cmd) {
-    sw_val = bsearch(sw, dyn_switch_list, num_switches, sizeof(SWITCH_VALUE),
-                     switch_cmp);
+    sw_val = static_cast<SWITCH_VALUE *>(
+        bsearch(sw, dyn_switch_list, num_switches, sizeof(SWITCH_VALUE), switch_cmp));
     if (sw_val)
       return sw_val->value;
     else
@@ -493,7 +493,7 @@ make_command(const char *name, int type,
              const char *sw, command_func func)
 {
   COMMAND_INFO *cmd;
-  cmd = slab_malloc(command_slab, NULL);
+  cmd = static_cast<COMMAND_INFO *>(slab_malloc(command_slab, NULL));
   memset(cmd, 0, sizeof(COMMAND_INFO));
   cmd->name = name;
   cmd->restrict_message = NULL;
@@ -520,7 +520,7 @@ make_command(const char *name, int type,
   case CMD_LOAD_DONE:{
       switch_mask mask = switchmask(sw);
       if (mask) {
-        cmd->sw.mask = SW_ALLOC();
+        cmd->sw.mask = static_cast<uint8_t *>(SW_ALLOC());
         SW_COPY(cmd->sw.mask, mask);
       } else
         cmd->sw.mask = NULL;
@@ -653,7 +653,7 @@ switchmask(const char *switches)
   int switchnum;
 
   if (sm_bytes < switch_bytes) {
-    sw = mush_realloc(sw, switch_bytes, "cmd.switch.vector");
+    sw = static_cast<uint8_t *>(mush_realloc(sw, switch_bytes, "cmd.switch.vector"));
     sm_bytes = switch_bytes;
   }
 
@@ -686,8 +686,6 @@ reserve_alias(const char *a)
   static char placeholder[2] = "x";
   hashadd(strupper(a), (void *) placeholder, &htab_reserved_aliases);
 }
-
-static StrTree switch_names;
 
 /** Initialize command tables (before reading config file).
  * This function performs command table initialization that should take place
@@ -762,7 +760,7 @@ build_switch_table(const char *sw, int count __attribute__ ((__unused__)),
                    void *d)
 {
   SWITCH_VALUE *s;
-  struct bst_data *data = d;
+  struct bst_data *data = static_cast<bst_data *>(d);
 
   for (s = switch_list; s->name; s++) {
     if (strcmp(s->name, sw) == 0) {
@@ -790,8 +788,8 @@ command_init_postconfig(void)
   command_state = CMD_LOAD_DONE;
 
   /* First make the switch table */
-  dyn_switch_list = mush_calloc(switch_names.count + 2, sizeof(SWITCH_VALUE),
-                                "cmd_switch_table");
+  dyn_switch_list = static_cast<SWITCH_VALUE *>(
+      mush_calloc(switch_names.count + 2, sizeof(SWITCH_VALUE), "cmd_switch_table"));
   if (!dyn_switch_list)
     mush_panic("Unable to allocate command switch table");
   sw_data.table = dyn_switch_list;
@@ -805,10 +803,11 @@ command_init_postconfig(void)
   switch_bytes = ceil((double) num_switches / 8.0);
 
   /* Then convert the list of switch names in all commands to masks */
-  for (c = ptab_firstentry(&ptab_command); c; c = ptab_nextentry(&ptab_command)) {
+  for (c = static_cast<COMMAND_INFO *>(ptab_firstentry(&ptab_command)); c;
+       c = static_cast<COMMAND_INFO *>(ptab_nextentry(&ptab_command))) {
     const char *switchstr = c->sw.names;
     if (switchstr) {
-      c->sw.mask = SW_ALLOC();
+      c->sw.mask = static_cast<uint8_t *>(SW_ALLOC());
       SW_COPY(c->sw.mask, switchmask(switchstr));
     }
   }
@@ -1024,11 +1023,11 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
 
   rhs_present = 0;
 
-  command = mush_malloc(BUFFER_LEN, "string");
-  swtch = mush_malloc(BUFFER_LEN, "string");
-  ls = mush_malloc(BUFFER_LEN, "string");
-  rs = mush_malloc(BUFFER_LEN, "string");
-  switches = mush_malloc(BUFFER_LEN, "string");
+  command = static_cast<char *>(mush_malloc(BUFFER_LEN, "string"));
+  swtch = static_cast<char *>(mush_malloc(BUFFER_LEN, "string"));
+  ls = static_cast<char *>(mush_malloc(BUFFER_LEN, "string"));
+  rs = static_cast<char *>(mush_malloc(BUFFER_LEN, "string"));
+  switches = static_cast<char *>(mush_malloc(BUFFER_LEN, "string"));
   if (!command || !swtch || !ls || !rs || !switches)
     mush_panic("Couldn't allocate memory in command_parse");
   p = string;
@@ -1208,7 +1207,7 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
     return NULL;
   }
   /* Parse out any switches */
-  sw = SW_ALLOC();
+  sw = static_cast<uint8_t *>(SW_ALLOC());
   swp = switches;
   *swp = '\0';
   se = switch_err;
@@ -1496,7 +1495,7 @@ restrict_command(const char *name, const char *xrestriction)
         set_flag_bitmask(command->flagmask, roy->bitpos);
         set_flag_bitmask(command->flagmask, wiz->bitpos);
       }
-    } else if ((c = ptab_find(&ptab_command_perms, restriction))) {
+    } else if ((c = static_cast<command_perms_t *>(ptab_find(&ptab_command_perms, restriction)))) {
       if (clear)
         command->type &= ~c->type;
       else
@@ -1629,14 +1628,14 @@ do_command_delete(dbref player, char *name)
       return;
     } else {
       acount = 0;
-      cptr = ptab_firstentry_new(&ptab_command, alias);
+      cptr = static_cast<COMMAND_INFO *>(ptab_firstentry_new(&ptab_command, alias));
       while (cptr) {
         if (cptr == command) {
           ptab_delete(&ptab_command, alias);
           acount++;
-          cptr = ptab_firstentry_new(&ptab_command, alias);
+          cptr = static_cast<COMMAND_INFO *>(ptab_firstentry_new(&ptab_command, alias));
         } else
-          cptr = ptab_nextentry_new(&ptab_command, alias);
+          cptr = static_cast<COMMAND_INFO *>(ptab_nextentry_new(&ptab_command, alias));
       }
       mush_free((void *) command->name, "command_add");
       slab_free(command_slab, command);

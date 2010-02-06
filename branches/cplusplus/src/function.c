@@ -842,14 +842,14 @@ list_functions(const char *type)
     return buff;
   }
 
-  ptrs =
+  ptrs = static_cast<const char **>(
     mush_calloc(sizeof(char *),
                 htab_function.entries + htab_user_function.entries,
-                "function.list");
+                "function.list"));
 
   if (which & 0x1) {
-    for (fp = hash_firstentry(&htab_function);
-         fp; fp = hash_nextentry(&htab_function)) {
+    for (fp = static_cast<FUN *>(hash_firstentry(&htab_function));
+         fp; fp = static_cast<FUN *>(hash_nextentry(&htab_function))) {
       if (fp->flags & FN_OVERRIDE)
         continue;
       ptrs[nptrs++] = fp->name;
@@ -857,8 +857,8 @@ list_functions(const char *type)
   }
 
   if (which & 0x2) {
-    for (fp = hash_firstentry(&htab_user_function);
-         fp; fp = hash_nextentry(&htab_user_function))
+    for (fp = static_cast<FUN *>(hash_firstentry(&htab_user_function));
+         fp; fp = static_cast<FUN *>(hash_nextentry(&htab_user_function)))
       ptrs[nptrs++] = fp->name;
   }
 
@@ -891,9 +891,9 @@ FUN *
 func_hash_lookup(const char *name)
 {
   FUN *f;
-  f = (FUN *) hashfind(strupper(name), &htab_function);
+  f = static_cast<FUN *>(hashfind(strupper(name), &htab_function));
   if (!f || f->flags & FN_OVERRIDE)
-    f = (FUN *) hashfind(strupper(name), &htab_user_function);
+    f = static_cast<FUN *>(hashfind(strupper(name), &htab_user_function));
   return f;
 }
 
@@ -905,7 +905,7 @@ FUN *
 builtin_func_hash_lookup(const char *name)
 {
   FUN *f;
-  f = (FUN *) hashfind(strupper(name), &htab_function);
+  f = static_cast<FUN *>(hashfind(strupper(name), &htab_function));
   return f;
 }
 
@@ -1018,7 +1018,7 @@ function_add(const char *name, function_func fun, int minargs, int maxargs,
 
   if (!name || name[0] == '\0')
     return;
-  fp = slab_malloc(function_slab, NULL);
+  fp = static_cast<FUN *>(slab_malloc(function_slab, NULL));
   memset(fp, 0, sizeof(FUN));
   fp->name = name;
   fp->where.fun = fun;
@@ -1272,10 +1272,11 @@ do_function(dbref player, char *name, char *argv[], int preserve)
       FUN **funclist;
       int n = 0;
 
-      funclist = mush_calloc(userfn_count, sizeof(FUN *), "function.fp.list");
+      funclist = static_cast<FUN **>(
+          mush_calloc(userfn_count, sizeof(FUN *), "function.fp.list"));
       notify(player, T("Function Name                   Dbref #    Attrib"));
-      for (fp = (FUN *) hash_firstentry(&htab_user_function);
-           fp; fp = (FUN *) hash_nextentry(&htab_user_function)) {
+      for (fp = static_cast<FUN *>(hash_firstentry(&htab_user_function));
+           fp; fp = static_cast<FUN *>(hash_nextentry(&htab_user_function))) {
         funclist[n] = fp;
         n++;
       }
@@ -1292,7 +1293,8 @@ do_function(dbref player, char *name, char *argv[], int preserve)
       int n = 0;
       /* just print out the list of available functions */
       safe_str(T("User functions:"), tbuf1, &bp);
-      funcnames = mush_calloc(userfn_count, sizeof(char *), "function.list");
+      funcnames = static_cast<const char **>(
+          mush_calloc(userfn_count, sizeof(char *), "function.list"));
       for (fp = (FUN *) hash_firstentry(&htab_user_function);
            fp; fp = (FUN *) hash_nextentry(&htab_user_function)) {
         funcnames[n] = fp->name;
@@ -1358,7 +1360,7 @@ do_function(dbref player, char *name, char *argv[], int preserve)
       return;
     }
     /* a completely new entry. First, insert it into general hash table */
-    fp = slab_malloc(function_slab, NULL);
+    fp = static_cast<FUN *>(slab_malloc(function_slab, NULL));
     fp->name = mush_strdup(name, "func_hash.name");
     if (argv[3] && *argv[3]) {
       fp->minargs = parse_integer(argv[3]);
@@ -1386,7 +1388,7 @@ do_function(dbref player, char *name, char *argv[], int preserve)
     hashadd(name, fp, &htab_user_function);
 
     /* now add it to the user function table */
-    fp->where.ufun = mush_malloc(sizeof(USERFN_ENTRY), "userfn");
+    fp->where.ufun = static_cast<USERFN_ENTRY *>(mush_malloc(sizeof(USERFN_ENTRY), "userfn"));
     fp->where.ufun->thing = thing;
     fp->where.ufun->name = mush_strdup(upcasestr(argv[2]), "userfn.name");
 
@@ -1400,9 +1402,9 @@ do_function(dbref player, char *name, char *argv[], int preserve)
       return;
     }
     if (fp->flags & FN_BUILTIN) {       /* Overriding a built in function */
-      fp = slab_malloc(function_slab, NULL);
+      fp = static_cast<FUN *>(slab_malloc(function_slab, NULL));
       fp->name = mush_strdup(name, "func_hash.name");
-      fp->where.ufun = mush_malloc(sizeof(USERFN_ENTRY), "userfn");
+      fp->where.ufun = static_cast<USERFN_ENTRY *>(mush_malloc(sizeof(USERFN_ENTRY), "userfn"));
       fp->flags = 0;
       hashadd(name, fp, &htab_user_function);
     }
@@ -1444,7 +1446,7 @@ do_function(dbref player, char *name, char *argv[], int preserve)
 static void
 delete_function(void *data)
 {
-  FUN *fp = data;
+  FUN *fp = static_cast<FUN *>(data);
 
   mush_free((void *) fp->name, "func_hash.name");
   mush_free(fp->where.ufun->name, "userfn.name");
@@ -1477,7 +1479,7 @@ do_function_restore(dbref player, const char *name)
     return;
   }
 
-  fp = (FUN *) hashfind(strupper(name), &htab_function);
+  fp = static_cast<FUN *>(hashfind(strupper(name), &htab_function));
 
   if (!fp) {
     notify(player, T("That's not a builtin function."));

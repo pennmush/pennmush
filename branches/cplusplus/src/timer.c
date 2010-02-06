@@ -145,9 +145,8 @@ migrate_stuff(int amount)
   if (!refs || actual > refs_size) {
     if (refs)
       mush_free(refs, "migration reference array");
-    refs =
-      mush_calloc(actual, sizeof(chunk_reference_t *),
-                  "migration reference array");
+    refs = static_cast<chunk_reference_t **>(
+        mush_calloc(actual, sizeof(chunk_reference_t *), "migration reference array"));
     refs_size = actual;
     if (!refs)
       mush_panic("Could not allocate migration reference array");

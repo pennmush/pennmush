@@ -8,7 +8,6 @@
 
 #include "copyrite.h"
 #include "config.h"
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
@@ -1942,8 +1941,8 @@ penn_fopen(const char *filename, const char *mode)
 {
   PENNFILE *pf;
 
-  pf = mush_malloc(sizeof *pf, "pennfile");
-  pf->type = PFT_FILE;
+  pf = static_cast<PENNFILE *>(mush_malloc(sizeof *pf, "pennfile"));
+  pf->type = PENNFILE::PFT_FILE;
   pf->handle.f = fopen(filename, mode);
   if (!pf->handle.f) {
     do_rawlog(LT_ERR, "Unable to open %s in mode '%s': %s",
@@ -1959,15 +1958,15 @@ void
 penn_fclose(PENNFILE *pf)
 {
   switch (pf->type) {
-  case PFT_PIPE:
+  case PENNFILE::PFT_PIPE:
 #ifndef WIN32
     pclose(pf->handle.f);
 #endif
     break;
-  case PFT_FILE:
+  case PENNFILE::PFT_FILE:
     fclose(pf->handle.f);
     break;
-  case PFT_GZFILE:
+  case PENNFILE::PFT_GZFILE:
 #ifdef HAVE_LIBZ
     gzclose(pf->handle.g);
 #endif
@@ -1981,11 +1980,11 @@ int
 penn_fgetc(PENNFILE *f)
 {
   switch (f->type) {
-  case PFT_FILE:
-  case PFT_PIPE:
+  case PENNFILE::PFT_FILE:
+  case PENNFILE::PFT_PIPE:
     return fgetc(f->handle.f);
     break;
-  case PFT_GZFILE:
+  case PENNFILE::PFT_GZFILE:
 #ifdef HAVE_LIBZ
     return gzgetc(f->handle.g);
 #endif
@@ -1998,10 +1997,10 @@ char *
 penn_fgets(char *buf, int len, PENNFILE *pf)
 {
   switch (pf->type) {
-  case PFT_FILE:
-  case PFT_PIPE:
+  case PENNFILE::PFT_FILE:
+  case PENNFILE::PFT_PIPE:
     return fgets(buf, len, pf->handle.f);
-  case PFT_GZFILE:
+  case PENNFILE::PFT_GZFILE:
 #ifdef HAVE_LIBZ
     return gzgets(pf->handle.g, buf, len);
 #endif
@@ -2014,11 +2013,11 @@ int
 penn_fputc(int c, PENNFILE *f)
 {
   switch (f->type) {
-  case PFT_FILE:
-  case PFT_PIPE:
+  case PENNFILE::PFT_FILE:
+  case PENNFILE::PFT_PIPE:
     OUTPUT(fputc(c, f->handle.f));
     break;
-  case PFT_GZFILE:
+  case PENNFILE::PFT_GZFILE:
 #ifdef HAVE_LIBZ
     OUTPUT(gzputc(f->handle.g, c));
 #endif
@@ -2031,11 +2030,11 @@ int
 penn_fputs(const char *s, PENNFILE *f)
 {
   switch (f->type) {
-  case PFT_FILE:
-  case PFT_PIPE:
+  case PENNFILE::PFT_FILE:
+  case PENNFILE::PFT_PIPE:
     OUTPUT(fputs(s, f->handle.f));
     break;
-  case PFT_GZFILE:
+  case PENNFILE::PFT_GZFILE:
 #ifdef HAVE_LIBZ
     OUTPUT(gzputs(f->handle.g, s));
 #endif
@@ -2051,15 +2050,15 @@ penn_fprintf(PENNFILE *f, const char *fmt, ...)
   int r = -1;
 
   switch (f->type) {
-  case PFT_FILE:
-  case PFT_PIPE:
+  case PENNFILE::PFT_FILE:
+  case PENNFILE::PFT_PIPE:
     va_start(ap, fmt);
     r = vfprintf(f->handle.f, fmt, ap);
     va_end(ap);
     if (r < 0)
       longjmp(db_err, 1);
     break;
-  case PFT_GZFILE:
+  case PENNFILE::PFT_GZFILE:
 #ifdef HAVE_LIBZ
     /* No equivalent to vfprintf in zlib... */
 #ifdef HAVE_VASPRINTF
@@ -2101,11 +2100,11 @@ int
 penn_ungetc(int c, PENNFILE *f)
 {
   switch (f->type) {
-  case PFT_FILE:
-  case PFT_PIPE:
+  case PENNFILE::PFT_FILE:
+  case PENNFILE::PFT_PIPE:
     OUTPUT(ungetc(c, f->handle.f));
     break;
-  case PFT_GZFILE:
+  case PENNFILE::PFT_GZFILE:
 #ifdef HAVE_LIBZ
     OUTPUT(gzungetc(c, f->handle.g));
 #endif
@@ -2119,10 +2118,10 @@ int
 penn_feof(PENNFILE *pf)
 {
   switch (pf->type) {
-  case PFT_FILE:
-  case PFT_PIPE:
+  case PENNFILE::PFT_FILE:
+  case PENNFILE::PFT_PIPE:
     return feof(pf->handle.f);
-  case PFT_GZFILE:
+  case PENNFILE::PFT_GZFILE:
 #ifdef HAVE_LIBZ
     return gzeof(pf->handle.g);
 #endif

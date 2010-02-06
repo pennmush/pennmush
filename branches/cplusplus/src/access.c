@@ -141,7 +141,7 @@ sitelock_alloc(const char *host, dbref who,
                                          const char **errptr)
 {
   struct access *tmp;
-  tmp = mush_malloc(sizeof(struct access), "sitelock.rule");
+  tmp = static_cast<struct access *>(mush_malloc(sizeof(struct access), "sitelock.rule"));
   if (!tmp) {
     static const char *memerr = "unable to allocate memory";
     if (errptr)

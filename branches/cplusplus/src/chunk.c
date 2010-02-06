@@ -223,7 +223,6 @@
 #include <wtypes.h>
 #include <io.h>
 #else
-#define __USE_UNIX98
 #include <unistd.h>
 #endif
 #include <errno.h>
@@ -1405,7 +1404,7 @@ find_available_cache_region(void)
 #ifdef DEBUG_CHUNK_MALLOC
     do_rawlog(LT_TRACE, "CHUNK: malloc()ing a cache region");
 #endif
-    rhp = mush_malloc(REGION_SIZE, "chunk region cache buffer");
+    rhp = static_cast<RegionHeader *>(mush_malloc(REGION_SIZE, "chunk region cache buffer"));
     if (!rhp) {
       mush_panic("chunk region cache buffer allocation failure");
     }
@@ -2369,7 +2368,7 @@ chunk_init(void)
 #ifdef DEBUG_CHUNK_MALLOC
   do_rawlog(LT_TRACE, "CHUNK: malloc()ing initial region array");
 #endif
-  regions = mush_calloc(region_array_len, sizeof(Region), "chunk region list");
+  regions = static_cast<Region *>(mush_calloc(region_array_len, sizeof(Region), "chunk region list"));
   if (!regions)
     mush_panic("cannot malloc space for chunk region list");
 

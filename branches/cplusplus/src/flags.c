@@ -77,7 +77,7 @@ slab *flag_slab = NULL;
 extern PTAB ptab_command;       /* Uses flag bitmasks */
 
 /** Attempt to find a flagspace from its name */
-#define Flagspace_Lookup(n,ns)  if (!(n = (FLAGSPACE *)hashfind(ns,&htab_flagspaces))) mush_panic("Unable to locate flagspace");
+#define Flagspace_Lookup(n,ns)  if (!(n = static_cast<FLAGSPACE *>(hashfind(ns,&htab_flagspaces)))) mush_panic("Unable to locate flagspace");
 
 /** This is the old default flag table. We still use it when we have to
  * convert old dbs, but once you have a converted db, it's the flag
@@ -288,7 +288,7 @@ static PRIV flag_privs[] = {
 FLAG *
 match_flag(const char *name)
 {
-  return (FLAG *) match_flag_ns(hashfind("FLAG", &htab_flagspaces), name);
+  return match_flag_ns(static_cast<FLAGSPACE *>(hashfind("FLAG", &htab_flagspaces)), name);
 }
 
 /** Convenience function to return a pointer to a flag struct
@@ -299,7 +299,7 @@ match_flag(const char *name)
 FLAG *
 match_power(const char *name)
 {
-  return (FLAG *) match_flag_ns(hashfind("POWER", &htab_flagspaces), name);
+  return match_flag_ns(static_cast<FLAGSPACE *>(hashfind("POWER", &htab_flagspaces)), name);
 }
 
 /** Convenience function to return a pointer to a flag struct
@@ -361,7 +361,7 @@ new_flag(void)
 
   if (flag_slab == NULL)
     flag_slab = slab_create("flags", sizeof(FLAG));
-  f = slab_malloc(flag_slab, NULL);
+  f = static_cast<FLAG *>(slab_malloc(flag_slab, NULL));
   if (!f)
     mush_panic("Unable to allocate memory for a new flag!\n");
   return f;
@@ -373,7 +373,8 @@ clear_all_flags(FLAGSPACE *n)
 {
   FLAG *f;
 
-  for (f = ptab_firstentry(n->tab); f; f = ptab_nextentry(n->tab)) {
+  for (f = static_cast<FLAG *>(ptab_firstentry(n->tab)); f;
+       f = static_cast<FLAG *>(ptab_nextentry(n->tab))) {
     f->perms = DECR_FLAG_REF(f->perms);
     if (FLAG_REF(f->perms) == 0) {
       mush_free((void *) f->name, "flag.name");
@@ -443,8 +444,8 @@ flag_add(FLAGSPACE *n, const char *name, FLAG *f)
     if (f->bitpos >= n->flagbits) {
       /* Oops, we need a bigger array */
       n->flags =
-        mush_realloc(n->flags, (f->bitpos + 1) * sizeof(FLAG *),
-                     "flagspace.flags");
+          static_cast<FLAG **>(mush_realloc(n->flags, (f->bitpos + 1) * sizeof(FLAG *),
+                                            "flagspace.flags"));
       if (!n->flags)
         mush_panic("Unable to reallocate flags array!\n");
 
@@ -574,7 +575,7 @@ flag_read_all_oldstyle(PENNFILE *in, const char *ns)
   FLAGSPACE *n;
   char alias[BUFFER_LEN];
 
-  if (!(n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces))) {
+  if (!(n = static_cast<FLAGSPACE *>(hashfind(ns, &htab_flagspaces)))) {
     do_rawlog(LT_ERR, "FLAG READ: Unable to locate flagspace %s.", ns);
     return;
   }
@@ -662,7 +663,7 @@ flag_read_all(PENNFILE *in, const char *ns)
     return;
   }
 
-  if (!(n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces))) {
+  if (!(n = static_cast<FLAGSPACE *>(hashfind(ns, &htab_flagspaces)))) {
     do_rawlog(LT_ERR, "FLAG READ: Unable to locate flagspace %s.", ns);
     return;
   }
@@ -749,7 +750,7 @@ flag_write_all(PENNFILE *out, const char *ns)
   FLAGSPACE *n;
   char flagname[BUFFER_LEN];
 
-  if (!(n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces))) {
+  if (!(n = static_cast<FLAGSPACE *>(hashfind(ns, &htab_flagspaces)))) {
     do_rawlog(LT_ERR, "FLAG WRITE: Unable to locate flagspace %s.", ns);
     return;
   }
@@ -769,20 +770,20 @@ flag_write_all(PENNFILE *out, const char *ns)
    * bit position
    */
   count = 0;
-  f = ptab_firstentry_new(n->tab, flagname);
+  f = static_cast<FLAG *>(ptab_firstentry_new(n->tab, flagname));
   while (f) {
     if (strcmp(n->flags[f->bitpos]->name, flagname))
       count++;
-    f = ptab_nextentry_new(n->tab, flagname);
+    f = static_cast<FLAG *>(ptab_nextentry_new(n->tab, flagname));
   }
   db_write_labeled_int(out, "flagaliascount", count);
-  f = ptab_firstentry_new(n->tab, flagname);
+  f = static_cast<FLAG *>(ptab_firstentry_new(n->tab, flagname));
   while (f) {
     if (strcmp(n->flags[f->bitpos]->name, flagname)) {
       /* This is an alias! */
       flag_alias_write(out, f, flagname);
     }
-    f = ptab_nextentry_new(n->tab, flagname);
+    f = static_cast<FLAG *>(ptab_nextentry_new(n->tab, flagname));
   }
 }
 
@@ -794,7 +795,7 @@ init_flagspaces(void)
   FLAGSPACE *flags;
 
   hashinit(&htab_flagspaces, 4);
-  flags = mush_malloc(sizeof(FLAGSPACE), "flagspace");
+  flags = static_cast<FLAGSPACE *>(mush_malloc(sizeof(FLAGSPACE), "flagspace"));
   flags->name = strdup("FLAG");
   flags->tab = &ptab_flag;
   ptab_init(&ptab_flag);
@@ -803,7 +804,7 @@ init_flagspaces(void)
   flags->flag_table = flag_table;
   flags->flag_alias_table = flag_alias_tab;
   hashadd("FLAG", (void *) flags, &htab_flagspaces);
-  flags = (FLAGSPACE *) mush_malloc(sizeof(FLAGSPACE), "flagspace");
+  flags = static_cast<FLAGSPACE *>(mush_malloc(sizeof(FLAGSPACE), "flagspace"));
   flags->name = strdup("POWER");
   flags->tab = &ptab_power;
   ptab_init(&ptab_power);
@@ -827,7 +828,7 @@ init_flag_table(const char *ns)
   FLAG_ALIAS *a;
   FLAGSPACE *n;
 
-  if (!(n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces))) {
+  if (!(n = static_cast<FLAGSPACE *>(hashfind(ns, &htab_flagspaces)))) {
     do_rawlog(LT_ERR, "FLAG INIT: Unable to locate flagspace %s.", ns);
     return;
   }
@@ -889,7 +890,7 @@ flag_add_additional(FLAGSPACE *n)
       f->letter = '\0';
     }
     f = add_flag("CHAN_USEFIRSTMATCH", '\0', NOTYPE, F_INHERIT, F_INHERIT);
-    flags = hashfind("FLAG", &htab_flagspaces);
+    flags = static_cast<FLAGSPACE *>(hashfind("FLAG", &htab_flagspaces));
     if (!match_flag("CHAN_FIRSTMATCH"))
       flag_add(flags, "CHAN_FIRSTMATCH", f);
     if (!match_flag("CHAN_MATCHFIRST"))
@@ -907,7 +908,7 @@ flag_add_additional(FLAGSPACE *n)
       for (i = 0; i < n->flagbits; i++)
         n->flags[i]->perms |= F_LOG;
     }
-    flags = hashfind("POWER", &htab_flagspaces);
+    flags = static_cast<FLAGSPACE *>(hashfind("POWER", &htab_flagspaces));
     f = add_power("Sql_Ok", '\0', NOTYPE, F_WIZARD | F_LOG, F_ANY);
     if (!match_power("Use_SQL"))
       flag_add(flags, "Use_SQL", f);
@@ -1042,7 +1043,7 @@ new_flag_bitmask(const char *ns)
   object_flag_type bitmask;
   FLAGSPACE *n;
   Flagspace_Lookup(n, ns);
-  bitmask = mush_malloc(FlagBytes(n), "flag_bitmask");
+  bitmask = static_cast<unsigned char *>(mush_malloc(FlagBytes(n), "flag_bitmask"));
   if (!bitmask)
     mush_panic("Unable to allocate memory for flag bitmask");
   memset(bitmask, 0, FlagBytes(n));
@@ -1261,7 +1262,7 @@ string_to_bits(const char *ns, const char *str)
   FLAGSPACE *n;
 
   bitmask = new_flag_bitmask(ns);
-  if (!(n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces))) {
+  if (!(n = static_cast<FLAGSPACE *>(hashfind(ns, &htab_flagspaces)))) {
     do_rawlog(LT_ERR, "FLAG: Unable to locate flagspace %s.", ns);
     return bitmask;
   }
@@ -1302,7 +1303,7 @@ has_flag_in_space_by_name(const char *ns, dbref thing, const char *flag,
 {
   FLAG *f;
   FLAGSPACE *n;
-  n = hashfind(ns, &htab_flagspaces);
+  n = static_cast<FLAGSPACE *>(hashfind(ns, &htab_flagspaces));
   f = flag_hash_lookup(n, flag, type);
   if (!f)
     return 0;
@@ -1514,7 +1515,7 @@ twiddle_flag_internal(const char *ns, dbref thing, const char *flag, int negate)
   FLAGSPACE *n;
   if (IsGarbage(thing))
     return;
-  n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces);
+  n = static_cast<FLAGSPACE *>(hashfind(ns, &htab_flagspaces));
   f = flag_hash_lookup(n, flag, Typeof(thing));
   if (f && (n->flag_table != type_table))
     twiddle_flag(n, thing, f, negate);
@@ -1543,7 +1544,7 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
   FLAGSPACE *n;
   int current;
 
-  n = (FLAGSPACE *) hashfind("FLAG", &htab_flagspaces);
+  n = static_cast<FLAGSPACE *>(hashfind("FLAG", &htab_flagspaces));
   if ((f = flag_hash_lookup(n, flag, Typeof(thing))) == NULL) {
     notify_format(player, T("%s - I don't recognize that flag."), flag);
     return;
@@ -1701,7 +1702,7 @@ set_power(dbref player, dbref thing, const char *flag, int negate)
   FLAGSPACE *n;
   char tbuf1[BUFFER_LEN], *tp;
 
-  n = (FLAGSPACE *) hashfind("POWER", &htab_flagspaces);
+  n = static_cast<FLAGSPACE *>(hashfind("POWER", &htab_flagspaces));
   if ((f = flag_hash_lookup(n, flag, Typeof(thing))) == NULL) {
     notify_format(player, T("%s - I don't recognize that power."), flag);
     return;
@@ -1754,7 +1755,7 @@ flaglist_check(const char *ns, dbref player, dbref it, const char *fstr,
   negate = temp = 0;
   if (!GoodObject(it))
     return 0;
-  if (!(n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces))) {
+  if (!(n = static_cast<FLAGSPACE *>(hashfind(ns, &htab_flagspaces)))) {
     do_rawlog(LT_ERR, "FLAG: Unable to locate flagspace %s", ns);
     return 0;
   }
@@ -1849,7 +1850,7 @@ flaglist_check_long(const char *ns, dbref player, dbref it, const char *fstr,
   negate = temp = 0;
   if (!GoodObject(it))
     return 0;
-  if (!(n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces))) {
+  if (!(n = static_cast<FLAGSPACE *>(hashfind(ns, &htab_flagspaces)))) {
     do_rawlog(LT_ERR, "FLAG: Unable to locate flagspace %s", ns);
     return 0;
   }
@@ -1932,7 +1933,7 @@ sees_flag(const char *ns, dbref privs, dbref thing, const char *name)
   /* Does thing have the flag named name && can privs see it? */
   FLAG *f;
   FLAGSPACE *n;
-  n = hashfind(ns, &htab_flagspaces);
+  n = static_cast<FLAGSPACE *>(hashfind(ns, &htab_flagspaces));
   if ((f = flag_hash_lookup(n, name, Typeof(thing))) == NULL)
     return 0;
   return has_flag_ns(n, thing, f) && Can_See_Flag(privs, thing, f);
@@ -2013,7 +2014,7 @@ do_flag_info(const char *ns, dbref player, const char *name)
   FLAG *f;
   FLAGSPACE *n;
   /* Find the flagspace */
-  if (!(n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces))) {
+  if (!(n = static_cast<FLAGSPACE *>(hashfind(ns, &htab_flagspaces)))) {
     do_rawlog(LT_ERR, "FLAG: Unable to locate flagspace %s", ns);
     return;
   }
@@ -2062,7 +2063,7 @@ do_flag_restrict(const char *ns, dbref player, const char *name,
     notify(player, T("You don't have enough magic for that."));
     return;
   }
-  n = hashfind(ns, &htab_flagspaces);
+  n = static_cast<FLAGSPACE *>(hashfind(ns, &htab_flagspaces));
   if (!(f = flag_hash_lookup(n, name, NOTYPE))) {
     notify_format(player, T("No such %s."), strlower(ns));
     return;
@@ -2125,7 +2126,7 @@ do_flag_type(const char *ns, dbref player, const char *name, char *type_string)
     notify(player, T("You don't have enough magic for that."));
     return;
   }
-  n = hashfind(ns, &htab_flagspaces);
+  n = static_cast<FLAGSPACE *>(hashfind(ns, &htab_flagspaces));
   if (!(f = flag_hash_lookup(n, name, NOTYPE))) {
     notify_format(player, T("No such %s."), strlower(ns));
     return;
@@ -2288,7 +2289,7 @@ do_flag_alias(const char *ns, dbref player, const char *name, const char *alias)
 {
   FLAG *f, *af;
   FLAGSPACE *n;
-  int delete = 0;
+  int todelete = 0;
   if (!God(player)) {
     notify(player, T("You don't look like God."));
     return;
@@ -2298,7 +2299,7 @@ do_flag_alias(const char *ns, dbref player, const char *name, const char *alias)
     return;
   }
   if (*alias == '!') {
-    delete = 1;
+    todelete = 1;
     alias++;
   }
   if (strlen(alias) <= 1) {
@@ -2311,9 +2312,9 @@ do_flag_alias(const char *ns, dbref player, const char *name, const char *alias)
                   strinitial(ns));
     return;
   }
-  n = hashfind(ns, &htab_flagspaces);
+  n = static_cast<FLAGSPACE *>(hashfind(ns, &htab_flagspaces));
   af = match_flag_ns(n, alias);
-  if (!delete && af) {
+  if (!todelete && af) {
     notify_format(player, T("That alias already matches the %s %s."),
                   af->name, strlower(ns));
     return;
@@ -2327,12 +2328,12 @@ do_flag_alias(const char *ns, dbref player, const char *name, const char *alias)
     notify_format(player, T("That %s is disabled."), strlower(ns));
     return;
   }
-  if (delete && !af) {
+  if (todelete && !af) {
     notify_format(player, T("That isn't an alias of the %s %s."),
                   f->name, strlower(ns));
     return;
   }
-  if (delete) {
+  if (todelete) {
     /* Delete the alias in the ptab if it's really an alias! */
     if (!strcasecmp(n->flags[f->bitpos]->name, alias)) {
       notify_format(player, T("That's the %s's name, not an alias."),
@@ -2496,8 +2497,8 @@ do_flag_delete(const char *ns, dbref player, const char *name)
     notify(player, T("You don't look like God."));
     return;
   }
-  n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces);
-  f = ptab_find_exact(n->tab, name);
+  n = static_cast<FLAGSPACE *>(hashfind(ns, &htab_flagspaces));
+  f = static_cast<FLAG *>(ptab_find_exact(n->tab, name));
   if (!f) {
     notify_format(player, T("I don't know that %s."), strlower(ns));
     return;
@@ -2511,7 +2512,7 @@ do_flag_delete(const char *ns, dbref player, const char *name)
    */
   do {
     got_one = 0;
-    tmpf = ptab_firstentry_new(n->tab, flagname);
+    tmpf = static_cast<FLAG *>(ptab_firstentry_new(n->tab, flagname));
     while (tmpf) {
       if (!strcmp(tmpf->name, f->name) &&
           strcmp(n->flags[f->bitpos]->name, flagname)) {
@@ -2519,7 +2520,7 @@ do_flag_delete(const char *ns, dbref player, const char *name)
         got_one = 1;
         break;
       }
-      tmpf = ptab_nextentry_new(n->tab, flagname);
+      tmpf = static_cast<FLAG *>(ptab_nextentry_new(n->tab, flagname));
     }
   } while (got_one);
   /* Reset the flag on all objects */
@@ -2578,7 +2579,7 @@ list_aliases(FLAGSPACE *n, FLAG *given)
   char flagname[BUFFER_LEN];
   int first = 1;
   bp = buf;
-  f = ptab_firstentry_new(n->tab, flagname);
+  f = static_cast<FLAG *>(ptab_firstentry_new(n->tab, flagname));
   while (f) {
     if (!strcmp(given->name, f->name) &&
         strcmp(n->flags[f->bitpos]->name, flagname)) {
@@ -2588,7 +2589,7 @@ list_aliases(FLAGSPACE *n, FLAG *given)
       first = 0;
       safe_str(flagname, buf, &bp);
     }
-    f = ptab_nextentry_new(n->tab, flagname);
+    f = static_cast<FLAG *>(ptab_nextentry_new(n->tab, flagname));
   }
   *bp = '\0';
   return buf;

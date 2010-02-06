@@ -44,9 +44,18 @@ POSSIBILITY OF SUCH DAMAGE.
 
 
 #define PENN_MATCH_LIMIT 100000
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct pcre_extra;
 void set_match_limit(struct pcre_extra *);
 struct pcre_extra *default_match_limit(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #ifdef HAVE_PCRE
 #include <pcre.h>

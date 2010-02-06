@@ -51,15 +51,15 @@ static char missing_name[ATTRIBUTE_NAME_LIMIT + 1];
 
 slab *attrib_slab = NULL;
 
-static int real_atr_clr(dbref thinking, char const *atr, dbref player,
-                        int we_are_wiping);
+static atr_err real_atr_clr(dbref thinking, char const *atr, dbref player,
+                            int we_are_wiping);
 
 static ATTR *alloc_atr(const void *hint);
 static void free_atr(ATTR *);
 static void atr_free_one(ATTR *);
 static ATTR *find_atr_pos_in_list(ATTR ***pos, char const *name);
-static int can_create_attr(dbref player, dbref obj, char const *atr_name,
-                           uint32_t flags);
+static atr_err can_create_attr(dbref player, dbref obj, char const *atr_name,
+                               uint32_t flags);
 static ATTR *find_atr_in_list(ATTR *atr, char const *name);
 static ATTR *atr_get_with_parent(dbref obj, char const *atrname, dbref *parent);
 
@@ -518,7 +518,7 @@ can_edit_attr(dbref player, dbref thing, const char *attrname)
  * \retval 0 if the player cannot write the attribute.
  * \retval 1 if the player can write the attribute.
  */
-static int
+static atr_err
 can_create_attr(dbref player, dbref obj, char const *atr_name, uint32_t flags)
 {
   char *p;
@@ -1355,7 +1355,7 @@ use_attr(UsedAttr **prev, char const *name, uint32_t no_prog)
 
   found = find_attr(&prev, name);
   if (!found) {
-    used = mush_malloc(sizeof *used, "used_attr");
+    used = static_cast<UsedAttr *>(mush_malloc(sizeof *used, "used_attr"));
     used->next = *prev;
     used->name = name;
     used->no_prog = 0;
@@ -2098,7 +2098,7 @@ alloc_atr(const void *hint)
     slab_set_opt(attrib_slab, SLAB_HINTLESS_THRESHOLD, 10);
   }
 
-  return slab_malloc(attrib_slab, hint);
+  return static_cast<ATTR *>(slab_malloc(attrib_slab, hint));
 }
 
 

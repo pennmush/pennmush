@@ -369,8 +369,8 @@ COMMAND(cmd_sql)
 #endif
 #ifdef HAVE_POSTGRESQL
   case SQL_PLATFORM_POSTGRESQL:
-    numfields = PQnfields(qres);
-    numrows = PQntuples(qres);
+    numfields = PQnfields(static_cast<PGresult *>(qres));
+    numrows = PQntuples(static_cast<PGresult *>(qres));
     break;
 #endif
 #ifdef HAVE_SQLITE3
@@ -415,8 +415,8 @@ COMMAND(cmd_sql)
 #endif
 #ifdef HAVE_POSTGRESQL
         case SQL_PLATFORM_POSTGRESQL:
-          cell = PQgetvalue(qres, rownum, i);
-          name = PQfname(qres, i);
+          cell = PQgetvalue(static_cast<PGresult *>(qres), rownum, i);
+          name = PQfname(static_cast<PGresult *>(qres), i);
           break;
 #endif
 #ifdef HAVE_SQLITE3
@@ -508,8 +508,8 @@ FUNCTION(fun_mapsql)
 #endif
 #ifdef HAVE_POSTGRESQL
   case SQL_PLATFORM_POSTGRESQL:
-    numfields = PQnfields(qres);
-    numrows = PQntuples(qres);
+    numfields = PQnfields(static_cast<PGresult *>(qres));
+    numrows = PQntuples(static_cast<PGresult *>(qres));
     break;
 #endif
 #ifdef HAVE_SQLITE3
@@ -538,7 +538,7 @@ FUNCTION(fun_mapsql)
 #endif
 #ifdef HAVE_POSTGRESQL
       case SQL_PLATFORM_POSTGRESQL:
-        wenv[i + 1] = PQfname(qres, i);
+        wenv[i + 1] = PQfname(static_cast<PGresult *>(qres), i);
         break;
 #endif
 #ifdef HAVE_SQLITE3
@@ -587,7 +587,7 @@ FUNCTION(fun_mapsql)
 #endif
 #ifdef HAVE_POSTGRESQL
       case SQL_PLATFORM_POSTGRESQL:
-        cell = PQgetvalue(qres, rownum, i);
+        cell = PQgetvalue(static_cast<PGresult *>(qres), rownum, i);
         break;
 #endif
 #ifdef HAVE_SQLITE3
@@ -679,8 +679,8 @@ FUNCTION(fun_sql)
 #endif
 #ifdef HAVE_POSTGRESQL
   case SQL_PLATFORM_POSTGRESQL:
-    numfields = PQnfields(qres);
-    numrows = PQntuples(qres);
+    numfields = PQnfields(static_cast<PGresult *>(qres));
+    numrows = PQntuples(static_cast<PGresult *>(qres));
     break;
 #endif
 #ifdef HAVE_SQLITE3
@@ -726,7 +726,7 @@ FUNCTION(fun_sql)
 #endif
 #ifdef HAVE_POSTGRESQL
       case SQL_PLATFORM_POSTGRESQL:
-        cell = PQgetvalue(qres, rownum, i);
+        cell = PQgetvalue(static_cast<PGresult *>(qres), rownum, i);
         break;
 #endif
 #ifdef HAVE_SQLITE3

@@ -573,7 +573,7 @@ na_loc(dbref current, void *data)
 dbref
 na_nextbut(dbref current, void *data)
 {
-  dbref *dbrefs = data;
+  dbref *dbrefs = static_cast<dbref *>(data);
 
   do {
     if (current == NOTHING)
@@ -592,7 +592,7 @@ na_nextbut(dbref current, void *data)
 dbref
 na_except(dbref current, void *data)
 {
-  dbref *dbrefs = data;
+  dbref *dbrefs = static_cast<dbref *>(data);
 
   do {
     if (current == NOTHING)
@@ -613,7 +613,7 @@ na_except(dbref current, void *data)
 dbref
 na_except2(dbref current, void *data)
 {
-  dbref *dbrefs = data;
+  dbref *dbrefs = static_cast<dbref *>(data);
 
   do {
     if (current == NOTHING)
@@ -634,7 +634,7 @@ na_except2(dbref current, void *data)
 dbref
 na_exceptN(dbref current, void *data)
 {
-  dbref *dbrefs = data;
+  dbref *dbrefs = static_cast<dbref *>(data);
   int i, check;
 
   do {
@@ -1194,10 +1194,10 @@ make_text_block(const unsigned char *s, int n)
     slab_set_opt(text_block_slab, SLAB_ALLOC_FIRST_FIT, 1);
     slab_set_opt(text_block_slab, SLAB_ALWAYS_KEEP_A_PAGE, 1);
   }
-  p = slab_malloc(text_block_slab, NULL);
+  p = static_cast<text_block *>(slab_malloc(text_block_slab, NULL));
   if (!p)
     mush_panic("Out of memory");
-  p->buf = mush_malloc(n, "text_block_buff");
+  p->buf = static_cast<unsigned char *>(mush_malloc(n, "text_block_buff"));
   if (!p->buf)
     mush_panic("Out of memory");
 
@@ -1471,7 +1471,7 @@ ns_esnotify(dbref speaker, na_lookup func __attribute__ ((__unused__)),
             void *fdata __attribute__ ((__unused__)), int para)
 {
   char *dest, *bp;
-  bp = dest = mush_malloc(BUFFER_LEN, "string");
+  bp = dest = static_cast<char *>(mush_malloc(BUFFER_LEN, "string"));
 
   if (!GoodObject(speaker))
     *dest = '\0';

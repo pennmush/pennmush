@@ -8,7 +8,6 @@
 #include "copyrite.h"
 
 #include "config.h"
-#define _GNU_SOURCE
 #include <string.h>
 #include <ctype.h>
 #include "conf.h"
@@ -228,12 +227,12 @@ FUNCTION(fun_munge)
 
   /* Break up the two lists into their respective elements. */
 
-  ptrs1 = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
-  ptrs2 = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
+  ptrs1 = static_cast<char **>(mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray"));
+  ptrs2 = static_cast<char **>(mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray"));
 
   /* ptrs3 is destructively modified, but it's a copy of ptrs2, so we
    * make it a straight copy of ptrs2 and freearr() on ptrs2. */
-  ptrs3 = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
+  ptrs3 = static_cast<char **>(mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray"));
 
   if (!ptrs1 || !ptrs2)
     mush_panic("Unable to allocate memory in fun_munge");
@@ -266,7 +265,7 @@ FUNCTION(fun_munge)
    * corresponding element from list2.  Mark used elements with
    * NULL to handle duplicates
    */
-  results = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
+  results = static_cast<char **>(mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray"));
   if (!results)
     mush_panic("Unable to allocate memory in fun_munge");
   nresults = list2arr_ansi(results, MAX_SORTSIZE, rlist, sep);
@@ -319,8 +318,8 @@ FUNCTION(fun_elements)
     osep = osepd;
   }
 
-  ptrs = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
-  wordlist = mush_malloc(BUFFER_LEN, "string");
+  ptrs = static_cast<char **>(mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray"));
+  wordlist = static_cast<char *>(mush_malloc(BUFFER_LEN, "string"));
   if (!ptrs || !wordlist)
     mush_panic("Unable to allocate memory in fun_elements");
 
@@ -763,7 +762,7 @@ FUNCTION(fun_sortby)
   /* Split up the list, sort it, reconstruct it. */
   nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, args[1], sep);
   if (nptrs > 1)                /* pointless to sort less than 2 elements */
-    sane_qsort((void *) ptrs, 0, nptrs - 1, u_comp);
+    sane_qsort(reinterpret_cast<void **>(ptrs), 0, nptrs - 1, u_comp);
 
   arr2list(ptrs, nptrs, buff, bp, osep);
   freearr(ptrs, nptrs);
@@ -789,8 +788,8 @@ FUNCTION(fun_setinter)
   if (!delim_check(buff, bp, nargs, args, 3, &sep))
     return;
 
-  a1 = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
-  a2 = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
+  a1 = static_cast<char **>(mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray"));
+  a2 = static_cast<char **>(mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray"));
   if (!a1 || !a2)
     mush_panic("Unable to allocate memory in fun_inter");
 
@@ -919,8 +918,8 @@ FUNCTION(fun_setunion)
   if (!delim_check(buff, bp, nargs, args, 3, &sep))
     return;
 
-  a1 = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
-  a2 = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
+  a1 = static_cast<char **>(mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray"));
+  a2 = static_cast<char **>(mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray"));
   if (!a1 || !a2)
     mush_panic("Unable to allocate memory in fun_setunion");
 
@@ -1057,8 +1056,8 @@ FUNCTION(fun_setdiff)
   if (!delim_check(buff, bp, nargs, args, 3, &sep))
     return;
 
-  a1 = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
-  a2 = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
+  a1 = static_cast<char **>(mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray"));
+  a2 = static_cast<char **>(mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray"));
   if (!a1 || !a2)
     mush_panic("Unable to allocate memory in fun_diff");
 
@@ -1178,7 +1177,7 @@ FUNCTION(fun_unique)
   if (!delim_check(buff, bp, nargs, args, 3, &sep))
     return;
 
-  a1 = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
+  a1 = static_cast<char **>(mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray"));
 
   if (!a1)
     mush_panic("Unable to allocate memory in fun_unique");
@@ -1186,7 +1185,7 @@ FUNCTION(fun_unique)
   /* make array out of the list */
   n1 = list2arr_ansi(a1, MAX_SORTSIZE, args[0], sep);
 
-  a2 = mush_calloc(n1, sizeof(char *), "ptrarray");
+  a2 = static_cast<char **>(mush_calloc(n1, sizeof(char *), "ptrarray"));
   if (!a2)
     mush_panic("Unable to allocate memory in fun_unique");
 
@@ -1992,8 +1991,8 @@ FUNCTION(fun_ldelete)
     osep = osepd;
   }
 
-  ptrs = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
-  wordlist = mush_malloc(BUFFER_LEN, "string");
+  ptrs = static_cast<char **>(mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray"));
+  wordlist = static_cast<char *>(mush_malloc(BUFFER_LEN, "string"));
   if (!ptrs || !wordlist)
     mush_panic("Unable to allocate memory in fun_elements");
 
@@ -2142,7 +2141,7 @@ FUNCTION(fun_revwords)
     osep = osepd;
   }
 
-  words = mush_calloc(BUFFER_LEN, sizeof(char *), "wordlist");
+  words = static_cast<char **>(mush_calloc(BUFFER_LEN, sizeof(char *), "wordlist"));
 
   origcount = count = list2arr_ansi(words, BUFFER_LEN, args[0], sep);
   if (count == 0) {
@@ -2187,8 +2186,8 @@ FUNCTION(fun_splice)
   osep[0] = sep;
   osep[1] = '\0';
 
-  orig = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
-  repl = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
+  orig = static_cast<char **>(mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray"));
+  repl = static_cast<char **>(mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray"));
   /* Turn them into lists */
   ocount = list2arr(orig, MAX_SORTSIZE, args[0], sep);
   rcount = list2arr(repl, MAX_SORTSIZE, args[1], sep);
@@ -3223,7 +3222,7 @@ regrep_helper(dbref who __attribute__ ((__unused__)),
               char const *name __attribute__ ((__unused__)),
               ATTR *atr, void *args)
 {
-  struct regrep_data *reharg = args;
+  struct regrep_data *reharg = static_cast<regrep_data *>(args);
   char const *str;
   size_t slen;
   int offsets[99];

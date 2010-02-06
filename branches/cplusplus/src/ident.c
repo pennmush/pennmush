@@ -206,7 +206,7 @@ id_open(struct sockaddr *faddr, socklen_t flen,
   int tmperrno;
 #endif
 
-  if ((id = malloc(sizeof *id)) == NULL)
+  if ((id = static_cast<ident_t *>(malloc(sizeof *id))) == NULL)
     return NULL;
 
   memset(id, 0, sizeof *id);
@@ -403,7 +403,7 @@ id_parse(ident_t *id, int *timeout, IDENT ** ident)
   if (!id || !ident)
     return -1;
 
-  *ident = malloc(sizeof(IDENT));
+  *ident = static_cast<IDENT *>(malloc(sizeof(IDENT)));
 
   if (!*ident)
     return -1;

@@ -41,7 +41,7 @@ string_to_privs(PRIV *table, const char *str, privbits origprivs)
   privbits ltr = 0;
   char *p, *r;
   char tbuf1[BUFFER_LEN];
-  bool not;
+  bool to_clear;
   int words = 0;
 
   if (!str || !*str)
@@ -50,9 +50,9 @@ string_to_privs(PRIV *table, const char *str, privbits origprivs)
   r = trim_space_sep(tbuf1, ' ');
   while ((p = split_token(&r, ' '))) {
     words++;
-    not = 0;
+    to_clear = 0;
     if (*p == '!') {
-      not = 1;
+      to_clear = 1;
       if (!*++p)
         continue;
     }
@@ -60,7 +60,7 @@ string_to_privs(PRIV *table, const char *str, privbits origprivs)
     if (strlen(p) == 1) {
       /* One-letter string is treated as a character if possible */
       ltr = letter_to_privs(table, p, 0);
-      if (not)
+      if (to_clear)
         no |= ltr;
       else
         yes |= ltr;
@@ -71,7 +71,7 @@ string_to_privs(PRIV *table, const char *str, privbits origprivs)
     if (!ltr) {
       for (c = table; c->name; c++) {
         if (string_prefix(c->name, p)) {
-          if (not)
+          if (to_clear)
             no |= c->bits_to_set;
           else
             yes |= c->bits_to_set;
@@ -105,7 +105,7 @@ list_to_privs(PRIV *table, const char *str, privbits origprivs)
   privbits no = 0;
   char *p, *r;
   char tbuf1[BUFFER_LEN];
-  bool not;
+  bool to_clear;
   int words = 0;
 
   if (!str || !*str)
@@ -114,15 +114,15 @@ list_to_privs(PRIV *table, const char *str, privbits origprivs)
   r = trim_space_sep(tbuf1, ' ');
   while ((p = split_token(&r, ' '))) {
     words++;
-    not = 0;
+    to_clear = 0;
     if (*p == '!') {
-      not = 1;
+      to_clear = 1;
       if (!*++p)
         continue;
     }
     for (c = table; c->name; c++) {
       if (!strcasecmp(c->name, p)) {
-        if (not)
+        if (to_clear)
           no |= c->bits_to_set;
         else
           yes |= c->bits_to_set;
@@ -151,7 +151,7 @@ string_to_privsets(PRIV *table, const char *str, privbits *setprivs,
   PRIV *c;
   char *p, *r;
   char tbuf1[BUFFER_LEN];
-  bool not;
+  bool to_clear;
   privbits ltr;
   int words = 0;
   int err = 0;
@@ -164,9 +164,9 @@ string_to_privsets(PRIV *table, const char *str, privbits *setprivs,
   r = trim_space_sep(tbuf1, ' ');
   while ((p = split_token(&r, ' '))) {
     words++;
-    not = 0;
+    to_clear = 0;
     if (*p == '!') {
-      not = 1;
+      to_clear = 1;
       if (!*++p) {
         err = 1;
         continue;
@@ -176,7 +176,7 @@ string_to_privsets(PRIV *table, const char *str, privbits *setprivs,
     if (strlen(p) == 1) {
       /* One-letter string is treated as a character if possible */
       ltr = letter_to_privs(table, p, 0);
-      if (not)
+      if (to_clear)
         *clrprivs |= ltr;
       else
         *setprivs |= ltr;
@@ -187,7 +187,7 @@ string_to_privsets(PRIV *table, const char *str, privbits *setprivs,
       for (c = table; c->name; c++) {
         if (string_prefix(c->name, p)) {
           found++;
-          if (not)
+          if (to_clear)
             *clrprivs |= c->bits_to_set;
           else
             *setprivs |= c->bits_to_set;
@@ -216,21 +216,21 @@ letter_to_privs(PRIV *table, const char *str, privbits origprivs)
   PRIV *c;
   privbits yes = 0, no = 0;
   const char *p;
-  bool not;
+  bool to_clear;
 
   if (!str || !*str)
     return origprivs;
 
   for (p = str; *p; p++) {
-    not = 0;
+    to_clear = 0;
     if (*p == '!') {
-      not = 1;
+      to_clear = 1;
       if (!*++p)
         break;
     }
     for (c = table; c->name; c++) {
       if (c->letter == *p) {
-        if (not)
+        if (to_clear)
           no |= c->bits_to_set;
         else
           yes |= c->bits_to_set;

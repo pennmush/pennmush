@@ -365,7 +365,7 @@ static void set_userstring(unsigned char **userstring, const char *command);
 static void process_commands(void);
 static int do_command(DESC *d, char *command);
 static void parse_puebloclient(DESC *d, char *command);
-static int dump_messages(DESC *d, dbref player, int new);
+static int dump_messages(DESC *d, dbref player, int isnew);
 static int check_connect(DESC *d, const char *msg);
 static void parse_connect(const char *msg, char *command, char *user,
                           char *pass);
@@ -1332,7 +1332,7 @@ fcache_read(FBLOCK *fb, const char *filename)
       *attr++ = '\0';
       if ((thing = qparse_dbref(objname)) != NOTHING) {
         /* we have #dbref/attr */
-        if (!(fb->buff = mush_malloc(BUFFER_LEN, "fcache_data"))) {
+        if (!(fb->buff = static_cast<unsigned char *>(mush_malloc(BUFFER_LEN, "fcache_data")))) {
           return -1;
         }
         len = strlen(attr);
@@ -1401,7 +1401,7 @@ fcache_read(FBLOCK *fb, const char *filename)
     }
 
 
-    if (!(fb->buff = mush_malloc(sb.st_size, "fcache_data"))) {
+    if (!(fb->buff = static_cast<unsigned char *>(mush_malloc(sb.st_size, "fcache_data")))) {
       do_rawlog(LT_ERR, "Couldn't allocate %d bytes of memory for '%s'!",
                 (int) sb.st_size, filename);
       close(fd);
@@ -1434,7 +1434,7 @@ fcache_read(FBLOCK *fb, const char *filename)
 void
 fcache_load(dbref player)
 {
-  int conn, motd, wiz, new, reg, quit, down, full;
+  int conn, motd, wiz, newuser, reg, quit, down, full;
   int guest;
   int i;
 
@@ -1442,7 +1442,7 @@ fcache_load(dbref player)
     conn = fcache_read(&fcache.connect_fcache[i], options.connect_file[i]);
     motd = fcache_read(&fcache.motd_fcache[i], options.motd_file[i]);
     wiz = fcache_read(&fcache.wizmotd_fcache[i], options.wizmotd_file[i]);
-    new = fcache_read(&fcache.newuser_fcache[i], options.newuser_file[i]);
+    newuser = fcache_read(&fcache.newuser_fcache[i], options.newuser_file[i]);
     reg = fcache_read(&fcache.register_fcache[i], options.register_file[i]);
     quit = fcache_read(&fcache.quit_fcache[i], options.quit_file[i]);
     down = fcache_read(&fcache.down_fcache[i], options.down_file[i]);
@@ -1453,7 +1453,7 @@ fcache_load(dbref player)
       notify_format(player,
                     T
                     ("%s sizes:  NewUser...%d  Connect...%d  Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  Register...%d  Down...%d  Full...%d"),
-                    i ? "HTMLFile" : "File", new, conn, guest, motd, wiz, quit,
+                    i ? "HTMLFile" : "File", newuser, conn, guest, motd, wiz, quit,
                     reg, down, full);
     }
   }
@@ -1870,7 +1870,7 @@ test_telnet(DESC *d)
      with client-side editing. Good for Broken Telnet Programs. */
   if (!TELNET_ABLE(d)) {
     /*  IAC DO LINEMODE */
-    unsigned char query[3] = "\xFF\xFD\x22";
+    unsigned char query[3] = {0xFF, 0xFD, 0x22};
     queue_newwrite(d, query, 3);
     d->conn_flags |= CONN_TELNET_QUERY;
     process_output(d);
@@ -1886,7 +1886,7 @@ setup_telnet(DESC *d)
   d->conn_flags |= CONN_TELNET;
   if (d->conn_flags & CONN_TELNET_QUERY) {
     /* IAC DO NAWS IAC DO TERMINAL-TYPE */
-    unsigned char extra_options[6] = "\xFF\xFD\x1F" "\xFF\xFD\x18";
+    unsigned char extra_options[6] = {0xFF, 0xFD, 0x1F, 0xFF, 0xFD, 0x18};
     d->conn_flags &= ~CONN_TELNET_QUERY;
     do_rawlog(LT_CONN, "[%d/%s/%s] Switching to Telnet mode.",
               d->descriptor, d->addr, d->ip);
@@ -2037,14 +2037,14 @@ handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
     if (**q == TN_LINEMODE) {
       /* Set up our preferred linemode options. */
       /* IAC SB LINEMODE MODE (EDIT|SOFT_TAB) IAC SE */
-      unsigned char reply[7] = "\xFF\xFA\x22\x01\x09\xFF\xF0";
+      unsigned char reply[7] = {0xFF, 0xFA, 0x22, 0x01, 0x09, 0xFF, 0xF0};
       queue_newwrite(d, reply, 7);
 #ifdef DEBUG_TELNET
       fprintf(stderr, "Setting linemode options.\n");
 #endif
     } else if (**q == TN_TTYPE) {
       /* Ask for terminal type id: IAC SB TERMINAL-TYPE SEND IAC SEC */
-      unsigned char reply[6] = "\xFF\xFA\x18\x01\xFF\xF0";
+      unsigned char reply[6] = {0xFF, 0xFA, 0x18, 0x01, 0xFF, 0xF0};
       queue_newwrite(d, reply, 6);
     } else if (**q == TN_SGA || **q == TN_NAWS) {
       /* This is good to be at. */
@@ -2065,7 +2065,7 @@ handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
     if (**q == TN_LINEMODE) {
     } else if (**q == TN_SGA) {
       /* IAC WILL SGA IAC DO SGA */
-      unsigned char reply[6] = "\xFF\xFB\x03\xFF\xFD\x03";
+      unsigned char reply[6] = {0xFF, 0xFB, 0x03, 0xFF, 0xFD, 0x03};
       queue_newwrite(d, reply, 6);
       process_output(d);
       /* Yeah, we still will send GA, which they should treat as a NOP,
@@ -2108,7 +2108,7 @@ process_input_helper(DESC *d, char *tbuf1, int got)
   unsigned char *p, *pend, *q, *qend;
 
   if (!d->raw_input) {
-    d->raw_input = mush_malloc(MAX_COMMAND_LEN, "descriptor_raw_input");
+    d->raw_input = static_cast<unsigned char *>(mush_malloc(MAX_COMMAND_LEN, "descriptor_raw_input"));
     if (!d->raw_input)
       mush_panic("Out of memory");
     d->raw_input_at = d->raw_input;
@@ -4146,7 +4146,7 @@ lookup_desc(dbref executor, const char *name)
   if (is_strict_integer(name)) {
     int fd = parse_integer(name);
 
-    d = im_find(descs_by_fd, fd);
+    d = static_cast<DESC *>(im_find(descs_by_fd, fd));
     if (d && (Priv_Who(executor) || d->player == executor))
       return d;
     else
@@ -5275,7 +5275,8 @@ watch_files_in(int fd)
     WATCH(options.guest_file[n]);
   }
 
-  for (h = hash_firstentry(&help_files); h; h = hash_nextentry(&help_files))
+  for (h = static_cast<help_file *>(hash_firstentry(&help_files)); h;
+       h = static_cast<help_file *>(hash_nextentry(&help_files)))
     WATCH(h->file);
 
 #undef WATCH

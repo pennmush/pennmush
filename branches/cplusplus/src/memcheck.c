@@ -66,7 +66,7 @@ add_check(const char *ref)
   if (!memcheck_slab)
     memcheck_slab = slab_create("mem check references", sizeof(MEM));
 
-  newcheck = slab_malloc(memcheck_slab, prev);
+  newcheck = static_cast<MEM *>(slab_malloc(memcheck_slab, prev));
   mush_strncpy(newcheck->ref_name, ref, REF_NAME_LEN);
   newcheck->ref_count = 1;
   newcheck->next = loop;

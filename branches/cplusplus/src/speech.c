@@ -489,7 +489,7 @@ do_pemit_list(dbref player, char *list, const char *message, int flags)
       if (nospoof && Nospoof(who)) {
         if (Paranoid(who)) {
           if (!nspbuf) {
-            bp = nspbuf = mush_malloc(BUFFER_LEN, "string");
+            bp = nspbuf = static_cast<char *>(mush_malloc(BUFFER_LEN, "string"));
             if (player == Owner(player))
               safe_format(nspbuf, &bp, "[%s(#%d)->] %s", Name(player),
                           player, message);
@@ -505,7 +505,7 @@ do_pemit_list(dbref player, char *list, const char *message, int flags)
             notify(who, nspbuf);
         } else {
           if (!nsbuf) {
-            bp = nsbuf = mush_malloc(BUFFER_LEN, "string");
+            bp = nsbuf = static_cast<char *>(mush_malloc(BUFFER_LEN, "string"));
             safe_format(nsbuf, &bp, "[%s->] %s", Name(player), message);
             *bp = '\0';
           }
@@ -1017,7 +1017,7 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
   for (i = 0; i < gcount; i++) {
     if (!IsPlayer(player) && Nospoof(good[i])) {
       if (msgbuf == NULL) {
-        msgbuf = mush_malloc(BUFFER_LEN, "page buffer");
+        msgbuf = static_cast<char *>(mush_malloc(BUFFER_LEN, "page buffer"));
       }
       snprintf(msgbuf, BUFFER_LEN, "[#%d] %s", player, tbuf);
       /* Swap tbuf and msgbuf */
@@ -1410,12 +1410,12 @@ do_lemit(dbref player, const char *tbuf1, int flags)
 dbref
 na_zemit(dbref current __attribute__ ((__unused__)), void *data)
 {
-  dbref this;
+  dbref object;
   dbref room;
-  dbref *dbrefs = data;
-  this = dbrefs[0];
+  dbref *dbrefs = static_cast<dbref *>(data);
+  object = dbrefs[0];
   do {
-    if (this == NOTHING) {
+    if (object== NOTHING) {
       for (room = dbrefs[1]; room < db_top; room++) {
         if (IsRoom(room) && (Zone(room) == dbrefs[2])
             && (Loud(dbrefs[3]) || eval_lock(dbrefs[3], room, Speech_Lock))
@@ -1424,16 +1424,16 @@ na_zemit(dbref current __attribute__ ((__unused__)), void *data)
       }
       if (!(room < db_top))
         return NOTHING;
-      this = room;
+      object = room;
       dbrefs[1] = room + 1;
-    } else if (IsRoom(this)) {
-      this = Contents(this);
+    } else if (IsRoom(object)) {
+      object = Contents(object);
     } else {
-      this = Next(this);
+      object = Next(object);
     }
-  } while ((this == NOTHING) || (this == dbrefs[4]));
-  dbrefs[0] = this;
-  return this;
+  } while ((object == NOTHING) || (object == dbrefs[4]));
+  dbrefs[0] = object;
+  return object;
 }
 
 /** The zemit command.

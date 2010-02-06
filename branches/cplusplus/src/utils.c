@@ -106,7 +106,7 @@ parse_anon_attrib(dbref player, char *str, dbref *thing, ATTR **attrib)
       *attrib = NULL;
       *thing = NOTHING;
     } else {
-      *attrib = mush_malloc(sizeof(ATTR), "anon_attr");
+      *attrib = static_cast<ATTR *>(mush_malloc(sizeof(ATTR), "anon_attr"));
       AL_CREATOR(*attrib) = player;
       AL_NAME(*attrib) = mush_strdup("#lambda", "anon_attr.lambda");
       t = compress(str);
@@ -612,6 +612,9 @@ get_random32(uint32_t low, uint32_t high)
      // we will call getrand() is less than 2.
    */
 
+#ifndef UINT32_MAX
+#define UINT32_MAX 0xffffffffU
+#endif
   n_limit = UINT32_MAX - (UINT32_MAX % x);
 
   do {

@@ -162,8 +162,8 @@ list_locks(char *buff, char **bp, const char *name)
   int first = 1;
   const lock_list *ptr;
   rp = rbuff;
-  for (ptr = hash_firstentry(&htab_locks);
-       ptr; ptr = hash_nextentry(&htab_locks)) {
+  for (ptr = static_cast<const lock_list *>(hash_firstentry(&htab_locks));
+       ptr; ptr = static_cast<const lock_list *>(hash_nextentry(&htab_locks))) {
     /* Skip those that don't match */
     if (name && !string_prefix(ptr->type, name))
       continue;
@@ -292,7 +292,7 @@ define_lock(lock_type name, privbits flags)
 {
   lock_list *newlock;
 
-  newlock = mush_malloc(sizeof *newlock, "lock");
+  newlock = static_cast<lock_list *>(mush_malloc(sizeof *newlock, "lock"));
   newlock->type = mush_strdup(strupper(name), "lock.name");
   newlock->flags = flags;
   newlock->creator = GOD;
@@ -327,7 +327,7 @@ next_free_lock(const void *hint)
     lock_slab = slab_create("locks", sizeof(lock_list));
     slab_set_opt(lock_slab, SLAB_ALLOC_BEST_FIT, 1);
   }
-  return slab_malloc(lock_slab, hint);
+  return static_cast<lock_list *>(slab_malloc(lock_slab, hint));
 }
 
 static void
@@ -422,7 +422,7 @@ lock_type
 match_lock(lock_type type)
 {
   lock_list *ll;
-  ll = hashfind(strupper(type), &htab_locks);
+  ll = static_cast<lock_list *>(hashfind(strupper(type), &htab_locks));
   if (ll)
     return ll->type;
   else
@@ -436,7 +436,7 @@ match_lock(lock_type type)
 const lock_list *
 get_lockproto(lock_type type)
 {
-  return hashfind(strupper(type), &htab_locks);
+  return static_cast<const lock_list *>(hashfind(strupper(type), &htab_locks));
 }
 
 /** Add a lock to an object (primitive).

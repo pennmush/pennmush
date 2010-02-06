@@ -1063,7 +1063,7 @@ process_command(dbref player, char *command, dbref cause, int from_port)
   dbref check_loc;
 
   if (!errdblist)
-    if (!(errdblist = mush_calloc(errdbsize, sizeof(dbref), "errdblist")))
+    if (!(errdblist = static_cast<dbref *>(mush_calloc(errdbsize, sizeof(dbref), "errdblist"))))
       mush_panic("Unable to allocate memory in process_command()!");
 
   errdbtail = errdblist;
@@ -2175,11 +2175,11 @@ db_open(const char *fname)
 
   snprintf(filename, sizeof filename, "%s%s", fname, options.compresssuff);
 
-  pf = mush_malloc(sizeof *pf, "pennfile");
+  pf = static_cast<PENNFILE *>(mush_malloc(sizeof *pf, "pennfile"));
 
 #ifdef HAVE_LIBZ
   if (*options.uncompressprog && strcmp(options.uncompressprog, "gunzip") == 0) {
-    pf->type = PFT_GZFILE;
+    pf->type = PENNFILE::PFT_GZFILE;
     pf->handle.g = gzopen(filename, "rb");
     if (!pf->handle.g) {
       do_rawlog(LT_ERR, "Unable to open %s with libz: %s\n", filename,
@@ -2193,7 +2193,7 @@ db_open(const char *fname)
 
 #ifndef WIN32
   if (*options.uncompressprog) {
-    pf->type = PFT_PIPE;
+    pf->type = PENNFILE::PFT_PIPE;
     /* We do this because on some machines (SGI Irix, for example),
      * the popen will not return NULL if the mailfile isn't there.
      */
@@ -2217,7 +2217,7 @@ db_open(const char *fname)
   } else
 #endif                          /* WIN32 */
   {
-    pf->type = PFT_FILE;
+    pf->type = PENNFILE::PFT_FILE;
     pf->handle.f = fopen(filename, FOPEN_READ);
     if (!pf->handle.f)
       do_rawlog(LT_ERR, "Unable to open %s: %s\n", filename, strerror(errno));
@@ -2264,11 +2264,11 @@ db_open_write(const char *fname)
             errno, strerror(errno));
   }
 
-  pf = mush_malloc(sizeof *pf, "pennfile");
+  pf = static_cast<PENNFILE *>(mush_malloc(sizeof *pf, "pennfile"));
 
 #ifdef HAVE_LIBZ
   if (*options.compressprog && strcmp(options.compressprog, "gzip") == 0) {
-    pf->type = PFT_GZFILE;
+    pf->type = PENNFILE::PFT_GZFILE;
     pf->handle.g = gzopen(filename, "wb");
     if (!pf->handle.g) {
       do_rawlog(LT_ERR, "Unable to open %s with libz: %s\n", filename,
@@ -2282,7 +2282,7 @@ db_open_write(const char *fname)
 
 #ifndef WIN32
   if (*options.compressprog) {
-    pf->type = PFT_PIPE;
+    pf->type = PENNFILE::PFT_PIPE;
     pf->handle.f =
 #ifdef __LCC__
       (FILE *)
@@ -2298,7 +2298,7 @@ db_open_write(const char *fname)
   } else
 #endif                          /* WIN32 */
   {
-    pf->type = PFT_FILE;
+    pf->type = PENNFILE::PFT_FILE;
     pf->handle.f = fopen(filename, "wb");
     if (!pf->handle.f)
       do_rawlog(LT_ERR, "Unable to open %s: %s\n", filename, strerror(errno));
@@ -2463,8 +2463,8 @@ errdb_grow(void)
   dbref *newerrdb;
   if (errdbsize >= 50)
     return;                     /* That's it, no more, forget it */
-  newerrdb = mush_realloc(errdblist, (errdbsize + 1) * sizeof(dbref),
-                          "errdblist");
+  newerrdb = static_cast<dbref *>(mush_realloc(errdblist, (errdbsize + 1) * sizeof(dbref),
+                                               "errdblist"));
   if (newerrdb) {
     errdblist = newerrdb;
     errdbtail = errdblist + errdbsize;

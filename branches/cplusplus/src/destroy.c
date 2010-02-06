@@ -99,7 +99,7 @@ static int attribute_owner_helper
    void *args);
 
 extern void remove_all_obj_chan(dbref thing);
-extern void chan_chownall(dbref old, dbref new);
+extern void chan_chownall(dbref old, dbref newowner);
 
 extern struct db_stat_info current_state;
 

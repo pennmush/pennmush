@@ -1265,7 +1265,7 @@ grep_util_helper(dbref player __attribute__ ((__unused__)),
                  char const *pattern
                  __attribute__ ((__unused__)), ATTR *atr, void *args)
 {
-  struct guh_args *guh = args;
+  struct guh_args *guh = static_cast<guh_args *>(args);
   int found = 0;
   char *s;
   int len;
@@ -1295,7 +1295,7 @@ wildgrep_util_helper(dbref player __attribute__ ((__unused__)),
                      char const *pattern
                      __attribute__ ((__unused__)), ATTR *atr, void *args)
 {
-  struct guh_args *guh = args;
+  struct guh_args *guh = static_cast<guh_args *>(args);
   int found = 0;
 
   if (quick_wild_new(guh->lookfor, atr_value(atr), guh->sensitive)) {
@@ -1347,7 +1347,7 @@ grep_helper(dbref player, dbref thing __attribute__ ((__unused__)),
             char const *pattern
             __attribute__ ((__unused__)), ATTR *atr, void *args)
 {
-  struct gh_args *gh = args;
+  struct gh_args *gh = static_cast<gh_args *>(args);
   int found;
   char *s;
   char tbuf1[BUFFER_LEN];

@@ -430,7 +430,8 @@ hash_init(HASHTAB *htab, int size, void (*free_data) (void *))
   htab->free_data = free_data;
   htab->hashsize = size;
   htab->hashfunc_offset = 0;
-  htab->buckets = mush_calloc(size, sizeof(struct hash_bucket), "hash.buckets");
+  htab->buckets = static_cast<hash_bucket *>(
+      mush_calloc(size, sizeof(struct hash_bucket), "hash.buckets"));
 }
 
 /** Return a hashtable entry given a key.
@@ -551,8 +552,8 @@ real_hash_resize(HASHTAB *htab, int newsize, int hashfunc_offset)
   oldoffset = htab->hashfunc_offset;
   oldarr = htab->buckets;
 
-  htab->buckets =
-    mush_calloc(newsize, sizeof(struct hash_bucket), "hash.buckets");
+  htab->buckets = static_cast<hash_bucket *>(
+      mush_calloc(newsize, sizeof(struct hash_bucket), "hash.buckets"));
   htab->hashsize = newsize;
   htab->hashfunc_offset = hashfunc_offset;
   for (i = 0; i < oldsize; i++) {
@@ -662,7 +663,7 @@ hash_flush(HASHTAB *htab, int size)
   }
   htab->entries = 0;
   size = next_prime_after(size);
-  resized = mush_realloc(htab->buckets, size, "hash.buckets");
+  resized = static_cast<hash_bucket *>(mush_realloc(htab->buckets, size, "hash.buckets"));
   if (resized) {
     htab->buckets = resized;
     htab->hashsize = size;

@@ -232,7 +232,7 @@ st_insert(char const *s, StrTree *root)
 
   /* Need a new node.  Allocate and initialize it. */
   keylen = strlen(s) + 1;
-  n = mush_malloc(sizeof(StrNode) - BUFFER_LEN + keylen, "StrNode");
+  n = static_cast<StrNode *>(mush_malloc(sizeof(StrNode) - BUFFER_LEN + keylen, "StrNode"));
   if (!n)
     return NULL;
   memcpy(n->string, s, keylen);

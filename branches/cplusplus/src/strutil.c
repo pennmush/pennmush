@@ -44,7 +44,7 @@ mush_strndup(const char *src, size_t len, const char *check)
   if (rlen < len)
     len = rlen;
 
-  copy = mush_malloc(len + 1, check);
+  copy = static_cast<char *>(mush_malloc(len + 1, check));
   if (copy) {
     memcpy(copy, src, len);
     copy[len] = '\0';
@@ -918,7 +918,7 @@ replace_string(const char *restrict old, const char *restrict newbit,
   char *result, *r;
   size_t len, newlen;
 
-  r = result = mush_malloc(BUFFER_LEN, "replace_string.buff");
+  r = result = static_cast<char *>(mush_malloc(BUFFER_LEN, "replace_string.buff"));
   if (!result)
     mush_panic("Couldn't allocate memory in replace_string!");
 
@@ -965,7 +965,7 @@ replace_string2(const char *old[2], const char *newbits[2],
   if (!string)
     return NULL;
 
-  rp = result = mush_malloc(BUFFER_LEN, "replace_string.buff");
+  rp = result = static_cast<char *>(mush_malloc(BUFFER_LEN, "replace_string.buff"));
   if (!result)
     mush_panic("Couldn't allocate memory in replace_string2!");
 
@@ -1349,8 +1349,8 @@ strncoll(const char *s1, const char *s2, size_t t)
   int result;
   size_t s1_len, s2_len;
 
-  ns1 = mush_malloc(t + 1, "string");
-  ns2 = mush_malloc(t + 1, "string");
+  ns1 = static_cast<char *>(mush_malloc(t + 1, "string"));
+  ns2 = static_cast<char *>(mush_malloc(t + 1, "string"));
   memcpy(ns1, s1, t);
   ns1[t] = '\0';
   memcpy(ns2, s2, t);
@@ -1358,8 +1358,8 @@ strncoll(const char *s1, const char *s2, size_t t)
   s1_len = strxfrm(NULL, ns1, 0) + 1;
   s2_len = strxfrm(NULL, ns2, 0) + 1;
 
-  d1 = mush_malloc(s1_len + 1, "string");
-  d2 = mush_malloc(s2_len + 1, "string");
+  d1 = static_cast<char *>(mush_malloc(s1_len + 1, "string"));
+  d2 = static_cast<char *>(mush_malloc(s2_len + 1, "string"));
   (void) strxfrm(d1, ns1, s1_len);
   (void) strxfrm(d2, ns2, s2_len);
   result = strcmp(d1, d2);
@@ -1393,8 +1393,8 @@ strcasecoll(const char *s1, const char *s2)
   s1_len = strxfrm(NULL, s1, 0) + 1;
   s2_len = strxfrm(NULL, s2, 0) + 1;
 
-  d1 = mush_malloc(s1_len, "string");
-  d2 = mush_malloc(s2_len, "string");
+  d1 = static_cast<char *>(mush_malloc(s1_len, "string"));
+  d2 = static_cast<char *>(mush_malloc(s2_len, "string"));
   (void) strxfrm(d1, strupper(s1), s1_len);
   (void) strxfrm(d2, strupper(s2), s2_len);
   result = strcmp(d1, d2);
@@ -1424,8 +1424,8 @@ strncasecoll(const char *s1, const char *s2, size_t t)
   int result;
   size_t s1_len, s2_len;
 
-  ns1 = mush_malloc(t + 1, "string");
-  ns2 = mush_malloc(t + 1, "string");
+  ns1 = static_cast<char *>(mush_malloc(t + 1, "string"));
+  ns2 = static_cast<char *>(mush_malloc(t + 1, "string"));
   memcpy(ns1, s1, t);
   ns1[t] = '\0';
   memcpy(ns2, s2, t);
@@ -1433,8 +1433,8 @@ strncasecoll(const char *s1, const char *s2, size_t t)
   s1_len = strxfrm(NULL, ns1, 0) + 1;
   s2_len = strxfrm(NULL, ns2, 0) + 1;
 
-  d1 = mush_malloc(s1_len, "string");
-  d2 = mush_malloc(s2_len, "string");
+  d1 = static_cast<char *>(mush_malloc(s1_len, "string"));
+  d2 = static_cast<char *>(mush_malloc(s2_len, "string"));
   (void) strxfrm(d1, strupper(ns1), s1_len);
   (void) strxfrm(d2, strupper(ns2), s2_len);
   result = strcmp(d1, d2);

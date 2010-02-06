@@ -324,7 +324,7 @@ safe_get_bytecode(boolexp b)
   uint16_t len;
 
   len = chunk_len(b);
-  bytecode = mush_malloc(len, "boolexp.bytecode");
+  bytecode = static_cast<uint8_t *>(mush_malloc(len, "boolexp.bytecode"));
   chunk_fetch(b, bytecode, len);
   return bytecode;
 }
@@ -841,7 +841,7 @@ alloc_bool(void)
 {
   struct boolexp_node *b;
 
-  b = mush_malloc(sizeof *b, "boolexp.node");
+  b = static_cast<boolexp_node *>(mush_malloc(sizeof *b, "boolexp.node"));
 
   b->data.sub.a = NULL;
   b->data.sub.b = NULL;
@@ -1294,7 +1294,7 @@ append_insn(struct bvm_asm *a, bvm_opcode op, int arg, const char *s)
     }
     /* Allocate a new string if needed. */
     if (!found) {
-      newstr = mush_malloc(sizeof *newstr, "bvm.strnode");
+      newstr = static_cast<bvm_strnode *>(mush_malloc(sizeof *newstr, "bvm.strnode"));
       if (!s)
         mush_panic("Unable to allocate memory for boolexp string node!");
       newstr->s = mush_strdup(s, "bvm.string");
@@ -1315,7 +1315,7 @@ append_insn(struct bvm_asm *a, bvm_opcode op, int arg, const char *s)
 
   if (bvm_asmnode_slab == NULL)
     bvm_asmnode_slab = slab_create("bvm.asmnode", sizeof *newop);
-  newop = slab_malloc(bvm_asmnode_slab, NULL);
+  newop = static_cast<bvm_asmnode *>(slab_malloc(bvm_asmnode_slab, NULL));
   if (!newop)
     mush_panic("Unable to allocate memory for boolexp asm node!");
   newop->op = op;
@@ -1422,7 +1422,7 @@ generate_bvm_asm(struct boolexp_node *b)
   if (!b)
     return NULL;
 
-  a = mush_malloc(sizeof *a, "bvm.asm");
+  a = static_cast<bvm_asm *>(mush_malloc(sizeof *a, "bvm.asm"));
   if (!a)
     return NULL;
 
@@ -1635,7 +1635,7 @@ optimize_bvm_asm(struct bvm_asm *a)
           /* Avoid useless conditional jumps on different conditions by
              jumping to the next instruction after. Ex: a&b|c */
           struct bvm_asmnode *newlbl;
-          newlbl = slab_malloc(bvm_asmnode_slab, NULL);
+          newlbl = static_cast<bvm_asmnode *>(slab_malloc(bvm_asmnode_slab, NULL));
           if (!newlbl)
             mush_panic("Unable to allocate memory for boolexp asm node!");
           newlbl->op = OP_LABEL;
@@ -1686,7 +1686,7 @@ emit_bytecode(struct bvm_asm *a, int derefs)
   for (s = a->shead; s; s = s->next)
     len += s->len;
 
-  pc = bytecode = mush_malloc(len, "boolexp.bytecode");
+  pc = bytecode = static_cast<unsigned char *>(mush_malloc(len, "boolexp.bytecode"));
   if (!pc)
     return TRUE_BOOLEXP;
 

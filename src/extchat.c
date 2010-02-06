@@ -54,7 +54,7 @@ static void insert_obj_chan(dbref who, CHAN **ch);
 static void remove_obj_chan(dbref who, CHAN *ch);
 void remove_all_obj_chan(dbref thing);
 static void chan_chown(CHAN *c, dbref victim);
-void chan_chownall(dbref old, dbref new);
+void chan_chownall(dbref old, dbref newowner);
 static int insert_user(CHANUSER *user, CHAN *ch);
 static int remove_user(CHANUSER *u, CHAN *ch);
 static int save_channel(PENNFILE *fp, CHAN *ch);
@@ -327,7 +327,7 @@ new_channel(void)
 {
   CHAN *ch;
 
-  ch = slab_malloc(channel_slab, NULL);
+  ch = static_cast<CHAN *>(slab_malloc(channel_slab, NULL));
   if (!ch)
     return NULL;
   ch->name[0] = '\0';
@@ -358,7 +358,7 @@ static CHANUSER *
 new_user(dbref who, const void *hint)
 {
   CHANUSER *u;
-  u = slab_malloc(chanuser_slab, hint);
+  u = static_cast<CHANUSER *>(slab_malloc(chanuser_slab, hint));
   if (!u)
     mush_panic("Couldn't allocate memory in new_user in extchat.c");
   CUdbref(u) = who;
@@ -703,7 +703,7 @@ static CHANLIST *
 new_chanlist(const void *hint)
 {
   CHANLIST *c;
-  c = slab_malloc(chanlist_slab, hint);
+  c = static_cast<CHANLIST *>(slab_malloc(chanlist_slab, hint));
   if (!c)
     return NULL;
   c->chan = NULL;
@@ -3427,7 +3427,7 @@ COMMAND(cmd_clock)
 dbref
 na_channel(dbref current, void *data)
 {
-  struct na_cpass *nac = data;
+  struct na_cpass *nac = static_cast<na_cpass *>(data);
   CHANUSER *u, *nu;
   int cont;
 

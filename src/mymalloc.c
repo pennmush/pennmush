@@ -182,7 +182,7 @@ slab_create(const char *name, size_t item_size)
   struct slab *sl;
   size_t pgsize, offset;
 
-  sl = malloc(sizeof(struct slab));
+  sl = static_cast<slab *>(malloc(sizeof(struct slab)));
   pgsize = getpagesize();
   offset = sizeof(struct slab_page);
   /* Start the objects 16-byte aligned */
@@ -263,7 +263,7 @@ slab_alloc_page(struct slab *sl)
   if (posix_memalign((void **) &page, pgsize, pgsize) < 0) {
     do_rawlog(LT_ERR, "Unable to allocate %d bytes via posix_memalign: %s",
               pgsize, strerror(errno));
-    page = malloc(pgsize);
+    page = static_cast<uint8_t *>(malloc(pgsize));
   }
 #else
   page = malloc(pgsize);
@@ -416,7 +416,7 @@ slab_free(slab *sl, void *obj)
   last = NULL;
   for (page = sl->slabs; page; page = page->next) {
     if (obj > (void *) page && obj <= page->last_obj) {
-      struct slab_page_list *item = obj;
+      struct slab_page_list *item = static_cast<slab_page_list *>(obj);
 #ifdef SLAB_DEBUG
       struct slab_page_list *scan;
       for (scan = page->freelist; scan; scan = scan->next)

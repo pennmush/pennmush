@@ -42,8 +42,6 @@
 #ifdef HAS_CRYPT
 #ifdef I_CRYPT
 #include <crypt.h>
-#else
-extern char *crypt(const char *, const char *);
 #endif
 #endif
 

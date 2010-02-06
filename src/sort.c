@@ -59,7 +59,7 @@ uint_comp(const void *s1, const void *s2)
 int
 nval_comp(const void *a, const void *b)
 {
-  const NVAL *x = a, *y = b;
+  const NVAL *x = static_cast<const NVAL *>(a), *y = static_cast<const NVAL *>(b);
   const double epsilon = pow(10.0, -FLOAT_PRECISION);
   int eq = (fabs(*x - *y) <= (epsilon * fabs(*x)));
   return eq ? 0 : (*x > *y ? 1 : -1);
@@ -712,7 +712,7 @@ do_gensort(dbref player, char *keys[], char *strs[], int n, char *sort_type)
          ltypelist[sorti].name && strcasecmp(ltypelist[sorti].name, sort_type);
          sorti++) ;
   }
-  sp = mush_calloc(n, sizeof(s_rec), "do_gensort");
+  sp = static_cast<s_rec *>(mush_calloc(n, sizeof(s_rec), "do_gensort"));
   for (i = 0; i < n; i++) {
     /* Elements are 0 by default thanks to calloc. Only need to touch
        those that need other values. */

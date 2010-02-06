@@ -607,7 +607,7 @@ add_config(const char *name, config_func handler, void *loc, int max,
 PENNCONF *
 get_config(const char *name)
 {
-  return ((PENNCONF *) hashfind(name, &local_options));
+  return static_cast<PENNCONF *>(hashfind(name, &local_options));
 }
 
 /** Parse a boolean configuration option.
@@ -1098,8 +1098,8 @@ config_set(const char *opt, char *val, int source, int restrictions)
       return i;
     }
   }
-  for (cp = hash_firstentry(&local_options); cp;
-       cp = hash_nextentry(&local_options)) {
+  for (cp = static_cast<PENNCONF *>(hash_firstentry(&local_options)); cp;
+       cp = static_cast<PENNCONF *>(hash_nextentry(&local_options))) {
     int i = 0;
     if ((!source || (cp->group && strcmp(cp->group, "files") != 0
                      && strcmp(cp->group, "messages") != 0))

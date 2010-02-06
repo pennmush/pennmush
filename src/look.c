@@ -8,7 +8,6 @@
 
 #include "config.h"
 #include "copyrite.h"
-#define _GNU_SOURCE
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
@@ -1380,7 +1379,7 @@ decompile_helper(dbref player, dbref thing __attribute__ ((__unused__)),
                  const char *pattern
                  __attribute__ ((__unused__)), ATTR *atr, void *args)
 {
-  struct dh_args *dh = args;
+  struct dh_args *dh = static_cast<dh_args *>(args);
   ATTR *ptr;
   char *avalue;
   int avlen;

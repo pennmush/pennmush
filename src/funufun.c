@@ -262,9 +262,9 @@ FUNCTION(fun_udefault)
      * pass them to the function */
     xargs = NULL;
     if (nargs > 2) {
-      xargs = mush_calloc(nargs - 2, sizeof(char *), "udefault.xargs");
+      xargs = static_cast<char **>(mush_calloc(nargs - 2, sizeof(char *), "udefault.xargs"));
       for (i = 0; i < nargs - 2; i++) {
-        xargs[i] = mush_malloc(BUFFER_LEN, "udefault");
+        xargs[i] = static_cast<char *>(mush_malloc(BUFFER_LEN, "udefault"));
         dp = xargs[i];
         sp = args[i + 2];
         process_expression(xargs[i], &dp, &sp, executor, caller, enactor,

@@ -89,7 +89,7 @@ lattr_helper(dbref player __attribute__ ((__unused__)),
              char const *pattern __attribute__ ((__unused__)),
              ATTR *atr, void *args)
 {
-  struct lh_args *lh = args;
+  struct lh_args *lh = static_cast<lh_args *>(args);
   lh->nattr++;
   if (lh->count < 1
       || (lh->nattr >= lh->start && lh->nattr < (lh->count + lh->start))) {

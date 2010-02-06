@@ -59,7 +59,7 @@ COMMAND(cmd_helpcmd)
 {
   help_file *h;
 
-  h = hashfind(cmd->name, &help_files);
+  h = static_cast<help_file *>(hashfind(cmd->name, &help_files));
 
   if (!h) {
     notify(player, T("That command is unavailable."));
@@ -126,13 +126,13 @@ add_help_file(const char *command_name, const char *filename, int admin)
     return;
 
   /* If there's already an entry for it, complain */
-  h = hashfind(strupper(command_name), &help_files);
+  h = static_cast<help_file *>(hashfind(strupper(command_name), &help_files));
   if (h) {
     do_rawlog(LT_ERR, "Duplicate help_command %s ignored.", command_name);
     return;
   }
 
-  h = mush_malloc(sizeof *h, "help_file.entry");
+  h = static_cast<help_file *>(mush_malloc(sizeof *h, "help_file.entry"));
   h->command = mush_strdup(strupper(command_name), "help_file.command");
   h->file = mush_strdup(filename, "help_file.filename");
   h->entries = 0;
@@ -161,8 +161,8 @@ help_reindex(dbref player)
 {
   help_file *curr;
 
-  for (curr = hash_firstentry(&help_files);
-       curr; curr = hash_nextentry(&help_files)) {
+  for (curr = static_cast<help_file *>(hash_firstentry(&help_files));
+       curr; curr = static_cast<help_file *>(hash_nextentry(&help_files))) {
     if (curr->indx) {
       mush_free(curr->indx, "help_index");
       curr->indx = NULL;
@@ -342,8 +342,8 @@ static int WIN32_CDECL topic_cmp(const void *s1, const void *s2);
 static int WIN32_CDECL
 topic_cmp(const void *s1, const void *s2)
 {
-  const help_indx *a = s1;
-  const help_indx *b = s2;
+  const help_indx *a = static_cast<const help_indx *>(s1);
+  const help_indx *b = static_cast<const help_indx *>(s2);
 
   return strcasecmp(a->topic, b->topic);
 
@@ -467,7 +467,7 @@ FUNCTION(fun_textfile)
 {
   help_file *h;
 
-  h = hashfind(strupper(args[0]), &help_files);
+  h = static_cast<help_file *>(hashfind(strupper(args[0]), &help_files));
   if (!h) {
     safe_str(T("#-1 NO SUCH FILE"), buff, bp);
     return;
@@ -498,7 +498,7 @@ FUNCTION(fun_textentries)
   int len = 0;
   const char *sep = " ";
 
-  h = hashfind(strupper(args[0]), &help_files);
+  h = static_cast<help_file *>(hashfind(strupper(args[0]), &help_files));
   if (!h) {
     safe_str(T("#-1 NO SUCH FILE"), buff, bp);
     return;
@@ -601,13 +601,13 @@ list_matching_entries(const char *pattern, help_file *help_dat, int *len)
       return NULL;
     } else {
       *len = 1;
-      buff = mush_malloc(sizeof(char **), "help.search");
+      buff = static_cast<char **>(mush_malloc(sizeof(char **), "help.search"));
       *buff = entry->topic + offset;
       return buff;
     }
   }
 
-  buff = mush_calloc(help_dat->entries, sizeof(char *), "help.search");
+  buff = static_cast<char **>(mush_calloc(help_dat->entries, sizeof(char *), "help.search"));
   *len = 0;
 
   for (n = 0; n < help_dat->entries; n++)

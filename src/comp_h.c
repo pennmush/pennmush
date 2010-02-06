@@ -262,7 +262,7 @@ add_ones(CNode *node)
     if (node->right)
       add_ones(node->right);
     if ((count >= 7) || ((count >= 3) && !node->left && !node->right)) {
-      ctop = slab_malloc(huffman_slab, node);
+      ctop = static_cast<CNode *>(slab_malloc(huffman_slab, node));
       if (!ctop) {
         do_rawlog(LT_ERR,
                   "Cannot allocate memory for compression tree. Aborting.");
@@ -345,7 +345,7 @@ init_compress(PENNFILE *f)
   /* Part 1: initialize */
   for (total = 0; total < TABLE_SIZE; total++) {
     table[total].freq = 0;
-    table[total].node = slab_malloc(huffman_slab, NULL);
+    table[total].node = static_cast<CNode *>(slab_malloc(huffman_slab, NULL));
     if (!table[total].node) {
       do_rawlog(LT_ERR,
                 "Cannot allocate memory for compression tree. Aborting.");
@@ -440,7 +440,7 @@ init_compress(PENNFILE *f)
       printf("%3d: %d\t", table[count].node->c, table[count].freq);
     printf("\n");
 #endif
-    node = slab_malloc(huffman_slab, table[indx].node);
+    node = static_cast<CNode *>(slab_malloc(huffman_slab, table[indx].node));
     if (!node) {
       do_rawlog(LT_ERR,
                 "Cannot allocate memory for compression tree. Aborting.");
@@ -490,7 +490,7 @@ init_compress(PENNFILE *f)
   node = table[1].node;         /* top of tree */
   for (count = 0; node->left && (count < 4); count++)
     node = node->left;
-  ctop = slab_malloc(huffman_slab, node);
+  ctop = static_cast<CNode *>(slab_malloc(huffman_slab, node));
   if (!ctop) {
     do_rawlog(LT_ERR, "Cannot allocate memory for compression tree. Aborting.");
     exit(1);
@@ -514,7 +514,7 @@ init_compress(PENNFILE *f)
   node = table[1].node;         /* top of tree */
   for (count = 0; count < 8; count++) {
     if (!node->left) {
-      ctop = slab_malloc(huffman_slab, node);
+      ctop = static_cast<CNode *>(slab_malloc(huffman_slab, node));
       if (!ctop) {
         do_rawlog(LT_ERR,
                   "Cannot allocate memory for compression tree. Aborting.");

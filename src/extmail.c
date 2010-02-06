@@ -1096,7 +1096,7 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
   mp = find_insertion_point(target);
 
   /* initialize the appropriate fields */
-  newp = slab_malloc(mail_slab, mp);
+  newp = static_cast<MAIL *>(slab_malloc(mail_slab, mp));
   newp->to = target;
   newp->from = player;
   newp->from_ctime = CreTime(player);
@@ -1123,14 +1123,14 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
   } else {
     uint16_t len;
     unsigned char *text;
-    newmsg = mush_malloc(BUFFER_LEN, "string");
+    newmsg = static_cast<char *>(mush_malloc(BUFFER_LEN, "string"));
     if (!newmsg)
       mush_panic("Failed to allocate string in send_mail");
     nm = newmsg;
     safe_str(message, newmsg, &nm);
     if (!nosig && ((a = atr_get_noparent(player, "MAILSIGNATURE")) != NULL)) {
       /* Append the MAILSIGNATURE to the mail - Cordin@Dune's idea */
-      buff = mush_malloc(BUFFER_LEN, "string");
+      buff = static_cast<char *>(mush_malloc(BUFFER_LEN, "string"));
       if (!buff)
         mush_panic("Failed to allocate string in send_mail");
       ms = mailsig = safe_atr_value(a);
@@ -1972,7 +1972,7 @@ find_exact_starting_point(dbref player)
   if (!HEAD)
     return NULL;
 
-  mp = get_objdata(player, "MAIL");
+  mp = static_cast<MAIL *>(get_objdata(player, "MAIL"));
   if (!mp) {
     /* Player hasn't already done something that looks up their mail. */
     if (HEAD->to > player)
@@ -2006,7 +2006,7 @@ find_insertion_point(dbref player)
 
   if (!HEAD)
     return NULL;
-  mp = get_objdata(player, "MAIL");
+  mp = static_cast<MAIL *>(get_objdata(player, "MAIL"));
   if (!mp) {
     if (HEAD->to > player)
       return NULL;              /* No mail chain */
@@ -2083,7 +2083,7 @@ load_mail(PENNFILE *fp)
     return 0;
   }
   /* first one is a special case */
-  mp = slab_malloc(mail_slab, NULL);
+  mp = static_cast<MAIL *>(slab_malloc(mail_slab, NULL));
   mp->to = getref(fp);
   mp->from = getref(fp);
   if (mail_flags & MDBF_SENDERCTIME)
@@ -2118,7 +2118,7 @@ load_mail(PENNFILE *fp)
 
   /* now loop through */
   for (; i < mail_top; i++) {
-    mp = slab_malloc(mail_slab, NULL);
+    mp = static_cast<MAIL *>(slab_malloc(mail_slab, NULL));
     mp->to = getref(fp);
     mp->from = getref(fp);
     if (mail_flags & MDBF_SENDERCTIME)
@@ -2261,24 +2261,24 @@ void
 add_folder_name(dbref player, int fld, const char *name)
 {
   char *old, *res, *r;
-  char *new, *pat, *str, *tbuf;
+  char *newname, *pat, *str, *tbuf;
   ATTR *a;
 
   /* Muck with the player's MAILFOLDERS attrib to add a string of the form:
    * number:name:number to it, replacing any such string with a matching
    * number.
    */
-  new = (char *) mush_malloc(BUFFER_LEN, "string");
+  newname = (char *) mush_malloc(BUFFER_LEN, "string");
   pat = (char *) mush_malloc(BUFFER_LEN, "string");
   str = (char *) mush_malloc(BUFFER_LEN, "string");
   tbuf = (char *) mush_malloc(BUFFER_LEN, "string");
-  if (!new || !pat || !str || !tbuf)
+  if (!newname || !pat || !str || !tbuf)
     mush_panic("Failed to allocate strings in add_folder_name");
 
   if (name && *name)
-    snprintf(new, BUFFER_LEN, "%d:%s:%d ", fld, strupper(name), fld);
+    snprintf(newname, BUFFER_LEN, "%d:%s:%d ", fld, strupper(name), fld);
   else
-    strcpy(new, " ");
+    strcpy(newname, " ");
   sprintf(pat, "%d:", fld);
   /* get the attrib and the old string, if any */
   old = NULL;
@@ -2293,19 +2293,19 @@ add_folder_name(dbref player, int fld, const char *name)
     while (!isspace((unsigned char) *r))
       r++;
     *r = '\0';
-    res = replace_string(old, new, tbuf);       /* mallocs mem! */
+    res = replace_string(old, newname, tbuf);       /* mallocs mem! */
   } else {
     r = res = (char *) mush_malloc(BUFFER_LEN + 1, "replace_string.buff");
     if (a)
       safe_str(str, res, &r);
-    safe_str(new, res, &r);
+    safe_str(newname, res, &r);
     *r = '\0';
   }
   /* put the attrib back */
   (void) atr_add(player, "MAILFOLDERS", res, GOD,
                  AF_WIZARD | AF_NOPROG | AF_LOCKED);
   mush_free(res, "replace_string.buff");
-  mush_free(new, "string");
+  mush_free(newname, "string");
   mush_free(pat, "string");
   mush_free(str, "string");
   mush_free(tbuf, "string");
@@ -2828,10 +2828,10 @@ filter_mail(dbref from, dbref player, char *subject,
     tbuf1[j++] = 'R';
   tbuf1[j] = '\0';
 
-  arg = mush_malloc(BUFFER_LEN, "string");
-  arg2 = mush_malloc(BUFFER_LEN, "string");
-  arg3 = mush_malloc(BUFFER_LEN, "string");
-  arg4 = mush_malloc(BUFFER_LEN, "string");
+  arg = static_cast<char *>(mush_malloc(BUFFER_LEN, "string"));
+  arg2 = static_cast<char *>(mush_malloc(BUFFER_LEN, "string"));
+  arg3 = static_cast<char *>(mush_malloc(BUFFER_LEN, "string"));
+  arg4 = static_cast<char *>(mush_malloc(BUFFER_LEN, "string"));
   if (!arg4)
     mush_panic("Unable to allocate memory in mailfilter");
   save_global_regs("filter_mail", rsave);

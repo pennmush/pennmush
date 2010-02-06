@@ -122,8 +122,8 @@ allocate_bufferq(int lines)
 {
   BUFFERQ *bq;
   int bytes = lines * (BUFFER_LEN + BUFFERQLINEOVERHEAD);
-  bq = mush_malloc(sizeof(BUFFERQ), "bufferq");
-  bq->buffer = mush_malloc(bytes, "bufferq.buffer");
+  bq = static_cast<BUFFERQ *>(mush_malloc(sizeof(BUFFERQ), "bufferq"));
+  bq->buffer = static_cast<char *>(mush_malloc(bytes, "bufferq.buffer"));
   *bq->buffer = '\0';
   bq->buffer_end = bq->buffer;
   bq->num_buffered = 0;
@@ -170,7 +170,7 @@ reallocate_bufferq(BUFFERQ *bq, int lines)
       shift_bufferq(bq, bq->buffer_end - bq->buffer - bytes);
   }
   bufflen = bq->buffer_end - bq->buffer;
-  newbuff = realloc(bq->buffer, bytes);
+  newbuff = static_cast<char *>(realloc(bq->buffer, bytes));
   if (newbuff) {
     bq->buffer = newbuff;
     bq->buffer_end = bq->buffer + bufflen;

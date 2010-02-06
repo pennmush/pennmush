@@ -785,7 +785,7 @@ real_parse_ansi_string(const char *source)
   safe_str(source, src, &sptr);
   *sptr = '\0';
 
-  data = mush_malloc(sizeof(ansi_string), "ansi_string");
+  data = static_cast<ansi_string *>(mush_malloc(sizeof(ansi_string), "ansi_string"));
   if (!data)
     return NULL;
 
@@ -1577,7 +1577,7 @@ scramble_ansi_string(ansi_string *as)
 
   optimize_ansi_string(as);
 
-  tmp = mush_malloc(sizeof(ansi_string), "ansi_string");
+  tmp = static_cast<ansi_string *>(mush_malloc(sizeof(ansi_string), "ansi_string"));
   if (!tmp)
     return NULL;
 

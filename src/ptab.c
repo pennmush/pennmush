@@ -248,8 +248,8 @@ ptab_start_inserts(PTAB *tab)
 static int WIN32_CDECL
 ptab_cmp(const void *a, const void *b)
 {
-  const struct ptab_entry *const *ra = a;
-  const struct ptab_entry *const *rb = b;
+  const struct ptab_entry *const *ra = static_cast<const ptab_entry *const *>(a);
+  const struct ptab_entry *const *rb = static_cast<const ptab_entry *const *>(b);
 
   return strcasecmp((*ra)->key, (*rb)->key);
 }
@@ -266,7 +266,8 @@ ptab_end_inserts(PTAB *tab)
   tab->state = 0;
   qsort(tab->tab, tab->len, sizeof(struct ptab_entry *), ptab_cmp);
 
-  tmp = realloc(tab->tab, (tab->len + 10) * sizeof(struct ptab_entry *));
+  tmp = static_cast<ptab_entry **>(
+      realloc(tab->tab, (tab->len + 10) * sizeof(struct ptab_entry *)));
   if (!tmp)
     return;
   tab->tab = tmp;
@@ -289,7 +290,8 @@ ptab_grow(PTAB *tab)
     tab->maxlen = 200;
   else
     tab->maxlen *= 2;
-  tmp = realloc(tab->tab, tab->maxlen * sizeof(struct ptab_entry **));
+  tmp = static_cast<ptab_entry **>(
+      realloc(tab->tab, tab->maxlen * sizeof(struct ptab_entry **)));
   if (tab->tab == NULL)
     add_check("ptab");
   if (!tmp) {
@@ -321,7 +323,7 @@ ptab_insert(PTAB *tab, const char *key, void *data)
 
   lamed = strlen(key) + 1;
 
-  tab->tab[tab->len] = mush_malloc(PTAB_SIZE + lamed, "ptab.entry");
+  tab->tab[tab->len] = static_cast<ptab_entry *>(mush_malloc(PTAB_SIZE + lamed, "ptab.entry"));
 
   tab->tab[tab->len]->data = data;
   memcpy(tab->tab[tab->len]->key, key, lamed);
@@ -373,7 +375,7 @@ ptab_insert_one(PTAB *tab, const char *key, void *data)
 
   /* And splice in the new one */
   len = strlen(key) + 1;
-  tab->tab[n] = mush_malloc(PTAB_SIZE + len, "ptab.entry");
+  tab->tab[n] = static_cast<ptab_entry *>(mush_malloc(PTAB_SIZE + len, "ptab.entry"));
   tab->tab[n]->data = data;
   memcpy(tab->tab[n]->key, key, len);
   tab->len++;

@@ -168,10 +168,12 @@ do_malias_create(dbref player, char *alias, char *tolist)
   }
   if (!ma_size) {
     ma_size = MA_INC;
-    malias = mush_calloc(ma_size, sizeof(struct mail_alias), "malias_list");
+    malias = static_cast<mail_alias *>(
+        mush_calloc(ma_size, sizeof(struct mail_alias), "malias_list"));
   } else if (ma_top >= ma_size) {
     ma_size += MA_INC;
-    m = mush_calloc(ma_size, sizeof(struct mail_alias), "malias_list");
+    m = static_cast<mail_alias *>(
+        mush_calloc(ma_size, sizeof(struct mail_alias), "malias_list"));
     memcpy(m, malias, sizeof(struct mail_alias) * ma_top);
     mush_free(malias, "malias_list");
     malias = m;
@@ -237,7 +239,7 @@ do_malias_create(dbref player, char *alias, char *tolist)
     return;
   }
   m = &malias[ma_top];
-  m->members = mush_calloc(i, sizeof(dbref), "malias_members");
+  m->members = static_cast<dbref *>(mush_calloc(i, sizeof(dbref), "malias_members"));
   memcpy(m->members, alist, sizeof(dbref) * i);
 
   na = alias + 1;
@@ -615,7 +617,7 @@ do_malias_set(dbref player, char *alias, char *tolist)
   }
   if (m->members)
     mush_free(m->members, "malias_members");
-  m->members = mush_calloc(i, sizeof(dbref), "malias_members");
+  m->members = static_cast<dbref *>(mush_calloc(i, sizeof(dbref), "malias_members"));
   memcpy(m->members, alist, sizeof(dbref) * i);
   m->size = i;
   notify(player, T("MAIL: Alias list set."));
@@ -829,7 +831,7 @@ do_malias_add(dbref player, char *alias, char *tolist)
     notify(player, T("MAIL: No valid recipients for alias-list!"));
     return;
   }
-  members = mush_calloc(i + m->size, sizeof(dbref), "malias_members");
+  members = static_cast<dbref *>(mush_calloc(i + m->size, sizeof(dbref), "malias_members"));
 
   memcpy(members, m->members, sizeof(dbref) * m->size);
   memcpy(&members[m->size], alist, sizeof(dbref) * i);
@@ -1057,7 +1059,8 @@ load_malias(PENNFILE *fp)
   ma_size = ma_top;
 
   if (ma_top > 0)
-    malias = mush_calloc(ma_size, sizeof(struct mail_alias), "malias_list");
+    malias = static_cast<mail_alias *>(
+        mush_calloc(ma_size, sizeof(struct mail_alias), "malias_list"));
   else
     malias = NULL;
 
@@ -1074,7 +1077,7 @@ load_malias(PENNFILE *fp)
     m->size = getref(fp);
 
     if (m->size > 0) {
-      m->members = mush_calloc(m->size, sizeof(dbref), "malias_members");
+      m->members = static_cast<dbref *>(mush_calloc(m->size, sizeof(dbref), "malias_members"));
       for (j = 0; j < m->size; j++) {
         m->members[j] = getref(fp);
       }

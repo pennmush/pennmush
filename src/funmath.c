@@ -1791,7 +1791,7 @@ FUNCTION(fun_lmath)
   }
 
   /* Allocate memory */
-  ptr = mush_calloc(BUFFER_LEN, sizeof(char *), "string");
+  ptr = static_cast<char **>(mush_calloc(BUFFER_LEN, sizeof(char *), "string"));
 
   nptr = list2arr(ptr, BUFFER_LEN, args[1], sep);
 
@@ -2598,7 +2598,7 @@ MATH_FUNC(math_median)
   NVAL *numbers;
   int n;
 
-  numbers = mush_malloc(nptr * sizeof(NVAL), "number_array");
+  numbers = static_cast<NVAL *>(mush_malloc(nptr * sizeof(NVAL), "number_array"));
 
   for (n = 0; n < nptr; n++) {
     if (!is_number(ptr[n])) {

@@ -334,7 +334,7 @@ eventwait_watch_fd_read(int fd)
 #endif
 #ifdef HAVE_POLL
   case METHOD_POLL:
-    poll_fds = realloc(poll_fds, sizeof(struct pollfd) * (pollfd_len + 1));
+    poll_fds = static_cast<pollfd *>(realloc(poll_fds, sizeof(struct pollfd) * (pollfd_len + 1)));
     poll_fds[pollfd_len].fd = fd;
     poll_fds[pollfd_len].events = POLLIN;
     pollfd_len += 1;

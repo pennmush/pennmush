@@ -304,7 +304,7 @@ parse_que(dbref player, const char *command, dbref cause)
     notify(player, T("Queue entry table full. Try again later."));
     return;
   }
-  tmp = mush_malloc(sizeof *tmp, "cqueue");
+  tmp = static_cast<BQUE *>(mush_malloc(sizeof *tmp, "cqueue"));
   tmp->pid = pid;
   tmp->comm = mush_strdup(command, "cqueue.comm");
   tmp->semattr = NULL;
@@ -429,7 +429,7 @@ wait_que(dbref player, int waittill, char *command, dbref cause, dbref sem,
     notify(player, T("Queue entry table full. Try again later."));
     return;
   }
-  tmp = mush_malloc(sizeof *tmp, "cqueue");
+  tmp = static_cast<BQUE *>(mush_malloc(sizeof *tmp, "cqueue"));
   tmp->comm = mush_strdup(command, "cqueue.comm");
   tmp->pid = pid;
   tmp->player = player;
@@ -983,7 +983,7 @@ do_waitpid(dbref player, const char *pidstr, const char *timestr, bool until)
   }
 
   pid = parse_uint32(pidstr, NULL, 10);
-  q = im_find(queue_map, pid);
+  q = static_cast<BQUE *>(im_find(queue_map, pid));
 
   if (!q) {
     notify(player, T("That is not a valid pid!"));
@@ -1087,7 +1087,7 @@ FUNCTION(fun_pidinfo)
   }
 
   pid = parse_uint32(args[0], NULL, 10);
-  q = im_find(queue_map, pid);
+  q = static_cast<BQUE *>(im_find(queue_map, pid));
 
   if (!q) {
     safe_str(T("#-1 INVALID PID"), buff, bp);
@@ -1494,7 +1494,7 @@ do_haltpid(dbref player, const char *arg1)
   }
 
   pid = parse_uint32(arg1, NULL, 10);
-  q = im_find(queue_map, pid);
+  q = static_cast<BQUE *>(im_find(queue_map, pid));
   if (!q) {
     notify(player, T("That is not a valid pid!"));
     return;

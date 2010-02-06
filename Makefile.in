@@ -16,11 +16,13 @@ PATCHLEVEL=12
 #
 MAKE=@MAKE@
 CC=@CC@
+CXX=@CXX@
 
 SQL_CFLAGS=@MYSQL_CFLAGS@ @POSTGRESQL_CFLAGS@ @SQLITE3_CFLAGS@
 SQL_LDFLAGS=@MYSQL_LDFLAGS@ @POSTGRESQL_LDFLAGS@ @SQLITE3_LDFLAGS@
 
 CCFLAGS=@CFLAGS@ -I.. -I../hdrs @CPPFLAGS@ @PCRE_CFLAGS@
+CXXFLAGS=@CFLAGS@ -I.. -I../hdrs @CPPFLAGS@ @PCRE_CFLAGS@
 LDFLAGS=@LDFLAGS@ 
 CLIBS=@LIBS@ @PCRE_LIBS@
 INSTALL=@INSTALL@
@@ -37,6 +39,7 @@ GLOBAL_INSTALL=@libexecdir@
 all: config.h options.h autogen game/mush.cnf
 	@echo "Making all in src."
 	(cd src; @MAKE@ all "CC=$(CC)" "CCFLAGS=$(CCFLAGS)" \
+	"CXX=$(CXX)" "CXXFLAGS=$(CXXFLAGS)" \
 	"LDFLAGS=$(LDFLAGS)" "CLIBS=$(CLIBS)" "MAKE=$(MAKE)" \
 	"MAKEFLAGS=$(MAKEFLAGS)" "SQL_CFLAGS=$(SQL_CFLAGS)" \
 	"SQL_LDFLAGS=$(SQL_LDFLAGS)")
@@ -77,6 +80,7 @@ install: localized all
 
 netmud: 
 	(cd src; make netmud "CC=$(CC)" "CCFLAGS=$(CCFLAGS)" \
+	"CXX=$(CXX)" "CXXFLAGS=$(CXXFLAGS)" \
 	"SQL_CFLAGS=$(SQL_CFLAGS)" "SQL_LDFLAGS=$(SQL_LDFLAGS)" \
 	"LDFLAGS=$(LDFLAGS)" "CLIBS=$(CLIBS)" )
 
@@ -92,10 +96,12 @@ localized:
 
 portmsg:
 	(cd src; make portmsg "CC=$(CC)" "CCFLAGS=$(CCFLAGS)" \
+	"CXX=$(CXX)" "CXXFLAGS=$(CXXFLAGS)" \
 	"LDFLAGS=$(LDFLAGS)" "CLIBS=$(CLIBS)" )
 
 ssl_slave:
 	(cd src; make ssl_slave "CC=$(CC)" "CCFLAGS=$(CCFLAGS)" \
+	"CXX=$(CXX)" "CXXFLAGS=$(CXXFLAGS)" \
 	"LDFLAGS=$(LDFLAGS)" "CLIBS=$(CLIBS)" "MAKE=$(MAKE)" \
 	"MAKEFLAGS=$(MAKEFLAGS)")
 
@@ -110,6 +116,7 @@ safety:
 
 distdepend: hdrs/funs.h hdrs/cmds.h
 	(cd src; @MAKE@ depend "CC=$(CC)" "CCFLAGS=$(CCFLAGS)" \
+	"CXX=$(CXX)" "CXXFLAGS=$(CXXFLAGS)" \
 	"LDFLAGS=$(LDFLAGS)" "CLIBS=$(CLIBS)" )
 
 local-files:

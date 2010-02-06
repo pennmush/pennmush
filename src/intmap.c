@@ -93,7 +93,7 @@ intmap *
 im_new(void)
 {
   intmap *im;
-  im = mush_malloc(sizeof *im, "int_map");
+  im = static_cast<intmap *>(mush_malloc(sizeof *im, "int_map"));
   if (!intmap_slab) {
     intmap_slab = slab_create("patricia tree nodes", sizeof(struct patricia));
     slab_set_opt(intmap_slab, SLAB_ALLOC_BEST_FIT, 1);
@@ -199,7 +199,7 @@ im_insert(intmap *im, im_key key, void *data)
   patricia *here, *newnode, *prev = NULL;
   int bit, prevbit = 0;
 
-  newnode = slab_malloc(intmap_slab, im->root);
+  newnode = static_cast<patricia *>(slab_malloc(intmap_slab, im->root));
   newnode->key = key;
   newnode->data = data;
   newnode->links[0] = newnode->links[1] = newnode;
@@ -475,6 +475,6 @@ im_stats_header(dbref player)
 void
 im_stats(dbref player, intmap *im, const char *name)
 {
-  notify_format(player, "%-11s %7lld %7u", name, (long long) im->count,
+  notify_format(player, "%-11s %7lld %7u", name, im->count,
                 (unsigned int) (sizeof(*im) + (sizeof(patricia) * im->count)));
 }

@@ -1327,10 +1327,12 @@ process_expression(char *buff, char **bp, char const **str,
           if (nfargs >= args_alloced) {
             char **nargs;
             int *narglens;
-            nargs = mush_calloc(nfargs + 10, sizeof(char *),
-                                "process_expression.function_arglist");
-            narglens = mush_calloc(nfargs + 10, sizeof(int),
-                                   "process_expression.function_arglens");
+            nargs = static_cast<char **>(
+                mush_calloc(nfargs + 10, sizeof(char *),
+                            "process_expression.function_arglist"));
+            narglens = static_cast<int *>(
+                mush_calloc(nfargs + 10, sizeof(int),
+                            "process_expression.function_arglens"));
             for (j = 0; j < nfargs; j++) {
               nargs[j] = fargs[j];
               narglens[j] = arglens[j];

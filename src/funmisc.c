@@ -236,13 +236,13 @@ FUNCTION(fun_letq)
     preserve[n] = NULL;
 
   if (npairs) {
-    values = mush_calloc(npairs, sizeof(char *), "letq.values");
+    values = static_cast<char **>(mush_calloc(npairs, sizeof(char *), "letq.values"));
     if (!values) {
       safe_str(T("#-1 UNABLE TO ALLOCATE MEMORY"), buff, bp);
       return;
     }
 
-    regs = mush_calloc(npairs, sizeof(int), "letq.registers");
+    regs = static_cast<int *>(mush_calloc(npairs, sizeof(int), "letq.registers"));
     if (!regs) {
       safe_str(T("#-1 UNABLE TO ALLOCATE MEMORY"), buff, bp);
       mush_free(values, "letq.values");

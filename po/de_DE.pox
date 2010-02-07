@@ -2684,6 +2684,11 @@ msgstr "Du muﬂt einen Kanal angeben."
 msgid "You must specify a command."
 msgstr "Du muﬂt einen Befehl angeben."
 
+#: src/rob.c:230
+#, c-format
+msgid "You must specify a positive number of %s."
+msgstr "Du must eine positive Anzahl an %s angeben."
+
 #: src/look.c:1044
 msgid "You must specify a valid player name."
 msgstr "Du musst ein gueltigen Spieler Namen angeben."

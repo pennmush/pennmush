@@ -4404,7 +4404,7 @@ msgstr "Objet invalide"
 
 #: extchat.c:1377
 msgid "cleared"
-msgstr "OK."
+msgstr "effacé"
 
 #: move.c:608
 #, c-format

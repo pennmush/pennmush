@@ -30,6 +30,7 @@
 #include "ansi.h"
 
 #ifdef WIN32
+#include <windows.h>
 #pragma warning( disable : 4761)        /* NJG: disable warning re conversion */
 #endif
 
@@ -60,6 +61,8 @@ FUNCTION(fun_valid)
     safe_boolean(ok_command_name(upcasestr(args[1])), buff, bp);
   else if (!strcasecmp(args[0], "function"))
     safe_boolean(ok_function_name(upcasestr(args[1])), buff, bp);
+  else if (!strcasecmp(args[0], "flag"))
+    safe_boolean(good_flag_name(upcasestr(args[1])), buff, bp);
   else
     safe_str("#-1", buff, bp);
 }
@@ -67,7 +70,7 @@ FUNCTION(fun_valid)
 /* ARGSUSED */
 FUNCTION(fun_pemit)
 {
-  int ns = string_prefix(called_as, "NS");
+  int ns = (string_prefix(called_as, "NS") && Can_Nspemit(executor));
   int flags = PEMIT_LIST | PEMIT_SILENT;
   dbref saved_orator = orator;
   if (!command_check_byname(executor, ns ? "@nspemit" : "@pemit") ||
@@ -100,7 +103,7 @@ FUNCTION(fun_message)
 /* ARGSUSED */
 FUNCTION(fun_oemit)
 {
-  int ns = string_prefix(called_as, "NS");
+  int ns = (string_prefix(called_as, "NS") && Can_Nspemit(executor));
   int flags = ns ? PEMIT_SPOOF : 0;
   if (!command_check_byname(executor, ns ? "@nsoemit" : "@oemit") ||
       fun->flags & FN_NOSIDEFX) {
@@ -114,7 +117,7 @@ FUNCTION(fun_oemit)
 /* ARGSUSED */
 FUNCTION(fun_emit)
 {
-  int ns = string_prefix(called_as, "NS");
+  int ns = (string_prefix(called_as, "NS") && Can_Nspemit(executor));
   int flags = ns ? PEMIT_SPOOF : 0;
   if (!command_check_byname(executor, ns ? "@nsemit" : "@emit") ||
       fun->flags & FN_NOSIDEFX) {
@@ -128,7 +131,7 @@ FUNCTION(fun_emit)
 /* ARGSUSED */
 FUNCTION(fun_remit)
 {
-  int ns = string_prefix(called_as, "NS");
+  int ns = (string_prefix(called_as, "NS") && Can_Nspemit(executor));
   int flags = ns ? PEMIT_SPOOF : 0;
   if (!command_check_byname(executor, ns ? "@nsremit" : "@remit") ||
       fun->flags & FN_NOSIDEFX) {
@@ -142,7 +145,7 @@ FUNCTION(fun_remit)
 /* ARGSUSED */
 FUNCTION(fun_lemit)
 {
-  int ns = string_prefix(called_as, "NS");
+  int ns = (string_prefix(called_as, "NS") && Can_Nspemit(executor));
   int flags = ns ? PEMIT_SPOOF : 0;
   if (!command_check_byname(executor, ns ? "@nslemit" : "@lemit") ||
       fun->flags & FN_NOSIDEFX) {
@@ -156,7 +159,7 @@ FUNCTION(fun_lemit)
 /* ARGSUSED */
 FUNCTION(fun_zemit)
 {
-  int ns = string_prefix(called_as, "NS");
+  int ns = (string_prefix(called_as, "NS") && Can_Nspemit(executor));
   int flags = ns ? PEMIT_SPOOF : 0;
   if (!command_check_byname(executor, ns ? "@nszemit" : "@zemit") ||
       fun->flags & FN_NOSIDEFX) {
@@ -170,7 +173,7 @@ FUNCTION(fun_zemit)
 /* ARGSUSED */
 FUNCTION(fun_prompt)
 {
-  int ns = string_prefix(called_as, "NS");
+  int ns = (string_prefix(called_as, "NS") && Can_Nspemit(executor));
   int flags = PEMIT_LIST | PEMIT_PROMPT;
   if (!command_check_byname(executor, ns ? "@nspemit" : "@pemit") ||
       fun->flags & FN_NOSIDEFX) {
@@ -289,6 +292,30 @@ cleanup:
     for (n = 0; n < npairs; n++)
       mush_free(values[n], "letq.value");
     mush_free(values, "letq.values");
+  }
+}
+
+/* ARGSUSED */
+FUNCTION(fun_unsetq)
+{
+  /* sets a variable into a local register */
+  char *ptr;
+  int qindex;
+  int i;
+
+  if (nargs == 0 || args[0][0] == '\0') {
+    for (i = 0; i < NUMQ; i++) {
+      *(global_eval_context.renv[i]) = '\0';
+    }
+    return;
+  }
+
+  for (ptr = args[0]; *ptr; ptr++) {
+    if ((qindex = qreg_indexes[(unsigned char) *ptr]) != -1) {
+      *(global_eval_context.renv[qindex]) = '\0';
+    } else if (!isspace(*ptr)) {
+      safe_str(T("#-1 REGISTER OUT OF RANGE"), buff, bp);
+    }
   }
 }
 
@@ -565,6 +592,12 @@ FUNCTION(fun_mudname)
 }
 
 /* ARGSUSED */
+FUNCTION(fun_mudurl)
+{
+  safe_str(MUDURL, buff, bp);
+}
+
+/* ARGSUSED */
 FUNCTION(fun_version)
 {
   safe_format(buff, bp, "PennMUSH version %s patchlevel %s %s",
@@ -828,4 +861,106 @@ FUNCTION(fun_allof)
 {
   do_whichof(args, nargs, DO_ALLOF, buff, bp, executor,
              caller, enactor, pe_info);
+}
+
+/* Returns a platform-specific timestamp with platform-dependent resolution. */
+static uint64_t
+get_tsc()
+{
+#ifdef WIN32
+  LARGE_INTEGER li;
+  QueryPerformanceCounter(&li);
+  return li.QuadPart;
+#else
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return 1000000ULL * tv.tv_sec + tv.tv_usec;
+#endif
+}
+
+static uint64_t
+tsc_diff_to_microseconds(uint64_t start, uint64_t end)
+{
+#ifdef WIN32
+  LARGE_INTEGER frequency;
+  QueryPerformanceFrequency(&frequency);
+  return (end - start) * 1000000.0 / frequency.QuadPart;
+#else
+  return end - start;
+#endif
+}
+
+/* ARGSUSED */
+FUNCTION(fun_benchmark)
+{
+  char tbuf[BUFFER_LEN], *tp;
+  char const *sp;
+  int n;
+  unsigned int min = UINT_MAX;
+  unsigned int max = 0;
+  unsigned int total = 0;
+  int i;
+  dbref thing = NOTHING;
+
+  if (!is_number(args[1])) {
+    safe_str(T(e_nums), buff, bp);
+    return;
+  }
+  n = parse_number(args[1]);
+  if (n < 1) {
+    safe_str(T(e_range), buff, bp);
+    return;
+  }
+
+  if (nargs > 2) {
+    /* Evaluate <sendto> argument */
+    tp = tbuf;
+    sp = args[2];
+    process_expression(tbuf, &tp, &sp, executor, caller, enactor,
+                       PE_DEFAULT, PT_DEFAULT, pe_info);
+    *tp = '\0';
+    thing = noisy_match_result(executor, tbuf, NOTYPE, MAT_EVERYTHING);
+    if (!GoodObject(thing)) {
+      safe_dbref(thing, buff, bp);
+      return;
+    }
+    if (!okay_pemit(executor, thing)) {
+      notify_format(executor, T("I don't think #%d wants to hear from you."),
+                    thing);
+      safe_str("#-1", buff, bp);
+      return;
+    }
+  }
+
+  for (i = 0; i < n; i++) {
+    uint64_t start;
+    unsigned int elapsed;
+    tp = tbuf;
+    sp = args[0];
+    start = get_tsc();
+    if (process_expression(tbuf, &tp, &sp, executor, caller, enactor,
+                           PE_DEFAULT, PT_DEFAULT, pe_info)) {
+      break;
+    }
+    *tp = '\0';
+    elapsed = tsc_diff_to_microseconds(start, get_tsc());
+    if (elapsed < min) {
+      min = elapsed;
+    }
+    if (elapsed > max) {
+      max = elapsed;
+    }
+    total += elapsed;
+  }
+
+  if (thing != NOTHING) {
+    safe_str(tbuf, buff, bp);
+    notify_format(thing, T("Average: %.2f   Min: %u   Max: %u"),
+                  ((double) total) / n, min, max);
+  } else {
+    safe_format(buff, bp, T("Average: %.2f   Min: %u   Max: %u"),
+                ((double) total) / n, min, max);
+  }
+
+  return;
 }

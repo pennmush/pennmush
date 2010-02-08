@@ -60,6 +60,8 @@ static sqlite3 *sqlite3_connp = NULL;
 #include "confmagic.h"
 #include "ansi.h"
 
+extern signed char qreg_indexes[UCHAR_MAX + 1];
+
 /* Supported platforms */
 typedef enum { SQL_PLATFORM_DISABLED = -1,
   SQL_PLATFORM_MYSQL = 1,
@@ -74,9 +76,9 @@ typedef enum { SQL_PLATFORM_DISABLED = -1,
   if (!qres) { \
     if (affected_rows >= 0) { \
     } else if (!sql_connected()) { \
-      safe_str("#-1 SQL ERROR: NO DATABASE CONNECTED", buff, bp);	\
+      safe_str(T("#-1 SQL ERROR: NO DATABASE CONNECTED"), buff, bp);	\
     } else { \
-      safe_format(buff, bp, "#-1 SQL ERROR: %s", sql_error()); \
+      safe_format(buff, bp, T("#-1 SQL ERROR: %s"), sql_error()); \
     } \
     return; \
   }
@@ -288,7 +290,7 @@ FUNCTION(fun_sql_escape)
   if (!sql_connected()) {
     sql_init();
     if (!sql_connected()) {
-      notify(executor, "No SQL database connection.");
+      notify(executor, T("No SQL database connection."));
       safe_str("#-1", buff, bp);
       return;
     }
@@ -320,7 +322,7 @@ FUNCTION(fun_sql_escape)
   if (chars_written < BUFFER_LEN)
     safe_str(bigbuff, buff, bp);
   else
-    safe_str("#-1 TOO LONG", buff, bp);
+    safe_str(T("#-1 TOO LONG"), buff, bp);
 }
 
 
@@ -345,11 +347,11 @@ COMMAND(cmd_sql)
 
   if (!qres) {
     if (affected_rows >= 0) {
-      notify_format(player, "SQL: %d rows affected.", affected_rows);
+      notify_format(player, T("SQL: %d rows affected."), affected_rows);
     } else if (!sql_connected()) {
-      notify(player, "No SQL database connection.");
+      notify(player, T("No SQL database connection."));
     } else {
-      notify_format(player, "SQL: Error: %s", sql_error());
+      notify_format(player, T("SQL: Error: %s"), sql_error());
     }
     return;
   }
@@ -396,7 +398,7 @@ COMMAND(cmd_sql)
       if (retcode == SQLITE_DONE)
         break;
       else if (retcode != SQLITE_ROW) {
-        notify_format(player, "SQL: Error: %s", sql_error());
+        notify_format(player, T("SQL: Error: %s"), sql_error());
         break;
       }
     }
@@ -438,11 +440,11 @@ COMMAND(cmd_sql)
             cell = tbuf;
           }
         }
-        notify_format(player, "Row %d, Field %s: %s",
+        notify_format(player, T("Row %d, Field %s: %s"),
                       rownum + 1, name, (cell && *cell) ? cell : "NULL");
       }
     } else
-      notify_format(player, "Row %d: NULL", rownum + 1);
+      notify_format(player, T("Row %d: NULL"), rownum + 1);
   }
 
 finished:
@@ -635,6 +637,7 @@ FUNCTION(fun_sql)
   int i;
   int numfields, numrows;
   ansi_string *as;
+  int qindex = -1;
   if (sql_platform() == SQL_PLATFORM_DISABLED) {
     safe_str(T(e_disabled), buff, bp);
     return;
@@ -654,7 +657,17 @@ FUNCTION(fun_sql)
     fieldsep = args[2];
   }
 
+  if (nargs >= 4) {
+    /* return affected rows to the qreg in args[3]. */
+    if (args[3][0] && !args[3][1]) {
+      qindex = qreg_indexes[(unsigned char) args[3][0]];
+    }
+  }
+
   qres = sql_query(args[0], &affected_rows);
+  if (affected_rows >= 0 && qindex >= 0) {
+    strcpy(global_eval_context.renv[qindex], unparse_number(affected_rows));
+  }
   sql_test_result(qres);
   /* Get results. A silent query (INSERT, UPDATE, etc.) will return NULL */
   switch (sql_platform()) {

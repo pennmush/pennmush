@@ -243,7 +243,7 @@ pay_queue(dbref player, const char *command)
     notify_format(Owner(player),
                   T("Runaway object: %s(%s). Commands halted."),
                   Name(player), unparse_dbref(player));
-    do_log(LT_TRACE, player, player, T("Runaway object %s executing: %s"),
+    do_log(LT_TRACE, player, player, "Runaway object %s executing: %s",
            unparse_dbref(player), command);
     /* Refund the queue costs */
     giveto(player, QUEUE_COST);
@@ -263,8 +263,7 @@ next_pid(void)
 
   if (im_count(queue_map) >= (int) MAX_PID) {
     do_rawlog(LT_ERR,
-              T
-              ("There are %ld queue entries! That's too many. Failing to add another."),
+              "There are %ld queue entries! That's too many. Failing to add another.",
               (long) im_count(queue_map));
     return 0;
   }
@@ -1634,16 +1633,16 @@ do_restart_com(dbref player, const char *arg1)
                       Name(player));
       } else {
         notify_format(player,
-                      "Restarting: %s's %s(%s)",
+                      T("Restarting: %s's %s(%s)"),
                       Name(Owner(victim)), Name(victim), unparse_dbref(victim));
-        notify_format(Owner(victim), "Restarting: %s(%s), by %s",
+        notify_format(Owner(victim), T("Restarting: %s(%s), by %s"),
                       Name(victim), unparse_dbref(victim), Name(player));
       }
     } else {
       if (victim == player)
         notify(player, T("All of your objects are being restarted."));
       else
-        notify_format(player, "Restarting: %s(%s)", Name(victim),
+        notify_format(player, T("Restarting: %s(%s)"), Name(victim),
                       unparse_dbref(victim));
     }
     do_halt(player, "", victim);

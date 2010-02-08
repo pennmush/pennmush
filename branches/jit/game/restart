@@ -2,9 +2,9 @@
 #
 # usage: restart
 #
-# REQUIRED: You must set this to the path to your game directory.
-# E.g.: /home/mush/game
-GAMEDIR=
+# REQUIRED (but only if the autodetect doesn't work): you must set this to the
+# path to your game directory, e.g. /home/mush/game
+GAMEDIR=`cd $(dirname $0); pwd`
 
 # OPTIONAL things that you may want to tweak.
 
@@ -69,10 +69,10 @@ fi
 #
 # Read the cnf file and set some variables.
 #
-INDB=`egrep "^input_database" $CONF_FILE | sed "s/[^[:space:]][[:space:]]*.*\/\(.*\)/\1/" | sed 's/\r$//'`
-OUTDB=`egrep "^output_database" $CONF_FILE | sed "s/[^[:space:]][[:space:]]*.*\/\(.*\)/\1/" | sed 's/\r$//'`
-PANICDB=`egrep "^crash_database" $CONF_FILE | sed "s/[^[:space:]][[:space:]]*.*\/\(.*\)/\1/" | sed 's/\r$//'`
-PANICDIR=`egrep "^crash_database" $CONF_FILE | sed "s/[^[:space:]][[:space:]]*\(.*\)\/.*/\1/" | sed 's/\r$//'`
+INDB=`egrep "^input_database" $CONF_FILE | tail -n1 | sed "s/[^[:space:]][[:space:]]*.*\/\(.*\)/\1/" | sed 's/\r$//'`
+OUTDB=`egrep "^output_database" $CONF_FILE | tail -n1 | sed "s/[^[:space:]][[:space:]]*.*\/\(.*\)/\1/" | sed 's/\r$//'`
+PANICDB=`egrep "^crash_database" $CONF_FILE | tail -n1 | sed "s/[^[:space:]][[:space:]]*.*\/\(.*\)/\1/" | sed 's/\r$//'`
+PANICDIR=`egrep "^crash_database" $CONF_FILE | tail -n1 | sed "s/[^[:space:]][[:space:]]*\(.*\)\/.*/\1/" | sed 's/\r$//'`
 COMPRESSOR="cat"
 SUFFIX=""
 
@@ -80,8 +80,8 @@ SUFFIX=""
 egrep -s "^compress_program[[:space:]]*[[:alnum:]/]" $CONF_FILE
 nocompress=$?
 if [ "$nocompress" -eq 0 ]; then
-    COMPRESSOR=`egrep "^compress_program" $CONF_FILE | sed "s/[^[:space:]]*[[:space:]]*\(.*\)/\1/" | sed 's/\r$//'`
-    SUFFIX=`egrep "^compress_suffix" $CONF_FILE | sed "s/[^[:space:]]*[[:space:]]*\(.*\)/\1/" | sed 's/\r$//'`
+    COMPRESSOR=`egrep "^compress_program" $CONF_FILE | tail -n1 | sed "s/[^[:space:]]*[[:space:]]*\(.*\)/\1/" | sed 's/\r$//'`
+    SUFFIX=`egrep "^compress_suffix" $CONF_FILE | tail -n1 | sed "s/[^[:space:]]*[[:space:]]*\(.*\)/\1/" | sed 's/\r$//'`
 fi
 
 #-- start up everything

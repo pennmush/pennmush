@@ -7,6 +7,21 @@ test('abs.5', $god, 'think abs(-0)', '0');
 test('abs.6', $god, 'think abs(99999999999)', '99999999999');
 test('abs.7', $god, 'think abs(-99999999999)', '99999999999');
 
+test('baseconv.1', $god, 'think baseconv(10,10,36)', 'a');
+test('baseconv.2', $god, 'think baseconv(-10,10,36)', '-a');
+test('baseconv.3', $god, 'think baseconv(9,36,10)', '9');
+test('baseconv.4', $god, 'think baseconv(-9,36,10)', '-9');
+test('baseconv.5', $god, 'think baseconv(abc,36,10)', '13368');
+test('baseconv.6', $god, 'think baseconv(-abc,36,10)', '-13368');
+test('baseconv.7', $god, 'think baseconv(13368,10,36)', 'abc');
+test('baseconv.8', $god, 'think baseconv(-13368,10,36)', '-abc');
+test('baseconv.9', $god, 'think baseconv(100,10,64)', 'Bk');
+test('baseconv.10', $god, 'think baseconv(Bk,64,10)', '100');
+test('baseconv.11', $god, 'think baseconv(-Bk,64,10)', '254052');
+test('baseconv.12', $god, 'think baseconv(-_,64,10)', '4031');
+test('baseconv.13', $god, 'think baseconv(+/,64,10)', '4031');
+test('baseconv.14', $god, 'think baseconv(4031,10,64)', '-_');
+
 test('cos.1',$god, 'think cos(90,d)', '^-?0\s*$');
 test('cos.2',$god, 'think cos(pi(),r)', '^-1\s*$');
 test('cos.3',$god, 'think cos(pi())', '^-1\s*$');

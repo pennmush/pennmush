@@ -208,7 +208,7 @@ do_attribute_access(dbref player, char *name, char *perms, int retroactive)
     insert = 1;
     ap = (ATTR *) mush_malloc(sizeof(ATTR), "ATTR");
     if (!ap) {
-      notify(player, "Critical memory failure - Alert God!");
+      notify(player, T("Critical memory failure - Alert God!"));
       do_log(LT_ERR, 0, 0, "do_attribute_access: unable to malloc ATTR");
       return;
     }
@@ -346,11 +346,11 @@ do_attribute_info(dbref player, char *name)
     notify(player, T("That attribute isn't in the attribute table"));
     return;
   }
-  notify_format(player, "Attribute: %s", AL_NAME(ap));
+  notify_format(player, "%9s: %s", T("Attribute"), AL_NAME(ap));
   notify_format(player,
-                "    Flags: %s", privs_to_string(attr_privs_view,
-                                                 AL_FLAGS(ap)));
-  notify_format(player, "  Creator: %s", unparse_dbref(AL_CREATOR(ap)));
+                "%9s: %s", T("Flags"), privs_to_string(attr_privs_view,
+                                                       AL_FLAGS(ap)));
+  notify_format(player, "%9s: %s", T("Creator"), unparse_dbref(AL_CREATOR(ap)));
   return;
 }
 

@@ -336,6 +336,7 @@ FUNTAB flist[] = {
   {"BASECONV", fun_baseconv, 3, 3, FN_REG},
   {"BEEP", fun_beep, 0, 1, FN_REG},
   {"BEFORE", fun_before, 2, 2, FN_REG},
+  {"BENCHMARK", fun_benchmark, 2, 3, FN_NOPARSE},
   {"BNAND", fun_bnand, 2, 2, FN_REG},
   {"BNOT", fun_bnot, 1, 1, FN_REG},
   {"BOR", fun_bor, 1, INT_MAX, FN_REG},
@@ -343,6 +344,7 @@ FUNTAB flist[] = {
   {"BRACKETS", fun_brackets, 1, 1, FN_REG},
   {"BXOR", fun_bxor, 1, INT_MAX, FN_REG},
   {"CAND", fun_cand, 2, INT_MAX, FN_NOPARSE},
+  {"NCAND", fun_cand, 1, INT_MAX, FN_NOPARSE},
   {"CAPSTR", fun_capstr, 1, -1, FN_REG},
   {"CASE", fun_switch, 3, INT_MAX, FN_NOPARSE},
   {"CASEALL", fun_switch, 3, INT_MAX, FN_NOPARSE},
@@ -379,6 +381,7 @@ FUNTAB flist[] = {
   {"CONVUTCSECS", fun_convsecs, 1, 1, FN_REG},
   {"CONVTIME", fun_convtime, 1, 1, FN_REG},
   {"COR", fun_cor, 2, INT_MAX, FN_NOPARSE},
+  {"NCOR", fun_cor, 1, INT_MAX, FN_NOPARSE},
   {"CREATE", fun_create, 1, 3, FN_REG},
   {"CSECS", fun_csecs, 1, 1, FN_REG},
   {"CTIME", fun_ctime, 1, 2, FN_REG},
@@ -487,7 +490,7 @@ FUNTAB flist[] = {
   {"LIT", fun_lit, 1, -1, FN_LITERAL},
   {"LJUST", fun_ljust, 2, 3, FN_REG},
   {"LLOCKFLAGS", fun_lockflags, 0, 1, FN_REG},
-  {"LLOCKS", fun_locks, 1, 1, FN_REG},
+  {"LLOCKS", fun_locks, 0, 1, FN_REG},
   {"LMATH", fun_lmath, 2, 3, FN_REG},
   {"LNUM", fun_lnum, 1, 4, FN_REG},
   {"LOC", fun_loc, 1, 1, FN_REG},
@@ -543,6 +546,7 @@ FUNTAB flist[] = {
   {"MSECS", fun_msecs, 1, 1, FN_REG},
   {"MTIME", fun_mtime, 1, 2, FN_REG},
   {"MUDNAME", fun_mudname, 0, 0, FN_REG},
+  {"MUDURL", fun_mudurl, 0, 0, FN_REG},
   {"MUL", fun_mul, 2, INT_MAX, FN_REG},
   {"MUNGE", fun_munge, 3, 5, FN_REG},
   {"MWHO", fun_lwho, 0, 0, FN_REG},
@@ -677,7 +681,7 @@ FUNTAB flist[] = {
   {"SPEAKPENN", fun_speak, 2, 7, FN_REG},
   {"SPELLNUM", fun_spellnum, 1, 1, FN_REG},
   {"SPLICE", fun_splice, 3, 4, FN_REG},
-  {"SQL", fun_sql, 1, 3, FN_REG},
+  {"SQL", fun_sql, 1, 4, FN_REG},
   {"SQLESCAPE", fun_sql_escape, 1, 1, FN_REG},
   {"SQUISH", fun_squish, 1, 2, FN_REG},
   {"SSL", fun_ssl, 1, 1, FN_REG},
@@ -714,12 +718,14 @@ FUNTAB flist[] = {
   {"UCSTR", fun_ucstr, 1, -1, FN_REG},
   {"UDEFAULT", fun_udefault, 2, 12, FN_NOPARSE},
   {"UFUN", fun_ufun, 1, 11, FN_REG},
+  {"U", fun_ufun, 1, 11, FN_REG},
+  {"PFUN", fun_pfun, 1, 11, FN_REG},
   {"ULAMBDA", fun_ufun, 1, 11, FN_REG},
   {"ULDEFAULT", fun_udefault, 1, 12, FN_NOPARSE | FN_LOCALIZE},
   {"ULOCAL", fun_ufun, 1, 11, FN_REG | FN_LOCALIZE},
   {"UNIQUE", fun_unique, 1, 4, FN_REG},
+  {"UNSETQ", fun_unsetq, 0, 1, FN_REG},
   {"UTCTIME", fun_time, 0, 0, FN_REG},
-  {"U", fun_ufun, 1, 11, FN_REG},
   {"V", fun_v, 1, 1, FN_REG},
   {"VALID", fun_valid, 2, 2, FN_REG},
   {"VERSION", fun_version, 0, 0, FN_REG},
@@ -816,7 +822,7 @@ char *
 list_functions(const char *type)
 {
   FUN *fp;
-  const char *ptrs[BUFFER_LEN / 2];
+  const char **ptrs;
   static char buff[BUFFER_LEN];
   char *bp;
   int nptrs = 0, i;
@@ -835,6 +841,11 @@ list_functions(const char *type)
     mush_strncpy(buff, T("#-1 INVALID ARGUMENT"), BUFFER_LEN);
     return buff;
   }
+
+  ptrs =
+    mush_calloc(sizeof(char *),
+                htab_function.entries + htab_user_function.entries,
+                "function.list");
 
   if (which & 0x1) {
     for (fp = hash_firstentry(&htab_function);
@@ -863,6 +874,7 @@ list_functions(const char *type)
     }
   }
   *bp = '\0';
+  mush_free(ptrs, "function.list");
   return buff;
 }
 

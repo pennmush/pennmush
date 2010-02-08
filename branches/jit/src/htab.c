@@ -53,7 +53,7 @@
 #endif
 #include "conf.h"
 #include "externs.h"
-
+#include "log.h"
 #include "htab.h"
 #include "mymalloc.h"
 #include "confmagic.h"
@@ -504,7 +504,8 @@ hash_insert(HASHTAB *htab, const char *key, void *data)
 
   /* At this point, we've bumped BUMP_LIMIT times. Probably in a
      loop. Find the first empty bucket, add the last bumped to, and
-     return failure. */
+     return failure. The table will have to be resized now to restore
+     the hash. */
   for (n = 0; n < htab->hashsize; n++)
     if (htab->buckets[n].key == NULL) {
       htab->buckets[n] = bump;
@@ -555,9 +556,7 @@ real_hash_resize(HASHTAB *htab, int newsize, int hashfunc_offset)
   htab->hashsize = newsize;
   htab->hashfunc_offset = hashfunc_offset;
   for (i = 0; i < oldsize; i++) {
-
     if (oldarr[i].key) {
-
       if (!hash_insert(htab, oldarr[i].key, oldarr[i].data)) {
         /* Couldn't fit an element in. Try with different hash functions. */
         mush_free(htab->buckets, "hash.buckets");
@@ -604,23 +603,23 @@ hash_resize(HASHTAB *htab, int size)
 bool
 hash_add(HASHTAB *htab, const char *key, void *hashdata)
 {
-  const char *keycopy;
+  char *keycopy;
 
   if (hash_find(htab, key) != NULL)
     return false;
 
-  htab->entries += 1;
-
   keycopy = mush_strdup(key, "hash.key");
 
+  if (htab->entries == htab->hashsize)
+    real_hash_resize(htab, next_prime_after(floor(htab->hashsize * 1.15)),
+                     htab->hashfunc_offset);
+
+  htab->entries += 1;
   if (!hash_insert(htab, keycopy, hashdata)) {
     first_offset = -1;
     resize_calls = 0;
-    if (!real_hash_resize(htab, htab->hashsize,
-                          (htab->hashfunc_offset + 1) % NHASH_MOD)) {
-      htab->entries -= 1;
-      return false;
-    }
+    real_hash_resize(htab, htab->hashsize,
+                     (htab->hashfunc_offset + 1) % NHASH_MOD);
   }
   return true;
 }
@@ -769,7 +768,7 @@ hash_stats_header(dbref player)
 void
 hash_stats(dbref player, HASHTAB *htab, const char *hname)
 {
-  int n;
+  int n, entries = 0;
   size_t bytes;
   unsigned int compares[3] = { 0, 0, 0 };
 
@@ -784,6 +783,7 @@ hash_stats(dbref player, HASHTAB *htab, const char *hname)
       int i;
       int len = strlen(htab->buckets[n].key);
       bytes += len + 1;
+      entries += 1;
       for (i = 0; i < 3; i++) {
         hash_func hash =
           hash_functions[(i + htab->hashfunc_offset) % NHASH_MOD];
@@ -798,4 +798,7 @@ hash_stats(dbref player, HASHTAB *htab, const char *hname)
                 "%-11s %7d %7d %7u %7u %7u %7u",
                 hname, htab->hashsize, htab->entries, compares[0], compares[1],
                 compares[2], (unsigned int) bytes);
+  if (entries != htab->entries)
+    notify_format(player, "Mismatch in size: %d expected, %d found!",
+                  htab->entries, entries);
 }

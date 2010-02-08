@@ -12,8 +12,14 @@ off.
 The main advantage to doing this over using the normal lock bytecode
 VM is that it eliminates a lot of switching on opcodes. There are ways
 to do this without compiling to native code, too, but JIT is
-cooler. No love for threaded interpreters these days. And no reason
-both can't co-exist.
+cooler.
+
+In testing, gcc generates pretty decent code for the current
+switch-based dispatch -- it turns into a jump table involving an array
+lookup and a single jump, instead of lots of comparisions and
+conditional jumps. Splitting each opcode into its own function and
+storing pointers to those functions in the compiled bytecode is the
+only improvement over that scheme that springs to mind.
 
 This version depends on the dotgnu/pnet libjit to do all the hard
 work. Version 0.1.2 or recent checkout from the project's git

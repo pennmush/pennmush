@@ -2081,7 +2081,7 @@ void free_string_pool(struct string_pool *p)
   }
 }
 
-void
+static void
 incr_recursion(jit_function_t fun)
 {
   jit_value_t temp1, temp2, recr, one;
@@ -2093,7 +2093,7 @@ incr_recursion(jit_function_t fun)
   jit_insn_store_relative(fun, recr, 0, temp2);
 }
 
-void
+static void
 decr_recursion(jit_function_t fun)
 {
   jit_value_t temp1, temp2, recr, one;
@@ -2103,6 +2103,30 @@ decr_recursion(jit_function_t fun)
   temp1 = jit_insn_load_relative(fun, recr, 0, jit_type_int);
   temp2 = jit_insn_sub(fun, temp1, one);
   jit_insn_store_relative(fun, recr, 0, temp2);
+}
+
+static int
+tind_impl(dbref player, dbref target, dbref arg, char *s)
+{
+  if (!Can_Read_Lock(target, arg, s))
+    return 0;
+  else
+    return eval_boolexp(player, getlock(arg, s), arg);
+}
+
+static int
+tattr_impl(dbref player, dbref target, const char *aname, const char *pattern)
+{
+  ATTR *a = atr_get(player, aname);
+  if (!a || !Can_Read_Attr(target, player, a))
+    return 0;
+  else {
+    int ret;
+    char *text = safe_atr_value(a);
+    ret = local_wild_match(pattern, text);
+    free(text);
+    return ret;
+  }
 }
 
 
@@ -2124,7 +2148,8 @@ compile_boolexp(dbref thing, boolexp b)
   struct lock_jit_metadata *meta;
   jit_function_t fun;
   static jit_type_t sig = NULL, params[4] = { NULL };
-  static jit_type_t member_sig = NULL, eval_lock_sig = NULL;
+  static jit_type_t member_sig = NULL, eval_lock_sig = NULL, ind_lock_sig = NULL;
+  static jit_type_t flag_lock_sig = NULL;
   jit_value_t j_arg, j_s, j_player, j_thing;
   jit_value_t temp1, temp2, temp3, temp4;
   jit_value_t func_args[4] = { NULL };
@@ -2150,16 +2175,31 @@ compile_boolexp(dbref thing, boolexp b)
     params[0] = jit_type_int;
     params[1] = jit_type_int;
     sig = jit_type_create_signature(jit_abi_cdecl, jit_type_int, params, 2, 1);
-
+    
     /* Sig for member() */
     member_sig = jit_type_create_signature(jit_abi_cdecl, jit_type_sys_bool, params, 2, 1);
-
+    
     /* Sig for check_attrib_lock */
     params[0] = jit_type_int;
     params[1] = jit_type_int;
     params[2] = jit_type_cstr;
     params[3] = jit_type_cstr;
     eval_lock_sig = jit_type_create_signature(jit_abi_cdecl, jit_type_int, params, 4, 1);
+
+    /* Sig for tind_impl */
+    params[0] = jit_type_int;
+    params[1] = jit_type_int;
+    params[2] = jit_type_int;
+    params[3] = jit_type_cstr;
+    ind_lock_sig = jit_type_create_signature(jit_abi_cdecl, jit_type_int, params, 4, 1);
+
+
+    /* Sig for sees_flag */
+    params[0] = jit_type_cstr;
+    params[1] = jit_type_int;
+    params[2] = jit_type_int;
+    params[3] = jit_type_cstr;
+    flag_lock_sig = jit_type_create_signature(jit_abi_cdecl, jit_type_int, params, 4, 1);
   }
 
 
@@ -2284,6 +2324,41 @@ compile_boolexp(dbref thing, boolexp b)
       jit_insn_store(fun, j_r, temp3);
       jit_insn_label(fun, &j_lab_end);
       break;
+    case OP_TIND:
+      j_arg = jit_value_create_nint_constant(fun, jit_type_int, arg);
+      incr_recursion(fun);
+      check_goodobject(fun, j_arg, &j_lab_end);
+      func_args[0] = j_player;
+      func_args[1] = j_thing;
+      func_args[2] = j_arg;
+      func_args[3] = j_s;
+      temp1 = jit_insn_call_native(fun, "tind_impl", (void*)tind_impl, ind_lock_sig, func_args, 4, 0);
+      jit_insn_store(fun, j_r, temp1);
+      jit_insn_label(fun, &j_lab_end);
+      decr_recursion(fun);
+      break;
+    case OP_TATR:
+      {
+	struct string_pool *newstr;
+	newstr = mush_malloc(sizeof *newstr, "lock.jit.constant");
+	newstr->s = mush_strdup((char *) bytecode + arg, "lock.jit.constant.string");
+	newstr->next = meta->pool;
+	meta->pool = newstr;
+
+	j_arg = jit_value_create_nint_constant(fun, jit_type_cstr, (jit_nint)newstr->s);
+
+	incr_recursion(fun);
+	check_goodobject(fun, j_arg, &j_lab_end);
+	func_args[0] = j_player;
+	func_args[1] = j_thing;
+	func_args[3] = j_s;
+	func_args[2] = j_arg;
+	temp1 = jit_insn_call_native(fun, "tattr_impl", (void*)tattr_impl, eval_lock_sig, func_args, 4, 0);
+	jit_insn_store(fun, j_r, temp1);
+	jit_insn_label(fun, &j_lab_end);
+	decr_recursion(fun);
+      break;
+      }
     case OP_TEVAL:
       {
 	struct string_pool *newstr;
@@ -2304,6 +2379,24 @@ compile_boolexp(dbref thing, boolexp b)
 	decr_recursion(fun);
       }
       break;
+    case OP_TFLAG:
+    case OP_TPOWER:
+      {
+	struct string_pool *newstr;
+	newstr = mush_malloc(sizeof *newstr, "lock.jit.constant");
+	newstr->s = mush_strdup((char *) bytecode + arg, "lock.jit.constant.string");
+	newstr->next = meta->pool;
+	meta->pool = newstr;
+
+	temp1 = jit_value_create_nint_constant(fun, jit_type_cstr, (jit_nint)newstr->s);
+	temp2 = jit_value_create_nint_constant(fun, jit_type_cstr, (jit_nint)(op == OP_TFLAG ? "FLAG" : "POWER"));
+	func_args[0] = temp2;
+	func_args[1] = j_thing;
+	func_args[2] = j_player;
+	func_args[3] = temp1;
+	temp3 = jit_insn_call_native(fun, "sees_flag", (void*)sees_flag, flag_lock_sig, func_args, 4, 0);
+	jit_insn_store(fun, j_r, temp3);	
+      }
     case OP_TTYPE:
       switch (bytecode[arg]) {
       case 'R':

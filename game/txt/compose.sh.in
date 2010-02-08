@@ -20,6 +20,9 @@ echo=@ECHO@
 # This process can eat CPU, so uncomment if you want to be nice
 #/etc/renice +4 $$
 
+# Force a standard locale for sorting purposes
+LC_ALL=C
+
 # What subdirectories should we be processing?
 dir=$1
 if $test ! -d $dir; then

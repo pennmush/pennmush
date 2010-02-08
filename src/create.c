@@ -97,7 +97,7 @@ do_real_open(dbref player, const char *direction, const char *linkto,
   char flagbuff[BUFFER_LEN];
 
   if (!command_check_byname(player, "@dig")) {
-    notify(player, "Permission denied.");
+    notify(player, T("Permission denied."));
     return NOTHING;
   }
   if ((loc == NOTHING) || (!IsRoom(loc))) {
@@ -370,9 +370,9 @@ do_link(dbref player, const char *name, const char *room_name, int preserve)
       }
       break;
     default:
-      notify(player, "Internal error: weird object type.");
+      notify(player, T("Internal error: weird object type."));
       do_log(LT_ERR, NOTHING, NOTHING,
-             T("Weird object! Type of #%d is %d"), thing, Typeof(thing));
+             "Weird object! Type of #%d is %d", thing, Typeof(thing));
       break;
     }
   }

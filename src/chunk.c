@@ -782,7 +782,7 @@ verify_used_chunk(uint16_t region, uint16_t offset)
 }
 
 /** Verify that a region is sane.
- * Do a throrough consistency check on a region, verifying all the region
+ * Do a thorough consistency check on a region, verifying all the region
  * totals, making sure the counts are consistent, and that all the space
  * in the region is accounted for.
  * \param region the region to verify.

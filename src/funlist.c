@@ -115,8 +115,11 @@ list2arr(char *r[], int max, char *list, char sep)
   int i;
   int first;
   char *aptr;
+  size_t len;
 
-  memcpy(list, remove_markup(list, NULL), BUFFER_LEN);
+  aptr = remove_markup(list, &len);
+
+  memcpy(list, aptr, len);
 
   aptr = trim_space_sep(list, sep);
 
@@ -726,7 +729,7 @@ FUNCTION(fun_sortby)
   /* Split up the list, sort it, reconstruct it. */
   nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, args[1], sep);
   if (nptrs > 1)                /* pointless to sort less than 2 elements */
-    sane_qsort((void *) ptrs, 0, nptrs - 1, u_comp);
+    sane_qsort((void **)ptrs, 0, nptrs - 1, u_comp);
 
   arr2list(ptrs, nptrs, buff, bp, osep);
 

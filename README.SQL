@@ -113,10 +113,12 @@ III. Mush configuration overview
 
   sql_host gives the name of the host running the SQL server.  It
   defaults to 127.0.0.1, which makes a TCP connection to the local
-  host. The keyword "localhost" instead makes a domain socket (Unix)
-  or named pipe (Windows) connection under MySQL.  You can also
-  specify an alternate port by setting sql_host to hostname:port
-  (e.g. 127.0.0.1:5444).
+  host. For MySQL, the keyword "localhost" instead makes a domain
+  socket (Unix) or named pipe (Windows) connection. For PostgreSQL on
+  Unix, if a path is specified (e.g. /var/run/postgresql), PennMUSH
+  will use the domain socket connection found in that directory. You
+  can also specify an alternate port by setting sql_host to
+  hostname:port (e.g. 127.0.0.1:5444).
 
   sql_database gives the name of the database that contains the MUSH's
   tables. This must be specified and there is no default.
@@ -193,17 +195,17 @@ IV. SQL setup tips
     
     Are you pretty sure you would like to implement this [yes/no]: yes
 
-  B. PostgresQL
+  B. PostgreSQL
 
-    As the postgres user:
+  % sudo -u postgres psql
+  postgres=# CREATE USER mush WITH PASSWORD 'mush';
+  CREATE ROLE
+  postgres=# CREATE DATABASE mush OWNER musher;
+  CREATE DATABASE
+  postgres=# \q
 
-	% createuser -A -d -P mush
-	Enter password for new user:			<===========
-	CREATE USER
-
-	% createdb -U mush mush
-	Password:					<===========
-	CREATE DATABASE
+  If you are using domain sockets on Unix and don't need to use password
+  authentication, simply omit "WITH PASSWORD 'mush'".
 
   C. Sqlite3:
     

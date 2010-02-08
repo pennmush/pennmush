@@ -176,7 +176,7 @@ do_dump(dbref player, char *num, enum dump_type flag)
     if (flag != DUMP_NORMAL) {
 #endif
       /* want to do a scan before dumping each object */
-      globals.paranoid_dump = 1;
+      globals.paranoid_dump = (flag == DUMP_DEBUG ? 2 : 1);
       if (num && *num) {
         /* checkpoint interval given */
         globals.paranoid_checkpt = atoi(num);
@@ -205,12 +205,12 @@ do_dump(dbref player, char *num, enum dump_type flag)
                   "*** DEBUG DUMP *** done by %s(#%d),\n",
                   Name(player), player);
       }
-      do_rawlog(LT_CHECK, T("\tcheckpoint interval %d, at %s"),
+      do_rawlog(LT_CHECK, "\tcheckpoint interval %d, at %s",
                 globals.paranoid_checkpt, show_time(mudtime, 0));
     } else {
       /* normal dump */
       globals.paranoid_dump = 0;        /* just to be safe */
-      notify(player, "Dumping...");
+      notify(player, T("Dumping..."));
       do_rawlog(LT_CHECK, "** DUMP ** done by %s(#%d) at %s",
                 Name(player), player, show_time(mudtime, 0));
     }
@@ -229,7 +229,7 @@ void
 report(void)
 {
   if (GoodObject(global_eval_context.cplr))
-    do_rawlog(LT_TRACE, T("TRACE: Cmd:%s\tby #%d at #%d"),
+    do_rawlog(LT_TRACE, "TRACE: Cmd:%s\tby #%d at #%d",
               global_eval_context.ccom, global_eval_context.cplr,
               Location(global_eval_context.cplr));
   else
@@ -252,21 +252,21 @@ rusage_stats(void)
   psize = getpagesize();
   getrusage(RUSAGE_SELF, &usage);
 
-  do_rawlog(LT_ERR, T("Process statistics:"));
-  do_rawlog(LT_ERR, T("Time used:   %10ld user   %10ld sys"),
+  do_rawlog(LT_ERR, "Process statistics:");
+  do_rawlog(LT_ERR, "Time used:   %10ld user   %10ld sys",
             (long) usage.ru_utime.tv_sec, (long) usage.ru_stime.tv_sec);
   do_rawlog(LT_ERR, "Max res mem: %10ld pages  %10ld bytes",
             usage.ru_maxrss, (usage.ru_maxrss * psize));
   do_rawlog(LT_ERR, "Integral mem:%10ld shared %10ld private %10ld stack",
             usage.ru_ixrss, usage.ru_idrss, usage.ru_isrss);
   do_rawlog(LT_ERR,
-            T("Page faults: %10ld hard   %10ld soft    %10ld swapouts"),
+            "Page faults: %10ld hard   %10ld soft    %10ld swapouts",
             usage.ru_majflt, usage.ru_minflt, usage.ru_nswap);
-  do_rawlog(LT_ERR, T("Disk I/O:    %10ld reads  %10ld writes"),
+  do_rawlog(LT_ERR, "Disk I/O:    %10ld reads  %10ld writes",
             usage.ru_inblock, usage.ru_oublock);
-  do_rawlog(LT_ERR, T("Network I/O: %10ld in     %10ld out"), usage.ru_msgrcv,
+  do_rawlog(LT_ERR, "Network I/O: %10ld in     %10ld out", usage.ru_msgrcv,
             usage.ru_msgsnd);
-  do_rawlog(LT_ERR, T("Context swi: %10ld vol    %10ld forced"),
+  do_rawlog(LT_ERR, "Context swi: %10ld vol    %10ld forced",
             usage.ru_nvcsw, usage.ru_nivcsw);
   do_rawlog(LT_ERR, "Signals:     %10ld", usage.ru_nsignals);
 }
@@ -289,7 +289,7 @@ do_shutdown(dbref player, enum shutdown_type flag)
   }
   if (Wizard(player)) {
     flag_broadcast(0, 0, T("GAME: Shutdown by %s"), Name(player));
-    do_log(LT_ERR, player, NOTHING, T("SHUTDOWN by %s(%s)\n"),
+    do_log(LT_ERR, player, NOTHING, "SHUTDOWN by %s(%s)\n",
            Name(player), unparse_dbref(player));
 
     if (flag == SHUT_PANIC) {
@@ -327,7 +327,7 @@ dump_database_internal(void)
   if (setjmp(db_err)) {
     /* The dump failed. Disk might be full or something went bad with the
        compression slave. Boo! */
-    do_rawlog(LT_ERR, T("ERROR! Database save failed."));
+    do_rawlog(LT_ERR, "ERROR! Database save failed.");
     flag_broadcast("WIZARD ROYALTY", 0,
                    T("GAME: ERROR! Database save failed!"));
     if (f)
@@ -434,8 +434,7 @@ mush_panic(const char *message)
 
   if (already_panicking) {
     do_rawlog(LT_ERR,
-              T
-              ("PANIC: Attempted to panic because of '%s' while already panicking. Run in circles, scream and shout!"),
+              "PANIC: Attempted to panic because of '%s' while already panicking. Run in circles, scream and shout!",
               message);
     _exit(133);
   }
@@ -443,7 +442,7 @@ mush_panic(const char *message)
   already_panicking = 1;
   do_rawlog(LT_ERR, "PANIC: %s", message);
   report();
-  flag_broadcast(0, 0, "EMERGENCY SHUTDOWN: %s", message);
+  flag_broadcast(0, 0, T("EMERGENCY SHUTDOWN: %s"), message);
 
   /* turn off signals */
   block_signals();
@@ -455,23 +454,23 @@ mush_panic(const char *message)
   if (globals.database_loaded) {
     if (setjmp(db_err)) {
       /* Dump failed. We're in deep doo-doo */
-      do_rawlog(LT_ERR, T("CANNOT DUMP PANIC DB. OOPS."));
+      do_rawlog(LT_ERR, "CANNOT DUMP PANIC DB. OOPS.");
       _exit(134);
     } else {
       if ((f = penn_fopen(panicfile, FOPEN_WRITE)) == NULL) {
-        do_rawlog(LT_ERR, T("CANNOT OPEN PANIC FILE, YOU LOSE"));
+        do_rawlog(LT_ERR, "CANNOT OPEN PANIC FILE, YOU LOSE");
         _exit(135);
       } else {
-        do_rawlog(LT_ERR, T("DUMPING: %s"), panicfile);
+        do_rawlog(LT_ERR, "DUMPING: %s", panicfile);
         db_write(f, DBF_PANIC);
         dump_mail(f);
         save_chatdb(f);
         penn_fclose(f);
-        do_rawlog(LT_ERR, T("DUMPING: %s (done)"), panicfile);
+        do_rawlog(LT_ERR, "DUMPING: %s (done)", panicfile);
       }
     }
   } else {
-    do_rawlog(LT_ERR, T("Skipping panic dump because database isn't loaded."));
+    do_rawlog(LT_ERR, "Skipping panic dump because database isn't loaded.");
   }
   _exit(136);
 }
@@ -557,7 +556,8 @@ fork_and_dump(int forking)
       do_log(LT_ERR, 0, 0,
              "fork_and_dump: Data are swapped to disk, so nonforking dumps will be used.");
       flag_broadcast("WIZARD", 0,
-                     "DUMP: Data are swapped to disk, so nonforking dumps will be used.");
+                     T
+                     ("DUMP: Data are swapped to disk, so nonforking dumps will be used."));
       nofork = 1;
     }
 #endif
@@ -645,7 +645,7 @@ do_restart(void)
     }
   }
 
-  /* Once we load all that, then we can trigger the startups and 
+  /* Once we load all that, then we can trigger the startups and
    * begin queueing commands. Also, let's make sure that we get
    * rid of null names.
    */
@@ -665,7 +665,7 @@ do_restart(void)
       if (IsGarbage(thing))
         set_name(thing, "Garbage");
       else {
-        do_log(LT_ERR, NOTHING, NOTHING, T("Null name on object #%d"), thing);
+        do_log(LT_ERR, NOTHING, NOTHING, "Null name on object #%d", thing);
         set_name(thing, "XXXX");
       }
     }
@@ -682,7 +682,7 @@ void init_queue(void);
 
 /** Initialize game structures and read the most of the configuration file.
  * This function runs before we read in the databases. It is responsible
- * for recording the MUSH start time, setting up all the hash and 
+ * for recording the MUSH start time, setting up all the hash and
  * prefix tables and similar structures, and reading the portions of the
  * config file that don't require database load.
  * \param conf file name of the configuration file.
@@ -747,13 +747,13 @@ init_game_config(const char *conf)
 #endif
 
   do_rawlog(LT_ERR, "%s", VERSION);
-  do_rawlog(LT_ERR, T("MUSH restarted, PID %d, at %s"),
+  do_rawlog(LT_ERR, "MUSH restarted, PID %d, at %s",
             (int) mypid, show_time(globals.start_time, 0));
 }
 
 /** Post-db-load configuration.
- * This function contains code that should be run after dbs are loaded 
- * (usually because we need to have the flag table loaded, or because they 
+ * This function contains code that should be run after dbs are loaded
+ * (usually because we need to have the flag table loaded, or because they
  * run last). It reads in the portions of the config file that rely
  * on flags being defined.
  * \param conf file name of the configuration file.
@@ -870,27 +870,26 @@ init_game_dbs(void)
 
     /* complain about bad config options */
     if (!GoodObject(PLAYER_START) || (!IsRoom(PLAYER_START)))
-      do_rawlog(LT_ERR, T("WARNING: Player_start (#%d) is NOT a room."),
+      do_rawlog(LT_ERR, "WARNING: Player_start (#%d) is NOT a room.",
                 PLAYER_START);
     if (!GoodObject(MASTER_ROOM) || (!IsRoom(MASTER_ROOM)))
-      do_rawlog(LT_ERR, T("WARNING: Master room (#%d) is NOT a room."),
+      do_rawlog(LT_ERR, "WARNING: Master room (#%d) is NOT a room.",
                 MASTER_ROOM);
     if (!GoodObject(BASE_ROOM) || (!IsRoom(BASE_ROOM)))
-      do_rawlog(LT_ERR, T("WARNING: Base room (#%d) is NOT a room."),
-                BASE_ROOM);
+      do_rawlog(LT_ERR, "WARNING: Base room (#%d) is NOT a room.", BASE_ROOM);
     if (!GoodObject(DEFAULT_HOME) || (!IsRoom(DEFAULT_HOME)))
-      do_rawlog(LT_ERR, T("WARNING: Default home (#%d) is NOT a room."),
+      do_rawlog(LT_ERR, "WARNING: Default home (#%d) is NOT a room.",
                 DEFAULT_HOME);
     if (!GoodObject(GOD) || (!IsPlayer(GOD)))
-      do_rawlog(LT_ERR, T("WARNING: God (#%d) is NOT a player."), GOD);
+      do_rawlog(LT_ERR, "WARNING: God (#%d) is NOT a player.", GOD);
 
     /* read mail database */
     mail_init();
 
     if (panicdb) {
-      do_rawlog(LT_ERR, T("LOADING: Trying to get mail from %s"), infile);
+      do_rawlog(LT_ERR, "LOADING: Trying to get mail from %s", infile);
       if (load_mail(f) <= 0) {
-        do_rawlog(LT_ERR, T("FAILED: Reverting to normal maildb"));
+        do_rawlog(LT_ERR, "FAILED: Reverting to normal maildb");
         penn_fclose(f);
         panicdb = 0;
       }
@@ -911,9 +910,9 @@ init_game_dbs(void)
     init_chatdb();
 
     if (panicdb) {
-      do_rawlog(LT_ERR, T("LOADING: Trying to get chat from %s"), infile);
+      do_rawlog(LT_ERR, "LOADING: Trying to get chat from %s", infile);
       if (load_chatdb(f) <= 0) {
-        do_rawlog(LT_ERR, T("FAILED: Reverting to normal chatdb"));
+        do_rawlog(LT_ERR, "FAILED: Reverting to normal chatdb");
         penn_fclose(f);
         panicdb = 0;
       }
@@ -1071,13 +1070,12 @@ process_command(dbref player, char *command, dbref cause, int from_port)
   errdbtail = errdblist;
   errdb = NOTHING;
   if (!command) {
-    do_log(LT_ERR, NOTHING, NOTHING, T("ERROR: No command!!!"));
+    do_log(LT_ERR, NOTHING, NOTHING, "ERROR: No command!!!");
     return;
   }
   /* robustify player */
   if (!GoodObject(player)) {
-    do_log(LT_ERR, NOTHING, NOTHING, T("process_command bad player #%d"),
-           player);
+    do_log(LT_ERR, NOTHING, NOTHING, "process_command bad player #%d", player);
     return;
   }
 
@@ -1102,7 +1100,7 @@ process_command(dbref player, char *command, dbref cause, int from_port)
                   T("Invalid location on command execution: %s(#%d)"),
                   Name(player), player);
     do_log(LT_ERR, NOTHING, NOTHING,
-           T("Command attempted by %s(#%d) in invalid location #%d."),
+           "Command attempted by %s(#%d) in invalid location #%d.",
            Name(player), player, Location(player));
     if (Mobile(player))
       moveto(player, PLAYER_START);     /* move it someplace valid */
@@ -1230,7 +1228,7 @@ process_command(dbref player, char *command, dbref cause, int from_port)
     }                           /* end of special checks */
     if (!a) {
       /* Do we have any error dbs queued up, and if so, do any
-       * have associated failure messages? 
+       * have associated failure messages?
        */
       if ((errdblist == errdbtail) || (!fail_commands(player)))
         /* Nope. This is totally unmatched, run generic failure */
@@ -1424,7 +1422,7 @@ Hearer(dbref thing)
  * That is, if it has any attributes with $commands on them that are
  * not set no_command.
  * \param thing object to check.
- * \retval 1 object responds to commands. 
+ * \retval 1 object responds to commands.
  * \retval 0 object doesn't respond to commands.
  */
 int
@@ -1457,7 +1455,7 @@ Listener(dbref thing)
 
 /** Reset all players' money.
  * \verbatim
- * This function implements the @poor command. It probably belongs in 
+ * This function implements the @poor command. It probably belongs in
  * rob.c, though.
  * \endverbatim
  * \param player the enactor, for permission checking.
@@ -1480,7 +1478,7 @@ do_poor(dbref player, char *arg1)
                 ("The money supply of all players has been reset to %d %s."),
                 amt, MONIES);
   do_log(LT_WIZ, player, NOTHING,
-         T("** POOR done ** Money supply reset to %d %s."), amt, MONIES);
+         "** POOR done ** Money supply reset to %d %s.", amt, MONIES);
 }
 
 
@@ -1502,7 +1500,7 @@ do_writelog(dbref player, char *str, int ltype)
   do_rawlog(ltype, "LOG: %s(#%d%s): %s", Name(player), player,
             unparse_flags(player, GOD), str);
 
-  notify(player, "Logged.");
+  notify(player, T("Logged."));
 }
 
 /** Bind occurences of '##' in "action" to "arg", then run "action".
@@ -1783,7 +1781,6 @@ do_scan(dbref player, char *command, int flag)
   strcpy(global_eval_context.ccom, save_ccom);
 }
 
-#define DOL_MAP 1      /**< The map command */
 #define DOL_NOTIFY 2   /**< Add a notify after a dolist */
 #define DOL_DELIM 4    /**< Specify a delimiter to a dolist */
 
@@ -1846,29 +1843,10 @@ do_dolist(dbref player, char *list, char *command, dbref cause,
     curr = split_token(&objstring, delim);
     place++;
     sprintf(placestr, "%d", place);
-    if (!(flags & DOL_MAP)) {
-      /* @dolist, queue command */
-      bind_and_queue(player, cause, command, curr, placestr);
-    } else {
-      const char *replace[2];
-      char *ebuf, *ebufptr;
-      /* it's @map, add to the output list */
-      if (bp != outbuf)
-        safe_chr(delim, outbuf, &bp);
-      replace[0] = curr;
-      replace[1] = placestr;
-      ebufptr = ebuf = replace_string2(standard_tokens, replace, command);
-      process_expression(outbuf, &bp, (char const **) &ebuf, player,
-                         cause, cause, PE_DEFAULT, PT_DEFAULT, NULL);
-    }
+    bind_and_queue(player, cause, command, curr, placestr);
   }
 
   *bp = '\0';
-  if (flags & DOL_MAP) {
-    /* if we're doing a @map, copy the list to an attribute */
-    (void) atr_add(player, "MAPLIST", outbuf, GOD, 0);
-    notify(player, T("Function mapped onto list."));
-  }
   if (flags & DOL_NOTIFY) {
     /*  Execute a '@notify me' so the object knows we're done
      *  with the list execution. We don't execute dequeue_semaphores()
@@ -1955,18 +1933,16 @@ linux_uptime(dbref player __attribute__ ((__unused__)))
   pid = getpid();
   psize = getpagesize();
   notify_format(player,
-                T("\nProcess ID:  %10u        %10d bytes per page"),
-                pid, psize);
+                "\nProcess ID:  %10u        %10d bytes per page", pid, psize);
 
   /* Linux's getrusage() is mostly unimplemented. Just has times, page faults
      and swapouts. We use /proc/self/status */
 #ifdef HAS_GETRUSAGE
   getrusage(RUSAGE_SELF, &usage);
-  notify_format(player, T("Time used:   %10ld user   %10ld sys"),
+  notify_format(player, "Time used:   %10ld user   %10ld sys",
                 usage.ru_utime.tv_sec, usage.ru_stime.tv_sec);
   notify_format(player,
-                T
-                ("Page faults: %10ld hard   %10ld soft    %10ld swapouts"),
+                "Page faults: %10ld hard   %10ld soft    %10ld swapouts",
                 usage.ru_majflt, usage.ru_minflt, usage.ru_nswap);
 #endif
   fp = fopen("/proc/self/status", "r");
@@ -2020,11 +1996,11 @@ unix_uptime(dbref player __attribute__ ((__unused__)))
   /* just in case the system is screwy */
   if (fp == NULL) {
     notify(player, T("Error -- cannot execute uptime."));
-    do_rawlog(LT_ERR, T("** ERROR ** popen for @uptime returned NULL."));
+    do_rawlog(LT_ERR, "** ERROR ** popen for @uptime returned NULL.");
     return;
   }
   /* print system uptime */
-  for (i = 0; (c = getc(fp)) != '\n'; i++)
+  for (i = 0; (c = getc(fp)) != '\n' && c != EOF; i++)
     tbuf1[i] = c;
   tbuf1[i] = '\0';
   pclose(fp);
@@ -2037,13 +2013,12 @@ unix_uptime(dbref player __attribute__ ((__unused__)))
   pid = getpid();
   psize = getpagesize();
   notify_format(player,
-                T("\nProcess ID:  %10u        %10d bytes per page"),
-                pid, psize);
+                "\nProcess ID:  %10u        %10d bytes per page", pid, psize);
 
 
 #ifdef HAS_GETRUSAGE
   getrusage(RUSAGE_SELF, &usage);
-  notify_format(player, T("Time used:   %10ld user   %10ld sys"),
+  notify_format(player, "Time used:   %10ld user   %10ld sys",
                 (long) usage.ru_utime.tv_sec, (long) usage.ru_stime.tv_sec);
   notify_format(player, "Max res mem: %10ld pages  %10ld bytes",
                 usage.ru_maxrss, (usage.ru_maxrss * psize));
@@ -2051,14 +2026,13 @@ unix_uptime(dbref player __attribute__ ((__unused__)))
                 "Integral mem:%10ld shared %10ld private %10ld stack",
                 usage.ru_ixrss, usage.ru_idrss, usage.ru_isrss);
   notify_format(player,
-                T
-                ("Page faults: %10ld hard   %10ld soft    %10ld swapouts"),
+                "Page faults: %10ld hard   %10ld soft    %10ld swapouts",
                 usage.ru_majflt, usage.ru_minflt, usage.ru_nswap);
-  notify_format(player, T("Disk I/O:    %10ld reads  %10ld writes"),
+  notify_format(player, "Disk I/O:    %10ld reads  %10ld writes",
                 usage.ru_inblock, usage.ru_oublock);
-  notify_format(player, T("Network I/O: %10ld in     %10ld out"),
+  notify_format(player, "Network I/O: %10ld in     %10ld out",
                 usage.ru_msgrcv, usage.ru_msgsnd);
-  notify_format(player, T("Context swi: %10ld vol    %10ld forced"),
+  notify_format(player, "Context swi: %10ld vol    %10ld forced",
                 usage.ru_nvcsw, usage.ru_nivcsw);
   notify_format(player, "Signals:     %10ld", usage.ru_nsignals);
 #endif                          /* HAS_GETRUSAGE */
@@ -2102,24 +2076,23 @@ do_uptime(dbref player, int mortal)
   ldiv_t secs;
 
   when = localtime(&globals.first_start_time);
-  strftime(tbuf1, sizeof tbuf1, T("     Up since %a %b %d %X %Z %Y"), when);
-  notify(player, tbuf1);
+  strftime(tbuf1, sizeof tbuf1, "%a %b %d %X %Z %Y", when);
+  notify_format(player, "%13s: %s", T("Up since"), tbuf1);
 
   when = localtime(&globals.start_time);
-  strftime(tbuf1, sizeof tbuf1, T("  Last reboot: %a %b %d %X %Z %Y"), when);
-  notify(player, tbuf1);
+  strftime(tbuf1, sizeof tbuf1, "%a %b %d %X %Z %Y", when);
+  notify_format(player, "%13s: %s", T("Last reboot"), tbuf1);
 
-  notify_format(player, T("Total reboots: %d"), globals.reboot_count);
+  notify_format(player, "%13s: %d", T("Total reboots"), globals.reboot_count);
 
   when = localtime(&mudtime);
-  strftime(tbuf1, sizeof tbuf1, T("     Time now: %a %b %d %X %Z %Y"), when);
-  notify(player, tbuf1);
+  strftime(tbuf1, sizeof tbuf1, "%a %b %d %X %Z %Y", when);
+  notify_format(player, "%13s: %s", T("Time now"), tbuf1);
 
   if (globals.last_dump_time > 0) {
     when = localtime(&globals.last_dump_time);
-    strftime(tbuf1, sizeof tbuf1,
-             T("   Time of last database save: %a %b %d %X %Z %Y"), when);
-    notify(player, tbuf1);
+    strftime(tbuf1, sizeof tbuf1, "%a %b %d %X %Z %Y", when);
+    notify_format(player, "%29s: %s", T("Time of last database save"), tbuf1);
   }
 
   /* calculate times until various events */
@@ -2127,34 +2100,30 @@ do_uptime(dbref player, int mortal)
   strftime(tbuf1, sizeof tbuf1, "%X", when);
   secs = ldiv((long) difftime(options.dump_counter, mudtime), 60);
   notify_format(player,
-                T
-                ("Time until next database save: %ld minutes %ld seconds, at %s"),
-                secs.quot, secs.rem, tbuf1);
+                T("%29s: %ld minutes %ld seconds, at %s."),
+                T("Time until next database save"), secs.quot, secs.rem, tbuf1);
 
   when = localtime(&options.dbck_counter);
   strftime(tbuf1, sizeof tbuf1, "%X", when);
   secs = ldiv((long) difftime(options.dbck_counter, mudtime), 60);
   notify_format(player,
-                T
-                ("   Time until next dbck check: %ld minutes %ld seconds, at %s."),
-                secs.quot, secs.rem, tbuf1);
+                T("%29s: %ld minutes %ld seconds, at %s."),
+                T("Time until next dbck check"), secs.quot, secs.rem, tbuf1);
 
   when = localtime(&options.purge_counter);
   strftime(tbuf1, sizeof tbuf1, "%X", when);
   secs = ldiv((long) difftime(options.purge_counter, mudtime), 60);
   notify_format(player,
-                T
-                ("        Time until next purge: %ld minutes %ld seconds, at %s."),
-                secs.quot, secs.rem, tbuf1);
+                T("%29s: %ld minutes %ld seconds, at %s."),
+                T("Time until next purge"), secs.quot, secs.rem, tbuf1);
 
   if (options.warn_interval) {
     when = localtime(&options.warn_counter);
     strftime(tbuf1, sizeof tbuf1, "%X", when);
     secs = ldiv((long) difftime(options.warn_counter, mudtime), 60);
     notify_format(player,
-                  T
-                  ("    Time until next @warnings: %ld minutes %ld seconds, at %s."),
-                  secs.quot, secs.rem, tbuf1);
+                  T("%29s: %ld minutes %ld seconds, at %s."),
+                  T("Time until next @warnings"), secs.quot, secs.rem, tbuf1);
   }
 
   {
@@ -2193,7 +2162,7 @@ do_uptime(dbref player, int mortal)
 }
 
 
-/* Open a db file, which may be compressed, and return a file pointer. These probably should be moved into db.c or 
+/* Open a db file, which may be compressed, and return a file pointer. These probably should be moved into db.c or
  a new dbio.c */
 static PENNFILE *
 db_open(const char *fname)
@@ -2445,8 +2414,7 @@ do_list_memstats(dbref player)
                   "%10.0f %% OVERALL compression ratio (lower is better). ",
                   percent);
     notify_format(player,
-                  T
-                  ("          (Includes table items, and table of words pointers of %ld bytes)"),
+                  "          (Includes table items, and table of words pointers of %ld bytes)",
                   32768L * sizeof(char *));
     if (percent >= 100.0)
       notify(player,

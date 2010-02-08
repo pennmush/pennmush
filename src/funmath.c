@@ -2,7 +2,7 @@
  * \file funmath.c
  *
  * \brief Mathematical functions for mushcode.
- * 
+ *
  *
  */
 
@@ -58,14 +58,14 @@ static void lmathcomp(char **ptr, int nptr, char *buff, char **bp,
 /* Functions for testing and parsing IVALs and UIVALs, the types of
  * arguments to math functions that work on integers instead of
  *  floating-point numbers. No matter what IVAL is (32-bit or 64-bit),
- *  they can be passed to safe_integer()/safe_uinteger(). 
+ *  they can be passed to safe_integer()/safe_uinteger().
  *
  * Math functions that operate on IVALs: div(), floordiv(), modulo(),
  *  remainder()
  * Math functions that operate on UIVALS: shl(), shr(), band(), bnot(), bor()
  *  bxor(), bnand()
  *
- * Other functions work on NVALs or accept plain ints 
+ * Other functions work on NVALs or accept plain ints
  */
 
 static IVAL
@@ -1277,7 +1277,7 @@ FUNCTION(fun_root)
 
 /** Calculates the numerator and denominator for a fraction representing
  *  a floating point number. Only works for positive numbers!
- * \param v the number 
+ * \param v the number
  * \param n pointer to the numerator
  * \param d pointer to the denominator
  * \param error accuracy to which the fraction should represent the original number
@@ -1288,7 +1288,7 @@ frac(double v, double *RESTRICT n, double *RESTRICT d, double error)
 {
 
 /* Based on a routine found in netlib (http://www.netlib.org) by
-   
+
                         Robert J. Craig
                         AT&T Bell Laboratories
                         1200 East Naperville Road
@@ -1410,6 +1410,7 @@ FUNCTION(fun_cand)
   int j;
   char tbuf[BUFFER_LEN], *tp;
   char const *sp;
+  int negate = (called_as[0] == 'N');
 
   for (j = 0; j < nargs; j++) {
     tp = tbuf;
@@ -1418,11 +1419,11 @@ FUNCTION(fun_cand)
                        PE_DEFAULT, PT_DEFAULT, pe_info);
     *tp = '\0';
     if (!parse_boolean(tbuf)) {
-      safe_chr('0', buff, bp);
+      safe_integer(negate, buff, bp);
       return;
     }
   }
-  safe_chr('1', buff, bp);
+  safe_integer(!negate, buff, bp);
 }
 
 /* ARGSUSED */
@@ -1431,6 +1432,7 @@ FUNCTION(fun_cor)
   int j;
   char tbuf[BUFFER_LEN], *tp;
   char const *sp;
+  int negate = (called_as[0] == 'N');
 
   for (j = 0; j < nargs; j++) {
     tp = tbuf;
@@ -1439,11 +1441,11 @@ FUNCTION(fun_cor)
                        PE_DEFAULT, PT_DEFAULT, pe_info);
     *tp = '\0';
     if (parse_boolean(tbuf)) {
-      safe_chr('1', buff, bp);
+      safe_integer(!negate, buff, bp);
       return;
     }
   }
-  safe_chr('0', buff, bp);
+  safe_integer(negate, buff, bp);
 }
 
 /* ARGSUSED */
@@ -1567,7 +1569,7 @@ do_ordinalize(char **buff, char ***bp)
 }
 
 
-/** adds zeros to the beginning of the string, untill its length is 
+/** adds zeros to the beginning of the string, untill its length is
  * a multiple of 3.
  */
 #define add_zeros(p) \
@@ -1613,8 +1615,8 @@ FUNCTION(fun_spellnum)
 
   pnum1 = number = pnumber;
 
-  /* Is it a number? 
-   * If so, devide the number in two parts: pnum1.pnum2 
+  /* Is it a number?
+   * If so, devide the number in two parts: pnum1.pnum2
    */
   len = strlen(number);
   for (m = 0; m < len; m++) {
@@ -1776,7 +1778,7 @@ FUNCTION(fun_lmath)
 *
 * &op me=<op>(%0, %1)
 * fold(me/op, <list>, <sep>)
-* 
+*
 * but a lot more efficient. The Tiny l-OP functions
 * can be simulated with @function if needed.
 */
@@ -1893,20 +1895,27 @@ FUNCTION(fun_baseconv)
   /* Parse it. */
   ptr = trim_space_sep(args[0], ' ');
   n = 0;
-  while (ptr && *ptr) {
-    if (*ptr == '-') {
+  if (ptr) {
+    /* Hyphen-minus are always treated as digits in base 63/base 64. */
+    if (from < 63 && to < 63 && *ptr == '-') {
       isnegative = 1;
       ptr++;
-      continue;
     }
-    n *= from;
-    if (frombase[(unsigned char) *ptr] >= 0) {
-      n += frombase[(unsigned char) *ptr];
-      ptr++;
-    } else {
-      safe_str(T("#-1 MALFORMED NUMBER"), buff, bp);
-      return;
+    while (*ptr) {
+      n *= from;
+      if (frombase[(unsigned char) *ptr] >= 0 &&
+          frombase[(unsigned char) *ptr] < (int) from) {
+        n += frombase[(unsigned char) *ptr];
+        ptr++;
+      } else {
+        safe_str(T("#-1 MALFORMED NUMBER"), buff, bp);
+        return;
+      }
     }
+  }
+
+  if (isnegative) {
+    safe_chr('-', buff, bp);
   }
 
   /* Handle the 0-case. (And quickly handle < to_base case, too!) */
@@ -1926,9 +1935,6 @@ FUNCTION(fun_baseconv)
 
   /* Reverse back onto buff. */
   nbp--;
-  if (isnegative) {
-    safe_chr('-', buff, bp);
-  }
   while (nbp >= numbuff) {
     safe_chr(*nbp, buff, bp);
     nbp--;
@@ -2495,7 +2501,7 @@ lmathcomp(char **ptr, int nptr, char *buff, char **bp, int eqokay, int isgt)
     return;
   }
 
-  if (!is_number(ptr[1])) {
+  if (!is_number(ptr[0])) {
     safe_str(T(e_nums), buff, bp);
     return;
   }

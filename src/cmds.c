@@ -36,7 +36,6 @@
 void do_poor(dbref player, char *arg1);
 void do_list_memstats(dbref player);
 
-#define DOL_MAP 1               /**< dolist/map bitflag */
 #define DOL_NOTIFY 2            /**< dolist/notify bitflag */
 #define DOL_DELIM 4             /**< dolist/delim bitflag */
 
@@ -96,14 +95,16 @@ COMMAND(cmd_atrchown)
 
 COMMAND(cmd_boot)
 {
-  if (SW_ISSET(sw, SWITCH_PORT))
-    do_boot(player, arg_left, BOOT_DESC);
-  else if (SW_ISSET(sw, SWITCH_ME))
-    do_boot(player, (char *) NULL, BOOT_SELF);
-  else if (SW_ISSET(sw, SWITCH_SILENT))
-    do_boot(player, arg_left, BOOT_SILENT);
+
+  int silent = (SW_ISSET(sw, SWITCH_SILENT));
+
+  if (SW_ISSET(sw, SWITCH_ME))
+    do_boot(player, (char *) NULL, BOOT_SELF, silent);
+  else if (SW_ISSET(sw, SWITCH_PORT))
+    do_boot(player, arg_left, BOOT_DESC, silent);
   else
-    do_boot(player, arg_left, BOOT_NAME);
+    do_boot(player, arg_left, BOOT_NAME, silent);
+
 }
 
 COMMAND(cmd_break)
@@ -158,27 +159,7 @@ COMMAND(cmd_chzone)
 
 COMMAND(cmd_config)
 {
-  int lc;
-  lc = SW_ISSET(sw, SWITCH_LOWERCASE);
-  if (SW_ISSET(sw, SWITCH_GLOBALS))
-    do_config_list(player, NULL, lc);
-  else if (SW_ISSET(sw, SWITCH_DEFAULTS))
-    do_config_list(player, NULL, lc);
-  else if (SW_ISSET(sw, SWITCH_COSTS))
-    do_config_list(player, NULL, lc);
-  else if (SW_ISSET(sw, SWITCH_FUNCTIONS))
-    do_list_functions(player, lc);
-  else if (SW_ISSET(sw, SWITCH_COMMANDS))
-    do_list_commands(player, lc);
-  else if (SW_ISSET(sw, SWITCH_ATTRIBS))
-    do_list_attribs(player, lc);
-  else if (SW_ISSET(sw, SWITCH_LIST))
-    do_config_list(player, arg_left, lc);
-  else if (SW_ISSET(sw, SWITCH_FLAGS))
-    do_list_flags("FLAG", player, arg_left, lc, T("Flags"));
-  else if (SW_ISSET(sw, SWITCH_POWERS))
-    do_list_flags("POWER", player, arg_left, lc, T("Powers"));
-  else if (SW_ISSET(sw, SWITCH_SET) || SW_ISSET(sw, SWITCH_SAVE)) {
+  if (SW_ISSET(sw, SWITCH_SET) || SW_ISSET(sw, SWITCH_SAVE)) {
     if (!Wizard(player)) {
       notify(player, T("You can't remake the world in your image."));
       return;
@@ -211,7 +192,7 @@ COMMAND(cmd_config)
       }
     }
   } else
-    do_config_list(player, arg_left, lc);
+    do_config_list(player, arg_left, SW_ISSET(sw, SWITCH_LOWERCASE));
 }
 
 COMMAND(cmd_cpattr)
@@ -252,10 +233,13 @@ COMMAND(cmd_dbck)
 COMMAND(cmd_decompile)
 {
   char prefix[BUFFER_LEN];
-  int sd = SW_ISSET(sw, SWITCH_SKIPDEFAULTS);
+  int flags = 0, dbflags = 0;
+  //int sd = SW_ISSET(sw, SWITCH_SKIPDEFAULTS);
   *prefix = '\0';
+  if (SW_ISSET(sw, SWITCH_SKIPDEFAULTS))
+    flags |= DEC_SKIPDEF;
   if (SW_ISSET(sw, SWITCH_TF)) {
-    /* @dec/tf overrides @dec/prefix */
+    /* @dec/tf overrides =<prefix> */
     ATTR *a;
     if (((a = atr_get_noparent(player, "TFPREFIX")) != NULL) &&
         AL_STR(a) && *AL_STR(a)) {
@@ -263,17 +247,22 @@ COMMAND(cmd_decompile)
     } else {
       strcpy(prefix, "FugueEdit > ");
     }
-  } else if (SW_ISSET(sw, SWITCH_PREFIX)) {
+  } else {
     strcpy(prefix, arg_right);
   }
+
   if (SW_ISSET(sw, SWITCH_DB) || SW_ISSET(sw, SWITCH_TF))
-    do_decompile(player, arg_left, prefix, DEC_DB, sd);
-  else if (SW_ISSET(sw, SWITCH_FLAGS))
-    do_decompile(player, arg_left, prefix, DEC_FLAG, sd);
-  else if (SW_ISSET(sw, SWITCH_ATTRIBS))
-    do_decompile(player, arg_left, prefix, DEC_ATTR, sd);
-  else
-    do_decompile(player, arg_left, prefix, DEC_NORMAL, sd);
+    flags |= DEC_DB;
+  if (SW_ISSET(sw, SWITCH_NAME))
+    flags = ~DEC_DB;
+  if (SW_ISSET(sw, SWITCH_FLAGS))
+    dbflags |= DEC_FLAG;
+  if (SW_ISSET(sw, SWITCH_ATTRIBS))
+    dbflags |= DEC_ATTR;
+  if (!dbflags)
+    dbflags = DEC_FLAG | DEC_ATTR;
+
+  do_decompile(player, arg_left, prefix, flags | dbflags);
 }
 
 COMMAND(cmd_teach)
@@ -338,7 +327,8 @@ COMMAND(cmd_elock)
 
 COMMAND(cmd_emit)
 {
-  int spflags = !strcmp(cmd->name, "@NSEMIT") ? PEMIT_SPOOF : 0;
+  int spflags = (!strcmp(cmd->name, "@NSEMIT")
+                 && Can_Nspemit(player) ? PEMIT_SPOOF : 0);
   SPOOF(player, cause, sw);
 
   if (SW_ISSET(sw, SWITCH_ROOM))
@@ -355,16 +345,19 @@ COMMAND(cmd_enable)
 
 COMMAND(cmd_entrances)
 {
+  int types = 0;
+
   if (SW_ISSET(sw, SWITCH_EXITS))
-    do_entrances(player, arg_left, args_right, ENT_EXITS);
-  else if (SW_ISSET(sw, SWITCH_THINGS))
-    do_entrances(player, arg_left, args_right, ENT_THINGS);
-  else if (SW_ISSET(sw, SWITCH_PLAYERS))
-    do_entrances(player, arg_left, args_right, ENT_PLAYERS);
-  else if (SW_ISSET(sw, SWITCH_ROOMS))
-    do_entrances(player, arg_left, args_right, ENT_ROOMS);
-  else
-    do_entrances(player, arg_left, args_right, ENT_ALL);
+    types |= TYPE_EXIT;
+  if (SW_ISSET(sw, SWITCH_THINGS))
+    types |= TYPE_THING;
+  if (SW_ISSET(sw, SWITCH_PLAYERS))
+    types |= TYPE_PLAYER;
+  if (SW_ISSET(sw, SWITCH_ROOMS))
+    types |= TYPE_ROOM;
+  if (!types)
+    types = NOTYPE;
+  do_entrances(player, arg_left, args_right, types);
 }
 
 COMMAND(cmd_eunlock)
@@ -379,7 +372,7 @@ COMMAND(cmd_find)
 
 COMMAND(cmd_firstexit)
 {
-  do_firstexit(player, arg_left);
+  do_firstexit(player, (const char **) args_left);
 }
 
 COMMAND(cmd_flag)
@@ -473,7 +466,8 @@ COMMAND(cmd_halt)
 
 COMMAND(cmd_hide)
 {
-  hide_player(player, !(SW_ISSET(sw, SWITCH_NO) || SW_ISSET(sw, SWITCH_OFF)));
+  hide_player(player, !(SW_ISSET(sw, SWITCH_NO) || SW_ISSET(sw, SWITCH_OFF)),
+              arg_left);
 }
 
 COMMAND(cmd_hook)
@@ -522,7 +516,8 @@ COMMAND(cmd_kick)
 
 COMMAND(cmd_lemit)
 {
-  int spflags = !strcmp(cmd->name, "@NSLEMIT") ? PEMIT_SPOOF : 0;
+  int spflags = (!strcmp(cmd->name, "@NSLEMIT")
+                 && Can_Nspemit(player) ? PEMIT_SPOOF : 0);
   SPOOF(player, cause, sw);
   do_lemit(player, arg_left,
            (SW_ISSET(sw, SWITCH_SILENT) * PEMIT_SILENT) | spflags);
@@ -698,14 +693,6 @@ COMMAND(cmd_malias)
     do_malias(player, arg_left, arg_right);
 }
 
-COMMAND(cmd_map)
-{
-  unsigned int flags = DOL_MAP;
-  if (SW_ISSET(sw, SWITCH_DELIMIT))
-    flags |= DOL_DELIM;
-  do_dolist(player, arg_left, arg_right, cause, flags);
-}
-
 COMMAND(cmd_message)
 {
   char *message;
@@ -784,7 +771,8 @@ COMMAND(cmd_nuke)
 
 COMMAND(cmd_oemit)
 {
-  int spflags = !strcmp(cmd->name, "@NSOEMIT") ? PEMIT_SPOOF : 0;
+  int spflags = (!strcmp(cmd->name, "@NSOEMIT")
+                 && Can_Nspemit(player) ? PEMIT_SPOOF : 0);
   SPOOF(player, cause, sw);
   do_oemit_list(player, arg_left, arg_right, spflags);
 }
@@ -834,7 +822,7 @@ COMMAND(cmd_pemit)
 
   SPOOF(player, cause, sw);
 
-  if (!strcmp(cmd->name, "@NSPEMIT"))
+  if (!strcmp(cmd->name, "@NSPEMIT") && Can_Nspemit(player))
     flags |= PEMIT_SPOOF;
   if (SW_ISSET(sw, SWITCH_LIST))
     do_pemit_list(player, arg_left, arg_right, flags);
@@ -854,7 +842,7 @@ COMMAND(cmd_prompt)
     flags = 0;
   else
     flags = SILENT_PEMIT ? PEMIT_SILENT : 0;
-  if (!strcmp(cmd->name, "@NSPEMIT"))
+  if (!strcmp(cmd->name, "@NSPEMIT") && Can_Nspemit(player))
     flags |= PEMIT_SPOOF;
   do_pemit_list(player, arg_left, arg_right, flags | PEMIT_PROMPT);
 }
@@ -937,7 +925,7 @@ COMMAND(cmd_remit)
     flags = SILENT_PEMIT ? PEMIT_SILENT : 0;
   if (SW_ISSET(sw, SWITCH_LIST))
     flags |= PEMIT_LIST;
-  if (!strcmp(cmd->name, "@NSREMIT"))
+  if (!strcmp(cmd->name, "@NSREMIT") && Can_Nspemit(player))
     flags |= PEMIT_SPOOF;
   do_remit(player, arg_left, arg_right, flags);
 }
@@ -1178,7 +1166,8 @@ COMMAND(cmd_wizmotd)
 
 COMMAND(cmd_zemit)
 {
-  int flags = !strcmp(cmd->name, "@NSZEMIT") ? PEMIT_SPOOF : 0;
+  int flags = (!strcmp(cmd->name, "@NSZEMIT")
+               && Can_Nspemit(player) ? PEMIT_SPOOF : 0);
   do_zemit(player, arg_left, arg_right, flags);
 }
 
@@ -1312,8 +1301,6 @@ COMMAND(cmd_page)
                  !SW_ISSET(sw, SWITCH_NOEVAL));
   else
     do_page(player, arg_left, arg_right, cause, SW_ISSET(sw, SWITCH_NOEVAL),
-            !(SW_ISSET(sw, SWITCH_BLIND) ||
-              (!(SW_ISSET(sw, SWITCH_LIST)) && (BLIND_PAGE))),
             SW_ISSET(sw, SWITCH_OVERRIDE), rhs_present);
 }
 

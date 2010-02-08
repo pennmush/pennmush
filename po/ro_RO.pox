@@ -1,177 +1,15 @@
-#: src/wiz.c:2259
-#, c-format
-msgid "          (Includes table items, and table of words pointers of %ld bytes)"
-msgstr "          Include obiecte tabelare, si tqbele de pointere word de %ld bytes)"
-
-#: src/game.c:1447
-#, c-format
-msgid "        Time until next purge: %ld minutes %ld seconds."
-msgstr "        Timp ramas pana la urmatoarea curatare: %ld minute %ld secunde."
-
-#: src/malias.c:565
-msgid "      to set, add, remove permissions, respectively."
-msgstr "      pentru a seta, adauga, anula permisiuni."
-
-#: game.c:1437
-#, c-format
-msgid "     Up since: %s"
-msgstr "     Functionare neantrerupta din: %s"
-
-#: filecopy.c:110
-#, c-format
-msgid "    ** Unable to open file: %s"
-msgstr "    ** Fisierul nu poate fi deschis: %s"
-
-#: src/filecopy.c:112
-#, c-format
-msgid "    ** Unable to open file: %s\n"
-msgstr "    ** Fisierul nu poate fi deschis: %s\n"
-
-#: filecopy.c:101
-msgid "    Copying file"
-msgstr "    Fisierul se copiaza"
-
-#: src/filecopy.c:100
-#, c-format
-msgid "    Copying file: %s, %ld byte%s\n"
-msgstr "    Fisierul se copiaza: %s, %ld byte%s\n"
-
-#: src/game.c:1452
-#, c-format
-msgid "    Time until next @warnings: %ld minutes %ld seconds."
-msgstr "    Timp ramas pana la urmatorul @warnings: %ld minute %ld secunde."
-
-#: src/game.c:1432
-#, c-format
-msgid "   Time now: %s"
-msgstr "   Timpul actual: %s"
-
-#: src/game.c:1443
-#, c-format
-msgid "   Time until next dbck check: %ld minutes %ld seconds."
-msgstr "   Timp ramas pana la urmatoarea verificare dbck: %ld minute %ld secunde."
-
-#: src/game.c:1422
-#, c-format
-msgid "   Up since: %s"
-msgstr "   Functionare neantrerupta din:"
-
-#: db.c:1205
-msgid "  (expecting ], >, or < as first character of the line.)"
-msgstr "  (se asteapta ], >, sau < ca prime caractere ale liniei.)"
-
-#: src/db.c:1309
-msgid "  (expecting ], >, or < as first character of the line.)\n"
+# SOME DESCRIPTIVE TITLE.\nCopyright (C) YEAR Free Software Foundation, Inc.\nFIRST AUTHOR <EMAIL@ADDRESS>, YEAR.\n
+#, fuzzy
+msgid ""
 msgstr ""
-"  (se asteapta ], >, sau < ca prime caractere ale liniei.)\n"
-".\n"
-
-#: db.c:1207
-#, c-format
-msgid "  Last attribute read was: %s"
-msgstr "  Ultimul atribut citit a fost: %s"
-
-#: src/db.c:1311
-#, c-format
-msgid "  Last attribute read was: %s\n"
-msgstr "  Ultimul atribut citit a fost: %s\n"
-
-#: game.c:1442
-#, c-format
-msgid "  Last reboot: %s"
-msgstr "  Ultimul reboot: %s"
-
-#: db.c:1209
-msgid "  No attributes had been read yet."
-msgstr "  Inca nu a fost citit nici un atribut."
-
-#: src/db.c:1313
-msgid "  No attributes had been read yet.\n"
-msgstr "  Inca nu a fost citit nici un atribut.\n"
-
-#: src/services.c:803
-#, c-format
-msgid " %s           - runs as a service, or stand-alone\n"
-msgstr " %s           - ruleaza ca un serviciu, sau de sine statator\n"
-
-#: src/services.c:813
-#, c-format
-msgid " %s /help     - displays this information\n"
-msgstr " %s /help     - afiseaza aceasta informatie\n"
-
-#: src/services.c:808
-#, c-format
-msgid " %s /install  - installs this service\n"
-msgstr " %s /install       -instaleaza acest serviciu\n"
-
-#: src/services.c:809
-#, c-format
-msgid " %s /remove   - removes (un-installs) this service\n"
-msgstr " %s /remove     -dezinstaleaza acest serviciu\n"
-
-#: src/services.c:805
-#, c-format
-msgid " %s /run      - runs stand-alone\n"
-msgstr " %s /run     -functioneaza de sine statator\n"
-
-#: src/services.c:806
-#, c-format
-msgid " %s /start    - starts this service\n"
-msgstr " %s /start        -porneste acest serviciu\n"
-
-#: src/services.c:811
-#, c-format
-msgid " %s /status   - displays the status of this service\n"
-msgstr " %s /status        -afiseaza starea acestui serviciu \n"
-
-#: src/services.c:807
-#, c-format
-msgid " %s /stop     - stops this service\n"
-msgstr " %s /stop          -opreste acest serviciu \n"
-
-#: src/db.c:567
-#, c-format
-msgid " * Bad attribute name on #%d. Changing name to %s.\n"
-msgstr " * Nume de atribut necorespunzator pe #%d. Se schimba numele in %s. \n"
-
-#: src/db.c:574
-#, c-format
-msgid " * Bad owner on attribute %s on #%d.\n"
-msgstr " * Posesor necorespunzator pe atributul %s din #%d. \n"
-
-#: src/db.c:608
-#, c-format
-msgid " * Bad text in attribute %s on #%d. Changed to:\n"
-msgstr " * Text necorespunzator pe atributul %s din #%d. Se schimba in: \n"
-
-#: db.c:1285 db.c:1293
-#, c-format
-msgid " * Name of #%d is longer than the maximum, truncating.\n"
-msgstr " * Numele lui #%d este mai lung decat maximul, se scurteaza. \n"
-
-#: src/conf.c:1098
-msgid " @lock/drop is available."
-msgstr " @lock/drop este disponibil"
-
-#: src/conf.c:1101
-msgid " @lock/give is available."
-msgstr " @lock/give este disponibil"
-
-#: src/conf.c:1095
-msgid " @lock/leave is available."
-msgstr " @lock/leave este disponibil"
-
-#: src/conf.c:1092
-msgid " @lock/speech is available."
-msgstr " @lock/speech este disponibil"
-
-#: src/conf.c:1008
-msgid " @mail messages do not have subject lines."
-msgstr " Mesajele @mail nu au linii de subiect."
-
-#: src/conf.c:1000
-msgid " @mail messages have subject lines."
-msgstr " Mesajele @mail au linii de subiect."
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2004-11-04 13:52-0600\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=iso-8859-2\n"
+"Content-Transfer-Encoding: 8bit"
 
 #: conf.c:1044
 msgid " Attributes are 8-bit word compressed in memory."
@@ -181,10 +19,6 @@ msgstr " Atributele sunt compresate in memorie prin metoda \"8-bit word \"."
 msgid " Attributes are Huffman compressed in memory."
 msgstr " Atributele sunt compresate in memorie prin metoda Huffman."
 
-#: conf.c:1038
-msgid " Attributes are bigram compressed in memory."
-msgstr " Atributele sunt compresate in memorie prin metoda bigram."
-
 #: conf.c:1032
 msgid " Attributes are not compressed in memory."
 msgstr " Atributele nu sunt compresate in memorie."
@@ -192,26 +26,6 @@ msgstr " Atributele nu sunt compresate in memorie."
 #: conf.c:1041
 msgid " Attributes are word compressed in memory."
 msgstr " Atributele sunt compresate in memorie prin metoda \"word \"."
-
-#: src/conf.c:1063
-msgid " Attributes can be deleted."
-msgstr " Atributele pot fi sterse."
-
-#: src/conf.c:1065
-msgid " Attributes cannot be deleted."
-msgstr " Atributele nu pot fi sterse."
-
-#: conf.c:1214
-msgid " BSD sockets networking in use."
-msgstr " BSD sockets networking se utilizeaza."
-
-#: src/conf.c:1044
-msgid " Creation/modification times for objects are enabled."
-msgstr " Timpii de creare/modificare pentru obiecte sunt activati."
-
-#: src/conf.c:1046
-msgid " Creation/modification times for objects are not enabled."
-msgstr " Timpii de creare/modificare pentru obiecte nu sunt activati."
 
 #: src/conf.c:980
 msgid " DNS and ident lookups are handled by a slave process."
@@ -221,174 +35,9 @@ msgstr " Cautarile DNS si ident sunt realizate de procese slave."
 msgid " DNS and ident lookups are handled by the MUSH process."
 msgstr " Cautarile DNS si ident sunt realizate de procese MUSH."
 
-#: src/conf.c:1068
-msgid " Empty attributes are deleted."
-msgstr " Atributele goale sunt sterse."
-
-#: src/conf.c:1058
-msgid " Empty attributes are dumped."
-msgstr " Atributele goale sunt transferate."
-
-#: src/conf.c:1051
-msgid " Empty attributes are kept."
-msgstr " Atributele goale sunt pastrate."
-
-#: src/conf.c:1060
-msgid " Empty attributes are not dumped."
-msgstr " Atributele goale nu sunt transferate."
-
-#: src/conf.c:1055
-msgid " Empty attributes are not visible."
-msgstr " Atributele goale nu sunt vizibile."
-
-#: src/conf.c:1053
-msgid " Empty attributes are visible."
-msgstr " Atributele goale sunt vizibile."
-
-#: src/conf.c:1105
-msgid " Extended ANSI functions are enabled."
-msgstr " Functiile ANSI extinse sunt activate."
-
-#: src/conf.c:1107
-msgid " Extended ANSI functions are not enabled."
-msgstr " Functiile ANSI extinse nu sunt activate."
-
 #: src/conf.c:1111
 msgid " Extended convtime() is supported."
 msgstr " Convtime() extins este suportat."
-
-#: flags.c:706
-msgid " Flags:"
-msgstr " Steaguri:"
-
-#: src/conf.c:988
-msgid " Floating point functions are disabled."
-msgstr " Functiile de virgula mobila sunt dezactivate."
-
-#: src/conf.c:986
-msgid " Floating point functions are enabled."
-msgstr " Functiile de virgula mobila sunt activate."
-
-#: src/conf.c:1072
-msgid " Garbage objects are not dumped to disk."
-msgstr " Obiectele de tip gunoi nu sunt transferate pe disc."
-
-#: src/conf.c:970
-msgid " Logging is to a single log file."
-msgstr " Logging-ul se realizeaza intr-un singur fisier."
-
-#: src/conf.c:972
-msgid " Logging is to multiple log files."
-msgstr " Logging-ul se realizeaza in mai multe fisiere."
-
-#: src/conf.c:1002
-msgid " Messages without subject lines have subject (no subject)"
-msgstr " Mesajele fara linie de subiect au subiectul (fara subiect)"
-
-#: src/conf.c:1005
-msgid " Messages without subject lines use the beginning of the message as subject"
-msgstr " Mesajele fara linie de subiect utilizeaza inceputul mesajului ca subiect"
-
-#: src/conf.c:954
-msgid " Passwords are convereted from plaintext to SHS"
-msgstr " Parolele sunt convertite din text in SHS"
-
-#: conf.c:1179
-msgid " Passwords are converted from plaintext to SHS"
-msgstr " Parolele sunt convertite din text in SHS"
-
-#: src/conf.c:951
-msgid " Passwords are converted from system crypt to SHS"
-msgstr " Parolele sunt convertite din sistem criptat in SHS"
-
-#: src/conf.c:948
-msgid " Passwords are encrypted with SHS."
-msgstr " Parolele sunt criptate cu SHS"
-
-#: src/conf.c:945
-msgid " Passwords are encrypted with the operating system's crypt function."
-msgstr " Parolele sunt criptate cu functia de criptare a sistemului de operare."
-
-#: src/conf.c:941
-msgid " Passwords are not stored encrypted."
-msgstr " Parolele nu sunt stocate criptat."
-
-#: src/conf.c:1021
-msgid " Quota restrictions are being enforced."
-msgstr " Restrictiile de cota sunt in functiune."
-
-#: src/conf.c:994
-msgid " Side effect functions are disabled."
-msgstr " Functiile de efect secundar sunt dezactivate."
-
-#: src/conf.c:992
-msgid " Side effect functions are enabled."
-msgstr " Functiile de efect secundar sunt activate."
-
-#: src/conf.c:1078
-msgid " The FIXED flag is disabled."
-msgstr " Steagul FIXED este dezactivat."
-
-#: src/conf.c:1076
-msgid " The FIXED flag is enabled."
-msgstr " Steagul FIXED este activat."
-
-#: src/conf.c:1040
-msgid " The MUSH building warning system is disabled."
-msgstr " Avertizarea sistemului de cladire al MUSH este dezactivata."
-
-#: src/conf.c:1031
-msgid " The MUSH building warning system is enabled."
-msgstr " Avertizarea sistemului de cladire al MUSH este activata."
-
-#: src/conf.c:1088
-msgid " The UNINSPECTED flag is enabled."
-msgstr " Steagul UNINSPECTED este activat."
-
-#: src/conf.c:1082
-msgid " The UNREGISTERED flag is enabled."
-msgstr " Steagul UNREGISTRED este activat."
-
-#: src/conf.c:1085
-msgid " The VACATION flag is enabled."
-msgstr " Steagul VACATION este activat."
-
-#: src/conf.c:1011
-msgid " The built-in MUSH mailing system is not being used."
-msgstr " Sistemul intern de mail al MUSH  nu este folosit."
-
-#: src/conf.c:1017
-msgid " The chat system is disabled."
-msgstr " Sistemul de chat este dezactivat."
-
-#: src/conf.c:998
-msgid " The extended built-in MUSH mailing system is being used."
-msgstr " Sistemul intern de mail extins al MUSH este folosit."
-
-#: src/conf.c:1015
-msgid " The extended chat system is enabled."
-msgstr " Sistemul de chat extins este activat."
-
-#: src/conf.c:1027
-msgid " The royalty flag is disabled."
-msgstr " Steagul royalty este dezactivat."
-
-#: src/conf.c:1025
-msgid " The royalty flag is enabled."
-msgstr " Steagul royalty este activat."
-
-#: src/conf.c:1035
-#, c-format
-msgid " Warnings will be automatically given every %d minutes"
-msgstr " Se vor emite avertizari la fiecare %d minute."
-
-#: src/conf.c:1038
-msgid " Warnings will not be automatically given."
-msgstr " Nu se vor emite avertizari automat."
-
-#: conf.c:1212
-msgid " Windows NT native TCP/IP networking functions in use."
-msgstr " Functiile de networking TCP/IP native ale sistemului Windows NT sunt utilizate."
 
 #: wiz.c:1605
 #, c-format
@@ -399,49 +48,17 @@ msgstr " [locatia: %s]"
 msgid " convtime() is stricter."
 msgstr " convtime () este mai strict."
 
-#: src/look.c:205
-msgid " is corrupt!"
-msgstr " este corupt!"
-
 #: src/look.c:688 src/look.c:770
 msgid " is owned by "
 msgstr " este proprietatea lui "
-
-#: src/look.c:201
-msgid " leads home."
-msgstr " conduce acasa."
-
-#: src/look.c:199
-msgid " leads nowhere."
-msgstr " nu conduce nicaieri."
-
-#: src/look.c:207
-msgid " leads to "
-msgstr " conduce catre "
-
-#: src/look.c:203
-msgid " leads to a variable location."
-msgstr " conduce catre o locatie variabila."
 
 #: speech.c:1021
 msgid " pages"
 msgstr " trimite page"
 
-#: src/speech.c:475
-msgid " whispers to "
-msgstr " sopteste catre "
-
-#: speech.c:975
-msgid " with "
-msgstr " cu "
-
 #: extchat.c:1503
 msgid "#-1 AMBIGUOUS CHANNEL NAME"
 msgstr "#-1 NUME DE CANAL AMBIGUU"
-
-#: src/fundb.c:463
-msgid "#-1 AMBIGUOUS MATCH"
-msgstr "#-1 POTRIVIRE AMBIGUA"
 
 #: src/fundb.c:784 src/fundb.c:1001
 msgid "#-1 ARG1 NOT FOUND"
@@ -450,10 +67,6 @@ msgstr "#-1 ARG1 NU ESTE GASIT"
 #: src/fundb.c:786 src/fundb.c:1003
 msgid "#-1 ARG2 NOT FOUND"
 msgstr "#-1 ARG2 NU ESTE GASIT"
-
-#: src/funmath.c:1218 src/funmath.c:1225
-msgid "#-1 ARGUMENT MUST BE A NUMBER"
-msgstr "#-1 ARGUMENTUL TREBUIE SA FIE UN NUMAR"
 
 #: src/funlist.c:1886 src/funlist.c:1905
 msgid "#-1 ARGUMENT MUST BE INTEGER"
@@ -474,10 +87,6 @@ msgstr "#-1 ARGUMENTUL TREBUIE SA FIE OBJ/ATTR"
 #: parse.c:87
 msgid "#-1 ARGUMENT MUST BE POSITIVE INTEGER"
 msgstr "#-1 ARGUMENTUL TREBUIE SA FIE POZITIV INTREG"
-
-#: src/funtime.c:110
-msgid "#-1 ARGUMENT MUST BE POSITIVE"
-msgstr "#-1 ARGUMENTUL TREBUIE SA FIE POZITIV"
 
 #: src/funmath.c:218 src/funmath.c:250
 msgid "#-1 ARGUMENT MUST END IN AN INTEGER"
@@ -514,10 +123,6 @@ msgstr "#-1 FORMAT NEPOTRIVIT DE ARGUMENT PENTRU GET_EVAL"
 #: src/funmath.c:987
 msgid "#-1 BASE OUT OF RANGE"
 msgstr "#-1 BAZA ESTE IN AFARA LIMITEI"
-
-#: src/funlist.c:1410
-msgid "#-1 CAN ONLY DELETE ONE ELEMENT"
-msgstr "#-1 SE POATE STERGE NUMAI UN ELEMENT"
 
 #: src/funlist.c:1456 src/funlist.c:1680
 msgid "#-1 CAN ONLY TEST ONE ELEMENT"
@@ -611,10 +216,6 @@ msgstr "#-1 NICI UN OBIECT CONTROLAT"
 msgid "#-1 NO PERMISSION TO GET ATTRIBUTE"
 msgstr "#-1 NU EXISTA PERMISIUNE DE A EFECTUA GET ATTRIBUTE"
 
-#: src/funlist.c:370 src/funlist.c:454
-msgid "#-1 NO PERMISSION TO RUN ATTRIBUTE"
-msgstr "#-1 NU EXISTA PERMISIUNE DE A EFECTUA RUN ATTRIBUTE"
-
 #: src/bsd.c:4827
 msgid "#-1 NO PERMISSIONS FOR CHANNEL"
 msgstr "#-1 NU EXISTA PERMISIUNE PENTRU CANAL"
@@ -639,17 +240,9 @@ msgstr "#-1 NU EXISTA ASEMENEA TIP DE INCUIETOARE"
 msgid "#-1 NO SUCH OBJECT VISIBLE"
 msgstr "#-1 NU EXISTA ASEMENEA OBIECT VIZIBIL"
 
-#: src/conf.c:901
-msgid "#-1 NO SUCH OPTION"
-msgstr "#-1 NU EXISTA ASEMENEA OPTIUNE"
-
 #: src/extmail.c:1468 src/extmail.c:1489
 msgid "#-1 NO SUCH PLAYER"
 msgstr "#-1 NU EXISTA ASEMENEA JUCATOR"
-
-#: src/wiz.c:1128
-msgid "#-1 NO SUCH POWER"
-msgstr "#-1 NU EXISTA ASEMENEA PUTERE"
 
 #: src/fundb.c:907
 msgid "#-1 NO SUCH TYPE"
@@ -659,17 +252,9 @@ msgstr "#-1 NU EXISTA ASEMENEA TIP"
 msgid "#-1 NO SUCH USER FUNCTION"
 msgstr "#-1 NU EXISTA ASEMENEA FUNCTIE USER"
 
-#: src/conf.c:905
-msgid "#-1 NO VALUE GIVEN"
-msgstr "#-1 NICI O VALOARE DATA"
-
 #: src/bsd.c:4485 src/bsd.c:4498
 msgid "#-1 NOT CONNECTED"
 msgstr "#-1 NU ESTE CONECTAT"
-
-#: src/fundb.c:1645 src/funlist.c:362 src/funlist.c:446
-msgid "#-1 NOT FOUND"
-msgstr "#-1 NU ESTE GASIT"
 
 #: extchat.c:1525
 msgid "#-1 NOT ON CHANNEL"
@@ -691,16 +276,8 @@ msgstr "#-1 IN AFARA LIMITEI"
 msgid "#-1 OVERFLOW ERROR"
 msgstr "#-1 EROARE OVERFLOW"
 
-#: src/conf.c:897
-msgid "#-1 PERMISSIION DENIED"
-msgstr "#-1 INTERZIS"
-
 #: src/extmail.c:1471 src/extmail.c:1492 src/extmail.c:1531 src/fundb.c:122\nsrc/fundb.c:141 src/fundb.c:169 src/fundb.c:261 src/fundb.c:303\nsrc/fundb.c:341 src/fundb.c:789 src/fundb.c:953 src/fundb.c:1114\nsrc/fundb.c:1139 src/fundb.c:1248 src/fundb.c:1442 src/fundb.c:1456\nsrc/fundb.c:1466 src/fundb.c:1477 src/fundb.c:1487 src/fundb.c:1502\nsrc/fundb.c:1512 src/fundb.c:1522 src/fundb.c:1537 src/fundb.c:1651\nsrc/fundb.c:1737 src/fundb.c:1741 src/fundb.c:1748 src/fundb.c:1752\nsrc/fundb.c:1858 src/fundb.c:1872 src/funlist.c:1966 src/funmisc.c:60\nsrc/funmisc.c:72 src/funmisc.c:84 src/funmisc.c:96 src/funmisc.c:108\nsrc/funmisc.c:120 src/funmisc.c:134 src/funstr.c:778 src/funufun.c:118\nsrc/funufun.c:149 src/funufun.c:300 src/wiz.c:2155 src/wiz.c:2167\nsrc/wiz.c:2189 src/wiz.c:2202
 msgid "#-1 PERMISSION DENIED"
-msgstr "#-1 INTERZIS"
-
-#: src/fundb.c:725
-msgid "#-1 PERMISSION DENIED."
 msgstr "#-1 INTERZIS"
 
 #: src/funlist.c:2256 src/funlist.c:2335 src/funlist.c:2378 src/funlist.c:2437\nsrc/funlist.c:2478
@@ -715,10 +292,6 @@ msgstr "#-1 REGISTRU IN AFARA LIMITEI"
 msgid "#-1 SEPARATOR MUST BE ONE CHARACTER"
 msgstr "#-1 SEPARATORUL TREBUIE SA FIE UN CARACTER"
 
-#: src/funmath.c:1005
-msgid "#-1 SQUARE ROOT OF NEGATIVE"
-msgstr "#-1 RADICAL DE NUMAR NEGATIV"
-
 #: src/funlist.c:1943
 msgid "#-1 STEP OUT OF RANGE"
 msgstr "#-1 PAS IN AFARA LIMITEI"
@@ -727,10 +300,6 @@ msgstr "#-1 PAS IN AFARA LIMITEI"
 msgid "#-1 STRING LENGTHS MUST BE EQUAL"
 msgstr "#-1 LUNGIMILE SIRURILOR TREBUIE SA FIE EGALE"
 
-#: src/funstr.c:357
-msgid "#-1 TOO MANY CHARACTERS"
-msgstr "#-1 PREA MULTE CARACTERE"
-
 #: src/funlist.c:1815
 msgid "#-1 TOO MANY ITERS"
 msgstr "#-1 PREA MULTE REPETARI"
@@ -738,14 +307,6 @@ msgstr "#-1 PREA MULTE REPETARI"
 #: src/funlist.c:1782
 msgid "#-1 TOO MANY WORDS"
 msgstr "#-1 PREA MULTE CUVINTE"
-
-#: src/conf.c:914
-msgid "#-1 TWO-ARGUMENT FORM OF FUNCTION DISABLED"
-msgstr "#-1 FORMA DE DOUA ARGUMENTE A FUNCTIEI ESTE DEZAFECTATA"
-
-#: src/conf.c:909
-msgid "#-1 UNABLE TO SET OPTION"
-msgstr "#-1 NU SE POATE SETA OPTIUNEA"
 
 #: src/funmath.c:1385
 msgid "#-1 UNKNOWN OPERATION"
@@ -762,11 +323,6 @@ msgstr "#-1 LATIME PREA MICA"
 #: src/extmail.c:1641
 msgid "#-? fun_mailstats called with invalid called_as!"
 msgstr "#-?  fun_mailstats invocata cu called_as invalid"
-
-#: src/flags.c:967
-#, c-format
-msgid "%c: unknown flag."
-msgstr "%c: steag necunoscut."
 
 #: src/wiz.c:1044
 #, c-format
@@ -803,11 +359,6 @@ msgstr "%d obiecte = %d camere, %d iesiri, %d obiecte, %d jucatori, %d gunoi."
 msgid "%d objects = %d rooms, %d exits, %d things, %d players."
 msgstr "%d obiecte = %d camere, %d iesiri, %d obiecte, %d jucatori."
 
-#: help.c:382
-#, c-format
-msgid "%d topics indexed."
-msgstr "%d subiecte indexate."
-
 #: src/bsd.c:3405
 #, c-format
 msgid "%ld failed connections since last login."
@@ -833,40 +384,15 @@ msgstr "%s (aceasta camera) [vorbire]. (conectat)."
 msgid "%s (this room) [speech]."
 msgstr "%s (aceasta camera) [vorbire]."
 
-#: src/wiz.c:1207
-#, c-format
-msgid "%s - power granted."
-msgstr "%s -putere acordata."
-
-#: src/wiz.c:1198
-#, c-format
-msgid "%s - power removed."
-msgstr "%s putere anulata."
-
 #: src/atr_tab.c:226
 #, c-format
 msgid "%s -- Attribute permissions now: %s"
 msgstr "%s - Permisiuni de atribute acum : %s"
 
-#: src/look.c:721
-#, c-format
-msgid "%s Lock: %s"
-msgstr "%s Incuie: %s"
-
-#: wiz.c:1583
-#, c-format
-msgid "%s [from %s to %s]"
-msgstr "%s [de la %s catre %s ]"
-
 #: src/look.c:954 src/look.c:979 src/look.c:1019
 #, c-format
 msgid "%s [owner: %s] is listening."
 msgstr "%s [proprietarul: %s ] asculta."
-
-#: wiz.c:1569 wiz.c:1593
-#, c-format
-msgid "%s [owner: %s]"
-msgstr "%s [proprietarul: %s ]"
 
 #: destroy.c:353
 #, c-format
@@ -928,90 +454,15 @@ msgstr "Lui %s  ii cresc urechi si poate auzi."
 msgid "%s has %d messages."
 msgstr "%s are %d mesaje."
 
-#: src/bsd.c:3985
-#, c-format
-msgid "%s has %s%sconnected."
-msgstr "%s s-a %sconectat."
-
-#: src/bsd.c:4208
-#, c-format
-msgid "%s has %sdisconnected."
-msgstr "%s s-a %s deconectat."
-
-#: bsd.c:4000
-#, c-format
-msgid "%s has DARK-connected."
-msgstr "%s s-a conectat DARK."
-
-#: bsd.c:4174
-#, c-format
-msgid "%s has DARK-disconnected."
-msgstr "%s s-a deconectat DARK."
-
-#: bsd.c:3999
-#, c-format
-msgid "%s has DARK-reconnected."
-msgstr "%s s-a reconectat DARK."
-
-#: bsd.c:4003
-#, c-format
-msgid "%s has HIDDEN-connected."
-msgstr "%s s-a conectat HIDDEN."
-
-#: bsd.c:4437
-#, c-format
-msgid "%s has HIDDEN-disconnected."
-msgstr "%s s-a deconectat HIDDEN."
-
-#: bsd.c:4002
-#, c-format
-msgid "%s has HIDDEN-reconnected."
-msgstr "%s s-a reconectat HIDDEN."
-
 #: src/destroy.c:414 src/destroy.c:510
 #, c-format
 msgid "%s has been spared from destruction."
 msgstr "%s a fost oprit de la distrugere."
 
-#: bsd.c:4006
-#, c-format
-msgid "%s has connected."
-msgstr "%s s-a conectat ."
-
-#: src/bsd.c:4136
-#, c-format
-msgid "%s has disconnected."
-msgstr "%s s-a dereconectat ."
-
 #: src/look.c:1060
 #, c-format
 msgid "%s has just located your position."
 msgstr "%s tocmai ti-a localizat pozitia."
-
-#: src/rob.c:47
-#, c-format
-msgid "%s has no %s."
-msgstr "%s nu are %s."
-
-#: bsd.c:4435
-#, c-format
-msgid "%s has partially DARK-disconnected."
-msgstr "%s s-a deconectat  DARK partial."
-
-#: bsd.c:4438
-#, c-format
-msgid "%s has partially HIDDEN-disconnected."
-msgstr "%s s-a deconectat  HIDDEN partial."
-
-#: src/bsd.c:4212
-#, c-format
-msgid "%s has partially disconnected."
-msgstr "%s s-a deconectat  partial."
-
-#: bsd.c:4005
-#, c-format
-msgid "%s has reconnected."
-msgstr "%s s-a reconectat ."
 
 #: src/destroy.c:361 src/destroy.c:371 src/destroy.c:464
 #, c-format
@@ -1038,11 +489,6 @@ msgstr "%s este la: %s ."
 msgid "%s is corrupt!"
 msgstr "%s este corupt!"
 
-#: src/look.c:952 src/look.c:977 src/look.c:1017
-#, c-format
-msgid "%s is listening"
-msgstr "%s asculta"
-
 #: src/flags.c:1067 src/flags.c:1073
 #, c-format
 msgid "%s is no longer listening."
@@ -1057,11 +503,6 @@ msgstr "%s nu este pe canalul %s ."
 #, c-format
 msgid "%s is now listening."
 msgstr "%s asculta acum."
-
-#: src/move.c:456
-#, c-format
-msgid "%s is now the first exit."
-msgstr "%s este acum prima iesire."
 
 #: src/destroy.c:364 src/destroy.c:378
 #, c-format
@@ -1143,20 +584,10 @@ msgstr "%s a trimis %d mesaje."
 msgid "%s sizes:  NewUser...%d  Connect...%d  Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  Register...%d  Down...%d  Full...%d"
 msgstr "Marimi %s:  NewUser...%d  Connect...%d  Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  Register...%d  Down...%d  Full...%d"
 
-#: src/rob.c:56
-#, c-format
-msgid "%s stole one of your %s!"
-msgstr "%s ti-a furat unul dintre %s !"
-
 #: src/move.c:918 src/move.c:1063
 #, c-format
 msgid "%s stops following you."
 msgstr "%s nu te mai urmeaza."
-
-#: src/wiz.c:1576
-#, c-format
-msgid "%s to "
-msgstr "%s catre "
 
 #: src/rob.c:288
 #, c-format
@@ -1173,11 +604,6 @@ msgstr "%s a incercat sa te omoare!"
 msgid "%s tried to locate you and failed."
 msgstr "%s a incercat sa te localizeze dar a esuat."
 
-#: src/rob.c:49
-#, c-format
-msgid "%s tried to rob you, but you have no %s to take."
-msgstr "%s a incercat sa te jefuiasca, dar nu ai nici un %s pe care sa il ia."
-
 #: src/wiz.c:548
 #, c-format
 msgid "%s tries to impose his will on you and fails."
@@ -1192,11 +618,6 @@ msgstr "%s tipareste -->%s %s %s"
 #, c-format
 msgid "%s was taken from you."
 msgstr "Ti-a fost luat %s"
-
-#: speech.c:395 speech.c:372
-#, c-format
-msgid "%s whispers to %s."
-msgstr "%s sopteste catre %s ."
 
 #: destroy.c:412
 #, c-format
@@ -1218,46 +639,14 @@ msgstr "%s (#%d) are mail dar nu este jucator."
 msgid "%s(%s) - %s locked."
 msgstr "\"%s(%s) - %s incuiat.\""
 
-#: lock.c:490
-#, c-format
-msgid "%s(%s) - (already) unlocked."
-msgstr "\"%s(%s) - este (deja)  deschis.\""
-
 #: src/extmail.c:1260 src/extmail.c:1668 src/wiz.c:673 src/wiz.c:1277
 #, c-format
 msgid "%s: No such player."
 msgstr "%s: Nu exista asemenea jucator."
 
-#: src/extmail.c:1156
-#, c-format
-msgid "%s: no such player."
-msgstr "%s: nu exista asemenea jucator."
-
-#: src/wiz.c:1445
-#, c-format
-msgid "%s: unknown class."
-msgstr "%s: clasa necunoscuta."
-
-#: src/wiz.c:1417
-#, c-format
-msgid "%s: unknown type."
-msgstr "%s: tip necunoscut."
-
-#: src/attrib.c:186 src/attrib.c:299 src/attrib.c:309 src/attrib.c:361\nsrc/attrib.c:582
-msgid "ATTR value"
-msgstr "Valoarea ATTR"
-
 #: src/bsd.c:559 src/bsd.c:761
 msgid "Ack!  Failed reopening stderr!"
 msgstr "Au! Redeschiderea stderr esuata!"
-
-#: src/wiz.c:2282
-msgid "Alas, I can't reboot under MacOS.  Sorry."
-msgstr "Nu pot face reboot sub MacOS. Imi pare rau."
-
-#: src/wiz.c:2285
-msgid "Alas, I can't reboot under Windows.  Sorry."
-msgstr "Nu pot face reboot sub Windows. Imi pare rau."
 
 #: src/destroy.c:405
 msgid "Alas, your efforts of mercy are in vain."
@@ -1318,32 +707,15 @@ msgstr "Argumente: %d %s"
 msgid "Arguments : %d to %d %s"
 msgstr "Argumente: %d catre %d %s"
 
-#: function.c:920
-msgid "Arguments : 0 to 10"
-msgstr "Argumente: 0 catre 10"
-
 #: function.c:912
 #, c-format
 msgid "Arguments : At least %d %s"
 msgstr "Argumente: Cel putin %d %s"
 
-#: attrib.c:288
-#, c-format
-msgid "Attempt by %s(%d) to create too many attributes on %s(%d)"
-msgstr "Incercare de catre %s(#d) de a crea prea multe atribute pe %s(%d)"
-
-#: src/attrib.c:274
-msgid "Attempt to create too many attributes"
-msgstr "Incercare de a crea prea multe atribute"
-
 #: src/game.c:851
 #, c-format
 msgid "Attempt to execute command by halted object #%d"
 msgstr "Incercare de executa comanda pe obiectul oprit #%d"
-
-#: src/services.c:134
-msgid "Attempting to start PennMUSH as a service ...\n"
-msgstr "Se incearca pornirea pennMUSH ca serviciu...\n"
 
 #: src/set.c:633
 #, c-format
@@ -1362,10 +734,6 @@ msgstr "Proprietarul atributului s-a schimbat."
 msgid "Attribute unlocked."
 msgstr "Atribut descuiat."
 
-#: src/set.c:962
-msgid "Attributes wiped."
-msgstr "Atribute sterse."
-
 #: src/flags.c:1147
 msgid "Audible exits in this room have been activated."
 msgstr "Iesirile audibile in aceasta camera au fost activate."
@@ -1373,16 +741,6 @@ msgstr "Iesirile audibile in aceasta camera au fost activate."
 #: src/flags.c:1086
 msgid "Audible exits in this room have been deactivated."
 msgstr "Iesirile audibile in aceasta camera au fost dezactivate."
-
-#: src/bsd.c:3747
-#, c-format
-msgid "BAILOUT: caught signal %d"
-msgstr "BAILOUT: semnal prins %d"
-
-#: attrib.c:158
-#, c-format
-msgid "Bad attribute name %s on object %s"
-msgstr "Nume de atribut necorespunzator %s pe obiectul %s"
 
 #: src/move.c:326 src/move.c:520 src/wiz.c:397 src/wiz.c:402 src/wiz.c:406
 msgid "Bad destination."
@@ -1396,11 +754,6 @@ msgstr "Parola noua necorespunzatoare."
 #, c-format
 msgid "Bad object #%d has mail."
 msgstr "Obiectul necorespunzator #%d are mail."
-
-#: src/extchat.c:289
-#, c-format
-msgid "Bad object #%d removed from channel %s"
-msgstr "obiectul necorespunzator #%d a fost scos de pe canalul %s"
 
 #: extchat.c:1998
 #, c-format
@@ -1421,16 +774,6 @@ msgstr "CHAT: Parasesti canalul <%s>."
 msgid "Carrying:"
 msgstr "In inventar:"
 
-#: filecopy.c:151
-#, c-format
-msgid "Copied %i %s, %ld %s\n"
-msgstr "S-a copiat %i %s, %ld %s\n"
-
-#: help.c:85
-#, c-format
-msgid "Duplicate help_command %s ignored."
-msgstr "Comanda_ajutor in duplicat %s a fost ignorata."
-
 #: access.c:425
 msgid "Email registration is allowed"
 msgstr "\"Inregistrarea prin email este permisa.\""
@@ -1439,26 +782,17 @@ msgstr "\"Inregistrarea prin email este permisa.\""
 msgid "Exits:"
 msgstr "Iesiri:"
 
-#: flags.c:542
-#, c-format
-msgid "FLAG INIT: flag alias %s matches no known flag."
-msgstr "FLAG INIT: alias-ul %s nu corespunde nici unui steag cunoscut."
-
 #: bsd.c:4032 bsd.c:4055 bsd.c:4058 bsd.c:4061 bsd.c:4234 bsd.c:4237\nbsd.c:4240
 msgid "GAME:"
 msgstr "JOC:"
 
+#: game.c:2091
+msgid "Last reboot"
+msgstr "Ultimul reboot"
+
 #: src/malias.c:107
 msgid "MAIL: Invalid malias command."
 msgstr "MAIL: Comanda malias invalida."
-
-#: function.c:739
-msgid "Restricted."
-msgstr "Restrictionat."
-
-#: src/extmail.c:1270 src/extmail.c:1678 src/look.c:886 src/look.c:1080\nsrc/wiz.c:1241
-msgid "Sorry, that command has been temporarily disabled."
-msgstr "Ne pare rau, aceasta comanda a fost temporar dezafectata."
 
 #: src/destroy.c:543
 #, c-format
@@ -1469,9 +803,29 @@ msgstr "Camera %s a fost salvata de la distrugere."
 msgid "There are probably easier ways to crash your MUSH."
 msgstr "\"Probabil ca exista metode mai usoare de a-ti bloca MUSH ul.\""
 
+#: game.c:2097
+msgid "Time now"
+msgstr "Timpul actual"
+
+#: game.c:2137
+msgid "Time until next @warnings"
+msgstr "Timp ramas pana la urmatorul @warnings"
+
+#: game.c:2120
+msgid "Time until next dbck check"
+msgstr "Timp ramas pana la urmatoarea verificare dbck"
+
+#: game.c:2128
+msgid "Time until next purge"
+msgstr "Timp ramas pana la urmatoarea curatare"
+
 #: src/speech.c:402
 msgid "Too many people to whisper to."
 msgstr "Prea multe persoane catre care trebuie soptit."
+
+#: game.c:2087
+msgid "Up since"
+msgstr "Functionare neantrerupta din"
 
 #: warnings.c:227
 #, c-format
@@ -1498,10 +852,6 @@ msgstr "\"Trebuie sa specifici un obiect de folosit pentru semafor.\""
 #, c-format
 msgid "You pemit \"%s\" to %s."
 msgstr "Trimiti un pemit continand \"%s\" catre %s."
-
-#: src/set.c:386
-msgid "ZMO requires a more secure zone-lock before you @chzone!"
-msgstr "ZMO necesita un lacat-de-zona mai sigur inainte de a face @chzone !"
 
 #: src/bsd.c:4683
 msgid ""

@@ -26,10 +26,12 @@
   amail=<boolean>: Is the @amail attribute used?
   player_listen=<boolean>: Is @listen checked on players?
   player_ahear=<boolean>: Is @ahear triggered on players?
+  startups=<boolean>: Are @startup triggered at restart?
   room_connects=<boolean>: Are @aconnect and @adisconnect triggered on rooms?
   read_remote_desc=<boolean>: Can anyone remotely retrieve @descs?
-  startups=<boolean>: Are @startup triggered at restart?
   empty_attrs=<boolean>: Can attributes be set to an empty string?
+  reverse_shs=<boolean>: Reverse the endedness of the
+    shs password encryption? (Playing with this will break logins)
 & @config chat
  These options control chat system settings.
 
@@ -66,7 +68,6 @@
    or as North East West?
   count_all=<boolean>: Does the count of connected players in WHO include
    hidden connections for mortals?
-  blind_page=<boolean>: Does page default to page/blind?
 
 Continued in help @config cosmetic2
 & @config cosmetic2
@@ -199,7 +200,7 @@ Continued in help @config limits3
   queue_entry_cpu_time=<number>: The maximum number of milliseconds a
    queue entry can take to run.
   use_quota=<boolean>: Controls if quotas are used to limit the number
-   of objects a player can own.
+	   of objects a player can own.
 
 Continued in help @config limits4
 & @config limits4
@@ -211,6 +212,8 @@ Continued in help @config limits4
   max_parents=<number>: The maximum number of levels of parenting allowed.
   call_limit=<number>: The maximum number of times the parser can be called
    recursively for any one expression.
+  chunk_migrate=<number>: Maximum number of attributes that can be moved to
+   disk cache per second.
 & @config log
  These options affect logging.
 
@@ -221,6 +224,9 @@ Continued in help @config limits4
  
   mud_name=<string>: The name of the mush for mudname() and @version and
    the like.
+  mud_url=<string>: If this is set, the welcome message for the mush is
+   bracketed in <!-- ... --> for all clients, and web browsers are
+   redirected to the url described in mud_url.
   use_dns=<boolean>: Are IP addresses resolved into hostnames?
   use_ident=<boolean>: Is ident information looked up for connections?
   ident_timeout=<time>: How many seconds does the mush wait before an ident
@@ -232,6 +238,8 @@ Continued in help @config limits4
   sql_platform=<string>: What kind of SQL server are we using? 
                          ("mysql" or "disabled")
   sql_host=<string>: What is the hostname or ip address of the SQL server
+  ssl_require_client_cert=<boolean>: Are client certificates verified in 
+    SSL connections?
 & @config tiny
  Options that help control compability with TinyMUSH servers.
 

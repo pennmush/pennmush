@@ -1,188 +1,15 @@
-#: src/wiz.c:2259
-#, c-format
-msgid "          (Includes table items, and table of words pointers of %ld bytes)"
-msgstr "          (Inkluderar tabell-objekt och en tabell med ord-pekare p\345 %ld bytes)"
-
-#: game.c:1930
-#, c-format
-msgid "        Time until next purge: %ld minutes %ld seconds, at %s."
-msgstr "        Tid till nästa rensning: %ld minuter %ld sekunder, vid %s."
-
-#: src/game.c:1447
-#, c-format
-msgid "        Time until next purge: %ld minutes %ld seconds."
-msgstr "        Tid till nästa rensning: %ld minuter %ld sekunder."
-
-#: src/malias.c:565
-msgid "      to set, add, remove permissions, respectively."
-msgstr "      för att sätta, lägga till, respektive ta bort rättigheter."
-
-#: game.c:1899
-msgid "     Time now: %a %b %d %X %Z %Y"
-msgstr "     Nuvarande tid: %a %b %d %X %Z %Y"
-
-#: game.c:1889
-msgid "     Up since %a %b %d %X %Z %Y"
-msgstr "     Uppe sedan %a %b %d %X %Z %Y"
-
-#: game.c:1437
-#, c-format
-msgid "     Up since: %s"
-msgstr "     Uppe sedan: %s"
-
-#: filecopy.c:110
-#, c-format
-msgid "    ** Unable to open file: %s"
-msgstr "    ** Kunde ej \366ppna fil: %s"
-
-#: src/filecopy.c:112
-#, c-format
-msgid "    ** Unable to open file: %s\n"
-msgstr "    ** Kunde ej öppna fil: %s\n"
-
-#: filecopy.c:101
-msgid "    Copying file"
-msgstr "    Kopierar fil"
-
-#: src/filecopy.c:100
-#, c-format
-msgid "    Copying file: %s, %ld byte%s\n"
-msgstr "    Kopierar fil: %s, %ld byte%s\n"
-
-#: src/game.c:1452
-#, c-format
-msgid "    Time until next @warnings: %ld minutes %ld seconds."
-msgstr "    Tid till nästa @warning: %ld minuter %ld sekunder."
-
-#: src/game.c:1432
-#, c-format
-msgid "   Time now: %s"
-msgstr "   Nuvarande tid: %s"
-
-#: src/game.c:1443
-#, c-format
-msgid "   Time until next dbck check: %ld minutes %ld seconds."
-msgstr "   Tid till nästa dbck kontroll: %ld minuter %ld sekunder."
-
-#: src/game.c:1422
-#, c-format
-msgid "   Up since: %s"
-msgstr "   Uppe sedan: %s"
-
-#: db.c:1205
-msgid "  (expecting ], >, or < as first character of the line.)"
-msgstr "  (f\366rv\344ntar ], > eller < som f\366rsta tecken p\345 raden.)"
-
-#: src/db.c:1309
-msgid "  (expecting ], >, or < as first character of the line.)\n"
-msgstr "  (förväntar ], > eller < som första tecken på raden.)\n"
-
-#: db.c:1207
-#, c-format
-msgid "  Last attribute read was: %s"
-msgstr "  Senaste l\344sta attribut var: %s"
-
-#: src/db.c:1311
-#, c-format
-msgid "  Last attribute read was: %s\n"
-msgstr "  Senast lästa attribut var: %s\n"
-
-#: game.c:1442
-#, c-format
-msgid "  Last reboot: %s"
-msgstr "  Senaste omstart: %s"
-
-#: db.c:1209
-msgid "  No attributes had been read yet."
-msgstr "  Inga attribut har blivit l\344sta \344n."
-
-#: src/db.c:1313
-msgid "  No attributes had been read yet.\n"
-msgstr "  Inga attribut har blivit lästa än.\n"
-
-#: src/services.c:803
-#, c-format
-msgid " %s           - runs as a service, or stand-alone\n"
-msgstr " %s           - k\366rs som tj\344nst eller stand-alone\n"
-
-#: src/services.c:813
-#, c-format
-msgid " %s /help     - displays this information\n"
-msgstr " %s /help     - visar denna information\n"
-
-#: src/services.c:808
-#, c-format
-msgid " %s /install  - installs this service\n"
-msgstr " %s /install  - installerar denna tj\344nst\n"
-
-#: src/services.c:809
-#, c-format
-msgid " %s /remove   - removes (un-installs) this service\n"
-msgstr " %s /remove   - tar bort (avinstallerar) denna tj\344nst\n"
-
-#: src/services.c:805
-#, c-format
-msgid " %s /run      - runs stand-alone\n"
-msgstr " %s /run      - k\366rs stand-alone\n"
-
-#: src/services.c:806
-#, c-format
-msgid " %s /start    - starts this service\n"
-msgstr " %s /start    - startar denna tj\344nst\n"
-
-#: src/services.c:811
-#, c-format
-msgid " %s /status   - displays the status of this service\n"
-msgstr " %s /status   - visar status f\366r denna tj\344nst\n"
-
-#: src/services.c:807
-#, c-format
-msgid " %s /stop     - stops this service\n"
-msgstr " %s /stop     - stoppar denna tj\344nst\n"
-
-#: src/db.c:567
-#, c-format
-msgid " * Bad attribute name on #%d. Changing name to %s.\n"
-msgstr " * Felaktigt attribut namn p\345 #%d. Byter namn till %s.\n"
-
-#: src/db.c:574
-#, c-format
-msgid " * Bad owner on attribute %s on #%d.\n"
-msgstr " * Felaktig \344gare p\345 attribut %s p\345 #%d.\n"
-
-#: src/db.c:608
-#, c-format
-msgid " * Bad text in attribute %s on #%d. Changed to:\n"
-msgstr " * Felaktig text i attribut %s p\345 #%d. \304ndrat till:\n"
-
-#: db.c:1285 db.c:1293
-#, c-format
-msgid " * Name of #%d is longer than the maximum, truncating.\n"
-msgstr " * Namn p\345 #%d \344r l\344ngre \344n max, trunkerar.\n"
-
-#: src/conf.c:1098
-msgid " @lock/drop is available."
-msgstr " @lock/drop är tillgänglig."
-
-#: src/conf.c:1101
-msgid " @lock/give is available."
-msgstr " @lock/give är tillgänglig."
-
-#: src/conf.c:1095
-msgid " @lock/leave is available."
-msgstr " @lock/leave är tillgängligt."
-
-#: src/conf.c:1092
-msgid " @lock/speech is available."
-msgstr " @lock/speech är tillgänglig."
-
-#: src/conf.c:1008
-msgid " @mail messages do not have subject lines."
-msgstr " @mail meddelanden kan inte ha 'subject' rader."
-
-#: src/conf.c:1000
-msgid " @mail messages have subject lines."
-msgstr " @mail meddelanden har ämnesrader."
+# SOME DESCRIPTIVE TITLE.\nCopyright (C) YEAR Free Software Foundation, Inc.\nFIRST AUTHOR <EMAIL@ADDRESS>, YEAR.\n
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2004-11-04 13:52-0600\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=iso-8859-1\n"
+"Content-Transfer-Encoding: 8bit"
 
 #: conf.c:1044
 msgid " Attributes are 8-bit word compressed in memory."
@@ -192,10 +19,6 @@ msgstr " Attribut \344r 8-bitars ord-komprimerade i minnet."
 msgid " Attributes are Huffman compressed in memory."
 msgstr " Attribut \344r Huffman-komprimerade i minnet."
 
-#: conf.c:1038
-msgid " Attributes are bigram compressed in memory."
-msgstr " Attribut är bigram komprimerade i minnet."
-
 #: conf.c:1032
 msgid " Attributes are not compressed in memory."
 msgstr " Attribut \344r inte komprimerade i minnet."
@@ -203,18 +26,6 @@ msgstr " Attribut \344r inte komprimerade i minnet."
 #: conf.c:1041
 msgid " Attributes are word compressed in memory."
 msgstr " Attribut \344r ord-komprimerade i minnet."
-
-#: src/conf.c:1063
-msgid " Attributes can be deleted."
-msgstr " Attribut kan tas bort."
-
-#: src/conf.c:1065
-msgid " Attributes cannot be deleted."
-msgstr " Attribut kan inte raderas."
-
-#: conf.c:1214
-msgid " BSD sockets networking in use."
-msgstr " BSD sockelnätverk används."
 
 #: conf.c:1498
 msgid " CPU usage limiting is NOT supported."
@@ -224,14 +35,6 @@ msgstr " Användbarhetsbegränsning av CPU stöds EJ."
 msgid " CPU usage limiting is supported."
 msgstr " Användbarhetsbegränsning av CPU stöds."
 
-#: src/conf.c:1044
-msgid " Creation/modification times for objects are enabled."
-msgstr " Skapande- och modifikationstider för objekt är tillgängliga."
-
-#: src/conf.c:1046
-msgid " Creation/modification times for objects are not enabled."
-msgstr " Skapande- och modifikationstider för objekt är ej tillgängliga."
-
 #: src/conf.c:980
 msgid " DNS and ident lookups are handled by a slave process."
 msgstr " DNS och ident uppslagningar hanteras av en slavprocess."
@@ -239,38 +42,6 @@ msgstr " DNS och ident uppslagningar hanteras av en slavprocess."
 #: src/conf.c:982
 msgid " DNS and ident lookups are handled by the MUSH process."
 msgstr " DNS och ident kontroller hanteras av MUSHprocessen."
-
-#: src/conf.c:1068
-msgid " Empty attributes are deleted."
-msgstr " Tomma attribut raderas."
-
-#: src/conf.c:1058
-msgid " Empty attributes are dumped."
-msgstr " Tomma attribut dumpas."
-
-#: src/conf.c:1051
-msgid " Empty attributes are kept."
-msgstr " Tomma attribut behålls."
-
-#: src/conf.c:1060
-msgid " Empty attributes are not dumped."
-msgstr " Tomma attribut dumpas ej."
-
-#: src/conf.c:1055
-msgid " Empty attributes are not visible."
-msgstr " Tomma attribut är inte synliga."
-
-#: src/conf.c:1053
-msgid " Empty attributes are visible."
-msgstr " Tomma attribut är synliga."
-
-#: src/conf.c:1105
-msgid " Extended ANSI functions are enabled."
-msgstr " Utökade ANSI funktioner är tillgängliga."
-
-#: src/conf.c:1107
-msgid " Extended ANSI functions are not enabled."
-msgstr " Utökade ANSI funktioner är ej tillgängliga."
 
 #: src/conf.c:1111
 msgid " Extended convtime() is supported."
@@ -280,151 +51,14 @@ msgstr " Ut\366kad convtime() st\366ds."
 msgid " Flags: "
 msgstr " Flaggor: "
 
-#: flags.c:706
-msgid " Flags:"
-msgstr " Flaggor:"
-
-#: src/conf.c:988
-msgid " Floating point functions are disabled."
-msgstr " Flyttalsfunktioner är ej tillgängliga."
-
-#: src/conf.c:986
-msgid " Floating point functions are enabled."
-msgstr " Flyttalsfunktioner är tillgängliga."
-
-#: src/conf.c:1072
-msgid " Garbage objects are not dumped to disk."
-msgstr " Skräp object dumpas inte till disk."
-
-#: src/conf.c:970
-msgid " Logging is to a single log file."
-msgstr " Logging sker till en logg-fil."
-
-#: src/conf.c:972
-msgid " Logging is to multiple log files."
-msgstr " Loggning sker till flera logg-filer."
-
-#: src/conf.c:1002
-msgid " Messages without subject lines have subject (no subject)"
-msgstr " Meddelanden utan ämnes-rader har ämnet (inget ämne)"
-
-#: src/conf.c:1005
-msgid " Messages without subject lines use the beginning of the message as subject"
-msgstr " Meddelanden utan ämnes-rader använder början på meddelandet som ämne"
-
-#: src/conf.c:954
-msgid " Passwords are convereted from plaintext to SHS"
-msgstr " Lösenord konverteras från klartext till SHS"
-
-#: conf.c:1179
-msgid " Passwords are converted from plaintext to SHS"
-msgstr " Lösenord konverteras från klartext till SHS"
-
-#: src/conf.c:951
-msgid " Passwords are converted from system crypt to SHS"
-msgstr " Lösenord är konverterade från system-crypt till SHS"
-
-#: src/conf.c:948
-msgid " Passwords are encrypted with SHS."
-msgstr " Lösenorden är krypterade med SHS."
-
-#: src/conf.c:945
-msgid " Passwords are encrypted with the operating system's crypt function."
-msgstr " Lösenord är krypterade med operativsystemets crypt funktion."
-
-#: src/conf.c:941
-msgid " Passwords are not stored encrypted."
-msgstr " Lösenord sparas inte krypterade."
-
-#: src/conf.c:1021
-msgid " Quota restrictions are being enforced."
-msgstr " Kvot restriktioner följs."
-
-#: src/conf.c:994
-msgid " Side effect functions are disabled."
-msgstr " Sidoeffektsfunktioner är ej tillgängliga."
-
-#: src/conf.c:992
-msgid " Side effect functions are enabled."
-msgstr " Sidoeffekts funktioner är tillgängliga."
-
-#: src/conf.c:1078
-msgid " The FIXED flag is disabled."
-msgstr " FIXED flaggan är ej tillgänglig."
-
-#: src/conf.c:1076
-msgid " The FIXED flag is enabled."
-msgstr " FIXED flaggan är tillgänglig."
-
-#: src/conf.c:1040
-msgid " The MUSH building warning system is disabled."
-msgstr " MUSHets bygg-varnings system är ej tillgängligt."
-
-#: src/conf.c:1031
-msgid " The MUSH building warning system is enabled."
-msgstr " MUSHets bygg-varnings system är tillgängligt."
-
 #: conf.c:1594
 msgid " The MUSH was compiled with SSL support."
 msgstr " MUSHen kompilerades med stöd för SSL."
-
-#: src/conf.c:1088
-msgid " The UNINSPECTED flag is enabled."
-msgstr " UNINSPECTED flaggan är tillgänglig."
-
-#: src/conf.c:1082
-msgid " The UNREGISTERED flag is enabled."
-msgstr " UNREGISTERED flaggan är tillgänglig."
-
-#: src/conf.c:1085
-msgid " The VACATION flag is enabled."
-msgstr " VACATION flaggan är tillgänglig."
-
-#: src/conf.c:1011
-msgid " The built-in MUSH mailing system is not being used."
-msgstr " Det inbyggda MUSH brev systemet används inte."
-
-#: src/conf.c:1017
-msgid " The chat system is disabled."
-msgstr " Chat-systemet är ej tillgängligt."
-
-#: src/conf.c:998
-msgid " The extended built-in MUSH mailing system is being used."
-msgstr " Det utökade inbyggda MUSH brev systemet används."
-
-#: src/conf.c:1015
-msgid " The extended chat system is enabled."
-msgstr " Det utökade chat-systemet är tillgängligt."
-
-#: src/conf.c:1027
-msgid " The royalty flag is disabled."
-msgstr " Royalty-flaggan är ej tillgänglig."
-
-#: src/conf.c:1025
-msgid " The royalty flag is enabled."
-msgstr " Royalty-flaggan är tillgänglig."
-
-#: src/conf.c:1035
-#, c-format
-msgid " Warnings will be automatically given every %d minutes"
-msgstr " Varningar kommer att ges automatiskt varje %d minuter"
-
-#: src/conf.c:1038
-msgid " Warnings will not be automatically given."
-msgstr " Varningar kommer inte att ges automatiskt."
-
-#: conf.c:1212
-msgid " Windows NT native TCP/IP networking functions in use."
-msgstr " Windows NT TCP/IP funktioner används."
 
 #: wiz.c:1605
 #, c-format
 msgid " [location: %s]"
 msgstr " [plats: %s]"
-
-#: speech.c:816
-msgid " and "
-msgstr " och "
 
 #: src/conf.c:1113
 msgid " convtime() is stricter."
@@ -434,29 +68,9 @@ msgstr " convtime() \344r striktare."
 msgid " granted."
 msgstr " beviljas."
 
-#: src/look.c:205
-msgid " is corrupt!"
-msgstr " är korrupt!"
-
 #: src/look.c:688 src/look.c:770
 msgid " is owned by "
 msgstr " \344gs av "
-
-#: src/look.c:201
-msgid " leads home."
-msgstr " leder hem."
-
-#: src/look.c:199
-msgid " leads nowhere."
-msgstr " leder ingenstans."
-
-#: src/look.c:207
-msgid " leads to "
-msgstr " leder till "
-
-#: src/look.c:203
-msgid " leads to a variable location."
-msgstr " leder till en varierande plats."
 
 #: speech.c:1021
 msgid " pages"
@@ -470,34 +84,9 @@ msgstr " återställt."
 msgid " set."
 msgstr " satt."
 
-#: src/speech.c:475
-msgid " whispers to "
-msgstr " viskar till "
-
-#: speech.c:975
-msgid " with "
-msgstr " med "
-
-# SOME DESCRIPTIVE TITLE.\nCopyright (C) YEAR Free Software Foundation, Inc.\nFIRST AUTHOR <EMAIL@ADDRESS>, YEAR.\n
-#, fuzzy
-msgid ""
-msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2004-11-04 13:52-0600\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
-"Content-Transfer-Encoding: 8bit"
-
 #: extchat.c:1503
 msgid "#-1 AMBIGUOUS CHANNEL NAME"
 msgstr "#-1 TVETYDIGT KANALNAMN"
-
-#: src/fundb.c:463
-msgid "#-1 AMBIGUOUS MATCH"
-msgstr "#-1 TVETYDIG TR\304FF"
 
 #: src/fundb.c:784 src/fundb.c:1001
 msgid "#-1 ARG1 NOT FOUND"
@@ -506,10 +95,6 @@ msgstr "#-1 ARG1 HITTADES INTE"
 #: src/fundb.c:786 src/fundb.c:1003
 msgid "#-1 ARG2 NOT FOUND"
 msgstr "#-1 ARG2 HITTADES INTE"
-
-#: src/funmath.c:1218 src/funmath.c:1225
-msgid "#-1 ARGUMENT MUST BE A NUMBER"
-msgstr "#-1 ARGUMENT MÅSTE VARA ETT NUMMER"
 
 #: src/funlist.c:1886 src/funlist.c:1905
 msgid "#-1 ARGUMENT MUST BE INTEGER"
@@ -530,10 +115,6 @@ msgstr "#-1 ARGUMENT M\305STE VARA OBJ/ATTR"
 #: parse.c:87
 msgid "#-1 ARGUMENT MUST BE POSITIVE INTEGER"
 msgstr "#-1 ARGUMENT M\305STE VARA ETT POSITIVT HELTAL"
-
-#: src/funtime.c:110
-msgid "#-1 ARGUMENT MUST BE POSITIVE"
-msgstr "#-1 ARGUMENT MÅSTE VARA POSITIVT"
 
 #: src/funmath.c:218 src/funmath.c:250
 msgid "#-1 ARGUMENT MUST END IN AN INTEGER"
@@ -575,10 +156,6 @@ msgstr "#-1 BASEN \304R UTANF\326R GR\304NSERNA"
 msgid "#-1 CALL LIMIT EXCEEDED"
 msgstr "#-1 ANROPSGRÄNS NÅDD"
 
-#: src/funlist.c:1410
-msgid "#-1 CAN ONLY DELETE ONE ELEMENT"
-msgstr "#-1 KAN BARA RADERA ETT ELEMENT"
-
 #: src/funlist.c:1456 src/funlist.c:1680
 msgid "#-1 CAN ONLY TEST ONE ELEMENT"
 msgstr "#-1 KAN BARA TESTA ETT ELEMENT"
@@ -610,10 +187,6 @@ msgstr "#-1 FUNKTION (SOUNDLIKE) KR\304VER TV\305 EN-ORDS ARGUMENT"
 #: src/fundb.c:959 src/fundb.c:1120 src/fundb.c:1145 src/fundb.c:1254\nsrc/fundb.c:1549 src/fundb.c:1555 src/fundb.c:1561 src/fundb.c:1567\nsrc/fundb.c:1573 src/fundb.c:1579 src/fundb.c:1585 src/fundb.c:1591\nsrc/fundb.c:1864 src/funstr.c:901
 msgid "#-1 FUNCTION DISABLED"
 msgstr "#-1 FUNKTION EJ TILLG\304NGLIG"
-
-#: funstr.c:1011 funstr.c:1017
-msgid "#-1 FUNCTION EXPECTS ONE CHARACTER"
-msgstr "#-1 FUNKTIONEN FÖRVÄNTAR SIG ETT TECKEN"
 
 #: parse.c:91
 msgid "#-1 FUNCTION INVOCATION LIMIT EXCEEDED"
@@ -688,10 +261,6 @@ msgstr "#-1 INGA OBJEKT KONTROLLERAS"
 msgid "#-1 NO PERMISSION TO GET ATTRIBUTE"
 msgstr "#-1 INGA R\304TTIGHETER ATT L\304SA ATTRIBUT"
 
-#: src/funlist.c:370 src/funlist.c:454
-msgid "#-1 NO PERMISSION TO RUN ATTRIBUTE"
-msgstr "#-1 INGA RÄTTIGHETER ATT KÖRA ATTRIBUT"
-
 #: src/bsd.c:4827
 msgid "#-1 NO PERMISSIONS FOR CHANNEL"
 msgstr "#-1 INGA R\304TTIGHETER F\326R KANAL"
@@ -720,17 +289,9 @@ msgstr "#-1 INGEN S\305DAN L\305STYP"
 msgid "#-1 NO SUCH OBJECT VISIBLE"
 msgstr "#-1 INGET S\305DANT OBJEKT SYNLIGT"
 
-#: src/conf.c:901
-msgid "#-1 NO SUCH OPTION"
-msgstr "#-1 INGET SÅDANT ALTERNATIV"
-
 #: src/extmail.c:1468 src/extmail.c:1489
 msgid "#-1 NO SUCH PLAYER"
 msgstr "#-1 INGEN S\305DAN SPELARE"
-
-#: src/wiz.c:1128
-msgid "#-1 NO SUCH POWER"
-msgstr "#-1 INGEN SÅDAN POWER"
 
 #: src/fundb.c:907
 msgid "#-1 NO SUCH TYPE"
@@ -740,17 +301,9 @@ msgstr "#-1 INGEN S\305DAN TYP"
 msgid "#-1 NO SUCH USER FUNCTION"
 msgstr "#-1 INGEN S\305DAN ANV\304NDARFUNKTION"
 
-#: src/conf.c:905
-msgid "#-1 NO VALUE GIVEN"
-msgstr "#-1 INGET VÄRDE ANGIVET"
-
 #: src/bsd.c:4485 src/bsd.c:4498
 msgid "#-1 NOT CONNECTED"
 msgstr "#-1 EJ UPPKOPPLAD"
-
-#: src/fundb.c:1645 src/funlist.c:362 src/funlist.c:446
-msgid "#-1 NOT FOUND"
-msgstr "#-1 EJ HITTAT"
 
 #: extchat.c:1525
 msgid "#-1 NOT ON CHANNEL"
@@ -772,17 +325,9 @@ msgstr "#-1 GR\304NSER \326VERSKRIDNA"
 msgid "#-1 OVERFLOW ERROR"
 msgstr "#-1 \326VERFL\326DESFEL"
 
-#: src/conf.c:897
-msgid "#-1 PERMISSIION DENIED"
-msgstr "#-1 ÅTKOMST NEKAD"
-
 #: src/extmail.c:1471 src/extmail.c:1492 src/extmail.c:1531 src/fundb.c:122\nsrc/fundb.c:141 src/fundb.c:169 src/fundb.c:261 src/fundb.c:303\nsrc/fundb.c:341 src/fundb.c:789 src/fundb.c:953 src/fundb.c:1114\nsrc/fundb.c:1139 src/fundb.c:1248 src/fundb.c:1442 src/fundb.c:1456\nsrc/fundb.c:1466 src/fundb.c:1477 src/fundb.c:1487 src/fundb.c:1502\nsrc/fundb.c:1512 src/fundb.c:1522 src/fundb.c:1537 src/fundb.c:1651\nsrc/fundb.c:1737 src/fundb.c:1741 src/fundb.c:1748 src/fundb.c:1752\nsrc/fundb.c:1858 src/fundb.c:1872 src/funlist.c:1966 src/funmisc.c:60\nsrc/funmisc.c:72 src/funmisc.c:84 src/funmisc.c:96 src/funmisc.c:108\nsrc/funmisc.c:120 src/funmisc.c:134 src/funstr.c:778 src/funufun.c:118\nsrc/funufun.c:149 src/funufun.c:300 src/wiz.c:2155 src/wiz.c:2167\nsrc/wiz.c:2189 src/wiz.c:2202
 msgid "#-1 PERMISSION DENIED"
 msgstr "#-1 \305TKOMST NEKAD"
-
-#: src/fundb.c:725
-msgid "#-1 PERMISSION DENIED."
-msgstr "#-1 ÅTKOMST NEKAD."
 
 #: src/funlist.c:2256 src/funlist.c:2335 src/funlist.c:2378 src/funlist.c:2437\nsrc/funlist.c:2478
 msgid "#-1 REGEXP ERROR: "
@@ -796,10 +341,6 @@ msgstr "#-1 REGISTER UTANF\326R GR\304NSER"
 msgid "#-1 SEPARATOR MUST BE ONE CHARACTER"
 msgstr "#-1 SEPARATOR M\305STE VARA ETT TECKEN"
 
-#: src/funmath.c:1005
-msgid "#-1 SQUARE ROOT OF NEGATIVE"
-msgstr "#-1 ROTEN UR NÅGOT NEGATIVT"
-
 #: src/funlist.c:1943
 msgid "#-1 STEP OUT OF RANGE"
 msgstr "#-1 STEG UTANF\326R GR\304NSER"
@@ -808,10 +349,6 @@ msgstr "#-1 STEG UTANF\326R GR\304NSER"
 msgid "#-1 STRING LENGTHS MUST BE EQUAL"
 msgstr "#-1 STR\304NGL\304NGDER M\305STE VARA SAMMA"
 
-#: src/funstr.c:357
-msgid "#-1 TOO MANY CHARACTERS"
-msgstr "#-1 FÖR MÅNGA TECKEN"
-
 #: src/funlist.c:1815
 msgid "#-1 TOO MANY ITERS"
 msgstr "#-1 F\326R M\305NGA ITERATIONER"
@@ -819,14 +356,6 @@ msgstr "#-1 F\326R M\305NGA ITERATIONER"
 #: src/funlist.c:1782
 msgid "#-1 TOO MANY WORDS"
 msgstr "#-1 F\326R M\305NGA ORD"
-
-#: src/conf.c:914
-msgid "#-1 TWO-ARGUMENT FORM OF FUNCTION DISABLED"
-msgstr "#-1 TVÅ-ARGUMENTS FORM FÖR FUNKTION EJ TILLGÄNGLIG"
-
-#: src/conf.c:909
-msgid "#-1 UNABLE TO SET OPTION"
-msgstr "#-1 KAN INTE SÄTTA ALTERNATIV"
 
 #: help.c:516 help.c:519
 msgid "#-1 UNAVAILABLE"
@@ -851,11 +380,6 @@ msgstr "#-1 BREDD F\326R LITEN"
 #: src/extmail.c:1641
 msgid "#-? fun_mailstats called with invalid called_as!"
 msgstr "#-? fun_mailstats anropad med ogiltigt called_as!"
-
-#: src/flags.c:967
-#, c-format
-msgid "%c: unknown flag."
-msgstr "%c: okänd flagga."
 
 #: src/wiz.c:1044
 #, c-format
@@ -892,11 +416,6 @@ msgstr "%d object = %d rum, %d utg\345ngar, %d saker, %d spelare, %d skr\344p."
 msgid "%d objects = %d rooms, %d exits, %d things, %d players."
 msgstr "%d objekt = %d rum, %d utg\345ngar, %d saker, %d spelare."
 
-#: help.c:382
-#, c-format
-msgid "%d topics indexed."
-msgstr "%d \344mnen indexerade."
-
 #: src/bsd.c:3405
 #, c-format
 msgid "%ld failed connections since last login."
@@ -927,40 +446,15 @@ msgstr "%s (detta rum) [tal]."
 msgid "%s - I don't recognize that flag."
 msgstr "Känner ej igen flagga: %s."
 
-#: src/wiz.c:1207
-#, c-format
-msgid "%s - power granted."
-msgstr "%s - power beviljad."
-
-#: src/wiz.c:1198
-#, c-format
-msgid "%s - power removed."
-msgstr "%s - power borttagen."
-
 #: src/atr_tab.c:226
 #, c-format
 msgid "%s -- Attribute permissions now: %s"
 msgstr "%s -- Attribut r\344ttigheter \344r nu: %s"
 
-#: src/look.c:721
-#, c-format
-msgid "%s Lock: %s"
-msgstr "%s Lås: %s"
-
-#: wiz.c:1583
-#, c-format
-msgid "%s [from %s to %s]"
-msgstr "%s [från %s till %s]"
-
 #: src/look.c:954 src/look.c:979 src/look.c:1019
 #, c-format
 msgid "%s [owner: %s] is listening."
 msgstr "%s [\344gare: %s] lyssnar."
-
-#: wiz.c:1569 wiz.c:1593
-#, c-format
-msgid "%s [owner: %s]"
-msgstr "%s [ägare: %s]"
 
 #: destroy.c:353
 #, c-format
@@ -1022,90 +516,15 @@ msgstr "%s f\345r \366ron och kan nu h\366ra."
 msgid "%s has %d messages."
 msgstr "%s har %d meddelanden."
 
-#: src/bsd.c:3985
-#, c-format
-msgid "%s has %s%sconnected."
-msgstr "%s har %s%sconnected."
-
-#: src/bsd.c:4208
-#, c-format
-msgid "%s has %sdisconnected."
-msgstr "%s har %skopplat ned."
-
-#: bsd.c:4000
-#, c-format
-msgid "%s has DARK-connected."
-msgstr "%s har DARK-uppkopplat."
-
-#: bsd.c:4174
-#, c-format
-msgid "%s has DARK-disconnected."
-msgstr "%s har DARK-nedkopplat."
-
-#: bsd.c:3999
-#, c-format
-msgid "%s has DARK-reconnected."
-msgstr "%s har DARK-om-uppkopplat."
-
-#: bsd.c:4003
-#, c-format
-msgid "%s has HIDDEN-connected."
-msgstr "%s har HIDDEN-uppkopplat."
-
-#: bsd.c:4437
-#, c-format
-msgid "%s has HIDDEN-disconnected."
-msgstr "%s har HIDDEN-kopplat ner."
-
-#: bsd.c:4002
-#, c-format
-msgid "%s has HIDDEN-reconnected."
-msgstr "%s har HIDDEN-om-uppkopplat."
-
 #: src/destroy.c:414 src/destroy.c:510
 #, c-format
 msgid "%s has been spared from destruction."
 msgstr "%s har ben\345dats fr\345n f\366rintelse."
 
-#: bsd.c:4006
-#, c-format
-msgid "%s has connected."
-msgstr "%s har kopplat upp sig."
-
-#: src/bsd.c:4136
-#, c-format
-msgid "%s has disconnected."
-msgstr "%s har kopplad ned."
-
 #: src/look.c:1060
 #, c-format
 msgid "%s has just located your position."
 msgstr "%s har just lokaliserat dig."
-
-#: src/rob.c:47
-#, c-format
-msgid "%s has no %s."
-msgstr "%s har ingen %s."
-
-#: bsd.c:4435
-#, c-format
-msgid "%s has partially DARK-disconnected."
-msgstr "%s har delvis DARK-kopplat ner."
-
-#: bsd.c:4438
-#, c-format
-msgid "%s has partially HIDDEN-disconnected."
-msgstr "%s har delvis HIDDEN-kopplat ner."
-
-#: src/bsd.c:4212
-#, c-format
-msgid "%s has partially disconnected."
-msgstr "%s har delvis kopplat ned."
-
-#: bsd.c:4005
-#, c-format
-msgid "%s has reconnected."
-msgstr "%s har kopplat upp sig igen."
 
 #: src/destroy.c:361 src/destroy.c:371 src/destroy.c:464
 #, c-format
@@ -1132,11 +551,6 @@ msgstr "%s \344r vid: %s."
 msgid "%s is corrupt!"
 msgstr "%s \344r korrupt!"
 
-#: src/look.c:952 src/look.c:977 src/look.c:1017
-#, c-format
-msgid "%s is listening"
-msgstr "%s lyssnar"
-
 #: src/flags.c:1067 src/flags.c:1073
 #, c-format
 msgid "%s is no longer listening."
@@ -1156,11 +570,6 @@ msgstr "%s \344r inte p\345 kanalen <%s>."
 #, c-format
 msgid "%s is now listening."
 msgstr "%s lyssnar nu."
-
-#: src/move.c:456
-#, c-format
-msgid "%s is now the first exit."
-msgstr "%s \344r nu f\366rsta utg\345ngen."
 
 #: src/destroy.c:364 src/destroy.c:378
 #, c-format
@@ -1262,20 +671,10 @@ msgstr "%s bör endast innehålla dbrefs."
 msgid "%s sizes:  NewUser...%d  Connect...%d  Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  Register...%d  Down...%d  Full...%d"
 msgstr "%s storlekar:  NyAnv\344ndare...%d  Uppkoppling...%d  G\344st...%d  Motd...%d  MagMotd...%d  Avsluta...%d  Registrera...%d  Nere...%d  Full...%d"
 
-#: src/rob.c:56
-#, c-format
-msgid "%s stole one of your %s!"
-msgstr "%s stal en av dina %s!"
-
 #: src/move.c:918 src/move.c:1063
 #, c-format
 msgid "%s stops following you."
 msgstr "%s slutar f\366lja efter dig."
-
-#: src/wiz.c:1576
-#, c-format
-msgid "%s to "
-msgstr "%s till "
 
 #: src/rob.c:288
 #, c-format
@@ -1297,11 +696,6 @@ msgstr "%s f\366rs\366kte d\366da dig!"
 msgid "%s tried to locate you and failed."
 msgstr "%s f\366rs\366kte hitta dig och misslyckades."
 
-#: src/rob.c:49
-#, c-format
-msgid "%s tried to rob you, but you have no %s to take."
-msgstr "%s försöker råna dig, men du har inga %s att ta."
-
 #: src/wiz.c:548
 #, c-format
 msgid "%s tries to impose his will on you and fails."
@@ -1316,11 +710,6 @@ msgstr "%s skriver --> %s%s%s"
 #, c-format
 msgid "%s was taken from you."
 msgstr "%s togs fr\345n dig."
-
-#: speech.c:395 speech.c:372
-#, c-format
-msgid "%s whispers to %s."
-msgstr "%s viskar till %s."
 
 #: destroy.c:412
 #, c-format
@@ -1352,21 +741,6 @@ msgstr "%s(%s) - %s låst."
 msgid "%s(%s) - %s unlocked."
 msgstr "%s(%s) - %s upplåst."
 
-#: lock.c:490
-#, c-format
-msgid "%s(%s) - (already) unlocked."
-msgstr "%s(%s) - (redan) upplåst."
-
-#: lock.c:551
-#, c-format
-msgid "%s(%s) - locked."
-msgstr "%s(%s) - låst."
-
-#: lock.c:493
-#, c-format
-msgid "%s(%s) - unlocked."
-msgstr "%s(%s) - upplåst."
-
 #: set.c:482
 #, c-format
 msgid "%s/%s - %s reset."
@@ -1382,21 +756,6 @@ msgstr "%s/%s - %s satt."
 msgid "%s: No such player."
 msgstr "%s: Ingen s\345dan spelare."
 
-#: src/extmail.c:1156
-#, c-format
-msgid "%s: no such player."
-msgstr "%s: ingen sådan spelare."
-
-#: src/wiz.c:1445
-#, c-format
-msgid "%s: unknown class."
-msgstr "%s: okänd klass."
-
-#: src/wiz.c:1417
-#, c-format
-msgid "%s: unknown type."
-msgstr "%s: okänd typ."
-
 #: function.c:905
 msgid "(Commas okay in last argument)"
 msgstr "(Komma \344r giltigt i sista argumentet)"
@@ -1405,87 +764,10 @@ msgstr "(Komma \344r giltigt i sista argumentet)"
 msgid "(no subject)"
 msgstr "(inget \344rende)"
 
-#: bsd.c:2079
-msgid "(unknown)"
-msgstr "(ok\344nt)"
-
-#: speech.c:1403
-#, c-format
-msgid "** BAD CONTAINER **  #%d is inside #%d."
-msgstr "** FELAKTIG KONTAINER ** #%d \344r inuti #%d."
-
-#: src/speech.c:1408
-#, c-format
-msgid "** BAD CONTAINER **  #%d is inside #%d.\n"
-msgstr "** DÅLIG BEHÅLLARE ** #%d är inuti #%d.\n"
-
-#: src/game.c:1466
-msgid "** ERROR ** popen for @uptime returned NULL."
-msgstr "** FEL ** popen f\366r @uptime returnerade NULL."
-
-#: src/extmail.c:1129
-#, c-format
-msgid "** MAIL PURGE ** done by %s(#%d)."
-msgstr "** BREV RENING ** utf\366rd av %s(#%d)."
-
-#: src/game.c:1166
-#, c-format
-msgid "** POOR done ** Money supply reset to %d %s."
-msgstr "** POOR klar ** Pengatillg\345ng satt till %d %s."
-
-#: db.c:1168
-#, c-format
-msgid "** WARNING **  Hard newline in attribute %s on object #%d"
-msgstr "** VARNING ** Hård nyrad i attribut %s på objekt #%d"
-
-#: src/db.c:1273
-#, c-format
-msgid "** WARNING **  Hard newline in attribute %s on object #%d\n"
-msgstr "** VARNING ** Hård nyrad i attribut %s på objekt #%d\n"
-
 #: src/look.c:911
 #, c-format
 msgid "*** %d objects found ***"
 msgstr "*** %d objekt hittade ***"
-
-#: look.c:809
-#, c-format
-msgid "*** BLEAH *** Weird exit %s(#%d) in #%d with source AMBIG."
-msgstr "*** BL\304 *** Konstig utg\345ng %s(#%d) i #%d med k\344lla AMBIG."
-
-#: src/look.c:812
-#, c-format
-msgid "*** BLEAH *** Weird exit %s(#%d) in #%d with source AMBIG.\n"
-msgstr "*** BLÄH *** Konstig utgång %s(#%d) i #%d med källa AMBIG.\n"
-
-#: look.c:814
-#, c-format
-msgid "*** BLEAH *** Weird exit %s(#%d) in #%d with source HOME."
-msgstr "*** BL\304 *** Konstig utg\345ng %s(#%d) i #%d med k\344lla HOME."
-
-#: src/look.c:817
-#, c-format
-msgid "*** BLEAH *** Weird exit %s(#%d) in #%d with source HOME.\n"
-msgstr "*** BLÄH *** Konstig utgång %s(#%d) i #%d med källa HOME.\n"
-
-#: look.c:804
-#, c-format
-msgid "*** BLEAH *** Weird exit %s(#%d) in #%d with source NOTHING."
-msgstr "*** BL\304 *** Konstig utg\345ng %s(#%d) i #%d med k\344lla NOTHING."
-
-#: src/look.c:807
-#, c-format
-msgid "*** BLEAH *** Weird exit %s(#%d) in #%d with source NOTHING.\n"
-msgstr "*** BLÄÄ *** Konstig utgång %s(#%d) i #%d kommer från NOTHING.\n"
-
-#: src/malias.c:1003
-msgid "*** End of MALIAS ***"
-msgstr "*** Slut på MALIAS ***"
-
-#: src/wiz.c:2001
-#, c-format
-msgid "*** SITELOCK *** %s for %s(%s) --> %s"
-msgstr "*** SAJTL\305S *** %s f\366r %s(%s) --> %s"
 
 #: src/malias.c:300
 msgid "*****  End of Mail Aliases *****"
@@ -1523,56 +805,14 @@ msgstr "---------- S\366kning klar ----------"
 msgid "------------  Queue Done  ------------"
 msgstr "------------ K\366 klar ------------"
 
-#: extmail.c:532
-#, c-format
-msgid "---------------------------   MAIL (folder %d)  ------------------------------"
-msgstr "----------------------------   BREV (mapp %d)  -------------------------------"
-
 #: extmail.c:543
 #, c-format
 msgid "---------------------------  MAIL (folder %2d)  ------------------------------"
 msgstr "---------------------------  BREV (mapp %2d)  ------------------------------"
 
-#: extchat.c:833
-#, c-format
-msgid "<%s> %s has joined this channel."
-msgstr "<%s> %s har g\345tt med i denna kanal."
-
-#: extchat.c:864
-#, c-format
-msgid "<%s> %s has left this channel."
-msgstr "<%s> %s har l\344mnat denna kanal."
-
-#: extchat.c:975
-#, c-format
-msgid "<%s> %s%s%s says, \"%s\""
-msgstr "<%s> %s%s%s säger, \"%s\""
-
-#: extchat.c:974
-#, c-format
-msgid "<%s> %s%s%s%s says, \"%s\""
-msgstr "<%s> %s%s%s%s s\344ger, \"%s\""
-
-#: src/look.c:1256
-msgid "@@ No attributes found. @@"
-msgstr "@@ Inga attribut hittades. @@"
-
 #: src/command.c:1118
 msgid "@command is ALWAYS enabled."
 msgstr "@command \344r ALLTID tillg\344ngligt."
-
-#: attrib.c:926
-msgid "@forwardlist should contain only dbrefs."
-msgstr "@forwardlist ska endast innehålla dbrefs."
-
-#: src/flags.c:1040
-msgid "@set !GOING has been disabled. Use @undestroy instead."
-msgstr "@set !GOING är ej tillgänglig. Använd @undestroy istället."
-
-#: src/warnings.c:310
-#, c-format
-msgid "@warnings set to %s"
-msgstr "@warnings satt till %s"
 
 #: src/warnings.c:450
 msgid "@wcheck complete."
@@ -1582,36 +822,9 @@ msgstr "@wcheck klar."
 msgid "A thing cannot be its own ancestor!"
 msgstr "En sak kan inte vara sin egen f\366rfader!"
 
-#: src/command.c:598
-#, c-format
-msgid "ALIAS : %s for nonexistant command %s"
-msgstr "ALIAS: %s för ej existerande kommando %s"
-
-#: atr_tab.c:159
-#, c-format
-msgid "ATR INIT: attribute alias %s matches no known attribute."
-msgstr "ATR INIT: attribut alias %s träffar inget känt attribut."
-
-#: src/atr_tab.c:165
-#, c-format
-msgid "ATR INIT: attribute alias %s matches no known attribute.\n"
-msgstr "ATR INIT: attribut alias %s träffar inga kända attribut.\n"
-
-#: src/attrib.c:186 src/attrib.c:299 src/attrib.c:309 src/attrib.c:361\nsrc/attrib.c:582
-msgid "ATTR value"
-msgstr "ATTR värde"
-
 #: src/bsd.c:559 src/bsd.c:761
 msgid "Ack!  Failed reopening stderr!"
 msgstr "Aj d\345!  Misslyckades att \366ppna om stderr!"
-
-#: src/wiz.c:2282
-msgid "Alas, I can't reboot under MacOS.  Sorry."
-msgstr "Tyvärr, det går inte att boota om under MacOS."
-
-#: src/wiz.c:2285
-msgid "Alas, I can't reboot under Windows.  Sorry."
-msgstr "Tyvärr, det går inte att boota om under Windows."
 
 #: src/destroy.c:405
 msgid "Alas, your efforts of mercy are in vain."
@@ -1708,32 +921,15 @@ msgstr "Argument  : %d %s"
 msgid "Arguments : %d to %d %s"
 msgstr "Argument  : %d till %d %s"
 
-#: function.c:920
-msgid "Arguments : 0 to 10"
-msgstr "Argument  : 0 till 10"
-
 #: function.c:912
 #, c-format
 msgid "Arguments : At least %d %s"
 msgstr "Argument  : Minst %d %s"
 
-#: attrib.c:288
-#, c-format
-msgid "Attempt by %s(%d) to create too many attributes on %s(%d)"
-msgstr "F\366rs\366k av %s(%d) att skapa f\366r m\345nga attribut p\345 %s(%d)"
-
-#: src/attrib.c:274
-msgid "Attempt to create too many attributes"
-msgstr "Försök att skapa för många attribut"
-
 #: src/game.c:851
 #, c-format
 msgid "Attempt to execute command by halted object #%d"
 msgstr "F\366rs\366kt att k\366ra kommando av stoppad objekt #%d"
-
-#: src/services.c:134
-msgid "Attempting to start PennMUSH as a service ...\n"
-msgstr "F\366rs\366ker starta PennMUSH som en tj\344nst...\n"
 
 #: src/set.c:633
 #, c-format
@@ -1752,10 +948,6 @@ msgstr "\304gare av attribut \344ndrad."
 msgid "Attribute unlocked."
 msgstr "Attribut uppl\345st."
 
-#: src/set.c:962
-msgid "Attributes wiped."
-msgstr "Attribut rensade."
-
 #: src/flags.c:1147
 msgid "Audible exits in this room have been activated."
 msgstr "H\366rbara utg\345ngar i detta rum har aktiverats."
@@ -1763,16 +955,6 @@ msgstr "H\366rbara utg\345ngar i detta rum har aktiverats."
 #: src/flags.c:1086
 msgid "Audible exits in this room have been deactivated."
 msgstr "H\366rbara utg\345ngar i detta rum har avaktiverats."
-
-#: src/bsd.c:3747
-#, c-format
-msgid "BAILOUT: caught signal %d"
-msgstr "BAILOUT: f\345ngade signal %d"
-
-#: attrib.c:158
-#, c-format
-msgid "Bad attribute name %s on object %s"
-msgstr "D\345ligt attributnamn %s p\345 objekt %s"
 
 #: command.c:1312
 msgid "Bad command name."
@@ -1791,16 +973,6 @@ msgstr "Felaktigt nytt l\366senord."
 msgid "Bad object #%d has mail."
 msgstr "Felaktigt objekt #%d har brev."
 
-#: src/extchat.c:289
-#, c-format
-msgid "Bad object #%d removed from channel %s"
-msgstr "Felaktigt objekt #%d borttaget fr\345n kanal %s."
-
-#: src/destroy.c:1156
-#, c-format
-msgid "Bad object type found for %s in mark_contents"
-msgstr "Felaktig objekt-typ hittad f\366r %s i mark_contents"
-
 #: src/wiz.c:1096
 msgid "Bad object type."
 msgstr "Felaktig objekt-typ."
@@ -1809,58 +981,20 @@ msgstr "Felaktig objekt-typ."
 msgid "Bad password."
 msgstr "Felaktigt l\366senord."
 
-#: src/bsd.c:2144 src/bsd.c:2206
-#, c-format
-msgid "Below maximum player limit of %d. Logins enabled."
-msgstr "Under maximala spelar-gr\344nsen p\345 %d. Inlogging tillg\344nglig."
-
-#: src/bsd.c:3824
-#, c-format
-msgid "Bogus caller #%d of dump_users"
-msgstr "Fingerad anropare #%d av dump_users"
-
 #: src/set.c:147
 #, c-format
 msgid "Broadcast: Suspect %s changed name to %s."
 msgstr "S\344nd: Misst\344nkt %s \344ndrade namn till %s."
-
-#: bsd.c:4018
-#, c-format
-msgid "Broadcast: Suspect %s created."
-msgstr "Sänd: Misstänkt %s skapad."
 
 #: src/rob.c:99
 #, c-format
 msgid "Broadcast: Suspect %s tried to kill %s(#%d)."
 msgstr "S\344nd: Misst\344nkt %s f\366rs\366kte d\366da %s(#%d)."
 
-#: bsd.c:4035 bsd.c:4211
-#, c-format
-msgid "Broadcast: Suspect %s"
-msgstr "Sänd: Misstänkt %s"
-
-#: boolexp.c:337
-#, c-format
-msgid "Broken lock on #%d in object called by #%d"
-msgstr "Trasigt lås på #%d hos objekt anropat av #%d"
-
-#: src/boolexp.c:158
-#, c-format
-msgid "Broken lock type %s in object called by #%d"
-msgstr "Trasig låstyp %s i objekt anropat av #%d"
-
 #: src/version.c:44 src/version.c:46
 #, c-format
 msgid "Build date: %s"
 msgstr "Bygg datum: %s"
-
-#: game.c:422
-msgid "CANNOT DUMP PANIC DB. OOPS."
-msgstr "KAN INTE DUMPA PANIK DB. OJ."
-
-#: game.c:427
-msgid "CANNOT OPEN PANIC FILE, YOU LOSE"
-msgstr "KAN INTE \326PPNA PANIK FIL, DU F\326RLORAR"
 
 #: src/extchat.c:1443
 #, c-format
@@ -1907,16 +1041,6 @@ msgstr "CHAT: Kanal <%s> \344gs nu av %s."
 msgid "CHAT: Channel <%s> resists."
 msgstr "CHAT: Kanal <%s> g\366r motst\345nd."
 
-#: src/extchat.c:1731
-#, c-format
-msgid "CHAT: Channel <%s> title cleared."
-msgstr "CHAT: Kanal <%s> titel rensad."
-
-#: src/extchat.c:1734
-#, c-format
-msgid "CHAT: Channel <%s> title set."
-msgstr "CHAT: Kanal <%s> titel satt."
-
 #: extchat.c:1742
 #, c-format
 msgid "CHAT: Channel <%s> wiped."
@@ -1935,11 +1059,6 @@ msgstr "CHAT: Kanalbuffring avaktiverad för kanal <%s>."
 #: extchat.c:2969
 msgid "CHAT: End recall"
 msgstr "CHAT: Återspelning slut."
-
-#: src/extchat.c:1587
-#, c-format
-msgid "CHAT: Hidelock on <%s> %s."
-msgstr "CHAT: Gömlås på <%s> %s."
 
 #: extchat.c:1595
 #, c-format
@@ -1967,11 +1086,6 @@ msgstr "CHAT: Jag f\366rst\345r inte den nyckeln."
 msgid "CHAT: Invalid owner."
 msgstr "CHAT: Ogiltig \344gare."
 
-#: src/extchat.c:1563
-#, c-format
-msgid "CHAT: Joinlock on <%s> %s."
-msgstr "CHAT: Gå-med lås på <%s> %s."
-
 #: extchat.c:1568
 #, c-format
 msgid "CHAT: Joinlock on <%s> reset."
@@ -1981,11 +1095,6 @@ msgstr "CHAT: G\345medl\345s p\345 <%s> nollst\344llt."
 #, c-format
 msgid "CHAT: Joinlock on <%s> set."
 msgstr "CHAT: G\345medl\345s p\345 <%s> satt."
-
-#: src/extchat.c:1595
-#, c-format
-msgid "CHAT: Modlock on <%s> %s."
-msgstr "CHAT: Modlås på <%s> %s."
 
 #: extchat.c:1604
 #, c-format
@@ -1997,30 +1106,13 @@ msgstr "CHAT: Modl\345s p\345 <%s> nollst\344llt."
 msgid "CHAT: Modlock on <%s> set."
 msgstr "CHAT: Modl\345s p\345 <%s> satt."
 
-#: extchat.c:1985
-msgid "CHAT: New description too long."
-msgstr "CHAT: Kanal <%s> beskrivning \344ndrad."
-
-#: src/extchat.c:1718
-msgid "CHAT: New title too long."
-msgstr "CHAT: Ny titel för lång."
-
 #: src/extchat.c:1703
 msgid "CHAT: No channel matches that string."
 msgstr "CHAT: Inga kanaler tr\344ffar den str\344ngen."
 
-#: extchat.c:178
-msgid "CHAT: No end-of-dump marker in the chat database."
-msgstr "CHAT: Ingen end-of-dump markör i chatdatabasen!"
-
 #: extchat.c:1132 extchat.c:1139
 msgid "CHAT: No more memory for channels!"
 msgstr "CHAT: Inget mer minne f\366r kanaler!"
-
-#: src/extchat.c:1657
-#, c-format
-msgid "CHAT: No permission to decompile <%s>"
-msgstr "CHAT: Inga r\344ttigheter att dekompilera <%s>"
 
 #: extchat.c:1274
 msgid "CHAT: No such channel."
@@ -2048,11 +1140,6 @@ msgstr "CHAT: Återspelning från kanal <%s>"
 msgid "CHAT: Resizing buffer of channel <%s>"
 msgstr "CHAT: Ändrar buffertstorlek för kanal <%s>"
 
-#: src/extchat.c:1579
-#, c-format
-msgid "CHAT: Seelock on <%s> %s."
-msgstr "CHAT: Selås på <%s> %s."
-
 #: extchat.c:1586
 #, c-format
 msgid "CHAT: Seelock on <%s> reset."
@@ -2062,11 +1149,6 @@ msgstr "CHAT: Sel\345s p\345 <%s> nollst\344llt."
 #, c-format
 msgid "CHAT: Seelock on <%s> set."
 msgstr "CHAT: Seel\345s p\345 <%s> satt."
-
-#: src/extchat.c:1571
-#, c-format
-msgid "CHAT: Speaklock on <%s> %s."
-msgstr "SNACK: Tallås på <%s> %s."
 
 #: extchat.c:1577
 #, c-format
@@ -2091,22 +1173,6 @@ msgstr "CHAT: Kanalen beh\366ver ett mer unikt namn."
 msgid "CHAT: To recall the entire buffer, use @chan/recall %s=0"
 msgstr "CHAT: För att återspela hella bufferten, använd @chan/recall %s=0"
 
-#: extchat.c:180
-msgid "CHAT: Trailing garbage in the chat database."
-msgstr "CHAT: Sl\344pande skr\344p i chatdatabasen."
-
-#: src/extchat.c:812
-msgid "CHAT: Warning: Player does not meet channel join permissions (joining anyway)"
-msgstr "CHAT: Varning: Spelaren har inte rätt att gå med i kanalen (går med ändå)"
-
-#: extchat.c:885
-msgid "CHAT: Warning: Target does not meet channel join permissions (joining anyway)"
-msgstr "CHAT: Varning: Spelaren har inte r\344tt att g\345 med i kanalen (g\345r med \344nd\345)"
-
-#: extchat.c:974
-msgid "CHAT: Warning: You don't meet channel join permissions (joining anyway)"
-msgstr "CHAT: Varning: Du klarar inte kraven p\345 att g\345 med i kanalen (g\345r med \344nd\345)"
-
 #: src/extchat.c:1461
 msgid "CHAT: Wipe that silly grin off your face instead."
 msgstr "CHAT: Rensa bort det f\345niga flinet fr\345n ditt ansikte ist\344llet."
@@ -2115,11 +1181,6 @@ msgstr "CHAT: Rensa bort det f\345niga flinet fr\345n ditt ansikte ist\344llet."
 #, c-format
 msgid "CHAT: You are already on channel <%s>"
 msgstr "CHAT: Du l\344mnar kanal <%s>."
-
-#: extchat.c:1012
-#, c-format
-msgid "CHAT: You are not on channel <%s>"
-msgstr "CHAT: Du \344r inte p\345 kanal <%s>."
 
 #: src/extchat.c:757
 #, c-format
@@ -2141,216 +1202,14 @@ msgstr "CHAT: Du g\345r med i kanal <%s>."
 msgid "CHAT: You leave channel <%s>."
 msgstr "CHAT: Du l\344mnar kanal <%s>."
 
-#: extchat.c:2935
-msgid "CHAT: You must join a channel to recall from it."
-msgstr "CHAT: Du måste gå med i kanalen för att kunna återspela dess buffert."
-
 #: src/extchat.c:859
 #, c-format
 msgid "CHAT: You remove %s from channel <%s>."
 msgstr "CHAT: Du tar bort %s fr\345n kanalen <%s>."
 
-#: log.c:276
-#, c-format
-msgid "CMD: %s %s / %s: %s"
-msgstr "KMD: %s %s / %s: %s"
-
-#: log.c:280
-#, c-format
-msgid "CMD: %s %s in %s: %s"
-msgstr "KMD: %s %s i %s: %s"
-
-#: src/log.c:239
-#, c-format
-msgid "CMD: %s in %s: %s"
-msgstr "KMD: %s i %s: %s"
-
-#: src/log.c:237 src/log.c:244
-#, c-format
-msgid "CMD: SUSPECT %s in %s: %s"
-msgstr "KMD: MISSTÄNKT %s i %s: %s"
-
-#: conf.c:484 conf.c:502
-#, c-format
-msgid "CONFIG: Couldn't alias %s to %s.\n"
-msgstr "KONFIG: Kunde inte s\344tta alias %s till %s.\n"
-
-#: src/conf.c:442
-#, c-format
-msgid "CONFIG: Invalid command or restriction for %s.\n"
-msgstr "KONFIG: Ogiltigt kommando eller restriktion f\366r %s.\n"
-
-#: conf.c:453
-#, c-format
-msgid "CONFIG: Invalid function or restriction for %s.\n"
-msgstr "KONFIG: Ogiltig funktion eller begr\344nsning f\366r %s.\n"
-
-#: conf.c:689
-#, c-format
-msgid "CONFIG: Unknown time interval in option %s"
-msgstr "CONFIG: Okänt tidsintervall i %s"
-
-#: conf.c:354
-#, c-format
-msgid "CONFIG: attempt to set option %s to a bad dbref (#%d)"
-msgstr "KONFIG: f\366rs\366k att s\344tta val %s till en felaktig dbref (#%d)"
-
-#: conf.c:689
-#, c-format
-msgid "CONFIG: attribute_alias %s requires an alias.\n"
-msgstr "CONFIG: attribute_alias %s kräver ett alias.\n"
-
-#: conf.c:491
-#, c-format
-msgid "CONFIG: command_alias %s requires an alias.\n"
-msgstr "KONFIG: command_alias %s kr\344ver ett alias.\n"
-
-#: conf.c:899
-msgid "CONFIG: compression program is specified but not used in MacOS, ignoring"
-msgstr "KONFIG: komprimeringsprogram angett men används inte i MacOS, ignorerar"
-
-#: conf.c:782
-msgid "CONFIG: compression program is specified but not used in Win32, ignoring"
-msgstr "KONFIG: komprimeringsprogram \344r angett men anv\344nds ej i Windows, ignorerar"
-
-#: conf.c:758
-msgid "CONFIG: compression program is specified but not used in Win32, ignoring\n"
-msgstr "KONFIG: komprimeringsprogram är satt men används inte under Windows, ignorerar\n"
-
-#: conf.c:906
-msgid "CONFIG: compression suffix is specified but not used in MacOS, ignoring"
-msgstr "KONFIG: komprimeringsuffix är angett men används inte i MacOS, ignorerar"
-
-#: conf.c:789
-msgid "CONFIG: compression suffix is specified but not used in Win32, ignoring"
-msgstr "KONFIG: komprimeringssuffix \344r angett men anv\344nds ej i Windows, ignorerar"
-
-#: conf.c:766
-msgid "CONFIG: compression suffix is specified but not used in Win32, ignoring\n"
-msgstr "KONFIG: kompressions-ändelse är satt men används inte under Windows, ignorerar\n"
-
-#: src/conf.c:474
-#, c-format
-msgid "CONFIG: directive '%s' in cnf file ignored.\n"
-msgstr "KONFIG: direktiv '%s' i cnf-fil ignorerat.\n"
-
-#: conf.c:763
-#, c-format
-msgid "CONFIG: directive '%s' missing from cnf file, using default value."
-msgstr "KONFIG: direktiv '%s' saknas i cnf fil, anv\344nder standardv\344rde."
-
-#: src/conf.c:728
-#, c-format
-msgid "CONFIG: directive '%s' missing from cnf file, using default value.\n"
-msgstr "KONFIG: direktiv '%s' saknas i cnf-fil, använder standardvärde.\n"
-
-#: src/conf.c:397
-#, c-format
-msgid "CONFIG: flag '%s' cannot be set.\n"
-msgstr "KONFIG: flagga '%s' kan inte sättas.\n"
-
-#: src/conf.c:402
-#, c-format
-msgid "CONFIG: flag '%s' for type not found.\n"
-msgstr "KONFIG: flagga '%s' för typen hittades ej.\n"
-
-#: conf.c:509
-#, c-format
-msgid "CONFIG: function_alias %s requires an alias.\n"
-msgstr "KONFIG: function_alias %s kr\344ver ett alias.\n"
-
-#: conf.c:478 conf.c:490
-msgid "CONFIG: help_command requires a command name and file name.\n"
-msgstr "KONFIG: help_command kr\344ver ett kommandonamn och ett filnamn.\n"
-
-#: conf.c:743
-#, c-format
-msgid "CONFIG: include depth too deep in file %s"
-msgstr "KONFIG: inkluderingsdjup f\366r djupt i fil %s"
-
-#: src/conf.c:710
-#, c-format
-msgid "CONFIG: include depth too deep in file %s\n"
-msgstr "KONFIG: för djup inkludering i fil %s\n"
-
-#: conf.c:1314
-#, c-format
-msgid "CONFIG: local directive '%s' missing from cnf file. using default value."
-msgstr "CONFIG: Lokalt direktiv '%s' saknas i cnf fil. Använder standard."
-
-#: src/conf.c:304
-#, c-format
-msgid "CONFIG: option %s value %s invalid.\n"
-msgstr "KONFIG: alternativ %s v\344rde %s ogiltigt.\n"
-
-#: conf.c:348
-#, c-format
-msgid "CONFIG: option %s value limited to #%d\n"
-msgstr "KONFIG: val %s v\344rde begr\344nsat till #%d\n"
-
-#: src/conf.c:354
-#, c-format
-msgid "CONFIG: option %s value limited to %d\n"
-msgstr "KONFIG: alternativ %s v\344rde begr\344nsat till %d\n"
-
-#: src/conf.c:327
-#, c-format
-msgid "CONFIG: option %s value truncated\n"
-msgstr "KONFIG: alternativ %s v\344rde trunkerat\n"
-
-#: src/conf.c:451
-#, c-format
-msgid "CONFIG: restrict_command %s requires a restriction value.\n"
-msgstr "KONFIG: restrict_command %s kr\344ver ett restriktions-v\344rde.\n"
-
-#: conf.c:462
-#, c-format
-msgid "CONFIG: restrict_function %s requires a restriction value.\n"
-msgstr "KONFIG: restrict_function %s kr\344ver ett begr\344nsnings-v\344rde.\n"
-
-#: src/conf.c:392
-#, c-format
-msgid "CONFIG: weird flag set directive '%s'\n"
-msgstr "KONFIG: konstigt flagg-sättnings direktiv '%s'\n"
-
-#: help.c:313
-#, c-format
-msgid "Can't open %s for reading"
-msgstr "Kan inte \366ppna %s f\366r l\344sning"
-
-#: src/bsd.c:3082
-#, c-format
-msgid "Can't open index file %s for reading"
-msgstr "Kan inte öppna index fil %s för läsning"
-
-#: src/bsd.c:3095
-#, c-format
-msgid "Can't open text file %s for reading"
-msgstr "Kan inte \366ppna text-fil %s f\366r l\344sning"
-
 #: src/create.c:322
 msgid "Can't set home to home."
 msgstr "Kan inte s\344tta hem till hem."
-
-#: src/services.c:537
-msgid "Cannot access service definition"
-msgstr "Kan inte komma \345t tj\344nst-definition"
-
-#: src/services.c:406 src/services.c:602
-msgid "Cannot locate full filename"
-msgstr "Kan inte lokalisera fullt filnamn"
-
-#: src/services.c:664
-msgid "Cannot remove service"
-msgstr "Kan inte ta bort tj\344nst"
-
-#: src/services.c:699
-msgid "Cannot start service"
-msgstr "Kan inte starta tj\344nst"
-
-#: src/services.c:733
-msgid "Cannot stop service"
-msgstr "Kan inte stoppa tj\344nst"
 
 #: look.c:748
 msgid "Carrying:"
@@ -2381,10 +1240,6 @@ msgstr "Kanaler: *INGA*"
 msgid "Channels:"
 msgstr "Kanaler:"
 
-#: src/log.c:334
-msgid "Checkpoint log wiped."
-msgstr "Kontroll-logg rensad."
-
 #: extmail.c:2473
 msgid "Cleared "
 msgstr "Rensat "
@@ -2412,19 +1267,6 @@ msgstr "Klonade: Rum #%d"
 msgid "Cmds"
 msgstr "Kmd"
 
-#: src/game.c:863
-#, c-format
-msgid "Command attempted by %s(#%d) in invalid location #%d."
-msgstr "F\366rs\366k att utf\366ra kommando av %s(#%d) i ogiltig plats #%d."
-
-#: src/create.c:507 src/create.c:572
-msgid "Command is for builders only."
-msgstr "Kommandot är bara för byggare."
-
-#: src/log.c:340
-msgid "Command log wiped."
-msgstr "Kommandologg rensad."
-
 #: src/version.c:48
 #, c-format
 msgid "Compilation flags: %s"
@@ -2435,87 +1277,13 @@ msgstr "Kompileringsflaggor: %s"
 msgid "Compiler: %s"
 msgstr "Kompilator: %s"
 
-#: src/log.c:328
-msgid "Connect log wiped."
-msgstr "Uppkopplingslogg rensad."
-
-#: bsd.c:4737
-#, c-format
-msgid "Connected players on channel <%s> are:"
-msgstr "Uppkopplade spelare på kanal <%s> är:"
-
-#: src/bsd.c:4790
-msgid "Connected players on that channel are:"
-msgstr "Uppkopplade spelare på den kanalen:"
-
-#: src/player.c:170
-#, c-format
-msgid "Connection from Suspect site. Setting %s(#%d) suspect."
-msgstr "Uppkoppling fr\345n Misst\344nkt sajt. S\344tter %s(#%d) misst\344nkt."
-
-#: src/player.c:129
-#, c-format
-msgid "Connection to %s (GUEST) not allowed from %s (%s)"
-msgstr "Uppkoppling till %s (GUEST) inte till\345ten fr\345n %s (%s)"
-
-#: src/player.c:138
-#, c-format
-msgid "Connection to %s (Non-GUEST) not allowed from %s (%s)"
-msgstr "Uppkoppling till %s (Icke-GUEST) inte till\345ten fr\345n %s (%s)"
-
-#: player.c:129
-#, c-format
-msgid "Connection to GOING player %s not allowed from %s (%s)"
-msgstr "Koppling till GOING spelare %s till\345ts inte fr\345n %s (%s)"
-
 #: look.c:494 look.c:750
 msgid "Contents:"
 msgstr "Inneh\345ll:"
 
-#: src/game.c:1520
-#, c-format
-msgid "Context swi: %10ld vol    %10ld forced"
-msgstr "Context byt: %10ld fri    %10ld tvingad"
-
-#: src/game.c:256
-#, c-format
-msgid "Context swi: %10ld vol    %10ld forced\n"
-msgstr "Context swi: %10ld själv  %10ld tvingade\n"
-
-#: filecopy.c:147
-#, c-format
-msgid "Copied %i %s, %ld %s"
-msgstr "Kopierade %i %s, %ld %s"
-
-#: filecopy.c:151
-#, c-format
-msgid "Copied %i %s, %ld %s\n"
-msgstr "Kopierade %i %s, %ld %s\n"
-
-#: src/filecopy.c:149
-#, c-format
-msgid "Copied %i file%s, %ld byte%s\n"
-msgstr "Kopierade %i fil%s, %ld byte%s\n"
-
-#: strutil.c:418
-msgid "Couldn't allocate memory in replace_string!"
-msgstr "Kunde inte allokera minne i s\366kning!"
-
-#: strutil.c:455
-msgid "Couldn't allocate memory in replace_string2!"
-msgstr "Kunde inte allokera minne i s\366kning!"
-
-#: wiz.c:1517
-msgid "Couldn't allocate memory in search!"
-msgstr "Kunde inte allokera minne i s\366kning!"
-
 #: src/wiz.c:1635 src/wiz.c:1929
 msgid "Couldn't find that player."
 msgstr "Kunde inte hitta spelaren."
-
-#: wiz.c:1531 wiz.c:1548 wiz.c:1566 wiz.c:1585 wiz.c:1621 wiz.c:1640\nwiz.c:1659
-msgid "Couldn't reallocate memory in search!"
-msgstr "Kunde inte omallokera minne i s\366kning!"
 
 #: src/cmds.c:193
 msgid "Couldn't set that option"
@@ -2530,43 +1298,9 @@ msgstr "Skapa vad?"
 msgid "Created: %s"
 msgstr "Skapad: %s"
 
-#: filecopy.c:72
-#, c-format
-msgid "Creating file: %s"
-msgstr "Skapar fil: %s"
-
-#: src/filecopy.c:76
-#, c-format
-msgid "Creating file: %s\n"
-msgstr "Skapar fil: %s\n"
-
 #: extchat.c:1626 extchat.c:1636
 msgid "Creator"
 msgstr "Skapare"
-
-#: src/destroy.c:1323
-msgid "DBCK done."
-msgstr "DBCK klar."
-
-#: game.c:439
-#, c-format
-msgid "DUMPING: %s (done)"
-msgstr "DUMPNING: %s (klar)"
-
-#: game.c:430
-#, c-format
-msgid "DUMPING: %s"
-msgstr "DUMPNING: %s"
-
-#: filecopy.c:221
-#, c-format
-msgid "Database not terminated correctly, file %s"
-msgstr "Databas inte avslutad korrekt, fil %s"
-
-#: src/filecopy.c:223
-#, c-format
-msgid "Database not terminated correctly, file %s\n"
-msgstr "Databasen är inte avslutad korrekt, fil %s\n"
 
 #: src/game.c:188
 #, c-format
@@ -2615,20 +1349,6 @@ msgstr "Gr\344v vad?"
 msgid "Disabled."
 msgstr "Ej tillg\344nglig."
 
-#: src/destroy.c:1232
-msgid "Disconnected room. So what?"
-msgstr "Bortkopplat rum."
-
-#: src/game.c:1514
-#, c-format
-msgid "Disk I/O:    %10ld reads  %10ld writes"
-msgstr "Disk I/O:    %10ld l\344sta  %10ld skrivna"
-
-#: src/game.c:252
-#, c-format
-msgid "Disk I/O:    %10ld reads  %10ld writes\n"
-msgstr "Disk I/O:    %10ld läs    %10ld skriv\n"
-
 #: function.c:735
 msgid "Do what with the function?"
 msgstr "G\366ra vad med funktionen?"
@@ -2646,18 +1366,10 @@ msgstr "Doing satt."
 msgid "Don't you have anything to say?"
 msgstr "Har du inget att s\344ga?"
 
-#: extchat.c:1249
-msgid "Done."
-msgstr "Klart."
-
 #: src/bsd.c:4280
 #, c-format
 msgid "Down MOTD: %s"
 msgstr "Nere MOTD: %s"
-
-#: src/bsd.c:4270
-msgid "Down motd set."
-msgstr "Nere MOTD satt."
 
 #: cque.c:710
 msgid "Drained."
@@ -2680,275 +1392,6 @@ msgstr "Dropto borttagen."
 msgid "Dropto set."
 msgstr "Dropto satt."
 
-#: help.c:85
-#, c-format
-msgid "Duplicate help_command %s ignored."
-msgstr "Dubbla help_command %s ignorerade."
-
-#: set.c:128
-msgid "E.g.: @name player = newname password"
-msgstr "T.ex.: @name spelare = nyttnamn lösenord"
-
-#: src/set.c:131
-msgid "E.g.: name player = newname password"
-msgstr "T.ex.: name spelare = nyttnamn lösenord"
-
-#: src/destroy.c:1303
-#, c-format
-msgid "ERROR DBCK: Moved object %d"
-msgstr "FEL DBCK: Flyttade objekt %d"
-
-#: game.c:309
-msgid "ERROR! Database save failed."
-msgstr "FEL! Sparning av databas misslyckades."
-
-#: bsd.c:4241
-#, c-format
-msgid "ERROR! forking dump exited with signal %d"
-msgstr "FEL: Förgrenad dumpning avslutades med signal %d"
-
-#: src/parse.c:801
-#, c-format
-msgid "ERROR: @function (%s) without attribute (#%d/%s)"
-msgstr "FEL: @function (%s) utan attribut (#%d/%s)"
-
-#: src/move.c:188
-#, c-format
-msgid "ERROR: Attempt to move %d to exit %d\n"
-msgstr "FEL: F\366rs\366k att flytta %d till utg\345ng %d\n"
-
-#: move.c:219
-#, c-format
-msgid "ERROR: Attempt to move player %d into carried object %d\n"
-msgstr "FEL: F\366rs\366k att flytta spelare %d till b\344rt objekt %d\n"
-
-#: src/move.c:193
-#, c-format
-msgid "ERROR: Attempt to move player %d into itself\n"
-msgstr "FEL: F\366rs\366k att flytta spelare %d till sig sj\344lv\n"
-
-#: db.c:1202
-#, c-format
-msgid "ERROR: Bad character %c (%d) in attribute list on object %d"
-msgstr "FEL: Felaktigt tecken %c (%d) i attribut lista p\345 objekt %d"
-
-#: src/db.c:1306
-#, c-format
-msgid "ERROR: Bad character %c (%d) in attribute list on object %d\n"
-msgstr "FEL: Felaktigt tecken %c (%d) i attributlista på objekt %d\n"
-
-#: db.c:1136
-#, c-format
-msgid "ERROR: Bad format on new attribute %s. object #%d"
-msgstr "FEL: Felaktigt format p\345 nytt attribut %s. objekt #%d"
-
-#: src/db.c:1242
-#, c-format
-msgid "ERROR: Bad format on new attribute %s. object #%d\n"
-msgstr "FEL: Felaktigt format på nytt attribut %s. objekt #%d\n"
-
-#: db.c:1129
-#, c-format
-msgid "ERROR: Bad format on new attributes. object #%d"
-msgstr "FEL: Felaktigt format p\345 nya attribut. objekt #%d"
-
-#: src/db.c:1236
-#, c-format
-msgid "ERROR: Bad format on new attributes. object #%d\n"
-msgstr "FEL: Felaktigt format på nya attribut. objekt #%d\n"
-
-#: conf.c:690 conf.c:699
-#, c-format
-msgid "ERROR: Cannot open configuration file %s."
-msgstr "FEL: Kan inte \366ppna konfigurationsfil %s."
-
-#: src/conf.c:667
-#, c-format
-msgid "ERROR: Cannot open configuration file %s.\n"
-msgstr "FEL: Kan inte öppna konfigurationsfil %s.\n"
-
-#: src/destroy.c:1260
-#, c-format
-msgid "ERROR: Contents of object %d corrupt at object %d cleared"
-msgstr "FEL: Inneh\345ll i objekt %d korrupt vid objekt %d rensat"
-
-#: src/destroy.c:864
-msgid "ERROR: Corrupt free list, fixing\n"
-msgstr "FEL: Korrupt fri-lista, korrigerar\n"
-
-#: bsd.c:628
-msgid "ERROR: Couldn't load databases! Exiting."
-msgstr "FEL: Kunde inte ladda databaser! Avslutar."
-
-#: src/bsd.c:606
-msgid "ERROR: Couldn't load databases! Exiting.\n"
-msgstr "FEL: Kunde inte ladda databaser! Avslutar.\n"
-
-#: src/destroy.c:1003
-#, c-format
-msgid "ERROR: Exit %s has a contents list. Wiping it out."
-msgstr "FEL: Utg\345ng %s har inneh\345llslista. Rensar den."
-
-#: src/destroy.c:628 src/destroy.c:1031
-#, c-format
-msgid "ERROR: Exit %s leading from invalid room #%d destroyed."
-msgstr "FEL: Utg\345ng %s som leder fr\345n ogiltigt rum #%d f\366rst\366rt."
-
-#: src/destroy.c:1024
-#, c-format
-msgid "ERROR: Exit %s leading to garbage room #%d relinked to its source room."
-msgstr "FEL: Utg\345ng %s som leder till skr\344p-rum #%d oml\344nkad till sitt k\344ll-rum."
-
-#: src/destroy.c:1013
-#, c-format
-msgid "ERROR: Exit %s leading to invalid room #%d relinked to its source room."
-msgstr "FEL: Utg\345ng %s som leder till ogiltigt rum #%d oml\344nkad till sitt k\344ll-rum."
-
-#: src/destroy.c:1283
-#, c-format
-msgid "ERROR: Exits of room %d corrupt at object %d cleared"
-msgstr "FEL: Utg\345ngar i rum %d korrupta vid objekt %d rensade"
-
-#: attrib.c:695
-msgid "ERROR: Invalid attribute number in convert_atr. aborting."
-msgstr "FEL: Ogiltigt attribut nummer i convert_atr. ger upp."
-
-#: src/attrib.c:716
-msgid "ERROR: Invalid attribute number in convert_atr. aborting.\n"
-msgstr "FEL: Ogiltigt attributnummer i convert_atr. Ger upp.\n"
-
-#: db.c:986
-#, c-format
-msgid "ERROR: Invalid lock format on object #%d"
-msgstr "FEL: Ogiltigt l\345s-format p\345 objekt #%d"
-
-#: src/db.c:1023
-#, c-format
-msgid "ERROR: Invalid lock format on object #%d\n"
-msgstr "FEL: Ogiltigt lås-format på objekt #%d\n"
-
-#: src/destroy.c:957 src/destroy.c:981
-#, c-format
-msgid "ERROR: Invalid next pointer #%d from object %s"
-msgstr "FEL: Ogiltig next pekare #%d fr\345n objekt %s"
-
-#: src/destroy.c:974
-#, c-format
-msgid "ERROR: Invalid object owner on %s(%d)"
-msgstr "FEL: Ogiltig objekt-\344gare p\345 %s(%d)"
-
-#: src/game.c:835
-msgid "ERROR: No command!!!"
-msgstr "FEL: Inget kommando!!!"
-
-#: db.c:1408
-#, c-format
-msgid "ERROR: No end of dump %d"
-msgstr "FEL: Inget slut på dumpning %d"
-
-#: src/db.c:1491
-#, c-format
-msgid "ERROR: No end of dump %d\n"
-msgstr "FEL: Inget slut på dump %d\n"
-
-#: db.c:1451
-#, c-format
-msgid "ERROR: No end of dump after object #%d"
-msgstr "FEL: Inget slut p\345 dumpning efter objekt #%d"
-
-#: src/move.c:183
-#, c-format
-msgid "ERROR: Non object moved!! %d\n"
-msgstr "FEL: Icke objekt flyttat!! %d\n"
-
-#: src/destroy.c:863
-#, c-format
-msgid "ERROR: Object #%d should not be free\n"
-msgstr "FEL: Objekt #%d ska inte vara fritt\n"
-
-#: db.c:1235
-msgid "ERROR: Old database without required dbflags."
-msgstr "FEL: Gammal databas saknar nödvändiga flaggor."
-
-#: db.c:972
-#, c-format
-msgid "ERROR: Old-style @lock on object #%d\n"
-msgstr "FEL: Gammalmodigt format på @lock hos objekt #%d\n"
-
-#: src/destroy.c:859
-msgid "ERROR: Removed free list and continued\n"
-msgstr "FEL: Tog bort fri-lista och fortsatte\n"
-
-#: src/memcheck.c:66
-#, c-format
-msgid "ERROR: Tried deleteing a check that was never added! :%s\n"
-msgstr "FEL: Försökte ta bort en koll som aldrig var adderad! :%s\n"
-
-#: memcheck.c:87
-#, c-format
-msgid "ERROR: Tried deleting a check that was never added! :%s\n"
-msgstr "FEL: F\366rs\366kte radera en koll som aldrig lagts till! :%s\n"
-
-#: db.c:1197
-msgid "ERROR: Unexpected EOF on file."
-msgstr "FEL: Ov\344ntat EOF p\345 fil."
-
-#: src/db.c:1302
-msgid "ERROR: Unexpected EOF on file.\n"
-msgstr "FEL: Oväntat EOF i filen.\n"
-
-#: db.c:1389
-#, c-format
-msgid "ERROR: bad attribute list object %d"
-msgstr "FEL: felaktigt attribut list objekt %d"
-
-#: src/db.c:1472
-#, c-format
-msgid "ERROR: bad attribute list object %d\n"
-msgstr "FEL: felaktigt attributlistsobjekt %d\n"
-
-#: src/db.c:1186
-msgid "ERROR: bad bool type in dup_bool!\n"
-msgstr "FEL: felaktig bool-typ i dup_bool!\n"
-
-#: db.c:1421
-#, c-format
-msgid "ERROR: failed object %d"
-msgstr "FEL: misslyckat objekt %d"
-
-#: src/db.c:1504
-#, c-format
-msgid "ERROR: failed object %d\n"
-msgstr "FEL: misslyckat objekt %d\n"
-
-#: db.c:1191
-#, c-format
-msgid "ERROR: no line feed after < on object %d"
-msgstr "FEL: ingen ny rad efter < p\345 objekt %d"
-
-#: src/db.c:1296
-#, c-format
-msgid "ERROR: no line feed after < on object %d\n"
-msgstr "FEL: ingen ny rad efter < på objekt %d\n"
-
-#: src/destroy.c:1100
-#, c-format
-msgid "ERROR: no name for room #%d."
-msgstr "FEL: inget namn f\366r rum #%d."
-
-#: db.c:1253
-msgid "ERROR: old style database."
-msgstr "FEL: databas i gammal stil"
-
-#: src/db.c:1353
-msgid "ERROR: old style database.\n"
-msgstr "FEL: gammal typ av databas.\n"
-
-#: db.c:1167
-#, c-format
-msgid "ERROR: old-style attribute format in object %d"
-msgstr "FEL: gammal stil på attributformat hos objekt %d"
-
 #: bsd.c:272
 msgid "Either that player does not exist, or has a different password."
 msgstr "Antingen finns inte den spelaren, eller s\345 har den ett annat l\366senord."
@@ -2965,10 +1408,6 @@ msgstr "E-mail registrering är tillåten."
 msgid "Enabled."
 msgstr "Tillg\344nglig."
 
-#: src/bsd.c:5276
-msgid "End of MUD listening thread ...\n"
-msgstr "Slut p\345 MUD lyssnings-tr\345d...\n"
-
 #: src/bsd.c:497
 #, c-format
 msgid "Error %i on WSAStartup\n"
@@ -2978,22 +1417,9 @@ msgstr "Fel %i i WSAStartup\n"
 msgid "Error -- cannot execute uptime."
 msgstr "Fel -- kan inte k\366ra 'uptime'."
 
-#: src/wiz.c:2097
-msgid "Error writing to file."
-msgstr "Fel under skrivning till fil."
-
-#: db.c:1239
-msgid "Error: Unsupported @lock format in database."
-msgstr "FEL: Felaktigt @lock format i databasen."
-
 #: src/destroy.c:271
 msgid "Even you can't do that!"
 msgstr "Inte ens du kan g\366ra det!"
-
-#: src/move.c:384
-#, c-format
-msgid "Exit #%d destination became %d during move.\n"
-msgstr "Ut\345ng #%d destination blev %d under flyttning.\n"
 
 #: src/flags.c:1080
 #, c-format
@@ -3004,10 +1430,6 @@ msgstr "Utg\345ng %s s\344nder inte l\344ngre."
 #, c-format
 msgid "Exit %s is now broadcasting."
 msgstr "Ut\345ng %s s\344nder nu."
-
-#: src/create.c:610
-msgid "Exit cloned."
-msgstr "Utgång klonad."
 
 #: src/move.c:386 src/move.c:390
 msgid "Exit destination is invalid."
@@ -3025,135 +1447,6 @@ msgstr "Utg\345ngar:"
 msgid "Expected between 1 and 5 arguments."
 msgstr "\"Väntade 1-5 argument.\""
 
-#: game.c:770
-msgid "FAILED: Reverting to normal chatdb"
-msgstr "MISSLYCKADES: \305terg\345r till normal chatdb"
-
-#: src/game.c:722
-msgid "FAILED: Reverting to normal chatdb\n"
-msgstr "MISSLYCKADES: Återgår till normala chatdb\n"
-
-#: game.c:744
-msgid "FAILED: Reverting to normal maildb"
-msgstr "MISSLYCKADES: \305terg\345r till normal maildb"
-
-#: src/game.c:696
-msgid "FAILED: Reverting to normal maildb\n"
-msgstr "MISSLYCKADES: Återgår till normala maildb\n"
-
-#: flags.c:664
-#, c-format
-msgid "FLAG INIT: Unable to locate flagspace %s."
-msgstr "\"FLAGGINITIERING: Kunde inte hitta flaggutrymme %s.\""
-
-#: flags.c:542
-#, c-format
-msgid "FLAG INIT: flag alias %s matches no known flag."
-msgstr "FLAG INIT: flagg alias %s tr\344ffar ingen k\344nd flagga."
-
-#: src/flags.c:546
-#, c-format
-msgid "FLAG INIT: flag alias %s matches no known flag.\n"
-msgstr "FLAGGINITIERING: flagg-alias %s träffar ingen känd flagga.\n"
-
-#: flags.c:550
-#, c-format
-msgid "FLAG READ: Unable to locate flagspace %s."
-msgstr "\"FLAGGLÄSNING: Kunde inte hitta flaggutrymme %s.\""
-
-#: flags.c:432
-#, c-format
-msgid "FLAG READ: flag alias %s matches no known flag. Skipping aliases."
-msgstr "\"FLAGGLÄSNING: Aliaset %s motsvarar ingen känd flagga. Skippar alias.\""
-
-#: flags.c:600
-#, c-format
-msgid "FLAG WRITE: Unable to locate flagspace %s."
-msgstr "FLAGGSKRIVNING: Kunde inte hitta flaggutrymme %s.\""
-
-#: flags.c:1566 flags.c:1663 flags.c:1830
-#, c-format
-msgid "FLAG: Unable to locate flagspace %s"
-msgstr "FLAGGa: Kunde inte hitta flaggutrymme %s.\""
-
-#: flags.c:1074
-#, c-format
-msgid "FLAG: Unable to locate flagspace %s."
-msgstr "FLAGGA: Kunde inte hitta flaggutrymme %s.\""
-
-#: src/player.c:188
-#, c-format
-msgid "Failed creation (bad name) from %s"
-msgstr "Skapande misslyckades (felaktigt namn) fr\345n %s"
-
-#: src/player.c:192
-#, c-format
-msgid "Failed creation (bad password) from %s"
-msgstr "Skapande misslyckades (felaktigt l\366senord) fr\345n %s"
-
-#: player.c:204
-#, c-format
-msgid "Failed creation (no db space) from %s"
-msgstr "Skapande misslyckades (ingen plats f\366r databas) fr\345n %s"
-
-#: src/player.c:261
-#, c-format
-msgid "Failed registration (bad email: %s) from %s"
-msgstr "Registrering misslyckades (felaktig epost: %s) fr\345n %s"
-
-#: src/player.c:225
-#, c-format
-msgid "Failed registration (bad name) from %s"
-msgstr "Registrering misslyckades (felaktigt namn) fr\345n %s"
-
-#: src/player.c:242 src/player.c:253
-#, c-format
-msgid "Failed registration (bad site in email: %s) from %s"
-msgstr "Registrering misslyckades (felaktig sajt i epost: %s) fr\345n %s"
-
-#: player.c:281
-#, c-format
-msgid "Failed registration (no db space) from %s"
-msgstr "Registrering misslyckades (ingen plats f\366r databas) fr\345n %s"
-
-#: src/player.c:321
-#, c-format
-msgid "Failed registration (no sendmail) from %s"
-msgstr "Registrering misslyckades (ingen sendmail) fr\345n %s"
-
-#: src/player.c:285
-#, c-format
-msgid "Failed registration of %s by %s: unable to open sendmail"
-msgstr "Registrering av %s fr\345n %s misslyckades: kunde inte \366ppna sendmail"
-
-#: src/access.c:229
-msgid "Failed to add access node!"
-msgstr "Misslyckades att l\344gga till tilltr\344desnod!"
-
-#: access.c:207
-msgid "Failed to add sitelock node!"
-msgstr "Kunde ej lägga till sitelock nod."
-
-#: src/extmail.c:1023 src/extmail.c:1030
-msgid "Failed to allocate string in send_mail"
-msgstr "Kunde inte allokera str\344ng i send_mail"
-
-#: src/extmail.c:2156
-msgid "Failed to allocate strings in add_folder_name"
-msgstr "Kunde inte allokera str\344ngar i add_folder_name"
-
-#: src/bsd.c:536
-msgid "Failed to set ctype locale from environment.\n"
-msgstr "Kunde inte sätta ctype lokalisering från omgivning.\n"
-
-#: src/bsd.c:540
-msgid "Failed to set messages locale from environment.\n"
-msgstr "Kunde inte sätta lokalitet från omgivning.\n"
-
-#: src/bsd.c:538
-msgid "Failed to set time locale from environment.\n"
-msgstr "Kunde inte sätta tids-lokalisering från omgivning.\n"
-
 #: wiz.c:109
 #, c-format
 msgid "Failure creating '%s' (bad name)"
@@ -3168,104 +1461,10 @@ msgstr "Fel vid f\366rs\366k att skapa '%s' (felaktigt l\366senord)"
 msgid "Feeling poor today?"
 msgstr "K\344nner du dig fattig idag?"
 
-#: filecopy.c:190
-#, c-format
-msgid "File \"%s\" found, size %ld %s, modified on %02d %s %04d %02d:%02d:%02d"
-msgstr "Fil \"%s\" hittad, storlek %ld %s, modiferad %02d %s %04d %02d:%02d:%02d"
-
-#: filecopy.c:194
-#, c-format
-msgid "File \"%s\" found, size %ld %s, modified on %02d %s %04d %02d:%02d:%02d\n"
-msgstr "Fil \"%s\" hittad, storlek %ld %s, modifierad %02d %s %04d %02d:%02d:%02d\n"
-
-#: filecopy.c:317
-msgid "File corrupted during selection process."
-msgstr "Fil f\366rst\366rd under val."
-
-#: src/filecopy.c:313
-msgid "File corrupted during selection process.\n"
-msgstr "Fil förstörd under utvalsprocess.\n"
-
-#: filecopy.c:196
-msgid "File is too small to be a MUSH database."
-msgstr "Filen \344r f\366r liten f\366r att vara en MUSH databas."
-
-#: src/filecopy.c:198
-msgid "File is too small to be a MUSH database.\n"
-msgstr "Filen är för liten för att vara en MUSH databas.\n"
-
-#: src/extmail.c:1274 src/extmail.c:1682
-#, c-format
-msgid "Finding mail stats costs %d %s."
-msgstr "Att hitta brev-statistik kostar %d %s."
-
-#: src/look.c:890
-#, c-format
-msgid "Finds cost %d %s."
-msgstr "Att leta kostar %d %s."
-
-#: src/wiz.c:1079
-#, c-format
-msgid "First mail sender: %d"
-msgstr "F\366rsta brev-skickare: %d"
-
 #: src/extmail.c:1182
 #, c-format
 msgid "Fixing mail for #%d."
 msgstr "Korrigerar brev f\366r #%d."
-
-#: flags.c:1568
-#, c-format
-msgid "Flag %s deleted."
-msgstr "Flagga %s har raderats."
-
-#: flags.c:1518
-#, c-format
-msgid "Flag %s disabled."
-msgstr "Flagga %s har avaktiverats."
-
-#: flags.c:1593
-#, c-format
-msgid "Flag %s enabled."
-msgstr "Flagga %s har aktiverats."
-
-#: flags.c:1467
-msgid "Flag aliases may not contain spaces."
-msgstr "Flaggalias får ej innehålla blanksteg."
-
-#: flags.c:1463
-msgid "Flag aliases must be longer than one character."
-msgstr "Flaggalias måste vara längre än ett tecken."
-
-#: flags.c:1301
-#, c-format
-msgid "Flag char: %c"
-msgstr "Flaggtecken: %c"
-
-#: flags.c:1396
-msgid "Flag characters must be single characters."
-msgstr "Flaggtecken måste vara enskillda tecken."
-
-#: flags.c:1300
-#, c-format
-msgid "Flag name: %s"
-msgstr "Flaggnamn: %s"
-
-#: flags.c:1386
-msgid "Flag names may not contain spaces."
-msgstr "Flaggnamn får ej innehålla blanksteg."
-
-#: flags.c:1382
-msgid "Flag names must be longer than one character."
-msgstr "Flaggnamn måste vara längre än ett tecken."
-
-#: src/flags.c:1097
-msgid "Flag reset."
-msgstr "Flagga nollställd."
-
-#: src/flags.c:1157
-msgid "Flag set."
-msgstr "Flagga satt."
 
 #: function.c:897
 #, c-format
@@ -3276,11 +1475,6 @@ msgstr "Flaggor   : %s"
 #, c-format
 msgid "Flags value: %s"
 msgstr "Flaggvärden: %s"
-
-#: src/wiz.c:1068
-#, c-format
-msgid "Flags value: 0x%08x"
-msgstr "Flagg-värde: 0x%08x"
 
 #: cmds.c:135 cmds.c:280 cmds.c:420
 msgid "Flags"
@@ -3294,11 +1488,6 @@ msgstr "Flaggor: %s"
 #: extmail.c:462 extmail.c:465
 msgid "Folder:"
 msgstr "Mapp:"
-
-#: src/destroy.c:636 src/destroy.c:1040
-#, c-format
-msgid "Found a destroyed exit #%d in room #%d"
-msgstr "Hittade en f\366rintad utg\345ng #%d i rum #%d"
 
 #: src/speech.c:1010
 msgid "From afar"
@@ -3325,10 +1514,6 @@ msgstr ""
 msgid "Full MOTD: %s"
 msgstr "Hela MOTD: %s"
 
-#: src/bsd.c:4274
-msgid "Full motd set."
-msgstr "Hela motd satt."
-
 #: src/function.c:633
 msgid "Function Name                   Dbref #    Attrib"
 msgstr "Funktionsnamn                   Dbref #    Attrib"
@@ -3341,21 +1526,9 @@ msgstr "Funktion adderad."
 msgid "Function deleted."
 msgstr "Funktion raderad."
 
-#: src/fundb.c:650 src/wiz.c:1668 src/wiz.c:2184
-msgid "Function disabled."
-msgstr "Funktion ej tillgänglig."
-
-#: src/game.c:1390
-msgid "Function mapped onto list."
-msgstr "Funktion kopplad till lista."
-
 #: src/function.c:677
 msgid "Function name too long."
 msgstr "Funktionsnamn f\366r l\345ngt."
-
-#: src/function.c:668
-msgid "Function table full."
-msgstr "Funktionstabellen \344r full."
 
 #: src/function.c:741
 msgid "Function updated."
@@ -3453,10 +1626,6 @@ msgstr "SPEL: Misst\344nkt %s"
 msgid "GAME:"
 msgstr "SPEL:"
 
-#: src/extchat.c:1334
-msgid "Gag status must be 'yes' or 'no'."
-msgstr "Munkavelstatus måste vara 'yes' eller 'no'."
-
 #: src/wiz.c:363
 msgid "Garbage belongs in the garbage dump."
 msgstr "Skr\344p h\366r hemma p\345 soptippen."
@@ -3471,10 +1640,6 @@ msgstr "Ge det vilket nytt namn?"
 
 #: src/rob.c:177
 msgid "Give to whom?"
-msgstr "Ge till vem?"
-
-#: rob.c:151
-msgid "Give to whome?"
 msgstr "Ge till vem?"
 
 #: rob.c:374
@@ -3505,10 +1670,6 @@ msgstr "Gästuppkopplingar är tillåtna."
 msgid "Guest connections not allowed."
 msgstr "Gästuppkopplingar ej tillåtna."
 
-#: src/create.c:110 src/create.c:275 src/create.c:369 src/create.c:427\nsrc/create.c:483
-msgid "Guests are not allowed to build."
-msgstr "Gäster får inte bygga."
-
 #: src/extchat.c:793
 msgid "Guests are not allowed to join channels."
 msgstr "G\344ster f\345r inte g\345 med i kanaler."
@@ -3521,10 +1682,6 @@ msgstr "G\344ster kan inte l\344mna kanaler."
 msgid "Guests cannot do that."
 msgstr "G\344ster kan inte g\366ra det."
 
-#: src/player.c:414
-msgid "Guests may not change their passwords."
-msgstr "Gäster får inte ändra deras lösenord."
-
 #: src/extchat.c:846
 msgid "Guests may not leave channels."
 msgstr "G\344ster f\345r inte l\344mna kanaler."
@@ -3533,23 +1690,9 @@ msgstr "G\344ster f\345r inte l\344mna kanaler."
 msgid "Guests may not modify channels."
 msgstr "G\344ster f\345r inte modifiera kanaler."
 
-#: src/set.c:88
-msgid "Guests may not rename themselves."
-msgstr "Gäster får inte ändra sitt namn."
-
-#: src/log.c:270
-#, c-format
-msgid "HUH: %s in %s [%s]: %s"
-msgstr "VAD: %s i %s [%s]: %s"
-
 #: cque.c:830 cque.c:934 cque.c:937
 msgid "Halted"
 msgstr "Stoppat"
-
-#: help.c:123
-#, c-format
-msgid "Help files reindexed by %s(#%d)"
-msgstr "Hj\344lp-filer omindexerade av %s(#%d)"
 
 #: help.c:122 help.c:126
 msgid "Help files reindexed."
@@ -3567,10 +1710,6 @@ msgid ""
 msgstr ""
 "Följande poster matchade '%s':\n"
 "%s\""
-
-#: src/extchat.c:1310
-msgid "Hide status must be 'yes' or 'no'."
-msgstr "Gömd status måste vara 'yes' eller 'no'."
 
 #: src/create.c:326
 msgid "Home set."
@@ -3600,10 +1739,6 @@ msgstr "Krokar är ej tillåtna för det kommandot."
 msgid "How do you want to restrict that %s?"
 msgstr "Hur vill du begränsa det %s?"
 
-#: flags.c:1327
-msgid "How do you want to restrict that flag?"
-msgstr "Hur vill du begränsa den flaggan?"
-
 #: src/command.c:1109
 msgid "How do you want to restrict the command?"
 msgstr "Hur vill du begr\344nsa kommandot?"
@@ -3624,14 +1759,6 @@ msgstr "Hur många rader ville du återspela?"
 msgid "Huh?  (Type \"help\" for help.)"
 msgstr "Eh? (Skriv \"help\" f\366r hj\344lp.)"
 
-#: src/speech.c:892
-msgid "I can't figure out who you want to page."
-msgstr "Jag kan inte räkna ut vem du vill kalla."
-
-#: src/speech.c:195
-msgid "I can't find that object."
-msgstr "Jag kan inte hitta det objektet."
-
 #: src/attrib.c:1076
 msgid "I can't find that player"
 msgstr "Jag kan inte hitta den spelaren"
@@ -3648,10 +1775,6 @@ msgstr "Jag kan inte hitta det."
 #, c-format
 msgid "I can't find who you're trying to page with: %s"
 msgstr "Kan ej hitta den du försöker anropa med: %s"
-
-#: src/speech.c:881
-msgid "I can't find who you're trying to page."
-msgstr "Jag kan inte hitta den du försöker kalla."
 
 #: src/fundb.c:1795 src/match.c:271
 msgid "I can't see that here."
@@ -3690,10 +1813,6 @@ msgstr "Jag kunde inte hitta den spelaren."
 #, c-format
 msgid "I don't know that %s."
 msgstr "Okänd %s."
-
-#: flags.c:1478 flags.c:1509 flags.c:1538 flags.c:1584
-msgid "I don't know that flag."
-msgstr "Okänd flagga."
 
 #: src/rob.c:94
 msgid "I don't know what you mean!"
@@ -3748,10 +1867,6 @@ msgstr "Jag vet inte vem du menar!"
 msgid "I don't recognize that channel."
 msgstr "Jag k\344nner inte igen den kanalen."
 
-#: src/flags.c:1009
-msgid "I don't recognize that flag."
-msgstr "Jag känner inte igen den flaggan."
-
 #: move.c:883
 msgid "I don't recognize who you want to desert."
 msgstr "Jag k\344nner inte igen vem du vill \366verge."
@@ -3759,10 +1874,6 @@ msgstr "Jag k\344nner inte igen vem du vill \366verge."
 #: move.c:853
 msgid "I don't recognize who you want to dismiss."
 msgstr "Jag k\344nner inte igen vem du vill stoppa."
-
-#: src/move.c:788
-msgid "I don't recognize who you want to stop following."
-msgstr "Jag vet inte vem du vill ska sluta följa dig."
 
 #: src/boolexp.c:261
 #, c-format
@@ -3832,10 +1943,6 @@ msgstr "Jag \344r inte s\344ker p\345 vem du menar."
 msgid "I'm not sure who you want to page with: %s"
 msgstr "Jag är osäker på vem du vill anropa med: %s."
 
-#: src/speech.c:886
-msgid "I'm not sure who you want to page!"
-msgstr "Jag är inte säker på vem du vill kalla!"
-
 #: src/speech.c:611 src/speech.c:1371
 #, c-format
 msgid "I'm sorry, but %s wishes to be left alone now."
@@ -3849,43 +1956,6 @@ msgstr "Inaktiv"
 msgid "If you want to quit, use QUIT."
 msgstr "Vill du avsluta, använd QUIT."
 
-#: src/destroy.c:1272
-#, c-format
-msgid "Incorrect location on object %s. Reset to #%d."
-msgstr "Felaktig plats p\345 objekt %s. Nollst\344llt till #%d"
-
-#: src/set.c:134
-msgid "Incorrect password."
-msgstr "Felaktigt lösenord."
-
-#: src/destroy.c:1291
-#, c-format
-msgid "Incorrect source on exit %s. Reset to #%d."
-msgstr "Ej korrekt k\344lla p\345 utg\345ng %s. Nollst\344lld till #%d."
-
-#: help.c:320
-#, c-format
-msgid "Indexing file %s (admin topics)"
-msgstr "Indexerar fil %s (admin \344mnen)"
-
-#: help.c:317
-#, c-format
-msgid "Indexing file %s"
-msgstr "Indexerar fil %s"
-
-#: filecopy.c:320
-msgid "Input database verified. Proceeding to analysis."
-msgstr "In-databas verifierad. Forts\344tter med analys."
-
-#: src/filecopy.c:316
-msgid "Input database verified. Proceeding to analysis.\n"
-msgstr "Indatabas verifierad. Fortsätter med analys.\n"
-
-#: src/log.c:320
-#, c-format
-msgid "Invalid attempt to wipe the %s log, password %s"
-msgstr "Oglitigt f\366rs\366k att radera %s logg, l\366senord %s"
-
 #: extchat.c:2996
 msgid "Invalid buffer size."
 msgstr "Ogiltig buffertstorlek."
@@ -3893,15 +1963,6 @@ msgstr "Ogiltig buffertstorlek."
 #: extchat.c:1598
 msgid "Invalid character in title."
 msgstr "Otillåtet tecken i titeln."
-
-#: src/speech.c:1407
-msgid "Invalid container object."
-msgstr "Ogiltigt beh\345llar-objekt."
-
-#: attrib.c:931
-#, c-format
-msgid "Invalid dbref #%d in @forwardlist."
-msgstr "Ogiltig dbref #%d i @forwardlist."
 
 #: src/game.c:860
 #, c-format
@@ -3925,10 +1986,6 @@ msgstr "Ogiltig parameter."
 msgid "Invalid range argument"
 msgstr "Ogiltigt gr\344ns-argument"
 
-#: wiz.c:1390 wiz.c:1400
-msgid "Invalid range argument."
-msgstr "Ogiltigt områdesargument."
-
 #: src/attrib.c:1038
 msgid "Invalid status on atrlock.. Notify god."
 msgstr "Ogiltig status p\345 atrlock.. Tala om det f\366r Gud."
@@ -3936,15 +1993,6 @@ msgstr "Ogiltig status p\345 atrlock.. Tala om det f\366r Gud."
 #: src/extchat.c:782 src/extchat.c:797 src/extchat.c:842
 msgid "Invalid target."
 msgstr "Ogiltigt m\345l."
-
-#: src/bsd.c:4083 src/bsd.c:4189
-#, c-format
-msgid "Invalid zone #%d for %s(#%d) has bad type %d"
-msgstr "Ogiltig zon #%d f\366r %s(#%d) har felaktig typ %d"
-
-#: src/set.c:342 src/wiz.c:948
-msgid "Invalid zone object type."
-msgstr "Ogiltig zon objekt typ."
 
 #: src/speech.c:1475
 msgid "Invalid zone."
@@ -3972,34 +2020,6 @@ msgstr "Det flyttades till %s."
 msgid "It's all around you!"
 msgstr "Du st\345r i det!"
 
-#: src/rob.c:241
-msgid "It's cruel to reduce anyone to such abject poverty."
-msgstr "Det är grymt att göra någon så fattig."
-
-#: cmds.c:740
-msgid "Just who do you think you are?"
-msgstr "Vem tror du att du är?"
-
-#: game.c:768
-#, c-format
-msgid "LOADING: Trying to get chat from %s"
-msgstr "LADDAR: F\366rs\366ker h\344mta chat fr\345n %s"
-
-#: src/game.c:720
-#, c-format
-msgid "LOADING: Trying to get chat from %s\n"
-msgstr "LADDAR: F\366rs\366ker h\344mta chat fr\345n %s\n"
-
-#: game.c:742
-#, c-format
-msgid "LOADING: Trying to get mail from %s"
-msgstr "LADDAR: F\366rs\366ker h\344mta brev fr\345n %s"
-
-#: src/game.c:694
-#, c-format
-msgid "LOADING: Trying to get mail from %s\n"
-msgstr "LADDAR: Försöker få brev från %s\n"
-
 #: src/player.c:460
 #, c-format
 msgid "Last FAILED connect was from %s."
@@ -4020,40 +2040,19 @@ msgstr "Senaste uppkoppling var fr\345n %s %s."
 msgid "Last is dated %s"
 msgstr "Senaste \344r daterad %s"
 
-#: src/game.c:1427
-#, c-format
-msgid "Last reboot: %s"
-msgstr "Senaste omstarten: %s"
+#: game.c:2091
+msgid "Last reboot"
+msgstr "Senaste omstart"
 
 #: src/version.c:37
 #, c-format
 msgid "Last restarted: %s"
 msgstr "Senast omstartat: %s"
 
-#: src/bsd.c:3352
-#, c-format
-msgid "Limit of %d players reached. Logins disabled.\n"
-msgstr "Begr\344nsing p\345 %d spelare n\345dd. Inlogging ej tillg\344nglig.\n"
-
-#: help.c:332
-#, c-format
-msgid "Line %d of %s: line too long"
-msgstr "Rad %d i %s: rad f\366r l\345ng"
-
 #: create.c:156 create.c:296
 #, c-format
 msgid "Linked exit #%d to #%d"
 msgstr "L\344nkade utg\345ng #%d till #%d"
-
-#: bsd.c:699
-#, c-format
-msgid "Listening (NT-style) on port %d"
-msgstr "Lysstnar (NT-stil) p\345 port %d"
-
-#: src/bsd.c:677
-#, c-format
-msgid "Listening (NT-style) on port %d\n"
-msgstr "Lyssnar (NT-stil) på port %d\n"
 
 #: src/look.c:996
 msgid "Listening EXITS:"
@@ -4067,41 +2066,18 @@ msgstr "Lyssnar i RUM:"
 msgid "Listening in your INVENTORY:"
 msgstr "Lyssnar i ditt INVENTORY:"
 
-#: src/bsd.c:2378
-#, c-format
-msgid "Listening on port %d\n"
-msgstr "Lyssnar på port %d\n"
-
 #: bsd.c:3855 bsd.c:3859
 msgid "Loc #"
 msgstr "Lok #"
-
-#: function.c:917
-#, c-format
-msgid "Location  : #%d/%s"
-msgstr "Plats     : #%d/%s"
 
 #: look.c:791
 #, c-format
 msgid "Location: %s"
 msgstr "Plats: %s"
 
-#: lock.c:369
-msgid "Locked."
-msgstr "Låst."
-
 #: src/log.c:358
 msgid "Log wiped."
 msgstr "Logg rensad."
-
-#: src/speech.c:981
-msgid "Long distance to "
-msgstr "Långdistans till "
-
-#: speech.c:835
-#, c-format
-msgid "Long distance to %s%s: %s%s%s"
-msgstr "Långdistans till %s%s: %s%s%s"
 
 #: bsd.c:4125
 #, c-format
@@ -4204,11 +2180,6 @@ msgstr "BREV: Tilldelade \366ppningar %d"
 msgid "MAIL: Bad alias. Aliases must start with '%c'."
 msgstr "BREV: Felaktigt alias. Alias m\345ste b\366rja med '%c'."
 
-#: src/extmail.c:1876
-#, c-format
-msgid "MAIL: Count of messages is %d, mdb_top is %d."
-msgstr "BREV: Antal meddelanden \344r %d, mdb_top \344r %d."
-
 #: src/extmail.c:233
 #, c-format
 msgid "MAIL: Current folder is %d [%s]."
@@ -4222,18 +2193,6 @@ msgstr "BREV: Nuvarande folder satt till %d[%s]."
 #: src/malias.c:353
 msgid "MAIL: Description changed."
 msgstr "BREV: Beskrivning \344ndrad."
-
-#: malias.c:966
-msgid "MAIL: Error reading MALIAS list"
-msgstr "BREV: Fel under l\344sning av MALIAS lista"
-
-#: src/malias.c:972
-msgid "MAIL: Error reading MALIAS list\n"
-msgstr "BREV: Fel under läsning av MALIAS lista\n"
-
-#: src/malias.c:564
-msgid "MAIL: First character of permisisons must be one of '=', '+', '-',"
-msgstr "BREV: Första tecknet i rättigheter måste vara ett av '=', '+', '-',"
 
 #: src/extmail.c:283
 #, c-format
@@ -4323,10 +2282,6 @@ msgstr "BREV: Brevl\345da rensad."
 msgid "MAIL: Message ages must be integers"
 msgstr "BREV: Meddelandets \345lder m\345ste vara siffror."
 
-#: extmail.c:1980 extmail.c:2077
-msgid "MAIL: Missing end-of-dump marker in mail database."
-msgstr "BREV: Skr\344p i slutet av brev databasen."
-
 #: extmail.c:362
 #, c-format
 msgid "MAIL: Msg #%d:%d cleared."
@@ -4385,11 +2340,6 @@ msgstr "BREV: \305tkomst nekad!"
 msgid "MAIL: Permission denied."
 msgstr "BREV: \305tkomst nekad."
 
-#: src/malias.c:606
-#, c-format
-msgid "MAIL: Permission to list alias '%s' changed to %s"
-msgstr "BREV: Rättigheter till list alias '%s' ändrade till %s"
-
 #: src/malias.c:539
 #, c-format
 msgid "MAIL: Permission to see/use alias '%s' changed to %s"
@@ -4398,11 +2348,6 @@ msgstr "BREV: R\344ttighet att se/anv\344nda alias '%s' \344ndrat till %s"
 #: src/malias.c:408
 msgid "MAIL: That name already exists!"
 msgstr "BREV: Det namnet existerar redan!"
-
-#: src/extmail.c:1320
-#, c-format
-msgid "MAIL: There are %d cleared msgs in the mail spool, totalling %d characters."
-msgstr "BREV: Det finns %d rensade meddelanden i brevlådan, totalt %d tecken."
 
 #: src/extmail.c:1294
 #, c-format
@@ -4423,19 +2368,6 @@ msgstr "BREV: Det finns %d gamla meddelanden i brevl\345dan, totalt %d tecken."
 msgid "MAIL: To whom should I forward?"
 msgstr "BREV: Till vem ska jag skicka vidare?"
 
-#: extmail.c:1989 extmail.c:2082
-msgid "MAIL: Trailing garbage in the mail database."
-msgstr "BREV: Skr\344p i slutet av brev databasen."
-
-#: extmail.c:1978 extmail.c:2073
-msgid "MAIL: Trailing garbage in the mail database.\n"
-msgstr "BREV: Extra skräp i brevdatabasen.\n"
-
-#: src/malias.c:570
-#, c-format
-msgid "MAIL: Unknown permission type '%s'."
-msgstr "BREV: Okänd rättighetstyp '%s'."
-
 #: src/extmail.c:378
 #, c-format
 msgid "MAIL: Unread Msg #%d:%d cleared! Use @mail/unclear %d:%d to recover."
@@ -4445,10 +2377,6 @@ msgstr "BREV: Ol\344sta meddelandet #%d:%d rensat! Anv\344nd @mail/unclear %d:%d
 #, c-format
 msgid "MAIL: Warning! Limit on inbox messages is %d!"
 msgstr "BREV: Varning! Begr\344nsning av inkommande meddelanden \344r %d!"
-
-#: src/malias.c:143
-msgid "MAIL: What alias do you want to create?."
-msgstr "BREV: Vilket alias vill du skapa?"
 
 #: src/extmail.c:239 src/extmail.c:279
 msgid "MAIL: What folder is that?"
@@ -4504,24 +2432,6 @@ msgstr "BREV: Du vill f\366rmodligen inte skicka ett brev som s\344ger 'clear'."
 msgid "MAIL: You sent your message to %s."
 msgstr "BREV: Du skickade ditt meddelande till %s."
 
-#: extmail.c:2066
-msgid "MAIL: bad code."
-msgstr "BREV: felaktig kod."
-
-#: src/extmail.c:2064
-msgid "MAIL: bad code.\n"
-msgstr "BREV: felaktig kod.\n"
-
-#: extmail.c:2074
-#, c-format
-msgid "MAIL: mail_top is %d, only read in %d messages."
-msgstr "BREV: mail_top \344r %d, l\344ste bara %d meddelanden."
-
-#: src/extmail.c:2073
-#, c-format
-msgid "MAIL: mail_top is %d, only read in %d messages.\n"
-msgstr "BREV: mail_top är %d, läste bara %d meddelanden.\n"
-
 #: src/malias.c:675
 #, c-format
 msgid "MAIL: player '%s' exists already in alias %s."
@@ -4531,20 +2441,6 @@ msgstr "BREV: spelare '%s' finns redan i alias %s."
 #, c-format
 msgid "MAIL: player '%s' is not in alias %s."
 msgstr "BREV: spelare '%s' finns inte i alias %s."
-
-#: game.c:650
-#, c-format
-msgid "MUSH restarted, PID %d, at %s"
-msgstr "MUSH omstartat, PID %d, %s"
-
-#: src/game.c:609
-#, c-format
-msgid "MUSH restarted, PID %d, at %s\n"
-msgstr "MUSH omstartat, PID %d, %s\n"
-
-#: bsd.c:753
-msgid "MUSH shutdown completed."
-msgstr "MUSH nedst\344nging klar."
 
 #: src/extmail.c:1161
 #, c-format
@@ -4568,16 +2464,6 @@ msgstr "Brev sundhets-korrigering klar."
 #, c-format
 msgid "Mail statistics for %s:"
 msgstr "Brev statistik f\366r %s:"
-
-#: help.c:331
-#, c-format
-msgid "Malformed help file %s doesn't start with &"
-msgstr "Felaktigt format p\345 hj\344lp fil %s, startar inte med &"
-
-#: src/version.c:49
-#, c-format
-msgid "Malloc package: %d"
-msgstr "Malloc paket: %d"
 
 #: extmail.c:2477
 msgid "Mass "
@@ -4629,55 +2515,10 @@ msgstr "Tr\344ffar p\345 zon-m\344star rum p\345 plats:"
 msgid "Members of channel <%s> are:"
 msgstr "Anv\344ndare p\345 kanal <%s> \344r:"
 
-#: src/fundb.c:1426
-msgid "More than one match found."
-msgstr "Mer än en träff hittad."
-
-#: src/bsd.c:4262
-msgid "Motd set."
-msgstr "Motd satt."
-
-#: src/destroy.c:1213 src/destroy.c:1221
-#, c-format
-msgid "Moved to %s."
-msgstr "Flyttade till %s."
-
-#: src/player.c:165
-#, c-format
-msgid "Multiple connection to Guest #%d"
-msgstr "Flera uppkopplingar till Guest #%d"
-
-#: src/malias.c:572
-msgid "Must be one of 'everyone', 'members', 'admin', 'owner' (can be abbreviated)."
-msgstr "Måste vara en av 'everyone', 'members', 'admin', 'owner' (kan förkortas)."
-
-#: src/extchat.c:1279
-msgid "Mute status must be 'yes' or 'no'."
-msgstr "Stum status måste vara 'yes' eller 'no'."
-
-#: src/malias.c:284
-msgid "Name         Description                         Use See Owner"
-msgstr "Namn         Beskrivning                         Anv Se  Ägare"
-
 #: function.c:1090
 #, c-format
 msgid "Name      : %s() (%s%s)"
 msgstr "Namn      : %s() (%s%s)"
-
-#: function.c:876
-#, c-format
-msgid "Name      : %s() (%s)"
-msgstr "Namn      : %s() (%s)"
-
-#: src/wiz.c:2094
-#, c-format
-msgid "Name %s locked"
-msgstr "Namn %s låst"
-
-#: src/set.c:143
-#, c-format
-msgid "Name change by %s(#%d) to %s"
-msgstr "Namn\344ndring av %s(#%d) till %s"
 
 #: src/wiz.c:2069
 msgid "Name removed."
@@ -4691,30 +2532,10 @@ msgstr "Namn satt."
 msgid "Name"
 msgstr "Namn"
 
-#: src/game.c:1517
-#, c-format
-msgid "Network I/O: %10ld in     %10ld out"
-msgstr "N\344tverk I/O: %10ld in     %10ld ut"
-
-#: src/game.c:254
-#, c-format
-msgid "Network I/O: %10ld in     %10ld out\n"
-msgstr "Nätverk I/O: %10ld in     %10ld ut\n"
-
 #: src/wiz.c:131
 #, c-format
 msgid "New player '%s' (#%d) created with password '%s'"
 msgstr "Ny spelare '%s' (#%d) skapad med l\366senord '%s'"
-
-#: src/access.c:192
-#, c-format
-msgid "No %s file found."
-msgstr "Ingen %s fil hittad."
-
-#: src/command.c:1017
-#, c-format
-msgid "No command vector on command %s."
-msgstr "Ingen kommandovektor p\345 kommando %s."
 
 #: src/bsd.c:3090
 #, c-format
@@ -4728,15 +2549,6 @@ msgstr "Inga utg\345ngar."
 #: src/function.c:626
 msgid "No global user-defined functions exist."
 msgstr "Det finns inga globala anv\344ndar-definierade funktioner."
-
-#: src/destroy.c:291 src/destroy.c:297
-msgid "No home-wrecking allowed! Relink first."
-msgstr "Du kan inte förstöra hem! Länka om det först."
-
-#: help.c:162
-#, c-format
-msgid "No index for %s."
-msgstr "Inget index f\366r %s."
 
 #: lock.c:600
 msgid "No lock name given."
@@ -4802,10 +2614,6 @@ msgstr "Inget s\345dant alternativ."
 msgid "No such player."
 msgstr "Ingen s\345dan spelare."
 
-#: src/wiz.c:1370
-msgid "No such power to search for."
-msgstr "Ingen sådan makt att söka efter."
-
 #: src/extmail.c:747 src/extmail.c:859
 #, c-format
 msgid "No such unique player: %s."
@@ -4823,22 +2631,6 @@ msgstr "Inga giltiga alternativ hittade."
 msgid "No zone specified."
 msgstr "Ingen zon specifierad."
 
-#: wiz.c:809
-msgid "None of your connections are idle."
-msgstr "Inga av dina uppkopplingar \344r oaktiva."
-
-#: src/wiz.c:825
-msgid "None of your connections has been idle."
-msgstr "Inga av dina uppkopplingar har varit inaktiv."
-
-#: src/wiz.c:1861
-msgid "Not enough money to do search."
-msgstr "Inte tillräckligt mycket pengar för att söka."
-
-#: src/cque.c:182
-msgid "Not enough money to queue command."
-msgstr "Inte tillr\344ckligt mycket pengar f\366r att k\366a kommando."
-
 #: src/fundb.c:1424 src/look.c:1177 src/wiz.c:1553 src/wiz.c:1913
 msgid "Nothing found."
 msgstr "Inget hittat."
@@ -4847,23 +2639,9 @@ msgstr "Inget hittat."
 msgid "Nothing to do."
 msgstr "Inget att g\366ra."
 
-#: src/game.c:574
-#, c-format
-msgid "Null name on object #%d"
-msgstr "Null namn p\345 objekt #%d"
-
 #: src/wiz.c:1039
 msgid "Number out of range."
 msgstr "Nummer utanf\366r gr\344nser."
-
-#: src/bsd.c:2996
-msgid "O_NDELAY fcntl failed"
-msgstr "O_NDELAY fcntl misslyckades"
-
-#: src/destroy.c:1178
-#, c-format
-msgid "Object %s not pointed to by anything."
-msgstr "Objekt %s pekas inte p\345 av n\345got."
 
 #: src/cque.c:795
 msgid "Object Queue:"
@@ -4895,25 +2673,9 @@ msgstr "Bara Gud kan skapa ekonomiskt kaos."
 msgid "Only God can do that."
 msgstr "Bara Gud kan g\366ra det."
 
-#: src/set.c:703
-msgid "Only God can edit himself!"
-msgstr "Bara Gud kan editera sig själv!"
-
 #: src/set.c:526
 msgid "Only God can set himself!"
 msgstr "Bara Gud kan s\344tta sig sj\344lv!"
-
-#: src/create.c:272
-msgid "Only authorized builders may seize exits."
-msgstr "Bara auktoriserade byggare får ta över utgångar."
-
-#: src/speech.c:606
-msgid "Only players and things can hear @pemits."
-msgstr "Bara spelare och saker kan höra @pemits."
-
-#: src/set.c:362
-msgid "Only rooms may have zone master rooms."
-msgstr "Bara rum kan ha zon-mästar rum."
 
 #: src/wiz.c:162
 msgid "Only wizards may change a quota."
@@ -4927,11 +2689,6 @@ msgstr "Bara wizards kan ge makt."
 msgid "Open where?"
 msgstr "\326ppna var?"
 
-#: create.c:142
-#, c-format
-msgid "Opened exit #%d"
-msgstr "Öppnade utgång #%d"
-
 #: create.c:140
 #, c-format
 msgid "Opened exit %s"
@@ -4940,14 +2697,6 @@ msgstr "\326ppnade utg\345ng %s"
 #: src/cmds.c:195
 msgid "Option set."
 msgstr "Alternativ satt."
-
-#: src/destroy.c:1226
-msgid "Orphaned exit destroyed."
-msgstr "F\366r\344ldral\366s utg\345ng f\366rst\366rd."
-
-#: help.c:272
-msgid "Out of memory"
-msgstr "Slut p\345 minne"
 
 #: src/set.c:227
 msgid "Owner changed."
@@ -4967,16 +2716,6 @@ msgstr "\304gare: %s  Zon: %s  %s: %d"
 msgid "Ownership changed for %d objects."
 msgstr "\304garskap f\366r %d objekt \344ndrad."
 
-#: src/game.c:1511
-#, c-format
-msgid "Page faults: %10ld hard   %10ld soft    %10ld swapouts"
-msgstr "Sidfel:     %10ld h\345rda  %10ld mjuka   %10ld utbyten"
-
-#: src/game.c:250
-#, c-format
-msgid "Page faults: %10ld hard   %10ld soft    %10ld swapouts\n"
-msgstr "Sidfel:     %10ld hårda  %10ld mjuka   %10ld utbyten\n"
-
 #: src/game.c:182
 #, c-format
 msgid "Paranoid dumping, checkpoint interval %d."
@@ -4991,18 +2730,10 @@ msgstr "F\366r\344lder \344ndrad."
 msgid "Parent: %s"
 msgstr "F\366r\344lder: %s"
 
-#: src/player.c:423 src/wiz.c:738
-msgid "Password changed."
-msgstr "Lösenord ändrat."
-
 #: wiz.c:724
 #, c-format
 msgid "Password for %s changed."
 msgstr "L\366senord \344ndrat \345t %s"
-
-#: src/set.c:842
-msgid "Pemission denied."
-msgstr "Åtkomst nekad."
 
 #: src/extmail.c:1584
 msgid "Permission denied"
@@ -5016,10 +2747,6 @@ msgstr "\305tkomst nekad, kommandot \344r typ-begr\344nsat."
 msgid "Permission denied. Invalid checkpoint interval."
 msgstr "\305tkomst nekad. Ogiltigt kontrollpunktsintervall."
 
-#: src/extchat.c:1215
-msgid "Permission denied. Use @channel/mute <chan>=<y/n>"
-msgstr "Åtkomst nekad. Använd @channel/mute <chan>=<y/n>"
-
 #: src/bsd.c:4589 src/bsd.c:4627 src/command.c:1288 src/cque.c:611\nsrc/cque.c:669 src/cque.c:909 src/cque.c:1040 src/create.c:125\nsrc/create.c:201 src/create.c:252 src/create.c:259 src/create.c:316\nsrc/create.c:320 src/create.c:337 src/create.c:491 src/destroy.c:228\nsrc/extchat.c:1150 src/extchat.c:1167 src/extchat.c:1197 src/flags.c:1021\nsrc/flags.c:1027 src/flags.c:1033 src/function.c:664 src/function.c:759\nsrc/fundb.c:1080 src/fundb.c:1332 src/game.c:771 src/game.c:1177\nsrc/log.c:295 src/look.c:1093 src/look.c:1333 src/malias.c:633\nsrc/malias.c:736 src/match.c:158 src/move.c:471 src/move.c:630\nsrc/move.c:638 src/predicat.c:865 src/predicat.c:1037 src/rob.c:219\nsrc/set.c:210 src/set.c:680 src/set.c:809 src/set.c:872 src/set.c:889\nsrc/set.c:952 src/speech.c:1479 src/warnings.c:263 src/warnings.c:439\nsrc/wiz.c:428 src/wiz.c:538 src/wiz.c:1029 src/wiz.c:1059 src/wiz.c:1630\nsrc/wiz.c:1855
 msgid "Permission denied."
 msgstr "\305tkomst nekad."
@@ -5031,11 +2758,6 @@ msgstr "Du har inte r\344tt att g\345 med."
 #: src/set.c:601
 msgid "Permission to read attribute denied."
 msgstr "Inget r\344tt att l\344sa attribut."
-
-#: flags.c:1354
-#, c-format
-msgid "Permissions on %s flag set."
-msgstr "Behörighet på flagga %s satt."
 
 #: src/extchat.c:1210
 #, c-format
@@ -5050,10 +2772,6 @@ msgstr "Spelarnamn"
 msgid "Player Queue:"
 msgstr "Spelark\366:"
 
-#: src/wiz.c:133
-msgid "Player creation"
-msgstr "Spelar skapelse"
-
 #: src/set.c:205
 msgid "Players always own themselves."
 msgstr "Spelare \344ger alltid sig sj\344lva."
@@ -5062,47 +2780,14 @@ msgstr "Spelare \344ger alltid sig sj\344lva."
 msgid "Players connecting are set SUSPECT"
 msgstr "Uppkopplande spelare är satt SUSPECT"
 
-#: src/bsd.c:4341
-#, c-format
-msgid "Poll Set to '%s'."
-msgstr "Poll satt till '%s'."
-
-#: src/bsd.c:4337
-#, c-format
-msgid "Poll set. %d characters lost."
-msgstr "Poll satt. %d tecken f\366rlorade."
-
-#: src/bsd.c:4340
-msgid "Poll set."
-msgstr "Poll satt."
-
 #: src/speech.c:679
 msgid "Posing as a wizard could be hazardous to your health."
 msgstr "Att l\345tsas vara en wizard kan vara livsfarligt."
-
-#: src/wiz.c:1208
-#, c-format
-msgid "Power Granted: %s"
-msgstr "Power beviljad: %s"
-
-#: src/wiz.c:1199
-#, c-format
-msgid "Power Removed: %s"
-msgstr "Power borttagen: %s"
-
-#: src/wiz.c:1070
-#, c-format
-msgid "Powers value: 0x%08x"
-msgstr "Powers värde: 0x%08x"
 
 #: look.c:716
 #, c-format
 msgid "Powers: %s"
 msgstr "Powers: %s"
-
-#: game.c:233
-msgid "Process statistics:"
-msgstr "Process statistik:"
 
 #: src/destroy.c:257
 msgid "Programs don't kill people; people kill people!"
@@ -5121,15 +2806,6 @@ msgstr "K\366 f\366r : %s"
 msgid "Queue for : all"
 msgstr "K\366 f\366r : alla"
 
-#: src/extchat.c:1226
-msgid "Quiet status must be 'yes' or 'no'."
-msgstr "Tystetsstatus måste vara 'yes' eller 'no'."
-
-#: src/extchat.c:1230
-#, c-format
-msgid "Quiet status on channel <%s> changed."
-msgstr "Tystnadsstatus på kanal <%s> ändrad."
-
 #: src/wiz.c:271
 msgid "Quotas not changed."
 msgstr "Kvoter ej \344ndrade."
@@ -5137,15 +2813,6 @@ msgstr "Kvoter ej \344ndrade."
 #: extmail.c:2469
 msgid "Read "
 msgstr "L\344s "
-
-#: src/bsd.c:557
-#, c-format
-msgid "Redirecting output to: %s\n"
-msgstr "Omdirigerar outdata till: %s\n"
-
-#: bsd.c:2078
-msgid "Refused connection"
-msgstr "V\344grade uppkoppling"
 
 #: bsd.c:275
 msgid "Registration successful! You will receive your password by email."
@@ -5182,29 +2849,6 @@ msgstr "Begr\344nsingsf\366rs\366k misslyckades."
 msgid "Restrict what function?"
 msgstr "Begr\344nsa vilken funktion?"
 
-#: function.c:739
-msgid "Restricted."
-msgstr "Begränsad."
-
-#: src/rob.c:38
-msgid "Rob whom?"
-msgstr "Råna vem?"
-
-#: cque.c:170
-#, c-format
-msgid "Runaway object #%d executing: %s"
-msgstr "Bortsprunget objekt #%d utför: %s"
-
-#: cque.c:203
-#, c-format
-msgid "Runaway object %s executing: %s"
-msgstr "Burtsprunget objekt %s utf\366r: %s"
-
-#: src/cque.c:187
-#, c-format
-msgid "Runaway object: %s(#%d). Commands halted."
-msgstr "Bortsprunget objekt: %s(#%d). Kommandon stoppade."
-
 #: cque.c:201
 #, c-format
 msgid "Runaway object: %s(%s). Commands halted."
@@ -5214,43 +2858,10 @@ msgstr "Bortsprunget objekt: %s(%s). Kommandon stoppade."
 msgid "Running database topology warning checks"
 msgstr "K\366r varningskollar f\366r databastopologi"
 
-#: src/bsd.c:514
-#, c-format
-msgid "Running under Windows %s\n"
-msgstr "K\366r under Windows %s\n"
-
-#: game.c:263
-#, c-format
-msgid "SHUTDOWN by %s(%s)\n"
-msgstr "NEDST\304NGNING av %s\n"
-
-#: src/game.c:274
-#, c-format
-msgid "SHUTDOWN by %s\n"
-msgstr "NEDSTÄNGNING av %s\n"
-
-#: src/bsd.c:1749
-msgid "SHUTDOWN by external signal"
-msgstr "NEDST\304NGING av extern signal"
-
-#: src/timer.c:144
-msgid "SIGHUP received: reloading .txt and .cnf files"
-msgstr "SIGHUP f\345ngad: laddar om .txt och .cnf filer"
-
-#: src/bsd.c:3761
-#, c-format
-msgid "SIGNAL_SHUTDOWN: caught signal %d"
-msgstr "SIGNAL_SHUTDOWN: fångade signal %d"
-
 #: src/wiz.c:1471
 #, c-format
 msgid "Searches cost %d %s."
 msgstr "Att s\366ka kostar %d %s."
-
-#: help.c:224
-#, c-format
-msgid "Seek error in file %s"
-msgstr "S\366k-fel i fil %s"
 
 #: src/cque.c:803
 msgid "Semaphore Queue:"
@@ -5259,18 +2870,6 @@ msgstr "Semafor-k\366:"
 #: game.c:1408
 msgid "Separator must be one character."
 msgstr "\305tskiljare m\345ste vara ett tecken."
-
-#: game.c:1347
-msgid "Seperator must be one character."
-msgstr "Åtskiljare måste vara ett tecken."
-
-#: src/services.c:629
-msgid "Service successfully installed\n"
-msgstr "Installation av tj\344nst lyckades\n"
-
-#: src/services.c:668
-msgid "Service successfully removed\n"
-msgstr "Tj\344nst togs bort korrekt\n"
 
 #: attrib.c:942
 msgid "Set"
@@ -5308,25 +2907,9 @@ msgstr "Tyv\344rr kan du bara skapa utg\345ngar ut ur rum."
 msgid "Sorry you can't drop exits."
 msgstr "Du kan tyv\344rr inte sl\344ppa utg\345ngar."
 
-#: src/game.c:156
-msgid "Sorry, CPU intensive commands are currently disabled."
-msgstr "CPU intensiva kommandon är tyvärr inte tillgängliga för tillfället."
-
-#: src/boolexp.c:105
-msgid "Sorry, broken lock!"
-msgstr "Tyvärr, trasigt lås!"
-
 #: src/destroy.c:266
 msgid "Sorry, no suicide allowed."
 msgstr "Sj\344lvmord \344r tyv\344rr inte till\345tet."
-
-#: src/set.c:760
-msgid "Sorry, that attribute became too long to display. Examine it to see its new value."
-msgstr "Attributet blev tyvärr för långt för att visas. Undersjök det för att se det nya värdet."
-
-#: src/extmail.c:1270 src/extmail.c:1678 src/look.c:886 src/look.c:1080\nsrc/wiz.c:1241
-msgid "Sorry, that command has been temporarily disabled."
-msgstr "Det kommandot är tyvärr inte tillgängligt för tillfället."
 
 #: help.c:161
 msgid "Sorry, that command is temporarily unvailable."
@@ -5361,18 +2944,10 @@ msgstr "Du \344r tyv\344rr p\345 en ogiltig plats."
 msgid "Sorry, you can only kill players and objects."
 msgstr "Du kan tyv\344rr bara d\366da spelare och objekt."
 
-#: src/rob.c:45
-msgid "Sorry, you can only rob other players."
-msgstr "Du kan tyvärr bara råna andra spelare."
-
 #: src/predicat.c:369
 #, c-format
 msgid "Sorry, you don't have enough %s."
 msgstr "Du har tyv\344rr inte tillr\344ckligt mycket %s."
-
-#: src/speech.c:1484
-msgid "Sorry, you don't have enough money to do that."
-msgstr "Du har tyv\344rr inte nog med pengar f\366r att g\366ra det."
 
 #: src/move.c:643
 msgid "Sorry, you must remain beside yourself!"
@@ -5397,65 +2972,14 @@ msgstr "Din byggkvot \344r tyv\344rr slut."
 msgid "Source: %s"
 msgstr "K\344lla: %s"
 
-#: src/services.c:703
-msgid "Start request sent to service\n"
-msgstr "Start f\366rfr\345gan skickad till tj\344nst\n"
-
-#: src/bsd.c:5211
-msgid "Starting MUD listening thread ...\n"
-msgstr "Startar MUD lyssningstr\345d...\n"
-
-#: src/services.c:737
-msgid "Stop request sent to service\n"
-msgstr "Stopp f\366rfr\345gan skickad till tj\344nst\n"
-
 #: extmail.c:482
 #, c-format
 msgid "Subject: %s"
 msgstr "\304mne: %s"
 
-#: src/player.c:292
-#, c-format
-msgid "Subject: [%s] Registration of %s\n"
-msgstr "\304mne: [%s] Registrering av %s\n"
-
-#: player.c:443
-msgid "Suffering from memory loss? See a wizard!"
-msgstr "Lider du av minnesf\366rlust? Kontakta en wizard!"
-
-#: src/destroy.c:382
-msgid "Surprising type in do_destroy."
-msgstr "F\366rv\345nande typ i do_destroy."
-
-#: src/destroy.c:470
-msgid "Surprising type in pre_destroy."
-msgstr "F\366rv\345nande typ i pre_destroy."
-
-#: src/destroy.c:565
-msgid "Surprising type in un_destroy."
-msgstr "F\366rv\345nande typ i un_destroy."
-
-#: src/destroy.c:1236
-#, c-format
-msgid "Surprising type on #%d found in check_cycles."
-msgstr "F\366rv\345nande typ p\345 #%d hittad i check_cycles."
-
-#: src/services.c:365
-msgid "System shutdown by system operator"
-msgstr "Nedst\344ngning av systemet av systemoperat\366ren"
-
-#: src/game.c:216
-#, c-format
-msgid "TRACE: Cmd:%s\tdepth:%d\tby #%d at #%d"
-msgstr "SPÅR: Kmd:%s\tdjup:%d\tav #%d vid #%d"
-
 #: extmail.c:2481
 msgid "Tagged"
 msgstr "Markerad"
-
-#: move.c:517 move.c:519 move.c:559 move.c:561
-msgid "Taken."
-msgstr "Tagen."
 
 #: wiz.c:423 wiz.c:522
 msgid "Teleported."
@@ -5474,10 +2998,6 @@ msgstr "Det attributet kan inte \344ndras av dig."
 msgid "That attribute is %slocked."
 msgstr "Det attributed \344r %sl\345st."
 
-#: attrib.c:909
-msgid "That attribute is SAFE.  Set it !SAFE to modify it."
-msgstr "Det attributet \344r SAFE. S\344tt det !SAFE f\366r att modifiera det."
-
 #: src/atr_tab.c:246 src/atr_tab.c:280 src/atr_tab.c:307
 msgid "That attribute isn't in the attribute table"
 msgstr "Det attributet finns inte i attribut-tabellen"
@@ -5486,17 +3006,9 @@ msgstr "Det attributet finns inte i attribut-tabellen"
 msgid "That attribute's permissions can not be changed."
 msgstr "Attrbitut-r\344ttigheterna kan inte \344ndras."
 
-#: src/create.c:106 src/create.c:365 src/create.c:423
-msgid "That command is restricted to authorized builders."
-msgstr "Det kommandot är begränsat till auktoriserade byggare."
-
 #: help.c:55
 msgid "That command is unavailable."
 msgstr "Det kommandot \344r inte tillg\344ngligt."
-
-#: flags.c:1482
-msgid "That flag is disabled."
-msgstr "Den flaggan är inaktiverad."
 
 #: function.c:928
 msgid "That function isn't deleted!"
@@ -5510,10 +3022,6 @@ msgstr "Det \344r en utg\345ng."
 msgid "That is not a debugging option."
 msgstr "Det \344r inte ett avlusningsalternativ."
 
-#: src/wiz.c:1192
-msgid "That is not a power."
-msgstr "Det är inte en power."
-
 #: src/set.c:156
 msgid "That is not a reasonable name."
 msgstr "Det \344r inte ett f\366rnuftigt namn."
@@ -5521,10 +3029,6 @@ msgstr "Det \344r inte ett f\366rnuftigt namn."
 #: src/create.c:333
 msgid "That is not a room!"
 msgstr "Det \344r inte ett rum!"
-
-#: src/attrib.c:907 src/attrib.c:915
-msgid "That is not a valid alias."
-msgstr "Det \344r inte ett giltigt alias."
 
 #: src/extchat.c:1003
 msgid "That is not a valid channel."
@@ -5582,22 +3086,6 @@ msgstr "Objektet \344r satt WIZARD. Du m\345ste anv\344nda @nuke f\366r att f\36
 msgid "That player does not seem to exist."
 msgstr "Den spelaren verkar inte existera."
 
-#: src/speech.c:904
-msgid "That player is not accepting any pages."
-msgstr "Den spelaren accepterar inte kallelser."
-
-#: src/speech.c:914
-msgid "That player is not accepting your pages."
-msgstr "Den spelaren accepterar inte dina kallelser."
-
-#: src/speech.c:898 src/speech.c:911
-msgid "That player is not connected."
-msgstr "Den spelaren är inte uppkopplad."
-
-#: src/wiz.c:827
-msgid "That player isn't connected!"
-msgstr "Den spelaren \344r inte uppkopplad!"
-
 #: src/look.c:1052
 msgid "That player wishes to have some privacy."
 msgstr "Den spelaren vill vara ensam."
@@ -5626,10 +3114,6 @@ msgstr "Det \344r inte en inbyggd funktion."
 msgid "That's not a very good name for an attribute."
 msgstr "Det \344r inte ett bra namn f\366r ett attribut."
 
-#: src/services.c:104 src/services.c:118
-msgid "The MUSH is already running as a service.\n"
-msgstr "MUSHet k\366rs redan som en tj\344nst.\n"
-
 #: src/extchat.c:1176
 msgid "The channel needs a more unique new name."
 msgstr "Kanalen beh\366ver ett mer unikt nytt namn."
@@ -5645,11 +3129,6 @@ msgstr "Tecknet '|' f\345r inte anv\344ndas i namn p\345 l\345s."
 #: src/destroy.c:705
 msgid "The floor disappears under your feet, you fall through NOTHINGness and then:"
 msgstr "Golvet f\366rsvinner under dina f\366tter och du faller genom intigheten och sedan:"
-
-#: src/game.c:1525
-#, c-format
-msgid "The head of the object free list is #%d."
-msgstr "Huvudet på listan över fria objekt är #%d."
 
 #: src/game.c:1163
 #, c-format
@@ -5697,14 +3176,6 @@ msgstr "Rummet skakar och b\366rjar falla s\366nder."
 msgid "The service continue is pending."
 msgstr "Forts\344ttning av tj\344nsten v\344ntar."
 
-#: src/services.c:726
-msgid "The service is not currently running."
-msgstr "Tj\344nsten k\366rs inte f\366r tillf\344llet."
-
-#: src/services.c:692
-msgid "The service is not currently stopped."
-msgstr "Tj\344nsten \344r inte stoppad f\366r tillf\344llet."
-
 #: src/services.c:763
 msgid "The service is not running."
 msgstr "Tj\344nsten k\366rs inte."
@@ -5732,7 +3203,7 @@ msgstr "Tj\344nstepausen v\344ntar."
 #: src/destroy.c:341
 #, c-format
 msgid "The wrecking ball is on its way for %s's %s and its exits."
-msgstr "%s och dess utg\345ngar \344r p\345 v\344g att f\366rintas."
+msgstr "Rivningskulan är på väg att demolera %s %s och dess utgångar."
 
 #: src/extmail.c:1281
 #, c-format
@@ -5784,29 +3255,25 @@ msgstr "Detta rum s\344nder inte l\344ngre."
 msgid "This room is now broadcasting."
 msgstr "Detta rum s\344nder nu."
 
-#: src/game.c:1439
-#, c-format
-msgid "Time until next database save: %ld minutes %ld seconds."
-msgstr "Tid innan nästa sparning av databas: %ld minuter %ld sekunder."
+#: game.c:2097
+msgid "Time now"
+msgstr "Nuvarande tid"
 
-#: src/game.c:1499
-#, c-format
-msgid "Time used:   %10ld user   %10ld sys"
-msgstr "Anv\344nd tid:  %10ld anv    %10ld system"
+#: game.c:2137
+msgid "Time until next @warnings"
+msgstr "Tid till nästa @warning"
 
-#: src/game.c:239
-#, c-format
-msgid "Time used:   %10ld user   %10ld sys\n"
-msgstr "Tid använd:  %10ld anv.   %10ld sys\n"
+#: game.c:2112
+msgid "Time until next database save"
+msgstr "Tid innan nästa sparning av databas"
 
-#: extchat.c:1376
-#, c-format
-msgid "Title %s for channel <%s>."
-msgstr "Titel %s för kanal <%s>."
+#: game.c:2120
+msgid "Time until next dbck check"
+msgstr "Tid till nästa dbck kontroll"
 
-#: src/extchat.c:1369
-msgid "Title set."
-msgstr "Titel satt."
+#: game.c:2128
+msgid "Time until next purge"
+msgstr "Tid till nästa rensning"
 
 #: src/extchat.c:1358
 msgid "Title too long."
@@ -5816,21 +3283,6 @@ msgstr "Titel f\366r l\345ng."
 #, c-format
 msgid "To access this character, connect to %s and type:\n"
 msgstr "F\366r att f\345 tillg\345ng till denna karakt\344r, koppla upp dig till %s och skriv:\n"
-
-#: src/extchat.c:977
-#, c-format
-msgid "To channel %s: %s says, \"%s\""
-msgstr "Till kanal %s: %s säger, \"%s\""
-
-#: src/extchat.c:968
-#, c-format
-msgid "To channel %s: %s%s%s"
-msgstr "Till kanal %s: %s%s%s"
-
-#: src/wiz.c:1069
-#, c-format
-msgid "Toggles value: 0x%08x"
-msgstr "Togglar värde: 0x%08x"
 
 #: src/set.c:906
 msgid "Too many ancestors."
@@ -5848,41 +3300,17 @@ msgstr "F\366r m\345nga m\344nniskor att oemitta till."
 msgid "Too many people to whisper to."
 msgstr "F\366r m\345nga m\344nniskor att viska till."
 
-#: game.c:1447
-#, c-format
-msgid "Total reboots: %d"
-msgstr "Totalt antal omstarter: %d"
-
-#: wiz.c:1615
-#, c-format
-msgid "Totals: Rooms...%d  Exits...%d  Objects...%d  Players...%d"
-msgstr "Totalt: Rum...%d  Utg\345ngar...%d  Objekt...%d  Spelare...%d"
-
-#: src/log.c:346
-msgid "Trace log wiped."
-msgstr "Sp\345rlogg raderad."
-
-#: src/wiz.c:829
-#, c-format
-msgid "Try %s instead."
-msgstr "Försök med %s istället."
+#: game.c:2093
+msgid "Total reboots"
+msgstr "Totalt antal omstarter"
 
 #: src/wiz.c:878
 msgid "Try asking them first!"
 msgstr "Prova att fr\345ga f\366rst!"
 
-#: src/rob.c:226
-msgid "Try using the \"rob\" command."
-msgstr "Försök att använda \"rob\" kommandot."
-
 #: src/create.c:147
 msgid "Trying to link..."
 msgstr "F\366rs\366ker l\344nka..."
-
-#: src/flags.c:955
-#, c-format
-msgid "Type conflict with flag '%c'."
-msgstr "Typ konflikt med flagga '%c'."
 
 #: flags.c:688
 msgid "Type: "
@@ -5893,129 +3321,27 @@ msgstr "Typ: "
 msgid "Unable to %s attribute."
 msgstr "Kan ej %s attribut."
 
-#: src/services.c:649 src/services.c:689 src/services.c:723 src/services.c:759
-msgid "Unable to access service details"
-msgstr "Kan ej komma \345t tj\344nstedetaljer"
-
-#: src/wiz.c:971
-msgid "Unable to authenticate you, sorry."
-msgstr "Kan tyvärr inte styrka din identitet."
-
-#: filecopy.c:208
-#, c-format
-msgid "Unable to check file %s"
-msgstr "Kunde inte kolla fil %s"
-
-#: src/filecopy.c:210
-#, c-format
-msgid "Unable to check file %s\n"
-msgstr "Kan ej kontrollera fil %s\n"
-
-#: src/services.c:625
-msgid "Unable to create service"
-msgstr "Kan ej skapa tj\344nst."
-
 #: src/wiz.c:2073 src/wiz.c:2076 src/wiz.c:2080
 msgid "Unable to delete name."
 msgstr "Kan ej ta bort namn."
-
-#: src/extchat.c:145
-#, c-format
-msgid "Unable to load channel %d."
-msgstr "Kan ej ladda kanal %d."
 
 #: src/bsd.c:758
 #, c-format
 msgid "Unable to open %s. Error output continues to stderr.\n"
 msgstr "Kan ej \366ppna %s. Felmeddelanden forts\344tter p\345 stderr.\n"
 
-#: src/bsd.c:555
-#, c-format
-msgid "Unable to open %s. Error output to stderr.\n"
-msgstr "Kan ej \366ppna %s. Fel-meddelanden till stderr.\n"
-
-#: src/access.c:261
-#, c-format
-msgid "Unable to open %s."
-msgstr "Kan ej \366ppna %s."
-
-#: filecopy.c:204
-#, c-format
-msgid "Unable to open file %s"
-msgstr "Kan inte \366ppna fil %s"
-
-#: src/filecopy.c:206
-#, c-format
-msgid "Unable to open file %s\n"
-msgstr "Kan ej öppna filen %s\n"
-
-#: filecopy.c:69
-#, c-format
-msgid "Unable to open file: %s"
-msgstr "Kan inte \366ppna fil: %s"
-
-#: src/filecopy.c:73
-#, c-format
-msgid "Unable to open file: %s\n"
-msgstr "Kan ej öppna fil: %s\n"
-
 #: src/wiz.c:2036 src/wiz.c:2056
 msgid "Unable to open names file."
 msgstr "Kan ej \366ppna namn-fil."
-
-#: src/speech.c:873
-msgid "Unable to page:"
-msgstr "Kunde inte kalla:"
-
-#: filecopy.c:217
-#, c-format
-msgid "Unable to read last part of file %s"
-msgstr "Kan inte l\344sa sista delen av fil %s"
-
-#: src/filecopy.c:219
-#, c-format
-msgid "Unable to read last part of file %s\n"
-msgstr "Kan ej läsa sista delen av filen %s\n"
 
 #: bsd.c:274
 msgid "Unable to register that player with that email address."
 msgstr "Kan inte registrera den spelaren med den e-post adressen."
 
-#: src/services.c:137
-msgid "Unable to start service, assuming running console-mode application.\n"
-msgstr "Kan ej starta tj\344nst, f\366ruts\344tter applikation i konsol-l\344ge.\n"
-
-#: src/services.c:521
-msgid "Unable to talk to the Service Control Manager"
-msgstr "Kan ej kommunicera med Tj\344nst Kontrollen"
-
-#: src/speech.c:389
-msgid "Unable to whisper to:"
-msgstr "Kan inte viska till:"
-
-#: filecopy.c:125
-#, c-format
-msgid "Unable to write to file: %s"
-msgstr "Kunde inte skriva till fil: %s"
-
-#: src/filecopy.c:127
-#, c-format
-msgid "Unable to write to file: %s\n"
-msgstr "Kan inte skriva till fil: %s\n"
-
-#: src/access.c:549
-#, c-format
-msgid "Unknown access flag: %s"
-msgstr "Ok\344nd tillg\345ngsflagga: %s"
-
 #: src/access.c:547
 #, c-format
 msgid "Unknown access option: %s"
 msgstr "Ok\344nt tillg\345ngsalternativ: %s"
-
-#: src/wiz.c:1742
-msgid "Unknown flag."
-msgstr "Okänd flagga."
 
 #: src/lock.c:297 src/lock.c:303
 msgid "Unknown lock type."
@@ -6025,26 +3351,13 @@ msgstr "Ok\344nd l\345s typ."
 msgid "Unknown owner."
 msgstr "Ok\344nd \344gare."
 
-#: src/wiz.c:1002
-msgid "Unknown parameter."
-msgstr "Okänd parameter."
-
 #: src/wiz.c:1349 src/wiz.c:1772
 msgid "Unknown parent."
 msgstr "Ok\344nd f\366r\344lder."
 
-#: src/wiz.c:1792
-msgid "Unknown power."
-msgstr "Okänd power."
-
 #: wiz.c:1503
 msgid "Unknown search class."
 msgstr "Ok\344nd s\366k klass."
-
-#: src/destroy.c:599
-#, c-format
-msgid "Unknown type on #%d in free_object."
-msgstr "Ok\344nd typ p\345 #%d i free_object."
 
 #: src/wiz.c:1825 src/wiz.c:1848
 msgid "Unknown type."
@@ -6063,15 +3376,6 @@ msgstr "Ok\344nd zon."
 msgid "Unlink what?"
 msgstr "L\344nka av vad?"
 
-#: create.c:206
-#, c-format
-msgid "Unlinked exit #%d."
-msgstr "Avl\344nkade utg\345ng #%d."
-
-#: set.c:394
-msgid "Unlocked ZMO - automatically zone-locking ZMO to its owner"
-msgstr "Olåst ZMO - Zonlåser den automatiskt till ägaren."
-
 #: extmail.c:2471
 msgid "Unread "
 msgstr "Ol\344st "
@@ -6084,17 +3388,13 @@ msgstr "Ok\344nd status."
 msgid "Unrecognized attribute flag."
 msgstr "Ok\344nd attributflagga."
 
-#: db.c:1313
-msgid "Unrecognized database format!"
-msgstr "Ok\344nt format p\345 databas!"
+#: game.c:2087
+msgid "Up since"
+msgstr "Uppe sedan"
 
 #: extmail.c:2475
 msgid "Urgent "
 msgstr "Viktigt "
-
-#: src/services.c:802
-msgid "Usage is :-\n"
-msgstr "Anv\344ndning:-\n"
 
 #: malias.c:269
 msgid "Use See"
@@ -6118,54 +3418,6 @@ msgstr "Variabel utgång har tomt %s attribut"
 msgid "Variable exit has no %s attribute"
 msgstr "Variabel utgång saknar %s attribut."
 
-#: filecopy.c:315
-msgid "Verifying selected database."
-msgstr "Verifierar vald databas."
-
-#: src/filecopy.c:311
-msgid "Verifying selected database.\n"
-msgstr "Kontrollerar utvald databas.\n"
-
-#: game.c:737
-#, c-format
-msgid "WARNING: God (#%d) is NOT a player."
-msgstr "VARNING: God (#%d) \344r INTE en spelare."
-
-#: src/game.c:689
-#, c-format
-msgid "WARNING: God (#%d) is NOT a player.\n"
-msgstr "VARNING: Gud (#%d) är INTE en spelare.\n"
-
-#: game.c:734
-#, c-format
-msgid "WARNING: Master room (#%d) is NOT a room."
-msgstr "VARNING: Master rum (#%d) \344r INTE ett rum."
-
-#: src/game.c:687
-#, c-format
-msgid "WARNING: Master room (#%d) is NOT a room.\n"
-msgstr "VARNING: Master-rummet (#%d) är INTE ett rum.\n"
-
-#: game.c:731
-#, c-format
-msgid "WARNING: Player_start (#%d) is NOT a room."
-msgstr "VARNING: Player_start (#d) \344r INTE ett rum."
-
-#: src/game.c:684
-#, c-format
-msgid "WARNING: Player_start (#%d) is NOT a room.\n"
-msgstr "VARNING: Player_start (#%d) är INTE ett rum.\n"
-
-#: src/fundb.c:853
-#, c-format
-msgid "WARNING: Weird object #%d (type %d)\n"
-msgstr "VARNING: Konstigt objekt #%d (typ %d)\n"
-
-#: src/log.c:78
-#, c-format
-msgid "WARNING: cannot open log %s\n"
-msgstr "VARNING: kan inte \366ppna logg %s\n"
-
 #: src/cque.c:799
 msgid "Wait Queue:"
 msgstr "V\344ntek\366:"
@@ -6179,25 +3431,9 @@ msgstr "Varning '%s' f\366r %s:"
 msgid "Warning checks complete."
 msgstr "Varningskontroll klar."
 
-#: src/set.c:316
-msgid "Warning: @CHOWN/PRESERVE on a target with WIZ, ROY, INHERIT, or @power priveleges."
-msgstr "Varning: @CHOWN/PRESERVE på mål med WIZ, ROY, INHERIT eller @power privilegier."
-
-#: set.c:323
-msgid "Warning: @CHOWN/PRESERVE on a target with WIZ, ROY, INHERIT, or @power privileges."
-msgstr "Varning: @CHOWN/PRESERVE på ett mål med WIZ, ROY, INHERIT eller @power privilegier."
-
-#: src/create.c:609
-msgid "Warning: @CLONE/PRESERVE on an exit with WIZ, ROY, @Powers, or Warnings."
-msgstr "Varning: @CLONE/PRESERVE på en utgång med WIZ, ROY, @Powers eller Warnings."
-
 #: src/create.c:547
 msgid "Warning: @CLONE/PRESERVE on an object with WIZ, ROY, @powers, or @warnings."
 msgstr "Varning: @CLONE/PRESERVE p\345 ett objekt med WIZ, ROY, @powers eller @warnings."
-
-#: create.c:623
-msgid "Warning: @CLONE/PRESERVE on an room with WIZ, ROY, @powers, or @warnings."
-msgstr "Varning: @CLONE/PRESERVE på ett rum med WIZ, ROU, @powers eller @warnings."
 
 #: src/set.c:417
 msgid "Warning: @chzoning a privileged player."
@@ -6207,25 +3443,9 @@ msgstr "Varning: @chzonar en priviligerad spelare."
 msgid "Warning: @chzoning admin-owned object!"
 msgstr "Varning: @chzonar admin-\344gt objekt!"
 
-#: src/set.c:419
-msgid "Warning: @chzoning an INHERIT player."
-msgstr "Varning: @chzonar en INHERIT spelare."
-
 #: set.c:434
 msgid "Warning: @chzoning an TRUST player."
 msgstr "Varning: @chzoning en TRUST spelare."
-
-#: src/flags.c:1118
-msgid "Warning: Setting inherit flag on zoned object"
-msgstr "Varning: Sätter inherit flagga på zonat objekt."
-
-#: src/set.c:307
-msgid "Warning: WIZ flag reset because @CHOWN/PRESERVE is to a third party."
-msgstr "Varning: WIZ flagga nollställd eftersom @CHOWN/PRESERVE är till en tredje person."
-
-#: src/set.c:391
-msgid "Warning: ZMO may have loose zone lock. Lock ZMOs to =player, not player"
-msgstr "Varning: ZMO kan ha löst zon-lås. Lås ZMOer till =spelare, inte spelare"
 
 #: src/extchat.c:1116
 msgid "Warning: channel will be created disabled."
@@ -6240,27 +3460,9 @@ msgstr "Varning: Kanalen kommer ej att vara tillg\344nglig."
 msgid "Warnings checked: %s"
 msgstr "Varnings kontrollerade: %s"
 
-#: src/wiz.c:1122 src/wiz.c:1146
-msgid "We could let you see that, but then we'd have to kill you."
-msgstr "Vi kunde låta dig se det, men då måste vi döda dig."
-
-#: src/create.c:347
-#, c-format
-msgid "Weird object! Type of #%d is %d"
-msgstr "Konstigt objekt! #%ds typ \344r %d"
-
-#: wiz.c:1226
-#, c-format
-msgid "Weird type for dbref #%d"
-msgstr "Konstig typ f\366r dbref #%d"
-
 #: bsd.c:3796
 msgid "Welcome back from vacation! Don't forget to unset your ON-VACATION flag"
 msgstr "Välkommen tillbaka från semestern! Glöm inte att slå av din ON-VACATION flagga"
-
-#: src/bsd.c:3422
-msgid "Welcome back from vacation!"
-msgstr "Välkommen tillbaka från semestern."
 
 #: src/wiz.c:465
 msgid "What are you doing inside of yourself?"
@@ -6277,10 +3479,6 @@ msgstr "Vilket kommando vill du l\344ra ut?"
 #: src/speech.c:698
 msgid "What did you want to say?"
 msgstr "Vad ville du s\344ga?"
-
-#: src/cmds.c:189
-msgid "What did you want to set that to?"
-msgstr "Vad ville du sätta det till?"
 
 #: src/cmds.c:185
 msgid "What did you want to set?"
@@ -6354,10 +3552,6 @@ msgstr "Vilken sajt ville du l\345sa?"
 msgid "What was the victim of the verb?"
 msgstr "Vad var m\345let f\366r verbet?"
 
-#: src/command.c:1105
-msgid "Where's your pointy hat?"
-msgstr "Var är din spetsiga hatt?"
-
 #: src/atr_tab.c:184 src/atr_tab.c:239 src/atr_tab.c:300
 msgid "Which attribute do you mean?"
 msgstr "Vilket attribut menar du?"
@@ -6386,15 +3580,6 @@ msgstr "Du f\345r inte \344ndra poll."
 msgid "Who do you want to lock?"
 msgstr "Vem vill du l\345sa?"
 
-#: src/bsd.c:4456
-#, c-format
-msgid "Whoa. doing() can't find player #%d on call by #%d\n"
-msgstr "Oj. doing() kan inte hitta spelare #%d i anrop av #%d\n"
-
-#: src/rob.c:240
-msgid "Why not just have that person wake up on a lilypad tomorrow?"
-msgstr "Kanske du ska ta kläderna också?"
-
 #: src/warnings.c:267 src/warnings.c:443
 msgid "Why would you want to be warned about garbage?"
 msgstr "Varf\366r skulle du vilja bli varnad om skr\344p?"
@@ -6411,14 +3596,6 @@ msgstr "Varf\366r vill du l\345sa skr\344p?"
 #, c-format
 msgid "Wiz MOTD: %s"
 msgstr "Wiz MOTD: %s"
-
-#: src/log.c:352
-msgid "Wizard log wiped."
-msgstr "Wizard logg rensad."
-
-#: src/bsd.c:4266
-msgid "Wizard motd set."
-msgstr "Wizard motd satt."
 
 #: src/move.c:512
 msgid "You already have that!"
@@ -6451,17 +3628,9 @@ msgstr "Du f\366ljs efter av: %s"
 msgid "You are following: %s"
 msgstr "Du f\366ljer efter: %s"
 
-#: src/rob.c:234
-msgid "You are not a bank!"
-msgstr "Du är inte en bank!"
-
 #: src/set.c:901
 msgid "You are not allowed to be your own ancestor!"
 msgstr "Du kan inte vara din egen f\366rfader!"
-
-#: extchat.c:1430
-msgid "You are not on any channels."
-msgstr "Du \344r inte p\345 kanal <%s>."
 
 #: src/extchat.c:1254 src/extchat.c:1364
 #, c-format
@@ -6508,37 +3677,13 @@ msgstr "Du sparkade av %s!"
 msgid "You booted unconnected port %s!"
 msgstr "Du slängde ut ej uppkopplad port %s!"
 
-#: src/speech.c:200
-msgid "You can only @oemit to neighboring objects."
-msgstr "Du kan bara @oemitta till angränsande objekt."
-
-#: src/attrib.c:1107
-msgid "You can only chown an attribute to the current owner of the object."
-msgstr "Du kan bara chown:a ett attribut till nuvarande ägaren av objektet."
-
 #: attrib.c:1078
 msgid "You can only chown an attribute to yourself."
 msgstr "Du kan bara chown:a ett attribut till dig sj\344lv."
 
-#: src/create.c:619
-msgid "You can only clone things and exits."
-msgstr "Du kan bara klona saker och utgångar."
-
-#: create.c:689
-msgid "You can only clone things, rooms, and exits."
-msgstr "Du kan bara klona saker, rum och utgångar."
-
-#: function.c:838
-msgid "You can only enable or disable built in functions."
-msgstr "Du kan bara aktivera och avaktivera inbyggda funktioner."
-
 #: src/move.c:749
 msgid "You can only follow players and things."
 msgstr "Du kan bara f\366lja efter spelare och saker."
-
-#: src/wiz.c:568
-msgid "You can only force players and things."
-msgstr "Du kan bara tvinga spelare och saker."
 
 #: src/wiz.c:229
 msgid "You can only set quotas to a number."
@@ -6547,10 +3692,6 @@ msgstr "Du kan bara s\344tta kvoter till ett nummer."
 #: src/wiz.c:234
 msgid "You can only set quotas to a positive number."
 msgstr "Du kan bara s\344tta kvoter till ett positivt nummer."
-
-#: src/services.c:139
-msgid "You can save time on the next invocation by specifying: pennmush /run\n"
-msgstr "Du kan spara tid vid n\344sta uppstart genom att ange: pennmush /run\n"
 
 #: src/extchat.c:1119
 #, c-format
@@ -6561,10 +3702,6 @@ msgstr "Du har inte r\345d med %d %s."
 msgid "You can't boot other people!"
 msgstr "Du kan inte boot:a andra m\344nniskor!"
 
-#: src/extchat.c:999
-msgid "You can't channel-surf that well."
-msgstr "Du kan inte kanalsurfa speciellt bra."
-
 #: src/extchat.c:1112
 msgid "You can't create channels of that type."
 msgstr "Du kan inte skapa den typen av kanaler."
@@ -6572,10 +3709,6 @@ msgstr "Du kan inte skapa den typen av kanaler."
 #: src/function.c:773
 msgid "You can't delete that @function."
 msgstr "Du kan inte ta bort den @function:en."
-
-#: src/game.c:899 src/move.c:710 src/wiz.c:374
-msgid "You can't do that IC!"
-msgstr "Du kan inte g\366ra s\345 IK!"
 
 #: src/move.c:576
 msgid "You can't drop that."
@@ -6705,10 +3838,6 @@ msgstr "Du kan inte @CHOWN/PRESERVE. Anv\344nd normala @CHOWN."
 msgid "You cannot @CLONE/PRESERVE.  Use normal @CLONE instead."
 msgstr "Du kan inte anv\344nda @CLONE/PRESERVE. Anv\344nd normal @CLONE ist\344llet."
 
-#: src/function.c:731
-msgid "You cannot change a built-in function."
-msgstr "Du kan inte ändra en inbyggd funktion."
-
 #: function.c:869
 msgid "You cannot change that built-in function."
 msgstr "Du kan inte \344ndra den inbyggda funktionen."
@@ -6716,10 +3845,6 @@ msgstr "Du kan inte \344ndra den inbyggda funktionen."
 #: src/wiz.c:734
 msgid "You cannot change that player's password."
 msgstr "Du kan inte \344ndra den spelarens l\366senord."
-
-#: src/function.c:768
-msgid "You cannot delete a built-in function."
-msgstr "Du kan inte radera en inbyggd funktion."
 
 #: src/command.c:1248
 msgid "You cannot do that while fixed."
@@ -6740,11 +3865,6 @@ msgstr "Du kan inte modifiera utg\345ngar i det rummet."
 #: src/set.c:357
 msgid "You cannot move that object to that zone."
 msgstr "Du kan inte flytta det objekted till den zonen."
-
-#: src/set.c:444
-#, c-format
-msgid "You cannot set %s/%s"
-msgstr "Du kan inte sätta %s/%s"
 
 #: src/set.c:469
 #, c-format
@@ -6782,16 +3902,6 @@ msgstr "Du har inte makt att \344ndra verkligheten."
 #: src/cque.c:972
 msgid "You do not have the power to restart the world."
 msgstr "Du har inte makt att starta om v\344rlden."
-
-#: src/fundb.c:729
-#, c-format
-msgid "You don't have %d %s to do that."
-msgstr "Du har inte %d %s f\366r att g\366ra det."
-
-#: src/look.c:1097
-#, c-format
-msgid "You don't have enough %d %s to do that."
-msgstr "Du har inte tillr\344ckligt %d %s f\366r att g\366ra det."
 
 #: src/create.c:152
 #, c-format
@@ -6930,10 +4040,6 @@ msgstr "Du m\345ste vara p\345 den kanalen f\366r att prata p\345 den."
 msgid "You must carry the object to @chown it."
 msgstr "Du m\345ste b\344ra objektet f\366r att @chown:a det."
 
-#: wiz.c:1423
-msgid "You must give a flag list."
-msgstr "Du måste ange en flagglista."
-
 #: wiz.c:1453
 msgid "You must give a string of flag characters."
 msgstr "Du måste ange en sträng av flaggtecken."
@@ -6950,22 +4056,10 @@ msgstr "Du m\345ste ange ett kommando."
 msgid "You must specify a flag to set."
 msgstr "Du m\345ste ange en flagga att s\344tta."
 
-#: src/set.c:130
-msgid "You must specify a password to change a player name."
-msgstr "Du måste ange ett lösenord för att ändra ett spelarnamn."
-
 #: src/rob.c:230
 #, c-format
 msgid "You must specify a positive number of %s."
 msgstr "Du m\345ste ange ett positivt antal %s."
-
-#: src/wiz.c:1187
-msgid "You must specify a power."
-msgstr "Du måste ange en power."
-
-#: src/cmds.c:228
-msgid "You must specify a type of lock"
-msgstr "Du m\345ste ange en l\345styp."
 
 #: src/look.c:1044
 msgid "You must specify a valid player name."
@@ -6974,10 +4068,6 @@ msgstr "Du m\345ste ange ett giltigt spelarnamn."
 #: src/function.c:672
 msgid "You must specify an object and an attribute."
 msgstr "Du m\345ste ange ett objekt och ett attribut."
-
-#: src/services.c:657
-msgid "You must stop the service before you can remove it."
-msgstr "Du m\345ste stoppa en tj\344nst innan du kan ta bort den."
 
 #: src/destroy.c:280
 msgid "You must use @nuke to destroy a player."
@@ -7006,10 +4096,6 @@ msgstr "Du m\345ste kontrollera ett attribut f\366r att f\345 editera det."
 #: src/attrib.c:985 src/attrib.c:989 src/attrib.c:1058 src/attrib.c:1062
 msgid "You need to give an object/attribute pair."
 msgstr "Du m\345ste ge ett objekt/attribut par."
-
-#: src/attrib.c:1026
-msgid "You need to own the attribute to change its lock."
-msgstr "Du måste äga attributet för att ändra dess lås."
 
 #: src/extchat.c:746
 msgid "You need to specify a channel."
@@ -7048,10 +4134,6 @@ msgstr "Du \344ger ett objekt %s som blev f\366r\344ldral\366st."
 msgid "You own an object without a @lock/zone being used as a zone: %s"
 msgstr "Du \344ger ett objekt utan @lock/zone som anv\344nds som zon: %s"
 
-#: src/speech.c:991
-msgid "You paged "
-msgstr "Du kallade "
-
 #: src/rob.c:263
 #, c-format
 msgid "You paid %d %s."
@@ -7060,7 +4142,7 @@ msgstr "Du betalade %d %s."
 #: src/speech.c:616
 #, c-format
 msgid "You pemit \"%s\" to %s."
-msgstr "Du pemittar \"%s\" till \"s."
+msgstr "Du pemittar \"%s\" till %s."
 
 #: src/speech.c:1383
 #, c-format
@@ -7076,10 +4158,6 @@ msgstr "Du s\344ger, \"%s\""
 msgid "You see nothing special."
 msgstr "Du ser inget s\344rskilt."
 
-#: src/speech.c:464
-msgid "You sense: "
-msgstr "Du känner: "
-
 #: extmail.c:2685
 #, c-format
 msgid "You sent your message to the '%s' alias"
@@ -7092,15 +4170,6 @@ msgstr "Du b\366r inte \344ndra zon p\345 objekt till sig sj\344lvt!"
 #: src/create.c:240
 msgid "You somehow wound up in a exit. No biscuit."
 msgstr "Du hamnade i en utg\345ng, p\345 n\345got s\344tt."
-
-#: src/rob.c:55
-#, c-format
-msgid "You stole a %s."
-msgstr "Du stal en %s."
-
-#: src/move.c:801
-msgid "You stop everyone from following you."
-msgstr "Du stoppar alla från att följa efter dig."
 
 #: src/move.c:917 src/move.c:1036
 #, c-format
@@ -7115,10 +4184,6 @@ msgstr "Du slutar f\366lja efter vem som helst."
 #, c-format
 msgid "You took %d %s from %s!"
 msgstr "Du tog %d %s fr\345n %s!"
-
-#: src/speech.c:441
-msgid "You whisper, \""
-msgstr "Du viskar, \""
 
 #: src/destroy.c:336
 #, c-format
@@ -7159,14 +4224,6 @@ msgstr "Du borde kontrollera din wiz-bit f\366rst."
 msgid "You're already following %s."
 msgstr "Du f\366ljer redan efter %s."
 
-#: src/move.c:758
-msgid "You're already following them."
-msgstr "Du följer redan efter dem."
-
-#: src/wiz.c:802
-msgid "You're good.  That's spelled with two 'o's."
-msgstr "Du kan inte boot:a en gud."
-
 #: src/wiz.c:453
 msgid "You're in the Void. This is not a good thing."
 msgstr "Du \344r i Void. Det \344r inte bra."
@@ -7178,24 +4235,6 @@ msgstr "Du \344r i Void - skickar hem dig."
 #: src/wiz.c:487
 msgid "You're in too many containers."
 msgstr "Du \344r i f\366r m\345nga beh\345llare."
-
-#: move.c:793
-#, c-format
-msgid "You're not allowed to follow %s."
-msgstr "Du får inte följa efter %s."
-
-#: src/move.c:763
-msgid "You're not allowed to follow them."
-msgstr "Du har inte rätt att följa efter dem."
-
-#: move.c:825
-#, c-format
-msgid "You're not following %s"
-msgstr "Du följer inte efter %s"
-
-#: src/move.c:793
-msgid "You're not following that person."
-msgstr "Du följer inte efter den personen."
 
 #: speech.c:733
 msgid "You're trying to page too many people at once."
@@ -7213,10 +4252,6 @@ msgstr "Din HAVEN flagga \344r satt. Du kan inte ta emot kallelser."
 #: timer.c:158
 msgid "Your ON-VACATION flag is set! If you're back, clear it."
 msgstr "Din ON-VACATION flagga är satt! Om du är tillbaka, nollställ den."
-
-#: src/rob.c:60
-msgid "Your conscience tells you not to."
-msgstr "Ditt samvete hindrar dig."
 
 #: src/flags.c:1092
 msgid "Your contents can no longer be heard from outside."
@@ -7267,14 +4302,6 @@ msgstr "Ditt l\366senord har \344ndrats av %s."
 msgid "Your requested player, %s, has been created.\n"
 msgstr "Din efterfr\345gade spelare, %s, har skapats.\n"
 
-#: src/set.c:386
-msgid "ZMO requires a more secure zone-lock before you @chzone!"
-msgstr "ZMO kräver en säkrare zon-låsning innan du använder @chzone!"
-
-#: src/set.c:376
-msgid "ZMOs must be zone-locked before you @chzone!"
-msgstr "ZMOer måste vara zon-låsta innan du använder @chzone!"
-
 #: lock.c:888
 #, c-format
 msgid "Zone %s really should have a more secure zone-lock."
@@ -7289,135 +4316,10 @@ msgstr "Zon \344ndrad f\366r %d objekt."
 msgid "Zone changed."
 msgstr "Zon \344ndrad."
 
-#: src/bsd.c:3463
-#, c-format
-msgid "[%d/%s/%s] Connected dark to %s(#%d) in %s(#%d)"
-msgstr "[%d/%s/%s] Uppkollad m\366rk till %s(#d) i %s(%d)"
-
-#: src/bsd.c:3502
-#, c-format
-msgid "[%d/%s/%s] Connected hidden to %s(#%d) in %s(#%d)"
-msgstr "[%d/%s/%s] G\366md uppkoppling till %s(#%d) i %s(#%d)"
-
-#: src/bsd.c:3447 src/bsd.c:3482
-#, c-format
-msgid "[%d/%s/%s] Connected to %s(#%d) in %s(#%d)"
-msgstr "[%d/%s/%s] Uppkopplad till %s(#%d) i %s(#%d)"
-
-#: src/bsd.c:2210
-#, c-format
-msgid "[%d/%s/%s] Connection closed, never connected."
-msgstr "[%d/%s/%s] Uppkoppling st\344ngd, aldrig uppkopplad."
-
-#: src/bsd.c:1960 src/bsd.c:2672
-#, c-format
-msgid "[%d/%s/%s] Connection opened."
-msgstr "[%d/%s/%s] Uppkoppling \366ppnad."
-
-#: src/bsd.c:3444 src/bsd.c:3459 src/bsd.c:3479 src/bsd.c:3498
-#, c-format
-msgid "[%d/%s/%s] Failed connect to '%s'."
-msgstr "[%d/%s/%s] Uppkoppling till '%s' misslyckades."
-
-#: src/bsd.c:3543
-#, c-format
-msgid "[%d/%s/%s] Failed create for '%s' (bad name)."
-msgstr "[%d/%s/%s] Skapelse misslyckades f\366r '%s' (felaktigt namn)."
-
-#: src/bsd.c:3548
-#, c-format
-msgid "[%d/%s/%s] Failed create for '%s' (bad password)."
-msgstr "[%d/%s/%s] Misslyckades med skapelse f\366r '%s' (fel l\366senord)"
-
-#: src/bsd.c:3580
-#, c-format
-msgid "[%d/%s/%s] Failed registration for '%s'."
-msgstr "[%d/%s/%s] Registrering f\366r '%s' misslyckades."
-
-#: src/bsd.c:2133
-#, c-format
-msgid "[%d/%s/%s] Logout by %s(#%d) <Connection not dropped>"
-msgstr "[%d/%s/%s] Utloggning av %s(#%d)"
-
-#: src/bsd.c:4675
-#, c-format
-msgid "[%d/%s/%s] Logout by %s(#%d) <Inactivity Timeout>"
-msgstr "[%d/%s/%s] Utloggning av %s(#%d) <Brist p\345 aktivitet>"
-
-#: src/bsd.c:2191
-#, c-format
-msgid "[%d/%s/%s] Logout by %s(#%d)"
-msgstr "[%d/%s/%s] Utloggning av %s(#%d)"
-
-#: src/bsd.c:2149
-#, c-format
-msgid "[%d/%s/%s] Logout, never connected. <Connection not dropped>"
-msgstr "[%d/%s/%s] Utloggning, kopplade aldrig upp. <Uppkoppling f\366rsvann ej>"
-
-#: src/bsd.c:1951 src/bsd.c:2518
-#, c-format
-msgid "[%d/%s/%s] Refused connection (remote port %d)"
-msgstr "[%d/%s/%s] Vägrade uppkoppling (port på andra sidan %d)"
-
-#: bsd.c:1970
-#, c-format
-msgid "[%d/%s/%s] Refused connection (remote port %s)"
-msgstr "[%d/%s/%s] Vägrade uppkoppling (port på andra sidan %s)"
-
-#: src/bsd.c:2663
-#, c-format
-msgid "[%d/%s/%s] Refused connection."
-msgstr "[%d/%s/%s] V\344grade uppkoppling."
-
-#: src/bsd.c:3521
-#, c-format
-msgid "[%d/%s/%s] Refused create for '%s'."
-msgstr "[%d/%s/%s] V\344grade att skapa f\366r '%s'."
-
-#: src/bsd.c:3565
-#, c-format
-msgid "[%d/%s/%s] Refused registration (bad site) for '%s'."
-msgstr "[%d/%s/%s] V\344grade registrering (felaktig sajt) f\366r '%s'."
-
-#: src/bsd.c:3303
-#, c-format
-msgid "[%d/%s/%s] Switching to Pueblo mode."
-msgstr "[%d/%s/%s] Byter till Pueblo l\344ge."
-
-#: bsd.c:3463 bsd.c:3486 bsd.c:3511
-#, c-format
-msgid "[%d/%s/%s] Switching to Telnet mode."
-msgstr "[%d/%s/%s] Byter till Telnetläge."
-
-#: src/bsd.c:5241
-#, c-format
-msgid "[%d/%s] Connection opened."
-msgstr "[%d/%s] Uppkoppling \366ppnad."
-
-#: src/bsd.c:5245
-#, c-format
-msgid "[%d/%s] Connection opened.\n"
-msgstr "[%d/%s] Uppkoppling \366ppnad.\n"
-
-#: src/bsd.c:5235
-#, c-format
-msgid "[%d/%s] Refused connection (remote port %d)"
-msgstr "[%d/%s] Vägrade uppkoppling (port på andra sidan %d)"
-
-#: bsd.c:2550
-#, c-format
-msgid "[%d/%s] Refused connection (remote port %s)"
-msgstr "[%d/%s] V\344grade uppkoppling (port p\345 andra sidan %s)"
-
 #: src/predicat.c:764
 #, c-format
 msgid "[%d:%02d] %s message sent to %s."
 msgstr "[%d:%02d] %s meddelande skickat till %s"
-
-#: src/extmail.c:573
-#, c-format
-msgid "[%s] %2d:%-3d (%4d) From: %-*s At: %s %s"
-msgstr "[%s] %2d:%-3d (%4d) Från: %-*s Tid: %s %s"
 
 #: src/bsd.c:4683
 msgid ""
@@ -7443,80 +4345,9 @@ msgstr ""
 "\n"
 "BREV: Du har inga brev.\n"
 
-#: src/bsd.c:727
-msgid ""
-"\n"
-"MUSH shutdown completed.\n"
-msgstr ""
-"\n"
-"MUSH nedstänging klar.\n"
-
-#: src/game.c:1491
-#, c-format
-msgid ""
-"\n"
-"Process ID:  %10d        %10d bytes per page"
-msgstr ""
-"\n"
-"Process ID:  %10d        %10d bytes per sida"
-
-#: src/game.c:1494
-#, c-format
-msgid ""
-"\n"
-"Process ID:  %10d"
-msgstr ""
-"\n"
-"Process ID:  %10d"
-
-#: game.c:1530
-#, c-format
-msgid ""
-"\n"
-"Process ID:  %10u        %10d bytes per page"
-msgstr ""
-"\n"
-"Process ID:  %10u        %10d bytes per sida"
-
-#: game.c:1533
-#, c-format
-msgid ""
-"\n"
-"Process ID:  %10u"
-msgstr ""
-"\n"
-"Process ID:  %10u"
-
-#: src/game.c:238
-msgid ""
-"\n"
-"Process statistics:\n"
-msgstr ""
-"\n"
-"Process statistik:\n"
-
-#: src/db.c:689
-#, c-format
-msgid "\t...finished at object #%d\n"
-msgstr "\t...avslutad vid objekt #%d\n"
-
-#: src/db.c:686
-#, c-format
-msgid "\t...wrote up to object #%d\n"
-msgstr "\t...skrev fram till objekt #%d\n"
-
-#: src/game.c:194
-#, c-format
-msgid "\tcheckpoint interval %d, at %s"
-msgstr "\tkontrollpunktsintervall %d, vid %s"
-
 #: bsd.c:4127 bsd.c:4133
 msgid "a connecting player"
 msgstr "en uppkopplande spelare"
-
-#: speech.c:822
-msgid "and "
-msgstr "och "
 
 #: extchat.c:2150 look.c:209 speech.c:372 speech.c:806
 msgid "and"
@@ -7526,22 +4357,9 @@ msgstr "och"
 msgid "bad object"
 msgstr "felaktigt objekt"
 
-#: filecopy.c:104 filecopy.c:154 filecopy.c:196
-msgid "byte"
-msgstr "byte"
-
-#: filecopy.c:104 filecopy.c:154 filecopy.c:196
-msgid "bytes"
-msgstr "bytes"
-
 #: extchat.c:1377
 msgid "cleared"
 msgstr "rensat"
-
-#: src/bsd.c:2021
-#, c-format
-msgid "couldn't open cached text file '%s'"
-msgstr "kunde inte öppna cachad textfil '%s'"
 
 #: move.c:608
 #, c-format
@@ -7565,24 +4383,6 @@ msgstr "utg\345ng saknar beskrivning"
 msgid "exit is unlinked; anyone can steal it"
 msgstr "utg\345ng \344r ej l\344nkad; vem som helst kan stj\344la det"
 
-#: src/wiz.c:122
-#, c-format
-msgid "failure creating '%s' (bad name)"
-msgstr "misslyckande vid skapelse av '%s' (felaktigt namn)"
-
-#: src/wiz.c:127
-#, c-format
-msgid "failure creating '%s' (bad password)"
-msgstr "misslyckande vid skapelse av '%s' (felaktigt lösenord)"
-
-#: filecopy.c:153
-msgid "file"
-msgstr "fil"
-
-#: filecopy.c:153
-msgid "files"
-msgstr "filer"
-
 #: src/move.c:101
 msgid "has arrived."
 msgstr "har kommit."
@@ -7591,11 +4391,6 @@ msgstr "har kommit."
 msgid "has left."
 msgstr "har l\344mnat rummet."
 
-#: bsd.c:4233
-#, c-format
-msgid "info_slave on pid %d exited!"
-msgstr "info_slave på pid %d avslutade!"
-
 #: lock.c:685
 msgid "lock flags set"
 msgstr "låsflaggor satta"
@@ -7603,10 +4398,6 @@ msgstr "låsflaggor satta"
 #: lock.c:685
 msgid "lock flags unset"
 msgstr "låsflaggor återställda"
-
-#: src/funmath.c:1974 src/funmath.c:1979 src/funmath.c:1986
-msgid "median list"
-msgstr "median lista"
 
 #: src/warnings.c:202
 msgid "player is missing description"
@@ -7628,34 +4419,17 @@ msgstr "m\366jligtvis ol\345st utg\345ng saknar succ/osucc/odrop"
 msgid "possibly unlocked thing missing succ/osucc/drop/odrop"
 msgstr "m\366jligt ol\345st sak saknar succ/osucc/drop/odrop"
 
-#: src/game.c:840
-#, c-format
-msgid "process_command bad player #%d"
-msgstr "process_command felaktig spelare #%d"
-
 #: funstr.c:91
 msgid "pronoun:neuter,possessive"
 msgstr "pronomen:neutral,posessivt"
-
-#: bsd.c:2078
-msgid "remote port"
-msgstr "port p\345 andra sidan"
 
 #: src/warnings.c:126
 msgid "room has no description"
 msgstr "rummet har ingen beskrivning"
 
-#: speech.c:710
-msgid "says,"
-msgstr "säger,"
-
 #: extchat.c:1377
 msgid "set"
 msgstr "satt"
-
-#: speech.c:712
-msgid "shouts,"
-msgstr "ropar,"
 
 #: move.c:492 move.c:534
 #, c-format
@@ -7665,8 +4439,4 @@ msgstr "tar %s."
 #: src/warnings.c:219
 msgid "thing is missing description"
 msgstr "föremål saknar beskrivning"
-
-#: src/match.c:529
-msgid "this here "
-msgstr "det här "
 

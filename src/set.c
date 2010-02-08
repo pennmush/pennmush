@@ -105,7 +105,7 @@ do_name(dbref player, const char *name, char *newname_)
         return;
       }
       /* everything ok, notify */
-      do_log(LT_CONN, 0, 0, T("Name change by %s(#%d) to %s"),
+      do_log(LT_CONN, 0, 0, "Name change by %s(#%d) to %s",
              Name(thing), thing, bon);
       if (Suspect(thing))
         flag_broadcast("WIZARD", 0,
@@ -236,7 +236,7 @@ chown_ok(dbref player, dbref thing, dbref newowner)
    *   3.  thing is CHOWN_OK, and player holds thing if it's an object.
    *
    * The third condition is syntactic sugar to handle the situation
-   * where Joe owns Box, an ordinary object, and Tool, an inherit object, 
+   * where Joe owns Box, an ordinary object, and Tool, an inherit object,
    * and ZMP, a Zone Master Player, is zone-locked to =tool.
    * In this case, if Joe doesn't pass ZMP's lock, we don't want
    *   Joe to be able to @fo Tool=@chown Box=ZMP
@@ -373,7 +373,7 @@ do_chzone(dbref player, char const *name, char const *newobj, int noisy)
     return 0;
   }
   /* a player may change an object's zone to:
-   * 1.  NOTHING 
+   * 1.  NOTHING
    * 2.  an object he owns
    * 3.  an object with a chzone-lock that the player passes.
    * Note that an object with no chzone-lock isn't valid
@@ -410,7 +410,7 @@ do_chzone(dbref player, char const *name, char const *newobj, int noisy)
     }
   }
 
-  /* Don't allow chzone to objects without elocks! 
+  /* Don't allow chzone to objects without elocks!
    * If no lock is set, set a default lock (warn if zmo are used for control)
    * This checks for many trivial elocks (canuse/1, where &canuse=1)
    */
@@ -866,9 +866,9 @@ gedit_helper(dbref player, dbref thing,
   } else {
     /* We don't do it - we just pemit it. */
     if (!ansi_long_flag && ShowAnsi(player))
-      notify_format(player, "%s - Set: %s", AL_NAME(a), tbuf_ansi);
+      notify_format(player, T("%s - Set: %s"), AL_NAME(a), tbuf_ansi);
     else
-      notify_format(player, "%s - Set: %s", AL_NAME(a), tbuf1);
+      notify_format(player, T("%s - Set: %s"), AL_NAME(a), tbuf1);
   }
 
   return 1;
@@ -963,9 +963,9 @@ do_trigger(dbref player, char *object, char **argv)
   for (a = 0; a < 10; a++)
     global_eval_context.wnxt[a] = argv[a + 1];
 
-  if (charge_action(player, thing, upcasestr(s))) {
+  if (queue_attribute(thing, upcasestr(s), player)) {
     if (!AreQuiet(player, thing))
-      notify_format(player, "%s - Triggered.", Name(thing));
+      notify_format(player, T("%s - Triggered."), Name(thing));
   } else {
     notify(player, T("No such attribute."));
   }
@@ -990,8 +990,10 @@ do_use(dbref player, const char *what)
     if (!eval_lock(player, thing, Use_Lock)) {
       fail_lock(player, thing, Use_Lock, T("Permission denied."), NOTHING);
       return;
-    } else
-      did_it(player, thing, "USE", T("Used."), "OUSE", NULL, "AUSE", NOTHING);
+    } else {
+      did_it(player, thing, "USE", T("Used."), "OUSE", NULL,
+             (charge_action(thing) ? "AUSE" : "RUNOUT"), NOTHING);
+    }
   }
 }
 
@@ -1025,7 +1027,7 @@ do_parent(dbref player, char *name, char *parent_name)
     notify(player, T("Permission denied."));
     return;
   }
-  /* a player may change an object's parent to NOTHING or to an 
+  /* a player may change an object's parent to NOTHING or to an
    * object he owns, or one that is LINK_OK when the player passes
    * the parent lock
    * mod: also when the player controls the parent, it passes the parent lock

@@ -29,6 +29,8 @@
   /* types of match results - used internally */
 #define MAT_NOISY                0x1000000
 #define MAT_LAST                 0x2000000
+#define MAT_TYPE                 0x4000000      /* don't accept objects of other types */
+#define MAT_EXACT                0x8000000      /* don't do partial name matches */
   /* groups of things to match */
 #define MAT_EVERYTHING   (MAT_ME|MAT_HERE|MAT_ABSOLUTE|MAT_PLAYER| \
                           MAT_NEIGHBOR|MAT_POSSESSION|MAT_EXIT|MAT_ENGLISH)
@@ -47,12 +49,12 @@
  * last_match_result - returns a match or NOTHING
  * match_controlled - returns match if player controls, or NOTHING
  */
-extern dbref match_result
-  (const dbref who, const char *name, const int type, const long int flags);
+extern dbref
+ match_result(dbref who, const char *xname, int type, long flags);
 extern dbref noisy_match_result
-  (const dbref who, const char *name, const int type, const long int flags);
+  (const dbref who, const char *name, const int type, const long flags);
 extern dbref last_match_result
-  (const dbref who, const char *name, const int type, const long int flags);
+  (const dbref who, const char *name, const int type, const long flags);
 extern dbref match_controlled(dbref player, const char *name);
 
 #define match_thing(player,name) \

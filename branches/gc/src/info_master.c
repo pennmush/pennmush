@@ -120,7 +120,7 @@ make_info_slave(void)
     time(&now);
     if (difftime(now, startup_window) <= 60.0) {
       /* Too many failed attempts to start info_slave in 1 minute */
-      do_rawlog(LT_ERR, T("Disabling info_slave due to too many errors."));
+      do_rawlog(LT_ERR, "Disabling info_slave due to too many errors.");
       info_slave_halted = true;
       return false;
     } else {
@@ -258,7 +258,7 @@ query_info_slave(int fd)
       penn_perror("getting remote port number");
     else {
       if (!Deny_Silent_Site(buf, AMBIGUOUS)) {
-        do_log(LT_CONN, 0, 0, T("[%d/%s] Refused connection (remote port %s)"),
+        do_log(LT_CONN, 0, 0, "[%d/%s] Refused connection (remote port %s)",
                fd, buf, port);
       }
     }
@@ -348,7 +348,7 @@ reap_info_slave(void)
   if (Forbidden_Site(resp.ipaddr) || Forbidden_Site(hostname)) {
     if (!Deny_Silent_Site(resp.ipaddr, AMBIGUOUS)
         || !Deny_Silent_Site(hostname, AMBIGUOUS)) {
-      do_log(LT_CONN, 0, 0, T("[%d/%s/%s] Refused connection."), resp.fd,
+      do_log(LT_CONN, 0, 0, "[%d/%s/%s] Refused connection.", resp.fd,
              hostname, resp.ipaddr);
     }
     shutdown(resp.fd, 2);
@@ -356,7 +356,7 @@ reap_info_slave(void)
     return;
   }
 
-  do_log(LT_CONN, 0, 0, T("[%d/%s/%s] Connection opened."), resp.fd,
+  do_log(LT_CONN, 0, 0, "[%d/%s/%s] Connection opened.", resp.fd,
          hostname, resp.ipaddr);
   set_keepalive(resp.fd);
   initializesock(resp.fd, hostname, resp.ipaddr,

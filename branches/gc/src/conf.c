@@ -174,6 +174,8 @@ PENNCONF conftable[] = {
   ,
   {"mud_name", cf_str, options.mud_name, 128, 0, "net"}
   ,
+  {"mud_url", cf_str, options.mud_url, 256, 0, "net"}
+  ,
   {"ip_addr", cf_str, options.ip_addr, 64, 0, "net"}
   ,
   {"ssl_ip_addr", cf_str, options.ssl_ip_addr, 64, 0, "net"}
@@ -256,8 +258,6 @@ PENNCONF conftable[] = {
   {"comma_exit_list", cf_bool, &options.comma_exit_list, 2, 0, "cosmetic"}
   ,
   {"count_all", cf_bool, &options.count_all, 2, 0, "cosmetic"}
-  ,
-  {"blind_page", cf_bool, &options.blind_page, 2, 0, "cosmetic"}
   ,
   {"page_aliases", cf_bool, &options.page_aliases, 2, 0, "cosmetic"}
   ,
@@ -463,8 +463,6 @@ PENNCONF conftable[] = {
   ,
   {"find_cost", cf_int, &options.find_cost, 10000, 0, "costs"}
   ,
-  {"page_cost", cf_int, &options.page_cost, 10000, 0, "costs"}
-  ,
   {"kill_default_cost", cf_int, &options.kill_default_cost, 10000, 0,
    "costs"}
   ,
@@ -636,7 +634,7 @@ cf_bool(const char *opt, const char *val, void *loc,
     *((int *) loc) = 0;
   else {
     if (from_cmd == 0) {
-      do_rawlog(LT_ERR, T("CONFIG: option %s value %s invalid."), opt, val);
+      do_rawlog(LT_ERR, "CONFIG: option %s value %s invalid.", opt, val);
     }
     return 0;
   }
@@ -662,7 +660,7 @@ cf_str(const char *opt, const char *val, void *loc, int maxval, int from_cmd)
   /* truncate if necessary */
   if (len >= (size_t) maxval) {
     if (from_cmd == 0) {
-      do_rawlog(LT_ERR, T("CONFIG: option %s value truncated"), opt);
+      do_rawlog(LT_ERR, "CONFIG: option %s value truncated", opt);
     }
     len = maxval - 1;
   }
@@ -700,14 +698,12 @@ cf_dbref(const char *opt, const char *val, void *loc,
   if (n < NOTHING) {
     n = NOTHING;
     if (from_cmd == 0) {
-      do_rawlog(LT_ERR, T("CONFIG: option %s value limited to #%d"), opt,
-                maxval);
+      do_rawlog(LT_ERR, "CONFIG: option %s value limited to #%d", opt, maxval);
     }
   }
   if (from_cmd && ((!GoodObject(n) && n != NOTHING) || (n > 0 && IsGarbage(n)))) {
     do_rawlog(LT_ERR,
-              T("CONFIG: attempt to set option %s to a bad dbref (#%d)"),
-              opt, n);
+              "CONFIG: attempt to set option %s to a bad dbref (#%d)", opt, n);
     return 0;
   }
   *((dbref *) loc) = n;
@@ -739,8 +735,7 @@ cf_int(const char *opt, const char *val, void *loc, int maxval, int from_cmd)
   if ((maxval >= 0) && (n > maxval)) {
     n = maxval;
     if (from_cmd == 0) {
-      do_rawlog(LT_ERR, T("CONFIG: option %s value limited to %d"), opt,
-                maxval);
+      do_rawlog(LT_ERR, "CONFIG: option %s value limited to %d", opt, maxval);
     }
   }
   *((int *) loc) = n;
@@ -793,7 +788,7 @@ cf_time(const char *opt, const char *val, void *loc, int maxval, int from_cmd)
       break;
     default:
       if (from_cmd == 0)
-        do_rawlog(LT_ERR, T("CONFIG: Unknown time interval in option %s"), opt);
+        do_rawlog(LT_ERR, "CONFIG: Unknown time interval in option %s", opt);
       return 0;
     }
     val = end + 1;
@@ -803,8 +798,7 @@ done:
   if ((maxval >= 0) && (secs > maxval)) {
     secs = maxval;
     if (from_cmd == 0) {
-      do_rawlog(LT_ERR, T("CONFIG: option %s value limited to %d"), opt,
-                maxval);
+      do_rawlog(LT_ERR, "CONFIG: option %s value limited to %d", opt, maxval);
     }
   }
   *((int *) loc) = secs;
@@ -833,11 +827,11 @@ cf_flag(const char *opt, const char *val, void *loc, int maxval, int from_cmd)
     len = maxval - total - 1;
     if (len <= 0) {
       if (from_cmd == 0)
-        do_rawlog(LT_ERR, T("CONFIG: option %s value overflow"), opt);
+        do_rawlog(LT_ERR, "CONFIG: option %s value overflow", opt);
       return 0;
     }
     if (from_cmd == 0)
-      do_rawlog(LT_ERR, T("CONFIG: option %s value truncated"), opt);
+      do_rawlog(LT_ERR, "CONFIG: option %s value truncated", opt);
   }
   sprintf((char *) loc, "%s %s", (char *) loc, val);
   return 1;
@@ -854,7 +848,7 @@ validate_config(void)
 #define VALIDATE_ROOM(opt) do { \
     if (!(GoodObject((opt)) && IsRoom((opt)))) { \
       opt = 0; \
-      do_rawlog(LT_ERR, T("CONFIG: option %s not a valid room!"), #opt); \
+      do_rawlog(LT_ERR, "CONFIG: option %s not a valid room!", #opt); \
     } \
   } while (0)
 
@@ -868,7 +862,7 @@ validate_config(void)
 #define VALIDATE(opt) do { \
     if (!GoodObject((opt)) && (opt) != NOTHING) { \
       opt = 0; \
-      do_rawlog(LT_ERR, T("CONFIG: option %s not a valid dbref or -1!"), \
+      do_rawlog(LT_ERR, "CONFIG: option %s not a valid dbref or -1!", \
                 #opt); \
     } \
    } while (0)
@@ -952,15 +946,14 @@ config_set(const char *opt, char *val, int source, int restrictions)
       if (!restrict_command(val, p)) {
         if (source == 0) {
           do_rawlog(LT_ERR,
-                    T("CONFIG: Invalid command or restriction for %s."), val);
+                    "CONFIG: Invalid command or restriction for %s.", val);
         }
         return 0;
       }
     } else {
       if (source == 0) {
         do_rawlog(LT_ERR,
-                  T
-                  ("CONFIG: restrict_command %s requires a restriction value."),
+                  "CONFIG: restrict_command %s requires a restriction value.",
                   val);
       }
       return 0;
@@ -977,15 +970,14 @@ config_set(const char *opt, char *val, int source, int restrictions)
       if (!restrict_function(val, p)) {
         if (source == 0) {
           do_rawlog(LT_ERR,
-                    T("CONFIG: Invalid function or restriction for %s."), val);
+                    "CONFIG: Invalid function or restriction for %s.", val);
         }
         return 0;
       }
     } else {
       if (source == 0) {
         do_rawlog(LT_ERR,
-                  T
-                  ("CONFIG: restrict_function %s requires a restriction value."),
+                  "CONFIG: restrict_function %s requires a restriction value.",
                   val);
       }
       return 0;
@@ -1006,14 +998,13 @@ config_set(const char *opt, char *val, int source, int restrictions)
       *p++ = '\0';
       if (!alias_command(val, p)) {
         if (source == 0) {
-          do_rawlog(LT_ERR, T("CONFIG: Couldn't alias %s to %s."), p, val);
+          do_rawlog(LT_ERR, "CONFIG: Couldn't alias %s to %s.", p, val);
         }
         return 0;
       }
     } else {
       if (source == 0) {
-        do_rawlog(LT_ERR,
-                  T("CONFIG: command_alias %s requires an alias."), val);
+        do_rawlog(LT_ERR, "CONFIG: command_alias %s requires an alias.", val);
       }
       return 0;
     }
@@ -1028,14 +1019,13 @@ config_set(const char *opt, char *val, int source, int restrictions)
       *p++ = '\0';
       if (!alias_attribute(val, p)) {
         if (source == 0) {
-          do_rawlog(LT_ERR, T("CONFIG: Couldn't alias %s to %s."), p, val);
+          do_rawlog(LT_ERR, "CONFIG: Couldn't alias %s to %s.", p, val);
         }
         return 0;
       }
     } else {
       if (source == 0) {
-        do_rawlog(LT_ERR,
-                  T("CONFIG: attribute_alias %s requires an alias."), val);
+        do_rawlog(LT_ERR, "CONFIG: attribute_alias %s requires an alias.", val);
       }
       return 0;
     }
@@ -1050,14 +1040,13 @@ config_set(const char *opt, char *val, int source, int restrictions)
       *p++ = '\0';
       if (!alias_function(val, p)) {
         if (source == 0) {
-          do_rawlog(LT_ERR, T("CONFIG: Couldn't alias %s to %s."), p, val);
+          do_rawlog(LT_ERR, "CONFIG: Couldn't alias %s to %s.", p, val);
         }
         return 0;
       }
     } else {
       if (source == 0) {
-        do_rawlog(LT_ERR,
-                  T("CONFIG: function_alias %s requires an alias."), val);
+        do_rawlog(LT_ERR, "CONFIG: function_alias %s requires an alias.", val);
       }
       return 0;
     }
@@ -1075,8 +1064,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
       return 0;
     if (!val || !*val) {
       do_rawlog(LT_ERR,
-                T
-                ("CONFIG: help_command requires a command name and file name."));
+                "CONFIG: help_command requires a command name and file name.");
       return 0;
     }
     comm = val;
@@ -1087,8 +1075,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
       return 1;
     } else {
       do_rawlog(LT_ERR,
-                T
-                ("CONFIG: help_command requires a command name and file name."));
+                "CONFIG: help_command requires a command name and file name.");
       return 0;
     }
   } else if (restrictions) {
@@ -1129,7 +1116,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
   }
 
   if (source == 0) {
-    do_rawlog(LT_ERR, T("CONFIG: directive '%s' in cnf file ignored."), opt);
+    do_rawlog(LT_ERR, "CONFIG: directive '%s' in cnf file ignored.", opt);
   }
   return 0;
 }
@@ -1139,7 +1126,8 @@ config_set(const char *opt, char *val, int source, int restrictions)
 void
 conf_default_set(void)
 {
-  strcpy(options.mud_name, "TinyMUSH");
+  strcpy(options.mud_name, "PennMUSH");
+  strcpy(options.mud_url, "");
   options.port = 4201;
   options.ssl_port = 0;
   strcpy(options.input_db, "data/indb");
@@ -1170,7 +1158,6 @@ conf_default_set(void)
   options.max_logins = 128;
   options.max_guests = 0;
   options.whisper_loudness = 100;
-  options.blind_page = 1;
   options.page_aliases = 0;
   options.paycheck = 50;
   options.guest_paycheck = 0;
@@ -1281,7 +1268,6 @@ conf_default_set(void)
   options.queue_cost = 10;
   options.quota_cost = 1;
   options.find_cost = 100;
-  options.page_cost = 0;
   options.kill_default_cost = 100;
   options.kill_min_cost = 10;
   options.kill_bonus = 50;
@@ -1356,7 +1342,7 @@ config_file_startup(const char *conf, int restrictions)
       strcpy(cfile, conf);
     fp = fopen(cfile, FOPEN_READ);
     if (fp == NULL) {
-      do_rawlog(LT_ERR, T("ERROR: Cannot open configuration file %s."), cfile);
+      do_rawlog(LT_ERR, "ERROR: Cannot open configuration file %s.", cfile);
       return 0;
     }
     do_rawlog(LT_ERR, "Reading %s", cfile);
@@ -1366,7 +1352,7 @@ config_file_startup(const char *conf, int restrictions)
     if (conf && *conf)
       fp = fopen(conf, FOPEN_READ);
     if (fp == NULL) {
-      do_rawlog(LT_ERR, T("ERROR: Cannot open configuration file %s."),
+      do_rawlog(LT_ERR, "ERROR: Cannot open configuration file %s.",
                 (conf && *conf) ? conf : "Unknown");
       return 0;
     }
@@ -1418,8 +1404,7 @@ config_file_startup(const char *conf, int restrictions)
       if (strcasecmp(p, "include") == 0) {
         conf_recursion++;
         if (conf_recursion > 10) {
-          do_rawlog(LT_ERR, T("CONFIG: include depth too deep in file %s"),
-                    conf);
+          do_rawlog(LT_ERR, "CONFIG: include depth too deep in file %s", conf);
         } else {
           config_file_startup(q, restrictions);
         }
@@ -1436,8 +1421,7 @@ config_file_startup(const char *conf, int restrictions)
     for (cp = conftable; cp->name; cp++) {
       if (!cp->overridden) {
         do_rawlog(LT_ERR,
-                  T
-                  ("CONFIG: directive '%s' missing from cnf file, using default value."),
+                  "CONFIG: directive '%s' missing from cnf file, using default value.",
                   cp->name);
       }
     }
@@ -1445,8 +1429,7 @@ config_file_startup(const char *conf, int restrictions)
          cp = (PENNCONF *) hash_nextentry(&local_options)) {
       if (!cp->overridden) {
         do_rawlog(LT_ERR,
-                  T
-                  ("CONFIG: local directive '%s' missing from cnf file. Using default value."),
+                  "CONFIG: local directive '%s' missing from cnf file. Using default value.",
                   cp->name);
       }
     }
@@ -1462,15 +1445,13 @@ config_file_startup(const char *conf, int restrictions)
     /* if we're on Win32, complain about compression */
     if ((options.compressprog && *options.compressprog)) {
       do_rawlog(LT_ERR,
-                T
-                ("CONFIG: compression program is specified but not used in Win32, ignoring"),
+                "CONFIG: compression program is specified but not used in Win32, ignoring",
                 options.compressprog);
     }
 
     if (((options.compresssuff && *options.compresssuff))) {
       do_rawlog(LT_ERR,
-                T
-                ("CONFIG: compression suffix is specified but not used in Win32, ignoring"),
+                "CONFIG: compression suffix is specified but not used in Win32, ignoring",
                 options.compresssuff);
     }
 
@@ -1713,7 +1694,7 @@ do_enable(dbref player, const char *param, int state)
         else
           notify(player, T("Enabled."));
         do_log(LT_WIZ, player, NOTHING, "%s %s",
-               cp->name, (state) ? "ENABLED" : "DISABLED");
+               cp->name, (state) ? T("ENABLED") : T("DISABLED"));
       } else
         notify(player, T("That isn't a on/off option."));
       return;

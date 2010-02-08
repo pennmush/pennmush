@@ -208,7 +208,7 @@ read_access_file(void)
   release_fd();
   fp = fopen(ACCESS_FILE, FOPEN_READ);
   if (!fp) {
-    do_rawlog(LT_ERR, T("Access file %s not found."), ACCESS_FILE);
+    do_rawlog(LT_ERR, "Access file %s not found.", ACCESS_FILE);
     retval = 0;
   } else {
     do_rawlog(LT_ERR, "Reading %s", ACCESS_FILE);
@@ -229,8 +229,7 @@ read_access_file(void)
         if (!strncasecmp(p, "@sitelock", 9)) {
           if (!add_access_node("@sitelock", AMBIGUOUS, ACS_SITELOCK, 0, "",
                                &errptr))
-            do_log(LT_ERR, GOD, GOD, T("Failed to add sitelock node: %s"),
-                   errptr);
+            do_log(LT_ERR, GOD, GOD, "Failed to add sitelock node: %s", errptr);
         } else {
           if ((comment = strchr(p, '#'))) {
             *comment++ = '\0';
@@ -246,8 +245,7 @@ read_access_file(void)
             /* Nothing listed, so assume we can't do anything! */
             cant = ACS_DEFAULT;
           if (!add_access_node(buf, who, can, cant, comment, &errptr))
-            do_log(LT_ERR, GOD, GOD, T("Failed to add access node: %s"),
-                   errptr);
+            do_log(LT_ERR, GOD, GOD, "Failed to add access node: %s", errptr);
         }
       }
     }
@@ -274,7 +272,7 @@ write_access_file(void)
   release_fd();
   fp = fopen(tmpf, FOPEN_WRITE);
   if (!fp) {
-    do_log(LT_ERR, GOD, GOD, T("Unable to open %s."), tmpf);
+    do_log(LT_ERR, GOD, GOD, "Unable to open %s.", tmpf);
   } else {
     for (ap = access_top; ap; ap = ap->next) {
       if (strcmp(ap->host, "@sitelock") == 0) {
@@ -632,9 +630,9 @@ do_list_access(dbref player)
       }
       *bp = '\0';
       notify_format(player,
-                    "%3d SITE: %-20s  DBREF: %-6s FLAGS:%s", rulenum,
+                    T("%3d SITE: %-20s  DBREF: %-6s FLAGS:%s"), rulenum,
                     ap->host, unparse_dbref(ap->who), flaglist);
-      notify_format(player, " COMMENT: %s", ap->comment ? ap->comment : "");
+      notify_format(player, T(" COMMENT: %s"), ap->comment ? ap->comment : "");
     } else {
       notify(player,
              T
@@ -717,7 +715,7 @@ parse_access_options(const char *opts, dbref *who, uint32_t *can,
       if (GoodObject(player))
         notify_format(player, T("Unknown access option: %s"), w);
       else
-        do_log(LT_ERR, GOD, GOD, T("Unknown access flag: %s"), w);
+        do_log(LT_ERR, GOD, GOD, "Unknown access flag: %s", w);
     } else {
       totalfound += found;
     }

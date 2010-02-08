@@ -101,7 +101,7 @@ main(int argc, char **argv)
 
       status = get_service_status(&svcstatus, TRUE);
       if (status == 0 && svcstatus.dwCurrentState == SERVICE_RUNNING) {
-        fprintf(stderr, T("The MUSH is already running as a service.\n"));
+        fprintf(stderr, "The MUSH is already running as a service.\n");
         return 1;
       }
       worker_thread(NULL);
@@ -115,7 +115,7 @@ main(int argc, char **argv)
 
     status = get_service_status(&svcstatus, TRUE);
     if (status == 0 && svcstatus.dwCurrentState == SERVICE_RUNNING) {
-      fprintf(stderr, T("The MUSH is already running as a service.\n"));
+      fprintf(stderr, "The MUSH is already running as a service.\n");
       return 1;
     }
     /*  Under Windows 95 they won't be able to use the service manager */
@@ -131,14 +131,12 @@ main(int argc, char **argv)
 
      */
 
-    fprintf(stderr, T("Attempting to start PennMUSH as a service ...\n"));
+    fprintf(stderr, "Attempting to start PennMUSH as a service ...\n");
     if (!StartServiceCtrlDispatcher(dispatchTable)) {
       fprintf(stderr,
-              T
-              ("Unable to start service, assuming running console-mode application.\n"));
+              "Unable to start service, assuming running console-mode application.\n");
       fprintf(stderr,
-              T
-              ("You can save time on the next invocation by specifying: pennmush /run\n"));
+              "You can save time on the next invocation by specifying: pennmush /run\n");
       worker_thread(NULL);
     }
   }                             /*  end of argc == 1 */
@@ -364,7 +362,7 @@ shut_down_handler(DWORD dwCtrlType)
       TerminateThread(threadHandle, 1);
     threadHandle = NULL;
 
-    mush_panic(T("System shutdown by system operator"));
+    mush_panic("System shutdown by system operator");
 
     _exit(99);
 
@@ -405,7 +403,7 @@ worker_thread(VOID * notused)
   char *p;
 
   if (!GetModuleFileName(NULL, fullfilename, sizeof(fullfilename))) {
-    service_error(GetLastError(), T("Cannot locate full filename"));
+    service_error(GetLastError(), "Cannot locate full filename");
     Win32_Exit(1);
   }
 /*  remove last part of file name to get working directory */
@@ -518,7 +516,7 @@ open_service_manager(void)
 
   if (!SCmanager)
     return service_error(GetLastError(),
-                         T("Unable to talk to the Service Control Manager"));
+                         "Unable to talk to the Service Control Manager");
 
   return FALSE;
 
@@ -534,7 +532,7 @@ get_service(void)
   service = OpenService(SCmanager, THIS_SERVICE, SERVICE_ALL_ACCESS);
 
   if (!service)
-    return service_error(GetLastError(), T("Cannot access service definition"));
+    return service_error(GetLastError(), "Cannot access service definition");
 
   return FALSE;
 }                               /*  end of get_service */
@@ -599,7 +597,7 @@ CmdInstallService(int argc, char *argv[])
  */
 
   if (!GetModuleFileName(NULL, fullfilename, sizeof(fullfilename)))
-    return service_error(GetLastError(), T("Cannot locate full filename"));
+    return service_error(GetLastError(), "Cannot locate full filename");
 
 /*
    Open a handle to the Service Control Manager.
@@ -619,11 +617,11 @@ CmdInstallService(int argc, char *argv[])
                           NULL);        /*  no password */
 
   if (!service)
-    return service_error(GetLastError(), T("Unable to create service"));
+    return service_error(GetLastError(), "Unable to create service");
 
   close_service_handles();
 
-  fprintf(stderr, T("Service successfully installed\n"));
+  fprintf(stderr, "Service successfully installed\n");
 
   return FALSE;
 }                               /*  end of CmdInstallService */
@@ -643,7 +641,7 @@ CmdRemoveService(void)
  */
 
   if (status = get_service_status(&svcstatus, TRUE))
-    return service_error(status, T("Unable to access service details"));
+    return service_error(status, "Unable to access service details");
 
 /*
    Check to see that the service is not running.
@@ -651,19 +649,18 @@ CmdRemoveService(void)
 
   if (svcstatus.dwCurrentState != SERVICE_STOPPED)
     return service_error(0,
-                         T
-                         ("You must stop the service before you can remove it."));
+                         "You must stop the service before you can remove it.");
 
 /*
    Everything is fine, so delete the service definition.
  */
 
   if (!DeleteService(service))
-    return service_error(GetLastError(), T("Cannot remove service"));
+    return service_error(GetLastError(), "Cannot remove service");
 
   close_service_handles();
 
-  fprintf(stderr, T("Service successfully removed\n"));
+  fprintf(stderr, "Service successfully removed\n");
 
   return FALSE;
 }                               /*  end of CmdRemoveService */
@@ -684,21 +681,21 @@ CmdStartService(void)
  */
 
   if (status = get_service_status(&svcstatus, TRUE))
-    return service_error(status, T("Unable to access service details"));
+    return service_error(status, "Unable to access service details");
 
   if (svcstatus.dwCurrentState != SERVICE_STOPPED)
-    return service_error(0, T("The service is not currently stopped."));
+    return service_error(0, "The service is not currently stopped.");
 
 /*
    Everything is fine, so start the service
  */
 
   if (!StartService(service, 0, NULL))
-    return service_error(GetLastError(), T("Cannot start service"));
+    return service_error(GetLastError(), "Cannot start service");
 
   close_service_handles();
 
-  fprintf(stderr, T("Start request sent to service\n"));
+  fprintf(stderr, "Start request sent to service\n");
 
   return FALSE;
 }                               /*  end of CmdStartService */
@@ -718,21 +715,21 @@ CmdStopService(void)
  */
 
   if (status = get_service_status(&svcstatus, TRUE))
-    return service_error(status, T("Unable to access service details"));
+    return service_error(status, "Unable to access service details");
 
   if (svcstatus.dwCurrentState != SERVICE_RUNNING)
-    return service_error(0, T("The service is not currently running."));
+    return service_error(0, "The service is not currently running.");
 
 /*
    Everything is fine, so stop the service
  */
 
   if (!ControlService(service, SERVICE_CONTROL_STOP, &svcstatus))
-    return service_error(GetLastError(), T("Cannot stop service"));
+    return service_error(GetLastError(), "Cannot stop service");
 
   close_service_handles();
 
-  fprintf(stderr, T("Stop request sent to service\n"));
+  fprintf(stderr, "Stop request sent to service\n");
 
   return FALSE;
 }                               /*  end of CmdStopService */
@@ -754,7 +751,7 @@ CmdStatusService(void)
  */
 
   if (status = get_service_status(&svcstatus, FALSE))
-    return service_error(status, T("Unable to access service details"));
+    return service_error(status, "Unable to access service details");
 
   switch (svcstatus.dwCurrentState) {
   case SERVICE_STOPPED:
@@ -797,19 +794,18 @@ CmdStatusService(void)
 static void
 CmdDisplayFormat(void)
 {
-  fprintf(stderr, T("Usage is :-\n"));
-  fprintf(stderr, T(" %s           - runs as a service, or stand-alone\n"),
+  fprintf(stderr, "Usage is :-\n");
+  fprintf(stderr, " %s           - runs as a service, or stand-alone\n",
           THIS_SERVICE);
-  fprintf(stderr, T(" %s /run      - runs stand-alone\n"), THIS_SERVICE);
-  fprintf(stderr, T(" %s /start    - starts this service\n"), THIS_SERVICE);
-  fprintf(stderr, T(" %s /stop     - stops this service\n"), THIS_SERVICE);
-  fprintf(stderr, T(" %s /install  - installs this service\n"), THIS_SERVICE);
-  fprintf(stderr, T(" %s /remove   - removes (un-installs) this service\n"),
+  fprintf(stderr, " %s /run      - runs stand-alone\n", THIS_SERVICE);
+  fprintf(stderr, " %s /start    - starts this service\n", THIS_SERVICE);
+  fprintf(stderr, " %s /stop     - stops this service\n", THIS_SERVICE);
+  fprintf(stderr, " %s /install  - installs this service\n", THIS_SERVICE);
+  fprintf(stderr, " %s /remove   - removes (un-installs) this service\n",
           THIS_SERVICE);
-  fprintf(stderr, T(" %s /status   - displays the status of this service\n"),
+  fprintf(stderr, " %s /status   - displays the status of this service\n",
           THIS_SERVICE);
-  fprintf(stderr, T(" %s /help     - displays this information\n"),
-          THIS_SERVICE);
+  fprintf(stderr, " %s /help     - displays this information\n", THIS_SERVICE);
 }                               /*  end of CmdDisplayFormat */
 
 static char *
@@ -833,3 +829,11 @@ convert_error(DWORD error)
 
 #endif                          /* WIN32SERVICES */
 #endif                          /* WIN32 */
+
+static void dummy(void) __attribute__ ((__unused__));
+static void
+dummy(void)
+{
+  /* This function exists solely to supress a warning on non-Windows
+     systems about an empty source file. */
+}

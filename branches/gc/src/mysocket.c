@@ -364,7 +364,7 @@ make_nonblocking(int s)
   unsigned long arg = 1;
   if (ioctlsocket(s, FIONBIO, &arg) == -1) {
     penn_perror("make_nonblocking: ioctlsocket");
-    mush_panic(T("Fatal network error!"));
+    mush_panic("Fatal network error!");
   }
 #else
   int flags;
@@ -372,7 +372,7 @@ make_nonblocking(int s)
   if ((flags = fcntl(s, F_GETFL, 0)) == -1) {
     penn_perror("make_nonblocking: fcntl");
 #ifndef INFOSLAVE
-    mush_panic(T("Fatal network error!"));
+    mush_panic("Fatal network error!");
 #else
     exit(1);
 #endif
@@ -383,7 +383,7 @@ make_nonblocking(int s)
   if (fcntl(s, F_SETFL, flags) == -1) {
     penn_perror("make_nonblocking: fcntl");
 #ifndef INFOSLAVE
-    mush_panic(T("Fatal network error!"));
+    mush_panic("Fatal network error!");
 #else
     exit(1);
 #endif
@@ -401,7 +401,7 @@ make_blocking(int s)
   unsigned long arg = 0;
   if (ioctlsocket(s, FIONBIO, &arg) == -1) {
     penn_perror("make_blocking: ioctlsocket");
-    mush_panic(T("Fatal network error"));
+    mush_panic("Fatal network error");
   }
 #else
   int flags;
@@ -409,7 +409,7 @@ make_blocking(int s)
   if ((flags = fcntl(s, F_GETFL, 0)) == -1) {
     penn_perror("make_blocking: fcntl");
 #ifndef INFOSLAVE
-    mush_panic(T("Fatal network error!"));
+    mush_panic("Fatal network error!");
 #else
     exit(1);
 #endif
@@ -419,7 +419,7 @@ make_blocking(int s)
   if (fcntl(s, F_SETFL, flags) == -1) {
     penn_perror("make_nonblocking: fcntl");
 #ifndef INFOSLAVE
-    mush_panic(T("Fatal network error!"));
+    mush_panic("Fatal network error!");
 #else
     exit(1);
 #endif
@@ -998,8 +998,9 @@ gn_ipv46(char *host, size_t hostlen, char *serv, size_t servlen,
 
 /* include getnameinfo */
 int
-getnameinfo(const struct sockaddr *sa, socklen_t salen,
-            char *host, size_t hostlen, char *serv, size_t servlen, int flags)
+getnameinfo(const struct sockaddr *sa, socklen_t salen
+            __attribute__ ((__unused__)), char *host, size_t hostlen,
+            char *serv, size_t servlen, int flags)
 {
 
   switch (sa->sa_family) {
@@ -1218,7 +1219,8 @@ bad:
 /* include ga_echeck */
 static int
 ga_echeck(const char *hostname, const char *servname,
-          int flags, int family, int socktype, int protocol)
+          int flags, int family, int socktype, int protocol
+          __attribute__ ((__unused__)))
 {
   if (flags & ~(AI_PASSIVE | AI_CANONNAME))
     return (EAI_BADFLAGS);      /* unknown flag bits */

@@ -3,7 +3,7 @@
 # - System configuration - #
 
 VERSION=1.8.3
-PATCHLEVEL=11
+PATCHLEVEL=12
 
 #
 # This section of the file should be automatically configured by the
@@ -67,9 +67,6 @@ src/switchinc.c: src/SWITCHES Patchlevel
 
 hdrs/funs.h: src/fun*.c src/bsd.c src/conf.c src/extmail.c src/help.c src/markup.c src/wiz.c src/sql.c Patchlevel src/cque.c
 	@PERL@ utils/mkcmds.pl functions
-
-hdrs/patches.h: patches/*
-	@PERL@ utils/mkcmds.pl patches
 
 install: localized all
 	-rm -f game/netmush
@@ -174,7 +171,7 @@ clean:
 	(cd game; rm -f netmush info_slave)
 
 distclean: 
-	(cd hdrs; rm -f *.orig *~ \#* *.rej *.bak funs.h cmds.h buildinf.h patches.h)
+	(cd hdrs; rm -f *.orig *~ \#* *.rej *.bak funs.h cmds.h buildinf.h)
 	(cd utils; rm -f *.orig *~ \#* *.rej *.bak mkcmds.sh *.o)
 	(cd game; rm -rf *.log netmush info_slave *.orig *.rej *~ *.bak mush.cnf)
 	(cd src; make distclean; rm -f Makefile)

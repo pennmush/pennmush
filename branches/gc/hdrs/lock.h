@@ -81,6 +81,7 @@ void list_lock_flags_long(char *buff, char **bp);
 lock_list *getlockstruct(dbref thing, lock_type type);
 void check_zone_lock(dbref player, dbref zone, int noisy);
 void define_lock(lock_type name, privbits flags);
+void purge_locks(void);
 #define L_FLAGS(lock) ((lock)->flags)
 #define L_CREATOR(lock) ((lock)->creator)
 #define L_TYPE(lock) ((lock)->type)

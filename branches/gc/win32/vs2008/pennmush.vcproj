@@ -23,7 +23,7 @@
 			<Tool
 				Name="VCPreBuildEventTool"
 				Description="Copying necessary files..."
-				CommandLine="IF NOT EXIST $(ProjectDir)\..\..\src\cmdlocal.c copy $(ProjectDir)\..\..\src\cmdlocal.dst $(ProjectDir)\..\..\src\cmdlocal.c&#x0D;&#x0A;IF NOT EXIST $(ProjectDir)\..\..\hdrs\cmds.h copy $(ProjectDir)\..\..\win32\cmds.h $(ProjectDir)\..\..\hdrs\cmds.h&#x0D;&#x0A;IF NOT EXIST $(ProjectDir)\..\..\src\flaglocal.c copy $(ProjectDir)\..\..\src\flaglocal.dst $(ProjectDir)\..\..\src\flaglocal.c&#x0D;&#x0A;IF NOT EXIST $(ProjectDir)\..\..\src\funlocal.c copy $(ProjectDir)\..\..\src\funlocal.dst $(ProjectDir)\..\..\src\funlocal.c&#x0D;&#x0A;IF NOT EXIST $(ProjectDir)\..\..\hdrs\funs.h copy $(ProjectDir)\..\..\win32\funs.h $(ProjectDir)\..\..\hdrs\funs.h&#x0D;&#x0A;IF NOT EXIST $(ProjectDir)\..\..\src\local.c copy $(ProjectDir)\..\..\src\local.dst $(ProjectDir)\..\..\src\local.c&#x0D;&#x0A;copy $(ProjectDir)\..\..\win32\options.h $(ProjectDir)\..\..\options.h&#x0D;&#x0A;copy $(ProjectDir)\..\..\win32\config.h $(ProjectDir)\..\..\config.h&#x0D;&#x0A;copy $(ProjectDir)\..\..\win32\confmagic.h $(ProjectDir)\..\..\confmagic.h&#x0D;&#x0A;copy $(ProjectDir)\..\..\win32\patches.h $(ProjectDir)\..\..\hdrs\patches.h&#x0D;&#x0A;echo If any *local.c files failed to build, run build again.&#x0D;&#x0A;"
+				CommandLine="IF NOT EXIST $(ProjectDir)\..\..\src\cmdlocal.c copy $(ProjectDir)\..\..\src\cmdlocal.dst $(ProjectDir)\..\..\src\cmdlocal.c&#x0D;&#x0A;IF NOT EXIST $(ProjectDir)\..\..\src\flaglocal.c copy $(ProjectDir)\..\..\src\flaglocal.dst $(ProjectDir)\..\..\src\flaglocal.c&#x0D;&#x0A;IF NOT EXIST $(ProjectDir)\..\..\src\funlocal.c copy $(ProjectDir)\..\..\src\funlocal.dst $(ProjectDir)\..\..\src\funlocal.c&#x0D;&#x0A;IF NOT EXIST $(ProjectDir)\..\..\src\local.c copy $(ProjectDir)\..\..\src\local.dst $(ProjectDir)\..\..\src\local.c&#x0D;&#x0A;copy $(ProjectDir)\..\..\win32\options.h $(ProjectDir)\..\..\options.h&#x0D;&#x0A;copy $(ProjectDir)\..\..\win32\config.h $(ProjectDir)\..\..\config.h&#x0D;&#x0A;copy $(ProjectDir)\..\..\win32\confmagic.h $(ProjectDir)\..\..\confmagic.h&#x0D;&#x0A;copy $(ProjectDir)\..\..\win32\patches.h $(ProjectDir)\..\..\hdrs\patches.h&#x0D;&#x0A;wscript.exe $(ProjectDir)\..\mkcmds.js&#x0D;&#x0A;echo If any *local.c files failed to build, run build again.&#x0D;&#x0A;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -42,6 +42,7 @@
 				AdditionalIncludeDirectories="..\..;..\..\hdrs"
 				PreprocessorDefinitions="WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_USE_32BIT_TIME_T"
 				RuntimeLibrary="1"
+				DebugInformationFormat="3"
 				CompileAs="1"
 			/>
 			<Tool
@@ -96,7 +97,7 @@
 			<Tool
 				Name="VCPreBuildEventTool"
 				Description="Copying necessary files..."
-				CommandLine="IF NOT EXIST $(ProjectDir)\..\..\src\cmdlocal.c copy $(ProjectDir)\..\..\src\cmdlocal.dst $(ProjectDir)\..\..\src\cmdlocal.c&#x0D;&#x0A;IF NOT EXIST $(ProjectDir)\..\..\hdrs\cmds.h copy $(ProjectDir)\..\..\win32\cmds.h $(ProjectDir)\..\..\hdrs\cmds.h&#x0D;&#x0A;IF NOT EXIST $(ProjectDir)\..\..\src\flaglocal.c copy $(ProjectDir)\..\..\src\flaglocal.dst $(ProjectDir)\..\..\src\flaglocal.c&#x0D;&#x0A;IF NOT EXIST $(ProjectDir)\..\..\src\funlocal.c copy $(ProjectDir)\..\..\src\funlocal.dst $(ProjectDir)\..\..\src\funlocal.c&#x0D;&#x0A;IF NOT EXIST $(ProjectDir)\..\..\hdrs\funs.h copy $(ProjectDir)\..\..\win32\funs.h $(ProjectDir)\..\..\hdrs\funs.h&#x0D;&#x0A;IF NOT EXIST $(ProjectDir)\..\..\src\local.c copy $(ProjectDir)\..\..\src\local.dst $(ProjectDir)\..\..\src\local.c&#x0D;&#x0A;copy $(ProjectDir)\..\..\win32\options.h $(ProjectDir)\..\..\options.h&#x0D;&#x0A;copy $(ProjectDir)\..\..\win32\config.h $(ProjectDir)\..\..\config.h&#x0D;&#x0A;copy $(ProjectDir)\..\..\win32\confmagic.h $(ProjectDir)\..\..\confmagic.h&#x0D;&#x0A;copy $(ProjectDir)\..\..\win32\patches.h $(ProjectDir)\..\..\hdrs\patches.h&#x0D;&#x0A;echo If any *local.c files failed to build, run build again.&#x0D;&#x0A;"
+				CommandLine="IF NOT EXIST $(ProjectDir)\..\..\src\cmdlocal.c copy $(ProjectDir)\..\..\src\cmdlocal.dst $(ProjectDir)\..\..\src\cmdlocal.c&#x0D;&#x0A;IF NOT EXIST $(ProjectDir)\..\..\src\flaglocal.c copy $(ProjectDir)\..\..\src\flaglocal.dst $(ProjectDir)\..\..\src\flaglocal.c&#x0D;&#x0A;IF NOT EXIST $(ProjectDir)\..\..\src\funlocal.c copy $(ProjectDir)\..\..\src\funlocal.dst $(ProjectDir)\..\..\src\funlocal.c&#x0D;&#x0A;IF NOT EXIST $(ProjectDir)\..\..\src\local.c copy $(ProjectDir)\..\..\src\local.dst $(ProjectDir)\..\..\src\local.c&#x0D;&#x0A;copy $(ProjectDir)\..\..\win32\options.h $(ProjectDir)\..\..\options.h&#x0D;&#x0A;copy $(ProjectDir)\..\..\win32\config.h $(ProjectDir)\..\..\config.h&#x0D;&#x0A;copy $(ProjectDir)\..\..\win32\confmagic.h $(ProjectDir)\..\..\confmagic.h&#x0D;&#x0A;copy $(ProjectDir)\..\..\win32\patches.h $(ProjectDir)\..\..\hdrs\patches.h&#x0D;&#x0A;wscript.exe $(ProjectDir)\..\mkcmds.js&#x0D;&#x0A;echo If any *local.c files failed to build, run build again.&#x0D;&#x0A;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"

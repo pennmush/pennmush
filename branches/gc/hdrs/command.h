@@ -4,7 +4,7 @@
 
 typedef uint8_t *switch_mask;
 extern int switch_bytes;
-#define SW_ALLOC()      GC_MALLOC_ATOMIC(switch_bytes);
+#define SW_ALLOC()      GC_MALLOC_ATOMIC(switch_bytes)
 #define SW_SET(m,n)     (m[(n) >> 3] |= (1 << ((n) & 0x7)))
 #define SW_CLR(m,n)     (m[(n) >> 3] &= ~(1 << ((n) & 0x7)))
 #define SW_ISSET(m,n)   (m[(n) >> 3] & (1 << ((n) & 0x7)))
@@ -223,6 +223,7 @@ char *command_parse(dbref player, dbref cause, char *string, int fromport);
 void do_list_commands(dbref player, int lc);
 char *list_commands(void);
 int command_check_byname(dbref player, const char *name);
+int command_check_byname_quiet(dbref player, const char *name);
 int restrict_command(const char *name, const char *restriction);
 void reserve_aliases(void);
 void local_commands(void);

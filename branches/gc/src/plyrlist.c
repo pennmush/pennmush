@@ -58,7 +58,7 @@ add_player(dbref player)
     init_hft();
   p = GC_MALLOC_ATOMIC(sizeof *p);
   if (!p)
-    mush_panic(T("Unable to allocate memory in plyrlist!"));
+    mush_panic("Unable to allocate memory in plyrlist!");
   *p = player;
   hashadd(strupper(Name(player)), p, &htab_player_list);
 }
@@ -90,7 +90,7 @@ add_player_alias(dbref player, const char *alias)
       dbref *p;
       p = GC_MALLOC_ATOMIC(sizeof *p);
       if (!p)
-        mush_panic(T("Unable to allocate memory in plyrlist!"));
+        mush_panic("Unable to allocate memory in plyrlist!");
       *p = player;
       hashadd(strupper(sp), p, &htab_player_list);
     }
@@ -128,10 +128,13 @@ dbref
 lookup_player_name(const char *name)
 {
   dbref *p;
-  p = hashfind(strupper(name), &htab_player_list);
-  if (!p)
-    return NOTHING;
-  return *p;
+  if (hft_initialized) {
+    p = hashfind(strupper(name), &htab_player_list);
+    if (!p)
+      return NOTHING;
+    return *p;
+  }
+  return NOTHING;
 }
 
 

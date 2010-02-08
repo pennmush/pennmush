@@ -34,20 +34,20 @@
 
 See also: chat, CHAN_USEFIRSTMATCH
 & @CHATFORMAT
-  @chatformat <object>[= <message>]
+  @chatformat <object>[=<message>]
 
-  The @chatformat attribute is evaluated when an object receives a
-  channel message. The evaluated result, is displayed to the player,
-  otherwise the default message is shown. A null result, as long as
-  the attribute exists, shows nothing.
-
+  The chatformat attribute is evaluated when an object receives a channel 
+  message. If the attribute exists, its evaluated result is shown to the
+  object instead of the default message. If the attribute exists but returns
+  nothing, the object will not see anything.
+  
   Registers:
     %0:  The 'type' of the message. It is a single character that
          will always be set:
            '"', ';' or ':' for say, semipose and pose, respectively.
            '|' for an @cemit.
            '@' for a "system" message - such as "Walker has connected."
-    %1:  The channel name. e.g: "Public" "Admin" "Softcode"
+    %1:  The channel name. e.g: "Public", "Admin", "Softcode"
     %2:  The message as typed (post-evaluation, if necessary) by the
          speaker.  Be warned, though - If type is '@', then %2 will
          contain the entire message, and will include the name of
@@ -55,13 +55,13 @@ See also: chat, CHAN_USEFIRSTMATCH
     %3:  The speaker name, unless channel is set NO_NAME.
     %4:  The speaker's channel title, unless none is set, or the
          channel is NO_TITLE.
-    %5:  The original message.
+    %5:  The default message, as shown when no chatformat is set.
 
-    If The channel is NO_NAME, and the speaker either has no title or
-    the channel is also set NO_TITLE, then %3 will be "Someone"
+    If the channel is NO_NAME, and the speaker either has no title or
+    the channel is also set NO_TITLE, then %3 will be "Someone".
 
-(continued in help @chatformat2)
-See also: @chat, @pageformat, speak()
+  Continued in 'help @chatformat2'.
+See also: @chat, @pageformat, @message, speak()
 & @CHATFORMAT2
   Examples:
 
@@ -79,7 +79,7 @@ See also: @chat, @pageformat, speak()
 
     @chatformat me=ansi(if(strmatch(%2,*[name(%!)]*),r,n),%5)
 
-(More examples in help @chatformat3)
+  See 'help @chatformat3' for more examples.
 & @CHATFORMAT3
   A popular feature in clients now available in PennMUSH directly:
   Let's suppose you want "Public" channel chatter to all be green,
@@ -101,29 +101,30 @@ See also: @chat, @pageformat, speak()
 
 See also: @chat, @pageformat, speak()
 & CHAN_USEFIRSTMATCH
-  CHAN_USEFIRSTMATCH (any type)
+  Flag:  CHAN_USEFIRSTMATCH  (any type)
 
   When this flag is set on an object that uses the chat system,
   channel name matching will default to the first matching channel in
   cases of ambiguity. Without this flag, attempting to use an
   ambiguous partial channel name will produce an error.
 
+See also: CHAT
 & @cemit
 & @nscemit
   @cemit[/noisy|/silent][/noeval] <channel>=<message>
   @nscemit[/noisy|/silent][/noeval] <channel>=<message>
 
-  This command allows <message> to be directly broadcasted to the
-  players on <channel>. No channel-prefix is prepended unless the
-  /noisy switch is given or the noisy_cemit config option is yes and
-  /silent is not given.  If the /noeval switch is given, the <message>
-  is not evaluated. This command is intended for use in writing
-  extended chat systems.
+  This command allows <message> to be directly broadcasted to the players 
+  on <channel>. A channel prefix is included if the /noisy switch is given,
+  and omitted if /silent is given - the default is controlled by the 
+  noisy_cemit @config option. If the /noeval switch is given, the <message>
+  is not evaluated. This command is intended for use in writing extended 
+  chat systems.
 
   @nscemit is a wizard-only version that does not include nospoof
   information in broadcasts.
 
-See also: chat
+See also: CHAT, cemit(), @chat
 & @channel
   @channel/list [<channel-prefix>]
   @channel/what [<channel-prefix>]

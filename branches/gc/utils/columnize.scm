@@ -27,9 +27,9 @@
 	   (fixnum)
 	   (usual-integrations)
 	   (disable-interrupts)
-	   (uses srfi-1 srfi-13 regex)))
+	   (uses srfi-1 srfi-13 regex extras)))
  ((and chicken csi)
-  (use srfi-1 srfi-13 regex))
+  (use srfi-1 srfi-13 regex extras))
  (guile
   (use-modules (srfi srfi-1) (srfi srfi-13) (ice-9 regex)
 	       (ice-9 rdelim))

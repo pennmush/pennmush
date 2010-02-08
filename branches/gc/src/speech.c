@@ -30,7 +30,6 @@
 #include "mymalloc.h"
 #include "confmagic.h"
 
-int okay_pemit(dbref player, dbref target);
 static dbref speech_loc(dbref thing);
 void propagate_sound(dbref thing, const char *msg);
 static void do_audible_stuff(dbref loc, dbref *excs, int numexcs,
@@ -747,13 +746,12 @@ messageformat(dbref player, const char *attribute, dbref enactor, int flags,
  * \param arg2 the message to page.
  * \param cause the object that caused the command to run.
  * \param noeval if 1, page/noeval.
- * \param multipage if 1, a page/list; if 0, a page/blind.
  * \param override if 1, page/override.
  * \param has_eq if 1, the command had an = in it.
  */
 void
 do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
-        int noeval, int multipage, int override, int has_eq)
+        int noeval, int override, int has_eq)
 {
   dbref target;
   const char *message;
@@ -812,7 +810,7 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
     mush_panic("Unable to allocate memory in do_page");
 
   if (override && !Pemit_All(player)) {
-    notify(player, "Try again after you get the pemit_all power.");
+    notify(player, T("Try again after you get the pemit_all power."));
     override = 0;
   }
 
@@ -892,12 +890,6 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
     return;
   }
 
-  /* Can the player afford to pay for this thing? */
-  if (!payfor(player, PAGE_COST * gcount)) {
-    notify_format(player, T("You don't have enough %s."), MONIES);
-    return;
-  }
-
   /* Okay, we have a real page, the player can pay for it, and it's
    * actually going to someone. We're in this for keeps now. */
 
@@ -958,13 +950,10 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
 
   /* Figure out the one success message, and send it */
   if (key == 1)
-    notify_format(player, T("Long distance to %s%s: %s%s%s"),
-                  ((gcount > 1) && (!multipage)) ? "(blind) " : "", tbuf2,
+    notify_format(player, T("Long distance to %s: %s%s%s"), tbuf2,
                   Name(player), gap, message);
   else
-    notify_format(player, T("You paged %s%s with '%s'"),
-                  ((gcount > 1) && (!multipage)) ? "(blind) " : "", tbuf2,
-                  message);
+    notify_format(player, T("You paged %s with '%s'"), tbuf2, message);
 
   /* Figure out the 'name' of the player */
   if ((alias = shortalias(player)) && *alias && PAGE_ALIASES)
@@ -978,7 +967,7 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
   /* Build the header */
   if (key == 1) {
     safe_str(T("From afar"), tbuf, &tp);
-    if ((gcount > 1) && (multipage)) {
+    if (gcount > 1) {
       safe_str(T(" (to "), tbuf, &tp);
       safe_str(tbuf2, tbuf, &tp);
       safe_chr(')', tbuf, &tp);
@@ -989,7 +978,7 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
   } else {
     safe_str(current, tbuf, &tp);
     safe_str(T(" pages"), tbuf, &tp);
-    if ((gcount > 1) && (multipage)) {
+    if (gcount > 1) {
       safe_chr(' ', tbuf, &tp);
       safe_str(tbuf2, tbuf, &tp);
     }
@@ -1000,12 +989,10 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
   *tp = '\0';
 
   tp2 = tbuf2;
-  if (multipage) {
-    for (i = 0; i < gcount; i++) {
-      if (i)
-        safe_chr(' ', tbuf2, &tp2);
-      safe_dbref(good[i], tbuf2, &tp2);
-    }
+  for (i = 0; i < gcount; i++) {
+    if (i)
+      safe_chr(' ', tbuf2, &tp2);
+    safe_dbref(good[i], tbuf2, &tp2);
   }
   *tp2 = '\0';
   for (i = 0; i < gcount; i++) {
@@ -1097,7 +1084,7 @@ make_prefixstr(dbref thing, const char *msg, char *tbuf1)
   bp = tbuf1;
 
   if (!a) {
-    safe_str("From ", tbuf1, &bp);
+    safe_str(T("From "), tbuf1, &bp);
     safe_str(Name(IsExit(thing) ? Source(thing) : thing), tbuf1, &bp);
     safe_str(", ", tbuf1, &bp);
   } else {
@@ -1445,11 +1432,7 @@ do_zemit(dbref player, const char *arg1, const char *arg2, int flags)
     notify(player, T("Permission denied."));
     return;
   }
-  /* this command is computationally expensive */
-  if (!payfor(player, FIND_COST)) {
-    notify(player, T("Sorry, you don't have enough money to do that."));
-    return;
-  }
+
   where = unparse_object(player, zone);
   notify_format(player, T("You zemit, \"%s\" in zone %s"), arg2, where);
 

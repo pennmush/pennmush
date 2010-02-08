@@ -827,7 +827,7 @@ FUNCTION(fun_entrances)
   dbref counter;
   dbref entrance;
   int found;
-  int exd, td, pd, rd;          /* what we're looking for */
+  int types = 0;
   char *p;
   int controlswhere = 0;
 
@@ -842,7 +842,6 @@ FUNCTION(fun_entrances)
     safe_str(T("#-1 INVALID LOCATION"), buff, bp);
     return;
   }
-  exd = td = pd = rd = 0;
   if (nargs > 1) {
     if (!args[1] || !*args[1]) {
       safe_str(T("#-1 INVALID SECOND ARGUMENT"), buff, bp);
@@ -853,23 +852,23 @@ FUNCTION(fun_entrances)
       switch (*p) {
       case 'a':
       case 'A':
-        exd = td = pd = rd = 1;
+        types = NOTYPE;
         break;
       case 'e':
       case 'E':
-        exd = 1;
+        types |= TYPE_EXIT;
         break;
       case 't':
       case 'T':
-        td = 1;
+        types |= TYPE_THING;
         break;
       case 'p':
       case 'P':
-        pd = 1;
+        types |= TYPE_PLAYER;
         break;
       case 'r':
       case 'R':
-        rd = 1;
+        types |= TYPE_ROOM;
         break;
       default:
         safe_str(T("#-1 INVALID SECOND ARGUMENT"), buff, bp);
@@ -878,9 +877,9 @@ FUNCTION(fun_entrances)
       p++;
     }
   }
-  if (!exd && !td && !pd && !rd) {
-    exd = td = pd = rd = 1;
-  }
+  if (!types)
+    types = NOTYPE;
+
   if (nargs > 2) {
     if (is_integer(args[2])) {
       low = parse_integer(args[2]);
@@ -915,9 +914,7 @@ FUNCTION(fun_entrances)
   found = 0;
   for (counter = low; counter <= high; counter++) {
     if (GoodObject(counter)) {
-      if ((exd && IsExit(counter)) ||
-          (td && IsThing(counter)) ||
-          (pd && IsPlayer(counter)) || (rd && IsRoom(counter))) {
+      if (types & Typeof(counter)) {
         if (Mobile(counter))
           entrance = Home(counter);
         else
@@ -1049,8 +1046,7 @@ FUNCTION(fun_type)
     break;
   default:
     safe_str("WEIRD OBJECT", buff, bp);
-    do_rawlog(LT_ERR, T("WARNING: Weird object #%d (type %d)\n"), it,
-              Typeof(it));
+    do_rawlog(LT_ERR, "WARNING: Weird object #%d (type %d)\n", it, Typeof(it));
   }
 }
 
@@ -1133,44 +1129,60 @@ FUNCTION(fun_hastype)
 FUNCTION(fun_orflags)
 {
   dbref it = match_thing(executor, args[0]);
-  if (!strcmp(called_as, "ORPOWERS"))
-    safe_boolean(flaglist_check("POWER", executor, it, args[1], 0), buff, bp);
+  int hasflag;
+  hasflag = flaglist_check("FLAG", executor, it, args[1], 0);
+  if (hasflag == -1)
+    safe_str(T("#-1 INVALID FLAG"), buff, bp);
   else
-    safe_boolean(flaglist_check("FLAG", executor, it, args[1], 0), buff, bp);
+    safe_boolean(hasflag, buff, bp);
 }
 
 /* ARGSUSED */
 FUNCTION(fun_andflags)
 {
   dbref it = match_thing(executor, args[0]);
-  if (!strcmp(called_as, "ANDPOWERS"))
-    safe_boolean(flaglist_check("POWER", executor, it, args[1], 1), buff, bp);
+  int hasflag;
+  hasflag = flaglist_check("FLAG", executor, it, args[1], 1);
+  if (hasflag == -1)
+    safe_str(T("#-1 INVALID FLAG"), buff, bp);
   else
-    safe_boolean(flaglist_check("FLAG", executor, it, args[1], 1), buff, bp);
+    safe_boolean(hasflag, buff, bp);
 }
 
 /* ARGSUSED */
 FUNCTION(fun_orlflags)
 {
   dbref it = match_thing(executor, args[0]);
+  int hasflag;
   if (!strcmp(called_as, "ORLPOWERS"))
-    safe_boolean(flaglist_check_long("POWER", executor, it, args[1], 0), buff,
-                 bp);
+    hasflag = flaglist_check_long("POWER", executor, it, args[1], 0);
   else
-    safe_boolean(flaglist_check_long("FLAG", executor, it, args[1], 0), buff,
-                 bp);
+    hasflag = flaglist_check_long("FLAG", executor, it, args[1], 0);
+  if (hasflag == -1)
+    if (!strcmp(called_as, "ORLPOWERS"))
+      safe_str(T("#-1 INVALID POWER"), buff, bp);
+    else
+      safe_str(T("#-1 INVALID FLAG"), buff, bp);
+  else
+    safe_boolean(hasflag, buff, bp);
 }
 
 /* ARGSUSED */
 FUNCTION(fun_andlflags)
 {
   dbref it = match_thing(executor, args[0]);
+  int hasflag;
   if (!strcmp(called_as, "ANDLPOWERS"))
-    safe_boolean(flaglist_check_long("POWER", executor, it, args[1], 1), buff,
-                 bp);
+    hasflag = flaglist_check_long("POWER", executor, it, args[1], 1);
   else
-    safe_boolean(flaglist_check_long("FLAG", executor, it, args[1], 1), buff,
-                 bp);
+    hasflag = flaglist_check_long("FLAG", executor, it, args[1], 1);
+  if (hasflag == -1)
+    if (!strcmp(called_as, "ANDLPOWERS"))
+      safe_str(T("#-1 INVALID POWER"), buff, bp);
+    else
+      safe_str(T("#-1 INVALID FLAG"), buff, bp);
+  else
+    safe_boolean(hasflag, buff, bp);
 }
 
 static lock_type
@@ -1185,13 +1197,30 @@ get_locktype(char *str)
   return upcasestr(str);
 }
 
+extern lock_list lock_types[];
 /* ARGSUSED */
 FUNCTION(fun_locks)
 {
-  dbref thing = match_thing(executor, args[0]);
+  dbref thing;
   lock_list *ll;
   const lock_list *p;
-  int first = 1;
+  bool first = 1;
+
+  if (nargs == 0) {
+    /* List all builtin lock names */
+    int n;
+
+    for (n = 0; lock_types[n].type; n++) {
+      if (!first)
+        safe_chr(' ', buff, bp);
+      else
+        first = 0;
+      safe_str(lock_types[n].type, buff, bp);
+    }
+    return;
+  }
+
+  thing = match_thing(executor, args[0]);
 
   if (!GoodObject(thing)) {
     safe_str(T(e_notvis), buff, bp);
@@ -1250,11 +1279,11 @@ FUNCTION(fun_lockflags)
         safe_str(lock_flags(ll), buff, bp);
       return;
     } else {
-      safe_str("#-1 NO SUCH LOCK", buff, bp);
+      safe_str(T("#-1 NO SUCH LOCK"), buff, bp);
       return;
     }
   }
-  safe_str("#-1 NO SUCH LOCK", buff, bp);
+  safe_str(T("#-1 NO SUCH LOCK"), buff, bp);
 }
 
 /* ARGSUSED */
@@ -1373,7 +1402,7 @@ FUNCTION(fun_testlock)
   elock = parse_boolexp(executor, args[0], "Search");
 
   if (elock == TRUE_BOOLEXP) {
-    safe_str("#-1 INVALID BOOLEXP", buff, bp);
+    safe_str(T("#-1 INVALID BOOLEXP"), buff, bp);
     return;
   }
 
@@ -1803,38 +1832,19 @@ FUNCTION(fun_pmatch)
 {
   dbref target;
 
-  if (*args[0] == '*')
-    target = lookup_player(args[0] + 1);
-  else if (*args[0] == NUMBER_TOKEN) {
-    target = parse_objid(args[0]);
-    if (!(GoodObject(target) && IsPlayer(target))) {
-      notify(executor, T("No match."));
-      safe_str("#-1", buff, bp);
-      return;
-    } else {
-      safe_dbref(target, buff, bp);
-      return;
-    }
-  } else
-    target = lookup_player(args[0]);
-  if (target == NOTHING) {
-    if (*args[0] == '*')
-      target = visible_short_page(executor, args[0] + 1);
-    else
-      target = visible_short_page(executor, args[0]);
-  }
+  target =
+    match_result(executor, args[0], TYPE_PLAYER,
+                 MAT_PMATCH | MAT_TYPE | MAT_ABSOLUTE);
+  /* Not using MAT_NOISY, as #-1 gives a different error message */
   switch (target) {
   case NOTHING:
     notify(executor, T("No match."));
-    safe_str("#-1", buff, bp);
     break;
   case AMBIGUOUS:
     notify(executor, T("I'm not sure who you mean."));
-    safe_str("#-2", buff, bp);
     break;
-  default:
-    safe_dbref(target, buff, bp);
   }
+  safe_dbref(target, buff, bp);
 }
 
 /* ARGUSED */
@@ -1888,9 +1898,7 @@ FUNCTION(fun_locate)
   int pref_type;
   dbref item, loc;
   char *p;
-  int keys = 0;
   int ambig_ok = 0;
-  int force_type = 0;
   long match_flags = 0;
 
   /* find out what we're matching in relation to */
@@ -1924,10 +1932,10 @@ FUNCTION(fun_locate)
       pref_type |= TYPE_THING;
       break;
     case 'L':
-      keys = 1;
+      match_flags |= MAT_CHECK_KEYS;
       break;
     case 'F':
-      force_type = 1;
+      match_flags |= MAT_TYPE;
       break;
     case '*':
       match_flags |= MAT_EVERYTHING;
@@ -1965,9 +1973,14 @@ FUNCTION(fun_locate)
     case 'z':
       match_flags |= MAT_ENGLISH;
       break;
+    case 'x':
+      match_flags |= MAT_EXACT;
+      break;
     case 'X':
       ambig_ok = 1;             /* okay to pick last match */
       break;
+    case ' ':
+      break;                    /* skip over spaces */
     default:
       notify_format(executor, T("I don't understand switch '%c'."), *p);
       break;
@@ -1976,8 +1989,8 @@ FUNCTION(fun_locate)
   if (!pref_type)
     pref_type = NOTYPE;
 
-  if (keys)
-    match_flags = MAT_CHECK_KEYS;
+  if (!(match_flags & ~(MAT_CHECK_KEYS | MAT_TYPE | MAT_EXACT)))
+    match_flags |= MAT_EVERYTHING;
 
   /* report the results */
   if (!ambig_ok)
@@ -1987,11 +2000,6 @@ FUNCTION(fun_locate)
 
   if (!GoodObject(item)) {
     safe_dbref(item, buff, bp);
-    return;
-  }
-
-  if (force_type && !(Typeof(item) & pref_type)) {
-    safe_dbref(NOTHING, buff, bp);
     return;
   }
 

@@ -868,7 +868,7 @@ replace_string(const char *restrict old, const char *restrict newbit,
 
   r = result = GC_MALLOC_ATOMIC(BUFFER_LEN);
   if (!result)
-    mush_panic(T("Couldn't allocate memory in replace_string!"));
+    mush_panic("Couldn't allocate memory in replace_string!");
 
   len = strlen(old);
   newlen = strlen(newbit);
@@ -915,7 +915,7 @@ replace_string2(const char *old[2], const char *newbits[2],
 
   rp = result = GC_MALLOC_ATOMIC(BUFFER_LEN);
   if (!result)
-    mush_panic(T("Couldn't allocate memory in replace_string2!"));
+    mush_panic("Couldn't allocate memory in replace_string2!");
 
   firsts[0] = old[0][0];
   firsts[1] = old[1][0];
@@ -1136,12 +1136,14 @@ next_in_list(const char **head)
 
 }
 
-#ifndef HAVE_IMAXDIV
+#ifndef HAVE_IMAXDIV_T
 typedef struct imaxdiv_t {
   intmax_t rem;
   intmax_t quot;
 } imaxdiv_t;
+#endif
 
+#ifndef HAVE_IMAXDIV
 imaxdiv_t
 imaxdiv(intmax_t num, intmax_t denom)
 {

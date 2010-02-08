@@ -16,6 +16,11 @@ chronological order (most recent first)
 
 ==========================================================================
 
+Version 1.8.3 patchlevel 13                     ??? ??, 20??
+
+Minor Changes:
+ * align() columns can now have ansi color definitions. [GM]
+
 Version 1.8.3 patchlevel 12                     Feb 07, 2010
 
 Major Changes:

@@ -89,12 +89,13 @@ typedef struct _ansi_data {
   char back;
 } ansi_data;
 
+#define HAS_ANSI(adata) (adata.bits || adata.offbits || adata.fore || adata.back)
 int read_raw_ansi_data(ansi_data *store, const char *codes);
 int write_raw_ansi_data(ansi_data *old, ansi_data *cur, char *buff, char **bp);
 
 void define_ansi_data(ansi_data *store, const char *str);
 int write_ansi_data(ansi_data *cur, char *buff, char **bp);
-
+int write_ansi_close(char *buff, char **bp);
 
 void nest_ansi_data(ansi_data *old, ansi_data *cur);
 

@@ -138,7 +138,7 @@ connect_player(const char *name, const char *password, const char *host,
   /* See if player is allowed to connect like this */
   if (Going(player) || Going_Twice(player)) {
     do_log(LT_CONN, 0, 0,
-           T("Connection to GOING player %s not allowed from %s (%s)"), name,
+           "Connection to GOING player %s not allowed from %s (%s)", name,
            host, ip);
     return NOTHING;
   }
@@ -146,7 +146,7 @@ connect_player(const char *name, const char *password, const char *host,
       && (!Site_Can_Guest(host, player) || !Site_Can_Guest(ip, player))) {
     if (!Deny_Silent_Site(host, AMBIGUOUS) && !Deny_Silent_Site(ip, AMBIGUOUS)) {
       do_log(LT_CONN, 0, 0,
-             T("Connection to %s (GUEST) not allowed from %s (%s)"), name,
+             "Connection to %s (GUEST) not allowed from %s (%s)", name,
              host, ip);
       strcpy(errbuf, T("Guest connections not allowed."));
     }
@@ -156,7 +156,7 @@ connect_player(const char *name, const char *password, const char *host,
                  || !Site_Can_Connect(ip, player))) {
     if (!Deny_Silent_Site(host, player) && !Deny_Silent_Site(ip, player)) {
       do_log(LT_CONN, 0, 0,
-             T("Connection to %s (Non-GUEST) not allowed from %s (%s)"), name,
+             "Connection to %s (Non-GUEST) not allowed from %s (%s)", name,
              host, ip);
       strcpy(errbuf, T("Player connections not allowed."));
     }
@@ -176,14 +176,14 @@ connect_player(const char *name, const char *password, const char *host,
     /* Enforce guest limit */
     player = guest_to_connect(player);
     if (!GoodObject(player)) {
-      do_log(LT_CONN, 0, 0, T("Can't connect to a guest (too many connected)"));
+      do_log(LT_CONN, 0, 0, "Can't connect to a guest (too many connected)");
       strcpy(errbuf, T("Too many guests are connected now."));
       return NOTHING;
     }
   }
   if (Suspect_Site(host, player) || Suspect_Site(ip, player)) {
     do_log(LT_CONN, 0, 0,
-           T("Connection from Suspect site. Setting %s(#%d) suspect."),
+           "Connection from Suspect site. Setting %s(#%d) suspect.",
            Name(player), player);
     set_flag_internal(player, "SUSPECT");
   }
@@ -204,16 +204,16 @@ create_player(const char *name, const char *password, const char *host,
               const char *ip, dbref try_dbref)
 {
   if (!ok_player_name(name, NOTHING, NOTHING)) {
-    do_log(LT_CONN, 0, 0, T("Failed creation (bad name) from %s"), host);
+    do_log(LT_CONN, 0, 0, "Failed creation (bad name) from %s", host);
     return NOTHING;
   }
   if (!ok_password(password)) {
-    do_log(LT_CONN, 0, 0, T("Failed creation (bad password) from %s"), host);
+    do_log(LT_CONN, 0, 0, "Failed creation (bad password) from %s", host);
     return AMBIGUOUS;
   }
   if (DBTOP_MAX && (db_top >= DBTOP_MAX + 1) && (first_free == NOTHING)) {
     /* Oops, out of db space! */
-    do_log(LT_CONN, 0, 0, T("Failed creation (no db space) from %s"), host);
+    do_log(LT_CONN, 0, 0, "Failed creation (no db space) from %s", host);
     return NOTHING;
   }
   /* else he doesn't already exist, create him */
@@ -255,7 +255,7 @@ email_register_player(const char *name, const char *email, const char *host,
   FILE *fp;
 
   if (!ok_player_name(name, NOTHING, NOTHING)) {
-    do_log(LT_CONN, 0, 0, T("Failed registration (bad name) from %s"), host);
+    do_log(LT_CONN, 0, 0, "Failed registration (bad name) from %s", host);
     return NOTHING;
   }
   /* Make sure that the email address is valid. A valid address must
@@ -272,7 +272,7 @@ email_register_player(const char *name, const char *email, const char *host,
     if (!Site_Can_Register(p)) {
       if (!Deny_Silent_Site(p, AMBIGUOUS)) {
         do_log(LT_CONN, 0, 0,
-               T("Failed registration (bad site in email: %s) from %s"),
+               "Failed registration (bad site in email: %s) from %s",
                email, host);
       }
       return NOTHING;
@@ -283,7 +283,7 @@ email_register_player(const char *name, const char *email, const char *host,
       *p = '!';
       if (!Deny_Silent_Site(email, AMBIGUOUS)) {
         do_log(LT_CONN, 0, 0,
-               T("Failed registration (bad site in email: %s) from %s"),
+               "Failed registration (bad site in email: %s) from %s",
                email, host);
       }
       return NOTHING;
@@ -291,7 +291,7 @@ email_register_player(const char *name, const char *email, const char *host,
       *p = '!';
   } else {
     if (!Deny_Silent_Site(host, AMBIGUOUS)) {
-      do_log(LT_CONN, 0, 0, T("Failed registration (bad email: %s) from %s"),
+      do_log(LT_CONN, 0, 0, "Failed registration (bad email: %s) from %s",
              email, host);
     }
     return NOTHING;
@@ -299,7 +299,7 @@ email_register_player(const char *name, const char *email, const char *host,
 
   if (DBTOP_MAX && (db_top >= DBTOP_MAX + 1) && (first_free == NOTHING)) {
     /* Oops, out of db space! */
-    do_log(LT_CONN, 0, 0, T("Failed registration (no db space) from %s"), host);
+    do_log(LT_CONN, 0, 0, "Failed registration (no db space) from %s", host);
     return NOTHING;
   }
 
@@ -322,12 +322,13 @@ email_register_player(const char *name, const char *email, const char *host,
 #endif
        popen(tprintf("%s -t", SENDMAIL), "w")) == NULL) {
     do_log(LT_CONN, 0, 0,
-           T("Failed registration of %s by %s: unable to open sendmail"),
+           "Failed registration of %s by %s: unable to open sendmail",
            name, email);
     reserve_fd();
     return NOTHING;
   }
-  fprintf(fp, T("Subject: [%s] Registration of %s\n"), MUDNAME, name);
+  fprintf(fp, "Subject: ");
+  fprintf(fp, T("[%s] Registration of %s\n"), MUDNAME, name);
   fprintf(fp, "To: %s\n", email);
   fprintf(fp, "Precedence: junk\n");
   fprintf(fp, "\n");
@@ -352,8 +353,8 @@ dbref
 email_register_player(const char *name, const char *email, const char *host,
                       const char *ip __attribute__ ((__unused__)))
 {
-  do_log(LT_CONN, 0, 0, T("Failed registration (no sendmail) from %s"), host);
-  do_log(LT_CONN, 0, 0, T("Requested character: '%s'. Email address: %s\n"),
+  do_log(LT_CONN, 0, 0, "Failed registration (no sendmail) from %s", host);
+  do_log(LT_CONN, 0, 0, "Requested character: '%s'. Email address: %s\n",
          name, email);
   return NOTHING;
 }

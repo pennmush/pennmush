@@ -28,7 +28,7 @@ int sizeof_boolexp(boolexp b);
 int eval_boolexp(dbref player, boolexp b, dbref target);
 boolexp parse_boolexp(dbref player, const char *buf, lock_type ltype);
 boolexp parse_boolexp_d(dbref player, const char *buf, lock_type ltype,
-                               int derefs);
+                        int derefs);
 void free_boolexp(boolexp b);
 boolexp getboolexp(PENNFILE *f, const char *ltype);
 void putboolexp(PENNFILE *f, boolexp b);
@@ -38,7 +38,9 @@ enum u_b_f {
   UB_MEREF /**< Use dbrefs or "me" if the object is the player arg
               from unparse_boolexp.() For @decompile. */
 };
+
 char *unparse_boolexp(dbref player, boolexp b, enum u_b_f flag);
+boolexp cleanup_boolexp(boolexp);
 
 #ifdef USE_JIT
 jit_function_t compile_boolexp(dbref thing, boolexp b);
@@ -53,4 +55,5 @@ struct lock_jit_metadata {
 void free_string_pool(struct string_pool *);
 
 #endif
+
 #endif                          /* BOOLEXP_H */

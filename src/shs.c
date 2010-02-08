@@ -422,3 +422,13 @@ shsFinal(SHS_INFO *shsInfo)
 }
 
 #endif                          /* HAS_OPENSSL */
+
+
+static void dummy(void) __attribute__ ((__unused__));
+static void
+dummy(void)
+{
+  /* This function exists to suppress a warning about an empty source
+     file. */
+  return;
+}

@@ -6388,6 +6388,17 @@ fi
 
 
 
+ac_fn_c_check_type "$LINENO" "imaxdiv_t" "ac_cv_type_imaxdiv_t" "$ac_includes_default"
+if test "x$ac_cv_type_imaxdiv_t" = x""yes; then :
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_IMAXDIV_T 1
+_ACEOF
+
+
+fi
+
+
 # The cast to long int works around a bug in the HP C Compiler
 # version HP92453-01 B.11.11.23709.GP, which incorrectly rejects
 # declarations like `int a3[[(sizeof (unsigned char)) >= 0]];'.

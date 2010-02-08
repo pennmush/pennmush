@@ -124,10 +124,11 @@ FUNCTION(fun_ansi)
 
   /* Populate the colors struct */
   define_ansi_data(&colors, args[0]);
+
+  /* If there are no colors designated at all, then just return args[1]. */
   if (!(colors.bits || colors.offbits || colors.fore || colors.back)) {
-    if (!safe_strl(args[1], arglens[1], buff, bp))
-      /* write_ansi_close(buff, bp); */
-      return;
+    safe_strl(args[1], arglens[1], buff, bp);
+    return;
   }
 
   /* Write the colors to buff */
@@ -168,7 +169,7 @@ FUNCTION(fun_html)
 FUNCTION(fun_tag)
 {
   int i;
-  if (!Wizard(executor)
+  if (!Can_Pueblo_Send(executor)
       && !is_allowed_tag(args[0], arglens[0])) {
     safe_str("#-1", buff, bp);
     return;
@@ -188,7 +189,7 @@ FUNCTION(fun_tag)
 /* ARGSUSED */
 FUNCTION(fun_endtag)
 {
-  if (!Wizard(executor) && !is_allowed_tag(args[0], arglens[0]))
+  if (!Can_Pueblo_Send(executor) && !is_allowed_tag(args[0], arglens[0]))
     safe_str("#-1", buff, bp);
   else
     safe_tag_cancel(args[0], buff, bp);
@@ -197,7 +198,7 @@ FUNCTION(fun_endtag)
 /* ARGSUSED */
 FUNCTION(fun_tagwrap)
 {
-  if (!Wizard(executor) && !is_allowed_tag(args[0], arglens[0]))
+  if (!Can_Pueblo_Send(executor) && !is_allowed_tag(args[0], arglens[0]))
     safe_str("#-1", buff, bp);
   else {
     if (nargs == 2)
@@ -234,7 +235,7 @@ ansi_strlen(const char *p)
   return i;
 }
 
-/** Returns the apparent length of a string, up to numchars visible 
+/** Returns the apparent length of a string, up to numchars visible
  * characters. The apparent length skips over nonprinting ansi and
  * tags.
  * \param p string.
@@ -372,7 +373,7 @@ init_ansi_codes(void)
 {
   memset(ansi_chars, 0, sizeof(ansi_chars));
   memset(ansi_codes, 0, sizeof(ansi_codes));
-/* 
+/*
   BUILD_ANSI('n', COL_NORMAL);
   BUILD_ANSI('f', COL_FLASH);
   BUILD_ANSI('h', COL_HILITE);
@@ -878,7 +879,7 @@ real_parse_ansi_string(const char *source)
       break;
     case ESC_CHAR:
       /* ESC_CHAR tags shouldn't be used anymore, so hopefully
-       * we won't get here. 
+       * we won't get here.
        * To parse these, we assume they can't have the new tag-style
        * ANSI codes in them, as this should always be true when loading
        * from attributes. Assuming that, this code is separate from the
@@ -1072,7 +1073,7 @@ optimize_ansi_string(ansi_string *as)
   /* Get rid of all removed markups
    * "target" is non-negative when we've pegged a destination
    * "len" begins counting when we have a target set and we hit a
-   *   block of non-removed markup 
+   *   block of non-removed markup
    * If len is non-zero and we hit a removed markup, shift the block left.
    * The end of the removed string is our new target (it's removable anyway)
    */
@@ -1129,7 +1130,7 @@ copy_stop_code(markup_information *info, char *buff, char **bp)
   save = *bp;
   if (info && info->stop_code) {
     retval += safe_chr(TAG_START, buff, bp);
-    retval += safe_chr(MARKUP_HTML, buff, bp);
+    retval += safe_chr(info->type, buff, bp);
     retval += safe_str(info->stop_code, buff, bp);
     retval += safe_chr(TAG_END, buff, bp);
   }
@@ -1145,19 +1146,20 @@ inspect_ansi_string(ansi_string *as, dbref who)
   markup_information *info;
   int count = 0;
   int j;
-  notify_format(who, "Inspecting ansi string");
-  notify_format(who, "  Text: %s", as->text);
-  notify_format(who, "  Nmarkups: %d", as->nmarkups);
+  notify_format(who, T("Inspecting ansi string"));
+  notify_format(who, T("  Text: %s"), as->text);
+  notify_format(who, T("  Nmarkups: %d"), as->nmarkups);
   for (j = 0; j < as->nmarkups; j++) {
     info = &(as->markup[j]);
     if (info->type == MARKUP_HTML) {
       notify_format(who,
-                    "    %d (%s): (start: %d end: %d) start_code: %s stop_code: %s",
+                    T
+                    ("    %d (%s): (start: %d end: %d) start_code: %s stop_code: %s"),
                     count++, (info->type == MARKUP_HTML ? "html" : "ansi"),
                     info->start, info->end, info->start_code, info->stop_code);
     }
   }
-  notify_format(who, "Inspecting ansi string complete");
+  notify_format(who, T("Inspecting ansi string complete"));
 }
 #endif
 

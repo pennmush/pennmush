@@ -51,6 +51,9 @@
 #define SESSION_COMMAND "SESSION"
 #define IDLE_COMMAND "IDLE"
 
+#define GET_COMMAND "GET"
+#define POST_COMMAND "POST"
+
 #define PREFIX_COMMAND "OUTPUTPREFIX"
 #define SUFFIX_COMMAND "OUTPUTSUFFIX"
 #define PUEBLO_COMMAND "PUEBLOCLIENT "
@@ -103,6 +106,7 @@ typedef struct confparm {
  */
 struct options_table {
   char mud_name[128];   /**< The name of the mush */
+  char mud_url[256];   /**< The name of the mush */
   int port;             /**< The port to listen for connections */
   int ssl_port;         /**< The port to listen for SSL connections */
   char input_db[256];   /**< Name of the input database file */
@@ -126,7 +130,6 @@ struct options_table {
   int max_logins;       /**< Maximum total logins allowed at once */
   int max_guests;       /**< Maximum guests logins allowed at once */
   int whisper_loudness; /**< % chance that a noisy whisper is overheard */
-  int blind_page;       /**< Does page default to page/blind? */
   int page_aliases;     /**< Does page include aliases? */
   int paycheck;         /**< Number of pennies awarded each day of connection */
   int guest_paycheck;   /**< Paycheck for guest connections */
@@ -229,7 +232,6 @@ struct options_table {
   int queue_cost;       /**< Deposit to queue a command */
   int quota_cost;       /**< Number of objects per quota unit */
   int find_cost;        /**< Cost to create an object */
-  int page_cost;        /**< Cost to create an object */
   int kill_default_cost;        /**< Default cost to use 'kill' */
   int kill_min_cost;    /**< Minimum cost to use 'kill' */
   int kill_bonus;       /**< Percentage of cost paid to victim of 'kill' */
@@ -333,7 +335,6 @@ int cf_time(const char *opt, const char *val, void *loc, int maxval,
 #define MONEY            (options.money_singular)
 #define MONIES           (options.money_plural)
 #define WHISPER_LOUDNESS        (options.whisper_loudness)
-#define BLIND_PAGE      (options.blind_page)
 #define PAGE_ALIASES    (options.page_aliases)
 
 #define START_BONUS      (options.starting_money)
@@ -346,6 +347,7 @@ int cf_time(const char *opt, const char *val, void *loc, int maxval,
 #define QUEUE_QUOTA      (options.player_queue_limit)
 
 #define MUDNAME          (options.mud_name)
+#define MUDURL           (options.mud_url)
 #define DEF_DB_IN        (options.input_db)
 #define DEF_DB_OUT       (options.output_db)
 
@@ -365,7 +367,6 @@ int cf_time(const char *opt, const char *val, void *loc, int maxval,
 #define KILL_MIN_COST (options.kill_min_cost)
 #define KILL_BASE_COST (options.kill_default_cost)
 #define FIND_COST (options.find_cost)
-#define PAGE_COST (options.page_cost)
 #define QUOTA_COST (options.quota_cost)
 #define QUEUE_COST (options.queue_cost)
 #define ROOM_COST (options.room_cost)

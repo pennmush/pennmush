@@ -67,10 +67,10 @@ ConcatenateFiles(const char *path, const char *outputfile)
 /* Open output file */
   fo = fopen(outputfile, "wb");
   if (!fo) {
-    do_rawlog(LT_ERR, T("Unable to open file: %s"), outputfile);
+    do_rawlog(LT_ERR, "Unable to open file: %s", outputfile);
     return FALSE;
   }
-  do_rawlog(LT_ERR, T("Creating file: %s"), outputfile);
+  do_rawlog(LT_ERR, "Creating file: %s", outputfile);
 
 /* Find first file matching the wildcard */
   filscan = FindFirstFile(path, &fildata);
@@ -91,16 +91,16 @@ ConcatenateFiles(const char *path, const char *outputfile)
 
   do {
     if (!(fildata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
-      do_rawlog(LT_ERR, "%s: %s, %ld %s", T("    Copying file"),
+      do_rawlog(LT_ERR, "%s: %s, %ld %s", "    Copying file",
                 fildata.cFileName, fildata.nFileSizeLow,
-                fildata.nFileSizeLow == 1 ? T("byte") : T("bytes"));
+                fildata.nFileSizeLow == 1 ? "byte" : "bytes");
       strcpy(fullname, directory);
       strcat(fullname, fildata.cFileName);
 
 /* Open the input file */
       f = fopen(fullname, "rb");
       if (!f)
-        do_rawlog(LT_ERR, T("    ** Unable to open file: %s"), fullname);
+        do_rawlog(LT_ERR, "    ** Unable to open file: %s", fullname);
 
       else {
         total_files++;
@@ -113,7 +113,7 @@ ConcatenateFiles(const char *path, const char *outputfile)
           bytes_out = fwrite(buff, 1, bytes_in, fo);
           total_bytes += bytes_out;
           if (bytes_in != bytes_out) {
-            do_rawlog(LT_ERR, T("Unable to write to file: %s"), outputfile);
+            do_rawlog(LT_ERR, "Unable to write to file: %s", outputfile);
             fclose(f);
             break;
           }
@@ -129,9 +129,9 @@ ConcatenateFiles(const char *path, const char *outputfile)
   status = GetLastError();
   FindClose(filscan);
   fclose(fo);
-  do_rawlog(LT_ERR, T("Copied %i %s, %ld %s"), total_files,
-            total_files == 1 ? T("file") : T("files"), total_bytes,
-            total_bytes == 1 ? T("byte") : T("bytes"));
+  do_rawlog(LT_ERR, "Copied %i %s, %ld %s", total_files,
+            total_files == 1 ? "file" : "files", total_bytes,
+            total_bytes == 1 ? "byte" : "bytes");
   if (status == ERROR_NO_MORE_FILES)
     return TRUE;
 
@@ -162,35 +162,35 @@ CheckDatabase(const char *path, FILETIME * modified, long *filesize)
   FileTimeToSystemTime(&fildata.ftLastWriteTime, &st);
   if (st.wMonth < 1 || st.wMonth > 12)
     st.wMonth = 0;
-  do_rawlog(LT_ERR, T
-            ("File \"%s\" found, size %ld %s, modified on %02d %s %04d %02d:%02d:%02d"),
+  do_rawlog(LT_ERR,
+            "File \"%s\" found, size %ld %s, modified on %02d %s %04d %02d:%02d:%02d",
             path, fildata.nFileSizeLow,
-            fildata.nFileSizeLow == 1 ? T("byte") : T("bytes"), st.wDay,
+            fildata.nFileSizeLow == 1 ? "byte" : "bytes", st.wDay,
             months[st.wMonth], st.wYear, st.wHour, st.wMinute, st.wSecond);
   if (fildata.nFileSizeHigh == 0 && fildata.nFileSizeLow < 80) {
-    do_rawlog(LT_ERR, T("File is too small to be a MUSH database."));
+    do_rawlog(LT_ERR, "File is too small to be a MUSH database.");
     return FALSE;
   }
 
 /* check file for validity */
   f = fopen(path, "rb");
   if (!f) {
-    do_rawlog(LT_ERR, T("Unable to open file %s"), path);
+    do_rawlog(LT_ERR, "Unable to open file %s", path);
     return FALSE;
   }
   if (fseek(f, -80, SEEK_END) != 0) {
-    do_rawlog(LT_ERR, T("Unable to check file %s"), path);
+    do_rawlog(LT_ERR, "Unable to check file %s", path);
     fclose(f);
     return FALSE;
   }
   bytes = fread(buff, 1, 80, f);
   fclose(f);
   if (bytes != 80) {
-    do_rawlog(LT_ERR, T("Unable to read last part of file %s"), path);
+    do_rawlog(LT_ERR, "Unable to read last part of file %s", path);
     return FALSE;
   }
   if (strstr(buff, "***END OF DUMP***") == 0) {
-    do_rawlog(LT_ERR, T("Database not terminated correctly, file %s"), path);
+    do_rawlog(LT_ERR, "Database not terminated correctly, file %s", path);
     return FALSE;
   }
   return TRUE;
@@ -276,12 +276,12 @@ Win32MUSH_setup(void)
   }
 
 /* Final failsafe - input database SHOULD still be OK. */
-  do_rawlog(LT_ERR, T("Verifying selected database."));
+  do_rawlog(LT_ERR, "Verifying selected database.");
   if (!CheckDatabase(options.input_db, &indb_time, &indb_size)) {
-    do_rawlog(LT_ERR, T("File corrupted during selection process."));
+    do_rawlog(LT_ERR, "File corrupted during selection process.");
     exit(-1);
   } else {
-    do_rawlog(LT_ERR, T("Input database verified. Proceeding to analysis."));
+    do_rawlog(LT_ERR, "Input database verified. Proceeding to analysis.");
   }
 }
 

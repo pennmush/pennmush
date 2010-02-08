@@ -128,7 +128,7 @@ add_help_file(const char *command_name, const char *filename, int admin)
   /* If there's already an entry for it, complain */
   h = hashfind(strupper(command_name), &help_files);
   if (h) {
-    do_rawlog(LT_ERR, T("Duplicate help_command %s ignored."), command_name);
+    do_rawlog(LT_ERR, "Duplicate help_command %s ignored.", command_name);
     return;
   }
 
@@ -172,10 +172,9 @@ help_reindex(dbref player)
   }
   if (player != NOTHING) {
     notify(player, T("Help files reindexed."));
-    do_rawlog(LT_WIZ, T("Help files reindexed by %s(#%d)"), Name(player),
-              player);
+    do_rawlog(LT_WIZ, "Help files reindexed by %s(#%d)", Name(player), player);
   } else
-    do_rawlog(LT_WIZ, T("Help files reindexed."));
+    do_rawlog(LT_WIZ, "Help files reindexed.");
 }
 
 static void
@@ -205,7 +204,7 @@ do_new_spitfile(dbref player, char *arg1, help_file *help_dat)
 
   if (!help_dat->indx || help_dat->entries == 0) {
     notify(player, T("Sorry, that command is temporarily unvailable."));
-    do_rawlog(LT_ERR, T("No index for %s."), help_dat->command);
+    do_rawlog(LT_ERR, "No index for %s.", help_dat->command);
     return;
   }
 
@@ -220,13 +219,12 @@ do_new_spitfile(dbref player, char *arg1, help_file *help_dat)
 
   if ((fp = fopen(help_dat->file, FOPEN_READ)) == NULL) {
     notify(player, T("Sorry, that function is temporarily unavailable."));
-    do_log(LT_ERR, 0, 0, T("Can't open text file %s for reading"),
-           help_dat->file);
+    do_log(LT_ERR, 0, 0, "Can't open text file %s for reading", help_dat->file);
     return;
   }
   if (fseek(fp, entry->pos, 0) < 0L) {
     notify(player, T("Sorry, that function is temporarily unavailable."));
-    do_rawlog(LT_ERR, T("Seek error in file %s"), help_dat->file);
+    do_rawlog(LT_ERR, "Seek error in file %s", help_dat->file);
     return;
   }
   strcpy(the_topic, strupper(entry->topic + (*entry->topic == '&')));
@@ -329,7 +327,7 @@ write_topic(long int p)
       else
         topics = (help_indx *) malloc(top_topics * sizeof(help_indx));
       if (!topics) {
-        mush_panic(T("Out of memory"));
+        mush_panic("Out of memory");
       }
     }
     temp = &topics[num_topics++];
@@ -368,15 +366,15 @@ help_build_index(help_file *h, int restricted)
   if (!h || !h->file)
     return;
   if ((rfp = fopen(h->file, FOPEN_READ)) == NULL) {
-    do_rawlog(LT_ERR, T("Can't open %s for reading: %s"), h->file,
+    do_rawlog(LT_ERR, "Can't open %s for reading: %s", h->file,
               strerror(errno));
     return;
   }
 
   if (restricted)
-    do_rawlog(LT_WIZ, T("Indexing file %s (admin topics)"), h->file);
+    do_rawlog(LT_WIZ, "Indexing file %s (admin topics)", h->file);
   else
-    do_rawlog(LT_WIZ, T("Indexing file %s"), h->file);
+    do_rawlog(LT_WIZ, "Indexing file %s", h->file);
   topics = NULL;
   num_topics = 0;
   top_topics = 0;
@@ -396,7 +394,7 @@ help_build_index(help_file *h, int restricted)
       /* Looking for the first topic, but we'll ignore blank lines */
       if (!line[0]) {
         /* Someone's feeding us /dev/null? */
-        do_rawlog(LT_ERR, T("Malformed help file %s doesn't start with &"),
+        do_rawlog(LT_ERR, "Malformed help file %s doesn't start with &",
                   h->file);
         fclose(rfp);
         return;
@@ -404,7 +402,7 @@ help_build_index(help_file *h, int restricted)
       if (isspace((unsigned char) line[0]))
         continue;
       if (line[0] != '&') {
-        do_rawlog(LT_ERR, T("Malformed help file %s doesn't start with &"),
+        do_rawlog(LT_ERR, "Malformed help file %s doesn't start with &",
                   h->file);
         fclose(rfp);
         return;
@@ -412,7 +410,7 @@ help_build_index(help_file *h, int restricted)
     }
     n = strlen(line);
     if (line[n - 1] != '\n') {
-      do_rawlog(LT_ERR, T("Line %d of %s: line too long"), lineno, h->file);
+      do_rawlog(LT_ERR, "Line %d of %s: line too long", lineno, h->file);
     }
     if (line[0] == '&') {
       ++ntopics;
@@ -460,7 +458,7 @@ help_build_index(help_file *h, int restricted)
   h->indx = topics;
   add_check("help_index");
   fclose(rfp);
-  do_rawlog(LT_WIZ, T("%d topics indexed."), num_topics);
+  do_rawlog(LT_WIZ, "%d topics indexed.", num_topics);
   return;
 }
 

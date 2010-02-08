@@ -198,7 +198,7 @@ typedef enum bvm_opcode {
   OP_TIP, /**< Tests IP^ARG */
   OP_THOSTNAME, /**< Tests HOSTNAME^ARG */
   OP_TOBJID, /**< Tests OBJID^ARG */
-  OP_TDBREFLIST,        /**< Tests DBERFLIST^ARG */
+  OP_TDBREFLIST,        /**< Tests DBREFLIST^ARG */
   OP_LOADS, /**< Load ARG into S */
   OP_LOADR, /**< Load ARG into R */
   OP_NEGR,  /**< Negate R */
@@ -293,8 +293,8 @@ safe_get_bytecode(boolexp b)
     static size_t pos_of_label(struct bvm_asm *a, int label);
     static size_t offset_to_string(struct bvm_asm *a, int c);
     static struct bvm_asmnode *insn_after_label(struct bvm_asm *a, int label);
-    static void opt_thread_jumps(struct bvm_asm *a);
     static void optimize_bvm_asm(struct bvm_asm *a);
+    static void optimize_bvm_ast(struct boolexp_node *);
     static boolexp emit_bytecode(struct bvm_asm *a, int derefs);
     static void free_bvm_asm(struct bvm_asm *a);
 #ifdef DEBUG_BYTECODE
@@ -1302,10 +1302,10 @@ append_insn(struct bvm_asm *a, bvm_opcode op, int arg, const char *s)
     if (!found) {
       newstr = mush_malloc(sizeof *newstr, "bvm.strnode");
       if (!s)
-        mush_panic(T("Unable to allocate memory for boolexp string node!"));
+        mush_panic("Unable to allocate memory for boolexp string node!");
       newstr->s = mush_strdup(s, "bvm.string");
       if (!newstr->s)
-        mush_panic(T("Unable to allocate memory for boolexp string!"));
+        mush_panic("Unable to allocate memory for boolexp string!");
       newstr->len = strlen(s) + 1;
       newstr->next = NULL;
       if (a->shead == NULL)
@@ -1323,7 +1323,7 @@ append_insn(struct bvm_asm *a, bvm_opcode op, int arg, const char *s)
     bvm_asmnode_slab = slab_create("bvm.asmnode", sizeof *newop);
   newop = slab_malloc(bvm_asmnode_slab, NULL);
   if (!newop)
-    mush_panic(T("Unable to allocate memory for boolexp asm node!"));
+    mush_panic("Unable to allocate memory for boolexp asm node!");
   newop->op = op;
   newop->arg = arg;
   newop->next = NULL;
@@ -1525,18 +1525,110 @@ insn_after_label(struct bvm_asm *a, int label)
   return NULL;
 }
 
-/** Avoid jumps that lead straight to another jump. If the second jump
- * is on the same condition as the first one, jump instead to its
- * destination. If it's the opposite condition, jump instead to the
- * first instruction after the second jump to avoid the useless
- * conditional check. 
- * \param a the assembler list to thread. */
+
+/** Do some trivial optimizations at the syntax tree level. Some of
+ * these catch things that no normal person would do with a lock, but
+ * might be created artificially at some point in the future -- for
+ * example, if we ever go through and replace reference to a deleted
+ * object with #false in locks.
+ *
+ * Current optimizations:
+ *
+ * Turn =#123|+#123 into the equivalent #123 (Won't work with
+ * =#123|+#123|foo); doing so is probably overkill.)
+ * Turn !!foo into foo
+ * Turn !#TRUE into #FALSE and vis versa
+ *
+ * Possible future additions:
+ * Change foo&#FALSE&bar into #FALSE
+ * Change foo|#TRUE|bar into #TRUE
+ *
+ *  \param ast the syntax tree to transform
+ */
 static void
-opt_thread_jumps(struct bvm_asm *a)
+optimize_bvm_ast(struct boolexp_node *ast)
+{
+  struct boolexp_node *temp;
+
+  if (!ast)
+    return;
+  switch (ast->type) {
+  case BOOLEXP_OR:
+    if (((ast->data.sub.a->type == BOOLEXP_IS
+          && ast->data.sub.b->type == BOOLEXP_CARRY)
+         || (ast->data.sub.a->type == BOOLEXP_CARRY
+             && ast->data.sub.b->type == BOOLEXP_IS))
+        && (ast->data.sub.a->thing == ast->data.sub.b->thing)) {
+      /* Turn =#123|+#123 into #123 */
+
+      dbref thing = ast->data.sub.a->thing;
+
+      free_bool(ast->data.sub.a);
+      free_bool(ast->data.sub.b);
+      ast->type = BOOLEXP_CONST;
+      ast->thing = thing;
+      ast->data.sub.a = ast->data.sub.b = NULL;
+    } else {
+      optimize_bvm_ast(ast->data.sub.a);
+      optimize_bvm_ast(ast->data.sub.b);
+    }
+    break;
+  case BOOLEXP_AND:
+    optimize_bvm_ast(ast->data.sub.a);
+    optimize_bvm_ast(ast->data.sub.b);
+    break;
+  case BOOLEXP_NOT:
+    temp = ast->data.n;
+    if (temp->type == BOOLEXP_NOT) {
+      /* Turn !!foo into foo */
+      struct boolexp_node *n = temp->data.n;
+      free_bool(temp);
+      ast->type = n->type;
+      ast->thing = n->thing;
+      ast->data = n->data;
+      free_bool(n);
+      optimize_bvm_ast(ast);
+    } else if (temp->type == BOOLEXP_BOOL) {
+      /* Turn !#true into #false */
+      ast->type = BOOLEXP_BOOL;
+      ast->thing = !temp->thing;
+      ast->data.n = NULL;
+      free_bool(temp);
+    } else
+      optimize_bvm_ast(ast->data.n);
+    break;
+  default:
+    (void) 0;                   /* Nothing to do. */
+  }
+}
+
+
+/** Do some trivial optimizations of boolexp vm assembly. 
+ *
+ *
+ * Current optimizations: Thread jumping
+ *
+ * Possible future additions:
+ * Just-in-time compiling of locks to machine code? Raevnos did this once as a proof of concept.
+ *
+ *  \param a the assembler list to transform.
+ */
+static void
+optimize_bvm_asm(struct bvm_asm *a)
 {
   struct bvm_asmnode *n, *target;
 
+  if (!a)
+    return;
+
   for (n = a->head; n;) {
+
+    /* Avoid jumps that lead straight to another jump. If the second
+     * jump is on the same condition as the first one, jump instead to its
+     * destination. If it's the opposite condition, jump instead to the
+     * first instruction after the second jump to avoid the useless
+     * conditional check.
+     */
     if (n->op == OP_JMPT || n->op == OP_JMPF) {
       target = insn_after_label(a, n->arg);
       if (target && (target->op == OP_JMPT || target->op == OP_JMPF)) {
@@ -1551,7 +1643,7 @@ opt_thread_jumps(struct bvm_asm *a)
           struct bvm_asmnode *newlbl;
           newlbl = slab_malloc(bvm_asmnode_slab, NULL);
           if (!newlbl)
-            mush_panic(T("Unable to allocate memory for boolexp asm node!"));
+            mush_panic("Unable to allocate memory for boolexp asm node!");
           newlbl->op = OP_LABEL;
           n->arg = newlbl->arg = gen_label_id(a);
           if (target->next)
@@ -1567,17 +1659,6 @@ opt_thread_jumps(struct bvm_asm *a)
     } else
       n = n->next;
   }
-}
-
-/** Do some trivial optimizations.  
- * \param a the assembler list to transform.
- */
-static void
-optimize_bvm_asm(struct bvm_asm *a)
-{
-  if (!a)
-    return;
-  opt_thread_jumps(a);
 }
 
 /** Turn assembly into bytecode. 
@@ -1680,6 +1761,7 @@ parse_boolexp_d(dbref player, const char *buf, lock_type ltype, int derefs)
   ast = parse_boolexp_E();
   if (!ast)
     return TRUE_BOOLEXP;
+  optimize_bvm_ast(ast);
   bvasm = generate_bvm_asm(ast);
   if (!bvasm) {
     free_boolexp_node(ast);
@@ -1975,6 +2057,52 @@ check_lock(dbref player, dbref i, const char *name, boolexp be)
     }
   }
 }
+
+/* Replace tests of garbage objects with #FALSE */
+boolexp
+cleanup_boolexp(boolexp b)
+{
+  unsigned char *pc, *bytecode;
+  uint16_t bytecode_len = 0;
+  bvm_opcode op;
+  int arg;
+  bool revised = 0;
+  unsigned char false_op[INSN_LEN] = { OP_LOADR, 0 };
+
+  if (b == TRUE_BOOLEXP)
+    return b;
+
+  bytecode = pc = get_bytecode(b, &bytecode_len);
+  while (1) {
+    op = (bvm_opcode) *pc;
+    memcpy(&arg, pc + 1, sizeof arg);
+    switch (op) {
+    case OP_RET:
+      goto done;                /* Oh, for named loops */
+    case OP_TCONST:
+    case OP_TCARRY:
+    case OP_TIS:
+    case OP_TOWNER:
+    case OP_TIND:
+      if (IsGarbage(arg)) {
+        revised = 1;
+        memcpy(pc, false_op, INSN_LEN);
+      }
+      break;
+    default:
+      (void) 0;                 /* Do nothing for other opcodes */
+    }
+    pc += INSN_LEN;
+  }
+done:
+  if (revised) {
+    boolexp copy = chunk_create(bytecode, bytecode_len, chunk_derefs(b));
+    chunk_delete(b);
+    return copy;
+  } else
+    return b;
+}
+
 
 #ifdef USE_JIT
 

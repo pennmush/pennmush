@@ -1070,3 +1070,23 @@ check_zone_lock(dbref player, dbref zone, int noisy)
                     unparse_object(player, zone));
   }
 }
+
+
+void
+purge_locks(void)
+{
+  dbref thing;
+
+  for (thing = 0; thing < db_top; thing++) {
+    lock_list *ll;
+    boolexp old;
+    for (ll = Locks(thing); ll; ll = L_NEXT(ll)) {
+      old = L_KEY(ll);
+      L_KEY(ll) = cleanup_boolexp(L_KEY(ll));
+#ifdef USE_JIT
+      if (old != L_KEY(ll))
+	ll->fun = NULL;
+#endif
+    }
+  }
+}

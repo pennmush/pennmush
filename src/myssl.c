@@ -274,7 +274,7 @@ get_dh1024(void)
 
   dh->g = BN_bin2bn(dh1024_g, sizeof(dh1024_g), NULL);
   if (!dh->g) {
-    do_rawlog(LT_ERR, "ERror in BN_bin2bn 2");
+    do_rawlog(LT_ERR, "Error in BN_bin2bn 2");
     DH_free(dh);
     return NULL;
   }

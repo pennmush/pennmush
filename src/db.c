@@ -311,7 +311,7 @@ db_read_labeled_string(PENNFILE *f, char **label, char **value)
   } while (c != EOF && isspace(c));
 
   if (c == EOF) {
-    do_rawlog(LT_ERR, T("DB: Unexpected EOF at line %d"), dbline);
+    do_rawlog(LT_ERR, "DB: Unexpected EOF at line %d", dbline);
     longjmp(db_err, 1);
   }
 
@@ -339,10 +339,9 @@ db_read_labeled_string(PENNFILE *f, char **label, char **value)
   /* check for presence of a value, which we must have. */
   if (c == EOF || c == '\n') {
     if (c == EOF)
-      do_rawlog(LT_ERR, T("DB: Unexpected EOF at line %d"), dbline);
+      do_rawlog(LT_ERR, "DB: Unexpected EOF at line %d", dbline);
     else
-      do_rawlog(LT_ERR, T("DB: Missing value for '%s' at line %d"), lbuf,
-                dbline);
+      do_rawlog(LT_ERR, "DB: Missing value for '%s' at line %d", lbuf, dbline);
     longjmp(db_err, 1);
   }
 
@@ -421,7 +420,7 @@ db_read_this_labeled_string(PENNFILE *f, const char *label, char **value)
 
   if (strcmp(readlabel, label)) {
     do_rawlog(LT_ERR,
-              T("DB: error: Got label '%s', expected label '%s' at line %d"),
+              "DB: error: Got label '%s', expected label '%s' at line %d",
               readlabel, label, dbline);
     longjmp(db_err, 1);
   }
@@ -444,7 +443,7 @@ db_read_this_labeled_int(PENNFILE *f, const char *label, int *value)
 
   if (strcmp(readlabel, label)) {
     do_rawlog(LT_ERR,
-              T("DB: error: Got label '%s', expected label '%s' at line %d"),
+              "DB: error: Got label '%s', expected label '%s' at line %d",
               readlabel, label, dbline);
     longjmp(db_err, 1);
   }
@@ -484,7 +483,7 @@ db_read_this_labeled_uint32(PENNFILE *f, const char *label, uint32_t *value)
 
   if (strcmp(readlabel, label)) {
     do_rawlog(LT_ERR,
-              T("DB: error: Got label '%s', expected label '%s' at line %d"),
+              "DB: error: Got label '%s', expected label '%s' at line %d",
               readlabel, label, dbline);
     longjmp(db_err, 1);
   }
@@ -524,7 +523,7 @@ db_read_this_labeled_dbref(PENNFILE *f, const char *label, dbref *val)
 
   if (strcmp(readlabel, label)) {
     do_rawlog(LT_ERR,
-              T("DB: error: Got label '%s', expected label '%s' at line %d"),
+              "DB: error: Got label '%s', expected label '%s' at line %d",
               readlabel, label, dbline);
     longjmp(db_err, 1);
   }
@@ -817,14 +816,14 @@ db_paranoid_write_object(PENNFILE *f, dbref i, int flag)
         mush_strncpy(name, tbuf1, BUFFER_LEN);
       }
       do_rawlog(LT_CHECK,
-                T(" * Bad attribute name on #%d. Changing name to %s.\n"),
+                " * Bad attribute name on #%d. Changing name to %s.\n",
                 i, name);
       err = 0;
     }
     /* check the owner */
     owner = AL_CREATOR(list);
     if (!GoodObject(owner)) {
-      do_rawlog(LT_CHECK, T(" * Bad owner on attribute %s on #%d.\n"), name, i);
+      do_rawlog(LT_CHECK, " * Bad owner on attribute %s on #%d.\n", name, i);
       owner = GOD;
       fixmemdb = 1;
     } else {
@@ -853,8 +852,7 @@ db_paranoid_write_object(PENNFILE *f, dbref i, int flag)
     if (err) {
       fixmemdb = 1;
       do_rawlog(LT_CHECK,
-                T(" * Bad text in attribute %s on #%d. Changed to:\n"), name,
-                i);
+                " * Bad text in attribute %s on #%d. Changed to:\n", name, i);
       do_rawlog(LT_CHECK, "%s\n", tbuf1);
     }
     db_write_labeled_string(f, "  value", tbuf1);
@@ -938,10 +936,10 @@ db_paranoid_write(PENNFILE *f, int flag)
     db_paranoid_write_object(f, i, flag);
     /* print out a message every so many objects */
     if (i % globals.paranoid_checkpt == 0)
-      do_rawlog(LT_CHECK, T("\t...wrote up to object #%d\n"), i);
+      do_rawlog(LT_CHECK, "\t...wrote up to object #%d\n", i);
   }
   penn_fputs(EOD, f);
-  do_rawlog(LT_CHECK, T("\t...finished at object #%d\n"), i - 1);
+  do_rawlog(LT_CHECK, "\t...finished at object #%d\n", i - 1);
   do_rawlog(LT_CHECK, "END OF PARANOID WRITE.\n");
   return db_top;
 }
@@ -956,7 +954,7 @@ getref(PENNFILE *f)
 {
   static char buf[BUFFER_LEN];
   if (!penn_fgets(buf, sizeof(buf), f)) {
-    do_rawlog(LT_ERR, T("Unexpected EOF at line %d"), dbline);
+    do_rawlog(LT_ERR, "Unexpected EOF at line %d", dbline);
     longjmp(db_err, 1);
   }
   dbline++;
@@ -982,7 +980,7 @@ getstring_noalloc(PENNFILE *f)
   p = buf;
   c = penn_fgetc(f);
   if (c == EOF) {
-    do_rawlog(LT_ERR, T("Unexpected EOF at line %d"), dbline);
+    do_rawlog(LT_ERR, "Unexpected EOF at line %d", dbline);
     longjmp(db_err, 1);
   } else if (c != '"') {
     for (;;) {
@@ -1094,8 +1092,7 @@ get_new_locks(dbref i, PENNFILE *f, int c)
 
   if (found != count)
     do_rawlog(LT_ERR,
-              T
-              ("WARNING: Actual lock count (%d) different from expected count (%d)."),
+              "WARNING: Actual lock count (%d) different from expected count (%d).",
               found, count);
 
 }
@@ -1123,7 +1120,7 @@ getlocks(dbref i, PENNFILE *f)
     }
     *p = '\0';
     if (c == EOF || (p - buf == 0)) {
-      do_rawlog(LT_ERR, T("ERROR: Invalid lock format on object #%d"), i);
+      do_rawlog(LT_ERR, "ERROR: Invalid lock format on object #%d", i);
       return;
     }
     b = getboolexp(f, buf);     /* Which will clobber a '\n' */
@@ -1189,14 +1186,13 @@ get_list(PENNFILE *f, dbref i)
          disallowing " in attribute names. */
       penn_fgets(tbuf1, BUFFER_LEN + 150, f);
       if (!(p = strchr(tbuf1, '^'))) {
-        do_rawlog(LT_ERR, T("ERROR: Bad format on new attributes. object #%d"),
-                  i);
+        do_rawlog(LT_ERR, "ERROR: Bad format on new attributes. object #%d", i);
         return -1;
       }
       *p++ = '\0';
       if (!(q = strchr(p, '^'))) {
         do_rawlog(LT_ERR,
-                  T("ERROR: Bad format on new attribute %s. object #%d"),
+                  "ERROR: Bad format on new attribute %s. object #%d",
                   tbuf1, i);
         return -1;
       }
@@ -1240,30 +1236,29 @@ get_list(PENNFILE *f, dbref i)
        */
       break;
     case '>':                  /* old style attribs, die noisily */
-      do_rawlog(LT_ERR, T("ERROR: old-style attribute format in object %d"), i);
+      do_rawlog(LT_ERR, "ERROR: old-style attribute format in object %d", i);
       return -1;
       break;
     case '<':                  /* end of list */
       if ('\n' != penn_fgetc(f)) {
-        do_rawlog(LT_ERR, T("ERROR: no line feed after < on object %d"), i);
+        do_rawlog(LT_ERR, "ERROR: no line feed after < on object %d", i);
         return -1;
       }
       return count;
     default:
       if (c == EOF) {
-        do_rawlog(LT_ERR, T("ERROR: Unexpected EOF on file."));
+        do_rawlog(LT_ERR, "ERROR: Unexpected EOF on file.");
         return -1;
       }
       do_rawlog(LT_ERR,
-                T
-                ("ERROR: Bad character %c (%d) in attribute list on object %d"),
+                "ERROR: Bad character %c (%d) in attribute list on object %d",
                 c, c, i);
       do_rawlog(LT_ERR,
-                T("  (expecting ], >, or < as first character of the line.)"));
+                "  (expecting ], >, or < as first character of the line.)");
       if (*tbuf1)
-        do_rawlog(LT_ERR, T("  Last attribute read was: %s"), tbuf1);
+        do_rawlog(LT_ERR, "  Last attribute read was: %s", tbuf1);
       else
-        do_rawlog(LT_ERR, T("  No attributes had been read yet."));
+        do_rawlog(LT_ERR, "  No attributes had been read yet.");
       return -1;
     }
 }
@@ -1322,8 +1317,7 @@ db_read_attrs(PENNFILE *f, dbref i, int count)
 
   if (found != count)
     do_rawlog(LT_ERR,
-              T
-              ("WARNING: Actual attribute count (%d) different than expected count (%d)."),
+              "WARNING: Actual attribute count (%d) different than expected count (%d).",
               found, count);
 
 }
@@ -1361,14 +1355,14 @@ db_read_oldstyle(PENNFILE *f)
         (void) getstring_noalloc(f);
         flag_read_all(f, "POWER");
       } else {
-        do_rawlog(LT_ERR, T("Unrecognized database format!"));
+        do_rawlog(LT_ERR, "Unrecognized database format!");
         return -1;
       }
       break;
       /* old fashioned database */
     case '#':
     case '&':                  /* zone oriented database */
-      do_rawlog(LT_ERR, T("ERROR: old style database."));
+      do_rawlog(LT_ERR, "ERROR: old style database.");
       return -1;
       break;
       /* new database */
@@ -1397,7 +1391,7 @@ db_read_oldstyle(PENNFILE *f)
         old_flags = getref(f);
         old_toggles = getref(f);
         if ((o->type = type_from_old_flags(old_flags)) < 0) {
-          do_rawlog(LT_ERR, T("Unable to determine type of #%d\n"), i);
+          do_rawlog(LT_ERR, "Unable to determine type of #%d\n", i);
           return -1;
         }
         o->flags =
@@ -1431,14 +1425,14 @@ db_read_oldstyle(PENNFILE *f)
         mush_strncpy(buff, o->name, PLAYER_NAME_LIMIT);
         set_name(i, buff);
         do_rawlog(LT_CHECK,
-                  T(" * Name of #%d is longer than the maximum, truncating.\n"),
+                  " * Name of #%d is longer than the maximum, truncating.\n",
                   i);
       } else if (!IsPlayer(i) && (strlen(o->name) > OBJECT_NAME_LIMIT)) {
         char buff[OBJECT_NAME_LIMIT + 1];       /* The name plus a NUL */
         mush_strncpy(buff, o->name, OBJECT_NAME_LIMIT);
         set_name(i, buff);
         do_rawlog(LT_CHECK,
-                  T(" * Name of #%d is longer than the maximum, truncating.\n"),
+                  " * Name of #%d is longer than the maximum, truncating.\n",
                   i);
       }
 
@@ -1497,7 +1491,7 @@ db_read_oldstyle(PENNFILE *f)
 
       /* read attribute list for item */
       if ((o->attrcount = get_list(f, i)) < 0) {
-        do_rawlog(LT_ERR, T("ERROR: bad attribute list object %d"), i);
+        do_rawlog(LT_ERR, "ERROR: bad attribute list object %d", i);
         return -1;
       }
       if (!(globals.indb_flags & DBF_AF_NODUMP)) {
@@ -1524,7 +1518,7 @@ db_read_oldstyle(PENNFILE *f)
         penn_ungetc('*', f);
         penn_fgets(buff, sizeof buff, f);
         if (strcmp(buff, EOD) != 0) {
-          do_rawlog(LT_ERR, T("ERROR: No end of dump after object #%d"), i - 1);
+          do_rawlog(LT_ERR, "ERROR: No end of dump after object #%d", i - 1);
           return -1;
         } else {
           do_rawlog(LT_ERR, "READING: done");
@@ -1536,7 +1530,7 @@ db_read_oldstyle(PENNFILE *f)
         }
       }
     default:
-      do_rawlog(LT_ERR, T("ERROR: failed object %d"), i);
+      do_rawlog(LT_ERR, "ERROR: failed object %d", i);
       return -1;
     }
   }
@@ -1569,12 +1563,12 @@ db_read(PENNFILE *f)
 
   c = penn_fgetc(f);
   if (c != '+') {
-    do_rawlog(LT_ERR, T("Database does not start with a version string"));
+    do_rawlog(LT_ERR, "Database does not start with a version string");
     return -1;
   }
   c = penn_fgetc(f);
   if (c != 'V') {
-    do_rawlog(LT_ERR, T("Database does not start with a version string"));
+    do_rawlog(LT_ERR, "Database does not start with a version string");
     return -1;
   }
   globals.indb_flags = ((getref(f) - 2) / 256) - 5;
@@ -1583,7 +1577,7 @@ db_read(PENNFILE *f)
    */
   if (((globals.indb_flags & minimum_flags) != minimum_flags) ||
       (globals.indb_flags & DBF_NO_POWERS)) {
-    do_rawlog(LT_ERR, T("ERROR: Old database without required dbflags."));
+    do_rawlog(LT_ERR, "ERROR: Old database without required dbflags.");
     return -1;
   }
 
@@ -1593,7 +1587,7 @@ db_read(PENNFILE *f)
   db_read_this_labeled_string(f, "savedtime", &tmp);
   strcpy(db_timestamp, tmp);
 
-  do_rawlog(LT_ERR, T("Loading database saved on %s UTC"), db_timestamp);
+  do_rawlog(LT_ERR, "Loading database saved on %s UTC", db_timestamp);
 
   while ((c = penn_fgetc(f)) != EOF) {
     switch (c) {
@@ -1606,7 +1600,7 @@ db_read(PENNFILE *f)
         (void) getstring_noalloc(f);
         flag_read_all(f, "POWER");
       } else {
-        do_rawlog(LT_ERR, T("Unrecognized database format!"));
+        do_rawlog(LT_ERR, "Unrecognized database format!");
         return -1;
       }
       break;
@@ -1754,7 +1748,7 @@ db_read(PENNFILE *f)
             break;
           case LBL_ERROR:
           default:
-            do_rawlog(LT_ERR, T("Unrecognized field '%s' in object #%d"),
+            do_rawlog(LT_ERR, "Unrecognized field '%s' in object #%d",
                       label, i);
             return -1;
           }
@@ -1765,8 +1759,7 @@ db_read(PENNFILE *f)
           buff[PLAYER_NAME_LIMIT] = '\0';
           set_name(i, buff);
           do_rawlog(LT_CHECK,
-                    T
-                    (" * Name of #%d is longer than the maximum, truncating.\n"),
+                    " * Name of #%d is longer than the maximum, truncating.\n",
                     i);
         } else if (!IsPlayer(i) && (strlen(o->name) > OBJECT_NAME_LIMIT)) {
           char buff[OBJECT_NAME_LIMIT + 1];     /* The name plus a NUL */
@@ -1774,8 +1767,7 @@ db_read(PENNFILE *f)
           buff[OBJECT_NAME_LIMIT] = '\0';
           set_name(i, buff);
           do_rawlog(LT_CHECK,
-                    T
-                    (" * Name of #%d is longer than the maximum, truncating.\n"),
+                    " * Name of #%d is longer than the maximum, truncating.\n",
                     i);
         }
         if (IsPlayer(i)) {
@@ -1796,7 +1788,7 @@ db_read(PENNFILE *f)
         penn_ungetc('*', f);
         penn_fgets(buff, sizeof buff, f);
         if (strcmp(buff, EOD) != 0) {
-          do_rawlog(LT_ERR, T("ERROR: No end of dump after object #%d"), i - 1);
+          do_rawlog(LT_ERR, "ERROR: No end of dump after object #%d", i - 1);
           return -1;
         } else {
           do_rawlog(LT_ERR, "READING: done");
@@ -1808,7 +1800,7 @@ db_read(PENNFILE *f)
         }
       }
     default:
-      do_rawlog(LT_ERR, T("ERROR: failed object %d"), i);
+      do_rawlog(LT_ERR, "ERROR: failed object %d", i);
       return -1;
     }
   }

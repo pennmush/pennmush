@@ -1,7 +1,7 @@
 & mail
 & @mail
-  @mail[/<switches>] [<msg-list> [= <target>]]
-  @mail[/<switches>] <player-list> = [<subject>/]<message>
+  @mail[/<switches>] [<msg-list>[=<target>]]
+  @mail[/<switches>] <player-list>=[<subject>/]<message>
  
   @mail invokes the built-in MUSH mailer, which allows players to send
   and receive mail. Pronoun/function substitution is performed on any
@@ -50,15 +50,20 @@
 & mail-sending 
   @mail[/switch] <player-list> = [<subject>]/<msg>
         This sends the message <msg> to all players in <player-list>.
+
         If no subject is given, the message subject is the beginning
-        of the message itself.
+        of the message itself. To include a literal / in the subject,
+        double it up (//).
+
         All function substitutions are valid in <msg> including mail(#) which
         will allow you to forward mail you have received to other users.
+
         The following switches are available:
                 /send   - same as no switch
                 /urgent - mail is marked as "Urgent"
                 /silent - no notification to sender that mail was sent
                 /nosig  - no mail signature
+
         If you have an @mailsignature attribute set on yourself, its
         contents will be evaluated and appended to the message unless
         the /nosig switch is given.
@@ -148,9 +153,7 @@ See also: mail-folders
     @mail/debug <action>[=<player>]
     @mail/nuke
   
-  Only wizards may stats players other than themselves. The mail
-  statistics commands are computationally expensive and cost the same
-  as @find.
+  Only wizards may stats players other than themselves.
   
   The /debug switch does sanity checking on the mail database, and may
   only be used by a wizard. "@mail/debug sanity" just does the check;

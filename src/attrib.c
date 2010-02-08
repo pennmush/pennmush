@@ -58,8 +58,8 @@ static ATTR *alloc_atr(const void *hint);
 static void free_atr(ATTR *);
 static void atr_free_one(ATTR *);
 static ATTR *find_atr_pos_in_list(ATTR ***pos, char const *name);
-static int can_create_attr(dbref player, dbref obj, char const *atr_name,
-                           uint32_t flags);
+static atr_err can_create_attr(dbref player, dbref obj, char const *atr_name,
+                               uint32_t flags);
 static ATTR *find_atr_in_list(ATTR *atr, char const *name);
 static ATTR *atr_get_with_parent(dbref obj, char const *atrname, dbref *parent);
 
@@ -78,7 +78,7 @@ extern char atr_name_table[UCHAR_MAX + 1];
 
 /** Decide if a name is valid for an attribute.
  * A good attribute name is at least one character long, no more than
- * ATTRIBUTE_NAME_LIMIT characters long, and every character is a 
+ * ATTRIBUTE_NAME_LIMIT characters long, and every character is a
  * valid character. An attribute name may not start or end with a backtick.
  * An attribute name may not contain multiple consecutive backticks.
  * \param s a string to test for validity as an attribute name.
@@ -137,9 +137,42 @@ atr_sub_branch(ATTR *branch)
   return NULL;
 }
 
+/** Find the attr immediately before the first child of 'branch'. This is
+ *  not necessarily 'branch' itself.
+ * \param branch the attr to look for children of
+ * \return the attr immediately before branch's first child, or NULL
+ *        if it has no children
+ */
+ATTR *
+atr_sub_branch_prev(ATTR *branch)
+{
+  char const *name, *n2;
+  size_t len;
+  ATTR *prev;
+
+  name = AL_NAME(branch);
+  len = strlen(name);
+  prev = branch;
+  for (branch = AL_NEXT(branch); branch; branch = AL_NEXT(branch)) {
+    n2 = AL_NAME(branch);
+    if (strlen(n2) <= len) {
+      return NULL;
+    }
+    if (n2[len] == '`') {
+      if (!strncmp(n2, name, len))
+        return prev;
+      else
+        return NULL;
+    }
+    prev = branch;
+  }
+  return NULL;
+}
+
+
 /** Scan an attribute list for an attribute with the specified name.
  * This continues from whatever start point is passed in.
- * 
+ *
  * Attributes are stored as sorted linked lists. This means that
  * search is O(N) in the worst case. An unsuccessful search is usually
  * better than that, because we don't have to look at every attribute
@@ -265,7 +298,7 @@ string_to_atrflag(dbref player, char const *p, privbits *bits)
 
 /** Convert a string of attribute flags to a pair of bitmasks.
  * Given a space-separated string of attribute flags, look them up
- * and return bitmasks of those to set or clear 
+ * and return bitmasks of those to set or clear
  * if player is permitted to use all of those flags.
  * \param player the dbref to use for privilege checks.
  * \param p a space-separated string of attribute flags.
@@ -485,7 +518,7 @@ can_edit_attr(dbref player, dbref thing, const char *attrname)
  * \retval 0 if the player cannot write the attribute.
  * \retval 1 if the player can write the attribute.
  */
-static int
+static atr_err
 can_create_attr(dbref player, dbref obj, char const *atr_name, uint32_t flags)
 {
   char *p;
@@ -532,7 +565,7 @@ can_create_attr(dbref player, dbref obj, char const *atr_name, uint32_t flags)
   if ((AttrCount(obj) + num_new) >
       (Many_Attribs(obj) ? HARD_MAX_ATTRCOUNT : MAX_ATTRCOUNT)) {
     do_log(LT_ERR, player, obj,
-           T("Attempt by %s(%d) to create too many attributes on %s(%d)"),
+           "Attempt by %s(%d) to create too many attributes on %s(%d)",
            Name(player), player, Name(obj), obj);
     return AE_TOOMANY;
   }
@@ -582,9 +615,9 @@ create_atr(dbref thing, char const *atr_name, const ATTR *hint)
 
 /** Add an attribute to an object, dangerously.
  * This is a stripped down version of atr_add, without duplicate checking,
- * permissions checking, attribute count checking, or auto-ODARKing.  
- * If anyone uses this outside of database load or atr_cpy (below), 
- * I will personally string them up by their toes.  - Alex 
+ * permissions checking, attribute count checking, or auto-ODARKing.
+ * If anyone uses this outside of database load or atr_cpy (below),
+ * I will personally string them up by their toes.  - Alex
  * \param thing object to set the attribute on.
  * \param atr name of the attribute to set.
  * \param s value of the attribute to set.
@@ -604,7 +637,7 @@ atr_new_add(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
 
   /* Don't fail on a bad name, but do log it */
   if (!good_atr_name(atr))
-    do_rawlog(LT_ERR, T("Bad attribute name %s on object %s"), atr,
+    do_rawlog(LT_ERR, "Bad attribute name %s on object %s", atr,
               unparse_dbref(thing));
 
   ptr = create_atr(thing, atr, List(thing));
@@ -617,7 +650,7 @@ atr_new_add(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
     *p = '\0';
     root = find_atr_in_list(List(thing), root_name);
     if (!root) {
-      do_rawlog(LT_ERR, T("Missing root attribute '%s' on object #%d!\n"),
+      do_rawlog(LT_ERR, "Missing root attribute '%s' on object #%d!\n",
                 root_name, thing);
       root = create_atr(thing, root_name, ptr);
       set_default_flags(root, 0);
@@ -626,7 +659,7 @@ atr_new_add(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
       if (!EMPTY_ATTRS) {
         unsigned char *t = compress(" ");
         if (!t) {
-          mush_panic(T("Unable to allocate memory in atr_new_add()!"));
+          mush_panic("Unable to allocate memory in atr_new_add()!");
         }
         root->data = chunk_create(t, u_strlen(t), 0);
         free(t);
@@ -725,7 +758,7 @@ atr_add(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
         if (!EMPTY_ATTRS) {
           unsigned char *t = compress(" ");
           if (!t)
-            mush_panic(T("Unable to allocate memory in atr_add()!"));
+            mush_panic("Unable to allocate memory in atr_add()!");
           root->data = chunk_create(t, u_strlen(t), 0);
           free(t);
         }
@@ -785,11 +818,19 @@ atr_clear_children(dbref player, dbref thing, ATTR *root)
 {
   ATTR *sub, *next = NULL, *prev;
   int skipped = 0;
+  size_t len;
+  const char *name, *n2;
 
-  prev = root;
+  prev = atr_sub_branch_prev(root);
+  if (!prev)
+    return 1;
 
-  for (sub = atr_sub_branch(root);
-       sub && string_prefix(AL_NAME(sub), AL_NAME(root)); sub = next) {
+  name = AL_NAME(root);
+  len = strlen(name);
+  for (sub = AL_NEXT(prev); sub; sub = next) {
+    n2 = AL_NAME(sub);
+    if (strlen(n2) < (len + 1) || n2[len] != '`' || strncmp(n2, name, len))
+      break;
     if (AL_FLAGS(sub) & AF_ROOT) {
       if (!atr_clear_children(player, thing, sub)) {
         skipped++;
@@ -819,7 +860,7 @@ atr_clear_children(dbref player, dbref thing, ATTR *root)
 }
 
 /** Remove an attribute from an object.
- * This function clears an attribute from an object. 
+ * This function clears an attribute from an object.
  * Permission is denied if the attribute is a branch, not a leaf.
  * \param thing object to clear attribute from.
  * \param atr name of attribute to remove.
@@ -873,7 +914,7 @@ real_atr_clr(dbref thing, char const *atr, dbref player, int we_are_wiping)
       *p = '`';
 
       if (!root) {
-        do_rawlog(LT_ERR, T("Attribute %s on object #%d lacks a parent!"),
+        do_rawlog(LT_ERR, "Attribute %s on object #%d lacks a parent!",
                   root_name, thing);
       } else {
         if (!atr_sub_branch(root))
@@ -887,7 +928,7 @@ real_atr_clr(dbref thing, char const *atr, dbref player, int we_are_wiping)
 }
 
 /** Remove an attribute from an object.
- * This function clears an attribute from an object. 
+ * This function clears an attribute from an object.
  * Permission is denied if the attribute is a branch, not a leaf.
  * \param thing object to clear attribute from.
  * \param atr name of attribute to remove.
@@ -902,7 +943,7 @@ atr_clr(dbref thing, char const *atr, dbref player)
 
 
 /** \@wipe an attribute (And any leaves) from an object.
- * This function clears an attribute from an object. 
+ * This function clears an attribute from an object.
  * \param thing object to clear attribute from.
  * \param atr name of attribute to remove.
  * \param player enactor attempting to remove attribute.
@@ -1004,7 +1045,7 @@ atr_get_with_parent(dbref obj, char const *atrname, dbref *parent)
  * This function retrieves an attribute from an object, and does not
  * check the parent chain. It returns a pointer to the attribute
  * or NULL.  This is a pointer to an attribute structure, not
- * to the value of the attribute, so the (compressed) value is usually 
+ * to the value of the attribute, so the (compressed) value is usually
  * to the value of the attribute, so the value is usually accessed
  * through atr_value() or safe_atr_value().
  * \param thing the object containing the attribute.
@@ -1328,7 +1369,7 @@ use_attr(UsedAttr **prev, char const *name, uint32_t no_prog)
 
 /** Match input against a $command or ^listen attribute.
  * This function attempts to match a string against either the $commands
- * or ^listens on an object. Matches may be glob or regex matches, 
+ * or ^listens on an object. Matches may be glob or regex matches,
  * depending on the attribute's flags. With the reasonably safe assumption
  * that most of the matches are going to fail, the faster non-capturing
  * glob match is done first, and the capturing version only called when
@@ -1624,9 +1665,9 @@ exit_sequence:
   return match;
 }
 
-/** Match input against a specified object's specified $command 
+/** Match input against a specified object's specified $command
  * attribute. Matches may be glob or regex matches. Used in command hooks.
- * depending on the attribute's flags. 
+ * depending on the attribute's flags.
  * \param thing object containing attributes to check.
  * \param player the enactor, for privilege checks.
  * \param atr the name of the attribute

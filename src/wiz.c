@@ -137,7 +137,7 @@ do_pcreate(dbref creator, const char *player_name, const char *player_password,
   }
   notify_format(creator, T("New player '%s' (#%d) created with password '%s'"),
                 player_name, player, player_password);
-  do_log(LT_WIZ, creator, player, T("Player creation"));
+  do_log(LT_WIZ, creator, player, "Player creation");
   return player;
 }
 
@@ -266,13 +266,13 @@ do_allquota(dbref player, const char *arg1, int quiet)
 
     if (NoQuota(who)) {
       if (!quiet)
-        notify_format(player, "%s: Objects: %d   Limit: UNLIMITED",
+        notify_format(player, T("%s: Objects: %d   Limit: UNLIMITED"),
                       Name(who), owned);
       continue;
     }
     if (!quiet) {
       oldlimit = get_current_quota(who);
-      notify_format(player, "%s: Objects: %d   Limit: %d",
+      notify_format(player, T("%s: Objects: %d   Limit: %d"),
                     Name(who), owned, oldlimit);
     }
     if (limit != -1) {
@@ -805,92 +805,90 @@ do_newpassword(dbref player, dbref cause,
  * \param flag the type of booting to do.
  */
 void
-do_boot(dbref player, const char *name, enum boot_type flag)
+do_boot(dbref player, const char *name, enum boot_type flag, int silent)
 {
   dbref victim;
   DESC *d = NULL;
+  int count = 0;
+  int priv = Can_Boot(player);
 
-  victim = NOTHING;
   switch (flag) {
+  case BOOT_NAME:
+    victim = noisy_match_result(player, name, TYPE_PLAYER,
+                                MAT_PMATCH | MAT_PLAYER | MAT_ME);
+    if (victim == NOTHING) {
+      notify(player, T("No such connected player."));
+      return;
+    } else if (victim == player) {
+      flag = BOOT_SELF;
+    }
+    break;
   case BOOT_SELF:
-    /* self boot */
     victim = player;
     break;
   case BOOT_DESC:
-    /* boot by descriptor */
-    victim = find_player_by_desc(atoi(name));
-    if (victim == NOTHING) {
-      d = port_desc(atoi(name));
-      if (!d && Can_Boot(player)) {
-        notify(player, "There is no one connected on that descriptor.");
-        return;
-      } else
-        victim = AMBIGUOUS;
-    }
-    break;
-  case BOOT_SILENT:
-  case BOOT_NAME:
-    /* boot by name */
-    if ((victim =
-         noisy_match_result(player, name, TYPE_PLAYER,
-                            MAT_LIMITED | MAT_ME)) == NOTHING) {
-      notify(player, T("No such connected player."));
+    if (!is_strict_integer(name)) {
+      notify(player, T("Invalid port."));
       return;
     }
-    if (victim == player)
-      flag = BOOT_SELF;
+    d = port_desc(parse_integer(name));
+    if (!d || (!priv && d->player != player)) {
+      if (priv)
+        notify(player, T("There is noone connected on that descriptor."));
+      else
+        notify(player, T("You can't boot other people!"));
+      return;
+    }
+    victim = (d->connected ? d->player : AMBIGUOUS);
+    if (d->descriptor == global_eval_context.process_command_port) {
+      notify(player, T("If you want to quit, use QUIT."));
+      return;
+    }
     break;
   }
 
-  if ((victim != player) && !Can_Boot(player)) {
+  if (God(victim) && !God(player)) {
+    notify(player, T("Permission denied."));
+    return;
+  }
+
+  if (victim != player && !priv) {
     notify(player, T("You can't boot other people!"));
     return;
   }
-  if (God(victim) && !God(player)) {
-    notify(player, T("You're good.  That's spelled with two 'o's."));
-    return;
-  }
-  /* look up descriptor */
-  switch (flag) {
-  case BOOT_SILENT:
-  case BOOT_NAME:
-    d = player_desc(victim);
-    break;
-  case BOOT_DESC:
-    d = port_desc(atoi(name));
-    break;
-  case BOOT_SELF:
-    d = inactive_desc(victim);
-    break;
-  }
 
-  if (victim == player
-      && (!d || d->descriptor == global_eval_context.process_command_port)) {
-    notify(player, T("If you want to quit, use QUIT."));
-    return;
-  }
-
-  /* check for more errors */
-  if (!d) {
-    if (flag == BOOT_SELF)
-      notify(player, T("None of your connections are idle."));
-    else
-      notify(player, T("That player isn't connected!"));
-  } else {
-    do_log(LT_WIZ, player, victim, "*** BOOT ***");
-    if (flag == BOOT_SELF)
-      notify(player, T("You boot an idle self."));
-    else if (victim == AMBIGUOUS)
-      notify_format(player, T("You booted unconnected port %s!"), name);
-    else if (victim == player)
-      notify(player, T("You boot a duplicate self."));
-    else {
-      notify_format(player, T("You booted %s off!"), Name(victim));
-      if (flag != BOOT_SILENT)
+  if (flag == BOOT_DESC) {
+    if (GoodObject(victim)) {
+      if (!silent)
         notify(victim, T("You are politely shown to the door."));
+      if (player == victim)
+        notify(player, T("You boot a duplicate self."));
+      else
+        notify_format(player, T("You booted %s off!"), Name(victim));
+    } else {
+      notify_format(player, T("You booted unconnected port %s!"), name);
     }
+    do_log(LT_WIZ, player, victim, "*** BOOT ***");
     boot_desc(d);
+    return;
   }
+
+  /* Doing @boot <player>, or @boot/me */
+  count = boot_player(victim, (flag == BOOT_SELF), silent);
+  if (count) {
+    if (flag != BOOT_SELF) {
+      do_log(LT_WIZ, player, victim, "*** BOOT ***");
+      notify_format(player, T("You booted %s off!"), Name(victim));
+    }
+  } else {
+    if (flag == BOOT_SELF)
+      notify(player,
+             T
+             ("None of your connections are idle. If you want to quit, use QUIT."));
+    else
+      notify(player, T("That player is not online."));
+  }
+
 }
 
 /** Chown all of a player's objects.
@@ -1057,24 +1055,24 @@ do_debug_examine(dbref player, const char *name)
   notify_format(player, T("Powers value: %s"),
                 bits_to_string("POWER", Powers(thing), GOD, NOTHING));
 
-  notify_format(player, "Next: %d", Next(thing));
-  notify_format(player, "Contents: %d", Contents(thing));
-  notify_format(player, "Pennies: %d", Pennies(thing));
+  notify_format(player, T("Next: %d"), Next(thing));
+  notify_format(player, T("Contents: %d"), Contents(thing));
+  notify_format(player, T("Pennies: %d"), Pennies(thing));
 
   switch (Typeof(thing)) {
   case TYPE_PLAYER:
     break;
   case TYPE_THING:
-    notify_format(player, "Location: %d", Location(thing));
-    notify_format(player, "Home: %d", Home(thing));
+    notify_format(player, T("Location: %d"), Location(thing));
+    notify_format(player, T("Home: %d"), Home(thing));
     break;
   case TYPE_EXIT:
-    notify_format(player, "Destination: %d", Location(thing));
-    notify_format(player, "Source: %d", Source(thing));
+    notify_format(player, T("Destination: %d"), Location(thing));
+    notify_format(player, T("Source: %d"), Source(thing));
     break;
   case TYPE_ROOM:
-    notify_format(player, "Drop-to: %d", Location(thing));
-    notify_format(player, "Exits: %d", Exits(thing));
+    notify_format(player, T("Drop-to: %d"), Location(thing));
+    notify_format(player, T("Exits: %d"), Exits(thing));
     break;
   case TYPE_GARBAGE:
     break;
@@ -1246,7 +1244,7 @@ do_search(dbref player, const char *arg1, char **arg3)
         break;
       default:
         /* Unknown type. Ignore. */
-        do_rawlog(LT_ERR, T("Weird type for dbref #%d"), results[n]);
+        do_rawlog(LT_ERR, "Weird type for dbref #%d", results[n]);
       }
     }
 
@@ -1471,7 +1469,7 @@ do_sitelock(dbref player, const char *site, const char *opts, const char *who,
                       T("Site %s access options for %s(%s) set to %s"),
                       site, Name(whod), unparse_dbref(whod), opts);
         do_log(LT_WIZ, player, NOTHING,
-               T("*** SITELOCK *** %s for %s(%s) --> %s"), site,
+               "*** SITELOCK *** %s for %s(%s) --> %s", site,
                Name(whod), unparse_dbref(whod), opts);
       } else {
         notify_format(player, T("Site %s access options set to %s"), site,
@@ -2007,7 +2005,7 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
   result_size = (db_top / 4) + 1;
   *result = mush_calloc(result_size, sizeof(dbref), "search_results");
   if (!*result)
-    mush_panic(T("Couldn't allocate memory in search!"));
+    mush_panic("Couldn't allocate memory in search!");
 
   for (n = spec.low; n <= spec.high; n++) {
     if (IsGarbage(n) && spec.type != TYPE_GARBAGE)
@@ -2022,12 +2020,13 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
       continue;
     if (*spec.name && !string_match(Name(n), spec.name))
       continue;
-    if (*spec.flags && !flaglist_check("FLAG", player, n, spec.flags, 1))
+    if (*spec.flags && (flaglist_check("FLAG", player, n, spec.flags, 1) != 1))
       continue;
-    if (*spec.lflags && !flaglist_check_long("FLAG", player, n, spec.lflags, 1))
+    if (*spec.lflags
+        && (flaglist_check_long("FLAG", player, n, spec.lflags, 1) != 1))
       continue;
     if (*spec.powers
-        && !flaglist_check_long("POWER", player, n, spec.powers, 1))
+        && (flaglist_check_long("POWER", player, n, spec.powers, 1) != 1))
       continue;
     if (spec.lock != TRUE_BOOLEXP && !eval_boolexp(n, spec.lock, player))
       continue;
@@ -2083,7 +2082,7 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
       result_size *= 2;
       newresults = (dbref *) realloc(*result, sizeof(dbref) * result_size);
       if (!newresults)
-        mush_panic(T("Couldn't reallocate memory in search!"));
+        mush_panic("Couldn't reallocate memory in search!");
       *result = newresults;
     }
 

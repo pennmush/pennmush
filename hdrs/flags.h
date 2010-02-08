@@ -1,6 +1,6 @@
-/** \file flags.h 
+/** \file flags.h
  *
- * \brief flag and powers stuff 
+ * \brief flag and powers stuff
  */
 
 #ifndef __FLAGS_H
@@ -127,6 +127,7 @@ extern const char *power_to_string(int pwr);
 extern void decompile_flags_generic(dbref player, dbref thing, const char *name,
                                     const char *ns, const char *command,
                                     const char *prefix);
+extern int good_flag_name(char const *s);
 #define decompile_flags(p,t,n,r) decompile_flags_generic(p,t,n,"FLAG","@set",r)
 #define decompile_powers(p,t,n,r) decompile_flags_generic(p,t,n,"POWER","@power",r)
 

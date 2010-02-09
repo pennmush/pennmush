@@ -429,6 +429,7 @@ void make_prefixstr(dbref thing, const char *msg, char *tbuf1);
 int filter_found(dbref thing, const char *msg, int flag);
 
 /* From strutil.c */
+char *next_token(char *str, char sep);
 char *split_token(char **sp, char sep);
 char *chopstr(const char *str, size_t lim);
 int string_prefix(const char *restrict string, const char *restrict prefix);

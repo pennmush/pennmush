@@ -18,6 +18,8 @@ Minor Changes:
  
 Fixes:
  * Bug in randword() and extract() fixed. [MG]
+ * Memory leak in new match code closed. [SW]
+ * Help fix by aumiiari.
 
 & 1.8.3p12
 Version 1.8.3 patchlevel 12                     Feb 07, 2010

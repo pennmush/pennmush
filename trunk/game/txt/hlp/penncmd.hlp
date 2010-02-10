@@ -499,7 +499,7 @@ See also: get, goto, @lock, SUCCESS, FAILURE, @odrop, ACTION LISTS
   @attribute/rename <attrib>=<new name>
 
   The @attribute command displays and modifies the MUSH's standard
-  attributes (see "@list/attributes" for a list of them).
+  attributes (see "@list/attribs" for a list of them).
   
   *** Unlike TinyMUSH, changes to the PennMUSH attribute table are not saved 
   *** across shutdowns. Use these commands from God's @startup to ensure

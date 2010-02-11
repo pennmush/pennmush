@@ -745,7 +745,7 @@ FUNCTION(fun_sortby)
   /* Split up the list, sort it, reconstruct it. */
   nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, args[1], sep);
   if (nptrs > 1)                /* pointless to sort less than 2 elements */
-    sane_qsort((void **)ptrs, 0, nptrs - 1, u_comp);
+    sane_qsort((void **) ptrs, 0, nptrs - 1, u_comp);
 
   arr2list(ptrs, nptrs, buff, bp, osep);
   freearr(ptrs, nptrs);

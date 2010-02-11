@@ -983,12 +983,13 @@ command_isattr(char *command)
 }
 
 /** A handy macro to free up the command_parse-allocated variables */
-#define command_parse_free_args \
+#define command_parse_free_args	  \
     mush_free(command, "string_command"); \
     mush_free(swtch, "string_swtch"); \
     mush_free(ls, "string_ls"); \
     mush_free(rs, "string_rs"); \
-    mush_free(switches, "string_switches")
+    mush_free(switches, "string_switches"); \
+    if (sw) SW_FREE(sw)
 
 /** Parse commands.
  * Parse the commands. This is the big one!
@@ -1378,7 +1379,6 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
     free_global_regs("hook.regs", saveregs);
   }
 
-  SW_FREE(sw);
   command_parse_free_args;
   return retval;
 }

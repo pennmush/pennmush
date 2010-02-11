@@ -16,7 +16,7 @@ chronological order (most recent first)
 
 ==========================================================================
 
-Version 1.8.3 patchlevel 13                     ??? ??, 20??
+Version 1.8.3 patchlevel 13                     Feb ??, 2010
 
 Minor Changes:
  * align() columns can now have ansi color definitions. [GM]
@@ -24,7 +24,7 @@ Minor Changes:
 Fixes:
  * Heisencrashbug in command parser fixed. Reported by Mercutio. [GM]
  * Bug in randword() and extract() fixed. [MG]
- * Memory leak in new match code closed. [SW]
+ * Fix several memory leaks. [SW]
  * Help fix by aumiiari.
 
 Version 1.8.3 patchlevel 12                     Feb 07, 2010

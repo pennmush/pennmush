@@ -22,6 +22,7 @@ Minor Changes:
  * align() columns can now have ansi color definitions. [GM]
  
 Fixes:
+ * Heisencrashbug in command parser fixed. Reported by Mercutio. [GM]
  * Bug in randword() and extract() fixed. [MG]
  * Memory leak in new match code closed. [SW]
  * Help fix by aumiiari.

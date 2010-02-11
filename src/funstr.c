@@ -1976,7 +1976,8 @@ FUNCTION(fun_align)
     if (*ptr == '(') {
       ptr++;
       ansistr = ptr;
-      while (*ptr && *ptr != ')') ptr++;
+      while (*ptr && *ptr != ')')
+        ptr++;
       if (*ptr != ')') {
         safe_str(T("#-1 INVALID ALIGN STRING"), buff, bp);
         return;

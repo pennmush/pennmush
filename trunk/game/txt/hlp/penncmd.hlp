@@ -4246,10 +4246,10 @@ See also: @use, @charges, @lock, @ufail
   WHO command, such as:
   
     > &HOOK.WHO <object>=not(comp(left(%c,3),WHO))
-	  > @hook/ignore WHO=<object>,HOOK.WHO
+    > @hook/ignore WHO=<object>,HOOK.WHO
 	  
-	@hooks are not maintained across reboots, and should be placed into an
-	@startup on a low-dbref object.
+  @hooks are not maintained across reboots, and should be placed into an
+  @startup on a low-dbref object.
   
   Note: The WHO command available at the login screen is totally separate
   from the in-game WHO command, and is not affected by any changes to the 

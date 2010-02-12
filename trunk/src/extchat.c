@@ -294,14 +294,20 @@ load_chatdb(PENNFILE *fp)
 
   /* How many channels? */
   db_read_this_labeled_int(fp, "channels", &num_channels);
-  if (num_channels > MAX_CHANNELS)
+  if (num_channels > MAX_CHANNELS) {
+    do_rawlog(LT_ERR,
+              "CHAT: Too many channels in chatdb (there are %d, max is %d)",
+              num_channels, MAX_CHANNELS);
     return 0;
+  }
 
   /* Load all channels */
   for (i = 0; i < num_channels; i++) {
     ch = new_channel();
-    if (!ch)
+    if (!ch) {
+      do_rawlog(LT_ERR, "CHAT: Unable to allocate memory for channel %d!", i);
       return 0;
+    }
     if (!load_labeled_channel(fp, ch, flags)) {
       do_rawlog(LT_ERR, "Unable to load channel %d.", i);
       free_channel(ch);

@@ -26,6 +26,8 @@ Fixes:
  * Bug in randword() and extract() fixed. [MG]
  * Fix several memory leaks. [SW]
  * Help fixes by aumiiari and others. [MG]
+ * Add more specific log messages when the chatdb fails to load, from
+   report by Dan@M*U*S*H. [MG]
 
 Version 1.8.3 patchlevel 12                     Feb 07, 2010
 

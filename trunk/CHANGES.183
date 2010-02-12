@@ -25,7 +25,7 @@ Fixes:
  * Heisencrashbug in command parser fixed. Reported by Mercutio. [GM]
  * Bug in randword() and extract() fixed. [MG]
  * Fix several memory leaks. [SW]
- * Help fix by aumiiari.
+ * Help fixes by aumiiari and others. [MG]
 
 Version 1.8.3 patchlevel 12                     Feb 07, 2010
 

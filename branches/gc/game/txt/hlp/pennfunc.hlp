@@ -380,7 +380,20 @@ See also: before(), rest()
 
   <widths> is a space-separated list of column widths. '10 10 10' for
   the widths argument specifies that there are 3 columns, each 10
-  spaces wide. You can alter the behavior of a column in two ways:
+  spaces wide. You can alter the behavior of a column in multiple ways.
+  (Check 'help align2' for more details)
+
+  <filler> is a single character that, if given, is the character used
+  to fill empty columns and remaining spaces. <colsep>, if given, is
+  inserted between every column, on every row. <rowsep>, if given, is
+  inserted between every line. By default, <filler> and <colsep> are a
+  space, and <rowsep> is a newline.
+
+  Continued in 'help align2'
+& ALIGN2
+  You can modify column behavior within align(). The basic format is:
+
+  [justification]Width[runout][(ansi)]
 
   Justification: Placing one of these characters before the width alters
   the spacing for this column. (e.g: <30)
@@ -394,14 +407,11 @@ See also: before(), rest()
     ` Merge with the column on the left.
     ' Merge with the column on the right.
 
-  <filler> is a single character that, if given, is the character used
-  to fill empty columns and remaining spaces. <colsep>, if given, is
-  inserted between every column, on every row. <rowsep>, if given, is
-  inserted between every line. By default, <filler> and <colsep> are a
-  space, and <rowsep> is a newline.
+  Ansi: Place ansi characters (as defined in 'help ansi()') within ()s to
+  define a column's ansi markup.
 
-  Continued in 'help align2'
-& ALIGN2
+  Continued in 'help align3'
+& ALIGN3
   Examples:
   
     > &line me=align(<5 10 20,\([left(xget(%0,sex),1)]\),name(%0),name(loc(%0)))
@@ -421,6 +431,7 @@ See also: before(), rest()
          +                  Luke                  +
          +----------------------------------------+
 
+  Continued in 'help align4'
 See also: center(), ljust(), rjust(), table()
 & ALLOF()
   allof(<expr>[, ... , <exprN>], <osep>)
@@ -5015,7 +5026,9 @@ See also: merge(), splice()
   If no <trim style> is specified, characters are trimmed from both the
   left and right sides of the string. If the 'l' trim style is specified, 
   characters are only trimmed from the left side. If the 'r' trim style is 
-  specified, characters are only trimmed from the right side.
+  specified, characters are only trimmed from the right side. If the 'b'
+  trim style is specified, or a style is omitted, characters are trimmed
+  off of both sides of the string.
 
   Normally, the arguments for trim() are in the same order as trimpenn().
   However, if the tiny_trim_fun @config option is on, the <character to trim>

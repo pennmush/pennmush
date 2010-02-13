@@ -499,7 +499,7 @@ See also: get, goto, @lock, SUCCESS, FAILURE, @odrop, ACTION LISTS
   @attribute/rename <attrib>=<new name>
 
   The @attribute command displays and modifies the MUSH's standard
-  attributes (see "@list/attributes" for a list of them).
+  attributes (see "@list/attribs" for a list of them).
   
   *** Unlike TinyMUSH, changes to the PennMUSH attribute table are not saved 
   *** across shutdowns. Use these commands from God's @startup to ensure
@@ -4246,10 +4246,10 @@ See also: @use, @charges, @lock, @ufail
   WHO command, such as:
   
     > &HOOK.WHO <object>=not(comp(left(%c,3),WHO))
-	  > @hook/ignore WHO=<object>,HOOK.WHO
+    > @hook/ignore WHO=<object>,HOOK.WHO
 	  
-	@hooks are not maintained across reboots, and should be placed into an
-	@startup on a low-dbref object.
+  @hooks are not maintained across reboots, and should be placed into an
+  @startup on a low-dbref object.
   
   Note: The WHO command available at the login screen is totally separate
   from the in-game WHO command, and is not affected by any changes to the 

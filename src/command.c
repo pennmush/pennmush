@@ -918,7 +918,12 @@ command_argparse(dbref player, dbref cause, char **from, char *to,
       if (*f)
         f++;
       i++;
-      t++;
+      /* Because we test on f, not t. This was causing a bug wherein
+       * trying to build a commandraw with multiple rsargs, including
+       * one massive one, was causing a crash.
+       */
+      if ((t - to) < (BUFFER_LEN - 1))
+        t++;
       if (i == MAX_ARG)
         done = 1;
     }

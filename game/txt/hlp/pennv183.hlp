@@ -1,4 +1,4 @@
-& 1.8.3p12
+& 1.8.3p13
 & changes
 This is a list of changes in this patchlevel which are probably of
 interest to players. More information about new commands and functions
@@ -11,6 +11,20 @@ help topics named for each release (e.g. 'help 1.7.2p30').
 A list of the patchlevels associated with each release can
 be read in 'help patchlevels'.
 
+Version 1.8.3 patchlevel 13                     Feb 13, 2010
+
+Minor Changes:
+ * align() columns can now have ansi color definitions. [GM]
+ 
+Fixes:
+ * Heisencrashbug in command parser fixed. Reported by Mercutio. [GM]
+ * Bug in randword() and extract() fixed. [MG]
+ * Fix several memory leaks. [SW]
+ * Help fixes by aumiiari and others. [MG]
+ * Add more specific log messages when the chatdb fails to load, from
+   report by Dan@M*U*S*H. [MG]
+
+& 1.8.3p12
 Version 1.8.3 patchlevel 12                     Feb 07, 2010
 
 Major Changes:

@@ -30,7 +30,6 @@
 #include "confmagic.h"
 
 
-static char *next_token(char *str, char sep);
 static int regrep_helper(dbref who, dbref what, dbref parent,
                          char const *name, ATTR *atr, void *args);
 enum itemfun_op { IF_DELETE, IF_REPLACE, IF_INSERT };
@@ -44,23 +43,6 @@ int inum_limit = 0;         /**< limit of iter depth */
 extern const unsigned char *tables;
 
 #define RealGoodObject(x) (GoodObject(x) && !IsGarbage(x))
-
-static char *
-next_token(char *str, char sep)
-{
-  /* move pointer to start of the next token */
-
-  while (*str && (*str != sep))
-    str++;
-  if (!*str)
-    return NULL;
-  str++;
-  if (sep == ' ') {
-    while (*str == sep)
-      str++;
-  }
-  return str;
-}
 
 /** Convert list to array.
  * Chops up a list of words into an array of words. The list is
@@ -428,7 +410,7 @@ FUNCTION(fun_fold)
    * optional base case. With no base case, the first list element is
    * passed as %0, and the second as %1. The attribute is then evaluated
    * with these args. The result is then used as %0, and the next arg as
-   * %1. Repeat until no elements are left in the list. The base case 
+   * %1. Repeat until no elements are left in the list. The base case
    * can provide a starting point.
    */
 
@@ -587,7 +569,7 @@ FUNCTION(fun_filter)
 /* ARGSUSED */
 FUNCTION(fun_shuffle)
 {
-  /* given a list of words, randomize the order of words. 
+  /* given a list of words, randomize the order of words.
    * We do this by taking each element, and swapping it with another
    * element with a greater array index (thus, words[0] can be swapped
    * with anything up to words[n], words[5] with anything between
@@ -763,7 +745,7 @@ FUNCTION(fun_sortby)
   /* Split up the list, sort it, reconstruct it. */
   nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, args[1], sep);
   if (nptrs > 1)                /* pointless to sort less than 2 elements */
-    sane_qsort((void **)ptrs, 0, nptrs - 1, u_comp);
+    sane_qsort((void **) ptrs, 0, nptrs - 1, u_comp);
 
   arr2list(ptrs, nptrs, buff, bp, osep);
   freearr(ptrs, nptrs);

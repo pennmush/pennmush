@@ -75,7 +75,8 @@ extern void do_sweep(dbref player, const char *arg1);
 extern void do_entrances(dbref player, const char *where, char **argv,
                          int types);
 enum dec_type { DEC_NORMAL, DEC_DB = 1, DEC_FLAG = 2, DEC_ATTR =
-    4, DEC_SKIPDEF = 8 };
+    4, DEC_SKIPDEF = 8
+};
 extern void do_decompile(dbref player, const char *name, const char *prefix,
                          int dec_type);
 

@@ -53,7 +53,6 @@
 
 /* Now the code */
 
-static int write_ansi_close(char *buff, char **bp);
 static int write_ansi_letters(const ansi_data *cur, char *buff, char **bp);
 static int safe_markup(char const *a_tag, char *buf, char **bp, char type);
 static int
@@ -411,7 +410,7 @@ write_ansi_data(ansi_data *cur, char *buff, char **bp)
   return retval;
 }
 
-static int
+int
 write_ansi_close(char *buff, char **bp)
 {
   int retval = 0;

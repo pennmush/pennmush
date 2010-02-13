@@ -38,7 +38,8 @@
 static int wraplen(char *str, size_t maxlen);
 static int align_one_line(char *buff, char **bp, int ncols,
                           int cols[MAX_COLS], int calign[MAX_COLS],
-                          char *ptrs[MAX_COLS], ansi_string *as[MAX_COLS],
+                          char *ptrs[MAX_COLS],
+                          ansi_string *as[MAX_COLS], ansi_data adata[MAX_COLS],
                           int linenum, char *fieldsep, int fslen, char *linesep,
                           int lslen, char filler);
 static int comp_gencomp(dbref executor, char *left, char *right, char *type);
@@ -1716,7 +1717,7 @@ FUNCTION(fun_wrap)
 static int
 align_one_line(char *buff, char **bp, int ncols,
                int cols[MAX_COLS], int calign[MAX_COLS], char *ptrs[MAX_COLS],
-               ansi_string *as[MAX_COLS],
+               ansi_string *as[MAX_COLS], ansi_data adata[MAX_COLS],
                int linenum, char *fieldsep, int fslen,
                char *linesep, int lslen, char filler)
 {
@@ -1827,6 +1828,9 @@ align_one_line(char *buff, char **bp, int ncols,
     }
     *sp = '\0';
 
+    if (HAS_ANSI(adata[i])) {
+      write_ansi_data(&adata[i], line, &lp);
+    }
     switch (calign[i] & 0xF) {
     case AL_FULL:
     case AL_WPFULL:
@@ -1878,6 +1882,9 @@ align_one_line(char *buff, char **bp, int ncols,
       lp += (j >> 1) + (j & 1);
       break;
     }
+    if (HAS_ANSI(adata[i])) {
+      write_ansi_close(line, &lp);
+    }
     if ((lp - line) > BUFFER_LEN)
       lp = (line + BUFFER_LEN - 1);
     if (i < (ncols - 1) && fslen)
@@ -1908,7 +1915,9 @@ FUNCTION(fun_align)
   static int cols[MAX_COLS];
   static int calign[MAX_COLS];
   static ansi_string *as[MAX_COLS];
+  static ansi_data adata[MAX_COLS];
   static char *ptrs[MAX_COLS];
+  char *ansistr;
   char filler;
   char *fieldsep;
   int fslen;
@@ -1919,6 +1928,8 @@ FUNCTION(fun_align)
   filler = ' ';
   fieldsep = (char *) " ";
   linesep = (char *) "\n";
+
+  memset(adata, 0, sizeof(adata));
 
   /* Get column widths */
   ncols = 0;
@@ -1961,6 +1972,18 @@ FUNCTION(fun_align)
     if (*ptr == '\'') {
       calign[ncols] |= AL_COALESCE_RIGHT;
       ptr++;
+    }
+    if (*ptr == '(') {
+      ptr++;
+      ansistr = ptr;
+      while (*ptr && *ptr != ')')
+        ptr++;
+      if (*ptr != ')') {
+        safe_str(T("#-1 INVALID ALIGN STRING"), buff, bp);
+        return;
+      }
+      *(ptr++) = '\0';
+      define_ansi_data(&adata[ncols], ansistr);
     }
     cols[ncols++] = i;
     if (!*ptr)
@@ -2062,7 +2085,8 @@ FUNCTION(fun_align)
   nline = 0;
   while (1) {
     if (!align_one_line(buff, bp, ncols, cols, calign, ptrs,
-                        as, nline++, fieldsep, fslen, linesep, lslen, filler))
+                        as, adata, nline++, fieldsep, fslen,
+                        linesep, lslen, filler))
       break;
   }
   **bp = '\0';

@@ -1509,19 +1509,20 @@ decompile_locks(dbref player, dbref thing, const char *name,
  * \param dec_type flags for what to show in decompile, and how to show it
  */
 void
-do_decompile(dbref player, const char *name, const char *prefix, int dec_type)
+do_decompile(dbref player, const char *xname, const char *prefix, int dec_type)
 {
   dbref thing;
   char object[BUFFER_LEN];
-  char *objp, *attrib, *attrname;
+  char *objp, *attrib, *attrname, *name;
 
   int skipdef = (dec_type & DEC_SKIPDEF);
 
   /* @decompile must always have an argument */
-  if (!name || !*name) {
+  if (!xname || !*xname) {
     notify(player, T("What do you want to @decompile?"));
     return;
   }
+  name = mush_strdup(xname, "decompile.name");
   attrib = strchr(name, '/');
   if (attrib)
     *attrib++ = '\0';
@@ -1529,11 +1530,13 @@ do_decompile(dbref player, const char *name, const char *prefix, int dec_type)
   /* find object */
   if ((thing = noisy_match_result(player, name, NOTYPE, MAT_EVERYTHING)) ==
       NOTHING) {
+    mush_free(name, "decompile.name");
     return;
   }
 
   if (!GoodObject(thing) || IsGarbage(thing)) {
     notify(player, T("Garbage is garbage."));
+    mush_free(name, "decompile.name");
     return;
   }
 
@@ -1570,16 +1573,19 @@ do_decompile(dbref player, const char *name, const char *prefix, int dec_type)
     while ((attrib = split_token(&attrname, ' ')) != NULL) {
       decompile_atrs(player, thing, object, attrib, prefix, skipdef);
     }
+    mush_free(name, "decompile.name");
     return;
   } else if (!(dec_type & DEC_FLAG)) {
     /* Show all attrs, nothing else */
     decompile_atrs(player, thing, object, "**", prefix, skipdef);
+    mush_free(name, "decompile.name");
     return;
   }
 
   /* else we have a full decompile */
   if (!Can_Examine(player, thing)) {
     notify(player, T("Permission denied."));
+    mush_free(name, "decompile.name");
     return;
   }
 
@@ -1620,7 +1626,7 @@ do_decompile(dbref player, const char *name, const char *prefix, int dec_type)
   if (dec_type & DEC_ATTR) {
     decompile_atrs(player, thing, object, "**", prefix, skipdef);
   }
-
+  mush_free(name, "decompile.name");
 }
 
 static char *

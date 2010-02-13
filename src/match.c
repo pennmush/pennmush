@@ -479,6 +479,8 @@ match_result(dbref who, const char *xname, int type, long flags)
     }
   }
 
+  mush_free(sname, "mri.string");
+
   return bestmatch;
 }
 

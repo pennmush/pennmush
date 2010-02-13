@@ -581,7 +581,7 @@ See also: EXECUTOR, CALLER, SUBSTITUTION, DBREF
     
 See also: ENACTOR, EXECUTOR
 & EVALUATION ORDER
-  Whenever some text is entered by an objec, the MUSH attempts to match it 
+  Whenever some text is entered by an object, the MUSH attempts to match it
   against a valid game command in the following order of possible commands:
 
     Socket commands (*): QUIT, SCREENWIDTH, etc

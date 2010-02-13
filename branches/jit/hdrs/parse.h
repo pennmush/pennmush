@@ -34,7 +34,7 @@ extern char e_disabled[];       /* #-1 FUNCTION DISABLED */
 extern char e_range[];          /* #-1 OUT OF RANGE */
 
 /* The following routines all take strings as arguments, and return
- * data of the appropriate types.  
+ * data of the appropriate types.
  */
 
 bool parse_boolean(char const *str);
@@ -131,7 +131,7 @@ typedef struct fun FUN;
  * The argument strings are stored in BUFFER_LEN buffers, but reliance
  * on that size is also considered bad form.  The argument strings may
  * be modified, but modifying the pointers to the argument strings will
- * cause crashes. 
+ * cause crashes.
  *
  * executor corresponds to %!, the object invoking the function.
  * caller   corresponds to %@, the last object to do a U() or similar.
@@ -220,6 +220,8 @@ int process_expression(char *buff, char **bp, char const **str,
  *
  * PE_DEFAULT is the most commonly used set of flags, normally sufficient
  * for calls to process_expression().
+ *
+ * PE_DOLLAR does $0-$9 subs, for regedit()
  *
  * PE_UDEFAULT is PE_DEFAULT without PE_DOLLAR, intended for use in
  * calling attributes (via u(), mix, step, etc)

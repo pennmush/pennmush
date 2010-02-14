@@ -16,6 +16,11 @@ chronological order (most recent first)
 
 ==========================================================================
 
+Versionh 1.8.4?                                 ??? ??,  2010
+
+Minor Changes:
+ * @shutdown/reboot logs who was responsible. Suggested by Kitai. [SW]
+
 Version 1.8.3 patchlevel 13                     Feb 13, 2010
 
 Minor Changes:

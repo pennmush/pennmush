@@ -896,6 +896,8 @@ See also: look, @exitformat, @nameformat, @descformat, @invformat,
   If arguments are provided to @include, they are substituted for the
   environment's %0, %1, etc. while the included action list is running.
   The environment is then restored after the @include. 
+  
+See also: @trigger, ufun(), @break
 & @invformat
   @invformat <object>[=<format>]
 
@@ -3367,6 +3369,7 @@ See also: JUMP_OK, NO_TEL, @oxtport, @tport, @otport, @atport, @lock
   @trigger. However, in most cases, the time saved by cramming everything 
   into one attribute is outweighed by the time spent debugging.
 
+See also: @include, ufun()
 & @ulock
   @ulock <object> = <key>
 

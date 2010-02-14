@@ -5208,7 +5208,7 @@ See also: ufun(), get(), parent(), zfun(), PARENTS
   may be configured in the MUSH.
 
 See also: anonymous attributes, udefault(), get(), ATTRIBUTES, ulocal(),
-    pfun(), attribute flags
+    pfun(), attribute flags, @include
 & UCSTR()
   ucstr(<string>)
 

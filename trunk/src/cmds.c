@@ -1068,6 +1068,11 @@ COMMAND(cmd_teleport)
                 (SW_ISSET(sw, SWITCH_INSIDE)));
 }
 
+COMMAND(cmd_include)
+{
+  do_include(player, arg_left, args_right);
+}
+
 COMMAND(cmd_trigger)
 {
   do_trigger(player, arg_left, args_right);

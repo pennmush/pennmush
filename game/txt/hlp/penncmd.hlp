@@ -2136,7 +2136,9 @@ See also: LISTENING, @ahear, @amhear, @aahear
   For the available key types, such as how to check an attribute on an
   object trying to pass a lock, see "help lockkeys".
 
-See also: @lock-simple, locktypes, lockkeys, @clock, failure, success
+See also: @lock-simple, locktypes, lockkeys, @clock, failure, success.
+  elock(), lock(), @lset, @clock, testlock(), locks(), lockflags(),
+  lockowner(), clock(), llocks()
 & @lock-simple
 & @lock-objid
 SIMPLE LOCKS
@@ -2144,7 +2146,7 @@ SIMPLE LOCKS
   You can lock an object in several different ways. The simplest lock
   is one that always succeeds (#true) or always fails (#false), or
   that matches one other object by prefixing it with a '=', signifying
-  a DBRef # match.:
+  a dbref match:
 
    @lock My Toy = #false
      This lock will always fail.
@@ -2190,6 +2192,8 @@ CARRY LOCK
       This locks the exit "Disneyworld Entrance" to either the object 
       "Child" -or- to someone carrying the object "Child". (OK, so it's
       a weird example.)
+      
+  This is the same as @lock Entrance=+Child|=Child.
 
 & @lock-attribute
 ATTRIBUTE LOCKS
@@ -2246,7 +2250,7 @@ EVALUATION LOCK
   and <object> doesn't have permission to do that, the person will
   automatically fail to pass the lock.
 
-(continued in help @lock-eval2)
+  Continued in 'help @lock-eval2'.
 & @lock-eval2
 & @lock-evaluation2
 
@@ -2266,7 +2270,6 @@ EVALUATION LOCK
   you should probably use a bit lock instead.
 
 See also: @lock-bit
-
 & @lock-bit
 & @lock-flag
 & @lock-type
@@ -2316,6 +2319,25 @@ INDIRECT LOCKS
     @lock Second Puppet = @First Puppet/Use
       Second Puppet's basic lock now checks First Puppet's use lock.
 
+& @lock-host
+HOST LOCKS
+
+  You can check to make sure an object is owned by a player connected from 
+  a specific host or IP address using the following:
+  
+    @lock <object>=ip^<ipaddress>
+    @lock <object>=hostname^<hostname>
+    
+  <ipaddress> and <hostname> can contain wildcards. <object> must be able
+  to see the LASTIP attribute (for ip locks) or LASTSITE attribute (for
+  hostname locks) on the enactor's owner.
+  
+  For example:
+    @lock <object>=ip^127.0.0.1
+      This locks <object> to players (and the objects of players) currently
+      connected from the computer the MUSH is running on.
+      
+See also: ipaddr(), hostname(), LASTSITE
 & lockkeys
 & lock keys
 
@@ -2335,11 +2357,11 @@ INDIRECT LOCKS
   Evaluation - Evaluate an attribute on the object the lock is on.
   Bit        - Check for a flag, type, power, or channel membership.
   List       - Check if the object trying to pass the lock is part of a list.
+  Host       - Check for players connecting from a particular host/ip.
 
   Complex    - Combine other lock keys using groups and boolean operators.
 
-  See also: @lock, locktypes, @clock, objid()
-
+See also: @lock, locktypes, @clock, objid()
 & locktypes
 & locklist
 & lock types
@@ -2360,7 +2382,7 @@ INDIRECT LOCKS
   @lock/user:<name>     User-defined. No built-in function of this lock,
                         but users can test it with elock()
 
-  See 'help locktypes2' for more
+  Continued in 'help locktypes2'.
 & lock types2
 & locktypes2
   More standard lock types:
@@ -2396,6 +2418,7 @@ See also: @lock, @lset, @clock, FAILURE
   wizard     (w)     This lock can only be set by wizards.
   locked     (+)     This lock can only be set by the owner of the lock.
 
+See also: @lock, lockflags(), llockflags(), lset()
 & @log
   @log[/<switch>] <message>
 

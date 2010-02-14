@@ -5164,11 +5164,14 @@ do_reboot(dbref player, int flag)
     flag_broadcast(0, 0,
                    T
                    ("GAME: Reboot w/o disconnect from game account, please wait."));
+    do_rawlog(LT_WIZ, T("Reboot w/o disconnect triggered by signal."));
   } else {
     flag_broadcast(0, 0,
                    T
                    ("GAME: Reboot w/o disconnect by %s, please wait."),
                    Name(Owner(player)));
+    do_rawlog(LT_WIZ, T("Reboot w/o disconnect triggered by %s(#%d)."),
+	      Name(player), player);
   }
   if (flag) {
     globals.paranoid_dump = 1;

@@ -23,6 +23,10 @@ Minor Changes:
  * Rewrite of help @lock to improve clarity, by Sketch.
  * New NO_LOG flag to disable command logging on a per-object basis.
    Based on code by Teal. [SW]
+   
+Functions:
+ * Added strfirstof() and strallof(), which return the first arg/all args
+   which are non-empty strings. [MG]
 
 Version 1.8.3 patchlevel 13                     Feb 13, 2010
 

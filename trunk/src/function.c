@@ -687,6 +687,8 @@ FUNTAB flist[] = {
   {"SSL", fun_ssl, 1, 1, FN_REG},
   {"STARTTIME", fun_starttime, 0, 0, FN_REG},
   {"STEP", fun_step, 3, 5, FN_REG},
+  {"STRFIRSTOF", fun_firstof, 2, INT_MAX, FN_NOPARSE},
+  {"STRALLOF", fun_allof, 2, INT_MAX, FN_NOPARSE},
   {"STRCAT", fun_strcat, 1, INT_MAX, FN_REG},
   {"STRINGSECS", fun_stringsecs, 1, 1, FN_REG},
   {"STRINSERT", fun_strinsert, 3, -3, FN_REG},

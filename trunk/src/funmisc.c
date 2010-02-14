@@ -806,7 +806,7 @@ enum whichof_t { DO_FIRSTOF, DO_ALLOF };
 static void
 do_whichof(char *args[], int nargs, enum whichof_t flag,
            char *buff, char **bp, dbref executor,
-           dbref caller, dbref enactor, PE_Info *pe_info)
+           dbref caller, dbref enactor, PE_Info *pe_info, int isbool)
 {
   int j;
   char tbuf[BUFFER_LEN], *tp;
@@ -834,7 +834,7 @@ do_whichof(char *args[], int nargs, enum whichof_t flag,
     process_expression(tbuf, &tp, &sp, executor, caller,
                        enactor, PE_DEFAULT, PT_DEFAULT, pe_info);
     *tp = '\0';
-    if (parse_boolean(tbuf)) {
+    if ((isbool && parse_boolean(tbuf)) || (!isbool && strlen(tbuf))) {
       if (!first) {
         safe_chr(sep, buff, bp);
       } else
@@ -852,7 +852,7 @@ do_whichof(char *args[], int nargs, enum whichof_t flag,
 FUNCTION(fun_firstof)
 {
   do_whichof(args, nargs, DO_FIRSTOF, buff, bp, executor,
-             caller, enactor, pe_info);
+             caller, enactor, pe_info, !!strcasecmp(called_as, "STRFIRSTOF"));
 }
 
 
@@ -860,7 +860,7 @@ FUNCTION(fun_firstof)
 FUNCTION(fun_allof)
 {
   do_whichof(args, nargs, DO_ALLOF, buff, bp, executor,
-             caller, enactor, pe_info);
+             caller, enactor, pe_info, !!strcasecmp(called_as, "STRALLOF"));
 }
 
 /* Returns a platform-specific timestamp with platform-dependent resolution. */

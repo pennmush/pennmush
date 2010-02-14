@@ -50,6 +50,7 @@ static int wipe_helper(dbref player, dbref thing, dbref parent,
                        char const *pattern, ATTR *atr, void *args);
 static void copy_attrib_flags(dbref player, dbref target, ATTR *atr, int flags);
 
+extern int rhs_present;         /* from command.c */
 
 /** Rename something.
  * \verbatim
@@ -986,6 +987,52 @@ do_trigger(dbref player, char *object, char **argv)
   }
 }
 
+
+/** Include an attribute.
+ * \verbatim
+ * This implements @include obj/attribute
+ * \endverbatim
+ * \param player the enactor.
+ * \param object the object/attribute pair.
+ * \param argv array of arguments. (not yet used)
+ */
+void
+do_include(dbref player, char *object, char **argv)
+{
+  dbref thing;
+  int a;
+  char *s;
+  char tbuf1[BUFFER_LEN];
+
+  strcpy(tbuf1, object);
+  for (s = tbuf1; *s && (*s != '/'); s++) ;
+  if (!*s) {
+    notify(player, T("I need to know what attribute to include."));
+    return;
+  }
+  *s++ = '\0';
+
+  thing = noisy_match_result(player, tbuf1, NOTYPE, MAT_EVERYTHING);
+
+  if (thing == NOTHING)
+    return;
+
+  if (God(thing) && !God(player)) {
+    notify(player, T("You can't include God!"));
+    return;
+  }
+  /* include modifies the stack, but only if arguments are given */
+  for (a = 0; a < 10; a++) {
+    if (rhs_present && argv[a + 1])
+      global_eval_context.include_wenv[a] = mush_strdup(argv[a + 1], "include_wenv");
+    else
+      global_eval_context.include_wenv[a] = NULL;
+  }
+  if (!inplace_queue_attribute(thing, upcasestr(s), player, rhs_present)) {
+    notify(player, T("No such attribute."));
+  }
+
+}
 
 /** The use command.
  * It's here for lack of a better place.

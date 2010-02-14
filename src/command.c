@@ -172,6 +172,8 @@ COMLIST commands[] = {
   {"@HOOK", "LIST AFTER BEFORE IGNORE OVERRIDE", cmd_hook,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS,
    "WIZARD", "hook"},
+  {"@INCLUDE", NULL, cmd_include,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@KICK", NULL, cmd_kick, CMD_T_ANY, "WIZARD", 0},
 
   {"@LEMIT", "NOEVAL SILENT SPOOF", cmd_lemit,

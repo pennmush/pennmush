@@ -452,7 +452,7 @@ See also: center(), ljust(), rjust(), table()
     > say allof(#-1,#101,#2970,,#-3,0,#319,null(This Doesn't Count),|)
     You say, "#101|#2970|#319"
 
-See also: firstof(), BOOLEAN VALUES
+See also: firstof(), BOOLEAN VALUES, strallof(), filter()
 & ALPHAMAX()
   alphamax(<word>[, ... , <wordN>])
 
@@ -1460,7 +1460,7 @@ See also: div(), mod()
     > say filter(test/is_odd, 1 2 3 4 5 6)
     You say, "1 3 5"
 
-See also: anonymous attributes
+See also: anonymous attributes, firstof(), allof()
 & FINDABLE()
   findable(<object>, <victim>)
  
@@ -1474,7 +1474,7 @@ See also: locate(), loc()
 
   Returns the first element of a list.
 
-See also: before(), rest(), last()
+See also: before(), rest(), last(), firstof(), strfirstof()
 & FIRSTOF()
   firstof(<expr>[, ... , <exprN>], <default>)
 
@@ -1500,7 +1500,7 @@ See also: before(), rest(), last()
     > say firstof(get(%#/royal cheese),#-1 This Has No Meaning,0,)
     You say, ""
 
-See also: allof(), BOOLEAN VALUES
+See also: allof(), BOOLEAN VALUES, strfirstof(), filter()
 & FLAGS()
   flags()
   flags(<object>[/<attribute>])
@@ -4581,6 +4581,29 @@ See also: map(), iter(), fold(), anonymous attributes
   Returns the sample standard deviation of its arguments.
 
 See also: mean(), median()
+& STRFIRSTOF()
+& STRALLOF()
+  strfirstof(<expr>[, ... , <exprN>], <default>)
+  strallof(<expr>[, ... , <exprN>], <osep>)
+
+  strfirstof() returns the first <expr> which evaluates to a non-empty
+  string (a string at least 1 character long). If all <expr>s evaluate empty,
+  <default> is returned instead.
+  
+  strallof() returns all <expr>s which evaluate to non-empty strings, with
+  each expression separated by <osep>.
+  
+  Examples:
+    > say strfirstof(,  ,@@(Nothing),foo,default)
+    You say, "foo"
+    
+    > say strfirstof(get(%#/fullname), u(%#/ansiname), %n)
+    You say, "Mike"
+    
+    > say strallof(,  ,foo,@@(Nothing),%b,bar|baz,#-1,|)
+    You say, "foo| |bar|baz|#-1"
+  
+See also: allof(), firstof(), first(), strlen(), cat()
 & STRINSERT()
   strinsert(<string>, <position>, <insert>)
 
@@ -4617,7 +4640,7 @@ See also: stripaccents(), ansi(), tag()
     > say strlen(foobar)
     You say, "6"
 
-See also: words()
+See also: words(), strfirstof()
 & STRMATCH()
   strmatch(<string>, <pattern>[, <register list>])
   

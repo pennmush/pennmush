@@ -20,6 +20,7 @@ Versionh 1.8.4?                                 ??? ??,  2010
 
 Minor Changes:
  * @shutdown/reboot logs who was responsible. Suggested by Kitai. [SW]
+ * Rewrite of help @lock to improve clarity, by ssstarduster.
 
 Version 1.8.3 patchlevel 13                     Feb 13, 2010
 

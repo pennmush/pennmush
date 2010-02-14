@@ -2102,11 +2102,18 @@ See also: LISTENING, @ahear, @amhear, @aahear
   locktypes may also have such success/failure messages: see "help
   failure" for info.
 
-  You can specify <object> and <key> as either the name of an object
-  in the immediate area, a DBREF number, "me", or "here".
+  Just like attributes, locks can be inherited from parents. By default,
+  locks are set no_inherit, but this flag can be cleared using @lset. More
+  details and a list of flags can be found in HELP @LSET.
 
-(continued in help @lock2)  
-& @lock2
+  A listing of lock types, such as pagelocks, look at "help locktypes".
+  For the available key types, such as how to check an attribute on an
+  object trying to pass a lock, see "help lockkeys".
+
+See also: @lock-simple, locktypes, lockkeys, @clock, failure, success
+& @lock-simple
+& @lock-objid
+SIMPLE LOCKS
 
   You can lock an object in several different ways. The simplest lock
   is one that always succeeds (#true) or always fails (#false), or
@@ -2126,55 +2133,39 @@ See also: LISTENING, @ahear, @amhear, @aahear
   
   You can lock an object -against- another object as well, using the
   '!'  symbol before any other key:
-    @lock Shared Toy = !Vector Sigma
+    @lock Shared Toy = !=Vector Sigma
       This locks the object "Shared Toy" to everyone -except- Vector
       Sigma.  Everyone except Vector will be able to pick up the
       object.
 
-(continued in help @lock3)
-& @lock3
-  You can lock an object to something that has to be carried:
-    @lock Door = +Secret Door Key
-      This locks the exit "Door" to someone carrying the object
-      "Secret Door Key". Anyone carrying that object will be able to
-      go through the exit.
+  The above locks take the form @lock <object>= =<dbref>, but you can
+  also test for an object id, instead of a dbref, with:
+    @lock <object>=objid^<object id>
 
-  You can lock an object to -either- an object or to someone carrying
-  the object with:
-    @lock Disneyworld Entrance = Child
-      This locks the exit "Disneyworld Entrance" to either the object
-      "Child" -or- to someone carrying the object "Child". (OK, so
-      it's a weird example.)
-  
-  You can lock an object to a specific player by using a *:
-    @lock Note == *Jazz
-      Only the player "Jazz" will be able to pick up the Note object.
-  
-(continued in help @lock4)
-& @lock4
+& @lock-owner
+& @lock-carry
+OWNER LOCK
+
   An "owner" lock allows you to lock something to anything owned by
   the same player:
     @lock Box = $My Toy
-      This locks "Box" to anything owned by the owner of "My Toy"
-      (since players own themselves, that includes the owner as well).
+  This locks "Box" to anything owned by the owner of "My Toy"
+   (since players own themselves, that includes the owner as well).
 
-  An "indirect" lock allows you to lock something to the same thing as
-  another object (very useful in setting channel locks; see help
-  @clock):
-    @lock Second Puppet = @First Puppet
-      This locks the object "Second Puppet" to whatever the object
-      "First Puppet" is locked to. Normally, the lock type that is
-      checked is the same as the lock on the first. You can specify a
-      different lock type with @object/LOCKNAME. For example: @lock
-      Second Puppet = @First Puppet/Use Second Puppet's basic lock now
-      checks First Puppet's use lock.
+CARRY LOCK
+  You can lock an object to something that has to be carried:
+    @lock Door = +Secret Door Key
+      This locks the exit "Door" to someone carrying the object "Secret Door
+      Key". Anyone carrying that object will be able to go through the exit.
 
-  There are also some more complex locks called attribute and
-  evaluation locks. In addition, you can make complex locks (combining
-  several types or reversing them).
+  You can lock an object to -either- an object or to someone carrying the
+  object with:
+    @lock Disneyworld Entrance = Child
+      This locks the exit "Disneyworld Entrance" to either the object 
+      "Child" -or- to someone carrying the object "Child". (OK, so it's
+      a weird example.)
 
-(continued in help @lock5)
-& @lock5
+& @lock-attribute
 ATTRIBUTE LOCKS
   You can lock an object to an attribute on the person trying to pass
   the lock (as long as the object can "see" that attribute):
@@ -2193,8 +2184,7 @@ ATTRIBUTE LOCKS
       starting with a letter "less than" the letter "g". This assumes
       that ICNAME is visual or the object with the lock can see it.
 
-(continued in help @lock6)
-& @lock6
+& @lock-complex
 COMPLEX LOCKS
   You can combine or reverse locks very easily using the following
   BOOLEAN symbols and parentheses () to group them:
@@ -2212,9 +2202,8 @@ COMPLEX LOCKS
       This locks it to Chromia, OR to Marissa if she is carrying the
       Key.
 
-(continued in help @lock7)
-& @lock7
-EVALUATION LOCKS
+& @lock-evaluation
+EVALUATION LOCK
   An evaluation lock is set using this format:
 
     @lock <object>=<attribute>/<value>
@@ -2231,26 +2220,34 @@ EVALUATION LOCKS
   and <object> doesn't have permission to do that, the person will
   automatically fail to pass the lock.
 
-(continued in help @lock8)
-& @lock8
+(continued in help @lock-eval2)
+& @lock-eval2
+& @lock-evaluation2
 
-  Example: 
-    @lock Stage = ispuppet/1
-    &ispuppet Stage = hasflag(%#, PUPPET)
-      This locks the object "Stage" to puppets only.
+  Example:
+    @lock Thursday Cafe = whichday/Thu
+    &whichday Thursday Cafe = first(time())
+      This locks the object "Thursday Cafe" (probably an exit) unless today
+      is Thursday.
 
-      Whenever someone tries to pick up the object, the attribute
-      "ispuppet" will be checked, substituting in the person's DBREF
-      number for %#.
- 
-      [hasflag(<dbref>, PUPPET)] will come out to 1 if the object with
-      <dbref> has the "PUPPET" flag. Otherwise, it will come out to be
-      0.  Since the value in the @lock is 1, only objects with the
-      PUPPET flag will be able to pass this lock.
+      Whenever someone tries to pass through the exit, the attribute
+      "whichday" will be evaluated, extracting the first word returned from
+      time() (the day of the week). The result is compared with the value in
+      the lock ("Thu"), and the lock will only be passable when the strings
+      match--Only on Thursdays.
 
-(continued in help @lock9)
-& @lock9
-  You can also test for set flags, powers, or object types in a lock
+  If you have an evaluation lock that just does [hasflag(%#,FLAGNAME)],
+  you should probably use a bit lock instead.
+
+See also: @lock-bit
+
+& @lock-bit
+& @lock-flag
+& @lock-type
+& @lock-power
+& @lock-channel
+BIT LOCKS
+  You can test for set flags, powers, or object types in a lock
   directly, without using an evaluation lock, with these formats:
 
     @lock <object>=flag^<flag>
@@ -2261,19 +2258,15 @@ EVALUATION LOCKS
   <flag>), hastype(%#, <type>), or haspower(%#, <power>) succeeding if
   the flag is set.
 
-  You can test for channel membership with:
-
-    @lock <object>=channel^<channel>
-
   For example,
     @lock/use Admin Commands=flag^wizard|flag^royalty
 
-(continued in help @lock10)
-& @lock10
-  You can test for an object id, instead of a dbref, with:
+  You can also test for channel membership with:
 
-    @lock <object>=objid^<object id>
+    @lock <object>=channel^<channel>
 
+& @lock-list
+LIST LOCK
   You can test to see if the enactor is a member of a space-separated
   list of dbrefs or objids on an attribute on the object, with:
 
@@ -2284,7 +2277,43 @@ EVALUATION LOCKS
     &deny commands = #200 #1020
     @lock/use commands = !dbreflist^deny & dbreflist^allow 
 
-See also: locktypes, @clock, elock(), lock(), objid()
+& @lock-indirect
+INDIRECT LOCKS
+  An "indirect" lock allows you to lock something to the same thing as
+  another object (very useful in setting channel locks; see help
+  @clock):
+    @lock Second Puppet = @First Puppet
+      This locks the object "Second Puppet" to whatever the object
+      "First Puppet" is locked to. Normally, the lock type that is
+      checked is the same as the lock on the first. You can specify a
+      different lock type with @object/LOCKNAME. For example:
+    @lock Second Puppet = @First Puppet/Use
+      Second Puppet's basic lock now checks First Puppet's use lock.
+
+& lockkeys
+& lock keys
+
+  There are many key types, and it is also possible to form more complex
+  locks by using boolean symbols and grouping. See HELP @LOCK-COMPLEX
+  for examples.
+
+  The types of keys are outlined below. Detailed help for each is available
+  by typing "help @lock-<key>", replacing <key> with the word on the left.
+
+  Simple     - Always true, always false, or locking to an object.
+  Objid      - Check if the object trying to pass the lock matches an objid.
+  Owner      - Lock to objects owned by the owner of an object.
+  Carry      - Lock to someone carrying an object such as a key.
+  Indirect   - Use the result of a lock on another object.
+  Attribute  - Check an attribute on the object trying to pass the lock.
+  Evaluation - Evaluate an attribute on the object the lock is on.
+  Bit        - Check for a flag, type, power, or channel membership.
+  List       - Check if the object trying to pass the lock is part of a list.
+
+  Complex    - Combine other lock keys using groups and boolean operators.
+
+  See also: @lock, locktypes, @clock, objid()
+
 & locktypes
 & locklist
 & lock types

@@ -146,6 +146,7 @@ static FLAG flag_table[] = {
   {"GOING_TWICE", '\0', NOTYPE, GOING_TWICE, F_INTERNAL | F_DARK,
    F_INTERNAL | F_DARK},
   {"KEEPALIVE", 'k', TYPE_PLAYER, 0, F_ANY, F_ANY},
+  {"NO_LOG", '\0', NOTYPE, 0, F_WIZARD | F_MDARK | F_LOG, F_WIZARD | F_MDARK},
   {NULL, '\0', 0, 0, 0, 0}
 };
 
@@ -870,6 +871,7 @@ flag_add_additional(FLAGSPACE *n)
     add_flag("TRACK_MONEY", '\0', TYPE_PLAYER, F_ANY, F_ANY);
     add_flag("LOUD", '\0', NOTYPE, F_ROYAL, F_ANY);
     add_flag("HEAR_CONNECT", '\0', TYPE_PLAYER, F_ROYAL, F_ANY);
+    add_flag("NO_LOG", '\0', NOTYPE, F_WIZARD | F_MDARK | F_LOG, F_WIZARD | F_MDARK);
     if ((f = match_flag("LISTEN_PARENT")))
       f->type |= TYPE_PLAYER;
     if ((f = match_flag("TERSE")))

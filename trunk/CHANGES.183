@@ -32,6 +32,9 @@ Functions:
  * Added strfirstof() and strallof(), which return the first arg/all args
    which are non-empty strings. [MG]
 
+Fixes:
+ * Minor bug in benchmark() fixed. [MG]
+
 Version 1.8.3 patchlevel 13                     Feb 13, 2010
 
 Minor Changes:

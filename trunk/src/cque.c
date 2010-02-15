@@ -665,7 +665,8 @@ do_entry(BQUE *entry, int include_recurses)
       local_break_called = 0;
       break_count = 100;
       *(global_eval_context.break_replace) = '\0';
-      start_cpu_timer();
+      if (!include_recurses)
+        start_cpu_timer();
       while (!cpu_time_limit_hit && *s) {
         r = global_eval_context.ccom;
         process_expression(global_eval_context.ccom, &r, &s,
@@ -741,7 +742,8 @@ do_entry(BQUE *entry, int include_recurses)
           }
         }
       }
-      reset_cpu_timer();
+      if (!include_recurses)
+        reset_cpu_timer();
     }
   }
   return local_break_called;

@@ -940,6 +940,7 @@ FUNCTION(fun_benchmark)
     start = get_tsc();
     if (process_expression(tbuf, &tp, &sp, executor, caller, enactor,
                            PE_DEFAULT, PT_DEFAULT, pe_info)) {
+      *tp = '\0';
       break;
     }
     *tp = '\0';

@@ -556,8 +556,8 @@ insert_channel(CHAN **ch)
   if (!ch || !*ch)
     return;
 
-  /* If there's no users on the list, or if the first user is already
-   * alphabetically greater, user should be the first entry on the list */
+  /* If there's no channels on the list, or if the first channel is already
+   * alphabetically greater, ch should be the first entry on the list */
   /* No channels? */
   if (!channels) {
     channels = *ch;
@@ -617,6 +617,8 @@ insert_obj_chan(dbref who, CHAN **ch)
 {
   CHANLIST *p;
   CHANLIST *tmp;
+  char cleanname[CHAN_NAME_LEN];
+  char cleanp[CHAN_NAME_LEN];
 
   if (!ch || !*ch)
     return;
@@ -625,6 +627,7 @@ insert_obj_chan(dbref who, CHAN **ch)
   if (!tmp)
     return;
   tmp->chan = *ch;
+  strcpy(cleanname, remove_markup(ChanName(*ch), NULL));
   /* If there's no channels on the list, or if the first channel is already
    * alphabetically greater, chan should be the first entry on the list */
   /* No channels? */
@@ -635,20 +638,23 @@ insert_obj_chan(dbref who, CHAN **ch)
   }
   p = Chanlist(who);
   /* First channel? */
-  if (strcasecoll(ChanName(p->chan), ChanName(*ch)) > 0) {
+  strcpy(cleanp, remove_markup(ChanName(p->chan), NULL));
+  if (strcasecoll(cleanp, cleanname) > 0) {
     tmp->next = p;
     s_Chanlist(who, tmp);
     return;
-  } else if (!strcasecmp(ChanName(p->chan), ChanName(*ch))) {
+  } else if (!strcasecmp(cleanp, cleanname)) {
     /* Don't add the same channel twice! */
     free_chanlist(tmp);
   } else {
     /* Otherwise, find which channel this channel should be inserted after */
-    for (;
-         p->next
-         && (strcasecoll(ChanName(p->next->chan), ChanName(*ch)) < 0);
-         p = p->next) ;
-    if (p->next && !strcasecmp(ChanName(p->next->chan), ChanName(*ch))) {
+    while (p->next) {
+      strcpy(cleanp, remove_markup(ChanName(p->next->chan), NULL));
+      if (strcasecoll(cleanp, cleanname) >= 0)
+        break;
+      p = p->next;
+    }
+    if (p->next && !strcasecmp(cleanp, cleanname)) {
       /* Don't add the same channel twice! */
       free_chanlist(tmp);
     } else {

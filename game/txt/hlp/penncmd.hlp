@@ -285,15 +285,15 @@ See also: follow, unfollow, @unfollow, followers(), ACTION LISTS
 
 See also: follow, unfollow, @follow, followers(), ACTION LISTS
 & @ahear
-& @aahear
 & @amhear
+& @aahear
   @ahear <object>[=<action list>]
-  @aahear <object>[=<action list>]
   @amhear <object>[=<action list>]
+  @aahear <object>[=<action list>]
 
   Sets the actions to be taken after the object's @listen is matched.
   @ahear will only be triggered by sound made by other objects, and
-  @amhear is only triggered by sound made by <object> itself. @amhear 
+  @amhear is only triggered by sound made by <object> itself. @aahear 
   will be triggered by all matching sound, regardless of the source.
   
 See also: @listen, LISTENING, ACTION LISTS

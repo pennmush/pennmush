@@ -1430,6 +1430,10 @@ msgstr "@hook/ignore: #%d/%s"
 msgid "@hook/override: #%d/%s"
 msgstr "@hook/override: #%d/%s"
 
+#: cque.c:695
+msgid "@include recursion exceeded."
+msgstr "Prekoraceno ogranicenje rekurzije naredbe @include."
+
 #: cmds.c:687
 msgid "@message them with what?"
 msgstr "Koju poruku im zelis poslati s @message?"
@@ -2898,6 +2902,10 @@ msgstr "Ne shvacam sto zelis @listati."
 msgid "I don't understand what you want to do."
 msgstr "Ne shvacam sto zelis napraviti."
 
+#: set.c:1010
+msgid "I need to know what attribute to include."
+msgstr "Moram znati koji atribut trebam ukljuciti."
+
 #: src/set.c:798
 msgid "I need to know what attribute to trigger."
 msgstr "Moram znati koji atribut zelis okinuti."
@@ -4144,6 +4152,15 @@ msgstr "Quote nepromijenjene."
 #: extmail.c:2469
 msgid "Read "
 msgstr "Procitano "
+
+#: bsd.c:5173
+#, c-format
+msgid "Reboot w/o disconnect triggered by %s(#%d)."
+msgstr "%s(#%d) pokrene rebootanje bez prekida veze."
+
+#: bsd.c:5167
+msgid "Reboot w/o disconnect triggered by signal."
+msgstr "Signal pokrene rebootanje bez prekida veze."
 
 #: extchat.c:2192
 #, c-format
@@ -5559,6 +5576,10 @@ msgstr "Ne mozes ici tim putem."
 #: src/wiz.c:1175
 msgid "You can't grant powers to unregistered players."
 msgstr "Ne mozes davati moci neregistriranim igracima."
+
+#: set.c:1021
+msgid "You can't include God!"
+msgstr "Ne mozes ukljuciti Boga!"
 
 #: src/move.c:670
 msgid "You can't leave."

@@ -39,9 +39,17 @@ msgstr " Attribute werden im Speicher nicht komprimiert."
 msgid " Attributes are word compressed in memory."
 msgstr " Attribute werden im Arbeitsspeicher word komprimiert."
 
+#: parse.c:1324
+msgid " OR "
+msgstr " ODER "
+
 #: conf.c:1690
 msgid " The MUSH was compiled with Sqlite3 support."
 msgstr " Das MUSH wurde mit Sqlite3-Unterstützung kompiliert."
+
+#: src/conf.c:1113
+msgid " convtime() is stricter."
+msgstr " convtime() ist strenger."
 
 #: flags.c:1531
 msgid " granted."
@@ -77,7 +85,7 @@ msgstr "#-1 ARGUMENT MUSS EINE NUMMER SEIN"
 
 #: src/fundb.c:1691 src/fundb.c:1695
 msgid "#-1 ARGUMENT MUST BE OBJ/ATTR"
-msgstr "Schöpfungs/Veränderungszeiten für Objekte sind aktiviert"
+msgstr "#-1 ARGUMENT MUSS OBJEKT/ATTRIBUT SEIN"
 
 #: parse.c:87
 msgid "#-1 ARGUMENT MUST BE POSITIVE INTEGER"
@@ -105,11 +113,11 @@ msgstr "#-1 BASIS AUSSERHALB DER REICHWEITE"
 
 #: src/funlist.c:1456 src/funlist.c:1680
 msgid "#-1 CAN ONLY TEST ONE ELEMENT"
-msgstr "#-1 ARGUMENT MUSS EIN OBJEKT ODER ATTRIBUT SEIN"
+msgstr "#-1 KANN NUR EIN ELEMENT TESTEN"
 
 #: src/funmath.c:754 src/funmath.c:1584 src/funmath.c:1628 src/funmath.c:1673\nsrc/funmath.c:1707 src/funmath.c:1751
 msgid "#-1 DIVISION BY ZERO"
-msgstr "#-1 Division durch NULL"
+msgstr "#-1 DIVISION DURCH NULL"
 
 #: src/parse.c:671 src/parse.c:759
 msgid "#-1 FUNCTION ("
@@ -129,7 +137,7 @@ msgstr "#-1 MAXIMALE ANZAHL FUNKTIONSAUFRUFE ÜBERSCHRITTEN"
 
 #: funmath.c:1033 funmath.c:1066
 msgid "#-1 IMAGINARY NUMBER"
-msgstr "#-1 IMAGINAERE ZAHL"
+msgstr "#-1 IMAGINÄRE ZAHL"
 
 #: src/funmath.c:949 src/funmath.c:972
 msgid "#-1 INFINITY"
@@ -149,7 +157,7 @@ msgstr "#-1 UNGÜLTIGE NACHRICHT ODER SPIELER"
 
 #: funstr.c:1985
 msgid "#-1 INVALID NUMBER OF ARGUMENTS TO ALIGN"
-msgstr "#-1 UNGUELTIGE ANZAHL ARGUMENTE FUER ALIGN"
+msgstr "#-1 UNGÜLTIGE ANZAHL ARGUMENTE FÜR ALIGN"
 
 #: src/fundb.c:1890 src/fundb.c:1912 src/funufun.c:113 src/funufun.c:144
 msgid "#-1 INVALID OBJECT"
@@ -157,19 +165,23 @@ msgstr "#-1 UNGÜLTIGES OBJEKT"
 
 #: src/fundb.c:663 src/fundb.c:690
 msgid "#-1 INVALID SECOND ARGUMENT"
-msgstr "#-1 UNGÜLTIGES ZWEITES ARGUMENT."
+msgstr "#-1 UNGÜLTIGES ZWEITES ARGUMENT"
+
+#: funstr.c:369 funstr.c:425
+msgid "#-1 INVALID THIRD ARGUMENT"
+msgstr "#-1 UNGÜLTIGES DRITTES ARGUMENT"
 
 #: funtime.c:222 funtime.c:249
 msgid "#-1 INVALID TIMESTRING"
-msgstr "#-1 UNGUELTIGER TIME STRING"
+msgstr "#-1 UNGÜLTIGER TIME STRING"
 
 #: src/funlist.c:194 src/funlist.c:2088
 msgid "#-1 LISTS MUST BE OF EQUAL SIZE"
-msgstr "#-1 Listen muessen die gleiche groesse haben"
+msgstr "#-1 LISTEN MÜSSEN DIE GLEICHE GRÖSSE HABEN"
 
 #: src/funlist.c:1778
 msgid "#-1 NEED A WORD"
-msgstr "#-1 Benötige ein Wort"
+msgstr "#-1 BENÖTIGE EIN WORT"
 
 #: extchat.c:1495
 msgid "#-1 NO CHANNEL GIVEN"
@@ -217,7 +229,7 @@ msgstr "#-1 NICHT VERBUNDEN"
 
 #: funstr.c:1977
 msgid "#-1 NOT ENOUGH COLUMNS FOR ALIGN"
-msgstr "#-1 NICHT GENUG SPALTEN FUER DIE ANORDNUNG"
+msgstr "#-1 NICHT GENUG SPALTEN FÜR DIE ANORDNUNG"
 
 #: extchat.c:1525
 msgid "#-1 NOT ON CHANNEL"
@@ -229,7 +241,7 @@ msgstr "#-1 ANZAHL DER WÖRTER MUSS GERADE SEIN"
 
 #: src/funlist.c:1179 src/funmisc.c:222
 msgid "#-1 NUMBER OUT OF RANGE"
-msgstr "#-1  NUMMER  AUSSERHALB DER MENGE"
+msgstr "#-1 NUMMER AUSSERHALB DER REICHWEITE"
 
 #: src/funmath.c:850 src/funmath.c:876 src/funmath.c:930 src/funmath.c:954\nsrc/funmath.c:977 src/funmath.c:1238 src/funstr.c:212 src/funstr.c:234\nsrc/funstr.c:254 src/funstr.c:281 src/funtime.c:152
 msgid "#-1 OUT OF RANGE"
@@ -257,7 +269,7 @@ msgstr "#-1 UNBEKANNTE OPERATION"
 
 #: src/funmath.c:420 src/funmath.c:462 src/funmath.c:501 src/funmath.c:540\nsrc/funmath.c:598 src/funmath.c:632
 msgid "#-1 VECTORS MUST BE SAME DIMENSIONS"
-msgstr "#-1 VEKTOREN MUESSEN GLEICH DIMENSIONIERT SEIN"
+msgstr "#-1 VEKTOREN MÜSSEN GLEICH DIMENSIONIERT SEIN"
 
 #: src/funstr.c:1097
 msgid "#-1 WIDTH TOO SMALL"
@@ -301,7 +313,7 @@ msgstr "%d Objekt = %d Räume, %d Ausgänge, %d Dinge, %d Spieler."
 #: src/look.c:969
 #, c-format
 msgid "%s (this room) [broadcasting]."
-msgstr "%s (dieser Raum) [sendend]"
+msgstr "%s (dieser Raum) [sendend]."
 
 #: src/look.c:967
 #, c-format
@@ -321,7 +333,7 @@ msgstr "%s [Besitzer: %s] hört zu."
 #: src/destroy.c:352
 #, c-format
 msgid "%s and all their objects are scheduled to be destroyed."
-msgstr "%s und alle ihre Objekte sind zur Zerstoerung eingetragen"
+msgstr "%s und alle ihre Objekte sind zur Zerstörung eingetragen."
 
 #: src/move.c:862
 #, c-format
@@ -356,7 +368,7 @@ msgstr "%s hat dich %s gegeben."
 #: src/rob.c:285
 #, c-format
 msgid "%s gives you %d %s."
-msgstr "%s gibt dir %d %s"
+msgstr "%s gibt dir %d %s."
 
 #: src/move.c:332
 #, c-format
@@ -391,7 +403,7 @@ msgstr "%s hat die Zerstörung deines Raumes %s angeordnet. Tja, Pech."
 #: src/extchat.c:803 src/extchat.c:835
 #, c-format
 msgid "%s is already on channel <%s>."
-msgstr "%s ist schon im Channel <%s>"
+msgstr "%s ist schon im Channel <%s>."
 
 #: look.c:205
 #, c-format
@@ -521,7 +533,7 @@ msgstr "%s(%s) - %s aufgeschlossen."
 #: src/extmail.c:1260 src/extmail.c:1668 src/wiz.c:673 src/wiz.c:1277
 #, c-format
 msgid "%s: No such player."
-msgstr "%s:   Kein solcher Spieler."
+msgstr "%s: Kein solcher Spieler."
 
 #: function.c:905
 msgid "(Commas okay in last argument)"
@@ -529,7 +541,7 @@ msgstr "(Beistriche sind in der letzten Angabe okay)"
 
 #: src/extmail.c:211 src/extmail.c:810 src/extmail.c:1004
 msgid "(no subject)"
-msgstr "(Kein Titel]"
+msgstr "(Kein Titel)"
 
 #: src/malias.c:471
 msgid "***** End of Mail Aliases *****"
@@ -688,6 +700,11 @@ msgstr "CHAT: Channel <%s> ist jetzt im Besitz von %s."
 #, c-format
 msgid "CHAT: Channel <%s> wiped."
 msgstr "CHAT: Kanal <%s> ausgelöscht."
+
+#: extchat.c:1596
+#, c-format
+msgid "CHAT: Hidelock on <%s> set."
+msgstr "CHAT: Hidelock auf <%s> gesetzt."
 
 #: extchat.c:955 extchat.c:1008
 msgid "CHAT: I don't know which channel you mean."
@@ -1851,7 +1868,7 @@ msgstr "Thema: %s"
 
 #: extmail.c:2481
 msgid "Tagged"
-msgstr "Markiert."
+msgstr "Markiert"
 
 #: flags.c:2129
 #, c-format
@@ -2374,6 +2391,10 @@ msgstr "Du bist auf HAVEN gesetzt und kannst keine Pager-Nachrichten empfangen."
 #: src/look.c:863
 msgid "You aren't carrying anything."
 msgstr "Du trägst nix bei dir."
+
+#: src/wiz.c:833
+msgid "You boot an idle self."
+msgstr "Du wirfst ein inaktives Alter Ego raus."
 
 #: src/wiz.c:835
 #, c-format

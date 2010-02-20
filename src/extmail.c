@@ -425,7 +425,7 @@ do_mail_flags(dbref player, const char *msglist, mail_flag flag, bool negate)
               if (negate)
                 notify(player, T("MAIL: All messages in all folders untagged."));
               else
-                notify(player, T("MAIL: All messages in all folder tagged."));
+                notify(player, T("MAIL: All messages in all folders tagged."));
               notified++;
             }
           } else {

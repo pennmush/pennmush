@@ -49,11 +49,11 @@ I. An SSL overview
 
 II. Compiling with OpenSSL
 
-  The Configure script distributed with PennMUSH automatically detects
+  The configure script distributed with PennMUSH automatically detects
   the OpenSSL libraries (libssl and libcrypto) and attempts to link
   them into the executable, defining HAVE_SSL and HAS_OPENSSL in
   config.h. If you have SSL libraries but wish to avoid linking with them,
-  give the --without-ssl argument to Configure when you run it.
+  give the --without-ssl argument to configure when you run it.
 
   You can compile the OpenSSL libraries yourself from source code
   at http://www.openssl.org. If you install it through your OS'es
@@ -72,7 +72,7 @@ II. Compiling with OpenSSL
 
 III. Mush configuration overview
 
-  mush.cnf includes three directives that configure the SSL support:
+  mush.cnf includes four directives that configure the SSL support:
 
   ssl_port selects the port number for the MUSH to listen for SSL 
   connections. Any port number other than the MUSH's ordinary listening

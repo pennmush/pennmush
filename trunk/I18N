@@ -11,7 +11,7 @@ by the game into another language. (Helpfiles aren't currently translated.)
 Several languages are currently supported to one degree or another.
 If your favorite language isn't (or if you want to increase the
 level of support), and you're fluent in it, you can help out!
-See http://www.pennmush.org/translation.html.
+See http://javelin.pennmush.org/translation.html.
 
 Localization (the process of making a MUSH conform to a given "locale")
 is controlled by the LANG or LC_ALL environment variables, which have

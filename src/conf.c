@@ -1688,9 +1688,9 @@ do_enable(dbref player, const char *param, int state)
         else
           notify(player, T("Enabled."));
         do_log(LT_WIZ, player, NOTHING, "%s %s",
-               cp->name, (state) ? T("ENABLED") : T("DISABLED"));
+               cp->name, (state) ? "ENABLED" : "DISABLED");
       } else
-        notify(player, T("That isn't a on/off option."));
+        notify(player, T("That isn't an on/off option."));
       return;
     }
   }

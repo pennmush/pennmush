@@ -422,22 +422,30 @@ do_mail_flags(dbref player, const char *msglist, mail_flag flag, bool negate)
         case M_TAG:
           if (All(ms)) {
             if (!notified) {
-              notify_format(player,
-                            T("MAIL: All messages in all folders %s."),
-                            negate ? "untagged" : "tagged");
+              if (negate)
+                notify(player, T("MAIL: All messages in all folders untagged."));
+              else
+                notify(player, T("MAIL: All messages in all folder tagged."));
               notified++;
             }
-          } else
-            notify_format(player,
-                          "MAIL: Msg #%d:%d %s.", (int) Folder(mp),
-                          i[Folder(mp)], negate ? "untagged" : "tagged");
+          } else {
+            if (negate) {
+              notify_format(player, T("MAIL: Msg #%d:%d untagged"),
+                            (int) Folder(mp), i[Folder(mp)]);
+            } else {
+              notify_format(player, T("MAIL: Msg #%d:%d tagged"),
+                            (int) Folder(mp), i[Folder(mp)]);
+            }
+          }
           break;
         case M_CLEARED:
           if (All(ms)) {
             if (!notified) {
-              notify_format(player,
-                            T("MAIL: All messages in all folders %s."),
-                            negate ? "uncleared" : "cleared");
+              if (negate) {
+                notify(player, T("MAIL: All messages in all folders uncleared."));
+              } else {
+                notify(player, T("MAIL: All messages in all folders cleared."));
+              }
               notified++;
             }
           } else {
@@ -1406,6 +1414,7 @@ do_mail_stats(dbref player, char *name, enum mail_stats_type full)
                     ("MAIL: There are %d new msgs in the mail spool, totalling %d characters."),
                     fu, tchars);
       notify_format(player,
+                    T
                     ("MAIL: There are %d cleared msgs in the mail spool, totalling %d characters."),
                     fc, cchars);
       return;

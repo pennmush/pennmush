@@ -521,7 +521,7 @@ main(int argc, char **argv)
     /* Need to include library: wsock32.lib for Windows Sockets */
     err = WSAStartup(wVersionRequested, &wsadata);
     if (err) {
-      printf(T("Error %i on WSAStartup\n"), err);
+      printf("Error %i on WSAStartup\n", err);
       exit(1);
     }
   }
@@ -3307,8 +3307,8 @@ do_who_admin(dbref player, char *name)
     notify_noenter(player, pbuff);
   }
 
-  notify_format(player, "%-16s %6s %9s %5s %5s Des  Host", T("Player Name"),
-                T("Loc #"), T("On For"), T("Idle"), T("Cmds"));
+  notify_format(player, "%-16s %6s %9s %5s %5s %4s %4s", T("Player Name"),
+                T("Loc #"), T("On For"), T("Idle"), T("Cmds"), T("Des"), T("Host"));
   for (d = descriptor_list; d; d = d->next) {
     if (d->connected)
       count++;
@@ -4338,7 +4338,7 @@ FUNCTION(fun_zwho)
   }
   if ((getlock(zone, Zone_Lock) == TRUE_BOOLEXP) ||
       (IsPlayer(zone) && !(has_flag_by_name(zone, "SHARED", TYPE_PLAYER)))) {
-    safe_str(T("#-1 INVALID ZONE."), buff, bp);
+    safe_str(T("#-1 INVALID ZONE"), buff, bp);
     return;
   }
 
@@ -5164,13 +5164,13 @@ do_reboot(dbref player, int flag)
     flag_broadcast(0, 0,
                    T
                    ("GAME: Reboot w/o disconnect from game account, please wait."));
-    do_rawlog(LT_WIZ, T("Reboot w/o disconnect triggered by signal."));
+    do_rawlog(LT_WIZ, "Reboot w/o disconnect triggered by signal.");
   } else {
     flag_broadcast(0, 0,
                    T
                    ("GAME: Reboot w/o disconnect by %s, please wait."),
                    Name(Owner(player)));
-    do_rawlog(LT_WIZ, T("Reboot w/o disconnect triggered by %s(#%d)."),
+    do_rawlog(LT_WIZ, "Reboot w/o disconnect triggered by %s(#%d).",
 	      Name(player), player);
   }
   if (flag) {

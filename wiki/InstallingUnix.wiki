@@ -56,7 +56,7 @@ This is a brief overview of how to install PennMUSH on Unix, or in Unix-like env
 {{{
  CPPFLAGS=-I/path/to/extra/headers
  LDFLAGS=-L/path/to/extra/libraries
- CFLAGS=-Optimation and -Warning options.
+ CFLAGS=-Optimization and -Warning options.
 
  VAR=arg ... ./configure
 }}}

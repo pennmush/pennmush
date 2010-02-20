@@ -3307,7 +3307,7 @@ do_who_admin(dbref player, char *name)
     notify_noenter(player, pbuff);
   }
 
-  notify_format(player, "%-16s %6s %9s %5s %5s %4s %4s", T("Player Name"),
+  notify_format(player, "%-16s %6s %9s %5s %5s %-4s %-s", T("Player Name"),
                 T("Loc #"), T("On For"), T("Idle"), T("Cmds"), T("Des"), T("Host"));
   for (d = descriptor_list; d; d = d->next) {
     if (d->connected)

@@ -1,5 +1,6 @@
 #summary Installing PennMUSH on Unix and Unix-like environments
 =Installing PennMUSH on Unix=
+This page contains instructions for installing a new copy of PennMUSH in Unix (or under Cygwin/Mingw on Windows). If you're [Upgrading upgrading an existing installation], or [InstallingWindows compiling with MSVC++/MS VS.NET on Windows], see the relevant pages for more info.
 
 ==Requirements==
 
@@ -13,7 +14,18 @@ Although they aren't required, the following components are also recommended:
   * The PCRE Regular Expression library. (Penn comes with an older version, but a global library will be more likely to be up to date.)
   * OpenSSL is strongly suggested; most OSes these days come with it out of the box, but some might require a development package as well (openssl-dev or some such name)
 
-
+When installing using [http://www.cygwin.com Cygwin] on Windows, you'll need the following packages (and their dependancies), as well as the default packages included in Cygwin:
+  * binutils
+  * gcc
+  * gcc-core
+  * make
+  * openssl
+  * openssl-devel
+  * perl
+  * bash
+  * gnupg
+  * patch
+  * gettext-devel (if running a translated copy)
 ==Overview==
 
 This is a brief overview of how to install PennMUSH on Unix, or in Unix-like environments (like [http://www.cygwin.com Cygwin] or Mingw on Windows). More detailed instructions are below.

@@ -1328,7 +1328,7 @@ channel_join_self(dbref player, const char *name)
   switch (find_channel_partial_off(name, &chan, player)) {
   case CMATCH_NONE:
     if (find_channel_partial_on(name, &chan, player))
-      notify_format(player, T("CHAT: You are already on channel <%s>"),
+      notify_format(player, T("CHAT: You are already on channel <%s>."),
                     ChanName(chan));
     else
       notify(player, T("CHAT: I don't recognize that channel."));
@@ -3326,10 +3326,10 @@ FUNCTION(fun_crecall)
       char *nsmsg = ns_esnotify(speaker, na_one, &executor,
                                 Paranoid(executor) ? 1 : 0);
       if (!showstamp)
-        safe_format(buff, bp, T("%s %s"), nsmsg, buf);
+        safe_format(buff, bp, "%s %s", nsmsg, buf);
       else {
         stamp = show_time(timestamp, 0);
-        safe_format(buff, bp, T("[%s] %s %s"), stamp, nsmsg, buf);
+        safe_format(buff, bp, "[%s] %s %s", stamp, nsmsg, buf);
       }
       mush_free(nsmsg, "string");
     } else {
@@ -3337,7 +3337,7 @@ FUNCTION(fun_crecall)
         safe_str(buf, buff, bp);
       else {
         stamp = show_time(timestamp, 0);
-        safe_format(buff, bp, T("[%s] %s"), stamp, buf);
+        safe_format(buff, bp, "[%s] %s", stamp, buf);
       }
     }
     num_lines--;
@@ -3816,10 +3816,10 @@ do_chan_recall(dbref player, const char *name, char *lineinfo[], int quiet)
       char *nsmsg = ns_esnotify(speaker, na_one, &player,
                                 Paranoid(player) ? 1 : 0);
       if (quiet)
-        notify_format(player, T("%s %s"), nsmsg, buf);
+        notify_format(player, "%s %s", nsmsg, buf);
       else {
         stamp = show_time(timestamp, 0);
-        notify_format(player, T("[%s] %s %s"), stamp, nsmsg, buf);
+        notify_format(player, "[%s] %s %s", stamp, nsmsg, buf);
       }
       mush_free(nsmsg, "string");
     } else {
@@ -3827,7 +3827,7 @@ do_chan_recall(dbref player, const char *name, char *lineinfo[], int quiet)
         notify(player, buf);
       else {
         stamp = show_time(timestamp, 0);
-        notify_format(player, T("[%s] %s"), stamp, buf);
+        notify_format(player, "[%s] %s", stamp, buf);
       }
     }
     num_lines--;

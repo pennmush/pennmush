@@ -2649,7 +2649,7 @@ MATH_FUNC(math_dist2d)
   NVAL d1, d2, r;
 
   if (nptr != 4) {
-    safe_str(T("#-1 FUNCTION (dist2d) EXPECTS 4 ARGUMENTS"), buff, bp);
+    safe_str(T("#-1 FUNCTION (DIST2D) EXPECTS 4 ARGUMENTS"), buff, bp);
     return;
   }
 
@@ -2676,7 +2676,7 @@ MATH_FUNC(math_dist3d)
   NVAL d1, d2, d3, r;
 
   if (nptr != 6) {
-    safe_str(T("#-1 FUNCTION (dist3d) expects 6 arguments"), buff, bp);
+    safe_str(T("#-1 FUNCTION (DIST3D) EXPECTS 6 ARGUMENTS"), buff, bp);
     return;
   }
 

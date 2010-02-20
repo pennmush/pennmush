@@ -3,7 +3,7 @@
   * [Downloads]
   * Installing:
     * [InstallingUnix Installing on Unix]
-      * [InstallingUpgrading Upgrading PennMUSH]
+      * [Upgrading Upgrading PennMUSH]
     * [InstallingWindows Installing on Windows]
     * [InstallingSql Installing with SQL Support]
   * Setting up the MUSH

@@ -179,7 +179,7 @@ COMMAND(cmd_config)
       }
       if (!config_set(arg_left, arg_right, source, 0)
           && !config_set(arg_left, arg_right, source, 1))
-        notify(player, T("Couldn't set that option"));
+        notify(player, T("Couldn't set that option."));
       else {
         if (source == 2) {
 #ifdef HAVE_ED

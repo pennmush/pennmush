@@ -450,7 +450,7 @@ do_chzone(dbref player, char const *name, char const *newobj, int noisy)
       if (Hasprivs(thing))
         notify(player, T("Warning: @chzoning a privileged player."));
       if (Inherit(thing))
-        notify(player, T("Warning: @chzoning an TRUST player."));
+        notify(player, T("Warning: @chzoning a TRUST player."));
     }
   }
   if (noisy)

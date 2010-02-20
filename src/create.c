@@ -101,7 +101,7 @@ do_real_open(dbref player, const char *direction, const char *linkto,
     return NOTHING;
   }
   if ((loc == NOTHING) || (!IsRoom(loc))) {
-    notify(player, T("Sorry you can only make exits out of rooms."));
+    notify(player, T("Sorry, you can only make exits out of rooms."));
     return NOTHING;
   }
   if (Going(loc)) {
@@ -621,7 +621,7 @@ do_clone(dbref player, char *name, char *newname, int preserve)
   }
   if (preserve && !Wizard(player)) {
     notify(player,
-           T("You cannot @CLONE/PRESERVE.  Use normal @CLONE instead."));
+           T("You cannot @CLONE/PRESERVE. Use normal @CLONE instead."));
     return NOTHING;
   }
   /* make sure owner can afford it */

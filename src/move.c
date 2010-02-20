@@ -678,7 +678,7 @@ do_drop(dbref player, const char *name)
       notify(player, T("You can't drop that."));
       return;
     } else if (IsExit(thing)) {
-      notify(player, T("Sorry you can't drop exits."));
+      notify(player, T("Sorry, you can't drop exits."));
       return;
     } else if (!eval_lock(player, thing, Drop_Lock)) {
       notify(player, T("You can't seem to get rid of that."));
@@ -1002,7 +1002,7 @@ do_follow(dbref player, const char *arg)
     /* Ok, are we allowed to follow them? */
     if (!eval_lock(player, leader, Follow_Lock)) {
       fail_lock(player, leader, Follow_Lock,
-                T("You're not alllowed to follow."), Location(player));
+                T("You're not allowed to follow."), Location(player));
       return;
     }
     /* Ok, looks good */

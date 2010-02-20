@@ -111,7 +111,7 @@ how_many_fds(void)
   /* Need to init Windows Sockets to get socket data */
   err = WSAStartup(wVersionRequested, &wsadata);
   if (err) {
-    printf(T("Error %i on WSAStartup\n"), err);
+    printf("Error %i on WSAStartup\n", err);
     exit(1);
   }
   iMaxSocketsAllowed = options.max_logins ? (2 * options.max_logins) : 120;

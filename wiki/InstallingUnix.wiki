@@ -1,0 +1,65 @@
+#summary Installing PennMUSH on Unix and Unix-like environments
+=Installing PennMUSH on Unix=
+
+==Requirements==
+
+To install PennMUSH, you'll need:
+
+  * A C compiler
+  * Perl
+  * The minimum development packages required to compile programs (Linux distributions that don't come with gcc in the base install often need a package named glibc-dev)
+
+Although they aren't required, the following components are also recommended:
+  * The PCRE Regular Expression library. (Penn comes with an older version, but a global library will be more likely to be up to date.)
+  * OpenSSL is strongly suggested; most OSes these days come with it out of the box, but some might require a development package as well (openssl-dev or some such name)
+
+
+==Overview==
+
+This is a brief overview of how to install PennMUSH on Unix, or in Unix-like environments (like [http://www.cygwin.com Cygwin] or Mingw on Windows). More detailed instructions are below.
+
+  # [Downloads Download PennMUSH], extract the archive, and cd to the new PennMUSH directory
+  # Run `./configure` or some variant
+    * Under Cygwin, use `./configure --disable-info_slave`
+  # Run `make update`, to build options.h and copy the .cnf option files
+  # Run `make install`
+  # [SetupOptions Set the MUSH options in mush.cnf]
+  # Edit the `GAMEDIR` line in the restart script, if necessary
+
+
+==Detailed Instructions==
+
+  # [Downloads Download PennMUSH]
+  # Extract the archive, and cd to the new directory. For example:
+{{{
+ tar xfz pennmush-1.8.3p13.tar.gz
+ cd pennmush-1.8.3p13
+}}}
+  # Run `./configure`. Some of the most useful/common arguments for configure are:
+    * `--disable-sql`: Don't compile with [InstallSql SQL support].
+    * `--disable-nsl`: Turn of translation if you don't need it.
+    * `--disable-info_slave`: Don't use an external process to do hostname lookups. This option is required on Windows.
+    * `--help`: See all options.
+    Environment variables to customize search paths:
+{{{
+ CPPFLAGS=-I/path/to/extra/headers
+ LDFLAGS=-L/path/to/extra/libraries
+ CFLAGS=-Optimation and -Warning options.
+
+ VAR=arg ... ./configure
+}}}
+    See hints/your-os.txt and hints/your-processor if present for more details and system-specific help, and [InstallingSql Installing with SQL Support] for help with detecting an SQL server.
+  # Run `make update`. 
+    * If `make update` doesn't work on your system, you can manually copy options.h.dist to options.h, and alter these options as needed. Also, copy all the game/*cnf.dst files to game/*.cnf
+  # Do a `make install`. This will build all the necessary files, and set up some symbolic links for the restart script.  You will probably receive a few compilation warnings, which can generally be ignored.
+  # [SetupOptions Set the MUSH options in mush.cnf]
+
+You should then be able to restart the game, with
+{{{
+ cd game
+ ./restart
+}}}
+If you get an error that GAMEDIR doesn't seem to be a valid directory, edit the game/restart script, placing the path to your game directory on the GAMEDIR line, for example
+{{{
+ GAMEDIR=/home/usr/pennmush-1.8.3p13/game
+}}}

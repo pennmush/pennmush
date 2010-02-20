@@ -1,0 +1,12 @@
+#summary Contents / wiki-outline
+
+  * [Downloads]
+  * Installing:
+    * [InstallingUnix Installing on Unix]
+      * [InstallingUpgrading Upgrading PennMUSH]
+    * [InstallingWindows Installing on Windows]
+    * [InstallingSql Installing with SQL Support]
+  * Setting up the MUSH
+    * [SetupOptions mush.cnf options]
+    * [SetupHelpfiles Help and News Files]
+  * More...

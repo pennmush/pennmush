@@ -10,3 +10,6 @@
     * [SetupOptions mush.cnf options]
     * [SetupHelpfiles Help and News Files]
   * More...
+
+
+[http://code.google.com/p/pennmush/w/list List of all Wiki pages]

@@ -225,7 +225,7 @@ FUNCTION(fun_letq)
   const char *p;
 
   if ((nargs % 2) != 1) {
-    safe_str(T("#-1 FUNCTION (letq) EXPECTS AN ODD NUMBER OF ARGUMENTS"),
+    safe_str(T("#-1 FUNCTION (LETQ) EXPECTS AN ODD NUMBER OF ARGUMENTS"),
              buff, bp);
     return;
   }

@@ -36,7 +36,7 @@ lag the mush for everyone!
 
 II. Compiling with/without SQL
 
-In general, Configure attempts to detect all supported sql client
+In general, configure attempts to detect all supported sql client
 libraries on the host, and will link with all of them, permitting you
 to select which platform you want at runtime. You can selectively
 prevent linking with client libraries that are present on your system,

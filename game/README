@@ -8,7 +8,8 @@ directory is a file called "mush.cnf". If you don't have mush.cnf, but
 you have mushcnf.dst, you can copy mushcnf.dst to mush.cnf.  This file
 is a list of all runtime configuration options with their default
 settting. Change them as you see fit.  IMPORTANT: do not _delete_ any
-parameters. They all need to be there.
+parameters. If you do, the defaults will still be used. Some options can
+be set to empty values to effectively clear them, though.
 
 WIN32 WITH MSVC++:
   Under win32 using the Microsoft compiler, ignore the restart script.
@@ -17,21 +18,21 @@ WIN32 WITH MSVC++:
   Poof, you're done.
 
 UNIX or WIN32 VIA CYGWIN/MINGW:
-  Edit the restart script. Change GAMEDIR to the path to the directory
-  containing mush.cnf. Read about the optional settings in that file.
-  The restart script is written for sh, and assumes a fairly standard
-  Berkeley UNIX setup. If you're on a HP-UX or SysV machine, for
-  example, you may need to change the restart script a bit. Then run
+  You may need to edit the restart script to change GAMEDIR to the path to 
+  the directory containing mush.cnf. Read about the optional settings in 
+  that file. The restart script is written for sh, and assumes a fairly 
+  standard Berkeley UNIX setup. If you're on a HP-UX or SysV machine, 
+  for example, you may need to change the restart script a bit. Then run
   it, with 'sh restart' or './restart'.
 
 You should now be able to log into the game.  This distribution can
-general a minimal database - a God character, starting room, and
+generate a minimal database - a God character, starting room, and
 master room.  The server will generate this database if it doesn't
 find another database to load.
 
 If you're starting with the minimal database, the god character "One"
 has no password, so you can log in without one. Of course, you should
-immediately set one (via @newpasswd).  options.h has the Master Room
+immediately set one (via @newpasswd).  mush.cnf has the Master Room
 as #2 by default; in the minimal database, this room is created for
 you.
 
@@ -54,7 +55,7 @@ present - this verifies that the server is successfully dumping.
 
 If you ever run into trouble, the your first reaction should ALWAYS be
 to back up your database. indb.Z.old is the file that the MUSH saves
-indb.Z to when the game, restarted, indb.Z is the file that the MUSH
+indb.Z to when the game is restarted, indb.Z is the file that the MUSH
 loaded at startup, and outdb.Z is the file to which the MUSH is
 currently dumping the database.
 
@@ -87,9 +88,9 @@ less out of luck.
 The game may crash from time to time. It will generate a core file,
 usually; if you don't limit the coredumpsize or strip the executable,
 you should be able to get some useful information out of it, using a
-debugger. Javelin is interested in stack traces. You can do a stack
-trace in the following manner: Go into the directory where you keep
-your source code, and type
+debugger. The developers are interested in stack traces. You can do a
+stack trace in the following manner: Go into the directory where you
+keep your source code, and type
 	<name of debugger> netmud ../game/core
 If you don't call your executable "netmud", substitute in whatever you
 do call it.
@@ -125,7 +126,7 @@ patches that have been written to deal with them. We are also
 interested in any extensions that people make to the code, and
 requests that ones that are of more than just local interest be sent
 to us for inclusion in the next release of this code. See
-http://dev.pennmush.org.
+http://code.google.com/p/pennmush/.
 
 One important thing to remember is, if the MUSH refuses to start,
 there is probably a good reason. Check the MUSH log, and the core

@@ -1147,11 +1147,6 @@ msgstr "CHAT: Le canal doit avoir un nom plus 'unique'."
 msgid "CHAT: Wipe that silly grin off your face instead."
 msgstr "CHAT: hmm pas possible :)"
 
-#: extchat.c:952
-#, c-format
-msgid "CHAT: You are already on channel <%s>"
-msgstr "CHAT: Vous \352tes d\351ja membre du canal <%s>"
-
 #: src/extchat.c:757
 #, c-format
 msgid "CHAT: You can't do that with channel <%s>."
@@ -1268,10 +1263,6 @@ msgstr "Contenu:"
 msgid "Couldn't find that player."
 msgstr "Impossible de trouver ce joueur."
 
-#: src/cmds.c:193
-msgid "Couldn't set that option"
-msgstr "Impossible de configurer cette option"
-
 #: src/create.c:431
 msgid "Create what?"
 msgstr "Cr\351er quoi?"
@@ -1385,11 +1376,6 @@ msgstr "\"L'enregistrement par e-mail est activée\""
 #: wiz.c:1013
 msgid "Enabled."
 msgstr "Activ\351."
-
-#: src/bsd.c:497
-#, c-format
-msgid "Error %i on WSAStartup\n"
-msgstr "Erreur %i lors du WSAStartup\n"
 
 #: src/game.c:1465
 msgid "Error -- cannot execute uptime."
@@ -2066,11 +2052,6 @@ msgstr "MAIL: Tous les alias de courrier sont d\351truits!"
 #, c-format
 msgid "MAIL: All messages filed in folder %d [%s]"
 msgstr "COURRIER: Tous les messages sont listes dans le dossier %d [%s]"
-
-#: src/extmail.c:357 src/extmail.c:370
-#, c-format
-msgid "MAIL: All messages in all folders %s."
-msgstr "COURRIER: Tous les messages dans tous les dossiers %s."
 
 #: src/malias.c:485
 #, c-format
@@ -2812,14 +2793,6 @@ msgstr "Options d'acc\350s au site %s regl\351es pour %s"
 msgid "Site %s locked"
 msgstr "Site %s banni"
 
-#: src/create.c:102
-msgid "Sorry you can only make exits out of rooms."
-msgstr "D\351sol\351, mais vous ne pouvez cr\351er des sorties qu'en dehors des salles."
-
-#: src/move.c:579
-msgid "Sorry you can't drop exits."
-msgstr "D\351sol\351, vous ne pouvez pas l\342cher des sorties."
-
 #: src/destroy.c:266
 msgid "Sorry, no suicide allowed."
 msgstr "D\351sol\351, le suicide est interdit."
@@ -2962,10 +2935,6 @@ msgstr "Cet objet n'est pas valide."
 #: src/destroy.c:232
 msgid "That is too special to be destroyed."
 msgstr "Ceci est trop special pour \352tre d\351truit."
-
-#: conf.c:958
-msgid "That isn't a on/off option."
-msgstr "Ce n'est pas une option de type on/off"
 
 #: src/extchat.c:1181
 msgid "That name is too long."
@@ -3402,10 +3371,6 @@ msgstr "Attention: @chzoning d'un joueur privil\351gi\351."
 msgid "Warning: @chzoning admin-owned object!"
 msgstr "Attention: @chzoning admin-owned object!"
 
-#: set.c:434
-msgid "Warning: @chzoning an TRUST player."
-msgstr "Attention: @chzone sur un joueur TRUST."
-
 #: flags.c:1049
 msgid "Warning: Setting trust flag on zoned object"
 msgstr "\"Attention: Configuration du flag TRUST sur un objet zoné.\""
@@ -3816,10 +3781,6 @@ msgstr "Vous ne pouvez pas @unlink cela!"
 #: src/set.c:214
 msgid "You cannot @CHOWN/PRESERVE. Use normal @CHOWN."
 msgstr "Vous ne pouvez pas utiliser @CHOWN/PRESERVE. Utilisez la commande @CHOWN normale."
-
-#: src/create.c:500
-msgid "You cannot @CLONE/PRESERVE.  Use normal @CLONE instead."
-msgstr "Vous ne pouvez pas utiliser @CLONE/PRESERVE. Utilisez la commande @CLONE normale a la place."
 
 #: function.c:869
 msgid "You cannot change that built-in function."
@@ -4276,10 +4237,6 @@ msgstr "Vous \352tes dans le vide - On vous renvoie \340 la maison."
 #: src/wiz.c:487
 msgid "You're in too many containers."
 msgstr "Vous êtes dans trop de conteneurs."
-
-#: move.c:981
-msgid "You're not alllowed to follow."
-msgstr "Vous n'êtes pas autorisé à suivre."
 
 #: move.c:845
 #, c-format

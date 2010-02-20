@@ -1047,11 +1047,6 @@ msgstr "CHAT: El canal necesita un nombre más individual."
 msgid "CHAT: Wipe that silly grin off your face instead."
 msgstr "CHAT: Mejor borra esa estúpida sonrisa de tu rostro."
 
-#: extchat.c:952
-#, c-format
-msgid "CHAT: You are already on channel <%s>"
-msgstr "CHAT: Ya estás en el canal <%s>"
-
 #: src/extchat.c:757
 #, c-format
 msgid "CHAT: You can't do that with channel <%s>."
@@ -1159,10 +1154,6 @@ msgstr "Contenidos:"
 msgid "Couldn't find that player."
 msgstr "No se pudo encontrar ese jugador."
 
-#: src/cmds.c:193
-msgid "Couldn't set that option"
-msgstr "No se pudo establecer esa opción"
-
 #: src/create.c:431
 msgid "Create what?"
 msgstr "Crear qué?"
@@ -1268,11 +1259,6 @@ msgstr "Ya hay un jugador con ese nombre, o el nombre es ilegal."
 #: wiz.c:1013
 msgid "Enabled."
 msgstr "Habilitado."
-
-#: src/bsd.c:497
-#, c-format
-msgid "Error %i on WSAStartup\n"
-msgstr "Error %i en WASAtartup\n"
 
 #: src/game.c:1465
 msgid "Error -- cannot execute uptime."
@@ -1906,11 +1892,6 @@ msgstr "CORREO: Todos los alias de coreo fueron destruidos!"
 #, c-format
 msgid "MAIL: All messages filed in folder %d [%s]"
 msgstr "CORREO: Todos los mensajes fueron guardados en la carpeta %d [%s]"
-
-#: src/extmail.c:357 src/extmail.c:370
-#, c-format
-msgid "MAIL: All messages in all folders %s."
-msgstr "CORREO: Todos los mensajes en todas las carpetas %s."
 
 #: src/malias.c:485
 #, c-format
@@ -2561,14 +2542,6 @@ msgstr "El separador debe tener un carácter al menos."
 msgid "Set"
 msgstr "Establecido"
 
-#: src/create.c:102
-msgid "Sorry you can only make exits out of rooms."
-msgstr "Lo siento, solo puedes hacer salidas en habitaciones."
-
-#: src/move.c:579
-msgid "Sorry you can't drop exits."
-msgstr "Lo siento, no puedes tirar salidas."
-
 #: src/destroy.c:266
 msgid "Sorry, no suicide allowed."
 msgstr "Lo siento, no se permite el suicidio."
@@ -2694,10 +2667,6 @@ msgstr "Ese no es un objeto válido."
 #: src/destroy.c:232
 msgid "That is too special to be destroyed."
 msgstr "Eso es demasiado especial para ser destruido."
-
-#: conf.c:958
-msgid "That isn't a on/off option."
-msgstr "Eso no es una función on/off."
 
 #: src/extchat.c:1181
 msgid "That name is too long."
@@ -3039,10 +3008,6 @@ msgstr "Aviso '%s' para %s:"
 #: src/warnings.c:417
 msgid "Warning checks complete."
 msgstr "Finalizado el chequeo"
-
-#: set.c:434
-msgid "Warning: @chzoning an TRUST player."
-msgstr "Aviso: @chzoning un jugador de confianza"
 
 #: src/extchat.c:1116
 msgid "Warning: channel will be created disabled."

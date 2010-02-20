@@ -319,18 +319,6 @@ msgstr "#-1 FUNKCJA (SOUNDEX) WYMAGA ARGUMENTU W POSTACI POJEDYNCZEGO S£OWA"
 msgid "#-1 FUNCTION (SOUNDLIKE) REQUIRES TWO ONE-WORD ARGUMENTS"
 msgstr "#-1 FUNKCJA (SOUNDLIKE) WYMAGA DWÓCH ARGUMENTÓW SK£ADAJ¡CYCH SIÊ Z JEDNEGO S£OWA"
 
-#: funmath.c:2423
-msgid "#-1 FUNCTION (dist2d) EXPECTS 4 ARGUMENTS"
-msgstr "#-1 FUNKCJA (dist2d) WYMAGA 4 ARGUMENTÓW"
-
-#: funmath.c:2450
-msgid "#-1 FUNCTION (dist3d) expects 6 arguments"
-msgstr "#-1 FUNCKJA (dist3d) wymaga 6 argumentów"
-
-#: funmisc.c:222
-msgid "#-1 FUNCTION (letq) EXPECTS AN ODD NUMBER OF ARGUMENTS"
-msgstr "#-1 FUNKCJA (letq) WYMAGA NIEPARZYSTEJ LICZBY ARGUMENTÓW."
-
 #: src/fundb.c:959 src/fundb.c:1120 src/fundb.c:1145 src/fundb.c:1254\nsrc/fundb.c:1549 src/fundb.c:1555 src/fundb.c:1561 src/fundb.c:1567\nsrc/fundb.c:1573 src/fundb.c:1579 src/fundb.c:1585 src/fundb.c:1591\nsrc/fundb.c:1864 src/funstr.c:901
 msgid "#-1 FUNCTION DISABLED"
 msgstr "#-1 FUNKCJA WY£¡CZONA"
@@ -423,10 +411,6 @@ msgstr "#-1 NIEPRAWID£OWY £AÑCUCH CZASOWY"
 #: src/funufun.c:293
 msgid "#-1 INVALID ZONE"
 msgstr "#-1 NIEPRAWID£OWA STREFA"
-
-#: bsd.c:4310
-msgid "#-1 INVALID ZONE."
-msgstr "#-1 NIEPRAWID£OWA STREFA."
 
 #: src/funlist.c:194 src/funlist.c:2088
 msgid "#-1 LISTS MUST BE OF EQUAL SIZE"
@@ -704,11 +688,6 @@ msgstr "%s %s wy³±czone."
 #, c-format
 msgid "%s %s enabled."
 msgstr "%s %s w³±czone."
-
-#: extchat.c:3126 extchat.c:3387
-#, c-format
-msgid "%s %s"
-msgstr "%s %s"
 
 #: src/look.c:969
 #, c-format
@@ -1741,11 +1720,6 @@ msgstr "CZAT: Aby przywo³aæ ca³y bufor, u¿yj @chan/recall %s=0"
 msgid "CHAT: Wipe that silly grin off your face instead."
 msgstr "CZAT: Wyczy¶æ zamiast tego ten g³upawy u¶mieszek ze swojej twarzy."
 
-#: extchat.c:952
-#, c-format
-msgid "CHAT: You are already on channel <%s>"
-msgstr "CZAT: Jeste¶ ju¿ na kanale <%s>"
-
 #: src/extchat.c:757
 #, c-format
 msgid "CHAT: You can't do that with channel <%s>."
@@ -1912,10 +1886,6 @@ msgstr "Nie mogê znale¼æ tego deskryptora."
 msgid "Couldn't find that player."
 msgstr "Nie mogê znale¼æ tego gracza."
 
-#: src/cmds.c:193
-msgid "Couldn't set that option"
-msgstr "Nie mo¿esz ustawiæ tej opcji."
-
 #: src/create.c:431
 msgid "Create what?"
 msgstr "Utworzyæ co?"
@@ -2064,11 +2034,6 @@ msgstr "Rejestracja mailowa jest w³±czona"
 #: wiz.c:1013
 msgid "Enabled."
 msgstr "W³±czony."
-
-#: src/bsd.c:497
-#, c-format
-msgid "Error %i on WSAStartup\n"
-msgstr "B³±d %i w WSAStartup\n"
 
 #: src/game.c:1465
 msgid "Error -- cannot execute uptime."
@@ -2934,11 +2899,6 @@ msgstr "POCZTA: Wszystkie aliasy pocztowe zosta³y zniszczone!"
 #, c-format
 msgid "MAIL: All messages filed in folder %d [%s]"
 msgstr "POCZTA: Wszystkie wiadomo¶ci w folderze %d [%s]"
-
-#: src/extmail.c:357 src/extmail.c:370
-#, c-format
-msgid "MAIL: All messages in all folders %s."
-msgstr "POCZTA: Wszystkie wiadomo¶ci we wszystkich folderach %s."
 
 #: src/malias.c:485
 #, c-format
@@ -3918,14 +3878,6 @@ msgstr "Punkt %s zbanowany"
 msgid "Site %s locked"
 msgstr "Punkt %s zablokowana"
 
-#: src/create.c:102
-msgid "Sorry you can only make exits out of rooms."
-msgstr "Przykro mi, mo¿esz robiæ wyj¶cia tylko poza pokoje."
-
-#: src/move.c:579
-msgid "Sorry you can't drop exits."
-msgstr "Przykro mi, nie mo¿esz upuszczaæ wyj¶æ."
-
 #: src/destroy.c:266
 msgid "Sorry, no suicide allowed."
 msgstr "Przykro mi, nie zgadzamy siê na samobójstwo."
@@ -4117,10 +4069,6 @@ msgstr "To nie jest prawid³owy ³añcuch czasu."
 #: src/destroy.c:232
 msgid "That is too special to be destroyed."
 msgstr "To jest zbyt specjalne aby by³o zniszczone."
-
-#: conf.c:958
-msgid "That isn't a on/off option."
-msgstr "To nie jest opcja typu on/off."
 
 #: flags.c:2253
 #, c-format
@@ -4708,10 +4656,6 @@ msgstr "Ostrze¿enie: @zmiana strefy na uprzywilejowanym graczu."
 msgid "Warning: @chzoning admin-owned object!"
 msgstr "Ostrze¿enie: @zmiana strefy na obiekcie zarz±dzanym przez stra¿nika!"
 
-#: set.c:434
-msgid "Warning: @chzoning an TRUST player."
-msgstr "Ostrze¿enie: @zmiana strefy na ZAUFANYM graczu."
-
 #: flags.c:1049
 msgid "Warning: Setting trust flag on zoned object"
 msgstr "Ostrze¿enie: Ustawiania flagi zaufania na obiekcie strefy."
@@ -5178,10 +5122,6 @@ msgstr "Nie mo¿esz tego od³±czyæ!"
 #: src/set.c:214
 msgid "You cannot @CHOWN/PRESERVE. Use normal @CHOWN."
 msgstr "Nie mo¿esz wykonaæ @CHOWN/PRESERVE. U¿yj normalnego @CHOWN"
-
-#: src/create.c:500
-msgid "You cannot @CLONE/PRESERVE.  Use normal @CLONE instead."
-msgstr "Nie mo¿esz wykonaæ @CLONE/PRESERVE. U¿yj zamiast tego zwyk³ego @CLONE."
 
 #: cque.c:985
 msgid "You cannot adjust the timeout of an indefinite semaphore."
@@ -5717,10 +5657,6 @@ msgstr "Jeste¶ w pustce - wysy³am ciebie do domu."
 msgid "You're in too many containers."
 msgstr "Jeste¶ w zbyt wielu pojemnikach."
 
-#: move.c:981
-msgid "You're not alllowed to follow."
-msgstr "Nie masz pozwolenia aby pod±¿aæ."
-
 #: move.c:845
 #, c-format
 msgid "You're not following %s."
@@ -5815,16 +5751,6 @@ msgstr "Strefa zmieniona."
 #, c-format
 msgid "[%d:%02d] %s message sent to %s."
 msgstr "[%d:%02d] %s wiadomo¶æ wys³ana do %s."
-
-#: extchat.c:3129 extchat.c:3390
-#, c-format
-msgid "[%s] %s %s"
-msgstr "[%s] %s %s"
-
-#: extchat.c:3137 extchat.c:3398
-#, c-format
-msgid "[%s] %s"
-msgstr "[%s] %s"
 
 #: src/bsd.c:4683
 msgid ""

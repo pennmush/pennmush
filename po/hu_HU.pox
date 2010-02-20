@@ -1221,11 +1221,6 @@ msgstr "CSATI: A csatorna egyedibb nevet igényel."
 msgid "CHAT: Wipe that silly grin off your face instead."
 msgstr "CSATI: Inkább a hülye vigyort töröld az arcodról."
 
-#: extchat.c:952
-#, c-format
-msgid "CHAT: You are already on channel <%s>"
-msgstr "CSATI: Már rajta vagy a <%s> csatornán"
-
 #: src/extchat.c:757
 #, c-format
 msgid "CHAT: You can't do that with channel <%s>."
@@ -1345,10 +1340,6 @@ msgstr "Tartalma:"
 #: src/wiz.c:1635 src/wiz.c:1929
 msgid "Couldn't find that player."
 msgstr "Nem találom ezt a játékost."
-
-#: src/cmds.c:193
-msgid "Couldn't set that option"
-msgstr "Ez az opció nem beállítható"
 
 #: src/create.c:431
 msgid "Create what?"
@@ -1476,11 +1467,6 @@ msgstr "Email regisztráció engedélyezve"
 #: wiz.c:1013
 msgid "Enabled."
 msgstr "Engedélyezve."
-
-#: src/bsd.c:497
-#, c-format
-msgid "Error %i on WSAStartup\n"
-msgstr "%i hiba a WSAStartup-ban\n"
 
 #: src/game.c:1465
 msgid "Error -- cannot execute uptime."
@@ -2181,11 +2167,6 @@ msgstr "POSTA: Minden posta-alias törölve!"
 #, c-format
 msgid "MAIL: All messages filed in folder %d [%s]"
 msgstr "POSTA: Minden üzenet rögzítve a %d [%s] mappában"
-
-#: src/extmail.c:357 src/extmail.c:370
-#, c-format
-msgid "MAIL: All messages in all folders %s."
-msgstr "POSTA: Minden üzenet, minden mappában %s."
 
 #: src/malias.c:485
 #, c-format
@@ -2948,14 +2929,6 @@ msgstr "A %s site elérési opcióinak új értéke %s"
 msgid "Site %s locked"
 msgstr "a %s site letiltva."
 
-#: src/create.c:102
-msgid "Sorry you can only make exits out of rooms."
-msgstr "Bocs, kijáratot csak szobában tudsz csinálni."
-
-#: src/move.c:579
-msgid "Sorry you can't drop exits."
-msgstr "Bocs, nem dobhatsz el kijáratokat."
-
 #: src/destroy.c:266
 msgid "Sorry, no suicide allowed."
 msgstr "Bocs, az öngyilkosság nem megengedett."
@@ -3098,10 +3071,6 @@ msgstr "Ez nem egy érvényes objektum."
 #: src/destroy.c:232
 msgid "That is too special to be destroyed."
 msgstr "Ez az objektum túl speciális a megsemmisítéshez."
-
-#: conf.c:958
-msgid "That isn't a on/off option."
-msgstr "Ez nem egy on/off kapcsoló."
 
 #: src/extchat.c:1181
 msgid "That name is too long."
@@ -3550,10 +3519,6 @@ msgstr "Figyelem: Privilegizált játékos @chzone-olása."
 msgid "Warning: @chzoning admin-owned object!"
 msgstr "Figyelem: admin-tulajdonosú objektum @chown-olása!"
 
-#: set.c:434
-msgid "Warning: @chzoning an TRUST player."
-msgstr "Figyelem: TRUST játékos @chzone-olása."
-
 #: flags.c:1049
 msgid "Warning: Setting trust flag on zoned object"
 msgstr "Vigyázat: Zónában levõ objektumon bizalmi jelzõ beállítása"
@@ -3956,10 +3921,6 @@ msgstr "A kötést nem szüntetheted meg!"
 #: src/set.c:214
 msgid "You cannot @CHOWN/PRESERVE. Use normal @CHOWN."
 msgstr "A @CHOWN/PRESERVE nem használható. Használd helyette a @CHOWN-t."
-
-#: src/create.c:500
-msgid "You cannot @CLONE/PRESERVE.  Use normal @CLONE instead."
-msgstr "Nem használhatod a @CLONE/PRESERVE parancsot. Használd a @CLONE parancsot helyette."
 
 #: function.c:869
 msgid "You cannot change that built-in function."

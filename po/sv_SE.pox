@@ -1177,11 +1177,6 @@ msgstr "CHAT: För att återspela hella bufferten, använd @chan/recall %s=0"
 msgid "CHAT: Wipe that silly grin off your face instead."
 msgstr "CHAT: Rensa bort det f\345niga flinet fr\345n ditt ansikte ist\344llet."
 
-#: extchat.c:952
-#, c-format
-msgid "CHAT: You are already on channel <%s>"
-msgstr "CHAT: Du l\344mnar kanal <%s>."
-
 #: src/extchat.c:757
 #, c-format
 msgid "CHAT: You can't do that with channel <%s>."
@@ -1284,10 +1279,6 @@ msgstr "Inneh\345ll:"
 #: src/wiz.c:1635 src/wiz.c:1929
 msgid "Couldn't find that player."
 msgstr "Kunde inte hitta spelaren."
-
-#: src/cmds.c:193
-msgid "Couldn't set that option"
-msgstr "Kunde inte s\344tta det alternativet"
 
 #: src/create.c:431
 msgid "Create what?"
@@ -1407,11 +1398,6 @@ msgstr "E-mail registrering är tillåten."
 #: wiz.c:1013
 msgid "Enabled."
 msgstr "Tillg\344nglig."
-
-#: src/bsd.c:497
-#, c-format
-msgid "Error %i on WSAStartup\n"
-msgstr "Fel %i i WSAStartup\n"
 
 #: src/game.c:1465
 msgid "Error -- cannot execute uptime."
@@ -2165,11 +2151,6 @@ msgstr "BREV: Alla brev alias f\366rst\366rda!"
 msgid "MAIL: All messages filed in folder %d [%s]"
 msgstr "BREV: Alla meddelanden arkiverade i mapp %d [%s]"
 
-#: src/extmail.c:357 src/extmail.c:370
-#, c-format
-msgid "MAIL: All messages in all folders %s."
-msgstr "BREV: Alla meddelanden i alla mappar %s."
-
 #: src/malias.c:485
 #, c-format
 msgid "MAIL: Allocated slots %d"
@@ -2899,14 +2880,6 @@ msgstr "Sajten %s har bannlysts."
 msgid "Site %s locked"
 msgstr "Plats %s l\345st."
 
-#: src/create.c:102
-msgid "Sorry you can only make exits out of rooms."
-msgstr "Tyv\344rr kan du bara skapa utg\345ngar ut ur rum."
-
-#: src/move.c:579
-msgid "Sorry you can't drop exits."
-msgstr "Du kan tyv\344rr inte sl\344ppa utg\345ngar."
-
 #: src/destroy.c:266
 msgid "Sorry, no suicide allowed."
 msgstr "Sj\344lvmord \344r tyv\344rr inte till\345tet."
@@ -3049,10 +3022,6 @@ msgstr "Det \344r inte ett giltigt objekt."
 #: src/destroy.c:232
 msgid "That is too special to be destroyed."
 msgstr "Det \344r f\366r speciellt f\366r att bli f\366rst\366rt."
-
-#: conf.c:958
-msgid "That isn't a on/off option."
-msgstr "Det \344r inte ett av/p\345 alternativ."
 
 #: src/extchat.c:1181
 msgid "That name is too long."
@@ -3443,10 +3412,6 @@ msgstr "Varning: @chzonar en priviligerad spelare."
 msgid "Warning: @chzoning admin-owned object!"
 msgstr "Varning: @chzonar admin-\344gt objekt!"
 
-#: set.c:434
-msgid "Warning: @chzoning an TRUST player."
-msgstr "Varning: @chzoning en TRUST spelare."
-
 #: src/extchat.c:1116
 msgid "Warning: channel will be created disabled."
 msgstr "Varning: kanalen kommer att skapas ej tillg\344nglig."
@@ -3833,10 +3798,6 @@ msgstr "Du kan inte avl\344nka det!"
 #: src/set.c:214
 msgid "You cannot @CHOWN/PRESERVE. Use normal @CHOWN."
 msgstr "Du kan inte @CHOWN/PRESERVE. Anv\344nd normala @CHOWN."
-
-#: src/create.c:500
-msgid "You cannot @CLONE/PRESERVE.  Use normal @CLONE instead."
-msgstr "Du kan inte anv\344nda @CLONE/PRESERVE. Anv\344nd normal @CLONE ist\344llet."
 
 #: function.c:869
 msgid "You cannot change that built-in function."

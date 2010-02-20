@@ -1026,11 +1026,6 @@ msgstr "CHAT: Kanalen trenger et mer unikt navn."
 msgid "CHAT: Wipe that silly grin off your face instead."
 msgstr "CHAT: Slutt \345 glis i stedet."
 
-#: extchat.c:952
-#, c-format
-msgid "CHAT: You are already on channel <%s>"
-msgstr "CHAT: Du har forlatt kanal <%s>."
-
 #: src/extchat.c:757
 #, c-format
 msgid "CHAT: You can't do that with channel <%s>."
@@ -1134,10 +1129,6 @@ msgstr "Innhold:"
 msgid "Couldn't find that player."
 msgstr "Kan ikke finne den spilleren."
 
-#: src/cmds.c:193
-msgid "Couldn't set that option"
-msgstr "Kunne ikke sette det alternativet"
-
 #: src/create.c:431
 msgid "Create what?"
 msgstr "@create hva?"
@@ -1239,11 +1230,6 @@ msgstr "Enten fins den spilleren allerede, ellers er navnet ikke tillatt."
 #: wiz.c:1013
 msgid "Enabled."
 msgstr "Skrudd p\345."
-
-#: src/bsd.c:497
-#, c-format
-msgid "Error %i on WSAStartup\n"
-msgstr "Feil %i ved WSAStartup\n"
 
 #: src/game.c:1465
 msgid "Error -- cannot execute uptime."
@@ -1879,11 +1865,6 @@ msgstr "MAIL: Alle mailalias slettet!"
 #, c-format
 msgid "MAIL: All messages filed in folder %d [%s]"
 msgstr "MAIL: Alle meldinger lagret i folder %d [%s]"
-
-#: src/extmail.c:357 src/extmail.c:370
-#, c-format
-msgid "MAIL: All messages in all folders %s."
-msgstr "MAIL: Alle meldinger i alle foldere %s."
 
 #: src/malias.c:485
 #, c-format
@@ -2591,14 +2572,6 @@ msgstr "Site %s aksess alternativer satt til %s"
 msgid "Site %s locked"
 msgstr "Site %s l\345st."
 
-#: src/create.c:102
-msgid "Sorry you can only make exits out of rooms."
-msgstr "Beklager, du kan bare lage utganger ut fra rom."
-
-#: src/move.c:579
-msgid "Sorry you can't drop exits."
-msgstr "Beklager, men du kan ikke slippe utganger."
-
 #: src/destroy.c:266
 msgid "Sorry, no suicide allowed."
 msgstr "Beklager, selvmord er ikke tillatt."
@@ -2746,10 +2719,6 @@ msgstr "Det der er ikke et gyldig objekt."
 #: src/destroy.c:232
 msgid "That is too special to be destroyed."
 msgstr "Objektet er for spesielt til \345 bli \370delagt."
-
-#: conf.c:958
-msgid "That isn't a on/off option."
-msgstr "Det der er ikke et av/p\345 alternativ."
 
 #: src/extchat.c:1181
 msgid "That name is too long."
@@ -3144,10 +3113,6 @@ msgstr "Advarsel: @chzone p\345 en priviligert spiller."
 msgid "Warning: @chzoning admin-owned object!"
 msgstr "Advarsel: @chzone p\345 admin-eid objekt!"
 
-#: set.c:434
-msgid "Warning: @chzoning an TRUST player."
-msgstr "Advarsel: @chzone p\345 en TRUST-spiller."
-
 #: destroy.c:329
 msgid "Warning: Target is set SAFE, but scheduling for destruction anyway."
 msgstr "Advarsel: Målet er satt SAFE, men klargjør for destruksjon uansett."
@@ -3529,10 +3494,6 @@ msgstr "Du kan ikke unlink'e det!"
 #: src/set.c:214
 msgid "You cannot @CHOWN/PRESERVE. Use normal @CHOWN."
 msgstr "Du kan ikke @chown/PRESERVE. Bruk normal @CHOWN."
-
-#: src/create.c:500
-msgid "You cannot @CLONE/PRESERVE.  Use normal @CLONE instead."
-msgstr "Du kan ikke @CLONE/PRESERVE. Bruk vanlig @CLONE istedet."
 
 #: function.c:869
 msgid "You cannot change that built-in function."
@@ -3934,10 +3895,6 @@ msgstr "Du er i limbo - sender deg hjem."
 #: src/wiz.c:487
 msgid "You're in too many containers."
 msgstr "Du er i for mange containere."
-
-#: move.c:981
-msgid "You're not alllowed to follow."
-msgstr "Du har ikke tillatelse til å følge."
 
 #: src/destroy.c:410
 #, c-format

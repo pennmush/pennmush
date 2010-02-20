@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-02-17 02:00-0600\n"
+"POT-Creation-Date: 2010-02-20 02:00-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -407,11 +407,6 @@ msgstr ""
 msgid "GAME: SSL connections must be dropped, sorry."
 msgstr ""
 
-#: bsd.c:524 myrlimit.c:114
-#, c-format
-msgid "Error %i on WSAStartup\n"
-msgstr ""
-
 #: bsd.c:688
 #, c-format
 msgid "Unable to open %s. Error output continues to stderr.\n"
@@ -544,12 +539,16 @@ msgstr ""
 msgid "Cmds"
 msgstr ""
 
-#: bsd.c:3339 bsd.c:3412
-msgid "Connecting..."
+#: bsd.c:3311 bsd.c:3391
+msgid "Des"
 msgstr ""
 
-#: bsd.c:3391
-msgid "Des"
+#: bsd.c:3311
+msgid "Host"
+msgstr ""
+
+#: bsd.c:3339 bsd.c:3412
+msgid "Connecting..."
 msgstr ""
 
 #: bsd.c:3391
@@ -745,8 +744,8 @@ msgstr ""
 msgid "Couldn't find that player."
 msgstr ""
 
-#: bsd.c:4341
-msgid "#-1 INVALID ZONE."
+#: bsd.c:4341 funufun.c:304
+msgid "#-1 INVALID ZONE"
 msgstr ""
 
 #: bsd.c:4458 bsd.c:4479 bsd.c:4532
@@ -820,18 +819,9 @@ msgstr ""
 msgid "GAME: Reboot w/o disconnect from game account, please wait."
 msgstr ""
 
-#: bsd.c:5167
-msgid "Reboot w/o disconnect triggered by signal."
-msgstr ""
-
 #: bsd.c:5171
 #, c-format
 msgid "GAME: Reboot w/o disconnect by %s, please wait."
-msgstr ""
-
-#: bsd.c:5173
-#, c-format
-msgid "Reboot w/o disconnect triggered by %s(#%d)."
 msgstr ""
 
 #: cmds.c:164 cmds.c:176
@@ -843,7 +833,7 @@ msgid "What did you want to set?"
 msgstr ""
 
 #: cmds.c:182
-msgid "Couldn't set that option"
+msgid "Couldn't set that option."
 msgstr ""
 
 #: cmds.c:186
@@ -878,7 +868,7 @@ msgstr ""
 msgid "Powers"
 msgstr ""
 
-#: cmds.c:645 command.c:1878 extmail.c:1522
+#: cmds.c:645 command.c:1878 extmail.c:1531
 msgid "You cannot do that while gagged."
 msgstr ""
 
@@ -1204,16 +1194,8 @@ msgstr ""
 msgid "Enabled."
 msgstr ""
 
-#: conf.c:1691
-msgid "ENABLED"
-msgstr ""
-
-#: conf.c:1691
-msgid "DISABLED"
-msgstr ""
-
 #: conf.c:1693
-msgid "That isn't a on/off option."
+msgid "That isn't an on/off option."
 msgstr ""
 
 #: conf.c:1697
@@ -1503,7 +1485,7 @@ msgid "You can't link to that."
 msgstr ""
 
 #: create.c:104
-msgid "Sorry you can only make exits out of rooms."
+msgid "Sorry, you can only make exits out of rooms."
 msgstr ""
 
 #: create.c:108
@@ -1652,7 +1634,7 @@ msgid "There's nothing left of it to clone!"
 msgstr ""
 
 #: create.c:624
-msgid "You cannot @CLONE/PRESERVE.  Use normal @CLONE instead."
+msgid "You cannot @CLONE/PRESERVE. Use normal @CLONE instead."
 msgstr ""
 
 #: create.c:632
@@ -1973,7 +1955,7 @@ msgstr ""
 
 #: extchat.c:1331
 #, c-format
-msgid "CHAT: You are already on channel <%s>"
+msgid "CHAT: You are already on channel <%s>."
 msgstr ""
 
 #: extchat.c:1359
@@ -2522,21 +2504,6 @@ msgstr ""
 msgid "#-1 NO RECALL BUFFER"
 msgstr ""
 
-#: extchat.c:3329 extchat.c:3819
-#, c-format
-msgid "%s %s"
-msgstr ""
-
-#: extchat.c:3332 extchat.c:3822
-#, c-format
-msgid "[%s] %s %s"
-msgstr ""
-
-#: extchat.c:3340 extchat.c:3830
-#, c-format
-msgid "[%s] %s"
-msgstr ""
-
 #: extchat.c:3429
 msgid "You must specify a type of lock!"
 msgstr ""
@@ -2608,7 +2575,7 @@ msgstr ""
 msgid "CHAT: Buffering enabled on channel <%s>."
 msgstr ""
 
-#: extmail.c:222 extmail.c:1109
+#: extmail.c:222 extmail.c:1117
 msgid "(no subject)"
 msgstr ""
 
@@ -2657,49 +2624,70 @@ msgstr ""
 msgid "MAIL: Folder %d now has no name"
 msgstr ""
 
-#: extmail.c:426 extmail.c:439
+#: extmail.c:426
+msgid "MAIL: All messages in all folders untagged."
+msgstr ""
+
+#: extmail.c:428
+msgid "MAIL: All messages in all folder tagged."
+msgstr ""
+
+#: extmail.c:433
 #, c-format
-msgid "MAIL: All messages in all folders %s."
+msgid "MAIL: Msg #%d:%d untagged"
+msgstr ""
+
+#: extmail.c:436
+#, c-format
+msgid "MAIL: Msg #%d:%d tagged"
+msgstr ""
+
+#: extmail.c:445
+msgid "MAIL: All messages in all folders uncleared."
 msgstr ""
 
 #: extmail.c:447
+msgid "MAIL: All messages in all folders cleared."
+msgstr ""
+
+#: extmail.c:455
 #, c-format
 msgid "MAIL: Unread Msg #%d:%d cleared! Use @mail/unclear %d:%d to recover."
 msgstr ""
 
-#: extmail.c:452
+#: extmail.c:460
 #, c-format
 msgid "MAIL: Msg #%d:%d uncleared."
 msgstr ""
 
-#: extmail.c:453
+#: extmail.c:461
 #, c-format
 msgid "MAIL: Msg #%d:%d cleared."
 msgstr ""
 
-#: extmail.c:464 extmail.c:523
+#: extmail.c:472 extmail.c:531
 msgid "MAIL: You don't have any matching messages!"
 msgstr ""
 
-#: extmail.c:491
+#: extmail.c:499
 msgid "MAIL: Invalid folder specification"
 msgstr ""
 
-#: extmail.c:509
+#: extmail.c:517
 #, c-format
 msgid "MAIL: All messages filed in folder %d [%s]"
 msgstr ""
 
-#: extmail.c:515
+#: extmail.c:523
 #, c-format
 msgid "MAIL: Msg %d:%d filed in folder %d [%s]"
 msgstr ""
 
-#: extmail.c:562 extmail.c:564
+#: extmail.c:570 extmail.c:572
 msgid "Folder:"
 msgstr ""
 
-#: extmail.c:569
+#: extmail.c:577
 #, c-format
 msgid ""
 "From: %-55s %s\n"
@@ -2707,314 +2695,320 @@ msgid ""
 "Status: %s"
 msgstr ""
 
-#: extmail.c:573
+#: extmail.c:581
 msgid " (Conn)"
 msgstr ""
 
-#: extmail.c:576
+#: extmail.c:584
 #, c-format
 msgid "Subject: %s"
 msgstr ""
 
-#: extmail.c:593
+#: extmail.c:601
 msgid "MAIL: You don't have that many matching messages!"
 msgstr ""
 
-#: extmail.c:625
+#: extmail.c:633
 #, c-format
 msgid ""
 "---------------------------  MAIL (folder %2d)  "
 "------------------------------"
 msgstr ""
 
-#: extmail.c:732
+#: extmail.c:740
 msgid "MAIL: Mailbox purged."
 msgstr ""
 
-#: extmail.c:765
+#: extmail.c:773
 msgid "MAIL: To whom should I forward?"
 msgstr ""
 
-#: extmail.c:775
+#: extmail.c:783
 msgid "MAIL: You have no messages to forward."
 msgstr ""
 
-#: extmail.c:796
+#: extmail.c:804
 msgid "MAIL: You can't reply to nonexistant mail."
 msgstr ""
 
-#: extmail.c:816 extmail.c:919
+#: extmail.c:824 extmail.c:927
 #, c-format
 msgid "No such unique player: %s."
 msgstr ""
 
-#: extmail.c:831
+#: extmail.c:839
 #, c-format
 msgid "MAIL: %d messages forwarded."
 msgstr ""
 
-#: extmail.c:857
+#: extmail.c:865
 msgid "MAIL: I can't figure out who you want to mail to."
 msgstr ""
 
-#: extmail.c:861
+#: extmail.c:869
 msgid "MAIL: I can't figure out what you want to send."
 msgstr ""
 
-#: extmail.c:899
+#: extmail.c:907
 msgid "MAIL: You can't reply to nonexistent mail."
 msgstr ""
 
-#: extmail.c:1034
+#: extmail.c:1042
 #, c-format
 msgid "Failed attempt to forward @mail to #%d"
 msgstr ""
 
-#: extmail.c:1043 extmail.c:1185
+#: extmail.c:1051 extmail.c:1193
 #, c-format
 msgid "MAIL: You sent your message to %s."
 msgstr ""
 
-#: extmail.c:1047
+#: extmail.c:1055
 #, c-format
 msgid "MAIL: Your message was not sent to %s due to a mail forwarding problem."
 msgstr ""
 
-#: extmail.c:1069
+#: extmail.c:1077
 msgid "MAIL: You cannot send mail to non-existent people."
 msgstr ""
 
-#: extmail.c:1074
+#: extmail.c:1082
 msgid "MAIL: You probably don't wanna send mail saying 'clear'."
 msgstr ""
 
-#: extmail.c:1080
+#: extmail.c:1088
 #, c-format
 msgid "MAIL: %s is not accepting mail from you right now."
 msgstr ""
 
-#: extmail.c:1087
+#: extmail.c:1095
 #, c-format
 msgid "MAIL: %s's mailbox is full. Can't send."
 msgstr ""
 
-#: extmail.c:1187
+#: extmail.c:1195
 #, c-format
 msgid "MAIL: You have a new message (%d) from %s."
 msgstr ""
 
-#: extmail.c:1210
+#: extmail.c:1218
 msgid "The postal service issues a warrant for your arrest."
 msgstr ""
 
-#: extmail.c:1227
+#: extmail.c:1235
 msgid "You annihilate the post office. All messages cleared."
 msgstr ""
 
-#: extmail.c:1244
+#: extmail.c:1252
 msgid "Go get some bugspray."
 msgstr ""
 
-#: extmail.c:1253 extmail.c:1359 extmail.c:1760 wiz.c:727
+#: extmail.c:1261 extmail.c:1367 extmail.c:1769 wiz.c:727
 #, c-format
 msgid "%s: No such player."
 msgstr ""
 
-#: extmail.c:1258
+#: extmail.c:1266
 #, c-format
 msgid "Mail cleared for %s(#%d)."
 msgstr ""
 
-#: extmail.c:1263
+#: extmail.c:1271
 #, c-format
 msgid "Bad object #%d has mail."
 msgstr ""
 
-#: extmail.c:1265
+#: extmail.c:1273
 #, c-format
 msgid "%s(#%d) has mail but is not a player."
 msgstr ""
 
-#: extmail.c:1271
+#: extmail.c:1279
 #, c-format
 msgid "Mail database top is %d, actual message count is %d. Fixing."
 msgstr ""
 
-#: extmail.c:1275
+#: extmail.c:1283
 msgid "Mail sanity check completed."
 msgstr ""
 
-#: extmail.c:1279
+#: extmail.c:1287
 #, c-format
 msgid "Fixing mail for #%d."
 msgstr ""
 
-#: extmail.c:1310
+#: extmail.c:1318
 msgid "Mail sanity fix completed."
 msgstr ""
 
-#: extmail.c:1312
+#: extmail.c:1320
 msgid "That is not a debugging option."
 msgstr ""
 
-#: extmail.c:1363 extmail.c:1764
+#: extmail.c:1371 extmail.c:1773
 msgid "The post office protects privacy!"
 msgstr ""
 
-#: extmail.c:1371
+#: extmail.c:1379
 #, c-format
 msgid "There are %d messages in the mail spool."
 msgstr ""
 
-#: extmail.c:1384
+#: extmail.c:1392
 #, c-format
 msgid "MAIL: There are %d msgs in the mail spool, %d unread, %d cleared."
 msgstr ""
 
-#: extmail.c:1402
+#: extmail.c:1410
 #, c-format
 msgid "MAIL: There are %d old msgs in the mail spool, totalling %d characters."
 msgstr ""
 
-#: extmail.c:1406
+#: extmail.c:1414
 #, c-format
 msgid "MAIL: There are %d new msgs in the mail spool, totalling %d characters."
 msgstr ""
 
-#: extmail.c:1424
+#: extmail.c:1418
+#, c-format
+msgid ""
+"MAIL: There are %d cleared msgs in the mail spool, totalling %d characters."
+msgstr ""
+
+#: extmail.c:1433
 #, c-format
 msgid "%s sent %d messages."
 msgstr ""
 
-#: extmail.c:1425
+#: extmail.c:1434
 #, c-format
 msgid "%s has %d messages."
 msgstr ""
 
-#: extmail.c:1454
+#: extmail.c:1463
 #, c-format
 msgid "Mail statistics for %s:"
 msgstr ""
 
-#: extmail.c:1457
+#: extmail.c:1466
 #, c-format
 msgid "%d messages sent, %d unread, %d cleared."
 msgstr ""
 
-#: extmail.c:1459
+#: extmail.c:1468
 #, c-format
 msgid "%d messages received, %d unread, %d cleared."
 msgstr ""
 
-#: extmail.c:1464
+#: extmail.c:1473
 #, c-format
 msgid "%d messages sent, %d unread, %d cleared, totalling %d characters."
 msgstr ""
 
-#: extmail.c:1468
+#: extmail.c:1477
 #, c-format
 msgid "%d messages received, %d unread, %d cleared, totalling %d characters."
 msgstr ""
 
-#: extmail.c:1473
+#: extmail.c:1482
 #, c-format
 msgid "Last is dated %s"
 msgstr ""
 
-#: extmail.c:1498
+#: extmail.c:1507
 msgid "MAIL: Invalid mail command."
 msgstr ""
 
-#: extmail.c:1561 extmail.c:1577 funcrypt.c:332
+#: extmail.c:1570 extmail.c:1586 funcrypt.c:332
 msgid "#-1 NO SUCH PLAYER"
 msgstr ""
 
-#: extmail.c:1584
+#: extmail.c:1593
 msgid "#-1 FOLDER MUST BE INTEGER"
 msgstr ""
 
-#: extmail.c:1644
+#: extmail.c:1653
 msgid "#-1 INVALID MESSAGE OR PLAYER"
 msgstr ""
 
-#: extmail.c:1674
+#: extmail.c:1683
 msgid "Permission denied"
 msgstr ""
 
-#: extmail.c:1680
+#: extmail.c:1689
 msgid "Invalid message specification"
 msgstr ""
 
-#: extmail.c:1733
+#: extmail.c:1742
 msgid "#-? fun_mailstats called with invalid called_as!"
 msgstr ""
 
-#: extmail.c:2433 extmail.c:2530
+#: extmail.c:2442 extmail.c:2539
 msgid "MAIL: Invalid message specification"
 msgstr ""
 
-#: extmail.c:2441 extmail.c:2451 extmail.c:2458 extmail.c:2468 extmail.c:2475
-#: extmail.c:2485
+#: extmail.c:2450 extmail.c:2460 extmail.c:2467 extmail.c:2477 extmail.c:2484
+#: extmail.c:2494
 msgid "MAIL: Invalid age"
 msgstr ""
 
-#: extmail.c:2445 extmail.c:2462 extmail.c:2479
+#: extmail.c:2454 extmail.c:2471 extmail.c:2488
 msgid "MAIL: Message ages must be integers"
 msgstr ""
 
-#: extmail.c:2491 extmail.c:2496
+#: extmail.c:2500 extmail.c:2505
 msgid "MAIL: Invalid dbref #"
 msgstr ""
 
-#: extmail.c:2503 extmail.c:2508
+#: extmail.c:2512 extmail.c:2517
 msgid "MAIL: Invalid player"
 msgstr ""
 
-#: extmail.c:2564
+#: extmail.c:2573
 msgid "Read "
 msgstr ""
 
-#: extmail.c:2566
+#: extmail.c:2575
 msgid "Unread "
 msgstr ""
 
-#: extmail.c:2568
+#: extmail.c:2577
 msgid "Cleared "
 msgstr ""
 
-#: extmail.c:2570
+#: extmail.c:2579
 msgid "Urgent "
 msgstr ""
 
-#: extmail.c:2572
+#: extmail.c:2581
 msgid "Mass "
 msgstr ""
 
-#: extmail.c:2574
+#: extmail.c:2583
 msgid "Fwd "
 msgstr ""
 
-#: extmail.c:2576
+#: extmail.c:2585
 msgid "Tagged"
 msgstr ""
 
-#: extmail.c:2602 extmail.c:2636
+#: extmail.c:2611 extmail.c:2645
 #, c-format
 msgid "MAIL: %d messages in folder %d [%s] (%d unread, %d cleared)."
 msgstr ""
 
-#: extmail.c:2607 extmail.c:2641
+#: extmail.c:2616 extmail.c:2650
 #, c-format
 msgid "MAIL: Warning! Limit on inbox messages is %d!"
 msgstr ""
 
-#: extmail.c:2613 extmail.c:2639
+#: extmail.c:2622 extmail.c:2648
 msgid ""
 "\n"
 "MAIL: You have no mail.\n"
 msgstr ""
 
-#: extmail.c:2785
+#: extmail.c:2794
 #, c-format
 msgid "You sent your message to the '%s' alias"
 msgstr ""
@@ -3661,7 +3655,7 @@ msgid "#-1 COMPARISON REQUIRES 2 OR MORE NUMBERS"
 msgstr ""
 
 #: funmath.c:2652
-msgid "#-1 FUNCTION (dist2d) EXPECTS 4 ARGUMENTS"
+msgid "#-1 FUNCTION (DIST2D) EXPECTS 4 ARGUMENTS"
 msgstr ""
 
 #: funmath.c:2667 funmath.c:2696
@@ -3669,7 +3663,7 @@ msgid "#-1 OVERFLOW ERROR"
 msgstr ""
 
 #: funmath.c:2679
-msgid "#-1 FUNCTION (dist3d) expects 6 arguments"
+msgid "#-1 FUNCTION (DIST3D) EXPECTS 6 ARGUMENTS"
 msgstr ""
 
 #: funmisc.c:200
@@ -3682,7 +3676,7 @@ msgid "#-1 REGISTER OUT OF RANGE"
 msgstr ""
 
 #: funmisc.c:228
-msgid "#-1 FUNCTION (letq) EXPECTS AN ODD NUMBER OF ARGUMENTS"
+msgid "#-1 FUNCTION (LETQ) EXPECTS AN ODD NUMBER OF ARGUMENTS"
 msgstr ""
 
 #: funmisc.c:241 funmisc.c:247 funmisc.c:273
@@ -3854,10 +3848,6 @@ msgstr ""
 
 #: funtime.c:211
 msgid "#-1 INVALID TIMESTRING"
-msgstr ""
-
-#: funufun.c:304
-msgid "#-1 INVALID ZONE"
 msgstr ""
 
 #: funufun.c:321
@@ -4918,7 +4908,7 @@ msgid "You can't drop that."
 msgstr ""
 
 #: move.c:681
-msgid "Sorry you can't drop exits."
+msgid "Sorry, you can't drop exits."
 msgstr ""
 
 #: move.c:684
@@ -4992,7 +4982,7 @@ msgid "You're already following %s."
 msgstr ""
 
 #: move.c:1005
-msgid "You're not alllowed to follow."
+msgid "You're not allowed to follow."
 msgstr ""
 
 #: move.c:1012
@@ -5626,7 +5616,7 @@ msgid "Warning: @chzoning a privileged player."
 msgstr ""
 
 #: set.c:453
-msgid "Warning: @chzoning an TRUST player."
+msgid "Warning: @chzoning a TRUST player."
 msgstr ""
 
 #: set.c:457

@@ -356,18 +356,6 @@ msgstr "#-1 FUNKCIJI (SOUNDEX) TREBA JEDAN ARGUMENT OD JEDNE RIJECI"
 msgid "#-1 FUNCTION (SOUNDLIKE) REQUIRES TWO ONE-WORD ARGUMENTS"
 msgstr "#-1 FUNKCIJI (SOUNDLIKE) TREBAJU DVA ARGUMENTA OD JEDNE RIJECI"
 
-#: funmath.c:2423
-msgid "#-1 FUNCTION (dist2d) EXPECTS 4 ARGUMENTS"
-msgstr "#-1 FUNKCIJA (dist2d) OCEKUJE 4 ARGUMENTA"
-
-#: funmath.c:2450
-msgid "#-1 FUNCTION (dist3d) expects 6 arguments"
-msgstr "#-1 FUNKCIJA (dist3d) ocekuje 6 argumenata"
-
-#: funmisc.c:222
-msgid "#-1 FUNCTION (letq) EXPECTS AN ODD NUMBER OF ARGUMENTS"
-msgstr "#-1 FUNKCIJA (letq) OCEKUJE NEPARAN BROJ ARGUMENATA"
-
 #: src/fundb.c:959 src/fundb.c:1120 src/fundb.c:1145 src/fundb.c:1254\nsrc/fundb.c:1549 src/fundb.c:1555 src/fundb.c:1561 src/fundb.c:1567\nsrc/fundb.c:1573 src/fundb.c:1579 src/fundb.c:1585 src/fundb.c:1591\nsrc/fundb.c:1864 src/funstr.c:901
 msgid "#-1 FUNCTION DISABLED"
 msgstr "#-1 FUNKCIJA ISKLJUCENA"
@@ -472,10 +460,6 @@ msgstr "#-1 NEISPRAVNI VREMENSKI STRING"
 #: src/funufun.c:293
 msgid "#-1 INVALID ZONE"
 msgstr "#-1 NEISPRAVNA ZONA"
-
-#: bsd.c:4310
-msgid "#-1 INVALID ZONE."
-msgstr "#-1 NEISPRAVNA ZONA."
 
 #: src/funlist.c:194 src/funlist.c:2088
 msgid "#-1 LISTS MUST BE OF EQUAL SIZE"
@@ -780,11 +764,6 @@ msgstr "%s %s - iskljuceno."
 #, c-format
 msgid "%s %s enabled."
 msgstr "%s %s - ukljuceno."
-
-#: extchat.c:3126 extchat.c:3387
-#, c-format
-msgid "%s %s"
-msgstr "%s %s"
 
 #: extmail.c:239
 #, c-format
@@ -1915,11 +1894,6 @@ msgstr "CHAT: Upozorenje: Ne zadovoljavas uvjete za spajanje na kanal! (svejedno
 msgid "CHAT: Wipe that silly grin off your face instead."
 msgstr "CHAT: Umjesto toga, makni taj blesavi smjesak sa svoga lica."
 
-#: extchat.c:952
-#, c-format
-msgid "CHAT: You are already on channel <%s>"
-msgstr "CHAT: Vec jesi na kanalu <%s>"
-
 #: extchat.c:1385
 #, c-format
 msgid "CHAT: You are not on channel <%s>."
@@ -2122,10 +2096,6 @@ msgstr "Ne mogu pronaci taj deskriptor."
 msgid "Couldn't find that player."
 msgstr "Nisam mogao naci tog korisnika."
 
-#: src/cmds.c:193
-msgid "Couldn't set that option"
-msgstr "Nisam mogao postaviti tu opciju"
-
 #: src/create.c:431
 msgid "Create what?"
 msgstr "Sto da stvorim?"
@@ -2155,10 +2125,6 @@ msgstr "Tvorac"
 #: atr_tab.c:211
 msgid "Critical memory failure - Alert God!"
 msgstr "Memorija je kriticno zakazala - Upozori Boga!"
-
-#: conf.c:1710
-msgid "DISABLED"
-msgstr "ISKLJUCENO"
 
 #: game.c:560
 msgid "DUMP: Data are swapped to disk, so nonforking dumps will be used."
@@ -2294,10 +2260,6 @@ msgstr "Snimam..."
 msgid "EMERGENCY SHUTDOWN: %s"
 msgstr "HITNO GASENJE: %s"
 
-#: conf.c:1710
-msgid "ENABLED"
-msgstr "UKLJUCENO"
-
 #: bsd.c:272
 msgid "Either that player does not exist, or has a different password."
 msgstr "Ili taj igrac ne postoji, ili ima drugu sifru."
@@ -2313,11 +2275,6 @@ msgstr "Registracija putem elektronicke poste je dozvoljena"
 #: wiz.c:1013
 msgid "Enabled."
 msgstr "Ukljuceno."
-
-#: src/bsd.c:497
-#, c-format
-msgid "Error %i on WSAStartup\n"
-msgstr "Greska %i pri WSAStartupu\n"
 
 #: src/game.c:1465
 msgid "Error -- cannot execute uptime."
@@ -3245,11 +3202,6 @@ msgstr "POSTA: Svi postanski aliasi unisteni!"
 msgid "MAIL: All messages filed in folder %d [%s]"
 msgstr "POSTA: Sve poruke premjestene u folder %d [%s]"
 
-#: src/extmail.c:357 src/extmail.c:370
-#, c-format
-msgid "MAIL: All messages in all folders %s."
-msgstr "POSTA: Sve poruke u svim folderima: %s."
-
 #: src/malias.c:485
 #, c-format
 msgid "MAIL: Allocated slots %d"
@@ -4153,15 +4105,6 @@ msgstr "Quote nepromijenjene."
 msgid "Read "
 msgstr "Procitano "
 
-#: bsd.c:5173
-#, c-format
-msgid "Reboot w/o disconnect triggered by %s(#%d)."
-msgstr "%s(#%d) pokrene rebootanje bez prekida veze."
-
-#: bsd.c:5167
-msgid "Reboot w/o disconnect triggered by signal."
-msgstr "Signal pokrene rebootanje bez prekida veze."
-
 #: extchat.c:2192
 #, c-format
 msgid "Recall buffer: %dk, with %d lines stored."
@@ -4325,14 +4268,6 @@ msgstr "Internet adresa %s banana."
 #, c-format
 msgid "Site %s locked"
 msgstr "Internet adresa %s zakljucana"
-
-#: src/create.c:102
-msgid "Sorry you can only make exits out of rooms."
-msgstr "Oprosti, ali izlaze mozes stvarati samo u sobama."
-
-#: src/move.c:579
-msgid "Sorry you can't drop exits."
-msgstr "Oprosti, ali ne mozes ispustati izlaze."
 
 #: src/destroy.c:266
 msgid "Sorry, no suicide allowed."
@@ -4539,10 +4474,6 @@ msgstr "To nije ispravan vremenski pecat."
 #: src/destroy.c:232
 msgid "That is too special to be destroyed."
 msgstr "Tako vaznu stvar se ne moze unistiti."
-
-#: conf.c:958
-msgid "That isn't a on/off option."
-msgstr "To nije on/off opcija."
 
 #: flags.c:2253
 #, c-format
@@ -5196,10 +5127,6 @@ msgstr "Upozorenje: @chzoneanje privilegiranog igraca."
 msgid "Warning: @chzoning admin-owned object!"
 msgstr "Upozorenje: @chzoneanje objekta ciji je vlasnik administrator!"
 
-#: set.c:434
-msgid "Warning: @chzoning an TRUST player."
-msgstr "Upozorenje: @chzoneanje korisnika koji ima flag TRUST."
-
 #: flags.c:1049
 msgid "Warning: Setting trust flag on zoned object"
 msgstr "Upozorenje: TRUST flag stavljen na objekt koji je u zoni"
@@ -5680,10 +5607,6 @@ msgstr "Ne mozes to unlinkati!"
 #: src/set.c:214
 msgid "You cannot @CHOWN/PRESERVE. Use normal @CHOWN."
 msgstr "Ne mozes upotrebljavati @CHOWN/PRESERVE. Upotrijebi obican @CHOWN."
-
-#: src/create.c:500
-msgid "You cannot @CLONE/PRESERVE.  Use normal @CLONE instead."
-msgstr "Ne mozes upotrebljavati @CLONE/PRESERVE. Umjesto njega upotrijebi obican @CLONE."
 
 #: cque.c:985
 msgid "You cannot adjust the timeout of an indefinite semaphore."
@@ -6238,10 +6161,6 @@ msgstr "Nalazis se u nistavilu - saljem te doma."
 msgid "You're in too many containers."
 msgstr "Nalazis se u previse spremnika."
 
-#: move.c:981
-msgid "You're not alllowed to follow."
-msgstr "Pracenje ti nije dozvoljeno."
-
 #: move.c:845
 #, c-format
 msgid "You're not following %s."
@@ -6341,16 +6260,6 @@ msgstr "[%d:%02d] %s poruka poslana korisniku '%s'."
 #, c-format
 msgid "[%s(#%d)'s %s(#%d)] "
 msgstr "[Vlasnik: %s(#%d), objekt: %s(#%d)] "
-
-#: extchat.c:3129 extchat.c:3390
-#, c-format
-msgid "[%s] %s %s"
-msgstr "[%s] %s %s"
-
-#: extchat.c:3137 extchat.c:3398
-#, c-format
-msgid "[%s] %s"
-msgstr "[%s] %s"
 
 #: player.c:331
 #, c-format

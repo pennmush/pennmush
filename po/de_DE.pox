@@ -760,11 +760,6 @@ msgstr "CHAT: Dieser Kanal hat keinen Recall-Buffer."
 msgid "CHAT: Wipe that silly grin off your face instead."
 msgstr "CHAT: Wisch dir lieber diesen dämlichen Grinser aus dem Gesicht."
 
-#: extchat.c:952
-#, c-format
-msgid "CHAT: You are already on channel <%s>"
-msgstr "CHAT: Du bist schon im Kanal <%s>"
-
 #: src/extchat.c:757
 #, c-format
 msgid "CHAT: You can't do that with channel <%s>."
@@ -909,11 +904,6 @@ msgstr "Dropto gesetzt."
 #: bsd.c:272
 msgid "Either that player does not exist, or has a different password."
 msgstr "Entweder existiert dieser Spieler nicht, oder er hat ein anderes Passwort."
-
-#: src/bsd.c:497
-#, c-format
-msgid "Error %i on WSAStartup\n"
-msgstr "Fehler %i bei WSAStartup\n"
 
 #: src/destroy.c:271
 msgid "Even you can't do that!"
@@ -1920,10 +1910,6 @@ msgstr "Das ist kein gültiges Log."
 msgid "That is not a valid object."
 msgstr "Das ist kein gültiges Objekt."
 
-#: conf.c:958
-msgid "That isn't a on/off option."
-msgstr "Das ist keine An/Aus-Option."
-
 #: src/extchat.c:1181
 msgid "That name is too long."
 msgstr "Der Name ist zu lang."
@@ -2230,10 +2216,6 @@ msgstr "Das MUSH-Schöpfer-Warnsystem ist deaktiviert."
 #: src/set.c:417
 msgid "Warning: @chzoning a privileged player."
 msgstr "Warnung : @chzoning eines privilegierten Spielers."
-
-#: set.c:434
-msgid "Warning: @chzoning an TRUST player."
-msgstr "Warnung: @chzonging ein SICHEREN Spieler."
 
 #: src/extchat.c:1207
 msgid "Warning: channel will be disabled."

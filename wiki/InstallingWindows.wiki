@@ -1,0 +1,5 @@
+#summary Installing PennMUSH on Windows
+
+*Note:* These instructions are for building PennMUSH on Windows using MSVC++ / MS VS.NET. If you're using a Unix emulation environment like Cygwin or Mingw, follow the instructions for [InstallingUnix installing in Unix].
+
+_Information pending._

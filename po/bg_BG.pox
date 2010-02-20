@@ -1116,11 +1116,6 @@ msgstr "ЧАТ: Speaklock на <%s> поставен."
 msgid "CHAT: To recall the entire buffer, use @chan/recall %s=0"
 msgstr "\"Р§РђРў: Р—Р° РґР° РёР·РІРёРєР°С€ С†РµР»РёСЏ Р±СѓС„РµСЂ, РёР·РїРѕР»Р·РІР°Р№ @chan/recall %s=0\""
 
-#: extchat.c:952
-#, c-format
-msgid "CHAT: You are already on channel <%s>"
-msgstr "ЧАТ: Ти вече си на канал <%s>"
-
 #: src/extchat.c:757
 #, c-format
 msgid "CHAT: You can't do that with channel <%s>."
@@ -1228,11 +1223,6 @@ msgstr "Dropto премахнато."
 #: src/create.c:341
 msgid "Dropto set."
 msgstr "Dropto настроено."
-
-#: src/bsd.c:497
-#, c-format
-msgid "Error %i on WSAStartup\n"
-msgstr "Грешен %i на WSAStartup\n"
 
 #: src/game.c:1465
 msgid "Error -- cannot execute uptime."
@@ -1581,11 +1571,6 @@ msgstr "ПОЩА: Всички пощенски псевдоними трябва да започват с '%c'."
 #, c-format
 msgid "MAIL: All messages filed in folder %d [%s]"
 msgstr "ПОЩА: Всички съобщения пъхнати в папка %d [%s]"
-
-#: src/extmail.c:357 src/extmail.c:370
-#, c-format
-msgid "MAIL: All messages in all folders %s."
-msgstr "ПОЩА: Всички съобщения във всички папки %s."
 
 #: src/malias.c:485
 #, c-format
@@ -2160,10 +2145,6 @@ msgstr "Предупреждение: @chzoning превилегирован играч."
 msgid "Warning: @chzoning admin-owned object!"
 msgstr "Предупреждение: @chzoning притежаван от администратор обект!"
 
-#: set.c:434
-msgid "Warning: @chzoning an TRUST player."
-msgstr "Предупреждение: @chzone-ира един TRUST играч."
-
 #: destroy.c:329
 msgid "Warning: Target is set SAFE, but scheduling for destruction anyway."
 msgstr "\"Р’РЅРёРјР°РЅРёРµ: Р¦РµР»С‚Р° Рµ РЅР°СЃС‚СЂРѕРµРЅР° SAFE, РЅРѕ РЅР°СЂРµРґРµРЅР° Р·Р° СѓРЅРёС‰РѕР¶Р°РІР°РЅРµ РІСЉРїСЂРµРєРё С‚РѕРІР°.\""
@@ -2269,10 +2250,6 @@ msgstr "Не можеш да преподаваш 'teach', съжалявам."
 #: src/set.c:214
 msgid "You cannot @CHOWN/PRESERVE. Use normal @CHOWN."
 msgstr "Не можеш да @CHOWN/PRESERVE. Използвай нормално @CHOWN."
-
-#: src/create.c:500
-msgid "You cannot @CLONE/PRESERVE.  Use normal @CLONE instead."
-msgstr "Не можеш да @CLONE/PRESERVE. Вместо това използвай нормално @CLONE."
 
 #: set.c:474
 #, c-format

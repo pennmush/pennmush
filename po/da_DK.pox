@@ -681,11 +681,6 @@ msgstr "CHAT: Talel\345s p\345 <%s> fjernet."
 msgid "CHAT: Speaklock on <%s> set."
 msgstr "CHAT: Talel\345s p\345 <%s> fjernet."
 
-#: extchat.c:952
-#, c-format
-msgid "CHAT: You are already on channel <%s>"
-msgstr "CHAT: Du forlader kanalen <%s>."
-
 #: src/extchat.c:757
 #, c-format
 msgid "CHAT: You can't do that with channel <%s>."
@@ -752,10 +747,6 @@ msgstr "Hjem: %s"
 #: src/wiz.c:1635 src/wiz.c:1929
 msgid "Couldn't find that player."
 msgstr "Jeg kunne ikke finde den spiller."
-
-#: src/cmds.c:193
-msgid "Couldn't set that option"
-msgstr "Kunne ikke s\346tte den option"
 
 #: src/create.c:431
 msgid "Create what?"
@@ -1519,10 +1510,6 @@ msgstr "Hvilken funktion vil du begr\346nse adgangen til ?"
 msgid "Semaphore Queue:"
 msgstr "Semafork\370:"
 
-#: src/create.c:102
-msgid "Sorry you can only make exits out of rooms."
-msgstr "Beklager, du kan kun dr\346be spillere og objekter."
-
 #: src/destroy.c:266
 msgid "Sorry, no suicide allowed."
 msgstr "Beklager, selvmord er ikke tilladt."
@@ -1645,10 +1632,6 @@ msgstr "Det er ikke et rum!"
 #: src/destroy.c:232
 msgid "That is too special to be destroyed."
 msgstr "Det er for specielt til at blive destrueret."
-
-#: conf.c:958
-msgid "That isn't a on/off option."
-msgstr "Det er ikke et rum!"
 
 #: src/extchat.c:1181
 msgid "That name is too long."
@@ -1853,10 +1836,6 @@ msgstr "Advarsel: @chzoner en INHERIT spiller."
 
 #: src/set.c:396
 msgid "Warning: @chzoning admin-owned object!"
-msgstr "Advarsel: @chzoner en INHERIT spiller."
-
-#: set.c:434
-msgid "Warning: @chzoning an TRUST player."
 msgstr "Advarsel: @chzoner en INHERIT spiller."
 
 #: src/wiz.c:465

@@ -342,10 +342,6 @@ msgstr "[localiza\347\343o: %s]"
 msgid "Couldn't find that player."
 msgstr "Eu n\343o consigo encontrar isso."
 
-#: src/cmds.c:193
-msgid "Couldn't set that option"
-msgstr "Voc\352 n\343o pode fazer isso enquanto estiver fixo."
-
 #: src/create.c:431
 msgid "Create what?"
 msgstr "Criar o qu\352?"
@@ -692,14 +688,6 @@ msgstr "Criar o qu\352?"
 #: function.c:731
 msgid "Restrict what function?"
 msgstr "Criar o qu\352?"
-
-#: src/create.c:102
-msgid "Sorry you can only make exits out of rooms."
-msgstr "Voc\352 s\363 pode seguir jogadores e coisas."
-
-#: src/move.c:579
-msgid "Sorry you can't drop exits."
-msgstr "Eu n\343o consigo encontrar isso."
 
 #: help.c:161
 msgid "Sorry, that command is temporarily unvailable."

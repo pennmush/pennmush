@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-02-20 02:00-0600\n"
+"POT-Creation-Date: 2010-02-21 02:00-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -497,9 +497,9 @@ msgstr ""
 msgid "%s pages: %s"
 msgstr ""
 
-#: bsd.c:2963
+#: bsd.c:2963 speech.c:975
 #, c-format
-msgid "You paged %s with '%s'."
+msgid "You paged %s with '%s'"
 msgstr ""
 
 #: bsd.c:3202 bsd.c:3256 bsd.c:3310 bsd.c:3390
@@ -1074,26 +1074,6 @@ msgstr ""
 msgid "The following commands have hooks: "
 msgstr ""
 
-#: command.c:2181
-#, c-format
-msgid "@hook/before: #%d/%s"
-msgstr ""
-
-#: command.c:2184
-#, c-format
-msgid "@hook/after: #%d/%s"
-msgstr ""
-
-#: command.c:2187
-#, c-format
-msgid "@hook/ignore: #%d/%s"
-msgstr ""
-
-#: command.c:2190
-#, c-format
-msgid "@hook/override: #%d/%s"
-msgstr ""
-
 #: conf.c:542
 msgid "Options affecting attributes"
 msgstr ""
@@ -1620,7 +1600,7 @@ msgstr ""
 msgid "Created: Object %s."
 msgstr ""
 
-#: create.c:573
+#: create.c:573 create.c:700
 msgid ""
 "Warning: @CLONE/PRESERVE on an object with WIZ, ROY, @powers, or @warnings."
 msgstr ""
@@ -1645,11 +1625,6 @@ msgstr ""
 #: create.c:649
 #, c-format
 msgid "Cloned: Room #%d."
-msgstr ""
-
-#: create.c:700
-msgid ""
-"Warning: @CLONE/PRESERVE on an exit with WIZ, ROY, @powers, or Warnings."
 msgstr ""
 
 #: create.c:701
@@ -1847,7 +1822,7 @@ msgid "It was destroyed."
 msgstr ""
 
 #: destroy.c:1444
-msgid "Silly mortal chicks are for kids!"
+msgid "Silly mortal, chicks are for kids!"
 msgstr ""
 
 #: destroy.c:1447
@@ -1875,8 +1850,8 @@ msgstr ""
 msgid "You need to specify a channel."
 msgstr ""
 
-#: extchat.c:1177
-msgid "What do you want to do with that channel?"
+#: extchat.c:1177 extchat.c:1704
+msgid "What do you want to do with the channel?"
 msgstr ""
 
 #: extchat.c:1196 extchat.c:3775
@@ -2052,10 +2027,6 @@ msgstr ""
 
 #: extchat.c:1700
 msgid "Guests may not modify channels."
-msgstr ""
-
-#: extchat.c:1704
-msgid "What do you want to do with the channel?"
 msgstr ""
 
 #: extchat.c:1715
@@ -2629,7 +2600,7 @@ msgid "MAIL: All messages in all folders untagged."
 msgstr ""
 
 #: extmail.c:428
-msgid "MAIL: All messages in all folder tagged."
+msgid "MAIL: All messages in all folders tagged."
 msgstr ""
 
 #: extmail.c:433
@@ -3347,10 +3318,6 @@ msgstr ""
 
 #: function.c:1205
 msgid "Builtin function"
-msgstr ""
-
-#: function.c:1207
-msgid "@function"
 msgstr ""
 
 #: function.c:1210
@@ -4686,8 +4653,9 @@ msgstr ""
 msgid "MAIL: Mail Alias renamed."
 msgstr ""
 
-#: malias.c:505
-msgid "MAIL: Not a valid alias. Remember to prefix the alias name with *."
+#: malias.c:505 malias.c:545
+#, c-format
+msgid "MAIL: Not a valid alias. Remember to prefix the alias name with %c."
 msgstr ""
 
 #: malias.c:509
@@ -4696,11 +4664,6 @@ msgstr ""
 
 #: malias.c:518 malias.c:554
 msgid "MAIL: Permission denied!"
-msgstr ""
-
-#: malias.c:545
-#, c-format
-msgid "MAIL: Not a valid alias. Remember to prefix the alias name with %c."
 msgstr ""
 
 #: malias.c:550
@@ -5968,11 +5931,6 @@ msgstr ""
 msgid "You are set HAVEN and cannot receive pages."
 msgstr ""
 
-#: speech.c:975
-#, c-format
-msgid "You paged %s with '%s'"
-msgstr ""
-
 #: speech.c:988
 msgid "From afar"
 msgstr ""
@@ -6331,7 +6289,7 @@ msgstr ""
 msgid "You can't force God!"
 msgstr ""
 
-#: wiz.c:732
+#: wiz.c:732 wiz.c:1999
 msgid "You need a search warrant to do that!"
 msgstr ""
 
@@ -6684,8 +6642,4 @@ msgstr ""
 #: wiz.c:1987
 #, c-format
 msgid "Searches cost %d %s."
-msgstr ""
-
-#: wiz.c:1999
-msgid "You need a search warrant to do that."
 msgstr ""

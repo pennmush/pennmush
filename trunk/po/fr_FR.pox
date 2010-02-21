@@ -2194,10 +2194,6 @@ msgstr "MAIL: Aucun destinataires valide dans la liste d'alias!"
 msgid "MAIL: Not a valid alias. Remember to prefix the alias name with %c."
 msgstr "MAIL: Nom d'emprunt invalide.  Rappelez-vous de pr\351fixer le nom d'emprunt avec %c."
 
-#: src/malias.c:434
-msgid "MAIL: Not a valid alias. Remember to prefix the alias name with *."
-msgstr "MAIL: Alias non valide. Pensez a mettre un * devant l'alias."
-
 #: src/malias.c:484
 #, c-format
 msgid "MAIL: Number of mail aliases defined: %d"
@@ -2773,10 +2769,6 @@ msgstr "Le s\351parateur doit \352tre un caract\350re unique."
 #: attrib.c:942
 msgid "Set"
 msgstr "OK."
-
-#: src/destroy.c:1319
-msgid "Silly mortal chicks are for kids!"
-msgstr "Ahahahah!"
 
 #: src/wiz.c:1999
 #, c-format
@@ -3432,10 +3424,6 @@ msgstr "Vers ou voulez-vous copier?"
 msgid "What do you want to do the verb?"
 msgstr "Qui voulez-vous faire ce verbe?"
 
-#: src/extchat.c:750
-msgid "What do you want to do with that channel?"
-msgstr "Que voulez-vous faire avec ce canal?"
-
 #: src/extchat.c:1082
 msgid "What do you want to do with the channel?"
 msgstr "Que voulez-vous faire avec le canal?"
@@ -4058,10 +4046,6 @@ msgstr "\"Vous devez avoir un permis de pêcher pour utiliser ce hook.\""
 msgid "You need a search warrant to do that!"
 msgstr "Hehe, impossible de faire ca!"
 
-#: wiz.c:1509
-msgid "You need a search warrant to do that."
-msgstr "Et qui va faire la recherche pour vous?"
-
 #: attrib.c:1017
 msgid "You need to be able to set the attribute to change its lock."
 msgstr "Vous devez \352tre capable de r\351gler l'attribut pour faire ce changement."
@@ -4115,11 +4099,6 @@ msgstr "\"Vous avez un objet dans une zone en boucle infinie : %s\""
 #, c-format
 msgid "You own an object without a @lock/zone being used as a zone: %s"
 msgstr "Vous poss\351dez un objet sans @lock/zone pour l'utiliser en tant que zone: %s"
-
-#: bsd.c:4131
-#, c-format
-msgid "You paged %s with '%s'."
-msgstr "\"Vous dîtes à %s: '%s'.\""
 
 #: src/rob.c:263
 #, c-format

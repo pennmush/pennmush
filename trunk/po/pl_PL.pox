@@ -1246,30 +1246,6 @@ msgstr "Rekursja @break przekroczona."
 msgid "@command is ALWAYS enabled."
 msgstr "@komenda jest ZAWSZE dostêpna."
 
-#: function.c:1195
-msgid "@function"
-msgstr "@function"
-
-#: command.c:2119
-#, c-format
-msgid "@hook/after: #%d/%s"
-msgstr "@hook/after: #%d/%s"
-
-#: command.c:2116
-#, c-format
-msgid "@hook/before: #%d/%s"
-msgstr "@hook/before: #%d/%s"
-
-#: command.c:2122
-#, c-format
-msgid "@hook/ignore: #%d/%s"
-msgstr "@hook/ignore: #%d/%s"
-
-#: command.c:2125
-#, c-format
-msgid "@hook/override: #%d/%s"
-msgstr "@hook/override: #%d/%s"
-
 #: cmds.c:687
 msgid "@message them with what?"
 msgstr "wys³aæ @wiadomo¶æ im o czym?"
@@ -3041,10 +3017,6 @@ msgstr "POCZTA: Brak poprawnych odbiorców na li¶cie aliasu!"
 msgid "MAIL: Not a valid alias. Remember to prefix the alias name with %c."
 msgstr "POCZTA: Nieprawid³owy alias. Pamiêtaj aby dodaæ przedrostek %c do nazwy aliasu."
 
-#: src/malias.c:434
-msgid "MAIL: Not a valid alias. Remember to prefix the alias name with *."
-msgstr "POCZTA: Nieprawid³owy alias. Pamiêtaj aby dodaæ przedrostek * do nazwy aliasu."
-
 #: src/malias.c:484
 #, c-format
 msgid "MAIL: Number of mail aliases defined: %d"
@@ -3854,10 +3826,6 @@ msgstr "Separator musi byæ pojedynczym znakiem."
 msgid "Set"
 msgstr "Ustaw"
 
-#: src/destroy.c:1319
-msgid "Silly mortal chicks are for kids!"
-msgstr "G³upie dzieciêce zabawy!"
-
 #: src/wiz.c:1999
 #, c-format
 msgid "Site %s access options for %s(%s) set to %s"
@@ -4640,10 +4608,6 @@ msgstr "Sprawdzanie ostrze¿eñ ukoñczone."
 msgid "Warning: @CHOWN/PRESERVE on an object (#%d) with WIZ, ROY, INHERIT, or @power privileges."
 msgstr "Ostrze¿enie: @CHOWN/PRESERVE. na obiekcie (#%d) z WIZ, ROY, INHERIT lub przywilejami @mocy."
 
-#: create.c:640
-msgid "Warning: @CLONE/PRESERVE on an exit with WIZ, ROY, @powers, or Warnings."
-msgstr "Ostrze¿enie: @CLONE/PRESERVE na wyj¶ciu z flag± WIZ, ROY, @mocami lub Ostrze¿eniami."
-
 #: src/create.c:547
 msgid "Warning: @CLONE/PRESERVE on an object with WIZ, ROY, @powers, or @warnings."
 msgstr "Ostrze¿enie: wykonano @CLONE/PRESERVE na obiekcie z WIZ, ROY, @powers lub @warnings."
@@ -4726,10 +4690,6 @@ msgstr "Co chcesz skopiowaæ?"
 #: src/predicat.c:849
 msgid "What do you want to do the verb?"
 msgstr "Co chcesz zrobiæ z verb?"
-
-#: src/extchat.c:750
-msgid "What do you want to do with that channel?"
-msgstr "Co chcesz zrobiæ z tym kana³em?"
 
 #: src/extchat.c:1082
 msgid "What do you want to do with the channel?"
@@ -5469,10 +5429,6 @@ msgstr "Potrzebujesz karty wêdkarskiej aby u¿yæ tego haczyka (hook)."
 msgid "You need a search warrant to do that!"
 msgstr "Musisz mieæ nakaz przeszukania aby zrobiæ to!"
 
-#: wiz.c:1509
-msgid "You need a search warrant to do that."
-msgstr "Potrzebujesz nakaz przeszukania aby to zrobiæ."
-
 #: attrib.c:1017
 msgid "You need to be able to set the attribute to change its lock."
 msgstr "Musisz mieæ uprawnienia do ustawiania atrybutu aby zmieniæ tê blokadê."
@@ -5530,11 +5486,6 @@ msgstr "Posiadasz obiekt w okrê¿nym ³añcuchu strefy: %s"
 #, c-format
 msgid "You own an object without a @lock/zone being used as a zone: %s"
 msgstr "Twój posiadany obiekt bez @lock/zone bêdzie u¿ywany jako strefa: %s"
-
-#: bsd.c:4131
-#, c-format
-msgid "You paged %s with '%s'."
-msgstr "Wzywasz %s: '%s'"
 
 #: src/rob.c:263
 #, c-format

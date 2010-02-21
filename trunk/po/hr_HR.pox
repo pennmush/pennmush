@@ -344,6 +344,18 @@ msgstr "#-1 FUNKCIJA (%s) OCEKUJE "
 msgid "#-1 FUNCTION (%s) EXPECTS AN EVEN NUMBER OF ARGUMENTS"
 msgstr "#-1 FUNKCIJA (%s) OCEKUJE PARAN BROJ ARGUMENATA"
 
+#: funmath.c:2652
+msgid "#-1 FUNCTION (DIST2D) EXPECTS 4 ARGUMENTS"
+msgstr "#-1 FUNKCIJA (DIST2D) OCEKUJE 4 ARGUMENTA"
+
+#: funmath.c:2679
+msgid "#-1 FUNCTION (DIST3D) EXPECTS 6 ARGUMENTS"
+msgstr "#-1 FUNKCIJA (DIST3D) OCEKUJE 6 ARGUMENATA"
+
+#: funmisc.c:228
+msgid "#-1 FUNCTION (LETQ) EXPECTS AN ODD NUMBER OF ARGUMENTS"
+msgstr "#-1 FUNKCIJA (LETQ) OCEKUJE NEPARAN BROJ ARGUMENATA"
+
 #: funstr.c:1313 funstr.c:1319
 msgid "#-1 FUNCTION (ORD) EXPECTS ONE CHARACTER"
 msgstr "#-1 FUNKCIJA (ORD) OCEKUJE JEDAN ZNAK"
@@ -1385,30 +1397,6 @@ msgstr "Prekoraceno ogranicenje rekurzije @break naredbe."
 msgid "@command is ALWAYS enabled."
 msgstr "@command je UVIJEK ukljucen."
 
-#: function.c:1195
-msgid "@function"
-msgstr "@function"
-
-#: command.c:2119
-#, c-format
-msgid "@hook/after: #%d/%s"
-msgstr "@hook/after: #%d/%s"
-
-#: command.c:2116
-#, c-format
-msgid "@hook/before: #%d/%s"
-msgstr "@hook/before: #%d/%s"
-
-#: command.c:2122
-#, c-format
-msgid "@hook/ignore: #%d/%s"
-msgstr "@hook/ignore: #%d/%s"
-
-#: command.c:2125
-#, c-format
-msgid "@hook/override: #%d/%s"
-msgstr "@hook/override: #%d/%s"
-
 #: cque.c:695
 msgid "@include recursion exceeded."
 msgstr "Prekoraceno ogranicenje rekurzije naredbe @include."
@@ -1894,6 +1882,11 @@ msgstr "CHAT: Upozorenje: Ne zadovoljavas uvjete za spajanje na kanal! (svejedno
 msgid "CHAT: Wipe that silly grin off your face instead."
 msgstr "CHAT: Umjesto toga, makni taj blesavi smjesak sa svoga lica."
 
+#: extchat.c:1331
+#, c-format
+msgid "CHAT: You are already on channel <%s>."
+msgstr "CHAT: Vec jesi na kanalu <%s>."
+
 #: extchat.c:1385
 #, c-format
 msgid "CHAT: You are not on channel <%s>."
@@ -2095,6 +2088,10 @@ msgstr "Ne mogu pronaci taj deskriptor."
 #: src/wiz.c:1635 src/wiz.c:1929
 msgid "Couldn't find that player."
 msgstr "Nisam mogao naci tog korisnika."
+
+#: cmds.c:182
+msgid "Couldn't set that option."
+msgstr "Nisam mogao postaviti tu opciju."
 
 #: src/create.c:431
 msgid "Create what?"
@@ -2649,6 +2646,10 @@ msgstr "Hook stavljen za naredbu %s."
 msgid "Hooks not allowed with that command."
 msgstr "Hookovi nisu dozvoljeni za tu naredbu."
 
+#: bsd.c:3311
+msgid "Host"
+msgstr "Adresa"
+
 #: flags.c:1882
 #, c-format
 msgid "How do you want to restrict that %s?"
@@ -3202,6 +3203,18 @@ msgstr "POSTA: Svi postanski aliasi unisteni!"
 msgid "MAIL: All messages filed in folder %d [%s]"
 msgstr "POSTA: Sve poruke premjestene u folder %d [%s]"
 
+#: extmail.c:447
+msgid "MAIL: All messages in all folders cleared."
+msgstr "POSTA: Obrisane sve poruke u svim folderima."
+
+#: extmail.c:445
+msgid "MAIL: All messages in all folders uncleared."
+msgstr "POSTA: Ponisteno brisanje svih poruka u svim folderima."
+
+#: extmail.c:426
+msgid "MAIL: All messages in all folders untagged."
+msgstr "POSTA: Sve poruke u svim folderima oznacene."
+
 #: src/malias.c:485
 #, c-format
 msgid "MAIL: Allocated slots %d"
@@ -3319,10 +3332,20 @@ msgstr "POSTA: Starosti poruka moraju biti cijeli brojevi"
 msgid "MAIL: Msg #%d:%d cleared."
 msgstr "POSTA: Poruka #%d:%d obrisana."
 
+#: extmail.c:436
+#, c-format
+msgid "MAIL: Msg #%d:%d tagged"
+msgstr "POSTA: Por #%d:%d oznacena"
+
 #: extmail.c:361
 #, c-format
 msgid "MAIL: Msg #%d:%d uncleared."
 msgstr "POSTA: Poruka #%d:%d od-obrisana."
+
+#: extmail.c:433
+#, c-format
+msgid "MAIL: Msg #%d:%d untagged"
+msgstr "POSTA: Por #%d:%d od-oznacena"
 
 #: src/extmail.c:438
 #, c-format
@@ -3342,10 +3365,6 @@ msgstr "POSTA: Nema ispravnih primatelja za alias-listu!"
 #, c-format
 msgid "MAIL: Not a valid alias. Remember to prefix the alias name with %c."
 msgstr "POSTA: Alias nije ispravan. Sjeti se staviti %c ispred imena aliasa."
-
-#: src/malias.c:434
-msgid "MAIL: Not a valid alias. Remember to prefix the alias name with *."
-msgstr "POSTA: Taj alias nije ispravan. Ne zaboravi staviti * ispred aliasa."
 
 #: src/malias.c:484
 #, c-format
@@ -4245,10 +4264,6 @@ msgstr "Separator mora biti jedan znak."
 msgid "Set"
 msgstr "Postavljeno"
 
-#: src/destroy.c:1319
-msgid "Silly mortal chicks are for kids!"
-msgstr "Dopustenje uskraceno."
-
 #: src/wiz.c:1999
 #, c-format
 msgid "Site %s access options for %s(%s) set to %s"
@@ -4305,6 +4320,14 @@ msgstr "Nazalost, nalazis se u neispravnoj lokaciji."
 #: src/rob.c:102
 msgid "Sorry, you can only kill players and objects."
 msgstr "Nazalost, mozes ubijati samo igrace i predmete."
+
+#: create.c:104
+msgid "Sorry, you can only make exits out of rooms."
+msgstr "Oprosti, ali izlaze mozes stvarati samo u sobama."
+
+#: move.c:681
+msgid "Sorry, you can't drop exits."
+msgstr "Oprosti, ali ne mozes ispustati izlaze."
 
 #: src/predicat.c:369
 #, c-format
@@ -4479,6 +4502,10 @@ msgstr "Tako vaznu stvar se ne moze unistiti."
 #, c-format
 msgid "That isn't an alias of the %s %s."
 msgstr "To nije alias od %s %s."
+
+#: conf.c:1693
+msgid "That isn't an on/off option."
+msgstr "To nije on/off opcija."
 
 #: src/extchat.c:1181
 msgid "That name is too long."
@@ -5111,13 +5138,13 @@ msgstr "Provjera upozorenja gotova."
 msgid "Warning: @CHOWN/PRESERVE on an object (#%d) with WIZ, ROY, INHERIT, or @power privileges."
 msgstr "Upozorenje: Upotreba naredbe @CHOWN/PRESERVE na objekt (#%d) koji ima WIZ, ROY, INHERIT ili @power privilegije."
 
-#: create.c:640
-msgid "Warning: @CLONE/PRESERVE on an exit with WIZ, ROY, @powers, or Warnings."
-msgstr "Upozorenje: @CLONE/PRESERVE upotrijebljen na izlazu koji ima WIZ, ROY, @powere ili Warninge."
-
 #: src/create.c:547
 msgid "Warning: @CLONE/PRESERVE on an object with WIZ, ROY, @powers, or @warnings."
 msgstr "Upozorenje: Upotreba naredbe @CLONE/PRESERVE na objekt s WIZom, ROYem, @powerima ili @warninzima."
+
+#: set.c:453
+msgid "Warning: @chzoning a TRUST player."
+msgstr "Upozorenje: @chzoneanje igraca koji ima flag TRUST."
 
 #: src/set.c:417
 msgid "Warning: @chzoning a privileged player."
@@ -5197,10 +5224,6 @@ msgstr "Kamo zelis kopirati?"
 #: src/predicat.c:849
 msgid "What do you want to do the verb?"
 msgstr "Sto zelis napraviti s glagolom?"
-
-#: src/extchat.c:750
-msgid "What do you want to do with that channel?"
-msgstr "Sto zelis napraviti s tim kanalom?"
 
 #: src/extchat.c:1082
 msgid "What do you want to do with the channel?"
@@ -5608,6 +5631,10 @@ msgstr "Ne mozes to unlinkati!"
 msgid "You cannot @CHOWN/PRESERVE. Use normal @CHOWN."
 msgstr "Ne mozes upotrebljavati @CHOWN/PRESERVE. Upotrijebi obican @CHOWN."
 
+#: create.c:624
+msgid "You cannot @CLONE/PRESERVE. Use normal @CLONE instead."
+msgstr "Ne mozes upotrebljavati @CLONE/PRESERVE. Umjesto njega upotrijebi obican @CLONE."
+
 #: cque.c:985
 msgid "You cannot adjust the timeout of an indefinite semaphore."
 msgstr "Ne mozes promijeniti rok isteka stalnog semafora."
@@ -5958,10 +5985,6 @@ msgstr "Treba ti ribicka dozvola da koristis taj hook."
 msgid "You need a search warrant to do that!"
 msgstr "Da to napravis, treba ti nalog za pretres!"
 
-#: wiz.c:1509
-msgid "You need a search warrant to do that."
-msgstr "Za to ti treba nalog za pretres."
-
 #: attrib.c:1017
 msgid "You need to be able to set the attribute to change its lock."
 msgstr "Moras moci postaviti atribut da mozes promijeniti njegovu bravu."
@@ -6024,11 +6047,6 @@ msgstr "Posjedujes objekt bez zonske brave koji je koristen kao zona: %s"
 #, c-format
 msgid "You paged %s with '%s'"
 msgstr "%s dobije tvoju poruku '%s'"
-
-#: bsd.c:4131
-#, c-format
-msgid "You paged %s with '%s'."
-msgstr "%s dobije tvoju poruku '%s'."
 
 #: src/rob.c:263
 #, c-format
@@ -6160,6 +6178,10 @@ msgstr "Nalazis se u nistavilu - saljem te doma."
 #: src/wiz.c:487
 msgid "You're in too many containers."
 msgstr "Nalazis se u previse spremnika."
+
+#: move.c:1005
+msgid "You're not allowed to follow."
+msgstr "Pracenje ti nije dozvoljeno."
 
 #: move.c:845
 #, c-format

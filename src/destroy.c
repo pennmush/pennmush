@@ -1441,7 +1441,7 @@ void
 do_dbck(dbref player)
 {
   if (!Wizard(player)) {
-    notify(player, T("Silly mortal chicks are for kids!"));
+    notify(player, T("Silly mortal, chicks are for kids!"));
     return;
   }
   notify(player, T("GAME: Performing database consistency check."));

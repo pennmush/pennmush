@@ -2960,7 +2960,7 @@ do_page_port(dbref player, dbref cause, const char *pc, const char *message,
     break;
   case 3:
     safe_format(tbuf, &tbp, T("%s pages: %s"), Name(player), message);
-    notify_format(player, T("You paged %s with '%s'."),
+    notify_format(player, T("You paged %s with '%s'"),
                   target != NOTHING ? Name(target) :
                   T("a connecting player"), message);
     break;

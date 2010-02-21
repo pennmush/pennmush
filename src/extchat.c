@@ -1174,7 +1174,7 @@ do_channel(dbref player, const char *name, const char *target, const char *com)
     return;
   }
   if (!com || !*com) {
-    notify(player, T("What do you want to do with that channel?"));
+    notify(player, T("What do you want to do with the channel?"));
     return;
   }
 

@@ -697,7 +697,7 @@ do_clone(dbref player, char *name, char *newname, int preserve)
           !null_flagmask("POWER", Powers(clone)))
         notify(player,
                T
-               ("Warning: @CLONE/PRESERVE on an exit with WIZ, ROY, @powers, or Warnings."));
+               ("Warning: @CLONE/PRESERVE on an object with WIZ, ROY, @powers, or @warnings."));
       notify_format(player, T("Cloned: Exit #%d."), clone);
       local_data_clone(clone, thing);
       return clone;

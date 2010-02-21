@@ -1204,7 +1204,7 @@ do_function_restrict(dbref player, const char *name, const char *restriction,
   if (fp->flags & FN_BUILTIN)
     safe_format(tbuf1, &bp, "%s %s - ", T("Builtin function"), fp->name);
   else
-    safe_format(tbuf1, &bp, "%s #%d/%s - ", T("@function"),
+    safe_format(tbuf1, &bp, "%s #%d/%s - ", "@function",
                 fp->where.ufun->thing, fp->where.ufun->name);
   if (fp->flags == flags)
     safe_str(T("Restrictions unchanged."), tbuf1, &bp);

@@ -1996,7 +1996,7 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
       !(is_wiz || (spec.type == TYPE_PLAYER) ||
         (ZMaster(spec.owner) && eval_lock(player, spec.owner, Zone_Lock)))) {
     giveto(player, FIND_COST);
-    notify(player, T("You need a search warrant to do that."));
+    notify(player, T("You need a search warrant to do that!"));
     if (spec.lock != TRUE_BOOLEXP)
       free_boolexp(spec.lock);
     return -1;

@@ -2178,16 +2178,16 @@ do_hook_list(dbref player, char *command)
     }
     if (Wizard(player) || has_power_by_name(player, "HOOK", NOTYPE)) {
       if (GoodObject(cmd->hooks.before.obj))
-        notify_format(player, T("@hook/before: #%d/%s"),
+        notify_format(player, "@hook/before: #%d/%s",
                       cmd->hooks.before.obj, cmd->hooks.before.attrname);
       if (GoodObject(cmd->hooks.after.obj))
-        notify_format(player, T("@hook/after: #%d/%s"), cmd->hooks.after.obj,
+        notify_format(player, "@hook/after: #%d/%s", cmd->hooks.after.obj,
                       cmd->hooks.after.attrname);
       if (GoodObject(cmd->hooks.ignore.obj))
-        notify_format(player, T("@hook/ignore: #%d/%s"),
+        notify_format(player, "@hook/ignore: #%d/%s",
                       cmd->hooks.ignore.obj, cmd->hooks.ignore.attrname);
       if (GoodObject(cmd->hooks.override.obj))
-        notify_format(player, T("@hook/override: #%d/%s"),
+        notify_format(player, "@hook/override: #%d/%s",
                       cmd->hooks.override.obj, cmd->hooks.override.attrname);
     }
   }

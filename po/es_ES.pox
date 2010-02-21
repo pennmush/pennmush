@@ -2034,10 +2034,6 @@ msgstr "CORREO: Destinatarios no válidos para la lista de alias!"
 msgid "MAIL: Not a valid alias. Remember to prefix the alias name with %c."
 msgstr "CORREO: No es un alias válido. Recuerda prefijar el nombre del alias con %c."
 
-#: src/malias.c:434
-msgid "MAIL: Not a valid alias. Remember to prefix the alias name with *."
-msgstr "CORREO: No es un alias válido. Recuerda prefijar el nombre del alias con *."
-
 #: src/malias.c:484
 #, c-format
 msgid "MAIL: Number of mail aliases defined: %d"
@@ -3057,10 +3053,6 @@ msgstr "¿Que quieres copiar de donde?"
 #: src/set.c:610
 msgid "What do you want to copy to?"
 msgstr "¿Que quieres copiar a donde?"
-
-#: src/extchat.c:750
-msgid "What do you want to do with that channel?"
-msgstr "¿Que quieres hacer con ese canal?"
 
 #: src/extchat.c:1082
 msgid "What do you want to do with the channel?"

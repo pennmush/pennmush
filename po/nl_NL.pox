@@ -344,6 +344,18 @@ msgstr "#-1 FUNCTIE (%s) VERWACHT "
 msgid "#-1 FUNCTION (%s) EXPECTS AN EVEN NUMBER OF ARGUMENTS"
 msgstr "#-1 FUNCTIE (%s) VERWACHT EEN EVEN AANTAL ARGUMENTEN"
 
+#: funmath.c:2652
+msgid "#-1 FUNCTION (DIST2D) EXPECTS 4 ARGUMENTS"
+msgstr "#-1 FUNCTIE (DIST2D) VERWACHT 4 ARGUMENTEN"
+
+#: funmath.c:2679
+msgid "#-1 FUNCTION (DIST3D) EXPECTS 6 ARGUMENTS"
+msgstr "#-1 FUNCTIE (DIST3D) VERWACHT 6 ARGUMENTEN"
+
+#: funmisc.c:228
+msgid "#-1 FUNCTION (LETQ) EXPECTS AN ODD NUMBER OF ARGUMENTS"
+msgstr "#-1 FUNCTIE (LETQ) WERWACHT EEN ONEVEN AANTAL ARGUMENTEN"
+
 #: funstr.c:1313 funstr.c:1319
 msgid "#-1 FUNCTION (ORD) EXPECTS ONE CHARACTER"
 msgstr "#-1 FUNCTIE (ORD) VERWACHT ÉÉN KARAKTER"
@@ -689,6 +701,11 @@ msgstr "#-2 GEEN UNIEKE KANAAL MATCH"
 #: src/extmail.c:1641
 msgid "#-? fun_mailstats called with invalid called_as!"
 msgstr "#-? fun_mailstats werd opgeroepen met ongeldige called_as!"
+
+#: game.c:2111 game.c:2119 game.c:2127 game.c:2136
+#, c-format
+msgid "%29s: %ld minutes %ld seconds, at %s."
+msgstr "%29s: %ld minuten %ld seconden, op %s."
 
 #: set.c:1145
 #, c-format
@@ -1280,6 +1297,16 @@ msgstr "%s/%s - %s aangezet."
 msgid "%s: No such player."
 msgstr "%s: Speler bestaat niet."
 
+#: wiz.c:275
+#, c-format
+msgid "%s: Objects: %d   Limit: %d"
+msgstr "%s: Objecten: %d  Limiet: %d"
+
+#: wiz.c:269
+#, c-format
+msgid "%s: Objects: %d   Limit: UNLIMITED"
+msgstr "%s: Objecten: %d  Limiet: ONGELIMITEERD"
+
 #: attrib.c:1566 attrib.c:1584
 #, c-format
 msgid "'%s' contains too many aliases."
@@ -1364,30 +1391,6 @@ msgstr "@break recursie overschreden."
 #: src/command.c:1118
 msgid "@command is ALWAYS enabled."
 msgstr "@command is ALTIJD ingeschakeld."
-
-#: function.c:1195
-msgid "@function"
-msgstr "@function"
-
-#: command.c:2119
-#, c-format
-msgid "@hook/after: #%d/%s"
-msgstr "@hook/after: #%d/%s"
-
-#: command.c:2116
-#, c-format
-msgid "@hook/before: #%d/%s"
-msgstr "@hook/before: #%d/%s"
-
-#: command.c:2122
-#, c-format
-msgid "@hook/ignore: #%d/%s"
-msgstr "@hook/ignore: #%d/%s"
-
-#: command.c:2125
-#, c-format
-msgid "@hook/override: #%d/%s"
-msgstr "@hook/override: #%d/%s"
 
 #: cque.c:695
 msgid "@include recursion exceeded."
@@ -3257,10 +3260,6 @@ msgstr "POST: Geen geldige ontvangers voor alias-lijst!"
 msgid "MAIL: Not a valid alias. Remember to prefix the alias name with %c."
 msgstr "POST: Geen geldige alias. Onthoud dat de naam begint met %c."
 
-#: src/malias.c:434
-msgid "MAIL: Not a valid alias. Remember to prefix the alias name with *."
-msgstr "POST: Geen geldige alias. Onthoud dat een alias naam begint met *."
-
 #: src/malias.c:484
 #, c-format
 msgid "MAIL: Number of mail aliases defined: %d"
@@ -4126,10 +4125,6 @@ msgstr "Separator mag slechts één karakter zijn."
 msgid "Set"
 msgstr "Ingesteld"
 
-#: src/destroy.c:1319
-msgid "Silly mortal chicks are for kids!"
-msgstr "Lief klein stervelingetje moet geen stoute dingen doen."
-
 #: src/wiz.c:1999
 #, c-format
 msgid "Site %s access options for %s(%s) set to %s"
@@ -4186,6 +4181,14 @@ msgstr "Sorry, je bent in een ongeldige plaats."
 #: src/rob.c:102
 msgid "Sorry, you can only kill players and objects."
 msgstr "Sorry, je kunt alleen spelers en voorwerpen vermoorden."
+
+#: create.c:104
+msgid "Sorry, you can only make exits out of rooms."
+msgstr "Sorry, je kunt uitgangen alleen vanuit kamers maken."
+
+#: move.c:681
+msgid "Sorry, you can't drop exits."
+msgstr "Sorry, je kunt uitgangen niet laten vallen."
 
 #: src/predicat.c:369
 #, c-format
@@ -4360,6 +4363,10 @@ msgstr "Dat is te bijzonder om vernietigd te worden."
 #, c-format
 msgid "That isn't an alias of the %s %s."
 msgstr "Dat is geen alias van de %s %s."
+
+#: conf.c:1693
+msgid "That isn't an on/off option."
+msgstr "Dat is geen aan/uit optie."
 
 #: src/extchat.c:1181
 msgid "That name is too long."
@@ -4992,10 +4999,6 @@ msgstr "Gereed met de waarschuwingen controle."
 msgid "Warning: @CHOWN/PRESERVE on an object (#%d) with WIZ, ROY, INHERIT, or @power privileges."
 msgstr "Waarschuwing:  @chown/preserve op een object (#%d) met WIZ, ROY, INHERIT of @power privileges."
 
-#: create.c:640
-msgid "Warning: @CLONE/PRESERVE on an exit with WIZ, ROY, @powers, or Warnings."
-msgstr "Waarschuwing: @CLONE/PRESERVE op een uitgang met WIZ, ROY, @powers, of Warnings."
-
 #: src/create.c:547
 msgid "Warning: @CLONE/PRESERVE on an object with WIZ, ROY, @powers, or @warnings."
 msgstr "Waarschuwing: @CLONE/PRESERVE op een object met WIZ, ROY, @powers of @warnings."
@@ -5078,10 +5081,6 @@ msgstr "Waar wil je naar kopiëren?"
 #: src/predicat.c:849
 msgid "What do you want to do the verb?"
 msgstr "Wat wil je dit werkwoord laten doen?"
-
-#: src/extchat.c:750
-msgid "What do you want to do with that channel?"
-msgstr "Wat wil je met dat kanaal doen?"
 
 #: src/extchat.c:1082
 msgid "What do you want to do with the channel?"
@@ -5835,10 +5834,6 @@ msgstr "Je hebt een visakte nodig om die haak te gebruiken."
 msgid "You need a search warrant to do that!"
 msgstr "Daar heb je een huiszoekingsbevel voor nodig!"
 
-#: wiz.c:1509
-msgid "You need a search warrant to do that."
-msgstr "Daar heb je een huiszoekingsbevel voor nodig."
-
 #: attrib.c:1017
 msgid "You need to be able to set the attribute to change its lock."
 msgstr "Je moet in staat zijn het attribuut in te stellen om het slot te wijzigen."
@@ -5901,11 +5896,6 @@ msgstr "Je bezit een voorwerp zonder een @lock/zone dat gebruikt wordt als een z
 #, c-format
 msgid "You paged %s with '%s'"
 msgstr "Je roept %s op met '%s'"
-
-#: bsd.c:4131
-#, c-format
-msgid "You paged %s with '%s'."
-msgstr "Je roept %s op met '%s'."
 
 #: src/rob.c:263
 #, c-format
@@ -6037,6 +6027,10 @@ msgstr "Je bevindt je het niets - je wordt naar huis gezonden."
 #: src/wiz.c:487
 msgid "You're in too many containers."
 msgstr "Je bent in teveel containers."
+
+#: move.c:1005
+msgid "You're not allowed to follow."
+msgstr "Je mag niet volgen."
 
 #: move.c:845
 #, c-format

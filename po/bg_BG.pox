@@ -2129,10 +2129,6 @@ msgstr "\"РџСЂРѕРјРµРЅР»РёРІРёСЏС‚ РёР·С…РѕРґ РЅСЏРјР° %s Р°С‚СЂРёР±СѓС‚\""
 msgid "Warning '%s' for %s:"
 msgstr "Предупреждение '%s' за %s:"
 
-#: create.c:640
-msgid "Warning: @CLONE/PRESERVE on an exit with WIZ, ROY, @powers, or Warnings."
-msgstr "\"РџСЂРµРґСѓРїСЂРµР¶РґРµРЅРёРµ: @CLONE/PRESERVE РЅР° РёР·С…РѕРґ СЃ WIZ, ROY, @powers, РёР»Рё Warnings.\""
-
 #: src/create.c:547
 msgid "Warning: @CLONE/PRESERVE on an object with WIZ, ROY, @powers, or @warnings."
 msgstr "Предупреждение: @CLONE/PRESERVE на обект с WIZ, ROY, @powers, или @warnings."
@@ -2419,11 +2415,6 @@ msgstr "\"РџСЂРёС‚РµР¶Р°РІР°С€ РѕР±РµРєС‚ РѕС‚ РІРµСЂРёРіР° С†РёСЂРєСѓР»СЏСЂРЅРё
 #, c-format
 msgid "You own an object without a @lock/zone being used as a zone: %s"
 msgstr "Притежаваш обект без @lock/zone, който се ползва като зона: %s"
-
-#: bsd.c:4131
-#, c-format
-msgid "You paged %s with '%s'."
-msgstr "\"РўРё РїРѕРІРёРєР° %s СЃ '%s'.\""
 
 #: src/rob.c:263
 #, c-format

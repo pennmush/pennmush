@@ -802,10 +802,6 @@ msgstr "Qual sinal voc\352 quer ativar?"
 msgid "What do you want to do the verb?"
 msgstr "Qual sinal voc\352 quer ativar?"
 
-#: src/extchat.c:750
-msgid "What do you want to do with that channel?"
-msgstr "Qual sinal voc\352 quer ativar?"
-
 #: src/extchat.c:1082
 msgid "What do you want to do with the channel?"
 msgstr "Qual sinal voc\352 quer ativar?"

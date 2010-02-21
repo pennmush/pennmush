@@ -1874,10 +1874,6 @@ msgstr "Hvorfor vil du dog det?"
 msgid "What do you want to do the verb?"
 msgstr "Hvorfor vil du dog det?"
 
-#: src/extchat.c:750
-msgid "What do you want to do with that channel?"
-msgstr "Hvorfor vil du dog det?"
-
 #: src/extchat.c:1082
 msgid "What do you want to do with the channel?"
 msgstr "Hvorfor vil du dog det?"
@@ -2315,10 +2311,6 @@ msgstr "Det objekt er sat WIZARD. Du skal bruge @nuke for at destruere det."
 
 #: src/wiz.c:678 src/wiz.c:1451
 msgid "You need a search warrant to do that!"
-msgstr "Du har ikke lov til at overtage ejerskab p\345 det."
-
-#: wiz.c:1509
-msgid "You need a search warrant to do that."
 msgstr "Du har ikke lov til at overtage ejerskab p\345 det."
 
 #: src/set.c:715

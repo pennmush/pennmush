@@ -2309,10 +2309,6 @@ msgstr "POSTA: Nincs érvényes célpont a becenév-listához!"
 msgid "MAIL: Not a valid alias. Remember to prefix the alias name with %c."
 msgstr "POSTA: Nem megfelelõ alias. Az aliasok prefixe %c."
 
-#: src/malias.c:434
-msgid "MAIL: Not a valid alias. Remember to prefix the alias name with *."
-msgstr "POSTA: Érvénytelen alias. Az aliasnak *-al kell kezdõdnie."
-
 #: src/malias.c:484
 #, c-format
 msgid "MAIL: Number of mail aliases defined: %d"
@@ -2909,10 +2905,6 @@ msgstr "Az elválasztójel egy karakter kell legyen."
 #: attrib.c:942
 msgid "Set"
 msgstr "Beállítva"
-
-#: src/destroy.c:1319
-msgid "Silly mortal chicks are for kids!"
-msgstr "Dilis tyúkot a gyereknek!"
 
 #: src/wiz.c:1999
 #, c-format
@@ -3576,10 +3568,6 @@ msgstr "Hova akarod másolni?"
 msgid "What do you want to do the verb?"
 msgstr "Mit szeretnél ezzel az igével csinálni?"
 
-#: src/extchat.c:750
-msgid "What do you want to do with that channel?"
-msgstr "Mit szeretnél tenni ezzel a csatornával?"
-
 #: src/extchat.c:1082
 msgid "What do you want to do with the channel?"
 msgstr "Mit kívánsz tenni ezzel a csatornával?"
@@ -4219,10 +4207,6 @@ msgstr "Nem rendelkezel engedéllyel a horog használatához."
 msgid "You need a search warrant to do that!"
 msgstr "Körözvényre lenne ehhez szükséged!"
 
-#: wiz.c:1509
-msgid "You need a search warrant to do that."
-msgstr "Ehhez szükséged lenne egy letartóztatási engedélyre."
-
 #: attrib.c:1017
 msgid "You need to be able to set the attribute to change its lock."
 msgstr "Kell, hogy tudd állítani az attribútumot, hogy a zárján változtass."
@@ -4280,11 +4264,6 @@ msgstr "A körkörös zóna láncolatban rendelkezel objektummal: %s"
 #, c-format
 msgid "You own an object without a @lock/zone being used as a zone: %s"
 msgstr "Van egy tárgyad ami @lock/zone nélkül zónaként van használva: %s"
-
-#: bsd.c:4131
-#, c-format
-msgid "You paged %s with '%s'."
-msgstr "Azt üzened %s részére: %s"
 
 #: src/rob.c:263
 #, c-format

@@ -2007,10 +2007,6 @@ msgstr "MAIL: Ingen gyldige mottakere for aliaslisten!"
 msgid "MAIL: Not a valid alias. Remember to prefix the alias name with %c."
 msgstr "MAIL: Ikke et gyldig alias. Husk \345 prefikse aliaset med %c."
 
-#: src/malias.c:434
-msgid "MAIL: Not a valid alias. Remember to prefix the alias name with *."
-msgstr "MAIL: Ikke et gyldig alias. Husk \345 prefikse aliaset med *."
-
 #: src/malias.c:484
 #, c-format
 msgid "MAIL: Number of mail aliases defined: %d"
@@ -2552,10 +2548,6 @@ msgstr "Separator m\345 v\346re ett tegn."
 #: attrib.c:942
 msgid "Set"
 msgstr "Satt"
-
-#: src/destroy.c:1319
-msgid "Silly mortal chicks are for kids!"
-msgstr "Idiotiske d\370delige beibs er for unger!"
 
 #: src/wiz.c:1999
 #, c-format
@@ -3166,10 +3158,6 @@ msgstr "Hva vil du kopiere fra?"
 msgid "What do you want to do the verb?"
 msgstr "Hva vil du gj\370re med verbet?"
 
-#: src/extchat.c:750
-msgid "What do you want to do with that channel?"
-msgstr "Hva vil du gj\370re med den kanalen?"
-
 #: src/extchat.c:1082
 msgid "What do you want to do with the channel?"
 msgstr "Hva vil du gj\370re med kanalen?"
@@ -3740,10 +3728,6 @@ msgstr "Du m\345 bruke @nuke for \345 slette en spiller."
 #: src/wiz.c:678 src/wiz.c:1451
 msgid "You need a search warrant to do that!"
 msgstr "Du trenger en ransakingsordre for \345 gj\370re det!"
-
-#: wiz.c:1509
-msgid "You need a search warrant to do that."
-msgstr "Du trenger en ransakingsordre for \345 gj\370re det."
 
 #: attrib.c:1017
 msgid "You need to be able to set the attribute to change its lock."

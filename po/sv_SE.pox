@@ -2292,10 +2292,6 @@ msgstr "BREV: Inga giltiga mottagare f\366r alias-listan!"
 msgid "MAIL: Not a valid alias. Remember to prefix the alias name with %c."
 msgstr "BREV: Inte ett giltigt alias. Kom ih\345g att l\344gga till %c f\366re aliasnamnet."
 
-#: src/malias.c:434
-msgid "MAIL: Not a valid alias. Remember to prefix the alias name with *."
-msgstr "BREV: Inte ett giltigt alias. Kom ih\345g att alltid b\366rja alias namn med *."
-
 #: src/malias.c:484
 #, c-format
 msgid "MAIL: Number of mail aliases defined: %d"
@@ -2855,10 +2851,6 @@ msgstr "\305tskiljare m\345ste vara ett tecken."
 #: attrib.c:942
 msgid "Set"
 msgstr "Satt"
-
-#: src/destroy.c:1319
-msgid "Silly mortal chicks are for kids!"
-msgstr "Tokiga d\366dliga kycklingar \344r barnsligt!"
 
 #: src/wiz.c:1999
 #, c-format
@@ -3465,10 +3457,6 @@ msgstr "Vad vill du kopiera till?"
 msgid "What do you want to do the verb?"
 msgstr "Vad vill du g\366ra med verbet?"
 
-#: src/extchat.c:750
-msgid "What do you want to do with that channel?"
-msgstr "Vad vill du g\366ra med den kanalen?"
-
 #: src/extchat.c:1082
 msgid "What do you want to do with the channel?"
 msgstr "Vad vill du g\366ra med kanalen?"
@@ -4041,10 +4029,6 @@ msgstr "Du behöver ett fiskekort för att använda den krioken."
 #: src/wiz.c:678 src/wiz.c:1451
 msgid "You need a search warrant to do that!"
 msgstr "Du f\345r inte s\366ka det!"
-
-#: wiz.c:1509
-msgid "You need a search warrant to do that."
-msgstr "Du beh\366ver tillst\345nd f\366r det."
 
 #: attrib.c:1017
 msgid "You need to be able to set the attribute to change its lock."

@@ -4541,34 +4541,6 @@ msgstr "De kamer schudt en begint af te brokkelen."
 msgid "The semaphore count must be an integer."
 msgstr "De semafoorteller moet een integer zijn."
 
-#: src/services.c:775
-msgid "The service continue is pending."
-msgstr "De hervatting van de service wordt behandeld."
-
-#: src/services.c:763
-msgid "The service is not running."
-msgstr "De service draait niet."
-
-#: src/services.c:781
-msgid "The service is paused."
-msgstr "De service is gepauseerd."
-
-#: src/services.c:772
-msgid "The service is running."
-msgstr "De service draait."
-
-#: src/services.c:766
-msgid "The service is starting."
-msgstr "De service is aan het starten."
-
-#: src/services.c:769
-msgid "The service is stopping."
-msgstr "De service is aan het stoppen."
-
-#: src/services.c:778
-msgid "The service pause is pending."
-msgstr "De service onderbreking is ophanden."
-
 #: src/destroy.c:341
 #, c-format
 msgid "The wrecking ball is on its way for %s's %s and its exits."
@@ -4913,10 +4885,6 @@ msgstr "Zone %s niet afgesloten - automatisch slot op zichzelf ingesteld"
 #: extmail.c:2471
 msgid "Unread "
 msgstr "Ongelezen "
-
-#: src/services.c:784
-msgid "Unrecognised status."
-msgstr "Niet herkende status."
 
 #: src/set.c:498
 msgid "Unrecognized attribute flag."

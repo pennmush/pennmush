@@ -3133,34 +3133,6 @@ msgstr "Rum %s har ben\345dats fr\345n f\366rintelse."
 msgid "The room shakes and begins to crumble."
 msgstr "Rummet skakar och b\366rjar falla s\366nder."
 
-#: src/services.c:775
-msgid "The service continue is pending."
-msgstr "Forts\344ttning av tj\344nsten v\344ntar."
-
-#: src/services.c:763
-msgid "The service is not running."
-msgstr "Tj\344nsten k\366rs inte."
-
-#: src/services.c:781
-msgid "The service is paused."
-msgstr "Tj\344nsten \344r pausad."
-
-#: src/services.c:772
-msgid "The service is running."
-msgstr "Tj\344nsten k\366rs."
-
-#: src/services.c:766
-msgid "The service is starting."
-msgstr "Tj\344nsten startas."
-
-#: src/services.c:769
-msgid "The service is stopping."
-msgstr "Tj\344nsten stoppas."
-
-#: src/services.c:778
-msgid "The service pause is pending."
-msgstr "Tj\344nstepausen v\344ntar."
-
 #: src/destroy.c:341
 #, c-format
 msgid "The wrecking ball is on its way for %s's %s and its exits."
@@ -3340,10 +3312,6 @@ msgstr "L\344nka av vad?"
 #: extmail.c:2471
 msgid "Unread "
 msgstr "Ol\344st "
-
-#: src/services.c:784
-msgid "Unrecognised status."
-msgstr "Ok\344nd status."
 
 #: src/set.c:498
 msgid "Unrecognized attribute flag."

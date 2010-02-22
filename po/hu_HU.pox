@@ -3202,34 +3202,6 @@ msgstr "A szoba megrázkódik, és elkezd összeomlani."
 msgid "The semaphore count must be an integer."
 msgstr "A szemafor számláló szám kell, hogy legyen."
 
-#: src/services.c:775
-msgid "The service continue is pending."
-msgstr "A szolgáltatás függõben van."
-
-#: src/services.c:763
-msgid "The service is not running."
-msgstr "A szolgáltatás szünetel."
-
-#: src/services.c:781
-msgid "The service is paused."
-msgstr "A szolgáltatás szünetel."
-
-#: src/services.c:772
-msgid "The service is running."
-msgstr "A szolgáltatás mûködik."
-
-#: src/services.c:766
-msgid "The service is starting."
-msgstr "A szolgáltatás elindul."
-
-#: src/services.c:769
-msgid "The service is stopping."
-msgstr "A szolgáltatás leáll."
-
-#: src/services.c:778
-msgid "The service pause is pending."
-msgstr "A szolgáltatás szüneteltetése függõben."
-
 #: src/destroy.c:341
 #, c-format
 msgid "The wrecking ball is on its way for %s's %s and its exits."
@@ -3443,10 +3415,6 @@ msgstr "Minek a kötését oldjam fel?"
 #: extmail.c:2471
 msgid "Unread "
 msgstr "Olvasatlan "
-
-#: src/services.c:784
-msgid "Unrecognised status."
-msgstr "Felismerhetetlen státusz."
 
 #: src/set.c:498
 msgid "Unrecognized attribute flag."

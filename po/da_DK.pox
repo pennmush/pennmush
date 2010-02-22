@@ -1707,34 +1707,6 @@ msgstr "Postv\346senet udsteder en arrestordre p\345 dig."
 msgid "The room %s has been spared from destruction by %s."
 msgstr "%s har sat dit %s op til destruktion."
 
-#: src/services.c:775
-msgid "The service continue is pending."
-msgstr "Servicen standser."
-
-#: src/services.c:763
-msgid "The service is not running."
-msgstr "Servicen standser."
-
-#: src/services.c:781
-msgid "The service is paused."
-msgstr "Servicen standser."
-
-#: src/services.c:772
-msgid "The service is running."
-msgstr "Servicen standser."
-
-#: src/services.c:766
-msgid "The service is starting."
-msgstr "Servicen standser."
-
-#: src/services.c:769
-msgid "The service is stopping."
-msgstr "Servicen standser."
-
-#: src/services.c:778
-msgid "The service pause is pending."
-msgstr "Servicen standser."
-
 #: src/destroy.c:341
 #, c-format
 msgid "The wrecking ball is on its way for %s's %s and its exits."
@@ -1801,10 +1773,6 @@ msgstr "Type: "
 #, c-format
 msgid "Unable to %s attribute."
 msgstr "Kunne ikke %s attributten."
-
-#: src/services.c:784
-msgid "Unrecognised status."
-msgstr "Ikke genkendt status."
 
 #: src/set.c:498
 msgid "Unrecognized attribute flag."

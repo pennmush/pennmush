@@ -4207,34 +4207,6 @@ msgstr "Pokój trzêsie siê i zaczyna siê rozpadaæ."
 msgid "The semaphore count must be an integer."
 msgstr "Zliczanie semafora musi byæ liczb± ca³kowit±."
 
-#: src/services.c:775
-msgid "The service continue is pending."
-msgstr "Kontynuacja us³ugi jest wykonywana."
-
-#: src/services.c:763
-msgid "The service is not running."
-msgstr "Us³uga nie dzia³a."
-
-#: src/services.c:781
-msgid "The service is paused."
-msgstr "Us³uga jest zatrzymana."
-
-#: src/services.c:772
-msgid "The service is running."
-msgstr "Us³uga dzia³a"
-
-#: src/services.c:766
-msgid "The service is starting."
-msgstr "Us³uga startuje."
-
-#: src/services.c:769
-msgid "The service is stopping."
-msgstr "Us³uga jest zatrzymywana."
-
-#: src/services.c:778
-msgid "The service pause is pending."
-msgstr "Pauzowanie us³ugi jest wykonywane."
-
 #: src/destroy.c:341
 #, c-format
 msgid "The wrecking ball is on its way for %s's %s and its exits."
@@ -4526,10 +4498,6 @@ msgstr "Odblokowana strefa %s - automatyczne blokowanie-strefy do niej samej"
 #: extmail.c:2471
 msgid "Unread "
 msgstr "Nieczytane "
-
-#: src/services.c:784
-msgid "Unrecognised status."
-msgstr "Nieznany status."
 
 #: src/set.c:498
 msgid "Unrecognized attribute flag."

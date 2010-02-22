@@ -2222,15 +2222,14 @@ COMPLEX LOCKS
     |      - "or"
 
   For example:
-   @lock My Toy = =me | !*Chromia | +Toy Box Key
-      This locks "My Toy" to me, -against- the player Chromia, or to
-      anyone carrying the object "Toy Box Key".
-   @lock My Toy = *Marissa & +Toy Box Key
+   @lock My Toy = =*Marissa & +Toy Box Key
       This locks "My Toy" to the player Marissa, who needs to be
       carrying the object "Toy Box Key".
-   @lock My Toy= *Chromia | ( *Marissa & +Toy Box Key )
-      This locks it to Chromia, OR to Marissa if she is carrying the
-      Key.
+   @lock My Toy= =*Chromia | ( =*Marissa & +Toy Box Key )
+      This locks it to Chromia, OR to Marissa if she is carrying the Key.
+   @lock My Toy = =me | (!=*Chromia & +Toy Box Key)
+      This locks "My Toy" to me, or to anyone -except- the player Chromia
+      who is carrying the object "Toy Box Key".
 
 & @lock-evaluation
 EVALUATION LOCK

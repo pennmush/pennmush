@@ -1872,7 +1872,7 @@ msgstr "Dieses Attribut kann von dir nicht verändert werden."
 
 #: src/atr_tab.c:246 src/atr_tab.c:280 src/atr_tab.c:307
 msgid "That attribute isn't in the attribute table"
-msgstr "Diese Attribut ist nicht in der Attribut-Liste vorhanden"
+msgstr "Dieses Attribut ist nicht in der Attribut-Liste vorhanden"
 
 #: help.c:55
 msgid "That command is unavailable."
@@ -1884,7 +1884,7 @@ msgstr "Das ist ein Ausgang."
 
 #: src/extmail.c:1218
 msgid "That is not a debugging option."
-msgstr "Dies ist keine debugging option"
+msgstr "Dies ist keine debugging option."
 
 #: src/set.c:156
 msgid "That is not a reasonable name."
@@ -1928,7 +1928,7 @@ msgstr "Dieses Objekt ist geschützt."
 
 #: src/destroy.c:238
 msgid "That object is set SAFE. You must set it !SAFE before destroying it."
-msgstr "Das Object wurde SAFE gesetzt. Es muß !SAFE gesetzt werden bevor es Zerstört werden kann."
+msgstr "Das Object wurde SAFE gesetzt. Es muß !SAFE gesetzt werden bevor es zerstört werden kann."
 
 #: src/destroy.c:287
 msgid "That object is set WIZARD. You must use @nuke to destroy it."
@@ -1952,7 +1952,7 @@ msgstr "Ziemlich komischer Name für einen Ausgang!"
 
 #: function.c:923
 msgid "That's not a builtin function."
-msgstr "Das ist keine eingebaut Funktion."
+msgstr "Das ist keine eingebaute Funktion."
 
 #: attrib.c:930
 msgid "That's not a very good name for an attribute."
@@ -2002,22 +2002,6 @@ msgstr "Der Raum %s wurde vor der Zerstörung bewahrt."
 msgid "The room shakes and begins to crumble."
 msgstr "Der Raum bebt und beginnt, sich aufzulösen."
 
-#: src/services.c:763
-msgid "The service is not running."
-msgstr "Dieser Service läuft gerade nicht."
-
-#: src/services.c:781
-msgid "The service is paused."
-msgstr "Der Service ist pausiert."
-
-#: src/services.c:772
-msgid "The service is running."
-msgstr "Der Service läuft."
-
-#: src/services.c:766
-msgid "The service is starting."
-msgstr "Der Service startet."
-
 #: src/destroy.c:341
 #, c-format
 msgid "The wrecking ball is on its way for %s's %s and its exits."
@@ -2051,7 +2035,7 @@ msgstr "Heimat, süße Heimat..."
 
 #: rob.c:202
 msgid "There's nobody here to buy things from."
-msgstr "Es ist niemand hier von dem du Kaufen kannst."
+msgstr "Es ist niemand hier von dem du kaufen kannst."
 
 #: src/move.c:426
 msgid "This feature coming soon."
@@ -2095,7 +2079,7 @@ msgstr "Zu viele Container."
 
 #: src/speech.c:302
 msgid "Too many people to oemit to."
-msgstr "Zu viele personen für ein oemit."
+msgstr "Zu viele Personen für ein oemit."
 
 #: src/speech.c:402
 msgid "Too many people to whisper to."
@@ -2119,7 +2103,7 @@ msgstr "Typ: "
 
 #: src/wiz.c:2073 src/wiz.c:2076 src/wiz.c:2080
 msgid "Unable to delete name."
-msgstr "Kann den namen nicht löschen."
+msgstr "Kann den Namen nicht löschen."
 
 #: wiz.c:1858 wiz.c:1886 wiz.c:1893
 msgid "Unable to lock name."
@@ -2291,7 +2275,7 @@ msgstr "Wen willst du sperren?"
 
 #: src/warnings.c:267 src/warnings.c:443
 msgid "Why would you want to be warned about garbage?"
-msgstr "Wieso solltes du vor Müll gewarnt werden wollen?"
+msgstr "Wieso solltest du vor Müll gewarnt werden wollen?"
 
 #: src/bsd.c:4297
 msgid "Why would you want to do that?"
@@ -2343,7 +2327,7 @@ msgstr "Du bist auf keinem Channel."
 #: src/extchat.c:1254 src/extchat.c:1364
 #, c-format
 msgid "You are not on channel <%s>."
-msgstr "Du bist nicht im Kanal <%s>"
+msgstr "Du bist nicht im Kanal <%s>."
 
 #: src/extchat.c:1291
 #, c-format
@@ -2426,11 +2410,11 @@ msgstr "Dahin kannst du nicht gehen."
 
 #: src/wiz.c:1175
 msgid "You can't grant powers to unregistered players."
-msgstr "Du kannst  unregistrierten Spielern keine Mächte verleihen."
+msgstr "Du kannst unregistrierten Spielern keine Mächte verleihen."
 
 #: src/move.c:670
 msgid "You can't leave."
-msgstr "Du kannst diesen Ort nicht verlassen.."
+msgstr "Du kannst diesen Ort nicht verlassen."
 
 #: src/create.c:60
 msgid "You can't link to that."
@@ -2466,7 +2450,7 @@ msgstr "Du kannst Ausgänge nicht aufnehmen."
 
 #: src/look.c:534
 msgid "You can't see through that."
-msgstr "Du kannst  nich da durch schauen."
+msgstr "Du kannst nicht da durch schauen."
 
 #: src/move.c:586
 msgid "You can't seem to drop things here."
@@ -2565,7 +2549,7 @@ msgstr "Du hast nicht genug %s."
 #: src/rob.c:246
 #, c-format
 msgid "You don't have that many %s to give!"
-msgstr "Du hast nich genug um so viele %s herzugeben!"
+msgstr "Du hast nicht genug um so viele %s herzugeben!"
 
 #: src/move.c:568 src/rob.c:191
 msgid "You don't have that!"
@@ -2715,7 +2699,7 @@ msgstr "Du bist noch nicht mehr auf der WHO-Liste sichtbar."
 #: src/extchat.c:1305
 #, c-format
 msgid "You now appear on channel <%s>'s who list."
-msgstr "Du erscheinst nun auf der WHO Liste des <%s> Channels"
+msgstr "Du erscheinst nun auf der WHO Liste des <%s> Channels."
 
 #: src/bsd.c:4641
 msgid "You now appear on the WHO list."
@@ -2817,7 +2801,7 @@ msgstr "Du bist in den Kerkerdimensionen. Das ist definitiv _nicht_ gut."
 
 #: src/wiz.c:487
 msgid "You're in too many containers."
-msgstr "Du befindest dich  in zu vielen Containern."
+msgstr "Du befindest dich in zu vielen Containern."
 
 #: src/destroy.c:410
 #, c-format
@@ -2826,7 +2810,7 @@ msgstr "Dein %s wurde von der Zerstörung verschont."
 
 #: timer.c:158
 msgid "Your ON-VACATION flag is set! If you're back, clear it."
-msgstr "\"Dein AUF-URLAUB Flag ist gesetzt! Setze es zurück wenn du wieder da bist.\""
+msgstr "Dein AUF-URLAUB Flag ist gesetzt! Setze es zurück wenn du wieder da bist."
 
 #: src/rob.c:147
 msgid "Your insurance policy has been revoked."
@@ -2884,7 +2868,7 @@ msgstr "Ausgang hat mehrere (%d) rückwärtige Ausgänge"
 
 #: src/warnings.c:163
 msgid "exit is missing description"
-msgstr "Dem Ausgang fehlt eine Beschreibung"
+msgstr "dem Ausgang fehlt eine Beschreibung"
 
 #: src/move.c:101
 msgid "has arrived."
@@ -2908,7 +2892,7 @@ msgstr "Spieler hat keine Beschreibung"
 
 #: src/warnings.c:126
 msgid "room has no description"
-msgstr "Raum hat keine Beschreibung."
+msgstr "Raum hat keine Beschreibung"
 
 #: move.c:492 move.c:534
 #, c-format

@@ -2830,34 +2830,6 @@ msgstr "Rommet %s har blitt reddet fra \370deleggelse"
 msgid "The room shakes and begins to crumble."
 msgstr "Rommet rister og begynner \345 falle sammen."
 
-#: src/services.c:775
-msgid "The service continue is pending."
-msgstr "Tjenesten vil fortsette snart."
-
-#: src/services.c:763
-msgid "The service is not running."
-msgstr "Tjenesten kj\370rer ikke."
-
-#: src/services.c:781
-msgid "The service is paused."
-msgstr "Tjenesten er pauset."
-
-#: src/services.c:772
-msgid "The service is running."
-msgstr "Tjenesten kj\370rer."
-
-#: src/services.c:766
-msgid "The service is starting."
-msgstr "Tjenesten starter."
-
-#: src/services.c:769
-msgid "The service is stopping."
-msgstr "Tjenesten stopper."
-
-#: src/services.c:778
-msgid "The service pause is pending."
-msgstr "Tjenestepausen venter."
-
 #: src/destroy.c:341
 #, c-format
 msgid "The wrecking ball is on its way for %s's %s and its exits."
@@ -3046,10 +3018,6 @@ msgstr "Ulåst sone %s - låser sonen til seg selv automatisk"
 #: extmail.c:2471
 msgid "Unread "
 msgstr "Ulest "
-
-#: src/services.c:784
-msgid "Unrecognised status."
-msgstr "Ukjent status."
 
 #: src/set.c:498
 msgid "Unrecognized attribute flag."

@@ -2782,34 +2782,6 @@ msgstr "La habitación %s ha sido salvada de la destrucción."
 msgid "The room shakes and begins to crumble."
 msgstr "La habitación se mueve y comienza a temblar."
 
-#: src/services.c:775
-msgid "The service continue is pending."
-msgstr "El servicio continua pendiente."
-
-#: src/services.c:763
-msgid "The service is not running."
-msgstr "El servicio no está trabajando."
-
-#: src/services.c:781
-msgid "The service is paused."
-msgstr "El servicio está en pausa."
-
-#: src/services.c:772
-msgid "The service is running."
-msgstr "El servicio está trabajando."
-
-#: src/services.c:766
-msgid "The service is starting."
-msgstr "El servicio está comenzando."
-
-#: src/services.c:769
-msgid "The service is stopping."
-msgstr "El servicio está detenido."
-
-#: src/services.c:778
-msgid "The service pause is pending."
-msgstr "Pendiente la pausa del servicio."
-
 #: src/extmail.c:1281
 #, c-format
 msgid "There are %d messages in the mail spool."
@@ -2967,10 +2939,6 @@ msgstr "¿Desunir que?"
 #: extmail.c:2471
 msgid "Unread "
 msgstr "No leído "
-
-#: src/services.c:784
-msgid "Unrecognised status."
-msgstr "Status no reconocido."
 
 #: src/set.c:498
 msgid "Unrecognized attribute flag."

@@ -4680,34 +4680,6 @@ msgstr "Soba se zatrese i pocne se rusiti."
 msgid "The semaphore count must be an integer."
 msgstr "Brojac semafora mora biti cijeli broj."
 
-#: src/services.c:775
-msgid "The service continue is pending."
-msgstr "Nastavak usluge ceka odobrenje."
-
-#: src/services.c:763
-msgid "The service is not running."
-msgstr "Usluga ne radi."
-
-#: src/services.c:781
-msgid "The service is paused."
-msgstr "Usluga je pauzirana."
-
-#: src/services.c:772
-msgid "The service is running."
-msgstr "Usluga radi."
-
-#: src/services.c:766
-msgid "The service is starting."
-msgstr "Usluga se pokrece."
-
-#: src/services.c:769
-msgid "The service is stopping."
-msgstr "Usluga se zaustavlja."
-
-#: src/services.c:778
-msgid "The service pause is pending."
-msgstr "Pauziranje usluge ceka odobrenje."
-
 #: src/destroy.c:341
 #, c-format
 msgid "The wrecking ball is on its way for %s's %s and its exits."
@@ -5052,10 +5024,6 @@ msgstr "Otkljucana zona %s - automatski se zone-zakljucava na samu sebe"
 #: extmail.c:2471
 msgid "Unread "
 msgstr "Neprocitano "
-
-#: src/services.c:784
-msgid "Unrecognised status."
-msgstr "Neprepoznat status."
 
 #: src/set.c:498
 msgid "Unrecognized attribute flag."

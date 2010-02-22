@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-02-21 02:00-0600\n"
+"POT-Creation-Date: 2010-02-22 02:00-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -5454,38 +5454,6 @@ msgstr ""
 
 #: services.c:257
 msgid "GAME: Game shutdown by system operator"
-msgstr ""
-
-#: services.c:758
-msgid "The service is not running."
-msgstr ""
-
-#: services.c:761
-msgid "The service is starting."
-msgstr ""
-
-#: services.c:764
-msgid "The service is stopping."
-msgstr ""
-
-#: services.c:767
-msgid "The service is running."
-msgstr ""
-
-#: services.c:770
-msgid "The service continue is pending."
-msgstr ""
-
-#: services.c:773
-msgid "The service pause is pending."
-msgstr ""
-
-#: services.c:776
-msgid "The service is paused."
-msgstr ""
-
-#: services.c:779
-msgid "Unrecognised status."
 msgstr ""
 
 #: set.c:79

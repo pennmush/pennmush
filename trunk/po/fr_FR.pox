@@ -3066,34 +3066,6 @@ msgstr "La salle tremble et commence a s'\351crouler."
 msgid "The semaphore count must be an integer."
 msgstr "\"Le compteur de sémaphore doit être un entier.\""
 
-#: src/services.c:775
-msgid "The service continue is pending."
-msgstr "Le service 'continue' est en attente."
-
-#: src/services.c:763
-msgid "The service is not running."
-msgstr "Le service n'est pas lanc\351."
-
-#: src/services.c:781
-msgid "The service is paused."
-msgstr "Le service est en pause."
-
-#: src/services.c:772
-msgid "The service is running."
-msgstr "Le service est lanc\351."
-
-#: src/services.c:766
-msgid "The service is starting."
-msgstr "Le service d\351marre."
-
-#: src/services.c:769
-msgid "The service is stopping."
-msgstr "Le service va s'arr\352ter."
-
-#: src/services.c:778
-msgid "The service pause is pending."
-msgstr "Le service pause est en attente."
-
 #: src/destroy.c:341
 #, c-format
 msgid "The wrecking ball is on its way for %s's %s and its exits."
@@ -3295,10 +3267,6 @@ msgstr "D\351lier quoi?"
 #: extmail.c:2471
 msgid "Unread "
 msgstr "Non lu "
-
-#: src/services.c:784
-msgid "Unrecognised status."
-msgstr "Statut non reconnu."
 
 #: src/set.c:498
 msgid "Unrecognized attribute flag."

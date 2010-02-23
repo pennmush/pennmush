@@ -14,7 +14,7 @@ msgstr ""
 #: markup.c:1155
 #, c-format
 msgid "    %d (%s): (start: %d end: %d) start_code: %s stop_code: %s"
-msgstr "    %d (%s): (pocetak: %d kraj: %d) start_code: %s stop_code: %s"
+msgstr "    %d (%s): (poèetak: %d kraj: %d) start_code: %s stop_code: %s"
 
 #: markup.c:1150
 #, c-format
@@ -32,11 +32,11 @@ msgstr " (Spoj)"
 
 #: flags.c:1617 flags.c:1678
 msgid " (already)"
-msgstr " (vec)"
+msgstr " (veæ)"
 
 #: flags.c:2391
 msgid " (disabled)"
-msgstr " (iskljuceno)"
+msgstr " (iskljuèeno)"
 
 #: speech.c:856
 msgid " (to "
@@ -44,11 +44,11 @@ msgstr " (za "
 
 #: conf.c:1786
 msgid " @config/save is disabled."
-msgstr " @config/save je iskljucen."
+msgstr " @config/save je iskljuèen."
 
 #: conf.c:1784
 msgid " @config/save is enabled."
-msgstr " @config/save je ukljucen."
+msgstr " @config/save je ukljuèen."
 
 #: parse.c:1332
 msgid " AND "
@@ -64,11 +64,11 @@ msgstr " Koristi se Altivec."
 
 #: conf.c:1044
 msgid " Attributes are 8-bit word compressed in memory."
-msgstr " Atributi su 8-bitne rijeci komprimirane u memoriji."
+msgstr " Atributi su 8-bitne rijeèi komprimirane u memoriji."
 
 #: conf.c:1035
 msgid " Attributes are Huffman compressed in memory."
-msgstr " Atributi su u memoriji kompresirani Huffmanovim algoritmom."
+msgstr " Atributi su u memoriji komprimirani Huffmanovim algoritmom."
 
 #: conf.c:1032
 msgid " Attributes are not compressed in memory."
@@ -76,7 +76,7 @@ msgstr " Atributi nisu komprimirani u memoriji."
 
 #: conf.c:1041
 msgid " Attributes are word compressed in memory."
-msgstr " Atributi su komprimirani u memoriji kodiranjem dugih rijeci."
+msgstr " Atributi su komprimirani u memoriji kodiranjem dugih rijeèi."
 
 #: access.c:667
 #, c-format
@@ -85,15 +85,15 @@ msgstr " KOMENTAR: %s"
 
 #: conf.c:1498
 msgid " CPU usage limiting is NOT supported."
-msgstr " Ogranicavanje koristenja procesora NIJE podrzano."
+msgstr " Ogranièavanje kori¹tenja procesora NIJE podr¾ano."
 
 #: conf.c:1496
 msgid " CPU usage limiting is supported."
-msgstr " Ogranicavanje koristenja procesora je podrzano."
+msgstr " Ogranièavanje kori¹tenja procesora je podr¾ano."
 
 #: conf.c:1713
 msgid " Changed help files will be automatically reindexed."
-msgstr " Promijenjeni help fileovi bit ce reindeksirani automatski."
+msgstr " Promijenjeni help fileovi bit æe reindeksirani automatski."
 
 #: src/conf.c:980
 msgid " DNS and ident lookups are handled by a slave process."
@@ -105,7 +105,7 @@ msgstr " DNS i ident potrage obavlja MUSHev proces."
 
 #: src/conf.c:1111
 msgid " Extended convtime() is supported."
-msgstr " Prosireni convtime() je podrzan."
+msgstr " Pro¹ireni convtime() je podr¾an."
 
 #: flags.c:917
 msgid " Flags: "
@@ -125,19 +125,19 @@ msgstr " Koristi se SSE3."
 
 #: conf.c:1607
 msgid " The MUSH was compiled with MySQL support."
-msgstr " MUSH je kompajliran s MySQL podrskom."
+msgstr " MUSH je kompajliran s MySQL podr¹kom."
 
 #: conf.c:1687
 msgid " The MUSH was compiled with Postgresql support."
-msgstr " MUSH je kompajliran s Postgresql podrskom."
+msgstr " MUSH je kompajliran s Postgresql podr¹kom."
 
 #: conf.c:1594
 msgid " The MUSH was compiled with SSL support."
-msgstr " MUSH je kompajliran s SSL podrskom."
+msgstr " MUSH je kompajliran s SSL podr¹kom."
 
 #: conf.c:1690
 msgid " The MUSH was compiled with Sqlite3 support."
-msgstr " MUSH je kompajliran s Sqlite3 podrskom."
+msgstr " MUSH je kompajliran s Sqlite3 podr¹kom."
 
 #: wiz.c:1605
 #, c-format
@@ -146,7 +146,7 @@ msgstr " [lokacija: %s]"
 
 #: src/conf.c:1113
 msgid " convtime() is stricter."
-msgstr " convtime() je strozi."
+msgstr " convtime() je stro¾i."
 
 #: flags.c:1531
 msgid " granted."
@@ -154,11 +154,11 @@ msgstr " - dano."
 
 #: src/look.c:688 src/look.c:770
 msgid " is owned by "
-msgstr " je vlasnistvo igraca koji se zove "
+msgstr " je vlasni¹tvo igraèa koji se zove "
 
 #: speech.c:1021
 msgid " pages"
-msgstr " salje poruku"
+msgstr " ¹alje poruku"
 
 #: flags.c:1531
 msgid " removed."
@@ -170,7 +170,7 @@ msgstr " resetirano."
 
 #: flags.c:831
 msgid " set."
-msgstr " postavljen."
+msgstr " postavljeno."
 
 #: speech.c:359 wiz.c:1260
 msgid " to "
@@ -191,19 +191,19 @@ msgstr "#-1 @FUNCTIONU ("
 
 #: funcrypt.c:53 funcrypt.c:61 funcrypt.c:100 funcrypt.c:107
 msgid "#-1 ALLOCATION ERROR"
-msgstr "#-1 GRESKA U ALOCIRANJU"
+msgstr "#-1 GRE©KA U ALOCIRANJU"
 
 #: extchat.c:1503
 msgid "#-1 AMBIGUOUS CHANNEL NAME"
-msgstr "#-1 VISEZNACNO IME KANALA"
+msgstr "#-1 VI©EZNAÈNO IME KANALA"
 
 #: src/fundb.c:784 src/fundb.c:1001
 msgid "#-1 ARG1 NOT FOUND"
-msgstr "#-1 ARG1 NIJE NADJEN"
+msgstr "#-1 ARG1 NIJE PRONAÐEN"
 
 #: src/fundb.c:786 src/fundb.c:1003
 msgid "#-1 ARG2 NOT FOUND"
-msgstr "#-1 ARG2 NIJE PRONADJEN"
+msgstr "#-1 ARG2 NIJE PRONAÐEN"
 
 #: src/funlist.c:1886 src/funlist.c:1905
 msgid "#-1 ARGUMENT MUST BE INTEGER"
@@ -227,7 +227,7 @@ msgstr "#-1 ARGUMENT MORA BITI POZITIVNI CIJELI BROJ"
 
 #: src/funmath.c:218 src/funmath.c:250
 msgid "#-1 ARGUMENT MUST END IN AN INTEGER"
-msgstr "#-1 ARGUMENT MORA ZAVRSITI CIJELIM BROJEM"
+msgstr "#-1 ARGUMENT MORA ZAVR©ITI CIJELIM BROJEM"
 
 #: src/funlist.c:1892 src/funlist.c:1911
 msgid "#-1 ARGUMENT OUT OF RANGE"
@@ -247,28 +247,28 @@ msgstr "#-1 ARGUMENTI MORAJU BITI POZITIVNI CIJELI BROJEVI"
 
 #: src/fundb.c:61
 msgid "#-1 ATTRIBUTE LENGTH TOO LONG"
-msgstr "#-1 IME ATRIBUTA PREDUGACKO"
+msgstr "#-1 IME ATRIBUTA PREDUGAÈKO"
 
 #: fundb.c:204
 #, c-format
 msgid "#-1 BAD ARGUMENT FORMAT TO %s"
-msgstr "#-1 LOS FORMAT ARGUMENATA ZA %s"
+msgstr "#-1 LO© FORMAT ARGUMENATA ZA %s"
 
 #: fundb.c:1998
 msgid "#-1 BAD ARGUMENT FORMAT TO ATTRIB_SET"
-msgstr "#-1 LOS FORMAT ARGUMENATA ZA ATTRIB_SET"
+msgstr "#-1 LO© FORMAT ARGUMENATA ZA ATTRIB_SET"
 
 #: src/fundb.c:183
 msgid "#-1 BAD ARGUMENT FORMAT TO GET"
-msgstr "#-1 LOS FORMAT ARGUMENATA ZA GET"
+msgstr "#-1 LO© FORMAT ARGUMENATA ZA GET"
 
 #: src/fundb.c:291
 msgid "#-1 BAD ARGUMENT FORMAT TO GET_EVAL"
-msgstr "#-1 LOS FORMAT ARGUMENATA ZA GET_EVAL"
+msgstr "#-1 LO© FORMAT ARGUMENATA ZA GET_EVAL"
 
 #: fundb.c:981
 msgid "#-1 BAD ATTR NAME"
-msgstr "#-1 LOSE IME ATRIBUTA"
+msgstr "#-1 LO©E IME ATRIBUTA"
 
 #: src/funmath.c:987
 msgid "#-1 BASE OUT OF RANGE"
@@ -276,7 +276,7 @@ msgstr "#-1 BAZA IZVAN RASPONA"
 
 #: parse.c:83
 msgid "#-1 CALL LIMIT EXCEEDED"
-msgstr "#-1 PRIJEDJENO OGRANICENJE POZIVANJA"
+msgstr "#-1 PRIJEÐENO OGRANIÈENJE POZIVANJA"
 
 #: src/funlist.c:1456 src/funlist.c:1680
 msgid "#-1 CAN ONLY TEST ONE ELEMENT"
@@ -284,7 +284,7 @@ msgstr "#-1 MOGU TESTIRATI SAMO JEDAN ELEMENT"
 
 #: funstr.c:1893
 msgid "#-1 CANNOT HAVE COLUMNS OF NEGATIVE SIZE"
-msgstr "#-1 STUPCI NE MOGU IMATI NEGATIVNU VELICINU"
+msgstr "#-1 STUPCI NE MOGU IMATI NEGATIVNU VELIÈINU"
 
 #: funstr.c:1897 funstr.c:1903
 msgid "#-1 CANNOT HAVE COLUMNS THAT LARGE"
@@ -300,7 +300,7 @@ msgstr "#-1 ZA USPOREDBU SU POTREBNA BAREM 2 BROJA"
 
 #: funcrypt.c:69 funcrypt.c:134 funcrypt.c:141 funcrypt.c:154
 msgid "#-1 CONVERSION ERROR"
-msgstr "#-1 GRESKA U KONVERZIJI"
+msgstr "#-1 GRE©KA U KONVERZIJI"
 
 #: funtime.c:89
 msgid "#-1 COULDN'T FORMAT TIME"
@@ -312,7 +312,7 @@ msgstr "#-1 DIJELJENJE S NULOM"
 
 #: funstr.c:962 funstr.c:981
 msgid "#-1 FILL ARGUMENT MAY NOT BE ZERO-LENGTH"
-msgstr "#-1 ARGUMENT ZA POPUNJAVANJE NE MOZE IMATI DUZINU NULA"
+msgstr "#-1 ARGUMENT ZA POPUNJAVANJE NE MO®E IMATI DU®INU NULA"
 
 #: funstr.c:1990
 msgid "#-1 FILLER MUST BE ONE CHARACTER"
@@ -328,7 +328,7 @@ msgstr "#-1 NEGATIVNI BROJ POTENCIRAN RAZLOMKOM"
 
 #: funmath.c:1631
 msgid "#-1 FROM BASE OUT OF RANGE"
-msgstr "#-1 POCETNA BAZA IZVAN RASPONA"
+msgstr "#-1 POÈETNA BAZA IZVAN RASPONA"
 
 #: src/parse.c:671 src/parse.c:759
 msgid "#-1 FUNCTION ("
@@ -337,48 +337,48 @@ msgstr "#-1 FUNKCIJA ("
 #: parse.c:1319
 #, c-format
 msgid "#-1 FUNCTION (%s) EXPECTS "
-msgstr "#-1 FUNKCIJA (%s) OCEKUJE "
+msgstr "#-1 FUNKCIJA (%s) OÈEKUJE "
 
 #: funmisc.c:163
 #, c-format
 msgid "#-1 FUNCTION (%s) EXPECTS AN EVEN NUMBER OF ARGUMENTS"
-msgstr "#-1 FUNKCIJA (%s) OCEKUJE PARAN BROJ ARGUMENATA"
+msgstr "#-1 FUNKCIJA (%s) OÈEKUJE PARAN BROJ ARGUMENATA"
 
 #: funmath.c:2652
 msgid "#-1 FUNCTION (DIST2D) EXPECTS 4 ARGUMENTS"
-msgstr "#-1 FUNKCIJA (DIST2D) OCEKUJE 4 ARGUMENTA"
+msgstr "#-1 FUNKCIJA (DIST2D) OÈEKUJE 4 ARGUMENTA"
 
 #: funmath.c:2679
 msgid "#-1 FUNCTION (DIST3D) EXPECTS 6 ARGUMENTS"
-msgstr "#-1 FUNKCIJA (DIST3D) OCEKUJE 6 ARGUMENATA"
+msgstr "#-1 FUNKCIJA (DIST3D) OÈEKUJE 6 ARGUMENATA"
 
 #: funmisc.c:228
 msgid "#-1 FUNCTION (LETQ) EXPECTS AN ODD NUMBER OF ARGUMENTS"
-msgstr "#-1 FUNKCIJA (LETQ) OCEKUJE NEPARAN BROJ ARGUMENATA"
+msgstr "#-1 FUNKCIJA (LETQ) OÈEKUJE NEPARAN BROJ ARGUMENATA"
 
 #: funstr.c:1313 funstr.c:1319
 msgid "#-1 FUNCTION (ORD) EXPECTS ONE CHARACTER"
-msgstr "#-1 FUNKCIJA (ORD) OCEKUJE JEDAN ZNAK"
+msgstr "#-1 FUNKCIJA (ORD) OÈEKUJE JEDAN ZNAK"
 
 #: src/funmisc.c:406
 msgid "#-1 FUNCTION (SOUNDEX) REQUIRES A SINGLE WORD ARGUMENT"
-msgstr "#-1 FUNKCIJI (SOUNDEX) TREBA JEDAN ARGUMENT OD JEDNE RIJECI"
+msgstr "#-1 FUNKCIJI (SOUNDEX) TREBA JEDAN ARGUMENT OD JEDNE RIJEÈI"
 
 #: src/funmisc.c:424
 msgid "#-1 FUNCTION (SOUNDLIKE) REQUIRES TWO ONE-WORD ARGUMENTS"
-msgstr "#-1 FUNKCIJI (SOUNDLIKE) TREBAJU DVA ARGUMENTA OD JEDNE RIJECI"
+msgstr "#-1 FUNKCIJI (SOUNDLIKE) TREBAJU DVA ARGUMENTA OD JEDNE RIJEÈI"
 
 #: src/fundb.c:959 src/fundb.c:1120 src/fundb.c:1145 src/fundb.c:1254\nsrc/fundb.c:1549 src/fundb.c:1555 src/fundb.c:1561 src/fundb.c:1567\nsrc/fundb.c:1573 src/fundb.c:1579 src/fundb.c:1585 src/fundb.c:1591\nsrc/fundb.c:1864 src/funstr.c:901
 msgid "#-1 FUNCTION DISABLED"
-msgstr "#-1 FUNKCIJA ISKLJUCENA"
+msgstr "#-1 FUNKCIJA ISKLJUÈENA"
 
 #: parse.c:91
 msgid "#-1 FUNCTION INVOCATION LIMIT EXCEEDED"
-msgstr "#-1 PRIJEDJEN MAKSIMALNI BROJ DOPUSTENIH FUNKCIJA"
+msgstr "#-1 PRIJEÐEN MAKSIMALNI BROJ DOPU©TENIH FUNKCIJA"
 
 #: src/parse.c:790
 msgid "#-1 FUNCTION RECURSION LIMIT EXCEEDED"
-msgstr "#-1 PREKORACENO OGRANICENJE REKURZIJE FUNKCIJA"
+msgstr "#-1 PREKORAÈENO OGRANIÈENJE REKURZIJE FUNKCIJA"
 
 #: bsd.c:4955 bsd.c:4966
 msgid "#-1 FUNCTION REQUIRES ONE ARGUMENT"
@@ -390,7 +390,7 @@ msgstr "#-1 IMAGINARNI BROJ"
 
 #: src/funmath.c:949 src/funmath.c:972
 msgid "#-1 INFINITY"
-msgstr "#-1 BESKONACNO"
+msgstr "#-1 BESKONAÈNO"
 
 #: funstr.c:1953
 msgid "#-1 INVALID ALIGN STRING"
@@ -419,7 +419,7 @@ msgstr "#-1 NEISPRAVAN TEKST"
 #: funtime.c:55
 #, c-format
 msgid "#-1 INVALID ESCAPE CODE '$%c'"
-msgstr "#-1 NEISPRAVNA ESCAPE SIFRA '$%c'"
+msgstr "#-1 NEISPRAVNA ESCAPE ©IFRA '$%c'"
 
 #: fundb.c:1143 fundb.c:1155 fundb.c:1173 fundb.c:1191
 msgid "#-1 INVALID FLAG"
@@ -435,7 +435,7 @@ msgstr "#-1 NEISPRAVNA LOKACIJA"
 
 #: src/extmail.c:1549
 msgid "#-1 INVALID MESSAGE OR PLAYER"
-msgstr "#-1 NEISPRAVNA PORUKA ILI IGRAC"
+msgstr "#-1 NEISPRAVNA PORUKA ILI IGRAÈ"
 
 #: funstr.c:1985
 msgid "#-1 INVALID NUMBER OF ARGUMENTS TO ALIGN"
@@ -451,7 +451,7 @@ msgstr "#-1 NEISPRAVAN PID"
 
 #: fundb.c:1171 fundb.c:1189
 msgid "#-1 INVALID POWER"
-msgstr "#-1 NEISPRAVNA MOC"
+msgstr "#-1 NEISPRAVNA MOÆ"
 
 #: src/fundb.c:663 src/fundb.c:690
 msgid "#-1 INVALID SECOND ARGUMENT"
@@ -459,7 +459,7 @@ msgstr "#-1 NEISPRAVNI DRUGI ARGUMENT"
 
 #: funstr.c:369 funstr.c:425
 msgid "#-1 INVALID THIRD ARGUMENT"
-msgstr "#-1 NEISPRAVAN TRECI ARGUMENT"
+msgstr "#-1 NEISPRAVAN TREÆI ARGUMENT"
 
 #: funtime.c:95
 msgid "#-1 INVALID TIME ZONE"
@@ -475,15 +475,15 @@ msgstr "#-1 NEISPRAVNA ZONA"
 
 #: src/funlist.c:194 src/funlist.c:2088
 msgid "#-1 LISTS MUST BE OF EQUAL SIZE"
-msgstr "#-1 POPISI MORAJU IMATI ISTU VELICINU"
+msgstr "#-1 POPISI MORAJU IMATI ISTU VELIÈINU"
 
 #: funmath.c:1643
 msgid "#-1 MALFORMED NUMBER"
-msgstr "#-1 LOSE FORMIRANI BROJ"
+msgstr "#-1 LO©E FORMIRANI BROJ"
 
 #: src/funlist.c:1778
 msgid "#-1 NEED A WORD"
-msgstr "#-1 TREBAM RIJEC"
+msgstr "#-1 TREBAM RIJEÈ"
 
 #: extchat.c:1495
 msgid "#-1 NO CHANNEL GIVEN"
@@ -511,15 +511,15 @@ msgstr "#-1 NEMA KONTROLIRANIH OBJEKATA"
 
 #: src/fundb.c:63 src/fundb.c:69 src/fundb.c:72 src/fundb.c:273\nsrc/fundb.c:315 src/funlist.c:366 src/funlist.c:450 src/funufun.c:125\nsrc/funufun.c:158 src/funufun.c:307
 msgid "#-1 NO PERMISSION TO GET ATTRIBUTE"
-msgstr "#-1 NEMA DOPUSTENJA ZA CITANJE ATRIBUTA"
+msgstr "#-1 NEMA DOPU©TENJA ZA ÈITANJE ATRIBUTA"
 
 #: src/bsd.c:4827
 msgid "#-1 NO PERMISSIONS FOR CHANNEL"
-msgstr "#-1 NEMA DOPUSTENJA ZA KANAL"
+msgstr "#-1 NEMA DOPU©TENJA ZA KANAL"
 
 #: extchat.c:3100
 msgid "#-1 NO RECALL BUFFER"
-msgstr "#-1 KANAL NE BILJEZI PORUKE"
+msgstr "#-1 KANAL NE BILJE®I PORUKE"
 
 #: src/fundb.c:1614 src/fundb.c:1762 src/funlist.c:2320 src/funlist.c:2363
 msgid "#-1 NO SUCH ATTRIBUTE"
@@ -551,7 +551,7 @@ msgstr "#-1 TAKAV OBJEKT NIJE VIDLJIV"
 
 #: src/extmail.c:1468 src/extmail.c:1489
 msgid "#-1 NO SUCH PLAYER"
-msgstr "#-1 TAJ IGRAC NE POSTOJI"
+msgstr "#-1 TAJ IGRAÈ NE POSTOJI"
 
 #: src/fundb.c:907
 msgid "#-1 NO SUCH TYPE"
@@ -559,7 +559,7 @@ msgstr "#-1 TAJ TIP NE POSTOJI"
 
 #: src/funufun.c:310
 msgid "#-1 NO SUCH USER FUNCTION"
-msgstr "#-1 TA KORISNICKA FUNKCIJA NE POSTOJI"
+msgstr "#-1 TA KORISNIÈKA FUNKCIJA NE POSTOJI"
 
 #: extchat.c:2279
 msgid "#-1 NO TEXT GIVEN"
@@ -579,7 +579,7 @@ msgstr "#-1 NIJE NA KANALU"
 
 #: src/funlist.c:1786
 msgid "#-1 NUMBER OF WORDS MUST BE EQUAL"
-msgstr "#-1 BROJ RIJECI MORA BITI JEDNAK"
+msgstr "#-1 BROJ RIJEÈI MORA BITI JEDNAK"
 
 #: src/funlist.c:1179 src/funmisc.c:222
 msgid "#-1 NUMBER OUT OF RANGE"
@@ -591,15 +591,15 @@ msgstr "#-1 IZVAN RASPONA"
 
 #: src/funmath.c:336 src/funmath.c:366
 msgid "#-1 OVERFLOW ERROR"
-msgstr "#-1 GRESKA ZBOG PREOPTERECENJA"
+msgstr "#-1 GRE©KA ZBOG PREOPTEREÆENJA"
 
 #: src/extmail.c:1471 src/extmail.c:1492 src/extmail.c:1531 src/fundb.c:122\nsrc/fundb.c:141 src/fundb.c:169 src/fundb.c:261 src/fundb.c:303\nsrc/fundb.c:341 src/fundb.c:789 src/fundb.c:953 src/fundb.c:1114\nsrc/fundb.c:1139 src/fundb.c:1248 src/fundb.c:1442 src/fundb.c:1456\nsrc/fundb.c:1466 src/fundb.c:1477 src/fundb.c:1487 src/fundb.c:1502\nsrc/fundb.c:1512 src/fundb.c:1522 src/fundb.c:1537 src/fundb.c:1651\nsrc/fundb.c:1737 src/fundb.c:1741 src/fundb.c:1748 src/fundb.c:1752\nsrc/fundb.c:1858 src/fundb.c:1872 src/funlist.c:1966 src/funmisc.c:60\nsrc/funmisc.c:72 src/funmisc.c:84 src/funmisc.c:96 src/funmisc.c:108\nsrc/funmisc.c:120 src/funmisc.c:134 src/funstr.c:778 src/funufun.c:118\nsrc/funufun.c:149 src/funufun.c:300 src/wiz.c:2155 src/wiz.c:2167\nsrc/wiz.c:2189 src/wiz.c:2202
 msgid "#-1 PERMISSION DENIED"
-msgstr "#-1 DOZVOLA USKRACENA"
+msgstr "#-1 DOZVOLA USKRAÆENA"
 
 #: src/funlist.c:2256 src/funlist.c:2335 src/funlist.c:2378 src/funlist.c:2437\nsrc/funlist.c:2478
 msgid "#-1 REGEXP ERROR: "
-msgstr "#-1 GRESKA U REGEXPU: "
+msgstr "#-1 GRE©KA U REGEXPU: "
 
 #: src/funmisc.c:158 src/funmisc.c:178
 msgid "#-1 REGISTER OUT OF RANGE"
@@ -611,16 +611,16 @@ msgstr "#-1 KORIJEN IZVAN RASPONA"
 
 #: src/function.c:118
 msgid "#-1 SEPARATOR MUST BE ONE CHARACTER"
-msgstr "#-1 ODJELJIVAC MORA BITI JEDAN ZNAK"
+msgstr "#-1 ODJELJIVAÈ MORA BITI JEDAN ZNAK"
 
 #: sql.c:81
 #, c-format
 msgid "#-1 SQL ERROR: %s"
-msgstr "#-1 SQL GRESKA: %s"
+msgstr "#-1 SQL GRE©KA: %s"
 
 #: sql.c:79
 msgid "#-1 SQL ERROR: NO DATABASE CONNECTED"
-msgstr "#-1 SQL GRESKA: BAZA PODATAKA NIJE SPOJENA"
+msgstr "#-1 SQL GRE©KA: BAZA PODATAKA NIJE SPOJENA"
 
 #: src/funlist.c:1943
 msgid "#-1 STEP OUT OF RANGE"
@@ -636,27 +636,27 @@ msgstr "#-1 OVO NIJE UNICODE"
 
 #: funmath.c:1636
 msgid "#-1 TO BASE OUT OF RANGE"
-msgstr "#-1 ZAVRSNA BAZA IZVAN RASPONA"
+msgstr "#-1 ZAVR©NA BAZA IZVAN RASPONA"
 
 #: sql.c:325
 msgid "#-1 TOO LONG"
-msgstr "#-1 PREDUGACKO"
+msgstr "#-1 PREDUGAÈKO"
 
 #: funstr.c:1981
 msgid "#-1 TOO MANY COLUMNS FOR ALIGN"
-msgstr "#-1 PREVISE STUPACA ZA ALIGN"
+msgstr "#-1 PREVI©E STUPACA ZA ALIGN"
 
 #: src/funlist.c:1815
 msgid "#-1 TOO MANY ITERS"
-msgstr "#-1 PREVISE ITERA"
+msgstr "#-1 PREVI©E ITERA"
 
 #: src/funlist.c:1782
 msgid "#-1 TOO MANY WORDS"
-msgstr "#-1 PREVISE RIJECI"
+msgstr "#-1 PREVI©E RIJEÈI"
 
 #: funstr.c:757 funstr.c:765 funstr.c:795 funstr.c:803
 msgid "#-1 TR CANNOT ACCEPT NONPRINTING CHARS"
-msgstr "#-1 TR NE MOZE PRIMITI NEISPISIVE ZNAKOVE"
+msgstr "#-1 TR NE MO®E PRIMITI NEISPISIVE ZNAKOVE"
 
 #: funmisc.c:235 funmisc.c:241 funmisc.c:267
 msgid "#-1 UNABLE TO ALLOCATE MEMORY"
@@ -676,7 +676,7 @@ msgstr "#-1 NEPRIKAZIV ZNAK"
 
 #: funcrypt.c:160 funcrypt.c:183
 msgid "#-1 UNSUPPORTED DIGEST TYPE"
-msgstr "#-1 NEPODRZAVAN TIP ZA DIGEST"
+msgstr "#-1 NEPODR®AVAN TIP ZA DIGEST"
 
 #: funmath.c:711 funmath.c:721 funmath.c:746 funmath.c:756
 msgid "#-1 VECTOR MUST NOT BE EMPTY"
@@ -692,11 +692,11 @@ msgstr "#-1 VEKTORI MORAJU BITI TRODIMENZIONALNI"
 
 #: src/funstr.c:1097
 msgid "#-1 WIDTH TOO SMALL"
-msgstr "#-1 SIRINA PREMALA"
+msgstr "#-1 ©IRINA PREMALA"
 
 #: extchat.c:3144
 msgid "#-2 AMBIGUOUS CHANNEL MATCH"
-msgstr "#-2 VISESTRUKO PODUDARANJE S KANALIMA"
+msgstr "#-2 VI©ESTRUKO PODUDARANJE S KANALIMA"
 
 #: src/extmail.c:1641
 msgid "#-? fun_mailstats called with invalid called_as!"
@@ -720,47 +720,47 @@ msgstr "%d atributa obrisano."
 #: src/wiz.c:1044
 #, c-format
 msgid "%d commands executed."
-msgstr "Broj izvrsenih naredbi: %d."
+msgstr "Broj izvr¹enih naredbi: %d."
 
 #: src/extmail.c:1379
 #, c-format
 msgid "%d messages received, %d unread, %d cleared, totalling %d characters."
-msgstr "%d poruka primljeno, %d neprocitano, %d obrisano, ukupno %d znakova."
+msgstr "%d poruka primljeno, %d neproèitano, %d obrisano, ukupno %d znakova."
 
 #: src/extmail.c:1370
 #, c-format
 msgid "%d messages received, %d unread, %d cleared."
-msgstr "%d poruka primljeno, %d neprocitano, %d obrisano."
+msgstr "%d poruka primljeno, %d neproèitano, %d obrisano."
 
 #: src/extmail.c:1375
 #, c-format
 msgid "%d messages sent, %d unread, %d cleared, totalling %d characters."
-msgstr "%d poruka poslano, %d neprocitano, %d obrisano, s ukupno %d znakova."
+msgstr "%d poruka poslano, %d neproèitano, %d obrisano, s ukupno %d znakova."
 
 #: src/extmail.c:1368
 #, c-format
 msgid "%d messages sent, %d unread, %d cleared."
-msgstr "%d poruka poslano, %d neprocitano, %d obrisano."
+msgstr "%d poruka poslano, %d neproèitano, %d obrisano."
 
 #: src/wiz.c:686
 #, c-format
 msgid "%d objects = %d rooms, %d exits, %d things, %d players, %d garbage."
-msgstr "%d objekata = %d soba, %d izlaza, %d predmeta, %d igraca, %d otpada."
+msgstr "%d objekata = %d soba, %d izlaza, %d predmeta, %d igraèa, %d otpada."
 
 #: src/wiz.c:692
 #, c-format
 msgid "%d objects = %d rooms, %d exits, %d things, %d players."
-msgstr "%d objekata = %d soba, %d izlaza, %d predmeta, %d igraca."
+msgstr "%d objekata = %d soba, %d izlaza, %d predmeta, %d igraèa."
 
 #: wiz.c:1745
 #, c-format
 msgid "%d sitelocks removed."
-msgstr "Broj otkljucanih internet adresa: %d."
+msgstr "Broj otkljuèanih internet adresa: %d."
 
 #: src/bsd.c:3405
 #, c-format
 msgid "%ld failed connections since last login."
-msgstr "%ld neuspjelih pokusaja spajanja od zadnjeg ulogiravanja."
+msgstr "%ld neuspjelih poku¹aja spajanja od zadnjeg ulogiravanja."
 
 #: flags.c:2283
 #, c-format
@@ -770,12 +770,12 @@ msgstr "%s %s - obrisano."
 #: flags.c:2223
 #, c-format
 msgid "%s %s disabled."
-msgstr "%s %s - iskljuceno."
+msgstr "%s %s - iskljuèeno."
 
 #: flags.c:2319
 #, c-format
 msgid "%s %s enabled."
-msgstr "%s %s - ukljuceno."
+msgstr "%s %s - ukljuèeno."
 
 #: extmail.c:239
 #, c-format
@@ -785,7 +785,7 @@ msgstr "%s (vlasnik: %s)"
 #: src/look.c:969
 #, c-format
 msgid "%s (this room) [broadcasting]."
-msgstr "%s (ova soba) [propusta zvuk]."
+msgstr "%s (ova soba) [propu¹ta zvuk]."
 
 #: src/look.c:967
 #, c-format
@@ -810,7 +810,7 @@ msgstr "%s - ne prepoznajem taj flag."
 #: flags.c:1515
 #, c-format
 msgid "%s - I don't recognize that power."
-msgstr "%s - ne prepoznajem tu moc."
+msgstr "%s - ne prepoznajem tu moæ."
 
 #: set.c:889 set.c:891
 #, c-format
@@ -825,7 +825,7 @@ msgstr "%s - Okinuto."
 #: src/atr_tab.c:226
 #, c-format
 msgid "%s -- Attribute permissions now: %s"
-msgstr "%s -- Atributska dopustenja su sada: %s"
+msgstr "%s -- Atributska dopu¹tenja su sada: %s"
 
 #: look.c:706
 #, c-format
@@ -840,7 +840,7 @@ msgstr "%s [#%d%s] je pod velom"
 #: look.c:1206
 #, c-format
 msgid "%s [broadcasting]."
-msgstr "%s [propusta zvuk]."
+msgstr "%s [propu¹ta zvuk]."
 
 #: look.c:1193 look.c:1233
 #, c-format
@@ -860,7 +860,7 @@ msgstr "%s [vlasnik: "
 #: src/look.c:954 src/look.c:979 src/look.c:1019
 #, c-format
 msgid "%s [owner: %s] is listening."
-msgstr "%s [vlasnik: %s] slusa."
+msgstr "%s [vlasnik: %s] slu¹a."
 
 #: look.c:1188 look.c:1228
 #, c-format
@@ -875,37 +875,37 @@ msgstr "%s [govor]."
 #: flags.c:2112
 #, c-format
 msgid "%s aliases may not contain spaces."
-msgstr "%s aliasi ne mogu sadrzavati razmake."
+msgstr "%s aliasi ne mogu sadr¾avati razmake."
 
 #: flags.c:2107
 #, c-format
 msgid "%s aliases must be longer than one character."
-msgstr "%s mora imati alias koji je duzi od jednog znaka."
+msgstr "%s mora imati alias koji je du¾i od jednog znaka."
 
 #: destroy.c:353
 #, c-format
 msgid "%s and all their (non-SAFE) objects are scheduled to be destroyed."
-msgstr "%s i svi objekti (koji nisu SAFE) tog igraca stavljeni su na popis za unistenje."
+msgstr "%s i svi objekti (koji nisu SAFE) tog igraèa stavljeni su na popis za uni¹tenje."
 
 #: src/destroy.c:352
 #, c-format
 msgid "%s and all their objects are scheduled to be destroyed."
-msgstr "%s i svi objekti tog igraca stavljeni su na popis za unistenje."
+msgstr "%s i svi objekti tog igraèa stavljeni su na popis za uni¹tenje."
 
 #: src/move.c:862
 #, c-format
 msgid "%s begins following you."
-msgstr "%s te pocne slijediti."
+msgstr "%s te poène slijediti."
 
 #: speech.c:332
 #, c-format
 msgid "%s can't hear you."
-msgstr "%s te ne moze cuti."
+msgstr "%s te ne mo¾e èuti."
 
 #: flags.c:2028 flags.c:2169
 #, c-format
 msgid "%s characters must be single characters."
-msgstr "%s znakovi mogu sadrzavati samo jedan znak."
+msgstr "%s znakovi mogu sadr¾avati samo jedan znak."
 
 #: src/create.c:388
 #, c-format
@@ -950,17 +950,17 @@ msgstr "%s ode doma."
 #: src/attrib.c:953
 #, c-format
 msgid "%s grows ears and can now hear."
-msgstr "%s dobije usi i sada moze cuti."
+msgstr "%s dobije u¹i i sada mo¾e èuti."
 
 #: src/extmail.c:1336
 #, c-format
 msgid "%s has %d messages."
-msgstr "%s ima %d poruka u postanskom sanducicu."
+msgstr "%s ima %d poruka u po¹tanskom sanduèiæu."
 
 #: src/destroy.c:414 src/destroy.c:510
 #, c-format
 msgid "%s has been spared from destruction."
-msgstr "Objekt '%s' postedjen od unistenja."
+msgstr "Objekt '%s' po¹teðen od uni¹tenja."
 
 #: src/look.c:1060
 #, c-format
@@ -970,12 +970,12 @@ msgstr "%s sazna tvoju lokaciju."
 #: src/destroy.c:361 src/destroy.c:371 src/destroy.c:464
 #, c-format
 msgid "%s has scheduled your %s for destruction."
-msgstr "%s stavi tvoj objekt %s na popis za unistenje."
+msgstr "%s stavi tvoj objekt %s na popis za uni¹tenje."
 
 #: src/destroy.c:344
 #, c-format
 msgid "%s has scheduled your room %s to be destroyed."
-msgstr "%s stavi tvoju sobu %s na popis za unistenje."
+msgstr "%s stavi tvoju sobu %s na popis za uni¹tenje."
 
 #: attrib.c:1508
 #, c-format
@@ -985,7 +985,7 @@ msgstr "%s je razgranati atribut; prvo ukloni njegovu djecu."
 #: src/extchat.c:803 src/extchat.c:835
 #, c-format
 msgid "%s is already on channel <%s>."
-msgstr "%s vec jest na kanalu <%s>."
+msgstr "%s veæ jest na kanalu <%s>."
 
 #: src/look.c:1057
 #, c-format
@@ -1000,12 +1000,12 @@ msgstr "%s je iskvareno!"
 #: look.c:954 look.c:979 look.c:1019
 #, c-format
 msgid "%s is listening."
-msgstr "%s slusa."
+msgstr "%s slu¹a."
 
 #: src/flags.c:1067 src/flags.c:1073
 #, c-format
 msgid "%s is no longer listening."
-msgstr "%s vise ne slusa."
+msgstr "%s vi¹e ne slu¹a."
 
 #: speech.c:708
 #, c-format
@@ -1030,7 +1030,7 @@ msgstr "%s nije na kanalu <%s>."
 #: src/flags.c:1127 src/flags.c:1133
 #, c-format
 msgid "%s is now listening."
-msgstr "%s sada slusa."
+msgstr "%s sada slu¹a."
 
 #: move.c:517
 #, c-format
@@ -1040,7 +1040,7 @@ msgstr "%s je sada prvi izlaz u sobi %s."
 #: src/destroy.c:364 src/destroy.c:378
 #, c-format
 msgid "%s is scheduled to be destroyed."
-msgstr "%s je na popisu za unistenje."
+msgstr "%s je na popisu za uni¹tenje."
 
 #: move.c:888
 #, c-format
@@ -1090,12 +1090,12 @@ msgstr "%s vodi na promjenjivu lokaciju."
 #: warnings.c:162
 #, c-format
 msgid "%s lock has eval-lock that uses a nonexistant attribute '%s'."
-msgstr "Brava '%s' ima evaluacijsku bravu koja koristi nepostojeci atribut '%s'."
+msgstr "Brava '%s' ima evaluacijsku bravu koja koristi nepostojeæi atribut '%s'."
 
 #: warnings.c:173
 #, c-format
 msgid "%s lock has indirect lock to %s/%s that it can't read"
-msgstr "Brava %s je neizravno zakljucana pomocu atributa %s/%s kojeg ne moze procitati"
+msgstr "Brava %s je neizravno zakljuèana pomoæu atributa %s/%s kojeg ne mo¾e proèitati"
 
 #: warnings.c:145 warnings.c:169
 #, c-format
@@ -1105,7 +1105,7 @@ msgstr "Brava %s se odnosi na otpadni objekt"
 #: src/attrib.c:949
 #, c-format
 msgid "%s loses its ears and becomes deaf."
-msgstr "%s izgubi usi i oglusi."
+msgstr "%s izgubi u¹i i oglu¹i."
 
 #: src/predicat.c:760
 #, c-format
@@ -1115,17 +1115,17 @@ msgstr "%s poruka od %s: %s"
 #: flags.c:2016
 #, c-format
 msgid "%s names may not contain spaces."
-msgstr "%s ne moze imati razmake u imenu."
+msgstr "%s ne mo¾e imati razmake u imenu."
 
 #: flags.c:2011
 #, c-format
 msgid "%s names must be longer than one character."
-msgstr "%s mora imati ime koje je duze od jednog znaka."
+msgstr "%s mora imati ime koje je du¾e od jednog znaka."
 
 #: bsd.c:4692
 #, c-format
 msgid "%s no longer appears on the WHO list."
-msgstr "%s se vise ne pojavljuje na WHO listi."
+msgstr "%s se vi¹e ne pojavljuje na WHO listi."
 
 #: bsd.c:4697
 #, c-format
@@ -1140,12 +1140,12 @@ msgstr "%s u %s"
 #: help.c:256
 #, c-format
 msgid "%s output truncated."
-msgstr "%s ispis skracen."
+msgstr "%s ispis skraæen."
 
 #: bsd.c:4130
 #, c-format
 msgid "%s pages: %s"
-msgstr "%s salje poruku: %s"
+msgstr "%s ¹alje poruku: %s"
 
 #: rob.c:284
 #, c-format
@@ -1155,17 +1155,17 @@ msgstr "%s odbije tvoj novac."
 #: src/speech.c:179
 #, c-format
 msgid "%s says, \"%s\""
-msgstr "%s kaze, \"%s\""
+msgstr "%s ka¾e, \"%s\""
 
 #: speech.c:380
 #, c-format
 msgid "%s sense: %s%s%s"
-msgstr "%s osjecaju: %s%s%s"
+msgstr "%s osjeæaju: %s%s%s"
 
 #: speech.c:378
 #, c-format
 msgid "%s senses: %s%s%s"
-msgstr "%s osjeca: %s%s%s"
+msgstr "%s osjeæa: %s%s%s"
 
 #: src/extmail.c:1335
 #, c-format
@@ -1175,12 +1175,12 @@ msgstr "%s ima %d poslanih poruka."
 #: attrib.c:1474
 #, c-format
 msgid "%s should contain only dbrefs."
-msgstr "%s treba sadrzavati iskljucivo dbrefove."
+msgstr "%s treba sadr¾avati iskljuèivo dbrefove."
 
 #: src/bsd.c:2100
 #, c-format
 msgid "%s sizes:  NewUser...%d  Connect...%d  Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  Register...%d  Down...%d  Full...%d"
-msgstr "%s velicine:  NewUser...%d  Connect...%d  Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  Register...%d  Down...%d  Full...%d"
+msgstr "%s velièine:  NewUser...%d  Connect...%d  Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  Register...%d  Down...%d  Full...%d"
 
 #: src/move.c:918 src/move.c:1063
 #, c-format
@@ -1200,22 +1200,22 @@ msgstr "%s te pokupi."
 #: src/rob.c:156
 #, c-format
 msgid "%s tried to kill you!"
-msgstr "%s te pokusa ubiti!"
+msgstr "%s te poku¹a ubiti!"
 
 #: src/look.c:1053
 #, c-format
 msgid "%s tried to locate you and failed."
-msgstr "%s te pokusa naci i ne uspije."
+msgstr "%s te poku¹a naæi i ne uspije."
 
 #: src/wiz.c:548
 #, c-format
 msgid "%s tries to impose his will on you and fails."
-msgstr "%s ti pokusa nametnuti svoju volju i ne uspije."
+msgstr "%s ti poku¹a nametnuti svoju volju i ne uspije."
 
 #: src/speech.c:151
 #, c-format
 msgid "%s types --> %s%s%s"
-msgstr "%s napise --> %s%s%s"
+msgstr "%s napi¹e --> %s%s%s"
 
 #: src/move.c:495
 #, c-format
@@ -1225,12 +1225,12 @@ msgstr "Predmet %s ti je oduzet."
 #: speech.c:387
 #, c-format
 msgid "%s whispers%s."
-msgstr "%s sapne%s."
+msgstr "%s ¹apne%s."
 
 #: speech.c:374
 #, c-format
 msgid "%s whispers%s: %s"
-msgstr "%s sapne%s: %s"
+msgstr "%s ¹apne%s: %s"
 
 #: look.c:341
 #, c-format
@@ -1245,12 +1245,12 @@ msgstr "%s%s [#%d%s]%s je pod velom"
 #: destroy.c:412
 #, c-format
 msgid "%s's %s has been spared from destruction."
-msgstr "%2$s igraca koji se zove %1$s je postedjen od unistenja."
+msgstr "%2$s igraèa koji se zove %1$s je po¹teðen od uni¹tenja."
 
 #: src/destroy.c:357 src/destroy.c:374
 #, c-format
 msgid "%s's %s is scheduled to be destroyed."
-msgstr "Objekt %2$s igraca koji se zove %1$s je stavljen na popis za unistenje."
+msgstr "Objekt %2$s igraèa koji se zove %1$s je stavljen na popis za uni¹tenje."
 
 #: look.c:1360
 #, c-format
@@ -1270,22 +1270,22 @@ msgstr "%s(#%d) [dom]"
 #: src/extmail.c:1168
 #, c-format
 msgid "%s(#%d) has mail but is not a player."
-msgstr "%s(#%d) ima postu ali nije igrac."
+msgstr "%s(#%d) ima po¹tu ali nije igraè."
 
 #: lock.c:541
 #, c-format
 msgid "%s(%s) - %s (already) unlocked."
-msgstr "%s(%s) - %s (vec) otkljucano."
+msgstr "%s(%s) - %s (veæ) otkljuèano."
 
 #: lock.c:603
 #, c-format
 msgid "%s(%s) - %s locked."
-msgstr "%s(%s) - %s zakljucano."
+msgstr "%s(%s) - %s zakljuèano."
 
 #: lock.c:544
 #, c-format
 msgid "%s(%s) - %s unlocked."
-msgstr "%s(%s) - %s otkljucano."
+msgstr "%s(%s) - %s otkljuèano."
 
 #: set.c:482
 #, c-format
@@ -1300,7 +1300,7 @@ msgstr "%s/%s - %s postavljeno."
 #: src/extmail.c:1260 src/extmail.c:1668 src/wiz.c:673 src/wiz.c:1277
 #, c-format
 msgid "%s: No such player."
-msgstr "%s: Taj igrac ne postoji."
+msgstr "%s: Taj igraè ne postoji."
 
 #: wiz.c:275
 #, c-format
@@ -1310,7 +1310,7 @@ msgstr "%s: Objekti: %d Granica: %d"
 #: wiz.c:269
 #, c-format
 msgid "%s: Objects: %d   Limit: UNLIMITED"
-msgstr "%s: Objekti: %d Granica: NEOGRANICENO"
+msgstr "%s: Objekti: %d Granica: NEOGRANIÈENO"
 
 #: attrib.c:1566 attrib.c:1584
 #, c-format
@@ -1341,7 +1341,7 @@ msgstr ") NIJE PRONADJENA"
 #: src/look.c:911
 #, c-format
 msgid "*** %d objects found ***"
-msgstr "*** %d objekata pronadjeno ***"
+msgstr "*** %d objekata pronaðeno ***"
 
 #: src/malias.c:300
 msgid "*****  End of Mail Aliases *****"
@@ -3207,13 +3207,17 @@ msgstr "POSTA: Sve poruke premjestene u folder %d [%s]"
 msgid "MAIL: All messages in all folders cleared."
 msgstr "POSTA: Obrisane sve poruke u svim folderima."
 
+#: extmail.c:428
+msgid "MAIL: All messages in all folders tagged."
+msgstr "PO©TA: Sve poruke u svim folderima oznaèene."
+
 #: extmail.c:445
 msgid "MAIL: All messages in all folders uncleared."
 msgstr "POSTA: Ponisteno brisanje svih poruka u svim folderima."
 
 #: extmail.c:426
 msgid "MAIL: All messages in all folders untagged."
-msgstr "POSTA: Sve poruke u svim folderima oznacene."
+msgstr "PO©TA: Sve poruke u svim folderima od-oznaèene."
 
 #: src/malias.c:485
 #, c-format
@@ -4263,6 +4267,10 @@ msgstr "Separator mora biti jedan znak."
 #: attrib.c:942
 msgid "Set"
 msgstr "Postavljeno"
+
+#: destroy.c:1444
+msgid "Silly mortal, chicks are for kids!"
+msgstr "Dopu¹tenje uskraæeno."
 
 #: src/wiz.c:1999
 #, c-format
@@ -5784,7 +5792,7 @@ msgstr "Imas beskonacno %s."
 
 #: src/speech.c:832
 msgid "You haven't paged anyone since connecting."
-msgstr "Od spajanja nemas poslanih privatnih poruka."
+msgstr "Od spajanja nema¹ poslanih privatnih poruka."
 
 #: extchat.c:1593
 msgid "You hide on all the channels you can."
@@ -5812,7 +5820,7 @@ msgstr "U zivotu mozes dobiti svojih pet minuta slave, ali ne sada."
 #: look.c:959
 #, c-format
 msgid "You may give unlimited %s"
-msgstr "Mozes davati beskonacno puno %s"
+msgstr "Mo¾e¹ davati beskonaèno puno %s"
 
 #: src/create.c:311
 msgid "You may not link something to itself."
@@ -5824,7 +5832,7 @@ msgstr "Ne mozes postavljati atribute."
 
 #: src/speech.c:132 src/speech.c:171 src/speech.c:644 src/speech.c:1342
 msgid "You may not speak here!"
-msgstr "Ovdje ne mozes govoriti!"
+msgstr "Ovdje ne mo¾e¹ govoriti!"
 
 #: src/speech.c:218 src/speech.c:270 src/speech.c:1375 src/speech.c:1420
 msgid "You may not speak there!"
@@ -6044,7 +6052,7 @@ msgstr "Maknes 1 objekt iz objekta %s."
 #: src/speech.c:177
 #, c-format
 msgid "You say, \"%s\""
-msgstr "Kažeš, \"%s\""
+msgstr "Ka¾e¹, \"%s\""
 
 #: src/look.c:412
 msgid "You see nothing special."
@@ -6099,7 +6107,7 @@ msgstr "Sapnes, \"%s\"%s."
 #: src/destroy.c:336
 #, c-format
 msgid "You will be rewarded shortly for %s."
-msgstr "Uskoro ces primiti nagradu za objekt %s."
+msgstr "Uskoro æe¹ primiti nagradu za objekt %s."
 
 #: src/extchat.c:1266
 #, c-format

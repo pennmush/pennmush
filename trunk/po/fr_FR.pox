@@ -13,47 +13,47 @@ msgstr ""
 
 #: speech.c:856
 msgid " (to "
-msgstr " \" (a \" "
+msgstr " (a "
 
 #: conf.c:1044
 msgid " Attributes are 8-bit word compressed in memory."
-msgstr " Les attributs en m\351moire utilisent la m\351thode de compression 8-bits."
+msgstr " Les attributs en mémoire utilisent la méthode de compression 8-bits."
 
 #: conf.c:1035
 msgid " Attributes are Huffman compressed in memory."
-msgstr " Les attributs en m\351moire utilisent la m\351thode de compression Huffman."
+msgstr " Les attributs en mémoire utilisent la méthode de compression Huffman."
 
 #: conf.c:1032
 msgid " Attributes are not compressed in memory."
-msgstr " Les attributs en m\351moire ne sont pas compress\351s."
+msgstr " Les attributs en mémoire ne sont pas compressés."
 
 #: conf.c:1041
 msgid " Attributes are word compressed in memory."
-msgstr " Les attributs en m\351moire utilisent la m\351thode de compression de Nick Gammon ('word-based compression')"
+msgstr " Les attributs en mémoire utilisent la méthode de compression de Nick Gammon ('word-based compression')."
 
 #: conf.c:1498
 msgid " CPU usage limiting is NOT supported."
-msgstr " \" La limitation du temps de calcul du processeur n'est PAS implémentée.\""
+msgstr " La limitation du temps de calcul du processeur n'est PAS implémentée."
 
 #: conf.c:1496
 msgid " CPU usage limiting is supported."
-msgstr " \" Limitation de l'usage de CPU supportée\""
+msgstr " Limitation de l'usage de CPU supportée"
 
 #: src/conf.c:980
 msgid " DNS and ident lookups are handled by a slave process."
-msgstr " Les r\351solutions DNS et d'ident sont g\351r\351es par un processus fils."
+msgstr " Les résolutions DNS et d'ident sont gérées par un processus fils."
 
 #: src/conf.c:982
 msgid " DNS and ident lookups are handled by the MUSH process."
-msgstr " Les r\351solutions DNS et d'ident sont g\351r\351es par le processus du MUSH."
+msgstr " Les résolutions DNS et d'ident sont gérées par le processus du MUSH."
 
 #: src/conf.c:1111
 msgid " Extended convtime() is supported."
-msgstr " La fonction convtime() \351tendue est impl\351ment\351e."
+msgstr " La fonction convtime() étendue est implémentée."
 
 #: flags.c:917
 msgid " Flags: "
-msgstr " \" Flags: \" "
+msgstr " Flags: "
 
 #: wiz.c:1605
 #, c-format
@@ -66,7 +66,7 @@ msgstr " convtime() est plus stricte."
 
 #: src/look.c:688 src/look.c:770
 msgid " is owned by "
-msgstr " est la propri\351t\351 de "
+msgstr " est la propriété de "
 
 #: speech.c:1021
 msgid " pages"
@@ -74,11 +74,11 @@ msgstr " page"
 
 #: flags.c:764
 msgid " reset."
-msgstr " \" remis à zéro.\""
+msgstr " remis à zéro."
 
 #: flags.c:831
 msgid " set."
-msgstr " \" configuré.\""
+msgstr " configuré."
 
 #: extchat.c:1503
 msgid "#-1 AMBIGUOUS CHANNEL NAME"
@@ -150,7 +150,7 @@ msgstr "#-1 BASE HORS DE PORTEE"
 
 #: parse.c:83
 msgid "#-1 CALL LIMIT EXCEEDED"
-msgstr "\"#-1 LIMITE D'APPEL ATTEINTE\""
+msgstr "#-1 LIMITE D'APPEL ATTEINTE"
 
 #: src/funlist.c:1456 src/funlist.c:1680
 msgid "#-1 CAN ONLY TEST ONE ELEMENT"
@@ -194,7 +194,7 @@ msgstr "#-1 LIMITE DE RECURSIVITE DE FONCTION DEPASSEE"
 
 #: bsd.c:4955 bsd.c:4966
 msgid "#-1 FUNCTION REQUIRES ONE ARGUMENT"
-msgstr "\"#-1 UN ARGUMENT REQUIS\""
+msgstr "#-1 UN ARGUMENT REQUIS"
 
 #: src/funmath.c:949 src/funmath.c:972
 msgid "#-1 INFINITY"
@@ -202,20 +202,20 @@ msgstr "#-1 INIFINI"
 
 #: funmath.c:73
 msgid "#-1 INVALID ANGLE TYPE"
-msgstr "\"#-1 TYPE D'ANGLE INVALIDE\""
+msgstr "#-1 TYPE D'ANGLE INVALIDE"
 
 #: funstr.c:418
 msgid "#-1 INVALID DBREF"
-msgstr "\"#-1 DBREF INVALIDE\""
+msgstr "#-1 DBREF INVALIDE"
 
 #: help.c:454
 msgid "#-1 INVALID ENTRY"
-msgstr "\"#-1 ENTREE INVALIDE\""
+msgstr "#-1 ENTREE INVALIDE"
 
 #: funtime.c:55
 #, c-format
 msgid "#-1 INVALID ESCAPE CODE '$%c'"
-msgstr "\"#-1 CODE D'ECHAPPEMENT '$%c' INVALIDE\""
+msgstr "#-1 CODE D'ECHAPPEMENT '$%c' INVALIDE"
 
 #: src/fundb.c:1618 src/funlist.c:2324 src/funlist.c:2367
 msgid "#-1 INVALID GREP PATTERN"
@@ -239,7 +239,7 @@ msgstr "#-1 SECOND ARGUMENT INVALIDE"
 
 #: funstr.c:369 funstr.c:425
 msgid "#-1 INVALID THIRD ARGUMENT"
-msgstr "\"#-1 TROISIEME ARGUMENT INVALIDE\""
+msgstr "#-1 TROISIEME ARGUMENT INVALIDE"
 
 #: src/funufun.c:293
 msgid "#-1 INVALID ZONE"
@@ -259,11 +259,11 @@ msgstr "#-1 AUCUN CANAL SPECIFIE"
 
 #: help.c:512
 msgid "#-1 NO ENTRY"
-msgstr "\"#-1 PAS D'ENTREE\""
+msgstr "#-1 PAS D'ENTREE"
 
 #: help.c:464
 msgid "#-1 NO INDEX FOR FILE"
-msgstr "\"#-1 PAS D'INDEX POUR CE FICHIER\""
+msgstr "#-1 PAS D'INDEX POUR CE FICHIER"
 
 #: src/fundb.c:118 src/fundb.c:137 src/fundb.c:460 src/funstr.c:118\nsrc/funstr.c:131 src/funstr.c:144 src/funstr.c:157
 msgid "#-1 NO MATCH"
@@ -295,7 +295,7 @@ msgstr "#-1 PAS DE TELLE OPTION DE CONFIGURATION"
 
 #: help.c:429
 msgid "#-1 NO SUCH FILE"
-msgstr "\"#-1 FICHIER INEXISTANT\""
+msgstr "#-1 FICHIER INEXISTANT"
 
 #: src/fundb.c:1851
 msgid "#-1 NO SUCH LOCK TYPE"
@@ -367,7 +367,7 @@ msgstr "#-1 LES LONGUEURS DES CHAINES DOIVENT ETRE EGALES"
 
 #: funstr.c:1034
 msgid "#-1 THIS ISN'T UNICODE"
-msgstr "\"#-1 CE N'EST PAS DE L'UNICODE\""
+msgstr "#-1 CE N'EST PAS DE L'UNICODE"
 
 #: src/funlist.c:1815
 msgid "#-1 TOO MANY ITERS"
@@ -379,7 +379,7 @@ msgstr "#-1 TROP DE MOTS"
 
 #: help.c:516 help.c:519
 msgid "#-1 UNAVAILABLE"
-msgstr "\"#-1 NON DISPONIBLE\""
+msgstr "#-1 NON DISPONIBLE"
 
 #: src/funmath.c:1385
 msgid "#-1 UNKNOWN OPERATION"
@@ -387,7 +387,7 @@ msgstr "#-1 OPERATION INCONNUE"
 
 #: funstr.c:1021 funstr.c:1038
 msgid "#-1 UNPRINTABLE CHARACTER"
-msgstr "\"#-1 CARACTERE NON AFFICHABLE\""
+msgstr "#-1 CARACTERE NON AFFICHABLE"
 
 #: src/funmath.c:420 src/funmath.c:462 src/funmath.c:501 src/funmath.c:540\nsrc/funmath.c:598 src/funmath.c:632
 msgid "#-1 VECTORS MUST BE SAME DIMENSIONS"
@@ -399,37 +399,37 @@ msgstr "#-1 LARGEUR TROP PETITE"
 
 #: src/extmail.c:1641
 msgid "#-? fun_mailstats called with invalid called_as!"
-msgstr "#-? fun_mailstats a \351t\351 appel\351e avec un called_as non valide!"
+msgstr "#-? fun_mailstats a été appelée avec un called_as non valide!"
 
 #: src/wiz.c:1044
 #, c-format
 msgid "%d commands executed."
-msgstr "%d commandes ex\351cut\351es."
+msgstr "%d commandes exécutées."
 
 #: src/extmail.c:1379
 #, c-format
 msgid "%d messages received, %d unread, %d cleared, totalling %d characters."
-msgstr "%d messages re\347us, %d non lus, %d effac\351s, totalisant %d caract\350res."
+msgstr "%d messages re\347us, %d non lus, %d effacés, totalisant %d caract\350res."
 
 #: src/extmail.c:1370
 #, c-format
 msgid "%d messages received, %d unread, %d cleared."
-msgstr "%d messages re\347us, %d non lus, %d effac\351s."
+msgstr "%d messages re\347us, %d non lus, %d effacés."
 
 #: src/extmail.c:1375
 #, c-format
 msgid "%d messages sent, %d unread, %d cleared, totalling %d characters."
-msgstr "%d messages envoy\351s, %d non lus, %d effac\351s, totalisant %d caract\350res."
+msgstr "%d messages envoyés, %d non lus, %d effacés, totalisant %d caract\350res."
 
 #: src/extmail.c:1368
 #, c-format
 msgid "%d messages sent, %d unread, %d cleared."
-msgstr "%d messages envoy\351s, %d non lus, %d effac\351s."
+msgstr "%d messages envoyés, %d non lus, %d effacés."
 
 #: src/wiz.c:686
 #, c-format
 msgid "%d objects = %d rooms, %d exits, %d things, %d players, %d garbage."
-msgstr "%d objets = %d salles, %d sorties, %d choses, %d joueurs, %d r\351sidus."
+msgstr "%d objets = %d salles, %d sorties, %d choses, %d joueurs, %d résidus."
 
 #: src/wiz.c:692
 #, c-format
@@ -439,12 +439,12 @@ msgstr "%d objets = %d salles, %d sorties, %d choses, %d joueurs."
 #: wiz.c:1745
 #, c-format
 msgid "%d sitelocks removed."
-msgstr "\"%d sitelocks ont été supprimés.\""
+msgstr "%d sitelocks ont été supprimés."
 
 #: src/bsd.c:3405
 #, c-format
 msgid "%ld failed connections since last login."
-msgstr "%ld connexions \351chou\351es depuis la derni\350re connexion."
+msgstr "%ld connexions échouées depuis la derni\350re connexion."
 
 #: src/look.c:969
 #, c-format
@@ -459,7 +459,7 @@ msgstr "%s (cette salle) [commandes]."
 #: src/look.c:961
 #, c-format
 msgid "%s (this room) [speech]. (connected)"
-msgstr "%s (cette salle) [speech]. (connect\351)"
+msgstr "%s (cette salle) [speech]. (connecté)"
 
 #: src/look.c:964
 #, c-format
@@ -474,22 +474,22 @@ msgstr "%s -- Les permissions de cet attribut sont maintenant: %s"
 #: look.c:706
 #, c-format
 msgid "%s Lock [#%d%s]: %s"
-msgstr "\"%s Verrou [#%d%s]: %s\""
+msgstr "%s Verrou [#%d%s]: %s"
 
 #: src/look.c:954 src/look.c:979 src/look.c:1019
 #, c-format
 msgid "%s [owner: %s] is listening."
-msgstr "%s [propri\351taire: %s] est \340 l'\351coute."
+msgstr "%s [propriétaire: %s] est à l'écoute."
 
 #: destroy.c:353
 #, c-format
 msgid "%s and all their (non-SAFE) objects are scheduled to be destroyed."
-msgstr "%s et tous ses objects non SAFE seront d\351truits sous peu."
+msgstr "%s et tous ses objects non SAFE seront détruits sous peu."
 
 #: src/destroy.c:352
 #, c-format
 msgid "%s and all their objects are scheduled to be destroyed."
-msgstr "%s et tous ses objets seront d\351truits sous peu."
+msgstr "%s et tous ses objets seront détruits sous peu."
 
 #: src/move.c:862
 #, c-format
@@ -499,17 +499,17 @@ msgstr "%s vous suit."
 #: speech.c:332
 #, c-format
 msgid "%s can't hear you."
-msgstr "\"%s ne peut pas t'entendre.\""
+msgstr "%s ne peut pas t'entendre."
 
 #: src/create.c:388
 #, c-format
 msgid "%s created with room number %d."
-msgstr "%s cr\351\351e avec le num\351ro de salle %d."
+msgstr "%s créée avec le numéro de salle %d."
 
 #: src/bsd.c:3978
 #, c-format
 msgid "%s created."
-msgstr "%s cr\351\351."
+msgstr "%s créé."
 
 #: src/command.c:960
 #, c-format
@@ -524,12 +524,12 @@ msgstr "\"%s vous lâche.\""
 #: src/rob.c:213
 #, c-format
 msgid "%s gave you %s."
-msgstr "%s vous a donn\351 %s."
+msgstr "%s vous a donné %s."
 
 #: src/rob.c:215
 #, c-format
 msgid "%s gave you to %s."
-msgstr "%s vous a donn\351 \340 %s."
+msgstr "%s vous a donné à %s."
 
 #: src/rob.c:285
 #, c-format
@@ -554,7 +554,7 @@ msgstr "%s a %d messages."
 #: src/destroy.c:414 src/destroy.c:510
 #, c-format
 msgid "%s has been spared from destruction."
-msgstr "%s a \351t\351 sauv\351(e) de la destruction."
+msgstr "%s a été sauvé(e) de la destruction."
 
 #: src/look.c:1060
 #, c-format
@@ -564,22 +564,22 @@ msgstr "%s vient de vous localiser."
 #: src/destroy.c:361 src/destroy.c:371 src/destroy.c:464
 #, c-format
 msgid "%s has scheduled your %s for destruction."
-msgstr "%s a programm\351 votre %s pour destruction."
+msgstr "%s a programmé votre %s pour destruction."
 
 #: src/destroy.c:344
 #, c-format
 msgid "%s has scheduled your room %s to be destroyed."
-msgstr "%s a planifi\351 la destruction de votre salle %s."
+msgstr "%s a planifié la destruction de votre salle %s."
 
 #: src/extchat.c:803 src/extchat.c:835
 #, c-format
 msgid "%s is already on channel <%s>."
-msgstr "%s est d\351j\340 sur le canal <%s>."
+msgstr "%s est déjà sur le canal <%s>."
 
 #: src/look.c:1057
 #, c-format
 msgid "%s is at: %s."
-msgstr "%s est \340: %s"
+msgstr "%s est à: %s"
 
 #: look.c:205
 #, c-format
@@ -589,27 +589,27 @@ msgstr "%s est corrompu!"
 #: look.c:954 look.c:979 look.c:1019
 #, c-format
 msgid "%s is listening."
-msgstr "\"%s est à l'écoute.\""
+msgstr "%s est à l'écoute."
 
 #: src/flags.c:1067 src/flags.c:1073
 #, c-format
 msgid "%s is no longer listening."
-msgstr "%s n'\351coute plus."
+msgstr "%s n'écoute plus."
 
 #: speech.c:708
 #, c-format
 msgid "%s is not accepting any pages."
-msgstr "\"%s n'accepte aucun page.\""
+msgstr "%s n'accepte aucun page."
 
 #: speech.c:713
 #, c-format
 msgid "%s is not accepting your pages."
-msgstr "\"%s refuse vos pages.\""
+msgstr "%s refuse vos pages."
 
 #: speech.c:703
 #, c-format
 msgid "%s is not connected."
-msgstr "\"%s n'est pas connecté.\""
+msgstr "%s n'est pas connecté."
 
 #: src/extchat.c:865
 #, c-format
@@ -619,12 +619,12 @@ msgstr "%s n'est pas sur le canal <%s>."
 #: src/flags.c:1127 src/flags.c:1133
 #, c-format
 msgid "%s is now listening."
-msgstr "%s est maintenant a l'\351coute."
+msgstr "%s est maintenant a l'écoute."
 
 #: src/destroy.c:364 src/destroy.c:378
 #, c-format
 msgid "%s is scheduled to be destroyed."
-msgstr "%s est sur le point d'\352tre d\351truit."
+msgstr "%s est sur le point d'\352tre détruit."
 
 #: move.c:888
 #, c-format
@@ -639,7 +639,7 @@ msgstr "%s ne vous suit pas."
 #: src/rob.c:134
 #, c-format
 msgid "%s killed you!"
-msgstr "%s vous a tu\351!"
+msgstr "%s vous a tué!"
 
 #: look.c:200
 #, c-format
@@ -664,17 +664,17 @@ msgstr "%s m\350ne a un endroit variable."
 #: warnings.c:162
 #, c-format
 msgid "%s lock has eval-lock that uses a nonexistant attribute '%s'."
-msgstr "\"Le verrou de %s a un eval-lock qui utilise l'attribut inexistant '%s'.\""
+msgstr "Le verrou de %s a un eval-lock qui utilise l'attribut inexistant '%s'."
 
 #: warnings.c:173
 #, c-format
 msgid "%s lock has indirect lock to %s/%s that it can't read"
-msgstr "\"%s possède un verrou indirectement lié à %s/%s qu'il ne peut pas lire.\""
+msgstr "%s possède un verrou indirectement lié à %s/%s qu'il ne peut pas lire."
 
 #: warnings.c:145 warnings.c:169
 #, c-format
 msgid "%s lock refers to garbage object"
-msgstr "\"Le verrou de %s réfère à un résidu.\""
+msgstr "Le verrou de %s réfère à un résidu."
 
 #: src/attrib.c:949
 #, c-format
@@ -694,12 +694,12 @@ msgstr "%s sur %s"
 #: help.c:256
 #, c-format
 msgid "%s output truncated."
-msgstr "%s sortie tronqu\351e."
+msgstr "%s sortie tronquée."
 
 #: bsd.c:4130
 #, c-format
 msgid "%s pages: %s"
-msgstr "\"%s page: %s\""
+msgstr "%s page: %s"
 
 #: src/speech.c:179
 #, c-format
@@ -709,12 +709,12 @@ msgstr "%s dit \"%s\""
 #: speech.c:378
 #, c-format
 msgid "%s senses: %s%s%s"
-msgstr "\"%s perçoit: %s%s%s\""
+msgstr "%s perçoit: %s%s%s"
 
 #: src/extmail.c:1335
 #, c-format
 msgid "%s sent %d messages."
-msgstr "%s a envoy\351 %d messages."
+msgstr "%s a envoyé %d messages."
 
 #: src/bsd.c:2100
 #, c-format
@@ -734,22 +734,22 @@ msgstr "%s vous a pris %d %s!"
 #: move.c:526 move.c:572
 #, c-format
 msgid "%s took you."
-msgstr "\"%s vous prend.\""
+msgstr "%s vous prend."
 
 #: src/rob.c:156
 #, c-format
 msgid "%s tried to kill you!"
-msgstr "%s a tent\351 de vous tuer!"
+msgstr "%s a tenté de vous tuer!"
 
 #: src/look.c:1053
 #, c-format
 msgid "%s tried to locate you and failed."
-msgstr "%s a essay\351 de vous localiser, mais sans succ\350s."
+msgstr "%s a essayé de vous localiser, mais sans succ\350s."
 
 #: src/wiz.c:548
 #, c-format
 msgid "%s tries to impose his will on you and fails."
-msgstr "%s essaye de vous imposer sa volont\351 mais a \351chou\351."
+msgstr "%s essaye de vous imposer sa volonté mais a échoué."
 
 #: src/speech.c:151
 #, c-format
@@ -759,17 +759,17 @@ msgstr "%s tape --> %s%s%s"
 #: src/move.c:495
 #, c-format
 msgid "%s was taken from you."
-msgstr "%s vous a \351t\351 pris(e)."
+msgstr "%s vous a été pris(e)."
 
 #: destroy.c:412
 #, c-format
 msgid "%s's %s has been spared from destruction."
-msgstr "Le %2$s de %1$s a \351t\351 sauv\351 de la destruction."
+msgstr "Le %2$s de %1$s a été sauvé de la destruction."
 
 #: src/destroy.c:357 src/destroy.c:374
 #, c-format
 msgid "%s's %s is scheduled to be destroyed."
-msgstr "Le %2$s de %1$s va \352tre d\351truit sous peu."
+msgstr "Le %2$s de %1$s va \352tre détruit sous peu."
 
 #: src/extmail.c:1168
 #, c-format
@@ -779,17 +779,17 @@ msgstr "%s(#%d) a du courrier mais n'est pas un joueur."
 #: lock.c:541
 #, c-format
 msgid "%s(%s) - %s (already) unlocked."
-msgstr "\"%s(%s) - %s (déja) verrouillé.\""
+msgstr "%s(%s) - %s (déja) verrouillé."
 
 #: lock.c:603
 #, c-format
 msgid "%s(%s) - %s locked."
-msgstr "\"%s(%s) - %s verrouillé.\""
+msgstr "%s(%s) - %s verrouillé."
 
 #: lock.c:544
 #, c-format
 msgid "%s(%s) - %s unlocked."
-msgstr "\"%s(%s) - %s déverrouillé."
+msgstr "%s(%s) - %s déverrouillé."
 
 #: src/extmail.c:1260 src/extmail.c:1668 src/wiz.c:673 src/wiz.c:1277
 #, c-format
@@ -798,7 +798,7 @@ msgstr "%s: Pas de tel joueur."
 
 #: function.c:905
 msgid "(Commas okay in last argument)"
-msgstr "(les virgules sont accept\351es en dernier argument)"
+msgstr "(les virgules sont acceptées en dernier argument)"
 
 #: src/extmail.c:211 src/extmail.c:810 src/extmail.c:1004
 msgid "(no subject)"
@@ -884,15 +884,15 @@ msgstr "Alias mis en place."
 
 #: access.c:410
 msgid "All but God"
-msgstr "\"Personne sauf Dieu.\""
+msgstr "Personne sauf Dieu"
 
 #: access.c:406
 msgid "All but admin"
-msgstr "\"Tous sauf les admins\""
+msgstr "Tous sauf les admins"
 
 #: access.c:408
 msgid "All but wizards"
-msgstr "\"Tous sauf les wizards\""
+msgstr "Tous sauf les wizards"
 
 #: src/cque.c:1045
 #, c-format
@@ -925,11 +925,11 @@ msgstr "Tous vos objets ont \351t\351 arr\352t\351s."
 #: src/wiz.c:273
 #, c-format
 msgid "All quotas changed to %d."
-msgstr "Tous les quotas ont \351t\351 configur\351s \340 %d."
+msgstr "Tous les quotas ont été configur\351s à %d."
 
 #: access.c:412
 msgid "All"
-msgstr "\"Tous\""
+msgstr "Tous"
 
 #: function.c:910
 #, c-format
@@ -939,7 +939,7 @@ msgstr "Arguments : %d %s"
 #: function.c:914
 #, c-format
 msgid "Arguments : %d to %d %s"
-msgstr "Arguments : %d \340 %d %s"
+msgstr "Arguments : %d à %d %s"
 
 #: function.c:912
 #, c-format
@@ -1000,12 +1000,12 @@ msgstr "Mot de passe invalide."
 #: src/set.c:147
 #, c-format
 msgid "Broadcast: Suspect %s changed name to %s."
-msgstr "Message \340 tous: Le suspect %s a chang\351 son nom pour %s."
+msgstr "Message à tous: Le suspect %s a chang\351 son nom pour %s."
 
 #: src/rob.c:99
 #, c-format
 msgid "Broadcast: Suspect %s tried to kill %s(#%d)."
-msgstr "Message \340 tous: Le suspect %s a essay\351 de tuer %s(#%d)."
+msgstr "Message à tous: Le suspect %s a essay\351 de tuer %s(#%d)."
 
 #: src/version.c:44 src/version.c:46
 #, c-format
@@ -1109,7 +1109,7 @@ msgstr "CHAT: Nouvelle description trop longue."
 
 #: src/extchat.c:1703
 msgid "CHAT: No channel matches that string."
-msgstr "CHAT: Aucun canal ne correspond \340 cette cha\356ne."
+msgstr "CHAT: Aucun canal ne correspond à cette cha\356ne."
 
 #: extchat.c:1132 extchat.c:1139
 msgid "CHAT: No more memory for channels!"
@@ -1174,7 +1174,7 @@ msgstr "CHAT: Vous virez %s du canal <%s>."
 
 #: parse.c:301
 msgid "CPU usage exceeded."
-msgstr "\"Temps processeur dépassé.\""
+msgstr "Temps processeur dépassé."
 
 #: src/create.c:322
 msgid "Can't set home to home."
@@ -1199,7 +1199,7 @@ msgstr "Canal supprim\351."
 
 #: src/extchat.c:1192
 msgid "Channel renamed."
-msgstr "Canal renomm\351."
+msgstr "Canal renommé."
 
 #: look.c:616
 msgid "Channels: *NONE*"
@@ -1211,7 +1211,7 @@ msgstr "Canaux:"
 
 #: extmail.c:2473
 msgid "Cleared "
-msgstr "Effac\351 "
+msgstr "Effacé "
 
 #: attrib.c:942
 msgid "Cleared"
@@ -1220,12 +1220,12 @@ msgstr "Effacé"
 #: create.c:680
 #, c-format
 msgid "Cloned: Exit #%d."
-msgstr "La sortie #%d a \351t\351 clon\351e."
+msgstr "La sortie #%d a été clonée."
 
 #: create.c:565
 #, c-format
 msgid "Cloned: Object %s."
-msgstr "L'objet %s a \351t\351 clon\351."
+msgstr "L'objet %s a été clon\351."
 
 #: create.c:628
 #, c-format
@@ -1239,7 +1239,7 @@ msgstr "Cmds"
 #: access.c:400
 #, c-format
 msgid "Comment: %s"
-msgstr "\"Commentaire: %s\""
+msgstr "Commentaire: %s"
 
 #: src/version.c:48
 #, c-format
@@ -1253,7 +1253,7 @@ msgstr "Compilateur: %s"
 
 #: bsd.c:4386 bsd.c:4395
 msgid "Connecting..."
-msgstr "\"En cours de connection...\""
+msgstr "En cours de connection..."
 
 #: look.c:494 look.c:750
 msgid "Contents:"
@@ -1274,7 +1274,7 @@ msgstr "Cr\351\351: %s"
 
 #: access.c:422
 msgid "Creation is allowed"
-msgstr "\"Création permise.\""
+msgstr "Création permise."
 
 #: extchat.c:1626 extchat.c:1636
 msgid "Creator"
@@ -1333,7 +1333,7 @@ msgstr "Doing configur\351."
 
 #: src/extchat.c:889
 msgid "Don't you have anything to say?"
-msgstr "Vous n'avez rien \340 dire?"
+msgstr "Vous n'avez rien à dire?"
 
 #: src/bsd.c:4280
 #, c-format
@@ -1342,12 +1342,12 @@ msgstr "Mush down, MOTD: %s"
 
 #: cque.c:710
 msgid "Drained."
-msgstr "\"Drainé.\""
+msgstr "Drainé."
 
 #: src/look.c:789
 #, c-format
 msgid "Dropped objects go to: %s"
-msgstr "Les objets l\342ch\351s vont \340: %s"
+msgstr "Les objets l\342ch\351s vont à: %s"
 
 #: move.c:596 move.c:600 move.c:603 move.c:609
 msgid "Dropped."
@@ -1367,11 +1367,11 @@ msgstr "Ce joueur n'existe pas, ou le mot de passe est diff\351rent."
 
 #: bsd.c:273
 msgid "Either there is already a player with that name, or that name is illegal."
-msgstr "Soit il existe d\351j\340 un joueur nomm\351 ainsi, soit ce nom est invalide."
+msgstr "Soit il existe d\351jà un joueur nomm\351 ainsi, soit ce nom est invalide."
 
 #: access.c:425
 msgid "Email registration is allowed"
-msgstr "\"L'enregistrement par e-mail est activée\""
+msgstr "L'enregistrement par e-mail est activée"
 
 #: wiz.c:1013
 msgid "Enabled."
@@ -1434,12 +1434,16 @@ msgstr "Flags     : %s"
 #: wiz.c:936
 #, c-format
 msgid "Flags value: %s"
-msgstr "\"Valeur de flag: %s\""
+msgstr "Valeur de flag: %s"
+
+#: cmds.c:135 cmds.c:280 cmds.c:420
+msgid "Flags"
+msgstr "Flags"
 
 #: flags.c:1284
 #, c-format
 msgid "Flags: %s"
-msgstr "\"Flags: %s\""
+msgstr "Flags: %s"
 
 #: extmail.c:462 extmail.c:465
 msgid "Folder:"
@@ -1452,7 +1456,7 @@ msgstr "De loin"
 #: bsd.c:4123
 #, c-format
 msgid "From afar, %s%s%s"
-msgstr "\"De loin, %s%s%s\""
+msgstr "De loin, %s%s%s"
 
 #: extmail.c:471
 #, c-format
@@ -1488,7 +1492,7 @@ msgstr "Nom de fonction trop long."
 
 #: src/function.c:741
 msgid "Function updated."
-msgstr "Fonction mise \340 jour."
+msgstr "Fonction mise à jour."
 
 #: extmail.c:2479
 msgid "Fwd "
@@ -1520,7 +1524,7 @@ msgstr "JEU: ERREUR! Echec de sauvegarde!"
 
 #: bsd.c:4244
 msgid "GAME: ERROR! Forking database save failed!"
-msgstr "\"JEU: ERRUR! Le fork a planté lors de la sauvegarde de la base de données!\""
+msgstr "JEU: ERRUR! Le fork a planté lors de la sauvegarde de la base de données!"
 
 #: src/bsd.c:5057
 msgid "GAME: Error writing reboot database!"
@@ -1545,7 +1549,7 @@ msgstr "JEU: Red\351marrage sans d\351connexion par %s, veuillez patienter."
 
 #: src/wiz.c:2289
 msgid "GAME: Reboot w/o disconnect from game account, please wait."
-msgstr "JEU: Red\351marrage sans d\351connexion \340 partir du shell, veuillez patienter."
+msgstr "JEU: Red\351marrage sans d\351connexion à partir du shell, veuillez patienter."
 
 #: src/game.c:273
 #, c-format
@@ -1572,7 +1576,7 @@ msgstr "JEU:"
 
 #: src/wiz.c:363
 msgid "Garbage belongs in the garbage dump."
-msgstr "Les ordures appartiennent \340 la poubelle."
+msgstr "Les ordures appartiennent à la poubelle."
 
 #: src/look.c:667 src/look.c:1306
 msgid "Garbage is garbage."
@@ -1584,7 +1588,7 @@ msgstr "Lui donner quel nouveau nom?"
 
 #: src/rob.c:177
 msgid "Give to whom?"
-msgstr "Donner \340 qui?"
+msgstr "Donner à qui?"
 
 #: src/extmail.c:1147
 msgid "Go get some bugspray."
@@ -1592,7 +1596,7 @@ msgstr "Va te laver!"
 
 #: src/wiz.c:1180
 msgid "God is already all-powerful."
-msgstr "Dieu est d\351j\340 tout-puissant."
+msgstr "Dieu est d\351jà tout-puissant."
 
 #: bsd.c:276
 msgid "Going down - Bye"
@@ -1600,7 +1604,7 @@ msgstr "-- Au revoir --"
 
 #: access.c:415
 msgid "Guest connections are NOT allowed"
-msgstr "\"Les connexions d'invités ne sont pas activées.\""
+msgstr "Les connexions d'invités ne sont pas activées."
 
 #: src/extchat.c:793
 msgid "Guests are not allowed to join channels."
@@ -1608,7 +1612,7 @@ msgstr "Les invit\351s n'ont pas le droit de rejoindre des canaux."
 
 #: extchat.c:1000
 msgid "Guests are not allowed to leave channels."
-msgstr "Les invit\351s ne sont pas autoris\351s \340 quitter les canaux de discussion."
+msgstr "Les invit\351s ne sont pas autoris\351s à quitter les canaux de discussion."
 
 #: src/command.c:1252
 msgid "Guests cannot do that."
@@ -1646,12 +1650,12 @@ msgstr "Foyer: %s"
 #: command.c:1352
 #, c-format
 msgid "Hook removed from %s."
-msgstr "\"Hook supprimé de %s.\""
+msgstr "Hook supprimé de %s."
 
 #: command.c:1375
 #, c-format
 msgid "Hook set for %s"
-msgstr "\"Hook configuré pour %s\""
+msgstr "Hook configuré pour %s"
 
 #: src/command.c:1109
 msgid "How do you want to restrict the command?"
@@ -1684,7 +1688,7 @@ msgstr "Je ne peux pas trouver ca."
 #: speech.c:686
 #, c-format
 msgid "I can't find who you're trying to page with: %s"
-msgstr "\"Je ne trouve pas qui vous voulez pager avec: %s\""
+msgstr "Je ne trouve pas qui vous voulez pager avec: %s"
 
 #: src/fundb.c:1795 src/match.c:271
 msgid "I can't see that here."
@@ -1692,7 +1696,7 @@ msgstr "Je vois rien de tel par ici..."
 
 #: src/wiz.c:941
 msgid "I can't seem to find that."
-msgstr "Je n'arrive pas \340 trouver cela."
+msgstr "Je n'arrive pas à trouver cela."
 
 #: src/bsd.c:4810
 msgid "I can't tell which channel you mean."
@@ -1700,11 +1704,11 @@ msgstr "De quel canal parlez-vous?"
 
 #: move.c:785
 msgid "I can't tell which one to follow."
-msgstr "\"Suivre qui?\""
+msgstr "Suivre qui?"
 
 #: move.c:837
 msgid "I can't tell which one to stop following."
-msgstr "\"Je ne vois pas qui je dois arrêter de suivre.\""
+msgstr "Je ne vois pas qui je dois arrêter de suivre."
 
 #: src/look.c:576
 msgid "I can't tell which one you mean."
@@ -1804,7 +1808,7 @@ msgstr "Je ne comprends pas cette cl\351."
 
 #: flags.c:1405
 msgid "I don't understand the list of types."
-msgstr "\"C'est quoi cette liste de types? comprends pas.\""
+msgstr "C'est quoi cette liste de types? comprends pas."
 
 #: src/atr_tab.c:189
 msgid "I don't understand those permissions."
@@ -1837,7 +1841,7 @@ msgstr "Je ne suis pas sur de qui vous parlez."
 #: speech.c:692
 #, c-format
 msgid "I'm not sure who you want to page with: %s"
-msgstr "\"Je ne sais pas trop à qui vous voulez pager ce texte: %s\""
+msgstr "Je ne sais pas trop à qui vous voulez pager ce texte: %s"
 
 #: src/speech.c:611 src/speech.c:1371
 #, c-format
@@ -1850,7 +1854,7 @@ msgstr "Inactif"
 
 #: extchat.c:1598
 msgid "Invalid character in title."
-msgstr "\"Caractère invalide dans le titre.\""
+msgstr "Caractère invalide dans le titre."
 
 #: src/game.c:860
 #, c-format
@@ -1970,7 +1974,7 @@ msgstr "Log supprim\351."
 #: bsd.c:4125
 #, c-format
 msgid "Long distance to %s: %s%s%s"
-msgstr "\"Appel longue distance vers %s: %s%s%s\""
+msgstr "Appel longue distance vers %s: %s%s%s"
 
 #: src/extmail.c:763
 #, c-format
@@ -2097,7 +2101,7 @@ msgstr "COURRIER: Je ne comprends pas ce que vous voulez envoyer."
 
 #: src/extmail.c:788
 msgid "MAIL: I can't figure out who you want to mail to."
-msgstr "MAIL: Je ne comprends pas \340 qui vous voulez envoyer un courrier."
+msgstr "MAIL: Je ne comprends pas à qui vous voulez envoyer un courrier."
 
 #: src/malias.c:398 src/malias.c:529 src/malias.c:555
 msgid "MAIL: I cannot find that alias!"
@@ -2146,7 +2150,7 @@ msgstr "COURRIER: Joueur non valide"
 #: src/malias.c:164
 #, c-format
 msgid "MAIL: Mail Alias '%s' already exists."
-msgstr "MAIL: L'alias de courrier '%s' existe d\351j\340."
+msgstr "MAIL: L'alias de courrier '%s' existe d\351jà."
 
 #: src/malias.c:629 src/malias.c:732
 #, c-format
@@ -2226,7 +2230,7 @@ msgstr "MAIL: Permission d'utiliser see/use alias '%s' modifi\351 pour %s"
 
 #: src/malias.c:408
 msgid "MAIL: That name already exists!"
-msgstr "MAIL: Ce nom existe d\351j\340!"
+msgstr "MAIL: Ce nom existe d\351jà!"
 
 #: src/extmail.c:1294
 #, c-format
@@ -2263,11 +2267,11 @@ msgstr "MAIL: C'est quoi ce dossier?"
 
 #: src/extmail.c:726
 msgid "MAIL: You can't reply to nonexistant mail."
-msgstr "MAIL: Vous ne pouvez pas r\351pondre \340 des courriers inexistants."
+msgstr "MAIL: Vous ne pouvez pas r\351pondre à des courriers inexistants."
 
 #: src/extmail.c:826
 msgid "MAIL: You can't reply to nonexistent mail."
-msgstr "MAIL: Vous ne pouvez pas r\351pondre \340 des courriers inexistants."
+msgstr "MAIL: Vous ne pouvez pas r\351pondre à des courriers inexistants."
 
 #: src/malias.c:374
 msgid "MAIL: You cannot do that!"
@@ -2292,11 +2296,11 @@ msgstr "COURRIER: Vous avez un nouveau message (%d) de %s."
 
 #: src/extmail.c:705
 msgid "MAIL: You have no messages to forward."
-msgstr "MAIL: Vous n'avez aucun message \340 transf\351rer."
+msgstr "MAIL: Vous n'avez aucun message à transf\351rer."
 
 #: malias.c:447
 msgid "MAIL: You must set the alias to a non-empty list."
-msgstr "COURRIER: Vous devez fixer le nom d'emprunt \340 une liste non vide."
+msgstr "COURRIER: Vous devez fixer le nom d'emprunt à une liste non vide."
 
 #: src/extmail.c:274
 msgid "MAIL: You must specify a folder name or number"
@@ -2309,7 +2313,7 @@ msgstr "MAIL: Il est peu probable que vous souhaitiez envoyer un message disant 
 #: src/extmail.c:1090
 #, c-format
 msgid "MAIL: You sent your message to %s."
-msgstr "MAIL: Message envoy\351 \340 %s."
+msgstr "MAIL: Message envoy\351 à %s."
 
 #: src/malias.c:675
 #, c-format
@@ -2356,7 +2360,7 @@ msgstr "Trouv\351(s) ici: %s  [%d:%s]"
 #: access.c:397
 #, c-format
 msgid "Matched line %d: %s %s"
-msgstr "\"Ligne correspondante n°%d: %s %s\""
+msgstr "Ligne correspondante n°%d: %s %s"
 
 #: src/game.c:1296
 #, c-format
@@ -2423,7 +2427,7 @@ msgstr "Nouveau joueur '%s' (#%d) cr\351e avec le mot de passe '%s'"
 
 #: set.c:525
 msgid "No attribute found to change."
-msgstr "\"Aucun attribut à changer.\""
+msgstr "Aucun attribut à changer."
 
 #: src/bsd.c:3090
 #, c-format
@@ -2440,7 +2444,7 @@ msgstr "Aucune fonction globale de type user-defined existante."
 
 #: lock.c:600
 msgid "No lock name given."
-msgstr "\"Pas de verrou spécifié.\""
+msgstr "Pas de verrou spécifié."
 
 #: src/create.c:303 src/fundb.c:1281 src/fundb.c:1300 src/wiz.c:386
 msgid "No match."
@@ -2448,7 +2452,7 @@ msgstr "Aucune correspondance."
 
 #: access.c:431
 msgid "No matching access rule"
-msgstr "\"Pas de liste d'accès correspondante.\""
+msgstr "Pas de liste d'accès correspondante."
 
 #: src/look.c:395
 msgid "No matching attributes."
@@ -2500,7 +2504,7 @@ msgstr "Pas de telle fonction."
 
 #: lock.c:620
 msgid "No such lock."
-msgstr "\"Pas de tel verrou.\""
+msgstr "Pas de tel verrou."
 
 #: conf.c:962
 msgid "No such option."
@@ -2537,7 +2541,7 @@ msgstr "Rien \340 faire."
 
 #: cque.c:712
 msgid "Notified."
-msgstr "\"Notifié.\""
+msgstr "Notifié."
 
 #: src/wiz.c:1039
 msgid "Number out of range."
@@ -2678,7 +2682,7 @@ msgstr "Les joueurs sont toujours leurs propres propri\351taires."
 
 #: access.c:427
 msgid "Players connecting are set SUSPECT"
-msgstr "\"Les joueurs en connexion sont configurés SUSPECT\""
+msgstr "Les joueurs en connexion sont configurés SUSPECT"
 
 #: src/speech.c:679
 msgid "Posing as a wizard could be hazardous to your health."
@@ -2942,7 +2946,7 @@ msgstr "Cet objet ne vous appartient pas. Utilisez @nuke pour le d\351truire."
 
 #: set.c:330
 msgid "That object is already in that zone."
-msgstr "\"Cet objet se trouve déja dans cette zone.\""
+msgstr "Cet objet se trouve déja dans cette zone."
 
 #: src/destroy.c:243
 msgid "That object is marked SAFE. Use @nuke to destroy it."
@@ -2966,7 +2970,7 @@ msgstr "Ce joueur ne semble pas exister."
 
 #: set.c:214
 msgid "That player doesn't have enough money or quota to receive that object."
-msgstr "\"Ce joueur n'a pas assez d'argent ou de quota pour recevoir cet objet.\""
+msgstr "Ce joueur n'a pas assez d'argent ou de quota pour recevoir cet objet."
 
 #: src/look.c:1052
 msgid "That player wishes to have some privacy."
@@ -2974,7 +2978,7 @@ msgstr "Ce joueur souhaite avoir un peu d'intimit\351."
 
 #: bsd.c:4116
 msgid "That port's not active."
-msgstr "\"Ce port n'est pas actif.\""
+msgstr "Ce port n'est pas actif."
 
 #: src/create.c:57
 msgid "That room is being destroyed. Sorry."
@@ -2998,7 +3002,7 @@ msgstr "Ce n'est pas une fonction syst\350me."
 
 #: bsd.c:4093
 msgid "That's not a port number."
-msgstr "\"Ceci n'est pas un numéro de port.\""
+msgstr "Ceci n'est pas un numéro de port."
 
 #: attrib.c:930
 msgid "That's not a very good name for an attribute."
@@ -3064,7 +3068,7 @@ msgstr "La salle tremble et commence a s'\351crouler."
 
 #: cque.c:694
 msgid "The semaphore count must be an integer."
-msgstr "\"Le compteur de sémaphore doit être un entier.\""
+msgstr "Le compteur de sémaphore doit être un entier."
 
 #: src/destroy.c:341
 #, c-format
@@ -3091,7 +3095,7 @@ msgstr "Il n'y a aucun joueur connect\351."
 
 #: flags.c:1542
 msgid "There are probably easier ways to crash your MUSH."
-msgstr "\"Il y a certainement des façons plus aisées de crasher votre mush.\""
+msgstr "Il y a certainement des façons plus aisées de crasher votre mush."
 
 #: src/speech.c:1368
 msgid "There can't be anything in that!"
@@ -3172,7 +3176,7 @@ msgstr "Vous avez sp\351cifi\351 un trop grand nombre de personnes \340 qui murm
 
 #: boolexp.c:245
 msgid "Too much recursion in lock!"
-msgstr "\"Trop de récursion dans le verrou!\""
+msgstr "Trop de récursion dans le verrou!"
 
 #: game.c:2093
 msgid "Total reboots"
@@ -3211,7 +3215,7 @@ msgstr "Impossible d'ouvrir le fichier de noms."
 #: speech.c:745
 #, c-format
 msgid "Unable to page:%s"
-msgstr "\"Impossible de pager: %s\""
+msgstr "Impossible de pager: %s"
 
 #: bsd.c:274
 msgid "Unable to register that player with that email address."
@@ -3220,7 +3224,7 @@ msgstr "Impossible d'inscrire ce joueur avec cette adresse email."
 #: speech.c:355
 #, c-format
 msgid "Unable to whisper to:%s"
-msgstr "\"Impossible de chuchoter à %s\""
+msgstr "Impossible de chuchoter à %s"
 
 #: src/access.c:547
 #, c-format
@@ -3229,7 +3233,7 @@ msgstr "Option d'acc\350s inconnue: %s"
 
 #: command.c:1349 command.c:1368
 msgid "Unknown hook type"
-msgstr "\"Type de hook inconnu.\""
+msgstr "Type de hook inconnu."
 
 #: src/lock.c:297 src/lock.c:303
 msgid "Unknown lock type."
@@ -3274,7 +3278,7 @@ msgstr "Flag d'attribut non reconnu."
 
 #: lock.c:620
 msgid "Unrecognized lock flag."
-msgstr "\"Flag de verrou inconnu.\""
+msgstr "Flag de verrou inconnu."
 
 #: game.c:2087
 msgid "Up since"
@@ -3299,12 +3303,12 @@ msgstr "Fonctions soft-cod\351es:"
 #: warnings.c:232
 #, c-format
 msgid "Variable exit has empty %s attribute"
-msgstr "\"La sortie variable a un attribut vide : %s\""
+msgstr "La sortie variable a un attribut vide : %s"
 
 #: warnings.c:227
 #, c-format
 msgid "Variable exit has no %s attribute"
-msgstr "\"La sortie variable n'a pas d'attribut %s.\""
+msgstr "La sortie variable n'a pas d'attribut %s."
 
 #: src/cque.c:799
 msgid "Wait Queue:"
@@ -3333,11 +3337,11 @@ msgstr "Attention: @chzoning admin-owned object!"
 
 #: flags.c:1049
 msgid "Warning: Setting trust flag on zoned object"
-msgstr "\"Attention: Configuration du flag TRUST sur un objet zoné.\""
+msgstr "Attention: Configuration du flag TRUST sur un objet zoné."
 
 #: destroy.c:329
 msgid "Warning: Target is set SAFE, but scheduling for destruction anyway."
-msgstr "\"Attention: L'objet cible est SAFE, mais il est planifié pour destruction de toute façon.\""
+msgstr "Attention: L'objet cible est SAFE, mais il est planifié pour destruction de toute façon."
 
 #: src/extchat.c:1116
 msgid "Warning: channel will be created disabled."
@@ -3354,7 +3358,7 @@ msgstr "Warnings v\351rifi\351s: %s"
 
 #: bsd.c:3796
 msgid "Welcome back from vacation! Don't forget to unset your ON-VACATION flag"
-msgstr "\"Bon retour de vacances! N'oubliez pas d'effacer votre flag ON-VACATION!\""
+msgstr "Bon retour de vacances! N'oubliez pas d'effacer votre flag ON-VACATION!"
 
 #: src/wiz.c:465
 msgid "What are you doing inside of yourself?"
@@ -3410,7 +3414,7 @@ msgstr "Que voulez-vous emit'er?"
 
 #: bsd.c:4098
 msgid "What do you want to page with?"
-msgstr "\"Que voulez-vous pager?\""
+msgstr "Que voulez-vous pager?"
 
 #: src/extchat.c:981
 msgid "What do you want to say to that channel?"
@@ -3491,7 +3495,7 @@ msgstr "MDJ Admins: %s"
 
 #: log.c:297
 msgid "Wrong password."
-msgstr "\"Mauvais mot de passe.\""
+msgstr "Mauvais mot de passe."
 
 #: src/move.c:512
 msgid "You already have that!"
@@ -3575,7 +3579,7 @@ msgstr "Vous kickez %s!"
 #: wiz.c:776
 #, c-format
 msgid "You booted unconnected port %s!"
-msgstr "\"Vous avez viré le port non connecté %s!\""
+msgstr "Vous avez viré le port non connecté %s!"
 
 #: attrib.c:1078
 msgid "You can only chown an attribute to yourself."
@@ -3672,7 +3676,7 @@ msgstr "Impossible d'utiliser ce type sur les canaux."
 
 #: set.c:391
 msgid "You can't make circular zones!"
-msgstr "\"Vous ne pouvez pas créer des zones en boucle infinie!\""
+msgstr "Vous ne pouvez pas créer des zones en boucle infinie!"
 
 #: src/wiz.c:416
 msgid "You can't move an exit to someplace that's crumbling."
@@ -3836,7 +3840,7 @@ msgstr "Vous n'avez pas le pouvoir d'alt\351rer la r\351alit\351."
 
 #: flags.c:1455 flags.c:1504 flags.c:1533 flags.c:1579
 msgid "You don't look like God."
-msgstr "\"Tu ressembles pas à Dieu, mon gars.\""
+msgstr "Tu ressembles pas à Dieu, mon gars."
 
 #: src/bsd.c:3073
 msgid "You don't look like an admin to me."
@@ -3849,7 +3853,7 @@ msgstr "Vous ne voyez pas \347a ici."
 #: move.c:649
 #, c-format
 msgid "You drop %s."
-msgstr "\"Vous lâchez %s.\""
+msgstr "Vous lâchez %s."
 
 #: move.c:1128
 #, c-format
@@ -3859,7 +3863,7 @@ msgstr "Vous suivez %s."
 #: rob.c:182
 #, c-format
 msgid "You gave %s to %s."
-msgstr "\"Vous donnez %s à %s.\""
+msgstr "Vous donnez %s à %s."
 
 #: src/rob.c:261
 #, c-format
@@ -3931,11 +3935,11 @@ msgstr "Vous ne pouvez parler la!"
 
 #: cque.c:662
 msgid "You may not specify a semaphore attribute with the ANY switch."
-msgstr "\"Vous ne pouvez spécifier un attribut de sémaphore avec le switch ANY.\""
+msgstr "Vous ne pouvez spécifier un attribut de sémaphore avec le switch ANY."
 
 #: cque.c:690
 msgid "You may not specify a semaphore count with the ALL switch."
-msgstr "\"Vous ne pouvez pas spécifier un compteur de sémaphore avec le switch ALL.\""
+msgstr "Vous ne pouvez pas spécifier un compteur de sémaphore avec le switch ALL."
 
 #: src/wiz.c:514
 msgid "You may not teleport out of the zone from this room."
@@ -3959,15 +3963,15 @@ msgstr "Vous devez porter l'objet pour utiliser @chown sur celui-ci."
 
 #: cmds.c:424
 msgid "You must give a switch for @hook"
-msgstr "\"Vous devez passer un switch à @hook\""
+msgstr "Vous devez passer un switch à @hook"
 
 #: command.c:1357
 msgid "You must give both an object and attribute."
-msgstr "\"Vous devez spécifier à la fois un objet et un attribut.\""
+msgstr "Vous devez spécifier à la fois un objet et un attribut."
 
 #: flags.c:1459
 msgid "You must provide a name for the alias."
-msgstr "\"Vous devez fournir un nom pour cet alias.\""
+msgstr "Vous devez fournir un nom pour cet alias."
 
 #: src/extchat.c:1074 src/extchat.c:1247 src/extchat.c:1354
 msgid "You must specify a channel."
@@ -3996,11 +4000,11 @@ msgstr "Vous devez sp\351cifier un objet et un attribut."
 
 #: cque.c:652
 msgid "You must specify an object to use for the semaphore."
-msgstr "\"Vous devez spécifier un objet à utiliser pour le sémaphore.\""
+msgstr "Vous devez spécifier un objet à utiliser pour le sémaphore."
 
 #: extchat.c:1171 extchat.c:1266
 msgid "You must stop gagging that channel to speak on it."
-msgstr "\"Vous devez arrêter d'ignorer ce canal afin d'y parler.\""
+msgstr "Vous devez arrêter d'ignorer ce canal afin d'y parler."
 
 #: src/destroy.c:280
 msgid "You must use @nuke to destroy a player."
@@ -4008,7 +4012,7 @@ msgstr "Vous devez utiliser la commande @nuke pour d\351truire un joueur."
 
 #: cmds.c:415
 msgid "You need a fishing license to use that hook."
-msgstr "\"Vous devez avoir un permis de pêcher pour utiliser ce hook.\""
+msgstr "Vous devez avoir un permis de pêcher pour utiliser ce hook."
 
 #: src/wiz.c:678 src/wiz.c:1451
 msgid "You need a search warrant to do that!"
@@ -4061,7 +4065,7 @@ msgstr "Vous poss\351dez un objet orphelin, %s."
 #: destroy.c:1170
 #, c-format
 msgid "You own an object in a circular zone chain: %s"
-msgstr "\"Vous avez un objet dans une zone en boucle infinie : %s\""
+msgstr "Vous avez un objet dans une zone en boucle infinie : %s"
 
 #: destroy.c:1143
 #, c-format
@@ -4117,12 +4121,12 @@ msgstr "Vous arr\352tez de poursuivre personne."
 #: move.c:527
 #, c-format
 msgid "You take %s from %s."
-msgstr "\"Vous prenez %s à %s.\""
+msgstr "Vous prenez %s à %s."
 
 #: move.c:573
 #, c-format
 msgid "You take %s."
-msgstr "\"Vous prenez %s.\""
+msgstr "Vous prenez %s."
 
 #: src/rob.c:279
 #, c-format
@@ -4132,7 +4136,7 @@ msgstr "Vous avez pris %d %s a %s!"
 #: speech.c:395
 #, c-format
 msgid "You whisper, \"%s\"%s."
-msgstr "\"Vous chuchotez: \"%s\"%s.\""
+msgstr "Vous chuchotez: \"%s\"%s."
 
 #: src/destroy.c:336
 #, c-format
@@ -4188,11 +4192,11 @@ msgstr "Vous êtes dans trop de conteneurs."
 #: move.c:845
 #, c-format
 msgid "You're not following %s."
-msgstr "\"Vous ne suivez pas %s.\""
+msgstr "Vous ne suivez pas %s."
 
 #: speech.c:733
 msgid "You're trying to page too many people at once."
-msgstr "\"Vous tentez de pager trop de monde à la fois.\""
+msgstr "Vous tentez de pager trop de monde à la fois."
 
 #: src/destroy.c:410
 #, c-format
@@ -4205,7 +4209,7 @@ msgstr "Votre flag HAVEN est activ\351. Vous ne pourrez plus recevoir de pages."
 
 #: timer.c:158
 msgid "Your ON-VACATION flag is set! If you're back, clear it."
-msgstr "\"Votre flag ON-VACATION est actif! Si vous êtes de retour, effacez-le.\""
+msgstr "Votre flag ON-VACATION est actif! Si vous êtes de retour, effacez-le."
 
 #: src/flags.c:1092
 msgid "Your contents can no longer be heard from outside."
@@ -4296,11 +4300,11 @@ msgstr ""
 
 #: bsd.c:4127 bsd.c:4133
 msgid "a connecting player"
-msgstr "\"un joueur en cours de connection\""
+msgstr "un joueur en cours de connection"
 
 #: extchat.c:2150 look.c:209 speech.c:372 speech.c:806
 msgid "and"
-msgstr "\"et\""
+msgstr "et"
 
 #: src/log.c:273
 msgid "bad object"
@@ -4362,31 +4366,31 @@ msgstr "Chose potentiellement sans verrou et sans succ/osucc/drop/odrop"
 
 #: funstr.c:88
 msgid "pronoun:feminine,objective"
-msgstr "\"sa\""
+msgstr "sa"
 
 #: funstr.c:85
 msgid "pronoun:masculine,possessive"
-msgstr "\"son\""
+msgstr "son"
 
 #: funstr.c:91
 msgid "pronoun:neuter,absolute possessive"
-msgstr "\"leur\""
+msgstr "leur"
 
 #: funstr.c:87
 msgid "pronoun:neuter,objective"
-msgstr "\"son\""
+msgstr "son"
 
 #: funstr.c:94
 msgid "pronoun:plural,absolute possessive "
-msgstr "\"leur\" "
+msgstr "leur "
 
 #: funstr.c:86
 msgid "pronoun:plural,possessive"
-msgstr "\"leur\""
+msgstr "leur"
 
 #: funstr.c:82
 msgid "pronoun:plural,subjective"
-msgstr "\"leur\""
+msgstr "leur"
 
 #: src/warnings.c:126
 msgid "room has no description"
@@ -4399,7 +4403,7 @@ msgstr "OK."
 #: move.c:529
 #, c-format
 msgid "takes %s from %s."
-msgstr "\"prend %s à %s.\""
+msgstr "prend %s à %s."
 
 #: move.c:492 move.c:534
 #, c-format

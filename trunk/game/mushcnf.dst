@@ -756,13 +756,6 @@ flags_on_examine yes
 # (like examine/full in TinyMUSH)
 ex_public_attribs yes
 
-# What should page a b c = message do?
-# If blind_page is yes, page defaults to page/blind (a,b,c each get separate
-# pages with no evidence that it was a multipage). If blind_page is no,
-# page defaults to page/list (a single page goes to a,b,c and they can
-# see that they all received it.
-blind_page no
-
 # Should we show the pager's alias, in parentheses, after their name?
 # That is, should recipients see:
 # Javelin (Jav) paged: ...
@@ -806,7 +799,7 @@ only_ascii_in_names yes
 # Uncommenting this will cause all exits to be TRANSPARENT by default
 #   (if you look through them, you will see the description of the next room)
 # exit_flags transparent
-
+exit_flags 
 # -- Default flags for rooms
 
 # Uncommenting this will cause all rooms to be TRANSPARENT by default.

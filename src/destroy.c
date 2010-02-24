@@ -10,7 +10,7 @@
  * The other part is functions for checking the consistency of the
  * database, and repairing any inconsistencies that are found. The
  * major function in this group is dbck().
- * 
+ *
  *
  * These lengthy comments are by Ralph Melton, December 1995.
  *
@@ -24,7 +24,7 @@
  *    field pointing to a destroyed object.
  * 4. No object's zone or parent is a destroyed object.
  * 5. No object's owner is a destroyed object.
- * 
+ *
  * For the sake of efficiency, we allow indirect locks and other locks to
  * refer to destroyed objects; boolexp.c had better be able to cope with
  * these.
@@ -47,7 +47,7 @@
  *
  * Note that phases 2 and 3 do not have to happen immediately after Phase 1.
  * To allow some delay, we set the object GOING, and then process it on
- * the check that happens every ten minutes. 
+ * the check that happens every ten minutes.
  *
  */
 
@@ -118,9 +118,9 @@ extern struct db_stat_info current_state;
  *
  * My major criteria are these (with no implied ranking, since I haven't
  * decided how they balance out):
- * 
+ *
  * 1) It's easy to destroy things you intend to destroy.
- * 
+ *
  * 2) It's easy to correct from destroying things that you don't intend
  * to destroy. This includes both typos and realizing that you didn't mean
  * to destroy that. This principle requires two sub-principles:
@@ -159,7 +159,7 @@ extern struct db_stat_info current_state;
  * example, when rooms are destroyed, any exits leading from those
  * rooms are also destroyed, and when a player is destroyed, !SAFE
  * objects they own may also be destroyed.
- * 
+ *
  * To handle this, we do the following:
  * pre-destroying a room pre-destroys all its exits.
  * pre-destroying a player pre-destroys all the objects that will be purged
@@ -173,28 +173,28 @@ extern struct db_stat_info current_state;
  * foo; @undestroy foo' a no-op for all foo:
  * undestroying a room undestroys all its exits.
  * undestroying a player undestroys all its GOING things.
- * 
+ *
  * Now, consider this scenario:
  * Player A owns room #1. Player B owns exit #2, whose source is room #1.
  * Player B owns thing #3. Player A and player B are both pre-destroyed;
  * none of the objects are set SAFE. Thing #3 is then undestroyed.
- * 
+ *
  * If you trace through the dependencies, you find that this involves
  * undestroying all the objects, including both players! Is that what
  * we want? It seems to me that it would be very surprising in practice.
- * 
+ *
  * To reconcile this, we introduce the following compromise.
  * undestroying a room undestroys all exits in the room that are not owned
  *      by a GOING player or set SAFE..
  * undestroying a player undestroys all objects he owns that are not exits
  *      in a GOING room that he does not own.
- * 
+ *
  * In this way, the propagation of previous scenario would die out at exit
  * #2, which would stay GOING. Metaphorically, there are two 'votes' for
  * its destruction: the destruction of room #1, and the destruction of
  * player B. Undestroying player B by undestroying thing #3 removes one
  * of the 'votes' for exit #2's destruction, but there would still be
- * the vote from room #1.  
+ * the vote from room #1.
  */
 
 
@@ -941,7 +941,7 @@ free_get(void)
   return (newobj);
 }
 
-/** Build the free list with a sledgehammer. 
+/** Build the free list with a sledgehammer.
  * Only do this when it's actually necessary.
  * Since we only do it if things are corrupted, we do not free any memory.
  * Presumably, this will only waste a reasonable amount of memory, since
@@ -1126,7 +1126,7 @@ check_fields(void)
        * an invalid dbref, change its ownership to God.
        */
       if (!IsGarbage(thing))
-        atr_iter_get(GOD, thing, "**", 0, attribute_owner_helper, NULL);
+        atr_iter_get(GOD, thing, "**", 0, 0, attribute_owner_helper, NULL);
     }
   }
 }

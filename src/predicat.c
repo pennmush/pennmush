@@ -1328,7 +1328,7 @@ grep_util(dbref player, dbref thing, char *pattern, char *lookfor,
   guh.bp = guh.buff;
   guh.lookfor = lookfor;
   guh.sensitive = sensitive;
-  (void) atr_iter_get(player, thing, pattern, 0, wild ? wildgrep_util_helper
+  (void) atr_iter_get(player, thing, pattern, 0, 0, wild ? wildgrep_util_helper
                       : grep_util_helper, &guh);
   *guh.bp = '\0';
   return guh.buff;
@@ -1426,7 +1426,7 @@ do_grep(dbref player, char *obj, char *lookfor, int flag, int insensitive)
     gh.lookfor = lookfor;
     gh.len = len;
     gh.insensitive = insensitive;
-    if (!atr_iter_get(player, thing, pattern, 0, grep_helper, &gh))
+    if (!atr_iter_get(player, thing, pattern, 0, 0, grep_helper, &gh))
       notify(player, T("No matching attributes."));
   } else {
     tp = grep_util(player, thing, pattern, lookfor, !insensitive, 0);

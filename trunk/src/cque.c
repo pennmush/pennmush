@@ -883,7 +883,7 @@ dequeue_semaphores(dbref thing, char const *aname, int count, int all,
     if (aname)
       (void) atr_clr(thing, aname, GOD);
     else
-      atr_iter_get(GOD, thing, "**", 0, drain_helper, NULL);
+      atr_iter_get(GOD, thing, "**", 0, 0, drain_helper, NULL);
   }
 
   /* If @notify and count was higher than the number of queue entries,

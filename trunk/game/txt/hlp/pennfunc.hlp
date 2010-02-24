@@ -64,9 +64,10 @@ See also: MUSHCODE
   aposs()        attrib_set()   default()      edefault()     eval()
   get()          grep()         grepi()        hasattr()      hasattrp()
   hasattrval()   lattr()        nattr()        obj()          pfun()
-  poss()         regrep()       regrepi()      subj()         udefault()     
-  ufun()         uldefault()    ulocal()       v()            wildgrep()     
-  wildgrepi()    xattr()        xget()         zfun()         
+  poss()         reglattr()     regrep()       regrepi()      regxattr()
+  subj()         udefault()     ufun()         uldefault()    ulocal()       
+  v()            wildgrep()     wildgrepi()    xattr()        xget()         
+  zfun()         
 
 See also: ATTRIBUTES, NON-STANDARD ATTRIBUTES
 & Bitwise functions
@@ -182,10 +183,10 @@ See also: VECTOR FUNCTIONS
   These functions take a regular expression (regexp, or re) and match
   it against assorted things.
 
-  regedit()     regeditall() regeditalli()  regediti()    regmatch()
-  regmatchi()   regrab()     regraball()    regraballi()  regrabi()
-  regrep()      regrepi()    reswitch()     reswitchall() reswitchalli()
-  reswitchi()
+  regedit()     regeditall()   regeditalli()  regediti()    reglattr()
+  reglattrp()   regmatch()     regmatchi()    regrab()      regraball()    
+  regraballi()  regrabi()      regrep()       regrepi()     reswitch()     
+  reswitchall() reswitchalli() reswitchi()    regxattr()    regxattrp()
 
 See also: string functions, regexp
 & SQL functions
@@ -2171,16 +2172,22 @@ See also: first(), rest(), before(), after()
 & LATTRP()
   lattr(<object>[/<attribute pattern>][, <output separator>])
   lattrp(<object>[/<attribute pattern>][, <output separator>])
+  reglattr(<object>[/<regexp>][, <output separator>])
+  reglattrp(<object>[/<regexp>][, <output separator>])
  
-  Returns a list of all the attributes on <object> which you can see, and
-  which match the wildcard <attribute pattern>. If no <attribute pattern> is
-  given, it defaults to "*". Note that this does not include branches in
+  lattr() returns a list of all the attributes on <object> which you can see,
+  and which match the wildcard <attribute pattern>. If no <attribute pattern>
+  is given, it defaults to "*". Note that this does not include branches in
   attribute trees; you must use the "**" wildcard to include those.
   
   The resulting list will be separated by <output separator>, or a space if
   no separator is given.
+  
+  reglattr() returns attributes whose names match the regexp <regexp>. The 
+  match is not case-sensitive (as attribute names are always upper-case),
+  and the "`" branch separator has no special meaning in the pattern.
 
-  lattrp() also includes attributes inherited from parents.
+  lattrp() and reglattrp() also include attributes inherited from parents.
   
   When returning large numbers of attributes, the results may be truncated
   due to buffer limits. In these cases, you can use nattr() and xattr() to
@@ -2193,16 +2200,22 @@ See also: nattr(), xattr(), hasattr(), examine, wildcards
 & ATTRPCNT()
   nattr(<object>[/<attribute pattern>])
   nattrp(<object>[/<attribute pattern>])
+  regnattr(<object>[/<regexp>])
+  regnattrp(<object>[/<regexp>])
 
   nattr() returns the number of attributes on <object> that you can see
-  which match the given <attribute pattern>. It is considerably faster
-  than words(lattr()) and doesn't suffer from buffer length constraints.
-  It's designed primarily for statistical purposes.
+  which match the given <attribute pattern>. It is considerably faster than
+  words(lattr()) and doesn't suffer from buffer length constraints. It's 
+  designed primarily for statistical purposes. Note that, unlike lattr()
+  and similar functions, <attribute> pattern defaults to "**", and NOT "*".
+  
+  regnattr() matches attribute names against the regular expression <regexp>.
 
-  nattrp() also counts matching attributes on the parent. attrcnt() and
-  attrpcnt() are aliases.
+  nattrp() and regnattrp() also count matching attributes on the parent.
+  
+  attrcnt() and attrpcnt() are aliases for nattr() and nattrp() respectively.
 
-See also: lattr(), hasattr()
+See also: lattr(), hasattr(), xattr(), wildcards
 & LCON()
   lcon(<object>)
 
@@ -5573,6 +5586,8 @@ See also: strlen(), items()
 & XATTRP()
   xattr(<object>[/<attribute pattern>], <start>, <count>[, <osep>])
   xattrp(<object>[/<attribute pattern>], <start>, <count>[, <osep>])
+  regxattr(<object>[/<regexp>], <start>, <count>[, <osep>])
+  regxattrp(<object>[/<regexp>], <start>, <count>[, <osep>])
 
   xattr() fetches <count> or fewer attribute names from <object> starting 
   at position <start>. It is useful when the number of attributes on an 
@@ -5582,11 +5597,14 @@ See also: strlen(), items()
   It is equivalent to
     extract(lattr(<object>[/<attribute pattern>]), <start>, <count>, <osep>)
 
-  xattrp() will include attributes from parents. Do note that parent
-  attributes are listed _after_ child attributes, not sorted
+  <attribute pattern> is a wilddcard pattern which defaults to "*". 
+  regxattr() matches attributes against the regular expression <regexp>.
+
+  xattrp() and regxattrp() will include attributes from parents. Do note that
+  parent attributes are listed _after_ child attributes, not sorted 
   alphabetically.
 
-See also: nattr(), lattr()
+See also: nattr(), lattr(), wildcards
 & XOR()
   xor(<boolean1>, <boolean2>[, ... , <booleanN>])
 

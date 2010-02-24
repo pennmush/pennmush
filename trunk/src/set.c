@@ -551,7 +551,7 @@ do_attrib_flags(dbref player, const char *obj, const char *atrname,
   }
   af.clrflags = mush_strdup(atrflag_to_string(af.clrf), "af_flag list");
   af.setflags = mush_strdup(atrflag_to_string(af.setf), "af_flag list");
-  if (!atr_iter_get(player, thing, atrname, 0, af_helper, &af))
+  if (!atr_iter_get(player, thing, atrname, 0, 0, af_helper, &af))
     notify(player, T("No attribute found to change."));
   mush_free(af.clrflags, "af_flag list");
   mush_free(af.setflags, "af_flag list");
@@ -934,7 +934,7 @@ do_gedit(dbref player, char *it, char **argv, enum edit_type target, int doit)
   args.target = target;
   args.doit = doit;
 
-  if (!atr_iter_get(player, thing, q, 0, gedit_helper, &args))
+  if (!atr_iter_get(player, thing, q, 0, 0, gedit_helper, &args))
     notify(player, T("No matching attributes."));
 }
 
@@ -1193,7 +1193,7 @@ do_wipe(dbref player, char *name)
     return;
   }
 
-  wiped = atr_iter_get(player, thing, pattern, 0, wipe_helper, NULL);
+  wiped = atr_iter_get(player, thing, pattern, 0, 0, wipe_helper, NULL);
   switch (wiped) {
   case 0:
     notify(player, T("No attributes wiped."));

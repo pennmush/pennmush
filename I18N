@@ -66,6 +66,9 @@ Your server account might be set up with a non-english language as the
 default. If so, and you don't set LANG in the restart script, that
 default language will be used.
 
+You may also wish to change the only_ascii_in_names config option in
+mush.cnf, to allow accented characters in object names.
+
 3. Development - tips
 
 Generally, the rules that the devteam use to decide what strings

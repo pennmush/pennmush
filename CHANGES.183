@@ -31,6 +31,8 @@ Commands:
 Functions:
  * Added strfirstof() and strallof(), which return the first arg/all args
    which are non-empty strings. [MG]
+ * Added reglattr[p](), regxattr[p]() and regnattr[p](), regexp variants of 
+   lattr[p](), xattr[p]() and nattr[p](). Suggested by Trinsec. [MG]
 
 Fixes:
  * Minor bug in benchmark() fixed. [MG]

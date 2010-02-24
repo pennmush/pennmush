@@ -108,14 +108,23 @@ FUNCTION(fun_nattr)
 {
   dbref thing;
   int doparent;
-  static const char *matchall = "**";   /* count atrees by default too */
   char *pattern;
+  int regexp = 0;
+  int matchall = 0;
+
+  if (*called_as == 'R')
+    regexp = 1;
+  doparent = strchr(called_as, 'P') ? 1 : 0;
 
   pattern = strchr(args[0], '/');
   if (pattern)
     *pattern++ = '\0';
   else
-    pattern = (char *) matchall;        /* match anything */
+    pattern = "**";
+  if (!strcmp(pattern, "**") || !strlen(pattern)) {
+    regexp = 0;
+    matchall = 1;
+  }
 
   thing = match_thing(executor, args[0]);
   if (!GoodObject(thing)) {
@@ -123,13 +132,12 @@ FUNCTION(fun_nattr)
     return;
   }
 
-  doparent = strchr(called_as, 'P') ? 1 : 0;
 
-  if (!doparent && pattern == matchall && Can_Examine(executor, thing)) {
+  if (!doparent && matchall && Can_Examine(executor, thing)) {
     safe_integer(AttrCount(thing), buff, bp);
   } else {
     safe_integer(atr_pattern_count(executor, thing, pattern, doparent,
-                                   !Can_Examine(executor, thing)), buff, bp);
+                                   !Can_Examine(executor, thing), regexp), buff, bp);
   }
 }
 
@@ -140,10 +148,11 @@ FUNCTION(fun_lattr)
   char *pattern;
   struct lh_args lh;
   char delim;
+  int regexp = 0;
 
   lh.nattr = lh.start = lh.count = 0;
 
-  if (*called_as == 'X') {
+  if (strchr(called_as, 'X')) {
     if (!is_strict_integer(args[1]) || !is_strict_integer(args[2])) {
       safe_str(T(e_int), buff, bp);
       return;
@@ -164,12 +173,17 @@ FUNCTION(fun_lattr)
     if (!delim_check(buff, bp, nargs, args, 2, &delim))
       return;
   }
+  if(*called_as == 'R')
+    regexp = 1;
 
   pattern = strchr(args[0], '/');
   if (pattern)
     *pattern++ = '\0';
-  else
-    pattern = (char *) "*";     /* match anything */
+  else if (regexp) {
+    regexp = 0;
+    pattern = (char *) "**";
+  } else
+    pattern = (char *) "*";
 
   thing = match_thing(executor, args[0]);
   if (!GoodObject(thing)) {
@@ -183,11 +197,11 @@ FUNCTION(fun_lattr)
 
   if (strchr(called_as, 'P')) {
     (void) atr_iter_get_parent(executor, thing, pattern,
-                               !Can_Examine(executor, thing), lattr_helper,
+                               !Can_Examine(executor, thing), regexp, lattr_helper,
                                &lh);
   } else {
     (void) atr_iter_get(executor, thing, pattern,
-                        !Can_Examine(executor, thing), lattr_helper, &lh);
+                        !Can_Examine(executor, thing), regexp, lattr_helper, &lh);
   }
 }
 

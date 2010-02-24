@@ -3192,7 +3192,7 @@ FUNCTION(fun_regrep)
   reharg.buff = buff;
   reharg.bp = bp;
 
-  atr_iter_get(executor, it, args[1], 0, regrep_helper, (void *) &reharg);
+  atr_iter_get(executor, it, args[1], 0, 0, regrep_helper, (void *) &reharg);
   mush_free(reharg.re, "pcre");
   if (free_study)
     mush_free(reharg.study, "pcre.extra");

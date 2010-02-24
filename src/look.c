@@ -421,20 +421,20 @@ look_atrs(dbref player, dbref thing, const char *mstr, int all, int mortal,
 {
   if (all || (mstr && *mstr && !wildcard(mstr))) {
     if (parent) {
-      if (!atr_iter_get_parent(player, thing, mstr, mortal, look_helper, NULL)
+      if (!atr_iter_get_parent(player, thing, mstr, mortal, 0, look_helper, NULL)
           && mstr)
         notify(player, T("No matching attributes."));
     } else {
-      if (!atr_iter_get(player, thing, mstr, mortal, look_helper, NULL) && mstr)
+      if (!atr_iter_get(player, thing, mstr, mortal, 0, look_helper, NULL) && mstr)
         notify(player, T("No matching attributes."));
     }
   } else {
     if (parent) {
       if (!atr_iter_get_parent
-          (player, thing, mstr, mortal, look_helper_veiled, NULL) && mstr)
+          (player, thing, mstr, mortal, 0, look_helper_veiled, NULL) && mstr)
         notify(player, T("No matching attributes."));
     } else {
-      if (!atr_iter_get(player, thing, mstr, mortal, look_helper_veiled, NULL)
+      if (!atr_iter_get(player, thing, mstr, mortal, 0, look_helper_veiled, NULL)
           && mstr)
         notify(player, T("No matching attributes."));
     }
@@ -1457,7 +1457,7 @@ decompile_atrs(dbref player, dbref thing, const char *name, const char *pattern,
   dh.name = name;
   dh.skipdef = skipdef;
   /* Comment complaints if none are found */
-  if (!atr_iter_get(player, thing, pattern, 0, decompile_helper, &dh))
+  if (!atr_iter_get(player, thing, pattern, 0, 0, decompile_helper, &dh))
     notify_format(player, T("@@ No attributes match '%s'. @@"), pattern);
 }
 

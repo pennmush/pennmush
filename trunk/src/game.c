@@ -287,24 +287,20 @@ do_shutdown(dbref player, enum shutdown_type flag)
     notify(player, T("It takes a God to make me panic."));
     return;
   }
-  if (Wizard(player)) {
-    flag_broadcast(0, 0, T("GAME: Shutdown by %s"), Name(player));
-    do_log(LT_ERR, player, NOTHING, "SHUTDOWN by %s(%s)\n",
-           Name(player), unparse_dbref(player));
+  flag_broadcast(0, 0, T("GAME: Shutdown by %s"), Name(player));
+  do_log(LT_ERR, player, NOTHING, "SHUTDOWN by %s(%s)\n",
+         Name(player), unparse_dbref(player));
 
-    if (flag == SHUT_PANIC) {
-      mush_panic("@shutdown/panic");
-    } else {
-      if (flag == SHUT_PARANOID) {
-        globals.paranoid_checkpt = db_top / 5;
-        if (globals.paranoid_checkpt < 1)
-          globals.paranoid_checkpt = 1;
-        globals.paranoid_dump = 1;
-      }
-      shutdown_flag = 1;
-    }
+  if (flag == SHUT_PANIC) {
+    mush_panic("@shutdown/panic");
   } else {
-    notify(player, T("Your delusions of grandeur have been duly noted."));
+    if (flag == SHUT_PARANOID) {
+      globals.paranoid_checkpt = db_top / 5;
+      if (globals.paranoid_checkpt < 1)
+        globals.paranoid_checkpt = 1;
+      globals.paranoid_dump = 1;
+    }
+    shutdown_flag = 1;
   }
 }
 

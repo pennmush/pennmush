@@ -3535,10 +3535,6 @@ msgstr "Du har ikke s\345 mange %s \345 gi bort!"
 msgid "You don't have that!"
 msgstr "Du har ikke det!"
 
-#: src/wiz.c:2292
-msgid "You don't have the authority to do that!"
-msgstr "Du har ikke lov til \345 gj\370re det!"
-
 #: src/attrib.c:1114
 msgid "You don't have the permission to chown that."
 msgstr "Du har ikke tillatelse til \345 chown'e det."
@@ -3864,10 +3860,6 @@ msgstr "Innholdet ditt kan ikke lenger h\370res fra utsiden."
 #: src/flags.c:1152
 msgid "Your contents can now be heard from outside."
 msgstr "Innholdet ditt kan n\345 h\370res fra utsiden."
-
-#: src/game.c:294 src/wiz.c:726
-msgid "Your delusions of grandeur have been duly noted."
-msgstr "Dine grandiose illusjoner er beh\370rlig notert."
 
 #: src/wiz.c:1971
 msgid "Your delusions of grandeur have been noted."

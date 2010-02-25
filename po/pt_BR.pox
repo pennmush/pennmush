@@ -1046,10 +1046,6 @@ msgstr "Aparentemente voc\352 n\343o pode largar coisas aqui."
 msgid "You don't have that!"
 msgstr "Eu n\343o consigo encontrar isso."
 
-#: src/wiz.c:2292
-msgid "You don't have the authority to do that!"
-msgstr "Aparentemente voc\352 n\343o pode largar coisas aqui."
-
 #: src/set.c:352
 msgid "You don't have the power to shift reality."
 msgstr "Aparentemente voc\352 n\343o pode largar coisas aqui."

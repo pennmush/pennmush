@@ -3826,10 +3826,6 @@ msgstr "Vous n'avez pas tant de %s \340 donner!"
 msgid "You don't have that!"
 msgstr "Vous ne portez pas \347a!"
 
-#: src/wiz.c:2292
-msgid "You don't have the authority to do that!"
-msgstr "Vous n'avez pas le pouvoir de faire \347a!"
-
 #: src/attrib.c:1114
 msgid "You don't have the permission to chown that."
 msgstr "Vous n'avez pas la permission de @chown'er \347a."
@@ -4009,10 +4005,6 @@ msgstr "Vous devez arrêter d'ignorer ce canal afin d'y parler."
 #: src/destroy.c:280
 msgid "You must use @nuke to destroy a player."
 msgstr "Vous devez utiliser la commande @nuke pour d\351truire un joueur."
-
-#: cmds.c:415
-msgid "You need a fishing license to use that hook."
-msgstr "Vous devez avoir un permis de pêcher pour utiliser ce hook."
 
 #: src/wiz.c:678 src/wiz.c:1451
 msgid "You need a search warrant to do that!"
@@ -4218,10 +4210,6 @@ msgstr "Votre contenu n'est plus audible de l'exterieur."
 #: src/flags.c:1152
 msgid "Your contents can now be heard from outside."
 msgstr "Votre contenu peut maintenant \352tre audible de l'exterieur."
-
-#: src/game.c:294 src/wiz.c:726
-msgid "Your delusions of grandeur have been duly noted."
-msgstr "Vous illusions de grandeur ont \351t\351 not\351es."
 
 #: src/wiz.c:1971
 msgid "Your delusions of grandeur have been noted."

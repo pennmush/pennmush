@@ -234,7 +234,6 @@ COMMAND(cmd_decompile)
 {
   char prefix[BUFFER_LEN];
   int flags = 0, dbflags = 0;
-  //int sd = SW_ISSET(sw, SWITCH_SKIPDEFAULTS);
   *prefix = '\0';
   if (SW_ISSET(sw, SWITCH_SKIPDEFAULTS))
     flags |= DEC_SKIPDEF;
@@ -473,11 +472,6 @@ COMMAND(cmd_hide)
 COMMAND(cmd_hook)
 {
   enum hook_type flags;
-
-  if (!(Wizard(player) || has_power_by_name(player, "HOOK", NOTYPE))) {
-    notify(player, T("You need a fishing license to use that hook."));
-    return;
-  }
 
   if (SW_ISSET(sw, SWITCH_AFTER))
     flags = HOOK_AFTER;
@@ -983,10 +977,6 @@ COMMAND(cmd_set)
 COMMAND(cmd_shutdown)
 {
   enum shutdown_type paranoid;
-  if (!Wizard(player)) {
-    notify(player, T("You don't have the authority to do that!"));
-    return;
-  }
   paranoid = SW_ISSET(sw, SWITCH_PARANOID) ? SHUT_PARANOID : SHUT_NORMAL;
   if (SW_ISSET(sw, SWITCH_REBOOT))
     do_reboot(player, paranoid == SHUT_PARANOID);

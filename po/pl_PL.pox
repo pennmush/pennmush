@@ -5148,10 +5148,6 @@ msgstr "Nie masz tak wiele %s aby daæ!"
 msgid "You don't have that!"
 msgstr "Nie masz tego!"
 
-#: src/wiz.c:2292
-msgid "You don't have the authority to do that!"
-msgstr "Nie masz w³adzy aby to zrobiæ!"
-
 #: src/attrib.c:1114
 msgid "You don't have the permission to chown that."
 msgstr "Nie masz uprawnieñ aby przypisaæ to do siebie."
@@ -5389,10 +5385,6 @@ msgstr "Musisz przestaæ uciszaæ ten kana³ aby móc na nim rozmawiaæ."
 msgid "You must use @nuke to destroy a player."
 msgstr "Musisz u¿yæ @nuke aby zniszczyæ gracza."
 
-#: cmds.c:415
-msgid "You need a fishing license to use that hook."
-msgstr "Potrzebujesz karty wêdkarskiej aby u¿yæ tego haczyka (hook)."
-
 #: src/wiz.c:678 src/wiz.c:1451
 msgid "You need a search warrant to do that!"
 msgstr "Musisz mieæ nakaz przeszukania aby zrobiæ to!"
@@ -5605,10 +5597,6 @@ msgstr "Twoja zawarto¶æ nie bêdzie d³u¿ej s³yszalna z zewn±trz."
 #: src/flags.c:1152
 msgid "Your contents can now be heard from outside."
 msgstr "Twoja zawarto¶æ mo¿e byæ od teraz s³yszalna z zewn±trz."
-
-#: src/game.c:294 src/wiz.c:726
-msgid "Your delusions of grandeur have been duly noted."
-msgstr "Twoje z³udzenie wielko¶ci zosta³o nale¿ycie udokumentowane."
 
 #: src/wiz.c:1971
 msgid "Your delusions of grandeur have been noted."

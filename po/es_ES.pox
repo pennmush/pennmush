@@ -3420,10 +3420,6 @@ msgstr "¡No tienes tantos %s para dar!"
 msgid "You don't have that!"
 msgstr "¡No tienes eso!"
 
-#: src/wiz.c:2292
-msgid "You don't have the authority to do that!"
-msgstr "¡No tienes poder para hacer eso!"
-
 #: src/attrib.c:1114
 msgid "You don't have the permission to chown that."
 msgstr "No estás autorizado a cambiar el propietario de eso."
@@ -3705,10 +3701,6 @@ msgstr "Tienes establecida la señal de Vacaciones. Si has regresado, quítala."
 #: src/flags.c:1152
 msgid "Your contents can now be heard from outside."
 msgstr "Ahora tus contenidos se pueden escuchar desde afuera."
-
-#: src/game.c:294 src/wiz.c:726
-msgid "Your delusions of grandeur have been duly noted."
-msgstr "Tus sueños de grandeza han sido debidamente tenidos en cuenta."
 
 #: src/wiz.c:1971
 msgid "Your delusions of grandeur have been noted."

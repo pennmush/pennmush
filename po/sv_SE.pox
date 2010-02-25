@@ -3839,10 +3839,6 @@ msgstr "Du har inte s\345 m\345nga %s att ge!"
 msgid "You don't have that!"
 msgstr "Du har inte det!"
 
-#: src/wiz.c:2292
-msgid "You don't have the authority to do that!"
-msgstr "Du har inte r\344tt att g\366ra det!"
-
 #: src/attrib.c:1114
 msgid "You don't have the permission to chown that."
 msgstr "Du har inte r\344ttigheter att chown:a det."
@@ -3989,10 +3985,6 @@ msgstr "Du m\345ste ange ett objekt och ett attribut."
 #: src/destroy.c:280
 msgid "You must use @nuke to destroy a player."
 msgstr "Du m\345ste anv\344nda @nuke f\366r att f\366rst\366ra en spelare."
-
-#: cmds.c:415
-msgid "You need a fishing license to use that hook."
-msgstr "Du behöver ett fiskekort för att använda den krioken."
 
 #: src/wiz.c:678 src/wiz.c:1451
 msgid "You need a search warrant to do that!"
@@ -4173,10 +4165,6 @@ msgstr "Ditt inneh\345ll kan inte l\344ngre h\366ras utifr\345n."
 #: src/flags.c:1152
 msgid "Your contents can now be heard from outside."
 msgstr "Ditt inneh\345ll kan nu h\366ras utifr\345n."
-
-#: src/game.c:294 src/wiz.c:726
-msgid "Your delusions of grandeur have been duly noted."
-msgstr "Ditt f\366rs\366k har noterats."
 
 #: src/wiz.c:1971
 msgid "Your delusions of grandeur have been noted."

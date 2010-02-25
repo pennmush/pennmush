@@ -2191,10 +2191,6 @@ msgstr "Beklager, du har ikke nok %s."
 msgid "You don't have that!"
 msgstr "Du har ikke magt til at forskyde virkeligheden."
 
-#: src/wiz.c:2292
-msgid "You don't have the authority to do that!"
-msgstr "Du har ikke lov til at overtage ejerskab p\345 det."
-
 #: src/attrib.c:1114
 msgid "You don't have the permission to chown that."
 msgstr "Du har ikke lov til at overtage ejerskab p\345 det."
@@ -2369,10 +2365,6 @@ msgstr "Dit indhold kan ikke l\346ngere h\370res udefra."
 #: src/flags.c:1152
 msgid "Your contents can now be heard from outside."
 msgstr "Dit indhold kan ikke l\346ngere h\370res udefra."
-
-#: src/game.c:294 src/wiz.c:726
-msgid "Your delusions of grandeur have been duly noted."
-msgstr "Dine h\370je tanker om dig selv er taget til efterretning."
 
 #: src/wiz.c:1971
 msgid "Your delusions of grandeur have been noted."

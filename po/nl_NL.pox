@@ -5549,10 +5549,6 @@ msgstr "Je hebt niet zoveel %s om weg te geven!"
 msgid "You don't have that!"
 msgstr "Dat heb je niet!"
 
-#: src/wiz.c:2292
-msgid "You don't have the authority to do that!"
-msgstr "Je hebt de toestemming niet dat te doen!"
-
 #: src/attrib.c:1114
 msgid "You don't have the permission to chown that."
 msgstr "Je hebt geen toestemming om dat te @chownen."
@@ -5794,10 +5790,6 @@ msgstr "Je moet eerst niet langer tijdelijk dat kanaal negeren voor je er op kun
 msgid "You must use @nuke to destroy a player."
 msgstr "Je moet @nuke gebruiken om een speler te vernietigen."
 
-#: cmds.c:415
-msgid "You need a fishing license to use that hook."
-msgstr "Je hebt een visakte nodig om die haak te gebruiken."
-
 #: src/wiz.c:678 src/wiz.c:1451
 msgid "You need a search warrant to do that!"
 msgstr "Daar heb je een huiszoekingsbevel voor nodig!"
@@ -6029,10 +6021,6 @@ msgstr "Je inhoud kan niet langer van buitenaf gehoord worden."
 #: src/flags.c:1152
 msgid "Your contents can now be heard from outside."
 msgstr "Je inhoud kan nu van buitenaf gehoord worden."
-
-#: src/game.c:294 src/wiz.c:726
-msgid "Your delusions of grandeur have been duly noted."
-msgstr "Je grootheidswaanzin is opgemerkt zoals 't behoort."
 
 #: src/wiz.c:1971
 msgid "Your delusions of grandeur have been noted."

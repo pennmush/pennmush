@@ -3971,10 +3971,6 @@ msgstr "Nincs nálad elég %s, hogy átadd!"
 msgid "You don't have that!"
 msgstr "Nincs nálad ilyen!"
 
-#: src/wiz.c:2292
-msgid "You don't have the authority to do that!"
-msgstr "Nincs engedélyed, hogy ezt tedd!"
-
 #: src/attrib.c:1114
 msgid "You don't have the permission to chown that."
 msgstr "Nincs engedélyed, hogy ezt @chown-old."
@@ -4166,10 +4162,6 @@ msgstr "Ki kell kapcsolnod a csatorna csendességét, hogy beszélhess rajta."
 #: src/destroy.c:280
 msgid "You must use @nuke to destroy a player."
 msgstr "Játékos megsemmisítéséhez használd a @nuke parancsot."
-
-#: cmds.c:415
-msgid "You need a fishing license to use that hook."
-msgstr "Nem rendelkezel engedéllyel a horog használatához."
 
 #: src/wiz.c:678 src/wiz.c:1451
 msgid "You need a search warrant to do that!"
@@ -4378,10 +4370,6 @@ msgstr "A nálad levõk többé nem hallatszanak kívülrõl."
 #: src/flags.c:1152
 msgid "Your contents can now be heard from outside."
 msgstr "A nálad levõk mostantól hallhatóak kívülrõl."
-
-#: src/game.c:294 src/wiz.c:726
-msgid "Your delusions of grandeur have been duly noted."
-msgstr "Nagyzási hóbortod feljegyeztetett."
 
 #: src/wiz.c:1971
 msgid "Your delusions of grandeur have been noted."

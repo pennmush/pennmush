@@ -1315,7 +1315,7 @@ msgstr "%s: Objekti: %d Granica: NEOGRANIÈENO"
 #: attrib.c:1566 attrib.c:1584
 #, c-format
 msgid "'%s' contains too many aliases."
-msgstr "'%s' sadrzi previse aliasa."
+msgstr "'%s' sadr¾i previ¹e aliasa."
 
 #: attrib.c:1556 attrib.c:1563 attrib.c:1581
 #, c-format
@@ -3476,35 +3476,35 @@ msgstr "PO©TA: Nema¹ poruka za proslijediti."
 
 #: malias.c:447
 msgid "MAIL: You must set the alias to a non-empty list."
-msgstr "POSTA: Aliasu moras dodijeliti nepraznu listu."
+msgstr "PO©TA: Aliasu mora¹ dodijeliti nepraznu listu."
 
 #: src/extmail.c:274
 msgid "MAIL: You must specify a folder name or number"
-msgstr "POSTA: Moras navesti ime ili broj foldera"
+msgstr "PO©TA: Mora¹ navesti ime ili broj foldera"
 
 #: src/extmail.c:979
 msgid "MAIL: You probably don't wanna send mail saying 'clear'."
-msgstr "POSTA: Vjerojatno ne zelis poslati pismo u kojem pise 'clear'."
+msgstr "PO©TA: Vjerojatno ne ¾eli¹ poslati pismo u kojem pi¹e 'clear'."
 
 #: src/extmail.c:1090
 #, c-format
 msgid "MAIL: You sent your message to %s."
-msgstr "POSTA: %s dobije tvoju poruku u postanski sanducic."
+msgstr "PO©TA: %s dobije tvoju poruku u po¹tanski sanduèiæ."
 
 #: extmail.c:1010
 #, c-format
 msgid "MAIL: Your message was not sent to %s due to a mail forwarding problem."
-msgstr "POSTA: %s ne primi tvoju poruku zbog problema s prosljedjivanjem poste."
+msgstr "PO©TA: %s ne primi tvoju poruku zbog problema s prosljeðivanjem po¹te."
 
 #: src/malias.c:675
 #, c-format
 msgid "MAIL: player '%s' exists already in alias %s."
-msgstr "POSTA: korisnik '%s' se vec nalazi u aliasu %s."
+msgstr "PO©TA: korisnik '%s' se veæ nalazi u aliasu %s."
 
 #: src/malias.c:777
 #, c-format
 msgid "MAIL: player '%s' is not in alias %s."
-msgstr "POSTA: korisnik '%s' nije u aliasu %s."
+msgstr "PO©TA: korisnik '%s' nije u aliasu %s."
 
 #: bsd.c:3464
 #, c-format
@@ -3514,25 +3514,25 @@ msgstr "MOTD: %s"
 #: src/extmail.c:1161
 #, c-format
 msgid "Mail cleared for %s(#%d)."
-msgstr "%s(#%d) izgubi svu postu."
+msgstr "%s(#%d) izgubi svu po¹tu."
 
 #: src/extmail.c:1174
 #, c-format
 msgid "Mail database top is %d, actual message count is %d. Fixing."
-msgstr "Vrh postanske baze podataka je %d, a pravi broj poruka je %d. Popravljam."
+msgstr "Vrh po¹tanske baze podataka je %d, a pravi broj poruka je %d. Popravljam."
 
 #: src/extmail.c:1178
 msgid "Mail sanity check completed."
-msgstr "Zavrsena provjera konzistencije poste."
+msgstr "Zavr¹ena provjera konzistencije po¹te."
 
 #: src/extmail.c:1216
 msgid "Mail sanity fix completed."
-msgstr "Zavrsen popravak konzistencije poste."
+msgstr "Zavr¹en popravak konzistencije po¹te."
 
 #: src/extmail.c:1365
 #, c-format
 msgid "Mail statistics for %s:"
-msgstr "%s ima sljedece postanske statistike:"
+msgstr "%s ima sljedeæe po¹tanske statistike:"
 
 #: game.c:1207
 msgid "Make room! Make room!"
@@ -3574,11 +3574,11 @@ msgstr "Podudaranja s '%s' na %s(#%d): %s"
 
 #: src/game.c:1258
 msgid "Matches on carried objects:"
-msgstr "Podudaranja na nosenim objektima:"
+msgstr "Podudaranja na no¹enim objektima:"
 
 #: src/game.c:1243
 msgid "Matches on contents of this room:"
-msgstr "Podudaranja na sadrzaju ove sobe:"
+msgstr "Podudaranja na sadr¾aju ove sobe:"
 
 #: src/game.c:1306
 msgid "Matches on objects in the Master Room:"
@@ -3599,7 +3599,7 @@ msgstr "Na kanal <%s> su spojeni:"
 
 #: conf.c:556
 msgid "Message files sent by the MUSH"
-msgstr "Tekstualni fileovi koje MUSH salje"
+msgstr "Tekstualni fileovi koje MUSH ¹alje"
 
 #: extchat.c:2730
 #, c-format
@@ -3632,7 +3632,7 @@ msgstr "Ime       : %s() (%s%s)"
 #: wiz.c:1890
 #, c-format
 msgid "Name %s locked."
-msgstr "Ime %s zakljucano."
+msgstr "Ime %s zakljuèano."
 
 #: src/wiz.c:2069
 msgid "Name removed."
@@ -3648,17 +3648,17 @@ msgstr "Ime"
 
 #: conf.c:557
 msgid "Networking and connection-related options"
-msgstr "Opcije za mrezu i spajanje"
+msgstr "Opcije za mre¾u i spajanje"
 
 #: src/wiz.c:131
 #, c-format
 msgid "New player '%s' (#%d) created with password '%s'"
-msgstr "Novi korisnik '%s' (#%d) stvoren sa sifrom '%s'"
+msgstr "Novi igraè '%s' (#%d) stvoren sa ¹ifrom '%s'"
 
 #: wiz.c:1060
 #, c-format
 msgid "Next: %d"
-msgstr "Sljedeci: %d"
+msgstr "Sljedeæi: %d"
 
 #: sql.c:291 sql.c:350
 msgid "No SQL database connection."
@@ -3666,7 +3666,7 @@ msgstr "Ne postoji veza sa SQL bazom podataka."
 
 #: set.c:525
 msgid "No attribute found to change."
-msgstr "Nije pronadjen nijedan atribut kojeg bi trebalo promijeniti."
+msgstr "Nije pronaðen nijedan atribut kojeg bi trebalo promijeniti."
 
 #: set.c:1126
 msgid "No attributes wiped."
@@ -3675,17 +3675,17 @@ msgstr "Nijedan atribut nije obrisan."
 #: cmds.c:1069
 #, c-format
 msgid "No command found in code by %s - don't start code with functions."
-msgstr "Programski kod na objektu %s ne sadrzi naredbu - ne zapocinji programski kod s funkcijom."
+msgstr "Programski kod na objektu %s ne sadr¾i naredbu - ne zapoèinji programski kod s funkcijom."
 
 #: help.c:78
 #, c-format
 msgid "No entries matching '%s' were found."
-msgstr "Nije nadjen nijedan tekst koji se podudara s '%s'."
+msgstr "Nije naðen nijedan tekst koji se podudara s '%s'."
 
 #: src/bsd.c:3090
 #, c-format
 msgid "No entry for '%s'."
-msgstr "Nista ne pise pod '%s'."
+msgstr "Ni¹ta ne pi¹e pod '%s'."
 
 #: src/look.c:785
 msgid "No exits."
@@ -3693,7 +3693,7 @@ msgstr "Nema nikakvih izlaza."
 
 #: src/function.c:626
 msgid "No global user-defined functions exist."
-msgstr "Ne postoji nijedna globalna korisnicka funkcija."
+msgstr "Ne postoji nijedna globalna korisnièka funkcija."
 
 #: lock.c:600
 msgid "No lock name given."
@@ -3705,15 +3705,15 @@ msgstr "Taj objekt ne postoji."
 
 #: access.c:431
 msgid "No matching access rule"
-msgstr "Nema podudarajuceg pristupnog pravila"
+msgstr "Nema podudarajuæeg pristupnog pravila"
 
 #: src/look.c:395
 msgid "No matching attributes."
-msgstr "Nema podudarajucih atributa."
+msgstr "Nema podudarajuæih atributa."
 
 #: src/set.c:973
 msgid "No matching command."
-msgstr "Nema podudarajuce naredbe."
+msgstr "Nema podudarajuæe naredbe."
 
 #: help.c:540
 msgid "No matching help topics."
@@ -3721,7 +3721,7 @@ msgstr "Nema takvih help tema."
 
 #: src/extchat.c:1093
 msgid "No more room for channels."
-msgstr "Nema vise mjesta za kanale."
+msgstr "Nema vi¹e mjesta za kanale."
 
 #: access.c:404
 msgid "No one"
@@ -3729,11 +3729,11 @@ msgstr "Nitko"
 
 #: function.c:1166
 msgid "No permission to control object."
-msgstr "Nemas dopustenje kontrolirati taj objekt."
+msgstr "Nema¹ dopu¹tenje kontrolirati taj objekt."
 
 #: src/function.c:687
 msgid "No permission to examine object."
-msgstr "Nema dopustenja za provjeru objekta."
+msgstr "Nema dopu¹tenja za provjeru objekta."
 
 #: flags.c:1839 flags.c:1878 flags.c:1941
 #, c-format
@@ -3742,11 +3742,11 @@ msgstr "%s te vrste ne postoji."
 
 #: src/set.c:596
 msgid "No such attribute to copy from."
-msgstr "Atribut kojeg se zeli kopirati ne postoji."
+msgstr "Atribut kojeg se ¾eli kopirati ne postoji."
 
 #: src/attrib.c:931
 msgid "No such attribute to reset."
-msgstr "Atribut kojeg se zeli maknuti ne postoji."
+msgstr "Atribut kojeg se ¾eli maknuti ne postoji."
 
 #: src/set.c:711
 msgid "No such attribute, try set instead."
@@ -3766,7 +3766,7 @@ msgstr "Ta naredba ne postoji."
 
 #: src/wiz.c:789
 msgid "No such connected player."
-msgstr "Takav igrac nije spojen."
+msgstr "Takav igraè nije spojen."
 
 #: src/function.c:764
 msgid "No such function."
@@ -3782,12 +3782,12 @@ msgstr "Ta opcija ne postoji."
 
 #: src/wiz.c:155 src/wiz.c:729 src/wiz.c:1703
 msgid "No such player."
-msgstr "Taj igrac ne postoji."
+msgstr "Taj igraè ne postoji."
 
 #: src/extmail.c:747 src/extmail.c:859
 #, c-format
 msgid "No such unique player: %s."
-msgstr "Nema takvog jedinstvenog igraca: %s."
+msgstr "Nema takvog jedinstvenog igraèa: %s."
 
 #: src/rob.c:83
 msgid "No suicide allowed."
@@ -3795,7 +3795,7 @@ msgstr "Samoubojstvo je zabranjeno."
 
 #: src/wiz.c:1985
 msgid "No valid options found."
-msgstr "Nijedna ispravna opcija nije nadjena."
+msgstr "Nijedna ispravna opcija nije naðena."
 
 #: src/wiz.c:933
 msgid "No zone specified."
@@ -3803,7 +3803,7 @@ msgstr "Zona nije navedena."
 
 #: wiz.c:885
 msgid "None of your connections are idle. If you want to quit, use QUIT."
-msgstr "Nemas nijednu neaktivnu vezu. Ako zelis otici, upotrijebi QUIT."
+msgstr "Nema¹ nijednu neaktivnu vezu. Ako zelis otiæi, upotrijebi QUIT."
 
 #: bsd.c:4662
 msgid "Noone is connected to that descriptor."
@@ -3816,7 +3816,7 @@ msgstr "Nedovoljno novca da bi se u queue dodala naredba za %s(#%d)."
 
 #: src/fundb.c:1424 src/look.c:1177 src/wiz.c:1553 src/wiz.c:1913
 msgid "Nothing found."
-msgstr "Nista nije pronadjeno."
+msgstr "Ni¹ta nije pronaðeno."
 
 #: src/set.c:684
 msgid "Nothing to do."
@@ -3841,17 +3841,17 @@ msgstr "Queue objekata:"
 #: flags.c:1964
 #, c-format
 msgid "Objects of other types already have this %s set. Search for them and remove it first."
-msgstr "Objekti drugih tipova vec imaju ovaj %s postavljen. Pronadji ih i makni ga."
+msgstr "Objekti drugih tipova veæ imaju ovaj %s postavljen. Pronaði ih i makni ga."
 
 #: wiz.c:175 wiz.c:181 wiz.c:195
 #, c-format
 msgid "Objects: %d   Limit: %d"
-msgstr "Broj objekata: %d   Ogranicenje: %d"
+msgstr "Broj objekata: %d   Ogranièenje: %d"
 
 #: wiz.c:166
 #, c-format
 msgid "Objects: %d   Limit: UNLIMITED"
-msgstr "Broj objekata: %d   Ogranicenje: NEOGRANICENO"
+msgstr "Broj objekata: %d   Ogranièenje: NEOGRANIÈENO"
 
 #: src/look.c:505 src/look.c:767
 msgid "Obvious exits:"
@@ -3875,15 +3875,15 @@ msgstr "Jedan atribut obrisan."
 
 #: src/game.c:1155
 msgid "Only God can cause financial ruin."
-msgstr "Samo Bog moze izazvati financijsku propast."
+msgstr "Samo Bog mo¾e izazvati financijsku propast."
 
 #: src/command.c:1256
 msgid "Only God can do that."
-msgstr "Samo Bog to moze uciniti."
+msgstr "Samo Bog to mo¾e uèiniti."
 
 #: src/set.c:526
 msgid "Only God can set himself!"
-msgstr "Samo Bog moze definirati samoga sebe!"
+msgstr "Samo Bog mo¾e definirati samoga sebe!"
 
 #: src/wiz.c:162
 msgid "Only wizards may change a quota."
@@ -3891,7 +3891,7 @@ msgstr "Samo administratori mogu promijeniti quotu."
 
 #: src/wiz.c:1168
 msgid "Only wizards may grant powers."
-msgstr "Samo carobnjaci mogu davati moci."
+msgstr "Samo èarobnjaci mogu davati moæi."
 
 #: src/create.c:118
 msgid "Open where?"
@@ -3908,7 +3908,7 @@ msgstr "Opcija postavljena i snimljena."
 
 #: cmds.c:207
 msgid "Option set but not saved (Saves disabled.)"
-msgstr "Opcija je postavljena, ali nije snimljena (Snimanje iskljuceno.)"
+msgstr "Opcija je postavljena, ali nije snimljena (Snimanje iskljuèeno.)"
 
 #: src/cmds.c:195
 msgid "Option set."
@@ -3920,15 +3920,15 @@ msgstr "Opcije za atribute"
 
 #: conf.c:545
 msgid "Options affecting command behavior"
-msgstr "Opcije za ponasanje naredbi"
+msgstr "Opcije za pona¹anje naredbi"
 
 #: conf.c:550
 msgid "Options affecting dumps and other periodic processes"
-msgstr "Opcije za snimanje i ostale periodicne procese"
+msgstr "Opcije za snimanje i ostale periodiène procese"
 
 #: conf.c:553
 msgid "Options affecting function behavior"
-msgstr "Opcije za ponasanje funkcija"
+msgstr "Opcije za pona¹anje funkcija"
 
 #: set.c:317
 msgid "Overly deep zone chain broken."
@@ -3964,7 +3964,7 @@ msgstr "%d objekata je promijenilo vlasnika."
 #: src/game.c:182
 #, c-format
 msgid "Paranoid dumping, checkpoint interval %d."
-msgstr "Paranoicno snimanje, interval provjeravanja %d."
+msgstr "Paranoièno snimanje, interval provjeravanja %d."
 
 #: src/set.c:912
 msgid "Parent changed."
@@ -3978,11 +3978,11 @@ msgstr "Roditelj: %s"
 #: wiz.c:724
 #, c-format
 msgid "Password for %s changed."
-msgstr "Sifra korisnika '%s' promijenjena."
+msgstr "©ifra korisnika '%s' promijenjena."
 
 #: bsd.c:3324
 msgid "Pend"
-msgstr "Ceka"
+msgstr "Èeka"
 
 #: game.c:2159
 #, c-format
@@ -3997,41 +3997,41 @@ msgstr "PennMUSH verzija %s patchlevel %s %s"
 #: wiz.c:1062
 #, c-format
 msgid "Pennies: %d"
-msgstr "Novcici: %d"
+msgstr "Novèiæi: %d"
 
 #: src/extmail.c:1584
 msgid "Permission denied"
-msgstr "Dopustenje uskraceno"
+msgstr "Dopu¹tenje uskraæeno"
 
 #: src/command.c:1276
 msgid "Permission denied, command is type-restricted."
-msgstr "Dopustenje uskraceno, naredba je ogranicena na tip korisnika."
+msgstr "Dopu¹tenje uskraæeno, naredba je ogranièena na tip korisnika."
 
 #: src/game.c:171
 msgid "Permission denied. Invalid checkpoint interval."
-msgstr "Dopustenje uskraceno. Neispravan interval provjeravanja."
+msgstr "Dopu¹tenje uskraæeno. Neispravan interval provjeravanja."
 
 #: src/bsd.c:4589 src/bsd.c:4627 src/command.c:1288 src/cque.c:611\nsrc/cque.c:669 src/cque.c:909 src/cque.c:1040 src/create.c:125\nsrc/create.c:201 src/create.c:252 src/create.c:259 src/create.c:316\nsrc/create.c:320 src/create.c:337 src/create.c:491 src/destroy.c:228\nsrc/extchat.c:1150 src/extchat.c:1167 src/extchat.c:1197 src/flags.c:1021\nsrc/flags.c:1027 src/flags.c:1033 src/function.c:664 src/function.c:759\nsrc/fundb.c:1080 src/fundb.c:1332 src/game.c:771 src/game.c:1177\nsrc/log.c:295 src/look.c:1093 src/look.c:1333 src/malias.c:633\nsrc/malias.c:736 src/match.c:158 src/move.c:471 src/move.c:630\nsrc/move.c:638 src/predicat.c:865 src/predicat.c:1037 src/rob.c:219\nsrc/set.c:210 src/set.c:680 src/set.c:809 src/set.c:872 src/set.c:889\nsrc/set.c:952 src/speech.c:1479 src/warnings.c:263 src/warnings.c:439\nsrc/wiz.c:428 src/wiz.c:538 src/wiz.c:1029 src/wiz.c:1059 src/wiz.c:1630\nsrc/wiz.c:1855
 msgid "Permission denied."
-msgstr "Odobrenje uskraceno."
+msgstr "Dopu¹tenje uskraæeno."
 
 #: src/extchat.c:814
 msgid "Permission to join denied."
-msgstr "Dopustenje za spajanje uskraceno."
+msgstr "Dopu¹tenje za spajanje uskraæeno."
 
 #: src/set.c:601
 msgid "Permission to read attribute denied."
-msgstr "Dozvola za citanje atributa uskracena."
+msgstr "Dozvola za èitanje atributa uskraæena."
 
 #: flags.c:1910
 #, c-format
 msgid "Permissions on %s %s set."
-msgstr "Dopustenja za %s %s postavljena."
+msgstr "Dopu¹tenja za %s %s postavljena."
 
 #: src/extchat.c:1210
 #, c-format
 msgid "Permissions on channel <%s> changed."
-msgstr "Dopustenja za kanal <%s> promijenjena."
+msgstr "Dopu¹tenja za kanal <%s> promijenjena."
 
 #: flags.c:2033
 msgid "Perms"
@@ -4039,11 +4039,11 @@ msgstr "Dozvole"
 
 #: bsd.c:3848 bsd.c:3851 bsd.c:3855 bsd.c:3859
 msgid "Player Name"
-msgstr "Ime igraca"
+msgstr "Ime igraèa"
 
 #: src/cque.c:791
 msgid "Player Queue:"
-msgstr "Korisnicki queue:"
+msgstr "Korisnièki queue:"
 
 #: player.c:164
 msgid "Player connections not allowed."
@@ -4051,11 +4051,11 @@ msgstr "Korisnicima spajanje nije dozvoljeno."
 
 #: src/set.c:205
 msgid "Players always own themselves."
-msgstr "Korisnici uvijek posjeduju sami sebe."
+msgstr "Igraèi uvijek posjeduju sami sebe."
 
 #: access.c:427
 msgid "Players connecting are set SUSPECT"
-msgstr "Igraci koji se spajaju ce dobiti flag SUSPECT"
+msgstr "Igraèi koji se spajaju æe dobiti flag SUSPECT"
 
 #: bsd.c:3704
 msgid "Poll reset."
@@ -4073,21 +4073,21 @@ msgstr "Anketa promijenjena u: %s"
 
 #: src/speech.c:679
 msgid "Posing as a wizard could be hazardous to your health."
-msgstr "Pretvaranjem da si carobnjak mozes naskoditi vlastitom zdravlju."
+msgstr "Pretvaranjem da si èarobnjak mo¾e¹ ugroziti vlastito zdravlje."
 
 #: wiz.c:995
 #, c-format
 msgid "Powers value: %s"
-msgstr "Vrijednost moci: %s"
+msgstr "Vrijednost moæi: %s"
 
 #: cmds.c:137 cmds.c:422 cmds.c:650
 msgid "Powers"
-msgstr "Moci"
+msgstr "Moæi"
 
 #: look.c:716
 #, c-format
 msgid "Powers: %s"
-msgstr "Moci: %s"
+msgstr "Moæi: %s"
 
 #: src/destroy.c:257
 msgid "Programs don't kill people; people kill people!"
@@ -4095,7 +4095,7 @@ msgstr "Programi ne ubijaju ljude; ljudi ubijaju ljude!"
 
 #: src/destroy.c:924
 msgid "Purge complete."
-msgstr "Ciscenje gotovo."
+msgstr "Èi¹æenje gotovo."
 
 #: cque.c:303 cque.c:428
 msgid "Queue entry table full. Try again later."
@@ -4126,7 +4126,7 @@ msgstr "Quote nepromijenjene."
 
 #: extmail.c:2469
 msgid "Read "
-msgstr "Procitano "
+msgstr "Proèitano "
 
 #: extchat.c:2192
 #, c-format
@@ -4139,7 +4139,7 @@ msgstr "Prim"
 
 #: bsd.c:275
 msgid "Registration successful! You will receive your password by email."
-msgstr "Registracija uspjesna! Primit ces sifru putem elektronske poste."
+msgstr "Registracija uspje¹na! Primit æe¹ ¹ifru putem elektronske po¹te."
 
 #: command.c:1435
 #, c-format
@@ -4178,11 +4178,11 @@ msgstr "Restartam: %s(%s)"
 #: cque.c:1639
 #, c-format
 msgid "Restarting: %s(%s), by %s"
-msgstr "Restartam: %s(%s), izvrsitelj je %s"
+msgstr "Restartam: %s(%s), izvr¹itelj je %s"
 
 #: function.c:916
 msgid "Restore what?"
-msgstr "Sto da restoream?"
+msgstr "©to da restoream?"
 
 #: function.c:933
 msgid "Restored."
@@ -4191,23 +4191,23 @@ msgstr "Restoreano."
 #: command.c:1773
 #, c-format
 msgid "Restrict   : %s"
-msgstr "Ogranicenje: %s"
+msgstr "Ogranièenje: %s"
 
 #: src/command.c:1114
 msgid "Restrict attempt failed."
-msgstr "Pokusaj ogranicavanja neuspjesan."
+msgstr "Poku¹aj ogranièavanja neuspje¹an."
 
 #: function.c:731
 msgid "Restrict what function?"
-msgstr "Koju funkciju zelis ograniciti?"
+msgstr "Koju funkciju ¾eli¹ ogranièiti?"
 
 #: function.c:863
 msgid "Restrictions modified."
-msgstr "Ogranicenja promijenjena."
+msgstr "Ogranièenja promijenjena."
 
 #: function.c:1078
 msgid "Restrictions unchanged."
-msgstr "Ogranicenja nepromijenjena."
+msgstr "Ogranièenja nepromijenjena."
 
 #: command.c:1809
 #, c-format
@@ -4231,7 +4231,7 @@ msgstr "Odbjegli objekt: %s(%s). Naredbe zaustavljene."
 
 #: src/warnings.c:415
 msgid "Running database topology warning checks"
-msgstr "Vrsim provjeru topologije baze podataka"
+msgstr "Vr¹im provjeru topologije baze podataka"
 
 #: flags.c:1738
 msgid "SET"
@@ -4240,17 +4240,17 @@ msgstr "POSTAVLJENO"
 #: sql.c:348
 #, c-format
 msgid "SQL: %d rows affected."
-msgstr "SQL: Zahvaceno je %d redaka."
+msgstr "SQL: Zahvaæeno je %d redaka."
 
 #: sql.c:352
 #, c-format
 msgid "SQL: Error: %s"
-msgstr "SQL: Greska: %s"
+msgstr "SQL: Gre¹ka: %s"
 
 #: src/wiz.c:1471
 #, c-format
 msgid "Searches cost %d %s."
-msgstr "Pretrage kostaju %d %s."
+msgstr "Pretrage ko¹taju %d %s."
 
 #: src/cque.c:803
 msgid "Semaphore Queue:"
@@ -4290,15 +4290,15 @@ msgstr "Internet adresa %s banana."
 #: src/wiz.c:2026
 #, c-format
 msgid "Site %s locked"
-msgstr "Internet adresa %s zakljucana"
+msgstr "Internet adresa %s zakljuèana"
 
 #: src/destroy.c:266
 msgid "Sorry, no suicide allowed."
-msgstr "Nazalost, samoubojstvo je zabranjeno."
+msgstr "Na¾alost, samoubojstvo je zabranjeno."
 
 #: help.c:161
 msgid "Sorry, that command is temporarily unvailable."
-msgstr "Nazalost, ta naredba trenutno nije dostupna."
+msgstr "Na¾alost, ta naredba trenutno nije dostupna."
 
 #: src/bsd.c:3081 src/bsd.c:3094 src/bsd.c:3099
 msgid "Sorry, that function is temporarily unavailable."
@@ -4306,50 +4306,50 @@ msgstr "Oprosti, ali ta funkcija je privremeno nedostupna."
 
 #: src/predicat.c:364
 msgid "Sorry, there is no more room in the database."
-msgstr "Nazalost, nema vise prostora u bazi podataka."
+msgstr "Na¾alost, nema vi¹e prostora u bazi podataka."
 
 #: src/extchat.c:787
 #, c-format
 msgid "Sorry, wrong type of thing for channel <%s>."
-msgstr "Oprosti, to je los tip predmeta za kanal <%s>."
+msgstr "Oprosti, to je lo¹ tip predmeta za kanal <%s>."
 
 #: src/destroy.c:926
 msgid "Sorry, you are a mortal."
-msgstr "Nazalost, ti si smrtnik."
+msgstr "Na¾alost, ti si smrtnik."
 
 #: src/game.c:206
 msgid "Sorry, you are in a no dumping zone."
-msgstr "Oprosti, ali nalazis se u 'no dumping' zoni."
+msgstr "Oprosti, ali nalazi¹ se u 'no dumping' zoni."
 
 #: src/game.c:1235
 msgid "Sorry, you are in an invalid location."
-msgstr "Nazalost, nalazis se u neispravnoj lokaciji."
+msgstr "Na¾alost, nalazi¹ se na neispravnoj lokaciji."
 
 #: src/rob.c:102
 msgid "Sorry, you can only kill players and objects."
-msgstr "Nazalost, mozes ubijati samo igrace i predmete."
+msgstr "Na¾alost, mo¾e¹ ubijati samo igraèe i predmete."
 
 #: create.c:104
 msgid "Sorry, you can only make exits out of rooms."
-msgstr "Oprosti, ali izlaze mozes stvarati samo u sobama."
+msgstr "Oprosti, ali izlaze mo¾e¹ stvarati samo u sobama."
 
 #: move.c:681
 msgid "Sorry, you can't drop exits."
-msgstr "Oprosti, ali ne mozes ispustati izlaze."
+msgstr "Oprosti, ali ne mo¾e¹ ispu¹tati izlaze."
 
 #: src/predicat.c:369
 #, c-format
 msgid "Sorry, you don't have enough %s."
-msgstr "Oprosti, ali nemas dovoljno %s."
+msgstr "Oprosti, ali nema¹ dovoljno %s."
 
 #: src/move.c:643
 msgid "Sorry, you must remain beside yourself!"
-msgstr "Oprosti, ali moras donekle biti na distanci od sebe!"
+msgstr "Oprosti, ali mora¹ donekle biti na distanci od sebe!"
 
 #: extchat.c:1429
 #, c-format
 msgid "Sorry, you're not allowed to @cemit on channel <%s>."
-msgstr "Nazalost, nije ti dozvoljeno @cemitirati na kanal <%s>."
+msgstr "Na¾alost, nije ti dozvoljeno @cemitirati na kanal <%s>."
 
 #: src/extchat.c:927 src/extchat.c:1034
 #, c-format
@@ -4359,25 +4359,25 @@ msgstr "Oprosti, ali nije ti dozvoljeno govoriti na kanalu <%s>."
 #: src/extchat.c:916 src/extchat.c:1021
 #, c-format
 msgid "Sorry, you're not the right type to be on channel <%s>."
-msgstr "Oprosti, ali nisi pravi tip da budes na kanalu <%s>."
+msgstr "Oprosti, ali nisi pravi tip da bude¹ na kanalu <%s>."
 
 #: src/predicat.c:375
 msgid "Sorry, your building quota has run out."
-msgstr "Oprosti, ali ponestalo ti je quote za gradjenje."
+msgstr "Oprosti, ali ponestalo ti je quote za graðenje."
 
 #: mymalloc.c:566 wiz.c:592
 msgid "Sorry."
-msgstr "Zao mi je."
+msgstr "®ao mi je."
 
 #: wiz.c:1073
 #, c-format
 msgid "Source: %d"
-msgstr "Polaziste: %d"
+msgstr "Polazi¹te: %d"
 
 #: look.c:815
 #, c-format
 msgid "Source: %s"
-msgstr "Polaziste: %s"
+msgstr "Polazi¹te: %s"
 
 #: extchat.c:2084
 msgid "Status"
@@ -4399,7 +4399,7 @@ msgstr "Switchevi  :"
 
 #: extmail.c:2481
 msgid "Tagged"
-msgstr "Oznaceno"
+msgstr "Oznaèeno"
 
 #: wiz.c:423 wiz.c:522
 msgid "Teleported."
@@ -4412,31 +4412,31 @@ msgstr "Teleportiranje nije dozvoljeno u ovoj sobi."
 #: flags.c:2218
 #, c-format
 msgid "That %s is already disabled."
-msgstr "Taj %s je vec iskljucen."
+msgstr "Taj %s je veæ iskljuèen."
 
 #: flags.c:2129
 #, c-format
 msgid "That %s is disabled."
-msgstr "Taj %s je iskljucen."
+msgstr "Taj %s je iskljuèen."
 
 #: flags.c:2314
 #, c-format
 msgid "That %s is not disabled."
-msgstr "Taj %s nije iskljucen."
+msgstr "Taj %s nije iskljuèen."
 
 #: flags.c:2119
 #, c-format
 msgid "That alias already matches the %s %s."
-msgstr "Taj alias je vec u upotrebi za %2$s %1$s."
+msgstr "Taj alias je veæ u upotrebi za %2$s %1$s."
 
 #: src/attrib.c:928
 msgid "That attribute cannot be changed by you."
-msgstr "Ti ne mozes mijenjati taj atribut."
+msgstr "Ti ne mo¾e¹ mijenjati taj atribut."
 
 #: src/attrib.c:1022
 #, c-format
 msgid "That attribute is %slocked."
-msgstr "Taj atribut je %szakljucan."
+msgstr "Taj atribut je %szakljuèan."
 
 #: src/atr_tab.c:246 src/atr_tab.c:280 src/atr_tab.c:307
 msgid "That attribute isn't in the attribute table"
@@ -4448,7 +4448,7 @@ msgstr "Dozvole za taj atribut se ne mogu promijeniti."
 
 #: destroy.c:436
 msgid "That can't be undestroyed."
-msgstr "To ne moze biti od-unisteno."
+msgstr "To ne mo¾e biti od-uni¹teno."
 
 #: help.c:55
 msgid "That command is unavailable."
@@ -4500,11 +4500,11 @@ msgstr "To nije ispravan pid!"
 
 #: cque.c:990
 msgid "That is not a valid timestamp."
-msgstr "To nije ispravan vremenski pecat."
+msgstr "To nije ispravan vremenski peèat."
 
 #: src/destroy.c:232
 msgid "That is too special to be destroyed."
-msgstr "Tako vaznu stvar se ne moze unistiti."
+msgstr "Tako va¾nu stvar se ne mo¾e uni¹titi."
 
 #: flags.c:2253
 #, c-format
@@ -4517,51 +4517,51 @@ msgstr "To nije on/off opcija."
 
 #: src/extchat.c:1181
 msgid "That name is too long."
-msgstr "To ime je predugacko."
+msgstr "To ime je predugaèko."
 
 #: src/rob.c:109
 msgid "That object cannot be killed."
-msgstr "Taj objekt ne moze biti ubijen."
+msgstr "Taj objekt ne mo¾e biti ubijen."
 
 #: src/destroy.c:250
 msgid "That object does not belong to you. Use @nuke to destroy it."
-msgstr "Taj objekt ti ne pripada. Upotrijebi @nuke da ga unistis."
+msgstr "Taj objekt ti ne pripada. Upotrijebi @nuke da ga uni¹ti¹."
 
 #: set.c:330
 msgid "That object is already in that zone."
-msgstr "Taj predmet se vec nalazi u toj zoni."
+msgstr "Taj predmet se veæ nalazi u toj zoni."
 
 #: src/destroy.c:243
 msgid "That object is marked SAFE. Use @nuke to destroy it."
-msgstr "Taj objekt ima flag SAFE. Morat ces upotrijebiti @nuke da ga unistis."
+msgstr "Taj objekt ima flag SAFE. Morat æe¹ upotrijebiti @nuke da ga uni¹ti¹."
 
 #: src/set.c:957
 msgid "That object is protected."
-msgstr "Taj objekt je zasticen."
+msgstr "Taj objekt je za¹tiæen."
 
 #: src/destroy.c:238
 msgid "That object is set SAFE. You must set it !SAFE before destroying it."
-msgstr "Taj objekt ima flag SAFE. Moras ga !SAFE-ati prije nego sto ga unistis."
+msgstr "Taj objekt ima flag SAFE. Mora¹ ga !SAFE-ati prije nego ¹to ga uni¹ti¹."
 
 #: src/destroy.c:287
 msgid "That object is set WIZARD. You must use @nuke to destroy it."
-msgstr "Taj objekt ima flag WIZARD. Ako ga zelis unistiti, upotrijebi naredbu @nuke."
+msgstr "Taj objekt ima flag WIZARD. Ako ga ¾eli¹ uni¹titi, upotrijebi naredbu @nuke."
 
 #: src/look.c:1048
 msgid "That player does not seem to exist."
-msgstr "Cini se da taj igrac ne postoji."
+msgstr "Èini se da taj igraè ne postoji."
 
 #: set.c:214
 msgid "That player doesn't have enough money or quota to receive that object."
-msgstr "Tom korisniku nedostaje ili novac ili quota, pa ne moze primiti taj objekt."
+msgstr "Tom korisniku nedostaje ili novac ili quota, pa ne mo¾e primiti taj objekt."
 
 #: bsd.c:4681
 msgid "That player is not online."
-msgstr "Taj igrac nije online."
+msgstr "Taj igraè nije online."
 
 #: src/look.c:1052
 msgid "That player wishes to have some privacy."
-msgstr "Taj igrac zeli malo privatnosti."
+msgstr "Taj igraè ¾eli malo privatnosti."
 
 #: bsd.c:2801
 msgid "That port is not active."
@@ -4573,7 +4573,7 @@ msgstr "Taj port nije aktivan."
 
 #: src/create.c:57
 msgid "That room is being destroyed. Sorry."
-msgstr "Ta soba je u procesu unistenja. Zao mi je."
+msgstr "Ta soba je u procesu uni¹tenja. ®ao mi je."
 
 #: src/create.c:376
 msgid "That's a silly name for a room!"
@@ -4585,11 +4585,11 @@ msgstr "To je blesavo ime za predmet!"
 
 #: src/create.c:121
 msgid "That's a strange name for an exit!"
-msgstr "To je cudno ime za izlaz!"
+msgstr "To je èudno ime za izlaz!"
 
 #: function.c:923
 msgid "That's not a builtin function."
-msgstr "To nije ugradjena funkcija."
+msgstr "To nije ugraðena funkcija."
 
 #: bsd.c:4093
 msgid "That's not a port number."
@@ -4602,7 +4602,7 @@ msgstr "To nije ispravno ime za %s."
 
 #: attrib.c:930
 msgid "That's not a very good name for an attribute."
-msgstr "To bas i nije dobro ime za atribut."
+msgstr "To ba¹ i nije dobro ime za atribut."
 
 #: flags.c:2260
 #, c-format
@@ -4615,11 +4615,11 @@ msgstr "Taj kanal treba jedinstvenije novo ime."
 
 #: src/extchat.c:1097
 msgid "The channel needs a shorter name."
-msgstr "Kanalu treba krace ime."
+msgstr "Kanalu treba kraæe ime."
 
 #: src/lock.c:307
 msgid "The character '|' may not be used in lock names."
-msgstr "Znak '|' se ne moze koristiti u imenima brava."
+msgstr "Znak '|' se ne mo¾e koristiti u imenima brava."
 
 #: bsd.c:3693
 #, c-format
@@ -4628,80 +4628,80 @@ msgstr "Trenutna anketa je: %s"
 
 #: src/destroy.c:705
 msgid "The floor disappears under your feet, you fall through NOTHINGness and then:"
-msgstr "Tlo ti nestane pod nogama, padas kroz nistavilo, i tada:"
+msgstr "Tlo ti nestane pod nogama, pada¹ kroz ni¹tavilo, i tada:"
 
 #: command.c:2138
 msgid "The following commands have hooks: "
-msgstr "Sljedece naredbe imaju hookove: "
+msgstr "Sljedeæe naredbe imaju hookove: "
 
 #: src/game.c:1163
 #, c-format
 msgid "The money supply of all players has been reset to %d %s."
-msgstr "Novcane zalihe svih igraca su upravo postavljene na %d %s."
+msgstr "Novèane zalihe svih igraèa su upravo postavljene na %d %s."
 
 #: src/atr_tab.c:273
 #, c-format
 msgid "The name %s is already used in the attribute table."
-msgstr "Ime %s je vec koristeno u tablici atributa."
+msgstr "Ime %s je veæ kori¹teno u tablici atributa."
 
 #: wiz.c:694
 #, c-format
 msgid "The next object to be created will be #%d."
-msgstr "Sljedeci stvoreni objekt ce biti #%d."
+msgstr "Sljedeæi stvoreni objekt æe biti #%d."
 
 #: player.c:420
 msgid "The old password that you entered was incorrect."
-msgstr "Stara sifra je netocna."
+msgstr "Stara ¹ifra je netoèna."
 
 #: src/player.c:299
 #, c-format
 msgid "The password is %s\n"
-msgstr "Sifra je %s\n"
+msgstr "©ifra je %s\n"
 
 #: bsd.c:290
 msgid "The password is invalid (or missing)."
-msgstr "Sifra je neispravna (ili je nema)."
+msgstr "©ifra je neispravna (ili je nema)."
 
 #: src/extmail.c:1264 src/extmail.c:1672
 msgid "The post office protects privacy!"
-msgstr "Postanski ured stiti privatnost!"
+msgstr "Po¹tanski ured ¹titi privatnost!"
 
 #: src/extmail.c:1111
 msgid "The postal service issues a warrant for your arrest."
-msgstr "Postanska sluzba izda nalog za tvoje hapsenje."
+msgstr "Po¹tanska slu¾ba izda nalog za tvoje hap¹enje."
 
 #: src/destroy.c:548
 #, c-format
 msgid "The room %s has been spared from destruction by %s."
-msgstr "%2$s spasi sobu %1$s od unistenja."
+msgstr "%2$s spasi sobu %1$s od uni¹tenja."
 
 #: src/destroy.c:543
 #, c-format
 msgid "The room %s has been spared from destruction."
-msgstr "Soba %s je spasena od unistenja."
+msgstr "Soba %s je spa¹ena od uni¹tenja."
 
 #: src/destroy.c:333
 msgid "The room shakes and begins to crumble."
-msgstr "Soba se zatrese i pocne se rusiti."
+msgstr "Soba se zatrese i poène se ru¹iti."
 
 #: cque.c:694
 msgid "The semaphore count must be an integer."
-msgstr "Brojac semafora mora biti cijeli broj."
+msgstr "Brojaè semafora mora biti cijeli broj."
 
 #: src/destroy.c:341
 #, c-format
 msgid "The wrecking ball is on its way for %s's %s and its exits."
-msgstr "Sluzba za rusenje zgrada je na putu prema sobi %s korisnika '%s' i njenim izlazima."
+msgstr "Slu¾ba za ru¹enje zgrada je na putu prema sobi %s korisnika '%s' i njenim izlazima."
 
 #: src/extmail.c:1281
 #, c-format
 msgid "There are %d messages in the mail spool."
-msgstr "Broj poruka u postanskom spoolu: %d."
+msgstr "Broj poruka u po¹tanskom spoolu: %d."
 
 #: bsd.c:3925
 #, c-format
 msgid "There are %d players connected."
-msgstr "%d igraca je spojeno."
+msgstr "%d igraèa je spojeno."
 
 #: access.c:687
 msgid "There are no access rules."
@@ -4709,7 +4709,7 @@ msgstr "Ne postoje pravila za pristup."
 
 #: src/bsd.c:4788
 msgid "There are no connected players on that channel."
-msgstr "Na tom kanalu nema spojenih igraca."
+msgstr "Na tom kanalu nema spojenih igraèa."
 
 #: command.c:2133
 msgid "There are no hooks currently set."
@@ -4721,15 +4721,15 @@ msgstr "Nema spojenih korisnika."
 
 #: flags.c:1542
 msgid "There are probably easier ways to crash your MUSH."
-msgstr "Vjerojatno postoje jednostavniji nacini da si srusis MUSH."
+msgstr "Vjerojatno postoje jednostavniji naèini da si sru¹i¹ MUSH."
 
 #: src/speech.c:1368
 msgid "There can't be anything in that!"
-msgstr "U tome ne moze biti nicega!"
+msgstr "U tome ne mo¾e biti nièega!"
 
 #: bsd.c:3922
 msgid "There is 1 player connected."
-msgstr "1 igrac je spojen."
+msgstr "1 igraè je spojen."
 
 #: wiz.c:837
 msgid "There is noone connected on that descriptor."
@@ -4737,19 +4737,19 @@ msgstr "Nitko nije spojen na taj deskriptor."
 
 #: bsd.c:3211 bsd.c:3291 bsd.c:3361
 msgid "There is one player connected."
-msgstr "Jedan korisnik je spojen."
+msgstr "Jedan igraè je spojen."
 
 #: src/move.c:335 src/move.c:336 src/move.c:337
 msgid "There's no place like home..."
-msgstr "Doma je najljepse..."
+msgstr "Doma je najljep¹e..."
 
 #: rob.c:202
 msgid "There's nobody here to buy things from."
-msgstr "Ovdje nema nikoga od koga bi se nesto moglo kupiti."
+msgstr "Ovdje nema nikoga od koga bi se ne¹to moglo kupiti."
 
 #: src/create.c:496
 msgid "There's nothing left of it to clone!"
-msgstr "Od toga nista nije ostalo pa se ne moze ni klonirati!"
+msgstr "Od toga ni¹ta nije ostalo pa se ne mo¾e ni klonirati!"
 
 #: command.c:1562
 msgid "This command has not been implemented."
@@ -4757,7 +4757,7 @@ msgstr "Ova naredba se ne koristi."
 
 #: src/move.c:426
 msgid "This feature coming soon."
-msgstr "Ova mogucnost ce uskoro biti dostupna."
+msgstr "Ova moguænost æe uskoro biti dostupna."
 
 #: src/player.c:296
 msgid "This is an automated message.\n"
@@ -4765,11 +4765,11 @@ msgstr "Ovo je automatizirana poruka.\n"
 
 #: src/flags.c:1091
 msgid "This room is no longer broadcasting."
-msgstr "Ova prostorija vise ne propusta zvuk prema van."
+msgstr "Ova prostorija vi¹e ne propu¹ta zvuk prema van."
 
 #: src/flags.c:1151
 msgid "This room is now broadcasting."
-msgstr "Ova prostorija sada propusta zvuk prema van."
+msgstr "Ova prostorija sada propu¹ta zvuk prema van."
 
 #: game.c:2097
 msgid "Time now"
@@ -4781,19 +4781,19 @@ msgstr "Zadnje snimanje baze podataka"
 
 #: game.c:2137
 msgid "Time until next @warnings"
-msgstr "Do sljedecih @warninga"
+msgstr "Do sljedeæih @warninga"
 
 #: game.c:2112
 msgid "Time until next database save"
-msgstr "Do sljedeceg snimanja"
+msgstr "Do sljedeæeg snimanja"
 
 #: game.c:2120
 msgid "Time until next dbck check"
-msgstr "Do sljedece dbck provjere"
+msgstr "Do sljedeæe dbck provjere"
 
 #: game.c:2128
 msgid "Time until next purge"
-msgstr "Do sljedeceg ciscenja"
+msgstr "Do sljedeæeg èi¹æenja"
 
 #: conf.c:558
 msgid "TinyMUSH compatibility options"
@@ -4806,12 +4806,12 @@ msgstr "Titula %s za %skanal <%s>."
 
 #: src/extchat.c:1358
 msgid "Title too long."
-msgstr "Titula predugacka."
+msgstr "Titula predugaèka."
 
 #: src/player.c:301
 #, c-format
 msgid "To access this character, connect to %s and type:\n"
-msgstr "Da dobijes pristup ovom liku, spoji se na korisnika '%s' i napisi:\n"
+msgstr "Da dobije¹ pristup ovom liku, spoji se na korisnika '%s' i napi¹i:\n"
 
 #: extchat.c:3693
 #, c-format
@@ -4820,31 +4820,31 @@ msgstr "Na kanal %s: %s"
 
 #: src/set.c:906
 msgid "Too many ancestors."
-msgstr "Previse predaka."
+msgstr "Previ¹e predaka."
 
 #: attrib.c:1653
 msgid "Too many attributes on that object to add another."
-msgstr "Taj objekt ima previse atributa, pa se na njega ne moze staviti jos jedan."
+msgstr "Taj objekt ima previ¹e atributa, pa se na njega ne mo¾e staviti jo¹ jedan."
 
 #: src/fundb.c:1073 src/speech.c:1416
 msgid "Too many containers."
-msgstr "Previse spremnika."
+msgstr "Previ¹e spremnika."
 
 #: player.c:183
 msgid "Too many guests are connected now."
-msgstr "Trenutno je spojeno previse gostiju."
+msgstr "Trenutno je spojeno previ¹e gostiju."
 
 #: src/speech.c:302
 msgid "Too many people to oemit to."
-msgstr "Ne mozes oemitirati tolikom broju ljudi."
+msgstr "Ne mo¾e¹ oemitirati tolikom broju ljudi."
 
 #: src/speech.c:402
 msgid "Too many people to whisper to."
-msgstr "Ne mozes saptati tolikom broju ljudi."
+msgstr "Ne mo¾e¹ ¹aptati tolikom broju ljudi."
 
 #: boolexp.c:245
 msgid "Too much recursion in lock!"
-msgstr "Previse rekurzije u bravi!"
+msgstr "Previ¹e rekurzije u bravi!"
 
 #: game.c:2093
 msgid "Total reboots"
@@ -4853,24 +4853,24 @@ msgstr "Uk. rebootova"
 #: cque.c:1168
 #, c-format
 msgid "Totals: Player...%d/%d[%ddel]  Object...%d/%d[%ddel]  Wait...%d/%d[%ddel]  Semaphore...%d/%d"
-msgstr "Ukupno: Korisnicki...%d/%d[%ddel]  Objektni...%d/%d[%ddel]  Cekajuci...%d/%d[%ddel]  Semaforski...%d/%d"
+msgstr "Ukupno: Korisnièki...%d/%d[%ddel]  Objektni...%d/%d[%ddel]  Èekajuæi...%d/%d[%ddel]  Semaforski...%d/%d"
 
 #: wiz.c:1295
 #, c-format
 msgid "Totals: Rooms...%d  Exits...%d  Things...%d  Players...%d"
-msgstr "Ukupno: Sobe...%d  Izlazi...%d   Predmeti...%d  Igraci...%d"
+msgstr "Ukupno: Sobe...%d  Izlazi...%d   Predmeti...%d  Igraèi...%d"
 
 #: speech.c:825
 msgid "Try again after you get the pemit_all power."
-msgstr "Probaj to opet nakon sto dobijes moc pemit_all."
+msgstr "Probaj to opet nakon ¹to dobije¹ moæ pemit_all."
 
 #: src/wiz.c:878
 msgid "Try asking them first!"
-msgstr "Probaj prvo pitati za dopustenje!"
+msgstr "Probaj prvo pitati za dopu¹tenje!"
 
 #: src/create.c:147
 msgid "Trying to link..."
-msgstr "Pokusavam povezati..."
+msgstr "Poku¹avam povezati..."
 
 #: flags.c:1971
 #, c-format
@@ -4893,7 +4893,7 @@ msgstr "Tipovi     : %s"
 #: src/set.c:638
 #, c-format
 msgid "Unable to %s attribute."
-msgstr "Ne mogu izvrsiti operaciju nad atributom: %s."
+msgstr "Ne mogu izvr¹iti operaciju nad atributom: %s."
 
 #: access.c:549 access.c:562
 #, c-format
@@ -4903,7 +4903,7 @@ msgstr "Ne mogu dodati separator za @sitelock: %s"
 #: access.c:542
 #, c-format
 msgid "Unable to add sitelock entry: %s"
-msgstr "Ne mogu dodati predmet u popis zakljucanih internet adresa: %s"
+msgstr "Ne mogu dodati predmet u popis zakljuèanih internet adresa: %s"
 
 #: create.c:485
 msgid "Unable to create object with that dbref."
@@ -4915,12 +4915,12 @@ msgstr "Ne mogu obrisati ime."
 
 #: wiz.c:1858 wiz.c:1886 wiz.c:1893
 msgid "Unable to lock name."
-msgstr "Ne mogu zakljucati ime."
+msgstr "Ne mogu zakljuèati ime."
 
 #: src/bsd.c:758
 #, c-format
 msgid "Unable to open %s. Error output continues to stderr.\n"
-msgstr "Ne mogu otvoriti %s. Ispis gresaka nastavlja ici u stderr.\n"
+msgstr "Ne mogu otvoriti %s. Ispis gre¹aka nastavlja iæi u stderr.\n"
 
 #: src/wiz.c:2036 src/wiz.c:2056
 msgid "Unable to open names file."
@@ -4929,21 +4929,21 @@ msgstr "Ne mogu otvoriti file s imenima."
 #: speech.c:745
 #, c-format
 msgid "Unable to page:%s"
-msgstr "Ne mogu poslati poruku igracima:%s"
+msgstr "Ne mogu poslati poruku igraèima:%s"
 
 #: bsd.c:5033
 #, c-format
 msgid "Unable to reboot using executable '%s': %s"
-msgstr "Ne mogu rebootati pomocu izvrsivog filea '%s': %s"
+msgstr "Ne mogu rebootati pomoæu izvr¹ivog filea '%s': %s"
 
 #: bsd.c:274
 msgid "Unable to register that player with that email address."
-msgstr "Ne mogu registrirati tog igraca s tom e-mail adresom."
+msgstr "Ne mogu registrirati tog igraèa s tom e-mail adresom."
 
 #: attrib.c:1767
 #, c-format
 msgid "Unable to remove '%s' because of a protected tree attribute."
-msgstr "Ne mogu ukloniti '%s' zbog zasticenog atributa u drvetu."
+msgstr "Ne mogu ukloniti '%s' zbog za¹tiæenog atributa u drvetu."
 
 #: attrib.c:1773
 #, c-format
@@ -4957,7 +4957,7 @@ msgstr "Ne mogu postaviti alias."
 #: speech.c:355
 #, c-format
 msgid "Unable to whisper to:%s"
-msgstr "Ne mogu sapnuti korisniku:%s"
+msgstr "Ne mogu ¹apnuti korisniku:%s"
 
 #: set.c:1096
 #, c-format
@@ -4976,11 +4976,11 @@ msgstr "Nisam uspio dodati %s iz nepoznatog razloga."
 
 #: flags.c:1492
 msgid "Unknown failure adding alias."
-msgstr "Nepoznata greska u dodavanju aliasa."
+msgstr "Nepoznata gre¹ka u dodavanju aliasa."
 
 #: flags.c:2266
 msgid "Unknown failure deleting alias."
-msgstr "Nepoznata greska u brisanju aliasa."
+msgstr "Nepoznata gre¹ka u brisanju aliasa."
 
 #: command.c:1349 command.c:1368
 msgid "Unknown hook type"
@@ -5017,21 +5017,21 @@ msgstr "Zona nepoznata."
 
 #: src/create.c:194
 msgid "Unlink what?"
-msgstr "Sto da unlinkam?"
+msgstr "©to da unlinkam?"
 
 #: create.c:206
 #, c-format
 msgid "Unlinked exit #%d (Used to lead to %s)."
-msgstr "Izlaz #%d izgubio odrediste (Nekad vodio u sobu %s)."
+msgstr "Izlaz #%d izgubio odredi¹te (Nekad vodio u sobu %s)."
 
 #: lock.c:880
 #, c-format
 msgid "Unlocked zone %s - automatically zone-locking to itself"
-msgstr "Otkljucana zona %s - automatski se zone-zakljucava na samu sebe"
+msgstr "Otkljuèana zona %s - automatski se zone-zakljuèava na samu sebe"
 
 #: extmail.c:2471
 msgid "Unread "
-msgstr "Neprocitano "
+msgstr "Neproèitano "
 
 #: src/set.c:498
 msgid "Unrecognized attribute flag."
@@ -5055,11 +5055,11 @@ msgstr "Pristup"
 
 #: cmds.c:690
 msgid "Use what attribute for the @message?"
-msgstr "Koji atribut zelis upotrijebiti za ovaj @message?"
+msgstr "Koji atribut ¾eli¹ upotrijebiti za ovaj @message?"
 
 #: src/conf.c:799
 msgid "Use: @config/list <type of options> where type is one of:"
-msgstr "Upotrijebi: @config/list <tip opcija> gdje je tip nesto od:"
+msgstr "Upotrijebi: @config/list <tip opcija> gdje je tip ne¹to od:"
 
 #: set.c:1021
 msgid "Used."
@@ -5067,7 +5067,7 @@ msgstr "Upotrijebljeno."
 
 #: src/function.c:644
 msgid "User functions:"
-msgstr "Korisnicke funkcije:"
+msgstr "Korisnièke funkcije:"
 
 #: extchat.c:2084
 msgid "Users"
@@ -5076,7 +5076,7 @@ msgstr "Korisnika"
 #: move.c:423
 #, c-format
 msgid "Variable exit destination #%d is invalid or not permitted."
-msgstr "Promjenjivo odrediste izlaza #%d je neispravno ili nije dozvoljeno."
+msgstr "Promjenjivo odredi¹te izlaza #%d je neispravno ili nije dozvoljeno."
 
 #: warnings.c:232
 #, c-format
@@ -5093,12 +5093,12 @@ msgid ""
 "WARNING: /NOEVAL no longer creates a Noparse command.\n"
 "         Use /NOPARSE if that's what you meant."
 msgstr ""
-"UPOZORENJE: /NOEVAL vise ne radi naredbe koje nisu parseane.\n"
-"         Upotrijebi /NOPARSE ako na to mislis."
+"UPOZORENJE: /NOEVAL vi¹e ne radi naredbe koje nisu parseane.\n"
+"         Upotrijebi /NOPARSE ako na to misli¹."
 
 #: src/cque.c:799
 msgid "Wait Queue:"
-msgstr "Cekajuci queue:"
+msgstr "Èekajuæi queue:"
 
 #: warnings.c:119
 #, c-format
@@ -5120,15 +5120,15 @@ msgstr "Upozorenje: Upotreba naredbe @CLONE/PRESERVE na objekt s WIZom, ROYem, @
 
 #: set.c:453
 msgid "Warning: @chzoning a TRUST player."
-msgstr "Upozorenje: @chzoneanje igraca koji ima flag TRUST."
+msgstr "Upozorenje: @chzoneanje igraèa koji ima flag TRUST."
 
 #: src/set.c:417
 msgid "Warning: @chzoning a privileged player."
-msgstr "Upozorenje: @chzoneanje privilegiranog igraca."
+msgstr "Upozorenje: @chzoneanje privilegiranog igraèa."
 
 #: src/set.c:396
 msgid "Warning: @chzoning admin-owned object!"
-msgstr "Upozorenje: @chzoneanje objekta ciji je vlasnik administrator!"
+msgstr "Upozorenje: @chzoneanje objekta èiji je vlasnik administrator!"
 
 #: flags.c:1049
 msgid "Warning: Setting trust flag on zoned object"
@@ -5136,7 +5136,7 @@ msgstr "Upozorenje: TRUST flag stavljen na objekt koji je u zoni"
 
 #: destroy.c:329
 msgid "Warning: Target is set SAFE, but scheduling for destruction anyway."
-msgstr "Upozorenje: Meta ima flag SAFE, ali svejedno ce biti unistena."
+msgstr "Upozorenje: Meta ima flag SAFE, ali svejedno æe biti uni¹tena."
 
 #: set.c:328
 #, c-format
@@ -5146,15 +5146,15 @@ msgstr "Upozorenje: WIZ flag maknut s objekta #%d jer je objekt @CHOWN/PRESERVEa
 #: lock.c:893
 #, c-format
 msgid "Warning: Zone %s may have loose zone lock. Lock zones to =player, not player"
-msgstr "Upozorenje: Zona %s mozda ima krhku zonsku bravu. Zakljucavaj zone na =korisnika, a ne na korisnika."
+msgstr "Upozorenje: Zona %s mo¾da ima krhku zonsku bravu. Zakljuèavaj zone na =korisnika, a ne na korisnika."
 
 #: src/extchat.c:1116
 msgid "Warning: channel will be created disabled."
-msgstr "Upozorenje: kanal ce biti stvoren iskljucen."
+msgstr "Upozorenje: kanal æe biti stvoren iskljuèen."
 
 #: src/extchat.c:1207
 msgid "Warning: channel will be disabled."
-msgstr "Upozorenje: kanal ce biti iskljucen."
+msgstr "Upozorenje: kanal æe biti iskljuèen."
 
 #: src/look.c:733
 #, c-format
@@ -5163,95 +5163,95 @@ msgstr "Upozorenja provjerena: %s"
 
 #: bsd.c:3796
 msgid "Welcome back from vacation! Don't forget to unset your ON-VACATION flag"
-msgstr "Dobrodoslica radi povratka s odmora! Ne zaboravi maknuti svoj ON-VACATION flag"
+msgstr "Dobrodo¹lica radi povratka s odmora! Ne zaboravi maknuti svoj ON-VACATION flag"
 
 #: src/wiz.c:465
 msgid "What are you doing inside of yourself?"
-msgstr "Sto radis unutar sebe?"
+msgstr "©to radi¹ unutar sebe?"
 
 #: src/game.c:1239
 msgid "What command do you want to scan for?"
-msgstr "Koju naredbu zelis skenirati?"
+msgstr "Koju naredbu ¾eli¹ skenirati?"
 
 #: src/speech.c:145
 msgid "What command do you want to teach?"
-msgstr "Koju naredbu zelis objasniti?"
+msgstr "Koju naredbu ¾eli¹ objasniti?"
 
 #: src/speech.c:698
 msgid "What did you want to say?"
-msgstr "Sto zelis reci?"
+msgstr "©to ¾eli¹ reæi?"
 
 #: src/cmds.c:185
 msgid "What did you want to set?"
-msgstr "Sto hoces postaviti?"
+msgstr "©to hoæe¹ postaviti?"
 
 #: src/look.c:1294
 msgid "What do you want to @decompile?"
-msgstr "Sto zelis @decompileati?"
+msgstr "©to ¾eli¹ @decompileati?"
 
 #: src/set.c:576
 msgid "What do you want to copy from?"
-msgstr "Odakle zelis kopirati?"
+msgstr "Odakle ¾eli¹ kopirati?"
 
 #: src/set.c:610
 msgid "What do you want to copy to?"
-msgstr "Kamo zelis kopirati?"
+msgstr "Kamo ¾eli¹ kopirati?"
 
 #: src/predicat.c:849
 msgid "What do you want to do the verb?"
-msgstr "Sto zelis napraviti s glagolom?"
+msgstr "©to ¾eli¹ napraviti s glagolom?"
 
 #: src/extchat.c:1082
 msgid "What do you want to do with the channel?"
-msgstr "Sto zelis napraviti s kanalom?"
+msgstr "©to ¾eli¹ napraviti s kanalom?"
 
 #: src/game.c:1331
 msgid "What do you want to do with the list?"
-msgstr "Sto zelis napraviti s popisom?"
+msgstr "©to ¾eli¹ napraviti s popisom?"
 
 #: src/predicat.c:843
 msgid "What do you want to do with the verb?"
-msgstr "Sto zelis napraviti s glagolom?"
+msgstr "©to ¾eli¹ napraviti s glagolom?"
 
 #: src/extchat.c:1039
 msgid "What do you want to emit?"
-msgstr "Sto zelis emitirati?"
+msgstr "©to ¾eli¹ emitirati?"
 
 #: bsd.c:4098
 msgid "What do you want to page with?"
-msgstr "Koju poruku zelis poslati?"
+msgstr "Koju poruku ¾eli¹ poslati?"
 
 #: src/extchat.c:981
 msgid "What do you want to say to that channel?"
-msgstr "Sto zelis reci na tom kanalu?"
+msgstr "©to ¾eli¹ reæi na tom kanalu?"
 
 #: src/wiz.c:196
 msgid "What do you want to set the quota to?"
-msgstr "Koji iznos quote zelis postaviti?"
+msgstr "Koji iznos quote ¾eli¹ postaviti?"
 
 #: set.c:595
 msgid "What do you want to set?"
-msgstr "Sto zelis postaviti?"
+msgstr "©to ¾eli¹ postaviti?"
 
 #: src/set.c:491
 msgid "What flag do you want to set?"
-msgstr "Koji flag zelis postaviti?"
+msgstr "Koji flag ¾eli¹ postaviti?"
 
 #: rob.c:210
 msgid "What is this, a holdup?"
-msgstr "Sto je ovo, oruzana pljacka?"
+msgstr "©to je ovo, oru¾ana pljaèka?"
 
 #: src/set.c:583
 msgid "What object do you want to copy the attribute from?"
-msgstr "S kojeg objekta zelis kopirati taj atribut?"
+msgstr "S kojeg objekta ¾eli¹ kopirati taj atribut?"
 
 #: src/predicat.c:1023
 msgid "What pattern do you want to grep for?"
-msgstr "Koji uzorak zelis grepati?"
+msgstr "Koji uzorak ¾eli¹ grepati?"
 
 #: src/wiz.c:1980
 msgid "What site did you want to lock?"
-msgstr "Koju internet adresu zelis zakljucati?"
+msgstr "Koju internet adresu ¾eli¹ zakljuèati?"
 
 #: flags.c:1945
 #, c-format
@@ -5260,51 +5260,51 @@ msgstr "%s treba biti kakvog tipa?"
 
 #: src/predicat.c:837
 msgid "What was the victim of the verb?"
-msgstr "Sto je zrtva glagola?"
+msgstr "©to je ¾rtva glagola?"
 
 #: src/atr_tab.c:184 src/atr_tab.c:239 src/atr_tab.c:300
 msgid "Which attribute do you mean?"
-msgstr "Na koji atribut mislis?"
+msgstr "Na koji atribut misli¹?"
 
 #: src/atr_tab.c:264
 msgid "Which attributes do you mean?"
-msgstr "Na koje atribute mislis?"
+msgstr "Na koje atribute misli¹?"
 
 #: extchat.c:3328
 msgid "Which line do you want to start recall from?"
-msgstr "Od koje linije zelis da ispis zapocne?"
+msgstr "Od koje linije ¾eli¹ da ispis zapoène?"
 
 #: src/speech.c:355
 msgid "Whisper to whom?"
-msgstr "Kome zelis saptati?"
+msgstr "Kome ¾eli¹ ¹aptati?"
 
 #: src/speech.c:359
 msgid "Whisper what?"
-msgstr "Sto zelis sapnuti?"
+msgstr "©to ¾eli¹ ¹apnuti?"
 
 #: src/wiz.c:223
 msgid "Who do you think you are, GOD?"
-msgstr "Tko mislis da si, BOG?"
+msgstr "Tko misli¹ da si, BOG?"
 
 #: src/bsd.c:4330
 msgid "Who do you think you are, Gallup?"
-msgstr "Tko mislis da si, Gallup?"
+msgstr "Tko misli¹ da si, Gallup?"
 
 #: src/wiz.c:1991
 msgid "Who do you want to lock?"
-msgstr "Koga zelis zakljucati?"
+msgstr "Koga ¾eli¹ zakljuèati?"
 
 #: src/warnings.c:267 src/warnings.c:443
 msgid "Why would you want to be warned about garbage?"
-msgstr "Zasto zelis primati upozorenja o otpadu?"
+msgstr "Za¹to ¾eli¹ primati upozorenja o otpadu?"
 
 #: src/bsd.c:4297
 msgid "Why would you want to do that?"
-msgstr "Zasto to uopce hoces napraviti?"
+msgstr "Za¹to to uopæe hoæe¹ napraviti?"
 
 #: src/lock.c:373
 msgid "Why would you want to lock garbage?"
-msgstr "Zasto zelis zakljucati otpad?"
+msgstr "Za¹to ¾eli¹ zakljuèati otpad?"
 
 #: src/bsd.c:4279
 #, c-format
@@ -5318,28 +5318,28 @@ msgstr "%s: Administratorski MOTD."
 
 #: log.c:297
 msgid "Wrong password."
-msgstr "Pogresna sifra."
+msgstr "Pogre¹na ¹ifra."
 
 #: src/move.c:512
 msgid "You already have that!"
-msgstr "Vec imas to!"
+msgstr "Veæ ima¹ to!"
 
 #: src/extchat.c:1101
 msgid "You already own too many channels."
-msgstr "Vec posjedujes previse kanala."
+msgstr "Veæ posjeduje¹ previ¹e kanala."
 
 #: src/extmail.c:1131
 msgid "You annihilate the post office. All messages cleared."
-msgstr "Sravnis postanski ured sa zemljom. Sve poruke obrisane."
+msgstr "Sravni¹ po¹tanski ured sa zemljom. Sve poruke obrisane."
 
 #: src/look.c:865
 msgid "You are carrying:"
-msgstr "Kod sebe imas:"
+msgstr "Kod sebe ima¹:"
 
 #: src/version.c:33
 #, c-format
 msgid "You are connected to %s"
-msgstr "Server na kojem se nalazis je %s"
+msgstr "Server na kojem se nalazi¹ je %s"
 
 #: src/move.c:771
 #, c-format
@@ -5349,11 +5349,11 @@ msgstr "Slijede te: %s"
 #: src/move.c:770
 #, c-format
 msgid "You are following: %s"
-msgstr "Slijedis korisnika: %s"
+msgstr "Slijedi¹ korisnika: %s"
 
 #: src/set.c:901
 msgid "You are not allowed to be your own ancestor!"
-msgstr "Nije ti dozvoljeno da budes vlastiti predak!"
+msgstr "Nije ti dozvoljeno da bude¹ vlastiti predak!"
 
 #: extchat.c:1430
 msgid "You are not on any channels."
@@ -5379,368 +5379,364 @@ msgstr "Ljubazno te isprate van."
 
 #: src/speech.c:857
 msgid "You are set HAVEN and cannot receive pages."
-msgstr "Imas flag HAVEN i ne mozes primati privatne poruke."
+msgstr "Ima¹ flag HAVEN i ne mo¾e¹ primati privatne poruke."
 
 #: src/look.c:863
 msgid "You aren't carrying anything."
-msgstr "Nemas nikakvih predmeta."
+msgstr "Nema¹ nikakvih predmeta."
 
 #: src/move.c:861
 #, c-format
 msgid "You begin following %s."
-msgstr "Pocnes slijediti korisnika '%s'."
+msgstr "Poène¹ slijediti igraèa '%s'."
 
 #: bsd.c:2813
 #, c-format
 msgid "You boot %d idle selves."
-msgstr "Bootas %d neaktivnih verzija sebe."
+msgstr "Boota¹ %d neaktivnih verzija sebe."
 
 #: wiz.c:824
 msgid "You boot a duplicate self."
-msgstr "Bootas svoj duplikat."
+msgstr "Boota¹ svoj duplikat."
 
 #: src/wiz.c:833
 msgid "You boot an idle self."
-msgstr "Bootas neaktivnu verziju sebe."
+msgstr "Boota¹ neaktivnu verziju sebe."
 
 #: src/wiz.c:835
 #, c-format
 msgid "You booted %s off!"
-msgstr "Bootas korisnika '%s'!"
+msgstr "Boota¹ igraèa '%s'!"
 
 #: wiz.c:776
 #, c-format
 msgid "You booted unconnected port %s!"
-msgstr "Bootas port %s na kojeg nitko nije spojen!"
+msgstr "Boota¹ port %s na kojeg nitko nije spojen!"
 
 #: rob.c:291
 #, c-format
 msgid "You buy a %s from %s."
-msgstr "Kupis '%s' od objekta '%s'."
+msgstr "Kupi¹ '%s' od objekta '%s'."
 
 #: attrib.c:1078
 msgid "You can only chown an attribute to yourself."
-msgstr "Atribut mozes chownati samo sebi."
+msgstr "Atribut mo¾e¹ chownati samo sebi."
 
 #: src/move.c:749
 msgid "You can only follow players and things."
-msgstr "Mozes slijediti samo igrace i predmete."
+msgstr "Mo¾e¹ slijediti samo igraèe i predmete."
 
 #: src/wiz.c:229
 msgid "You can only set quotas to a number."
-msgstr "Za quotu mozes postaviti samo broj."
+msgstr "Za quotu mo¾e¹ postaviti samo broj."
 
 #: src/wiz.c:234
 msgid "You can only set quotas to a positive number."
-msgstr "Za quotu mozes postaviti samo pozitivan broj."
+msgstr "Za quotu mo¾e¹ postaviti samo pozitivan broj."
 
 #: rob.c:326
 msgid "You can't afford that."
-msgstr "Nemas novaca za to."
+msgstr "Nema¹ novaca za to."
 
 #: src/extchat.c:1119
 #, c-format
 msgid "You can't afford the %d %s."
-msgstr "Nemas %d %s."
+msgstr "Nema¹ %d %s."
 
 #: src/wiz.c:798
 msgid "You can't boot other people!"
-msgstr "Ne mozes bootati druge ljude!"
+msgstr "Ne mo¾e¹ bootati druge ljude!"
 
 #: rob.c:198
 msgid "You can't buy from yourself!"
-msgstr "Ne mozes kupovati stvari od sebe!"
+msgstr "Ne mo¾e¹ kupovati stvari od sebe!"
 
 #: cmds.c:1041
 msgid "You can't buy things by taking money."
-msgstr "Ne mozes kupovati stvari tako da dobijes novac."
+msgstr "Ne mo¾e¹ kupovati stvari tako da dobije¹ novac."
 
 #: src/extchat.c:1112
 msgid "You can't create channels of that type."
-msgstr "Ne mozes stvarati kanale tog tipa."
+msgstr "Ne mo¾e¹ stvarati kanale tog tipa."
 
 #: command.c:1419
 msgid "You can't delete built-in commands. @command/disable instead."
-msgstr "Ne mozes brisati ugradjene komande. Umjesto toga, upotrijebi @command/disable."
+msgstr "Ne mo¾e¹ brisati ugraðene komande. Umjesto toga, upotrijebi @command/disable."
 
 #: src/function.c:773
 msgid "You can't delete that @function."
-msgstr "Ne mozes obrisati taj @function."
+msgstr "Ne mo¾e¹ obrisati taj @function."
 
 #: src/move.c:576
 msgid "You can't drop that."
-msgstr "Ne mozes to ispustiti."
+msgstr "Ne mo¾e¹ to ispustiti."
 
 #: move.c:731
 msgid "You can't empty that from here."
-msgstr "Ne mozes to isprazniti odavde."
+msgstr "Ne mo¾e¹ to isprazniti odavde."
 
 #: src/wiz.c:584
 msgid "You can't force God!"
-msgstr "Ne mozes siliti Boga!"
+msgstr "Ne mo¾e¹ siliti Boga!"
 
 #: src/set.c:139
 msgid "You can't give a player that name."
-msgstr "Ne mozes igracu dati to ime."
+msgstr "Ne mo¾e¹ igraèu dati to ime."
 
 #: rob.c:212
 msgid "You can't give an object to itself!"
-msgstr "Ne mozes dati predmet njemu samom!"
+msgstr "Ne mo¾e¹ dati predmet njemu samom!"
 
 #: src/rob.c:207
 msgid "You can't give that away."
-msgstr "Ne mozes to dati."
+msgstr "Ne mo¾e¹ to dati."
 
 #: src/rob.c:202
 msgid "You can't give yourself away!"
-msgstr "Ne mozes dati sebe!"
+msgstr "Ne mo¾e¹ dati sebe!"
 
 #: src/move.c:359 src/move.c:412 src/move.c:430
 msgid "You can't go that way."
-msgstr "Ne mozes ici tim putem."
+msgstr "Ne mo¾e¹ iæi tim putem."
 
 #: src/wiz.c:1175
 msgid "You can't grant powers to unregistered players."
-msgstr "Ne mozes davati moci neregistriranim igracima."
+msgstr "Ne mo¾e¹ davati moæi neregistriranim igraèima."
 
 #: set.c:1021
 msgid "You can't include God!"
-msgstr "Ne mozes ukljuciti Boga!"
+msgstr "Ne mo¾e¹ ukljuèiti Boga!"
 
 #: src/move.c:670
 msgid "You can't leave."
-msgstr "Ne mozes otici."
+msgstr "Ne mo¾e¹ otiæi."
 
 #: src/create.c:60
 msgid "You can't link to that."
-msgstr "Ne mozes linkati na to."
+msgstr "Ne mo¾e¹ linkati na to."
 
 #: src/lock.c:369
 msgid "You can't lock that!"
-msgstr "Ne mozes to zakljucati!"
+msgstr "Ne mo¾e¹ to zakljuèati!"
 
 #: src/wiz.c:166
 msgid "You can't look at someone else's quota."
-msgstr "Ne mozes vidjeti quotu drugog korisnika."
+msgstr "Ne mo¾e¹ vidjeti quotu drugog korisnika."
 
 #: src/look.c:572
 msgid "You can't look at that from here."
-msgstr "Ne mozes to vidjeti odavde."
+msgstr "Ne mo¾e¹ to vidjeti odavde."
 
 #: src/wiz.c:1202
 msgid "You can't make admin into guests."
-msgstr "Ne mozes administratore pretvarati u goste."
+msgstr "Ne mo¾e¹ administratore pretvarati u goste."
 
 #: src/create.c:114
 msgid "You can't make an exit in a place that's crumbling."
-msgstr "Ne mozes stvarati izlaze na mjestu koje se raspada."
+msgstr "Ne mo¾e¹ stvarati izlaze na mjestu koje se raspada."
 
 #: src/extchat.c:1203
 msgid "You can't make channels that type."
-msgstr "Ne mozes davati taj tip kanalima."
+msgstr "Ne mo¾e¹ davati taj tip kanalima."
 
 #: set.c:391
 msgid "You can't make circular zones!"
-msgstr "Ne mozes raditi kruzne zone!"
+msgstr "Ne mo¾e¹ raditi kru¾ne zone!"
 
 #: src/wiz.c:416
 msgid "You can't move an exit to someplace that's crumbling."
-msgstr "Ne mozes premjestiti izlaz na mjesto koje se raspada."
+msgstr "Ne mo¾e¹ premjestiti izlaz na mjesto koje se raspada."
 
 #: src/move.c:537
 msgid "You can't pick that up."
-msgstr "Ne mozes to pokupiti."
+msgstr "Ne mo¾e¹ to pokupiti."
 
 #: src/move.c:541
 msgid "You can't pick up exits."
-msgstr "Ne mozes pokupiti izlaz."
+msgstr "Ne mo¾e¹ pokupiti izlaz."
 
 #: src/cmds.c:181
 msgid "You can't remake the world in your image."
-msgstr "Ne mozes prepraviti svijet na svoju sliku."
+msgstr "Ne mo¾e¹ prepraviti svijet na svoju sliku."
 
 #: src/wiz.c:1934
 msgid "You can't see someone else's quota!"
-msgstr "Ne mozes vidjeti tudju quotu!"
+msgstr "Ne mo¾e¹ vidjeti tuðu quotu!"
 
 #: src/look.c:534
 msgid "You can't see through that."
-msgstr "Ne mozes vidjeti kroz to."
+msgstr "Ne mo¾e¹ vidjeti kroz to."
 
 #: src/move.c:586
 msgid "You can't seem to drop things here."
-msgstr "Izgleda da ovdje ne mozes ispustati stvari."
+msgstr "Izgleda da ovdje ne mo¾e¹ ispu¹tati stvari."
 
 #: src/move.c:583
 msgid "You can't seem to get rid of that."
-msgstr "Izgleda da se toga ne mozes rijesiti."
+msgstr "Izgleda da se toga ne mo¾e¹ rije¹iti."
 
 #: src/move.c:502
 msgid "You can't take that from there."
-msgstr "Ne mozes to uzeti od tamo."
+msgstr "Ne mo¾e¹ to uzeti od tamo."
 
 #: src/move.c:544
 msgid "You can't take that!"
-msgstr "Ne mozes to pokupiti!"
+msgstr "Ne mo¾e¹ to pokupiti!"
 
 #: src/speech.c:139
 msgid "You can't teach 'teach', sorry."
-msgstr "Ne mozes teachati 'teach', zao mi je."
+msgstr "Ne mo¾e¹ teachati 'teach', ¾ao mi je."
 
 #: src/wiz.c:359
 msgid "You can't teleport rooms."
-msgstr "Ne mozes teleportirati sobe."
+msgstr "Ne mo¾e¹ teleportirati sobe."
 
 #: cmds.c:835
 msgid "You can't teleport to nothing!"
-msgstr "Ne mozes se teleportirati u nista!"
+msgstr "Ne mo¾e¹ se teleportirati u ni¹ta!"
 
 #: src/set.c:813
 msgid "You can't trigger God!"
-msgstr "Ne mozes okinuti Boga!"
+msgstr "Ne mo¾e¹ okinuti Boga!"
 
 #: src/create.c:213
 msgid "You can't unlink that!"
-msgstr "Ne mozes to unlinkati!"
+msgstr "Ne mo¾e¹ to unlinkati!"
 
 #: src/set.c:214
 msgid "You cannot @CHOWN/PRESERVE. Use normal @CHOWN."
-msgstr "Ne mozes upotrebljavati @CHOWN/PRESERVE. Upotrijebi obican @CHOWN."
+msgstr "Ne mo¾e¹ upotrebljavati @CHOWN/PRESERVE. Upotrijebi obièan @CHOWN."
 
 #: create.c:624
 msgid "You cannot @CLONE/PRESERVE. Use normal @CLONE instead."
-msgstr "Ne mozes upotrebljavati @CLONE/PRESERVE. Umjesto njega upotrijebi obican @CLONE."
+msgstr "Ne mo¾e¹ upotrebljavati @CLONE/PRESERVE. Umjesto njega upotrijebi obièan @CLONE."
 
 #: cque.c:985
 msgid "You cannot adjust the timeout of an indefinite semaphore."
-msgstr "Ne mozes promijeniti rok isteka stalnog semafora."
+msgstr "Ne mo¾e¹ promijeniti rok isteka stalnog semafora."
 
 #: function.c:869
 msgid "You cannot change that built-in function."
-msgstr "Ne mozes promijeniti tu ugradjenu funkciju."
+msgstr "Ne mo¾e¹ promijeniti tu ugraðenu funkciju."
 
 #: set.c:474
 #, c-format
 msgid "You cannot change that flag on %s/%s"
-msgstr "Ne mozes promijeniti taj flag na %s/%s"
+msgstr "Ne mo¾e¹ promijeniti taj flag na %s/%s"
 
 #: src/wiz.c:734
 msgid "You cannot change that player's password."
-msgstr "Ne mozes promijeniti sifru tog igraca."
+msgstr "Ne mo¾e¹ promijeniti ¹ifru tog igraèa."
 
 #: src/command.c:1248
 msgid "You cannot do that while fixed."
-msgstr "Ne mozes to napraviti jer je flag FIXED na tebi."
+msgstr "Ne mo¾e¹ to napraviti jer je flag FIXED na tebi."
 
 #: src/command.c:1244
 msgid "You cannot do that while gagged."
-msgstr "Ne mozes to napraviti jer je flag GAGGED na tebi."
+msgstr "Ne mo¾e¹ to napraviti jer je flag GAGGED na tebi."
 
 #: src/move.c:527
 msgid "You cannot get yourself!"
-msgstr "Ne mozes pokupiti sebe!"
+msgstr "Ne mo¾e¹ pokupiti sebe!"
 
 #: src/move.c:450
 msgid "You cannot modify exits in that room."
-msgstr "Ne mozes mijenjati izlaze u toj sobi."
+msgstr "Ne mo¾e¹ mijenjati izlaze u toj sobi."
 
 #: src/set.c:357
 msgid "You cannot move that object to that zone."
-msgstr "Ne mozes premjestiti taj objekt u tu zonu."
+msgstr "Ne mo¾e¹ premjestiti taj objekt u tu zonu."
 
 #: src/set.c:469
 #, c-format
 msgid "You cannot set attrib flags on %s/%s"
-msgstr "Ne mozes stavljati atributske flagove na %s/%s"
+msgstr "Ne mo¾e¹ stavljati atributske flagove na %s/%s"
 
 #: src/move.c:753
 msgid "You chase your tail for a while and feel silly."
-msgstr "Neko vrijeme pokusavas uloviti vlastiti rep, a onda se osjecas glupo."
+msgstr "Neko vrijeme poku¹ava¹ uloviti vlastiti rep, a onda se osjeæa¹ glupo."
 
 #: move.c:899
 msgid "You desert everyone you're leading or following."
-msgstr "Napustis svakoga koga vodis ili slijedis."
+msgstr "Napusti¹ svakoga koga vodi¹ ili slijedi¹."
 
 #: move.c:866
 msgid "You dismiss all your followers."
-msgstr "Naredis svim svojim sljedbenicima da odu."
+msgstr "Naredi¹ svim svojim sljedbenicima da odu."
 
 #: src/rob.c:77
 msgid "You do not have such power."
-msgstr "Nemas takvu moc."
+msgstr "Nema¹ takvu moæ."
 
 #: src/wiz.c:117
 msgid "You do not have the power over body and mind!"
-msgstr "Nemas moc nad tijelom i duhom!"
+msgstr "Nema¹ moæ nad tijelom i duhom!"
 
 #: src/cque.c:950
 msgid "You do not have the power to bring the world to a halt."
-msgstr "Nemas moc zaustaviti svijet."
+msgstr "Nema¹ moæ zaustaviti svijet."
 
 #: src/wiz.c:925
 msgid "You do not have the power to change reality."
-msgstr "Nemas moc promijeniti stvarnost."
+msgstr "Nema¹ moæ promijeniti stvarnost."
 
 #: src/cque.c:972
 msgid "You do not have the power to restart the world."
-msgstr "Nemas moc restartati svijet."
+msgstr "Nema¹ moæ restartati svijet."
 
 #: src/create.c:152
 #, c-format
 msgid "You don't have enough %s to link."
-msgstr "Nemas dovoljno %s za linkanje."
+msgstr "Nema¹ dovoljno %s za linkanje."
 
 #: src/rob.c:120 src/speech.c:935
 #, c-format
 msgid "You don't have enough %s."
-msgstr "Nemas dovoljno %s."
+msgstr "Nema¹ dovoljno %s."
 
 #: flags.c:1319 flags.c:1374
 msgid "You don't have enough magic for that."
-msgstr "Nemas dovoljno magije za to."
+msgstr "Nema¹ dovoljno magije za to."
 
 #: src/rob.c:246
 #, c-format
 msgid "You don't have that many %s to give!"
-msgstr "Ne mozes dati toliko %s jer ih nemas!"
+msgstr "Ne mo¾e¹ dati toliko %s jer ih nema¹!"
 
 #: src/move.c:568 src/rob.c:191
 msgid "You don't have that!"
-msgstr "Nemas to!"
-
-#: src/wiz.c:2292
-msgid "You don't have the authority to do that!"
-msgstr "Nemas ovlasti za to!"
+msgstr "Nema¹ to!"
 
 #: src/attrib.c:1114
 msgid "You don't have the permission to chown that."
-msgstr "Nemas dopustenje da to chownas."
+msgstr "Nema¹ dopu¹tenje da to chownas."
 
 #: src/set.c:352
 msgid "You don't have the power to shift reality."
-msgstr "Nemas moc promijeniti stvarnost."
+msgstr "Nema¹ moæ promijeniti stvarnost."
 
 #: flags.c:1455 flags.c:1504 flags.c:1533 flags.c:1579
 msgid "You don't look like God."
-msgstr "Ne izgledas k'o Bog."
+msgstr "Ne izgleda¹ k'o Bog."
 
 #: src/bsd.c:3073
 msgid "You don't look like an admin to me."
-msgstr "Ne izgledas mi kao administrator."
+msgstr "Ne izgleda¹ mi kao administrator."
 
 #: src/move.c:745
 msgid "You don't see that here."
-msgstr "Ne vidis to ovdje."
+msgstr "Ne vidi¹ to ovdje."
 
 #: move.c:649
 #, c-format
 msgid "You drop %s."
-msgstr "Ispustis predmet '%s'."
+msgstr "Ispusti¹ predmet '%s'."
 
 #: move.c:1128
 #, c-format
 msgid "You follow %s."
-msgstr "Pratis korisnika '%s'."
+msgstr "Prati¹ korisnika '%s'."
 
 #: rob.c:182
 #, c-format
@@ -5750,12 +5746,12 @@ msgstr "%2$s dobije tvoj predmet '%1$s'."
 #: src/rob.c:261
 #, c-format
 msgid "You get %d in change."
-msgstr "Dobijes %d kao kusur."
+msgstr "Dobije¹ %d kao kusur."
 
 #: src/destroy.c:759
 #, c-format
 msgid "You get your %d %s deposit back for %s."
-msgstr "Dobijes svoj ulog od %d %s za %s."
+msgstr "Dobije¹ svoj ulog od %d %s za %s."
 
 #: src/rob.c:276
 #, c-format
@@ -5765,30 +5761,30 @@ msgstr "%3$s dobije %1$d %2$s od tebe."
 #: src/look.c:853
 #, c-format
 msgid "You have %d %s."
-msgstr "Imas %d %s."
+msgstr "Ima¹ %d %s."
 
 #: src/destroy.c:514
 #, c-format
 msgid "You have been spared from destruction by %s."
-msgstr "%s te postedi od unistenja."
+msgstr "%s te po¹tedi od uni¹tenja."
 
 #: src/destroy.c:517
 msgid "You have been spared from destruction."
-msgstr "Postedjelo te se od unistenja."
+msgstr "Po¹tedjelo te se od uni¹tenja."
 
 #: player.c:425
 msgid "You have changed your password."
-msgstr "Promijenis svoju sifru."
+msgstr "Promijeni¹ svoju ¹ifru."
 
 #: extchat.c:2034
 #, c-format
 msgid "You have no title set on <%s>."
-msgstr "Nemas titulu na kanalu <%s>."
+msgstr "Nema¹ titulu na kanalu <%s>."
 
 #: look.c:953
 #, c-format
 msgid "You have unlimited %s."
-msgstr "Imas beskonacno %s."
+msgstr "Ima¹ beskonaèno %s."
 
 #: src/speech.c:832
 msgid "You haven't paged anyone since connecting."
@@ -5796,7 +5792,7 @@ msgstr "Od spajanja nema¹ poslanih privatnih poruka."
 
 #: extchat.c:1593
 msgid "You hide on all the channels you can."
-msgstr "Sakrijes se na svim kanalima na kojima mozes."
+msgstr "Sakrije¹ se na svim kanalima na kojima mo¾e¹."
 
 #: src/rob.c:127
 #, c-format
@@ -5811,11 +5807,11 @@ msgstr "%s je zadnji korisnik koji je primio tvoju privatnu poruku."
 #: src/speech.c:1424
 #, c-format
 msgid "You lemit: \"%s\""
-msgstr "Lemitiras: \"%s\""
+msgstr "Lemitira¹: \"%s\""
 
 #: src/bsd.c:4256
 msgid "You may get 15 minutes of fame and glory in life, but not right now."
-msgstr "U zivotu mozes dobiti svojih pet minuta slave, ali ne sada."
+msgstr "U ¾ivotu mo¾e¹ dobiti svojih pet minuta slave, ali ne sada."
 
 #: look.c:959
 #, c-format
@@ -5824,11 +5820,11 @@ msgstr "Mo¾e¹ davati beskonaèno puno %s"
 
 #: src/create.c:311
 msgid "You may not link something to itself."
-msgstr "Ne mozes nesto linkati na samo sebe."
+msgstr "Ne mo¾e¹ ne¹to linkati na samo sebe."
 
 #: src/set.c:535
 msgid "You may not set attributes."
-msgstr "Ne mozes postavljati atribute."
+msgstr "Ne mo¾e¹ postavljati atribute."
 
 #: src/speech.c:132 src/speech.c:171 src/speech.c:644 src/speech.c:1342
 msgid "You may not speak here!"
@@ -5836,159 +5832,155 @@ msgstr "Ovdje ne mo¾e¹ govoriti!"
 
 #: src/speech.c:218 src/speech.c:270 src/speech.c:1375 src/speech.c:1420
 msgid "You may not speak there!"
-msgstr "Tamo ne mozes govoriti!"
+msgstr "Tamo ne mo¾e¹ govoriti!"
 
 #: cque.c:662
 msgid "You may not specify a semaphore attribute with the ANY switch."
-msgstr "Ne mozes specificirati semaforski atribut s IJEDNIM switchem."
+msgstr "Ne mo¾e¹ specificirati semaforski atribut s IJEDNIM switchem."
 
 #: cque.c:690
 msgid "You may not specify a semaphore count with the ALL switch."
-msgstr "Ne mozes navesti broj semaphorea ukoliko koristis switch ALL."
+msgstr "Ne mo¾e¹ navesti broj semaphorea ukoliko koristi¹ switch ALL."
 
 #: src/wiz.c:514
 msgid "You may not teleport out of the zone from this room."
-msgstr "Iz ove sobe se ne mozes teleportirati iz zone."
+msgstr "Iz ove sobe se ne mo¾e¹ teleportirati iz zone."
 
 #: src/cque.c:913
 msgid "You may not use @halt obj=command on this object."
-msgstr "Na ovom objektu ne mozes koristiti @halt obj=komanda."
+msgstr "Na ovom objektu ne mo¾e¹ koristiti @halt obj=naredba."
 
 #: src/flags.c:595
 msgid "You must @lock/zone before you can set a player ZONE"
-msgstr "Moras upotrijebiti @lock/zone prije nego sto mozes staviti flag ZONE na igraca."
+msgstr "Mora¹ upotrijebiti @lock/zone prije nego ¹to mo¾e¹ staviti flag ZONE na igraèa."
 
 #: src/extchat.c:922 src/extchat.c:1029
 msgid "You must be on that channel to speak on it."
-msgstr "Moras biti spojen na taj kanal da bi mogao govoriti na njemu."
+msgstr "Mora¹ biti spojen na taj kanal da bi mogao govoriti na njemu."
 
 #: set.c:210
 msgid "You must carry the object to @chown it."
-msgstr "Moras imati predmet kod sebe da ga mozes @chownati."
+msgstr "Mora¹ imati predmet kod sebe da ga mo¾e¹ @chownati."
 
 #: wiz.c:1460
 msgid "You must give a list of flag names."
-msgstr "Moras navesti popis imena flagova."
+msgstr "Mora¹ navesti popis imena flagova."
 
 #: wiz.c:1437
 msgid "You must give a list of power names."
-msgstr "Moras navesti popis naziva moci."
+msgstr "Mora¹ navesti popis naziva moæi."
 
 #: wiz.c:1453
 msgid "You must give a string of flag characters."
-msgstr "Moras navesti string znakova za flagove."
+msgstr "Mora¹ navesti string znakova za flagove."
 
 #: cmds.c:424
 msgid "You must give a switch for @hook"
-msgstr "Moras navesti switch za @hook"
+msgstr "Mora¹ navesti switch za @hook"
 
 #: command.c:2073
 msgid "You must give an object."
-msgstr "Moras dati objekt."
+msgstr "Mora¹ dati objekt."
 
 #: command.c:1357
 msgid "You must give both an object and attribute."
-msgstr "Moras navesti i objekt i atribut."
+msgstr "Mora¹ navesti i objekt i atribut."
 
 #: flags.c:2006
 #, c-format
 msgid "You must provide a name for the %s."
-msgstr "Moras navesti ime za %s."
+msgstr "Mora¹ navesti ime za %s."
 
 #: flags.c:1459
 msgid "You must provide a name for the alias."
-msgstr "Moras navesti ime za alias."
+msgstr "Mora¹ navesti ime za alias."
 
 #: flags.c:2023
 msgid "You must provide more information."
-msgstr "Moras dati vise podataka."
+msgstr "Mora¹ dati vi¹e podataka."
 
 #: attrib.c:1505
 #, c-format
 msgid "You must set %s first."
-msgstr "Prvo moras postaviti %s."
+msgstr "Prvo mora¹ postaviti %s."
 
 #: src/extchat.c:1074 src/extchat.c:1247 src/extchat.c:1354
 msgid "You must specify a channel."
-msgstr "Moras navesti kanal."
+msgstr "Mora¹ navesti kanal."
 
 #: src/command.c:1090
 msgid "You must specify a command."
-msgstr "Moras navesti naredbu."
+msgstr "Mora¹ navesti naredbu."
 
 #: src/set.c:547
 msgid "You must specify a flag to set."
-msgstr "Moras navesti koji flag zelis postaviti."
+msgstr "Mora¹ navesti koji flag ¾eli¹ postaviti."
 
 #: src/rob.c:230
 #, c-format
 msgid "You must specify a positive number of %s."
-msgstr "Moras navesti pozitivan broj %s."
+msgstr "Mora¹ navesti pozitivan broj %s."
 
 #: wiz.c:1067
 msgid "You must specify a power to set."
-msgstr "Moras navesti koju moc zelis dati."
+msgstr "Mora¹ navesti koju moæ ¾eli¹ dati."
 
 #: extchat.c:3416
 msgid "You must specify a type of lock!"
-msgstr "Moras navesti vrstu brave!"
+msgstr "Mora¹ navesti vrstu brave!"
 
 #: src/look.c:1044
 msgid "You must specify a valid player name."
-msgstr "Moras navesti ispravno ime korisnika."
+msgstr "Mora¹ navesti ispravno ime igraèa."
 
 #: src/function.c:672
 msgid "You must specify an object and an attribute."
-msgstr "Moras navesti objekt i atribut."
+msgstr "Mora¹ navesti objekt i atribut."
 
 #: cque.c:652
 msgid "You must specify an object to use for the semaphore."
-msgstr "Moras specificirati koji objekt zelis koristiti za ovaj semafor."
+msgstr "Mora¹ specificirati koji objekt ¾eli¹ koristiti za ovaj semafor."
 
 #: extchat.c:1171 extchat.c:1266
 msgid "You must stop gagging that channel to speak on it."
-msgstr "Moras si iskljuciti gag za taj kanal da mozes govoriti na njemu."
+msgstr "Mora¹ si iskljuèiti gag za taj kanal da mo¾e¹ govoriti na njemu."
 
 #: src/destroy.c:280
 msgid "You must use @nuke to destroy a player."
-msgstr "Moras upotrijebiti @nuke da unistis igraca."
-
-#: cmds.c:415
-msgid "You need a fishing license to use that hook."
-msgstr "Treba ti ribicka dozvola da koristis taj hook."
+msgstr "Mora¹ upotrijebiti @nuke da uni¹ti¹ igraèa."
 
 #: src/wiz.c:678 src/wiz.c:1451
 msgid "You need a search warrant to do that!"
-msgstr "Da to napravis, treba ti nalog za pretres!"
+msgstr "Da to napravi¹, treba ti nalog za pretres!"
 
 #: attrib.c:1017
 msgid "You need to be able to set the attribute to change its lock."
-msgstr "Moras moci postaviti atribut da mozes promijeniti njegovu bravu."
+msgstr "Mora¹ moæi postaviti atribut da mo¾e¹ promijeniti njegovu bravu."
 
 #: src/set.c:715
 msgid "You need to control an attribute to edit it."
-msgstr "Moras biti vlasnik atributa da ga mozes mijenjati."
+msgstr "Mora¹ biti vlasnik atributa da ga mo¾e¹ mijenjati."
 
 #: src/attrib.c:985 src/attrib.c:989 src/attrib.c:1058 src/attrib.c:1062
 msgid "You need to give an object/attribute pair."
-msgstr "Moras navesti par objekt/atribut."
+msgstr "Mora¹ navesti par objekt/atribut."
 
 #: src/extchat.c:746
 msgid "You need to specify a channel."
-msgstr "Moras navesti kanal."
+msgstr "Mora¹ navesti kanal."
 
 #: extchat.c:2991
 msgid "You need to specify the number of lines to buffer."
-msgstr "Moras navesti broj linija koje ces dodijeliti bufferu."
+msgstr "Mora¹ navesti broj linija koje æe¹ dodijeliti bufferu."
 
 #: src/extchat.c:1298
 #, c-format
 msgid "You no longer appear on channel <%s>'s who list."
-msgstr "Vise te nema na 'who' popisu kanala <%s>."
+msgstr "Vi¹e te nema na 'who' popisu kanala <%s>."
 
 #: src/bsd.c:4639
 msgid "You no longer appear on the WHO list."
-msgstr "Vise te nema na WHO-u."
+msgstr "Vi¹e te nema na WHO-u."
 
 #: src/extchat.c:1305
 #, c-format
@@ -5997,27 +5989,27 @@ msgstr "Sada te ima na 'who' popisu kanala <%s>."
 
 #: src/bsd.c:4641
 msgid "You now appear on the WHO list."
-msgstr "Sada se pojavljujes na WHO popisu."
+msgstr "Sada se pojavljuje¹ na WHO popisu."
 
 #: src/destroy.c:1103
 #, c-format
 msgid "You own a disconnected room, %s"
-msgstr "Posjedujes nepovezanu sobu, %s"
+msgstr "Posjeduje¹ nepovezanu sobu, %s"
 
 #: src/destroy.c:1181
 #, c-format
 msgid "You own an object %s that was 'orphaned'."
-msgstr "Vlasnik si objekta %s koji je 'siroce'."
+msgstr "Vlasnik si objekta %s koji je 'siroèe'."
 
 #: destroy.c:1170
 #, c-format
 msgid "You own an object in a circular zone chain: %s"
-msgstr "Posjedujes objekt u kruznom zonskom lancu: %s"
+msgstr "Posjeduje¹ objekt u kru¾nom zonskom lancu: %s"
 
 #: destroy.c:1143
 #, c-format
 msgid "You own an object without a @lock/zone being used as a zone: %s"
-msgstr "Posjedujes objekt bez zonske brave koji je koristen kao zona: %s"
+msgstr "Posjeduje¹ objekt bez zonske brave koji je kori¹ten kao zona: %s"
 
 #: speech.c:975
 #, c-format
@@ -6027,27 +6019,27 @@ msgstr "%s dobije tvoju poruku '%s'"
 #: src/rob.c:263
 #, c-format
 msgid "You paid %d %s."
-msgstr "Platis %d %s."
+msgstr "Plati¹ %d %s."
 
 #: src/speech.c:616
 #, c-format
 msgid "You pemit \"%s\" to %s."
-msgstr "Pemitiras \"%s\" korisniku '%s'."
+msgstr "Pemitira¹ \"%s\" korisniku '%s'."
 
 #: src/speech.c:1383
 #, c-format
 msgid "You remit, \"%s\" in %s"
-msgstr "Remitiras, \"%s\" u prostoriju %s"
+msgstr "Remitira¹, \"%s\" u prostoriju %s"
 
 #: move.c:840
 #, c-format
 msgid "You remove %d objects from %s."
-msgstr "Maknes %d objekata iz objekta %s."
+msgstr "Makne¹ %d objekata iz objekta %s."
 
 #: move.c:838
 #, c-format
 msgid "You remove 1 object from %s."
-msgstr "Maknes 1 objekt iz objekta %s."
+msgstr "Makne¹ 1 objekt iz objekta %s."
 
 #: src/speech.c:177
 #, c-format
@@ -6056,53 +6048,53 @@ msgstr "Ka¾e¹, \"%s\""
 
 #: src/look.c:412
 msgid "You see nothing special."
-msgstr "Ne vidis nista posebno."
+msgstr "Ne vidi¹ ni¹ta posebno."
 
 #: extmail.c:2685
 #, c-format
 msgid "You sent your message to the '%s' alias"
-msgstr "Posaljes poruku aliasu '%s'"
+msgstr "Po¹alje¹ poruku aliasu '%s'"
 
 #: src/set.c:367
 msgid "You shouldn't zone objects to themselves!"
-msgstr "Ne smijes zonirati objekte na njih same!"
+msgstr "Ne smije¹ zonirati objekte na njih same!"
 
 #: src/create.c:240
 msgid "You somehow wound up in a exit. No biscuit."
-msgstr "Iz nekog razloga se nalazis u izlazu. Neces dobiti kolacic."
+msgstr "Iz nekog razloga se nalazi¹ u izlazu. Neæe¹ dobiti kolaèiæ."
 
 #: src/move.c:917 src/move.c:1036
 #, c-format
 msgid "You stop following %s."
-msgstr "Prestanes slijediti korisnika '%s'."
+msgstr "Prestane¹ slijediti igraèa '%s'."
 
 #: move.c:835
 msgid "You stop following anyone."
-msgstr "Prestanes slijediti bilo koga."
+msgstr "Prestane¹ slijediti bilo koga."
 
 #: move.c:527
 #, c-format
 msgid "You take %s from %s."
-msgstr "Uzmes predmet '%s' od korisnika '%s'."
+msgstr "Uzme¹ predmet '%s' od igraèa '%s'."
 
 #: move.c:573
 #, c-format
 msgid "You take %s."
-msgstr "Uzmes predmet '%s'."
+msgstr "Uzme¹ predmet '%s'."
 
 #: src/rob.c:279
 #, c-format
 msgid "You took %d %s from %s!"
-msgstr "Uzmes %d %s od igraca '%s'!"
+msgstr "Uzme¹ %d %s od igraèa '%s'!"
 
 #: extchat.c:1594
 msgid "You unhide on all channels."
-msgstr "Prestanes se skrivati na svim kanalima."
+msgstr "Prestane¹ se skrivati na svim kanalima."
 
 #: speech.c:395
 #, c-format
 msgid "You whisper, \"%s\"%s."
-msgstr "Sapnes, \"%s\"%s."
+msgstr "©apne¹, \"%s\"%s."
 
 #: src/destroy.c:336
 #, c-format
@@ -6112,103 +6104,99 @@ msgstr "Uskoro æe¹ primiti nagradu za objekt %s."
 #: src/extchat.c:1266
 #, c-format
 msgid "You will no longer hear connection messages on channel <%s>."
-msgstr "Vise neces cuti poruke o spajanjima na kanalu <%s>."
+msgstr "Vi¹e neæe¹ èuti poruke o spajanjima na kanalu <%s>."
 
 #: src/extchat.c:1322
 #, c-format
 msgid "You will no longer hear messages on channel <%s>."
-msgstr "Vise neces cuti poruke s kanala <%s>."
+msgstr "Vi¹e neæe¹ èuti poruke s kanala <%s>."
 
 #: src/extchat.c:1274
 #, c-format
 msgid "You will now hear connection messages on channel <%s>."
-msgstr "Od sada ces na kanalu <%s> cuti obavijesti o spajanju."
+msgstr "Od sada æe¹ na kanalu <%s> èuti obavijesti o spajanju."
 
 #: src/extchat.c:1329
 #, c-format
 msgid "You will now hear messages on channel <%s>."
-msgstr "Odsad ces cuti poruke na kanalu <%s>."
+msgstr "Odsad æe¹ èuti poruke na kanalu <%s>."
 
 #: src/speech.c:1488
 #, c-format
 msgid "You zemit, \"%s\" in zone %s"
-msgstr "Zemitiras, \"%s\" u zoni %s"
+msgstr "Zemitira¹, \"%s\" u zoni %s"
 
 #: src/warnings.c:412
 msgid "You'd better check your wizbit first."
-msgstr "Bolje da prvo provjeris jesi li administrator."
+msgstr "Bolje da prvo provjeri¹ jesi li administrator."
 
 #: move.c:788
 #, c-format
 msgid "You're already following %s."
-msgstr "Vec slijedis korisnika '%s'."
+msgstr "Veæ slijedi¹ korisnika '%s'."
 
 #: src/wiz.c:453
 msgid "You're in the Void. This is not a good thing."
-msgstr "Nalazis se u Nistavilu. To nije dobro."
+msgstr "Nalazi¹ se u Ni¹tavilu. To nije dobro."
 
 #: src/wiz.c:479
 msgid "You're in the void - sending you home."
-msgstr "Nalazis se u nistavilu - saljem te doma."
+msgstr "Nalazi¹ se u ni¹tavilu - ¹aljem te doma."
 
 #: src/wiz.c:487
 msgid "You're in too many containers."
-msgstr "Nalazis se u previse spremnika."
+msgstr "Nalazi¹ se u previ¹e spremnika."
 
 #: move.c:1005
 msgid "You're not allowed to follow."
-msgstr "Pracenje ti nije dozvoljeno."
+msgstr "Praæenje ti nije dozvoljeno."
 
 #: move.c:845
 #, c-format
 msgid "You're not following %s."
-msgstr "Ne slijedis %s."
+msgstr "Ne slijedi¹ %s."
 
 #: speech.c:733
 msgid "You're trying to page too many people at once."
-msgstr "Pokusavas poslati privatnu poruku prevelikom broju ljudi odjednom."
+msgstr "Poku¹ava¹ poslati privatnu poruku prevelikom broju ljudi odjednom."
 
 #: src/destroy.c:410
 #, c-format
 msgid "Your %s has been spared from destruction."
-msgstr "Tvoj objekt '%s' je spasen od unistenja."
+msgstr "Tvoj objekt '%s' je spa¹en od uni¹tenja."
 
 #: src/bsd.c:3419
 msgid "Your HAVEN flag is set. You cannot receive pages."
-msgstr "Flag HAVEN je postavljen na tebe. Ne mozes primati privatne poruke."
+msgstr "Flag HAVEN je postavljen na tebe. Ne mo¾e¹ primati privatne poruke."
 
 #: timer.c:158
 msgid "Your ON-VACATION flag is set! If you're back, clear it."
-msgstr "ON-VACATION flag je postavljen na tebe! Cim se vratis, makni ga."
+msgstr "ON-VACATION flag je postavljen na tebe! Èim se vrati¹, makni ga."
 
 #: src/flags.c:1092
 msgid "Your contents can no longer be heard from outside."
-msgstr "Tvoj sadrzaj se vise ne moze cuti izvana."
+msgstr "Tvoj sadr¾aj se vi¹e ne mo¾e èuti izvana."
 
 #: src/flags.c:1152
 msgid "Your contents can now be heard from outside."
-msgstr "Tvoj sadrzaj se sada moze cuti izvana."
-
-#: src/game.c:294 src/wiz.c:726
-msgid "Your delusions of grandeur have been duly noted."
-msgstr "Tvoje deluzije o velicini ce biti uzete u obzir."
+msgstr "Tvoj sadr¾aj se sada mo¾e èuti izvana."
 
 #: src/wiz.c:1971
 msgid "Your delusions of grandeur have been noted."
-msgstr "Tvoje deluzije o vlastitoj velicini su primijecene."
+msgstr "Tvoje deluzije o vlastitoj velièini su primijeæene."
 
 #: src/rob.c:147
 msgid "Your insurance policy has been revoked."
-msgstr "Tvoje zivotno osiguranje je ponisteno."
+msgstr "Tvoje ¾ivotno osiguranje je poni¹teno."
 
 #: src/rob.c:143
 #, c-format
 msgid "Your insurance policy pays %d %s."
-msgstr "Zivotno osiguranje ti plati %d %s."
+msgstr "®ivotno osiguranje ti plati %d %s."
 
 #: src/rob.c:155
 msgid "Your murder attempt failed."
-msgstr "Tvoj pokusaj ubojstva je propao."
+msgstr "Tvoj poku¹aj ubojstva je propao."
 
 #: src/cque.c:988
 #, c-format
@@ -6223,7 +6211,7 @@ msgstr "%s globalno zaustavi tvoje objekte"
 #: src/wiz.c:739
 #, c-format
 msgid "Your password has been changed by %s."
-msgstr "%s promijeni tvoju sifru."
+msgstr "%s promijeni tvoju ¹ifru."
 
 #: src/player.c:298
 #, c-format
@@ -6270,7 +6258,7 @@ msgid ""
 "*** Inactivity limit reached. You are now HIDDEN. ***\n"
 msgstr ""
 "\n"
-"*** Granica neaktivnosti prijedjena. Sada imas flag HIDDEN. ***\n"
+"*** Granica neaktivnosti prijeðena. Sada ima¹ flag HIDDEN. ***\n"
 
 #: src/bsd.c:4673
 msgid ""
@@ -6278,7 +6266,7 @@ msgid ""
 "*** Inactivity timeout ***\n"
 msgstr ""
 "\n"
-"*** Granica neaktivnosti prijedjena ***\n"
+"*** Granica neaktivnosti prijeðena ***\n"
 
 #: wiz.c:1248
 msgid ""
@@ -6294,7 +6282,7 @@ msgid ""
 "MAIL: You have no mail.\n"
 msgstr ""
 "\n"
-"POSTA: Nemas poste.\n"
+"POSTA: Nema¹ po¹te.\n"
 
 #: wiz.c:1284
 msgid ""
@@ -6322,7 +6310,7 @@ msgstr ""
 
 #: bsd.c:4127 bsd.c:4133
 msgid "a connecting player"
-msgstr "korisnik koji se spaja"
+msgstr "igraè koji se spaja"
 
 #: extchat.c:2150 look.c:209 speech.c:372 speech.c:806
 msgid "and"
@@ -6330,7 +6318,7 @@ msgstr "i"
 
 #: src/log.c:273
 msgid "bad object"
-msgstr "los objekt"
+msgstr "lo¹ objekt"
 
 #: rob.c:295
 #, c-format
@@ -6357,7 +6345,7 @@ msgstr "ispusti %s."
 #: src/warnings.c:186
 #, c-format
 msgid "exit has multiple (%d) return exits"
-msgstr "izlaz ima vise (%d) povratnih izlaza"
+msgstr "izlaz ima vi¹e (%d) povratnih izlaza"
 
 #: src/warnings.c:183
 msgid "exit has no return exit"
@@ -6369,7 +6357,7 @@ msgstr "izlazu nedostaje opis"
 
 #: src/warnings.c:148
 msgid "exit is unlinked; anyone can steal it"
-msgstr "izlaz nije linkan; svatko ga moze ukrasti"
+msgstr "izlaz nije linkan; svatko ga mo¾e ukrasti"
 
 #: bsd.c:3443
 msgid "has DARK-connected."
@@ -6397,7 +6385,7 @@ msgstr "se ponovo spoji s flagom HIDDEN."
 
 #: src/move.c:101
 msgid "has arrived."
-msgstr "dodje."
+msgstr "doðe."
 
 #: bsd.c:3448
 msgid "has connected."
@@ -6421,15 +6409,15 @@ msgstr "ode."
 
 #: bsd.c:3654
 msgid "has partially DARK-disconnected."
-msgstr "djelomicno prekine vezu s flagom DARK."
+msgstr "djelomièno prekine vezu s flagom DARK."
 
 #: bsd.c:3657
 msgid "has partially HIDDEN-disconnected."
-msgstr "djelomicno prekine vezu s flagom HIDDEN."
+msgstr "djelomièno prekine vezu s flagom HIDDEN."
 
 #: bsd.c:3660
 msgid "has partially disconnected."
-msgstr "djelomicno prekine vezu."
+msgstr "djelomièno prekine vezu."
 
 #: bsd.c:3448
 msgid "has reconnected."
@@ -6459,27 +6447,27 @@ msgstr "premjestiti"
 
 #: set.c:734
 msgid "moved"
-msgstr "premjesten"
+msgstr "premje¹ten"
 
 #: src/warnings.c:202
 msgid "player is missing description"
-msgstr "korisnik nema opis"
+msgstr "igraè nema opis"
 
 #: src/warnings.c:159
 msgid "possibly locked exit missing fail"
-msgstr "mozda zakljucan izlaz kojem fali fail"
+msgstr "mo¾da zakljuèan izlaz kojem fali fail"
 
 #: src/warnings.c:229
 msgid "possibly locked thing missing fail"
-msgstr "mozda zakljucan predmet kojem fali fail"
+msgstr "mo¾da zakljuèan predmet kojem fali fail"
 
 #: src/warnings.c:157
 msgid "possibly unlocked exit missing succ/osucc/odrop"
-msgstr "mozda otkljucan izlaz kojem nedostaje succ/osucc/odrop"
+msgstr "mo¾da otkljuèan izlaz kojem fali succ/osucc/odrop"
 
 #: src/warnings.c:227
 msgid "possibly unlocked thing missing succ/osucc/drop/odrop"
-msgstr "mozda otkljucan predmet kojem fali succ/osucc/drop/odrop"
+msgstr "mo¾da otkljuèan predmet kojem fali succ/osucc/drop/odrop"
 
 #: funstr.c:100
 msgid "pronoun:feminine,absolute possessive"
@@ -6551,7 +6539,7 @@ msgstr "soba nema opisa"
 
 #: speech.c:676
 msgid "says"
-msgstr "kaze"
+msgstr "ka¾e"
 
 #: extchat.c:1377
 msgid "set"
@@ -6564,7 +6552,7 @@ msgstr "vikne"
 #: move.c:529
 #, c-format
 msgid "takes %s from %s."
-msgstr "uzme predmet %s od igraca koji se zove %s."
+msgstr "uzme predmet %s od igraèa koji se zove %s."
 
 #: move.c:492 move.c:534
 #, c-format

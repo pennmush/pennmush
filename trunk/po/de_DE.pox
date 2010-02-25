@@ -2555,10 +2555,6 @@ msgstr "Du hast nicht genug um so viele %s herzugeben!"
 msgid "You don't have that!"
 msgstr "Das besitzt du nicht!"
 
-#: src/wiz.c:2292
-msgid "You don't have the authority to do that!"
-msgstr "Du hast nicht die Autorisation um das zu tun."
-
 #: src/set.c:352
 msgid "You don't have the power to shift reality."
 msgstr "Du besitzt nicht die Macht, die Realität zu wechseln."

@@ -2170,6 +2170,8 @@ See also: Connection Functions, hostname(), ports(), lports()
 See also: first(), rest(), before(), after()
 & LATTR()
 & LATTRP()
+& REGLATTR()
+& REGLATTRP()
   lattr(<object>[/<attribute pattern>][, <output separator>])
   lattrp(<object>[/<attribute pattern>][, <output separator>])
   reglattr(<object>[/<regexp>][, <output separator>])
@@ -2198,6 +2200,8 @@ See also: nattr(), xattr(), hasattr(), examine, wildcards
 & NATTRP()
 & ATTRCNT()
 & ATTRPCNT()
+& REGNATTR()
+& REGNATTRP()
   nattr(<object>[/<attribute pattern>])
   nattrp(<object>[/<attribute pattern>])
   regnattr(<object>[/<regexp>])
@@ -4236,8 +4240,8 @@ See also: repeat()
 & SPEAK()
 & SPEAKPENN()
   speak(<speaker>, <string>[, <say string>
-                  [, [<transform obj>/]<transform attr>
-                  [, [<isnull obj>/]<isnull attr>[, <open>[, <close>]]]]])
+                [, [<transform obj>/]<transform attr>
+                [, [<isnull obj>/]<isnull attr>[, <open>[, <close>]]]]])
  
   This function is used to format speech-like constructs, and is
   capable of transforming text within a speech string; it is useful
@@ -4245,7 +4249,8 @@ See also: repeat()
 
   If <speaker> begins with &, the rest of the <speaker> string is
   treated as the speaker's name, so you can use it for NPCs or tacking
-  on titles (such as with @chatformat).
+  on titles (such as with @chatformat). Otherwise, the name of the object
+  <speaker> is used.
  
   When only <speaker> and <string> are given, this function formats
   <string> as if it were speech from <speaker>, as follows.
@@ -4450,26 +4455,9 @@ See also: merge()
   If <dofieldnames> evaluates to a true boolean, then the first call will be
   with row number 0 and %1-%9 will be set to the field names.
 
-  See 'help mapsql2' for examples.
+  See 'help sql examples' for examples.
 
 See also: anonymous attributes, sqlescape(), sql(), @sql
-& MAPSQL2
-
-  > @@ Field, Type, Null?, Key?, Default, Extra
-  > &each_row me=align(<15 <15 <5 <5 <10 <14,%1,%2,%3,%4,%5,%6)
-  > &tabledesc me=mapsql(each_row,describe %0,%r,1)
-  > think u(tabledesc,quotes)
-  Field           Type            Null  Key   Default    Extra
-  quoteid         int(11)               PRI              auto_increment
-  quote           text
-
-  > &each_bb me=(%0) - %1 (%2)
-  > &query me=SELECT name, count(*) FROM bbs GROUP BY name ORDER BY name
-  > think mapsql(each_bb, v(query), %r)
-  (1) - Announcements (5)
-  (2) - Advertisements (20)
-  ... etc
-
 & SQL()
   sql(<query>[, <row separator>[, <field separator>[, <register>]]])
 
@@ -4484,18 +4472,46 @@ See also: anonymous attributes, sqlescape(), sql(), @sql
   <query> is evaluated, so it's useful to either read it from another
   attribute with u() or use lit() to protect commas. If you will be 
   interpolating user-provided values into the query, be careful to escape 
-  them with sqlescape(), like this:
+  them with sqlescape().
 
-    > &SEL_GETID obj = SELECT id FROM mytable WHERE name = '[sqlescape(%0)]'
-    > &DOIT obj = $do *: ... [setq(0,sql(u(SEL_GETID,%0),~,|))] ...
+  A query that doesn't return any rows, such as an UPDATE or SELECT that
+  has no matches will return a null string.
 
-  A query that doesn't return any rows, such as a UPDATE or SELECT that
-  has no matches will return a null string. 
-
-  If <register> is specified, there is a side-effect: the number of affected
+  If <register> is specified, and <query> alters the database (such as an
+  UPDATE or INSERT query), there is a side-effect: the number of affected
   rows is stored into the specified q-register.
+  
+  See 'help sql examples' for examples.
 
 See also: sqlescape(), mapsql(), @sql, setq(), r()
+& SQL Examples
+
+  Example of using sqlescape() to prevent injection attacks:
+    > &SEL_GETID obj=SELECT id FROM mytable WHERE name = '[sqlescape(%0)]'
+    > &DOIT obj=$do *: think setq(0,sql(u(SEL_GETID,%0),~,|)); @@ More cmds
+    
+  Using mapsql() to format results:
+    > @@ Field, Type, Null?, Key?, Default, Extra
+    > &each_row me=align(<15 <15 <5 <5 <10 <14,%1,%2,%3,%4,%5,%6)
+    > &tabledesc me=mapsql(each_row,describe `[sqlescape(%0)]`,%r,1)
+    > think u(tabledesc,quotes)
+    Field           Type            Null  Key   Default    Extra
+    quoteid         int(11)               PRI              auto_increment
+    quote           text
+
+    > &each_bb me=(%0) - %1 (%2)
+    > &query me=SELECT name, count(*) FROM bbs GROUP BY name ORDER BY name
+    > think mapsql(each_bb, v(query), %r)
+    (1) - Announcements (5)
+    (2) - Advertisements (20)
+
+  Using sql() to update fields:
+    > &update me=UPDATE `foo` SET `time` = '[sqlescape(%0)]' WHERE 
+                 `loc` = '[sqlescape(%1)]'
+    > &foo me=$foo *: think sql(u(update, %0, %L),,0)%q0 rows updated.
+    > foo bar
+    5 rows updated.
+
 & SQLESCAPE()
   sqlescape(<string>)
 
@@ -4541,9 +4557,8 @@ See also: trim()
 & STARTTIME()
   starttime()
  
-  Returns a string containing the time the MUSH first started up (not
-  including @shutdown/reboots). The time is in the same format that the 
-  time() function returns.
+  Returns the time the MUSH first was last restarted (not including 
+  @shutdown/reboots), in the same format as time().
  
   Example:
     > say starttime()
@@ -4553,8 +4568,9 @@ See also: convtime(), restarttime(), restarts()
 & RESTARTTIME()
   restarttime()
 
-  Returns a string which is the time the MUSH last rebooted. The time is in 
-  the same format as the time() function returns.
+  Returns the time the MUSH was last restarted, including @shutdown/reboots,
+  in the same format as time(). If @shutdown/reboot hasn't been used since
+  the MUSH was started, this is the same value as starttime().
 
 See also: convtime(), starttime(), restarts()
 & RESTARTS()
@@ -4621,7 +4637,7 @@ See also: allof(), firstof(), first(), strlen(), cat()
   strinsert(<string>, <position>, <insert>)
 
   This function returns <string>, with <insert> added before the <position>
-  character in <string>. Note that the first character in a string is
+  character in <string>. Note that the first character in <string> is
   numbered 0, not 1.
 
   Examples:
@@ -4682,8 +4698,8 @@ See also: comp(), match(), setq(), r()
 & STRREPLACE()
   strreplace(<string>, <start>, <length>, <text>)
 
-  Returns string with the <length> characters starting at <start>
-  replaced by <text>. As with other string functions, the first
+  Returns <string> with the <length> characters starting at <start>
+  replaced by <text>. As with most other string functions, the first
   character is at position 0.
 
   Example:
@@ -4757,12 +4773,16 @@ See also: reswitch(), if(), cond()
   Examples:
     > say switch(test, *a*, foo, *b*, bar, *t*, neat, baz)
     You say, "neat"
+    
     > say switchall(ack, *a*, foo, *b*, bar, *c*, neat, baz)
     You say, "fooneat"
+    
     > say switch(moof, *a*, foo, *b*, bar, *t*, neat, baz)
     You say, "baz"
+    
     > say switch(moof, *a*, foo, *b*, bar, *t*, neat, #$)
     You say, "moof"
+    
     > say case(moof, *f, foo, moof, bar, baz)
     You say, "bar"
 & SWITCH WILDCARDS
@@ -4798,9 +4818,9 @@ See also: WILDCARDS
   definitions of true and false vary depending on the value of the 
   'tiny_booleans' @config option. See 'help boolean values' for details.
 
-See also: not, if(), cond()
+See also: not(), if(), cond(), @break, or(), and()
 & TABLE()
-  table(<list>, [<field width>, [<line length>, [<delimiter>[, <osep>]]]])
+  table(<list>[, <field width>[, <line length>[, <delimiter>[, <osep>]]]])
 
   This function returns the elements of <list> in a tabular format.
   All other parameters are optional.
@@ -4833,8 +4853,8 @@ See also: acos(), asin(), atan(), cos(), ctu(), sin()
 & TEL()
   tel(<object>, <destination>[, <silent>[, <inside>]])
 
-  This function will teleport <object> to <destination>, exactly as
-  @teleport <object>=<destination>. <silent> is an optional boolean that, if 
+  This function will teleport <object> to <destination>, exactly as 
+  @teleport <object>=<destination>. <silent> is an optional boolean that, if
   true, makes the function act like @teleport/silent. <inside> is an 
   optional boolean that, if true, makes the function act like
   @teleport/inside.
@@ -4861,9 +4881,9 @@ See also: @teleport
   other players is restricted to see_all objects.
 See also: pueblo(), width(), height(), ssl()
 & TESTLOCK()
-  testlock(<lock>, <victim>)
+  testlock(<key>, <victim>)
 
-  testlock() returns 1 if the <victim> would pass the lock defined in <lock>
+  testlock() returns 1 if the <victim> would pass the lock defined in <key>
   as run by the caller, and 0 if it would fail.
 
   testlock() evaluates the lock from the caller's perspective.
@@ -5074,11 +5094,11 @@ See also: merge(), splice()
  
    Examples:
       > say trim(%b%bfoo bar baz%b%b%beek%b%b)
-       You say, "foo bar baz   eek"
+      You say, "foo bar baz   eek"
       > say trim(***BLAM***,*)
-       You say, "BLAM"
+      You say, "BLAM"
       > say trim(-----> WOW <---,-,r)
-       You say, "-----> WOW <"
+      You say, "-----> WOW <"
 
 See also: squish(), edit()
 & TRUNC()
@@ -5090,7 +5110,9 @@ See also: squish(), edit()
   does not start with a number, 0 is returned.
   
   Example:
-    say trunc(101Dalmations)
+    > say trunc(3.141593)
+    You say, "3"
+    > say trunc(101Dalmations)
     You say, "101"
     
   val() is an alias for trunc().
@@ -5100,7 +5122,7 @@ See also: ceil(), floor(), bound(), round(), left()
   type(<object>)
 
   This function returns the type of an object - one of PLAYER, THING, EXIT,
-  ROOM or GARBAGE.
+  ROOM or GARBAGE - or #-1 if the object can't be found.
   
   Example:
     > @create Test
@@ -5322,7 +5344,6 @@ See also: setunion(), sort()
   but is usually slightly more efficient.
 
 See also: SUBSTITUTIONS, get(), r(), ATTRIBUTES
-
 & VADD()
   vadd(<vector1>, <vector2>[, <delimiter>])
 
@@ -5544,8 +5565,8 @@ See also: @wipe, attrib_set(), set()
   Returns the number of the word within <list> where the <number>th
   character falls. Characters and words are numbered starting with 1, and 
   <delimiter>s between words are treated as belonging to the word that
-  follows them. If <number> is not within the string, #-1 is returned.
-  <delimiter> defaults to a space.
+  follows them. If the list is less than <number> characters long, #-1 is
+  returned. <delimiter> defaults to a space.
 
   Example: 
     > say wordpos(foo bar baz, 5)
@@ -5584,6 +5605,8 @@ See also: strlen(), items()
                    switch(#@, >1, space(4))]##, |, %r)
 & XATTR()
 & XATTRP()
+& REGXATTR()
+& REGXATTRP()
   xattr(<object>[/<attribute pattern>], <start>, <count>[, <osep>])
   xattrp(<object>[/<attribute pattern>], <start>, <count>[, <osep>])
   regxattr(<object>[/<regexp>], <start>, <count>[, <osep>])

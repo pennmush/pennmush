@@ -313,7 +313,7 @@ FUNCTION(fun_unsetq)
   for (ptr = args[0]; *ptr; ptr++) {
     if ((qindex = qreg_indexes[(unsigned char) *ptr]) != -1) {
       *(global_eval_context.renv[qindex]) = '\0';
-    } else if (!isspace(*ptr)) {
+    } else if (!isspace((int) *ptr)) {
       safe_str(T("#-1 REGISTER OUT OF RANGE"), buff, bp);
     }
   }

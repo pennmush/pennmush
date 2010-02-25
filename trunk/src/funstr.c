@@ -1609,8 +1609,8 @@ wraplen(char *str, size_t maxlen)
     return -1;
 }
 
-/** The integer in string a will be stored in v, 
- * if a is not an integer then d (efault) is stored in v. 
+/** The integer in string a will be stored in v,
+ * if a is not an integer then d (efault) is stored in v.
  */
 #define initint(a, v, d) \
   do \
@@ -1794,7 +1794,7 @@ align_one_line(char *buff, char **bp, int ncols,
       }
     }
     // Fixes align(3,123 1 1 1 1)
-    if (isspace(*ptr)) {
+    if (isspace((int) *ptr)) {
       lastspace = ptr;
     }
     skipspace = 0;
@@ -1843,7 +1843,7 @@ align_one_line(char *buff, char **bp, int ncols,
       spacesneeded = cols[i] - len;
       numspaces = 0;
       for (j = 0; segment[j]; j++) {
-        if (isspace(segment[j])) {
+        if (isspace((int) segment[j])) {
           numspaces++;
         }
       }
@@ -1854,7 +1854,7 @@ align_one_line(char *buff, char **bp, int ncols,
           // Copy the char over.
           safe_chr(segment[j], line, &lp);
           // If it's a space, expand it.
-          if (isspace(segment[j])) {
+          if (isspace((int) segment[j])) {
             k = (spacesneeded / numspaces);
             if (spacecount < (spacesneeded % numspaces)) {
               k++;

@@ -945,17 +945,20 @@ COMMAND(cmd_rwall)
 
 COMMAND(cmd_scan)
 {
+  int check = 0;
+
   if (SW_ISSET(sw, SWITCH_ROOM))
-    do_scan(player, arg_left, CHECK_NEIGHBORS | CHECK_HERE);
-  else if (SW_ISSET(sw, SWITCH_SELF))
-    do_scan(player, arg_left, CHECK_INVENTORY | CHECK_SELF);
-  else if (SW_ISSET(sw, SWITCH_ZONE))
-    do_scan(player, arg_left, CHECK_ZONE);
-  else if (SW_ISSET(sw, SWITCH_GLOBALS))
-    do_scan(player, arg_left, CHECK_GLOBAL);
-  else
-    do_scan(player, arg_left, CHECK_INVENTORY | CHECK_NEIGHBORS |
-            CHECK_SELF | CHECK_HERE | CHECK_ZONE | CHECK_GLOBAL);
+    check |= CHECK_NEIGHBORS | CHECK_HERE;
+  if (SW_ISSET(sw, SWITCH_SELF))
+    check |= CHECK_INVENTORY | CHECK_SELF;
+  if (SW_ISSET(sw, SWITCH_ZONE))
+    check |= CHECK_ZONE;
+  if (SW_ISSET(sw, SWITCH_GLOBALS))
+    check |= CHECK_GLOBAL;
+  if (check == 0)
+    check = CHECK_INVENTORY | CHECK_NEIGHBORS |
+            CHECK_SELF | CHECK_HERE | CHECK_ZONE | CHECK_GLOBAL;
+    do_scan(player, arg_left, check);
 }
 
 COMMAND(cmd_search)

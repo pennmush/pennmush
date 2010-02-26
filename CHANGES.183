@@ -1,7 +1,7 @@
 
-This is the most current changes file for PennMUSH. Please look it
-over; each version contains new things which might significantly affect
-the function of your server.  Changes are reported in reverse
+This is the changes file for PennMUSH 1.8.3. Please look it over; each
+version contains new things which might significantly affect the
+function of your server.  Changes are reported in reverse
 chronological order (most recent first)
 
 [SW] is Shawn Wagner, a PennMUSH developer (aka Raevnos), also
@@ -15,32 +15,6 @@ chronological order (most recent first)
 [Rhost] refers to code by (or inspired by) RhostMUSH
 
 ==========================================================================
-
-Versionh 1.8.4?                                 ??? ??,  2010
-
-Minor Changes:
- * @shutdown/reboot logs who was responsible. Suggested by Kitai. [SW]
- * Rewrite of help @lock to improve clarity, by Sketch.
- * New NO_LOG flag to disable command logging on a per-object basis.
-   Based on code by Teal. [SW]
-   
-Commands:
- * New @include <obj>/<attr> command, which inserts <attr> into the current
-   action list. Patch by Javelin.
-   
-Functions:
- * Added strfirstof() and strallof(), which return the first arg/all args
-   which are non-empty strings. [MG]
- * Added reglattr[p](), regxattr[p]() and regnattr[p](), regexp variants of 
-   lattr[p](), xattr[p]() and nattr[p](). Suggested by Trinsec. [MG]
-
-Fixes:
- * Minor bug in benchmark() fixed. [MG]
- * channels(<object>) was incorrectly sorted for channel names containing
-   ansi. Reported by Trelane. [MG]
- * Help fixes by Teal.
- * Minor updates to some README files. [MG]
- * Some typos and translation errors fixed by Stoko.
 
 Version 1.8.3 patchlevel 13                     Feb 13, 2010
 

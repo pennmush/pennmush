@@ -411,7 +411,8 @@ See also: before(), rest()
   Ansi: Place ansi characters (as defined in 'help ansi()') within ()s to
   define a column's ansi markup.
 
-  Continued in 'help align3'
+  See 'help align3' for examples.
+See also: center(), ljust(), rjust(), table()
 & ALIGN3
   Examples:
   
@@ -432,8 +433,25 @@ See also: before(), rest()
          +                  Luke                  +
          +----------------------------------------+
 
-  Continued in 'help align4'
-See also: center(), ljust(), rjust(), table()
+  See 'help align4' for another example.
+& ALIGN4
+
+  > &dropcap me=%b_______%r|__%b%b%b__|%r%b%b%b|%b|%r%b%b%b|_|
+  > &story me=%r'was the night before Christmas, when all through the house%r
+              Not a creature was stirring, not even a mouse.%r
+              The stockings were hung by the chimney with care,%r
+              In hopes that St Nicholas soon would be there.
+  > th align(9'(ch) 68, u(dropcap), u(story)
+  
+   _______                                                                      
+  |__   __| 'was the night before Christmas, when all through the house          
+     | |    Not a creature was stirring, not even a mouse.                      
+     |_|    The stockings were hung by the chimney with care,                   
+  In hopes that St Nicholas soon would be there.       
+  
+  The dropcap 'T' will be in ANSI cyan-highlight, and merges with the 'story'
+  column.
+  
 & ALLOF()
   allof(<expr>[, ... , <exprN>], <osep>)
 

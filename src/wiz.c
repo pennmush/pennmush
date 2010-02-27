@@ -1745,7 +1745,7 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
   strcpy(spec->eval, "");
   strcpy(spec->name, "");
   spec->low = 0;
-  spec->high = db_top - 1;
+  spec->high = INT_MAX;
   spec->start = 1;              /* 1-indexed */
   spec->count = 0;
   spec->lock = TRUE_BOOLEXP;
@@ -1782,8 +1782,6 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
         if (*restriction == '#')
           offset = 1;
         spec->high = parse_integer(restriction + offset);
-        if (!GoodObject(spec->high))
-          spec->high = db_top - 1;
         continue;
       }
     }
@@ -1796,8 +1794,6 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
       if (*class == '#')
         offset = 1;
       spec->low = parse_integer(class + offset);
-      if (!GoodObject(spec->low))
-        spec->low = 0;
       if (isdigit((unsigned char) *restriction)
           || ((*restriction == '#') && *(restriction + 1)
               && isdigit((unsigned char) *(restriction + 1)))) {
@@ -1805,9 +1801,6 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
         if (*restriction == '#')
           offset = 1;
         spec->high = parse_integer(restriction + offset);
-        if (!GoodObject(spec->high))
-          spec->high = db_top - 1;
-
       }
       continue;
     }
@@ -1820,16 +1813,12 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
       if (*restriction == '#')
         offset = 1;
       spec->low = parse_integer(restriction + offset);
-      if (!GoodObject(spec->low))
-        spec->low = 0;
       continue;
     } else if (string_prefix("maxdb", class)) {
       size_t offset = 0;
       if (*restriction == '#')
         offset = 1;
       spec->high = parse_integer(restriction + offset);
-      if (!GoodObject(spec->high))
-        spec->low = db_top - 1;
       continue;
     }
 
@@ -2007,7 +1996,12 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
   if (!*result)
     mush_panic("Couldn't allocate memory in search!");
 
-  for (n = spec.low; n <= spec.high; n++) {
+  if (spec.low < 0) {
+    spec.low = 0;
+  }
+  if (spec.high >= db_top)
+    spec.high = db_top - 1;
+  for (n = spec.low; n <= spec.high && n < db_top; n++) {
     if (IsGarbage(n) && spec.type != TYPE_GARBAGE)
       continue;
     if (spec.owner != ANY_OWNER && Owner(n) != spec.owner)

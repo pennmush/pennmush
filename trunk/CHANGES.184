@@ -23,6 +23,9 @@ Minor Changes:
  * Rewrite of help @lock to improve clarity, by Sketch.
  * New NO_LOG flag to disable command logging on a per-object basis.
    Based on code by Teal. [SW]
+ * mindb+maxdb classes for lsearch/@search no longer reset to default
+   values when > db_top or < 0 is given: Instead treated as an integer
+   comparison. [GM]
    
 Commands:
  * New @include <obj>/<attr> command, which inserts <attr> into the current

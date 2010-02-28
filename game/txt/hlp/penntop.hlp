@@ -833,6 +833,7 @@ See also: LINK_OK, ABODE, @link
 
 (continued in help listening2)
 & ^
+& ^-LISTENS
 & LISTENING2
   If you need an object to "listen" for more than one pattern, you can
   also use ^-patterns.  These work similar to user-defined commands,
@@ -1343,11 +1344,11 @@ See also: @ps, LOOPING
 
     (sens|respons)e and \1ibility
 
-  matches "sense and sensibility" and "response and  responsibility",  but
-  not  "sense  and  responsibility". 
+  matches "sense and sensibility" and "response and  responsibility", but
+  not "sense  and  responsibility". 
 
-  You can give names to subpatterns and refer to them that way instead of using
-  numbers.
+  You can give names to subpatterns and refer to them that way instead of
+  using numbers.
 
    (?P<NAME>subexpr) (Note: Literal <>'s) is a named capture, and
    (?P=NAME) refers back to it. The above pattern might be written:
@@ -1842,11 +1843,47 @@ See also: EXITS, USER-DEFINED COMMANDS, LISTENING, GLOBALS
 
 See also: STACK, SUBSTITUTIONS, @lock
 & VERBS
-  For most verbs there are three forms: Verb (what the Enactor sees),
-  Overb (what others in the area see) and Averb (the action to be
-  taken when the event happens). Example: @Drop, @Odrop and @Adrop
+  Verb attributes are ones which are shown (or triggered) when you use a 
+  particular command, or perform a certain action. There are normally three:
+  the 'verb' attribute (shown to the enactor), the 'overb' attribute (shown
+  to others in the enactor's location), and the 'averb' attribute (an action
+  list which is triggered). One example is @use, @ouse, and @ause, which are 
+  shown/triggered when the 'use' command is run on an object.
   
-  You can create your own verbs with the @verb command. See help @verb.
+  Some verbs which involve movement have a fourth attribute, 'oxverb', shown
+  in the enactor's old location (for example, @oxmove), while some verbs have
+  less (for example, @oname/@aname are shown when an object's name changes,
+  but there is no @name attribute).
+  
+  You can create your own verbs for softcoded commands/actions with the
+  @verb command.
+  
+  Continued in 'help verbs2'.
+& VERBS2
+& NONAME
+& NOSPACE
+
+  Normally, the enactor's name and a space are prepended to the 'overb' and 
+  'oxverb' attributes automatically. The NOSPACE attribute flag prevents a
+  space being placed between the name and attribute value, and the NONAME
+  attribute flag stops the name being added at all.
+  
+  Example:
+    > @ouse Foo=has used Foo!
+    > use Foo
+    Sketch has used Foo!
+    
+    > @ouse Foo=;'s used Foo!
+    > @set Foo/ouse=nospace
+    > use Foo
+    Sketch's used Foo!
+    
+    > @ouse Foo=Foo has been used by %n!
+    > @set Foo/ouse=noname
+    > use Foo
+    Foo has been used by Sketch!
+  
+See also: @verb, attribute flags
 & WARNINGS
 
   If the building warning system has been enabled in the source code,

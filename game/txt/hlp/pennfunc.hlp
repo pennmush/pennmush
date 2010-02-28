@@ -416,7 +416,7 @@ See also: center(), ljust(), rjust(), table()
 & ALIGN3
   Examples:
   
-    > &line me=align(<5 10 20,\([left(xget(%0,sex),1)]\),name(%0),name(loc(%0)))
+    > &line me=align(<5 10 20,([left(get(%0/sex),1)]),name(%0),name(loc(%0)))
     > th iter(lwho(),u(line,##),%b,%r)
       (M) Walker     Tree
       (F) Jane Doe   Nowhere
@@ -443,11 +443,11 @@ See also: center(), ljust(), rjust(), table()
               In hopes that St Nicholas soon would be there.
   > th align(9'(ch) 68, u(dropcap), u(story)
   
-   _______                                                                      
-  |__   __| 'was the night before Christmas, when all through the house          
-     | |    Not a creature was stirring, not even a mouse.                      
-     |_|    The stockings were hung by the chimney with care,                   
-  In hopes that St Nicholas soon would be there.       
+   _______  
+  |__   __| 'was the night before Christmas, when all through the house
+     | |    Not a creature was stirring, not even a mouse.
+     |_|    The stockings were hung by the chimney with care,
+  In hopes that St Nicholas soon would be there.
   
   The dropcap 'T' will be in ANSI cyan-highlight, and merges with the 'story'
   column.

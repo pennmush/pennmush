@@ -42,7 +42,7 @@ Fixes:
  * Minor bug in benchmark() fixed. [MG]
  * channels(<object>) was incorrectly sorted for channel names containing
    ansi. Reported by Trelane. [MG]
- * Help fixes by Teal.
+ * Help fixes by Teal and others. [MG]
  * Minor updates to some README files. [MG]
  * Some typos and translation errors fixed by Stoko.
 

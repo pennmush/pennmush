@@ -73,6 +73,12 @@ FUNCTION(fun_pemit)
   int ns = (string_prefix(called_as, "NS") && Can_Nspemit(executor));
   int flags = PEMIT_LIST | PEMIT_SILENT;
   dbref saved_orator = orator;
+
+  if (!FUNCTION_SIDE_EFFECTS) {
+    safe_str(T(e_disabled), buff, bp);
+    return;
+  }
+
   if (!command_check_byname(executor, ns ? "@nspemit" : "@pemit") ||
       fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
@@ -105,6 +111,12 @@ FUNCTION(fun_oemit)
 {
   int ns = (string_prefix(called_as, "NS") && Can_Nspemit(executor));
   int flags = ns ? PEMIT_SPOOF : 0;
+
+  if (!FUNCTION_SIDE_EFFECTS) {
+    safe_str(T(e_disabled), buff, bp);
+    return;
+  }
+
   if (!command_check_byname(executor, ns ? "@nsoemit" : "@oemit") ||
       fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
@@ -119,6 +131,12 @@ FUNCTION(fun_emit)
 {
   int ns = (string_prefix(called_as, "NS") && Can_Nspemit(executor));
   int flags = ns ? PEMIT_SPOOF : 0;
+
+  if (!FUNCTION_SIDE_EFFECTS) {
+    safe_str(T(e_disabled), buff, bp);
+    return;
+  }
+
   if (!command_check_byname(executor, ns ? "@nsemit" : "@emit") ||
       fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
@@ -133,6 +151,12 @@ FUNCTION(fun_remit)
 {
   int ns = (string_prefix(called_as, "NS") && Can_Nspemit(executor));
   int flags = ns ? PEMIT_SPOOF : 0;
+
+  if (!FUNCTION_SIDE_EFFECTS) {
+    safe_str(T(e_disabled), buff, bp);
+    return;
+  }
+
   if (!command_check_byname(executor, ns ? "@nsremit" : "@remit") ||
       fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
@@ -147,6 +171,12 @@ FUNCTION(fun_lemit)
 {
   int ns = (string_prefix(called_as, "NS") && Can_Nspemit(executor));
   int flags = ns ? PEMIT_SPOOF : 0;
+
+  if (!FUNCTION_SIDE_EFFECTS) {
+    safe_str(T(e_disabled), buff, bp);
+    return;
+  }
+
   if (!command_check_byname(executor, ns ? "@nslemit" : "@lemit") ||
       fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
@@ -161,6 +191,12 @@ FUNCTION(fun_zemit)
 {
   int ns = (string_prefix(called_as, "NS") && Can_Nspemit(executor));
   int flags = ns ? PEMIT_SPOOF : 0;
+
+  if (!FUNCTION_SIDE_EFFECTS) {
+    safe_str(T(e_disabled), buff, bp);
+    return;
+  }
+
   if (!command_check_byname(executor, ns ? "@nszemit" : "@zemit") ||
       fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
@@ -175,6 +211,12 @@ FUNCTION(fun_prompt)
 {
   int ns = (string_prefix(called_as, "NS") && Can_Nspemit(executor));
   int flags = PEMIT_LIST | PEMIT_PROMPT;
+
+  if (!FUNCTION_SIDE_EFFECTS) {
+    safe_str(T(e_disabled), buff, bp);
+    return;
+  }
+
   if (!command_check_byname(executor, ns ? "@nspemit" : "@pemit") ||
       fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);

@@ -1481,7 +1481,7 @@ process_expression(char *buff, char **bp, char const **str,
           (*str)++;
         }
       break;
-      /* Escape charater */
+      /* Escape character */
     case '\\':
       if (!(eflags & PE_EVALUATE))
         safe_chr('\\', buff, bp);

@@ -2275,6 +2275,11 @@ FUNCTION(fun_cbufferadd)
   CHAN *c;
   dbref victim;
 
+  if (!FUNCTION_SIDE_EFFECTS) {
+    safe_str(T(e_disabled), buff, bp);
+    return;
+  }
+
   /* Person must be able to do nospoof cemits. */
   if (!command_check_byname(executor, "@cemit") || fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
@@ -2295,7 +2300,7 @@ FUNCTION(fun_cbufferadd)
   /* Do we spoof somebody else? */
   if (nargs == 3 && parse_boolean(args[2])) {
     /* Person must be able to do nospoof cemits. */
-    if (!command_check_byname(executor, "@nscemit") || fun->flags & FN_NOSIDEFX) {
+    if (!command_check_byname(executor, "@nscemit")) {
       safe_str(T(e_perm), buff, bp);
       return;
     }

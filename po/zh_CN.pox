@@ -11,10 +11,6 @@ msgstr ""
 "Content-Type: text/plain; charset=gb2312\n"
 "Content-Transfer-Encoding: 8bit"
 
-#: speech.c:1021
-msgid " pages"
-msgstr " &#39029;"
-
 #: src/funmath.c:218 src/funmath.c:250
 msgid "#-1 ARGUMENT MUST END IN AN INTEGER"
 msgstr "#-1 参数必须以一个整数结尾"

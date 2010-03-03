@@ -308,7 +308,7 @@ typedef struct fun_tab {
  * add_function().
  */
 FUNTAB flist[] = {
-  {"@@", fun_atat, 1, -1, FN_NOPARSE},
+  {"@@", fun_null, 1, -1, FN_NOPARSE},
   {"ABS", fun_abs, 1, 1, FN_REG},
   {"ACCENT", fun_accent, 2, 2, FN_REG},
   {"ACCNAME", fun_accname, 1, 1, FN_REG},

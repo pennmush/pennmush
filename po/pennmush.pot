@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-03-01 02:00-0600\n"
+"POT-Creation-Date: 2010-03-03 02:00-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -298,11 +298,11 @@ msgstr ""
 #: create.c:343 create.c:347 create.c:365 create.c:475 create.c:614
 #: destroy.c:233 extchat.c:1780 extchat.c:1797 extchat.c:1828 extchat.c:3876
 #: flags.c:1555 flags.c:1560 flags.c:1713 function.c:1192 function.c:1327
-#: function.c:1479 function.c:1525 function.c:1566 funmisc.c:833 game.c:951
+#: function.c:1479 function.c:1525 function.c:1566 funmisc.c:827 game.c:951
 #: game.c:1493 lock.c:709 lock.c:773 lock.c:969 look.c:1298 look.c:1587
 #: malias.c:763 malias.c:868 match.c:476 move.c:535 move.c:861 move.c:876
 #: predicat.c:1226 predicat.c:1421 rob.c:423 set.c:193 set.c:924 set.c:971
-#: set.c:1053 set.c:1089 set.c:1102 set.c:1187 speech.c:1462 warnings.c:294
+#: set.c:1053 set.c:1089 set.c:1102 set.c:1187 speech.c:1480 warnings.c:294
 #: warnings.c:515 wiz.c:443 wiz.c:566 wiz.c:577 wiz.c:851 wiz.c:1014
 #: wiz.c:1044
 msgid "Permission denied."
@@ -487,7 +487,7 @@ msgstr ""
 msgid "From afar, %s%s%s"
 msgstr ""
 
-#: bsd.c:2957 speech.c:972
+#: bsd.c:2957 speech.c:1021
 #, c-format
 msgid "Long distance to %s: %s%s%s"
 msgstr ""
@@ -497,7 +497,7 @@ msgstr ""
 msgid "%s pages: %s"
 msgstr ""
 
-#: bsd.c:2963 speech.c:975
+#: bsd.c:2963 speech.c:1024
 #, c-format
 msgid "You paged %s with '%s'"
 msgstr ""
@@ -2408,7 +2408,7 @@ msgstr ""
 msgid "CHAT: No channel matches that string."
 msgstr ""
 
-#: extchat.c:2853 look.c:204 speech.c:362 speech.c:960
+#: extchat.c:2853 look.c:204 speech.c:362 speech.c:968
 msgid "and"
 msgstr ""
 
@@ -3650,12 +3650,12 @@ msgstr ""
 msgid "#-1 FUNCTION (SOUNDLIKE) REQUIRES TWO ONE-WORD ARGUMENTS"
 msgstr ""
 
-#: funmisc.c:970
+#: funmisc.c:964
 #, c-format
 msgid "I don't think #%d wants to hear from you."
 msgstr ""
 
-#: funmisc.c:1001 funmisc.c:1004
+#: funmisc.c:995 funmisc.c:998
 #, c-format
 msgid "Average: %.2f   Min: %u   Max: %u"
 msgstr ""
@@ -5725,7 +5725,7 @@ msgstr ""
 msgid "%d attributes wiped."
 msgstr ""
 
-#: speech.c:115 speech.c:155 speech.c:600 speech.c:1297
+#: speech.c:115 speech.c:155 speech.c:600 speech.c:1315
 msgid "You may not speak here!"
 msgstr ""
 
@@ -5756,7 +5756,7 @@ msgstr ""
 msgid "I can't find that room."
 msgstr ""
 
-#: speech.c:218 speech.c:1331 speech.c:1393
+#: speech.c:218 speech.c:1349 speech.c:1411
 msgid "You may not speak there!"
 msgstr ""
 
@@ -5815,7 +5815,7 @@ msgstr ""
 msgid "%s whispers%s."
 msgstr ""
 
-#: speech.c:561 speech.c:1328
+#: speech.c:561 speech.c:1346
 #, c-format
 msgid "I'm sorry, but %s wishes to be left alone now."
 msgstr ""
@@ -5836,100 +5836,100 @@ msgstr ""
 msgid "says"
 msgstr ""
 
-#: speech.c:806
+#: speech.c:810
 msgid "You haven't paged anyone since connecting."
 msgstr ""
 
-#: speech.c:811
+#: speech.c:816
 #, c-format
 msgid "You last paged %s."
 msgstr ""
 
-#: speech.c:824
+#: speech.c:830
 msgid "Try again after you get the pemit_all power."
-msgstr ""
-
-#: speech.c:836
-#, c-format
-msgid "I can't find who you're trying to page with: %s"
 msgstr ""
 
 #: speech.c:842
 #, c-format
+msgid "I can't find who you're trying to page with: %s"
+msgstr ""
+
+#: speech.c:848
+#, c-format
 msgid "I'm not sure who you want to page with: %s"
 msgstr ""
 
-#: speech.c:852
+#: speech.c:858
 #, c-format
 msgid "%s is not connected."
 msgstr ""
 
-#: speech.c:859
+#: speech.c:865
 #, c-format
 msgid "%s is not accepting any pages."
 msgstr ""
 
-#: speech.c:864
+#: speech.c:870
 #, c-format
 msgid "%s is not accepting your pages."
 msgstr ""
 
-#: speech.c:887
+#: speech.c:893
 msgid "You're trying to page too many people at once."
 msgstr ""
 
-#: speech.c:901
+#: speech.c:908
 #, c-format
 msgid "Unable to page:%s"
 msgstr ""
 
-#: speech.c:930
+#: speech.c:938
 msgid "You are set HAVEN and cannot receive pages."
 msgstr ""
 
-#: speech.c:988
+#: speech.c:989
 msgid "From afar"
 msgstr ""
 
-#: speech.c:990
+#: speech.c:991
 msgid " (to "
 msgstr ""
 
-#: speech.c:999
+#: speech.c:1000
 msgid " pages"
 msgstr ""
 
-#: speech.c:1116
+#: speech.c:1134
 msgid "From "
 msgstr ""
 
-#: speech.c:1322
+#: speech.c:1340
 msgid "I can't find that."
 msgstr ""
 
-#: speech.c:1325
+#: speech.c:1343
 msgid "There can't be anything in that!"
 msgstr ""
 
-#: speech.c:1337
+#: speech.c:1355
 #, c-format
 msgid "You remit, \"%s\" in %s"
 msgstr ""
 
-#: speech.c:1390
+#: speech.c:1408
 msgid "Too many containers."
 msgstr ""
 
-#: speech.c:1398
+#: speech.c:1416
 #, c-format
 msgid "You lemit: \"%s\""
 msgstr ""
 
-#: speech.c:1458
+#: speech.c:1476
 msgid "Invalid zone."
 msgstr ""
 
-#: speech.c:1467
+#: speech.c:1485
 #, c-format
 msgid "You zemit, \"%s\" in zone %s"
 msgstr ""

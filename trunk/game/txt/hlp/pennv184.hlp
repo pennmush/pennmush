@@ -1,0 +1,48 @@
+& 1.8.4p0
+& changes
+This is a list of changes in this patchlevel which are probably of
+interest to players. More information about new commands and functions
+can probably be gotten via 'help <name of whatever>'. 'help credits'
+lists the [initials] of developers and porters that are used in the list 
+of changes.
+
+Information about changes in prior releases can be found under
+help topics named for each release (e.g. 'help 1.7.2p30').
+A list of the patchlevels associated with each release can
+be read in 'help patchlevels'.
+
+Version 1.8.4 patchlevel 0                                 ??? ??,  2010
+
+Minor Changes:
+ * @shutdown/reboot logs who was responsible. Suggested by Kitai. [SW]
+ * Rewrite of help @lock to improve clarity, by Sketch.
+ * New NO_LOG flag to disable command logging on a per-object basis.
+   Based on code by Teal. [SW]
+ * mindb+maxdb classes for lsearch/@search no longer reset to default
+   values when > db_top or < 0 is given: Instead treated as an integer
+   comparison. [GM]
+   
+Commands:
+ * New @include <obj>/<attr> command, which inserts <attr> into the current
+   action list. Patch by Javelin.
+ * @scan can now take multiple switches at the same time. [MG]
+   
+Functions:
+ * Added strfirstof() and strallof(), which return the first arg/all args
+   which are non-empty strings. [MG]
+ * Added reglattr[p](), regxattr[p]() and regnattr[p](), regexp variants of 
+   lattr[p](), xattr[p]() and nattr[p](). Suggested by Trinsec. [MG]
+ * The *emit() functions, and cbufferadd(), are now disabled when
+   function_side_effects are off. Suggested by Cheetah. [MG]
+
+Attributes:
+ * @outpageformat lets you alter how you view pages that you send.
+
+Fixes:
+ * Minor bug in benchmark() fixed. [MG]
+ * channels(<object>) was incorrectly sorted for channel names containing
+   ansi. Reported by Trelane. [MG]
+ * Help fixes by Teal and others. [MG]
+ * Minor updates to some README files. [MG]
+ * Some typos and translation errors fixed by Stoko.
+

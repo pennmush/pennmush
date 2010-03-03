@@ -777,12 +777,6 @@ FUNCTION(fun_null)
 }
 
 /* ARGSUSED */
-FUNCTION(fun_atat)
-{
-  return;
-}
-
-/* ARGSUSED */
 FUNCTION(fun_list)
 {
   if (!args[0] || !*args[0])

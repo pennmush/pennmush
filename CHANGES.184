@@ -40,6 +40,9 @@ Functions:
  * The *emit() functions, and cbufferadd(), are now disabled when
    function_side_effects are off. Suggested by Cheetah. [MG]
 
+Attributes:
+ * @outpageformat lets you alter how you view pages that you send.
+
 Fixes:
  * Minor bug in benchmark() fixed. [MG]
  * channels(<object>) was incorrectly sorted for channel names containing

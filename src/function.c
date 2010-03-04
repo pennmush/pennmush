@@ -793,7 +793,7 @@ FUNTAB flist[] = {
   {"LN", fun_ln, 1, 1, FN_REG},
   {"PI", fun_pi, 0, 0, FN_REG},
   {"POWER", fun_power, 2, 2, FN_REG},
-  {"ROUND", fun_round, 2, 2, FN_REG},
+  {"ROUND", fun_round, 2, 3, FN_REG},
   {"SIN", fun_sin, 1, 2, FN_REG},
   {"SQRT", fun_sqrt, 1, 1, FN_REG},
   {"STDDEV", fun_stddev, 1, INT_MAX, FN_REG},

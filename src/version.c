@@ -20,6 +20,9 @@
 #include "confmagic.h"
 
 void do_version(dbref player);
+#ifndef SVNREVISION
+#define SVNREVISION "$Rev$"
+#endif
 
 /** The version command.
  * \param player the enactor.
@@ -38,7 +41,7 @@ do_version(dbref player)
   notify_format(player, T("PennMUSH version %s patchlevel %s %s"), VERSION,
                 PATCHLEVEL, PATCHDATE);
 #ifdef SVNREVISION
-  scan = sscanf(SVNREVISION, "$Rev: %d $", &svn);
+  scan = sscanf(SVNREVISION, "$Rev$", &svn);
   if (scan == 1)
     notify_format(player, T("SVN revision: %d"), svn);
 #endif

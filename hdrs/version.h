@@ -2,4 +2,3 @@
 #define PATCHLEVEL "13"
 #define PATCHDATE "[02/13/2010]"
 #define NUMVERSION 1008003013
-#define SVNREVISION "$Rev$"

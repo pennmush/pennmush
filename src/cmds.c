@@ -48,6 +48,8 @@ void do_scan(dbref player, char *command, int flag);
 void do_uptime(dbref player, int mortal);
 extern int config_set(const char *opt, char *val, int source, int restrictions);
 
+void do_list_allocations(dbref player);
+
 /** Is there a right-hand side of the equal sign? From command.c */
 extern int rhs_present;
 
@@ -545,6 +547,8 @@ COMMAND(cmd_list)
     do_list_flags("FLAG", player, arg_left, lc, T("Flags"));
   else if (SW_ISSET(sw, SWITCH_POWERS))
     do_list_flags("POWER", player, arg_left, lc, T("Powers"));
+  else if (SW_ISSET(sw, SWITCH_ALLOCATIONS))
+    do_list_allocations(player);
   else
     do_list(player, arg_left, lc);
 }

@@ -41,7 +41,7 @@ do_version(dbref player)
   notify_format(player, T("PennMUSH version %s patchlevel %s %s"), VERSION,
                 PATCHLEVEL, PATCHDATE);
 #ifdef SVNREVISION
-  scan = sscanf(SVNREVISION, "$Rev$", &svn);
+  scan = sscanf(SVNREVISION, "$" "Rev: %d $", &svn);
   if (scan == 1)
     notify_format(player, T("SVN revision: %d"), svn);
 #endif

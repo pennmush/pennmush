@@ -481,7 +481,7 @@ See also: firstof(), BOOLEAN VALUES, strallof(), filter()
   
   This is equivilent to last(sort(<word> ... <wordN>,a)).
 
-See also: alphamin()
+See also: alphamin(), max()
 & ALPHAMIN()
   alphamin(<word>[, ... , <wordN>])
 
@@ -491,7 +491,7 @@ See also: alphamin()
   
   This is equivilent to first(sort(<word> ... <wordN>,a)).
 
-See also: alphamax()
+See also: alphamax(), min()
 & AND()
 & CAND()
   and(<boolean1>, <boolean2>[, ... , <booleanN>])
@@ -2858,7 +2858,7 @@ See also: grab(), strmatch(), member(), WILDCARDS
   This function returns the largest number in its list of arguments.
   It can take any number of arguments.
   
-See also: min(), lmath(), bound()
+See also: min(), lmath(), bound(), alphamax()
 & MEAN()
   mean(<number>[, ... , <numberN>])
 
@@ -2928,7 +2928,7 @@ See also: left(), right(), delete()
   This function returns the smallest number in its list of arguments.
   It can take any number of arguments.
   
-See also: max(), lmath(), bound()
+See also: max(), lmath(), bound(), alphamin()
 & MIX()
  
   mix([<object>/]<attribute>, <list1>, <list2>[, ... , <list10>, <delim>])

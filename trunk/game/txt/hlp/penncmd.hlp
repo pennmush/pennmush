@@ -2019,22 +2019,18 @@ See also: @ps, QUEUE
   The @list command lists useful MUSH information.
 
   Switches include:
-  /motd      : Alias for @listmotd, shows current messages of the day.
-  /functions : Lists all built-in functions and @functions
-  /commands  : Lists all built-in commands
-  /attribs   : Lists all standard attributes
-  /locks     : Lists the built-in lock types
-  /flags     : Alias for @flag/list, shows all flags
-  /powers    : Alias for @powers/list, shows all powers
+  motd        : Alias for @listmotd, shows current messages of the day.
+  functions   : Lists all built-in functions and @functions.
+  commands    : Lists all built-in commands.
+  attribs     : Lists all standard attributes.
+  locks       : Lists the built-in lock types.
+  flags       : Alias for @flag/list, shows all flags.
+  powers      : Alias for @powers/list, shows all powers.
+  allocations : Information about memory allocations. Admin-only.
   
   By default, information is shown in upper-case. Add the /lowercase switch
   to show output in lowercase instead.
 
-  These admin-only commands require the use of '@list <what>' and don't work
-  as '@list/<what>':
-
-  allocations : Information about memory allocations.
-  
 See also: list(), @config, config(), functions(), @stats, @command,
     @function, @flag, @power, @attribute, @listmotd, @motd, locktypes
 & @listmotd

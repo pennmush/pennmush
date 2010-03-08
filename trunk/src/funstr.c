@@ -240,17 +240,10 @@ FUNCTION(fun_aposs)
 /* ARGSUSED */
 FUNCTION(fun_alphamax)
 {
-  char amax[BUFFER_LEN];
-  char *c;
   int j, m = 0;
-  size_t len;
 
-  c = remove_markup(args[0], &len);
-  memcpy(amax, c, len);
   for (j = 1; j < nargs; j++) {
-    c = remove_markup(args[j], &len);
-    if (strcoll(amax, c) < 0) {
-      memcpy(amax, c, len);
+    if (strcoll(args[m], args[j]) < 0) {
       m = j;
     }
   }
@@ -260,17 +253,10 @@ FUNCTION(fun_alphamax)
 /* ARGSUSED */
 FUNCTION(fun_alphamin)
 {
-  char amin[BUFFER_LEN];
-  char *c;
   int j, m = 0;
-  size_t len;
 
-  c = remove_markup(args[0], &len);
-  memcpy(amin, c, len);
   for (j = 1; j < nargs; j++) {
-    c = remove_markup(args[j], &len);
-    if (strcoll(amin, c) > 0) {
-      memcpy(amin, c, len);
+    if (strcoll(args[m], args[j]) > 0) {
       m = j;
     }
   }
@@ -490,25 +476,13 @@ FUNCTION(fun_comp)
   switch (type) {
   case 'A':                    /* Case-sensitive lexicographic */
     {
-      char left[BUFFER_LEN], right[BUFFER_LEN], *l, *r;
-      size_t llen, rlen;
-      l = remove_markup(args[0], &llen);
-      memcpy(left, l, llen);
-      r = remove_markup(args[1], &rlen);
-      memcpy(right, r, rlen);
-      safe_integer(comp_gencomp(executor, left, right, ALPHANUM_LIST), buff,
+      safe_integer(comp_gencomp(executor, args[0], args[1], ALPHANUM_LIST), buff,
                    bp);
       return;
     }
   case 'I':                    /* Case-insensitive lexicographic */
     {
-      char left[BUFFER_LEN], right[BUFFER_LEN], *l, *r;
-      size_t llen, rlen;
-      l = remove_markup(args[0], &llen);
-      memcpy(left, l, llen);
-      r = remove_markup(args[1], &rlen);
-      memcpy(right, r, rlen);
-      safe_integer(comp_gencomp(executor, left, right, INSENS_ALPHANUM_LIST),
+      safe_integer(comp_gencomp(executor, args[0], args[1], INSENS_ALPHANUM_LIST),
                    buff, bp);
       return;
     }
@@ -550,15 +524,11 @@ FUNCTION(fun_comp)
 /* ARGSUSED */
 FUNCTION(fun_pos)
 {
-  char tbuf[BUFFER_LEN];
   char *pos;
-  size_t len;
 
-  pos = remove_markup(args[1], &len);
-  memcpy(tbuf, pos, len);
-  pos = strstr(tbuf, remove_markup(args[0], NULL));
+  pos = strstr(args[1], args[0]);
   if (pos)
-    safe_integer(pos - tbuf + 1, buff, bp);
+    safe_integer(pos - args[1] + 1, buff, bp);
   else
     safe_str("#-1", buff, bp);
 }
@@ -566,17 +536,14 @@ FUNCTION(fun_pos)
 /* ARGSUSED */
 FUNCTION(fun_lpos)
 {
-  char *pos;
   char c = ' ';
-  size_t n, len;
-  int first = 1;
+  int first = 1, n;
 
   if (args[1][0])
-    c = remove_markup(args[1], &len)[0];
+    c = args[1][0];
 
-  pos = remove_markup(args[0], &len);
-  for (n = 0; n < len; n++)
-    if (pos[n] == c) {
+  for (n = 0; n < arglens[0]; n++)
+    if (args[0][n] == c) {
       if (first)
         first = 0;
       else
@@ -584,7 +551,6 @@ FUNCTION(fun_lpos)
       safe_integer(n, buff, bp);
     }
 }
-
 
 /* ARGSUSED */
 FUNCTION(fun_strmatch)
@@ -1443,20 +1409,16 @@ FUNCTION(fun_beep)
 
 FUNCTION(fun_ord)
 {
-  char *m;
-  size_t len = 0;
-  unsigned char what;
+
   if (!args[0] || !args[0][0]) {
     safe_str(T("#-1 FUNCTION (ORD) EXPECTS ONE CHARACTER"), buff, bp);
     return;
   }
-  m = remove_markup(args[0], &len);
-  what = (unsigned char) *m;
 
-  if (len != 2)                 /* len includes trailing nul */
-    safe_str(T("#-1 FUNCTION (ORD) EXPECTS ONE CHARACTER"), buff, bp);
-  else if (isprint(what) || what == '\n')
-    safe_integer(what, buff, bp);
+  if (arglens[0] != 1)                 /* len includes trailing nul */
+    safe_str(T("#-1 FUNCTION (ORD) EXPECTS ONE CHARACTER "), buff, bp);
+  else if (isprint((int) args[0][0]) || args[0][0] == '\n')
+    safe_integer(args[0][0], buff, bp);
   else
     safe_str(T("#-1 UNPRINTABLE CHARACTER"), buff, bp);
 }

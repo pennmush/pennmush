@@ -41,4 +41,8 @@ do_version(dbref player)
   notify_format(player, T("Compiler: %s"), COMPILER);
   notify_format(player, T("Compilation flags: %s"), CCFLAGS);
 #endif
+#ifdef SVNREVISION
+  if (strcmp(SVNREVISION, "$Rev"))
+    notify_format(player, T("SVN revision: %s"), SVNREVISION);
+#endif
 }

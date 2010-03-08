@@ -31,6 +31,8 @@ Commands:
  * New @include <obj>/<attr> command, which inserts <attr> into the current
    action list. Patch by Javelin.
  * @scan can now take multiple switches at the same time. [MG]
+ * @version now reports the SVN revision of the current version, when 
+   available. Suggested by Paige. [MG]
    
 Functions:
  * Added strfirstof() and strallof(), which return the first arg/all args

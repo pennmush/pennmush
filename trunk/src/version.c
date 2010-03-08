@@ -18,11 +18,9 @@
 #include "buildinf.h"
 #endif
 #include "confmagic.h"
+#include "svninfo.h"
 
 void do_version(dbref player);
-#ifndef SVNREVISION
-#define SVNREVISION "$Rev$"
-#endif
 
 /** The version command.
  * \param player the enactor.
@@ -31,9 +29,12 @@ void
 do_version(dbref player)
 {
 #ifdef SVNREVISION
-  int svn = 0;
+  int svnrev = 0;
   int scan;
-#endif
+#ifdef SVNDATE
+  char svndate[75];
+#endif /* SVNDATE */
+#endif /* SVNREVISION */
   notify_format(player, T("You are connected to %s"), MUDNAME);
   notify_format(player, T("Address: %s"), MUDURL);
   notify_format(player, T("Last restarted: %s"),
@@ -41,10 +42,21 @@ do_version(dbref player)
   notify_format(player, T("PennMUSH version %s patchlevel %s %s"), VERSION,
                 PATCHLEVEL, PATCHDATE);
 #ifdef SVNREVISION
-  scan = sscanf(SVNREVISION, "$" "Rev: %d $", &svn);
-  if (scan == 1)
-    notify_format(player, T("SVN revision: %d"), svn);
-#endif
+  scan = sscanf(SVNREVISION, "$" "Rev: %d $", &svnrev);
+  if (scan == 1) {
+#ifdef SVNDATE
+    scan = sscanf(SVNDATE, "$" "Date: %s $", svndate);
+    if (scan == 1)
+      notify_format(player, T("SVN revision: %d [%s]"), svnrev, svndate);
+    else
+      notify_format(player, T("SVN revision: %d"), svnrev);
+#else
+    notify_format(player, T("SVN revision: %d"), svnrev);
+#endif /* SVNDATE */
+  }
+#endif /* SVNREVISION */
+
+
 #ifdef WIN32
   notify_format(player, T("Build date: %s"), __DATE__);
 #else

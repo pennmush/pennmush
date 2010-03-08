@@ -677,39 +677,38 @@ static char *
 soundex(char *str)
 {
   static char tbuf1[BUFFER_LEN];
-  char *p, *q;
+  char *p;
 
-  q = remove_markup(str, NULL);
   memset(tbuf1, '\0', 4);
 
   p = tbuf1;
 
   /* First character is just copied */
-  *p = UPCASE(*q);
-  q++;
+  *p = UPCASE(*str);
+  str++;
   /* Special case for PH->F */
-  if ((UPCASE(*p) == 'P') && *q && (UPCASE(*q) == 'H')) {
+  if ((UPCASE(*p) == 'P') && *str && (UPCASE(*str) == 'H')) {
     *p = 'F';
-    q++;
+    str++;
   }
   p++;
   /* Convert letters to soundex values, squash duplicates, skip accents and other non-ascii characters */
-  while (*q) {
-    if (!isalpha((unsigned char) *q) || (unsigned char) *q > 127) {
-      q++;
+  while (*str) {
+    if (!isalpha((unsigned char) *str) || (unsigned char) *str > 127) {
+      str++;
       continue;
     }
-    *p = soundex_val[(unsigned char) *q++];
+    *p = soundex_val[(unsigned char) *str++];
     if (*p != *(p - 1))
       p++;
   }
   *p = '\0';
   /* Remove zeros */
-  p = q = tbuf1;
-  while (*q) {
-    if (*q != '0')
-      *p++ = *q;
-    q++;
+  p = str = tbuf1;
+  while (*str) {
+    if (*str != '0')
+      *p++ = *str;
+    str++;
   }
   *p = '\0';
   /* Pad/truncate to 4 chars */

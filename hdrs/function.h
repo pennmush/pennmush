@@ -36,6 +36,8 @@
 #define FN_LOCALIZE     0x4000
 /* Allowed in @function only */
 #define FN_USERFN     0x8000
+/* Strip ANSI/markup from function's arguments */
+#define FN_STRIPANSI  0x10000
 
 #ifndef HAVE_FUN_DEFINED
 typedef struct fun FUN;

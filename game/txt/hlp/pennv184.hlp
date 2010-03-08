@@ -34,6 +34,11 @@ Functions:
    lattr[p](), xattr[p]() and nattr[p](). Suggested by Trinsec. [MG]
  * The *emit() functions, and cbufferadd(), are now disabled when
    function_side_effects are off. Suggested by Cheetah. [MG]
+ * round() now takes an optional third argument to 0-pad the results if
+   needed. Suggested by Trinsec. [SW]
+ * Many functions (particularly ones which take only numbers, dbrefs or
+   attribute names as arguments) now ignore ANSI in their arguments, rather
+   than throwing an error. [MG]
 
 Attributes:
  * @outpageformat lets you alter how you view pages that you send.

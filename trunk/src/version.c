@@ -27,13 +27,21 @@ void do_version(dbref player);
 void
 do_version(dbref player)
 {
-
+#ifdef SVNREVISION
+  int svn = 0;
+  int scan;
+#endif
   notify_format(player, T("You are connected to %s"), MUDNAME);
   notify_format(player, T("Address: %s"), MUDURL);
   notify_format(player, T("Last restarted: %s"),
                 show_time(globals.start_time, 0));
   notify_format(player, T("PennMUSH version %s patchlevel %s %s"), VERSION,
                 PATCHLEVEL, PATCHDATE);
+#ifdef SVNREVISION
+  scan = sscanf(SVNREVISION, "$Rev: %d $", &svn);
+  if (scan == 1)
+    notify_format(player, T("SVN revision: %d"), svn);
+#endif
 #ifdef WIN32
   notify_format(player, T("Build date: %s"), __DATE__);
 #else
@@ -41,8 +49,5 @@ do_version(dbref player)
   notify_format(player, T("Compiler: %s"), COMPILER);
   notify_format(player, T("Compilation flags: %s"), CCFLAGS);
 #endif
-#ifdef SVNREVISION
-  if (strcmp(SVNREVISION, "$Rev"))
-    notify_format(player, T("SVN revision: %s"), SVNREVISION);
-#endif
+
 }

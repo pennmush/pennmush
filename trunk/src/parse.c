@@ -195,7 +195,7 @@ parse_boolean(char const *str)
      * Empty (or space only) strings are false, all other strings are true.
      */
     /* Null strings are false */
-    if (!clean || !*clean)
+    if (!clean[0])
       return 0;
     /* Negative dbrefs are false - actually anything starting #-,
      * which will also cover our error messages. */
@@ -205,7 +205,7 @@ parse_boolean(char const *str)
     if (is_strict_number(clean))
       return parse_number(clean) != 0;    /* avoid rounding problems */
     /* Skip blanks */
-    while (*clean == ' ')
+    while (clean[i] == ' ')
       i++;
     /* If there's any non-blanks left, it's true */
     return clean[i] != '\0';        /* force to 1 or 0 */

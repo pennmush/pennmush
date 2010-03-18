@@ -120,7 +120,7 @@ FUNCTION(fun_nattr)
   if (pattern)
     *pattern++ = '\0';
   else
-    pattern = "**";
+    pattern = (regexp ? "**" : "*");
   if (!strcmp(pattern, "**") || !strlen(pattern)) {
     regexp = 0;
     matchall = 1;
@@ -132,13 +132,8 @@ FUNCTION(fun_nattr)
     return;
   }
 
-
-  if (!doparent && matchall && Can_Examine(executor, thing)) {
-    safe_integer(AttrCount(thing), buff, bp);
-  } else {
-    safe_integer(atr_pattern_count(executor, thing, pattern, doparent,
+  safe_integer(atr_pattern_count(executor, thing, pattern, doparent,
                                    !Can_Examine(executor, thing), regexp), buff, bp);
-  }
 }
 
 /* ARGSUSED */

@@ -591,12 +591,14 @@ clone_object(dbref player, dbref thing, const char *newname, int preserve)
  * \param name the name of the object to clone.
  * \param newname the name to give the duplicate.
  * \param preserve if 1, preserve ownership and privileges on duplicate.
+ * \paran newdbref the (unparsed) dbref to give the object, or NULL to use the next free
  * \return dbref of the duplicate, or NOTHING.
  */
 dbref
-do_clone(dbref player, char *name, char *newname, int preserve)
+do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref)
 {
   dbref clone, thing;
+  dbref new;
   char dbnum[BUFFER_LEN];
 
   if (newname && *newname && !ok_name(newname)) {
@@ -624,6 +626,25 @@ do_clone(dbref player, char *name, char *newname, int preserve)
            T("You cannot @CLONE/PRESERVE. Use normal @CLONE instead."));
     return NOTHING;
   }
+
+  if (newdbref && *newdbref) {
+    /* move newdbref to the start of the free list */
+    if (!Wizard(player)) {
+      notify(player, T("Permission denied."));
+      return NOTHING;
+    }
+    new = parse_dbref(newdbref);
+    if (new == NOTHING || !GoodObject(new) || !IsGarbage(new)) {
+      notify(player, T("That is not a valid dbref."));
+      return NOTHING;
+    }
+
+    if (!make_first_free(new)) {
+      notify(player, T("Unable to create object with that dbref."));
+      return NOTHING;
+    }
+  }
+
   /* make sure owner can afford it */
   switch (Typeof(thing)) {
   case TYPE_THING:

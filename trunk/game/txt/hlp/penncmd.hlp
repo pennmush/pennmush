@@ -739,8 +739,8 @@ See also: ZONES, @chzoneall, zone()
   
 See also: @chzone, ZONES
 & @clone
-  @clone <object>[=<new name>]
-  @clone/preserve <object>[=<new name>]
+  @clone <object>[=<new name>[, <dbref>]]
+  @clone/preserve <object>[=<new name>[, <dbref>]]
 
   This command creates a copy of <object>. The clone will have the same name
   as the original unless a <new name> is given for it. You can only clone
@@ -759,6 +759,9 @@ See also: @chzone, ZONES
   Normally, the Wizard and Royalty flags, @powers and @warnings are stripped
   from the cloned object, but Wizards may use the /preserve flag to prevent
   this.
+  
+  The clone will normally be created with the first available dbref, but
+  Wizards may specify the <dbref> of a garbage object to use that instead.
 
   To clone a room and all its exits, use code like:
     > @teleport setq(0,%L)[clone(here)]
@@ -1060,7 +1063,7 @@ See also: ATTRIBUTES, NON-STANDARD ATTRIBUTES, @set
   creating the object. Otherwise, the object is given the next
   available dbref.
  
-See also: give, @quota, MONEY
+See also: give, @quota, MONEY, @clone, create(), @dig, @open
 & @dbck
   @dbck
   

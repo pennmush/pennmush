@@ -33,6 +33,8 @@ Commands:
  * @scan can now take multiple switches at the same time. [MG]
  * @version now reports the SVN revision of the current version, when 
    available. Suggested by Paige. [MG]
+ * @clone can take a garbage dbref for the new object, the same as @create.
+   Suggested by Dan. [MG]
    
 Functions:
  * Added strfirstof() and strallof(), which return the first arg/all args
@@ -48,6 +50,7 @@ Functions:
    than throwing an error. [MG]
  * nattr()'s <attribute pattern> now defaults to *, not **, the same as
    lattr() and other attribute functions. [MG]
+ * clone() can now take a <new name> and <dbref>, as per @clone. [MG]
 
 Attributes:
  * @outpageformat lets you alter how you view pages that you send.

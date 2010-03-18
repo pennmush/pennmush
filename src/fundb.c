@@ -2117,7 +2117,7 @@ FUNCTION(fun_clone)
     safe_str(T(e_perm), buff, bp);
     return;
   }
-  safe_dbref(do_clone(executor, args[0], NULL, 0), buff, bp);
+  safe_dbref(do_clone(executor, args[0], args[1], 0, args[2]), buff, bp);
 }
 
 

@@ -810,12 +810,17 @@ See also: @password, @newpassword
     > say chr(65)
     You say, "A"
 & CLONE()
-  clone(<object>)
+  clone(<object>[, <new name>[, <dbref>]])
  
-  This function clones <object>, and returns the dbref number of the
-  clone.
+  This function clones <object>, as per @clone, and returns the dbref number
+  of the clone, or #-1 if the object could not be cloned.
 
-  This is a side-effect function and may not be enabled on some MUSHes.
+  The clone will have the same name as the original object unless you give
+  a <new name> for it. Normally, the clone will be created with the first
+  available dbref, but wizards may give the <dbref> of a garbage object to
+  use instead.
+
+See also: @clone, create(), dig(), open()
 & CMDS()
   cmds(<player|descriptor>)
 

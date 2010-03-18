@@ -368,7 +368,7 @@ FUNTAB flist[] = {
   {"CHILDREN", fun_lsearch, 1, 1, FN_REG | FN_STRIPANSI},
   {"CHR", fun_chr, 1, 1, FN_REG | FN_STRIPANSI},
   {"CHECKPASS", fun_checkpass, 2, 2, FN_REG | FN_WIZARD | FN_STRIPANSI},
-  {"CLONE", fun_clone, 1, 1, FN_REG},
+  {"CLONE", fun_clone, 1, 3, FN_REG},
   {"CMDS", fun_cmds, 1, 1, FN_REG | FN_STRIPANSI},
   {"COMP", fun_comp, 2, 3, FN_REG | FN_STRIPANSI},
   {"CON", fun_con, 1, 1, FN_REG | FN_STRIPANSI},

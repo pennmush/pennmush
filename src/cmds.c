@@ -222,9 +222,9 @@ COMMAND(cmd_create)
 COMMAND(cmd_clone)
 {
   if (SW_ISSET(sw, SWITCH_PRESERVE))
-    do_clone(player, arg_left, arg_right, SWITCH_PRESERVE);
+    do_clone(player, arg_left, args_right[1], SWITCH_PRESERVE, args_right[2]);
   else
-    do_clone(player, arg_left, arg_right, SWITCH_NONE);
+    do_clone(player, arg_left, args_right[1], SWITCH_NONE, args_right[2]);
 }
 
 COMMAND(cmd_dbck)

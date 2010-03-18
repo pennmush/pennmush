@@ -118,7 +118,8 @@ COMLIST commands[] = {
   {"@CREATE", NULL, cmd_create,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED,
    0, 0},
-  {"@CLONE", "PRESERVE", cmd_clone, CMD_T_ANY | CMD_T_NOGAGGED | CMD_T_EQSPLIT,
+  {"@CLONE", "PRESERVE", cmd_clone,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED,
    0, 0},
 
   {"@CLOCK", "JOIN SPEAK MOD SEE HIDE", cmd_clock,

@@ -46,6 +46,8 @@ Functions:
  * Many functions (particularly ones which take only numbers, dbrefs or
    attribute names as arguments) now ignore ANSI in their arguments, rather
    than throwing an error. [MG]
+ * nattr()'s <attribute pattern> now defaults to *, not **, the same as
+   lattr() and other attribute functions. [MG]
 
 Attributes:
  * @outpageformat lets you alter how you view pages that you send.

@@ -51,6 +51,7 @@ Attributes:
  * @outpageformat lets you alter how you view pages that you send.
 
 Fixes:
+ * Possible crashbug in @destroy fixed. Reported by Dan. [MG]
  * Minor bug in benchmark() fixed. [MG]
  * channels(<object>) was incorrectly sorted for channel names containing
    ansi. Reported by Trelane. [MG]

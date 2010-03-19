@@ -173,15 +173,36 @@ do_real_open(dbref player, const char *direction, const char *linkto,
  * \endverbatim
  * \param player the enactor.
  * \param direction name of the exit forward.
- * \param links 1-based array containing name of destination and optionally name of exit back.
+ * \param links 1-based array, possibly containing name of destination, name of exit back,
+ * and room to open initial exit from.
  */
 void
 do_open(dbref player, const char *direction, char **links)
 {
   dbref forward;
-  forward = do_real_open(player, direction, links[1], NOTHING);
+  dbref source = NOTHING;
+  if (links[3]) {
+    source = match_result(player, links[3], TYPE_ROOM, MAT_HERE | MAT_ABSOLUTE | MAT_TYPE);
+    if (!GoodObject(source)) {
+      notify(player, T("Open from where?"));
+      return;
+    }
+  }
+
+  forward = do_real_open(player, direction, links[1], source);
   if (links[2] && GoodObject(forward) && GoodObject(Location(forward))) {
-    do_real_open(player, links[2], "here", Location(forward));
+    char sourcestr[SBUF_LEN]; /* SBUF_LEN is the size used by unparse_dbref */
+    if (!GoodObject(source)) {
+      if (IsRoom(player)) {
+        source = player;
+      } else if (IsExit(player)) {
+        source = Home(player);
+      } else {
+        source = Location(player);
+      }
+    }
+    strcpy(sourcestr, unparse_dbref(source));
+    do_real_open(player, links[2], sourcestr, Location(forward));
   }
 }
 

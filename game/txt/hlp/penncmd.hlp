@@ -2607,25 +2607,24 @@ See also: @emit, @pemit, NOSPOOF and SPOOFING.
   
 See also: go, @move, @omove, @amove
 & @open
-  @open <exit name>
-  @open <exit name>;<exit aliases>=<destination>
-  @open <exit name>;<exit aliases>=<destination>,<exit name>;<exit aliases>
+  @open <exit name>[=<destination>[, <return exit name>[, <source room>]]]
 
-  This command opens an exit in the room you are standing in with the 
-  specified name. You can then use the @link command to set the exit's
-  destination, or you can set it automatically by using the DBREF of a
-  destination, which can be a room or thing. (Note that you CANNOT open
-  exits from things.) If you also include the second exit name, an exit
-  from the destination room will be opened back to the room you are in.
-
-  NOTE: you can have as many exit aliases as you like by adding more,
-  separated by semicolons. An exit alias allows you to type that instead of 
-  the full exit name to go through the exit. Only the exit name appears in
-  the list of Obvious Exits in a room.
-
-  Ex: @open Up;u;climb = #255, Down;dow;do;d;fall
-
-See also: EXITS, @link, @dig
+  This command opens an exit, named <exit name>, in your current location,
+  or in <source room> if one is given. Exits can only be opened from rooms.
+  If a <destination> is given, the exit will be linked (as per @link) to
+  that object. If you don't have permission to link to <destination>, the
+  exit will be created but unlinked.
+  
+  If <return exit name> is given, the MUSH will attempt to open an exit back
+  from <destination> and link it to <exit name>'s source.
+  
+  Both <exit name> and <return exit name> can include any number of aliases
+  for the exits, separated by semicolons. See 'help @name' for details.
+  
+  Example:
+    > @open Up <U>;up;u;climb=#255, Down <D>;down;d;fall
+  
+See also: EXITS, @link, @dig, open()
 & @oxleave
   @oxleave <object> [= <message>]
 

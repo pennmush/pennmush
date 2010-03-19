@@ -72,6 +72,7 @@
 #include "flags.h"
 #include "lock.h"
 #include "confmagic.h"
+#include "parse.h"
 
 
 
@@ -878,6 +879,32 @@ clear_exit(dbref thing)
     Exits(loc) = remove_first(Exits(loc), thing);
   };
   giveto(Owner(thing), EXIT_COST);
+}
+
+int
+make_first_free_wrapper(dbref player, char *newdbref)
+{
+  dbref thing;
+
+  if (!newdbref || !*newdbref)
+    return 1;
+
+  if (!Wizard(player)) {
+    notify(player, T("Permission denied."));
+    return 0;
+  }
+  thing = parse_dbref(newdbref);
+  if (thing == NOTHING || !GoodObject(thing) || !IsGarbage(thing)) {
+    notify(player, T("That is not a valid dbref."));
+    return 0;
+  }
+
+  if (!make_first_free(thing)) {
+      notify(player, T("Unable to create object with that dbref."));
+    return 0;
+  }
+
+  return 1;
 }
 
 /** If object is in the free list, move it to the very beginning.

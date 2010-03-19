@@ -109,7 +109,7 @@ extern char errlog[BUFFER_LEN];
  */
 dbref
 do_pcreate(dbref creator, const char *player_name, const char *player_password,
-           const char *try_dbref)
+           char *try_dbref)
 {
   dbref player;
 
@@ -120,12 +120,11 @@ do_pcreate(dbref creator, const char *player_name, const char *player_password,
   if (!can_pay_fees(creator, 0))
     return NOTHING;
 
-  if (try_dbref && *try_dbref)
-    player = parse_dbref(try_dbref);
-  else
-    player = NOTHING;
+  if (!make_first_free_wrapper(creator, try_dbref)) {
+    return NOTHING;
+  }
 
-  player = create_player(player_name, player_password, "None", "None", player);
+  player = create_player(player_name, player_password, "None", "None");
   if (player == NOTHING) {
     notify_format(creator, T("Failure creating '%s' (bad name)"), player_name);
     return NOTHING;

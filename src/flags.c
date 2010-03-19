@@ -147,6 +147,7 @@ static FLAG flag_table[] = {
    F_INTERNAL | F_DARK},
   {"KEEPALIVE", 'k', TYPE_PLAYER, 0, F_ANY, F_ANY},
   {"NO_LOG", '\0', NOTYPE, 0, F_WIZARD | F_MDARK | F_LOG, F_WIZARD | F_MDARK},
+  {"OPEN_OK", '\0', TYPE_ROOM, 0, F_ANY, F_ANY},
   {NULL, '\0', 0, 0, 0, 0}
 };
 
@@ -872,6 +873,7 @@ flag_add_additional(FLAGSPACE *n)
     add_flag("LOUD", '\0', NOTYPE, F_ROYAL, F_ANY);
     add_flag("HEAR_CONNECT", '\0', TYPE_PLAYER, F_ROYAL, F_ANY);
     add_flag("NO_LOG", '\0', NOTYPE, F_WIZARD | F_MDARK | F_LOG, F_WIZARD | F_MDARK);
+    add_flag("OPEN_OK", '\0', TYPE_ROOM, F_ANY, F_ANY);
     if ((f = match_flag("LISTEN_PARENT")))
       f->type |= TYPE_PLAYER;
     if ((f = match_flag("TERSE")))

@@ -469,22 +469,8 @@ do_create(dbref player, char *name, int cost, char *newdbref)
     cost = OBJECT_COST;
   }
 
-  if (newdbref && *newdbref) {
-    /* move newdbref to the start of the free list */
-    if (!has_flag_by_name(player, "WIZARD", NOTYPE)) {
-      notify(player, T("Permission denied."));
-      return NOTHING;
-    }
-    thing = parse_dbref(newdbref);
-    if (thing == NOTHING || !GoodObject(thing) || !IsGarbage(thing)) {
-      notify(player, T("That is not a valid dbref."));
-      return NOTHING;
-    }
-
-    if (!make_first_free(thing)) {
-      notify(player, T("Unable to create object with that dbref."));
-      return NOTHING;
-    }
+  if (!make_first_free_wrapper(player, newdbref)) {
+    return NOTHING;
   }
 
   if (can_pay_fees(player, cost)) {
@@ -598,7 +584,6 @@ dbref
 do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref)
 {
   dbref clone, thing;
-  dbref new;
   char dbnum[BUFFER_LEN];
 
   if (newname && *newname && !ok_name(newname)) {
@@ -627,22 +612,8 @@ do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref)
     return NOTHING;
   }
 
-  if (newdbref && *newdbref) {
-    /* move newdbref to the start of the free list */
-    if (!Wizard(player)) {
-      notify(player, T("Permission denied."));
-      return NOTHING;
-    }
-    new = parse_dbref(newdbref);
-    if (new == NOTHING || !GoodObject(new) || !IsGarbage(new)) {
-      notify(player, T("That is not a valid dbref."));
-      return NOTHING;
-    }
-
-    if (!make_first_free(new)) {
-      notify(player, T("Unable to create object with that dbref."));
-      return NOTHING;
-    }
+  if (!make_first_free_wrapper(player, newdbref)) {
+    return NOTHING;
   }
 
   /* make sure owner can afford it */

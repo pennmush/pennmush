@@ -344,7 +344,7 @@ dbref lookup_player(const char *name);
 dbref lookup_player_name(const char *name);
 /* from player.c */
 dbref create_player(const char *name, const char *password,
-                    const char *host, const char *ip, dbref try_dbref);
+                    const char *host, const char *ip);
 dbref connect_player(const char *name, const char *password,
                      const char *host, const char *ip, char *errbuf);
 void check_last(dbref player, const char *host, const char *ip);
@@ -677,6 +677,7 @@ strdup(const char *s)
     void do_undestroy(dbref player, char *name);
     dbref free_get(void);
     int make_first_free(dbref object);
+    int make_first_free_wrapper(dbref player, char *newdbref);
     void fix_free_list(void);
     void purge(void);
     void do_purge(dbref player);

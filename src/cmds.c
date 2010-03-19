@@ -792,7 +792,7 @@ COMMAND(cmd_password)
 
 COMMAND(cmd_pcreate)
 {
-  const char *newdbref;
+  char *newdbref;
 
   if (args_right[2] && *args_right[2])
     newdbref = args_right[2];

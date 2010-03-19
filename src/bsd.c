@@ -2619,7 +2619,7 @@ check_connect(DESC *d, const char *msg)
                 user, d->addr, d->descriptor);
       return 0;
     }
-    player = create_player(user, password, d->addr, d->ip, NOTHING);
+    player = create_player(user, password, d->addr, d->ip);
     if (player == NOTHING) {
       queue_string_eol(d, T(create_fail));
       do_rawlog(LT_CONN,

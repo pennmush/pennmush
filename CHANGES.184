@@ -26,6 +26,8 @@ Minor Changes:
  * mindb+maxdb classes for lsearch/@search no longer reset to default
    values when > db_top or < 0 is given: Instead treated as an integer
    comparison. [GM]
+ * @open can now open exits in remove locations, as well as your current
+   location. Suggested by Bane. [MG]
    
 Commands:
  * New @include <obj>/<attr> command, which inserts <attr> into the current

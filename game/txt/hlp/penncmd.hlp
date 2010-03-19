@@ -680,7 +680,7 @@ See also: use, @ause, ACTION LISTS
     > @chown here=me (for a room)
     > @chown box=Soundwave (for a thing)
 
-See also: CHOWN_OK, Zone Masters, @chownall
+See also: CHOWN_OK, Zone Masters, @chownall, owner()
 & @chownall
   @chownall[/preserve] <player>[=<new owner>]
 
@@ -820,6 +820,7 @@ See also: @create, clone(), create(), @cpattr
   are never case-sensitive.
 
   See 'help @command3' for examples.
+See also: @hook, RESTRICT, EVALUATION ORDER
 & @command3
   Examples:
     > @create Dining Machine
@@ -839,8 +840,6 @@ See also: @create, clone(), create(), @cpattr
     Walker drinks aet.
     > drink/noeval reverse(tea)
     Walker drinks reverse(tea).
-
-See also: @hook, RESTRICT, EVALUATION ORDER
 & @comment
   @comment <object>[=<comment>]
 
@@ -1051,19 +1050,19 @@ See also: ATTRIBUTES, NON-STANDARD ATTRIBUTES, @set
 & @create
   @create <name>[=<cost>[,<dbref>]]
 
-  Creates a thing with the specified name. Creating a thing costs
-  a certain amount of MUSH money, which usually defaults to 10 pennies (see
-  '@config object_cost'). You can specify a higher cost if you wish, but not
-  a lower one. This cost is refunded if you @destroy the thing.
+  This command creates a new thing called <name>. Creating an object costs
+  a certain number of pennies (see '@config object_cost'); you can specify
+  a higher cost if you wish. This cost is refunded to you when the object 
+  is destroyed.
 
-  Some MUSHes choose to limit the number of objects you can create by setting
-  a quota.
+  Some MUSHes choose to limit the number of objects you can create by
+  setting a quota.
   
   Wizards can also specify the <dbref> of a garbage object to use when
   creating the object. Otherwise, the object is given the next
   available dbref.
  
-See also: give, @quota, MONEY, @clone, create(), @dig, @open
+See also: give, @quota, MONEY, @clone, create(), @dig, @open, @pcreate
 & @dbck
   @dbck
   
@@ -1090,13 +1089,13 @@ See also: give, @quota, MONEY, @clone, create(), @dig, @open
   @decompile[/<switches>] <object>[=<prefix>]
   @decompile[/<switches>] <object>/<attribute patterns>[=<prefix>]
 
-  This command produces a list of the commands that you would have to
-  enter in order to recreate <object>. Useful for either copying objects
-  from one MUSH to another, or for making logs of important objects to
-  protect against an accidental @nuke or a crash.
+  @decompile outputs a list of the commands that you would have to enter 
+  in order to recreate <object>. Useful for either copying objects from 
+  one MUSH to another, or for making logs of important objects to protect 
+  against an accidental @nuke or a crash.
 
-  If a <prefix> is given, all output lines will be prefixed with <prefix>.
-  This is useful for creating client-side scripts for editting code.
+  All output lines are prefixed with <prefix>, if one is given. This is
+  useful for creating client-side scripts for editing code.
 
   You can either @decompile an entire object, or just certain parts of it.
   To @decompile just a few attributes, for example, you could type:
@@ -1167,10 +1166,10 @@ See also: CLIENTS, ATTRIBUTES, WILDCARDS, MUSHCODE
   The description can be formatted using the @descformat attribute. This is
   particularly useful for @parents and ancestors.
   
-  When inside a thing or player, you will see it's @idescribe instead, if
+  When inside a thing or player, you will see its @idescribe instead, if
   one is set.
 
-  @describe can be abbreviated as @desc
+  @describe can be abbreviated as @desc.
 
 See also: look, @adescribe, @idescribe, @descformat
 & @destroy
@@ -1199,7 +1198,7 @@ See also: look, @adescribe, @idescribe, @descformat
   
   When an object is destroyed, any commands, @waits and semaphores it has
   queued are drained, and the object's owner has the quota for the object,
-  and the cost of creating it initially, refunded.
+  and the initial cost of creating it, refunded.
   
   Continued in 'help @destroy2'.
 & @destroy2
@@ -1230,19 +1229,19 @@ See also: @create, @dig, @open, DESTROY_OK, SAFE
   /teleport switch is given, you will be teleported to the room after it's
   created, as per the @teleport command.
   
-  If <exit to> is given, the MUSH will automatically open an exit named from
-  your current location to the new room named <exit to>, if you have
-  permission. You can also specify <exit from>, to create an exit from the 
-  new room back to your current location. Opening exists also costs pennies; 
-  see '@config exit_cost'. The exit names may contain multiple aliases,
-  separated with semicolons.
+  If <exit to> is given, the MUSH will automatically open an exit from your 
+  current location to the new room named <exit to>, if you have permission. 
+  You can also specify <exit from>, to create an exit from the new room back 
+  to your current location. Opening exists also costs pennies; see 
+  '@config exit_cost'. The exit names may contain multiple aliases, separated 
+  with semicolons, as per 'help @name'.
   
   See 'help @dig2' for examples.
 & @dig2
   Examples: 
     > @dig Kitchen
   This command will create a new room named 'Kitchen'. You will be informed
-  what the dbref# of this room is.
+  what the dbref of this room is.
 
     > @dig Kitchen=Kitchen <N>;n;north;kitchen;k
   This will create the room as above, and also open an exit leading to it 
@@ -1254,7 +1253,7 @@ See also: @create, @dig, @open, DESTROY_OK, SAFE
   exit named "Out <S>" with the aliases s, south, out and o coming back from
   the kitchen to whatever room you are currently in.
 
-See also: @open, @link, EXITS, @create, DBREF
+See also: @open, @link, EXITS, @create, DBREF, dig()
 & @doing
   @doing <message>
   @doing/header <message>
@@ -1274,7 +1273,7 @@ See also: @poll, WHO, doing()
   in which case it is a <delim>-separated list.
   
   If the string "##" appears anywhere in <action list>, it will be replaced
-  with the current element of <list>. The string "##" is replaced with the
+  with the current element of <list>. The string "#@" is replaced with the
   position of the current element in the list.
  
   If the /notify switch is given, the command "@notify me" is queued after 
@@ -1301,7 +1300,7 @@ See also: iter(), map(), @notify, SEMAPHORES, ACTION LISTS
   If the /all switch is given, then all queue entries associated with the
   selected semaphore(s) are discarded, and the semaphore attribute(s)
   are cleared.  Otherwise, only the indicated <number> of queue entries are
-  discarded.  If no <number> is given, then the /all switch is assumed.
+  discarded. If no <number> is given, then the /all switch is assumed.
 
   You may not specify both the /any switch and a specific attribute.
   Similarly, you may not specify both the /all switch and a number.
@@ -1328,7 +1327,7 @@ See also: SEMAPHORES, @wait, @notify
   configured to do forking dumps (see "@config forking_dump").
   
   These switches should ONLY be used if a normal @dump is not being done
-  correctly. They should generally only be done by wizards with  access to 
+  correctly. They should generally only be done by wizards with access to 
   the account on which the MUSH is running, since others will not have 
   access to the checkpoint log file.
 
@@ -1539,7 +1538,8 @@ See also: EXITS, @open, @link
   
   See 'help @filter2' for an example.
   
-See also: AUDIBLE, @infilter, attribute flags, LISTENING, @forwardlist
+See also: AUDIBLE, @infilter, attribute flags, LISTENING, @forwardlist,
+  @prefix
 & @filter2
 
   Example: 
@@ -1572,7 +1572,8 @@ See also: AUDIBLE, @infilter, attribute flags, LISTENING, @forwardlist
   results more complexly.
 
 See also: @search, lsearch(), @entrances
-& @FORWARDLIST
+& @forwardlist
+& forwardlist
   @forwardlist <object>[=<list of dbrefs>]
 
   If <object> is set AUDIBLE, any sound it hears which passes its @filter
@@ -1586,12 +1587,14 @@ See also: @search, lsearch(), @entrances
   control you, use @lock/forward me=$me)
 
 See also: @filter, @prefix, AUDIBLE, PUPPET, @debugforwardlist, @lock
-& @DEBUGFORWARDLIST
-& DEBUGFORWARDLIST
+& @debugforwardlist
+& debugforwardlist
   @debugforwardlist <object>[=<list of dbrefs>]
 
-  When <object> is set DEBUG, the debug output is forwarded to all the dbrefs
-  in its @debugforwardlist attribute.
+  When <object> has an @debugforwardlist attribute set, any debug output it
+  produces (either because it has the DEBUG flag set, or because an attribute
+  with the DEBUG attribute flag is evaluated) is forwarded to all the dbrefs
+  listed in the debugforwardlist.
 
   The @debugforwardlist must be a space-seperated list of dbrefs. In order to 
   forward to an object, you must either control it, have the pemit_all power, 
@@ -1611,10 +1614,9 @@ See also: DEBUG, @forwardlist, @lock
   Continued in 'help @force2'.
 & @force2
 
-  Normally, the action list is parsed for function evaluation and
-  substitutions twice - once when @force is run, once when <object> runs the 
-  action list. If the /noeval switch is given, <action list> is not evaluated
-  until it is run by <object>.
+  Normally, the action list is evaluated twice - once when @force is run, and 
+  again when <object> runs the action list. If the /noeval switch is given, 
+  <action list> is not evaluated until it is run by <object>.
 
   Examples:
     > @create Lackey
@@ -1627,7 +1629,7 @@ See also: DEBUG, @forwardlist, @lock
     > #103 page Cyclonus=Whee
     Lackey pages: Whee
 
-See also: PUPPET, DBREF
+See also: PUPPET, DBREF, objeval()
 & @flag
   @flag <flag name>
   @flag/list [<flag name pattern>]
@@ -1658,7 +1660,9 @@ See also: PUPPET, DBREF
       flag table. It requires the exact flag name or alias to be used.
       Be very very careful with this. 
 
-See also: help flags. See help @flag2 for information on @flag/add
+  See 'help @flag2' for information on @flag/add.
+  
+See also: FLAGS, @set, @power, flag permissions
 & @flag2
   @flag/add is used to add a new flag with the given name. Arguments
   other than the flag name are optional:
@@ -1694,7 +1698,7 @@ See also: help flags. See help @flag2 for information on @flag/add
   can see the flag on an <object>, and are given along with the
   <setperms> in @flag/add. By default, anyone can see the flag:
 
-   dark        <actor> must be Only God (#1) to see the flag on objects.
+   dark        <actor> must be Only God (#1) to see the flag on objects
    mdark       <actor> must be WIZARD or ROYALTY 
    odark       <actor> must own the <object> (or be WIZARD or ROYALTY)
 
@@ -1705,9 +1709,9 @@ See also: help flags. See help @flag2 for information on @flag/add
 
 & @function
   @function [<function name>]
-  @function[/preserve] <name>=<obj>,<attrib>[,<min args>,
-     <max args>[,<restrictions>]]
-    or @function <function name>=<object>/<attribute>
+  @function[/preserve] <name>=<obj>, <attrib>[, <min args>,
+     <max args>[, <restrictions>]]
+  @function <function name>=<object>/<attribute>
   @function/<switch> <function name>
   @function/restrict[/builtin] <function name>=<restrictions>
   
@@ -1720,14 +1724,15 @@ See also: help flags. See help @flag2 for information on @flag/add
   how that function is parsed, and how many arguments it takes.
   
   <switch> can be one of:
-  /disable, to disable a built in function.
+  /disable, to disable a built-in function.
   /enable, to re-enable it.
   /delete, to remove a user-defined function.
   /restrict, to change the restriction flags on an existing function.
 
   Otherwise, this command defines a global function with the name
   <function name>, which evaluates to <attribute> on <object>.
-(continued in help @function2)
+  
+  Continued in 'help @function2'.
 & @function2
   <object> can be anything that the player using the @function command
   controls (if safer_ufun is enabled) or can examine (if not).
@@ -1752,113 +1757,116 @@ See also: help flags. See help @flag2 for information on @flag/add
   Example:
   
     > &WORD_CONCAT #10=%0 %1
-    > say "[ufun(#10/word_concat,foo,bar)]
+    > say u(#10/word_concat, foo, bar)
     You say, "foo bar"
   
-    > @function word_concat = #10, word_concat
-    > say "[word_concat(foo,bar)]
+    > @function word_concat=#10, word_concat
+    > say word_concat(foo,bar)
     You say, "foo bar"
  
-(continued in help @function3)
+  Continued in 'help @function3'.
 & @function3
   Global user-defined functions are not automatically loaded when the
   game is restarted. In order to avoid objects which attempt to use
   functions that have not been loaded, a @startup containing @function
   commands should be set on a wizard object with as low a dbref number
-  as possible; object #1 (generally God) is suggested for this use.
+  as possible; God (#1) is suggested for this use.
 
   For example, if you have one object that stores all your global
   functions, you could set the following command (the object is #100
   in the example):
 
-    @startup #1=@dol lattr(#100)=@function ##=#100,##
+    @startup #1=@dolist lattr(#100)=@function ##=#100,##
 
   And then store each function as an attribute of the same name on
   object #100.
-(continued in help @function4)
+  
+  Continued in 'help @function4'.
 & @function4
- Normally, built in functions cannot be overriden by @functions.
- However, if a built-in function is deleted with @function/delete, you
- can then make a @function with the same name. "Deleted" built-ins can
- still be called through the FN() function, and can have restrictions
- applied with @function/restrict/builtin.  @function/restore will
- delete the @function and turn the built in version back on.
+  Normally, built in functions cannot be overriden by @functions. However,
+  if a built-in function is deleted with @function/delete, you can then 
+  make a @function with the same name. "Deleted" built-ins can still be
+  called through the FN() function, and can have restrictions applied with 
+  @function/restrict/builtin.  @function/restore will delete the @function
+  and turn the built in version back on.
 
- Using @function on an already-added @function will delete the old one
- and install a new function with none of the settings of the old one
- kept.
+  Using @function on an already-added @function will delete the old one and 
+  install a new function with none of the settings of the old one kept.
 
- For example:
-  @function/delete ansi
-  &ansi_fun #1234=%1
-  @function ansi=#1234, ansi_fun, 2, -2, noguest
+  Example:
+    > @function/delete ansi
+    > &ansi_fun #1234=%1
+    > @function ansi=#1234, ansi_fun, 2, -2, noguest
 
- will create a new version of ansi() that doesn't do any colorization,
- and that needs two arguments, like the built-in version. It will be
- restricted to non-guest players.
+  This creates a new version of ansi() that doesn't do any colorization,
+  and that needs two arguments, like the built-in version. It will be
+  restricted to non-guest players.
 
 See also: RESTRICT, FUNCTIONS, @startup, fn()
 & @grep
   @grep[/<switch>] <object>[/<attrs>]=<pattern>
   
-  This command searches attributes in an object for <pattern>. It takes
-  four switches:
+  This command searches attributes in an object for <pattern>. You must be
+  able to examine <object>. @grep takes four switches:
   @grep/list
     Lists the names of the attributes on the object containing <pattern>.
+    This is the default.
   @grep/ilist
     Same as above, but is case-insensitive when trying to match <pattern>.
   @grep/print
-    Prints out all the attributes, highlighting the pattern itself in 
-    boldface, if you're ANSI.
+    Prints out all the attributes, ansi-highlighting the pattern itself.
   @grep/iprint
     Same as above, case-insensitive.
 
-  When used without a switch, @grep defaults to @grep/list.
-(continued in help @grep2)
+  Continued in 'help @grep2'.
 & @grep2
 
-  You must be able to see attributes on <object> (i.e. you must control
-  the object, it must be VISUAL, or you must be a Wizard or Royalty).
- 
-  <attrs> is an optional wildcard pattern specifying attributes to
-  match (much like @edit). If <attrs> is not provided, all attributes
-  are assumed (just as if you had provided "*").
+  <attrs> is an optional wildcard pattern specifying attributes to check. If
+  <attrs> is not provided, it defaults to "*". Note that this does not
+  include attribute trees; use "**" to check branch attributes as well.
    
   <pattern> is not treated as a wildcard pattern, so you can grep for
   patterns containing '*', '?', etc.  Also, <pattern> is NOT PARSED,
   so '[v(0)]' and the like can be searched for.
+  
+See also: grep(), wildgrep(), regrep(), WILDCARDS
 & @halt
 & @allhalt
-  @halt <object> [=<new_command>] 
+  @halt <object>[=<action list>] 
   @halt/pid <pid>
   @halt/all
   @allhalt
  
-  The @halt command removes all queued actions for <object>.  If <new
-  command> is specified, that new command is placed in the queue for
-  the object instead. If no new command is specified, the object is
-  set HALT.
+  The @halt command removes all queued actions for <object>.  If given,
+  <action list> is placed in the queue for the object instead. If no action
+  list is specified, the object is set HALT.
 
-  If <object> is a player, it clears the queue for the player and and
-  all of his objects. You can use "@halt me" to clear your own queue
-  without setting yourself HALT.
+  If <object> is a player, it clears the queue for the player and all of 
+  his objects. You can use "@halt me" to clear your own queue without 
+  setting yourself HALT.
 
-  Only wizards and objects with the halt @power can @halt other
-  player's objects. Note that halting an object does NOT affect any
-  objects waiting on it as a semaphore.
+  Only wizards and objects with the halt @power can @halt other player's 
+  objects. Note that halting an object does NOT affect any objects waiting 
+  on it as a semaphore.
 
-  @halt/pid will cancel a single queue entry with the given pid (The
+  @halt/pid will cancel a single queue entry with the given pid (the
   number in parenthesis before it in @ps). You must control the object
   that queued the command or have the halt power to do this.
 
-  @halt/all is a synonym for @allhalt and is a wizard-only command
+  @halt/all is a synonym for @allhalt, and is a wizard-only command
   which halts all objects in the game in an effort to free up the queue.
+  
+See also: @wait, @ps, SEMAPHORES, @drain, @notify
 & @haven
-  @haven <player> = <message>
+  @haven <player>[=<message>]
 
-  This message is sent to a player whose pages you are refusing, either
-  through use of the HAVEN flag or through the use of a page lock, if
-  it evaluates to something non-null.
+  When someone attempts to page <player> and is unable to, either because
+  <player> is set HAVEN or because of his page lock, they will be shown
+  <message>, if it evaluates to something non-null.
+
+  Example:
+    > @set me=HAVEN
+    > @haven me=I'm AFK and can't answer pages. Please @mail instead.
 
 See also: HAVEN, page, @lock, @away
 & @hide
@@ -1882,26 +1890,24 @@ See also: hidden(), WHO, lwho(), lports(), ports()
 & @idescribe
 & @oidescribe
 & @aidescribe
-  @idescribe <object> [=<description>]
-  @oidescribe <object> [=<message>]
-  @aidescribe <object> [=<action list>]
+  @idescribe <object>[=<description>]
+  @oidescribe <object>[=<message>]
+  @aidescribe <object>[=<action list>]
 
   @idescribe command sets the internal description for an object, which is 
-  shown to anyone who enters or looks while inside the object. Meaningless 
-  for rooms and exits. May be abbreviated to @idesc.
-
-  @oidescribe sets the message seen by others when someone looks at the 
-  idesc, and @aidescribe sets the action the object will take (just as 
-  with @desc, @odesc, @adesc). 
-
-  If there is no IDESCRIBE set for an object, those who enter or look 
-  inside it will see its @desc, and no o-message or action will be
-  available. If you want to use @aidescribe without @idescribe, set 
-  @idescribe to a blank string.
-
-  If [=<description>] or [=<message>] omitted, the attribute will be 
-  reset.
+  shown to anyone who enters or looks while inside the object. It's only 
+  used for players and things; rooms and exits always use @describe.
   
+  The @oidescribe attribute is shown to others inside <object> when someone
+  looks at the @idescribe, and the @aidescribe is triggered when someone
+  lookst at the @idescribe.
+
+  If there is no IDESCRIBE set for an object, those who enter or look inside
+  it will see its @describe. In this case, others in the object will see 
+  nothing, and the @aidescribe will not be triggered. If you want to use 
+  @aidescribe without @idescribe, set @idescribe to a blank string, or to
+  u(describe) to show the description.
+
 See also: enter, @enter, ENTER_OK, @describe, look, @idescformat
 & @hook
   @hook/<switch> <command>[=<object>, <attribute>]
@@ -2467,7 +2473,7 @@ See also: @log
 
 See also: message(), @chatformat, @pageformat
 & @motd
-  @motd[/<switch>] [<message>].  
+  @motd[/<switch>] [<message>]
  
   The default for this command (and with the /connect) switch, is a
   wizard only command that will set a temporary message that 

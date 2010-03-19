@@ -433,9 +433,16 @@ See also: DARK
   If a room or object is LINK_OK, anyone can link exits to it (but
   still not from it). Also, LINK_OK overrides the TRUST protection
   against @trigger (although not @force or @set). This also allows
-  others to @parent their objects to the thing set LINK_OK.
+  others to @parent their objects to the object set LINK_OK.
 
-  See @link, TRUST, @parent, PARENTS
+See also: @link, TRUST, @parent, PARENTS, OPEN_OK
+& OPEN_OK
+  Flag: OPEN_OK  (rooms)
+  
+  When set on a room, anyone who passes the rooms @lock/open can open
+  exits in the room with @open (or move exits to the room with @teleport).
+  
+See also: @open, LINK_OK
 & MONITOR
   Flag:  MONITOR  (players, things, rooms)
  

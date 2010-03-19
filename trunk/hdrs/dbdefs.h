@@ -138,6 +138,7 @@ extern dbref first_free;        /* pointer to free list */
 #define Inherit(x)      (has_flag_by_name(x, "TRUST", NOTYPE))
 #define Light(x)        (has_flag_by_name(x, "LIGHT", NOTYPE))
 #define LinkOk(x)       (has_flag_by_name(x, "LINK_OK", NOTYPE))
+#define OpenOk(x)       (has_flag_by_name(x, "OPEN_OK", TYPE_ROOM))
 #define Loud(x)         (has_flag_by_name(x, "LOUD", NOTYPE))
 #define Mistrust(x)     (has_flag_by_name(x, "MISTRUST", TYPE_THING|TYPE_EXIT|TYPE_ROOM))
 #define NoCommand(x)    (has_flag_by_name(x, "NO_COMMAND", NOTYPE))

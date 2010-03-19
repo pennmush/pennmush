@@ -28,7 +28,9 @@ Minor Changes:
    comparison. [GM]
  * @open can now open exits in remove locations, as well as your current
    location. Suggested by Bane. [MG]
-   
+ * New OPEN_OK flag allows anyone to open exits in a room, and @lock/open
+   to restrict who can. Based on patch by ranmir@M*U*S*H. [MG]   
+
 Commands:
  * New @include <obj>/<attr> command, which inserts <attr> into the current
    action list. Patch by Javelin.

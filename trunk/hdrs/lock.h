@@ -118,5 +118,6 @@ extern lock_type Destroy_Lock;  /* Who can @dest me if I'm dest_ok? */
 extern lock_type Interact_Lock;
 extern lock_type MailForward_Lock;      /* Who can forward mail to me */
 extern lock_type Take_Lock;     /* Who can take from the contents of this object? */
+extern lock_type Open_Lock;     /* who can @open exits in this room? */
 
 #endif                          /* __LOCK_H */

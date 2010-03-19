@@ -2374,7 +2374,7 @@ See also: @lock, locktypes, @clock, objid()
 & locklist
 & lock types
 & lock list
-  Your MUSH will almost certainly support these standard lock types:
+  These are the standard lock types supported by PennMUSH:
 
   @lock/basic           Who can pick up the player/object, or go through
                         the exit.
@@ -2386,6 +2386,7 @@ See also: @lock, locktypes, @clock, objid()
   @lock/parent          Who can @parent something to this object/room
   @lock/link            Who can @link something to this object/room
                         or who can @link this unlinked exit.
+  @link/open            Who can @open an exit from this room
   @lock/mail            Who can @mail the player
   @lock/user:<name>     User-defined. No built-in function of this lock,
                         but users can test it with elock()
@@ -2620,7 +2621,11 @@ See also: go, @move, @omove, @amove
   
   Both <exit name> and <return exit name> can include any number of aliases
   for the exits, separated by semicolons. See 'help @name' for details.
-  
+
+  To open an exit in a room, you must control the room, have the 
+  Open_Anywhere @power, or the room must be set OPEN_OK and you must pass
+  its @lock/open.
+
   Example:
     > @open Up <U>;up;u;climb=#255, Down <D>;down;d;fall
   

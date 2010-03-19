@@ -79,6 +79,7 @@ lock_type Destroy_Lock = "Destroy"; /**< Name of destroy lock */
 lock_type Interact_Lock = "Interact"; /**< Name of interaction lock */
 lock_type MailForward_Lock = "MailForward"; /**< Name of mailforward lock */
 lock_type Take_Lock = "Take"; /**< Name of take lock */
+lock_type Open_Lock = "Open"; /**< Name of open lock */
 
  /** Table of lock names and permissions */
 lock_list lock_types[] = {
@@ -107,6 +108,7 @@ lock_list lock_types[] = {
   {"Interact", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {"MailForward", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {"Take", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
+  {"Open", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {NULL, TRUE_BOOLEXP, GOD, 0, NULL}
 };
 

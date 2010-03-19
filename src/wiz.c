@@ -437,8 +437,8 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
       /* Unlike normal teleport, you must control the destination
        * or have the open_anywhere power
        */
-      if (!(tport_control_ok(player, victim, loc) &&
-            (controls(player, destination) || Open_Anywhere(player)))) {
+      if (!tport_control_ok(player, victim, loc) ||
+          !can_open_from(player, destination)) {
         notify(player, T("Permission denied."));
         return;
       }

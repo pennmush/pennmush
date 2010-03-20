@@ -472,7 +472,6 @@ realloc_object_flag_bitmasks(FLAGSPACE *n)
 {
   dbref it;
   object_flag_type p;
-  COMMAND_INFO *command;
   int numbytes = (n->flagbits + 7) / 8;
 
   for (it = 0; it < db_top; it++) {
@@ -485,26 +484,6 @@ realloc_object_flag_bitmasks(FLAGSPACE *n)
     }
     /* Zero them out */
     memset(p, 0, 1);
-  }
-  /* We also need to make sure that all the command flagmasks are
-   * reallocated!
-   */
-  command = (COMMAND_INFO *) ptab_firstentry(&ptab_command);
-  while (command) {
-    if (n->tab == &ptab_flag && command->flagmask) {
-      command->flagmask =
-        (object_flag_type) realloc(command->flagmask, numbytes);
-      /* Zero them out */
-      p = command->flagmask + numbytes - 1;
-      memset(p, 0, 1);
-    }
-    if (n->tab == &ptab_power && command->powers) {
-      command->powers = (object_flag_type) realloc(command->powers, numbytes);
-      /* Zero them out */
-      p = command->powers + numbytes - 1;
-      memset(p, 0, 1);
-    }
-    command = (COMMAND_INFO *) ptab_nextentry(&ptab_command);
   }
 }
 
@@ -2660,7 +2639,47 @@ list_all_flags(const char *ns, const char *name, dbref privs, int which)
   return buf;
 }
 
+char *
+flag_list_to_lock_string(object_flag_type flags, object_flag_type powers)
+{
+  FLAGSPACE *n;
+  FLAG *f;
+  int i, first = 1;
+  char buff[BUFFER_LEN];
+  char *bp;
 
+  bp = buff;
+  if (flags) {
+    Flagspace_Lookup(n, "FLAG");
+    for (i = 0; i < n->flagbits; i++) {
+      if ((f = n->flags[i]) && has_bit(flags, f->bitpos)) {
+        if (!first)
+          safe_chr('|', buff, &bp);
+        safe_format(buff, &bp, "FLAG^%s", f->name);
+        first = 0;
+      }
+    }
+  }
+
+  if (powers) {
+    Flagspace_Lookup(n, "POWER");
+    for (i = 0; i < n->flagbits; i++) {
+      if ((f = n->flags[i]) && has_bit(powers, f->bitpos)) {
+        if (!first)
+          safe_chr('|', buff, &bp);
+        safe_format(buff, &bp, "POWER^%s", f->name);
+        first = 0;
+      }
+    }
+  }
+
+  if (first) {
+    return "";
+  }
+
+  *bp = '\0';
+  return tprintf("(%s)", buff);
+}
 
 
 /*--------------------------------------------------------------------------
@@ -2682,34 +2701,6 @@ power_description(dbref player, dbref thing)
   safe_str(bits_to_string("POWER", Powers(thing), player, thing), buf, &bp);
   *bp = '\0';
   return buf;
-}
-
-/** Show the flags and powers associated with a command.
- * \param flagmask the command's flagmask.
- * \param powers the command's power mask.
- * \return string output of powers and flags.
- */
-const char *
-show_command_flags(object_flag_type flagmask, object_flag_type powers)
-{
-  static char fbuf[BUFFER_LEN];
-  char *bp;
-  bp = fbuf;
-  if (powers) {
-    safe_str("Powers     : ", fbuf, &bp);
-    safe_str(bits_to_string("POWER", powers, GOD, NOTHING), fbuf, &bp);
-  }
-
-  /* do generic flags */
-  if (flagmask) {
-    if (powers)
-      safe_chr('\n', fbuf, &bp);
-    safe_str("Flags      : ", fbuf, &bp);
-    safe_str(bits_to_string("FLAG", flagmask, GOD, NOTHING), fbuf, &bp);
-  }
-
-  *bp = '\0';
-  return fbuf;
 }
 
 /** Lookup table for good_flag_name */

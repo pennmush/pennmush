@@ -930,6 +930,7 @@ int
 config_set(const char *opt, char *val, int source, int restrictions)
 {
   PENNCONF *cp;
+  COMMAND_INFO *command;
   char *p;
 
   if (!val)
@@ -942,7 +943,14 @@ config_set(const char *opt, char *val, int source, int restrictions)
     for (p = val; *p && !isspace((unsigned char) *p); p++) ;
     if (*p) {
       *p++ = '\0';
-      if (!restrict_command(val, p)) {
+      command = command_find(val);
+      if (!command) {
+        if (source == 0) {
+          do_rawlog(LT_ERR,
+                    "CONFIG: Invalid command or restriction for %s.", val);
+        }
+        return 0;
+      } else if (!restrict_command(NOTHING, command, p)) {
         if (source == 0) {
           do_rawlog(LT_ERR,
                     "CONFIG: Invalid command or restriction for %s.", val);

@@ -1,6 +1,7 @@
 #ifndef __COMMAND_H
 #define __COMMAND_H
 
+#include "boolexp.h"
 
 typedef uint8_t *switch_mask;
 extern int switch_bytes;
@@ -131,8 +132,7 @@ struct command_info {
   const char *restrict_message; /**< Message sent when command is restricted */
   command_func func;    /**< Function to call when command is run */
   unsigned int type;    /**< Types of objects that can use the command */
-  object_flag_type flagmask;    /**< Flags to which the command is restricted */
-  object_flag_type powers;      /**< Powers to which the command is restricted */
+  boolexp cmdlock;      /**< Boolexp restricting who can use command */
   /** Switches for this command. */
   union {
     switch_mask mask;       /**< Bitflags of switches this command can take */
@@ -150,7 +150,7 @@ struct command_info {
 
 typedef struct command_list COMLIST;
 /** A command list entry.
- * This structure stores the static array of commands that are 
+ * This structure stores the static array of commands that are
  * initially loaded into the command table. Commands can also be
  * added dynamically, outside of this array.
  */
@@ -204,11 +204,10 @@ COMMAND_INFO *command_add
   (const char *name, int type, const char *flagstr, const char *powers,
    const char *switchstr, command_func func);
 COMMAND_INFO *make_command
-  (const char *name, int type, object_flag_type flagmask,
-   object_flag_type powers, const char *sw, command_func func);
+  (const char *name, int type, const char *flagstr,
+   const char *powerstr, const char *sw, command_func func);
 COMMAND_INFO *command_modify(const char *name, int type,
-                             object_flag_type flagmask,
-                             object_flag_type powers, switch_mask sw,
+                             boolexp key, switch_mask sw,
                              command_func func);
 void reserve_alias(const char *a);
 int alias_command(const char *command, const char *alias);
@@ -225,7 +224,7 @@ void do_list_commands(dbref player, int lc);
 char *list_commands(void);
 int command_check_byname(dbref player, const char *name);
 int command_check_byname_quiet(dbref player, const char *name);
-int restrict_command(const char *name, const char *restriction);
+int restrict_command(dbref player, COMMAND_INFO *command, const char *restriction);
 void reserve_aliases(void);
 void local_commands(void);
 void do_command_add(dbref player, char *name, int flags);

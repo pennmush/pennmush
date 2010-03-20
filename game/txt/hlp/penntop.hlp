@@ -2069,19 +2069,24 @@ This is the AHELP index.
  @function.
  
  In the config file, the syntax is:
-  restrict_command command-name restriction [" <error message>]
-  restrict_function function-name restriction
+  restrict_command <command-name> <restriction> [" <error message>]
+  restrict_function <function-name> <restriction>
 
  From the game:
-  @command/restrict command-name=restriction [" <error message>]
-  @function/restrict function-name=restriction
+  @command/restrict <command-name>=<restriction> [" <error message>]
+  @function/restrict <function-name>=<restriction>
  
 For commands, if <error message> is given, that message is sent to the
 player who runs it instead of a generic, unhelpful error message.
 
-(Continued in restrict2)
+  Continued in 'help restrict2'.
 & RESTRICT2
- <restriction> can be one of the following:
+
+  For commands, <restriction> should be an @lock-style boolexp (though,
+  for backwards compatability, the restrictions below can be used, and will
+  be converted into an @lock automatically). For functions, <restriction>
+  should be any combination of the phrases below.
+
    god        Command or function is usable only by God.
    wizard     Usable only by wizards.
    admin      Usable only by Wiz/Roy.
@@ -2090,27 +2095,43 @@ player who runs it instead of a generic, unhelpful error message.
    noguest    Usable only by non-guest @powered objects.
    nobody     Nothing can use it. Same as the /disable switch
               to @command or @function.
+   logname    When used, log cmd/fun name, and who is using it
+   logargs    When used, log cmd/fun name and args, and who is using it
+              
+ Functions only:             
    noparse    Function arguments are not evaluated. Only applies
               to @functions.
    localize   %q-registers are saved/restored when evaluating, as if
               the @function were wrapped in localize().
    userfn     Function can only be called from within an @function.
 
- Commands can also use the 'noplayer' restriction, which stops player
- objects from using the command, as well as any generic <flag> or any
- <power>.
+  Commands only:
+   noplayer   Cannot be used by players.
+  Commands can also give any flag, power or type, to restrict to
+   objects with one of those flags or powers, or of one of those types.
 
-(Continued in restrict3)
+  Continued in 'help restrict3'.
 & RESTRICT3
- In cases where there are a function and command that do the same
- thing (Like pemit() and @pemit), the command's restrictions are also
- checked when the function is called, so restricting @pemit also
- restricts pemit(). However, a function's restrictions are not checked
- when a command is called, to allow disabling side-effect functions.
+  In cases where there are a function and command that do the same
+  thing (like pemit() and @pemit), the command's restrictions are also
+  checked when the function is called, so to use pemit() you must also be
+  able to use @pemit. However, a function's restrictions are not checked
+  when a command is called, to allow disabling side-effect functions.
 
- Some functions (Like name()) have non-side-effect and side-effect
- versions depending on how many arguments they're called with. The
- side-effect version can be disabled while keeping the safe
- non-side-effect form with the 'nosidefx' restriction. This can also
- be used to disable pure side-effect functions.
+  Some functions (like name()) have non-side-effect and side-effect
+  versions depending on how many arguments they're called with. The
+  side-effect version can be disabled while keeping the safe
+  non-side-effect form with the 'nosidefx' restriction. This can also
+  be used to disable pure side-effect functions.
+ 
+  Examples:
+  Only allow admin to use ansi():
+    > @function/restrict ansi=admin
+    
+  Don't let anyone set SUSPECT or GAGGED use @emit, and log the name of
+  anyone who uses it.
+    > @command/restrict @emit=logname
+    > @command/restrict @emit=!flag^suspect&!flag^gagged
+
+See also: @command, @function, @lock
 

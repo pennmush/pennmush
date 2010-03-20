@@ -18,6 +18,10 @@ chronological order (most recent first)
 
 Version 1.8.4 patchlevel 0                                 ??? ??,  2010
 
+Major Changes:
+ * Commands can now be restricted with an @lock-style lock in restrict.cnf
+   and @command/restrict, allowing more complex restrictions. [MG]
+
 Minor Changes:
  * @shutdown/reboot logs who was responsible. Suggested by Kitai. [SW]
  * Rewrite of help @lock to improve clarity, by Sketch.

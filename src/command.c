@@ -70,6 +70,7 @@ int run_hook(dbref player, dbref cause, struct hook_data *hook,
 
 int run_hook_override(COMMAND_INFO *cmd, dbref player, const char *commandraw);
 
+const char *CommandLock = "CommandLock";
 
 /** The list of standard commands. Additional commands can be added
  * at runtime with add_command().
@@ -484,15 +485,15 @@ SW_BY_NAME(switch_mask sw, const char *name)
  * for local hacks - use command_add() instead.
  * \param name command name.
  * \param type types of objects that can use the command.
- * \param flagmask mask of flags (one is sufficient to use the command).
- * \param powers mask of powers (one is sufficient to use the command).
+ * \param flagstr list of flags names to restrict command
+ * \param powerstr list of power names to restrict command
  * \param sw mask of switches the command accepts.
  * \param func function to call when the command is executed.
  * \return pointer to a newly allocated COMMAND_INFO structure.
  */
 COMMAND_INFO *
 make_command(const char *name, int type,
-             object_flag_type flagmask, object_flag_type powers,
+             const char *flagstr, const char *powerstr,
              const char *sw, command_func func)
 {
   COMMAND_INFO *cmd;
@@ -502,8 +503,6 @@ make_command(const char *name, int type,
   cmd->restrict_message = NULL;
   cmd->func = func;
   cmd->type = type;
-  cmd->flagmask = flagmask;
-  cmd->powers = powers;
   switch (command_state) {
   case CMD_LOAD_BUILTIN:
     cmd->sw.names = sw;
@@ -537,6 +536,14 @@ make_command(const char *name, int type,
   cmd->hooks.ignore.attrname = NULL;
   cmd->hooks.override.obj = NOTHING;
   cmd->hooks.override.attrname = NULL;
+  if (!flagstr && !powerstr)
+    restrict_command(NOTHING, cmd, "");
+  else if (!flagstr)
+    restrict_command(NOTHING, cmd, powerstr);
+  else if (!powerstr)
+    restrict_command(NOTHING, cmd, flagstr);
+  else
+    restrict_command(NOTHING, cmd, tprintf("%s %s", flagstr, powerstr));
   return cmd;
 }
 
@@ -554,14 +561,8 @@ COMMAND_INFO *
 command_add(const char *name, int type, const char *flagstr,
             const char *powerstr, const char *switchstr, command_func func)
 {
-  object_flag_type flagmask = NULL, powers = NULL;
-
-  if (flagstr)
-    flagmask = string_to_bits("FLAG", flagstr);
-  if (powerstr)
-    powers = string_to_bits("POWER", powerstr);
   ptab_insert_one(&ptab_command, name,
-                  make_command(name, type, flagmask, powers, switchstr, func));
+                  make_command(name, type, flagstr, powerstr, switchstr, func));
   return command_find(name);
 }
 
@@ -612,15 +613,14 @@ command_find_exact(const char *name)
  * in the table, and if it's there, modify the parameters.
  * \param name name of command to modify.
  * \param type new types for command, or -1 to leave unchanged.
- * \param flagmask new mask of flags for command, or NULL to leave unchanged.
- * \param powers new mask of powers for command, or NULL to leave unchanged.
+ * \param key new boolexp to restrict command, or NULL to leave unchanged.
  * \param sw new mask of switches for command, or NULL to leave unchanged.
  * \param func new function to call, or NULL to leave unchanged.
  * \return pointer to modified command entry, or NULL.
  */
 COMMAND_INFO *
 command_modify(const char *name, int type,
-               object_flag_type flagmask, object_flag_type powers,
+               boolexp key,
                switch_mask sw, command_func func)
 {
   COMMAND_INFO *cmd;
@@ -629,10 +629,8 @@ command_modify(const char *name, int type,
     return NULL;
   if (type != -1)
     cmd->type = type;
-  if (flagmask)
-    cmd->flagmask = flagmask;
-  if (powers)
-    cmd->powers = powers;
+  if (key)
+    cmd->cmdlock = key;
   if (sw)
     SW_COPY(cmd->sw.mask, sw);
   if (func)
@@ -736,8 +734,7 @@ command_init_preconfig(void)
     }
     ptab_insert(&ptab_command, cmd->name,
                 make_command(cmd->name, cmd->type,
-                             string_to_bits("FLAG", cmd->flagstr),
-                             string_to_bits("POWER", cmd->powers),
+                             cmd->flagstr, cmd->powers,
                              cmd->switches, cmd->func));
   }
   ptab_end_inserts(&ptab_command);
@@ -1422,6 +1419,10 @@ generic_command_failure(dbref player, dbref cause, char *string)
   }
 }
 
+#define add_restriction(r, j) \
+        if(lockstr != tp) \
+          safe_chr(j, lockstr, &tp); \
+        safe_str(r, lockstr, &tp)
 
 /** Add a restriction to a command.
  * Given a command name and a restriction, apply the restriction to the
@@ -1447,18 +1448,23 @@ generic_command_failure(dbref player, dbref cause, char *string)
  * \retval 0 failure (unable to find command name).
  */
 int
-restrict_command(const char *name, const char *xrestriction)
+restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
 {
-  COMMAND_INFO *command;
   struct command_perms_t *c;
   char *message, *restriction, *rsave;
   int clear;
-  FLAG *mask;
-  FLAG *powers;
+  FLAG *f;
+  char lockstr[BUFFER_LEN];
   char *tp;
+  boolexp key;
+  object_flag_type flags = new_flag_bitmask("FLAG");
+  object_flag_type powers = new_flag_bitmask("POWER");
 
-  if (!name || !*name || !xrestriction || !*xrestriction ||
-      !(command = command_find(name)))
+  if (!command)
+    return 0;
+
+  /* Allow empty restrictions when we first load commands, as we parse off the CMD_T_* flags */
+  if (GoodObject(player) && (!xrestriction || !*xrestriction))
     return 0;
 
   if (command->restrict_message) {
@@ -1473,6 +1479,15 @@ restrict_command(const char *name, const char *xrestriction)
       command->restrict_message = mush_strdup(message, "cmd_restrict_message");
   }
 
+  key = parse_boolexp(player, restriction, CommandLock);
+  if (key != TRUE_BOOLEXP) {
+    /* A valid boolexp lock. Hooray. */
+    command->cmdlock = key;
+    mush_free(rsave, "rc.string");
+    return 1;
+  }
+
+  /* Parse old-style restriction into a boolexp */
   while (restriction && *restriction) {
     if ((tp = strchr(restriction, ' ')))
       *tp++ = '\0';
@@ -1491,44 +1506,89 @@ restrict_command(const char *name, const char *xrestriction)
 
     /* Gah. I love backwards compatiblity. */
     if (!strcasecmp(restriction, "admin")) {
-      FLAG *roy = match_flag("ROYALTY");
-      FLAG *wiz = match_flag("WIZARD");
-      if (clear && command->flagmask) {
-        clear_flag_bitmask(command->flagmask, roy->bitpos);
-        clear_flag_bitmask(command->flagmask, wiz->bitpos);
+
+      if (clear) {
+        f = match_flag("ROYALTY");
+        clear_flag_bitmask(flags, f->bitpos);
+        f = match_flag("WIZARD");
+        clear_flag_bitmask(flags, f->bitpos);
       } else {
-        if (!command->flagmask)
-          command->flagmask = new_flag_bitmask("FLAG");
-        set_flag_bitmask(command->flagmask, roy->bitpos);
-        set_flag_bitmask(command->flagmask, wiz->bitpos);
+        f = match_flag("ROYALTY");
+        set_flag_bitmask(flags, f->bitpos);
+        f = match_flag("WIZARD");
+        set_flag_bitmask(flags, f->bitpos);
       }
     } else if ((c = ptab_find(&ptab_command_perms, restriction))) {
+      /* Although all of these are stored in command->type, most are later parsed into the boolexp, and not checked for in ->type again */
       if (clear)
         command->type &= ~c->type;
       else
         command->type |= c->type;
-    } else if ((mask = match_flag(restriction))) {
-      if (clear && command->flagmask)
-        clear_flag_bitmask(command->flagmask, mask->bitpos);
+    } else if ((f = match_flag(restriction))) {
+      if (clear)
+        clear_flag_bitmask(flags, f->bitpos);
       else {
-        if (!command->flagmask)
-          command->flagmask = new_flag_bitmask("FLAG");
-        set_flag_bitmask(command->flagmask, mask->bitpos);
+        set_flag_bitmask(flags, f->bitpos);
       }
-    } else if ((powers = match_power(restriction))) {
-      if (clear && command->powers)
-        clear_flag_bitmask(command->powers, powers->bitpos);
+    } else if ((f = match_power(restriction))) {
+      if (clear)
+        clear_flag_bitmask(powers, f->bitpos);
       else {
-        if (!command->powers)
-          command->powers = new_flag_bitmask("POWER");
-        set_flag_bitmask(command->powers, powers->bitpos);
+        set_flag_bitmask(powers, f->bitpos);
       }
     }
     restriction = tp;
   }
+
   mush_free(rsave, "rc.string");
+
+  /* And now format what we have into a lock string */
+  tp = lockstr;
+  safe_str(flag_list_to_lock_string(flags, powers), lockstr, &tp);
+  if ((command->type & CMD_T_ANY) != CMD_T_ANY) {
+    char join = '(';
+    int close = !(lockstr == tp);
+    /* Type-locked command */
+    if (command->type & CMD_T_PLAYER) {
+      add_restriction("TYPE^PLAYER", join);
+      join = '|';
+    }
+    if (command->type & CMD_T_THING) {
+      add_restriction("TYPE^THING", join);
+      join = '|';
+    }
+    if (command->type & CMD_T_ROOM) {
+      add_restriction("TYPE^ROOM", join);
+      join = '|';
+    }
+    if (command->type & CMD_T_EXIT) {
+      add_restriction("TYPE^EXIT", join);
+      join = '|';
+    }
+    if (close && join != '(')
+      safe_chr(')', lockstr, &tp);
+  }
+  if (command->type & CMD_T_GOD) {
+    add_restriction(tprintf("=#%d", GOD), '&');
+  }
+  if (command->type & CMD_T_NOGUEST) {
+    add_restriction("!POWER^GUEST", '&');
+  }
+  if (command->type & CMD_T_NOGAGGED) {
+    add_restriction("!FLAG^GAGGED", '&');
+  }
+  if (command->type & CMD_T_NOFIXED) {
+    add_restriction("!FLAG^FIXED", '&');
+  }
+  /* CMD_T_DISABLED and CMD_T_LOG* are still checked for in command->types */
+  *tp = '\0';
+  key = parse_boolexp(player, lockstr, CommandLock);
+
+  command->cmdlock = key;
   return 1;
 }
+
+#undef add_restriction
 
 /** Command stub for \@command/add-ed commands.
  * This does nothing more than notify the player
@@ -1725,7 +1785,7 @@ COMMAND(cmd_command)
         return;
       }
 
-      if (!restrict_command(arg_left, arg_right))
+      if (!restrict_command(player, command, arg_right))
         notify(player, T("Restrict attempt failed."));
     }
 
@@ -1738,35 +1798,12 @@ COMMAND(cmd_command)
     notify_format(player,
                   T("Name       : %s (%s)"), command->name,
                   (command->type & CMD_T_DISABLED) ? "Disabled" : "Enabled");
-    if ((command->type & CMD_T_ANY) == CMD_T_ANY)
-      safe_strl("Any", 3, buff, &bp);
-    else {
-      buff[0] = '\0';
-      if (command->type & CMD_T_ROOM)
-        strccat(buff, &bp, "Room");
-      if (command->type & CMD_T_THING)
-        strccat(buff, &bp, "Thing");
-      if (command->type & CMD_T_EXIT)
-        strccat(buff, &bp, "Exit");
-      if (command->type & CMD_T_PLAYER)
-        strccat(buff, &bp, "Player");
-    }
-    *bp = '\0';
-    notify_format(player, T("Types      : %s"), buff);
     buff[0] = '\0';
     bp = buff;
     if (command->type & CMD_T_SWITCHES)
       strccat(buff, &bp, "Switches");
-    if (command->type & CMD_T_NOGAGGED)
-      strccat(buff, &bp, "Nogagged");
-    if (command->type & CMD_T_NOFIXED)
-      strccat(buff, &bp, "Nofixed");
-    if (command->type & CMD_T_NOGUEST)
-      strccat(buff, &bp, "Noguest");
     if (command->type & CMD_T_EQSPLIT)
       strccat(buff, &bp, "Eqsplit");
-    if (command->type & CMD_T_GOD)
-      strccat(buff, &bp, "God");
     if (command->type & CMD_T_LOGARGS)
       strccat(buff, &bp, "LogArgs");
     else if (command->type & CMD_T_LOGNAME)
@@ -1774,7 +1811,7 @@ COMMAND(cmd_command)
     *bp = '\0';
     notify_format(player, T("Restrict   : %s"), buff);
     buff[0] = '\0';
-    notify(player, show_command_flags(command->flagmask, command->powers));
+    notify_format(player, T("Lock       : %s"), unparse_boolexp(player, command->cmdlock, UB_DBREF));
     if (command->sw.mask) {
       bp = buff;
       for (sw_val = dyn_switch_list; sw_val->name; sw_val++)
@@ -1816,7 +1853,6 @@ COMMAND(cmd_command)
     do_hook_list(player, arg_left);
   }
 }
-
 
 /** Display a list of defined commands.
  * This function sends a player the list of commands.
@@ -1868,77 +1904,22 @@ list_commands(void)
 static int
 command_check(dbref player, COMMAND_INFO *cmd, int noisy)
 {
-  int ok;
-  const char *mess = NULL;
-  int check_flags, check_powers;
 
   /* If disabled, return silently */
   if (cmd->type & CMD_T_DISABLED)
     return 0;
-  if ((cmd->type & CMD_T_NOGAGGED) && Gagged(player)) {
-    mess = T("You cannot do that while gagged.");
-    goto send_error;
-  }
-  if ((cmd->type & CMD_T_NOFIXED) && Fixed(player)) {
-    mess = T("You cannot do that while fixed.");
-    goto send_error;
-  }
-  if ((cmd->type & CMD_T_NOGUEST) && Guest(player)) {
-    mess = T("Guests cannot do that.");
-    goto send_error;
-  }
-  if ((cmd->type & CMD_T_GOD) && (!God(player))) {
-    mess = T("Only God can do that.");
-    goto send_error;
-  }
-  switch (Typeof(player)) {
-  case TYPE_ROOM:
-    ok = (cmd->type & CMD_T_ROOM);
-    break;
-  case TYPE_THING:
-    ok = (cmd->type & CMD_T_THING);
-    break;
-  case TYPE_EXIT:
-    ok = (cmd->type & CMD_T_EXIT);
-    break;
-  case TYPE_PLAYER:
-    ok = (cmd->type & CMD_T_PLAYER);
-    break;
-  default:
-    ok = 0;
-  }
-  if (!ok) {
-    mess = T("Permission denied, command is type-restricted.");
-    goto send_error;
-  }
-  /* A command can specify required flags or powers, and if
-   * any match, the player is ok to do the command.
-   */
-  ok = 1;
-  check_flags = cmd->flagmask && !null_flagmask("FLAG", cmd->flagmask);
-  check_powers = cmd->powers && !null_flagmask("POWER", cmd->powers);
 
-  if (check_flags && check_powers)
-    ok = !!(has_any_flags_by_mask(player, cmd->flagmask)
-            || has_any_powers_by_mask(player, cmd->powers));
-  else if (check_flags)
-    ok = !!(has_any_flags_by_mask(player, cmd->flagmask));
-  else if (check_powers)
-    ok = !!(has_any_powers_by_mask(player, cmd->powers));
-  if (!ok) {
-    mess = T("Permission denied.");
-    goto send_error;
+  if (eval_boolexp(player, cmd->cmdlock, player)) {
+    return 1;
+  } else {
+    if (noisy) {
+      if (cmd->restrict_message)
+        notify(player, cmd->restrict_message);
+      else
+        notify(player, T("Permission denied."));
+    }
+    return 0;
   }
-  return ok;
-
-send_error:
-  if (noisy) {
-    if (cmd->restrict_message)
-      notify(player, cmd->restrict_message);
-    else if (mess)
-      notify(player, mess);
-  }
-  return 0;
 }
 
 /** Determine whether a player can use a command.

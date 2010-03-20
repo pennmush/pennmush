@@ -1867,7 +1867,7 @@ FUNCTION(fun_namelist)
   int first = 1;
   char *current;
   dbref target;
-  const char *start;
+  char *start;
   int report = 0;
   ufun_attrib ufun;
   char *wenv[2];
@@ -1881,12 +1881,12 @@ FUNCTION(fun_namelist)
     }
   }
 
-  start = args[0];
+  start = trim_space_sep(args[0], ' ');
   while (start && *start) {
     if (!first)
-      safe_str(" ", buff, bp);
+      safe_chr(' ', buff, bp);
     first = 0;
-    current = next_in_list(&start);
+    current = split_token(&start, ' ');
     if (*current == '*')
       current = current + 1;
     target = lookup_player(current);

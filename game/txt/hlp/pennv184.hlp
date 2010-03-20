@@ -66,4 +66,5 @@ Fixes:
  * Help fixes by Teal and others. [MG]
  * Minor updates to some README files. [MG]
  * Some typos and translation errors fixed by Stoko.
+ * namelist() now ignores null items. Reported by Minion. [MG]
 

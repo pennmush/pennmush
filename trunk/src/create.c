@@ -347,7 +347,7 @@ do_link(dbref player, const char *name, const char *room_name, int preserve)
     case TYPE_PLAYER:
     case TYPE_THING:
       if ((room =
-           noisy_match_result(player, room_name, NOTYPE, MAT_EVERYTHING)) < 0) {
+           noisy_match_result(player, room_name, NOTYPE, MAT_EVERYTHING)) == NOTHING) {
         notify(player, T("No match."));
         return;
       }

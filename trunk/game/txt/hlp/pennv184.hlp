@@ -70,3 +70,5 @@ Fixes:
  * namelist() now ignores null items. Reported by Minion. [MG]
  * The matching code would always perform absolute (dbref) matches, even
    when it wasn't told to. [MG]
+ * Improvements to the match flags used by many pieces of code, hopefully
+   fixing a number of minor bugs. [MG]

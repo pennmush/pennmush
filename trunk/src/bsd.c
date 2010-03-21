@@ -4013,7 +4013,7 @@ FUNCTION(fun_nwho)
       return;
     }
     if ((victim = noisy_match_result(executor, args[0], NOTYPE,
-                                     MAT_EVERYTHING)) == 0) {
+                                     MAT_EVERYTHING)) == NOTHING) {
       safe_str(T(e_notvis), buff, bp);
       return;
     }
@@ -4048,7 +4048,7 @@ FUNCTION(fun_lwho)
       return;
     }
     if ((victim = noisy_match_result(executor, args[0], NOTYPE,
-                                     MAT_EVERYTHING)) == 0) {
+                                     MAT_EVERYTHING)) == NOTHING) {
       safe_str(T(e_notvis), buff, bp);
       return;
     }
@@ -4156,7 +4156,7 @@ lookup_desc(dbref executor, const char *name)
     dbref target = lookup_player(name);
     if (target == NOTHING) {
       target = match_result(executor, name, TYPE_PLAYER,
-                            MAT_ABSOLUTE | MAT_PLAYER | MAT_ME);
+                            MAT_ABSOLUTE | MAT_PLAYER | MAT_ME | MAT_TYPE);
     }
     if (!GoodObject(target) || !Connected(target))
       return NULL;
@@ -4635,7 +4635,7 @@ FUNCTION(fun_ports)
   target = lookup_player(args[0]);
   if (target == NOTHING) {
     target = match_result(executor, args[0], TYPE_PLAYER,
-                          MAT_ABSOLUTE | MAT_PLAYER | MAT_ME);
+                          MAT_ABSOLUTE | MAT_PLAYER | MAT_ME | MAT_TYPE);
   }
   if (target != executor && !Priv_Who(executor)) {
     /* This should probably be a safe_str */
@@ -4706,7 +4706,7 @@ hide_player(dbref player, int hide, char *victim)
     } else {
       thing =
         noisy_match_result(player, victim, TYPE_PLAYER,
-                           MAT_ABSOLUTE | MAT_PLAYER | MAT_PMATCH | MAT_ME);
+                           MAT_ABSOLUTE | MAT_PMATCH | MAT_ME | MAT_TYPE);
       if (!GoodObject(thing)) {
         return;
       }

@@ -1194,7 +1194,7 @@ do_verb(dbref player, dbref cause, char *arg1, char **argv)
   /* our victim object can be anything */
   victim = match_result(player, arg1, NOTYPE, MAT_EVERYTHING);
 
-  if (victim == NOTHING) {
+  if (!GoodObject(victim)) {
     notify(player, T("What was the victim of the verb?"));
     return;
   }
@@ -1206,7 +1206,7 @@ do_verb(dbref player, dbref cause, char *arg1, char **argv)
   }
   actor = match_result(player, argv[1], NOTYPE, MAT_EVERYTHING);
 
-  if (actor == NOTHING) {
+  if (!GoodObject(actor)) {
     notify(player, T("What do you want to do the verb?"));
     return;
   }

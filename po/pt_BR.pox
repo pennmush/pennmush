@@ -379,10 +379,6 @@ msgstr "Nome de função muito grande."
 msgid "Function updated."
 msgstr "Nome de função muito grande."
 
-#: src/command.c:1252
-msgid "Guests cannot do that."
-msgstr "Eu não consigo encontrar isso."
-
 #: src/extchat.c:846
 msgid "Guests may not leave channels."
 msgstr "Eu não consigo encontrar isso."
@@ -656,10 +652,6 @@ msgstr "Você precisa especificar um comando."
 #: src/set.c:684
 msgid "Nothing to do."
 msgstr "Você precisa especificar um comando."
-
-#: src/command.c:1256
-msgid "Only God can do that."
-msgstr "Eu não consigo encontrar isso."
 
 #: src/set.c:526
 msgid "Only God can set himself!"
@@ -1020,10 +1012,6 @@ msgstr "Você não pode fazer isso enquanto estiver fixo."
 
 #: src/wiz.c:734
 msgid "You cannot change that player's password."
-msgstr "Você não pode fazer isso enquanto estiver fixo."
-
-#: src/command.c:1248
-msgid "You cannot do that while fixed."
 msgstr "Você não pode fazer isso enquanto estiver fixo."
 
 #: src/command.c:1244

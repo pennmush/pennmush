@@ -1450,10 +1450,6 @@ msgstr "Gjester kan ikke bli med i kanaler."
 msgid "Guests are not allowed to leave channels."
 msgstr "Gjester kan ikke forlate kanaler."
 
-#: src/command.c:1252
-msgid "Guests cannot do that."
-msgstr "Gjester kan ikke gjøre det."
-
 #: src/extchat.c:846
 msgid "Guests may not leave channels."
 msgstr "Gjester kan ikke forlate kanaler."
@@ -2357,10 +2353,6 @@ msgstr "Pålogget"
 msgid "Only God can cause financial ruin."
 msgstr "Bare Gud kan forårsake børskrakk."
 
-#: src/command.c:1256
-msgid "Only God can do that."
-msgstr "Bare Gud kan gjøre det"
-
 #: src/set.c:526
 msgid "Only God can set himself!"
 msgstr "Bare Gud kan sette seg selv!"
@@ -2421,10 +2413,6 @@ msgstr "Forelder: %s"
 #: src/extmail.c:1584
 msgid "Permission denied"
 msgstr "Tillatelse nektes"
-
-#: src/command.c:1276
-msgid "Permission denied, command is type-restricted."
-msgstr "Ikke tillatt. Kommandoen er type-restriktert."
 
 #: src/game.c:171
 msgid "Permission denied. Invalid checkpoint interval."
@@ -3458,10 +3446,6 @@ msgstr "Du kan ikke forandre den innebygde funksjonen."
 #: src/wiz.c:734
 msgid "You cannot change that player's password."
 msgstr "Du kan ikke forandre den spillerens passord."
-
-#: src/command.c:1248
-msgid "You cannot do that while fixed."
-msgstr "Du kan ikke gjøre det når du er fixed."
 
 #: src/command.c:1244
 msgid "You cannot do that while gagged."

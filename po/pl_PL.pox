@@ -2314,10 +2314,6 @@ msgstr "Go¶cie nie mog± do³±czaæ do kana³ów."
 msgid "Guests are not allowed to leave channels."
 msgstr "Go¶cie nie maj± prawa opuszczaæ kana³ów."
 
-#: src/command.c:1252
-msgid "Guests cannot do that."
-msgstr "Go¶cie nie mog± tego robiæ."
-
 #: src/extchat.c:846
 msgid "Guests may not leave channels."
 msgstr "Go¶cie nie mog± opuszczaæ kana³ów."
@@ -3502,10 +3498,6 @@ msgstr "Atrybut skasowany."
 msgid "Only God can cause financial ruin."
 msgstr "Tylko Jedyny mo¿e robiæ finansow± ruinê."
 
-#: src/command.c:1256
-msgid "Only God can do that."
-msgstr "Tylko Jedyny mo¿e to zrobiæ."
-
 #: src/set.c:526
 msgid "Only God can set himself!"
 msgstr "Tylko bóg mo¿e ustawiaæ siebie!"
@@ -3617,10 +3609,6 @@ msgstr "Vishtar Uptime: %ld dni %ld godzin %ld minut %ld sekund"
 #: src/extmail.c:1584
 msgid "Permission denied"
 msgstr "Brak uprawnieñ"
-
-#: src/command.c:1276
-msgid "Permission denied, command is type-restricted."
-msgstr "Brak uprawnieñ, komenda jest zastrze¿ona typem."
 
 #: src/game.c:171
 msgid "Permission denied. Invalid checkpoint interval."
@@ -5067,10 +5055,6 @@ msgstr "Nie mo¿esz zmieniæ tej flagi na %s/%s"
 #: src/wiz.c:734
 msgid "You cannot change that player's password."
 msgstr "Nie mo¿esz zmieniæ has³a temu graczowi."
-
-#: src/command.c:1248
-msgid "You cannot do that while fixed."
-msgstr "Nie mo¿esz tego zrobiæ kiedy jeste¶ usztywniony."
 
 #: src/command.c:1244
 msgid "You cannot do that while gagged."

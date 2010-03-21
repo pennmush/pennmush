@@ -334,7 +334,7 @@ match_result(dbref who, const char *xname, int type, long flags)
   int goodwho = GoodObject(who);
   char *name, *sname;           /* name contains the object name searched for, after english matching tokens are stripped from xname */
 #ifdef DEBUG_OBJECT_MATCHING
-  debugMatchTo = (IsPlayer(who) ? who : 1);
+  debugMatchTo = (goodwho && IsPlayer(who) ? who : 1);
   notify(debugMatchTo, "ENTERING MATCH_RESULT");
   notify_format(debugMatchTo, "FLAGS: %ld, TYPE: %d", flags, (type == NOTYPE));
 #endif
@@ -373,7 +373,7 @@ match_result(dbref who, const char *xname, int type, long flags)
 
   /* dbref match */
   match = abs;
-  if (GoodObject(match) && MATCH_TYPE) {
+  if (GoodObject(match) && (flags & MAT_ABSOLUTE) && MATCH_TYPE) {
     if (!(flags & MAT_NEAR) || Long_Fingers(who)
         || (nearby(who, match) || controls(who, match))) {
       /* valid dbref match */

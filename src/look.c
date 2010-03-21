@@ -673,12 +673,37 @@ do_look_at(dbref player, const char *name, int key)
       boxname = name;
       strcpy(objnamebuf, name);
       objname = objnamebuf;
-      box = parse_match_possessor(player, &objname);
+      box = parse_match_possessor(player, &objname, 1);
       if (box == NOTHING) {
         notify(player, T("I don't see that here."));
         return;
       } else if (box == AMBIGUOUS) {
         notify_format(player, T("I can't tell which %s."), boxname);
+        return;
+      }
+      if (IsExit(box)) {
+        /* Looking through an exit at an object on the other side */
+        if (!(Transparented(box) && !Cloudy(box)) && !(Cloudy(box) && !Transparented(box))) {
+          notify_format(player, T("You can't see through that."));
+          return;
+        }
+        box = Location(box);
+        if (box == HOME)
+          box = Home(player); /* Resolve exits linked to HOME */
+        if (!GoodObject(box)) {
+          /* Do nothing for exits with no destination, or a variable destination */
+          notify(player, T("You can't see through that."));
+          return;
+        }
+        /* Including MAT_CARRIED_EXIT allows looking at remote exits, but gives slightly strange
+           results when the remote exit is set transparent, and possibly lets you look at the back
+           of the door you're looking through, which is odd */
+        thing = match_result(box, objname, NOTYPE, MAT_POSSESSION | MAT_ENGLISH);
+        if (!GoodObject(thing)) {
+          notify(player, T("I don't see that here."));
+          return;
+        }
+        look_simple(player, thing);
         return;
       }
       thing = match_result(box, objname, NOTYPE, MAT_POSSESSION | MAT_ENGLISH);

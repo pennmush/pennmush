@@ -2585,10 +2585,6 @@ msgstr "Gostima nije dopu¹teno spajati se na kanale."
 msgid "Guests are not allowed to leave channels."
 msgstr "Gostima nije dopu¹teno napu¹tati kanale."
 
-#: src/command.c:1252
-msgid "Guests cannot do that."
-msgstr "Gosti to ne mogu raditi."
-
 #: src/extchat.c:846
 msgid "Guests may not leave channels."
 msgstr "Gosti ne mogu napu¹tati kanale."
@@ -3877,10 +3873,6 @@ msgstr "Jedan atribut obrisan."
 msgid "Only God can cause financial ruin."
 msgstr "Samo Bog mo¾e izazvati financijsku propast."
 
-#: src/command.c:1256
-msgid "Only God can do that."
-msgstr "Samo Bog to mo¾e uèiniti."
-
 #: src/set.c:526
 msgid "Only God can set himself!"
 msgstr "Samo Bog mo¾e definirati samoga sebe!"
@@ -4002,10 +3994,6 @@ msgstr "Novèiæi: %d"
 #: src/extmail.c:1584
 msgid "Permission denied"
 msgstr "Dopu¹tenje uskraæeno"
-
-#: src/command.c:1276
-msgid "Permission denied, command is type-restricted."
-msgstr "Dopu¹tenje uskraæeno, naredba je ogranièena na tip korisnika."
 
 #: src/game.c:171
 msgid "Permission denied. Invalid checkpoint interval."
@@ -4885,11 +4873,6 @@ msgstr "Tip(ovi)"
 msgid "Type: "
 msgstr "Tip: "
 
-#: command.c:1753
-#, c-format
-msgid "Types      : %s"
-msgstr "Tipovi     : %s"
-
 #: src/set.c:638
 #, c-format
 msgid "Unable to %s attribute."
@@ -5627,10 +5610,6 @@ msgstr "Ne mo¾e¹ promijeniti taj flag na %s/%s"
 #: src/wiz.c:734
 msgid "You cannot change that player's password."
 msgstr "Ne mo¾e¹ promijeniti ¹ifru tog igraèa."
-
-#: src/command.c:1248
-msgid "You cannot do that while fixed."
-msgstr "Ne mo¾e¹ to napraviti jer je flag FIXED na tebi."
 
 #: src/command.c:1244
 msgid "You cannot do that while gagged."

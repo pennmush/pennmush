@@ -1474,10 +1474,6 @@ msgstr "A los invitados no se les permite unirse a canales."
 msgid "Guests are not allowed to leave channels."
 msgstr "A los invitados no se les permite dejar los canales."
 
-#: src/command.c:1252
-msgid "Guests cannot do that."
-msgstr "Los invitados no pueden hacer eso."
-
 #: src/extchat.c:846
 msgid "Guests may not leave channels."
 msgstr "Los invitados no pueden dejar los canales."
@@ -2355,10 +2351,6 @@ msgstr "Conectado desde"
 msgid "Only God can cause financial ruin."
 msgstr "Solo Dios puede causar una ruina financiera."
 
-#: src/command.c:1256
-msgid "Only God can do that."
-msgstr "Solo Dios puede hacer eso."
-
 #: src/set.c:526
 msgid "Only God can set himself!"
 msgstr "¡Solo Dios puede establecerse a si mismo!"
@@ -2415,10 +2407,6 @@ msgstr "Cambiada la contraseña para %s."
 #: src/extmail.c:1584
 msgid "Permission denied"
 msgstr "Permiso denegado"
-
-#: src/command.c:1276
-msgid "Permission denied, command is type-restricted."
-msgstr "Permiso denegado, comando restringido."
 
 #: src/game.c:171
 msgid "Permission denied. Invalid checkpoint interval."
@@ -3347,10 +3335,6 @@ msgstr "No puedes cambiar esa señal en %s/%s"
 #: src/wiz.c:734
 msgid "You cannot change that player's password."
 msgstr "No puedes cambiar la contraseña de ese jugador."
-
-#: src/command.c:1248
-msgid "You cannot do that while fixed."
-msgstr "No puedes hacer eso mientras estés fijado."
 
 #: src/command.c:1244
 msgid "You cannot do that while gagged."

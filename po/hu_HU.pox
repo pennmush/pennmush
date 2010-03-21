@@ -1709,10 +1709,6 @@ msgstr "Vendégek nem léphetnek be csatornákra."
 msgid "Guests are not allowed to leave channels."
 msgstr "Vendégek nem hagyhatják el a csatornákat."
 
-#: src/command.c:1252
-msgid "Guests cannot do that."
-msgstr "Vendégek ezt nem tehetik."
-
 #: src/extchat.c:846
 msgid "Guests may not leave channels."
 msgstr "A vendégek nem léphetnek le csatornákról."
@@ -2692,10 +2688,6 @@ msgstr "Játszik"
 msgid "Only God can cause financial ruin."
 msgstr "Csak Isten okozhat pénzügyi zavart."
 
-#: src/command.c:1256
-msgid "Only God can do that."
-msgstr "Ezt csak Isten teheti meg."
-
 #: src/set.c:526
 msgid "Only God can set himself!"
 msgstr "Csak Isten állíthatja át saját magát!"
@@ -2761,10 +2753,6 @@ msgstr "%s jelszava megváltozott."
 #: src/extmail.c:1584
 msgid "Permission denied"
 msgstr "Hozzáférés megtagadva."
-
-#: src/command.c:1276
-msgid "Permission denied, command is type-restricted."
-msgstr "Hozzáférés megtagadva, a parancs típus-korlátozva van."
 
 #: src/game.c:171
 msgid "Permission denied. Invalid checkpoint interval."
@@ -3890,10 +3878,6 @@ msgstr "Nem állíthatod a %s/%s jelzõjét"
 #: src/wiz.c:734
 msgid "You cannot change that player's password."
 msgstr "A játékos jelszavát nem állíthatod át."
-
-#: src/command.c:1248
-msgid "You cannot do that while fixed."
-msgstr "FIXED állapotban ezt nem teheted."
 
 #: src/command.c:1244
 msgid "You cannot do that while gagged."

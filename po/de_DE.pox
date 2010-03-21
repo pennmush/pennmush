@@ -1039,10 +1039,6 @@ msgstr "Beendet - Tschüß"
 msgid "Guests are not allowed to join channels."
 msgstr "Gäste dürfen keine Kanäle betreten."
 
-#: src/command.c:1252
-msgid "Guests cannot do that."
-msgstr "Gäste können das nicht tun."
-
 #: src/extchat.c:846
 msgid "Guests may not leave channels."
 msgstr "Gäste dürfen keine Channels verlassen."
@@ -1668,10 +1664,6 @@ msgstr "An"
 msgid "Only God can cause financial ruin."
 msgstr "Nur Gott kann dich finanziell ruinieren. Das, und ein kluger Scheidungsanwalt."
 
-#: src/command.c:1256
-msgid "Only God can do that."
-msgstr "Nur Gott kann das tun."
-
 #: src/wiz.c:162
 msgid "Only wizards may change a quota."
 msgstr "Nur Magiker dürfen die Quota ändern."
@@ -1717,10 +1709,6 @@ msgstr "Passwort von %s wurde geändert."
 #: src/extmail.c:1584
 msgid "Permission denied"
 msgstr "Zugriff verweigert"
-
-#: src/command.c:1276
-msgid "Permission denied, command is type-restricted."
-msgstr "Zugriff verweigert, das Kommando hat eine Typ-Einschränkung."
 
 #: src/bsd.c:4589 src/bsd.c:4627 src/command.c:1288 src/cque.c:611\nsrc/cque.c:669 src/cque.c:909 src/cque.c:1040 src/create.c:125\nsrc/create.c:201 src/create.c:252 src/create.c:259 src/create.c:316\nsrc/create.c:320 src/create.c:337 src/create.c:491 src/destroy.c:228\nsrc/extchat.c:1150 src/extchat.c:1167 src/extchat.c:1197 src/flags.c:1021\nsrc/flags.c:1027 src/flags.c:1033 src/function.c:664 src/function.c:759\nsrc/fundb.c:1080 src/fundb.c:1332 src/game.c:771 src/game.c:1177\nsrc/log.c:295 src/look.c:1093 src/look.c:1333 src/malias.c:633\nsrc/malias.c:736 src/match.c:158 src/move.c:471 src/move.c:630\nsrc/move.c:638 src/predicat.c:865 src/predicat.c:1037 src/rob.c:219\nsrc/set.c:210 src/set.c:680 src/set.c:809 src/set.c:872 src/set.c:889\nsrc/set.c:952 src/speech.c:1479 src/warnings.c:263 src/warnings.c:439\nsrc/wiz.c:428 src/wiz.c:538 src/wiz.c:1029 src/wiz.c:1059 src/wiz.c:1630\nsrc/wiz.c:1855
 msgid "Permission denied."

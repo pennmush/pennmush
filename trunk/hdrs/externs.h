@@ -402,7 +402,7 @@ int ok_player_name(const char *name, dbref player, dbref thing);
 int ok_player_alias(const char *alias, dbref player, dbref thing);
 int ok_password(const char *password);
 int ok_tag_attribute(dbref player, const char *params);
-dbref parse_match_possessor(dbref player, char **str);
+dbref parse_match_possessor(dbref player, char **str, int exits);
 void page_return(dbref player, dbref target, const char *type,
                  const char *message, const char *def);
 char *grep_util(dbref player, dbref thing, char *pattern,

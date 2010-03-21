@@ -310,7 +310,7 @@ can_move(dbref player, const char *direction)
     ok = command_check_byname(player, "HOME");
   } else {
     /* otherwise match on exits - don't use GoodObject here! */
-    ok = (match_result(player, direction, TYPE_EXIT, MAT_ENGLISH | MAT_EXIT) !=
+    ok = (match_result(player, direction, TYPE_EXIT, MAT_ENGLISH | MAT_EXIT | MAT_TYPE) !=
           NOTHING);
   }
   return ok;                    /* Written like this due to overeager compiler */
@@ -387,15 +387,15 @@ do_move(dbref player, const char *direction, enum move_type type)
     if (type == MOVE_GLOBAL)
       exit_m =
         match_result(player, direction, TYPE_EXIT,
-                     MAT_ENGLISH | MAT_EXIT | MAT_GLOBAL | MAT_CHECK_KEYS);
+                     MAT_ENGLISH | MAT_EXIT | MAT_GLOBAL | MAT_CHECK_KEYS | MAT_TYPE);
     else if (type == MOVE_ZONE)
       exit_m =
         match_result(player, direction, TYPE_EXIT,
-                     MAT_ENGLISH | MAT_EXIT | MAT_REMOTES | MAT_CHECK_KEYS);
+                     MAT_ENGLISH | MAT_EXIT | MAT_REMOTES | MAT_CHECK_KEYS | MAT_TYPE);
     else
       exit_m =
         match_result(player, direction, TYPE_EXIT,
-                     MAT_ENGLISH | MAT_EXIT | MAT_CHECK_KEYS);
+                     MAT_ENGLISH | MAT_EXIT | MAT_CHECK_KEYS | MAT_TYPE);
     switch (exit_m) {
     case NOTHING:
       /* try to force the object */
@@ -503,7 +503,7 @@ do_firstexit(dbref player, const char **what)
   for (i = 1; i < MAX_ARG && what[i]; i++) {
     if ((thing =
          noisy_match_result(player, what[i], TYPE_EXIT,
-                            MAT_ENGLISH | MAT_EXIT | MAT_ABSOLUTE)) == NOTHING)
+                            MAT_ENGLISH | MAT_EXIT | MAT_TYPE)) == NOTHING)
       continue;
     loc = Home(thing);
     if (!controls(player, loc)) {
@@ -745,7 +745,7 @@ do_empty(dbref player, const char *what)
     return;
   thing =
     noisy_match_result(player, what, TYPE_THING | TYPE_PLAYER,
-                       MAT_NEAR_THINGS | MAT_ENGLISH);
+                       MAT_NEAR_THINGS | MAT_ENGLISH | MAT_TYPE);
   if (!GoodObject(thing))
     return;
   thing_loc = Location(thing);
@@ -851,7 +851,9 @@ do_enter(dbref player, const char *what)
 {
   dbref thing;
   dbref loc;
-  long match_flags = MAT_CHECK_KEYS | MAT_NEIGHBOR | MAT_ENGLISH | MAT_ABSOLUTE;
+  long match_flags = MAT_NEIGHBOR | MAT_ENGLISH;
+  if (Hasprivs(player))
+    match_flags |= MAT_ABSOLUTE;
   if ((thing = noisy_match_result(player, what, TYPE_THING, match_flags))
       == NOTHING)
     return;

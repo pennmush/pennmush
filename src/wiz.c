@@ -814,7 +814,7 @@ do_boot(dbref player, const char *name, enum boot_type flag, int silent)
   switch (flag) {
   case BOOT_NAME:
     victim = noisy_match_result(player, name, TYPE_PLAYER,
-                                MAT_PMATCH | MAT_PLAYER | MAT_ME);
+                                MAT_PMATCH | MAT_TYPE | MAT_ME);
     if (victim == NOTHING) {
       notify(player, T("No such connected player."));
       return;
@@ -911,7 +911,7 @@ do_chownall(dbref player, const char *name, const char *target, int preserve)
     notify(player, T("Try asking them first!"));
     return;
   }
-  if ((victim = noisy_match_result(player, name, TYPE_PLAYER, MAT_LIMITED))
+  if ((victim = noisy_match_result(player, name, TYPE_PLAYER, MAT_LIMITED | MAT_TYPE))
       == NOTHING)
     return;
 
@@ -920,7 +920,7 @@ do_chownall(dbref player, const char *name, const char *target, int preserve)
   } else {
     if ((n_target =
          noisy_match_result(player, target, TYPE_PLAYER,
-                            MAT_LIMITED)) == NOTHING)
+                            MAT_LIMITED | MAT_TYPE)) == NOTHING)
       return;
   }
 
@@ -961,7 +961,7 @@ do_chzoneall(dbref player, const char *name, const char *target)
     notify(player, T("You do not have the power to change reality."));
     return;
   }
-  if ((victim = noisy_match_result(player, name, TYPE_PLAYER, MAT_LIMITED))
+  if ((victim = noisy_match_result(player, name, TYPE_PLAYER, MAT_LIMITED | MAT_TYPE))
       == NOTHING)
     return;
 

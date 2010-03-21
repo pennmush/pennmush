@@ -1403,7 +1403,7 @@ do_queue(dbref player, const char *what, enum queue_type flag)
       victim = player;
     else {
       victim = match_result(player, what, TYPE_PLAYER,
-                            MAT_PLAYER | MAT_ABSOLUTE | MAT_ME);
+                            MAT_PLAYER | MAT_ABSOLUTE | MAT_ME | MAT_TYPE);
     }
   } else {
     victim = player;

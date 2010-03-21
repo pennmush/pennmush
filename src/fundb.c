@@ -599,7 +599,7 @@ FUNCTION(fun_rnum)
   if ((place != NOTHING) &&
       (Can_Examine(executor, place) || (Location(executor) == place) ||
        (enactor == place))) {
-    switch (thing = match_result(place, name, NOTYPE, MAT_REMOTE)) {
+    switch (thing = match_result(place, name, NOTYPE, MAT_POSSESSION | MAT_CARRIED_EXIT)) {
     case NOTHING:
       safe_str(T(e_match), buff, bp);
       break;
@@ -1693,10 +1693,6 @@ FUNCTION(fun_money)
       safe_str("#-1", buff, bp);
     }
     return;
-  } else if (!GoodObject(it)) {
-    /* Catch ambiguous matches */
-    safe_str("#-1", buff, bp);
-    return;
   }
   /* If the thing in question has unlimited money, respond with the
    * max money possible. We don't use the NoPay macro, though, because
@@ -1704,7 +1700,7 @@ FUNCTION(fun_money)
    * if its owner is no_pay. Softcode can check money(owner(XX)) if
    * they want to allow objects to pay like their owners.
    */
-  if (has_power_by_name(it, "NO_PAY", NOTYPE))
+  if (NoPay(it))
     safe_integer(MAX_PENNIES, buff, bp);
   else
     safe_integer(Pennies(it), buff, bp);

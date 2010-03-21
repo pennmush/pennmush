@@ -664,8 +664,8 @@ do_drop(dbref player, const char *name)
   if ((loc = Location(player)) == NOTHING)
     return;
   switch (thing =
-          match_result(player, name, TYPE_THING,
-                       MAT_POSSESSION | MAT_ABSOLUTE | MAT_ENGLISH)) {
+          match_result(player, name, TYPE_THING | TYPE_PLAYER,
+                       MAT_POSSESSION | MAT_ENGLISH | MAT_TYPE)) {
   case NOTHING:
     notify(player, T("You don't have that!"));
     return;

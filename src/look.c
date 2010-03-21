@@ -652,7 +652,7 @@ do_look_at(dbref player, const char *name, int key)
       look_room(player, loc, LOOK_NORMAL);
       return;
     }
-    thing = match_result(loc, name, NOTYPE, MAT_POSSESSION | MAT_CARRIED_EXIT);
+    thing = match_result(loc, name, NOTYPE, MAT_POSSESSION | MAT_CARRIED_EXIT | MAT_ENGLISH);
     if (thing == NOTHING) {
       notify(player, T("I don't see that here."));
       return;
@@ -681,7 +681,7 @@ do_look_at(dbref player, const char *name, int key)
         notify_format(player, T("I can't tell which %s."), boxname);
         return;
       }
-      thing = match_result(box, objname, NOTYPE, MAT_POSSESSION);
+      thing = match_result(box, objname, NOTYPE, MAT_POSSESSION | MAT_ENGLISH);
       if (thing == NOTHING) {
         notify(player, T("I don't see that here."));
         return;

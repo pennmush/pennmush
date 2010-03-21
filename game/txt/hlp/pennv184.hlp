@@ -38,6 +38,7 @@ Commands:
    available. Suggested by Paige. [MG]
  * @clone can take a garbage dbref for the new object, the same as @create.
    Suggested by Dan. [MG]
+ * 'look' now supports more english-matching (look this foo's 1st bar). [MG]
    
 Functions:
  * Added strfirstof() and strallof(), which return the first arg/all args

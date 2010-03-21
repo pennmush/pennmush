@@ -16,28 +16,29 @@
  * flags = a set of bits indicating what kind of matching to do
  *
  * flags are defined in match.h, but here they are for reference:
- * MAT_CHECK_KEYS       - check locks when matching
+ * MAT_CHECK_KEYS       - prefer objects whose Basic lock 'who' passes
  * MAT_GLOBAL           - match in master room
- * MAT_REMOTES          - match things not nearby
+ * MAT_REMOTES          - match ZMR exits
  * MAT_NEAR             - match things nearby
- * MAT_CONTROL          - do a control check after matching
+ * MAT_CONTROL          - only match objects 'who' controls
  * MAT_ME               - match "me"
  * MAT_HERE             - match "here"
- * MAT_ABSOLUTE         - match "#dbref"
- * MAT_PLAYER           - match a player's name
- * MAT_NEIGHBOR         - match something in the same room
- * MAT_POSSESSION       - match something I'm carrying
- * MAT_EXIT             - match an exit
- * MAT_CARRIED_EXIT     - match a carried exit (rare)
- * MAT_CONTAINER        - match a container I'm in
- * MAT_REMOTE_CONTENTS  - match the contents of a remote location
+ * MAT_ABSOLUTE         - match any <#dbref>
+ * MAT_PMATCH           - match <playerName> or *<playerName>
+ * MAT_PLAYER           - match *<playerName>
+ * MAT_NEIGHBOR         - match something in 'who's location
+ * MAT_POSSESSION       - match something in 'who's inventory
+ * MAT_EXIT             - match an exit in 'who's location
+ * MAT_CARRIED_EXIT     - match an exit in the room 'who'
+ * MAT_CONTAINER        - match the name of 'who's location
+ * MAT_REMOTE_CONTENTS  - matches the same as MAT_POSSESSION
  * MAT_ENGLISH          - match natural english 'my 2nd flower'
  * MAT_TYPE             - match only objects of the given type(s)
  * MAT_EXACT            - only do full-name matching, no partial names
  * MAT_EVERYTHING       - me,here,absolute,player,neighbor,possession,exit
- * MAT_NEARBY           - everything near
+ * MAT_NEARBY           - everything,near - absolute
  * MAT_OBJECTS          - me,absolute,player,neigbor,possession
- * MAT_NEAR_THINGS      - objects near
+ * MAT_NEAR_THINGS      - objects,near - absolute
  * MAT_REMOTE           - absolute,player,remote_contents,exit,remotes
  * MAT_LIMITED          - absolute,player,neighbor
  */

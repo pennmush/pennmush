@@ -918,12 +918,10 @@ do_gedit(dbref player, char *it, char **argv, enum edit_type target, int doit)
     return;
   }
   *q++ = '\0';
-  thing = noisy_match_result(player, tbuf1, NOTYPE, MAT_EVERYTHING);
+  thing = noisy_match_result(player, tbuf1, NOTYPE, MAT_EVERYTHING | MAT_CONTROL);
 
-  if ((thing == NOTHING) || !controls(player, thing)) {
-    notify(player, T("Permission denied."));
+  if (thing == NOTHING)
     return;
-  }
 
   if (!argv[1] || !*argv[1]) {
     notify(player, T("Nothing to do."));
@@ -1075,7 +1073,7 @@ do_parent(dbref player, char *name, char *parent_name)
   dbref check;
   int i;
 
-  if ((thing = noisy_match_result(player, name, NOTYPE, MAT_NEARBY)) == NOTHING)
+  if ((thing = noisy_match_result(player, name, NOTYPE, MAT_EVERYTHING)) == NOTHING)
     return;
 
   if (!parent_name || !*parent_name || !strcasecmp(parent_name, "none"))

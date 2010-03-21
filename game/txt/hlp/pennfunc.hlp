@@ -2496,7 +2496,7 @@ See also: letq(), setq(), setr(), r(), ulocal(), uldefault()
 & LOCATE2
  
   You can control where to look with:
-    a - Absolute match (check to see if <name> is a dbref)
+    a - Absolute match (match <name> against any dbref)
     c - Exits in the room <looker>
     e - Exits in <looker>'s location
     h - If <name> is "here", return <looker>'s location

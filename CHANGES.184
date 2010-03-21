@@ -73,4 +73,5 @@ Fixes:
  * Minor updates to some README files. [MG]
  * Some typos and translation errors fixed by Stoko.
  * namelist() now ignores null items. Reported by Minion. [MG]
-
+ * The matching code would always perform absolute (dbref) matches, even
+   when it wasn't told to. [MG]

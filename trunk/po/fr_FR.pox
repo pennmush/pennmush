@@ -1614,10 +1614,6 @@ msgstr "Les invités n'ont pas le droit de rejoindre des canaux."
 msgid "Guests are not allowed to leave channels."
 msgstr "Les invités ne sont pas autorisés à quitter les canaux de discussion."
 
-#: src/command.c:1252
-msgid "Guests cannot do that."
-msgstr "Les invités ne peuvent pas faire cela."
-
 #: src/extchat.c:846
 msgid "Guests may not leave channels."
 msgstr "Les invités ne peuvent pas quitter les canaux."
@@ -2573,10 +2569,6 @@ msgstr "Depuis"
 msgid "Only God can cause financial ruin."
 msgstr "Seul Dieu peut causer une ruine financière."
 
-#: src/command.c:1256
-msgid "Only God can do that."
-msgstr "Seul Dieu peut faire ça."
-
 #: src/set.c:526
 msgid "Only God can set himself!"
 msgstr "Seul Dieu peut se modifier!"
@@ -2642,10 +2634,6 @@ msgstr "Mot de passe de %s changé."
 #: src/extmail.c:1584
 msgid "Permission denied"
 msgstr "permission refusée"
-
-#: src/command.c:1276
-msgid "Permission denied, command is type-restricted."
-msgstr "Accès réfusé, la commande est restreinte à certains types."
 
 #: src/game.c:171
 msgid "Permission denied. Invalid checkpoint interval."
@@ -3749,10 +3737,6 @@ msgstr "Impossible de modifier cette fonction système."
 #: src/wiz.c:734
 msgid "You cannot change that player's password."
 msgstr "Vous ne pouvez pas changer le mot de passe de ce joueur."
-
-#: src/command.c:1248
-msgid "You cannot do that while fixed."
-msgstr "Impossible de faire cela pendant que vous avez le flag FIXED."
 
 #: src/command.c:1244
 msgid "You cannot do that while gagged."

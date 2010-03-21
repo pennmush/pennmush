@@ -2522,10 +2522,6 @@ msgstr "Gasten mogen niet op kanalen komen."
 msgid "Guests are not allowed to leave channels."
 msgstr "Gasten mogen kanalen niet verlaten."
 
-#: src/command.c:1252
-msgid "Guests cannot do that."
-msgstr "Gasten kunnen dat niet."
-
 #: src/extchat.c:846
 msgid "Guests may not leave channels."
 msgstr "Gasten mogen kanalen niet verlaten."
@@ -3762,10 +3758,6 @@ msgstr "Eén attribuut gewist."
 msgid "Only God can cause financial ruin."
 msgstr "Alleen God can een financiele rampspoed veroorzaken."
 
-#: src/command.c:1256
-msgid "Only God can do that."
-msgstr "Dat kan alleen God doen."
-
 #: src/set.c:526
 msgid "Only God can set himself!"
 msgstr "Alleen God kan zichzelf @setten."
@@ -3887,10 +3879,6 @@ msgstr "Pennies: %d"
 #: src/extmail.c:1584
 msgid "Permission denied"
 msgstr "Toestemming geweigerd"
-
-#: src/command.c:1276
-msgid "Permission denied, command is type-restricted."
-msgstr "Toestemming geweigerd, commando is beperkt op type."
 
 #: src/game.c:171
 msgid "Permission denied. Invalid checkpoint interval."
@@ -4738,11 +4726,6 @@ msgstr "Type(s)"
 msgid "Type: "
 msgstr "Type: "
 
-#: command.c:1753
-#, c-format
-msgid "Types      : %s"
-msgstr "Types      : %s"
-
 #: src/set.c:638
 #, c-format
 msgid "Unable to %s attribute."
@@ -5468,10 +5451,6 @@ msgstr "Je kan die vlag op %s/%s niet veranderen."
 #: src/wiz.c:734
 msgid "You cannot change that player's password."
 msgstr "Je kan het wachtwoord van die speler niet wijzigen."
-
-#: src/command.c:1248
-msgid "You cannot do that while fixed."
-msgstr "Dat kun je niet doen zolang je fixed bent."
 
 #: src/command.c:1244
 msgid "You cannot do that while gagged."

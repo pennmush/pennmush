@@ -902,10 +902,6 @@ msgstr "Hvad skal det hedde i stedet?"
 msgid "Going down - Bye"
 msgstr "Går ned - Farvel"
 
-#: src/command.c:1252
-msgid "Guests cannot do that."
-msgstr "Det kan du ikke samle op!"
-
 #: src/create.c:326
 msgid "Home set."
 msgstr "Navn ændret."
@@ -1390,10 +1386,6 @@ msgstr "Spillernavn"
 #: src/game.c:1155
 msgid "Only God can cause financial ruin."
 msgstr "Kun Gud kan forårsage finansiel ruin."
-
-#: src/command.c:1256
-msgid "Only God can do that."
-msgstr "Det kan du ikke samle op!"
 
 #: src/set.c:526
 msgid "Only God can set himself!"

@@ -384,24 +384,24 @@ For more, see Entries-19
  fmod()                    fn()                      fold()                   
  fold2                     folderstats()             follow                   
  followers()               following()               foreach()                
- foreach2                  fraction()                fullalias()              
- fullname()                function list             functions                
- functions()               functions2                gagged                   
- gender                    get                       get()                    
- get_eval()                getpids()                 give                     
- global commands           globals                   go                       
- going                     goto                      grab()                   
- graball()                 grep()                    grepi()                  
- gt()                      gte()                     halt                     
- hasattr()                 hasattrp()                hasattrpval()            
- hasattrval()              hasflag()                 haspower()               
+ foreach2                  forwardlist               fraction()               
+ fullalias()               fullname()                function list            
+ functions                 functions()               functions2               
+ gagged                    gender                    get                      
+ get()                     get_eval()                getpids()                
+ give                      global commands           globals                  
+ go                        going                     goto                     
+ grab()                    graball()                 grep()                   
+ grepi()                   gt()                      gte()                    
+ halt                      hasattr()                 hasattrp()               
+ hasattrpval()             hasattrval()              hasflag()                
 
 For more, see Entries-20
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-20
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- hastype()                 haven                     hear_connect             
- heavy                     height()                  help                     
+ haspower()                hastype()                 haven                    
+ hear_connect              heavy                     height()                 
  here                      hidden()                  home                     
  home()                    homes                     host()                   
  hostname()                html                      html functions           
@@ -512,48 +512,48 @@ For more, see Entries-25
  obj()                     object parents            objeval()                
  objid()                   objmem()                  oemit()                  
  on-vacation               opaque                    open()                   
- or()                      ord()                     ordinal()                
- orflags()                 orlflags()                orlpowers()              
- orphan                    outputprefix              outputsuffix             
- owner()                   page                      page2                    
- paranoid                  parent                    parent()                 
- parents                   parents2                  parents3                 
- parents4                  parents5                  parse()                  
- patchlevels               pcreate()                 pemit()                  
- pfun()                    pfun2                     pfun3                    
+ open_ok                   or()                      ord()                    
+ ordinal()                 orflags()                 orlflags()               
+ orlpowers()               orphan                    outputprefix             
+ outputsuffix              owner()                   page                     
+ page2                     paranoid                  parent                   
+ parent()                  parents                   parents2                 
+ parents3                  parents4                  parents5                 
+ parse()                   patchlevels               pcreate()                
+ pemit()                   pfun()                    pfun2                    
 
 For more, see Entries-26
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-26
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- pi()                      pickrand()                pidinfo()                
- player                    player()                  playermem()              
- pmatch()                  poll()                    ports()                  
- pos()                     pose                      pose2                    
- poss()                    power()                   powers list              
- powers list2              powers()                  powers2                  
- prompt()                  prompt_newlines           pueblo                   
- pueblo features           pueblo()                  puppet                   
- puppets                   puppets2                  queue                    
- quiet                     quit                      quota()                  
- r()                       r-function                rand()                   
- randword()                read                      recv()                   
- regedit()                 regeditall()              regeditalli()            
- regediti()                regexp                    regexp classes           
- regexp classes2           regexp examples           regexp syntax            
- regexp syntax2            regexp syntax3            regexp syntax4           
+ pfun3                     pi()                      pickrand()               
+ pidinfo()                 player                    player()                 
+ playermem()               pmatch()                  poll()                   
+ ports()                   pos()                     pose                     
+ pose2                     poss()                    power()                  
+ powers list               powers list2              powers()                 
+ powers2                   prompt()                  prompt_newlines          
+ pueblo                    pueblo features           pueblo()                 
+ puppet                    puppets                   puppets2                 
+ queue                     quiet                     quit                     
+ quota()                   r()                       r-function               
+ rand()                    randword()                read                     
+ recv()                    regedit()                 regeditall()             
+ regeditalli()             regediti()                regexp                   
+ regexp classes            regexp classes2           regexp examples          
+ regexp syntax             regexp syntax2            regexp syntax3           
 
 For more, see Entries-27
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-27
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- regexp syntax5            regexp syntax6            regexp syntax7           
- regexp syntax8            regexps                   regexps2                 
- registers                 registers2                reglattr()               
- reglattrp()               regmatch()                regmatchi()              
- regnattr()                regnattrp()               regrab()                 
- regraball()               regraballi()              regrabi()                
- regrep()                  regrepi()                                          
+ regexp syntax4            regexp syntax5            regexp syntax6           
+ regexp syntax7            regexp syntax8            regexps                  
+ regexps2                  registers                 registers2               
+ reglattr()                reglattrp()               regmatch()               
+ regmatchi()               regnattr()                regnattrp()              
+ regrab()                  regraball()               regraballi()             
+ regrabi()                 regrep()                  regrepi()                
  regular expression functions                        regxattr()               
  regxattrp()               remainder()               remit()                  
  remove()                  repeat()                  replace()                

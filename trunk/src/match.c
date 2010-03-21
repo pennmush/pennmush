@@ -527,7 +527,7 @@ parse_english(char **name, long *flags)
     *name += 3;
     *flags &= ~(MAT_NEIGHBOR | MAT_EXIT | MAT_CONTAINER | MAT_REMOTE_CONTENTS);
   }
-  if ((*flags & MAT_EXIT) && (!strncasecmp(*name, "toward ", 7))) {
+  if ((*flags & (MAT_EXIT | MAT_CARRIED_EXIT)) && (!strncasecmp(*name, "toward ", 7))) {
     *name += 7;
     *flags &=
       ~(MAT_NEIGHBOR | MAT_POSSESSION | MAT_CONTAINER | MAT_REMOTE_CONTENTS);

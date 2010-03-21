@@ -1052,10 +1052,11 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
  * to the string to point at the name of the contained object.
  * \param player the enactor/looker.
  * \param str a pointer to a string to check for possessive matches.
+ * \param exits if true, match for exits, as well as things/players
  * \return matching dbref or NOTHING or AMBIGUOUS.
  */
 dbref
-parse_match_possessor(dbref player, char **str)
+parse_match_possessor(dbref player, char **str, int exits)
 {
   const char *box;              /* name of container */
   char *obj;                    /* name of object */
@@ -1076,7 +1077,7 @@ parse_match_possessor(dbref player, char **str)
 
   /* we already have a terminating null, so we're okay to just do matches */
   return match_result(player, box, NOTYPE,
-                      MAT_NEIGHBOR | MAT_POSSESSION | MAT_ENGLISH);
+                      MAT_NEIGHBOR | MAT_POSSESSION | MAT_ENGLISH | (exits ? MAT_EXIT : 0));
 }
 
 

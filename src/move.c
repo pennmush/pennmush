@@ -546,7 +546,7 @@ do_get(dbref player, const char *what)
       strcpy(objnamebuf, what);
       objname = objnamebuf;
       /* take care of possessive get (stealing) */
-      box = parse_match_possessor(player, &objname);
+      box = parse_match_possessor(player, &objname, 0);
       if (box == NOTHING) {
         notify(player, T("I don't see that here."));
         return;

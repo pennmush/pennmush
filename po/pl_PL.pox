@@ -2454,10 +2454,6 @@ msgstr "Nie mogê znale¼æ tego gracza."
 msgid "I don't know that %s."
 msgstr "Nie znam tego %s."
 
-#: src/rob.c:94
-msgid "I don't know what you mean!"
-msgstr "Nie wiem co masz na my¶li!"
-
 #: rob.c:390
 msgid "I don't know what you mean."
 msgstr "Nie wiem co masz na my¶li."

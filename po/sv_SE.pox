@@ -1796,10 +1796,6 @@ msgstr "Jag kunde inte hitta den spelaren."
 msgid "I don't know that %s."
 msgstr "Okänd %s."
 
-#: src/rob.c:94
-msgid "I don't know what you mean!"
-msgstr "Jag förstår inte vad du menar!"
-
 #: rob.c:390
 msgid "I don't know what you mean."
 msgstr "Jag förstår ej vad du menar."

@@ -1817,10 +1817,6 @@ msgstr "Nem tudom melyikre gondolsz."
 msgid "I couldn't find that player."
 msgstr "Nem találom ezt a játékost."
 
-#: src/rob.c:94
-msgid "I don't know what you mean!"
-msgstr "Nem tudom mire gondolsz!"
-
 #: src/boolexp.c:265
 #, c-format
 msgid "I don't know which %s you mean!"

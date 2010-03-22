@@ -2738,10 +2738,6 @@ msgstr "Nisam mogao naæi tog igraèa."
 msgid "I don't know that %s."
 msgstr "Navedena stvar (%s) mi nije poznata."
 
-#: src/rob.c:94
-msgid "I don't know what you mean!"
-msgstr "Ne znam na ¹to misli¹!"
-
 #: rob.c:390
 msgid "I don't know what you mean."
 msgstr "Ne znam na ¹to misli¹."

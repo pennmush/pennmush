@@ -1541,10 +1541,6 @@ msgstr "Jeg fant ikke den spilleren."
 msgid "I don't know that %s."
 msgstr "Jeg vet ikke av det %s."
 
-#: src/rob.c:94
-msgid "I don't know what you mean!"
-msgstr "Jeg vet ikke hva du mener!"
-
 #: src/boolexp.c:265
 #, c-format
 msgid "I don't know which %s you mean!"

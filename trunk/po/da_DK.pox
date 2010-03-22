@@ -951,10 +951,6 @@ msgstr "CHAT: Jeg ved ikke hvilken kanal du mener."
 msgid "I couldn't find that player."
 msgstr "Jeg kunne ikke finde den spiller."
 
-#: src/rob.c:94
-msgid "I don't know what you mean!"
-msgstr "CHAT: Jeg ved ikke hvilken kanal du mener."
-
 #: src/extchat.c:1011
 msgid "I don't know which channel you mean."
 msgstr "CHAT: Jeg ved ikke hvilken kanal du mener."

@@ -1559,10 +1559,6 @@ msgstr "No puedo decir a que te refieres."
 msgid "I couldn't find that player."
 msgstr "No pude encontrar ese jugador"
 
-#: src/rob.c:94
-msgid "I don't know what you mean!"
-msgstr "No se lo que quieres decir!"
-
 #: src/boolexp.c:265
 #, c-format
 msgid "I don't know which %s you mean!"

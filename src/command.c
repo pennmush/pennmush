@@ -1456,6 +1456,7 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
   FLAG *f;
   char lockstr[BUFFER_LEN];
   char *tp;
+  int make_boolexp = 0;
   boolexp key;
   object_flag_type flags = new_flag_bitmask("FLAG");
   object_flag_type powers = new_flag_bitmask("POWER");
@@ -1506,7 +1507,7 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
 
     /* Gah. I love backwards compatiblity. */
     if (!strcasecmp(restriction, "admin")) {
-
+      make_boolexp = 1;
       if (clear) {
         f = match_flag("ROYALTY");
         clear_flag_bitmask(flags, f->bitpos);
@@ -1519,18 +1520,25 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
         set_flag_bitmask(flags, f->bitpos);
       }
     } else if ((c = ptab_find(&ptab_command_perms, restriction))) {
-      /* Although all of these are stored in command->type, most are later parsed into the boolexp, and not checked for in ->type again */
+      if (!(c->type & (CMD_T_LOGARGS | CMD_T_LOGNAME | CMD_T_DISABLED))) {
+        /* These 3 restrictions are checked for in command->type, and aren't
+         * built into the boolexp, so we only bother to rebuild the boolexp
+         * for the other restrictions */
+         make_boolexp = 1;
+      }
       if (clear)
         command->type &= ~c->type;
       else
         command->type |= c->type;
     } else if ((f = match_flag(restriction))) {
+      make_boolexp = 1;
       if (clear)
         clear_flag_bitmask(flags, f->bitpos);
       else {
         set_flag_bitmask(flags, f->bitpos);
       }
     } else if ((f = match_power(restriction))) {
+      make_boolexp = 1;
       if (clear)
         clear_flag_bitmask(powers, f->bitpos);
       else {
@@ -1542,7 +1550,9 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
 
   mush_free(rsave, "rc.string");
 
-  /* And now format what we have into a lock string */
+  /* And now format what we have into a lock string, if necessary */
+  if (!make_boolexp)
+    return 1;
   tp = lockstr;
   safe_str(flag_list_to_lock_string(flags, powers), lockstr, &tp);
   if ((command->type & CMD_T_ANY) != CMD_T_ANY) {
@@ -1580,7 +1590,7 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
   if (command->type & CMD_T_NOFIXED) {
     add_restriction("!FLAG^FIXED", '&');
   }
-  /* CMD_T_DISABLED and CMD_T_LOG* are still checked for in command->types */
+  /* CMD_T_DISABLED and CMD_T_LOG* are checked for in command->types, and not part of the boolexp */
   *tp = '\0';
   key = parse_boolexp(player, lockstr, CommandLock);
 

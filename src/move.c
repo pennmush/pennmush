@@ -852,6 +852,7 @@ do_enter(dbref player, const char *what)
   dbref thing;
   dbref loc;
   long match_flags = MAT_NEIGHBOR | MAT_ENGLISH;
+
   if (Hasprivs(player))
     match_flags |= MAT_ABSOLUTE;
   if ((thing = noisy_match_result(player, what, TYPE_THING, match_flags))

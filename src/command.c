@@ -47,7 +47,6 @@ HASHTAB htab_reserved_aliases;  /**< Hash table for reserved command aliases */
 slab *command_slab = NULL; /**< slab for command_info structs */
 
 static const char *command_isattr(char *command);
-static int command_check(dbref player, COMMAND_INFO *cmd, int noisy);
 static int switch_find(COMMAND_INFO *cmd, const char *sw);
 static void strccat(char *buff, char **bp, const char *from);
 static int has_hook(struct hook_data *hook);
@@ -1350,33 +1349,12 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
     command_parse_free_args;
     return NULL;
   } else {
-    char *saveregs[NUMQ];
-    init_global_regs(saveregs);
     /* If we have a hook/ignore that returns false, we don't do the command */
-    if (run_hook(player, cause, &cmd->hooks.ignore, saveregs, 1)) {
-      /* If we have a hook/override, we use that instead */
-      if (!run_hook_override(cmd, player, commandraw)) {
-        /* Otherwise, we do hook/before, the command, and hook/after */
-        /* But first, let's see if we had an invalid switch */
-        if (*switch_err) {
-          notify(player, switch_err);
-          free_global_regs("hook.regs", saveregs);
-          command_parse_free_args;
-          return NULL;
-        }
-        run_hook(player, cause, &cmd->hooks.before, saveregs, 1);
-        cmd->func(cmd, player, cause, sw, string, swp, ap, ls, lsa, rs, rsa);
-        run_hook(player, cause, &cmd->hooks.after, saveregs, 0);
-      }
-      /* Either way, we might log */
-      if (cmd->type & CMD_T_LOGARGS)
-        do_log(LT_CMD, player, cause, "%s", string);
-      else if (cmd->type & CMD_T_LOGNAME)
-        do_log(LT_CMD, player, cause, "%s", commandraw);
+    if (run_command(cmd, player, cause, commandraw, sw, switch_err, string, swp, ap, ls, lsa, rs, rsa)) {
+      retval = NULL;
     } else {
       retval = commandraw;
     }
-    free_global_regs("hook.regs", saveregs);
   }
 
   command_parse_free_args;
@@ -1384,6 +1362,47 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
 }
 
 #undef command_parse_free_args
+
+int
+run_command(COMMAND_INFO *cmd, dbref player, dbref cause, char *commandraw, switch_mask sw,
+            char switch_err[BUFFER_LEN], char *string, char *swp, char *ap, char *ls,
+            char *lsa[MAX_ARG], char *rs, char *rsa[MAX_ARG])
+{
+
+  char *saveregs[NUMQ];
+
+  if (!cmd)
+    return 0;
+
+  init_global_regs(saveregs);
+
+  if (!run_hook(player, cause, &cmd->hooks.ignore, saveregs, 1)) {
+    free_global_regs("hook.regs", saveregs);
+    return 0;
+  }
+
+  /* If we have a hook/override, we use that instead */
+  if (!run_hook_override(cmd, player, commandraw)) {
+    /* Otherwise, we do hook/before, the command, and hook/after */
+    /* But first, let's see if we had an invalid switch */
+    if (switch_err && *switch_err) {
+      notify(player, switch_err);
+      return 1;
+    }
+    run_hook(player, cause, &cmd->hooks.before, saveregs, 1);
+    cmd->func(cmd, player, cause, sw, string, swp, ap, ls, lsa, rs, rsa);
+    run_hook(player, cause, &cmd->hooks.after, saveregs, 0);
+  }
+  /* Either way, we might log */
+  if (cmd->type & CMD_T_LOGARGS)
+    do_log(LT_CMD, player, cause, "%s", commandraw);
+  else if (cmd->type & CMD_T_LOGNAME)
+    do_log(LT_CMD, player, cause, "%s", cmd->name);
+
+  free_global_regs("hook.regs", saveregs);
+  return 1;
+
+}
 
 /** Execute the huh_command when no command is matched.
  * \param player the enactor.
@@ -1394,28 +1413,9 @@ void
 generic_command_failure(dbref player, dbref cause, char *string)
 {
   COMMAND_INFO *cmd;
-  char *saveregs[NUMQ];
 
-  if ((cmd = command_find("HUH_COMMAND"))) {
-    if (!(cmd->type & CMD_T_DISABLED)) {
-      init_global_regs(saveregs);
-      if (run_hook(player, cause, &cmd->hooks.ignore, saveregs, 1)) {
-        /* If we have a hook/override, we use that instead */
-        if (!has_hook(&cmd->hooks.override) ||
-            !one_comm_match(cmd->hooks.override.obj, player,
-                            cmd->hooks.override.attrname, "HUH_COMMAND")) {
-          /* Otherwise, we do hook/before, the command, and hook/after */
-          run_hook(player, cause, &cmd->hooks.before, saveregs, 1);
-          cmd->func(cmd, player, cause, NULL, string, NULL, NULL, string, NULL,
-                    NULL, NULL);
-          run_hook(player, cause, &cmd->hooks.after, saveregs, 0);
-        }
-        /* Either way, we might log */
-        if (cmd->type & CMD_T_LOGARGS)
-          do_log(LT_HUH, player, cause, "%s", string);
-      }
-      free_global_regs("hook.regs", saveregs);
-    }
+  if ((cmd = command_find("HUH_COMMAND")) && !(cmd->type & CMD_T_DISABLED)) {
+    run_command(cmd, player, cause, "HUH_COMMAND", NULL, NULL, string, NULL, NULL, string, NULL, NULL, NULL);
   }
 }
 
@@ -1606,32 +1606,15 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
  */
 COMMAND(cmd_unimplemented)
 {
-  char *saveregs[NUMQ];
 
   if (strcmp(cmd->name, "UNIMPLEMENTED_COMMAND") != 0 &&
-      (cmd = command_find("UNIMPLEMENTED_COMMAND"))) {
-    if (!(cmd->type & CMD_T_DISABLED)) {
-      init_global_regs(saveregs);
-      if (run_hook(player, cause, &cmd->hooks.ignore, saveregs, 1)) {
-        /* If we have a hook/override, we use that instead */
-        if (!has_hook(&cmd->hooks.override) ||
-            !one_comm_match(cmd->hooks.override.obj, player,
-                            cmd->hooks.override.attrname, "HUH_COMMAND")) {
-          /* Otherwise, we do hook/before, the command, and hook/after */
-          run_hook(player, cause, &cmd->hooks.before, saveregs, 1);
-
-          cmd->func(cmd, player, cause, sw, raw, switches, args_raw,
-                    arg_left, args_left, arg_right, args_right);
-          run_hook(player, cause, &cmd->hooks.after, saveregs, 0);
-        }
-      }
-      free_global_regs("hook.regs", saveregs);
-      return;
-    }
+      (cmd = command_find("UNIMPLEMENTED_COMMAND")) &&
+      !(cmd->type & CMD_T_DISABLED)) {
+    run_command(cmd, player, cause, "UNIMPLEMENTED_COMMAND", sw, NULL, raw, NULL, args_raw, arg_left, args_left, arg_right, args_right);
+  } else {
+    /* Either we were already in UNIMPLEMENTED_COMMAND, or we couldn't find it */
+    notify(player, T("This command has not been implemented."));
   }
-
-  /* Either we were already in UNIMPLEMENTED_COMMAND, or we couldn't find it */
-  notify(player, T("This command has not been implemented."));
 }
 
 /** Adds a user-added command
@@ -1911,7 +1894,7 @@ list_commands(void)
 /* Check command permissions. Return 1 if player can use command,
  * 0 otherwise, and maybe be noisy about it.
  */
-static int
+int
 command_check(dbref player, COMMAND_INFO *cmd, int noisy)
 {
 

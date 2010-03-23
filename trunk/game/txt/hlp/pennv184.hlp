@@ -77,3 +77,6 @@ Fixes:
    when it wasn't told to. [MG]
  * Improvements to the match flags used by many pieces of code, hopefully
    fixing a number of minor bugs. [MG]
+ * Paranoid dumps no longer treat ANSI tags as invalid characters in attrs.
+   Reported by Trelane. [MG]
+

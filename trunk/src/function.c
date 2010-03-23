@@ -363,7 +363,7 @@ FUNTAB flist[] = {
   {"CSTATUS", fun_cstatus, 2, 2, FN_REG | FN_STRIPANSI},
   {"CTITLE", fun_ctitle, 2, 2, FN_REG | FN_STRIPANSI},
   {"CUSERS", fun_cinfo, 1, 1, FN_REG | FN_STRIPANSI},
-  {"CWHO", fun_cwho, 1, 2, FN_REG | FN_STRIPANSI},
+  {"CWHO", fun_cwho, 1, 3, FN_REG | FN_STRIPANSI},
   {"CENTER", fun_center, 2, 4, FN_REG},
   {"CHILDREN", fun_lsearch, 1, 1, FN_REG | FN_STRIPANSI},
   {"CHR", fun_chr, 1, 1, FN_REG | FN_STRIPANSI},

@@ -65,6 +65,8 @@ Functions:
  * nattr()'s <attribute pattern> now defaults to *, not **, the same as
    lattr() and other attribute functions. [MG]
  * clone() can now take a <new name> and <dbref>, as per @clone. [MG]
+ * cwho() now takes an optional 3rd argument to omit gagged objects.
+   Suggested by Trinsec. [MG]
 
 Attributes:
  * @outpageformat lets you alter how you view pages that you send.

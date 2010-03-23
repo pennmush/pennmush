@@ -2877,6 +2877,7 @@ FUNCTION(fun_cwho)
   int first = 1;
   int matchcond = 0;
   int priv = 0;
+  int skip_gagged = 0;
   int show;
   CHAN *chan = NULL;
   CHANUSER *u;
@@ -2893,7 +2894,7 @@ FUNCTION(fun_cwho)
     break;
   }
 
-  if (nargs == 2) {
+  if (nargs > 1 && args[1] && *args[1]) {
     if (!strcasecmp(args[1], "on"))
       matchcond = 0;
     else if (!strcasecmp(args[1], "off"))
@@ -2905,6 +2906,9 @@ FUNCTION(fun_cwho)
       return;
     }
   }
+
+  if (nargs > 2 && parse_boolean(args[2]))
+    skip_gagged = 1;
 
   /* Feh. We need to do some sort of privilege checking, so that
    * if mortals can't do '@channel/who wizard', they can't do
@@ -2936,6 +2940,8 @@ FUNCTION(fun_cwho)
         show = Connected(who) && (!Chanuser_Hide(u) || priv);
     }
     if (!show)
+      continue;
+    if (Chanuser_Gag(u) && skip_gagged)
       continue;
     if (first)
       first = 0;

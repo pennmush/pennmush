@@ -222,6 +222,7 @@ void command_argparse
 char *command_parse(dbref player, dbref cause, char *string, int fromport);
 void do_list_commands(dbref player, int lc);
 char *list_commands(void);
+int command_check(dbref player, COMMAND_INFO *cmd, int noisy);
 int command_check_byname(dbref player, const char *name);
 int command_check_byname_quiet(dbref player, const char *name);
 int restrict_command(dbref player, COMMAND_INFO *command, const char *restriction);
@@ -229,6 +230,9 @@ void reserve_aliases(void);
 void local_commands(void);
 void do_command_add(dbref player, char *name, int flags);
 void do_command_delete(dbref player, char *name);
+int run_command(COMMAND_INFO *cmd, dbref player, dbref cause, char *commandraw, switch_mask sw,
+      char switch_err[BUFFER_LEN], char *string, char *swp, char *ap,
+      char *ls, char *lsa[MAX_ARG], char *rs, char *rsa[MAX_ARG]);
 
 
 #endif                          /* __COMMAND_H */

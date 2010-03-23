@@ -28,7 +28,10 @@ Minor Changes:
  * @open can now open exits in remove locations, as well as your current
    location. Suggested by Bane. [MG]
  * New OPEN_OK flag allows anyone to open exits in a room, and @lock/open
-   to restrict who can. Based on patch by ranmir@M*U*S*H. [MG]   
+   to restrict who can. Based on patch by ranmir@M*U*S*H. [MG]
+ * Master Room exits and ZMR exits now run the "goto" command, and @ealias
+   and @lalias run the "enter"/"leave" commands, so @hooks get run, command
+   restrictions checked, etc. [MG]
 
 Commands:
  * New @include <obj>/<attr> command, which inserts <attr> into the current

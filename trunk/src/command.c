@@ -1395,7 +1395,10 @@ run_command(COMMAND_INFO *cmd, dbref player, dbref cause, char *commandraw, swit
   }
   /* Either way, we might log */
   if (cmd->type & CMD_T_LOGARGS)
-    do_log(LT_CMD, player, cause, "%s", commandraw);
+    if (cmd->func == cmd_password || cmd->func == cmd_newpassword || cmd->func == cmd_pcreate)
+      do_log(LT_CMD, player, cause, "%s %s=***", cmd->name, (cmd->func == cmd_password ? "***" : ls));
+    else
+      do_log(LT_CMD, player, cause, "%s", commandraw);
   else if (cmd->type & CMD_T_LOGNAME)
     do_log(LT_CMD, player, cause, "%s", cmd->name);
 

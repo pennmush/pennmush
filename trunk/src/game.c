@@ -1123,8 +1123,7 @@ process_command(dbref player, char *command, dbref cause, int from_port)
     log_activity(LA_CMD, player, msg);
     if (options.log_commands || Suspect(player))
       do_log(LT_CMD, player, NOTHING, "%s", msg);
-    if Verbose
-      (player)
+    if (Verbose(player))
         raw_notify(Owner(player), tprintf("#%d] %s", player, msg));
   }
 

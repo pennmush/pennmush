@@ -68,6 +68,8 @@ lock_type Link_Lock = "Link";       /**< Name of link lock */
 lock_type Leave_Lock = "Leave";     /**< Name of leave lock */
 lock_type Drop_Lock = "Drop";       /**< Name of drop lock */
 lock_type Give_Lock = "Give";       /**< Name of give lock */
+lock_type From_Lock = "From";       /**< Name of frop lock */
+lock_type Receive_Lock = "Receive"; /**< Name of receive lock */
 lock_type Mail_Lock = "Mail";       /**< Name of mail lock */
 lock_type Follow_Lock = "Follow";   /**< Name of follow lock */
 lock_type Examine_Lock = "Examine"; /**< Name of examine lock */
@@ -97,6 +99,8 @@ lock_list lock_types[] = {
   {"Leave", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {"Drop", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {"Give", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
+  {"From", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
+  {"Receive", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {"Mail", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {"Follow", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {"Examine", TRUE_BOOLEXP, GOD, LF_PRIVATE | LF_OWNER, NULL},

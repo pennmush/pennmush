@@ -107,6 +107,8 @@ extern lock_type Link_Lock;     /* Who can @link to me */
 extern lock_type Leave_Lock;    /* Who can leave me */
 extern lock_type Drop_Lock;     /* Who can drop me */
 extern lock_type Give_Lock;     /* Who can give me */
+extern lock_type From_Lock;     /* Who can give to me */
+extern lock_type Receive_Lock;  /* What can be given to me */
 extern lock_type Mail_Lock;     /* Who can @mail me */
 extern lock_type Follow_Lock;   /* Who can follow me */
 extern lock_type Examine_Lock;  /* Who can examine visual me */

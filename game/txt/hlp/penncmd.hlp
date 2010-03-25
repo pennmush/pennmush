@@ -998,14 +998,16 @@ See also: accent(), @nameformat, accname(), stripaccents()
 See also: look, @exitformat, @conformat, @descformat, @nameaccent, 
     @invformat, @idescformat
 & @cost
-  @cost <object>[=<amount>]
+  @cost <thing>[=<amount>]
   
   The COST attribute contains the number of pennies that must be given to
-  <object> to trigger its @pay/@opay/@apay attributes. If less than this
+  <thing> to trigger its @pay/@opay/@apay attributes. If less than this
   amount is given, the money will be refused, and if more is given, the
   difference is refunded.
   
   This attribute is evaluated, with the amount being given passed as %0.
+  It is only checked for THING-type objects; pennies can always be given
+  to other types of object.
 
   Example:
     > @cost Exit Machine=10
@@ -2408,6 +2410,8 @@ See also: @lock, locktypes, @clock, objid()
   @lock/leave           Who can leave this object (or room, via exits/@tel)
   @lock/drop            Who can drop this object or in this room
   @lock/give            Who can give this object
+  @lock/from            Who can give things to this object
+  @lock/receive         What things can be given to this object
   @lock/follow          Who can follow this object
   @lock/examine         Who can examine this object if it's VISUAL
   @lock/chzone          Who can @chzone to this object if it's a ZMO
@@ -4015,11 +4019,12 @@ See also: @ABUY, @BUY, @PRICELIST
   given. Wizards may "give" a negative number of pennies.
 
   You may also give players objects, but the other player must be set
-  ENTER_OK in order to receive something you give.
-
-  Giving money to an object gives the money to the object's
-  owner. Some MUSHes may have @lock/give enabled, which determines who
-  is allowed to give an object.
+  ENTER_OK in order to receive something you give. You must pass <object>'s
+  @lock/give and <player>'s @lock/from. <object> must pass <player>'s
+  @lock/receive.
+  
+  Giving money to a non-player gives it to the object's owner instead. When
+  giving to a THING, the amount given must match its @COST attribute.
 
 See also: @pay, @cost, @lock, inventory, @receive, @give
 & go

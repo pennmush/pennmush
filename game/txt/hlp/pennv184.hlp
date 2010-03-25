@@ -32,6 +32,9 @@ Minor Changes:
  * Master Room exits and ZMR exits now run the "goto" command, and @ealias
    and @lalias run the "enter"/"leave" commands, so @hooks get run, command
    restrictions checked, etc. [MG]
+ * New @lock/from and @lock/receive locks, to control who can give to an
+   object, and what objects can be given to them, respectively. From a 
+   suggestion by Nammyung@M*U*S*H, based on locks on ElendorMUSH. [MG]
 
 Commands:
  * New @include <obj>/<attr> command, which inserts <attr> into the current

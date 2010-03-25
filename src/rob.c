@@ -390,6 +390,17 @@ do_give(dbref player, char *recipient, char *amnt, int silent)
         notify(player, T("You can't give that away."));
         return;
       }
+
+      if (!eval_lock(player, who, From_Lock)) {
+        notify_format(player, T("%s doesn't want anything from you."), Name(who));
+        return;
+      }
+
+      if (!eval_lock(thing, who, Receive_Lock)) {
+        notify_format(player, T("%s doesn't want that."), Name(who));
+        return;
+      }
+
       if (Mobile(thing) && (EnterOk(who) || controls(player, who))) {
         moveto(thing, who);
 

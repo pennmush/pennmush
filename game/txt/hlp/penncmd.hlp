@@ -800,7 +800,7 @@ See also: @create, clone(), create(), @cpattr
   @command/add is a powerful tool that lets you create new commands which
   are matched before normal $-commands, and which can be set not to parse
   their arguments, but (via @hook) can still execute softcode like an
-  $-command. Only God can @command/add or @command/delete.
+  $-command. Only Wizards can @command/add, and only God can @command/delete.
 
   You can use these additional switches, along with @command/add, to control
   how the new command parses its arguments:

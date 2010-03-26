@@ -47,6 +47,7 @@ Commands:
  * 'look' now supports more english-matching (look this foo's 1st bar). [MG]
  * You can now look at objects on the other side of transparent exits, with
    "look [toward] <exit>'s <object>". Suggested by Trinsec. [MG]
+ * All wizards can now use @command/add. Suggested by qa'toq. [MG]
    
 Functions:
  * Added strfirstof() and strallof(), which return the first arg/all args

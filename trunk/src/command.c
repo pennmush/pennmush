@@ -1634,7 +1634,7 @@ do_command_add(dbref player, char *name, int flags)
 {
   COMMAND_INFO *command;
 
-  if (!God(player)) {
+  if (!Wizard(player)) {
     notify(player, T("Permission denied."));
     return;
   }

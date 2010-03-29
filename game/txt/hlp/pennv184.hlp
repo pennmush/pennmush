@@ -48,6 +48,11 @@ Commands:
  * You can now look at objects on the other side of transparent exits, with
    "look [toward] <exit>'s <object>". Suggested by Trinsec. [MG]
  * All wizards can now use @command/add. Suggested by qa'toq. [MG]
+ * function_alias in alias.cnf now creates a proper alias, not a clone, of
+   functions. @function/alias added, which does the same in-game. [MG]
+ * New @command/clone and @function/clone commands, which create copies of
+   a command/function which initially work the same as, but are independant
+   of, the originals. Based on suggestion by Bane. [MG]
    
 Functions:
  * Added strfirstof() and strallof(), which return the first arg/all args

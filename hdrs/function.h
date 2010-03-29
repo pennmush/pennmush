@@ -105,6 +105,8 @@ void do_function(dbref player, char *name, char **argv, int preserve);
 void do_function_toggle(dbref player, char *name, int toggle);
 void do_function_report(dbref player, char *name);
 void do_function_delete(dbref player, char *name);
+void do_function_clone(dbref player, const char *function, const char *clone);
+
 void function_init_postconfig(void);
 
 

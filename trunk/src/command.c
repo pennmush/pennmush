@@ -49,6 +49,7 @@ slab *command_slab = NULL; /**< slab for command_info structs */
 static const char *command_isattr(char *command);
 static int switch_find(COMMAND_INFO *cmd, const char *sw);
 static void strccat(char *buff, char **bp, const char *from);
+static COMMAND_INFO *clone_command(char *original, char *clone);
 static int has_hook(struct hook_data *hook);
 extern int global_fun_invocations;       /**< Counter for function invocations */
 extern int global_fun_recursions;       /**< Counter for function recursion */
@@ -77,7 +78,7 @@ const char *CommandLock = "CommandLock";
 COMLIST commands[] = {
 
   {"@COMMAND",
-   "ADD ALIAS DELETE EQSPLIT LSARGS RSARGS NOEVAL ON OFF QUIET ENABLE DISABLE RESTRICT NOPARSE",
+   "ADD ALIAS CLONE DELETE EQSPLIT LSARGS RSARGS NOEVAL ON OFF QUIET ENABLE DISABLE RESTRICT NOPARSE",
    cmd_command,
    CMD_T_PLAYER | CMD_T_EQSPLIT, 0, 0},
   {"@@", NULL, cmd_null, CMD_T_ANY | CMD_T_NOPARSE, 0, 0},
@@ -163,7 +164,7 @@ COMLIST commands[] = {
 
   {"@FORCE", "NOEVAL", cmd_force, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED,
    0, 0},
-  {"@FUNCTION", "ALIAS BUILTIN DELETE ENABLE DISABLE PRESERVE RESTORE RESTRICT",
+  {"@FUNCTION", "ALIAS BUILTIN CLONE DELETE ENABLE DISABLE PRESERVE RESTORE RESTRICT",
    cmd_function,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@GREP", "LIST PRINT ILIST IPRINT", cmd_grep,
@@ -1656,6 +1657,78 @@ do_command_add(dbref player, char *name, int flags)
   }
 }
 
+void
+do_command_clone(dbref player, char *original, char *clone)
+{
+  COMMAND_INFO *cmd;
+
+  if (!Wizard(player)) {
+    notify(player, T("Permission denied."));
+    return;
+  }
+
+  upcasestr(original);
+  upcasestr(clone);
+
+  cmd = command_find(original);
+  if (!cmd) {
+    notify(player, T("No such command."));
+    return;
+  } else if (!ok_command_name(clone) || command_find(clone)) {
+    notify(player, T("Bad command name."));
+    return;
+  }
+
+  clone_command(original, clone);
+  notify(player, T("Command cloned."));
+
+}
+
+static COMMAND_INFO *
+clone_command(char *original, char *clone)
+{
+
+  COMMAND_INFO *c1, *c2;
+
+  upcasestr(original);
+  upcasestr(clone);
+
+  c1 = command_find(original);
+  c2 = command_find(clone);
+  if (!c1 || c2)
+    return NULL;
+
+  c2 = make_command(mush_strdup(clone, "command_add"), c1->type, NULL, NULL, c1->sw.names, c1->func);
+  c2->sw.mask = c1->sw.mask;
+  if (c1->restrict_message)
+    c2->restrict_message = mush_strdup(c1->restrict_message, "cmd_restrict_message");
+  c2->cmdlock = c1->cmdlock;
+
+  if (c1->hooks.before.obj)
+    c2->hooks.before.obj = c1->hooks.before.obj;
+  if (c1->hooks.before.attrname)
+    c2->hooks.before.attrname = mush_strdup(c1->hooks.before.attrname, "hook.attr");
+
+  if (c1->hooks.after.obj)
+    c2->hooks.after.obj = c1->hooks.after.obj;
+  if (c1->hooks.after.attrname)
+    c2->hooks.after.attrname = mush_strdup(c1->hooks.after.attrname, "hook.attr");
+
+  if (c1->hooks.ignore.obj)
+    c2->hooks.ignore.obj = c1->hooks.ignore.obj;
+  if (c1->hooks.ignore.attrname)
+    c2->hooks.ignore.attrname = mush_strdup(c1->hooks.ignore.attrname, "hook.attr");
+
+  if (c1->hooks.override.obj)
+    c2->hooks.override.obj = c1->hooks.override.obj;
+  if (c1->hooks.override.attrname)
+    c2->hooks.override.attrname = mush_strdup(c1->hooks.override.attrname, "hook.attr");
+
+  ptab_insert_one(&ptab_command, clone, c2);
+  return command_find(clone);
+}
+
+
 /** Deletes a user-added command
  * \verbatim
  * This code implements @command/delete, which deletes a
@@ -1757,6 +1830,10 @@ COMMAND(cmd_command)
     } else {
       notify(player, T("Permission denied."));
     }
+    return;
+  }
+  if (SW_ISSET(sw, SWITCH_CLONE)) {
+    do_command_clone(player, arg_left, arg_right);
     return;
   }
 

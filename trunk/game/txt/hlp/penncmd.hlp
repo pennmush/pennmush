@@ -772,6 +772,7 @@ See also: @create, clone(), create(), @cpattr
   @command <command>
   @command/<switch> <command>
   @command/alias <command>=<alias>
+  @command/clone <command>=<clone>
   @command/restrict <command>=<restriction>
 
   @command can be used for adding new built-in commands, altering the way
@@ -782,7 +783,9 @@ See also: @create, clone(), create(), @cpattr
   about how a command is parsed.
   
   The /alias switch creates an alias for <command>, allowing players to type
-  <alias> to run <command>.
+  <alias> to run <command>. The /clone switch creates a separate copy of
+  <command>, which works the same initially but can be restricted, @hooked,
+  etc, separately.
 
   @command/restrict can be used to restrict who can use <command>. See 'help
   restrict' for more information.
@@ -1717,6 +1720,7 @@ See also: FLAGS, @set, @power, flag permissions
   @function/<switch> <function name>
   @function/restrict[/builtin] <function name>=<restrictions>
   @function/alias <function name>=<alias>
+  @function/clone <function name>=<clone>
   
   When used without any arguments, this command lists all global
   user-defined functions. For wizards and others with the Functions
@@ -1733,7 +1737,9 @@ See also: FLAGS, @set, @power, flag permissions
   /restrict, to change the restriction flags on an existing function.
   
   @function/alias creates an alias for the built-in function <function name>
-  so that it can also be called as <alias>. You cannot alias @functions.
+  so that it can also be called as <alias>. @function/clone creates a new
+  copy of <function name> named <clone>, which works the same initially but
+  can be restricted separately. You cannot alias or clone @functions.
 
   Otherwise, this command defines a global function with the name
   <function name>, which evaluates to <attribute> on <object>.

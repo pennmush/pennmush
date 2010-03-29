@@ -2551,7 +2551,7 @@ See also: @lock, locktypes, elock(), lockflags(), llockflags(), lset(),
   llocks([<object>])
   locks(<object>)
 
-  llocks(), aliased locks(), list locks set on <object>, including
+  llocks() and locks() both list @locks set on <object>, including
   user-defined locks (prefixed with USER:)
 
   If no object is given, llocks() returns all the predefined lock

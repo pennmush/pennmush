@@ -418,6 +418,8 @@ COMMAND(cmd_function)
                          SW_ISSET(sw, SWITCH_BUILTIN));
   else if (SW_ISSET(sw, SWITCH_RESTORE))
     do_function_restore(player, arg_left);
+  else if (SW_ISSET(sw, SWITCH_ALIAS))
+    alias_function(player, arg_left, args_right[1]);
   else {
     int split;
     char *saved;

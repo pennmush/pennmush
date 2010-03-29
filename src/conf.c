@@ -1045,7 +1045,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
     for (p = val; *p && !isspace((unsigned char) *p); p++) ;
     if (*p) {
       *p++ = '\0';
-      if (!alias_function(val, p)) {
+      if (!alias_function(NOTHING, val, p)) {
         if (source == 0) {
           do_rawlog(LT_ERR, "CONFIG: Couldn't alias %s to %s.", p, val);
         }

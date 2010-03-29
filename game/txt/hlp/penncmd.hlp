@@ -1716,6 +1716,7 @@ See also: FLAGS, @set, @power, flag permissions
   @function <function name>=<object>/<attribute>
   @function/<switch> <function name>
   @function/restrict[/builtin] <function name>=<restrictions>
+  @function/alias <function name>=<alias>
   
   When used without any arguments, this command lists all global
   user-defined functions. For wizards and others with the Functions
@@ -1730,6 +1731,9 @@ See also: FLAGS, @set, @power, flag permissions
   /enable, to re-enable it.
   /delete, to remove a user-defined function.
   /restrict, to change the restriction flags on an existing function.
+  
+  @function/alias creates an alias for the built-in function <function name>
+  so that it can also be called as <alias>. You cannot alias @functions.
 
   Otherwise, this command defines a global function with the name
   <function name>, which evaluates to <attribute> on <object>.

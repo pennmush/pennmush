@@ -334,7 +334,7 @@ COMMAND(cmd_emit)
 
   if (SW_ISSET(sw, SWITCH_ROOM))
     do_lemit(player, arg_left,
-             (SW_ISSET(sw, SWITCH_SILENT) * PEMIT_SILENT) | spflags);
+             (SW_ISSET(sw, SWITCH_SILENT) ? PEMIT_SILENT : 0) | spflags);
   else
     do_emit(player, arg_left, spflags);
 }
@@ -520,7 +520,7 @@ COMMAND(cmd_lemit)
                  && Can_Nspemit(player) ? PEMIT_SPOOF : 0);
   SPOOF(player, cause, sw);
   do_lemit(player, arg_left,
-           (SW_ISSET(sw, SWITCH_SILENT) * PEMIT_SILENT) | spflags);
+           (SW_ISSET(sw, SWITCH_SILENT) ? PEMIT_SILENT : 0) | spflags);
 }
 
 COMMAND(cmd_link)

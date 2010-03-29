@@ -95,7 +95,7 @@ FUN *func_hash_lookup(const char *name);
 FUN *builtin_func_hash_lookup(const char *name);
 int check_func(dbref player, FUN *fp);
 int restrict_function(const char *name, const char *restrict);
-int alias_function(const char *function, const char *alias);
+int alias_function(dbref player, const char *function, const char *alias);
 void do_function_restrict(dbref player, const char *name,
                           const char *restrict, int builtin);
 void do_function_restore(dbref player, const char *name);

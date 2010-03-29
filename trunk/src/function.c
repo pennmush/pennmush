@@ -1031,6 +1031,11 @@ do_function_clone(dbref player, const char *function, const char *clone)
 {
   FUN *fp;
 
+  if (!Wizard(player)) {
+    notify(player, T("Permission denied."));
+    return;
+  }
+
   if (any_func_hash_lookup(clone)) {
     notify(player, T("There's already a function with that name."));
     return;

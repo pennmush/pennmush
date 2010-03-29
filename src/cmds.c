@@ -420,6 +420,8 @@ COMMAND(cmd_function)
     do_function_restore(player, arg_left);
   else if (SW_ISSET(sw, SWITCH_ALIAS))
     alias_function(player, arg_left, args_right[1]);
+  else if (SW_ISSET(sw, SWITCH_CLONE))
+    do_function_clone(player, arg_left, args_right[1]);
   else {
     int split;
     char *saved;

@@ -34,6 +34,8 @@ static void func_hash_insert(const char *name, FUN *func);
 extern void local_functions(void);
 static int apply_restrictions(unsigned int result, const char *restriction);
 static char *build_function_report(dbref player, FUN *fp);
+static FUN *user_func_hash_lookup(const char *name);
+static FUN *any_func_hash_lookup(const char *name);
 
 HASHTAB htab_function;      /**< Function hash table */
 HASHTAB htab_user_function; /**< User-defined function hash table */
@@ -916,10 +918,27 @@ func_hash_lookup(const char *name)
   FUN *f;
   f = builtin_func_hash_lookup(name);
   if (!f)
-    f = (FUN *) hashfind(strupper(name), &htab_user_function);
+    f = user_func_hash_lookup(name);
   else if (f->flags & FN_OVERRIDE)
-    f = (FUN *) hashfind(f->name, &htab_user_function);
+    f = user_func_hash_lookup(name);
   return f;
+}
+
+static FUN *
+any_func_hash_lookup(const char *name)
+{
+
+  FUN *f;
+  f = builtin_func_hash_lookup(name);
+  if (!f)
+    f = user_func_hash_lookup(name);
+  return f;
+}
+
+static FUN *
+user_func_hash_lookup(const char *name)
+{
+  return (FUN *) hashfind(strupper(name), &htab_user_function);
 }
 
 /** Look up a function by name, builtins only.
@@ -1002,6 +1021,33 @@ check_func(dbref player, FUN *fp)
   return 1;
 }
 
+/** @function/clone, for creating a copy of a function.
+ * \param player the enactor
+ * \param name name of function to clone
+ * \param clone name of the cloned function
+ */
+void
+do_function_clone(dbref player, const char *function, const char *clone)
+{
+  FUN *fp;
+
+  if (any_func_hash_lookup(clone)) {
+    notify(player, T("There's already a function with that name."));
+    return;
+  }
+
+  fp = builtin_func_hash_lookup(function);
+  if (!fp) {
+    notify(player, T("That's not a builtin function."));
+    return;
+  }
+
+  function_add(strupper(clone), fp->where.fun, fp->minargs,
+               fp->maxargs, fp->flags);
+
+  notify(player, T("Function cloned."));
+}
+
 /** Add an alias to a function.
  * This function adds an alias to a function in the hash table.
  * \param player dbref of player to notify with errors, or NOTHING to skip
@@ -1016,9 +1062,9 @@ alias_function(dbref player, const char *function, const char *alias)
   FUN *fp;
 
   /* Make sure the alias doesn't exist already */
-  if (func_hash_lookup(alias)) {
+  if (any_func_hash_lookup(alias)) {
     if (player != NOTHING)
-      notify(player, T("There is already a function with that name."));
+      notify(player, T("There's already a function with that name."));
     return 0;
   }
 
@@ -1511,7 +1557,7 @@ do_function_restore(dbref player, const char *name)
     return;
   }
 
-  fp = (FUN *) hashfind(strupper(name), &htab_function);
+  fp = builtin_func_hash_lookup(name);
 
   if (!fp) {
     notify(player, T("That's not a builtin function."));

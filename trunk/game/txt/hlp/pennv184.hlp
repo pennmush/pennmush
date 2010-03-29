@@ -90,4 +90,5 @@ Fixes:
    fixing a number of minor bugs. [MG]
  * Paranoid dumps no longer treat ANSI tags as invalid characters in attrs.
    Reported by Trelane. [MG]
+ * The /silent switch for @lemit didn't work. [MG]
 

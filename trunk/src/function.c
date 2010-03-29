@@ -303,6 +303,22 @@ typedef struct fun_tab {
   int flags;    /**< Flags to control how the function is parsed. */
 } FUNTAB;
 
+typedef struct fun_alias {
+  const char *name;   /**< Name of function to alias */
+  const char *alias;  /**< Name of alias to create */
+} FUNALIAS;
+
+/* Table of hardcoded function aliases. Aliases can also be added with
+ * @function/alias or a function_alias directive in alias.cnf, both of
+ * which call the alias_function() function
+ */
+FUNALIAS faliases[] = {
+  {"UFUN", "U"},
+  {"IDLE", "IDLESECS"},
+  {"HOST", "HOSTNAME"},
+  {NULL, NULL}
+};
+
 
 /** The function table. Functions can also be added at runtime with
  * add_function().
@@ -452,9 +468,7 @@ FUNTAB flist[] = {
   {"HIDDEN", fun_hidden, 1, 1, FN_REG | FN_STRIPANSI},
   {"HOME", fun_home, 1, 1, FN_REG | FN_STRIPANSI},
   {"HOST", fun_hostname, 1, 1, FN_REG | FN_STRIPANSI},
-  {"HOSTNAME", fun_hostname, 1, 1, FN_REG | FN_STRIPANSI},
   {"IDLE", fun_idlesecs, 1, 1, FN_REG | FN_STRIPANSI},
-  {"IDLESECS", fun_idlesecs, 1, 1, FN_REG | FN_STRIPANSI},
   {"IF", fun_if, 2, 3, FN_NOPARSE},
   {"IFELSE", fun_if, 3, 3, FN_NOPARSE},
   {"ILEV", fun_ilev, 0, 0, FN_REG | FN_STRIPANSI},
@@ -726,7 +740,6 @@ FUNTAB flist[] = {
   {"UCSTR", fun_ucstr, 1, -1, FN_REG},
   {"UDEFAULT", fun_udefault, 2, 12, FN_NOPARSE},
   {"UFUN", fun_ufun, 1, 11, FN_REG},
-  {"U", fun_ufun, 1, 11, FN_REG},
   {"PFUN", fun_pfun, 1, 11, FN_REG},
   {"ULAMBDA", fun_ufun, 1, 11, FN_REG},
   {"ULDEFAULT", fun_udefault, 1, 12, FN_NOPARSE | FN_LOCALIZE},
@@ -877,8 +890,10 @@ list_functions(const char *type)
   if (nptrs > 0) {
     safe_str(ptrs[0], buff, &bp);
     for (i = 1; i < nptrs; i++) {
-      safe_chr(' ', buff, &bp);
-      safe_str(ptrs[i], buff, &bp);
+      if (strcmp(ptrs[i], ptrs[i - 1])) {
+        safe_chr(' ', buff, &bp);
+        safe_str(ptrs[i], buff, &bp);
+      }
     }
   }
   *bp = '\0';
@@ -899,9 +914,11 @@ FUN *
 func_hash_lookup(const char *name)
 {
   FUN *f;
-  f = (FUN *) hashfind(strupper(name), &htab_function);
-  if (!f || f->flags & FN_OVERRIDE)
+  f = builtin_func_hash_lookup(name);
+  if (!f)
     f = (FUN *) hashfind(strupper(name), &htab_user_function);
+  else if (f->flags & FN_OVERRIDE)
+    f = (FUN *) hashfind(f->name, &htab_user_function);
   return f;
 }
 
@@ -931,12 +948,16 @@ void
 init_func_hashtab(void)
 {
   FUNTAB *ftp;
+  FUNALIAS *fa;
 
   hashinit(&htab_function, 512);
   hash_init(&htab_user_function, 32, delete_function);
   function_slab = slab_create("functions", sizeof(FUN));
   for (ftp = flist; ftp->name; ftp++) {
     function_add(ftp->name, ftp->fun, ftp->minargs, ftp->maxargs, ftp->flags);
+  }
+  for (fa = faliases; fa->name; fa++) {
+    alias_function(NOTHING, fa->name, fa->alias);
   }
   local_functions();
 }
@@ -983,31 +1004,44 @@ check_func(dbref player, FUN *fp)
 
 /** Add an alias to a function.
  * This function adds an alias to a function in the hash table.
+ * \param player dbref of player to notify with errors, or NOTHING to skip
  * \param function name of function to alias.
  * \param alias name of the alias to add.
  * \retval 0 failure (alias exists, or function doesn't, or is a user fun).
  * \retval 1 success.
  */
 int
-alias_function(const char *function, const char *alias)
+alias_function(dbref player, const char *function, const char *alias)
 {
   FUN *fp;
 
   /* Make sure the alias doesn't exist already */
-  if (func_hash_lookup(alias))
+  if (func_hash_lookup(alias)) {
+    if (player != NOTHING)
+      notify(player, T("There is already a function with that name."));
     return 0;
+  }
 
   /* Look up the original */
   fp = func_hash_lookup(function);
-  if (!fp)
+  if (!fp) {
+    if (player != NOTHING)
+      notify(player, T("No such function."));
     return 0;
+  }
 
   /* We can't alias @functions. Just use another @function for these */
-  if (!(fp->flags & FN_BUILTIN))
+  if (!(fp->flags & FN_BUILTIN)) {
+    if (player != NOTHING)
+      notify(player, T("You cannot alias @functions."));
     return 0;
+  }
 
-  function_add(strdup(strupper(alias)), fp->where.fun,
-               fp->minargs, fp->maxargs, fp->flags);
+  func_hash_insert(strupper(alias), fp);
+
+  if (player != NOTHING)
+    notify(player, T("Alias added."));
+
   return 1;
 }
 
@@ -1401,18 +1435,10 @@ do_function(dbref player, char *name, char *argv[], int preserve)
     notify(player, T("Function added."));
     return;
   } else {
-
     /* we are modifying an old entry */
-    if ((fp->flags & FN_BUILTIN) && !(fp->flags & FN_OVERRIDE)) {
+    if ((fp->flags & FN_BUILTIN)) {
       notify(player, T("You cannot change that built-in function."));
       return;
-    }
-    if (fp->flags & FN_BUILTIN) {       /* Overriding a built in function */
-      fp = slab_malloc(function_slab, NULL);
-      fp->name = mush_strdup(name, "func_hash.name");
-      fp->where.ufun = mush_malloc(sizeof(USERFN_ENTRY), "userfn");
-      fp->flags = 0;
-      hashadd(name, fp, &htab_user_function);
     }
     fp->where.ufun->thing = thing;
     if (fp->where.ufun->name)
@@ -1531,6 +1557,12 @@ do_function_delete(dbref player, char *name)
     return;
   }
   if (fp->flags & FN_BUILTIN) {
+    if (strcasecmp(name, fp->name)) {
+      /* Function alias */
+      hashdelete(strupper(name), &htab_function);
+      notify(player, T("Function alias deleted."));
+      return;
+    }
     if (!Wizard(player)) {
       notify(player, T("You can't delete that @function."));
       return;
@@ -1570,6 +1602,11 @@ do_function_toggle(dbref player, char *name, int toggle)
   fp = func_hash_lookup(name);
   if (!fp) {
     notify(player, T("No such function."));
+    return;
+  }
+
+  if (strcasecmp(fp->name, strupper(name))) {
+    notify(player, T("You can't disable aliases."));
     return;
   }
 

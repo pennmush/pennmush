@@ -5633,8 +5633,8 @@ See also: strlen(), items()
   Examples:
     > @desc here=wrap(Wrapped paragraph, 72)
     > @desc here=wrap([space(4)]Indented paragraph, 72)
-    > @desc here=iter(wrap(Hanging indent, 72, 76, |),
-                   switch(#@, >1, space(4))]##, |, %r)
+    > @desc here=iter(wrap(Hanging indent, 72, 76, %r),
+                   switch(#@, >1, space(4))##, %r, %r)
 & XATTR()
 & XATTRP()
 & REGXATTR()

@@ -36,9 +36,9 @@
  * MAT_TYPE             - match only objects of the given type(s)
  * MAT_EXACT            - only do full-name matching, no partial names
  * MAT_EVERYTHING       - me,here,absolute,player,neighbor,possession,exit
- * MAT_NEARBY           - everything,near - absolute
+ * MAT_NEARBY           - everything,near
  * MAT_OBJECTS          - me,absolute,player,neigbor,possession
- * MAT_NEAR_THINGS      - objects,near - absolute
+ * MAT_NEAR_THINGS      - objects,near
  * MAT_REMOTE           - absolute,player,remote_contents,exit,remotes
  * MAT_LIMITED          - absolute,player,neighbor
  */

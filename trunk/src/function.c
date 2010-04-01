@@ -1030,14 +1030,20 @@ void
 do_function_clone(dbref player, const char *function, const char *clone)
 {
   FUN *fp;
+  char *realclone = strupper(clone);
 
   if (!Wizard(player)) {
     notify(player, T("Permission denied."));
     return;
   }
 
-  if (any_func_hash_lookup(clone)) {
+  if (any_func_hash_lookup(realclone)) {
     notify(player, T("There's already a function with that name."));
+    return;
+  }
+
+  if (!ok_function_name(realclone)) {
+    notify(player, T("Invalid function name."));
     return;
   }
 
@@ -1047,7 +1053,7 @@ do_function_clone(dbref player, const char *function, const char *clone)
     return;
   }
 
-  function_add(strupper(clone), fp->where.fun, fp->minargs,
+  function_add(realclone, fp->where.fun, fp->minargs,
                fp->maxargs, fp->flags);
 
   notify(player, T("Function cloned."));
@@ -1065,11 +1071,20 @@ int
 alias_function(dbref player, const char *function, const char *alias)
 {
   FUN *fp;
+  char *realalias;
+
+  realalias = strupper(alias);
 
   /* Make sure the alias doesn't exist already */
-  if (any_func_hash_lookup(alias)) {
+  if (any_func_hash_lookup(realalias)) {
     if (player != NOTHING)
       notify(player, T("There's already a function with that name."));
+    return 0;
+  }
+
+  if (!ok_function_name(realalias)) {
+    if (player != NOTHING)
+      notify(player, T("Invalid function name."));
     return 0;
   }
 
@@ -1088,7 +1103,7 @@ alias_function(dbref player, const char *function, const char *alias)
     return 0;
   }
 
-  func_hash_insert(strupper(alias), fp);
+  func_hash_insert(realalias, fp);
 
   if (player != NOTHING)
     notify(player, T("Alias added."));
@@ -1417,8 +1432,9 @@ do_function(dbref player, char *name, char *argv[], int preserve)
     return;
   }
   /* make sure the function name length is okay */
-  if (strlen(name) >= SBUF_LEN) {
-    notify(player, T("Function name too long."));
+  upcasestr(name);
+  if (!ok_function_name(name)) {
+    notify(player, T("Invalid function name."));
     return;
   }
   /* find the object. For some measure of security, the player must
@@ -1444,7 +1460,7 @@ do_function(dbref player, char *name, char *argv[], int preserve)
    * to replace a built-in function.
    */
 
-  fp = func_hash_lookup(upcasestr(name));
+  fp = func_hash_lookup(name);
   if (!fp) {
     if (argv[6] && *argv[6]) {
       notify(player, T("Expected between 1 and 5 arguments."));

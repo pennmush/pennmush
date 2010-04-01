@@ -40,6 +40,8 @@ Minor Changes:
  * New @lock/from and @lock/receive locks, to control who can give to an
    object, and what objects can be given to them, respectively. From a 
    suggestion by Nammyung@M*U*S*H, based on locks on ElendorMUSH. [MG]
+ * Changed the restrictions for valid @function names to match what was
+   reported by valid(). [MG]
 
 Commands:
  * New @include <obj>/<attr> command, which inserts <attr> into the current

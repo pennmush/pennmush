@@ -923,7 +923,7 @@ ok_function_name(const char *name)
    * to find at least one uppercase alpha
    */
   for (p = (unsigned char *) name; p && *p; p++) {
-    if (isspace(*p))
+    if (isspace(*p) || !isprint(*p))
       return 0;
     if (isupper(*p))
       cnt++;

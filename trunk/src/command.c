@@ -536,14 +536,46 @@ make_command(const char *name, int type,
   cmd->hooks.ignore.attrname = NULL;
   cmd->hooks.override.obj = NOTHING;
   cmd->hooks.override.attrname = NULL;
-  if (!flagstr && !powerstr)
-    restrict_command(NOTHING, cmd, "");
-  else if (!flagstr)
-    restrict_command(NOTHING, cmd, powerstr);
-  else if (!powerstr)
-    restrict_command(NOTHING, cmd, flagstr);
-  else
-    restrict_command(NOTHING, cmd, tprintf("%s %s", flagstr, powerstr));
+  /* Restrict with no flags/powers, then manually parse flagstr and powerstr
+     separately and add to restriction, to avoid issues with flags/powers with
+     the same name (HALT flag and Halt power) */
+  restrict_command(NOTHING, cmd, "");
+  if ((flagstr && *flagstr) || (powerstr && *powerstr)) {
+    char buff[BUFFER_LEN];
+    char *bp, *one, list[BUFFER_LEN], *p;
+    int first = 1;
+    bp = buff;
+    if (cmd->cmdlock != TRUE_BOOLEXP) {
+      safe_chr('(', buff, &bp);
+      safe_str(unparse_boolexp(NOTHING, cmd->cmdlock, UB_DBREF), buff, &bp);
+      safe_str(")&", buff, &bp);
+    }
+    if (flagstr && *flagstr) {
+      strcpy(list, flagstr);
+      p = trim_space_sep(list, ' ');
+      while ((one = split_token(&p, ' '))) {
+        if (!first)
+          safe_chr('|', buff, &bp);
+        first = 0;
+        safe_str("FLAG^", buff, &bp);
+        safe_str(one, buff, &bp);
+      }
+    }
+    if (powerstr && *powerstr) {
+      strcpy(list, powerstr);
+      p = trim_space_sep(list, ' ');
+      while ((one = split_token(&p, ' '))) {
+        if (!first)
+          safe_chr('|', buff, &bp);
+        first = 0;
+        safe_str("POWER^", buff, &bp);
+        safe_str(one, buff, &bp);
+      }
+    }
+    *bp = '\0';
+    cmd->cmdlock = parse_boolexp(NOTHING, buff, CommandLock);
+
+  }
   return cmd;
 }
 
@@ -1524,12 +1556,6 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
         set_flag_bitmask(flags, f->bitpos);
       }
     } else if ((c = ptab_find(&ptab_command_perms, restriction))) {
-      if (!(c->type & (CMD_T_LOGARGS | CMD_T_LOGNAME | CMD_T_DISABLED))) {
-        /* These 3 restrictions are checked for in command->type, and aren't
-         * built into the boolexp, so we only bother to rebuild the boolexp
-         * for the other restrictions */
-         make_boolexp = 1;
-      }
       if (clear)
         command->type &= ~c->type;
       else
@@ -1552,11 +1578,17 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
     restriction = tp;
   }
 
+  if ((command->type & (CMD_T_GOD | CMD_T_NOGAGGED | CMD_T_NOGUEST | CMD_T_NOFIXED)))
+    make_boolexp = 1;
+  else if ((command->type & CMD_T_ANY) != CMD_T_ANY)
+    make_boolexp = 1;
+
   mush_free(rsave, "rc.string");
 
   /* And now format what we have into a lock string, if necessary */
   if (!make_boolexp)
     return 1;
+
   tp = lockstr;
   safe_str(flag_list_to_lock_string(flags, powers), lockstr, &tp);
   if ((command->type & CMD_T_ANY) != CMD_T_ANY) {
@@ -1596,9 +1628,10 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
   }
   /* CMD_T_DISABLED and CMD_T_LOG* are checked for in command->types, and not part of the boolexp */
   *tp = '\0';
-  key = parse_boolexp(player, lockstr, CommandLock);
 
+  key = parse_boolexp(player, lockstr, CommandLock);
   command->cmdlock = key;
+
   return 1;
 }
 

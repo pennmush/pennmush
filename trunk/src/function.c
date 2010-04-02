@@ -1071,9 +1071,8 @@ int
 alias_function(dbref player, const char *function, const char *alias)
 {
   FUN *fp;
-  char *realalias;
-
-  realalias = strupper(alias);
+  char realalias[BUFFER_LEN];
+  strcpy(realalias, strupper(alias));
 
   /* Make sure the alias doesn't exist already */
   if (any_func_hash_lookup(realalias)) {

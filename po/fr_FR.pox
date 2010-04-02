@@ -1486,10 +1486,6 @@ msgstr "Fonction ajoutée."
 msgid "Function deleted."
 msgstr "Fonction supprimée."
 
-#: src/function.c:677
-msgid "Function name too long."
-msgstr "Nom de fonction trop long."
-
 #: src/function.c:741
 msgid "Function updated."
 msgstr "Fonction mise à jour."

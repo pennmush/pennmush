@@ -952,10 +952,6 @@ msgstr "Komplettes MODT: %s"
 msgid "Function deleted."
 msgstr "Funktion gelöscht."
 
-#: src/function.c:677
-msgid "Function name too long."
-msgstr "Funktionsname ist zu lang."
-
 #: src/function.c:741
 msgid "Function updated."
 msgstr "Funktion aktualisiert."

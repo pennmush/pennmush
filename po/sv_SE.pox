@@ -1512,10 +1512,6 @@ msgstr "Funktion adderad."
 msgid "Function deleted."
 msgstr "Funktion raderad."
 
-#: src/function.c:677
-msgid "Function name too long."
-msgstr "Funktionsnamn för långt."
-
 #: src/function.c:741
 msgid "Function updated."
 msgstr "Funktion updaterad."

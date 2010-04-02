@@ -2409,10 +2409,6 @@ msgstr "Funkcija dodana."
 msgid "Function deleted."
 msgstr "Funkcija obrisana."
 
-#: src/function.c:677
-msgid "Function name too long."
-msgstr "Ime funkcije je predugaèko."
-
 #: src/function.c:741
 msgid "Function updated."
 msgstr "Funkcija a¾urirana."

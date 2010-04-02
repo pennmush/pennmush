@@ -1330,10 +1330,6 @@ msgstr "Funksjon lagt til."
 msgid "Function deleted."
 msgstr "Funksjon slettet."
 
-#: src/function.c:677
-msgid "Function name too long."
-msgstr "Funksjonsnavnet for langt."
-
 #: src/function.c:741
 msgid "Function updated."
 msgstr "Funksjonen oppdatert."

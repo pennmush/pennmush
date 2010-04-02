@@ -1573,10 +1573,6 @@ msgstr "Funkció hozzáadva."
 msgid "Function deleted."
 msgstr "Funkció törölve."
 
-#: src/function.c:677
-msgid "Function name too long."
-msgstr "Funkció neve túl hosszú."
-
 #: src/function.c:741
 msgid "Function updated."
 msgstr "Funkció frissítve."

@@ -371,10 +371,6 @@ msgstr "Nome de função muito grande."
 msgid "Function deleted."
 msgstr "Nome de função muito grande."
 
-#: src/function.c:677
-msgid "Function name too long."
-msgstr "Nome de função muito grande."
-
 #: src/function.c:741
 msgid "Function updated."
 msgstr "Nome de função muito grande."

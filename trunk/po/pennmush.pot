@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-02 02:00-0500\n"
+"POT-Creation-Date: 2010-04-03 02:00-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -298,8 +298,8 @@ msgstr ""
 #: create.c:313 create.c:364 create.c:368 create.c:386 create.c:622
 #: destroy.c:234 destroy.c:893 extchat.c:1780 extchat.c:1797 extchat.c:1828
 #: extchat.c:3882 flags.c:1536 flags.c:1541 flags.c:1694 function.c:1036
-#: function.c:1292 function.c:1427 function.c:1572 function.c:1618
-#: function.c:1665 funmisc.c:826 game.c:951 game.c:1497 lock.c:715 lock.c:779
+#: function.c:1291 function.c:1426 function.c:1571 function.c:1617
+#: function.c:1664 funmisc.c:826 game.c:951 game.c:1497 lock.c:715 lock.c:779
 #: lock.c:975 look.c:1323 look.c:1612 malias.c:763 malias.c:868 match.c:477
 #: move.c:535 move.c:864 move.c:879 predicat.c:1227 predicat.c:1422 rob.c:428
 #: set.c:193 set.c:969 set.c:1051 set.c:1087 set.c:1100 set.c:1185
@@ -1146,11 +1146,11 @@ msgstr ""
 msgid "#-1 NO SUCH CONFIG OPTION"
 msgstr ""
 
-#: conf.c:1695 function.c:1685
+#: conf.c:1695 function.c:1684
 msgid "Disabled."
 msgstr ""
 
-#: conf.c:1697 function.c:1682
+#: conf.c:1697 function.c:1681
 msgid "Enabled."
 msgstr ""
 
@@ -3288,15 +3288,15 @@ msgstr ""
 msgid "Functions: %s"
 msgstr ""
 
-#: function.c:1041 function.c:1081
+#: function.c:1041 function.c:1080
 msgid "There's already a function with that name."
 msgstr ""
 
-#: function.c:1046 function.c:1087 function.c:1437
+#: function.c:1046 function.c:1086 function.c:1436
 msgid "Invalid function name."
 msgstr ""
 
-#: function.c:1052 function.c:1584
+#: function.c:1052 function.c:1583
 msgid "That's not a builtin function."
 msgstr ""
 
@@ -3304,137 +3304,137 @@ msgstr ""
 msgid "Function cloned."
 msgstr ""
 
-#: function.c:1095 function.c:1305 function.c:1623 function.c:1671
-#: function.c:1704
+#: function.c:1094 function.c:1304 function.c:1622 function.c:1670
+#: function.c:1703
 msgid "No such function."
 msgstr ""
 
-#: function.c:1102
+#: function.c:1101
 msgid "You cannot alias @functions."
 msgstr ""
 
-#: function.c:1109
+#: function.c:1108
 msgid "Alias added."
 msgstr ""
 
-#: function.c:1296
+#: function.c:1295
 msgid "Restrict what function?"
 msgstr ""
 
-#: function.c:1300
+#: function.c:1299
 msgid "Do what with the function?"
 msgstr ""
 
-#: function.c:1311
+#: function.c:1310
 msgid "Builtin function"
 msgstr ""
 
-#: function.c:1316
+#: function.c:1315
 msgid "Restrictions unchanged."
 msgstr ""
 
-#: function.c:1318
+#: function.c:1317
 msgid "Restrictions modified."
 msgstr ""
 
-#: function.c:1373
+#: function.c:1372
 msgid "No global user-defined functions exist."
 msgstr ""
 
-#: function.c:1384
+#: function.c:1383
 msgid "Function Name                   Dbref #    Attrib"
 msgstr ""
 
-#: function.c:1402
+#: function.c:1401
 msgid "User functions:"
 msgstr ""
 
-#: function.c:1431
+#: function.c:1430
 msgid "You must specify an object and an attribute."
 msgstr ""
 
-#: function.c:1448
+#: function.c:1447
 msgid "No permission to control object."
 msgstr ""
 
-#: function.c:1452
+#: function.c:1451
 msgid "No permission to examine object."
 msgstr ""
 
-#: function.c:1466
+#: function.c:1465
 msgid "Expected between 1 and 5 arguments."
 msgstr ""
 
-#: function.c:1502
+#: function.c:1501
 msgid "Function added."
 msgstr ""
 
-#: function.c:1507
+#: function.c:1506
 msgid "You cannot change that built-in function."
 msgstr ""
 
-#: function.c:1540
+#: function.c:1539
 msgid "Function updated."
 msgstr ""
 
-#: function.c:1577
+#: function.c:1576
 msgid "Restore what?"
 msgstr ""
 
-#: function.c:1589
+#: function.c:1588
 msgid "That function isn't deleted!"
 msgstr ""
 
-#: function.c:1594
+#: function.c:1593
 msgid "Restored."
 msgstr ""
 
-#: function.c:1630
+#: function.c:1629
 msgid "Function alias deleted."
 msgstr ""
 
-#: function.c:1634 function.c:1643
+#: function.c:1633 function.c:1642
 msgid "You can't delete that @function."
 msgstr ""
 
-#: function.c:1638 function.c:1648
+#: function.c:1637 function.c:1647
 msgid "Function deleted."
 msgstr ""
 
-#: function.c:1676
+#: function.c:1675
 msgid "You can't disable aliases."
 msgstr ""
 
-#: function.c:1737
+#: function.c:1736
 #, c-format
 msgid "Name      : %s() (%s%s)"
 msgstr ""
 
-#: function.c:1837
+#: function.c:1836
 #, c-format
 msgid "Flags     : %s"
 msgstr ""
 
-#: function.c:1841
+#: function.c:1840
 #, c-format
 msgid "Location  : #%d/%s\n"
 msgstr ""
 
-#: function.c:1849
+#: function.c:1848
 msgid "(Commas okay in last argument)"
 msgstr ""
 
-#: function.c:1855
+#: function.c:1854
 #, c-format
 msgid "Arguments : %d %s"
 msgstr ""
 
-#: function.c:1857
+#: function.c:1856
 #, c-format
 msgid "Arguments : At least %d %s"
 msgstr ""
 
-#: function.c:1860
+#: function.c:1859
 #, c-format
 msgid "Arguments : %d to %d %s"
 msgstr ""

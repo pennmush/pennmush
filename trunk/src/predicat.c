@@ -440,7 +440,10 @@ controls(dbref who, dbref what)
   if (!GoodObject(what))
     return 0;
 
-  if (God(what) && !God(who))
+  if (what == who)
+    return 1;
+
+  if (God(what))
     return 0;
 
   if (Wizard(who))
@@ -449,7 +452,7 @@ controls(dbref who, dbref what)
   if (Wizard(what) || (Hasprivs(what) && !Hasprivs(who)))
     return 0;
 
-  if (Mistrust(who) && (who != what))
+  if (Mistrust(who))
     return 0;
 
   if (Owns(who, what) && (!Inheritable(what) || Inheritable(who)))

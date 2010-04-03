@@ -2426,7 +2426,7 @@ See also: @lock, locktypes, @clock, objid()
   @lock/examine         Who can examine this object if it's VISUAL
   @lock/chzone          Who can @chzone to this object if it's a ZMO
   @lock/forward         Who can @forwardlist a message to this object 
-  @lock/control         Who can control this object (only if set)
+  @lock/control         Who can control this object (only if set; non-player)
   @lock/dropto          Who can trigger this container's drop-to.
   @lock/destroy         Who can destroy this object if it's DESTROY_OK
   @lock/interact        Who can send sound (say/pose/emit/etc) to this object

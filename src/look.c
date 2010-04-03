@@ -1614,9 +1614,10 @@ do_decompile(dbref player, const char *xname, const char *prefix, int dec_type)
     return;
   }
 
+  notify_format(player, "%s@@ %s (#%d)", prefix, shortname(thing), thing);
   switch (Typeof(thing)) {
   case TYPE_THING:
-    notify_format(player, "%s@create %s", prefix, object);
+    notify_format(player, "%s@create %s", prefix, Name(thing));
     break;
   case TYPE_ROOM:
     notify_format(player, "%s@dig/teleport %s", prefix, Name(thing));

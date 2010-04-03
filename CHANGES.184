@@ -60,6 +60,8 @@ Commands:
  * New @command/clone and @function/clone commands, which create copies of
    a command/function which initially work the same as, but are independant
    of, the originals. Based on suggestion by Bane. [MG]
+ * Added a comment line to the beginning of @decompile's output showing
+   the object name and dbref. [MG]
    
 Functions:
  * Added strfirstof() and strallof(), which return the first arg/all args
@@ -98,4 +100,6 @@ Fixes:
  * Paranoid dumps no longer treat ANSI tags as invalid characters in attrs.
    Reported by Trelane. [MG]
  * The /silent switch for @lemit didn't work. [MG]
+ * @decompile/db showed '@create <dbref>' for THINGs, not '@create <name>',
+   and @decomp/name could break. Reported by Paige. [MG]
 

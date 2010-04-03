@@ -255,7 +255,7 @@ COMMAND(cmd_decompile)
   if (SW_ISSET(sw, SWITCH_DB) || SW_ISSET(sw, SWITCH_TF))
     flags |= DEC_DB;
   if (SW_ISSET(sw, SWITCH_NAME))
-    flags = ~DEC_DB;
+    flags &= ~DEC_DB;
   if (SW_ISSET(sw, SWITCH_FLAGS))
     dbflags |= DEC_FLAG;
   if (SW_ISSET(sw, SWITCH_ATTRIBS))

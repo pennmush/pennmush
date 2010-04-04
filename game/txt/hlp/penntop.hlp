@@ -649,49 +649,6 @@ See also: ENACTOR, EXECUTOR
   was thus the executor.
 
 See also: ENACTOR, CALLER, SUBSTITUTION
-& EXITS
-  An exit is a one-way link that takes you from its source room to its
-  destination room. To open an exit from a room, you must control that
-  room.  To open an exit to a room, you must either control the room
-  or it must be set LINK_OK. If an exit is set DARK is will not show
-  up in the list of obvious exits in a room.
-
-  If an exit is set TRANSPARENT, someone who looks at the exit will
-  also see the description and contents of the destination room. If an
-  exit is set CLOUDY, someone who looks at the exit will also see the
-  contents of the room beyond, but not its description. If an exits is
-  set -both- CLOUDY and TRANSPARENT, the description but not the
-  contents will be seen.
-   
-  If you have code on an exit (In an @asuccess or the like), note that
-  [loc(exit)] is the exit's destination, and [home(exit)] is the
-  exit's starting point. If an exit @emit's something, it will be
-  heard in the source room.
-   
-(continued in exits2)
-& EXITS2
-  You can create an exit that sends those who go through it to their
-  homes by typing '@link <EXIT>=home'.
-
-  Starting with PennMUSH version 1.50p10, exits can have more than one
-  destination. To make an exit with a variable destination, open the
-  exit (using @open), then type '@link <EXIT>=variable'. Finally, add
-  an attribute named 'DESTINATION' to the exit (&destination <EXIT>),
-  which will be evaluated for the dbref # of the destination room when
-  the exit is used.
-   
-  For example:
-  @open South <S>;s;south
-  @link s=variable
-  &destination s=[switch(rand(3),0,#100,1,#101,2,#102)]
-   
-  This exit would take you to either room #100, #101, or #102
-  depending on the random number.
-
-  Anyone can create variable exits, but the destinations must be to
-  places that the exit can normally @link to.
-
-See also: @link, @open, link_ok, CLOUDY, TRANSPARENT, @firstexit
 & FAILURE
   FAILURE  
 
@@ -1758,41 +1715,62 @@ See also: FAILURE, @lock, VERBS, ATTRIBUTES, @success, @asuccess, @osuccess
   file for that command.
   (If you are looking for information on @switch, see 'help @switch'.)
 & TYPES OF OBJECTS
+& TYPES
+& OBJECTS
   
-  Everything on a MUSH is an object in the MUSH database. There are
-  four types of objects: players, rooms, exits, things. You can see
-  the type of an object when you 'examine' it, or with the 'type()'
-  function.
+  Everything on a MUSH is an object in the MUSH database. There are four 
+  types of objects: players, things (once called 'objects'), rooms and exits.
+  You can see the type of an object when you 'examine' it, or with the 
+  type() function.
+  
+  For more information on any of the types, see 'help <type>'.
 
-  Unique Characteristics
-  PLAYERS
-    Can own other objects and can be connected to. Can receive @mail.
-    Can move around, speak/pose/emit, enter MUSH commands, enter
-    global $-commands. You can have $-commands on a player, but not
-    ^-patterns.  Players can be carried, can carry other objects, and
-    can follow.
-  ROOMS
-    Fixed container objects, linked together by exits. Cannot move.
-    Rooms can enter MUSH commands and execute global $-commands.  You
-    can have $-commands and ^-patterns on a room.
-    
-(continued in help TYPES2)
-& TYPES2
-  EXITS
-    Objects that link rooms and things together. Cannot move, but can
-    be @teleport-ed to a new location. Exits can enter MUSH commands
-    and execute global $-commands. You can NOT have $-commands or
-    ^-patterns on exits. Exits can lead TO things (if the
-    link_to_object @config option is true), but they can only lead
-    FROM rooms.
+See also: type(), hastype()
+& PLAYERS
 
-  THINGS
-    Can move around, speak/pose/emit, enter MUSH commands, enter
-    global $-commands. Can send @mail as themselves. You can have
-    $-commands and ^-patterns on things. Things can carry, be carried,
-    and can follow.
+  Players can be created at the login screen (or with @pcreate) and connected
+  to. They can also receive @mail, and have a number of attributes set on 
+  them by the MUSH automatically, including LAST, LASTSITE, etc. They can 
+  have multiple @aliases, and are checked for $-commands and ^-listens.
+  
+  @linking a player sets their home.
 
-See also: EXITS, USER-DEFINED COMMANDS, LISTENING, GLOBALS
+See also: TYPES OF OBJECTS, type(), hastype(), @pcreate
+& ROOMS
+
+  Rooms are outermost-containers: they cannot be moved. They are created
+  with @dig. Rooms can contain exits. They are checked for $-commands and 
+  ^-listens. Rooms do not have aliases.
+  
+  @linking a room creates a drop-to. Rooms have no location; loc() on a room
+  returns its drop-to (as does home()).
+  
+See also: TYPES OF OBJECTS, type(), hastype(), @dig, DROP-TOS
+& THINGS
+  
+  Things are created with @create. They can move around the MUSH, be entered
+  and carried. They are checked for $-commands and ^-listens.  Things do not
+  have aliases.
+  
+  @linking a thing sets its home.
+  
+See also: TYPES OF OBJECTS, type(), hastype(), @create
+& EXITS
+
+  Exits are created with @open. They link rooms together, and can be used by
+  players and things to move from one room to another with the GOTO command.
+  Exits cannot move (though they can be @teleported to another room). They
+  can have multiple aliases as part of their @name. They are NOT checked for
+  $-commands or ^-listens.
+  
+  You can change the destination of an exit with the @link command. home()
+  returns the source room of an exit, and loc() returns its destination.
+  
+  Setting an exit CLOUDY and/or TRANSPARENT causes its destination's
+  description and/or contents to be shown after the exit's description when
+  looked at.
+  
+See also: TYPES OF OBJECTS, type(), hastype(), @open, @link
 & $-COMMANDS
 & MACROS
 & USER-DEFINED COMMANDS

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-03 02:00-0500\n"
+"POT-Creation-Date: 2010-04-04 02:00-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -301,7 +301,7 @@ msgstr ""
 #: function.c:1291 function.c:1426 function.c:1571 function.c:1617
 #: function.c:1664 funmisc.c:826 game.c:951 game.c:1497 lock.c:715 lock.c:779
 #: lock.c:975 look.c:1323 look.c:1612 malias.c:763 malias.c:868 match.c:477
-#: move.c:535 move.c:864 move.c:879 predicat.c:1227 predicat.c:1422 rob.c:428
+#: move.c:535 move.c:864 move.c:879 predicat.c:1230 predicat.c:1425 rob.c:428
 #: set.c:193 set.c:969 set.c:1051 set.c:1087 set.c:1100 set.c:1185
 #: speech.c:1480 warnings.c:294 warnings.c:515 wiz.c:442 wiz.c:565 wiz.c:576
 #: wiz.c:850 wiz.c:1013 wiz.c:1043
@@ -4257,7 +4257,7 @@ msgstr ""
 msgid "%s [#%d%s] is veiled"
 msgstr ""
 
-#: look.c:426 look.c:429 look.c:435 look.c:439 predicat.c:1431 set.c:936
+#: look.c:426 look.c:429 look.c:435 look.c:439 predicat.c:1434 set.c:936
 msgid "No matching attributes."
 msgstr ""
 
@@ -5200,56 +5200,56 @@ msgstr ""
 msgid "%s on %s"
 msgstr ""
 
-#: predicat.c:492
+#: predicat.c:495
 msgid "Sorry, there is no more room in the database."
 msgstr ""
 
-#: predicat.c:497
+#: predicat.c:500
 #, c-format
 msgid "Sorry, you don't have enough %s."
 msgstr ""
 
-#: predicat.c:502
+#: predicat.c:505
 msgid "Sorry, your building quota has run out."
 msgstr ""
 
-#: predicat.c:545
+#: predicat.c:548
 #, c-format
 msgid "GAME: %s(%s) spent %d %s."
 msgstr ""
 
-#: predicat.c:553
+#: predicat.c:556
 #, c-format
 msgid "GAME: %s(%s) tried to spend %d %s."
 msgstr ""
 
-#: predicat.c:1112
+#: predicat.c:1115
 #, c-format
 msgid "%s message from %s: %s"
 msgstr ""
 
-#: predicat.c:1116
+#: predicat.c:1119
 #, c-format
 msgid "[%d:%02d] %s message sent to %s."
 msgstr ""
 
-#: predicat.c:1199
+#: predicat.c:1202
 msgid "What was the victim of the verb?"
 msgstr ""
 
-#: predicat.c:1205
+#: predicat.c:1208
 msgid "What do you want to do with the verb?"
 msgstr ""
 
-#: predicat.c:1211
+#: predicat.c:1214
 msgid "What do you want to do the verb?"
 msgstr ""
 
-#: predicat.c:1407
+#: predicat.c:1410
 msgid "What pattern do you want to grep for?"
 msgstr ""
 
-#: predicat.c:1434
+#: predicat.c:1437
 #, c-format
 msgid "Matches of '%s' on %s(#%d): %s"
 msgstr ""

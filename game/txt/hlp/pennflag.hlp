@@ -440,7 +440,10 @@ See also: @open, LINK_OK
   patterns. Unlike $-commands, ^-listens are not inherited from parents by
   default; LISTEN_PARENT must be set as well as MONITOR to enable this.
 
-  When using the LISTEN Attribute Tree, you must set the Root Attribute
+  The NO_COMMAND attribute flag disables ^-listen matching for a single
+  attribute; see 'help attribute flags' for details.
+
+  If using the LISTEN Attribute Tree, you must set the Root Attribute
   !NO_COMMAND. By default this Attribute/Attribute Root has been set 
   NO_COMMAND by the system. Attributes which are set NO_COMMAND will not
   be checked for ^-listen patterns.
@@ -494,6 +497,9 @@ See also: i18n, accent(), stripaccents()
   Many MUSHes choose to have all objects initially set NO_COMMAND at
   creation. The flag has no effect on exits, which are never checked for
   $-commands.
+  
+  There is also a NO_COMMAND attribute flag, which disables $-command AND
+  ^-listen checking for a single attribute. See 'help attribute flags'.
 
 See also: USER-DEFINED COMMANDS
 & NO_LEAVE

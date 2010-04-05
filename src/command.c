@@ -1594,6 +1594,8 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
   if ((command->type & CMD_T_ANY) != CMD_T_ANY) {
     char join = '\0';
 
+    if (lockstr != tp)
+      safe_chr('&', lockstr, &tp);
     safe_chr('(', lockstr, &tp);
 
     /* Type-locked command */

@@ -1592,7 +1592,7 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
   tp = lockstr;
   safe_str(flag_list_to_lock_string(flags, powers), lockstr, &tp);
   if ((command->type & CMD_T_ANY) != CMD_T_ANY) {
-    char join = (char) NULL;
+    char join = '\0';
 
     safe_chr('(', lockstr, &tp);
 

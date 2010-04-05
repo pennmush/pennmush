@@ -334,47 +334,13 @@ See also: can_nspemit
 & INHERIT
 & TRUST
   Flag:  TRUST  (all types)
-
-  TRUST is a security flag used to prevent objects without authorization 
-  from using @force, @set, and @trigger on other objects. Authorization is 
-  successful if any of these are true:
- 
-    1. The enactor is WIZARD ("wizards control all").
-    2. The enactor's owner is TRUST ("the player trusts all their objects").
-    3. The enactor is TRUST ("this object is trusted").
-    4. The target is not TRUST ("this object isn't trusted").
-
-  That is, if a non-wizard player is set TRUST, all of their objects may act
-  on each other (case 2). Otherwise, only TRUST objects may act on TRUST 
-  objects (case 3) but any of the player's objects may act on non-TRUST 
-  objects (case 4).
-
-  Only TRUST or WIZARD objects may force their owners. Players can always 
-  @force, @set, and @trigger their objects.
-
-  This flag used to be called INHERIT, and INHERIT is still an alias for it,
-  but TRUST better describes its action.
- 
-  Continued in "help trust2".
-& TRUST2
-& INHERIT2
- 
-  Authorization is only denied if the enactor is neither a player nor
-  TRUST, and the target is WIZARD, TRUST, or is a player.
-
-  The TRUST protection against @trigger may be overridden by setting
-  the target object LINK_OK.
-
-  Objects which are WIZARD are not subject to any special criterion,
-  although they are automatically considered to be TRUST. The normal
-  criteria for object control still apply.
- 
-  The TRUST flag protects against an object from being controlled by
-  anything not owned by its owner. This prevents someone who controls
-  a zone master from doing things like @forcing an TRUST object to
-  @force its owner.
   
-See also: MISTRUST
+  Setting an object TRUST prevents anything else from controlling it, aside
+  from WIZARDs, the object's owner, or another object owned by the same
+  player which is also set TRUST. It also allows the object to control its
+  owner.
+  
+See also: MISTRUST, CONTROL
 & JUDGE
 & JURY_OK
   Flags:  JUDGE and JURY_OK  (players)
@@ -464,20 +430,19 @@ See also: LISTENING, @listen, LISTEN_PARENT, HEAR_CONNECT
 See also: DBREF, TERSE
 & MISTRUST
   Flag:  MISTRUST  (things, rooms, exits)
-
-  Mistrust prevents an object from controlling anything but itself. This 
-  will also usually prevent it from examining anything else non-VISUAL 
-  owned by the same player. It also prevents the object from benefitting 
-  from its owner's no_pay, no_kill, and no_quota powers, if any.
-
-  This flag can be used when you wish a single player to retain ownership 
-  of objects that other players will use to run arbitrary commands, and 
-  don't want those objects to be able to affect your objects.
-
-  Note, however, that a Wizard object will ignore this flag, a see_all 
-  object will still be able to examine anything, a no_pay object will still
-  have unlimited money, etc. This flag works best when no other privileges 
-  are granted to the object.
+  
+  The MISTRUST flag prevents an object from controlling another object via
+  Control @locks, Zone @locks on ZMOs or SHARED players, or from controlling
+  other objects with the same owner. It also prevents the object from
+  inheriting the no_pay, no_kill and no_quota powers from its owner.
+  
+  This flag can be used when you with a single player to retain ownership
+  of objects that other players will control or run arbitrary code on, and
+  don't want those objects to be able ot affect your other objects.
+  
+  Note that if a MISTRUST object is set WIZARD is will still control all
+  objects in the database, and that MISTRUST does not prevent no_pay or 
+  other powers from being applies to the object directly.
 
 See also: control, TRUST
 & NOACCENTS

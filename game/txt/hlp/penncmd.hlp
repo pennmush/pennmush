@@ -304,18 +304,19 @@ See also: follow, unfollow, @follow, followers(), ACTION LISTS
 See also: @listen, LISTENING, ACTION LISTS
 & @leave
 & @oleave
+& @oxleave
 & @aleave
   @leave <object>[=<message>]
   @oleave <object>[=<message>]
+  @oxleave <object>[=<message>]
   @aleave <object>[=<action list>]
   
   These attributes contain the message shown to anyone leaving <object>,
-  the message shown to others inside <object> when someone leaves it, and 
+  the message shown to others inside <object> when someone leaves it, the
+  message shown to others in <object>'s location when someone leaves it, and 
   the actions to be taken by <object> when someone leaves it, respectively.
-  The name of the object leaving is automatically added to the beginning of
-  the @oleave message.
   
-See also: leave, @oxleave, @lfail, ACTION LISTS,
+See also: leave, @oxleave, @lfail, ACTION LISTS, VERBS
 & @lfail
 & @olfail
 & @alfail
@@ -365,22 +366,25 @@ See also: @name, alias(), fullalias()
 See also: @quota, @squota
 & @move
 & @omove
+& @oxmove
 & @amove
   @move <object>[=<message>]
   @omove <object>[=<message>]
+  @oxmove <object>[=<message>]
   @amove <object>[=<action list>]
   
-  These attributes contain the message shown to <object> immediately after it
-  moves, the message shown to others in the room <object> moves into, and
-  the actions to be taken when <object> moves, respectively. <object>'s name
-  is added automatically to the beginning of the @omove message. Please note
-  that long @omoves are frequently found annoying.
+  These attributes contain the message shown to <object> immediately after
+  it moves, the message shown to others in the room <object> moves into, the
+  message shown to objects in the location <object> leaves, and the actions 
+  to be taken when <object> moves, respectively. Please note that long 
+  @omoves are frequently found annoying.
 
   Example:
    > @move me=You moved! You are now in the room: [name(here)].
    > @omove me=stalks into the room wearing a malevolent expression.
+   > @oxmove me=stalks away, glaring.
 
-See also: goto, @oxmove, ACTION LISTS
+See also: goto, @oxmove, ACTION LISTS, VERBS
 & @aenter
 & @enter
 & @oenter
@@ -2538,31 +2542,31 @@ See also: @alias, @oname, name(), fullname()
 
 See also: @name, name()
 & @newpassword
-  @newpassword <player> = <password>
+  @newpassword <player>=<password>
 
-  This wizard-only command changes <player>'s password. If <player>
-  is logged in, s/he will be informed that the password was changed.
+  This wizard-only command changes <player>'s password. If <player> is 
+  connected, she will be informed that the password was changed and who by,
+  but not what it was changed to.
 
-See also: @password
+See also: @password, checkpass()
 & @notify
   @notify[/any][/all] <object>[/<attribute>][=<number>]
   
-  This command notifies a semaphore, allowing commands queued for
-  that semaphore to be executed.
+  This command notifies a semaphore, allowing commands queued for that 
+  semaphore to be executed.
 
-  If the /any switch is given, then all semaphores associated with
-  <object> are @notified.  Otherwise, only the specified semaphore
-  attribute (or SEMAPHORE if no attribute is specified) is @notified.
+  If the /any switch is given, then all semaphores associated with <object>
+  are @notified.  Otherwise, only the specified semaphore <attribute> (or 
+  SEMAPHORE if no attribute is specified) is @notified.
 
-  If the /all switch is given, then all queue entries associated
-  with the selected semaphore(s) are executed.  Otherwise, only the
-  first <number> of queue entries are run.  If no <number> is given,
-  then only one queue entry is run.
+  If the /all switch is given, then all queue entries associated with the
+  selected semaphore(s) are executed. Otherwise, only the first <number> of
+  queue entries are run.  If no <number> is given, then only one queue entry
+  is run.
 
-  If the /all switch was not used, and there were not enough queue
-  entries waiting to satisfy the requested <number> (or 1, if no
-  number was given), then subsequent @waits will not block until
-  the requested <number> have been run.
+  If the /all switch was not used, and there were not enough queue entries 
+  waiting to satisfy the requested <number>, then the semaphore becomes
+  negative, and subsequent @waits will not block until it reaches 0 again.
   
   You may not specify both the /any switch and a specific attribute.
   Similarly, you may not specify both the /all switch and a number.
@@ -2593,40 +2597,30 @@ See also: @emit, @lemit, @pemit, @prompt, @remit, @oemit, @zemit, nsemit(),
   nslemit(), nspemit(), nsprompt(), nsremit(), nsoemit(), nszemit(),
   PROMPT_NEWLINES
 & @oemit
-  @oemit[/<switch>] [<room>/]<object> [<object>...] = <message>
+  @oemit[/<switch>] [<room>/]<object> [... <object>]=<message>
  
   This command shows <message> to everyone in the location of <object>
-  EXCEPT <object>. The object can be specified by name if in your current
-  location, or by DBREF number. A list of objects can be given, in
-  which case the message is shown in all locations to all except those
-  objects.
+  EXCEPT <object>. A list of objects can be given, in which case the message
+  is shown in the locations of each, to everyone but those objects.
   
-  If a room is specified (usually via dbref), this command shows
-  <message> to everyone in <room> except for <object> (which may be
-  a list, as above). In this case, object(s) are matched with reference to
-  <room>. Therefore, if you want to send a message to everything but an
-  object called "spy" in #100, you can simply use "@oemit #100/spy=Test";
-  you don't need to know the dbref of "spy".
-
-  The /noeval switch prevents the MUSH from evaluating the message.
+  If <room> is specified (usually as a dbref), this command shows <message> 
+  to everyone in <room> except for the given <object>s. In this case, each
+  <object> is matched relative to <room>.
+  
+  The /noeval switch prevents the MUSH from evaluating <message>.
   The /spoof switch causes nospoof notifications to show the enactor's
     dbref instead of the executor's dbref, and requires control over
     the enactor or the Can_nspemit power.
+    
+  Examples:
+    Show a message in the locations of players Bob and Fred, to everyone
+    except those two players:
+    > @oemit *Bob *Fred=Bob throws a paper aeroplane at Fred.
+    
+    Show a message in #50 to everyone except the object 'Spy'.
+    > @oemit #50/Spy=Sssh!
  
-See also: @emit, @pemit, NOSPOOF and SPOOFING.
-& @oxmove
-  @oxmove <object> [= <message>]
-
-  Sets the message shown to others in the source room whenever <object> 
-  moves elsewhere. <object>'s name is automatically inserted at the
-  beginning of this message. Note that long @oxmoves are annoying.
-
- Example:
-  @oxmove me=stalks away, glaring.
-
-  If the =<message> is omitted, the message is cleared.
-  
-See also: go, @move, @omove, @amove
+See also: @emit, @pemit, @nsoemit, oemit(), nsoemit(), NOSPOOF, SPOOFING
 & @open
   @open <exit name>[=<destination>[, <return exit name>[, <source room>]]]
 
@@ -2650,30 +2644,21 @@ See also: go, @move, @omove, @amove
     > @open Up <U>;up;u;climb=#255, Down <D>;down;d;fall
   
 See also: EXITS, @link, @dig, open()
-& @oxleave
-  @oxleave <object> [= <message>]
-
-  This message is shown to everyone in the room that a person enters
-  when doing a 'leave' command.  This will be shown in addition to the
-  enter messages of the room, not instead of.
-
-  If the =<message> part is omitted, the message will be reset.
-
-See also: leave, @leave, @oleave, @aleave
 & @parent
-  @parent <object> = <parent>
+  @parent <object>[=<parent>]
  
-  This command sets the parent of <object> to <parent>. <parent> may be
-  an object of any type; <object> can be anything but a player. The
-  player must control <object>. <parent> must be controlled by the
-  player or LINK_OK.
-  If <parent> is "none" or blank, the object is unparented.
-
-See also: PARENTS, parent(), lparent()
+  This command sets the parent of <object> to <parent>. If no <parent> is
+  given, or <parent> is "none", <object>'s parent is cleared. You must
+  control <object>, and must either control <parent> or it must be set
+  LINK_OK and you must pass its @lock/parent.
+  
+See also: PARENTS, parent(), lparent(), ANCESTORS
 & @password
   @password <old password>=<new password>
 
   This changes your password. Please note that passwords ARE case-sensitive.
+  
+See also: @newpassword, checkpass()
 & @pageformat
 & @outpageformat
   @outpageformat <object>[=<message>]
@@ -2682,7 +2667,7 @@ See also: PARENTS, parent(), lparent()
   @pageformat changes the message seen by <object> when it receives a page.
   @outpageformat sets the message seen by <object> when it sends a page.
 
-  %0 will be set to the page message. (Will not include :, ; or ")
+  %0 will be set to the page message (not including :, ; or ").
   %1 will be set to ':' ';' or '"' for pose, semipose and normal page,
                     respectively.
   %2 will be set to the alias of the pager, if any.
@@ -2691,7 +2676,7 @@ See also: PARENTS, parent(), lparent()
 
   See 'help @pageformat2' for examples.
 
-See also: page, speak()
+See also: page, speak(), @chatformat, @message
 & @pageformat2
 & @outpageformat2
   For simple page timestamps:
@@ -2710,60 +2695,61 @@ See also: page, speak()
 & @receive
 & @oreceive
 & @areceive
-  @receive <recipient> [=<message>]
-  @oreceive <recipient> [=<message>]
-  @areceive <recipient> [=<message>]
+  @receive <recipient>[=<message>]
+  @oreceive <recipient>[=<message>]
+  @areceive <recipient>[=<message>]
 
-  @receive sets the message that is shown to the recipient who 
-  acquires an object by 'get'ing it or having it 'give'n to them.
-  @oreceive is a message shown to others in the recipient's location,
-  and @areceive is an action run by the recipient. If not set,
-  the recipient gets a default message ("Jane gave you A Headache").
+  These attributes contain the message shown <recipient> when he receives an
+  object (via 'get' or 'give'), the message shown to others in <recipient>'s
+  location when he receives an object, and the actions to be taken by
+  <recipient> when he receives an object, respectively.
   
-  %0 will be set to the dbref of the object received.
-  %1 will be set to the dbref of the giver if a 'give' was performed.
+  In all cases, %0 is the dbref of the object received. If the object was
+  'give'n, %1 will be the dbref of the giver.
 
-See also: give
+See also: give, get, @give, @success
 & @give
 & @ogive
 & @agive
-  @give <giver> [=<message>]
-  @ogive <giver> [=<message>]
-  @agive <giver> [=<message>]
+  @give <giver>[=<message>]
+  @ogive <giver>[=<message>]
+  @agive <giver>[=<message>]
+  
+  These attributes contain the message shown to <giver> when he gives an
+  object, the message shown to others in <giver>'s location when he gives an
+  object, and the actions to be taken by <giver> when he gives an object,
+  respectively.
+  
+  In all cases, %0 is the dbref of the object being given, and %1 is the
+  dbref of the recipient.
 
-  @give sets the message that is shown to the giver when giving an object
-  to someone else.  @ogive is a message shown to others in the giver's
-  location, and @agive is an action run by the giver. If not set,
-  the giver gets a default message.
-
-  %0 will be set to the dbref of the object given.
-  %1 will be set to the dbref of the recipient.
-
-See also: give
+See also: give, @receive
 & @pcreate
-  @pcreate <name> = <password>[, <dbref>]
+  @pcreate <name>=<password>[, <dbref>]
 
-  This wizard-only command creates a player with the given name and
-  password.
+  This wizard-only command creates a player with the given name and password.
+  If specified, <dbref> is the dbref of a garbage object to be used for the
+  new player.
+  
+See also: pcreate()  
 & @prompt
-  @prompt[/<switch>] <dbref list> = <message>
+  @prompt[/<switch>] <dbref list>=<message>
 
-  A variation of @pemit/list that adds a telnet GOAHEAD control code
-  to the end of messages sent to players. Players with clients
-  that handle GOAHEAD may get the message as a prompt in their
-  client's input area.
+  A variation of @pemit/list that adds a telnet GOAHEAD control code to the 
+  end of messages sent to players. Players with clients that handle GOAHEAD 
+  may get the message as a prompt in their client's input area.
 
   @prompt supports the following @pemit switches: /silent, /noisy,
   /spoof, /noeval
 
 See also: @pemit, @nsprompt, prompt(), nsprompt(), PROMPT_NEWLINES
 & PROMPT_NEWLINES
-  PROMPT_NEWLINES <1|0>
+  PROMPT_NEWLINES [1|0]
 
   This socket-level command is used to indicate whether a newline should
-  be sent after the telnet GOAHEAD code issued by @prompt/prompt()
-  to telnet-capable clients.  By default, in order to maximize
-  portability, newlines are sent.
+  be sent after the telnet GOAHEAD code issued by @prompt/prompt() to 
+  telnet-capable clients. By default, in order to maximize portability, 
+  newlines are sent.
 
   Some clients, like TinyFugue, are smart enough to interpret GOAHEAD and
   treat prompts specially by putting them into their input window. These
@@ -2774,39 +2760,39 @@ See also: @pemit, @nsprompt, prompt(), nsprompt(), PROMPT_NEWLINES
 
 See also: @prompt, prompt(), terminfo()
 & @pemit
-  @pemit[/<switch>] <object> = <message>
+  @pemit[/<switches>] <object>=<message>
+  @pemit/list[/<switches>] <object list>=<message>
+  @pemit/port[/silent] <descriptor>=<message>
   
-  The basic form of this command sends <message> to <object> directly.
-  It is very similar in its effects to @emit except only one object
-  will see the message. You may @pemit to objects in the same room,
-  objects you are carrying, and to objects that are carrying you, 
-  or @pemit remotely, using #<object> or *<player name>.
+  The basic form of this command sends <message> to <object> directly. It is
+  very similar in its effects to @emit except only one object will see the 
+  message.
  
-  The /list switch to this command allows you to @pemit a message to
-  a list:  @pemit/list <object 1> [<object 2> <object N>] = <message>
-  There can be any number of objects in the list. You will not get back a
-  "confirmation" message for the /list form of this command.
+  @pemit/list sends the message to multiple objects. You will not get a
+  confirmation message when using this switch.
+  
+  @pemit/port can only be used by Wizards/Royalty, and sends <message> to a
+  single connection. It can be used to send messages to connections which
+  are still at the login screen.
 
-(continued in help @pemit2)
+  See "help @pemit2" for more.
 & @pemit2
   The @pemit command can take the following additional switches:
     /contents  -- equivalent to @remit.
     /silent    -- does not tell the @pemit'ing object a confirmation message.
     /noisy     -- tells the @pemit'ing object a confirmation message.
-    /noeval    -- the message will not be evaluated for substitutions 
+    /noeval    -- <message> will not be evaluated for substitutions 
     /spoof     -- the enactor's dbref will be used for nospoof notifications
                   instead of the executor's dbref. Requires control
                   over enactor or Can_nspemit power. 
-    /port      -- <object> is taken to be a port number, instead of a dbref,
-                  and the message is only sent to that port. Wiz/roy only.
 
-  Note that page-lock and the HAVEN flag will block @pemits as well, 
-  except from Wizards or those with the pemit_all power.
+  You cannot @pemit to objects set HAVEN, or objects whose @lock/page you do
+  not pass, unless you are set WIZARD or have the pemit_all @power.
 
-  See also @emit, @oemit, @remit, NOSPOOF, and SPOOFING.
+See also: @emit, @nspemit, @oemit, @remit, NOSPOOF, SPOOFING, page
 & @poll
   @poll
-  @poll <poll question>
+  @poll <message>
   @poll/clear
 
   This command manipulate the message at the top of WHO/DOING. By itself,
@@ -2815,11 +2801,12 @@ See also: @prompt, prompt(), terminfo()
 
 See also: @doing, WHO, DOING
 & @poor
-  @poor <value>.
-  This is a god only command.  It sets every player's money supply to
-  value.
+  @poor <value>
+  
+  This command sets the pennies of every player on the MUSH to <value>. It
+  can only be used by God.
 
-See also: MONEY
+See also: MONEY, give
 & @power
   @power/list [<power name pattern>]
   @power <power>

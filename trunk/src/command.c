@@ -1456,7 +1456,7 @@ generic_command_failure(dbref player, dbref cause, char *string)
 }
 
 #define add_restriction(r, j) \
-        if(lockstr != tp) \
+        if(lockstr != tp && j) \
           safe_chr(j, lockstr, &tp); \
         safe_str(r, lockstr, &tp)
 
@@ -1592,8 +1592,10 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
   tp = lockstr;
   safe_str(flag_list_to_lock_string(flags, powers), lockstr, &tp);
   if ((command->type & CMD_T_ANY) != CMD_T_ANY) {
-    char join = '(';
-    int close = !(lockstr == tp);
+    char join = (char) NULL;
+
+    safe_chr('(', lockstr, &tp);
+
     /* Type-locked command */
     if (command->type & CMD_T_PLAYER) {
       add_restriction("TYPE^PLAYER", join);
@@ -1611,7 +1613,7 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
       add_restriction("TYPE^EXIT", join);
       join = '|';
     }
-    if (close && join != '(')
+    if (join)
       safe_chr(')', lockstr, &tp);
   }
   if (command->type & CMD_T_GOD) {
@@ -1915,7 +1917,7 @@ COMMAND(cmd_command)
     else if (command->type & CMD_T_LOGNAME)
       strccat(buff, &bp, "LogName");
     *bp = '\0';
-    notify_format(player, T("Restrict   : %s"), buff);
+    notify_format(player, T("Flags      : %s"), buff);
     buff[0] = '\0';
     notify_format(player, T("Lock       : %s"), unparse_boolexp(player, command->cmdlock, UB_DBREF));
     if (command->sw.mask) {

@@ -1075,8 +1075,8 @@ See also: @parent, $-COMMANDS, ATTRIBUTES, ANCESTORS
 (continued in help powers2)
 & POWERS2
 & POWERS LIST2
-  no_pay                Doesn't need money for anything
-  no_quota              Has an unlimited quota
+  no_pay *              Doesn't need money for anything
+  no_quota *            Has an unlimited quota
   open_anywhere         Can @open a link from any room.
   pemit_all             Can @pemit to HAVEN/ulocked players.
   player_create         Can use @pcreate command.
@@ -1090,8 +1090,11 @@ See also: @parent, $-COMMANDS, ATTRIBUTES, ANCESTORS
   sql_ok                Can perform SQL queries
   tport_anything        Can @teleport anything.
   tport_anywhere        Can @teleport to anywhere.
-  unkillable            Can not be killed
+  unkillable *          Cannot be killed
   can_nspemit           Can use @nspemit and nspemit()
+  
+  * When these powers are set on a player, all the objects they own which
+    are not set MISTRUST are also considered to have the power.
 
 See also: help @power, and especially @power/list
 & PUPPETS

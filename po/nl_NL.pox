@@ -356,6 +356,10 @@ msgstr "#-1 FUNCTIE (DIST3D) VERWACHT 6 ARGUMENTEN"
 msgid "#-1 FUNCTION (LETQ) EXPECTS AN ODD NUMBER OF ARGUMENTS"
 msgstr "#-1 FUNCTIE (LETQ) WERWACHT EEN ONEVEN AANTAL ARGUMENTEN"
 
+#: funstr.c:1419
+msgid "#-1 FUNCTION (ORD) EXPECTS ONE CHARACTER "
+msgstr "#-1 FUNCTIE (ORD) VERWACHT EEN KARAKTER "
+
 #: funstr.c:1313 funstr.c:1319
 msgid "#-1 FUNCTION (ORD) EXPECTS ONE CHARACTER"
 msgstr "#-1 FUNCTIE (ORD) VERWACHT ……N KARAKTER"
@@ -707,6 +711,11 @@ msgstr "#-? fun_mailstats werd opgeroepen met ongeldige called_as!"
 msgid "%29s: %ld minutes %ld seconds, at %s."
 msgstr "%29s: %ld minuten %ld seconden, op %s."
 
+#: access.c:665
+#, c-format
+msgid "%3d SITE: %-20s  DBREF: %-6s FLAGS:%s"
+msgstr "%3d SITE: %-20s  DBREF: %-6s VLAGGEN:%s"
+
 #: set.c:1145
 #, c-format
 msgid "%d attributes wiped."
@@ -916,6 +925,16 @@ msgstr "%s aangemaakt."
 #, c-format
 msgid "%s doesn't know switch %s."
 msgstr "%s kent schakeloptie %s niet."
+
+#: rob.c:395
+#, c-format
+msgid "%s doesn't want anything from you."
+msgstr "%s wil niets van je hebben."
+
+#: rob.c:400
+#, c-format
+msgid "%s doesn't want that."
+msgstr "%s wil dat niet."
 
 #: move.c:641 move.c:644
 #, c-format
@@ -1446,6 +1465,10 @@ msgstr "Helaas, je pogingen om genade te tonen helpen niet."
 msgid "Alias Description"
 msgstr "Alias Beschrijving"
 
+#: function.c:1094
+msgid "Alias added."
+msgstr "Alias toegevoegd."
+
 #: src/attrib.c:939
 msgid "Alias removed."
 msgstr "Alias verwijderd."
@@ -1700,6 +1723,21 @@ msgstr "CHAT: Beschrijving van kanaal %s gewist."
 msgid "CHAT: Channel <%s> description set."
 msgstr "CHAT: Beschrijving van kanaal <%s> ingesteld."
 
+#: extchat.c:2531
+#, c-format
+msgid "CHAT: Channel <%s> isn't being mogrified."
+msgstr "CHAT: Kanaal <%s> wordt niet gemogrified."
+
+#: extchat.c:2525
+#, c-format
+msgid "CHAT: Channel <%s> no longer mogrified by %s."
+msgstr "CHAT: Kanaal <%s> niet langer gemogrified door %s."
+
+#: extchat.c:2542
+#, c-format
+msgid "CHAT: Channel <%s> now mogrified by %s."
+msgstr "CHAT: Kanaal <%s> wordt nu gemogrified door %s."
+
 #: src/extchat.c:1496
 #, c-format
 msgid "CHAT: Channel <%s> now owned by %s."
@@ -1799,6 +1837,10 @@ msgstr "CHAT: Niets om op te roepen."
 msgid "CHAT: Only a Wizard can do that."
 msgstr "CHAT: Alleen een Wizard kan dat doen"
 
+#: extchat.c:2510
+msgid "CHAT: Only a channel modifier can do that."
+msgstr "CHAT: Alleen een kanaalbeheerder kan dat doen."
+
 #: extchat.c:797
 msgid "CHAT: Partial matches are:"
 msgstr "CHAT: Gedeeltelijke overeenkomsten:"
@@ -1846,14 +1888,37 @@ msgstr "CHAT: Het kanaal heeft een uniekere naam nodig."
 msgid "CHAT: To recall the entire buffer, use @chan/recall %s=0"
 msgstr "CHAT: Om de hele buffer te bekijken gebruik je @chan/recall %s=0"
 
+#: extchat.c:1244
+msgid "CHAT: Warning: Target does not meet channel join permissions! (joining anyway)"
+msgstr "CHAT: Waarschuwing: Doel kan normaal niet op het kanaal komen! (desondanks toch op het   kanaal gezet)"
+
+#: extchat.c:1348
+msgid "CHAT: Warning: You don't meet channel join permissions! (joining anyway)"
+msgstr "CHAT: Waarschuwing: Je hebt niet de juiste toestemmingen om op dit kanaal te komen (maar   zit desondanks nu op het kanaal)"
+
 #: src/extchat.c:1461
 msgid "CHAT: Wipe that silly grin off your face instead."
 msgstr "CHAT: Haal in plaats daarvan die rare grijns van je gezicht."
+
+#: extchat.c:1331
+#, c-format
+msgid "CHAT: You are already on channel <%s>."
+msgstr "CHAT: Je zit al op kanaal <%s>."
+
+#: extchat.c:1385
+#, c-format
+msgid "CHAT: You are not on channel <%s>."
+msgstr "CHAT: Je zit niet op kanaal <%s>."
 
 #: src/extchat.c:757
 #, c-format
 msgid "CHAT: You can't do that with channel <%s>."
 msgstr "CHAT: Dat kan je met kanaal <%s> niet doen."
+
+#: extchat.c:2775
+#, c-format
+msgid "CHAT: You don't have permission to decompile <%s>."
+msgstr "CHAT: Geen toestemming om <%s> te decompileren."
 
 #: src/extchat.c:824
 #, c-format
@@ -1873,6 +1938,10 @@ msgstr "CHAT: Je verlaat kanaal <%s>."
 #: extchat.c:1433
 msgid "CHAT: You may wish to set the CHAN_USEFIRSTMATCH flag on yourself."
 msgstr "CHAT: Wellicht wil je de CHAN_USEFIRSTMATCH op jezelf zetten."
+
+#: extchat.c:3772
+msgid "CHAT: You must be able to join a channel to recall from it."
+msgstr "CHAT: Je moet op een kanaal kunnen komen om de berichtengeschiedenis te kunnen bekijken."
 
 #: extchat.c:2537
 msgid "CHAT: You must control the mogrifier."
@@ -1928,6 +1997,10 @@ msgstr "Kanalen:"
 msgid "Character"
 msgstr "Karakter"
 
+#: conf.c:544
+msgid "Chat system options"
+msgstr "Chat systeem opties"
+
 #: set.c:308
 msgid "Circular zone broken."
 msgstr "Circulaire zone doorbroken."
@@ -1968,6 +2041,10 @@ msgstr "Commando %s toegevoegd."
 #, c-format
 msgid "Command %s already exists."
 msgstr "Commando %s bestaat al."
+
+#: command.c:1683
+msgid "Command cloned."
+msgstr "Commando gekloond."
 
 #: command.c:1818
 #, c-format
@@ -2034,6 +2111,10 @@ msgstr "Kon die descriptor niet vinden."
 msgid "Couldn't find that player."
 msgstr "Ik kan die speler niet vinden."
 
+#: cmds.c:182
+msgid "Couldn't set that option."
+msgstr "Kon die optie niet instellen."
+
 #: src/create.c:431
 msgid "Create what?"
 msgstr "Wat maken?"
@@ -2063,6 +2144,10 @@ msgstr "Maker"
 #: atr_tab.c:211
 msgid "Critical memory failure - Alert God!"
 msgstr "Kritieke geheigen fout - Waarschuw God!"
+
+#: game.c:560
+msgid "DUMP: Data are swapped to disk, so nonforking dumps will be used."
+msgstr "DUMP: Gegevens zijn naar schijf geswapt, dump zonder fork wordt gebruikt."
 
 #: conf.c:549
 msgid "Database options"
@@ -2342,6 +2427,14 @@ msgstr "Functienaam                     Dbref #    Attrib"
 msgid "Function added."
 msgstr "Functie toegevoegd."
 
+#: function.c:1614
+msgid "Function alias deleted."
+msgstr "Functie alias verwijderd."
+
+#: function.c:1053
+msgid "Function cloned."
+msgstr "Functie gekloond."
+
 #: src/function.c:802
 msgid "Function deleted."
 msgstr "Functie verwijderd."
@@ -2575,6 +2668,10 @@ msgstr "Hook ingesteld voor %s"
 msgid "Hooks not allowed with that command."
 msgstr "Hooks zijn niet toegestaan met dat commando."
 
+#: bsd.c:3311
+msgid "Host"
+msgstr "Host"
+
 #: flags.c:1882
 #, c-format
 msgid "How do you want to restrict that %s?"
@@ -2599,6 +2696,10 @@ msgstr "Voeveel regels wil je terugkijken?"
 #: src/game.c:999
 msgid "Huh?  (Type \"help\" for help.)"
 msgstr "Watte? (Gebruik \"help\" voor help.)"
+
+#: command.c:1692
+msgid "I can't alias a command to that!"
+msgstr "Ik kan daar geen commando alias aan verbinden."
 
 #: rob.c:321
 msgid "I can't find that item here."
@@ -2815,6 +2916,14 @@ msgstr "Idle"
 msgid "If you want to quit, use QUIT."
 msgstr "Als je wilt uitloggen, gebruik dan QUIT."
 
+#: markup.c:1160
+msgid "Inspecting ansi string complete"
+msgstr "Ansi string inspectie gereed"
+
+#: markup.c:1148
+msgid "Inspecting ansi string"
+msgstr "Bezig met ansi string inspectie"
+
 #: create.c:373
 msgid "Internal error: weird object type."
 msgstr "Interne fout: Vreemd type object."
@@ -2839,6 +2948,10 @@ msgstr "Ongeldige tel index."
 #, c-format
 msgid "Invalid dbref #%d in %s."
 msgstr "Ongeldig dbref #%d in %s."
+
+#: function.c:1046 function.c:1087 function.c:1437
+msgid "Invalid function name."
+msgstr "Ongeldige functie naam."
 
 #: command.c:1735
 msgid "Invalid hook object."
@@ -2945,6 +3058,11 @@ msgstr "Laatste herstart"
 msgid "Last restarted: %s"
 msgstr "Laatst herstart: %s"
 
+#: command.c:1797
+#, c-format
+msgid "Leftside   : %s"
+msgstr "Linkerhand : %s"
+
 #: flags.c:2045 flags.c:2175
 #, c-format
 msgid "Letter conflicts with the %s %s."
@@ -3004,6 +3122,11 @@ msgstr "Locatie: %d"
 #, c-format
 msgid "Location: %s"
 msgstr "Locatie: %s"
+
+#: command.c:1814
+#, c-format
+msgid "Lock       : %s"
+msgstr "Slot       : %s"
 
 #: cmds.c:466
 msgid "Locks"
@@ -3106,6 +3229,22 @@ msgstr "POST: Alle post aliasen vernietigd!"
 #, c-format
 msgid "MAIL: All messages filed in folder %d [%s]"
 msgstr "POST: Alle berichten gearchiveerd in map %d [%s]"
+
+#: extmail.c:447
+msgid "MAIL: All messages in all folders cleared."
+msgstr "POST: Alle berichten in alle mappen gewist."
+
+#: extmail.c:428
+msgid "MAIL: All messages in all folders tagged."
+msgstr "POST: Alle berichten in alle mappen getagd."
+
+#: extmail.c:445
+msgid "MAIL: All messages in all folders uncleared."
+msgstr "POST: Alle berichten in alle mappen teruggehaald."
+
+#: extmail.c:426
+msgid "MAIL: All messages in all folders untagged."
+msgstr "POST: Tags van alle berichten in alle mappen weggehaald."
 
 #: src/malias.c:485
 #, c-format
@@ -3224,10 +3363,20 @@ msgstr "POST: Leeftijd van boodschap moet integer zijn."
 msgid "MAIL: Msg #%d:%d cleared."
 msgstr "POST: Ber #%dL%d gewist."
 
+#: extmail.c:436
+#, c-format
+msgid "MAIL: Msg #%d:%d tagged"
+msgstr "POST: Ber #%d:%d getagd"
+
 #: extmail.c:361
 #, c-format
 msgid "MAIL: Msg #%d:%d uncleared."
 msgstr "POST: Ber #%d:%d ongewist"
+
+#: extmail.c:433
+#, c-format
+msgid "MAIL: Msg #%d:%d untagged"
+msgstr "POST: Ber #%d:%d niet meer getagd"
 
 #: src/extmail.c:438
 #, c-format
@@ -3497,6 +3646,11 @@ msgstr "Msgs"
 msgid "NOWHERE"
 msgstr "NERGENS"
 
+#: command.c:1737
+#, c-format
+msgid "Name       : %s (%s)"
+msgstr "Naam       : %s (%s)"
+
 #: function.c:1090
 #, c-format
 msgid "Name      : %s() (%s%s)"
@@ -3762,6 +3916,10 @@ msgstr "Alleen wizards mogen een quota veranderen."
 msgid "Only wizards may grant powers."
 msgstr "Alleen wizards kunnen krachten toekennen."
 
+#: create.c:187
+msgid "Open from where?"
+msgstr "Waar vandaan openen?"
+
 #: src/create.c:118
 msgid "Open where?"
 msgstr "Waar openen?"
@@ -3898,6 +4056,10 @@ msgstr "Permissies op %s %s ingesteld."
 msgid "Permissions on channel <%s> changed."
 msgstr "Toestemming op kanaal <%s> gewijzigd."
 
+#: flags.c:2033
+msgid "Perms"
+msgstr "Permissies"
+
 #: bsd.c:3848 bsd.c:3851 bsd.c:3855 bsd.c:3859
 msgid "Player Name"
 msgstr "Spelernaam"
@@ -4026,6 +4188,21 @@ msgstr "%s in %s veranderd in attributen tabel."
 msgid "ResetPrms"
 msgstr "ResetPrms"
 
+#: cque.c:1637
+#, c-format
+msgid "Restarting: %s's %s(%s)"
+msgstr "Herstarten: %s's %s(%s)"
+
+#: cque.c:1646
+#, c-format
+msgid "Restarting: %s(%s)"
+msgstr "Herstarten: %s(%s)"
+
+#: cque.c:1639
+#, c-format
+msgid "Restarting: %s(%s), by %s"
+msgstr "Herstarten: %s(%s), door %s"
+
 #: function.c:916
 msgid "Restore what?"
 msgstr "Herstel wat?"
@@ -4074,6 +4251,10 @@ msgstr "Op hol geslagen object %s(%s). Commandos stopgezet."
 msgid "Running database topology warning checks"
 msgstr "Bezig met database topologie waarschuwingscontroles."
 
+#: flags.c:1738
+msgid "SET"
+msgstr "GEZET"
+
 #: sql.c:348
 #, c-format
 msgid "SQL: %d rows affected."
@@ -4083,6 +4264,16 @@ msgstr "SQL: %d rijen beinvloed."
 #, c-format
 msgid "SQL: Error: %s"
 msgstr "SQL: Fout: %s"
+
+#: version.c:50
+#, c-format
+msgid "SVN revision: %d [%s]"
+msgstr "SVN revisie: %d [%s]"
+
+#: version.c:52 version.c:54
+#, c-format
+msgid "SVN revision: %d"
+msgstr "SVN revisie: %d"
 
 #: src/wiz.c:1471
 #, c-format
@@ -4104,6 +4295,10 @@ msgstr "Separator mag slechts ÈÈn karakter zijn."
 #: attrib.c:942
 msgid "Set"
 msgstr "Ingesteld"
+
+#: destroy.c:1444
+msgid "Silly mortal, chicks are for kids!"
+msgstr "Joh, ga buiten spelen."
 
 #: src/wiz.c:1999
 #, c-format
@@ -4572,6 +4767,10 @@ msgstr "Er is niemand verbonden op die descriptor."
 msgid "There is one player connected."
 msgstr "Er is een speler verbonden."
 
+#: function.c:1040 function.c:1072
+msgid "There's already a function with that name."
+msgstr "Er is al een functie met die naam."
+
 #: src/move.c:335 src/move.c:336 src/move.c:337
 msgid "There's no place like home..."
 msgstr "Oost west, thuis best..."
@@ -4946,6 +5145,10 @@ msgstr "Waarschuwing:  @chown/preserve op een object (#%d) met WIZ, ROY, INHERIT
 msgid "Warning: @CLONE/PRESERVE on an object with WIZ, ROY, @powers, or @warnings."
 msgstr "Waarschuwing: @CLONE/PRESERVE op een object met WIZ, ROY, @powers of @warnings."
 
+#: set.c:453
+msgid "Warning: @chzoning a TRUST player."
+msgstr "Waarschuwing: @chzone aan het toepassen op een TRUST speler."
+
 #: src/set.c:417
 msgid "Warning: @chzoning a privileged player."
 msgstr "Waarschuwing: @chzone van een speler met privileges."
@@ -5291,6 +5494,10 @@ msgstr "Je kunt ingebouwde commando's niet verwijderen. Gebruik @command/disable
 msgid "You can't delete that @function."
 msgstr "Je kunt die @function niet verwijderen."
 
+#: function.c:1660
+msgid "You can't disable aliases."
+msgstr "Je kunt aliasen niet uitschakelen."
+
 #: src/move.c:576
 msgid "You can't drop that."
 msgstr "Je kunt dat niet neerleggen."
@@ -5326,6 +5533,10 @@ msgstr "Je kunt die kant niet op."
 #: src/wiz.c:1175
 msgid "You can't grant powers to unregistered players."
 msgstr "Je kunt geen krachten toekennen aan ongeregistreerde spelers."
+
+#: set.c:1021
+msgid "You can't include God!"
+msgstr "Je kunt God niet includen!"
 
 #: src/move.c:670
 msgid "You can't leave."
@@ -5427,9 +5638,17 @@ msgstr "Je kunt dat niet unlinken."
 msgid "You cannot @CHOWN/PRESERVE. Use normal @CHOWN."
 msgstr "Je kunt @CHOWN/PRESERVE niet gebruiken. Gebruik gewoon @CHOWN."
 
+#: create.c:624
+msgid "You cannot @CLONE/PRESERVE. Use normal @CLONE instead."
+msgstr "Je kunt @CLONE/PRESERVE niet gebruiken. Gebruik gewoon @CLONE."
+
 #: cque.c:985
 msgid "You cannot adjust the timeout of an indefinite semaphore."
 msgstr "Je kunt de timeout van een onbepaalde semaphore niet aanpassen."
+
+#: function.c:1087
+msgid "You cannot alias @functions."
+msgstr "Je kunt @functions niet aliasen."
 
 #: function.c:869
 msgid "You cannot change that built-in function."

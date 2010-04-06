@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-04 02:00-0500\n"
+"POT-Creation-Date: 2010-04-06 02:00-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -260,7 +260,7 @@ msgstr ""
 msgid "No such attribute to reset."
 msgstr ""
 
-#: attrib.c:1923 command.c:1861
+#: attrib.c:1923 command.c:1865
 msgid "Alias set."
 msgstr ""
 
@@ -292,7 +292,7 @@ msgstr ""
 
 #: attrib.c:1998 attrib.c:2071 bsd.c:2856 bsd.c:2902 bsd.c:4108 bsd.c:4642
 #: bsd.c:4675 bsd.c:4687 bsd.c:4692 cmds.c:78 cmds.c:83 cmds.c:88
-#: command.c:1672 command.c:1699 command.c:1782 command.c:1864 command.c:2025
+#: command.c:1676 command.c:1703 command.c:1786 command.c:1868 command.c:2029
 #: cque.c:943 cque.c:1045 cque.c:1096 cque.c:1549 cque.c:1607 cque.c:1724
 #: create.c:100 create.c:119 create.c:235 create.c:300 create.c:309
 #: create.c:313 create.c:364 create.c:368 create.c:386 create.c:622
@@ -902,155 +902,155 @@ msgstr ""
 msgid "%s doesn't know switch %s."
 msgstr ""
 
-#: command.c:1653
+#: command.c:1657
 msgid "This command has not been implemented."
 msgstr ""
 
-#: command.c:1680 command.c:1711
+#: command.c:1684 command.c:1715
 msgid "Bad command name."
 msgstr ""
 
-#: command.c:1686
+#: command.c:1690
 #, c-format
 msgid "Command %s added."
 msgstr ""
 
-#: command.c:1689
+#: command.c:1693
 #, c-format
 msgid "Command %s already exists."
 msgstr ""
 
-#: command.c:1708 command.c:1788 command.c:1879 command.c:2163 command.c:2264
+#: command.c:1712 command.c:1792 command.c:1883 command.c:2167 command.c:2268
 msgid "No such command."
 msgstr ""
 
-#: command.c:1716
+#: command.c:1720
 msgid "Command cloned."
 msgstr ""
 
-#: command.c:1796
+#: command.c:1800
 msgid "You can't delete built-in commands. @command/disable instead."
 msgstr ""
 
-#: command.c:1812
+#: command.c:1816
 #, c-format
 msgid "Removed %s and aliases from command table."
 msgstr ""
 
-#: command.c:1815 command.c:1820
+#: command.c:1819 command.c:1824
 #, c-format
 msgid "Removed %s from command table."
 msgstr ""
 
-#: command.c:1836
+#: command.c:1840
 msgid "You must specify a command."
 msgstr ""
 
-#: command.c:1849
+#: command.c:1853
 msgid ""
 "WARNING: /NOEVAL no longer creates a Noparse command.\n"
 "         Use /NOPARSE if that's what you meant."
 msgstr ""
 
-#: command.c:1856
+#: command.c:1860
 msgid "I can't alias a command to that!"
 msgstr ""
 
-#: command.c:1858
+#: command.c:1862
 msgid "Unable to set alias."
 msgstr ""
 
-#: command.c:1890
+#: command.c:1894
 msgid "How do you want to restrict the command?"
 msgstr ""
 
-#: command.c:1895
+#: command.c:1899
 msgid "Restrict attempt failed."
 msgstr ""
 
-#: command.c:1899
+#: command.c:1903
 msgid "@command is ALWAYS enabled."
 msgstr ""
 
-#: command.c:1905
+#: command.c:1909
 #, c-format
 msgid "Name       : %s (%s)"
 msgstr ""
 
-#: command.c:1918
+#: command.c:1922
 #, c-format
-msgid "Restrict   : %s"
+msgid "Flags      : %s"
 msgstr ""
 
-#: command.c:1920
+#: command.c:1924
 #, c-format
 msgid "Lock       : %s"
 msgstr ""
 
-#: command.c:1927
+#: command.c:1931
 #, c-format
 msgid "Switches   : %s"
 msgstr ""
 
-#: command.c:1929
+#: command.c:1933
 msgid "Switches   :"
 msgstr ""
 
-#: command.c:1942
+#: command.c:1946
 #, c-format
 msgid "Leftside   : %s"
 msgstr ""
 
-#: command.c:1954
+#: command.c:1958
 #, c-format
 msgid "Rightside  : %s"
 msgstr ""
 
-#: command.c:1957
+#: command.c:1961
 #, c-format
 msgid "Arguments  : %s"
 msgstr ""
 
-#: command.c:1972
+#: command.c:1976
 #, c-format
 msgid "Commands: %s"
 msgstr ""
 
-#: command.c:2167
+#: command.c:2171
 msgid "Hooks not allowed with that command."
 msgstr ""
 
-#: command.c:2180
+#: command.c:2184
 msgid "Unknown hook type"
 msgstr ""
 
-#: command.c:2185
+#: command.c:2189
 #, c-format
 msgid "Hook removed from %s."
 msgstr ""
 
-#: command.c:2192
+#: command.c:2196
 msgid "You must give an object."
 msgstr ""
 
-#: command.c:2194
+#: command.c:2198
 msgid "You must give both an object and attribute."
 msgstr ""
 
-#: command.c:2199
+#: command.c:2203
 msgid "Invalid hook object."
 msgstr ""
 
-#: command.c:2210
+#: command.c:2214
 #, c-format
 msgid "Hook set for %s"
 msgstr ""
 
-#: command.c:2244
+#: command.c:2248
 msgid "There are no hooks currently set."
 msgstr ""
 
-#: command.c:2249
+#: command.c:2253
 msgid "The following commands have hooks: "
 msgstr ""
 

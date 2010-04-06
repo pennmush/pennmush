@@ -4168,11 +4168,6 @@ msgstr "©to da restoream?"
 msgid "Restored."
 msgstr "Restoreano."
 
-#: command.c:1773
-#, c-format
-msgid "Restrict   : %s"
-msgstr "Ogranièenje: %s"
-
 #: src/command.c:1114
 msgid "Restrict attempt failed."
 msgstr "Poku¹aj ogranièavanja neuspje¹an."

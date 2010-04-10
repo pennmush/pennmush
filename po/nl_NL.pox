@@ -2362,6 +2362,11 @@ msgstr "Bestanden gebruikt door de MUSH"
 msgid "Fixing mail for #%d."
 msgstr "Mail voor #%d wordt gerepareerd."
 
+#: command.c:1922
+#, c-format
+msgid "Flags      : %s"
+msgstr "Vlaggen    : %s"
+
 #: function.c:897
 #, c-format
 msgid "Flags     : %s"

@@ -2352,6 +2352,11 @@ msgstr "Filer brukt av MUSHen"
 msgid "Fixing mail for #%d."
 msgstr "Fikser mail for #%d."
 
+#: command.c:1922
+#, c-format
+msgid "Flags      : %s"
+msgstr "Flagg      : %s"
+
 #: function.c:897
 #, c-format
 msgid "Flags     : %s"

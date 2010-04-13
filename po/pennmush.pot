@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-06 02:00-0500\n"
+"POT-Creation-Date: 2010-04-13 02:00-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3749,7 +3749,7 @@ msgstr ""
 msgid "#-1 INVALID DBREF"
 msgstr ""
 
-#: funstr.c:646 funstr.c:788 funstr.c:1447
+#: funstr.c:646 funstr.c:788 funstr.c:1449
 msgid "#-1 STRING LENGTHS MUST BE EQUAL"
 msgstr ""
 
@@ -3765,51 +3765,47 @@ msgstr ""
 msgid "#-1 FILL ARGUMENT MAY NOT BE ZERO-LENGTH"
 msgstr ""
 
-#: funstr.c:1414
+#: funstr.c:1415
 msgid "#-1 FUNCTION (ORD) EXPECTS ONE CHARACTER"
 msgstr ""
 
-#: funstr.c:1419
-msgid "#-1 FUNCTION (ORD) EXPECTS ONE CHARACTER "
-msgstr ""
-
-#: funstr.c:1423 funstr.c:1440
+#: funstr.c:1424 funstr.c:1442
 msgid "#-1 UNPRINTABLE CHARACTER"
 msgstr ""
 
-#: funstr.c:1436
+#: funstr.c:1438
 msgid "#-1 THIS ISN'T UNICODE"
 msgstr ""
 
-#: funstr.c:1629
+#: funstr.c:1631
 msgid "#-1 WIDTH TOO SMALL"
 msgstr ""
 
-#: funstr.c:1919 funstr.c:1944
+#: funstr.c:1921 funstr.c:1946
 msgid "#-1 INVALID ALIGN STRING"
 msgstr ""
 
-#: funstr.c:1958
+#: funstr.c:1960
 msgid "#-1 CANNOT HAVE COLUMNS OF NEGATIVE SIZE"
 msgstr ""
 
-#: funstr.c:1962 funstr.c:1968
+#: funstr.c:1964 funstr.c:1970
 msgid "#-1 CANNOT HAVE COLUMNS THAT LARGE"
 msgstr ""
 
-#: funstr.c:1973
+#: funstr.c:1975
 msgid "#-1 NOT ENOUGH COLUMNS FOR ALIGN"
 msgstr ""
 
-#: funstr.c:1977
+#: funstr.c:1979
 msgid "#-1 TOO MANY COLUMNS FOR ALIGN"
 msgstr ""
 
-#: funstr.c:1983 funstr.c:2018
+#: funstr.c:1985 funstr.c:2020
 msgid "#-1 INVALID NUMBER OF ARGUMENTS TO ALIGN"
 msgstr ""
 
-#: funstr.c:1988 funstr.c:2023
+#: funstr.c:1990 funstr.c:2025
 msgid "#-1 FILLER MUST BE ONE CHARACTER"
 msgstr ""
 

@@ -85,6 +85,7 @@ Attributes:
  * @outpageformat lets you alter how you view pages that you send.
 
 Fixes:
+ * isprint() bug in ord() fixed. [GM]
  * Possible crashbug in @destroy fixed. Reported by Dan. [MG]
  * Minor bug in benchmark() fixed. [MG]
  * channels(<object>) was incorrectly sorted for channel names containing

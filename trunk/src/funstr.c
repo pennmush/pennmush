@@ -1409,18 +1409,20 @@ FUNCTION(fun_beep)
 
 FUNCTION(fun_ord)
 {
+  int c;
 
-  if (!args[0] || !args[0][0]) {
+  if (!args[0] || !args[0][0] || arglens[0] != 1) {
     safe_str(T("#-1 FUNCTION (ORD) EXPECTS ONE CHARACTER"), buff, bp);
     return;
   }
 
-  if (arglens[0] != 1)                 /* len includes trailing nul */
-    safe_str(T("#-1 FUNCTION (ORD) EXPECTS ONE CHARACTER "), buff, bp);
-  else if (isprint((int) args[0][0]) || args[0][0] == '\n')
-    safe_integer(args[0][0], buff, bp);
-  else
+  c = (unsigned char) args[0][0];
+
+  if (isprint(c)) {
+    safe_integer(c, buff, bp);
+  } else { 
     safe_str(T("#-1 UNPRINTABLE CHARACTER"), buff, bp);
+  }
 }
 
 FUNCTION(fun_chr)

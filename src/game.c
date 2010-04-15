@@ -432,7 +432,7 @@ mush_panic(const char *message)
     do_rawlog(LT_ERR,
               "PANIC: Attempted to panic because of '%s' while already panicking. Run in circles, scream and shout!",
               message);
-    _exit(133);
+    abort();
   }
 
   already_panicking = 1;
@@ -451,7 +451,7 @@ mush_panic(const char *message)
     if (setjmp(db_err)) {
       /* Dump failed. We're in deep doo-doo */
       do_rawlog(LT_ERR, "CANNOT DUMP PANIC DB. OOPS.");
-      _exit(134);
+      abort();
     } else {
       if ((f = penn_fopen(panicfile, FOPEN_WRITE)) == NULL) {
         do_rawlog(LT_ERR, "CANNOT OPEN PANIC FILE, YOU LOSE");
@@ -468,7 +468,7 @@ mush_panic(const char *message)
   } else {
     do_rawlog(LT_ERR, "Skipping panic dump because database isn't loaded.");
   }
-  _exit(136);
+  abort();
 }
 
 /** Crash gracefully.

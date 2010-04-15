@@ -247,10 +247,10 @@
 
 /* A whole bunch of debugging #defines. */
 /** Basic debugging stuff - are assertions checked? */
-#undef CHUNK_DEBUG
+#define CHUNK_DEBUG
 /** Paranoid people check for region validity after every operation
  * that modifies a region. */
-#undef CHUNK_PARANOID
+#define CHUNK_PARANOID
 /** Log all moves and slides during migration. */
 #undef DEBUG_CHUNK_MIGRATE
 /** Log creation of regions. */

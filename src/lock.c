@@ -777,7 +777,7 @@ do_lock(dbref player, const char *name, const char *keyname, lock_type type)
           ModTime(thing) = mudtime;
       } else {
         notify(player, T("Permission denied."));
-        free_boolexp(key);
+	/*  Done by a failed add_lock()  // free_boolexp(key); */
       }
     } else
       free_boolexp(key);

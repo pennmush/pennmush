@@ -971,7 +971,7 @@ FUNCTION(fun_round)
     char *decimal;
 
     *(*bp) = '\0';
-    decimal = strchr(sbp, '.');    
+    decimal = strchr(sbp, '.');
     if (!decimal) {
       safe_chr('.', buff, bp);
       safe_fill('0', places, buff, bp);

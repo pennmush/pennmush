@@ -965,8 +965,8 @@ COMMAND(cmd_scan)
     check |= CHECK_GLOBAL;
   if (check == 0)
     check = CHECK_INVENTORY | CHECK_NEIGHBORS |
-            CHECK_SELF | CHECK_HERE | CHECK_ZONE | CHECK_GLOBAL;
-    do_scan(player, arg_left, check);
+      CHECK_SELF | CHECK_HERE | CHECK_ZONE | CHECK_GLOBAL;
+  do_scan(player, arg_left, check);
 }
 
 COMMAND(cmd_search)

@@ -501,8 +501,9 @@ do_malias_destroy(dbref player, char *alias)
   m = get_malias(player, alias);
   if (!m) {
     notify_format(player,
-           T
-           ("MAIL: Not a valid alias. Remember to prefix the alias name with %c."), MALIAS_TOKEN);
+                  T
+                  ("MAIL: Not a valid alias. Remember to prefix the alias name with %c."),
+                  MALIAS_TOKEN);
     return;
   }
   if (Wizard(player) || (m->owner == player)) {

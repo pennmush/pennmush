@@ -281,13 +281,13 @@ do_log(int logtype, dbref player, dbref object, const char *fmt, ...)
     if (!has_flag_by_name(player, "NO_LOG", NOTYPE)) {
       strcpy(unp1, quick_unparse(player));
       if (GoodObject(object)) {
-	strcpy(unp2, quick_unparse(object));
-	do_rawlog(logtype, "CMD: %s %s / %s: %s",
-		  (Suspect(player) ? "SUSPECT" : ""), unp1, unp2, tbuf1);
+        strcpy(unp2, quick_unparse(object));
+        do_rawlog(logtype, "CMD: %s %s / %s: %s",
+                  (Suspect(player) ? "SUSPECT" : ""), unp1, unp2, tbuf1);
       } else {
-	strcpy(unp2, quick_unparse(Location(player)));
-	do_rawlog(logtype, "CMD: %s %s in %s: %s",
-                (Suspect(player) ? "SUSPECT" : ""), unp1, unp2, tbuf1);
+        strcpy(unp2, quick_unparse(Location(player)));
+        do_rawlog(logtype, "CMD: %s %s in %s: %s",
+                  (Suspect(player) ? "SUSPECT" : ""), unp1, unp2, tbuf1);
       }
     }
     break;

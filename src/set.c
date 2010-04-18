@@ -918,7 +918,8 @@ do_gedit(dbref player, char *it, char **argv, enum edit_type target, int doit)
     return;
   }
   *q++ = '\0';
-  thing = noisy_match_result(player, tbuf1, NOTYPE, MAT_EVERYTHING | MAT_CONTROL);
+  thing =
+    noisy_match_result(player, tbuf1, NOTYPE, MAT_EVERYTHING | MAT_CONTROL);
 
   if (thing == NOTHING)
     return;
@@ -1022,7 +1023,8 @@ do_include(dbref player, char *object, char **argv)
   /* include modifies the stack, but only if arguments are given */
   for (a = 0; a < 10; a++) {
     if (rhs_present && argv[a + 1])
-      global_eval_context.include_wenv[a] = mush_strdup(argv[a + 1], "include_wenv");
+      global_eval_context.include_wenv[a] =
+        mush_strdup(argv[a + 1], "include_wenv");
     else
       global_eval_context.include_wenv[a] = NULL;
   }
@@ -1073,7 +1075,8 @@ do_parent(dbref player, char *name, char *parent_name)
   dbref check;
   int i;
 
-  if ((thing = noisy_match_result(player, name, NOTYPE, MAT_EVERYTHING)) == NOTHING)
+  if ((thing =
+       noisy_match_result(player, name, NOTYPE, MAT_EVERYTHING)) == NOTHING)
     return;
 
   if (!parent_name || !*parent_name || !strcasecmp(parent_name, "none"))

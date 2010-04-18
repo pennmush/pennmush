@@ -1019,7 +1019,7 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
   tosend = mush_malloc(BUFFER_LEN, "page_buff");
   if (key == 1) {
     snprintf(tosend, BUFFER_LEN, T("Long distance to %s: %s%s%s"), namebuf,
-                  Name(player), gap, message);
+             Name(player), gap, message);
   } else {
     snprintf(tosend, BUFFER_LEN, T("You paged %s with '%s'"), namebuf, message);
   }

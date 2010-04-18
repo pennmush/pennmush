@@ -842,7 +842,8 @@ db_paranoid_write_object(PENNFILE *f, dbref i, int flag)
     lastp = '\0';
     for (p = tbuf1; *p; p++) {
       if (!isprint((unsigned char) *p) && !isspace((unsigned char) *p) &&
-        *p != TAG_START && *p != TAG_END && *p != ESC_CHAR && *p != BEEP_CHAR) {
+          *p != TAG_START && *p != TAG_END && *p != ESC_CHAR
+          && *p != BEEP_CHAR) {
         *p = '!';
         err = 1;
       }

@@ -476,14 +476,15 @@ FUNCTION(fun_comp)
   switch (type) {
   case 'A':                    /* Case-sensitive lexicographic */
     {
-      safe_integer(comp_gencomp(executor, args[0], args[1], ALPHANUM_LIST), buff,
-                   bp);
+      safe_integer(comp_gencomp(executor, args[0], args[1], ALPHANUM_LIST),
+                   buff, bp);
       return;
     }
   case 'I':                    /* Case-insensitive lexicographic */
     {
-      safe_integer(comp_gencomp(executor, args[0], args[1], INSENS_ALPHANUM_LIST),
-                   buff, bp);
+      safe_integer(comp_gencomp
+                   (executor, args[0], args[1], INSENS_ALPHANUM_LIST), buff,
+                   bp);
       return;
     }
   case 'N':                    /* Integers */
@@ -1420,7 +1421,7 @@ FUNCTION(fun_ord)
 
   if (isprint(c)) {
     safe_integer(c, buff, bp);
-  } else { 
+  } else {
     safe_str(T("#-1 UNPRINTABLE CHARACTER"), buff, bp);
   }
 }

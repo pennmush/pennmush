@@ -112,8 +112,7 @@ do_kill(dbref player, const char *what, int cost, int slay)
     safe_format(tbuf2, &tp, T("killed %s!"), Name(victim));
     *tp = '\0';
     do_halt(victim, "", victim);
-    did_it(player, victim, "DEATH", tbuf1, "ODEATH", tbuf2, "ADEATH",
-           NOTHING);
+    did_it(player, victim, "DEATH", tbuf1, "ODEATH", tbuf2, "ADEATH", NOTHING);
 
     /* notify victim */
     notify_format(victim, T("%s killed you!"), Name(player));
@@ -392,7 +391,8 @@ do_give(dbref player, char *recipient, char *amnt, int silent)
       }
 
       if (!eval_lock(player, who, From_Lock)) {
-        notify_format(player, T("%s doesn't want anything from you."), Name(who));
+        notify_format(player, T("%s doesn't want anything from you."),
+                      Name(who));
         return;
       }
 

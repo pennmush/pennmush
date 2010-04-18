@@ -164,7 +164,8 @@ COMLIST commands[] = {
 
   {"@FORCE", "NOEVAL", cmd_force, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED,
    0, 0},
-  {"@FUNCTION", "ALIAS BUILTIN CLONE DELETE ENABLE DISABLE PRESERVE RESTORE RESTRICT",
+  {"@FUNCTION",
+   "ALIAS BUILTIN CLONE DELETE ENABLE DISABLE PRESERVE RESTORE RESTRICT",
    cmd_function,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@GREP", "LIST PRINT ILIST IPRINT", cmd_grep,
@@ -184,7 +185,8 @@ COMLIST commands[] = {
    0},
   {"@LISTMOTD", NULL, cmd_listmotd, CMD_T_ANY, 0, 0},
 
-  {"@LIST", "LOWERCASE MOTD LOCKS FLAGS FUNCTIONS POWERS COMMANDS ATTRIBS ALLOCATIONS",
+  {"@LIST",
+   "LOWERCASE MOTD LOCKS FLAGS FUNCTIONS POWERS COMMANDS ATTRIBS ALLOCATIONS",
    cmd_list,
    CMD_T_ANY, 0, 0},
   {"@LOCK", NULL, cmd_lock,
@@ -652,8 +654,7 @@ command_find_exact(const char *name)
  */
 COMMAND_INFO *
 command_modify(const char *name, int type,
-               boolexp key,
-               switch_mask sw, command_func func)
+               boolexp key, switch_mask sw, command_func func)
 {
   COMMAND_INFO *cmd;
   cmd = command_find(name);
@@ -1383,7 +1384,9 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
     return NULL;
   } else {
     /* If we have a hook/ignore that returns false, we don't do the command */
-    if (run_command(cmd, player, cause, commandraw, sw, switch_err, string, swp, ap, ls, lsa, rs, rsa)) {
+    if (run_command
+        (cmd, player, cause, commandraw, sw, switch_err, string, swp, ap, ls,
+         lsa, rs, rsa)) {
       retval = NULL;
     } else {
       retval = commandraw;
@@ -1397,9 +1400,10 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
 #undef command_parse_free_args
 
 int
-run_command(COMMAND_INFO *cmd, dbref player, dbref cause, char *commandraw, switch_mask sw,
-            char switch_err[BUFFER_LEN], char *string, char *swp, char *ap, char *ls,
-            char *lsa[MAX_ARG], char *rs, char *rsa[MAX_ARG])
+run_command(COMMAND_INFO *cmd, dbref player, dbref cause, char *commandraw,
+            switch_mask sw, char switch_err[BUFFER_LEN], char *string,
+            char *swp, char *ap, char *ls, char *lsa[MAX_ARG], char *rs,
+            char *rsa[MAX_ARG])
 {
 
   char *saveregs[NUMQ];
@@ -1428,8 +1432,10 @@ run_command(COMMAND_INFO *cmd, dbref player, dbref cause, char *commandraw, swit
   }
   /* Either way, we might log */
   if (cmd->type & CMD_T_LOGARGS)
-    if (cmd->func == cmd_password || cmd->func == cmd_newpassword || cmd->func == cmd_pcreate)
-      do_log(LT_CMD, player, cause, "%s %s=***", cmd->name, (cmd->func == cmd_password ? "***" : ls));
+    if (cmd->func == cmd_password || cmd->func == cmd_newpassword
+        || cmd->func == cmd_pcreate)
+      do_log(LT_CMD, player, cause, "%s %s=***", cmd->name,
+             (cmd->func == cmd_password ? "***" : ls));
     else
       do_log(LT_CMD, player, cause, "%s", commandraw);
   else if (cmd->type & CMD_T_LOGNAME)
@@ -1451,7 +1457,8 @@ generic_command_failure(dbref player, dbref cause, char *string)
   COMMAND_INFO *cmd;
 
   if ((cmd = command_find("HUH_COMMAND")) && !(cmd->type & CMD_T_DISABLED)) {
-    run_command(cmd, player, cause, "HUH_COMMAND", NULL, NULL, string, NULL, NULL, string, NULL, NULL, NULL);
+    run_command(cmd, player, cause, "HUH_COMMAND", NULL, NULL, string, NULL,
+                NULL, string, NULL, NULL, NULL);
   }
 }
 
@@ -1578,7 +1585,8 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
     restriction = tp;
   }
 
-  if ((command->type & (CMD_T_GOD | CMD_T_NOGAGGED | CMD_T_NOGUEST | CMD_T_NOFIXED)))
+  if ((command->
+       type & (CMD_T_GOD | CMD_T_NOGAGGED | CMD_T_NOGUEST | CMD_T_NOFIXED)))
     make_boolexp = 1;
   else if ((command->type & CMD_T_ANY) != CMD_T_ANY)
     make_boolexp = 1;
@@ -1651,7 +1659,8 @@ COMMAND(cmd_unimplemented)
   if (strcmp(cmd->name, "UNIMPLEMENTED_COMMAND") != 0 &&
       (cmd = command_find("UNIMPLEMENTED_COMMAND")) &&
       !(cmd->type & CMD_T_DISABLED)) {
-    run_command(cmd, player, cause, "UNIMPLEMENTED_COMMAND", sw, NULL, raw, NULL, args_raw, arg_left, args_left, arg_right, args_right);
+    run_command(cmd, player, cause, "UNIMPLEMENTED_COMMAND", sw, NULL, raw,
+                NULL, args_raw, arg_left, args_left, arg_right, args_right);
   } else {
     /* Either we were already in UNIMPLEMENTED_COMMAND, or we couldn't find it */
     notify(player, T("This command has not been implemented."));
@@ -1735,31 +1744,38 @@ clone_command(char *original, char *clone)
   if (!c1 || c2)
     return NULL;
 
-  c2 = make_command(mush_strdup(clone, "command_add"), c1->type, NULL, NULL, c1->sw.names, c1->func);
+  c2 =
+    make_command(mush_strdup(clone, "command_add"), c1->type, NULL, NULL,
+                 c1->sw.names, c1->func);
   c2->sw.mask = c1->sw.mask;
   if (c1->restrict_message)
-    c2->restrict_message = mush_strdup(c1->restrict_message, "cmd_restrict_message");
+    c2->restrict_message =
+      mush_strdup(c1->restrict_message, "cmd_restrict_message");
   c2->cmdlock = c1->cmdlock;
 
   if (c1->hooks.before.obj)
     c2->hooks.before.obj = c1->hooks.before.obj;
   if (c1->hooks.before.attrname)
-    c2->hooks.before.attrname = mush_strdup(c1->hooks.before.attrname, "hook.attr");
+    c2->hooks.before.attrname =
+      mush_strdup(c1->hooks.before.attrname, "hook.attr");
 
   if (c1->hooks.after.obj)
     c2->hooks.after.obj = c1->hooks.after.obj;
   if (c1->hooks.after.attrname)
-    c2->hooks.after.attrname = mush_strdup(c1->hooks.after.attrname, "hook.attr");
+    c2->hooks.after.attrname =
+      mush_strdup(c1->hooks.after.attrname, "hook.attr");
 
   if (c1->hooks.ignore.obj)
     c2->hooks.ignore.obj = c1->hooks.ignore.obj;
   if (c1->hooks.ignore.attrname)
-    c2->hooks.ignore.attrname = mush_strdup(c1->hooks.ignore.attrname, "hook.attr");
+    c2->hooks.ignore.attrname =
+      mush_strdup(c1->hooks.ignore.attrname, "hook.attr");
 
   if (c1->hooks.override.obj)
     c2->hooks.override.obj = c1->hooks.override.obj;
   if (c1->hooks.override.attrname)
-    c2->hooks.override.attrname = mush_strdup(c1->hooks.override.attrname, "hook.attr");
+    c2->hooks.override.attrname =
+      mush_strdup(c1->hooks.override.attrname, "hook.attr");
 
   ptab_insert_one(&ptab_command, clone, c2);
   return command_find(clone);
@@ -1921,7 +1937,8 @@ COMMAND(cmd_command)
     *bp = '\0';
     notify_format(player, T("Flags      : %s"), buff);
     buff[0] = '\0';
-    notify_format(player, T("Lock       : %s"), unparse_boolexp(player, command->cmdlock, UB_DBREF));
+    notify_format(player, T("Lock       : %s"),
+                  unparse_boolexp(player, command->cmdlock, UB_DBREF));
     if (command->sw.mask) {
       bp = buff;
       for (sw_val = dyn_switch_list; sw_val->name; sw_val++)

@@ -460,13 +460,12 @@ static int ignore;      /**< Used to shut up compiler warnings when not assertin
         (REGION_CAPACITY - CHUNK_LONG_DATA_OFFSET)
 
 static int
-LenToFullLen(int len) {
-  return (len + 
-   ((len > MAX_SHORT_CHUNK_LEN) 
-    ? (len > MAX_MEDIUM_CHUNK_LEN) 
-      ? CHUNK_LONG_DATA_OFFSET 
-      : CHUNK_MEDIUM_DATA_OFFSET 
-    : CHUNK_SHORT_DATA_OFFSET));
+LenToFullLen(int len)
+{
+  return (len + ((len > MAX_SHORT_CHUNK_LEN)
+                 ? (len > MAX_MEDIUM_CHUNK_LEN)
+                 ? CHUNK_LONG_DATA_OFFSET
+                 : CHUNK_MEDIUM_DATA_OFFSET : CHUNK_SHORT_DATA_OFFSET));
 }
 
 static inline unsigned char *ChunkPointer(uint16_t, uint16_t);
@@ -483,8 +482,8 @@ CPLenShort(const unsigned char *cptr)
 static inline uint16_t
 CPLenMedium(const unsigned char *cptr)
 {
-  return ((cptr[CHUNK_MEDIUM_LEN_MSB_OFFSET] & CHUNK_MEDIUM_LEN_MSB_MASK) << 8) + 
-    (cptr[CHUNK_MEDIUM_LEN_LSB_OFFSET] & CHUNK_MEDIUM_LEN_LSB_MASK);
+  return ((cptr[CHUNK_MEDIUM_LEN_MSB_OFFSET] & CHUNK_MEDIUM_LEN_MSB_MASK) << 8)
+    + (cptr[CHUNK_MEDIUM_LEN_LSB_OFFSET] & CHUNK_MEDIUM_LEN_LSB_MASK);
 }
 
 static inline uint16_t
@@ -525,7 +524,7 @@ CPFullLen(const unsigned char *cptr)
 }
 
 static inline uint16_t
-ChunkFullLen(uint16_t region, uint16_t offset) 
+ChunkFullLen(uint16_t region, uint16_t offset)
 {
   return CPFullLen(ChunkPointer(region, offset));
 }
@@ -545,7 +544,7 @@ ChunkIsShort(uint16_t region, uint16_t offset)
 static inline bool
 ChunkIsMedium(uint16_t region, uint16_t offset)
 {
-  return (*ChunkPointer(region, offset) & (CHUNK_TAG1_MASK | CHUNK_TAG2_MASK)) 
+  return (*ChunkPointer(region, offset) & (CHUNK_TAG1_MASK | CHUNK_TAG2_MASK))
     == (CHUNK_TAG1_MEDIUM | CHUNK_TAG2_MEDIUM);
 }
 
@@ -573,7 +572,7 @@ static unsigned char *
 CPDataPtr(unsigned char *cptr)
 {
   if (*cptr & CHUNK_TAG1_MASK) {
-    if (*cptr & CHUNK_TAG2_MASK) 
+    if (*cptr & CHUNK_TAG2_MASK)
       return cptr + CHUNK_LONG_DATA_OFFSET;
     else
       return cptr + CHUNK_MEDIUM_DATA_OFFSET;
@@ -595,10 +594,11 @@ ChunkNextFree(uint16_t region, uint16_t offset)
 
 /* 0 for no, 1 for yes with room, 2 for exact */
 static int
-FitsInSpace(int size, int capacity) {
+FitsInSpace(int size, int capacity)
+{
   if (size == capacity)
     return 2;
-  else 
+  else
     return size <= capacity - MIN_REMNANT_LEN;
 }
 
@@ -712,16 +712,17 @@ static void find_oddballs(uint16_t region);
  */
 
 static inline unsigned char *
-ChunkPointer(uint16_t region, uint16_t offset) {
-  return ((unsigned char *)(regions[region].in_memory)) + offset;
+ChunkPointer(uint16_t region, uint16_t offset)
+{
+  return ((unsigned char *) (regions[region].in_memory)) + offset;
 }
 
 static uint8_t
 RegionDerefs(uint16_t region)
 {
   if (regions[region].used_count)
-    return (regions[region].total_derefs >> 
-	    (curr_period - regions[region].period_last_touched)) / 
+    return (regions[region].total_derefs >>
+            (curr_period - regions[region].period_last_touched)) /
       regions[region].used_count;
   else
     return 0;
@@ -731,7 +732,7 @@ static uint8_t
 RegionDerefsWithChunk(uint16_t region, uint16_t derefs)
 {
   return ((regions[region].total_derefs >>
-	   (curr_period - regions[region].period_last_touched)) + derefs) /
+           (curr_period - regions[region].period_last_touched)) + derefs) /
     (regions[region].used_count + 1);
 }
 

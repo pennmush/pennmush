@@ -911,7 +911,8 @@ do_chownall(dbref player, const char *name, const char *target, int preserve)
     notify(player, T("Try asking them first!"));
     return;
   }
-  if ((victim = noisy_match_result(player, name, TYPE_PLAYER, MAT_LIMITED | MAT_TYPE))
+  if ((victim =
+       noisy_match_result(player, name, TYPE_PLAYER, MAT_LIMITED | MAT_TYPE))
       == NOTHING)
     return;
 
@@ -961,7 +962,8 @@ do_chzoneall(dbref player, const char *name, const char *target)
     notify(player, T("You do not have the power to change reality."));
     return;
   }
-  if ((victim = noisy_match_result(player, name, TYPE_PLAYER, MAT_LIMITED | MAT_TYPE))
+  if ((victim =
+       noisy_match_result(player, name, TYPE_PLAYER, MAT_LIMITED | MAT_TYPE))
       == NOTHING)
     return;
 

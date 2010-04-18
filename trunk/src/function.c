@@ -1053,8 +1053,7 @@ do_function_clone(dbref player, const char *function, const char *clone)
     return;
   }
 
-  function_add(realclone, fp->where.fun, fp->minargs,
-               fp->maxargs, fp->flags);
+  function_add(realclone, fp->where.fun, fp->minargs, fp->maxargs, fp->flags);
 
   notify(player, T("Function cloned."));
 }

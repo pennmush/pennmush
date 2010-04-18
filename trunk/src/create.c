@@ -182,7 +182,9 @@ do_open(dbref player, const char *direction, char **links)
   dbref forward;
   dbref source = NOTHING;
   if (links[3]) {
-    source = match_result(player, links[3], TYPE_ROOM, MAT_HERE | MAT_ABSOLUTE | MAT_TYPE);
+    source =
+      match_result(player, links[3], TYPE_ROOM,
+                   MAT_HERE | MAT_ABSOLUTE | MAT_TYPE);
     if (!GoodObject(source)) {
       notify(player, T("Open from where?"));
       return;
@@ -191,7 +193,7 @@ do_open(dbref player, const char *direction, char **links)
 
   forward = do_real_open(player, direction, links[1], source);
   if (links[2] && GoodObject(forward) && GoodObject(Location(forward))) {
-    char sourcestr[SBUF_LEN]; /* SBUF_LEN is the size used by unparse_dbref */
+    char sourcestr[SBUF_LEN];   /* SBUF_LEN is the size used by unparse_dbref */
     if (!GoodObject(source)) {
       if (IsRoom(player)) {
         source = player;
@@ -347,7 +349,8 @@ do_link(dbref player, const char *name, const char *room_name, int preserve)
     case TYPE_PLAYER:
     case TYPE_THING:
       if ((room =
-           noisy_match_result(player, room_name, NOTYPE, MAT_EVERYTHING)) == NOTHING) {
+           noisy_match_result(player, room_name, NOTYPE,
+                              MAT_EVERYTHING)) == NOTHING) {
         notify(player, T("No match."));
         return;
       }
@@ -628,8 +631,7 @@ do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref)
     return NOTHING;
   }
   if (preserve && !Wizard(player)) {
-    notify(player,
-           T("You cannot @CLONE/PRESERVE. Use normal @CLONE instead."));
+    notify(player, T("You cannot @CLONE/PRESERVE. Use normal @CLONE instead."));
     return NOTHING;
   }
 

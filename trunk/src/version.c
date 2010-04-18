@@ -33,8 +33,8 @@ do_version(dbref player)
   int scan;
 #ifdef SVNDATE
   char svndate[75];
-#endif /* SVNDATE */
-#endif /* SVNREVISION */
+#endif                          /* SVNDATE */
+#endif                          /* SVNREVISION */
   notify_format(player, T("You are connected to %s"), MUDNAME);
   if (MUDURL && *MUDURL)
     notify_format(player, T("Address: %s"), MUDURL);
@@ -53,9 +53,9 @@ do_version(dbref player)
       notify_format(player, T("SVN revision: %d"), svnrev);
 #else
     notify_format(player, T("SVN revision: %d"), svnrev);
-#endif /* SVNDATE */
+#endif                          /* SVNDATE */
   }
-#endif /* SVNREVISION */
+#endif                          /* SVNREVISION */
 
 
 #ifdef WIN32

@@ -70,7 +70,8 @@ extern int flaglist_check_long(const char *ns, dbref player, dbref it,
                                const char *fstr, int type);
 extern FLAG *match_flag(const char *name);
 extern FLAG *match_power(const char *name);
-extern char *flag_list_to_lock_string(object_flag_type flags, object_flag_type powers);
+extern char *flag_list_to_lock_string(object_flag_type flags,
+                                      object_flag_type powers);
 
 extern void twiddle_flag_internal(const char *ns, dbref thing, const char *flag,
                                   int negate);

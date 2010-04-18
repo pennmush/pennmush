@@ -3308,7 +3308,8 @@ do_who_admin(dbref player, char *name)
   }
 
   notify_format(player, "%-16s %6s %9s %5s %5s %-4s %-s", T("Player Name"),
-                T("Loc #"), T("On For"), T("Idle"), T("Cmds"), T("Des"), T("Host"));
+                T("Loc #"), T("On For"), T("Idle"), T("Cmds"), T("Des"),
+                T("Host"));
   for (d = descriptor_list; d; d = d->next) {
     if (d->connected)
       count++;
@@ -5171,7 +5172,7 @@ do_reboot(dbref player, int flag)
                    ("GAME: Reboot w/o disconnect by %s, please wait."),
                    Name(Owner(player)));
     do_rawlog(LT_WIZ, "Reboot w/o disconnect triggered by %s(#%d).",
-	      Name(player), player);
+              Name(player), player);
   }
   if (flag) {
     globals.paranoid_dump = 1;

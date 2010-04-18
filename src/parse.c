@@ -203,12 +203,12 @@ parse_boolean(char const *str)
       return 0;
     /* Non-zero numbers are true, zero is false */
     if (is_strict_number(clean))
-      return parse_number(clean) != 0;    /* avoid rounding problems */
+      return parse_number(clean) != 0;  /* avoid rounding problems */
     /* Skip blanks */
     while (clean[i] == ' ')
       i++;
     /* If there's any non-blanks left, it's true */
-    return clean[i] != '\0';        /* force to 1 or 0 */
+    return clean[i] != '\0';    /* force to 1 or 0 */
   }
 }
 
@@ -1324,7 +1324,9 @@ process_expression(char *buff, char **bp, char const **str,
             ~(PE_COMPRESS_SPACES | PE_EVALUATE | PE_FUNCTION_CHECK);
         temp_tflags = PT_COMMA | PT_PAREN;
         nfargs = 0;
-        onearg = (char *) mush_malloc(BUFFER_LEN, "process_expression.single_function_argument");
+        onearg =
+          (char *) mush_malloc(BUFFER_LEN,
+                               "process_expression.single_function_argument");
         do {
           char *argp;
           if ((fp->maxargs < 0) && ((nfargs + 1) >= -fp->maxargs))

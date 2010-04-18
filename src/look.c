@@ -421,11 +421,13 @@ look_atrs(dbref player, dbref thing, const char *mstr, int all, int mortal,
 {
   if (all || (mstr && *mstr && !wildcard(mstr))) {
     if (parent) {
-      if (!atr_iter_get_parent(player, thing, mstr, mortal, 0, look_helper, NULL)
+      if (!atr_iter_get_parent
+          (player, thing, mstr, mortal, 0, look_helper, NULL)
           && mstr)
         notify(player, T("No matching attributes."));
     } else {
-      if (!atr_iter_get(player, thing, mstr, mortal, 0, look_helper, NULL) && mstr)
+      if (!atr_iter_get(player, thing, mstr, mortal, 0, look_helper, NULL)
+          && mstr)
         notify(player, T("No matching attributes."));
     }
   } else {
@@ -434,7 +436,8 @@ look_atrs(dbref player, dbref thing, const char *mstr, int all, int mortal,
           (player, thing, mstr, mortal, 0, look_helper_veiled, NULL) && mstr)
         notify(player, T("No matching attributes."));
     } else {
-      if (!atr_iter_get(player, thing, mstr, mortal, 0, look_helper_veiled, NULL)
+      if (!atr_iter_get
+          (player, thing, mstr, mortal, 0, look_helper_veiled, NULL)
           && mstr)
         notify(player, T("No matching attributes."));
     }
@@ -652,7 +655,9 @@ do_look_at(dbref player, const char *name, int key)
       look_room(player, loc, LOOK_NORMAL);
       return;
     }
-    thing = match_result(loc, name, NOTYPE, MAT_POSSESSION | MAT_CARRIED_EXIT | MAT_ENGLISH);
+    thing =
+      match_result(loc, name, NOTYPE,
+                   MAT_POSSESSION | MAT_CARRIED_EXIT | MAT_ENGLISH);
     if (thing == NOTHING) {
       notify(player, T("I don't see that here."));
       return;
@@ -683,13 +688,14 @@ do_look_at(dbref player, const char *name, int key)
       }
       if (IsExit(box)) {
         /* Looking through an exit at an object on the other side */
-        if (!(Transparented(box) && !Cloudy(box)) && !(Cloudy(box) && !Transparented(box))) {
+        if (!(Transparented(box) && !Cloudy(box))
+            && !(Cloudy(box) && !Transparented(box))) {
           notify_format(player, T("You can't see through that."));
           return;
         }
         box = Location(box);
         if (box == HOME)
-          box = Home(player); /* Resolve exits linked to HOME */
+          box = Home(player);   /* Resolve exits linked to HOME */
         if (!GoodObject(box)) {
           /* Do nothing for exits with no destination, or a variable destination */
           notify(player, T("You can't see through that."));
@@ -698,7 +704,8 @@ do_look_at(dbref player, const char *name, int key)
         /* Including MAT_CARRIED_EXIT allows looking at remote exits, but gives slightly strange
            results when the remote exit is set transparent, and possibly lets you look at the back
            of the door you're looking through, which is odd */
-        thing = match_result(box, objname, NOTYPE, MAT_POSSESSION | MAT_ENGLISH);
+        thing =
+          match_result(box, objname, NOTYPE, MAT_POSSESSION | MAT_ENGLISH);
         if (!GoodObject(thing)) {
           notify(player, T("I don't see that here."));
           return;

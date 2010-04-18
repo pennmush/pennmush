@@ -207,8 +207,7 @@ COMMAND_INFO *make_command
   (const char *name, int type, const char *flagstr,
    const char *powerstr, const char *sw, command_func func);
 COMMAND_INFO *command_modify(const char *name, int type,
-                             boolexp key, switch_mask sw,
-                             command_func func);
+                             boolexp key, switch_mask sw, command_func func);
 void reserve_alias(const char *a);
 int alias_command(const char *command, const char *alias);
 void command_init_preconfig(void);
@@ -225,14 +224,16 @@ char *list_commands(void);
 int command_check(dbref player, COMMAND_INFO *cmd, int noisy);
 int command_check_byname(dbref player, const char *name);
 int command_check_byname_quiet(dbref player, const char *name);
-int restrict_command(dbref player, COMMAND_INFO *command, const char *restriction);
+int restrict_command(dbref player, COMMAND_INFO *command,
+                     const char *restriction);
 void reserve_aliases(void);
 void local_commands(void);
 void do_command_add(dbref player, char *name, int flags);
 void do_command_delete(dbref player, char *name);
-int run_command(COMMAND_INFO *cmd, dbref player, dbref cause, char *commandraw, switch_mask sw,
-      char switch_err[BUFFER_LEN], char *string, char *swp, char *ap,
-      char *ls, char *lsa[MAX_ARG], char *rs, char *rsa[MAX_ARG]);
+int run_command(COMMAND_INFO *cmd, dbref player, dbref cause, char *commandraw,
+                switch_mask sw, char switch_err[BUFFER_LEN], char *string,
+                char *swp, char *ap, char *ls, char *lsa[MAX_ARG], char *rs,
+                char *rsa[MAX_ARG]);
 
 
 #endif                          /* __COMMAND_H */

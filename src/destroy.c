@@ -900,7 +900,7 @@ make_first_free_wrapper(dbref player, char *newdbref)
   }
 
   if (!make_first_free(thing)) {
-      notify(player, T("Unable to create object with that dbref."));
+    notify(player, T("Unable to create object with that dbref."));
     return 0;
   }
 

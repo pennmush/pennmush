@@ -238,7 +238,7 @@ struct eval_context {
   char break_replace[BUFFER_LEN];  /**< What to replace the break with */
   int include_called;           /**< Has the include command been called? */
   char include_replace[BUFFER_LEN];  /**< What to replace the include with */
-  char *include_wenv[10];  	/**< Working env for include */
+  char *include_wenv[10];       /**< Working env for include */
   struct real_pcre *re_code;              /**< The compiled re */
   int re_subpatterns;         /**< The number of re subpatterns */
   int *re_offsets;            /**< The offsets for the subpatterns */
@@ -284,7 +284,8 @@ void do_open(dbref player, const char *direction, char **links);
 void do_link(dbref player, const char *name, const char *room_name,
              int preserve);
 void do_unlink(dbref player, const char *name);
-dbref do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref);
+dbref do_clone(dbref player, char *name, char *newname, int preserve,
+               char *newdbref);
 
 /* From funtime.c */
 int etime_to_secs(char *str1, int *secs);

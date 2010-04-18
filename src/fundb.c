@@ -133,7 +133,8 @@ FUNCTION(fun_nattr)
   }
 
   safe_integer(atr_pattern_count(executor, thing, pattern, doparent,
-                                   !Can_Examine(executor, thing), regexp), buff, bp);
+                                 !Can_Examine(executor, thing), regexp), buff,
+               bp);
 }
 
 /* ARGSUSED */
@@ -168,7 +169,7 @@ FUNCTION(fun_lattr)
     if (!delim_check(buff, bp, nargs, args, 2, &delim))
       return;
   }
-  if(*called_as == 'R')
+  if (*called_as == 'R')
     regexp = 1;
 
   pattern = strchr(args[0], '/');
@@ -192,11 +193,12 @@ FUNCTION(fun_lattr)
 
   if (strchr(called_as, 'P')) {
     (void) atr_iter_get_parent(executor, thing, pattern,
-                               !Can_Examine(executor, thing), regexp, lattr_helper,
-                               &lh);
+                               !Can_Examine(executor, thing), regexp,
+                               lattr_helper, &lh);
   } else {
     (void) atr_iter_get(executor, thing, pattern,
-                        !Can_Examine(executor, thing), regexp, lattr_helper, &lh);
+                        !Can_Examine(executor, thing), regexp, lattr_helper,
+                        &lh);
   }
 }
 
@@ -599,7 +601,9 @@ FUNCTION(fun_rnum)
   if ((place != NOTHING) &&
       (Can_Examine(executor, place) || (Location(executor) == place) ||
        (enactor == place))) {
-    switch (thing = match_result(place, name, NOTYPE, MAT_POSSESSION | MAT_CARRIED_EXIT)) {
+    switch (thing =
+            match_result(place, name, NOTYPE,
+                         MAT_POSSESSION | MAT_CARRIED_EXIT)) {
     case NOTHING:
       safe_str(T(e_match), buff, bp);
       break;

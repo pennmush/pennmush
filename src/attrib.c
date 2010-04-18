@@ -1108,7 +1108,8 @@ atr_iter_get(dbref player, dbref thing, const char *name, int mortal,
     } else {
       name = "*";
     }
-  }  len = strlen(name);
+  }
+  len = strlen(name);
 
   if (!regexp && !wildcard(name) && name[len - 1] != '`') {
     ptr = atr_get_noparent(thing, strupper(name));
@@ -1120,7 +1121,9 @@ atr_iter_get(dbref player, dbref thing, const char *name, int mortal,
     while (*indirect) {
       ptr = *indirect;
       if ((mortal ? Is_Visible_Attr(thing, ptr)
-           : Can_Read_Attr(player, thing, ptr)) && (regexp ? quick_regexp_match(name, AL_NAME(ptr), 0) : atr_wild(name, AL_NAME(ptr))))
+           : Can_Read_Attr(player, thing, ptr))
+          && (regexp ? quick_regexp_match(name, AL_NAME(ptr), 0) :
+              atr_wild(name, AL_NAME(ptr))))
         result += func(player, thing, NOTHING, name, ptr, args);
       if (ptr == *indirect)
         indirect = &AL_NEXT(ptr);
@@ -1185,7 +1188,8 @@ atr_pattern_count(dbref player, dbref thing, const char *name,
           if ((parent == thing) || !AF_Private(ptr)) {
             if ((mortal ? Is_Visible_Attr(parent, ptr)
                  : Can_Read_Attr(player, parent, ptr))
-                && (regexp ? quick_regexp_match(name, AL_NAME(ptr), 0) : atr_wild(name, AL_NAME(ptr))))
+                && (regexp ? quick_regexp_match(name, AL_NAME(ptr), 0) :
+                    atr_wild(name, AL_NAME(ptr))))
               result += 1;
           }
         }
@@ -1252,7 +1256,8 @@ atr_iter_get_parent(dbref player, dbref thing, const char *name, int mortal,
           if ((parent == thing) || !AF_Private(ptr)) {
             if ((mortal ? Is_Visible_Attr(parent, ptr)
                  : Can_Read_Attr(player, parent, ptr))
-                && (regexp ? quick_regexp_match(name, AL_NAME(ptr), 0) : atr_wild(name, AL_NAME(ptr))))
+                && (regexp ? quick_regexp_match(name, AL_NAME(ptr), 0) :
+                    atr_wild(name, AL_NAME(ptr))))
               result += func(player, thing, parent, name, ptr, args);
           }
         }

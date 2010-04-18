@@ -343,7 +343,8 @@ parse_que(dbref player, const char *command, dbref cause)
 }
 
 int
-inplace_queue_attribute(dbref thing, const char *atrname, dbref enactor, int rsargs)
+inplace_queue_attribute(dbref thing, const char *atrname, dbref enactor,
+                        int rsargs)
 {
   ATTR *a;
   char *start, *command;
@@ -709,16 +710,19 @@ do_entry(BQUE *entry, int include_recurses)
           tmp->cause = entry->cause;
           for (a = 0; a < 10; a++) {
             if (global_eval_context.include_called == 1) {
-              tmp->env[a] = entry->env[a] ? mush_strdup(entry->env[a], "cqueue.env") : NULL;
+              tmp->env[a] =
+                entry->env[a] ? mush_strdup(entry->env[a], "cqueue.env") : NULL;
             } else {
               if (global_eval_context.include_wenv[a]) {
-                tmp->env[a] = mush_strdup(global_eval_context.include_wenv[a], "cqueue.env");
+                tmp->env[a] =
+                  mush_strdup(global_eval_context.include_wenv[a],
+                              "cqueue.env");
               } else {
                 tmp->env[a] = NULL;
               }
             }
             if (global_eval_context.include_wenv[a]) {
-              mush_free(global_eval_context.include_wenv[a],"include_wenv");
+              mush_free(global_eval_context.include_wenv[a], "include_wenv");
               global_eval_context.include_wenv[a] = NULL;
             }
           }

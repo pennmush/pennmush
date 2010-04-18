@@ -1124,7 +1124,7 @@ process_command(dbref player, char *command, dbref cause, int from_port)
     if (options.log_commands || Suspect(player))
       do_log(LT_CMD, player, NOTHING, "%s", msg);
     if (Verbose(player))
-        raw_notify(Owner(player), tprintf("#%d] %s", player, msg));
+      raw_notify(Owner(player), tprintf("#%d] %s", player, msg));
   }
 
   strcpy(unp, command);
@@ -1143,15 +1143,19 @@ process_command(dbref player, char *command, dbref cause, int from_port)
             (i = alias_list_check(Contents(check_loc), cptr, "EALIAS")) != -1) {
           if (command_check(player, cmd, 1)) {
             sprintf(temp, "#%d", i);
-            run_command(cmd, player, cause, tprintf("ENTER #%d", i), NULL, NULL, tprintf("ENTER #%d", i), NULL, NULL, temp, NULL, NULL, NULL);
+            run_command(cmd, player, cause, tprintf("ENTER #%d", i), NULL, NULL,
+                        tprintf("ENTER #%d", i), NULL, NULL, temp, NULL, NULL,
+                        NULL);
           }
           goto done;
         }
         /* if that didn't work, try matching leave aliases */
-        if (!IsRoom(check_loc) && (cmd = command_find("LEAVE")) && !(cmd->type & CMD_T_DISABLED) &&
-            (loc_alias_check(check_loc, cptr, "LALIAS"))) {
+        if (!IsRoom(check_loc) && (cmd = command_find("LEAVE"))
+            && !(cmd->type & CMD_T_DISABLED)
+            && (loc_alias_check(check_loc, cptr, "LALIAS"))) {
           if (command_check(player, cmd, 1))
-            run_command(cmd, player, cause, "LEAVE", NULL, NULL, "LEAVE", NULL, NULL, NULL, NULL, NULL, NULL);
+            run_command(cmd, player, cause, "LEAVE", NULL, NULL, "LEAVE", NULL,
+                        NULL, NULL, NULL, NULL, NULL);
           goto done;
         }
       }
@@ -1178,11 +1182,14 @@ process_command(dbref player, char *command, dbref cause, int from_port)
            * so we check for exits and commands
            */
           /* check zone master room exits */
-          if (remote_exit(player, cptr) && (cmd = command_find("GOTO")) && !(cmd->type & CMD_T_DISABLED)) {
+          if (remote_exit(player, cptr) && (cmd = command_find("GOTO"))
+              && !(cmd->type & CMD_T_DISABLED)) {
             if (!Mobile(player) || !command_check(player, cmd, 1)) {
               goto done;
             } else {
-              run_command(cmd, player, cause, tprintf("GOTO %s", cptr), NULL, NULL, tprintf("GOTO %s", cptr), NULL, NULL, cptr, NULL, NULL, NULL);
+              run_command(cmd, player, cause, tprintf("GOTO %s", cptr), NULL,
+                          NULL, tprintf("GOTO %s", cptr), NULL, NULL, cptr,
+                          NULL, NULL, NULL);
               goto done;
             }
           } else
@@ -1210,11 +1217,14 @@ process_command(dbref player, char *command, dbref cause, int from_port)
       /* end of zone stuff */
       /* check global exits only if no other commands are matched */
       if ((!a) && (check_loc != MASTER_ROOM)) {
-        if (global_exit(player, cptr) && (cmd = command_find("GOTO")) && !(cmd->type & CMD_T_DISABLED)) {
+        if (global_exit(player, cptr) && (cmd = command_find("GOTO"))
+            && !(cmd->type & CMD_T_DISABLED)) {
           if (!Mobile(player) || !command_check(player, cmd, 1))
             goto done;
           else {
-            run_command(cmd, player, cause, tprintf("GOTO %s", cptr), NULL, NULL, tprintf("GOTO %s", cptr), NULL, NULL, cptr, NULL, NULL, NULL);
+            run_command(cmd, player, cause, tprintf("GOTO %s", cptr), NULL,
+                        NULL, tprintf("GOTO %s", cptr), NULL, NULL, cptr, NULL,
+                        NULL, NULL);
             goto done;
           }
         } else

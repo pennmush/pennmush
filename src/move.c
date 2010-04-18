@@ -310,8 +310,10 @@ can_move(dbref player, const char *direction)
     ok = command_check_byname(player, "HOME");
   } else {
     /* otherwise match on exits - don't use GoodObject here! */
-    ok = (match_result(player, direction, TYPE_EXIT, MAT_ENGLISH | MAT_EXIT | MAT_TYPE) !=
-          NOTHING);
+    ok =
+      (match_result
+       (player, direction, TYPE_EXIT,
+        MAT_ENGLISH | MAT_EXIT | MAT_TYPE) != NOTHING);
   }
   return ok;                    /* Written like this due to overeager compiler */
 }
@@ -387,11 +389,13 @@ do_move(dbref player, const char *direction, enum move_type type)
     if (type == MOVE_GLOBAL)
       exit_m =
         match_result(player, direction, TYPE_EXIT,
-                     MAT_ENGLISH | MAT_EXIT | MAT_GLOBAL | MAT_CHECK_KEYS | MAT_TYPE);
+                     MAT_ENGLISH | MAT_EXIT | MAT_GLOBAL | MAT_CHECK_KEYS |
+                     MAT_TYPE);
     else if (type == MOVE_ZONE)
       exit_m =
         match_result(player, direction, TYPE_EXIT,
-                     MAT_ENGLISH | MAT_EXIT | MAT_REMOTES | MAT_CHECK_KEYS | MAT_TYPE);
+                     MAT_ENGLISH | MAT_EXIT | MAT_REMOTES | MAT_CHECK_KEYS |
+                     MAT_TYPE);
     else
       exit_m =
         match_result(player, direction, TYPE_EXIT,

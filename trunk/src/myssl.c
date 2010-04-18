@@ -114,7 +114,7 @@ static SSL_CTX *ctx = NULL;
 SSL_CTX *
 ssl_init(char *private_key_file, char *ca_file, int req_client_cert)
 {
-  SSL_METHOD *meth;
+  const SSL_METHOD *meth;
   unsigned char context[128];
   DH *dh;
   unsigned int reps = 1;

@@ -1,10 +1,4 @@
-use PennMUSH;
-use MUSHConnection;
-use TestHarness;
-
-$mush = PennMUSH->new();
-$god = $mush->loginGod();
-
+run tests:
 test('alias.1', $god, '@name me=God', ['Name set.']);
 test('alias.2', $god, '@name me=One', ['Name set.']);
 test('alias.3', $god, '@alias me=God', ['Alias set.']);

@@ -1501,8 +1501,7 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
   char *tp;
   int make_boolexp = 0;
   boolexp key;
-  object_flag_type flags = new_flag_bitmask("FLAG");
-  object_flag_type powers = new_flag_bitmask("POWER");
+  object_flag_type flags = NULL, powers = NULL;
 
   if (!command)
     return 0;
@@ -1530,6 +1529,9 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
     mush_free(rsave, "rc.string");
     return 1;
   }
+
+  flags = new_flag_bitmask("FLAG");
+  powers = new_flag_bitmask("POWER");
 
   /* Parse old-style restriction into a boolexp */
   while (restriction && *restriction) {
@@ -1594,8 +1596,11 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
   mush_free(rsave, "rc.string");
 
   /* And now format what we have into a lock string, if necessary */
-  if (!make_boolexp)
+  if (!make_boolexp) {
+    destroy_flag_bitmask(flags);
+    destroy_flag_bitmask(powers);
     return 1;
+  }
 
   tp = lockstr;
   safe_str(flag_list_to_lock_string(flags, powers), lockstr, &tp);
@@ -1644,6 +1649,8 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
   key = parse_boolexp(player, lockstr, CommandLock);
   command->cmdlock = key;
 
+  destroy_flag_bitmask(flags);
+  destroy_flag_bitmask(powers);
   return 1;
 }
 

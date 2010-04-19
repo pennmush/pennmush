@@ -3176,7 +3176,7 @@ See also: namegrab(), name(), locate()
     > say namegraball(#0 #1 #2,room)
     You say, "#0 #2"
   
-See also: namelist(), locate(0
+See also: namelist(), locate()
 & NAND()
 & NCAND()
   nand(<boolean1>[, ... , <booleanN>])

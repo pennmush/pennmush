@@ -1,44 +1,62 @@
 & ATTRIBUTE FLAGS
   Attribute flags are set on an object's attributes using @set, or applied
-  to attributes globally using @attrib. Their names (and, when applicable,
-  the character used in examine as shorthand for the flag) include:
+  to attributes globally using @attribute. Their names (and, when applicable,
+  the character used in examine as shorthand for the flag) are shown below.
+  
+  These attribute flags restrict access, and are inherited down attribute
+  trees (if FOO is no_command, FOO`BAR is automatically no_command too):
 
-  no_command ($)    Attribute will not be checked for '$' commands and
-                    '^' listen patterns.
-  visual (v)        Attribute can be seen by anyone via get(), eval(),
-                    ufun(), zfun(), and similar functions.
+  no_command ($)    Attribute won't be checked for $-commands or 
+                    ^-listen patterns.
   no_inherit (i)    Attribute will not be inherited by the children of
                     this object.
   no_clone (c)      Attribute will not be copied if the object is @clone'd.
-  regexp (R)        Match $-commands and ^-listens using regular expressions.
-                    See 'help regexps'.
-  case (C)          Match $-commands and ^-listens case sensitively.
-  safe (S)          Attribute may not be modified, without unsetting this flag.
   mortal_dark (m)   Attribute cannot be seen by mortals. This flag can only
-                    be set by royalty and wizards.  "hidden" is a synonym.
+                    be set by royalty and wizards. "hidden" is a synonym.
+  wizard (w)        Attribute can only be set by wizards.
+                    This flag can only be set by royalty and wizards.
+  veiled (V)        Attribute value won't be shown on default examine, but 
+                    is still otherwise accessible (for spammy attribs).
+  nearby (n)        Even if the attribute is visual, it can only be retrieved
+                    if you're near the object (see 'help nearby()').
+  locked (+)        Attribute is locked with @atrlock.
+  safe (S)          Attribute can't be modified without unsetting this flag.
 
   Continued in 'help attribute flags2'
 & ATTRIBUTE FLAGS2
-  noname (N)        Attribute won't show name in @o-* messages.
-  nospace (s)       Attribute won't append a space in @o-* messages.
-  wizard (w)        Attribute can only be set by wizards.
-                    This flag can only be set by royalty and wizards.
-  veiled (V)        Attribute value will not be shown on default examine,
-                    but is still otherwise accessible (for spammy attribs).
-  debug (b)         Show debug output when this attribute is evaluated.
-  nearby (n)        Even if this attribute is visual, it can only be
-                    retrieved if you're co-located with the object.
+  These attribute flags grant access. They are not inherited down attribute
+  trees, and must be set a branch attribute as well as a leaf to take effect
+  (to make FOO`BAR visual, FOO must be visual too):
+  
+  visual (v)        Attribute can be seen by anyone via get(), eval(),
+                    ufun(), zfun(), and similar functions.
   public (p)        This attribute can be evaluated by any object, even
                     if safer_ufun is in use. DANGEROUS! AVOID!
-  aahear (A)        ^-listens on this attribute match like @aahear
-  amhear (M)        ^-listens on this attribute match like @amhear
+
+  These attribute flags alter the way attributes are used in commands and
+  ^-listens. They always only affect the attribute they're set on, regardless
+  of attribute trees:
+
+  debug (b)         Show debug output when this attribute is evaluated.
+  regexp (R)        Match $-commands and ^-listens using regular expressions.
+                    See 'help regexps'.
+  case (C)          Match $-commands and ^-listens case sensitively.
+  nospace (s)       Attribute won't add a space after the object name in 
+                    @o-* messages. See 'help verbs'.
+  noname (N)        Attribute won't show name in @o-* messages.
 
   Continued in 'help attribute flags3'
 & ATTRIBUTE FLAGS3
-  prefixmatch       When a user attempts to set an attribute using @<attrib>,
-                    this attribute will be matched down to its unique
-                    prefixes. This flag is primarily used internally.
+  aahear (A)        ^-listens on this attribute match like @aahear
+  amhear (M)        ^-listens on this attribute match like @amhear
+  prefixmatch       When set with @<attrib>, this attribute will be matched
+                    down to its unique prefixes. This flag is primarily used
+                    internally, but also useful in @attribute/access.
+                    
+  These attribute flags are only used internally, and shown on 'examine':
   `                 This attribute is a branch. See: help ATTRIBUTE TREES
+  
+See also: @set, @attribute, ATTRIBUTE TREES
 & ATTRIBUTE TREES
 & ATTR TREES
 & ATTRIB TREES
@@ -142,22 +160,3 @@ inherited attributes that are set by the parent (although it may loosen
 access restrictions to its own attributes on the same branch). The child
 object may impose stricter restrictions, however, and these may prevent
 access to inherited parent data.
-& NONAME
-& NOSPACE
-  @o-* Attributes set NONAME will not prepend the enactor's name to their
-  message. Similarily, attributes set NOSPACE will not append a space
-  to the enactor's name in their message.
-
-  > @create anvil
-  > @lock anvil=#false
-  > @ofailure anvil=s strength is not enough to pick up the anvil.
-  > @set anvil/ofailure=nospace
-  > get anvil
-  (spectators see:)
-  Walkers strength is not enough to pick up the anvil.
-
-  > @ofailure anvil=The anvil is too heavy for %N to pick up.
-  > @set anvil/ofailure=noname
-  > get anvil
-  (spectators see:)
-  The anvil is too heavy for Walker to pick up.

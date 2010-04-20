@@ -114,7 +114,7 @@ static SSL_CTX *ctx = NULL;
 SSL_CTX *
 ssl_init(char *private_key_file, char *ca_file, int req_client_cert)
 {
-  SSL_METHOD *meth;
+  const SSL_METHOD *meth;
   unsigned char context[128];
   DH *dh;
   unsigned int reps = 1;
@@ -150,7 +150,8 @@ ssl_init(char *private_key_file, char *ca_file, int req_client_cert)
 
   /* Create context */
   meth = SSLv23_server_method();
-  ctx = SSL_CTX_new(meth);
+  // FIXME: this shouldn't require the const_cast...
+  ctx = SSL_CTX_new(const_cast<SSL_METHOD *>(meth));
 
   /* Load keys/certs */
   if (private_key_file && *private_key_file) {

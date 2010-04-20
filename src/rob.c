@@ -61,90 +61,83 @@ do_kill(dbref player, const char *what, int cost, int slay)
     notify(player, T("You do not have such power."));
     return;
   }
-  victim = match_result(player, what, TYPE_PLAYER, MAT_NEAR_THINGS);
+  victim = noisy_match_result(player, what, TYPE_PLAYER, MAT_NEAR_THINGS);
 
-  if (player == victim) {
+  if (victim == NOTHING)
+    return;
+  else if (player == victim) {
     notify(player, T("No suicide allowed."));
     return;
   }
   if (slay)
     do_log(LT_WIZ, player, victim, "SLAY");
 
-  switch (victim) {
-  case NOTHING:
-    notify(player, T("I don't see that here."));
-    break;
-  case AMBIGUOUS:
-    notify(player, T("I don't know what you mean!"));
-    break;
-  default:
-    if (Suspect(player))
-      flag_broadcast("WIZARD", 0,
-                     T("Broadcast: Suspect %s tried to kill %s(#%d)."),
-                     Name(player), Name(victim), victim);
-    if (!Mobile(victim)) {
-      notify(player, T("Sorry, you can only kill players and objects."));
-    } else if ((Haven(Location(victim)) &&
-                !Wizard(player)) ||
-               (controls(victim, Location(victim)) &&
-                !controls(player, Location(victim)))) {
-      notify(player, T("Sorry."));
-    } else if (NoKill(victim) && !Wizard(player) && (Owner(victim) != player)) {
-      notify(player, T("That object cannot be killed."));
-    } else {
-      /* go for it */
-      /* set cost */
-      /* if this isn't called via slay */
-      if (!slay) {
-        if (cost < KILL_MIN_COST)
-          cost = KILL_MIN_COST;
+  if (Suspect(player))
+    flag_broadcast("WIZARD", 0,
+                   T("Broadcast: Suspect %s tried to kill %s(#%d)."),
+                   Name(player), Name(victim), victim);
+  if (!Mobile(victim)) {
+    notify(player, T("Sorry, you can only kill players and objects."));
+    return;
+  } else if ((Haven(Location(victim)) &&
+              !Wizard(player)) ||
+             (controls(victim, Location(victim)) &&
+              !controls(player, Location(victim)))) {
+    notify(player, T("Sorry."));
+    return;
+  } else if (NoKill(victim) && !Wizard(player) && (Owner(victim) != player)) {
+    notify(player, T("That object cannot be killed."));
+    return;
+  }
+  /* go for it */
+  /* set cost */
+  /* if this isn't called via slay */
+  if (!slay) {
+    if (cost < KILL_MIN_COST)
+      cost = KILL_MIN_COST;
 
-        /* see if it works */
-        if (!payfor(player, cost)) {
-          notify_format(player, T("You don't have enough %s."), MONIES);
-          break;
-        }
-      }
-      if (((get_random32(0, KILL_BASE_COST) < (uint32_t) cost) || slay) &&
-          !Wizard(victim)) {
-        /* you killed him */
-        tp = tbuf1;
-        safe_format(tbuf1, &tp, T("You killed %s!"), Name(victim));
-        *tp = '\0';
-        tp = tbuf2;
-        safe_format(tbuf2, &tp, T("killed %s!"), Name(victim));
-        *tp = '\0';
-        do_halt(victim, "", victim);
-        did_it(player, victim, "DEATH", tbuf1, "ODEATH", tbuf2, "ADEATH",
-               NOTHING);
-
-        /* notify victim */
-        notify_format(victim, T("%s killed you!"), Name(player));
-
-        /* maybe pay off the bonus */
-        /* if we were not called via slay */
-        if (!slay) {
-          int payoff = cost * KILL_BONUS / 100;
-          if (payoff + Pennies(Owner(victim)) > Max_Pennies(Owner(victim)))
-            payoff = Max_Pennies(Owner(victim)) - Pennies(Owner(victim));
-          if (payoff > 0) {
-            notify_format(victim, T("Your insurance policy pays %d %s."),
-                          payoff, ((payoff == 1) ? MONEY : MONIES));
-            giveto(Owner(victim), payoff);
-          } else {
-            notify(victim, T("Your insurance policy has been revoked."));
-          }
-        }
-        /* send him home */
-        safe_tel(victim, HOME, 0);
-        /* if victim is object also dequeue all commands */
-      } else {
-        /* notify player and victim only */
-        notify(player, T("Your murder attempt failed."));
-        notify_format(victim, T("%s tried to kill you!"), Name(player));
-      }
-      break;
+    /* see if it works */
+    if (!payfor(player, cost)) {
+      notify_format(player, T("You don't have enough %s."), MONIES);
+      return;
     }
+  }
+  if (((get_random32(0, KILL_BASE_COST) < (uint32_t) cost) || slay) &&
+      !Wizard(victim)) {
+    /* you killed him */
+    tp = tbuf1;
+    safe_format(tbuf1, &tp, T("You killed %s!"), Name(victim));
+    *tp = '\0';
+    tp = tbuf2;
+    safe_format(tbuf2, &tp, T("killed %s!"), Name(victim));
+    *tp = '\0';
+    do_halt(victim, "", victim);
+    did_it(player, victim, "DEATH", tbuf1, "ODEATH", tbuf2, "ADEATH", NOTHING);
+
+    /* notify victim */
+    notify_format(victim, T("%s killed you!"), Name(player));
+
+    /* maybe pay off the bonus */
+    /* if we were not called via slay */
+    if (!slay) {
+      int payoff = cost * KILL_BONUS / 100;
+      if (payoff + Pennies(Owner(victim)) > Max_Pennies(Owner(victim)))
+        payoff = Max_Pennies(Owner(victim)) - Pennies(Owner(victim));
+      if (payoff > 0) {
+        notify_format(victim, T("Your insurance policy pays %d %s."),
+                      payoff, ((payoff == 1) ? MONEY : MONIES));
+        giveto(Owner(victim), payoff);
+      } else {
+        notify(victim, T("Your insurance policy has been revoked."));
+      }
+    }
+    /* send him home */
+    safe_tel(victim, HOME, 0);
+    /* if victim is object also dequeue all commands */
+  } else {
+    /* notify player and victim only */
+    notify(player, T("Your murder attempt failed."));
+    notify_format(victim, T("%s tried to kill you!"), Name(player));
   }
 }
 
@@ -185,8 +178,8 @@ do_buy(dbref player, char *item, char *from, int price)
 
   if (from != NULL && *from) {
     switch (vendor =
-            match_result(player, from, TYPE_PLAYER,
-                         MAT_NEAR_THINGS | MAT_ENGLISH)) {
+            match_result(player, from, TYPE_PLAYER | TYPE_THING,
+                         MAT_NEAR_THINGS | MAT_ENGLISH | MAT_TYPE)) {
     case NOTHING:
       notify(player, T("Buy from whom?"));
       return;
@@ -396,6 +389,18 @@ do_give(dbref player, char *recipient, char *amnt, int silent)
         notify(player, T("You can't give that away."));
         return;
       }
+
+      if (!eval_lock(player, who, From_Lock)) {
+        notify_format(player, T("%s doesn't want anything from you."),
+                      Name(who));
+        return;
+      }
+
+      if (!eval_lock(thing, who, Receive_Lock)) {
+        notify_format(player, T("%s doesn't want that."), Name(who));
+        return;
+      }
+
       if (Mobile(thing) && (EnterOk(who) || controls(player, who))) {
         moveto(thing, who);
 

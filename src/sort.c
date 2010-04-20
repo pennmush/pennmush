@@ -291,7 +291,7 @@ GENRECORD(gen_magic)
     case '8':
     case '9':
       intval = 0;
-      while (*s && isdigit(*s)) {
+      while (*s && isdigit((int) *s)) {
         intval *= 10;
         intval += *s - '0';
         s++;
@@ -299,10 +299,10 @@ GENRECORD(gen_magic)
       safe_format(buff, &bp, "%.20d", intval);
       if (*s == '.') {
         s++;
-        if (isdigit(*s)) {
+        if (isdigit((int) *s)) {
           intval = 0;
           numdigits = 0;
-          while (*s && isdigit(*s)) {
+          while (*s && isdigit((int) *s)) {
             intval *= 10;
             intval += *s - '0';
             numdigits++;
@@ -318,10 +318,10 @@ GENRECORD(gen_magic)
       }
       break;
     case NUMBER_TOKEN:
-      if (isdigit(*(s + 1))) {
+      if (isdigit((int) *(s + 1))) {
         s++;
         victim = 0;
-        while (*s && isdigit(*s)) {
+        while (*s && isdigit((int) *s)) {
           victim *= 10;
           victim += *s - '0';
           s++;

@@ -287,24 +287,20 @@ do_shutdown(dbref player, enum shutdown_type flag)
     notify(player, T("It takes a God to make me panic."));
     return;
   }
-  if (Wizard(player)) {
-    flag_broadcast(0, 0, T("GAME: Shutdown by %s"), Name(player));
-    do_log(LT_ERR, player, NOTHING, "SHUTDOWN by %s(%s)\n",
-           Name(player), unparse_dbref(player));
+  flag_broadcast(0, 0, T("GAME: Shutdown by %s"), Name(player));
+  do_log(LT_ERR, player, NOTHING, "SHUTDOWN by %s(%s)\n",
+         Name(player), unparse_dbref(player));
 
-    if (flag == SHUT_PANIC) {
-      mush_panic("@shutdown/panic");
-    } else {
-      if (flag == SHUT_PARANOID) {
-        globals.paranoid_checkpt = db_top / 5;
-        if (globals.paranoid_checkpt < 1)
-          globals.paranoid_checkpt = 1;
-        globals.paranoid_dump = 1;
-      }
-      shutdown_flag = 1;
-    }
+  if (flag == SHUT_PANIC) {
+    mush_panic("@shutdown/panic");
   } else {
-    notify(player, T("Your delusions of grandeur have been duly noted."));
+    if (flag == SHUT_PARANOID) {
+      globals.paranoid_checkpt = db_top / 5;
+      if (globals.paranoid_checkpt < 1)
+        globals.paranoid_checkpt = 1;
+      globals.paranoid_dump = 1;
+    }
+    shutdown_flag = 1;
   }
 }
 
@@ -436,7 +432,7 @@ mush_panic(const char *message)
     do_rawlog(LT_ERR,
               "PANIC: Attempted to panic because of '%s' while already panicking. Run in circles, scream and shout!",
               message);
-    _exit(133);
+    abort();
   }
 
   already_panicking = 1;
@@ -455,7 +451,7 @@ mush_panic(const char *message)
     if (setjmp(db_err)) {
       /* Dump failed. We're in deep doo-doo */
       do_rawlog(LT_ERR, "CANNOT DUMP PANIC DB. OOPS.");
-      _exit(134);
+      abort();
     } else {
       if ((f = penn_fopen(panicfile, FOPEN_WRITE)) == NULL) {
         do_rawlog(LT_ERR, "CANNOT OPEN PANIC FILE, YOU LOSE");
@@ -472,7 +468,7 @@ mush_panic(const char *message)
   } else {
     do_rawlog(LT_ERR, "Skipping panic dump because database isn't loaded.");
   }
-  _exit(136);
+  abort();
 }
 
 /** Crash gracefully.
@@ -1061,6 +1057,7 @@ process_command(dbref player, char *command, dbref cause, int from_port)
   char *cptr;
   dbref errdb;
   dbref check_loc;
+  COMMAND_INFO *cmd;
 
   if (!errdblist)
     if (!(errdblist = static_cast<dbref *>(mush_calloc(errdbsize, sizeof(dbref), "errdblist"))))
@@ -1126,9 +1123,8 @@ process_command(dbref player, char *command, dbref cause, int from_port)
     log_activity(LA_CMD, player, msg);
     if (options.log_commands || Suspect(player))
       do_log(LT_CMD, player, NOTHING, "%s", msg);
-    if Verbose
-      (player)
-        raw_notify(Owner(player), tprintf("#%d] %s", player, msg));
+    if (Verbose(player))
+      raw_notify(Owner(player), tprintf("#%d] %s", player, msg));
   }
 
   strcpy(unp, command);
@@ -1142,16 +1138,24 @@ process_command(dbref player, char *command, dbref cause, int from_port)
       if (Mobile(player)) {
         /* if the "player" is an exit or room, no need to do these checks */
         /* try matching enter aliases */
-        if (check_loc != NOTHING &&
+        if (check_loc != NOTHING && (cmd = command_find("ENTER")) &&
+            !(cmd->type & CMD_T_DISABLED) &&
             (i = alias_list_check(Contents(check_loc), cptr, "EALIAS")) != -1) {
-
-          sprintf(temp, "#%d", i);
-          do_enter(player, temp);
+          if (command_check(player, cmd, 1)) {
+            sprintf(temp, "#%d", i);
+            run_command(cmd, player, cause, tprintf("ENTER #%d", i), NULL, NULL,
+                        tprintf("ENTER #%d", i), NULL, NULL, temp, NULL, NULL,
+                        NULL);
+          }
           goto done;
         }
         /* if that didn't work, try matching leave aliases */
-        if (!IsRoom(check_loc) && (loc_alias_check(check_loc, cptr, "LALIAS"))) {
-          do_leave(player);
+        if (!IsRoom(check_loc) && (cmd = command_find("LEAVE"))
+            && !(cmd->type & CMD_T_DISABLED)
+            && (loc_alias_check(check_loc, cptr, "LALIAS"))) {
+          if (command_check(player, cmd, 1))
+            run_command(cmd, player, cause, "LEAVE", NULL, NULL, "LEAVE", NULL,
+                        NULL, NULL, NULL, NULL, NULL);
           goto done;
         }
       }
@@ -1178,11 +1182,14 @@ process_command(dbref player, char *command, dbref cause, int from_port)
            * so we check for exits and commands
            */
           /* check zone master room exits */
-          if (remote_exit(player, cptr)) {
-            if (!Mobile(player))
+          if (remote_exit(player, cptr) && (cmd = command_find("GOTO"))
+              && !(cmd->type & CMD_T_DISABLED)) {
+            if (!Mobile(player) || !command_check(player, cmd, 1)) {
               goto done;
-            else {
-              do_move(player, cptr, MOVE_ZONE);
+            } else {
+              run_command(cmd, player, cause, tprintf("GOTO %s", cptr), NULL,
+                          NULL, tprintf("GOTO %s", cptr), NULL, NULL, cptr,
+                          NULL, NULL, NULL);
               goto done;
             }
           } else
@@ -1210,11 +1217,14 @@ process_command(dbref player, char *command, dbref cause, int from_port)
       /* end of zone stuff */
       /* check global exits only if no other commands are matched */
       if ((!a) && (check_loc != MASTER_ROOM)) {
-        if (global_exit(player, cptr)) {
-          if (!Mobile(player))
+        if (global_exit(player, cptr) && (cmd = command_find("GOTO"))
+            && !(cmd->type & CMD_T_DISABLED)) {
+          if (!Mobile(player) || !command_check(player, cmd, 1))
             goto done;
           else {
-            do_move(player, cptr, MOVE_GLOBAL);
+            run_command(cmd, player, cause, tprintf("GOTO %s", cptr), NULL,
+                        NULL, tprintf("GOTO %s", cptr), NULL, NULL, cptr, NULL,
+                        NULL, NULL);
             goto done;
           }
         } else

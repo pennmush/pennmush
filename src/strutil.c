@@ -28,7 +28,6 @@
 #include "log.h"
 #include "confmagic.h"
 
-char *next_token(char *str, char sep);
 int format_long(intmax_t val, char *buff, char **bp, int maxlen, int base);
 
 char *
@@ -153,7 +152,7 @@ strncasecmp(const char *s1, const char *s2, size_t n)
 }
 #endif
 
-/** Does string begin with prefix? 
+/** Does string begin with prefix?
  * This comparison is case-insensitive.
  * \param string to check.
  * \param prefix to check against.
@@ -946,7 +945,7 @@ const char *standard_tokens[2] = { "##", "#@" };
 /* Replace two tokens in a string at once. All-around better than calling
  * replace_string() twice
  */
-/** Search for all copies of two old strings, and replace each with a 
+/** Search for all copies of two old strings, and replace each with a
  * corresponding newbit.
  * The replaced string is returned, newly allocated.
  * \param old array of two strings to find.
@@ -1209,7 +1208,7 @@ imaxdiv(intmax_t num, intmax_t denom)
 #endif                          /* !HAVE_IMAXDIV */
 
 /** Safely append an int to a string. Returns a true value on failure.
- * This will someday take extra arguments for use with our version 
+ * This will someday take extra arguments for use with our version
  * of snprintf. Please try not to use it.
  * maxlen = total length of string.
  * buf[maxlen - 1] = place where \0 will go.
@@ -1217,7 +1216,7 @@ imaxdiv(intmax_t num, intmax_t denom)
  * \param val value to append.
  * \param buff string to append to.
  * \param bp pointer to pointer to insertion point in buff.
- * \param maxlen total length of string. 
+ * \param maxlen total length of string.
  * \param base the base to render the number in.
  */
 int

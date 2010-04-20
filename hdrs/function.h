@@ -36,6 +36,8 @@
 #define FN_LOCALIZE     0x4000
 /* Allowed in @function only */
 #define FN_USERFN     0x8000
+/* Strip ANSI/markup from function's arguments */
+#define FN_STRIPANSI  0x10000
 
 #ifndef HAVE_FUN_DEFINED
 typedef struct fun FUN;
@@ -93,7 +95,7 @@ FUN *func_hash_lookup(const char *name);
 FUN *builtin_func_hash_lookup(const char *name);
 int check_func(dbref player, FUN *fp);
 int restrict_function(const char *name, const char *restrict);
-int alias_function(const char *function, const char *alias);
+int alias_function(dbref player, const char *function, const char *alias);
 void do_function_restrict(dbref player, const char *name,
                           const char *restrict, int builtin);
 void do_function_restore(dbref player, const char *name);
@@ -103,6 +105,8 @@ void do_function(dbref player, char *name, char **argv, int preserve);
 void do_function_toggle(dbref player, char *name, int toggle);
 void do_function_report(dbref player, char *name);
 void do_function_delete(dbref player, char *name);
+void do_function_clone(dbref player, const char *function, const char *clone);
+
 void function_init_postconfig(void);
 
 

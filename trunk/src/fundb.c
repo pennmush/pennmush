@@ -108,7 +108,7 @@ FUNCTION(fun_nattr)
 {
   dbref thing;
   int doparent;
-  char *pattern;
+  const char *pattern;
   int regexp = 0;
   int matchall = 0;
 
@@ -117,10 +117,12 @@ FUNCTION(fun_nattr)
   doparent = strchr(called_as, 'P') ? 1 : 0;
 
   pattern = strchr(args[0], '/');
-  if (pattern)
-    *pattern++ = '\0';
-  else
+  if (pattern) {
+    args[0][pattern - args[0]] = '\0';
+    pattern++;
+  } else {
     pattern = (regexp ? "**" : "*");
+  }
   if (!strcmp(pattern, "**") || !strlen(pattern)) {
     regexp = 0;
     matchall = 1;

@@ -75,7 +75,8 @@ extern void do_sweep(dbref player, const char *arg1);
 extern void do_entrances(dbref player, const char *where, char **argv,
                          int types);
 enum dec_type { DEC_NORMAL, DEC_DB = 1, DEC_FLAG = 2, DEC_ATTR =
-    4, DEC_SKIPDEF = 8 };
+    4, DEC_SKIPDEF = 8
+};
 extern void do_decompile(dbref player, const char *name, const char *prefix,
                          int dec_type);
 
@@ -158,7 +159,7 @@ extern void do_kick(dbref player, const char *num);
 extern void do_search(dbref player, const char *arg1, char **arg3);
 extern dbref do_pcreate
   (dbref creator, const char *player_name, const char *player_password,
-   const char *try_dbref);
+   char *try_dbref);
 extern void do_quota(dbref player, const char *arg1, const char *arg2,
                      int set_q);
 extern void do_allquota(dbref player, const char *arg1, int quiet);

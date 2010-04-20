@@ -1047,11 +1047,6 @@ msgstr "CHAT: El canal necesita un nombre más individual."
 msgid "CHAT: Wipe that silly grin off your face instead."
 msgstr "CHAT: Mejor borra esa estúpida sonrisa de tu rostro."
 
-#: extchat.c:952
-#, c-format
-msgid "CHAT: You are already on channel <%s>"
-msgstr "CHAT: Ya estás en el canal <%s>"
-
 #: src/extchat.c:757
 #, c-format
 msgid "CHAT: You can't do that with channel <%s>."
@@ -1159,10 +1154,6 @@ msgstr "Contenidos:"
 msgid "Couldn't find that player."
 msgstr "No se pudo encontrar ese jugador."
 
-#: src/cmds.c:193
-msgid "Couldn't set that option"
-msgstr "No se pudo establecer esa opción"
-
 #: src/create.c:431
 msgid "Create what?"
 msgstr "Crear qué?"
@@ -1269,11 +1260,6 @@ msgstr "Ya hay un jugador con ese nombre, o el nombre es ilegal."
 msgid "Enabled."
 msgstr "Habilitado."
 
-#: src/bsd.c:497
-#, c-format
-msgid "Error %i on WSAStartup\n"
-msgstr "Error %i en WASAtartup\n"
-
 #: src/game.c:1465
 msgid "Error -- cannot execute uptime."
 msgstr "Error -- no se puede ejecutar uptime."
@@ -1363,10 +1349,6 @@ msgstr "Función agregada."
 #: src/function.c:802
 msgid "Function deleted."
 msgstr "Función borrada."
-
-#: src/function.c:677
-msgid "Function name too long."
-msgstr "Nombre de función demasiado largo."
 
 #: src/function.c:741
 msgid "Function updated."
@@ -1488,10 +1470,6 @@ msgstr "A los invitados no se les permite unirse a canales."
 msgid "Guests are not allowed to leave channels."
 msgstr "A los invitados no se les permite dejar los canales."
 
-#: src/command.c:1252
-msgid "Guests cannot do that."
-msgstr "Los invitados no pueden hacer eso."
-
 #: src/extchat.c:846
 msgid "Guests may not leave channels."
 msgstr "Los invitados no pueden dejar los canales."
@@ -1576,10 +1554,6 @@ msgstr "No puedo decir a que te refieres."
 #: src/cque.c:775 src/set.c:199
 msgid "I couldn't find that player."
 msgstr "No pude encontrar ese jugador"
-
-#: src/rob.c:94
-msgid "I don't know what you mean!"
-msgstr "No se lo que quieres decir!"
 
 #: src/boolexp.c:265
 #, c-format
@@ -1907,11 +1881,6 @@ msgstr "CORREO: Todos los alias de coreo fueron destruidos!"
 msgid "MAIL: All messages filed in folder %d [%s]"
 msgstr "CORREO: Todos los mensajes fueron guardados en la carpeta %d [%s]"
 
-#: src/extmail.c:357 src/extmail.c:370
-#, c-format
-msgid "MAIL: All messages in all folders %s."
-msgstr "CORREO: Todos los mensajes en todas las carpetas %s."
-
 #: src/malias.c:485
 #, c-format
 msgid "MAIL: Allocated slots %d"
@@ -2052,10 +2021,6 @@ msgstr "CORREO: Destinatarios no válidos para la lista de alias!"
 #, c-format
 msgid "MAIL: Not a valid alias. Remember to prefix the alias name with %c."
 msgstr "CORREO: No es un alias válido. Recuerda prefijar el nombre del alias con %c."
-
-#: src/malias.c:434
-msgid "MAIL: Not a valid alias. Remember to prefix the alias name with *."
-msgstr "CORREO: No es un alias válido. Recuerda prefijar el nombre del alias con *."
 
 #: src/malias.c:484
 #, c-format
@@ -2378,10 +2343,6 @@ msgstr "Conectado desde"
 msgid "Only God can cause financial ruin."
 msgstr "Solo Dios puede causar una ruina financiera."
 
-#: src/command.c:1256
-msgid "Only God can do that."
-msgstr "Solo Dios puede hacer eso."
-
 #: src/set.c:526
 msgid "Only God can set himself!"
 msgstr "¡Solo Dios puede establecerse a si mismo!"
@@ -2438,10 +2399,6 @@ msgstr "Cambiada la contraseña para %s."
 #: src/extmail.c:1584
 msgid "Permission denied"
 msgstr "Permiso denegado"
-
-#: src/command.c:1276
-msgid "Permission denied, command is type-restricted."
-msgstr "Permiso denegado, comando restringido."
 
 #: src/game.c:171
 msgid "Permission denied. Invalid checkpoint interval."
@@ -2560,14 +2517,6 @@ msgstr "El separador debe tener un carácter al menos."
 #: attrib.c:942
 msgid "Set"
 msgstr "Establecido"
-
-#: src/create.c:102
-msgid "Sorry you can only make exits out of rooms."
-msgstr "Lo siento, solo puedes hacer salidas en habitaciones."
-
-#: src/move.c:579
-msgid "Sorry you can't drop exits."
-msgstr "Lo siento, no puedes tirar salidas."
 
 #: src/destroy.c:266
 msgid "Sorry, no suicide allowed."
@@ -2695,10 +2644,6 @@ msgstr "Ese no es un objeto válido."
 msgid "That is too special to be destroyed."
 msgstr "Eso es demasiado especial para ser destruido."
 
-#: conf.c:958
-msgid "That isn't a on/off option."
-msgstr "Eso no es una función on/off."
-
 #: src/extchat.c:1181
 msgid "That name is too long."
 msgstr "Ese nombre es demasiado largo."
@@ -2816,34 +2761,6 @@ msgstr "La habitación %s ha sido salvada de la destrucción."
 #: src/destroy.c:333
 msgid "The room shakes and begins to crumble."
 msgstr "La habitación se mueve y comienza a temblar."
-
-#: src/services.c:775
-msgid "The service continue is pending."
-msgstr "El servicio continua pendiente."
-
-#: src/services.c:763
-msgid "The service is not running."
-msgstr "El servicio no está trabajando."
-
-#: src/services.c:781
-msgid "The service is paused."
-msgstr "El servicio está en pausa."
-
-#: src/services.c:772
-msgid "The service is running."
-msgstr "El servicio está trabajando."
-
-#: src/services.c:766
-msgid "The service is starting."
-msgstr "El servicio está comenzando."
-
-#: src/services.c:769
-msgid "The service is stopping."
-msgstr "El servicio está detenido."
-
-#: src/services.c:778
-msgid "The service pause is pending."
-msgstr "Pendiente la pausa del servicio."
 
 #: src/extmail.c:1281
 #, c-format
@@ -3003,10 +2920,6 @@ msgstr "¿Desunir que?"
 msgid "Unread "
 msgstr "No leído "
 
-#: src/services.c:784
-msgid "Unrecognised status."
-msgstr "Status no reconocido."
-
 #: src/set.c:498
 msgid "Unrecognized attribute flag."
 msgstr "Atributo de señal no reconocido."
@@ -3039,10 +2952,6 @@ msgstr "Aviso '%s' para %s:"
 #: src/warnings.c:417
 msgid "Warning checks complete."
 msgstr "Finalizado el chequeo"
-
-#: set.c:434
-msgid "Warning: @chzoning an TRUST player."
-msgstr "Aviso: @chzoning un jugador de confianza"
 
 #: src/extchat.c:1116
 msgid "Warning: channel will be created disabled."
@@ -3092,10 +3001,6 @@ msgstr "¿Que quieres copiar de donde?"
 #: src/set.c:610
 msgid "What do you want to copy to?"
 msgstr "¿Que quieres copiar a donde?"
-
-#: src/extchat.c:750
-msgid "What do you want to do with that channel?"
-msgstr "¿Que quieres hacer con ese canal?"
 
 #: src/extchat.c:1082
 msgid "What do you want to do with the channel?"
@@ -3423,10 +3328,6 @@ msgstr "No puedes cambiar esa señal en %s/%s"
 msgid "You cannot change that player's password."
 msgstr "No puedes cambiar la contraseña de ese jugador."
 
-#: src/command.c:1248
-msgid "You cannot do that while fixed."
-msgstr "No puedes hacer eso mientras estés fijado."
-
 #: src/command.c:1244
 msgid "You cannot do that while gagged."
 msgstr "No puedes hacer eso mientras estes silenciado."
@@ -3494,10 +3395,6 @@ msgstr "¡No tienes tantos %s para dar!"
 #: src/move.c:568 src/rob.c:191
 msgid "You don't have that!"
 msgstr "¡No tienes eso!"
-
-#: src/wiz.c:2292
-msgid "You don't have the authority to do that!"
-msgstr "¡No tienes poder para hacer eso!"
 
 #: src/attrib.c:1114
 msgid "You don't have the permission to chown that."
@@ -3780,10 +3677,6 @@ msgstr "Tienes establecida la señal de Vacaciones. Si has regresado, quítala."
 #: src/flags.c:1152
 msgid "Your contents can now be heard from outside."
 msgstr "Ahora tus contenidos se pueden escuchar desde afuera."
-
-#: src/game.c:294 src/wiz.c:726
-msgid "Your delusions of grandeur have been duly noted."
-msgstr "Tus sueños de grandeza han sido debidamente tenidos en cuenta."
 
 #: src/wiz.c:1971
 msgid "Your delusions of grandeur have been noted."

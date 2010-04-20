@@ -521,7 +521,7 @@ main(int argc, char **argv)
     /* Need to include library: wsock32.lib for Windows Sockets */
     err = WSAStartup(wVersionRequested, &wsadata);
     if (err) {
-      printf(T("Error %i on WSAStartup\n"), err);
+      printf("Error %i on WSAStartup\n", err);
       exit(1);
     }
   }
@@ -2619,7 +2619,7 @@ check_connect(DESC *d, const char *msg)
                 user, d->addr, d->descriptor);
       return 0;
     }
-    player = create_player(user, password, d->addr, d->ip, NOTHING);
+    player = create_player(user, password, d->addr, d->ip);
     if (player == NOTHING) {
       queue_string_eol(d, T(create_fail));
       do_rawlog(LT_CONN,
@@ -2960,7 +2960,7 @@ do_page_port(dbref player, dbref cause, const char *pc, const char *message,
     break;
   case 3:
     safe_format(tbuf, &tbp, T("%s pages: %s"), Name(player), message);
-    notify_format(player, T("You paged %s with '%s'."),
+    notify_format(player, T("You paged %s with '%s'"),
                   target != NOTHING ? Name(target) :
                   T("a connecting player"), message);
     break;
@@ -3307,8 +3307,9 @@ do_who_admin(dbref player, char *name)
     notify_noenter(player, pbuff);
   }
 
-  notify_format(player, "%-16s %6s %9s %5s %5s Des  Host", T("Player Name"),
-                T("Loc #"), T("On For"), T("Idle"), T("Cmds"));
+  notify_format(player, "%-16s %6s %9s %5s %5s %-4s %-s", T("Player Name"),
+                T("Loc #"), T("On For"), T("Idle"), T("Cmds"), T("Des"),
+                T("Host"));
   for (d = descriptor_list; d; d = d->next) {
     if (d->connected)
       count++;
@@ -4013,7 +4014,7 @@ FUNCTION(fun_nwho)
       return;
     }
     if ((victim = noisy_match_result(executor, args[0], NOTYPE,
-                                     MAT_EVERYTHING)) == 0) {
+                                     MAT_EVERYTHING)) == NOTHING) {
       safe_str(T(e_notvis), buff, bp);
       return;
     }
@@ -4048,7 +4049,7 @@ FUNCTION(fun_lwho)
       return;
     }
     if ((victim = noisy_match_result(executor, args[0], NOTYPE,
-                                     MAT_EVERYTHING)) == 0) {
+                                     MAT_EVERYTHING)) == NOTHING) {
       safe_str(T(e_notvis), buff, bp);
       return;
     }
@@ -4156,7 +4157,7 @@ lookup_desc(dbref executor, const char *name)
     dbref target = lookup_player(name);
     if (target == NOTHING) {
       target = match_result(executor, name, TYPE_PLAYER,
-                            MAT_ABSOLUTE | MAT_PLAYER | MAT_ME);
+                            MAT_ABSOLUTE | MAT_PLAYER | MAT_ME | MAT_TYPE);
     }
     if (!GoodObject(target) || !Connected(target))
       return NULL;
@@ -4338,7 +4339,7 @@ FUNCTION(fun_zwho)
   }
   if ((getlock(zone, Zone_Lock) == TRUE_BOOLEXP) ||
       (IsPlayer(zone) && !(has_flag_by_name(zone, "SHARED", TYPE_PLAYER)))) {
-    safe_str(T("#-1 INVALID ZONE."), buff, bp);
+    safe_str(T("#-1 INVALID ZONE"), buff, bp);
     return;
   }
 
@@ -4635,7 +4636,7 @@ FUNCTION(fun_ports)
   target = lookup_player(args[0]);
   if (target == NOTHING) {
     target = match_result(executor, args[0], TYPE_PLAYER,
-                          MAT_ABSOLUTE | MAT_PLAYER | MAT_ME);
+                          MAT_ABSOLUTE | MAT_PLAYER | MAT_ME | MAT_TYPE);
   }
   if (target != executor && !Priv_Who(executor)) {
     /* This should probably be a safe_str */
@@ -4706,7 +4707,7 @@ hide_player(dbref player, int hide, char *victim)
     } else {
       thing =
         noisy_match_result(player, victim, TYPE_PLAYER,
-                           MAT_ABSOLUTE | MAT_PLAYER | MAT_PMATCH | MAT_ME);
+                           MAT_ABSOLUTE | MAT_PMATCH | MAT_ME | MAT_TYPE);
       if (!GoodObject(thing)) {
         return;
       }
@@ -5164,11 +5165,14 @@ do_reboot(dbref player, int flag)
     flag_broadcast(0, 0,
                    T
                    ("GAME: Reboot w/o disconnect from game account, please wait."));
+    do_rawlog(LT_WIZ, "Reboot w/o disconnect triggered by signal.");
   } else {
     flag_broadcast(0, 0,
                    T
                    ("GAME: Reboot w/o disconnect by %s, please wait."),
                    Name(Owner(player)));
+    do_rawlog(LT_WIZ, "Reboot w/o disconnect triggered by %s(#%d).",
+              Name(player), player);
   }
   if (flag) {
     globals.paranoid_dump = 1;

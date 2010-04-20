@@ -929,6 +929,8 @@ FUNCTION(fun_round)
 {
   int places;
   double n, rounded;
+  char *sbp;
+  bool pad = 0;
 
   if (!is_number(args[0])) {
     safe_str(T(e_num), buff, bp);
@@ -936,7 +938,7 @@ FUNCTION(fun_round)
   } else
     n = parse_number(args[0]);
 
-  if (nargs == 2) {
+  if (nargs >= 2) {
     if (!is_integer(args[1])) {
       safe_str(T(e_int), buff, bp);
       return;
@@ -944,6 +946,9 @@ FUNCTION(fun_round)
     places = parse_integer(args[1]);
   } else
     places = 0;
+
+  if (nargs == 3)
+    pad = parse_boolean(args[2]);
 
   if (places < 0)
     places = 0;
@@ -959,7 +964,22 @@ FUNCTION(fun_round)
   rounded = fround(n, places);
 #endif
 
+  sbp = *bp;
   safe_number(rounded, buff, bp);
+
+  if (pad && places > 0) {
+    char *decimal;
+
+    *(*bp) = '\0';
+    decimal = strchr(sbp, '.');
+    if (!decimal) {
+      safe_chr('.', buff, bp);
+      safe_fill('0', places, buff, bp);
+    } else {
+      size_t padding = places - (*bp - decimal) + 1;
+      safe_fill('0', padding, buff, bp);
+    }
+  }
 }
 
 /* ARGSUSED */
@@ -2649,7 +2669,7 @@ MATH_FUNC(math_dist2d)
   NVAL d1, d2, r;
 
   if (nptr != 4) {
-    safe_str(T("#-1 FUNCTION (dist2d) EXPECTS 4 ARGUMENTS"), buff, bp);
+    safe_str(T("#-1 FUNCTION (DIST2D) EXPECTS 4 ARGUMENTS"), buff, bp);
     return;
   }
 
@@ -2676,7 +2696,7 @@ MATH_FUNC(math_dist3d)
   NVAL d1, d2, d3, r;
 
   if (nptr != 6) {
-    safe_str(T("#-1 FUNCTION (dist3d) expects 6 arguments"), buff, bp);
+    safe_str(T("#-1 FUNCTION (DIST3D) EXPECTS 6 ARGUMENTS"), buff, bp);
     return;
   }
 

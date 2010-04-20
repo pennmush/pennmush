@@ -319,18 +319,6 @@ msgstr "#-1 FUNKCJA (SOUNDEX) WYMAGA ARGUMENTU W POSTACI POJEDYNCZEGO S£OWA"
 msgid "#-1 FUNCTION (SOUNDLIKE) REQUIRES TWO ONE-WORD ARGUMENTS"
 msgstr "#-1 FUNKCJA (SOUNDLIKE) WYMAGA DWÓCH ARGUMENTÓW SK£ADAJ¡CYCH SIÊ Z JEDNEGO S£OWA"
 
-#: funmath.c:2423
-msgid "#-1 FUNCTION (dist2d) EXPECTS 4 ARGUMENTS"
-msgstr "#-1 FUNKCJA (dist2d) WYMAGA 4 ARGUMENTÓW"
-
-#: funmath.c:2450
-msgid "#-1 FUNCTION (dist3d) expects 6 arguments"
-msgstr "#-1 FUNCKJA (dist3d) wymaga 6 argumentów"
-
-#: funmisc.c:222
-msgid "#-1 FUNCTION (letq) EXPECTS AN ODD NUMBER OF ARGUMENTS"
-msgstr "#-1 FUNKCJA (letq) WYMAGA NIEPARZYSTEJ LICZBY ARGUMENTÓW."
-
 #: src/fundb.c:959 src/fundb.c:1120 src/fundb.c:1145 src/fundb.c:1254\nsrc/fundb.c:1549 src/fundb.c:1555 src/fundb.c:1561 src/fundb.c:1567\nsrc/fundb.c:1573 src/fundb.c:1579 src/fundb.c:1585 src/fundb.c:1591\nsrc/fundb.c:1864 src/funstr.c:901
 msgid "#-1 FUNCTION DISABLED"
 msgstr "#-1 FUNKCJA WY£¡CZONA"
@@ -423,10 +411,6 @@ msgstr "#-1 NIEPRAWID£OWY £AÑCUCH CZASOWY"
 #: src/funufun.c:293
 msgid "#-1 INVALID ZONE"
 msgstr "#-1 NIEPRAWID£OWA STREFA"
-
-#: bsd.c:4310
-msgid "#-1 INVALID ZONE."
-msgstr "#-1 NIEPRAWID£OWA STREFA."
 
 #: src/funlist.c:194 src/funlist.c:2088
 msgid "#-1 LISTS MUST BE OF EQUAL SIZE"
@@ -704,11 +688,6 @@ msgstr "%s %s wy³±czone."
 #, c-format
 msgid "%s %s enabled."
 msgstr "%s %s w³±czone."
-
-#: extchat.c:3126 extchat.c:3387
-#, c-format
-msgid "%s %s"
-msgstr "%s %s"
 
 #: src/look.c:969
 #, c-format
@@ -1267,30 +1246,6 @@ msgstr "Rekursja @break przekroczona."
 msgid "@command is ALWAYS enabled."
 msgstr "@komenda jest ZAWSZE dostêpna."
 
-#: function.c:1195
-msgid "@function"
-msgstr "@function"
-
-#: command.c:2119
-#, c-format
-msgid "@hook/after: #%d/%s"
-msgstr "@hook/after: #%d/%s"
-
-#: command.c:2116
-#, c-format
-msgid "@hook/before: #%d/%s"
-msgstr "@hook/before: #%d/%s"
-
-#: command.c:2122
-#, c-format
-msgid "@hook/ignore: #%d/%s"
-msgstr "@hook/ignore: #%d/%s"
-
-#: command.c:2125
-#, c-format
-msgid "@hook/override: #%d/%s"
-msgstr "@hook/override: #%d/%s"
-
 #: cmds.c:687
 msgid "@message them with what?"
 msgstr "wys³aæ @wiadomo¶æ im o czym?"
@@ -1741,11 +1696,6 @@ msgstr "CZAT: Aby przywo³aæ ca³y bufor, u¿yj @chan/recall %s=0"
 msgid "CHAT: Wipe that silly grin off your face instead."
 msgstr "CZAT: Wyczy¶æ zamiast tego ten g³upawy u¶mieszek ze swojej twarzy."
 
-#: extchat.c:952
-#, c-format
-msgid "CHAT: You are already on channel <%s>"
-msgstr "CZAT: Jeste¶ ju¿ na kanale <%s>"
-
 #: src/extchat.c:757
 #, c-format
 msgid "CHAT: You can't do that with channel <%s>."
@@ -1912,10 +1862,6 @@ msgstr "Nie mogê znale¼æ tego deskryptora."
 msgid "Couldn't find that player."
 msgstr "Nie mogê znale¼æ tego gracza."
 
-#: src/cmds.c:193
-msgid "Couldn't set that option"
-msgstr "Nie mo¿esz ustawiæ tej opcji."
-
 #: src/create.c:431
 msgid "Create what?"
 msgstr "Utworzyæ co?"
@@ -2065,11 +2011,6 @@ msgstr "Rejestracja mailowa jest w³±czona"
 msgid "Enabled."
 msgstr "W³±czony."
 
-#: src/bsd.c:497
-#, c-format
-msgid "Error %i on WSAStartup\n"
-msgstr "B³±d %i w WSAStartup\n"
-
 #: src/game.c:1465
 msgid "Error -- cannot execute uptime."
 msgstr "B³±d -- nie mogê uruchomiæ uptime."
@@ -2196,10 +2137,6 @@ msgstr "Funkcja dodana."
 #: src/function.c:802
 msgid "Function deleted."
 msgstr "Funkcja skasowana."
-
-#: src/function.c:677
-msgid "Function name too long."
-msgstr "Nazwa funkcji zbyt d³uga."
 
 #: src/function.c:741
 msgid "Function updated."
@@ -2373,10 +2310,6 @@ msgstr "Go¶cie nie mog± do³±czaæ do kana³ów."
 msgid "Guests are not allowed to leave channels."
 msgstr "Go¶cie nie maj± prawa opuszczaæ kana³ów."
 
-#: src/command.c:1252
-msgid "Guests cannot do that."
-msgstr "Go¶cie nie mog± tego robiæ."
-
 #: src/extchat.c:846
 msgid "Guests may not leave channels."
 msgstr "Go¶cie nie mog± opuszczaæ kana³ów."
@@ -2516,10 +2449,6 @@ msgstr "Nie mogê znale¼æ tego gracza."
 #, c-format
 msgid "I don't know that %s."
 msgstr "Nie znam tego %s."
-
-#: src/rob.c:94
-msgid "I don't know what you mean!"
-msgstr "Nie wiem co masz na my¶li!"
 
 #: rob.c:390
 msgid "I don't know what you mean."
@@ -2935,11 +2864,6 @@ msgstr "POCZTA: Wszystkie aliasy pocztowe zosta³y zniszczone!"
 msgid "MAIL: All messages filed in folder %d [%s]"
 msgstr "POCZTA: Wszystkie wiadomo¶ci w folderze %d [%s]"
 
-#: src/extmail.c:357 src/extmail.c:370
-#, c-format
-msgid "MAIL: All messages in all folders %s."
-msgstr "POCZTA: Wszystkie wiadomo¶ci we wszystkich folderach %s."
-
 #: src/malias.c:485
 #, c-format
 msgid "MAIL: Allocated slots %d"
@@ -3080,10 +3004,6 @@ msgstr "POCZTA: Brak poprawnych odbiorców na li¶cie aliasu!"
 #, c-format
 msgid "MAIL: Not a valid alias. Remember to prefix the alias name with %c."
 msgstr "POCZTA: Nieprawid³owy alias. Pamiêtaj aby dodaæ przedrostek %c do nazwy aliasu."
-
-#: src/malias.c:434
-msgid "MAIL: Not a valid alias. Remember to prefix the alias name with *."
-msgstr "POCZTA: Nieprawid³owy alias. Pamiêtaj aby dodaæ przedrostek * do nazwy aliasu."
 
 #: src/malias.c:484
 #, c-format
@@ -3570,10 +3490,6 @@ msgstr "Atrybut skasowany."
 msgid "Only God can cause financial ruin."
 msgstr "Tylko Jedyny mo¿e robiæ finansow± ruinê."
 
-#: src/command.c:1256
-msgid "Only God can do that."
-msgstr "Tylko Jedyny mo¿e to zrobiæ."
-
 #: src/set.c:526
 msgid "Only God can set himself!"
 msgstr "Tylko bóg mo¿e ustawiaæ siebie!"
@@ -3685,10 +3601,6 @@ msgstr "Vishtar Uptime: %ld dni %ld godzin %ld minut %ld sekund"
 #: src/extmail.c:1584
 msgid "Permission denied"
 msgstr "Brak uprawnieñ"
-
-#: src/command.c:1276
-msgid "Permission denied, command is type-restricted."
-msgstr "Brak uprawnieñ, komenda jest zastrze¿ona typem."
 
 #: src/game.c:171
 msgid "Permission denied. Invalid checkpoint interval."
@@ -3894,10 +3806,6 @@ msgstr "Separator musi byæ pojedynczym znakiem."
 msgid "Set"
 msgstr "Ustaw"
 
-#: src/destroy.c:1319
-msgid "Silly mortal chicks are for kids!"
-msgstr "G³upie dzieciêce zabawy!"
-
 #: src/wiz.c:1999
 #, c-format
 msgid "Site %s access options for %s(%s) set to %s"
@@ -3917,14 +3825,6 @@ msgstr "Punkt %s zbanowany"
 #, c-format
 msgid "Site %s locked"
 msgstr "Punkt %s zablokowana"
-
-#: src/create.c:102
-msgid "Sorry you can only make exits out of rooms."
-msgstr "Przykro mi, mo¿esz robiæ wyj¶cia tylko poza pokoje."
-
-#: src/move.c:579
-msgid "Sorry you can't drop exits."
-msgstr "Przykro mi, nie mo¿esz upuszczaæ wyj¶æ."
 
 #: src/destroy.c:266
 msgid "Sorry, no suicide allowed."
@@ -4118,10 +4018,6 @@ msgstr "To nie jest prawid³owy ³añcuch czasu."
 msgid "That is too special to be destroyed."
 msgstr "To jest zbyt specjalne aby by³o zniszczone."
 
-#: conf.c:958
-msgid "That isn't a on/off option."
-msgstr "To nie jest opcja typu on/off."
-
 #: flags.c:2253
 #, c-format
 msgid "That isn't an alias of the %s %s."
@@ -4290,34 +4186,6 @@ msgstr "Pokój trzêsie siê i zaczyna siê rozpadaæ."
 #: cque.c:694
 msgid "The semaphore count must be an integer."
 msgstr "Zliczanie semafora musi byæ liczb± ca³kowit±."
-
-#: src/services.c:775
-msgid "The service continue is pending."
-msgstr "Kontynuacja us³ugi jest wykonywana."
-
-#: src/services.c:763
-msgid "The service is not running."
-msgstr "Us³uga nie dzia³a."
-
-#: src/services.c:781
-msgid "The service is paused."
-msgstr "Us³uga jest zatrzymana."
-
-#: src/services.c:772
-msgid "The service is running."
-msgstr "Us³uga dzia³a"
-
-#: src/services.c:766
-msgid "The service is starting."
-msgstr "Us³uga startuje."
-
-#: src/services.c:769
-msgid "The service is stopping."
-msgstr "Us³uga jest zatrzymywana."
-
-#: src/services.c:778
-msgid "The service pause is pending."
-msgstr "Pauzowanie us³ugi jest wykonywane."
 
 #: src/destroy.c:341
 #, c-format
@@ -4611,10 +4479,6 @@ msgstr "Odblokowana strefa %s - automatyczne blokowanie-strefy do niej samej"
 msgid "Unread "
 msgstr "Nieczytane "
 
-#: src/services.c:784
-msgid "Unrecognised status."
-msgstr "Nieznany status."
-
 #: src/set.c:498
 msgid "Unrecognized attribute flag."
 msgstr "Nieznana flaga atrybutu."
@@ -4692,10 +4556,6 @@ msgstr "Sprawdzanie ostrze¿eñ ukoñczone."
 msgid "Warning: @CHOWN/PRESERVE on an object (#%d) with WIZ, ROY, INHERIT, or @power privileges."
 msgstr "Ostrze¿enie: @CHOWN/PRESERVE. na obiekcie (#%d) z WIZ, ROY, INHERIT lub przywilejami @mocy."
 
-#: create.c:640
-msgid "Warning: @CLONE/PRESERVE on an exit with WIZ, ROY, @powers, or Warnings."
-msgstr "Ostrze¿enie: @CLONE/PRESERVE na wyj¶ciu z flag± WIZ, ROY, @mocami lub Ostrze¿eniami."
-
 #: src/create.c:547
 msgid "Warning: @CLONE/PRESERVE on an object with WIZ, ROY, @powers, or @warnings."
 msgstr "Ostrze¿enie: wykonano @CLONE/PRESERVE na obiekcie z WIZ, ROY, @powers lub @warnings."
@@ -4707,10 +4567,6 @@ msgstr "Ostrze¿enie: @zmiana strefy na uprzywilejowanym graczu."
 #: src/set.c:396
 msgid "Warning: @chzoning admin-owned object!"
 msgstr "Ostrze¿enie: @zmiana strefy na obiekcie zarz±dzanym przez stra¿nika!"
-
-#: set.c:434
-msgid "Warning: @chzoning an TRUST player."
-msgstr "Ostrze¿enie: @zmiana strefy na ZAUFANYM graczu."
 
 #: flags.c:1049
 msgid "Warning: Setting trust flag on zoned object"
@@ -4782,10 +4638,6 @@ msgstr "Co chcesz skopiowaæ?"
 #: src/predicat.c:849
 msgid "What do you want to do the verb?"
 msgstr "Co chcesz zrobiæ z verb?"
-
-#: src/extchat.c:750
-msgid "What do you want to do with that channel?"
-msgstr "Co chcesz zrobiæ z tym kana³em?"
 
 #: src/extchat.c:1082
 msgid "What do you want to do with the channel?"
@@ -5179,10 +5031,6 @@ msgstr "Nie mo¿esz tego od³±czyæ!"
 msgid "You cannot @CHOWN/PRESERVE. Use normal @CHOWN."
 msgstr "Nie mo¿esz wykonaæ @CHOWN/PRESERVE. U¿yj normalnego @CHOWN"
 
-#: src/create.c:500
-msgid "You cannot @CLONE/PRESERVE.  Use normal @CLONE instead."
-msgstr "Nie mo¿esz wykonaæ @CLONE/PRESERVE. U¿yj zamiast tego zwyk³ego @CLONE."
-
 #: cque.c:985
 msgid "You cannot adjust the timeout of an indefinite semaphore."
 msgstr "Nie mo¿esz ustawiæ limitu czasu na nieokre¶lonym semaforze."
@@ -5199,10 +5047,6 @@ msgstr "Nie mo¿esz zmieniæ tej flagi na %s/%s"
 #: src/wiz.c:734
 msgid "You cannot change that player's password."
 msgstr "Nie mo¿esz zmieniæ has³a temu graczowi."
-
-#: src/command.c:1248
-msgid "You cannot do that while fixed."
-msgstr "Nie mo¿esz tego zrobiæ kiedy jeste¶ usztywniony."
 
 #: src/command.c:1244
 msgid "You cannot do that while gagged."
@@ -5279,10 +5123,6 @@ msgstr "Nie masz tak wiele %s aby daæ!"
 #: src/move.c:568 src/rob.c:191
 msgid "You don't have that!"
 msgstr "Nie masz tego!"
-
-#: src/wiz.c:2292
-msgid "You don't have the authority to do that!"
-msgstr "Nie masz w³adzy aby to zrobiæ!"
 
 #: src/attrib.c:1114
 msgid "You don't have the permission to chown that."
@@ -5521,17 +5361,9 @@ msgstr "Musisz przestaæ uciszaæ ten kana³ aby móc na nim rozmawiaæ."
 msgid "You must use @nuke to destroy a player."
 msgstr "Musisz u¿yæ @nuke aby zniszczyæ gracza."
 
-#: cmds.c:415
-msgid "You need a fishing license to use that hook."
-msgstr "Potrzebujesz karty wêdkarskiej aby u¿yæ tego haczyka (hook)."
-
 #: src/wiz.c:678 src/wiz.c:1451
 msgid "You need a search warrant to do that!"
 msgstr "Musisz mieæ nakaz przeszukania aby zrobiæ to!"
-
-#: wiz.c:1509
-msgid "You need a search warrant to do that."
-msgstr "Potrzebujesz nakaz przeszukania aby to zrobiæ."
 
 #: attrib.c:1017
 msgid "You need to be able to set the attribute to change its lock."
@@ -5590,11 +5422,6 @@ msgstr "Posiadasz obiekt w okrê¿nym ³añcuchu strefy: %s"
 #, c-format
 msgid "You own an object without a @lock/zone being used as a zone: %s"
 msgstr "Twój posiadany obiekt bez @lock/zone bêdzie u¿ywany jako strefa: %s"
-
-#: bsd.c:4131
-#, c-format
-msgid "You paged %s with '%s'."
-msgstr "Wzywasz %s: '%s'"
 
 #: src/rob.c:263
 #, c-format
@@ -5717,10 +5544,6 @@ msgstr "Jeste¶ w pustce - wysy³am ciebie do domu."
 msgid "You're in too many containers."
 msgstr "Jeste¶ w zbyt wielu pojemnikach."
 
-#: move.c:981
-msgid "You're not alllowed to follow."
-msgstr "Nie masz pozwolenia aby pod±¿aæ."
-
 #: move.c:845
 #, c-format
 msgid "You're not following %s."
@@ -5750,10 +5573,6 @@ msgstr "Twoja zawarto¶æ nie bêdzie d³u¿ej s³yszalna z zewn±trz."
 #: src/flags.c:1152
 msgid "Your contents can now be heard from outside."
 msgstr "Twoja zawarto¶æ mo¿e byæ od teraz s³yszalna z zewn±trz."
-
-#: src/game.c:294 src/wiz.c:726
-msgid "Your delusions of grandeur have been duly noted."
-msgstr "Twoje z³udzenie wielko¶ci zosta³o nale¿ycie udokumentowane."
 
 #: src/wiz.c:1971
 msgid "Your delusions of grandeur have been noted."
@@ -5815,16 +5634,6 @@ msgstr "Strefa zmieniona."
 #, c-format
 msgid "[%d:%02d] %s message sent to %s."
 msgstr "[%d:%02d] %s wiadomo¶æ wys³ana do %s."
-
-#: extchat.c:3129 extchat.c:3390
-#, c-format
-msgid "[%s] %s %s"
-msgstr "[%s] %s %s"
-
-#: extchat.c:3137 extchat.c:3398
-#, c-format
-msgid "[%s] %s"
-msgstr "[%s] %s"
 
 #: src/bsd.c:4683
 msgid ""

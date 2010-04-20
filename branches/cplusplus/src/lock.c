@@ -68,6 +68,8 @@ lock_type Link_Lock = "Link";       /**< Name of link lock */
 lock_type Leave_Lock = "Leave";     /**< Name of leave lock */
 lock_type Drop_Lock = "Drop";       /**< Name of drop lock */
 lock_type Give_Lock = "Give";       /**< Name of give lock */
+lock_type From_Lock = "From";       /**< Name of frop lock */
+lock_type Receive_Lock = "Receive"; /**< Name of receive lock */
 lock_type Mail_Lock = "Mail";       /**< Name of mail lock */
 lock_type Follow_Lock = "Follow";   /**< Name of follow lock */
 lock_type Examine_Lock = "Examine"; /**< Name of examine lock */
@@ -79,6 +81,7 @@ lock_type Destroy_Lock = "Destroy"; /**< Name of destroy lock */
 lock_type Interact_Lock = "Interact"; /**< Name of interaction lock */
 lock_type MailForward_Lock = "MailForward"; /**< Name of mailforward lock */
 lock_type Take_Lock = "Take"; /**< Name of take lock */
+lock_type Open_Lock = "Open"; /**< Name of open lock */
 
  /** Table of lock names and permissions */
 lock_list lock_types[] = {
@@ -96,6 +99,8 @@ lock_list lock_types[] = {
   {"Leave", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {"Drop", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {"Give", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
+  {"From", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
+  {"Receive", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {"Mail", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {"Follow", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {"Examine", TRUE_BOOLEXP, GOD, LF_PRIVATE | LF_OWNER, NULL},
@@ -107,6 +112,7 @@ lock_list lock_types[] = {
   {"Interact", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {"MailForward", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {"Take", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
+  {"Open", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {NULL, TRUE_BOOLEXP, GOD, 0, NULL}
 };
 
@@ -771,7 +777,7 @@ do_lock(dbref player, const char *name, const char *keyname, lock_type type)
           ModTime(thing) = mudtime;
       } else {
         notify(player, T("Permission denied."));
-        free_boolexp(key);
+        /*  Done by a failed add_lock()  // free_boolexp(key); */
       }
     } else
       free_boolexp(key);

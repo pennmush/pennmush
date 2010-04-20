@@ -66,3 +66,6 @@ test('round.3', $god, 'think round(pi(), 3)', '3.142');
 test('round.4', $god, 'think round(pi(), 4)', '3.1416');
 test('round.5', $god, 'think round(pi(), 5)', '3.14159');
 test('round.6', $god, 'think round(-[pi()], 3)', '-3.142');
+test('round.7', $god, 'think round(3.5, 3, 1)', '3.500');
+test('round.8', $god, 'think round(1.2345, 2, 1)', '1.23');
+

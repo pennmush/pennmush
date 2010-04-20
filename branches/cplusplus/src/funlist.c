@@ -29,7 +29,6 @@
 #include "confmagic.h"
 
 
-static char *next_token(char *str, char sep);
 static int regrep_helper(dbref who, dbref what, dbref parent,
                          char const *name, ATTR *atr, void *args);
 enum itemfun_op { IF_DELETE, IF_REPLACE, IF_INSERT };
@@ -43,23 +42,6 @@ int inum_limit = 0;         /**< limit of iter depth */
 extern const unsigned char *tables;
 
 #define RealGoodObject(x) (GoodObject(x) && !IsGarbage(x))
-
-static char *
-next_token(char *str, char sep)
-{
-  /* move pointer to start of the next token */
-
-  while (*str && (*str != sep))
-    str++;
-  if (!*str)
-    return NULL;
-  str++;
-  if (sep == ' ') {
-    while (*str == sep)
-      str++;
-  }
-  return str;
-}
 
 /** Convert list to array.
  * Chops up a list of words into an array of words. The list is
@@ -427,7 +409,7 @@ FUNCTION(fun_fold)
    * optional base case. With no base case, the first list element is
    * passed as %0, and the second as %1. The attribute is then evaluated
    * with these args. The result is then used as %0, and the next arg as
-   * %1. Repeat until no elements are left in the list. The base case 
+   * %1. Repeat until no elements are left in the list. The base case
    * can provide a starting point.
    */
 
@@ -586,7 +568,7 @@ FUNCTION(fun_filter)
 /* ARGSUSED */
 FUNCTION(fun_shuffle)
 {
-  /* given a list of words, randomize the order of words. 
+  /* given a list of words, randomize the order of words.
    * We do this by taking each element, and swapping it with another
    * element with a greater array index (thus, words[0] can be swapped
    * with anything up to words[n], words[5] with anything between
@@ -762,7 +744,7 @@ FUNCTION(fun_sortby)
   /* Split up the list, sort it, reconstruct it. */
   nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, args[1], sep);
   if (nptrs > 1)                /* pointless to sort less than 2 elements */
-    sane_qsort(reinterpret_cast<void **>(ptrs), 0, nptrs - 1, u_comp);
+    sane_qsort((void **) ptrs, 0, nptrs - 1, u_comp);
 
   arr2list(ptrs, nptrs, buff, bp, osep);
   freearr(ptrs, nptrs);
@@ -1567,20 +1549,15 @@ FUNCTION(fun_match)
   char *s, *r;
   char sep;
   int wcount = 1;
-  char needle[BUFFER_LEN], haystack[BUFFER_LEN];
 
   if (!delim_check(buff, bp, nargs, args, 3, &sep))
     return;
 
-  strncpy(haystack, remove_markup(args[0], NULL), BUFFER_LEN);
-  strncpy(needle, remove_markup(args[1], NULL), BUFFER_LEN);
-
-
   /* Walk the wordstring, until we find the word we want. */
-  s = trim_space_sep(haystack, sep);
+  s = trim_space_sep(args[0], sep);
   do {
     r = split_token(&s, sep);
-    if (quick_wild(needle, r)) {
+    if (quick_wild(args[1], r)) {
       safe_integer(wcount, buff, bp);
       return;
     }
@@ -2049,7 +2026,6 @@ FUNCTION(fun_member)
   char *s, *t;
   char sep;
   int el;
-  char needle[BUFFER_LEN], haystack[BUFFER_LEN];
 
   if (!delim_check(buff, bp, nargs, args, 3, &sep))
     return;
@@ -2059,15 +2035,12 @@ FUNCTION(fun_member)
     return;
   }
 
-  strncpy(haystack, remove_markup(args[0], NULL), BUFFER_LEN);
-  strncpy(needle, remove_markup(args[1], NULL), BUFFER_LEN);
-
-  s = trim_space_sep(haystack, sep);
+  s = trim_space_sep(args[0], sep);
   el = 1;
 
   do {
     t = split_token(&s, sep);
-    if (!strcmp(needle, t)) {
+    if (!strcmp(args[1], t)) {
       safe_integer(el, buff, bp);
       return;
     }
@@ -3209,7 +3182,7 @@ FUNCTION(fun_regrep)
   reharg.buff = buff;
   reharg.bp = bp;
 
-  atr_iter_get(executor, it, args[1], 0, regrep_helper, (void *) &reharg);
+  atr_iter_get(executor, it, args[1], 0, 0, regrep_helper, (void *) &reharg);
   mush_free(reharg.re, "pcre");
   if (free_study)
     mush_free(reharg.study, "pcre.extra");

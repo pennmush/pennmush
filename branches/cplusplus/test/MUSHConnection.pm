@@ -36,7 +36,7 @@ sub connect {
 
 
   my $socket = $self->[0];
-  $socket->close if $socket->connected();
+#  $socket->close if $socket->connected();
   $self->[0] = IO::Socket::INET->new(PeerAddr => $addr, PeerPort => $port,
                                      Proto => "tcp");
   $socket = $self->[0];
@@ -75,7 +75,7 @@ sub read_to_pattern {
 #    $patsub =~ s/(\W)/\\$1/go;
     my $sub = <<EOT;
 sub $nextpat {
-  return (\$`, \$&, \$') if \$_[\$[] =~ /$patsub/o;
+  return (\$`, \$&, \$') if \$_[0] =~ /$patsub/o;
   return undef;
 }
 1;
@@ -89,7 +89,7 @@ EOT
 
   my $socket = $self->[0];
   my $buffer = $self->[1]->{BUFFER};
-  my @match = &$matcher($buffer);
+  my @match = $buffer ? &$matcher($buffer) : undef;
   my $poll = new IO::Poll;
   $poll->mask($socket => POLLIN | POLLERR | POLLHUP);
   until (@match > 1) {

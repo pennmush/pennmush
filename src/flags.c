@@ -2640,7 +2640,7 @@ list_all_flags(const char *ns, const char *name, dbref privs, int which)
   return buf;
 }
 
-char *
+const char *
 flag_list_to_lock_string(object_flag_type flags, object_flag_type powers)
 {
   FLAGSPACE *n;

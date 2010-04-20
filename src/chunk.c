@@ -245,6 +245,12 @@
 #pragma warning( disable : 4761)        /* disable warning re conversion */
 #endif
 
+#ifdef WIN32
+#define PRIdS "I"
+#else
+#define PRIdS "t"
+#endif
+
 /* A whole bunch of debugging #defines. */
 /** Basic debugging stuff - are assertions checked? */
 #define CHUNK_DEBUG
@@ -836,7 +842,7 @@ debug_dump_region(uint16_t region, FILE * fp)
       if (ChunkIsFree(region, offset)) {
         fprintf(fp, "next:%04x\n", ChunkNextFree(region, offset));
       } else {
-        fprintf(fp, "doff:%04x len:%04x ",
+        fprintf(fp, "doff:%04"PRIdS"x len:%04x ",
                 ChunkDataPtr(region, offset) - (unsigned char *) rhp,
                 ChunkLen(region, offset));
         count = ChunkDerefs(region, offset);

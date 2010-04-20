@@ -91,14 +91,14 @@ bool SW_BY_NAME(switch_mask, const char *);
 
 #define COMMAND(command_name) \
 void command_name (COMMAND_INFO *cmd, dbref player, dbref cause, \
- switch_mask sw,char *raw, const char *switches, char *args_raw, \
+ switch_mask sw, const char *raw, const char *switches, char *args_raw, \
                   char *arg_left, char *args_left[MAX_ARG], \
                   char *arg_right, char *args_right[MAX_ARG]); \
 void command_name(COMMAND_INFO *cmd __attribute__ ((__unused__)), \
                   dbref player __attribute__ ((__unused__)), \
                   dbref cause __attribute__ ((__unused__)), \
                   switch_mask sw __attribute__ ((__unused__)), \
-                  char *raw __attribute__ ((__unused__)), \
+                  const char *raw __attribute__ ((__unused__)), \
                   const char *switches __attribute__ ((__unused__)), \
                   char *args_raw __attribute__ ((__unused__)), \
                   char *arg_left __attribute__ ((__unused__)), \
@@ -108,12 +108,12 @@ void command_name(COMMAND_INFO *cmd __attribute__ ((__unused__)), \
 
 /** Common command prototype macro */
 #define COMMAND_PROTO(command_name) \
-void command_name (COMMAND_INFO *cmd, dbref player, dbref cause, switch_mask sw,char *raw, const char *switches, char *args_raw, \
+void command_name (COMMAND_INFO *cmd, dbref player, dbref cause, switch_mask sw, const char *raw, const char *switches, char *args_raw, \
                   char *arg_left, char *args_left[MAX_ARG], \
                   char *arg_right, char *args_right[MAX_ARG])
 
 typedef struct command_info COMMAND_INFO;
-typedef void (*command_func) (COMMAND_INFO *, dbref, dbref, switch_mask, char *,
+typedef void (*command_func) (COMMAND_INFO *, dbref, dbref, switch_mask, const char *,
                               const char *, char *, char *, char *[MAX_ARG],
                               char *, char *[MAX_ARG]);
 
@@ -230,8 +230,8 @@ void reserve_aliases(void);
 void local_commands(void);
 void do_command_add(dbref player, char *name, int flags);
 void do_command_delete(dbref player, char *name);
-int run_command(COMMAND_INFO *cmd, dbref player, dbref cause, char *commandraw,
-                switch_mask sw, char switch_err[BUFFER_LEN], char *string,
+int run_command(COMMAND_INFO *cmd, dbref player, dbref cause, const char *commandraw,
+                switch_mask sw, char switch_err[BUFFER_LEN], const char *string,
                 char *swp, char *ap, char *ls, char *lsa[MAX_ARG], char *rs,
                 char *rsa[MAX_ARG]);
 

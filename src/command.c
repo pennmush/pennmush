@@ -1400,8 +1400,8 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
 #undef command_parse_free_args
 
 int
-run_command(COMMAND_INFO *cmd, dbref player, dbref cause, char *commandraw,
-            switch_mask sw, char switch_err[BUFFER_LEN], char *string,
+run_command(COMMAND_INFO *cmd, dbref player, dbref cause, const char *commandraw,
+            switch_mask sw, char switch_err[BUFFER_LEN], const char *string,
             char *swp, char *ap, char *ls, char *lsa[MAX_ARG], char *rs,
             char *rsa[MAX_ARG])
 {

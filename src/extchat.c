@@ -3480,8 +3480,8 @@ na_channel(dbref current, void *data)
  */
 
 char *
-mogrify(dbref mogrifier, char *attrname,
-        dbref player, int numargs, char *argv[], char *orig)
+mogrify(dbref mogrifier, const char *attrname,
+        dbref player, int numargs, const char *argv[], const char *orig)
 {
   static char buff[BUFFER_LEN];
   const char *wenv[10] = { 0 };
@@ -3530,12 +3530,12 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
   CHANUSER *speaker;
   dbref current;
   char *bp;
-  char *blockstr = "";
+  const char *blockstr = "";
   int na_flags = NA_INTER_LOCK;
   const char *someone = "Someone";
   dbref mogrifier = NOTHING;
-  char *ctype = NULL;
-  char *argv[10];
+  const char *ctype = NULL;
+  const char *argv[10];
   int override_chatformat = 0;
   memset(argv, 0, sizeof(argv));
 

@@ -18,6 +18,8 @@ Fixes:
    Reported by Minion. [MG]
  * The command parser incorrectly expanded the names of disabled built-in
    commands prior to $-command matching. Reported by Mercutio. [MG]
+ * benchmark()'s average would be thrown off when the CPU limit was 
+   exceeded during evaluation. Reported by Amberyl. [MG]
 
 
 & 1.8.4p0

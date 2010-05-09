@@ -16,7 +16,7 @@ chronological order (most recent first)
 
 ==========================================================================
 
-Version 1.8.4 patchlevel 0                                 Apr 28,  2010
+Version 1.8.4 patchlevel 0                                 May 09,  2010
 
 Major Changes:
  * Commands can now be restricted with an @lock-style lock in restrict.cnf
@@ -103,4 +103,5 @@ Fixes:
  * The /silent switch for @lemit didn't work. [MG]
  * @decompile/db showed '@create <dbref>' for THINGs, not '@create <name>',
    and @decomp/name could break. Reported by Paige. [MG]
+ * Crash bug in locks fixed. Reported by Tanaku. [SW]
 

@@ -21,6 +21,9 @@ Version 1.8.4 patchlevel 1                                 ??? ??,  2010
 Fixes:
  * @search's output can now include garbage objects, like lsearch().
    Reported by Minion. [MG]
+ * The command parser incorrectly expanded the names of disabled built-in
+   commands prior to $-command matching. Reported by Mercutio. [MG]
+
 
 Version 1.8.4 patchlevel 0                                 May 09,  2010
 

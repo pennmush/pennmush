@@ -47,6 +47,7 @@
 #include "command.h"
 #include "dbdefs.h"
 #include "extmail.h"
+#include "ansi.h"
 
 
 #include "confmagic.h"
@@ -1221,13 +1222,14 @@ do_search(dbref player, const char *arg1, char **arg3)
   } else if (nresults > 0) {
     /* Split the results up by type and report. */
     int n;
-    int nthings = 0, nexits = 0, nrooms = 0, nplayers = 0;
-    dbref *things, *exits, *rooms, *players;
+    int nthings = 0, nexits = 0, nrooms = 0, nplayers = 0, ngarbage = 0;
+    dbref *things, *exits, *rooms, *players, *garbage;
 
     things = mush_calloc(nresults, sizeof(dbref), "dbref_list");
     exits = mush_calloc(nresults, sizeof(dbref), "dbref_list");
     rooms = mush_calloc(nresults, sizeof(dbref), "dbref_list");
     players = mush_calloc(nresults, sizeof(dbref), "dbref_list");
+    garbage = mush_calloc(nresults, sizeof(dbref), "dbref_list");
 
     for (n = 0; n < nresults; n++) {
       switch (Typeof(results[n])) {
@@ -1242,6 +1244,9 @@ do_search(dbref player, const char *arg1, char **arg3)
         break;
       case TYPE_PLAYER:
         players[nplayers++] = results[n];
+        break;
+      case TYPE_GARBAGE:
+        garbage[ngarbage++] = results[n];
         break;
       default:
         /* Unknown type. Ignore. */
@@ -1314,15 +1319,33 @@ do_search(dbref player, const char *arg1, char **arg3)
       }
     }
 
+    if (ngarbage) {
+      notify(player, T("\nGARBAGE:"));
+      for (n = 0; n < ngarbage; n++) {
+        tbp = tbuf;
+      if (ANSI_NAMES && ShowAnsi(player))
+        notify_format(player, T("%sGarbage%s(#%d)"), ANSI_HILITE, ANSI_END, garbage[n]);
+      else
+        notify_format(player, T("Garbage(#%d)"), garbage[n]);
+      }
+    }
+
     notify(player, T("----------  Search Done  ----------"));
-    notify_format(player,
-                  T
-                  ("Totals: Rooms...%d  Exits...%d  Things...%d  Players...%d"),
-                  nrooms, nexits, nthings, nplayers);
+    if (ngarbage)
+      notify_format(player,
+                    T
+                    ("Totals: Rooms...%d  Exits...%d  Things...%d  Players...%d  Garbage...%d"),
+                    nrooms, nexits, nthings, nplayers, ngarbage);
+    else
+      notify_format(player,
+                    T
+                    ("Totals: Rooms...%d  Exits...%d  Things...%d  Players...%d"),
+                    nrooms, nexits, nthings, nplayers);
     mush_free(rooms, "dbref_list");
     mush_free(exits, "dbref_list");
     mush_free(things, "dbref_list");
     mush_free(players, "dbref_list");
+    mush_free(garbage, "dbref_list");
   }
   if (results)
     mush_free(results, "search_results");

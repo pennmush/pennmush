@@ -1192,39 +1192,11 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
     }
   }
 
-  /* Set up commandraw for future use. This will contain the canonicalization
-   * of the command name and may later have the parsed rest of the input
-   * appended at the position pointed to by c2.
-   */
-  c2 = c;
-  if (!cmd) {
-    c2 = commandraw + strlen(commandraw);
-  } else {
-    if (replacer) {
-      /* These commands don't allow switches, and need a space
-       * added after their canonical name
-       */
-      c2 = commandraw;
-      safe_str(cmd->name, commandraw, &c2);
-      safe_chr(' ', commandraw, &c2);
-    } else if (*c2 == '/') {
-      /* Oh... DAMN */
-      c2 = commandraw;
-      strcpy(switches, commandraw);
-      safe_str(cmd->name, commandraw, &c2);
-      t = strchr(switches, '/');
-      safe_str(t, commandraw, &c2);
-    } else {
-      c2 = commandraw;
-      safe_str(cmd->name, commandraw, &c2);
-    }
-  }
-
   /* Test if this either isn't a command, or is a disabled one
    * If so, return Fully Parsed string for further processing.
    */
-
   if (!cmd || (cmd->type & CMD_T_DISABLED)) {
+    c2 = commandraw + strlen(commandraw);
     if (*p) {
       if (*p == ' ') {
         safe_chr(' ', commandraw, &c2);
@@ -1238,12 +1210,36 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
     *c2 = '\0';
     command_parse_free_args;
     return commandraw;
-  }
-  /* Check the permissions */
-  if (!command_check(player, cmd, 1)) {
+  } else if (!command_check(player, cmd, 1)) {
+    /* No permission to use command, stop processing */
     command_parse_free_args;
     return NULL;
   }
+
+  /* Set up commandraw for future use. This will contain the canonicalization
+   * of the command name and will later have the parsed rest of the input
+   * appended at the position pointed to by c2.
+   */
+  c2 = c;
+  if (replacer) {
+    /* These commands don't allow switches, and need a space
+     * added after their canonical name
+     */
+    c2 = commandraw;
+    safe_str(cmd->name, commandraw, &c2);
+    safe_chr(' ', commandraw, &c2);
+  } else if (*c2 == '/') {
+    /* Oh... DAMN */
+    c2 = commandraw;
+    strcpy(switches, commandraw);
+    safe_str(cmd->name, commandraw, &c2);
+    t = strchr(switches, '/');
+    safe_str(t, commandraw, &c2);
+  } else {
+    c2 = commandraw;
+    safe_str(cmd->name, commandraw, &c2);
+  }
+
   /* Parse out any switches */
   sw = SW_ALLOC();
   swp = switches;

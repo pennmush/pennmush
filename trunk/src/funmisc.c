@@ -967,7 +967,7 @@ FUNCTION(fun_benchmark)
     }
   }
 
-  for (i = 0; i < n; i++) {
+  for (i = 1; i <= n; i++) {
     uint64_t start;
     unsigned int elapsed;
     tp = tbuf;
@@ -992,10 +992,10 @@ FUNCTION(fun_benchmark)
   if (thing != NOTHING) {
     safe_str(tbuf, buff, bp);
     notify_format(thing, T("Average: %.2f   Min: %u   Max: %u"),
-                  ((double) total) / n, min, max);
+                  ((double) total) / i, min, max);
   } else {
     safe_format(buff, bp, T("Average: %.2f   Min: %u   Max: %u"),
-                ((double) total) / n, min, max);
+                ((double) total) / i, min, max);
   }
 
   return;

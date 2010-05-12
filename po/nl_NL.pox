@@ -1322,6 +1322,11 @@ msgstr "%s: Objecten: %d  Limiet: %d"
 msgid "%s: Objects: %d   Limit: UNLIMITED"
 msgstr "%s: Objecten: %d  Limiet: ONGELIMITEERD"
 
+#: wiz.c:1327
+#, c-format
+msgid "%sGarbage%s(#%d)"
+msgstr "%sAfval%s(#%d)"
+
 #: attrib.c:1566 attrib.c:1584
 #, c-format
 msgid "'%s' contains too many aliases."
@@ -2567,6 +2572,11 @@ msgstr "Afval hoort op de afvalhoop."
 #: src/look.c:667 src/look.c:1306
 msgid "Garbage is garbage."
 msgstr "Afval is afval."
+
+#: wiz.c:1329
+#, c-format
+msgid "Garbage(#%d)"
+msgstr "Afval(#%d)"
 
 #: src/set.c:82
 msgid "Give it what new name?"
@@ -4888,6 +4898,11 @@ msgstr "Herstart aantal"
 msgid "Totals: Player...%d/%d[%ddel]  Object...%d/%d[%ddel]  Wait...%d/%d[%ddel]  Semaphore...%d/%d"
 msgstr "Totalen: Speler...%d/%d[%ddel]  Object...%d/%d[%ddel]  Wacht...%d/%d[%ddel]  Semaphore...%d/%d"
 
+#: wiz.c:1337
+#, c-format
+msgid "Totals: Rooms...%d  Exits...%d  Things...%d  Players...%d  Garbage...%d"
+msgstr "Totaal: Kamers...%d  Uitgangen...%d  Dingen...%d  Spelers...%d  Afval...%d"
+
 #: wiz.c:1295
 #, c-format
 msgid "Totals: Rooms...%d  Exits...%d  Things...%d  Players...%d"
@@ -6307,6 +6322,14 @@ msgid ""
 msgstr ""
 "\n"
 "UITGANGEN:"
+
+#: wiz.c:1323
+msgid ""
+"\n"
+"GARBAGE:"
+msgstr ""
+"\n"
+"AFVAL:"
 
 #: src/extmail.c:2507
 msgid ""

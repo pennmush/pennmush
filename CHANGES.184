@@ -25,6 +25,7 @@ Fixes:
    commands prior to $-command matching. Reported by Mercutio. [MG]
  * benchmark()'s average would be thrown off when the CPU limit was 
    exceeded during evaluation. Reported by Amberyl. [MG]
+ * Fix a few bugs in handling of command locks. [SW]
 
 
 Version 1.8.4 patchlevel 0                                 May 09,  2010

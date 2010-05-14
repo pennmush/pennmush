@@ -647,10 +647,12 @@ command_find_exact(const char *name)
  * in the table, and if it's there, modify the parameters.
  * \param name name of command to modify.
  * \param type new types for command, or -1 to leave unchanged.
- * \param key new boolexp to restrict command, or NULL to leave unchanged.
+ * \param key new boolexp to restrict command.
  * \param sw new mask of switches for command, or NULL to leave unchanged.
  * \param func new function to call, or NULL to leave unchanged.
  * \return pointer to modified command entry, or NULL.
+ *
+ * Doesn't appear to be used. Work in progress, Mike?
  */
 COMMAND_INFO *
 command_modify(const char *name, int type,
@@ -662,8 +664,11 @@ command_modify(const char *name, int type,
     return NULL;
   if (type != -1)
     cmd->type = type;
-  if (key)
+  if (key) {
+    if (cmd->cmdlock != TRUE_BOOLEXP)
+      free_boolexp(cmd->cmdlock);
     cmd->cmdlock = key;
+  }
   if (sw)
     SW_COPY(cmd->sw.mask, sw);
   if (func)
@@ -1754,7 +1759,7 @@ clone_command(char *original, char *clone)
   if (c1->restrict_message)
     c2->restrict_message =
       mush_strdup(c1->restrict_message, "cmd_restrict_message");
-  c2->cmdlock = c1->cmdlock;
+  c2->cmdlock = dup_bool(c1->cmdlock);
 
   if (c1->hooks.before.obj)
     c2->hooks.before.obj = c1->hooks.before.obj;

@@ -1550,20 +1550,15 @@ FUNCTION(fun_match)
   char *s, *r;
   char sep;
   int wcount = 1;
-  char needle[BUFFER_LEN], haystack[BUFFER_LEN];
 
   if (!delim_check(buff, bp, nargs, args, 3, &sep))
     return;
 
-  strncpy(haystack, remove_markup(args[0], NULL), BUFFER_LEN);
-  strncpy(needle, remove_markup(args[1], NULL), BUFFER_LEN);
-
-
   /* Walk the wordstring, until we find the word we want. */
-  s = trim_space_sep(haystack, sep);
+  s = trim_space_sep(args[0], sep);
   do {
     r = split_token(&s, sep);
-    if (quick_wild(needle, r)) {
+    if (quick_wild(args[1], r)) {
       safe_integer(wcount, buff, bp);
       return;
     }
@@ -2032,7 +2027,6 @@ FUNCTION(fun_member)
   char *s, *t;
   char sep;
   int el;
-  char needle[BUFFER_LEN], haystack[BUFFER_LEN];
 
   if (!delim_check(buff, bp, nargs, args, 3, &sep))
     return;
@@ -2042,15 +2036,12 @@ FUNCTION(fun_member)
     return;
   }
 
-  strncpy(haystack, remove_markup(args[0], NULL), BUFFER_LEN);
-  strncpy(needle, remove_markup(args[1], NULL), BUFFER_LEN);
-
-  s = trim_space_sep(haystack, sep);
+  s = trim_space_sep(args[0], sep);
   el = 1;
 
   do {
     t = split_token(&s, sep);
-    if (!strcmp(needle, t)) {
+    if (!strcmp(args[1], t)) {
       safe_integer(el, buff, bp);
       return;
     }
@@ -3192,7 +3183,7 @@ FUNCTION(fun_regrep)
   reharg.buff = buff;
   reharg.bp = bp;
 
-  atr_iter_get(executor, it, args[1], 0, regrep_helper, (void *) &reharg);
+  atr_iter_get(executor, it, args[1], 0, 0, regrep_helper, (void *) &reharg);
   mush_free(reharg.re, "pcre");
   if (free_study)
     mush_free(reharg.study, "pcre.extra");

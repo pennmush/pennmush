@@ -18,6 +18,7 @@
 #include "buildinf.h"
 #endif
 #include "confmagic.h"
+#include "svninfo.h"
 
 void do_version(dbref player);
 
@@ -27,13 +28,36 @@ void do_version(dbref player);
 void
 do_version(dbref player)
 {
-
+#ifdef SVNREVISION
+  int svnrev = 0;
+  int scan;
+#ifdef SVNDATE
+  char svndate[75];
+#endif                          /* SVNDATE */
+#endif                          /* SVNREVISION */
   notify_format(player, T("You are connected to %s"), MUDNAME);
-  notify_format(player, T("Address: %s"), MUDURL);
+  if (MUDURL && *MUDURL)
+    notify_format(player, T("Address: %s"), MUDURL);
   notify_format(player, T("Last restarted: %s"),
                 show_time(globals.start_time, 0));
   notify_format(player, T("PennMUSH version %s patchlevel %s %s"), VERSION,
                 PATCHLEVEL, PATCHDATE);
+#ifdef SVNREVISION
+  scan = sscanf(SVNREVISION, "$" "Rev: %d $", &svnrev);
+  if (scan == 1) {
+#ifdef SVNDATE
+    scan = sscanf(SVNDATE, "$" "Date: %s $", svndate);
+    if (scan == 1)
+      notify_format(player, T("SVN revision: %d [%s]"), svnrev, svndate);
+    else
+      notify_format(player, T("SVN revision: %d"), svnrev);
+#else
+    notify_format(player, T("SVN revision: %d"), svnrev);
+#endif                          /* SVNDATE */
+  }
+#endif                          /* SVNREVISION */
+
+
 #ifdef WIN32
   notify_format(player, T("Build date: %s"), __DATE__);
 #else
@@ -41,4 +65,5 @@ do_version(dbref player)
   notify_format(player, T("Compiler: %s"), COMPILER);
   notify_format(player, T("Compilation flags: %s"), CCFLAGS);
 #endif
+
 }

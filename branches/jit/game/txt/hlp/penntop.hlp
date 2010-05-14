@@ -420,23 +420,25 @@ See also: BOOLEAN FUNCTIONS, not(), t()
   change the object's characteristics such as flags and attributes. It
   may also mean that you have the ability to destroy it.
 
-  Here are the conditions under which object O controls victim V:
-  1. If V is God, O must be God
-  2. If V is Wizard, O must be Wizard or God
-  3. If O is a Wizard, O controls V
-  4. If V is Royalty, O must be Royalty, Wizard or God
-  5. If O is MISTRUST, O must be V to control V
-  6. If V and O are owned by the same player:
-     6a. If V is not TRUST, O controls V
-     6b. If V is TRUST, O must be TRUST or the player must be TRUST
-  7. If V is on a zone, and isn't a player and isn't TRUST,
-     O controls V if O passes the zone-lock of the zone.
-  8. If V is owned by a SHARED player, and V isn't a player and isn't set
-     TRUST, O controls V if O passes the zone-lock of the SHARED player.
-
-  Step 7 is skipped if config(zone_control_zmp_only) is on.  There's
-  also one special case: anyone can @link an unlinked exit (at which
-  point the exit is @chowned to the linker).
+  These checks are performed, from top to bottom, to see if object O
+  controls object V:
+   1. If O and V are the same object, O controls V
+   2. If V is God, O does not control V
+   3. If O is a Wizard, O controls V
+   4. If V is a Wizard, O does not control V
+   5. If V is Royalty and O is not, O does not control V
+   6. If V is MISTRUST, O does not control V
+   7. If O and V are owned by the same player, and either:
+       a. V is not set TRUST, or
+       b. O is set TRUST
+      then O controls V
+   8. If V is a player, or set TRUST, O does not control V
+   9. If the zone_control_zmp_only @config option is set to 'No', V is on a
+      Zone, and O passes the Zone's @lock/zone, O controls V
+  10. If V is owned by a SHARED player, and O passes the owner's @lock/zone,
+      O controls V
+  11. If V has an @lock/control, and O passes the lock, O controls V
+  12. O does not control V
 
 See also: controls(), TRUST, MISTRUST, ZONES, SHARED PLAYERS
 & COSTS
@@ -524,16 +526,17 @@ See also: help code, help license
 
 See also: MYOPIC, OPAQUE, MUSHCODE
 & DROP-TOS
+& DROPTOS
 
   When you use the @link command on a room, it sets another room or
   object as the DROP-TO location. By default, any non-STICKY object
   that someone drops in the room will automatically be transported to
   the drop-to location, rather than staying in the room. Any STICKY
-  object droped in the room will go to its home.
+  object dropped in the room will go to its home.
 
-  If the room is set STICKY, objects dropped in the room will stay
-  there until the last player leaves/disconnects, at which point they
-  will be transported as described above.
+  If the room is set STICKY, objects dropped in the room will stay there 
+  until the last player leaves, at which point they will be transported 
+  as described above.
 
   If the room has a @lock/dropto set on it, only objects that pass the
   lock will be transported (either immediately or when the last player
@@ -544,7 +547,7 @@ See also: MYOPIC, OPAQUE, MUSHCODE
 
 See also: @link, STICKY, LINK_OK, @lock
 & %#
-& %N
+& %n
 & %~
 & %:
 & ENACTOR
@@ -646,49 +649,6 @@ See also: ENACTOR, EXECUTOR
   was thus the executor.
 
 See also: ENACTOR, CALLER, SUBSTITUTION
-& EXITS
-  An exit is a one-way link that takes you from its source room to its
-  destination room. To open an exit from a room, you must control that
-  room.  To open an exit to a room, you must either control the room
-  or it must be set LINK_OK. If an exit is set DARK is will not show
-  up in the list of obvious exits in a room.
-
-  If an exit is set TRANSPARENT, someone who looks at the exit will
-  also see the description and contents of the destination room. If an
-  exit is set CLOUDY, someone who looks at the exit will also see the
-  contents of the room beyond, but not its description. If an exits is
-  set -both- CLOUDY and TRANSPARENT, the description but not the
-  contents will be seen.
-   
-  If you have code on an exit (In an @asuccess or the like), note that
-  [loc(exit)] is the exit's destination, and [home(exit)] is the
-  exit's starting point. If an exit @emit's something, it will be
-  heard in the source room.
-   
-(continued in exits2)
-& EXITS2
-  You can create an exit that sends those who go through it to their
-  homes by typing '@link <EXIT>=home'.
-
-  Starting with PennMUSH version 1.50p10, exits can have more than one
-  destination. To make an exit with a variable destination, open the
-  exit (using @open), then type '@link <EXIT>=variable'. Finally, add
-  an attribute named 'DESTINATION' to the exit (&destination <EXIT>),
-  which will be evaluated for the dbref # of the destination room when
-  the exit is used.
-   
-  For example:
-  @open South <S>;s;south
-  @link s=variable
-  &destination s=[switch(rand(3),0,#100,1,#101,2,#102)]
-   
-  This exit would take you to either room #100, #101, or #102
-  depending on the random number.
-
-  Anyone can create variable exits, but the destinations must be to
-  places that the exit can normally @link to.
-
-See also: @link, @open, link_ok, CLOUDY, TRANSPARENT, @firstexit
 & FAILURE
   FAILURE  
 
@@ -833,6 +793,7 @@ See also: LINK_OK, ABODE, @link
 
 (continued in help listening2)
 & ^
+& ^-LISTENS
 & LISTENING2
   If you need an object to "listen" for more than one pattern, you can
   also use ^-patterns.  These work similar to user-defined commands,
@@ -1114,8 +1075,8 @@ See also: @parent, $-COMMANDS, ATTRIBUTES, ANCESTORS
 (continued in help powers2)
 & POWERS2
 & POWERS LIST2
-  no_pay                Doesn't need money for anything
-  no_quota              Has an unlimited quota
+  no_pay *              Doesn't need money for anything
+  no_quota *            Has an unlimited quota
   open_anywhere         Can @open a link from any room.
   pemit_all             Can @pemit to HAVEN/ulocked players.
   player_create         Can use @pcreate command.
@@ -1129,8 +1090,11 @@ See also: @parent, $-COMMANDS, ATTRIBUTES, ANCESTORS
   sql_ok                Can perform SQL queries
   tport_anything        Can @teleport anything.
   tport_anywhere        Can @teleport to anywhere.
-  unkillable            Can not be killed
+  unkillable *          Cannot be killed
   can_nspemit           Can use @nspemit and nspemit()
+  
+  * When these powers are set on a player, all the objects they own which
+    are not set MISTRUST are also considered to have the power.
 
 See also: help @power, and especially @power/list
 & PUPPETS
@@ -1343,11 +1307,11 @@ See also: @ps, LOOPING
 
     (sens|respons)e and \1ibility
 
-  matches "sense and sensibility" and "response and  responsibility",  but
-  not  "sense  and  responsibility". 
+  matches "sense and sensibility" and "response and  responsibility", but
+  not "sense  and  responsibility". 
 
-  You can give names to subpatterns and refer to them that way instead of using
-  numbers.
+  You can give names to subpatterns and refer to them that way instead of
+  using numbers.
 
    (?P<NAME>subexpr) (Note: Literal <>'s) is a named capture, and
    (?P=NAME) refers back to it. The above pattern might be written:
@@ -1754,41 +1718,62 @@ See also: FAILURE, @lock, VERBS, ATTRIBUTES, @success, @asuccess, @osuccess
   file for that command.
   (If you are looking for information on @switch, see 'help @switch'.)
 & TYPES OF OBJECTS
+& TYPES
+& OBJECTS
   
-  Everything on a MUSH is an object in the MUSH database. There are
-  four types of objects: players, rooms, exits, things. You can see
-  the type of an object when you 'examine' it, or with the 'type()'
-  function.
+  Everything on a MUSH is an object in the MUSH database. There are four 
+  types of objects: players, things (once called 'objects'), rooms and exits.
+  You can see the type of an object when you 'examine' it, or with the 
+  type() function.
+  
+  For more information on any of the types, see 'help <type>'.
 
-  Unique Characteristics
-  PLAYERS
-    Can own other objects and can be connected to. Can receive @mail.
-    Can move around, speak/pose/emit, enter MUSH commands, enter
-    global $-commands. You can have $-commands on a player, but not
-    ^-patterns.  Players can be carried, can carry other objects, and
-    can follow.
-  ROOMS
-    Fixed container objects, linked together by exits. Cannot move.
-    Rooms can enter MUSH commands and execute global $-commands.  You
-    can have $-commands and ^-patterns on a room.
-    
-(continued in help TYPES2)
-& TYPES2
-  EXITS
-    Objects that link rooms and things together. Cannot move, but can
-    be @teleport-ed to a new location. Exits can enter MUSH commands
-    and execute global $-commands. You can NOT have $-commands or
-    ^-patterns on exits. Exits can lead TO things (if the
-    link_to_object @config option is true), but they can only lead
-    FROM rooms.
+See also: type(), hastype()
+& PLAYERS
 
-  THINGS
-    Can move around, speak/pose/emit, enter MUSH commands, enter
-    global $-commands. Can send @mail as themselves. You can have
-    $-commands and ^-patterns on things. Things can carry, be carried,
-    and can follow.
+  Players can be created at the login screen (or with @pcreate) and connected
+  to. They can also receive @mail, and have a number of attributes set on 
+  them by the MUSH automatically, including LAST, LASTSITE, etc. They can 
+  have multiple @aliases, and are checked for $-commands and ^-listens.
+  
+  @linking a player sets their home.
 
-See also: EXITS, USER-DEFINED COMMANDS, LISTENING, GLOBALS
+See also: TYPES OF OBJECTS, type(), hastype(), @pcreate
+& ROOMS
+
+  Rooms are outermost-containers: they cannot be moved. They are created
+  with @dig. Rooms can contain exits. They are checked for $-commands and 
+  ^-listens. Rooms do not have aliases.
+  
+  @linking a room creates a drop-to. Rooms have no location; loc() on a room
+  returns its drop-to (as does home()).
+  
+See also: TYPES OF OBJECTS, type(), hastype(), @dig, DROP-TOS
+& THINGS
+  
+  Things are created with @create. They can move around the MUSH, be entered
+  and carried. They are checked for $-commands and ^-listens.  Things do not
+  have aliases.
+  
+  @linking a thing sets its home.
+  
+See also: TYPES OF OBJECTS, type(), hastype(), @create
+& EXITS
+
+  Exits are created with @open. They link rooms together, and can be used by
+  players and things to move from one room to another with the GOTO command.
+  Exits cannot move (though they can be @teleported to another room). They
+  can have multiple aliases as part of their @name. They are NOT checked for
+  $-commands or ^-listens.
+  
+  You can change the destination of an exit with the @link command. home()
+  returns the source room of an exit, and loc() returns its destination.
+  
+  Setting an exit CLOUDY and/or TRANSPARENT causes its destination's
+  description and/or contents to be shown after the exit's description when
+  looked at.
+  
+See also: TYPES OF OBJECTS, type(), hastype(), @open, @link
 & $-COMMANDS
 & MACROS
 & USER-DEFINED COMMANDS
@@ -1842,11 +1827,47 @@ See also: EXITS, USER-DEFINED COMMANDS, LISTENING, GLOBALS
 
 See also: STACK, SUBSTITUTIONS, @lock
 & VERBS
-  For most verbs there are three forms: Verb (what the Enactor sees),
-  Overb (what others in the area see) and Averb (the action to be
-  taken when the event happens). Example: @Drop, @Odrop and @Adrop
+  Verb attributes are ones which are shown (or triggered) when you use a 
+  particular command, or perform a certain action. There are normally three:
+  the 'verb' attribute (shown to the enactor), the 'overb' attribute (shown
+  to others in the enactor's location), and the 'averb' attribute (an action
+  list which is triggered). One example is @use, @ouse, and @ause, which are 
+  shown/triggered when the 'use' command is run on an object.
   
-  You can create your own verbs with the @verb command. See help @verb.
+  Some verbs which involve movement have a fourth attribute, 'oxverb', shown
+  in the enactor's old location (for example, @oxmove), while some verbs have
+  less (for example, @oname/@aname are shown when an object's name changes,
+  but there is no @name attribute).
+  
+  You can create your own verbs for softcoded commands/actions with the
+  @verb command.
+  
+  Continued in 'help verbs2'.
+& VERBS2
+& NONAME
+& NOSPACE
+
+  Normally, the enactor's name and a space are prepended to the 'overb' and 
+  'oxverb' attributes automatically. The NOSPACE attribute flag prevents a
+  space being placed between the name and attribute value, and the NONAME
+  attribute flag stops the name being added at all.
+  
+  Example:
+    > @ouse Foo=has used Foo!
+    > use Foo
+    Sketch has used Foo!
+    
+    > @ouse Foo=;'s used Foo!
+    > @set Foo/ouse=nospace
+    > use Foo
+    Sketch's used Foo!
+    
+    > @ouse Foo=Foo has been used by %n!
+    > @set Foo/ouse=noname
+    > use Foo
+    Foo has been used by Sketch!
+  
+See also: @verb, attribute flags
 & WARNINGS
 
   If the building warning system has been enabled in the source code,
@@ -2031,19 +2052,24 @@ This is the AHELP index.
  @function.
  
  In the config file, the syntax is:
-  restrict_command command-name restriction [" <error message>]
-  restrict_function function-name restriction
+  restrict_command <command-name> <restriction> [" <error message>]
+  restrict_function <function-name> <restriction>
 
  From the game:
-  @command/restrict command-name=restriction [" <error message>]
-  @function/restrict function-name=restriction
+  @command/restrict <command-name>=<restriction> [" <error message>]
+  @function/restrict <function-name>=<restriction>
  
 For commands, if <error message> is given, that message is sent to the
 player who runs it instead of a generic, unhelpful error message.
 
-(Continued in restrict2)
+  Continued in 'help restrict2'.
 & RESTRICT2
- <restriction> can be one of the following:
+
+  For commands, <restriction> should be an @lock-style boolexp (though,
+  for backwards compatability, the restrictions below can be used, and will
+  be converted into an @lock automatically). For functions, <restriction>
+  should be any combination of the phrases below.
+
    god        Command or function is usable only by God.
    wizard     Usable only by wizards.
    admin      Usable only by Wiz/Roy.
@@ -2052,27 +2078,43 @@ player who runs it instead of a generic, unhelpful error message.
    noguest    Usable only by non-guest @powered objects.
    nobody     Nothing can use it. Same as the /disable switch
               to @command or @function.
+   logname    When used, log cmd/fun name, and who is using it
+   logargs    When used, log cmd/fun name and args, and who is using it
+              
+ Functions only:             
    noparse    Function arguments are not evaluated. Only applies
               to @functions.
    localize   %q-registers are saved/restored when evaluating, as if
               the @function were wrapped in localize().
    userfn     Function can only be called from within an @function.
 
- Commands can also use the 'noplayer' restriction, which stops player
- objects from using the command, as well as any generic <flag> or any
- <power>.
+  Commands only:
+   noplayer   Cannot be used by players.
+  Commands can also give any flag, power or type, to restrict to
+   objects with one of those flags or powers, or of one of those types.
 
-(Continued in restrict3)
+  Continued in 'help restrict3'.
 & RESTRICT3
- In cases where there are a function and command that do the same
- thing (Like pemit() and @pemit), the command's restrictions are also
- checked when the function is called, so restricting @pemit also
- restricts pemit(). However, a function's restrictions are not checked
- when a command is called, to allow disabling side-effect functions.
+  In cases where there are a function and command that do the same
+  thing (like pemit() and @pemit), the command's restrictions are also
+  checked when the function is called, so to use pemit() you must also be
+  able to use @pemit. However, a function's restrictions are not checked
+  when a command is called, to allow disabling side-effect functions.
 
- Some functions (Like name()) have non-side-effect and side-effect
- versions depending on how many arguments they're called with. The
- side-effect version can be disabled while keeping the safe
- non-side-effect form with the 'nosidefx' restriction. This can also
- be used to disable pure side-effect functions.
+  Some functions (like name()) have non-side-effect and side-effect
+  versions depending on how many arguments they're called with. The
+  side-effect version can be disabled while keeping the safe
+  non-side-effect form with the 'nosidefx' restriction. This can also
+  be used to disable pure side-effect functions.
+ 
+  Examples:
+  Only allow admin to use ansi():
+    > @function/restrict ansi=admin
+    
+  Don't let anyone set SUSPECT or GAGGED use @emit, and log the name of
+  anyone who uses it.
+    > @command/restrict @emit=logname
+    > @command/restrict @emit=!flag^suspect&!flag^gagged
+
+See also: @command, @function, @lock
 

@@ -47,9 +47,9 @@ HASHTAB htab_reserved_aliases;  /**< Hash table for reserved command aliases */
 slab *command_slab = NULL; /**< slab for command_info structs */
 
 static const char *command_isattr(char *command);
-static int command_check(dbref player, COMMAND_INFO *cmd, int noisy);
 static int switch_find(COMMAND_INFO *cmd, const char *sw);
 static void strccat(char *buff, char **bp, const char *from);
+static COMMAND_INFO *clone_command(char *original, char *clone);
 static int has_hook(struct hook_data *hook);
 extern int global_fun_invocations;       /**< Counter for function invocations */
 extern int global_fun_recursions;       /**< Counter for function recursion */
@@ -70,6 +70,7 @@ int run_hook(dbref player, dbref cause, struct hook_data *hook,
 
 int run_hook_override(COMMAND_INFO *cmd, dbref player, const char *commandraw);
 
+const char *CommandLock = "CommandLock";
 
 /** The list of standard commands. Additional commands can be added
  * at runtime with add_command().
@@ -77,7 +78,7 @@ int run_hook_override(COMMAND_INFO *cmd, dbref player, const char *commandraw);
 COMLIST commands[] = {
 
   {"@COMMAND",
-   "ADD ALIAS DELETE EQSPLIT LSARGS RSARGS NOEVAL ON OFF QUIET ENABLE DISABLE RESTRICT NOPARSE",
+   "ADD ALIAS CLONE DELETE EQSPLIT LSARGS RSARGS NOEVAL ON OFF QUIET ENABLE DISABLE RESTRICT NOPARSE",
    cmd_command,
    CMD_T_PLAYER | CMD_T_EQSPLIT, 0, 0},
   {"@@", NULL, cmd_null, CMD_T_ANY | CMD_T_NOPARSE, 0, 0},
@@ -118,7 +119,8 @@ COMLIST commands[] = {
   {"@CREATE", NULL, cmd_create,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED,
    0, 0},
-  {"@CLONE", "PRESERVE", cmd_clone, CMD_T_ANY | CMD_T_NOGAGGED | CMD_T_EQSPLIT,
+  {"@CLONE", "PRESERVE", cmd_clone,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED,
    0, 0},
 
   {"@CLOCK", "JOIN SPEAK MOD SEE HIDE", cmd_clock,
@@ -162,7 +164,8 @@ COMLIST commands[] = {
 
   {"@FORCE", "NOEVAL", cmd_force, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED,
    0, 0},
-  {"@FUNCTION", "BUILTIN DELETE ENABLE DISABLE PRESERVE RESTORE RESTRICT",
+  {"@FUNCTION",
+   "ALIAS BUILTIN CLONE DELETE ENABLE DISABLE PRESERVE RESTORE RESTRICT",
    cmd_function,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@GREP", "LIST PRINT ILIST IPRINT", cmd_grep,
@@ -172,6 +175,8 @@ COMLIST commands[] = {
   {"@HOOK", "LIST AFTER BEFORE IGNORE OVERRIDE", cmd_hook,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS,
    "WIZARD", "hook"},
+  {"@INCLUDE", NULL, cmd_include,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@KICK", NULL, cmd_kick, CMD_T_ANY, "WIZARD", 0},
 
   {"@LEMIT", "NOEVAL SILENT SPOOF", cmd_lemit,
@@ -180,7 +185,8 @@ COMLIST commands[] = {
    0},
   {"@LISTMOTD", NULL, cmd_listmotd, CMD_T_ANY, 0, 0},
 
-  {"@LIST", "LOWERCASE MOTD LOCKS FLAGS FUNCTIONS POWERS COMMANDS ATTRIBS",
+  {"@LIST",
+   "LOWERCASE MOTD LOCKS FLAGS FUNCTIONS POWERS COMMANDS ATTRIBS ALLOCATIONS",
    cmd_list,
    CMD_T_ANY, 0, 0},
   {"@LOCK", NULL, cmd_lock,
@@ -481,15 +487,15 @@ SW_BY_NAME(switch_mask sw, const char *name)
  * for local hacks - use command_add() instead.
  * \param name command name.
  * \param type types of objects that can use the command.
- * \param flagmask mask of flags (one is sufficient to use the command).
- * \param powers mask of powers (one is sufficient to use the command).
+ * \param flagstr list of flags names to restrict command
+ * \param powerstr list of power names to restrict command
  * \param sw mask of switches the command accepts.
  * \param func function to call when the command is executed.
  * \return pointer to a newly allocated COMMAND_INFO structure.
  */
 COMMAND_INFO *
 make_command(const char *name, int type,
-             object_flag_type flagmask, object_flag_type powers,
+             const char *flagstr, const char *powerstr,
              const char *sw, command_func func)
 {
   COMMAND_INFO *cmd;
@@ -499,8 +505,6 @@ make_command(const char *name, int type,
   cmd->restrict_message = NULL;
   cmd->func = func;
   cmd->type = type;
-  cmd->flagmask = flagmask;
-  cmd->powers = powers;
   switch (command_state) {
   case CMD_LOAD_BUILTIN:
     cmd->sw.names = sw;
@@ -534,6 +538,46 @@ make_command(const char *name, int type,
   cmd->hooks.ignore.attrname = NULL;
   cmd->hooks.override.obj = NOTHING;
   cmd->hooks.override.attrname = NULL;
+  /* Restrict with no flags/powers, then manually parse flagstr and powerstr
+     separately and add to restriction, to avoid issues with flags/powers with
+     the same name (HALT flag and Halt power) */
+  restrict_command(NOTHING, cmd, "");
+  if ((flagstr && *flagstr) || (powerstr && *powerstr)) {
+    char buff[BUFFER_LEN];
+    char *bp, *one, list[BUFFER_LEN], *p;
+    int first = 1;
+    bp = buff;
+    if (cmd->cmdlock != TRUE_BOOLEXP) {
+      safe_chr('(', buff, &bp);
+      safe_str(unparse_boolexp(NOTHING, cmd->cmdlock, UB_DBREF), buff, &bp);
+      safe_str(")&", buff, &bp);
+    }
+    if (flagstr && *flagstr) {
+      strcpy(list, flagstr);
+      p = trim_space_sep(list, ' ');
+      while ((one = split_token(&p, ' '))) {
+        if (!first)
+          safe_chr('|', buff, &bp);
+        first = 0;
+        safe_str("FLAG^", buff, &bp);
+        safe_str(one, buff, &bp);
+      }
+    }
+    if (powerstr && *powerstr) {
+      strcpy(list, powerstr);
+      p = trim_space_sep(list, ' ');
+      while ((one = split_token(&p, ' '))) {
+        if (!first)
+          safe_chr('|', buff, &bp);
+        first = 0;
+        safe_str("POWER^", buff, &bp);
+        safe_str(one, buff, &bp);
+      }
+    }
+    *bp = '\0';
+    cmd->cmdlock = parse_boolexp(NOTHING, buff, CommandLock);
+
+  }
   return cmd;
 }
 
@@ -551,14 +595,8 @@ COMMAND_INFO *
 command_add(const char *name, int type, const char *flagstr,
             const char *powerstr, const char *switchstr, command_func func)
 {
-  object_flag_type flagmask = NULL, powers = NULL;
-
-  if (flagstr)
-    flagmask = string_to_bits("FLAG", flagstr);
-  if (powerstr)
-    powers = string_to_bits("POWER", powerstr);
   ptab_insert_one(&ptab_command, name,
-                  make_command(name, type, flagmask, powers, switchstr, func));
+                  make_command(name, type, flagstr, powerstr, switchstr, func));
   return command_find(name);
 }
 
@@ -609,16 +647,14 @@ command_find_exact(const char *name)
  * in the table, and if it's there, modify the parameters.
  * \param name name of command to modify.
  * \param type new types for command, or -1 to leave unchanged.
- * \param flagmask new mask of flags for command, or NULL to leave unchanged.
- * \param powers new mask of powers for command, or NULL to leave unchanged.
+ * \param key new boolexp to restrict command, or NULL to leave unchanged.
  * \param sw new mask of switches for command, or NULL to leave unchanged.
  * \param func new function to call, or NULL to leave unchanged.
  * \return pointer to modified command entry, or NULL.
  */
 COMMAND_INFO *
 command_modify(const char *name, int type,
-               object_flag_type flagmask, object_flag_type powers,
-               switch_mask sw, command_func func)
+               boolexp key, switch_mask sw, command_func func)
 {
   COMMAND_INFO *cmd;
   cmd = command_find(name);
@@ -626,10 +662,8 @@ command_modify(const char *name, int type,
     return NULL;
   if (type != -1)
     cmd->type = type;
-  if (flagmask)
-    cmd->flagmask = flagmask;
-  if (powers)
-    cmd->powers = powers;
+  if (key)
+    cmd->cmdlock = key;
   if (sw)
     SW_COPY(cmd->sw.mask, sw);
   if (func)
@@ -733,8 +767,7 @@ command_init_preconfig(void)
     }
     ptab_insert(&ptab_command, cmd->name,
                 make_command(cmd->name, cmd->type,
-                             string_to_bits("FLAG", cmd->flagstr),
-                             string_to_bits("POWER", cmd->powers),
+                             cmd->flagstr, cmd->powers,
                              cmd->switches, cmd->func));
   }
   ptab_end_inserts(&ptab_command);
@@ -1350,33 +1383,14 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
     command_parse_free_args;
     return NULL;
   } else {
-    char *saveregs[NUMQ];
-    init_global_regs(saveregs);
     /* If we have a hook/ignore that returns false, we don't do the command */
-    if (run_hook(player, cause, &cmd->hooks.ignore, saveregs, 1)) {
-      /* If we have a hook/override, we use that instead */
-      if (!run_hook_override(cmd, player, commandraw)) {
-        /* Otherwise, we do hook/before, the command, and hook/after */
-        /* But first, let's see if we had an invalid switch */
-        if (*switch_err) {
-          notify(player, switch_err);
-          free_global_regs("hook.regs", saveregs);
-          command_parse_free_args;
-          return NULL;
-        }
-        run_hook(player, cause, &cmd->hooks.before, saveregs, 1);
-        cmd->func(cmd, player, cause, sw, string, swp, ap, ls, lsa, rs, rsa);
-        run_hook(player, cause, &cmd->hooks.after, saveregs, 0);
-      }
-      /* Either way, we might log */
-      if (cmd->type & CMD_T_LOGARGS)
-        do_log(LT_CMD, player, cause, "%s", string);
-      else if (cmd->type & CMD_T_LOGNAME)
-        do_log(LT_CMD, player, cause, "%s", commandraw);
+    if (run_command
+        (cmd, player, cause, commandraw, sw, switch_err, string, swp, ap, ls,
+         lsa, rs, rsa)) {
+      retval = NULL;
     } else {
       retval = commandraw;
     }
-    free_global_regs("hook.regs", saveregs);
   }
 
   command_parse_free_args;
@@ -1384,6 +1398,53 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
 }
 
 #undef command_parse_free_args
+
+int
+run_command(COMMAND_INFO *cmd, dbref player, dbref cause, const char *commandraw,
+            switch_mask sw, char switch_err[BUFFER_LEN], const char *string,
+            char *swp, char *ap, char *ls, char *lsa[MAX_ARG], char *rs,
+            char *rsa[MAX_ARG])
+{
+
+  char *saveregs[NUMQ];
+
+  if (!cmd)
+    return 0;
+
+  init_global_regs(saveregs);
+
+  if (!run_hook(player, cause, &cmd->hooks.ignore, saveregs, 1)) {
+    free_global_regs("hook.regs", saveregs);
+    return 0;
+  }
+
+  /* If we have a hook/override, we use that instead */
+  if (!run_hook_override(cmd, player, commandraw)) {
+    /* Otherwise, we do hook/before, the command, and hook/after */
+    /* But first, let's see if we had an invalid switch */
+    if (switch_err && *switch_err) {
+      notify(player, switch_err);
+      return 1;
+    }
+    run_hook(player, cause, &cmd->hooks.before, saveregs, 1);
+    cmd->func(cmd, player, cause, sw, string, swp, ap, ls, lsa, rs, rsa);
+    run_hook(player, cause, &cmd->hooks.after, saveregs, 0);
+  }
+  /* Either way, we might log */
+  if (cmd->type & CMD_T_LOGARGS)
+    if (cmd->func == cmd_password || cmd->func == cmd_newpassword
+        || cmd->func == cmd_pcreate)
+      do_log(LT_CMD, player, cause, "%s %s=***", cmd->name,
+             (cmd->func == cmd_password ? "***" : ls));
+    else
+      do_log(LT_CMD, player, cause, "%s", commandraw);
+  else if (cmd->type & CMD_T_LOGNAME)
+    do_log(LT_CMD, player, cause, "%s", cmd->name);
+
+  free_global_regs("hook.regs", saveregs);
+  return 1;
+
+}
 
 /** Execute the huh_command when no command is matched.
  * \param player the enactor.
@@ -1394,31 +1455,17 @@ void
 generic_command_failure(dbref player, dbref cause, char *string)
 {
   COMMAND_INFO *cmd;
-  char *saveregs[NUMQ];
 
-  if ((cmd = command_find("HUH_COMMAND"))) {
-    if (!(cmd->type & CMD_T_DISABLED)) {
-      init_global_regs(saveregs);
-      if (run_hook(player, cause, &cmd->hooks.ignore, saveregs, 1)) {
-        /* If we have a hook/override, we use that instead */
-        if (!has_hook(&cmd->hooks.override) ||
-            !one_comm_match(cmd->hooks.override.obj, player,
-                            cmd->hooks.override.attrname, "HUH_COMMAND")) {
-          /* Otherwise, we do hook/before, the command, and hook/after */
-          run_hook(player, cause, &cmd->hooks.before, saveregs, 1);
-          cmd->func(cmd, player, cause, NULL, string, NULL, NULL, string, NULL,
-                    NULL, NULL);
-          run_hook(player, cause, &cmd->hooks.after, saveregs, 0);
-        }
-        /* Either way, we might log */
-        if (cmd->type & CMD_T_LOGARGS)
-          do_log(LT_HUH, player, cause, "%s", string);
-      }
-      free_global_regs("hook.regs", saveregs);
-    }
+  if ((cmd = command_find("HUH_COMMAND")) && !(cmd->type & CMD_T_DISABLED)) {
+    run_command(cmd, player, cause, "HUH_COMMAND", NULL, NULL, string, NULL,
+                NULL, string, NULL, NULL, NULL);
   }
 }
 
+#define add_restriction(r, j) \
+        if(lockstr != tp && j) \
+          safe_chr(j, lockstr, &tp); \
+        safe_str(r, lockstr, &tp)
 
 /** Add a restriction to a command.
  * Given a command name and a restriction, apply the restriction to the
@@ -1444,18 +1491,23 @@ generic_command_failure(dbref player, dbref cause, char *string)
  * \retval 0 failure (unable to find command name).
  */
 int
-restrict_command(const char *name, const char *xrestriction)
+restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
 {
-  COMMAND_INFO *command;
   struct command_perms_t *c;
   char *message, *restriction, *rsave;
   int clear;
-  FLAG *mask;
-  FLAG *powers;
+  FLAG *f;
+  char lockstr[BUFFER_LEN];
   char *tp;
+  int make_boolexp = 0;
+  boolexp key;
+  object_flag_type flags = NULL, powers = NULL;
 
-  if (!name || !*name || !xrestriction || !*xrestriction ||
-      !(command = command_find(name)))
+  if (!command)
+    return 0;
+
+  /* Allow empty restrictions when we first load commands, as we parse off the CMD_T_* flags */
+  if (GoodObject(player) && (!xrestriction || !*xrestriction))
     return 0;
 
   if (command->restrict_message) {
@@ -1470,6 +1522,18 @@ restrict_command(const char *name, const char *xrestriction)
       command->restrict_message = mush_strdup(message, "cmd_restrict_message");
   }
 
+  key = parse_boolexp(player, restriction, CommandLock);
+  if (key != TRUE_BOOLEXP) {
+    /* A valid boolexp lock. Hooray. */
+    command->cmdlock = key;
+    mush_free(rsave, "rc.string");
+    return 1;
+  }
+
+  flags = new_flag_bitmask("FLAG");
+  powers = new_flag_bitmask("POWER");
+
+  /* Parse old-style restriction into a boolexp */
   while (restriction && *restriction) {
     if ((tp = strchr(restriction, ' ')))
       *tp++ = '\0';
@@ -1488,44 +1552,109 @@ restrict_command(const char *name, const char *xrestriction)
 
     /* Gah. I love backwards compatiblity. */
     if (!strcasecmp(restriction, "admin")) {
-      FLAG *roy = match_flag("ROYALTY");
-      FLAG *wiz = match_flag("WIZARD");
-      if (clear && command->flagmask) {
-        clear_flag_bitmask(command->flagmask, roy->bitpos);
-        clear_flag_bitmask(command->flagmask, wiz->bitpos);
+      make_boolexp = 1;
+      if (clear) {
+        f = match_flag("ROYALTY");
+        clear_flag_bitmask(flags, f->bitpos);
+        f = match_flag("WIZARD");
+        clear_flag_bitmask(flags, f->bitpos);
       } else {
-        if (!command->flagmask)
-          command->flagmask = new_flag_bitmask("FLAG");
-        set_flag_bitmask(command->flagmask, roy->bitpos);
-        set_flag_bitmask(command->flagmask, wiz->bitpos);
+        f = match_flag("ROYALTY");
+        set_flag_bitmask(flags, f->bitpos);
+        f = match_flag("WIZARD");
+        set_flag_bitmask(flags, f->bitpos);
       }
     } else if ((c = ptab_find(&ptab_command_perms, restriction))) {
       if (clear)
         command->type &= ~c->type;
       else
         command->type |= c->type;
-    } else if ((mask = match_flag(restriction))) {
-      if (clear && command->flagmask)
-        clear_flag_bitmask(command->flagmask, mask->bitpos);
+    } else if ((f = match_flag(restriction))) {
+      make_boolexp = 1;
+      if (clear)
+        clear_flag_bitmask(flags, f->bitpos);
       else {
-        if (!command->flagmask)
-          command->flagmask = new_flag_bitmask("FLAG");
-        set_flag_bitmask(command->flagmask, mask->bitpos);
+        set_flag_bitmask(flags, f->bitpos);
       }
-    } else if ((powers = match_power(restriction))) {
-      if (clear && command->powers)
-        clear_flag_bitmask(command->powers, powers->bitpos);
+    } else if ((f = match_power(restriction))) {
+      make_boolexp = 1;
+      if (clear)
+        clear_flag_bitmask(powers, f->bitpos);
       else {
-        if (!command->powers)
-          command->powers = new_flag_bitmask("POWER");
-        set_flag_bitmask(command->powers, powers->bitpos);
+        set_flag_bitmask(powers, f->bitpos);
       }
     }
     restriction = tp;
   }
+
+  if ((command->
+       type & (CMD_T_GOD | CMD_T_NOGAGGED | CMD_T_NOGUEST | CMD_T_NOFIXED)))
+    make_boolexp = 1;
+  else if ((command->type & CMD_T_ANY) != CMD_T_ANY)
+    make_boolexp = 1;
+
   mush_free(rsave, "rc.string");
+
+  /* And now format what we have into a lock string, if necessary */
+  if (!make_boolexp) {
+    destroy_flag_bitmask(flags);
+    destroy_flag_bitmask(powers);
+    return 1;
+  }
+
+  tp = lockstr;
+  safe_str(flag_list_to_lock_string(flags, powers), lockstr, &tp);
+  if ((command->type & CMD_T_ANY) != CMD_T_ANY) {
+    char join = '\0';
+
+    if (lockstr != tp)
+      safe_chr('&', lockstr, &tp);
+    safe_chr('(', lockstr, &tp);
+
+    /* Type-locked command */
+    if (command->type & CMD_T_PLAYER) {
+      add_restriction("TYPE^PLAYER", join);
+      join = '|';
+    }
+    if (command->type & CMD_T_THING) {
+      add_restriction("TYPE^THING", join);
+      join = '|';
+    }
+    if (command->type & CMD_T_ROOM) {
+      add_restriction("TYPE^ROOM", join);
+      join = '|';
+    }
+    if (command->type & CMD_T_EXIT) {
+      add_restriction("TYPE^EXIT", join);
+      join = '|';
+    }
+    if (join)
+      safe_chr(')', lockstr, &tp);
+  }
+  if (command->type & CMD_T_GOD) {
+    add_restriction(tprintf("=#%d", GOD), '&');
+  }
+  if (command->type & CMD_T_NOGUEST) {
+    add_restriction("!POWER^GUEST", '&');
+  }
+  if (command->type & CMD_T_NOGAGGED) {
+    add_restriction("!FLAG^GAGGED", '&');
+  }
+  if (command->type & CMD_T_NOFIXED) {
+    add_restriction("!FLAG^FIXED", '&');
+  }
+  /* CMD_T_DISABLED and CMD_T_LOG* are checked for in command->types, and not part of the boolexp */
+  *tp = '\0';
+
+  key = parse_boolexp(player, lockstr, CommandLock);
+  command->cmdlock = key;
+
+  destroy_flag_bitmask(flags);
+  destroy_flag_bitmask(powers);
   return 1;
 }
+
+#undef add_restriction
 
 /** Command stub for \@command/add-ed commands.
  * This does nothing more than notify the player
@@ -1533,32 +1662,16 @@ restrict_command(const char *name, const char *xrestriction)
  */
 COMMAND(cmd_unimplemented)
 {
-  char *saveregs[NUMQ];
 
   if (strcmp(cmd->name, "UNIMPLEMENTED_COMMAND") != 0 &&
-      (cmd = command_find("UNIMPLEMENTED_COMMAND"))) {
-    if (!(cmd->type & CMD_T_DISABLED)) {
-      init_global_regs(saveregs);
-      if (run_hook(player, cause, &cmd->hooks.ignore, saveregs, 1)) {
-        /* If we have a hook/override, we use that instead */
-        if (!has_hook(&cmd->hooks.override) ||
-            !one_comm_match(cmd->hooks.override.obj, player,
-                            cmd->hooks.override.attrname, "HUH_COMMAND")) {
-          /* Otherwise, we do hook/before, the command, and hook/after */
-          run_hook(player, cause, &cmd->hooks.before, saveregs, 1);
-
-          cmd->func(cmd, player, cause, sw, raw, switches, args_raw,
-                    arg_left, args_left, arg_right, args_right);
-          run_hook(player, cause, &cmd->hooks.after, saveregs, 0);
-        }
-      }
-      free_global_regs("hook.regs", saveregs);
-      return;
-    }
+      (cmd = command_find("UNIMPLEMENTED_COMMAND")) &&
+      !(cmd->type & CMD_T_DISABLED)) {
+    run_command(cmd, player, cause, "UNIMPLEMENTED_COMMAND", sw, NULL, raw,
+                NULL, args_raw, arg_left, args_left, arg_right, args_right);
+  } else {
+    /* Either we were already in UNIMPLEMENTED_COMMAND, or we couldn't find it */
+    notify(player, T("This command has not been implemented."));
   }
-
-  /* Either we were already in UNIMPLEMENTED_COMMAND, or we couldn't find it */
-  notify(player, T("This command has not been implemented."));
 }
 
 /** Adds a user-added command
@@ -1575,7 +1688,7 @@ do_command_add(dbref player, char *name, int flags)
 {
   COMMAND_INFO *command;
 
-  if (!God(player)) {
+  if (!Wizard(player)) {
     notify(player, T("Permission denied."));
     return;
   }
@@ -1596,6 +1709,85 @@ do_command_add(dbref player, char *name, int flags)
     notify_format(player, T("Command %s already exists."), command->name);
   }
 }
+
+void
+do_command_clone(dbref player, char *original, char *clone)
+{
+  COMMAND_INFO *cmd;
+
+  if (!Wizard(player)) {
+    notify(player, T("Permission denied."));
+    return;
+  }
+
+  upcasestr(original);
+  upcasestr(clone);
+
+  cmd = command_find(original);
+  if (!cmd) {
+    notify(player, T("No such command."));
+    return;
+  } else if (!ok_command_name(clone) || command_find(clone)) {
+    notify(player, T("Bad command name."));
+    return;
+  }
+
+  clone_command(original, clone);
+  notify(player, T("Command cloned."));
+
+}
+
+static COMMAND_INFO *
+clone_command(char *original, char *clone)
+{
+
+  COMMAND_INFO *c1, *c2;
+
+  upcasestr(original);
+  upcasestr(clone);
+
+  c1 = command_find(original);
+  c2 = command_find(clone);
+  if (!c1 || c2)
+    return NULL;
+
+  c2 =
+    make_command(mush_strdup(clone, "command_add"), c1->type, NULL, NULL,
+                 c1->sw.names, c1->func);
+  c2->sw.mask = c1->sw.mask;
+  if (c1->restrict_message)
+    c2->restrict_message =
+      mush_strdup(c1->restrict_message, "cmd_restrict_message");
+  c2->cmdlock = c1->cmdlock;
+
+  if (c1->hooks.before.obj)
+    c2->hooks.before.obj = c1->hooks.before.obj;
+  if (c1->hooks.before.attrname)
+    c2->hooks.before.attrname =
+      mush_strdup(c1->hooks.before.attrname, "hook.attr");
+
+  if (c1->hooks.after.obj)
+    c2->hooks.after.obj = c1->hooks.after.obj;
+  if (c1->hooks.after.attrname)
+    c2->hooks.after.attrname =
+      mush_strdup(c1->hooks.after.attrname, "hook.attr");
+
+  if (c1->hooks.ignore.obj)
+    c2->hooks.ignore.obj = c1->hooks.ignore.obj;
+  if (c1->hooks.ignore.attrname)
+    c2->hooks.ignore.attrname =
+      mush_strdup(c1->hooks.ignore.attrname, "hook.attr");
+
+  if (c1->hooks.override.obj)
+    c2->hooks.override.obj = c1->hooks.override.obj;
+  if (c1->hooks.override.attrname)
+    c2->hooks.override.attrname =
+      mush_strdup(c1->hooks.override.attrname, "hook.attr");
+
+  ptab_insert_one(&ptab_command, clone, c2);
+  return command_find(clone);
+}
+
 
 /** Deletes a user-added command
  * \verbatim
@@ -1625,7 +1817,7 @@ do_command_delete(dbref player, char *name)
   }
   if (strcasecmp(command->name, name) == 0) {
     /* This is the command, not an alias */
-    if (command->func != cmd_unimplemented) {
+    if (command->func != cmd_unimplemented || !strcmp(command->name, "@SQL")) {
       notify(player,
              T
              ("You can't delete built-in commands. @command/disable instead."));
@@ -1700,6 +1892,10 @@ COMMAND(cmd_command)
     }
     return;
   }
+  if (SW_ISSET(sw, SWITCH_CLONE)) {
+    do_command_clone(player, arg_left, arg_right);
+    return;
+  }
 
   if (SW_ISSET(sw, SWITCH_DELETE)) {
     do_command_delete(player, arg_left);
@@ -1722,7 +1918,7 @@ COMMAND(cmd_command)
         return;
       }
 
-      if (!restrict_command(arg_left, arg_right))
+      if (!restrict_command(player, command, arg_right))
         notify(player, T("Restrict attempt failed."));
     }
 
@@ -1735,43 +1931,21 @@ COMMAND(cmd_command)
     notify_format(player,
                   T("Name       : %s (%s)"), command->name,
                   (command->type & CMD_T_DISABLED) ? "Disabled" : "Enabled");
-    if ((command->type & CMD_T_ANY) == CMD_T_ANY)
-      safe_strl("Any", 3, buff, &bp);
-    else {
-      buff[0] = '\0';
-      if (command->type & CMD_T_ROOM)
-        strccat(buff, &bp, "Room");
-      if (command->type & CMD_T_THING)
-        strccat(buff, &bp, "Thing");
-      if (command->type & CMD_T_EXIT)
-        strccat(buff, &bp, "Exit");
-      if (command->type & CMD_T_PLAYER)
-        strccat(buff, &bp, "Player");
-    }
-    *bp = '\0';
-    notify_format(player, T("Types      : %s"), buff);
     buff[0] = '\0';
     bp = buff;
     if (command->type & CMD_T_SWITCHES)
       strccat(buff, &bp, "Switches");
-    if (command->type & CMD_T_NOGAGGED)
-      strccat(buff, &bp, "Nogagged");
-    if (command->type & CMD_T_NOFIXED)
-      strccat(buff, &bp, "Nofixed");
-    if (command->type & CMD_T_NOGUEST)
-      strccat(buff, &bp, "Noguest");
     if (command->type & CMD_T_EQSPLIT)
       strccat(buff, &bp, "Eqsplit");
-    if (command->type & CMD_T_GOD)
-      strccat(buff, &bp, "God");
     if (command->type & CMD_T_LOGARGS)
       strccat(buff, &bp, "LogArgs");
     else if (command->type & CMD_T_LOGNAME)
       strccat(buff, &bp, "LogName");
     *bp = '\0';
-    notify_format(player, T("Restrict   : %s"), buff);
+    notify_format(player, T("Flags      : %s"), buff);
     buff[0] = '\0';
-    notify(player, show_command_flags(command->flagmask, command->powers));
+    notify_format(player, T("Lock       : %s"),
+                  unparse_boolexp(player, command->cmdlock, UB_DBREF));
     if (command->sw.mask) {
       bp = buff;
       for (sw_val = dyn_switch_list; sw_val->name; sw_val++)
@@ -1813,7 +1987,6 @@ COMMAND(cmd_command)
     do_hook_list(player, arg_left);
   }
 }
-
 
 /** Display a list of defined commands.
  * This function sends a player the list of commands.
@@ -1862,80 +2035,25 @@ list_commands(void)
 /* Check command permissions. Return 1 if player can use command,
  * 0 otherwise, and maybe be noisy about it.
  */
-static int
+int
 command_check(dbref player, COMMAND_INFO *cmd, int noisy)
 {
-  int ok;
-  const char *mess = NULL;
-  int check_flags, check_powers;
 
   /* If disabled, return silently */
   if (cmd->type & CMD_T_DISABLED)
     return 0;
-  if ((cmd->type & CMD_T_NOGAGGED) && Gagged(player)) {
-    mess = T("You cannot do that while gagged.");
-    goto send_error;
-  }
-  if ((cmd->type & CMD_T_NOFIXED) && Fixed(player)) {
-    mess = T("You cannot do that while fixed.");
-    goto send_error;
-  }
-  if ((cmd->type & CMD_T_NOGUEST) && Guest(player)) {
-    mess = T("Guests cannot do that.");
-    goto send_error;
-  }
-  if ((cmd->type & CMD_T_GOD) && (!God(player))) {
-    mess = T("Only God can do that.");
-    goto send_error;
-  }
-  switch (Typeof(player)) {
-  case TYPE_ROOM:
-    ok = (cmd->type & CMD_T_ROOM);
-    break;
-  case TYPE_THING:
-    ok = (cmd->type & CMD_T_THING);
-    break;
-  case TYPE_EXIT:
-    ok = (cmd->type & CMD_T_EXIT);
-    break;
-  case TYPE_PLAYER:
-    ok = (cmd->type & CMD_T_PLAYER);
-    break;
-  default:
-    ok = 0;
-  }
-  if (!ok) {
-    mess = T("Permission denied, command is type-restricted.");
-    goto send_error;
-  }
-  /* A command can specify required flags or powers, and if
-   * any match, the player is ok to do the command.
-   */
-  ok = 1;
-  check_flags = cmd->flagmask && !null_flagmask("FLAG", cmd->flagmask);
-  check_powers = cmd->powers && !null_flagmask("POWER", cmd->powers);
 
-  if (check_flags && check_powers)
-    ok = !!(has_any_flags_by_mask(player, cmd->flagmask)
-            || has_any_powers_by_mask(player, cmd->powers));
-  else if (check_flags)
-    ok = !!(has_any_flags_by_mask(player, cmd->flagmask));
-  else if (check_powers)
-    ok = !!(has_any_powers_by_mask(player, cmd->powers));
-  if (!ok) {
-    mess = T("Permission denied.");
-    goto send_error;
+  if (eval_boolexp(player, cmd->cmdlock, player)) {
+    return 1;
+  } else {
+    if (noisy) {
+      if (cmd->restrict_message)
+        notify(player, cmd->restrict_message);
+      else
+        notify(player, T("Permission denied."));
+    }
+    return 0;
   }
-  return ok;
-
-send_error:
-  if (noisy) {
-    if (cmd->restrict_message)
-      notify(player, cmd->restrict_message);
-    else if (mess)
-      notify(player, mess);
-  }
-  return 0;
 }
 
 /** Determine whether a player can use a command.
@@ -2176,16 +2294,16 @@ do_hook_list(dbref player, char *command)
     }
     if (Wizard(player) || has_power_by_name(player, "HOOK", NOTYPE)) {
       if (GoodObject(cmd->hooks.before.obj))
-        notify_format(player, T("@hook/before: #%d/%s"),
+        notify_format(player, "@hook/before: #%d/%s",
                       cmd->hooks.before.obj, cmd->hooks.before.attrname);
       if (GoodObject(cmd->hooks.after.obj))
-        notify_format(player, T("@hook/after: #%d/%s"), cmd->hooks.after.obj,
+        notify_format(player, "@hook/after: #%d/%s", cmd->hooks.after.obj,
                       cmd->hooks.after.attrname);
       if (GoodObject(cmd->hooks.ignore.obj))
-        notify_format(player, T("@hook/ignore: #%d/%s"),
+        notify_format(player, "@hook/ignore: #%d/%s",
                       cmd->hooks.ignore.obj, cmd->hooks.ignore.attrname);
       if (GoodObject(cmd->hooks.override.obj))
-        notify_format(player, T("@hook/override: #%d/%s"),
+        notify_format(player, "@hook/override: #%d/%s",
                       cmd->hooks.override.obj, cmd->hooks.override.attrname);
     }
   }

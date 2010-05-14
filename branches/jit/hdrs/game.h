@@ -159,7 +159,7 @@ extern void do_kick(dbref player, const char *num);
 extern void do_search(dbref player, const char *arg1, char **arg3);
 extern dbref do_pcreate
   (dbref creator, const char *player_name, const char *player_password,
-   const char *try_dbref);
+   char *try_dbref);
 extern void do_quota(dbref player, const char *arg1, const char *arg2,
                      int set_q);
 extern void do_allquota(dbref player, const char *arg1, int quiet);

@@ -236,6 +236,9 @@ struct eval_context {
   char ucom[BUFFER_LEN];      /**< evaluated command */
   int break_called;           /**< Has the break command been called? */
   char break_replace[BUFFER_LEN];  /**< What to replace the break with */
+  int include_called;           /**< Has the include command been called? */
+  char include_replace[BUFFER_LEN];  /**< What to replace the include with */
+  char *include_wenv[10];       /**< Working env for include */
   struct real_pcre *re_code;              /**< The compiled re */
   int re_subpatterns;         /**< The number of re subpatterns */
   int *re_offsets;            /**< The offsets for the subpatterns */
@@ -253,6 +256,8 @@ int queue_attribute_base
   (dbref executor, const char *atrname, dbref enactor, int noparent);
 ATTR *queue_attribute_getatr(dbref executor, const char *atrname, int noparent);
 int queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor);
+int inplace_queue_attribute(dbref thing, const char *atrname,
+                            dbref enactor, int rsargs);
 
 /** Queue the code in an attribute, including parent objects */
 #define queue_attribute(a,b,c) queue_attribute_base(a,b,c,0)
@@ -279,7 +284,8 @@ void do_open(dbref player, const char *direction, char **links);
 void do_link(dbref player, const char *name, const char *room_name,
              int preserve);
 void do_unlink(dbref player, const char *name);
-dbref do_clone(dbref player, char *name, char *newname, int preserve);
+dbref do_clone(dbref player, char *name, char *newname, int preserve,
+               char *newdbref);
 
 /* From funtime.c */
 int etime_to_secs(char *str1, int *secs);
@@ -339,7 +345,7 @@ dbref lookup_player(const char *name);
 dbref lookup_player_name(const char *name);
 /* from player.c */
 dbref create_player(const char *name, const char *password,
-                    const char *host, const char *ip, dbref try_dbref);
+                    const char *host, const char *ip);
 dbref connect_player(const char *name, const char *password,
                      const char *host, const char *ip, char *errbuf);
 void check_last(dbref player, const char *host, const char *ip);
@@ -397,7 +403,7 @@ int ok_player_name(const char *name, dbref player, dbref thing);
 int ok_player_alias(const char *alias, dbref player, dbref thing);
 int ok_password(const char *password);
 int ok_tag_attribute(dbref player, const char *params);
-dbref parse_match_possessor(dbref player, char **str);
+dbref parse_match_possessor(dbref player, char **str, int exits);
 void page_return(dbref player, dbref target, const char *type,
                  const char *message, const char *def);
 char *grep_util(dbref player, dbref thing, char *pattern,
@@ -411,7 +417,7 @@ void s_Pennies(dbref thing, int amount);
 
 /* From set.c */
 void chown_object(dbref player, dbref thing, dbref newowner, int preserve);
-
+void do_include(dbref player, char *object, char **argv);
 /* From speech.c */
 int okay_pemit(dbref player, dbref target);
 int vmessageformat(dbref player, const char *attribute,
@@ -672,6 +678,7 @@ strdup(const char *s)
     void do_undestroy(dbref player, char *name);
     dbref free_get(void);
     int make_first_free(dbref object);
+    int make_first_free_wrapper(dbref player, char *newdbref);
     void fix_free_list(void);
     void purge(void);
     void do_purge(dbref player);

@@ -48,6 +48,8 @@ void do_scan(dbref player, char *command, int flag);
 void do_uptime(dbref player, int mortal);
 extern int config_set(const char *opt, char *val, int source, int restrictions);
 
+void do_list_allocations(dbref player);
+
 /** Is there a right-hand side of the equal sign? From command.c */
 extern int rhs_present;
 
@@ -179,7 +181,7 @@ COMMAND(cmd_config)
       }
       if (!config_set(arg_left, arg_right, source, 0)
           && !config_set(arg_left, arg_right, source, 1))
-        notify(player, T("Couldn't set that option"));
+        notify(player, T("Couldn't set that option."));
       else {
         if (source == 2) {
 #ifdef HAVE_ED
@@ -220,9 +222,9 @@ COMMAND(cmd_create)
 COMMAND(cmd_clone)
 {
   if (SW_ISSET(sw, SWITCH_PRESERVE))
-    do_clone(player, arg_left, arg_right, SWITCH_PRESERVE);
+    do_clone(player, arg_left, args_right[1], SWITCH_PRESERVE, args_right[2]);
   else
-    do_clone(player, arg_left, arg_right, SWITCH_NONE);
+    do_clone(player, arg_left, args_right[1], SWITCH_NONE, args_right[2]);
 }
 
 COMMAND(cmd_dbck)
@@ -234,7 +236,6 @@ COMMAND(cmd_decompile)
 {
   char prefix[BUFFER_LEN];
   int flags = 0, dbflags = 0;
-  //int sd = SW_ISSET(sw, SWITCH_SKIPDEFAULTS);
   *prefix = '\0';
   if (SW_ISSET(sw, SWITCH_SKIPDEFAULTS))
     flags |= DEC_SKIPDEF;
@@ -254,7 +255,7 @@ COMMAND(cmd_decompile)
   if (SW_ISSET(sw, SWITCH_DB) || SW_ISSET(sw, SWITCH_TF))
     flags |= DEC_DB;
   if (SW_ISSET(sw, SWITCH_NAME))
-    flags = ~DEC_DB;
+    flags &= ~DEC_DB;
   if (SW_ISSET(sw, SWITCH_FLAGS))
     dbflags |= DEC_FLAG;
   if (SW_ISSET(sw, SWITCH_ATTRIBS))
@@ -333,7 +334,7 @@ COMMAND(cmd_emit)
 
   if (SW_ISSET(sw, SWITCH_ROOM))
     do_lemit(player, arg_left,
-             (SW_ISSET(sw, SWITCH_SILENT) * PEMIT_SILENT) | spflags);
+             (SW_ISSET(sw, SWITCH_SILENT) ? PEMIT_SILENT : 0) | spflags);
   else
     do_emit(player, arg_left, spflags);
 }
@@ -417,6 +418,10 @@ COMMAND(cmd_function)
                          SW_ISSET(sw, SWITCH_BUILTIN));
   else if (SW_ISSET(sw, SWITCH_RESTORE))
     do_function_restore(player, arg_left);
+  else if (SW_ISSET(sw, SWITCH_ALIAS))
+    alias_function(player, arg_left, args_right[1]);
+  else if (SW_ISSET(sw, SWITCH_CLONE))
+    do_function_clone(player, arg_left, args_right[1]);
   else {
     int split;
     char *saved;
@@ -474,11 +479,6 @@ COMMAND(cmd_hook)
 {
   enum hook_type flags;
 
-  if (!(Wizard(player) || has_power_by_name(player, "HOOK", NOTYPE))) {
-    notify(player, T("You need a fishing license to use that hook."));
-    return;
-  }
-
   if (SW_ISSET(sw, SWITCH_AFTER))
     flags = HOOK_AFTER;
   else if (SW_ISSET(sw, SWITCH_BEFORE))
@@ -520,7 +520,7 @@ COMMAND(cmd_lemit)
                  && Can_Nspemit(player) ? PEMIT_SPOOF : 0);
   SPOOF(player, cause, sw);
   do_lemit(player, arg_left,
-           (SW_ISSET(sw, SWITCH_SILENT) * PEMIT_SILENT) | spflags);
+           (SW_ISSET(sw, SWITCH_SILENT) ? PEMIT_SILENT : 0) | spflags);
 }
 
 COMMAND(cmd_link)
@@ -551,6 +551,8 @@ COMMAND(cmd_list)
     do_list_flags("FLAG", player, arg_left, lc, T("Flags"));
   else if (SW_ISSET(sw, SWITCH_POWERS))
     do_list_flags("POWER", player, arg_left, lc, T("Powers"));
+  else if (SW_ISSET(sw, SWITCH_ALLOCATIONS))
+    do_list_allocations(player);
   else
     do_list(player, arg_left, lc);
 }
@@ -794,7 +796,7 @@ COMMAND(cmd_password)
 
 COMMAND(cmd_pcreate)
 {
-  const char *newdbref;
+  char *newdbref;
 
   if (args_right[2] && *args_right[2])
     newdbref = args_right[2];
@@ -951,17 +953,20 @@ COMMAND(cmd_rwall)
 
 COMMAND(cmd_scan)
 {
+  int check = 0;
+
   if (SW_ISSET(sw, SWITCH_ROOM))
-    do_scan(player, arg_left, CHECK_NEIGHBORS | CHECK_HERE);
-  else if (SW_ISSET(sw, SWITCH_SELF))
-    do_scan(player, arg_left, CHECK_INVENTORY | CHECK_SELF);
-  else if (SW_ISSET(sw, SWITCH_ZONE))
-    do_scan(player, arg_left, CHECK_ZONE);
-  else if (SW_ISSET(sw, SWITCH_GLOBALS))
-    do_scan(player, arg_left, CHECK_GLOBAL);
-  else
-    do_scan(player, arg_left, CHECK_INVENTORY | CHECK_NEIGHBORS |
-            CHECK_SELF | CHECK_HERE | CHECK_ZONE | CHECK_GLOBAL);
+    check |= CHECK_NEIGHBORS | CHECK_HERE;
+  if (SW_ISSET(sw, SWITCH_SELF))
+    check |= CHECK_INVENTORY | CHECK_SELF;
+  if (SW_ISSET(sw, SWITCH_ZONE))
+    check |= CHECK_ZONE;
+  if (SW_ISSET(sw, SWITCH_GLOBALS))
+    check |= CHECK_GLOBAL;
+  if (check == 0)
+    check = CHECK_INVENTORY | CHECK_NEIGHBORS |
+      CHECK_SELF | CHECK_HERE | CHECK_ZONE | CHECK_GLOBAL;
+  do_scan(player, arg_left, check);
 }
 
 COMMAND(cmd_search)
@@ -983,10 +988,6 @@ COMMAND(cmd_set)
 COMMAND(cmd_shutdown)
 {
   enum shutdown_type paranoid;
-  if (!Wizard(player)) {
-    notify(player, T("You don't have the authority to do that!"));
-    return;
-  }
   paranoid = SW_ISSET(sw, SWITCH_PARANOID) ? SHUT_PARANOID : SHUT_NORMAL;
   if (SW_ISSET(sw, SWITCH_REBOOT))
     do_reboot(player, paranoid == SHUT_PARANOID);
@@ -1066,6 +1067,11 @@ COMMAND(cmd_teleport)
   else
     do_teleport(player, arg_left, arg_right, (SW_ISSET(sw, SWITCH_SILENT)),
                 (SW_ISSET(sw, SWITCH_INSIDE)));
+}
+
+COMMAND(cmd_include)
+{
+  do_include(player, arg_left, args_right);
 }
 
 COMMAND(cmd_trigger)

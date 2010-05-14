@@ -701,15 +701,17 @@ absolute_room(dbref it)
   if (IsRoom(it))
     return it;
   room = IsExit(it) ? Home(it) : Location(it);
-  if (!GoodObject(room))
-    return NOTHING;
-  while (!IsRoom(room)) {
-    room = Location(room);
+  while (rec <= 20) {
+    if (!GoodObject(room) || IsGarbage(room)) {
+      return NOTHING;
+    }
+    if (IsRoom(room)) {
+      return room;
+    }
     rec++;
-    if (rec > 20)
-      return AMBIGUOUS;
+    room = Location(room);
   }
-  return room;
+  return AMBIGUOUS;
 }
 
 

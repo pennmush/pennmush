@@ -73,6 +73,12 @@ FUNCTION(fun_pemit)
   int ns = (string_prefix(called_as, "NS") && Can_Nspemit(executor));
   int flags = PEMIT_LIST | PEMIT_SILENT;
   dbref saved_orator = orator;
+
+  if (!FUNCTION_SIDE_EFFECTS) {
+    safe_str(T(e_disabled), buff, bp);
+    return;
+  }
+
   if (!command_check_byname(executor, ns ? "@nspemit" : "@pemit") ||
       fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
@@ -105,6 +111,12 @@ FUNCTION(fun_oemit)
 {
   int ns = (string_prefix(called_as, "NS") && Can_Nspemit(executor));
   int flags = ns ? PEMIT_SPOOF : 0;
+
+  if (!FUNCTION_SIDE_EFFECTS) {
+    safe_str(T(e_disabled), buff, bp);
+    return;
+  }
+
   if (!command_check_byname(executor, ns ? "@nsoemit" : "@oemit") ||
       fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
@@ -119,6 +131,12 @@ FUNCTION(fun_emit)
 {
   int ns = (string_prefix(called_as, "NS") && Can_Nspemit(executor));
   int flags = ns ? PEMIT_SPOOF : 0;
+
+  if (!FUNCTION_SIDE_EFFECTS) {
+    safe_str(T(e_disabled), buff, bp);
+    return;
+  }
+
   if (!command_check_byname(executor, ns ? "@nsemit" : "@emit") ||
       fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
@@ -133,6 +151,12 @@ FUNCTION(fun_remit)
 {
   int ns = (string_prefix(called_as, "NS") && Can_Nspemit(executor));
   int flags = ns ? PEMIT_SPOOF : 0;
+
+  if (!FUNCTION_SIDE_EFFECTS) {
+    safe_str(T(e_disabled), buff, bp);
+    return;
+  }
+
   if (!command_check_byname(executor, ns ? "@nsremit" : "@remit") ||
       fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
@@ -147,6 +171,12 @@ FUNCTION(fun_lemit)
 {
   int ns = (string_prefix(called_as, "NS") && Can_Nspemit(executor));
   int flags = ns ? PEMIT_SPOOF : 0;
+
+  if (!FUNCTION_SIDE_EFFECTS) {
+    safe_str(T(e_disabled), buff, bp);
+    return;
+  }
+
   if (!command_check_byname(executor, ns ? "@nslemit" : "@lemit") ||
       fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
@@ -161,6 +191,12 @@ FUNCTION(fun_zemit)
 {
   int ns = (string_prefix(called_as, "NS") && Can_Nspemit(executor));
   int flags = ns ? PEMIT_SPOOF : 0;
+
+  if (!FUNCTION_SIDE_EFFECTS) {
+    safe_str(T(e_disabled), buff, bp);
+    return;
+  }
+
   if (!command_check_byname(executor, ns ? "@nszemit" : "@zemit") ||
       fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
@@ -175,6 +211,12 @@ FUNCTION(fun_prompt)
 {
   int ns = (string_prefix(called_as, "NS") && Can_Nspemit(executor));
   int flags = PEMIT_LIST | PEMIT_PROMPT;
+
+  if (!FUNCTION_SIDE_EFFECTS) {
+    safe_str(T(e_disabled), buff, bp);
+    return;
+  }
+
   if (!command_check_byname(executor, ns ? "@nspemit" : "@pemit") ||
       fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
@@ -225,7 +267,7 @@ FUNCTION(fun_letq)
   const char *p;
 
   if ((nargs % 2) != 1) {
-    safe_str(T("#-1 FUNCTION (letq) EXPECTS AN ODD NUMBER OF ARGUMENTS"),
+    safe_str(T("#-1 FUNCTION (LETQ) EXPECTS AN ODD NUMBER OF ARGUMENTS"),
              buff, bp);
     return;
   }
@@ -313,7 +355,7 @@ FUNCTION(fun_unsetq)
   for (ptr = args[0]; *ptr; ptr++) {
     if ((qindex = qreg_indexes[(unsigned char) *ptr]) != -1) {
       *(global_eval_context.renv[qindex]) = '\0';
-    } else if (!isspace(*ptr)) {
+    } else if (!isspace((int) *ptr)) {
       safe_str(T("#-1 REGISTER OUT OF RANGE"), buff, bp);
     }
   }
@@ -635,39 +677,38 @@ static char *
 soundex(char *str)
 {
   static char tbuf1[BUFFER_LEN];
-  char *p, *q;
+  char *p;
 
-  q = remove_markup(str, NULL);
   memset(tbuf1, '\0', 4);
 
   p = tbuf1;
 
   /* First character is just copied */
-  *p = UPCASE(*q);
-  q++;
+  *p = UPCASE(*str);
+  str++;
   /* Special case for PH->F */
-  if ((UPCASE(*p) == 'P') && *q && (UPCASE(*q) == 'H')) {
+  if ((UPCASE(*p) == 'P') && *str && (UPCASE(*str) == 'H')) {
     *p = 'F';
-    q++;
+    str++;
   }
   p++;
   /* Convert letters to soundex values, squash duplicates, skip accents and other non-ascii characters */
-  while (*q) {
-    if (!isalpha((unsigned char) *q) || (unsigned char) *q > 127) {
-      q++;
+  while (*str) {
+    if (!isalpha((unsigned char) *str) || (unsigned char) *str > 127) {
+      str++;
       continue;
     }
-    *p = soundex_val[(unsigned char) *q++];
+    *p = soundex_val[(unsigned char) *str++];
     if (*p != *(p - 1))
       p++;
   }
   *p = '\0';
   /* Remove zeros */
-  p = q = tbuf1;
-  while (*q) {
-    if (*q != '0')
-      *p++ = *q;
-    q++;
+  p = str = tbuf1;
+  while (*str) {
+    if (*str != '0')
+      *p++ = *str;
+    str++;
   }
   *p = '\0';
   /* Pad/truncate to 4 chars */
@@ -730,12 +771,6 @@ FUNCTION(fun_functions)
 
 /* ARGSUSED */
 FUNCTION(fun_null)
-{
-  return;
-}
-
-/* ARGSUSED */
-FUNCTION(fun_atat)
 {
   return;
 }
@@ -806,7 +841,7 @@ enum whichof_t { DO_FIRSTOF, DO_ALLOF };
 static void
 do_whichof(char *args[], int nargs, enum whichof_t flag,
            char *buff, char **bp, dbref executor,
-           dbref caller, dbref enactor, PE_Info *pe_info)
+           dbref caller, dbref enactor, PE_Info *pe_info, int isbool)
 {
   int j;
   char tbuf[BUFFER_LEN], *tp;
@@ -834,7 +869,7 @@ do_whichof(char *args[], int nargs, enum whichof_t flag,
     process_expression(tbuf, &tp, &sp, executor, caller,
                        enactor, PE_DEFAULT, PT_DEFAULT, pe_info);
     *tp = '\0';
-    if (parse_boolean(tbuf)) {
+    if ((isbool && parse_boolean(tbuf)) || (!isbool && strlen(tbuf))) {
       if (!first) {
         safe_chr(sep, buff, bp);
       } else
@@ -852,7 +887,7 @@ do_whichof(char *args[], int nargs, enum whichof_t flag,
 FUNCTION(fun_firstof)
 {
   do_whichof(args, nargs, DO_FIRSTOF, buff, bp, executor,
-             caller, enactor, pe_info);
+             caller, enactor, pe_info, !!strcasecmp(called_as, "STRFIRSTOF"));
 }
 
 
@@ -860,7 +895,7 @@ FUNCTION(fun_firstof)
 FUNCTION(fun_allof)
 {
   do_whichof(args, nargs, DO_ALLOF, buff, bp, executor,
-             caller, enactor, pe_info);
+             caller, enactor, pe_info, !!strcasecmp(called_as, "STRALLOF"));
 }
 
 /* Returns a platform-specific timestamp with platform-dependent resolution. */
@@ -940,6 +975,7 @@ FUNCTION(fun_benchmark)
     start = get_tsc();
     if (process_expression(tbuf, &tp, &sp, executor, caller, enactor,
                            PE_DEFAULT, PT_DEFAULT, pe_info)) {
+      *tp = '\0';
       break;
     }
     *tp = '\0';

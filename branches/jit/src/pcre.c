@@ -43,6 +43,7 @@ POSSIBILITY OF SUCH DAMAGE.
    support. If you want the full thing, see http://www.pcre.org. */
 /* Modified by Alan Schwartz for PennMUSH to change the use of
  * 'isblank' as a variable (reported to Philip Hazel for pcre 4.5) */
+/* Modified to disable warnings I don't feel like fixing */
 
 #include <string.h>
 #include "config.h"
@@ -50,6 +51,10 @@ POSSIBILITY OF SUCH DAMAGE.
 
 /* Only use if a system libpcre isn't present. */
 #ifndef HAVE_PCRE
+
+#ifndef WIN32
+#pragma GCC diagnostic warning "-Wclobbered"
+#endif
 
 #include <ctype.h>
 #include <limits.h>
@@ -1263,6 +1268,7 @@ int
 
 
 
+
 pcre_get_substring_list(const char *subject, int *ovector, int stringcount,
                         const char ***listptr);
 
@@ -1358,6 +1364,7 @@ int
 
 
 
+
 pcre_get_substring(const char *subject, int *ovector, int stringcount,
                    int stringnumber, const char **stringptr);
 
@@ -1409,6 +1416,7 @@ Returns:         if successful:
 */
 
 int
+
 
 
 
@@ -2301,6 +2309,7 @@ static const unsigned char ebcdic_chartab[] = { /* chartable partial dup */
 /* Definition to allow mutual recursion */
 
 static BOOL
+
 
 
 

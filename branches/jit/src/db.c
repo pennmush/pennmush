@@ -246,7 +246,7 @@ putref(PENNFILE *f, long int ref)
 }
 
 /** Output a string to a file.
- * This function writes a string to a file, double-quoted, 
+ * This function writes a string to a file, double-quoted,
  * appropriately escaping quotes and backslashes (the escape character).
  * \param f file pointer to write to.
  * \param s value to write.
@@ -404,7 +404,7 @@ db_read_labeled_string(PENNFILE *f, char **label, char **value)
 }
 
 /** Read a string with a given label.
- * If the label read is different than the one being checked, the 
+ * If the label read is different than the one being checked, the
  * database load will abort with an error.
  * \param f the file to read from.
  * \param label the label that should be read.
@@ -427,7 +427,7 @@ db_read_this_labeled_string(PENNFILE *f, const char *label, char **value)
 }
 
 /** Read an int with a given label.
- * If the label read is different than the one being checked, the 
+ * If the label read is different than the one being checked, the
  * database load will abort with an error.
  * \param f the file to read from.
  * \param label the label that should be read.
@@ -467,7 +467,7 @@ db_read_labeled_int(PENNFILE *f, char **label, int *value)
 
 
 /** Read a uint32_t with a given label.
- * If the label read is different than the one being checked, the 
+ * If the label read is different than the one being checked, the
  * database load will abort with an error.
  * \param f the file to read from.
  * \param label the label that should be read.
@@ -507,7 +507,7 @@ db_read_labeled_uint32(PENNFILE *f, char **label, uint32_t *value)
 
 
 /** Read a dbref with a given label.
- * If the label read is different than the one being checked, the 
+ * If the label read is different than the one being checked, the
  * database load will abort with an error.
  * \param f the file to read from.
  * \param label the label that should be read.
@@ -841,11 +841,11 @@ db_paranoid_write_object(PENNFILE *f, dbref i, int flag)
     /* get rid of unprintables and hard newlines */
     lastp = '\0';
     for (p = tbuf1; *p; p++) {
-      if (!isprint((unsigned char) *p)) {
-        if (!isspace((unsigned char) *p)) {
-          *p = '!';
-          err = 1;
-        }
+      if (!isprint((unsigned char) *p) && !isspace((unsigned char) *p) &&
+          *p != TAG_START && *p != TAG_END && *p != ESC_CHAR
+          && *p != BEEP_CHAR) {
+        *p = '!';
+        err = 1;
       }
       lastp = *p;
     }
@@ -872,7 +872,7 @@ db_paranoid_write_object(PENNFILE *f, dbref i, int flag)
 
 /** Write out the object database to disk, in paranoid mode.
  * \verbatim
- * This function writes the databsae out to disk, in paranoid mode. 
+ * This function writes the databsae out to disk, in paranoid mode.
  * The database structure currently looks something like this:
  * +V<header line>
  * +FLAGS LIST
@@ -1216,7 +1216,7 @@ get_list(PENNFILE *f, dbref i)
         derefs = 0;
       /* We add the attribute assuming that atoi(p) is an ok dbref
        * since we haven't loaded the whole db and can't really tell
-       * if it is or not. We'll fix this up at the end of the load 
+       * if it is or not. We'll fix this up at the end of the load
        */
       tb2 = getstring_noalloc(f);
       if (strchr(tb2, TAG_START) || strchr(tb2, ESC_CHAR)) {
@@ -1322,7 +1322,7 @@ db_read_attrs(PENNFILE *f, dbref i, int count)
 
 }
 
-/** Read a non-labeled database from a file. 
+/** Read a non-labeled database from a file.
  * \param f the file to read from
  * \return number of objects in the database
  */
@@ -1816,7 +1816,7 @@ init_objdata_htab(int size, void (*free_data) (void *))
   hashinit(&htab_objdata_keys, 8);
 }
 
-/** Add data to the object data hashtable. 
+/** Add data to the object data hashtable.
  * This hash table is typically used to store transient object data
  * that is built at database load and isn't saved to disk, but it
  * can be used for other purposes as well - it's a good general

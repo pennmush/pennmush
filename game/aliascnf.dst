@@ -39,11 +39,7 @@ command_alias @atrchown @attrchown
 command_alias get take
 
 # As well as commands, functions can be aliased. Same syntax,
-# just function_alias instead of command_alias. Note that many
-# functions use the same internal function, doing slightly different
-# things depending on the name it was called by. The hasattr*() functions
-# are an example of these. Aliases of this type of function may not work
-# right.
+# just function_alias instead of command_alias. 
 # Some standard aliases:
 function_alias lsearch search
 function_alias soundslike soundlike

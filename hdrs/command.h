@@ -1,6 +1,7 @@
 #ifndef __COMMAND_H
 #define __COMMAND_H
 
+#include "boolexp.h"
 
 typedef uint8_t *switch_mask;
 extern int switch_bytes;
@@ -90,14 +91,14 @@ bool SW_BY_NAME(switch_mask, const char *);
 
 #define COMMAND(command_name) \
 void command_name (COMMAND_INFO *cmd, dbref player, dbref cause, \
- switch_mask sw,char *raw, const char *switches, char *args_raw, \
+ switch_mask sw, const char *raw, const char *switches, char *args_raw, \
                   char *arg_left, char *args_left[MAX_ARG], \
                   char *arg_right, char *args_right[MAX_ARG]); \
 void command_name(COMMAND_INFO *cmd __attribute__ ((__unused__)), \
                   dbref player __attribute__ ((__unused__)), \
                   dbref cause __attribute__ ((__unused__)), \
                   switch_mask sw __attribute__ ((__unused__)), \
-                  char *raw __attribute__ ((__unused__)), \
+                  const char *raw __attribute__ ((__unused__)), \
                   const char *switches __attribute__ ((__unused__)), \
                   char *args_raw __attribute__ ((__unused__)), \
                   char *arg_left __attribute__ ((__unused__)), \
@@ -107,12 +108,12 @@ void command_name(COMMAND_INFO *cmd __attribute__ ((__unused__)), \
 
 /** Common command prototype macro */
 #define COMMAND_PROTO(command_name) \
-void command_name (COMMAND_INFO *cmd, dbref player, dbref cause, switch_mask sw,char *raw, const char *switches, char *args_raw, \
+void command_name (COMMAND_INFO *cmd, dbref player, dbref cause, switch_mask sw, const char *raw, const char *switches, char *args_raw, \
                   char *arg_left, char *args_left[MAX_ARG], \
                   char *arg_right, char *args_right[MAX_ARG])
 
 typedef struct command_info COMMAND_INFO;
-typedef void (*command_func) (COMMAND_INFO *, dbref, dbref, switch_mask, char *,
+typedef void (*command_func) (COMMAND_INFO *, dbref, dbref, switch_mask, const char *,
                               const char *, char *, char *, char *[MAX_ARG],
                               char *, char *[MAX_ARG]);
 
@@ -131,8 +132,7 @@ struct command_info {
   const char *restrict_message; /**< Message sent when command is restricted */
   command_func func;    /**< Function to call when command is run */
   unsigned int type;    /**< Types of objects that can use the command */
-  object_flag_type flagmask;    /**< Flags to which the command is restricted */
-  object_flag_type powers;      /**< Powers to which the command is restricted */
+  boolexp cmdlock;      /**< Boolexp restricting who can use command */
   /** Switches for this command. */
   union {
     switch_mask mask;       /**< Bitflags of switches this command can take */
@@ -150,7 +150,7 @@ struct command_info {
 
 typedef struct command_list COMLIST;
 /** A command list entry.
- * This structure stores the static array of commands that are 
+ * This structure stores the static array of commands that are
  * initially loaded into the command table. Commands can also be
  * added dynamically, outside of this array.
  */
@@ -204,12 +204,10 @@ COMMAND_INFO *command_add
   (const char *name, int type, const char *flagstr, const char *powers,
    const char *switchstr, command_func func);
 COMMAND_INFO *make_command
-  (const char *name, int type, object_flag_type flagmask,
-   object_flag_type powers, const char *sw, command_func func);
+  (const char *name, int type, const char *flagstr,
+   const char *powerstr, const char *sw, command_func func);
 COMMAND_INFO *command_modify(const char *name, int type,
-                             object_flag_type flagmask,
-                             object_flag_type powers, switch_mask sw,
-                             command_func func);
+                             boolexp key, switch_mask sw, command_func func);
 void reserve_alias(const char *a);
 int alias_command(const char *command, const char *alias);
 void command_init_preconfig(void);
@@ -223,13 +221,19 @@ void command_argparse
 char *command_parse(dbref player, dbref cause, char *string, int fromport);
 void do_list_commands(dbref player, int lc);
 char *list_commands(void);
+int command_check(dbref player, COMMAND_INFO *cmd, int noisy);
 int command_check_byname(dbref player, const char *name);
 int command_check_byname_quiet(dbref player, const char *name);
-int restrict_command(const char *name, const char *restriction);
+int restrict_command(dbref player, COMMAND_INFO *command,
+                     const char *restriction);
 void reserve_aliases(void);
 void local_commands(void);
 void do_command_add(dbref player, char *name, int flags);
 void do_command_delete(dbref player, char *name);
+int run_command(COMMAND_INFO *cmd, dbref player, dbref cause, const char *commandraw,
+                switch_mask sw, char switch_err[BUFFER_LEN], const char *string,
+                char *swp, char *ap, char *ls, char *lsa[MAX_ARG], char *rs,
+                char *rsa[MAX_ARG]);
 
 
 #endif                          /* __COMMAND_H */

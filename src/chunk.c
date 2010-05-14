@@ -245,12 +245,18 @@
 #pragma warning( disable : 4761)        /* disable warning re conversion */
 #endif
 
+#ifdef WIN32
+#define PRIdS "I"
+#else
+#define PRIdS "t"
+#endif
+
 /* A whole bunch of debugging #defines. */
 /** Basic debugging stuff - are assertions checked? */
-#undef CHUNK_DEBUG
+#define CHUNK_DEBUG
 /** Paranoid people check for region validity after every operation
  * that modifies a region. */
-#undef CHUNK_PARANOID
+#define CHUNK_PARANOID
 /** Log all moves and slides during migration. */
 #undef DEBUG_CHUNK_MIGRATE
 /** Log creation of regions. */
@@ -459,76 +465,148 @@ static int ignore;      /**< Used to shut up compiler warnings when not assertin
 #define MAX_LONG_CHUNK_LEN \
         (REGION_CAPACITY - CHUNK_LONG_DATA_OFFSET)
 
-#define LenToFullLen(len) \
-  ((len) + \
-   (((len) > MAX_SHORT_CHUNK_LEN) \
-    ? ((len) > MAX_MEDIUM_CHUNK_LEN) \
-      ? CHUNK_LONG_DATA_OFFSET \
-      : CHUNK_MEDIUM_DATA_OFFSET \
-    : CHUNK_SHORT_DATA_OFFSET))
+static int
+LenToFullLen(int len)
+{
+  return (len + ((len > MAX_SHORT_CHUNK_LEN)
+                 ? (len > MAX_MEDIUM_CHUNK_LEN)
+                 ? CHUNK_LONG_DATA_OFFSET
+                 : CHUNK_MEDIUM_DATA_OFFSET : CHUNK_SHORT_DATA_OFFSET));
+}
 
-#define ChunkPointer(region, offset) \
-  (((unsigned char *)(regions[(region)].in_memory)) + (offset))
-#define ChunkReferenceToPointer(ref) \
-  ChunkPointer(ChunkReferenceToRegion((ref)), ChunkReferenceToOffset((ref)))
+static inline unsigned char *ChunkPointer(uint16_t, uint16_t);
 
 /*
- * Macros for probing and manipulating chunk headers
+ * Functions for probing and manipulating chunk headers
  */
-#define CPLenShort(cptr) \
-  ((cptr)[CHUNK_SHORT_LEN_OFFSET] & CHUNK_SHORT_LEN_MASK)
-#define CPLenMedium(cptr) \
-  ((((cptr)[CHUNK_MEDIUM_LEN_MSB_OFFSET] & CHUNK_MEDIUM_LEN_MSB_MASK) << 8) + \
-   ((cptr)[CHUNK_MEDIUM_LEN_LSB_OFFSET] & CHUNK_MEDIUM_LEN_LSB_MASK))
-#define CPLenLong(cptr) \
-  ((((cptr)[CHUNK_LONG_LEN_MSB_OFFSET] & CHUNK_LONG_LEN_MSB_MASK) << 8) + \
-   ((cptr)[CHUNK_LONG_LEN_LSB_OFFSET] & CHUNK_LONG_LEN_LSB_MASK))
-#define CPLen(cptr) \
-  ((*(cptr) & CHUNK_TAG1_MASK) \
-   ? (*(cptr) & CHUNK_TAG2_MASK) \
-     ? CPLenLong((cptr)) \
-     : CPLenMedium((cptr)) \
-   : CPLenShort((cptr)))
-#define ChunkLen(region, offset) \
-  CPLen(ChunkPointer((region), (offset)))
-#define CPFullLen(cptr) \
-  ((*(cptr) & CHUNK_TAG1_MASK) \
-   ? (*(cptr) & CHUNK_TAG2_MASK) \
-     ? (CPLenLong((cptr)) + CHUNK_LONG_DATA_OFFSET) \
-     : (CPLenMedium((cptr)) + CHUNK_MEDIUM_DATA_OFFSET) \
-   : (CPLenShort((cptr)) + CHUNK_SHORT_DATA_OFFSET))
-#define ChunkFullLen(region, offset) \
-  CPFullLen(ChunkPointer((region), (offset)))
+static inline uint16_t
+CPLenShort(const unsigned char *cptr)
+{
+  return cptr[CHUNK_SHORT_LEN_OFFSET] & CHUNK_SHORT_LEN_MASK;
+}
 
-#define ChunkIsFree(region, offset) \
-  ((*ChunkPointer((region), (offset)) & CHUNK_FREE_MASK) == CHUNK_FREE)
-#define ChunkIsShort(region, offset) \
-  ((*ChunkPointer((region), (offset)) & CHUNK_TAG1_MASK) == CHUNK_TAG1_SHORT)
-#define ChunkIsMedium(region, offset) \
-  ((*ChunkPointer((region), (offset)) & (CHUNK_TAG1_MASK | CHUNK_TAG2_MASK)) \
-   == (CHUNK_TAG1_MEDIUM | CHUNK_TAG2_MEDIUM))
-#define ChunkIsLong(region, offset) \
-  ((*ChunkPointer((region), (offset)) & (CHUNK_TAG1_MASK | CHUNK_TAG2_MASK)) \
-   == (CHUNK_TAG1_LONG | CHUNK_TAG2_LONG))
+static inline uint16_t
+CPLenMedium(const unsigned char *cptr)
+{
+  return ((cptr[CHUNK_MEDIUM_LEN_MSB_OFFSET] & CHUNK_MEDIUM_LEN_MSB_MASK) << 8)
+    + (cptr[CHUNK_MEDIUM_LEN_LSB_OFFSET] & CHUNK_MEDIUM_LEN_LSB_MASK);
+}
 
-#define ChunkDerefs(region, offset) \
-  (ChunkPointer((region), (offset))[CHUNK_DEREF_OFFSET])
+static inline uint16_t
+CPLenLong(const unsigned char *cptr)
+{
+  return ((cptr[CHUNK_LONG_LEN_MSB_OFFSET] & CHUNK_LONG_LEN_MSB_MASK) << 8) +
+    (cptr[CHUNK_LONG_LEN_LSB_OFFSET] & CHUNK_LONG_LEN_LSB_MASK);
+}
 
-#define CPDataPtr(cptr) \
-  ((*(cptr) & CHUNK_TAG1_MASK) \
-   ? (*(cptr) & CHUNK_TAG2_MASK) \
-     ? (cptr) + CHUNK_LONG_DATA_OFFSET \
-     : (cptr) + CHUNK_MEDIUM_DATA_OFFSET \
-   : (cptr) + CHUNK_SHORT_DATA_OFFSET)
-#define ChunkDataPtr(region, offset) \
-  (CPDataPtr(ChunkPointer(region, offset)))
+static uint16_t
+CPLen(const unsigned char *cptr)
+{
+  if (*cptr & CHUNK_TAG1_MASK) {
+    if (*cptr & CHUNK_TAG2_MASK)
+      return CPLenLong(cptr);
+    else
+      return CPLenMedium(cptr);
+  } else
+    return CPLenShort(cptr);
+}
 
-#define ChunkNextFree(region, offset) \
-  ((ChunkDataPtr(region, offset)[0] << 8) + ChunkDerefs(region, offset))
+static inline uint16_t
+ChunkLen(uint16_t region, uint16_t offset)
+{
+  return CPLen(ChunkPointer(region, offset));
+}
+
+static uint16_t
+CPFullLen(const unsigned char *cptr)
+{
+  if (*cptr & CHUNK_TAG1_MASK) {
+    if (*cptr & CHUNK_TAG2_MASK)
+      return CPLenLong(cptr) + CHUNK_LONG_DATA_OFFSET;
+    else
+      return CPLenMedium(cptr) + CHUNK_MEDIUM_DATA_OFFSET;
+  } else
+    return CPLenShort(cptr) + CHUNK_SHORT_DATA_OFFSET;
+}
+
+static inline uint16_t
+ChunkFullLen(uint16_t region, uint16_t offset)
+{
+  return CPFullLen(ChunkPointer(region, offset));
+}
+
+static inline bool
+ChunkIsFree(uint16_t region, uint16_t offset)
+{
+  return (*ChunkPointer(region, offset) & CHUNK_FREE_MASK) == CHUNK_FREE;
+}
+
+static inline bool
+ChunkIsShort(uint16_t region, uint16_t offset)
+{
+  return (*ChunkPointer(region, offset) & CHUNK_TAG1_MASK) == CHUNK_TAG1_SHORT;
+}
+
+static inline bool
+ChunkIsMedium(uint16_t region, uint16_t offset)
+{
+  return (*ChunkPointer(region, offset) & (CHUNK_TAG1_MASK | CHUNK_TAG2_MASK))
+    == (CHUNK_TAG1_MEDIUM | CHUNK_TAG2_MEDIUM);
+}
+
+static inline bool
+ChunkIsLong(uint16_t region, uint16_t offset)
+{
+  return (*ChunkPointer(region, offset) & (CHUNK_TAG1_MASK | CHUNK_TAG2_MASK))
+    == (CHUNK_TAG1_LONG | CHUNK_TAG2_LONG);
+}
+
+
+static inline uint8_t
+ChunkDerefs(uint16_t region, uint16_t offset)
+{
+  return ChunkPointer(region, offset)[CHUNK_DEREF_OFFSET];
+}
+
+static void
+SetChunkDerefs(uint16_t region, uint16_t offset, uint8_t derefs)
+{
+  ChunkPointer(region, offset)[CHUNK_DEREF_OFFSET] = derefs;
+}
+
+static unsigned char *
+CPDataPtr(unsigned char *cptr)
+{
+  if (*cptr & CHUNK_TAG1_MASK) {
+    if (*cptr & CHUNK_TAG2_MASK)
+      return cptr + CHUNK_LONG_DATA_OFFSET;
+    else
+      return cptr + CHUNK_MEDIUM_DATA_OFFSET;
+  } else
+    return cptr + CHUNK_SHORT_DATA_OFFSET;
+}
+
+static inline unsigned char *
+ChunkDataPtr(uint16_t region, uint16_t offset)
+{
+  return CPDataPtr(ChunkPointer(region, offset));
+}
+
+static inline uint16_t
+ChunkNextFree(uint16_t region, uint16_t offset)
+{
+  return (ChunkDataPtr(region, offset)[0] << 8) + ChunkDerefs(region, offset);
+}
 
 /* 0 for no, 1 for yes with room, 2 for exact */
-#define FitsInSpace(size, capacity) \
-  (((size) == (capacity)) ? 2 : ((size) <= (capacity) - MIN_REMNANT_LEN))
+static int
+FitsInSpace(int size, int capacity)
+{
+  if (size == capacity)
+    return 2;
+  else
+    return size <= capacity - MIN_REMNANT_LEN;
+}
 
 /** Region info that gets paged out with its region.
  * This is at the start of the region;
@@ -557,16 +635,6 @@ typedef struct region {
   uint16_t oddballs[NUM_ODDBALLS];      /**< chunk offsets with odd derefs */
 } Region;
 
-#define RegionDerefs(region) \
-  (regions[(region)].used_count \
-   ? (regions[(region)].total_derefs >> \
-      (curr_period - regions[(region)].period_last_touched)) / \
-     regions[(region)].used_count \
-   : 0)
-#define RegionDerefsWithChunk(region, derefs) \
-   (((regions[(region)].total_derefs >> \
-     (curr_period - regions[(region)].period_last_touched)) + derefs) / \
-    (regions[(region)].used_count + 1))
 
 /*
  *  Globals
@@ -639,10 +707,40 @@ static int rolling_pos;
 static int noisy_log = 0;
 #endif
 
+
 /*
  * Forward decls
  */
 static void find_oddballs(uint16_t region);
+
+/*
+ * Lookup functions
+ */
+
+static inline unsigned char *
+ChunkPointer(uint16_t region, uint16_t offset)
+{
+  return ((unsigned char *) (regions[region].in_memory)) + offset;
+}
+
+static uint8_t
+RegionDerefs(uint16_t region)
+{
+  if (regions[region].used_count)
+    return (regions[region].total_derefs >>
+            (curr_period - regions[region].period_last_touched)) /
+      regions[region].used_count;
+  else
+    return 0;
+}
+
+static uint8_t
+RegionDerefsWithChunk(uint16_t region, uint16_t derefs)
+{
+  return ((regions[region].total_derefs >>
+           (curr_period - regions[region].period_last_touched)) + derefs) /
+    (regions[region].used_count + 1);
+}
 
 /*
  * Debug routines
@@ -744,7 +842,7 @@ debug_dump_region(uint16_t region, FILE * fp)
       if (ChunkIsFree(region, offset)) {
         fprintf(fp, "next:%04x\n", ChunkNextFree(region, offset));
       } else {
-        fprintf(fp, "doff:%04x len:%04x ",
+        fprintf(fp, "doff:%04"PRIdS"x len:%04x ",
                 ChunkDataPtr(region, offset) - (unsigned char *) rhp,
                 ChunkLen(region, offset));
         count = ChunkDerefs(region, offset);
@@ -1483,7 +1581,7 @@ bring_in_region(uint16_t region)
       rp->total_derefs = 0;
       for (offset = FIRST_CHUNK_OFFSET_IN_REGION;
            offset < REGION_SIZE; offset += ChunkFullLen(region, offset)) {
-        ChunkDerefs(region, offset) = 0;
+        SetChunkDerefs(region, offset, 0);
       }
     } else {
       rp->total_derefs = 0;
@@ -1491,7 +1589,7 @@ bring_in_region(uint16_t region)
            offset < REGION_SIZE; offset += ChunkFullLen(region, offset)) {
         if (ChunkIsFree(region, offset))
           continue;
-        ChunkDerefs(region, offset) >>= shift;
+        SetChunkDerefs(region, offset, ChunkDerefs(region, offset) >> shift);
         rp->total_derefs += ChunkDerefs(region, offset);
       }
     }
@@ -2208,7 +2306,7 @@ chunk_fetch(chunk_reference_t reference,
   touch_cache_region(regions[region].in_memory);
   stat_deref_count++;
   if (ChunkDerefs(region, offset) < CHUNK_DEREF_MAX) {
-    ChunkDerefs(region, offset)++;
+    SetChunkDerefs(region, offset, ChunkDerefs(region, offset) + 1);
     regions[region].total_derefs++;
     if (ChunkDerefs(region, offset) == CHUNK_DEREF_MAX)
       stat_deref_maxxed++;
@@ -2453,7 +2551,7 @@ chunk_new_period(void)
       rp->total_derefs = 0;
       for (offset = FIRST_CHUNK_OFFSET_IN_REGION;
            offset < REGION_SIZE; offset += ChunkFullLen(region, offset)) {
-        ChunkDerefs(region, offset) = 0;
+        SetChunkDerefs(region, offset, 0);
       }
     } else {
       rp->total_derefs = 0;
@@ -2461,7 +2559,7 @@ chunk_new_period(void)
            offset < REGION_SIZE; offset += ChunkFullLen(region, offset)) {
         if (ChunkIsFree(region, offset))
           continue;
-        ChunkDerefs(region, offset) >>= shift;
+        SetChunkDerefs(region, offset, ChunkDerefs(region, offset) >> shift);
         rp->total_derefs += ChunkDerefs(region, offset);
       }
     }

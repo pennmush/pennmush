@@ -13,19 +13,19 @@ msgstr ""
 
 #: conf.c:1044
 msgid " Attributes are 8-bit word compressed in memory."
-msgstr " Attribut \344r 8-bitars ord-komprimerade i minnet."
+msgstr " Attribut är 8-bitars ord-komprimerade i minnet."
 
 #: conf.c:1035
 msgid " Attributes are Huffman compressed in memory."
-msgstr " Attribut \344r Huffman-komprimerade i minnet."
+msgstr " Attribut är Huffman-komprimerade i minnet."
 
 #: conf.c:1032
 msgid " Attributes are not compressed in memory."
-msgstr " Attribut \344r inte komprimerade i minnet."
+msgstr " Attribut är inte komprimerade i minnet."
 
 #: conf.c:1041
 msgid " Attributes are word compressed in memory."
-msgstr " Attribut \344r ord-komprimerade i minnet."
+msgstr " Attribut är ord-komprimerade i minnet."
 
 #: conf.c:1498
 msgid " CPU usage limiting is NOT supported."
@@ -45,7 +45,7 @@ msgstr " DNS och ident kontroller hanteras av MUSHprocessen."
 
 #: src/conf.c:1111
 msgid " Extended convtime() is supported."
-msgstr " Ut\366kad convtime() st\366ds."
+msgstr " Utökad convtime() stöds."
 
 #: flags.c:917
 msgid " Flags: "
@@ -62,7 +62,7 @@ msgstr " [plats: %s]"
 
 #: src/conf.c:1113
 msgid " convtime() is stricter."
-msgstr " convtime() \344r striktare."
+msgstr " convtime() är striktare."
 
 #: flags.c:1531
 msgid " granted."
@@ -70,7 +70,7 @@ msgstr " beviljas."
 
 #: src/look.c:688 src/look.c:770
 msgid " is owned by "
-msgstr " \344gs av "
+msgstr " ägs av "
 
 #: speech.c:1021
 msgid " pages"
@@ -98,47 +98,47 @@ msgstr "#-1 ARG2 HITTADES INTE"
 
 #: src/funlist.c:1886 src/funlist.c:1905
 msgid "#-1 ARGUMENT MUST BE INTEGER"
-msgstr "#-1 ARGUMENTET M\305STE VARA ETT HELTAL"
+msgstr "#-1 ARGUMENTET MÅSTE VARA ETT HELTAL"
 
 #: src/funstr.c:421
 msgid "#-1 ARGUMENT MUST BE NON-NEGATIVE INTEGER"
-msgstr "#-1 ARGUMENT M\305STE VARA POSITIVT HELTAL"
+msgstr "#-1 ARGUMENT MÅSTE VARA POSITIVT HELTAL"
 
 #: parse.c:89
 msgid "#-1 ARGUMENT MUST BE NUMBER"
-msgstr "#-1 ARGUMENT M\305STE VARA EN SIFFRA"
+msgstr "#-1 ARGUMENT MÅSTE VARA EN SIFFRA"
 
 #: src/fundb.c:1691 src/fundb.c:1695
 msgid "#-1 ARGUMENT MUST BE OBJ/ATTR"
-msgstr "#-1 ARGUMENT M\305STE VARA OBJ/ATTR"
+msgstr "#-1 ARGUMENT MÅSTE VARA OBJ/ATTR"
 
 #: parse.c:87
 msgid "#-1 ARGUMENT MUST BE POSITIVE INTEGER"
-msgstr "#-1 ARGUMENT M\305STE VARA ETT POSITIVT HELTAL"
+msgstr "#-1 ARGUMENT MÅSTE VARA ETT POSITIVT HELTAL"
 
 #: src/funmath.c:218 src/funmath.c:250
 msgid "#-1 ARGUMENT MUST END IN AN INTEGER"
-msgstr "#-1 ARGUMENT M\305STE SLUTA MED ETT HELTAL"
+msgstr "#-1 ARGUMENT MÅSTE SLUTA MED ETT HELTAL"
 
 #: src/funlist.c:1892 src/funlist.c:1911
 msgid "#-1 ARGUMENT OUT OF RANGE"
-msgstr "#-1 ARGUMENT UTANF\326R GR\304NSER"
+msgstr "#-1 ARGUMENT UTANFÖR GRÄNSER"
 
 #: parse.c:86
 msgid "#-1 ARGUMENTS MUST BE INTEGERS"
-msgstr "#-1 ARGUMENT M\305STE VARA HELTAL"
+msgstr "#-1 ARGUMENT MÅSTE VARA HELTAL"
 
 #: parse.c:90
 msgid "#-1 ARGUMENTS MUST BE NUMBERS"
-msgstr "#-1 ARGUMENT M\305STE VARA SIFFROR"
+msgstr "#-1 ARGUMENT MÅSTE VARA SIFFROR"
 
 #: parse.c:88
 msgid "#-1 ARGUMENTS MUST BE POSITIVE INTEGERS"
-msgstr "#-1 ARGUMENT M\305STE VARA POSITIVA HELTAL"
+msgstr "#-1 ARGUMENT MÅSTE VARA POSITIVA HELTAL"
 
 #: src/fundb.c:61
 msgid "#-1 ATTRIBUTE LENGTH TOO LONG"
-msgstr "#-1 ATTRIBUTL\304NGD F\326R STOR"
+msgstr "#-1 ATTRIBUTLÄNGD FÖR STOR"
 
 #: src/fundb.c:183
 msgid "#-1 BAD ARGUMENT FORMAT TO GET"
@@ -150,7 +150,7 @@ msgstr "#-1 FELAKTIGT ARGUMENTFORMAT TILL GET_EVAL"
 
 #: src/funmath.c:987
 msgid "#-1 BASE OUT OF RANGE"
-msgstr "#-1 BASEN \304R UTANF\326R GR\304NSERNA"
+msgstr "#-1 BASEN ÄR UTANFÖR GRÄNSERNA"
 
 #: parse.c:83
 msgid "#-1 CALL LIMIT EXCEEDED"
@@ -166,11 +166,11 @@ msgstr "#-1 DIVISION MED NOLL"
 
 #: src/extmail.c:1496
 msgid "#-1 FOLDER MUST BE INTEGER"
-msgstr "#-1 MAPP M\305STE VARA HELTAL"
+msgstr "#-1 MAPP MÅSTE VARA HELTAL"
 
 #: src/funmath.c:925
 msgid "#-1 FRACTIONAL POWER OF NEGATIVE"
-msgstr "#-1 NEGATIVT TAL UPPH\326JT TILL BR\305KTAL"
+msgstr "#-1 NEGATIVT TAL UPPHÖJT TILL BRÅKTAL"
 
 #: src/parse.c:671 src/parse.c:759
 msgid "#-1 FUNCTION ("
@@ -178,27 +178,27 @@ msgstr "#-1 FUNKTION  ("
 
 #: src/funmisc.c:406
 msgid "#-1 FUNCTION (SOUNDEX) REQUIRES A SINGLE WORD ARGUMENT"
-msgstr "#-1 FUNKTION (SOUNDEX) KR\304VER ETT ORD SOM ARGUMENT"
+msgstr "#-1 FUNKTION (SOUNDEX) KRÄVER ETT ORD SOM ARGUMENT"
 
 #: src/funmisc.c:424
 msgid "#-1 FUNCTION (SOUNDLIKE) REQUIRES TWO ONE-WORD ARGUMENTS"
-msgstr "#-1 FUNKTION (SOUNDLIKE) KR\304VER TV\305 EN-ORDS ARGUMENT"
+msgstr "#-1 FUNKTION (SOUNDLIKE) KRÄVER TVÅ EN-ORDS ARGUMENT"
 
 #: src/fundb.c:959 src/fundb.c:1120 src/fundb.c:1145 src/fundb.c:1254\nsrc/fundb.c:1549 src/fundb.c:1555 src/fundb.c:1561 src/fundb.c:1567\nsrc/fundb.c:1573 src/fundb.c:1579 src/fundb.c:1585 src/fundb.c:1591\nsrc/fundb.c:1864 src/funstr.c:901
 msgid "#-1 FUNCTION DISABLED"
-msgstr "#-1 FUNKTION EJ TILLG\304NGLIG"
+msgstr "#-1 FUNKTION EJ TILLGÄNGLIG"
 
 #: parse.c:91
 msgid "#-1 FUNCTION INVOCATION LIMIT EXCEEDED"
-msgstr "#-1 BEGR\304NSNING AV FUNKTIONSANROP \326VERSKRIDEN"
+msgstr "#-1 BEGRÄNSNING AV FUNKTIONSANROP ÖVERSKRIDEN"
 
 #: src/parse.c:790
 msgid "#-1 FUNCTION RECURSION LIMIT EXCEEDED"
-msgstr "#-1 REKURSIONSGR\304NS F\326R FUNKTION \326VERSKRIDEN"
+msgstr "#-1 REKURSIONSGRÄNS FÖR FUNKTION ÖVERSKRIDEN"
 
 #: src/funmath.c:949 src/funmath.c:972
 msgid "#-1 INFINITY"
-msgstr "#-1 O\304NDLIGHET"
+msgstr "#-1 OÄNDLIGHET"
 
 #: help.c:454
 msgid "#-1 INVALID ENTRY"
@@ -211,7 +211,7 @@ msgstr "#-1 OGILTIG ESCAPEKOD '$%c'"
 
 #: src/fundb.c:1618 src/funlist.c:2324 src/funlist.c:2367
 msgid "#-1 INVALID GREP PATTERN"
-msgstr "#-1 OGILTIGT GREP M\326NSTER"
+msgstr "#-1 OGILTIGT GREP MÖNSTER"
 
 #: src/fundb.c:657
 msgid "#-1 INVALID LOCATION"
@@ -235,11 +235,11 @@ msgstr "#-1 OGILTIG ZON"
 
 #: src/funlist.c:194 src/funlist.c:2088
 msgid "#-1 LISTS MUST BE OF EQUAL SIZE"
-msgstr "#-1 LISTOR M\305STE VARA LIKA STORA"
+msgstr "#-1 LISTOR MÅSTE VARA LIKA STORA"
 
 #: src/funlist.c:1778
 msgid "#-1 NEED A WORD"
-msgstr "#-1 BEH\326VER ETT ORD"
+msgstr "#-1 BEHÖVER ETT ORD"
 
 #: extchat.c:1495
 msgid "#-1 NO CHANNEL GIVEN"
@@ -259,23 +259,23 @@ msgstr "#-1 INGA OBJEKT KONTROLLERAS"
 
 #: src/fundb.c:63 src/fundb.c:69 src/fundb.c:72 src/fundb.c:273\nsrc/fundb.c:315 src/funlist.c:366 src/funlist.c:450 src/funufun.c:125\nsrc/funufun.c:158 src/funufun.c:307
 msgid "#-1 NO PERMISSION TO GET ATTRIBUTE"
-msgstr "#-1 INGA R\304TTIGHETER ATT L\304SA ATTRIBUT"
+msgstr "#-1 INGA RÄTTIGHETER ATT LÄSA ATTRIBUT"
 
 #: src/bsd.c:4827
 msgid "#-1 NO PERMISSIONS FOR CHANNEL"
-msgstr "#-1 INGA R\304TTIGHETER F\326R KANAL"
+msgstr "#-1 INGA RÄTTIGHETER FÖR KANAL"
 
 #: src/fundb.c:1614 src/fundb.c:1762 src/funlist.c:2320 src/funlist.c:2363
 msgid "#-1 NO SUCH ATTRIBUTE"
-msgstr "#-1 INGET S\305DANT ATTRIBUT"
+msgstr "#-1 INGET SÅDANT ATTRIBUT"
 
 #: src/fundb.c:1828
 msgid "#-1 NO SUCH CHANNEL"
-msgstr "#-1 INGEN S\305DAN KANAL"
+msgstr "#-1 INGEN SÅDAN KANAL"
 
 #: src/conf.c:926
 msgid "#-1 NO SUCH CONFIG OPTION"
-msgstr "#-1 INGET S\305DANT KONFIGURATIONSALTERNATIV"
+msgstr "#-1 INGET SÅDANT KONFIGURATIONSALTERNATIV"
 
 #: help.c:429
 msgid "#-1 NO SUCH FILE"
@@ -283,23 +283,23 @@ msgstr "#-1 INGEN SÅDAN FIL"
 
 #: src/fundb.c:1851
 msgid "#-1 NO SUCH LOCK TYPE"
-msgstr "#-1 INGEN S\305DAN L\305STYP"
+msgstr "#-1 INGEN SÅDAN LÅSTYP"
 
 #: src/fundb.c:155 src/fundb.c:189 src/fundb.c:205 src/fundb.c:255\nsrc/fundb.c:297 src/fundb.c:1609 src/funlist.c:2315 src/funlist.c:2358
 msgid "#-1 NO SUCH OBJECT VISIBLE"
-msgstr "#-1 INGET S\305DANT OBJEKT SYNLIGT"
+msgstr "#-1 INGET SÅDANT OBJEKT SYNLIGT"
 
 #: src/extmail.c:1468 src/extmail.c:1489
 msgid "#-1 NO SUCH PLAYER"
-msgstr "#-1 INGEN S\305DAN SPELARE"
+msgstr "#-1 INGEN SÅDAN SPELARE"
 
 #: src/fundb.c:907
 msgid "#-1 NO SUCH TYPE"
-msgstr "#-1 INGEN S\305DAN TYP"
+msgstr "#-1 INGEN SÅDAN TYP"
 
 #: src/funufun.c:310
 msgid "#-1 NO SUCH USER FUNCTION"
-msgstr "#-1 INGEN S\305DAN ANV\304NDARFUNKTION"
+msgstr "#-1 INGEN SÅDAN ANVÄNDARFUNKTION"
 
 #: src/bsd.c:4485 src/bsd.c:4498
 msgid "#-1 NOT CONNECTED"
@@ -307,27 +307,27 @@ msgstr "#-1 EJ UPPKOPPLAD"
 
 #: extchat.c:1525
 msgid "#-1 NOT ON CHANNEL"
-msgstr "#-1 INTE P\305 KANAL"
+msgstr "#-1 INTE PÅ KANAL"
 
 #: src/funlist.c:1786
 msgid "#-1 NUMBER OF WORDS MUST BE EQUAL"
-msgstr "#-1 ANTALET ORD M\305STE VARA SAMMA"
+msgstr "#-1 ANTALET ORD MÅSTE VARA SAMMA"
 
 #: src/funlist.c:1179 src/funmisc.c:222
 msgid "#-1 NUMBER OUT OF RANGE"
-msgstr "#-1 NUMMER UTANF\326R GR\304NSER"
+msgstr "#-1 NUMMER UTANFÖR GRÄNSER"
 
 #: src/funmath.c:850 src/funmath.c:876 src/funmath.c:930 src/funmath.c:954\nsrc/funmath.c:977 src/funmath.c:1238 src/funstr.c:212 src/funstr.c:234\nsrc/funstr.c:254 src/funstr.c:281 src/funtime.c:152
 msgid "#-1 OUT OF RANGE"
-msgstr "#-1 GR\304NSER \326VERSKRIDNA"
+msgstr "#-1 GRÄNSER ÖVERSKRIDNA"
 
 #: src/funmath.c:336 src/funmath.c:366
 msgid "#-1 OVERFLOW ERROR"
-msgstr "#-1 \326VERFL\326DESFEL"
+msgstr "#-1 ÖVERFLÖDESFEL"
 
 #: src/extmail.c:1471 src/extmail.c:1492 src/extmail.c:1531 src/fundb.c:122\nsrc/fundb.c:141 src/fundb.c:169 src/fundb.c:261 src/fundb.c:303\nsrc/fundb.c:341 src/fundb.c:789 src/fundb.c:953 src/fundb.c:1114\nsrc/fundb.c:1139 src/fundb.c:1248 src/fundb.c:1442 src/fundb.c:1456\nsrc/fundb.c:1466 src/fundb.c:1477 src/fundb.c:1487 src/fundb.c:1502\nsrc/fundb.c:1512 src/fundb.c:1522 src/fundb.c:1537 src/fundb.c:1651\nsrc/fundb.c:1737 src/fundb.c:1741 src/fundb.c:1748 src/fundb.c:1752\nsrc/fundb.c:1858 src/fundb.c:1872 src/funlist.c:1966 src/funmisc.c:60\nsrc/funmisc.c:72 src/funmisc.c:84 src/funmisc.c:96 src/funmisc.c:108\nsrc/funmisc.c:120 src/funmisc.c:134 src/funstr.c:778 src/funufun.c:118\nsrc/funufun.c:149 src/funufun.c:300 src/wiz.c:2155 src/wiz.c:2167\nsrc/wiz.c:2189 src/wiz.c:2202
 msgid "#-1 PERMISSION DENIED"
-msgstr "#-1 \305TKOMST NEKAD"
+msgstr "#-1 ÅTKOMST NEKAD"
 
 #: src/funlist.c:2256 src/funlist.c:2335 src/funlist.c:2378 src/funlist.c:2437\nsrc/funlist.c:2478
 msgid "#-1 REGEXP ERROR: "
@@ -335,27 +335,27 @@ msgstr "#-1 REGEXP FEL: "
 
 #: src/funmisc.c:158 src/funmisc.c:178
 msgid "#-1 REGISTER OUT OF RANGE"
-msgstr "#-1 REGISTER UTANF\326R GR\304NSER"
+msgstr "#-1 REGISTER UTANFÖR GRÄNSER"
 
 #: src/function.c:118
 msgid "#-1 SEPARATOR MUST BE ONE CHARACTER"
-msgstr "#-1 SEPARATOR M\305STE VARA ETT TECKEN"
+msgstr "#-1 SEPARATOR MÅSTE VARA ETT TECKEN"
 
 #: src/funlist.c:1943
 msgid "#-1 STEP OUT OF RANGE"
-msgstr "#-1 STEG UTANF\326R GR\304NSER"
+msgstr "#-1 STEG UTANFÖR GRÄNSER"
 
 #: src/funstr.c:353
 msgid "#-1 STRING LENGTHS MUST BE EQUAL"
-msgstr "#-1 STR\304NGL\304NGDER M\305STE VARA SAMMA"
+msgstr "#-1 STRÄNGLÄNGDER MÅSTE VARA SAMMA"
 
 #: src/funlist.c:1815
 msgid "#-1 TOO MANY ITERS"
-msgstr "#-1 F\326R M\305NGA ITERATIONER"
+msgstr "#-1 FÖR MÅNGA ITERATIONER"
 
 #: src/funlist.c:1782
 msgid "#-1 TOO MANY WORDS"
-msgstr "#-1 F\326R M\305NGA ORD"
+msgstr "#-1 FÖR MÅNGA ORD"
 
 #: help.c:516 help.c:519
 msgid "#-1 UNAVAILABLE"
@@ -363,7 +363,7 @@ msgstr "#-1 EJ TILLGÄNGLIG"
 
 #: src/funmath.c:1385
 msgid "#-1 UNKNOWN OPERATION"
-msgstr "#-1 OK\304ND OPERATION"
+msgstr "#-1 OKÄND OPERATION"
 
 #: funstr.c:1021 funstr.c:1038
 msgid "#-1 UNPRINTABLE CHARACTER"
@@ -371,11 +371,11 @@ msgstr "#-1 OPRINTBART TECKEN"
 
 #: src/funmath.c:420 src/funmath.c:462 src/funmath.c:501 src/funmath.c:540\nsrc/funmath.c:598 src/funmath.c:632
 msgid "#-1 VECTORS MUST BE SAME DIMENSIONS"
-msgstr "#-1 VEKTORER M\305STE HA SAMMA DIMENSIONER"
+msgstr "#-1 VEKTORER MÅSTE HA SAMMA DIMENSIONER"
 
 #: src/funstr.c:1097
 msgid "#-1 WIDTH TOO SMALL"
-msgstr "#-1 BREDD F\326R LITEN"
+msgstr "#-1 BREDD FÖR LITEN"
 
 #: src/extmail.c:1641
 msgid "#-? fun_mailstats called with invalid called_as!"
@@ -384,37 +384,37 @@ msgstr "#-? fun_mailstats anropad med ogiltigt called_as!"
 #: src/wiz.c:1044
 #, c-format
 msgid "%d commands executed."
-msgstr "%d kommandon utf\366rda."
+msgstr "%d kommandon utförda."
 
 #: src/extmail.c:1379
 #, c-format
 msgid "%d messages received, %d unread, %d cleared, totalling %d characters."
-msgstr "%d meddelande mottagna, %d ol\344sta, %d rensade, totalt %d tecken."
+msgstr "%d meddelande mottagna, %d olästa, %d rensade, totalt %d tecken."
 
 #: src/extmail.c:1370
 #, c-format
 msgid "%d messages received, %d unread, %d cleared."
-msgstr "%d meddelande mottagna, %d ol\344sta, %d rensade."
+msgstr "%d meddelande mottagna, %d olästa, %d rensade."
 
 #: src/extmail.c:1375
 #, c-format
 msgid "%d messages sent, %d unread, %d cleared, totalling %d characters."
-msgstr "%d meddelanden skickade, %d ol\344sta, %d rensade, totalt %d tecken."
+msgstr "%d meddelanden skickade, %d olästa, %d rensade, totalt %d tecken."
 
 #: src/extmail.c:1368
 #, c-format
 msgid "%d messages sent, %d unread, %d cleared."
-msgstr "%d meddelanden skickade, %d ol\344sta, %d rensade."
+msgstr "%d meddelanden skickade, %d olästa, %d rensade."
 
 #: src/wiz.c:686
 #, c-format
 msgid "%d objects = %d rooms, %d exits, %d things, %d players, %d garbage."
-msgstr "%d object = %d rum, %d utg\345ngar, %d saker, %d spelare, %d skr\344p."
+msgstr "%d object = %d rum, %d utgångar, %d saker, %d spelare, %d skräp."
 
 #: src/wiz.c:692
 #, c-format
 msgid "%d objects = %d rooms, %d exits, %d things, %d players."
-msgstr "%d objekt = %d rum, %d utg\345ngar, %d saker, %d spelare."
+msgstr "%d objekt = %d rum, %d utgångar, %d saker, %d spelare."
 
 #: src/bsd.c:3405
 #, c-format
@@ -424,7 +424,7 @@ msgstr "%ld misslyckade uppkopplingar sedan senaste inloggning."
 #: src/look.c:969
 #, c-format
 msgid "%s (this room) [broadcasting]."
-msgstr "%s (detta rum) [s\344nder]."
+msgstr "%s (detta rum) [sänder]."
 
 #: src/look.c:967
 #, c-format
@@ -449,27 +449,27 @@ msgstr "Känner ej igen flagga: %s."
 #: src/atr_tab.c:226
 #, c-format
 msgid "%s -- Attribute permissions now: %s"
-msgstr "%s -- Attribut r\344ttigheter \344r nu: %s"
+msgstr "%s -- Attribut rättigheter är nu: %s"
 
 #: src/look.c:954 src/look.c:979 src/look.c:1019
 #, c-format
 msgid "%s [owner: %s] is listening."
-msgstr "%s [\344gare: %s] lyssnar."
+msgstr "%s [ägare: %s] lyssnar."
 
 #: destroy.c:353
 #, c-format
 msgid "%s and all their (non-SAFE) objects are scheduled to be destroyed."
-msgstr "%s och alla deras (ej SAFE) objekt \344r schemalagda f\366r att f\366rintas."
+msgstr "%s och alla deras (ej SAFE) objekt är schemalagda för att förintas."
 
 #: src/destroy.c:352
 #, c-format
 msgid "%s and all their objects are scheduled to be destroyed."
-msgstr "%s och alla deras objekt \344r schemalagda f\366r att f\366rintas."
+msgstr "%s och alla deras objekt är schemalagda för att förintas."
 
 #: src/move.c:862
 #, c-format
 msgid "%s begins following you."
-msgstr "%s b\366rjar f\366lja efter dig."
+msgstr "%s börjar följa efter dig."
 
 #: src/create.c:388
 #, c-format
@@ -484,7 +484,7 @@ msgstr "%s skapad."
 #: src/command.c:960
 #, c-format
 msgid "%s doesn't know switch %s."
-msgstr "%s k\344nner inte till omkopplare %s."
+msgstr "%s känner inte till omkopplare %s."
 
 #: src/rob.c:213
 #, c-format
@@ -504,12 +504,12 @@ msgstr "%s ger dig %d %s."
 #: src/move.c:332
 #, c-format
 msgid "%s goes home."
-msgstr "%s g\345r hem."
+msgstr "%s går hem."
 
 #: src/attrib.c:953
 #, c-format
 msgid "%s grows ears and can now hear."
-msgstr "%s f\345r \366ron och kan nu h\366ra."
+msgstr "%s får öron och kan nu höra."
 
 #: src/extmail.c:1336
 #, c-format
@@ -519,7 +519,7 @@ msgstr "%s har %d meddelanden."
 #: src/destroy.c:414 src/destroy.c:510
 #, c-format
 msgid "%s has been spared from destruction."
-msgstr "%s har ben\345dats fr\345n f\366rintelse."
+msgstr "%s har benådats från förintelse."
 
 #: src/look.c:1060
 #, c-format
@@ -529,27 +529,27 @@ msgstr "%s har just lokaliserat dig."
 #: src/destroy.c:361 src/destroy.c:371 src/destroy.c:464
 #, c-format
 msgid "%s has scheduled your %s for destruction."
-msgstr "%s har schemalagt din %s f\366r f\366rintelse."
+msgstr "%s har schemalagt din %s för förintelse."
 
 #: src/destroy.c:344
 #, c-format
 msgid "%s has scheduled your room %s to be destroyed."
-msgstr "%s har schemalagt ditt rum %s f\366r f\366rintelse."
+msgstr "%s har schemalagt ditt rum %s för förintelse."
 
 #: src/extchat.c:803 src/extchat.c:835
 #, c-format
 msgid "%s is already on channel <%s>."
-msgstr "%s \344r redan p\345 kanalen <%s>."
+msgstr "%s är redan på kanalen <%s>."
 
 #: src/look.c:1057
 #, c-format
 msgid "%s is at: %s."
-msgstr "%s \344r vid: %s."
+msgstr "%s är vid: %s."
 
 #: look.c:205
 #, c-format
 msgid "%s is corrupt!"
-msgstr "%s \344r korrupt!"
+msgstr "%s är korrupt!"
 
 #: src/flags.c:1067 src/flags.c:1073
 #, c-format
@@ -564,7 +564,7 @@ msgstr "%s är inte uppkopplad."
 #: src/extchat.c:865
 #, c-format
 msgid "%s is not on channel <%s>."
-msgstr "%s \344r inte p\345 kanalen <%s>."
+msgstr "%s är inte på kanalen <%s>."
 
 #: src/flags.c:1127 src/flags.c:1133
 #, c-format
@@ -574,22 +574,22 @@ msgstr "%s lyssnar nu."
 #: src/destroy.c:364 src/destroy.c:378
 #, c-format
 msgid "%s is scheduled to be destroyed."
-msgstr "%s \344r schemalagt f\366r att f\366rst\366ras."
+msgstr "%s är schemalagt för att förstöras."
 
 #: move.c:888
 #, c-format
 msgid "%s isn't following you, nor vice versa."
-msgstr "%s f\366ljer inte efter dig eller vice versa."
+msgstr "%s följer inte efter dig eller vice versa."
 
 #: move.c:858
 #, c-format
 msgid "%s isn't following you."
-msgstr "%s f\366ljer inte efter dig."
+msgstr "%s följer inte efter dig."
 
 #: src/rob.c:134
 #, c-format
 msgid "%s killed you!"
-msgstr "%s d\366dade dig!"
+msgstr "%s dödade dig!"
 
 #: look.c:200
 #, c-format
@@ -609,17 +609,17 @@ msgstr "%s leder till %s."
 #: look.c:202
 #, c-format
 msgid "%s leads to a variable location."
-msgstr "%s leder till \344n v\344xlande plats."
+msgstr "%s leder till än växlande plats."
 
 #: src/attrib.c:949
 #, c-format
 msgid "%s loses its ears and becomes deaf."
-msgstr "%s f\366rlorar sina \366ron och blir d\366v."
+msgstr "%s förlorar sina öron och blir döv."
 
 #: src/predicat.c:760
 #, c-format
 msgid "%s message from %s: %s"
-msgstr "%s meddelande fr\345n %s: %s"
+msgstr "%s meddelande från %s: %s"
 
 #: flags.c:2016
 #, c-format
@@ -629,7 +629,7 @@ msgstr "%s namn får ej innehålla blanksteg."
 #: src/player.c:486
 #, c-format
 msgid "%s on %s"
-msgstr "%s p\345 %s"
+msgstr "%s på %s"
 
 #: help.c:256
 #, c-format
@@ -649,7 +649,7 @@ msgstr "%s vägrar ta emot dina pengar."
 #: src/speech.c:179
 #, c-format
 msgid "%s says, \"%s\""
-msgstr "%s s\344ger, \"%s\""
+msgstr "%s säger, \"%s\""
 
 #: speech.c:378
 #, c-format
@@ -669,17 +669,17 @@ msgstr "%s bör endast innehålla dbrefs."
 #: src/bsd.c:2100
 #, c-format
 msgid "%s sizes:  NewUser...%d  Connect...%d  Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  Register...%d  Down...%d  Full...%d"
-msgstr "%s storlekar:  NyAnv\344ndare...%d  Uppkoppling...%d  G\344st...%d  Motd...%d  MagMotd...%d  Avsluta...%d  Registrera...%d  Nere...%d  Full...%d"
+msgstr "%s storlekar:  NyAnvändare...%d  Uppkoppling...%d  Gäst...%d  Motd...%d  MagMotd...%d  Avsluta...%d  Registrera...%d  Nere...%d  Full...%d"
 
 #: src/move.c:918 src/move.c:1063
 #, c-format
 msgid "%s stops following you."
-msgstr "%s slutar f\366lja efter dig."
+msgstr "%s slutar följa efter dig."
 
 #: src/rob.c:288
 #, c-format
 msgid "%s took %d %s from you!"
-msgstr "%s tog %d %s fr\345n dig!"
+msgstr "%s tog %d %s från dig!"
 
 #: move.c:526 move.c:572
 #, c-format
@@ -689,17 +689,17 @@ msgstr "%s tog dig."
 #: src/rob.c:156
 #, c-format
 msgid "%s tried to kill you!"
-msgstr "%s f\366rs\366kte d\366da dig!"
+msgstr "%s försökte döda dig!"
 
 #: src/look.c:1053
 #, c-format
 msgid "%s tried to locate you and failed."
-msgstr "%s f\366rs\366kte hitta dig och misslyckades."
+msgstr "%s försökte hitta dig och misslyckades."
 
 #: src/wiz.c:548
 #, c-format
 msgid "%s tries to impose his will on you and fails."
-msgstr "%s f\366rs\366ker betvinga dig men misslyckas."
+msgstr "%s försöker betvinga dig men misslyckas."
 
 #: src/speech.c:151
 #, c-format
@@ -709,22 +709,22 @@ msgstr "%s skriver --> %s%s%s"
 #: src/move.c:495
 #, c-format
 msgid "%s was taken from you."
-msgstr "%s togs fr\345n dig."
+msgstr "%s togs från dig."
 
 #: destroy.c:412
 #, c-format
 msgid "%s's %s has been spared from destruction."
-msgstr "%s's %s har blivit besparad f\366rst\366relse."
+msgstr "%s's %s har blivit besparad förstörelse."
 
 #: src/destroy.c:357 src/destroy.c:374
 #, c-format
 msgid "%s's %s is scheduled to be destroyed."
-msgstr "%ss %s \344r schemalagt f\366r att bli f\366rintat."
+msgstr "%ss %s är schemalagt för att bli förintat."
 
 #: src/extmail.c:1168
 #, c-format
 msgid "%s(#%d) has mail but is not a player."
-msgstr "%s(#%d) har brev men \344r inte en spelare."
+msgstr "%s(#%d) har brev men är inte en spelare."
 
 #: lock.c:541
 #, c-format
@@ -754,15 +754,15 @@ msgstr "%s/%s - %s satt."
 #: src/extmail.c:1260 src/extmail.c:1668 src/wiz.c:673 src/wiz.c:1277
 #, c-format
 msgid "%s: No such player."
-msgstr "%s: Ingen s\345dan spelare."
+msgstr "%s: Ingen sådan spelare."
 
 #: function.c:905
 msgid "(Commas okay in last argument)"
-msgstr "(Komma \344r giltigt i sista argumentet)"
+msgstr "(Komma är giltigt i sista argumentet)"
 
 #: src/extmail.c:211 src/extmail.c:810 src/extmail.c:1004
 msgid "(no subject)"
-msgstr "(inget \344rende)"
+msgstr "(inget ärende)"
 
 #: src/look.c:911
 #, c-format
@@ -771,11 +771,11 @@ msgstr "*** %d objekt hittade ***"
 
 #: src/malias.c:300
 msgid "*****  End of Mail Aliases *****"
-msgstr "***** Slut p\345 brev alias *****"
+msgstr "***** Slut på brev alias *****"
 
 #: src/malias.c:471
 msgid "***** End of Mail Aliases *****"
-msgstr "***** Slut p\345 brev alias *****"
+msgstr "***** Slut på brev alias *****"
 
 #: unparse.c:105
 msgid "*HOME*"
@@ -791,19 +791,19 @@ msgstr "*VARIABEL*"
 
 #: src/access.c:476
 msgid "---- @sitelock will add sites immediately below this line ----"
-msgstr "---- @sitelock kommer att l\344gga till sajter under denna rad ----"
+msgstr "---- @sitelock kommer att lägga till sajter under denna rad ----"
 
 #: src/look.c:1180
 msgid "----------  Entrances Done  ----------"
-msgstr "---------- Ing\345ngar klara ----------"
+msgstr "---------- Ingångar klara ----------"
 
 #: src/wiz.c:1606
 msgid "----------  Search Done  ----------"
-msgstr "---------- S\366kning klar ----------"
+msgstr "---------- Sökning klar ----------"
 
 #: src/cque.c:807
 msgid "------------  Queue Done  ------------"
-msgstr "------------ K\366 klar ------------"
+msgstr "------------ Kö klar ------------"
 
 #: extmail.c:543
 #, c-format
@@ -812,7 +812,7 @@ msgstr "---------------------------  BREV (mapp %2d)  --------------------------
 
 #: src/command.c:1118
 msgid "@command is ALWAYS enabled."
-msgstr "@command \344r ALLTID tillg\344ngligt."
+msgstr "@command är ALLTID tillgängligt."
 
 #: src/warnings.c:450
 msgid "@wcheck complete."
@@ -820,15 +820,15 @@ msgstr "@wcheck klar."
 
 #: src/set.c:894
 msgid "A thing cannot be its own ancestor!"
-msgstr "En sak kan inte vara sin egen f\366rfader!"
+msgstr "En sak kan inte vara sin egen förfader!"
 
 #: src/bsd.c:559 src/bsd.c:761
 msgid "Ack!  Failed reopening stderr!"
-msgstr "Aj d\345!  Misslyckades att \366ppna om stderr!"
+msgstr "Aj då!  Misslyckades att öppna om stderr!"
 
 #: src/destroy.c:405
 msgid "Alas, your efforts of mercy are in vain."
-msgstr "Du kan inte ben\345da det."
+msgstr "Du kan inte benåda det."
 
 #: malias.c:269
 msgid "Alias Description"
@@ -873,7 +873,7 @@ msgstr "Alla kanaler: ljud på."
 #: src/cque.c:1045
 #, c-format
 msgid "All objects for %s are being restarted."
-msgstr "Alla objekt f\366r %s startas om."
+msgstr "Alla objekt för %s startas om."
 
 #: src/cque.c:924
 #, c-format
@@ -883,7 +883,7 @@ msgstr "Alla %ss objekt har stoppats."
 #: src/cque.c:1048
 #, c-format
 msgid "All of your objects are being restarted by %s."
-msgstr "\300lla dina objekt startas om av %s."
+msgstr "Àlla dina objekt startas om av %s."
 
 #: src/cque.c:1059
 msgid "All of your objects are being restarted."
@@ -901,7 +901,7 @@ msgstr "Alla dina objekt har stoppats."
 #: src/wiz.c:273
 #, c-format
 msgid "All quotas changed to %d."
-msgstr "Alla kvoter \344ndrade till %d."
+msgstr "Alla kvoter ändrade till %d."
 
 #: access.c:412
 msgid "All"
@@ -929,7 +929,7 @@ msgstr "Argument  : Minst %d %s"
 #: src/game.c:851
 #, c-format
 msgid "Attempt to execute command by halted object #%d"
-msgstr "F\366rs\366kt att k\366ra kommando av stoppad objekt #%d"
+msgstr "Försökt att köra kommando av stoppad objekt #%d"
 
 #: src/set.c:633
 #, c-format
@@ -938,23 +938,23 @@ msgstr "Attribut %s (%d kopior)"
 
 #: src/attrib.c:1031
 msgid "Attribute locked."
-msgstr "Attribut l\345st."
+msgstr "Attribut låst."
 
 #: src/attrib.c:1111
 msgid "Attribute owner changed."
-msgstr "\304gare av attribut \344ndrad."
+msgstr "Ägare av attribut ändrad."
 
 #: src/attrib.c:1035
 msgid "Attribute unlocked."
-msgstr "Attribut uppl\345st."
+msgstr "Attribut upplåst."
 
 #: src/flags.c:1147
 msgid "Audible exits in this room have been activated."
-msgstr "H\366rbara utg\345ngar i detta rum har aktiverats."
+msgstr "Hörbara utgångar i detta rum har aktiverats."
 
 #: src/flags.c:1086
 msgid "Audible exits in this room have been deactivated."
-msgstr "H\366rbara utg\345ngar i detta rum har avaktiverats."
+msgstr "Hörbara utgångar i detta rum har avaktiverats."
 
 #: command.c:1312
 msgid "Bad command name."
@@ -966,7 +966,7 @@ msgstr "Felaktig destination."
 
 #: src/player.c:420
 msgid "Bad new password."
-msgstr "Felaktigt nytt l\366senord."
+msgstr "Felaktigt nytt lösenord."
 
 #: src/extmail.c:1166
 #, c-format
@@ -979,17 +979,17 @@ msgstr "Felaktig objekt-typ."
 
 #: src/wiz.c:732
 msgid "Bad password."
-msgstr "Felaktigt l\366senord."
+msgstr "Felaktigt lösenord."
 
 #: src/set.c:147
 #, c-format
 msgid "Broadcast: Suspect %s changed name to %s."
-msgstr "S\344nd: Misst\344nkt %s \344ndrade namn till %s."
+msgstr "Sänd: Misstänkt %s ändrade namn till %s."
 
 #: src/rob.c:99
 #, c-format
 msgid "Broadcast: Suspect %s tried to kill %s(#%d)."
-msgstr "S\344nd: Misst\344nkt %s f\366rs\366kte d\366da %s(#%d)."
+msgstr "Sänd: Misstänkt %s försökte döda %s(#%d)."
 
 #: src/version.c:44 src/version.c:46
 #, c-format
@@ -999,7 +999,7 @@ msgstr "Bygg datum: %s"
 #: src/extchat.c:1443
 #, c-format
 msgid "CHAT: %s has removed all users from <%s>."
-msgstr "CHAT: %s har tagit bort alla anv\344ndare fr\345n <%s>."
+msgstr "CHAT: %s har tagit bort alla användare från <%s>."
 
 #: src/extchat.c:821
 #, c-format
@@ -1009,7 +1009,7 @@ msgstr "CHAT: %s tar med dig i kanal <%s>."
 #: src/extchat.c:856
 #, c-format
 msgid "CHAT: %s removes you from channel <%s>."
-msgstr "CHAT: %s tar bort dig fr\345n kanal <%s>."
+msgstr "CHAT: %s tar bort dig från kanal <%s>."
 
 #: extchat.c:3027
 #, c-format
@@ -1029,17 +1029,17 @@ msgstr "CHAT: kanal <%s> beskrivning bortagen."
 #: extchat.c:2001
 #, c-format
 msgid "CHAT: Channel <%s> description set."
-msgstr "CHAT: Kanal <%s> beskrivning best\344md."
+msgstr "CHAT: Kanal <%s> beskrivning bestämd."
 
 #: src/extchat.c:1496
 #, c-format
 msgid "CHAT: Channel <%s> now owned by %s."
-msgstr "CHAT: Kanal <%s> \344gs nu av %s."
+msgstr "CHAT: Kanal <%s> ägs nu av %s."
 
 #: extchat.c:1548
 #, c-format
 msgid "CHAT: Channel <%s> resists."
-msgstr "CHAT: Kanal <%s> g\366r motst\345nd."
+msgstr "CHAT: Kanal <%s> gör motstånd."
 
 #: extchat.c:1742
 #, c-format
@@ -1063,12 +1063,12 @@ msgstr "CHAT: Återspelning slut."
 #: extchat.c:1595
 #, c-format
 msgid "CHAT: Hidelock on <%s> reset."
-msgstr "CHAT: G\366ml\345s p\345 <%s> nollst\344llt."
+msgstr "CHAT: Gömlås på <%s> nollställt."
 
 #: extchat.c:1596
 #, c-format
 msgid "CHAT: Hidelock on <%s> set."
-msgstr "CHAT: G\366ml\345s p\345 <%s> satt."
+msgstr "CHAT: Gömlås på <%s> satt."
 
 #: extchat.c:955 extchat.c:1008
 msgid "CHAT: I don't know which channel you mean."
@@ -1076,43 +1076,43 @@ msgstr "CHAT: Jag vet inte vilken kanal du menar."
 
 #: src/extchat.c:760 src/extchat.c:1015 src/extchat.c:1635
 msgid "CHAT: I don't recognize that channel."
-msgstr "CHAT: Jag k\344nner inte igen den kanalen."
+msgstr "CHAT: Jag känner inte igen den kanalen."
 
 #: src/extchat.c:1554
 msgid "CHAT: I don't understand that key."
-msgstr "CHAT: Jag f\366rst\345r inte den nyckeln."
+msgstr "CHAT: Jag förstår inte den nyckeln."
 
 #: src/extchat.c:1488
 msgid "CHAT: Invalid owner."
-msgstr "CHAT: Ogiltig \344gare."
+msgstr "CHAT: Ogiltig ägare."
 
 #: extchat.c:1568
 #, c-format
 msgid "CHAT: Joinlock on <%s> reset."
-msgstr "CHAT: G\345medl\345s p\345 <%s> nollst\344llt."
+msgstr "CHAT: Gåmedlås på <%s> nollställt."
 
 #: extchat.c:1569
 #, c-format
 msgid "CHAT: Joinlock on <%s> set."
-msgstr "CHAT: G\345medl\345s p\345 <%s> satt."
+msgstr "CHAT: Gåmedlås på <%s> satt."
 
 #: extchat.c:1604
 #, c-format
 msgid "CHAT: Modlock on <%s> reset."
-msgstr "CHAT: Modl\345s p\345 <%s> nollst\344llt."
+msgstr "CHAT: Modlås på <%s> nollställt."
 
 #: extchat.c:1605
 #, c-format
 msgid "CHAT: Modlock on <%s> set."
-msgstr "CHAT: Modl\345s p\345 <%s> satt."
+msgstr "CHAT: Modlås på <%s> satt."
 
 #: src/extchat.c:1703
 msgid "CHAT: No channel matches that string."
-msgstr "CHAT: Inga kanaler tr\344ffar den str\344ngen."
+msgstr "CHAT: Inga kanaler träffar den strängen."
 
 #: extchat.c:1132 extchat.c:1139
 msgid "CHAT: No more memory for channels!"
-msgstr "CHAT: Inget mer minne f\366r kanaler!"
+msgstr "CHAT: Inget mer minne för kanaler!"
 
 #: extchat.c:1274
 msgid "CHAT: No such channel."
@@ -1124,7 +1124,7 @@ msgstr "CHAT: Inget att återspela."
 
 #: src/extchat.c:1481
 msgid "CHAT: Only a Wizard can do that."
-msgstr "CHAT: Bara en Wizard kan g\366ra det."
+msgstr "CHAT: Bara en Wizard kan göra det."
 
 #: extchat.c:797
 msgid "CHAT: Partial matches are:"
@@ -1143,22 +1143,22 @@ msgstr "CHAT: Ändrar buffertstorlek för kanal <%s>"
 #: extchat.c:1586
 #, c-format
 msgid "CHAT: Seelock on <%s> reset."
-msgstr "CHAT: Sel\345s p\345 <%s> nollst\344llt."
+msgstr "CHAT: Selås på <%s> nollställt."
 
 #: extchat.c:1587
 #, c-format
 msgid "CHAT: Seelock on <%s> set."
-msgstr "CHAT: Seel\345s p\345 <%s> satt."
+msgstr "CHAT: Seelås på <%s> satt."
 
 #: extchat.c:1577
 #, c-format
 msgid "CHAT: Speaklock on <%s> reset."
-msgstr "CHAT: Pratl\345s p\345 <%s> nollst\344llt."
+msgstr "CHAT: Pratlås på <%s> nollställt."
 
 #: extchat.c:1578
 #, c-format
 msgid "CHAT: Speaklock on <%s> set."
-msgstr "CHAT: Tall\345s p\345 <%s> satt."
+msgstr "CHAT: Tallås på <%s> satt."
 
 #: extchat.c:2939
 msgid "CHAT: That channel doesn't have a recall buffer."
@@ -1166,7 +1166,7 @@ msgstr "CHAT: Den kanalen saknar återspelningsbuffert."
 
 #: src/extchat.c:1106
 msgid "CHAT: The channel needs a more unique name."
-msgstr "CHAT: Kanalen beh\366ver ett mer unikt namn."
+msgstr "CHAT: Kanalen behöver ett mer unikt namn."
 
 #: extchat.c:3016
 #, c-format
@@ -1175,17 +1175,12 @@ msgstr "CHAT: För att återspela hella bufferten, använd @chan/recall %s=0"
 
 #: src/extchat.c:1461
 msgid "CHAT: Wipe that silly grin off your face instead."
-msgstr "CHAT: Rensa bort det f\345niga flinet fr\345n ditt ansikte ist\344llet."
-
-#: extchat.c:952
-#, c-format
-msgid "CHAT: You are already on channel <%s>"
-msgstr "CHAT: Du l\344mnar kanal <%s>."
+msgstr "CHAT: Rensa bort det fåniga flinet från ditt ansikte istället."
 
 #: src/extchat.c:757
 #, c-format
 msgid "CHAT: You can't do that with channel <%s>."
-msgstr "CHAT: Du kan inte g\366ra det med kanal <%s>."
+msgstr "CHAT: Du kan inte göra det med kanal <%s>."
 
 #: src/extchat.c:824
 #, c-format
@@ -1195,25 +1190,25 @@ msgstr "CHAT: Du tar med %s i kanal <%s>."
 #: src/extchat.c:827
 #, c-format
 msgid "CHAT: You join channel <%s>."
-msgstr "CHAT: Du g\345r med i kanal <%s>."
+msgstr "CHAT: Du går med i kanal <%s>."
 
 #: src/extchat.c:863
 #, c-format
 msgid "CHAT: You leave channel <%s>."
-msgstr "CHAT: Du l\344mnar kanal <%s>."
+msgstr "CHAT: Du lämnar kanal <%s>."
 
 #: src/extchat.c:859
 #, c-format
 msgid "CHAT: You remove %s from channel <%s>."
-msgstr "CHAT: Du tar bort %s fr\345n kanalen <%s>."
+msgstr "CHAT: Du tar bort %s från kanalen <%s>."
 
 #: src/create.c:322
 msgid "Can't set home to home."
-msgstr "Kan inte s\344tta hem till hem."
+msgstr "Kan inte sätta hem till hem."
 
 #: look.c:748
 msgid "Carrying:"
-msgstr "B\344r:"
+msgstr "Bär:"
 
 #: src/extchat.c:1047
 #, c-format
@@ -1230,7 +1225,7 @@ msgstr "Kanal borttagen."
 
 #: src/extchat.c:1192
 msgid "Channel renamed."
-msgstr "Kanalnamn \344ndrat."
+msgstr "Kanalnamn ändrat."
 
 #: look.c:616
 msgid "Channels: *NONE*"
@@ -1251,7 +1246,7 @@ msgstr "Rensad"
 #: create.c:680
 #, c-format
 msgid "Cloned: Exit #%d."
-msgstr "Klonade: Utg\345ng #%d"
+msgstr "Klonade: Utgång #%d"
 
 #: create.c:565
 #, c-format
@@ -1279,15 +1274,11 @@ msgstr "Kompilator: %s"
 
 #: look.c:494 look.c:750
 msgid "Contents:"
-msgstr "Inneh\345ll:"
+msgstr "Innehåll:"
 
 #: src/wiz.c:1635 src/wiz.c:1929
 msgid "Couldn't find that player."
 msgstr "Kunde inte hitta spelaren."
-
-#: src/cmds.c:193
-msgid "Couldn't set that option"
-msgstr "Kunde inte s\344tta det alternativet"
 
 #: src/create.c:431
 msgid "Create what?"
@@ -1327,15 +1318,15 @@ msgstr "Destination: *UNLINKED*"
 
 #: destroy.c:320
 msgid "Destroyed."
-msgstr "F\366rst\366rt."
+msgstr "Förstört."
 
 #: src/destroy.c:216
 msgid "Destroying God would be blasphemous."
-msgstr "Du kan inte f\366rinta Gud."
+msgstr "Du kan inte förinta Gud."
 
 #: src/destroy.c:212
 msgid "Destroying that again is hardly necessary."
-msgstr "Det \344r inte n\366dv\344ndigt att f\366rst\366ra det igen."
+msgstr "Det är inte nödvändigt att förstöra det igen."
 
 #: rob.c:367
 msgid "Did you want to give something *to* someone?"
@@ -1343,20 +1334,20 @@ msgstr "Tänkte du ge något *till* någon?"
 
 #: src/create.c:374
 msgid "Dig what?"
-msgstr "Gr\344v vad?"
+msgstr "Gräv vad?"
 
 #: wiz.c:1011
 msgid "Disabled."
-msgstr "Ej tillg\344nglig."
+msgstr "Ej tillgänglig."
 
 #: function.c:735
 msgid "Do what with the function?"
-msgstr "G\366ra vad med funktionen?"
+msgstr "Göra vad med funktionen?"
 
 #: src/bsd.c:4316
 #, c-format
 msgid "Doing set. %d characters lost."
-msgstr "Doing satt. %d tecken f\366rlorade."
+msgstr "Doing satt. %d tecken förlorade."
 
 #: src/bsd.c:4319
 msgid "Doing set."
@@ -1364,7 +1355,7 @@ msgstr "Doing satt."
 
 #: src/extchat.c:889
 msgid "Don't you have anything to say?"
-msgstr "Har du inget att s\344ga?"
+msgstr "Har du inget att säga?"
 
 #: src/bsd.c:4280
 #, c-format
@@ -1378,11 +1369,11 @@ msgstr "Tömd."
 #: src/look.c:789
 #, c-format
 msgid "Dropped objects go to: %s"
-msgstr "Sl\344ppta objekt \345ker till: %s"
+msgstr "Släppta objekt åker till: %s"
 
 #: move.c:596 move.c:600 move.c:603 move.c:609
 msgid "Dropped."
-msgstr "Sl\344ppt."
+msgstr "Släppt."
 
 #: src/create.c:210
 msgid "Dropto removed."
@@ -1394,11 +1385,11 @@ msgstr "Dropto satt."
 
 #: bsd.c:272
 msgid "Either that player does not exist, or has a different password."
-msgstr "Antingen finns inte den spelaren, eller s\345 har den ett annat l\366senord."
+msgstr "Antingen finns inte den spelaren, eller så har den ett annat lösenord."
 
 #: bsd.c:273
 msgid "Either there is already a player with that name, or that name is illegal."
-msgstr "Antingen finns det redan en spelare med det namnet, eller s\345 \344r det ogiltigt."
+msgstr "Antingen finns det redan en spelare med det namnet, eller så är det ogiltigt."
 
 #: access.c:425
 msgid "Email registration is allowed"
@@ -1406,42 +1397,37 @@ msgstr "E-mail registrering är tillåten."
 
 #: wiz.c:1013
 msgid "Enabled."
-msgstr "Tillg\344nglig."
-
-#: src/bsd.c:497
-#, c-format
-msgid "Error %i on WSAStartup\n"
-msgstr "Fel %i i WSAStartup\n"
+msgstr "Tillgänglig."
 
 #: src/game.c:1465
 msgid "Error -- cannot execute uptime."
-msgstr "Fel -- kan inte k\366ra 'uptime'."
+msgstr "Fel -- kan inte köra 'uptime'."
 
 #: src/destroy.c:271
 msgid "Even you can't do that!"
-msgstr "Inte ens du kan g\366ra det!"
+msgstr "Inte ens du kan göra det!"
 
 #: src/flags.c:1080
 #, c-format
 msgid "Exit %s is no longer broadcasting."
-msgstr "Utg\345ng %s s\344nder inte l\344ngre."
+msgstr "Utgång %s sänder inte längre."
 
 #: src/flags.c:1141
 #, c-format
 msgid "Exit %s is now broadcasting."
-msgstr "Ut\345ng %s s\344nder nu."
+msgstr "Utång %s sänder nu."
 
 #: src/move.c:386 src/move.c:390
 msgid "Exit destination is invalid."
-msgstr "Destinationen f\366r utg\345ngen \344r ej giltig."
+msgstr "Destinationen för utgången är ej giltig."
 
 #: src/wiz.c:412
 msgid "Exits can only be teleported to other rooms."
-msgstr "Utg\345ngar kan bara teleporteras till andra rum."
+msgstr "Utgångar kan bara teleporteras till andra rum."
 
 #: look.c:772
 msgid "Exits:"
-msgstr "Utg\345ngar:"
+msgstr "Utgångar:"
 
 #: function.c:1018
 msgid "Expected between 1 and 5 arguments."
@@ -1450,21 +1436,21 @@ msgstr "\"Väntade 1-5 argument.\""
 #: wiz.c:109
 #, c-format
 msgid "Failure creating '%s' (bad name)"
-msgstr "Fel vid f\366rs\366k att skapa '%s' (felaktigt namn)"
+msgstr "Fel vid försök att skapa '%s' (felaktigt namn)"
 
 #: wiz.c:113
 #, c-format
 msgid "Failure creating '%s' (bad password)"
-msgstr "Fel vid f\366rs\366k att skapa '%s' (felaktigt l\366senord)"
+msgstr "Fel vid försök att skapa '%s' (felaktigt lösenord)"
 
 #: src/rob.c:254
 msgid "Feeling poor today?"
-msgstr "K\344nner du dig fattig idag?"
+msgstr "Känner du dig fattig idag?"
 
 #: src/extmail.c:1182
 #, c-format
 msgid "Fixing mail for #%d."
-msgstr "Korrigerar brev f\366r #%d."
+msgstr "Korrigerar brev för #%d."
 
 #: function.c:897
 #, c-format
@@ -1491,7 +1477,7 @@ msgstr "Mapp:"
 
 #: src/speech.c:1010
 msgid "From afar"
-msgstr "L\345ngt bort ifr\345n"
+msgstr "Långt bort ifrån"
 
 #: bsd.c:4123
 #, c-format
@@ -1505,7 +1491,7 @@ msgid ""
 "Date: %-25s   %s %2d   Message: %d\n"
 "Status: %s"
 msgstr ""
-"Fr\345n: %-55s %s\n"
+"Från: %-55s %s\n"
 "Datum: %-25s  %s %2d   Meddelande: %d\n"
 "Status: %s"
 
@@ -1526,10 +1512,6 @@ msgstr "Funktion adderad."
 msgid "Function deleted."
 msgstr "Funktion raderad."
 
-#: src/function.c:677
-msgid "Function name too long."
-msgstr "Funktionsnamn f\366r l\345ngt."
-
 #: src/function.c:741
 msgid "Function updated."
 msgstr "Funktion updaterad."
@@ -1540,7 +1522,7 @@ msgstr "Fwd "
 
 #: src/destroy.c:1325
 msgid "GAME: Database consistency check complete."
-msgstr "SPEL: Databasens integritetskontroll utf\366rd."
+msgstr "SPEL: Databasens integritetskontroll utförd."
 
 #: src/conf.c:570
 msgid "GAME: Database will be dumped in 1 minute."
@@ -1552,11 +1534,11 @@ msgstr "SPEL: Databasen kommer att dumpas om 5 minuter."
 
 #: src/conf.c:502
 msgid "GAME: Dump complete. Time in."
-msgstr "SPEL: Dump klar. Forts\344tt."
+msgstr "SPEL: Dump klar. Fortsätt."
 
 #: src/conf.c:501
 msgid "GAME: Dumping database. Game may freeze for a minute"
-msgstr "SPEL: Dumpar databasen. Spelet kan l\345sa sig n\345gon minut."
+msgstr "SPEL: Dumpar databasen. Spelet kan låsa sig någon minut."
 
 #: game.c:311
 msgid "GAME: ERROR! Database save failed!"
@@ -1576,7 +1558,7 @@ msgstr "SPEL: Fel under skrivning av ombootningsdatabas!"
 
 #: src/services.c:257
 msgid "GAME: Game shutdown by system operator"
-msgstr "SPEL: Spelet nedst\344ngt av system operat\366ren."
+msgstr "SPEL: Spelet nedstängt av system operatören."
 
 #: src/destroy.c:1322
 msgid "GAME: Performing database consistency check."
@@ -1589,11 +1571,11 @@ msgstr "SPEL: Omstart klar."
 #: src/wiz.c:2295
 #, c-format
 msgid "GAME: Reboot w/o disconnect by %s, please wait."
-msgstr "SPEL: Omstart utan nedkoppling av %s, v\344nta."
+msgstr "SPEL: Omstart utan nedkoppling av %s, vänta."
 
 #: src/wiz.c:2289
 msgid "GAME: Reboot w/o disconnect from game account, please wait."
-msgstr "SPEL: Omstart utan nedkoppling fr\345n spel-konto, v\344nta."
+msgstr "SPEL: Omstart utan nedkoppling från spel-konto, vänta."
 
 #: log.c:459
 msgid "GAME: Recall from activity log"
@@ -1606,21 +1588,21 @@ msgstr "SPEL: SSL kopplingarna måste stängas, tyvärr."
 #: src/game.c:273
 #, c-format
 msgid "GAME: Shutdown by %s"
-msgstr "SPEL: Nedst\344ngning av %s"
+msgstr "SPEL: Nedstängning av %s"
 
 #: src/bsd.c:1748
 msgid "GAME: Shutdown by external signal"
-msgstr "SPEL: Nedst\344nging av extern signal"
+msgstr "SPEL: Nedstänging av extern signal"
 
 #: bsd.c:4064
 #, c-format
 msgid "GAME: Suspect %s created."
-msgstr "SPEL: Misst\344nkt %s skapad."
+msgstr "SPEL: Misstänkt %s skapad."
 
 #: bsd.c:4081 bsd.c:4259
 #, c-format
 msgid "GAME: Suspect %s"
-msgstr "SPEL: Misst\344nkt %s"
+msgstr "SPEL: Misstänkt %s"
 
 #: bsd.c:4032 bsd.c:4055 bsd.c:4058 bsd.c:4061 bsd.c:4234 bsd.c:4237\nbsd.c:4240
 msgid "GAME:"
@@ -1628,11 +1610,11 @@ msgstr "SPEL:"
 
 #: src/wiz.c:363
 msgid "Garbage belongs in the garbage dump."
-msgstr "Skr\344p h\366r hemma p\345 soptippen."
+msgstr "Skräp hör hemma på soptippen."
 
 #: src/look.c:667 src/look.c:1306
 msgid "Garbage is garbage."
-msgstr "Skr\344p \344r skr\344p."
+msgstr "Skräp är skräp."
 
 #: src/set.c:82
 msgid "Give it what new name?"
@@ -1656,7 +1638,7 @@ msgstr "Gud är redan allsmäktig."
 
 #: bsd.c:276
 msgid "Going down - Bye"
-msgstr "G\345r ner - Hej d\345"
+msgstr "Går ner - Hej då"
 
 #: access.c:415
 msgid "Guest connections are NOT allowed"
@@ -1672,23 +1654,19 @@ msgstr "Gästuppkopplingar ej tillåtna."
 
 #: src/extchat.c:793
 msgid "Guests are not allowed to join channels."
-msgstr "G\344ster f\345r inte g\345 med i kanaler."
+msgstr "Gäster får inte gå med i kanaler."
 
 #: extchat.c:1000
 msgid "Guests are not allowed to leave channels."
-msgstr "G\344ster kan inte l\344mna kanaler."
-
-#: src/command.c:1252
-msgid "Guests cannot do that."
-msgstr "G\344ster kan inte g\366ra det."
+msgstr "Gäster kan inte lämna kanaler."
 
 #: src/extchat.c:846
 msgid "Guests may not leave channels."
-msgstr "G\344ster f\345r inte l\344mna kanaler."
+msgstr "Gäster får inte lämna kanaler."
 
 #: src/extchat.c:1078
 msgid "Guests may not modify channels."
-msgstr "G\344ster f\345r inte modifiera kanaler."
+msgstr "Gäster får inte modifiera kanaler."
 
 #: cque.c:830 cque.c:934 cque.c:937
 msgid "Halted"
@@ -1696,11 +1674,11 @@ msgstr "Stoppat"
 
 #: help.c:122 help.c:126
 msgid "Help files reindexed."
-msgstr "Hj\344lp-filer omindexerade."
+msgstr "Hjälp-filer omindexerade."
 
 #: src/bsd.c:3065
 msgid "Help topics don't start with '&'."
-msgstr "Hj\344lp sektioner b\366rjar inte med '&'."
+msgstr "Hjälp sektioner börjar inte med '&'."
 
 #: help.c:71
 #, c-format
@@ -1741,15 +1719,15 @@ msgstr "Hur vill du begränsa det %s?"
 
 #: src/command.c:1109
 msgid "How do you want to restrict the command?"
-msgstr "Hur vill du begr\344nsa kommandot?"
+msgstr "Hur vill du begränsa kommandot?"
 
 #: src/destroy.c:276
 msgid "How gruesome. You may not destroy players who are connected."
-msgstr "Du kan inte f\366rinta spelare som \344r uppkopplade."
+msgstr "Du kan inte förinta spelare som är uppkopplade."
 
 #: src/wiz.c:1033
 msgid "How many commands do you want to execute?"
-msgstr "Hur m\345nga kommandon vill du utf\366ra?"
+msgstr "Hur många kommandon vill du utföra?"
 
 #: extchat.c:2914 extchat.c:2919
 msgid "How many lines did you want to recall?"
@@ -1757,7 +1735,7 @@ msgstr "Hur många rader ville du återspela?"
 
 #: src/game.c:999
 msgid "Huh?  (Type \"help\" for help.)"
-msgstr "Eh? (Skriv \"help\" f\366r hj\344lp.)"
+msgstr "Eh? (Skriv \"help\" för hjälp.)"
 
 #: src/attrib.c:1076
 msgid "I can't find that player"
@@ -1778,7 +1756,7 @@ msgstr "Kan ej hitta den du försöker anropa med: %s"
 
 #: src/fundb.c:1795 src/match.c:271
 msgid "I can't see that here."
-msgstr "Jag kan inte se det h\344r."
+msgstr "Jag kan inte se det här."
 
 #: src/wiz.c:941
 msgid "I can't seem to find that."
@@ -1791,7 +1769,7 @@ msgstr "Kan inte avgöra vilken %s."
 
 #: src/bsd.c:4810
 msgid "I can't tell which channel you mean."
-msgstr "Jag kan inte avg\366ra vilken kanal du menar."
+msgstr "Jag kan inte avgöra vilken kanal du menar."
 
 #: move.c:785
 msgid "I can't tell which one to follow."
@@ -1803,7 +1781,7 @@ msgstr "Kan inte avgöra vilken du vill sluta följa."
 
 #: src/look.c:576
 msgid "I can't tell which one you mean."
-msgstr "Jag kan inte avg\366ra vilken du menar."
+msgstr "Jag kan inte avgöra vilken du menar."
 
 #: src/cque.c:775 src/set.c:199
 msgid "I couldn't find that player."
@@ -1814,10 +1792,6 @@ msgstr "Jag kunde inte hitta den spelaren."
 msgid "I don't know that %s."
 msgstr "Okänd %s."
 
-#: src/rob.c:94
-msgid "I don't know what you mean!"
-msgstr "Jag f\366rst\345r inte vad du menar!"
-
 #: rob.c:390
 msgid "I don't know what you mean."
 msgstr "Jag förstår ej vad du menar."
@@ -1825,7 +1799,7 @@ msgstr "Jag förstår ej vad du menar."
 #: src/boolexp.c:265
 #, c-format
 msgid "I don't know which %s you mean!"
-msgstr "Jag kan inte avg\366ra vilken %s du menar!"
+msgstr "Jag kan inte avgöra vilken %s du menar!"
 
 #: src/extchat.c:1011
 msgid "I don't know which channel you mean."
@@ -1845,7 +1819,7 @@ msgstr "Jag vet inte vilken du menar."
 
 #: src/lock.c:365
 msgid "I don't know which one you want to lock!"
-msgstr "Jag vet inte vilken du vill l\345sa!"
+msgstr "Jag vet inte vilken du vill låsa!"
 
 #: src/fundb.c:1797
 msgid "I don't know which thing you mean."
@@ -1853,7 +1827,7 @@ msgstr "Jag vet inte vilken sak du menar."
 
 #: src/move.c:362
 msgid "I don't know which way you mean!"
-msgstr "Jag vet inte vilken v\344g du menar!"
+msgstr "Jag vet inte vilken väg du menar!"
 
 #: src/move.c:571 src/rob.c:194
 msgid "I don't know which you mean!"
@@ -1865,24 +1839,24 @@ msgstr "Jag vet inte vem du menar!"
 
 #: src/extchat.c:1008
 msgid "I don't recognize that channel."
-msgstr "Jag k\344nner inte igen den kanalen."
+msgstr "Jag känner inte igen den kanalen."
 
 #: move.c:883
 msgid "I don't recognize who you want to desert."
-msgstr "Jag k\344nner inte igen vem du vill \366verge."
+msgstr "Jag känner inte igen vem du vill överge."
 
 #: move.c:853
 msgid "I don't recognize who you want to dismiss."
-msgstr "Jag k\344nner inte igen vem du vill stoppa."
+msgstr "Jag känner inte igen vem du vill stoppa."
 
 #: src/boolexp.c:261
 #, c-format
 msgid "I don't see %s here."
-msgstr "Jag ser inte %s h\344r."
+msgstr "Jag ser inte %s här."
 
 #: src/fundb.c:1327 src/look.c:551 src/look.c:566 src/move.c:482\nsrc/move.c:505 src/rob.c:91 src/speech.c:599
 msgid "I don't see that here."
-msgstr "Jag ser inte det h\344r."
+msgstr "Jag ser inte det här."
 
 #: src/warnings.c:256 src/warnings.c:432
 msgid "I don't see that object."
@@ -1890,21 +1864,21 @@ msgstr "Jag kan inte se det objektet."
 
 #: src/lock.c:362
 msgid "I don't see what you want to lock!"
-msgstr "Jag f\366rst\345r inte vad du vill l\345sa!"
+msgstr "Jag förstår inte vad du vill låsa!"
 
 #: attrib.c:935
 #, c-format
 msgid "I don't think #%d wants to hear from you."
-msgstr "Jag tror inte att #%d vill h\366ra n\345got fr\345n dig."
+msgstr "Jag tror inte att #%d vill höra något från dig."
 
 #: src/fundb.c:1412
 #, c-format
 msgid "I don't understand switch '%c'."
-msgstr "Jag f\366rst\345r inte omkopplare '%c'."
+msgstr "Jag förstår inte omkopplare '%c'."
 
 #: src/lock.c:383
 msgid "I don't understand that key."
-msgstr "Jag f\366rst\345r inte den nyckeln."
+msgstr "Jag förstår inte den nyckeln."
 
 #: flags.c:1405
 msgid "I don't understand the list of types."
@@ -1912,31 +1886,31 @@ msgstr "Jag förstår ej typlistan."
 
 #: src/atr_tab.c:189
 msgid "I don't understand those permissions."
-msgstr "Jag f\366rst\345r inte de r\344ttigheterna."
+msgstr "Jag förstår inte de rättigheterna."
 
 #: src/game.c:1606 src/game.c:1616
 msgid "I don't understand what you want to @list."
-msgstr "Jag f\366rst\345r inte vad du vill @list:a."
+msgstr "Jag förstår inte vad du vill @list:a."
 
 #: src/extchat.c:870
 msgid "I don't understand what you want to do."
-msgstr "Jag f\366rst\345r inte vad du vill g\366ra."
+msgstr "Jag förstår inte vad du vill göra."
 
 #: src/set.c:798
 msgid "I need to know what attribute to trigger."
-msgstr "Jag beh\366ver veta vilket attribut som ska triggas."
+msgstr "Jag behöver veta vilket attribut som ska triggas."
 
 #: src/set.c:667 src/set.c:673
 msgid "I need to know what you want to edit."
-msgstr "Jag beh\366ver veta vad du vill editera."
+msgstr "Jag behöver veta vad du vill editera."
 
 #: src/conf.c:779
 msgid "I only know the following types of options:"
-msgstr "Jag k\344nner bara till f\366ljande typer av alternativ:"
+msgstr "Jag känner bara till följande typer av alternativ:"
 
 #: src/fundb.c:1304
 msgid "I'm not sure who you mean."
-msgstr "Jag \344r inte s\344ker p\345 vem du menar."
+msgstr "Jag är inte säker på vem du menar."
 
 #: speech.c:692
 #, c-format
@@ -1946,7 +1920,7 @@ msgstr "Jag är osäker på vem du vill anropa med: %s."
 #: src/speech.c:611 src/speech.c:1371
 #, c-format
 msgid "I'm sorry, but %s wishes to be left alone now."
-msgstr "%s vill tyv\344rr vara ensam nu."
+msgstr "%s vill tyvärr vara ensam nu."
 
 #: bsd.c:3848 bsd.c:3851 bsd.c:3855 bsd.c:3859
 msgid "Idle"
@@ -1967,7 +1941,7 @@ msgstr "Otillåtet tecken i titeln."
 #: src/game.c:860
 #, c-format
 msgid "Invalid location on command execution: %s(#%d)"
-msgstr "Ogiltig plats p\345 kommando-k\366rning: %s(#%d)"
+msgstr "Ogiltig plats på kommando-körning: %s(#%d)"
 
 #: src/extmail.c:1590
 msgid "Invalid message specification"
@@ -1976,7 +1950,7 @@ msgstr "Ogiltig meddelande specifikation"
 #: extchat.c:1359
 #, c-format
 msgid "Invalid or same permissions on channel <%s>. No changes made."
-msgstr "Ogiltiga eller samma r\344ttigheter p\345 kanal <%s>. Inga \344ndringar gjorda."
+msgstr "Ogiltiga eller samma rättigheter på kanal <%s>. Inga ändringar gjorda."
 
 #: src/look.c:941
 msgid "Invalid parameter."
@@ -1984,15 +1958,15 @@ msgstr "Ogiltig parameter."
 
 #: src/wiz.c:1458 src/wiz.c:1465 src/wiz.c:1681 src/wiz.c:1689
 msgid "Invalid range argument"
-msgstr "Ogiltigt gr\344ns-argument"
+msgstr "Ogiltigt gräns-argument"
 
 #: src/attrib.c:1038
 msgid "Invalid status on atrlock.. Notify god."
-msgstr "Ogiltig status p\345 atrlock.. Tala om det f\366r Gud."
+msgstr "Ogiltig status på atrlock.. Tala om det för Gud."
 
 #: src/extchat.c:782 src/extchat.c:797 src/extchat.c:842
 msgid "Invalid target."
-msgstr "Ogiltigt m\345l."
+msgstr "Ogiltigt mål."
 
 #: src/speech.c:1475
 msgid "Invalid zone."
@@ -2001,15 +1975,15 @@ msgstr "Ogiltig zon."
 #: src/create.c:265 src/create.c:279
 #, c-format
 msgid "It costs %d %s to link this exit."
-msgstr "Det kostar %d %s att l\344nka denna utg\345ng."
+msgstr "Det kostar %d %s att länka denna utgång."
 
 #: src/game.c:269
 msgid "It takes a God to make me panic."
-msgstr "Det kr\344vs Gud f\366r att f\345 mig i panik."
+msgstr "Det krävs Gud för att få mig i panik."
 
 #: src/destroy.c:1225
 msgid "It was destroyed."
-msgstr "Det f\366rst\366rdes."
+msgstr "Det förstördes."
 
 #: src/destroy.c:1210 src/destroy.c:1218
 #, c-format
@@ -2018,12 +1992,12 @@ msgstr "Det flyttades till %s."
 
 #: src/move.c:516
 msgid "It's all around you!"
-msgstr "Du st\345r i det!"
+msgstr "Du står i det!"
 
 #: src/player.c:460
 #, c-format
 msgid "Last FAILED connect was from %s."
-msgstr "Senaste MISSLYCKADE uppkoppling var fr\345n %s."
+msgstr "Senaste MISSLYCKADE uppkoppling var från %s."
 
 #: src/look.c:743
 #, c-format
@@ -2033,12 +2007,12 @@ msgstr "Senaste modifikation: %s"
 #: src/player.c:452
 #, c-format
 msgid "Last connect was from %s on %s."
-msgstr "Senaste uppkoppling var fr\345n %s %s."
+msgstr "Senaste uppkoppling var från %s %s."
 
 #: src/extmail.c:1384
 #, c-format
 msgid "Last is dated %s"
-msgstr "Senaste \344r daterad %s"
+msgstr "Senaste är daterad %s"
 
 #: game.c:2091
 msgid "Last reboot"
@@ -2052,11 +2026,11 @@ msgstr "Senast omstartat: %s"
 #: create.c:156 create.c:296
 #, c-format
 msgid "Linked exit #%d to #%d"
-msgstr "L\344nkade utg\345ng #%d till #%d"
+msgstr "Länkade utgång #%d till #%d"
 
 #: src/look.c:996
 msgid "Listening EXITS:"
-msgstr "Lyssnande UTG\305NGAR:"
+msgstr "Lyssnande UTGÅNGAR:"
 
 #: src/look.c:946
 msgid "Listening in ROOM:"
@@ -2092,7 +2066,7 @@ msgstr "BREV: %d meddelanden vidarebefodrade."
 #: src/extmail.c:2504
 #, c-format
 msgid "MAIL: %d messages in folder %d [%s] (%d unread, %d cleared)."
-msgstr "BREV: %d meddelanden i mapp %d [%s] (%d ol\344sta, %d rensade)."
+msgstr "BREV: %d meddelanden i mapp %d [%s] (%d olästa, %d rensade)."
 
 #: src/malias.c:223 src/malias.c:679
 #, c-format
@@ -2102,17 +2076,17 @@ msgstr "BREV: %s adderad till alias %s"
 #: src/extmail.c:984
 #, c-format
 msgid "MAIL: %s is not accepting mail from you right now."
-msgstr "BREV: %s accepterar inte brev fr\345n dig just nu."
+msgstr "BREV: %s accepterar inte brev från dig just nu."
 
 #: src/malias.c:782
 #, c-format
 msgid "MAIL: %s removed from alias %s"
-msgstr "BREV: %s borttagen fr\345n alias %s"
+msgstr "BREV: %s borttagen från alias %s"
 
 #: src/extmail.c:990
 #, c-format
 msgid "MAIL: %s's mailbox is full. Can't send."
-msgstr "BREV: %ss brevl\345da \344r full. Kan inte skicka."
+msgstr "BREV: %ss brevlåda är full. Kan inte skicka."
 
 #: malias.c:315
 #, c-format
@@ -2131,11 +2105,11 @@ msgstr "BREV: Alias '%s' hittades ej."
 
 #: src/malias.c:438
 msgid "MAIL: Alias Destroyed."
-msgstr "BREV: Alias f\366rst\366rt."
+msgstr "BREV: Alias förstört."
 
 #: src/malias.c:239 src/malias.c:696
 msgid "MAIL: Alias list is restricted to maximal 100 entries!"
-msgstr "BREV: Alias listan \344r begr\344nsad till max 100 f\344lt."
+msgstr "BREV: Alias listan är begränsad till max 100 fält."
 
 #: malias.c:518
 msgid "MAIL: Alias list set."
@@ -2144,46 +2118,41 @@ msgstr "BREV: Alias lista satt."
 #: src/malias.c:264
 #, c-format
 msgid "MAIL: Alias set '%s' defined."
-msgstr "BREV: Alias upps\344ttning '%s' definierad."
+msgstr "BREV: Alias uppsättning '%s' definierad."
 
 #: src/malias.c:711 src/malias.c:794
 #, c-format
 msgid "MAIL: Alias set '%s' redefined."
-msgstr "BREV: Alias upps\344ttning '%s' omdefinierad."
+msgstr "BREV: Alias uppsättning '%s' omdefinierad."
 
 #: src/malias.c:148
 #, c-format
 msgid "MAIL: All Mail aliases must begin with '%c'."
-msgstr "BREV: Alla brev alias m\345ste b\366rja med '%c'."
+msgstr "BREV: Alla brev alias måste börja med '%c'."
 
 #: src/malias.c:513
 msgid "MAIL: All mail aliases destroyed!"
-msgstr "BREV: Alla brev alias f\366rst\366rda!"
+msgstr "BREV: Alla brev alias förstörda!"
 
 #: src/extmail.c:432
 #, c-format
 msgid "MAIL: All messages filed in folder %d [%s]"
 msgstr "BREV: Alla meddelanden arkiverade i mapp %d [%s]"
 
-#: src/extmail.c:357 src/extmail.c:370
-#, c-format
-msgid "MAIL: All messages in all folders %s."
-msgstr "BREV: Alla meddelanden i alla mappar %s."
-
 #: src/malias.c:485
 #, c-format
 msgid "MAIL: Allocated slots %d"
-msgstr "BREV: Tilldelade \366ppningar %d"
+msgstr "BREV: Tilldelade öppningar %d"
 
 #: src/malias.c:403
 #, c-format
 msgid "MAIL: Bad alias. Aliases must start with '%c'."
-msgstr "BREV: Felaktigt alias. Alias m\345ste b\366rja med '%c'."
+msgstr "BREV: Felaktigt alias. Alias måste börja med '%c'."
 
 #: src/extmail.c:233
 #, c-format
 msgid "MAIL: Current folder is %d [%s]."
-msgstr "BREV: Nuvarande mapp \344r %d [%s]."
+msgstr "BREV: Nuvarande mapp är %d [%s]."
 
 #: src/extmail.c:260
 #, c-format
@@ -2192,7 +2161,7 @@ msgstr "BREV: Nuvarande folder satt till %d[%s]."
 
 #: src/malias.c:353
 msgid "MAIL: Description changed."
-msgstr "BREV: Beskrivning \344ndrad."
+msgstr "BREV: Beskrivning ändrad."
 
 #: src/extmail.c:283
 #, c-format
@@ -2206,15 +2175,15 @@ msgstr "BREV: Mappen %d kallas nu '%s'"
 
 #: src/extmail.c:245
 msgid "MAIL: Folder name too long"
-msgstr "BREV: Mapp namn f\366r l\345ngt."
+msgstr "BREV: Mapp namn för långt."
 
 #: src/extmail.c:792
 msgid "MAIL: I can't figure out what you want to send."
-msgstr "BREV: Jag f\366rst\345r inte vad du vill skicka."
+msgstr "BREV: Jag förstår inte vad du vill skicka."
 
 #: src/extmail.c:788
 msgid "MAIL: I can't figure out who you want to mail to."
-msgstr "BREV: Jag kan inte r\344kna ut vem du vill skicka brev till."
+msgstr "BREV: Jag kan inte räkna ut vem du vill skicka brev till."
 
 #: src/malias.c:398 src/malias.c:529 src/malias.c:555
 msgid "MAIL: I cannot find that alias!"
@@ -2230,7 +2199,7 @@ msgstr "BREV: Ogiltigt mapp namn"
 
 #: src/extmail.c:2345 src/extmail.c:2355 src/extmail.c:2362 src/extmail.c:2372\nsrc/extmail.c:2379 src/extmail.c:2389
 msgid "MAIL: Invalid age"
-msgstr "BREV: Ogiltig \345lder"
+msgstr "BREV: Ogiltig ålder"
 
 #: src/malias.c:158
 msgid "MAIL: Invalid character in mail alias."
@@ -2272,15 +2241,15 @@ msgstr "BREV: Brev alias '%s' hittades ej."
 
 #: src/malias.c:418
 msgid "MAIL: Mail Alias renamed."
-msgstr "BREV: Brev alias namn \344ndrat."
+msgstr "BREV: Brev alias namn ändrat."
 
 #: src/extmail.c:668
 msgid "MAIL: Mailbox purged."
-msgstr "BREV: Brevl\345da rensad."
+msgstr "BREV: Brevlåda rensad."
 
 #: src/extmail.c:2349 src/extmail.c:2366 src/extmail.c:2383
 msgid "MAIL: Message ages must be integers"
-msgstr "BREV: Meddelandets \345lder m\345ste vara siffror."
+msgstr "BREV: Meddelandets ålder måste vara siffror."
 
 #: extmail.c:362
 #, c-format
@@ -2300,20 +2269,16 @@ msgstr "BREV: Meddelande %d:%d arkiverat i mapp %d [%s]"
 #: src/malias.c:220 src/malias.c:671 src/malias.c:774
 #, c-format
 msgid "MAIL: No such player '%s'."
-msgstr "BREV: Ingen s\345dan spelare '%s'."
+msgstr "BREV: Ingen sådan spelare '%s'."
 
 #: src/malias.c:242 src/malias.c:699
 msgid "MAIL: No valid recipients for alias-list!"
-msgstr "BREV: Inga giltiga mottagare f\366r alias-listan!"
+msgstr "BREV: Inga giltiga mottagare för alias-listan!"
 
 #: malias.c:450
 #, c-format
 msgid "MAIL: Not a valid alias. Remember to prefix the alias name with %c."
-msgstr "BREV: Inte ett giltigt alias. Kom ih\345g att l\344gga till %c f\366re aliasnamnet."
-
-#: src/malias.c:434
-msgid "MAIL: Not a valid alias. Remember to prefix the alias name with *."
-msgstr "BREV: Inte ett giltigt alias. Kom ih\345g att alltid b\366rja alias namn med *."
+msgstr "BREV: Inte ett giltigt alias. Kom ihåg att lägga till %c före aliasnamnet."
 
 #: src/malias.c:484
 #, c-format
@@ -2322,28 +2287,28 @@ msgstr "BREV: Antalet brev alias definerat: %d"
 
 #: src/malias.c:497
 msgid "MAIL: Only god can do that!"
-msgstr "BREV: Bara Gud kan g\366ra det!"
+msgstr "BREV: Bara Gud kan göra det!"
 
 #: src/malias.c:139
 msgid "MAIL: Only players may create mail aliases."
-msgstr "BREV: Bara spelare f\345r skapa brev alias."
+msgstr "BREV: Bara spelare får skapa brev alias."
 
 #: src/malias.c:382
 msgid "MAIL: Owner changed for alias."
-msgstr "BREV: \304gare f\366r alias \344ndrad."
+msgstr "BREV: Ägare för alias ändrad."
 
 #: src/malias.c:443
 msgid "MAIL: Permission denied!"
-msgstr "BREV: \305tkomst nekad!"
+msgstr "BREV: Åtkomst nekad!"
 
 #: src/malias.c:324 src/malias.c:355 src/malias.c:412 src/malias.c:482\nsrc/malias.c:533 src/malias.c:559
 msgid "MAIL: Permission denied."
-msgstr "BREV: \305tkomst nekad."
+msgstr "BREV: Åtkomst nekad."
 
 #: src/malias.c:539
 #, c-format
 msgid "MAIL: Permission to see/use alias '%s' changed to %s"
-msgstr "BREV: R\344ttighet att se/anv\344nda alias '%s' \344ndrat till %s"
+msgstr "BREV: Rättighet att se/använda alias '%s' ändrat till %s"
 
 #: src/malias.c:408
 msgid "MAIL: That name already exists!"
@@ -2352,17 +2317,17 @@ msgstr "BREV: Det namnet existerar redan!"
 #: src/extmail.c:1294
 #, c-format
 msgid "MAIL: There are %d msgs in the mail spool, %d unread, %d cleared."
-msgstr "BREV: Det finns %d meddelanden i brevl\345dan, %d ol\344sta, %d rensade."
+msgstr "BREV: Det finns %d meddelanden i brevlådan, %d olästa, %d rensade."
 
 #: src/extmail.c:1316
 #, c-format
 msgid "MAIL: There are %d new msgs in the mail spool, totalling %d characters."
-msgstr "BREV: Det finns %d nya meddelanden i brevl\345dan, totalt %d tecken."
+msgstr "BREV: Det finns %d nya meddelanden i brevlådan, totalt %d tecken."
 
 #: src/extmail.c:1312
 #, c-format
 msgid "MAIL: There are %d old msgs in the mail spool, totalling %d characters."
-msgstr "BREV: Det finns %d gamla meddelanden i brevl\345dan, totalt %d tecken."
+msgstr "BREV: Det finns %d gamla meddelanden i brevlådan, totalt %d tecken."
 
 #: src/extmail.c:695
 msgid "MAIL: To whom should I forward?"
@@ -2371,28 +2336,28 @@ msgstr "BREV: Till vem ska jag skicka vidare?"
 #: src/extmail.c:378
 #, c-format
 msgid "MAIL: Unread Msg #%d:%d cleared! Use @mail/unclear %d:%d to recover."
-msgstr "BREV: Ol\344sta meddelandet #%d:%d rensat! Anv\344nd @mail/unclear %d:%d f\366r att \345terst\344lla."
+msgstr "BREV: Olästa meddelandet #%d:%d rensat! Använd @mail/unclear %d:%d för att återställa."
 
 #: src/extmail.c:2509
 #, c-format
 msgid "MAIL: Warning! Limit on inbox messages is %d!"
-msgstr "BREV: Varning! Begr\344nsning av inkommande meddelanden \344r %d!"
+msgstr "BREV: Varning! Begränsning av inkommande meddelanden är %d!"
 
 #: src/extmail.c:239 src/extmail.c:279
 msgid "MAIL: What folder is that?"
-msgstr "BREV: Vilken mapp \344r det?"
+msgstr "BREV: Vilken mapp är det?"
 
 #: src/extmail.c:726
 msgid "MAIL: You can't reply to nonexistant mail."
-msgstr "BREV: Du kan inte svara p\345 brev som inte existerar."
+msgstr "BREV: Du kan inte svara på brev som inte existerar."
 
 #: src/extmail.c:826
 msgid "MAIL: You can't reply to nonexistent mail."
-msgstr "BREV: Du kan inte svara p\345 brev som inte existerar."
+msgstr "BREV: Du kan inte svara på brev som inte existerar."
 
 #: src/malias.c:374
 msgid "MAIL: You cannot do that!"
-msgstr "BREV: Du kan inte g\366ra det!"
+msgstr "BREV: Du kan inte göra det!"
 
 #: src/extmail.c:975
 msgid "MAIL: You cannot send mail to non-existent people."
@@ -2400,16 +2365,16 @@ msgstr "BREV: Du kan inte skicka brev till personer som inte existerar."
 
 #: src/extmail.c:393 src/extmail.c:446
 msgid "MAIL: You don't have any matching messages!"
-msgstr "BREV: Du har inga tr\344ffade meddelanden!"
+msgstr "BREV: Du har inga träffade meddelanden!"
 
 #: src/extmail.c:518
 msgid "MAIL: You don't have that many matching messages!"
-msgstr "BREV: Du har inte s\345 m\345nga tr\344ffade meddelanden!"
+msgstr "BREV: Du har inte så många träffade meddelanden!"
 
 #: src/extmail.c:1091
 #, c-format
 msgid "MAIL: You have a new message (%d) from %s."
-msgstr "BREV: Du har ett nytt meddelande (%d) fr\345n %s."
+msgstr "BREV: Du har ett nytt meddelande (%d) från %s."
 
 #: src/extmail.c:705
 msgid "MAIL: You have no messages to forward."
@@ -2417,15 +2382,15 @@ msgstr "BREV: Du har inga meddelanden att skicka vidare."
 
 #: malias.c:447
 msgid "MAIL: You must set the alias to a non-empty list."
-msgstr "BREV: Du m\345ste s\344tta alias till en icke-tom lista."
+msgstr "BREV: Du måste sätta alias till en icke-tom lista."
 
 #: src/extmail.c:274
 msgid "MAIL: You must specify a folder name or number"
-msgstr "BREV: Du m\345ste specifiera ett mapp-namn eller -nummer"
+msgstr "BREV: Du måste specifiera ett mapp-namn eller -nummer"
 
 #: src/extmail.c:979
 msgid "MAIL: You probably don't wanna send mail saying 'clear'."
-msgstr "BREV: Du vill f\366rmodligen inte skicka ett brev som s\344ger 'clear'."
+msgstr "BREV: Du vill förmodligen inte skicka ett brev som säger 'clear'."
 
 #: src/extmail.c:1090
 #, c-format
@@ -2445,12 +2410,12 @@ msgstr "BREV: spelare '%s' finns inte i alias %s."
 #: src/extmail.c:1161
 #, c-format
 msgid "Mail cleared for %s(#%d)."
-msgstr "Brev rensade f\366r %s(#%d)."
+msgstr "Brev rensade för %s(#%d)."
 
 #: src/extmail.c:1174
 #, c-format
 msgid "Mail database top is %d, actual message count is %d. Fixing."
-msgstr "Brev databas topp \344r %d, meddelande antal \344r %d. Korrigerar."
+msgstr "Brev databas topp är %d, meddelande antal är %d. Korrigerar."
 
 #: src/extmail.c:1178
 msgid "Mail sanity check completed."
@@ -2463,57 +2428,57 @@ msgstr "Brev sundhets-korrigering klar."
 #: src/extmail.c:1365
 #, c-format
 msgid "Mail statistics for %s:"
-msgstr "Brev statistik f\366r %s:"
+msgstr "Brev statistik för %s:"
 
 #: extmail.c:2477
 msgid "Mass "
-msgstr "M\344ngd "
+msgstr "Mängd "
 
 #: src/game.c:1253
 #, c-format
 msgid "Matched here: %s  [%d:%s]"
-msgstr "Tr\344ffade h\344r: %s [%d:%s]"
+msgstr "Träffade här: %s [%d:%s]"
 
 #: src/game.c:1296
 #, c-format
 msgid "Matched personal zone: %s  [%d:%s]"
-msgstr "Tr\344ffade personlig zon: %s [%d:%s]"
+msgstr "Träffade personlig zon: %s [%d:%s]"
 
 #: src/game.c:1267
 #, c-format
 msgid "Matched self: %s  [%d:%s]"
-msgstr "Tr\344ffade sig sj\344lv: %s [%d:%s]"
+msgstr "Träffade sig själv: %s [%d:%s]"
 
 #: src/game.c:1288
 #, c-format
 msgid "Matched zone of location: %s  [%d:%s]"
-msgstr "Tr\344ffade zon i plats: %s  [%d:%s]"
+msgstr "Träffade zon i plats: %s  [%d:%s]"
 
 #: src/predicat.c:1051
 #, c-format
 msgid "Matches of '%s' on %s(#%d): %s"
-msgstr "Tr\344ffar av '%s' p\345 %s(#%d): %s"
+msgstr "Träffar av '%s' på %s(#%d): %s"
 
 #: src/game.c:1258
 msgid "Matches on carried objects:"
-msgstr "Tr\344ffar p\345 burna objekt:"
+msgstr "Träffar på burna objekt:"
 
 #: src/game.c:1243
 msgid "Matches on contents of this room:"
-msgstr "Tr\344ffar p\345 inneh\345ll i detta rum:"
+msgstr "Träffar på innehåll i detta rum:"
 
 #: src/game.c:1306
 msgid "Matches on objects in the Master Room:"
-msgstr "Tr\344ffar p\345 objekt i Master-rummet:"
+msgstr "Träffar på objekt i Master-rummet:"
 
 #: src/game.c:1276
 msgid "Matches on zone master room of location:"
-msgstr "Tr\344ffar p\345 zon-m\344star rum p\345 plats:"
+msgstr "Träffar på zon-mästar rum på plats:"
 
 #: extchat.c:2007
 #, c-format
 msgid "Members of channel <%s> are:"
-msgstr "Anv\344ndare p\345 kanal <%s> \344r:"
+msgstr "Användare på kanal <%s> är:"
 
 #: function.c:1090
 #, c-format
@@ -2535,20 +2500,20 @@ msgstr "Namn"
 #: src/wiz.c:131
 #, c-format
 msgid "New player '%s' (#%d) created with password '%s'"
-msgstr "Ny spelare '%s' (#%d) skapad med l\366senord '%s'"
+msgstr "Ny spelare '%s' (#%d) skapad med lösenord '%s'"
 
 #: src/bsd.c:3090
 #, c-format
 msgid "No entry for '%s'."
-msgstr "Inget f\344lt f\366r '%s'."
+msgstr "Inget fält för '%s'."
 
 #: src/look.c:785
 msgid "No exits."
-msgstr "Inga utg\345ngar."
+msgstr "Inga utgångar."
 
 #: src/function.c:626
 msgid "No global user-defined functions exist."
-msgstr "Det finns inga globala anv\344ndar-definierade funktioner."
+msgstr "Det finns inga globala användar-definierade funktioner."
 
 #: lock.c:600
 msgid "No lock name given."
@@ -2556,72 +2521,72 @@ msgstr "Inget låsnamn givet."
 
 #: src/create.c:303 src/fundb.c:1281 src/fundb.c:1300 src/wiz.c:386
 msgid "No match."
-msgstr "Ingen tr\344ff."
+msgstr "Ingen träff."
 
 #: src/look.c:395
 msgid "No matching attributes."
-msgstr "Inga attribut tr\344ffades."
+msgstr "Inga attribut träffades."
 
 #: src/set.c:973
 msgid "No matching command."
-msgstr "Inget tr\344ffat kommando."
+msgstr "Inget träffat kommando."
 
 #: src/extchat.c:1093
 msgid "No more room for channels."
-msgstr "Ingen mer plats f\366r kanaler."
+msgstr "Ingen mer plats för kanaler."
 
 #: src/function.c:687
 msgid "No permission to examine object."
-msgstr "Inga r\344ttigheter att unders\366ka objekt."
+msgstr "Inga rättigheter att undersöka objekt."
 
 #: src/set.c:596
 msgid "No such attribute to copy from."
-msgstr "Inget s\345dant attribut att kopiera fr\345n."
+msgstr "Inget sådant attribut att kopiera från."
 
 #: src/attrib.c:931
 msgid "No such attribute to reset."
-msgstr "Inget s\345dant attribut att nollst\344lla."
+msgstr "Inget sådant attribut att nollställa."
 
 #: src/set.c:711
 msgid "No such attribute, try set instead."
-msgstr "Inget s\345dant attribut, f\366rs\366k med 'set' ist\344llet."
+msgstr "Inget sådant attribut, försök med 'set' istället."
 
 #: src/attrib.c:1043 src/attrib.c:1118
 msgid "No such attribute."
-msgstr "Inget s\345dant attribut."
+msgstr "Inget sådant attribut."
 
 #: src/bsd.c:4807 src/extchat.c:894
 msgid "No such channel."
-msgstr "Ingen s\345dan kanal."
+msgstr "Ingen sådan kanal."
 
 #: src/command.c:1095
 msgid "No such command."
-msgstr "Inget s\345dant kommando finns."
+msgstr "Inget sådant kommando finns."
 
 #: src/wiz.c:789
 msgid "No such connected player."
-msgstr "Ingen s\345dan uppkopplad spelare."
+msgstr "Ingen sådan uppkopplad spelare."
 
 #: src/function.c:764
 msgid "No such function."
-msgstr "Ingen s\345dan funktion."
+msgstr "Ingen sådan funktion."
 
 #: conf.c:962
 msgid "No such option."
-msgstr "Inget s\345dant alternativ."
+msgstr "Inget sådant alternativ."
 
 #: src/wiz.c:155 src/wiz.c:729 src/wiz.c:1703
 msgid "No such player."
-msgstr "Ingen s\345dan spelare."
+msgstr "Ingen sådan spelare."
 
 #: src/extmail.c:747 src/extmail.c:859
 #, c-format
 msgid "No such unique player: %s."
-msgstr "Ingen s\345dan unik spelare: %s."
+msgstr "Ingen sådan unik spelare: %s."
 
 #: src/rob.c:83
 msgid "No suicide allowed."
-msgstr "Sj\344lvmord \344r inte till\345tet."
+msgstr "Självmord är inte tillåtet."
 
 #: src/wiz.c:1985
 msgid "No valid options found."
@@ -2637,49 +2602,45 @@ msgstr "Inget hittat."
 
 #: src/set.c:684
 msgid "Nothing to do."
-msgstr "Inget att g\366ra."
+msgstr "Inget att göra."
 
 #: src/wiz.c:1039
 msgid "Number out of range."
-msgstr "Nummer utanf\366r gr\344nser."
+msgstr "Nummer utanför gränser."
 
 #: src/cque.c:795
 msgid "Object Queue:"
-msgstr "Objektk\366:"
+msgstr "Objektkö:"
 
 #: wiz.c:175 wiz.c:181 wiz.c:195
 #, c-format
 msgid "Objects: %d   Limit: %d"
-msgstr "Objekt: %d    Gr\344ns: %d"
+msgstr "Objekt: %d    Gräns: %d"
 
 #: wiz.c:166
 #, c-format
 msgid "Objects: %d   Limit: UNLIMITED"
-msgstr "Objekt: %d    Limit: OBEGR\304NSAD"
+msgstr "Objekt: %d    Limit: OBEGRÄNSAD"
 
 #: src/look.c:505 src/look.c:767
 msgid "Obvious exits:"
-msgstr "Uppenbara utg\345ngar:"
+msgstr "Uppenbara utgångar:"
 
 #: bsd.c:3848 bsd.c:3851 bsd.c:3855 bsd.c:3859
 msgid "On For"
-msgstr "P\345 f\366r"
+msgstr "På för"
 
 #: src/game.c:1155
 msgid "Only God can cause financial ruin."
 msgstr "Bara Gud kan skapa ekonomiskt kaos."
 
-#: src/command.c:1256
-msgid "Only God can do that."
-msgstr "Bara Gud kan g\366ra det."
-
 #: src/set.c:526
 msgid "Only God can set himself!"
-msgstr "Bara Gud kan s\344tta sig sj\344lv!"
+msgstr "Bara Gud kan sätta sig själv!"
 
 #: src/wiz.c:162
 msgid "Only wizards may change a quota."
-msgstr "Endast wizards kan \344ndra kvoten."
+msgstr "Endast wizards kan ändra kvoten."
 
 #: src/wiz.c:1168
 msgid "Only wizards may grant powers."
@@ -2687,12 +2648,12 @@ msgstr "Bara wizards kan ge makt."
 
 #: src/create.c:118
 msgid "Open where?"
-msgstr "\326ppna var?"
+msgstr "Öppna var?"
 
 #: create.c:140
 #, c-format
 msgid "Opened exit %s"
-msgstr "\326ppnade utg\345ng %s"
+msgstr "Öppnade utgång %s"
 
 #: src/cmds.c:195
 msgid "Option set."
@@ -2700,21 +2661,21 @@ msgstr "Alternativ satt."
 
 #: src/set.c:227
 msgid "Owner changed."
-msgstr "\304gare \344ndrad."
+msgstr "Ägare ändrad."
 
 #: malias.c:269
 msgid "Owner"
-msgstr "\304gare"
+msgstr "Ägare"
 
 #: look.c:704
 #, c-format
 msgid "Owner: %s  Zone: %s  %s: %d"
-msgstr "\304gare: %s  Zon: %s  %s: %d"
+msgstr "Ägare: %s  Zon: %s  %s: %d"
 
 #: src/wiz.c:910
 #, c-format
 msgid "Ownership changed for %d objects."
-msgstr "\304garskap f\366r %d objekt \344ndrad."
+msgstr "Ägarskap för %d objekt ändrad."
 
 #: src/game.c:182
 #, c-format
@@ -2723,46 +2684,42 @@ msgstr "Paranoid dumpning, kontrollpunktsinterval %d."
 
 #: src/set.c:912
 msgid "Parent changed."
-msgstr "F\366r\344lder \344ndrad."
+msgstr "Förälder ändrad."
 
 #: look.c:707
 #, c-format
 msgid "Parent: %s"
-msgstr "F\366r\344lder: %s"
+msgstr "Förälder: %s"
 
 #: wiz.c:724
 #, c-format
 msgid "Password for %s changed."
-msgstr "L\366senord \344ndrat \345t %s"
+msgstr "Lösenord ändrat åt %s"
 
 #: src/extmail.c:1584
 msgid "Permission denied"
-msgstr "\305tkomst nekad."
-
-#: src/command.c:1276
-msgid "Permission denied, command is type-restricted."
-msgstr "\305tkomst nekad, kommandot \344r typ-begr\344nsat."
+msgstr "Åtkomst nekad."
 
 #: src/game.c:171
 msgid "Permission denied. Invalid checkpoint interval."
-msgstr "\305tkomst nekad. Ogiltigt kontrollpunktsintervall."
+msgstr "Åtkomst nekad. Ogiltigt kontrollpunktsintervall."
 
 #: src/bsd.c:4589 src/bsd.c:4627 src/command.c:1288 src/cque.c:611\nsrc/cque.c:669 src/cque.c:909 src/cque.c:1040 src/create.c:125\nsrc/create.c:201 src/create.c:252 src/create.c:259 src/create.c:316\nsrc/create.c:320 src/create.c:337 src/create.c:491 src/destroy.c:228\nsrc/extchat.c:1150 src/extchat.c:1167 src/extchat.c:1197 src/flags.c:1021\nsrc/flags.c:1027 src/flags.c:1033 src/function.c:664 src/function.c:759\nsrc/fundb.c:1080 src/fundb.c:1332 src/game.c:771 src/game.c:1177\nsrc/log.c:295 src/look.c:1093 src/look.c:1333 src/malias.c:633\nsrc/malias.c:736 src/match.c:158 src/move.c:471 src/move.c:630\nsrc/move.c:638 src/predicat.c:865 src/predicat.c:1037 src/rob.c:219\nsrc/set.c:210 src/set.c:680 src/set.c:809 src/set.c:872 src/set.c:889\nsrc/set.c:952 src/speech.c:1479 src/warnings.c:263 src/warnings.c:439\nsrc/wiz.c:428 src/wiz.c:538 src/wiz.c:1029 src/wiz.c:1059 src/wiz.c:1630\nsrc/wiz.c:1855
 msgid "Permission denied."
-msgstr "\305tkomst nekad."
+msgstr "Åtkomst nekad."
 
 #: src/extchat.c:814
 msgid "Permission to join denied."
-msgstr "Du har inte r\344tt att g\345 med."
+msgstr "Du har inte rätt att gå med."
 
 #: src/set.c:601
 msgid "Permission to read attribute denied."
-msgstr "Inget r\344tt att l\344sa attribut."
+msgstr "Inget rätt att läsa attribut."
 
 #: src/extchat.c:1210
 #, c-format
 msgid "Permissions on channel <%s> changed."
-msgstr "R\344ttigheter p\345 kanal <%s> \344ndrade."
+msgstr "Rättigheter på kanal <%s> ändrade."
 
 #: bsd.c:3848 bsd.c:3851 bsd.c:3855 bsd.c:3859
 msgid "Player Name"
@@ -2770,11 +2727,11 @@ msgstr "Spelarnamn"
 
 #: src/cque.c:791
 msgid "Player Queue:"
-msgstr "Spelark\366:"
+msgstr "Spelarkö:"
 
 #: src/set.c:205
 msgid "Players always own themselves."
-msgstr "Spelare \344ger alltid sig sj\344lva."
+msgstr "Spelare äger alltid sig själva."
 
 #: access.c:427
 msgid "Players connecting are set SUSPECT"
@@ -2782,7 +2739,7 @@ msgstr "Uppkopplande spelare är satt SUSPECT"
 
 #: src/speech.c:679
 msgid "Posing as a wizard could be hazardous to your health."
-msgstr "Att l\345tsas vara en wizard kan vara livsfarligt."
+msgstr "Att låtsas vara en wizard kan vara livsfarligt."
 
 #: look.c:716
 #, c-format
@@ -2791,7 +2748,7 @@ msgstr "Powers: %s"
 
 #: src/destroy.c:257
 msgid "Programs don't kill people; people kill people!"
-msgstr "Program d\366dar inte m\344nniskor, m\344nniskor d\366dar m\344nniskor!"
+msgstr "Program dödar inte människor, människor dödar människor!"
 
 #: src/destroy.c:924
 msgid "Purge complete."
@@ -2800,28 +2757,28 @@ msgstr "Rening klar."
 #: src/cque.c:786
 #, c-format
 msgid "Queue for : %s"
-msgstr "K\366 f\366r : %s"
+msgstr "Kö för : %s"
 
 #: src/cque.c:784
 msgid "Queue for : all"
-msgstr "K\366 f\366r : alla"
+msgstr "Kö för : alla"
 
 #: src/wiz.c:271
 msgid "Quotas not changed."
-msgstr "Kvoter ej \344ndrade."
+msgstr "Kvoter ej ändrade."
 
 #: extmail.c:2469
 msgid "Read "
-msgstr "L\344s "
+msgstr "Läs "
 
 #: bsd.c:275
 msgid "Registration successful! You will receive your password by email."
-msgstr "Registreringen lyckades! Du kommer att f\345 ditt l\366senord via e-post."
+msgstr "Registreringen lyckades! Du kommer att få ditt lösenord via e-post."
 
 #: src/atr_tab.c:252
 #, c-format
 msgid "Removed %s from attribute table."
-msgstr "Tog bort %s fr\345n attribut-tabell."
+msgstr "Tog bort %s från attribut-tabell."
 
 #: command.c:1347
 #, c-format
@@ -2831,23 +2788,23 @@ msgstr "Raderade %s från kommandotabell."
 #: src/atr_tab.c:288
 #, c-format
 msgid "Renamed %s to %s in attribute table."
-msgstr "\304ndrade namn p\345 %s till %s i attribut-tabell."
+msgstr "Ändrade namn på %s till %s i attribut-tabell."
 
 #: function.c:916
 msgid "Restore what?"
-msgstr "\305terst\344ll vad?"
+msgstr "Återställ vad?"
 
 #: function.c:933
 msgid "Restored."
-msgstr "\305terst\344llt."
+msgstr "Återställt."
 
 #: src/command.c:1114
 msgid "Restrict attempt failed."
-msgstr "Begr\344nsingsf\366rs\366k misslyckades."
+msgstr "Begränsingsförsök misslyckades."
 
 #: function.c:731
 msgid "Restrict what function?"
-msgstr "Begr\344nsa vilken funktion?"
+msgstr "Begränsa vilken funktion?"
 
 #: cque.c:201
 #, c-format
@@ -2856,33 +2813,29 @@ msgstr "Bortsprunget objekt: %s(%s). Kommandon stoppade."
 
 #: src/warnings.c:415
 msgid "Running database topology warning checks"
-msgstr "K\366r varningskollar f\366r databastopologi"
+msgstr "Kör varningskollar för databastopologi"
 
 #: src/wiz.c:1471
 #, c-format
 msgid "Searches cost %d %s."
-msgstr "Att s\366ka kostar %d %s."
+msgstr "Att söka kostar %d %s."
 
 #: src/cque.c:803
 msgid "Semaphore Queue:"
-msgstr "Semafor-k\366:"
+msgstr "Semafor-kö:"
 
 #: game.c:1408
 msgid "Separator must be one character."
-msgstr "\305tskiljare m\345ste vara ett tecken."
+msgstr "Åtskiljare måste vara ett tecken."
 
 #: attrib.c:942
 msgid "Set"
 msgstr "Satt"
 
-#: src/destroy.c:1319
-msgid "Silly mortal chicks are for kids!"
-msgstr "Tokiga d\366dliga kycklingar \344r barnsligt!"
-
 #: src/wiz.c:1999
 #, c-format
 msgid "Site %s access options for %s(%s) set to %s"
-msgstr "Sajt %s access alternativ f\366r %s(%s) satta till %s"
+msgstr "Sajt %s access alternativ för %s(%s) satta till %s"
 
 #: src/wiz.c:2004
 #, c-format
@@ -2897,85 +2850,77 @@ msgstr "Sajten %s har bannlysts."
 #: src/wiz.c:2026
 #, c-format
 msgid "Site %s locked"
-msgstr "Plats %s l\345st."
-
-#: src/create.c:102
-msgid "Sorry you can only make exits out of rooms."
-msgstr "Tyv\344rr kan du bara skapa utg\345ngar ut ur rum."
-
-#: src/move.c:579
-msgid "Sorry you can't drop exits."
-msgstr "Du kan tyv\344rr inte sl\344ppa utg\345ngar."
+msgstr "Plats %s låst."
 
 #: src/destroy.c:266
 msgid "Sorry, no suicide allowed."
-msgstr "Sj\344lvmord \344r tyv\344rr inte till\345tet."
+msgstr "Självmord är tyvärr inte tillåtet."
 
 #: help.c:161
 msgid "Sorry, that command is temporarily unvailable."
-msgstr "Det kommandot \344r tyv\344rr inte tillg\344ngligt f\366r tillf\344llet."
+msgstr "Det kommandot är tyvärr inte tillgängligt för tillfället."
 
 #: src/bsd.c:3081 src/bsd.c:3094 src/bsd.c:3099
 msgid "Sorry, that function is temporarily unavailable."
-msgstr "Funktionen \344r tyv\344rr inte tillg\344nglig f\366r tillf\344llet."
+msgstr "Funktionen är tyvärr inte tillgänglig för tillfället."
 
 #: src/predicat.c:364
 msgid "Sorry, there is no more room in the database."
-msgstr "Det finns tyv\344rr inte mer plats i databasen."
+msgstr "Det finns tyvärr inte mer plats i databasen."
 
 #: src/extchat.c:787
 #, c-format
 msgid "Sorry, wrong type of thing for channel <%s>."
-msgstr "Tyv\344rr, fel typ av sak f\366r kanal <%s>."
+msgstr "Tyvärr, fel typ av sak för kanal <%s>."
 
 #: src/destroy.c:926
 msgid "Sorry, you are a mortal."
-msgstr "Du \344r tyv\344rr d\366dlig."
+msgstr "Du är tyvärr dödlig."
 
 #: src/game.c:206
 msgid "Sorry, you are in a no dumping zone."
-msgstr "Du f\345r tyv\344rr inte sl\344nga saker h\344r."
+msgstr "Du får tyvärr inte slänga saker här."
 
 #: src/game.c:1235
 msgid "Sorry, you are in an invalid location."
-msgstr "Du \344r tyv\344rr p\345 en ogiltig plats."
+msgstr "Du är tyvärr på en ogiltig plats."
 
 #: src/rob.c:102
 msgid "Sorry, you can only kill players and objects."
-msgstr "Du kan tyv\344rr bara d\366da spelare och objekt."
+msgstr "Du kan tyvärr bara döda spelare och objekt."
 
 #: src/predicat.c:369
 #, c-format
 msgid "Sorry, you don't have enough %s."
-msgstr "Du har tyv\344rr inte tillr\344ckligt mycket %s."
+msgstr "Du har tyvärr inte tillräckligt mycket %s."
 
 #: src/move.c:643
 msgid "Sorry, you must remain beside yourself!"
-msgstr "Du m\345ste tyv\344rr stanna vid din sida!"
+msgstr "Du måste tyvärr stanna vid din sida!"
 
 #: src/extchat.c:927 src/extchat.c:1034
 #, c-format
 msgid "Sorry, you're not allowed to speak on channel <%s>."
-msgstr "Du f\345r tyv\344rr inte prata p\345 kanalen <%s>."
+msgstr "Du får tyvärr inte prata på kanalen <%s>."
 
 #: src/extchat.c:916 src/extchat.c:1021
 #, c-format
 msgid "Sorry, you're not the right type to be on channel <%s>."
-msgstr "Du \344r tyv\344rr inte r\344tt typ f\366r att vara p\345 kanal <%s>."
+msgstr "Du är tyvärr inte rätt typ för att vara på kanal <%s>."
 
 #: src/predicat.c:375
 msgid "Sorry, your building quota has run out."
-msgstr "Din byggkvot \344r tyv\344rr slut."
+msgstr "Din byggkvot är tyvärr slut."
 
 #: look.c:815
 #, c-format
 msgid "Source: %s"
-msgstr "K\344lla: %s"
+msgstr "Källa: %s"
 
 #: extmail.c:482
 #, c-format
 msgid "Subject: %s"
-msgstr "\304mne: %s"
+msgstr "Ämne: %s"
 
 #: extmail.c:2481
 msgid "Tagged"
@@ -2987,16 +2932,16 @@ msgstr "Teleporterad."
 
 #: src/wiz.c:503
 msgid "Teleports are not allowed in this room."
-msgstr "Teleportering \344r inte till\345tet i detta rum."
+msgstr "Teleportering är inte tillåtet i detta rum."
 
 #: src/attrib.c:928
 msgid "That attribute cannot be changed by you."
-msgstr "Det attributet kan inte \344ndras av dig."
+msgstr "Det attributet kan inte ändras av dig."
 
 #: src/attrib.c:1022
 #, c-format
 msgid "That attribute is %slocked."
-msgstr "Det attributed \344r %sl\345st."
+msgstr "Det attributed är %slåst."
 
 #: src/atr_tab.c:246 src/atr_tab.c:280 src/atr_tab.c:307
 msgid "That attribute isn't in the attribute table"
@@ -3004,83 +2949,79 @@ msgstr "Det attributet finns inte i attribut-tabellen"
 
 #: atr_tab.c:198
 msgid "That attribute's permissions can not be changed."
-msgstr "Attrbitut-r\344ttigheterna kan inte \344ndras."
+msgstr "Attrbitut-rättigheterna kan inte ändras."
 
 #: help.c:55
 msgid "That command is unavailable."
-msgstr "Det kommandot \344r inte tillg\344ngligt."
+msgstr "Det kommandot är inte tillgängligt."
 
 #: function.c:928
 msgid "That function isn't deleted!"
-msgstr "Den funktionen \344r inte raderad!"
+msgstr "Den funktionen är inte raderad!"
 
 #: src/create.c:307
 msgid "That is an exit."
-msgstr "Det \344r en utg\345ng."
+msgstr "Det är en utgång."
 
 #: src/extmail.c:1218
 msgid "That is not a debugging option."
-msgstr "Det \344r inte ett avlusningsalternativ."
+msgstr "Det är inte ett avlusningsalternativ."
 
 #: src/set.c:156
 msgid "That is not a reasonable name."
-msgstr "Det \344r inte ett f\366rnuftigt namn."
+msgstr "Det är inte ett förnuftigt namn."
 
 #: src/create.c:333
 msgid "That is not a room!"
-msgstr "Det \344r inte ett rum!"
+msgstr "Det är inte ett rum!"
 
 #: src/extchat.c:1003
 msgid "That is not a valid channel."
-msgstr "Det \344r inte en giltig kanal."
+msgstr "Det är inte en giltig kanal."
 
 #: lock.c:326
 msgid "That is not a valid lock name."
-msgstr "Det \344r inte ett giltigt l\345s namn."
+msgstr "Det är inte ett giltigt lås namn."
 
 #: src/log.c:355
 msgid "That is not a valid log."
-msgstr "Det \344r inte en giltig logg."
+msgstr "Det är inte en giltig logg."
 
 #: src/create.c:54
 msgid "That is not a valid object."
-msgstr "Det \344r inte ett giltigt objekt."
+msgstr "Det är inte ett giltigt objekt."
 
 #: src/destroy.c:232
 msgid "That is too special to be destroyed."
-msgstr "Det \344r f\366r speciellt f\366r att bli f\366rst\366rt."
-
-#: conf.c:958
-msgid "That isn't a on/off option."
-msgstr "Det \344r inte ett av/p\345 alternativ."
+msgstr "Det är för speciellt för att bli förstört."
 
 #: src/extchat.c:1181
 msgid "That name is too long."
-msgstr "Det namnet \344r f\366r l\345ngt."
+msgstr "Det namnet är för långt."
 
 #: src/rob.c:109
 msgid "That object cannot be killed."
-msgstr "Det objektet kan inte d\366das."
+msgstr "Det objektet kan inte dödas."
 
 #: src/destroy.c:250
 msgid "That object does not belong to you. Use @nuke to destroy it."
-msgstr "Objektet \344r inte ditt. Anv\344nd @nuke f\366r att f\366rst\366ra det."
+msgstr "Objektet är inte ditt. Använd @nuke för att förstöra det."
 
 #: src/destroy.c:243
 msgid "That object is marked SAFE. Use @nuke to destroy it."
-msgstr "Objektet \344r markerat SAFE. Anv\344nd @nuke f\366r att f\366rst\366ra det."
+msgstr "Objektet är markerat SAFE. Använd @nuke för att förstöra det."
 
 #: src/set.c:957
 msgid "That object is protected."
-msgstr "Objektet \344r skyddat."
+msgstr "Objektet är skyddat."
 
 #: src/destroy.c:238
 msgid "That object is set SAFE. You must set it !SAFE before destroying it."
-msgstr "Objektet \344r satt SAFE. Du m\345ste s\344tta det !SAFE innan du f\366rst\366r det."
+msgstr "Objektet är satt SAFE. Du måste sätta det !SAFE innan du förstör det."
 
 #: src/destroy.c:287
 msgid "That object is set WIZARD. You must use @nuke to destroy it."
-msgstr "Objektet \344r satt WIZARD. Du m\345ste anv\344nda @nuke f\366r att f\366rst\366ra det."
+msgstr "Objektet är satt WIZARD. Du måste använda @nuke för att förstöra det."
 
 #: src/look.c:1048
 msgid "That player does not seem to exist."
@@ -3092,43 +3033,43 @@ msgstr "Den spelaren vill vara ensam."
 
 #: src/create.c:57
 msgid "That room is being destroyed. Sorry."
-msgstr "Det rummet h\345ller tyv\344rr p\345 att f\366rst\366ras."
+msgstr "Det rummet håller tyvärr på att förstöras."
 
 #: src/create.c:376
 msgid "That's a silly name for a room!"
-msgstr "Det \344r att tokigt namn p\345 ett rum!"
+msgstr "Det är att tokigt namn på ett rum!"
 
 #: src/create.c:434
 msgid "That's a silly name for a thing!"
-msgstr "Det \344r ett tokigt namn p\345 en sak!"
+msgstr "Det är ett tokigt namn på en sak!"
 
 #: src/create.c:121
 msgid "That's a strange name for an exit!"
-msgstr "Det \344r ett konstigt namn p\345 en utg\345ng!"
+msgstr "Det är ett konstigt namn på en utgång!"
 
 #: function.c:923
 msgid "That's not a builtin function."
-msgstr "Det \344r inte en inbyggd funktion."
+msgstr "Det är inte en inbyggd funktion."
 
 #: attrib.c:930
 msgid "That's not a very good name for an attribute."
-msgstr "Det \344r inte ett bra namn f\366r ett attribut."
+msgstr "Det är inte ett bra namn för ett attribut."
 
 #: src/extchat.c:1176
 msgid "The channel needs a more unique new name."
-msgstr "Kanalen beh\366ver ett mer unikt nytt namn."
+msgstr "Kanalen behöver ett mer unikt nytt namn."
 
 #: src/extchat.c:1097
 msgid "The channel needs a shorter name."
-msgstr "Kanalen beh\366ver ett kortare namn."
+msgstr "Kanalen behöver ett kortare namn."
 
 #: src/lock.c:307
 msgid "The character '|' may not be used in lock names."
-msgstr "Tecknet '|' f\345r inte anv\344ndas i namn p\345 l\345s."
+msgstr "Tecknet '|' får inte användas i namn på lås."
 
 #: src/destroy.c:705
 msgid "The floor disappears under your feet, you fall through NOTHINGness and then:"
-msgstr "Golvet f\366rsvinner under dina f\366tter och du faller genom intigheten och sedan:"
+msgstr "Golvet försvinner under dina fötter och du faller genom intigheten och sedan:"
 
 #: src/game.c:1163
 #, c-format
@@ -3138,17 +3079,17 @@ msgstr "Alla spelares pengar har satts till %d %s."
 #: src/atr_tab.c:273
 #, c-format
 msgid "The name %s is already used in the attribute table."
-msgstr "Namnet %s anv\344nds redan i attribut-tabellen."
+msgstr "Namnet %s används redan i attribut-tabellen."
 
 #: wiz.c:694
 #, c-format
 msgid "The next object to be created will be #%d."
-msgstr "N\344sta objekt som skapas kommer att bli #%d."
+msgstr "Nästa objekt som skapas kommer att bli #%d."
 
 #: src/player.c:299
 #, c-format
 msgid "The password is %s\n"
-msgstr "L\366senordet \344r %s\n"
+msgstr "Lösenordet är %s\n"
 
 #: src/extmail.c:1264 src/extmail.c:1672
 msgid "The post office protects privacy!"
@@ -3156,49 +3097,21 @@ msgstr "Postkontoret skyddar privatlivet!"
 
 #: src/extmail.c:1111
 msgid "The postal service issues a warrant for your arrest."
-msgstr "Postkontoret skickar ut en efterlysning p\345 dig."
+msgstr "Postkontoret skickar ut en efterlysning på dig."
 
 #: src/destroy.c:548
 #, c-format
 msgid "The room %s has been spared from destruction by %s."
-msgstr "Rum %s har ben\345dats fr\345n f\366rintelse av %s."
+msgstr "Rum %s har benådats från förintelse av %s."
 
 #: src/destroy.c:543
 #, c-format
 msgid "The room %s has been spared from destruction."
-msgstr "Rum %s har ben\345dats fr\345n f\366rintelse."
+msgstr "Rum %s har benådats från förintelse."
 
 #: src/destroy.c:333
 msgid "The room shakes and begins to crumble."
-msgstr "Rummet skakar och b\366rjar falla s\366nder."
-
-#: src/services.c:775
-msgid "The service continue is pending."
-msgstr "Forts\344ttning av tj\344nsten v\344ntar."
-
-#: src/services.c:763
-msgid "The service is not running."
-msgstr "Tj\344nsten k\366rs inte."
-
-#: src/services.c:781
-msgid "The service is paused."
-msgstr "Tj\344nsten \344r pausad."
-
-#: src/services.c:772
-msgid "The service is running."
-msgstr "Tj\344nsten k\366rs."
-
-#: src/services.c:766
-msgid "The service is starting."
-msgstr "Tj\344nsten startas."
-
-#: src/services.c:769
-msgid "The service is stopping."
-msgstr "Tj\344nsten stoppas."
-
-#: src/services.c:778
-msgid "The service pause is pending."
-msgstr "Tj\344nstepausen v\344ntar."
+msgstr "Rummet skakar och börjar falla sönder."
 
 #: src/destroy.c:341
 #, c-format
@@ -3208,20 +3121,20 @@ msgstr "Rivningskulan är på väg att demolera %s %s och dess utgångar."
 #: src/extmail.c:1281
 #, c-format
 msgid "There are %d messages in the mail spool."
-msgstr "Det finns %d meddelanden i brevl\345dan."
+msgstr "Det finns %d meddelanden i brevlådan."
 
 #: bsd.c:3925
 #, c-format
 msgid "There are %d players connected."
-msgstr "%d spelare \344r uppkopplade."
+msgstr "%d spelare är uppkopplade."
 
 #: src/bsd.c:4788
 msgid "There are no connected players on that channel."
-msgstr "Det finns inga uppkopplade spelare p\345 den kanalen."
+msgstr "Det finns inga uppkopplade spelare på den kanalen."
 
 #: bsd.c:3919
 msgid "There are no players connected."
-msgstr "Inga spelare \344r uppkopplade."
+msgstr "Inga spelare är uppkopplade."
 
 #: src/speech.c:1368
 msgid "There can't be anything in that!"
@@ -3229,11 +3142,11 @@ msgstr "Inget kan vara i det!"
 
 #: bsd.c:3922
 msgid "There is 1 player connected."
-msgstr "Det \344r bara en spelare uppkopplad."
+msgstr "Det är bara en spelare uppkopplad."
 
 #: src/move.c:335 src/move.c:336 src/move.c:337
 msgid "There's no place like home..."
-msgstr "Hemma b\344st..."
+msgstr "Hemma bäst..."
 
 #: src/create.c:496
 msgid "There's nothing left of it to clone!"
@@ -3241,19 +3154,19 @@ msgstr "Det finns inget kvar av det att klona!"
 
 #: src/move.c:426
 msgid "This feature coming soon."
-msgstr "Denna tj\344nst kommer snart."
+msgstr "Denna tjänst kommer snart."
 
 #: src/player.c:296
 msgid "This is an automated message.\n"
-msgstr "Detta \344r ett automatiserat meddelande.\n"
+msgstr "Detta är ett automatiserat meddelande.\n"
 
 #: src/flags.c:1091
 msgid "This room is no longer broadcasting."
-msgstr "Detta rum s\344nder inte l\344ngre."
+msgstr "Detta rum sänder inte längre."
 
 #: src/flags.c:1151
 msgid "This room is now broadcasting."
-msgstr "Detta rum s\344nder nu."
+msgstr "Detta rum sänder nu."
 
 #: game.c:2097
 msgid "Time now"
@@ -3277,28 +3190,28 @@ msgstr "Tid till nästa rensning"
 
 #: src/extchat.c:1358
 msgid "Title too long."
-msgstr "Titel f\366r l\345ng."
+msgstr "Titel för lång."
 
 #: src/player.c:301
 #, c-format
 msgid "To access this character, connect to %s and type:\n"
-msgstr "F\366r att f\345 tillg\345ng till denna karakt\344r, koppla upp dig till %s och skriv:\n"
+msgstr "För att få tillgång till denna karaktär, koppla upp dig till %s och skriv:\n"
 
 #: src/set.c:906
 msgid "Too many ancestors."
-msgstr "F\366r m\345nga f\366rf\344der."
+msgstr "För många förfäder."
 
 #: src/fundb.c:1073 src/speech.c:1416
 msgid "Too many containers."
-msgstr "F\366r m\345nga beh\345llare."
+msgstr "För många behållare."
 
 #: src/speech.c:302
 msgid "Too many people to oemit to."
-msgstr "F\366r m\345nga m\344nniskor att oemitta till."
+msgstr "För många människor att oemitta till."
 
 #: src/speech.c:402
 msgid "Too many people to whisper to."
-msgstr "F\366r m\345nga m\344nniskor att viska till."
+msgstr "För många människor att viska till."
 
 #: game.c:2093
 msgid "Total reboots"
@@ -3306,11 +3219,11 @@ msgstr "Totalt antal omstarter"
 
 #: src/wiz.c:878
 msgid "Try asking them first!"
-msgstr "Prova att fr\345ga f\366rst!"
+msgstr "Prova att fråga först!"
 
 #: src/create.c:147
 msgid "Trying to link..."
-msgstr "F\366rs\366ker l\344nka..."
+msgstr "Försöker länka..."
 
 #: flags.c:688
 msgid "Type: "
@@ -3328,11 +3241,11 @@ msgstr "Kan ej ta bort namn."
 #: src/bsd.c:758
 #, c-format
 msgid "Unable to open %s. Error output continues to stderr.\n"
-msgstr "Kan ej \366ppna %s. Felmeddelanden forts\344tter p\345 stderr.\n"
+msgstr "Kan ej öppna %s. Felmeddelanden fortsätter på stderr.\n"
 
 #: src/wiz.c:2036 src/wiz.c:2056
 msgid "Unable to open names file."
-msgstr "Kan ej \366ppna namn-fil."
+msgstr "Kan ej öppna namn-fil."
 
 #: bsd.c:274
 msgid "Unable to register that player with that email address."
@@ -3341,52 +3254,48 @@ msgstr "Kan inte registrera den spelaren med den e-post adressen."
 #: src/access.c:547
 #, c-format
 msgid "Unknown access option: %s"
-msgstr "Ok\344nt tillg\345ngsalternativ: %s"
+msgstr "Okänt tillgångsalternativ: %s"
 
 #: src/lock.c:297 src/lock.c:303
 msgid "Unknown lock type."
-msgstr "Ok\344nd l\345s typ."
+msgstr "Okänd lås typ."
 
 #: wiz.c:1413
 msgid "Unknown owner."
-msgstr "Ok\344nd \344gare."
+msgstr "Okänd ägare."
 
 #: src/wiz.c:1349 src/wiz.c:1772
 msgid "Unknown parent."
-msgstr "Ok\344nd f\366r\344lder."
+msgstr "Okänd förälder."
 
 #: wiz.c:1503
 msgid "Unknown search class."
-msgstr "Ok\344nd s\366k klass."
+msgstr "Okänd sök klass."
 
 #: src/wiz.c:1825 src/wiz.c:1848
 msgid "Unknown type."
-msgstr "Ok\344nd typ."
+msgstr "Okänd typ."
 
 #: src/warnings.c:301
 #, c-format
 msgid "Unknown warning: %s"
-msgstr "Ok\344nd varning: %s"
+msgstr "Okänd varning: %s"
 
 #: src/wiz.c:1435 src/wiz.c:1837
 msgid "Unknown zone."
-msgstr "Ok\344nd zon."
+msgstr "Okänd zon."
 
 #: src/create.c:194
 msgid "Unlink what?"
-msgstr "L\344nka av vad?"
+msgstr "Länka av vad?"
 
 #: extmail.c:2471
 msgid "Unread "
-msgstr "Ol\344st "
-
-#: src/services.c:784
-msgid "Unrecognised status."
-msgstr "Ok\344nd status."
+msgstr "Oläst "
 
 #: src/set.c:498
 msgid "Unrecognized attribute flag."
-msgstr "Ok\344nd attributflagga."
+msgstr "Okänd attributflagga."
 
 #: game.c:2087
 msgid "Up since"
@@ -3398,15 +3307,15 @@ msgstr "Viktigt "
 
 #: malias.c:269
 msgid "Use See"
-msgstr "Anv\344nd See"
+msgstr "Använd See"
 
 #: src/conf.c:799
 msgid "Use: @config/list <type of options> where type is one of:"
-msgstr "Anv\344nd: @config/list <typ av alternativ> d\344r typ \344r en av:"
+msgstr "Använd: @config/list <typ av alternativ> där typ är en av:"
 
 #: src/function.c:644
 msgid "User functions:"
-msgstr "Anv\344ndarfunktioner:"
+msgstr "Användarfunktioner:"
 
 #: warnings.c:232
 #, c-format
@@ -3420,12 +3329,12 @@ msgstr "Variabel utgång saknar %s attribut."
 
 #: src/cque.c:799
 msgid "Wait Queue:"
-msgstr "V\344ntek\366:"
+msgstr "Väntekö:"
 
 #: warnings.c:119
 #, c-format
 msgid "Warning '%s' for %s:"
-msgstr "Varning '%s' f\366r %s:"
+msgstr "Varning '%s' för %s:"
 
 #: src/warnings.c:417
 msgid "Warning checks complete."
@@ -3433,7 +3342,7 @@ msgstr "Varningskontroll klar."
 
 #: src/create.c:547
 msgid "Warning: @CLONE/PRESERVE on an object with WIZ, ROY, @powers, or @warnings."
-msgstr "Varning: @CLONE/PRESERVE p\345 ett objekt med WIZ, ROY, @powers eller @warnings."
+msgstr "Varning: @CLONE/PRESERVE på ett objekt med WIZ, ROY, @powers eller @warnings."
 
 #: src/set.c:417
 msgid "Warning: @chzoning a privileged player."
@@ -3441,19 +3350,15 @@ msgstr "Varning: @chzonar en priviligerad spelare."
 
 #: src/set.c:396
 msgid "Warning: @chzoning admin-owned object!"
-msgstr "Varning: @chzonar admin-\344gt objekt!"
-
-#: set.c:434
-msgid "Warning: @chzoning an TRUST player."
-msgstr "Varning: @chzoning en TRUST spelare."
+msgstr "Varning: @chzonar admin-ägt objekt!"
 
 #: src/extchat.c:1116
 msgid "Warning: channel will be created disabled."
-msgstr "Varning: kanalen kommer att skapas ej tillg\344nglig."
+msgstr "Varning: kanalen kommer att skapas ej tillgänglig."
 
 #: src/extchat.c:1207
 msgid "Warning: channel will be disabled."
-msgstr "Varning: Kanalen kommer ej att vara tillg\344nglig."
+msgstr "Varning: Kanalen kommer ej att vara tillgänglig."
 
 #: src/look.c:733
 #, c-format
@@ -3466,7 +3371,7 @@ msgstr "Välkommen tillbaka från semestern! Glöm inte att slå av din ON-VACATION 
 
 #: src/wiz.c:465
 msgid "What are you doing inside of yourself?"
-msgstr "Vad g\366r du inuti dig sj\344lv?"
+msgstr "Vad gör du inuti dig själv?"
 
 #: src/game.c:1239
 msgid "What command do you want to scan for?"
@@ -3474,15 +3379,15 @@ msgstr "Vilket kommando vill du skanna efter?"
 
 #: src/speech.c:145
 msgid "What command do you want to teach?"
-msgstr "Vilket kommando vill du l\344ra ut?"
+msgstr "Vilket kommando vill du lära ut?"
 
 #: src/speech.c:698
 msgid "What did you want to say?"
-msgstr "Vad ville du s\344ga?"
+msgstr "Vad ville du säga?"
 
 #: src/cmds.c:185
 msgid "What did you want to set?"
-msgstr "Vad ville du s\344tta?"
+msgstr "Vad ville du sätta?"
 
 #: src/look.c:1294
 msgid "What do you want to @decompile?"
@@ -3490,7 +3395,7 @@ msgstr "Vad vill du @decompile:a?"
 
 #: src/set.c:576
 msgid "What do you want to copy from?"
-msgstr "Vad vill du kopiera fr\345n?"
+msgstr "Vad vill du kopiera från?"
 
 #: src/set.c:610
 msgid "What do you want to copy to?"
@@ -3498,23 +3403,19 @@ msgstr "Vad vill du kopiera till?"
 
 #: src/predicat.c:849
 msgid "What do you want to do the verb?"
-msgstr "Vad vill du g\366ra med verbet?"
-
-#: src/extchat.c:750
-msgid "What do you want to do with that channel?"
-msgstr "Vad vill du g\366ra med den kanalen?"
+msgstr "Vad vill du göra med verbet?"
 
 #: src/extchat.c:1082
 msgid "What do you want to do with the channel?"
-msgstr "Vad vill du g\366ra med kanalen?"
+msgstr "Vad vill du göra med kanalen?"
 
 #: src/game.c:1331
 msgid "What do you want to do with the list?"
-msgstr "Vad vill du g\366ra med listan?"
+msgstr "Vad vill du göra med listan?"
 
 #: src/predicat.c:843
 msgid "What do you want to do with the verb?"
-msgstr "Vad vill du g\366ra med verbet?"
+msgstr "Vad vill du göra med verbet?"
 
 #: src/extchat.c:1039
 msgid "What do you want to emit?"
@@ -3522,35 +3423,35 @@ msgstr "Vad vill du emitta?"
 
 #: src/extchat.c:981
 msgid "What do you want to say to that channel?"
-msgstr "Vad vill du s\344ga till den kanalen?"
+msgstr "Vad vill du säga till den kanalen?"
 
 #: src/wiz.c:196
 msgid "What do you want to set the quota to?"
-msgstr "Vad vill du s\344tta kvoten till?"
+msgstr "Vad vill du sätta kvoten till?"
 
 #: src/set.c:491
 msgid "What flag do you want to set?"
-msgstr "Vilken flagga vill du s\344tta?"
+msgstr "Vilken flagga vill du sätta?"
 
 #: rob.c:210
 msgid "What is this, a holdup?"
-msgstr "Vad \344r detta? Ett r\345n?"
+msgstr "Vad är detta? Ett rån?"
 
 #: src/set.c:583
 msgid "What object do you want to copy the attribute from?"
-msgstr "Vilket objekt vill du kopiera attributet fr\345n?"
+msgstr "Vilket objekt vill du kopiera attributet från?"
 
 #: src/predicat.c:1023
 msgid "What pattern do you want to grep for?"
-msgstr "Vilken str\344ng vill du grep:a efter?"
+msgstr "Vilken sträng vill du grep:a efter?"
 
 #: src/wiz.c:1980
 msgid "What site did you want to lock?"
-msgstr "Vilken sajt ville du l\345sa?"
+msgstr "Vilken sajt ville du låsa?"
 
 #: src/predicat.c:837
 msgid "What was the victim of the verb?"
-msgstr "Vad var m\345let f\366r verbet?"
+msgstr "Vad var målet för verbet?"
 
 #: src/atr_tab.c:184 src/atr_tab.c:239 src/atr_tab.c:300
 msgid "Which attribute do you mean?"
@@ -3570,27 +3471,27 @@ msgstr "Viska vad?"
 
 #: src/wiz.c:223
 msgid "Who do you think you are, GOD?"
-msgstr "Vem tror du att du \344r? Gud?"
+msgstr "Vem tror du att du är? Gud?"
 
 #: src/bsd.c:4330
 msgid "Who do you think you are, Gallup?"
-msgstr "Du f\345r inte \344ndra poll."
+msgstr "Du får inte ändra poll."
 
 #: src/wiz.c:1991
 msgid "Who do you want to lock?"
-msgstr "Vem vill du l\345sa?"
+msgstr "Vem vill du låsa?"
 
 #: src/warnings.c:267 src/warnings.c:443
 msgid "Why would you want to be warned about garbage?"
-msgstr "Varf\366r skulle du vilja bli varnad om skr\344p?"
+msgstr "Varför skulle du vilja bli varnad om skräp?"
 
 #: src/bsd.c:4297
 msgid "Why would you want to do that?"
-msgstr "Varf\366r skulle du vilja g\366ra s\345?"
+msgstr "Varför skulle du vilja göra så?"
 
 #: src/lock.c:373
 msgid "Why would you want to lock garbage?"
-msgstr "Varf\366r vill du l\345sa skr\344p?"
+msgstr "Varför vill du låsa skräp?"
 
 #: src/bsd.c:4279
 #, c-format
@@ -3603,48 +3504,48 @@ msgstr "Du har redan det!"
 
 #: src/extchat.c:1101
 msgid "You already own too many channels."
-msgstr "Du \344ger redan f\366r m\345nga kanaler."
+msgstr "Du äger redan för många kanaler."
 
 #: src/extmail.c:1131
 msgid "You annihilate the post office. All messages cleared."
-msgstr "Du tillintetg\366r postkontoret. Alla meddelanden rensas."
+msgstr "Du tillintetgör postkontoret. Alla meddelanden rensas."
 
 #: src/look.c:865
 msgid "You are carrying:"
-msgstr "Du b\344r:"
+msgstr "Du bär:"
 
 #: src/version.c:33
 #, c-format
 msgid "You are connected to %s"
-msgstr "Du \344r uppkopplad till %s"
+msgstr "Du är uppkopplad till %s"
 
 #: src/move.c:771
 #, c-format
 msgid "You are followed by: %s"
-msgstr "Du f\366ljs efter av: %s"
+msgstr "Du följs efter av: %s"
 
 #: src/move.c:770
 #, c-format
 msgid "You are following: %s"
-msgstr "Du f\366ljer efter: %s"
+msgstr "Du följer efter: %s"
 
 #: src/set.c:901
 msgid "You are not allowed to be your own ancestor!"
-msgstr "Du kan inte vara din egen f\366rfader!"
+msgstr "Du kan inte vara din egen förfader!"
 
 #: src/extchat.c:1254 src/extchat.c:1364
 #, c-format
 msgid "You are not on channel <%s>."
-msgstr "Du \344r inte p\345 kanal <%s>."
+msgstr "Du är inte på kanal <%s>."
 
 #: src/extchat.c:1291
 #, c-format
 msgid "You are not permitted to hide on channel <%s>."
-msgstr "Du f\345r inte g\366mma dig p\345 kanal <%s>."
+msgstr "Du får inte gömma dig på kanal <%s>."
 
 #: src/bsd.c:4015
 msgid "You are nowhere!"
-msgstr "Du \344r ingenstans!"
+msgstr "Du är ingenstans!"
 
 #: src/wiz.c:836
 msgid "You are politely shown to the door."
@@ -3652,20 +3553,20 @@ msgstr "Du kastas ut."
 
 #: src/speech.c:857
 msgid "You are set HAVEN and cannot receive pages."
-msgstr "Du \344r satt till HAVEN och kan inte ta emot kallelser."
+msgstr "Du är satt till HAVEN och kan inte ta emot kallelser."
 
 #: src/look.c:863
 msgid "You aren't carrying anything."
-msgstr "Du b\344r inte n\345got."
+msgstr "Du bär inte något."
 
 #: src/move.c:861
 #, c-format
 msgid "You begin following %s."
-msgstr "Du b\366rjar att f\366lja efter %s."
+msgstr "Du börjar att följa efter %s."
 
 #: src/wiz.c:833
 msgid "You boot an idle self."
-msgstr "Du kastar ut ett inaktivt sj\344lv."
+msgstr "Du kastar ut ett inaktivt själv."
 
 #: src/wiz.c:835
 #, c-format
@@ -3679,28 +3580,28 @@ msgstr "Du slängde ut ej uppkopplad port %s!"
 
 #: attrib.c:1078
 msgid "You can only chown an attribute to yourself."
-msgstr "Du kan bara chown:a ett attribut till dig sj\344lv."
+msgstr "Du kan bara chown:a ett attribut till dig själv."
 
 #: src/move.c:749
 msgid "You can only follow players and things."
-msgstr "Du kan bara f\366lja efter spelare och saker."
+msgstr "Du kan bara följa efter spelare och saker."
 
 #: src/wiz.c:229
 msgid "You can only set quotas to a number."
-msgstr "Du kan bara s\344tta kvoter till ett nummer."
+msgstr "Du kan bara sätta kvoter till ett nummer."
 
 #: src/wiz.c:234
 msgid "You can only set quotas to a positive number."
-msgstr "Du kan bara s\344tta kvoter till ett positivt nummer."
+msgstr "Du kan bara sätta kvoter till ett positivt nummer."
 
 #: src/extchat.c:1119
 #, c-format
 msgid "You can't afford the %d %s."
-msgstr "Du har inte r\345d med %d %s."
+msgstr "Du har inte råd med %d %s."
 
 #: src/wiz.c:798
 msgid "You can't boot other people!"
-msgstr "Du kan inte boot:a andra m\344nniskor!"
+msgstr "Du kan inte boot:a andra människor!"
 
 #: src/extchat.c:1112
 msgid "You can't create channels of that type."
@@ -3712,7 +3613,7 @@ msgstr "Du kan inte ta bort den @function:en."
 
 #: src/move.c:576
 msgid "You can't drop that."
-msgstr "Du kan inte sl\344ppa det."
+msgstr "Du kan inte släppa det."
 
 #: src/wiz.c:584
 msgid "You can't force God!"
@@ -3728,11 +3629,11 @@ msgstr "Du kan inte ge bort det."
 
 #: src/rob.c:202
 msgid "You can't give yourself away!"
-msgstr "Du kan inte ge bort dig sj\344lv!"
+msgstr "Du kan inte ge bort dig själv!"
 
 #: src/move.c:359 src/move.c:412 src/move.c:430
 msgid "You can't go that way."
-msgstr "Du kan inte g\345 dit."
+msgstr "Du kan inte gå dit."
 
 #: src/wiz.c:1175
 msgid "You can't grant powers to unregistered players."
@@ -3740,35 +3641,35 @@ msgstr "Du kan inte ge power till oregistrerade spelare."
 
 #: src/move.c:670
 msgid "You can't leave."
-msgstr "Du kan inte l\344mna rummet."
+msgstr "Du kan inte lämna rummet."
 
 #: src/create.c:60
 msgid "You can't link to that."
-msgstr "Du kan inte l\344nka till det."
+msgstr "Du kan inte länka till det."
 
 #: src/lock.c:369
 msgid "You can't lock that!"
-msgstr "Du kan inte l\345sa det!"
+msgstr "Du kan inte låsa det!"
 
 #: src/wiz.c:166
 msgid "You can't look at someone else's quota."
-msgstr "Du kan inte titta p\345 n\345gon annans kvot."
+msgstr "Du kan inte titta på någon annans kvot."
 
 #: src/look.c:572
 msgid "You can't look at that from here."
-msgstr "Du kan inte titta p\345 det h\344rifr\345n."
+msgstr "Du kan inte titta på det härifrån."
 
 #: src/wiz.c:1202
 msgid "You can't make admin into guests."
-msgstr "Du kan inte g\366ra g\344ster av administrat\366rer."
+msgstr "Du kan inte göra gäster av administratörer."
 
 #: src/create.c:114
 msgid "You can't make an exit in a place that's crumbling."
-msgstr "Du kan inte skapa en utg\345ng i ett rum som faller s\366nder."
+msgstr "Du kan inte skapa en utgång i ett rum som faller sönder."
 
 #: src/extchat.c:1203
 msgid "You can't make channels that type."
-msgstr "Du kan inte g\366ra kanaler av den typen."
+msgstr "Du kan inte göra kanaler av den typen."
 
 #: set.c:391
 msgid "You can't make circular zones!"
@@ -3776,7 +3677,7 @@ msgstr "Du kan inte göra cirkulära zoner!"
 
 #: src/wiz.c:416
 msgid "You can't move an exit to someplace that's crumbling."
-msgstr "Du kan inte flytta en utg\345ng till en plats som h\345ller p\345 att f\366rst\366ras."
+msgstr "Du kan inte flytta en utgång till en plats som håller på att förstöras."
 
 #: src/move.c:537
 msgid "You can't pick that up."
@@ -3784,7 +3685,7 @@ msgstr "Du kan inte ta upp det."
 
 #: src/move.c:541
 msgid "You can't pick up exits."
-msgstr "Du kan inte plocka upp utg\345ngar."
+msgstr "Du kan inte plocka upp utgångar."
 
 #: src/cmds.c:181
 msgid "You can't remake the world in your image."
@@ -3800,15 +3701,15 @@ msgstr "Du kan inte se igenom det."
 
 #: src/move.c:586
 msgid "You can't seem to drop things here."
-msgstr "Du verkar inte kunna sl\344ppa saker h\344r."
+msgstr "Du verkar inte kunna släppa saker här."
 
 #: src/move.c:583
 msgid "You can't seem to get rid of that."
-msgstr "Du verkar inte kunna g\366ra dig av med det."
+msgstr "Du verkar inte kunna göra dig av med det."
 
 #: src/move.c:502
 msgid "You can't take that from there."
-msgstr "Du kan inte ta det d\344rifr\345n."
+msgstr "Du kan inte ta det därifrån."
 
 #: src/move.c:544
 msgid "You can't take that!"
@@ -3816,7 +3717,7 @@ msgstr "Du kan inte ta det!"
 
 #: src/speech.c:139
 msgid "You can't teach 'teach', sorry."
-msgstr "Du kan tyv\344rr inte l\344ra ut 'teach'."
+msgstr "Du kan tyvärr inte lära ut 'teach'."
 
 #: src/wiz.c:359
 msgid "You can't teleport rooms."
@@ -3828,39 +3729,31 @@ msgstr "Du kan inte trigga Gud!"
 
 #: src/create.c:213
 msgid "You can't unlink that!"
-msgstr "Du kan inte avl\344nka det!"
+msgstr "Du kan inte avlänka det!"
 
 #: src/set.c:214
 msgid "You cannot @CHOWN/PRESERVE. Use normal @CHOWN."
-msgstr "Du kan inte @CHOWN/PRESERVE. Anv\344nd normala @CHOWN."
-
-#: src/create.c:500
-msgid "You cannot @CLONE/PRESERVE.  Use normal @CLONE instead."
-msgstr "Du kan inte anv\344nda @CLONE/PRESERVE. Anv\344nd normal @CLONE ist\344llet."
+msgstr "Du kan inte @CHOWN/PRESERVE. Använd normala @CHOWN."
 
 #: function.c:869
 msgid "You cannot change that built-in function."
-msgstr "Du kan inte \344ndra den inbyggda funktionen."
+msgstr "Du kan inte ändra den inbyggda funktionen."
 
 #: src/wiz.c:734
 msgid "You cannot change that player's password."
-msgstr "Du kan inte \344ndra den spelarens l\366senord."
-
-#: src/command.c:1248
-msgid "You cannot do that while fixed."
-msgstr "Du kan inte g\366ra det medan du \344r fixerad."
+msgstr "Du kan inte ändra den spelarens lösenord."
 
 #: src/command.c:1244
 msgid "You cannot do that while gagged."
-msgstr "Du kan inte g\366ra det d\345 du har munkavle."
+msgstr "Du kan inte göra det då du har munkavle."
 
 #: src/move.c:527
 msgid "You cannot get yourself!"
-msgstr "Du kan inte plocka upp dig sj\344lv."
+msgstr "Du kan inte plocka upp dig själv."
 
 #: src/move.c:450
 msgid "You cannot modify exits in that room."
-msgstr "Du kan inte modifiera utg\345ngar i det rummet."
+msgstr "Du kan inte modifiera utgångar i det rummet."
 
 #: src/set.c:357
 msgid "You cannot move that object to that zone."
@@ -3869,78 +3762,74 @@ msgstr "Du kan inte flytta det objekted till den zonen."
 #: src/set.c:469
 #, c-format
 msgid "You cannot set attrib flags on %s/%s"
-msgstr "Du kan inte s\344tta attribut-flaggor p\345 %s/%s"
+msgstr "Du kan inte sätta attribut-flaggor på %s/%s"
 
 #: src/move.c:753
 msgid "You chase your tail for a while and feel silly."
-msgstr "Du jagar din svans en stund och k\344nner dig dum."
+msgstr "Du jagar din svans en stund och känner dig dum."
 
 #: move.c:899
 msgid "You desert everyone you're leading or following."
-msgstr "Du \366verger alla du leder eller f\366ljer."
+msgstr "Du överger alla du leder eller följer."
 
 #: move.c:866
 msgid "You dismiss all your followers."
-msgstr "Du stoppar alla dina efterf\366ljare."
+msgstr "Du stoppar alla dina efterföljare."
 
 #: src/rob.c:77
 msgid "You do not have such power."
-msgstr "Du har inte s\345dan power."
+msgstr "Du har inte sådan power."
 
 #: src/wiz.c:117
 msgid "You do not have the power over body and mind!"
-msgstr "Du har inte makt \366ver kropp och sj\344l!"
+msgstr "Du har inte makt över kropp och själ!"
 
 #: src/cque.c:950
 msgid "You do not have the power to bring the world to a halt."
-msgstr "Du har inte makt att stoppa v\344rlden."
+msgstr "Du har inte makt att stoppa världen."
 
 #: src/wiz.c:925
 msgid "You do not have the power to change reality."
-msgstr "Du har inte makt att \344ndra verkligheten."
+msgstr "Du har inte makt att ändra verkligheten."
 
 #: src/cque.c:972
 msgid "You do not have the power to restart the world."
-msgstr "Du har inte makt att starta om v\344rlden."
+msgstr "Du har inte makt att starta om världen."
 
 #: src/create.c:152
 #, c-format
 msgid "You don't have enough %s to link."
-msgstr "Du har inte tillr\344ckligt med %s f\366r att l\344nka."
+msgstr "Du har inte tillräckligt med %s för att länka."
 
 #: src/rob.c:120 src/speech.c:935
 #, c-format
 msgid "You don't have enough %s."
-msgstr "Du har inte tillr\344ckligt med %s."
+msgstr "Du har inte tillräckligt med %s."
 
 #: src/rob.c:246
 #, c-format
 msgid "You don't have that many %s to give!"
-msgstr "Du har inte s\345 m\345nga %s att ge!"
+msgstr "Du har inte så många %s att ge!"
 
 #: src/move.c:568 src/rob.c:191
 msgid "You don't have that!"
 msgstr "Du har inte det!"
 
-#: src/wiz.c:2292
-msgid "You don't have the authority to do that!"
-msgstr "Du har inte r\344tt att g\366ra det!"
-
 #: src/attrib.c:1114
 msgid "You don't have the permission to chown that."
-msgstr "Du har inte r\344ttigheter att chown:a det."
+msgstr "Du har inte rättigheter att chown:a det."
 
 #: src/set.c:352
 msgid "You don't have the power to shift reality."
-msgstr "Du har inte makt att \344ndra verkligheten."
+msgstr "Du har inte makt att ändra verkligheten."
 
 #: src/bsd.c:3073
 msgid "You don't look like an admin to me."
-msgstr "Du ser inte ut som en administrat\366r."
+msgstr "Du ser inte ut som en administratör."
 
 #: src/move.c:745
 msgid "You don't see that here."
-msgstr "Du ser inte det h\344r."
+msgstr "Du ser inte det här."
 
 #: move.c:649
 #, c-format
@@ -3950,17 +3839,17 @@ msgstr "Du släpper %s."
 #: move.c:1128
 #, c-format
 msgid "You follow %s."
-msgstr "Du f\366ljer efter %s."
+msgstr "Du följer efter %s."
 
 #: src/rob.c:261
 #, c-format
 msgid "You get %d in change."
-msgstr "Du f\345r %d tillbaka."
+msgstr "Du får %d tillbaka."
 
 #: src/destroy.c:759
 #, c-format
 msgid "You get your %d %s deposit back for %s."
-msgstr "Du f\345r tillbaka handpenningen p\345 %d %s f\366r %s."
+msgstr "Du får tillbaka handpenningen på %d %s för %s."
 
 #: src/rob.c:276
 #, c-format
@@ -3975,20 +3864,20 @@ msgstr "Du har %d %s"
 #: src/destroy.c:514
 #, c-format
 msgid "You have been spared from destruction by %s."
-msgstr "Du har ben\345dats fr\345n f\366rintelse av %s."
+msgstr "Du har benådats från förintelse av %s."
 
 #: src/destroy.c:517
 msgid "You have been spared from destruction."
-msgstr "Du har ben\345dats fr\345n f\366rintelse."
+msgstr "Du har benådats från förintelse."
 
 #: src/speech.c:832
 msgid "You haven't paged anyone since connecting."
-msgstr "Du har inte kallat n\345gon sedan du kopplade upp dig."
+msgstr "Du har inte kallat någon sedan du kopplade upp dig."
 
 #: src/rob.c:127
 #, c-format
 msgid "You killed %s!"
-msgstr "Du d\366dade %s!"
+msgstr "Du dödade %s!"
 
 #: src/speech.c:842
 #, c-format
@@ -4002,43 +3891,43 @@ msgstr "Du lemittar: \"%s\""
 
 #: src/bsd.c:4256
 msgid "You may get 15 minutes of fame and glory in life, but not right now."
-msgstr "Du kanske f\345r din kvart i rampljuset, men inte just nu."
+msgstr "Du kanske får din kvart i rampljuset, men inte just nu."
 
 #: src/create.c:311
 msgid "You may not link something to itself."
-msgstr "Du kan inte l\344nka n\345got till sig sj\344lv."
+msgstr "Du kan inte länka något till sig själv."
 
 #: src/set.c:535
 msgid "You may not set attributes."
-msgstr "Du f\345r inte s\344tta attribut."
+msgstr "Du får inte sätta attribut."
 
 #: src/speech.c:132 src/speech.c:171 src/speech.c:644 src/speech.c:1342
 msgid "You may not speak here!"
-msgstr "Du f\345r inte prata h\344r!"
+msgstr "Du får inte prata här!"
 
 #: src/speech.c:218 src/speech.c:270 src/speech.c:1375 src/speech.c:1420
 msgid "You may not speak there!"
-msgstr "Du f\345r inte prata d\344r!"
+msgstr "Du får inte prata där!"
 
 #: src/wiz.c:514
 msgid "You may not teleport out of the zone from this room."
-msgstr "Du f\345r inte teleportera ut ur zonen fr\345n detta rum."
+msgstr "Du får inte teleportera ut ur zonen från detta rum."
 
 #: src/cque.c:913
 msgid "You may not use @halt obj=command on this object."
-msgstr "Du f\345r inte anv\344nda @halt obj=command p\345 detta objekt."
+msgstr "Du får inte använda @halt obj=command på detta objekt."
 
 #: src/flags.c:595
 msgid "You must @lock/zone before you can set a player ZONE"
-msgstr "Du m\345ste anv\344nda @lock/zone innan du kan s\344tta en spelare ZONE"
+msgstr "Du måste använda @lock/zone innan du kan sätta en spelare ZONE"
 
 #: src/extchat.c:922 src/extchat.c:1029
 msgid "You must be on that channel to speak on it."
-msgstr "Du m\345ste vara p\345 den kanalen f\366r att prata p\345 den."
+msgstr "Du måste vara på den kanalen för att prata på den."
 
 #: set.c:210
 msgid "You must carry the object to @chown it."
-msgstr "Du m\345ste b\344ra objektet f\366r att @chown:a det."
+msgstr "Du måste bära objektet för att @chown:a det."
 
 #: wiz.c:1453
 msgid "You must give a string of flag characters."
@@ -4046,69 +3935,61 @@ msgstr "Du måste ange en sträng av flaggtecken."
 
 #: src/extchat.c:1074 src/extchat.c:1247 src/extchat.c:1354
 msgid "You must specify a channel."
-msgstr "Du m\345ste ange en kanal."
+msgstr "Du måste ange en kanal."
 
 #: src/command.c:1090
 msgid "You must specify a command."
-msgstr "Du m\345ste ange ett kommando."
+msgstr "Du måste ange ett kommando."
 
 #: src/set.c:547
 msgid "You must specify a flag to set."
-msgstr "Du m\345ste ange en flagga att s\344tta."
+msgstr "Du måste ange en flagga att sätta."
 
 #: src/rob.c:230
 #, c-format
 msgid "You must specify a positive number of %s."
-msgstr "Du m\345ste ange ett positivt antal %s."
+msgstr "Du måste ange ett positivt antal %s."
 
 #: src/look.c:1044
 msgid "You must specify a valid player name."
-msgstr "Du m\345ste ange ett giltigt spelarnamn."
+msgstr "Du måste ange ett giltigt spelarnamn."
 
 #: src/function.c:672
 msgid "You must specify an object and an attribute."
-msgstr "Du m\345ste ange ett objekt och ett attribut."
+msgstr "Du måste ange ett objekt och ett attribut."
 
 #: src/destroy.c:280
 msgid "You must use @nuke to destroy a player."
-msgstr "Du m\345ste anv\344nda @nuke f\366r att f\366rst\366ra en spelare."
-
-#: cmds.c:415
-msgid "You need a fishing license to use that hook."
-msgstr "Du behöver ett fiskekort för att använda den krioken."
+msgstr "Du måste använda @nuke för att förstöra en spelare."
 
 #: src/wiz.c:678 src/wiz.c:1451
 msgid "You need a search warrant to do that!"
-msgstr "Du f\345r inte s\366ka det!"
-
-#: wiz.c:1509
-msgid "You need a search warrant to do that."
-msgstr "Du beh\366ver tillst\345nd f\366r det."
+msgstr "Du får inte söka det!"
 
 #: attrib.c:1017
 msgid "You need to be able to set the attribute to change its lock."
-msgstr "Du m\345ste kunna s\344tta attributet f\366r att \344ndra dess l\345sning."
+msgstr "Du måste kunna sätta attributet för att ändra dess låsning."
 
 #: src/set.c:715
 msgid "You need to control an attribute to edit it."
-msgstr "Du m\345ste kontrollera ett attribut f\366r att f\345 editera det."
+msgstr "Du måste kontrollera ett attribut för att få editera det."
 
 #: src/attrib.c:985 src/attrib.c:989 src/attrib.c:1058 src/attrib.c:1062
 msgid "You need to give an object/attribute pair."
-msgstr "Du m\345ste ge ett objekt/attribut par."
+msgstr "Du måste ge ett objekt/attribut par."
 
 #: src/extchat.c:746
 msgid "You need to specify a channel."
-msgstr "Du m\345ste ange en kanal."
+msgstr "Du måste ange en kanal."
 
 #: src/extchat.c:1298
 #, c-format
 msgid "You no longer appear on channel <%s>'s who list."
-msgstr "Du syns inte l\344ngre p\345 kanal <%s>s who-lista."
+msgstr "Du syns inte längre på kanal <%s>s who-lista."
 
 #: src/bsd.c:4639
 msgid "You no longer appear on the WHO list."
-msgstr "Du syns inte l\344ngre p\345 WHO listan."
+msgstr "Du syns inte längre på WHO listan."
 
 #: src/extchat.c:1305
 #, c-format
@@ -4117,22 +3998,22 @@ msgstr "Du syns nu i kanal <%s>s who-lista."
 
 #: src/bsd.c:4641
 msgid "You now appear on the WHO list."
-msgstr "Du syns nu p\345 WHO listan."
+msgstr "Du syns nu på WHO listan."
 
 #: src/destroy.c:1103
 #, c-format
 msgid "You own a disconnected room, %s"
-msgstr "Du \344ger ett fr\345nkopplat rum, %s"
+msgstr "Du äger ett frånkopplat rum, %s"
 
 #: src/destroy.c:1181
 #, c-format
 msgid "You own an object %s that was 'orphaned'."
-msgstr "Du \344ger ett objekt %s som blev f\366r\344ldral\366st."
+msgstr "Du äger ett objekt %s som blev föräldralöst."
 
 #: destroy.c:1143
 #, c-format
 msgid "You own an object without a @lock/zone being used as a zone: %s"
-msgstr "Du \344ger ett objekt utan @lock/zone som anv\344nds som zon: %s"
+msgstr "Du äger ett objekt utan @lock/zone som används som zon: %s"
 
 #: src/rob.c:263
 #, c-format
@@ -4152,11 +4033,11 @@ msgstr "Du remittar, \"%s\" i %s"
 #: src/speech.c:177
 #, c-format
 msgid "You say, \"%s\""
-msgstr "Du s\344ger, \"%s\""
+msgstr "Du säger, \"%s\""
 
 #: src/look.c:412
 msgid "You see nothing special."
-msgstr "Du ser inget s\344rskilt."
+msgstr "Du ser inget särskilt."
 
 #: extmail.c:2685
 #, c-format
@@ -4165,50 +4046,50 @@ msgstr "Du skickade ditt meddelande till '%s' aliaset"
 
 #: src/set.c:367
 msgid "You shouldn't zone objects to themselves!"
-msgstr "Du b\366r inte \344ndra zon p\345 objekt till sig sj\344lvt!"
+msgstr "Du bör inte ändra zon på objekt till sig självt!"
 
 #: src/create.c:240
 msgid "You somehow wound up in a exit. No biscuit."
-msgstr "Du hamnade i en utg\345ng, p\345 n\345got s\344tt."
+msgstr "Du hamnade i en utgång, på något sätt."
 
 #: src/move.c:917 src/move.c:1036
 #, c-format
 msgid "You stop following %s."
-msgstr "Du slutar f\366lja efter %s."
+msgstr "Du slutar följa efter %s."
 
 #: move.c:835
 msgid "You stop following anyone."
-msgstr "Du slutar f\366lja efter vem som helst."
+msgstr "Du slutar följa efter vem som helst."
 
 #: src/rob.c:279
 #, c-format
 msgid "You took %d %s from %s!"
-msgstr "Du tog %d %s fr\345n %s!"
+msgstr "Du tog %d %s från %s!"
 
 #: src/destroy.c:336
 #, c-format
 msgid "You will be rewarded shortly for %s."
-msgstr "Du kommer snart att bli bel\366nad f\366r %s."
+msgstr "Du kommer snart att bli belönad för %s."
 
 #: src/extchat.c:1266
 #, c-format
 msgid "You will no longer hear connection messages on channel <%s>."
-msgstr "Du kommer inte l\344ngre att h\366ra uppkopplingsmeddelanden p\345 kanal <%s>."
+msgstr "Du kommer inte längre att höra uppkopplingsmeddelanden på kanal <%s>."
 
 #: src/extchat.c:1322
 #, c-format
 msgid "You will no longer hear messages on channel <%s>."
-msgstr "Du kommer inte l\344ngre att h\366ra meddelanden p\345 kanal <%s>."
+msgstr "Du kommer inte längre att höra meddelanden på kanal <%s>."
 
 #: src/extchat.c:1274
 #, c-format
 msgid "You will now hear connection messages on channel <%s>."
-msgstr "Du kommer nu att h\366ra uppkopplingsmeddelanden p\345 kanal <%s>."
+msgstr "Du kommer nu att höra uppkopplingsmeddelanden på kanal <%s>."
 
 #: src/extchat.c:1329
 #, c-format
 msgid "You will now hear messages on channel <%s>."
-msgstr "Du kommer nu att h\366ra meddelanden p\345 kanal <%s>."
+msgstr "Du kommer nu att höra meddelanden på kanal <%s>."
 
 #: src/speech.c:1488
 #, c-format
@@ -4217,24 +4098,24 @@ msgstr "Du zemittar, \"%s\" i zon %s"
 
 #: src/warnings.c:412
 msgid "You'd better check your wizbit first."
-msgstr "Du borde kontrollera din wiz-bit f\366rst."
+msgstr "Du borde kontrollera din wiz-bit först."
 
 #: move.c:788
 #, c-format
 msgid "You're already following %s."
-msgstr "Du f\366ljer redan efter %s."
+msgstr "Du följer redan efter %s."
 
 #: src/wiz.c:453
 msgid "You're in the Void. This is not a good thing."
-msgstr "Du \344r i Void. Det \344r inte bra."
+msgstr "Du är i Void. Det är inte bra."
 
 #: src/wiz.c:479
 msgid "You're in the void - sending you home."
-msgstr "Du \344r i Void - skickar hem dig."
+msgstr "Du är i Void - skickar hem dig."
 
 #: src/wiz.c:487
 msgid "You're in too many containers."
-msgstr "Du \344r i f\366r m\345nga beh\345llare."
+msgstr "Du är i för många behållare."
 
 #: speech.c:733
 msgid "You're trying to page too many people at once."
@@ -4243,11 +4124,11 @@ msgstr "Du försöker anropa för många personer på en gång."
 #: src/destroy.c:410
 #, c-format
 msgid "Your %s has been spared from destruction."
-msgstr "Din %s har ben\345dats fr\345n f\366rintelse."
+msgstr "Din %s har benådats från förintelse."
 
 #: src/bsd.c:3419
 msgid "Your HAVEN flag is set. You cannot receive pages."
-msgstr "Din HAVEN flagga \344r satt. Du kan inte ta emot kallelser."
+msgstr "Din HAVEN flagga är satt. Du kan inte ta emot kallelser."
 
 #: timer.c:158
 msgid "Your ON-VACATION flag is set! If you're back, clear it."
@@ -4255,32 +4136,28 @@ msgstr "Din ON-VACATION flagga är satt! Om du är tillbaka, nollställ den."
 
 #: src/flags.c:1092
 msgid "Your contents can no longer be heard from outside."
-msgstr "Ditt inneh\345ll kan inte l\344ngre h\366ras utifr\345n."
+msgstr "Ditt innehåll kan inte längre höras utifrån."
 
 #: src/flags.c:1152
 msgid "Your contents can now be heard from outside."
-msgstr "Ditt inneh\345ll kan nu h\366ras utifr\345n."
-
-#: src/game.c:294 src/wiz.c:726
-msgid "Your delusions of grandeur have been duly noted."
-msgstr "Ditt f\366rs\366k har noterats."
+msgstr "Ditt innehåll kan nu höras utifrån."
 
 #: src/wiz.c:1971
 msgid "Your delusions of grandeur have been noted."
-msgstr "Ditt f\366rs\366k har noterats."
+msgstr "Ditt försök har noterats."
 
 #: src/rob.c:147
 msgid "Your insurance policy has been revoked."
-msgstr "Din livf\366rs\344kring har g\345tt ut."
+msgstr "Din livförsäkring har gått ut."
 
 #: src/rob.c:143
 #, c-format
 msgid "Your insurance policy pays %d %s."
-msgstr "Din livf\366rs\344kring betalar ut %d %s."
+msgstr "Din livförsäkring betalar ut %d %s."
 
 #: src/rob.c:155
 msgid "Your murder attempt failed."
-msgstr "Ditt mordf\366rs\366k misslyckades."
+msgstr "Ditt mordförsök misslyckades."
 
 #: src/cque.c:988
 #, c-format
@@ -4295,12 +4172,12 @@ msgstr "Dina objekt har blivit globalt stoppade av %s"
 #: src/wiz.c:739
 #, c-format
 msgid "Your password has been changed by %s."
-msgstr "Ditt l\366senord har \344ndrats av %s."
+msgstr "Ditt lösenord har ändrats av %s."
 
 #: src/player.c:298
 #, c-format
 msgid "Your requested player, %s, has been created.\n"
-msgstr "Din efterfr\345gade spelare, %s, har skapats.\n"
+msgstr "Din efterfrågade spelare, %s, har skapats.\n"
 
 #: lock.c:888
 #, c-format
@@ -4310,11 +4187,11 @@ msgstr "Zon %s borde verkligen ha ett säkrare zon-lås."
 #: src/wiz.c:959
 #, c-format
 msgid "Zone changed for %d objects."
-msgstr "Zon \344ndrad f\366r %d objekt."
+msgstr "Zon ändrad för %d objekt."
 
 #: src/set.c:422
 msgid "Zone changed."
-msgstr "Zon \344ndrad."
+msgstr "Zon ändrad."
 
 #: src/predicat.c:764
 #, c-format
@@ -4327,7 +4204,7 @@ msgid ""
 "*** Inactivity limit reached. You are now HIDDEN. ***\n"
 msgstr ""
 "\n"
-"*** Tidsgr\344ns f\366r brist p\345 aktivitet n\345dd. Du \344r nu HIDDEN. ***\n"
+"*** Tidsgräns för brist på aktivitet nådd. Du är nu HIDDEN. ***\n"
 
 #: src/bsd.c:4673
 msgid ""
@@ -4335,7 +4212,7 @@ msgid ""
 "*** Inactivity timeout ***\n"
 msgstr ""
 "\n"
-" *** Timeout p\345 grund av brist p\345 aktivitet ***\n"
+" *** Timeout på grund av brist på aktivitet ***\n"
 
 #: src/extmail.c:2507
 msgid ""
@@ -4364,24 +4241,24 @@ msgstr "rensat"
 #: move.c:608
 #, c-format
 msgid "drops %s."
-msgstr "sl\344pper %s."
+msgstr "släpper %s."
 
 #: src/warnings.c:186
 #, c-format
 msgid "exit has multiple (%d) return exits"
-msgstr "utg\345ng har flera (%d) tillbakag\345ende utg\345ngar"
+msgstr "utgång har flera (%d) tillbakagående utgångar"
 
 #: src/warnings.c:183
 msgid "exit has no return exit"
-msgstr "utg\345ngen har ingen v\344g tillbaka"
+msgstr "utgången har ingen väg tillbaka"
 
 #: src/warnings.c:163
 msgid "exit is missing description"
-msgstr "utg\345ng saknar beskrivning"
+msgstr "utgång saknar beskrivning"
 
 #: src/warnings.c:148
 msgid "exit is unlinked; anyone can steal it"
-msgstr "utg\345ng \344r ej l\344nkad; vem som helst kan stj\344la det"
+msgstr "utgång är ej länkad; vem som helst kan stjäla det"
 
 #: src/move.c:101
 msgid "has arrived."
@@ -4389,7 +4266,7 @@ msgstr "har kommit."
 
 #: src/move.c:96
 msgid "has left."
-msgstr "har l\344mnat rummet."
+msgstr "har lämnat rummet."
 
 #: lock.c:685
 msgid "lock flags set"
@@ -4405,19 +4282,19 @@ msgstr "spelare saknar beskrivning"
 
 #: src/warnings.c:159
 msgid "possibly locked exit missing fail"
-msgstr "m\366jligtvis l\345st utg\345ng saknar fail"
+msgstr "möjligtvis låst utgång saknar fail"
 
 #: src/warnings.c:229
 msgid "possibly locked thing missing fail"
-msgstr "m\366jligtvis l\345st sak saknar fail"
+msgstr "möjligtvis låst sak saknar fail"
 
 #: src/warnings.c:157
 msgid "possibly unlocked exit missing succ/osucc/odrop"
-msgstr "m\366jligtvis ol\345st utg\345ng saknar succ/osucc/odrop"
+msgstr "möjligtvis olåst utgång saknar succ/osucc/odrop"
 
 #: src/warnings.c:227
 msgid "possibly unlocked thing missing succ/osucc/drop/odrop"
-msgstr "m\366jligt ol\345st sak saknar succ/osucc/drop/odrop"
+msgstr "möjligt olåst sak saknar succ/osucc/drop/odrop"
 
 #: funstr.c:91
 msgid "pronoun:neuter,possessive"

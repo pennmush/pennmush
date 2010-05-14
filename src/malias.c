@@ -500,9 +500,10 @@ do_malias_destroy(dbref player, char *alias)
   struct mail_alias *m;
   m = get_malias(player, alias);
   if (!m) {
-    notify(player,
-           T
-           ("MAIL: Not a valid alias. Remember to prefix the alias name with *."));
+    notify_format(player,
+                  T
+                  ("MAIL: Not a valid alias. Remember to prefix the alias name with %c."),
+                  MALIAS_TOKEN);
     return;
   }
   if (Wizard(player) || (m->owner == player)) {

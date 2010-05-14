@@ -556,8 +556,8 @@ insert_channel(CHAN **ch)
   if (!ch || !*ch)
     return;
 
-  /* If there's no users on the list, or if the first user is already
-   * alphabetically greater, user should be the first entry on the list */
+  /* If there's no channels on the list, or if the first channel is already
+   * alphabetically greater, ch should be the first entry on the list */
   /* No channels? */
   if (!channels) {
     channels = *ch;
@@ -617,6 +617,8 @@ insert_obj_chan(dbref who, CHAN **ch)
 {
   CHANLIST *p;
   CHANLIST *tmp;
+  char cleanname[CHAN_NAME_LEN];
+  char cleanp[CHAN_NAME_LEN];
 
   if (!ch || !*ch)
     return;
@@ -625,6 +627,7 @@ insert_obj_chan(dbref who, CHAN **ch)
   if (!tmp)
     return;
   tmp->chan = *ch;
+  strcpy(cleanname, remove_markup(ChanName(*ch), NULL));
   /* If there's no channels on the list, or if the first channel is already
    * alphabetically greater, chan should be the first entry on the list */
   /* No channels? */
@@ -635,20 +638,23 @@ insert_obj_chan(dbref who, CHAN **ch)
   }
   p = Chanlist(who);
   /* First channel? */
-  if (strcasecoll(ChanName(p->chan), ChanName(*ch)) > 0) {
+  strcpy(cleanp, remove_markup(ChanName(p->chan), NULL));
+  if (strcasecoll(cleanp, cleanname) > 0) {
     tmp->next = p;
     s_Chanlist(who, tmp);
     return;
-  } else if (!strcasecmp(ChanName(p->chan), ChanName(*ch))) {
+  } else if (!strcasecmp(cleanp, cleanname)) {
     /* Don't add the same channel twice! */
     free_chanlist(tmp);
   } else {
     /* Otherwise, find which channel this channel should be inserted after */
-    for (;
-         p->next
-         && (strcasecoll(ChanName(p->next->chan), ChanName(*ch)) < 0);
-         p = p->next) ;
-    if (p->next && !strcasecmp(ChanName(p->next->chan), ChanName(*ch))) {
+    while (p->next) {
+      strcpy(cleanp, remove_markup(ChanName(p->next->chan), NULL));
+      if (strcasecoll(cleanp, cleanname) >= 0)
+        break;
+      p = p->next;
+    }
+    if (p->next && !strcasecmp(cleanp, cleanname)) {
       /* Don't add the same channel twice! */
       free_chanlist(tmp);
     } else {
@@ -1168,7 +1174,7 @@ do_channel(dbref player, const char *name, const char *target, const char *com)
     return;
   }
   if (!com || !*com) {
-    notify(player, T("What do you want to do with that channel?"));
+    notify(player, T("What do you want to do with the channel?"));
     return;
   }
 
@@ -1322,7 +1328,7 @@ channel_join_self(dbref player, const char *name)
   switch (find_channel_partial_off(name, &chan, player)) {
   case CMATCH_NONE:
     if (find_channel_partial_on(name, &chan, player))
-      notify_format(player, T("CHAT: You are already on channel <%s>"),
+      notify_format(player, T("CHAT: You are already on channel <%s>."),
                     ChanName(chan));
     else
       notify(player, T("CHAT: I don't recognize that channel."));
@@ -2269,6 +2275,11 @@ FUNCTION(fun_cbufferadd)
   CHAN *c;
   dbref victim;
 
+  if (!FUNCTION_SIDE_EFFECTS) {
+    safe_str(T(e_disabled), buff, bp);
+    return;
+  }
+
   /* Person must be able to do nospoof cemits. */
   if (!command_check_byname(executor, "@cemit") || fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
@@ -2289,7 +2300,7 @@ FUNCTION(fun_cbufferadd)
   /* Do we spoof somebody else? */
   if (nargs == 3 && parse_boolean(args[2])) {
     /* Person must be able to do nospoof cemits. */
-    if (!command_check_byname(executor, "@nscemit") || fun->flags & FN_NOSIDEFX) {
+    if (!command_check_byname(executor, "@nscemit")) {
       safe_str(T(e_perm), buff, bp);
       return;
     }
@@ -2866,6 +2877,7 @@ FUNCTION(fun_cwho)
   int first = 1;
   int matchcond = 0;
   int priv = 0;
+  int skip_gagged = 0;
   int show;
   CHAN *chan = NULL;
   CHANUSER *u;
@@ -2882,7 +2894,7 @@ FUNCTION(fun_cwho)
     break;
   }
 
-  if (nargs == 2) {
+  if (nargs > 1 && args[1] && *args[1]) {
     if (!strcasecmp(args[1], "on"))
       matchcond = 0;
     else if (!strcasecmp(args[1], "off"))
@@ -2894,6 +2906,9 @@ FUNCTION(fun_cwho)
       return;
     }
   }
+
+  if (nargs > 2 && parse_boolean(args[2]))
+    skip_gagged = 1;
 
   /* Feh. We need to do some sort of privilege checking, so that
    * if mortals can't do '@channel/who wizard', they can't do
@@ -2925,6 +2940,8 @@ FUNCTION(fun_cwho)
         show = Connected(who) && (!Chanuser_Hide(u) || priv);
     }
     if (!show)
+      continue;
+    if (Chanuser_Gag(u) && skip_gagged)
       continue;
     if (first)
       first = 0;
@@ -3320,10 +3337,10 @@ FUNCTION(fun_crecall)
       char *nsmsg = ns_esnotify(speaker, na_one, &executor,
                                 Paranoid(executor) ? 1 : 0);
       if (!showstamp)
-        safe_format(buff, bp, T("%s %s"), nsmsg, buf);
+        safe_format(buff, bp, "%s %s", nsmsg, buf);
       else {
         stamp = show_time(timestamp, 0);
-        safe_format(buff, bp, T("[%s] %s %s"), stamp, nsmsg, buf);
+        safe_format(buff, bp, "[%s] %s %s", stamp, nsmsg, buf);
       }
       mush_free(nsmsg, "string");
     } else {
@@ -3331,7 +3348,7 @@ FUNCTION(fun_crecall)
         safe_str(buf, buff, bp);
       else {
         stamp = show_time(timestamp, 0);
-        safe_format(buff, bp, T("[%s] %s"), stamp, buf);
+        safe_format(buff, bp, "[%s] %s", stamp, buf);
       }
     }
     num_lines--;
@@ -3463,8 +3480,8 @@ na_channel(dbref current, void *data)
  */
 
 char *
-mogrify(dbref mogrifier, char *attrname,
-        dbref player, int numargs, char *argv[], char *orig)
+mogrify(dbref mogrifier, const char *attrname,
+        dbref player, int numargs, const char *argv[], const char *orig)
 {
   static char buff[BUFFER_LEN];
   const char *wenv[10] = { 0 };
@@ -3513,12 +3530,12 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
   CHANUSER *speaker;
   dbref current;
   char *bp;
-  char *blockstr = "";
+  const char *blockstr = "";
   int na_flags = NA_INTER_LOCK;
   const char *someone = "Someone";
   dbref mogrifier = NOTHING;
-  char *ctype = NULL;
-  char *argv[10];
+  const char *ctype = NULL;
+  const char *argv[10];
   int override_chatformat = 0;
   memset(argv, 0, sizeof(argv));
 
@@ -3810,10 +3827,10 @@ do_chan_recall(dbref player, const char *name, char *lineinfo[], int quiet)
       char *nsmsg = ns_esnotify(speaker, na_one, &player,
                                 Paranoid(player) ? 1 : 0);
       if (quiet)
-        notify_format(player, T("%s %s"), nsmsg, buf);
+        notify_format(player, "%s %s", nsmsg, buf);
       else {
         stamp = show_time(timestamp, 0);
-        notify_format(player, T("[%s] %s %s"), stamp, nsmsg, buf);
+        notify_format(player, "[%s] %s %s", stamp, nsmsg, buf);
       }
       mush_free(nsmsg, "string");
     } else {
@@ -3821,7 +3838,7 @@ do_chan_recall(dbref player, const char *name, char *lineinfo[], int quiet)
         notify(player, buf);
       else {
         stamp = show_time(timestamp, 0);
-        notify_format(player, T("[%s] %s"), stamp, buf);
+        notify_format(player, "[%s] %s", stamp, buf);
       }
     }
     num_lines--;

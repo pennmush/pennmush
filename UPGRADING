@@ -38,7 +38,9 @@ To upgrade with patch files, get all the patch files for higher
 patchlevels than your current version. For example, if you're running
 1.8.0p0 and the latest version is 1.8.0p4, you need patches 1-4.
 
-These files are stored at http://ftp.pennmush.org/Source and usually
+Patchfiles can be downloaded via the Downloads tab at
+http://code.google.com/p/pennmush/ with older patches currently
+available from http://ftp.pennmush.org/Source and usually
 named things like 1.8.0-patch02 (the patch from 1.8.0p1 to 1.8.0p2)
 or, in some cases, 1.7.6p16-1.8.0p0.patch (the patch from 1.7.6p16 to
 1.8.0p0).
@@ -60,17 +62,20 @@ make the upgrade (e.g. from 1.7.4p3 to 1.8.0p0), it's often easier to
 simply build a new distribution following the INSTALL instructions,
 but with your old configuration stuff.
 
-Move your older version of PennMUSH in a directory called oldpenn/,
-unpack the new one (it will unpack into pennmush/).
+Up until 1.8.2p5, all PennMUSH installs unpacked into a directory called
+pennmush/, so it was necessary to rename your existing directory to 
+something like oldpenn/ prior to unpacking the new version. From 1.8.2p5
+and onwards, directory names are version-specific (pennmush-1.8.2p5/),
+so this is no longer necessary.
 
-All of the steps below should be taken before running Configure for
+All of the steps below should be taken before running ./configure for
 the new version:
 
 A.2.a. options.h and game/*.cnf
 
 You can copy the options.h file and game/mush.cnf file from your old
 version to the new version. The 'make update' command (run after
-Configure) will compare your files with the newly distributed ones and
+configure) will compare your files with the newly distributed ones and
 tell you about options that have been added or removed. If you have
 any options defined that the new version doesn't recognize, you'll be
 asked if you want to retain them (which is safe).
@@ -86,11 +91,12 @@ recommended that you copy restart to a second file, called something
 like restart.local, and modify and use it instead of the stock restart
 script to reduce conflicts when patching.
 
-You can also copy your old game/access.cnf, game/sitelock.cnf, and
+You can also copy your old game/access.cnf, game/names.cnf, and
 game/txt/*.txt files into the appropriate locations. You may wish to
-do the same thing for game/restrict.cnf, but you should compare it to
-the new version, as restrictions that may formerly have been compiled
-into the server may now be specified in restrict.cnf instead.
+do the same thing for game/restrict.cnf and game/alias.cnf, but you
+should compare them to the new versions, as restrictions and aliases 
+that may formerly have been compiled into the server may now be 
+specified in the .cnf files instead.
 
 A.2.b. src/*local.c
 

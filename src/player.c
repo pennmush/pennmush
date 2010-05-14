@@ -53,8 +53,7 @@ extern char *crypt(const char *, const char *);
 dbref email_register_player
   (const char *name, const char *email, const char *host, const char *ip);
 static dbref make_player
-  (const char *name, const char *password, const char *host, const char *ip,
-   dbref try_dbref);
+  (const char *name, const char *password, const char *host, const char *ip);
 void do_password(dbref player, dbref cause, const char *old,
                  const char *newobj);
 
@@ -195,13 +194,12 @@ connect_player(const char *name, const char *password, const char *host,
  * \param password initial password of created player.
  * \param host host from which creation is attempted.
  * \param ip ip address from which creation is attempted.
- * \param try_dbref NOTHING or dbref of garbage object to use.
  * \return dbref of created player, NOTHING if bad name, AMBIGUOUS if bad
  *  password.
  */
 dbref
 create_player(const char *name, const char *password, const char *host,
-              const char *ip, dbref try_dbref)
+              const char *ip)
 {
   if (!ok_player_name(name, NOTHING, NOTHING)) {
     do_log(LT_CONN, 0, 0, "Failed creation (bad name) from %s", host);
@@ -217,7 +215,7 @@ create_player(const char *name, const char *password, const char *host,
     return NOTHING;
   }
   /* else he doesn't already exist, create him */
-  return make_player(name, password, host, ip, try_dbref);
+  return make_player(name, password, host, ip);
 }
 
 /* The HAS_SENDMAIL ifdef is kept here as a hint to metaconfig */
@@ -344,7 +342,7 @@ email_register_player(const char *name, const char *email, const char *host,
   pclose(fp);
   reserve_fd();
   /* Ok, all's well, make a player */
-  player = make_player(name, passwd, host, ip, NOTHING);
+  player = make_player(name, passwd, host, ip);
   (void) atr_add(player, "REGISTERED_EMAIL", email, GOD, 0);
   return player;
 }
@@ -362,17 +360,12 @@ email_register_player(const char *name, const char *email, const char *host,
 
 static dbref
 make_player(const char *name, const char *password, const char *host,
-            const char *ip, dbref try_dbref)
+            const char *ip)
 {
   dbref player;
   char temp[SBUF_LEN];
   char *flaglist, *flagname;
   char flagbuff[BUFFER_LEN];
-
-  if (try_dbref != NOTHING && GoodObject(try_dbref) && IsGarbage(try_dbref)) {
-    if (!make_first_free(try_dbref))
-      return NOTHING;
-  }
 
   player = new_object();
 

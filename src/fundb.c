@@ -108,14 +108,25 @@ FUNCTION(fun_nattr)
 {
   dbref thing;
   int doparent;
-  static const char *matchall = "**";   /* count atrees by default too */
-  char *pattern;
+  const char *pattern;
+  int regexp = 0;
+  int matchall = 0;
+
+  if (*called_as == 'R')
+    regexp = 1;
+  doparent = strchr(called_as, 'P') ? 1 : 0;
 
   pattern = strchr(args[0], '/');
-  if (pattern)
-    *pattern++ = '\0';
-  else
-    pattern = (char *) matchall;        /* match anything */
+  if (pattern) {
+    args[0][pattern - args[0]] = '\0';
+    pattern++;
+  } else {
+    pattern = (regexp ? "**" : "*");
+  }
+  if (!strcmp(pattern, "**") || !strlen(pattern)) {
+    regexp = 0;
+    matchall = 1;
+  }
 
   thing = match_thing(executor, args[0]);
   if (!GoodObject(thing)) {
@@ -123,14 +134,9 @@ FUNCTION(fun_nattr)
     return;
   }
 
-  doparent = strchr(called_as, 'P') ? 1 : 0;
-
-  if (!doparent && pattern == matchall && Can_Examine(executor, thing)) {
-    safe_integer(AttrCount(thing), buff, bp);
-  } else {
-    safe_integer(atr_pattern_count(executor, thing, pattern, doparent,
-                                   !Can_Examine(executor, thing)), buff, bp);
-  }
+  safe_integer(atr_pattern_count(executor, thing, pattern, doparent,
+                                 !Can_Examine(executor, thing), regexp), buff,
+               bp);
 }
 
 /* ARGSUSED */
@@ -140,10 +146,11 @@ FUNCTION(fun_lattr)
   char *pattern;
   struct lh_args lh;
   char delim;
+  int regexp = 0;
 
   lh.nattr = lh.start = lh.count = 0;
 
-  if (*called_as == 'X') {
+  if (strchr(called_as, 'X')) {
     if (!is_strict_integer(args[1]) || !is_strict_integer(args[2])) {
       safe_str(T(e_int), buff, bp);
       return;
@@ -164,12 +171,17 @@ FUNCTION(fun_lattr)
     if (!delim_check(buff, bp, nargs, args, 2, &delim))
       return;
   }
+  if (*called_as == 'R')
+    regexp = 1;
 
   pattern = strchr(args[0], '/');
   if (pattern)
     *pattern++ = '\0';
-  else
-    pattern = (char *) "*";     /* match anything */
+  else if (regexp) {
+    regexp = 0;
+    pattern = (char *) "**";
+  } else
+    pattern = (char *) "*";
 
   thing = match_thing(executor, args[0]);
   if (!GoodObject(thing)) {
@@ -183,11 +195,12 @@ FUNCTION(fun_lattr)
 
   if (strchr(called_as, 'P')) {
     (void) atr_iter_get_parent(executor, thing, pattern,
-                               !Can_Examine(executor, thing), lattr_helper,
-                               &lh);
+                               !Can_Examine(executor, thing), regexp,
+                               lattr_helper, &lh);
   } else {
     (void) atr_iter_get(executor, thing, pattern,
-                        !Can_Examine(executor, thing), lattr_helper, &lh);
+                        !Can_Examine(executor, thing), regexp, lattr_helper,
+                        &lh);
   }
 }
 
@@ -590,7 +603,9 @@ FUNCTION(fun_rnum)
   if ((place != NOTHING) &&
       (Can_Examine(executor, place) || (Location(executor) == place) ||
        (enactor == place))) {
-    switch (thing = match_result(place, name, NOTYPE, MAT_REMOTE)) {
+    switch (thing =
+            match_result(place, name, NOTYPE,
+                         MAT_POSSESSION | MAT_CARRIED_EXIT)) {
     case NOTHING:
       safe_str(T(e_match), buff, bp);
       break;
@@ -1684,10 +1699,6 @@ FUNCTION(fun_money)
       safe_str("#-1", buff, bp);
     }
     return;
-  } else if (!GoodObject(it)) {
-    /* Catch ambiguous matches */
-    safe_str("#-1", buff, bp);
-    return;
   }
   /* If the thing in question has unlimited money, respond with the
    * max money possible. We don't use the NoPay macro, though, because
@@ -1695,7 +1706,7 @@ FUNCTION(fun_money)
    * if its owner is no_pay. Softcode can check money(owner(XX)) if
    * they want to allow objects to pay like their owners.
    */
-  if (has_power_by_name(it, "NO_PAY", NOTYPE))
+  if (NoPay(it))
     safe_integer(MAX_PENNIES, buff, bp);
   else
     safe_integer(Pennies(it), buff, bp);
@@ -1858,7 +1869,7 @@ FUNCTION(fun_namelist)
   int first = 1;
   char *current;
   dbref target;
-  const char *start;
+  char *start;
   int report = 0;
   ufun_attrib ufun;
   char *wenv[2];
@@ -1872,12 +1883,12 @@ FUNCTION(fun_namelist)
     }
   }
 
-  start = args[0];
+  start = trim_space_sep(args[0], ' ');
   while (start && *start) {
     if (!first)
-      safe_str(" ", buff, bp);
+      safe_chr(' ', buff, bp);
     first = 0;
-    current = next_in_list(&start);
+    current = split_token(&start, ' ');
     if (*current == '*')
       current = current + 1;
     target = lookup_player(current);
@@ -2108,7 +2119,7 @@ FUNCTION(fun_clone)
     safe_str(T(e_perm), buff, bp);
     return;
   }
-  safe_dbref(do_clone(executor, args[0], NULL, 0), buff, bp);
+  safe_dbref(do_clone(executor, args[0], args[1], 0, args[2]), buff, bp);
 }
 
 

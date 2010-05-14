@@ -101,7 +101,7 @@ do_real_open(dbref player, const char *direction, const char *linkto,
     return NOTHING;
   }
   if ((loc == NOTHING) || (!IsRoom(loc))) {
-    notify(player, T("Sorry you can only make exits out of rooms."));
+    notify(player, T("Sorry, you can only make exits out of rooms."));
     return NOTHING;
   }
   if (Going(loc)) {
@@ -173,15 +173,38 @@ do_real_open(dbref player, const char *direction, const char *linkto,
  * \endverbatim
  * \param player the enactor.
  * \param direction name of the exit forward.
- * \param links 1-based array containing name of destination and optionally name of exit back.
+ * \param links 1-based array, possibly containing name of destination, name of exit back,
+ * and room to open initial exit from.
  */
 void
 do_open(dbref player, const char *direction, char **links)
 {
   dbref forward;
-  forward = do_real_open(player, direction, links[1], NOTHING);
+  dbref source = NOTHING;
+  if (links[3]) {
+    source =
+      match_result(player, links[3], TYPE_ROOM,
+                   MAT_HERE | MAT_ABSOLUTE | MAT_TYPE);
+    if (!GoodObject(source)) {
+      notify(player, T("Open from where?"));
+      return;
+    }
+  }
+
+  forward = do_real_open(player, direction, links[1], source);
   if (links[2] && GoodObject(forward) && GoodObject(Location(forward))) {
-    do_real_open(player, links[2], "here", Location(forward));
+    char sourcestr[SBUF_LEN];   /* SBUF_LEN is the size used by unparse_dbref */
+    if (!GoodObject(source)) {
+      if (IsRoom(player)) {
+        source = player;
+      } else if (IsExit(player)) {
+        source = Home(player);
+      } else {
+        source = Location(player);
+      }
+    }
+    strcpy(sourcestr, unparse_dbref(source));
+    do_real_open(player, links[2], sourcestr, Location(forward));
   }
 }
 
@@ -326,7 +349,8 @@ do_link(dbref player, const char *name, const char *room_name, int preserve)
     case TYPE_PLAYER:
     case TYPE_THING:
       if ((room =
-           noisy_match_result(player, room_name, NOTYPE, MAT_EVERYTHING)) < 0) {
+           noisy_match_result(player, room_name, NOTYPE,
+                              MAT_EVERYTHING)) == NOTHING) {
         notify(player, T("No match."));
         return;
       }
@@ -469,22 +493,8 @@ do_create(dbref player, char *name, int cost, char *newdbref)
     cost = OBJECT_COST;
   }
 
-  if (newdbref && *newdbref) {
-    /* move newdbref to the start of the free list */
-    if (!has_flag_by_name(player, "WIZARD", NOTYPE)) {
-      notify(player, T("Permission denied."));
-      return NOTHING;
-    }
-    thing = parse_dbref(newdbref);
-    if (thing == NOTHING || !GoodObject(thing) || !IsGarbage(thing)) {
-      notify(player, T("That is not a valid dbref."));
-      return NOTHING;
-    }
-
-    if (!make_first_free(thing)) {
-      notify(player, T("Unable to create object with that dbref."));
-      return NOTHING;
-    }
+  if (!make_first_free_wrapper(player, newdbref)) {
+    return NOTHING;
   }
 
   if (can_pay_fees(player, cost)) {
@@ -591,10 +601,11 @@ clone_object(dbref player, dbref thing, const char *newname, int preserve)
  * \param name the name of the object to clone.
  * \param newname the name to give the duplicate.
  * \param preserve if 1, preserve ownership and privileges on duplicate.
+ * \paran newdbref the (unparsed) dbref to give the object, or NULL to use the next free
  * \return dbref of the duplicate, or NOTHING.
  */
 dbref
-do_clone(dbref player, char *name, char *newname, int preserve)
+do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref)
 {
   dbref clone, thing;
   char dbnum[BUFFER_LEN];
@@ -620,10 +631,14 @@ do_clone(dbref player, char *name, char *newname, int preserve)
     return NOTHING;
   }
   if (preserve && !Wizard(player)) {
-    notify(player,
-           T("You cannot @CLONE/PRESERVE.  Use normal @CLONE instead."));
+    notify(player, T("You cannot @CLONE/PRESERVE. Use normal @CLONE instead."));
     return NOTHING;
   }
+
+  if (!make_first_free_wrapper(player, newdbref)) {
+    return NOTHING;
+  }
+
   /* make sure owner can afford it */
   switch (Typeof(thing)) {
   case TYPE_THING:
@@ -697,7 +712,7 @@ do_clone(dbref player, char *name, char *newname, int preserve)
           !null_flagmask("POWER", Powers(clone)))
         notify(player,
                T
-               ("Warning: @CLONE/PRESERVE on an exit with WIZ, ROY, @powers, or Warnings."));
+               ("Warning: @CLONE/PRESERVE on an object with WIZ, ROY, @powers, or @warnings."));
       notify_format(player, T("Cloned: Exit #%d."), clone);
       local_data_clone(clone, thing);
       return clone;

@@ -422,22 +422,32 @@ do_mail_flags(dbref player, const char *msglist, mail_flag flag, bool negate)
         case M_TAG:
           if (All(ms)) {
             if (!notified) {
-              notify_format(player,
-                            T("MAIL: All messages in all folders %s."),
-                            negate ? "untagged" : "tagged");
+              if (negate)
+                notify(player,
+                       T("MAIL: All messages in all folders untagged."));
+              else
+                notify(player, T("MAIL: All messages in all folders tagged."));
               notified++;
             }
-          } else
-            notify_format(player,
-                          "MAIL: Msg #%d:%d %s.", (int) Folder(mp),
-                          i[Folder(mp)], negate ? "untagged" : "tagged");
+          } else {
+            if (negate) {
+              notify_format(player, T("MAIL: Msg #%d:%d untagged"),
+                            (int) Folder(mp), i[Folder(mp)]);
+            } else {
+              notify_format(player, T("MAIL: Msg #%d:%d tagged"),
+                            (int) Folder(mp), i[Folder(mp)]);
+            }
+          }
           break;
         case M_CLEARED:
           if (All(ms)) {
             if (!notified) {
-              notify_format(player,
-                            T("MAIL: All messages in all folders %s."),
-                            negate ? "uncleared" : "cleared");
+              if (negate) {
+                notify(player,
+                       T("MAIL: All messages in all folders uncleared."));
+              } else {
+                notify(player, T("MAIL: All messages in all folders cleared."));
+              }
               notified++;
             }
           } else {
@@ -807,11 +817,7 @@ do_mail_fwd(dbref player, char *msglist, char *tolist)
             /* forwarding to a player */
             target =
               match_result(player, current, TYPE_PLAYER,
-                           MAT_ME | MAT_ABSOLUTE | MAT_PLAYER);
-            if (!GoodObject(target))
-              target = lookup_player(current);
-            if (!GoodObject(target))
-              target = short_page(current);
+                           MAT_ME | MAT_ABSOLUTE | MAT_PMATCH | MAT_TYPE);
             if (!GoodObject(target) || !IsPlayer(target)) {
               notify_format(player, T("No such unique player: %s."), current);
             } else {
@@ -1245,10 +1251,8 @@ do_mail_debug(dbref player, const char *action, const char *victim)
     return;
   }
   if (string_prefix("clear", action)) {
-    target = lookup_player(victim);
-    if (target == NOTHING) {
-      target = match_result(player, victim, NOTYPE, MAT_ABSOLUTE);
-    }
+    target =
+      match_result(player, victim, TYPE_PLAYER, MAT_PMATCH | MAT_ABSOLUTE);
     if (target == NOTHING) {
       notify_format(player, T("%s: No such player."), victim);
       return;
@@ -1341,20 +1345,14 @@ do_mail_stats(dbref player, char *name, enum mail_stats_type full)
       target = AMBIGUOUS;
     else
       target = player;
-  } else if (*name == NUMBER_TOKEN) {
-    target = atoi(&name[1]);
-    if (!GoodObject(target) || !IsPlayer(target))
-      target = NOTHING;
-  } else if (!strcasecmp(name, "me")) {
-    target = player;
   } else {
-    target = lookup_player(name);
+    target =
+      match_result(player, name, TYPE_PLAYER,
+                   MAT_TYPE | MAT_ABSOLUTE | MAT_PMATCH | MAT_ME);
+    if (!GoodObject(target))
+      target = NOTHING;
   }
 
-  /* Don't use GoodObject here! */
-  if (target == NOTHING) {
-    target = match_result(player, name, NOTYPE, MAT_ABSOLUTE);
-  }
   if ((target == NOTHING) || ((target == AMBIGUOUS) && !Wizard(player))) {
     notify_format(player, T("%s: No such player."), name);
     return;
@@ -1406,6 +1404,7 @@ do_mail_stats(dbref player, char *name, enum mail_stats_type full)
                     ("MAIL: There are %d new msgs in the mail spool, totalling %d characters."),
                     fu, tchars);
       notify_format(player,
+                    T
                     ("MAIL: There are %d cleared msgs in the mail spool, totalling %d characters."),
                     fc, cchars);
       return;
@@ -1557,7 +1556,8 @@ FUNCTION(fun_folderstats)
       /* handle the case of wanting to count the number of messages */
       if ((player =
            noisy_match_result(executor, args[0], TYPE_PLAYER,
-                              MAT_ME | MAT_ABSOLUTE | MAT_PLAYER)) == NOTHING) {
+                              MAT_ME | MAT_ABSOLUTE | MAT_PMATCH | MAT_TYPE)) ==
+          NOTHING) {
         safe_str(T("#-1 NO SUCH PLAYER"), buff, bp);
         return;
       } else if (!controls(executor, player)) {
@@ -1573,7 +1573,8 @@ FUNCTION(fun_folderstats)
   case 2:
     if ((player =
          noisy_match_result(executor, args[0], TYPE_PLAYER,
-                            MAT_ME | MAT_ABSOLUTE | MAT_PLAYER)) == NOTHING) {
+                            MAT_ME | MAT_ABSOLUTE | MAT_PMATCH | MAT_TYPE)) ==
+        NOTHING) {
       safe_str(T("#-1 NO SUCH PLAYER"), buff, bp);
       return;
     } else if (!controls(executor, player)) {
@@ -1620,7 +1621,7 @@ FUNCTION(fun_mail)
   if (nargs == 1) {
     player =
       match_result(executor, args[0], TYPE_PLAYER,
-                   MAT_ME | MAT_ABSOLUTE | MAT_PLAYER);
+                   MAT_ME | MAT_ABSOLUTE | MAT_PMATCH | MAT_TYPE);
     if (GoodObject(player)) {
       if (!controls(executor, player)) {
         safe_str(T(e_perm), buff, bp);
@@ -1668,7 +1669,8 @@ mailfun_fetch(dbref player, int nargs, char *arg1, char *arg2)
     /* Both a target and a message */
     if ((target =
          noisy_match_result(player, arg1, TYPE_PLAYER,
-                            MAT_ME | MAT_ABSOLUTE | MAT_PLAYER)) == NOTHING) {
+                            MAT_ME | MAT_ABSOLUTE | MAT_PLAYER | MAT_TYPE)) ==
+        NOTHING) {
       return NULL;
     } else if (!controls(player, target)) {
       notify(player, T("Permission denied"));
@@ -1743,19 +1745,14 @@ FUNCTION(fun_mailstats)
         target = AMBIGUOUS;
     else
       target = executor;
-  } else if (*args[0] == NUMBER_TOKEN) {
-    target = atoi(&args[0][1]);
-    if (!GoodObject(target) || !IsPlayer(target))
-      target = NOTHING;
-  } else if (!strcasecmp(args[0], "me")) {
-    target = executor;
   } else {
-    target = lookup_player(args[0]);
+    target =
+      match_result(executor, args[0], TYPE_PLAYER,
+                   MAT_TYPE | MAT_ABSOLUTE | MAT_PMATCH | MAT_ME);
+    if (!GoodObject(target))
+      target = NOTHING;
   }
 
-  if (!GoodObject(target)) {
-    target = match_result(executor, args[0], NOTYPE, MAT_ABSOLUTE);
-  }
   if (!GoodObject(target) || !IsPlayer(target)) {
     notify_format(executor, T("%s: No such player."), args[0]);
     return;

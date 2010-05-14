@@ -766,9 +766,11 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
   int key;
   char *tbuf, *tp;
   char *tbuf2, *tp2;
+  char *namebuf, *nbp;
   dbref good[100];
   int gcount = 0;
   char *msgbuf, *mb;
+  char *nsbuf = NULL, *tosend;
   char *head;
   char *hp = NULL;
   const char **start;
@@ -783,6 +785,8 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
   tp2 = tbuf2 = (char *) mush_malloc(BUFFER_LEN, "page_buff");
   if (!tbuf2)
     mush_panic("Unable to allocate memory in do_page");
+
+  nbp = namebuf = (char *) mush_malloc(BUFFER_LEN, "page_buff");
 
   if (*arg1 && has_eq) {
     /* page to=[msg]. Always evaluate to, maybe evaluate msg */
@@ -805,11 +809,13 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
     if (!a || !*((hp = head = safe_atr_value(a)))) {
       notify(player, T("You haven't paged anyone since connecting."));
       mush_free(tbuf2, "page_buff");
+      mush_free(namebuf, "page_buff");
       return;
     }
     if (!message || !*message) {
       notify_format(player, T("You last paged %s."), head);
       mush_free(tbuf2, "page_buff");
+      mush_free(namebuf, "page_buff");
       if (hp)
         free(hp);
       return;
@@ -887,6 +893,7 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
     notify(player, T("You're trying to page too many people at once."));
     mush_free(tbuf, "page_buff");
     mush_free(tbuf2, "page_buff");
+    mush_free(namebuf, "page_buff");
     if (hp)
       free(hp);
     return;
@@ -904,6 +911,7 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
     /* Well, that was a total waste of time. */
     mush_free(tbuf, "page_buff");
     mush_free(tbuf2, "page_buff");
+    mush_free(namebuf, "page_buff");
     if (hp)
       free(hp);
     return;
@@ -948,7 +956,7 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
   tp = tbuf;
   tp2 = tbuf2;
 
-  /* tbuf2 is used to hold a fancy formatted list of names,
+  /* namebuf is used to hold a fancy formatted list of names,
    * with commas and the word 'and' , if needed. */
   /* tbuf holds a space-separated list of names for repaging */
 
@@ -957,22 +965,15 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
     if (i)
       safe_chr(' ', tbuf, &tp);
     safe_str_space(Name(good[i]), tbuf, &tp);
-    safe_itemizer(i + 1, (i == gcount - 1), ",", T("and"), " ", tbuf2, &tp2);
-    safe_str(Name(good[i]), tbuf2, &tp2);
+    safe_itemizer(i + 1, (i == gcount - 1), ",", T("and"), " ", namebuf, &nbp);
+    safe_str(Name(good[i]), namebuf, &nbp);
   }
   *tp = '\0';
-  *tp2 = '\0';
+  *nbp = '\0';
   (void) atr_add(player, "LASTPAGED", tbuf, GOD, 0);
 
   /* Reset tbuf to use later */
   tp = tbuf;
-
-  /* Figure out the one success message, and send it */
-  if (key == 1)
-    notify_format(player, T("Long distance to %s: %s%s%s"), tbuf2,
-                  Name(player), gap, message);
-  else
-    notify_format(player, T("You paged %s with '%s'"), tbuf2, message);
 
   /* Figure out the 'name' of the player */
   if ((alias = shortalias(player)) && *alias && PAGE_ALIASES)
@@ -988,7 +989,7 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
     safe_str(T("From afar"), tbuf, &tp);
     if (gcount > 1) {
       safe_str(T(" (to "), tbuf, &tp);
-      safe_str(tbuf2, tbuf, &tp);
+      safe_str(namebuf, tbuf, &tp);
       safe_chr(')', tbuf, &tp);
     }
     safe_str(", ", tbuf, &tp);
@@ -999,7 +1000,7 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
     safe_str(T(" pages"), tbuf, &tp);
     if (gcount > 1) {
       safe_chr(' ', tbuf, &tp);
-      safe_str(tbuf2, tbuf, &tp);
+      safe_str(namebuf, tbuf, &tp);
     }
     safe_str(": ", tbuf, &tp);
   }
@@ -1014,22 +1015,36 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
     safe_dbref(good[i], tbuf2, &tp2);
   }
   *tp2 = '\0';
+  /* Figure out the one success message, and send it */
+  tosend = mush_malloc(BUFFER_LEN, "page_buff");
+  if (key == 1) {
+    snprintf(tosend, BUFFER_LEN, T("Long distance to %s: %s%s%s"), namebuf,
+             Name(player), gap, message);
+  } else {
+    snprintf(tosend, BUFFER_LEN, T("You paged %s with '%s'"), namebuf, message);
+  }
+  if (!vmessageformat(player, "OUTPAGEFORMAT", player, 0, 5, message,
+                      (key == 1) ? (*gap ? ":" : ";") : "\"",
+                      (alias && *alias) ? alias : "", tbuf2, tosend)) {
+    notify(player, tosend);
+  }
+  mush_free(tosend, "page_buff");
+
+  /* And send the page to everyone. */
   for (i = 0; i < gcount; i++) {
+    tosend = tbuf;
     if (!IsPlayer(player) && Nospoof(good[i])) {
-      if (msgbuf == NULL) {
-        msgbuf = mush_malloc(BUFFER_LEN, "page buffer");
+      if (nsbuf == NULL) {
+        nsbuf = mush_malloc(BUFFER_LEN, "page buffer");
+        snprintf(nsbuf, BUFFER_LEN, "[#%d] %s", player, tbuf);
       }
-      snprintf(msgbuf, BUFFER_LEN, "[#%d] %s", player, tbuf);
-      /* Swap tbuf and msgbuf */
-      tp = tbuf;
-      tbuf = msgbuf;
-      msgbuf = tp;
+      tosend = nsbuf;
     }
     if (!vmessageformat(good[i], "PAGEFORMAT", player, 0, 5, message,
                         (key == 1) ? (*gap ? ":" : ";") : "\"",
                         (alias && *alias) ? alias : "", tbuf2, tbuf)) {
       /* Player doesn't have Pageformat, or it eval'd to 0 */
-      notify(good[i], tbuf);
+      notify(good[i], tosend);
     }
 
     page_return(player, good[i], "Idle", "IDLE", NULL);
@@ -1037,8 +1052,11 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
 
   mush_free(tbuf, "page_buff");
   mush_free(tbuf2, "page_buff");
+  mush_free(namebuf, "page_buff");
   if (msgbuf)
     mush_free(msgbuf, "page_buff");
+  if (nsbuf)
+    mush_free(nsbuf, "page_buff");
   if (hp)
     free(hp);
 }

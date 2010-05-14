@@ -421,20 +421,23 @@ look_atrs(dbref player, dbref thing, const char *mstr, int all, int mortal,
 {
   if (all || (mstr && *mstr && !wildcard(mstr))) {
     if (parent) {
-      if (!atr_iter_get_parent(player, thing, mstr, mortal, look_helper, NULL)
+      if (!atr_iter_get_parent
+          (player, thing, mstr, mortal, 0, look_helper, NULL)
           && mstr)
         notify(player, T("No matching attributes."));
     } else {
-      if (!atr_iter_get(player, thing, mstr, mortal, look_helper, NULL) && mstr)
+      if (!atr_iter_get(player, thing, mstr, mortal, 0, look_helper, NULL)
+          && mstr)
         notify(player, T("No matching attributes."));
     }
   } else {
     if (parent) {
       if (!atr_iter_get_parent
-          (player, thing, mstr, mortal, look_helper_veiled, NULL) && mstr)
+          (player, thing, mstr, mortal, 0, look_helper_veiled, NULL) && mstr)
         notify(player, T("No matching attributes."));
     } else {
-      if (!atr_iter_get(player, thing, mstr, mortal, look_helper_veiled, NULL)
+      if (!atr_iter_get
+          (player, thing, mstr, mortal, 0, look_helper_veiled, NULL)
           && mstr)
         notify(player, T("No matching attributes."));
     }
@@ -652,7 +655,9 @@ do_look_at(dbref player, const char *name, int key)
       look_room(player, loc, LOOK_NORMAL);
       return;
     }
-    thing = match_result(loc, name, NOTYPE, MAT_POSSESSION | MAT_CARRIED_EXIT);
+    thing =
+      match_result(loc, name, NOTYPE,
+                   MAT_POSSESSION | MAT_CARRIED_EXIT | MAT_ENGLISH);
     if (thing == NOTHING) {
       notify(player, T("I don't see that here."));
       return;
@@ -673,7 +678,7 @@ do_look_at(dbref player, const char *name, int key)
       boxname = name;
       strcpy(objnamebuf, name);
       objname = objnamebuf;
-      box = parse_match_possessor(player, &objname);
+      box = parse_match_possessor(player, &objname, 1);
       if (box == NOTHING) {
         notify(player, T("I don't see that here."));
         return;
@@ -681,7 +686,34 @@ do_look_at(dbref player, const char *name, int key)
         notify_format(player, T("I can't tell which %s."), boxname);
         return;
       }
-      thing = match_result(box, objname, NOTYPE, MAT_POSSESSION);
+      if (IsExit(box)) {
+        /* Looking through an exit at an object on the other side */
+        if (!(Transparented(box) && !Cloudy(box))
+            && !(Cloudy(box) && !Transparented(box))) {
+          notify_format(player, T("You can't see through that."));
+          return;
+        }
+        box = Location(box);
+        if (box == HOME)
+          box = Home(player);   /* Resolve exits linked to HOME */
+        if (!GoodObject(box)) {
+          /* Do nothing for exits with no destination, or a variable destination */
+          notify(player, T("You can't see through that."));
+          return;
+        }
+        /* Including MAT_CARRIED_EXIT allows looking at remote exits, but gives slightly strange
+           results when the remote exit is set transparent, and possibly lets you look at the back
+           of the door you're looking through, which is odd */
+        thing =
+          match_result(box, objname, NOTYPE, MAT_POSSESSION | MAT_ENGLISH);
+        if (!GoodObject(thing)) {
+          notify(player, T("I don't see that here."));
+          return;
+        }
+        look_simple(player, thing);
+        return;
+      }
+      thing = match_result(box, objname, NOTYPE, MAT_POSSESSION | MAT_ENGLISH);
       if (thing == NOTHING) {
         notify(player, T("I don't see that here."));
         return;
@@ -1457,7 +1489,7 @@ decompile_atrs(dbref player, dbref thing, const char *name, const char *pattern,
   dh.name = name;
   dh.skipdef = skipdef;
   /* Comment complaints if none are found */
-  if (!atr_iter_get(player, thing, pattern, 0, decompile_helper, &dh))
+  if (!atr_iter_get(player, thing, pattern, 0, 0, decompile_helper, &dh))
     notify_format(player, T("@@ No attributes match '%s'. @@"), pattern);
 }
 
@@ -1589,9 +1621,10 @@ do_decompile(dbref player, const char *xname, const char *prefix, int dec_type)
     return;
   }
 
+  notify_format(player, "%s@@ %s (#%d)", prefix, shortname(thing), thing);
   switch (Typeof(thing)) {
   case TYPE_THING:
-    notify_format(player, "%s@create %s", prefix, object);
+    notify_format(player, "%s@create %s", prefix, Name(thing));
     break;
   case TYPE_ROOM:
     notify_format(player, "%s@dig/teleport %s", prefix, Name(thing));

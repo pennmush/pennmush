@@ -109,7 +109,7 @@ extern char errlog[BUFFER_LEN];
  */
 dbref
 do_pcreate(dbref creator, const char *player_name, const char *player_password,
-           const char *try_dbref)
+           char *try_dbref)
 {
   dbref player;
 
@@ -120,12 +120,11 @@ do_pcreate(dbref creator, const char *player_name, const char *player_password,
   if (!can_pay_fees(creator, 0))
     return NOTHING;
 
-  if (try_dbref && *try_dbref)
-    player = parse_dbref(try_dbref);
-  else
-    player = NOTHING;
+  if (!make_first_free_wrapper(creator, try_dbref)) {
+    return NOTHING;
+  }
 
-  player = create_player(player_name, player_password, "None", "None", player);
+  player = create_player(player_name, player_password, "None", "None");
   if (player == NOTHING) {
     notify_format(creator, T("Failure creating '%s' (bad name)"), player_name);
     return NOTHING;
@@ -438,8 +437,8 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
       /* Unlike normal teleport, you must control the destination
        * or have the open_anywhere power
        */
-      if (!(tport_control_ok(player, victim, loc) &&
-            (controls(player, destination) || Open_Anywhere(player)))) {
+      if (!tport_control_ok(player, victim, loc) ||
+          !can_open_from(player, destination)) {
         notify(player, T("Permission denied."));
         return;
       }
@@ -815,7 +814,7 @@ do_boot(dbref player, const char *name, enum boot_type flag, int silent)
   switch (flag) {
   case BOOT_NAME:
     victim = noisy_match_result(player, name, TYPE_PLAYER,
-                                MAT_PMATCH | MAT_PLAYER | MAT_ME);
+                                MAT_PMATCH | MAT_TYPE | MAT_ME);
     if (victim == NOTHING) {
       notify(player, T("No such connected player."));
       return;
@@ -912,7 +911,8 @@ do_chownall(dbref player, const char *name, const char *target, int preserve)
     notify(player, T("Try asking them first!"));
     return;
   }
-  if ((victim = noisy_match_result(player, name, TYPE_PLAYER, MAT_LIMITED))
+  if ((victim =
+       noisy_match_result(player, name, TYPE_PLAYER, MAT_LIMITED | MAT_TYPE))
       == NOTHING)
     return;
 
@@ -921,7 +921,7 @@ do_chownall(dbref player, const char *name, const char *target, int preserve)
   } else {
     if ((n_target =
          noisy_match_result(player, target, TYPE_PLAYER,
-                            MAT_LIMITED)) == NOTHING)
+                            MAT_LIMITED | MAT_TYPE)) == NOTHING)
       return;
   }
 
@@ -962,7 +962,8 @@ do_chzoneall(dbref player, const char *name, const char *target)
     notify(player, T("You do not have the power to change reality."));
     return;
   }
-  if ((victim = noisy_match_result(player, name, TYPE_PLAYER, MAT_LIMITED))
+  if ((victim =
+       noisy_match_result(player, name, TYPE_PLAYER, MAT_LIMITED | MAT_TYPE))
       == NOTHING)
     return;
 
@@ -1745,7 +1746,7 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
   strcpy(spec->eval, "");
   strcpy(spec->name, "");
   spec->low = 0;
-  spec->high = db_top - 1;
+  spec->high = INT_MAX;
   spec->start = 1;              /* 1-indexed */
   spec->count = 0;
   spec->lock = TRUE_BOOLEXP;
@@ -1782,8 +1783,6 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
         if (*restriction == '#')
           offset = 1;
         spec->high = parse_integer(restriction + offset);
-        if (!GoodObject(spec->high))
-          spec->high = db_top - 1;
         continue;
       }
     }
@@ -1796,8 +1795,6 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
       if (*class == '#')
         offset = 1;
       spec->low = parse_integer(class + offset);
-      if (!GoodObject(spec->low))
-        spec->low = 0;
       if (isdigit((unsigned char) *restriction)
           || ((*restriction == '#') && *(restriction + 1)
               && isdigit((unsigned char) *(restriction + 1)))) {
@@ -1805,9 +1802,6 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
         if (*restriction == '#')
           offset = 1;
         spec->high = parse_integer(restriction + offset);
-        if (!GoodObject(spec->high))
-          spec->high = db_top - 1;
-
       }
       continue;
     }
@@ -1820,16 +1814,12 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
       if (*restriction == '#')
         offset = 1;
       spec->low = parse_integer(restriction + offset);
-      if (!GoodObject(spec->low))
-        spec->low = 0;
       continue;
     } else if (string_prefix("maxdb", class)) {
       size_t offset = 0;
       if (*restriction == '#')
         offset = 1;
       spec->high = parse_integer(restriction + offset);
-      if (!GoodObject(spec->high))
-        spec->low = db_top - 1;
       continue;
     }
 
@@ -1996,7 +1986,7 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
       !(is_wiz || (spec.type == TYPE_PLAYER) ||
         (ZMaster(spec.owner) && eval_lock(player, spec.owner, Zone_Lock)))) {
     giveto(player, FIND_COST);
-    notify(player, T("You need a search warrant to do that."));
+    notify(player, T("You need a search warrant to do that!"));
     if (spec.lock != TRUE_BOOLEXP)
       free_boolexp(spec.lock);
     return -1;
@@ -2007,7 +1997,12 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
   if (!*result)
     mush_panic("Couldn't allocate memory in search!");
 
-  for (n = spec.low; n <= spec.high; n++) {
+  if (spec.low < 0) {
+    spec.low = 0;
+  }
+  if (spec.high >= db_top)
+    spec.high = db_top - 1;
+  for (n = spec.low; n <= spec.high && n < db_top; n++) {
     if (IsGarbage(n) && spec.type != TYPE_GARBAGE)
       continue;
     if (spec.owner != ANY_OWNER && Owner(n) != spec.owner)

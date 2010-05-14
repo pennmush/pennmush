@@ -90,6 +90,7 @@ static void show_queue(dbref player, dbref victim, int q_type,
 static void do_raw_restart(dbref victim);
 static int waitable_attr(dbref thing, const char *atr);
 static void shutdown_a_queue(BQUE **head, BQUE **tail);
+static int do_entry(BQUE *entry, int include_recurses);
 
 extern sig_atomic_t cpu_time_limit_hit; /**< Have we used too much CPU? */
 
@@ -341,6 +342,42 @@ parse_que(dbref player, const char *command, dbref cause)
   im_insert(queue_map, tmp->pid, tmp);
 }
 
+int
+inplace_queue_attribute(dbref thing, const char *atrname, dbref enactor,
+                        int rsargs)
+{
+  ATTR *a;
+  char *start, *command;
+  int noparent = 0;
+  char *bp;
+
+  a = queue_attribute_getatr(thing, atrname, noparent);
+  if (!a)
+    return 0;
+  if (!Can_Read_Attr(enactor, thing, a))
+    return 0;
+
+  global_eval_context.include_called = 1 + rsargs;
+  start = safe_atr_value(a);
+  command = start;
+  /* Trim off $-command or ^-command prefix */
+  if (*command == '$' || *command == '^') {
+    do {
+      command = strchr(command + 1, ':');
+    } while (command && command[-1] == '\\');
+    if (!command)
+      /* Oops, had '$' or '^', but no ':' */
+      command = start;
+    else
+      /* Skip the ':' */
+      command++;
+  }
+  bp = global_eval_context.include_replace;
+  safe_str(command, global_eval_context.include_replace, &bp);
+  *bp = '\0';
+  free(start);
+  return 1;
+}
 
 /** Enqueue the action part of an attribute.
  * This function is a front-end to parse_que() that takes an attribute,
@@ -576,15 +613,10 @@ do_second(void)
 int
 do_top(int ncom)
 {
-  int a, i;
+  int i;
   BQUE *entry;
-  char tbuf[BUFFER_LEN];
-  int break_count;
-  char *r;
-  char const *s;
 
   for (i = 0; i < ncom; i++) {
-
     if (!qfirst) {
       strcpy(global_eval_context.ccom, "");
       return i;
@@ -595,56 +627,130 @@ do_top(int ncom)
     entry = qfirst;
     if (!(qfirst = entry->next))
       qlast = NULL;
-    if (GoodObject(entry->player) && !IsGarbage(entry->player)) {
-      global_eval_context.cplr = entry->player;
-      giveto(global_eval_context.cplr, QUEUE_COST);
-      add_to(entry->queued, -1);
-      entry->player = 0;
-      if (IsPlayer(global_eval_context.cplr)
-          || !Halted(global_eval_context.cplr)) {
-        for (a = 0; a < 10; a++)
-          global_eval_context.wenv[a] = entry->env[a];
-        for (a = 0; a < NUMQ; a++) {
-          if (entry->rval[a])
-            strcpy(global_eval_context.renv[a], entry->rval[a]);
-          else
-            global_eval_context.renv[a][0] = '\0';
-        }
-        global_eval_context.process_command_port = 0;
-        s = entry->comm;
-        global_eval_context.break_called = 0;
-        break_count = 100;
-        *(global_eval_context.break_replace) = '\0';
-        start_cpu_timer();
-        while (!cpu_time_limit_hit && *s) {
-          r = global_eval_context.ccom;
-          process_expression(global_eval_context.ccom, &r, &s,
-                             global_eval_context.cplr, entry->cause,
-                             entry->cause, PE_NOTHING, PT_SEMI, NULL);
-          *r = '\0';
-          if (*s == ';')
-            s++;
-          strcpy(tbuf, global_eval_context.ccom);
-          process_command(global_eval_context.cplr, tbuf, entry->cause, 0);
-          if (global_eval_context.break_called) {
-            global_eval_context.break_called = 0;
-            s = global_eval_context.break_replace;
-            if (!*global_eval_context.break_replace)
-              break;
-            break_count--;
-            if (!break_count) {
-              notify(global_eval_context.cplr, T("@break recursion exceeded."));
-              break;
-            }
-          }
-        }
-        reset_cpu_timer();
-      }
-    }
+    do_entry(entry, 0);
     free_qentry(entry);
   }
-
   return i;
+}
+
+static int
+do_entry(BQUE *entry, int include_recurses)
+{
+  int a;
+  char tbuf[BUFFER_LEN];
+  int break_count;
+  int save_player;
+  int local_break_called = 0;
+  char *r;
+  char const *s;
+  if (GoodObject(entry->player) && !IsGarbage(entry->player)) {
+    save_player = global_eval_context.cplr = entry->player;
+    if (!global_eval_context.include_called) {
+      giveto(global_eval_context.cplr, QUEUE_COST);
+      add_to(entry->queued, -1);
+    }
+    entry->player = 0;
+    if (IsPlayer(global_eval_context.cplr)
+        || !Halted(global_eval_context.cplr)) {
+      for (a = 0; a < 10; a++)
+        global_eval_context.wenv[a] = entry->env[a];
+      for (a = 0; a < NUMQ; a++) {
+        if (entry->rval[a])
+          strcpy(global_eval_context.renv[a], entry->rval[a]);
+        else
+          global_eval_context.renv[a][0] = '\0';
+      }
+      global_eval_context.process_command_port = 0;
+      s = entry->comm;
+      global_eval_context.break_called = 0;
+      local_break_called = 0;
+      break_count = 100;
+      *(global_eval_context.break_replace) = '\0';
+      if (!include_recurses)
+        start_cpu_timer();
+      while (!cpu_time_limit_hit && *s) {
+        r = global_eval_context.ccom;
+        process_expression(global_eval_context.ccom, &r, &s,
+                           global_eval_context.cplr, entry->cause,
+                           entry->cause, PE_NOTHING, PT_SEMI, NULL);
+        *r = '\0';
+        if (*s == ';')
+          s++;
+        strcpy(tbuf, global_eval_context.ccom);
+        process_command(global_eval_context.cplr, tbuf, entry->cause, 0);
+        if (global_eval_context.break_called) {
+          global_eval_context.break_called = 0;
+          local_break_called = 1;
+          s = global_eval_context.break_replace;
+          if (!*global_eval_context.break_replace)
+            break;
+          break_count--;
+          if (!break_count) {
+            notify(global_eval_context.cplr, T("@break recursion exceeded."));
+            break;
+          }
+        }
+        if (global_eval_context.include_called) {
+          BQUE *tmp;
+          /* @include was called. Check for recursion limit */
+          if (include_recurses > 20) {
+            notify(global_eval_context.cplr, T("@include recursion exceeded."));
+            break;
+          }
+          if (!*global_eval_context.include_replace)
+            break;
+          /* Clone qentry */
+          tmp = mush_malloc(sizeof *tmp, "cqueue");
+          tmp->pid = entry->pid;
+          tmp->semattr = NULL;
+          tmp->player = save_player;
+          tmp->queued = entry->queued;
+          tmp->next = NULL;
+          tmp->left = 0;
+          tmp->cause = entry->cause;
+          for (a = 0; a < 10; a++) {
+            if (global_eval_context.include_called == 1) {
+              tmp->env[a] =
+                entry->env[a] ? mush_strdup(entry->env[a], "cqueue.env") : NULL;
+            } else {
+              if (global_eval_context.include_wenv[a]) {
+                tmp->env[a] =
+                  mush_strdup(global_eval_context.include_wenv[a],
+                              "cqueue.env");
+              } else {
+                tmp->env[a] = NULL;
+              }
+            }
+            if (global_eval_context.include_wenv[a]) {
+              mush_free(global_eval_context.include_wenv[a], "include_wenv");
+              global_eval_context.include_wenv[a] = NULL;
+            }
+          }
+          for (a = 0; a < NUMQ; a++)
+            if (!entry->rval[a])
+              tmp->rval[a] = NULL;
+            else {
+              tmp->rval[a] = mush_strdup(entry->rval[a], "cqueue.rval");
+            }
+          global_eval_context.include_called = 0;
+          /* Put the included actions in the clone */
+          tmp->comm =
+            mush_strdup(global_eval_context.include_replace, "cqueue.comm");
+          local_break_called = do_entry(tmp, include_recurses + 1);
+          for (a = 0; a < 10; a++)
+            global_eval_context.wenv[a] = entry->env[a];
+          free_qentry(tmp);
+          if (local_break_called) {
+            /* Propagate break */
+            break;
+          }
+        }
+      }
+      if (!include_recurses)
+        reset_cpu_timer();
+    }
+  }
+  return local_break_called;
 }
 
 /** Determine whether it's time to run a queued command.
@@ -781,7 +887,7 @@ dequeue_semaphores(dbref thing, char const *aname, int count, int all,
     if (aname)
       (void) atr_clr(thing, aname, GOD);
     else
-      atr_iter_get(GOD, thing, "**", 0, drain_helper, NULL);
+      atr_iter_get(GOD, thing, "**", 0, 0, drain_helper, NULL);
   }
 
   /* If @notify and count was higher than the number of queue entries,
@@ -1301,7 +1407,7 @@ do_queue(dbref player, const char *what, enum queue_type flag)
       victim = player;
     else {
       victim = match_result(player, what, TYPE_PLAYER,
-                            MAT_PLAYER | MAT_ABSOLUTE | MAT_ME);
+                            MAT_PLAYER | MAT_ABSOLUTE | MAT_ME | MAT_TYPE);
     }
   } else {
     victim = player;

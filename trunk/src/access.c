@@ -4,14 +4,14 @@
  * \brief Access control lists for PennMUSH.
  * \verbatim
  *
- * The file access.cnf in the game directory will control all 
+ * The file access.cnf in the game directory will control all
  * access-related directives, replacing lockout.cnf and sites.cnf
  *
  * The format of entries in the file will be:
  *
  * wild-host-name    [!]option [!]option [!]option ... # comment
  *
- * A wild-host-name is a wildcard pattern to match hostnames with. 
+ * A wild-host-name is a wildcard pattern to match hostnames with.
  * The wildcard "*" will work like UNIX filename globbing, so
  * *.edu will match all sites with names ending in .edu, and
  * *.*.*.*.* will match all sites with 4 periods in their name.
@@ -50,7 +50,7 @@
  *
  * @sitelock'd sites appear after the line "@sitelock" in the file
  * Using @sitelock writes out the file.
- * 
+ *
  * \endverbatim
  */
 
@@ -211,7 +211,7 @@ read_access_file(void)
   const char *errptr = NULL;
 
   if (access_top) {
-    /* We're reloading the file, so we've got to delete any current 
+    /* We're reloading the file, so we've got to delete any current
      * entries
      */
     free_access_list();
@@ -326,20 +326,6 @@ write_access_file(void)
   reserve_fd();
   return;
 }
-
-#ifdef FORCE_IPV4
-static char *
-ip4_to_ip6(const char *addr)
-{
-  static char tbuf1[BUFFER_LEN];
-  char *bp;
-  bp = tbuf1;
-  safe_format(tbuf1, &bp, "::ffff:%s", addr);
-  *bp = '\0';
-  return tbuf1;
-}
-#endif
-
 
 /** Decide if a host can access someway.
  * \param hname a host or user+host pattern.

@@ -206,8 +206,6 @@ COMMAND_INFO *command_add
 COMMAND_INFO *make_command
   (const char *name, int type, const char *flagstr,
    const char *powerstr, const char *sw, command_func func);
-COMMAND_INFO *command_modify(const char *name, int type,
-                             boolexp key, switch_mask sw, command_func func);
 void reserve_alias(const char *a);
 int alias_command(const char *command, const char *alias);
 void command_init_preconfig(void);

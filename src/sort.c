@@ -259,8 +259,6 @@ GENRECORD(gen_alphanum)
   }
 }
 
-#define RealGoodObject(x) (GoodObject(x) && !IsGarbage(x))
-
 GENRECORD(gen_magic)
 {
   static char buff[BUFFER_LEN];

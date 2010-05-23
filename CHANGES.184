@@ -26,7 +26,7 @@ Fixes:
  * benchmark()'s average would be thrown off when the CPU limit was 
    exceeded during evaluation. Reported by Amberyl. [MG]
  * Fix a few bugs in handling of command locks. [SW]
- * Better error when trying to set @powers on garbage. Reported by Paige.
+ * Garbage objects could be matched by dbref. Reported by Paige. [MG]
 
 
 Version 1.8.4 patchlevel 0                                 May 09,  2010

@@ -42,8 +42,6 @@ int inum = 0;               /**< iter depth */
 int inum_limit = 0;         /**< limit of iter depth */
 extern const unsigned char *tables;
 
-#define RealGoodObject(x) (GoodObject(x) && !IsGarbage(x))
-
 /** Convert list to array.
  * Chops up a list of words into an array of words. The list is
  * destructively modified. The array returned consists of

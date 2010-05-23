@@ -374,7 +374,7 @@ match_result(dbref who, const char *xname, int type, long flags)
 
   /* dbref match */
   match = abs;
-  if (GoodObject(match) && (flags & MAT_ABSOLUTE) && MATCH_TYPE) {
+  if (RealGoodObject(match) && (flags & MAT_ABSOLUTE) && MATCH_TYPE) {
     if (!(flags & MAT_NEAR) || Long_Fingers(who)
         || (nearby(who, match) || controls(who, match))) {
       /* valid dbref match */

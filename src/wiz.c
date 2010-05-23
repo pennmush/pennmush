@@ -1114,10 +1114,6 @@ do_power(dbref player, const char *name, const char *power)
   if ((thing = noisy_match_result(player, name, NOTYPE, MAT_EVERYTHING)) ==
       NOTHING)
     return;
-  if (IsGarbage(thing)) {
-    notify(player, T("Garbage is garbage."));
-    return;
-  }
   if (Unregistered(thing)) {
     notify(player, T("You can't grant powers to unregistered players."));
     return;

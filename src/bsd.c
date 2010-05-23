@@ -614,8 +614,10 @@ main(int argc, char **argv)
 
   descs_by_fd = im_new();
 
-  /* go do it */
-  load_reboot_db();
+  if (restarting) {
+    /* go do it */
+    load_reboot_db();
+  }
 
   shovechars((Port_t) TINYPORT, (Port_t) SSLPORT);
 

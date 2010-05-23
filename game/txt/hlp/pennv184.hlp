@@ -20,6 +20,10 @@ Fixes:
    commands prior to $-command matching. Reported by Mercutio. [MG]
  * benchmark()'s average would be thrown off when the CPU limit was 
    exceeded during evaluation. Reported by Amberyl. [MG]
+ * Fix a few bugs in handling of command locks. [SW]
+ * Garbage objects could be matched by dbref. Reported by Paige. [MG]
+ * No longer complain about reboot.db not being present when we're not
+   doing a @shutdown/reboot anyway. Reported by Paige. [MG]
 
 
 & 1.8.4p0

@@ -62,7 +62,7 @@ This is a brief overview of how to install PennMUSH on Unix, or in Unix-like env
 }}}
     See hints/your-os.txt and hints/your-processor if present for more details and system-specific help, and [InstallingSql Installing with SQL Support] for help with detecting an SQL server.
   # Run `make update`. 
-    * If `make update` doesn't work on your system, you can manually copy options.h.dist to options.h, and alter these options as needed. Also, copy all the game/*cnf.dst files to game/*.cnf
+    * If `make update` doesn't work on your system, you can manually copy options.h.dist to options.h, and alter these options as needed. Also, copy all the game/`*`cnf.dst files to game/`*`.cnf
   # Do a `make install`. This will build all the necessary files, and set up some symbolic links for the restart script.  You will probably receive a few compilation warnings, which can generally be ignored.
   # [SetupOptions Set the MUSH options in mush.cnf]
 

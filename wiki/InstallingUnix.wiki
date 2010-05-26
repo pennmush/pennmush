@@ -41,7 +41,10 @@ This is a brief overview of how to install PennMUSH on Unix, or in Unix-like env
 
 ==Detailed Instructions==
 
-  # [Downloads Download PennMUSH]
+  # [Downloads Download PennMUSH]. On most linux systems you can do this with wget, for instance:
+{{{
+ wget http://pennmush.googlecode.com/files/pennmush-1.8.3p13.tar.gz
+}}}
   # Extract the archive, and cd to the new directory. For example:
 {{{
  tar xfz pennmush-1.8.3p13.tar.gz

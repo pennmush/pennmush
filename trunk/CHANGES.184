@@ -29,6 +29,8 @@ Fixes:
  * Garbage objects could be matched by dbref. Reported by Paige. [MG]
  * No longer complain about reboot.db not being present when we're not
    doing a @shutdown/reboot anyway. Reported by Paige. [MG]
+ * The Telnet escape code was not properly escaped when sent literally to
+   Pueblo-aware clients. [MG]
 
 
 Version 1.8.4 patchlevel 0                                 May 09,  2010

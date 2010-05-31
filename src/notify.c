@@ -404,6 +404,8 @@ notify_makestring(const char *message, struct notify_strings messages[],
       case IAC:
         if (type == NA_TANSI || type == NA_TCOLOR)
           safe_strl("\xFF\xFF", 2, t, &o);
+        else if (pueblo)
+          safe_format(t, &o, "&#%d;", IAC);
         else if (strip && accent_table[IAC].base)
           safe_str(accent_table[IAC].base, t, &o);
         else

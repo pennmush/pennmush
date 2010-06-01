@@ -31,6 +31,7 @@ Fixes:
    doing a @shutdown/reboot anyway. Reported by Paige. [MG]
  * The Telnet escape code was not properly escaped when sent literally to
    Pueblo-aware clients. [MG]
+ * namelist() did not accept names in quotes. Reported by Amberyl. [MG]
 
 
 Version 1.8.4 patchlevel 0                                 May 09,  2010

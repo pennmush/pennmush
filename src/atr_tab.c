@@ -224,13 +224,16 @@ do_attribute_access(dbref player, char *name, char *perms, int retroactive)
   }
 
   /* Ok, now we need to see if there are any attributes of this name
-   * set on objects in the db. If so, and if we're retroactive, set 
-   * perms/creator 
+   * set on objects in the db. If so, and if we're retroactive, set
+   * perms/creator
    */
   if (retroactive) {
     for (i = 0; i < db_top; i++) {
       if ((ap2 = atr_get_noparent(i, name))) {
-        AL_FLAGS(ap2) = flags;
+        if (AL_FLAGS(ap2) & AF_ROOT)
+          AL_FLAGS(ap2) = flags | AF_ROOT;
+        else
+          AL_FLAGS(ap2) = flags;
         AL_CREATOR(ap2) = player;
       }
     }

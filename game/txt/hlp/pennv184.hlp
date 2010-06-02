@@ -27,6 +27,8 @@ Fixes:
  * The Telnet escape code was not properly escaped when sent literally to
    Pueblo-aware clients. [MG]
  * namelist() did not accept names in quotes. Reported by Amberyl. [MG]
+ * @attrib/access/retroactive could remove the 'root' flag from attribute
+   trees, making nasty things happen. Reported by Cooee. [MG]
 
 
 & 1.8.4p0

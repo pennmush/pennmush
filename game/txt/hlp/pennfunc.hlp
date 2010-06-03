@@ -3853,7 +3853,7 @@ See also: ceil(), floor(), bound(), trunc()
   fn(<function name>[, <arg0>[, ... , <argN>]])
 
   fn() executes the built-in/hardcoded function <function name>, even if the
-  function has been disabled or overridden with @function. It is primarily 
+  function has been deleted or overridden with @function. It is primarily 
   useful within @functions that override built-ins in order to be able to 
   call the built-in.
   
@@ -3867,6 +3867,9 @@ See also: ceil(), floor(), bound(), trunc()
   To restrict the use of fn() to @functions only (to prevent players
   from skirting softcoded replacements), use @function/restrict
   fn=userfn.
+
+  To prevent deleted functions from being used with fn(), @function/disable
+  them prior to deleting.
 
 See also: @function, RESTRICT
 & S()

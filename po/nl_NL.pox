@@ -148,10 +148,6 @@ msgstr " [locatie: %s]"
 msgid " convtime() is stricter."
 msgstr " convtime() is strenger."
 
-#: flags.c:1531
-msgid " granted."
-msgstr " verleend."
-
 #: src/look.c:688 src/look.c:770
 msgid " is owned by "
 msgstr " is van "
@@ -159,10 +155,6 @@ msgstr " is van "
 #: speech.c:1021
 msgid " pages"
 msgstr " roept op"
-
-#: flags.c:1531
-msgid " removed."
-msgstr " verwijderd."
 
 #: flags.c:764
 msgid " reset."

@@ -148,10 +148,6 @@ msgstr " [lokacija: %s]"
 msgid " convtime() is stricter."
 msgstr " convtime() je stro¾i."
 
-#: flags.c:1531
-msgid " granted."
-msgstr " - dano."
-
 #: src/look.c:688 src/look.c:770
 msgid " is owned by "
 msgstr " je vlasni¹tvo igraèa koji se zove "
@@ -159,10 +155,6 @@ msgstr " je vlasni¹tvo igraèa koji se zove "
 #: speech.c:1021
 msgid " pages"
 msgstr " ¹alje poruku"
-
-#: flags.c:1531
-msgid " removed."
-msgstr " - uklonjeno."
 
 #: flags.c:764
 msgid " reset."

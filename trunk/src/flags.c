@@ -1684,6 +1684,7 @@ set_power(dbref player, dbref thing, const char *flag, int negate)
   FLAG *f;
   FLAGSPACE *n;
   char tbuf1[BUFFER_LEN], *tp;
+  int current;
 
   n = (FLAGSPACE *) hashfind("POWER", &htab_flagspaces);
   if ((f = flag_hash_lookup(n, flag, Typeof(thing))) == NULL) {
@@ -1696,17 +1697,29 @@ set_power(dbref player, dbref thing, const char *flag, int negate)
     return;
   }
 
+  current = sees_flag("POWER", player, thing, f->name);
+
   twiddle_flag(n, thing, f, negate);
 
   if (!AreQuiet(player, thing)) {
     tp = tbuf1;
-    safe_str(Name(thing), tbuf1, &tp);
-    safe_str(" - ", tbuf1, &tp);
-    safe_str(f->name, tbuf1, &tp);
-    safe_str(negate ? T(" removed.") : T(" granted."), tbuf1, &tp);
+    if (negate) {
+      if (current) {
+        safe_format(tbuf1, &tp, T("%s - %s removed."), Name(thing), f->name);
+      } else {
+        safe_format(tbuf1, &tp, T("%s - %s (already) removed."), Name(thing), f->name);
+      }
+    } else {
+      if (current) {
+        safe_format(tbuf1, &tp, T("%s - %s (already) granted."), Name(thing), f->name);
+      } else {
+        safe_format(tbuf1, &tp, T("%s - %s granted."), Name(thing), f->name);
+      }
+    }
     *tp = '\0';
     notify(player, tbuf1);
   }
+
   if (f->perms & F_LOG)
     do_log(LT_WIZ, player, thing, "%s POWER %s", f->name,
            negate ? T("CLEARED") : T("SET"));

@@ -18,6 +18,10 @@ chronological order (most recent first)
 
 Version 1.8.4 patchlevel 1                                 ??? ??,  2010
 
+Minor Changes:
+ * @power now reports when you try and set a power which is already set (or
+   clear one which isn't set), similar to @set. Suggested by Paige. [MG]
+
 Fixes:
  * Help fixes.
  * @search's output can now include garbage objects, like lsearch().

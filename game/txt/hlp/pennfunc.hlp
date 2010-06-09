@@ -1161,7 +1161,7 @@ See also: get(), hasattr(), ufun(), edefault(), udefault(), uldefault()
     > say delete(abcdefgh, 3, -2)
     You say, "abefgh"
 
-See also: strreplace()
+See also: strreplace(), strinsert(), mid()
 & DIE()
   die(<number of times to roll die>, <number of sides on die>[, <show>])
  
@@ -4682,7 +4682,7 @@ See also: allof(), firstof(), first(), strlen(), cat()
   > think strinsert(Myname, 2, %b)
   My name
 
-See also: strdelete(), insert(), strreplace()
+See also: delete(), insert(), strreplace()
 & STRIPACCENTS()
   stripaccents(<string>)
 
@@ -4742,7 +4742,7 @@ See also: comp(), match(), setq(), r()
   > think strreplace(Fix teh typo, 4, 3, the)
   Fix the typo
 
-See also: delete(), strinsert(), strdelete(), ldelete(), replace()
+See also: delete(), strinsert(), ldelete(), replace()
 & SUB()
   sub(<number1>, <number2>)
  

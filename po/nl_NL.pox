@@ -794,6 +794,26 @@ msgstr "%s (deze kamer) [spraak]. (ingelogd)"
 msgid "%s (this room) [speech]."
 msgstr "%s (deze kamer) [spraak]."
 
+#: flags.c:1714
+#, c-format
+msgid "%s - %s (already) granted."
+msgstr "%s - %s (al) verleend."
+
+#: flags.c:1710
+#, c-format
+msgid "%s - %s (already) removed."
+msgstr "%s - %s (al) verwijderd."
+
+#: flags.c:1716
+#, c-format
+msgid "%s - %s granted."
+msgstr "%s - %s verleend."
+
+#: flags.c:1708
+#, c-format
+msgid "%s - %s removed."
+msgstr "%s - %s verwijderd."
+
 #: flags.c:1357
 #, c-format
 msgid "%s - I don't recognize that flag."

@@ -502,6 +502,7 @@ make_command(const char *name, int type,
   cmd = slab_malloc(command_slab, NULL);
   memset(cmd, 0, sizeof(COMMAND_INFO));
   cmd->name = name;
+  cmd->cmdlock = TRUE_BOOLEXP;
   cmd->restrict_message = NULL;
   cmd->func = func;
   cmd->type = type;
@@ -551,6 +552,7 @@ make_command(const char *name, int type,
       safe_chr('(', buff, &bp);
       safe_str(unparse_boolexp(NOTHING, cmd->cmdlock, UB_DBREF), buff, &bp);
       safe_str(")&", buff, &bp);
+      free_boolexp(cmd->cmdlock);
     }
     if (flagstr && *flagstr) {
       strcpy(list, flagstr);
@@ -1488,6 +1490,11 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
       command->restrict_message = mush_strdup(message, "cmd_restrict_message");
   }
 
+  if (command->cmdlock != TRUE_BOOLEXP) {
+    free_boolexp(command->cmdlock);
+    command->cmdlock = TRUE_BOOLEXP;
+  }
+
   key = parse_boolexp(player, restriction, CommandLock);
   if (key != TRUE_BOOLEXP) {
     /* A valid boolexp lock. Hooray. */
@@ -1724,6 +1731,8 @@ clone_command(char *original, char *clone)
   if (c1->restrict_message)
     c2->restrict_message =
       mush_strdup(c1->restrict_message, "cmd_restrict_message");
+  if (c2->cmdlock != TRUE_BOOLEXP)
+    free_boolexp(c2->cmdlock);
   c2->cmdlock = dup_bool(c1->cmdlock);
 
   if (c1->hooks.before.obj)

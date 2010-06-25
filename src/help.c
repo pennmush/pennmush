@@ -6,14 +6,14 @@
  *
  */
 #include "config.h"
-#define _XOPEN_SOURCE 600
+/* This might have to be uncommented on some linux distros... */
+/* #define _XOPEN_SOURCE 600 */
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <strings.h>
 #include "conf.h"
 #include "externs.h"
 #include "command.h"

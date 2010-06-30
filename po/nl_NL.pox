@@ -1561,7 +1561,7 @@ msgstr "Alle"
 
 #: wiz.c:1810
 msgid "Any name matching these wildcard patterns is banned:"
-msgstr "Iedere naam die met deze wildcards overeenkomt is verboden:"
+msgstr "Iedere naam die met deze wildcard patronen overeenkomt is verboden:"
 
 #: command.c:1812
 #, c-format
@@ -2204,7 +2204,7 @@ msgstr "Bestemming: *THUIS*"
 
 #: look.c:821
 msgid "Destination: *UNLINKED*"
-msgstr "Doel: *NIET GEKOPPELD*"
+msgstr "Bestemming: *NIET GEKOPPELD*"
 
 #: destroy.c:320
 msgid "Destroyed."
@@ -2949,7 +2949,7 @@ msgstr "Bezig met ansi string inspectie"
 
 #: create.c:373
 msgid "Internal error: weird object type."
-msgstr "Interne fout: Vreemd type object."
+msgstr "Interne fout: vreemd type object."
 
 #: atr_tab.c:202 atr_tab.c:293
 msgid "Invalid attribute name."
@@ -4370,7 +4370,7 @@ msgstr "Sorry, jij bent een sterveling."
 
 #: src/game.c:206
 msgid "Sorry, you are in a no dumping zone."
-msgstr "Sorry, je bent in een zone waar dumpen verboden is."
+msgstr "Sorry, je mag hier niet dumpen."
 
 #: src/game.c:1235
 msgid "Sorry, you are in an invalid location."
@@ -6317,7 +6317,7 @@ msgid ""
 "*** Inactivity limit reached. You are now HIDDEN. ***\n"
 msgstr ""
 "\n"
-" *** Inactiviteits limiet bereikt. Je bent nu HIDDEN. ***\n"
+" *** Inactiviteitslimiet bereikt. Je bent nu HIDDEN. ***\n"
 
 #: src/bsd.c:4673
 msgid ""

@@ -14,7 +14,7 @@ msgstr ""
 #: look.c:205
 #, c-format
 msgid "%s is corrupt!"
-msgstr "%s estas dibo&#265;iga!"
+msgstr "%s estas diboæiga!"
 
 #: src/look.c:667 src/look.c:1306
 msgid "Garbage is garbage."

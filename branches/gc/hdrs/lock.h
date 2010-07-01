@@ -107,6 +107,8 @@ extern lock_type Link_Lock;     /* Who can @link to me */
 extern lock_type Leave_Lock;    /* Who can leave me */
 extern lock_type Drop_Lock;     /* Who can drop me */
 extern lock_type Give_Lock;     /* Who can give me */
+extern lock_type From_Lock;     /* Who can give to me */
+extern lock_type Receive_Lock;  /* What can be given to me */
 extern lock_type Mail_Lock;     /* Who can @mail me */
 extern lock_type Follow_Lock;   /* Who can follow me */
 extern lock_type Examine_Lock;  /* Who can examine visual me */
@@ -118,5 +120,6 @@ extern lock_type Destroy_Lock;  /* Who can @dest me if I'm dest_ok? */
 extern lock_type Interact_Lock;
 extern lock_type MailForward_Lock;      /* Who can forward mail to me */
 extern lock_type Take_Lock;     /* Who can take from the contents of this object? */
+extern lock_type Open_Lock;     /* who can @open exits in this room? */
 
 #endif                          /* __LOCK_H */

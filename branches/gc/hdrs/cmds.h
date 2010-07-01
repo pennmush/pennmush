@@ -60,6 +60,7 @@ COMMAND_PROTO(cmd_hide);
 COMMAND_PROTO(cmd_home);
 COMMAND_PROTO(cmd_hook);
 COMMAND_PROTO(cmd_huh_command);
+COMMAND_PROTO(cmd_include);
 COMMAND_PROTO(cmd_inventory);
 COMMAND_PROTO(cmd_kick);
 COMMAND_PROTO(cmd_kill);

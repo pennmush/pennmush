@@ -22,7 +22,6 @@ FUNCTION_PROTO(fun_art);
 FUNCTION_PROTO(fun_asin);
 FUNCTION_PROTO(fun_atan);
 FUNCTION_PROTO(fun_atan2);
-FUNCTION_PROTO(fun_atat);
 FUNCTION_PROTO(fun_atrlock);
 FUNCTION_PROTO(fun_attrib_set);
 FUNCTION_PROTO(fun_band);

@@ -114,7 +114,7 @@
 #pragma warning( disable : 4761)        /* disable warning re conversion */
 #endif
 
-/* #define DEBUG_BYTECODE */
+/* #define DEBUG_BYTECODE  */
 
 /** Parse tree node types */
 typedef enum boolexp_type {
@@ -1772,8 +1772,9 @@ static void
 print_bytecode(boolexp b)
 {
   bvm_opcode op;
-  int arg, len = 0, pos = 0;
-  char *pc, *bytecode;
+  int arg, pos = 0;
+  uint16_t len = 0;
+  uint8_t *pc, *bytecode;
 
   if (b == TRUE_BOOLEXP) {
     puts("NULL bytecode!");
@@ -1782,6 +1783,7 @@ print_bytecode(boolexp b)
 
   pc = bytecode = get_bytecode(b, &len);
 
+  printf("Chunk ID# for bytecode: %hu\n", b);
   printf("Total length of bytecode+strings: %d bytes\n", len);
 
   while (1) {
@@ -1798,10 +1800,10 @@ print_bytecode(boolexp b)
       printf("PAREN %c\n", (arg == 0) ? '(' : ((arg == 1) ? ')' : '!'));
       break;
     case OP_JMPT:
-      printf("JMPT %d\n", arg / INSN_LEN);
+      printf("JMPT %d\n", (int)(arg / INSN_LEN));
       break;
     case OP_JMPF:
-      printf("JMPF %d\n", arg / INSN_LEN);
+      printf("JMPF %d\n", (int)(arg / INSN_LEN));
       break;
     case OP_TCONST:
       printf("TCONST #%d\n", arg);

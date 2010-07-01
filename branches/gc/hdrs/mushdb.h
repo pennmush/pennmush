@@ -80,6 +80,12 @@ bool unfindable(dbref);
        (LinkOk(x) && eval_lock(p,x,Link_Lock))) \
    && (!NO_LINK_TO_OBJECT || IsRoom(x)))
 
+/* can p open an exit in r? */
+#define can_open_from(p,r) \
+     (GoodObject(r) && IsRoom(r) \
+   && (controls(p,r) || Open_Anywhere(p) || \
+       (OpenOk(r) && eval_lock(p,r,Open_Lock))))
+
 /* can p access attribute a on object x? */
 #define Can_Read_Attr(p,x,a)   \
    (!AF_Internal(a) && \
@@ -97,7 +103,7 @@ bool unfindable(dbref);
 #define Is_Visible_Attr(x,a)   \
    (!AF_Internal(a) && can_read_attr_internal(NOTHING,(x),(a)))
 
-/* can p write attribute a on object x, assuming p may modify x? 
+/* can p write attribute a on object x, assuming p may modify x?
  * Must be (1) God, or (2) a non-internal, non-safe flag and
  * (2a) a Wizard or (2b) a non-wizard attrib and (2b1) you own
  * the attrib or (2b2) it's not atrlocked.
@@ -129,7 +135,7 @@ bool unfindable(dbref);
 #define Paycheck(p) (Guest(p) ? GUEST_PAY_CHECK : PAY_CHECK)
 
 /* DB flag macros - these should be defined whether or not the
- * corresponding system option is defined 
+ * corresponding system option is defined
  * They are successive binary numbers
  */
 #define DBF_NO_CHAT_SYSTEM      0x01
@@ -157,7 +163,7 @@ bool unfindable(dbref);
 #define DBF_HEAR_CONNECT        0x400000
 
 /* Reboot DB flag macros - these should be defined whether or not the
- * corresponding system option is defined 
+ * corresponding system option is defined
  * They are successive binary numbers
  */
 #define RDBF_SCREENSIZE         0x01

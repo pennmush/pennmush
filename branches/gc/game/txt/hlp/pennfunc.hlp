@@ -64,9 +64,10 @@ See also: MUSHCODE
   aposs()        attrib_set()   default()      edefault()     eval()
   get()          grep()         grepi()        hasattr()      hasattrp()
   hasattrval()   lattr()        nattr()        obj()          pfun()
-  poss()         regrep()       regrepi()      subj()         udefault()     
-  ufun()         uldefault()    ulocal()       v()            wildgrep()     
-  wildgrepi()    xattr()        xget()         zfun()         
+  poss()         reglattr()     regrep()       regrepi()      regxattr()
+  subj()         udefault()     ufun()         uldefault()    ulocal()       
+  v()            wildgrep()     wildgrepi()    xattr()        xget()         
+  zfun()         
 
 See also: ATTRIBUTES, NON-STANDARD ATTRIBUTES
 & Bitwise functions
@@ -182,10 +183,10 @@ See also: VECTOR FUNCTIONS
   These functions take a regular expression (regexp, or re) and match
   it against assorted things.
 
-  regedit()     regeditall() regeditalli()  regediti()    regmatch()
-  regmatchi()   regrab()     regraball()    regraballi()  regrabi()
-  regrep()      regrepi()    reswitch()     reswitchall() reswitchalli()
-  reswitchi()
+  regedit()     regeditall()   regeditalli()  regediti()    reglattr()
+  reglattrp()   regmatch()     regmatchi()    regrab()      regraball()    
+  regraballi()  regrabi()      regrep()       regrepi()     reswitch()     
+  reswitchall() reswitchalli() reswitchi()    regxattr()    regxattrp()
 
 See also: string functions, regexp
 & SQL functions
@@ -410,11 +411,12 @@ See also: before(), rest()
   Ansi: Place ansi characters (as defined in 'help ansi()') within ()s to
   define a column's ansi markup.
 
-  Continued in 'help align3'
+  See 'help align3' for examples.
+See also: center(), ljust(), rjust(), table()
 & ALIGN3
   Examples:
   
-    > &line me=align(<5 10 20,\([left(xget(%0,sex),1)]\),name(%0),name(loc(%0)))
+    > &line me=align(<5 10 20,([left(get(%0/sex),1)]),name(%0),name(loc(%0)))
     > th iter(lwho(),u(line,##),%b,%r)
       (M) Walker     Tree
       (F) Jane Doe   Nowhere
@@ -431,8 +433,25 @@ See also: before(), rest()
          +                  Luke                  +
          +----------------------------------------+
 
-  Continued in 'help align4'
-See also: center(), ljust(), rjust(), table()
+  See 'help align4' for another example.
+& ALIGN4
+
+  > &dropcap me=%b_______%r|__%b%b%b__|%r%b%b%b|%b|%r%b%b%b|_|
+  > &story me=%r'was the night before Christmas, when all through the house%r
+              Not a creature was stirring, not even a mouse.%r
+              The stockings were hung by the chimney with care,%r
+              In hopes that St Nicholas soon would be there.
+  > th align(9'(ch) 68, u(dropcap), u(story)
+  
+   _______  
+  |__   __| 'was the night before Christmas, when all through the house
+     | |    Not a creature was stirring, not even a mouse.
+     |_|    The stockings were hung by the chimney with care,
+  In hopes that St Nicholas soon would be there.
+  
+  The dropcap 'T' will be in ANSI cyan-highlight, and merges with the 'story'
+  column.
+  
 & ALLOF()
   allof(<expr>[, ... , <exprN>], <osep>)
 
@@ -452,7 +471,7 @@ See also: center(), ljust(), rjust(), table()
     > say allof(#-1,#101,#2970,,#-3,0,#319,null(This Doesn't Count),|)
     You say, "#101|#2970|#319"
 
-See also: firstof(), BOOLEAN VALUES
+See also: firstof(), BOOLEAN VALUES, strallof(), filter()
 & ALPHAMAX()
   alphamax(<word>[, ... , <wordN>])
 
@@ -462,7 +481,7 @@ See also: firstof(), BOOLEAN VALUES
   
   This is equivilent to last(sort(<word> ... <wordN>,a)).
 
-See also: alphamin()
+See also: alphamin(), max()
 & ALPHAMIN()
   alphamin(<word>[, ... , <wordN>])
 
@@ -472,7 +491,7 @@ See also: alphamin()
   
   This is equivilent to first(sort(<word> ... <wordN>,a)).
 
-See also: alphamax()
+See also: alphamax(), min()
 & AND()
 & CAND()
   and(<boolean1>, <boolean2>[, ... , <booleanN>])
@@ -791,12 +810,17 @@ See also: @password, @newpassword
     > say chr(65)
     You say, "A"
 & CLONE()
-  clone(<object>)
+  clone(<object>[, <new name>[, <dbref>]])
  
-  This function clones <object>, and returns the dbref number of the
-  clone.
+  This function clones <object>, as per @clone, and returns the dbref number
+  of the clone, or #-1 if the object could not be cloned.
 
-  This is a side-effect function and may not be enabled on some MUSHes.
+  The clone will have the same name as the original object unless you give
+  a <new name> for it. Normally, the clone will be created with the first
+  available dbref, but wizards may give the <dbref> of a garbage object to
+  use instead.
+
+See also: @clone, create(), dig(), open()
 & CMDS()
   cmds(<player|descriptor>)
 
@@ -1460,7 +1484,7 @@ See also: div(), mod()
     > say filter(test/is_odd, 1 2 3 4 5 6)
     You say, "1 3 5"
 
-See also: anonymous attributes
+See also: anonymous attributes, firstof(), allof()
 & FINDABLE()
   findable(<object>, <victim>)
  
@@ -1474,7 +1498,7 @@ See also: locate(), loc()
 
   Returns the first element of a list.
 
-See also: before(), rest(), last()
+See also: before(), rest(), last(), firstof(), strfirstof()
 & FIRSTOF()
   firstof(<expr>[, ... , <exprN>], <default>)
 
@@ -1500,7 +1524,7 @@ See also: before(), rest(), last()
     > say firstof(get(%#/royal cheese),#-1 This Has No Meaning,0,)
     You say, ""
 
-See also: allof(), BOOLEAN VALUES
+See also: allof(), BOOLEAN VALUES, strfirstof(), filter()
 & FLAGS()
   flags()
   flags(<object>[/<attribute>])
@@ -2169,18 +2193,26 @@ See also: Connection Functions, hostname(), ports(), lports()
 See also: first(), rest(), before(), after()
 & LATTR()
 & LATTRP()
+& REGLATTR()
+& REGLATTRP()
   lattr(<object>[/<attribute pattern>][, <output separator>])
   lattrp(<object>[/<attribute pattern>][, <output separator>])
+  reglattr(<object>[/<regexp>][, <output separator>])
+  reglattrp(<object>[/<regexp>][, <output separator>])
  
-  Returns a list of all the attributes on <object> which you can see, and
-  which match the wildcard <attribute pattern>. If no <attribute pattern> is
-  given, it defaults to "*". Note that this does not include branches in
+  lattr() returns a list of all the attributes on <object> which you can see,
+  and which match the wildcard <attribute pattern>. If no <attribute pattern>
+  is given, it defaults to "*". Note that this does not include branches in
   attribute trees; you must use the "**" wildcard to include those.
   
   The resulting list will be separated by <output separator>, or a space if
   no separator is given.
+  
+  reglattr() returns attributes whose names match the regexp <regexp>. The 
+  match is not case-sensitive (as attribute names are always upper-case),
+  and the "`" branch separator has no special meaning in the pattern.
 
-  lattrp() also includes attributes inherited from parents.
+  lattrp() and reglattrp() also include attributes inherited from parents.
   
   When returning large numbers of attributes, the results may be truncated
   due to buffer limits. In these cases, you can use nattr() and xattr() to
@@ -2191,18 +2223,27 @@ See also: nattr(), xattr(), hasattr(), examine, wildcards
 & NATTRP()
 & ATTRCNT()
 & ATTRPCNT()
+& REGNATTR()
+& REGNATTRP()
   nattr(<object>[/<attribute pattern>])
   nattrp(<object>[/<attribute pattern>])
+  regnattr(<object>[/<regexp>])
+  regnattrp(<object>[/<regexp>])
 
   nattr() returns the number of attributes on <object> that you can see
-  which match the given <attribute pattern>. It is considerably faster
-  than words(lattr()) and doesn't suffer from buffer length constraints.
-  It's designed primarily for statistical purposes.
+  which match the given <attribute pattern>. It is considerably faster than
+  words(lattr()) and doesn't suffer from buffer length constraints. It's 
+  designed primarily for statistical purposes. <attribute pattern> defaults
+  to "*", which does not include branches in attribute trees; use "**" if
+  you need to count attribute trees.  
+  
+  regnattr() matches attribute names against the regular expression <regexp>.
 
-  nattrp() also counts matching attributes on the parent. attrcnt() and
-  attrpcnt() are aliases.
+  nattrp() and regnattrp() also count matching attributes on the parent.
+  
+  attrcnt() and attrpcnt() are aliases for nattr() and nattrp() respectively.
 
-See also: lattr(), hasattr()
+See also: lattr(), hasattr(), xattr(), wildcards
 & LCON()
   lcon(<object>)
 
@@ -2393,9 +2434,10 @@ See also: log()
   loc(<object>)
   
   For things and players, loc() returns the dbref of the object which
-  contains <object>. For exits, it returns the destination (the source is
-  an exits home()). For rooms, it returns the drop-to, if one is set, or 
-  #-1 otherwise.
+  contains <object>. For rooms, it returns the drop-to, if one is set, or 
+  #-1 otherwise. For exits, it returns the destination (the source is
+  an exits home()). This will be #-1 for unlinked exits, #-2 for variable
+  exits, and #-3 for exits @linked to "home".
   
   You must be able to examine <object>, or be near it, for this function
   to work.
@@ -2403,7 +2445,7 @@ See also: log()
   You can also get the location of the enactor using the %L substitution,
   whether you are near to/can examine it or not.
   
-See also: locate(), rloc(), home(), where(), rnum(), room()
+See also: locate(), rloc(), home(), where(), rnum(), room(), @link
 & LOCALIZE()
   localize(<code>)
 
@@ -2455,7 +2497,7 @@ See also: letq(), setq(), setr(), r(), ulocal(), uldefault()
 & LOCATE2
  
   You can control where to look with:
-    a - Absolute match (check to see if <name> is a dbref)
+    a - Absolute match (match <name> against any dbref)
     c - Exits in the room <looker>
     e - Exits in <looker>'s location
     h - If <name> is "here", return <looker>'s location
@@ -2510,7 +2552,7 @@ See also: @lock, locktypes, elock(), lockflags(), llockflags(), lset(),
   llocks([<object>])
   locks(<object>)
 
-  llocks(), aliased locks(), list locks set on <object>, including
+  llocks() and locks() both list @locks set on <object>, including
   user-defined locks (prefixed with USER:)
 
   If no object is given, llocks() returns all the predefined lock
@@ -2823,7 +2865,7 @@ See also: grab(), strmatch(), member(), WILDCARDS
   This function returns the largest number in its list of arguments.
   It can take any number of arguments.
   
-See also: min(), lmath(), bound()
+See also: min(), lmath(), bound(), alphamax()
 & MEAN()
   mean(<number>[, ... , <numberN>])
 
@@ -2893,7 +2935,7 @@ See also: left(), right(), delete()
   This function returns the smallest number in its list of arguments.
   It can take any number of arguments.
   
-See also: max(), lmath(), bound()
+See also: max(), lmath(), bound(), alphamin()
 & MIX()
  
   mix([<object>/]<attribute>, <list1>, <list2>[, ... , <list10>, <delim>])
@@ -3134,7 +3176,7 @@ See also: namegrab(), name(), locate()
     > say namegraball(#0 #1 #2,room)
     You say, "#0 #2"
   
-See also: namelist(), locate(0
+See also: namelist(), locate()
 & NAND()
 & NCAND()
   nand(<boolean1>[, ... , <booleanN>])
@@ -3793,10 +3835,18 @@ See also: loc(), rloc(), rnum(), where()
 
 See also: sqrt(), power()
 & ROUND()
-  round(<number>, <places>)
+  round(<number>, <places>[, <pad>])
  
   Rounds <number> to <places> decimal places. <places> must be between
-  0 and config(float_precision).
+  0 and config(float_precision). If the optional <pad> argument is
+  true, the result will be padded with 0s if it would otherwise have
+  fewer than <places> digits after the decimal point.
+
+  Examples:
+  > think round(3.14159, 2)
+  3.14
+  > think round(3.5, 3, 1)
+  3.500
  
 See also: ceil(), floor(), bound(), trunc()
 & FN()
@@ -4223,8 +4273,8 @@ See also: repeat()
 & SPEAK()
 & SPEAKPENN()
   speak(<speaker>, <string>[, <say string>
-                  [, [<transform obj>/]<transform attr>
-                  [, [<isnull obj>/]<isnull attr>[, <open>[, <close>]]]]])
+                [, [<transform obj>/]<transform attr>
+                [, [<isnull obj>/]<isnull attr>[, <open>[, <close>]]]]])
  
   This function is used to format speech-like constructs, and is
   capable of transforming text within a speech string; it is useful
@@ -4232,7 +4282,8 @@ See also: repeat()
 
   If <speaker> begins with &, the rest of the <speaker> string is
   treated as the speaker's name, so you can use it for NPCs or tacking
-  on titles (such as with @chatformat).
+  on titles (such as with @chatformat). Otherwise, the name of the object
+  <speaker> is used.
  
   When only <speaker> and <string> are given, this function formats
   <string> as if it were speech from <speaker>, as follows.
@@ -4437,26 +4488,9 @@ See also: merge()
   If <dofieldnames> evaluates to a true boolean, then the first call will be
   with row number 0 and %1-%9 will be set to the field names.
 
-  See 'help mapsql2' for examples.
+  See 'help sql examples' for examples.
 
 See also: anonymous attributes, sqlescape(), sql(), @sql
-& MAPSQL2
-
-  > @@ Field, Type, Null?, Key?, Default, Extra
-  > &each_row me=align(<15 <15 <5 <5 <10 <14,%1,%2,%3,%4,%5,%6)
-  > &tabledesc me=mapsql(each_row,describe %0,%r,1)
-  > think u(tabledesc,quotes)
-  Field           Type            Null  Key   Default    Extra
-  quoteid         int(11)               PRI              auto_increment
-  quote           text
-
-  > &each_bb me=(%0) - %1 (%2)
-  > &query me=SELECT name, count(*) FROM bbs GROUP BY name ORDER BY name
-  > think mapsql(each_bb, v(query), %r)
-  (1) - Announcements (5)
-  (2) - Advertisements (20)
-  ... etc
-
 & SQL()
   sql(<query>[, <row separator>[, <field separator>[, <register>]]])
 
@@ -4471,18 +4505,46 @@ See also: anonymous attributes, sqlescape(), sql(), @sql
   <query> is evaluated, so it's useful to either read it from another
   attribute with u() or use lit() to protect commas. If you will be 
   interpolating user-provided values into the query, be careful to escape 
-  them with sqlescape(), like this:
+  them with sqlescape().
 
-    > &SEL_GETID obj = SELECT id FROM mytable WHERE name = '[sqlescape(%0)]'
-    > &DOIT obj = $do *: ... [setq(0,sql(u(SEL_GETID,%0),~,|))] ...
+  A query that doesn't return any rows, such as an UPDATE or SELECT that
+  has no matches will return a null string.
 
-  A query that doesn't return any rows, such as a UPDATE or SELECT that
-  has no matches will return a null string. 
-
-  If <register> is specified, there is a side-effect: the number of affected
+  If <register> is specified, and <query> alters the database (such as an
+  UPDATE or INSERT query), there is a side-effect: the number of affected
   rows is stored into the specified q-register.
+  
+  See 'help sql examples' for examples.
 
 See also: sqlescape(), mapsql(), @sql, setq(), r()
+& SQL Examples
+
+  Example of using sqlescape() to prevent injection attacks:
+    > &SEL_GETID obj=SELECT id FROM mytable WHERE name = '[sqlescape(%0)]'
+    > &DOIT obj=$do *: think setq(0,sql(u(SEL_GETID,%0),~,|)); @@ More cmds
+    
+  Using mapsql() to format results:
+    > @@ Field, Type, Null?, Key?, Default, Extra
+    > &each_row me=align(<15 <15 <5 <5 <10 <14,%1,%2,%3,%4,%5,%6)
+    > &tabledesc me=mapsql(each_row,describe `[sqlescape(%0)]`,%r,1)
+    > think u(tabledesc,quotes)
+    Field           Type            Null  Key   Default    Extra
+    quoteid         int(11)               PRI              auto_increment
+    quote           text
+
+    > &each_bb me=(%0) - %1 (%2)
+    > &query me=SELECT name, count(*) FROM bbs GROUP BY name ORDER BY name
+    > think mapsql(each_bb, v(query), %r)
+    (1) - Announcements (5)
+    (2) - Advertisements (20)
+
+  Using sql() to update fields:
+    > &update me=UPDATE `foo` SET `time` = '[sqlescape(%0)]' WHERE 
+                 `loc` = '[sqlescape(%1)]'
+    > &foo me=$foo *: think sql(u(update, %0, %L),,0)%q0 rows updated.
+    > foo bar
+    5 rows updated.
+
 & SQLESCAPE()
   sqlescape(<string>)
 
@@ -4528,9 +4590,8 @@ See also: trim()
 & STARTTIME()
   starttime()
  
-  Returns a string containing the time the MUSH first started up (not
-  including @shutdown/reboots). The time is in the same format that the 
-  time() function returns.
+  Returns the time the MUSH first was last restarted (not including 
+  @shutdown/reboots), in the same format as time().
  
   Example:
     > say starttime()
@@ -4540,8 +4601,9 @@ See also: convtime(), restarttime(), restarts()
 & RESTARTTIME()
   restarttime()
 
-  Returns a string which is the time the MUSH last rebooted. The time is in 
-  the same format as the time() function returns.
+  Returns the time the MUSH was last restarted, including @shutdown/reboots,
+  in the same format as time(). If @shutdown/reboot hasn't been used since
+  the MUSH was started, this is the same value as starttime().
 
 See also: convtime(), starttime(), restarts()
 & RESTARTS()
@@ -4581,11 +4643,34 @@ See also: map(), iter(), fold(), anonymous attributes
   Returns the sample standard deviation of its arguments.
 
 See also: mean(), median()
+& STRFIRSTOF()
+& STRALLOF()
+  strfirstof(<expr>[, ... , <exprN>], <default>)
+  strallof(<expr>[, ... , <exprN>], <osep>)
+
+  strfirstof() returns the first <expr> which evaluates to a non-empty
+  string (a string at least 1 character long). If all <expr>s evaluate empty,
+  <default> is returned instead.
+  
+  strallof() returns all <expr>s which evaluate to non-empty strings, with
+  each expression separated by <osep>.
+  
+  Examples:
+    > say strfirstof(,  ,@@(Nothing),foo,default)
+    You say, "foo"
+    
+    > say strfirstof(get(%#/fullname), u(%#/ansiname), %n)
+    You say, "Mike"
+    
+    > say strallof(,  ,foo,@@(Nothing),%b,bar|baz,#-1,|)
+    You say, "foo| |bar|baz|#-1"
+  
+See also: allof(), firstof(), first(), strlen(), cat()
 & STRINSERT()
   strinsert(<string>, <position>, <insert>)
 
   This function returns <string>, with <insert> added before the <position>
-  character in <string>. Note that the first character in a string is
+  character in <string>. Note that the first character in <string> is
   numbered 0, not 1.
 
   Examples:
@@ -4617,7 +4702,7 @@ See also: stripaccents(), ansi(), tag()
     > say strlen(foobar)
     You say, "6"
 
-See also: words()
+See also: words(), strfirstof()
 & STRMATCH()
   strmatch(<string>, <pattern>[, <register list>])
   
@@ -4646,8 +4731,8 @@ See also: comp(), match(), setq(), r()
 & STRREPLACE()
   strreplace(<string>, <start>, <length>, <text>)
 
-  Returns string with the <length> characters starting at <start>
-  replaced by <text>. As with other string functions, the first
+  Returns <string> with the <length> characters starting at <start>
+  replaced by <text>. As with most other string functions, the first
   character is at position 0.
 
   Example:
@@ -4721,12 +4806,16 @@ See also: reswitch(), if(), cond()
   Examples:
     > say switch(test, *a*, foo, *b*, bar, *t*, neat, baz)
     You say, "neat"
+    
     > say switchall(ack, *a*, foo, *b*, bar, *c*, neat, baz)
     You say, "fooneat"
+    
     > say switch(moof, *a*, foo, *b*, bar, *t*, neat, baz)
     You say, "baz"
+    
     > say switch(moof, *a*, foo, *b*, bar, *t*, neat, #$)
     You say, "moof"
+    
     > say case(moof, *f, foo, moof, bar, baz)
     You say, "bar"
 & SWITCH WILDCARDS
@@ -4762,9 +4851,9 @@ See also: WILDCARDS
   definitions of true and false vary depending on the value of the 
   'tiny_booleans' @config option. See 'help boolean values' for details.
 
-See also: not, if(), cond()
+See also: not(), if(), cond(), @break, or(), and()
 & TABLE()
-  table(<list>, [<field width>, [<line length>, [<delimiter>[, <osep>]]]])
+  table(<list>[, <field width>[, <line length>[, <delimiter>[, <osep>]]]])
 
   This function returns the elements of <list> in a tabular format.
   All other parameters are optional.
@@ -4797,8 +4886,8 @@ See also: acos(), asin(), atan(), cos(), ctu(), sin()
 & TEL()
   tel(<object>, <destination>[, <silent>[, <inside>]])
 
-  This function will teleport <object> to <destination>, exactly as
-  @teleport <object>=<destination>. <silent> is an optional boolean that, if 
+  This function will teleport <object> to <destination>, exactly as 
+  @teleport <object>=<destination>. <silent> is an optional boolean that, if
   true, makes the function act like @teleport/silent. <inside> is an 
   optional boolean that, if true, makes the function act like
   @teleport/inside.
@@ -4825,9 +4914,9 @@ See also: @teleport
   other players is restricted to see_all objects.
 See also: pueblo(), width(), height(), ssl()
 & TESTLOCK()
-  testlock(<lock>, <victim>)
+  testlock(<key>, <victim>)
 
-  testlock() returns 1 if the <victim> would pass the lock defined in <lock>
+  testlock() returns 1 if the <victim> would pass the lock defined in <key>
   as run by the caller, and 0 if it would fail.
 
   testlock() evaluates the lock from the caller's perspective.
@@ -5038,11 +5127,11 @@ See also: merge(), splice()
  
    Examples:
       > say trim(%b%bfoo bar baz%b%b%beek%b%b)
-       You say, "foo bar baz   eek"
+      You say, "foo bar baz   eek"
       > say trim(***BLAM***,*)
-       You say, "BLAM"
+      You say, "BLAM"
       > say trim(-----> WOW <---,-,r)
-       You say, "-----> WOW <"
+      You say, "-----> WOW <"
 
 See also: squish(), edit()
 & TRUNC()
@@ -5054,7 +5143,9 @@ See also: squish(), edit()
   does not start with a number, 0 is returned.
   
   Example:
-    say trunc(101Dalmations)
+    > say trunc(3.141593)
+    You say, "3"
+    > say trunc(101Dalmations)
     You say, "101"
     
   val() is an alias for trunc().
@@ -5064,7 +5155,7 @@ See also: ceil(), floor(), bound(), round(), left()
   type(<object>)
 
   This function returns the type of an object - one of PLAYER, THING, EXIT,
-  ROOM or GARBAGE.
+  ROOM or GARBAGE - or #-1 if the object can't be found.
   
   Example:
     > @create Test
@@ -5185,7 +5276,7 @@ See also: ufun(), get(), parent(), zfun(), PARENTS
   may be configured in the MUSH.
 
 See also: anonymous attributes, udefault(), get(), ATTRIBUTES, ulocal(),
-    pfun(), attribute flags
+    pfun(), attribute flags, @include
 & UCSTR()
   ucstr(<string>)
 
@@ -5286,7 +5377,6 @@ See also: setunion(), sort()
   but is usually slightly more efficient.
 
 See also: SUBSTITUTIONS, get(), r(), ATTRIBUTES
-
 & VADD()
   vadd(<vector1>, <vector2>[, <delimiter>])
 
@@ -5508,8 +5598,8 @@ See also: @wipe, attrib_set(), set()
   Returns the number of the word within <list> where the <number>th
   character falls. Characters and words are numbered starting with 1, and 
   <delimiter>s between words are treated as belonging to the word that
-  follows them. If <number> is not within the string, #-1 is returned.
-  <delimiter> defaults to a space.
+  follows them. If the list is less than <number> characters long, #-1 is
+  returned. <delimiter> defaults to a space.
 
   Example: 
     > say wordpos(foo bar baz, 5)
@@ -5544,12 +5634,16 @@ See also: strlen(), items()
   Examples:
     > @desc here=wrap(Wrapped paragraph, 72)
     > @desc here=wrap([space(4)]Indented paragraph, 72)
-    > @desc here=iter(wrap(Hanging indent, 72, 76, |),
-                   switch(#@, >1, space(4))]##, |, %r)
+    > @desc here=iter(wrap(Hanging indent, 72, 76, %r),
+                   switch(#@, >1, space(4))%i0, %r, %r)
 & XATTR()
 & XATTRP()
+& REGXATTR()
+& REGXATTRP()
   xattr(<object>[/<attribute pattern>], <start>, <count>[, <osep>])
   xattrp(<object>[/<attribute pattern>], <start>, <count>[, <osep>])
+  regxattr(<object>[/<regexp>], <start>, <count>[, <osep>])
+  regxattrp(<object>[/<regexp>], <start>, <count>[, <osep>])
 
   xattr() fetches <count> or fewer attribute names from <object> starting 
   at position <start>. It is useful when the number of attributes on an 
@@ -5559,11 +5653,14 @@ See also: strlen(), items()
   It is equivalent to
     extract(lattr(<object>[/<attribute pattern>]), <start>, <count>, <osep>)
 
-  xattrp() will include attributes from parents. Do note that parent
-  attributes are listed _after_ child attributes, not sorted
+  <attribute pattern> is a wilddcard pattern which defaults to "*". 
+  regxattr() matches attributes against the regular expression <regexp>.
+
+  xattrp() and regxattrp() will include attributes from parents. Do note that
+  parent attributes are listed _after_ child attributes, not sorted 
   alphabetically.
 
-See also: nattr(), lattr()
+See also: nattr(), lattr(), wildcards
 & XOR()
   xor(<boolean1>, <boolean2>[, ... , <booleanN>])
 

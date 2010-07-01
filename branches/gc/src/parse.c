@@ -183,8 +183,11 @@ parse_objid(char const *str)
 bool
 parse_boolean(char const *str)
 {
+  char clean[BUFFER_LEN];
+  int i = 0;
+  strcpy(clean, remove_markup(str, NULL));
   if (TINY_BOOLEANS) {
-    return (atoi(str) ? 1 : 0);
+    return (atoi(clean) ? 1 : 0);
   } else {
     /* Turn a string into a boolean value.
      * All negative dbrefs are false, all non-negative dbrefs are true.
@@ -192,20 +195,20 @@ parse_boolean(char const *str)
      * Empty (or space only) strings are false, all other strings are true.
      */
     /* Null strings are false */
-    if (!str || !*str)
+    if (!clean[0])
       return 0;
     /* Negative dbrefs are false - actually anything starting #-,
      * which will also cover our error messages. */
-    if (*str == '#' && *(str + 1) && (*(str + 1) == '-'))
+    if (*clean == '#' && *(clean + 1) && (*(clean + 1) == '-'))
       return 0;
     /* Non-zero numbers are true, zero is false */
-    if (is_strict_number(str))
-      return parse_number(str) != 0;    /* avoid rounding problems */
+    if (is_strict_number(clean))
+      return parse_number(clean) != 0;  /* avoid rounding problems */
     /* Skip blanks */
-    while (*str == ' ')
-      str++;
+    while (clean[i] == ' ')
+      i++;
     /* If there's any non-blanks left, it's true */
-    return *str != '\0';        /* force to 1 or 0 */
+    return clean[i] != '\0';    /* force to 1 or 0 */
   }
 }
 
@@ -1206,6 +1209,7 @@ process_expression(char *buff, char **bp, char const **str,
         }
         break;
       } else {
+        char *onearg;
         char *sargs[10];
         char **fargs;
         int sarglens[10];
@@ -1316,6 +1320,7 @@ process_expression(char *buff, char **bp, char const **str,
             ~(PE_COMPRESS_SPACES | PE_EVALUATE | PE_FUNCTION_CHECK);
         temp_tflags = PT_COMMA | PT_PAREN;
         nfargs = 0;
+        onearg = GC_MALLOC_ATOMIC(BUFFER_LEN);
         do {
           char *argp;
           if ((fp->maxargs < 0) && ((nfargs + 1) >= -fp->maxargs))
@@ -1334,8 +1339,8 @@ process_expression(char *buff, char **bp, char const **str,
             args_alloced += 10;
           }
           fargs[nfargs] = GC_MALLOC_ATOMIC(BUFFER_LEN);
-          argp = fargs[nfargs];
-          if (process_expression(fargs[nfargs], &argp, str,
+          argp = onearg;
+          if (process_expression(onearg, &argp, str,
                                  executor, caller, enactor,
                                  temp_eflags, temp_tflags, pe_info)) {
             retval = 1;
@@ -1343,7 +1348,12 @@ process_expression(char *buff, char **bp, char const **str,
             goto free_func_args;
           }
           *argp = '\0';
-          arglens[nfargs] = argp - fargs[nfargs];
+          if (fp->flags & FN_STRIPANSI) {
+            strcpy(fargs[nfargs], remove_markup(onearg, NULL));
+          } else {
+            strcpy(fargs[nfargs], onearg);
+          }
+          arglens[nfargs] = strlen(fargs[nfargs]);
           (*str)++;
           nfargs++;
         } while ((*str)[-1] == ',');
@@ -1463,7 +1473,7 @@ process_expression(char *buff, char **bp, char const **str,
           (*str)++;
         }
       break;
-      /* Escape charater */
+      /* Escape character */
     case '\\':
       if (!(eflags & PE_EVALUATE))
         safe_chr('\\', buff, bp);

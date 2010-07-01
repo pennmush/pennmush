@@ -755,28 +755,28 @@ CmdStatusService(void)
 
   switch (svcstatus.dwCurrentState) {
   case SERVICE_STOPPED:
-    p = T("The service is not running.");
+    p = "The service is not running.";
     break;
   case SERVICE_START_PENDING:
-    p = T("The service is starting.");
+    p = "The service is starting.";
     break;
   case SERVICE_STOP_PENDING:
-    p = T("The service is stopping.");
+    p = "The service is stopping.";
     break;
   case SERVICE_RUNNING:
-    p = T("The service is running.");
+    p = "The service is running.";
     break;
   case SERVICE_CONTINUE_PENDING:
-    p = T("The service continue is pending.");
+    p = "The service continue is pending.";
     break;
   case SERVICE_PAUSE_PENDING:
-    p = T("The service pause is pending.");
+    p = "The service pause is pending.";
     break;
   case SERVICE_PAUSED:
-    p = T("The service is paused.");
+    p = "The service is paused.";
     break;
   default:
-    p = T("Unrecognised status.");
+    p = "Unrecognised status.";
     break;
   }                             /*  end of switch */
 

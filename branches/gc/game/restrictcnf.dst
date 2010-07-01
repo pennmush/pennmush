@@ -2,6 +2,8 @@
 # Commands to restrict
 # Syntax: restrict_command <command> <restriction> [" <error message>]
 #         restrict_function <function> <restriction>
+# For commands, <restriction> can be an @lock-style lock, or any combination of
+# the phrases below. For functions, use any combination of the phrases. 
 # <restriction> is a space separated list that may include:
 #	nobody		Totally disable the command
 #	nogagged	Gagged players can't use it
@@ -15,7 +17,7 @@
 #	logargs		When func/cmd is used, log its name, args, and user
 #       <flag>		Any flag that must be present to use it (Command only)
 #       <power>		Any power that must be present to use it (Command only)
-#	!<restriction>	The opposite of a restriction (Command only).
+#	!<restriction>	Remove a restriction (Command only).
 #       nosidefx        The side-effect version of a function won't work (Function only).
 #
 # If <error message> is given to a restrict_command, it is sent to the player

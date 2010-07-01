@@ -698,49 +698,53 @@ See also: CHOWN_OK, Zone Masters, @chownall, owner()
 
 See also: @chown
 & @chzone
-  @chzone <object>=<zone> 
+  @chzone[/preserve] <object>=<zone> 
   @chzone <object>=none
 
-  The first form of this command changes the zone of <object> to <zone>. 
-  This puts the object on that zone and may (if the zone_control_zmp_only 
-  @config option is off) allow anyone who passes the Zone @lock of <zone> to
-  control <object>. Any kind of object can be @chzoned, and any kind of 
-  object can be used as a zone.
+  The first form of this command changes the zone of <object> to
+  <zone>.  This puts the object on that zone and may (if the
+  zone_control_zmp_only @config option is off) allow anyone who passes
+  the Zone @lock of <zone> to control <object>. Any kind of object can
+  be @chzoned, and any kind of object can be used as a zone.
 
-  The second form of this command removes <object> from its current zone, 
-  leaving it unzoned. Anyone can reset the zone of an object he owns.
+  The second form of this command removes <object> from its current
+  zone, leaving it unzoned. Anyone can reset the zone of an object he
+  owns.
 
-  If a player is @chzoned, anything objects he creates from that point on 
-  will automatically be on the same zone. Objects the player already owns
-  are not affected. Players can only @chzone themselves to a zone if they
-  own it, though wizards can @chzone players to any zone.
+  If a player is @chzoned, anything objects he creates from that point
+  on will automatically be on the same zone. Objects the player
+  already owns are not affected. Players can only @chzone themselves
+  to a zone if they own it, though wizards can @chzone players to any
+  zone.
   
   Continued in 'help @chzone2'.  
 & @chzone2
-  To see the Zone of an object, you can use either 'brief' or 'examine'
-  to examine it. The Zone is listed on the same line as the Owner of
-  the object.
+  To see the Zone of an object, you can use either 'brief' or
+  'examine' to examine it. The Zone is listed on the same line as the
+  Owner of the object.
 
   Players can @chzone objects they own if they own the zone object or
   if they pass its @lock/chzone.  Wizards can @chzone objects to any
   zone.
   
-  If <zone> does not have a Zone @lock when something is @chzoned to it, the
-  lock is automatically set to =<zone> (see 'help @lock' for more info).
+  If <zone> does not have a Zone @lock when something is @chzoned to
+  it, the lock is automatically set to =<zone> (see 'help @lock' for
+  more info).
 
-  Whenever an object besides a player is @chzoned to a zone object, the
-  WIZARD, ROYALTY, and TRUST flags will be reset, as will all @power's
-  (for security purposes). For similar reasons, it is strongly recommended
-  that you do not @chzone admin- or wizard-owned objects to any zone
-  that less privileged players have access to.
+  Whenever an object besides a player is @chzoned to a zone object,
+  the WIZARD, ROYALTY, and TRUST flags will be reset, as will all
+  @power's (for security purposes). For similar reasons, it is
+  strongly recommended that you do not @chzone admin- or wizard-owned
+  objects to any zone that less privileged players have access
+  to. Wizards can use the /preserve switch to prevent this reset.
 
 See also: ZONES, @chzoneall, zone()
 & @chzoneall
-  @chzoneall <player>=<zone object>
+  @chzoneall[/preserve] <player>=<zone object>
 
-  Changes the zone of all objects owned by <player> to <zone object>. 
-  If <zone object> is "none", the zone is reset to NOTHING. Only wizards 
-  may use this command.
+  Changes the zone of all objects owned by <player> to <zone object>.
+  If <zone object> is "none", the zone is reset to NOTHING. Only
+  wizards may use this command.
   
 See also: @chzone, ZONES
 & @clone

@@ -1,8 +1,5 @@
 Frequently asked questions about the PennMUSH Server, post-pl10
-Updated: November 11, 2006
-
-*** There are other FAQs on the web at:
-*** http://www.pennmush.org/cgi-penn/fom/
+Updated: March 29 2010
 
 0. What's the release history since 1.50pl10?
 1. How do I ask for help with a problem?
@@ -12,8 +9,7 @@ Updated: November 11, 2006
 5. Where can I hear about new releases?
 6. Why doesn't %t or space() work right for Pueblo clients?
 7. Compiling with the lcc compiler.
-8. Patch information in @version and INFO
-9. Which signals does PennMUSH understand?
+8. Which signals does PennMUSH understand?
 
 -----------------------------
 
@@ -36,9 +32,9 @@ Ralph Melton has since retired, and Thorvald Natvig took his place
 on the devteam. He rewrote the command parser, and PennMUSH was
 advanced to 1.7.0.
 
-Currently, the active development team is Javelin, Talek, Raevnos,
-Noltar, and Walker.  The stable version is 1.8.2, and the development
-version is 1.8.3.
+In July 2006, Raevnos took over from Javelin as maintainer. Currently, 
+the active development team is Raevnos, Noltar, Walker, Mike and Intrevis. 
+The current version is 1.8.3.
 
 1. How do I ask for help with a problem?
 
@@ -60,24 +56,23 @@ problem. Include at least the following:
 
 Visit http://code.google.com/p/pennmush/issues/list
 
-Include specific information as described in #3 above. If you know
+Include specific information as described in #1 above. If you know
 what's causing the bug, or how to fix it, or if you have a patch for
 the bug, send it along. If you don't, and the bug caused a crash with
-a core dump, you can send along a stack trace (see #6 if you don't know
-how to do this).
+a core dump, you can send along a stack trace.
 
 Bugs are patched as quickly as possible. Patches for bugs are
 emailed to the pennmush@pennmush.org mailing list and to the
 pennmush-announce@pennmush.org mailing list (to subscribe, visit
-http://www.pennmush.org/mailman/listinfo) and are put on the pennmush
-ftp site, in the /pub/PennMUSH/Source directory.
+http://www.pennmush.org/mailman/listinfo) and are put on the PennMUSH
+Google Code site at http://code.google.com/p/pennmush/wiki/Downloads?tm=2
 
 The pennmush-announce list distributes developer announcements
 only; the pennmush list also includes discussion.
 
 3. How do I request a new feature?
 
-Email to pennmush-developers@pennmush.org
+Visit http://code.google.com/p/pennmush/issues/list
 
 No promises, but we try to get back to you about the feasibility
 of suggestions quickly, and implement them as we can.
@@ -111,7 +106,7 @@ Actually, it does. Pueblo is built around an HTML browser. In HTML,
 multiple whitespace is ignored and treated as a single space.  This is
 correct behavior. In HTML, if you really want spaces to count as spaces,
 you must put your text in <PRE>..</PRE> blocks, e.g. tagwrap(PRE,this
-%t has %t tabs %t and    spaces).
+%t has %t tabs %t and %b%b spaces).
 
 7. Compiling with the lcc compiler.
 
@@ -131,21 +126,7 @@ out of config.h. lcc uses many of gcc's headers and libraries, so that
 this function might be detected, but it's never recognized by lcc. We'll
 just use our own implementation, as it makes things easier.
 
-8. Patch information in @version and INFO
-
-Files in the pennmush/patches directory are checked to see if they look
-like a patch file, and if so, information from this is included in
-@version and INFO.
-
-So, what makes it look like a patch file? Two lines.
-# Patch name: Whatever
-# Patch version: Whichever
-
-Whatever and Whichever are used in the @version report.
-The file with this patch information is rebuilt when needed by running
-make.
-
-9. Which signals does PennMUSH understand?
+8. Which signals does PennMUSH understand?
 
 PennMUSH understands the following signals, and performs the listed action:
 

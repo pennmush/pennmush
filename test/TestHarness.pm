@@ -1,11 +1,11 @@
 package TestHarness;
 use strict;
-use vars qw/%tests $testcount @failures $alltests $allfailures $allexpected/;
+use vars qw/%tests $testcount @failures $alltests @allfailures $allexpected/;
 use vars qw/$testfiles $use_mortal/;
 use subs qw/test summary/;
 
 $alltests = 0;
-$allfailures = 0;
+@allfailures = ();
 $allexpected = 0;
 $testfiles = 0;
 $use_mortal = 0;
@@ -45,8 +45,9 @@ sub new {
         $code .= $_;
     }
     close IN;
-    $code .= "}";
+    $code .= "}\n";
 #    print "Test function for $name:\n$code\n";
+#    flush STDOUT;
     $self{-test} = eval $code;
     my $obj = bless \%self;
     $tests{$name} = $obj;
@@ -78,7 +79,7 @@ sub run {
 
     $testfiles++;
     $alltests += $testcount;
-    $allfailures += @failures;
+    push @allfailures, @failures;
     $allexpected += $self->{-expected};
     
     summary $self->{-name}, $testcount, \@failures, $self->{-expected};
@@ -86,7 +87,7 @@ sub run {
 
 END {
     print "Totals:\n";
-    summary("all tests run", $alltests, $allfailures, $allexpected)
+    summary("all tests run", $alltests, \@allfailures, $allexpected)
         if $testfiles > 1;
 }
 

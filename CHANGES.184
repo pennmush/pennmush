@@ -1,0 +1,107 @@
+
+This is the most current changes file for PennMUSH. Please look it
+over; each version contains new things which might significantly
+affect the function of your server.  Changes are reported in reverse
+chronological order (most recent first)
+
+[SW] is Shawn Wagner, a PennMUSH developer (aka Raevnos), also
+ responsible for most unattributed changes.
+[EEH] is Ervin Hearn III, a PennMUSH developer (aka Noltar)
+[GM] is Greg Millam, a PennMUSH developer (aka Walker)
+[MG] is Mike Griffiths, a PennMUSH developer (aka Talvo)
+[TAP] is T. Alexander Popiel, a former PennMUSH developer (aka Talek)
+[3] refers to code by (or inspired by) TinyMUSH 3.0
+[MUX] refers to code by (or inspired by) TinyMUX 2.x
+[Rhost] refers to code by (or inspired by) RhostMUSH
+
+==========================================================================
+
+Version 1.8.4 patchlevel 0                                 May 09,  2010
+
+Major Changes:
+ * Commands can now be restricted with an @lock-style lock in restrict.cnf
+   and @command/restrict, allowing more complex restrictions. [MG]
+
+Minor Changes:
+ * @shutdown/reboot logs who was responsible. Suggested by Kitai. [SW]
+ * Rewrite of help @lock to improve clarity, by Sketch.
+ * New NO_LOG flag to disable command logging on a per-object basis.
+   Based on code by Teal. [SW]
+ * mindb+maxdb classes for lsearch/@search no longer reset to default
+   values when > db_top or < 0 is given: Instead treated as an integer
+   comparison. [GM]
+ * @open can now open exits in remove locations, as well as your current
+   location. Suggested by Bane. [MG]
+ * New OPEN_OK flag allows anyone to open exits in a room, and @lock/open
+   to restrict who can. Based on patch by ranmir@M*U*S*H. [MG]
+ * Master Room exits and ZMR exits now run the "goto" command, and @ealias
+   and @lalias run the "enter"/"leave" commands, so @hooks get run, command
+   restrictions checked, etc. [MG]
+ * New @lock/from and @lock/receive locks, to control who can give to an
+   object, and what objects can be given to them, respectively. From a 
+   suggestion by Nammyung@M*U*S*H, based on locks on ElendorMUSH. [MG]
+ * Changed the restrictions for valid @function names to match what was
+   reported by valid(). [MG]
+
+Commands:
+ * New @include <obj>/<attr> command, which inserts <attr> into the current
+   action list. Patch by Javelin.
+ * @scan can now take multiple switches at the same time. [MG]
+ * @version now reports the SVN revision of the current version, when 
+   available. Suggested by Paige. [MG]
+ * @clone can take a garbage dbref for the new object, the same as @create.
+   Suggested by Dan. [MG]
+ * 'look' now supports more english-matching (look this foo's 1st bar). [MG]
+ * You can now look at objects on the other side of transparent exits, with
+   "look [toward] <exit>'s <object>". Suggested by Trinsec. [MG]
+ * All wizards can now use @command/add. Suggested by qa'toq. [MG]
+ * function_alias in alias.cnf now creates a proper alias, not a clone, of
+   functions. @function/alias added, which does the same in-game. [MG]
+ * New @command/clone and @function/clone commands, which create copies of
+   a command/function which initially work the same as, but are independant
+   of, the originals. Based on suggestion by Bane. [MG]
+ * Added a comment line to the beginning of @decompile's output showing
+   the object name and dbref. [MG]
+   
+Functions:
+ * Added strfirstof() and strallof(), which return the first arg/all args
+   which are non-empty strings. [MG]
+ * Added reglattr[p](), regxattr[p]() and regnattr[p](), regexp variants of 
+   lattr[p](), xattr[p]() and nattr[p](). Suggested by Trinsec. [MG]
+ * The *emit() functions, and cbufferadd(), are now disabled when
+   function_side_effects are off. Suggested by Cheetah. [MG]
+ * round() now takes an optional third argument to 0-pad the results if
+   needed. Suggested by Trinsec. [SW]
+ * Many functions (particularly ones which take only numbers, dbrefs or
+   attribute names as arguments) now ignore ANSI in their arguments, rather
+   than throwing an error. [MG]
+ * nattr()'s <attribute pattern> now defaults to *, not **, the same as
+   lattr() and other attribute functions. [MG]
+ * clone() can now take a <new name> and <dbref>, as per @clone. [MG]
+ * cwho() now takes an optional 3rd argument to omit gagged objects.
+   Suggested by Trinsec. [MG]
+
+Attributes:
+ * @outpageformat lets you alter how you view pages that you send.
+
+Fixes:
+ * isprint() bug in ord() fixed. [GM]
+ * Possible crashbug in @destroy fixed. Reported by Dan. [MG]
+ * Minor bug in benchmark() fixed. [MG]
+ * channels(<object>) was incorrectly sorted for channel names containing
+   ansi. Reported by Trelane. [MG]
+ * Help fixes by Teal and others. [MG]
+ * Minor updates to some README files. [MG]
+ * Some typos and translation errors fixed by Stoko.
+ * namelist() now ignores null items. Reported by Minion. [MG]
+ * The matching code would always perform absolute (dbref) matches, even
+   when it wasn't told to. [MG]
+ * Improvements to the match flags used by many pieces of code, hopefully
+   fixing a number of minor bugs. [MG]
+ * Paranoid dumps no longer treat ANSI tags as invalid characters in attrs.
+   Reported by Trelane. [MG]
+ * The /silent switch for @lemit didn't work. [MG]
+ * @decompile/db showed '@create <dbref>' for THINGs, not '@create <name>',
+   and @decomp/name could break. Reported by Paige. [MG]
+ * Crash bug in locks fixed. Reported by Tanaku. [SW]
+

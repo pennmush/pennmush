@@ -63,11 +63,12 @@ extern ATTR *atr_get(dbref thing, char const *atr);
 extern ATTR *atr_get_noparent(dbref thing, char const *atr);
 typedef int (*aig_func) (dbref, dbref, dbref, const char *, ATTR *, void *);
 extern int atr_iter_get(dbref player, dbref thing, char const *name,
-                        int mortal, aig_func func, void *args);
+                        int mortal, int regexp, aig_func func, void *args);
 extern int atr_iter_get_parent(dbref player, dbref thing, char const *name,
-                               int mortal, aig_func func, void *args);
+                               int mortal, int regexp, aig_func func,
+                               void *args);
 extern int atr_pattern_count(dbref player, dbref thing, const char *name,
-                             int doparent, int mortal);
+                             int doparent, int mortal, int regexp);
 extern ATTR *atr_complete_match(dbref player, char const *atr, dbref privs);
 extern void atr_free_all(dbref thing);
 extern void atr_cpy(dbref dest, dbref source);

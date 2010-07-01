@@ -50,6 +50,7 @@ static int wipe_helper(dbref player, dbref thing, dbref parent,
                        char const *pattern, ATTR *atr, void *args);
 static void copy_attrib_flags(dbref player, dbref target, ATTR *atr, int flags);
 
+extern int rhs_present;         /* from command.c */
 
 /** Rename something.
  * \verbatim
@@ -441,7 +442,7 @@ do_chzone(dbref player, char const *name, char const *newobj, int noisy)
       if (Hasprivs(thing))
         notify(player, T("Warning: @chzoning a privileged player."));
       if (Inherit(thing))
-        notify(player, T("Warning: @chzoning an TRUST player."));
+        notify(player, T("Warning: @chzoning a TRUST player."));
     }
   }
   if (noisy)
@@ -542,7 +543,7 @@ do_attrib_flags(dbref player, const char *obj, const char *atrname,
   }
   af.clrflags = atrflag_to_string(af.clrf);
   af.setflags = atrflag_to_string(af.setf);
-  if (!atr_iter_get(player, thing, atrname, 0, af_helper, &af))
+  if (!atr_iter_get(player, thing, atrname, 0, 0, af_helper, &af))
     notify(player, T("No attribute found to change."));
 }
 
@@ -902,12 +903,11 @@ do_gedit(dbref player, char *it, char **argv, enum edit_type target, int doit)
     return;
   }
   *q++ = '\0';
-  thing = noisy_match_result(player, tbuf1, NOTYPE, MAT_EVERYTHING);
+  thing =
+    noisy_match_result(player, tbuf1, NOTYPE, MAT_EVERYTHING | MAT_CONTROL);
 
-  if ((thing == NOTHING) || !controls(player, thing)) {
-    notify(player, T("Permission denied."));
+  if (thing == NOTHING)
     return;
-  }
 
   if (!argv[1] || !*argv[1]) {
     notify(player, T("Nothing to do."));
@@ -918,7 +918,7 @@ do_gedit(dbref player, char *it, char **argv, enum edit_type target, int doit)
   args.target = target;
   args.doit = doit;
 
-  if (!atr_iter_get(player, thing, q, 0, gedit_helper, &args))
+  if (!atr_iter_get(player, thing, q, 0, 0, gedit_helper, &args))
     notify(player, T("No matching attributes."));
 }
 
@@ -972,6 +972,53 @@ do_trigger(dbref player, char *object, char **argv)
 }
 
 
+/** Include an attribute.
+ * \verbatim
+ * This implements @include obj/attribute
+ * \endverbatim
+ * \param player the enactor.
+ * \param object the object/attribute pair.
+ * \param argv array of arguments. (not yet used)
+ */
+void
+do_include(dbref player, char *object, char **argv)
+{
+  dbref thing;
+  int a;
+  char *s;
+  char tbuf1[BUFFER_LEN];
+
+  strcpy(tbuf1, object);
+  for (s = tbuf1; *s && (*s != '/'); s++) ;
+  if (!*s) {
+    notify(player, T("I need to know what attribute to include."));
+    return;
+  }
+  *s++ = '\0';
+
+  thing = noisy_match_result(player, tbuf1, NOTYPE, MAT_EVERYTHING);
+
+  if (thing == NOTHING)
+    return;
+
+  if (God(thing) && !God(player)) {
+    notify(player, T("You can't include God!"));
+    return;
+  }
+  /* include modifies the stack, but only if arguments are given */
+  for (a = 0; a < 10; a++) {
+    if (rhs_present && argv[a + 1])
+      global_eval_context.include_wenv[a] =
+        GC_STRDUP(argv[a + 1]);
+    else
+      global_eval_context.include_wenv[a] = NULL;
+  }
+  if (!inplace_queue_attribute(thing, upcasestr(s), player, rhs_present)) {
+    notify(player, T("No such attribute."));
+  }
+
+}
+
 /** The use command.
  * It's here for lack of a better place.
  * \param player the enactor.
@@ -1013,7 +1060,8 @@ do_parent(dbref player, char *name, char *parent_name)
   dbref check;
   int i;
 
-  if ((thing = noisy_match_result(player, name, NOTYPE, MAT_NEARBY)) == NOTHING)
+  if ((thing =
+       noisy_match_result(player, name, NOTYPE, MAT_EVERYTHING)) == NOTHING)
     return;
 
   if (!parent_name || !*parent_name || !strcasecmp(parent_name, "none"))
@@ -1131,7 +1179,7 @@ do_wipe(dbref player, char *name)
     return;
   }
 
-  wiped = atr_iter_get(player, thing, pattern, 0, wipe_helper, NULL);
+  wiped = atr_iter_get(player, thing, pattern, 0, 0, wipe_helper, NULL);
   switch (wiped) {
   case 0:
     notify(player, T("No attributes wiped."));

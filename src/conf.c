@@ -931,6 +931,7 @@ int
 config_set(const char *opt, char *val, int source, int restrictions)
 {
   PENNCONF *cp;
+  COMMAND_INFO *command;
   char *p;
 
   if (!val)
@@ -943,7 +944,14 @@ config_set(const char *opt, char *val, int source, int restrictions)
     for (p = val; *p && !isspace((unsigned char) *p); p++) ;
     if (*p) {
       *p++ = '\0';
-      if (!restrict_command(val, p)) {
+      command = command_find(val);
+      if (!command) {
+        if (source == 0) {
+          do_rawlog(LT_ERR,
+                    "CONFIG: Invalid command or restriction for %s.", val);
+        }
+        return 0;
+      } else if (!restrict_command(NOTHING, command, p)) {
         if (source == 0) {
           do_rawlog(LT_ERR,
                     "CONFIG: Invalid command or restriction for %s.", val);
@@ -1038,7 +1046,7 @@ config_set(const char *opt, char *val, int source, int restrictions)
     for (p = val; *p && !isspace((unsigned char) *p); p++) ;
     if (*p) {
       *p++ = '\0';
-      if (!alias_function(val, p)) {
+      if (!alias_function(NOTHING, val, p)) {
         if (source == 0) {
           do_rawlog(LT_ERR, "CONFIG: Couldn't alias %s to %s.", p, val);
         }
@@ -1694,9 +1702,9 @@ do_enable(dbref player, const char *param, int state)
         else
           notify(player, T("Enabled."));
         do_log(LT_WIZ, player, NOTHING, "%s %s",
-               cp->name, (state) ? T("ENABLED") : T("DISABLED"));
+               cp->name, (state) ? "ENABLED" : "DISABLED");
       } else
-        notify(player, T("That isn't a on/off option."));
+        notify(player, T("That isn't an on/off option."));
       return;
     }
   }

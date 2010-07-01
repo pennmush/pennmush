@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <strings.h>
 #include "conf.h"
 #include "externs.h"
 #include "command.h"

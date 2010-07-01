@@ -436,7 +436,10 @@ controls(dbref who, dbref what)
   if (!GoodObject(what))
     return 0;
 
-  if (God(what) && !God(who))
+  if (what == who)
+    return 1;
+
+  if (God(what))
     return 0;
 
   if (Wizard(who))
@@ -445,7 +448,7 @@ controls(dbref who, dbref what)
   if (Wizard(what) || (Hasprivs(what) && !Hasprivs(who)))
     return 0;
 
-  if (Mistrust(who) && (who != what))
+  if (Mistrust(who))
     return 0;
 
   if (Owns(who, what) && (!Inheritable(what) || Inheritable(who)))
@@ -919,7 +922,7 @@ ok_function_name(const char *name)
    * to find at least one uppercase alpha
    */
   for (p = (unsigned char *) name; p && *p; p++) {
-    if (isspace(*p))
+    if (isspace(*p) || !isprint(*p))
       return 0;
     if (isupper(*p))
       cnt++;
@@ -1046,10 +1049,11 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
  * to the string to point at the name of the contained object.
  * \param player the enactor/looker.
  * \param str a pointer to a string to check for possessive matches.
+ * \param exits if true, match for exits, as well as things/players
  * \return matching dbref or NOTHING or AMBIGUOUS.
  */
 dbref
-parse_match_possessor(dbref player, char **str)
+parse_match_possessor(dbref player, char **str, int exits)
 {
   const char *box;              /* name of container */
   char *obj;                    /* name of object */
@@ -1070,7 +1074,9 @@ parse_match_possessor(dbref player, char **str)
 
   /* we already have a terminating null, so we're okay to just do matches */
   return match_result(player, box, NOTYPE,
-                      MAT_NEIGHBOR | MAT_POSSESSION | MAT_ENGLISH);
+                      MAT_NEIGHBOR | MAT_POSSESSION | MAT_ENGLISH | (exits ?
+                                                                     MAT_EXIT :
+                                                                     0));
 }
 
 
@@ -1187,7 +1193,7 @@ do_verb(dbref player, dbref cause, char *arg1, char **argv)
   /* our victim object can be anything */
   victim = match_result(player, arg1, NOTYPE, MAT_EVERYTHING);
 
-  if (victim == NOTHING) {
+  if (!GoodObject(victim)) {
     notify(player, T("What was the victim of the verb?"));
     return;
   }
@@ -1199,7 +1205,7 @@ do_verb(dbref player, dbref cause, char *arg1, char **argv)
   }
   actor = match_result(player, argv[1], NOTYPE, MAT_EVERYTHING);
 
-  if (actor == NOTHING) {
+  if (!GoodObject(actor)) {
     notify(player, T("What do you want to do the verb?"));
     return;
   }
@@ -1321,7 +1327,7 @@ grep_util(dbref player, dbref thing, char *pattern, char *lookfor,
   guh.bp = guh.buff;
   guh.lookfor = lookfor;
   guh.sensitive = sensitive;
-  (void) atr_iter_get(player, thing, pattern, 0, wild ? wildgrep_util_helper
+  (void) atr_iter_get(player, thing, pattern, 0, 0, wild ? wildgrep_util_helper
                       : grep_util_helper, &guh);
   *guh.bp = '\0';
   return guh.buff;
@@ -1419,7 +1425,7 @@ do_grep(dbref player, char *obj, char *lookfor, int flag, int insensitive)
     gh.lookfor = lookfor;
     gh.len = len;
     gh.insensitive = insensitive;
-    if (!atr_iter_get(player, thing, pattern, 0, grep_helper, &gh))
+    if (!atr_iter_get(player, thing, pattern, 0, 0, grep_helper, &gh))
       notify(player, T("No matching attributes."));
   } else {
     tp = grep_util(player, thing, pattern, lookfor, !insensitive, 0);

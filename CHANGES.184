@@ -22,6 +22,9 @@ Minor Changes:
  * @power now reports when you try and set a power which is already set (or
    clear one which isn't set), similar to @set. Suggested by Paige. [MG]
 
+Commands:
+ * Add /preserve switch to @chzone and @chzoneall, like @chown/preserve.
+
 Fixes:
  * Help fixes.
  * @search's output can now include garbage objects, like lsearch().

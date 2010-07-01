@@ -1601,7 +1601,7 @@ FUNCTION(fun_zone)
       return;
     }
     if (FUNCTION_SIDE_EFFECTS)
-      (void) do_chzone(executor, args[0], args[1], 1);
+      (void) do_chzone(executor, args[0], args[1], 1, 0);
     else {
       safe_str(T(e_disabled), buff, bp);
       return;

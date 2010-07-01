@@ -952,7 +952,7 @@ do_chownall(dbref player, const char *name, const char *target, int preserve)
  * \param target string containing new zone master for objects.
  */
 void
-do_chzoneall(dbref player, const char *name, const char *target)
+do_chzoneall(dbref player, const char *name, const char *target, bool preserve)
 {
   int i;
   dbref victim;
@@ -990,7 +990,7 @@ do_chzoneall(dbref player, const char *name, const char *target)
    * consistency on things like flag resetting, etc... */
   for (i = 0; i < db_top; i++) {
     if (Owner(i) == victim && Zone(i) != zone) {
-      count += do_chzone(player, unparse_dbref(i), target, 0);
+      count += do_chzone(player, unparse_dbref(i), target, 0, preserve);
     }
   }
   notify_format(player, T("Zone changed for %d objects."), count);

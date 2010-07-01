@@ -107,9 +107,9 @@ COMLIST commands[] = {
 
   {"@CHOWN", "PRESERVE", cmd_chown,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
-  {"@CHZONEALL", NULL, cmd_chzoneall, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
+  {"@CHZONEALL", "PRESERVE", cmd_chzoneall, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
 
-  {"@CHZONE", NULL, cmd_chzone,
+  {"@CHZONE", "PRESERVE", cmd_chzone,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@CONFIG", "SET SAVE LOWERCASE LIST", cmd_config, CMD_T_ANY | CMD_T_EQSPLIT,
    0, 0},

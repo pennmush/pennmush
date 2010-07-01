@@ -151,12 +151,12 @@ COMMAND(cmd_chown)
 
 COMMAND(cmd_chzoneall)
 {
-  do_chzoneall(player, arg_left, arg_right);
+  do_chzoneall(player, arg_left, arg_right, SW_ISSET(sw, SWITCH_PRESERVE));
 }
 
 COMMAND(cmd_chzone)
 {
-  (void) do_chzone(player, arg_left, arg_right, 1);
+  do_chzone(player, arg_left, arg_right, 1, SW_ISSET(sw, SWITCH_PRESERVE));
 }
 
 COMMAND(cmd_config)

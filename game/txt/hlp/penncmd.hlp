@@ -711,11 +711,10 @@ See also: @chown
   zone, leaving it unzoned. Anyone can reset the zone of an object he
   owns.
 
-  If a player is @chzoned, anything objects he creates from that point
-  on will automatically be on the same zone. Objects the player
-  already owns are not affected. Players can only @chzone themselves
-  to a zone if they own it, though wizards can @chzone players to any
-  zone.
+  If a player is @chzoned, any objects he creates from that point on will
+  automatically be on the same zone. Objects the player already owns are
+  not affected. Players can only @chzone themselves to a zone if they own
+  it, though wizards can @chzone players to any zone.
   
   Continued in 'help @chzone2'.  
 & @chzone2

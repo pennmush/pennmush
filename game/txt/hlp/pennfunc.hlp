@@ -2440,12 +2440,15 @@ See also: log()
   exits, and #-3 for exits @linked to "home".
   
   You must be able to examine <object>, or be near it, for this function
-  to work.
+  to work. A special case exists when <object> is a player: As long as
+  <object> is not set UNFINDABLE, and you are allowed to use the @whereis
+  command, you can get <object>'s location.
   
   You can also get the location of the enactor using the %L substitution,
   whether you are near to/can examine it or not.
   
-See also: locate(), rloc(), home(), where(), rnum(), room(), @link
+See also: locate(), rloc(), home(), where(), rnum(), room(), @link,
+  UNFINDABLE, @whereis
 & LOCALIZE()
   localize(<code>)
 

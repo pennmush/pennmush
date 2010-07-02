@@ -42,6 +42,8 @@ Fixes:
  * namelist() did not accept names in quotes. Reported by Amberyl. [MG]
  * @attrib/access/retroactive could remove the 'root' flag from attribute
    trees, making nasty things happen. Reported by Cooee. [MG]
+ * Fix fn() to check that the first arugment is actually the name of a
+   built-in function. Reported by Time and Cheetah. [DC]
 
 
 Version 1.8.4 patchlevel 0                                 May 09,  2010

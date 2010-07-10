@@ -44,6 +44,8 @@ Fixes:
    trees, making nasty things happen. Reported by Cooee. [MG]
  * Fix fn() to check that the first arugment is actually the name of a
    built-in function. Reported by Time and Cheetah. [DC]
+ * Nested @asserts/@breaks with no '=' would loop unintentionally.
+   Reported by Minion. [MG]
 
 
 Version 1.8.4 patchlevel 0                                 May 09,  2010

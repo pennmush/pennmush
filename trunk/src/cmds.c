@@ -120,6 +120,8 @@ COMMAND(cmd_break)
                          player, player, cause,
                          PE_COMMAND_BRACES, PT_DEFAULT, NULL);
       *bp++ = '\0';
+    } else {
+      *(global_eval_context.break_replace) = '\0';
     }
   }
 }
@@ -135,6 +137,8 @@ COMMAND(cmd_assert)
                          player, player, cause,
                          PE_COMMAND_BRACES, PT_DEFAULT, NULL);
       *bp++ = '\0';
+    } else {
+      *(global_eval_context.break_replace) = '\0';
     }
   }
 }

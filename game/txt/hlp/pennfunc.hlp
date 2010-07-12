@@ -4211,6 +4211,9 @@ See also: anonymous attributes, sorting, sortby()
   &factions or &species attrs. attr is probably case-sensitive, and
   attri is case-insensitive.
 
+  Prefixing the sort type with a minus sign, -, reverses the order of
+  the sort.
+
   Whether or not the 'a' sort type is case-sensitive or not depends on
   the particular mush and its environment.
 

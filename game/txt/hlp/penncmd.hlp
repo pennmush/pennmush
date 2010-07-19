@@ -1009,16 +1009,16 @@ See also: accent(), @nameformat, accname(), stripaccents()
 See also: look, @exitformat, @conformat, @descformat, @nameaccent, 
     @invformat, @idescformat
 & @cost
-  @cost <thing>[=<amount>]
+  @cost <object>[=<amount>]
   
   The COST attribute contains the number of pennies that must be given to
-  <thing> to trigger its @pay/@opay/@apay attributes. If less than this
+  <object> to trigger its @pay/@opay/@apay attributes. If less than this
   amount is given, the money will be refused, and if more is given, the
   difference is refunded.
   
   This attribute is evaluated, with the amount being given passed as %0.
-  It is only checked for THING-type objects; pennies can always be given
-  to other types of object.
+  Non-players must have this attribute set in order to receive pennies.
+  Players who don't have a COST always accept the amount of pennies given.
 
   Example:
     > @cost Exit Machine=10
@@ -4028,35 +4028,37 @@ See also: buy, @abuy, @buy, @obuy, MONEY, @cost
   first one you can afford will be the resulting price.
 
   ex:
-  > &PRICELIST vendor=coke:20 pepsi:20
-  > &drink.coke vendor=You enjoy a delicious coke.
-  > &drink.pepsi vendor=It tastes like a funny coke.
-  > @BUY vendor=u(drink.%0)
+  > @PRICELIST vendor=coke:20 pepsi:20
+  > &drink`coke vendor=You enjoy a delicious coke.
+  > &drink`pepsi vendor=It tastes like a funny coke.
+  > @BUY vendor=u(drink`%0)
   > buy coke
   You enjoy a delicious coke.
 
-See also: @ABUY, @BUY, @PRICELIST, give
+See also: @ABUY, @BUY, @PRICELIST, give, @COST
 & give
-  give[/silent] <player>=<number>
-  give[/silent] <number> to <player>
-  give <player>=<object>
-  give <object> to <player>
+  give[/silent] <recipient>=<number>
+  give[/silent] <number> to <recipient>
+  give <recipient>=<object>
+  give <object> to <recipient>
 
-  Gives player the specified <number> of pennies or <object>. You
-  can't give someone pennies if their new total would be greater than
-  100000 pennies.  (No reason to get greedy).  The /silent switch
-  suppresses the default message indicating how many pennies were
-  given. Wizards may "give" a negative number of pennies.
-
-  You may also give players objects, but the other player must be set
-  ENTER_OK in order to receive something you give. You must pass <object>'s
-  @lock/give and <player>'s @lock/from. <object> must pass <player>'s
-  @lock/receive.
+  The first two forms of this command give <number> pennies to <recipient>.
+  If <recipient> is a non-player, it must have an @COST, and any pennies
+  given to it will go to its owner. If /silent is given, the message 
+  informing the recipient how many pennies were given is suppressed. Wizards
+  may "give" a negative number of pennies to take from <recipient>. When you
+  give pennies, <recipient>'s PAYMENT/OPAYMENT/APAYMENT attributes are
+  triggered.
   
-  Giving money to a non-player gives it to the object's owner instead. When
-  giving to a THING, the amount given must match its @COST attribute.
+  The last two forms of this command give an <object> from your inventory to
+  <recipient>. The recipient must be set ENTER_OK, and you must pass his
+  @lock/from. You must also pass <object>'s @lock/give, and <object> must
+  pass <recipient>'s @lock/receive. When you give an object successfully,
+  your GIVE/OGIVE/AGIVE attributes, <recipient>'s RECEIVE/ORECEIVE/ARECEIVE
+  attributes, and <object>'s SUCCESS/ASUCCESS/OSUCCESS attributes are all
+  triggered.
 
-See also: @pay, @cost, @lock, inventory, @receive, @give, buy
+See also: @pay, @cost, @lock, inventory, @receive, @give, buy, @success
 & go
 & goto
 & move

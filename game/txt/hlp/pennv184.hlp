@@ -21,6 +21,8 @@ Minor Changes:
 
 Commands:
  * Add /preserve switch to @chzone and @chzoneall, like @chown/preserve.
+ * Rooms/exits must now have an @COST attribute in order to be given
+   pennies. Use @cost <ancestor>=%0 to enable giving to all rooms/exits. [MG]
 
 Fixes:
  * Help fixes.
@@ -43,6 +45,7 @@ Fixes:
    built-in function. Reported by Time and Cheetah. [DC]
  * Nested @asserts/@breaks with no '=' would loop unintentionally.
    Reported by Minion. [MG]
+ * Fixed a couple of small bugs in give/@cost. [MG]
 
 
 & 1.8.4p0

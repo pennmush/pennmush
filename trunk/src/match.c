@@ -362,10 +362,13 @@ match_result(dbref who, const char *xname, int type, long flags)
       ((type & TYPE_PLAYER) || !(flags & MAT_TYPE))) {
     match = match_player(who, xname, !(flags & MAT_EXACT));
     if (GoodObject(match)) {
-      if (MATCH_CONTROLS) {
-        return match;
-      } else {
-        nocontrol = 1;
+      if (!(flags & MAT_NEAR) || Long_Fingers(who) ||
+          (nearby(who, match) || controls(who, match))) {
+        if (MATCH_CONTROLS) {
+          return match;
+        } else {
+          nocontrol = 1;
+        }
       }
     } else {
       bestmatch = BEST_MATCH;

@@ -1260,9 +1260,23 @@ COMMAND(cmd_with)
   char *cptr = arg_right;
   dbref errdb;
 
-  what = noisy_match_result(player, arg_left, NOTYPE, MAT_NEARBY);
+  what = noisy_match_result(player, arg_left, NOTYPE, MAT_EVERYTHING);
   if (!GoodObject(what))
     return;
+  if (! (nearby(player, what) || Long_Fingers(player) || controls(player, what))) {
+    if (SW_ISSET(sw, SWITCH_ROOM)) {
+      if (what != MASTER_ROOM && what != Zone(player)) {
+        notify(player, T("I don't see that here."));
+        return;
+      } else if (what == Zone(player) && !IsRoom(what)) {
+        notify(player, T("Make room! Make room!"));
+        return;
+      }
+    } else if (what != Zone(player) || IsRoom(what)) {
+      notify(player, T("I don't see that here."));
+      return;
+    }
+  }
 
   errdbtail = errdblist;
   errdb = NOTHING;
@@ -1275,7 +1289,7 @@ COMMAND(cmd_with)
   } else {
     /* Run commands on objects in a masterish room */
 
-    if (!IsRoom(what)) {
+    if (!IsRoom(what) && what != Location(player)) {
       notify(player, T("Make room! Make room!"));
       return;
     }

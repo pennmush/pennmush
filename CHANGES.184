@@ -31,6 +31,8 @@ Commands:
  * Add /preserve switch to @chzone and @chzoneall, like @chown/preserve.
  * Rooms/exits must now have an @COST attribute in order to be given
    pennies. Use @cost <ancestor>=%0 to enable giving to all rooms/exits. [MG]
+ * with/room can now check for commands in the Master Room or your ZMR, and
+   with can check for commands on your ZMT. [MG]
 
 Fixes:
  * Help fixes.

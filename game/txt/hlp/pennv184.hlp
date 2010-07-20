@@ -18,6 +18,9 @@ Minor Changes:
    clear one which isn't set), similar to @set. Suggested by Paige. [MG]
  * Sorting methods now take - as a prefix to sort type in order to sort
    in descending order. Suggested by Minion. [GM]
+ * The matching code no longer matches players who aren't nearby with
+   "*playername" when MAT_NEAR is given, more in line with other checks.
+   (This has virtually no impact for most players.) [MG]
 
 Commands:
  * Add /preserve switch to @chzone and @chzoneall, like @chown/preserve.

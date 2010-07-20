@@ -4407,11 +4407,14 @@ See also: WHO
 & with
   with[/room] <obj>=<command>
 
-  Attempts to run a user-defined command on a specific object.  If the
-  /room switch is given, <obj> must be a room, and its contents are
-  checked for commands as if it was a master room.
+  Attempts to run a user-defined command on a specific object.  If the /room
+  switch is given, <obj> must be a room or your current location, and its 
+  contents are checked for commands as if it was a master room.
+  
+  <obj> must be an object near you, an object you control, your ZMO or (if
+  the /room switch is given) the Master Room.
 
-  See 'help USER-DEFINED COMMANDS'.
+  See also: USER-DEFINED COMMANDS, EVALUATION ORDER
 & socket commands
   These commands can only be entered by a connected player through
   their client. They generally do things that only affect a specific

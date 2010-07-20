@@ -54,6 +54,8 @@ Fixes:
  * Nested @asserts/@breaks with no '=' would loop unintentionally.
    Reported by Minion. [MG]
  * Fixed a couple of small bugs in give/@cost. [MG]
+ * You can now always look at remote objects whose descs are not set nearby,
+   and can never look at remote objects with nearby descs. [MG]
 
 
 Version 1.8.4 patchlevel 0                                 May 09,  2010

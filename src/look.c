@@ -635,6 +635,7 @@ do_look_at(dbref player, const char *name, int key)
 {
   dbref thing;
   dbref loc;
+  int near;
 
   if (!GoodObject(Location(player)))
     return;
@@ -665,13 +666,14 @@ do_look_at(dbref player, const char *name, int key)
       notify(player, T("I don't know which one you mean."));
       return;
     }
+    near = (loc == Location(thing));
   } else {                      /* regular look */
     if (*name == '\0') {
       look_room(player, Location(player), LOOK_NORMAL);
       return;
     }
     /* look at a thing in location */
-    if ((thing = match_result(player, name, NOTYPE, MAT_NEARBY)) == NOTHING) {
+    if ((thing = match_result(player, name, NOTYPE, MAT_EVERYTHING)) == NOTHING) {
       dbref box;
       const char *boxname;
       char objnamebuf[BUFFER_LEN], *objname;
@@ -731,6 +733,7 @@ do_look_at(dbref player, const char *name, int key)
       notify(player, T("I can't tell which one you mean."));
       return;
     }
+    near = nearby(player, thing);
   }
 
   /* once we've determined the object to look at, it doesn't matter whether
@@ -743,7 +746,17 @@ do_look_at(dbref player, const char *name, int key)
   if (Location(player) == thing) {
     look_room(player, thing, LOOK_NORMAL);
     return;
+  } else if (!near && !Long_Fingers(player) && !See_All(player)) {
+    ATTR *desc;
+
+    desc = atr_get(thing, "DESCRIBE");
+    if ((desc && AF_Nearby(desc)) || (!desc && !READ_REMOTE_DESC)) {
+      notify_format(player, T("You can't see that from here."));
+      return;
+    }
   }
+
+
   switch (Typeof(thing)) {
   case TYPE_ROOM:
     look_room(player, thing, LOOK_NORMAL);

@@ -5622,6 +5622,10 @@ msgstr "Je kunt de wereld niet in jouw evenbeeld scheppen."
 msgid "You can't see someone else's quota!"
 msgstr "Je kunt iemand anders z'n quota niet bekijken."
 
+#: look.c:754
+msgid "You can't see that from here."
+msgstr "Je kunt dat niet zien van hier af."
+
 #: src/look.c:534
 msgid "You can't see through that."
 msgstr "Je kunt daar niet doorheen kijken."

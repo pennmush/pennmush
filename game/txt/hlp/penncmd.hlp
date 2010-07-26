@@ -32,12 +32,13 @@ in 3 versions: @<whatever>, @o<whatever>, and @a<whatever>. Only the
 These '@' command set other standard attributes on objects that don't
 follow the pattern above:
 
-  @aahear        @aclone        @aconnect      @adisconnect   @amhear
-  @away          @charges       @cost          @conformat     @descformat
-  @ealias        @exitformat    @filter        @forwardlist   @haven         
-  @idescformat   @idle          @infilter      @inprefix      @lalias        
-  @listen        @nameformat    @oxenter       @oxleave       @oxmove        
-  @oxtport       @prefix        @runout        @sex           @startup       
+  @aahear        @aclone        @aconnect      @adisconnect   @amail
+  @amhear        @away          @charges       @conformat     @cost
+  @descformat    @ealias        @exitformat    @filter        @forwardlist
+  @haven         @idescformat   @idle          @infilter      @inprefix
+  @lalias        @listen        @nameformat    @oxenter       @oxleave
+  @oxmove        @oxtport       @prefix        @runout        @sex
+  @startup       
 
 See also: ATTRIBUTES, NON-STANDARD ATTRIBUTES
 & @-BUILDING
@@ -136,6 +137,13 @@ See also: @clone, @create, ACTION LISTS
     > @aconnect me=+who ; +bbscan
 
 See also: @adisconnect, ACTION LISTS
+& @amail
+  @amail <object>=<action list>
+
+  Sets the actions to be taken by <object> whenever it receives @mail. Admin-only,
+  and is only triggered if enabled via the amail configuration option.
+
+See also: @mail
 & @death
 & @adeath
 & @odeath

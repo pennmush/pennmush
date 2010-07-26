@@ -28,6 +28,8 @@ Commands:
    pennies. Use @cost <ancestor>=%0 to enable giving to all rooms/exits. [MG]
  * with/room can now check for commands in the Master Room or your ZMR, and
    with can check for commands on your ZMT. [MG]
+ * @sitelock/register <host> now sets the access rules for <host> to be
+   "!create register", rather than "!create". Suggested by Trinsec. [MG]
    
 Functions:
  * remit() now works like @remit/list. Suggested by Minion. [MG]

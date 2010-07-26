@@ -176,7 +176,7 @@ extern void do_chzoneall(dbref player, const char *name, const char *target, boo
 extern int parse_force(char *command);
 extern void do_power(dbref player, const char *name, const char *power);
 enum sitelock_type { SITELOCK_ADD, SITELOCK_REMOVE, SITELOCK_BAN,
-  SITELOCK_CHECK, SITELOCK_LIST
+  SITELOCK_CHECK, SITELOCK_LIST, SITELOCK_REGISTER
 };
 extern void do_sitelock(dbref player, const char *site, const char *opts,
                         const char *charname, enum sitelock_type type);

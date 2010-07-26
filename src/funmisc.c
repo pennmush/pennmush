@@ -150,7 +150,10 @@ FUNCTION(fun_emit)
 FUNCTION(fun_remit)
 {
   int ns = (string_prefix(called_as, "NS") && Can_Nspemit(executor));
-  int flags = ns ? PEMIT_SPOOF : 0;
+  int flags = PEMIT_LIST | PEMIT_SILENT;
+
+  if (ns)
+    flags |= PEMIT_SPOOF;
 
   if (!FUNCTION_SIDE_EFFECTS) {
     safe_str(T(e_disabled), buff, bp);

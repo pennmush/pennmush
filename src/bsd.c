@@ -2809,7 +2809,7 @@ boot_player(dbref player, int idleonly, int silent)
     if (count == 1)
       notify(player, T("You boot an idle self."));
     else
-      notify_format(player, T("You boot %d idle selves."), count);;
+      notify_format(player, T("You boot %d idle selves."), count);
   }
 
   return count;

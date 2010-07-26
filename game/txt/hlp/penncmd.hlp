@@ -3226,7 +3226,7 @@ See also: GENDER, subj(), poss(), aposs(), obj()
 & @sitelock
   @sitelock
   @sitelock/name <name>
-  @sitelock <host-pattern> = <options>[,<name>]
+  @sitelock <host-pattern>=<options>[, <name>]
   @sitelock[/<ban|register>] <host-pattern>
   @sitelock/check <host>
   @sitelock/remove <string>
@@ -3243,14 +3243,14 @@ See also: GENDER, subj(), poss(), aposs(), obj()
   @sitelock/name adds a name to the list of banned player names.
   Use !<name> to remove a name from the list.
 
-  @sitelock <host-pattern> = <options>[,<name>] controls the access options
+  @sitelock <host-pattern>=<options>[, <name>] controls the access options
   for hosts which match <host-pattern>, which may include wildcard
   characters "*" and "?". See help @sitelock2 for the list of options,
   and help @sitelock3 for an explanation about the name argument.
 
   For backward compatibility, @sitelock/ban is shorthand for
   setting options "!connect !create !guest", and @sitelock/register
-  is shorthand for options "!create".
+  is shorthand for options "!create register".
 
 & @sitelock2
 
@@ -3279,20 +3279,20 @@ See also: GENDER, subj(), poss(), aposs(), obj()
    regexp      -- Treat the hostname pattern as a regular expression
                   instead of a wildcard pattern.
 & @sitelock3
- If you specify a character name after the options, the options
- are only checked if the host pattern matches, AND the character
- being checked for connect support matches the one you gave.
- Use it only with connect and !connect options, since they're
- the only ones where an existing character is used.
+  If you specify a character name after the options, the options
+  are only checked if the host pattern matches, AND the character
+  being checked for connect support matches the one you gave.
+  Use it only with connect and !connect options, since they're
+  the only ones where an existing character is used.
 
- For example, to disallow anyone from connecting to 'Twink' from
- one domain, but to allow connections to the character from others,
- use something like:
+  For example, to disallow anyone from connecting to 'Twink' from
+  one domain, but to allow connections to the character from others,
+  use something like:
 
- @sitelock *.somesite.com=!connect,Twink
+    > @sitelock *.somesite.com=!connect,Twink
 
- If you want to disallow connections to a character from anywhere,
- use @newpassword or @sitelock *=!connect,Twink.
+  If you want to disallow connections to a character from anywhere,
+  use @newpassword or @sitelock *=!connect,Twink.
 
   @sitelock/remove will delete entries that were added with @sitelock
   if their host-pattern matches <string> exactly.

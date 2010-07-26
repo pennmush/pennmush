@@ -1006,7 +1006,7 @@ COMMAND(cmd_sitelock)
   if (SW_ISSET(sw, SWITCH_BAN))
     do_sitelock(player, arg_left, NULL, NULL, SITELOCK_BAN);
   else if (SW_ISSET(sw, SWITCH_REGISTER))
-    do_sitelock(player, arg_left, NULL, NULL, SITELOCK_ADD);
+    do_sitelock(player, arg_left, NULL, NULL, SITELOCK_REGISTER);
   else if (SW_ISSET(sw, SWITCH_NAME))
     do_sitelock_name(player, arg_left);
   else if (SW_ISSET(sw, SWITCH_REMOVE))

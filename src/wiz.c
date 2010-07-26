@@ -1512,6 +1512,13 @@ do_sitelock(dbref player, const char *site, const char *opts, const char *who,
       /* List bad sites */
       do_list_access(player);
       return;
+    case SITELOCK_REGISTER:
+      if (add_access_sitelock(player, site, AMBIGUOUS, ACS_REGISTER, ACS_CREATE)) {
+        write_access_file();
+        notify_format(player, T("Site %s locked"), site);
+        do_log(LT_WIZ, player, NOTHING, "*** SITELOCK *** %s", site);
+      }
+      break;
     case SITELOCK_ADD:
       if (add_access_sitelock(player, site, AMBIGUOUS, 0, ACS_CREATE)) {
         write_access_file();

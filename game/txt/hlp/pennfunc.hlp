@@ -3696,12 +3696,15 @@ See also: edit(), regmatch(), regrab()
 See also: regrab(), regedit()
 & REMIT()
 & NSREMIT()
-  remit(<object>, <message>)
-  nsremit(<object>, <message>)
+  remit(<object list>, <message>)
+  nsremit(<object list>, <message>)
 
-  Sends a message to the contents of <object>, as per @remit.
+  Sends a message to the contents of all the objects specified in
+  <object list>, as per @remit/list.
 
-  nsremit() works like @nsremit.
+  nsremit() works like @nsremit/list.
+  
+See also: @remit, pemit(), lemit()
 & REMOVE()
   remove(<list>, <words>[, <delimiter>])
 

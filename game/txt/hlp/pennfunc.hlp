@@ -363,7 +363,7 @@ See also: MATH FUNCTIONS
  
   Examples:
     > say after(foo bar baz,bar)
-    You say, "baz"
+    You say, " baz"
     
     > say after(foo bar baz,ba)
     You say, "r baz"

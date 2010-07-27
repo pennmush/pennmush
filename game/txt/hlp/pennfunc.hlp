@@ -2145,6 +2145,7 @@ See also: itext(), inum(), ilev(), map(), @dolist
 & ITEXT()
 & INUM()
 & %i
+& %i0
   ilev()
   itext(<n>)
   %i<n>

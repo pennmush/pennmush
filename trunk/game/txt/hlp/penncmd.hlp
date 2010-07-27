@@ -4436,7 +4436,7 @@ See also: WHO
   In addition, the following commands can only be used at the login
   screen:
 
-  cd ch connect create register
+  cd ch cv connect create register
   
   The WHO command can also be used at the login screen. Please note that
   this is different to the in-game WHO command.

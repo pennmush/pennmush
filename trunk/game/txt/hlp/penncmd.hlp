@@ -182,10 +182,12 @@ See also: look, @describe, @idescribe, ACTION LISTS
 & @adestroy
   @adestroy <object>[=<action list>]
  
-  The adestroy attribute is triggered when <object> is destroyed. It can
-  only be set by wizards.
+  The adestroy attribute is triggered when <object> is @destroyed. It can
+  only be set by wizards. Because the attribute is triggered when <object>
+  is @destroyed, not when the object is actually purged from the database,
+  it's possible for <object> to be @undestroyed after the adestroy has run.
   
-See also: @destroy, @nuke
+See also: @destroy, @undestroy
 & @adisconnect
   @adisconnect <object>[=<action list>]
 
@@ -1197,9 +1199,6 @@ See also: look, @adescribe, @idescribe, @descformat
 & @destroy
 & @recycle
 & @nuke
-& @undestroy
-& @unrecycle
-
   @destroy[/override] <object>
   @nuke <object>
   @undestroy <object>
@@ -1242,7 +1241,18 @@ See also: look, @adescribe, @idescribe, @descformat
   @recycle is an alias for @destroy. Some MUSHes disable @destroy and only
   use @recycle, to avoid players mistyping.
   
-See also: @create, @dig, @open, DESTROY_OK, SAFE
+See also: @undestroy, @create, @dig, @open, DESTROY_OK, SAFE
+& @undestroy
+& @unrecycle
+  @undestroy <object>
+  
+  When an object has been marked for destruction using @destroy, this
+  command spares it from destruction. <object>'s @startup is triggered
+  when it is spared.
+  
+  @unrecycle is an alias for @undestroy.
+  
+See also: @destroy, GOING, @startup
 & @dig
   @dig[/teleport] <room name>[=<exit to>[, <exit from>]]
   
@@ -3327,9 +3337,13 @@ See also: sql(), sqlescape(), mapsql()
 
   Sets the list of actions on <object> that will happen whenever the MUSH
   is restarted. This lets you start up objects that need to be running 
-  continuously. It is also useful for use with @function. 
+  continuously. It is also useful for setting up @functions, @hooks and
+  standard @attributes, which are not saved across restarts.
   
-See also: @function, ACTION LISTS
+  @startup is also triggered when an object is @restarted or @undestroyed.
+  
+See also: @restart, @undestroy, ACTION LISTS, @function, @command, @hook,
+  @attribute
 & @stats
   @stats [<player>]
   @stats/table

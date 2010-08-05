@@ -917,7 +917,7 @@ command_argparse(dbref player, dbref cause, char **from, char *to,
     while (*f == ' ')
       f++;
     if (process_expression(to, &t, (const char **) &f, player, cause, cause,
-                           parse, (split | args), NULL)) {
+                           parse, (split | args), global_eval_context.pe_info)) {
       done = 1;
     }
     *t = '\0';
@@ -1139,7 +1139,7 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
     process_expression(command, &c, (const char **) &p, player, cause, cause,
                        noevtoken ? PE_NOTHING :
                        ((PE_DEFAULT & ~PE_FUNCTION_CHECK) |
-                        PE_COMMAND_BRACES), PT_SPACE, NULL);
+                        PE_COMMAND_BRACES), PT_SPACE, global_eval_context.pe_info);
     *c = '\0';
     strcpy(commandraw, command);
     upcasestr(command);
@@ -1177,7 +1177,7 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
       process_expression(commandraw, &c2, (const char **) &p, player, cause,
                          cause, noevtoken ? PE_NOTHING :
                          ((PE_DEFAULT & ~PE_FUNCTION_CHECK) |
-                          PE_COMMAND_BRACES), PT_DEFAULT, NULL);
+                          PE_COMMAND_BRACES), PT_DEFAULT, global_eval_context.pe_info);
     }
     *c2 = '\0';
     command_parse_free_args;

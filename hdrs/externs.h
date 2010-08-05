@@ -243,6 +243,7 @@ struct eval_context {
   int re_subpatterns;         /**< The number of re subpatterns */
   int *re_offsets;            /**< The offsets for the subpatterns */
   struct _ansi_string *re_from;             /**< The positions of the subpatterns */
+  PE_Info *pe_info;           /**< The PE_Info to evaluate the queue with */
 };
 
 typedef struct eval_context EVAL_CONTEXT;

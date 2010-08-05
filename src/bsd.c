@@ -2365,12 +2365,13 @@ do_command(DESC *d, char *command)
       for (j = 0; j < NUMQ; j++)
         global_eval_context.renv[j][0] = '\0';
       global_eval_context.process_command_port = d->descriptor;
-
+      global_eval_context.pe_info = make_pe_info();
       process_command(d->player, command, d->player, 1);
       send_suffix(d);
       strcpy(global_eval_context.ccom, "");
       strcpy(global_eval_context.ucom, "");
       global_eval_context.cplr = NOTHING;
+      free_pe_info(global_eval_context.pe_info);
     } else {
       j = 0;
       if (!strncmp(command, WHO_COMMAND, strlen(WHO_COMMAND))) {

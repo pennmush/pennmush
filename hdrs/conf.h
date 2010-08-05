@@ -76,9 +76,6 @@
 #define COMMANDS_PER_TIME 1     /* commands per time slice after burst */
 
 
-/* Set this somewhere near the recursion limit */
-#define MAX_ITERS 100
-
 /* From conf.c */
 extern void do_config_list(dbref player, const char *type, int lc);
 

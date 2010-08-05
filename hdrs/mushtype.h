@@ -46,6 +46,10 @@ typedef unsigned char *object_flag_type;
 typedef const char *lock_type;
 typedef struct lock_list lock_list;
 
+
+/* Set this somewhere near the recursion limit */
+#define MAX_ITERS 100
+
 typedef struct pe_info PE_Info;
 typedef struct debug_info Debug_Info;
 /** process_expression() info
@@ -64,6 +68,9 @@ struct pe_info {
   int call_depth;               /**< Function call counter */
   Debug_Info *debug_strings;    /**< DEBUG infromation */
   int arg_count;                /**< Number of arguments passed to function */
+  int iter_nesting;             /**< Current iter() nesting depth */
+  char *iter_itext[MAX_ITERS];  /**< itext() replacements in iter() */
+  int iter_inum[MAX_ITERS];     /**< inum() values in iter() */
 };
 
 

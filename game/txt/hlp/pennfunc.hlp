@@ -3617,9 +3617,9 @@ See also: setq(), letq()
   
   Return a random number.
   
-  The first form returns an integer between 0 and <num>-1, inclusive.
-  The second returns an integer between <min> and <max>, inclusive. Both 
-  numbers must be positive.
+  The first form returns an integer between 0 and <num>-1, inclusive (or
+  between 0 and <num>+1, for negative <num>s).
+  The second returns an integer between <min> and <max>, inclusive.
 
   If called with an invalid argument, rand() returns an error message
   beginning with #-1.

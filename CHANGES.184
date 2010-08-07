@@ -40,6 +40,7 @@ Commands:
    
 Functions:
  * remit() now works like @remit/list. Suggested by Minion. [MG]
+ * rand() now accepts negative arguments again. [MG]
 
 Fixes:
  * Help fixes.

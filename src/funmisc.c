@@ -386,34 +386,50 @@ FUNCTION(fun_r)
 /* ARGSUSED */
 FUNCTION(fun_rand)
 {
-  uint32_t low, high;
-  if (!is_strict_uinteger(args[0])) {
-    safe_str(T(e_uint), buff, bp);
+  uint32_t low, high, rand;
+  int lowint, highint, offset = 0;
+  if (!is_strict_integer(args[0])) {
+    safe_str(T(e_int), buff, bp);
     return;
   }
   if (nargs == 1) {
-    low = 0;
-    high = parse_uinteger(args[0]);
-    if (high == 0) {
+    low = lowint = 0;
+    highint = parse_integer(args[0]);
+    if (highint == 0) {
       safe_str(T(e_range), buff, bp);
       return;
+    } else if (highint < 0) {
+      high = offset = (highint * -1);
+      offset -= 1;
+    } else {
+      high = highint;
     }
     high -= 1;
   } else {
-    if (!is_strict_uinteger(args[1])) {
-      safe_str(T(e_uints), buff, bp);
+    if (!is_strict_integer(args[1])) {
+      safe_str(T(e_ints), buff, bp);
       return;
     }
-    low = parse_uinteger(args[0]);
-    high = parse_uinteger(args[1]);
+    lowint = parse_integer(args[0]);
+    highint = parse_integer(args[1]);
+    if (lowint > highint) {
+      /* reverse numbers */
+      offset = lowint;
+      lowint = highint;
+      highint = offset;
+      offset = 0;
+    }
+    if (lowint < 0) {
+      offset = 0 - lowint;
+      low = 0;
+      high = highint + offset;
+    } else {
+      low = lowint;
+      high = highint;
+    }
   }
-
-  if (low > high) {
-    safe_str(T(e_range), buff, bp);
-    return;
-  }
-
-  safe_uinteger(get_random32(low, high), buff, bp);
+  rand = get_random32(low, high);
+  safe_integer((int) rand - offset, buff, bp);
 }
 
 /* ARGSUSED */

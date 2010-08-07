@@ -2187,8 +2187,10 @@ do_hook(dbref player, char *command, char *obj, char *attrname,
   if (!obj && !attrname) {
     notify_format(player, T("Hook removed from %s."), cmd->name);
     h->obj = NOTHING;
-    mush_free(h->attrname, "hook.attr");
-    h->attrname = NULL;
+    if (h->attrname) {
+      mush_free(h->attrname, "hook.attr");
+      h->attrname = NULL;
+    }
   } else if (!obj || !*obj
              || (flag != HOOK_OVERRIDE && (!attrname || !*attrname))) {
     if (flag == HOOK_OVERRIDE) {

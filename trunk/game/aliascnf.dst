@@ -19,6 +19,26 @@
 # We add a dummy here to make updating easier
 reserve_alias dummy_exit_alias
 
+# You can also add new commands, with
+# command_add <command> [<options>], where <options> is a space-separated
+# list of 0 or more of "noparse", "eqsplit", "lsargs" and "rsargs".
+# Equiv of @command/add[/<options>] <command>. See 'help @command'.
+# add_command @foo eqsplit rsargs
+
+# And hook commands, with
+# hook_command <cmd> <hook> [<obj>[/<attr>]]
+# as per @hook/<hook> <cmd>=[<obj>[/<attr>]]. See 'help @hook'.
+# Don't include the '#' in <obj>, just use the number.
+# hook_command say override 123/cmd.say
+
+# You can also add new functions, with
+# add_function <function> <obj>/<attr> [<minargs> [<maxargs>]]
+# as per @function <function>=<obj>, <attr>[, <minargs>[, <maxargs>]]
+# Don't include the '#' in <obj>, just use the number. See 'help @function'
+# If <function> is the name of a built-in function, it will be disabled
+# and replaced with the user function (like @function/delete).
+# add_function foo 123/fun.foo 1 5
+
 # You can also alias commands to other names.
 # command_alias EXISTING_COMMAND ALIAS
 # For example, a french-language game do the following:

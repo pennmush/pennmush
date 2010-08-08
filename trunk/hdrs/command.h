@@ -232,6 +232,8 @@ int run_command(COMMAND_INFO *cmd, dbref player, dbref cause, const char *comman
                 switch_mask sw, char switch_err[BUFFER_LEN], const char *string,
                 char *swp, char *ap, char *ls, char *lsa[MAX_ARG], char *rs,
                 char *rsa[MAX_ARG]);
+int cnf_add_command(char *name, char *opts);
+int cnf_hook_command(char *name, char *opts);
 
 
 #endif                          /* __COMMAND_H */

@@ -516,8 +516,8 @@ See also: get, goto, @lock, SUCCESS, FAILURE, @odrop, ACTION LISTS, VERBS
   attributes (see "@list/attribs" for a list of them).
   
   *** Unlike TinyMUSH, changes to the PennMUSH attribute table are not saved 
-  *** across shutdowns. Use these commands from God's @startup to ensure
-  *** they are run at each startup.
+  *** across shutdowns. Use these commands from God's @startup to ensure they
+  *** are run at each startup, or use restrict_attribute in restrict.cnf.
 
   The first form of the command displays the full name of the attribute
   <attrib>, along with the its attribute flags, and the dbref of the object 
@@ -839,7 +839,7 @@ See also: @create, clone(), create(), @cpattr
   needs to make allowances for the /noeval switch in it's matching.
 
   Commands added with @command/add, like other standard commands,
-  are never case-sensitive.
+  are never case-sensitive. Commands can also be added in the alias.cnf file.
 
   See 'help @command3' for examples.
 See also: @hook, RESTRICT, EVALUATION ORDER
@@ -1809,7 +1809,8 @@ See also: FLAGS, @set, @power, flag permissions
   game is restarted. In order to avoid objects which attempt to use
   functions that have not been loaded, a @startup containing @function
   commands should be set on a wizard object with as low a dbref number
-  as possible; God (#1) is suggested for this use.
+  as possible; God (#1) is suggested for this use. You can also create
+  functions from the alias.cnf file.
 
   For example, if you have one object that stores all your global
   functions, you could set the following command (the object is #100
@@ -1974,6 +1975,8 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
   wrapped in a call of null(). Also, in cases where a command and function
   do the same thing (e.g., @pemit and pemit()), only the command gets
   the hooks.
+  
+  Hooks can also be set in the alias.cnf file.
 
   Leaving out the object and attribute clears an existing hook. Wizards can
   see existing hooks with @command or @hook/list.

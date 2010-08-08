@@ -117,4 +117,7 @@ void function_init_postconfig(void);
 extern void function_add(const char *name, function_func fun, int minargs,
                          int maxargs, int ftype);
 
+int cnf_add_function(char *name, char *opts);
+
+
 #endif

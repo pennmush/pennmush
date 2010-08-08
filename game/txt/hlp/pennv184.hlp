@@ -13,6 +13,11 @@ be read in 'help patchlevels'.
 
 Version 1.8.4 patchlevel 1                                 ??? ??,  2010
 
+Major Changes:
+ * You can now do the equivilent of @command/add, @hook, @function and
+   @attribute/access from alias.cnf and restrict.cnf, to add/configure
+   commands, functions and standard attributes. Suggested by Paige. [MG]
+
 Minor Changes:
  * @power now reports when you try and set a power which is already set (or
    clear one which isn't set), similar to @set. Suggested by Paige. [MG]

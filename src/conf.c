@@ -992,6 +992,21 @@ config_set(const char *opt, char *val, int source, int restrictions)
     if (source == 2)
       append_restriction("restrict_function", val, p);
     return 1;
+  } else if (!strcasecmp(opt, "restrict_attribute")) {
+    if (!restrictions || source > 0)
+      return 0;
+    for (p = val; *p && !isspace((unsigned char) *p); p++) ;
+    if (*p) {
+      *p++ = '\0';
+      if (!cnf_attribute_access(val, p)) {
+        do_rawlog(LT_ERR, "CONFIG: Couldn't restrict attribute %s to %s", val, p);
+        return 0;
+      }
+    } else {
+      do_rawlog(LT_ERR, "CONFIG: restrict_attribute %s requires a restriction (use 'none' for none)", val);
+      return 0;
+    }
+    return 1;
   } else if (!strcasecmp(opt, "reserve_alias")) {
     if (!restrictions)
       return 0;
@@ -1017,6 +1032,53 @@ config_set(const char *opt, char *val, int source, int restrictions)
     }
     if (source == 2)
       append_restriction("reserve_alias", val, p);
+    return 1;
+  } else if (!strcasecmp(opt, "hook_command")) {
+    if (!restrictions || source > 0)
+      return 0;
+    for (p = val; *p && !isspace((unsigned char) *p); p++) ;
+    if (*p) {
+      *p++ = '\0';
+      if (!cnf_hook_command(val, p)) {
+        do_rawlog(LT_ERR, "CONFIG: Couldn't hook command %s with options %s", val, p);
+        return 0;
+      }
+    } else {
+      do_rawlog(LT_ERR, "CONFIG: hook_command %s requires a hook type", val);
+      return 0;
+    }
+    return 1;
+  } else if (!strcasecmp(opt, "add_command")) {
+    if (!restrictions || source > 0)
+      return 0;
+    for (p = val; *p && !isspace((unsigned char) *p); p++) ;
+    if (*p) {
+      *p++ = '\0';
+      if (!cnf_add_command(val, p)) {
+        do_rawlog(LT_ERR, "CONFIG: Couldn't add command %s with flags %s", val, p);
+        return 0;
+      }
+    } else {
+      if (!cnf_add_command(val, NULL)) {
+        do_rawlog(LT_ERR, "CONFIG: Couldn't add command %s", val);
+        return 0;
+      }
+    }
+    return 1;
+  } else if (!strcasecmp(opt, "add_function")) {
+    if (!restrictions || source > 0)
+      return 0;
+    for (p = val; *p && !isspace((unsigned char) *p); p++) ;
+    if (*p) {
+      *p++ = '\0';
+      if (!cnf_add_function(val, p)) {
+        do_rawlog(LT_ERR, "CONFIG: Couldn't add function %s with options %s", val, p);
+        return 0;
+      }
+    } else {
+      do_rawlog(LT_ERR, "CONFIG: add_function %s requires an obj/attr", val);
+      return 0;
+    }
     return 1;
   } else if (!strcasecmp(opt, "attribute_alias")) {
     if (!restrictions)

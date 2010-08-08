@@ -73,7 +73,7 @@ int run_hook_override(COMMAND_INFO *cmd, dbref player, const char *commandraw);
 const char *CommandLock = "CommandLock";
 
 /** The list of standard commands. Additional commands can be added
- * at runtime with add_command().
+ * at runtime with command_add().
  */
 COMLIST commands[] = {
 
@@ -602,6 +602,39 @@ command_add(const char *name, int type, const char *flagstr,
   return command_find(name);
 }
 
+/* Add a new command from a .cnf file's "add_command" statement */
+int
+cnf_add_command(char *name, char *opts)
+{
+  COMMAND_INFO *command;
+  int flags = 0;
+  char *p, *one;
+
+  if (opts && *opts) {
+    p = trim_space_sep(opts, ' ');
+    while ((one = split_token(&p, ' '))) {
+      if (string_prefix("noparse", one)) {
+        flags |= CMD_T_NOPARSE;
+      } else if (string_prefix("rsargs", one)) {
+        flags |= CMD_T_RS_ARGS;
+      } else if (string_prefix("lsargs", one)) {
+        flags |= CMD_T_LS_ARGS;
+      } else if (string_prefix("eqsplit", one)) {
+        flags |= CMD_T_EQSPLIT;
+      } else {
+        return 0; /* unknown option */
+      }
+    }
+  }
+
+  name = trim_space_sep(name, ' ');
+  upcasestr(name);
+  command = command_find(name);
+  if (command || !ok_command_name(name))
+    return 0;
+  command_add(mush_strdup(name, "command_add"), flags, NULL, 0, (flags & CMD_T_NOPARSE ? NULL : "NOEVAL"), cmd_unimplemented);
+  return (command_find(name) != NULL);
+}
 
 /** Search for a command by (partial) name.
  * This function searches the command table for a (partial) name match
@@ -2141,6 +2174,85 @@ run_hook_override(COMMAND_INFO *cmd, dbref player, const char *commandraw)
     return atr_comm_match(cmd->hooks.override.obj, player, '$', ':', commandraw,
                           0, 1, NULL, NULL, NULL);
   }
+}
+
+/* Add/modify a hook from a cnf file */
+int
+cnf_hook_command(char *command, char *opts)
+{
+  dbref thing;
+  char *attrname, *p, *one;
+  enum hook_type flag;
+  COMMAND_INFO *cmd;
+  struct hook_data *h;
+
+  if (!opts || !*opts)
+    return 0;
+
+  cmd = command_find(command);
+  if (!cmd)
+    return 0;
+
+  p = trim_space_sep(opts, ' ');
+  if (!(one = split_token(&p, ' ')))
+    return 0;
+
+  if (string_prefix("before", one)) {
+    flag = HOOK_BEFORE;
+    h = &cmd->hooks.before;
+  } else if (string_prefix("after", one)) {
+    flag = HOOK_AFTER;
+    h = &cmd->hooks.after;
+  } else if (string_prefix("override", one)) {
+    flag = HOOK_OVERRIDE;
+    h = &cmd->hooks.override;
+  } else if (string_prefix("ignore", one)) {
+    flag = HOOK_IGNORE;
+    h = &cmd->hooks.ignore;
+  } else {
+    return 0;
+  }
+
+  if (!(one = split_token(&p, ' '))) {
+    /* Clear existing hook */
+    h->obj = NOTHING;
+    if (h->attrname) {
+      mush_free(h->attrname, "hook.attr");
+      h->attrname = NULL;
+    }
+    return 1;
+  }
+
+  if ((attrname = strchr(one, '/')) == NULL) {
+    if (flag != HOOK_OVERRIDE) {
+      return 0; /* attribute required */
+    }
+  } else {
+    *attrname++ = '\0';
+    upcasestr(attrname);
+  }
+
+  if (!is_strict_integer(one))
+    return 0;
+
+  thing = (dbref) parse_integer(one);
+  if (!GoodObject(thing) || IsGarbage(thing))
+    return 0;
+
+  if (attrname && !good_atr_name(attrname))
+    return 0;
+
+  h->obj = thing;
+  if (h->attrname) {
+    mush_free(h->attrname, "hook.attr");
+  }
+
+  if (attrname)
+    h->attrname = mush_strdup(attrname, "hook.attr");
+  else
+    h->attrname = NULL;
+  return 1;
+
 }
 
 /** Set up or remove a command hook.

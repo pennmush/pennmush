@@ -156,6 +156,39 @@ aname_find_exact(const char *name)
   return (ATTR *) ptab_find_exact(&ptab_attrib, atrname);
 }
 
+/* Add a new, or restrict an existing, standard attribute from cnf file */
+int
+cnf_attribute_access(char *attrname, char *opts)
+{
+  ATTR *a;
+  privbits flags = 0;
+
+  upcasestr(attrname);
+  if (!good_atr_name(attrname))
+    return 0;
+
+  if (strcasecmp(opts, "none")) {
+    flags = list_to_privs(attr_privs_set, opts, 0);
+    if (!flags)
+      return 0;
+  }
+
+  a = (ATTR *) ptab_find_exact(&ptab_attrib, attrname);
+  if (a) {
+    if (AF_Internal(a))
+      return 0;
+  } else {
+    a = (ATTR *) mush_malloc(sizeof(ATTR), "ATTR");
+    if (!a)
+      return 0;
+    AL_NAME(a) = strdup(attrname);
+    a->data = NULL_CHUNK_REFERENCE;
+    ptab_insert_one(&ptab_attrib, attrname, a);
+  }
+  AL_FLAGS(a) = flags;
+  AL_CREATOR(a) = GOD;
+  return 1;
+}
 
 /** Add new standard attributes, or change permissions on them.
  * \verbatim

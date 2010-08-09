@@ -2263,6 +2263,8 @@ See also: lattr(), hasattr(), xattr(), wildcards
     player             - equivilent to lplayers(<object>)
     connect            - equivilent to lvplayers(<object>)
     thing (or object)  - equivilent to lthings(<object>)
+    listen             - return only listening objects
+    puppet             - return only THINGs set PUPPET
 
 See also: lexits(), lplayers(), lthings(), con(), next(), lvcon()
 & LCSTR()

@@ -493,7 +493,7 @@ FUNTAB flist[] = {
   {"LAST", fun_last, 1, 2, FN_REG},
   {"LATTR", fun_lattr, 1, 2, FN_REG | FN_STRIPANSI},
   {"LATTRP", fun_lattr, 1, 2, FN_REG | FN_STRIPANSI},
-  {"LCON", fun_dbwalker, 1, 1, FN_REG | FN_STRIPANSI},
+  {"LCON", fun_dbwalker, 1, 2, FN_REG | FN_STRIPANSI},
   {"LCSTR", fun_lcstr, 1, -1, FN_REG},
   {"LDELETE", fun_ldelete, 2, 3, FN_REG},
   {"LEFT", fun_left, 2, 2, FN_REG},

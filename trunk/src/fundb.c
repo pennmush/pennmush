@@ -736,46 +736,60 @@ FUNCTION(fun_dbwalker)
   buffptr = buff;
   bptr = bp;
 
-  switch (*(ptr++)) {
-  case 'X':
-    if (!is_strict_integer(args[1]) || !is_strict_integer(args[2])) {
-      safe_str(T(e_int), buff, bp);
+  if (!strcmp(called_as, "LCON") && nargs == 2) {
+    if (string_prefix("player", args[1])) {
+      type = TYPE_PLAYER;
+    } else if (string_prefix("object", args[1]) || string_prefix("thing", args[1])) {
+      type = TYPE_THING;
+    } else if (string_prefix("connect", args[1])) {
+      type = TYPE_PLAYER;
+      vis = 1;
+    } else {
+      safe_str("#-1", buff, bp);
       return;
     }
-    start = parse_integer(args[1]);
-    count = parse_integer(args[2]);
-    if (start < 1 || count < 1) {
-      safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
-      return;
+  } else {
+    switch (*(ptr++)) {
+    case 'X':
+      if (!is_strict_integer(args[1]) || !is_strict_integer(args[2])) {
+        safe_str(T(e_int), buff, bp);
+        return;
+      }
+      start = parse_integer(args[1]);
+      count = parse_integer(args[2]);
+      if (start < 1 || count < 1) {
+        safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
+        return;
+      }
+      break;
+    case 'N':
+      buffptr = NULL;
+      bptr = NULL;
+      break;
     }
-    break;
-  case 'N':
-    buffptr = NULL;
-    bptr = NULL;
-    break;
-  }
 
-  if (*ptr == 'V') {
-    vis = 1;
-    ptr++;
-  }
+    if (*ptr == 'V') {
+      vis = 1;
+      ptr++;
+    }
 
-  switch (*ptr) {
-  case 'C':                    /* con */
-    type = TYPE_THING | TYPE_PLAYER;
-    break;
-  case 'T':                    /* things */
-    type = TYPE_THING;
-    break;
-  case 'P':                    /* players */
-    type = TYPE_PLAYER;
-    break;
-  case 'E':                    /* exits */
-    type = TYPE_EXIT;
-    break;
-  default:
-    /* This should never be reached ... */
-    type = TYPE_THING | TYPE_PLAYER;
+    switch (*ptr) {
+    case 'C':                    /* con */
+      type = TYPE_THING | TYPE_PLAYER;
+      break;
+    case 'T':                    /* things */
+      type = TYPE_THING;
+      break;
+    case 'P':                    /* players */
+      type = TYPE_PLAYER;
+      break;
+    case 'E':                    /* exits */
+      type = TYPE_EXIT;
+      break;
+    default:
+      /* This should never be reached ... */
+      type = TYPE_THING | TYPE_PLAYER;
+    }
   }
 
   dbwalk(buffptr, bptr, executor, enactor, type, loc, NOTHING,

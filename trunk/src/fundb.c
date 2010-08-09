@@ -38,7 +38,7 @@ static int lattr_helper(dbref player, dbref thing, dbref parent,
                         char const *pattern, ATTR *atr, void *args);
 static dbref dbwalk(char *buff, char **bp, dbref executor, dbref enactor,
                     int type, dbref loc, dbref after, int skipdark,
-                    int start, int count, int *retcount);
+                    int start, int count, int listening, int *retcount);
 
 const char *
 do_get_attrib(dbref executor, dbref thing, const char *attrib)
@@ -653,7 +653,7 @@ FUNCTION(fun_rnum)
 static dbref
 dbwalk(char *buff, char **bp, dbref executor, dbref enactor,
        int type, dbref loc, dbref after, int skipdark,
-       int start, int count, int *retcount)
+       int start, int count, int listening, int *retcount)
 {
   dbref result;
   int first;
@@ -661,6 +661,7 @@ dbwalk(char *buff, char **bp, dbref executor, dbref enactor,
   dbref thing;
   int validloc;
   dbref startdb;
+  int privwho = Priv_Who(executor);
 
   nthing = 0;
 
@@ -696,6 +697,9 @@ dbwalk(char *buff, char **bp, dbref executor, dbref enactor,
           (skipdark && Dark(thing) && !Light(thing) && !Light(loc)) ||
           ((type == TYPE_PLAYER) && skipdark && !Connected(thing)))
         continue;
+      if (listening == 1 && !Puppet(thing) || (listening == 2 &&
+          !((Hearer(thing) || Listener(thing)) && (privwho || !Dark(thing)))))
+        continue;
       nthing += 1;
       if (count < 1 || (nthing >= start && nthing < start + count)) {
         if (buff) {
@@ -728,6 +732,7 @@ FUNCTION(fun_dbwalker)
   int vis = 0;
   int type = 0;
   int result = 0;
+  int listening = 0;
   const char *ptr = called_as;
   char *buffptr = buff;
   char **bptr = bp;
@@ -744,6 +749,12 @@ FUNCTION(fun_dbwalker)
     } else if (string_prefix("connect", args[1])) {
       type = TYPE_PLAYER;
       vis = 1;
+    } else if (string_prefix("puppet", args[1])) {
+      type = TYPE_THING;
+      listening = 1;
+    } else if (string_prefix("listen", args[1])) {
+      type = TYPE_THING | TYPE_PLAYER;
+      listening = 2;
     } else {
       safe_str("#-1", buff, bp);
       return;
@@ -793,7 +804,7 @@ FUNCTION(fun_dbwalker)
   }
 
   dbwalk(buffptr, bptr, executor, enactor, type, loc, NOTHING,
-         vis, start, count, &result);
+         vis, start, count, listening, &result);
 
   if (!buffptr) {
     safe_integer(result, buff, bp);
@@ -806,7 +817,7 @@ FUNCTION(fun_con)
   dbref loc = match_thing(executor, args[0]);
   safe_dbref(dbwalk
              (NULL, NULL, executor, enactor, TYPE_THING | TYPE_PLAYER, loc,
-              NOTHING, 0, 0, 0, NULL), buff, bp);
+              NOTHING, 0, 0, 0, 0, NULL), buff, bp);
 }
 
 /* ARGSUSED */
@@ -815,7 +826,7 @@ FUNCTION(fun_exit)
   dbref loc = match_thing(executor, args[0]);
   safe_dbref(dbwalk
              (NULL, NULL, executor, enactor, TYPE_EXIT, loc, NOTHING, 0, 0, 0,
-              NULL), buff, bp);
+              0, NULL), buff, bp);
 }
 
 /* ARGSUSED */
@@ -828,13 +839,13 @@ FUNCTION(fun_next)
     case TYPE_EXIT:
       safe_dbref(dbwalk
                  (NULL, NULL, executor, enactor, TYPE_EXIT, Source(it), it, 0,
-                  0, 0, NULL), buff, bp);
+                  0, 0, 0, NULL), buff, bp);
       break;
     case TYPE_THING:
     case TYPE_PLAYER:
       safe_dbref(dbwalk
                  (NULL, NULL, executor, enactor, TYPE_THING | TYPE_PLAYER,
-                  Location(it), it, 0, 0, 0, NULL), buff, bp);
+                  Location(it), it, 0, 0, 0, 0, NULL), buff, bp);
       break;
     default:
       safe_str("#-1", buff, bp);

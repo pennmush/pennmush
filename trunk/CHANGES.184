@@ -51,7 +51,8 @@ Functions:
  * remit() now works like @remit/list. Suggested by Minion. [MG]
  * rand() now accepts negative arguments again. [MG]
  * lcon() can now take a second argument to make it behave like lthings()
-   or l[v]players(), for MUX/Rhost compatability. Suggested by Bane. [MG]
+   or l[v]players(), or makes it return only puppets/listening objects,
+   for MUX/Rhost compatability. Suggested by Bane. [MG]
 
 Fixes:
  * Help fixes.

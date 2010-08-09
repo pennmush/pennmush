@@ -80,7 +80,7 @@
  * The only optimization done right now is thread jumping: If a jump
  * would move the program counter to another jump operation, it instead
  * goes to that jump's destination.
- * 
+ *
  * There's more useful room for improvement in the lock
  * @warnings. Checking things like flag and power keys for valid flags
  * comes to mind.
@@ -133,7 +133,7 @@ typedef enum boolexp_type {
 } boolexp_type;
 
 /** An attribute lock specification for the parse tree.
- * This structure is a piece of a boolexp that's used to store 
+ * This structure is a piece of a boolexp that's used to store
  * attribute locks (CANDO:1), eval locks (CANDO/1), and flag locks
  * FLAG^WIZARD.
  */
@@ -314,7 +314,7 @@ safe_get_bytecode(boolexp b)
  */
     extern int loading_db;
 
-/** Given a chunk id, return the bytecode for a boolexp.  
+/** Given a chunk id, return the bytecode for a boolexp.
  * \param b the boolexp to retrieve.
  * \return a malloced copy of the bytecode.
  */
@@ -329,7 +329,7 @@ safe_get_bytecode(boolexp b)
   return bytecode;
 }
 
-/** Given a chunk id, return the bytecode for a boolexp.  
+/** Given a chunk id, return the bytecode for a boolexp.
  * \param b The boolexp to retrieve.
  * \param storelen the length of the bytecode.
  * \return a static copy of the bytecode.
@@ -1597,7 +1597,7 @@ optimize_bvm_ast(struct boolexp_node *ast)
 }
 
 
-/** Do some trivial optimizations of boolexp vm assembly. 
+/** Do some trivial optimizations of boolexp vm assembly.
  *
  *
  * Current optimizations: Thread jumping
@@ -1655,7 +1655,7 @@ optimize_bvm_asm(struct bvm_asm *a)
   }
 }
 
-/** Turn assembly into bytecode. 
+/** Turn assembly into bytecode.
  * \param a the assembly list to emit.
  * \param the compiled bytecode.
  */
@@ -1788,7 +1788,7 @@ parse_boolexp(dbref player, const char *buf, lock_type ltype)
   return parse_boolexp_d(player, buf, ltype, 0);
 }
 
-/** Test to see if an eval lock passes, with a exact match.
+/** Test to see if an eval lock passes, with an exact match.
  * \param player the object attempting to pass the lock.
  * \param target the object the lock is on.
  * \param atrname the name of the attribute to evaluate on target.

@@ -2824,10 +2824,15 @@ do_chan_decompile(dbref player, const char *name, int brief)
                       bufferq_blocks(ChanBufferQ(c)));
       if (!brief) {
         for (u = ChanUsers(c); u; u = u->next) {
-          if (!Chanuser_Hide(u) || Priv_Who(player))
-
-            notify_format(player, "@channel/on %s = %s", ChanName(c),
+          if (!Chanuser_Hide(u) || Priv_Who(player)) {
+            if (IsPlayer(CUdbref(u))) {
+              notify_format(player, "@channel/on %s = *%s", ChanName(c),
                           Name(CUdbref(u)));
+            } else {
+              notify_format(player, "@channel/on %s = #%d", ChanName(c),
+                          CUdbref(u));
+            }
+          }
         }
       }
     }

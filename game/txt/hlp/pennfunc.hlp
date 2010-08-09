@@ -2246,7 +2246,7 @@ See also: nattr(), xattr(), hasattr(), examine, wildcards
 
 See also: lattr(), hasattr(), xattr(), wildcards
 & LCON()
-  lcon(<object>)
+  lcon(<object>[, <type>])
 
   Returns a list of the dbrefs of objects which are located in <object>.
 
@@ -2257,8 +2257,14 @@ See also: lattr(), hasattr(), xattr(), wildcards
   regardless of whether or not you have objects in it.
   
   When used on exits, this function returns #-1.
+  
+  For compatability with other codebases, a <type> can be given to limit
+  the results. Valid <type>s are:
+    player             - equivilent to lplayers(<object>)
+    connect            - equivilent to lvplayers(<object>)
+    thing (or object)  - equivilent to lthings(<object>)
 
-See also: lexits(), lplayers(), con(), next(), lvcon()
+See also: lexits(), lplayers(), lthings(), con(), next(), lvcon()
 & LCSTR()
   lcstr(<string>)
 

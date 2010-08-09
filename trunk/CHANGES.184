@@ -33,6 +33,8 @@ Minor Changes:
    (This has virtually no impact for most players.) [MG]
  * The internal pe_info (which manages the function invocation limit, among
    other things) is now managed per-queue, not per-command argument. [MG]
+ * @chan/decompile now uses "*name" for players, and dbrefs for other
+   objects, when printing "@chan/on" statements. [MG]
 
 Commands:
  * Add /preserve switch to @chzone and @chzoneall, like @chown/preserve.

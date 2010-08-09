@@ -520,7 +520,7 @@ load_labeled_chanusers(PENNFILE *fp, CHAN *ch)
   char *tmp;
   CHANUSER *user;
   dbref player;
-  for (i = 0; i < ChanNumUsers(ch); i++) {
+  for (i = ChanNumUsers(ch); i > 0; i--) {
     db_read_this_labeled_dbref(fp, "dbref", &player);
     /* Don't bother if the player isn't a valid dbref or the wrong type */
     if (GoodObject(player) && Chan_Ok_Type(ch, player)) {

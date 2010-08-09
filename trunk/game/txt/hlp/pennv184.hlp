@@ -30,6 +30,8 @@ Minor Changes:
    other things) is now managed per-queue, not per-command argument. [MG]
  * @chan/decompile now uses "*name" for players, and dbrefs for other
    objects, when printing "@chan/on" statements. [MG]
+ * cpu_limit now works on Cygwin (though not quite as well as on unix).
+   A slightly higher limit may be needed than other platforms. [MG]
 
 Commands:
  * Add /preserve switch to @chzone and @chzoneall, like @chown/preserve.

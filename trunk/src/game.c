@@ -316,9 +316,13 @@ dump_database_internal(void)
 
 #ifndef PROFILING
 #ifndef WIN32
+#ifdef __CYGWIN__
+  ignore_signal(SIGALRM);
+#else
   ignore_signal(SIGPROF);
-#endif
-#endif
+#endif /* __CYGWIN__ */
+#endif /* WIN32 */
+#endif /* PROFILING */
 
   if (setjmp(db_err)) {
     /* The dump failed. Disk might be full or something went bad with the
@@ -330,9 +334,13 @@ dump_database_internal(void)
       penn_fclose(f);
 #ifndef PROFILING
 #ifdef HAS_ITIMER
+#ifdef __CYGWIN__
+    install_sig_handler(SIGALRM, signal_cpu_limit);
+#else
     install_sig_handler(SIGPROF, signal_cpu_limit);
-#endif
-#endif
+#endif /* __CYGWIN__ */
+#endif /* HAS_ITIMER */
+#endif /* PROFILING */
     return false;
   } else {
     local_dump_database();
@@ -407,7 +415,11 @@ dump_database_internal(void)
 
 #ifndef PROFILING
 #ifdef HAS_ITIMER
+#ifdef __CYGWIN__
+  install_sig_handler(SIGALRM, signal_cpu_limit);
+#else
   install_sig_handler(SIGPROF, signal_cpu_limit);
+#endif
 #endif
 #endif
 

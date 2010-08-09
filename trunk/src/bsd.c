@@ -5195,9 +5195,13 @@ do_reboot(dbref player, int flag)
    * So we make sure that if we get a SIGPROF in our next incarnation,
    * we ignore it until our proper handler is set up.
    */
+#ifdef __CYGWIN__
+  ignore_signal(SIGALRM);
+#else
   ignore_signal(SIGPROF);
-#endif
-#endif
+#endif /* __CYGWIN__ */
+#endif /* WIN32 */
+#endif /* PROFILING */
   dump_reboot_db();
 #ifdef INFO_SLAVE
   kill_info_slave();

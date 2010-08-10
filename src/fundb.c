@@ -697,7 +697,7 @@ dbwalk(char *buff, char **bp, dbref executor, dbref enactor,
           (skipdark && Dark(thing) && !Light(thing) && !Light(loc)) ||
           ((type == TYPE_PLAYER) && skipdark && !Connected(thing)))
         continue;
-      if (listening == 1 && !Puppet(thing) || (listening == 2 &&
+      if ((listening == 1 && !Puppet(thing)) || (listening == 2 &&
           !((Hearer(thing) || Listener(thing)) && (privwho || !Dark(thing)))))
         continue;
       nthing += 1;

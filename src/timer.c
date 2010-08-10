@@ -98,7 +98,7 @@ init_timer(void)
 #ifdef HAS_ITIMER
 #ifdef __CYGWIN__
   install_sig_handler(SIGALRM, signal_cpu_limit);
-#elif
+#else
   install_sig_handler(SIGPROF, signal_cpu_limit);
 #endif
 #endif

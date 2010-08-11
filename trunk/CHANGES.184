@@ -53,6 +53,7 @@ Functions:
  * lcon() can now take a second argument to make it behave like lthings()
    or l[v]players(), or makes it return only puppets/listening objects,
    for MUX/Rhost compatability. Suggested by Bane. [MG]
+ * open() can now open rooms remotely. Suggested by Minion. [MG]
 
 Fixes:
  * Help fixes.

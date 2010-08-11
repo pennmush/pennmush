@@ -2108,6 +2108,7 @@ FUNCTION(fun_pcreate)
 /* ARGSUSED */
 FUNCTION(fun_open)
 {
+  dbref source = NOTHING;
   if (!FUNCTION_SIDE_EFFECTS) {
     safe_str(T(e_disabled), buff, bp);
     return;
@@ -2116,7 +2117,15 @@ FUNCTION(fun_open)
     safe_str(T(e_perm), buff, bp);
     return;
   }
-  safe_dbref(do_real_open(executor, args[0], args[1], NOTHING), buff, bp);
+  if (nargs > 2) {
+    source = match_result(executor, args[2], TYPE_ROOM,
+                   MAT_HERE | MAT_ABSOLUTE | MAT_TYPE);
+    if (source == NOTHING) {
+      safe_str(T("#-1 INVALID SOURCE ROOM"), buff, bp);
+      return;
+    }
+  }
+  safe_dbref(do_real_open(executor, args[0], (nargs > 1 ? args[1] : NULL), source), buff, bp);
 }
 
 /* ARGSUSED */

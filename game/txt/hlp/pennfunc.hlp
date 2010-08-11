@@ -3381,14 +3381,16 @@ See also: playermem()
   nsoemit() works like @nsoemit.
 
 & OPEN()
-  open(<exit name>, <room>)
+  open(<exit name>[, <destination>[, <source>]])
+  
+  This function attempts to open an exit named <exit name>. The exit will be
+  opened in the room <source>, if given, or the caller's current location if
+  no <source> is specified.
+  
+  If a <destination> is given, it will attempt to link the exit to 
+  <destination> after opening it.
  
-  This function opens an exit called <exit name> in the caller's current
-  location, and then attempts to link it to the room <room>, as per
-  @open <exit name>=<room>. If you want to open an unlinked exit, use
-  an empty string for <room>.
-
-See also: @open, @link 
+See also: @open, @link
 & OR()
 & COR()
   or(<boolean1>, <boolean2>[, ... , <booleanN>])
@@ -3416,7 +3418,7 @@ See also: BOOLEAN VALUES, and(), nor(), firstof(), allof()
     > say orflags(%#, WD!A)
     > say orlflags(%#, wizard dark !ansi)
   
-See also: andflags(), flags(), lflags()
+See also: andflags(), flags(), lflags(), orlpowers()
 & ORLPOWERS()
   orlpowers(<object>, <list of powers>)
 
@@ -3432,7 +3434,7 @@ See also: andflags(), flags(), lflags()
   If a name does not correspond to any power, orlpowers() returns 
   "#-1 INVALID POWER".
   
-See also: powers(), andlpowers(), POWERS LIST, @power
+See also: powers(), andlpowers(), POWERS LIST, @power, orlflags()
 & OWNER()
   owner(<object>[/<attribute>])
  

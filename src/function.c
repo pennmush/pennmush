@@ -611,7 +611,7 @@ FUNTAB flist[] = {
   {"OBJID", fun_objid, 1, 1, FN_REG | FN_STRIPANSI},
   {"OBJMEM", fun_objmem, 1, 1, FN_REG | FN_STRIPANSI},
   {"OEMIT", fun_oemit, 2, -2, FN_REG},
-  {"OPEN", fun_open, 2, 2, FN_REG},
+  {"OPEN", fun_open, 1, 3, FN_REG},
   {"OR", fun_or, 2, INT_MAX, FN_REG | FN_STRIPANSI},
   {"ORD", fun_ord, 1, 1, FN_REG | FN_STRIPANSI},
   {"ORDINAL", fun_spellnum, 1, 1, FN_REG | FN_STRIPANSI},

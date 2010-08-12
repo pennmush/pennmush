@@ -37,6 +37,9 @@ Minor Changes:
    objects, when printing "@chan/on" statements. [MG]
  * cpu_limit now works on Cygwin (though not quite as well as on unix).
    A slightly higher limit may be needed than other platforms. [MG]
+ * The output from say, pose, semipose and @emit is now passed through the
+   SPEECHFORMAT attribute before being outputted. Suggested by Paige, based on
+   MUX and TinyMUSH. [MG]
 
 Commands:
  * Add /preserve switch to @chzone and @chzoneall, like @chown/preserve.

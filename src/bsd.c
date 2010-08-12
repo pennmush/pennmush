@@ -2790,7 +2790,7 @@ emergency_shutdown(void)
 int
 boot_player(dbref player, int idleonly, int silent)
 {
-  DESC *d, *ignore = NULL;
+  DESC *d, *ignore = NULL, *boot = NULL;
   int count = 0;
   time_t now = mudtime;
 
@@ -2798,14 +2798,20 @@ boot_player(dbref player, int idleonly, int silent)
     ignore = least_idle_desc(player, 1);
 
   DESC_ITER_CONN(d) {
+    if (boot) {
+      boot_desc(boot);
+      boot = NULL;
+    }
     if (d->player == player
         && (!ignore || (d != ignore && difftime(now, d->last_time) > 60.0))) {
       if (!idleonly && !silent && !count)
         notify(player, T("You are politely shown to the door."));
       count++;
-      boot_desc(d);
+      boot = d;
     }
   }
+  if (boot)
+    boot_desc(boot);
   if (count && idleonly) {
     if (count == 1)
       notify(player, T("You boot an idle self."));

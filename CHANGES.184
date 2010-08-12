@@ -83,6 +83,7 @@ Fixes:
  * You can now always look at remote objects whose descs are not set nearby,
    and can never look at remote objects with nearby descs. [MG]
  * The chatdb didn't load correctly with invalid objects on channels. [MG]
+ * Fixed a crashbug in @boot on Windows. Reported by Daniel Powell. [MG]
 
 
 Version 1.8.4 patchlevel 0                                 May 09,  2010

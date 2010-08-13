@@ -1573,6 +1573,23 @@ do_config_list(dbref player, const char *type, int lc)
         }
       }
       if (!found) {
+        /* Try a wildcard search of option names, including local options */
+        char *wild = tprintf("*%s*", type);
+        for (cp = conftable; cp->name; cp++) {
+          if (cp->group && quick_wild(wild, cp->name)) {
+            found = 1;
+            notify(player, config_to_string(player, cp, lc));
+          }
+        }
+        for (cp = (PENNCONF *) hash_firstentry(&local_options); cp;
+             cp = (PENNCONF *) hash_nextentry(&local_options)) {
+          if (cp->group && quick_wild(wild, cp->name)) {
+            found = 1;
+            notify(player, config_to_string(player, cp, lc));
+          }
+        }
+      }
+      if (!found) {
         /* Wasn't found at all. Ok. */
         notify(player, T("I only know the following types of options:"));
         for (cgp = confgroups; cgp->name; cgp++) {

@@ -35,6 +35,8 @@ Minor Changes:
  * The output from say, pose, semipose and @emit is now passed through the
    SPEECHFORMAT attribute before being outputted. Suggested by Paige, based on
    MUX and TinyMUSH. [MG]
+ * @config/list now accepts wildcard patterns to match against option names.
+   Suggested by Trinsec. [MG]
 
 Commands:
  * Add /preserve switch to @chzone and @chzoneall, like @chown/preserve.

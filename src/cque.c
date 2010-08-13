@@ -729,10 +729,10 @@ do_entry(BQUE *entry, int include_recurses)
             }
           }
           for (a = 0; a < NUMQ; a++)
-            if (!entry->rval[a])
+            if (!global_eval_context.renv[a] || !*global_eval_context.renv[a])
               tmp->rval[a] = NULL;
             else {
-              tmp->rval[a] = mush_strdup(entry->rval[a], "cqueue.rval");
+              tmp->rval[a] = mush_strdup(global_eval_context.renv[a], "cqueue.rval");
             }
           global_eval_context.include_called = 0;
           /* Put the included actions in the clone */

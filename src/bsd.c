@@ -5205,9 +5205,9 @@ do_reboot(dbref player, int flag)
   ignore_signal(SIGALRM);
 #else
   ignore_signal(SIGPROF);
-#endif /* __CYGWIN__ */
-#endif /* WIN32 */
-#endif /* PROFILING */
+#endif                          /* __CYGWIN__ */
+#endif                          /* WIN32 */
+#endif                          /* PROFILING */
   dump_reboot_db();
 #ifdef INFO_SLAVE
   kill_info_slave();

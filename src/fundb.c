@@ -698,7 +698,10 @@ dbwalk(char *buff, char **bp, dbref executor, dbref enactor,
           ((type == TYPE_PLAYER) && skipdark && !Connected(thing)))
         continue;
       if ((listening == 1 && !Puppet(thing)) || (listening == 2 &&
-          !((Hearer(thing) || Listener(thing)) && (privwho || !Dark(thing)))))
+                                                 !((Hearer(thing)
+                                                    || Listener(thing))
+                                                   && (privwho
+                                                       || !Dark(thing)))))
         continue;
       nthing += 1;
       if (count < 1 || (nthing >= start && nthing < start + count)) {
@@ -744,7 +747,8 @@ FUNCTION(fun_dbwalker)
   if (!strcmp(called_as, "LCON") && nargs == 2) {
     if (string_prefix("player", args[1])) {
       type = TYPE_PLAYER;
-    } else if (string_prefix("object", args[1]) || string_prefix("thing", args[1])) {
+    } else if (string_prefix("object", args[1])
+               || string_prefix("thing", args[1])) {
       type = TYPE_THING;
     } else if (string_prefix("connect", args[1])) {
       type = TYPE_PLAYER;
@@ -785,16 +789,16 @@ FUNCTION(fun_dbwalker)
     }
 
     switch (*ptr) {
-    case 'C':                    /* con */
+    case 'C':                  /* con */
       type = TYPE_THING | TYPE_PLAYER;
       break;
-    case 'T':                    /* things */
+    case 'T':                  /* things */
       type = TYPE_THING;
       break;
-    case 'P':                    /* players */
+    case 'P':                  /* players */
       type = TYPE_PLAYER;
       break;
-    case 'E':                    /* exits */
+    case 'E':                  /* exits */
       type = TYPE_EXIT;
       break;
     default:
@@ -2119,13 +2123,15 @@ FUNCTION(fun_open)
   }
   if (nargs > 2) {
     source = match_result(executor, args[2], TYPE_ROOM,
-                   MAT_HERE | MAT_ABSOLUTE | MAT_TYPE);
+                          MAT_HERE | MAT_ABSOLUTE | MAT_TYPE);
     if (source == NOTHING) {
       safe_str(T("#-1 INVALID SOURCE ROOM"), buff, bp);
       return;
     }
   }
-  safe_dbref(do_real_open(executor, args[0], (nargs > 1 ? args[1] : NULL), source), buff, bp);
+  safe_dbref(do_real_open
+             (executor, args[0], (nargs > 1 ? args[1] : NULL), source), buff,
+             bp);
 }
 
 /* ARGSUSED */

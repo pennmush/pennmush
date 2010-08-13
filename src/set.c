@@ -349,7 +349,8 @@ chown_object(dbref player, dbref thing, dbref newowner, int preserve)
  * \retval 1 successfully changed zone.
  */
 int
-do_chzone(dbref player, char const *name, char const *newobj, bool noisy, bool preserve)
+do_chzone(dbref player, char const *name, char const *newobj, bool noisy,
+          bool preserve)
 {
   dbref thing;
   dbref zone;
@@ -432,7 +433,7 @@ do_chzone(dbref player, char const *name, char const *newobj, bool noisy, bool p
   }
   /* everything is okay, do the change */
   Zone(thing) = zone;
-  
+
   /* If we're not unzoning, and we're working with a non-player object,
    * we'll remove wizard, royalty, inherit, and powers, for security, unless
    * a wizard is changing the zone and explicitly says not to.

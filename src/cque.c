@@ -674,7 +674,8 @@ do_entry(BQUE *entry, int include_recurses)
         r = global_eval_context.ccom;
         process_expression(global_eval_context.ccom, &r, &s,
                            global_eval_context.cplr, entry->cause,
-                           entry->cause, PE_NOTHING, PT_SEMI, global_eval_context.pe_info);
+                           entry->cause, PE_NOTHING, PT_SEMI,
+                           global_eval_context.pe_info);
         *r = '\0';
         if (*s == ';')
           s++;
@@ -732,7 +733,8 @@ do_entry(BQUE *entry, int include_recurses)
             if (!global_eval_context.renv[a] || !*global_eval_context.renv[a])
               tmp->rval[a] = NULL;
             else {
-              tmp->rval[a] = mush_strdup(global_eval_context.renv[a], "cqueue.rval");
+              tmp->rval[a] =
+                mush_strdup(global_eval_context.renv[a], "cqueue.rval");
             }
           global_eval_context.include_called = 0;
           /* Put the included actions in the clone */

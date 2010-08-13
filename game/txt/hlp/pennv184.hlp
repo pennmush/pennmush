@@ -81,6 +81,8 @@ Fixes:
    and can never look at remote objects with nearby descs. [MG]
  * The chatdb didn't load correctly with invalid objects on channels. [MG]
  * Fixed a crashbug in @boot on Windows. Reported by Daniel Powell. [MG]
+ * %q-registers did not carry over into @includes correctly. Reported by
+   Reaver. [MG]
 
 
 & 1.8.4p0

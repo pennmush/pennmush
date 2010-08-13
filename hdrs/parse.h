@@ -158,7 +158,7 @@ int process_expression(char *buff, char **bp, char const **str,
                        dbref executor, dbref caller, dbref enactor,
                        int eflags, int tflags, PE_Info *pe_info);
 
-PE_Info * make_pe_info();
+PE_Info *make_pe_info();
 void free_pe_info();
 
 /* buff is a pointer to a BUFFER_LEN string to contain the expression

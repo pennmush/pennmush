@@ -165,14 +165,15 @@ do_say(dbref player, const char *tbuf1)
   args[1] = "\"";
   tbuf2[0] = '\0';
 
-  if (call_attrib(player, "SPEECHFORMAT", args, 2, tbuf2, player, NULL) && *tbuf2 != '\0')
+  if (call_attrib(player, "SPEECHFORMAT", args, 2, tbuf2, player, NULL)
+      && *tbuf2 != '\0')
     mod = 1;
 
   /* notify everybody */
   notify_format(player, T("You say, \"%s\""), (mod ? tbuf2 : tbuf1));
   notify_except(Contents(loc), player,
-                tprintf(T("%s says, \"%s\""), spname(player), (mod ? tbuf2 : tbuf1)),
-                NA_INTER_HEAR);
+                tprintf(T("%s says, \"%s\""), spname(player),
+                        (mod ? tbuf2 : tbuf1)), NA_INTER_HEAR);
 
 }
 
@@ -615,19 +616,22 @@ do_pose(dbref player, const char *tbuf1, int space)
   }
 
   args[0] = tbuf1;
-  args[1] = (space? ";" : ":");
+  args[1] = (space ? ";" : ":");
   tbuf2[0] = '\0';
 
-  if (call_attrib(player, "SPEECHFORMAT", args, 2, tbuf2, player, NULL) && *tbuf2 != '\0')
+  if (call_attrib(player, "SPEECHFORMAT", args, 2, tbuf2, player, NULL)
+      && *tbuf2 != '\0')
     mod = 1;
 
   /* notify everybody */
   if (!space)
     notify_except(Contents(loc), NOTHING,
-                  tprintf("%s %s", spname(player), (mod ? tbuf2 : tbuf1)), NA_INTER_HEAR);
+                  tprintf("%s %s", spname(player), (mod ? tbuf2 : tbuf1)),
+                  NA_INTER_HEAR);
   else
     notify_except(Contents(loc), NOTHING,
-                  tprintf("%s%s", spname(player), (mod ? tbuf2 : tbuf1)), NA_INTER_HEAR);
+                  tprintf("%s%s", spname(player), (mod ? tbuf2 : tbuf1)),
+                  NA_INTER_HEAR);
 }
 
 /** The *wall commands.
@@ -1343,13 +1347,15 @@ do_emit(dbref player, const char *tbuf1, int flags)
   args[1] = "|";
   tbuf2[0] = '\0';
 
-  if (call_attrib(player, "SPEECHFORMAT", args, 2, tbuf2, player, NULL) && *tbuf2 != '\0')
+  if (call_attrib(player, "SPEECHFORMAT", args, 2, tbuf2, player, NULL)
+      && *tbuf2 != '\0')
     mod = 1;
 
   /* notify everybody */
   if (flags & PEMIT_SPOOF)
     na_flags |= NA_SPOOF;
-  notify_anything(player, na_loc, &loc, ns_esnotify, na_flags, (mod ? tbuf2 : tbuf1));
+  notify_anything(player, na_loc, &loc, ns_esnotify, na_flags,
+                  (mod ? tbuf2 : tbuf1));
 
   do_audible_stuff(loc, NULL, 0, tbuf1);
 }

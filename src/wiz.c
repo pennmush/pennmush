@@ -1323,10 +1323,11 @@ do_search(dbref player, const char *arg1, char **arg3)
       notify(player, T("\nGARBAGE:"));
       for (n = 0; n < ngarbage; n++) {
         tbp = tbuf;
-      if (ANSI_NAMES && ShowAnsi(player))
-        notify_format(player, T("%sGarbage%s(#%d)"), ANSI_HILITE, ANSI_END, garbage[n]);
-      else
-        notify_format(player, T("Garbage(#%d)"), garbage[n]);
+        if (ANSI_NAMES && ShowAnsi(player))
+          notify_format(player, T("%sGarbage%s(#%d)"), ANSI_HILITE, ANSI_END,
+                        garbage[n]);
+        else
+          notify_format(player, T("Garbage(#%d)"), garbage[n]);
       }
     }
 
@@ -1513,7 +1514,8 @@ do_sitelock(dbref player, const char *site, const char *opts, const char *who,
       do_list_access(player);
       return;
     case SITELOCK_REGISTER:
-      if (add_access_sitelock(player, site, AMBIGUOUS, ACS_REGISTER, ACS_CREATE)) {
+      if (add_access_sitelock
+          (player, site, AMBIGUOUS, ACS_REGISTER, ACS_CREATE)) {
         write_access_file();
         notify_format(player, T("Site %s locked"), site);
         do_log(LT_WIZ, player, NOTHING, "*** SITELOCK *** %s", site);

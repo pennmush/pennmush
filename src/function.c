@@ -1346,7 +1346,8 @@ cnf_add_function(char *name, char *opts)
 {
   FUN *fp;
   dbref thing;
-  int minargs[2] = {0, 0}, maxargs[2] = {0, 0};
+  int minargs[2] = { 0, 0 };
+  int maxargs[2] = { 0, 0 };
   char *attrname, *one, *list;
 
   name = trim_space_sep(name, ' ');
@@ -1400,7 +1401,7 @@ cnf_add_function(char *name, char *opts)
       fp->flags |= FN_OVERRIDE;
       fp = NULL;
     } else {
-      if (fp->where.ufun->name){
+      if (fp->where.ufun->name) {
         mush_free(fp->where.ufun->name, "userfn.name");
       }
     }

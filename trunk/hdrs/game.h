@@ -172,7 +172,8 @@ extern void do_newpassword
 enum boot_type { BOOT_NAME, BOOT_DESC, BOOT_SELF };
 extern void do_boot(dbref player, const char *name, enum boot_type flag,
                     int silent);
-extern void do_chzoneall(dbref player, const char *name, const char *target, bool preserve);
+extern void do_chzoneall(dbref player, const char *name, const char *target,
+                         bool preserve);
 extern int parse_force(char *command);
 extern void do_power(dbref player, const char *name, const char *power);
 enum sitelock_type { SITELOCK_ADD, SITELOCK_REMOVE, SITELOCK_BAN,

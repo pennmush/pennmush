@@ -999,11 +999,14 @@ config_set(const char *opt, char *val, int source, int restrictions)
     if (*p) {
       *p++ = '\0';
       if (!cnf_attribute_access(val, p)) {
-        do_rawlog(LT_ERR, "CONFIG: Couldn't restrict attribute %s to %s", val, p);
+        do_rawlog(LT_ERR, "CONFIG: Couldn't restrict attribute %s to %s", val,
+                  p);
         return 0;
       }
     } else {
-      do_rawlog(LT_ERR, "CONFIG: restrict_attribute %s requires a restriction (use 'none' for none)", val);
+      do_rawlog(LT_ERR,
+                "CONFIG: restrict_attribute %s requires a restriction (use 'none' for none)",
+                val);
       return 0;
     }
     return 1;
@@ -1040,7 +1043,8 @@ config_set(const char *opt, char *val, int source, int restrictions)
     if (*p) {
       *p++ = '\0';
       if (!cnf_hook_command(val, p)) {
-        do_rawlog(LT_ERR, "CONFIG: Couldn't hook command %s with options %s", val, p);
+        do_rawlog(LT_ERR, "CONFIG: Couldn't hook command %s with options %s",
+                  val, p);
         return 0;
       }
     } else {
@@ -1055,7 +1059,8 @@ config_set(const char *opt, char *val, int source, int restrictions)
     if (*p) {
       *p++ = '\0';
       if (!cnf_add_command(val, p)) {
-        do_rawlog(LT_ERR, "CONFIG: Couldn't add command %s with flags %s", val, p);
+        do_rawlog(LT_ERR, "CONFIG: Couldn't add command %s with flags %s", val,
+                  p);
         return 0;
       }
     } else {
@@ -1072,7 +1077,8 @@ config_set(const char *opt, char *val, int source, int restrictions)
     if (*p) {
       *p++ = '\0';
       if (!cnf_add_function(val, p)) {
-        do_rawlog(LT_ERR, "CONFIG: Couldn't add function %s with options %s", val, p);
+        do_rawlog(LT_ERR, "CONFIG: Couldn't add function %s with options %s",
+                  val, p);
         return 0;
       }
     } else {

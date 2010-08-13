@@ -622,7 +622,7 @@ cnf_add_command(char *name, char *opts)
       } else if (string_prefix("eqsplit", one)) {
         flags |= CMD_T_EQSPLIT;
       } else {
-        return 0; /* unknown option */
+        return 0;               /* unknown option */
       }
     }
   }
@@ -632,7 +632,8 @@ cnf_add_command(char *name, char *opts)
   command = command_find(name);
   if (command || !ok_command_name(name))
     return 0;
-  command_add(mush_strdup(name, "command_add"), flags, NULL, 0, (flags & CMD_T_NOPARSE ? NULL : "NOEVAL"), cmd_unimplemented);
+  command_add(mush_strdup(name, "command_add"), flags, NULL, 0,
+              (flags & CMD_T_NOPARSE ? NULL : "NOEVAL"), cmd_unimplemented);
   return (command_find(name) != NULL);
 }
 
@@ -950,7 +951,8 @@ command_argparse(dbref player, dbref cause, char **from, char *to,
     while (*f == ' ')
       f++;
     if (process_expression(to, &t, (const char **) &f, player, cause, cause,
-                           parse, (split | args), global_eval_context.pe_info)) {
+                           parse, (split | args),
+                           global_eval_context.pe_info)) {
       done = 1;
     }
     *t = '\0';
@@ -1172,7 +1174,8 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
     process_expression(command, &c, (const char **) &p, player, cause, cause,
                        noevtoken ? PE_NOTHING :
                        ((PE_DEFAULT & ~PE_FUNCTION_CHECK) |
-                        PE_COMMAND_BRACES), PT_SPACE, global_eval_context.pe_info);
+                        PE_COMMAND_BRACES), PT_SPACE,
+                       global_eval_context.pe_info);
     *c = '\0';
     strcpy(commandraw, command);
     upcasestr(command);
@@ -1210,7 +1213,8 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
       process_expression(commandraw, &c2, (const char **) &p, player, cause,
                          cause, noevtoken ? PE_NOTHING :
                          ((PE_DEFAULT & ~PE_FUNCTION_CHECK) |
-                          PE_COMMAND_BRACES), PT_DEFAULT, global_eval_context.pe_info);
+                          PE_COMMAND_BRACES), PT_DEFAULT,
+                         global_eval_context.pe_info);
     }
     *c2 = '\0';
     command_parse_free_args;
@@ -1401,10 +1405,10 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
 #undef command_parse_free_args
 
 int
-run_command(COMMAND_INFO *cmd, dbref player, dbref cause, const char *commandraw,
-            switch_mask sw, char switch_err[BUFFER_LEN], const char *string,
-            char *swp, char *ap, char *ls, char *lsa[MAX_ARG], char *rs,
-            char *rsa[MAX_ARG])
+run_command(COMMAND_INFO *cmd, dbref player, dbref cause,
+            const char *commandraw, switch_mask sw, char switch_err[BUFFER_LEN],
+            const char *string, char *swp, char *ap, char *ls,
+            char *lsa[MAX_ARG], char *rs, char *rsa[MAX_ARG])
 {
 
   char *saveregs[NUMQ];
@@ -2225,7 +2229,7 @@ cnf_hook_command(char *command, char *opts)
 
   if ((attrname = strchr(one, '/')) == NULL) {
     if (flag != HOOK_OVERRIDE) {
-      return 0; /* attribute required */
+      return 0;                 /* attribute required */
     }
   } else {
     *attrname++ = '\0';

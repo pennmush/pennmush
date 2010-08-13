@@ -1707,11 +1707,13 @@ set_power(dbref player, dbref thing, const char *flag, int negate)
       if (current) {
         safe_format(tbuf1, &tp, T("%s - %s removed."), Name(thing), f->name);
       } else {
-        safe_format(tbuf1, &tp, T("%s - %s (already) removed."), Name(thing), f->name);
+        safe_format(tbuf1, &tp, T("%s - %s (already) removed."), Name(thing),
+                    f->name);
       }
     } else {
       if (current) {
-        safe_format(tbuf1, &tp, T("%s - %s (already) granted."), Name(thing), f->name);
+        safe_format(tbuf1, &tp, T("%s - %s (already) granted."), Name(thing),
+                    f->name);
       } else {
         safe_format(tbuf1, &tp, T("%s - %s granted."), Name(thing), f->name);
       }

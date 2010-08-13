@@ -320,9 +320,9 @@ dump_database_internal(void)
   ignore_signal(SIGALRM);
 #else
   ignore_signal(SIGPROF);
-#endif /* __CYGWIN__ */
-#endif /* WIN32 */
-#endif /* PROFILING */
+#endif                          /* __CYGWIN__ */
+#endif                          /* WIN32 */
+#endif                          /* PROFILING */
 
   if (setjmp(db_err)) {
     /* The dump failed. Disk might be full or something went bad with the
@@ -338,9 +338,9 @@ dump_database_internal(void)
     install_sig_handler(SIGALRM, signal_cpu_limit);
 #else
     install_sig_handler(SIGPROF, signal_cpu_limit);
-#endif /* __CYGWIN__ */
-#endif /* HAS_ITIMER */
-#endif /* PROFILING */
+#endif                          /* __CYGWIN__ */
+#endif                          /* HAS_ITIMER */
+#endif                          /* PROFILING */
     return false;
   } else {
     local_dump_database();
@@ -1275,7 +1275,7 @@ COMMAND(cmd_with)
   what = noisy_match_result(player, arg_left, NOTYPE, MAT_EVERYTHING);
   if (!GoodObject(what))
     return;
-  if (! (nearby(player, what) || Long_Fingers(player) || controls(player, what))) {
+  if (!(nearby(player, what) || Long_Fingers(player) || controls(player, what))) {
     if (SW_ISSET(sw, SWITCH_ROOM)) {
       if (what != MASTER_ROOM && what != Zone(player)) {
         notify(player, T("I don't see that here."));

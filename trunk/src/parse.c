@@ -1041,7 +1041,8 @@ process_expression(char *buff, char **bp, char const **str,
               || (pe_info->iter_nesting - inum_this) < 0) {
             safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
           } else {
-            safe_str(pe_info->iter_itext[pe_info->iter_nesting - inum_this], buff, bp);
+            safe_str(pe_info->iter_itext[pe_info->iter_nesting - inum_this],
+                     buff, bp);
           }
           break;
         case 'U':

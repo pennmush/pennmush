@@ -710,8 +710,8 @@ do_gensort(dbref player, char *keys[], char *strs[], int n, char *sort_type)
   ptr = NULL;
   sort_order = ASCENDING;
   if (sort_type && *sort_type == '-') {
-      sort_type++;
-      sort_order = DESCENDING;
+    sort_type++;
+    sort_order = DESCENDING;
   }
   if (!sort_type || !*sort_type) {
     /* Advance sorti to the default */

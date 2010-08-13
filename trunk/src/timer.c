@@ -335,7 +335,7 @@ start_cpu_timer(void)
       if (setitimer(ITIMER_REAL, &time_limit, NULL)) {
 #else
       if (setitimer(ITIMER_PROF, &time_limit, NULL)) {
-#endif  /* __CYGWIN__ */
+#endif                          /* __CYGWIN__ */
         penn_perror("setitimer");
         timer_set = 0;
       }
@@ -348,8 +348,8 @@ start_cpu_timer(void)
                         (TIMERPROC) win32_timer);
   else
     timer_set = 0;
-#endif /* HAS_ITIMER / WIN32 */
-#endif /* PROFILING */
+#endif                          /* HAS_ITIMER / WIN32 */
+#endif                          /* PROFILING */
 }
 
 /** Reset the cpu timer (after running a command).
@@ -369,14 +369,14 @@ reset_cpu_timer(void)
     if (setitimer(ITIMER_REAL, &time_limit, &time_left))
 #else
     if (setitimer(ITIMER_PROF, &time_limit, &time_left))
-#endif  /* __CYGWIN__ */
+#endif                          /* __CYGWIN__ */
       penn_perror("setitimer");
 #elif defined(WIN32)
     KillTimer(NULL, timer_id);
-#endif /* HAS_ITIMER / WIN32 */
+#endif                          /* HAS_ITIMER / WIN32 */
   }
   cpu_time_limit_hit = 0;
   cpu_limit_warning_sent = 0;
   timer_set = 0;
-#endif /* PROFILING */
+#endif                          /* PROFILING */
 }

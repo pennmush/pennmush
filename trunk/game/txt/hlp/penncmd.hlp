@@ -1431,7 +1431,7 @@ See also: @lock, locktypes, enter, ENTER_OK
   \<message>
 
   This sends <message> to everyone in your location. Nothing is added to the
-  message, not even your name. If you have a SPEECHFORMAT attribute set, it
+  message, not even your name. If you have a SPEECHMOD attribute set, it
   will be evaluated with <message> as %0, and | as %1, and the result will be
   shown instead of <message> as long as it evaluates to a non-empty string.
 
@@ -1446,7 +1446,7 @@ See also: @lock, locktypes, enter, ENTER_OK
   @emit can be abbreviated "\"
 
 See also: @nsemit, emit(), @pemit, @remit, @oemit, @lemit, @zemit, @cemit, 
-    @speechformat, NOSPOOF and SPOOFING.
+    @speechmod, NOSPOOF and SPOOFING.
 & @enable
 & @disable
   @enable <option>
@@ -2734,7 +2734,7 @@ See also: @newpassword, checkpass()
 
   See 'help @pageformat2' for examples.
 
-See also: page, speak(), @chatformat, @speechformat, @message
+See also: page, speak(), @chatformat, @speechmod, @message
 & @pageformat2
 & @outpageformat2
   For simple page timestamps:
@@ -3313,8 +3313,8 @@ See also: GENDER, subj(), poss(), aposs(), obj()
   @sitelock/remove will delete entries that were added with @sitelock
   if their host-pattern matches <string> exactly.
 
-& @SPEECHFORMAT
-  @speechformat <object>[=<modifier>]
+& @SPEECHMOD
+  @speechmod <object>[=<modifier>]
   
   When set, this attribute modifies everything <object> says, poses,
   semiposes and @emits. The original text spoken/posed/emitted is passed as
@@ -3325,13 +3325,13 @@ See also: GENDER, subj(), poss(), aposs(), obj()
   used. Otherwise, the result of the attribute is used.
   
   Example:
-    > @speechformat me=ucstr(%0)!
+    > @speechmod me=ucstr(%0)!
     > say hello
     You say, "HELLO!"
     > pose waves
     Bob WAVES!
     
-    > @speechformat me=switch(%1,",ucstr(%0),:,lcstr(%0))
+    > @speechmod me=switch(%1,",ucstr(%0),:,lcstr(%0))
     > say Test
     You say, "TEST"
     > pose Test
@@ -4300,13 +4300,12 @@ See also: @lock, @alias, @pageformat, pose, :, ;, HAVEN, NOSPOOF, FLAGS
   be abbreviated to ':' and ';' respectively. The /noeval switch stops 
   <action> from being evaluated.
   
-  If you have a SPEECHFORMAT attribute set, it will be evaluated with
-  <action> as %0 and either : (for pose) or ; (for semipose) as %1. The 
-  result is used instead of <action>, as long as it returns a non-empty
-  string.
+  If you have a SPEECHMOD attribute set, it will be evaluated with <action>
+  as %0 and either : (for pose) or ; (for semipose) as %1. The result is
+  used instead of <action>, as long as it returns a non-empty string.
 
   See 'help pose2' for examples.
-See also: say, @emit, @speechformat
+See also: say, @emit, @speechmod
 & pose2
  
   Examples:
@@ -4327,11 +4326,11 @@ See also: say, @emit, @speechformat
   A single double-quote is the abbreviation for this common command.
   If the /noeval switch is given, <message> will not be evaluated.
   
-  If you have a SPEECHFORMAT attribute set, it will be evaluated with
-  <message> passed as %0 and " (a double-quote) passed as %1. The result is
-  shown instead of <message>, as long as it evaluates to a non-empty string.
+  If you have a SPEECHMOD attribute set, it will be evaluated with <message>
+  passed as %0 and " (a double-quote) passed as %1. The result is shown 
+  instead of <message>, as long as it evaluates to a non-empty string.
 
-See also: pose, whisper, @speechformat, @emit, page
+See also: pose, whisper, @speechmod, @emit, page
 & score
   score
   

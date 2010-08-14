@@ -38,7 +38,7 @@ Minor Changes:
  * cpu_limit now works on Cygwin (though not quite as well as on unix).
    A slightly higher limit may be needed than other platforms. [MG]
  * The output from say, pose, semipose and @emit is now passed through the
-   SPEECHFORMAT attribute before being outputted. Suggested by Paige, based on
+   SPEECHMOD attribute before being outputted. Suggested by Paige, based on
    MUX and TinyMUSH. [MG]
  * @config/list now accepts wildcard patterns to match against option names.
    Suggested by Trinsec. [MG]

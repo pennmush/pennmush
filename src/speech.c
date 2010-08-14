@@ -165,7 +165,7 @@ do_say(dbref player, const char *tbuf1)
   args[1] = "\"";
   tbuf2[0] = '\0';
 
-  if (call_attrib(player, "SPEECHFORMAT", args, 2, tbuf2, player, NULL)
+  if (call_attrib(player, "SPEECHMOD", args, 2, tbuf2, player, NULL)
       && *tbuf2 != '\0')
     mod = 1;
 
@@ -619,7 +619,7 @@ do_pose(dbref player, const char *tbuf1, int space)
   args[1] = (space ? ";" : ":");
   tbuf2[0] = '\0';
 
-  if (call_attrib(player, "SPEECHFORMAT", args, 2, tbuf2, player, NULL)
+  if (call_attrib(player, "SPEECHMOD", args, 2, tbuf2, player, NULL)
       && *tbuf2 != '\0')
     mod = 1;
 
@@ -1347,7 +1347,7 @@ do_emit(dbref player, const char *tbuf1, int flags)
   args[1] = "|";
   tbuf2[0] = '\0';
 
-  if (call_attrib(player, "SPEECHFORMAT", args, 2, tbuf2, player, NULL)
+  if (call_attrib(player, "SPEECHMOD", args, 2, tbuf2, player, NULL)
       && *tbuf2 != '\0')
     mod = 1;
 

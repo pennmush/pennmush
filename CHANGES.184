@@ -42,6 +42,8 @@ Minor Changes:
    MUX and TinyMUSH. [MG]
  * @config/list now accepts wildcard patterns to match against option names.
    Suggested by Trinsec. [MG]
+ * The dreaded <Output flushed> message should show up a lot less frequently
+   on spammy debug output and the like. By popular demand. [SW]
 
 Commands:
  * Add /preserve switch to @chzone and @chzoneall, like @chown/preserve.

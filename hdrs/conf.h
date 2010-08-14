@@ -63,7 +63,10 @@
 #define PUEBLO_HELLO "This world is Pueblo 1.10 Enhanced.\r\n"
 
 
-#define MAX_OUTPUT 16384
+/* How much pending outgoing text can be queued up on a socket before
+ * the dreaded 'Output flushed' message shows up? Used to be 16k, now 1m.
+ */
+#define MAX_OUTPUT (1024*1024)
 /* How much output buffer space must be left before we flush the
  * buffer? Reportedly, using '0' fixes problems with Win32 port,
  * and may be more efficient in network use. Using (MAX_OUTPUT / 2)

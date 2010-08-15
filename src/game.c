@@ -1260,9 +1260,11 @@ process_command(dbref player, char *command, dbref cause, int from_port)
   /* command has been executed. Free up memory. */
 
 done:
-  mush_free(errdblist, "errdblist");
-  errdblist = errdbtail = NULL;
-  errdbsize = ERRDB_INITIAL_SIZE;
+  if (errdblist) {
+    mush_free(errdblist, "errdblist");
+    errdblist = errdbtail = NULL;
+    errdbsize = ERRDB_INITIAL_SIZE;
+  }
 }
 
 

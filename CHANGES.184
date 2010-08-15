@@ -90,6 +90,7 @@ Fixes:
  * Fixed a crashbug in @boot on Windows. Reported by Daniel Powell. [MG]
  * %q-registers did not carry over into @includes correctly. Reported by
    Reaver. [MG]
+ * Double-free in follow command fixed. Reported by Anya@ST:DW. [MG]
 
 
 Version 1.8.4 patchlevel 0                                 May 09,  2010

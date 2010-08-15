@@ -44,6 +44,8 @@ Minor Changes:
    Suggested by Trinsec. [MG]
  * The dreaded <Output flushed> message should show up a lot less frequently
    on spammy debug output and the like. By popular demand. [SW]
+ * Added support for MSSP (Mud Server Status Protocol), based on patches by
+   Javelin and Teal. See mush.cnf for details. [MG]
 
 Commands:
  * Add /preserve switch to @chzone and @chzoneall, like @chown/preserve.

@@ -30,10 +30,6 @@
 
 int format_long(intmax_t val, char *buff, char **bp, int maxlen, int base);
 
-char *
-mush_strndup(const char *src, size_t len, const char *check)
-  __attribute_malloc__;
-
 /* Duplicate the first len characters of s */
     char *mush_strndup(const char *src, size_t len, const char *check)
 {

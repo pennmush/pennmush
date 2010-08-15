@@ -50,6 +50,7 @@
 #define DOING_COMMAND "DOING"
 #define SESSION_COMMAND "SESSION"
 #define IDLE_COMMAND "IDLE"
+#define MSSPREQUEST_COMMAND "MSSP-REQUEST"
 
 #define GET_COMMAND "GET"
 #define POST_COMMAND "POST"
@@ -277,8 +278,16 @@ struct options_table {
   char sql_database[256]; /**< Database for sql */
 };
 
+typedef struct mssp MSSP;
+struct mssp {
+  char *name;
+  char *value;
+  MSSP *next;
+};
+
 extern OPTTAB options;
 extern HASHTAB local_options;
+extern MSSP *mssp;
 
 extern PENNCONF *add_config(const char *name, config_func handler, void *loc,
                             int max, const char *group);

@@ -48,6 +48,7 @@ static char *config_to_string(dbref player, PENNCONF *cp, int lc);
 
 OPTTAB options;         /**< The table of configuration options */
 HASHTAB local_options;  /**< Hash table for local config options */
+MSSP *mssp;             /**< Linked list of MSSP values */
 
 int config_set(const char *opt, char *val, int source, int restrictions);
 void conf_default_set(void);
@@ -914,6 +915,38 @@ save_config_option(PENNCONF *cp)
 
 }
 
+int
+add_mssp(char *name, char *value) {
+  MSSP *opt = NULL, *last;
+
+  /* Validate name and value */
+  while (*name && *name == ' ')
+    name++;
+  /* names/values cannot contain IAC(255), MSSP_VAR (1) or MSSP_VAL (2) */
+  if (!name || (strchr(name, (char) 255) || strchr(name, (char) 1) ||
+      strchr(name, (char) 2)))
+    return 0;
+  if (strchr(value, (char) 255) || strchr(value, (char) 1) ||
+      strchr(value, (char) 2))
+    return 0;
+
+  upcasestr(name);
+  opt = mush_malloc(sizeof(MSSP), "mssp");
+  if (!mssp) {
+    mssp = opt;
+  } else {
+    last = mssp;
+    while (last->next) {
+      last = last->next;
+    }
+    last->next = opt;
+  }
+  opt->name = mush_strndup(name, 50, "mssp.name");
+  opt->value = mush_strndup(value, 150, "mssp.value");
+  opt->next = NULL;
+  return 1;
+}
+
 /** Set a configuration option.
  * This function sets a runtime configuration option. During the load
  * of the configuration file, it gets run twice - once to set the
@@ -1151,6 +1184,16 @@ config_set(const char *opt, char *val, int source, int restrictions)
     } else {
       do_rawlog(LT_ERR,
                 "CONFIG: help_command requires a command name and file name.");
+      return 0;
+    }
+  } else if (!strcasecmp(opt, "mssp")) {
+    if (restrictions)
+      return 0;
+    if ((p = strchr(val, '/')) != NULL) {
+      *p++ = '\0';
+      return add_mssp((char *) val, p);
+    } else {
+      do_rawlog(LT_ERR, "CONFIG: mssp requires option/value");
       return 0;
     }
   } else if (restrictions) {

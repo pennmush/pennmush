@@ -4144,6 +4144,8 @@ See also: HOME, @link, @ealias, @lalias, EXITS
   such as its version number, time of last restart, number of players
   currently connected, and size of database. It can be issued from the
   connect screen.
+  
+See also: MSSP-REQUEST
 & inventory
   inventory
 
@@ -4480,6 +4482,7 @@ See also: WHO
   
   IDLE    INFO    LOGOUT  OUTPUTPREFIX    OUTPUTSUFFIX
   PROMPT_NEWLINES QUIT    SCREENWIDTH     SCREENHEIGHT
+  MSSP-REQUEST
 
   In addition, the following commands can only be used at the login
   screen:
@@ -4488,3 +4491,14 @@ See also: WHO
   
   The WHO command can also be used at the login screen. Please note that
   this is different to the in-game WHO command.
+& MSSP-REQUEST
+
+  MSSP-REQUEST
+  
+  This socket command shows some basic information about the MUSH, along with
+  any admin-defined information specified in mush.cnf with the 'mssp' option.
+  The info is also shown via the MSSP telnet option. Useful for MUD crawlers
+  and bots. For more information about the MUD Server Status Protocol (MSSP),
+  see http://tintin.sourceforge.net/mssp/
+  
+See also: INFO

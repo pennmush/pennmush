@@ -449,6 +449,10 @@ msgstr "#-1 ONGELDIGE POWER"
 msgid "#-1 INVALID SECOND ARGUMENT"
 msgstr "#-1 ONGELDIG TWEEDE ARGUMENT"
 
+#: fundb.c:2124
+msgid "#-1 INVALID SOURCE ROOM"
+msgstr "#-1 ONGELDIGE BRON KAMER"
+
 #: funstr.c:369 funstr.c:425
 msgid "#-1 INVALID THIRD ARGUMENT"
 msgstr "#-1 ONGELDIG DERDE ARGUMENT"

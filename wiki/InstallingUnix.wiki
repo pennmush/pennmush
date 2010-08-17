@@ -32,7 +32,7 @@ This is a brief overview of how to install PennMUSH on Unix, or in Unix-like env
 
   # [Downloads Download PennMUSH], extract the archive, and cd to the new PennMUSH directory
   # Run `./configure` or some variant
-    * Under Cygwin, use `./configure --disable-info_slave`
+    * Under Cygwin, use `./configure --disable-info_slave --disable-ipv6`
   # Run `make update`, to build options.h and copy the .cnf option files
   # Run `make install`
   # [SetupOptions Set the MUSH options in mush.cnf]

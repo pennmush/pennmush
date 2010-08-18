@@ -1597,8 +1597,8 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
     restriction = tp;
   }
 
-  if ((command->
-       type & (CMD_T_GOD | CMD_T_NOGAGGED | CMD_T_NOGUEST | CMD_T_NOFIXED)))
+  if ((command->type &
+       (CMD_T_GOD | CMD_T_NOGAGGED | CMD_T_NOGUEST | CMD_T_NOFIXED)))
     make_boolexp = 1;
   else if ((command->type & CMD_T_ANY) != CMD_T_ANY)
     make_boolexp = 1;

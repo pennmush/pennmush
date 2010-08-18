@@ -1893,7 +1893,8 @@ setup_telnet(DESC *d)
   d->conn_flags |= CONN_TELNET;
   if (d->conn_flags & CONN_TELNET_QUERY) {
     /* IAC DO NAWS IAC DO TERMINAL-TYPE IAC WILL MSSP  */
-    unsigned char extra_options[9] = "\xFF\xFD\x1F" "\xFF\xFD\x18" "\xFF\xFB\x46";
+    unsigned char extra_options[9] =
+      "\xFF\xFD\x1F" "\xFF\xFD\x18" "\xFF\xFB\x46";
     d->conn_flags &= ~CONN_TELNET_QUERY;
     do_rawlog(LT_CONN, "[%d/%s/%s] Switching to Telnet mode.",
               d->descriptor, d->addr, d->ip);
@@ -3130,7 +3131,8 @@ reaper(int sig __attribute__ ((__unused__)))
 
 
 static int
-count_players(void) {
+count_players(void)
+{
   int count = 0;
   DESC *d;
 
@@ -3176,28 +3178,37 @@ report_mssp(DESC *d, char *buff, char **bp)
     queue_string_eol(d, tprintf("%s\t%s", "NAME", options.mud_name));
     queue_string_eol(d, tprintf("%s\t%d", "PLAYERS", count_players()));
     queue_string_eol(d, tprintf("%s\t%ld", "UPTIME", globals.first_start_time));
-    /* Not required, but we know anyway*/
+    /* Not required, but we know anyway */
     queue_string_eol(d, tprintf("%s\t%d", "PORT", options.port));
     if (options.ssl_port)
       queue_string_eol(d, tprintf("%s\t%d", "SSL", options.ssl_port));
     queue_string_eol(d, tprintf("%s\t%d", "PUEBLO", options.support_pueblo));
-    queue_string_eol(d, tprintf("%s\t%s %sp%s", "CODEBASE", "PennMUSH", VERSION, PATCHLEVEL));
+    queue_string_eol(d,
+                     tprintf("%s\t%s %sp%s", "CODEBASE", "PennMUSH", VERSION,
+                             PATCHLEVEL));
     queue_string_eol(d, tprintf("%s\t%s", "FAMILY", "TinyMUD"));
     if (strlen(options.mud_url))
       queue_string_eol(d, tprintf("%s\t%s", "WEBSITE", options.mud_url));
   } else {
-    safe_format(buff, bp, "%c%s%c%s", MSSP_VAR, "NAME", MSSP_VAL, options.mud_name);
-    safe_format(buff, bp, "%c%s%c%d", MSSP_VAR, "PLAYERS", MSSP_VAL, count_players());
-    safe_format(buff, bp, "%c%s%c%ld", MSSP_VAR, "UPTIME", MSSP_VAL, globals.first_start_time);
+    safe_format(buff, bp, "%c%s%c%s", MSSP_VAR, "NAME", MSSP_VAL,
+                options.mud_name);
+    safe_format(buff, bp, "%c%s%c%d", MSSP_VAR, "PLAYERS", MSSP_VAL,
+                count_players());
+    safe_format(buff, bp, "%c%s%c%ld", MSSP_VAR, "UPTIME", MSSP_VAL,
+                globals.first_start_time);
 
     safe_format(buff, bp, "%c%s%c%d", MSSP_VAR, "PORT", MSSP_VAL, options.port);
     if (options.ssl_port)
-      safe_format(buff, bp, "%c%s%c%d", MSSP_VAR, "SSL", MSSP_VAL, options.ssl_port);
-    safe_format(buff, bp, "%c%s%c%d", MSSP_VAR, "PUEBLO", MSSP_VAL, options.support_pueblo);
-    safe_format(buff, bp, "%c%s%cPennMUSH %sp%s", MSSP_VAR, "CODEBASE", MSSP_VAL, VERSION, PATCHLEVEL);
+      safe_format(buff, bp, "%c%s%c%d", MSSP_VAR, "SSL", MSSP_VAL,
+                  options.ssl_port);
+    safe_format(buff, bp, "%c%s%c%d", MSSP_VAR, "PUEBLO", MSSP_VAL,
+                options.support_pueblo);
+    safe_format(buff, bp, "%c%s%cPennMUSH %sp%s", MSSP_VAR, "CODEBASE",
+                MSSP_VAL, VERSION, PATCHLEVEL);
     safe_format(buff, bp, "%c%s%c%s", MSSP_VAR, "FAMILY", MSSP_VAL, "TinyMUD");
     if (strlen(options.mud_url))
-      safe_format(buff, bp, "%c%s%c%s", MSSP_VAR, "WEBSITE", MSSP_VAL, options.mud_url);
+      safe_format(buff, bp, "%c%s%c%s", MSSP_VAR, "WEBSITE", MSSP_VAL,
+                  options.mud_url);
   }
 
   if (mssp) {
@@ -3210,7 +3221,8 @@ report_mssp(DESC *d, char *buff, char **bp)
       queue_string_eol(d, "MSSP-REPLY-END");
     } else {
       while (opt) {
-        safe_format(buff, bp, "%c%s%c%s", MSSP_VAR, opt->name, MSSP_VAL, opt->value);
+        safe_format(buff, bp, "%c%s%c%s", MSSP_VAR, opt->name, MSSP_VAL,
+                    opt->value);
         opt = opt->next;
       }
     }

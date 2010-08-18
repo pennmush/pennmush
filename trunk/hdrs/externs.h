@@ -455,16 +455,16 @@ size_t u_strlen(const unsigned char *s);
 unsigned char *u_strncpy
   (unsigned char *restrict target, const unsigned char *restrict source,
    size_t len);
-char *mush_strndup(const char *src, size_t len, const char *check)
+char *
+mush_strndup(const char *src, size_t len, const char *check)
   __attribute_malloc__;
 
 
 /** Unsigned char strdup. Why is this a macro when the others functions? */
 #define u_strdup(x) (unsigned char *)strdup((const char *) x)
 #ifndef HAVE_STRDUP
-char *
-strdup(const char *s)
-  __attribute_malloc__;
+    char *strdup(const char *s)
+ __attribute_malloc__;
 #endif
     char *mush_strdup(const char *s, const char *check) __attribute_malloc__;
 

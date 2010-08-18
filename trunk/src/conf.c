@@ -916,7 +916,8 @@ save_config_option(PENNCONF *cp)
 }
 
 int
-add_mssp(char *name, char *value) {
+add_mssp(char *name, char *value)
+{
   MSSP *opt = NULL, *last;
 
   /* Validate name and value */
@@ -924,7 +925,7 @@ add_mssp(char *name, char *value) {
     name++;
   /* names/values cannot contain IAC(255), MSSP_VAR (1) or MSSP_VAL (2) */
   if (!name || (strchr(name, (char) 255) || strchr(name, (char) 1) ||
-      strchr(name, (char) 2)))
+                strchr(name, (char) 2)))
     return 0;
   if (strchr(value, (char) 255) || strchr(value, (char) 1) ||
       strchr(value, (char) 2))

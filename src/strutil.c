@@ -31,7 +31,8 @@
 int format_long(intmax_t val, char *buff, char **bp, int maxlen, int base);
 
 /* Duplicate the first len characters of s */
-    char *mush_strndup(const char *src, size_t len, const char *check)
+char *
+mush_strndup(const char *src, size_t len, const char *check)
 {
   char *copy;
   size_t rlen = strlen(src);

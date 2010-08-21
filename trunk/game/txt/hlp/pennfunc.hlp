@@ -4795,9 +4795,14 @@ See also: aposs(), obj(), poss()
   reswitch() and reswitchi() return the <list> which corresponds to the first
   matched <re>, while reswitchall() and reswitchalli() return the <list>s
   corresponding to all matched <re>s. If no <re>s match, all four functions
-  return <default>
-
-See also: switch()
+  return <default>.
+  
+  The string "#$" in the <list>s will be replaced with the value of <str>,
+  /before/ <list> is evaluated. You can also use $N in <list> to refer to the
+  Nth subpattern which matched in <re>, with $0 being the entire matching
+  string. Use $<name> (the '<>' are literal) to refer to named subpatterns.
+  
+See also: switch(), regmatch(), regedit()
 & SWITCH()
 & SWITCHALL()
 & CASE()
@@ -4824,7 +4829,7 @@ See also: switch()
   
   See 'help switch2' for examples.
  
-See also: reswitch(), if(), cond()
+See also: reswitch(), if(), cond(), firstof()
 & SWITCH2
   Examples:
     > say switch(test, *a*, foo, *b*, bar, *t*, neat, baz)

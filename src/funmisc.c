@@ -40,6 +40,8 @@ extern char cf_motd_msg[BUFFER_LEN], cf_wizmotd_msg[BUFFER_LEN],
   cf_downmotd_msg[BUFFER_LEN], cf_fullmotd_msg[BUFFER_LEN];
 extern HASHTAB htab_function;
 
+extern const unsigned char *tables;
+
 /* ARGSUSED */
 FUNCTION(fun_valid)
 {
@@ -549,24 +551,34 @@ FUNCTION(fun_reswitch)
 {
   /* this works a bit like the @switch/regexp command */
 
-  int j, per;
+  int j, per = 0;
   char mstr[BUFFER_LEN], pstr[BUFFER_LEN], *dp;
   char const *sp;
   char *tbuf1;
-  int first = 1, found = 0, cs = 1;
+  int first = 1, found = 0, flags = 0;
+  int search, subpatterns, offsets[99];
+  pcre *re;
+  struct re_save rsave;
+  ansi_string *mas;
+  const char *errptr;
+  int erroffset;
+  pcre_extra *extra;
 
   if (strstr(called_as, "ALL"))
     first = 0;
 
   if (strcmp(called_as, "RESWITCHI") == 0
       || strcmp(called_as, "RESWITCHALLI") == 0)
-    cs = 0;
+    flags = PCRE_CASELESS;
 
   dp = mstr;
   sp = args[0];
   process_expression(mstr, &dp, &sp, executor, caller, enactor,
                      PE_DEFAULT, PT_DEFAULT, pe_info);
   *dp = '\0';
+  mas = parse_ansi_string(mstr);
+
+  save_regexp_context(&rsave);
 
   /* try matching, return match immediately when found */
 
@@ -577,24 +589,48 @@ FUNCTION(fun_reswitch)
                        PE_DEFAULT, PT_DEFAULT, pe_info);
     *dp = '\0';
 
-    if (quick_regexp_match(pstr, mstr, cs)) {
+    if ((re = pcre_compile(remove_markup(pstr, NULL), flags, &errptr, &erroffset, tables)) == NULL) {
+      /* Matching error. Ignore this one, move on. */
+      continue;
+    }
+    add_check("pcre");
+    extra = default_match_limit();
+    search = 0;
+    subpatterns = pcre_exec(re, extra, mas->text, mas->len, search, 0, offsets, 99);
+    if (subpatterns >= 0) {
       /* If there's a #$ in a switch's action-part, replace it with
        * the value of the conditional (mstr) before evaluating it.
        */
       tbuf1 = replace_string("#$", mstr, args[j + 1]);
-
       sp = tbuf1;
-
+      /* set regexp context here */
+      global_eval_context.re_code = re;
+      global_eval_context.re_from = mas;
+      global_eval_context.re_offsets = offsets;
+      global_eval_context.re_subpatterns = subpatterns;
       per = process_expression(buff, bp, &sp,
                                executor, caller, enactor,
-                               PE_DEFAULT, PT_DEFAULT, pe_info);
+                               PE_DEFAULT | PE_DOLLAR, PT_DEFAULT, pe_info);
       mush_free(tbuf1, "replace_string.buff");
       found = 1;
-      if (per || first)
-        return;
+    }
+    mush_free(re, "pcre");
+    if (first && found) {
+      free_ansi_string(mas);
+      restore_regexp_context(&rsave);
+      return;
+    }
+    /* clear regexp context again here */
+    global_eval_context.re_code = NULL;
+    global_eval_context.re_subpatterns = -1;
+    global_eval_context.re_offsets = NULL;
+    global_eval_context.re_from = NULL;
+    if (per) {
+      free_ansi_string(mas);
+      restore_regexp_context(&rsave);
+      return;
     }
   }
-
   if (!(nargs & 1) && !found) {
     /* Default case */
     tbuf1 = replace_string("#$", mstr, args[nargs - 1]);
@@ -603,6 +639,8 @@ FUNCTION(fun_reswitch)
                        PE_DEFAULT, PT_DEFAULT, pe_info);
     mush_free(tbuf1, "replace_string.buff");
   }
+  free_ansi_string(mas);
+  restore_regexp_context(&rsave);
 }
 
 /* ARGSUSED */

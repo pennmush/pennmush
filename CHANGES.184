@@ -63,6 +63,7 @@ Functions:
    or l[v]players(), or makes it return only puppets/listening objects,
    for MUX/Rhost compatability. Suggested by Bane. [MG]
  * open() can now open rooms remotely. Suggested by Minion. [MG]
+ * reswitch() and co now perform $-replacements for subexpressions. [MG]
 
 Fixes:
  * Help fixes.

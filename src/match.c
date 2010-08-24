@@ -306,18 +306,16 @@ match_aliases(dbref match, const char *name)
     return 0;
   }
 
-  if (IsExit(match)) {
-    return check_alias(name, Name(match));
-  } else {
+  if (IsExit(match) && check_alias(name, Name(match)))
+    return 1;
+  else {
     char tbuf1[BUFFER_LEN];
     ATTR *a = atr_get_noparent(match, "ALIAS");
-    if (!a) {
+    if (!a)
       return 0;
-    }
     mush_strncpy(tbuf1, atr_value(a), BUFFER_LEN);
     return check_alias(name, tbuf1);
   }
-
 }
 
 dbref

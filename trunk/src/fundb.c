@@ -1831,9 +1831,19 @@ FUNCTION(fun_name)
 FUNCTION(fun_fullname)
 {
   dbref it = match_thing(executor, args[0]);
-  if (GoodObject(it))
+  if (GoodObject(it)) {
     safe_str(Name(it), buff, bp);
-  else
+    if (IsExit(it)) {
+      ATTR *a = atr_get_noparent(it, "ALIAS");
+      if (a) {
+	char *aliases = atr_value(a);
+	if (aliases && *aliases) {
+	  safe_chr(';', buff, bp);
+	  safe_str(aliases, buff, bp);
+	}
+      }
+    }
+  } else
     safe_str(T(e_notvis), buff, bp);
 }
 

@@ -349,21 +349,24 @@ See also: leave, @leave, NO_LEAVE, locktypes, ACTION LISTS, VERBS
   @alias <player>[=<name1>[;<name2>[;...;<nameN>]]]
   @alias <object>[=<string>]
  
-  For players, the ALIAS attribute has special meaning: it contains a list
-  of aliases (separated by semicolons) which can be used instead of his name
-  to refer to the player.
+  For players and exits, the ALIAS attribute has special meaning: it
+  contains a list of aliases (separated by semicolons) which can be
+  used instead of its name to refer to the player or exit.
   
-  The number aliases allowed is controlled by the 'max_aliases' @config
-  option. The same rules which apply to player names also apply to aliases,
-  and you cannot use another player's name as your alias (though you can
-  include your own name in your aliases, and can change your name to one of
-  your aliases).
+  The number of aliases allowed is controlled by the 'max_aliases'
+  @config option. The same rules which apply to player names also
+  apply to aliases, and you cannot use another player's name as your
+  alias (though you can include your own name in your aliases, and can
+  change your name to one of your aliases).
   
-  If the page_aliases @config option is on, the first alias in the list is 
-  shown along with the player's name when they page others.
+  If the page_aliases @config option is on, the first alias in the
+  list is shown along with the player's name when they page others.
   
-  For other types of object, @alias has no special meaning. (Exit aliases
-  are part of the exit's name - see 'help @name' for details.)
+  Exits also support including the aliases directly in their name, but
+  doing so in new construction is depreciated and @alias should be used
+  instead.
+ 
+  For other types of object, @alias has no special meaning.www
 
 See also: @name, alias(), fullalias()
 & @allquota
@@ -2566,7 +2569,6 @@ See also: message(), @chatformat, @pageformat
   /list   : list the MOTDs (like @listmotd, can be used by anyone)
 & @name
   @name <object>=<new name>
-  @name <exit>=<new name>[;<alias1>[;<alias2>[;...;<aliasN>]]]
 
   Changes the name of <object> to <new name>.
 
@@ -2578,10 +2580,17 @@ See also: message(), @chatformat, @pageformat
   use by another player, as a name or alias. (They can change their name to
   something from their own @alias.)
 
-  An exit can have many names/aliases, each separated by a semicolon. The
-  exit can be referred to by any of these names in all commands. For example:
-    > @name exit=East <e>;east;e
+  An exit can have many names, each separated by a semicolon. In new
+  construction, the aliases should be in the @alias attribute, but
+  they are also supported in the name itself. The exit can be referred
+  to by any of these names in all commands. For example:
 
+    (New-style)
+    > @name exit=East <e>
+    > @alias exit=east;e
+    (Old-style)
+    > @name exit=East <e>;east;e
+  
 See also: @alias, @oname, name(), fullname()
 & @ONAME
 & @ANAME

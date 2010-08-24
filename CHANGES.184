@@ -22,6 +22,9 @@ Major Changes:
  * You can now do the equivilent of @command/add, @hook, @function and
    @attribute/access from alias.cnf and restrict.cnf, to add/configure
    commands, functions and standard attributes. Suggested by Paige. [MG]
+ * Exits now use @alias for alternate names. The old style of
+   including aliases directly in names is still supported, but
+   depreciated in new construction. Suggested by [MG]. [SW]
 
 Minor Changes:
  * @power now reports when you try and set a power which is already set (or

@@ -49,6 +49,8 @@ Minor Changes:
    on spammy debug output and the like. By popular demand. [SW]
  * Added support for MSSP (Mud Server Status Protocol), based on patches by
    Javelin and Teal. See mush.cnf for details. [MG]
+ * The script for updating config files is smarter about adding new alias
+   lines. [SW]
 
 Commands:
  * Add /preserve switch to @chzone and @chzoneall, like @chown/preserve.

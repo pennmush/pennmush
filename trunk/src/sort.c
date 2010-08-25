@@ -601,7 +601,7 @@ get_list_type(char *args[], int nargs, int type_pos, char *ptrs[], int nptrs)
       strcpy(stype, str);
       str = strchr(stype, ':');
       if (str)
-        *(str++) = '\0';
+        *str = '\0';
       for (i = 0; ltypelist[i].name && strcasecmp(ltypelist[i].name, stype);
            i++) ;
       /* return ltypelist[i].name; */
@@ -630,7 +630,7 @@ get_list_type_noauto(char *args[], int nargs, int type_pos)
       strcpy(stype, str);
       str = strchr(stype, ':');
       if (str)
-        *(str++) = '\0';
+        *str = '\0';
       for (i = 0; ltypelist[i].name && strcasecmp(ltypelist[i].name, stype);
            i++) ;
       /* return ltypelist[i].name; */

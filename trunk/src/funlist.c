@@ -53,7 +53,6 @@ list2arr_ansi(char *r[], int max, char *list, char sep)
 {
   char *p, *lp;
   int i;
-  int first;
   ansi_string *as;
   char *aptr;
 
@@ -64,7 +63,6 @@ list2arr_ansi(char *r[], int max, char *list, char sep)
 
   lp = list;
   p = split_token(&aptr, sep);
-  first = 0;
   for (i = 0; p && (i < max); i++, p = split_token(&aptr, sep)) {
     lp = list;
     safe_ansi_string(as, p - (as->text), strlen(p), list, &lp);
@@ -87,9 +85,8 @@ list2arr_ansi(char *r[], int max, char *list, char sep)
 int
 list2arr(char *r[], int max, char *list, char sep)
 {
-  char *p, *lp;
+  char *p;
   int i;
-  int first;
   char *aptr;
   size_t len;
 
@@ -99,9 +96,7 @@ list2arr(char *r[], int max, char *list, char sep)
 
   aptr = trim_space_sep(list, sep);
 
-  lp = list;
   p = split_token(&aptr, sep);
-  first = 0;
   for (i = 0; p && (i < max); i++, p = split_token(&aptr, sep)) {
     r[i] = p;
   }
@@ -1358,7 +1353,7 @@ FUNCTION(fun_randword)
   if (!s || !*s)                /* ran off the end of the string */
     return;
 
-  /* Chop off the end, and copy. No length checking needed. */
+  /* Chop off the end, tand copy. No length checking needed. */
   r = s;
   if (s && *s)
     (void) split_token(&s, sep);

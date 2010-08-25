@@ -100,7 +100,7 @@ do_name(dbref player, const char *name, char *newname_)
         while (*eon && !isspace((unsigned char) *eon))
           eon++;
         if (*eon)
-          *(eon++) = '\0';
+          *eon = '\0';
       }
       if (!ok_player_name(bon, player, thing)) {
         notify(player, T("You can't give a player that name."));
@@ -797,7 +797,6 @@ gedit_helper(dbref player, dbref thing,
     /* insert replacement string between every character */
     ansi_string *haystack;
     size_t last = 0;
-    int too_long = 0;
 
     haystack = parse_ansi_string(s);
 
@@ -807,7 +806,6 @@ gedit_helper(dbref player, dbref thing,
         for (last = 0; last < (size_t) haystack->len; last++) {
           /* Add the next character */
           if (safe_ansi_string(haystack, last, 1, tbuf1, &tbufp)) {
-            too_long = 1;
             break;
           }
           if (!ansi_long_flag) {
@@ -816,7 +814,6 @@ gedit_helper(dbref player, dbref thing,
           }
           /* Copy in r */
           if (safe_str(r, tbuf1, &tbufp)) {
-            too_long = 1;
             break;
           }
           if (!ansi_long_flag) {

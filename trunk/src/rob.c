@@ -250,7 +250,7 @@ do_buy(dbref player, char *item, char *from, int price)
               boughtit = price;
             }
           } else if ((plus = strchr(cost, '+'))) {
-            *(plus++) = '\0';
+            *plus = '\0';
             if (!is_strict_integer(cost))
               continue;
             low = parse_integer(cost);

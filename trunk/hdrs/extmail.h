@@ -51,9 +51,12 @@ struct mail_selector {
 };
 
 typedef int folder_array[MAX_FOLDERS + 1];
-#define FA_Init(fa,x) \
-for (x = 0; x <= MAX_FOLDERS; x++) \
-fa[x] = 0
+#define FA_Init(fa) \
+  do { \
+  int nfolders; \
+  for (nfolders = 0; nfolders <= MAX_FOLDERS; nfolders++)	\
+    fa[nfolders] = 0; \
+  } while (0)
 
 #define SUBJECT_COOKIE  '/'
 #define SUBJECT_LEN     60

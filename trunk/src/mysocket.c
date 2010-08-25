@@ -176,7 +176,6 @@ make_socket_conn(const char *host, int socktype, struct sockaddr *myiterface,
   char cport[NI_MAXSERV];
   int s;
   int res;
-  int err;
 
   memset(&hints, 0, sizeof(struct addrinfo));
   hints.ai_family = AF_UNSPEC;  /* Try to use IPv6 if available */
@@ -216,7 +215,7 @@ make_socket_conn(const char *host, int socktype, struct sockaddr *myiterface,
         penn_perror("bind failed (Possibly harmless)");
     }
 
-    if ((err = connect_nonb(s, server->ai_addr, server->ai_addrlen, nonb)) == 0)
+    if (connect_nonb(s, server->ai_addr, server->ai_addrlen, nonb) == 0)
       break;
 
 #ifdef DEBUG

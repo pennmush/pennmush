@@ -1390,7 +1390,7 @@ fcache_read(FBLOCK *fb, const char *filename)
 #else
   /* Posix read code here */
   {
-    int fd, n;
+    int fd;
     struct stat sb;
 
     release_fd();
@@ -1416,7 +1416,7 @@ fcache_read(FBLOCK *fb, const char *filename)
       return -1;
     }
 
-    if ((n = read(fd, fb->buff, sb.st_size)) != sb.st_size) {
+    if (read(fd, fb->buff, sb.st_size) != sb.st_size) {
       do_rawlog(LT_ERR, "Couldn't read all of '%s'", filename);
       close(fd);
       mush_free(fb->buff, "fcache_data");
@@ -5325,7 +5325,7 @@ do_reboot(dbref player, int flag)
       args[n++] = pidfile;
     }
     args[n++] = confname;
-    args[n++] = NULL;
+    args[n] = NULL;
 
     execv(saved_argv[0], (char **) args);
   }

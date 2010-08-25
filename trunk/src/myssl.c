@@ -359,10 +359,9 @@ ssl_handshake(SSL * ssl)
 {
   int ret;
   int state = 0;
-  int err;
 
   if ((ret = SSL_do_handshake(ssl)) <= 0) {
-    switch (err = SSL_get_error(ssl, ret)) {
+    switch (SSL_get_error(ssl, ret)) {
     case SSL_ERROR_WANT_READ:
       /* We must want for the socket to be readable, and then repeat
        * the call.
@@ -542,7 +541,6 @@ ssl_write(SSL * ssl, int state, int net_read_ready, int net_write_ready,
     switch (SSL_get_error(ssl, r)) {
     case SSL_ERROR_NONE:
       /* We wrote something, but maybe not all */
-      bufsize -= r;
       *offset += r;
       break;
     case SSL_ERROR_WANT_WRITE:

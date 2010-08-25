@@ -396,16 +396,14 @@ do_mail_flags(dbref player, const char *msglist, mail_flag flag, bool negate)
 {
   MAIL *mp;
   struct mail_selector ms;
-  int j;
   mail_flag folder;
   folder_array i;
-  int notified = 0;
+  int notified = 0, j;
 
   if (!parse_msglist(msglist, &ms, player)) {
     return;
   }
-  FA_Init(i, j);
-  j = 0;
+  FA_Init(i);
   folder = AllInFolder(ms) ? player_folder(player) : MSFolder(ms);
   for (mp = find_exact_starting_point(player);
        mp && (mp->to == player); mp = mp->next) {
@@ -489,10 +487,10 @@ do_mail_file(dbref player, char *msglist, char *folder)
 {
   MAIL *mp;
   struct mail_selector ms;
-  int j, foldernum;
+  int foldernum;
   mail_flag origfold;
   folder_array i;
-  int notified = 0;
+  int notified = 0, j = 0;
 
   if (!parse_msglist(msglist, &ms, player)) {
     return;
@@ -501,8 +499,7 @@ do_mail_file(dbref player, char *msglist, char *folder)
     notify(player, T("MAIL: Invalid folder specification"));
     return;
   }
-  FA_Init(i, j);
-  j = 0;
+  FA_Init(i);
   origfold = AllInFolder(ms) ? player_folder(player) : MSFolder(ms);
   for (mp = find_exact_starting_point(player);
        mp && (mp->to == player); mp = mp->next) {
@@ -547,16 +544,15 @@ do_mail_read(dbref player, char *msglist)
   char tbuf1[BUFFER_LEN];
   char folderheader[BUFFER_LEN];
   struct mail_selector ms;
-  int j;
   mail_flag folder;
   folder_array i;
+  int j = 0;
 
   if (!parse_msglist(msglist, &ms, player)) {
     return;
   }
   folder = AllInFolder(ms) ? player_folder(player) : MSFolder(ms);
-  FA_Init(i, j);
-  j = 0;
+  FA_Init(i);
   for (mp = find_exact_starting_point(player);
        mp && (mp->to == player); mp = mp->next) {
     if ((mp->to == player) && (All(ms) || Folder(mp) == folder)) {
@@ -618,15 +614,13 @@ do_mail_list(dbref player, const char *msglist)
   char sender[30];
   MAIL *mp;
   struct mail_selector ms;
-  int j;
   mail_flag folder;
   folder_array i;
 
   if (!parse_msglist(msglist, &ms, player)) {
     return;
   }
-  FA_Init(i, j);
-  j = 0;
+  FA_Init(i);
   folder = AllInFolder(ms) ? player_folder(player) : MSFolder(ms);
   if (SUPPORT_PUEBLO)
     notify_noenter(player, open_tag("SAMP"));
@@ -757,7 +751,7 @@ do_mail_fwd(dbref player, char *msglist, char *tolist)
   MAIL *mp;
   MAIL *last;
   struct mail_selector ms;
-  int j, num;
+  int num;
   mail_flag folder;
   folder_array i;
   const char *head;
@@ -788,7 +782,7 @@ do_mail_fwd(dbref player, char *msglist, char *tolist)
   while (last->next && (last->next->to == player))
     last = last->next;
 
-  FA_Init(i, j);
+  FA_Init(i);
   while (mp && (mp->to == player) && (mp != last->next)) {
     if ((mp->to == player) && (All(ms) || (Folder(mp) == folder))) {
       i[Folder(mp)]++;
@@ -1021,8 +1015,7 @@ send_mail(dbref player, dbref target, char *subject, char *message,
   a = atr_get_noparent(target, "MAILFORWARDLIST");
   if (!a) {
     /* Easy, no forwarding */
-    good =
-      real_send_mail(player, target, subject, message, flags, silent, nosig);
+    real_send_mail(player, target, subject, message, flags, silent, nosig);
     return;
   } else {
     /* We have a forward list. Run through it. */

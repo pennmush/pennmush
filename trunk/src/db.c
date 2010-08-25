@@ -770,7 +770,6 @@ db_paranoid_write_object(PENNFILE *f, dbref i, int flag)
   char tbuf1[BUFFER_LEN];
   int err = 0;
   char *p;
-  char lastp;
   dbref owner;
   int fixmemdb = 0;
   int count = 0;
@@ -839,7 +838,6 @@ db_paranoid_write_object(PENNFILE *f, dbref i, int flag)
     /* now check the attribute */
     strcpy(tbuf1, atr_value(list));
     /* get rid of unprintables and hard newlines */
-    lastp = '\0';
     for (p = tbuf1; *p; p++) {
       if (!isprint((unsigned char) *p) && !isspace((unsigned char) *p) &&
           *p != TAG_START && *p != TAG_END && *p != ESC_CHAR
@@ -847,7 +845,6 @@ db_paranoid_write_object(PENNFILE *f, dbref i, int flag)
         *p = '!';
         err = 1;
       }
-      lastp = *p;
     }
     if (err) {
       fixmemdb = 1;
@@ -1470,9 +1467,7 @@ db_read_oldstyle(PENNFILE *f)
       /* If there are channels in the db, read 'em in */
       /* We don't support this anymore, so we just discard them */
       if (!(globals.indb_flags & DBF_NO_CHAT_SYSTEM))
-        temp = getref(f);
-      else
-        temp = 0;
+        getref(f);
 
       /* If there are warnings in the db, read 'em in */
       temp = MAYBE_GET(f, DBF_WARNINGS);

@@ -1917,7 +1917,6 @@ build_function_report(dbref player, FUN *fp)
     if (first == 0)
       safe_strl(", ", 2, tbuf, &tp);
     safe_str("God", tbuf, &tp);
-    first = 0;
   }
 
   *tp = '\0';

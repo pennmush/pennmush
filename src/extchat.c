@@ -1265,7 +1265,7 @@ do_channel(dbref player, const char *name, const char *target, const char *com)
       notify_format(player,
                     T("CHAT: You join %s to channel <%s>."), Name(victim),
                     ChanName(chan));
-      u = onchannel(victim, chan);
+      onchannel(victim, chan);
       ChanNumUsers(chan)++;
       if (!Channel_Quiet(chan) && !DarkLegal(victim)) {
         channel_send(chan, victim,
@@ -1318,7 +1318,6 @@ static void
 channel_join_self(dbref player, const char *name)
 {
   CHAN *chan = NULL;
-  CHANUSER *u;
 
   if (Guest(player)) {
     notify(player, T("Guests are not allowed to join channels."));
@@ -1364,7 +1363,7 @@ channel_join_self(dbref player, const char *name)
   }
   if (insert_user_by_dbref(player, chan)) {
     notify_format(player, T("CHAT: You join channel <%s>."), ChanName(chan));
-    u = onchannel(player, chan);
+    onchannel(player, chan);
     ChanNumUsers(chan)++;
     if (!Channel_Quiet(chan) && !DarkLegal(player))
       channel_send(chan, player,
@@ -1530,7 +1529,6 @@ void
 do_chat(dbref player, CHAN *chan, const char *arg1)
 {
   CHANUSER *u;
-  const char *gap;
   char type;
   bool canhear;
 
@@ -1569,11 +1567,9 @@ do_chat(dbref player, CHAN *chan, const char *arg1)
   }
 
   /* figure out what kind of message we have */
-  gap = " ";
   type = ':';
   switch (*arg1) {
   case SEMI_POSE_TOKEN:
-    gap = "";
     type = ';';
     /* FALLTHRU */
   case POSE_TOKEN:
@@ -3806,8 +3802,7 @@ do_chan_recall(dbref player, const char *name, char *lineinfo[], int quiet)
   }
   if (recall_timestring) {
     num_lines = 0;
-    while ((buf =
-            iter_bufferq(ChanBufferQ(chan), &p, &speaker, &type, &timestamp))) {
+    while (iter_bufferq(ChanBufferQ(chan), &p, &speaker, &type, &timestamp)) {
       if (timestamp >= recall_from)
         num_lines++;
     }
@@ -3823,7 +3818,7 @@ do_chan_recall(dbref player, const char *name, char *lineinfo[], int quiet)
   all = (start <= 0 && num_lines >= BufferQNum(ChanBufferQ(chan)));
   notify_format(player, T("CHAT: Recall from channel <%s>"), ChanName(chan));
   while (start > 0) {
-    buf = iter_bufferq(ChanBufferQ(chan), &p, &speaker, &type, &timestamp);
+    iter_bufferq(ChanBufferQ(chan), &p, &speaker, &type, &timestamp);
     start--;
   }
   while ((buf = iter_bufferq(ChanBufferQ(chan), &p, &speaker, &type,

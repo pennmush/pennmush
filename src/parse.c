@@ -371,11 +371,10 @@ bool
 is_strict_number(char const *str)
 {
   char *end;
-  NVAL val;
   if (!str)
     return 0;
   errno = 0;
-  val = strtod(str, &end);
+  strtod(str, &end);
   if (errno == ERANGE || *end != '\0')
     return 0;
   return end > str;
@@ -415,11 +414,10 @@ bool
 is_strict_integer(char const *str)
 {
   char *end;
-  int val;
   if (!str)
     return 0;
   errno = 0;
-  val = parse_int(str, &end, 10);
+  parse_int(str, &end, 10);
   if (errno == ERANGE || *end != '\0')
     return 0;
   return end > str;

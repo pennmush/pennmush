@@ -667,9 +667,7 @@ forbidden_name(const char *name)
 {
   char buf[BUFFER_LEN], *newlin, *ptr;
   FILE *fp;
-  char *upname;
 
-  upname = strupper(name);
   fp = fopen(NAMES_FILE, FOPEN_READ);
   if (!fp)
     return 0;

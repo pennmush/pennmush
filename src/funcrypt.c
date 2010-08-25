@@ -71,7 +71,7 @@ encode_base64(const char *input, int len, char *buff, char **bp)
     return false;
   }
 
-  len = BIO_flush(bio);
+  (void) BIO_flush(bio);
 
   len = BIO_get_mem_data(bmem, &membuf);
 

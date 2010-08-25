@@ -83,14 +83,13 @@ add_check(const char *ref)
 void
 del_check(const char *ref, const char *filename, int line)
 {
-  MEM *loop, *prev = NULL;
-  int cmp;
+  MEM *loop;
 
   if (!options.mem_check)
     return;
 
   for (loop = my_check; loop; loop = loop->next) {
-    cmp = strcmp(ref, loop->ref_name);
+    int cmp = strcmp(ref, loop->ref_name);
     if (cmp == 0) {
       loop->ref_count--;
       if (loop->ref_count < 0)
@@ -104,7 +103,6 @@ del_check(const char *ref, const char *filename, int line)
                 ref, filename, line);
       break;
     }
-    prev = loop;
   }
 }
 

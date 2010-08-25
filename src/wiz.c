@@ -807,7 +807,7 @@ do_newpassword(dbref player, dbref cause,
 void
 do_boot(dbref player, const char *name, enum boot_type flag, int silent)
 {
-  dbref victim;
+  dbref victim = NOTHING;
   DESC *d = NULL;
   int count = 0;
   int priv = Can_Boot(player);

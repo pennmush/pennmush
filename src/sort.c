@@ -597,7 +597,7 @@ get_list_type(char *args[], int nargs, int type_pos, char *ptrs[], int nptrs)
       str++;
       sort_order = DESCENDING;
     }
-    if (*str) {
+    if (str && *str) {
       strcpy(stype, str);
       str = strchr(stype, ':');
       if (str)

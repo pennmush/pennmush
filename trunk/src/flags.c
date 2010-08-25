@@ -1498,7 +1498,9 @@ twiddle_flag_internal(const char *ns, dbref thing, const char *flag, int negate)
   FLAGSPACE *n;
   if (IsGarbage(thing))
     return;
-  n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces);
+  n = hashfind(ns, &htab_flagspaces);
+  if (!n)
+    return;
   f = flag_hash_lookup(n, flag, Typeof(thing));
   if (f && (n->flag_table != type_table))
     twiddle_flag(n, thing, f, negate);
@@ -1527,7 +1529,11 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
   FLAGSPACE *n;
   int current;
 
-  n = (FLAGSPACE *) hashfind("FLAG", &htab_flagspaces);
+  n = hashfind("FLAG", &htab_flagspaces);
+  if (!n) {
+    notify_format(player, T("Internal error: Unable to find flagspace '%s'!"), "FLAG");
+    return;
+  }
   if ((f = flag_hash_lookup(n, flag, Typeof(thing))) == NULL) {
     notify_format(player, T("%s - I don't recognize that flag."), flag);
     return;
@@ -1686,7 +1692,12 @@ set_power(dbref player, dbref thing, const char *flag, int negate)
   char tbuf1[BUFFER_LEN], *tp;
   int current;
 
-  n = (FLAGSPACE *) hashfind("POWER", &htab_flagspaces);
+  n = hashfind("POWER", &htab_flagspaces);
+  if (!n) {
+    notify_format(player, T("Internal error: Unable to find flagspace '%s'!"), "POWER");
+    return;
+  }
+
   if ((f = flag_hash_lookup(n, flag, Typeof(thing))) == NULL) {
     notify_format(player, T("%s - I don't recognize that power."), flag);
     return;
@@ -2311,6 +2322,11 @@ do_flag_alias(const char *ns, dbref player, const char *name, const char *alias)
     return;
   }
   n = hashfind(ns, &htab_flagspaces);
+  if (!n) {
+    notify_format(player, T("Internal error: Unknown flag space '%s'!"), ns);
+    return;
+  }
+
   af = match_flag_ns(n, alias);
   if (!delete && af) {
     notify_format(player, T("That alias already matches the %s %s."),
@@ -2495,7 +2511,11 @@ do_flag_delete(const char *ns, dbref player, const char *name)
     notify(player, T("You don't look like God."));
     return;
   }
-  n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces);
+  n = hashfind(ns, &htab_flagspaces);
+  if (!n) {
+    notify_format(player, T("Internal error: Unknown flagspace '%s'!"), ns);
+    return;
+  }
   f = ptab_find_exact(n->tab, name);
   if (!f) {
     notify_format(player, T("I don't know that %s."), strlower(ns));

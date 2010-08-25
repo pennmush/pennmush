@@ -4016,9 +4016,12 @@ short_page(const char *match)
   dbref who1 = NOTHING;
   int count = 0;
 
+  if (!(match && *match))
+    return NOTHING;
+
   for (d = descriptor_list; d; d = d->next) {
     if (d->connected) {
-      if (match && !string_prefix(Name(d->player), match))
+      if (!string_prefix(Name(d->player), match))
         continue;
       if (!strcasecmp(Name(d->player), match)) {
         count = 1;

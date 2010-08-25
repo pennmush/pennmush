@@ -1841,7 +1841,7 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
 	    return -1;
       }
       }
-    } else if (IsExit(thing)) {
+    } else if (IsExit(thing) && s && *s) {
       char *alias, *aliases;
 
       strcpy(tbuf1, s);
@@ -2091,7 +2091,7 @@ do_atrchown(dbref player, const char *xarg1, const char *arg2)
     return;
   }
 
-  if ((!arg2 && !*arg2) || !strcasecmp(arg2, "me"))
+  if (!(arg2 && *arg2) || !strcasecmp(arg2, "me"))
     new_owner = player;
   else
     new_owner = lookup_player(arg2);

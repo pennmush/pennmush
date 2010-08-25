@@ -1757,11 +1757,10 @@ flaglist_check(const char *ns, dbref player, dbref it, const char *fstr,
 {
   char *s;
   FLAG *fp;
-  int negate, temp;
+  int negate = 0, temp = 0;
   int ret = type;
   FLAGSPACE *n;
 
-  negate = temp = 0;
   if (!GoodObject(it))
     return 0;
   if (!(n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces))) {
@@ -1853,10 +1852,10 @@ flaglist_check_long(const char *ns, dbref player, dbref it, const char *fstr,
 {
   char *s, *copy, *sp;
   FLAG *fp;
-  int negate, temp;
+  int negate = 0, temp = 0;
   int ret = type;
   FLAGSPACE *n;
-  negate = temp = 0;
+
   if (!GoodObject(it))
     return 0;
   if (!(n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces))) {
@@ -2278,7 +2277,7 @@ do_flag_add(const char *ns, dbref player, const char *name, char *args_right[])
   /* Ok, let's do it. */
   add_flag_generic(ns, name, letter, type, perms, negate_perms);
   /* Did it work? */
-  if ((f = match_flag_ns(n, name)))
+  if (match_flag_ns(n, name))
     do_flag_info(ns, player, name);
   else
     notify_format(player, T("Unknown failure adding %s."), strlower(ns));
@@ -2355,7 +2354,7 @@ do_flag_alias(const char *ns, dbref player, const char *name, const char *alias)
       return;
     }
     ptab_delete(n->tab, alias);
-    if ((af = match_flag_ns(n, alias)))
+    if (match_flag_ns(n, alias))
       notify(player, T("Unknown failure deleting alias."));
     else
       do_flag_info(ns, player, f->name);
@@ -2399,7 +2398,7 @@ alias_flag_generic(const char *ns, const char *name, const char *alias)
 
   ptab_insert_one(n->tab, strupper(alias), f);
 
-  return ((f = match_flag_ns(n, alias)) ? 1 : 0);
+  return (match_flag_ns(n, alias) ? 1 : 0);
 }
 
 

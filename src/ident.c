@@ -455,7 +455,7 @@ id_parse(ident_t *id, int *timeout, IDENT ** ident)
   if (id->buf[pos - 1] != '\n')
     return 0;
 
-  id->buf[pos++] = '\0';
+  id->buf[pos] = '\0';
 
   /* Get first field (<lport> , <fport>) */
   cp = xstrtok(id->buf, ":", &c);

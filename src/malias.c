@@ -869,7 +869,6 @@ do_malias_remove(dbref player, char *alias, char *tolist)
     notify(player, T("Permission denied."));
     return;
   }
-  i = 0;
 
   /*
    * Parse the player list

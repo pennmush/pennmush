@@ -481,7 +481,7 @@ nest_ansi_data(ansi_data *old, ansi_data *cur)
 }
 
 /* We need EDGE_UP to return 1 if x has bit set and y doesn't. */
-#define EDGE_UP(x,y,z) ((x.bits & z) != (y->bits & z))
+#define EDGE_UP(x,y,z) (((x).bits & (z)) != ((y)->bits & (z)))
 int
 write_raw_ansi_data(ansi_data *old, ansi_data *cur, char *buff, char **bp)
 {
@@ -517,26 +517,22 @@ write_raw_ansi_data(ansi_data *old, ansi_data *cur, char *buff, char **bp)
   }
 
   safe_str(ANSI_BEGIN, buff, bp);
-  if (EDGE_UP(past, cur, CBIT_HILITE)) {
-    if (f++)
-      safe_chr(';', buff, bp);
-    safe_integer(COL_HILITE, buff, bp);
-  }
-  if (EDGE_UP(past, cur, CBIT_INVERT)) {
-    if (f++)
-      safe_chr(';', buff, bp);
-    safe_integer(COL_INVERT, buff, bp);
-  }
-  if (EDGE_UP(past, cur, CBIT_FLASH)) {
-    if (f++)
-      safe_chr(';', buff, bp);
-    safe_integer(COL_FLASH, buff, bp);
-  }
-  if (EDGE_UP(past, cur, CBIT_UNDERSCORE)) {
-    if (f++)
-      safe_chr(';', buff, bp);
-    safe_integer(COL_UNDERSCORE, buff, bp);
-  }
+
+#define maybe_append_code(code) \
+  do { \
+    if (EDGE_UP(past, cur, CBIT_ ## code)) {	\
+      if (f++)				  \
+	safe_chr(';', buff, bp);	  \
+      safe_integer(COL_ ## code, buff, bp); \
+    } \
+  } while (0)
+
+  maybe_append_code(HILITE);
+  maybe_append_code(INVERT);
+  maybe_append_code(FLASH);
+  maybe_append_code(UNDERSCORE);
+
+#undef maybe_append_code
 
   if (pres.fore && pres.fore != past.fore) {
     if (f++)
@@ -544,7 +540,7 @@ write_raw_ansi_data(ansi_data *old, ansi_data *cur, char *buff, char **bp)
     safe_integer(ansi_codes[(unsigned char) pres.fore], buff, bp);
   }
   if (pres.back && pres.back != past.back) {
-    if (f++)
+    if (f)
       safe_chr(';', buff, bp);
     safe_integer(ansi_codes[(unsigned char) pres.back], buff, bp);
   }
@@ -2163,11 +2159,11 @@ ansi_pcre_copy_named_substring(const pcre * code, ansi_string *as,
 static int
 safe_markup(char const *a_tag, char *buf, char **bp, char type)
 {
-  int result = 0;
+  int result;
   char *save = buf;
-  result = safe_chr(TAG_START, buf, bp);
-  result = safe_chr(type, buf, bp);
-  result = safe_str(a_tag, buf, bp);
+  safe_chr(TAG_START, buf, bp);
+  safe_chr(type, buf, bp);
+  safe_str(a_tag, buf, bp);
   result = safe_chr(TAG_END, buf, bp);
   /* If it didn't all fit, rewind. */
   if (result)
@@ -2196,12 +2192,12 @@ safe_tag(char const *a_tag, char *buff, char **bp)
 static int
 safe_markup_cancel(char const *a_tag, char *buf, char **bp, char type)
 {
-  int result = 0;
+  int result;
   char *save = buf;
-  result = safe_chr(TAG_START, buf, bp);
-  result = safe_chr(type, buf, bp);
-  result = safe_chr('/', buf, bp);
-  result = safe_str(a_tag, buf, bp);
+  safe_chr(TAG_START, buf, bp);
+  safe_chr(type, buf, bp);
+  safe_chr('/', buf, bp);
+  safe_str(a_tag, buf, bp);
   result = safe_chr(TAG_END, buf, bp);
   /* If it didn't all fit, rewind. */
   if (result)
@@ -2235,14 +2231,14 @@ safe_tag_wrap(char const *a_tag, char const *params,
   int result = 0;
   char *save = buf;
   if (SUPPORT_PUEBLO) {
-    result = safe_chr(TAG_START, buf, bp);
-    result = safe_chr(MARKUP_HTML, buf, bp);
-    result = safe_str(a_tag, buf, bp);
+    safe_chr(TAG_START, buf, bp);
+    safe_chr(MARKUP_HTML, buf, bp);
+    safe_str(a_tag, buf, bp);
     if (params && *params && ok_tag_attribute(player, params)) {
-      result = safe_chr(' ', buf, bp);
-      result = safe_str(params, buf, bp);
+      safe_chr(' ', buf, bp);
+      safe_str(params, buf, bp);
     }
-    result = safe_chr(TAG_END, buf, bp);
+    safe_chr(TAG_END, buf, bp);
   }
   result = safe_str(data, buf, bp);
   if (SUPPORT_PUEBLO) {

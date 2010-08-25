@@ -245,10 +245,8 @@ void
 rusage_stats(void)
 {
   struct rusage usage;
-  int pid;
   int psize;
 
-  pid = getpid();
   psize = getpagesize();
   getrusage(RUSAGE_SELF, &usage);
 

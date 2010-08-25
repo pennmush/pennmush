@@ -822,7 +822,6 @@ command_init_postconfig(void)
 {
   struct bst_data sw_data;
   COMMAND_INFO *c;
-  size_t sl_size;
 
   command_state = CMD_LOAD_DONE;
 
@@ -834,7 +833,6 @@ command_init_postconfig(void)
   sw_data.table = dyn_switch_list;
   sw_data.n = 0;
   sw_data.start = sizeof switch_list / sizeof(SWITCH_VALUE);
-  sl_size = sw_data.start - 2;
   st_walk(&switch_names, build_switch_table, &sw_data);
   num_switches = sw_data.start;
   dyn_switch_list[sw_data.n].name = NULL;

@@ -658,9 +658,7 @@ shortalias(dbref it)
     return n;
   }
 
-  mush_strncpy(n, s, BUFFER_LEN);
-  if ((s = strchr(n, ';')))
-    *s = '\0';
+  copy_up_to(n, s, ';');
 
   return n;
 }

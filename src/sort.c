@@ -598,10 +598,7 @@ get_list_type(char *args[], int nargs, int type_pos, char *ptrs[], int nptrs)
       sort_order = DESCENDING;
     }
     if (str && *str) {
-      strcpy(stype, str);
-      str = strchr(stype, ':');
-      if (str)
-        *str = '\0';
+      copy_up_to(stype, str, ':');
       for (i = 0; ltypelist[i].name && strcasecmp(ltypelist[i].name, stype);
            i++) ;
       /* return ltypelist[i].name; */
@@ -627,10 +624,7 @@ get_list_type_noauto(char *args[], int nargs, int type_pos)
         str++;
         sort_order = DESCENDING;
       }
-      strcpy(stype, str);
-      str = strchr(stype, ':');
-      if (str)
-        *str = '\0';
+      copy_up_to(stype, str, ':');
       for (i = 0; ltypelist[i].name && strcasecmp(ltypelist[i].name, stype);
            i++) ;
       /* return ltypelist[i].name; */
@@ -719,7 +713,7 @@ do_gensort(dbref player, char *keys[], char *strs[], int n, char *sort_type)
   } else if (strchr(sort_type, ':') != NULL) {
     strcpy(stype, sort_type);
     ptr = strchr(stype, ':');
-    *(ptr++) = '\0';
+    *ptr++ = '\0';
     if (!*ptr)
       ptr = NULL;
     for (sorti = 0;

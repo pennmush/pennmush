@@ -1158,7 +1158,6 @@ void
 do_sweep(dbref player, const char *arg1)
 {
   char tbuf1[BUFFER_LEN];
-  char *p;
   dbref here = Location(player);
   int connect_flag = 0;
   int here_flag = 0;
@@ -1238,9 +1237,7 @@ do_sweep(dbref player, const char *arg1)
       /* listening exits only work if the room is AUDIBLE */
       for (here = Exits(Location(player)); here != NOTHING; here = Next(here)) {
         if (Audible(here)) {
-          strcpy(tbuf1, Name(here));
-          p = seek_char(tbuf1, ';');
-          *p = '\0';
+	  copy_up_to(tbuf1, Name(here), ';');
           notify_format(player, T("%s [broadcasting]."), tbuf1);
         }
       }

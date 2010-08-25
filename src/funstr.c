@@ -1689,7 +1689,7 @@ align_one_line(char *buff, char **bp, int ncols,
   static char line[BUFFER_LEN];
   static char segment[BUFFER_LEN];
   char *sp;
-  char *ptr, *tptr;
+  char *ptr;
   char *lp;
   char *lastspace;
   int i, j, k;
@@ -1774,8 +1774,9 @@ align_one_line(char *buff, char **bp, int ncols,
         safe_ansi_string(as[i], ptrs[i] - (as[i]->text), len, segment, &sp);
       }
       ptrs[i] = ptr + 1;
-      ptr = tptr;
     } else if (lastspace) {
+      char *tptr;
+
       ptr = lastspace;
       skipspace = 1;
       for (tptr = ptr;

@@ -398,7 +398,7 @@ do_mail_flags(dbref player, const char *msglist, mail_flag flag, bool negate)
   struct mail_selector ms;
   mail_flag folder;
   folder_array i;
-  int notified = 0, j;
+  int notified = 0, j = 0;
 
   if (!parse_msglist(msglist, &ms, player)) {
     return;

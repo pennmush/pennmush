@@ -51,6 +51,8 @@ Minor Changes:
    Javelin and Teal. See mush.cnf for details. [MG]
  * The script for updating config files is smarter about adding new alias
    lines. [SW]
+ * @search now only charges for elock searches which use eval or indirect
+   locks.
 
 Commands:
  * Add /preserve switch to @chzone and @chzoneall, like @chown/preserve.

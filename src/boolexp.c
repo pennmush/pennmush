@@ -1828,6 +1828,31 @@ check_attrib_lock(dbref player, dbref target,
   return !strcasecmp(buff, str);
 }
 
+/* Is this an eval (attr/result) or indirect (@obj/lock) lock?
+ * If so, @search needs to charge for it
+ */
+bool
+is_eval_lock(boolexp b)
+{
+  bvm_opcode op;
+  uint8_t *pc;
+
+  if (b == TRUE_BOOLEXP)
+    return 0;
+
+  pc = get_bytecode(b, NULL);
+  while (1) {
+    op = (bvm_opcode) *pc;
+    pc += INSN_LEN;
+    if (op == OP_TEVAL || op == OP_TIND) {
+      return 1;
+    } else if (op == OP_RET) {
+      return 0;
+    }
+  }
+
+}
+
 #ifdef DEBUG_BYTECODE
 
 /** Find the size of a parse tree node, recursively to count all child nodes.

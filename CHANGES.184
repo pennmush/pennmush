@@ -53,6 +53,8 @@ Minor Changes:
    lines. [SW]
  * @search now only charges for elock searches which use eval or indirect
    locks.
+ * Added @mail/unread, to mark mail you've already read as new. Suggested
+   by qa'toq. [MG]
 
 Commands:
  * Add /preserve switch to @chzone and @chzoneall, like @chown/preserve.

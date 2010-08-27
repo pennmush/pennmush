@@ -384,6 +384,15 @@ do_mail_unclear(dbref player, const char *msglist)
   do_mail_flags(player, msglist, M_CLEARED, 1);
 }
 
+/** Unread a set of mail messages.
+ * \param player the enactor
+ * \param msglist string specifying messages to unclear.
+ */
+void
+do_mail_unread(dbref player, const char *msglist)
+{
+  do_mail_flags(player, msglist, M_MSGREAD, 1);
+}
 
 /** Set or clear a flag on a set of messages.
  * \param player the enactor.
@@ -460,6 +469,24 @@ do_mail_flags(dbref player, const char *msglist, mail_flag flag, bool negate)
                             (negate ? T("MAIL: Msg #%d:%d uncleared.") :
                              T("MAIL: Msg #%d:%d cleared.")), (int) Folder(mp),
                             i[Folder(mp)]);
+            }
+          }
+          break;
+        case M_MSGREAD:
+          if (All(ms)) {
+            if (!notified) {
+              if (negate) {
+                notify(player, T("MAIL: All messages in all folders unread."));
+              } else {
+                notify(player, T("MAIL: All messages in all folders marked as read."));
+              }
+              notified++;
+            }
+          } else {
+            if (negate) {
+              notify_format(player, T("MAIL: Msg #%d:%d unread"), (int) Folder(mp), i[Folder(mp)]);
+            } else {
+              notify_format(player, T("MAIL: Msg #%d:%d marked as read"), (int) Folder(mp), i[Folder(mp)]);
             }
           }
           break;
@@ -600,7 +627,6 @@ do_mail_read(dbref player, char *msglist)
   }
   return;
 }
-
 
 /** List the flags, number, sender, subject, and date of messages in a
  * concise format.

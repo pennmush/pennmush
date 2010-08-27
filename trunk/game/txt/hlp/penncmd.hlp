@@ -3154,9 +3154,12 @@ See also: $-commands, EVALUATION ORDER
   type given is used in the search.
 
   @search is only mildly computationally expensive for most of the search
-  classes.  computationally expensive searches are the evaluating searches
-  (EVAL, EPLAYER, ETHING, EROOM, EEXIT) or the attribute pattern
-  searches (COMMAND, LISTEN)
+  classes.  Computationally expensive searches are the evaluating searches
+  (EVAL, EPLAYER, ETHING, EROOM, EEXIT), the attribute pattern
+  searches (COMMAND, LISTEN), and ELOCK searches which perform evaluation
+  searches (attr/value) or indirect locks (@obj/lock). These searches all
+  cost a number of pennies (the exact amount is configurable; see 
+  @config find_cost).
   
   See "help @search5" for some examples.
 & @search5

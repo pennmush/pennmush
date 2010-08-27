@@ -88,8 +88,8 @@ while (<IN>) {
 	    $seen{$key} = 1;
 	} else {
 	    # Present in working copy and dist copy.
-	    my $nwork = scalar $working_cnf->{$key};
-	    my $ndist = scalar $dist_cnf->{$key};
+	    my $nwork = scalar @{$working_cnf->{$key}};
+	    my $ndist = scalar @{$dist_cnf->{$key}};
 	    if ($nwork == $ndist) {
 		# Both copies have the same number of repeats. Use working version.
 		dump_directive \*OUT, $working_cnf->{$key};

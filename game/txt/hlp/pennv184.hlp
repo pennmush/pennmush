@@ -17,6 +17,9 @@ Major Changes:
  * You can now do the equivilent of @command/add, @hook, @function and
    @attribute/access from alias.cnf and restrict.cnf, to add/configure
    commands, functions and standard attributes. Suggested by Paige. [MG]
+ * Exits now use @alias for alternate names. The old style of
+   including aliases directly in names is still supported, but
+   depreciated in new construction. Suggested by [MG]. [SW]
 
 Minor Changes:
  * @power now reports when you try and set a power which is already set (or
@@ -41,6 +44,10 @@ Minor Changes:
    on spammy debug output and the like. By popular demand. [SW]
  * Added support for MSSP (Mud Server Status Protocol), based on patches by
    Javelin and Teal. See mush.cnf for details. [MG]
+ * The script for updating config files is smarter about adding new alias
+   lines. [SW]
+ * @search now only charges for elock searches which use eval or indirect
+   locks.
 
 Commands:
  * Add /preserve switch to @chzone and @chzoneall, like @chown/preserve.

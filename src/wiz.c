@@ -47,6 +47,7 @@
 #include "command.h"
 #include "dbdefs.h"
 #include "extmail.h"
+#include "boolexp.h"
 #include "ansi.h"
 
 
@@ -1979,7 +1980,6 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
   return 0;
 }
 
-
 /* Does the actual searching */
 static int
 raw_search(dbref player, const char *owner, int nargs, const char **args,
@@ -2001,27 +2001,28 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
     return -1;
   }
 
-  /* make sure player has money to do the search -
-   * But only if this does an eval or lock search. */
-  if ((spec.lock != TRUE_BOOLEXP) ||
-      spec.cmdstring[0] || spec.listenstring[0] || spec.eval[0]) {
-    if (!payfor(player, FIND_COST)) {
-      notify_format(player, T("Searches cost %d %s."), FIND_COST,
-                    ((FIND_COST == 1) ? MONEY : MONIES));
-      return -1;
-    }
-  }
-
   is_wiz = Search_All(player) || See_All(player);
 
   if ((spec.owner != ANY_OWNER && spec.owner != Owner(player)) &&
       !(is_wiz || (spec.type == TYPE_PLAYER) ||
         (ZMaster(spec.owner) && eval_lock(player, spec.owner, Zone_Lock)))) {
-    giveto(player, FIND_COST);
     notify(player, T("You need a search warrant to do that!"));
     if (spec.lock != TRUE_BOOLEXP)
       free_boolexp(spec.lock);
     return -1;
+  }
+
+  /* make sure player has money to do the search -
+   * But only if this does an eval or lock search. */
+  if (((spec.lock != TRUE_BOOLEXP) && is_eval_lock(spec.lock)) ||
+      spec.cmdstring[0] || spec.listenstring[0] || spec.eval[0]) {
+    if (!payfor(player, FIND_COST)) {
+      notify_format(player, T("Searches cost %d %s."), FIND_COST,
+                    ((FIND_COST == 1) ? MONEY : MONIES));
+      if (spec.lock != TRUE_BOOLEXP)
+        free_boolexp(spec.lock);
+      return -1;
+    }
   }
 
   result_size = (db_top / 4) + 1;

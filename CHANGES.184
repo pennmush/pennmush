@@ -53,7 +53,8 @@ Minor Changes:
    lines. [SW]
  * @search now only charges for elock searches which use eval or indirect
    locks.
- * Added @mail/unread, to mark mail you've already read as new. Suggested
+ * Added @mail/unread, to mark mail you've already read as new, and 
+   @mail/status to change read/cleared/tagged status for messages.. Suggested
    by qa'toq. [MG]
 
 Commands:

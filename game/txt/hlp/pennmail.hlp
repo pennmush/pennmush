@@ -101,6 +101,13 @@
         
   @mail/unread [<msg-list> | all]
         Mark messages which have already been read as new/unread.
+        
+  @mail/status [<msg-list> | all]=<status>
+        Set the status of the given messages. <status> can be one of tagged,
+        untagged, cleared, uncleared, read or unread. read marks a new
+        message as read without reading it, the others are equivilent to
+        @mail/tag, @mail/untag, @mail/clear, @mail/unclear and @mail/unread
+        respectively.
 & mail-folders
   The MUSH mail system allows each player 16 folders, numbered from 0
   to 15. Mail can only be in 1 folder at a time. Folder 0 is the

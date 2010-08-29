@@ -394,6 +394,40 @@ do_mail_unread(dbref player, const char *msglist)
   do_mail_flags(player, msglist, M_MSGREAD, 1);
 }
 
+/** Change the status for a set of mail messages.
+ * \param player the enactor
+ * \param msglist string specifying messages to unclear.
+ * \param status the status to set for the messages
+ */
+void
+do_mail_status(dbref player, const char *msglist, const char *status)
+{
+  int flag;
+  bool negate = 0;
+
+  if (!status || !*status) {
+    notify(player, T("MAIL: What do you want to do with the messages?"));
+    return;
+  }
+
+  if (string_prefix("read", status) || string_prefix("unread", status))
+    flag = M_MSGREAD;
+  else if (string_prefix("cleared", status) || string_prefix("uncleared", status))
+    flag = M_CLEARED;
+  else if (string_prefix("tagged", status) || string_prefix("untagged", status))
+    flag = M_TAG;
+  else {
+    notify(player, T("MAIL: Unknown status."));
+    return;
+  }
+
+  if (*status == 'u' || *status == 'U')
+    negate = 1;
+
+  do_mail_flags(player, msglist, flag, negate);
+}
+
+
 /** Set or clear a flag on a set of messages.
  * \param player the enactor.
  * \param msglist string representing list of messages to operate on.

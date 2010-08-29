@@ -634,6 +634,8 @@ COMMAND(cmd_mail)
     do_mail_read(player, arg_left);
   else if (SW_ISSET(sw, SWITCH_UNREAD))
     do_mail_unread(player, arg_left);
+  else if (SW_ISSET(sw, SWITCH_STATUS))
+    do_mail_status(player, arg_left, arg_right);
   else if (SW_ISSET(sw, SWITCH_CLEAR))
     do_mail_clear(player, arg_left);
   else if (SW_ISSET(sw, SWITCH_UNCLEAR))

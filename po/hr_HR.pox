@@ -3281,6 +3281,10 @@ msgstr "PO©TA: Sve poruke premje¹tene u folder %d [%s]"
 msgid "MAIL: All messages in all folders cleared."
 msgstr "PO©TA: Obrisane sve poruke u svim folderima."
 
+#: extmail.c:481
+msgid "MAIL: All messages in all folders marked as read."
+msgstr "PO©TA: Sve poruke u svim folderima oznaèene kao proèitane."
+
 #: extmail.c:428
 msgid "MAIL: All messages in all folders tagged."
 msgstr "PO©TA: Sve poruke u svim folderima oznaèene."
@@ -3288,6 +3292,10 @@ msgstr "PO©TA: Sve poruke u svim folderima oznaèene."
 #: extmail.c:445
 msgid "MAIL: All messages in all folders uncleared."
 msgstr "PO©TA: Poni¹teno brisanje svih poruka u svim folderima."
+
+#: extmail.c:479
+msgid "MAIL: All messages in all folders unread."
+msgstr "PO©TA: Sve poruke u svim folderima oznaèene kao neproèitane."
 
 #: extmail.c:426
 msgid "MAIL: All messages in all folders untagged."
@@ -3410,6 +3418,11 @@ msgstr "PO©TA: Starosti poruka moraju biti cijeli brojevi"
 msgid "MAIL: Msg #%d:%d cleared."
 msgstr "PO©TA: Poruka #%d:%d obrisana."
 
+#: extmail.c:489
+#, c-format
+msgid "MAIL: Msg #%d:%d marked as read"
+msgstr "PO©TA: Poruka #%d:%d oznaèena kao proèitana"
+
 #: extmail.c:436
 #, c-format
 msgid "MAIL: Msg #%d:%d tagged"
@@ -3419,6 +3432,11 @@ msgstr "PO©TA: Poruka #%d:%d oznaèena"
 #, c-format
 msgid "MAIL: Msg #%d:%d uncleared."
 msgstr "PO©TA: Poruka #%d:%d od-obrisana."
+
+#: extmail.c:487
+#, c-format
+msgid "MAIL: Msg #%d:%d unread"
+msgstr "PO©TA: Poruka #%d:%d oznaèena kao neproèitana"
 
 #: extmail.c:433
 #, c-format

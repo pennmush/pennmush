@@ -1836,11 +1836,11 @@ FUNCTION(fun_fullname)
     if (IsExit(it)) {
       ATTR *a = atr_get_noparent(it, "ALIAS");
       if (a) {
-	char *aliases = atr_value(a);
-	if (aliases && *aliases) {
-	  safe_chr(';', buff, bp);
-	  safe_str(aliases, buff, bp);
-	}
+        char *aliases = atr_value(a);
+        if (aliases && *aliases) {
+          safe_chr(';', buff, bp);
+          safe_str(aliases, buff, bp);
+        }
       }
     }
   } else

@@ -530,7 +530,7 @@ mush_strndup(const char *src, size_t len, const char *check)
                           const char *restrict string)
  __attribute_malloc__;
     extern const char *standard_tokens[2];      /* ## and #@ */
-char *copy_up_to(char * RESTRICT dest, const char * RESTRICT src, char c);
+    char *copy_up_to(char *RESTRICT dest, const char *RESTRICT src, char c);
     char *trim_space_sep(char *str, char sep);
     int do_wordcount(char *str, char sep);
     char *remove_word(char *list, char *word, char sep);

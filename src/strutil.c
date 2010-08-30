@@ -1008,12 +1008,12 @@ replace_string2(const char *old[2], const char *newbits[2],
  * \return pointer to the start of the string
  */
 char *
-copy_up_to(char * RESTRICT dest, const char * RESTRICT src, char c)
+copy_up_to(char *RESTRICT dest, const char *RESTRICT src, char c)
 {
   char *d;
   d = dest;
 
-  for (d = dest; *src && *src != c; src++) 
+  for (d = dest; *src && *src != c; src++)
     *d++ = *src;
 
   *d = '\0';

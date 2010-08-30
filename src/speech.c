@@ -1000,7 +1000,8 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
   tp = tbuf;
 
   /* Figure out the 'name' of the player */
-  if ((alias = shortalias(player)) && *alias && PAGE_ALIASES && strcasecmp(alias, Name(player)))
+  if ((alias = shortalias(player)) && *alias && PAGE_ALIASES
+      && strcasecmp(alias, Name(player)))
     current = tprintf("%s (%s)", Name(player), alias);
   else
     current = (char *) Name(player);

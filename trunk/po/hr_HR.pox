@@ -3515,6 +3515,10 @@ msgstr "PO©TA: Broj starih poruka u po¹tanskom spoolu je %d, a zajedno imaju %d 
 msgid "MAIL: To whom should I forward?"
 msgstr "PO©TA: Kome bih trebao proslijediti po¹tu?"
 
+#: extmail.c:420
+msgid "MAIL: Unknown status."
+msgstr "PO©TA: Nepoznato stanje."
+
 #: src/extmail.c:378
 #, c-format
 msgid "MAIL: Unread Msg #%d:%d cleared! Use @mail/unclear %d:%d to recover."
@@ -3528,6 +3532,10 @@ msgstr "PO©TA: Upozorenje! Ogranièenje za poruke u inboxu je %d!"
 #: malias.c:145
 msgid "MAIL: What alias do you want to create?"
 msgstr "PO©TA: Koji alias ¾eli¹ stvoriti?"
+
+#: extmail.c:409
+msgid "MAIL: What do you want to do with the messages?"
+msgstr "PO©TA: ©to ¾eli¹ napraviti s tim porukama?"
 
 #: src/extmail.c:239 src/extmail.c:279
 msgid "MAIL: What folder is that?"

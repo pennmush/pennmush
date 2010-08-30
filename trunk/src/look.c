@@ -1237,7 +1237,7 @@ do_sweep(dbref player, const char *arg1)
       /* listening exits only work if the room is AUDIBLE */
       for (here = Exits(Location(player)); here != NOTHING; here = Next(here)) {
         if (Audible(here)) {
-	  copy_up_to(tbuf1, Name(here), ';');
+          copy_up_to(tbuf1, Name(here), ';');
           notify_format(player, T("%s [broadcasting]."), tbuf1);
         }
       }

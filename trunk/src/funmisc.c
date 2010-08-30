@@ -589,14 +589,17 @@ FUNCTION(fun_reswitch)
                        PE_DEFAULT, PT_DEFAULT, pe_info);
     *dp = '\0';
 
-    if ((re = pcre_compile(remove_markup(pstr, NULL), flags, &errptr, &erroffset, tables)) == NULL) {
+    if ((re =
+         pcre_compile(remove_markup(pstr, NULL), flags, &errptr, &erroffset,
+                      tables)) == NULL) {
       /* Matching error. Ignore this one, move on. */
       continue;
     }
     add_check("pcre");
     extra = default_match_limit();
     search = 0;
-    subpatterns = pcre_exec(re, extra, mas->text, mas->len, search, 0, offsets, 99);
+    subpatterns =
+      pcre_exec(re, extra, mas->text, mas->len, search, 0, offsets, 99);
     if (subpatterns >= 0) {
       /* If there's a #$ in a switch's action-part, replace it with
        * the value of the conditional (mstr) before evaluating it.

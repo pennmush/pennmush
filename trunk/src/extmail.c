@@ -412,7 +412,8 @@ do_mail_status(dbref player, const char *msglist, const char *status)
 
   if (string_prefix("read", status) || string_prefix("unread", status))
     flag = M_MSGREAD;
-  else if (string_prefix("cleared", status) || string_prefix("uncleared", status))
+  else if (string_prefix("cleared", status)
+           || string_prefix("uncleared", status))
     flag = M_CLEARED;
   else if (string_prefix("tagged", status) || string_prefix("untagged", status))
     flag = M_TAG;
@@ -512,15 +513,18 @@ do_mail_flags(dbref player, const char *msglist, mail_flag flag, bool negate)
               if (negate) {
                 notify(player, T("MAIL: All messages in all folders unread."));
               } else {
-                notify(player, T("MAIL: All messages in all folders marked as read."));
+                notify(player,
+                       T("MAIL: All messages in all folders marked as read."));
               }
               notified++;
             }
           } else {
             if (negate) {
-              notify_format(player, T("MAIL: Msg #%d:%d unread"), (int) Folder(mp), i[Folder(mp)]);
+              notify_format(player, T("MAIL: Msg #%d:%d unread"),
+                            (int) Folder(mp), i[Folder(mp)]);
             } else {
-              notify_format(player, T("MAIL: Msg #%d:%d marked as read"), (int) Folder(mp), i[Folder(mp)]);
+              notify_format(player, T("MAIL: Msg #%d:%d marked as read"),
+                            (int) Folder(mp), i[Folder(mp)]);
             }
           }
           break;

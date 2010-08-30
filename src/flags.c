@@ -1531,7 +1531,8 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
 
   n = hashfind("FLAG", &htab_flagspaces);
   if (!n) {
-    notify_format(player, T("Internal error: Unable to find flagspace '%s'!"), "FLAG");
+    notify_format(player, T("Internal error: Unable to find flagspace '%s'!"),
+                  "FLAG");
     return;
   }
   if ((f = flag_hash_lookup(n, flag, Typeof(thing))) == NULL) {
@@ -1694,7 +1695,8 @@ set_power(dbref player, dbref thing, const char *flag, int negate)
 
   n = hashfind("POWER", &htab_flagspaces);
   if (!n) {
-    notify_format(player, T("Internal error: Unable to find flagspace '%s'!"), "POWER");
+    notify_format(player, T("Internal error: Unable to find flagspace '%s'!"),
+                  "POWER");
     return;
   }
 

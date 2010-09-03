@@ -4129,7 +4129,7 @@ See also: scramble(), pickrand()
     > say sign(0)
     You say, "0"
   
-See also: abs(), bound
+See also: abs(), bound()
 & SIN()
   sin(<angle>[, <angle type>])
  

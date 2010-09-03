@@ -99,6 +99,8 @@ Fixes:
  * %q-registers did not carry over into @includes correctly. Reported by
    Reaver. [MG]
  * Double-free in follow command fixed. Reported by Anya@ST:DW. [MG]
+ * locate() sometimes returned #-2 when two objects matched, even if only
+   one of them was the preferred type. Reported by Minion. [MG]
 
 
 & 1.8.4p0

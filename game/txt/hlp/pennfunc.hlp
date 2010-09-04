@@ -1719,7 +1719,7 @@ See also: name(), accname(), iname(), alias(), fullalias()
   
 See also: list(), config()
 & GET()
-& XGET
+& XGET()
   get(<object>/<attribute>)
   xget(<object>, <attribute>)
 
@@ -5219,7 +5219,7 @@ See also: hastype(), TYPES OF OBJECTS
     ParentFoo
   
   Continued in 'help pfun2'.
-& pfun2
+& PFUN2
 
   This function does not have the security problems of using 
   
@@ -5236,7 +5236,7 @@ See also: hastype(), TYPES OF OBJECTS
   See 'help pfun3' for an example.
   
 See also: ufun(), get(), parent(), zfun(), PARENTS
-& pfun3
+& PFUN3
 
   Example:
   

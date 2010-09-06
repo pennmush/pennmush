@@ -69,6 +69,7 @@ struct pe_info {
   Debug_Info *debug_strings;    /**< DEBUG infromation */
   int arg_count;                /**< Number of arguments passed to function */
   int iter_nesting;             /**< Current iter() nesting depth */
+  int local_iter_nesting;       /**< Expression-level iter() nesting depth */
   char *iter_itext[MAX_ITERS];  /**< itext() replacements in iter() */
   int iter_inum[MAX_ITERS];     /**< inum() values in iter() */
 };

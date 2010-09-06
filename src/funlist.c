@@ -162,8 +162,7 @@ FUNCTION(fun_munge)
   char **ptrs1, **ptrs2, **results;
   char **ptrs3;
   int i, j, nptrs1, nptrs2, nresults;
-  dbref thing;
-  ATTR *attrib;
+  ufun_attrib ufun;
   char sep, isep[2] = { '\0', '\0' }, *osep, osepd[2] = {
   '\0', '\0'};
   int first;
@@ -180,16 +179,11 @@ FUNCTION(fun_munge)
     osep = osepd;
   }
 
+
+
   /* find our object and attribute */
-  parse_anon_attrib(executor, args[0], &thing, &attrib);
-  if (!GoodObject(thing) || !attrib || !Can_Read_Attr(executor, thing, attrib)) {
-    free_anon_attrib(attrib);
+  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
     return;
-  }
-  if (!CanEvalAttr(executor, thing, attrib)) {
-    free_anon_attrib(attrib);
-    return;
-  }
 
   /* Copy the first list, since we need to pass it to two destructive
    * routines.
@@ -219,18 +213,15 @@ FUNCTION(fun_munge)
     mush_free(ptrs1, "ptrarray");
     mush_free(ptrs2, "ptrarray");
     mush_free(ptrs3, "ptrarray");
-    free_anon_attrib(attrib);
     return;
   }
-  /* Call the user function */
 
+  /* Call the user function */
   lp = list1;
   rp = rlist;
   uargs[0] = lp;
   uargs[1] = isep;
-  do_userfn(rlist, &rp, thing, attrib, 2, uargs,
-            executor, caller, enactor, pe_info, 0);
-  *rp = '\0';
+  call_ufun(&ufun, uargs, 2, rlist, executor, enactor, pe_info);
 
   /* Now that we have our result, put it back into array form. Search
    * through list1 until we find the element position, then copy the
@@ -263,7 +254,6 @@ FUNCTION(fun_munge)
   mush_free(ptrs2, "ptrarray");
   mush_free(ptrs3, "ptrarray");
   mush_free(results, "ptrarray");
-  free_anon_attrib(attrib);
 }
 
 /* ARGSUSED */

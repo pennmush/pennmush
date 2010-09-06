@@ -162,7 +162,7 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
   ufun->thing = executor;
   thingname = NULL;
 
-  if (!attrstring) return 0; 
+  if (!attrstring) return 0;
   strncpy(astring, attrstring, BUFFER_LEN);
 
   /* Split obj/attr */
@@ -172,7 +172,7 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
   } else {
     attrname = astring;
   }
- 
+
   if (thingname && (flags & UFUN_LAMBDA) && !strcasecmp(thingname,"#lambda")) {
     /* It's a lambda. */
     thingname = NULL;
@@ -193,7 +193,13 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
   attrib = (ATTR *) atr_get(ufun->thing, upcasestr(attrname));
   // An empty attrib is the same as no attrib.
   if (attrib == NULL) {
-    return (flags & UFUN_REQUIRE_ATTR) ? 0 : 1;
+    if (flags & UFUN_REQUIRE_ATTR) {
+      if (!Can_Examine(executor, ufun->thing))
+        ufun->errmess = e_atrperm;
+      return 0;
+    } else {
+      return 1;
+    }
   }
   if (!Can_Read_Attr(executor, ufun->thing, attrib)) {
     ufun->errmess = e_atrperm;

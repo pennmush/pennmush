@@ -599,6 +599,8 @@ make_pe_info()
   pe_info->arg_count = 0;
   pe_info->iter_nesting = -1;
   pe_info->local_iter_nesting = -1;
+  pe_info->iter_break = -1;
+  pe_info->dolists = 0;
 
   return pe_info;
 }

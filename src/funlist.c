@@ -2279,6 +2279,10 @@ FUNCTION(fun_iter)
     funccount = pe_info->fun_invocations;
     oldbp = *bp;
     mush_free(tbuf2, "replace_string.buff");
+    if (pe_info->iter_break >= 0) {
+      pe_info->iter_break--;
+      break;
+    }
   }
   *place = 0;
   pe_info->iter_itext[pe_info->iter_nesting] = NULL;
@@ -2286,6 +2290,28 @@ FUNCTION(fun_iter)
   pe_info->local_iter_nesting--;
   mush_free(outsep, "string");
   mush_free(list, "string");
+}
+
+/* ARGSUSED */
+FUNCTION(fun_ibreak)
+{
+  int i = 1;
+
+  if (nargs && args[0] && *args[0]) {
+    if (!is_strict_integer(args[0])) {
+      safe_str(T(e_int), buff, bp);
+      return;
+    }
+    i = parse_integer(args[0]);
+  }
+
+  if (i < 0 || (i + pe_info->iter_break) > (pe_info->local_iter_nesting - pe_info->dolists)) {
+    safe_str(T(e_range), buff, bp);
+    return;
+  }
+
+  pe_info->iter_break += i;
+
 }
 
 /* ARGSUSED */

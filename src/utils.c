@@ -144,10 +144,11 @@ free_anon_attrib(ATTR *attrib)
  * \return 0 on failure, true on success.
  */
 bool
-fetch_ufun_attrib(char *attrstring, dbref executor, ufun_attrib * ufun,
+fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
                   int flags)
 {
   char *thingname, *attrname;
+  char astring[BUFFER_LEN];
   ATTR *attrib;
 
   if (!ufun) return 0;
@@ -161,12 +162,15 @@ fetch_ufun_attrib(char *attrstring, dbref executor, ufun_attrib * ufun,
   ufun->thing = executor;
   thingname = NULL;
 
+  if (!attrstring) return 0; 
+  strncpy(astring, attrstring, BUFFER_LEN);
+
   /* Split obj/attr */
-  if ((flags & UFUN_OBJECT) && ((attrname = strchr(attrstring,'/')) != NULL)) {
-    thingname = attrstring;
+  if ((flags & UFUN_OBJECT) && ((attrname = strchr(astring,'/')) != NULL)) {
+    thingname = astring;
     *(attrname++) = '\0';
   } else {
-    attrname = attrstring;
+    attrname = astring;
   }
  
   if (thingname && (flags & UFUN_LAMBDA) && !strcasecmp(thingname,"#lambda")) {
@@ -187,6 +191,10 @@ fetch_ufun_attrib(char *attrstring, dbref executor, ufun_attrib * ufun,
   }
 
   attrib = (ATTR *) atr_get(ufun->thing, upcasestr(attrname));
+  // An empty attrib is the same as no attrib.
+  if (attrib == NULL) {
+    return (flags & UFUN_REQUIRE_ATTR) ? 0 : 1;
+  }
   if (!Can_Read_Attr(executor, ufun->thing, attrib)) {
     ufun->errmess = e_atrperm;
     return 0;
@@ -231,7 +239,7 @@ call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
   char *rp;
   char *old_wenv[10];
   char *saveqs[NUMQ];
-  int iter_nest;
+  int iter_nest = 0;
   int old_args = 0;
   int i;
   int pe_ret;
@@ -321,10 +329,11 @@ call_attrib(dbref thing, const char *attrname, const char *wenv_args[],
             int wenv_argc, char *ret, dbref enactor, PE_Info *pe_info)
 {
   ufun_attrib ufun;
-  if (!fetch_ufun_attrib(attrname, thing, &ufun, UFUN_LOCALIZE)) {
+  if (!fetch_ufun_attrib(attrname, thing, &ufun,
+                         UFUN_LOCALIZE | UFUN_REQUIRE_ATTR)) {
     return 0;
   }
-  return !call_ufun(&ufun, wenv_args, wenv_argc, ret, thing, enactor, pe_info);
+  return !call_ufun(&ufun, (char **) wenv_args, wenv_argc, ret, thing, enactor, pe_info);
 }
 
 /** Given an exit, find the room that is its source through brute force.

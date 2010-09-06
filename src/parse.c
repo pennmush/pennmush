@@ -371,10 +371,11 @@ bool
 is_strict_number(char const *str)
 {
   char *end;
+  int throwaway;
   if (!str)
     return 0;
   errno = 0;
-  strtod(str, &end);
+  throwaway = strtod(str, &end);
   if (errno == ERANGE || *end != '\0')
     return 0;
   return end > str;

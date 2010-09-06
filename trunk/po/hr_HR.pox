@@ -553,10 +553,6 @@ msgstr "#-1 TAJ IGRAÈ NE POSTOJI"
 msgid "#-1 NO SUCH TYPE"
 msgstr "#-1 TAJ TIP NE POSTOJI"
 
-#: src/funufun.c:310
-msgid "#-1 NO SUCH USER FUNCTION"
-msgstr "#-1 TA KORISNIÈKA FUNKCIJA NE POSTOJI"
-
 #: extchat.c:2279
 msgid "#-1 NO TEXT GIVEN"
 msgstr "#-1 NIJE ZADAN TEKST"

@@ -219,10 +219,6 @@ msgstr "#-1 OBJEKT IST NICHT SICHTBAR"
 msgid "#-1 NO SUCH PLAYER"
 msgstr "#-1 SPIELER NICHT VORHANDEN"
 
-#: src/funufun.c:310
-msgid "#-1 NO SUCH USER FUNCTION"
-msgstr "#-1 DIESE BENUTZERFUNKTION IST NICHT VORHANDEN"
-
 #: src/bsd.c:4485 src/bsd.c:4498
 msgid "#-1 NOT CONNECTED"
 msgstr "#-1 NICHT VERBUNDEN"

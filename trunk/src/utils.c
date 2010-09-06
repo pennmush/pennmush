@@ -194,18 +194,18 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
   // An empty attrib is the same as no attrib.
   if (attrib == NULL) {
     if (flags & UFUN_REQUIRE_ATTR) {
-      if (!Can_Examine(executor, ufun->thing))
+      if (!(flags & UFUN_IGNORE_PERMS) && !Can_Examine(executor, ufun->thing))
         ufun->errmess = e_atrperm;
       return 0;
     } else {
       return 1;
     }
   }
-  if (!Can_Read_Attr(executor, ufun->thing, attrib)) {
+  if (!(flags & UFUN_IGNORE_PERMS) && !Can_Read_Attr(executor, ufun->thing, attrib)) {
     ufun->errmess = e_atrperm;
     return 0;
   }
-  if (!CanEvalAttr(executor, ufun->thing, attrib)) {
+  if (!(flags & UFUN_IGNORE_PERMS) && !CanEvalAttr(executor, ufun->thing, attrib)) {
     ufun->errmess = e_perm;
     return 0;
   }
@@ -336,7 +336,7 @@ call_attrib(dbref thing, const char *attrname, const char *wenv_args[],
 {
   ufun_attrib ufun;
   if (!fetch_ufun_attrib(attrname, thing, &ufun,
-                         UFUN_LOCALIZE | UFUN_REQUIRE_ATTR)) {
+                         UFUN_LOCALIZE | UFUN_REQUIRE_ATTR | UFUN_IGNORE_PERMS)) {
     return 0;
   }
   return !call_ufun(&ufun, (char **) wenv_args, wenv_argc, ret, thing, enactor, pe_info);

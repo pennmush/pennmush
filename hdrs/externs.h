@@ -252,7 +252,7 @@ extern EVAL_CONTEXT global_eval_context;
 void do_second(void);
 int do_top(int ncom);
 void do_halt(dbref owner, const char *ncom, dbref victim);
-void parse_que(dbref player, const char *command, dbref cause);
+void parse_que(dbref player, const char *command, dbref cause, PE_Info *pe_info);
 int queue_attribute_base
   (dbref executor, const char *atrname, dbref enactor, int noparent);
 ATTR *queue_attribute_getatr(dbref executor, const char *atrname, int noparent);

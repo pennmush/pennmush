@@ -2153,13 +2153,19 @@ See also: itext(), inum(), ilev(), map(), @dolist
   %i<n>
   inum(<n>)
 
-  These functions, when called within an iter(), return the equivalent
-  of ## (itext) or #@ (inum), with reference to the <n>th more outermost
-  iter(), where <n>=0 refers to the current iter(), <n>=1 to an iter() in
-  which the current iter() is nested, etc. %i<n> is shorthand for
-  itext(<n>) (up to itext(9)).  ilev() returns the current nesting depth,
-  or -1 if it is outside an iter().  Thus, itext(ilev()) will return
-  the ## of the outermost iter().
+  These functions return the equivilent of ## (itext) or #@ (inum) for iter()
+  and @dolist, where an <n>=0 returns to the current iter or @dolist, <n>=1 
+  refers to the iter()/@dolist which the current iter() or @dolist is nested
+  in, etc. An <n> of "L" can be used to refer to the outermost iter()/@dolist.
+  %i<n> is an alias for itext(<n>), where <n> can be from 0 to 9 (or "L").
+  
+  ilev() returns the current nesting depth, or -1 when used outside an iter()
+  or @dolist. Thus, itext(ilev()) will return the outermost ##, equivilent to
+  %iL.
+  
+  See 'help itext2' for examples.
+See also: iter(), @dolist
+& ITEXT2
 
   Examples:
     > say iter(red blue green, iter(fish shoe, #@:##))
@@ -2173,8 +2179,13 @@ See also: itext(), inum(), ilev(), map(), @dolist
   
     > say iter(red blue green,iter(fish shoe, %i1:%i0))
     You say, "red:fish red:shoe blue:fish blue:shoe green:fish green:shoe"
-  
-See also: iter()
+    
+    > @dolist red blue green=say iter(fish shoe, %i1:%i0)
+    You say, "red:fish red:shoe"
+		You say, "blue:fish blue:shoe"
+    You say, "green:fish green:shoe"
+    
+See also: iter(), @dolist
 & IPADDR()
   ipaddr(<player|descriptor>)
 

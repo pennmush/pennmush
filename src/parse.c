@@ -606,6 +606,14 @@ make_pe_info()
 void
 free_pe_info(PE_Info *pe_info)
 {
+  if (!pe_info)
+    return;
+  if (pe_info->iter_nesting >= 0) {
+    int i;
+    for (i = pe_info->iter_nesting; i >= 0; i--) {
+      mush_free(pe_info->iter_itext[i], "dolist_arg");
+    }
+  }
   mush_free(pe_info, "process_expression.pe_info");
   return;
 }

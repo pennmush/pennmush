@@ -1309,19 +1309,22 @@ See also: @poll, WHO, doing()
   
   If the string "##" appears anywhere in <action list>, it will be replaced
   with the current element of <list>. The string "#@" is replaced with the
-  position of the current element in the list.
+  position of the current element in the list. Note that these replacements
+  occur before evaluation. It is recommended that you use the itext() and
+  inum() functions instead, which serve the same purpose but are replaced
+  during evaluation. You can also use itext/inum to refer to nested @dolists.
  
   If the /notify switch is given, the command "@notify me" is queued after 
   all copies of <action list> have been queued. This is useful for object
   synchronization with semaphores.
   
   Example:
-    > @dolist a b c=say ## is number #@
+    > @dolist a b c=say %i0 is number [inum(0)]
     You say, "a is number 1"
     You say, "b is number 2"
     You say, "c is number 3"
     
-See also: iter(), map(), @notify, SEMAPHORES, ACTION LISTS
+See also: iter(), itext(), map(), @notify, SEMAPHORES, ACTION LISTS
 & @drain
   @drain[/any][/all] <object>[/<attribute>][=<number>]
   

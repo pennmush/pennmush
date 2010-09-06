@@ -21,6 +21,8 @@ Version 1.8.4 patchlevel 2                                 ??? ??,  2010
 Minor Changes:
  * Player names with spaces no longer need to be in given in quotes for
    @name. Suggested by Minion. [MG]
+ * @decompile no longer shows flags which can't be set by players, like
+   GOING and CONNECTED. [MG]
 
 Version 1.8.4 patchlevel 1                                 Sep 05,  2010
 

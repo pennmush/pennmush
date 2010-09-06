@@ -1167,7 +1167,7 @@ do_search(dbref player, const char *arg1, char **arg3)
     arg1 = "me";
 
   /* First argument is a player, so we could have a quoted name */
-  if (PLAYER_NAME_SPACES && *arg1 == '\"') {
+  if (*arg1 == '\"') {
     for (; *arg1 && ((*arg1 == '\"') || isspace((unsigned char) *arg1));
          arg1++) ;
     strcpy(tbuf, arg1);

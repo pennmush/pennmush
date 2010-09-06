@@ -16,6 +16,12 @@ chronological order (most recent first)
 
 ==========================================================================
 
+Version 1.8.4 patchlevel 2                                 ??? ??,  2010
+
+Minor Changes:
+ * Player names with spaces no longer need to be in given in quotes for
+   @name. Suggested by Minion. [MG]
+
 Version 1.8.4 patchlevel 1                                 Sep 05,  2010
 
 Major Changes:

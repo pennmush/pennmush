@@ -2572,10 +2572,6 @@ See also: message(), @chatformat, @pageformat
 
   Changes the name of <object> to <new name>.
 
-  When changing a player's name on games that support multi-word player
-  names, the name should be enclosed in quotes. For example:
-    > @name me="James Bond"
-
   Players can change their name to anything valid which is not currently in
   use by another player, as a name or alias. (They can change their name to
   something from their own @alias.)
@@ -2590,6 +2586,9 @@ See also: message(), @chatformat, @pageformat
     > @alias exit=east;e
     (Old-style)
     > @name exit=East <e>;east;e
+    
+  When <object>'s name is changed, its ONAME and ANAME verb attributes will
+  be triggered. See 'help @oname' for details.
   
 See also: @alias, @oname, name(), fullname()
 & @ONAME

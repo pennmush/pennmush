@@ -27,6 +27,8 @@ Minor Changes:
  * hardcode: call_attrib is now a wrapper around call_ufun. [GM]
  * The %i<n> substitution, and itext()/inum()/ilev() functions, now work
    for @dolist as well as iter(). [MG]
+ * iter() context (itext(), inum(), etc) is no longer propagated through
+   ufuns. [MG]
 
 
 Version 1.8.4 patchlevel 1                                 Sep 05,  2010

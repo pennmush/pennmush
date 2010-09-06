@@ -597,6 +597,7 @@ make_pe_info()
   pe_info->debug_strings = NULL;
   pe_info->arg_count = 0;
   pe_info->iter_nesting = -1;
+  pe_info->local_iter_nesting = -1;
 
   return pe_info;
 }
@@ -1030,17 +1031,32 @@ process_expression(char *buff, char **bp, char const **str,
           if (!nextc)
             goto exit_sequence;
           (*str)++;
-          if (!isdigit((unsigned char) nextc)) {
-            safe_str(T(e_int), buff, bp);
-            break;
-          }
-          inum_this = nextc - '0';
-          if (inum_this < 0 || inum_this > pe_info->iter_nesting
-              || (pe_info->iter_nesting - inum_this) < 0) {
-            safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
+          if (pe_info->iter_nesting >= 0) {
+            if (nextc == 'l') {
+              if (pe_info->local_iter_nesting >= 0) {
+                safe_str(
+                    pe_info->iter_itext[
+                        pe_info->iter_nesting - pe_info->local_iter_nesting],
+                    buff, bp);
+              } else {
+                safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
+              }
+              break;
+            }
+            if (!isdigit((unsigned char) nextc)) {
+              safe_str(T(e_int), buff, bp);
+              break;
+            }
+            inum_this = nextc - '0';
+            if (inum_this < 0 || inum_this > pe_info->iter_nesting
+                || (pe_info->iter_nesting - inum_this) < 0) {
+              safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
+            } else {
+              safe_str(pe_info->iter_itext[pe_info->iter_nesting - inum_this],
+                       buff, bp);
+            }
           } else {
-            safe_str(pe_info->iter_itext[pe_info->iter_nesting - inum_this],
-                     buff, bp);
+            safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
           }
           break;
         case 'U':

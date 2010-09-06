@@ -188,9 +188,13 @@ FUNCTION(fun_ufun)
 {
   char rbuff[BUFFER_LEN];
   ufun_attrib ufun;
+  int flags = UFUN_OBJECT;
 
-  if (!fetch_ufun_attrib
-      (args[0], executor, &ufun, (!strcmp(called_as, "ULAMBDA")))) {
+  if (!strcmp(called_as,"ULAMBDA")) {
+    flags |= UFUN_LAMBDA;
+  }
+
+  if (!fetch_ufun_attrib(args[0], executor, &ufun, flags)) {
     safe_str(T(ufun.errmess), buff, bp);
     return;
   }

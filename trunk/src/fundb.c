@@ -1914,7 +1914,7 @@ FUNCTION(fun_namelist)
   char *wenv[2];
 
   if (nargs > 1 && args[1] && *args[1]) {
-    if (fetch_ufun_attrib(args[1], executor, &ufun, 1)) {
+    if (fetch_ufun_attrib(args[1], executor, &ufun, UFUN_DEFAULT)) {
       report = 1;
     } else {
       safe_str(ufun.errmess, buff, bp);

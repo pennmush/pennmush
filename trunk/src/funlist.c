@@ -414,7 +414,7 @@ FUNCTION(fun_fold)
   if (!delim_check(buff, bp, nargs, args, 4, &sep))
     return;
 
-  if (!fetch_ufun_attrib(args[0], executor, &ufun, 1))
+  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
     return;
 
   cp = args[1];
@@ -526,7 +526,7 @@ FUNCTION(fun_filter)
     check_bool = 1;
 
   /* find our object and attribute */
-  if (!fetch_ufun_attrib(args[0], executor, &ufun, 1))
+  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
     return;
 
   /* Go through each argument */
@@ -658,7 +658,7 @@ FUNCTION(fun_sortkey)
     strcpy(outsep, args[4]);
 
   /* find our object and attribute */
-  if (!fetch_ufun_attrib(args[0], executor, &ufun, 1))
+  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
     return;
 
   nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, args[1], sep);
@@ -2252,6 +2252,7 @@ FUNCTION(fun_iter)
   }
 
   pe_info->iter_nesting++;
+  pe_info->local_iter_nesting++;
   place = &pe_info->iter_inum[pe_info->iter_nesting];
   *place = 0;
   funccount = pe_info->fun_invocations;
@@ -2282,6 +2283,7 @@ FUNCTION(fun_iter)
   *place = 0;
   pe_info->iter_itext[pe_info->iter_nesting] = NULL;
   pe_info->iter_nesting--;
+  pe_info->local_iter_nesting--;
   mush_free(outsep, "string");
   mush_free(list, "string");
 }
@@ -2464,7 +2466,7 @@ FUNCTION(fun_map)
   if (!*lp)
     return;
 
-  if (!fetch_ufun_attrib(args[0], executor, &ufun, 1))
+  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
     return;
 
   strcpy(place, "1");
@@ -2524,7 +2526,7 @@ FUNCTION(fun_mix)
     lp[n] = trim_space_sep(args[n + 1], sep);
 
   /* find our object and attribute */
-  if (!fetch_ufun_attrib(args[0], executor, &ufun, 1))
+  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
     return;
 
   first = 1;

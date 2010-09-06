@@ -624,7 +624,7 @@ do_force(dbref player, const char *what, char *command)
     global_eval_context.wnxt[j] = global_eval_context.wenv[j];
   for (j = 0; j < NUMQ; j++)
     global_eval_context.rnxt[j] = global_eval_context.renv[j];
-  parse_que(victim, command, player);
+  parse_que(victim, command, player, NULL);
 }
 
 /** Parse a force token command, but don't force with it.

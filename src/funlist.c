@@ -2299,11 +2299,15 @@ FUNCTION(fun_itext)
 {
   int i;
 
-  if (!is_strict_integer(args[0])) {
-    safe_str(T(e_int), buff, bp);
-    return;
+  if (!strcasecmp(args[0], "l")) {
+    i = pe_info->local_iter_nesting;
+  } else {
+    if (!is_strict_integer(args[0])) {
+      safe_str(T(e_int), buff, bp);
+      return;
+    }
+    i = parse_integer(args[0]);
   }
-  i = parse_integer(args[0]);
 
   if (i < 0 || i > pe_info->iter_nesting || (pe_info->iter_nesting - i) < 0) {
     safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
@@ -2318,11 +2322,15 @@ FUNCTION(fun_inum)
 {
   int i;
 
-  if (!is_strict_integer(args[0])) {
-    safe_str(T(e_int), buff, bp);
-    return;
+  if (!strcasecmp(args[0], "d"))
+    i = pe_info->iter_nesting;
+  else {
+    if (!is_strict_integer(args[0])) {
+      safe_str(T(e_int), buff, bp);
+      return;
+    }
+    i = parse_integer(args[0]);
   }
-  i = parse_integer(args[0]);
 
   if (i < 0 || i > pe_info->iter_nesting || (pe_info->iter_nesting - i) < 0) {
     safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);

@@ -148,10 +148,6 @@ msgstr " [lokacija: %s]"
 msgid " convtime() is stricter."
 msgstr " convtime() je stro¾i."
 
-#: flags.c:1531
-msgid " granted."
-msgstr " - dano."
-
 #: src/look.c:688 src/look.c:770
 msgid " is owned by "
 msgstr " je vlasni¹tvo igraèa koji se zove "
@@ -159,10 +155,6 @@ msgstr " je vlasni¹tvo igraèa koji se zove "
 #: speech.c:1021
 msgid " pages"
 msgstr " ¹alje poruku"
-
-#: flags.c:1531
-msgid " removed."
-msgstr " - uklonjeno."
 
 #: flags.c:764
 msgid " reset."
@@ -456,6 +448,10 @@ msgstr "#-1 NEISPRAVNA MOÆ"
 #: src/fundb.c:663 src/fundb.c:690
 msgid "#-1 INVALID SECOND ARGUMENT"
 msgstr "#-1 NEISPRAVNI DRUGI ARGUMENT"
+
+#: fundb.c:2124
+msgid "#-1 INVALID SOURCE ROOM"
+msgstr "#-1 NEISPRAVNA POLAZI©NA SOBA"
 
 #: funstr.c:369 funstr.c:425
 msgid "#-1 INVALID THIRD ARGUMENT"
@@ -802,6 +798,26 @@ msgstr "%s (ova soba) [govor]. (spojen)"
 msgid "%s (this room) [speech]."
 msgstr "%s (ova soba) [govor]."
 
+#: flags.c:1714
+#, c-format
+msgid "%s - %s (already) granted."
+msgstr "%s - %s (veæ) dano."
+
+#: flags.c:1710
+#, c-format
+msgid "%s - %s (already) removed."
+msgstr "%s - %s (veæ) uklonjeno."
+
+#: flags.c:1716
+#, c-format
+msgid "%s - %s granted."
+msgstr "%s - %s dano."
+
+#: flags.c:1708
+#, c-format
+msgid "%s - %s removed."
+msgstr "%s - %s uklonjeno."
+
 #: flags.c:1357
 #, c-format
 msgid "%s - I don't recognize that flag."
@@ -921,6 +937,16 @@ msgstr "Stvoreno: %s"
 #, c-format
 msgid "%s doesn't know switch %s."
 msgstr "%s ne poznaje switch %s."
+
+#: rob.c:395
+#, c-format
+msgid "%s doesn't want anything from you."
+msgstr "%s ne ¾eli ni¹ta od tebe."
+
+#: rob.c:400
+#, c-format
+msgid "%s doesn't want that."
+msgstr "%s to ne ¾eli."
 
 #: move.c:641 move.c:644
 #, c-format
@@ -1312,6 +1338,11 @@ msgstr "%s: Objekti: %d Granica: %d"
 msgid "%s: Objects: %d   Limit: UNLIMITED"
 msgstr "%s: Objekti: %d Granica: NEOGRANIÈENO"
 
+#: wiz.c:1327
+#, c-format
+msgid "%sGarbage%s(#%d)"
+msgstr "%sOtpad%s(#%d)"
+
 #: attrib.c:1566 attrib.c:1584
 #, c-format
 msgid "'%s' contains too many aliases."
@@ -1321,6 +1352,11 @@ msgstr "'%s' sadr¾i previ¹e aliasa."
 #, c-format
 msgid "'%s' is not a valid alias."
 msgstr "'%s' nije ispravan alias."
+
+#: attrib.c:1851
+#, c-format
+msgid "'%s' is not a valid exit name."
+msgstr "'%s' nije ispravno ime izlaza."
 
 #: function.c:905
 msgid "(Commas okay in last argument)"
@@ -1450,6 +1486,10 @@ msgstr "Na¾alost, tvoj poku¹aj milosrða je uzaludan."
 #: malias.c:269
 msgid "Alias Description"
 msgstr "Opis aliasa"
+
+#: function.c:1094
+msgid "Alias added."
+msgstr "Alias dodan."
 
 #: src/attrib.c:939
 msgid "Alias removed."
@@ -2024,6 +2064,10 @@ msgstr "Naredba %s dodana."
 msgid "Command %s already exists."
 msgstr "Naredba %s veæ postoji."
 
+#: command.c:1683
+msgid "Command cloned."
+msgstr "Naredba klonirana."
+
 #: command.c:1818
 #, c-format
 msgid "Commands: %s"
@@ -2340,6 +2384,11 @@ msgstr "Fileovi koje MUSH koristi"
 msgid "Fixing mail for #%d."
 msgstr "Popravljam po¹tu za #%d."
 
+#: command.c:1922
+#, c-format
+msgid "Flags      : %s"
+msgstr "Flagovi    : %s"
+
 #: function.c:897
 #, c-format
 msgid "Flags     : %s"
@@ -2404,6 +2453,14 @@ msgstr "Ime funkcije                   Dbref #    Atribut"
 #: src/function.c:725
 msgid "Function added."
 msgstr "Funkcija dodana."
+
+#: function.c:1614
+msgid "Function alias deleted."
+msgstr "Alias za funkciju uklonjen."
+
+#: function.c:1053
+msgid "Function cloned."
+msgstr "Funkcija klonirana."
 
 #: src/function.c:802
 msgid "Function deleted."
@@ -2536,6 +2593,11 @@ msgstr "Otpadu je mjesto na odlagali¹tu otpada."
 #: src/look.c:667 src/look.c:1306
 msgid "Garbage is garbage."
 msgstr "Otpad je otpad."
+
+#: wiz.c:1329
+#, c-format
+msgid "Garbage(#%d)"
+msgstr "Otpad(#%d)"
 
 #: src/set.c:82
 msgid "Give it what new name?"
@@ -2894,6 +2956,21 @@ msgstr "Provjera ansi teksta gotova"
 msgid "Inspecting ansi string"
 msgstr "Provjeravam ansi tekst"
 
+#: flags.c:1534 flags.c:1697
+#, c-format
+msgid "Internal error: Unable to find flagspace '%s'!"
+msgstr "Unutarnja gre¹ka: Ne mogu naæi flagovski prostor '%s'!"
+
+#: flags.c:2325
+#, c-format
+msgid "Internal error: Unknown flag space '%s'!"
+msgstr "Unutarnja gre¹ka: Nepoznati flagovski prostor '%s'!"
+
+#: flags.c:2515
+#, c-format
+msgid "Internal error: Unknown flagspace '%s'!"
+msgstr "Unutarnja gre¹ka: Nepoznati flagovski prostor '%s'!"
+
 #: create.c:373
 msgid "Internal error: weird object type."
 msgstr "Unutarnja gre¹ka: èudan tip objekta."
@@ -2918,6 +2995,10 @@ msgstr "Neispravan count indeks."
 #, c-format
 msgid "Invalid dbref #%d in %s."
 msgstr "Neispravan dbref #%d na lokaciji %s."
+
+#: function.c:1046 function.c:1087 function.c:1437
+msgid "Invalid function name."
+msgstr "Neispravno ime funkcije."
 
 #: command.c:1735
 msgid "Invalid hook object."
@@ -3089,6 +3170,11 @@ msgstr "Lokacija: %d"
 msgid "Location: %s"
 msgstr "Lokacija: %s"
 
+#: command.c:1814
+#, c-format
+msgid "Lock       : %s"
+msgstr "Brava      : %s"
+
 #: cmds.c:466
 msgid "Locks"
 msgstr "Brave"
@@ -3195,6 +3281,10 @@ msgstr "PO©TA: Sve poruke premje¹tene u folder %d [%s]"
 msgid "MAIL: All messages in all folders cleared."
 msgstr "PO©TA: Obrisane sve poruke u svim folderima."
 
+#: extmail.c:481
+msgid "MAIL: All messages in all folders marked as read."
+msgstr "PO©TA: Sve poruke u svim folderima oznaèene kao proèitane."
+
 #: extmail.c:428
 msgid "MAIL: All messages in all folders tagged."
 msgstr "PO©TA: Sve poruke u svim folderima oznaèene."
@@ -3202,6 +3292,10 @@ msgstr "PO©TA: Sve poruke u svim folderima oznaèene."
 #: extmail.c:445
 msgid "MAIL: All messages in all folders uncleared."
 msgstr "PO©TA: Poni¹teno brisanje svih poruka u svim folderima."
+
+#: extmail.c:479
+msgid "MAIL: All messages in all folders unread."
+msgstr "PO©TA: Sve poruke u svim folderima oznaèene kao neproèitane."
 
 #: extmail.c:426
 msgid "MAIL: All messages in all folders untagged."
@@ -3324,6 +3418,11 @@ msgstr "PO©TA: Starosti poruka moraju biti cijeli brojevi"
 msgid "MAIL: Msg #%d:%d cleared."
 msgstr "PO©TA: Poruka #%d:%d obrisana."
 
+#: extmail.c:489
+#, c-format
+msgid "MAIL: Msg #%d:%d marked as read"
+msgstr "PO©TA: Poruka #%d:%d oznaèena kao proèitana"
+
 #: extmail.c:436
 #, c-format
 msgid "MAIL: Msg #%d:%d tagged"
@@ -3333,6 +3432,11 @@ msgstr "PO©TA: Poruka #%d:%d oznaèena"
 #, c-format
 msgid "MAIL: Msg #%d:%d uncleared."
 msgstr "PO©TA: Poruka #%d:%d od-obrisana."
+
+#: extmail.c:487
+#, c-format
+msgid "MAIL: Msg #%d:%d unread"
+msgstr "PO©TA: Poruka #%d:%d oznaèena kao neproèitana"
 
 #: extmail.c:433
 #, c-format
@@ -3411,6 +3515,10 @@ msgstr "PO©TA: Broj starih poruka u po¹tanskom spoolu je %d, a zajedno imaju %d 
 msgid "MAIL: To whom should I forward?"
 msgstr "PO©TA: Kome bih trebao proslijediti po¹tu?"
 
+#: extmail.c:420
+msgid "MAIL: Unknown status."
+msgstr "PO©TA: Nepoznato stanje."
+
 #: src/extmail.c:378
 #, c-format
 msgid "MAIL: Unread Msg #%d:%d cleared! Use @mail/unclear %d:%d to recover."
@@ -3424,6 +3532,10 @@ msgstr "PO©TA: Upozorenje! Ogranièenje za poruke u inboxu je %d!"
 #: malias.c:145
 msgid "MAIL: What alias do you want to create?"
 msgstr "PO©TA: Koji alias ¾eli¹ stvoriti?"
+
+#: extmail.c:409
+msgid "MAIL: What do you want to do with the messages?"
+msgstr "PO©TA: ©to ¾eli¹ napraviti s tim porukama?"
 
 #: src/extmail.c:239 src/extmail.c:279
 msgid "MAIL: What folder is that?"
@@ -3877,6 +3989,10 @@ msgstr "Samo administratori mogu promijeniti quotu."
 msgid "Only wizards may grant powers."
 msgstr "Samo èarobnjaci mogu davati moæi."
 
+#: create.c:187
+msgid "Open from where?"
+msgstr "Otvoriti odakle?"
+
 #: src/create.c:118
 msgid "Open where?"
 msgstr "Prema kamo da otvorim izlaz?"
@@ -4221,6 +4337,16 @@ msgstr "SQL: Zahvaæeno je %d redaka."
 #, c-format
 msgid "SQL: Error: %s"
 msgstr "SQL: Gre¹ka: %s"
+
+#: version.c:50
+#, c-format
+msgid "SVN revision: %d [%s]"
+msgstr "SVN revizija: %d [%s]"
+
+#: version.c:52 version.c:54
+#, c-format
+msgid "SVN revision: %d"
+msgstr "SVN revizija: %d"
 
 #: src/wiz.c:1471
 #, c-format
@@ -4714,6 +4840,10 @@ msgstr "Nitko nije spojen na taj deskriptor."
 msgid "There is one player connected."
 msgstr "Jedan igraè je spojen."
 
+#: function.c:1040 function.c:1072
+msgid "There's already a function with that name."
+msgstr "Veæ postoji funkcija s tim imenom."
+
 #: src/move.c:335 src/move.c:336 src/move.c:337
 msgid "There's no place like home..."
 msgstr "Doma je najljep¹e..."
@@ -4829,6 +4959,11 @@ msgstr "Uk. rebootova"
 #, c-format
 msgid "Totals: Player...%d/%d[%ddel]  Object...%d/%d[%ddel]  Wait...%d/%d[%ddel]  Semaphore...%d/%d"
 msgstr "Ukupno: Korisnièki...%d/%d[%ddel]  Objektni...%d/%d[%ddel]  Èekajuæi...%d/%d[%ddel]  Semaforski...%d/%d"
+
+#: wiz.c:1337
+#, c-format
+msgid "Totals: Rooms...%d  Exits...%d  Things...%d  Players...%d  Garbage...%d"
+msgstr "Ukupno: Sobe...%d  Izlazi...%d  Predmeti...%d  Igraèi...%d  Otpad...%d"
 
 #: wiz.c:1295
 #, c-format
@@ -5437,6 +5572,10 @@ msgstr "Ne mo¾e¹ brisati ugraðene komande. Umjesto toga, upotrijebi @command/dis
 msgid "You can't delete that @function."
 msgstr "Ne mo¾e¹ obrisati taj @function."
 
+#: function.c:1660
+msgid "You can't disable aliases."
+msgstr "Ne mo¾e¹ iskljuèivati aliase."
+
 #: src/move.c:576
 msgid "You can't drop that."
 msgstr "Ne mo¾e¹ to ispustiti."
@@ -5533,6 +5672,10 @@ msgstr "Ne mo¾e¹ prepraviti svijet na svoju sliku."
 msgid "You can't see someone else's quota!"
 msgstr "Ne mo¾e¹ vidjeti tuðu quotu!"
 
+#: look.c:754
+msgid "You can't see that from here."
+msgstr "Ne vidi¹ to odavde."
+
 #: src/look.c:534
 msgid "You can't see through that."
 msgstr "Ne mo¾e¹ vidjeti kroz to."
@@ -5584,6 +5727,10 @@ msgstr "Ne mo¾e¹ upotrebljavati @CLONE/PRESERVE. Umjesto njega upotrijebi obièan
 #: cque.c:985
 msgid "You cannot adjust the timeout of an indefinite semaphore."
 msgstr "Ne mo¾e¹ promijeniti rok isteka stalnog semafora."
+
+#: function.c:1087
+msgid "You cannot alias @functions."
+msgstr "Ne mo¾e¹ raditi aliase za @funkcije."
 
 #: function.c:869
 msgid "You cannot change that built-in function."
@@ -6241,6 +6388,14 @@ msgid ""
 msgstr ""
 "\n"
 "IZLAZI:"
+
+#: wiz.c:1323
+msgid ""
+"\n"
+"GARBAGE:"
+msgstr ""
+"\n"
+"OTPAD:"
 
 #: src/extmail.c:2507
 msgid ""

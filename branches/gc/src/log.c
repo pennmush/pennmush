@@ -256,7 +256,7 @@ do_log(int logtype, dbref player, dbref object, const char *fmt, ...)
    */
   char tbuf1[BUFFER_LEN + 50];
   va_list args;
-  const char *unp1, *unp2;
+  const char *unp1 = NULL, *unp2 = NULL;
 
   va_start(args, fmt);
 
@@ -273,13 +273,13 @@ do_log(int logtype, dbref player, dbref object, const char *fmt, ...)
     break;
   case LT_CMD:
     if (!has_flag_by_name(player, "NO_LOG", NOTYPE)) {
-      strcpy(unp1, quick_unparse(player));
+      unp1 = quick_unparse(player);
       if (GoodObject(object)) {
-        strcpy(unp2, quick_unparse(object));
+        unp2 = quick_unparse(object);
         do_rawlog(logtype, "CMD: %s %s / %s: %s",
                   (Suspect(player) ? "SUSPECT" : ""), unp1, unp2, tbuf1);
       } else {
-        strcpy(unp2, quick_unparse(Location(player)));
+        unp2 = quick_unparse(Location(player));
         do_rawlog(logtype, "CMD: %s %s in %s: %s",
                   (Suspect(player) ? "SUSPECT" : ""), unp1, unp2, tbuf1);
       }

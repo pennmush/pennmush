@@ -50,6 +50,7 @@
 #define DOING_COMMAND "DOING"
 #define SESSION_COMMAND "SESSION"
 #define IDLE_COMMAND "IDLE"
+#define MSSPREQUEST_COMMAND "MSSP-REQUEST"
 
 #define GET_COMMAND "GET"
 #define POST_COMMAND "POST"
@@ -63,7 +64,10 @@
 #define PUEBLO_HELLO "This world is Pueblo 1.10 Enhanced.\r\n"
 
 
-#define MAX_OUTPUT 16384
+/* How much pending outgoing text can be queued up on a socket before
+ * the dreaded 'Output flushed' message shows up? Used to be 16k, now 1m.
+ */
+#define MAX_OUTPUT (1024*1024)
 /* How much output buffer space must be left before we flush the
  * buffer? Reportedly, using '0' fixes problems with Win32 port,
  * and may be more efficient in network use. Using (MAX_OUTPUT / 2)
@@ -75,9 +79,6 @@
 #define COMMAND_BURST_SIZE 100  /* commands allowed per user in a burst */
 #define COMMANDS_PER_TIME 1     /* commands per time slice after burst */
 
-
-/* Set this somewhere near the recursion limit */
-#define MAX_ITERS 100
 
 /* From conf.c */
 extern void do_config_list(dbref player, const char *type, int lc);
@@ -277,8 +278,16 @@ struct options_table {
   char sql_database[256]; /**< Database for sql */
 };
 
+typedef struct mssp MSSP;
+struct mssp {
+  char *name;
+  char *value;
+  MSSP *next;
+};
+
 extern OPTTAB options;
 extern HASHTAB local_options;
+extern MSSP *mssp;
 
 extern PENNCONF *add_config(const char *name, config_func handler, void *loc,
                             int max, const char *group);

@@ -37,10 +37,9 @@ static lock_type get_locktype(char *str);
 extern struct db_stat_info *get_stats(dbref owner);
 static int lattr_helper(dbref player, dbref thing, dbref parent,
                         char const *pattern, ATTR *atr, void *args);
-static dbref
-dbwalk(char *buff, char **bp, dbref executor, dbref enactor,
-       int type, dbref loc, dbref after, int skipdark,
-       int start, int count, int *retcount);
+static dbref dbwalk(char *buff, char **bp, dbref executor, dbref enactor,
+                    int type, dbref loc, dbref after, int skipdark,
+                    int start, int count, int listening, int *retcount);
 
 
 const char *
@@ -649,7 +648,7 @@ FUNCTION(fun_rnum)
 static dbref
 dbwalk(char *buff, char **bp, dbref executor, dbref enactor,
        int type, dbref loc, dbref after, int skipdark,
-       int start, int count, int *retcount)
+       int start, int count, int listening, int *retcount)
 {
   dbref result;
   int first;
@@ -657,6 +656,7 @@ dbwalk(char *buff, char **bp, dbref executor, dbref enactor,
   dbref thing;
   int validloc;
   dbref startdb;
+  int privwho = Priv_Who(executor);
 
   nthing = 0;
 
@@ -692,6 +692,12 @@ dbwalk(char *buff, char **bp, dbref executor, dbref enactor,
           (skipdark && Dark(thing) && !Light(thing) && !Light(loc)) ||
           ((type == TYPE_PLAYER) && skipdark && !Connected(thing)))
         continue;
+      if ((listening == 1 && !Puppet(thing)) || (listening == 2 &&
+                                                 !((Hearer(thing)
+                                                    || Listener(thing))
+                                                   && (privwho
+                                                       || !Dark(thing)))))
+        continue;
       nthing += 1;
       if (count < 1 || (nthing >= start && nthing < start + count)) {
         if (buff) {
@@ -724,6 +730,7 @@ FUNCTION(fun_dbwalker)
   int vis = 0;
   int type = 0;
   int result = 0;
+  int listening = 0;
   const char *ptr = called_as;
   char *buffptr = buff;
   char **bptr = bp;
@@ -732,50 +739,71 @@ FUNCTION(fun_dbwalker)
   buffptr = buff;
   bptr = bp;
 
-  switch (*(ptr++)) {
-  case 'X':
-    if (!is_strict_integer(args[1]) || !is_strict_integer(args[2])) {
-      safe_str(T(e_int), buff, bp);
+  if (!strcmp(called_as, "LCON") && nargs == 2) {
+    if (string_prefix("player", args[1])) {
+      type = TYPE_PLAYER;
+    } else if (string_prefix("object", args[1])
+               || string_prefix("thing", args[1])) {
+      type = TYPE_THING;
+    } else if (string_prefix("connect", args[1])) {
+      type = TYPE_PLAYER;
+      vis = 1;
+    } else if (string_prefix("puppet", args[1])) {
+      type = TYPE_THING;
+      listening = 1;
+    } else if (string_prefix("listen", args[1])) {
+      type = TYPE_THING | TYPE_PLAYER;
+      listening = 2;
+    } else {
+      safe_str("#-1", buff, bp);
       return;
     }
-    start = parse_integer(args[1]);
-    count = parse_integer(args[2]);
-    if (start < 1 || count < 1) {
-      safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
-      return;
+  } else {
+    switch (*(ptr++)) {
+    case 'X':
+      if (!is_strict_integer(args[1]) || !is_strict_integer(args[2])) {
+        safe_str(T(e_int), buff, bp);
+        return;
+      }
+      start = parse_integer(args[1]);
+      count = parse_integer(args[2]);
+      if (start < 1 || count < 1) {
+        safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
+        return;
+      }
+      break;
+    case 'N':
+      buffptr = NULL;
+      bptr = NULL;
+      break;
     }
-    break;
-  case 'N':
-    buffptr = NULL;
-    bptr = NULL;
-    break;
-  }
 
-  if (*ptr == 'V') {
-    vis = 1;
-    ptr++;
-  }
+    if (*ptr == 'V') {
+      vis = 1;
+      ptr++;
+    }
 
-  switch (*ptr) {
-  case 'C':                    /* con */
-    type = TYPE_THING | TYPE_PLAYER;
-    break;
-  case 'T':                    /* things */
-    type = TYPE_THING;
-    break;
-  case 'P':                    /* players */
-    type = TYPE_PLAYER;
-    break;
-  case 'E':                    /* exits */
-    type = TYPE_EXIT;
-    break;
-  default:
-    /* This should never be reached ... */
-    type = TYPE_THING | TYPE_PLAYER;
+    switch (*ptr) {
+    case 'C':                  /* con */
+      type = TYPE_THING | TYPE_PLAYER;
+      break;
+    case 'T':                  /* things */
+      type = TYPE_THING;
+      break;
+    case 'P':                  /* players */
+      type = TYPE_PLAYER;
+      break;
+    case 'E':                  /* exits */
+      type = TYPE_EXIT;
+      break;
+    default:
+      /* This should never be reached ... */
+      type = TYPE_THING | TYPE_PLAYER;
+    }
   }
 
   dbwalk(buffptr, bptr, executor, enactor, type, loc, NOTHING,
-         vis, start, count, &result);
+         vis, start, count, listening, &result);
 
   if (!buffptr) {
     safe_integer(result, buff, bp);
@@ -788,7 +816,7 @@ FUNCTION(fun_con)
   dbref loc = match_thing(executor, args[0]);
   safe_dbref(dbwalk
              (NULL, NULL, executor, enactor, TYPE_THING | TYPE_PLAYER, loc,
-              NOTHING, 0, 0, 0, NULL), buff, bp);
+              NOTHING, 0, 0, 0, 0, NULL), buff, bp);
 }
 
 /* ARGSUSED */
@@ -797,7 +825,7 @@ FUNCTION(fun_exit)
   dbref loc = match_thing(executor, args[0]);
   safe_dbref(dbwalk
              (NULL, NULL, executor, enactor, TYPE_EXIT, loc, NOTHING, 0, 0, 0,
-              NULL), buff, bp);
+              0, NULL), buff, bp);
 }
 
 /* ARGSUSED */
@@ -810,13 +838,13 @@ FUNCTION(fun_next)
     case TYPE_EXIT:
       safe_dbref(dbwalk
                  (NULL, NULL, executor, enactor, TYPE_EXIT, Source(it), it, 0,
-                  0, 0, NULL), buff, bp);
+                  0, 0, 0, NULL), buff, bp);
       break;
     case TYPE_THING:
     case TYPE_PLAYER:
       safe_dbref(dbwalk
                  (NULL, NULL, executor, enactor, TYPE_THING | TYPE_PLAYER,
-                  Location(it), it, 0, 0, 0, NULL), buff, bp);
+                  Location(it), it, 0, 0, 0, 0, NULL), buff, bp);
       break;
     default:
       safe_str("#-1", buff, bp);
@@ -1597,7 +1625,7 @@ FUNCTION(fun_zone)
       return;
     }
     if (FUNCTION_SIDE_EFFECTS)
-      (void) do_chzone(executor, args[0], args[1], 1);
+      (void) do_chzone(executor, args[0], args[1], 1, 0);
     else {
       safe_str(T(e_disabled), buff, bp);
       return;
@@ -1798,9 +1826,19 @@ FUNCTION(fun_name)
 FUNCTION(fun_fullname)
 {
   dbref it = match_thing(executor, args[0]);
-  if (GoodObject(it))
+  if (GoodObject(it)) {
     safe_str(Name(it), buff, bp);
-  else
+    if (IsExit(it)) {
+      ATTR *a = atr_get_noparent(it, "ALIAS");
+      if (a) {
+        char *aliases = atr_value(a);
+        if (aliases && *aliases) {
+          safe_chr(';', buff, bp);
+          safe_str(aliases, buff, bp);
+        }
+      }
+    }
+  } else
     safe_str(T(e_notvis), buff, bp);
 }
 
@@ -1865,7 +1903,7 @@ FUNCTION(fun_namelist)
   int first = 1;
   char *current;
   dbref target;
-  char *start;
+  const char *start;
   int report = 0;
   ufun_attrib ufun;
   char *wenv[2];
@@ -1879,12 +1917,12 @@ FUNCTION(fun_namelist)
     }
   }
 
-  start = trim_space_sep(args[0], ' ');
+  start = (const char *) args[0];
   while (start && *start) {
     if (!first)
       safe_chr(' ', buff, bp);
     first = 0;
-    current = split_token(&start, ' ');
+    current = next_in_list(&start);
     if (*current == '*')
       current = current + 1;
     target = lookup_player(current);
@@ -2079,6 +2117,7 @@ FUNCTION(fun_pcreate)
 /* ARGSUSED */
 FUNCTION(fun_open)
 {
+  dbref source = NOTHING;
   if (!FUNCTION_SIDE_EFFECTS) {
     safe_str(T(e_disabled), buff, bp);
     return;
@@ -2087,7 +2126,17 @@ FUNCTION(fun_open)
     safe_str(T(e_perm), buff, bp);
     return;
   }
-  safe_dbref(do_real_open(executor, args[0], args[1], NOTHING), buff, bp);
+  if (nargs > 2) {
+    source = match_result(executor, args[2], TYPE_ROOM,
+                          MAT_HERE | MAT_ABSOLUTE | MAT_TYPE);
+    if (source == NOTHING) {
+      safe_str(T("#-1 INVALID SOURCE ROOM"), buff, bp);
+      return;
+    }
+  }
+  safe_dbref(do_real_open
+             (executor, args[0], (nargs > 1 ? args[1] : NULL), source), buff,
+             bp);
 }
 
 /* ARGSUSED */

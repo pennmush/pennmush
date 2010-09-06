@@ -882,8 +882,7 @@ penn_mysql_sql_query(const char *q_string, int *affected_rows)
 static void
 penn_mysql_free_sql_query(MYSQL_RES * qres)
 {
-  MYSQL_ROW row_p;
-  while ((row_p = mysql_fetch_row(qres)) != NULL) ;
+  while (mysql_fetch_row(qres)) ;
   mysql_free_result(qres);
 }
 

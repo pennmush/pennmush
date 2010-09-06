@@ -88,8 +88,8 @@
         Actually deletes all messages marked for clearing with @mail/clear.
         This is done automatically when you log out.
 
-  @mail/tag [<msg-list> | all>]
-  @mail/untag [<msg-list> | all>]
+  @mail/tag [<msg-list> | all]
+  @mail/untag [<msg-list> | all]
         These commands tag or untag mail in the current folder.
         Tagged mail can be later acted on en masse by using "tagged" as
         the msg-list for other commands (which does *not* untag them
@@ -98,6 +98,16 @@
         msg-list, all mail in *all* folders is tagged/untagged.
         (Ex: To clear all mail from Paul and Chani, @mail/tag *paul,
         @mail/tag *chani, @mail/clear tagged, @mail/untag all).
+        
+  @mail/unread [<msg-list> | all]
+        Mark messages which have already been read as new/unread.
+        
+  @mail/status [<msg-list> | all]=<status>
+        Set the status of the given messages. <status> can be one of tagged,
+        untagged, cleared, uncleared, read or unread. read marks a new
+        message as read without reading it, the others are equivilent to
+        @mail/tag, @mail/untag, @mail/clear, @mail/unclear and @mail/unread
+        respectively.
 & mail-folders
   The MUSH mail system allows each player 16 folders, numbered from 0
   to 15. Mail can only be in 1 folder at a time. Folder 0 is the

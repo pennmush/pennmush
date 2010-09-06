@@ -369,7 +369,6 @@ void
 kill_info_slave(void)
 {
   WAIT_TYPE my_stat;
-  pid_t pid;
 
   if (info_slave_state != INFO_SLAVE_DOWN) {
     if (info_slave_pid > 0) {
@@ -383,7 +382,7 @@ kill_info_slave(void)
          die. This will hopefully be enough time. */
       usleep(100);
 
-      pid = mush_wait(info_slave_pid, &my_stat, WNOHANG);
+      mush_wait(info_slave_pid, &my_stat, WNOHANG);
       info_slave_pid = -1;
       unblock_a_signal(SIGCHLD);
     }

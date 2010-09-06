@@ -2047,20 +2047,22 @@ See also: @chzone, SHARED PLAYERS
 This is the AHELP index.
 & RESTRICT
 
- Commands and functions can have their permission levels controlled in
- the mush config files, or by wizards from the game via @command and
- @function.
+ Commands, functions and attributes can have their permission levels
+ controlled in the mush config files, or by wizards from the game via
+ @command, @function and @attribute.
  
  In the config file, the syntax is:
   restrict_command <command-name> <restriction> [" <error message>]
   restrict_function <function-name> <restriction>
+  restrict_attribute <attribute-name> <restriction>
 
  From the game:
   @command/restrict <command-name>=<restriction> [" <error message>]
   @function/restrict <function-name>=<restriction>
+  @attribute/access <attribute-name>=<restriction>
  
-For commands, if <error message> is given, that message is sent to the
-player who runs it instead of a generic, unhelpful error message.
+ For commands, if <error message> is given, that message is sent to the
+ player who runs it instead of a generic, unhelpful error message.
 
   Continued in 'help restrict2'.
 & RESTRICT2
@@ -2068,7 +2070,9 @@ player who runs it instead of a generic, unhelpful error message.
   For commands, <restriction> should be an @lock-style boolexp (though,
   for backwards compatability, the restrictions below can be used, and will
   be converted into an @lock automatically). For functions, <restriction>
-  should be any combination of the phrases below.
+  should be any combination of the phrases below. For attributes, 
+  <restriction> is a list of attribute flags, or "none" to create a standard
+  attribute with no restrictions (see 'help attribute flags').
 
    god        Command or function is usable only by God.
    wizard     Usable only by wizards.
@@ -2116,5 +2120,5 @@ player who runs it instead of a generic, unhelpful error message.
     > @command/restrict @emit=logname
     > @command/restrict @emit=!flag^suspect&!flag^gagged
 
-See also: @command, @function, @lock
+See also: @command, @function, @attribute, @lock
 

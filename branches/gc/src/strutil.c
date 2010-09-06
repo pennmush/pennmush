@@ -949,6 +949,29 @@ replace_string2(const char *old[2], const char *newbits[2],
 
 }
 
+/* Copy a string up until a specific character (Or end of string.)
+ * Replaces the strcpy()/strchr()/*p=0 pattern.
+ * Input and output buffers shouldn't overlap.
+ * 
+ * \param dest buffer to copy into.
+ * \param src string to copy from.
+ * \param c character to stop at.
+ * \return pointer to the start of the string
+ */
+char *
+copy_up_to(char *RESTRICT dest, const char *RESTRICT src, char c)
+{
+  char *d;
+  d = dest;
+
+  for (d = dest; *src && *src != c; src++)
+    *d++ = *src;
+
+  *d = '\0';
+
+  return dest;
+}
+
 /** Given a string and a separator, trim leading and trailing spaces
  * if the separator is a space. This destructively modifies the string.
  * \param str string to trim.

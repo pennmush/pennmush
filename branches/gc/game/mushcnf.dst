@@ -843,6 +843,17 @@ thing_flags no_command
 # channel_flags player quiet open hide_ok
 channel_flags player
 
+
+# PennMUSH supports MSSP (Mud Server Status Protocol) which tells connecting
+# clients/bots some basic information about your game theme, setup, etc.
+# See http://tintin.sourceforge.net/mssp/ for the list of fields the protocol
+# currently supports. Penn automatically handles name, players, uptime, port,
+# codebase, family, pueblo, ssl, website - all others are up to you.
+# Example:
+# mssp contact/you@yourgame.com
+# mssp hiring coders/1
+mssp ansi/1
+
 ###
 ### Reserved command names, and command and function aliases are in
 ### alias.cnf

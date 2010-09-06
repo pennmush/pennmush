@@ -268,6 +268,8 @@ See also: chat
   See "help @channel6" for more.
 & @channel6
 & @channel/mogrifier
+& mogrifier
+& mogrify
   @channel/mogrifier <channel>=<object>
 
   The Mogrifier lets you tweak every aspect of a channel's output, before

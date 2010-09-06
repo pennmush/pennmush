@@ -124,10 +124,6 @@ msgstr " [lokacja: %s]"
 msgid " convtime() is stricter."
 msgstr " convtime() jest ograniczony."
 
-#: flags.c:1531
-msgid " granted."
-msgstr " przyznane."
-
 #: src/look.c:688 src/look.c:770
 msgid " is owned by "
 msgstr " jest w posiadaniu "
@@ -135,10 +131,6 @@ msgstr " jest w posiadaniu "
 #: speech.c:1021
 msgid " pages"
 msgstr " wzywa"
-
-#: flags.c:1531
-msgid " removed."
-msgstr " usuniête."
 
 #: flags.c:764
 msgid " reset."

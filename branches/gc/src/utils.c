@@ -554,7 +554,7 @@ initialize_mt(void)
                 "Couldn't read from /dev/urandom! Resorting to normal seeding method.");
     } else {
       do_rawlog(LT_ERR, "Seeded RNG from /dev/urandom");
-      init_by_array(buf, r / sizeof(unsigned long));
+      init_by_array(buf, r / sizeof(uint32_t));
       return;
     }
   } else
@@ -644,12 +644,13 @@ shortalias(dbref it)
 {
   char *n, *s;
 
-  n = fullalias(it);
-  if (!(n && *n))
+  s = fullalias(it);
+  if (!(s && *s))
     return "";
 
-  if ((s = strchr(n, ';')))
-    *s = '\0';
+  n = GC_STRDUP(s);
+
+  copy_up_to(n, s, ';');
 
   return n;
 }

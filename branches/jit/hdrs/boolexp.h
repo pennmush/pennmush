@@ -56,4 +56,7 @@ void free_string_pool(struct string_pool *);
 
 #endif
 
+
+bool is_eval_lock(boolexp b);
+
 #endif                          /* BOOLEXP_H */

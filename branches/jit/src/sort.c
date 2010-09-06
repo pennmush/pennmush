@@ -19,6 +19,11 @@
 
 #define EPSILON 0.000000001  /**< limit of precision for float equality */
 
+/** If sort_order is positive, sort forward. If negative, it sorts backward. */
+#define ASCENDING 1
+#define DESCENDING -1
+int sort_order = ASCENDING;
+
 /** qsort() comparision routine for int */
 int
 int_comp(const void *s1, const void *s2)
@@ -31,9 +36,9 @@ int_comp(const void *s1, const void *s2)
   if (a == b)
     return 0;
   else if (a < b)
-    return -1;
+    return -1 * sort_order;
   else
-    return 1;
+    return 1 * sort_order;
 }
 
 
@@ -49,9 +54,9 @@ uint_comp(const void *s1, const void *s2)
   if (a == b)
     return 0;
   else if (a < b)
-    return -1;
+    return -1 * sort_order;
   else
-    return 1;
+    return 1 * sort_order;
 }
 
 
@@ -62,7 +67,7 @@ nval_comp(const void *a, const void *b)
   const NVAL *x = a, *y = b;
   const double epsilon = pow(10.0, -FLOAT_PRECISION);
   int eq = (fabs(*x - *y) <= (epsilon * fabs(*x)));
-  return eq ? 0 : (*x > *y ? 1 : -1);
+  return eq ? 0 : ((*x > *y ? 1 : -1) * sort_order);
 }
 
 
@@ -77,7 +82,7 @@ str_comp(const void *s1, const void *s2)
   a = *(const char **) s1;
   b = *(const char **) s2;
 
-  return strcmp(a, b);
+  return strcmp(a, b) * sort_order;
 }
 
 /** qsort() comparision routine for strings.
@@ -92,7 +97,7 @@ stri_comp(const void *s1, const void *s2)
   a = *(const char **) s1;
   b = *(const char **) s2;
 
-  return strcasecmp(a, b);
+  return strcasecmp(a, b) * sort_order;
 }
 
 /** qsort() comparision routine for dbrefs. */
@@ -107,9 +112,9 @@ dbref_comp(const void *s1, const void *s2)
   if (a == b)
     return 0;
   else if (a < b)
-    return -1;
+    return -1 * sort_order;
   else
-    return 1;
+    return 1 * sort_order;
 }
 
 
@@ -143,7 +148,7 @@ u_comp(const void *s1, const void *s2)
     return 0;
   n = parse_integer(result);
 
-  return n;
+  return n * sort_order;
 }
 
 
@@ -258,8 +263,6 @@ GENRECORD(gen_alphanum)
     rec->memo.str.freestr = 0;
   }
 }
-
-#define RealGoodObject(x) (GoodObject(x) && !IsGarbage(x))
 
 GENRECORD(gen_magic)
 {
@@ -495,7 +498,7 @@ s_comp(const void *s1, const void *s2)
   const s_rec *sr2 = (const s_rec *) s2;
   int res = 0;
   res = strcoll(sr1->memo.str.s, sr2->memo.str.s);
-  return Compare(res, sr1, sr2);
+  return Compare(res, sr1, sr2) * sort_order;
 }
 
 static int
@@ -505,7 +508,7 @@ si_comp(const void *s1, const void *s2)
   const s_rec *sr2 = (const s_rec *) s2;
   int res = 0;
   res = strcasecoll(sr1->memo.str.s, sr2->memo.str.s);
-  return Compare(res, sr1, sr2);
+  return Compare(res, sr1, sr2) * sort_order;
 }
 
 static int
@@ -513,7 +516,7 @@ i_comp(const void *s1, const void *s2)
 {
   const s_rec *sr1 = (const s_rec *) s1;
   const s_rec *sr2 = (const s_rec *) s2;
-  return Compare2(sr1->memo.num, sr2->memo.num, sr1, sr2);
+  return Compare2(sr1->memo.num, sr2->memo.num, sr1, sr2) * sort_order;
 }
 
 static int
@@ -522,7 +525,7 @@ tm_comp(const void *s1, const void *s2)
   const s_rec *sr1 = (const s_rec *) s1;
   const s_rec *sr2 = (const s_rec *) s2;
   double r = difftime(sr1->memo.tm, sr2->memo.tm);
-  return CompareF(r, sr1, sr2);
+  return CompareF(r, sr1, sr2) * sort_order;
 }
 
 static int
@@ -530,7 +533,7 @@ f_comp(const void *s1, const void *s2)
 {
   const s_rec *sr1 = (const s_rec *) s1;
   const s_rec *sr2 = (const s_rec *) s2;
-  return Compare2F(sr1->memo.numval, sr2->memo.numval, sr1, sr2);
+  return Compare2F(sr1->memo.numval, sr2->memo.numval, sr1, sr2) * sort_order;
 }
 
 typedef struct _list_type_list_ {
@@ -587,13 +590,15 @@ get_list_type(char *args[], int nargs, int type_pos, char *ptrs[], int nptrs)
   static char stype[BUFFER_LEN];
   int i;
   char *str;
+  sort_order = ASCENDING;
   if (nargs >= type_pos) {
     str = args[type_pos - 1];
-    if (*str) {
-      strcpy(stype, str);
-      str = strchr(stype, ':');
-      if (str)
-        *(str++) = '\0';
+    if (str && *str == '-') {
+      str++;
+      sort_order = DESCENDING;
+    }
+    if (str && *str) {
+      copy_up_to(stype, str, ':');
       for (i = 0; ltypelist[i].name && strcasecmp(ltypelist[i].name, stype);
            i++) ;
       /* return ltypelist[i].name; */
@@ -611,13 +616,15 @@ get_list_type_noauto(char *args[], int nargs, int type_pos)
   static char stype[BUFFER_LEN];
   int i;
   char *str;
+  sort_order = ASCENDING;
   if (nargs >= type_pos) {
     str = args[type_pos - 1];
     if (*str) {
-      strcpy(stype, str);
-      str = strchr(stype, ':');
-      if (str)
-        *(str++) = '\0';
+      if (*str == '-') {
+        str++;
+        sort_order = DESCENDING;
+      }
+      copy_up_to(stype, str, ':');
       for (i = 0; ltypelist[i].name && strcasecmp(ltypelist[i].name, stype);
            i++) ;
       /* return ltypelist[i].name; */
@@ -695,13 +702,18 @@ do_gensort(dbref player, char *keys[], char *strs[], int n, char *sort_type)
   int i, sorti;
   s_rec *sp;
   ptr = NULL;
+  sort_order = ASCENDING;
+  if (sort_type && *sort_type == '-') {
+    sort_type++;
+    sort_order = DESCENDING;
+  }
   if (!sort_type || !*sort_type) {
     /* Advance sorti to the default */
     for (sorti = 0; ltypelist[sorti].name; sorti++) ;
   } else if (strchr(sort_type, ':') != NULL) {
     strcpy(stype, sort_type);
     ptr = strchr(stype, ':');
-    *(ptr++) = '\0';
+    *ptr++ = '\0';
     if (!*ptr)
       ptr = NULL;
     for (sorti = 0;

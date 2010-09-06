@@ -64,10 +64,6 @@ msgstr " [plats: %s]"
 msgid " convtime() is stricter."
 msgstr " convtime() är striktare."
 
-#: flags.c:1531
-msgid " granted."
-msgstr " beviljas."
-
 #: src/look.c:688 src/look.c:770
 msgid " is owned by "
 msgstr " ägs av "

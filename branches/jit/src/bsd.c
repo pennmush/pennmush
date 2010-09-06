@@ -168,6 +168,7 @@ static int extrafd;
 #endif
 int shutdown_flag = 0;          /**< Is it time to shut down? */
 void chat_player_announce(dbref player, char *msg, int ungag);
+void report_mssp(DESC *d, char *buff, char **bp);
 
 static int login_number = 0;
 static int under_limit = 1;
@@ -218,6 +219,9 @@ char errlog[BUFFER_LEN] = { '\0' };      /**< Name of the error log file */
 #define TN_LINEMODE 34          /**< Line mode */
 #define TN_NAWS 31              /**< Negotiate About Window Size */
 #define TN_TTYPE 24             /**< Ask for termial type information */
+#define TN_MSSP 70              /**< Send MSSP info (http://tintin.sourceforge.net/mssp/) */
+#define MSSP_VAR 1              /**< MSSP option name */
+#define MSSP_VAL 2              /**< MSSP option value */
 static void test_telnet(DESC *d);
 static void setup_telnet(DESC *d);
 static int handle_telnet(DESC *d, unsigned char **q, unsigned char *qend);
@@ -360,6 +364,7 @@ extern int queue_string(DESC *d, const char *s);
 extern int queue_string_eol(DESC *d, const char *s);
 extern void freeqs(DESC *d);
 static void welcome_user(DESC *d, int telnet);
+static int count_players(void);
 static void dump_info(DESC *call_by);
 static void save_command(DESC *d, const unsigned char *command);
 static int process_input(DESC *d, int output_ready);
@@ -621,8 +626,10 @@ main(int argc, char **argv)
 
   descs_by_fd = im_new();
 
-  /* go do it */
-  load_reboot_db();
+  if (restarting) {
+    /* go do it */
+    load_reboot_db();
+  }
 
   shovechars((Port_t) TINYPORT, (Port_t) SSLPORT);
 
@@ -1390,7 +1397,7 @@ fcache_read(FBLOCK *fb, const char *filename)
 #else
   /* Posix read code here */
   {
-    int fd, n;
+    int fd;
     struct stat sb;
 
     release_fd();
@@ -1416,7 +1423,7 @@ fcache_read(FBLOCK *fb, const char *filename)
       return -1;
     }
 
-    if ((n = read(fd, fb->buff, sb.st_size)) != sb.st_size) {
+    if (read(fd, fb->buff, sb.st_size) != sb.st_size) {
       do_rawlog(LT_ERR, "Couldn't read all of '%s'", filename);
       close(fd);
       mush_free(fb->buff, "fcache_data");
@@ -1892,12 +1899,13 @@ setup_telnet(DESC *d)
      option for local echo, just remote echo. */
   d->conn_flags |= CONN_TELNET;
   if (d->conn_flags & CONN_TELNET_QUERY) {
-    /* IAC DO NAWS IAC DO TERMINAL-TYPE */
-    unsigned char extra_options[6] = "\xFF\xFD\x1F" "\xFF\xFD\x18";
+    /* IAC DO NAWS IAC DO TERMINAL-TYPE IAC WILL MSSP  */
+    unsigned char extra_options[9] =
+      "\xFF\xFD\x1F" "\xFF\xFD\x18" "\xFF\xFB\x46";
     d->conn_flags &= ~CONN_TELNET_QUERY;
     do_rawlog(LT_CONN, "[%d/%s/%s] Switching to Telnet mode.",
               d->descriptor, d->addr, d->ip);
-    queue_newwrite(d, extra_options, 6);
+    queue_newwrite(d, extra_options, 9);
     process_output(d);
   }
 }
@@ -2082,6 +2090,21 @@ handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
 #ifdef DEBUG_TELNET
       fprintf(stderr, "GOT IAC DO SGA, sending IAC WILL SGA IAG DO SGA\n");
 #endif
+    } else if (**q == TN_MSSP) {
+      /* IAC SB MSSP MSSP_VAR "variable" MSSP_VAL "value" ... IAC SE */
+      char reply[BUFFER_LEN];
+      char *bp;
+      bp = reply;
+
+      safe_chr((char) IAC, reply, &bp);
+      safe_chr((char) SB, reply, &bp);
+      safe_chr((char) TN_MSSP, reply, &bp);
+      report_mssp((DESC *) NULL, reply, &bp);
+      safe_chr((char) IAC, reply, &bp);
+      safe_chr((char) SE, reply, &bp);
+      *bp = '\0';
+      queue_newwrite(d, (unsigned char *) reply, strlen(reply));
+      process_output(d);
     } else {
       /* Stuff we won't do */
       unsigned char reply[3];
@@ -2331,6 +2354,10 @@ do_command(DESC *d, char *command)
     send_prefix(d);
     dump_info(d);
     send_suffix(d);
+  } else if (!strcmp(command, MSSPREQUEST_COMMAND)) {
+    send_prefix(d);
+    report_mssp(d, NULL, NULL);
+    send_suffix(d);
   } else if (!strncmp(command, PREFIX_COMMAND, strlen(PREFIX_COMMAND))) {
     set_userstring(&d->output_prefix, command + strlen(PREFIX_COMMAND));
   } else if (!strncmp(command, SUFFIX_COMMAND, strlen(SUFFIX_COMMAND))) {
@@ -2370,12 +2397,13 @@ do_command(DESC *d, char *command)
       for (j = 0; j < NUMQ; j++)
         global_eval_context.renv[j][0] = '\0';
       global_eval_context.process_command_port = d->descriptor;
-
+      global_eval_context.pe_info = make_pe_info();
       process_command(d->player, command, d->player, 1);
       send_suffix(d);
       strcpy(global_eval_context.ccom, "");
       strcpy(global_eval_context.ucom, "");
       global_eval_context.cplr = NOTHING;
+      free_pe_info(global_eval_context.pe_info);
     } else {
       j = 0;
       if (!strncmp(command, WHO_COMMAND, strlen(WHO_COMMAND))) {
@@ -2794,7 +2822,7 @@ emergency_shutdown(void)
 int
 boot_player(dbref player, int idleonly, int silent)
 {
-  DESC *d, *ignore = NULL;
+  DESC *d, *ignore = NULL, *boot = NULL;
   int count = 0;
   time_t now = mudtime;
 
@@ -2802,19 +2830,25 @@ boot_player(dbref player, int idleonly, int silent)
     ignore = least_idle_desc(player, 1);
 
   DESC_ITER_CONN(d) {
+    if (boot) {
+      boot_desc(boot);
+      boot = NULL;
+    }
     if (d->player == player
         && (!ignore || (d != ignore && difftime(now, d->last_time) > 60.0))) {
       if (!idleonly && !silent && !count)
         notify(player, T("You are politely shown to the door."));
       count++;
-      boot_desc(d);
+      boot = d;
     }
   }
+  if (boot)
+    boot_desc(boot);
   if (count && idleonly) {
     if (count == 1)
       notify(player, T("You boot an idle self."));
     else
-      notify_format(player, T("You boot %d idle selves."), count);;
+      notify_format(player, T("You boot %d idle selves."), count);
   }
 
   return count;
@@ -3103,12 +3137,11 @@ reaper(int sig __attribute__ ((__unused__)))
 #endif                          /* !(Mac or WIN32) */
 
 
-static void
-dump_info(DESC *call_by)
+static int
+count_players(void)
 {
   int count = 0;
   DESC *d;
-  queue_string_eol(call_by, tprintf("### Begin INFO %s", INFO_VERSION));
 
   /* Count connected players */
   for (d = descriptor_list; d; d = d->next) {
@@ -3119,16 +3152,88 @@ dump_info(DESC *call_by)
         count++;
     }
   }
+
+  return count;
+}
+
+static void
+dump_info(DESC *call_by)
+{
+
+  queue_string_eol(call_by, tprintf("### Begin INFO %s", INFO_VERSION));
+
   queue_string_eol(call_by, tprintf("Name: %s", options.mud_name));
   queue_string_eol(call_by, tprintf("Address: %s", options.mud_url));
   queue_string_eol(call_by,
                    tprintf("Uptime: %s",
                            show_time(globals.first_start_time, 0)));
-  queue_string_eol(call_by, tprintf("Connected: %d", count));
+  queue_string_eol(call_by, tprintf("Connected: %d", count_players()));
   queue_string_eol(call_by, tprintf("Size: %d", db_top));
   queue_string_eol(call_by,
                    tprintf("Version: PennMUSH %sp%s", VERSION, PATCHLEVEL));
   queue_string_eol(call_by, "### End INFO");
+}
+
+void
+report_mssp(DESC *d, char *buff, char **bp)
+{
+  MSSP *opt;
+
+  if (d) {
+    queue_string_eol(d, "\r\nMSSP-REPLY-START");
+    /* Required by current spec, as of 2010-08-15 */
+    queue_string_eol(d, tprintf("%s\t%s", "NAME", options.mud_name));
+    queue_string_eol(d, tprintf("%s\t%d", "PLAYERS", count_players()));
+    queue_string_eol(d, tprintf("%s\t%ld", "UPTIME", globals.first_start_time));
+    /* Not required, but we know anyway */
+    queue_string_eol(d, tprintf("%s\t%d", "PORT", options.port));
+    if (options.ssl_port)
+      queue_string_eol(d, tprintf("%s\t%d", "SSL", options.ssl_port));
+    queue_string_eol(d, tprintf("%s\t%d", "PUEBLO", options.support_pueblo));
+    queue_string_eol(d,
+                     tprintf("%s\t%s %sp%s", "CODEBASE", "PennMUSH", VERSION,
+                             PATCHLEVEL));
+    queue_string_eol(d, tprintf("%s\t%s", "FAMILY", "TinyMUD"));
+    if (strlen(options.mud_url))
+      queue_string_eol(d, tprintf("%s\t%s", "WEBSITE", options.mud_url));
+  } else {
+    safe_format(buff, bp, "%c%s%c%s", MSSP_VAR, "NAME", MSSP_VAL,
+                options.mud_name);
+    safe_format(buff, bp, "%c%s%c%d", MSSP_VAR, "PLAYERS", MSSP_VAL,
+                count_players());
+    safe_format(buff, bp, "%c%s%c%ld", MSSP_VAR, "UPTIME", MSSP_VAL,
+                globals.first_start_time);
+
+    safe_format(buff, bp, "%c%s%c%d", MSSP_VAR, "PORT", MSSP_VAL, options.port);
+    if (options.ssl_port)
+      safe_format(buff, bp, "%c%s%c%d", MSSP_VAR, "SSL", MSSP_VAL,
+                  options.ssl_port);
+    safe_format(buff, bp, "%c%s%c%d", MSSP_VAR, "PUEBLO", MSSP_VAL,
+                options.support_pueblo);
+    safe_format(buff, bp, "%c%s%cPennMUSH %sp%s", MSSP_VAR, "CODEBASE",
+                MSSP_VAL, VERSION, PATCHLEVEL);
+    safe_format(buff, bp, "%c%s%c%s", MSSP_VAR, "FAMILY", MSSP_VAL, "TinyMUD");
+    if (strlen(options.mud_url))
+      safe_format(buff, bp, "%c%s%c%s", MSSP_VAR, "WEBSITE", MSSP_VAL,
+                  options.mud_url);
+  }
+
+  if (mssp) {
+    opt = mssp;
+    if (d) {
+      while (opt) {
+        queue_string_eol(d, tprintf("%s\t%s", opt->name, opt->value));
+        opt = opt->next;
+      }
+      queue_string_eol(d, "MSSP-REPLY-END");
+    } else {
+      while (opt) {
+        safe_format(buff, bp, "%c%s%c%s", MSSP_VAR, opt->name, MSSP_VAL,
+                    opt->value);
+        opt = opt->next;
+      }
+    }
+  }
 }
 
 /** Determine if a new guest can connect at this point. If so, return
@@ -3918,9 +4023,12 @@ short_page(const char *match)
   dbref who1 = NOTHING;
   int count = 0;
 
+  if (!(match && *match))
+    return NOTHING;
+
   for (d = descriptor_list; d; d = d->next) {
     if (d->connected) {
-      if (match && !string_prefix(Name(d->player), match))
+      if (!string_prefix(Name(d->player), match))
         continue;
       if (!strcasecmp(Name(d->player), match)) {
         count = 1;
@@ -5199,9 +5307,13 @@ do_reboot(dbref player, int flag)
    * So we make sure that if we get a SIGPROF in our next incarnation,
    * we ignore it until our proper handler is set up.
    */
+#ifdef __CYGWIN__
+  ignore_signal(SIGALRM);
+#else
   ignore_signal(SIGPROF);
-#endif
-#endif
+#endif                          /* __CYGWIN__ */
+#endif                          /* WIN32 */
+#endif                          /* PROFILING */
   dump_reboot_db();
 #ifdef INFO_SLAVE
   kill_info_slave();
@@ -5220,7 +5332,7 @@ do_reboot(dbref player, int flag)
       args[n++] = pidfile;
     }
     args[n++] = confname;
-    args[n++] = NULL;
+    args[n] = NULL;
 
     execv(saved_argv[0], (char **) args);
   }

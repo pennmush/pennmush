@@ -250,7 +250,7 @@ do_buy(dbref player, char *item, char *from, int price)
               boughtit = price;
             }
           } else if ((plus = strchr(cost, '+'))) {
-            *(plus++) = '\0';
+            *plus = '\0';
             if (!is_strict_integer(cost))
               continue;
             low = parse_integer(cost);
@@ -449,14 +449,18 @@ do_give(dbref player, char *recipient, char *amnt, int silent)
   } else {
     char *pay_env[10] = { NULL };
     char paid[SBUF_LEN], *pb;
+    ATTR *a;
 
     pay_env[0] = pb = paid;
 
-    /* objects work differently */
-    if (IsThing(who)) {
-      /* give pennies to an object */
+    a = atr_get(who, "COST");
+    if (!a && !IsPlayer(who)) {
+      notify_format(player, T("%s refuses your money."), Name(who));
+      giveto(player, amount);
+      return;
+    } else if (a) {
+      /* give pennies to object with COST */
       int cost = 0;
-      ATTR *a;
       char *preserveq[NUMQ];
       char *preserves[10];
       char fbuff[BUFFER_LEN];
@@ -489,8 +493,11 @@ do_give(dbref player, char *recipient, char *amnt, int silent)
         giveto(player, amount);
         return;
       }
-      if (cost < 0)
+      if (cost < 0) {
+        notify_format(player, T("%s refuses your money."), Name(who));
+        giveto(player, amount);
         return;
+      }
       if ((amount - cost) > 0) {
         notify_format(player, T("You get %d in change."), amount - cost);
       } else {

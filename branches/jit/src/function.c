@@ -493,7 +493,7 @@ FUNTAB flist[] = {
   {"LAST", fun_last, 1, 2, FN_REG},
   {"LATTR", fun_lattr, 1, 2, FN_REG | FN_STRIPANSI},
   {"LATTRP", fun_lattr, 1, 2, FN_REG | FN_STRIPANSI},
-  {"LCON", fun_dbwalker, 1, 1, FN_REG | FN_STRIPANSI},
+  {"LCON", fun_dbwalker, 1, 2, FN_REG | FN_STRIPANSI},
   {"LCSTR", fun_lcstr, 1, -1, FN_REG},
   {"LDELETE", fun_ldelete, 2, 3, FN_REG},
   {"LEFT", fun_left, 2, 2, FN_REG},
@@ -611,7 +611,7 @@ FUNTAB flist[] = {
   {"OBJID", fun_objid, 1, 1, FN_REG | FN_STRIPANSI},
   {"OBJMEM", fun_objmem, 1, 1, FN_REG | FN_STRIPANSI},
   {"OEMIT", fun_oemit, 2, -2, FN_REG},
-  {"OPEN", fun_open, 2, 2, FN_REG},
+  {"OPEN", fun_open, 1, 3, FN_REG},
   {"OR", fun_or, 2, INT_MAX, FN_REG | FN_STRIPANSI},
   {"ORD", fun_ord, 1, 1, FN_REG | FN_STRIPANSI},
   {"ORDINAL", fun_spellnum, 1, 1, FN_REG | FN_STRIPANSI},
@@ -1340,6 +1340,95 @@ func_comp(const void *s1, const void *s2)
     return 1;
 }
 
+/* Add a user-defined function from cnf file */
+int
+cnf_add_function(char *name, char *opts)
+{
+  FUN *fp;
+  dbref thing;
+  int minargs[2] = { 0, 0 };
+  int maxargs[2] = { 0, 0 };
+  char *attrname, *one, *list;
+
+  name = trim_space_sep(name, ' ');
+  upcasestr(name);
+
+  if (!ok_function_name(name))
+    return 0;
+
+  /* Validate arguments */
+  list = trim_space_sep(opts, ' ');
+  if (!list)
+    return 0;
+  one = split_token(&list, ' ');
+  if ((attrname = strchr(one, '/')) == NULL)
+    return 0;
+  *attrname++ = '\0';
+  upcasestr(attrname);
+  /* Don't care if the attr exists, only if it /could/ exist */
+  if (!is_integer(one) || !good_atr_name(attrname))
+    return 0;
+  thing = (dbref) parse_integer(one);
+  if (!GoodObject(thing) || IsGarbage(thing))
+    return 0;
+  if (list) {
+    /* min/max args */
+    one = split_token(&list, ' ');
+    if (!is_strict_integer(one))
+      return 0;
+    minargs[0] = parse_integer(one);
+    minargs[1] = 1;
+    if (minargs[0] < 0 || minargs[0] > 10)
+      minargs[0] = 0;
+    if (list) {
+      /* max args */
+      one = split_token(&list, ' ');
+      if (!is_strict_integer(one))
+        return 0;
+      maxargs[0] = parse_integer(one);
+      maxargs[1] = 1;
+      if (maxargs[0] < -10)
+        maxargs[0] = -10;
+      else if (maxargs[0] > 10)
+        maxargs[0] = 10;
+    }
+  }
+
+  fp = func_hash_lookup(name);
+  if (fp) {
+    if (fp->flags & FN_BUILTIN) {
+      /* Override built-in function */
+      fp->flags |= FN_OVERRIDE;
+      fp = NULL;
+    } else {
+      if (fp->where.ufun->name) {
+        mush_free(fp->where.ufun->name, "userfn.name");
+      }
+    }
+  }
+
+  if (!fp) {
+    /* Create new userfunction */
+    fp = slab_malloc(function_slab, NULL);
+    fp->name = mush_strdup(name, "func_hash.name");
+    fp->where.ufun = mush_malloc(sizeof(USERFN_ENTRY), "userfn");
+    fp->minargs = 0;
+    fp->maxargs = 10;
+    hashadd(name, fp, &htab_user_function);
+  }
+
+  fp->where.ufun->thing = thing;
+  fp->where.ufun->name = mush_strdup(upcasestr(attrname), "userfn.name");
+  if (minargs[1])
+    fp->minargs = minargs[0];
+  if (maxargs[1])
+    fp->maxargs = maxargs[0];
+
+
+  return 1;
+
+}
+
 /** Add a user-defined function.
  * \verbatim
  * This is the implementation of the @function command. If no arguments
@@ -1828,7 +1917,6 @@ build_function_report(dbref player, FUN *fp)
     if (first == 0)
       safe_strl(", ", 2, tbuf, &tp);
     safe_str("God", tbuf, &tp);
-    first = 0;
   }
 
   *tp = '\0';

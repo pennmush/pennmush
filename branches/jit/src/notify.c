@@ -267,7 +267,6 @@ notify_makestring(const char *message, struct notify_strings messages[],
   char *o;
   const unsigned char *p;
   char *t;
-  int color = 0;
   int strip = 0;
   int pueblo = 0;
   static char tbuf[BUFFER_LEN];
@@ -392,7 +391,6 @@ notify_makestring(const char *message, struct notify_strings messages[],
   case NA_COLOR:
   case NA_TCOLOR:
   case NA_NCOLOR:
-    color = 1;
     /* FALLTHROUGH */
   case NA_ANSI:
   case NA_TANSI:
@@ -404,6 +402,8 @@ notify_makestring(const char *message, struct notify_strings messages[],
       case IAC:
         if (type == NA_TANSI || type == NA_TCOLOR)
           safe_strl("\xFF\xFF", 2, t, &o);
+        else if (pueblo)
+          safe_format(t, &o, "&#%d;", IAC);
         else if (strip && accent_table[IAC].base)
           safe_str(accent_table[IAC].base, t, &o);
         else
@@ -956,7 +956,7 @@ notify_anything_loc(dbref speaker, na_lookup func,
     /* If object is flagged AUDIBLE and has a @FORWARDLIST, send
      *  stuff on */
     if ((!(flags & NA_NORELAY) || (flags & NA_PUPPET)) && Audible(target)
-        && ((a = atr_get_noparent(target, "FORWARDLIST")) != NULL)
+        && atr_get_noparent(target, "FORWARDLIST") != NULL
         && !filter_found(target, msgbuf, 0)) {
       notify_list(speaker, target, "FORWARDLIST", msgbuf, flags);
 
@@ -1405,12 +1405,9 @@ queue_string(DESC *d, const char *s)
   unsigned char *n;
   enum na_type poutput;
   struct notify_strings messages[MESSAGE_TYPES];
-  dbref target;
   int ret;
 
   zero_strings(messages);
-
-  target = d->player;
 
   poutput = notify_type(d);
 

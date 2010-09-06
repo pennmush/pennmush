@@ -1795,49 +1795,62 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
     return 0;
   strcpy(name, atr);
   upcasestr(name);
-  if (!strcmp(name, "ALIAS") && IsPlayer(thing)) {
-    old = atr_get_noparent(thing, "ALIAS");
-    tbuf1[0] = '\0';
-    if (old) {
-      /* Old alias - we're allowed to change to a different case */
-      strcpy(tbuf1, atr_value(old));
-      if (s && !*s) {
-        notify_format(player, T("'%s' is not a valid alias."), s);
-        return -1;
-      }
-      if (s && strcasecmp(s, tbuf1)) {
-        int opae_res = ok_player_alias(s, player, thing);
-        switch (opae_res) {
-        case OPAE_INVALID:
+  if (strcmp(name, "ALIAS") == 0) {
+    if (IsPlayer(thing)) {
+      old = atr_get_noparent(thing, "ALIAS");
+      tbuf1[0] = '\0';
+      if (old) {
+        /* Old alias - we're allowed to change to a different case */
+        strcpy(tbuf1, atr_value(old));
+        if (s && !*s) {
           notify_format(player, T("'%s' is not a valid alias."), s);
-          break;
-        case OPAE_TOOMANY:
-          notify_format(player, T("'%s' contains too many aliases."), s);
-          break;
-        case OPAE_NULL:
-          notify_format(player, T("Null aliases are not valid."));
-          break;
-        }
-        if (opae_res != OPAE_SUCCESS)
           return -1;
+        }
+        if (s && strcasecmp(s, tbuf1)) {
+          int opae_res = ok_player_alias(s, player, thing);
+          switch (opae_res) {
+          case OPAE_INVALID:
+            notify_format(player, T("'%s' is not a valid alias."), s);
+            break;
+          case OPAE_TOOMANY:
+            notify_format(player, T("'%s' contains too many aliases."), s);
+            break;
+          case OPAE_NULL:
+            notify_format(player, T("Null aliases are not valid."));
+            break;
+          }
+          if (opae_res != OPAE_SUCCESS)
+            return -1;
+        }
+      } else {
+        /* No old alias */
+        if (s && *s) {
+          int opae_res = ok_player_alias(s, player, thing);
+          switch (opae_res) {
+          case OPAE_INVALID:
+            notify_format(player, T("'%s' is not a valid alias."), s);
+            break;
+          case OPAE_TOOMANY:
+            notify_format(player, T("'%s' contains too many aliases."), s);
+            break;
+          case OPAE_NULL:
+            notify_format(player, T("Null aliases are not valid."));
+            break;
+          }
+          if (opae_res != OPAE_SUCCESS)
+            return -1;
+        }
       }
-    } else {
-      /* No old alias */
-      if (s && *s) {
-        int opae_res = ok_player_alias(s, player, thing);
-        switch (opae_res) {
-        case OPAE_INVALID:
-          notify_format(player, T("'%s' is not a valid alias."), s);
-          break;
-        case OPAE_TOOMANY:
-          notify_format(player, T("'%s' contains too many aliases."), s);
-          break;
-        case OPAE_NULL:
-          notify_format(player, T("Null aliases are not valid."));
-          break;
-        }
-        if (opae_res != OPAE_SUCCESS)
+    } else if (IsExit(thing) && s && *s) {
+      char *alias, *aliases;
+
+      strcpy(tbuf1, s);
+      aliases = tbuf1;
+      while ((alias = split_token(&aliases, ';')) != NULL) {
+        if (!ok_name(alias)) {
+          notify_format(player, T("'%s' is not a valid exit name."), alias);
           return -1;
+        }
       }
     }
   } else if (s && *s && (!strcmp(name, "FORWARDLIST")
@@ -2078,7 +2091,7 @@ do_atrchown(dbref player, const char *xarg1, const char *arg2)
     return;
   }
 
-  if ((!arg2 && !*arg2) || !strcasecmp(arg2, "me"))
+  if (!(arg2 && *arg2) || !strcasecmp(arg2, "me"))
     new_owner = player;
   else
     new_owner = lookup_player(arg2);

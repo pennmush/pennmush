@@ -667,9 +667,7 @@ forbidden_name(const char *name)
 {
   char buf[BUFFER_LEN], *newlin, *ptr;
   FILE *fp;
-  char *upname;
 
-  upname = strupper(name);
   fp = fopen(NAMES_FILE, FOPEN_READ);
   if (!fp)
     return 0;
@@ -852,7 +850,7 @@ ok_password(const char *password)
 /** Is a name ok for a command?
  * It must contain only uppercase alpha, numbers, or punctuation.
  * It must contain at least one uppercase alpha.
- * It may not begin with " : ; & ] \ and # (the special tokens).
+ * It may not begin with " : ; & [ ] \ and # (the special tokens).
  * \param name name to check.
  * \retval 1 name is acceptable.
  * \retval 0 name is not acceptable.
@@ -871,6 +869,7 @@ ok_command_name(const char *name)
   case NOEVAL_TOKEN:
   case NUMBER_TOKEN:
   case '&':
+  case '[':
     return 0;
   default:
     if (!isupper((unsigned char) *name) && !isdigit((unsigned char) *name)

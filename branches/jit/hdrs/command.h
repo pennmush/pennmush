@@ -113,9 +113,9 @@ void command_name (COMMAND_INFO *cmd, dbref player, dbref cause, switch_mask sw,
                   char *arg_right, char *args_right[MAX_ARG])
 
 typedef struct command_info COMMAND_INFO;
-typedef void (*command_func) (COMMAND_INFO *, dbref, dbref, switch_mask, const char *,
-                              const char *, char *, char *, char *[MAX_ARG],
-                              char *, char *[MAX_ARG]);
+typedef void (*command_func) (COMMAND_INFO *, dbref, dbref, switch_mask,
+                              const char *, const char *, char *, char *,
+                              char *[MAX_ARG], char *, char *[MAX_ARG]);
 
 /** A hook specification.
  */
@@ -206,8 +206,6 @@ COMMAND_INFO *command_add
 COMMAND_INFO *make_command
   (const char *name, int type, const char *flagstr,
    const char *powerstr, const char *sw, command_func func);
-COMMAND_INFO *command_modify(const char *name, int type,
-                             boolexp key, switch_mask sw, command_func func);
 void reserve_alias(const char *a);
 int alias_command(const char *command, const char *alias);
 void command_init_preconfig(void);
@@ -230,10 +228,13 @@ void reserve_aliases(void);
 void local_commands(void);
 void do_command_add(dbref player, char *name, int flags);
 void do_command_delete(dbref player, char *name);
-int run_command(COMMAND_INFO *cmd, dbref player, dbref cause, const char *commandraw,
-                switch_mask sw, char switch_err[BUFFER_LEN], const char *string,
-                char *swp, char *ap, char *ls, char *lsa[MAX_ARG], char *rs,
+int run_command(COMMAND_INFO *cmd, dbref player, dbref cause,
+                const char *commandraw, switch_mask sw,
+                char switch_err[BUFFER_LEN], const char *string, char *swp,
+                char *ap, char *ls, char *lsa[MAX_ARG], char *rs,
                 char *rsa[MAX_ARG]);
+int cnf_add_command(char *name, char *opts);
+int cnf_hook_command(char *name, char *opts);
 
 
 #endif                          /* __COMMAND_H */

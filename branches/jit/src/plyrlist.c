@@ -193,10 +193,8 @@ reset_player_list(dbref player, const char *oldname, const char *oldalias,
 {
   char tbuf1[BUFFER_LEN];
   char tbuf2[BUFFER_LEN];
-  if (!oldname) {
-    oldname = Name(player);
+  if (!oldname)
     name = Name(player);
-  }
   if (oldalias) {
     mush_strncpy(tbuf1, oldalias, BUFFER_LEN);
     if (alias) {

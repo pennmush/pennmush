@@ -371,11 +371,10 @@ bool
 is_strict_number(char const *str)
 {
   char *end;
-  NVAL val;
   if (!str)
     return 0;
   errno = 0;
-  val = strtod(str, &end);
+  strtod(str, &end);
   if (errno == ERANGE || *end != '\0')
     return 0;
   return end > str;
@@ -415,11 +414,10 @@ bool
 is_strict_integer(char const *str)
 {
   char *end;
-  int val;
   if (!str)
     return 0;
   errno = 0;
-  val = parse_int(str, &end, 10);
+  parse_int(str, &end, 10);
   if (errno == ERANGE || *end != '\0')
     return 0;
   return end > str;
@@ -585,6 +583,33 @@ extern signed char qreg_indexes[UCHAR_MAX + 1];
 #pragma warning( disable : 4761)        /* NJG: disable warning re conversion */
 #endif
 
+PE_Info *
+make_pe_info()
+{
+  PE_Info *pe_info;
+
+  pe_info = (PE_Info *) mush_malloc(sizeof(PE_Info),
+                                    "process_expression.pe_info");
+  pe_info->fun_invocations = 0;
+  pe_info->fun_depth = 0;
+  pe_info->nest_depth = 0;
+  pe_info->call_depth = 0;
+  pe_info->debug_strings = NULL;
+  pe_info->arg_count = 0;
+  pe_info->iter_nesting = -1;
+
+  return pe_info;
+}
+
+void
+free_pe_info(PE_Info *pe_info)
+{
+  mush_free(pe_info, "process_expression.pe_info");
+  return;
+}
+
+
+
 
 /** Function and other substitution evaluation.
  * This is the PennMUSH function/expression parser. Big stuff.
@@ -650,7 +675,6 @@ process_expression(char *buff, char **bp, char const **str,
   int had_space = 0;
   char temp[3];
   int temp_eflags;
-  int old_iter_limit;
   int qindex;
   int retval = 0;
 
@@ -679,19 +703,8 @@ process_expression(char *buff, char **bp, char const **str,
     return 0;
 
   if (!pe_info) {
-    old_iter_limit = inum_limit;
-    inum_limit = inum;
     made_info = 1;
-    pe_info = (PE_Info *) mush_malloc(sizeof(PE_Info),
-                                      "process_expression.pe_info");
-    pe_info->fun_invocations = 0;
-    pe_info->fun_depth = 0;
-    pe_info->nest_depth = 0;
-    pe_info->call_depth = 0;
-    pe_info->debug_strings = NULL;
-    pe_info->arg_count = 0;
-  } else {
-    old_iter_limit = -1;
+    pe_info = make_pe_info();
   }
 
   /* If we've been asked to evaluate, log the expression if:
@@ -723,7 +736,6 @@ process_expression(char *buff, char **bp, char const **str,
       safe_strl(e_msg, e_len, buff, bp);
     goto exit_sequence;
   }
-
 
   if (eflags != PE_NOTHING) {
     debugging = (Debug(executor) || (eflags & PE_DEBUG))
@@ -1023,11 +1035,12 @@ process_expression(char *buff, char **bp, char const **str,
             break;
           }
           inum_this = nextc - '0';
-          if (inum_this < 0 || inum_this >= inum
-              || (inum - inum_this) <= inum_limit) {
+          if (inum_this < 0 || inum_this > pe_info->iter_nesting
+              || (pe_info->iter_nesting - inum_this) < 0) {
             safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
           } else {
-            safe_str(iter_rep[inum - inum_this], buff, bp);
+            safe_str(pe_info->iter_itext[pe_info->iter_nesting - inum_this],
+                     buff, bp);
           }
           break;
         case 'U':
@@ -1572,10 +1585,7 @@ exit_sequence:
   if (pe_info && CALL_LIMIT && pe_info->call_depth <= CALL_LIMIT)
     pe_info->call_depth--;
   if (made_info)
-    mush_free(pe_info, "process_expression.pe_info");
-  if (old_iter_limit != -1) {
-    inum_limit = old_iter_limit;
-  }
+    free_pe_info(pe_info);
   return retval;
 }
 

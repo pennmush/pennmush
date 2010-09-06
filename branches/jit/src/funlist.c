@@ -36,13 +36,7 @@ enum itemfun_op { IF_DELETE, IF_REPLACE, IF_INSERT };
 static void do_itemfuns(char *buff, char **bp, char *str, char *num,
                         char *word, char *sep, enum itemfun_op flag);
 
-char *iter_rep[MAX_ITERS];  /**< itext values */
-int iter_place[MAX_ITERS];  /**< inum numbers */
-int inum = 0;               /**< iter depth */
-int inum_limit = 0;         /**< limit of iter depth */
 extern const unsigned char *tables;
-
-#define RealGoodObject(x) (GoodObject(x) && !IsGarbage(x))
 
 /** Convert list to array.
  * Chops up a list of words into an array of words. The list is
@@ -59,7 +53,6 @@ list2arr_ansi(char *r[], int max, char *list, char sep)
 {
   char *p, *lp;
   int i;
-  int first;
   ansi_string *as;
   char *aptr;
 
@@ -70,7 +63,6 @@ list2arr_ansi(char *r[], int max, char *list, char sep)
 
   lp = list;
   p = split_token(&aptr, sep);
-  first = 0;
   for (i = 0; p && (i < max); i++, p = split_token(&aptr, sep)) {
     lp = list;
     safe_ansi_string(as, p - (as->text), strlen(p), list, &lp);
@@ -93,9 +85,8 @@ list2arr_ansi(char *r[], int max, char *list, char sep)
 int
 list2arr(char *r[], int max, char *list, char sep)
 {
-  char *p, *lp;
+  char *p;
   int i;
-  int first;
   char *aptr;
   size_t len;
 
@@ -105,9 +96,7 @@ list2arr(char *r[], int max, char *list, char sep)
 
   aptr = trim_space_sep(list, sep);
 
-  lp = list;
   p = split_token(&aptr, sep);
-  first = 0;
   for (i = 0; p && (i < max); i++, p = split_token(&aptr, sep)) {
     r[i] = p;
   }
@@ -1364,7 +1353,7 @@ FUNCTION(fun_randword)
   if (!s || !*s)                /* ran off the end of the string */
     return;
 
-  /* Chop off the end, and copy. No length checking needed. */
+  /* Chop off the end, tand copy. No length checking needed. */
   r = s;
   if (s && *s)
     (void) split_token(&s, sep);
@@ -2219,7 +2208,7 @@ FUNCTION(fun_iter)
   const char *replace[2];
 
 
-  if (inum >= MAX_ITERS) {
+  if (pe_info->iter_nesting >= MAX_ITERS) {
     safe_str(T("#-1 TOO MANY ITERS"), buff, bp);
     return;
   }
@@ -2262,8 +2251,8 @@ FUNCTION(fun_iter)
     return;
   }
 
-  inum++;
-  place = &iter_place[inum];
+  pe_info->iter_nesting++;
+  place = &pe_info->iter_inum[pe_info->iter_nesting];
   *place = 0;
   funccount = pe_info->fun_invocations;
   oldbp = *bp;
@@ -2272,7 +2261,7 @@ FUNCTION(fun_iter)
       safe_str(outsep, buff, bp);
     }
     *place = *place + 1;
-    iter_rep[inum] = tbuf1 = split_token(&lp, sep);
+    pe_info->iter_itext[pe_info->iter_nesting] = tbuf1 = split_token(&lp, sep);
     replace[0] = tbuf1;
     replace[1] = unparse_integer(*place);
     tbuf2 = replace_string2(standard_tokens, replace, args[1]);
@@ -2291,8 +2280,8 @@ FUNCTION(fun_iter)
     mush_free(tbuf2, "replace_string.buff");
   }
   *place = 0;
-  iter_rep[inum] = NULL;
-  inum--;
+  pe_info->iter_itext[pe_info->iter_nesting] = NULL;
+  pe_info->iter_nesting--;
   mush_free(outsep, "string");
   mush_free(list, "string");
 }
@@ -2300,7 +2289,7 @@ FUNCTION(fun_iter)
 /* ARGSUSED */
 FUNCTION(fun_ilev)
 {
-  safe_integer(inum - 1, buff, bp);
+  safe_integer(pe_info->iter_nesting, buff, bp);
 }
 
 /* ARGSUSED */
@@ -2314,12 +2303,12 @@ FUNCTION(fun_itext)
   }
   i = parse_integer(args[0]);
 
-  if (i < 0 || i >= inum || (inum - i) <= inum_limit) {
+  if (i < 0 || i > pe_info->iter_nesting || (pe_info->iter_nesting - i) < 0) {
     safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
     return;
   }
 
-  safe_str(iter_rep[inum - i], buff, bp);
+  safe_str(pe_info->iter_itext[pe_info->iter_nesting - i], buff, bp);
 }
 
 /* ARGSUSED */
@@ -2333,12 +2322,12 @@ FUNCTION(fun_inum)
   }
   i = parse_integer(args[0]);
 
-  if (i < 0 || i >= inum || (inum - i) <= inum_limit) {
+  if (i < 0 || i > pe_info->iter_nesting || (pe_info->iter_nesting - i) < 0) {
     safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
     return;
   }
 
-  safe_integer(iter_place[inum - i], buff, bp);
+  safe_integer(pe_info->iter_inum[pe_info->iter_nesting - i], buff, bp);
 }
 
 /* ARGSUSED */

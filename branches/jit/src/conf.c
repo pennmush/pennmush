@@ -48,6 +48,7 @@ static char *config_to_string(dbref player, PENNCONF *cp, int lc);
 
 OPTTAB options;         /**< The table of configuration options */
 HASHTAB local_options;  /**< Hash table for local config options */
+MSSP *mssp;             /**< Linked list of MSSP values */
 
 int config_set(const char *opt, char *val, int source, int restrictions);
 void conf_default_set(void);
@@ -914,6 +915,39 @@ save_config_option(PENNCONF *cp)
 
 }
 
+int
+add_mssp(char *name, char *value)
+{
+  MSSP *opt = NULL, *last;
+
+  /* Validate name and value */
+  while (*name && *name == ' ')
+    name++;
+  /* names/values cannot contain IAC(255), MSSP_VAR (1) or MSSP_VAL (2) */
+  if (!name || (strchr(name, (char) 255) || strchr(name, (char) 1) ||
+                strchr(name, (char) 2)))
+    return 0;
+  if (strchr(value, (char) 255) || strchr(value, (char) 1) ||
+      strchr(value, (char) 2))
+    return 0;
+
+  upcasestr(name);
+  opt = mush_malloc(sizeof(MSSP), "mssp");
+  if (!mssp) {
+    mssp = opt;
+  } else {
+    last = mssp;
+    while (last->next) {
+      last = last->next;
+    }
+    last->next = opt;
+  }
+  opt->name = mush_strndup(name, 50, "mssp.name");
+  opt->value = mush_strndup(value, 150, "mssp.value");
+  opt->next = NULL;
+  return 1;
+}
+
 /** Set a configuration option.
  * This function sets a runtime configuration option. During the load
  * of the configuration file, it gets run twice - once to set the
@@ -992,6 +1026,24 @@ config_set(const char *opt, char *val, int source, int restrictions)
     if (source == 2)
       append_restriction("restrict_function", val, p);
     return 1;
+  } else if (!strcasecmp(opt, "restrict_attribute")) {
+    if (!restrictions || source > 0)
+      return 0;
+    for (p = val; *p && !isspace((unsigned char) *p); p++) ;
+    if (*p) {
+      *p++ = '\0';
+      if (!cnf_attribute_access(val, p)) {
+        do_rawlog(LT_ERR, "CONFIG: Couldn't restrict attribute %s to %s", val,
+                  p);
+        return 0;
+      }
+    } else {
+      do_rawlog(LT_ERR,
+                "CONFIG: restrict_attribute %s requires a restriction (use 'none' for none)",
+                val);
+      return 0;
+    }
+    return 1;
   } else if (!strcasecmp(opt, "reserve_alias")) {
     if (!restrictions)
       return 0;
@@ -1017,6 +1069,56 @@ config_set(const char *opt, char *val, int source, int restrictions)
     }
     if (source == 2)
       append_restriction("reserve_alias", val, p);
+    return 1;
+  } else if (!strcasecmp(opt, "hook_command")) {
+    if (!restrictions || source > 0)
+      return 0;
+    for (p = val; *p && !isspace((unsigned char) *p); p++) ;
+    if (*p) {
+      *p++ = '\0';
+      if (!cnf_hook_command(val, p)) {
+        do_rawlog(LT_ERR, "CONFIG: Couldn't hook command %s with options %s",
+                  val, p);
+        return 0;
+      }
+    } else {
+      do_rawlog(LT_ERR, "CONFIG: hook_command %s requires a hook type", val);
+      return 0;
+    }
+    return 1;
+  } else if (!strcasecmp(opt, "add_command")) {
+    if (!restrictions || source > 0)
+      return 0;
+    for (p = val; *p && !isspace((unsigned char) *p); p++) ;
+    if (*p) {
+      *p++ = '\0';
+      if (!cnf_add_command(val, p)) {
+        do_rawlog(LT_ERR, "CONFIG: Couldn't add command %s with flags %s", val,
+                  p);
+        return 0;
+      }
+    } else {
+      if (!cnf_add_command(val, NULL)) {
+        do_rawlog(LT_ERR, "CONFIG: Couldn't add command %s", val);
+        return 0;
+      }
+    }
+    return 1;
+  } else if (!strcasecmp(opt, "add_function")) {
+    if (!restrictions || source > 0)
+      return 0;
+    for (p = val; *p && !isspace((unsigned char) *p); p++) ;
+    if (*p) {
+      *p++ = '\0';
+      if (!cnf_add_function(val, p)) {
+        do_rawlog(LT_ERR, "CONFIG: Couldn't add function %s with options %s",
+                  val, p);
+        return 0;
+      }
+    } else {
+      do_rawlog(LT_ERR, "CONFIG: add_function %s requires an obj/attr", val);
+      return 0;
+    }
     return 1;
   } else if (!strcasecmp(opt, "attribute_alias")) {
     if (!restrictions)
@@ -1083,6 +1185,16 @@ config_set(const char *opt, char *val, int source, int restrictions)
     } else {
       do_rawlog(LT_ERR,
                 "CONFIG: help_command requires a command name and file name.");
+      return 0;
+    }
+  } else if (!strcasecmp(opt, "mssp")) {
+    if (restrictions)
+      return 0;
+    if ((p = strchr(val, '/')) != NULL) {
+      *p++ = '\0';
+      return add_mssp((char *) val, p);
+    } else {
+      do_rawlog(LT_ERR, "CONFIG: mssp requires option/value");
       return 0;
     }
   } else if (restrictions) {
@@ -1507,6 +1619,23 @@ do_config_list(dbref player, const char *type, int lc)
           if (cp->group && !strcasecmp(cp->name, type)) {
             notify(player, config_to_string(player, cp, lc));
             found = 1;
+          }
+        }
+      }
+      if (!found) {
+        /* Try a wildcard search of option names, including local options */
+        char *wild = tprintf("*%s*", type);
+        for (cp = conftable; cp->name; cp++) {
+          if (cp->group && quick_wild(wild, cp->name)) {
+            found = 1;
+            notify(player, config_to_string(player, cp, lc));
+          }
+        }
+        for (cp = (PENNCONF *) hash_firstentry(&local_options); cp;
+             cp = (PENNCONF *) hash_nextentry(&local_options)) {
+          if (cp->group && quick_wild(wild, cp->name)) {
+            found = 1;
+            notify(player, config_to_string(player, cp, lc));
           }
         }
       }

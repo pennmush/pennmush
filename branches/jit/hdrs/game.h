@@ -110,7 +110,7 @@ extern void do_name(dbref player, const char *name, char *newname);
 extern void do_chown
   (dbref player, const char *name, const char *newobj, int preserve);
 extern int do_chzone(dbref player, const char *name, const char *newobj,
-                     int noisy);
+                     bool noisy, bool preserve);
 extern int do_set(dbref player, const char *name, char *flag);
 extern void do_cpattr
   (dbref player, char *oldpair, char **newpair, int move, int noflagcopy);
@@ -172,11 +172,12 @@ extern void do_newpassword
 enum boot_type { BOOT_NAME, BOOT_DESC, BOOT_SELF };
 extern void do_boot(dbref player, const char *name, enum boot_type flag,
                     int silent);
-extern void do_chzoneall(dbref player, const char *name, const char *target);
+extern void do_chzoneall(dbref player, const char *name, const char *target,
+                         bool preserve);
 extern int parse_force(char *command);
 extern void do_power(dbref player, const char *name, const char *power);
 enum sitelock_type { SITELOCK_ADD, SITELOCK_REMOVE, SITELOCK_BAN,
-  SITELOCK_CHECK, SITELOCK_LIST
+  SITELOCK_CHECK, SITELOCK_LIST, SITELOCK_REGISTER
 };
 extern void do_sitelock(dbref player, const char *site, const char *opts,
                         const char *charname, enum sitelock_type type);

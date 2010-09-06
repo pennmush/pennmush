@@ -146,7 +146,9 @@ void
 do_say(dbref player, const char *tbuf1)
 {
   dbref loc;
-
+  const char *args[2];
+  char tbuf2[BUFFER_LEN];
+  int mod = 0;
   loc = speech_loc(player);
   if (!GoodObject(loc))
     return;
@@ -159,11 +161,20 @@ do_say(dbref player, const char *tbuf1)
   if (*tbuf1 == SAY_TOKEN && CHAT_STRIP_QUOTE)
     tbuf1++;
 
+  args[0] = tbuf1;
+  args[1] = "\"";
+  tbuf2[0] = '\0';
+
+  if (call_attrib(player, "SPEECHMOD", args, 2, tbuf2, player, NULL)
+      && *tbuf2 != '\0')
+    mod = 1;
+
   /* notify everybody */
-  notify_format(player, T("You say, \"%s\""), tbuf1);
+  notify_format(player, T("You say, \"%s\""), (mod ? tbuf2 : tbuf1));
   notify_except(Contents(loc), player,
-                tprintf(T("%s says, \"%s\""), spname(player), tbuf1),
-                NA_INTER_HEAR);
+                tprintf(T("%s says, \"%s\""), spname(player),
+                        (mod ? tbuf2 : tbuf1)), NA_INTER_HEAR);
+
 }
 
 /** The oemit(/list) command.
@@ -585,12 +596,15 @@ do_pemit(dbref player, const char *arg1, const char *arg2, int flags)
 /** The pose and semipose command.
  * \param player the enactor.
  * \param tbuf1 the message to pose.
- * \param space if 1, put a space between name and pose; if 0, don't (semipose)
+ * \param space if 1, omit space between name and pose (semipose); if 0, include space (pose)
  */
 void
 do_pose(dbref player, const char *tbuf1, int space)
 {
   dbref loc;
+  const char *args[2];
+  char tbuf2[BUFFER_LEN];
+  int mod = 0;
 
   loc = speech_loc(player);
   if (!GoodObject(loc))
@@ -601,13 +615,23 @@ do_pose(dbref player, const char *tbuf1, int space)
     return;
   }
 
+  args[0] = tbuf1;
+  args[1] = (space ? ";" : ":");
+  tbuf2[0] = '\0';
+
+  if (call_attrib(player, "SPEECHMOD", args, 2, tbuf2, player, NULL)
+      && *tbuf2 != '\0')
+    mod = 1;
+
   /* notify everybody */
   if (!space)
     notify_except(Contents(loc), NOTHING,
-                  tprintf("%s %s", spname(player), tbuf1), NA_INTER_HEAR);
+                  tprintf("%s %s", spname(player), (mod ? tbuf2 : tbuf1)),
+                  NA_INTER_HEAR);
   else
     notify_except(Contents(loc), NOTHING,
-                  tprintf("%s%s", spname(player), tbuf1), NA_INTER_HEAR);
+                  tprintf("%s%s", spname(player), (mod ? tbuf2 : tbuf1)),
+                  NA_INTER_HEAR);
 }
 
 /** The *wall commands.
@@ -976,7 +1000,8 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
   tp = tbuf;
 
   /* Figure out the 'name' of the player */
-  if ((alias = shortalias(player)) && *alias && PAGE_ALIASES)
+  if ((alias = shortalias(player)) && *alias && PAGE_ALIASES
+      && strcasecmp(alias, Name(player)))
     current = tprintf("%s (%s)", Name(player), alias);
   else
     current = (char *) Name(player);
@@ -1306,6 +1331,9 @@ do_emit(dbref player, const char *tbuf1, int flags)
 {
   dbref loc;
   int na_flags = NA_INTER_HEAR;
+  const char *args[2];
+  char tbuf2[BUFFER_LEN];
+  int mod = 0;
 
   loc = speech_loc(player);
   if (!GoodObject(loc))
@@ -1316,10 +1344,19 @@ do_emit(dbref player, const char *tbuf1, int flags)
     return;
   }
 
+  args[0] = tbuf1;
+  args[1] = "|";
+  tbuf2[0] = '\0';
+
+  if (call_attrib(player, "SPEECHMOD", args, 2, tbuf2, player, NULL)
+      && *tbuf2 != '\0')
+    mod = 1;
+
   /* notify everybody */
   if (flags & PEMIT_SPOOF)
     na_flags |= NA_SPOOF;
-  notify_anything(player, na_loc, &loc, ns_esnotify, na_flags, tbuf1);
+  notify_anything(player, na_loc, &loc, ns_esnotify, na_flags,
+                  (mod ? tbuf2 : tbuf1));
 
   do_audible_stuff(loc, NULL, 0, tbuf1);
 }

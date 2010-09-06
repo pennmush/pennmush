@@ -73,7 +73,7 @@ int run_hook_override(COMMAND_INFO *cmd, dbref player, const char *commandraw);
 const char *CommandLock = "CommandLock";
 
 /** The list of standard commands. Additional commands can be added
- * at runtime with add_command().
+ * at runtime with command_add().
  */
 COMLIST commands[] = {
 
@@ -107,9 +107,9 @@ COMLIST commands[] = {
 
   {"@CHOWN", "PRESERVE", cmd_chown,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
-  {"@CHZONEALL", NULL, cmd_chzoneall, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
+  {"@CHZONEALL", "PRESERVE", cmd_chzoneall, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
 
-  {"@CHZONE", NULL, cmd_chzone,
+  {"@CHZONE", "PRESERVE", cmd_chzone,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@CONFIG", "SET SAVE LOWERCASE LIST", cmd_config, CMD_T_ANY | CMD_T_EQSPLIT,
    0, 0},
@@ -198,7 +198,7 @@ COMLIST commands[] = {
   {"@LSET", NULL, cmd_lset,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@MAIL",
-   "NOEVAL NOSIG STATS DSTATS FSTATS DEBUG NUKE FOLDERS UNFOLDER LIST READ CLEAR UNCLEAR PURGE FILE TAG UNTAG FWD FORWARD SEND SILENT URGENT",
+   "NOEVAL NOSIG STATS DSTATS FSTATS DEBUG NUKE FOLDERS UNFOLDER LIST READ UNREAD CLEAR UNCLEAR STATUS PURGE FILE TAG UNTAG FWD FORWARD SEND SILENT URGENT",
    cmd_mail, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
 
   {"@MALIAS",
@@ -502,6 +502,7 @@ make_command(const char *name, int type,
   cmd = slab_malloc(command_slab, NULL);
   memset(cmd, 0, sizeof(COMMAND_INFO));
   cmd->name = name;
+  cmd->cmdlock = TRUE_BOOLEXP;
   cmd->restrict_message = NULL;
   cmd->func = func;
   cmd->type = type;
@@ -551,6 +552,7 @@ make_command(const char *name, int type,
       safe_chr('(', buff, &bp);
       safe_str(unparse_boolexp(NOTHING, cmd->cmdlock, UB_DBREF), buff, &bp);
       safe_str(")&", buff, &bp);
+      free_boolexp(cmd->cmdlock);
     }
     if (flagstr && *flagstr) {
       strcpy(list, flagstr);
@@ -600,6 +602,40 @@ command_add(const char *name, int type, const char *flagstr,
   return command_find(name);
 }
 
+/* Add a new command from a .cnf file's "add_command" statement */
+int
+cnf_add_command(char *name, char *opts)
+{
+  COMMAND_INFO *command;
+  int flags = 0;
+  char *p, *one;
+
+  if (opts && *opts) {
+    p = trim_space_sep(opts, ' ');
+    while ((one = split_token(&p, ' '))) {
+      if (string_prefix("noparse", one)) {
+        flags |= CMD_T_NOPARSE;
+      } else if (string_prefix("rsargs", one)) {
+        flags |= CMD_T_RS_ARGS;
+      } else if (string_prefix("lsargs", one)) {
+        flags |= CMD_T_LS_ARGS;
+      } else if (string_prefix("eqsplit", one)) {
+        flags |= CMD_T_EQSPLIT;
+      } else {
+        return 0;               /* unknown option */
+      }
+    }
+  }
+
+  name = trim_space_sep(name, ' ');
+  upcasestr(name);
+  command = command_find(name);
+  if (command || !ok_command_name(name))
+    return 0;
+  command_add(mush_strdup(name, "command_add"), flags, NULL, 0,
+              (flags & CMD_T_NOPARSE ? NULL : "NOEVAL"), cmd_unimplemented);
+  return (command_find(name) != NULL);
+}
 
 /** Search for a command by (partial) name.
  * This function searches the command table for a (partial) name match
@@ -639,36 +675,6 @@ command_find_exact(const char *name)
   if (hash_find(&htab_reserved_aliases, cmdname))
     return NULL;
   return (COMMAND_INFO *) ptab_find_exact(&ptab_command, cmdname);
-}
-
-
-/** Modify a command's entry in the table.
- * Given a command name and other parameters, look up the command
- * in the table, and if it's there, modify the parameters.
- * \param name name of command to modify.
- * \param type new types for command, or -1 to leave unchanged.
- * \param key new boolexp to restrict command, or NULL to leave unchanged.
- * \param sw new mask of switches for command, or NULL to leave unchanged.
- * \param func new function to call, or NULL to leave unchanged.
- * \return pointer to modified command entry, or NULL.
- */
-COMMAND_INFO *
-command_modify(const char *name, int type,
-               boolexp key, switch_mask sw, command_func func)
-{
-  COMMAND_INFO *cmd;
-  cmd = command_find(name);
-  if (!cmd)
-    return NULL;
-  if (type != -1)
-    cmd->type = type;
-  if (key)
-    cmd->cmdlock = key;
-  if (sw)
-    SW_COPY(cmd->sw.mask, sw);
-  if (func)
-    cmd->func = func;
-  return cmd;
 }
 
 /** Convert a switch string to a switch mask.
@@ -816,7 +822,6 @@ command_init_postconfig(void)
 {
   struct bst_data sw_data;
   COMMAND_INFO *c;
-  size_t sl_size;
 
   command_state = CMD_LOAD_DONE;
 
@@ -828,7 +833,6 @@ command_init_postconfig(void)
   sw_data.table = dyn_switch_list;
   sw_data.n = 0;
   sw_data.start = sizeof switch_list / sizeof(SWITCH_VALUE);
-  sl_size = sw_data.start - 2;
   st_walk(&switch_names, build_switch_table, &sw_data);
   num_switches = sw_data.start;
   dyn_switch_list[sw_data.n].name = NULL;
@@ -945,7 +949,8 @@ command_argparse(dbref player, dbref cause, char **from, char *to,
     while (*f == ' ')
       f++;
     if (process_expression(to, &t, (const char **) &f, player, cause, cause,
-                           parse, (split | args), NULL)) {
+                           parse, (split | args),
+                           global_eval_context.pe_info)) {
       done = 1;
     }
     *t = '\0';
@@ -1167,7 +1172,8 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
     process_expression(command, &c, (const char **) &p, player, cause, cause,
                        noevtoken ? PE_NOTHING :
                        ((PE_DEFAULT & ~PE_FUNCTION_CHECK) |
-                        PE_COMMAND_BRACES), PT_SPACE, NULL);
+                        PE_COMMAND_BRACES), PT_SPACE,
+                       global_eval_context.pe_info);
     *c = '\0';
     strcpy(commandraw, command);
     upcasestr(command);
@@ -1192,39 +1198,11 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
     }
   }
 
-  /* Set up commandraw for future use. This will contain the canonicalization
-   * of the command name and may later have the parsed rest of the input
-   * appended at the position pointed to by c2.
-   */
-  c2 = c;
-  if (!cmd) {
-    c2 = commandraw + strlen(commandraw);
-  } else {
-    if (replacer) {
-      /* These commands don't allow switches, and need a space
-       * added after their canonical name
-       */
-      c2 = commandraw;
-      safe_str(cmd->name, commandraw, &c2);
-      safe_chr(' ', commandraw, &c2);
-    } else if (*c2 == '/') {
-      /* Oh... DAMN */
-      c2 = commandraw;
-      strcpy(switches, commandraw);
-      safe_str(cmd->name, commandraw, &c2);
-      t = strchr(switches, '/');
-      safe_str(t, commandraw, &c2);
-    } else {
-      c2 = commandraw;
-      safe_str(cmd->name, commandraw, &c2);
-    }
-  }
-
   /* Test if this either isn't a command, or is a disabled one
    * If so, return Fully Parsed string for further processing.
    */
-
   if (!cmd || (cmd->type & CMD_T_DISABLED)) {
+    c2 = commandraw + strlen(commandraw);
     if (*p) {
       if (*p == ' ') {
         safe_chr(' ', commandraw, &c2);
@@ -1233,17 +1211,42 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
       process_expression(commandraw, &c2, (const char **) &p, player, cause,
                          cause, noevtoken ? PE_NOTHING :
                          ((PE_DEFAULT & ~PE_FUNCTION_CHECK) |
-                          PE_COMMAND_BRACES), PT_DEFAULT, NULL);
+                          PE_COMMAND_BRACES), PT_DEFAULT,
+                         global_eval_context.pe_info);
     }
     *c2 = '\0';
     command_parse_free_args;
     return commandraw;
-  }
-  /* Check the permissions */
-  if (!command_check(player, cmd, 1)) {
+  } else if (!command_check(player, cmd, 1)) {
+    /* No permission to use command, stop processing */
     command_parse_free_args;
     return NULL;
   }
+
+  /* Set up commandraw for future use. This will contain the canonicalization
+   * of the command name and will later have the parsed rest of the input
+   * appended at the position pointed to by c2.
+   */
+  c2 = c;
+  if (replacer) {
+    /* These commands don't allow switches, and need a space
+     * added after their canonical name
+     */
+    c2 = commandraw;
+    safe_str(cmd->name, commandraw, &c2);
+    safe_chr(' ', commandraw, &c2);
+  } else if (*c2 == '/') {
+    /* Oh... DAMN */
+    c2 = commandraw;
+    strcpy(switches, commandraw);
+    safe_str(cmd->name, commandraw, &c2);
+    t = strchr(switches, '/');
+    safe_str(t, commandraw, &c2);
+  } else {
+    c2 = commandraw;
+    safe_str(cmd->name, commandraw, &c2);
+  }
+
   /* Parse out any switches */
   sw = SW_ALLOC();
   swp = switches;
@@ -1400,10 +1403,10 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
 #undef command_parse_free_args
 
 int
-run_command(COMMAND_INFO *cmd, dbref player, dbref cause, const char *commandraw,
-            switch_mask sw, char switch_err[BUFFER_LEN], const char *string,
-            char *swp, char *ap, char *ls, char *lsa[MAX_ARG], char *rs,
-            char *rsa[MAX_ARG])
+run_command(COMMAND_INFO *cmd, dbref player, dbref cause,
+            const char *commandraw, switch_mask sw, char switch_err[BUFFER_LEN],
+            const char *string, char *swp, char *ap, char *ls,
+            char *lsa[MAX_ARG], char *rs, char *rsa[MAX_ARG])
 {
 
   char *saveregs[NUMQ];
@@ -1522,6 +1525,11 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
       command->restrict_message = mush_strdup(message, "cmd_restrict_message");
   }
 
+  if (command->cmdlock != TRUE_BOOLEXP) {
+    free_boolexp(command->cmdlock);
+    command->cmdlock = TRUE_BOOLEXP;
+  }
+
   key = parse_boolexp(player, restriction, CommandLock);
   if (key != TRUE_BOOLEXP) {
     /* A valid boolexp lock. Hooray. */
@@ -1587,8 +1595,8 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
     restriction = tp;
   }
 
-  if ((command->
-       type & (CMD_T_GOD | CMD_T_NOGAGGED | CMD_T_NOGUEST | CMD_T_NOFIXED)))
+  if ((command->type &
+       (CMD_T_GOD | CMD_T_NOGAGGED | CMD_T_NOGUEST | CMD_T_NOFIXED)))
     make_boolexp = 1;
   else if ((command->type & CMD_T_ANY) != CMD_T_ANY)
     make_boolexp = 1;
@@ -1758,7 +1766,9 @@ clone_command(char *original, char *clone)
   if (c1->restrict_message)
     c2->restrict_message =
       mush_strdup(c1->restrict_message, "cmd_restrict_message");
-  c2->cmdlock = c1->cmdlock;
+  if (c2->cmdlock != TRUE_BOOLEXP)
+    free_boolexp(c2->cmdlock);
+  c2->cmdlock = dup_bool(c1->cmdlock);
 
   if (c1->hooks.before.obj)
     c2->hooks.before.obj = c1->hooks.before.obj;
@@ -2168,6 +2178,85 @@ run_hook_override(COMMAND_INFO *cmd, dbref player, const char *commandraw)
   }
 }
 
+/* Add/modify a hook from a cnf file */
+int
+cnf_hook_command(char *command, char *opts)
+{
+  dbref thing;
+  char *attrname, *p, *one;
+  enum hook_type flag;
+  COMMAND_INFO *cmd;
+  struct hook_data *h;
+
+  if (!opts || !*opts)
+    return 0;
+
+  cmd = command_find(command);
+  if (!cmd)
+    return 0;
+
+  p = trim_space_sep(opts, ' ');
+  if (!(one = split_token(&p, ' ')))
+    return 0;
+
+  if (string_prefix("before", one)) {
+    flag = HOOK_BEFORE;
+    h = &cmd->hooks.before;
+  } else if (string_prefix("after", one)) {
+    flag = HOOK_AFTER;
+    h = &cmd->hooks.after;
+  } else if (string_prefix("override", one)) {
+    flag = HOOK_OVERRIDE;
+    h = &cmd->hooks.override;
+  } else if (string_prefix("ignore", one)) {
+    flag = HOOK_IGNORE;
+    h = &cmd->hooks.ignore;
+  } else {
+    return 0;
+  }
+
+  if (!(one = split_token(&p, ' '))) {
+    /* Clear existing hook */
+    h->obj = NOTHING;
+    if (h->attrname) {
+      mush_free(h->attrname, "hook.attr");
+      h->attrname = NULL;
+    }
+    return 1;
+  }
+
+  if ((attrname = strchr(one, '/')) == NULL) {
+    if (flag != HOOK_OVERRIDE) {
+      return 0;                 /* attribute required */
+    }
+  } else {
+    *attrname++ = '\0';
+    upcasestr(attrname);
+  }
+
+  if (!is_strict_integer(one))
+    return 0;
+
+  thing = (dbref) parse_integer(one);
+  if (!GoodObject(thing) || IsGarbage(thing))
+    return 0;
+
+  if (attrname && !good_atr_name(attrname))
+    return 0;
+
+  h->obj = thing;
+  if (h->attrname) {
+    mush_free(h->attrname, "hook.attr");
+  }
+
+  if (attrname)
+    h->attrname = mush_strdup(attrname, "hook.attr");
+  else
+    h->attrname = NULL;
+  return 1;
+
+}
+
 /** Set up or remove a command hook.
  * \verbatim
  * This is the top-level function for @hook. If an object and attribute
@@ -2212,8 +2301,10 @@ do_hook(dbref player, char *command, char *obj, char *attrname,
   if (!obj && !attrname) {
     notify_format(player, T("Hook removed from %s."), cmd->name);
     h->obj = NOTHING;
-    mush_free(h->attrname, "hook.attr");
-    h->attrname = NULL;
+    if (h->attrname) {
+      mush_free(h->attrname, "hook.attr");
+      h->attrname = NULL;
+    }
   } else if (!obj || !*obj
              || (flag != HOOK_OVERRIDE && (!attrname || !*attrname))) {
     if (flag == HOOK_OVERRIDE) {

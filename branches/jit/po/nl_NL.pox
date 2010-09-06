@@ -148,10 +148,6 @@ msgstr " [locatie: %s]"
 msgid " convtime() is stricter."
 msgstr " convtime() is strenger."
 
-#: flags.c:1531
-msgid " granted."
-msgstr " verleend."
-
 #: src/look.c:688 src/look.c:770
 msgid " is owned by "
 msgstr " is van "
@@ -159,10 +155,6 @@ msgstr " is van "
 #: speech.c:1021
 msgid " pages"
 msgstr " roept op"
-
-#: flags.c:1531
-msgid " removed."
-msgstr " verwijderd."
 
 #: flags.c:764
 msgid " reset."
@@ -456,6 +448,10 @@ msgstr "#-1 ONGELDIGE POWER"
 #: src/fundb.c:663 src/fundb.c:690
 msgid "#-1 INVALID SECOND ARGUMENT"
 msgstr "#-1 ONGELDIG TWEEDE ARGUMENT"
+
+#: fundb.c:2124
+msgid "#-1 INVALID SOURCE ROOM"
+msgstr "#-1 ONGELDIGE BRON KAMER"
 
 #: funstr.c:369 funstr.c:425
 msgid "#-1 INVALID THIRD ARGUMENT"
@@ -801,6 +797,26 @@ msgstr "%s (deze kamer) [spraak]. (ingelogd)"
 #, c-format
 msgid "%s (this room) [speech]."
 msgstr "%s (deze kamer) [spraak]."
+
+#: flags.c:1714
+#, c-format
+msgid "%s - %s (already) granted."
+msgstr "%s - %s (al) verleend."
+
+#: flags.c:1710
+#, c-format
+msgid "%s - %s (already) removed."
+msgstr "%s - %s (al) verwijderd."
+
+#: flags.c:1716
+#, c-format
+msgid "%s - %s granted."
+msgstr "%s - %s verleend."
+
+#: flags.c:1708
+#, c-format
+msgid "%s - %s removed."
+msgstr "%s - %s verwijderd."
 
 #: flags.c:1357
 #, c-format
@@ -1322,6 +1338,11 @@ msgstr "%s: Objecten: %d  Limiet: %d"
 msgid "%s: Objects: %d   Limit: UNLIMITED"
 msgstr "%s: Objecten: %d  Limiet: ONGELIMITEERD"
 
+#: wiz.c:1327
+#, c-format
+msgid "%sGarbage%s(#%d)"
+msgstr "%sAfval%s(#%d)"
+
 #: attrib.c:1566 attrib.c:1584
 #, c-format
 msgid "'%s' contains too many aliases."
@@ -1544,7 +1565,7 @@ msgstr "Alle"
 
 #: wiz.c:1810
 msgid "Any name matching these wildcard patterns is banned:"
-msgstr "Iedere naam die met deze wildcards overeenkomt is verboden:"
+msgstr "Iedere naam die met deze wildcard patronen overeenkomt is verboden:"
 
 #: command.c:1812
 #, c-format
@@ -2187,7 +2208,7 @@ msgstr "Bestemming: *THUIS*"
 
 #: look.c:821
 msgid "Destination: *UNLINKED*"
-msgstr "Doel: *NIET GEKOPPELD*"
+msgstr "Bestemming: *NIET GEKOPPELD*"
 
 #: destroy.c:320
 msgid "Destroyed."
@@ -2568,6 +2589,11 @@ msgstr "Afval hoort op de afvalhoop."
 msgid "Garbage is garbage."
 msgstr "Afval is afval."
 
+#: wiz.c:1329
+#, c-format
+msgid "Garbage(#%d)"
+msgstr "Afval(#%d)"
+
 #: src/set.c:82
 msgid "Give it what new name?"
 msgstr "Welke nieuwe naam wil je het geven?"
@@ -2927,7 +2953,7 @@ msgstr "Bezig met ansi string inspectie"
 
 #: create.c:373
 msgid "Internal error: weird object type."
-msgstr "Interne fout: Vreemd type object."
+msgstr "Interne fout: vreemd type object."
 
 #: atr_tab.c:202 atr_tab.c:293
 msgid "Invalid attribute name."
@@ -4348,7 +4374,7 @@ msgstr "Sorry, jij bent een sterveling."
 
 #: src/game.c:206
 msgid "Sorry, you are in a no dumping zone."
-msgstr "Sorry, je bent in een zone waar dumpen verboden is."
+msgstr "Sorry, je mag hier niet dumpen."
 
 #: src/game.c:1235
 msgid "Sorry, you are in an invalid location."
@@ -4887,6 +4913,11 @@ msgstr "Herstart aantal"
 #, c-format
 msgid "Totals: Player...%d/%d[%ddel]  Object...%d/%d[%ddel]  Wait...%d/%d[%ddel]  Semaphore...%d/%d"
 msgstr "Totalen: Speler...%d/%d[%ddel]  Object...%d/%d[%ddel]  Wacht...%d/%d[%ddel]  Semaphore...%d/%d"
+
+#: wiz.c:1337
+#, c-format
+msgid "Totals: Rooms...%d  Exits...%d  Things...%d  Players...%d  Garbage...%d"
+msgstr "Totaal: Kamers...%d  Uitgangen...%d  Dingen...%d  Spelers...%d  Afval...%d"
 
 #: wiz.c:1295
 #, c-format
@@ -5595,6 +5626,10 @@ msgstr "Je kunt de wereld niet in jouw evenbeeld scheppen."
 msgid "You can't see someone else's quota!"
 msgstr "Je kunt iemand anders z'n quota niet bekijken."
 
+#: look.c:754
+msgid "You can't see that from here."
+msgstr "Je kunt dat niet zien van hier af."
+
 #: src/look.c:534
 msgid "You can't see through that."
 msgstr "Je kunt daar niet doorheen kijken."
@@ -6290,7 +6325,7 @@ msgid ""
 "*** Inactivity limit reached. You are now HIDDEN. ***\n"
 msgstr ""
 "\n"
-" *** Inactiviteits limiet bereikt. Je bent nu HIDDEN. ***\n"
+" *** Inactiviteitslimiet bereikt. Je bent nu HIDDEN. ***\n"
 
 #: src/bsd.c:4673
 msgid ""
@@ -6307,6 +6342,14 @@ msgid ""
 msgstr ""
 "\n"
 "UITGANGEN:"
+
+#: wiz.c:1323
+msgid ""
+"\n"
+"GARBAGE:"
+msgstr ""
+"\n"
+"AFVAL:"
 
 #: src/extmail.c:2507
 msgid ""

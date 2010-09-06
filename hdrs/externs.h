@@ -583,10 +583,12 @@ mush_strndup(const char *src, size_t len, const char *check)
 #define UFUN_OBJECT 0x01
 /* If it accepts obj/attr, does it accept #lambda/attr? */
 #define UFUN_LAMBDA 0x02
+/* If this is set, a nonexistant attribute is an error, instead of empty. */
+#define UFUN_REQUIRE_ATTR 0x04
 /* When calling the ufun, save and restore the Q-registers. */
 #define UFUN_LOCALIZE 0x10
 #define UFUN_DEFAULT (UFUN_OBJECT | UFUN_LAMBDA)
-    bool fetch_ufun_attrib(char *attrstring, dbref executor,
+    bool fetch_ufun_attrib(const char *attrstring, dbref executor,
                            ufun_attrib * ufun, int flags);
     bool call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc,
                    char *ret, dbref executor, dbref enactor, PE_Info *pe_info);

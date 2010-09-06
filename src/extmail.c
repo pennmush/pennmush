@@ -384,6 +384,50 @@ do_mail_unclear(dbref player, const char *msglist)
   do_mail_flags(player, msglist, M_CLEARED, 1);
 }
 
+/** Unread a set of mail messages.
+ * \param player the enactor
+ * \param msglist string specifying messages to unclear.
+ */
+void
+do_mail_unread(dbref player, const char *msglist)
+{
+  do_mail_flags(player, msglist, M_MSGREAD, 1);
+}
+
+/** Change the status for a set of mail messages.
+ * \param player the enactor
+ * \param msglist string specifying messages to unclear.
+ * \param status the status to set for the messages
+ */
+void
+do_mail_status(dbref player, const char *msglist, const char *status)
+{
+  int flag;
+  bool negate = 0;
+
+  if (!status || !*status) {
+    notify(player, T("MAIL: What do you want to do with the messages?"));
+    return;
+  }
+
+  if (string_prefix("read", status) || string_prefix("unread", status))
+    flag = M_MSGREAD;
+  else if (string_prefix("cleared", status)
+           || string_prefix("uncleared", status))
+    flag = M_CLEARED;
+  else if (string_prefix("tagged", status) || string_prefix("untagged", status))
+    flag = M_TAG;
+  else {
+    notify(player, T("MAIL: Unknown status."));
+    return;
+  }
+
+  if (*status == 'u' || *status == 'U')
+    negate = 1;
+
+  do_mail_flags(player, msglist, flag, negate);
+}
+
 
 /** Set or clear a flag on a set of messages.
  * \param player the enactor.
@@ -396,16 +440,14 @@ do_mail_flags(dbref player, const char *msglist, mail_flag flag, bool negate)
 {
   MAIL *mp;
   struct mail_selector ms;
-  int j;
   mail_flag folder;
   folder_array i;
-  int notified = 0;
+  int notified = 0, j = 0;
 
   if (!parse_msglist(msglist, &ms, player)) {
     return;
   }
-  FA_Init(i, j);
-  j = 0;
+  FA_Init(i);
   folder = AllInFolder(ms) ? player_folder(player) : MSFolder(ms);
   for (mp = find_exact_starting_point(player);
        mp && (mp->to == player); mp = mp->next) {
@@ -465,6 +507,27 @@ do_mail_flags(dbref player, const char *msglist, mail_flag flag, bool negate)
             }
           }
           break;
+        case M_MSGREAD:
+          if (All(ms)) {
+            if (!notified) {
+              if (negate) {
+                notify(player, T("MAIL: All messages in all folders unread."));
+              } else {
+                notify(player,
+                       T("MAIL: All messages in all folders marked as read."));
+              }
+              notified++;
+            }
+          } else {
+            if (negate) {
+              notify_format(player, T("MAIL: Msg #%d:%d unread"),
+                            (int) Folder(mp), i[Folder(mp)]);
+            } else {
+              notify_format(player, T("MAIL: Msg #%d:%d marked as read"),
+                            (int) Folder(mp), i[Folder(mp)]);
+            }
+          }
+          break;
         }
       }
     }
@@ -489,10 +552,10 @@ do_mail_file(dbref player, char *msglist, char *folder)
 {
   MAIL *mp;
   struct mail_selector ms;
-  int j, foldernum;
+  int foldernum;
   mail_flag origfold;
   folder_array i;
-  int notified = 0;
+  int notified = 0, j = 0;
 
   if (!parse_msglist(msglist, &ms, player)) {
     return;
@@ -501,8 +564,7 @@ do_mail_file(dbref player, char *msglist, char *folder)
     notify(player, T("MAIL: Invalid folder specification"));
     return;
   }
-  FA_Init(i, j);
-  j = 0;
+  FA_Init(i);
   origfold = AllInFolder(ms) ? player_folder(player) : MSFolder(ms);
   for (mp = find_exact_starting_point(player);
        mp && (mp->to == player); mp = mp->next) {
@@ -547,16 +609,15 @@ do_mail_read(dbref player, char *msglist)
   char tbuf1[BUFFER_LEN];
   char folderheader[BUFFER_LEN];
   struct mail_selector ms;
-  int j;
   mail_flag folder;
   folder_array i;
+  int j = 0;
 
   if (!parse_msglist(msglist, &ms, player)) {
     return;
   }
   folder = AllInFolder(ms) ? player_folder(player) : MSFolder(ms);
-  FA_Init(i, j);
-  j = 0;
+  FA_Init(i);
   for (mp = find_exact_starting_point(player);
        mp && (mp->to == player); mp = mp->next) {
     if ((mp->to == player) && (All(ms) || Folder(mp) == folder)) {
@@ -605,7 +666,6 @@ do_mail_read(dbref player, char *msglist)
   return;
 }
 
-
 /** List the flags, number, sender, subject, and date of messages in a
  * concise format.
  * \param player the enactor.
@@ -618,15 +678,13 @@ do_mail_list(dbref player, const char *msglist)
   char sender[30];
   MAIL *mp;
   struct mail_selector ms;
-  int j;
   mail_flag folder;
   folder_array i;
 
   if (!parse_msglist(msglist, &ms, player)) {
     return;
   }
-  FA_Init(i, j);
-  j = 0;
+  FA_Init(i);
   folder = AllInFolder(ms) ? player_folder(player) : MSFolder(ms);
   if (SUPPORT_PUEBLO)
     notify_noenter(player, open_tag("SAMP"));
@@ -757,7 +815,7 @@ do_mail_fwd(dbref player, char *msglist, char *tolist)
   MAIL *mp;
   MAIL *last;
   struct mail_selector ms;
-  int j, num;
+  int num;
   mail_flag folder;
   folder_array i;
   const char *head;
@@ -788,7 +846,7 @@ do_mail_fwd(dbref player, char *msglist, char *tolist)
   while (last->next && (last->next->to == player))
     last = last->next;
 
-  FA_Init(i, j);
+  FA_Init(i);
   while (mp && (mp->to == player) && (mp != last->next)) {
     if ((mp->to == player) && (All(ms) || (Folder(mp) == folder))) {
       i[Folder(mp)]++;
@@ -1021,8 +1079,7 @@ send_mail(dbref player, dbref target, char *subject, char *message,
   a = atr_get_noparent(target, "MAILFORWARDLIST");
   if (!a) {
     /* Easy, no forwarding */
-    good =
-      real_send_mail(player, target, subject, message, flags, silent, nosig);
+    real_send_mail(player, target, subject, message, flags, silent, nosig);
     return;
   } else {
     /* We have a forward list. Run through it. */

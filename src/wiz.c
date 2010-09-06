@@ -47,6 +47,8 @@
 #include "command.h"
 #include "dbdefs.h"
 #include "extmail.h"
+#include "boolexp.h"
+#include "ansi.h"
 
 
 #include "confmagic.h"
@@ -806,7 +808,7 @@ do_newpassword(dbref player, dbref cause,
 void
 do_boot(dbref player, const char *name, enum boot_type flag, int silent)
 {
-  dbref victim;
+  dbref victim = NOTHING;
   DESC *d = NULL;
   int count = 0;
   int priv = Can_Boot(player);
@@ -951,7 +953,7 @@ do_chownall(dbref player, const char *name, const char *target, int preserve)
  * \param target string containing new zone master for objects.
  */
 void
-do_chzoneall(dbref player, const char *name, const char *target)
+do_chzoneall(dbref player, const char *name, const char *target, bool preserve)
 {
   int i;
   dbref victim;
@@ -989,7 +991,7 @@ do_chzoneall(dbref player, const char *name, const char *target)
    * consistency on things like flag resetting, etc... */
   for (i = 0; i < db_top; i++) {
     if (Owner(i) == victim && Zone(i) != zone) {
-      count += do_chzone(player, unparse_dbref(i), target, 0);
+      count += do_chzone(player, unparse_dbref(i), target, 0, preserve);
     }
   }
   notify_format(player, T("Zone changed for %d objects."), count);
@@ -1221,13 +1223,14 @@ do_search(dbref player, const char *arg1, char **arg3)
   } else if (nresults > 0) {
     /* Split the results up by type and report. */
     int n;
-    int nthings = 0, nexits = 0, nrooms = 0, nplayers = 0;
-    dbref *things, *exits, *rooms, *players;
+    int nthings = 0, nexits = 0, nrooms = 0, nplayers = 0, ngarbage = 0;
+    dbref *things, *exits, *rooms, *players, *garbage;
 
     things = mush_calloc(nresults, sizeof(dbref), "dbref_list");
     exits = mush_calloc(nresults, sizeof(dbref), "dbref_list");
     rooms = mush_calloc(nresults, sizeof(dbref), "dbref_list");
     players = mush_calloc(nresults, sizeof(dbref), "dbref_list");
+    garbage = mush_calloc(nresults, sizeof(dbref), "dbref_list");
 
     for (n = 0; n < nresults; n++) {
       switch (Typeof(results[n])) {
@@ -1242,6 +1245,9 @@ do_search(dbref player, const char *arg1, char **arg3)
         break;
       case TYPE_PLAYER:
         players[nplayers++] = results[n];
+        break;
+      case TYPE_GARBAGE:
+        garbage[ngarbage++] = results[n];
         break;
       default:
         /* Unknown type. Ignore. */
@@ -1314,15 +1320,34 @@ do_search(dbref player, const char *arg1, char **arg3)
       }
     }
 
+    if (ngarbage) {
+      notify(player, T("\nGARBAGE:"));
+      for (n = 0; n < ngarbage; n++) {
+        tbp = tbuf;
+        if (ANSI_NAMES && ShowAnsi(player))
+          notify_format(player, T("%sGarbage%s(#%d)"), ANSI_HILITE, ANSI_END,
+                        garbage[n]);
+        else
+          notify_format(player, T("Garbage(#%d)"), garbage[n]);
+      }
+    }
+
     notify(player, T("----------  Search Done  ----------"));
-    notify_format(player,
-                  T
-                  ("Totals: Rooms...%d  Exits...%d  Things...%d  Players...%d"),
-                  nrooms, nexits, nthings, nplayers);
+    if (ngarbage)
+      notify_format(player,
+                    T
+                    ("Totals: Rooms...%d  Exits...%d  Things...%d  Players...%d  Garbage...%d"),
+                    nrooms, nexits, nthings, nplayers, ngarbage);
+    else
+      notify_format(player,
+                    T
+                    ("Totals: Rooms...%d  Exits...%d  Things...%d  Players...%d"),
+                    nrooms, nexits, nthings, nplayers);
     mush_free(rooms, "dbref_list");
     mush_free(exits, "dbref_list");
     mush_free(things, "dbref_list");
     mush_free(players, "dbref_list");
+    mush_free(garbage, "dbref_list");
   }
   if (results)
     mush_free(results, "search_results");
@@ -1489,6 +1514,14 @@ do_sitelock(dbref player, const char *site, const char *opts, const char *who,
       /* List bad sites */
       do_list_access(player);
       return;
+    case SITELOCK_REGISTER:
+      if (add_access_sitelock
+          (player, site, AMBIGUOUS, ACS_REGISTER, ACS_CREATE)) {
+        write_access_file();
+        notify_format(player, T("Site %s locked"), site);
+        do_log(LT_WIZ, player, NOTHING, "*** SITELOCK *** %s", site);
+      }
+      break;
     case SITELOCK_ADD:
       if (add_access_sitelock(player, site, AMBIGUOUS, 0, ACS_CREATE)) {
         write_access_file();
@@ -1947,7 +1980,6 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
   return 0;
 }
 
-
 /* Does the actual searching */
 static int
 raw_search(dbref player, const char *owner, int nargs, const char **args,
@@ -1969,27 +2001,28 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
     return -1;
   }
 
-  /* make sure player has money to do the search -
-   * But only if this does an eval or lock search. */
-  if ((spec.lock != TRUE_BOOLEXP) ||
-      spec.cmdstring[0] || spec.listenstring[0] || spec.eval[0]) {
-    if (!payfor(player, FIND_COST)) {
-      notify_format(player, T("Searches cost %d %s."), FIND_COST,
-                    ((FIND_COST == 1) ? MONEY : MONIES));
-      return -1;
-    }
-  }
-
   is_wiz = Search_All(player) || See_All(player);
 
   if ((spec.owner != ANY_OWNER && spec.owner != Owner(player)) &&
       !(is_wiz || (spec.type == TYPE_PLAYER) ||
         (ZMaster(spec.owner) && eval_lock(player, spec.owner, Zone_Lock)))) {
-    giveto(player, FIND_COST);
     notify(player, T("You need a search warrant to do that!"));
     if (spec.lock != TRUE_BOOLEXP)
       free_boolexp(spec.lock);
     return -1;
+  }
+
+  /* make sure player has money to do the search -
+   * But only if this does an eval or lock search. */
+  if (((spec.lock != TRUE_BOOLEXP) && is_eval_lock(spec.lock)) ||
+      spec.cmdstring[0] || spec.listenstring[0] || spec.eval[0]) {
+    if (!payfor(player, FIND_COST)) {
+      notify_format(player, T("Searches cost %d %s."), FIND_COST,
+                    ((FIND_COST == 1) ? MONEY : MONIES));
+      if (spec.lock != TRUE_BOOLEXP)
+        free_boolexp(spec.lock);
+      return -1;
+    }
   }
 
   result_size = (db_top / 4) + 1;

@@ -361,10 +361,8 @@ slab_malloc(slab *sl, const void *hint)
     return slab_alloc_obj(last->next);
   } else {
     struct slab_page *page, *last = NULL;
-    ptrdiff_t pgsize;
     /* Okay. We have a hint for where to allocate the object. Find the
        page the hint is on. */
-    pgsize = getpagesize();
     for (page = sl->slabs; page; page = page->next) {
       if (hint > (void *) page && hint <= page->last_obj) {
         /* If there's space, use this page, otherwise, if using
@@ -403,7 +401,6 @@ void
 slab_free(slab *sl, void *obj)
 {
   struct slab_page *page, *last;
-  ptrdiff_t pgsize;
 
   /* If objects are too big to fit in a single page, use plain free */
   if (sl->items_per_page == 0) {
@@ -412,7 +409,6 @@ slab_free(slab *sl, void *obj)
   }
 
   /* Find the page the object is on and push it into that page's free list */
-  pgsize = getpagesize();
   last = NULL;
   for (page = sl->slabs; page; page = page->next) {
     if (obj > (void *) page && obj <= page->last_obj) {

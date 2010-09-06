@@ -35,6 +35,9 @@ extern void do_list_attribs(dbref player, int lc);
 extern char *list_attribs(void);
 extern void attr_init_postconfig(void);
 
+extern int cnf_attribute_access(char *attrname, char *opts);
+
+
 /* From attrib.c */
 
 /** atr_add(), atr_clr() error codes */

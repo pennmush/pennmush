@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/local/bin/perl -w
 #
 # You make have to change the path to perl above, unless you call this
 # script with 'make update'
@@ -13,176 +13,214 @@
 #
 # Here's how it works.
 # First, we make a backup of your old-file to old-file.bak
-# Then we read all the directives in the old-file, and their
-#  associated comments. Associated comments are those which
-#  appear on lines preceding the directive.
-#  We store the names of all the directives, 
-#  their comments, and how they're defined.
-# Then we do the same for the new-file. If we find a directive
-#  that wasn't in the old-file, we show the user the comment
-#  and ask them how they want it set. Every time we write out
-#  a directive, we delete it from the list of directives from old-file
-# Finally, if there's anything left from old-file that's not in
-#  new-file, we ask if the user would like to retain each one.
-#  Presumably users want to retain their custom directives, but don't
-#  want to retain obsoleted directives. Retained directives appear at
-#  the end of the file.
+# If old-file doesn't exist, just copy new-file to it.
+# Otherwise... 
+# * Read both files, storing all their directives.
+# * Then, for each directive in old-file, if one of the same name also
+#   exists in new-file, write out old-file's version.
+# * If it's a multiple option, like function_alias, add ones present
+#   in new-file that aren't in old-file. If old-file has entries that
+#   aren't in new-file, also write them out.
+# * If it's a single option and is missing from new-file, prompt to
+#   keep it or not.
+# * Then add directives that are in new-file but not old-file.
 
-die "Usage: update-cnf.pl old-file new-file\n" unless $#ARGV == 1;
+use File::Copy;
+use strict;
+use subs qw/read_cnf_file prompt_to_save dump_directive/;
 
-$old = $ARGV[0];
-$bak = $old . ".bak";
-$new = $ARGV[1];
+die "Usage: $0 old-file new-file\n" unless scalar @ARGV == 2;
 
+my ($old, $new) = @ARGV;
 
-# Part 1 - back up the old file (inefficient but reliable method)
+my $bak = $old . ".bak";
+
+# Part 1 - back up the old file
 if (-r $old) {
     print "*** Backing up $old to $bak...\n";
-    die "update-cnf.pl: Unable to open $old\n" unless open(OLD,"$old"); 
-    die "update-cnf.pl: Unable to open $bak\n" unless open(BAK,">$bak");
-    print BAK <OLD>;
-    close(BAK);
-    close(OLD);
+    copy $old, $bak or die "Unable to back up $old: $!\n";
 } else {
     # Heck, let's just copy the new file to the old one and quit!
     print "*** Creating $old from $new...\n";
-    die "update-cnf.pl: Unable to open $old\n" unless open(OLD,">$old"); 
-    die "update-cnf.pl: Unable to open $new\n" unless open(NEW,"$new"); 
-    print OLD <NEW>;
-    close(OLD);
-    close(NEW);
+    copy $new, $old or die "Unable to copy $old to $new: $!\n";
     exit 0;
 }
-  
 
-# Part 2 - read the settings from the old file and store them
-if (-r $old) {
-    print "*** Reading your settings from $old...\n";
-    die "update-cnf.pl: Unable to open $old\n" unless open(OLD,"$old"); 
-    while (<OLD>) {
-	# We can have comments, which start with #,
-        # or directives, which start with anything else.
-	if (/^#/) {
-	  # A comment
- 	  push(@comment,$_);
-	} elsif (/^(\S+)\s+(.+)$/) {
-	  # A directive
-	  $key = $1; $val = $2;
-	  chop;
-	  if (defined($directive{$key})) {
-	      # This is a repeatable directive! 
-	      $num{$key}++;
-	      $directive{"$key/$num{$key}"} = $val;
-	      $comment{"$key/$num{$key}"} = join("",@comment);
-	  } else {
-	      $directive{$key} = $val; 
-	      $comment{$key} = join("",@comment);
-	  }
-	  undef @comment;
-        } elsif (/^(\S+)/) {
-          # A directive that's defined as blank
-          $key = $1; $val = "";
-          $directive{$key} = $val;
-	  $comment{$key} = join("",@comment);
-          undef @comment;
-    	} elsif (/^$/) {
-	  # A blank line. Ignore comments so far
-	  undef @comment;
-	}
-    }
-    close(OLD);
-}
+# Part 2 - read the settings from the current and the distributed config files and store them.
 
-# Part 3 - read in the new file, modifying its definition lines to
-#          match the old file. If we come across a definition that
-#          isn't in the old file, ask the user about it. 
+my $working_cnf = read_cnf_file $old;
+my $dist_cnf = read_cnf_file $new;
+
+# Part 3: Merge changes to the distributed conf file with the working one.
+
+my $tmp = $old . ".tmp";
 print "*** Updating $old from $new...\n";
-die "update-cnf.pl: Unable to open $old\n" unless open(OLD,">$old"); 
-die "update-cnf.pl: Unable to open $new\n" unless open(NEW,"$new"); 
-while (<NEW>) {
-    # We can have comments, which start with #,
-    # or directives, which start with anything else.
+
+my @comment = ();
+my @newoptions = ();
+my %seen;
+
+open OUT, ">", $tmp or die "update-cnf.pl: Unable to open $old: $!\n"; 
+open IN, "<", $old or die "update-cnf.pl: Unable to open $new: $!\n"; 
+while (<IN>) {
     if (/^#/) {
 	# A comment
-	push(@comment,$_);
-    } elsif (/^(\S+)/) {
-	# Not a comment
-	$key = $1;
-	chop;
-	if ($num{$key}) {
-	    if ($num{$key} > 0) {
-		# A repeatable directive!
-		# Spew them all here. It's probably the best we can do.
-		print OLD @comment;
-		print OLD "$key\t$directive{$key}\n\n";
-		delete $comment{$key};
-		for ($i = 1; $i <= $num{$key}; $i++) {
-		    print OLD $comment{"$key/$i"};
-		    print OLD "$key\t", $directive{"$key/$i"},"\n\n";
-		    delete $comment{"$key/$i"};
-		    delete $directive{"$key/$i"};
-		} 
-		$num{$key} = -1; # Don't spew again
-	    }
+	push @comment, $_;
+    } elsif (/^\s+$/) {
+	# Blank line. Dump preceding comments.
+	if (scalar @comment) {
+	    print OUT @comment, "\n";
+	    undef @comment;
 	} else {
-	    print OLD @comment;
-	    if (!defined($directive{$key}) || $key eq "include") {
-		# It's new, just add it
-		print OLD $_,"\n";
-		push(@newoptions,$key);
-              delete $comment{$key} if $key eq "include";
+	    print OUT "\n";
+	}
+    } elsif (/^(\S+)/) {
+	# Directive
+	my $key = $1;	
+
+	undef @comment;
+
+	next if $seen{$key};
+
+	if (!defined $dist_cnf->{$key}) {
+            # Present in working copy, not in dist copy.
+	    dump_directive $working_cnf->{$key} if prompt_to_save $key, $working_cnf->{$key};
+	    $seen{$key} = 1;
+	} else {
+	    # Present in working copy and dist copy.
+	    my $nwork = scalar @{$working_cnf->{$key}};
+	    my $ndist = scalar @{$dist_cnf->{$key}};
+	    if ($nwork == $ndist) {
+		# Both copies have the same number of repeats. Use working version.
+		dump_directive \*OUT, $working_cnf->{$key};
+		$seen{$key} = 1;
+	    } elsif ($nwork > $ndist) {
+		# There are more records in the working cnf
+		# file. Assume they're supposed to be there
+		# (Game-specific function aliases, etc.)
+		# TODO: Consider prompting for each one?
+		dump_directive \*OUT, $working_cnf->{$key};
+		$seen{$key} = 1;
 	    } else {
-		# It's old. Put it in, with a value if one's set.
-		print OLD $key;
-		print OLD "\t$directive{$key}" if (defined($directive{$key}));
-		print OLD "\n";
-		# Remove its comment.
-		delete $comment{$key};
+		# More records in the dist file. Try to merge.
+		my %records;
+
+		# Copy everything in the conf file.
+		dump_directive \*OUT, $working_cnf->{$key};
+
+		# And add anything new from the dist file. TODO: Prompting?
+		foreach my $dir (@{$dist_cnf->{$key}}) {
+		    $records{$dir->{"value"}} = $dir->{"comment"};
+		}
+		foreach my $dir (@{$working_cnf->{$key}}) {
+		    delete $records{$dir->{"value"}};
+		}
+		while (my ($val, $c) = each %records) {
+		    if ($val =~ /^(\S+)\s/) {
+			push @newoptions, "$key $1";
+		    } else {
+			push @newoptions, $key;
+		    }
+		    print OUT $c, $key, " ", $val, "\n";
+		}
+		$seen{$key} = 1;
 	    }
 	}
-	undef @comment;
-    } elsif (/^$/) {
-	print OLD @comment;
-	undef @comment;
-	print OLD;
-    } else {
-	print OLD;
     }
 }
-close(NEW);
+close IN;
 
-# Part 4 - if there are any definitions left from the old file,
-#          offer to delete them (or not)
-print "\n*** Checking for leftover defines from $old...\n";
-foreach $d (sort { $directive{$a} cmp $directive{$b} } keys %comment) {
-    $newd = $d;
-    $newd =~ s!/.*!!;
-    print "\nI found:\n";
-    print $comment{$d};
-    print "$newd\t$directive{$d}\n";
+# Now we check for things in dist that haven't been seen in the working file.
+while (my ($key, $dir) = each %{$dist_cnf}) {
+    next if $seen{$key};
+    dump_directive \*OUT, $dir;
+    push @newoptions, $key;   
+}
+
+close OUT;
+move $tmp, $old or die "Unable to create $old: $!\n";
+
+my (@deleted, @retained);
+
+print "\nSummary of changes:\n";
+print "New options from $new: ", join(", ",@newoptions), "\n";
+print "Old options retained: ", join(", ",@retained), "\n";
+print "Old options deleted: ", join(", ",@deleted), "\n";
+print "If this is wrong, you can recover $old from $bak.\n";
+print "Done!\n";
+
+sub read_cnf_file {
+    my (%directive, @comment);
+    my $file = shift;
+    
+    print "*** Reading settings from $file...\n";
+    open FILE, "<", $file or die "update-cnf.pl: Unable to open $file: $!\n"; 
+    while (<FILE>) {
+	# We can have comments, which start with #,
+	# or directives, which start with anything else.
+	chomp;
+	if (/^#/) {
+	    # A comment
+	    push @comment, $_;
+	} elsif (/^(\S+)\s+(.+)$/) {
+	    # A directive
+	    my ($key, $val) = ($1, $2);
+	    my $c = join "\n", @comment;
+	    $c .= "\n" if length $c;
+	    if (defined $directive{$key}) {
+		# This is a repeated directive! 
+		push @{$directive{$key}}, { "key" => $key, "value" => $val, "comment" => $c };
+	    } else {
+		$directive{$key} = [{"key" => $key, "value" => $val, "comment" => $c}]; 
+	    }
+	    undef @comment;
+        } elsif (/^(\S+)/) {
+	    # A directive that's defined as blank
+	    my ($key, $val) = ($1, "");
+	    my $c = join "\n", @comment;
+	    $c .= "\n" if length $c;
+	    if (defined $directive{$key}) {
+		# These probably won't repeat, but... 
+		push @{$directive{$key}}, {"key" => $key, "value" => "", "comment" => $c };
+	    } else {
+		$directive{$key} = [{"key" => $key, "value" => "", "comment" => $c }];
+	    }
+	    undef @comment;
+    	} elsif (/^$/) {
+	    # A blank line. Ignore comments so far
+	    undef @comment;
+	}
+    }
+    close FILE;
+    return \%directive;
+}
+
+sub prompt_to_save {
+    my ($name, $directive) = shift;
+
+    print "\nI found $name:\n";
+    dump_directive \*STDOUT, $directive;
     print "\n";
     print "If this is a directive that you hacked in, you probably should retain it.\n";
     print "If not, it's probably an obsolete directive from an earlier release,\n";
     print "and you need not retain it.\n";
     print "Do you want to retain this in your $old file? [y] ";
-    $yn = <STDIN>;
-    if ($yn !~ /^[Nn]/) {
-	print "Retaining directive. It will appear at the end of $old.\n";
-        @retained = (@retained, $newd);
-	print OLD $comment{$d};
-	print OLD "$newd\t$directive{$d}\n";
-	print OLD "\n";
+    my $yn = <STDIN>;
+    if ($yn !~ /^n/i) {
+	print "Retaining directive.\n";
+	push @retained, $name;
+	return 1;
     } else {
-	print "Deleting definition.\n";
-	@deleted = (@deleted, $d);
+        push @deleted, $name;
+	return 0;
     }
 }
-close(OLD);
 
-print "\nSummary of changes:\n";
-print "New options from $new: ",join(" ",@newoptions),"\n";
-print "Old options retained: ",join(" ",@retained),"\n";
-print "Old options deleted: ",join(" ",@deleted),"\n";
-print "If this is wrong, you can recover $old from $bak.\n";
-print "Done!\n";
-exit 0;
+sub dump_directive {
+    my $out = shift;
+    my $directive = shift;
+    foreach my $d (@{$directive}) {
+	print $out $d->{"comment"};
+	print $out $d->{key}, " ", $d->{"value"}, "\n";
+    }
+}

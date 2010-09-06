@@ -132,7 +132,7 @@ This is equivalent to the former function of sites.cnf
 *.twink.edu -2 !create register
 
 Using !create prevents people from using the usual create command.
-Adding register allows them to uset the register command.
+Adding register allows them to use the register command.
 
 
 6. Disable creation from twink.edu sites, and don't let Wizards 

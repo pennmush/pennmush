@@ -25,6 +25,15 @@
 #
 # Command restrictions typically also apply to side-effect functions that
 # emulate the command.
+# See 'help restrict' for more informtation.
+
+# You can also create and/or restrict standard attributes, using:
+# restrict_attribute <attribute> <restriction>
+# where <restriction> is "none" for a standard attribute with no restrictions,
+# or a space-separated list of attribute flags, as per 
+# @attribute/access <attribute>=<restriction>. See 'help @attribute' and
+# 'help attribute flags' for more information.
+# For example, restrict_attribute stats wizard mortal_dark no_command no_inherit
 
 # Don't let guests mess with the database
 # (This replaces the HARSH_GUEST compile-time define)

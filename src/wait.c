@@ -131,7 +131,7 @@ lower_priority_by(pid_t pid, int prio)
   if (newprio > 20)
     newprio = 20;
 
-#ifdef HAVE_SET_PRIORITY
+#ifdef HAVE_SETPRIORITY
   return setpriority(PRIO_PROCESS, pid, newprio);
 #else
   return 0;

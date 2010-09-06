@@ -100,7 +100,7 @@ do_name(dbref player, const char *name, char *newname_)
         while (*eon && !isspace((unsigned char) *eon))
           eon++;
         if (*eon)
-          *(eon++) = '\0';
+          *eon = '\0';
       }
       if (!ok_player_name(bon, player, thing)) {
         notify(player, T("You can't give a player that name."));
@@ -349,7 +349,8 @@ chown_object(dbref player, dbref thing, dbref newowner, int preserve)
  * \retval 1 successfully changed zone.
  */
 int
-do_chzone(dbref player, char const *name, char const *newobj, int noisy)
+do_chzone(dbref player, char const *name, char const *newobj, bool noisy,
+          bool preserve)
 {
   dbref thing;
   dbref zone;
@@ -432,10 +433,14 @@ do_chzone(dbref player, char const *name, char const *newobj, int noisy)
   }
   /* everything is okay, do the change */
   Zone(thing) = zone;
+
   /* If we're not unzoning, and we're working with a non-player object,
-   * we'll remove wizard, royalty, inherit, and powers, for security.
+   * we'll remove wizard, royalty, inherit, and powers, for security, unless
+   * a wizard is changing the zone and explicitly says not to.
    */
-  if ((zone != NOTHING) && !IsPlayer(thing)) {
+  if (!Wizard(player))
+    preserve = 0;
+  if (!preserve && ((zone != NOTHING) && !IsPlayer(thing))) {
     /* if the object is a player, resetting these flags is rather
      * inconvenient -- although this may pose a bit of a security
      * risk. Be careful when @chzone'ing wizard or royal players.
@@ -792,7 +797,6 @@ gedit_helper(dbref player, dbref thing,
     /* insert replacement string between every character */
     ansi_string *haystack;
     size_t last = 0;
-    int too_long = 0;
 
     haystack = parse_ansi_string(s);
 
@@ -802,7 +806,6 @@ gedit_helper(dbref player, dbref thing,
         for (last = 0; last < (size_t) haystack->len; last++) {
           /* Add the next character */
           if (safe_ansi_string(haystack, last, 1, tbuf1, &tbufp)) {
-            too_long = 1;
             break;
           }
           if (!ansi_long_flag) {
@@ -811,7 +814,6 @@ gedit_helper(dbref player, dbref thing,
           }
           /* Copy in r */
           if (safe_str(r, tbuf1, &tbufp)) {
-            too_long = 1;
             break;
           }
           if (!ansi_long_flag) {

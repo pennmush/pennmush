@@ -167,11 +167,14 @@ static dbref debugMatchTo = 1;
           /* Ignore any previous partial matches now we have an exact match */ \
           exact = 1; \
           curr = 1; \
+          right_type = 0; \
         } \
       } else { \
         /* Another partial match */ \
         curr++; \
       } \
+      if (type != NOTYPE && (Typeof(bestmatch) & type)) \
+        right_type++; \
     } else { \
       curr++; \
       if (curr == final) { \
@@ -306,18 +309,16 @@ match_aliases(dbref match, const char *name)
     return 0;
   }
 
-  if (IsExit(match)) {
-    return check_alias(name, Name(match));
-  } else {
+  if (IsExit(match) && check_alias(name, Name(match)))
+    return 1;
+  else {
     char tbuf1[BUFFER_LEN];
     ATTR *a = atr_get_noparent(match, "ALIAS");
-    if (!a) {
+    if (!a)
       return 0;
-    }
     mush_strncpy(tbuf1, atr_value(a), BUFFER_LEN);
     return check_alias(name, tbuf1);
   }
-
 }
 
 dbref
@@ -330,6 +331,7 @@ match_result(dbref who, const char *xname, int type, long flags)
   int final = 0;                /* the Xth object we want, with english matching (5th foo) */
   int curr = 0;                 /* the number of matches found so far, when 'final' is used */
   int nocontrol = 0;            /* set when we've matched an object, but don't control it and MAT_CONTROL is given */
+  int right_type = 0;           /* number of objects of preferred type found, when we have a type but MAT_TYPE isn't given */
   int exact = 0;                /* set to 1 when we've found an exact match, not just a partial one */
   int done = 0;                 /* set to 1 when we're using final, and have found the Xth object */
   int goodwho = GoodObject(who);
@@ -362,10 +364,13 @@ match_result(dbref who, const char *xname, int type, long flags)
       ((type & TYPE_PLAYER) || !(flags & MAT_TYPE))) {
     match = match_player(who, xname, !(flags & MAT_EXACT));
     if (GoodObject(match)) {
-      if (MATCH_CONTROLS) {
-        return match;
-      } else {
-        nocontrol = 1;
+      if (!(flags & MAT_NEAR) || Long_Fingers(who) ||
+          (nearby(who, match) || controls(who, match))) {
+        if (MATCH_CONTROLS) {
+          return match;
+        } else {
+          nocontrol = 1;
+        }
       }
     } else {
       bestmatch = BEST_MATCH;
@@ -374,7 +379,7 @@ match_result(dbref who, const char *xname, int type, long flags)
 
   /* dbref match */
   match = abs;
-  if (GoodObject(match) && (flags & MAT_ABSOLUTE) && MATCH_TYPE) {
+  if (RealGoodObject(match) && (flags & MAT_ABSOLUTE) && MATCH_TYPE) {
     if (!(flags & MAT_NEAR) || Long_Fingers(who)
         || (nearby(who, match) || controls(who, match))) {
       /* valid dbref match */
@@ -464,7 +469,8 @@ match_result(dbref who, const char *xname, int type, long flags)
     /* we never found the Nth item */
     bestmatch = NOTHING;
   } else if (!final && curr > 1) {
-    if (!(flags & MAT_LAST)) {
+    /* If we had a preferred type, and only found 1 of that type, give that, otherwise ambiguous */
+    if (right_type != 1 && !(flags & MAT_LAST)) {
       bestmatch = AMBIGUOUS;
     }
   }

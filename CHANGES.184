@@ -16,6 +16,98 @@ chronological order (most recent first)
 
 ==========================================================================
 
+Version 1.8.4 patchlevel 1                                 Sep 05,  2010
+
+Major Changes:
+ * You can now do the equivilent of @command/add, @hook, @function and
+   @attribute/access from alias.cnf and restrict.cnf, to add/configure
+   commands, functions and standard attributes. Suggested by Paige. [MG]
+ * Exits now use @alias for alternate names. The old style of
+   including aliases directly in names is still supported, but
+   depreciated in new construction. Suggested by [MG]. [SW]
+
+Minor Changes:
+ * @power now reports when you try and set a power which is already set (or
+   clear one which isn't set), similar to @set. Suggested by Paige. [MG]
+ * Sorting methods now take - as a prefix to sort type in order to sort
+   in descending order. Suggested by Minion. [GM]
+ * The matching code no longer matches players who aren't nearby with
+   "*playername" when MAT_NEAR is given, more in line with other checks.
+   (This has virtually no impact for most players.) [MG]
+ * The internal pe_info (which manages the function invocation limit, among
+   other things) is now managed per-queue, not per-command argument. [MG]
+ * @chan/decompile now uses "*name" for players, and dbrefs for other
+   objects, when printing "@chan/on" statements. [MG]
+ * cpu_limit now works on Cygwin (though not quite as well as on unix).
+   A slightly higher limit may be needed than other platforms. [MG]
+ * The output from say, pose, semipose and @emit is now passed through the
+   SPEECHMOD attribute before being outputted. Suggested by Paige, based on
+   MUX and TinyMUSH. [MG]
+ * @config/list now accepts wildcard patterns to match against option names.
+   Suggested by Trinsec. [MG]
+ * The dreaded <Output flushed> message should show up a lot less frequently
+   on spammy debug output and the like. By popular demand. [SW]
+ * Added support for MSSP (Mud Server Status Protocol), based on patches by
+   Javelin and Teal. See mush.cnf for details. [MG]
+ * The script for updating config files is smarter about adding new alias
+   lines. [SW]
+ * @search now only charges for elock searches which use eval or indirect
+   locks.
+ * Added @mail/unread, to mark mail you've already read as new, and 
+   @mail/status to change read/cleared/tagged status for messages.. Suggested
+   by qa'toq. [MG]
+
+Commands:
+ * Add /preserve switch to @chzone and @chzoneall, like @chown/preserve.
+ * Rooms/exits must now have an @COST attribute in order to be given
+   pennies. Use @cost <ancestor>=%0 to enable giving to all rooms/exits. [MG]
+ * with/room can now check for commands in the Master Room or your ZMR, and
+   with can check for commands on your ZMT. [MG]
+ * @sitelock/register <host> now sets the access rules for <host> to be
+   "!create register", rather than "!create". Suggested by Trinsec. [MG]
+   
+Functions:
+ * remit() now works like @remit/list. Suggested by Minion. [MG]
+ * rand() now accepts negative arguments again. [MG]
+ * lcon() can now take a second argument to make it behave like lthings()
+   or l[v]players(), or makes it return only puppets/listening objects,
+   for MUX/Rhost compatability. Suggested by Bane. [MG]
+ * open() can now open rooms remotely. Suggested by Minion. [MG]
+ * reswitch() and co now perform $-replacements for subexpressions. [MG]
+
+Fixes:
+ * Help fixes.
+ * @search's output can now include garbage objects, like lsearch().
+   Reported by Minion. [MG]
+ * The command parser incorrectly expanded the names of disabled built-in
+   commands prior to $-command matching. Reported by Mercutio. [MG]
+ * benchmark()'s average would be thrown off when the CPU limit was 
+   exceeded during evaluation. Reported by Amberyl. [MG]
+ * Fix a few bugs in handling of command locks. [SW]
+ * Garbage objects could be matched by dbref. Reported by Paige. [MG]
+ * No longer complain about reboot.db not being present when we're not
+   doing a @shutdown/reboot anyway. Reported by Paige. [MG]
+ * The Telnet escape code was not properly escaped when sent literally to
+   Pueblo-aware clients. [MG]
+ * namelist() did not accept names in quotes. Reported by Amberyl. [MG]
+ * @attrib/access/retroactive could remove the 'root' flag from attribute
+   trees, making nasty things happen. Reported by Cooee. [MG]
+ * Fix fn() to check that the first arugment is actually the name of a
+   built-in function. Reported by Time and Cheetah. [DC]
+ * Nested @asserts/@breaks with no '=' would loop unintentionally.
+   Reported by Minion. [MG]
+ * Fixed a couple of small bugs in give/@cost. [MG]
+ * You can now always look at remote objects whose descs are not set nearby,
+   and can never look at remote objects with nearby descs. [MG]
+ * The chatdb didn't load correctly with invalid objects on channels. [MG]
+ * Fixed a crashbug in @boot on Windows. Reported by Daniel Powell. [MG]
+ * %q-registers did not carry over into @includes correctly. Reported by
+   Reaver. [MG]
+ * Double-free in follow command fixed. Reported by Anya@ST:DW. [MG]
+ * locate() sometimes returned #-2 when two objects matched, even if only
+   one of them was the preferred type. Reported by Minion. [MG]
+
+
 Version 1.8.4 patchlevel 0                                 May 09,  2010
 
 Major Changes:
@@ -30,7 +122,7 @@ Minor Changes:
  * mindb+maxdb classes for lsearch/@search no longer reset to default
    values when > db_top or < 0 is given: Instead treated as an integer
    comparison. [GM]
- * @open can now open exits in remove locations, as well as your current
+ * @open can now open exits in remote locations, as well as your current
    location. Suggested by Bane. [MG]
  * New OPEN_OK flag allows anyone to open exits in a room, and @lock/open
    to restrict who can. Based on patch by ranmir@M*U*S*H. [MG]

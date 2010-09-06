@@ -33,82 +33,75 @@
 #  want to retain obsoleted defines. Retained defines appear at
 #  the end of the file.
 
-die "Usage: update.pl old-file new-file\n" unless $#ARGV == 1;
+die "Usage: update.pl old-file new-file\n" unless scalar @ARGV == 2;
 
-$old = $ARGV[0];
+use File::Copy;
+use subs qw/ask_value ask_simple def/;
+
+my ($old, $new) = @ARGV;
+
 $bak = $old . ".bak";
-$new = $ARGV[1];
 
-
-# Part 1 - back up the old file (inefficient but reliable method)
+# Part 1 - back up the old file
 if (-r $old) {
     print "*** Backing up $old to $bak...\n";
-    die "update.pl: Unable to open $old\n" unless open(OLD,"$old"); 
-    die "update.pl: Unable to open $bak\n" unless open(BAK,">$bak");
-    print BAK <OLD>;
-    close(BAK);
-    close(OLD);
+    copy $old, $bak or die "Unable to copy $old to $bak: $!\n";
 }
 
 # Part 2 - read the settings from the old file and store them
 if (-r $old) {
-   print "*** Reading your settings from $old...\n";
-    die "update.pl: Unable to open $old\n" unless open(OLD,"$old"); 
+    print "*** Reading your settings from $old...\n";
+    open OLD, "<", $old or die "update.pl: Unable to open $old: $!\n"; 
     while (<OLD>) {
-        # There are a few possibilities for what we could have:
-        # an #ifdef, #ifndef, #else, #endif, #define, #undef,
-        # commented #define, comment text, etc. We only care
-        # about the settings of define/undefs
-        s#/\*\s*\*/##;
-        s#[ \t]+([\r\n]*)$#$1#;
-        if ( /^#define\s+([A-Z0-9_-]+).*\\$/ ) {
-    	# A define with a continuation, we need the next line
-    	chop($next = <OLD>);
-    	$defs{$1} = $next;
-    	$comment{$1} = $comment;
-        } elsif ( m!^#define\s+([A-Z0-9_-]+)\s+(.+)\s+(/\*.*\*/)!
-    	     ) {
-    	# A define with a value and a comment
-    	$name = $1;
-    	$comment{$name} = $3;
-    	$defs{$name} = $2;
-    	undef $comment;
-        } elsif ( m!^#define\s+([A-Z0-9_-]+)\s+(.+)!
-    	     ) {
-    	# A define with a value
-    	$defs{$1} = $2;
-    	$comment{$1} = $comment;
-        } elsif ( /^#undef\s+([A-Z0-9_-]+)/ 
-    	     ) {
-    	# an undef
-    	$defs{$1} = 'undef';
-    	$comment{$1} = $comment;
-        } elsif ( m!^/\*\s*#define\s+([A-Z0-9_-]+)\s+(.+)\s+(/\*.*\*/)!
-    	     ) {
-    	# A commented define with a value and a comment
-    	$name = $1;
-    	$comment{$name} = $3;
-        $cvaldef{$name}++;
-    	$defs{$name} = $2;
-    	undef $comment;
-        } elsif ( /^(\/\*)*\s*#define\s+([A-Z0-9-][A-Z0-9_-]+)/
-    	     ) {
-    	# a define or commented define
-    	$defs{$2} = ($1 eq "/*") ? 'undef' : 'define';
-    	$comment{$2} = $comment;
+	# There are a few possibilities for what we could have:
+	# an #ifdef, #ifndef, #else, #endif, #define, #undef,
+	# commented #define, comment text, etc. We only care
+	# about the settings of define/undefs
+	s#/\*\s*\*/##;
+	s#[ \t]+([\r\n]*)$#$1#;
+	if (/^#define\s+([A-Z0-9_-]+).*\\$/) {
+	    # A define with a continuation, we need the next line
+	    chop($next = <OLD>);
+	    $defs{$1} = $next;
+	    $comment{$1} = $comment;
+	} elsif (m!^#define\s+([A-Z0-9_-]+)\s+(.+)\s+(/\*.*\*/)!) {
+	    # A define with a value and a comment
+	    $name = $1;
+	    $comment{$name} = $3;
+	    $defs{$name} = $2;
+	    undef $comment;
+        } elsif (m!^#define\s+([A-Z0-9_-]+)\s+(.+)!) {
+	    # A define with a value
+	    $defs{$1} = $2;
+	    $comment{$1} = $comment;
+        } elsif (/^#undef\s+([A-Z0-9_-]+)/) {
+	    # an undef
+	    $defs{$1} = 'undef';
+	    $comment{$1} = $comment;
+        } elsif (m!^/\*\s*#define\s+([A-Z0-9_-]+)\s+(.+)\s+(/\*.*\*/)!) {
+	    # A commented define with a value and a comment
+	    $name = $1;
+	    $comment{$name} = $3;
+	    $cvaldef{$name}++;
+	    $defs{$name} = $2;
+	    undef $comment;
+        } elsif (/^(\/\*)*\s*#define\s+([A-Z0-9-][A-Z0-9_-]+)/) {
+	    # a define or commented define
+	    $defs{$2} = ($1 eq "/*") ? 'undef' : 'define';
+	    $comment{$2} = $comment;
         } else {
-    	if (m#^\s*/\*#) {
-    	    # Start of a comment
-    	    $incomment = 1;
-    	    undef $comment;
-    	}
-    	if ($incomment) {
-    	    $comment = $comment . $_;
-    	    if (m#\*/\s+$#) {
-    		# End of a comment
-    		$incomment = 0;
-    	    }
-    	}
+	    if (m#^\s*/\*#) {
+		# Start of a comment
+		$incomment = 1;
+		undef $comment;
+	    }
+	    if ($incomment) {
+		$comment = $comment . $_;
+		if (m#\*/\s+$#) {
+		    # End of a comment
+		    $incomment = 0;
+		}
+	    }
         }
     }
     close(OLD);
@@ -119,48 +112,47 @@ undef $comment; $incomment = 0;
 # Part 3 - Check to see if we have environment variable SETTINGS and
 #          use those settings as if they were in the old file.
 if ($settings = $ENV{'DEFINE'}) {
-  print "\n*** Found a DEFINE environment variable - applying settings...\n";
-  @pairs = split ' ', $settings;
-  foreach (@pairs) {
-    if (($d,$v) = /(.+)=(.+)/) {
-      $defs{$d} = $v;
-    } else {
-      $defs{$_} = 'define';
+    print "\n*** Found a DEFINE environment variable - applying settings...\n";
+    my @pairs = split ' ', $settings;
+    foreach (@pairs) {
+	if (/(.+)=(.+)/) {
+	    $defs{$1} = $2;
+	} else {
+	    $defs{$_} = 'define';
+	}
     }
-  }
 }
 if ($settings = $ENV{'UNDEFINE'}) {
-  print "\n*** Found an UNDEFINE environment variable - applying settings...\n";
-  @pairs = split ' ', $settings;
-  foreach (@pairs) {
-      $defs{$_} = 'undef';
-  }
+    print "\n*** Found an UNDEFINE environment variable - applying settings...\n";
+    my @pairs = split ' ', $settings;
+    foreach (@pairs) {
+	$defs{$_} = 'undef';
+    }
 }
 
 # Part 4 - read in the new file, modifying its definition lines to
 #          match the old file. If we come across a definition that
 #          isn't in the old file, ask the user about it. 
 print "*** Updating $old from $new...\n";
-die "update.pl: Unable to open $old\n" unless open(OLD,">$old"); 
-die "update.pl: Unable to open $new\n" unless open(NEW,"$new"); 
+open OLD, ">", $old or die "update.pl: Unable to open $old: $!\n"; 
+open NEW, "<", $new or die "update.pl: Unable to open $new: $!\n"; 
 $_ = <NEW>;
 while ($next = <NEW>) {
     # Just like before, but we need to keep track of
     # comments in the file so that we can describe options
     s#[ \t]+([\r\n]*)$#$1#;
-    if ( /^#define\s+([A-Z0-9_-]+).*\\$/
-	) {
+    if (/^#define\s+([A-Z0-9_-]+).*\\$/) {
 	# A define with a continuation, we need the next line
 	print OLD "#define $1 \\\n";
-	&ask_value($1,$next) if (!defined($defs{$1}));
+	ask_value($1,$next) if (!defined($defs{$1}));
 	print OLD $defs{$1};
 	delete $defs{$1};
 	$next = <NEW>;
-    } elsif ( /^#define\s+([A-Z0-9-][A-Z0-9_-]+)\s+\/\*\s*\*\//) {
+    } elsif (/^#define\s+([A-Z0-9-][A-Z0-9_-]+)\s+\/\*\s*\*\//) {
 	# a define followed by /* */
-	print OLD defined($defs{$1}) ? &def($1) 
-	                             : &def(&ask_simple($1,'define'));
-    } elsif ( m!^(/\*\s*)?#define\s+([A-Z0-9_-]+)\s+(.+)\s+(/\*.*\*/)!) {
+	print OLD defined($defs{$1}) ? def($1) 
+	    : def(ask_simple($1,'define'));
+    } elsif (m!^(/\*\s*)?#define\s+([A-Z0-9_-]+)\s+(.+)\s+(/\*.*\*/)!) {
 	# A define with a value and a comment
         $maybeundef = $1;
 	$maybecomment = $4; $name = $2;
@@ -168,20 +160,18 @@ while ($next = <NEW>) {
 	$comment = $maybecomment if ($maybecomment =~ /\w/);
 	$def = "undef" if $maybeundef =~ /./;
 	print OLD defined($defs{$name}) 
-	    ? &def($name,$comment) : &def(&ask_value($name,$def),$maybecomment,$def eq "undef" ? $olddef : $def);
-    } elsif ( m!^#define\s+([A-Z0-9_-]+)\s+(.+)!) {
+	    ? def($name,$comment) : def(ask_value($name,$def),$maybecomment,$def eq "undef" ? $olddef : $def);
+    } elsif (m!^#define\s+([A-Z0-9_-]+)\s+(.+)!) {
 	# A define with a value
-	print OLD defined($defs{$1}) ? &def($1) : &def(&ask_value($1,$2));
-    } elsif ( /^#undef\s+([A-Z0-9_-]+)/ 
-	     ) {
-	print OLD defined($defs{$1}) ? &def($1) 
-	                             : &def(&ask_simple($1,'undef'));
-    } elsif ( /^(\/\*)*\s*#define\s+([A-Z0-9-][A-Z0-9_-]+)/
-	     ) {
+	print OLD defined($defs{$1}) ? def($1) : def(ask_value($1,$2));
+    } elsif (/^#undef\s+([A-Z0-9_-]+)/) {
+	print OLD defined($defs{$1}) ? def($1) 
+	    : def(ask_simple($1,'undef'));
+    } elsif (/^(\/\*)*\s*#define\s+([A-Z0-9-][A-Z0-9_-]+)/) {
 	# a define or commented define
 	print OLD defined($defs{$2}) ?
-	    &def($2)
-		: &def(&ask_simple($2,($1 eq "/*" ? 'undef': 'define')));
+	    def($2)
+	    : def(ask_simple($2,($1 eq "/*" ? 'undef': 'define')));
     } else {
 	if (m#^\s*/\*#) {
 	    # Start of a comment
@@ -189,7 +179,7 @@ while ($next = <NEW>) {
 	    undef $comment;
 	}
 	if ($incomment) {
-	    $comment = $comment . $_;
+	    $comment .= $_;
 	    if (m#\*/\s+$#) {
 		# End of a comment
 		$incomment = 0;
@@ -202,50 +192,48 @@ while ($next = <NEW>) {
 # At the end of that loop, $_ contains the last line of the
 # file, which should be the #endif.
 $final = $_;
-close(NEW);
+close NEW;
 
 # Part 5 - if there are any definitions left from the old file,
 #          offer to delete them (or not)
 print "\n*** Checking for leftover defines from $old...\n";
-foreach $d (keys %defs) {
+while (my ($d, $val) = each %defs) {
     print "\nI found: $d\n";
-    if ($defs{$d} eq 'undef') {
+    if ($val eq 'undef') {
 	print "Currently undefined\n";
-    } elsif ($defs{$d} eq 'define') {
+    } elsif ($val eq 'define') {
 	print "Currently defined\n";
     } else {
-	print "Definition: $defs{$d}\n";
+	print "Definition: $val\n";
     }
-    print $comment{$d};
-    print "\n";
+    print $comment{$d}, "\n";
     print "If this is a define that you hacked in, you probably should retain it.\n";
     print "If not, it's probably an obsolete define from an earlier patchlevel,\n";
     print "and you need not retain it.\n";
     print "Do you want to retain this in your $old file? [y] ";
     $yn = <STDIN>;
-    if ($yn !~ /^[Nn]/) {
+    if ($yn !~ /^n/i) {
 	print "Retaining definition. It will appear at the end of $old.\n";
-        @retained = (@retained, $d);
+        push @retained, $d;
 	print OLD $comment{$d};
-	print OLD &def($d);
+	print OLD def($d);
 	print OLD "\n";
     } else {
 	print "Deleting definition.\n";
-	@deleted = (@deleted, $d);
+	push @deleted, $d;
     }
 }
 
 print OLD $final;
 
-close(OLD);
+close OLD;
 
 print "\nSummary of changes:\n";
-print "New options from $new: ",join(" ",@newoptions),"\n";
-print "Old options retained: ",join(" ",@retained),"\n";
-print "Old options deleted: ",join(" ",@deleted),"\n";
+print "New options from $new: ", join(", ",@newoptions), "\n";
+print "Old options retained: ", join(", ",@retained), "\n";
+print "Old options deleted: ", join(", ",@deleted), "\n";
 print "If this is wrong, you can recover $old from $bak.\n";
 print "Done!\n";
-exit 0;
 
 
 #
@@ -254,9 +242,8 @@ exit 0;
 # May also be given a comment as a second arg.
 #
 sub def {
-    # We should use my instead of local, but some folks have perl 4
-    local($d,$c,$oldval) = @_;
-    local($df) = $defs{$d};
+    my ($d,$c,$oldval) = @_;
+    my $df = $defs{$d};
     delete $defs{$d};
     $d =~ s/^\s+//;
     $d =~ s/\s+$//;
@@ -265,13 +252,13 @@ sub def {
     $df =~ s/^\s+//;
     $df =~ s/\s+$//;
     if ($df eq 'undef') {
-      if (defined($oldval) and $oldval) {
-        $oldval =~ s/^\s+//;
-        $oldval =~ s/\s+$//;
-        return "/* #define $d\t$oldval /* */\n";
-      } else {
-        return "/* #define $d /* */\n";
-      }
+	if (defined($oldval) and $oldval) {
+	    $oldval =~ s/^\s+//;
+	    $oldval =~ s/\s+$//;
+	    return "/* #define $d\t$oldval /* */\n";
+	} else {
+	    return "/* #define $d /* */\n";
+	}
     }
     return "#define $d /* */\n" if ($df eq 'define');
     return "/* #define $d\t$df\t$c\n" if ($cvaldef{$d} and $c);
@@ -286,8 +273,8 @@ sub def {
 # Set $defs{$d} and return the name given
 #
 sub ask_simple {
-    local($d,$s) = @_;
-    local($yn);
+    my ($d,$s) = @_;
+    my $yn;
     print "\nNew option: $d\n";
     print $comment;
     $s = ($s eq 'define') ? 'y' : 'n';
@@ -295,21 +282,21 @@ sub ask_simple {
 	print "Define this option? [$s] ";
 	$yn = <STDIN>;
 	$yn = $s if $yn =~ /^$/;
-	last if $yn =~ /^[YyNn]/;
+	last if $yn =~ /^[yn]/i;
     }
-    $defs{$d} = ($yn =~ /^[Yy]/) ? 'define' : 'undef';
-    @newoptions = (@newoptions,$d);
+    $defs{$d} = ($yn =~ /^y/i) ? 'define' : 'undef';
+    push @newoptions, $d;
     return $d;
 }
-    
+
 
 #
 # &ask_value - Just like ask_simple, but instead of a yes/no,
 # we're going to get a value
 #
 sub ask_value {
-    local($d,$s) = @_;
-    local($val);
+    my ($d,$s) = @_;
+    my $val;
     print "\nNew option: $d\n";
     print "$comment\n" unless ($comment =~ /^\s*\/\*\s*\*\/\s*$/);
     print "Default value: $s\n";
@@ -317,7 +304,7 @@ sub ask_value {
     $val = <STDIN>;
     $val = $s if $val =~ /^$/;
     $defs{$d} = $val;
-    @newoptions = (@newoptions,$d);
+    push @newoptions, $d;
     return $d;
 }
 

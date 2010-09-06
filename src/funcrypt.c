@@ -71,7 +71,7 @@ encode_base64(const char *input, int len, char *buff, char **bp)
     return false;
   }
 
-  len = BIO_flush(bio);
+  (void) BIO_flush(bio);
 
   len = BIO_get_mem_data(bmem, &membuf);
 
@@ -213,7 +213,7 @@ crypt_code(char *code, char *text, int type)
   int mod = end - start + 1;
   char *p, *q, *r;
 
-  if (!text && !*text)
+  if (!(text && *text))
     return (char *) "";
   if (!code || !*code)
     return text;

@@ -55,10 +55,6 @@ msgstr " Das MUSH wurde mit Sqlite3-Unterstützung kompiliert."
 msgid " convtime() is stricter."
 msgstr " convtime() ist strenger."
 
-#: flags.c:1531
-msgid " granted."
-msgstr " erteilt."
-
 #: src/look.c:688 src/look.c:770
 msgid " is owned by "
 msgstr " gehört "

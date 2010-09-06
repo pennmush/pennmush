@@ -666,13 +666,16 @@ do_entry(BQUE *entry, int include_recurses)
       local_break_called = 0;
       break_count = 100;
       *(global_eval_context.break_replace) = '\0';
-      if (!include_recurses)
+      if (!include_recurses) {
         start_cpu_timer();
+        global_eval_context.pe_info = make_pe_info();
+      }
       while (!cpu_time_limit_hit && *s) {
         r = global_eval_context.ccom;
         process_expression(global_eval_context.ccom, &r, &s,
                            global_eval_context.cplr, entry->cause,
-                           entry->cause, PE_NOTHING, PT_SEMI, NULL);
+                           entry->cause, PE_NOTHING, PT_SEMI,
+                           global_eval_context.pe_info);
         *r = '\0';
         if (*s == ';')
           s++;
@@ -727,10 +730,11 @@ do_entry(BQUE *entry, int include_recurses)
             }
           }
           for (a = 0; a < NUMQ; a++)
-            if (!entry->rval[a])
+            if (!global_eval_context.renv[a] || !*global_eval_context.renv[a])
               tmp->rval[a] = NULL;
             else {
-              tmp->rval[a] = mush_strdup(entry->rval[a], "cqueue.rval");
+              tmp->rval[a] =
+                mush_strdup(global_eval_context.renv[a], "cqueue.rval");
             }
           global_eval_context.include_called = 0;
           /* Put the included actions in the clone */
@@ -746,8 +750,11 @@ do_entry(BQUE *entry, int include_recurses)
           }
         }
       }
-      if (!include_recurses)
+      if (!include_recurses) {
         reset_cpu_timer();
+        free_pe_info(global_eval_context.pe_info);
+        global_eval_context.pe_info = NULL;
+      }
     }
   }
   return local_break_called;

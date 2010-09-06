@@ -1,10 +1,17 @@
 #!/bin/sh
 #
 # usage: restart
-#
-# REQUIRED (but only if the autodetect doesn't work): you must set this to the
-# path to your game directory, e.g. /home/mush/game
-GAMEDIR=`cd $(dirname $0); pwd`
+
+# Try to autodetect the game directory. First, follow any symlinks the script
+# may have been run through.
+SCRIPTPATH=$0
+while [ -h "$SCRIPTPATH" ]; do
+  SCRIPTPATH=`readlink "$SCRIPTPATH"`
+done
+
+# REQUIRED if the autodetect fails: set GAMEDIR to point to your game directory,
+# e.g. /home/mush/game.
+GAMEDIR=`cd $(dirname "$SCRIPTPATH"); pwd`
 
 # OPTIONAL things that you may want to tweak.
 

@@ -120,6 +120,8 @@ COMMAND(cmd_break)
                          player, player, cause,
                          PE_COMMAND_BRACES, PT_DEFAULT, NULL);
       *bp++ = '\0';
+    } else {
+      *(global_eval_context.break_replace) = '\0';
     }
   }
 }
@@ -135,6 +137,8 @@ COMMAND(cmd_assert)
                          player, player, cause,
                          PE_COMMAND_BRACES, PT_DEFAULT, NULL);
       *bp++ = '\0';
+    } else {
+      *(global_eval_context.break_replace) = '\0';
     }
   }
 }
@@ -151,12 +155,12 @@ COMMAND(cmd_chown)
 
 COMMAND(cmd_chzoneall)
 {
-  do_chzoneall(player, arg_left, arg_right);
+  do_chzoneall(player, arg_left, arg_right, SW_ISSET(sw, SWITCH_PRESERVE));
 }
 
 COMMAND(cmd_chzone)
 {
-  (void) do_chzone(player, arg_left, arg_right, 1);
+  do_chzone(player, arg_left, arg_right, 1, SW_ISSET(sw, SWITCH_PRESERVE));
 }
 
 COMMAND(cmd_config)
@@ -628,6 +632,10 @@ COMMAND(cmd_mail)
     do_mail_list(player, arg_left);
   else if (SW_ISSET(sw, SWITCH_READ))
     do_mail_read(player, arg_left);
+  else if (SW_ISSET(sw, SWITCH_UNREAD))
+    do_mail_unread(player, arg_left);
+  else if (SW_ISSET(sw, SWITCH_STATUS))
+    do_mail_status(player, arg_left, arg_right);
   else if (SW_ISSET(sw, SWITCH_CLEAR))
     do_mail_clear(player, arg_left);
   else if (SW_ISSET(sw, SWITCH_UNCLEAR))
@@ -1002,7 +1010,7 @@ COMMAND(cmd_sitelock)
   if (SW_ISSET(sw, SWITCH_BAN))
     do_sitelock(player, arg_left, NULL, NULL, SITELOCK_BAN);
   else if (SW_ISSET(sw, SWITCH_REGISTER))
-    do_sitelock(player, arg_left, NULL, NULL, SITELOCK_ADD);
+    do_sitelock(player, arg_left, NULL, NULL, SITELOCK_REGISTER);
   else if (SW_ISSET(sw, SWITCH_NAME))
     do_sitelock_name(player, arg_left);
   else if (SW_ISSET(sw, SWITCH_REMOVE))

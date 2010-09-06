@@ -1498,7 +1498,9 @@ twiddle_flag_internal(const char *ns, dbref thing, const char *flag, int negate)
   FLAGSPACE *n;
   if (IsGarbage(thing))
     return;
-  n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces);
+  n = hashfind(ns, &htab_flagspaces);
+  if (!n)
+    return;
   f = flag_hash_lookup(n, flag, Typeof(thing));
   if (f && (n->flag_table != type_table))
     twiddle_flag(n, thing, f, negate);
@@ -1527,7 +1529,12 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
   FLAGSPACE *n;
   int current;
 
-  n = (FLAGSPACE *) hashfind("FLAG", &htab_flagspaces);
+  n = hashfind("FLAG", &htab_flagspaces);
+  if (!n) {
+    notify_format(player, T("Internal error: Unable to find flagspace '%s'!"),
+                  "FLAG");
+    return;
+  }
   if ((f = flag_hash_lookup(n, flag, Typeof(thing))) == NULL) {
     notify_format(player, T("%s - I don't recognize that flag."), flag);
     return;
@@ -1684,8 +1691,15 @@ set_power(dbref player, dbref thing, const char *flag, int negate)
   FLAG *f;
   FLAGSPACE *n;
   char tbuf1[BUFFER_LEN], *tp;
+  int current;
 
-  n = (FLAGSPACE *) hashfind("POWER", &htab_flagspaces);
+  n = hashfind("POWER", &htab_flagspaces);
+  if (!n) {
+    notify_format(player, T("Internal error: Unable to find flagspace '%s'!"),
+                  "POWER");
+    return;
+  }
+
   if ((f = flag_hash_lookup(n, flag, Typeof(thing))) == NULL) {
     notify_format(player, T("%s - I don't recognize that power."), flag);
     return;
@@ -1696,17 +1710,31 @@ set_power(dbref player, dbref thing, const char *flag, int negate)
     return;
   }
 
+  current = sees_flag("POWER", player, thing, f->name);
+
   twiddle_flag(n, thing, f, negate);
 
   if (!AreQuiet(player, thing)) {
     tp = tbuf1;
-    safe_str(Name(thing), tbuf1, &tp);
-    safe_str(" - ", tbuf1, &tp);
-    safe_str(f->name, tbuf1, &tp);
-    safe_str(negate ? T(" removed.") : T(" granted."), tbuf1, &tp);
+    if (negate) {
+      if (current) {
+        safe_format(tbuf1, &tp, T("%s - %s removed."), Name(thing), f->name);
+      } else {
+        safe_format(tbuf1, &tp, T("%s - %s (already) removed."), Name(thing),
+                    f->name);
+      }
+    } else {
+      if (current) {
+        safe_format(tbuf1, &tp, T("%s - %s (already) granted."), Name(thing),
+                    f->name);
+      } else {
+        safe_format(tbuf1, &tp, T("%s - %s granted."), Name(thing), f->name);
+      }
+    }
     *tp = '\0';
     notify(player, tbuf1);
   }
+
   if (f->perms & F_LOG)
     do_log(LT_WIZ, player, thing, "%s POWER %s", f->name,
            negate ? T("CLEARED") : T("SET"));
@@ -1731,11 +1759,10 @@ flaglist_check(const char *ns, dbref player, dbref it, const char *fstr,
 {
   char *s;
   FLAG *fp;
-  int negate, temp;
+  int negate = 0, temp = 0;
   int ret = type;
   FLAGSPACE *n;
 
-  negate = temp = 0;
   if (!GoodObject(it))
     return 0;
   if (!(n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces))) {
@@ -1827,10 +1854,10 @@ flaglist_check_long(const char *ns, dbref player, dbref it, const char *fstr,
 {
   char *s, *copy, *sp;
   FLAG *fp;
-  int negate, temp;
+  int negate = 0, temp = 0;
   int ret = type;
   FLAGSPACE *n;
-  negate = temp = 0;
+
   if (!GoodObject(it))
     return 0;
   if (!(n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces))) {
@@ -2252,7 +2279,7 @@ do_flag_add(const char *ns, dbref player, const char *name, char *args_right[])
   /* Ok, let's do it. */
   add_flag_generic(ns, name, letter, type, perms, negate_perms);
   /* Did it work? */
-  if ((f = match_flag_ns(n, name)))
+  if (match_flag_ns(n, name))
     do_flag_info(ns, player, name);
   else
     notify_format(player, T("Unknown failure adding %s."), strlower(ns));
@@ -2296,6 +2323,11 @@ do_flag_alias(const char *ns, dbref player, const char *name, const char *alias)
     return;
   }
   n = hashfind(ns, &htab_flagspaces);
+  if (!n) {
+    notify_format(player, T("Internal error: Unknown flag space '%s'!"), ns);
+    return;
+  }
+
   af = match_flag_ns(n, alias);
   if (!delete && af) {
     notify_format(player, T("That alias already matches the %s %s."),
@@ -2324,7 +2356,7 @@ do_flag_alias(const char *ns, dbref player, const char *name, const char *alias)
       return;
     }
     ptab_delete(n->tab, alias);
-    if ((af = match_flag_ns(n, alias)))
+    if (match_flag_ns(n, alias))
       notify(player, T("Unknown failure deleting alias."));
     else
       do_flag_info(ns, player, f->name);
@@ -2368,7 +2400,7 @@ alias_flag_generic(const char *ns, const char *name, const char *alias)
 
   ptab_insert_one(n->tab, strupper(alias), f);
 
-  return ((f = match_flag_ns(n, alias)) ? 1 : 0);
+  return (match_flag_ns(n, alias) ? 1 : 0);
 }
 
 
@@ -2480,7 +2512,11 @@ do_flag_delete(const char *ns, dbref player, const char *name)
     notify(player, T("You don't look like God."));
     return;
   }
-  n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces);
+  n = hashfind(ns, &htab_flagspaces);
+  if (!n) {
+    notify_format(player, T("Internal error: Unknown flagspace '%s'!"), ns);
+    return;
+  }
   f = ptab_find_exact(n->tab, name);
   if (!f) {
     notify_format(player, T("I don't know that %s."), strlower(ns));

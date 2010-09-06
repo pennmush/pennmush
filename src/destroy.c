@@ -576,7 +576,7 @@ undestroy(dbref player, dbref thing)
     }
     break;
   default:
-    do_log(LT_ERR, NOTHING, NOTHING, "Surprising type in un_destroy.");
+    do_log(LT_ERR, NOTHING, NOTHING, "Surprising type in undestroy.");
     return 0;
   }
   return 1;

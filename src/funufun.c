@@ -19,6 +19,7 @@
 #include "dbdefs.h"
 #include "flags.h"
 #include "lock.h"
+#include "function.h"
 #include "confmagic.h"
 
 void do_userfn(char *buff, char **bp, dbref obj, ATTR *attrib, int nargs,
@@ -50,6 +51,15 @@ FUNCTION(fun_fn)
   p = args[0];
   process_expression(tbuf, &tp, &p, executor, caller,
                      enactor, PE_DEFAULT, PT_DEFAULT, pe_info);
+  *tp = '\0';
+  /* Make sure a builtin function with the name actually exists */
+  if (!builtin_func_hash_lookup(tbuf)) {
+    safe_str(T("#-1 FUNCTION ("), buff, bp);
+    safe_str(tbuf, buff, bp);
+    safe_str(T(") NOT FOUND"), buff, bp);
+    return;
+  }
+
   safe_chr('(', tbuf, &tp);
   for (i = 1; i < nargs; i++) {
     if (i > 1)

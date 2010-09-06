@@ -24,6 +24,9 @@ Minor Changes:
    for @dolist as well as iter(). [MG]
  * iter() context (itext(), inum(), etc) is no longer propagated through
    ufuns. [MG]
+   
+Functions:
+ * ibreak(), for breaking out of an iter() loop. [Rhost] [MG]
 
 
 & 1.8.4p1

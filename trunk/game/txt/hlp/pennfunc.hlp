@@ -2117,6 +2117,7 @@ See also: words()
   ilev() function can be used to get the current iter() nesting level.
 
   See 'help iter2' for examples.
+See also: itext(), inum(), ilev(), ibreak(), map(), @dolist
 & ITER2   
   Examples:
     > say iter(This is a test string., strlen(%i0))
@@ -2141,8 +2142,25 @@ See also: words()
     2"
   
   parse() is an alias for iter().
+& IBREAK()
+  ibreak([<level>])
   
-See also: itext(), inum(), ilev(), map(), @dolist
+  The ibreak() function stops an iter() from running at the end of the
+  current loop. When used in nested iter()s, you can give a <level> to 
+  specify how many iter()s to break from. iter() will stop evaluating at the
+  end of the current loop, and NOT immediately after ibreak() is called.
+  
+  Examples:
+    > say iter(1 2 3 4 5,switch(%i0,3,ibreak())Test %i0!)
+    You say, "Test 1! Test 2! Test 3!"
+    
+    > say iter(1 2 3 4 5,switch(%i0,3,ibreak(),Test %i0!)
+    You say, "Test 1! Test 2! "
+    
+    > say iter(a b c, iter(1 2 3, switch(%i0%i1, 2c, ibreak(2), #$))
+    You say, "1a 2a 3a 1b 2b 3b 1c "
+    
+See also: iter(), itext(), inum(), ilev()
 & ILEV()
 & ITEXT()
 & INUM()
@@ -2164,7 +2182,7 @@ See also: itext(), inum(), ilev(), map(), @dolist
   %iL.
   
   See 'help itext2' for examples.
-See also: iter(), @dolist
+See also: iter(), ibreak(), @dolist
 & ITEXT2
 
   Examples:

@@ -20,6 +20,9 @@ Minor Changes:
    GOING and CONNECTED. [MG]
  * %il substitution as preparation to get rid of ##. [GM]
  * hardcode: call_attrib is now a wrapper around call_ufun. [GM]
+ * The %i<n> substitution, and itext()/inum()/ilev() functions, now work
+   for @dolist as well as iter(). [MG]
+
 
 & 1.8.4p1
 Version 1.8.4 patchlevel 1                                 Sep 05,  2010

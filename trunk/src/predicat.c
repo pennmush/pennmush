@@ -1029,7 +1029,7 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
         : local_wild_match(buff, expression)) {
       any = 1;
       tbuf1 = replace_string("#$", expression, argv[a + 1]);
-      parse_que(player, tbuf1, cause);
+      parse_que(player, tbuf1, cause, NULL);
       mush_free(tbuf1, "replace_string.buff");
     }
   }
@@ -1037,13 +1037,13 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
   /* do default if nothing has been matched */
   if ((a < MAX_ARG) && !any && argv[a]) {
     tbuf1 = replace_string("#$", expression, argv[a]);
-    parse_que(player, tbuf1, cause);
+    parse_que(player, tbuf1, cause, NULL);
     mush_free(tbuf1, "replace_string.buff");
   }
 
   /* Pop on @notify me, if requested */
   if (notifyme)
-    parse_que(player, "@notify me", cause);
+    parse_que(player, "@notify me", cause, NULL);
 }
 
 /** Parse possessive matches for the possessor.

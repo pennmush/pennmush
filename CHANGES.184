@@ -23,6 +23,8 @@ Minor Changes:
    @name. Suggested by Minion. [MG]
  * @decompile no longer shows flags which can't be set by players, like
    GOING and CONNECTED. [MG]
+ * %il substitution as preparation to get rid of ##. [GM]
+ * hardcode: call_attrib is now a wrapper around call_ufun. [GM]
 
 Version 1.8.4 patchlevel 1                                 Sep 05,  2010
 

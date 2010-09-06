@@ -2106,7 +2106,8 @@ See also: words()
   replacement occurs before substitution, it cannot be used well in nested
   iter()s, and should not be used on user input or untrusted <list>s, as the
   word will be evaluated. Instead, you can use the %iX substitution, or the 
-  itext() function.
+  itext() function. The substitution '%il' refers to the outermost iter
+  of the current expression, and is intended to replace ##.
   
   The string "#@" will be replaced with the position of the current word
   in <list>. Like "##", the replacement occurs before substitution. Use

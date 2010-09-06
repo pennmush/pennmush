@@ -572,12 +572,22 @@ mush_strndup(const char *src, size_t len, const char *check)
     void free_anon_attrib(ATTR *attrib);
     typedef struct _ufun_attrib {
       dbref thing;
-      char contents[BUFFER_LEN];
-      int pe_flags;
+      char  contents[BUFFER_LEN];
+      int   pe_flags;
       char *errmess;
+      int   ufun_flags;
     } ufun_attrib;
-    bool fetch_ufun_attrib(char *attrname, dbref executor,
-                           ufun_attrib * ufun, bool accept_lambda);
+/* Only 'attr', not 'obj/attr' */
+#define UFUN_NONE 0
+/* Does this string accept obj/attr? */
+#define UFUN_OBJECT 0x01
+/* If it accepts obj/attr, does it accept #lambda/attr? */
+#define UFUN_LAMBDA 0x02
+/* When calling the ufun, save and restore the Q-registers. */
+#define UFUN_LOCALIZE 0x10
+#define UFUN_DEFAULT (UFUN_OBJECT | UFUN_LAMBDA)
+    bool fetch_ufun_attrib(char *attrstring, dbref executor,
+                           ufun_attrib * ufun, int flags);
     bool call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc,
                    char *ret, dbref executor, dbref enactor, PE_Info *pe_info);
     bool call_attrib(dbref thing, const char *attrname,

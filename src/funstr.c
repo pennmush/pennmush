@@ -2107,7 +2107,7 @@ FUNCTION(fun_speak)
     if (args[3]) {
       /* we have a transform attr */
       transform = 1;
-      if (!fetch_ufun_attrib(args[3], executor, &transufun, 1)) {
+      if (!fetch_ufun_attrib(args[3], executor, &transufun, UFUN_DEFAULT)) {
         safe_str(T(e_atrperm), buff, bp);
         return;
       }
@@ -2115,7 +2115,7 @@ FUNCTION(fun_speak)
         if (args[4]) {
           /* we have an attr to use when transform returns an empty string */
           null = 1;
-          if (!fetch_ufun_attrib(args[4], executor, &nullufun, 1)) {
+          if (!fetch_ufun_attrib(args[4], executor, &nullufun, UFUN_DEFAULT)) {
             safe_str(T(e_atrperm), buff, bp);
             return;
           }

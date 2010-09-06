@@ -245,10 +245,8 @@ void
 rusage_stats(void)
 {
   struct rusage usage;
-  int pid;
   int psize;
 
-  pid = getpid();
   psize = getpagesize();
   getrusage(RUSAGE_SELF, &usage);
 
@@ -316,9 +314,13 @@ dump_database_internal(void)
 
 #ifndef PROFILING
 #ifndef WIN32
+#ifdef __CYGWIN__
+  ignore_signal(SIGALRM);
+#else
   ignore_signal(SIGPROF);
-#endif
-#endif
+#endif                          /* __CYGWIN__ */
+#endif                          /* WIN32 */
+#endif                          /* PROFILING */
 
   if (setjmp(db_err)) {
     /* The dump failed. Disk might be full or something went bad with the
@@ -330,9 +332,13 @@ dump_database_internal(void)
       penn_fclose(f);
 #ifndef PROFILING
 #ifdef HAS_ITIMER
+#ifdef __CYGWIN__
+    install_sig_handler(SIGALRM, signal_cpu_limit);
+#else
     install_sig_handler(SIGPROF, signal_cpu_limit);
-#endif
-#endif
+#endif                          /* __CYGWIN__ */
+#endif                          /* HAS_ITIMER */
+#endif                          /* PROFILING */
     return false;
   } else {
     local_dump_database();
@@ -407,7 +413,11 @@ dump_database_internal(void)
 
 #ifndef PROFILING
 #ifdef HAS_ITIMER
+#ifdef __CYGWIN__
+  install_sig_handler(SIGALRM, signal_cpu_limit);
+#else
   install_sig_handler(SIGPROF, signal_cpu_limit);
+#endif
 #endif
 #endif
 
@@ -713,10 +723,6 @@ init_game_config(const char *conf)
   if (!globals.first_start_time)
     globals.first_start_time = globals.start_time;
 
-  conf_default_set();
-
-  /* Initialize the attribute chunk storage */
-  chunk_init();
 
   /* initialize all the hash and prefix tables */
   init_flagspaces();
@@ -729,16 +735,18 @@ init_game_config(const char *conf)
   init_locks();
   init_names();
   init_pronouns();
-  command_init_preconfig();
 
   memset(&current_state, 0, sizeof current_state);
 
   /* Load all the config file stuff except restrict_* */
+  conf_default_set();
   local_configs();
   config_file_startup(conf, 0);
   start_all_logs();
   redirect_streams();
 
+  /* Initialize the attribute chunk storage */
+  chunk_init();
 
 #ifdef HAVE_GETPID
   mypid = getpid();
@@ -764,6 +772,7 @@ init_game_postdb(const char *conf)
   /* set up signal handlers for the timer */
   init_timer();
   /* Commands and functions require the flag table for restrictions */
+  command_init_preconfig();
   command_init_postconfig();
   function_init_postconfig();
   attr_init_postconfig();
@@ -1262,9 +1271,23 @@ COMMAND(cmd_with)
   char *cptr = arg_right;
   dbref errdb;
 
-  what = noisy_match_result(player, arg_left, NOTYPE, MAT_NEARBY);
+  what = noisy_match_result(player, arg_left, NOTYPE, MAT_EVERYTHING);
   if (!GoodObject(what))
     return;
+  if (!(nearby(player, what) || Long_Fingers(player) || controls(player, what))) {
+    if (SW_ISSET(sw, SWITCH_ROOM)) {
+      if (what != MASTER_ROOM && what != Zone(player)) {
+        notify(player, T("I don't see that here."));
+        return;
+      } else if (what == Zone(player) && !IsRoom(what)) {
+        notify(player, T("Make room! Make room!"));
+        return;
+      }
+    } else if (what != Zone(player) || IsRoom(what)) {
+      notify(player, T("I don't see that here."));
+      return;
+    }
+  }
 
   errdbtail = errdblist;
   errdb = NOTHING;
@@ -1277,7 +1300,7 @@ COMMAND(cmd_with)
   } else {
     /* Run commands on objects in a masterish room */
 
-    if (!IsRoom(what)) {
+    if (!IsRoom(what) && what != Location(player)) {
       notify(player, T("Make room! Make room!"));
       return;
     }

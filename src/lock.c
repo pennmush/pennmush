@@ -463,7 +463,6 @@ int
 add_lock(dbref player, dbref thing, lock_type type, boolexp key, privbits flags)
 {
   lock_list *ll, **t;
-  lock_type real_type = type;
 
   if (!GoodObject(thing)) {
     return 0;
@@ -488,7 +487,7 @@ add_lock(dbref player, dbref thing, lock_type type, boolexp key, privbits flags)
       /* Oh, this sucks */
       do_log(LT_ERR, 0, 0, "Unable to malloc memory for lock_list!");
     } else {
-      real_type = st_insert(type, &lock_names);
+      lock_type real_type = st_insert(type, &lock_names);
       ll->type = real_type;
       ll->key = key;
       ll->creator = player;

@@ -243,6 +243,7 @@ struct eval_context {
   int re_subpatterns;         /**< The number of re subpatterns */
   int *re_offsets;            /**< The offsets for the subpatterns */
   struct _ansi_string *re_from;             /**< The positions of the subpatterns */
+  PE_Info *pe_info;           /**< The PE_Info to evaluate the queue with */
 };
 
 typedef struct eval_context EVAL_CONTEXT;
@@ -448,6 +449,9 @@ size_t u_strlen(const unsigned char *s);
 unsigned char *u_strncpy
   (unsigned char *restrict target, const unsigned char *restrict source,
    size_t len);
+char *
+mush_strndup(const char *src, size_t len, const char *check)
+  __attribute_malloc__;
 
 
 /** Unsigned char strdup. Why is this a macro when the others functions? */
@@ -516,6 +520,7 @@ replace_string2(const char *old[2], const char *newbits[2],
                 const char *restrict string)
   __attribute_malloc__;
     extern const char *standard_tokens[2];      /* ## and #@ */
+    char *copy_up_to(char *RESTRICT dest, const char *RESTRICT src, char c);
     char *trim_space_sep(char *str, char sep);
     int do_wordcount(char *str, char sep);
     char *remove_word(char *list, char *word, char sep);

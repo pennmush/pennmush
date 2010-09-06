@@ -363,7 +363,7 @@ See also: MATH FUNCTIONS
  
   Examples:
     > say after(foo bar baz,bar)
-    You say, "baz"
+    You say, " baz"
     
     > say after(foo bar baz,ba)
     You say, "r baz"
@@ -1056,6 +1056,7 @@ See also: mtime(), time(), secs(), objid()
 
   As a refresher, there are 180 degrees in pi radians in 200 gradians.
 
+See also: acos(), asin(), atan(), cos(), ctu(), sin(), tan()
 & CTU()
   ctu(<angle>, <from>, <to>)
 
@@ -1161,7 +1162,7 @@ See also: get(), hasattr(), ufun(), edefault(), udefault(), uldefault()
     > say delete(abcdefgh, 3, -2)
     You say, "abefgh"
 
-See also: strreplace()
+See also: strreplace(), strinsert(), mid()
 & DIE()
   die(<number of times to roll die>, <number of sides on die>[, <show>])
  
@@ -1719,7 +1720,7 @@ See also: name(), accname(), iname(), alias(), fullalias()
   
 See also: list(), config()
 & GET()
-& XGET
+& XGET()
   get(<object>/<attribute>)
   xget(<object>, <attribute>)
 
@@ -2145,6 +2146,7 @@ See also: itext(), inum(), ilev(), map(), @dolist
 & ITEXT()
 & INUM()
 & %i
+& %i0
   ilev()
   itext(<n>)
   %i<n>
@@ -2245,7 +2247,7 @@ See also: nattr(), xattr(), hasattr(), examine, wildcards
 
 See also: lattr(), hasattr(), xattr(), wildcards
 & LCON()
-  lcon(<object>)
+  lcon(<object>[, <type>])
 
   Returns a list of the dbrefs of objects which are located in <object>.
 
@@ -2256,8 +2258,16 @@ See also: lattr(), hasattr(), xattr(), wildcards
   regardless of whether or not you have objects in it.
   
   When used on exits, this function returns #-1.
+  
+  For compatability with other codebases, a <type> can be given to limit
+  the results. Valid <type>s are:
+    player             - equivilent to lplayers(<object>)
+    connect            - equivilent to lvplayers(<object>)
+    thing (or object)  - equivilent to lthings(<object>)
+    listen             - return only listening objects
+    puppet             - return only THINGs set PUPPET
 
-See also: lexits(), lplayers(), con(), next(), lvcon()
+See also: lexits(), lplayers(), lthings(), con(), next(), lvcon()
 & LCSTR()
   lcstr(<string>)
 
@@ -2440,12 +2450,15 @@ See also: log()
   exits, and #-3 for exits @linked to "home".
   
   You must be able to examine <object>, or be near it, for this function
-  to work.
+  to work. A special case exists when <object> is a player: As long as
+  <object> is not set UNFINDABLE, and you are allowed to use the @whereis
+  command, you can get <object>'s location.
   
   You can also get the location of the enactor using the %L substitution,
   whether you are near to/can examine it or not.
   
-See also: locate(), rloc(), home(), where(), rnum(), room(), @link
+See also: locate(), rloc(), home(), where(), rnum(), room(), @link,
+  UNFINDABLE, @whereis
 & LOCALIZE()
   localize(<code>)
 
@@ -3369,14 +3382,16 @@ See also: playermem()
   nsoemit() works like @nsoemit.
 
 & OPEN()
-  open(<exit name>, <room>)
+  open(<exit name>[, <destination>[, <source>]])
+  
+  This function attempts to open an exit named <exit name>. The exit will be
+  opened in the room <source>, if given, or the caller's current location if
+  no <source> is specified.
+  
+  If a <destination> is given, it will attempt to link the exit to 
+  <destination> after opening it.
  
-  This function opens an exit called <exit name> in the caller's current
-  location, and then attempts to link it to the room <room>, as per
-  @open <exit name>=<room>. If you want to open an unlinked exit, use
-  an empty string for <room>.
-
-See also: @open, @link 
+See also: @open, @link
 & OR()
 & COR()
   or(<boolean1>, <boolean2>[, ... , <booleanN>])
@@ -3404,7 +3419,7 @@ See also: BOOLEAN VALUES, and(), nor(), firstof(), allof()
     > say orflags(%#, WD!A)
     > say orlflags(%#, wizard dark !ansi)
   
-See also: andflags(), flags(), lflags()
+See also: andflags(), flags(), lflags(), orlpowers()
 & ORLPOWERS()
   orlpowers(<object>, <list of powers>)
 
@@ -3420,7 +3435,7 @@ See also: andflags(), flags(), lflags()
   If a name does not correspond to any power, orlpowers() returns 
   "#-1 INVALID POWER".
   
-See also: powers(), andlpowers(), POWERS LIST, @power
+See also: powers(), andlpowers(), POWERS LIST, @power, orlflags()
 & OWNER()
   owner(<object>[/<attribute>])
  
@@ -3613,9 +3628,9 @@ See also: setq(), letq()
   
   Return a random number.
   
-  The first form returns an integer between 0 and <num>-1, inclusive.
-  The second returns an integer between <min> and <max>, inclusive. Both 
-  numbers must be positive.
+  The first form returns an integer between 0 and <num>-1, inclusive (or
+  between 0 and <num>+1, for negative <num>s).
+  The second returns an integer between <min> and <max>, inclusive.
 
   If called with an invalid argument, rand() returns an error message
   beginning with #-1.
@@ -3693,12 +3708,15 @@ See also: edit(), regmatch(), regrab()
 See also: regrab(), regedit()
 & REMIT()
 & NSREMIT()
-  remit(<object>, <message>)
-  nsremit(<object>, <message>)
+  remit(<object list>, <message>)
+  nsremit(<object list>, <message>)
 
-  Sends a message to the contents of <object>, as per @remit.
+  Sends a message to the contents of all the objects specified in
+  <object list>, as per @remit/list.
 
-  nsremit() works like @nsremit.
+  nsremit() works like @nsremit/list.
+  
+See also: @remit, pemit(), lemit()
 & REMOVE()
   remove(<list>, <words>[, <delimiter>])
 
@@ -3853,7 +3871,7 @@ See also: ceil(), floor(), bound(), trunc()
   fn(<function name>[, <arg0>[, ... , <argN>]])
 
   fn() executes the built-in/hardcoded function <function name>, even if the
-  function has been disabled or overridden with @function. It is primarily 
+  function has been deleted or overridden with @function. It is primarily 
   useful within @functions that override built-ins in order to be able to 
   call the built-in.
   
@@ -3867,6 +3885,9 @@ See also: ceil(), floor(), bound(), trunc()
   To restrict the use of fn() to @functions only (to prevent players
   from skirting softcoded replacements), use @function/restrict
   fn=userfn.
+
+  To prevent deleted functions from being used with fn(), @function/disable
+  them prior to deleting.
 
 See also: @function, RESTRICT
 & S()
@@ -4109,7 +4130,7 @@ See also: scramble(), pickrand()
     > say sign(0)
     You say, "0"
   
-See also: abs(), bound
+See also: abs(), bound()
 & SIN()
   sin(<angle>[, <angle type>])
  
@@ -4204,6 +4225,9 @@ See also: anonymous attributes, sorting, sortby()
   according to their <aname> attributes. For example: Separating by
   &factions or &species attrs. attr is probably case-sensitive, and
   attri is case-insensitive.
+
+  Prefixing the sort type with a minus sign, -, reverses the order of
+  the sort.
 
   Whether or not the 'a' sort type is case-sensitive or not depends on
   the particular mush and its environment.
@@ -4679,7 +4703,7 @@ See also: allof(), firstof(), first(), strlen(), cat()
   > think strinsert(Myname, 2, %b)
   My name
 
-See also: strdelete(), insert(), strreplace()
+See also: delete(), insert(), strreplace()
 & STRIPACCENTS()
   stripaccents(<string>)
 
@@ -4739,7 +4763,7 @@ See also: comp(), match(), setq(), r()
   > think strreplace(Fix teh typo, 4, 3, the)
   Fix the typo
 
-See also: delete(), strinsert(), strdelete(), ldelete(), replace()
+See also: delete(), strinsert(), ldelete(), replace()
 & SUB()
   sub(<number1>, <number2>)
  
@@ -4772,9 +4796,14 @@ See also: aposs(), obj(), poss()
   reswitch() and reswitchi() return the <list> which corresponds to the first
   matched <re>, while reswitchall() and reswitchalli() return the <list>s
   corresponding to all matched <re>s. If no <re>s match, all four functions
-  return <default>
-
-See also: switch()
+  return <default>.
+  
+  The string "#$" in the <list>s will be replaced with the value of <str>,
+  /before/ <list> is evaluated. You can also use $N in <list> to refer to the
+  Nth subpattern which matched in <re>, with $0 being the entire matching
+  string. Use $<name> (the '<>' are literal) to refer to named subpatterns.
+  
+See also: switch(), regmatch(), regedit()
 & SWITCH()
 & SWITCHALL()
 & CASE()
@@ -4801,7 +4830,7 @@ See also: switch()
   
   See 'help switch2' for examples.
  
-See also: reswitch(), if(), cond()
+See also: reswitch(), if(), cond(), firstof()
 & SWITCH2
   Examples:
     > say switch(test, *a*, foo, *b*, bar, *t*, neat, baz)
@@ -5191,7 +5220,7 @@ See also: hastype(), TYPES OF OBJECTS
     ParentFoo
   
   Continued in 'help pfun2'.
-& pfun2
+& PFUN2
 
   This function does not have the security problems of using 
   
@@ -5208,7 +5237,7 @@ See also: hastype(), TYPES OF OBJECTS
   See 'help pfun3' for an example.
   
 See also: ufun(), get(), parent(), zfun(), PARENTS
-& pfun3
+& PFUN3
 
   Example:
   

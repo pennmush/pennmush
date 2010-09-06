@@ -156,6 +156,39 @@ aname_find_exact(const char *name)
   return (ATTR *) ptab_find_exact(&ptab_attrib, atrname);
 }
 
+/* Add a new, or restrict an existing, standard attribute from cnf file */
+int
+cnf_attribute_access(char *attrname, char *opts)
+{
+  ATTR *a;
+  privbits flags = 0;
+
+  upcasestr(attrname);
+  if (!good_atr_name(attrname))
+    return 0;
+
+  if (strcasecmp(opts, "none")) {
+    flags = list_to_privs(attr_privs_set, opts, 0);
+    if (!flags)
+      return 0;
+  }
+
+  a = (ATTR *) ptab_find_exact(&ptab_attrib, attrname);
+  if (a) {
+    if (AF_Internal(a))
+      return 0;
+  } else {
+    a = GC_MALLOC(sizeof(ATTR));
+    if (!a)
+      return 0;
+    AL_NAME(a) = strdup(attrname);
+    a->data = NULL_CHUNK_REFERENCE;
+    ptab_insert_one(&ptab_attrib, attrname, a);
+  }
+  AL_FLAGS(a) = flags;
+  AL_CREATOR(a) = GOD;
+  return 1;
+}
 
 /** Add new standard attributes, or change permissions on them.
  * \verbatim
@@ -224,13 +257,16 @@ do_attribute_access(dbref player, char *name, char *perms, int retroactive)
   }
 
   /* Ok, now we need to see if there are any attributes of this name
-   * set on objects in the db. If so, and if we're retroactive, set 
-   * perms/creator 
+   * set on objects in the db. If so, and if we're retroactive, set
+   * perms/creator
    */
   if (retroactive) {
     for (i = 0; i < db_top; i++) {
       if ((ap2 = atr_get_noparent(i, name))) {
-        AL_FLAGS(ap2) = flags;
+        if (AL_FLAGS(ap2) & AF_ROOT)
+          AL_FLAGS(ap2) = flags | AF_ROOT;
+        else
+          AL_FLAGS(ap2) = flags;
         AL_CREATOR(ap2) = player;
       }
     }
@@ -373,22 +409,14 @@ char *
 list_attribs(void)
 {
   ATTR *ap;
-  const char *ptrs[BUFFER_LEN / 2];
-  static char buff[BUFFER_LEN];
-  char *bp;
-  int nptrs = 0, i;
+  char *buff, *bp;
 
-  ap = (ATTR *) ptab_firstentry(&ptab_attrib);
-  ptrs[0] = "";
-  while (ap) {
-    ptrs[nptrs++] = AL_NAME(ap);
-    ap = (ATTR *) ptab_nextentry(&ptab_attrib);
-  }
-  bp = buff;
-  safe_str(ptrs[0], buff, &bp);
-  for (i = 1; i < nptrs; i++) {
+  bp = buff = GC_MALLOC_ATOMIC(BUFFER_LEN);
+  ap = ptab_firstentry(&ptab_attrib);
+  safe_str(AL_NAME(ap), buff, &bp);
+  while ((ap = ptab_nextentry(&ptab_attrib))) {
     safe_chr(' ', buff, &bp);
-    safe_str(ptrs[i], buff, &bp);
+    safe_str(AL_NAME(ap), buff, &bp);
   }
   *bp = '\0';
   return buff;

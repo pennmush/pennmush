@@ -15,7 +15,7 @@ struct bufferq {
   char *buffer_end;     /**< Pointer to insertion point in buffer */
   int buffer_size;      /**< Size allocated to buffer, in bytes */
   int num_buffered;     /**< Number of strings in the buffer */
-  char last_string[BUFFER_LEN]; /**< Cache of last string inserted */
+  char *last_string; /**< Cache of last string inserted */
   char last_type;       /**< Cache of type of last string inserted */
 };
 

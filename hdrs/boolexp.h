@@ -35,4 +35,7 @@ enum u_b_f {
 };
 char *unparse_boolexp(dbref player, boolexp b, enum u_b_f flag);
 boolexp cleanup_boolexp(boolexp);
+
+bool is_eval_lock(boolexp b);
+
 #endif                          /* BOOLEXP_H */

@@ -70,7 +70,7 @@ add_to_bufferq(BUFFERQ *bq, int type, dbref player, const char *msg)
   bq->buffer_end += sizeof(time_t);
   memcpy(bq->buffer_end, msg, len + 1);
   bq->buffer_end += len + 1;
-  strcpy(bq->last_string, msg);
+  bq->last_string = GC_STRDUP(msg);
   bq->last_type = type;
   bq->num_buffered++;
 }
@@ -128,7 +128,7 @@ allocate_bufferq(int lines)
   bq->buffer_end = bq->buffer;
   bq->num_buffered = 0;
   bq->buffer_size = bytes;
-  strcpy(bq->last_string, "");
+  bq->last_string = "";
   bq->last_type = 0;
   return bq;
 }

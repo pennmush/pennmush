@@ -32,12 +32,13 @@ in 3 versions: @<whatever>, @o<whatever>, and @a<whatever>. Only the
 These '@' command set other standard attributes on objects that don't
 follow the pattern above:
 
-  @aahear        @aclone        @aconnect      @adisconnect   @amhear
-  @away          @charges       @cost          @conformat     @descformat
-  @ealias        @exitformat    @filter        @forwardlist   @haven         
-  @idescformat   @idle          @infilter      @inprefix      @lalias        
-  @listen        @nameformat    @oxenter       @oxleave       @oxmove        
-  @oxtport       @prefix        @runout        @sex           @startup       
+  @aahear        @aclone        @aconnect      @adisconnect   @amail
+  @amhear        @away          @charges       @conformat     @cost
+  @descformat    @ealias        @exitformat    @filter        @forwardlist
+  @haven         @idescformat   @idle          @infilter      @inprefix
+  @lalias        @listen        @nameformat    @oxenter       @oxleave
+  @oxmove        @oxtport       @prefix        @runout        @sex
+  @startup       
 
 See also: ATTRIBUTES, NON-STANDARD ATTRIBUTES
 & @-BUILDING
@@ -136,6 +137,14 @@ See also: @clone, @create, ACTION LISTS
     > @aconnect me=+who ; +bbscan
 
 See also: @adisconnect, ACTION LISTS
+& @amail
+  @amail <object>=<action list>
+
+  Sets the actions to be taken by <object> whenever it receives @mail. 
+  Admin-only, and is only triggered if enabled via the amail configuration
+  option.
+
+See also: @mail
 & @death
 & @adeath
 & @odeath
@@ -173,10 +182,12 @@ See also: look, @describe, @idescribe, ACTION LISTS
 & @adestroy
   @adestroy <object>[=<action list>]
  
-  The adestroy attribute is triggered when <object> is destroyed. It can
-  only be set by wizards.
+  The adestroy attribute is triggered when <object> is @destroyed. It can
+  only be set by wizards. Because the attribute is triggered when <object>
+  is @destroyed, not when the object is actually purged from the database,
+  it's possible for <object> to be @undestroyed after the adestroy has run.
   
-See also: @destroy, @nuke
+See also: @destroy, @undestroy
 & @adisconnect
   @adisconnect <object>[=<action list>]
 
@@ -338,21 +349,24 @@ See also: leave, @leave, NO_LEAVE, locktypes, ACTION LISTS, VERBS
   @alias <player>[=<name1>[;<name2>[;...;<nameN>]]]
   @alias <object>[=<string>]
  
-  For players, the ALIAS attribute has special meaning: it contains a list
-  of aliases (separated by semicolons) which can be used instead of his name
-  to refer to the player.
+  For players and exits, the ALIAS attribute has special meaning: it
+  contains a list of aliases (separated by semicolons) which can be
+  used instead of its name to refer to the player or exit.
   
-  The number aliases allowed is controlled by the 'max_aliases' @config
-  option. The same rules which apply to player names also apply to aliases,
-  and you cannot use another player's name as your alias (though you can
-  include your own name in your aliases, and can change your name to one of
-  your aliases).
+  The number of aliases allowed is controlled by the 'max_aliases'
+  @config option. The same rules which apply to player names also
+  apply to aliases, and you cannot use another player's name as your
+  alias (though you can include your own name in your aliases, and can
+  change your name to one of your aliases).
   
-  If the page_aliases @config option is on, the first alias in the list is 
-  shown along with the player's name when they page others.
+  If the page_aliases @config option is on, the first alias in the
+  list is shown along with the player's name when they page others.
   
-  For other types of object, @alias has no special meaning. (Exit aliases
-  are part of the exit's name - see 'help @name' for details.)
+  Exits also support including the aliases directly in their name, but
+  doing so in new construction is depreciated and @alias should be used
+  instead.
+ 
+  For other types of object, @alias has no special meaning.www
 
 See also: @name, alias(), fullalias()
 & @allquota
@@ -505,8 +519,8 @@ See also: get, goto, @lock, SUCCESS, FAILURE, @odrop, ACTION LISTS, VERBS
   attributes (see "@list/attribs" for a list of them).
   
   *** Unlike TinyMUSH, changes to the PennMUSH attribute table are not saved 
-  *** across shutdowns. Use these commands from God's @startup to ensure
-  *** they are run at each startup.
+  *** across shutdowns. Use these commands from God's @startup to ensure they
+  *** are run at each startup, or use restrict_attribute in restrict.cnf.
 
   The first form of the command displays the full name of the attribute
   <attrib>, along with the its attribute flags, and the dbref of the object 
@@ -698,49 +712,52 @@ See also: CHOWN_OK, Zone Masters, @chownall, owner()
 
 See also: @chown
 & @chzone
-  @chzone <object>=<zone> 
+  @chzone[/preserve] <object>=<zone> 
   @chzone <object>=none
 
-  The first form of this command changes the zone of <object> to <zone>. 
-  This puts the object on that zone and may (if the zone_control_zmp_only 
-  @config option is off) allow anyone who passes the Zone @lock of <zone> to
-  control <object>. Any kind of object can be @chzoned, and any kind of 
-  object can be used as a zone.
+  The first form of this command changes the zone of <object> to
+  <zone>.  This puts the object on that zone and may (if the
+  zone_control_zmp_only @config option is off) allow anyone who passes
+  the Zone @lock of <zone> to control <object>. Any kind of object can
+  be @chzoned, and any kind of object can be used as a zone.
 
-  The second form of this command removes <object> from its current zone, 
-  leaving it unzoned. Anyone can reset the zone of an object he owns.
+  The second form of this command removes <object> from its current
+  zone, leaving it unzoned. Anyone can reset the zone of an object he
+  owns.
 
-  If a player is @chzoned, anything objects he creates from that point on 
-  will automatically be on the same zone. Objects the player already owns
-  are not affected. Players can only @chzone themselves to a zone if they
-  own it, though wizards can @chzone players to any zone.
+  If a player is @chzoned, any objects he creates from that point on will
+  automatically be on the same zone. Objects the player already owns are
+  not affected. Players can only @chzone themselves to a zone if they own
+  it, though wizards can @chzone players to any zone.
   
   Continued in 'help @chzone2'.  
 & @chzone2
-  To see the Zone of an object, you can use either 'brief' or 'examine'
-  to examine it. The Zone is listed on the same line as the Owner of
-  the object.
+  To see the Zone of an object, you can use either 'brief' or
+  'examine' to examine it. The Zone is listed on the same line as the
+  Owner of the object.
 
   Players can @chzone objects they own if they own the zone object or
   if they pass its @lock/chzone.  Wizards can @chzone objects to any
   zone.
   
-  If <zone> does not have a Zone @lock when something is @chzoned to it, the
-  lock is automatically set to =<zone> (see 'help @lock' for more info).
+  If <zone> does not have a Zone @lock when something is @chzoned to
+  it, the lock is automatically set to =<zone> (see 'help @lock' for
+  more info).
 
-  Whenever an object besides a player is @chzoned to a zone object, the
-  WIZARD, ROYALTY, and TRUST flags will be reset, as will all @power's
-  (for security purposes). For similar reasons, it is strongly recommended
-  that you do not @chzone admin- or wizard-owned objects to any zone
-  that less privileged players have access to.
+  Whenever an object besides a player is @chzoned to a zone object,
+  the WIZARD, ROYALTY, and TRUST flags will be reset, as will all
+  @power's (for security purposes). For similar reasons, it is
+  strongly recommended that you do not @chzone admin- or wizard-owned
+  objects to any zone that less privileged players have access
+  to. Wizards can use the /preserve switch to prevent this reset.
 
 See also: ZONES, @chzoneall, zone()
 & @chzoneall
-  @chzoneall <player>=<zone object>
+  @chzoneall[/preserve] <player>=<zone object>
 
-  Changes the zone of all objects owned by <player> to <zone object>. 
-  If <zone object> is "none", the zone is reset to NOTHING. Only wizards 
-  may use this command.
+  Changes the zone of all objects owned by <player> to <zone object>.
+  If <zone object> is "none", the zone is reset to NOTHING. Only
+  wizards may use this command.
   
 See also: @chzone, ZONES
 & @clone
@@ -825,7 +842,7 @@ See also: @create, clone(), create(), @cpattr
   needs to make allowances for the /noeval switch in it's matching.
 
   Commands added with @command/add, like other standard commands,
-  are never case-sensitive.
+  are never case-sensitive. Commands can also be added in the alias.cnf file.
 
   See 'help @command3' for examples.
 See also: @hook, RESTRICT, EVALUATION ORDER
@@ -1006,16 +1023,16 @@ See also: accent(), @nameformat, accname(), stripaccents()
 See also: look, @exitformat, @conformat, @descformat, @nameaccent, 
     @invformat, @idescformat
 & @cost
-  @cost <thing>[=<amount>]
+  @cost <object>[=<amount>]
   
   The COST attribute contains the number of pennies that must be given to
-  <thing> to trigger its @pay/@opay/@apay attributes. If less than this
+  <object> to trigger its @pay/@opay/@apay attributes. If less than this
   amount is given, the money will be refused, and if more is given, the
   difference is refunded.
   
   This attribute is evaluated, with the amount being given passed as %0.
-  It is only checked for THING-type objects; pennies can always be given
-  to other types of object.
+  Non-players must have this attribute set in order to receive pennies.
+  Players who don't have a COST always accept the amount of pennies given.
 
   Example:
     > @cost Exit Machine=10
@@ -1185,9 +1202,6 @@ See also: look, @adescribe, @idescribe, @descformat
 & @destroy
 & @recycle
 & @nuke
-& @undestroy
-& @unrecycle
-
   @destroy[/override] <object>
   @nuke <object>
   @undestroy <object>
@@ -1230,7 +1244,18 @@ See also: look, @adescribe, @idescribe, @descformat
   @recycle is an alias for @destroy. Some MUSHes disable @destroy and only
   use @recycle, to avoid players mistyping.
   
-See also: @create, @dig, @open, DESTROY_OK, SAFE
+See also: @undestroy, @create, @dig, @open, DESTROY_OK, SAFE
+& @undestroy
+& @unrecycle
+  @undestroy <object>
+  
+  When an object has been marked for destruction using @destroy, this
+  command spares it from destruction. <object>'s @startup is triggered
+  when it is spared.
+  
+  @unrecycle is an alias for @undestroy.
+  
+See also: @destroy, GOING, @startup
 & @dig
   @dig[/teleport] <room name>[=<exit to>[, <exit from>]]
   
@@ -1409,7 +1434,9 @@ See also: @lock, locktypes, enter, ENTER_OK
   \<message>
 
   This sends <message> to everyone in your location. Nothing is added to the
-  message, not even your name.
+  message, not even your name. If you have a SPEECHMOD attribute set, it
+  will be evaluated with <message> as %0, and | as %1, and the result will be
+  shown instead of <message> as long as it evaluates to a non-empty string.
 
   If the /room switch is given, this command acts like @lemit instead. The
   /silent switch can be used with it to suppress the confirmation for @lemit.
@@ -1422,7 +1449,7 @@ See also: @lock, locktypes, enter, ENTER_OK
   @emit can be abbreviated "\"
 
 See also: @nsemit, emit(), @pemit, @remit, @oemit, @lemit, @zemit, @cemit, 
-    NOSPOOF and SPOOFING.
+    @speechmod, NOSPOOF and SPOOFING.
 & @enable
 & @disable
   @enable <option>
@@ -1787,7 +1814,8 @@ See also: FLAGS, @set, @power, flag permissions
   game is restarted. In order to avoid objects which attempt to use
   functions that have not been loaded, a @startup containing @function
   commands should be set on a wizard object with as low a dbref number
-  as possible; God (#1) is suggested for this use.
+  as possible; God (#1) is suggested for this use. You can also create
+  functions from the alias.cnf file.
 
   For example, if you have one object that stores all your global
   functions, you could set the following command (the object is #100
@@ -1952,6 +1980,8 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
   wrapped in a call of null(). Also, in cases where a command and function
   do the same thing (e.g., @pemit and pemit()), only the command gets
   the hooks.
+  
+  Hooks can also be set in the alias.cnf file.
 
   Leaving out the object and attribute clears an existing hook. Wizards can
   see existing hooks with @command or @hook/list.
@@ -2497,7 +2527,30 @@ See also: @log
   the NsPemit power, then SPOOF will make the message appear to be
   from the enactor.
 
+  See 'help @message2' for an example.
 See also: message(), @chatformat, @pageformat
+& @message2
+
+  Example:
+    > &sayformat *Mike=%n sez, '%0'
+    > &sayformat *Walker=From %n: %0
+    > &cmd.fsay me=$fsay *: @message/spoof *Mike *Walker *Javelin=
+             %n says\, "%0", SAYFORMAT, %0
+    > fsay This is a test
+    
+  Mike sees:
+    Player sez, 'This is a test'
+  Walker sees:
+    From Player: This is a test
+  Javelin sees:
+    Player says, "This is a test"
+
+  A rough implementation of @chatformat:
+    > &cmd.chat Globals=$^@chat (.+?)=([\:;]?)(.+?)$: @message/spoof
+         cwho(%1)=setr(0,<%1> [speak(&[squish(ctitle(%1, %#) %n)], %2%3)]),
+         CHATFORMAT, firstof(%2, "), %1, %3, %n, ctitle(%1, %#), %q0
+    > @set Globals/cmd.chat=regexp
+
 & @motd
   @motd[/<switch>] [<message>]
  
@@ -2516,7 +2569,6 @@ See also: message(), @chatformat, @pageformat
   /list   : list the MOTDs (like @listmotd, can be used by anyone)
 & @name
   @name <object>=<new name>
-  @name <exit>=<new name>[;<alias1>[;<alias2>[;...;<aliasN>]]]
 
   Changes the name of <object> to <new name>.
 
@@ -2528,10 +2580,17 @@ See also: message(), @chatformat, @pageformat
   use by another player, as a name or alias. (They can change their name to
   something from their own @alias.)
 
-  An exit can have many names/aliases, each separated by a semicolon. The
-  exit can be referred to by any of these names in all commands. For example:
-    > @name exit=East <e>;east;e
+  An exit can have many names, each separated by a semicolon. In new
+  construction, the aliases should be in the @alias attribute, but
+  they are also supported in the name itself. The exit can be referred
+  to by any of these names in all commands. For example:
 
+    (New-style)
+    > @name exit=East <e>
+    > @alias exit=east;e
+    (Old-style)
+    > @name exit=East <e>;east;e
+  
 See also: @alias, @oname, name(), fullname()
 & @ONAME
 & @ANAME
@@ -2684,7 +2743,7 @@ See also: @newpassword, checkpass()
 
   See 'help @pageformat2' for examples.
 
-See also: page, speak(), @chatformat, @message
+See also: page, speak(), @chatformat, @speechmod, @message
 & @pageformat2
 & @outpageformat2
   For simple page timestamps:
@@ -3095,9 +3154,12 @@ See also: $-commands, EVALUATION ORDER
   type given is used in the search.
 
   @search is only mildly computationally expensive for most of the search
-  classes.  computationally expensive searches are the evaluating searches
-  (EVAL, EPLAYER, ETHING, EROOM, EEXIT) or the attribute pattern
-  searches (COMMAND, LISTEN)
+  classes.  Computationally expensive searches are the evaluating searches
+  (EVAL, EPLAYER, ETHING, EROOM, EEXIT), the attribute pattern
+  searches (COMMAND, LISTEN), and ELOCK searches which perform evaluation
+  searches (attr/value) or indirect locks (@obj/lock). These searches all
+  cost a number of pennies (the exact amount is configurable; see 
+  @config find_cost).
   
   See "help @search5" for some examples.
 & @search5
@@ -3192,7 +3254,7 @@ See also: GENDER, subj(), poss(), aposs(), obj()
 & @sitelock
   @sitelock
   @sitelock/name <name>
-  @sitelock <host-pattern> = <options>[,<name>]
+  @sitelock <host-pattern>=<options>[, <name>]
   @sitelock[/<ban|register>] <host-pattern>
   @sitelock/check <host>
   @sitelock/remove <string>
@@ -3209,14 +3271,14 @@ See also: GENDER, subj(), poss(), aposs(), obj()
   @sitelock/name adds a name to the list of banned player names.
   Use !<name> to remove a name from the list.
 
-  @sitelock <host-pattern> = <options>[,<name>] controls the access options
+  @sitelock <host-pattern>=<options>[, <name>] controls the access options
   for hosts which match <host-pattern>, which may include wildcard
   characters "*" and "?". See help @sitelock2 for the list of options,
   and help @sitelock3 for an explanation about the name argument.
 
   For backward compatibility, @sitelock/ban is shorthand for
   setting options "!connect !create !guest", and @sitelock/register
-  is shorthand for options "!create".
+  is shorthand for options "!create register".
 
 & @sitelock2
 
@@ -3245,24 +3307,51 @@ See also: GENDER, subj(), poss(), aposs(), obj()
    regexp      -- Treat the hostname pattern as a regular expression
                   instead of a wildcard pattern.
 & @sitelock3
- If you specify a character name after the options, the options
- are only checked if the host pattern matches, AND the character
- being checked for connect support matches the one you gave.
- Use it only with connect and !connect options, since they're
- the only ones where an existing character is used.
+  If you specify a character name after the options, the options
+  are only checked if the host pattern matches, AND the character
+  being checked for connect support matches the one you gave.
+  Use it only with connect and !connect options, since they're
+  the only ones where an existing character is used.
 
- For example, to disallow anyone from connecting to 'Twink' from
- one domain, but to allow connections to the character from others,
- use something like:
+  For example, to disallow anyone from connecting to 'Twink' from
+  one domain, but to allow connections to the character from others,
+  use something like:
 
- @sitelock *.somesite.com=!connect,Twink
+    > @sitelock *.somesite.com=!connect,Twink
 
- If you want to disallow connections to a character from anywhere,
- use @newpassword or @sitelock *=!connect,Twink.
+  If you want to disallow connections to a character from anywhere,
+  use @newpassword or @sitelock *=!connect,Twink.
 
   @sitelock/remove will delete entries that were added with @sitelock
   if their host-pattern matches <string> exactly.
- 
+
+& @SPEECHMOD
+  @speechmod <object>[=<modifier>]
+  
+  When set, this attribute modifies everything <object> says, poses,
+  semiposes and @emits. The original text spoken/posed/emitted is passed as
+  %0, with %1 passed as " (for say), : (for pose), ; (for semipose) or |
+  (for @emit).
+  
+  If the attribute evaluates to an empty string, the original text will be
+  used. Otherwise, the result of the attribute is used.
+  
+  Example:
+    > @speechmod me=ucstr(%0)!
+    > say hello
+    You say, "HELLO!"
+    > pose waves
+    Bob WAVES!
+    
+    > @speechmod me=switch(%1,",ucstr(%0),:,lcstr(%0))
+    > say Test
+    You say, "TEST"
+    > pose Test
+    Bob test
+    > @emit Test
+    Test
+    
+See also: say, pose, @emit, @chatformat, @pageformat
 & @sql
   @sql <query>
 
@@ -3292,9 +3381,13 @@ See also: sql(), sqlescape(), mapsql()
 
   Sets the list of actions on <object> that will happen whenever the MUSH
   is restarted. This lets you start up objects that need to be running 
-  continuously. It is also useful for use with @function. 
+  continuously. It is also useful for setting up @functions, @hooks and
+  standard @attributes, which are not saved across restarts.
   
-See also: @function, ACTION LISTS
+  @startup is also triggered when an object is @restarted or @undestroyed.
+  
+See also: @restart, @undestroy, ACTION LISTS, @function, @command, @hook,
+  @attribute
 & @stats
   @stats [<player>]
   @stats/table
@@ -4002,35 +4095,37 @@ See also: buy, @abuy, @buy, @obuy, MONEY, @cost
   first one you can afford will be the resulting price.
 
   ex:
-  > &PRICELIST vendor=coke:20 pepsi:20
-  > &drink.coke vendor=You enjoy a delicious coke.
-  > &drink.pepsi vendor=It tastes like a funny coke.
-  > @BUY vendor=u(drink.%0)
+  > @PRICELIST vendor=coke:20 pepsi:20
+  > &drink`coke vendor=You enjoy a delicious coke.
+  > &drink`pepsi vendor=It tastes like a funny coke.
+  > @BUY vendor=u(drink`%0)
   > buy coke
   You enjoy a delicious coke.
 
-See also: @ABUY, @BUY, @PRICELIST, give
+See also: @ABUY, @BUY, @PRICELIST, give, @COST
 & give
-  give[/silent] <player>=<number>
-  give[/silent] <number> to <player>
-  give <player>=<object>
-  give <object> to <player>
+  give[/silent] <recipient>=<number>
+  give[/silent] <number> to <recipient>
+  give <recipient>=<object>
+  give <object> to <recipient>
 
-  Gives player the specified <number> of pennies or <object>. You
-  can't give someone pennies if their new total would be greater than
-  100000 pennies.  (No reason to get greedy).  The /silent switch
-  suppresses the default message indicating how many pennies were
-  given. Wizards may "give" a negative number of pennies.
-
-  You may also give players objects, but the other player must be set
-  ENTER_OK in order to receive something you give. You must pass <object>'s
-  @lock/give and <player>'s @lock/from. <object> must pass <player>'s
-  @lock/receive.
+  The first two forms of this command give <number> pennies to <recipient>.
+  If <recipient> is a non-player, it must have an @COST, and any pennies
+  given to it will go to its owner. If /silent is given, the message 
+  informing the recipient how many pennies were given is suppressed. Wizards
+  may "give" a negative number of pennies to take from <recipient>. When you
+  give pennies, <recipient>'s PAYMENT/OPAYMENT/APAYMENT attributes are
+  triggered.
   
-  Giving money to a non-player gives it to the object's owner instead. When
-  giving to a THING, the amount given must match its @COST attribute.
+  The last two forms of this command give an <object> from your inventory to
+  <recipient>. The recipient must be set ENTER_OK, and you must pass his
+  @lock/from. You must also pass <object>'s @lock/give, and <object> must
+  pass <recipient>'s @lock/receive. When you give an object successfully,
+  your GIVE/OGIVE/AGIVE attributes, <recipient>'s RECEIVE/ORECEIVE/ARECEIVE
+  attributes, and <object>'s SUCCESS/ASUCCESS/OSUCCESS attributes are all
+  triggered.
 
-See also: @pay, @cost, @lock, inventory, @receive, @give, buy
+See also: @pay, @cost, @lock, inventory, @receive, @give, buy, @success
 & go
 & goto
 & move
@@ -4061,6 +4156,8 @@ See also: HOME, @link, @ealias, @lalias, EXITS
   such as its version number, time of last restart, number of players
   currently connected, and size of database. It can be issued from the
   connect screen.
+  
+See also: MSSP-REQUEST
 & inventory
   inventory
 
@@ -4205,47 +4302,49 @@ See also: @lock, @alias, @pageformat, pose, :, ;, HAVEN, NOSPOOF, FLAGS
 & ;
 & pose
 & semipose
-  pose[/noeval] <action pose>
+  pose[/noeval] <action>
   :<action pose>
 
-  pose[/nospace] <action pose>
-  semipose[/noeval] <action pose>
+  pose[/nospace] <action>
+  semipose[/noeval] <action>
   ;<action pose>
  
-  Displays your name followed by the statement you posed.  May be
-  abbreviated by the ':' symbol. Normally, a space is placed between
-  your name and the action you are posing. If you do not wish to have
-  a space inserted, use the /nospace switch, the 'semipose' command,
-  or the ';' symbol and don't add a space between the ; and the
-  <action pose>.  The /noeval switch prevents the pose from being
-  evaluated by the parser.
+  The pose and semipose commands allow you to perform actions. Pose shows
+  your name, a space, and then <action>; semipose omits the space. They can 
+  be abbreviated to ':' and ';' respectively. The /noeval switch stops 
+  <action> from being evaluated.
+  
+  If you have a SPEECHMOD attribute set, it will be evaluated with <action>
+  as %0 and either : (for pose) or ; (for semipose) as %1. The result is
+  used instead of <action>, as long as it returns a non-empty string.
 
-(continued in help pose2)
+  See 'help pose2' for examples.
+See also: say, @emit, @speechmod
 & pose2
  
   Examples:
-    If you are player Bob, and you type in ':laughs out loud.' or
-    'pose laughs out loud.' everybody in the room will see:
-    "Bob laughs out loud." 
-  
-    If you are player Bob, and you type in ';'s smiling today.' or
-    'pose/nospace 's smiling today.' everybody in the room will see:
-    "Bob's smiling today."
+    > pose waves.
+    Bob waves.
+    
+    > :laughs out loud.
+    Bob laughs out loud.
+    > ;'s laughing on the inside.
+    Bob's laughing on the inside.
 & "
 & say
   say <message>
   say/noeval <message>
   "<message>
 
-  Says <message> out loud. The message will be enclosed in
-  double-quotes.  A single double-quote is the abbreviation for this
-  common command.
+  Says <message> out loud. The message will be enclosed in double-quotes.
+  A single double-quote is the abbreviation for this common command.
+  If the /noeval switch is given, <message> will not be evaluated.
+  
+  If you have a SPEECHMOD attribute set, it will be evaluated with <message>
+  passed as %0 and " (a double-quote) passed as %1. The result is shown 
+  instead of <message>, as long as it evaluates to a non-empty string.
 
-  Say takes one switch, /noeval. The /noeval switch prevents any
-  evaluation of the message, and is handy when you want to say things
-  that use special characters like % or []'s.
-
-See also: pose, whisper
+See also: pose, whisper, @speechmod, @emit, page
 & score
   score
   
@@ -4379,11 +4478,14 @@ See also: WHO
 & with
   with[/room] <obj>=<command>
 
-  Attempts to run a user-defined command on a specific object.  If the
-  /room switch is given, <obj> must be a room, and its contents are
-  checked for commands as if it was a master room.
+  Attempts to run a user-defined command on a specific object.  If the /room
+  switch is given, <obj> must be a room or your current location, and its 
+  contents are checked for commands as if it was a master room.
+  
+  <obj> must be an object near you, an object you control, your ZMO or (if
+  the /room switch is given) the Master Room.
 
-  See 'help USER-DEFINED COMMANDS'.
+  See also: USER-DEFINED COMMANDS, EVALUATION ORDER
 & socket commands
   These commands can only be entered by a connected player through
   their client. They generally do things that only affect a specific
@@ -4392,11 +4494,23 @@ See also: WHO
   
   IDLE    INFO    LOGOUT  OUTPUTPREFIX    OUTPUTSUFFIX
   PROMPT_NEWLINES QUIT    SCREENWIDTH     SCREENHEIGHT
+  MSSP-REQUEST
 
   In addition, the following commands can only be used at the login
   screen:
 
-  cd ch connect create register
+  cd ch cv connect create register
   
   The WHO command can also be used at the login screen. Please note that
   this is different to the in-game WHO command.
+& MSSP-REQUEST
+
+  MSSP-REQUEST
+  
+  This socket command shows some basic information about the MUSH, along with
+  any admin-defined information specified in mush.cnf with the 'mssp' option.
+  The info is also shown via the MSSP telnet option. Useful for MUD crawlers
+  and bots. For more information about the MUD Server Status Protocol (MSSP),
+  see http://tintin.sourceforge.net/mssp/
+  
+See also: INFO

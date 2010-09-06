@@ -76,7 +76,7 @@ extern dbref first_free;        /* pointer to free list */
 
 #define GoodObject(x) ((x >= 0) && (x < db_top))
 
-
+#define RealGoodObject(x) (GoodObject(x) && !IsGarbage(x))
 
 /******* Player toggles */
 #define Connected(x)    (IS(x, TYPE_PLAYER, "CONNECTED"))

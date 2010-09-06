@@ -148,10 +148,6 @@ msgstr " [lokasjon: %s]"
 msgid " convtime() is stricter."
 msgstr " convtime() er streng."
 
-#: flags.c:1531
-msgid " granted."
-msgstr " gitt."
-
 #: src/look.c:688 src/look.c:770
 msgid " is owned by "
 msgstr " er eid av "
@@ -159,10 +155,6 @@ msgstr " er eid av "
 #: speech.c:1021
 msgid " pages"
 msgstr " kaller"
-
-#: flags.c:1531
-msgid " removed."
-msgstr " fjernet."
 
 #: flags.c:764
 msgid " reset."

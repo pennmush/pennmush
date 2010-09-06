@@ -83,7 +83,7 @@ Continued in help @config cosmetic2
   rwall_prefix=<string>: Prefix for @rwall messages.
   wall_prefix=<string>: Prefix for @wall messages.
   announce_connects=<boolean>: Should (dis)connects be announced to 
-    non-MONITOR players and to channels?
+    non-HEAR_CONNECT players and to channels?
   chat_strip_quote=<boolean>:  Does +chan "foo strip the "?
   newline_one_char=<boolean>: Is strlen(%r) equal to 1?
   only_ascii_in_names=<boolean>: Names are ascii-only or are extended
@@ -100,7 +100,6 @@ Continued in help @config cosmetic2
   quota_cost=<number>: How much @quota goes down by for each object.
   find_cost=<number>: How many pennies it costs to use @search, @find,
    @entrances, and their function versions.
-  page_cost=<number>: How many pennies it costs to use page.  
   kill_default_cost=<number>: Default cost for kill.
   kill_min_cost=<number>: Smallest amount of pennies for kill.
   kill_bonus=<number>: What percent of the pennies spent for a successful
@@ -208,7 +207,7 @@ Continued in help @config limits4
 
   max_aliases=<number>: The maximum number of aliases a player can have.
   keepalive_timeout=<time>: How often should an 'Are you still there?' query
-   be sent to connects, to stop players' routers booting idle connections?
+   be sent to clients, to stop players' routers booting idle connections?
   max_parents=<number>: The maximum number of levels of parenting allowed.
   call_limit=<number>: The maximum number of times the parser can be called
    recursively for any one expression.

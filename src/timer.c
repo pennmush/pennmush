@@ -97,7 +97,11 @@ init_timer(void)
 #endif
 #ifndef PROFILING
 #ifdef HAS_ITIMER
+#ifdef __CYGWIN__
+  install_sig_handler(SIGALRM, signal_cpu_limit);
+#else
   install_sig_handler(SIGPROF, signal_cpu_limit);
+#endif
 #endif
 #endif
 }
@@ -284,7 +288,11 @@ void
 signal_cpu_limit(int signo __attribute__ ((__unused__)))
 {
   cpu_time_limit_hit = 1;
+#ifdef __CYGWIN__
+  reload_sig_handler(SIGALRM, signal_cpu_limit);
+#else
   reload_sig_handler(SIGPROF, signal_cpu_limit);
+#endif
 }
 #elif defined(WIN32)
 #if _MSC_VER <= 1100 && !defined(UINT_PTR)
@@ -320,7 +328,11 @@ start_cpu_timer(void)
       time_limit.it_value.tv_usec = t.rem * 1000;
       time_limit.it_interval.tv_sec = 0;
       time_limit.it_interval.tv_usec = 0;
+#ifdef __CYGWIN__
+      if (setitimer(ITIMER_REAL, &time_limit, NULL)) {
+#else
       if (setitimer(ITIMER_PROF, &time_limit, NULL)) {
+#endif                          /* __CYGWIN__ */
         penn_perror("setitimer");
         timer_set = 0;
       }
@@ -333,8 +345,8 @@ start_cpu_timer(void)
                         (TIMERPROC) win32_timer);
   else
     timer_set = 0;
-#endif
-#endif
+#endif                          /* HAS_ITIMER / WIN32 */
+#endif                          /* PROFILING */
 }
 
 /** Reset the cpu timer (after running a command).
@@ -350,14 +362,18 @@ reset_cpu_timer(void)
     time_limit.it_value.tv_usec = 0;
     time_limit.it_interval.tv_sec = 0;
     time_limit.it_interval.tv_usec = 0;
+#ifdef __CYGWIN__
+    if (setitimer(ITIMER_REAL, &time_limit, &time_left))
+#else
     if (setitimer(ITIMER_PROF, &time_limit, &time_left))
+#endif                          /* __CYGWIN__ */
       penn_perror("setitimer");
 #elif defined(WIN32)
     KillTimer(NULL, timer_id);
-#endif
+#endif                          /* HAS_ITIMER / WIN32 */
   }
   cpu_time_limit_hit = 0;
   cpu_limit_warning_sent = 0;
   timer_set = 0;
-#endif
+#endif                          /* PROFILING */
 }

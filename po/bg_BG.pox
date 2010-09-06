@@ -300,10 +300,6 @@ msgstr "#-1 мълю рюйзб хцпюв"
 msgid "#-1 NO SUCH TYPE"
 msgstr "#-1 мълю рюйзб рхо"
 
-#: src/funufun.c:310
-msgid "#-1 NO SUCH USER FUNCTION"
-msgstr "#-1 мълю рюйюбю онрпеахрекяйю тсмйжхъ"
-
 #: src/bsd.c:4485 src/bsd.c:4498
 msgid "#-1 NOT CONNECTED"
 msgstr "#-1 мълю бпзгйю"

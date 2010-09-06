@@ -470,6 +470,7 @@ FUNTAB flist[] = {
   {"HIDDEN", fun_hidden, 1, 1, FN_REG | FN_STRIPANSI},
   {"HOME", fun_home, 1, 1, FN_REG | FN_STRIPANSI},
   {"HOST", fun_hostname, 1, 1, FN_REG | FN_STRIPANSI},
+  {"IBREAK", fun_ibreak, 0, 1, FN_REG | FN_STRIPANSI},
   {"IDLE", fun_idlesecs, 1, 1, FN_REG | FN_STRIPANSI},
   {"IF", fun_if, 2, 3, FN_NOPARSE},
   {"IFELSE", fun_if, 3, 3, FN_NOPARSE},

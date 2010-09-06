@@ -72,6 +72,8 @@ struct pe_info {
   int local_iter_nesting;       /**< Expression-level iter() nesting depth */
   char *iter_itext[MAX_ITERS];  /**< itext() replacements in iter() */
   int iter_inum[MAX_ITERS];     /**< inum() values in iter() */
+  int iter_break;               /**< number of ibreak()s to break out of iter()s */
+  int dolists;                  /**< Number of @dolist values in iter_itext */
 };
 
 

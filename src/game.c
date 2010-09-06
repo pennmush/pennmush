@@ -1575,6 +1575,7 @@ bind_and_queue(dbref player, dbref cause, char *action,
   pe_info->iter_itext[i] = mush_strdup(arg, "dolist_arg");
   pe_info->iter_nesting = i;
   pe_info->local_iter_nesting = i;
+  pe_info->dolists = global_eval_context.pe_info->dolists + 1;
   parse_que(player, command, cause, pe_info);
 
   mush_free(command, "strip_braces.buff");

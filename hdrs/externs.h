@@ -585,6 +585,8 @@ mush_strndup(const char *src, size_t len, const char *check)
 #define UFUN_LAMBDA 0x02
 /* If this is set, a nonexistant attribute is an error, instead of empty. */
 #define UFUN_REQUIRE_ATTR 0x04
+/* When calling the ufun, don't check caller's perms */
+#define UFUN_IGNORE_PERMS 0x08
 /* When calling the ufun, save and restore the Q-registers. */
 #define UFUN_LOCALIZE 0x10
 #define UFUN_DEFAULT (UFUN_OBJECT | UFUN_LAMBDA)

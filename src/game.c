@@ -1251,7 +1251,7 @@ process_command(dbref player, char *command, dbref cause, int from_port)
        */
       if ((errdblist == errdbtail) || (!fail_commands(player)))
         /* Nope. This is totally unmatched, run generic failure */
-        generic_command_failure(player, cause, unp);
+        generic_command_failure(player, cause, cptr);
     }
   }
 

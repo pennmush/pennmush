@@ -349,24 +349,23 @@ See also: leave, @leave, NO_LEAVE, locktypes, ACTION LISTS, VERBS
   @alias <player>[=<name1>[;<name2>[;...;<nameN>]]]
   @alias <object>[=<string>]
  
-  For players and exits, the ALIAS attribute has special meaning: it
-  contains a list of aliases (separated by semicolons) which can be
-  used instead of its name to refer to the player or exit.
+  For players and exits, the ALIAS attribute has special meaning: it contains
+  a list of aliases (separated by semicolons) which can be used instead of 
+  its name to refer to the player or exit.
   
-  The number of aliases allowed is controlled by the 'max_aliases'
-  @config option. The same rules which apply to player names also
-  apply to aliases, and you cannot use another player's name as your
-  alias (though you can include your own name in your aliases, and can
+  Players can only have a limited number of aliases; the number is controlled
+  by the 'max_aliases' @config option. The same rules which apply to player
+  names also apply to aliases, and you cannot use another player's name as
+  your alias (though you can include your own name in your aliases, and can
   change your name to one of your aliases).
   
-  If the page_aliases @config option is on, the first alias in the
-  list is shown along with the player's name when they page others.
+  If the 'page_aliases' @config option is on, the first alias in the list is 
+  shown along with the player's name when they page others.
   
-  Exits also support including the aliases directly in their name, but
-  doing so in new construction is depreciated and @alias should be used
-  instead.
+  Exits also support including the aliases directly in their name, but doing
+  so in new construction is depreciated and @alias should be used instead.
  
-  For other types of object, @alias has no special meaning.www
+  For other types of object, @alias has no special meaning.
 
 See also: @name, alias(), fullalias()
 & @allquota

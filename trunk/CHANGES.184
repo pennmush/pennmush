@@ -29,6 +29,8 @@ Minor Changes:
    for @dolist as well as iter(). [MG]
  * iter() context (itext(), inum(), etc) is no longer propagated through
    ufuns. [MG]
+ * @hook/overrides on huh_command are now matched against "huh_command" and
+   "huh_command <input>". From a suggestion by Mercutio. [MG]
    
 Functions:
  * ibreak(), for breaking out of an iter() loop. [Rhost] [MG]

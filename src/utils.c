@@ -263,13 +263,20 @@ call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
     ret = rbuff;
   rp = ret;
 
+  /* Save contexts, globals, regexp vals, etc */
   for (i = 0; i < wenv_argc; i++) {
     old_wenv[i] = global_eval_context.wenv[i];
     global_eval_context.wenv[i] = wenv_args[i];
   }
+
   for (; i < 10; i++) {
     old_wenv[i] = global_eval_context.wenv[i];
     global_eval_context.wenv[i] = NULL;
+  }
+
+  save_regexp_context(&rsave);
+  if (ufun->ufun_flags & UFUN_LOCALIZE) {
+    save_global_regs("localize", saveqs);
   }
 
   /* Set all the regexp patterns to NULL so they are not
@@ -280,11 +287,6 @@ call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
   global_eval_context.re_from = NULL;
 
   /* And now, make the call! =) */
-  save_regexp_context(&rsave);
-  if (ufun->ufun_flags & UFUN_LOCALIZE) {
-    save_global_regs("localize", saveqs);
-  }
-
   if (pe_info) {
     old_args = pe_info->arg_count;
     pe_info->arg_count = wenv_argc;

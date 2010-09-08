@@ -239,6 +239,7 @@ FUNCTION(fun_pfun)
   mush_strncpy(ufun.contents, atr_value(a), BUFFER_LEN);
   ufun.pe_flags = pe_flags;
   ufun.errmess = (char *) "";
+  ufun.flags = UFUN_NONE;
 
   call_ufun(&ufun, args + 1, nargs - 1, rbuff, executor, enactor, pe_info);
 

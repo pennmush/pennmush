@@ -2326,7 +2326,7 @@ FUNCTION(fun_itext)
   }
 
   if (i < 0 || i > pe_info->local_iter_nesting || (pe_info->local_iter_nesting - i) < 0) {
-    safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
+    safe_str(T(e_argrange), buff, bp);
     return;
   }
 
@@ -2349,7 +2349,7 @@ FUNCTION(fun_inum)
   }
 
   if (i < 0 || i > pe_info->local_iter_nesting || (pe_info->local_iter_nesting - i) < 0) {
-    safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
+    safe_str(T(e_argrange), buff, bp);
     return;
   }
 

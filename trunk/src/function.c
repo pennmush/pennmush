@@ -724,6 +724,8 @@ FUNTAB flist[] = {
   {"SUBJ", fun_subj, 1, 1, FN_REG | FN_STRIPANSI},
   {"SWITCH", fun_switch, 3, INT_MAX, FN_NOPARSE},
   {"SWITCHALL", fun_switch, 3, INT_MAX, FN_NOPARSE},
+  {"SLEV", fun_slev, 0, 0, FN_REG},
+  {"STEXT", fun_stext, 1, 1, FN_REG | FN_STRIPANSI},
   {"T", fun_t, 1, 1, FN_REG | FN_STRIPANSI},
   {"TABLE", fun_table, 1, 5, FN_REG},
   {"TEL", fun_tel, 2, 4, FN_REG | FN_STRIPANSI},

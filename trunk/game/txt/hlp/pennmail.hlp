@@ -152,6 +152,18 @@ See also: @mailfilter
   > @mailfilter me=if(strmatch(%3,*U*),1)
 
 See also: mail-folders
+& @mailsignature
+& mailsignature
+
+  @mailsignature <object>[=<signature>]
+  
+  When set, this attribute is evaluated and appended to any @mail messages
+  sent by <object>, unless the @mail/nosig command is used.
+  
+  Example:
+  > @mailsignature me=%r%r-- %n%r%r[u(funny_quote)]
+  
+See also: @mail, mail-sending
 & mail-admin
   
   The @mail command can also take the following switches:

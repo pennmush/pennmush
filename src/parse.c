@@ -74,6 +74,7 @@ char e_match[] = "#-1 NO MATCH";
 char e_notvis[] = "#-1 NO SUCH OBJECT VISIBLE";
 char e_disabled[] = "#-1 FUNCTION DISABLED";
 char e_range[] = "#-1 OUT OF RANGE";
+char e_argrange[] = "#-1 ARGUMENT OUT OF RANGE";
 
 #endif
 
@@ -100,6 +101,7 @@ dummy_errors()
   temp = T("#-1 NO SUCH OBJECT VISIBLE");
   temp = T("#-1 FUNCTION DISABLED");
   temp = T("#-1 OUT OF RANGE");
+  temp = T("#-1 ARGUMENT OUT OF RANGE");
 }
 
 #endif
@@ -988,7 +990,7 @@ process_expression(char *buff, char **bp, char const **str,
             safe_chr(':', buff, bp);
             safe_integer(CreTime(enactor), buff, bp);
           } else {
-            safe_str("#-1 NO SUCH OBJECT VISIBLE", buff, bp);
+            safe_str(T(e_notvis), buff, bp);
           }
           break;
         case '?':              /* function limits */
@@ -1004,7 +1006,7 @@ process_expression(char *buff, char **bp, char const **str,
           if (GoodObject(enactor)) {
             safe_str(accented_name(enactor), buff, bp);
           } else {
-            safe_str("Nothing", buff, bp);
+            safe_str(T(e_notvis), buff, bp);
           }
           break;
         case '+':              /* argument count */
@@ -1033,7 +1035,7 @@ process_expression(char *buff, char **bp, char const **str,
               gender = get_gender(enactor);
             safe_str(absp[gender], buff, bp);
           } else {
-            safe_str("#-1 NO SUCH OBJECT VISIBLE", buff, bp);
+            safe_str(T(e_notvis), buff, bp);
           }
           break;
         case 'B':
@@ -1065,13 +1067,13 @@ process_expression(char *buff, char **bp, char const **str,
             inum_this = nextc - '0';
             if (inum_this < 0 || inum_this > pe_info->local_iter_nesting
                 || (pe_info->local_iter_nesting - inum_this) < 0) {
-              safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
+              safe_str(T(e_argrange), buff, bp);
             } else {
               safe_str(pe_info->iter_itext[pe_info->iter_nesting - inum_this],
                        buff, bp);
             }
           } else {
-            safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
+            safe_str(T(e_argrange), buff, bp);
           }
           break;
         case '$':
@@ -1090,13 +1092,13 @@ process_expression(char *buff, char **bp, char const **str,
             }
             if (inum_this < 0 || inum_this > pe_info->local_switch_nesting ||
                 (pe_info->local_switch_nesting - inum_this) < 0) {
-              safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
+              safe_str(T(e_argrange), buff, bp);
             } else {
               safe_str(pe_info->switch_text[pe_info->switch_nesting - inum_this],
                        buff, bp);
             }
           } else {
-            safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
+            safe_str(T(e_argrange), buff, bp);
           }
           break;
         case 'U':
@@ -1118,7 +1120,7 @@ process_expression(char *buff, char **bp, char const **str,
           if (GoodObject(enactor)) {
             safe_str(Name(enactor), buff, bp);
           } else {
-            safe_str("#-1 NO SUCH OBJECT VISIBLE", buff, bp);
+            safe_str(T(e_notvis), buff, bp);
           }
           break;
         case 'O':
@@ -1128,7 +1130,7 @@ process_expression(char *buff, char **bp, char const **str,
               gender = get_gender(enactor);
             safe_str(obj[gender], buff, bp);
           } else {
-            safe_str("#-1 NO SUCH OBJECT VISIBLE", buff, bp);
+            safe_str(T(e_notvis), buff, bp);
           }
           break;
         case 'P':
@@ -1138,7 +1140,7 @@ process_expression(char *buff, char **bp, char const **str,
               gender = get_gender(enactor);
             safe_str(poss[gender], buff, bp);
           } else {
-            safe_str("#-1 NO SUCH OBJECT VISIBLE", buff, bp);
+            safe_str(T(e_notvis), buff, bp);
           }
           break;
         case 'Q':
@@ -1166,7 +1168,7 @@ process_expression(char *buff, char **bp, char const **str,
               gender = get_gender(enactor);
             safe_str(subj[gender], buff, bp);
           } else {
-            safe_str("#-1 NO SUCH OBJECT VISIBLE", buff, bp);
+            safe_str(T(e_notvis), buff, bp);
           }
           break;
         case 'T':

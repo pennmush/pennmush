@@ -32,6 +32,7 @@ extern char e_match[];          /* #-1 NO MATCH */
 extern char e_notvis[];         /* #-1 NO SUCH OBJECT VISIBLE */
 extern char e_disabled[];       /* #-1 FUNCTION DISABLED */
 extern char e_range[];          /* #-1 OUT OF RANGE */
+extern char e_argrange[];       /* #-1 ARGUMENT OUT OF RANGE */
 
 /* The following routines all take strings as arguments, and return
  * data of the appropriate types.

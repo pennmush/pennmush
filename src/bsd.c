@@ -4080,7 +4080,7 @@ FUNCTION(fun_xwho)
   count = parse_integer(args[1]);
 
   if (start < 1 || count < 1) {
-    safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
+    safe_str(T(e_argrange), buff, bp);
     return;
   }
 

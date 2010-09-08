@@ -584,7 +584,7 @@ FUNCTION(fun_stext)
 
   if (i < 0 || i > pe_info->local_switch_nesting
       || (pe_info->local_switch_nesting - i) < 0) {
-    safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
+    safe_str(T(e_argrange), buff, bp);
     return;
   }
   safe_str(pe_info->switch_text[pe_info->local_switch_nesting - i], buff, bp);

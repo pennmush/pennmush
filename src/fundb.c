@@ -160,7 +160,7 @@ FUNCTION(fun_lattr)
     lh.count = parse_integer(args[2]);
 
     if (lh.start < 1 || lh.count < 1) {
-      safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
+      safe_str(T(e_argrange), buff, bp);
       return;
     }
 
@@ -773,7 +773,7 @@ FUNCTION(fun_dbwalker)
       start = parse_integer(args[1]);
       count = parse_integer(args[2]);
       if (start < 1 || count < 1) {
-        safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
+        safe_str(T(e_argrange), buff, bp);
         return;
       }
       break;

@@ -471,7 +471,10 @@ FUNCTION(fun_die)
     safe_uinteger(total, buff, bp);
   }
 }
-
+#define CLEAR_SWITCH_VALUE(pe) \
+  pe->switch_text[pe->switch_nesting] = NULL; \
+  pe->switch_nesting--; \
+  pe_info->local_switch_nesting--;
 /* ARGSUSED */
 FUNCTION(fun_switch)
 {
@@ -488,6 +491,11 @@ FUNCTION(fun_switch)
   char *tbuf1 = NULL;
   int first = 1, found = 0, exact = 0;
 
+  if (pe_info->switch_nesting >= MAX_ITERS) {
+    safe_str(T("#-1 TOO MANY SWITCHES"), buff, bp);
+    return;
+  }
+
   if (strstr(called_as, "ALL"))
     first = 0;
 
@@ -499,6 +507,10 @@ FUNCTION(fun_switch)
   process_expression(mstr, &dp, &sp, executor, caller, enactor,
                      PE_DEFAULT, PT_DEFAULT, pe_info);
   *dp = '\0';
+
+  pe_info->switch_nesting++;
+  pe_info->local_switch_nesting++;
+  pe_info->switch_text[pe_info->switch_nesting] = mstr;
 
   /* try matching, return match immediately when found */
 
@@ -528,8 +540,10 @@ FUNCTION(fun_switch)
       if (!exact)
         mush_free(tbuf1, "replace_string.buff");
       found = 1;
-      if (per || first)
+      if (per || first) {
+        CLEAR_SWITCH_VALUE(pe_info);
         return;
+      }
     }
   }
 
@@ -545,8 +559,38 @@ FUNCTION(fun_switch)
     if (!exact)
       mush_free(tbuf1, "replace_string.buff");
   }
+  CLEAR_SWITCH_VALUE(pe_info);
 }
 
+/* ARGSUSED */
+FUNCTION(fun_slev)
+{
+  safe_integer(pe_info->local_switch_nesting, buff, bp);
+}
+
+/* ARGSUSED */
+FUNCTION(fun_stext)
+{
+  int i;
+
+  if (!strcasecmp(args[0], "l")) {
+    i = pe_info->local_switch_nesting;
+  } else if (is_strict_integer(args[0])) {
+    i = parse_integer(args[0]);
+  } else {
+    safe_str(T(e_int), buff, bp);
+    return;
+  }
+
+  if (i < 0 || i > pe_info->local_switch_nesting
+      || (pe_info->local_switch_nesting - i) < 0) {
+    safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
+    return;
+  }
+  safe_str(pe_info->switch_text[pe_info->local_switch_nesting - i], buff, bp);
+}
+
+/* ARGSUSED */
 FUNCTION(fun_reswitch)
 {
   /* this works a bit like the @switch/regexp command */
@@ -564,6 +608,11 @@ FUNCTION(fun_reswitch)
   int erroffset;
   pcre_extra *extra;
 
+  if (pe_info->switch_nesting >= MAX_ITERS) {
+    safe_str(T("#-1 TOO MANY SWITCHES"), buff, bp);
+    return;
+  }
+
   if (strstr(called_as, "ALL"))
     first = 0;
 
@@ -579,6 +628,10 @@ FUNCTION(fun_reswitch)
   mas = parse_ansi_string(mstr);
 
   save_regexp_context(&rsave);
+
+  pe_info->switch_nesting++;
+  pe_info->local_switch_nesting++;
+  pe_info->switch_text[pe_info->switch_nesting] = mstr;
 
   /* try matching, return match immediately when found */
 
@@ -621,6 +674,7 @@ FUNCTION(fun_reswitch)
     if (first && found) {
       free_ansi_string(mas);
       restore_regexp_context(&rsave);
+      CLEAR_SWITCH_VALUE(pe_info);
       return;
     }
     /* clear regexp context again here */
@@ -631,6 +685,7 @@ FUNCTION(fun_reswitch)
     if (per) {
       free_ansi_string(mas);
       restore_regexp_context(&rsave);
+      CLEAR_SWITCH_VALUE(pe_info);
       return;
     }
   }
@@ -643,8 +698,11 @@ FUNCTION(fun_reswitch)
     mush_free(tbuf1, "replace_string.buff");
   }
   free_ansi_string(mas);
+  CLEAR_SWITCH_VALUE(pe_info);
   restore_regexp_context(&rsave);
 }
+
+#undef CLEAR_SWITCH_VALUE
 
 /* ARGSUSED */
 FUNCTION(fun_if)

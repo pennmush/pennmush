@@ -245,7 +245,8 @@ call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
   char *rp;
   char *old_wenv[10];
   char *saveqs[NUMQ];
-  int iter_nest = 0;
+  int iter_nest = -1;
+  int switch_nest = -1;
   int old_args = 0;
   int i;
   int pe_ret;
@@ -292,6 +293,8 @@ call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
     pe_info->arg_count = wenv_argc;
     iter_nest = pe_info->local_iter_nesting;
     pe_info->local_iter_nesting = -1;
+    switch_nest = pe_info->local_switch_nesting;
+    pe_info->local_switch_nesting = -1;
   }
 
   ap = ufun->contents;
@@ -305,6 +308,7 @@ call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
   }
   if (pe_info) {
     pe_info->local_iter_nesting = iter_nest;
+    pe_info->local_switch_nesting = switch_nest;
     pe_info->arg_count = old_args;
   }
 

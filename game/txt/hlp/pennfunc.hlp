@@ -4846,7 +4846,7 @@ See also: switch(), regmatch(), regedit()
   These functions match <string> against the <expr>essions, returning
   the corresponding <list>. If nothing is matched, the <default> is returned.
   switch() and case() return the <str> for the first matching <expr>, while 
-  switchall() and condall() return the corresponding <list> for all <expr>s
+  switchall() and caseall() return the corresponding <list> for all <expr>s
   which match.
 
   switch() and switchall() use wildcard <expr>s, as described in 'help switch
@@ -4856,11 +4856,14 @@ See also: switch(), regmatch(), regedit()
   If the string "#$" appears in the <list> to be evaluated, it will be 
   replaced with the evaluated value of <str> /before/ evaluation of 
   <list>. This is not done in case() and caseall(), for TinyMUSH 3
-  compatibility.
+  compatibility. Note that this replacement happens before evaluation, which
+  makes it unsafe when <str> contains user input, and makes it unsuitable for
+  use in nested switch()es. It is strongly recommended you use the %$<n>
+  substitution or stext() function instead, which solves these problems.
   
   See 'help switch2' for examples.
  
-See also: reswitch(), if(), cond(), firstof()
+See also: reswitch(), stext(), slev(), if(), cond(), firstof()
 & SWITCH2
   Examples:
     > say switch(test, *a*, foo, *b*, bar, *t*, neat, baz)
@@ -4903,6 +4906,32 @@ See also: reswitch(), if(), cond(), firstof()
   the greater/less than check).
 
 See also: WILDCARDS
+& STEXT()
+& SLEV()
+& %$
+& %$0
+  slev()
+  stext([<n>])
+  %$<n>
+  
+  slev() returns the current nesting depth of switch*(), reswitch*() and
+  @switch/@selects. stext() returns the <string> being matched for the
+  current switch, or the <n>th switch where n=0 is the current switch, n=1
+  is the switch the current switch is nested in, and so on. It is a safer
+  replacement for the "#$" token, which (because it is replaced before
+  evaluation) is unsafe with user input, and unsuitable for use in nested
+  switches.
+  
+  stext(L) returns the <string> for the outermost switch, and is equivilent
+  to stext(slev()). %$<n> is equivilent to stext(<n>), for <n>s of 0-9 or L.
+  
+  Example:
+    > &cmd.whois me=$whois *: @pemit %#=switch(pmatch(%0),#-*,
+                                    I don't know '%0', '%0' is %$0)
+    > @switch foo=f*, say switch(bar, b*,%$1 %$0!)
+    You say, "foo bar!"
+    
+See also: switch(), reswitch(), @switch
 & T()
   t(<expression>)
 

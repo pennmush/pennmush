@@ -74,6 +74,9 @@ struct pe_info {
   int iter_inum[MAX_ITERS];     /**< inum() values in iter() */
   int iter_break;               /**< number of ibreak()s to break out of iter()s */
   int dolists;                  /**< Number of @dolist values in iter_itext */
+  int switch_nesting;           /**< switch()/@switch nesting depth */
+  int local_switch_nesting;     /**< Expression-level switch nesting depth */
+  char *switch_text[MAX_ITERS]; /**< #$-values for switch()/@switches */
 };
 
 

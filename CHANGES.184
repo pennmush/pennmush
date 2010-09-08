@@ -35,6 +35,9 @@ Minor Changes:
    
 Functions:
  * ibreak(), for breaking out of an iter() loop. [Rhost] [MG]
+ * New stext() function and %$N sub, equivilent of #$ in @switch, switch*(),
+   and reswitch*(), but can be used in nested switches/on user input. [MG]
+ * New slev() function, returns the current nesting depth of switches. [MG]
 
 
 Version 1.8.4 patchlevel 1                                 Sep 05,  2010

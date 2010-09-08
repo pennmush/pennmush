@@ -26,9 +26,13 @@ Minor Changes:
    ufuns. [MG]
  * @hook/overrides on huh_command are now matched against "huh_command" and
    "huh_command <input>". From a suggestion by Mercutio. [MG]
+ * Various help fixes.
    
 Functions:
  * ibreak(), for breaking out of an iter() loop. [Rhost] [MG]
+ * New stext() function and %$N sub, equivilent of #$ in @switch, switch*(),
+   and reswitch*(), but can be used in nested switches/on user input. [MG]
+ * New slev() function, returns the current nesting depth of switches. [MG]
 
 
 & 1.8.4p1

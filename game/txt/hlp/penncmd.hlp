@@ -3202,30 +3202,6 @@ See also: $-commands, EVALUATION ORDER
     @search wizard_bc command=+who    <-- Forgot what object has your +who?
 
 See also: lsearch, lsearchr 
-& @select
-  @select <string>=<expr1>,<action1>[,<exprN>,<actionN>]...[,<default>]
-  This is similar to @switch, except it only executes the action
-  associated with the first expression which matches <string> - the
-  targets are mutually exclusive. If no target is matched, the default
-  actions are executed. This is equivalent to "@switch/first".
-
-  Example:
-    > &FOO thing = $foo *:@select %0=*a*,:acks,*b*,:bars,*c*,:cheeps,:glurps
-    > foo abc
-    thing acks
-    > foo xxx
-    thing glurps
-
-  The string "#$" in <action>'s will be expanded to the evaluated result
-  of <string> before it is acted on.
-
-  If the /notify switch is given, a "@notify me" is queued after 
-  the selected <action>. This is useful for synchronization with semaphores.
-
-  If the /regexp switch is given, the expressions are case-insensitive regular
-  expressions.
-
-See also: @switch, switch()
 & @set
   @set <object>=[!]<flag> [[!]<flag> ...]
   @<pre-defined attribute> <object>=<value>
@@ -3449,30 +3425,33 @@ See also: @restart, @undestroy, ACTION LISTS, @function, @command, @hook,
   The "here" and "inventory" flags check only your location or
   inventory, respectively. "exits" only checks for AUDIBLE exits.
 & @switch
-  @switch [/<switch>] <string> = <expr1>, <action1> [,<exprN>, 
+  @switch[/<switch>] <string>=<expr1>, <action1> [,<exprN>, 
                                  <actionN>]... [,<default>]
-  For those of you familiar with programming, this command acts like
-  if/then/else or switch/case. It compares <string> against whatever
-  each <expr> evaluates to. If <string> and <expr> match, the action list
-  associated with that <expr> is carried out. If no match is found, the
-  <default> action list is carried out. 
-
-  The string "#$" in <action>'s will be expanded to the evaluated result
-  of <string> before it is acted on.
+  @select <string>=<expr1>, <action1> [,<exprN>, <actionN>]... [,<default>]
   
-  @switch/all   will carry out the action lists for -all- of the 
-                expressions that match <string>. This is the default.
-  @switch/first will carry out the action list for only the -first-
-                expression that matches <string>. This is the same as
-                @select, and it is less computationally expensive than 
-                /all in many cases.
-  @switch/notify will cause a "@notify me" to be queued after 
-                the selected <action>. 
-  @switch/regexp will cause the expressions to be matched as case-insensitive
-                 regular expressions.
+  For those of you familiar with programming, these command acts like
+  if/then/else or switch/case. It compares <string> against whatever each 
+  <expr> evaluates to. If <string> and <expr> match, the action list 
+  associated with that <expr> is carried out. If no match is found, the
+  <default> action list is carried out. @switch runs <action>s for all
+  matching <expr>s by default, while @select only runs the <action> for the
+  first matching <expr>.
+
+  The string "#$" in <action>'s will be replaced with the evaluated result
+  of <string> before it is acted on. Note that this replacement happens
+  BEFORE the <action> is queued and executed, and does not work well in
+  nested switches. It is recommended that you use the %$N substitution, or
+  the stext() function, instead.
+  
+  @switch/all   runs <action>s for all matching <expr>s. Default for @switch.
+  @switch/first runs <action> for the first matching <expr> only. Same as
+                @select, and often the desired behaviour.
+  @switch/notify queues "@notify me" after the last <action>. 
+  @switch/regexp makes <expr>s case-insensitive regular expressions, not
+                 wildcard/glob patterns.
 
   See 'help @switch2' for examples.
-See also: switch wildcards, @select, switch(), @break
+See also: switch wildcards, switch(), @break, stext(), slev()
 & @switch2
   Examples: 
     > &SWITCH_EX thing=$foo *: @switch %0=*a*, :acks, *b*, :bars, :glurps

@@ -29,10 +29,15 @@
 #define Forward(m)      (m->read & M_FORWARD)
 #define Reply(m)        (m->read & M_REPLY)
 #define Tagged(m)       (m->read & M_TAG)
-#define Folder(m)       ((m->read & ~M_FMASK) >> 8U)
+static inline int 
+Folder(MAIL *m) {
+  return m->folder;
+}
 #define Read(m)         (m->read & M_MSGREAD)
 #define Cleared(m)      (m->read & M_CLEARED)
 #define Unread(m)       (!Read(m))
+
+/* Mail selector access macros */
 #define All(ms)         (ms.flags & M_ALL)
 #define AllInFolder(ms) (ms.flags & M_FOLDER)
 #define MSFolder(ms)    ((int)((ms.flags & ~M_FMASK) >> 8U))
@@ -71,37 +76,37 @@ typedef int folder_array[MAX_FOLDERS + 1];
 #define MDBF_SENDERCTIME        0x8
 
 /* From extmail.c */
-extern struct mail *maildb;
-extern void set_player_folder(dbref player, int fnum);
-extern void add_folder_name(dbref player, int fld, const char *name);
-extern struct mail *find_exact_starting_point(dbref player);
-extern void check_mail(dbref player, int folder, int silent);
-extern void check_all_mail(dbref player);
+struct mail *maildb;
+void set_player_folder(dbref player, int fnum);
+void add_folder_name(dbref player, int fld, const char *name);
+struct mail *find_exact_starting_point(dbref player);
+void check_mail(dbref player, int folder, int silent);
+void check_all_mail(dbref player);
 int dump_mail(PENNFILE *fp);
 int load_mail(PENNFILE *fp);
-extern void mail_init(void);
-extern int mdb_top;
-extern int can_mail(dbref player);
-extern void do_mail(dbref player, char *arg1, char *arg2);
+void mail_init(void);
+int mdb_top;
+int can_mail(dbref player);
+void do_mail(dbref player, char *arg1, char *arg2);
 enum mail_stats_type { MSTATS_COUNT, MSTATS_READ, MSTATS_SIZE };
-extern void do_mail_stats(dbref player, char *name, enum mail_stats_type full);
-extern void do_mail_debug(dbref player, const char *action, const char *victim);
-extern void do_mail_nuke(dbref player);
-extern void do_mail_change_folder(dbref player, char *fld, char *newname);
-extern void do_mail_unfolder(dbref player, char *fld);
-extern void do_mail_list(dbref player, const char *msglist);
-extern void do_mail_read(dbref player, char *msglist);
-extern void do_mail_clear(dbref player, const char *msglist);
-extern void do_mail_unclear(dbref player, const char *msglist);
-extern void do_mail_unread(dbref player, const char *msglist);
-extern void do_mail_status(dbref player, const char *msglist,
+void do_mail_stats(dbref player, char *name, enum mail_stats_type full);
+void do_mail_debug(dbref player, const char *action, const char *victim);
+void do_mail_nuke(dbref player);
+void do_mail_change_folder(dbref player, char *fld, char *newname);
+void do_mail_unfolder(dbref player, char *fld);
+void do_mail_list(dbref player, const char *msglist);
+void do_mail_read(dbref player, char *msglist);
+void do_mail_clear(dbref player, const char *msglist);
+void do_mail_unclear(dbref player, const char *msglist);
+void do_mail_unread(dbref player, const char *msglist);
+void do_mail_status(dbref player, const char *msglist,
                            const char *status);
-extern void do_mail_purge(dbref player);
-extern void do_mail_file(dbref player, char *msglist, char *folder);
-extern void do_mail_tag(dbref player, const char *msglist);
-extern void do_mail_untag(dbref player, const char *msglist);
-extern void do_mail_fwd(dbref player, char *msglist, char *tolist);
-extern void do_mail_send
+void do_mail_purge(dbref player);
+void do_mail_file(dbref player, char *msglist, char *folder);
+void do_mail_tag(dbref player, const char *msglist);
+void do_mail_untag(dbref player, const char *msglist);
+void do_mail_fwd(dbref player, char *msglist, char *tolist);
+void do_mail_send
   (dbref player, char *tolist, char *message, mail_flag flags,
    int silent, int nosig);
 

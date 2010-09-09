@@ -136,8 +136,8 @@ migrate_stuff(int amount)
       if (L_KEY(lptr) != NULL_CHUNK_REFERENCE)
         actual++;
     if (IsPlayer(end_obj)) {
-      for (mp = find_exact_starting_point(end_obj); mp; mp = mp->next)
-        if (mp->msgid != NULL_CHUNK_REFERENCE)
+      for (mp = get_mailbox(end_obj)->msgs; mp; mp = mp->next)
+        if (mp->msg->body != NULL_CHUNK_REFERENCE)
           actual++;
     }
     end_obj = (end_obj + 1) % db_top;
@@ -174,9 +174,9 @@ migrate_stuff(int amount)
         actual++;
       }
     if (IsPlayer(start_obj)) {
-      for (mp = find_exact_starting_point(start_obj); mp; mp = mp->next)
-        if (mp->msgid != NULL_CHUNK_REFERENCE) {
-          refs[actual] = &(mp->msgid);
+      for (mp = get_mailbox(start_obj)->msgs; mp; mp = mp->next)
+        if (mp->msg->body != NULL_CHUNK_REFERENCE) {
+          refs[actual] = &(mp->msg->body);
           actual++;
         }
     }

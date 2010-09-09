@@ -292,6 +292,11 @@ extern void clear_objdata(dbref thing);
 #define DOLIST_VISIBLE(var, first, player)\
     for((var) = first_visible((player), (first)); GoodObject((var)); (var) = first_visible((player), Next(var)))
 
+struct objid {
+  dbref obj;
+  time_t ctim;
+};
+
 typedef uint32_t mail_flag;
 
 /** A mail message.
@@ -299,20 +304,34 @@ typedef uint32_t mail_flag;
  * of messages that comprises the mail database. Mail messages are
  * stored in a doubly-linked list sorted by message recipient.
  */
-struct mail {
-  struct mail *next;            /**< Pointer to next message */
-  struct mail *prev;            /**< Pointer to previous message */
-  dbref to;                     /**< Recipient dbref */
-  dbref from;                   /**< Sender's dbref */
-  time_t from_ctime;            /**< Sender's creation time */
-  chunk_reference_t msgid;      /**< Message text, compressed */
+struct mail_msg {
+  struct mail_msg *next;        /**< Pointer to next message */
+  uint32_t id;                  /**< Unique message ID */
+  struct objid *to;             /**< Recipient dbrefs */
+  int tocount;                  /**< Number of recipients */
+  struct objid from;            /**< Sender */
+  chunk_reference_t body;      /**< Message text, compressed */
   time_t time;                  /**< Message date/time */
-  unsigned char *subject;       /**< Message subject, compressed */
-  mail_flag read;               /**< Bitflags of message status */
+  uint8_t *subject;             /**< Message subject, compressed */
+  struct mail_msg *fwd;         /**< Forwarded message. */
+  mail_msg_flags;               /**< Message flags */
 };
 
-typedef struct mail MAIL;
+struct mail_hdr {
+  struct mail_hdr *next; /**< Pointer to next message in mailbox. */
+  struct mail_hdr *prev; /**< Pointer to previous message in mailbox. */
+  struct mail_msg *msg; /**< Pointer to mail message */
+  mail_flag flags; /**< Per-recepient flags */
+  int folder; /**< What folder the message is in */
+};
 
+typedef struct mail_hdr MAIL;
+  
+struct mailbox {
+  struct mail_hdr *msgs;
+};
+
+typedef struct mailbox MAILBOX;
 
 extern const char *EOD;
 

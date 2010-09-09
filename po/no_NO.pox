@@ -549,6 +549,10 @@ msgstr "#-1 SPILLEREN FINNES IKKE"
 msgid "#-1 NO SUCH TYPE"
 msgstr "#-1 INGEN SLIK TYPE"
 
+#: src/funufun.c:310
+msgid "#-1 NO SUCH USER FUNCTION"
+msgstr "#-1 INGEN SLIK BRUKERFUNKSJON"
+
 #: extchat.c:2279
 msgid "#-1 NO TEXT GIVEN"
 msgstr "#-1 INGEN TEKST GITT"

@@ -2106,8 +2106,7 @@ See also: words()
   replacement occurs before substitution, it cannot be used well in nested
   iter()s, and should not be used on user input or untrusted <list>s, as the
   word will be evaluated. Instead, you can use the %iX substitution, or the 
-  itext() function. The substitution '%il' refers to the outermost iter
-  of the current expression, and is intended to replace ##.
+  itext() function.
   
   The string "#@" will be replaced with the position of the current word
   in <list>. Like "##", the replacement occurs before substitution. Use
@@ -2117,7 +2116,6 @@ See also: words()
   ilev() function can be used to get the current iter() nesting level.
 
   See 'help iter2' for examples.
-See also: itext(), inum(), ilev(), ibreak(), map(), @dolist
 & ITER2   
   Examples:
     > say iter(This is a test string., strlen(%i0))
@@ -2142,25 +2140,8 @@ See also: itext(), inum(), ilev(), ibreak(), map(), @dolist
     2"
   
   parse() is an alias for iter().
-& IBREAK()
-  ibreak([<level>])
   
-  The ibreak() function stops an iter() from running at the end of the
-  current loop. When used in nested iter()s, you can give a <level> to 
-  specify how many iter()s to break from. iter() will stop evaluating at the
-  end of the current loop, and NOT immediately after ibreak() is called.
-  
-  Examples:
-    > say iter(1 2 3 4 5,switch(%i0,3,ibreak())Test %i0!)
-    You say, "Test 1! Test 2! Test 3!"
-    
-    > say iter(1 2 3 4 5,switch(%i0,3,ibreak(),Test %i0!)
-    You say, "Test 1! Test 2! "
-    
-    > say iter(a b c, iter(1 2 3, switch(%i0%i1, 2c, ibreak(2), #$))
-    You say, "1a 2a 3a 1b 2b 3b 1c "
-    
-See also: iter(), itext(), inum(), ilev()
+See also: itext(), inum(), ilev(), map(), @dolist
 & ILEV()
 & ITEXT()
 & INUM()
@@ -2171,19 +2152,13 @@ See also: iter(), itext(), inum(), ilev()
   %i<n>
   inum(<n>)
 
-  These functions return the equivilent of ## (itext) or #@ (inum) for iter()
-  and @dolist, where an <n>=0 returns to the current iter or @dolist, <n>=1 
-  refers to the iter()/@dolist which the current iter() or @dolist is nested
-  in, etc. An <n> of "L" can be used to refer to the outermost iter()/@dolist.
-  %i<n> is an alias for itext(<n>), where <n> can be from 0 to 9 (or "L").
-  
-  ilev() returns the current nesting depth, or -1 when used outside an iter()
-  or @dolist. Thus, itext(ilev()) will return the outermost ##, equivilent to
-  %iL.
-  
-  See 'help itext2' for examples.
-See also: iter(), ibreak(), @dolist
-& ITEXT2
+  These functions, when called within an iter(), return the equivalent
+  of ## (itext) or #@ (inum), with reference to the <n>th more outermost
+  iter(), where <n>=0 refers to the current iter(), <n>=1 to an iter() in
+  which the current iter() is nested, etc. %i<n> is shorthand for
+  itext(<n>) (up to itext(9)).  ilev() returns the current nesting depth,
+  or -1 if it is outside an iter().  Thus, itext(ilev()) will return
+  the ## of the outermost iter().
 
   Examples:
     > say iter(red blue green, iter(fish shoe, #@:##))
@@ -2197,13 +2172,8 @@ See also: iter(), ibreak(), @dolist
   
     > say iter(red blue green,iter(fish shoe, %i1:%i0))
     You say, "red:fish red:shoe blue:fish blue:shoe green:fish green:shoe"
-    
-    > @dolist red blue green=say iter(fish shoe, %i1:%i0)
-    You say, "red:fish red:shoe"
-		You say, "blue:fish blue:shoe"
-    You say, "green:fish green:shoe"
-    
-See also: iter(), @dolist
+  
+See also: iter()
 & IPADDR()
   ipaddr(<player|descriptor>)
 
@@ -4846,7 +4816,7 @@ See also: switch(), regmatch(), regedit()
   These functions match <string> against the <expr>essions, returning
   the corresponding <list>. If nothing is matched, the <default> is returned.
   switch() and case() return the <str> for the first matching <expr>, while 
-  switchall() and caseall() return the corresponding <list> for all <expr>s
+  switchall() and condall() return the corresponding <list> for all <expr>s
   which match.
 
   switch() and switchall() use wildcard <expr>s, as described in 'help switch
@@ -4856,14 +4826,11 @@ See also: switch(), regmatch(), regedit()
   If the string "#$" appears in the <list> to be evaluated, it will be 
   replaced with the evaluated value of <str> /before/ evaluation of 
   <list>. This is not done in case() and caseall(), for TinyMUSH 3
-  compatibility. Note that this replacement happens before evaluation, which
-  makes it unsafe when <str> contains user input, and makes it unsuitable for
-  use in nested switch()es. It is strongly recommended you use the %$<n>
-  substitution or stext() function instead, which solves these problems.
+  compatibility.
   
   See 'help switch2' for examples.
  
-See also: reswitch(), stext(), slev(), if(), cond(), firstof()
+See also: reswitch(), if(), cond(), firstof()
 & SWITCH2
   Examples:
     > say switch(test, *a*, foo, *b*, bar, *t*, neat, baz)
@@ -4906,32 +4873,6 @@ See also: reswitch(), stext(), slev(), if(), cond(), firstof()
   the greater/less than check).
 
 See also: WILDCARDS
-& STEXT()
-& SLEV()
-& %$
-& %$0
-  slev()
-  stext([<n>])
-  %$<n>
-  
-  slev() returns the current nesting depth of switch*(), reswitch*() and
-  @switch/@selects. stext() returns the <string> being matched for the
-  current switch, or the <n>th switch where n=0 is the current switch, n=1
-  is the switch the current switch is nested in, and so on. It is a safer
-  replacement for the "#$" token, which (because it is replaced before
-  evaluation) is unsafe with user input, and unsuitable for use in nested
-  switches.
-  
-  stext(L) returns the <string> for the outermost switch, and is equivilent
-  to stext(slev()). %$<n> is equivilent to stext(<n>), for <n>s of 0-9 or L.
-  
-  Example:
-    > &cmd.whois me=$whois *: @pemit %#=switch(pmatch(%0),#-*,
-                                    I don't know '%0', '%0' is %$0)
-    > @switch foo=f*, say switch(bar, b*,%$1 %$0!)
-    You say, "foo bar!"
-    
-See also: switch(), reswitch(), @switch
 & T()
   t(<expression>)
 

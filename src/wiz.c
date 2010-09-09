@@ -624,7 +624,7 @@ do_force(dbref player, const char *what, char *command)
     global_eval_context.wnxt[j] = global_eval_context.wenv[j];
   for (j = 0; j < NUMQ; j++)
     global_eval_context.rnxt[j] = global_eval_context.renv[j];
-  parse_que(victim, command, player, NULL);
+  parse_que(victim, command, player);
 }
 
 /** Parse a force token command, but don't force with it.
@@ -1167,7 +1167,7 @@ do_search(dbref player, const char *arg1, char **arg3)
     arg1 = "me";
 
   /* First argument is a player, so we could have a quoted name */
-  if (*arg1 == '\"') {
+  if (PLAYER_NAME_SPACES && *arg1 == '\"') {
     for (; *arg1 && ((*arg1 == '\"') || isspace((unsigned char) *arg1));
          arg1++) ;
     strcpy(tbuf, arg1);

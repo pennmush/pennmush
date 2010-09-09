@@ -252,7 +252,7 @@ extern EVAL_CONTEXT global_eval_context;
 void do_second(void);
 int do_top(int ncom);
 void do_halt(dbref owner, const char *ncom, dbref victim);
-void parse_que(dbref player, const char *command, dbref cause, PE_Info *pe_info);
+void parse_que(dbref player, const char *command, dbref cause);
 int queue_attribute_base
   (dbref executor, const char *atrname, dbref enactor, int noparent);
 ATTR *queue_attribute_getatr(dbref executor, const char *atrname, int noparent);
@@ -572,26 +572,12 @@ mush_strndup(const char *src, size_t len, const char *check)
     void free_anon_attrib(ATTR *attrib);
     typedef struct _ufun_attrib {
       dbref thing;
-      char  contents[BUFFER_LEN];
-      int   pe_flags;
+      char contents[BUFFER_LEN];
+      int pe_flags;
       char *errmess;
-      int   ufun_flags;
     } ufun_attrib;
-/* Only 'attr', not 'obj/attr' */
-#define UFUN_NONE 0
-/* Does this string accept obj/attr? */
-#define UFUN_OBJECT 0x01
-/* If it accepts obj/attr, does it accept #lambda/attr? */
-#define UFUN_LAMBDA 0x02
-/* If this is set, a nonexistant attribute is an error, instead of empty. */
-#define UFUN_REQUIRE_ATTR 0x04
-/* When calling the ufun, don't check caller's perms */
-#define UFUN_IGNORE_PERMS 0x08
-/* When calling the ufun, save and restore the Q-registers. */
-#define UFUN_LOCALIZE 0x10
-#define UFUN_DEFAULT (UFUN_OBJECT | UFUN_LAMBDA)
-    bool fetch_ufun_attrib(const char *attrstring, dbref executor,
-                           ufun_attrib * ufun, int flags);
+    bool fetch_ufun_attrib(char *attrname, dbref executor,
+                           ufun_attrib * ufun, bool accept_lambda);
     bool call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc,
                    char *ret, dbref executor, dbref enactor, PE_Info *pe_info);
     bool call_attrib(dbref thing, const char *attrname,

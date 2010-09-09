@@ -248,6 +248,10 @@ msgstr "#-1 SPILLEREN FINDES IKKE"
 msgid "#-1 NO SUCH TYPE"
 msgstr "#-1 DEN TYPE FINDES IKKE"
 
+#: src/funufun.c:310
+msgid "#-1 NO SUCH USER FUNCTION"
+msgstr "#-1 DEN BRUGERFUNKTION FINDES IKKE"
+
 #: src/bsd.c:4485 src/bsd.c:4498
 msgid "#-1 NOT CONNECTED"
 msgstr "#-1 IKKE FORBUNDET"

@@ -488,6 +488,10 @@ msgstr "#-1 NIE MA TAKIEGO GRACZA"
 msgid "#-1 NO SUCH TYPE"
 msgstr "#-1 NIE MA TAKIEGO TYPU"
 
+#: src/funufun.c:310
+msgid "#-1 NO SUCH USER FUNCTION"
+msgstr "#-1 NIE MA TAKIEJ FUNKCJI U¯YTKOWNIKA"
+
 #: extchat.c:2279
 msgid "#-1 NO TEXT GIVEN"
 msgstr "#-1 NIE PODANO TEKSTU"

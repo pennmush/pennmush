@@ -162,7 +162,8 @@ FUNCTION(fun_munge)
   char **ptrs1, **ptrs2, **results;
   char **ptrs3;
   int i, j, nptrs1, nptrs2, nresults;
-  ufun_attrib ufun;
+  dbref thing;
+  ATTR *attrib;
   char sep, isep[2] = { '\0', '\0' }, *osep, osepd[2] = {
   '\0', '\0'};
   int first;
@@ -179,11 +180,16 @@ FUNCTION(fun_munge)
     osep = osepd;
   }
 
-
-
   /* find our object and attribute */
-  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
+  parse_anon_attrib(executor, args[0], &thing, &attrib);
+  if (!GoodObject(thing) || !attrib || !Can_Read_Attr(executor, thing, attrib)) {
+    free_anon_attrib(attrib);
     return;
+  }
+  if (!CanEvalAttr(executor, thing, attrib)) {
+    free_anon_attrib(attrib);
+    return;
+  }
 
   /* Copy the first list, since we need to pass it to two destructive
    * routines.
@@ -213,15 +219,18 @@ FUNCTION(fun_munge)
     mush_free(ptrs1, "ptrarray");
     mush_free(ptrs2, "ptrarray");
     mush_free(ptrs3, "ptrarray");
+    free_anon_attrib(attrib);
     return;
   }
-
   /* Call the user function */
+
   lp = list1;
   rp = rlist;
   uargs[0] = lp;
   uargs[1] = isep;
-  call_ufun(&ufun, uargs, 2, rlist, executor, enactor, pe_info);
+  do_userfn(rlist, &rp, thing, attrib, 2, uargs,
+            executor, caller, enactor, pe_info, 0);
+  *rp = '\0';
 
   /* Now that we have our result, put it back into array form. Search
    * through list1 until we find the element position, then copy the
@@ -254,6 +263,7 @@ FUNCTION(fun_munge)
   mush_free(ptrs2, "ptrarray");
   mush_free(ptrs3, "ptrarray");
   mush_free(results, "ptrarray");
+  free_anon_attrib(attrib);
 }
 
 /* ARGSUSED */
@@ -404,7 +414,7 @@ FUNCTION(fun_fold)
   if (!delim_check(buff, bp, nargs, args, 4, &sep))
     return;
 
-  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
+  if (!fetch_ufun_attrib(args[0], executor, &ufun, 1))
     return;
 
   cp = args[1];
@@ -516,7 +526,7 @@ FUNCTION(fun_filter)
     check_bool = 1;
 
   /* find our object and attribute */
-  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
+  if (!fetch_ufun_attrib(args[0], executor, &ufun, 1))
     return;
 
   /* Go through each argument */
@@ -648,7 +658,7 @@ FUNCTION(fun_sortkey)
     strcpy(outsep, args[4]);
 
   /* find our object and attribute */
-  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
+  if (!fetch_ufun_attrib(args[0], executor, &ufun, 1))
     return;
 
   nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, args[1], sep);
@@ -2242,7 +2252,6 @@ FUNCTION(fun_iter)
   }
 
   pe_info->iter_nesting++;
-  pe_info->local_iter_nesting++;
   place = &pe_info->iter_inum[pe_info->iter_nesting];
   *place = 0;
   funccount = pe_info->fun_invocations;
@@ -2269,45 +2278,18 @@ FUNCTION(fun_iter)
     funccount = pe_info->fun_invocations;
     oldbp = *bp;
     mush_free(tbuf2, "replace_string.buff");
-    if (pe_info->iter_break >= 0) {
-      pe_info->iter_break--;
-      break;
-    }
   }
   *place = 0;
   pe_info->iter_itext[pe_info->iter_nesting] = NULL;
   pe_info->iter_nesting--;
-  pe_info->local_iter_nesting--;
   mush_free(outsep, "string");
   mush_free(list, "string");
 }
 
 /* ARGSUSED */
-FUNCTION(fun_ibreak)
-{
-  int i = 1;
-
-  if (nargs && args[0] && *args[0]) {
-    if (!is_strict_integer(args[0])) {
-      safe_str(T(e_int), buff, bp);
-      return;
-    }
-    i = parse_integer(args[0]);
-  }
-
-  if (i < 0 || (i + pe_info->iter_break) > (pe_info->local_iter_nesting - pe_info->dolists)) {
-    safe_str(T(e_range), buff, bp);
-    return;
-  }
-
-  pe_info->iter_break += i;
-
-}
-
-/* ARGSUSED */
 FUNCTION(fun_ilev)
 {
-  safe_integer(pe_info->local_iter_nesting, buff, bp);
+  safe_integer(pe_info->iter_nesting, buff, bp);
 }
 
 /* ARGSUSED */
@@ -2315,18 +2297,14 @@ FUNCTION(fun_itext)
 {
   int i;
 
-  if (!strcasecmp(args[0], "l")) {
-    i = pe_info->local_iter_nesting;
-  } else {
-    if (!is_strict_integer(args[0])) {
-      safe_str(T(e_int), buff, bp);
-      return;
-    }
-    i = parse_integer(args[0]);
+  if (!is_strict_integer(args[0])) {
+    safe_str(T(e_int), buff, bp);
+    return;
   }
+  i = parse_integer(args[0]);
 
-  if (i < 0 || i > pe_info->local_iter_nesting || (pe_info->local_iter_nesting - i) < 0) {
-    safe_str(T(e_argrange), buff, bp);
+  if (i < 0 || i > pe_info->iter_nesting || (pe_info->iter_nesting - i) < 0) {
+    safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
     return;
   }
 
@@ -2338,18 +2316,14 @@ FUNCTION(fun_inum)
 {
   int i;
 
-  if (!strcasecmp(args[0], "l"))
-    i = pe_info->local_iter_nesting;
-  else {
-    if (!is_strict_integer(args[0])) {
-      safe_str(T(e_int), buff, bp);
-      return;
-    }
-    i = parse_integer(args[0]);
+  if (!is_strict_integer(args[0])) {
+    safe_str(T(e_int), buff, bp);
+    return;
   }
+  i = parse_integer(args[0]);
 
-  if (i < 0 || i > pe_info->local_iter_nesting || (pe_info->local_iter_nesting - i) < 0) {
-    safe_str(T(e_argrange), buff, bp);
+  if (i < 0 || i > pe_info->iter_nesting || (pe_info->iter_nesting - i) < 0) {
+    safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
     return;
   }
 
@@ -2490,7 +2464,7 @@ FUNCTION(fun_map)
   if (!*lp)
     return;
 
-  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
+  if (!fetch_ufun_attrib(args[0], executor, &ufun, 1))
     return;
 
   strcpy(place, "1");
@@ -2550,7 +2524,7 @@ FUNCTION(fun_mix)
     lp[n] = trim_space_sep(args[n + 1], sep);
 
   /* find our object and attribute */
-  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
+  if (!fetch_ufun_attrib(args[0], executor, &ufun, 1))
     return;
 
   first = 1;

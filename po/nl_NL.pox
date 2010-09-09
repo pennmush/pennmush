@@ -553,6 +553,10 @@ msgstr "#-1 SPELER BESTAAT NIET"
 msgid "#-1 NO SUCH TYPE"
 msgstr "#-1 TYPE BESTAAT NIET"
 
+#: src/funufun.c:310
+msgid "#-1 NO SUCH USER FUNCTION"
+msgstr "#-1 GEBRUIKER FUNCTIE BESTAAT NIET"
+
 #: extchat.c:2279
 msgid "#-1 NO TEXT GIVEN"
 msgstr "#-1 GEEN TEXT OPGEGEVEN"

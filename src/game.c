@@ -1251,7 +1251,7 @@ process_command(dbref player, char *command, dbref cause, int from_port)
        */
       if ((errdblist == errdbtail) || (!fail_commands(player)))
         /* Nope. This is totally unmatched, run generic failure */
-        generic_command_failure(player, cause, cptr);
+        generic_command_failure(player, cause, unp);
     }
   }
 
@@ -1552,8 +1552,6 @@ bind_and_queue(dbref player, dbref cause, char *action,
 {
   char *repl, *command;
   const char *replace[2];
-  PE_Info *pe_info;
-  int i = 0;
 
   replace[0] = arg;
   replace[1] = placestr;
@@ -1564,19 +1562,7 @@ bind_and_queue(dbref player, dbref cause, char *action,
 
   mush_free(repl, "replace_string.buff");
 
-  pe_info = make_pe_info();
-  if (global_eval_context.pe_info->iter_nesting >= 0) {
-    for (i = 0; i <= global_eval_context.pe_info->iter_nesting; i++) {
-      pe_info->iter_inum[i] = global_eval_context.pe_info->iter_inum[i];
-      pe_info->iter_itext[i] = mush_strdup(global_eval_context.pe_info->iter_itext[i], "dolist_arg");
-    }
-  }
-  pe_info->iter_inum[i] = parse_integer(placestr);
-  pe_info->iter_itext[i] = mush_strdup(arg, "dolist_arg");
-  pe_info->iter_nesting = i;
-  pe_info->local_iter_nesting = i;
-  pe_info->dolists = global_eval_context.pe_info->dolists + 1;
-  parse_que(player, command, cause, pe_info);
+  parse_que(player, command, cause);
 
   mush_free(command, "strip_braces.buff");
 }
@@ -1861,7 +1847,7 @@ do_dolist(dbref player, char *list, char *command, dbref cause,
   if (!command || !*command) {
     notify(player, T("What do you want to do with the list?"));
     if (flags & DOL_NOTIFY)
-      parse_que(player, "@notify me", cause, NULL);
+      parse_que(player, "@notify me", cause);
     return;
   }
 
@@ -1869,7 +1855,7 @@ do_dolist(dbref player, char *list, char *command, dbref cause,
     if (list[1] != ' ') {
       notify(player, T("Separator must be one character."));
       if (flags & DOL_NOTIFY)
-        parse_que(player, "@notify me", cause, NULL);
+        parse_que(player, "@notify me", cause);
       return;
     }
     delim = list[0];
@@ -1888,7 +1874,7 @@ do_dolist(dbref player, char *list, char *command, dbref cause,
   if (objstring && !*objstring) {
     /* Blank list */
     if (flags & DOL_NOTIFY)
-      parse_que(player, "@notify me", cause, NULL);
+      parse_que(player, "@notify me", cause);
     return;
   }
 
@@ -1906,7 +1892,7 @@ do_dolist(dbref player, char *list, char *command, dbref cause,
      *  directly, since we want the command to be queued
      *  _after_ the list has executed.
      */
-    parse_que(player, "@notify me", cause, NULL);
+    parse_que(player, "@notify me", cause);
   }
 }
 

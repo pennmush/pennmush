@@ -16,30 +16,6 @@ chronological order (most recent first)
 
 ==========================================================================
 
-Version 1.8.4 patchlevel 2                                 ??? ??,  2010
-
-Minor Changes:
- * Player names with spaces no longer need to be in given in quotes for
-   @name. Suggested by Minion. [MG]
- * @decompile no longer shows flags which can't be set by players, like
-   GOING and CONNECTED. [MG]
- * %il substitution as preparation to get rid of ##. [GM]
- * hardcode: call_attrib is now a wrapper around call_ufun. [GM]
- * The %i<n> substitution, and itext()/inum()/ilev() functions, now work
-   for @dolist as well as iter(). [MG]
- * iter() context (itext(), inum(), etc) is no longer propagated through
-   ufuns. [MG]
- * @hook/overrides on huh_command are now matched against "huh_command" and
-   "huh_command <input>". From a suggestion by Mercutio. [MG]
- * Various help fixes.
-   
-Functions:
- * ibreak(), for breaking out of an iter() loop. [Rhost] [MG]
- * New stext() function and %$N sub, equivilent of #$ in @switch, switch*(),
-   and reswitch*(), but can be used in nested switches/on user input. [MG]
- * New slev() function, returns the current nesting depth of switches. [MG]
-
-
 Version 1.8.4 patchlevel 1                                 Sep 05,  2010
 
 Major Changes:

@@ -188,13 +188,9 @@ FUNCTION(fun_ufun)
 {
   char rbuff[BUFFER_LEN];
   ufun_attrib ufun;
-  int flags = UFUN_OBJECT;
 
-  if (!strcmp(called_as,"ULAMBDA")) {
-    flags |= UFUN_LAMBDA;
-  }
-
-  if (!fetch_ufun_attrib(args[0], executor, &ufun, flags)) {
+  if (!fetch_ufun_attrib
+      (args[0], executor, &ufun, (!strcmp(called_as, "ULAMBDA")))) {
     safe_str(T(ufun.errmess), buff, bp);
     return;
   }
@@ -239,7 +235,6 @@ FUNCTION(fun_pfun)
   mush_strncpy(ufun.contents, atr_value(a), BUFFER_LEN);
   ufun.pe_flags = pe_flags;
   ufun.errmess = (char *) "";
-  ufun.ufun_flags = UFUN_NONE;
 
   call_ufun(&ufun, args + 1, nargs - 1, rbuff, executor, enactor, pe_info);
 
@@ -255,11 +250,11 @@ FUNCTION(fun_pfun)
 /* ARGSUSED */
 FUNCTION(fun_udefault)
 {
-  ufun_attrib ufun;
+  dbref thing;
+  ATTR *attrib;
   char *dp;
   char const *sp;
   char mstr[BUFFER_LEN];
-  char rbuff[BUFFER_LEN];
   char **xargs;
   int i;
 
@@ -269,50 +264,49 @@ FUNCTION(fun_udefault)
   process_expression(mstr, &dp, &sp, executor, caller, enactor,
                      PE_DEFAULT, PT_DEFAULT, pe_info);
   *dp = '\0';
-  if (!fetch_ufun_attrib(mstr, executor, &ufun, UFUN_OBJECT | UFUN_REQUIRE_ATTR)) {
-    /* We couldn't get it. Evaluate args[1] and return it */
-    sp = args[1];
+  parse_attrib(executor, mstr, &thing, &attrib);
+  if (GoodObject(thing) && attrib && CanEvalAttr(executor, thing, attrib)
+      && Can_Read_Attr(executor, thing, attrib)) {
+    /* Ok, we've got it */
+    /* We must now evaluate all the arguments from args[2] on and
+     * pass them to the function */
+    xargs = NULL;
+    if (nargs > 2) {
+      xargs = mush_calloc(nargs - 2, sizeof(char *), "udefault.xargs");
+      for (i = 0; i < nargs - 2; i++) {
+        xargs[i] = mush_malloc(BUFFER_LEN, "udefault");
+        dp = xargs[i];
+        sp = args[i + 2];
+        process_expression(xargs[i], &dp, &sp, executor, caller, enactor,
+                           PE_DEFAULT, PT_DEFAULT, pe_info);
+        *dp = '\0';
+      }
+    }
+    do_userfn(buff, bp, thing, attrib, nargs - 2, xargs,
+              executor, caller, enactor, pe_info, 0);
 
-    process_expression(buff, bp, &sp, executor, caller, enactor,
-                       PE_DEFAULT, PT_DEFAULT, pe_info);
+    /* Free the xargs */
+    if (nargs > 2) {
+      for (i = 0; i < nargs - 2; i++)
+        mush_free(xargs[i], "udefault");
+      mush_free(xargs, "udefault.xargs");
+    }
     return;
   }
+  /* We couldn't get it. Evaluate args[1] and return it */
+  sp = args[1];
 
-  /* Ok, we've got it */
-  /* We must now evaluate all the arguments from args[2] on and
-   * pass them to the function */
-  xargs = NULL;
-  if (nargs > 2) {
-    xargs = mush_calloc(nargs - 2, sizeof(char *), "udefault.xargs");
-    for (i = 0; i < nargs - 2; i++) {
-      xargs[i] = mush_malloc(BUFFER_LEN, "udefault");
-      dp = xargs[i];
-      sp = args[i + 2];
-      process_expression(xargs[i], &dp, &sp, executor, caller, enactor,
-                         PE_DEFAULT, PT_DEFAULT, pe_info);
-      *dp = '\0';
-    }
-  }
-  call_ufun(&ufun, xargs, nargs - 2, rbuff, executor, enactor, pe_info);
-  safe_str(rbuff, buff, bp);
-
-  /* Free the xargs */
-  if (nargs > 2) {
-    for (i = 0; i < nargs - 2; i++)
-      mush_free(xargs[i], "udefault");
-    mush_free(xargs, "udefault.xargs");
-  }
+  process_expression(buff, bp, &sp, executor, caller, enactor,
+                     PE_DEFAULT, PT_DEFAULT, pe_info);
   return;
-
 }
 
 
 /* ARGSUSED */
 FUNCTION(fun_zfun)
 {
-  ufun_attrib ufun;
+  ATTR *attrib;
   dbref zone;
-  char rbuff[BUFFER_LEN];
 
   zone = Zone(executor);
 
@@ -320,14 +314,20 @@ FUNCTION(fun_zfun)
     safe_str(T("#-1 INVALID ZONE"), buff, bp);
     return;
   }
-
   /* find the user function attribute */
-  if (!fetch_ufun_attrib(tprintf("#%d/%s", zone, args[0]), executor, &ufun, UFUN_OBJECT)) {
-    safe_str(T(ufun.errmess), buff, bp);
+  attrib = atr_get(zone, upcasestr(args[0]));
+  if (attrib && Can_Read_Attr(executor, zone, attrib)) {
+    if (!CanEvalAttr(executor, zone, attrib)) {
+      safe_str(T(e_perm), buff, bp);
+      return;
+    }
+    do_userfn(buff, bp, zone, attrib, nargs - 1, args + 1, executor, caller,
+              enactor, pe_info, 0);
+    return;
+  } else if (attrib || !Can_Examine(executor, zone)) {
+    safe_str(T(e_atrperm), buff, bp);
     return;
   }
-
-  call_ufun(&ufun, args + 1, nargs - 1, rbuff, executor, enactor, pe_info);
-
-  safe_str(rbuff, buff, bp);
+  safe_str(T("#-1 NO SUCH USER FUNCTION"), buff, bp);
+  return;
 }

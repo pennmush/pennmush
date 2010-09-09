@@ -1548,7 +1548,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
         safe_str(AL_NAME(ptr), atrname, abp);
       }
       if (!just_match)
-        parse_que(thing, s, player, NULL);
+        parse_que(thing, s, player);
     }
   }
 
@@ -1674,7 +1674,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
         }
         if (!just_match) {
           /* do_rawlog(LT_TRACE, "MATCHED %s:", AL_NAME(ptr)); */
-          parse_que(thing, s, player, NULL);
+          parse_que(thing, s, player);
         }
       }
     }
@@ -1750,7 +1750,7 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str)
     if (!eval_lock(player, thing, Command_Lock)
         || !eval_lock(player, thing, Use_Lock))
       return 0;
-    parse_que(thing, s, player, NULL);
+    parse_que(thing, s, player);
     return 1;
   }
   return 0;

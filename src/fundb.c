@@ -160,7 +160,7 @@ FUNCTION(fun_lattr)
     lh.count = parse_integer(args[2]);
 
     if (lh.start < 1 || lh.count < 1) {
-      safe_str(T(e_argrange), buff, bp);
+      safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
       return;
     }
 
@@ -773,7 +773,7 @@ FUNCTION(fun_dbwalker)
       start = parse_integer(args[1]);
       count = parse_integer(args[2]);
       if (start < 1 || count < 1) {
-        safe_str(T(e_argrange), buff, bp);
+        safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
         return;
       }
       break;
@@ -1914,7 +1914,7 @@ FUNCTION(fun_namelist)
   char *wenv[2];
 
   if (nargs > 1 && args[1] && *args[1]) {
-    if (fetch_ufun_attrib(args[1], executor, &ufun, UFUN_DEFAULT)) {
+    if (fetch_ufun_attrib(args[1], executor, &ufun, 1)) {
       report = 1;
     } else {
       safe_str(ufun.errmess, buff, bp);

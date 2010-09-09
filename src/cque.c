@@ -63,7 +63,6 @@ typedef struct bque {
   char *rval[NUMQ];             /**< environment, from setq() */
   char *comm;                   /**< command to be executed */
   uint32_t pid;                 /**< Process id of this entry */
-  PE_Info *pe_info;             /**< pe_info for evaluating queue, or NULL */
 } BQUE;
 
 intmap *queue_map = NULL; /**< Intmap for looking up queue entries by pid */
@@ -205,8 +204,6 @@ free_qentry(BQUE *point)
     mush_free(point->semattr, "cqueue.semattr");
   if (point->comm)
     mush_free(point->comm, "cqueue.comm");
-  if (point->pe_info)
-    free_pe_info(point->pe_info);
   im_delete(queue_map, point->pid);
   mush_free(point, "cqueue");
 }
@@ -291,28 +288,21 @@ next_pid(void)
  * \param player the enactor for the queued command.
  * \param command the command to enqueue.
  * \param cause the player or object causing the command to be queued.
- * \param pe_info the pe_info to use for evaluating the queue, or NULL
  */
 void
-parse_que(dbref player, const char *command, dbref cause, PE_Info *pe_info)
+parse_que(dbref player, const char *command, dbref cause)
 {
   int a;
   BQUE *tmp;
   int pid;
-  if (!IsPlayer(player) && (Halted(player))) {
-    free_pe_info(pe_info);
+  if (!IsPlayer(player) && (Halted(player)))
     return;
-  }
-  if (!pay_queue(player, command)) {
-    /* make sure player can afford to do it */
-    free_pe_info(pe_info);
+  if (!pay_queue(player, command))      /* make sure player can afford to do it */
     return;
-  }
   pid = next_pid();
   if (pid == 0) {
     /* Too many queue entries */
     notify(player, T("Queue entry table full. Try again later."));
-    free_pe_info(pe_info);
     return;
   }
   tmp = mush_malloc(sizeof *tmp, "cqueue");
@@ -324,7 +314,6 @@ parse_que(dbref player, const char *command, dbref cause, PE_Info *pe_info)
   tmp->next = NULL;
   tmp->left = 0;
   tmp->cause = cause;
-  tmp->pe_info = pe_info;
   for (a = 0; a < 10; a++)
     if (!global_eval_context.wnxt[a])
       tmp->env[a] = NULL;
@@ -438,7 +427,7 @@ queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor)
       /* Skip the ':' */
       command++;
   }
-  parse_que(executor, command, enactor, NULL);
+  parse_que(executor, command, enactor);
   free(start);
   return 1;
 }
@@ -467,7 +456,7 @@ wait_que(dbref player, int waittill, char *command, dbref cause, dbref sem,
   if (waittill == 0) {
     if (sem != NOTHING)
       add_to_sem(sem, -1, semattr);
-    parse_que(player, command, cause, NULL);
+    parse_que(player, command, cause);
     return;
   }
   if (!pay_queue(player, command))      /* make sure player can afford to do it */
@@ -485,7 +474,6 @@ wait_que(dbref player, int waittill, char *command, dbref cause, dbref sem,
   tmp->cause = cause;
   tmp->semattr = NULL;
   tmp->next = NULL;
-  tmp->pe_info = NULL;
   for (a = 0; a < 10; a++) {
     if (!global_eval_context.wnxt[a])
       tmp->env[a] = NULL;
@@ -680,11 +668,7 @@ do_entry(BQUE *entry, int include_recurses)
       *(global_eval_context.break_replace) = '\0';
       if (!include_recurses) {
         start_cpu_timer();
-        if (entry->pe_info) {
-          global_eval_context.pe_info = entry->pe_info;
-        } else {
-          global_eval_context.pe_info = make_pe_info();
-        }
+        global_eval_context.pe_info = make_pe_info();
       }
       while (!cpu_time_limit_hit && *s) {
         r = global_eval_context.ccom;
@@ -727,7 +711,6 @@ do_entry(BQUE *entry, int include_recurses)
           tmp->next = NULL;
           tmp->left = 0;
           tmp->cause = entry->cause;
-          tmp->pe_info = NULL;
           for (a = 0; a < 10; a++) {
             if (global_eval_context.include_called == 1) {
               tmp->env[a] =
@@ -769,9 +752,7 @@ do_entry(BQUE *entry, int include_recurses)
       }
       if (!include_recurses) {
         reset_cpu_timer();
-        if (!entry->pe_info) {
-          free_pe_info(global_eval_context.pe_info);
-        }
+        free_pe_info(global_eval_context.pe_info);
         global_eval_context.pe_info = NULL;
       }
     }
@@ -1552,7 +1533,7 @@ do_halt(dbref owner, const char *ncom, dbref victim)
       global_eval_context.wnxt[j] = global_eval_context.wenv[j];
     for (j = 0; j < NUMQ; j++)
       global_eval_context.rnxt[j] = global_eval_context.renv[j];
-    parse_que(player, ncom, player, NULL);
+    parse_que(player, ncom, player);
   }
 }
 

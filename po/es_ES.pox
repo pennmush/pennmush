@@ -264,6 +264,10 @@ msgstr "3-1 NO HAY TAL JUGADOR"
 msgid "#-1 NO SUCH TYPE"
 msgstr "#-1 NO HAY TAL TIPO"
 
+#: src/funufun.c:310
+msgid "#-1 NO SUCH USER FUNCTION"
+msgstr "#-1 NO HAY TAL FUNCION DE USUARIO"
+
 #: src/bsd.c:4485 src/bsd.c:4498
 msgid "#-1 NOT CONNECTED"
 msgstr "#-1 NO ESTA CONECTADO"

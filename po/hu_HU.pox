@@ -325,6 +325,10 @@ msgstr "#-1 NINCS ILYEN JÁTÉKOS"
 msgid "#-1 NO SUCH TYPE"
 msgstr "#-1 NINCS ILYEN TÍPUS"
 
+#: src/funufun.c:310
+msgid "#-1 NO SUCH USER FUNCTION"
+msgstr "#-1 NINCS ILYEN FELHASZNÁLÓI FUNKCIÓ"
+
 #: src/bsd.c:4485 src/bsd.c:4498
 msgid "#-1 NOT CONNECTED"
 msgstr "#-1 NINCS KAPCSOLÓDVA"

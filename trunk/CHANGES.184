@@ -32,6 +32,8 @@ Minor Changes:
  * @hook/overrides on huh_command are now matched against "huh_command" and
    "huh_command <input>". From a suggestion by Mercutio. [MG]
  * Various help fixes.
+ * @list and list() can now show only built-in or only local commands or
+   functions. Suggested by Trelane@M*U*S*H. [MG]
    
 Functions:
  * ibreak(), for breaking out of an iter() loop. [Rhost] [MG]

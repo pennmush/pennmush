@@ -896,6 +896,18 @@ FUNCTION(fun_null)
 /* ARGSUSED */
 FUNCTION(fun_list)
 {
+  int which = 3;
+  char *fwhich[3] = {"builtin", "local", "all"};
+  if (nargs == 2) {
+    if (!strcasecmp(args[1], "local"))
+      which = 2;
+    else if (!strcasecmp(args[1], "builtin"))
+      which = 1;
+    else if (strcasecmp(args[1], "all")) {
+      safe_str("#-1", buff, bp);
+      return;
+    }
+  }
   if (!args[0] || !*args[0])
     safe_str("#-1", buff, bp);
   else if (string_prefix("motd", args[0]))
@@ -907,11 +919,11 @@ FUNCTION(fun_list)
   else if (string_prefix("fullmotd", args[0]) && Hasprivs(executor))
     safe_str(cf_fullmotd_msg, buff, bp);
   else if (string_prefix("functions", args[0]))
-    safe_str(list_functions(NULL), buff, bp);
+    safe_str(list_functions(fwhich[which - 1]), buff, bp);
   else if (string_prefix("@functions", args[0]))
     safe_str(list_functions("local"), buff, bp);
   else if (string_prefix("commands", args[0]))
-    safe_str(list_commands(), buff, bp);
+    safe_str(list_commands(which), buff, bp);
   else if (string_prefix("attribs", args[0]))
     safe_str(list_attribs(), buff, bp);
   else if (string_prefix("locks", args[0]))

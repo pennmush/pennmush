@@ -503,7 +503,7 @@ FUNTAB flist[] = {
   {"LEXITS", fun_dbwalker, 1, 1, FN_REG | FN_STRIPANSI},
   {"LFLAGS", fun_lflags, 0, 1, FN_REG | FN_STRIPANSI},
   {"LINK", fun_link, 2, 3, FN_REG | FN_STRIPANSI},
-  {"LIST", fun_list, 1, 1, FN_REG | FN_STRIPANSI},
+  {"LIST", fun_list, 1, 2, FN_REG | FN_STRIPANSI},
   {"LIT", fun_lit, 1, -1, FN_LITERAL},
   {"LJUST", fun_ljust, 2, 3, FN_REG},
   {"LLOCKFLAGS", fun_lockflags, 0, 1, FN_REG | FN_STRIPANSI},
@@ -831,10 +831,10 @@ FUNTAB flist[] = {
  * \param lc if 1, return functions in lowercase.
  */
 void
-do_list_functions(dbref player, int lc)
+do_list_functions(dbref player, int lc, char *type)
 {
   /* lists all built-in functions. */
-  char *b = list_functions(NULL);
+  char *b = list_functions(type);
   notify_format(player, T("Functions: %s"), lc ? strlower(b) : b);
 }
 

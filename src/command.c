@@ -186,7 +186,7 @@ COMLIST commands[] = {
   {"@LISTMOTD", NULL, cmd_listmotd, CMD_T_ANY, 0, 0},
 
   {"@LIST",
-   "LOWERCASE MOTD LOCKS FLAGS FUNCTIONS POWERS COMMANDS ATTRIBS ALLOCATIONS",
+   "LOWERCASE MOTD LOCKS FLAGS FUNCTIONS POWERS COMMANDS ATTRIBS ALLOCATIONS ALL BUILTIN LOCAL",
    cmd_list,
    CMD_T_ANY, 0, 0},
   {"@LOCK", NULL, cmd_lock,
@@ -2004,31 +2004,40 @@ COMMAND(cmd_command)
  * This function sends a player the list of commands.
  * \param player the enactor.
  * \param lc if true, list is in lowercase rather than uppercase.
+ * \param type 3 = show all, 2 = show only local @commands, 1 = show only built-in @commands
  */
 void
-do_list_commands(dbref player, int lc)
+do_list_commands(dbref player, int lc, int type)
 {
-  char *b = list_commands();
+  char *b = list_commands(type);
   notify_format(player, T("Commands: %s"), lc ? strlower(b) : b);
 }
 
 /** Return a list of defined commands.
  * This function returns a space-separated list of commands as a string.
+ * \param type 3 = show all, 2 = show only local @commands, 1 = show only built-in @commands
  */
 char *
-list_commands(void)
+list_commands(int type)
 {
   COMMAND_INFO *command;
   char *ptrs[BUFFER_LEN / 2];
   static char buff[BUFFER_LEN];
   char *bp;
   int nptrs = 0, i;
+
   command = (COMMAND_INFO *) ptab_firstentry(&ptab_command);
   while (command) {
-    ptrs[nptrs] = (char *) command->name;
-    nptrs++;
+    if (type == 3 || (type == 1 && command->func != cmd_unimplemented) ||
+        (type == 2 && command->func == cmd_unimplemented)) {
+      ptrs[nptrs] = (char *) command->name;
+      nptrs++;
+    }
     command = (COMMAND_INFO *) ptab_nextentry(&ptab_command);
   }
+
+  if (!nptrs)
+    return "";
 
   do_gensort(0, ptrs, NULL, nptrs, ALPHANUM_LIST);
   bp = buff;

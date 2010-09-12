@@ -111,7 +111,7 @@ void do_writelog(dbref player, char *str, int ltype);
 void bind_and_queue(dbref player, dbref cause, char *action, const char *arg,
                     const char *placestr);
 void do_scan(dbref player, char *command, int flag);
-void do_list(dbref player, char *arg, int lc);
+void do_list(dbref player, char *arg, int lc, int which);
 void do_dolist(dbref player, char *list, char *command,
                dbref cause, unsigned int flags);
 void do_uptime(dbref player, int mortal);
@@ -2370,15 +2370,26 @@ db_open_write(const char *fname)
  * \param lc if 1, list in lowercase.
  */
 void
-do_list(dbref player, char *arg, int lc)
+do_list(dbref player, char *arg, int lc, int which)
 {
   if (!arg || !*arg)
     notify(player, T("I don't understand what you want to @list."));
   else if (string_prefix("commands", arg))
-    do_list_commands(player, lc);
-  else if (string_prefix("functions", arg))
-    do_list_functions(player, lc);
-  else if (string_prefix("motd", arg))
+    do_list_commands(player, lc, which);
+  else if (string_prefix("functions", arg)) {
+    switch (which) {
+      case '1':
+        do_list_functions(player, lc, "builtin");
+        break;
+      case '2':
+        do_list_functions(player, lc, "local");
+        break;
+      case '3':
+      default:
+        do_list_functions(player, lc, "all");
+        break;
+    }
+  } else if (string_prefix("motd", arg))
     do_motd(player, MOTD_LIST, "");
   else if (string_prefix("attribs", arg))
     do_list_attribs(player, lc);

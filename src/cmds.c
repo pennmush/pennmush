@@ -41,7 +41,7 @@ void do_list_memstats(dbref player);
 
 void do_dolist(dbref player, char *list, char *command,
                dbref cause, unsigned int flags);
-void do_list(dbref player, char *arg, int lc);
+void do_list(dbref player, char *arg, int lc, int which);
 void do_writelog(dbref player, char *str, int ltype);
 void do_readcache(dbref player);
 void do_scan(dbref player, char *command, int flag);
@@ -540,13 +540,22 @@ COMMAND(cmd_listmotd)
 COMMAND(cmd_list)
 {
   int lc;
+  int which = 3;
+  char *fwhich[3] = {"builtin", "local", "all"};
   lc = SW_ISSET(sw, SWITCH_LOWERCASE);
+  if (SW_ISSET(sw, SWITCH_ALL))
+    which = 3;
+  else if (SW_ISSET(sw, SWITCH_LOCAL))
+    which = 2;
+  else if (SW_ISSET(sw, SWITCH_BUILTIN))
+    which = 1;
+
   if (SW_ISSET(sw, SWITCH_MOTD))
     do_motd(player, MOTD_LIST, "");
   else if (SW_ISSET(sw, SWITCH_FUNCTIONS))
-    do_list_functions(player, lc);
+    do_list_functions(player, lc, fwhich[which - 1]);
   else if (SW_ISSET(sw, SWITCH_COMMANDS))
-    do_list_commands(player, lc);
+    do_list_commands(player, lc, which);
   else if (SW_ISSET(sw, SWITCH_ATTRIBS))
     do_list_attribs(player, lc);
   else if (SW_ISSET(sw, SWITCH_LOCKS))
@@ -558,7 +567,7 @@ COMMAND(cmd_list)
   else if (SW_ISSET(sw, SWITCH_ALLOCATIONS))
     do_list_allocations(player);
   else
-    do_list(player, arg_left, lc);
+    do_list(player, arg_left, lc, which);
 }
 
 COMMAND(cmd_lock)

@@ -2376,6 +2376,9 @@ FUNCTION(fun_step)
   char *oldbp;
   char *osep, osepd[2] = { '\0', '\0' };
   int pe_flags = PE_DEFAULT;
+  char *wenv[10];
+  ufun_attrib ufun;
+  char rbuff[BUFFER_LEN];
 
   if (!is_integer(args[2])) {
     safe_str(T(e_int), buff, bp);
@@ -2404,62 +2407,41 @@ FUNCTION(fun_step)
     return;
 
   /* find our object and attribute */
-  parse_anon_attrib(executor, args[0], &thing, &attrib);
-  if (!GoodObject(thing) || !attrib || !Can_Read_Attr(executor, thing, attrib)) {
-    free_anon_attrib(attrib);
-    return;
-  }
-  if (!CanEvalAttr(executor, thing, attrib)) {
-    free_anon_attrib(attrib);
-    return;
-  }
-  if (AF_Debug(attrib))
-    pe_flags |= PE_DEBUG;
-
-  asave = safe_atr_value(attrib);
+  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
+      return;
 
   /* save our stack */
   save_global_env("step", preserve);
 
   for (n = 0; n < step; n++) {
-    global_eval_context.wenv[n] = split_token(&lp, sep);
+    wenv[n] = split_token(&lp, sep);
     if (!lp) {
       n++;
       break;
     }
   }
   for (; n < 10; n++)
-    global_eval_context.wenv[n] = NULL;
+    wenv[n] = NULL;
 
-  ap = asave;
-  process_expression(buff, bp, &ap, thing, executor, enactor,
-                     pe_flags, PT_DEFAULT, pe_info);
-  oldbp = *bp;
-  funccount = pe_info->fun_invocations;
+  if (call_ufun(&ufun, wenv, step, rbuff, executor, enactor, pe_info))
+    return;
+  safe_str(rbuff, buff, bp);
   while (lp) {
     safe_str(osep, buff, bp);
     for (n = 0; n < step; n++) {
-      global_eval_context.wenv[n] = split_token(&lp, sep);
+      wenv[n] = split_token(&lp, sep);
       if (!lp) {
         n++;
         break;
       }
     }
     for (; n < 10; n++)
-      global_eval_context.wenv[n] = NULL;
-    ap = asave;
-    if (process_expression(buff, bp, &ap, thing, executor, enactor,
-                           pe_flags, PT_DEFAULT, pe_info))
-      break;
-    if (*bp == (buff + BUFFER_LEN - 1) && pe_info->fun_invocations == funccount)
-      break;
-    oldbp = *bp;
-    funccount = pe_info->fun_invocations;
+      wenv[n] = NULL;
+    if (call_ufun(&ufun, wenv, step, rbuff, executor, enactor, pe_info))
+      return;
+    safe_str(rbuff, buff, bp);
   }
 
-  free(asave);
-  free_anon_attrib(attrib);
-  restore_global_env("step", preserve);
 }
 
 /* ARGSUSED */

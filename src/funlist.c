@@ -2364,18 +2364,12 @@ FUNCTION(fun_step)
    * This function takes delimiters.
    */
 
-  dbref thing;
-  ATTR *attrib;
   char *preserve[10];
-  char const *ap;
-  char *asave, *lp;
+  char *lp;
   char sep;
   int n;
   int step;
-  int funccount;
-  char *oldbp;
   char *osep, osepd[2] = { '\0', '\0' };
-  int pe_flags = PE_DEFAULT;
   char *wenv[10];
   ufun_attrib ufun;
   char rbuff[BUFFER_LEN];

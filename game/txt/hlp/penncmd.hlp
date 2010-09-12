@@ -2104,7 +2104,7 @@ See also: @ps, QUEUE
     dbref instead of the executor's dbref, and requires control over
     the enactor or the Can_nspemit power.
 & @list
-  @list/<switch>[/lowercase]
+  @list/<switch>
   @list[/lowercase] <switch>
 
   The @list command lists useful MUSH information.
@@ -2112,7 +2112,7 @@ See also: @ps, QUEUE
   Switches include:
   motd        : Alias for @listmotd, shows current messages of the day.
   functions   : Lists all built-in functions and @functions.
-  commands    : Lists all built-in commands.
+  commands    : Lists all built-in commands and @commands.
   attribs     : Lists all standard attributes.
   locks       : Lists the built-in lock types.
   flags       : Alias for @flag/list, shows all flags.
@@ -2121,6 +2121,9 @@ See also: @ps, QUEUE
   
   By default, information is shown in upper-case. Add the /lowercase switch
   to show output in lowercase instead.
+  
+  "commands" and "functions" show built-in and local commands/functions by
+  default. The /builtin or /local switches can be given to limit this.
 
 See also: list(), @config, config(), functions(), @stats, @command,
     @function, @flag, @power, @attribute, @listmotd, @motd, locktypes

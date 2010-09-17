@@ -30,8 +30,6 @@
 #include "confmagic.h"
 
 
-static int regrep_helper(dbref who, dbref what, dbref parent,
-                         char const *name, ATTR *atr, void *args);
 enum itemfun_op { IF_DELETE, IF_REPLACE, IF_INSERT };
 static void do_itemfuns(char *buff, char **bp, char *str, char *num,
                         char *word, char *sep, enum itemfun_op flag);
@@ -3105,104 +3103,6 @@ FUNCTION(fun_regmatch)
   }
   mush_free(re, "pcre");
   free_ansi_string(as);
-}
-
-
-/** Structure to hold data for regrep */
-struct regrep_data {
-  pcre *re;             /**< Pointer to compiled regular expression */
-  pcre_extra *study;    /**< Pointer to studied data about re */
-  char *buff;           /**< Buffer to store regrep results */
-  char **bp;            /**< Pointer to address of insertion point in buff */
-  int first;            /**< Is this the first match or a later match? */
-};
-
-/* Like grep(), but using a regexp pattern. This same function handles
- *  both regrep and regrepi. */
-FUNCTION(fun_regrep)
-{
-  struct regrep_data reharg;
-  const char *errptr;
-  int erroffset;
-  int flags = 0;
-  bool free_study;
-  dbref it = match_thing(executor, args[0]);
-
-  reharg.first = 0;
-  if (it == NOTHING || it == AMBIGUOUS) {
-    safe_str(T(e_notvis), buff, bp);
-    return;
-  }
-  /* make sure there's an attribute and a pattern */
-  if (!*args[1]) {
-    safe_str(T("#-1 NO SUCH ATTRIBUTE"), buff, bp);
-    return;
-  }
-  if (!*args[2]) {
-    safe_str(T("#-1 INVALID GREP PATTERN"), buff, bp);
-    return;
-  }
-
-  if (strcmp(called_as, "REGREPI") == 0)
-    flags = PCRE_CASELESS;
-
-  if ((reharg.re = pcre_compile(args[2], flags,
-                                &errptr, &erroffset, tables)) == NULL) {
-    /* Matching error. */
-    safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
-    safe_str(errptr, buff, bp);
-    return;
-  }
-  add_check("pcre");
-
-  reharg.study = pcre_study(reharg.re, 0, &errptr);
-  if (errptr != NULL) {
-    safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
-    safe_str(errptr, buff, bp);
-    mush_free(reharg.re, "pcre");
-    return;
-  }
-  if (reharg.study) {
-    add_check("pcre.extra");
-    free_study = true;
-    set_match_limit(reharg.study);
-  } else {
-    free_study = false;
-    reharg.study = default_match_limit();
-  }
-
-  reharg.buff = buff;
-  reharg.bp = bp;
-
-  atr_iter_get(executor, it, args[1], 0, 0, regrep_helper, (void *) &reharg);
-  mush_free(reharg.re, "pcre");
-  if (free_study)
-    mush_free(reharg.study, "pcre.extra");
-}
-
-static int
-regrep_helper(dbref who __attribute__ ((__unused__)),
-              dbref what __attribute__ ((__unused__)),
-              dbref parent __attribute__ ((__unused__)),
-              char const *name __attribute__ ((__unused__)),
-              ATTR *atr, void *args)
-{
-  struct regrep_data *reharg = args;
-  char const *str;
-  size_t slen;
-  int offsets[99];
-
-  str = remove_markup(atr_value(atr), &slen);
-  if (pcre_exec(reharg->re, reharg->study, str, slen - 1, 0, 0, offsets, 99)
-      >= 0) {
-    if (reharg->first != 0)
-      safe_chr(' ', reharg->buff, reharg->bp);
-    else
-      reharg->first = 1;
-    safe_str(AL_NAME(atr), reharg->buff, reharg->bp);
-    return 1;
-  } else
-    return 0;
 }
 
 /* Like grab, but with a regexp pattern. This same function handles

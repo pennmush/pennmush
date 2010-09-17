@@ -36,6 +36,10 @@ Functions:
    and reswitch*(), but can be used in nested switches/on user input. [MG]
  * New slev() function, returns the current nesting depth of switches. [MG]
 
+Commands:
+ * @grep now accepts /wild and /regexp switches, for wildcard/globbing and
+   regular expression greps (a la wildgrep() and regrep()). Also /nocase
+   for case-insensitive greps. Suggested by Paige. [MG]
 
 & 1.8.4p1
 Version 1.8.4 patchlevel 1                                 Sep 05,  2010

@@ -1522,10 +1522,6 @@ do_grep(dbref player, char *obj, char *lookfor, int print, int flags)
   if ((thing = noisy_match_result(player, obj, NOTYPE, MAT_EVERYTHING)) ==
       NOTHING)
     return;
-  if (!Can_Examine(player, thing)) {
-    notify(player, T("Permission denied."));
-    return;
-  }
 
   if (print) {
     if (!grep_util(player, thing, pattern, lookfor, NULL, NULL, flags))

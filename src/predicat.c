@@ -1402,6 +1402,7 @@ regrep_helper(dbref player, dbref thing __attribute__ ((__unused__)),
     }
   }
   safe_ansi_string(orig, 0, orig->len, rbuff, &rbp);
+  *rbp = '\0';
   free_ansi_string(orig);
   grep_add_attr(rgd->buff, rgd->bp, player, rgd->count, attr, rbuff);
   rgd->count++;

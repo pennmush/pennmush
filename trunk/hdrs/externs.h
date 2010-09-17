@@ -407,11 +407,16 @@ int ok_tag_attribute(dbref player, const char *params);
 dbref parse_match_possessor(dbref player, char **str, int exits);
 void page_return(dbref player, dbref target, const char *type,
                  const char *message, const char *def);
-char *grep_util(dbref player, dbref thing, char *pattern,
-                char *lookfor, int sensitive, int wild);
 dbref where_is(dbref thing);
 int charge_action(dbref thing);
 dbref first_visible(dbref player, dbref thing);
+
+#define GREP_NOCASE 1
+#define GREP_WILD 2
+#define GREP_REGEXP 4
+int grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff, char **bp, int flags);
+
+
 
 /* From rob.c */
 void s_Pennies(dbref thing, int amount);

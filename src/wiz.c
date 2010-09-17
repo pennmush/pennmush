@@ -1768,7 +1768,6 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
                  struct search_spec *spec)
 {
   int n;
-  int is_wiz;
   const char *class, *restriction;
 
   spec->zone = spec->parent = spec->owner = ANY_OWNER;
@@ -1786,10 +1785,11 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
   strcpy(spec->cmdstring, "");
   strcpy(spec->listenstring, "");
 
-  is_wiz = Search_All(player) || See_All(player);
   /* set limits on who we search */
-  if (!owner || !*owner || strcasecmp(owner, "all") == 0)
-    spec->owner = is_wiz ? ANY_OWNER : player;
+  if (!owner || !*owner)
+    spec->owner = (See_All(player) || Search_All(player)) ? ANY_OWNER : player;
+  else if (strcasecmp(owner, "all") == 0)
+    spec->owner = ANY_OWNER; /* Will only show visual objects for mortals */
   else if (strcasecmp(owner, "me") == 0)
     spec->owner = player;
   else
@@ -1992,6 +1992,7 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
   struct search_spec spec;
   int count = 0;
   int ret = 0;
+  int vis_only = 1;
   ATTR *a;
   char lbuff[BUFFER_LEN];
 
@@ -2003,14 +2004,9 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
 
   is_wiz = Search_All(player) || See_All(player);
 
-  if ((spec.owner != ANY_OWNER && spec.owner != Owner(player)) &&
-      !(is_wiz || (spec.type == TYPE_PLAYER) ||
-        (ZMaster(spec.owner) && eval_lock(player, spec.owner, Zone_Lock)))) {
-    notify(player, T("You need a search warrant to do that!"));
-    if (spec.lock != TRUE_BOOLEXP)
-      free_boolexp(spec.lock);
-    return -1;
-  }
+  vis_only = (spec.owner != Owner(player) &&
+             !(is_wiz || (spec.type == TYPE_PLAYER) || (ZMaster(spec.owner) &&
+             eval_lock(player, spec.owner, Zone_Lock))));
 
   /* make sure player has money to do the search -
    * But only if this does an eval or lock search. */
@@ -2039,6 +2035,8 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
     if (IsGarbage(n) && spec.type != TYPE_GARBAGE)
       continue;
     if (spec.owner != ANY_OWNER && Owner(n) != spec.owner)
+      continue;
+    if (vis_only && !Can_Examine(player, n))
       continue;
     if (spec.type != NOTYPE && Typeof(n) != spec.type)
       continue;

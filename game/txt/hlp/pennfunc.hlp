@@ -2728,19 +2728,17 @@ See also: pos(), member(), match()
   children(<object>)
   nchildren(<object>)
  
-  This function is similar to the @search command, except it returns
-  just a list of dbref numbers. Some uses are computationally expensive,
-  and cost 100 pennies; see 'help @search' for details. The function must
-  have at least three arguments.  Wizards can specify "all" or <player>
-  for the <player> field; mortals must use "me" or a ZMP whose @lock/zone
-  they pass. If you do not want to restrict something, use "none" for
-  <class> and <restriction>.
+  This function is similar to the @search command, except it returns just a
+  list of dbref numbers. Some uses are computationally expensive, and cost 
+  100 pennies; see 'help @search' for details. The function must have at
+  least three arguments.  You can specify "all" or <player> for the <player>
+  field; for mortals, only objects they can examine are included. If you do
+  not want to restrict something, use "none" for <class> and <restriction>.
 
-  The possible <class>es and <restriction>s are the same as those
-  accepted by @search. lsearch() can accept multiple class/restriction
-  pairs, and applies them in a boolean "AND" fashion, returning only
-  dbrefs that fulfill all restrictions. See 'help @search' for
-  information about them.
+  The possible <class>es and <restriction>s are the same as those accepted
+  by @search. lsearch() can accept multiple class/restriction pairs, and 
+  applies them in a boolean "AND" fashion, returning only dbrefs that
+  fulfill all restrictions. See 'help @search' for information about them.
 
   children() is exactly the same as lsearch([me|all], parent, <object>),
   using "all" for See_All/Search_All players and "me" for others.
@@ -2771,6 +2769,7 @@ See also: pos(), member(), match()
   lsearch(me, type, room, 100, 200)        <-- same, but only w/db# 100-200
   lsearch(all, eplayer, \[eq(money(##),100)\]) <-- lists all players with 100
                                                    coins.
+See also: @search, @find, lparent()
 & LSTATS()
 & STATS()
   lstats(<player>)

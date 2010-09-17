@@ -3113,10 +3113,9 @@ See also: $-commands, EVALUATION ORDER
   specifying <begin> and <end> as the first and last dbrefs to search.
   
   If a <player> argument is supplied, only objects owned by that player
-  will be listed.  Mortals can only search themselves or a ZMP whose
-  @lock/zone they pass. Those with the Search power can also specify "all"
-  to search all players. Defaults to "me" for mortals, and "all" for
-  players with the Search power.
+  will be listed, or all objects if "all" is used. Mortals attempting to
+  match other players (aside from ZMPs whose @lock/zone they pass) or "all"
+  will only get objects which they can examine.
   
   <class> and <restriction> arguments can be given to filter the match
   results. Possible <class>es include TYPE, NAME, ZONE, PARENT, EXITS,
@@ -3134,7 +3133,7 @@ See also: $-commands, EVALUATION ORDER
   If <class>=PARENT, only children of parent <restriction> will be listed.
   For ZONE and PARENT, <restriction> must be specified as a dbref number.
   
-  'help @search2' for more.
+  Continued in 'help @search2'.
 & @search2
   If <class>=FLAGS or LFLAGS, only objects with the list of flags
   specified by <restriction> will be listed. For FLAGS, flags to match
@@ -3154,7 +3153,7 @@ See also: $-commands, EVALUATION ORDER
   is a function, is replaced by each dbref sequentially. Classes EPLAYER,
   EROOM, EEXIT, and ETHING work like EVAL but are restricted to a single type.
   
-  See "help @search3" for more.
+  Continued in 'help @search3' for more.
 & @search3
   If <class>=MINDB, only objects with dbrefs of <restriction> or
   higher will be listed. If <class>=MAXDB, only objects with dbrefs
@@ -3171,7 +3170,7 @@ See also: $-commands, EVALUATION ORDER
   If <class>=LISTEN, then @search will only return objects that respond to
   <restriction> through a listen.
 
-  See "help @search4" for more.
+  Continued in 'help @search4'.
 & @search4
   
   For the class TYPE=PLAYER, and for PLAYER=<player-name>, anyone may
@@ -3192,7 +3191,8 @@ See also: $-commands, EVALUATION ORDER
   cost a number of pennies (the exact amount is configurable; see 
   @config find_cost).
   
-  See "help @search5" for some examples.
+  See 'help @search5' for some examples.
+See also: lsearch(), @find
 & @search5
   Examples:  
     @search all type=player,flags=W      <-- list all Wizard players
@@ -3205,7 +3205,6 @@ See also: $-commands, EVALUATION ORDER
                                                   wizard or royalty flags.
     @search wizard_bc command=+who    <-- Forgot what object has your +who?
 
-See also: lsearch, lsearchr 
 & @set
   @set <object>=[!]<flag> [[!]<flag> ...]
   @<pre-defined attribute> <object>=<value>

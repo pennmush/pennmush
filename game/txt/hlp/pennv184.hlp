@@ -29,6 +29,8 @@ Minor Changes:
  * Various help fixes.
  * @list and list() can now show only built-in or only local commands or
    functions. Suggested by Trelane@M*U*S*H. [MG]
+ * Mortals can now use @search to find any objects they can examine.
+   Suggested by Paige. [MG]
    
 Functions:
  * ibreak(), for breaking out of an iter() loop. [Rhost] [MG]

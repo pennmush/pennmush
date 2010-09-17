@@ -1805,7 +1805,7 @@ See also: match(), matchall(), grab(), regmatch()
   grep()/wildgrep()/regrep() are case-sensitive. 
   grepi()/wildgrepi()/regrepi() are case-insensitive.
   
-See also: lattr(), WILDCARDS
+See also: @grep, lattr(), WILDCARDS
 & GT()
   gt(<number>, <number>[, ... , <numberN>])
 

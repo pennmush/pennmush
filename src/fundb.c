@@ -2299,9 +2299,7 @@ FUNCTION(fun_isobjid)
 /* ARGSUSED */
 FUNCTION(fun_grep)
 {
-  char *tp;
-  int wild;
-  int sensitive;
+  int flags = 0;
 
   dbref it = match_thing(executor, args[0]);
   if (!GoodObject(it)) {
@@ -2318,11 +2316,15 @@ FUNCTION(fun_grep)
     return;
   }
 
-  sensitive = !strcmp(called_as, "GREP") || !strcmp(called_as, "WILDGREP");
-  wild = !strcmp(called_as, "WILDGREPI") || !strcmp(called_as, "WILDGREP");
-  tp = grep_util(executor, it, args[1], args[2], sensitive, wild);
-  safe_str(tp, buff, bp);
-  mush_free(tp, "grep_util.buff");
+  if (!strcmp(called_as, "GREPI") || !strcmp(called_as, "WILDGREPI") || !strcmp(called_as, "REGREPI"))
+    flags |= GREP_NOCASE;
+
+  if (*called_as == 'W')
+    flags |= GREP_WILD;
+  else if (*called_as == 'R')
+    flags |= GREP_REGEXP;
+
+  grep_util(executor, it, args[1], args[2], buff, bp, flags);
 }
 
 /* Get database size statistics */

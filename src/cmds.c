@@ -454,13 +454,23 @@ COMMAND(cmd_function)
   }
 }
 
-
 COMMAND(cmd_grep)
 {
-  do_grep(player, arg_left, arg_right, ((SW_ISSET(sw, SWITCH_IPRINT))
-                                        || (SW_ISSET(sw, SWITCH_PRINT))),
-          ((SW_ISSET(sw, SWITCH_IPRINT))
-           || (SW_ISSET(sw, SWITCH_ILIST))));
+  int flags = 0;
+  int print = 0;
+
+  if (SW_ISSET(sw, SWITCH_IPRINT) || SW_ISSET(sw, SWITCH_ILIST) || SW_ISSET(sw, SWITCH_NOCASE))
+    flags |= GREP_NOCASE;
+
+  if (SW_ISSET(sw, SWITCH_REGEXP))
+    flags |= GREP_REGEXP;
+  else if (SW_ISSET(sw, SWITCH_WILD))
+    flags |= GREP_WILD;
+
+  if (SW_ISSET(sw, SWITCH_IPRINT) || SW_ISSET(sw, SWITCH_PRINT))
+    print = 1;
+
+  do_grep(player, arg_left, arg_right, print, flags);
 }
 
 COMMAND(cmd_halt)

@@ -1851,31 +1851,32 @@ See also: FLAGS, @set, @power, flag permissions
 
 See also: RESTRICT, FUNCTIONS, @startup, fn()
 & @grep
-  @grep[/<switch>] <object>[/<attrs>]=<pattern>
+  @grep[/<switches>] <object>[/<attrs>]=<pattern>
   
-  This command searches attributes in an object for <pattern>. You must be
-  able to examine <object>. @grep takes four switches:
-  @grep/list
-    Lists the names of the attributes on the object containing <pattern>.
-    This is the default.
-  @grep/ilist
-    Same as above, but is case-insensitive when trying to match <pattern>.
-  @grep/print
-    Prints out all the attributes, ansi-highlighting the pattern itself.
-  @grep/iprint
-    Same as above, case-insensitive.
+  @grep returns a list of all attributes on <object> which match <pattern>.
+  If <attrs> is specified, only attributes which match the wildcard pattern
+  <attrs> are checked; it defaults to "*". Use "**" for all attributes.
+  
+  By default, attributes which contain the string <pattern> are returned.
+  However, if the /wild switch is given, <pattern> is treated as a wildcard
+  pattern, and attributes which match the pattern are returned. If the
+  /regexp switch is given, <pattern> is treated as a regular expression,
+  and attributes matching the regexp are returned. Please note that <pattern>
+  will NOT be evaluated, so you can easily grep for code strings.
+  
+  All matches are case-sensitive, unless the /nocase switch is given.
+  
+  @grep only shows a list of matching attributes. However, you can specify
+  the /print switch, in which case attribute values are also shown, with the
+  matching substrings ansi-highlighted if appropriate.
 
   Continued in 'help @grep2'.
 & @grep2
 
-  <attrs> is an optional wildcard pattern specifying attributes to check. If
-  <attrs> is not provided, it defaults to "*". Note that this does not
-  include attribute trees; use "**" to check branch attributes as well.
+  For backwards compatability, the /list switch provides the default
+  behaviour of listing attributes without printing the values, and /ilist and
+  /iprint are aliases for /list/nocase and /print/nocase.
    
-  <pattern> is not treated as a wildcard pattern, so you can grep for
-  patterns containing '*', '?', etc.  Also, <pattern> is NOT PARSED,
-  so '[v(0)]' and the like can be searched for.
-  
 See also: grep(), wildgrep(), regrep(), WILDCARDS
 & @halt
 & @allhalt

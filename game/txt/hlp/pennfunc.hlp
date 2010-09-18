@@ -2844,12 +2844,11 @@ See also: lthings(), lvplayers(), lvcon(), lvexits()
   lwhoid([<viewer>[, <status>]])
 
   lwho() returns a list of the dbref numbers for all currently-connected
-  players. When mortals use this function, the dbref numbers of DARK
+  players. When mortals use this function, the dbref numbers of hidden
   wizards or royalty do NOT appear on the dbref list.
 
-  If a <viewer> is given, and used by an object that can see DARK and
-  Hidden players, lwho() returns the output of lwho() from <viewer>'s
-  point of view.
+  If a <viewer> is given, and used by a See_All object, lwho() returns the
+  output of lwho() from <viewer>'s point of view.
   
   <status> can be used to include "#-1" dbrefs for unconnected ports, and
   must be one of "all", "online" or "offline". It is primarily useful when
@@ -3365,14 +3364,14 @@ See also: ncon(), nexits(), xthings(), lthings(), lvthings()
   nmwho()
 
   nwho() returns a count of all currently-connected players. When mortals 
-  use this function, DARK wizards or royalty are NOT counted. See_All players
-  can specify a <viewer> to get a count of the number of players that 
-  <viewer> can see is online.
+  use this function, hidden players are NOT counted. See_All players can 
+  specify a <viewer> to get a count of the number of players that <viewer>
+  can see is online.
   
-  nmwho() returns a count of all currently connected, non-hidden
-  players.  It's exactly the same as nwho() used by a mortal, and is
-  suitable for use on privileged global objects that always need an
-  unprivileged count of who is online.
+  nmwho() returns a count of all currently connected, non-hidden players.
+  It's exactly the same as nwho() used by a mortal, and is suitable for use
+  on privileged global objects that always need an unprivileged count of 
+  who is online.
 
   These functions are equivilent to words(lwho([<viewer>])) and 
   words(mwho()), but are more efficient, and don't suffer from buffer
@@ -3603,8 +3602,7 @@ See also: @ps, getpids(), pidinfo()
     
   The <status> argument for lports() controls whether or not ports which
   are not connected to (ie, at the login screen) are included, and must be
-  one of "all", "online" or "offline". Only See_All players can see
-  unconnected ports.
+  one of "all", "online" or "offline".
 
   These port numbers also appear in the wizard WHO, and can be used
   with @boot/port, page/port, and the functions that return information
@@ -5844,7 +5842,7 @@ See also: nthings(), lthings(), lvthings(), xplayers(), xexits()
   
     extract(lwho(), <start>, <count>)
 
-  xmwho() does not include dark or hidden players (like mwho()).
+  xmwho() does not include hidden players (like mwho()).
 
   xwhoid() and xmwhoid() return objids instead of dbrefs.
 
@@ -5855,10 +5853,9 @@ See also: lwho(), mwho(), nwho(), zwho()
   zmwho(<object>)
 
   These functions return the dbrefs of all currently-connected players in
-  locations @chzone'd to <object>. zmwho() does not include dark or hidden
-  players, while zwho() returns all players that the caller can see are
-  online. You must be See_All or pass <object>'s @lock/zone to use these
-  functions.
+  locations @chzone'd to <object>. zmwho() does not include hidden players,
+  while zwho() returns all players that the caller can see are online. You
+  must be See_All or pass <object>'s @lock/zone to use these functions.
   
   See_All players can pass a <viewer> argument to zwho() to get only those
   players that <viewer> can see is online.

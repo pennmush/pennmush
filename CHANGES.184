@@ -47,6 +47,9 @@ Commands:
  * @grep now accepts /wild and /regexp switches, for wildcard/globbing and
    regular expression greps (a la wildgrep() and regrep()). Also /nocase
    for case-insensitive greps. Suggested by Paige. [MG]
+   
+Fixes:
+ * @cpattr and @mvattr could break attribute trees. Reported by Sketch. [MG]
 
 Version 1.8.4 patchlevel 1                                 Sep 05,  2010
 

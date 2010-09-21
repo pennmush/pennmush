@@ -514,6 +514,10 @@ copy_attrib_flags(dbref player, dbref target, ATTR *atr, int flags)
                   AL_NAME(atr));
     return;
   }
+  if (AL_FLAGS(atr) & AF_ROOT)
+    flags |= AF_ROOT;
+  else
+    flags &= ~AF_ROOT;
   AL_FLAGS(atr) = flags;
 }
 

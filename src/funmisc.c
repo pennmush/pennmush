@@ -1064,7 +1064,7 @@ FUNCTION(fun_benchmark)
   unsigned int min = UINT_MAX;
   unsigned int max = 0;
   unsigned int total = 0;
-  int i;
+  int i = 0;
   dbref thing = NOTHING;
 
   if (!is_number(args[1])) {
@@ -1097,12 +1097,13 @@ FUNCTION(fun_benchmark)
     }
   }
 
-  for (i = 1; i <= n; i++) {
+  while (i < n) {
     uint64_t start;
     unsigned int elapsed;
     tp = tbuf;
     sp = args[0];
     start = get_tsc();
+    ++i;
     if (process_expression(tbuf, &tp, &sp, executor, caller, enactor,
                            PE_DEFAULT, PT_DEFAULT, pe_info)) {
       *tp = '\0';

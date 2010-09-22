@@ -50,6 +50,7 @@ Commands:
    
 Fixes:
  * @cpattr and @mvattr could break attribute trees. Reported by Sketch. [MG]
+ * benchmark() calculated the average incorrectly. Reported by Cheetah. [DC]
 
 Version 1.8.4 patchlevel 1                                 Sep 05,  2010
 

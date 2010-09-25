@@ -891,10 +891,9 @@ ok_command_name(const char *name)
 }
 
 /** Is a name ok for a function?
- * It must start with uppercase alpha or punctuation and may contain only
- * uppercase alpha, numbers, or punctuation thereafter.
- * It must contain at least one uppercase alpha.
- * It may not begin with " : ; & ] \ and # (the special tokens).
+ * It must contain only uppercase alpha, numbers or punctuation, must
+ * contain at least one uppercase alpha, and may not begin with
+ * " : ; & ] \ or # (the special tokens).
  * \param name name to check.
  * \retval 1 name is acceptable.
  * \retval 0 name is not acceptable.
@@ -914,9 +913,6 @@ ok_function_name(const char *name)
   case NUMBER_TOKEN:
   case '&':
     return 0;
-  default:
-    if (!isupper((unsigned char) *name) && !ispunct((unsigned char) *name))
-      return 0;
   }
   /* Everything else must be printable and non-space, and we need
    * to find at least one uppercase alpha

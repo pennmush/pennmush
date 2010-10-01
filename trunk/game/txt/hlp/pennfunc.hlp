@@ -2465,7 +2465,8 @@ See also: decompose()
 & LN()
   ln(<number>)
  
-  Returns the natural log of <number>.
+  Returns the natural log of <number>. This is equivilent to
+  log(<number>, e).
   
 See also: log()
 & LNUM()

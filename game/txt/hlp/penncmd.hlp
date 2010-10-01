@@ -249,11 +249,18 @@ See also: enter, @enter, FAILURE, ACTION LISTS, VERBS
   @oufail <object>=[<message>]
   @aufail <object>=[<action list>]
  
-  Sets message shown to a player who fails to use an object via
-  the 'use' command (@ufail), message shown to others in the room
+  Sets the message shown to a player who fails to use an object via the 'use'
+  command (because they don't pass the @lock/use), the message shown to
+  others in the room when a player fails to use <object>, and the actions to
+  be taken by <object> when someone fails to use it, respectively.
 
   Note that these attributes are @ufail, NOT @ufailure, for
   TinyMUSH compatibility.
+  
+  Although the Use @lock also restricts who can trigger $-commands or
+  ^-listens on an object, these attributes will not be triggered for those
+  failures. Instead, the COMMAND_LOCK`* and LISTEN_LOCK`* attributes are
+  triggered. See 'help failure' for more information.
   
 See also: use, @use, FAILURE, ACTION LISTS, VERBS
 & @afailure
@@ -272,7 +279,7 @@ See also: use, @use, FAILURE, ACTION LISTS, VERBS
   "look" inside the room, though failure to pass the lock does not prevent
   the object from looking.
 
-See also: get, move, @lock, ACTION LISTS, VERBS, @succ
+See also: get, move, @lock, ACTION LISTS, VERBS, @success
 & @follow
 & @ofollow
 & @afollow
@@ -1416,8 +1423,6 @@ See also: enter, leave, goto, ENTER_OK
 See also: edit(), regedit(), ATTRIBUTES,
 & @elock
 & @eunlock
-  @eunlock <object>
-
   @elock <object>[=<key>]
   @eunlock <object>
   
@@ -3530,18 +3535,27 @@ See also: JUMP_OK, NO_TEL, @oxtport, @tport, @otport, @atport, @lock
 
 See also: @include, ufun()
 & @ulock
+& @uunlock
   @ulock <object>[=<key>]
+  @uunlock <object>
 
-  This is an abbreviation of @lock/use.
-
-  This lock determines who is allowed to "use" the object or to set off
-  any of the $-commands on the object. 
+  These commands set the Use lock for <object> to <key>, or clear the Use
+  lock. They are equivilent to
+    @lock/use <object>[=<key>]
+  and
+    @lock/use <object>
+    
+  The Use lock determines who is allowed to "use" the object or trigger any
+  $-commands or ^-listens on the object.
+  
+  To only lock who can use $-commands, use @lock/command. To only lock who
+  can trigger ^-listens, use @lock/listen.
 
   Example: if I want everyone but Bob to be able to use my toy, I would
   "@ulock toy=!*Bob". If I want only Bob to be able to use it, I would
-  "@ulock toy=*Bob".
+  "@ulock toy==*Bob".
 
-See also: @lock, @uunlock, locktypes
+See also: @lock, use, locktypes
 & @uptime
   @uptime[/mortal]
   
@@ -3585,12 +3599,6 @@ See also: @link, DROP-TO
   Removes the lock on <object>. It can take as many switches as @lock can. 
 
 See also: @lock, locktypes
-& @uunlock
-  @uunlock <object>
-
-  Un-use-locks the object.
-  
-See also: @lock, @ulock
 & @version
   @version
   Tells the player the name of the MUSH, which version of the code is 

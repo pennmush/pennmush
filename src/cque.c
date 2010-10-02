@@ -645,6 +645,34 @@ do_top(int ncom)
   return i;
 }
 
+void
+run_user_input(dbref player, char *input)
+{
+  BQUE *entry;
+  int i;
+
+  entry = mush_malloc(sizeof *entry, "cqueue");
+  entry->comm = mush_strdup(input, "cqueue.comm");
+  entry->pid = 0;
+  entry->player = player;
+  entry->queued = player;
+  entry->cause = player;
+  entry->sem = NOTHING;
+  entry->semattr = NULL;
+  entry->next = NULL;
+  entry->pe_info = NULL;
+  entry->left = 0;
+
+  for (i = 0; i < 10; i++)
+      entry->env[i] = NULL;
+  for (i = 0; i < NUMQ; i++)
+      entry->rval[i] = NULL;
+
+  do_entry(entry, -1);
+  free_qentry(entry);
+
+}
+
 static int
 do_entry(BQUE *entry, int include_recurses)
 {
@@ -655,9 +683,16 @@ do_entry(BQUE *entry, int include_recurses)
   int local_break_called = 0;
   char *r;
   char const *s;
+  int pt_flag = PT_SEMI;
+
+  if (include_recurses == -1) {
+    include_recurses = 0;
+    pt_flag = PT_NOTHING;
+  }
+
   if (GoodObject(entry->player) && !IsGarbage(entry->player)) {
     save_player = global_eval_context.cplr = entry->player;
-    if (!global_eval_context.include_called) {
+    if (!global_eval_context.include_called && pt_flag != PT_NOTHING) {
       giveto(global_eval_context.cplr, QUEUE_COST);
       add_to(entry->queued, -1);
     }
@@ -672,7 +707,8 @@ do_entry(BQUE *entry, int include_recurses)
         else
           global_eval_context.renv[a][0] = '\0';
       }
-      global_eval_context.process_command_port = 0;
+      if (pt_flag != PT_NOTHING)
+        global_eval_context.process_command_port = 0;
       s = entry->comm;
       global_eval_context.break_called = 0;
       local_break_called = 0;
@@ -690,14 +726,16 @@ do_entry(BQUE *entry, int include_recurses)
         r = global_eval_context.ccom;
         process_expression(global_eval_context.ccom, &r, &s,
                            global_eval_context.cplr, entry->cause,
-                           entry->cause, PE_NOTHING, PT_SEMI,
+                           entry->cause, PE_NOTHING, pt_flag,
                            global_eval_context.pe_info);
         *r = '\0';
         if (*s == ';')
           s++;
         strcpy(tbuf, global_eval_context.ccom);
-        process_command(global_eval_context.cplr, tbuf, entry->cause, 0);
+        process_command(global_eval_context.cplr, tbuf, entry->cause, (pt_flag == PT_NOTHING));
         if (global_eval_context.break_called) {
+          /* Make sure we process semicolons in @break arg, even from socket */
+          pt_flag = PT_SEMI;
           global_eval_context.break_called = 0;
           local_break_called = 1;
           s = global_eval_context.break_replace;

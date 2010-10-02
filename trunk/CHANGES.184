@@ -37,6 +37,7 @@ Minor Changes:
  * Mortals can now use @search to find any objects they can examine.
    Suggested by Paige. [MG]
  * @function names can start with numbers again. Requested by Mercutio. [MG]
+ * @include and @break now work when entered directly from a client. [MG]
    
 Functions:
  * ibreak(), for breaking out of an iter() loop. [Rhost] [MG]

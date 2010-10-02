@@ -2381,22 +2381,11 @@ do_command(DESC *d, char *command)
     if (d->connected) {
       send_prefix(d);
       global_eval_context.cplr = d->player;
-      mush_strncpy(global_eval_context.ccom, command, BUFFER_LEN);
-      global_eval_context.ucom[0] = '\0';
-
-      /* Clear %0-%9 and r(0) - r(9) */
-      for (j = 0; j < 10; j++)
-        global_eval_context.wenv[j] = (char *) NULL;
-      for (j = 0; j < NUMQ; j++)
-        global_eval_context.renv[j][0] = '\0';
-      global_eval_context.process_command_port = d->descriptor;
-      global_eval_context.pe_info = make_pe_info();
-      process_command(d->player, command, d->player, 1);
+      run_user_input(d->player, command);
       send_suffix(d);
       strcpy(global_eval_context.ccom, "");
       strcpy(global_eval_context.ucom, "");
       global_eval_context.cplr = NOTHING;
-      free_pe_info(global_eval_context.pe_info);
     } else {
       j = 0;
       if (!strncmp(command, WHO_COMMAND, strlen(WHO_COMMAND))) {

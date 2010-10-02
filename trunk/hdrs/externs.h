@@ -259,6 +259,7 @@ ATTR *queue_attribute_getatr(dbref executor, const char *atrname, int noparent);
 int queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor);
 int inplace_queue_attribute(dbref thing, const char *atrname,
                             dbref enactor, int rsargs);
+void run_user_input(dbref player, char *input);
 
 /** Queue the code in an attribute, including parent objects */
 #define queue_attribute(a,b,c) queue_attribute_base(a,b,c,0)

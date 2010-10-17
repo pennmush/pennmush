@@ -48,6 +48,8 @@ Commands:
 Fixes:
  * @cpattr and @mvattr could break attribute trees. Reported by Sketch. [MG]
  * benchmark() calculated the average incorrectly. Reported by Cheetah. [DC]
+ * "look <container>'s <object>" incorrectly stopped working in p1 when
+   <object>'s desc was set "nearby". Reported by Yuriko@M*U*SH. [MG]
 
 & 1.8.4p1
 Version 1.8.4 patchlevel 1                                 Sep 05,  2010

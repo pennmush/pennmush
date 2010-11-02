@@ -642,6 +642,10 @@ msgstr "#-1 PREVI©E STUPACA ZA ALIGN"
 msgid "#-1 TOO MANY ITERS"
 msgstr "#-1 PREVI©E ITERA"
 
+#: funmisc.c:495 funmisc.c:612
+msgid "#-1 TOO MANY SWITCHES"
+msgstr "#-1 PREVI©E SWITCHEVA"
+
 #: src/funlist.c:1782
 msgid "#-1 TOO MANY WORDS"
 msgstr "#-1 PREVI©E RIJEÈI"
@@ -3030,6 +3034,11 @@ msgstr "Neispravan port."
 msgid "Invalid range argument"
 msgstr "Argument nije u ispravnom rasponu"
 
+#: predicat.c:1444 predicat.c:1455
+#, c-format
+msgid "Invalid regexp: %s"
+msgstr "Neispravan regexp: %s"
+
 #: wiz.c:1772
 msgid "Invalid search class+restriction format."
 msgstr "Neispravan format klase i ogranièenja za pretragu."
@@ -3798,6 +3807,10 @@ msgstr "Nije navedeno ime brave."
 #: src/create.c:303 src/fundb.c:1281 src/fundb.c:1300 src/wiz.c:386
 msgid "No match."
 msgstr "Taj objekt ne postoji."
+
+#: predicat.c:1528 predicat.c:1537
+msgid "No matches."
+msgstr "Nema podudaranja."
 
 #: access.c:431
 msgid "No matching access rule"

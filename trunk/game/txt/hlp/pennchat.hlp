@@ -463,7 +463,7 @@ See also: cbufferadd(), crecall()
   cbufferadd(<channel>, <text>[, <spoof>])
 
   Adds text to a chan buffer without broadcasting it to all people on
-  the channel.  If <spoof> is true, it will spoof the encator (%#),
+  the channel.  If <spoof> is true, it will spoof the enactor (%#),
   and you must be able to perform an @nscemit.
 
   This function is only usable by objects that pass the channel's @clock/mod.

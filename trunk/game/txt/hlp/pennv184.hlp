@@ -33,6 +33,9 @@ Minor Changes:
    Suggested by Paige. [MG]
  * @function names can start with numbers again. Requested by Mercutio. [MG]
  * @include and @break now work when entered directly from a client. [MG]
+ * The Drop and Give @locks now trigger verb <name>_LOCK`FAILURE attributes
+   when you fail to pass them, as described in 'help failure'. Suggested by 
+   Cas@BeforeTheDarkness. [MG]
    
 Functions:
  * ibreak(), for breaking out of an iter() loop. [Rhost] [MG]

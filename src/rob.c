@@ -386,7 +386,8 @@ do_give(dbref player, char *recipient, char *amnt, int silent)
         return;
       }
       if (!eval_lock(player, thing, Give_Lock)) {
-        notify(player, T("You can't give that away."));
+        fail_lock(player, thing, Give_Lock,
+                  T("You can't give that away."), NOTHING);
         return;
       }
 

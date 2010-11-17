@@ -2730,11 +2730,10 @@ See also: pos(), member(), match()
   nchildren(<object>)
  
   This function is similar to the @search command, except it returns just a
-  list of dbref numbers. Some uses are computationally expensive, and cost 
-  100 pennies; see 'help @search' for details. The function must have at
-  least three arguments.  You can specify "all" or <player> for the <player>
-  field; for mortals, only objects they can examine are included. If you do
-  not want to restrict something, use "none" for <class> and <restriction>.
+  list of dbref numbers. The function must have at least three arguments. You
+  can specify "all" or <player> for the <player> field; for mortals, only
+  objects they can examine are included. If you do not want to restrict
+  something, use "none" for <class> and <restriction>.
 
   The possible <class>es and <restriction>s are the same as those accepted
   by @search. lsearch() can accept multiple class/restriction pairs, and 
@@ -2758,11 +2757,20 @@ See also: pos(), member(), match()
   again for each object looked at in the search. Before the per-object
   evaluation, the string "##" is replaced with the object dbref.
 
+  lsearch() is free unless it includes either an eval-class search or
+  an elock search that contains an eval or indirect lock. Otherwise,
+  it costs find_cost pennies to perform the lsearch.
+
   lsearchr() is like an lsearch() run through revwords(). Results are
   returned from highest dbref to lowest.  search() is an alias for
   lsearch().
- 
-  Examples:
+
+  Examples in 'help lsearch3'.
+
+See also: @search, @find, lparent()
+& LSEARCH3
+& SEARCH3
+  lsearch() Examples:
   
   lsearch(all, flags, Wc)                  <-- lists all connected wizards.
   lsearch(me, type, room)                  <-- lists all rooms owned by me.
@@ -2770,7 +2778,13 @@ See also: pos(), member(), match()
   lsearch(me, type, room, 100, 200)        <-- same, but only w/db# 100-200
   lsearch(all, eplayer, \[eq(money(##),100)\]) <-- lists all players with 100
                                                    coins.
-See also: @search, @find, lparent()
+  lsearch(all, type, player, elock, (FLAG^WIZARD|FLAG^ROYALTY)&!FLAG^IC)
+                                           ^-- list all wiz and roy players
+                                               that are not IC.
+  lsearch(all, type, player, elock, sex:m*) <- lists all players with an
+                                               @sex beginning with 'm'
+  lsearch(me, elock, !desc:*)              <-- lists all objects you own that
+                                               don't have an @desc set
 & LSTATS()
 & STATS()
   lstats(<player>)

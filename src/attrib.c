@@ -1785,6 +1785,7 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
   int was_hearer;
   int was_listener;
   dbref contents;
+  char *new;
   if (!EMPTY_ATTRS && s && !*s)
     s = NULL;
   if (IsGarbage(thing)) {
@@ -1886,6 +1887,15 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
       }
     }
     /* If you made it here, all your dbrefs were ok */
+  }
+
+  /* For ENUM and RLIMIT */
+  new = check_attr_value(player, name, s);
+  if (s && !new) {
+    /* Invalid set - Return, don't clear. */
+    return -1;
+  } else if (new) {
+    s = new;
   }
 
   was_hearer = Hearer(thing);

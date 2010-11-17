@@ -47,6 +47,8 @@ Commands:
  * @grep now accepts /wild and /regexp switches, for wildcard/globbing and
    regular expression greps (a la wildgrep() and regrep()). Also /nocase
    for case-insensitive greps. Suggested by Paige. [MG]
+ * @attribute now allows limiting attribute values through /enum and
+   /limit switches.
    
 Fixes:
  * A crashbug in @search was fixed. Reported by Paige. [GM]

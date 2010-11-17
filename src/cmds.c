@@ -86,6 +86,16 @@ COMMAND(cmd_attribute)
       do_attribute_rename(player, arg_left, arg_right);
     else
       notify(player, T("Permission denied."));
+  } else if (SW_ISSET(sw, SWITCH_LIMIT)) {
+    if (Wizard(player))
+      do_attribute_limit(player, arg_left, AF_RLIMIT, arg_right);
+    else
+      notify(player, T("Permission denied."));
+  } else if (SW_ISSET(sw, SWITCH_ENUM)) {
+    if (Wizard(player))
+      do_attribute_limit(player, arg_left, AF_ENUM, arg_right);
+    else
+      notify(player, T("Permission denied."));
   } else
     do_attribute_info(player, arg_left);
 }

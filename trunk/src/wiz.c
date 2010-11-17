@@ -1931,6 +1931,10 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
       }
     } else if (string_prefix("elock", class)) {
       spec->lock = parse_boolexp(player, restriction, "Search");
+      if (spec->lock == TRUE_BOOLEXP) {
+        notify(player, T("I don't understand that key."));
+        return -1;
+      }
     } else if (string_prefix("eval", class)) {
       strcpy(spec->eval, restriction);
     } else if (string_prefix("command", class)) {

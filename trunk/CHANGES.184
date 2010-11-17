@@ -54,6 +54,7 @@ Commands:
    for case-insensitive greps. Suggested by Paige. [MG]
    
 Fixes:
+ * A crashbug in @search was fixed. Reported by Paige. [GM]
  * @cpattr and @mvattr could break attribute trees. Reported by Sketch. [MG]
  * benchmark() calculated the average incorrectly. Reported by Cheetah. [DC]
  * "look <container>'s <object>" incorrectly stopped working in p1 when

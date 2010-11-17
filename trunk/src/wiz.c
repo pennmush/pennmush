@@ -1992,7 +1992,7 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
   struct search_spec spec;
   int count = 0;
   int ret = 0;
-  int vis_only = 1;
+  int vis_only = 0;
   ATTR *a;
   char lbuff[BUFFER_LEN];
 
@@ -2004,9 +2004,19 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
 
   is_wiz = Search_All(player) || See_All(player);
 
-  vis_only = (spec.owner != Owner(player) &&
-             !(is_wiz || (spec.type == TYPE_PLAYER) || (ZMaster(spec.owner) &&
-             eval_lock(player, spec.owner, Zone_Lock))));
+  /* vis_only: @searcher doesn't have see_all, and can only examine
+   * objects that they pass the CanExamine() check for.
+   */
+  if (!is_wiz && spec.owner != Owner(player)) {
+    vis_only = 1;
+
+    /* For Zones: If the player passes the zone lock on a shared player,
+     * they are considered to be able to examine everything of that player,
+     * so do not need vis_only. */
+    if (GoodObject(spec.owner) && ZMaster(spec.owner)) {
+      vis_only = !eval_lock(player, spec.owner, Zone_Lock);
+    }
+  }
 
   /* make sure player has money to do the search -
    * But only if this does an eval or lock search. */

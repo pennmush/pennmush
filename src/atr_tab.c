@@ -249,7 +249,7 @@ check_attr_value(dbref player, const char *name, const char *value)
                       &errptr, &erroffset, tables);
     if (!re) return value;
 
-    subpatterns = pcre_exec(re, default_match_limit(), value, strlen(value), 
+    subpatterns = pcre_exec(re, default_match_limit(), value, strlen(value),
                             0, 0, NULL, 0);
     free(re);
 
@@ -347,7 +347,7 @@ do_attribute_limit(dbref player, char *name, int type, char *pattern)
       re = pcre_compile(remove_markup(pattern, NULL), PCRE_CASELESS,
                         &errptr, &erroffset, tables);
       if (!re) {
-        notify(player, T("Invalid Regular Expression"));
+        notify(player, T("Invalid Regular Expression."));
         return;
       }
       /* We only care if it's valid, we're not using it. */
@@ -374,7 +374,7 @@ do_attribute_limit(dbref player, char *name, int type, char *pattern)
        * a delimiter. */
       snprintf(buff, BUFFER_LEN, "%c%s%c", delim, pattern, delim);
       buff[BUFFER_LEN - 1] = '\0';
-      
+
       /* For sanity's sake, we'll enforce a properly delimited enum
        * with a quick and dirty squish().
        * We already know we start with a delim, hence the +1 =). */
@@ -407,7 +407,7 @@ do_attribute_limit(dbref player, char *name, int type, char *pattern)
 
   if (!ap) {
     notify(player,
-        T("I don't know that attribute. Please use @attr/access to create it, first"));
+        T("I don't know that attribute. Please use @attribute/access to create it, first."));
     return;
   }
 

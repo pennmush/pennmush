@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-10-18 02:00-0500\n"
+"POT-Creation-Date: 2010-11-20 02:00-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -115,242 +115,292 @@ msgstr ""
 msgid "Unknown access option: %s"
 msgstr ""
 
-#: atr_tab.c:216 atr_tab.c:293 atr_tab.c:371
+#: atr_tab.c:259
+msgid "Attribute value does not match the /limit regexp."
+msgstr ""
+
+#: atr_tab.c:268 atr_tab.c:304
+#, c-format
+msgid "Value for %s needs to be one of: %s"
+msgstr ""
+
+#: atr_tab.c:350
+msgid "Invalid Regular Expression."
+msgstr ""
+
+#: atr_tab.c:364
+msgid "Delimiter must be one character."
+msgstr ""
+
+#: atr_tab.c:389
+msgid "Unknown limit type?"
+msgstr ""
+
+#: atr_tab.c:398 atr_tab.c:469 atr_tab.c:546 atr_tab.c:629
 msgid "Which attribute do you mean?"
 msgstr ""
 
-#: atr_tab.c:222 flags.c:2091 flags.c:2101 flags.c:2261 flags.c:2272
-msgid "I don't understand those permissions."
+#: atr_tab.c:410
+msgid ""
+"I don't know that attribute. Please use @attribute/access to create it, "
+"first."
 msgstr ""
 
-#: atr_tab.c:232
+#: atr_tab.c:416 atr_tab.c:485
 msgid "That attribute's permissions can not be changed."
 msgstr ""
 
-#: atr_tab.c:238 atr_tab.c:330
+#: atr_tab.c:429
+#, c-format
+msgid "%s -- Attribute limit or enum unset."
+msgstr ""
+
+#: atr_tab.c:432
+#, c-format
+msgid "%s -- Attribute limit or enum already unset."
+msgstr ""
+
+#: atr_tab.c:440
+#, c-format
+msgid "%s -- Attribute %s set to: %s"
+msgstr ""
+
+#: atr_tab.c:475 flags.c:2091 flags.c:2101 flags.c:2261 flags.c:2272
+msgid "I don't understand those permissions."
+msgstr ""
+
+#: atr_tab.c:491 atr_tab.c:588
 msgid "Invalid attribute name."
 msgstr ""
 
-#: atr_tab.c:244
+#: atr_tab.c:497
 msgid "Critical memory failure - Alert God!"
 msgstr ""
 
-#: atr_tab.c:275
+#: atr_tab.c:528
 #, c-format
 msgid "%s -- Attribute permissions now: %s"
 msgstr ""
 
-#: atr_tab.c:300 atr_tab.c:344 atr_tab.c:382
+#: atr_tab.c:553 atr_tab.c:602 atr_tab.c:640
 msgid "That attribute isn't in the attribute table"
 msgstr ""
 
-#: atr_tab.c:306
+#: atr_tab.c:564
 #, c-format
 msgid "Removed %s from attribute table."
 msgstr ""
 
-#: atr_tab.c:323
+#: atr_tab.c:581
 msgid "Which attributes do you mean?"
 msgstr ""
 
-#: atr_tab.c:337
+#: atr_tab.c:595
 #, c-format
 msgid "The name %s is already used in the attribute table."
 msgstr ""
 
-#: atr_tab.c:355
+#: atr_tab.c:613
 #, c-format
 msgid "Renamed %s to %s in attribute table."
 msgstr ""
 
-#: atr_tab.c:385
+#: atr_tab.c:643
 msgid "Attribute"
 msgstr ""
 
-#: atr_tab.c:387 cmds.c:386 cmds.c:574 game.c:2397
+#: atr_tab.c:645
+msgid "Limit"
+msgstr ""
+
+#: atr_tab.c:647
+msgid "Enum"
+msgstr ""
+
+#: atr_tab.c:650 cmds.c:396 cmds.c:584 game.c:2397
 msgid "Flags"
 msgstr ""
 
-#: atr_tab.c:389
+#: atr_tab.c:652
 msgid "Creator"
 msgstr ""
 
-#: atr_tab.c:404
+#: atr_tab.c:667
 #, c-format
 msgid "Attribs: %s"
 msgstr ""
 
-#: attrib.c:1791 look.c:823 look.c:1581
+#: attrib.c:1792 look.c:823 look.c:1581
 msgid "Garbage is garbage."
 msgstr ""
 
-#: attrib.c:1806 attrib.c:1813 attrib.c:1831
+#: attrib.c:1807 attrib.c:1814 attrib.c:1832
 #, c-format
 msgid "'%s' is not a valid alias."
 msgstr ""
 
-#: attrib.c:1816 attrib.c:1834
+#: attrib.c:1817 attrib.c:1835
 #, c-format
 msgid "'%s' contains too many aliases."
 msgstr ""
 
-#: attrib.c:1819 attrib.c:1837
+#: attrib.c:1820 attrib.c:1838
 msgid "Null aliases are not valid."
 msgstr ""
 
-#: attrib.c:1851
+#: attrib.c:1852
 #, c-format
 msgid "'%s' is not a valid exit name."
 msgstr ""
 
-#: attrib.c:1868
+#: attrib.c:1869
 #, c-format
 msgid "%s should contain only dbrefs."
 msgstr ""
 
-#: attrib.c:1873
+#: attrib.c:1874
 #, c-format
 msgid "Invalid dbref #%d in %s."
 msgstr ""
 
-#: attrib.c:1878
+#: attrib.c:1879
 #, c-format
 msgid "I don't think #%d wants to hear from %s."
 msgstr ""
 
-#: attrib.c:1883
+#: attrib.c:1884
 #, c-format
 msgid "I don't think #%d wants %s's mail."
 msgstr ""
 
-#: attrib.c:1897 set.c:1148
+#: attrib.c:1907 set.c:1148
 #, c-format
 msgid "Attribute %s is SAFE. Set it !SAFE to modify it."
 msgstr ""
 
-#: attrib.c:1904
+#: attrib.c:1914
 #, c-format
 msgid "Unable to remove '%s' because of a protected tree attribute."
 msgstr ""
 
-#: attrib.c:1910
+#: attrib.c:1920
 #, c-format
 msgid ""
 "Unable to set '%s' because of a failure to create a needed parent attribute."
 msgstr ""
 
-#: attrib.c:1915
+#: attrib.c:1925
 msgid "That's not a very good name for an attribute."
 msgstr ""
 
-#: attrib.c:1920
+#: attrib.c:1930
 #, c-format
 msgid "You must set %s first."
 msgstr ""
 
-#: attrib.c:1923
+#: attrib.c:1933
 #, c-format
 msgid "%s is a branch attribute; remove its children first."
 msgstr ""
 
-#: attrib.c:1926
+#: attrib.c:1936
 msgid "That attribute cannot be changed by you."
 msgstr ""
 
-#: attrib.c:1929
+#: attrib.c:1939
 msgid "Too many attributes on that object to add another."
 msgstr ""
 
-#: attrib.c:1932
+#: attrib.c:1942
 msgid "No such attribute to reset."
 msgstr ""
 
-#: attrib.c:1941 command.c:1900
+#: attrib.c:1951 command.c:1900
 msgid "Alias set."
 msgstr ""
 
-#: attrib.c:1943
+#: attrib.c:1953
 msgid "Alias removed."
 msgstr ""
 
-#: attrib.c:1956
+#: attrib.c:1966
 #, c-format
 msgid "%s loses its ears and becomes deaf."
 msgstr ""
 
-#: attrib.c:1960
+#: attrib.c:1970
 #, c-format
 msgid "%s grows ears and can now hear."
 msgstr ""
 
-#: attrib.c:1968
+#: attrib.c:1978
 msgid "Set"
 msgstr ""
 
-#: attrib.c:1968
+#: attrib.c:1978
 msgid "Cleared"
 msgstr ""
 
-#: attrib.c:1998 attrib.c:2005 attrib.c:2071 attrib.c:2078
+#: attrib.c:2008 attrib.c:2015 attrib.c:2081 attrib.c:2088
 msgid "You need to give an object/attribute pair."
 msgstr ""
 
-#: attrib.c:2016 attrib.c:2089 bsd.c:2879 bsd.c:2925 bsd.c:4206 bsd.c:4740
-#: bsd.c:4773 bsd.c:4785 bsd.c:4790 cmds.c:78 cmds.c:83 cmds.c:88
-#: command.c:1702 command.c:1729 command.c:1821 command.c:1903 command.c:2074
-#: cque.c:1011 cque.c:1113 cque.c:1164 cque.c:1617 cque.c:1675 cque.c:1792
-#: create.c:100 create.c:119 create.c:237 create.c:302 create.c:311
-#: create.c:315 create.c:367 create.c:371 create.c:389 create.c:625
-#: destroy.c:234 destroy.c:893 extchat.c:1776 extchat.c:1793 extchat.c:1824
-#: extchat.c:3882 flags.c:1544 flags.c:1549 flags.c:1709 function.c:1039
-#: function.c:1293 function.c:1517 function.c:1662 function.c:1708
-#: function.c:1755 funmisc.c:956 game.c:961 game.c:1533 lock.c:715 lock.c:779
-#: lock.c:975 look.c:1341 look.c:1630 malias.c:764 malias.c:869 match.c:483
-#: move.c:539 move.c:868 move.c:883 predicat.c:1244 rob.c:428 set.c:188
-#: set.c:971 set.c:1054 set.c:1091 set.c:1104 set.c:1189 speech.c:1517
-#: warnings.c:294 warnings.c:515 wiz.c:444 wiz.c:567 wiz.c:578 wiz.c:852
-#: wiz.c:1017 wiz.c:1047
+#: attrib.c:2026 attrib.c:2099 bsd.c:2879 bsd.c:2925 bsd.c:4206 bsd.c:4740
+#: bsd.c:4773 bsd.c:4785 bsd.c:4790 cmds.c:78 cmds.c:83 cmds.c:88 cmds.c:93
+#: cmds.c:98 command.c:1702 command.c:1729 command.c:1821 command.c:1903
+#: command.c:2074 cque.c:1011 cque.c:1113 cque.c:1164 cque.c:1617 cque.c:1675
+#: cque.c:1792 create.c:100 create.c:119 create.c:237 create.c:302
+#: create.c:311 create.c:315 create.c:367 create.c:371 create.c:389
+#: create.c:625 destroy.c:234 destroy.c:893 extchat.c:1776 extchat.c:1793
+#: extchat.c:1824 extchat.c:3882 flags.c:1544 flags.c:1549 flags.c:1709
+#: function.c:1039 function.c:1293 function.c:1517 function.c:1662
+#: function.c:1708 function.c:1755 funmisc.c:956 game.c:961 game.c:1533
+#: lock.c:715 lock.c:779 lock.c:975 look.c:1341 look.c:1630 malias.c:764
+#: malias.c:869 match.c:483 move.c:539 move.c:870 move.c:885 predicat.c:1244
+#: rob.c:429 set.c:188 set.c:971 set.c:1054 set.c:1091 set.c:1104 set.c:1189
+#: speech.c:1517 warnings.c:294 warnings.c:515 wiz.c:444 wiz.c:567 wiz.c:578
+#: wiz.c:852 wiz.c:1017 wiz.c:1047
 msgid "Permission denied."
 msgstr ""
 
-#: attrib.c:2024
+#: attrib.c:2034
 #, c-format
 msgid "That attribute is %slocked."
 msgstr ""
 
-#: attrib.c:2030
+#: attrib.c:2040
 msgid "You need to be able to set the attribute to change its lock."
 msgstr ""
 
-#: attrib.c:2037
+#: attrib.c:2047
 msgid "Attribute locked."
 msgstr ""
 
-#: attrib.c:2042
+#: attrib.c:2052
 msgid "Attribute unlocked."
 msgstr ""
 
-#: attrib.c:2046
+#: attrib.c:2056
 msgid "Invalid status on atrlock.. Notify god."
 msgstr ""
 
-#: attrib.c:2052 attrib.c:2122 set.c:986 set.c:1033
+#: attrib.c:2062 attrib.c:2132 set.c:986 set.c:1033
 msgid "No such attribute."
 msgstr ""
 
-#: attrib.c:2099
+#: attrib.c:2109
 msgid "I can't find that player"
 msgstr ""
 
-#: attrib.c:2108
+#: attrib.c:2118
 msgid "You can only chown an attribute to yourself."
 msgstr ""
 
-#: attrib.c:2113
+#: attrib.c:2123
 msgid "Attribute owner changed."
 msgstr ""
 
-#: attrib.c:2117
+#: attrib.c:2127
 msgid "You don't have the permission to chown that."
 msgstr ""
 
@@ -727,7 +777,7 @@ msgstr ""
 msgid "Poll set to: %s"
 msgstr ""
 
-#: bsd.c:4161 bsd.c:4170 bsd.c:4691 bsd.c:4700 cmds.c:438 fundb.c:895
+#: bsd.c:4161 bsd.c:4170 bsd.c:4691 bsd.c:4700 cmds.c:448 fundb.c:895
 #: fundb.c:922
 msgid "#-1 INVALID SECOND ARGUMENT"
 msgstr ""
@@ -824,75 +874,75 @@ msgstr ""
 msgid "GAME: Reboot w/o disconnect by %s, please wait."
 msgstr ""
 
-#: cmds.c:170 cmds.c:182
+#: cmds.c:180 cmds.c:192
 msgid "You can't remake the world in your image."
 msgstr ""
 
-#: cmds.c:174
+#: cmds.c:184
 msgid "What did you want to set?"
 msgstr ""
 
-#: cmds.c:188
+#: cmds.c:198
 msgid "Couldn't set that option."
 msgstr ""
 
-#: cmds.c:192
+#: cmds.c:202
 msgid "Option set and saved."
 msgstr ""
 
-#: cmds.c:194
+#: cmds.c:204
 msgid "Option set but not saved (Saves disabled.)"
 msgstr ""
 
-#: cmds.c:197
+#: cmds.c:207
 msgid "Option set."
 msgstr ""
 
-#: cmds.c:508
+#: cmds.c:518
 msgid "You must give a switch for @hook"
 msgstr ""
 
-#: cmds.c:516
+#: cmds.c:526
 msgid "Huh?  (Type \"help\" for help.)"
 msgstr ""
 
-#: cmds.c:572 game.c:2401
+#: cmds.c:582 game.c:2401
 msgid "Locks"
 msgstr ""
 
-#: cmds.c:576 cmds.c:892 game.c:2399
+#: cmds.c:586 cmds.c:902 game.c:2399
 msgid "Powers"
 msgstr ""
 
-#: cmds.c:674 extmail.c:1578
+#: cmds.c:684 extmail.c:1578
 msgid "You cannot do that while gagged."
 msgstr ""
 
-#: cmds.c:744
+#: cmds.c:754
 msgid "@message them with what?"
 msgstr ""
 
-#: cmds.c:747
+#: cmds.c:757
 msgid "Use what attribute for the @message?"
 msgstr ""
 
-#: cmds.c:751
+#: cmds.c:761
 msgid "@message who?"
 msgstr ""
 
-#: cmds.c:1093
+#: cmds.c:1103
 msgid "You can't teleport to nothing!"
 msgstr ""
 
-#: cmds.c:1285
+#: cmds.c:1295
 msgid "Buy for WHAT price?"
 msgstr ""
 
-#: cmds.c:1290
+#: cmds.c:1300
 msgid "You can't buy things by taking money."
 msgstr ""
 
-#: cmds.c:1407
+#: cmds.c:1417
 #, c-format
 msgid "No command found in code by %s - don't start code with functions."
 msgstr ""
@@ -3950,7 +4000,7 @@ msgid "Invalid location on command execution: %s(#%d)"
 msgstr ""
 
 #: game.c:1281 game.c:1288 look.c:663 look.c:685 look.c:712 look.c:720
-#: move.c:555 move.c:563 move.c:599 move.c:875 move.c:1044 speech.c:564
+#: move.c:555 move.c:563 move.c:599 move.c:877 move.c:1046 speech.c:564
 msgid "I don't see that here."
 msgstr ""
 
@@ -4197,7 +4247,7 @@ msgstr ""
 msgid "Why would you want to lock garbage?"
 msgstr ""
 
-#: lock.c:768
+#: lock.c:768 wiz.c:1935
 msgid "I don't understand that key."
 msgstr ""
 
@@ -4874,22 +4924,22 @@ msgstr ""
 msgid "%s is now the first exit in %s."
 msgstr ""
 
-#: move.c:580 move.c:799
+#: move.c:580 move.c:801
 #, c-format
 msgid "%s was taken from you."
 msgstr ""
 
-#: move.c:581 move.c:631 move.c:800
+#: move.c:581 move.c:631 move.c:802
 #, c-format
 msgid "%s took you."
 msgstr ""
 
-#: move.c:583 move.c:802
+#: move.c:583 move.c:804
 #, c-format
 msgid "You take %s from %s."
 msgstr ""
 
-#: move.c:587 move.c:806
+#: move.c:587 move.c:808
 #, c-format
 msgid "takes %s from %s."
 msgstr ""
@@ -4948,150 +4998,150 @@ msgstr ""
 msgid "Sorry, you can't drop exits."
 msgstr ""
 
-#: move.c:688
+#: move.c:689
 msgid "You can't seem to get rid of that."
 msgstr ""
 
-#: move.c:691
+#: move.c:693
 msgid "You can't seem to drop things here."
 msgstr ""
 
-#: move.c:694
+#: move.c:696
 msgid "Dropped."
 msgstr ""
 
-#: move.c:699 move.c:702 move.c:823 move.c:826
+#: move.c:701 move.c:704 move.c:825 move.c:828
 #, c-format
 msgid "%s drops you."
 msgstr ""
 
-#: move.c:708 move.c:830
+#: move.c:710 move.c:832
 #, c-format
 msgid "You drop %s."
 msgstr ""
 
-#: move.c:711 move.c:833
+#: move.c:713 move.c:835
 #, c-format
 msgid "drops %s."
 msgstr ""
 
-#: move.c:759
+#: move.c:761
 msgid "You can't empty that from here."
-msgstr ""
-
-#: move.c:840
-#, c-format
-msgid "You remove 1 object from %s."
 msgstr ""
 
 #: move.c:842
 #, c-format
+msgid "You remove 1 object from %s."
+msgstr ""
+
+#: move.c:844
+#, c-format
 msgid "You remove %d objects from %s."
 msgstr ""
 
-#: move.c:887
+#: move.c:889
 msgid "Sorry, you must remain beside yourself!"
 msgstr ""
 
-#: move.c:911
+#: move.c:913
 msgid "You can't leave."
 msgstr ""
 
-#: move.c:985
+#: move.c:987
 msgid "I can't tell which one to follow."
 msgstr ""
 
-#: move.c:993
+#: move.c:995
 msgid "You don't see that here."
 msgstr ""
 
-#: move.c:997
+#: move.c:999
 msgid "You can only follow players and things."
 msgstr ""
 
-#: move.c:1001
+#: move.c:1003
 msgid "You chase your tail for a while and feel silly."
 msgstr ""
 
-#: move.c:1006
+#: move.c:1008
 #, c-format
 msgid "You're already following %s."
 msgstr ""
 
-#: move.c:1012
+#: move.c:1014
 msgid "You're not allowed to follow."
 msgstr ""
 
-#: move.c:1019
+#: move.c:1021
 #, c-format
 msgid "You are following: %s"
 msgstr ""
 
-#: move.c:1020
+#: move.c:1022
 #, c-format
 msgid "You are followed by: %s"
 msgstr ""
 
-#: move.c:1040
+#: move.c:1042
 msgid "I can't tell which one to stop following."
 msgstr ""
 
-#: move.c:1049
+#: move.c:1051
 #, c-format
 msgid "You're not following %s."
 msgstr ""
 
-#: move.c:1057
+#: move.c:1059
 msgid "You stop following anyone."
 msgstr ""
 
-#: move.c:1078
+#: move.c:1080
 msgid "I don't recognize who you want to dismiss."
 msgstr ""
 
-#: move.c:1083
+#: move.c:1085
 #, c-format
 msgid "%s isn't following you."
 msgstr ""
 
-#: move.c:1091
+#: move.c:1093
 msgid "You dismiss all your followers."
 msgstr ""
 
-#: move.c:1111
+#: move.c:1113
 msgid "I don't recognize who you want to desert."
 msgstr ""
 
-#: move.c:1118
+#: move.c:1120
 #, c-format
 msgid "%s isn't following you, nor vice versa."
 msgstr ""
 
-#: move.c:1128
+#: move.c:1130
 msgid "You desert everyone you're leading or following."
 msgstr ""
 
-#: move.c:1179
+#: move.c:1181
 #, c-format
 msgid "You begin following %s."
 msgstr ""
 
-#: move.c:1180
+#: move.c:1182
 #, c-format
 msgid "%s begins following you."
 msgstr ""
 
-#: move.c:1226 move.c:1340
+#: move.c:1228 move.c:1342
 #, c-format
 msgid "You stop following %s."
 msgstr ""
 
-#: move.c:1227 move.c:1368
+#: move.c:1229 move.c:1370
 #, c-format
 msgid "%s stops following you."
 msgstr ""
 
-#: move.c:1402
+#: move.c:1404
 #, c-format
 msgid "You follow %s."
 msgstr ""
@@ -5431,7 +5481,7 @@ msgstr ""
 msgid "You can't afford that."
 msgstr ""
 
-#: rob.c:349 rob.c:358 rob.c:575
+#: rob.c:349 rob.c:358 rob.c:576
 msgid "Give to whom?"
 msgstr ""
 
@@ -5443,97 +5493,97 @@ msgstr ""
 msgid "You can't give an object to itself!"
 msgstr ""
 
-#: rob.c:389
+#: rob.c:390
 msgid "You can't give that away."
 msgstr ""
 
-#: rob.c:394
+#: rob.c:395
 #, c-format
 msgid "%s doesn't want anything from you."
 msgstr ""
 
-#: rob.c:400
+#: rob.c:401
 #, c-format
 msgid "%s doesn't want that."
 msgstr ""
 
-#: rob.c:409
+#: rob.c:410
 #, c-format
 msgid "You gave %s to %s."
 msgstr ""
 
-#: rob.c:416
+#: rob.c:417
 #, c-format
 msgid "%s gave you to %s."
 msgstr ""
 
-#: rob.c:422
+#: rob.c:423
 #, c-format
 msgid "%s gave you %s."
 msgstr ""
 
-#: rob.c:437
+#: rob.c:438
 msgid "What is this, a holdup?"
 msgstr ""
 
-#: rob.c:441
+#: rob.c:442
 #, c-format
 msgid "You must specify a positive number of %s."
 msgstr ""
 
-#: rob.c:448
+#: rob.c:449
 #, c-format
 msgid "You don't have that many %s to give!"
 msgstr ""
 
-#: rob.c:458 rob.c:473 rob.c:497
+#: rob.c:459 rob.c:474 rob.c:498
 #, c-format
 msgid "%s refuses your money."
 msgstr ""
 
-#: rob.c:492
+#: rob.c:493
 msgid "Feeling poor today?"
 msgstr ""
 
-#: rob.c:502
+#: rob.c:503
 #, c-format
 msgid "You get %d in change."
 msgstr ""
 
-#: rob.c:504
+#: rob.c:505
 #, c-format
 msgid "You paid %d %s."
 msgstr ""
 
-#: rob.c:519
+#: rob.c:520
 #, c-format
 msgid "You give %d %s to %s."
 msgstr ""
 
-#: rob.c:522
+#: rob.c:523
 #, c-format
 msgid "You took %d %s from %s!"
 msgstr ""
 
-#: rob.c:527
+#: rob.c:528
 #, c-format
 msgid "%s gives you %d %s."
 msgstr ""
 
-#: rob.c:530
+#: rob.c:531
 #, c-format
 msgid "%s took %d %s from you!"
 msgstr ""
 
-#: rob.c:559
+#: rob.c:560
 msgid "Did you want to give something *to* someone?"
 msgstr ""
 
-#: rob.c:566
+#: rob.c:567
 msgid "Give what?"
 msgstr ""
 
-#: rob.c:582
+#: rob.c:583
 msgid "I don't know what you mean."
 msgstr ""
 
@@ -6707,23 +6757,23 @@ msgstr ""
 msgid "Unknown zone."
 msgstr ""
 
-#: wiz.c:1956
+#: wiz.c:1960
 msgid "You must give a list of power names."
 msgstr ""
 
-#: wiz.c:1963
+#: wiz.c:1967
 msgid "You must give a string of flag characters."
 msgstr ""
 
-#: wiz.c:1970
+#: wiz.c:1974
 msgid "You must give a list of flag names."
 msgstr ""
 
-#: wiz.c:1975
+#: wiz.c:1979
 msgid "Unknown search class."
 msgstr ""
 
-#: wiz.c:2016
+#: wiz.c:2030
 #, c-format
 msgid "Searches cost %d %s."
 msgstr ""

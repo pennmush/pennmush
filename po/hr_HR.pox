@@ -838,6 +838,21 @@ msgstr "%s - Postavljeno: %s"
 msgid "%s - Triggered."
 msgstr "%s - Okinuto."
 
+#: atr_tab.c:440
+#, c-format
+msgid "%s -- Attribute %s set to: %s"
+msgstr "%s -- Atribut %s postavljen na: %s"
+
+#: atr_tab.c:432
+#, c-format
+msgid "%s -- Attribute limit or enum already unset."
+msgstr "%s -- Atributova granica ili enum je veæ maknut."
+
+#: atr_tab.c:429
+#, c-format
+msgid "%s -- Attribute limit or enum unset."
+msgstr "%s -- Atributova granica ili enum maknut."
+
 #: src/atr_tab.c:226
 #, c-format
 msgid "%s -- Attribute permissions now: %s"
@@ -1629,6 +1644,10 @@ msgstr "Vlasnik atributa promijenjen."
 msgid "Attribute unlocked."
 msgstr "Atribut otkljuèan."
 
+#: atr_tab.c:259
+msgid "Attribute value does not match the /limit regexp."
+msgstr "Atributova vrijednost se ne podudara sa /limitovim regexpom."
+
 #: atr_tab.c:349
 msgid "Attribute"
 msgstr "Atribut"
@@ -2184,6 +2203,10 @@ msgstr "Debug snima, interval provjere %d."
 msgid "Default flags for new objects"
 msgstr "Defaultni flagovi za nove objekte"
 
+#: atr_tab.c:364
+msgid "Delimiter must be one character."
+msgstr "Razdvojnik mora biti jedan znak."
+
 #: access.c:429
 msgid "Denied connections are not logged"
 msgstr "Odbijena spajanja se ne bilje¾e u log"
@@ -2316,6 +2339,10 @@ msgstr "Registracija putem elektronièke poste je dozvoljena"
 #: wiz.c:1013
 msgid "Enabled."
 msgstr "Ukljuèeno."
+
+#: atr_tab.c:647
+msgid "Enum"
+msgstr "Enum"
 
 #: src/game.c:1465
 msgid "Error -- cannot execute uptime."
@@ -3129,6 +3156,10 @@ msgstr "Slovo maknuto za %s %s."
 #, c-format
 msgid "Letter for %s %s set to '%c'."
 msgstr "Slovo za %s %s postavljeno na '%c'."
+
+#: atr_tab.c:645
+msgid "Limit"
+msgstr "Granica"
 
 #: conf.c:554
 msgid "Limits and other constants"
@@ -5100,6 +5131,10 @@ msgstr "Nepoznata gre¹ka u brisanju aliasa."
 msgid "Unknown hook type"
 msgstr "Nepoznata vrsta hooka"
 
+#: atr_tab.c:389
+msgid "Unknown limit type?"
+msgstr "Nepoznata vrsta granice?"
+
 #: src/lock.c:297 src/lock.c:303
 msgid "Unknown lock type."
 msgstr "Nepoznata vrsta brave."
@@ -5186,6 +5221,11 @@ msgstr "Korisnièke funkcije:"
 #: extchat.c:2084
 msgid "Users"
 msgstr "Korisnika"
+
+#: atr_tab.c:268 atr_tab.c:304
+#, c-format
+msgid "Value for %s needs to be one of: %s"
+msgstr "Vrijednost za %s mora biti jedna od: %s"
 
 #: move.c:423
 #, c-format

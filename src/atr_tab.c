@@ -197,6 +197,7 @@ const char *
 display_attr_limit(ATTR *ap) {
   char *ptr;
   char *s;
+
   if (ap->data && (ap->flags & AF_ENUM)) {
     ptr = atr_value(ap);
     *(ptr++) = '\0';
@@ -232,12 +233,15 @@ check_attr_value(dbref player, const char *name, const char *value)
   static char buff[BUFFER_LEN];
   char vbuff[BUFFER_LEN];
 
-  if (!name || !*name) return value;
-  if (!value) return value;
+  if (!name || !*name)
+    return value;
+  if (!value)
+    return value;
 
-  upcasestr(name);
+  upcasestr((char *) name);
   ap = (ATTR *) ptab_find_exact(&ptab_attrib, name);
-  if (!ap) return value;
+  if (!ap)
+    return value;
 
   attrval = atr_value(ap);
   if (!attrval) {
@@ -247,7 +251,8 @@ check_attr_value(dbref player, const char *name, const char *value)
   if (ap->flags & AF_RLIMIT) {
     re = pcre_compile(remove_markup(attrval, NULL), PCRE_CASELESS,
                       &errptr, &erroffset, tables);
-    if (!re) return value;
+    if (!re)
+      return value;
 
     subpatterns = pcre_exec(re, default_match_limit(), value, strlen(value),
                             0, 0, NULL, 0);
@@ -413,7 +418,7 @@ do_attribute_limit(dbref player, char *name, int type, char *pattern)
 
   if (AF_Internal(ap)) {
     /* Don't muck with internal attributes */
-    notify(player, T("That attribute's permissions can not be changed."));
+    notify(player, T("That attribute's permissions cannot be changed."));
     return;
   }
 
@@ -432,9 +437,11 @@ do_attribute_limit(dbref player, char *name, int type, char *pattern)
           T("%s -- Attribute limit or enum already unset."), name);
     }
   } else {
-    ap->data = chunk_create((unsigned char *) buff,
-                            u_strlen((unsigned char *) buff),
+    unsigned char *t = compress(buff);
+    ap->data = chunk_create(t,
+                            u_strlen(t),
                             0);
+    free(t);
     ap->flags |= type;
     notify_format(player,
         T("%s -- Attribute %s set to: %s"), name,

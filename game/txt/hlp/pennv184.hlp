@@ -53,6 +53,7 @@ Commands:
    /limit switches.
    
 Fixes:
+ * Debug output was sometimes sent to the wrong executor. [GM]
  * A crashbug in @search was fixed. Reported by Paige. [GM]
  * @search elock class failed to report invalid lock strings. Fixed. [GM]
  * @cpattr and @mvattr could break attribute trees. Reported by Sketch. [MG]

@@ -51,6 +51,7 @@ extern int cpu_limit_warning_sent;
 /** Structure for storing DEBUG output in a linked list */
 struct debug_info {
   char *string;         /**< A DEBUG string */
+  dbref executor;
   Debug_Info *prev;     /**< Previous node in the linked list */
   Debug_Info *next;     /**< Next node in the linked list */
 };
@@ -788,6 +789,7 @@ process_expression(char *buff, char **bp, char const **str,
       node = (Debug_Info *) mush_malloc(sizeof(Debug_Info),
                                         "process_expression.debug_node");
       node->string = debugstr;
+      node->executor = executor;
       node->prev = pe_info->debug_strings;
       node->next = NULL;
       if (node->prev)
@@ -1593,17 +1595,19 @@ exit_sequence:
       if (strcmp(sourcestr, startpos)) {
         static char dbuf[BUFFER_LEN];
         char *dbp;
+        dbref dbe;
         if (pe_info->debug_strings) {
           while (pe_info->debug_strings->prev)
             pe_info->debug_strings = pe_info->debug_strings->prev;
           while (pe_info->debug_strings->next) {
+            dbe = pe_info->debug_strings->executor;
             dbp = dbuf;
             dbuf[0] = '\0';
             safe_format(dbuf, &dbp, "%s :", pe_info->debug_strings->string);
             *dbp = '\0';
-            if (Connected(Owner(executor)))
-              raw_notify(Owner(executor), dbuf);
-            notify_list(executor, executor, "DEBUGFORWARDLIST", dbuf,
+            if (Connected(Owner(dbe)))
+              raw_notify(Owner(dbe), dbuf);
+            notify_list(dbe, dbe, "DEBUGFORWARDLIST", dbuf,
                         NA_NOLISTEN | NA_NOPREFIX);
             pe_info->debug_strings = pe_info->debug_strings->next;
             mush_free(pe_info->debug_strings->prev,

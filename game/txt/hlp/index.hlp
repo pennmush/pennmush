@@ -475,102 +475,102 @@ For more, see Entries-23
  mail()                    mail-admin                mail-folders             
  mail-forward              mail-other                mail-reading             
  mail-sending              maildstats()              mailfilter               
- mailfrom()                mailfstats()              mailsend()               
- mailsignature             mailstats()               mailstatus()             
- mailsubject()             mailtime()                malias()                 
- map()                     mapsql()                  master room              
+ mailfrom()                mailfstats()              maillist()               
+ mailsend()                mailsignature             mailstats()              
+ mailstatus()              mailsubject()             mailtime()               
+ malias()                  map()                     mapsql()                 
 
 For more, see Entries-24
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-24
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- match()                   matchall()                matching                 
- math functions            max()                     me                       
- mean()                    median()                  member()                 
- merge()                   message()                 mid()                    
- min()                     mistrust                  mix()                    
- mix2                      mod()                     modulo()                 
- modulus()                 mogrifier                 mogrify                  
- money                     money()                   monitor                  
- move                      msecs()                   mssp-request             
- mtime()                   mudname()                 mul()                    
- munge()                   munge2                    munge3                   
- mushcode                  mushcode2                 mwho()                   
- mwhoid()                  myopic                    name()                   
- namegrab()                namegraball()             namelist()               
- nand()                    nattr()                   nattrp()                 
- ncand()                   nchildren()               ncon()                   
+ master room               match()                   matchall()               
+ matching                  math functions            max()                    
+ me                        mean()                    median()                 
+ member()                  merge()                   message()                
+ mid()                     min()                     mistrust                 
+ mix()                     mix2                      mod()                    
+ modulo()                  modulus()                 mogrifier                
+ mogrify                   money                     money()                  
+ monitor                   move                      msecs()                  
+ mssp-request              mtime()                   mudname()                
+ mul()                     munge()                   munge2                   
+ munge3                    mushcode                  mushcode2                
+ mwho()                    mwhoid()                  myopic                   
+ name()                    namegrab()                namegraball()            
+ namelist()                nand()                    nattr()                  
+ nattrp()                  ncand()                   nchildren()              
 
 For more, see Entries-25
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-25
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- ncond()                   ncondall()                ncor()                   
- nearby()                  neq()                     newbie                   
- newbie2                   newbie3                   news                     
- nexits()                  next()                    nextdbref()              
- nlsearch()                nmwho()                   no_command               
- no_leave                  no_log                    no_tel                   
- no_warn                   noaccents                 noleave                  
- non-standard attributes   noname                    nor()                    
- nospace                   nospoof                   not()                    
- nowarn                    nplayers()                nsearch()                
- nsemit()                  nslemit()                 nsoemit()                
- nspemit()                 nsprompt()                nsremit()                
- nszemit()                 nthings()                 null()                   
- num()                     numversion()              nvcon()                  
- nvexits()                 nvplayers()               nvthings()               
- nwho()                    obj()                     object parents           
+ ncon()                    ncond()                   ncondall()               
+ ncor()                    nearby()                  neq()                    
+ newbie                    newbie2                   newbie3                  
+ news                      nexits()                  next()                   
+ nextdbref()               nlsearch()                nmwho()                  
+ no_command                no_leave                  no_log                   
+ no_tel                    no_warn                   noaccents                
+ noleave                   non-standard attributes   noname                   
+ nor()                     nospace                   nospoof                  
+ not()                     nowarn                    nplayers()               
+ nsearch()                 nsemit()                  nslemit()                
+ nsoemit()                 nspemit()                 nsprompt()               
+ nsremit()                 nszemit()                 nthings()                
+ null()                    num()                     numversion()             
+ nvcon()                   nvexits()                 nvplayers()              
+ nvthings()                nwho()                    obj()                    
 
 For more, see Entries-26
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-26
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- objects                   objeval()                 objid()                  
- objmem()                  oemit()                   on-vacation              
- opaque                    open()                    open_ok                  
- or()                      ord()                     ordinal()                
- orflags()                 orlflags()                orlpowers()              
- orphan                    outputprefix              outputsuffix             
- owner()                   page                      page2                    
- paranoid                  parent                    parent()                 
- parents                   parents2                  parents3                 
- parents4                  parents5                  parse()                  
- patchlevels               pcreate()                 pemit()                  
- pfun()                    pfun2                     pfun3                    
- pi()                      pickrand()                pidinfo()                
- player()                  playermem()               players                  
- pmatch()                  poll()                    ports()                  
- pos()                     pose                      pose2                    
+ object parents            objects                   objeval()                
+ objid()                   objmem()                  oemit()                  
+ on-vacation               opaque                    open()                   
+ open_ok                   or()                      ord()                    
+ ordinal()                 orflags()                 orlflags()               
+ orlpowers()               orphan                    outputprefix             
+ outputsuffix              owner()                   page                     
+ page2                     paranoid                  parent                   
+ parent()                  parents                   parents2                 
+ parents3                  parents4                  parents5                 
+ parse()                   patchlevels               pcreate()                
+ pemit()                   pfun()                    pfun2                    
+ pfun3                     pi()                      pickrand()               
+ pidinfo()                 player()                  playermem()              
+ players                   pmatch()                  poll()                   
+ ports()                   pos()                     pose                     
 
 For more, see Entries-27
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-27
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- poss()                    power()                   powers list              
- powers list2              powers()                  powers2                  
- prompt()                  prompt_newlines           pueblo                   
- pueblo features           pueblo()                  puppet                   
- puppets                   puppets2                  queue                    
- quiet                     quit                      quota()                  
- r()                       r-function                rand()                   
- randword()                read                      recv()                   
- regedit()                 regeditall()              regeditalli()            
- regediti()                regexp                    regexp classes           
- regexp classes2           regexp examples           regexp syntax            
- regexp syntax2            regexp syntax3            regexp syntax4           
- regexp syntax5            regexp syntax6            regexp syntax7           
- regexp syntax8            regexps                   regexps2                 
- registers                 registers2                reglattr()               
- reglattrp()               regmatch()                regmatchi()              
+ pose2                     poss()                    power()                  
+ powers list               powers list2              powers()                 
+ powers2                   prompt()                  prompt_newlines          
+ pueblo                    pueblo features           pueblo()                 
+ puppet                    puppets                   puppets2                 
+ queue                     quiet                     quit                     
+ quota()                   r()                       r-function               
+ rand()                    randword()                read                     
+ recv()                    regedit()                 regeditall()             
+ regeditalli()             regediti()                regexp                   
+ regexp classes            regexp classes2           regexp examples          
+ regexp syntax             regexp syntax2            regexp syntax3           
+ regexp syntax4            regexp syntax5            regexp syntax6           
+ regexp syntax7            regexp syntax8            regexps                  
+ regexps2                  registers                 registers2               
+ reglattr()                reglattrp()               regmatch()               
 
 For more, see Entries-28
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-28
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- regnattr()                regnattrp()               regrab()                 
- regraball()               regraballi()              regrabi()                
- regrep()                  regrepi()                                          
+ regmatchi()               regnattr()                regnattrp()              
+ regrab()                  regraball()               regraballi()             
+ regrabi()                 regrep()                  regrepi()                
  regular expression functions                        regxattr()               
  regxattrp()               remainder()               remit()                  
  remove()                  repeat()                  replace()                

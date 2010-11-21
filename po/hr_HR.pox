@@ -2823,6 +2823,10 @@ msgstr "Nisam mogao naæi tog igraèa."
 msgid "I don't know that %s."
 msgstr "Navedena stvar (%s) mi nije poznata."
 
+#: atr_tab.c:410
+msgid "I don't know that attribute. Please use @attribute/access to create it, first."
+msgstr "Ne znam za taj atribut. Molim te, prvo upotrijebi @attribute/access da ga stvori¹."
+
 #: rob.c:390
 msgid "I don't know what you mean."
 msgstr "Ne znam na ¹to misli¹."
@@ -3001,6 +3005,10 @@ msgstr "Unutarnja gre¹ka: Nepoznati flagovski prostor '%s'!"
 #: create.c:373
 msgid "Internal error: weird object type."
 msgstr "Unutarnja gre¹ka: èudan tip objekta."
+
+#: atr_tab.c:350
+msgid "Invalid Regular Expression."
+msgstr "Neispravan regularan izraz."
 
 #: atr_tab.c:202 atr_tab.c:293
 msgid "Invalid attribute name."

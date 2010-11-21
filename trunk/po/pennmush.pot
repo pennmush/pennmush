@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-20 02:00-0600\n"
+"POT-Creation-Date: 2010-11-21 02:00-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -115,117 +115,121 @@ msgstr ""
 msgid "Unknown access option: %s"
 msgstr ""
 
-#: atr_tab.c:259
+#: atr_tab.c:264
 msgid "Attribute value does not match the /limit regexp."
 msgstr ""
 
-#: atr_tab.c:268 atr_tab.c:304
+#: atr_tab.c:273 atr_tab.c:309
 #, c-format
 msgid "Value for %s needs to be one of: %s"
 msgstr ""
 
-#: atr_tab.c:350
+#: atr_tab.c:355
 msgid "Invalid Regular Expression."
 msgstr ""
 
-#: atr_tab.c:364
+#: atr_tab.c:369
 msgid "Delimiter must be one character."
 msgstr ""
 
-#: atr_tab.c:389
+#: atr_tab.c:394
 msgid "Unknown limit type?"
 msgstr ""
 
-#: atr_tab.c:398 atr_tab.c:469 atr_tab.c:546 atr_tab.c:629
+#: atr_tab.c:403 atr_tab.c:476 atr_tab.c:553 atr_tab.c:636
 msgid "Which attribute do you mean?"
 msgstr ""
 
-#: atr_tab.c:410
+#: atr_tab.c:415
 msgid ""
 "I don't know that attribute. Please use @attribute/access to create it, "
 "first."
 msgstr ""
 
-#: atr_tab.c:416 atr_tab.c:485
-msgid "That attribute's permissions can not be changed."
+#: atr_tab.c:421
+msgid "That attribute's permissions cannot be changed."
 msgstr ""
 
-#: atr_tab.c:429
+#: atr_tab.c:434
 #, c-format
 msgid "%s -- Attribute limit or enum unset."
 msgstr ""
 
-#: atr_tab.c:432
+#: atr_tab.c:437
 #, c-format
 msgid "%s -- Attribute limit or enum already unset."
 msgstr ""
 
-#: atr_tab.c:440
+#: atr_tab.c:447
 #, c-format
 msgid "%s -- Attribute %s set to: %s"
 msgstr ""
 
-#: atr_tab.c:475 flags.c:2091 flags.c:2101 flags.c:2261 flags.c:2272
+#: atr_tab.c:482 flags.c:2091 flags.c:2101 flags.c:2261 flags.c:2272
 msgid "I don't understand those permissions."
 msgstr ""
 
-#: atr_tab.c:491 atr_tab.c:588
+#: atr_tab.c:492
+msgid "That attribute's permissions can not be changed."
+msgstr ""
+
+#: atr_tab.c:498 atr_tab.c:595
 msgid "Invalid attribute name."
 msgstr ""
 
-#: atr_tab.c:497
+#: atr_tab.c:504
 msgid "Critical memory failure - Alert God!"
 msgstr ""
 
-#: atr_tab.c:528
+#: atr_tab.c:535
 #, c-format
 msgid "%s -- Attribute permissions now: %s"
 msgstr ""
 
-#: atr_tab.c:553 atr_tab.c:602 atr_tab.c:640
+#: atr_tab.c:560 atr_tab.c:609 atr_tab.c:647
 msgid "That attribute isn't in the attribute table"
 msgstr ""
 
-#: atr_tab.c:564
+#: atr_tab.c:571
 #, c-format
 msgid "Removed %s from attribute table."
 msgstr ""
 
-#: atr_tab.c:581
+#: atr_tab.c:588
 msgid "Which attributes do you mean?"
 msgstr ""
 
-#: atr_tab.c:595
+#: atr_tab.c:602
 #, c-format
 msgid "The name %s is already used in the attribute table."
 msgstr ""
 
-#: atr_tab.c:613
+#: atr_tab.c:620
 #, c-format
 msgid "Renamed %s to %s in attribute table."
 msgstr ""
 
-#: atr_tab.c:643
+#: atr_tab.c:650
 msgid "Attribute"
 msgstr ""
 
-#: atr_tab.c:645
+#: atr_tab.c:652
 msgid "Limit"
 msgstr ""
 
-#: atr_tab.c:647
+#: atr_tab.c:654
 msgid "Enum"
 msgstr ""
 
-#: atr_tab.c:650 cmds.c:396 cmds.c:584 game.c:2397
+#: atr_tab.c:657 cmds.c:396 cmds.c:584 game.c:2397
 msgid "Flags"
 msgstr ""
 
-#: atr_tab.c:652
+#: atr_tab.c:659
 msgid "Creator"
 msgstr ""
 
-#: atr_tab.c:667
+#: atr_tab.c:674
 #, c-format
 msgid "Attribs: %s"
 msgstr ""
@@ -353,8 +357,8 @@ msgstr ""
 #: create.c:311 create.c:315 create.c:367 create.c:371 create.c:389
 #: create.c:625 destroy.c:234 destroy.c:893 extchat.c:1776 extchat.c:1793
 #: extchat.c:1824 extchat.c:3882 flags.c:1544 flags.c:1549 flags.c:1709
-#: function.c:1039 function.c:1293 function.c:1517 function.c:1662
-#: function.c:1708 function.c:1755 funmisc.c:956 game.c:961 game.c:1533
+#: function.c:1040 function.c:1294 function.c:1518 function.c:1663
+#: function.c:1709 function.c:1756 funmisc.c:956 game.c:961 game.c:1533
 #: lock.c:715 lock.c:779 lock.c:975 look.c:1341 look.c:1630 malias.c:764
 #: malias.c:869 match.c:483 move.c:539 move.c:870 move.c:885 predicat.c:1244
 #: rob.c:429 set.c:188 set.c:971 set.c:1054 set.c:1091 set.c:1104 set.c:1189
@@ -914,7 +918,7 @@ msgstr ""
 msgid "Powers"
 msgstr ""
 
-#: cmds.c:684 extmail.c:1578
+#: cmds.c:684 extmail.c:1623
 msgid "You cannot do that while gagged."
 msgstr ""
 
@@ -1196,11 +1200,11 @@ msgstr ""
 msgid "#-1 NO SUCH CONFIG OPTION"
 msgstr ""
 
-#: conf.c:1824 function.c:1775
+#: conf.c:1824 function.c:1776
 msgid "Disabled."
 msgstr ""
 
-#: conf.c:1826 function.c:1772
+#: conf.c:1826 function.c:1773
 msgid "Enabled."
 msgstr ""
 
@@ -2467,7 +2471,7 @@ msgstr ""
 msgid "I can't tell which channel you mean."
 msgstr ""
 
-#: extchat.c:2906 function.c:867
+#: extchat.c:2906 function.c:868
 msgid "#-1 INVALID ARGUMENT"
 msgstr ""
 
@@ -2580,7 +2584,7 @@ msgstr ""
 msgid "CHAT: Buffering enabled on channel <%s>."
 msgstr ""
 
-#: extmail.c:222 extmail.c:1172
+#: extmail.c:222 extmail.c:1217
 msgid "(no subject)"
 msgstr ""
 
@@ -2746,300 +2750,300 @@ msgid ""
 "------------------------------"
 msgstr ""
 
-#: extmail.c:800
+#: extmail.c:845
 msgid "MAIL: Mailbox purged."
 msgstr ""
 
-#: extmail.c:833
+#: extmail.c:878
 msgid "MAIL: To whom should I forward?"
 msgstr ""
 
-#: extmail.c:843
+#: extmail.c:888
 msgid "MAIL: You have no messages to forward."
 msgstr ""
 
-#: extmail.c:864
+#: extmail.c:909
 msgid "MAIL: You can't reply to nonexistant mail."
 msgstr ""
 
-#: extmail.c:880 extmail.c:983
+#: extmail.c:925 extmail.c:1028
 #, c-format
 msgid "No such unique player: %s."
 msgstr ""
 
-#: extmail.c:895
+#: extmail.c:940
 #, c-format
 msgid "MAIL: %d messages forwarded."
 msgstr ""
 
-#: extmail.c:921
+#: extmail.c:966
 msgid "MAIL: I can't figure out who you want to mail to."
 msgstr ""
 
-#: extmail.c:925
+#: extmail.c:970
 msgid "MAIL: I can't figure out what you want to send."
 msgstr ""
 
-#: extmail.c:963
+#: extmail.c:1008
 msgid "MAIL: You can't reply to nonexistent mail."
 msgstr ""
 
-#: extmail.c:1097
+#: extmail.c:1142
 #, c-format
 msgid "Failed attempt to forward @mail to #%d"
 msgstr ""
 
-#: extmail.c:1106 extmail.c:1248
+#: extmail.c:1151 extmail.c:1293
 #, c-format
 msgid "MAIL: You sent your message to %s."
 msgstr ""
 
-#: extmail.c:1110
+#: extmail.c:1155
 #, c-format
 msgid "MAIL: Your message was not sent to %s due to a mail forwarding problem."
 msgstr ""
 
-#: extmail.c:1132
+#: extmail.c:1177
 msgid "MAIL: You cannot send mail to non-existent people."
 msgstr ""
 
-#: extmail.c:1137
+#: extmail.c:1182
 msgid "MAIL: You probably don't wanna send mail saying 'clear'."
 msgstr ""
 
-#: extmail.c:1143
+#: extmail.c:1188
 #, c-format
 msgid "MAIL: %s is not accepting mail from you right now."
 msgstr ""
 
-#: extmail.c:1150
+#: extmail.c:1195
 #, c-format
 msgid "MAIL: %s's mailbox is full. Can't send."
 msgstr ""
 
-#: extmail.c:1250
+#: extmail.c:1295
 #, c-format
 msgid "MAIL: You have a new message (%d) from %s."
 msgstr ""
 
-#: extmail.c:1273
+#: extmail.c:1318
 msgid "The postal service issues a warrant for your arrest."
 msgstr ""
 
-#: extmail.c:1290
+#: extmail.c:1335
 msgid "You annihilate the post office. All messages cleared."
 msgstr ""
 
-#: extmail.c:1307
+#: extmail.c:1352
 msgid "Go get some bugspray."
 msgstr ""
 
-#: extmail.c:1314 extmail.c:1414 extmail.c:1814 wiz.c:728
+#: extmail.c:1359 extmail.c:1459 extmail.c:1859 wiz.c:728
 #, c-format
 msgid "%s: No such player."
 msgstr ""
 
-#: extmail.c:1319
+#: extmail.c:1364
 #, c-format
 msgid "Mail cleared for %s(#%d)."
 msgstr ""
 
-#: extmail.c:1324
+#: extmail.c:1369
 #, c-format
 msgid "Bad object #%d has mail."
 msgstr ""
 
-#: extmail.c:1326
+#: extmail.c:1371
 #, c-format
 msgid "%s(#%d) has mail but is not a player."
 msgstr ""
 
-#: extmail.c:1332
+#: extmail.c:1377
 #, c-format
 msgid "Mail database top is %d, actual message count is %d. Fixing."
 msgstr ""
 
-#: extmail.c:1336
+#: extmail.c:1381
 msgid "Mail sanity check completed."
 msgstr ""
 
-#: extmail.c:1340
+#: extmail.c:1385
 #, c-format
 msgid "Fixing mail for #%d."
 msgstr ""
 
-#: extmail.c:1371
+#: extmail.c:1416
 msgid "Mail sanity fix completed."
 msgstr ""
 
-#: extmail.c:1373
+#: extmail.c:1418
 msgid "That is not a debugging option."
 msgstr ""
 
-#: extmail.c:1418 extmail.c:1818
+#: extmail.c:1463 extmail.c:1863
 msgid "The post office protects privacy!"
 msgstr ""
 
-#: extmail.c:1426
+#: extmail.c:1471
 #, c-format
 msgid "There are %d messages in the mail spool."
 msgstr ""
 
-#: extmail.c:1439
+#: extmail.c:1484
 #, c-format
 msgid "MAIL: There are %d msgs in the mail spool, %d unread, %d cleared."
 msgstr ""
 
-#: extmail.c:1457
+#: extmail.c:1502
 #, c-format
 msgid "MAIL: There are %d old msgs in the mail spool, totalling %d characters."
 msgstr ""
 
-#: extmail.c:1461
+#: extmail.c:1506
 #, c-format
 msgid "MAIL: There are %d new msgs in the mail spool, totalling %d characters."
 msgstr ""
 
-#: extmail.c:1465
+#: extmail.c:1510
 #, c-format
 msgid ""
 "MAIL: There are %d cleared msgs in the mail spool, totalling %d characters."
 msgstr ""
 
-#: extmail.c:1480
+#: extmail.c:1525
 #, c-format
 msgid "%s sent %d messages."
 msgstr ""
 
-#: extmail.c:1481
+#: extmail.c:1526
 #, c-format
 msgid "%s has %d messages."
 msgstr ""
 
-#: extmail.c:1510
+#: extmail.c:1555
 #, c-format
 msgid "Mail statistics for %s:"
 msgstr ""
 
-#: extmail.c:1513
+#: extmail.c:1558
 #, c-format
 msgid "%d messages sent, %d unread, %d cleared."
 msgstr ""
 
-#: extmail.c:1515
+#: extmail.c:1560
 #, c-format
 msgid "%d messages received, %d unread, %d cleared."
 msgstr ""
 
-#: extmail.c:1520
+#: extmail.c:1565
 #, c-format
 msgid "%d messages sent, %d unread, %d cleared, totalling %d characters."
 msgstr ""
 
-#: extmail.c:1524
+#: extmail.c:1569
 #, c-format
 msgid "%d messages received, %d unread, %d cleared, totalling %d characters."
 msgstr ""
 
-#: extmail.c:1529
+#: extmail.c:1574
 #, c-format
 msgid "Last is dated %s"
 msgstr ""
 
-#: extmail.c:1554
+#: extmail.c:1599
 msgid "MAIL: Invalid mail command."
 msgstr ""
 
-#: extmail.c:1618 extmail.c:1635 funcrypt.c:332
+#: extmail.c:1663 extmail.c:1680 funcrypt.c:332
 msgid "#-1 NO SUCH PLAYER"
 msgstr ""
 
-#: extmail.c:1642
+#: extmail.c:1687
 msgid "#-1 FOLDER MUST BE INTEGER"
 msgstr ""
 
-#: extmail.c:1702
+#: extmail.c:1747
 msgid "#-1 INVALID MESSAGE OR PLAYER"
 msgstr ""
 
-#: extmail.c:1733
+#: extmail.c:1778
 msgid "Permission denied"
 msgstr ""
 
-#: extmail.c:1739
+#: extmail.c:1784
 msgid "Invalid message specification"
 msgstr ""
 
-#: extmail.c:1792
+#: extmail.c:1837
 msgid "#-? fun_mailstats called with invalid called_as!"
 msgstr ""
 
-#: extmail.c:2487 extmail.c:2584
+#: extmail.c:2532 extmail.c:2629
 msgid "MAIL: Invalid message specification"
 msgstr ""
 
-#: extmail.c:2495 extmail.c:2505 extmail.c:2512 extmail.c:2522 extmail.c:2529
-#: extmail.c:2539
+#: extmail.c:2540 extmail.c:2550 extmail.c:2557 extmail.c:2567 extmail.c:2574
+#: extmail.c:2584
 msgid "MAIL: Invalid age"
 msgstr ""
 
-#: extmail.c:2499 extmail.c:2516 extmail.c:2533
+#: extmail.c:2544 extmail.c:2561 extmail.c:2578
 msgid "MAIL: Message ages must be integers"
 msgstr ""
 
-#: extmail.c:2545 extmail.c:2550
+#: extmail.c:2590 extmail.c:2595
 msgid "MAIL: Invalid dbref #"
 msgstr ""
 
-#: extmail.c:2557 extmail.c:2562
+#: extmail.c:2602 extmail.c:2607
 msgid "MAIL: Invalid player"
 msgstr ""
 
-#: extmail.c:2618
+#: extmail.c:2663
 msgid "Read "
 msgstr ""
 
-#: extmail.c:2620
+#: extmail.c:2665
 msgid "Unread "
 msgstr ""
 
-#: extmail.c:2622
+#: extmail.c:2667
 msgid "Cleared "
 msgstr ""
 
-#: extmail.c:2624
+#: extmail.c:2669
 msgid "Urgent "
 msgstr ""
 
-#: extmail.c:2626
+#: extmail.c:2671
 msgid "Mass "
 msgstr ""
 
-#: extmail.c:2628
+#: extmail.c:2673
 msgid "Fwd "
 msgstr ""
 
-#: extmail.c:2630
+#: extmail.c:2675
 msgid "Tagged"
 msgstr ""
 
-#: extmail.c:2656 extmail.c:2690
+#: extmail.c:2701 extmail.c:2735
 #, c-format
 msgid "MAIL: %d messages in folder %d [%s] (%d unread, %d cleared)."
 msgstr ""
 
-#: extmail.c:2661 extmail.c:2695
+#: extmail.c:2706 extmail.c:2740
 #, c-format
 msgid "MAIL: Warning! Limit on inbox messages is %d!"
 msgstr ""
 
-#: extmail.c:2667 extmail.c:2693
+#: extmail.c:2712 extmail.c:2738
 msgid ""
 "\n"
 "MAIL: You have no mail.\n"
 msgstr ""
 
-#: extmail.c:2839
+#: extmail.c:2884
 #, c-format
 msgid "You sent your message to the '%s' alias"
 msgstr ""
@@ -3386,158 +3390,158 @@ msgstr ""
 msgid "#-1 SEPARATOR MUST BE ONE CHARACTER"
 msgstr ""
 
-#: function.c:838
+#: function.c:839
 #, c-format
 msgid "Functions: %s"
 msgstr ""
 
-#: function.c:1044 function.c:1082
+#: function.c:1045 function.c:1083
 msgid "There's already a function with that name."
 msgstr ""
 
-#: function.c:1049 function.c:1088 function.c:1527
+#: function.c:1050 function.c:1089 function.c:1528
 msgid "Invalid function name."
 msgstr ""
 
-#: function.c:1055 function.c:1674
+#: function.c:1056 function.c:1675
 msgid "That's not a builtin function."
 msgstr ""
 
-#: function.c:1061
+#: function.c:1062
 msgid "Function cloned."
 msgstr ""
 
-#: function.c:1096 function.c:1306 function.c:1713 function.c:1761
-#: function.c:1794
+#: function.c:1097 function.c:1307 function.c:1714 function.c:1762
+#: function.c:1795
 msgid "No such function."
 msgstr ""
 
-#: function.c:1103
+#: function.c:1104
 msgid "You cannot alias @functions."
 msgstr ""
 
-#: function.c:1110
+#: function.c:1111
 msgid "Alias added."
 msgstr ""
 
-#: function.c:1297
+#: function.c:1298
 msgid "Restrict what function?"
 msgstr ""
 
-#: function.c:1301
+#: function.c:1302
 msgid "Do what with the function?"
 msgstr ""
 
-#: function.c:1312
+#: function.c:1313
 msgid "Builtin function"
 msgstr ""
 
-#: function.c:1317
+#: function.c:1318
 msgid "Restrictions unchanged."
 msgstr ""
 
-#: function.c:1319
+#: function.c:1320
 msgid "Restrictions modified."
 msgstr ""
 
-#: function.c:1463
+#: function.c:1464
 msgid "No global user-defined functions exist."
 msgstr ""
 
-#: function.c:1474
+#: function.c:1475
 msgid "Function Name                   Dbref #    Attrib"
 msgstr ""
 
-#: function.c:1492
+#: function.c:1493
 msgid "User functions:"
 msgstr ""
 
-#: function.c:1521
+#: function.c:1522
 msgid "You must specify an object and an attribute."
 msgstr ""
 
-#: function.c:1538
+#: function.c:1539
 msgid "No permission to control object."
 msgstr ""
 
-#: function.c:1542
+#: function.c:1543
 msgid "No permission to examine object."
 msgstr ""
 
-#: function.c:1556
+#: function.c:1557
 msgid "Expected between 1 and 5 arguments."
 msgstr ""
 
-#: function.c:1592
+#: function.c:1593
 msgid "Function added."
 msgstr ""
 
-#: function.c:1597
+#: function.c:1598
 msgid "You cannot change that built-in function."
 msgstr ""
 
-#: function.c:1630
+#: function.c:1631
 msgid "Function updated."
 msgstr ""
 
-#: function.c:1667
+#: function.c:1668
 msgid "Restore what?"
 msgstr ""
 
-#: function.c:1679
+#: function.c:1680
 msgid "That function isn't deleted!"
 msgstr ""
 
-#: function.c:1684
+#: function.c:1685
 msgid "Restored."
 msgstr ""
 
-#: function.c:1720
+#: function.c:1721
 msgid "Function alias deleted."
 msgstr ""
 
-#: function.c:1724 function.c:1733
+#: function.c:1725 function.c:1734
 msgid "You can't delete that @function."
 msgstr ""
 
-#: function.c:1728 function.c:1738
+#: function.c:1729 function.c:1739
 msgid "Function deleted."
 msgstr ""
 
-#: function.c:1766
+#: function.c:1767
 msgid "You can't disable aliases."
 msgstr ""
 
-#: function.c:1827
+#: function.c:1828
 #, c-format
 msgid "Name      : %s() (%s%s)"
 msgstr ""
 
-#: function.c:1926
+#: function.c:1927
 #, c-format
 msgid "Flags     : %s"
 msgstr ""
 
-#: function.c:1930
+#: function.c:1931
 #, c-format
 msgid "Location  : #%d/%s\n"
 msgstr ""
 
-#: function.c:1938
+#: function.c:1939
 msgid "(Commas okay in last argument)"
 msgstr ""
 
-#: function.c:1944
+#: function.c:1945
 #, c-format
 msgid "Arguments : %d %s"
 msgstr ""
 
-#: function.c:1946
+#: function.c:1947
 #, c-format
 msgid "Arguments : At least %d %s"
 msgstr ""
 
-#: function.c:1949
+#: function.c:1950
 #, c-format
 msgid "Arguments : %d to %d %s"
 msgstr ""

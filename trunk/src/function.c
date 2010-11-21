@@ -536,6 +536,7 @@ FUNTAB flist[] = {
   {"LWHO", fun_lwho, 0, 2, FN_REG | FN_STRIPANSI},
   {"LWHOID", fun_lwho, 0, 1, FN_REG | FN_STRIPANSI},
   {"MAIL", fun_mail, 0, 2, FN_REG | FN_STRIPANSI},
+  {"MAILLIST", fun_maillist, 0, 2, FN_REG | FN_STRIPANSI},
   {"MAILFROM", fun_mailfrom, 1, 2, FN_REG | FN_STRIPANSI},
   {"MAILSEND", fun_mailsend, 2, 2, FN_REG},
   {"MAILSTATS", fun_mailstats, 1, 1, FN_REG | FN_STRIPANSI},

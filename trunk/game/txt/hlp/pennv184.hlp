@@ -42,6 +42,8 @@ Functions:
  * New stext() function and %$N sub, equivilent of #$ in @switch, switch*(),
    and reswitch*(), but can be used in nested switches/on user input. [MG]
  * New slev() function, returns the current nesting depth of switches. [MG]
+ * maillist() returns a list of @mail messages matching a range, as per
+   @mail/list. Suggested by AnneLions. [MG]
 
 Commands:
  * @grep now accepts /wild and /regexp switches, for wildcard/globbing and

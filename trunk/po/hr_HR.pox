@@ -4595,6 +4595,10 @@ msgstr "Taj atribut nije u tablici atributa"
 msgid "That attribute's permissions can not be changed."
 msgstr "Dozvole za taj atribut se ne mogu promijeniti."
 
+#: atr_tab.c:421
+msgid "That attribute's permissions cannot be changed."
+msgstr "Dozvole za taj atribut ne mogu biti promijenjene."
+
 #: destroy.c:436
 msgid "That can't be undestroyed."
 msgstr "To ne mo¾e biti od-uni¹teno."

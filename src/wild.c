@@ -80,6 +80,10 @@ quick_wild_new(const char *restrict tstr, const char *restrict dstr, bool cs)
   return wild_match_test(tstr, dstr, cs, NULL, 0);
 }
 
+static bool
+real_atr_wild(const char *restrict tstr,
+              const char *restrict dstr,
+              int *invokes);
 /** Do an attribute name wildcard match.
  *
  * This probably crashes if fed NULLs instead of strings, too.
@@ -96,7 +100,21 @@ quick_wild_new(const char *restrict tstr, const char *restrict dstr, bool cs)
 bool
 atr_wild(const char *restrict tstr, const char *restrict dstr)
 {
+  int invokes = 10000;
+  return real_atr_wild(tstr, dstr, &invokes);
+}
+
+static bool
+real_atr_wild(const char *restrict tstr,
+              const char *restrict dstr,
+              int *invokes)
+{
   int starcount;
+  if (*invokes > 0) {
+    (*invokes)--;
+  } else {
+    return 0;
+  }
 
   if (!*tstr)
     return !strchr(dstr, '`');
@@ -163,9 +181,10 @@ atr_wild(const char *restrict tstr, const char *restrict dstr)
   if (*tstr == '?') {
     /* Scan for possible matches. */
     while (*dstr) {
-      if (*dstr != '`' && atr_wild(tstr + 1, dstr + 1))
+      if (*dstr != '`' && real_atr_wild(tstr + 1, dstr + 1, invokes))
         return 1;
       dstr++;
+      if (*invokes <= 0) return 0;
     }
   } else {
     /* Skip over a backslash in the pattern string if it is there. */
@@ -177,9 +196,10 @@ atr_wild(const char *restrict tstr, const char *restrict dstr)
       if (EQUAL(0, *dstr, *tstr)) {
         if (!*(tstr + 1) && *(dstr + 1))
           return 0;             /* No more in pattern string, but more in target */
-        if (atr_wild(tstr + 1, dstr + 1))
+        if (real_atr_wild(tstr + 1, dstr + 1, invokes))
           return 1;
       }
+      if (*invokes <= 0) return 0;
       if (starcount < 2 && *dstr == '`')
         return 0;
       dstr++;

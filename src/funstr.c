@@ -556,11 +556,7 @@ FUNCTION(fun_lpos)
 /* ARGSUSED */
 FUNCTION(fun_strmatch)
 {
-  char tbuf[BUFFER_LEN];
-  char pattern[BUFFER_LEN];
   char *ret[36];
-  char *t;
-  size_t len;
   int matches;
   int i;
   char *qregs[NUMQ];
@@ -571,27 +567,28 @@ FUNCTION(fun_strmatch)
 
   /* matches a wildcard pattern for an _entire_ string */
 
-  t = remove_markup(args[0], &len);
-  memcpy(tbuf, t, len);
-  t = remove_markup(args[1], &len);
-  memcpy(pattern, t, len);
-  memset(ret, 0, 36);
-  matches = wild_match_case_r(pattern, tbuf, 0, ret,
-                              NUMQ, match_space, match_space_len);
-  safe_boolean(matches, buff, bp);
-
   if (nargs > 2) {
-    /* Now, assign the captures if desired */
-    nqregs = list2arr(qregs, NUMQ, args[2], ' ');
+    matches = wild_match_case_r(args[1], args[0], 0, ret,
+                                NUMQ, match_space, match_space_len);
+    safe_boolean(matches, buff, bp);
 
-    for (i = 0; i < nqregs; i++) {
-      if (ret[i] && qregs[i][0] && !qregs[i][1]) {
-        qindex = qreg_indexes[(unsigned char) qregs[i][0]];
-        if (qindex >= 0 && global_eval_context.renv[qindex]) {
-          strcpy(global_eval_context.renv[qindex], ret[i]);
+    if (matches) {
+      /* Now, assign the captures, if we have returns. */
+      nqregs = list2arr(qregs, NUMQ, args[2], ' ');
+
+      for (i = 0; i < nqregs; i++) {
+        if (ret[i] && qregs[i][0] && !qregs[i][1]) {
+          qindex = qreg_indexes[(unsigned char) qregs[i][0]];
+          if (qindex >= 0 && global_eval_context.renv[qindex]) {
+            strncpy(global_eval_context.renv[qindex], ret[i], BUFFER_LEN);
+          }
         }
       }
     }
+  } else {
+    matches = wild_match_case_r(args[1], args[0], 0, NULL,
+                                0, NULL, 0);
+    safe_boolean(matches, buff, bp);
   }
 }
 

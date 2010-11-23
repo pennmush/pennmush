@@ -637,21 +637,24 @@ mush_strndup(const char *src, size_t len, const char *check)
     warn_type parse_warnings(dbref player, const char *warnings);
 
 /* From wild.c */
+    bool wild_match_test(const char *restrict s, const char *restrict d,
+                         bool cs, int *matches, int nmatches);
     bool local_wild_match_case(const char *restrict s,
                                const char *restrict d, bool cs);
     bool wildcard(const char *s);
     bool quick_wild_new(const char *restrict tstr,
                         const char *restrict dstr, bool cs);
+    bool wild_match_case_r(const char *restrict s,
+                           const char *restrict d, bool cs,
+                           char **ary, int max, char *ata, int len);
+    bool quick_wild(const char *restrict tsr, const char *restrict dstr);
+    bool atr_wild(const char *restrict tstr, const char *restrict dstr);
+
     bool regexp_match_case_r(const char *restrict s, const char *restrict d,
                              bool cs, char **, size_t, char *restrict, ssize_t);
     bool quick_regexp_match(const char *restrict s,
                             const char *restrict d, bool cs);
     bool qcomp_regexp_match(const pcre * re, const char *s);
-    bool wild_match_case_r(const char *restrict s,
-                           const char *restrict d, bool cs,
-                           char **ary, size_t max, char *ata, ssize_t len);
-    bool quick_wild(const char *restrict tsr, const char *restrict dstr);
-    bool atr_wild(const char *restrict tstr, const char *restrict dstr);
 /** Default (case-insensitive) local wildcard match */
 #define local_wild_match(s,d) local_wild_match_case(s, d, 0)
 

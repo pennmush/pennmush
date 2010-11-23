@@ -5,10 +5,11 @@
  *
  * Written by T. Alexander Popiel, 24 June 1993
  * Last modified by Javelin, 2002-2003
- * Heavily modified by Walker, 2010
  *
  * Thanks go to Andrew Molitor for debugging
  * Thanks also go to Rich $alz for code to benchmark against
+ *
+ * Rather thoroughly rewritten by Walker, 2010
  *
  * Copyright (c) 1993,2000 by T. Alexander Popiel
  * This code is available under the terms of the GPL,

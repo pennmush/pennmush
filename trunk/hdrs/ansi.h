@@ -141,6 +141,7 @@ int ansi_strcmp(const char *astr, const char *bstr);
 extern char *remove_markup(const char *orig, size_t * stripped_len);
 extern char *skip_leading_ansi(const char *p);
 
+int has_markup(const char *test);
 extern ansi_string *
 parse_ansi_string(const char *src)
   __attribute_malloc__;

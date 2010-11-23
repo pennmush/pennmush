@@ -1785,7 +1785,7 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
   int was_hearer;
   int was_listener;
   dbref contents;
-  char *new;
+  const char *new;
   if (!EMPTY_ATTRS && s && !*s)
     s = NULL;
   if (IsGarbage(thing)) {

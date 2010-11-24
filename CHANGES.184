@@ -45,6 +45,8 @@ Minor Changes:
  * The Drop and Give @locks now trigger verb <name>_LOCK`FAILURE attributes
    when you fail to pass them, as described in 'help failure'. Suggested by 
    Cas@BeforeTheDarkness. [MG]
+ * Set several attributes used internally AF_NOCOPY so they won't be included
+   in @decompile output. Suggested by Paige. [GM]
    
 Functions:
  * ibreak(), for breaking out of an iter() loop. [Rhost] [MG]

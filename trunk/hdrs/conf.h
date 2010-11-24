@@ -88,6 +88,11 @@ typedef struct options_table OPTTAB;
 typedef int (*config_func) (const char *opt, const char *val, void *loc,
                             int maxval, int source);
 
+#define CP_OVERRIDDEN 1   /* Set by .cnf file */
+#define CP_OPTIONAL   2   /* Doesn't complain if it's missing. */
+#define CP_CONFIGSET  4   /* Overridden/set by @config/set */
+#define CP_GODONLY    8   /* Only God can see. */
+
 /** Runtime configuration parameter.
  * This structure represents a runtime configuration option.
  */
@@ -97,9 +102,10 @@ typedef struct confparm {
   config_func handler;
   void *loc;                    /**< place to put this option. */
   int max;                      /**< max: string length, integer value. */
-  int overridden;               /**< Has the default been overridden? */
+  int flags;                    /**< Has the default been overridden? */
   const char *group;            /**< The option's group name */
 } PENNCONF;
+
 
 /** Runtime configuration options.
  * This large structure stores all of the runtime configuration options

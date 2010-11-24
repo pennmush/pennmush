@@ -23,6 +23,10 @@ Major Changes:
    ansi-aware capturing. [GM]
 
 Minor Changes:
+ * update-cnf.pl perl script now handles optional config lines, by placing
+   A # OPTIONAL above them. This is for message translation. [GM]
+ * Config options can now be marked as optional. If they don't exist,
+   Penn will not complain in the log. [MG]
  * Player names with spaces no longer need to be in given in quotes for
    @name. Suggested by Minion. [MG]
  * @decompile no longer shows flags which can't be set by players, like

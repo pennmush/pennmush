@@ -131,7 +131,16 @@ while (<IN>) {
 close IN;
 
 # Now we check for things in dist that haven't been seen in the working file.
-while (my ($key, $dir) = each %{$dist_cnf}) {
+# Sorted using position
+my @keys = keys %{$dist_cnf};
+
+# Unique 'em, I'm seeing duplicates.
+my %useen = ();
+my @ukeys = grep { ! $useen{$_} ++ } @keys;
+
+my @sorted = sort { $dist_cnf->{$a}->[0]->{"position"} <=> $dist_cnf->{$b}->[0]->{"position"} } @ukeys;
+for my $key (@sorted) {
+    my $dir = $dist_cnf->{$key};
     next if $seen{$key};
     dump_directive \*OUT, $dir;
     push @newoptions, $key;   
@@ -152,6 +161,8 @@ print "Done!\n";
 sub read_cnf_file {
     my (%directive, @comment);
     my $file = shift;
+    my $position = 0;
+    my $expectCommentedDirective = 0;
     
     print "*** Reading settings from $file...\n";
     open FILE, "<", $file or die "update-cnf.pl: Unable to open $file: $!\n"; 
@@ -159,19 +170,49 @@ sub read_cnf_file {
 	# We can have comments, which start with #,
 	# or directives, which start with anything else.
 	chomp;
-	if (/^#/) {
-	    # A comment
-	    push @comment, $_;
+        if (/^#\s*OPTIONAL/) {
+            # The next line is a commented-out directive that is optional.
+            $expectCommentedDirective = 1;
+            push @comment, $_;
+	} elsif (/^#/) {
+            if ($expectCommentedDirective && /^#\s*(\S+)\s+(.+)$/) {
+              # A directive, but an optional one.
+              my ($key, $val) = ($1, $2);
+              my $c = join "\n", @comment;
+              $c .= "\n" if length $c;
+              if (defined $directive{$key}) {
+                  # This is a repeated directive! 
+                  push @{$directive{$key}}, {"key" => $key, "value" => $val, "comment" => $c, "optional" => 1 };
+              } else {
+                  $directive{$key} = [{"position" => $position++, "key" => $key, "value" => $val, "comment" => $c, "optional" => 1}]; 
+              }
+              undef @comment;
+            } elsif ($expectCommentedDirective && /^#\s*(\S+)\s*$/) {
+              # An optional directive that's defined as blank
+              my ($key, $val) = ($1, "");
+              my $c = join "\n", @comment;
+              $c .= "\n" if length $c;
+              if (defined $directive{$key}) {
+                  # These probably won't repeat, but... 
+                  push @{$directive{$key}}, {"key" => $key, "value" => "", "comment" => $c, "optional" => 1 };
+              } else {
+                  $directive{$key} = [{"position" => $position++, "key" => $key, "value" => "", "comment" => $c, "optional" => 1 }];
+              }
+              undef @comment;
+            } else {
+              push @comment, $_;
+            }
 	} elsif (/^(\S+)\s+(.+)$/) {
+            $expectCommentedDirective = 0;
 	    # A directive
 	    my ($key, $val) = ($1, $2);
 	    my $c = join "\n", @comment;
 	    $c .= "\n" if length $c;
 	    if (defined $directive{$key}) {
 		# This is a repeated directive! 
-		push @{$directive{$key}}, { "key" => $key, "value" => $val, "comment" => $c };
+		push @{$directive{$key}}, {"key" => $key, "value" => $val, "comment" => $c };
 	    } else {
-		$directive{$key} = [{"key" => $key, "value" => $val, "comment" => $c}]; 
+		$directive{$key} = [{"position" => $position++, "key" => $key, "value" => $val, "comment" => $c}]; 
 	    }
 	    undef @comment;
         } elsif (/^(\S+)/) {
@@ -183,11 +224,12 @@ sub read_cnf_file {
 		# These probably won't repeat, but... 
 		push @{$directive{$key}}, {"key" => $key, "value" => "", "comment" => $c };
 	    } else {
-		$directive{$key} = [{"key" => $key, "value" => "", "comment" => $c }];
+		$directive{$key} = [{"position" => $position++, "key" => $key, "value" => "", "comment" => $c }];
 	    }
 	    undef @comment;
     	} elsif (/^$/) {
 	    # A blank line. Ignore comments so far
+            $expectCommentedDirective = 0;
 	    undef @comment;
 	}
     }
@@ -221,6 +263,10 @@ sub dump_directive {
     my $directive = shift;
     foreach my $d (@{$directive}) {
 	print $out $d->{"comment"};
-	print $out $d->{key}, " ", $d->{"value"}, "\n";
+        if ($d->{"optional"}) {
+            print $out "# ", $d->{key}, " ", $d->{"value"}, "\n";
+        } else {
+            print $out $d->{key}, " ", $d->{"value"}, "\n";
+        }
     }
 }

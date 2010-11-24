@@ -213,7 +213,7 @@ real_atr_wild(const char *restrict tstr,
 
 /** Test if a test string matches a pattern string. If len is -1, then
  * it tests the entire string. If len is non-zero, it tests that many
- * characters of test and pat against each other.
+ * characters of test and pattern against each other.
  *
  * \param test A string to test.
  * \param pattern The pattern to test it against. It may have MATCH_ANY_CHAR
@@ -240,6 +240,7 @@ strmatchwildn(const char *test, const char *pattern, int len) {
  * \param test A string to test.
  * \param testlen Length of <test>
  * \param pattern The pattern to test it against. It may have MATCH_ANY_CHAR
+ * \param patlen Length of <pattern>
  * \retval 1 The test matches the pattern.
  * \retval 0 The test does not match the pattern.
  */
@@ -366,7 +367,7 @@ populate_match_info(Wild_Match_Info *wmi, char *pat) {
   wmi[wmic].type = WTYPE_NONE;
 }
 
-/** Return 1 if this and all subsequent wild_match_infos 
+/** Return 1 if this and all subsequent wild_match_infos
  * match the text.
  *
  * This is an attempt to do wild matching iteratively instead of
@@ -549,8 +550,8 @@ wild_test(char *pat, const char *restrict test,
  *
  * This routine will cause crashes if fed NULLs instead of strings.
  *
- * \param pat pattern to match against.
- * \param test string to check.
+ * \param s pattern to match against.
+ * \param d string to check.
  * \param cs if 1, case-sensitive; if 0, case-insensitive.
  * \param matches An int[nmatches*2] to store positions into. The result will
  *                be [0start, 0len, 1start, 1len, 2start, 2len, ...]
@@ -587,7 +588,7 @@ wild_match_test(const char *restrict s, const char *restrict d, bool cs,
  * \param matches An array to store the grabs in
  * \param nmatches Number of elements ary can hold
  * \param data Buffer used to hold the matches. The elements of ary
- *    are set to pointers into this  buffer.
+ *    are set to pointers into this buffer.
  * \param len The number of bytes in data. Twice the length of d should
  *    be enough.
  * \retval 1 d matches s.
@@ -671,7 +672,7 @@ wild_match_case_r(const char *restrict s, const char *restrict d, bool cs,
  * This routine will cause crashes if fed NULLs instead of strings.
  *
  * \param s regexp to match against.
- * \param d string to check.
+ * \param val string to check.
  * \param cs if 1, case-sensitive; if 0, case-insensitive
  * \param matches array to store matched subexpressions in
  * \param nmatches the size of the matches array
@@ -740,7 +741,7 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
    * with other languages.
    */
   for (i = 0; i < nmatches && (int) i < subpatterns && totallen < len; i++) {
-    /* This is more annoying than a jumping flea up the nose. Since 
+    /* This is more annoying than a jumping flea up the nose. Since
      * ansi_pcre_copy_substring() uses buff, bp instead of char *, len,
      * we have to mangle bp and 'buff' by hand. Sound easy? We also
      * have to make sure that 'buff' + len < BUFFER_LEN. Particularly since

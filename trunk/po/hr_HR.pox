@@ -2520,22 +2520,6 @@ msgstr "IGRA: %s(%s) poku¹a potro¹iti %d %s."
 msgid "GAME: Database consistency check complete."
 msgstr "IGRA: Provjera konzistencije baze podataka gotova."
 
-#: src/conf.c:570
-msgid "GAME: Database will be dumped in 1 minute."
-msgstr "IGRA: Baza podataka æe biti snimljena za 1 minutu."
-
-#: src/conf.c:572
-msgid "GAME: Database will be dumped in 5 minutes."
-msgstr "IGRA: Baza podataka æe biti snimljena za 5 minuta."
-
-#: src/conf.c:502
-msgid "GAME: Dump complete. Time in."
-msgstr "IGRA: Snimanje gotovo."
-
-#: src/conf.c:501
-msgid "GAME: Dumping database. Game may freeze for a minute"
-msgstr "IGRA: Snimam bazu podataka. Server bi se mogao zablokirati na kraæe vrijeme"
-
 #: game.c:311
 msgid "GAME: ERROR! Database save failed!"
 msgstr "IGRA: GRE©KA! Snimanje baze podataka nije uspjelo!"

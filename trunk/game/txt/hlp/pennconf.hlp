@@ -159,6 +159,9 @@ Continued in help @config cosmetic2
   max_logins=<number>: The maximum number of connected players.
   max_guests=<number>: The maximum number of connected guests. If 0, 
    no limit. If -1, limited by the number of guest players in the db.
+  connect_fail_limit=<count>: The maximum number of times in a 10 minute
+   period that an IP can attempt to log in and fail. Maximum is 50,
+   0 means no limit.
   idle_timeout=<time>: The number of minutes a connection can be idle
    before getting booted. 0 means no limit.
   unconnected_idle_timeout=<time>: The number of minutes a connection can be 

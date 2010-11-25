@@ -217,6 +217,14 @@ ssl_require_client_cert no
 # money_singular Penny
 # money_plural Pennies
 
+# How many times in a 10 minute period should a given IP address be
+# allowed to attempt to log in before being rejected?
+# If you want this to really be successful, you should probably also
+# block Tor exit nodes at the firewall level:
+# http://doc.norang.ca/iptables.html#sec-3
+# Set to 0 for unlimited.
+connect_fail_limit 10
+
 # Should there be a limit on how long players can be idle?
 # If you want one, set idle_timeout to the # number of MINUTES 
 # a player may idle before getting disconnected.

@@ -2483,22 +2483,6 @@ msgstr "SPILL: %s(%s) prøvde å bruke %d %s."
 msgid "GAME: Database consistency check complete."
 msgstr "SPILL: Database konsistenssjekk ferdig."
 
-#: src/conf.c:570
-msgid "GAME: Database will be dumped in 1 minute."
-msgstr "SPILL: Databasedump om 1 minutt."
-
-#: src/conf.c:572
-msgid "GAME: Database will be dumped in 5 minutes."
-msgstr "SPILL: Databasen vil bli dumpet om 5 minutter."
-
-#: src/conf.c:502
-msgid "GAME: Dump complete. Time in."
-msgstr "SPILL: Dump ferdig. Bare fortsett, dere."
-
-#: src/conf.c:501
-msgid "GAME: Dumping database. Game may freeze for a minute"
-msgstr "SPILL: Dumper database. Spillet kan fryse en stund"
-
 #: game.c:311
 msgid "GAME: ERROR! Database save failed!"
 msgstr "SPILL: FEIL! Databaselagring ble ikke fullført!"

@@ -16,6 +16,8 @@ Version 1.8.4 patchlevel 2                                 ??? ??,  2010
 Major Changes:
  * Wildcard matcher completely rewritten to avoid hangs and to provide
    ansi-aware capturing. [GM]
+ * connection_fail_limit now lets you limit the # of connection fails in
+   a 10 minute time by any given IP. [GM]
 
 Minor Changes:
  * update-cnf.pl perl script now handles optional config lines, by placing

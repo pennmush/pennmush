@@ -53,6 +53,7 @@ Minor Changes:
    Cas@BeforeTheDarkness. [MG]
  * Set several attributes used internally AF_NOCOPY so they won't be included
    in @decompile output. Suggested by Paige. [GM]
+ * The help for the chat system (@channel) has been rewritten. [MG]
    
 Functions:
  * ibreak(), for breaking out of an iter() loop. [Rhost] [MG]

@@ -860,14 +860,6 @@ msgstr "VS "
 msgid "GAME: Database consistency check complete."
 msgstr "SPIL: Databasecheck komplet."
 
-#: src/conf.c:570
-msgid "GAME: Database will be dumped in 1 minute."
-msgstr "SPIL: Databasen gemmes om 5 minutter."
-
-#: src/conf.c:572
-msgid "GAME: Database will be dumped in 5 minutes."
-msgstr "SPIL: Databasen gemmes om 5 minutter."
-
 #: src/destroy.c:1322
 msgid "GAME: Performing database consistency check."
 msgstr "SPIL: Databasecheck komplet."

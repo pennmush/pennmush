@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-22 02:00-0600\n"
+"POT-Creation-Date: 2010-11-25 02:00-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1172,127 +1172,151 @@ msgstr ""
 msgid "TinyMUSH compatibility options"
 msgstr ""
 
-#: conf.c:1274
-msgid "GAME: Dumping database. Game may freeze for a minute"
+#: conf.c:1281
+msgid "GAME: Saving database. Game may freeze for a few moments."
 msgstr ""
 
-#: conf.c:1275
-msgid "GAME: Dump complete. Time in."
+#: conf.c:1282
+msgid "GAME: Save complete. "
 msgstr ""
 
-#: conf.c:1336
-msgid "GAME: Database will be dumped in 1 minute."
+#: conf.c:1301
+msgid "Penny"
 msgstr ""
 
-#: conf.c:1338
-msgid "GAME: Database will be dumped in 5 minutes."
+#: conf.c:1302
+msgid "Pennies"
 msgstr ""
 
-#: conf.c:1644
+#: conf.c:1343
+msgid "GAME: Database save in 1 minute."
+msgstr ""
+
+#: conf.c:1345
+msgid "GAME: Database save in 5 minutes."
+msgstr ""
+
+#: conf.c:1385
+msgid "Broadcast:"
+msgstr ""
+
+#: conf.c:1386
+msgid "Admin:"
+msgstr ""
+
+#: conf.c:1387
+msgid "Announcement:"
+msgstr ""
+
+#: conf.c:1651
 msgid "I only know the following types of options:"
 msgstr ""
 
-#: conf.c:1672
+#: conf.c:1679
 msgid "Use: @config/list <type of options> where type is one of:"
 msgstr ""
 
-#: conf.c:1783
+#: conf.c:1790
 msgid "#-1 NO SUCH CONFIG OPTION"
 msgstr ""
 
-#: conf.c:1824 function.c:1776
+#: conf.c:1829
+msgid "That option cannot be altered."
+msgstr ""
+
+#: conf.c:1834 function.c:1776
 msgid "Disabled."
 msgstr ""
 
-#: conf.c:1826 function.c:1773
+#: conf.c:1836 function.c:1773
 msgid "Enabled."
 msgstr ""
 
-#: conf.c:1830
+#: conf.c:1840
 msgid "That isn't an on/off option."
 msgstr ""
 
-#: conf.c:1834
+#: conf.c:1844
 msgid "No such option."
 msgstr ""
 
-#: conf.c:1841
+#: conf.c:1851
 msgid " Attributes are not compressed in memory."
 msgstr ""
 
-#: conf.c:1844
+#: conf.c:1854
 msgid " Attributes are Huffman compressed in memory."
 msgstr ""
 
-#: conf.c:1847
+#: conf.c:1857
 msgid " Attributes are word compressed in memory."
 msgstr ""
 
-#: conf.c:1850
+#: conf.c:1860
 msgid " Attributes are 8-bit word compressed in memory."
 msgstr ""
 
-#: conf.c:1854
+#: conf.c:1864
 msgid " The MUSH was compiled with SSL support."
 msgstr ""
 
-#: conf.c:1858
+#: conf.c:1868
 msgid " The MUSH was compiled with MySQL support."
 msgstr ""
 
-#: conf.c:1861
+#: conf.c:1871
 msgid " The MUSH was compiled with Postgresql support."
 msgstr ""
 
-#: conf.c:1864
+#: conf.c:1874
 msgid " The MUSH was compiled with Sqlite3 support."
 msgstr ""
 
-#: conf.c:1868
+#: conf.c:1878
 msgid " DNS and ident lookups are handled by a slave process."
 msgstr ""
 
-#: conf.c:1870
+#: conf.c:1880
 msgid " DNS and ident lookups are handled by the MUSH process."
 msgstr ""
 
-#: conf.c:1874
+#: conf.c:1884
 msgid " Extended convtime() is supported."
 msgstr ""
 
-#: conf.c:1876
+#: conf.c:1886
 msgid " convtime() is stricter."
 msgstr ""
 
-#: conf.c:1880
+#: conf.c:1890
 msgid " CPU usage limiting is supported."
 msgstr ""
 
-#: conf.c:1882
+#: conf.c:1892
 msgid " CPU usage limiting is NOT supported."
 msgstr ""
 
-#: conf.c:1886
+#: conf.c:1896
 msgid " Changed help files will be automatically reindexed."
 msgstr ""
 
-#: conf.c:1890
+#: conf.c:1900
 msgid " SSE2 instructions are being used."
 msgstr ""
 
-#: conf.c:1894
+#: conf.c:1904
 msgid " SSE3 instructions are being used."
 msgstr ""
 
-#: conf.c:1898
+#: conf.c:1908
 msgid " Altivec instructions are being used."
 msgstr ""
 
-#: conf.c:1902
+#: conf.c:1912
 msgid " @config/save is enabled."
 msgstr ""
 
-#: conf.c:1904
+#: conf.c:1914
 msgid " @config/save is disabled."
 msgstr ""
 
@@ -3864,63 +3888,63 @@ msgstr ""
 msgid "#-1 INVALID DBREF"
 msgstr ""
 
-#: funstr.c:647 funstr.c:789 funstr.c:1450
+#: funstr.c:644 funstr.c:786 funstr.c:1447
 msgid "#-1 STRING LENGTHS MUST BE EQUAL"
 msgstr ""
 
-#: funstr.c:719 funstr.c:727 funstr.c:757 funstr.c:765
+#: funstr.c:716 funstr.c:724 funstr.c:754 funstr.c:762
 msgid "#-1 TR CANNOT ACCEPT NONPRINTING CHARS"
 msgstr ""
 
-#: funstr.c:864
+#: funstr.c:861
 msgid "#-1 ARGUMENT MUST BE NON-NEGATIVE INTEGER"
 msgstr ""
 
-#: funstr.c:944 funstr.c:995 funstr.c:1047 funstr.c:1066
+#: funstr.c:941 funstr.c:992 funstr.c:1044 funstr.c:1063
 msgid "#-1 FILL ARGUMENT MAY NOT BE ZERO-LENGTH"
 msgstr ""
 
-#: funstr.c:1416
+#: funstr.c:1413
 msgid "#-1 FUNCTION (ORD) EXPECTS ONE CHARACTER"
 msgstr ""
 
-#: funstr.c:1425 funstr.c:1443
+#: funstr.c:1422 funstr.c:1440
 msgid "#-1 UNPRINTABLE CHARACTER"
 msgstr ""
 
-#: funstr.c:1439
+#: funstr.c:1436
 msgid "#-1 THIS ISN'T UNICODE"
 msgstr ""
 
-#: funstr.c:1632
+#: funstr.c:1629
 msgid "#-1 WIDTH TOO SMALL"
 msgstr ""
 
-#: funstr.c:1923 funstr.c:1948
+#: funstr.c:1920 funstr.c:1945
 msgid "#-1 INVALID ALIGN STRING"
 msgstr ""
 
-#: funstr.c:1962
+#: funstr.c:1959
 msgid "#-1 CANNOT HAVE COLUMNS OF NEGATIVE SIZE"
 msgstr ""
 
-#: funstr.c:1966 funstr.c:1972
+#: funstr.c:1963 funstr.c:1969
 msgid "#-1 CANNOT HAVE COLUMNS THAT LARGE"
 msgstr ""
 
-#: funstr.c:1977
+#: funstr.c:1974
 msgid "#-1 NOT ENOUGH COLUMNS FOR ALIGN"
 msgstr ""
 
-#: funstr.c:1981
+#: funstr.c:1978
 msgid "#-1 TOO MANY COLUMNS FOR ALIGN"
 msgstr ""
 
-#: funstr.c:1987 funstr.c:2022
+#: funstr.c:1984 funstr.c:2019
 msgid "#-1 INVALID NUMBER OF ARGUMENTS TO ALIGN"
 msgstr ""
 
-#: funstr.c:1992 funstr.c:2027
+#: funstr.c:1989 funstr.c:2024
 msgid "#-1 FILLER MUST BE ONE CHARACTER"
 msgstr ""
 
@@ -4854,26 +4878,26 @@ msgstr ""
 msgid "MAIL: %s removed from alias %s"
 msgstr ""
 
-#: markup.c:1144
+#: markup.c:1153
 msgid "Inspecting ansi string"
 msgstr ""
 
-#: markup.c:1145
+#: markup.c:1154
 #, c-format
 msgid "  Text: %s"
 msgstr ""
 
-#: markup.c:1146
+#: markup.c:1155
 #, c-format
 msgid "  Nmarkups: %d"
 msgstr ""
 
-#: markup.c:1152
+#: markup.c:1161
 #, c-format
 msgid "    %d (%s): (start: %d end: %d) start_code: %s stop_code: %s"
 msgstr ""
 
-#: markup.c:1157
+#: markup.c:1166
 msgid "Inspecting ansi string complete"
 msgstr ""
 

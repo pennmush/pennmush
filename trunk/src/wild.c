@@ -208,343 +208,6 @@ real_atr_wild(const char *restrict tstr,
   return 0;
 }
 
-/* In our version of strstr and strcmp, a MATCH_ANY_CHAR matches anything. */
-#define MATCH_ANY_CHAR '\x04'
-
-/** Test if a test string matches a pattern string. If len is -1, then
- * it tests the entire string. If len is non-zero, it tests that many
- * characters of test and pattern against each other.
- *
- * \param test A string to test.
- * \param pattern The pattern to test it against. It may have MATCH_ANY_CHAR
- * \param len The length of the pattern.
- * \retval 1 The test matches the pattern.
- * \retval 0 The test does not match the pattern.
- */
-static bool
-strmatchwildn(const char *test, const char *pattern, int len) {
-  int i;
-  for (i = 0; (i < len || len < 0) && test[i] && pattern[i]; i++) {
-    if ((test[i] != pattern[i]) && (pattern[i] != MATCH_ANY_CHAR)) {
-      return 0;
-    }
-  }
-  return (i >= len || pattern[i] == test[i]);
-}
-#define strmatchwild(t,p) strmatchwildn(t,p,-1)
-
-/** Find pattern string within test string. The pattern string may have
- *  MATCH_ANY_CHAR in it.
- *
- *  TODO: Optimize this with Knuth-Morris-Pratt or similar?
- * \param test A string to test.
- * \param testlen Length of <test>
- * \param pattern The pattern to test it against. It may have MATCH_ANY_CHAR
- * \param patlen Length of <pattern>
- * \retval 1 The test matches the pattern.
- * \retval 0 The test does not match the pattern.
- */
-static const char *
-strstrwildn(const char *test, int testlen,
-            const char *pattern, int patlen) {
-  int start = 0;
-  int startWith = 0;
-  int count = 0;
-  int maxStart;
-  /* For speed purposes, ignore leading MATCH_ANY_CHARs until a match is found,
-   * then do math with it. Yay math.
-   */
-  while (*pattern == MATCH_ANY_CHAR) {
-    startWith++;
-    pattern++;
-    patlen--;
-  }
-  start = startWith;
-
-  maxStart = testlen - patlen;
-
-  if (!*pattern) {
-    /* The pattern is either empty or formed purely of MATCH_ANY_CHARs.
-     * Easy. */
-    return (testlen >= startWith) ? test : NULL;
-  }
-
-  /* Now, starting at <start>, look for *pattern.  We have already guaranteed
-   * that pattern will not start with MATCH_ANY_CHARS.
-   */
-  while (start <= maxStart) {
-    if (test[start] == pattern[0]) {
-      for (count = 0; count < patlen; count++) {
-        if (!((test[start+count] == pattern[count]) ||
-             (pattern[count] == MATCH_ANY_CHAR))) {
-          break;
-        }
-      }
-      if (count >= patlen) {
-        /* We have a match! */
-        return test + start - startWith;
-      }
-    }
-    start++;
-  }
-  return NULL;
-}
-
-#define strstrwild(t,p) strstrwildn(t,strlen(t),p,strlen(p))
-
-#define WTYPE_CHAR '?'    /* Matches a ? that follows a * */
-#define WTYPE_LITERAL ' ' /* Matches a literal string, including ?s. */
-#define WTYPE_GLOB '*'    /* Matches 0 or more characters. */
-#define WTYPE_NONE '\0'   /* Nothing more to match. End of string. */
-typedef struct wild_match_info {
-  short type;       /* Literal, Glob or Char */
-  short matchcount; /* For WTYPE_LITERAL: How many ?s are in it? */
-  short start, len; /* The start position and length of the found match */
-  char *string;   /* For a literal, the string to match. */
-} Wild_Match_Info;
-
-
-/* Assumption: This is filling a wmi of BUFFER_LEN with a pattern that
- * is guaranteed <= BUFFER_LEN, meaning wmi will never overflow. */
-static void
-populate_match_info(Wild_Match_Info *wmi, char *pat) {
-  int wmic = 0;
-  char *str;
-
-  while (*pat) {
-    wmi[wmic].start = -1;
-    wmi[wmic].len = 0;
-    wmi[wmic].matchcount = 0;
-    wmi[wmic].string = NULL;
-    switch (*pat) {
-    case '*':
-      wmi[wmic].type = WTYPE_GLOB;
-      wmic++;
-      *(pat++) = '\0';
-      break;
-    case '?':
-      /* The only way we get this is if this is either the first character,
-       * or it follows a *. (Or is *???, etc). If it's the first character,
-       * we want it to fall through to WTYPE_LITERAL. Otherwise it's a
-       * WTYPE_CHAR */
-      if (wmic > 0) {
-        wmi[wmic].type = WTYPE_CHAR;
-        wmic++;
-        *(pat++) = '\0';
-        break;
-      }
-    default:
-      /* We need to remove '\'s. Sigh. */
-      wmi[wmic].type = WTYPE_LITERAL;
-      wmi[wmic].string = pat;
-
-      /* Literals don't count as matches UNLESS they have ?s in them.
-       * In which case, they have N matches.
-       */
-      wmi[wmic].matchcount = 0;
-      for (str = pat; *pat && *pat != '*'; pat++) {
-        if (*pat == '?') {
-          *(str++) = MATCH_ANY_CHAR;
-          wmi[wmic].matchcount++;
-          wmi[wmic].len++;
-        } else {
-          if (*pat == '\\') {
-            pat++;
-            /* A \ at the end of the pattern is invalid, so we ignore. */
-            if (!*pat) break;
-          }
-          *(str++) = *pat;
-          wmi[wmic].len++;
-        }
-      }
-      if (str < pat) {
-        *(str) = '\0';
-      }
-      wmic++;
-      break;
-    }
-  }
-  wmi[wmic].type = WTYPE_NONE;
-}
-
-/** Return 1 if this and all subsequent wild_match_infos
- * match the text.
- *
- * This is an attempt to do wild matching iteratively instead of
- * recursively.
- * We are utterly relying on strmatchwildn() and strstrwild() to do
- * the grunt work for us.
- */
-
-static bool
-wild_test_wmi(Wild_Match_Info *wmi, const char *test, int len) {
-  Wild_Match_Info *wp;
-  int minlen = 0;
-  int i = 0;
-  int endpoint = len;
-  int idx = 0;
-  const char *tmp;
-  Wild_Match_Info *globi, *globstart, *globp;
-
-  for (wp = wmi; wp->type != WTYPE_NONE;) {
-    switch (wp->type) {
-    case WTYPE_LITERAL:
-      if (!strmatchwildn(test + idx, wp->string, wp->len))
-        return 0;
-      wp->start = idx;
-      idx += wp->len;
-      wp++;
-      break;
-    case WTYPE_CHAR:
-    default:
-      /* Should not happen! WTYPE_CHARs should only appear after
-       * WTYPE_GLOB, and should be handled by the WTYPE_GLOB case, too.
-       * So we return 0, because a borked WMI structure is a borked
-       * wildmatch.
-       */
-      return 0;
-    case WTYPE_GLOB:
-      minlen = 0;
-      i = 0;
-      endpoint = len;
-      /* This is how we handle wildcard grouping like *?**??*?:
-       *
-       * In such a string: The final glob is greedy, so gets everything
-       * between the ?s before it and the ?s after it.
-       */
-      globi = globp = wp;
-      for (globstart = wp; wp->type == WTYPE_CHAR ||
-                       wp->type == WTYPE_GLOB; wp++) {
-        globp = wp;
-        if (wp->type == WTYPE_GLOB) {
-          globi = wp;
-        } else {
-          minlen++;
-        }
-      }
-      if (wp->type == WTYPE_NONE) {
-        /* This globbing pattern is at the end of the string. Super-easy. */
-        if ((len - idx) < minlen) {
-          /* But the pattern don't fit. d'oh. */
-          return 0;
-        }
-        endpoint = len;
-      } else if (wp->type == WTYPE_LITERAL) {
-        if ((wp+1)->type == WTYPE_NONE) {
-          /* This literal must be at the very end, or it's no match.
-           * We do the +1 to force checking the null terminator. */
-          if (!strmatchwildn(test + len - wp->len, wp->string, wp->len + 1)) {
-            return 0;
-          }
-          endpoint = len - wp->len;
-        } else {
-          tmp = strstrwildn(test + idx + minlen, len - (idx + minlen),
-                            wp->string, wp->len);
-          if (!tmp) {
-            /* This will never match. */
-            return 0;
-          }
-          /* We have a match! Yippee! */
-          endpoint = tmp - test;
-        }
-        wp->start = endpoint;
-      } else {
-        /* Like, what, dude? How'd we get here? Invalid, yo! */
-        return 0;
-      }
-      if (endpoint - idx < minlen) {
-        return 0;
-      }
-      /* It's valid. If minlen > 0, populate the relevant WTYPE_CHARs and
-       * then fill globi with the rest. */
-      for (i = endpoint; globp >= globstart; globp = globp - 1) {
-        if (globp->type == WTYPE_CHAR) {
-          globp->start = --i;
-          globp->len = 1;
-          minlen--;
-        } else if (globp == globi) {
-          globp->start = idx + minlen;
-          globp->len = i - globp->start;
-          i = idx + minlen;
-          globi = NULL;
-        } else {
-          globp->start = idx + minlen;
-          globp->len = 0;
-        }
-      }
-      idx = endpoint;
-      if (wp->type == WTYPE_LITERAL) {
-        idx += wp->len;
-        wp++;
-      }
-      break;
-    }
-  }
-  return (idx >= len);
-}
-
-/** Wildcard match, case sensitive. (Upcase before calling to make
- * case insensitive
- *
- * Don't call this directly, use wild_match_case_r.
- *
- * Returns 1 on match, 0 on no match. Resulting matches are stored using
- * (start, length) in the matches array.
- *
- * If it's buggy, blame Walker.
- */
-static int
-wild_test(char *pat, const char *restrict test,
-          int *matches, int nmatches) {
-  /* Maximum match data is BUFFER_LEN ?s. */
-  /* We make this static simply because of how large it is. */
-  static Wild_Match_Info wmis[BUFFER_LEN];
-  int i, j, k;
-  int matchcount;
-
-  /* Set up wild_match_info */
-  populate_match_info(wmis, pat);
-
-  if (!wild_test_wmi(wmis, test, strlen(test))) {
-    return 0;
-  }
-
-  /* Populate and return the matches. */
-  for (i = 0, j = 0;
-       i < BUFFER_LEN && j < nmatches && wmis[i].type != WTYPE_NONE;
-       i++) {
-    switch (wmis[i].type) {
-    case WTYPE_CHAR:
-    case WTYPE_GLOB:
-      matches[j*2] = wmis[i].start;
-      matches[j*2+1] = wmis[i].len;
-      j++;
-      break;
-    case WTYPE_LITERAL:
-      if (wmis[i].matchcount > 0) {
-        matchcount = wmis[i].matchcount;
-        /* This WTYPE_LITERAL has some MATCH_ANY_CHARs in it. */
-        for (k = 0; k < wmis[i].len && matchcount > 0; k++) {
-          if (wmis[i].string[k] == MATCH_ANY_CHAR) {
-            matches[j*2] = wmis[i].start + k;
-            matches[j*2+1] = 1;
-            j++;
-            matchcount--;
-          }
-        }
-      }
-      break;
-    default:
-      break;
-    }
-  }
-  if (j < nmatches) {
-    matches[j*2] = -1;
-    matches[j*2+1] = 0;
-  }
-  return 1;
-}
-
 /** Wildcard match, possibly case-sensitive, and remember the wild match
  * start+lengths.
  *
@@ -560,21 +223,93 @@ wild_test(char *pat, const char *restrict test,
  * \retval 0 d doesn't match s.
  */
 bool
-wild_match_test(const char *restrict s, const char *restrict d, bool cs,
+wild_match_test(const char *restrict pat, const char *restrict str, bool cs,
                 int *matches, int nmatches)
 {
-  char pat[BUFFER_LEN];
-  char test[BUFFER_LEN];
-  strncpy(pat, remove_markup(s, NULL), BUFFER_LEN);
-  strncpy(test, remove_markup(d, NULL), BUFFER_LEN);
+  int i, pi;
+  bool globbing = 0; /* Are we in a glob match right now? */
+  int pbase = 0, sbase = 0; /* Guaranteed matched so far. */
+  int matchi = 0, mbase = 0;
+  int slen = strlen(str);
 
-  /* Set all 'start's to -1 and all 'len's to 0 */
-  if (!cs) {
-    upcasestr(pat);
-    upcasestr(test);
+  for (i = 0; i < nmatches; i++) {
+    matches[i*2] = -1;
+    matches[i*2+1] = 0;
   }
 
-   return wild_test(pat, test, matches, nmatches);
+  char pbuff[BUFFER_LEN];
+  char tbuff[BUFFER_LEN];
+  if (!cs) {
+    strncpy(pbuff, remove_markup(pat, NULL), BUFFER_LEN);
+    strncpy(tbuff, remove_markup(str, NULL), BUFFER_LEN);
+
+    upcasestr(pbuff);
+    upcasestr(tbuff);
+
+    pat = pbuff;
+    str = tbuff;
+  }
+
+  for (i = 0, pi = 0; (sbase + i) < slen;) {
+    switch (pat[pbase+pi]) {
+    case '?':
+      /* No complaints here. Auto-match */
+      if (matchi < nmatches) {
+        matches[matchi*2] = sbase+i;
+        matches[matchi*2+1] = 1;
+      }
+      matchi++;
+      pi++; i++;
+      break;
+    case '*':
+      /* Everything so far is guaranteed matched. */
+      pbase += pi;
+      sbase += i;
+      globbing = 1;
+      i = pi = 0;
+      /* Skip past multiple globs. */
+      while (pat[pbase] == '*') {
+        pbase++;
+        mbase = matchi++;
+        if (mbase < nmatches) {
+          matches[mbase*2] = sbase;
+          matches[mbase*2+1] = 0;
+        }
+      }
+      if (!pat[pbase]) {
+        /* This pattern is the last thing, we match the rest. */
+        if (mbase < nmatches) {
+          matches[mbase*2+1] = slen - sbase;
+        }
+        return 1;
+      }
+      break;
+    case '\\':
+      /* Literal match of the next character, which may be a * or ?. */
+      pi++;
+    default:
+      if (str[sbase+i] == pat[pbase+pi]) {
+        pi++; i++;
+        break;
+      }
+    case 0: /* Pattern is too short to match */
+      /* If we're dealing with a glob, advance it by 1 character. */
+      if (globbing) {
+        if (mbase < nmatches) {
+          /* Up glob length */
+          matches[mbase*2+1]++;
+        }
+        sbase++;
+        /* Reset post-glob matches. */
+        i = pi = 0;
+        matchi = mbase + 1;
+      } else {
+        return 0;
+      }
+    }
+  }
+  while (pat[pbase+pi] == '*') pi++;
+  return !pat[pbase+pi];
 }
 
 /** Wildcard match, possibly case-sensitive, and remember the wild data

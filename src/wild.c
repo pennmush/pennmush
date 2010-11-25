@@ -239,15 +239,15 @@ wild_match_test(const char *restrict pat, const char *restrict str, bool cs,
 
   char pbuff[BUFFER_LEN];
   char tbuff[BUFFER_LEN];
-  if (!cs) {
-    strncpy(pbuff, remove_markup(pat, NULL), BUFFER_LEN);
-    strncpy(tbuff, remove_markup(str, NULL), BUFFER_LEN);
 
+  strncpy(pbuff, remove_markup(pat, NULL), BUFFER_LEN);
+  strncpy(tbuff, remove_markup(str, NULL), BUFFER_LEN);
+  pat = pbuff;
+  str = tbuff;
+
+  if (!cs) {
     upcasestr(pbuff);
     upcasestr(tbuff);
-
-    pat = pbuff;
-    str = tbuff;
   }
 
   for (i = 0, pi = 0; (sbase + i) < slen;) {

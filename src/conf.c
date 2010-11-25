@@ -291,6 +291,8 @@ PENNCONF conftable[] = {
   ,
   {"max_guests", cf_int, &options.max_guests, 128, 0, "limits"}
   ,
+  {"connect_fail_limit", cf_int, &options.connect_fail_limit, 50, 0, "limits"}
+  ,
   {"idle_timeout", cf_time, &options.idle_timeout, 100000, 0, "limits"}
   ,
   {"unconnected_idle_timeout", cf_time, &options.unconnected_idle_timeout,
@@ -1273,6 +1275,7 @@ conf_default_set(void)
   options.ancestor_exit = -1;
   options.ancestor_thing = -1;
   options.ancestor_player = -1;
+  options.connect_fail_limit = 10;
   options.idle_timeout = 0;
   options.unconnected_idle_timeout = 300;
   options.keepalive_timeout = 300;

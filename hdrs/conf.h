@@ -126,6 +126,7 @@ struct options_table {
   dbref ancestor_exit;  /**< The ultimate parent exit */
   dbref ancestor_thing; /**< The ultimate parent thing */
   dbref ancestor_player; /**< The ultimate parent player */
+  int connect_fail_limit; /**< Maximum number of connect fails in 10 mins. */
   int idle_timeout;     /**< Maximum idle time allowed, in minutes */
   int unconnected_idle_timeout; /**< Maximum idle time for connections without dbrefs, in minutes */
   int keepalive_timeout; /**< Number of seconds between TCP keepalive pings */
@@ -331,6 +332,7 @@ int cf_time(const char *opt, const char *val, void *loc, int maxval,
 #define DUMP_INTERVAL       (options.dump_interval)
 #define DUMP_NOFORK_MESSAGE  (options.dump_message)
 #define DUMP_NOFORK_COMPLETE (options.dump_complete)
+#define CONNECT_FAIL_LIMIT   (options.connect_fail_limit)
 #define INACTIVITY_LIMIT    (options.idle_timeout)
 #define UNCONNECTED_LIMIT    (options.unconnected_idle_timeout)
 

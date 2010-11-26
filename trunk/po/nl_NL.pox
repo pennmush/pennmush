@@ -2484,22 +2484,6 @@ msgstr "SPEL: %s(%s) probeerde %d %s uit te geven."
 msgid "GAME: Database consistency check complete."
 msgstr "SPEL: Bezig database consistentie controle uit te voeren."
 
-#: src/conf.c:570
-msgid "GAME: Database will be dumped in 1 minute."
-msgstr "SPEL: Database wordt over 1 minuut opgeslagen."
-
-#: src/conf.c:572
-msgid "GAME: Database will be dumped in 5 minutes."
-msgstr "SPEL: Database wordt over 5 minuten opgeslagen."
-
-#: src/conf.c:502
-msgid "GAME: Dump complete. Time in."
-msgstr "SPEL: Dump voltooid."
-
-#: src/conf.c:501
-msgid "GAME: Dumping database. Game may freeze for a minute"
-msgstr "SPEL: Database wordt opgeslagen. Spel kan tijdelijk blijven hangen."
-
 #: game.c:311
 msgid "GAME: ERROR! Database save failed!"
 msgstr "SPEL: FOUT! Opslaan van database mislukt!"

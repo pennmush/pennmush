@@ -3,15 +3,17 @@
 #ifndef _EXTMAIL_H
 #define _EXTMAIL_H
 /* Some of this isn't implemented yet, but heralds the future! */
+
+/* Per-message flags */
+#define M_URGENT        0x0004U
+#define M_FORWARD       0x0080U
+
+/* Individual mailbox flags */
 #define M_MSGREAD       0x0001U
 #define M_UNREAD        0x0FFEU
 #define M_CLEARED       0x0002U
-#define M_URGENT        0x0004U
-#define M_MASS          0x0008U
-#define M_EXPIRE        0x0010U
-#define M_RECEIPT       0x0020U
 #define M_TAG           0x0040U
-#define M_FORWARD       0x0080U
+
 /* 0x0100 - 0x0F00 reserved for folder numbers */
 #define M_FMASK         0xF0FFU
 #define M_ALL           0x1000U /* In mail_selector, all msgs in all folders */
@@ -22,19 +24,19 @@
 #define MAX_FOLDERS     15
 #define FOLDER_NAME_LEN (BUFFER_LEN / 30)
 #define FolderBit(f) (256 * (f))
-#define Urgent(m)       (m->read & M_URGENT)
-#define Mass(m)         (m->read & M_MASS)
-#define Expire(m)       (m->read & M_EXPIRE)
-#define Receipt(m)      (m->read & M_RECEIPT)
-#define Forward(m)      (m->read & M_FORWARD)
-#define Reply(m)        (m->read & M_REPLY)
-#define Tagged(m)       (m->read & M_TAG)
+#define Urgent(m)       (m->msg->flags & M_URGENT)
+#define Mass(m)         (m->msg->flags & M_MASS)
+#define Expire(m)       (m->msg->flags & M_EXPIRE)
+#define Receipt(m)      (m->msg->flags & M_RECEIPT)
+#define Forward(m)      (m->msg->flags & M_FORWARD)
+#define Reply(m)        (m->flags & M_REPLY)
+#define Tagged(m)       (m->flags & M_TAG)
 static inline int 
 Folder(MAIL *m) {
   return m->folder;
 }
-#define Read(m)         (m->read & M_MSGREAD)
-#define Cleared(m)      (m->read & M_CLEARED)
+#define Read(m)         (m->flags & M_MSGREAD)
+#define Cleared(m)      (m->flags & M_CLEARED)
 #define Unread(m)       (!Read(m))
 
 /* Mail selector access macros */
@@ -76,7 +78,8 @@ typedef int folder_array[MAX_FOLDERS + 1];
 #define MDBF_SENDERCTIME        0x8
 
 /* From extmail.c */
-struct mail *maildb;
+MAIL *maildb;
+MAILBOX *get_mailbox(dbref player);
 void set_player_folder(dbref player, int fnum);
 void add_folder_name(dbref player, int fld, const char *name);
 struct mail *find_exact_starting_point(dbref player);

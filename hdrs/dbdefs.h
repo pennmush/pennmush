@@ -297,7 +297,20 @@ struct objid {
   time_t ctim;
 };
 
+static inline bool
+GoodObjectID(struct objid id)
+{
+  return GoodObject(id.obj) && CreTime(id.obj) == id.ctim;
+}
+
+static inline bool
+objid_matches(struct objid id, dbref d)
+{
+  return GoodObjectID(id) && id.obj == d;
+}
+
 typedef uint32_t mail_flag;
+typedef uint32_t mail_msg_flag;
 
 /** A mail message.
  * This structure represents a single mail message in the linked list
@@ -314,7 +327,7 @@ struct mail_msg {
   time_t time;                  /**< Message date/time */
   uint8_t *subject;             /**< Message subject, compressed */
   struct mail_msg *fwd;         /**< Forwarded message. */
-  mail_msg_flags;               /**< Message flags */
+  mail_msg_flag flags;               /**< Message flags */
 };
 
 struct mail_hdr {

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-25 02:00-0600\n"
+"POT-Creation-Date: 2010-11-26 02:00-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -437,7 +437,7 @@ msgstr ""
 msgid "%s lock has indirect lock to %s/%s that it can't read"
 msgstr ""
 
-#: bsd.c:263 player.c:128
+#: bsd.c:263 player.c:196
 msgid "Either that player does not exist, or has a different password."
 msgstr ""
 
@@ -1108,215 +1108,215 @@ msgstr ""
 msgid "The following commands have hooks: "
 msgstr ""
 
-#: conf.c:543
+#: conf.c:545
 msgid "Options affecting attributes"
 msgstr ""
 
-#: conf.c:544
+#: conf.c:546
 msgid "Chat system options"
 msgstr ""
 
-#: conf.c:545
+#: conf.c:547
 msgid "Options affecting command behavior"
 msgstr ""
 
-#: conf.c:546
+#: conf.c:548
 msgid "Compile-time options"
 msgstr ""
 
-#: conf.c:547
+#: conf.c:549
 msgid "Cosmetic options"
 msgstr ""
 
-#: conf.c:548
+#: conf.c:550
 msgid "Costs"
 msgstr ""
 
-#: conf.c:549
+#: conf.c:551
 msgid "Database options"
 msgstr ""
 
-#: conf.c:550
+#: conf.c:552
 msgid "Options affecting dumps and other periodic processes"
 msgstr ""
 
-#: conf.c:551
+#: conf.c:553
 msgid "Files used by the MUSH"
 msgstr ""
 
-#: conf.c:552
+#: conf.c:554
 msgid "Default flags for new objects"
 msgstr ""
 
-#: conf.c:553
+#: conf.c:555
 msgid "Options affecting function behavior"
 msgstr ""
 
-#: conf.c:554
+#: conf.c:556
 msgid "Limits and other constants"
 msgstr ""
 
-#: conf.c:555
+#: conf.c:557
 msgid "Logging options"
 msgstr ""
 
-#: conf.c:556
+#: conf.c:558
 msgid "Message files sent by the MUSH"
 msgstr ""
 
-#: conf.c:557
+#: conf.c:559
 msgid "Networking and connection-related options"
 msgstr ""
 
-#: conf.c:558
+#: conf.c:560
 msgid "TinyMUSH compatibility options"
 msgstr ""
 
-#: conf.c:1281
+#: conf.c:1284
 msgid "GAME: Saving database. Game may freeze for a few moments."
 msgstr ""
 
-#: conf.c:1282
+#: conf.c:1285
 msgid "GAME: Save complete. "
 msgstr ""
 
-#: conf.c:1301
+#: conf.c:1304
 msgid "Penny"
 msgstr ""
 
-#: conf.c:1302
+#: conf.c:1305
 msgid "Pennies"
 msgstr ""
 
-#: conf.c:1343
+#: conf.c:1346
 msgid "GAME: Database save in 1 minute."
 msgstr ""
 
-#: conf.c:1345
+#: conf.c:1348
 msgid "GAME: Database save in 5 minutes."
 msgstr ""
 
-#: conf.c:1385
+#: conf.c:1388
 msgid "Broadcast:"
 msgstr ""
 
-#: conf.c:1386
+#: conf.c:1389
 msgid "Admin:"
 msgstr ""
 
-#: conf.c:1387
+#: conf.c:1390
 msgid "Announcement:"
 msgstr ""
 
-#: conf.c:1651
+#: conf.c:1654
 msgid "I only know the following types of options:"
 msgstr ""
 
-#: conf.c:1679
+#: conf.c:1682
 msgid "Use: @config/list <type of options> where type is one of:"
 msgstr ""
 
-#: conf.c:1790
+#: conf.c:1793
 msgid "#-1 NO SUCH CONFIG OPTION"
 msgstr ""
 
-#: conf.c:1829
+#: conf.c:1832
 msgid "That option cannot be altered."
 msgstr ""
 
-#: conf.c:1834 function.c:1776
+#: conf.c:1837 function.c:1776
 msgid "Disabled."
 msgstr ""
 
-#: conf.c:1836 function.c:1773
+#: conf.c:1839 function.c:1773
 msgid "Enabled."
 msgstr ""
 
-#: conf.c:1840
+#: conf.c:1843
 msgid "That isn't an on/off option."
 msgstr ""
 
-#: conf.c:1844
+#: conf.c:1847
 msgid "No such option."
 msgstr ""
 
-#: conf.c:1851
+#: conf.c:1854
 msgid " Attributes are not compressed in memory."
 msgstr ""
 
-#: conf.c:1854
+#: conf.c:1857
 msgid " Attributes are Huffman compressed in memory."
 msgstr ""
 
-#: conf.c:1857
+#: conf.c:1860
 msgid " Attributes are word compressed in memory."
 msgstr ""
 
-#: conf.c:1860
+#: conf.c:1863
 msgid " Attributes are 8-bit word compressed in memory."
 msgstr ""
 
-#: conf.c:1864
+#: conf.c:1867
 msgid " The MUSH was compiled with SSL support."
 msgstr ""
 
-#: conf.c:1868
+#: conf.c:1871
 msgid " The MUSH was compiled with MySQL support."
 msgstr ""
 
-#: conf.c:1871
+#: conf.c:1874
 msgid " The MUSH was compiled with Postgresql support."
 msgstr ""
 
-#: conf.c:1874
+#: conf.c:1877
 msgid " The MUSH was compiled with Sqlite3 support."
 msgstr ""
 
-#: conf.c:1878
+#: conf.c:1881
 msgid " DNS and ident lookups are handled by a slave process."
 msgstr ""
 
-#: conf.c:1880
+#: conf.c:1883
 msgid " DNS and ident lookups are handled by the MUSH process."
 msgstr ""
 
-#: conf.c:1884
+#: conf.c:1887
 msgid " Extended convtime() is supported."
 msgstr ""
 
-#: conf.c:1886
+#: conf.c:1889
 msgid " convtime() is stricter."
 msgstr ""
 
-#: conf.c:1890
+#: conf.c:1893
 msgid " CPU usage limiting is supported."
 msgstr ""
 
-#: conf.c:1892
+#: conf.c:1895
 msgid " CPU usage limiting is NOT supported."
 msgstr ""
 
-#: conf.c:1896
+#: conf.c:1899
 msgid " Changed help files will be automatically reindexed."
 msgstr ""
 
-#: conf.c:1900
+#: conf.c:1903
 msgid " SSE2 instructions are being used."
 msgstr ""
 
-#: conf.c:1904
+#: conf.c:1907
 msgid " SSE3 instructions are being used."
 msgstr ""
 
-#: conf.c:1908
+#: conf.c:1911
 msgid " Altivec instructions are being used."
 msgstr ""
 
-#: conf.c:1912
+#: conf.c:1915
 msgid " @config/save is enabled."
 msgstr ""
 
-#: conf.c:1914
+#: conf.c:1917
 msgid " @config/save is disabled."
 msgstr ""
 
@@ -5276,65 +5276,70 @@ msgstr ""
 msgid ") MISSING ATTRIBUTE ("
 msgstr ""
 
-#: player.c:150
+#: player.c:190
+msgid ""
+"This IP address has failed too many times. Please try again in 10 minutes."
+msgstr ""
+
+#: player.c:221
 msgid "Guest connections not allowed."
 msgstr ""
 
-#: player.c:160
+#: player.c:231
 msgid "Player connections not allowed."
 msgstr ""
 
-#: player.c:179
+#: player.c:251
 msgid "Too many guests are connected now."
 msgstr ""
 
-#: player.c:329
+#: player.c:401
 #, c-format
 msgid "[%s] Registration of %s\n"
 msgstr ""
 
-#: player.c:333
+#: player.c:405
 msgid "This is an automated message.\n"
 msgstr ""
 
-#: player.c:335
+#: player.c:407
 #, c-format
 msgid "Your requested player, %s, has been created.\n"
 msgstr ""
 
-#: player.c:336
+#: player.c:408
 #, c-format
 msgid "The password is %s\n"
 msgstr ""
 
-#: player.c:338
+#: player.c:410
 #, c-format
 msgid "To access this character, connect to %s and type:\n"
 msgstr ""
 
-#: player.c:459
+#: player.c:531
 msgid "The old password that you entered was incorrect."
 msgstr ""
 
-#: player.c:461
+#: player.c:533
 msgid "Bad new password."
 msgstr ""
 
-#: player.c:464
+#: player.c:536
 msgid "You have changed your password."
 msgstr ""
 
-#: player.c:495
+#: player.c:567
 #, c-format
 msgid "Last connect was from %s on %s."
 msgstr ""
 
-#: player.c:503
+#: player.c:575
 #, c-format
 msgid "Last FAILED connect was from %s."
 msgstr ""
 
-#: player.c:530
+#: player.c:602
 #, c-format
 msgid "%s on %s"
 msgstr ""

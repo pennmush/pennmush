@@ -1099,6 +1099,16 @@ msgstr "ЧАТ: Speaklock на <%s> поставен."
 msgid "CHAT: To recall the entire buffer, use @chan/recall %s=0"
 msgstr "ЧАТ: За да извикаш целия буфер, използвай @chan/recall %s=0"
 
+#: extchat.c:1331
+#, c-format
+msgid "CHAT: You are already on channel <%s>."
+msgstr "ЧАТ: Ти вече си на канал <%s>."
+
+#: extchat.c:1385
+#, c-format
+msgid "CHAT: You are not on channel <%s>."
+msgstr "ЧАТ: Ти не си на канал <%s>."
+
 #: src/extchat.c:757
 #, c-format
 msgid "CHAT: You can't do that with channel <%s>."

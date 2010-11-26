@@ -1494,6 +1494,10 @@ msgstr "Gnj!  Nisam uspio ponovo otvoriti stderr!"
 msgid "Address: %s"
 msgstr "Adresa: %s"
 
+#: conf.c:1386
+msgid "Admin:"
+msgstr "Administratorima:"
+
 #: src/destroy.c:405
 msgid "Alas, your efforts of mercy are in vain."
 msgstr "Na¾alost, tvoj poku¹aj milosrða je uzaludan."
@@ -1582,6 +1586,10 @@ msgstr "Sve quote su promijenjene u %d."
 #: access.c:412
 msgid "All"
 msgstr "Svi"
+
+#: conf.c:1387
+msgid "Announcement:"
+msgstr "Obavijest:"
 
 #: wiz.c:1810
 msgid "Any name matching these wildcard patterns is banned:"
@@ -1703,6 +1711,10 @@ msgstr "Obavijest: Sumnjivi igraè '%s' promijeni ime u '%s'."
 #, c-format
 msgid "Broadcast: Suspect %s tried to kill %s(#%d)."
 msgstr "Obavijest: Sumnjivi igraè '%s' poku¹a ubiti korisnika '%s'(#%d)."
+
+#: conf.c:1385
+msgid "Broadcast:"
+msgstr "Odaslana poruka:"
 
 #: extchat.c:2085
 msgid "Buf"
@@ -2520,6 +2532,14 @@ msgstr "IGRA: %s(%s) poku¹a potro¹iti %d %s."
 msgid "GAME: Database consistency check complete."
 msgstr "IGRA: Provjera konzistencije baze podataka gotova."
 
+#: conf.c:1343
+msgid "GAME: Database save in 1 minute."
+msgstr "IGRA: Snimanje baze podataka za 1 minutu."
+
+#: conf.c:1345
+msgid "GAME: Database save in 5 minutes."
+msgstr "IGRA: Snimanje baze podataka za 5 minuta."
+
 #: game.c:311
 msgid "GAME: ERROR! Database save failed!"
 msgstr "IGRA: GRE©KA! Snimanje baze podataka nije uspjelo!"
@@ -2569,6 +2589,14 @@ msgstr "IGRA: Ispis loga aktivnosti"
 #: bsd.c:294
 msgid "GAME: SSL connections must be dropped, sorry."
 msgstr "IGRA: SSL veze se moraju prekinuti, ¾ao mi je."
+
+#: conf.c:1282
+msgid "GAME: Save complete. "
+msgstr "IGRA: Snimanje gotovo. "
+
+#: conf.c:1281
+msgid "GAME: Saving database. Game may freeze for a few moments."
+msgstr "IGRA: Snimam bazu podataka. Igra bi se mogla zamrznuti na nekoliko trenutaka."
 
 #: src/game.c:273
 #, c-format
@@ -4126,10 +4154,18 @@ msgstr "PennMUSH Uptime: %ld dana %ld sati %ld minuta %ld sekundi"
 msgid "PennMUSH version %s patchlevel %s %s"
 msgstr "PennMUSH verzija %s patchlevel %s %s"
 
+#: conf.c:1302
+msgid "Pennies"
+msgstr "Novèiæa"
+
 #: wiz.c:1062
 #, c-format
 msgid "Pennies: %d"
 msgstr "Novèiæi: %d"
+
+#: conf.c:1301
+msgid "Penny"
+msgstr "Novèiæ"
 
 #: src/extmail.c:1584
 msgid "Permission denied"
@@ -4683,6 +4719,10 @@ msgstr "Taj objekt ima flag SAFE. Mora¹ ga !SAFE-ati prije nego ¹to ga uni¹ti¹."
 #: src/destroy.c:287
 msgid "That object is set WIZARD. You must use @nuke to destroy it."
 msgstr "Taj objekt ima flag WIZARD. Ako ga ¾eli¹ uni¹titi, upotrijebi naredbu @nuke."
+
+#: conf.c:1829
+msgid "That option cannot be altered."
+msgstr "Ta opcija ne mo¾e biti promijenjena."
 
 #: src/look.c:1048
 msgid "That player does not seem to exist."

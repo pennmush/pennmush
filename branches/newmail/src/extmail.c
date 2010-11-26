@@ -157,7 +157,9 @@ static bool addressed_to(struct mail_msg *msg, dbref player);
 
 MAIL *maildb;            /**< The head of the mail list */
 
-slab *mail_slab; /**< slab for 'struct mail' allocations */
+slab *mail_slab; /**< slab for 'struct mail_msg' allocations */
+slab *mail_hdr_slab; /**< slab for 'struct mail_msg_hdr' allocations */
+
 
 #define HEAD  maildb     /**< The head of the mail list */
 #define TAIL  tail_ptr   /**< The end of the mail list */
@@ -209,7 +211,7 @@ get_compressed_message(MAIL *mp)
   if (!mp)
     return NULL;
 
-  chunk_fetch(mp->msg->msgid, (unsigned char *) text, sizeof text);
+  chunk_fetch(mp->msg->body, (unsigned char *) text, BUFFER_LEN);
   return text;
 }
 
@@ -243,15 +245,15 @@ get_sender(MAIL *mp, int full)
 {
   static char tbuf1[BUFFER_LEN], *bp;
   bp = tbuf1;
-  if (!GoodObject(mp->msg->from))
+  if (!GoodObjectID(mp->msg->from))
     safe_str(T("!Purged!"), tbuf1, &bp);
-  else if (!was_sender(mp->msg->from, mp->msg))
+  else if (!was_sender(mp->msg->from.obj, mp->msg))
     safe_str(T("!Purged!"), tbuf1, &bp);
-  else if (IsPlayer(mp->msg->from) || !full)
-    safe_str(Name(mp->msg->from), tbuf1, &bp);
+  else if (IsPlayer(mp->msg->from.obj) || !full)
+    safe_str(Name(mp->msg->from.obj), tbuf1, &bp);
   else
-    safe_format(tbuf1, &bp, T("%s (owner: %s)"), Name(mp->msg->from),
-                Name(Owner(mp->msg->from)));
+    safe_format(tbuf1, &bp, T("%s (owner: %s)"), Name(mp->msg->from.obj),
+                Name(Owner(mp->msg->from.obj)));
   *bp = '\0';
   return tbuf1;
 }
@@ -260,14 +262,7 @@ get_sender(MAIL *mp, int full)
 static bool
 was_sender(dbref player, struct mail_msg *mp)
 {
-  /* If the dbrefs don't match, fail. */
-  if (mp->from != player)
-    return 0;
-  /* If we don't know the creation time of the sender, succeed. */
-  if (!mp->from_ctime)
-    return 1;
-  /* Succeed if and only if the creation times match. */
-  return (mp->from_ctime == CreTime(player));
+  return objid_matches(mp->from, player);
 }
 
 /** Returns true if the message was sent to player */
@@ -275,10 +270,9 @@ static bool
 addressed_to(struct mail_msg *msg, dbref player)
 {
   int n;
-  time_t pctime = CreTime(player);
 
   for (n = 0; n < msg->tocount; n++) {
-    if (msg->to[n].obj == player && msg->to[n].ctim = pctime)
+    if (objid_matches(msg->to[n], player))
       return 1;
   }
   return 0;
@@ -293,7 +287,6 @@ can_mail(dbref player)
 {
   return command_check_byname_quiet(player, "@MAIL");
 }
-
 /** Change folders or rename a folder.
  * \verbatim
  * This implements @mail/folder
@@ -593,9 +586,8 @@ do_mail_file(dbref player, char *msglist, char *folder)
   }
   FA_Init(i);
   origfold = AllInFolder(ms) ? player_folder(player) : MSFolder(ms);
-  for (mp = get_mailbox(player)->box;
-       mp && (mp->to == player); mp = mp->next) {
-    if ((mp->to == player) && (All(ms) || (Folder(mp) == origfold))) {
+  for (mp = get_mailbox(player)->msgs; mp; mp = mp->next) {
+    if (All(ms) || (Folder(mp) == origfold)) {
       i[Folder(mp)]++;
       if (mail_match(player, mp, ms, i[Folder(mp)])) {
         j++;
@@ -644,9 +636,9 @@ do_mail_read(dbref player, char *msglist)
   }
   folder = AllInFolder(ms) ? player_folder(player) : MSFolder(ms);
   FA_Init(i);
-  for (mp = get_mailbox(player)->msgs;
-       mp && (mp->to == player); mp = mp->next) {
-    if ((mp->to == player) && (All(ms) || Folder(mp) == folder)) {
+  for (mp = get_mailbox(player)->msgs; mp; mp = mp->next) {
+    struct mail_msg *msg = mp->msg;
+    if (All(ms) || Folder(mp) == folder) {
       i[Folder(mp)]++;
       if (mail_match(player, mp, ms, i[Folder(mp)])) {
         /* Read it */
@@ -661,14 +653,15 @@ do_mail_read(dbref player, char *msglist)
           mush_strncpy(folderheader, T("Folder:"), BUFFER_LEN);
         notify(player, DASH_LINE);
         mush_strncpy(tbuf1, get_sender(mp, 1), BUFFER_LEN);
+	/* TODO: Objid checking */
         notify_format(player,
                       T
                       ("From: %-55s %s\nDate: %-25s   %s %2d   Message: %d\nStatus: %s"),
-                      tbuf1, ((*tbuf1 != '!') && IsPlayer(mp->from)
-                              && Connected(mp->from)
-                              && (!hidden(mp->from)
+                      tbuf1, ((*tbuf1 != '!') && IsPlayer(msg->from.obj)
+                              && Connected(msg->from.obj)
+                              && (!hidden(msg->from.obj)
                                   || Priv_Who(player))) ? T(" (Conn)") :
-                      "      ", show_time(mp->time, 0), folderheader,
+                      "      ", show_time(msg->time, 0), folderheader,
                       (int) Folder(mp), i[Folder(mp)], status_string(mp));
         notify_format(player, T("Subject: %s"), get_subject(mp));
         notify(player, DASH_LINE);
@@ -680,8 +673,7 @@ do_mail_read(dbref player, char *msglist)
           notify(player, wrap_tag("SAMP", DASH_LINE));
         else
           notify(player, DASH_LINE);
-        if (Unread(mp))
-          mp->read |= M_MSGREAD;        /* mark message as read */
+	mp->flags |= M_MSGREAD;        /* mark message as read */
       }
     }
   }
@@ -718,9 +710,9 @@ do_mail_list(dbref player, const char *msglist)
                 T
                 ("---------------------------  MAIL (folder %2d)  ------------------------------"),
                 (int) folder);
-  for (mp = get_mailbox(player)->msgs; mp && (mp->to == player);
-       mp = mp->next) {
-    if ((mp->to == player) && (All(ms) || Folder(mp) == folder)) {
+  for (mp = get_mailbox(player)->msgs; mp; mp = mp->next) {
+    struct mail_msg *msg = mp->msg;
+    if (All(ms) || Folder(mp) == folder) {
       i[Folder(mp)]++;
       if (mail_match(player, mp, ms, i[Folder(mp)])) {
         /* list it */
@@ -733,13 +725,14 @@ do_mail_list(dbref player, const char *msglist)
                           TAG_END));
         strcpy(subj, chopstr(get_subject(mp), 28));
         strcpy(sender, chopstr(get_sender(mp, 0), 12));
+	/* TODO: objid */
         notify_format(player, "[%s] %2d:%-3d %c%-12s  %-*s %s",
                       status_chars(mp), (int) Folder(mp), i[Folder(mp)],
-                      ((*sender != '!') && (Connected(mp->from) &&
-                                            (!hidden(mp->from)
+                      ((*sender != '!') && (Connected(msg->from.obj) &&
+                                            (!hidden(msg->from.obj)
                                              || Priv_Who(player)))
                        ? '*' : ' '), sender, 30, subj,
-                      mail_list_time(show_time(mp->time, 0), 1));
+                      mail_list_time(show_time(msg->time, 0), 1));
         if (SUPPORT_PUEBLO)
           notify_noenter(player, tprintf("%c%c/A%c", TAG_START,
                                          MARKUP_HTML, TAG_END));
@@ -793,35 +786,29 @@ mail_list_time(const char *the_time, bool flag /* 1 for no year */ )
 void
 do_mail_purge(dbref player)
 {
-  MAIL *mp, *nextp;
+  MAIL *mp, *nextp = NULL;
+  MAILBOX *box;
+
+  box = get_mailbox(player);
 
   /* Go through player's mail, and remove anything marked cleared */
-  for (mp = get_mailbox(player)->msgs;
-       mp && (mp->to == player); mp = nextp) {
-    if ((mp->to == player) && Cleared(mp)) {
-      /* Delete this one */
-      /* head and tail of the list are special */
-      if (mp == HEAD)
-        HEAD = mp->next;
-      else if (mp == TAIL)
-        TAIL = mp->prev;
-      /* relink the list */
-      if (mp->prev != NULL)
-        mp->prev->next = mp->next;
-      if (mp->next != NULL)
-        mp->next->prev = mp->prev;
-      /* save the pointer */
-      nextp = mp->next;
-      /* then wipe */
-      mdb_top--;
-      free(mp->subject);
-      chunk_delete(mp->body);
-      slab_free(mail_slab, mp);
-    } else {
-      nextp = mp->next;
+  for (mp = box->msgs; mp; mp = nextp) {
+    nextp = mp->next;
+    if (Cleared(mp)) {
+      if (!mp->prev) {       
+	box->msgs = mp->next;
+	box->msgs->prev = NULL;
+      } else if (mp->next) {
+	mp->prev->next = mp->next;
+	mp->next->prev = mp->prev;
+      } else {
+	/* Last entry */
+	mp->prev->next = NULL;
+      }
+
+      slab_free(mail_hdr_slab, mp);
     }
   }
-  set_objdata(player, "MAIL", NULL);
   if (command_check_byname(player, "@MAIL"))
     notify(player, T("MAIL: Mailbox purged."));
   return;
@@ -1038,10 +1025,8 @@ real_mail_fetch(dbref player, int num, int folder)
   int i = 0;
 
   for (mp = get_mailbox(player)->msgs; mp != NULL; mp = mp->next) {
-    if (mp->to > player)
-      break;
-    if ((mp->to == player) && ((folder < 0)
-                               || (Folder(mp) == (mail_flag) folder)))
+    if (folder < 0
+	|| (Folder(mp) == folder))
       i++;
     if (i == num)
       return mp;
@@ -1060,10 +1045,8 @@ count_mail(dbref player, int folder, int *rcount, int *ucount, int *ccount)
   int rc, uc, cc;
 
   cc = rc = uc = 0;
-  for (mp = get_mailbox(player)->msgs;
-       mp && (mp->to == player); mp = mp->next) {
-    if ((mp->to == player) && ((folder == -1) ||
-                               (Folder(mp) == (mail_flag) folder))) {
+  for (mp = get_mailbox(player)->msgs; mp; mp = mp->next) {
+    if (folder == -1 || Folder(mp) == folder) {
       if (Cleared(mp))
         cc++;
       else if (Read(mp))
@@ -2049,13 +2032,14 @@ get_mailbox(dbref player)
   if (!mbox) {
     mbox = mush_malloc(sizeof *mbox, "MAILBOX");
     set_objdata(player, "MAIL", mbox);
-    mbox->box = NULL;
+    mbox->msgs = NULL;
     return mbox;
   } else
     return mbox;
 }
 
 
+/*** OBSOLETE ***/
 /* Find the place where new mail to this player should go (after):
  *  1. The last message in the player's mail chain, or
  *  2. The last message before where the player's chain should start, or
@@ -2093,7 +2077,8 @@ mail_init(void)
   if (!init_called) {
     init_called = 1;
     mdb_top = 0;
-    mail_slab = slab_create("mail messages", sizeof(struct mail));
+    mail_slab = slab_create("mail messages", sizeof(struct mail_msg));
+    mail_hdr_slab = slab_create("mail headers", sizeof(struct mail_msg_hdr));
     slab_set_opt(mail_slab, SLAB_HINTLESS_THRESHOLD, 5);
     HEAD = NULL;
     TAIL = NULL;
@@ -2330,10 +2315,10 @@ add_folder_name(dbref player, int fld, const char *name)
    * number:name:number to it, replacing any such string with a matching
    * number.
    */
-  new = (char *) mush_malloc(BUFFER_LEN, "string");
-  pat = (char *) mush_malloc(BUFFER_LEN, "string");
-  str = (char *) mush_malloc(BUFFER_LEN, "string");
-  tbuf = (char *) mush_malloc(BUFFER_LEN, "string");
+  new = mush_malloc(BUFFER_LEN, "string");
+  pat = mush_malloc(BUFFER_LEN, "string");
+  str = mush_malloc(BUFFER_LEN, "string");
+  tbuf = mush_malloc(BUFFER_LEN, "string");
   if (!new || !pat || !str || !tbuf)
     mush_panic("Failed to allocate strings in add_folder_name");
 
@@ -2357,7 +2342,7 @@ add_folder_name(dbref player, int fld, const char *name)
     *r = '\0';
     res = replace_string(old, new, tbuf);       /* mallocs mem! */
   } else {
-    r = res = (char *) mush_malloc(BUFFER_LEN + 1, "replace_string.buff");
+    r = res = mush_malloc(BUFFER_LEN + 1, "replace_string.buff");
     if (a)
       safe_str(str, res, &r);
     safe_str(new, res, &r);
@@ -2385,7 +2370,7 @@ player_folder(dbref player)
     set_player_folder(player, 0);
     return 0;
   }
-  return atoi(atr_value(a));
+  return parse_integer(atr_value(a));
 }
 
 /** Set a player's current mail folder to a given folder.
@@ -2607,7 +2592,6 @@ status_chars(MAIL *mp)
   *p++ = Read(mp) ? '-' : 'N';
   *p++ = Cleared(mp) ? 'C' : '-';
   *p++ = Urgent(mp) ? 'U' : '-';
-  /* *p++ = Mass(mp) ? 'M' : '-'; */
   *p++ = Forward(mp) ? 'F' : '-';
   *p++ = Tagged(mp) ? '+' : '-';
   *p = '\0';
@@ -2630,8 +2614,6 @@ status_string(MAIL *mp)
     safe_str(T("Cleared "), tbuf1, &tp);
   if (Urgent(mp))
     safe_str(T("Urgent "), tbuf1, &tp);
-  if (Mass(mp))
-    safe_str(T("Mass "), tbuf1, &tp);
   if (Forward(mp))
     safe_str(T("Fwd "), tbuf1, &tp);
   if (Tagged(mp))
@@ -2652,7 +2634,7 @@ check_all_mail(dbref player)
   int cc;                       /* cleared messages */
   int subtotal;                 /* total messages per iteration */
   int total = 0;                /* total messages */
-
+  
   /* search through all the folders. */
 
   for (folder = 0; folder <= MAX_FOLDERS; folder++) {
@@ -2928,4 +2910,67 @@ filter_mail(dbref from, dbref player, char *subject,
   mush_free(arg4, "string");
   restore_global_env("filter_mail", wsave);
   restore_global_regs("filter_mail", rsave);
+}
+
+
+/* Scan all mailboxes and mark present messages. */
+void
+mail_mark(void)
+{
+  struct mail_msg *m;
+  dbref d;
+
+  /* Clear tag bits */
+  for (m = HEAD; m; m = m->next)
+    m->flags &= ~M_TAG;
+
+  for (d = 0; d < db_top; d++) {
+    MAIL *mp;
+
+    if (!IsPlayer(d))
+      continue;
+
+    box = get_mailbox(d);
+    for (mp = get_mailbox(d)->msgs; mp; mp = mp->next) {
+      mp->msg->flags |= M_TAG;
+      if (mp->msg->flags & M_FORWARD)
+	mp->msg->fwd->flags |= M_TAG;
+    }
+  }
+}
+
+
+/**
+ * Purge unmarked messages.
+ */
+void
+mail_sweep(void)
+{
+  struct mail_msg *mp, *next, *prev = NULL;
+  
+  for (mp = HEAD; mp; mp = next) {
+    next = mp->next;
+    if (mp->flags & M_TAG)
+      continue;
+    
+    mush_free(mp->to, "mail_msg.address");
+    mush_free(mp->subject, "mail_msg.subject");
+    chunk_delete(mp->body);
+    
+    if (prev)
+      prev->next = next;
+    else
+      HEAD = next;
+
+    mush_free(mp, "mail_msg");
+  }
+}
+
+
+void
+mail_gc(void)
+{
+  mail_mark();
+  mail_sweep();
+
 }

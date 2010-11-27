@@ -501,6 +501,57 @@ s_comp(const void *s1, const void *s2)
   return Compare(res, sr1, sr2) * sort_order;
 }
 
+int
+attr_comp(const void *s1, const void *s2)
+{
+  const s_rec *sr1 = (const s_rec *) s1;
+  const s_rec *sr2 = (const s_rec *) s2;
+
+  return compare_attr_names(sr1->memo.str.s, sr2->memo.str.s);
+
+}
+
+int compare_attr_names(const char *attr1, const char *attr2)
+{
+  char word1[BUFFER_LEN+1], word2[BUFFER_LEN+1];
+  char *a1, *a2, *next1, *next2;
+  int branches1 = 1, branches2 = 1;
+  int cmp;
+
+  strcpy(word1, attr1);
+  strcpy(word2, attr2);
+
+  a1 = word1;
+  a2 = word2;
+
+  while (a1 && a2) {
+    next1 = strchr(a1, '`');
+    if (next1) {
+      branches1++;
+      *(next1)++ = '\0';
+    }
+    next2 = strchr(a2, '`');
+    if (next2) {
+      branches2++;
+      *(next2)++ = '\0';
+    }
+    cmp = strcoll(a1, a2);
+    if (cmp != 0) {
+      /* Current branch differs */
+      return cmp * sort_order;
+    }
+    if (branches1 != branches2) {
+      /* Current branch is the same, but one attr has more branches */
+      return (branches1 < branches2 ? -1 : 1) * sort_order;
+    }
+    a1 = next1;
+    a2 = next2;
+  }
+  /* All branches were the same */
+  return 0;
+
+}
+
 static int
 si_comp(const void *s1, const void *s2)
 {
@@ -561,6 +612,7 @@ char DBREF_OWNER_LIST[] = "OWNER";
 char DBREF_LOCATION_LIST[] = "LOC";
 char DBREF_ATTR_LIST[] = "ATTR";
 char DBREF_ATTRI_LIST[] = "ATTRI";
+char ATTRNAME_LIST[] = "LATTR";
 char *UNKNOWN_LIST = NULL;
 
 list_type_list ltypelist[] = {
@@ -580,6 +632,7 @@ list_type_list ltypelist[] = {
   {DBREF_LOCATION_LIST, gen_db_loc, i_comp, IS_DB},
   {DBREF_ATTR_LIST, gen_db_attr, s_comp, IS_DB | IS_STRING},
   {DBREF_ATTRI_LIST, gen_db_attr, si_comp, IS_DB | IS_STRING},
+  {ATTRNAME_LIST, gen_alphanum, attr_comp, IS_STRING},
   /* This stops the loop, so is default */
   {NULL, gen_alphanum, s_comp, IS_STRING}
 };

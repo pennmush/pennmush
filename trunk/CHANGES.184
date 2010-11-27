@@ -82,6 +82,8 @@ Fixes:
  * @search elock class failed to report invalid lock strings. Fixed. [GM]
  * @cpattr and @mvattr could break attribute trees. Reported by Sketch. [MG]
  * benchmark() calculated the average incorrectly. Reported by Cheetah. [DC]
+ * map(), iter(), mix() and step() are ansi-aware, now. Using any of the
+   list functions without ansi should also be considerably faster. [GM]
  * "look <container>'s <object>" incorrectly stopped working in p1 when
    <object>'s desc was set "nearby". Reported by Yuriko@M*U*SH. [MG]
  * Attribute names are now sorted better with regard to attribute trees,

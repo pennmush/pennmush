@@ -74,6 +74,7 @@ Commands:
 Fixes:
  * Debug output was sometimes sent to the wrong executor. [GM]
  * A crashbug in @search was fixed. Reported by Paige. [GM]
+ * A crashbug in lpids() was fixed. Reported by Mercutio. Fixed by Javelin.
  * @search elock class failed to report invalid lock strings. Fixed. [GM]
  * @cpattr and @mvattr could break attribute trees. Reported by Sketch. [MG]
  * benchmark() calculated the average incorrectly. Reported by Cheetah. [DC]

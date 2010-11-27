@@ -54,6 +54,19 @@ list2arr_ansi(char *r[], int max, char *list, char sep)
   ansi_string *as;
   char *aptr;
 
+  /* Since ansi_string is ridiculously slow, we only use it if the string
+   * actually has markup. Unfortunately, freearr(), which is called only for
+   * list2arr_ansi()'d stuff, requires we malloc each item. Sigh. */
+  if (!has_markup(list)) {
+    int ret = list2arr(r, max, list, sep);
+    for (i = 0; i < ret; i++) {
+      /* This is lame, but fortunately, assignment happens after we call
+       * mush_strdup. A-hehehehe. */
+      r[i] = mush_strdup(r[i], "list2arr_item");
+    }
+    return ret;
+  }
+
   as = parse_ansi_string(list);
   aptr = as->text;
 
@@ -2198,6 +2211,8 @@ FUNCTION(fun_iter)
   /* Actually, this code has changed so much that the above comment
    * isn't really true anymore. - Talek, 18 Oct 2000
    */
+  char **ptrs = NULL;
+  int nptrs, i;
 
   char sep;
   char *outsep, *list;
@@ -2229,11 +2244,12 @@ FUNCTION(fun_iter)
 
   outsep = (char *) mush_malloc(BUFFER_LEN, "string");
   list = (char *) mush_malloc(BUFFER_LEN, "string");
-  if (!outsep || !list)
+  if (!outsep || !list) {
     mush_panic("Unable to allocate memory in fun_iter");
-  if (nargs < 4)
+  }
+  if (nargs < 4) {
     strcpy(outsep, " ");
-  else {
+  } else {
     const char *arg4 = args[3];
     char *osep = outsep;
     process_expression(outsep, &osep, &arg4, executor, caller, enactor,
@@ -2252,18 +2268,22 @@ FUNCTION(fun_iter)
     return;
   }
 
+  /* Split lp up into an ansi-safe list */
+  ptrs = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
+  nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, lp, sep);
+
   pe_info->iter_nesting++;
   pe_info->local_iter_nesting++;
   place = &pe_info->iter_inum[pe_info->iter_nesting];
   *place = 0;
   funccount = pe_info->fun_invocations;
   oldbp = *bp;
-  while (lp) {
+  for (i = 0; i < nptrs; i++) {
     if (*place) {
       safe_str(outsep, buff, bp);
     }
     *place = *place + 1;
-    pe_info->iter_itext[pe_info->iter_nesting] = tbuf1 = split_token(&lp, sep);
+    pe_info->iter_itext[pe_info->iter_nesting] = tbuf1 = ptrs[i];
     replace[0] = tbuf1;
     replace[1] = unparse_integer(*place);
     tbuf2 = replace_string2(standard_tokens, replace, args[1]);
@@ -2291,6 +2311,8 @@ FUNCTION(fun_iter)
   pe_info->local_iter_nesting--;
   mush_free(outsep, "string");
   mush_free(list, "string");
+  freearr(ptrs, nptrs);
+  mush_free(ptrs, "ptrarray");
 }
 
 /* ARGSUSED */
@@ -2384,6 +2406,8 @@ FUNCTION(fun_step)
   char *wenv[10];
   ufun_attrib ufun;
   char rbuff[BUFFER_LEN];
+  char **ptrs = NULL;
+  int nptrs, i;
 
   if (!is_integer(args[2])) {
     safe_str(T(e_int), buff, bp);
@@ -2418,35 +2442,34 @@ FUNCTION(fun_step)
   /* save our stack */
   save_global_env("step", preserve);
 
-  for (n = 0; n < step; n++) {
-    wenv[n] = split_token(&lp, sep);
-    if (!lp) {
-      n++;
-      break;
-    }
-  }
-  for (; n < 10; n++)
-    wenv[n] = NULL;
+  /* Split lp up into an ansi-safe list */
+  ptrs = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
+  nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, lp, sep);
 
-  if (call_ufun(&ufun, wenv, step, rbuff, executor, enactor, pe_info))
-    return;
-  safe_str(rbuff, buff, bp);
-  while (lp) {
-    safe_str(osep, buff, bp);
+  /* Step through the list. */
+  for (i = 0; i < nptrs;) {
     for (n = 0; n < step; n++) {
-      wenv[n] = split_token(&lp, sep);
-      if (!lp) {
-        n++;
+      if (i < nptrs) {
+        wenv[n] = ptrs[i++];
+      } else {
         break;
       }
     }
-    for (; n < 10; n++)
+    for (; n < 10; n++) {
       wenv[n] = NULL;
-    if (call_ufun(&ufun, wenv, step, rbuff, executor, enactor, pe_info))
+    }
+    if (call_ufun(&ufun, wenv, step, rbuff, executor, enactor, pe_info)) {
+      mush_free(ptrs, "ptrarray");
       return;
+    }
+    if (i > step) {
+      /* At least second loop */
+      safe_str(osep, buff, bp);
+    }
     safe_str(rbuff, buff, bp);
   }
-
+  freearr(ptrs, nptrs);
+  mush_free(ptrs, "ptrarray");
 }
 
 /* ARGSUSED */
@@ -2461,11 +2484,12 @@ FUNCTION(fun_map)
   char *lp;
   char *wenv[2];
   char place[16];
-  int placenr = 1;
   char sep;
   int funccount;
   char *osep, osepd[2] = { '\0', '\0' };
   char rbuff[BUFFER_LEN];
+  char **ptrs = NULL;
+  int nptrs, i;
 
   if (!delim_check(buff, bp, nargs, args, 3, &sep))
     return;
@@ -2482,25 +2506,33 @@ FUNCTION(fun_map)
 
   strcpy(place, "1");
 
+  ptrs = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
+  nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, lp, sep);
+
   /* Build our %0 args */
-  wenv[0] = split_token(&lp, sep);
-  wenv[1] = place;
+  for (i = 0; i < nptrs; i++) {
 
-  call_ufun(&ufun, wenv, 2, rbuff, executor, enactor, pe_info);
-  funccount = pe_info->fun_invocations;
-  safe_str(rbuff, buff, bp);
-  while (lp) {
-    safe_str(osep, buff, bp);
-    strcpy(place, unparse_integer(++placenr));
-    wenv[0] = split_token(&lp, sep);
+    wenv[0] = ptrs[i];
+    snprintf(place, 16, "%d", i + 1);
+    wenv[1] = place;
 
-    if (call_ufun(&ufun, wenv, 2, rbuff, executor, enactor, pe_info))
-      break;
-    safe_str(rbuff, buff, bp);
-    if (*bp == (buff + BUFFER_LEN - 1) && pe_info->fun_invocations == funccount)
-      break;
     funccount = pe_info->fun_invocations;
+
+    if (call_ufun(&ufun, wenv, 2, rbuff, executor, enactor, pe_info)) {
+      break;
+    }
+
+    if (i > 0) {
+      safe_str(osep, buff, bp);
+    }
+    safe_str(rbuff, buff, bp);
+    if (*bp >= (buff + BUFFER_LEN - 1)
+        && pe_info->fun_invocations == funccount) {
+      break;
+    }
   }
+  freearr(ptrs, nptrs);
+  mush_free(ptrs, "ptrarray");
 }
 
 
@@ -2520,7 +2552,8 @@ FUNCTION(fun_mix)
   int funccount;
   int n;
   int lists, words;
-  int first = 1;
+  char **ptrs[10] = {NULL};
+  int nptrs[10], i, maxi;
 
   if (nargs > 3) {              /* Last arg must be the delimiter */
     n = nargs;
@@ -2533,34 +2566,52 @@ FUNCTION(fun_mix)
   if (!delim_check(buff, bp, nargs, args, n, &sep))
     return;
 
-  for (n = 0; n < lists; n++)
-    lp[n] = trim_space_sep(args[n + 1], sep);
-
   /* find our object and attribute */
   if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
     return;
 
-  first = 1;
-  while (1) {
-    words = 0;
+  maxi = 0;
+  for (n = 0; n < lists; n++) {
+    lp[n] = trim_space_sep(args[n + 1], sep);
+    if (*lp) {
+      ptrs[n] = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
+      nptrs[n] = list2arr_ansi(ptrs[n], MAX_SORTSIZE, lp[n], sep);
+    } else {
+      ptrs[n] = NULL;
+      nptrs[n] = 0;
+    }
+    if (nptrs[n] > maxi) {
+      maxi = nptrs[n];
+    }
+  }
+
+  for (i = 0; i < maxi; i++) {
     for (n = 0; n < lists; n++) {
-      if (lp[n] && *lp[n]) {
-        list[n] = split_token(&lp[n], sep);
-        if (list[n])
-          words++;
+      if (nptrs[n] > i) {
+        list[n] = ptrs[n][i];
       } else {
         list[n] = NULL;
       }
     }
-    if (!words)
-      return;
-    if (first)
-      first = 0;
-    else
-      safe_chr(sep, buff, bp);
     funccount = pe_info->fun_invocations;
-    call_ufun(&ufun, list, lists, rbuff, executor, enactor, pe_info);
+    if (call_ufun(&ufun, list, lists, rbuff, executor, enactor, pe_info)) {
+      break;
+    }
+    if (i > 0) {
+      safe_chr(sep, buff, bp);
+    }
     safe_str(rbuff, buff, bp);
+    if (*bp == (buff + BUFFER_LEN - 1)
+        && pe_info->fun_invocations == funccount) {
+      break;
+    }
+  }
+
+  for (n = 0; n < lists; n++) {
+    if (ptrs[n]) {
+      freearr(ptrs[n], nptrs[n]);
+      mush_free(ptrs[n], "ptrarray");
+    }
   }
 }
 

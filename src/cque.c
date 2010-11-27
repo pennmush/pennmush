@@ -88,6 +88,7 @@ int que_next(void);
 static void show_queue(dbref player, dbref victim, int q_type,
                        int q_quiet, int q_all, BQUE *q_ptr, int *tot, int *self,
                        int *del);
+static void show_queue_single(dbref player, BQUE *q, int q_type);
 static void do_raw_restart(dbref victim);
 static int waitable_attr(dbref thing, const char *atr);
 static void shutdown_a_queue(BQUE **head, BQUE **tail);
@@ -1414,33 +1415,39 @@ show_queue(dbref player, dbref victim, int q_type, int q_quiet,
       if ((LookQueue(player)
            || Owns(tmp->player, player))) {
         (*self)++;
-        if (q_quiet)
-          continue;
-        switch (q_type) {
-        case 1:                /* wait queue */
-          notify_format(player, "(Pid: %u) [%ld]%s: %s",
-                        (unsigned int) tmp->pid, (long) difftime(tmp->left,
-                                                                 mudtime),
-                        unparse_object(player, tmp->player), tmp->comm);
-          break;
-        case 2:                /* semaphore queue */
-          if (tmp->left != 0) {
-            notify_format(player, "(Pid: %u) [#%d/%s/%ld]%s: %s",
-                          (unsigned int) tmp->pid, tmp->sem, tmp->semattr,
-                          (long) difftime(tmp->left, mudtime),
-                          unparse_object(player, tmp->player), tmp->comm);
-          } else {
-            notify_format(player, "(Pid: %u) [#%d/%s]%s: %s",
-                          (unsigned int) tmp->pid, tmp->sem, tmp->semattr,
-                          unparse_object(player, tmp->player), tmp->comm);
-          }
-          break;
-        default:               /* player or object queue */
-          notify_format(player, "(Pid: %u) %s: %s", (unsigned int) tmp->pid,
-                        unparse_object(player, tmp->player), tmp->comm);
-        }
+        if (!q_quiet)
+          show_queue_single(player, tmp, q_type);
       }
     }
+  }
+}
+
+/* Show a single queue entry */
+static void
+show_queue_single(dbref player, BQUE *q, int q_type)
+{
+  switch (q_type) {
+  case 1:                /* wait queue */
+    notify_format(player, "(Pid: %u) [%ld]%s: %s",
+                  (unsigned int) q->pid, (long) difftime(q->left,
+                                                           mudtime),
+                  unparse_object(player, q->player), q->comm);
+    break;
+  case 2:                /* semaphore queue */
+    if (q->left != 0) {
+      notify_format(player, "(Pid: %u) [#%d/%s/%ld]%s: %s",
+                    (unsigned int) q->pid, q->sem, q->semattr,
+                    (long) difftime(q->left, mudtime),
+                    unparse_object(player, q->player), q->comm);
+    } else {
+      notify_format(player, "(Pid: %u) [#%d/%s]%s: %s",
+                    (unsigned int) q->pid, q->sem, q->semattr,
+                    unparse_object(player, q->player), q->comm);
+    }
+    break;
+  default:               /* player or object queue */
+    notify_format(player, "(Pid: %u) %s: %s", (unsigned int) q->pid,
+                  unparse_object(player, q->player), q->comm);
   }
 }
 
@@ -1512,6 +1519,45 @@ do_queue(dbref player, const char *what, enum queue_type flag)
                   ("Totals: Player...%d/%d[%ddel]  Object...%d/%d[%ddel]  Wait...%d/%d[%ddel]  Semaphore...%d/%d"),
                   pq, tpq, dpq, oq, toq, doq, wq, twq, dwq, sq, tsq);
   }
+}
+
+/** Display info for a single queue entry.
+ * \verbatim
+ * This is the top-level function for @ps <pid>.
+ * \endverbatim
+ * \param player the enactor.
+ * \param pidstr the pid for the queue entry to show
+ */
+void
+do_queue_single(dbref player, char *pidstr)
+{
+  uint32_t pid;
+  BQUE *q;
+
+  if (!is_uinteger(pidstr)) {
+    notify(player, T("That is not a valid pid!"));
+    return;
+  }
+
+  pid = parse_uint32(pidstr, NULL, 10);
+  q = im_find(queue_map, pid);
+  if (!q) {
+    notify(player, T("That is not a valid pid!"));
+    return;
+  }
+
+  if (!LookQueue(player) && Owner(player) != Owner(q->player)) {
+    notify(player, T("Permission denied."));
+    return;
+  }
+
+  if (GoodObject(q->sem))
+    show_queue_single(player, q, 2);
+  else if (q->left > 0)
+    show_queue_single(player, q, 1);
+  else
+    show_queue_single(player, q, 0);
+
 }
 
 /** Halt an object, internal use.

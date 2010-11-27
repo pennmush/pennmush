@@ -72,7 +72,7 @@ COMMAND(cmd_helpcmd)
     return;
   }
 
-  if (wildcard(arg_left)) {
+  if (wildcard_count(arg_left, 1) == -1) {
     int len = 0;
     char **entries;
 
@@ -479,7 +479,7 @@ FUNCTION(fun_textfile)
     return;
   }
 
-  if (wildcard(args[1])) {
+  if (wildcard_count(args[1], 1) == -1) {
     char **entries;
     int len = 0;
     entries = list_matching_entries(args[1], h, &len);
@@ -588,7 +588,7 @@ list_matching_entries(const char *pattern, help_file *help_dat, int *len)
   else
     offset = 0;
 
-  if (!wildcard(pattern)) {
+  if (wildcard_count((char *) pattern, 1) >= 0) {
     /* Quick way out, use the other kind of matching */
     char the_topic[LINE_SIZE + 2];
     help_indx *entry = NULL;

@@ -1377,7 +1377,7 @@ FUNCTION(fun_lpids)
 
   if (qmask & 1) {
     for (tmp = qwait; tmp; tmp = tmp->next) {
-      if (GoodObject(player) && (!Owns(tmp->player, player)))
+      if (GoodObject(player) && GoodObject(tmp->player) && (!Owns(tmp->player, player)))
         continue;
       if (!first)
         safe_chr(' ', buff, bp);
@@ -1387,7 +1387,7 @@ FUNCTION(fun_lpids)
   }
   if (qmask & 2) {
     for (tmp = qsemfirst; tmp; tmp = tmp->next) {
-      if (GoodObject(player) && (!Owns(tmp->player, player)))
+      if (GoodObject(player) && GoodObject(tmp->player) && (!Owns(tmp->player, player)))
         continue;
       if (GoodObject(thing) && (tmp->sem != thing))
         continue;

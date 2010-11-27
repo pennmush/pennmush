@@ -594,7 +594,7 @@ FUNCTION(fun_sort)
 {
   char *ptrs[MAX_SORTSIZE];
   int nptrs;
-  char *sort_type;
+  SortType sort_type;
   char sep;
   char outsep[BUFFER_LEN];
 
@@ -623,7 +623,7 @@ FUNCTION(fun_sortkey)
   char *ptrs[MAX_SORTSIZE];
   char *keys[MAX_SORTSIZE];
   int nptrs;
-  char *sort_type;
+  SortType sort_type;
   char sep;
   char outsep[BUFFER_LEN];
   int i;
@@ -737,7 +737,7 @@ FUNCTION(fun_setinter)
   char sep;
   char **a1, **a2;
   int n1, n2, x1, x2, val;
-  char *sort_type = ALPHANUM_LIST;
+  SortType sort_type = UNKNOWN_LIST;
   int osepl = 0;
   char *osep = NULL, osepd[2] = { '\0', '\0' };
 
@@ -758,6 +758,7 @@ FUNCTION(fun_setinter)
   n2 = list2arr_ansi(a2, MAX_SORTSIZE, args[1], sep);
 
   if (nargs < 4) {
+    sort_type = autodetect_2lists(a1, n1, a2, n2);
     osepd[0] = sep;
     osep = osepd;
     if (sep)
@@ -765,7 +766,6 @@ FUNCTION(fun_setinter)
   } else if (nargs == 4) {
     sort_type = get_list_type_noauto(args, nargs, 4);
     if (sort_type == UNKNOWN_LIST) {
-      sort_type = ALPHANUM_LIST;
       osep = args[3];
       osepl = arglens[3];
     } else {
@@ -775,10 +775,15 @@ FUNCTION(fun_setinter)
         osepl = 1;
     }
   } else if (nargs == 5) {
-    sort_type = get_list_type(args, nargs, 4, a1, n1);
+    sort_type = get_list_type_noauto(args, nargs, 4);
     osep = args[4];
     osepl = arglens[4];
   }
+
+  if (sort_type == UNKNOWN_LIST) {
+    sort_type = autodetect_2lists(a1, n1, a2, n2);
+  }
+
   /* sort each array */
   do_gensort(executor, a1, NULL, n1, sort_type);
   do_gensort(executor, a2, NULL, n2, sort_type);
@@ -867,7 +872,7 @@ FUNCTION(fun_setunion)
   char **a1, **a2;
   int n1, n2, x1, x2, val, orign1, orign2;
   int lastx1, lastx2, found;
-  char *sort_type = ALPHANUM_LIST;
+  SortType sort_type = UNKNOWN_LIST;
   int osepl = 0;
   char *osep = NULL, osepd[2] = { '\0', '\0' };
 
@@ -895,7 +900,6 @@ FUNCTION(fun_setunion)
   } else if (nargs == 4) {
     sort_type = get_list_type_noauto(args, nargs, 4);
     if (sort_type == UNKNOWN_LIST) {
-      sort_type = ALPHANUM_LIST;
       osep = args[3];
       osepl = arglens[3];
     } else {
@@ -905,10 +909,15 @@ FUNCTION(fun_setunion)
         osepl = 1;
     }
   } else if (nargs == 5) {
-    sort_type = get_list_type(args, nargs, 4, a1, n1);
+    sort_type = get_list_type_noauto(args, nargs, 4);
     osep = args[4];
     osepl = arglens[4];
   }
+
+  if (sort_type == UNKNOWN_LIST) {
+    sort_type = autodetect_2lists(a1, n1, a2, n2);
+  }
+
   /* sort each array */
   do_gensort(executor, a1, NULL, n1, sort_type);
   do_gensort(executor, a2, NULL, n2, sort_type);
@@ -1005,7 +1014,7 @@ FUNCTION(fun_setdiff)
   char sep;
   char **a1, **a2;
   int n1, n2, x1, x2, val;
-  char *sort_type = ALPHANUM_LIST;
+  SortType sort_type = UNKNOWN_LIST;
   int osepl = 0;
   char *osep = NULL, osepd[2] = { '\0', '\0' };
 
@@ -1033,7 +1042,6 @@ FUNCTION(fun_setdiff)
   } else if (nargs == 4) {
     sort_type = get_list_type_noauto(args, nargs, 4);
     if (sort_type == UNKNOWN_LIST) {
-      sort_type = ALPHANUM_LIST;
       osep = args[3];
       osepl = arglens[3];
     } else {
@@ -1043,9 +1051,13 @@ FUNCTION(fun_setdiff)
         osepl = 1;
     }
   } else if (nargs == 5) {
-    sort_type = get_list_type(args, nargs, 4, a1, n1);
+    sort_type = get_list_type_noauto(args, nargs, 4);
     osep = args[4];
     osepl = arglens[4];
+  }
+
+  if (sort_type == UNKNOWN_LIST) {
+    sort_type = autodetect_2lists(a1, n1, a2, n2);
   }
 
   /* sort each array */
@@ -1126,7 +1138,7 @@ FUNCTION(fun_unique)
   char sep;
   char **a1, **a2;
   int n1, x1, x2;
-  char *sort_type = ALPHANUM_LIST;
+  SortType sort_type = ALPHANUM_LIST;
   int osepl = 0;
   char *osep = NULL, osepd[2] = { '\0', '\0' };
 
@@ -1152,8 +1164,9 @@ FUNCTION(fun_unique)
   if (nargs >= 2)
     sort_type = get_list_type_noauto(args, nargs, 2);
 
-  if (sort_type == UNKNOWN_LIST)
-    sort_type = ALPHANUM_LIST;
+  if (sort_type == UNKNOWN_LIST) {
+    sort_type = autodetect_list(a1, n1);
+  }
 
   if (nargs < 4) {
     osepd[0] = sep;

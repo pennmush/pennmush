@@ -25,6 +25,7 @@
 #include "mushdb.h"
 #include "lock.h"
 #include "log.h"
+#include "sort.h"
 #include "confmagic.h"
 
 #ifdef WIN32
@@ -260,7 +261,7 @@ find_atr_pos_in_list(ATTR ***pos, char const *name)
   int comp;
 
   while (**pos) {
-    comp = strcoll(name, AL_NAME(**pos));
+    comp = compare_attr_names(name, AL_NAME(**pos));
     if (comp < 0)
       return NULL;
     if (comp == 0)
@@ -1358,7 +1359,7 @@ find_attr(UsedAttr ***prev, char const *name)
 
   comp = 1;
   while (**prev) {
-    comp = strcoll(name, prev[0][0]->name);
+    comp = compare_attr_names(name, prev[0][0]->name);
     if (comp <= 0)
       break;
     *prev = &prev[0][0]->next;

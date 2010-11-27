@@ -75,6 +75,7 @@ Commands:
    for case-insensitive greps. Suggested by Paige. [MG]
  * @attribute now allows limiting attribute values through /enum and
    /limit switches. [GM]
+ * @ps <pid> shows info for a single queue entry. Suggested by Paige. [MG]
    
 Fixes:
  * Debug output was sometimes sent to the wrong executor. [GM]

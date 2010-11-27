@@ -1140,7 +1140,7 @@ wipe_helper(dbref player, dbref thing,
    */
   int saved_count = AttrCount(thing);
 
-  if (wildcard(pattern) && AF_Wizard(atr) && !God(player))
+  if (wildcard((char *) pattern) && AF_Wizard(atr) && !God(player))
     return 0;
 
   switch (wipe_atr(thing, AL_NAME(atr), player)) {

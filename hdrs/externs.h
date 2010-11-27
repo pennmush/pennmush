@@ -641,7 +641,9 @@ mush_strndup(const char *src, size_t len, const char *check)
                          bool cs, int *matches, int nmatches);
     bool local_wild_match_case(const char *restrict s,
                                const char *restrict d, bool cs);
-    bool wildcard(const char *s);
+    int wildcard_count(char *s, bool unescape);
+    /** Return 1 if s contains unescaped wildcards, 0 if not */
+    #define wildcard(s) (wildcard_count(s, 0) == -1)
     bool quick_wild_new(const char *restrict tstr,
                         const char *restrict dstr, bool cs);
     bool wild_match_case_r(const char *restrict s,

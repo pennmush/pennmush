@@ -683,7 +683,7 @@ get_list_type_noauto(char *args[], int nargs, int type_pos)
       if (ptr) {
         len = ptr - str;
       } else {
-        len = strlen(ptr);
+        len = strlen(str);
       }
       for (i = 0; ltypelist[i].name &&
                   strncasecmp(ltypelist[i].name, str, len);

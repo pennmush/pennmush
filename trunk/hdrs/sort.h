@@ -25,6 +25,9 @@ int uint_comp(const void *s1, const void *s2);
 int str_comp(const void *s1, const void *s2);
 int stri_comp(const void *s1, const void *s2);
 int dbref_comp(const void *s1, const void *s2);
+int attr_comp(const void *s1, const void *s2);
 int u_comp(const void *s1, const void *s2);     /* For sortby() */
+
+int compare_attr_names(const char *attr1, const char *attr2);
 
 #endif                          /* __PENNSORT_H */

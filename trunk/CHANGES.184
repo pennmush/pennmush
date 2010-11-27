@@ -62,6 +62,7 @@ Functions:
  * New slev() function, returns the current nesting depth of switches. [MG]
  * maillist() returns a list of @mail messages matching a range, as per
    @mail/list. Suggested by AnneLions. [MG]
+ * New sorttype, lattr, sorts a list of attribute names. [MG]
 
 Commands:
  * @grep now accepts /wild and /regexp switches, for wildcard/globbing and
@@ -78,6 +79,9 @@ Fixes:
  * benchmark() calculated the average incorrectly. Reported by Cheetah. [DC]
  * "look <container>'s <object>" incorrectly stopped working in p1 when
    <object>'s desc was set "nearby". Reported by Yuriko@M*U*SH. [MG]
+ * Attribute names are now sorted better with regard to attribute trees,
+   hopefully fixing the recurring bug of @wipe leaving branch attributes
+   when removing a root attr for good. [MG]
 
 Version 1.8.4 patchlevel 1                                 Sep 05,  2010
 

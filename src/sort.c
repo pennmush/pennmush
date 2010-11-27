@@ -588,7 +588,7 @@ f_comp(const void *s1, const void *s2)
 }
 
 typedef struct _list_type_list_ {
-  char *name;
+  SortType name;
   makerecord make_record;
   qsort_func sorter;
   uint32_t flags;
@@ -637,38 +637,11 @@ list_type_list ltypelist[] = {
   {NULL, gen_alphanum, s_comp, IS_STRING}
 };
 
-char *
+SortType
 get_list_type(char *args[], int nargs, int type_pos, char *ptrs[], int nptrs)
 {
-  static char stype[BUFFER_LEN];
-  int i;
-  char *str;
-  sort_order = ASCENDING;
-  if (nargs >= type_pos) {
-    str = args[type_pos - 1];
-    if (str && *str == '-') {
-      str++;
-      sort_order = DESCENDING;
-    }
-    if (str && *str) {
-      copy_up_to(stype, str, ':');
-      for (i = 0; ltypelist[i].name && strcasecmp(ltypelist[i].name, stype);
-           i++) ;
-      /* return ltypelist[i].name; */
-      if (ltypelist[i].name) {
-        return args[type_pos - 1];
-      }
-    }
-  }
-  return autodetect_list(ptrs, nptrs);
-}
-
-char *
-get_list_type_noauto(char *args[], int nargs, int type_pos)
-{
-  static char stype[BUFFER_LEN];
-  int i;
-  char *str;
+  int i, len;
+  char *str, *ptr;
   sort_order = ASCENDING;
   if (nargs >= type_pos) {
     str = args[type_pos - 1];
@@ -677,8 +650,43 @@ get_list_type_noauto(char *args[], int nargs, int type_pos)
         str++;
         sort_order = DESCENDING;
       }
-      copy_up_to(stype, str, ':');
-      for (i = 0; ltypelist[i].name && strcasecmp(ltypelist[i].name, stype);
+      ptr = strchr(str, ':');
+      if (ptr) {
+        len = ptr - str;
+      } else {
+        len = strlen(ptr);
+      }
+      for (i = 0; ltypelist[i].name &&
+                  strncasecmp(ltypelist[i].name, str, len);
+           i++) ;
+      /* return ltypelist[i].name; */
+      return args[type_pos - 1];
+    }
+  }
+  return autodetect_list(ptrs, nptrs);
+}
+
+SortType
+get_list_type_noauto(char *args[], int nargs, int type_pos)
+{
+  int i, len;
+  char *str, *ptr;
+  sort_order = ASCENDING;
+  if (nargs >= type_pos) {
+    str = args[type_pos - 1];
+    if (*str) {
+      if (*str == '-') {
+        str++;
+        sort_order = DESCENDING;
+      }
+      ptr = strchr(str, ':');
+      if (ptr) {
+        len = ptr - str;
+      } else {
+        len = strlen(ptr);
+      }
+      for (i = 0; ltypelist[i].name &&
+                  strncasecmp(ltypelist[i].name, str, len);
            i++) ;
       /* return ltypelist[i].name; */
       return args[type_pos - 1];
@@ -692,7 +700,7 @@ get_list_type_noauto(char *args[], int nargs, int type_pos)
  * \param
  */
 int
-gencomp(dbref player, char *a, char *b, char *sort_type)
+gencomp(dbref player, char *a, char *b, SortType sort_type)
 {
   char *ptr;
   int i, len;
@@ -748,7 +756,7 @@ gencomp(dbref player, char *a, char *b, char *sort_type)
  */
 
 void
-do_gensort(dbref player, char *keys[], char *strs[], int n, char *sort_type)
+do_gensort(dbref player, char *keys[], char *strs[], int n, SortType sort_type)
 {
   char *ptr;
   static char stype[BUFFER_LEN];
@@ -804,6 +812,25 @@ do_gensort(dbref player, char *keys[], char *strs[], int n, char *sort_type)
   mush_free(sp, "do_gensort");
 }
 
+SortType
+autodetect_2lists(char *ptrs[], int nptrs, char *ptrs2[], int nptrs2) {
+  SortType a = autodetect_list(ptrs, nptrs);
+  SortType b = autodetect_list(ptrs2, nptrs2);
+
+  /* If they're equal, no problem. */
+  if (a == b) {
+    return a;
+  }
+  /* Float and numeric means float. */
+  if ((a == NUMERIC_LIST || a == FLOAT_LIST) &&
+      (b == NUMERIC_LIST || b == FLOAT_LIST)) {
+    return FLOAT_LIST;
+  }
+
+  /* Magic list by default. */
+  return MAGIC_LIST;
+}
+
 typedef enum {
   L_NUMERIC,
   L_FLOAT,
@@ -811,48 +838,33 @@ typedef enum {
   L_DBREF
 } ltype;
 
-char *
+SortType 
 autodetect_list(char *ptrs[], int nptrs)
 {
-  char *sort_type;
-  ltype lt;
   int i;
+  ltype lt;
+  SortType sort_type = NUMERIC_LIST;
 
   lt = L_NUMERIC;
-  sort_type = NUMERIC_LIST;
-
   for (i = 0; i < nptrs; i++) {
+    /* Just one big chain of fall-throughs =). */
     switch (lt) {
     case L_NUMERIC:
-      if (!is_strict_integer(ptrs[i])) {
-        /* If it's not an integer, see if it's a floating-point number */
-        if (is_strict_number(ptrs[i])) {
-          lt = L_FLOAT;
-          sort_type = FLOAT_LIST;
-        } else if (i == 0) {
-
-          /* If we get something non-numeric, switch to an
-           * alphanumeric guess, unless this is the first
-           * element and we have a dbref.
-           */
-          if (is_objid(ptrs[i])) {
-            lt = L_DBREF;
-            sort_type = DBREF_LIST;
-          } else
-            return ALPHANUM_LIST;
-        }
+      if (is_strict_integer(ptrs[i])) {
+        break;
       }
-      break;
     case L_FLOAT:
-      if (!is_strict_number(ptrs[i]))
-        return ALPHANUM_LIST;
-      break;
+      if (is_strict_number(ptrs[i])) {
+        lt = L_FLOAT;
+        sort_type = FLOAT_LIST;
+      }
     case L_DBREF:
-      if (!is_objid(ptrs[i]))
-        return ALPHANUM_LIST;
-      break;
-    default:
-      return ALPHANUM_LIST;
+      if (is_objid(ptrs[i]) && (i == 0 || lt == L_DBREF)) {
+        lt = L_DBREF;
+        sort_type = DBREF_LIST;
+      }
+    case L_ALPHANUM:
+      return MAGIC_LIST;
     }
   }
   return sort_type;

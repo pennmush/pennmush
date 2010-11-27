@@ -49,6 +49,11 @@ Minor Changes:
  * Set several attributes used internally AF_NOCOPY so they won't be included
    in @decompile output. Suggested by Paige. [GM]
  * The help for the chat system (@channel) has been rewritten. [MG]
+ * autodetect_list now returns 'm' sort for unknown list types instead of
+   alphanum, so sorting on strings will now treat numbers in them as
+   separate comparisons by default. [GM]
+ * setunion(), setdiff(), setinter() now autodetect lists in all cases where
+   no sort type is provided instead of just some cases. [GM]
    
 Functions:
  * ibreak(), for breaking out of an iter() loop. [Rhost] [MG]
@@ -64,7 +69,7 @@ Commands:
    regular expression greps (a la wildgrep() and regrep()). Also /nocase
    for case-insensitive greps. Suggested by Paige. [MG]
  * @attribute now allows limiting attribute values through /enum and
-   /limit switches.
+   /limit switches. [GM]
    
 Fixes:
  * Debug output was sometimes sent to the wrong executor. [GM]

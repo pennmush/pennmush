@@ -928,6 +928,8 @@ COMMAND(cmd_ps)
     do_queue(player, arg_left, QUEUE_SUMMARY);
   else if (SW_ISSET(sw, SWITCH_QUICK))
     do_queue(player, arg_left, QUEUE_QUICK);
+  else if (arg_left && *arg_left && is_uinteger(arg_left))
+    do_queue_single(player, arg_left);
   else
     do_queue(player, arg_left, QUEUE_NORMAL);
 }

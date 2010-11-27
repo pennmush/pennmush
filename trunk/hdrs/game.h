@@ -35,6 +35,7 @@ void do_wait
 void do_waitpid(dbref, const char *, const char *, bool);
 enum queue_type { QUEUE_ALL, QUEUE_NORMAL, QUEUE_SUMMARY, QUEUE_QUICK };
 void do_queue(dbref player, const char *what, enum queue_type flag);
+void do_queue_single(dbref player, char *pidstr);
 void do_halt1(dbref player, const char *arg1, const char *arg2);
 void do_haltpid(dbref, const char *);
 void do_allhalt(dbref player);

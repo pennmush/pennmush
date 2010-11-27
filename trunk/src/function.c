@@ -986,9 +986,7 @@ init_func_hashtab(void)
 }
 
 /** Function initization to perform after reading the config file.
- * This function performs post-config initialization. Specifically,
- * we need the max_globals value from the config file before we
- * can allocate the global user function table here.
+ * This function performs post-config initialization.
  */
 void
 function_init_postconfig(void)

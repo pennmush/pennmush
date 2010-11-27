@@ -3726,7 +3726,7 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
  * \endverbatim
  * \param player the enactor.
  * \param name the name of the channel.
- * \param lineinfo point to array containing lines, optoinal start
+ * \param lineinfo point to array containing lines, optional start
  * \param quiet if true, don't show timestamps.
  */
 void

@@ -213,8 +213,8 @@ real_atr_wild(const char *restrict tstr,
  *
  * This routine will cause crashes if fed NULLs instead of strings.
  *
- * \param s pattern to match against.
- * \param d string to check.
+ * \param pat pattern to match against.
+ * \param str string to check.
  * \param cs if 1, case-sensitive; if 0, case-insensitive.
  * \param matches An int[nmatches*2] to store positions into. The result will
  *                be [0start, 0len, 1start, 1len, 2start, 2len, ...]
@@ -231,14 +231,13 @@ wild_match_test(const char *restrict pat, const char *restrict str, bool cs,
   int pbase = 0, sbase = 0; /* Guaranteed matched so far. */
   int matchi = 0, mbase = 0;
   int slen = strlen(str);
+  char pbuff[BUFFER_LEN];
+  char tbuff[BUFFER_LEN];
 
   for (i = 0; i < nmatches; i++) {
     matches[i*2] = -1;
     matches[i*2+1] = 0;
   }
-
-  char pbuff[BUFFER_LEN];
-  char tbuff[BUFFER_LEN];
 
   strncpy(pbuff, remove_markup(pat, NULL), BUFFER_LEN);
   pbuff[BUFFER_LEN-1] = '\0';
@@ -606,16 +605,51 @@ local_wild_match_case(const char *restrict s, const char *restrict d, bool cs)
     return (!d || !*d) ? 1 : 0;
 }
 
-/** Does a string contain a wildcard character (* or ?)?
- * Not used by the wild matching routines, but suitable for outside use.
- * \param s string to check.
- * \retval 1 s contains a * or ?
- * \retval 0 s does not contain a * or ?
+/** Check to see if a string contains either wildcard characters (* or ?), or
+ * backslash-escaped characters. If there are no wildcards but there are escaped characters,
+ * destructively modify the string to remove the escapes, if requested.
+ * \param s string to check
+ * \param unescape If no unescaped wildcards are present, should we modify s to remove escapes?
+ * \retval -1 s contains unescaped wildcards
+ * \retval >-1 number of \-escaped characters remaining in s
  */
-bool
-wildcard(const char *s)
+int wildcard_count(char *s, bool unescape)
 {
-  if (strchr(s, '*') || strchr(s, '?'))
-    return 1;
-  return 0;
+  char *c = s;
+  int escapes = 0;
+
+  while (*c) {
+    if (*c == '?' || *c == '*')
+      return -1;
+    else if (*c == '\\') {
+      c++;
+      if (!*c)
+        break;
+      else
+        escapes++;
+    }
+    c++;
+  }
+
+  if (!escapes || !unescape)
+    return escapes;
+  else {
+    char *rep;
+
+    /* There are \-escapes, but no unescaped wildcards.
+     * Modify s to remove one layer of \'s. */
+    c = rep = strchr(s, '\\');
+    while (*c) {
+      if (escapes && *rep == '\\') {
+        rep++;
+        escapes--;
+      }
+      *c = *rep;
+      if (!*rep)
+        break;
+      c++;
+      rep++;
+    }
+    return 0;
+  }
 }

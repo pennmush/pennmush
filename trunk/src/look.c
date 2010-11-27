@@ -419,7 +419,7 @@ static void
 look_atrs(dbref player, dbref thing, const char *mstr, int all, int mortal,
           int parent)
 {
-  if (all || (mstr && *mstr && !wildcard(mstr))) {
+  if (all || (mstr && *mstr && !wildcard((char *) mstr))) {
     if (parent) {
       if (!atr_iter_get_parent
           (player, thing, mstr, mortal, 0, look_helper, NULL)

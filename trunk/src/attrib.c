@@ -1111,7 +1111,8 @@ atr_iter_get(dbref player, dbref thing, const char *name, int mortal,
   }
   len = strlen(name);
 
-  if (!regexp && !wildcard(name) && name[len - 1] != '`') {
+  /* Must check name[len-1] first as wildcard_count() can destructively modify name */
+  if (!regexp && name[len - 1] != '`' && wildcard_count((char *) name, 1) != -1) {
     ptr = atr_get_noparent(thing, strupper(name));
     if (ptr && (mortal ? Is_Visible_Attr(thing, ptr)
                 : Can_Read_Attr(player, thing, ptr)))
@@ -1164,7 +1165,8 @@ atr_pattern_count(dbref player, dbref thing, const char *name,
   }
   len = strlen(name);
 
-  if (!regexp && !wildcard(name) && name[len - 1] != '`') {
+  /* Must check name[len-1] first as wildcard_count() can destructively modify name */
+  if (!regexp && name[len - 1] != '`' && wildcard_count((char *) name, 1) != -1) {
     parent = thing;
     if (doparent)
       ptr = atr_get_with_parent(thing, strupper(name), &parent);
@@ -1237,7 +1239,8 @@ atr_iter_get_parent(dbref player, dbref thing, const char *name, int mortal,
   }
   len = strlen(name);
 
-  if (!regexp && !wildcard(name) && name[len - 1] != '`') {
+  /* Must check name[len-1] first as wildcard_count() can destructively modify name */
+  if (!regexp && name[len - 1] != '`' && wildcard_count((char *) name, 1) != -1) {
     ptr = atr_get_with_parent(thing, strupper(name), &parent);
     if (ptr && (mortal ? Is_Visible_Attr(parent, ptr)
                 : Can_Read_Attr(player, parent, ptr)))

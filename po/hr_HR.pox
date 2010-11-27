@@ -4932,6 +4932,10 @@ msgstr "Ovdje nema nikoga od koga bi se ne¹to moglo kupiti."
 msgid "There's nothing left of it to clone!"
 msgstr "Od toga ni¹ta nije ostalo pa se ne mo¾e ni klonirati!"
 
+#: player.c:190
+msgid "This IP address has failed too many times. Please try again in 10 minutes."
+msgstr "Prevelik broj neuspje¹nih spajanja s te IP adrese. Molim, poku¹ati ponovo za 10 minuta."
+
 #: command.c:1562
 msgid "This command has not been implemented."
 msgstr "Ova naredba se ne koristi."

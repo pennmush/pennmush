@@ -3051,7 +3051,7 @@ chat_player_announce(dbref player, char *msg, int ungag)
 
   msglen = strlen(msg);
 
-  for (d = descriptor_list; d; d = d->next) 
+  for (d = descriptor_list; d; d = d->next)
     if (d->connected) {
       CHAN *c;
       CHANUSER *up, *uv;
@@ -3064,26 +3064,27 @@ chat_player_announce(dbref player, char *msg, int ungag)
       safe_chr('<', buff, &bp);
 
       for (c = channels; c; c = c->next) {
-	up = onchannel(player, c);
-	uv = onchannel(viewer, c);
-	if (up && uv) {
-	  shared = true;
-	  if (!Channel_Quiet(c) && !Chanuser_Quiet(uv) && (Channel_Admin(c) || Channel_Wizard(c)
-				    || (!Chanuser_Hide(up) && !Dark(player)))) {
-	    safe_str(ChanName(c), buff, &bp);
-	    safe_chr(' ', buff, &bp);
-	  }
-	}
-	if (up && ungag)
-	  CUtype(up) &= ~CU_GAG;
+        up = onchannel(player, c);
+        uv = onchannel(viewer, c);
+        if (up && uv) {
+          shared = true;
+          if (!Channel_Quiet(c) && !Chanuser_Quiet(uv)
+              && (Channel_Admin(c) || Channel_Wizard(c)
+                  || (!Chanuser_Hide(up) && !Dark(player)))) {
+            safe_str(ChanName(c), buff, &bp);
+            safe_chr(' ', buff, &bp);
+          }
+        }
+        if (up && ungag)
+          CUtype(up) &= ~CU_GAG;
       }
       if (shared) {
-	bp -= 1;
-	safe_format(buff, &bp, "> %s ", accented_name(player));
-	safe_strl(msg, msglen, buff, &bp);
-	*bp = '\0';
+        bp -= 1;
+        safe_format(buff, &bp, "> %s ", accented_name(player));
+        safe_strl(msg, msglen, buff, &bp);
+        *bp = '\0';
 
-	notify(viewer, buff);
+        notify(viewer, buff);
       }
     }
 }

@@ -71,7 +71,7 @@ do_name(dbref player, const char *name, char *newname_)
   char *newname;
 
   if ((thing = match_controlled(player, name)) == NOTHING)
-  return;
+    return;
 
   newname = mush_strdup(trim_space_sep(newname_, ' '), "name.newname");
   bon = newname;

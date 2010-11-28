@@ -190,7 +190,7 @@ FUNCTION(fun_ufun)
   ufun_attrib ufun;
   int flags = UFUN_OBJECT;
 
-  if (!strcmp(called_as,"ULAMBDA")) {
+  if (!strcmp(called_as, "ULAMBDA")) {
     flags |= UFUN_LAMBDA;
   }
 
@@ -269,7 +269,8 @@ FUNCTION(fun_udefault)
   process_expression(mstr, &dp, &sp, executor, caller, enactor,
                      PE_DEFAULT, PT_DEFAULT, pe_info);
   *dp = '\0';
-  if (!fetch_ufun_attrib(mstr, executor, &ufun, UFUN_OBJECT | UFUN_REQUIRE_ATTR)) {
+  if (!fetch_ufun_attrib
+      (mstr, executor, &ufun, UFUN_OBJECT | UFUN_REQUIRE_ATTR)) {
     /* We couldn't get it. Evaluate args[1] and return it */
     sp = args[1];
 
@@ -322,7 +323,8 @@ FUNCTION(fun_zfun)
   }
 
   /* find the user function attribute */
-  if (!fetch_ufun_attrib(tprintf("#%d/%s", zone, args[0]), executor, &ufun, UFUN_OBJECT)) {
+  if (!fetch_ufun_attrib
+      (tprintf("#%d/%s", zone, args[0]), executor, &ufun, UFUN_OBJECT)) {
     safe_str(T(ufun.errmess), buff, bp);
     return;
   }

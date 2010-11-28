@@ -203,18 +203,22 @@ PENNCONF conftable[] = {
   ,
   {"sql_host", cf_str, options.sql_host, sizeof options.sql_host, 0, "net"}
   ,
-  {"sql_username", cf_str, options.sql_username, sizeof options.sql_username, CP_GODONLY,
+  {"sql_username", cf_str, options.sql_username, sizeof options.sql_username,
+   CP_GODONLY,
    "net"}
   ,
-  {"sql_password", cf_str, options.sql_password, sizeof options.sql_password, CP_GODONLY,
+  {"sql_password", cf_str, options.sql_password, sizeof options.sql_password,
+   CP_GODONLY,
    "net"}
   ,
-  {"sql_database", cf_str, options.sql_database, sizeof options.sql_database, CP_GODONLY,
+  {"sql_database", cf_str, options.sql_database, sizeof options.sql_database,
+   CP_GODONLY,
    "net"}
   ,
   {"forking_dump", cf_bool, &options.forking_dump, 2, 0, "dump"}
   ,
-  {"dump_message", cf_str, options.dump_message, sizeof options.dump_message, CP_OPTIONAL,
+  {"dump_message", cf_str, options.dump_message, sizeof options.dump_message,
+   CP_OPTIONAL,
    "dump"}
   ,
   {"dump_complete", cf_str, options.dump_complete, sizeof options.dump_complete,
@@ -241,7 +245,8 @@ PENNCONF conftable[] = {
    sizeof options.money_singular, CP_OPTIONAL,
    "cosmetic"}
   ,
-  {"money_plural", cf_str, options.money_plural, sizeof options.money_plural, CP_OPTIONAL,
+  {"money_plural", cf_str, options.money_plural, sizeof options.money_plural,
+   CP_OPTIONAL,
    "cosmetic"}
   ,
   {"player_name_spaces", cf_bool, &options.player_name_spaces, 2, 0,
@@ -270,10 +275,12 @@ PENNCONF conftable[] = {
    sizeof options.wizwall_prefix, CP_OPTIONAL,
    "cosmetic"}
   ,
-  {"rwall_prefix", cf_str, options.rwall_prefix, sizeof options.rwall_prefix, CP_OPTIONAL,
+  {"rwall_prefix", cf_str, options.rwall_prefix, sizeof options.rwall_prefix,
+   CP_OPTIONAL,
    "cosmetic"}
   ,
-  {"wall_prefix", cf_str, options.wall_prefix, sizeof options.wall_prefix, CP_OPTIONAL,
+  {"wall_prefix", cf_str, options.wall_prefix, sizeof options.wall_prefix,
+   CP_OPTIONAL,
    "cosmetic"}
   ,
   {"announce_connects", cf_bool, &options.announce_connects, 2, 0, "cosmetic"}
@@ -1342,10 +1349,8 @@ conf_default_set(void)
   options.warn_interval = 3600;
   options.use_dns = 1;
   options.safer_ufun = 1;
-  strcpy(options.dump_warning_1min,
-         T("GAME: Database save in 1 minute."));
-  strcpy(options.dump_warning_5min,
-         T("GAME: Database save in 5 minutes."));
+  strcpy(options.dump_warning_1min, T("GAME: Database save in 1 minute."));
+  strcpy(options.dump_warning_5min, T("GAME: Database save in 5 minutes."));
   options.noisy_whisper = 0;
   options.possessive_get = 1;
   options.possessive_get_d = 1;
@@ -1617,7 +1622,8 @@ do_config_list(dbref player, const char *type, int lc)
     if (!found) {
       /* It wasn't a group. Is is one or more specific options? */
       for (cp = conftable; cp->name; cp++) {
-        if (cp->group && (God(player) || !(cp->flags & CP_GODONLY)) && string_prefix(cp->name, type)) {
+        if (cp->group && (God(player) || !(cp->flags & CP_GODONLY))
+            && string_prefix(cp->name, type)) {
           notify(player, config_to_string(player, cp, lc));
           found = 1;
         }
@@ -1626,7 +1632,8 @@ do_config_list(dbref player, const char *type, int lc)
         /* Ok, maybe a local option? */
         for (cp = (PENNCONF *) hash_firstentry(&local_options); cp;
              cp = (PENNCONF *) hash_nextentry(&local_options)) {
-          if (cp->group && (God(player) || !(cp->flags & CP_GODONLY)) && !strcasecmp(cp->name, type)) {
+          if (cp->group && (God(player) || !(cp->flags & CP_GODONLY))
+              && !strcasecmp(cp->name, type)) {
             notify(player, config_to_string(player, cp, lc));
             found = 1;
           }
@@ -1664,13 +1671,15 @@ do_config_list(dbref player, const char *type, int lc)
         show_compile_options(player);
       else {
         for (cp = conftable; cp->name; cp++) {
-          if (cp->group && (God(player) || !(cp->flags & CP_GODONLY)) && !strcmp(cp->group, cgp->name)) {
+          if (cp->group && (God(player) || !(cp->flags & CP_GODONLY))
+              && !strcmp(cp->group, cgp->name)) {
             notify(player, config_to_string(player, cp, lc));
           }
         }
         for (cp = (PENNCONF *) hash_firstentry(&local_options); cp;
              cp = (PENNCONF *) hash_nextentry(&local_options)) {
-          if (cp->group && (God(player) || !(cp->flags & CP_GODONLY)) && !strcasecmp(cp->group, cgp->name)) {
+          if (cp->group && (God(player) || !(cp->flags & CP_GODONLY))
+              && !strcasecmp(cp->group, cgp->name)) {
             notify(player, config_to_string(player, cp, lc));
           }
         }
@@ -1778,14 +1787,16 @@ FUNCTION(fun_config)
 
   if (args[0] && *args[0]) {
     for (cp = conftable; cp->name; cp++) {
-      if (cp->group && (God(executor) || !(cp->flags & CP_GODONLY)) && !strcasecmp(cp->name, args[0])) {
+      if (cp->group && (God(executor) || !(cp->flags & CP_GODONLY))
+          && !strcasecmp(cp->name, args[0])) {
         safe_str(config_to_string2(executor, cp, 0), buff, bp);
         return;
       }
     }
     for (cp = (PENNCONF *) hash_firstentry(&local_options); cp;
          cp = (PENNCONF *) hash_nextentry(&local_options)) {
-      if (cp->group && (God(executor) || !(cp->flags & CP_GODONLY)) && !strcasecmp(cp->name, args[0])) {
+      if (cp->group && (God(executor) || !(cp->flags & CP_GODONLY))
+          && !strcasecmp(cp->name, args[0])) {
         safe_str(config_to_string2(executor, cp, 0), buff, bp);
         return;
       }

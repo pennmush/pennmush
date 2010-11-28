@@ -2316,7 +2316,8 @@ FUNCTION(fun_grep)
     return;
   }
 
-  if (!strcmp(called_as, "GREPI") || !strcmp(called_as, "WILDGREPI") || !strcmp(called_as, "REGREPI"))
+  if (!strcmp(called_as, "GREPI") || !strcmp(called_as, "WILDGREPI")
+      || !strcmp(called_as, "REGREPI"))
     flags |= GREP_NOCASE;
 
   if (*called_as == 'W')

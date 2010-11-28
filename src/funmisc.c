@@ -471,6 +471,7 @@ FUNCTION(fun_die)
     safe_uinteger(total, buff, bp);
   }
 }
+
 #define CLEAR_SWITCH_VALUE(pe) \
   pe->switch_text[pe->switch_nesting] = NULL; \
   pe->switch_nesting--; \
@@ -897,7 +898,7 @@ FUNCTION(fun_null)
 FUNCTION(fun_list)
 {
   int which = 3;
-  char *fwhich[3] = {"builtin", "local", "all"};
+  char *fwhich[3] = { "builtin", "local", "all" };
   if (nargs == 2) {
     if (!strcasecmp(args[1], "local"))
       which = 2;

@@ -82,8 +82,7 @@ quick_wild_new(const char *restrict tstr, const char *restrict dstr, bool cs)
 
 static bool
 real_atr_wild(const char *restrict tstr,
-              const char *restrict dstr,
-              int *invokes);
+              const char *restrict dstr, int *invokes);
 /** Do an attribute name wildcard match.
  *
  * This probably crashes if fed NULLs instead of strings, too.
@@ -106,8 +105,7 @@ atr_wild(const char *restrict tstr, const char *restrict dstr)
 
 static bool
 real_atr_wild(const char *restrict tstr,
-              const char *restrict dstr,
-              int *invokes)
+              const char *restrict dstr, int *invokes)
 {
   int starcount;
   if (*invokes > 0) {
@@ -184,7 +182,8 @@ real_atr_wild(const char *restrict tstr,
       if (*dstr != '`' && real_atr_wild(tstr + 1, dstr + 1, invokes))
         return 1;
       dstr++;
-      if (*invokes <= 0) return 0;
+      if (*invokes <= 0)
+        return 0;
     }
   } else {
     /* Skip over a backslash in the pattern string if it is there. */
@@ -199,7 +198,8 @@ real_atr_wild(const char *restrict tstr,
         if (real_atr_wild(tstr + 1, dstr + 1, invokes))
           return 1;
       }
-      if (*invokes <= 0) return 0;
+      if (*invokes <= 0)
+        return 0;
       if (starcount < 2 && *dstr == '`')
         return 0;
       dstr++;
@@ -227,22 +227,22 @@ wild_match_test(const char *restrict pat, const char *restrict str, bool cs,
                 int *matches, int nmatches)
 {
   int i, pi;
-  bool globbing = 0; /* Are we in a glob match right now? */
-  int pbase = 0, sbase = 0; /* Guaranteed matched so far. */
+  bool globbing = 0;            /* Are we in a glob match right now? */
+  int pbase = 0, sbase = 0;     /* Guaranteed matched so far. */
   int matchi = 0, mbase = 0;
   int slen = strlen(str);
   char pbuff[BUFFER_LEN];
   char tbuff[BUFFER_LEN];
 
   for (i = 0; i < nmatches; i++) {
-    matches[i*2] = -1;
-    matches[i*2+1] = 0;
+    matches[i * 2] = -1;
+    matches[i * 2 + 1] = 0;
   }
 
   strncpy(pbuff, remove_markup(pat, NULL), BUFFER_LEN);
-  pbuff[BUFFER_LEN-1] = '\0';
+  pbuff[BUFFER_LEN - 1] = '\0';
   strncpy(tbuff, remove_markup(str, NULL), BUFFER_LEN);
-  tbuff[BUFFER_LEN-1] = '\0';
+  tbuff[BUFFER_LEN - 1] = '\0';
   pat = pbuff;
   str = tbuff;
 
@@ -252,15 +252,16 @@ wild_match_test(const char *restrict pat, const char *restrict str, bool cs,
   }
 
   for (i = 0, pi = 0; (sbase + i) < slen;) {
-    switch (pat[pbase+pi]) {
+    switch (pat[pbase + pi]) {
     case '?':
       /* No complaints here. Auto-match */
       if (matchi < nmatches) {
-        matches[matchi*2] = sbase+i;
-        matches[matchi*2+1] = 1;
+        matches[matchi * 2] = sbase + i;
+        matches[matchi * 2 + 1] = 1;
       }
       matchi++;
-      pi++; i++;
+      pi++;
+      i++;
       break;
     case '*':
       /* Everything so far is guaranteed matched. */
@@ -273,14 +274,14 @@ wild_match_test(const char *restrict pat, const char *restrict str, bool cs,
         pbase++;
         mbase = matchi++;
         if (mbase < nmatches) {
-          matches[mbase*2] = sbase;
-          matches[mbase*2+1] = 0;
+          matches[mbase * 2] = sbase;
+          matches[mbase * 2 + 1] = 0;
         }
       }
       if (!pat[pbase]) {
         /* This pattern is the last thing, we match the rest. */
         if (mbase < nmatches) {
-          matches[mbase*2+1] = slen - sbase;
+          matches[mbase * 2 + 1] = slen - sbase;
         }
         return 1;
       }
@@ -289,16 +290,17 @@ wild_match_test(const char *restrict pat, const char *restrict str, bool cs,
       /* Literal match of the next character, which may be a * or ?. */
       pi++;
     default:
-      if (str[sbase+i] == pat[pbase+pi]) {
-        pi++; i++;
+      if (str[sbase + i] == pat[pbase + pi]) {
+        pi++;
+        i++;
         break;
       }
-    case 0: /* Pattern is too short to match */
+    case 0:                    /* Pattern is too short to match */
       /* If we're dealing with a glob, advance it by 1 character. */
       if (globbing) {
         if (mbase < nmatches) {
           /* Up glob length */
-          matches[mbase*2+1]++;
+          matches[mbase * 2 + 1]++;
         }
         sbase++;
         /* Reset post-glob matches. */
@@ -309,8 +311,9 @@ wild_match_test(const char *restrict pat, const char *restrict str, bool cs,
       }
     }
   }
-  while (pat[pbase+pi] == '*') pi++;
-  return !pat[pbase+pi];
+  while (pat[pbase + pi] == '*')
+    pi++;
+  return !pat[pbase + pi];
 }
 
 /** Wildcard match, possibly case-sensitive, and remember the wild data
@@ -362,29 +365,27 @@ wild_match_case_r(const char *restrict s, const char *restrict d, bool cs,
         bp = data;
         maxbuff = data + len - BUFFER_LEN;
 
-        for (n = 0;
-             (n < BUFFER_LEN) && (results[n*2] >= 0)
-             && n < nmatches && bp < (data+len);
-             n++) {
+        for (n = 0; (n < BUFFER_LEN) && (results[n * 2] >= 0)
+             && n < nmatches && bp < (data + len); n++) {
           /* Eww, eww, eww, EWWW! */
           buff = bp;
-          if (buff > maxbuff) buff = maxbuff;
+          if (buff > maxbuff)
+            buff = maxbuff;
 
           matches[n] = bp;
-          safe_ansi_string(as, results[n*2], results[n*2+1], buff, &bp);
+          safe_ansi_string(as, results[n * 2], results[n * 2 + 1], buff, &bp);
           *(bp++) = '\0';
         }
         free_ansi_string(as);
       } else {
         for (n = 0, curlen = 0;
-             (results[n*2] >= 0) && n < nmatches && curlen < len;
-             n++) {
+             (results[n * 2] >= 0) && n < nmatches && curlen < len; n++) {
           spaceleft = len - curlen;
-          if (results[n*2+1] < spaceleft) {
-            spaceleft = results[n*2+1];
+          if (results[n * 2 + 1] < spaceleft) {
+            spaceleft = results[n * 2 + 1];
           }
           matches[n] = data + curlen;
-          strncpy(data + curlen, d + results[n*2], spaceleft);
+          strncpy(data + curlen, d + results[n * 2], spaceleft);
           curlen += spaceleft;
           data[curlen++] = '\0';
         }
@@ -613,7 +614,8 @@ local_wild_match_case(const char *restrict s, const char *restrict d, bool cs)
  * \retval -1 s contains unescaped wildcards
  * \retval >-1 number of \-escaped characters remaining in s
  */
-int wildcard_count(char *s, bool unescape)
+int
+wildcard_count(char *s, bool unescape)
 {
   char *c = s;
   int escapes = 0;

@@ -511,9 +511,10 @@ attr_comp(const void *s1, const void *s2)
 
 }
 
-int compare_attr_names(const char *attr1, const char *attr2)
+int
+compare_attr_names(const char *attr1, const char *attr2)
 {
-  char word1[BUFFER_LEN+1], word2[BUFFER_LEN+1];
+  char word1[BUFFER_LEN + 1], word2[BUFFER_LEN + 1];
   char *a1, *a2, *next1, *next2;
   int branches1 = 1, branches2 = 1;
   int cmp;
@@ -657,8 +658,7 @@ get_list_type(char *args[], int nargs, int type_pos, char *ptrs[], int nptrs)
         len = strlen(str);
       }
       for (i = 0; ltypelist[i].name &&
-                  strncasecmp(ltypelist[i].name, str, len);
-           i++) ;
+           strncasecmp(ltypelist[i].name, str, len); i++) ;
       /* return ltypelist[i].name; */
       return args[type_pos - 1];
     }
@@ -686,8 +686,7 @@ get_list_type_noauto(char *args[], int nargs, int type_pos)
         len = strlen(str);
       }
       for (i = 0; ltypelist[i].name &&
-                  strncasecmp(ltypelist[i].name, str, len);
-           i++) ;
+           strncasecmp(ltypelist[i].name, str, len); i++) ;
       /* return ltypelist[i].name; */
       return args[type_pos - 1];
     }
@@ -813,7 +812,8 @@ do_gensort(dbref player, char *keys[], char *strs[], int n, SortType sort_type)
 }
 
 SortType
-autodetect_2lists(char *ptrs[], int nptrs, char *ptrs2[], int nptrs2) {
+autodetect_2lists(char *ptrs[], int nptrs, char *ptrs2[], int nptrs2)
+{
   SortType a = autodetect_list(ptrs, nptrs);
   SortType b = autodetect_list(ptrs2, nptrs2);
 
@@ -838,7 +838,7 @@ typedef enum {
   L_DBREF
 } ltype;
 
-SortType 
+SortType
 autodetect_list(char *ptrs[], int nptrs)
 {
   int i;

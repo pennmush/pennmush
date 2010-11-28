@@ -151,7 +151,8 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
   char astring[BUFFER_LEN];
   ATTR *attrib;
 
-  if (!ufun) return 0;
+  if (!ufun)
+    return 0;
 
   ufun->contents[0] = '\0';
   ufun->errmess = (char *) "";
@@ -162,18 +163,19 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
   ufun->thing = executor;
   thingname = NULL;
 
-  if (!attrstring) return 0;
+  if (!attrstring)
+    return 0;
   strncpy(astring, attrstring, BUFFER_LEN);
 
   /* Split obj/attr */
-  if ((flags & UFUN_OBJECT) && ((attrname = strchr(astring,'/')) != NULL)) {
+  if ((flags & UFUN_OBJECT) && ((attrname = strchr(astring, '/')) != NULL)) {
     thingname = astring;
     *(attrname++) = '\0';
   } else {
     attrname = astring;
   }
 
-  if (thingname && (flags & UFUN_LAMBDA) && !strcasecmp(thingname,"#lambda")) {
+  if (thingname && (flags & UFUN_LAMBDA) && !strcasecmp(thingname, "#lambda")) {
     /* It's a lambda. */
     thingname = NULL;
     ufun->thing = executor;
@@ -183,7 +185,8 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
 
   if (thingname) {
     /* Attribute is on something else. */
-    ufun->thing = noisy_match_result(executor, thingname, NOTYPE, MAT_EVERYTHING);
+    ufun->thing =
+      noisy_match_result(executor, thingname, NOTYPE, MAT_EVERYTHING);
     if (!GoodObject(ufun->thing)) {
       ufun->errmess = (char *) "#-1 INVALID OBJECT";
       return 0;
@@ -201,11 +204,13 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
       return 1;
     }
   }
-  if (!(flags & UFUN_IGNORE_PERMS) && !Can_Read_Attr(executor, ufun->thing, attrib)) {
+  if (!(flags & UFUN_IGNORE_PERMS)
+      && !Can_Read_Attr(executor, ufun->thing, attrib)) {
     ufun->errmess = e_atrperm;
     return 0;
   }
-  if (!(flags & UFUN_IGNORE_PERMS) && !CanEvalAttr(executor, ufun->thing, attrib)) {
+  if (!(flags & UFUN_IGNORE_PERMS)
+      && !CanEvalAttr(executor, ufun->thing, attrib)) {
     ufun->errmess = e_perm;
     return 0;
   }
@@ -342,10 +347,12 @@ call_attrib(dbref thing, const char *attrname, const char *wenv_args[],
 {
   ufun_attrib ufun;
   if (!fetch_ufun_attrib(attrname, thing, &ufun,
-                         UFUN_LOCALIZE | UFUN_REQUIRE_ATTR | UFUN_IGNORE_PERMS)) {
+                         UFUN_LOCALIZE | UFUN_REQUIRE_ATTR | UFUN_IGNORE_PERMS))
+  {
     return 0;
   }
-  return !call_ufun(&ufun, (char **) wenv_args, wenv_argc, ret, thing, enactor, pe_info);
+  return !call_ufun(&ufun, (char **) wenv_args, wenv_argc, ret, thing, enactor,
+                    pe_info);
 }
 
 /** Given an exit, find the room that is its source through brute force.

@@ -71,7 +71,7 @@ extern struct db_stat_info current_state;
 /* How many failures to keep track of. */
 #define FAIL_COUNT 100
 typedef struct _fail_info {
-  char ip[IP_LENGTH]; /* Extra long, just for ipv6. */
+  char ip[IP_LENGTH];           /* Extra long, just for ipv6. */
   time_t failTime;
 } Fail_Info;
 
@@ -91,13 +91,15 @@ static int failCount = 0;
  * \retval 0 Do not allow to log in.
  */
 static int
-check_fails(const char *ipaddr) {
+check_fails(const char *ipaddr)
+{
   int i;
   int numFails = 0;
   time_t since = time(NULL) - 600;
 
   /* A connect_fail_limit of 0 means none. */
-  if (!CONNECT_FAIL_LIMIT) return 1;
+  if (!CONNECT_FAIL_LIMIT)
+    return 1;
 
   for (i = 0; i < failCount; i++) {
     if (IPFAIL(i).failTime > since) {
@@ -113,11 +115,13 @@ check_fails(const char *ipaddr) {
 }
 
 static void
-mark_failed(const char *ipaddr) {
+mark_failed(const char *ipaddr)
+{
   failIdx++;
   failIdx %= FAIL_COUNT;
 
-  if (failCount < FAIL_COUNT) failCount++;
+  if (failCount < FAIL_COUNT)
+    failCount++;
   strncpy(IPFAIL(0).ip, ipaddr, IP_LENGTH);
   IPFAIL(0).failTime = time(NULL);
 }
@@ -187,7 +191,8 @@ connect_player(const char *name, const char *password, const char *host,
 
   if (!check_fails(ip)) {
     strcpy(errbuf,
-        T("This IP address has failed too many times. Please try again in 10 minutes."));
+           T
+           ("This IP address has failed too many times. Please try again in 10 minutes."));
     return NOTHING;
   }
 

@@ -194,7 +194,8 @@ cnf_attribute_access(char *attrname, char *opts)
 
 /** Since enum adds a delim before and after the string, edit them out. */
 const char *
-display_attr_limit(ATTR *ap) {
+display_attr_limit(ATTR *ap)
+{
   char *ptr;
   char *s;
 
@@ -270,9 +271,8 @@ check_attr_value(dbref player, const char *name, const char *value)
     delim = *attrval;
     if (!*value || strchr(value, delim)) {
       notify_format(player,
-          T("Value for %s needs to be one of: %s"),
-          ap->name,
-          display_attr_limit(ap));
+                    T("Value for %s needs to be one of: %s"),
+                    ap->name, display_attr_limit(ap));
       return NULL;
     }
 
@@ -288,7 +288,7 @@ check_attr_value(dbref player, const char *name, const char *value)
 
     ptr = strstr(buff, vbuff);
     if (!ptr) {
-      *(vbuff+len+1) = '\0'; /* Remove the second delim */
+      *(vbuff + len + 1) = '\0';        /* Remove the second delim */
       ptr = strstr(buff, vbuff);
     }
 
@@ -297,18 +297,18 @@ check_attr_value(dbref player, const char *name, const char *value)
       /* ptr is pointing at the delim before the value. */
       ptr++;
       ptr2 = strchr(ptr, delim);
-      if (!ptr2) return NULL; /* Shouldn't happen, but sanity check. */
+      if (!ptr2)
+        return NULL;            /* Shouldn't happen, but sanity check. */
 
       /* Now we need to copy over the _original case_ version of the
        * enumerated string. Nasty pointer arithmetic. */
-      strncpy(buff, attrval + (ptr-buff), (int) (ptr2-ptr));
-      buff[ptr2-ptr] = '\0';
+      strncpy(buff, attrval + (ptr - buff), (int) (ptr2 - ptr));
+      buff[ptr2 - ptr] = '\0';
       return buff;
     } else {
       notify_format(player,
-          T("Value for %s needs to be one of: %s"),
-          ap->name,
-          display_attr_limit(ap));
+                    T("Value for %s needs to be one of: %s"),
+                    ap->name, display_attr_limit(ap));
       return NULL;
     }
   }
@@ -383,8 +383,8 @@ do_attribute_limit(dbref player, char *name, int type, char *pattern)
       /* For sanity's sake, we'll enforce a properly delimited enum
        * with a quick and dirty squish().
        * We already know we start with a delim, hence the +1 =). */
-      for (ptr = buff+1, bp = buff+1; *ptr; ptr++) {
-        if (!(*ptr == delim && *(ptr-1) == delim)) {
+      for (ptr = buff + 1, bp = buff + 1; *ptr; ptr++) {
+        if (!(*ptr == delim && *(ptr - 1) == delim)) {
           *(bp++) = *ptr;
         }
       }
@@ -412,7 +412,8 @@ do_attribute_limit(dbref player, char *name, int type, char *pattern)
 
   if (!ap) {
     notify(player,
-        T("I don't know that attribute. Please use @attribute/access to create it, first."));
+           T
+           ("I don't know that attribute. Please use @attribute/access to create it, first."));
     return;
   }
 
@@ -434,19 +435,16 @@ do_attribute_limit(dbref player, char *name, int type, char *pattern)
       notify_format(player, T("%s -- Attribute limit or enum unset."), name);
     } else {
       notify_format(player,
-          T("%s -- Attribute limit or enum already unset."), name);
+                    T("%s -- Attribute limit or enum already unset."), name);
     }
   } else {
     unsigned char *t = compress(buff);
-    ap->data = chunk_create(t,
-                            u_strlen(t),
-                            0);
+    ap->data = chunk_create(t, u_strlen(t), 0);
     free(t);
     ap->flags |= type;
     notify_format(player,
-        T("%s -- Attribute %s set to: %s"), name,
-        type == AF_RLIMIT ? "limit" : "enum",
-        display_attr_limit(ap));
+                  T("%s -- Attribute %s set to: %s"), name,
+                  type == AF_RLIMIT ? "limit" : "enum", display_attr_limit(ap));
   }
 }
 

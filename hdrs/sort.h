@@ -6,12 +6,12 @@
 
 #define MAX_SORTSIZE (BUFFER_LEN / 2)  /**< Maximum number of elements to sort */
 
-typedef char * SortType;
+typedef char *SortType;
 
 SortType autodetect_list(char **ptrs, int nptrs);
 SortType autodetect_2lists(char *ptrs[], int nptrs, char *ptrs2[], int nptrs2);
 SortType get_list_type(char *args[], int nargs, int type_pos, char *ptrs[],
-                    int nptrs);
+                       int nptrs);
 SortType get_list_type_noauto(char *args[], int nargs, int type_pos);
 int gencomp(dbref player, char *a, char *b, SortType sort_type);
 void do_gensort(dbref player, char *keys[], char *strs[], int n,

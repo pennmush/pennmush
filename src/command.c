@@ -1424,7 +1424,7 @@ run_command(COMMAND_INFO *cmd, dbref player, dbref cause,
   /* If we have a hook/override, we use that instead */
   if (!run_hook_override(cmd, player, commandraw) &&
       !(!strcmp(cmd->name, "HUH_COMMAND") &&
-      run_hook_override(cmd, player, tprintf("HUH_COMMAND %s", ls)))) {
+        run_hook_override(cmd, player, tprintf("HUH_COMMAND %s", ls)))) {
     /* Otherwise, we do hook/before, the command, and hook/after */
     /* But first, let's see if we had an invalid switch */
     if (switch_err && *switch_err) {

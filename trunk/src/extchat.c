@@ -3036,7 +3036,7 @@ canstilladd(dbref player)
   return (num < MAX_PLAYER_CHANS);
 }
 
-
+extern DESC *descriptor_list;
 
 /** Tell players on a channel when someone connects or disconnects.
  * \param player player that is connecting or disconnecting.
@@ -3046,20 +3046,46 @@ canstilladd(dbref player)
 void
 chat_player_announce(dbref player, char *msg, int ungag)
 {
-  CHAN *c;
-  CHANUSER *u;
+  DESC *d;
+  size_t msglen;
 
-  for (c = channels; c; c = c->next) {
-    u = onchannel(player, c);
-    if (u) {
-      if (!Channel_Quiet(c) && (Channel_Admin(c) || Channel_Wizard(c)
-                                || (!Chanuser_Hide(u) && !Dark(player)))) {
-        channel_send(c, player, CB_CHECKQUIET | CB_PRESENCE | CB_POSE, msg);
+  msglen = strlen(msg);
+
+  for (d = descriptor_list; d; d = d->next) 
+    if (d->connected) {
+      CHAN *c;
+      CHANUSER *up, *uv;
+      char buff[BUFFER_LEN], *bp;
+      dbref viewer = d->player;
+      bool shared = false;
+
+      bp = buff;
+
+      safe_chr('<', buff, &bp);
+
+      for (c = channels; c; c = c->next) {
+	up = onchannel(player, c);
+	uv = onchannel(viewer, c);
+	if (up && uv) {
+	  shared = true;
+	  if (!Channel_Quiet(c) && !Chanuser_Quiet(uv) && (Channel_Admin(c) || Channel_Wizard(c)
+				    || (!Chanuser_Hide(up) && !Dark(player)))) {
+	    safe_str(ChanName(c), buff, &bp);
+	    safe_chr(' ', buff, &bp);
+	  }
+	}
+	if (up && ungag)
+	  CUtype(up) &= ~CU_GAG;
       }
-      if (ungag)
-        CUtype(u) &= ~CU_GAG;
+      if (shared) {
+	bp -= 1;
+	safe_format(buff, &bp, "> %s ", accented_name(player));
+	safe_strl(msg, msglen, buff, &bp);
+	*bp = '\0';
+
+	notify(viewer, buff);
+      }
     }
-  }
 }
 
 /** Return a list of channels that the player is on.

@@ -252,9 +252,10 @@ extern EVAL_CONTEXT global_eval_context;
 void do_second(void);
 int do_top(int ncom);
 void do_halt(dbref owner, const char *ncom, dbref victim);
-void parse_que(dbref player, const char *command, dbref cause, PE_Info *pe_info);
-int queue_attribute_base
-  (dbref executor, const char *atrname, dbref enactor, int noparent);
+void parse_que(dbref player, const char *command, dbref cause,
+               PE_Info *pe_info);
+int queue_attribute_base(dbref executor, const char *atrname, dbref enactor,
+                         int noparent);
 ATTR *queue_attribute_getatr(dbref executor, const char *atrname, int noparent);
 int queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor);
 int inplace_queue_attribute(dbref thing, const char *atrname,
@@ -415,7 +416,8 @@ dbref first_visible(dbref player, dbref thing);
 #define GREP_NOCASE 1
 #define GREP_WILD 2
 #define GREP_REGEXP 4
-int grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff, char **bp, int flags);
+int grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff,
+              char **bp, int flags);
 
 
 
@@ -578,10 +580,10 @@ mush_strndup(const char *src, size_t len, const char *check)
     void free_anon_attrib(ATTR *attrib);
     typedef struct _ufun_attrib {
       dbref thing;
-      char  contents[BUFFER_LEN];
-      int   pe_flags;
+      char contents[BUFFER_LEN];
+      int pe_flags;
       char *errmess;
-      int   ufun_flags;
+      int ufun_flags;
     } ufun_attrib;
 /* Only 'attr', not 'obj/attr' */
 #define UFUN_NONE 0
@@ -643,7 +645,7 @@ mush_strndup(const char *src, size_t len, const char *check)
                                const char *restrict d, bool cs);
     int wildcard_count(char *s, bool unescape);
     /** Return 1 if s contains unescaped wildcards, 0 if not */
-    #define wildcard(s) (wildcard_count(s, 0) == -1)
+#define wildcard(s) (wildcard_count(s, 0) == -1)
     bool quick_wild_new(const char *restrict tstr,
                         const char *restrict dstr, bool cs);
     bool wild_match_case_r(const char *restrict s,

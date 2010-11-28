@@ -586,8 +586,7 @@ FUNCTION(fun_strmatch)
       }
     }
   } else {
-    matches = wild_match_case_r(args[1], args[0], 0, NULL,
-                                0, NULL, 0);
+    matches = wild_match_case_r(args[1], args[0], 0, NULL, 0, NULL, 0);
     safe_boolean(matches, buff, bp);
   }
 }

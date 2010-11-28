@@ -469,7 +469,8 @@ COMMAND(cmd_grep)
   int flags = 0;
   int print = 0;
 
-  if (SW_ISSET(sw, SWITCH_IPRINT) || SW_ISSET(sw, SWITCH_ILIST) || SW_ISSET(sw, SWITCH_NOCASE))
+  if (SW_ISSET(sw, SWITCH_IPRINT) || SW_ISSET(sw, SWITCH_ILIST)
+      || SW_ISSET(sw, SWITCH_NOCASE))
     flags |= GREP_NOCASE;
 
   if (SW_ISSET(sw, SWITCH_REGEXP))
@@ -561,7 +562,7 @@ COMMAND(cmd_list)
 {
   int lc;
   int which = 3;
-  char *fwhich[3] = {"builtin", "local", "all"};
+  char *fwhich[3] = { "builtin", "local", "all" };
   lc = SW_ISSET(sw, SWITCH_LOWERCASE);
   if (SW_ISSET(sw, SWITCH_ALL))
     which = 3;

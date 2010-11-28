@@ -665,9 +665,9 @@ run_user_input(dbref player, char *input)
   entry->left = 0;
 
   for (i = 0; i < 10; i++)
-      entry->env[i] = NULL;
+    entry->env[i] = NULL;
   for (i = 0; i < NUMQ; i++)
-      entry->rval[i] = NULL;
+    entry->rval[i] = NULL;
 
   do_entry(entry, -1);
   free_qentry(entry);
@@ -733,7 +733,8 @@ do_entry(BQUE *entry, int include_recurses)
         if (*s == ';')
           s++;
         strcpy(tbuf, global_eval_context.ccom);
-        process_command(global_eval_context.cplr, tbuf, entry->cause, (pt_flag == PT_NOTHING));
+        process_command(global_eval_context.cplr, tbuf, entry->cause,
+                        (pt_flag == PT_NOTHING));
         if (global_eval_context.break_called) {
           /* Make sure we process semicolons in @break arg, even from socket */
           pt_flag = PT_SEMI;
@@ -1378,7 +1379,8 @@ FUNCTION(fun_lpids)
 
   if (qmask & 1) {
     for (tmp = qwait; tmp; tmp = tmp->next) {
-      if (GoodObject(player) && GoodObject(tmp->player) && (!Owns(tmp->player, player)))
+      if (GoodObject(player) && GoodObject(tmp->player)
+          && (!Owns(tmp->player, player)))
         continue;
       if (!first)
         safe_chr(' ', buff, bp);
@@ -1388,7 +1390,8 @@ FUNCTION(fun_lpids)
   }
   if (qmask & 2) {
     for (tmp = qsemfirst; tmp; tmp = tmp->next) {
-      if (GoodObject(player) && GoodObject(tmp->player) && (!Owns(tmp->player, player)))
+      if (GoodObject(player) && GoodObject(tmp->player)
+          && (!Owns(tmp->player, player)))
         continue;
       if (GoodObject(thing) && (tmp->sem != thing))
         continue;
@@ -1427,13 +1430,13 @@ static void
 show_queue_single(dbref player, BQUE *q, int q_type)
 {
   switch (q_type) {
-  case 1:                /* wait queue */
+  case 1:                      /* wait queue */
     notify_format(player, "(Pid: %u) [%ld]%s: %s",
                   (unsigned int) q->pid, (long) difftime(q->left,
-                                                           mudtime),
+                                                         mudtime),
                   unparse_object(player, q->player), q->comm);
     break;
-  case 2:                /* semaphore queue */
+  case 2:                      /* semaphore queue */
     if (q->left != 0) {
       notify_format(player, "(Pid: %u) [#%d/%s/%ld]%s: %s",
                     (unsigned int) q->pid, q->sem, q->semattr,
@@ -1445,7 +1448,7 @@ show_queue_single(dbref player, BQUE *q, int q_type)
                     unparse_object(player, q->player), q->comm);
     }
     break;
-  default:               /* player or object queue */
+  default:                     /* player or object queue */
     notify_format(player, "(Pid: %u) %s: %s", (unsigned int) q->pid,
                   unparse_object(player, q->player), q->comm);
   }

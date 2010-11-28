@@ -1056,10 +1056,9 @@ process_expression(char *buff, char **bp, char const **str,
           (*str)++;
           if (pe_info->iter_nesting >= 0 && pe_info->local_iter_nesting >= 0) {
             if (nextc == 'l') {
-              safe_str(
-                  pe_info->iter_itext[
-                      pe_info->iter_nesting - pe_info->local_iter_nesting],
-                  buff, bp);
+              safe_str(pe_info->
+                       iter_itext[pe_info->iter_nesting -
+                                  pe_info->local_iter_nesting], buff, bp);
               break;
             }
             if (!isdigit((unsigned char) nextc)) {
@@ -1083,7 +1082,8 @@ process_expression(char *buff, char **bp, char const **str,
           if (!nextc)
             goto exit_sequence;
           (*str)++;
-          if (pe_info->switch_nesting >= 0 && pe_info->local_switch_nesting >= 0) {
+          if (pe_info->switch_nesting >= 0
+              && pe_info->local_switch_nesting >= 0) {
             if (nextc == 'l') {
               inum_this = pe_info->local_switch_nesting;
             } else if (!isdigit((unsigned char) nextc)) {
@@ -1096,8 +1096,9 @@ process_expression(char *buff, char **bp, char const **str,
                 (pe_info->local_switch_nesting - inum_this) < 0) {
               safe_str(T(e_argrange), buff, bp);
             } else {
-              safe_str(pe_info->switch_text[pe_info->switch_nesting - inum_this],
-                       buff, bp);
+              safe_str(pe_info->
+                       switch_text[pe_info->switch_nesting - inum_this], buff,
+                       bp);
             }
           } else {
             safe_str(T(e_argrange), buff, bp);

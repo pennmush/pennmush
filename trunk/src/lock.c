@@ -320,7 +320,7 @@ can_write_lock(dbref player, dbref thing, lock_list *lock)
     return 0;
   if ((L_FLAGS(lock) & LF_OWNER) && player != Owner(thing))
     return 0;
-  if ((L_FLAGS(lock) & LF_LOCKED) && player != lock->creator && \
+  if ((L_FLAGS(lock) & LF_LOCKED) && player != lock->creator &&
       Owner(player) != lock->creator)
     return 0;
   return 1;

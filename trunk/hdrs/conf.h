@@ -88,10 +88,10 @@ typedef struct options_table OPTTAB;
 typedef int (*config_func) (const char *opt, const char *val, void *loc,
                             int maxval, int source);
 
-#define CP_OVERRIDDEN 1   /* Set by .cnf file */
-#define CP_OPTIONAL   2   /* Doesn't complain if it's missing. */
-#define CP_CONFIGSET  4   /* Overridden/set by @config/set */
-#define CP_GODONLY    8   /* Only God can see. */
+#define CP_OVERRIDDEN 1         /* Set by .cnf file */
+#define CP_OPTIONAL   2         /* Doesn't complain if it's missing. */
+#define CP_CONFIGSET  4         /* Overridden/set by @config/set */
+#define CP_GODONLY    8         /* Only God can see. */
 
 /** Runtime configuration parameter.
  * This structure represents a runtime configuration option.

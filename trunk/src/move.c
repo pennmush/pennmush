@@ -686,11 +686,11 @@ do_drop(dbref player, const char *name)
       return;
     } else if (!eval_lock(player, thing, Drop_Lock)) {
       fail_lock(player, thing, Drop_Lock,
-                  T("You can't seem to get rid of that."), NOTHING);
+                T("You can't seem to get rid of that."), NOTHING);
       return;
     } else if (IsRoom(loc) && !eval_lock(player, loc, Drop_Lock)) {
       fail_lock(player, loc, Drop_Lock,
-                  T("You can't seem to drop things here."), NOTHING);
+                T("You can't seem to drop things here."), NOTHING);
       return;
     } else if (Sticky(thing) && !Fixed(thing)) {
       notify(thing, T("Dropped."));

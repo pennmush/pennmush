@@ -737,7 +737,7 @@ FUNCTION(fun_maillist)
 
   if (nargs == 2) {
     player = match_result(executor, args[0], TYPE_PLAYER,
-                   MAT_ME | MAT_ABSOLUTE | MAT_PMATCH | MAT_TYPE);
+                          MAT_ME | MAT_ABSOLUTE | MAT_PMATCH | MAT_TYPE);
     if (!GoodObject(player)) {
       safe_str(T(e_match), buff, bp);
       return;
@@ -749,14 +749,15 @@ FUNCTION(fun_maillist)
     player = executor;
   }
 
-  if (!parse_msglist((nargs ? args[nargs - 1] : "") , &ms, player)) {
+  if (!parse_msglist((nargs ? args[nargs - 1] : ""), &ms, player)) {
     safe_str(T(e_range), buff, bp);
     return;
   }
 
   FA_Init(i);
   folder = AllInFolder(ms) ? player_folder(player) : MSFolder(ms);
-  for (mp = find_exact_starting_point(player); mp && (mp->to == player); mp = mp->next) {
+  for (mp = find_exact_starting_point(player); mp && (mp->to == player);
+       mp = mp->next) {
     if ((mp->to == player) && (All(ms) || Folder(mp) == folder)) {
       i[Folder(mp)]++;
       if (mail_match(player, mp, ms, i[Folder(mp)])) {

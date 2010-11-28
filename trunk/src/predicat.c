@@ -44,7 +44,8 @@ int forbidden_name(const char *name);
 void do_switch(dbref player, char *expression, char **argv,
                dbref cause, int first, int notifyme, int regexp);
 void do_verb(dbref player, dbref cause, char *arg1, char **argv);
-static void grep_add_attr(char *buff, char **bp, dbref player, int count, ATTR *attr, char *atrval);
+static void grep_add_attr(char *buff, char **bp, dbref player, int count,
+                          ATTR *attr, char *atrval);
 void do_grep(dbref player, char *obj, char *lookfor, int print, int flags);
 static int pay_quota(dbref, int);
 extern PRIV attr_privs_view[];
@@ -1027,7 +1028,9 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
       pe_info = make_pe_info();
       if (global_eval_context.pe_info->switch_nesting >= 0) {
         for (i = 0; i <= global_eval_context.pe_info->switch_nesting; i++) {
-          pe_info->switch_text[i] = mush_strdup(global_eval_context.pe_info->switch_text[i], "switch_arg");
+          pe_info->switch_text[i] =
+            mush_strdup(global_eval_context.pe_info->switch_text[i],
+                        "switch_arg");
         }
       }
       pe_info->switch_text[i] = mush_strdup(expression, "switch_arg");
@@ -1044,7 +1047,9 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
     pe_info = make_pe_info();
     if (global_eval_context.pe_info->switch_nesting >= 0) {
       for (i = 0; i <= global_eval_context.pe_info->switch_nesting; i++) {
-        pe_info->switch_text[i] = mush_strdup(global_eval_context.pe_info->switch_text[i], "switch_arg");
+        pe_info->switch_text[i] =
+          mush_strdup(global_eval_context.pe_info->switch_text[i],
+                      "switch_arg");
       }
     }
     pe_info->switch_text[i] = mush_strdup(expression, "switch_arg");
@@ -1285,7 +1290,8 @@ struct grep_data {
 };
 
 static void
-grep_add_attr(char *buff, char **bp, dbref player, int count, ATTR *attr, char *atrval)
+grep_add_attr(char *buff, char **bp, dbref player, int count, ATTR *attr,
+              char *atrval)
 {
 
   if (buff) {
@@ -1327,7 +1333,9 @@ grep_helper(dbref player, dbref thing __attribute__ ((__unused__)),
     }
   } else {
     while (s && *s) {
-      if (!(cs ? strncmp(s, gd->findstr, gd->findlen) : strncasecmp(s, gd->findstr, gd->findlen))) {
+      if (!
+          (cs ? strncmp(s, gd->findstr, gd->findlen) :
+           strncasecmp(s, gd->findstr, gd->findlen))) {
         matched = 1;
         strncpy(b2, s, gd->findlen);
         b2[gd->findlen] = '\0';
@@ -1351,9 +1359,9 @@ grep_helper(dbref player, dbref thing __attribute__ ((__unused__)),
 
 static int
 regrep_helper(dbref player, dbref thing __attribute__ ((__unused__)),
-            dbref parent __attribute__ ((__unused__)),
-            char const *pattern
-            __attribute__ ((__unused__)), ATTR *attr, void *args)
+              dbref parent __attribute__ ((__unused__)),
+              char const *pattern
+              __attribute__ ((__unused__)), ATTR *attr, void *args)
 {
   struct regrep_data *rgd = args;
   char *s;
@@ -1365,7 +1373,9 @@ regrep_helper(dbref player, dbref thing __attribute__ ((__unused__)),
 
   s = atr_value(attr);
   orig = parse_ansi_string(s);
-  if ((subpatterns = pcre_exec(rgd->re, rgd->study, orig->text, orig->len, search, 0, offsets, 99))
+  if ((subpatterns =
+       pcre_exec(rgd->re, rgd->study, orig->text, orig->len, search, 0, offsets,
+                 99))
       < 0) {
     free_ansi_string(orig);
     return 0;
@@ -1379,8 +1389,7 @@ regrep_helper(dbref player, dbref thing __attribute__ ((__unused__)),
       repl = parse_ansi_string(rbuff);
 
       /* Do the replacement */
-      ansi_string_replace(orig, offsets[0], offsets[1] - offsets[0],
-                          repl);
+      ansi_string_replace(orig, offsets[0], offsets[1] - offsets[0], repl);
 
       /* Advance search */
       if (search == offsets[1]) {
@@ -1394,7 +1403,9 @@ regrep_helper(dbref player, dbref thing __attribute__ ((__unused__)),
       rbp = rbuff;
       if (search >= orig->len)
         break;
-      subpatterns = pcre_exec(rgd->re, rgd->study, orig->text, orig->len, search, 0, offsets, 99);
+      subpatterns =
+        pcre_exec(rgd->re, rgd->study, orig->text, orig->len, search, 0,
+                  offsets, 99);
     }
   }
   safe_ansi_string(orig, 0, orig->len, rbuff, &rbp);
@@ -1406,7 +1417,8 @@ regrep_helper(dbref player, dbref thing __attribute__ ((__unused__)),
 }
 
 int
-grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff, char **bp, int flags)
+grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff,
+          char **bp, int flags)
 {
   if (!findstr || !*findstr) {
     if (buff)
@@ -1431,7 +1443,7 @@ grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff, cha
       reflags |= PCRE_CASELESS;
 
     if ((rgd.re = pcre_compile(findstr, reflags,
-                                  &errptr, &erroffset, tables)) == NULL) {
+                               &errptr, &erroffset, tables)) == NULL) {
       /* Matching error. */
       if (buff) {
         safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
@@ -1528,7 +1540,8 @@ do_grep(dbref player, char *obj, char *lookfor, int print, int flags)
 
     if (grep_util(player, thing, pattern, lookfor, buff, &bp, flags)) {
       *bp = '\0';
-      notify_format(player, T("Matches of '%s' on %s(#%d): %s"), lookfor, Name(thing), thing, buff);
+      notify_format(player, T("Matches of '%s' on %s(#%d): %s"), lookfor,
+                    Name(thing), thing, buff);
     } else
       notify(player, T("No matches."));
   }

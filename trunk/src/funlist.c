@@ -2328,7 +2328,9 @@ FUNCTION(fun_ibreak)
     i = parse_integer(args[0]);
   }
 
-  if (i < 0 || (i + pe_info->iter_break) > (pe_info->local_iter_nesting - pe_info->dolists)) {
+  if (i < 0
+      || (i + pe_info->iter_break) >
+      (pe_info->local_iter_nesting - pe_info->dolists)) {
     safe_str(T(e_range), buff, bp);
     return;
   }
@@ -2358,7 +2360,8 @@ FUNCTION(fun_itext)
     i = parse_integer(args[0]);
   }
 
-  if (i < 0 || i > pe_info->local_iter_nesting || (pe_info->local_iter_nesting - i) < 0) {
+  if (i < 0 || i > pe_info->local_iter_nesting
+      || (pe_info->local_iter_nesting - i) < 0) {
     safe_str(T(e_argrange), buff, bp);
     return;
   }
@@ -2381,7 +2384,8 @@ FUNCTION(fun_inum)
     i = parse_integer(args[0]);
   }
 
-  if (i < 0 || i > pe_info->local_iter_nesting || (pe_info->local_iter_nesting - i) < 0) {
+  if (i < 0 || i > pe_info->local_iter_nesting
+      || (pe_info->local_iter_nesting - i) < 0) {
     safe_str(T(e_argrange), buff, bp);
     return;
   }
@@ -2437,7 +2441,7 @@ FUNCTION(fun_step)
 
   /* find our object and attribute */
   if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
-      return;
+    return;
 
   /* save our stack */
   save_global_env("step", preserve);
@@ -2552,7 +2556,7 @@ FUNCTION(fun_mix)
   int funccount;
   int n;
   int lists, words;
-  char **ptrs[10] = {NULL};
+  char **ptrs[10] = { NULL };
   int nptrs[10], i, maxi;
 
   if (nargs > 3) {              /* Last arg must be the delimiter */

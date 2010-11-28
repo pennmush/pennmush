@@ -1568,7 +1568,8 @@ bind_and_queue(dbref player, dbref cause, char *action,
   if (global_eval_context.pe_info->iter_nesting >= 0) {
     for (i = 0; i <= global_eval_context.pe_info->iter_nesting; i++) {
       pe_info->iter_inum[i] = global_eval_context.pe_info->iter_inum[i];
-      pe_info->iter_itext[i] = mush_strdup(global_eval_context.pe_info->iter_itext[i], "dolist_arg");
+      pe_info->iter_itext[i] =
+        mush_strdup(global_eval_context.pe_info->iter_itext[i], "dolist_arg");
     }
   }
   pe_info->iter_inum[i] = parse_integer(placestr);
@@ -2378,16 +2379,16 @@ do_list(dbref player, char *arg, int lc, int which)
     do_list_commands(player, lc, which);
   else if (string_prefix("functions", arg)) {
     switch (which) {
-      case '1':
-        do_list_functions(player, lc, "builtin");
-        break;
-      case '2':
-        do_list_functions(player, lc, "local");
-        break;
-      case '3':
-      default:
-        do_list_functions(player, lc, "all");
-        break;
+    case '1':
+      do_list_functions(player, lc, "builtin");
+      break;
+    case '2':
+      do_list_functions(player, lc, "local");
+      break;
+    case '3':
+    default:
+      do_list_functions(player, lc, "all");
+      break;
     }
   } else if (string_prefix("motd", arg))
     do_motd(player, MOTD_LIST, "");

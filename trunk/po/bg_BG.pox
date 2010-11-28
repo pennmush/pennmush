@@ -2349,11 +2349,6 @@ msgstr "Трябва да дадеш ключ за @hook"
 msgid "You must provide a name for the %s."
 msgstr "Трябва да дадеш име на %s."
 
-#: attrib.c:1505
-#, c-format
-msgid "You must set %s first."
-msgstr "?????? ?? ???????? ????? %s."
-
 #: src/rob.c:230
 #, c-format
 msgid "You must specify a positive number of %s."

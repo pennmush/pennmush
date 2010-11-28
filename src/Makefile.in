@@ -243,6 +243,7 @@ atr_tab.o: ../hdrs/privtab.h
 atr_tab.o: ../hdrs/mymalloc.h
 atr_tab.o: ../hdrs/log.h
 atr_tab.o: ../hdrs/parse.h
+atr_tab.o: ../hdrs/ansi.h
 attrib.o: ../hdrs/copyrite.h
 attrib.o: ../config.h
 attrib.o: ../hdrs/conf.h
@@ -268,6 +269,7 @@ attrib.o: ../hdrs/strtree.h
 attrib.o: ../hdrs/lock.h
 attrib.o: ../hdrs/boolexp.h
 attrib.o: ../hdrs/log.h
+attrib.o: ../hdrs/sort.h
 boolexp.o: ../hdrs/copyrite.h
 boolexp.o: ../config.h
 boolexp.o: ../hdrs/conf.h

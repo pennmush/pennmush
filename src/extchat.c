@@ -125,6 +125,7 @@ static PRIV chanuser_priv[] = {
   {"Quiet", 'Q', CU_QUIET, CU_QUIET},
   {"Hide", 'H', CU_HIDE, CU_HIDE},
   {"Gag", 'G', CU_GAG, CU_GAG},
+  {"Combine", 'C', CU_COMBINE, CU_COMBINE},
   {NULL, '\0', 0, 0}
 };
 
@@ -1886,7 +1887,7 @@ ok_channel_name(const char *n)
  * \param player the enactor.
  * \param name the name of the channel.
  * \param isyn a yes/no string.
- * \param flag switch indicator: 0=mute, 1=hide, 2=gag
+ * \param flag CU_* option
  * \param silent if 1, no notification of actions.
  */
 void
@@ -1907,17 +1908,21 @@ do_chan_user_flags(dbref player, char *name, const char *isyn, int flag,
     }
     silent = 1;
     switch (flag) {
-    case 0:
+    case CU_QUIET:
       notify(player, setting ? T("All channels have been muted.")
              : T("All channels have been unmuted."));
       break;
-    case 1:
+    case CU_HIDE:
       notify(player, setting ? T("You hide on all the channels you can.")
              : T("You unhide on all channels."));
       break;
-    case 2:
+    case CU_GAG:
       notify(player, setting ? T("All channels have been gagged.")
              : T("All channels have been ungagged."));
+      break;
+    case CU_COMBINE:
+      notify(player, setting ? T("All channels have been combined.")
+             : T("All channels have been uncombined."));
       break;
     }
   } else {
@@ -1943,7 +1948,7 @@ do_chan_user_flags(dbref player, char *name, const char *isyn, int flag,
     }
 
     switch (flag) {
-    case 0:
+    case CU_QUIET:
       /* Mute */
       if (setting) {
         CUtype(u) |= CU_QUIET;
@@ -1962,7 +1967,7 @@ do_chan_user_flags(dbref player, char *name, const char *isyn, int flag,
       }
       break;
 
-    case 1:
+    case CU_HIDE:
       /* Hide */
       if (setting) {
         if (!Chan_Can_Hide(c, player) && !Wizard(player)) {
@@ -1986,7 +1991,7 @@ do_chan_user_flags(dbref player, char *name, const char *isyn, int flag,
                         ChanName(c));
       }
       break;
-    case 2:
+    case CU_GAG:
       /* Gag */
       if (setting) {
         CUtype(u) |= CU_GAG;
@@ -2000,6 +2005,23 @@ do_chan_user_flags(dbref player, char *name, const char *isyn, int flag,
         if (!silent)
           notify_format(player,
                         T("You will now hear messages on channel <%s>."),
+                        ChanName(c));
+      }
+      break;
+    case CU_COMBINE:
+      /* Combine */
+      if (setting) {
+        CUtype(u) |= CU_COMBINE;
+        if (!silent)
+          notify_format(player,
+                        T
+                        ("Connect messages on channel <%s> will now be combined with others."),
+                        ChanName(c));
+      } else {
+        CUtype(u) &= ~CU_COMBINE;
+        if (!silent)
+          notify_format(player,
+                        T("Connect messages on channel <%s> will no longer be combined with others."),
                         ChanName(c));
       }
       break;
@@ -3048,16 +3070,32 @@ chat_player_announce(dbref player, char *msg, int ungag)
 {
   DESC *d;
   size_t msglen;
+  CHAN *c;
+  CHANUSER *up, *uv;
+  char buff[BUFFER_LEN], *bp;
+  dbref viewer;
+  bool shared = false;
 
   msglen = strlen(msg);
 
-  for (d = descriptor_list; d; d = d->next)
+  /* Use the regular channel_send() for all non-combined players. */
+  for (c = channels; c; c = c->next) {
+    up = onchannel(player, c);
+    if (up) {
+      if (!Channel_Quiet(c) && (Channel_Admin(c) || Channel_Wizard(c)
+            || (!Chanuser_Hide(up) && !Dark(player)))) {
+        channel_send(c, player,
+                     CB_NOCOMBINE | CB_CHECKQUIET | CB_PRESENCE | CB_POSE,
+                     msg);
+      }
+      if (ungag) {
+        CUtype(up) &= ~CU_GAG;
+      }
+    }
+  }
+  for (d = descriptor_list; d != NULL; d = d->next) {
+    viewer = d->player;
     if (d->connected) {
-      CHAN *c;
-      CHANUSER *up, *uv;
-      char buff[BUFFER_LEN], *bp;
-      dbref viewer = d->player;
-      bool shared = false;
 
       bp = buff;
 
@@ -3067,12 +3105,14 @@ chat_player_announce(dbref player, char *msg, int ungag)
         up = onchannel(player, c);
         uv = onchannel(viewer, c);
         if (up && uv) {
-          shared = true;
           if (!Channel_Quiet(c) && !Chanuser_Quiet(uv)
               && (Channel_Admin(c) || Channel_Wizard(c)
                   || (!Chanuser_Hide(up) && !Dark(player)))) {
-            safe_str(ChanName(c), buff, &bp);
-            safe_chr(' ', buff, &bp);
+            if (Chanuser_Combine(uv)) {
+              shared = true;
+              safe_str(ChanName(c), buff, &bp);
+              safe_chr(' ', buff, &bp);
+            }
           }
         }
         if (up && ungag)
@@ -3087,6 +3127,7 @@ chat_player_announce(dbref player, char *msg, int ungag)
         notify(viewer, buff);
       }
     }
+  }
 }
 
 /** Return a list of channels that the player is on.
@@ -3428,17 +3469,21 @@ COMMAND(cmd_channel)
   else if (SW_ISSET(sw, SWITCH_WIPE))
     do_chan_wipe(player, arg_left);
   else if (SW_ISSET(sw, SWITCH_MUTE))
-    do_chan_user_flags(player, arg_left, args_right[1], 0, 0);
+    do_chan_user_flags(player, arg_left, args_right[1], CU_QUIET, 0);
   else if (SW_ISSET(sw, SWITCH_UNMUTE))
-    do_chan_user_flags(player, arg_left, "n", 0, 0);
+    do_chan_user_flags(player, arg_left, "n", CU_QUIET, 0);
   else if (SW_ISSET(sw, SWITCH_HIDE))
-    do_chan_user_flags(player, arg_left, args_right[1], 1, 0);
+    do_chan_user_flags(player, arg_left, args_right[1], CU_HIDE, 0);
   else if (SW_ISSET(sw, SWITCH_UNHIDE))
-    do_chan_user_flags(player, arg_left, "n", 1, 0);
+    do_chan_user_flags(player, arg_left, "n", CU_HIDE, 0);
   else if (SW_ISSET(sw, SWITCH_GAG))
-    do_chan_user_flags(player, arg_left, args_right[1], 2, 0);
+    do_chan_user_flags(player, arg_left, args_right[1], CU_GAG, 0);
   else if (SW_ISSET(sw, SWITCH_UNGAG))
-    do_chan_user_flags(player, arg_left, "n", 2, 0);
+    do_chan_user_flags(player, arg_left, "n", CU_GAG, 0);
+  else if (SW_ISSET(sw, SWITCH_COMBINE))
+    do_chan_user_flags(player, arg_left, args_right[1], CU_COMBINE, 0);
+  else if (SW_ISSET(sw, SWITCH_UNCOMBINE))
+    do_chan_user_flags(player, arg_left, "n", CU_COMBINE, 0);
   else if (SW_ISSET(sw, SWITCH_WHAT))
     do_chan_what(player, arg_left);
   else if (SW_ISSET(sw, SWITCH_BUFFER))
@@ -3542,6 +3587,7 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
 {
 /* flags:
  *     CB_CHECKQUIET CB_NOSPOOF CB_PRESENCE CB_POSE CB_EMIT CB_SPEECH
+ *     CB_NOCOMBINE
  */
 
   /* These are static only to prevent them from chewing up
@@ -3722,6 +3768,9 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
   for (u = ChanUsers(channel); u; u = u->next) {
     current = CUdbref(u);
 
+    if ((flags & CB_NOCOMBINE) && Chanuser_Combine(u)) {
+      continue;
+    }
     if (!(((flags & CB_CHECKQUIET) && Chanuser_Quiet(u)) ||
           Chanuser_Gag(u) || (IsPlayer(current) && !Connected(current)))) {
       if (override_chatformat

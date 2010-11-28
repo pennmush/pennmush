@@ -188,9 +188,12 @@ See also: CHAT, @chat, @cemit
 & @channel/hide
 & @channel/unhide
 & @channel/mute
+& @channel/combine
+& @channel/uncombine
   @channel/gag [<channel>][=<yes|no>]
   @channel/mute [<channel>][=<yes|no>]
   @channel/hide [<channel>][=<yes|no>]
+  @channel/combine [<channel>][=<yes|no>]
 
   @channel/gag allows you to stay on a channel but stop receiving messages on
   it. Channels are automatically ungagged when you disconnect. You cannot
@@ -203,7 +206,11 @@ See also: CHAT, @chat, @cemit
   On channels with the 'hide_ok' priv, @channel/hide lets you hide from the
   @channel/who list if you pass the channel's @clock/hide.
 
-  For all three of these commands, you can specify a single channel to affect,
+  Connect and disconnect messages across all channels you have marked with
+  @channel/combine will be combined into a single message with a space-
+  separated list of all channel names.
+
+  For all four of these commands, you can specify a single channel to affect,
   or omit <channel> to affect all channels you're on. To undo the
   gag/mute/hide, either use @channel/<switch> [<channel>]=no or
   @channel/un<switch> [<channel>].

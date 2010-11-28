@@ -62,18 +62,21 @@ struct chanuser {
 #define CU_QUIET    0x1         /* Do not hear connection messages */
 #define CU_HIDE     0x2         /* Do not appear on the user list */
 #define CU_GAG      0x4         /* Do not hear any messages */
+#define CU_COMBINE  0x8         /* Combine connect/disconnect messages */
 #define CU_DEFAULT_FLAGS 0x0
 
 /* channel_broadcast flags */
-#define CB_CHECKQUIET 0x01      /* Check for quiet flag on recipients */
-#define CB_NOSPOOF    0x02      /* Use nospoof emits */
-#define CB_PRESENCE   0x04      /* This is a presence message, not sound */
-#define CB_QUIET      0x08      /* Do not prepend the <Channel> name */
-#define CB_SPEECH     0x10      /* This is player speech */
-#define CB_POSE       0x20      /* This is a pose */
-#define CB_SEMIPOSE   0x40      /* This is a semipose */
-#define CB_EMIT       0x80      /* This is an emit */
-#define CB_TYPE       0xF0      /* Type of a message. */
+#define CB_SPEECH     0x01      /* This is player speech */
+#define CB_POSE       0x02      /* This is a pose */
+#define CB_SEMIPOSE   0x04      /* This is a semipose */
+#define CB_EMIT       0x08      /* This is an emit */
+#define CB_TYPE       0x0F      /* Type of a message. */
+#define CB_CHECKQUIET 0x10      /* Check for quiet flag on recipients */
+#define CB_NOSPOOF    0x20      /* Use nospoof emits */
+#define CB_PRESENCE   0x40      /* This is a presence message, not sound */
+#define CB_QUIET      0x80      /* Do not prepend the <Channel> name */
+#define CB_NOCOMBINE  0x100     /* Don't send this message to players with
+                                 * their channels set COMBINE */
 
 #define CUdbref(u) ((u)->who)
 #define CUtype(u) ((u)->type)
@@ -82,6 +85,7 @@ struct chanuser {
 #define Chanuser_Quiet(u)       (CUtype(u) & CU_QUIET)
 #define Chanuser_Hide(u) ((CUtype(u) & CU_HIDE) || (IsPlayer(CUdbref(u)) && hidden(CUdbref(u))))
 #define Chanuser_Gag(u) (CUtype(u) & CU_GAG)
+#define Chanuser_Combine(u) (CUtype(u) & CU_COMBINE)
 
 /* This is a chat channel */
 #define CHAN_NAME_LEN 31

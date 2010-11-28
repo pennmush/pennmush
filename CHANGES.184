@@ -70,6 +70,8 @@ Functions:
  * New sorttype, lattr, sorts a list of attribute names. [MG]
 
 Commands:
+ * @channel/combine and @channel/uncombine let you combine spammy connect
+   messages for channels into one line. [SW] [GM]
  * @grep now accepts /wild and /regexp switches, for wildcard/globbing and
    regular expression greps (a la wildgrep() and regrep()). Also /nocase
    for case-insensitive greps. Suggested by Paige. [MG]

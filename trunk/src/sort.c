@@ -278,10 +278,12 @@ GENRECORD(gen_magic)
     case ESC_CHAR:
       while (*s && *s != 'm')
         s++;
+      s++; /* Advance past m */
       break;
     case TAG_START:
       while (*s && *s != TAG_END)
         s++;
+      s++; /* Advance past tag_end */
       break;
     case '0':
     case '1':
@@ -338,9 +340,9 @@ GENRECORD(gen_magic)
       }
     default:
       safe_chr(*s, buff, &bp);
+      if (*s)
+        s++;
     }
-    if (*s)
-      s++;
   }
   *bp = '\0';
   rec->memo.str.s = mush_strdup(buff, "genrecord");

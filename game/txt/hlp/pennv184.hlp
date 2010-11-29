@@ -54,7 +54,8 @@ Minor Changes:
    separate comparisons by default. [GM]
  * setunion(), setdiff(), setinter() now autodetect lists in all cases where
    no sort type is provided instead of just some cases. [GM]
-   
+ * The pipe (|) character is no longer valid in channel names. [MG]
+
 Functions:
  * ibreak(), for breaking out of an iter() loop. [Rhost] [MG]
  * New stext() function and %$N sub, equivilent of #$ in @switch, switch*(),

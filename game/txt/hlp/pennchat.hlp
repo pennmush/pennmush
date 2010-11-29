@@ -207,8 +207,8 @@ See also: CHAT, @chat, @cemit
   @channel/who list if you pass the channel's @clock/hide.
 
   Connect and disconnect messages across all channels you have marked with
-  @channel/combine will be combined into a single message with a space-
-  separated list of all channel names.
+  @channel/combine will be combined into a single message with a |-separated
+  list of all channel names.
 
   For all four of these commands, you can specify a single channel to affect,
   or omit <channel> to affect all channels you're on. To undo the
@@ -388,26 +388,27 @@ For keeping a channel PG and safe, and altering the channel name from
 & channel-list
 Here's the legend for reading the @channel/list output:
 
-Channel Name               Num Users Num Msgs  Access Locks     Status  Buf
-Sample                             1        0 [DPTWQHo jsmvh*] [On  QH]   4
-                                               ||||||| ||||||   |   ||    |
-Channel is DISABLED----------------------------/|||||| ||||||   |   ||    |
-Channel allows PLAYERS--------------------------/||||| ||||||   |   ||    |
-Channel allows THINGS----------------------------/|||| ||||||   |   ||    |
-Channel is Wizard-only (W) or Admin-only (A)------/||| ||||||   |   ||    |
-Channel is QUIET-----------------------------------/|| ||||||   |   ||    |
-Channel is HIDE_OK----------------------------------/| ||||||   |   ||    |
-Channel is OPEN (non-members can speak on it)--------/ ||||||   |   ||    |
-Channel has @clock/join set----------------------------||||||   |   ||    |
-Channel has @clock/speak set----------------------------/||||   |   ||    |
-Channel has @clock/mod set-------------------------------/|||   |   ||    |
-Channel has @clock/see set--------------------------------/||   |   ||    |
-Channel has @clock/hide set--------------------------------/|   |   ||    |
-Player is the owner of the channel--------------------------/   |   ||    |
-Player is currently on/off/gagging the channel------------------/   ||    |
-If on, player has the channel muted---------------------------------/|    |
-If on, player is hiding on the channel-------------------------------/    |
-Size of the channel buffer in full-length lines---------------------------/
+Channel Name               Num Users Num Msgs  Access Locks     Status   Buf
+Sample                             1        0 [DPTWQHo jsmvh*] [On  QHC]   4
+                                               ||||||| ||||||   |   |||    |
+Channel is DISABLED----------------------------/|||||| ||||||   |   |||    |
+Channel allows PLAYERS--------------------------/||||| ||||||   |   |||    |
+Channel allows THINGS----------------------------/|||| ||||||   |   |||    |
+Channel is Wizard-only (W) or Admin-only (A)------/||| ||||||   |   |||    |
+Channel is QUIET-----------------------------------/|| ||||||   |   |||    |
+Channel is HIDE_OK----------------------------------/| ||||||   |   |||    |
+Channel is OPEN (non-members can speak on it)--------/ ||||||   |   |||    |
+Channel has @clock/join set----------------------------||||||   |   |||    |
+Channel has @clock/speak set----------------------------/||||   |   |||    |
+Channel has @clock/mod set-------------------------------/|||   |   |||    |
+Channel has @clock/see set--------------------------------/||   |   |||    |
+Channel has @clock/hide set--------------------------------/|   |   |||    |
+Player is the owner of the channel--------------------------/   |   |||    |
+Player is currently on/off/gagging the channel------------------/   |||    |
+If on, player has the channel muted---------------------------------/||    |
+If on, player is hiding on the channel-------------------------------/|    |
+If on, player has @channel/combined the channel-----------------------/    |
+Size of the channel buffer in full-length lines----------------------------/
 & @channel privs
 & channel-privs
   The <privs> for @channel/add and @channel/privs should be a space-separated

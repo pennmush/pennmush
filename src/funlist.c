@@ -2577,7 +2577,7 @@ FUNCTION(fun_mix)
   maxi = 0;
   for (n = 0; n < lists; n++) {
     lp[n] = trim_space_sep(args[n + 1], sep);
-    if (*lp) {
+    if (*lp[n]) {
       ptrs[n] = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
       nptrs[n] = list2arr_ansi(ptrs[n], MAX_SORTSIZE, lp[n], sep);
     } else {

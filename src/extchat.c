@@ -1865,7 +1865,7 @@ ok_channel_name(const char *n)
 
   /* only printable characters */
   for (p = name; p && *p; p++) {
-    if (!isprint((unsigned char) *p))
+    if (!isprint((unsigned char) *p) || *p == '|')
       return 0;
   }
 
@@ -2112,7 +2112,7 @@ do_channel_list(dbref player, const char *partname)
 
   if (SUPPORT_PUEBLO)
     notify_noenter(player, open_tag("SAMP"));
-  notify_format(player, "%-30s %-5s %8s %-16s %-8s %-3s",
+  notify_format(player, "%-30s %-5s %8s %-16s %-9s %-3s",
                 T("Name"), T("Users"), T("Msgs"), T("Chan Type"), T("Status"),
                 T("Buf"));
   for (c = channels; c; c = c->next) {
@@ -2146,7 +2146,7 @@ do_channel_list(dbref player, const char *partname)
         blanks[0] = '\0';
       }
       notify_format(player,
-                    "%-30s%s %s %8ld [%c%c%c%c%c%c%c %c%c%c%c%c%c] [%-3s %c%c] %3d",
+                    "%-30s%s %s %8ld [%c%c%c%c%c%c%c %c%c%c%c%c%c] [%-3s %c%c%c] %3d",
                     ChanName(c), blanks, numusers, ChanNumMsgs(c),
                     Channel_Disabled(c) ? 'D' : '-',
                     Channel_Player(c) ? 'P' : '-',
@@ -2166,6 +2166,7 @@ do_channel_list(dbref player, const char *partname)
                     u ? (Chanuser_Gag(u) ? T("Gag") : T("On")) : T("Off"),
                     (u && Chanuser_Quiet(u)) ? 'Q' : ' ',
                     (u && Chanuser_Hide(u)) ? 'H' : ' ',
+                    (u && Chanuser_Combine(u)) ? 'C' : ' ',
                     bufferq_blocks(ChanBufferQ(c)));
     }
   }
@@ -3111,7 +3112,7 @@ chat_player_announce(dbref player, char *msg, int ungag)
             if (Chanuser_Combine(uv)) {
               shared = true;
               safe_str(ChanName(c), buff, &bp);
-              safe_chr(' ', buff, &bp);
+              safe_chr('|', buff, &bp);
             }
           }
         }

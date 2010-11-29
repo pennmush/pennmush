@@ -3097,7 +3097,7 @@ chat_player_announce(dbref player, char *msg, int ungag)
   for (d = descriptor_list; d != NULL; d = d->next) {
     viewer = d->player;
     if (d->connected) {
-
+      shared = false;
       bp = buff;
 
       safe_chr('<', buff, &bp);

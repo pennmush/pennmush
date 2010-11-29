@@ -76,6 +76,7 @@ Commands:
  * @ps <pid> shows info for a single queue entry. Suggested by Paige. [MG]
    
 Fixes:
+ * Off-by-one bug in 'm' sort when using embedded numbers fixed. [GM]
  * Debug output was sometimes sent to the wrong executor. [GM]
  * A crashbug in @search was fixed. Reported by Paige. [GM]
  * A crashbug in lpids() was fixed. Reported by Mercutio. Fixed by Javelin.

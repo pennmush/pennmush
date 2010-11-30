@@ -1534,6 +1534,10 @@ msgstr "Svi osim administratora"
 msgid "All but wizards"
 msgstr "Svi osim administratora"
 
+#: extchat.c:1924
+msgid "All channels have been combined."
+msgstr "Svi kanali su kombinirani."
+
 #: extchat.c:1597
 msgid "All channels have been gagged."
 msgstr "Gag stavljen na sve kanale."
@@ -1541,6 +1545,10 @@ msgstr "Gag stavljen na sve kanale."
 #: extchat.c:1589
 msgid "All channels have been muted."
 msgstr "Vi¹e neæe¹ èuti poruke o spajanjima ni na jednom kanalu."
+
+#: extchat.c:1925
+msgid "All channels have been uncombined."
+msgstr "Svi kanali su odkombinirani."
 
 #: extchat.c:1598
 msgid "All channels have been ungagged."
@@ -2122,6 +2130,16 @@ msgstr "Opcije pri kompajliranju"
 #, c-format
 msgid "Compiler: %s"
 msgstr "Compiler: %s"
+
+#: extchat.c:2024
+#, c-format
+msgid "Connect messages on channel <%s> will no longer be combined with others."
+msgstr "Poruke o spajanju na kanalu <%s> vi¹e neæe biti kombinirane s ostalima."
+
+#: extchat.c:2018
+#, c-format
+msgid "Connect messages on channel <%s> will now be combined with others."
+msgstr "Poruke o spajanju na kanalu <%s> æe sada biti kombinirane s ostalima."
 
 #: bsd.c:4386 bsd.c:4395
 msgid "Connecting..."

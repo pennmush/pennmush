@@ -2013,6 +2013,7 @@ See also: extract(), elements(), grab()
     > say insert(meep bleep gleep,-3,GOOP)
     You say, "meep GOOP bleep gleep"
 
+See also: replace(), ldelete(), strinsert()
 & ISDAYLIGHT()
   isdaylight()
 
@@ -2134,7 +2135,7 @@ See also: itext(), inum(), ilev(), ibreak(), map(), @dolist
     You say, "4 2 1 4 7"
 
   This example could be replaced by the use of map() like so:
-    > say map(strlen_fun, This is a test string)
+    > say map(strlen_fun, This is a test string.)
 
     > say iter(lnum(3), ##, ,%r)
     You say, "0
@@ -2154,10 +2155,10 @@ See also: itext(), inum(), ilev(), ibreak(), map(), @dolist
     > say iter(1 2 3 4 5,switch(%i0,3,ibreak())Test %i0!)
     You say, "Test 1! Test 2! Test 3!"
     
-    > say iter(1 2 3 4 5,switch(%i0,3,ibreak(),Test %i0!)
+    > say iter(1 2 3 4 5,switch(%i0,3,ibreak(),Test %i0!))
     You say, "Test 1! Test 2! "
     
-    > say iter(a b c, iter(1 2 3, switch(%i0%i1, 2c, ibreak(2), #$))
+    > say iter(a b c, iter(1 2 3, switch(%i0%i1, 2c, ibreak(2), #$)))
     You say, "1a 2a 3a 1b 2b 3b 1c "
     
 See also: iter(), itext(), inum(), ilev()
@@ -2320,7 +2321,8 @@ See also: capstr(), ucstr()
     You say, "This is a test string"
     > say ldelete(lemon|orange|pear|apple,2 3,|)
     You say, "lemon|apple"
-See also: delete(), remove()
+
+See also: delete(), remove(), insert()
 & LEFT()
   left(<string>, <length>)
 
@@ -3811,6 +3813,7 @@ See also: space()
     > say replace(blue|red|green|yellow,3,white,|)
     You say, "blue|red|white|yellow"
   
+See also: ldelete(), setdiff(), splice()
 & REST()
   rest(<list>[, <delimiter>])
 

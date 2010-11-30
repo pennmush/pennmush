@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-28 02:00-0600\n"
+"POT-Creation-Date: 2010-11-30 02:00-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -356,7 +356,7 @@ msgstr ""
 #: cque.c:1724 cque.c:1841 create.c:100 create.c:119 create.c:237 create.c:302
 #: create.c:311 create.c:315 create.c:367 create.c:371 create.c:389
 #: create.c:625 destroy.c:234 destroy.c:893 extchat.c:1777 extchat.c:1794
-#: extchat.c:1825 extchat.c:3958 flags.c:1545 flags.c:1550 flags.c:1710
+#: extchat.c:1825 extchat.c:3959 flags.c:1545 flags.c:1550 flags.c:1710
 #: function.c:1038 function.c:1292 function.c:1516 function.c:1661
 #: function.c:1707 function.c:1754 funmisc.c:957 game.c:961 game.c:1533
 #: lock.c:715 lock.c:779 lock.c:975 look.c:1341 look.c:1630 malias.c:764
@@ -786,7 +786,7 @@ msgstr ""
 msgid "#-1 INVALID SECOND ARGUMENT"
 msgstr ""
 
-#: bsd.c:4174 bsd.c:4704 extchat.c:2391 extchat.c:2396 parse.c:99
+#: bsd.c:4174 bsd.c:4704 extchat.c:2392 extchat.c:2397 parse.c:99
 msgid "#-1 PERMISSION DENIED"
 msgstr ""
 
@@ -1896,7 +1896,7 @@ msgid "GAME: Database consistency check complete."
 msgstr ""
 
 #: extchat.c:159 extchat.c:179 extchat.c:1200 extchat.c:1334 extchat.c:1344
-#: extchat.c:1399 extchat.c:1623 extchat.c:2778 extchat.c:3866
+#: extchat.c:1399 extchat.c:1623 extchat.c:2779 extchat.c:3867
 msgid "CHAT: I don't recognize that channel."
 msgstr ""
 
@@ -1908,7 +1908,7 @@ msgstr ""
 msgid "CHAT: Partial matches are:"
 msgstr ""
 
-#: extchat.c:1174 extchat.c:3826 extchat.c:3944
+#: extchat.c:1174 extchat.c:3827 extchat.c:3945
 msgid "You need to specify a channel."
 msgstr ""
 
@@ -1916,7 +1916,7 @@ msgstr ""
 msgid "What do you want to do with the channel?"
 msgstr ""
 
-#: extchat.c:1197 extchat.c:3863
+#: extchat.c:1197 extchat.c:3864
 #, c-format
 msgid "CHAT: You can't do that with channel <%s>."
 msgstr ""
@@ -2041,7 +2041,7 @@ msgstr ""
 msgid "Sorry, you're not allowed to speak on channel <%s>."
 msgstr ""
 
-#: extchat.c:1549 extchat.c:2911
+#: extchat.c:1549 extchat.c:2912
 msgid "No such channel."
 msgstr ""
 
@@ -2318,311 +2318,311 @@ msgstr ""
 msgid "Off"
 msgstr ""
 
-#: extchat.c:2212 extchat.c:2259 extchat.c:2308 extchat.c:2364 extchat.c:2418
-#: extchat.c:2462
+#: extchat.c:2213 extchat.c:2260 extchat.c:2309 extchat.c:2365 extchat.c:2419
+#: extchat.c:2463
 msgid "#-1 NO CHANNEL GIVEN"
 msgstr ""
 
-#: extchat.c:2217 extchat.c:2224 extchat.c:2264 extchat.c:2271 extchat.c:2330
-#: extchat.c:2369 extchat.c:2381 extchat.c:2423 extchat.c:2435 extchat.c:2467
-#: extchat.c:3234 extchat.c:3321 extchat.c:3363
+#: extchat.c:2218 extchat.c:2225 extchat.c:2265 extchat.c:2272 extchat.c:2331
+#: extchat.c:2370 extchat.c:2382 extchat.c:2424 extchat.c:2436 extchat.c:2468
+#: extchat.c:3235 extchat.c:3322 extchat.c:3364
 msgid "#-1 NO SUCH CHANNEL"
 msgstr ""
 
-#: extchat.c:2220 extchat.c:2267 extchat.c:2333 extchat.c:2372 extchat.c:2426
-#: extchat.c:2470
+#: extchat.c:2221 extchat.c:2268 extchat.c:2334 extchat.c:2373 extchat.c:2427
+#: extchat.c:2471
 msgid "#-1 AMBIGUOUS CHANNEL NAME"
 msgstr ""
 
-#: extchat.c:2245 extchat.c:2389
+#: extchat.c:2246 extchat.c:2390
 msgid "#-1 NOT ON CHANNEL"
 msgstr ""
 
-#: extchat.c:2313
+#: extchat.c:2314
 msgid "#-1 NO TEXT GIVEN"
 msgstr ""
 
-#: extchat.c:2341
+#: extchat.c:2342
 msgid "#-1 CHANNEL DOES NOT HAVE A BUFFER"
 msgstr ""
 
-#: extchat.c:2494
+#: extchat.c:2495
 #, c-format
 msgid "CHAT: %s has removed all users from <%s>."
 msgstr ""
 
-#: extchat.c:2517
+#: extchat.c:2518
 msgid "CHAT: Wipe that silly grin off your face instead."
 msgstr ""
 
-#: extchat.c:2522
+#: extchat.c:2523
 #, c-format
 msgid "CHAT: Channel <%s> wiped."
 msgstr ""
 
-#: extchat.c:2544
+#: extchat.c:2545
 msgid "CHAT: Only a channel modifier can do that."
 msgstr ""
 
-#: extchat.c:2552 extchat.c:3200 match.c:485 set.c:584
+#: extchat.c:2553 extchat.c:3201 match.c:485 set.c:584
 msgid "I can't see that here."
 msgstr ""
 
-#: extchat.c:2554 extchat.c:3202
+#: extchat.c:2555 extchat.c:3203
 msgid "I don't know which thing you mean."
 msgstr ""
 
-#: extchat.c:2559
+#: extchat.c:2560
 #, c-format
 msgid "CHAT: Channel <%s> no longer mogrified by %s."
 msgstr ""
 
-#: extchat.c:2565
+#: extchat.c:2566
 #, c-format
 msgid "CHAT: Channel <%s> isn't being mogrified."
 msgstr ""
 
-#: extchat.c:2571
+#: extchat.c:2572
 msgid "CHAT: You must control the mogrifier."
 msgstr ""
 
-#: extchat.c:2576
+#: extchat.c:2577
 #, c-format
 msgid "CHAT: Channel <%s> now mogrified by %s."
 msgstr ""
 
-#: extchat.c:2597
+#: extchat.c:2598
 msgid "CHAT: Only a Wizard can do that."
 msgstr ""
 
-#: extchat.c:2604
+#: extchat.c:2605
 msgid "CHAT: Invalid owner."
 msgstr ""
 
-#: extchat.c:2612
+#: extchat.c:2613
 #, c-format
 msgid "CHAT: Channel <%s> now owned by %s."
 msgstr ""
 
-#: extchat.c:2666
+#: extchat.c:2667
 #, c-format
 msgid "CHAT: Channel <%s> resists."
 msgstr ""
 
-#: extchat.c:2696
+#: extchat.c:2697
 msgid "CHAT: I don't understand that key."
-msgstr ""
-
-#: extchat.c:2705
-#, c-format
-msgid "CHAT: Joinlock on <%s> reset."
 msgstr ""
 
 #: extchat.c:2706
 #, c-format
-msgid "CHAT: Joinlock on <%s> set."
+msgid "CHAT: Joinlock on <%s> reset."
 msgstr ""
 
-#: extchat.c:2712
+#: extchat.c:2707
 #, c-format
-msgid "CHAT: Speaklock on <%s> reset."
+msgid "CHAT: Joinlock on <%s> set."
 msgstr ""
 
 #: extchat.c:2713
 #, c-format
-msgid "CHAT: Speaklock on <%s> set."
+msgid "CHAT: Speaklock on <%s> reset."
 msgstr ""
 
-#: extchat.c:2719
+#: extchat.c:2714
 #, c-format
-msgid "CHAT: Seelock on <%s> reset."
+msgid "CHAT: Speaklock on <%s> set."
 msgstr ""
 
 #: extchat.c:2720
 #, c-format
-msgid "CHAT: Seelock on <%s> set."
+msgid "CHAT: Seelock on <%s> reset."
 msgstr ""
 
-#: extchat.c:2726
+#: extchat.c:2721
 #, c-format
-msgid "CHAT: Hidelock on <%s> reset."
+msgid "CHAT: Seelock on <%s> set."
 msgstr ""
 
 #: extchat.c:2727
 #, c-format
-msgid "CHAT: Hidelock on <%s> set."
+msgid "CHAT: Hidelock on <%s> reset."
 msgstr ""
 
-#: extchat.c:2733
+#: extchat.c:2728
 #, c-format
-msgid "CHAT: Modlock on <%s> reset."
+msgid "CHAT: Hidelock on <%s> set."
 msgstr ""
 
 #: extchat.c:2734
 #, c-format
-msgid "CHAT: Modlock on <%s> set."
+msgid "CHAT: Modlock on <%s> reset."
 msgstr ""
 
-#: extchat.c:2761
+#: extchat.c:2735
 #, c-format
-msgid "Description: %s"
+msgid "CHAT: Modlock on <%s> set."
 msgstr ""
 
 #: extchat.c:2762
 #, c-format
+msgid "Description: %s"
+msgstr ""
+
+#: extchat.c:2763
+#, c-format
 msgid "Owner: %s"
 msgstr ""
 
-#: extchat.c:2764
+#: extchat.c:2765
 #, c-format
 msgid "Mogrifier: %s (#%d)"
 msgstr ""
 
-#: extchat.c:2767
+#: extchat.c:2768
 #, c-format
 msgid "Flags: %s"
 msgstr ""
 
-#: extchat.c:2771
+#: extchat.c:2772
 #, c-format
 msgid "Recall buffer: %dk, with %d lines stored."
 msgstr ""
 
-#: extchat.c:2810
+#: extchat.c:2811
 #, c-format
 msgid "CHAT: You don't have permission to decompile <%s>."
 msgstr ""
 
-#: extchat.c:2859
+#: extchat.c:2860
 msgid "CHAT: No channel matches that string."
 msgstr ""
 
-#: extchat.c:2876 look.c:204 speech.c:373 speech.c:992
+#: extchat.c:2877 look.c:204 speech.c:373 speech.c:992
 msgid "and"
 msgstr ""
 
-#: extchat.c:2890
+#: extchat.c:2891
 msgid "There are no connected players on that channel."
 msgstr ""
 
-#: extchat.c:2892
+#: extchat.c:2893
 #, c-format
 msgid "Members of channel <%s> are:"
 msgstr ""
 
-#: extchat.c:2914
+#: extchat.c:2915
 msgid "I can't tell which channel you mean."
 msgstr ""
 
-#: extchat.c:2928 function.c:868
+#: extchat.c:2929 function.c:868
 msgid "#-1 INVALID ARGUMENT"
 msgstr ""
 
-#: extchat.c:2950
+#: extchat.c:2951
 msgid "#-1 NO PERMISSIONS FOR CHANNEL"
 msgstr ""
 
-#: extchat.c:2993
+#: extchat.c:2994
 msgid "CHAT: New description too long."
 msgstr ""
 
-#: extchat.c:3006
+#: extchat.c:3007
 #, c-format
 msgid "CHAT: Channel <%s> description cleared."
 msgstr ""
 
-#: extchat.c:3010
+#: extchat.c:3011
 #, c-format
 msgid "CHAT: Channel <%s> description set."
 msgstr ""
 
-#: extchat.c:3147
+#: extchat.c:3148
 msgid "Channels:"
 msgstr ""
 
-#: extchat.c:3153
+#: extchat.c:3154
 msgid "Channels: *NONE*"
 msgstr ""
 
-#: extchat.c:3237
+#: extchat.c:3238
 msgid "#-2 AMBIGUOUS CHANNEL MATCH"
 msgstr ""
 
-#: extchat.c:3259
+#: extchat.c:3260
 msgid "#-1 NO SUCH LOCK TYPE"
 msgstr ""
 
-#: extchat.c:3374
+#: extchat.c:3375
 msgid "#-1 NO RECALL BUFFER"
 msgstr ""
 
-#: extchat.c:3513
+#: extchat.c:3514
 msgid "You must specify a type of lock!"
 msgstr ""
 
-#: extchat.c:3793
+#: extchat.c:3794
 #, c-format
 msgid "To channel %s: %s"
 msgstr ""
 
-#: extchat.c:3833
+#: extchat.c:3834
 msgid "Which line do you want to start recall from?"
 msgstr ""
 
-#: extchat.c:3847 extchat.c:3855
+#: extchat.c:3848 extchat.c:3856
 msgid "How many lines did you want to recall?"
 msgstr ""
 
-#: extchat.c:3872
+#: extchat.c:3873
 msgid "CHAT: You must be able to join a channel to recall from it."
 msgstr ""
 
-#: extchat.c:3876
+#: extchat.c:3877
 msgid "CHAT: That channel doesn't have a recall buffer."
 msgstr ""
 
-#: extchat.c:3891
+#: extchat.c:3892
 msgid "CHAT: Nothing to recall."
 msgstr ""
 
-#: extchat.c:3895
+#: extchat.c:3896
 #, c-format
 msgid "CHAT: Recall from channel <%s>"
 msgstr ""
 
-#: extchat.c:3922
+#: extchat.c:3923
 msgid "CHAT: End recall"
 msgstr ""
 
-#: extchat.c:3926
+#: extchat.c:3927
 #, c-format
 msgid "CHAT: To recall the entire buffer, use @chan/recall %s=0"
 msgstr ""
 
-#: extchat.c:3948
+#: extchat.c:3949
 msgid "You need to specify the number of lines to buffer."
 msgstr ""
 
-#: extchat.c:3953
+#: extchat.c:3954
 msgid "Invalid buffer size."
 msgstr ""
 
-#: extchat.c:3968
+#: extchat.c:3969
 #, c-format
 msgid "CHAT: Channel buffering disabled for channel <%s>."
 msgstr ""
 
-#: extchat.c:3973
+#: extchat.c:3974
 #, c-format
 msgid "CHAT: Channel buffering already disabled for channel <%s>."
 msgstr ""
 
-#: extchat.c:3981
+#: extchat.c:3982
 #, c-format
 msgid "CHAT: Resizing buffer of channel <%s>"
 msgstr ""
 
-#: extchat.c:3986
+#: extchat.c:3987
 #, c-format
 msgid "CHAT: Buffering enabled on channel <%s>."
 msgstr ""
@@ -5242,7 +5242,7 @@ msgstr ""
 msgid "#-1 NO MATCH"
 msgstr ""
 
-#: parse.c:102 sort.c:335
+#: parse.c:102 sort.c:337
 msgid "#-1 NO SUCH OBJECT VISIBLE"
 msgstr ""
 

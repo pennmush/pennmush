@@ -2554,8 +2554,7 @@ FUNCTION(fun_mix)
   char *list[10];
   char sep;
   int funccount;
-  int n;
-  int lists, words;
+  int n, lists;
   char **ptrs[10] = { NULL };
   int nptrs[10], i, maxi;
 

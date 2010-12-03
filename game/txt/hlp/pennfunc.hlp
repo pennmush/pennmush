@@ -504,6 +504,7 @@ See also: alphamax(), min()
 
 See also: BOOLEAN VALUES, nand(), or(), xor(), not()
 & ANDFLAGS()
+& ANDLFLAGS()
   andflags(<object>, <string of flag letters>)
   andlflags(<object>, <list of flag names>)
   
@@ -3105,13 +3106,18 @@ See also: score
 
 See also: ctime(), time(), secs(), convtime(), convsecs()
 & MUDNAME()
+& MUDURL()
   mudname()
- 
-  Returns the name of the MUSH, as set in the 'mud_name' @config option. 
+  mudurl()
+
+  These functions return the name of the MUSH and the MUSH's website address,
+  as set in the 'mud_name' and 'mud_url' @config options.
   
   Example: 
     > say mudname()
     You say, "TestMUSH"
+    > set mudurl()
+    You say, "http://www.testmush.com"
 
 see also: config()
 & MUL()
@@ -5050,7 +5056,7 @@ See also: pueblo(), width(), height(), ssl()
 See also: @lock, lock(), elock(), locktypes
 & TEXTFILE()
 & TEXTENTRIES()
-& dynhelp()
+& DYNHELP()
   textfile(<type>, <entry>)
   textentries(<type>, <pattern>[, <osep>])
 

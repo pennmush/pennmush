@@ -3100,8 +3100,6 @@ chat_player_announce(dbref player, char *msg, int ungag)
       shared = false;
       bp = buff;
 
-      safe_chr('<', buff, &bp);
-
       for (c = channels; c; c = c->next) {
         up = onchannel(player, c);
         uv = onchannel(viewer, c);
@@ -3112,20 +3110,37 @@ chat_player_announce(dbref player, char *msg, int ungag)
             if (Chanuser_Combine(uv)) {
               shared = true;
               safe_str(ChanName(c), buff, &bp);
-              safe_chr('|', buff, &bp);
+              safe_strl(" | ", 3, buff, &bp);
             }
           }
         }
         if (up && ungag)
           CUtype(up) &= ~CU_GAG;
       }
-      if (shared) {
-        bp -= 1;
-        safe_format(buff, &bp, "> %s ", accented_name(player));
-        safe_strl(msg, msglen, buff, &bp);
-        *bp = '\0';
+      
+      bp -= 3;
+      *bp = '\0';   
 
-        notify(viewer, buff);
+      if (shared) {
+	char defmsg[BUFFER_LEN], *dmp;
+	char shrtmsg[BUFFER_LEN], *smp;
+	char *accname;
+
+	dmp = defmsg;
+	smp = shrtmsg;
+	
+	accname = mush_strdup(accented_name(player), "chat_announce.name");
+
+	safe_format(shrtmsg, &smp, "%s %s", accname, msg);
+	*smp = '\0';
+          
+        safe_format(defmsg, &dmp, "<%s> %s %s", buff, accname, msg);
+        *dmp = '\0';
+
+	vmessageformat(viewer, "CHATFORMAT", player, NA_INTER_PRESENCE, 6,
+		       "@", buff, shrtmsg, accname, "", defmsg);
+	
+	mush_free(accname, "chat_announce.name");
       }
     }
   }
@@ -3669,7 +3684,7 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
         notify(player, blockstr);
         return;
       }
-      // Do we override chatformats?
+      /* Do we override chatformats? */
       if (parse_boolean
           (mogrify(mogrifier, "MOGRIFY`OVERRIDE", player, 6, argv, ""))) {
         override_chatformat = 1;
@@ -3740,7 +3755,7 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
   }
   *bp = '\0';
 
-  // @chatformat
+  /* @chatformat */
   if (flags & CB_PRESENCE) {
     snprintf(title, BUFFER_LEN, "%s", message);
     snprintf(message, BUFFER_LEN, "%s %s", Name(player), title);

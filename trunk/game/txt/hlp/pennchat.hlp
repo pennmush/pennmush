@@ -208,7 +208,7 @@ See also: CHAT, @chat, @cemit
 
   Connect and disconnect messages across all channels you have marked with
   @channel/combine will be combined into a single message with a |-separated
-  list of all channel names.
+  list of all channel names. Only players can use this.
 
   For all four of these commands, you can specify a single channel to affect,
   or omit <channel> to affect all channels you're on. To undo the

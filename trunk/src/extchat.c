@@ -1900,6 +1900,11 @@ do_chan_user_flags(dbref player, char *name, const char *isyn, int flag,
   int setting = abs(yesno(isyn));
   p = NULL;
 
+  if (!IsPlayer(player) && flag == CU_COMBINE) {
+    notify(player, T("Only players can use that option."));
+	   return;
+  }
+
   if (!name || !*name) {
     p = Chanlist(player);
     if (!p) {

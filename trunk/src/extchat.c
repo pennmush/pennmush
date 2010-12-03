@@ -3142,8 +3142,9 @@ chat_player_announce(dbref player, char *msg, int ungag)
         safe_format(defmsg, &dmp, "<%s> %s %s", buff, accname, msg);
         *dmp = '\0';
 
-	vmessageformat(viewer, "CHATFORMAT", player, NA_INTER_PRESENCE, 6,
-		       "@", buff, shrtmsg, accname, "", defmsg);
+	if (!vmessageformat(viewer, "CHATFORMAT", player, NA_INTER_PRESENCE, 6,
+			    "@", buff, shrtmsg, accname, "", defmsg)) 
+	  notify_anything(player, na_one, &viewer, ns_esnotify, NA_INTER_PRESENCE, defmsg);
 	
 	mush_free(accname, "chat_announce.name");
       }

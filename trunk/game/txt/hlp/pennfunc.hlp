@@ -3116,7 +3116,7 @@ See also: ctime(), time(), secs(), convtime(), convsecs()
   Example: 
     > say mudname()
     You say, "TestMUSH"
-    > set mudurl()
+    > say mudurl()
     You say, "http://www.testmush.com"
 
 see also: config()

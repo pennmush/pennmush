@@ -112,10 +112,10 @@ See also: @chat, @pageformat, @message, speak(), mogrify
   will produce an error.
 
 See also: CHAT
-& @cemit
-& @nscemit
-& cemit()
-& nscemit()
+& @CEMIT
+& @NSCEMIT
+& CEMIT()
+& NSCEMIT()
   @cemit[/nosiy|/silent][/noeval] <channel>=<message>
   @nscemit[/nosiy|/silent][/noeval] <channel>=<message>
   cemit(<channel>, <message>[, <noisy>])

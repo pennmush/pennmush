@@ -4059,6 +4059,10 @@ msgstr "Samo Bog mo¾e izazvati financijsku propast."
 msgid "Only God can set himself!"
 msgstr "Samo Bog mo¾e definirati samoga sebe!"
 
+#: extchat.c:1904
+msgid "Only players can use that option."
+msgstr "Samo igraèi mogu koristiti tu opciju."
+
 #: src/wiz.c:162
 msgid "Only wizards may change a quota."
 msgstr "Samo administratori mogu promijeniti quotu."

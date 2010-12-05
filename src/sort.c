@@ -625,7 +625,7 @@ list_type_list ltypelist[] = {
   {DBREF_LIST, gen_dbref, i_comp, 0},
   {NUMERIC_LIST, gen_num, i_comp, 0},
   {FLOAT_LIST, gen_float, f_comp, 0},
-  {MAGIC_LIST, gen_magic, si_comp, 0},
+  {MAGIC_LIST, gen_magic, si_comp, IS_STRING},
   {DBREF_NAME_LIST, gen_db_name, si_comp, IS_DB | IS_STRING},
   {DBREF_NAMEI_LIST, gen_db_name, si_comp, IS_DB | IS_STRING},
   {DBREF_IDLE_LIST, gen_db_idle, i_comp, IS_DB},

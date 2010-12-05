@@ -2252,7 +2252,7 @@ See also: first(), rest(), before(), after()
   due to buffer limits. In these cases, you can use nattr() and xattr() to
   retrieve the results in smaller pieces.
 
-See also: nattr(), xattr(), hasattr(), examine, wildcards
+See also: nattr(), xattr(), hasattr(), examine, grep(), wildcards
 & NATTR()
 & NATTRP()
 & ATTRCNT()

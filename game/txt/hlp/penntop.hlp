@@ -1094,7 +1094,7 @@ See also: @parent, $-COMMANDS, ATTRIBUTES, ANCESTORS
   tport_anything        Can @teleport anything.
   tport_anywhere        Can @teleport to anywhere.
   unkillable *          Cannot be killed
-  can_nspemit           Can use @nspemit and nspemit()
+  can_spoof             Can use @ns*emit, ns*emit() and @*emit/spoof
   
   * When these powers are set on a player, all the objects they own which
     are not set MISTRUST are also considered to have the power.

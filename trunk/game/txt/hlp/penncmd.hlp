@@ -1472,7 +1472,7 @@ See also: @lock, locktypes, enter, ENTER_OK
   The /noeval switch prevents the MUSH from evaluating <message>.
   The /spoof switch causes nospoof notifications to show the enactor's
     dbref instead of the executor's dbref, and requires control over
-    the enactor or the Can_nspemit power.
+    the enactor or the Can_spoof power.
 
   @emit can be abbreviated "\"
 
@@ -2129,7 +2129,7 @@ See also: @ps, QUEUE
   The /noeval switch prevents <message> from being evaluated.
   The /spoof switch causes nospoof notifications to show the enactor's
     dbref instead of the executor's dbref, and requires control over
-    the enactor or the Can_nspemit power.
+    the enactor or the Can_spoof power.
 & @list
   @list/<switch>
   @list[/lowercase] <switch>
@@ -2713,7 +2713,7 @@ See also: SEMAPHORES, @drain, @wait
 
   These commands work like @emit, @lemit, @pemit, @prompt, @remit, @oemit, 
   and @zemit, respectively, but will not include nospoof information if used
-  by Wizards or someone with the Can_Nspemit @power. They are meant to be
+  by Wizards or someone with the Can_spoof @power. They are meant to be
   used by commands in the master room where the nospoof information is just
   useless noise. They take all switches of their respective commands.
 
@@ -2734,7 +2734,7 @@ See also: @emit, @lemit, @pemit, @prompt, @remit, @oemit, @zemit, nsemit(),
   The /noeval switch prevents the MUSH from evaluating <message>.
   The /spoof switch causes nospoof notifications to show the enactor's
     dbref instead of the executor's dbref, and requires control over
-    the enactor or the Can_nspemit power.
+    the enactor or the Can_spoof power.
     
   Examples:
     Show a message in the locations of players Bob and Fred, to everyone
@@ -2908,7 +2908,7 @@ See also: @prompt, prompt(), terminfo()
     /noeval    -- <message> will not be evaluated for substitutions 
     /spoof     -- the enactor's dbref will be used for nospoof notifications
                   instead of the executor's dbref. Requires control
-                  over enactor or Can_nspemit power. 
+                  over enactor or Can_spoof power. 
 
   You cannot @pemit to objects set HAVEN, or objects whose @lock/page you do
   not pass, unless you are set WIZARD or have the pemit_all @power.
@@ -3087,7 +3087,7 @@ See also: @motd, @list, @listmotd
    space-separated list of targets.
   The /spoof switch causes nospoof notifications to show the enactor's
    dbref instead of the executor's dbref, and requires control over
-   the enactor or the Can_nspemit power.
+   the enactor or the Can_spoof power.
 
 See also: @emit, @pemit, @oemit, SPOOFING, NOSPOOF, CONTROL.
 & @restart

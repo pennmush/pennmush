@@ -330,7 +330,7 @@ See also: @teleport
   LOUD objects bypass all speech, channel speech, and interaction @locks.
   This flag can only be set by royalty or wizards.
 
-See also: can_nspemit
+See also: can_spoof (help powers2)
 & INHERIT
 & TRUST
   Flag:  TRUST  (all types)

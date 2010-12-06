@@ -158,7 +158,7 @@ void rusage_stats(void);
 int que_next(void);             /* from cque.c */
 
 void dispatch(void);            /* from timer.c */
-dbref email_register_player(const char *name, const char *email, const char *host, const char *ip);     /* from player.c */
+dbref email_register_player(DESC *d, const char *name, const char *email, const char *host, const char *ip);     /* from player.c */
 
 #ifdef SUN_OS
 static int extrafd;
@@ -291,7 +291,7 @@ int maxd = 0;
 extern const unsigned char *tables;
 
 sig_atomic_t signal_shutdown_flag = 0;  /**< Have we caught a shutdown signal? */
-sig_atomic_t signal_dump_flag = 0;      /**< Have we caught a dump signal? */
+sig_atomic_t usr2_triggered = 0;        /**< Have we caught a USR2 signal? */
 
 #ifndef BOOLEXP_DEBUGGING
 #ifdef WIN32SERVICES
@@ -348,7 +348,7 @@ static int fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
                             const unsigned char *prefix);
 static int fcache_read(FBLOCK *cp, const char *filename);
 static void logout_sock(DESC *d);
-static void shutdownsock(DESC *d);
+static void shutdownsock(DESC *d, const char *reason);
 DESC *initializesock(int s, char *addr, char *ip, int use_ssl);
 int process_output(DESC *d);
 /* Notify.c */
@@ -393,7 +393,7 @@ static void dump_users(DESC *call_by, char *match);
 static const char *time_format_1(time_t dt);
 static const char *time_format_2(time_t dt);
 static void announce_connect(DESC *d, int isnew, int num);
-static void announce_disconnect(DESC *saved);
+static void announce_disconnect(DESC *saved, const char *reason);
 void inactivity_check(void);
 void reopen_logs(void);
 void load_reboot_db(void);
@@ -935,16 +935,24 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
       if (WIFSIGNALED(dump_status)) {
         do_rawlog(LT_ERR, "ERROR! forking dump exited with signal %d",
                   WTERMSIG(dump_status));
+        queue_event(SYSEVENT, "DUMP`ERROR", "%s,%d,SIGNAL %d",
+                         T("GAME: ERROR! Forking database save failed!"),
+                         1, dump_status);
         flag_broadcast("ROYALTY WIZARD", 0,
                        T("GAME: ERROR! Forking database save failed!"));
       } else if (WIFEXITED(dump_status)) {
         if (WEXITSTATUS(dump_status) == 0) {
           time(&globals.last_dump_time);
+          queue_event(SYSEVENT, "DUMP`COMPLETE", "%s,%d",
+                           DUMP_NOFORK_COMPLETE, 1);
           if (DUMP_NOFORK_COMPLETE && *DUMP_NOFORK_COMPLETE)
             flag_broadcast(0, 0, "%s", DUMP_NOFORK_COMPLETE);
         } else {
           do_rawlog(LT_ERR, "ERROR! forking dump exited with exit code %d",
                     WEXITSTATUS(dump_status));
+          queue_event(SYSEVENT, "DUMP`ERROR", "%s,%d,EXIT %d",
+                      T("GAME: ERROR! Forking database save failed!"),
+                      1, dump_status);
           flag_broadcast("ROYALTY WIZARD", 0,
                          T("GAME: ERROR! Forking database save failed!"));
         }
@@ -968,11 +976,13 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
       shutdown_flag = 1;
     }
 
-    if (signal_dump_flag) {
-      globals.paranoid_dump = 0;
-      do_rawlog(LT_CHECK, "DUMP by external signal");
-      fork_and_dump(1);
-      signal_dump_flag = 0;
+    if (usr2_triggered) {
+      if (!queue_event(SYSEVENT, "SIGNAL`USR2", "%s", "")) {
+        globals.paranoid_dump = 0;
+        do_rawlog(LT_CHECK, "DUMP by external signal");
+        fork_and_dump(1);
+      }
+      usr2_triggered = 0;
     }
 
     if (shutdown_flag)
@@ -1115,13 +1125,13 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
         output_ready = FD_ISSET(d->descriptor, &output_set);
         if (input_ready) {
           if (!process_input(d, output_ready)) {
-            shutdownsock(d);
+            shutdownsock(d, "disconnect");
             continue;
           }
         }
         if (output_ready) {
           if (!process_output(d)) {
-            shutdownsock(d);
+            shutdownsock(d, "disconnect");
           }
         }
       }
@@ -1483,7 +1493,7 @@ logout_sock(DESC *d)
     do_rawlog(LT_CONN,
               "[%d/%s/%s] Logout by %s(#%d) <Connection not dropped>",
               d->descriptor, d->addr, d->ip, Name(d->player), d->player);
-    announce_disconnect(d);
+    announce_disconnect(d, "logout");
     if (can_mail(d->player)) {
       do_mail_purge(d->player);
     }
@@ -1528,7 +1538,7 @@ logout_sock(DESC *d)
  * \param d pointer to descriptor to disconnect.
  */
 static void
-shutdownsock(DESC *d)
+shutdownsock(DESC *d, const char *reason)
 {
   if (d->connected) {
     do_rawlog(LT_CONN, "[%d/%s/%s] Logout by %s(#%d)",
@@ -1536,7 +1546,7 @@ shutdownsock(DESC *d)
     if (d->connected != 2) {
       fcache_dump(d, fcache.quit_fcache, NULL);
       /* Player was not allowed to log in from the connect screen */
-      announce_disconnect(d);
+      announce_disconnect(d, reason);
       if (can_mail(d->player)) {
         do_mail_purge(d->player);
       }
@@ -1554,6 +1564,11 @@ shutdownsock(DESC *d)
     do_rawlog(LT_CONN, "[%d/%s/%s] Connection closed, never connected.",
               d->descriptor, d->addr, d->ip);
   }
+  /* (descriptor, ip, cause, recv/sent/cmds) */
+  queue_event(SYSEVENT, "SOCKET`DISCONNECT", "%d,%s,%s,%lu/%lu/%d",
+              d->descriptor, d->ip,
+              reason,
+              d->input_chars, d->output_chars, d->cmds);
   process_output(d);
   clearstrings(d);
   shutdown(d->descriptor, 2);
@@ -1644,6 +1659,7 @@ initializesock(int s, char *addr, char *ip, int use_ssl
 #endif
   im_insert(descs_by_fd, d->descriptor, d);
   welcome_user(d, 1);
+  queue_event(SYSEVENT, "SOCKET`CONNECT", "%d,%s", d->descriptor, d->ip);
   return d;
 }
 
@@ -2289,7 +2305,11 @@ process_commands(void)
         retval = do_command(cdesc, (char *) t->start);
         reset_cpu_timer();
         if (retval == 0) {
-          shutdownsock(cdesc);
+          shutdownsock(cdesc, "quit");
+        } else if (retval == -3) {
+          shutdownsock(cdesc, "http disconnect");
+        } else if (retval == -2) {
+          shutdownsock(cdesc, "sitelocked");
         } else if (retval == -1) {
           logout_sock(cdesc);
         } else {
@@ -2407,14 +2427,15 @@ do_command(DESC *d, char *command)
                  "</BODY></HEAD>", MUDNAME, MUDURL, MUDURL, MUDURL, MUDNAME);
         queue_write(d, (unsigned char *) buf, strlen(buf));
         queue_eol(d);
-        return 0;
+        return -3;
       }
       if (j) {
         send_prefix(d);
         dump_users(d, command + j);
         send_suffix(d);
-      } else if (!check_connect(d, command))
-        return 0;
+      } else if (!check_connect(d, command)) {
+        return -2;
+      }
     }
   }
   return 1;
@@ -2529,9 +2550,13 @@ check_connect(DESC *d, const char *msg)
 
   parse_connect(msg, command, user, password);
 
+  if (!check_fails(d->ip)) {
+    queue_string_eol(d, T(connect_fail_limit_exceeded));
+    return 1;
+  }
   if (string_prefix("connect", command)) {
-    if ((player =
-         connect_player(user, password, d->addr, d->ip, errbuf)) == NOTHING) {
+    if ((player = connect_player(d, user, password, d->addr, d->ip, errbuf))
+        == NOTHING) {
       queue_string_eol(d, errbuf);
       do_rawlog(LT_CONN, "[%d/%s/%s] Failed connect to '%s'.",
                 d->descriptor, d->addr, d->ip, user);
@@ -2546,8 +2571,8 @@ check_connect(DESC *d, const char *msg)
     }
 
   } else if (!strcasecmp(command, "cd")) {
-    if ((player =
-         connect_player(user, password, d->addr, d->ip, errbuf)) == NOTHING) {
+    if ((player = connect_player(d, user, password, d->addr, d->ip, errbuf))
+        == NOTHING) {
       queue_string_eol(d, errbuf);
       do_rawlog(LT_CONN, "[%d/%s/%s] Failed connect to '%s'.",
                 d->descriptor, d->addr, d->ip, user);
@@ -2569,8 +2594,8 @@ check_connect(DESC *d, const char *msg)
     }
 
   } else if (!strcasecmp(command, "cv")) {
-    if ((player =
-         connect_player(user, password, d->addr, d->ip, errbuf)) == NOTHING) {
+    if ((player = connect_player(d, user, password, d->addr, d->ip, errbuf))
+        == NOTHING) {
       queue_string_eol(d, errbuf);
       do_rawlog(LT_CONN, "[%d/%s/%s] Failed connect to '%s'.",
                 d->descriptor, d->addr, d->ip, user);
@@ -2589,8 +2614,8 @@ check_connect(DESC *d, const char *msg)
     }
 
   } else if (!strcasecmp(command, "ch")) {
-    if ((player =
-         connect_player(user, password, d->addr, d->ip, errbuf)) == NOTHING) {
+    if ((player = connect_player(d, user, password, d->addr, d->ip, errbuf))
+        == NOTHING) {
       queue_string_eol(d, errbuf);
       do_rawlog(LT_CONN, "[%d/%s/%s] Failed connect to '%s'.",
                 d->descriptor, d->addr, d->ip, user);
@@ -2617,6 +2642,9 @@ check_connect(DESC *d, const char *msg)
           && !Deny_Silent_Site(d->ip, AMBIGUOUS)) {
         do_rawlog(LT_CONN, "[%d/%s/%s] Refused create for '%s'.",
                   d->descriptor, d->addr, d->ip, user);
+        queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
+                    d->descriptor, d->ip, count_failed(d->ip),
+                    "create: sitelocked !create", user);
       }
       return 0;
     }
@@ -2628,15 +2656,21 @@ check_connect(DESC *d, const char *msg)
       do_rawlog(LT_CONN,
                 "REFUSED CREATION for %s from %s on descriptor %d.\n",
                 user, d->addr, d->descriptor);
+      queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
+                  d->descriptor, d->ip, count_failed(d->ip),
+                  "create: creation not allowed", user);
       return 0;
     } else if (MAX_LOGINS && !under_limit) {
       fcache_dump(d, fcache.full_fcache, NULL);
       do_rawlog(LT_CONN,
                 "REFUSED CREATION for %s from %s on descriptor %d.\n",
                 user, d->addr, d->descriptor);
+      queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
+                  d->descriptor, d->ip, count_failed(d->ip),
+                  "create: max login count reached", user);
       return 0;
     }
-    player = create_player(user, password, d->addr, d->ip);
+    player = create_player(d, user, password, d->addr, d->ip);
     if (player == NOTHING) {
       queue_string_eol(d, T(create_fail));
       do_rawlog(LT_CONN,
@@ -2648,6 +2682,9 @@ check_connect(DESC *d, const char *msg)
                 "[%d/%s/%s] Failed create for '%s' (bad password).",
                 d->descriptor, d->addr, d->ip, user);
     } else {
+      queue_event(SYSEVENT, "PLAYER`CREATE", "%s,%s,%s,%d",
+                  unparse_objid(player), Name(player),
+                  "create", d->descriptor);
       do_rawlog(LT_CONN, "[%d/%s/%s] Created %s(#%d)",
                 d->descriptor, d->addr, d->ip, Name(player), player);
       if ((dump_messages(d, player, 1)) == 0) {
@@ -2664,6 +2701,9 @@ check_connect(DESC *d, const char *msg)
         do_rawlog(LT_CONN,
                   "[%d/%s/%s] Refused registration (bad site) for '%s'.",
                   d->descriptor, d->addr, d->ip, user);
+        queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
+                    d->descriptor, d->ip, mark_failed(d->ip),
+                    "register: sitelocked host or ip", user);
       }
       return 0;
     }
@@ -2672,9 +2712,12 @@ check_connect(DESC *d, const char *msg)
       do_rawlog(LT_CONN,
                 "Refused registration (creation disabled) for %s from %s on descriptor %d.\n",
                 user, d->addr, d->descriptor);
+        queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
+                    d->descriptor, d->ip, mark_failed(d->ip),
+                    "register: registration disabled", user);
       return 0;
     }
-    if ((player = email_register_player(user, password, d->addr, d->ip)) ==
+    if ((player = email_register_player(d, user, password, d->addr, d->ip)) ==
         NOTHING) {
       queue_string_eol(d, T(register_fail));
       do_rawlog(LT_CONN, "[%d/%s/%s] Failed registration for '%s'.",
@@ -2813,7 +2856,7 @@ boot_player(dbref player, int idleonly, int silent)
 
   DESC_ITER_CONN(d) {
     if (boot) {
-      boot_desc(boot);
+      boot_desc(boot, "boot");
       boot = NULL;
     }
     if (d->player == player
@@ -2825,7 +2868,7 @@ boot_player(dbref player, int idleonly, int silent)
     }
   }
   if (boot)
-    boot_desc(boot);
+    boot_desc(boot, "boot");
   if (count && idleonly) {
     if (count == 1)
       notify(player, T("You boot an idle self."));
@@ -2841,9 +2884,9 @@ boot_player(dbref player, int idleonly, int silent)
  * \param d pointer to descriptor to disconnect.
  */
 void
-boot_desc(DESC *d)
+boot_desc(DESC *d, const char *cause)
 {
-  shutdownsock(d);
+  shutdownsock(d, cause);
 }
 
 /** Given a player dbref, return the player's first connected descriptor.
@@ -3075,7 +3118,7 @@ signal_shutdown(int sig __attribute__ ((__unused__)))
 void
 signal_dump(int sig __attribute__ ((__unused__)))
 {
-  signal_dump_flag = 1;
+  usr2_triggered = 1;
   reload_sig_handler(SIGUSR2, signal_dump);
 }
 #endif
@@ -3658,6 +3701,9 @@ announce_connect(DESC *d, int isnew, int num)
   for (j = 0; j < NUMQ; j++)
     global_eval_context.rnxt[j] = NULL;
   strcpy(global_eval_context.ccom, "");
+
+  queue_event(player, "PLAYER`CONNECT", "%s,%d,%d",
+              unparse_objid(player), num, d->descriptor);
   /* And then load it up, as follows:
    * %0 (unused, reserved for "reason for disconnect")
    * %1 (number of connections after connect)
@@ -3706,7 +3752,7 @@ announce_connect(DESC *d, int isnew, int num)
 }
 
 static void
-announce_disconnect(DESC *saved)
+announce_disconnect(DESC *saved, const char *reason)
 {
   dbref loc;
   int num;
@@ -3754,6 +3800,21 @@ announce_disconnect(DESC *saved)
   for (j = 0; j < 6; j++) {
     global_eval_context.wnxt[j] = myenv[j];
   }
+
+  /* Eww. Unwieldy.
+   * (objid, count, hidden, cause, ip, descriptor, conn,
+   * idle, recv/sent/commands)  */
+  queue_event(player, "PLAYER`DISCONNECT",
+              "%s,%d,%d,%s,%s,%d,%d,%d,%lu/%lu/%d",
+              unparse_objid(player),
+              num - 1,
+              Hidden(saved),
+              reason,
+              saved->ip,
+              saved->descriptor,
+              (int) difftime(mudtime, saved->connected_at),
+              (int) difftime(mudtime, saved->last_time),
+              saved->input_chars, saved->output_chars, saved->cmds);
 
   (void) queue_attribute(player, "ADISCONNECT", player);
   if (ROOM_CONNECTS)
@@ -4867,15 +4928,15 @@ inactivity_check(void)
 
     if ((d->connected) ? (idle_for > idle) : (idle_for > unconnected_idle)) {
 
-      if (!d->connected)
-        shutdownsock(d);
-      else if (!Can_Idle(d->player)) {
+      if (!d->connected) {
+        shutdownsock(d, "idle");
+      } else if (!Can_Idle(d->player)) {
 
         queue_string(d, T("\n*** Inactivity timeout ***\n"));
         do_rawlog(LT_CONN,
                   "[%d/%s/%s] Logout by %s(#%d) <Inactivity Timeout>",
                   d->descriptor, d->addr, d->ip, Name(d->player), d->player);
-        boot_desc(d);
+        boot_desc(d, "idle");
       } else if (Unfind(d->player)) {
 
         if ((Can_Hide(d->player)) && (!Hidden(d))) {
@@ -5210,7 +5271,7 @@ load_reboot_db(void)
   /* Now announce disconnects of everyone who's not really here */
   while (closed) {
     nextclosed = closed->next;
-    announce_disconnect(closed);
+    announce_disconnect(closed, "disconnect");
     mush_free(closed->ttype, "terminal description");
     mush_free(closed, "descriptor");
     closed = nextclosed;

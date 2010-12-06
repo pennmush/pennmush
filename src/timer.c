@@ -211,8 +211,10 @@ dispatch(void)
   }
   /* A USR1 does a shutdown/reboot */
   if (usr1_triggered) {
-    do_rawlog(LT_ERR, "SIGUSR1 received. Rebooting.");
-    do_reboot(NOTHING, 0);      /* We don't return from this */
+    if (!queue_event(SYSEVENT, "SIGNAL`USR1", "%s", "")) {
+      do_rawlog(LT_ERR, "SIGUSR1 received. Rebooting.");
+      do_reboot(NOTHING, 0);      /* We don't return from this */
+    }
     usr1_triggered = 0;         /* But just in case */
   }
   if (!globals.on_second)
@@ -259,14 +261,18 @@ dispatch(void)
     flag_broadcast(0, "ON-VACATION", "%s",
                    T
                    ("Your ON-VACATION flag is set! If you're back, clear it."));
-  } else if (NO_FORK &&
-             (options.dump_counter - 60 == mudtime) &&
-             *options.dump_warning_1min) {
-    flag_broadcast(0, 0, "%s", options.dump_warning_1min);
-  } else if (NO_FORK &&
-             (options.dump_counter - 300 == mudtime) &&
-             *options.dump_warning_5min) {
-    flag_broadcast(0, 0, "%s", options.dump_warning_5min);
+  } else if (options.dump_counter - 60 == mudtime) {
+    queue_event(SYSEVENT, "DUMP`1MIN", "%s,%d",
+                options.dump_warning_1min, NO_FORK ? 0 : 1);
+    if (NO_FORK && *options.dump_warning_1min) {
+      flag_broadcast(0, 0, "%s", options.dump_warning_1min);
+    }
+  } else if (options.dump_counter - 300 == mudtime) {
+    queue_event(SYSEVENT, "DUMP`5MIN", "%s,%d",
+                options.dump_warning_5min, NO_FORK ? 0 : 1);
+    if (NO_FORK && *options.dump_warning_5min) {
+      flag_broadcast(0, 0, "%s", options.dump_warning_5min);
+    }
   }
   if (options.warn_interval && (options.warn_counter <= mudtime)) {
     options.warn_counter = options.warn_interval + mudtime;

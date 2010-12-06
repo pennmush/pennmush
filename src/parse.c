@@ -143,7 +143,36 @@ qparse_dbref(const char *s)
   return parse_integer(s + 1);
 }
 
+/** Given a thing, return a buffer with its objid.
+ * This thing cheats, it uses a static buffer so it can safely return
+ * around 400-ish objids before rewinding back to start. This is not
+ * intended for use with large lists, but for queue_event() or for calling
+ * functions that need multiple char *s
+ *
+ * \param thing thing to the return the objid of.
+ * \return The objid string.
+ */
+const char *
+unparse_objid(dbref thing) {
+  static char obuff[BUFFER_LEN];
+  static char *obp = obuff;
+  char *retval;
 
+  if (!GoodObject(thing)) {
+    return "#-1";
+  }
+
+  if ((obp - obuff) >= (BUFFER_LEN - 40)) {
+    obp = obuff;
+  }
+  retval = obp;
+
+  safe_dbref(thing, obuff, &obp);
+  safe_chr(':', obuff, &obp);
+  safe_integer(CreTime(thing), obuff, &obp);
+  *(obp++) = '\0';
+  return retval;
+}
 /** Given a string, parse out an object id or dbref.
  * \param str string to parse.
  * \return dbref of object referenced by string, or NOTHING if not a valid

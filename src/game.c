@@ -326,6 +326,9 @@ dump_database_internal(void)
     /* The dump failed. Disk might be full or something went bad with the
        compression slave. Boo! */
     do_rawlog(LT_ERR, "ERROR! Database save failed.");
+    queue_event(SYSEVENT, "DUMP`ERROR", "%s,%d,PERROR %s",
+                T("GAME: ERROR! Database save failed!"),
+                0, strerror(errno));
     flag_broadcast("WIZARD ROYALTY", 0,
                    T("GAME: ERROR! Database save failed!"));
     if (f)
@@ -614,8 +617,13 @@ fork_and_dump(int forking)
       _exit(status ? 0 : 1);    /* d_d_i() returns true on success but exit code should be 0 on success */
     } else {
       reserve_fd();
-      if (status && DUMP_NOFORK_COMPLETE && *DUMP_NOFORK_COMPLETE)
-        flag_broadcast(0, 0, "%s", DUMP_NOFORK_COMPLETE);
+      if (status) {
+        queue_event(SYSEVENT, "DUMP`COMPLETE", "%s,%d",
+                    DUMP_NOFORK_COMPLETE, 0);
+        if (status && DUMP_NOFORK_COMPLETE && *DUMP_NOFORK_COMPLETE) {
+          flag_broadcast(0, 0, "%s", DUMP_NOFORK_COMPLETE);
+        }
+      }
     }
   }
 #ifdef LOG_CHUNK_STATS
@@ -1108,8 +1116,9 @@ process_command(dbref player, char *command, dbref cause, int from_port)
     do_log(LT_ERR, NOTHING, NOTHING,
            "Command attempted by %s(#%d) in invalid location #%d.",
            Name(player), player, Location(player));
-    if (Mobile(player))
-      moveto(player, PLAYER_START);     /* move it someplace valid */
+    if (Mobile(player)) {
+      moveto(player, PLAYER_START, SYSEVENT, "dbck"); /* move it someplace valid */
+    }
   }
   orator = player;
 

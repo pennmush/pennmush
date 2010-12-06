@@ -161,6 +161,7 @@ do_real_open(dbref player, const char *direction, const char *linkto,
     }
     current_state.exits++;
     local_data_create(new_exit);
+    queue_event(player, "OBJECT`CREATE", "%s", unparse_objid(new_exit));
     return new_exit;
   }
   return NOTHING;
@@ -460,6 +461,7 @@ do_dig(dbref player, const char *name, char **argv, int tport)
       sprintf(roomstr, "#%d", room);
       do_teleport(player, "me", roomstr, 0, 0); /* if flag, move the player */
     }
+    queue_event(player, "OBJECT`CREATE", "%s", unparse_objid(room));
     return room;
   }
   return NOTHING;
@@ -540,6 +542,9 @@ do_create(dbref player, char *name, int cost, char *newdbref)
     notify_format(player, T("Created: Object %s."), unparse_dbref(thing));
     current_state.things++;
     local_data_create(thing);
+
+    queue_event(player, "OBJECT`CREATE", "%s", unparse_objid(thing));
+
     return thing;
   }
   return NOTHING;
@@ -588,6 +593,8 @@ clone_object(dbref player, dbref thing, const char *newname, int preserve)
 
   Contents(clone) = Location(clone) = Next(clone) = NOTHING;
 
+  queue_event(player, "OBJECT`CREATE", "%s,%s",
+              unparse_objid(clone), unparse_objid(thing));
   return clone;
 
 }
@@ -646,9 +653,9 @@ do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref)
       clone = clone_object(player, thing, newname, preserve);
       notify_format(player, T("Cloned: Object %s."), unparse_dbref(clone));
       if (IsRoom(player))
-        moveto(clone, player);
+        moveto(clone, player, player, "cloned");
       else
-        moveto(clone, Location(player));
+        moveto(clone, Location(player), player, "cloned");
       current_state.things++;
       local_data_clone(clone, thing);
       real_did_it(player, clone, NULL, NULL, NULL, NULL, "ACLONE", NOTHING,
@@ -691,9 +698,9 @@ do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref)
       clone = do_real_open(player, newname, dbnum, NOTHING);
     else
       clone = do_real_open(player, Name(thing), dbnum, NOTHING);
-    if (!GoodObject(clone))
+    if (!GoodObject(clone)) {
       return NOTHING;
-    else {
+    } else {
       atr_cpy(clone, thing);
       clone_locks(player, thing, clone);
       Zone(clone) = Zone(thing);

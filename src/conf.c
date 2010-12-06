@@ -172,6 +172,8 @@ PENNCONF conftable[] = {
   ,
   {"ancestor_player", cf_dbref, &options.ancestor_player, 100000, 0, "db"}
   ,
+  {"event_handler", cf_dbref, &options.event_handler, 100000, 0, "db"}
+  ,
   {"mud_name", cf_str, options.mud_name, 128, 0, "net"}
   ,
   {"mud_url", cf_str, options.mud_url, 256, 0, "net"}
@@ -1282,6 +1284,7 @@ conf_default_set(void)
   options.ancestor_exit = -1;
   options.ancestor_thing = -1;
   options.ancestor_player = -1;
+  options.event_handler = -1;
   options.connect_fail_limit = 10;
   options.idle_timeout = 0;
   options.unconnected_idle_timeout = 300;

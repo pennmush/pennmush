@@ -3975,10 +3975,9 @@ See also: empty, get, STICKY, DROP-TO
   object differently from its exterior by using @idescribe.
 
 See: @enter, @oenter, @oxenter, @aenter, leave, @lock, @idesc, INTERIORS
-& events
 & rules
-  events [<topic>]
   rules [<topic>]
+  events [<topic>] 
 
   These commands, like news, work the same way as the help command,
   except that the information provided in them is specific to this

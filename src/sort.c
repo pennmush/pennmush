@@ -803,7 +803,7 @@ gencomp(dbref player, char *a, char *b, SortType sort_type)
   s1.val = a;
   s2.val = b;
   genrecord(&s1, player, lti);
-  genrecord(&s1, player, lti);
+  genrecord(&s2, player, lti);
   result = lti->sorter((const void *) &s1, (const void *) &s2);
   if (lti->flags & IS_STRING) {
     if (s1.memo.str.freestr)

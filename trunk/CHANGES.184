@@ -18,6 +18,18 @@ chronological order (most recent first)
 
 Version 1.8.4 patchlevel 3                                 ??? ??,  201?
 
+Events:
+ * Event system added. Certain things can now trigger events using @config
+   event_handler. See "help events" and "help event <type>". [GM]
+ * dump events: dump`5min, dump`1min, dump`complete.
+ * object events: object`create, object`destroy, object`move,
+   object`rename, object`kill.
+ * sql events: sql`connect, sql`disconnect.
+ * signal events: signal`usr1, signal`usr2.
+ * player events: player`create, player`fail, player`connect,
+   player`disconnect.
+ * socket events: soscket`connect, socket`disconnect
+
 Minor Changes:
  * The Can_Nspemit @power has been renamed to Can_Spoof, to better reflect
    its uses. Can_Nspemit is still an alias. [MG]

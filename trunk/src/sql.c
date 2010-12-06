@@ -795,8 +795,9 @@ penn_mysql_sql_init(void)
   /* If we are already connected, drop and retry the connection, in
    * case for some reason the server went away.
    */
-  if (sql_connected())
-    sql_shutdown();
+  if (penn_mysql_sql_connected()) {
+    penn_mysql_sql_shutdown();
+  }
 
   /* Parse SQL_HOST into sql_host and sql_port */
   mush_strncpy(sql_host, SQL_HOST, BUFFER_LEN);
@@ -817,13 +818,20 @@ penn_mysql_sql_init(void)
         (mysql_connp, sql_host, SQL_USER, SQL_PASS, SQL_DB, sql_port, 0, 0)) {
       do_rawlog(LT_ERR, "Failed mysql connection: %s\n",
                 mysql_error(mysql_connp));
-      sql_shutdown();
+      queue_event(SYSEVENT, "SQL`CONNECTFAIL", "%s,%s",
+                  "mysql", mysql_error(mysql_connp));
+      penn_mysql_sql_shutdown();
       sleep(1);
     }
     retries--;
   }
 
-  return sql_connected();
+  if (penn_mysql_sql_connected()) {
+    queue_event(SYSEVENT, "SQL`CONNECT", "%s", "mysql");
+    last_retry = 0;
+  }
+
+  return penn_mysql_sql_connected();
 }
 
 static MYSQL_RES *
@@ -842,9 +850,9 @@ penn_mysql_sql_query(const char *q_string, int *affected_rows)
   /* If we have no connection, and we don't have auto-reconnect on
    * (or we try to auto-reconnect and we fail), return NULL.
    */
-  if (!sql_connected()) {
-    sql_init();
-    if (!sql_connected()) {
+  if (!penn_mysql_sql_connected()) {
+    penn_mysql_sql_init();
+    if (!penn_mysql_sql_connected()) {
       return NULL;
     }
   }
@@ -852,11 +860,16 @@ penn_mysql_sql_query(const char *q_string, int *affected_rows)
   /* Send the query. If it returns non-zero, we have an error. */
   fail = mysql_real_query(mysql_connp, q_string, strlen(q_string));
   if (fail && (mysql_errno(mysql_connp) == CR_SERVER_GONE_ERROR)) {
+    if (mysql_connp) {
+      queue_event(SYSEVENT, "SQL`DISCONNECT", "%s,%s",
+                    "mysql", mysql_error(mysql_connp));
+    }
     /* If it's CR_SERVER_GONE_ERROR, the server went away.
      * Try reconnecting. */
-    sql_init();
-    if (mysql_connp)
+    penn_mysql_sql_init();
+    if (mysql_connp) {
       fail = mysql_real_query(mysql_connp, q_string, strlen(q_string));
+    }
   }
   /* If we still fail, it's an error. */
   if (fail) {
@@ -892,7 +905,7 @@ penn_mysql_free_sql_query(MYSQL_RES * qres)
 static void
 penn_pg_sql_shutdown(void)
 {
-  if (!sql_connected())
+  if (!penn_pg_sql_connected())
     return;
   PQfinish(postgres_connp);
   postgres_connp = NULL;
@@ -923,8 +936,9 @@ penn_pg_sql_init(void)
   /* If we are already connected, drop and retry the connection, in
    * case for some reason the server went away.
    */
-  if (sql_connected())
-    sql_shutdown();
+  if (penn_pg_sql_connected()) {
+    penn_pg_sql_shutdown();
+  }
 
   /* Parse SQL_HOST into sql_host and sql_port */
   mush_strncpy(sql_host, SQL_HOST, BUFFER_LEN);
@@ -945,13 +959,20 @@ penn_pg_sql_init(void)
     if (PQstatus(postgres_connp) != CONNECTION_OK) {
       do_rawlog(LT_ERR, "Failed postgresql connection to %s: %s\n",
                 PQdb(postgres_connp), PQerrorMessage(postgres_connp));
-      sql_shutdown();
+      queue_event(SYSEVENT, "SQL`CONNECTFAIL", "%s,%s",
+                  "postgresql", PQerrorMessage(postgres_connp));
+      penn_pg_sql_shutdown();
       sleep(1);
     }
     retries--;
   }
 
-  return sql_connected();
+  if (penn_pg_sql_connected()) {
+    queue_event(SYSEVENT, "SQL`CONNECT", "%s", "postgresql");
+    last_retry = 0;
+  }
+
+  return penn_pg_sql_connected();
 }
 
 static PGresult *
@@ -970,8 +991,8 @@ penn_pg_sql_query(const char *q_string, int *affected_rows)
   /* If we have no connection, and we don't have auto-reconnect on
    * (or we try to auto-reconnect and we fail), return NULL.
    */
-  if (!sql_connected()) {
-    sql_init();
+  if (!penn_pg_sql_connected()) {
+    penn_pg_sql_init();
     if (!sql_connected()) {
       return NULL;
     }
@@ -982,8 +1003,12 @@ penn_pg_sql_query(const char *q_string, int *affected_rows)
   if (!qres || (PQresultStatus(qres) != PGRES_COMMAND_OK &&
                 PQresultStatus(qres) != PGRES_TUPLES_OK)) {
     /* Serious error, try one more time */
-    sql_init();
-    if (sql_connected())
+    if (postgres_connp) {
+      queue_event(SYSEVENT, "SQL`DISCONNECT", "%s,%s",
+                  "postgresql", PQerrorMessage(postgres_connp));
+    }
+    penn_pg_sql_init();
+    if (penn_pg_sql_connected())
       qres = PQexec(postgres_connp, q_string);
     if (!qres || (PQresultStatus(qres) != PGRES_COMMAND_OK &&
                   PQresultStatus(qres) != PGRES_TUPLES_OK)) {
@@ -1015,13 +1040,17 @@ penn_sqlite3_sql_init(void)
   sqlite3_connp = NULL;
   if (sqlite3_open(SQL_DB, &sqlite3_connp) != SQLITE_OK) {
     do_rawlog(LT_ERR, "sqlite3: Failed to open %s: %s", SQL_DB, sql_error());
+    queue_event(SYSEVENT, "SQL`CONNECTFAIL", "%s,%s",
+                "sqlite3", sql_error());
     if (sqlite3_connp) {
       sqlite3_close(sqlite3_connp);
       sqlite3_connp = NULL;
     }
     return 0;
-  } else
+  } else {
+    queue_event(SYSEVENT, "SQL`CONNECT", "%s", "sqlite3");
     return 1;
+  }
 }
 
 static void
@@ -1044,9 +1073,9 @@ penn_sqlite3_sql_query(const char *query, int *affected_rows)
   const char *eoq = NULL;
   sqlite3_stmt *statement = NULL;
 
-  if (!sql_connected()) {
-    sql_init();
-    if (!sql_connected())
+  if (!penn_sqlite3_sql_connected()) {
+    penn_sqlite3_sql_init();
+    if (!penn_sqlite3_sql_connected())
       return NULL;
   }
 

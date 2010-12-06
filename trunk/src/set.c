@@ -132,6 +132,9 @@ do_name(dbref player, const char *name, char *newname_)
     reset_player_list(thing, Name(thing), NULL, bon, NULL);
   set_name(thing, bon);
 
+  queue_event(player, "OBJECT`RENAME", "%s,%s,%s",
+              unparse_objid(thing), myenv[1], myenv[0]);
+
   if (!AreQuiet(player, thing))
     notify(player, T("Name set."));
   real_did_it(player, thing, NULL, NULL, "ONAME", NULL, "ANAME", NOTHING,

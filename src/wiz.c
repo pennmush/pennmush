@@ -126,7 +126,7 @@ do_pcreate(dbref creator, const char *player_name, const char *player_password,
     return NOTHING;
   }
 
-  player = create_player(player_name, player_password, "None", "None");
+  player = create_player(NULL, player_name, player_password, "None", "None");
   if (player == NOTHING) {
     notify_format(creator, T("Failure creating '%s' (bad name)"), player_name);
     return NOTHING;
@@ -139,6 +139,8 @@ do_pcreate(dbref creator, const char *player_name, const char *player_password,
   notify_format(creator, T("New player '%s' (#%d) created with password '%s'"),
                 player_name, player, player_password);
   do_log(LT_WIZ, creator, player, "Player creation");
+  queue_event(creator, "PLAYER`CREATE", "%s,%s,%s",
+              unparse_objid(player), Name(player), "pcreate");
   return player;
 }
 
@@ -388,10 +390,11 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
      */
     if (player == victim) {
       if (command_check_byname(victim, "HOME"))
-        safe_tel(victim, HOME, silent);
+        safe_tel(victim, HOME, silent, player, "teleport");
       return;
-    } else
+    } else {
       destination = Home(victim);
+    }
   } else {
     destination = match_result(player, to, TYPE_PLAYER, MAT_EVERYTHING);
   }
@@ -463,7 +466,7 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
       if (!silent && loc != Location(destination))
         did_it_with(victim, victim, NULL, NULL, "OXTPORT", NULL, NULL, loc,
                     player, NOTHING, NA_INTER_HEAR);
-      safe_tel(victim, Location(destination), silent);
+      safe_tel(victim, Location(destination), silent, player, "teleport");
       if (!silent && loc != Location(destination))
         did_it_with(victim, victim, "TPORT", NULL, "OTPORT", NULL, "ATPORT",
                     Location(destination), player, loc, NA_INTER_HEAR);
@@ -552,7 +555,7 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
         if (!silent && loc != destination)
           did_it_with(victim, victim, NULL, NULL, "OXTPORT", NULL, NULL, loc,
                       player, NOTHING, NA_INTER_HEAR);
-        safe_tel(victim, destination, silent);
+        safe_tel(victim, destination, silent, player, "teleport");
         if (!silent && loc != destination)
           did_it_with(victim, victim, "TPORT", NULL, "OTPORT", NULL, "ATPORT",
                       destination, player, loc, NA_INTER_HEAR);
@@ -870,7 +873,7 @@ do_boot(dbref player, const char *name, enum boot_type flag, int silent)
       notify_format(player, T("You booted unconnected port %s!"), name);
     }
     do_log(LT_WIZ, player, victim, "*** BOOT ***");
-    boot_desc(d);
+    boot_desc(d, "boot");
     return;
   }
 

@@ -55,6 +55,7 @@ void
 do_kill(dbref player, const char *what, int cost, int slay)
 {
   dbref victim;
+  int overridekill = 0;
   char tbuf1[BUFFER_LEN], tbuf2[BUFFER_LEN], *tp;
 
   if (slay && !Wizard(player)) {
@@ -102,7 +103,7 @@ do_kill(dbref player, const char *what, int cost, int slay)
       return;
     }
   }
-  if (((get_random32(0, KILL_BASE_COST) < (uint32_t) cost) || slay) &&
+  if (((get_random32(0, 100) < (uint32_t) cost) || slay) &&
       !Wizard(victim)) {
     /* you killed him */
     tp = tbuf1;
@@ -111,28 +112,36 @@ do_kill(dbref player, const char *what, int cost, int slay)
     tp = tbuf2;
     safe_format(tbuf2, &tp, T("killed %s!"), Name(victim));
     *tp = '\0';
-    do_halt(victim, "", victim);
+
+    overridekill = queue_event(player, "OBJECT`KILL", "%s,%d,%d",
+                               unparse_objid(victim), cost, slay);
+    if (!overridekill) {
+      do_halt(victim, "", victim);
+    }
     did_it(player, victim, "DEATH", tbuf1, "ODEATH", tbuf2, "ADEATH", NOTHING);
 
     /* notify victim */
     notify_format(victim, T("%s killed you!"), Name(player));
 
-    /* maybe pay off the bonus */
-    /* if we were not called via slay */
-    if (!slay) {
-      int payoff = cost * KILL_BONUS / 100;
-      if (payoff + Pennies(Owner(victim)) > Max_Pennies(Owner(victim)))
-        payoff = Max_Pennies(Owner(victim)) - Pennies(Owner(victim));
-      if (payoff > 0) {
-        notify_format(victim, T("Your insurance policy pays %d %s."),
-                      payoff, ((payoff == 1) ? MONEY : MONIES));
-        giveto(Owner(victim), payoff);
-      } else {
-        notify(victim, T("Your insurance policy has been revoked."));
+    if (!overridekill) {
+      /* Overriding the kill event with the events system prevents do_halt,
+       * @tel and the payoff. */
+      /* Pay off the bonus, if we were not called via slay */
+      if (!slay) {
+        int payoff = cost * KILL_BONUS / 100;
+        if (payoff + Pennies(Owner(victim)) > Max_Pennies(Owner(victim)))
+          payoff = Max_Pennies(Owner(victim)) - Pennies(Owner(victim));
+        if (payoff > 0) {
+          notify_format(victim, T("Your insurance policy pays %d %s."),
+                        payoff, ((payoff == 1) ? MONEY : MONIES));
+          giveto(Owner(victim), payoff);
+        } else {
+          notify(victim, T("Your insurance policy has been revoked."));
+        }
       }
+      /* send him home */
+      safe_tel(victim, HOME, 0, player, "killed");
     }
-    /* send him home */
-    safe_tel(victim, HOME, 0);
     /* if victim is object also dequeue all commands */
   } else {
     /* notify player and victim only */
@@ -403,7 +412,7 @@ do_give(dbref player, char *recipient, char *amnt, int silent)
       }
 
       if (Mobile(thing) && (EnterOk(who) || controls(player, who))) {
-        moveto(thing, who);
+        moveto(thing, who, player, "give");
 
         /* Notify the giver with their GIVE message */
         bp = tbuf1;

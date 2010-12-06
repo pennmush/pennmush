@@ -54,7 +54,7 @@ extern time_t mudtime;
 
 extern int shutdown_flag;       /* if non-zero, interface should shut down */
 void emergency_shutdown(void);
-void boot_desc(DESC *d);        /* remove a player */
+void boot_desc(DESC *d, const char *cause);        /* remove a player */
 int boot_player(dbref player, int idleonly, int slilent);
 DESC *player_desc(dbref player);        /* find descriptors */
 DESC *inactive_desc(dbref player);      /* find descriptors */
@@ -252,6 +252,9 @@ extern EVAL_CONTEXT global_eval_context;
 void do_second(void);
 int do_top(int ncom);
 void do_halt(dbref owner, const char *ncom, dbref victim);
+#define SYSEVENT -1
+bool queue_event(dbref enactor, const char *event, const char *fmt, ...)
+  __attribute__ ((__format__(__printf__, 3, 4)));
 void parse_que(dbref player, const char *command, dbref cause,
                PE_Info *pe_info);
 int queue_attribute_base(dbref executor, const char *atrname, dbref enactor,
@@ -322,13 +325,15 @@ void list_mem_check(dbref player);
 void log_mem_check(void);
 
 /* From move.c */
-void enter_room(dbref player, dbref loc, int nomovemsgs);
+void enter_room(dbref player, dbref loc, int nomovemsgs,
+                dbref enactor, const char *cause);
 int can_move(dbref player, const char *direction);
 /** Enumeration of types of movements that can be performed */
 enum move_type { MOVE_NORMAL, MOVE_GLOBAL, MOVE_ZONE };
 void do_move(dbref player, const char *direction, enum move_type type);
-void moveto(dbref what, dbref where);
-void safe_tel(dbref player, dbref dest, int nomovemsgs);
+void moveto(dbref what, dbref where, dbref enactor, const char *cause);
+void safe_tel(dbref player, dbref dest, int nomovemsgs,
+              dbref enactor, const char *cause);
 int global_exit(dbref player, const char *direction);
 int remote_exit(dbref loc, const char *direction);
 void move_wrapper(dbref player, const char *command);
@@ -343,13 +348,17 @@ void clear_following(dbref follower, int noisy);
 char *mush_crypt(const char *key);
 
 /* From player.c */
+extern const char *connect_fail_limit_exceeded;
+int mark_failed(const char *ipaddr);
+int count_failed(const char *ipaddr);
+int check_fails(const char *ipaddr);
 int password_check(dbref player, const char *password);
 dbref lookup_player(const char *name);
 dbref lookup_player_name(const char *name);
 /* from player.c */
-dbref create_player(const char *name, const char *password,
+dbref create_player(DESC *d, const char *name, const char *password,
                     const char *host, const char *ip);
-dbref connect_player(const char *name, const char *password,
+dbref connect_player(DESC *d, const char *name, const char *password,
                      const char *host, const char *ip, char *errbuf);
 void check_last(dbref player, const char *host, const char *ip);
 void check_lastfailed(dbref player, const char *host);
@@ -565,6 +574,7 @@ mush_strndup(const char *src, size_t len, const char *check)
     const char *real_unparse
       (dbref player, dbref loc, int obey_myopic, int use_nameformat,
        int use_nameaccent);
+    extern const char *unparse_objid(dbref thing);
     extern const char *unparse_object(dbref player, dbref loc);
 /** For back compatibility, an alias for unparse_object */
 #define object_header(p,l) unparse_object(p,l)

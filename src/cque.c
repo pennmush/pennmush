@@ -285,6 +285,162 @@ next_pid(void)
   }
 }
 
+#define DELIM_CHAR '\x11'
+/** If EVENT_HANDLER config option is set to a valid dbref, try triggering
+ * its handler attribute
+ * \param event The event. No spaces, only alphanumerics and dashes.
+ * \param enactor The enactor who caused it.
+ * \param argstring A comma-deliminated string defining printf-style args.
+ * \param ... The args passed to argstring.
+ * \retval 1 The event had a handler attribute.
+ * \retval 0 No event handler or no attribute for the given event.
+ */
+bool
+queue_event(dbref enactor, const char *event, const char *fmt, ...)
+{
+  char myfmt[BUFFER_LEN];
+  char buff[BUFFER_LEN * 4];
+  va_list args;
+  char *s, *snext;
+  ATTR *a;
+  char *aval;
+  int argcount = 0;
+  char *wenv[10];
+  int i, len;
+  BQUE *tmp;
+  int pid;
+
+  /* Make sure we have an event to call, first. */
+  if (!GoodObject(EVENT_HANDLER) || IsGarbage(EVENT_HANDLER) ||
+      Halted(EVENT_HANDLER)) {
+    return 0;
+  }
+
+  /* <0 means system event, -1. Just in case, this also covers
+   * Garbage and !GoodObject enactors. */
+  if (!GoodObject(enactor) || IsGarbage(enactor)) {
+    enactor = -1;
+  }
+
+  a = atr_get_noparent(EVENT_HANDLER, event);
+  if (!(a && AL_STR(a) && *AL_STR(a))) {
+    /* Nonexistant or empty attrib. */
+    return 0;
+  }
+
+  /* Because Event is so easy to run away. */
+  if (!pay_queue(EVENT_HANDLER, event)) {
+    return 0;
+  }
+
+  /* Fetch the next available pid. */
+  pid = next_pid();
+  if (pid == 0) {
+    /* Too many queue entries */
+    notify(Owner(EVENT_HANDLER), T("Queue entry table full. Try again later."));
+    return 0;
+  }
+
+  /* We have an event to call. Yay! */
+  for (i = 0; i < 10; i++) wenv[i] = NULL;
+
+  /* Prep myfmt: Replace all commas with delim chars. */
+  snprintf(myfmt, BUFFER_LEN, "%s", fmt);
+  s = myfmt;
+
+  if (*s) argcount++; /* At least one arg. */
+  while ((s = strchr(s, ',')) != NULL) {
+    *(s++) = DELIM_CHAR;
+    argcount++;
+  }
+
+  /* Maximum number of args available is 10: %0-%9 */
+  if (argcount > 10) argcount = 10;
+
+  if (argcount > 0) {
+    /* Build the arguments. */
+    va_start(args, fmt);
+#ifdef HAS_VSNPRINTF
+    vsnprintf(buff, sizeof buff, myfmt, args);
+#else
+    /* Danger! Danger, Will Robinson! */
+    vsprintf(buff, myfmt, args);
+#endif
+    buff[(BUFFER_LEN*4) - 1] = '\0';
+    va_end(args);
+
+    len = strlen(buff);
+    for (i = 0, s = buff; i < argcount && s; i++, s = snext) {
+      snext = strchr(s, DELIM_CHAR);
+      if ((snext ? (snext - s) : (len - (s - buff))) > BUFFER_LEN) {
+        /* It's theoretically possible to have an arg that's longer than
+         * BUFFER_LEN */
+        s[BUFFER_LEN - 1] = '\0';
+      }
+      if (snext) {
+        *(snext++) = '\0';
+      }
+      wenv[i] = s;
+    }
+    
+  }
+
+  /* Let's queue this mother. */
+
+
+  /* Build tmp. */
+  tmp = mush_malloc(sizeof *tmp, "cqueue");
+  tmp->pid = pid;
+  tmp->semattr = NULL;
+  tmp->player = EVENT_HANDLER;
+  tmp->queued = QUEUE_PER_OWNER ? Owner(EVENT_HANDLER) : EVENT_HANDLER;
+  tmp->next = NULL;
+  tmp->left = 0;
+  tmp->cause = enactor;
+  tmp->pe_info = NULL;
+
+  aval = safe_atr_value(a);
+  tmp->comm = mush_strdup(aval, "cqueue.comm");
+  free(aval);
+
+  /* Set up %0-%9 */
+  for (i = 0; i < 10; i++) {
+    if (wenv[i]) {
+      tmp->env[i] = mush_strdup(wenv[i], "cqueue.env");
+    } else {
+      tmp->env[i] = NULL;
+    }
+  }
+
+  /* All Q-registers cleared */
+  for (i = 0; i < NUMQ; i++) {
+    tmp->rval[i] = NULL;
+  }
+
+  /* Hmm, should events queue ahead of anything else?
+   * For now, yes, but leaving code here anyway.
+   */
+  if (1) {
+    if (qlast) {
+      qlast->next = tmp;
+      qlast = tmp;
+    } else {
+      qlast = qfirst = tmp;
+    }
+  } else {
+    if (qllast) {
+      qllast->next = tmp;
+      qllast = tmp;
+    } else {
+      qllast = qlfirst = tmp;
+    }
+  }
+
+  /* All good! */
+  im_insert(queue_map, tmp->pid, tmp);
+  return 1;
+}
+
 /** Add a new entry onto the player or object command queues.
  * This function adds a new entry to the back of the player or
  * object command queues (depending on whether the call was

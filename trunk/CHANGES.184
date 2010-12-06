@@ -28,7 +28,7 @@ Events:
  * signal events: signal`usr1, signal`usr2.
  * player events: player`create, player`fail, player`connect,
    player`disconnect.
- * socket events: soscket`connect, socket`disconnect
+ * socket events: socket`connect, socket`disconnect
 
 Minor Changes:
  * The Can_Nspemit @power has been renamed to Can_Spoof, to better reflect

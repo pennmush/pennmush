@@ -230,7 +230,7 @@ do_buy(dbref player, char *item, char *from, int price)
       continue;
     mush_strncpy(prices, atr_value(a), BUFFER_LEN);
     upcasestr(prices);
-    count = list2arr(r, BUFFER_LEN / 2, prices, ' ');
+    count = list2arr(r, BUFFER_LEN / 2, prices, ' ', 0);
     if (!count)
       continue;
     for (i = 0; i < count; i++) {
@@ -239,7 +239,7 @@ do_buy(dbref player, char *item, char *from, int price)
         cost = r[i] + len;
         if (!*cost)
           continue;
-        costcount = list2arr(c, BUFFER_LEN / 2, cost, ',');
+        costcount = list2arr(c, BUFFER_LEN / 2, cost, ',', 0);
         for (ci = 0; ci < costcount; ci++) {
           cost = c[ci];
           /* Formats:

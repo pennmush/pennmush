@@ -595,7 +595,7 @@ ListTypeInfo ltypelist[] = {
   {NUMERIC_LIST, NULL, 0, gen_num, i_comp, 0},
   {FLOAT_LIST, NULL, 0, gen_float, f_comp, 0},
   {MAGIC_LIST, NULL, 0, gen_magic, s_comp, IS_STRING | IS_CASE_INSENS},
-  {DBREF_NAME_LIST, NULL, 0, gen_db_name, s_comp, IS_DB | IS_STRING | IS_CASE_INSENS},
+  {DBREF_NAME_LIST, NULL, 0, gen_db_name, s_comp, IS_DB | IS_STRING},
   {DBREF_NAMEI_LIST, NULL, 0, gen_db_name, s_comp, IS_DB | IS_STRING | IS_CASE_INSENS},
   {DBREF_IDLE_LIST, NULL, 0, gen_db_idle, i_comp, IS_DB},
   {DBREF_CONN_LIST, NULL, 0, gen_db_conn, i_comp, IS_DB},

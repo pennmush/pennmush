@@ -16,6 +16,12 @@ chronological order (most recent first)
 
 ==========================================================================
 
+Version 1.8.4 patchlevel 3                                 ??? ??,  201?
+
+Minor Changes:
+ * The Can_Nspemit @power has been renamed to Can_Spoof, to better reflect
+   its uses. Can_Nspemit is still an alias. [MG]
+
 Version 1.8.4 patchlevel 2                                 Dec 06,  2010
 
 Major Changes:

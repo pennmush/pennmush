@@ -128,7 +128,7 @@ See also: CHAT
   from being evaluated.
 
   @nscemit is exactly the same, but does not produce nospoof information when
-  used by players with the Can_nspemit @power.
+  used by players with the Can_spoof @power.
 
   cemit() and nscemit() work the same as @cemit/silent and @nscemit/silent,
   respectively. If <noisy> is given as a true value, they work like

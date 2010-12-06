@@ -574,7 +574,7 @@ FUNCTION(fun_strmatch)
 
     if (matches) {
       /* Now, assign the captures, if we have returns. */
-      nqregs = list2arr(qregs, NUMQ, args[2], ' ');
+      nqregs = list2arr(qregs, NUMQ, args[2], ' ', 0);
 
       for (i = 0; i < nqregs; i++) {
         if (ret[i] && qregs[i][0] && !qregs[i][1]) {

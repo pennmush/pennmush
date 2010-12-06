@@ -28,6 +28,11 @@ Events:
 Minor Changes:
  * The Can_Nspemit @power has been renamed to Can_Spoof, to better reflect
    its uses. Can_Nspemit is still an alias. [MG]
+ * Considerable improvement in the speed of functions that sort
+   case-insensitively, particularly using 'm' sort (Now default). [GM]
+ * Combined fun_setinter, fun_setdiff and fun_setunion into fun_setmanip. [GM]
+ * For hardcoders: list2arr and list2arr_ansi now take a third argument
+   on whether to include empty items. [GM]
 
 & 1.8.4p2
 Version 1.8.4 patchlevel 2                                 Dec 06,  2010

@@ -816,8 +816,8 @@ FUNCTION(fun_vcross)
   if (!delim_check(buff, bp, nargs, args, 3, &sep))
     return;
 
-  v1len = list2arr(v1, BUFFER_LEN / 2, args[0], sep);
-  v2len = list2arr(v2, BUFFER_LEN / 2, args[1], sep);
+  v1len = list2arr(v1, BUFFER_LEN / 2, args[0], sep, 1);
+  v2len = list2arr(v2, BUFFER_LEN / 2, args[1], sep, 1);
 
   if (v1len != 3 || v2len != 3) {
     safe_str(T("#-1 VECTORS MUST BE THREE-DIMENSIONAL"), buff, bp);
@@ -1813,7 +1813,7 @@ FUNCTION(fun_lmath)
   /* Allocate memory */
   ptr = mush_calloc(BUFFER_LEN, sizeof(char *), "string");
 
-  nptr = list2arr(ptr, BUFFER_LEN, args[1], sep);
+  nptr = list2arr(ptr, BUFFER_LEN, args[1], sep, 1);
 
   op = math_hash_lookup(args[0], arglens[0]);
 

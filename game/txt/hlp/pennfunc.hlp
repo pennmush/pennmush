@@ -1185,11 +1185,14 @@ See also: strreplace(), strinsert(), mid()
     > think die(3, 6, 1)
     5 2 1  
 & DIG()
-  dig(<name>[, <exit to>[, <exit from>]])
+  dig(<name>[, <exit to>[, <exit from>[, <dbref>]]])
  
   This function digs a room called <name>, and optionally opens and
   links <exit to> and <exit from>, like the normal @dig command. It
   returns the dbref number of the new room.
+  
+  Wizards can supply an optional fourth argument to specify a garbage
+  object to use for the new room.
 
   This is a side-effect function and may not be enabled on some MUSHes.
 & DIGEST()

@@ -3390,10 +3390,30 @@ See also: GENDER, subj(), poss(), aposs(), obj()
     Test
     
 See also: say, pose, @emit, @chatformat, @pageformat
+& @mapsql
+  @mapsql[/notify][/colnames] <obj>/<attr>=<query>
+
+  This command issues an SQL query if the MUSH supports SQL and
+  can connect to an SQL server. You must be WIZARD or have the
+  Sql_Ok power to use @sql.
+
+  Returned rows are passed to <obj>/<attr>, with Row number passed as %0
+  and the columns passed as %1-%9. Row numbers start at 1.
+
+  The /notify switch causes @mapsql to do an "@notify me" at the end of
+  the list.
+
+  The /colnames switch causes @mapsql to first queue the obj/attr with
+  row number 0 and %0-%9 being the column names.
+
+  Example:
+  > &desctable me=think align(30 20 4 10 10,%0,%1,%2,%3,%4)
+  > @mapsql me/desctable=DESCRIBE table_name
+See also: sql(), sqlescape(), mapsql(), @sql
 & @sql
   @sql <query>
 
-  This command issues and SQL query if the MUSH supports SQL and
+  This command issues an SQL query if the MUSH supports SQL and
   can connect to an SQL server. You must be WIZARD or have the
   Sql_Ok power to use @sql.
 
@@ -3405,7 +3425,7 @@ See also: say, pose, @emit, @chatformat, @pageformat
   Example:
     > @sql SHOW TABLES
 
-See also: sql(), sqlescape(), mapsql()
+See also: sql(), sqlescape(), mapsql(), @mapsql
 & @squota
   @squota <victim> [= [+|-] <amount>]
 

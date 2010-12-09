@@ -26,6 +26,7 @@ Events:
  * socket events: socket`connect, socket`disconnect
 
 Commands:
+ * @mapsql passes row results to attributes. Suggested by Mercutio. [GM]
  * @dig now takes an optional garbage dbref argument to specify the new
    dbref. Suggested by Paige. [GM]
 

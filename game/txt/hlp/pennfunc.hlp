@@ -4589,7 +4589,7 @@ See also: merge()
 
   See 'help sql examples' for examples.
 
-See also: anonymous attributes, sqlescape(), sql(), @sql
+See also: anonymous attributes, sqlescape(), sql(), @sql, @mapsql
 & SQL()
   sql(<query>[, <row separator>[, <field separator>[, <register>]]])
 
@@ -4615,7 +4615,7 @@ See also: anonymous attributes, sqlescape(), sql(), @sql
   
   See 'help sql examples' for examples.
 
-See also: sqlescape(), mapsql(), @sql, setq(), r()
+See also: sqlescape(), mapsql(), @sql, setq(), r(), @mapsql
 & SQL Examples
 
   Example of using sqlescape() to prevent injection attacks:
@@ -4664,7 +4664,7 @@ See also: sqlescape(), mapsql(), @sql, setq(), r()
 
   You must be a WIZARD or have the Sql_Ok power to use this function.
 
-See also: sql(), mapsql(), @sql
+See also: sql(), mapsql(), @sql, @mapsql
 & SQRT()
   sqrt(<number>)
  

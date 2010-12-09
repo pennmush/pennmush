@@ -142,9 +142,9 @@ See also: @chat
   The @channel command is used to add, join, list and modify channels in the
   chat system. It takes many different switches.
 
-  Help for @channel system is split into a number of topics. Please see 'help 
-  @channel <topic>' for more, where <topic> is one of the words below. You
-  can also use 'help @channel/<switch>' for help on a particular switch.
+  Help for @channel is split into a number of topics. Please see 'help 
+  @channel <topic>' for more, where <topic> is one of the words below. For
+  help on a specific switch to @command, use 'help @channel/<switch>'.
 
   Joining    - How to find, join, and leave channels
   Other      - Setting channel titles, recalling previous chat messages
@@ -550,8 +550,8 @@ See also: cstatus()
   for the list. You must be able to see the channel to use this function.
 
   With two arguments, cflags() returns a list of flags for that object on 
-  that channel, currently a string consisting of zero or more of 
-  "G" (gagging), "Q" (muted), and "H" (hidden). You must be able to see that
+  that channel, currently a string consisting of zero or more of "G" (Gag),
+  "Q" (Quiet), "H" (Hide) and "C" (Combine). You must be able to see that
   channel and to examine the object to use this function. If the object is
   not on the channel, an error is returned.
 

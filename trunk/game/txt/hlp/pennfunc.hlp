@@ -401,12 +401,13 @@ See also: before(), rest()
     < Left-justify       - Center-justify        > Right-justify
     _ Full-justify.      = Paragraph-justify.
  
-  Runout: Placing one of these characters after the width alters what
-  happens when the column runs out of text before the other columns.
-  (e.g: 30`)
-    . Repeat
-    ` Merge with the column on the left.
-    ' Merge with the column on the right.
+  Other options: Adding these after the width will alter the column's
+    behaviour in some situtations
+    . Repeat for as long as there is non-repeating text in another column.
+    ` Merge with the column on the left when it runs out of text.
+    ' Merge with the column on the right when it runs out of text.
+    $ nofill: Don't use filler after the text. If this is combined with
+      merge-left, the column to its left inherits the 'nofill' when merged.
 
   Ansi: Place ansi characters (as defined in 'help ansi()') within ()s to
   define a column's ansi markup.
@@ -433,9 +434,8 @@ See also: center(), ljust(), rjust(), table()
          +                  Luke                  +
          +----------------------------------------+
 
-  See 'help align4' for another example.
+  See 'help align4' for more examples.
 & ALIGN4
-
   > &dropcap me=%b_______%r|__%b%b%b__|%r%b%b%b|%b|%r%b%b%b|_|
   > &story me=%r'was the night before Christmas, when all through the house%r
               Not a creature was stirring, not even a mouse.%r
@@ -451,7 +451,11 @@ See also: center(), ljust(), rjust(), table()
   
   The dropcap 'T' will be in ANSI cyan-highlight, and merges with the 'story'
   column.
-  
+
+  > th align(>15 60,Walker,Staff & Developer,x,x)
+  xxxxxxxxxWalkerxStaff & Developerxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  > th align(>15 60$,Walker,Staff & Developer,x,x)
+  xxxxxxxxxWalkerxStaff & Developer
 & ALLOF()
   allof(<expr>[, ... , <exprN>], <osep>)
 

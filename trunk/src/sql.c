@@ -59,6 +59,7 @@ static sqlite3 *sqlite3_connp = NULL;
 #include "mushdb.h"
 #include "confmagic.h"
 #include "ansi.h"
+#include "match.h"
 
 extern signed char qreg_indexes[UCHAR_MAX + 1];
 
@@ -323,6 +324,178 @@ FUNCTION(fun_sql_escape)
     safe_str(bigbuff, buff, bp);
   else
     safe_str(T("#-1 TOO LONG"), buff, bp);
+}
+
+COMMAND(cmd_mapsql)
+{
+#ifdef HAVE_MYSQL
+  MYSQL_FIELD *fields = NULL;
+#endif
+  void *qres;
+  int affected_rows = -1;
+  int rownum;
+  int numfields;
+  int numrows;
+  char *names[10];
+  char *cells[10];
+  char tbuf[BUFFER_LEN];
+  char strrownum[20];
+  char *s;
+  int i, a;
+  dbref thing;
+  int dofieldnames = SW_ISSET(sw, SWITCH_COLNAMES);
+  int donotify = SW_ISSET(sw, SWITCH_NOTIFY);
+
+  /* Find and fetch the attribute, first. */
+  strncpy(tbuf, arg_left, BUFFER_LEN);
+
+  s = strchr(tbuf, '/');
+  if (!s) {
+    notify(player, T("I need to know what attribute to trigger."));
+    return;
+  }
+  *(s++) = '\0';
+  upcasestr(s);
+
+  thing = noisy_match_result(player, tbuf, NOTYPE, MAT_EVERYTHING);
+
+  if (thing == NOTHING) {
+    return;
+  }
+
+  if (!controls(player, thing) && !(Owns(player, thing) && LinkOk(thing))) {
+    notify(player, T("Permission denied."));
+    return;
+  }
+
+  if (God(thing) && !God(player)) {
+    notify(player, T("You can't trigger God!"));
+    return;
+  }
+
+  for (a = 0; a < 10; a++) {
+    cells[a] = NULL;
+    names[a] = NULL;
+  }
+
+  /* Do the query. */
+  qres = sql_query(arg_right, &affected_rows);
+
+  if (!qres) {
+    if (affected_rows >= 0) {
+      notify_format(player, T("SQL: %d rows affected."), affected_rows);
+    } else if (!sql_connected()) {
+      notify(player, T("No SQL database connection."));
+    } else {
+      notify_format(player, T("SQL: Error: %s"), sql_error());
+    }
+    return;
+  }
+
+  /* Get results. A silent query (INSERT, UPDATE, etc.) will return NULL */
+  switch (sql_platform()) {
+#ifdef HAVE_MYSQL
+  case SQL_PLATFORM_MYSQL:
+    affected_rows = mysql_affected_rows(mysql_connp);
+    numfields = mysql_num_fields(qres);
+    numrows = INT_MAX;          /* Using mysql_use_result() doesn't know the number
+                                   of rows ahead of time. */
+    fields = mysql_fetch_fields(qres);
+    break;
+#endif
+#ifdef HAVE_POSTGRESQL
+  case SQL_PLATFORM_POSTGRESQL:
+    numfields = PQnfields(qres);
+    numrows = PQntuples(qres);
+    break;
+#endif
+#ifdef HAVE_SQLITE3
+  case SQL_PLATFORM_SQLITE3:
+    numfields = sqlite3_column_count(qres);
+    numrows = INT_MAX;
+    break;
+#endif
+  default:
+    goto finished;
+  }
+
+  for (rownum = 0; rownum < numrows; rownum++) {
+#ifdef HAVE_MYSQL
+    MYSQL_ROW row_p = NULL;
+    if (sql_platform() == SQL_PLATFORM_MYSQL) {
+      row_p = mysql_fetch_row(qres);
+      if (!row_p)
+        break;
+    }
+#endif
+#ifdef HAVE_SQLITE3
+    if (sql_platform() == SQL_PLATFORM_SQLITE3) {
+      int retcode = sqlite3_step(qres);
+      if (retcode == SQLITE_DONE)
+        break;
+      else if (retcode != SQLITE_ROW) {
+        notify_format(player, T("SQL: Error: %s"), sql_error());
+        break;
+      }
+    }
+#endif
+
+    if (numfields > 0) {
+      for (i = 0; i < numfields && i < 9; i++) {
+        switch (sql_platform()) {
+#ifdef HAVE_MYSQL
+        case SQL_PLATFORM_MYSQL:
+          cells[i+1] = row_p[i];
+          names[i+1] = fields[i].name;
+          break;
+#endif
+#ifdef HAVE_POSTGRESQL
+        case SQL_PLATFORM_POSTGRESQL:
+          cells[i+1] = PQgetvalue(qres, rownum, i);
+          names[i+1] = PQfname(qres, i);
+          break;
+#endif
+#ifdef HAVE_SQLITE3
+        case SQL_PLATFORM_SQLITE3:
+          cells[i+1] = (char *) sqlite3_column_text(qres, i);
+          names[i+1] = (char *) sqlite3_column_name(qres, i);
+          break;
+#endif
+        default:
+          /* Not reached, shuts up compiler */
+          break;
+        }
+      }
+
+      if ((rownum == 0) && dofieldnames) {
+        /* Queue 0: <names> */
+        snprintf(strrownum, 20, "%d", 0);
+        names[0] = strrownum;
+        for (a = 0; a < 10; a++) {
+          global_eval_context.wnxt[a] = names[a];
+        }
+        queue_attribute(thing, s, player);
+      }
+
+      /* Queue the rest. */
+      snprintf(strrownum, 20, "%d", rownum + 1);
+      cells[0] = strrownum;
+      for (a = 0; a < 10; a++) {
+        global_eval_context.wnxt[a] = cells[a];
+      }
+      queue_attribute(thing, s, player);
+      /* Queue rownum: <names> */
+    } else {
+      /* What to do if there are no fields? This should be an error?. */
+      /* notify_format(player, T("Row %d: NULL"), rownum + 1); */
+    }
+  }
+  if (donotify) {
+    parse_que(player, "@notify me", cause, NULL);
+  }
+
+finished:
+  free_sql_query(qres);
 }
 
 

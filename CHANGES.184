@@ -38,6 +38,9 @@ Minor Changes:
  * Combined fun_setinter, fun_setdiff and fun_setunion into fun_setmanip. [GM]
  * For hardcoders: list2arr and list2arr_ansi now take a third argument
    on whether to include empty items. [GM]
+   
+Fixes:
+ * Help fixes by Daniel Powell. [MG]
 
 Version 1.8.4 patchlevel 2                                 Dec 06,  2010
 

@@ -1668,12 +1668,14 @@ FUNCTION(fun_wrap)
 #define AL_LEFT 1    /**< Align left */
 #define AL_RIGHT 2   /**< Align right */
 #define AL_CENTER 3  /**< Align center */
-#define AL_FULL 4  /**< Fully-justify */
-#define AL_WPFULL 5  /**< Fully-justify */
+#define AL_FULL 4    /**< Full justify */
+#define AL_WPFULL 5  /**< Paragraph full-justify */
+#define AL_TYPE 0x0F /**< Only the bottom 4 bits are used for the type. */
 /* Flags */
 #define AL_REPEAT 0x100  /**< Repeat column */
 #define AL_COALESCE_LEFT 0x200  /**< Coalesce empty column with column to left */
 #define AL_COALESCE_RIGHT 0x400  /**< Coalesce empty column with column to right */
+#define AL_NOFILL 0x800  /**< No filler on the right of this. */
 
 static int
 align_one_line(char *buff, char **bp, int ncols,
@@ -1715,6 +1717,10 @@ align_one_line(char *buff, char **bp, int ncols,
       /* To coalesce left on this line, modify the left column's
        * width and set the current column width to 0 (which we can
        * teach it to skip). */
+      /* If the next column is marked NOFILL, we inherit that. */
+      if (calign[i+1] & AL_NOFILL) {
+        calign[i] |= AL_NOFILL;
+      }
       cols[i] += cols[i + 1] + fslen;
       cols[i + 1] = 0;
     }
@@ -1737,7 +1743,9 @@ align_one_line(char *buff, char **bp, int ncols,
         cols_done++;
         continue;
       } else {
-        lp += cols[i];
+        if (!(calign[i] & AL_NOFILL)) {
+          lp += cols[i];
+        }
         if (i < (ncols - 1) && fslen)
           safe_str(fieldsep, line, &lp);
         cols_done++;
@@ -1793,13 +1801,13 @@ align_one_line(char *buff, char **bp, int ncols,
     if (HAS_ANSI(adata[i])) {
       write_ansi_data(&adata[i], line, &lp);
     }
-    switch (calign[i] & 0xF) {
+    switch (calign[i] & AL_TYPE) {
     case AL_FULL:
     case AL_WPFULL:
       // This is stupid: If it's full justify and not a hard break, then
       // we stretch spaces. If it is a hard break, then we fall through
       // to left-align.
-      iswpfull = (calign[i] & 0xF) == AL_WPFULL;
+      iswpfull = (calign[i] & AL_TYPE) == AL_WPFULL;
       // For a word processor full justify, # of spaces needed needs to be
       // less than half of the lenth.
       spacesneeded = cols[i] - len;
@@ -1831,17 +1839,26 @@ align_one_line(char *buff, char **bp, int ncols,
       }
     default:                   // Left-align
       safe_str(segment, line, &lp);
-      lp += cols[i] - len;
+      /* Don't fill if we're set NOFILL */
+      if (!(calign[i] & AL_NOFILL)) {
+        lp += cols[i] - len;
+      }
       break;
     case AL_RIGHT:
-      lp += cols[i] - len;
+      /* Don't fill if we're set NOFILL and this is an empty line. */
+      if (*segment || !(calign[i] & AL_NOFILL)) {
+        lp += cols[i] - len;
+      }
       safe_str(segment, line, &lp);
       break;
     case AL_CENTER:
       j = cols[i] - len;
       lp += j >> 1;
       safe_str(segment, line, &lp);
-      lp += (j >> 1) + (j & 1);
+      /* Don't fill if we're set NOFILL */
+      if (!(calign[i] & AL_NOFILL)) {
+        lp += (j >> 1) + (j & 1);
+      }
       break;
     }
     if (HAS_ANSI(adata[i])) {
@@ -1923,35 +1940,40 @@ FUNCTION(fun_align)
       i *= 10;
       i += *ptr - '0';
     }
-    if (*ptr == '.') {
-      calign[ncols] |= AL_REPEAT;
-      ptr++;
-    }
-    if (*ptr == '`') {
-      calign[ncols] |= AL_COALESCE_LEFT;
-      ptr++;
-    }
-    if (*ptr == '\'') {
-      calign[ncols] |= AL_COALESCE_RIGHT;
-      ptr++;
-    }
-    if (*ptr == '(') {
-      ptr++;
-      ansistr = ptr;
-      while (*ptr && *ptr != ')')
+    while (*ptr && !isspace(*ptr)) {
+      switch(*ptr) {
+      case '.':
+        calign[ncols] |= AL_REPEAT;
+        break;
+      case '`':
+        calign[ncols] |= AL_COALESCE_LEFT;
+        break;
+      case '\'':
+        calign[ncols] |= AL_COALESCE_RIGHT;
+        break;
+      case '$':
+        calign[ncols] |= AL_NOFILL;
+        break;
+      case '(':
         ptr++;
-      if (*ptr != ')') {
-        safe_str(T("#-1 INVALID ALIGN STRING"), buff, bp);
-        return;
+        ansistr = ptr;
+        while (*ptr && *ptr != ')')
+          ptr++;
+        if (*ptr != ')') {
+          safe_str(T("#-1 INVALID ALIGN STRING"), buff, bp);
+          return;
+        }
+        *ptr = '\0';
+        define_ansi_data(&adata[ncols], ansistr);
+        break;
       }
-      *(ptr++) = '\0';
-      define_ansi_data(&adata[ncols], ansistr);
+      ptr++;
     }
+
     cols[ncols++] = i;
     if (!*ptr)
       break;
   }
-
 
   for (i = 0; i < ncols; i++) {
     if (cols[i] < 0) {

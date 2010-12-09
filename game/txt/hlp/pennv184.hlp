@@ -25,6 +25,10 @@ Events:
    player`disconnect.
  * socket events: socket`connect, socket`disconnect
 
+Functions:
+ * align() now has '$' (nofill) as an option. Ideal for rightmost columns.
+   Suggested by Minion. [GM]
+
 Minor Changes:
  * The Can_Nspemit @power has been renamed to Can_Spoof, to better reflect
    its uses. Can_Nspemit is still an alias. [MG]
@@ -33,7 +37,7 @@ Minor Changes:
  * Combined fun_setinter, fun_setdiff and fun_setunion into fun_setmanip. [GM]
  * For hardcoders: list2arr and list2arr_ansi now take a third argument
    on whether to include empty items. [GM]
-   
+
 Fixes:
  * Help fixes by Daniel Powell. [MG]
 

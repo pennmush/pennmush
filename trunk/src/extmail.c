@@ -1159,6 +1159,18 @@ send_mail(dbref player, dbref target, char *subject, char *message,
 }
 
 static int
+can_mail_to(dbref player, dbref target)
+{
+  if (!can_mail(player)) {
+    return 0;
+  }
+  if (!(Hasprivs(player) || eval_lock(player, target, Mail_Lock))) {
+    return 0;
+  }
+  return 1;
+}
+
+static int
 real_send_mail(dbref player, dbref target, char *subject, char *message,
                mail_flag flags, int silent, int nosig)
 {
@@ -1289,9 +1301,16 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
   mdb_top++;
 
   /* notify people */
-  if (!silent)
-    notify_format(player,
-                  T("MAIL: You sent your message to %s."), Name(target));
+  if (!silent) {
+    if (can_mail_to(target, player)) {
+      notify_format(player,
+                    T("MAIL: You sent your message to %s."), Name(target));
+    } else {
+      notify_format(player,
+                    T("MAIL: You sent your message to %s, but they can't mail you!."),
+                    Name(target));
+    }
+  }
   notify_format(target,
                 T("MAIL: You have a new message (%d) from %s."),
                 rc + uc + cc + 1, Name(player));

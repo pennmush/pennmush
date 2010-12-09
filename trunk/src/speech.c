@@ -60,18 +60,21 @@ spname(dbref thing)
  * pagelock and target isn't HAVEN.
  * \param player dbref attempting to pemit.
  * \param target target dbref to pemit to.
+ * \param dofails If nonzero, run fail_lock()
  * \retval 1 player may pemit to target.
  * \retval 0 player may not pemit to target.
  */
 int
-okay_pemit(dbref player, dbref target)
+okay_pemit(dbref player, dbref target, int dofails)
 {
   if (Pemit_All(player))
     return 1;
   if (IsPlayer(target) && Haven(target))
     return 0;
   if (!eval_lock(player, target, Page_Lock)) {
-    fail_lock(player, target, Page_Lock, NULL, NOTHING);
+    if (dofails) {
+      fail_lock(player, target, Page_Lock, NULL, NOTHING);
+    }
     return 0;
   }
   return 1;
@@ -496,7 +499,7 @@ do_pemit_list(dbref player, char *list, const char *message, int flags)
 
   while (l && *l && (p = next_in_list(&l))) {
     who = noisy_match_result(player, p, NOTYPE, MAT_EVERYTHING);
-    if (GoodObject(who) && okay_pemit(player, who)) {
+    if (GoodObject(who) && okay_pemit(player, who, 1)) {
       if (nospoof && Nospoof(who)) {
         if (Paranoid(who)) {
           if (!nspbuf) {
@@ -567,7 +570,7 @@ do_pemit(dbref player, const char *arg1, const char *arg2, int flags)
     notify(player, T("I don't know who you mean!"));
     break;
   default:
-    if (!okay_pemit(player, who)) {
+    if (!okay_pemit(player, who, 1)) {
       notify_format(player,
                     T("I'm sorry, but %s wishes to be left alone now."),
                     Name(who));
@@ -1073,6 +1076,11 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
     }
 
     page_return(player, good[i], "Idle", "IDLE", NULL);
+    if (!okay_pemit(good[i], player, 0)) {
+      notify_format(player,
+          T("You paged %s, but they are unable to page you."),
+          Name(good[i]));
+    }
   }
 
   mush_free(tbuf, "page_buff");
@@ -1378,7 +1386,7 @@ do_one_remit(dbref player, const char *target, const char *msg, int flags)
   } else {
     if (IsExit(room)) {
       notify(player, T("There can't be anything in that!"));
-    } else if (!okay_pemit(player, room)) {
+    } else if (!okay_pemit(player, room, 1)) {
       notify_format(player,
                     T("I'm sorry, but %s wishes to be left alone now."),
                     Name(room));

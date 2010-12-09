@@ -409,7 +409,8 @@ do_link(dbref player, const char *name, const char *room_name, int preserve)
  * \endverbatim
  * \param player the enactor.
  * \param name the name of the room to create.
- * \param argv array of additional arguments to command (exit forward,exit back)
+ * \param argv array of additional arguments to command
+ *             (exit forward,exit back,newdbref)
  * \param tport if 1, teleport the player to the new room.
  * \return dbref of new room, or NOTHING.
  */
@@ -419,6 +420,11 @@ do_dig(dbref player, const char *name, char **argv, int tport)
   dbref room;
   char *flaglist, *flagname;
   char flagbuff[BUFFER_LEN];
+  char *newdbref = NULL;
+
+  if (argv[3] && *argv[3]) {
+    newdbref = argv[3];
+  }
 
   /* we don't need to know player's location!  hooray! */
   if (*name == '\0') {
@@ -426,6 +432,10 @@ do_dig(dbref player, const char *name, char **argv, int tport)
   } else if (!ok_name(name)) {
     notify(player, T("That's a silly name for a room!"));
   } else if (can_pay_fees(player, ROOM_COST)) {
+    if (!make_first_free_wrapper(player, newdbref)) {
+      return NOTHING;
+    }
+
     room = new_object();
 
     /* Initialize everything */

@@ -1284,7 +1284,7 @@ See also: @undestroy, @create, @dig, @open, DESTROY_OK, SAFE
   
 See also: @destroy, GOING, @startup
 & @dig
-  @dig[/teleport] <room name>[=<exit to>[, <exit from>]]
+  @dig[/teleport] <room name>[=<exit to>[, <exit from>[, <dbref>]]]
   
   This command creates a new room named <room name>. Creating a room costs
   some pennies (see '@config room_cost' for exactly how many). If the
@@ -1297,6 +1297,9 @@ See also: @destroy, GOING, @startup
   to your current location. Opening exists also costs pennies; see 
   '@config exit_cost'. The exit names may contain multiple aliases, separated 
   with semicolons, as per 'help @name'.
+
+  Wizards can also specify the <dbref> of a garbage object to use when
+  creating the room. Otherwise, the room is given the next available dbref.
   
   See 'help @dig2' for examples.
 & @dig2

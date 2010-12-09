@@ -410,7 +410,7 @@ FUNTAB flist[] = {
   {"DEFAULT", fun_default, 2, INT_MAX, FN_NOPARSE},
   {"DELETE", fun_delete, 3, 3, FN_REG},
   {"DIE", fun_die, 2, 3, FN_REG | FN_STRIPANSI},
-  {"DIG", fun_dig, 1, 3, FN_REG},
+  {"DIG", fun_dig, 1, 4, FN_REG},
   {"DIGEST", fun_digest, 2, -2, FN_REG},
   {"DIST2D", fun_dist2d, 4, 4, FN_REG | FN_STRIPANSI},
   {"DIST3D", fun_dist3d, 6, 6, FN_REG | FN_STRIPANSI},

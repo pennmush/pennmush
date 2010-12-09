@@ -25,9 +25,15 @@ Events:
    player`disconnect.
  * socket events: socket`connect, socket`disconnect
 
+Commands:
+ * @dig now takes an optional garbage dbref argument to specify the new
+   dbref. Suggested by Paige. [GM]
+
 Functions:
  * align() now has '$' (nofill) as an option. Ideal for rightmost columns.
    Suggested by Minion. [GM]
+ * dig() now takes an optional garbage dbref argument to specify the new
+   dbref. Suggested by Paige. [GM]
 
 Minor Changes:
  * The Can_Nspemit @power has been renamed to Can_Spoof, to better reflect

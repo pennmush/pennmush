@@ -351,71 +351,71 @@ For more, see Entries-17
  condall()                 config()                  conn()                   
  connected                 connection functions      contact                  
  control                   controls()                convsecs()               
- convtime()                convutcsecs()             copyright                
- copyrite                  cor()                     cos()                    
+ convtime()                convutcsecs()             convutctime()            
+ copyright                 copyrite                  cor()                    
 
 For more, see Entries-18
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-18
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- costs                     cowner()                  create()                 
- crecall()                 credits                   csecs()                  
- cstatus()                 ctime()                   ctitle()                 
- ctu()                     cusers()                  cv                       
- cwho()                    dark                      database                 
- dbref #                   dbref functions           dbref number             
- dbref2                    dbrefs                    debug                    
- debug2                    debugforwardlist          dec()                    
- decode64()                decompose()               decrypt()                
- default()                 delete()                  desert                   
- destroy_ok                die()                     dig()                    
- digest()                  dismiss                   dist2d()                 
- dist3d()                  div()                     doing                    
- doing()                   download                  drop                     
- drop-tos                  droptos                   dynhelp()                
- e()                       edefault()                edit()                   
+ cos()                     costs                     cowner()                 
+ create()                  crecall()                 credits                  
+ csecs()                   cstatus()                 ctime()                  
+ ctitle()                  ctu()                     cusers()                 
+ cv                        cwho()                    dark                     
+ database                  dbref #                   dbref functions          
+ dbref number              dbref2                    dbrefs                   
+ debug                     debug2                    debugforwardlist         
+ dec()                     decode64()                decompose()              
+ decrypt()                 default()                 delete()                 
+ desert                    destroy_ok                die()                    
+ dig()                     digest()                  dismiss                  
+ dist2d()                  dist3d()                  div()                    
+ doing                     doing()                   download                 
+ drop                      drop-tos                  droptos                  
+ dynhelp()                 e()                       edefault()               
 
 For more, see Entries-19
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-19
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- element()                 elements()                elist()                  
- elock()                   emit()                    empty                    
- enactor                   encode64()                encrypt()                
- endtag()                  enter                     enter_ok                 
- entrances()               eq()                      escape()                 
- etimefmt()                etimefmt2                 etimefmt3                
- eval()                    evaluation order          evaluation2              
- events                    examine                   executor                 
- exit()                    exits                     exp()                    
- extract()                 failure                   fdiv()                   
- filter()                  filterbool()              findable()               
- first()                   firstof()                 fixed                    
- flag list                 flag permissions          flags                    
- flags list                flags()                   flags2                   
- flip()                    floating                  floor()                  
- floordiv()                fmod()                    fn()                     
+ edit()                    element()                 elements()               
+ elist()                   elock()                   emit()                   
+ empty                     enactor                   encode64()               
+ encrypt()                 endtag()                  enter                    
+ enter_ok                  entrances()               eq()                     
+ escape()                  etimefmt()                etimefmt2                
+ etimefmt3                 eval()                    evaluation order         
+ evaluation2               events                    examine                  
+ executor                  exit()                    exits                    
+ exp()                     extract()                 failure                  
+ fdiv()                    filter()                  filterbool()             
+ findable()                first()                   firstof()                
+ fixed                     flag list                 flag permissions         
+ flags                     flags list                flags()                  
+ flags2                    flip()                    floating                 
+ floor()                   floordiv()                fmod()                   
 
 For more, see Entries-20
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-20
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- fold()                    fold2                     folderstats()            
- follow                    followers()               following()              
- foreach()                 foreach2                  forwardlist              
- fraction()                fullalias()               fullname()               
- function list             functions                 functions()              
- functions2                gagged                    gender                   
- get                       get()                     get_eval()               
- getpids()                 give                      global commands          
- globals                   go                        going                    
- going_twice               goto                      grab()                   
- graball()                 grep()                    grepi()                  
- gt()                      gte()                     halt                     
- hasattr()                 hasattrp()                hasattrpval()            
- hasattrval()              hasflag()                 haspower()               
- hastype()                 haven                     hear_connect             
- heavy                     height()                  help                     
+ fn()                      fold()                    fold2                    
+ folderstats()             follow                    followers()              
+ following()               foreach()                 foreach2                 
+ forwardlist               fraction()                fullalias()              
+ fullname()                function list             functions                
+ functions()               functions2                gagged                   
+ gender                    get                       get()                    
+ get_eval()                getpids()                 give                     
+ global commands           globals                   go                       
+ going                     going_twice               goto                     
+ grab()                    graball()                 grep()                   
+ grepi()                   gt()                      gte()                    
+ halt                      hasattr()                 hasattrp()               
+ hasattrpval()             hasattrval()              hasflag()                
+ haspower()                hastype()                 haven                    
+ hear_connect              heavy                     height()                 
 
 For more, see Entries-21
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-

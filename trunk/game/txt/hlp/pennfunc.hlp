@@ -220,9 +220,10 @@ See also: STRINGS
 & Time functions
   These functions return times or format times.
 
-  convsecs()    convutcsecs() convtime()    ctime()       etimefmt()
-  isdaylight()  mtime()       restarttime() secs()        starttime()
-  stringsecs()  time()        timefmt()     timestring()  utctime()
+  convsecs()    convutcsecs() convtime()    convutctime() ctime()
+  etimefmt()    isdaylight()  mtime()       restarttime() secs()
+  starttime()   stringsecs()  time()        timefmt()     timestring()
+  utctime()
 
 & Utility functions
   These functions don't quite fit into any other category.
@@ -981,7 +982,9 @@ See also: visible(), CONTROL
 
 See also: convtime(), time()
 & CONVTIME()
-  convtime(<time string>)
+& CONVUTCTIME()
+  convtime(<time string>,[utc])
+  convutctime(<time string>)
 
   This functions converts a time string (in the server's time zone) to
   the number of seconds since Jan 1, 1970 GMT. A time string is of the
@@ -990,6 +993,9 @@ See also: convtime(), time()
   24-hour time, MM is the minutes, SS is the seconds, and YYYY is the
   year.  If you supply an incorrectly formatted string, it will return
   -1.
+
+  convutctime() and convtime() with a second argument of 'utc' assume
+  the timestring is based on UTC time.
 
   If the extended convtime() is supported (See @config compile), more
   formats for the date are enabled, including ones missing the day of

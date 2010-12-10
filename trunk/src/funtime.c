@@ -451,6 +451,27 @@ FUNCTION(fun_convtime)
   /* converts time string to seconds */
 
   struct tm ttm;
+  struct tm *ltime;
+  struct tm *utctime;
+  int isdst;
+  int i = 0;
+
+  if (strcmp(called_as, "CONVUTCTIME") == 0 ||
+      (nargs == 2 && strcasecmp("UTC", args[1]) == 0)) {
+    /* store tm_isdst value, as the gmtime() call will use the
+       same pointer as the localtime() call */
+    ltime = localtime(&mudtime);
+    isdst = ltime->tm_isdst;
+    utctime = gmtime(&mudtime);
+    utctime->tm_isdst = isdst;
+    
+    i = mudtime -
+#ifdef SUN_OS
+      timelocal(utctime);
+#else
+      mktime(utctime);
+#endif                          /* SUN_OS */
+  }
 
   if (do_convtime(args[0], &ttm)
 #ifdef HAS_GETDATE
@@ -458,9 +479,9 @@ FUNCTION(fun_convtime)
 #endif
     ) {
 #ifdef SUN_OS
-    safe_integer(timelocal(&ttm), buff, bp);
+    safe_integer(i + timelocal(&ttm), buff, bp);
 #else
-    safe_integer(mktime(&ttm), buff, bp);
+    safe_integer(i + mktime(&ttm), buff, bp);
 #endif                          /* SUN_OS */
   } else {
     safe_str("-1", buff, bp);

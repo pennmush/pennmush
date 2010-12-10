@@ -40,6 +40,8 @@ Functions:
    Suggested by Minion. [GM]
  * dig() now takes an optional garbage dbref argument to specify the new
    dbref. Suggested by Paige. [GM]
+ * convutctime() and convtime(<time>, utc) to convert a timestring to
+   # of seconds since UTC. Patch by Minion.
 
 Minor Changes:
  * The Can_Nspemit @power has been renamed to Can_Spoof, to better reflect

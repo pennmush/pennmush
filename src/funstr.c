@@ -1940,7 +1940,7 @@ FUNCTION(fun_align)
       i *= 10;
       i += *ptr - '0';
     }
-    while (*ptr && !isspace(*ptr)) {
+    while (*ptr && !isspace((unsigned char) *ptr)) {
       switch(*ptr) {
       case '.':
         calign[ncols] |= AL_REPEAT;

@@ -328,7 +328,7 @@ do_convtime_gd(const char *str, struct tm *ttm)
 {
   /* converts time string to a struct tm. Returns 1 on success, 0 on fail.
    * Formats of the time string are taken from the file listed in the
-   * DATEMSK env variable 
+   * DATEMSK env variable
    */
   struct tm *tc;
 
@@ -450,7 +450,7 @@ FUNCTION(fun_convtime)
 {
   /* converts time string to seconds */
   struct tm ttm;
-  char *tz;
+  char *tz = NULL;
   int doutc = (!strcmp(called_as, "CONVUTCTIME") ||
               (nargs > 1 && !strcmp(args[1], "utc")));
 

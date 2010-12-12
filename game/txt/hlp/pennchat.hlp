@@ -158,7 +158,7 @@ See also: CHAT, @chat, @cemit
 & @channel/on
 & @channel/join
 & @channel/off
-& @channel/unjoin
+& @channel/leave
   @channel/list [<prefix>]
   @channel/what [<prefix>]
   @channel/who <channel>
@@ -178,7 +178,7 @@ See also: CHAT, @chat, @cemit
 
   @channel/on and @channel/off add or remove you from the given <channel>.
   You only hear messages for channels you're on, and most channels require you
-  to join them before you can speak on them. /join and /unjoin are aliases for
+  to join them before you can speak on them. /join and /leave are aliases for
   /on and /off.
 
   Continued in 'help @channel joining2'.

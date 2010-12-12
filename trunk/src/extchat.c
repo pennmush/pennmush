@@ -3122,9 +3122,9 @@ chat_player_announce(dbref player, char *msg, int ungag)
         if (up && ungag)
           CUtype(up) &= ~CU_GAG;
       }
-      
+
       bp -= 3;
-      *bp = '\0';   
+      *bp = '\0';
 
       if (shared) {
 	char defmsg[BUFFER_LEN], *dmp;
@@ -3133,19 +3133,19 @@ chat_player_announce(dbref player, char *msg, int ungag)
 
 	dmp = defmsg;
 	smp = shrtmsg;
-	
+
 	accname = mush_strdup(accented_name(player), "chat_announce.name");
 
 	safe_format(shrtmsg, &smp, "%s %s", accname, msg);
 	*smp = '\0';
-          
+
         safe_format(defmsg, &dmp, "<%s> %s %s", buff, accname, msg);
         *dmp = '\0';
 
 	if (!vmessageformat(viewer, "CHATFORMAT", player, NA_INTER_PRESENCE, 6,
-			    "@", buff, shrtmsg, accname, "", defmsg)) 
+			    "@", buff, shrtmsg, accname, "", defmsg))
 	  notify_anything(player, na_one, &viewer, ns_esnotify, NA_INTER_PRESENCE, defmsg);
-	
+
 	mush_free(accname, "chat_announce.name");
       }
     }
@@ -3462,9 +3462,7 @@ COMMAND(cmd_cemit)
 
 COMMAND(cmd_channel)
 {
-  if (switches)
-    do_channel(player, arg_left, args_right[1], switches);
-  else if (SW_ISSET(sw, SWITCH_LIST))
+  if (SW_ISSET(sw, SWITCH_LIST))
     do_channel_list(player, arg_left);
   else if (SW_ISSET(sw, SWITCH_ADD))
     do_chan_admin(player, arg_left, args_right[1], 0);
@@ -3510,6 +3508,12 @@ COMMAND(cmd_channel)
     do_chan_what(player, arg_left);
   else if (SW_ISSET(sw, SWITCH_BUFFER))
     do_chan_buffer(player, arg_left, args_right[1]);
+  else if (SW_ISSET(sw, SWITCH_ON) || SW_ISSET(sw, SWITCH_JOIN))
+    do_channel(player, arg_left, args_right[1], "ON");
+  else if (SW_ISSET(sw, SWITCH_OFF) || SW_ISSET(sw, SWITCH_LEAVE))
+    do_channel(player, arg_left, args_right[1], "OFF");
+  else if (SW_ISSET(sw, SWITCH_WHO))
+    do_channel(player, arg_left, args_right[1], "WHO");
   else
     do_channel(player, arg_left, NULL, args_right[1]);
 }

@@ -158,12 +158,12 @@ For more, see Entries-8
  @channel privs            @channel/add              @channel/buffer          
  @channel/chown            @channel/combine          @channel/decompile       
  @channel/delete           @channel/describe         @channel/gag             
- @channel/hide             @channel/join             @channel/list            
- @channel/mogrifier        @channel/mute             @channel/name            
- @channel/off              @channel/on               @channel/privs           
- @channel/recall           @channel/rename           @channel/title           
- @channel/uncombine        @channel/ungag            @channel/unhide          
- @channel/unjoin           @channel/what             @channel/who             
+ @channel/hide             @channel/join             @channel/leave           
+ @channel/list             @channel/mogrifier        @channel/mute            
+ @channel/name             @channel/off              @channel/on              
+ @channel/privs            @channel/recall           @channel/rename          
+ @channel/title            @channel/uncombine        @channel/ungag           
+ @channel/unhide           @channel/what             @channel/who             
 
 For more, see Entries-9
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-

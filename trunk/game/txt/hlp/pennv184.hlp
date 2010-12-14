@@ -51,6 +51,10 @@ Minor Changes:
 
 Fixes:
  * Help fixes by Daniel Powell. [MG]
+ * Connect/disconnect messages for combined channels incorrectly showed
+   NOSPOOF data. Reported by Sketch. [MG]
+ * The delimiter between combined channel names in @chatformat is now '|'
+   instead of ' | ', as documented. Reported by Trinsec. [MG]
 
 & 1.8.4p2
 Version 1.8.4 patchlevel 2                                 Dec 06,  2010

@@ -3079,8 +3079,10 @@ chat_player_announce(dbref player, char *msg, int ungag)
   CHAN *c;
   CHANUSER *up, *uv;
   char buff[BUFFER_LEN], *bp;
+  char buff2[BUFFER_LEN], *bp2;
   dbref viewer;
   bool shared = false;
+  int na_flags = NA_INTER_LOCK | NA_SPOOF | NA_INTER_PRESENCE;
 
   msglen = strlen(msg);
 
@@ -3104,6 +3106,7 @@ chat_player_announce(dbref player, char *msg, int ungag)
     if (d->connected) {
       shared = false;
       bp = buff;
+      bp2 = buff2;
 
       for (c = channels; c; c = c->next) {
         up = onchannel(player, c);
@@ -3116,6 +3119,8 @@ chat_player_announce(dbref player, char *msg, int ungag)
               shared = true;
               safe_str(ChanName(c), buff, &bp);
               safe_strl(" | ", 3, buff, &bp);
+              safe_str(ChanName(c), buff2, &bp2);
+              safe_chr('|', buff, &bp2);
             }
           }
         }
@@ -3125,6 +3130,8 @@ chat_player_announce(dbref player, char *msg, int ungag)
 
       bp -= 3;
       *bp = '\0';
+      bp2--;
+      *bp2 = '\0';
 
       if (shared) {
 	char defmsg[BUFFER_LEN], *dmp;
@@ -3142,9 +3149,9 @@ chat_player_announce(dbref player, char *msg, int ungag)
         safe_format(defmsg, &dmp, "<%s> %s %s", buff, accname, msg);
         *dmp = '\0';
 
-	if (!vmessageformat(viewer, "CHATFORMAT", player, NA_INTER_PRESENCE, 6,
-			    "@", buff, shrtmsg, accname, "", defmsg))
-	  notify_anything(player, na_one, &viewer, ns_esnotify, NA_INTER_PRESENCE, defmsg);
+  if (!vmessageformat(viewer, "CHATFORMAT", player, na_flags, 6,
+			    "@", buff2, shrtmsg, accname, "", defmsg))
+    notify_anything(player, na_one, &viewer, ns_esnotify, na_flags, defmsg);
 
 	mush_free(accname, "chat_announce.name");
       }

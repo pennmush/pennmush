@@ -6236,6 +6236,11 @@ msgstr "Posjeduje¹ objekt bez zonske brave koji je kori¹ten kao zona: %s"
 msgid "You paged %s with '%s'"
 msgstr "%s dobije tvoju poruku '%s'"
 
+#: speech.c:1081
+#, c-format
+msgid "You paged %s, but they are unable to page you."
+msgstr "%s primi tvoju privatnu poruku, ali ne mo¾e tebi slati privatne poruke."
+
 #: src/rob.c:263
 #, c-format
 msgid "You paid %d %s."

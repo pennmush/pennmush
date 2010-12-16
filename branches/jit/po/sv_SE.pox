@@ -293,10 +293,6 @@ msgstr "#-1 INGEN SÅDAN SPELARE"
 msgid "#-1 NO SUCH TYPE"
 msgstr "#-1 INGEN SÅDAN TYP"
 
-#: src/funufun.c:310
-msgid "#-1 NO SUCH USER FUNCTION"
-msgstr "#-1 INGEN SÅDAN ANVÄNDARFUNKTION"
-
 #: src/bsd.c:4485 src/bsd.c:4498
 msgid "#-1 NOT CONNECTED"
 msgstr "#-1 EJ UPPKOPPLAD"
@@ -1519,22 +1515,6 @@ msgstr "Fwd "
 #: src/destroy.c:1325
 msgid "GAME: Database consistency check complete."
 msgstr "SPEL: Databasens integritetskontroll utförd."
-
-#: src/conf.c:570
-msgid "GAME: Database will be dumped in 1 minute."
-msgstr "SPEL: Databasen kommer att dumpas om 1 minut."
-
-#: src/conf.c:572
-msgid "GAME: Database will be dumped in 5 minutes."
-msgstr "SPEL: Databasen kommer att dumpas om 5 minuter."
-
-#: src/conf.c:502
-msgid "GAME: Dump complete. Time in."
-msgstr "SPEL: Dump klar. Fortsätt."
-
-#: src/conf.c:501
-msgid "GAME: Dumping database. Game may freeze for a minute"
-msgstr "SPEL: Dumpar databasen. Spelet kan låsa sig någon minut."
 
 #: game.c:311
 msgid "GAME: ERROR! Database save failed!"

@@ -89,7 +89,7 @@ COMLIST commands[] = {
   {"@ATRLOCK", NULL, cmd_atrlock, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@ATRCHOWN", NULL, cmd_atrchown, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
 
-  {"@ATTRIBUTE", "ACCESS DELETE RENAME RETROACTIVE", cmd_attribute,
+  {"@ATTRIBUTE", "ACCESS DELETE RENAME RETROACTIVE LIMIT ENUM", cmd_attribute,
    CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@BOOT", "PORT ME SILENT", cmd_boot, CMD_T_ANY, 0, 0},
   {"@BREAK", NULL, cmd_break, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE, 0,
@@ -97,7 +97,7 @@ COMLIST commands[] = {
   {"@CEMIT", "NOEVAL NOISY SILENT SPOOF", cmd_cemit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@CHANNEL",
-   "LIST ADD DELETE RENAME MOGRIFIER NAME PRIVS QUIET NOISY DECOMPILE DESCRIBE CHOWN WIPE MUTE UNMUTE GAG UNGAG HIDE UNHIDE WHAT TITLE BRIEF RECALL BUFFER SET",
+   "LIST ADD DELETE RENAME MOGRIFIER NAME PRIVS QUIET NOISY DECOMPILE DESCRIBE CHOWN WIPE MUTE UNMUTE GAG UNGAG HIDE UNHIDE WHAT TITLE BRIEF RECALL BUFFER SET COMBINE UNCOMBINE",
    cmd_channel,
    CMD_T_ANY | CMD_T_SWITCHES | CMD_T_EQSPLIT | CMD_T_NOGAGGED | CMD_T_RS_ARGS,
    0, 0},
@@ -168,7 +168,7 @@ COMLIST commands[] = {
    "ALIAS BUILTIN CLONE DELETE ENABLE DISABLE PRESERVE RESTORE RESTRICT",
    cmd_function,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
-  {"@GREP", "LIST PRINT ILIST IPRINT", cmd_grep,
+  {"@GREP", "LIST PRINT ILIST IPRINT REGEXP WILD NOCASE", cmd_grep,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_NOGAGGED, 0, 0},
   {"@HALT", "ALL PID", cmd_halt, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@HIDE", "NO OFF YES ON", cmd_hide, CMD_T_ANY, 0, 0},
@@ -186,7 +186,7 @@ COMLIST commands[] = {
   {"@LISTMOTD", NULL, cmd_listmotd, CMD_T_ANY, 0, 0},
 
   {"@LIST",
-   "LOWERCASE MOTD LOCKS FLAGS FUNCTIONS POWERS COMMANDS ATTRIBS ALLOCATIONS",
+   "LOWERCASE MOTD LOCKS FLAGS FUNCTIONS POWERS COMMANDS ATTRIBS ALLOCATIONS ALL BUILTIN LOCAL",
    cmd_list,
    CMD_T_ANY, 0, 0},
   {"@LOCK", NULL, cmd_lock,
@@ -1422,7 +1422,9 @@ run_command(COMMAND_INFO *cmd, dbref player, dbref cause,
   }
 
   /* If we have a hook/override, we use that instead */
-  if (!run_hook_override(cmd, player, commandraw)) {
+  if (!run_hook_override(cmd, player, commandraw) &&
+      !(!strcmp(cmd->name, "HUH_COMMAND") &&
+        run_hook_override(cmd, player, tprintf("HUH_COMMAND %s", ls)))) {
     /* Otherwise, we do hook/before, the command, and hook/after */
     /* But first, let's see if we had an invalid switch */
     if (switch_err && *switch_err) {
@@ -2002,31 +2004,40 @@ COMMAND(cmd_command)
  * This function sends a player the list of commands.
  * \param player the enactor.
  * \param lc if true, list is in lowercase rather than uppercase.
+ * \param type 3 = show all, 2 = show only local @commands, 1 = show only built-in @commands
  */
 void
-do_list_commands(dbref player, int lc)
+do_list_commands(dbref player, int lc, int type)
 {
-  char *b = list_commands();
+  char *b = list_commands(type);
   notify_format(player, T("Commands: %s"), lc ? strlower(b) : b);
 }
 
 /** Return a list of defined commands.
  * This function returns a space-separated list of commands as a string.
+ * \param type 3 = show all, 2 = show only local @commands, 1 = show only built-in @commands
  */
 char *
-list_commands(void)
+list_commands(int type)
 {
   COMMAND_INFO *command;
   char *ptrs[BUFFER_LEN / 2];
   static char buff[BUFFER_LEN];
   char *bp;
   int nptrs = 0, i;
+
   command = (COMMAND_INFO *) ptab_firstentry(&ptab_command);
   while (command) {
-    ptrs[nptrs] = (char *) command->name;
-    nptrs++;
+    if (type == 3 || (type == 1 && command->func != cmd_unimplemented) ||
+        (type == 2 && command->func == cmd_unimplemented)) {
+      ptrs[nptrs] = (char *) command->name;
+      nptrs++;
+    }
     command = (COMMAND_INFO *) ptab_nextentry(&ptab_command);
   }
+
+  if (!nptrs)
+    return "";
 
   do_gensort(0, ptrs, NULL, nptrs, ALPHANUM_LIST);
   bp = buff;

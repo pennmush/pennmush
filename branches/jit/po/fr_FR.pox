@@ -313,10 +313,6 @@ msgstr "#-1 PAS DE TEL JOUEUR"
 msgid "#-1 NO SUCH TYPE"
 msgstr "#-1 PAS DE TEL TYPE"
 
-#: src/funufun.c:310
-msgid "#-1 NO SUCH USER FUNCTION"
-msgstr "#-1 PAS DE TELLE FONCTION UTILISATEUR"
-
 #: src/bsd.c:4485 src/bsd.c:4498
 msgid "#-1 NOT CONNECTED"
 msgstr "#-1 NON CONNECTE"
@@ -1497,22 +1493,6 @@ msgstr "Fwd "
 #: src/destroy.c:1325
 msgid "GAME: Database consistency check complete."
 msgstr "MESSAGE SYSTEME: La vérification de la consistence de la DB est achevée."
-
-#: src/conf.c:570
-msgid "GAME: Database will be dumped in 1 minute."
-msgstr "JEU: Sauvegarde de la DB dans 1 minute."
-
-#: src/conf.c:572
-msgid "GAME: Database will be dumped in 5 minutes."
-msgstr "JEU: Sauvegarde de la DB dans 5 minutes."
-
-#: src/conf.c:502
-msgid "GAME: Dump complete. Time in."
-msgstr "JEU: Sauvegarde effectuée. Le jeu reprend."
-
-#: src/conf.c:501
-msgid "GAME: Dumping database. Game may freeze for a minute"
-msgstr "JEU: Sauvegarde de la base de données. Il se peut que le jeu s'interrompe quelques instants."
 
 #: game.c:311
 msgid "GAME: ERROR! Database save failed!"

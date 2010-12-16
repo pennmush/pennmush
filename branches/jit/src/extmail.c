@@ -726,6 +726,52 @@ do_mail_list(dbref player, const char *msglist)
   return;
 }
 
+FUNCTION(fun_maillist)
+{
+  MAIL *mp;
+  struct mail_selector ms;
+  mail_flag folder;
+  folder_array i;
+  dbref player;
+  int matches = 0;
+
+  if (nargs == 2) {
+    player = match_result(executor, args[0], TYPE_PLAYER,
+                          MAT_ME | MAT_ABSOLUTE | MAT_PMATCH | MAT_TYPE);
+    if (!GoodObject(player)) {
+      safe_str(T(e_match), buff, bp);
+      return;
+    } else if (!controls(executor, player)) {
+      safe_str(T(e_perm), buff, bp);
+      return;
+    }
+  } else {
+    player = executor;
+  }
+
+  if (!parse_msglist((nargs ? args[nargs - 1] : ""), &ms, player)) {
+    safe_str(T(e_range), buff, bp);
+    return;
+  }
+
+  FA_Init(i);
+  folder = AllInFolder(ms) ? player_folder(player) : MSFolder(ms);
+  for (mp = find_exact_starting_point(player); mp && (mp->to == player);
+       mp = mp->next) {
+    if ((mp->to == player) && (All(ms) || Folder(mp) == folder)) {
+      i[Folder(mp)]++;
+      if (mail_match(player, mp, ms, i[Folder(mp)])) {
+        if (matches)
+          safe_chr(' ', buff, bp);
+        safe_integer((int) Folder(mp), buff, bp);
+        safe_chr(':', buff, bp);
+        safe_integer(i[Folder(mp)], buff, bp);
+        matches++;
+      }
+    }
+  }
+}
+
 static char *
 mail_list_time(const char *the_time, bool flag /* 1 for no year */ )
 {

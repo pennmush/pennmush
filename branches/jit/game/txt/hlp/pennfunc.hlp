@@ -504,6 +504,7 @@ See also: alphamax(), min()
 
 See also: BOOLEAN VALUES, nand(), or(), xor(), not()
 & ANDFLAGS()
+& ANDLFLAGS()
   andflags(<object>, <string of flag letters>)
   andlflags(<object>, <list of flag names>)
   
@@ -1805,7 +1806,7 @@ See also: match(), matchall(), grab(), regmatch()
   grep()/wildgrep()/regrep() are case-sensitive. 
   grepi()/wildgrepi()/regrepi() are case-insensitive.
   
-See also: lattr(), WILDCARDS
+See also: @grep, lattr(), WILDCARDS
 & GT()
   gt(<number>, <number>[, ... , <numberN>])
 
@@ -2013,6 +2014,7 @@ See also: extract(), elements(), grab()
     > say insert(meep bleep gleep,-3,GOOP)
     You say, "meep GOOP bleep gleep"
 
+See also: replace(), ldelete(), strinsert()
 & ISDAYLIGHT()
   isdaylight()
 
@@ -2106,7 +2108,8 @@ See also: words()
   replacement occurs before substitution, it cannot be used well in nested
   iter()s, and should not be used on user input or untrusted <list>s, as the
   word will be evaluated. Instead, you can use the %iX substitution, or the 
-  itext() function.
+  itext() function. The substitution '%il' refers to the outermost iter
+  of the current expression, and is intended to replace ##.
   
   The string "#@" will be replaced with the position of the current word
   in <list>. Like "##", the replacement occurs before substitution. Use
@@ -2116,6 +2119,7 @@ See also: words()
   ilev() function can be used to get the current iter() nesting level.
 
   See 'help iter2' for examples.
+See also: itext(), inum(), ilev(), ibreak(), map(), @dolist
 & ITER2   
   Examples:
     > say iter(This is a test string., strlen(%i0))
@@ -2132,7 +2136,7 @@ See also: words()
     You say, "4 2 1 4 7"
 
   This example could be replaced by the use of map() like so:
-    > say map(strlen_fun, This is a test string)
+    > say map(strlen_fun, This is a test string.)
 
     > say iter(lnum(3), ##, ,%r)
     You say, "0
@@ -2140,8 +2144,25 @@ See also: words()
     2"
   
   parse() is an alias for iter().
+& IBREAK()
+  ibreak([<level>])
   
-See also: itext(), inum(), ilev(), map(), @dolist
+  The ibreak() function stops an iter() from running at the end of the
+  current loop. When used in nested iter()s, you can give a <level> to 
+  specify how many iter()s to break from. iter() will stop evaluating at the
+  end of the current loop, and NOT immediately after ibreak() is called.
+  
+  Examples:
+    > say iter(1 2 3 4 5,switch(%i0,3,ibreak())Test %i0!)
+    You say, "Test 1! Test 2! Test 3!"
+    
+    > say iter(1 2 3 4 5,switch(%i0,3,ibreak(),Test %i0!))
+    You say, "Test 1! Test 2! "
+    
+    > say iter(a b c, iter(1 2 3, switch(%i0%i1, 2c, ibreak(2), #$)))
+    You say, "1a 2a 3a 1b 2b 3b 1c "
+    
+See also: iter(), itext(), inum(), ilev()
 & ILEV()
 & ITEXT()
 & INUM()
@@ -2152,13 +2173,19 @@ See also: itext(), inum(), ilev(), map(), @dolist
   %i<n>
   inum(<n>)
 
-  These functions, when called within an iter(), return the equivalent
-  of ## (itext) or #@ (inum), with reference to the <n>th more outermost
-  iter(), where <n>=0 refers to the current iter(), <n>=1 to an iter() in
-  which the current iter() is nested, etc. %i<n> is shorthand for
-  itext(<n>) (up to itext(9)).  ilev() returns the current nesting depth,
-  or -1 if it is outside an iter().  Thus, itext(ilev()) will return
-  the ## of the outermost iter().
+  These functions return the equivilent of ## (itext) or #@ (inum) for iter()
+  and @dolist, where an <n>=0 returns to the current iter or @dolist, <n>=1 
+  refers to the iter()/@dolist which the current iter() or @dolist is nested
+  in, etc. An <n> of "L" can be used to refer to the outermost iter()/@dolist.
+  %i<n> is an alias for itext(<n>), where <n> can be from 0 to 9 (or "L").
+  
+  ilev() returns the current nesting depth, or -1 when used outside an iter()
+  or @dolist. Thus, itext(ilev()) will return the outermost ##, equivilent to
+  %iL.
+  
+  See 'help itext2' for examples.
+See also: iter(), ibreak(), @dolist
+& ITEXT2
 
   Examples:
     > say iter(red blue green, iter(fish shoe, #@:##))
@@ -2172,8 +2199,13 @@ See also: itext(), inum(), ilev(), map(), @dolist
   
     > say iter(red blue green,iter(fish shoe, %i1:%i0))
     You say, "red:fish red:shoe blue:fish blue:shoe green:fish green:shoe"
-  
-See also: iter()
+    
+    > @dolist red blue green=say iter(fish shoe, %i1:%i0)
+    You say, "red:fish red:shoe"
+		You say, "blue:fish blue:shoe"
+    You say, "green:fish green:shoe"
+    
+See also: iter(), @dolist
 & IPADDR()
   ipaddr(<player|descriptor>)
 
@@ -2220,7 +2252,7 @@ See also: first(), rest(), before(), after()
   due to buffer limits. In these cases, you can use nattr() and xattr() to
   retrieve the results in smaller pieces.
 
-See also: nattr(), xattr(), hasattr(), examine, wildcards
+See also: nattr(), xattr(), hasattr(), examine, grep(), wildcards
 & NATTR()
 & NATTRP()
 & ATTRCNT()
@@ -2290,7 +2322,8 @@ See also: capstr(), ucstr()
     You say, "This is a test string"
     > say ldelete(lemon|orange|pear|apple,2 3,|)
     You say, "lemon|apple"
-See also: delete(), remove()
+
+See also: delete(), remove(), insert()
 & LEFT()
   left(<string>, <length>)
 
@@ -2366,12 +2399,28 @@ See also: align(), center(), rjust(), left()
 
 See also: @link, open()
 & LIST()
-  list(<option>)
- 
-  This function takes the same arguments as the @list command, and
-  returns the same things.
+  list(<option>[, <type>])
+
+  This is the function-equivilent of the @list command, and lists some useful
+  information about the MUSH. <option> can be one of:
   
-See also: @list, flags(), lflags(), config(), functions()
+  motd        : Returns the current @motd
+  wizmotd     : Returns the current @motd/wizard. Wiz/Roy only.
+  downmotd    : Returns the current @motd/down. Wiz/Roy only.
+  fullmotd    : Returns the current @motd/full. Wiz/Roy only.
+  functions   : Returns a list of all built-in functions and @functions.
+  commands    : Returns a list of all built-in commands and @commands.
+  attribs     : Returns all standard attributes.
+  locks       : Returns the built-in lock types. Similar to llocks().
+  flags       : Returns all flags. Similar to lflags().
+  powers      : Returns all @powers.
+
+  "commands"/"functions" return both built-in and local commands/functions by
+  default. You can specify a <type> of either "builtin", "local" or "all" to
+  limit this if you wish.
+
+See also: @list, flags(), lflags(), config(), functions(), @listmotd, @motd,
+  llocks()
 & LIT()
   lit(<string>)
 
@@ -2419,7 +2468,8 @@ See also: decompose()
 & LN()
   ln(<number>)
  
-  Returns the natural log of <number>.
+  Returns the natural log of <number>. This is equivilent to
+  log(<number>, e).
   
 See also: log()
 & LNUM()
@@ -2682,19 +2732,16 @@ See also: pos(), member(), match()
   children(<object>)
   nchildren(<object>)
  
-  This function is similar to the @search command, except it returns
-  just a list of dbref numbers. Some uses are computationally expensive,
-  and cost 100 pennies; see 'help @search' for details. The function must
-  have at least three arguments.  Wizards can specify "all" or <player>
-  for the <player> field; mortals must use "me" or a ZMP whose @lock/zone
-  they pass. If you do not want to restrict something, use "none" for
-  <class> and <restriction>.
+  This function is similar to the @search command, except it returns just a
+  list of dbref numbers. The function must have at least three arguments. You
+  can specify "all" or <player> for the <player> field; for mortals, only
+  objects they can examine are included. If you do not want to restrict
+  something, use "none" for <class> and <restriction>.
 
-  The possible <class>es and <restriction>s are the same as those
-  accepted by @search. lsearch() can accept multiple class/restriction
-  pairs, and applies them in a boolean "AND" fashion, returning only
-  dbrefs that fulfill all restrictions. See 'help @search' for
-  information about them.
+  The possible <class>es and <restriction>s are the same as those accepted
+  by @search. lsearch() can accept multiple class/restriction pairs, and 
+  applies them in a boolean "AND" fashion, returning only dbrefs that
+  fulfill all restrictions. See 'help @search' for information about them.
 
   children() is exactly the same as lsearch([me|all], parent, <object>),
   using "all" for See_All/Search_All players and "me" for others.
@@ -2713,11 +2760,20 @@ See also: pos(), member(), match()
   again for each object looked at in the search. Before the per-object
   evaluation, the string "##" is replaced with the object dbref.
 
+  lsearch() is free unless it includes either an eval-class search or
+  an elock search that contains an eval or indirect lock. Otherwise,
+  it costs find_cost pennies to perform the lsearch.
+
   lsearchr() is like an lsearch() run through revwords(). Results are
   returned from highest dbref to lowest.  search() is an alias for
   lsearch().
- 
-  Examples:
+
+  Examples in 'help lsearch3'.
+
+See also: @search, @find, lparent()
+& LSEARCH3
+& SEARCH3
+  lsearch() Examples:
   
   lsearch(all, flags, Wc)                  <-- lists all connected wizards.
   lsearch(me, type, room)                  <-- lists all rooms owned by me.
@@ -2725,6 +2781,13 @@ See also: pos(), member(), match()
   lsearch(me, type, room, 100, 200)        <-- same, but only w/db# 100-200
   lsearch(all, eplayer, \[eq(money(##),100)\]) <-- lists all players with 100
                                                    coins.
+  lsearch(all, type, player, elock, (FLAG^WIZARD|FLAG^ROYALTY)&!FLAG^IC)
+                                           ^-- list all wiz and roy players
+                                               that are not IC.
+  lsearch(all, type, player, elock, sex:m*) <- lists all players with an
+                                               @sex beginning with 'm'
+  lsearch(me, elock, !desc:*)              <-- lists all objects you own that
+                                               don't have an @desc set
 & LSTATS()
 & STATS()
   lstats(<player>)
@@ -2799,12 +2862,11 @@ See also: lthings(), lvplayers(), lvcon(), lvexits()
   lwhoid([<viewer>[, <status>]])
 
   lwho() returns a list of the dbref numbers for all currently-connected
-  players. When mortals use this function, the dbref numbers of DARK
+  players. When mortals use this function, the dbref numbers of hidden
   wizards or royalty do NOT appear on the dbref list.
 
-  If a <viewer> is given, and used by an object that can see DARK and
-  Hidden players, lwho() returns the output of lwho() from <viewer>'s
-  point of view.
+  If a <viewer> is given, and used by a See_All object, lwho() returns the
+  output of lwho() from <viewer>'s point of view.
   
   <status> can be used to include "#-1" dbrefs for unconnected ports, and
   must be one of "all", "online" or "offline". It is primarily useful when
@@ -3044,13 +3106,18 @@ See also: score
 
 See also: ctime(), time(), secs(), convtime(), convsecs()
 & MUDNAME()
+& MUDURL()
   mudname()
- 
-  Returns the name of the MUSH, as set in the 'mud_name' @config option. 
+  mudurl()
+
+  These functions return the name of the MUSH and the MUSH's website address,
+  as set in the 'mud_name' and 'mud_url' @config options.
   
   Example: 
     > say mudname()
     You say, "TestMUSH"
+    > say mudurl()
+    You say, "http://www.testmush.com"
 
 see also: config()
 & MUL()
@@ -3320,14 +3387,14 @@ See also: ncon(), nexits(), xthings(), lthings(), lvthings()
   nmwho()
 
   nwho() returns a count of all currently-connected players. When mortals 
-  use this function, DARK wizards or royalty are NOT counted. See_All players
-  can specify a <viewer> to get a count of the number of players that 
-  <viewer> can see is online.
+  use this function, hidden players are NOT counted. See_All players can 
+  specify a <viewer> to get a count of the number of players that <viewer>
+  can see is online.
   
-  nmwho() returns a count of all currently connected, non-hidden
-  players.  It's exactly the same as nwho() used by a mortal, and is
-  suitable for use on privileged global objects that always need an
-  unprivileged count of who is online.
+  nmwho() returns a count of all currently connected, non-hidden players.
+  It's exactly the same as nwho() used by a mortal, and is suitable for use
+  on privileged global objects that always need an unprivileged count of 
+  who is online.
 
   These functions are equivilent to words(lwho([<viewer>])) and 
   words(mwho()), but are more efficient, and don't suffer from buffer
@@ -3558,8 +3625,7 @@ See also: @ps, getpids(), pidinfo()
     
   The <status> argument for lports() controls whether or not ports which
   are not connected to (ie, at the login screen) are included, and must be
-  one of "all", "online" or "offline". Only See_All players can see
-  unconnected ports.
+  one of "all", "online" or "offline".
 
   These port numbers also appear in the wizard WHO, and can be used
   with @boot/port, page/port, and the functions that return information
@@ -3753,6 +3819,7 @@ See also: space()
     > say replace(blue|red|green|yellow,3,white,|)
     You say, "blue|red|white|yellow"
   
+See also: ldelete(), setdiff(), splice()
 & REST()
   rest(<list>[, <delimiter>])
 
@@ -4220,6 +4287,7 @@ See also: anonymous attributes, sorting, sortby()
    owner   Sorts dbrefs by their owner dbrefs.
    loc     Sorts dbrefs by their location dbref.
    ctime   Sorts dbrefs by their creation time.
+   lattr   Sorts attribute names.
 
   The special sort key attr:<aname> or attri:<aname> will sort dbrefs
   according to their <aname> attributes. For example: Separating by
@@ -4816,7 +4884,7 @@ See also: switch(), regmatch(), regedit()
   These functions match <string> against the <expr>essions, returning
   the corresponding <list>. If nothing is matched, the <default> is returned.
   switch() and case() return the <str> for the first matching <expr>, while 
-  switchall() and condall() return the corresponding <list> for all <expr>s
+  switchall() and caseall() return the corresponding <list> for all <expr>s
   which match.
 
   switch() and switchall() use wildcard <expr>s, as described in 'help switch
@@ -4826,11 +4894,14 @@ See also: switch(), regmatch(), regedit()
   If the string "#$" appears in the <list> to be evaluated, it will be 
   replaced with the evaluated value of <str> /before/ evaluation of 
   <list>. This is not done in case() and caseall(), for TinyMUSH 3
-  compatibility.
+  compatibility. Note that this replacement happens before evaluation, which
+  makes it unsafe when <str> contains user input, and makes it unsuitable for
+  use in nested switch()es. It is strongly recommended you use the %$<n>
+  substitution or stext() function instead, which solves these problems.
   
   See 'help switch2' for examples.
  
-See also: reswitch(), if(), cond(), firstof()
+See also: reswitch(), stext(), slev(), if(), cond(), firstof()
 & SWITCH2
   Examples:
     > say switch(test, *a*, foo, *b*, bar, *t*, neat, baz)
@@ -4873,6 +4944,32 @@ See also: reswitch(), if(), cond(), firstof()
   the greater/less than check).
 
 See also: WILDCARDS
+& STEXT()
+& SLEV()
+& %$
+& %$0
+  slev()
+  stext([<n>])
+  %$<n>
+  
+  slev() returns the current nesting depth of switch*(), reswitch*() and
+  @switch/@selects. stext() returns the <string> being matched for the
+  current switch, or the <n>th switch where n=0 is the current switch, n=1
+  is the switch the current switch is nested in, and so on. It is a safer
+  replacement for the "#$" token, which (because it is replaced before
+  evaluation) is unsafe with user input, and unsuitable for use in nested
+  switches.
+  
+  stext(L) returns the <string> for the outermost switch, and is equivilent
+  to stext(slev()). %$<n> is equivilent to stext(<n>), for <n>s of 0-9 or L.
+  
+  Example:
+    > &cmd.whois me=$whois *: @pemit %#=switch(pmatch(%0),#-*,
+                                    I don't know '%0', '%0' is %$0)
+    > @switch foo=f*, say switch(bar, b*,%$1 %$0!)
+    You say, "foo bar!"
+    
+See also: switch(), reswitch(), @switch
 & T()
   t(<expression>)
 
@@ -4959,7 +5056,7 @@ See also: pueblo(), width(), height(), ssl()
 See also: @lock, lock(), elock(), locktypes
 & TEXTFILE()
 & TEXTENTRIES()
-& dynhelp()
+& DYNHELP()
   textfile(<type>, <entry>)
   textentries(<type>, <pattern>[, <osep>])
 
@@ -5770,7 +5867,7 @@ See also: nthings(), lthings(), lvthings(), xplayers(), xexits()
   
     extract(lwho(), <start>, <count>)
 
-  xmwho() does not include dark or hidden players (like mwho()).
+  xmwho() does not include hidden players (like mwho()).
 
   xwhoid() and xmwhoid() return objids instead of dbrefs.
 
@@ -5781,10 +5878,9 @@ See also: lwho(), mwho(), nwho(), zwho()
   zmwho(<object>)
 
   These functions return the dbrefs of all currently-connected players in
-  locations @chzone'd to <object>. zmwho() does not include dark or hidden
-  players, while zwho() returns all players that the caller can see are
-  online. You must be See_All or pass <object>'s @lock/zone to use these
-  functions.
+  locations @chzone'd to <object>. zmwho() does not include hidden players,
+  while zwho() returns all players that the caller can see are online. You
+  must be See_All or pass <object>'s @lock/zone to use these functions.
   
   See_All players can pass a <viewer> argument to zwho() to get only those
   players that <viewer> can see is online.

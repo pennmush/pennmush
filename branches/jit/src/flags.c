@@ -1477,7 +1477,8 @@ decompile_flags_generic(dbref player, dbref thing, const char *name,
   Flagspace_Lookup(n, ns);
   for (i = 0; i < n->flagbits; i++)
     if ((f = n->flags[i])) {
-      if (has_flag_ns(n, thing, f) && Can_See_Flag(player, thing, f))
+      if (has_flag_ns(n, thing, f) && Can_See_Flag(player, thing, f)
+          && !(f->perms & F_INTERNAL))
         notify_format(player, "%s%s %s = %s", prefix, command, name, f->name);
     }
 }

@@ -137,80 +137,105 @@ free_anon_attrib(ATTR *attrib)
 /** Given an attribute [<object>/]<name> pair (which may include #lambda),
  * fetch its value, owner (thing), and pe_flags, and store in the struct
  * pointed to by ufun
- * \param attrname The obj/name of attribute.
+ * \param attrstring The obj/name of attribute.
  * \param executor Dbref of the executing object.
  * \param ufun Pointer to an allocated ufun_attrib struct to fill in.
- * \param accept_lambda true if #lambda can be used.
+ * \param flags A bitwise or of desired UFUN_* flags.
  * \return 0 on failure, true on success.
  */
 bool
-fetch_ufun_attrib(char *attrname, dbref executor, ufun_attrib * ufun,
-                  bool accept_lambda)
+fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
+                  int flags)
 {
+  char *thingname, *attrname;
+  char astring[BUFFER_LEN];
   ATTR *attrib;
-  dbref thing;
-  int pe_flags = PE_UDEFAULT;
 
   if (!ufun)
-    return 0;                   /* We should never NOT receive a ufun. */
+    return 0;
+
+  ufun->contents[0] = '\0';
   ufun->errmess = (char *) "";
+  ufun->thing = executor;
+  ufun->pe_flags = PE_UDEFAULT;
+  ufun->ufun_flags = flags;
 
-  /* find our object and attribute */
-  if (accept_lambda) {
-    parse_anon_attrib(executor, attrname, &thing, &attrib);
+  ufun->thing = executor;
+  thingname = NULL;
+
+  if (!attrstring)
+    return 0;
+  strncpy(astring, attrstring, BUFFER_LEN);
+
+  /* Split obj/attr */
+  if ((flags & UFUN_OBJECT) && ((attrname = strchr(astring, '/')) != NULL)) {
+    thingname = astring;
+    *(attrname++) = '\0';
   } else {
-    parse_attrib(executor, attrname, &thing, &attrib);
+    attrname = astring;
   }
 
-  /* Is it valid? */
-  if (!GoodObject(thing)) {
-    ufun->errmess = (char *) "#-1 INVALID OBJECT";
-    free_anon_attrib(attrib);
-    return 0;
-  } else if (!attrib) {
-    ufun->contents[0] = '\0';
-    ufun->thing = thing;
-    ufun->pe_flags = pe_flags;
-    free_anon_attrib(attrib);
+  if (thingname && (flags & UFUN_LAMBDA) && !strcasecmp(thingname, "#lambda")) {
+    /* It's a lambda. */
+    thingname = NULL;
+    ufun->thing = executor;
+    mush_strncpy(ufun->contents, attrname, BUFFER_LEN);
     return 1;
-  } else if (!Can_Read_Attr(executor, thing, attrib)) {
-    ufun->errmess = e_atrperm;
-    free_anon_attrib(attrib);
-    return 0;
   }
 
-  /* Can we evaluate it? */
-  if (!CanEvalAttr(executor, thing, attrib)) {
+  if (thingname) {
+    /* Attribute is on something else. */
+    ufun->thing =
+      noisy_match_result(executor, thingname, NOTYPE, MAT_EVERYTHING);
+    if (!GoodObject(ufun->thing)) {
+      ufun->errmess = (char *) "#-1 INVALID OBJECT";
+      return 0;
+    }
+  }
+
+  attrib = (ATTR *) atr_get(ufun->thing, upcasestr(attrname));
+  // An empty attrib is the same as no attrib.
+  if (attrib == NULL) {
+    if (flags & UFUN_REQUIRE_ATTR) {
+      if (!(flags & UFUN_IGNORE_PERMS) && !Can_Examine(executor, ufun->thing))
+        ufun->errmess = e_atrperm;
+      return 0;
+    } else {
+      return 1;
+    }
+  }
+  if (!(flags & UFUN_IGNORE_PERMS)
+      && !Can_Read_Attr(executor, ufun->thing, attrib)) {
+    ufun->errmess = e_atrperm;
+    return 0;
+  }
+  if (!(flags & UFUN_IGNORE_PERMS)
+      && !CanEvalAttr(executor, ufun->thing, attrib)) {
     ufun->errmess = e_perm;
-    free_anon_attrib(attrib);
     return 0;
   }
 
   /* DEBUG attributes */
-  if (AF_Debug(attrib))
-    pe_flags |= PE_DEBUG;
+  if (AF_Debug(attrib)) {
+    ufun->pe_flags |= PE_DEBUG;
+  }
 
   /* Populate the ufun object */
   mush_strncpy(ufun->contents, atr_value(attrib), BUFFER_LEN);
-  ufun->thing = thing;
-  ufun->pe_flags = pe_flags;
-
-  /* Cleanup */
-  free_anon_attrib(attrib);
 
   /* We're good */
   return 1;
 }
 
 /** Given a ufun, executor, enactor, PE_Info, and arguments for %0-%9,
- * call the ufun with appropriate permissions on values given for
- * wenv_args. The value returned is stored in the buffer pointed to
- * by retval, if given.
+ *  call the ufun with appropriate permissions on values given for
+ *  wenv_args. The value returned is stored in the buffer pointed to
+ *  by ret, if given.
  * \param ufun The ufun_attrib that was initialized by fetch_ufun_attrib
  * \param wenv_args An array of string values for global_eval_context.wenv
  * \param wenv_argc The number of wenv args to use.
  * \param ret If desired, a pointer to a buffer in which the results
- * of the process_expression are stored in.
+ *            of the process_expression are stored in.
  * \param executor The executor.
  * \param enactor The enactor.
  * \param pe_info The pe_info passed to the FUNCTION
@@ -224,6 +249,9 @@ call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
   char rbuff[BUFFER_LEN];
   char *rp;
   char *old_wenv[10];
+  char *saveqs[NUMQ];
+  int iter_nest = -1;
+  int switch_nest = -1;
   int old_args = 0;
   int i;
   int pe_ret;
@@ -231,26 +259,30 @@ call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
 
   struct re_save rsave;
 
-  save_regexp_context(&rsave);
-
   /* Make sure we have a ufun first */
   if (!ufun)
     return 1;
 
   /* If the user doesn't care about the return of the expression,
-   * then use our own rbuff.
-   */
+   * then use our own rbuff.  */
   if (!ret)
     ret = rbuff;
   rp = ret;
 
+  /* Save contexts, globals, regexp vals, etc */
   for (i = 0; i < wenv_argc; i++) {
     old_wenv[i] = global_eval_context.wenv[i];
     global_eval_context.wenv[i] = wenv_args[i];
   }
+
   for (; i < 10; i++) {
     old_wenv[i] = global_eval_context.wenv[i];
     global_eval_context.wenv[i] = NULL;
+  }
+
+  save_regexp_context(&rsave);
+  if (ufun->ufun_flags & UFUN_LOCALIZE) {
+    save_global_regs("localize", saveqs);
   }
 
   /* Set all the regexp patterns to NULL so they are not
@@ -260,11 +292,14 @@ call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
   global_eval_context.re_offsets = NULL;
   global_eval_context.re_from = NULL;
 
-
   /* And now, make the call! =) */
   if (pe_info) {
     old_args = pe_info->arg_count;
     pe_info->arg_count = wenv_argc;
+    iter_nest = pe_info->local_iter_nesting;
+    pe_info->local_iter_nesting = -1;
+    switch_nest = pe_info->local_switch_nesting;
+    pe_info->local_switch_nesting = -1;
   }
 
   ap = ufun->contents;
@@ -277,9 +312,14 @@ call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
     global_eval_context.wenv[i] = old_wenv[i];
   }
   if (pe_info) {
+    pe_info->local_iter_nesting = iter_nest;
+    pe_info->local_switch_nesting = switch_nest;
     pe_info->arg_count = old_args;
   }
 
+  if (ufun->ufun_flags & UFUN_LOCALIZE) {
+    restore_global_regs("localize", saveqs);
+  }
   /* Restore regexp patterns */
   restore_regexp_context(&rsave);
 
@@ -305,97 +345,14 @@ bool
 call_attrib(dbref thing, const char *attrname, const char *wenv_args[],
             int wenv_argc, char *ret, dbref enactor, PE_Info *pe_info)
 {
-  char atrbuf[BUFFER_LEN];
-  char rbuff[BUFFER_LEN];
-  char *rp;
-  char *old_wenv[10];
-  int old_args = 0;
-  int i;
-  int pe_ret;
-  char const *ap;
-  ATTR *attrib;
-  char *saver[NUMQ];
-
-  struct re_save rsave;
-
-  /* Make sure we have a valid object to call first */
-  if (!GoodObject(thing) || IsGarbage(thing))
+  ufun_attrib ufun;
+  if (!fetch_ufun_attrib(attrname, thing, &ufun,
+                         UFUN_LOCALIZE | UFUN_REQUIRE_ATTR | UFUN_IGNORE_PERMS))
+  {
     return 0;
-
-  if (attrname == NULL || !*attrname)
-    return 0;
-
-  /* Fetch the attrib contents */
-  attrib = (ATTR *) atr_get(thing, attrname);
-  if (attrib == NULL)
-    return 0;
-
-  mush_strncpy(atrbuf, atr_value(attrib), BUFFER_LEN);
-
-  if (!*atrbuf) {
-    if (ret)
-      *ret = '\0';
-    return 1;
   }
-
-  save_global_regs("localize", saver);
-
-  /* Store regepx info */
-  save_regexp_context(&rsave);
-
-  /* If the user doesn't care about the return of the expression,
-   * then use our own rbuff.
-   */
-  if (!ret)
-    ret = rbuff;
-  rp = ret;
-
-  /* Set up %0-%9 */
-  for (i = 0; i < wenv_argc; i++) {
-    old_wenv[i] = global_eval_context.wenv[i];
-    global_eval_context.wenv[i] = (char *) wenv_args[i];
-  }
-  for (; i < 10; i++) {
-    old_wenv[i] = global_eval_context.wenv[i];
-    global_eval_context.wenv[i] = NULL;
-  }
-  /* Clear all q-regs */
-  for (i = 0; i < NUMQ; i++) {
-    global_eval_context.renv[i][0] = '\0';
-  }
-
-  /* Set all the regexp patterns to NULL so they are not
-   * propogated */
-  global_eval_context.re_code = NULL;
-  global_eval_context.re_subpatterns = -1;
-  global_eval_context.re_offsets = NULL;
-  global_eval_context.re_from = NULL;
-
-  /* And now, make the call! =) */
-  if (pe_info) {
-    old_args = pe_info->arg_count;
-    pe_info->arg_count = wenv_argc;
-  }
-
-  ap = atrbuf;
-  pe_ret = process_expression(ret, &rp, &ap, thing, thing,
-                              enactor, PE_DEFAULT, PT_DEFAULT, pe_info);
-  *rp = '\0';
-
-  /* Restore the old wenv */
-  for (i = 0; i < 10; i++) {
-    global_eval_context.wenv[i] = old_wenv[i];
-  }
-
-  if (pe_info) {
-    pe_info->arg_count = old_args;
-  }
-
-  /* Restore regexp patterns */
-  restore_regexp_context(&rsave);
-  restore_global_regs("localize", saver);
-
-  return !pe_ret;
+  return !call_ufun(&ufun, (char **) wenv_args, wenv_argc, ret, thing, enactor,
+                    pe_info);
 }
 
 /** Given an exit, find the room that is its source through brute force.

@@ -203,29 +203,33 @@ PENNCONF conftable[] = {
   ,
   {"sql_host", cf_str, options.sql_host, sizeof options.sql_host, 0, "net"}
   ,
-  {"sql_username", cf_str, options.sql_username, sizeof options.sql_username, 0,
-   NULL}
+  {"sql_username", cf_str, options.sql_username, sizeof options.sql_username,
+   CP_GODONLY,
+   "net"}
   ,
-  {"sql_password", cf_str, options.sql_password, sizeof options.sql_password, 0,
-   NULL}
+  {"sql_password", cf_str, options.sql_password, sizeof options.sql_password,
+   CP_GODONLY,
+   "net"}
   ,
-  {"sql_database", cf_str, options.sql_database, sizeof options.sql_database, 0,
-   NULL}
+  {"sql_database", cf_str, options.sql_database, sizeof options.sql_database,
+   CP_GODONLY,
+   "net"}
   ,
   {"forking_dump", cf_bool, &options.forking_dump, 2, 0, "dump"}
   ,
-  {"dump_message", cf_str, options.dump_message, sizeof options.dump_message, 0,
+  {"dump_message", cf_str, options.dump_message, sizeof options.dump_message,
+   CP_OPTIONAL,
    "dump"}
   ,
   {"dump_complete", cf_str, options.dump_complete, sizeof options.dump_complete,
-   0, "dump"}
+   CP_OPTIONAL, "dump"}
   ,
   {"dump_warning_1min", cf_str, options.dump_warning_1min,
    sizeof options.dump_warning_1min,
-   0, "dump"}
+   CP_OPTIONAL, "dump"}
   ,
   {"dump_warning_5min", cf_str, options.dump_warning_5min,
-   sizeof options.dump_warning_5min, 0,
+   sizeof options.dump_warning_5min, CP_OPTIONAL,
    "dump"}
   ,
   {"dump_interval", cf_time, &options.dump_interval, 100000, 0, "dump"}
@@ -238,10 +242,11 @@ PENNCONF conftable[] = {
   ,
 
   {"money_singular", cf_str, options.money_singular,
-   sizeof options.money_singular, 0,
+   sizeof options.money_singular, CP_OPTIONAL,
    "cosmetic"}
   ,
-  {"money_plural", cf_str, options.money_plural, sizeof options.money_plural, 0,
+  {"money_plural", cf_str, options.money_plural, sizeof options.money_plural,
+   CP_OPTIONAL,
    "cosmetic"}
   ,
   {"player_name_spaces", cf_bool, &options.player_name_spaces, 2, 0,
@@ -267,13 +272,15 @@ PENNCONF conftable[] = {
    "cosmetic"}
   ,
   {"wizwall_prefix", cf_str, options.wizwall_prefix,
-   sizeof options.wizwall_prefix, 0,
+   sizeof options.wizwall_prefix, CP_OPTIONAL,
    "cosmetic"}
   ,
-  {"rwall_prefix", cf_str, options.rwall_prefix, sizeof options.rwall_prefix, 0,
+  {"rwall_prefix", cf_str, options.rwall_prefix, sizeof options.rwall_prefix,
+   CP_OPTIONAL,
    "cosmetic"}
   ,
-  {"wall_prefix", cf_str, options.wall_prefix, sizeof options.wall_prefix, 0,
+  {"wall_prefix", cf_str, options.wall_prefix, sizeof options.wall_prefix,
+   CP_OPTIONAL,
    "cosmetic"}
   ,
   {"announce_connects", cf_bool, &options.announce_connects, 2, 0, "cosmetic"}
@@ -290,6 +297,8 @@ PENNCONF conftable[] = {
   {"max_logins", cf_int, &options.max_logins, 128, 0, "limits"}
   ,
   {"max_guests", cf_int, &options.max_guests, 128, 0, "limits"}
+  ,
+  {"connect_fail_limit", cf_int, &options.connect_fail_limit, 50, 0, "limits"}
   ,
   {"idle_timeout", cf_time, &options.idle_timeout, 100000, 0, "limits"}
   ,
@@ -592,7 +601,7 @@ add_config(const char *name, config_func handler, void *loc, int max,
   cnf->handler = handler;
   cnf->loc = loc;
   cnf->max = max;
-  cnf->overridden = 0;
+  cnf->flags = 0;
   cnf->group = group;
   hashadd(name, (void *) cnf, &local_options);
   return cnf;
@@ -1203,15 +1212,19 @@ config_set(const char *opt, char *val, int source, int restrictions)
   /* search conf table for the option; if found, add it, if not found,
    * complain about it. Forbid use of @config to set options without
    * groups (log_wipe_passwd), or the file and message groups (@config/set
-   * output_data=../../.bashrc? Ouch.)  */
+   * output_data=../../.bashrc? Ouch.), or options which only God can see.  */
   for (cp = conftable; cp->name; cp++) {
     int i = 0;
     if ((!source || (cp->group && strcmp(cp->group, "files") != 0
-                     && strcmp(cp->group, "messages") != 0))
+                     && strcmp(cp->group, "messages") != 0
+                     && !(cp->flags & CP_GODONLY)))
         && !strcasecmp(cp->name, opt)) {
       i = cp->handler(opt, val, cp->loc, cp->max, source);
       if (i) {
-        cp->overridden = 1;
+        if (source)
+          cp->flags |= CP_CONFIGSET;
+        else
+          cp->flags |= CP_OVERRIDDEN;
         if (source == 2)
           save_config_option(cp);
       }
@@ -1226,7 +1239,10 @@ config_set(const char *opt, char *val, int source, int restrictions)
         && !strcasecmp(cp->name, opt)) {
       i = cp->handler(opt, val, cp->loc, cp->max, source);
       if (i) {
-        cp->overridden = 1;
+        if (source)
+          cp->flags |= CP_CONFIGSET;
+        else
+          cp->flags |= CP_OVERRIDDEN;
         if (source == 2)
           save_config_option(cp);
       }
@@ -1266,13 +1282,14 @@ conf_default_set(void)
   options.ancestor_exit = -1;
   options.ancestor_thing = -1;
   options.ancestor_player = -1;
+  options.connect_fail_limit = 10;
   options.idle_timeout = 0;
   options.unconnected_idle_timeout = 300;
   options.keepalive_timeout = 300;
   options.dump_interval = 3601;
   strcpy(options.dump_message,
-         T("GAME: Dumping database. Game may freeze for a minute"));
-  strcpy(options.dump_complete, T("GAME: Dump complete. Time in."));
+         T("GAME: Saving database. Game may freeze for a few moments."));
+  strcpy(options.dump_complete, T("GAME: Save complete. "));
   options.ident_timeout = 5;
   options.max_logins = 128;
   options.max_guests = 0;
@@ -1291,8 +1308,8 @@ conf_default_set(void)
   options.use_quota = 1;
   options.function_side_effects = 1;
   options.empty_attrs = 1;
-  strcpy(options.money_singular, "Penny");
-  strcpy(options.money_plural, "Pennies");
+  strcpy(options.money_singular, T("Penny"));
+  strcpy(options.money_plural, T("Pennies"));
   strcpy(options.log_wipe_passwd, "zap!");
 #ifdef WIN32
   strcpy(options.compressprog, "");
@@ -1332,10 +1349,8 @@ conf_default_set(void)
   options.warn_interval = 3600;
   options.use_dns = 1;
   options.safer_ufun = 1;
-  strcpy(options.dump_warning_1min,
-         T("GAME: Database will be dumped in 1 minute."));
-  strcpy(options.dump_warning_5min,
-         T("GAME: Database will be dumped in 5 minutes."));
+  strcpy(options.dump_warning_1min, T("GAME: Database save in 1 minute."));
+  strcpy(options.dump_warning_5min, T("GAME: Database save in 5 minutes."));
   options.noisy_whisper = 0;
   options.possessive_get = 1;
   options.possessive_get_d = 1;
@@ -1375,9 +1390,9 @@ conf_default_set(void)
   options.silent_pemit = 0;
   options.max_dbref = 0;
   options.chat_strip_quote = 1;
-  strcpy(options.wizwall_prefix, "Broadcast:");
-  strcpy(options.rwall_prefix, "Admin:");
-  strcpy(options.wall_prefix, "Announcement:");
+  strcpy(options.wizwall_prefix, T("Broadcast:"));
+  strcpy(options.rwall_prefix, T("Admin:"));
+  strcpy(options.wall_prefix, T("Announcement:"));
   strcpy(options.access_file, "access.cnf");
   strcpy(options.names_file, "names.cnf");
   options.object_cost = 10;
@@ -1533,7 +1548,7 @@ config_file_startup(const char *conf, int restrictions)
    */
   if (conf_recursion == 0) {
     for (cp = conftable; cp->name; cp++) {
-      if (!cp->overridden) {
+      if (!(cp->flags & (CP_OVERRIDDEN | CP_OPTIONAL))) {
         do_rawlog(LT_ERR,
                   "CONFIG: directive '%s' missing from cnf file, using default value.",
                   cp->name);
@@ -1541,7 +1556,7 @@ config_file_startup(const char *conf, int restrictions)
     }
     for (cp = (PENNCONF *) hash_firstentry(&local_options); cp;
          cp = (PENNCONF *) hash_nextentry(&local_options)) {
-      if (!cp->overridden) {
+      if (!(cp->flags & (CP_OVERRIDDEN | CP_OPTIONAL))) {
         do_rawlog(LT_ERR,
                   "CONFIG: local directive '%s' missing from cnf file. Using default value.",
                   cp->name);
@@ -1607,7 +1622,8 @@ do_config_list(dbref player, const char *type, int lc)
     if (!found) {
       /* It wasn't a group. Is is one or more specific options? */
       for (cp = conftable; cp->name; cp++) {
-        if (cp->group && string_prefix(cp->name, type)) {
+        if (cp->group && (God(player) || !(cp->flags & CP_GODONLY))
+            && string_prefix(cp->name, type)) {
           notify(player, config_to_string(player, cp, lc));
           found = 1;
         }
@@ -1616,7 +1632,8 @@ do_config_list(dbref player, const char *type, int lc)
         /* Ok, maybe a local option? */
         for (cp = (PENNCONF *) hash_firstentry(&local_options); cp;
              cp = (PENNCONF *) hash_nextentry(&local_options)) {
-          if (cp->group && !strcasecmp(cp->name, type)) {
+          if (cp->group && (God(player) || !(cp->flags & CP_GODONLY))
+              && !strcasecmp(cp->name, type)) {
             notify(player, config_to_string(player, cp, lc));
             found = 1;
           }
@@ -1654,13 +1671,15 @@ do_config_list(dbref player, const char *type, int lc)
         show_compile_options(player);
       else {
         for (cp = conftable; cp->name; cp++) {
-          if (cp->group && !strcmp(cp->group, cgp->name)) {
+          if (cp->group && (God(player) || !(cp->flags & CP_GODONLY))
+              && !strcmp(cp->group, cgp->name)) {
             notify(player, config_to_string(player, cp, lc));
           }
         }
         for (cp = (PENNCONF *) hash_firstentry(&local_options); cp;
              cp = (PENNCONF *) hash_nextentry(&local_options)) {
-          if (cp->group && !strcasecmp(cp->group, cgp->name)) {
+          if (cp->group && (God(player) || !(cp->flags & CP_GODONLY))
+              && !strcasecmp(cp->group, cgp->name)) {
             notify(player, config_to_string(player, cp, lc));
           }
         }
@@ -1768,14 +1787,16 @@ FUNCTION(fun_config)
 
   if (args[0] && *args[0]) {
     for (cp = conftable; cp->name; cp++) {
-      if (cp->group && !strcasecmp(cp->name, args[0])) {
+      if (cp->group && (God(executor) || !(cp->flags & CP_GODONLY))
+          && !strcasecmp(cp->name, args[0])) {
         safe_str(config_to_string2(executor, cp, 0), buff, bp);
         return;
       }
     }
     for (cp = (PENNCONF *) hash_firstentry(&local_options); cp;
          cp = (PENNCONF *) hash_nextentry(&local_options)) {
-      if (cp->group && !strcasecmp(cp->name, args[0])) {
+      if (cp->group && (God(executor) || !(cp->flags & CP_GODONLY))
+          && !strcasecmp(cp->name, args[0])) {
         safe_str(config_to_string2(executor, cp, 0), buff, bp);
         return;
       }
@@ -1785,7 +1806,7 @@ FUNCTION(fun_config)
   } else {
     int first = 1;
     for (cp = conftable; cp->name; cp++) {
-      if (cp->group) {
+      if (cp->group && (God(executor) || !(cp->flags & CP_GODONLY))) {
         if (first)
           first = 0;
         else
@@ -1795,7 +1816,7 @@ FUNCTION(fun_config)
     }
     for (cp = (PENNCONF *) hash_firstentry(&local_options); cp;
          cp = (PENNCONF *) hash_nextentry(&local_options)) {
-      if (cp->group) {
+      if (cp->group && (God(executor) || !(cp->flags & CP_GODONLY))) {
         if (first)
           first = 0;
         else
@@ -1818,7 +1839,10 @@ do_enable(dbref player, const char *param, int state)
 
   for (cp = conftable; cp->name; cp++) {
     if (cp->group && !strcasecmp(cp->name, param)) {
-      if (cp->handler == cf_bool) {
+      if (cp->flags & CP_GODONLY) {
+        notify(player, T("That option cannot be altered."));
+        return;
+      } else if (cp->handler == cf_bool) {
         cf_bool(param, (state ? "yes" : "no"), cp->loc, cp->max, 1);
         if (state == 0)
           notify(player, T("Disabled."));

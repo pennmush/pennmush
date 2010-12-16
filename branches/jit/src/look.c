@@ -419,7 +419,7 @@ static void
 look_atrs(dbref player, dbref thing, const char *mstr, int all, int mortal,
           int parent)
 {
-  if (all || (mstr && *mstr && !wildcard(mstr))) {
+  if (all || (mstr && *mstr && !wildcard((char *) mstr))) {
     if (parent) {
       if (!atr_iter_get_parent
           (player, thing, mstr, mortal, 0, look_helper, NULL)
@@ -635,7 +635,7 @@ do_look_at(dbref player, const char *name, int key)
 {
   dbref thing;
   dbref loc;
-  int near;
+  int near = 0;
 
   if (!GoodObject(Location(player)))
     return;
@@ -729,11 +729,12 @@ do_look_at(dbref player, const char *name, int key)
         notify(player, T("You can't look at that from here."));
         return;
       }
+      near = nearby(player, box) && nearby(box, thing);
     } else if (thing == AMBIGUOUS) {
       notify(player, T("I can't tell which one you mean."));
       return;
     }
-    near = nearby(player, thing);
+    near = near || nearby(player, thing);
   }
 
   /* once we've determined the object to look at, it doesn't matter whether

@@ -23,10 +23,6 @@ msgstr "\"#-1 ZONA WAKTU TIDAK SAH\""
 msgid "#-1 NO SUCH CHANNEL"
 msgstr "#-1 CHANNEL TIDAK ADA"
 
-#: src/funufun.c:310
-msgid "#-1 NO SUCH USER FUNCTION"
-msgstr "#-1 TIDAK ADA USER FUNCTION TERSEBU"
-
 #: src/look.c:964
 #, c-format
 msgid "%s (this room) [speech]."

@@ -219,10 +219,6 @@ msgstr "#-1 OBJEKT IST NICHT SICHTBAR"
 msgid "#-1 NO SUCH PLAYER"
 msgstr "#-1 SPIELER NICHT VORHANDEN"
 
-#: src/funufun.c:310
-msgid "#-1 NO SUCH USER FUNCTION"
-msgstr "#-1 DIESE BENUTZERFUNKTION IST NICHT VORHANDEN"
-
 #: src/bsd.c:4485 src/bsd.c:4498
 msgid "#-1 NOT CONNECTED"
 msgstr "#-1 NICHT VERBUNDEN"
@@ -955,14 +951,6 @@ msgstr "Funktion aktualisiert."
 #: src/destroy.c:1325
 msgid "GAME: Database consistency check complete."
 msgstr "SPIEL: Datenbankprüfung abgeschlossen."
-
-#: src/conf.c:572
-msgid "GAME: Database will be dumped in 5 minutes."
-msgstr "GAME: Datenbank wird in 5 Minuten gesichert."
-
-#: src/conf.c:501
-msgid "GAME: Dumping database. Game may freeze for a minute"
-msgstr "SPIEL: Datenbank wird ausgeschrieben. Das Spiel könnte jetzt für ein Minütchen stehenbleiben."
 
 #: game.c:311
 msgid "GAME: ERROR! Database save failed!"

@@ -184,10 +184,6 @@ msgstr "#-1 NÃO EXISTE ESTE TIPO"
 msgid "#-1 NO SUCH TYPE"
 msgstr "#-1 NÃO EXISTE ESTE TIPO"
 
-#: src/funufun.c:310
-msgid "#-1 NO SUCH USER FUNCTION"
-msgstr "#-1 NÃO EXISTE ESTE TIPO"
-
 #: src/bsd.c:4485 src/bsd.c:4498
 msgid "#-1 NOT CONNECTED"
 msgstr "#-1 ARG2 NÃO ENCONTRADO"

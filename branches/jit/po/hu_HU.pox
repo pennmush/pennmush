@@ -325,10 +325,6 @@ msgstr "#-1 NINCS ILYEN JÁTÉKOS"
 msgid "#-1 NO SUCH TYPE"
 msgstr "#-1 NINCS ILYEN TÍPUS"
 
-#: src/funufun.c:310
-msgid "#-1 NO SUCH USER FUNCTION"
-msgstr "#-1 NINCS ILYEN FELHASZNÁLÓI FUNKCIÓ"
-
 #: src/bsd.c:4485 src/bsd.c:4498
 msgid "#-1 NOT CONNECTED"
 msgstr "#-1 NINCS KAPCSOLÓDVA"
@@ -1584,22 +1580,6 @@ msgstr "Fwd "
 #: src/destroy.c:1325
 msgid "GAME: Database consistency check complete."
 msgstr "JÁTÉK: Adatbázis érvényességi teszt befejezve."
-
-#: src/conf.c:570
-msgid "GAME: Database will be dumped in 1 minute."
-msgstr "JÁTÉK: Adatbázismentés 1 perc múlva."
-
-#: src/conf.c:572
-msgid "GAME: Database will be dumped in 5 minutes."
-msgstr "JÁTÉK: Az adatbázis-mentés 5 percen belül."
-
-#: src/conf.c:502
-msgid "GAME: Dump complete. Time in."
-msgstr "JÁTÉk: Mentés vége."
-
-#: src/conf.c:501
-msgid "GAME: Dumping database. Game may freeze for a minute"
-msgstr "JÁTÉK: Adatbázismentés. A játék egy idõre leállhat"
 
 #: game.c:311
 msgid "GAME: ERROR! Database save failed!"

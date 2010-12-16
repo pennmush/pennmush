@@ -63,6 +63,7 @@ typedef struct bque {
   char *rval[NUMQ];             /**< environment, from setq() */
   char *comm;                   /**< command to be executed */
   uint32_t pid;                 /**< Process id of this entry */
+  PE_Info *pe_info;             /**< pe_info for evaluating queue, or NULL */
 } BQUE;
 
 intmap *queue_map = NULL; /**< Intmap for looking up queue entries by pid */
@@ -87,6 +88,7 @@ int que_next(void);
 static void show_queue(dbref player, dbref victim, int q_type,
                        int q_quiet, int q_all, BQUE *q_ptr, int *tot, int *self,
                        int *del);
+static void show_queue_single(dbref player, BQUE *q, int q_type);
 static void do_raw_restart(dbref victim);
 static int waitable_attr(dbref thing, const char *atr);
 static void shutdown_a_queue(BQUE **head, BQUE **tail);
@@ -204,6 +206,8 @@ free_qentry(BQUE *point)
     mush_free(point->semattr, "cqueue.semattr");
   if (point->comm)
     mush_free(point->comm, "cqueue.comm");
+  if (point->pe_info)
+    free_pe_info(point->pe_info);
   im_delete(queue_map, point->pid);
   mush_free(point, "cqueue");
 }
@@ -288,21 +292,28 @@ next_pid(void)
  * \param player the enactor for the queued command.
  * \param command the command to enqueue.
  * \param cause the player or object causing the command to be queued.
+ * \param pe_info the pe_info to use for evaluating the queue, or NULL
  */
 void
-parse_que(dbref player, const char *command, dbref cause)
+parse_que(dbref player, const char *command, dbref cause, PE_Info *pe_info)
 {
   int a;
   BQUE *tmp;
   int pid;
-  if (!IsPlayer(player) && (Halted(player)))
+  if (!IsPlayer(player) && (Halted(player))) {
+    free_pe_info(pe_info);
     return;
-  if (!pay_queue(player, command))      /* make sure player can afford to do it */
+  }
+  if (!pay_queue(player, command)) {
+    /* make sure player can afford to do it */
+    free_pe_info(pe_info);
     return;
+  }
   pid = next_pid();
   if (pid == 0) {
     /* Too many queue entries */
     notify(player, T("Queue entry table full. Try again later."));
+    free_pe_info(pe_info);
     return;
   }
   tmp = mush_malloc(sizeof *tmp, "cqueue");
@@ -314,6 +325,7 @@ parse_que(dbref player, const char *command, dbref cause)
   tmp->next = NULL;
   tmp->left = 0;
   tmp->cause = cause;
+  tmp->pe_info = pe_info;
   for (a = 0; a < 10; a++)
     if (!global_eval_context.wnxt[a])
       tmp->env[a] = NULL;
@@ -427,7 +439,7 @@ queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor)
       /* Skip the ':' */
       command++;
   }
-  parse_que(executor, command, enactor);
+  parse_que(executor, command, enactor, NULL);
   free(start);
   return 1;
 }
@@ -456,7 +468,7 @@ wait_que(dbref player, int waittill, char *command, dbref cause, dbref sem,
   if (waittill == 0) {
     if (sem != NOTHING)
       add_to_sem(sem, -1, semattr);
-    parse_que(player, command, cause);
+    parse_que(player, command, cause, NULL);
     return;
   }
   if (!pay_queue(player, command))      /* make sure player can afford to do it */
@@ -474,6 +486,7 @@ wait_que(dbref player, int waittill, char *command, dbref cause, dbref sem,
   tmp->cause = cause;
   tmp->semattr = NULL;
   tmp->next = NULL;
+  tmp->pe_info = NULL;
   for (a = 0; a < 10; a++) {
     if (!global_eval_context.wnxt[a])
       tmp->env[a] = NULL;
@@ -633,6 +646,34 @@ do_top(int ncom)
   return i;
 }
 
+void
+run_user_input(dbref player, char *input)
+{
+  BQUE *entry;
+  int i;
+
+  entry = mush_malloc(sizeof *entry, "cqueue");
+  entry->comm = mush_strdup(input, "cqueue.comm");
+  entry->pid = 0;
+  entry->player = player;
+  entry->queued = player;
+  entry->cause = player;
+  entry->sem = NOTHING;
+  entry->semattr = NULL;
+  entry->next = NULL;
+  entry->pe_info = NULL;
+  entry->left = 0;
+
+  for (i = 0; i < 10; i++)
+    entry->env[i] = NULL;
+  for (i = 0; i < NUMQ; i++)
+    entry->rval[i] = NULL;
+
+  do_entry(entry, -1);
+  free_qentry(entry);
+
+}
+
 static int
 do_entry(BQUE *entry, int include_recurses)
 {
@@ -643,9 +684,16 @@ do_entry(BQUE *entry, int include_recurses)
   int local_break_called = 0;
   char *r;
   char const *s;
+  int pt_flag = PT_SEMI;
+
+  if (include_recurses == -1) {
+    include_recurses = 0;
+    pt_flag = PT_NOTHING;
+  }
+
   if (GoodObject(entry->player) && !IsGarbage(entry->player)) {
     save_player = global_eval_context.cplr = entry->player;
-    if (!global_eval_context.include_called) {
+    if (!global_eval_context.include_called && pt_flag != PT_NOTHING) {
       giveto(global_eval_context.cplr, QUEUE_COST);
       add_to(entry->queued, -1);
     }
@@ -660,7 +708,8 @@ do_entry(BQUE *entry, int include_recurses)
         else
           global_eval_context.renv[a][0] = '\0';
       }
-      global_eval_context.process_command_port = 0;
+      if (pt_flag != PT_NOTHING)
+        global_eval_context.process_command_port = 0;
       s = entry->comm;
       global_eval_context.break_called = 0;
       local_break_called = 0;
@@ -668,20 +717,27 @@ do_entry(BQUE *entry, int include_recurses)
       *(global_eval_context.break_replace) = '\0';
       if (!include_recurses) {
         start_cpu_timer();
-        global_eval_context.pe_info = make_pe_info();
+        if (entry->pe_info) {
+          global_eval_context.pe_info = entry->pe_info;
+        } else {
+          global_eval_context.pe_info = make_pe_info();
+        }
       }
       while (!cpu_time_limit_hit && *s) {
         r = global_eval_context.ccom;
         process_expression(global_eval_context.ccom, &r, &s,
                            global_eval_context.cplr, entry->cause,
-                           entry->cause, PE_NOTHING, PT_SEMI,
+                           entry->cause, PE_NOTHING, pt_flag,
                            global_eval_context.pe_info);
         *r = '\0';
         if (*s == ';')
           s++;
         strcpy(tbuf, global_eval_context.ccom);
-        process_command(global_eval_context.cplr, tbuf, entry->cause, 0);
+        process_command(global_eval_context.cplr, tbuf, entry->cause,
+                        (pt_flag == PT_NOTHING));
         if (global_eval_context.break_called) {
+          /* Make sure we process semicolons in @break arg, even from socket */
+          pt_flag = PT_SEMI;
           global_eval_context.break_called = 0;
           local_break_called = 1;
           s = global_eval_context.break_replace;
@@ -711,6 +767,7 @@ do_entry(BQUE *entry, int include_recurses)
           tmp->next = NULL;
           tmp->left = 0;
           tmp->cause = entry->cause;
+          tmp->pe_info = NULL;
           for (a = 0; a < 10; a++) {
             if (global_eval_context.include_called == 1) {
               tmp->env[a] =
@@ -752,7 +809,9 @@ do_entry(BQUE *entry, int include_recurses)
       }
       if (!include_recurses) {
         reset_cpu_timer();
-        free_pe_info(global_eval_context.pe_info);
+        if (!entry->pe_info) {
+          free_pe_info(global_eval_context.pe_info);
+        }
         global_eval_context.pe_info = NULL;
       }
     }
@@ -1320,7 +1379,8 @@ FUNCTION(fun_lpids)
 
   if (qmask & 1) {
     for (tmp = qwait; tmp; tmp = tmp->next) {
-      if (GoodObject(player) && (!Owns(tmp->player, player)))
+      if (GoodObject(player) && GoodObject(tmp->player)
+          && (!Owns(tmp->player, player)))
         continue;
       if (!first)
         safe_chr(' ', buff, bp);
@@ -1330,7 +1390,8 @@ FUNCTION(fun_lpids)
   }
   if (qmask & 2) {
     for (tmp = qsemfirst; tmp; tmp = tmp->next) {
-      if (GoodObject(player) && (!Owns(tmp->player, player)))
+      if (GoodObject(player) && GoodObject(tmp->player)
+          && (!Owns(tmp->player, player)))
         continue;
       if (GoodObject(thing) && (tmp->sem != thing))
         continue;
@@ -1357,33 +1418,39 @@ show_queue(dbref player, dbref victim, int q_type, int q_quiet,
       if ((LookQueue(player)
            || Owns(tmp->player, player))) {
         (*self)++;
-        if (q_quiet)
-          continue;
-        switch (q_type) {
-        case 1:                /* wait queue */
-          notify_format(player, "(Pid: %u) [%ld]%s: %s",
-                        (unsigned int) tmp->pid, (long) difftime(tmp->left,
-                                                                 mudtime),
-                        unparse_object(player, tmp->player), tmp->comm);
-          break;
-        case 2:                /* semaphore queue */
-          if (tmp->left != 0) {
-            notify_format(player, "(Pid: %u) [#%d/%s/%ld]%s: %s",
-                          (unsigned int) tmp->pid, tmp->sem, tmp->semattr,
-                          (long) difftime(tmp->left, mudtime),
-                          unparse_object(player, tmp->player), tmp->comm);
-          } else {
-            notify_format(player, "(Pid: %u) [#%d/%s]%s: %s",
-                          (unsigned int) tmp->pid, tmp->sem, tmp->semattr,
-                          unparse_object(player, tmp->player), tmp->comm);
-          }
-          break;
-        default:               /* player or object queue */
-          notify_format(player, "(Pid: %u) %s: %s", (unsigned int) tmp->pid,
-                        unparse_object(player, tmp->player), tmp->comm);
-        }
+        if (!q_quiet)
+          show_queue_single(player, tmp, q_type);
       }
     }
+  }
+}
+
+/* Show a single queue entry */
+static void
+show_queue_single(dbref player, BQUE *q, int q_type)
+{
+  switch (q_type) {
+  case 1:                      /* wait queue */
+    notify_format(player, "(Pid: %u) [%ld]%s: %s",
+                  (unsigned int) q->pid, (long) difftime(q->left,
+                                                         mudtime),
+                  unparse_object(player, q->player), q->comm);
+    break;
+  case 2:                      /* semaphore queue */
+    if (q->left != 0) {
+      notify_format(player, "(Pid: %u) [#%d/%s/%ld]%s: %s",
+                    (unsigned int) q->pid, q->sem, q->semattr,
+                    (long) difftime(q->left, mudtime),
+                    unparse_object(player, q->player), q->comm);
+    } else {
+      notify_format(player, "(Pid: %u) [#%d/%s]%s: %s",
+                    (unsigned int) q->pid, q->sem, q->semattr,
+                    unparse_object(player, q->player), q->comm);
+    }
+    break;
+  default:                     /* player or object queue */
+    notify_format(player, "(Pid: %u) %s: %s", (unsigned int) q->pid,
+                  unparse_object(player, q->player), q->comm);
   }
 }
 
@@ -1455,6 +1522,45 @@ do_queue(dbref player, const char *what, enum queue_type flag)
                   ("Totals: Player...%d/%d[%ddel]  Object...%d/%d[%ddel]  Wait...%d/%d[%ddel]  Semaphore...%d/%d"),
                   pq, tpq, dpq, oq, toq, doq, wq, twq, dwq, sq, tsq);
   }
+}
+
+/** Display info for a single queue entry.
+ * \verbatim
+ * This is the top-level function for @ps <pid>.
+ * \endverbatim
+ * \param player the enactor.
+ * \param pidstr the pid for the queue entry to show
+ */
+void
+do_queue_single(dbref player, char *pidstr)
+{
+  uint32_t pid;
+  BQUE *q;
+
+  if (!is_uinteger(pidstr)) {
+    notify(player, T("That is not a valid pid!"));
+    return;
+  }
+
+  pid = parse_uint32(pidstr, NULL, 10);
+  q = im_find(queue_map, pid);
+  if (!q) {
+    notify(player, T("That is not a valid pid!"));
+    return;
+  }
+
+  if (!LookQueue(player) && Owner(player) != Owner(q->player)) {
+    notify(player, T("Permission denied."));
+    return;
+  }
+
+  if (GoodObject(q->sem))
+    show_queue_single(player, q, 2);
+  else if (q->left > 0)
+    show_queue_single(player, q, 1);
+  else
+    show_queue_single(player, q, 0);
+
 }
 
 /** Halt an object, internal use.
@@ -1533,7 +1639,7 @@ do_halt(dbref owner, const char *ncom, dbref victim)
       global_eval_context.wnxt[j] = global_eval_context.wenv[j];
     for (j = 0; j < NUMQ; j++)
       global_eval_context.rnxt[j] = global_eval_context.renv[j];
-    parse_que(player, ncom, player);
+    parse_que(player, ncom, player, NULL);
   }
 }
 

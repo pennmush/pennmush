@@ -61,6 +61,72 @@ static const char pword_attr[] = "XYXXY";
 
 extern struct db_stat_info current_state;
 
+/* Long IP, just for ipv6.
+ *
+ * Pure ipv6: 8*4+7=39.
+ * ipv6+ipv4 tunneling: 45.
+ * +1 for null, rounded up to nearest multiple of 4.
+ */
+#define IP_LENGTH 48
+/* How many failures to keep track of. */
+#define FAIL_COUNT 100
+typedef struct _fail_info {
+  char ip[IP_LENGTH];           /* Extra long, just for ipv6. */
+  time_t failTime;
+} Fail_Info;
+
+/* This is a rotating buffer of the FAIL_COUNT most recent failures. */
+static Fail_Info ipFails[FAIL_COUNT];
+/* IPFAIL(x) counts x items _BACKWARDS_ from current position. */
+
+static int failIdx = 0;
+#define IPFAIL(x) ipFails[((failIdx + FAIL_COUNT) - x) % FAIL_COUNT]
+
+static int failCount = 0;
+
+/** Check if the given IP has had too many failures to be allowed
+ * to log in.
+ * \param ipaddr The IP address to check.
+ * \retval 1 Okay to log in.
+ * \retval 0 Do not allow to log in.
+ */
+static int
+check_fails(const char *ipaddr)
+{
+  int i;
+  int numFails = 0;
+  time_t since = time(NULL) - 600;
+
+  /* A connect_fail_limit of 0 means none. */
+  if (!CONNECT_FAIL_LIMIT)
+    return 1;
+
+  for (i = 0; i < failCount; i++) {
+    if (IPFAIL(i).failTime > since) {
+      if (!strncmp(ipaddr, IPFAIL(i).ip, IP_LENGTH)) {
+        numFails++;
+        if (numFails >= CONNECT_FAIL_LIMIT) {
+          return 0;
+        }
+      }
+    }
+  }
+  return 1;
+}
+
+static void
+mark_failed(const char *ipaddr)
+{
+  failIdx++;
+  failIdx %= FAIL_COUNT;
+
+  if (failCount < FAIL_COUNT)
+    failCount++;
+  strncpy(IPFAIL(0).ip, ipaddr, IP_LENGTH);
+  IPFAIL(0).failTime = time(NULL);
+}
+
+
 /** Check a player's password against a given string.
  * \param player dbref of player.
  * \param password plaintext password string to check.
@@ -123,6 +189,13 @@ connect_player(const char *name, const char *password, const char *host,
 {
   dbref player;
 
+  if (!check_fails(ip)) {
+    strcpy(errbuf,
+           T
+           ("This IP address has failed too many times. Please try again in 10 minutes."));
+    return NOTHING;
+  }
+
   /* Default error */
   strcpy(errbuf,
          T("Either that player does not exist, or has a different password."));
@@ -131,8 +204,11 @@ connect_player(const char *name, const char *password, const char *host,
     return NOTHING;
 
   /* validate name */
-  if ((player = lookup_player(name)) == NOTHING)
+  if ((player = lookup_player(name)) == NOTHING) {
+    /* Invalid player names are failures, too. */
+    mark_failed(ip);
     return NOTHING;
+  }
 
   /* See if player is allowed to connect like this */
   if (Going(player) || Going_Twice(player)) {
@@ -167,6 +243,7 @@ connect_player(const char *name, const char *password, const char *host,
       /* Increment count of login failures */
       ModTime(player)++;
       check_lastfailed(player, host);
+      mark_failed(ip);
       return NOTHING;
     }
   /* If it's a Guest player, and already connected, search the

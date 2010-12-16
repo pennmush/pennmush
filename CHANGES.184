@@ -16,6 +16,86 @@ chronological order (most recent first)
 
 ==========================================================================
 
+Version 1.8.4 patchlevel 2                                 Dec 06,  2010
+
+Major Changes:
+ * Wildcard matcher completely rewritten to avoid hangs and to provide
+   ansi-aware capturing. [GM]
+ * connection_fail_limit now lets you limit the # of connection fails in
+   a 10 minute time by any given IP. [GM]
+
+Minor Changes:
+ * update-cnf.pl perl script now handles optional config lines, by placing
+   A # OPTIONAL above them. This is for message translation. [GM]
+ * Config options can now be marked as optional. If they don't exist,
+   Penn will not complain in the log. [MG]
+ * Player names with spaces no longer need to be in given in quotes for
+   @name. Suggested by Minion. [MG]
+ * @decompile no longer shows flags which can't be set by players, like
+   GOING and CONNECTED. [MG]
+ * %il substitution as preparation to get rid of ##. [GM]
+ * hardcode: call_attrib is now a wrapper around call_ufun. [GM]
+ * The %i<n> substitution, and itext()/inum()/ilev() functions, now work
+   for @dolist as well as iter(). [MG]
+ * iter() context (itext(), inum(), etc) is no longer propagated through
+   ufuns. [MG]
+ * @hook/overrides on huh_command are now matched against "huh_command" and
+   "huh_command <input>". From a suggestion by Mercutio. [MG]
+ * Various help fixes.
+ * @list and list() can now show only built-in or only local commands or
+   functions. Suggested by Trelane@M*U*S*H. [MG]
+ * Mortals can now use @search to find any objects they can examine.
+   Suggested by Paige. [MG]
+ * @function names can start with numbers again. Requested by Mercutio. [MG]
+ * @include and @break now work when entered directly from a client. [MG]
+ * The Drop and Give @locks now trigger verb <name>_LOCK`FAILURE attributes
+   when you fail to pass them, as described in 'help failure'. Suggested by 
+   Cas@BeforeTheDarkness. [MG]
+ * Set several attributes used internally AF_NOCOPY so they won't be included
+   in @decompile output. Suggested by Paige. [GM]
+ * The help for the chat system (@channel) has been rewritten. [MG]
+ * autodetect_list now returns 'm' sort for unknown list types instead of
+   alphanum, so sorting on strings will now treat numbers in them as
+   separate comparisons by default. [GM]
+ * setunion(), setdiff(), setinter() now autodetect lists in all cases where
+   no sort type is provided instead of just some cases. [GM]
+ * The pipe (|) character is no longer valid in channel names. [MG]
+
+Functions:
+ * ibreak(), for breaking out of an iter() loop. [Rhost] [MG]
+ * New stext() function and %$N sub, equivilent of #$ in @switch, switch*(),
+   and reswitch*(), but can be used in nested switches/on user input. [MG]
+ * New slev() function, returns the current nesting depth of switches. [MG]
+ * maillist() returns a list of @mail messages matching a range, as per
+   @mail/list. Suggested by AnneLions. [MG]
+ * New sorttype, lattr, sorts a list of attribute names. [MG]
+
+Commands:
+ * @channel/combine and @channel/uncombine let you combine spammy connect
+   messages for channels into one line. [SW] [GM]
+ * @grep now accepts /wild and /regexp switches, for wildcard/globbing and
+   regular expression greps (a la wildgrep() and regrep()). Also /nocase
+   for case-insensitive greps. Suggested by Paige. [MG]
+ * @attribute now allows limiting attribute values through /enum and
+   /limit switches. [GM]
+ * @ps <pid> shows info for a single queue entry. Suggested by Paige. [MG]
+   
+Fixes:
+ * Off-by-one bug in 'm' sort when using embedded numbers fixed. [GM]
+ * Debug output was sometimes sent to the wrong executor. [GM]
+ * A crashbug in @search was fixed. Reported by Paige. [GM]
+ * A crashbug in lpids() was fixed. Reported by Mercutio. Fixed by Javelin.
+ * @search elock class failed to report invalid lock strings. Fixed. [GM]
+ * @cpattr and @mvattr could break attribute trees. Reported by Sketch. [MG]
+ * benchmark() calculated the average incorrectly. Reported by Cheetah. [DC]
+ * map(), iter(), mix() and step() are ansi-aware, now. Using any of the
+   list functions without ansi should also be considerably faster. [GM]
+ * "look <container>'s <object>" incorrectly stopped working in p1 when
+   <object>'s desc was set "nearby". Reported by Yuriko@M*U*SH. [MG]
+ * Attribute names are now sorted better with regard to attribute trees,
+   hopefully fixing the recurring bug of @wipe leaving branch attributes
+   when removing a root attr for good. [MG]
+
 Version 1.8.4 patchlevel 1                                 Sep 05,  2010
 
 Major Changes:

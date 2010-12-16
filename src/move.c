@@ -685,10 +685,12 @@ do_drop(dbref player, const char *name)
       notify(player, T("Sorry, you can't drop exits."));
       return;
     } else if (!eval_lock(player, thing, Drop_Lock)) {
-      notify(player, T("You can't seem to get rid of that."));
+      fail_lock(player, thing, Drop_Lock,
+                T("You can't seem to get rid of that."), NOTHING);
       return;
     } else if (IsRoom(loc) && !eval_lock(player, loc, Drop_Lock)) {
-      notify(player, T("You can't seem to drop things here."));
+      fail_lock(player, loc, Drop_Lock,
+                T("You can't seem to drop things here."), NOTHING);
       return;
     } else if (Sticky(thing) && !Fixed(thing)) {
       notify(thing, T("Dropped."));

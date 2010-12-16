@@ -1,38 +1,43 @@
 & CHAT
+& CHAT SYSTEM
 & comsys
   CHAT SYSTEM
 
-  The MUSH has a built-in chat system with many different channels.
-  These channels vary from MUSH to MUSH; ask at your local site or use
-  @channel/list to see which ones are available.
+  PennMUSH has a built-in chat system which allows you to speak to other
+  players who are on the same channel without needing to be in the same room
+  as them. It supports a large number of channels which can be customized and
+  restricted in various ways.
 
-  You can talk to many people on the MUSH via the chat system, without
-  needing to be in the same room as them. Use the "@channel" command
-  to join, leave, or check who is on a channel, and use the "@chat" or
-  "+" command to communicate.
+  Many of the chat system commands take a <channel> argument; you don't need
+  to enter the entire channel name, only as many letters as needed to make it
+  distinct from other channels.
 
-  If you examine yourself, you will see a list of channels that you
-  are currently listening to. Some channels are restricted to wizards
-  or administrators only. See the following help topics for details:
-  @chat, @channel, @cemit, @clock, cwho()
+  You can list, join, and configure channels using the @channel command.
 
-& +
+  To speak on channels, use the @chat command.
+
+See also: @channel, @chat, @cemit, channel functions, CHAN_USEFIRSTMATCH,
+  @chatformat, @clock
 & @chat
+& +
   @chat <channel>=<message>
   +<channel> <message>
 
-  This tells everyone on <channel> your <message>. You can prepend
-  <message> with ':' or ';' to pose instead of talk. This command can
-  also be formatted: +<channel> <message> You do not need to type the
-  complete name of the channel, only as many letters as needed to make
-  it distinct from another channel that you're also on.
+  The @chat command is used to speak on channels. Everyone on the channel
+  will see your message, and it will be added to the channel's recall
+  buffer, if it has one. If <message> begins with a ':' or ';' it will be
+  posed (or semiposed) instead of spoken. You will usually need to join a
+  channel before you can speak on it.
 
-  Note: if you use the '+' form of this command, and you do not use
-  the name of a known channel, your command will be processed as
-  normal, preventing user-defined commands like "+last" from being
-  clobbered by the chat system.
+  +<channel> <message> is short-hand for the @chat command.
 
-See also: chat, CHAN_USEFIRSTMATCH
+  Example:
+  > @chat pub=Hello
+  <Public> Mike says, "Hello"
+  > +pub :waves
+  <Public> Mike waves
+
+See also: @channel, @cemit
 & @CHATFORMAT
   @chatformat <object>[=<message>]
 
@@ -49,7 +54,7 @@ See also: chat, CHAN_USEFIRSTMATCH
            '@' for a "system" message - such as "Walker has connected."
     %1:  The channel name. e.g: "Public", "Admin", "Softcode"
     %2:  The message as typed (post-evaluation, if necessary) by the
-         speaker.  Be warned, though - If type is '@', then %2 will
+         speaker. Be warned, though - if type is '@', then %2 will
          contain the entire message, and will include the name of
          the speaker that caused it.
     %3:  The speaker name, unless channel is set NO_NAME.
@@ -61,7 +66,7 @@ See also: chat, CHAN_USEFIRSTMATCH
     the channel is also set NO_TITLE, then %3 will be "Someone".
 
   Continued in 'help @chatformat2'.
-See also: @chat, @pageformat, @message, speak()
+See also: @chat, @pageformat, @message, speak(), mogrify
 & @CHATFORMAT2
   Examples:
 
@@ -98,205 +103,229 @@ See also: @chat, @pageformat, @message, speak()
 
     @chatformat me=CHAT:%1:[edit(switch(%0,@,%2,speak(if(%4,%4%b)%3,%0%2)),
            &,&amp;,<,&lt;,>,&gt;,%r,<BR>,%b%b,%b&nbsp;)]
-
-See also: @chat, @pageformat, speak()
 & CHAN_USEFIRSTMATCH
   Flag:  CHAN_USEFIRSTMATCH  (any type)
 
-  When this flag is set on an object that uses the chat system,
-  channel name matching will default to the first matching channel in
-  cases of ambiguity. Without this flag, attempting to use an
-  ambiguous partial channel name will produce an error.
+  When this flag is set on an object that uses the chat system, channel name
+  matching will default to the first matching channel in cases of ambiguity.
+  Without this flag, attempting to use an ambiguous partial channel name
+  will produce an error.
 
 See also: CHAT
-& @cemit
-& @nscemit
-  @cemit[/noisy|/silent][/noeval] <channel>=<message>
-  @nscemit[/noisy|/silent][/noeval] <channel>=<message>
+& @CEMIT
+& @NSCEMIT
+& CEMIT()
+& NSCEMIT()
+  @cemit[/nosiy|/silent][/noeval] <channel>=<message>
+  @nscemit[/nosiy|/silent][/noeval] <channel>=<message>
+  cemit(<channel>, <message>[, <noisy>])
+  nscemit(<channel>, <message>[, <noisy>])
 
-  This command allows <message> to be directly broadcasted to the players 
-  on <channel>. A channel prefix is included if the /noisy switch is given,
-  and omitted if /silent is given - the default is controlled by the 
-  noisy_cemit @config option. If the /noeval switch is given, the <message>
-  is not evaluated. This command is intended for use in writing extended 
-  chat systems.
+  @cemit emits <message> on <channel>. It does not include your name. The
+  channel prefix is included if the /noisy switch is given, and omitted if
+  /silent is given - if neither is given, the default behaviour is controlled
+  by the noisy_cemit @config option. The /noeval switch prevents <message> 
+  from being evaluated.
 
-  @nscemit is a wizard-only version that does not include nospoof
-  information in broadcasts.
+  @nscemit is exactly the same, but does not produce nospoof information when
+  used by players with the Can_nspemit @power.
 
-See also: CHAT, cemit(), @chat
+  cemit() and nscemit() work the same as @cemit/silent and @nscemit/silent,
+  respectively. If <noisy> is given as a true value, they work like
+  @cemit/noisy and @nscemit/noisy, respectively, instead.
+
+  @cemit is intended for use in writing extended chat systems. 
+
+See also: @chat
 & @channel
+
+  The @channel command is used to add, join, list and modify channels in the
+  chat system. It takes many different switches.
+
+  Help for @channel system is split into a number of topics. Please see 'help 
+  @channel <topic>' for more, where <topic> is one of the words below. You
+  can also use 'help @channel/<switch>' for help on a particular switch.
+
+  Joining    - How to find, join, and leave channels
+  Other      - Setting channel titles, recalling previous chat messages
+  Admin      - Adding, deleting and modifying channels
+
+See also: CHAT, @chat, @cemit
+& @CHANNEL JOINING
 & @channel/list
 & @channel/what
+& @channel/who
 & @channel/on
+& @channel/join
 & @channel/off
-  @channel/list [<channel-prefix>]
-  @channel/what [<channel-prefix>]
+& @channel/unjoin
+  @channel/list [<prefix>]
+  @channel/what [<prefix>]
+  @channel/who <channel>
   @channel/on <channel>[=<player>]
   @channel/off <channel>[=<player>]
 
-  The basic form of this command allows you to see the available
-  channels, and join or leave a channel. You do not need to type the
-  complete name of the channel, only as many letters as needed to make
-  it distinct from other channels.
+  @channel/list shows a list of all the channels you can see, along with some
+  basic information such as whether you are on the channel, how it's locked,
+  etc. 'help @channel list' explains the output in detail. If a <prefix> is
+  given, only channels whose names begin with <prefix> are shown.
 
-  Wizards may add and remove other players from channels by providing
-  a player name as a second argument.
+  @channel/what shows the name, description, owner, priv flags and buffer
+  size for all channels, or all channels whose names begin with <prefix> if
+  one is given.
 
-  Channels may be restricted in who can join them and/or speak on
-  them. @channel/list will show you the channel's name, number of
-  users, number of message since last restart, access information, and
-  your status. See "help channel-list" for an explanation of how to
-  read the listing.
+  @channel/who lists all the players on the given channel.
 
-  @channel/what will show you the channel's name, access information,
-  and a description of the channel's purpose.
+  @channel/on and @channel/off add or remove you from the given <channel>.
+  You only hear messages for channels you're on, and most channels require you
+  to join them before you can speak on them. /join and /unjoin are aliases for
+  /on and /off.
 
-  More commands are provided in "help @channel2".
-  
-See also: chat
-& @channel2
-& @channel/who
-& @channel/hide
-& @channel/title
-  @channel/who <channel>
-  @channel/hide <channel>=<yes|no>
-  @channel/title <channel>[=<string>]
-
-  The @channel/who command shows you who is currently on a channel, if
-  you are permitted to see it.
-
-  Some channels allow their users to hide from the @channel/who list.
-  If you're on such a channel and are permitted to hide, you can use
-  @channel/hide <channel>=yes to hide yourself, and @channel/hide
-  <channel>=no to reappear.
-
-  @channel/title lets you set a title to appear before your name when
-  you speak on the channel, or check your current title. If you leave
-  the channel, your title is cleared; use @channel/gag instead (see
-  help @channel3). You should escape any commas in your title with
-  backslashes.
-
-  See "help @channel3" for more.
-& @channel3
-& @channel/mute
+  Continued in 'help @channel joining2'.
+& @CHANNEL JOINING2
 & @channel/gag
+& @channel/ungag
+& @channel/hide
+& @channel/unhide
+& @channel/mute
+& @channel/combine
+& @channel/uncombine
+  @channel/gag [<channel>][=<yes|no>]
+  @channel/mute [<channel>][=<yes|no>]
+  @channel/hide [<channel>][=<yes|no>]
+  @channel/combine [<channel>][=<yes|no>]
+
+  @channel/gag allows you to stay on a channel but stop receiving messages on
+  it. Channels are automatically ungagged when you disconnect. You cannot
+  speak on channels you're gagging unless they have the "open" priv.
+
+  Channels without the 'quiet' priv broadcast messages when players connect or
+  disconnect from the MUSH. You can use @channel/mute to suppress these
+  messages if you don't want to see them.
+
+  On channels with the 'hide_ok' priv, @channel/hide lets you hide from the
+  @channel/who list if you pass the channel's @clock/hide.
+
+  Connect and disconnect messages across all channels you have marked with
+  @channel/combine will be combined into a single message with a |-separated
+  list of all channel names. Only players can use this.
+
+  For all four of these commands, you can specify a single channel to affect,
+  or omit <channel> to affect all channels you're on. To undo the
+  gag/mute/hide, either use @channel/<switch> [<channel>]=no or
+  @channel/un<switch> [<channel>].
+  
+See also: @channel/who, cstatus(), cowner(), cflags(), channels(),
+  @channel/privs
+& @CHANNEL OTHER
+& @channel/title
 & @channel/recall
-  @channel/mute <channel>=<yes|no>
-  @channel/gag <channel>=<yes|no>
-  @channel/recall <channel>[=<lines|duration>[, <start line>]]
+  @channel/title <channel>[=<message>]
+  @channel/recall[/quiet] <channel>[=<lines|duration>[, <start line>]]
 
-  Some channels broadcast messages when players connect or disconnect
-  from the MUSH. If you don't want to hear those messages, use
-  @channel/mute <channel>=yes. To resume hearing the messages, use
-  @channel/mute <channel>=no or @channel/unmute <channel>. Leave out
-  <channel> to mute or unmute all channels.
+  @channel/title lets you set a channel title, which is shown before your name
+  whenever you speak on a channel. If =<message> is omitted, your current
+  title on the channel is shown. Use an empty <message> to clear your title.
 
-  If you want to remain on a channel but not receive any messages on
-  the channel, use @channel/gag <channel>=yes. To resume hearing, use
-  @channel/gag <channel>=no (or @channel/ungag <channel>). When you
-  disconnect, the channel will be automatically ungagged for you.
-  Leave out <channel> to gag or ungag all channels.  If the channel
-  does not have the "open" priv, you can not speak on it while you are
-  gagged.
+  @channel/recall shows you the most recent messages on the channel, if it has
+  been given a recall buffer with @channel/buffer. With no extra arguments,
+  the 10 most recent lines are shown. You can specify either a number of
+  <lines> to show, or a <duration> (such as '1h30m') to show only that many
+  lines/messages that recent. If <start line> is given, lines before the
+  <start line>th will not be shown. Timestamps are shown with the messages
+  unless /quiet is given.
 
-  @channel/recall shows you the most recent messages on the channel;
-  the number of messages depends on how the channel is configured, but
-  can be limited by specifying <lines> to show and a <start line> to
-  start display from.  If <lines> is an elapsed time, like '1h',
-  messages from within the given interval will be recalled.  You must
-  be on a channel or able to join it to recall from it.
-
-  See "help @channel4" for more.
-& @channel4
+See also: crecall(), cbufferadd(), @channel/buffer
+& @CHANNEL ADMIN
 & @channel/add
-& @channel/delete
-& @channel/desc
-& @channel/rename
-  @channel/add <channel>[=<priv>]
-  @channel/delete <channel>
-  @channel/desc <channel>=<desc>
-  @channel/rename <channel>=<new name>
-
-  @channel/add creates a new channel. On some MUSHes, any player
-  can create a new channel, though there will be a cost associated
-  with creation (see @config chat). Possible <priv> specifications:
-  * "player" - players may use the channel
-  * "thing" - things may use the channel
-  * "admin" - only royalty/wizards/chat_privs may use the channel
-  * "wizard" - only wizards may use the channel
-  * "quiet" - channel will not show connection messages
-  * "open" - you may speak even if you aren't listening to the channel
-  * "hide_ok" - you may hide from the channel who list.
-  * "notitles" - chantitles are not displayed in channel messages.
-  * "nonames" - player names are not displayed in channel messages.
-  * "nocemit" - @cemit is prohibited on the channel.
-  * "interact" - Interaction rules (defined in local.c) are applied to 
-    the channel
-  Specifications may be combined, space-separated. Default is determined
-  by the 'channel_flags' @config option, or 'player' if not set.
-
-  @channel/delete removes a channel. You must own it or be Wizard.
-  @channel/desc sets the channel's description, shown on @channel/what.
-    Descriptions are limited to 256 characters. If there are any commas
-    in the description, the whole string should be enclosed in {}'s.
-  @channel/rename is used to rename a channel.
-
-  See "help @channel5" for more. See also "help @clock".
-& @channel5
-& @channel/priv
-& @channel/wipe
+& @channel/privs
+& @channel/describe
 & @channel/buffer
-& @channel/chown
-  @channel/priv <channel>=<new priv level>
-  @channel/wipe <channel>
+& @channel/decompile
+  @channel/add <channel>[=<privs>]
+  @channel/privs <channel>=<privs>
+  @channel/describe <channel>=<description>
   @channel/buffer <channel>=<lines>
-  @channel/decompile[/brief] <channel>
-  @channel/chown <channel>=<new owner>
+  @channel/decompile[/brief] <prefix>
 
-  The "priv" switch sets the channel's access privileges to those specified.
-  The "wipe" switch clears a channel of players without deleting it.
-  The "buffer" switch sets the maximum number of full-length lines that
-  the channel will buffer for @chan/recall. Many more shorter lines may
+  @channel/add creates a new channel named <channel>, with the given <privs>.
+  If you don't specify the <privs>, the defaults set in the channel_flags
+  @config option are used. There may be a limit on the number of channels
+  mortals can create, and a charge for doing so; see '@config chat'.
+
+  @channel/privs changes the privs for <channel>. See 'help @channel privs'
+  for an explaination of all the possible priviledges.
+
+  @channel/describe sets a description for the channel, which is shown to
+  players in @channel/what. Limited to 256 characters. If the desc includes
+  commas, the whole desc should be enclosed in {}s.
+
+  @channel/buffer sets the maximum number of full-length lines that the
+  channel will buffer for @channel/recall. Many more shorter lines may
   actually be buffered. Setting it to 0 turns off buffering.
 
-  The "decompile" and "chown" switches can only be used by Wizards.
-  @channel/decompile produces a decompile of matching channels. If the
-  /brief switch is included, players on the channel aren't listed.
-  @channel/chown allows a Wizard to change the owner of a channel.
+  @channel/decompile produces a decompile of all channels whose name begin
+  with <prefix>, showing the commands needed to recreate the channels. If
+  the /brief switch is also given, commands to re-add members of the channel
+  are omitted.
 
-  See "help @channel6" for more.
-& @channel6
+  Continued in 'help @channel admin2'.
+& @CHANNEL ADMIN2
+& @channel/chown
+& @channel/name
+& @channel/rename
+& @channel/wipe
+& @channel/delete
+  @channel/chown <channel>=<new owner>
+  @channel/rename <channel>=<new name>
+  @channel/wipe <channel>
+  @channel/delete <channel>
+
+  @channel/chown changes the owner of <channel>. It can only be used by
+  Wizards.
+
+  @channel/rename changes the name of <channel>.
+
+  @channel/wipe removes all players from <channel>.
+
+  @channel/delete completely removes <channel>. It can only be used by
+  Wizards or the owner of <channel>.
+
+  Continued in 'help @channel admin3'.
+See also: @clock
+& @CHANNEL ADMIN3
 & @channel/mogrifier
-& mogrifier
+& chat mogrifying
+& @chat mogrifying
 & mogrify
+& mogrifier
   @channel/mogrifier <channel>=<object>
 
-  The Mogrifier lets you tweak every aspect of a channel's output, before
-  it goes to individual players' @chatformats.
+  @channel/mogrifier sets the mogrifier object for <channel>. <object> must
+  be an object that you control.
 
-  <object> must be an object that you control, and it can have any or all
-  of these attributes which are evaluated when channel messages are generated.
+  Mogrifiers let you tweak every aspect of a channel's output, before it
+  goes to individual players' @chatformats. 
 
-  Before it begins Mogrifying, its MOGRIFY`BLOCK is called, using the same
-  arguments as @chatformat. If MOGRIFY`BLOCK returns a non-empty string, then
-  the resultant string is sent to the player, and the message is not
-  broadcasted.
+  Before it begins mogrifying, <object>'s MOGRIFY`BLOCK attribute is called,
+  with the same arguments as @chatformat. If MOGRIFY`BLOCK returns a
+  non-empty string, then the resultant string is sent back to the player,
+  and no message is broadcast on the channel.
 
-  A number of separate mogrifiers can be used. Check 'help @chat mogrifying'
-  for details.
+  Several different mogrifiers can be used. See 'help mogrify2' for details.
 
-  After all of these are called, MOGRIFY`FORMAT is called. It has the exact
-  same use as @chatformat, but is on a channel-wide level. It receives all
+  After all these mogrifiers are called, MOGRIFY`FORMAT is evaluated. It has
+  the same use as @chatformat, but on a channel-wide level. It receives all
   mogrified text (if any), so is generally intended only for reformatting the
-  whole channel text. It is also overridden by individual @chatformats.
+  whole channel text. It is also overriden by individual @chatformats.
 
-  See 'help @chat mogrifying' for more info and examples.
-& @chat mogrifying
-Mogrifying individual pieces of the channel chatter text:
+  See 'help mogrify2' for info on specific mogrifiers, and 'help mogrify3'
+  for some examples.
+& mogrify2
 
-  If any of these evaluate to a non-null string, they replace that portion
-  of the chat message.
+  There are mogrify attributes for each individual piece of the channel
+  message. If any evaluate to a non-empty string, they replace that portion
+  of the chat message. Each mogrify attribtute is passed six arguments:
 
   %0 - (Depends on the mogrifier.)
   %1 - Channel name (unmogrified).
@@ -305,14 +334,15 @@ Mogrifying individual pieces of the channel chatter text:
   %4 - Player chan title.
   %5 - Player name.
 
+  The mogrify attributes available are:
   MOGRIFY`CHANNAME: %0 = default channel display. (e.g: "<Public>").
   MOGRIFY`TITLE: %0 = The player's title, if any.
   MOGRIFY`PLAYERNAME: %0 = The player's name.
   MOGRIFY`SPEECHTEXT: %0 = "says"
   MOGRIFY`MESSAGE: %0 = <the content of the say, pose, semipose or emit>
 
-  See 'help @chat mogrifying2' for examples.
-& @chat mogrifying2
+  See 'help mogrify3' for examples.
+& mogrify3
 For Talk Like a Pirate Day (Sep 19):
 
   > @create Pirate Filter
@@ -324,7 +354,6 @@ For Talk Like a Pirate Day (Sep 19):
   > &MOGRIFY`CHANNAME Pirate Filter=(%1-Yarr!)
 
 Output:
-
   > +public Hello
   (Public-Yarr!) Buccaneer Walker yo-hos, "Hello"
 
@@ -335,8 +364,8 @@ Output:
   We don't need no ninjas!
   (And the message is blocked, won't be sent out).
 
-  See 'help @chat mogrifying3' for another example.
-& @chat mogrifying3
+  See 'help mogrify4' for another example.
+& mogrify4
 For keeping a channel PG and safe, and altering the channel name from
 <Public> to [Public], with a green "Public".
 
@@ -355,29 +384,56 @@ For keeping a channel PG and safe, and altering the channel name from
 
   Combine MOGRIFY`FORMAT with speak() and you can have plenty of fun:
   On-channel language systems and more!
+& @channel list
 & channel-list
 Here's the legend for reading the @channel/list output:
 
-Channel Name               Num Users Num Msgs  Access Locks     Status  Buf
-Sample                             1        0 [DPTWQHo jsmvh*] [On  QH]   4
-                                               ||||||| ||||||   |   ||    |
-Channel is DISABLED----------------------------/|||||| ||||||   |   ||    |
-Channel allows PLAYERS--------------------------/||||| ||||||   |   ||    |
-Channel allows THINGS----------------------------/|||| ||||||   |   ||    |
-Channel is Wizard-only (W) or Admin-only (A)------/||| ||||||   |   ||    |
-Channel is QUIET-----------------------------------/|| ||||||   |   ||    |
-Channel is HIDE_OK----------------------------------/| ||||||   |   ||    |
-Channel is OPEN (non-members can speak on it)--------/ ||||||   |   ||    |
-Channel has @clock/join set----------------------------||||||   |   ||    |
-Channel has @clock/speak set----------------------------/||||   |   ||    |
-Channel has @clock/mod set-------------------------------/|||   |   ||    |
-Channel has @clock/see set--------------------------------/||   |   ||    |
-Channel has @clock/hide set--------------------------------/|   |   ||    |
-Player is the owner of the channel--------------------------/   |   ||    |
-Player is currently on/off/gagging the channel------------------/   ||    |
-If on, player has the channel muted---------------------------------/|    |
-If on, player is hiding on the channel-------------------------------/    |
-Size of the channel buffer in full-length lines---------------------------/
+Channel Name               Num Users Num Msgs  Access Locks     Status   Buf
+Sample                             1        0 [DPTWQHo jsmvh*] [On  QHC]   4
+                                               ||||||| ||||||   |   |||    |
+Channel is DISABLED----------------------------/|||||| ||||||   |   |||    |
+Channel allows PLAYERS--------------------------/||||| ||||||   |   |||    |
+Channel allows THINGS----------------------------/|||| ||||||   |   |||    |
+Channel is Wizard-only (W) or Admin-only (A)------/||| ||||||   |   |||    |
+Channel is QUIET-----------------------------------/|| ||||||   |   |||    |
+Channel is HIDE_OK----------------------------------/| ||||||   |   |||    |
+Channel is OPEN (non-members can speak on it)--------/ ||||||   |   |||    |
+Channel has @clock/join set----------------------------||||||   |   |||    |
+Channel has @clock/speak set----------------------------/||||   |   |||    |
+Channel has @clock/mod set-------------------------------/|||   |   |||    |
+Channel has @clock/see set--------------------------------/||   |   |||    |
+Channel has @clock/hide set--------------------------------/|   |   |||    |
+Player is the owner of the channel--------------------------/   |   |||    |
+Player is currently on/off/gagging the channel------------------/   |||    |
+If on, player has the channel muted---------------------------------/||    |
+If on, player is hiding on the channel-------------------------------/|    |
+If on, player has @channel/combined the channel-----------------------/    |
+Size of the channel buffer in full-length lines----------------------------/
+& @channel privs
+& channel-privs
+  The <privs> for @channel/add and @channel/privs should be a space-separated
+  list of priv names, or a string of priv chars, from the list below:
+
+  * "player" (P) - players may use the channel
+  * "object" (O) - non-players may use the channel
+  * "admin" (A) - only royalty/wizards/chat_privs may use the channel
+  * "wizard" (W) - only wizards may use the channel
+  * "quiet" (Q) - channel will not show connection messages
+  * "open" (o) - you may speak even if you aren't listening to the channel
+  * "hide_ok" (H) - you may hide from the channel who list
+  * "notitles" (T) - chantitles are not displayed in channel messages
+  * "nonames" (N) - player names are not displayed in channel messages
+  * "nocemit" (C) - @cemit is prohibited on the channel
+  * "interact" (I) - Interaction rules (defined in local.c) are applied to 
+    the channel
+  * "disabled" (D) - noone can join or speak on the channel
+
+  The default privs are determined by the 'channel_flags' @config option.
+
+  Example:
+    > @channel/add Public=player quiet open nocemit
+
+See also: cflags(), clflags()
 & @clock
   @clock/join <channel>[=<key>]
   @clock/speak <channel>[=<key>]
@@ -385,13 +441,13 @@ Size of the channel buffer in full-length lines---------------------------/
   @clock/hide <channel>[=<key>]
   @clock/mod <channel>[=<key>]
 
-  The @clock command modifies the a lock on a chat channel if the
-  extended chat system is in use. If no key is specified, the lock is
-  unlocked. Evaluation locks will not work with @clock.  See help
-  @clock2 for information on using indirect locks.
+  The @clock command modifies the a lock on a chat channel. If no <key> is
+  specified, the lock is removed. Evaluation locks will not work with @clock,
+  but you can use an indirect lock which uses evaluation locks. For an
+  explaination of the <key> argument, see 'help @lock'.
 
   The "join" lock restricts who can join the channel.
-  The "speak" lock restricts who can speak to the channel.
+  The "speak" lock restricts who can speak on the channel.
   The "see" lock restricts who can see the channel on @channel/list
   The "hide" lock restricts @channel/hide if the channel is hide_ok.
   The "mod" lock restricts who can modify the channel. If you pass the
@@ -400,9 +456,7 @@ Size of the channel buffer in full-length lines---------------------------/
   When new channels are added, the mod lock is set to the
   creator/owner, and all other locks are unlocked.
 
-  See help @clock2 for how to use indirect locks to lock a channel to
-  anything.
-
+  Continued in 'help @clock2'.
 & @clock2
   You can use indirect @clocks to lock a channel to a lock of any type
   (including evaluation locks) on a VISUAL object. This channel can only
@@ -422,10 +476,12 @@ Size of the channel buffer in full-length lines---------------------------/
   You can lock multiple channels to the same object by specfiying a
   specific indirect lock instead of the default one:
 
+  > @lock/user:onechanneljoin #10=flag^foo
   > @clock/join onechannel=@#10/onechanneljoin
+  > @lock/user:anotherchanneljoin #10=flag^bar
   > @clock/join anotherchannel=@#10/anotherchanneljoin
-  > @lock/user:onechanneljoin #10 = 1
-  > @lock/user:anotherchanneljoin #10 = isunfind/1
+
+See also: clock()
 & COWNER()
   cowner(<channel>)
 
@@ -433,16 +489,16 @@ Size of the channel buffer in full-length lines---------------------------/
 & CTITLE()
   ctitle(<channel>, <object>)
 
-  Returns <object>'s @chan/title on <channel>. You must either be able
-  to examine the object, or it must be visibly on a channel which you
-  are allowed to join.
+  Returns <object>'s @channel/title on <channel>. You must either be able
+  to examine the object, or it must be visibly on <channel>, and you must
+  either be on <channel> on able to join it.
 & CSTATUS()
   cstatus(<channel>, <object>)
 
   Returns <object>'s status with respect to <channel>, which may be
   "Off", "On", or "Gag". You must either be able to examine the
   object, or it must visible be on the channel; "Off" is returned for
-  objects that you can not see on the channel.
+  objects that you cannot see on the channel.
   
 See also: cwho(), cflags()
 & CDESC()
@@ -454,21 +510,21 @@ See also: cwho(), cflags()
   cmsgs(<channel>)
   cbuffer(<channel>)
 
-  Return the description, number of users, number of messages, or
-  buffer size of <channel>, respectively. This information is also
-  displayed in @chan/list.
-  
+  Return the description (@channel/describe), number of users, number of
+  messages in the recall buffer, or buffer size of <channel>, respectively.
+  This information is also displayed in @channel/list and @channel/what.
+
 See also: cbufferadd(), crecall()
 & CBUFFERADD()
   cbufferadd(<channel>, <text>[, <spoof>])
 
-  Adds text to a chan buffer without broadcasting it to all people on
-  the channel.  If <spoof> is true, it will spoof the encator (%#),
-  and you must be able to perform an @nscemit.
+  Adds text to a channel buffer without broadcasting it to all people on
+  the channel. If <spoof> is true, it will spoof the enactor (%#).
 
-  This function is only usable by objects that pass the channel's @clock/mod.
+  This function is only usable by objects that pass the channel's @clock/mod,
+  and who can use the @cemit command (or @nscemit if <spoof> is true).
   
-See also: crecall(), cbuffer()
+See also: crecall(), cbuffer(), @channel/recall, @channel/buffer
 & CWHO()
   cwho(<channel>[, <status>[, <skip gagged?>]])
  
@@ -482,14 +538,6 @@ See also: crecall(), cbuffer()
   included in the results.
 
 See also: cstatus()
-& CEMIT()
-  cemit(<channel>, <message>[, <noisy>])
-
-  Sends a message to all players listening to the given chat channel.
-  See help @cemit for details.
-
-  If the third argument is a true value, the channel name will be
-  prepended to the message, behaving like @cemit/noisy.
 & CFLAGS()
 & CLFLAGS()
   cflags(<channel>)
@@ -497,18 +545,17 @@ See also: cstatus()
   clflags(<channel>)
   clflags(<channel>, <object>)
 
-  With one argument, cflags() returns a list of flags set on the given
-  channel, represented as a string of characters. See 'help channel-list'
-  for the list of flags (they appear in the "Access" column). You must be
-  able to see the channel to use this function.
+  With one argument, cflags() returns a list of priv flags set on the given
+  channel, represented as a string of characters. See 'help @channel privs'
+  for the list. You must be able to see the channel to use this function.
 
   With two arguments, cflags() returns a list of flags for that object on 
   that channel, currently a string consisting of zero or more of 
-  "G" (gagging), "Q" (muted), and "H" (hidden).  You must be able to see 
-  that channel and to examine the object to use this function. If the 
-  object is not on the channel, an error is returned.
+  "G" (gagging), "Q" (muted), and "H" (hidden). You must be able to see that
+  channel and to examine the object to use this function. If the object is
+  not on the channel, an error is returned.
 
-  The clflags versions return a space-separated list of flag names,
+  The clflags() versions return a space-separated list of flag names,
   rather than a string of flag characters.
   
 See also: cstatus()
@@ -517,40 +564,39 @@ See also: cstatus()
   channels(<object>)
   channels(<object>[, <delimiter>])
 
-  With no arguments, channels() returns the list of all channel names
-  which are visible to the player. With two arguments, returns the
-  list of channel names to which the object is listening, delimited by
-  <delimiter>.
+  With no arguments, channels() returns the list of all channel names which
+  are visible to the player. With two arguments, returns the list of channel
+  names to which the object is listening, delimited by <delimiter>.
 
-  With one argument, the behavior is ambiguous. If the argument
-  matches an object, returns the list of names to which the object is
-  listening, space-delimited. If not, it's treated as a no-argument
-  case with a delimiter.
+  With one argument, the behavior is ambiguous. If the argument matches an
+  object, it returns a space-separated list of channels to which the object
+  is listening. If not, it's treated as a no-argument case with a delimiter.
 
-  If you don't have permission to examine the object, you only see
-  those channels to which the object belong for which you have
-  permission to join (or are joined to).
+  If you don't have permission to examine the object, you only see those
+  channels to which the object belong for which you have permission to join
+  (or are joined to).
 & CLOCK()
   clock(<channel>[/<locktype>][, <new lock>])
 
-  With one argument, returns the value of a lock on a channel, if you
-  own the channel or are See_All.  If no locktype is given, "JOIN" is
-  assumed.  With two arguments, sets the lock if you would be able to
-  do so via @clock.
+  With one argument, returns the value of a lock on a channel, if you own the
+  channel or are See_All. If no locktype is given, "JOIN" is assumed. With
+  two arguments, sets the lock if you would be able to do so via @clock.
 
-See also: @clock
+See also: @clock, @lock
 & CRECALL()
   crecall(<channel>[, <lines> [, <start line> [, <osep> [, <timestamps?> ]]]])
 
-  This function is the functional form of @chan/recall, and returns a
+  This function is the functional form of @channel/recall, and returns a
   string containing the recalled lines from the channel, separated by
   <osep>. If <timestamps?> is a true value, the recalled lines will
   include their timestamps; otherwise, they will not.
 
-See also: @channel3, cbufferadd()
+See also: @channel/recall, cbufferadd()
 & Channel functions
   Channel functions work with the channel system.
 
   cbuffer()     cbufferadd()  cdesc()       cemit()       cflags()
   channels()    clflags()     clock()       cmsgs()       cowner()
   crecall()     cstatus()     ctitle()      cusers()      cwho()
+
+See also: CHAT, @channel, @cemit, @clock

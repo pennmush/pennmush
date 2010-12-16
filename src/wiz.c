@@ -624,7 +624,7 @@ do_force(dbref player, const char *what, char *command)
     global_eval_context.wnxt[j] = global_eval_context.wenv[j];
   for (j = 0; j < NUMQ; j++)
     global_eval_context.rnxt[j] = global_eval_context.renv[j];
-  parse_que(victim, command, player);
+  parse_que(victim, command, player, NULL);
 }
 
 /** Parse a force token command, but don't force with it.
@@ -1167,7 +1167,7 @@ do_search(dbref player, const char *arg1, char **arg3)
     arg1 = "me";
 
   /* First argument is a player, so we could have a quoted name */
-  if (PLAYER_NAME_SPACES && *arg1 == '\"') {
+  if (*arg1 == '\"') {
     for (; *arg1 && ((*arg1 == '\"') || isspace((unsigned char) *arg1));
          arg1++) ;
     strcpy(tbuf, arg1);
@@ -1768,7 +1768,6 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
                  struct search_spec *spec)
 {
   int n;
-  int is_wiz;
   const char *class, *restriction;
 
   spec->zone = spec->parent = spec->owner = ANY_OWNER;
@@ -1786,10 +1785,11 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
   strcpy(spec->cmdstring, "");
   strcpy(spec->listenstring, "");
 
-  is_wiz = Search_All(player) || See_All(player);
   /* set limits on who we search */
-  if (!owner || !*owner || strcasecmp(owner, "all") == 0)
-    spec->owner = is_wiz ? ANY_OWNER : player;
+  if (!owner || !*owner)
+    spec->owner = (See_All(player) || Search_All(player)) ? ANY_OWNER : player;
+  else if (strcasecmp(owner, "all") == 0)
+    spec->owner = ANY_OWNER;    /* Will only show visual objects for mortals */
   else if (strcasecmp(owner, "me") == 0)
     spec->owner = player;
   else
@@ -1931,6 +1931,10 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
       }
     } else if (string_prefix("elock", class)) {
       spec->lock = parse_boolexp(player, restriction, "Search");
+      if (spec->lock == TRUE_BOOLEXP) {
+        notify(player, T("I don't understand that key."));
+        return -1;
+      }
     } else if (string_prefix("eval", class)) {
       strcpy(spec->eval, restriction);
     } else if (string_prefix("command", class)) {
@@ -1992,6 +1996,7 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
   struct search_spec spec;
   int count = 0;
   int ret = 0;
+  int vis_only = 0;
   ATTR *a;
   char lbuff[BUFFER_LEN];
 
@@ -2003,13 +2008,18 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
 
   is_wiz = Search_All(player) || See_All(player);
 
-  if ((spec.owner != ANY_OWNER && spec.owner != Owner(player)) &&
-      !(is_wiz || (spec.type == TYPE_PLAYER) ||
-        (ZMaster(spec.owner) && eval_lock(player, spec.owner, Zone_Lock)))) {
-    notify(player, T("You need a search warrant to do that!"));
-    if (spec.lock != TRUE_BOOLEXP)
-      free_boolexp(spec.lock);
-    return -1;
+  /* vis_only: @searcher doesn't have see_all, and can only examine
+   * objects that they pass the CanExamine() check for.
+   */
+  if (!is_wiz && spec.owner != Owner(player)) {
+    vis_only = 1;
+
+    /* For Zones: If the player passes the zone lock on a shared player,
+     * they are considered to be able to examine everything of that player,
+     * so do not need vis_only. */
+    if (GoodObject(spec.owner) && ZMaster(spec.owner)) {
+      vis_only = !eval_lock(player, spec.owner, Zone_Lock);
+    }
   }
 
   /* make sure player has money to do the search -
@@ -2039,6 +2049,8 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
     if (IsGarbage(n) && spec.type != TYPE_GARBAGE)
       continue;
     if (spec.owner != ANY_OWNER && Owner(n) != spec.owner)
+      continue;
+    if (vis_only && !Can_Examine(player, n))
       continue;
     if (spec.type != NOTYPE && Typeof(n) != spec.type)
       continue;

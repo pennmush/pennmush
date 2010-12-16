@@ -248,10 +248,6 @@ msgstr "#-1 SPILLEREN FINDES IKKE"
 msgid "#-1 NO SUCH TYPE"
 msgstr "#-1 DEN TYPE FINDES IKKE"
 
-#: src/funufun.c:310
-msgid "#-1 NO SUCH USER FUNCTION"
-msgstr "#-1 DEN BRUGERFUNKTION FINDES IKKE"
-
 #: src/bsd.c:4485 src/bsd.c:4498
 msgid "#-1 NOT CONNECTED"
 msgstr "#-1 IKKE FORBUNDET"
@@ -863,14 +859,6 @@ msgstr "VS "
 #: src/destroy.c:1325
 msgid "GAME: Database consistency check complete."
 msgstr "SPIL: Databasecheck komplet."
-
-#: src/conf.c:570
-msgid "GAME: Database will be dumped in 1 minute."
-msgstr "SPIL: Databasen gemmes om 5 minutter."
-
-#: src/conf.c:572
-msgid "GAME: Database will be dumped in 5 minutes."
-msgstr "SPIL: Databasen gemmes om 5 minutter."
 
 #: src/destroy.c:1322
 msgid "GAME: Performing database consistency check."

@@ -278,10 +278,12 @@ GENRECORD(gen_magic)
     case ESC_CHAR:
       while (*s && *s != 'm')
         s++;
+      s++; /* Advance past m */
       break;
     case TAG_START:
       while (*s && *s != TAG_END)
         s++;
+      s++; /* Advance past tag_end */
       break;
     case '0':
     case '1':
@@ -338,9 +340,9 @@ GENRECORD(gen_magic)
       }
     default:
       safe_chr(*s, buff, &bp);
+      if (*s)
+        s++;
     }
-    if (*s)
-      s++;
   }
   *bp = '\0';
   rec->memo.str.s = mush_strdup(buff, "genrecord");
@@ -501,6 +503,58 @@ s_comp(const void *s1, const void *s2)
   return Compare(res, sr1, sr2) * sort_order;
 }
 
+int
+attr_comp(const void *s1, const void *s2)
+{
+  const s_rec *sr1 = (const s_rec *) s1;
+  const s_rec *sr2 = (const s_rec *) s2;
+
+  return compare_attr_names(sr1->memo.str.s, sr2->memo.str.s);
+
+}
+
+int
+compare_attr_names(const char *attr1, const char *attr2)
+{
+  char word1[BUFFER_LEN + 1], word2[BUFFER_LEN + 1];
+  char *a1, *a2, *next1, *next2;
+  int branches1 = 1, branches2 = 1;
+  int cmp;
+
+  strcpy(word1, attr1);
+  strcpy(word2, attr2);
+
+  a1 = word1;
+  a2 = word2;
+
+  while (a1 && a2) {
+    next1 = strchr(a1, '`');
+    if (next1) {
+      branches1++;
+      *(next1)++ = '\0';
+    }
+    next2 = strchr(a2, '`');
+    if (next2) {
+      branches2++;
+      *(next2)++ = '\0';
+    }
+    cmp = strcoll(a1, a2);
+    if (cmp != 0) {
+      /* Current branch differs */
+      return cmp * sort_order;
+    }
+    if (branches1 != branches2) {
+      /* Current branch is the same, but one attr has more branches */
+      return (branches1 < branches2 ? -1 : 1) * sort_order;
+    }
+    a1 = next1;
+    a2 = next2;
+  }
+  /* All branches were the same */
+  return 0;
+
+}
+
 static int
 si_comp(const void *s1, const void *s2)
 {
@@ -537,7 +591,7 @@ f_comp(const void *s1, const void *s2)
 }
 
 typedef struct _list_type_list_ {
-  char *name;
+  SortType name;
   makerecord make_record;
   qsort_func sorter;
   uint32_t flags;
@@ -561,6 +615,7 @@ char DBREF_OWNER_LIST[] = "OWNER";
 char DBREF_LOCATION_LIST[] = "LOC";
 char DBREF_ATTR_LIST[] = "ATTR";
 char DBREF_ATTRI_LIST[] = "ATTRI";
+char ATTRNAME_LIST[] = "LATTR";
 char *UNKNOWN_LIST = NULL;
 
 list_type_list ltypelist[] = {
@@ -570,7 +625,7 @@ list_type_list ltypelist[] = {
   {DBREF_LIST, gen_dbref, i_comp, 0},
   {NUMERIC_LIST, gen_num, i_comp, 0},
   {FLOAT_LIST, gen_float, f_comp, 0},
-  {MAGIC_LIST, gen_magic, si_comp, 0},
+  {MAGIC_LIST, gen_magic, si_comp, IS_STRING},
   {DBREF_NAME_LIST, gen_db_name, si_comp, IS_DB | IS_STRING},
   {DBREF_NAMEI_LIST, gen_db_name, si_comp, IS_DB | IS_STRING},
   {DBREF_IDLE_LIST, gen_db_idle, i_comp, IS_DB},
@@ -580,42 +635,16 @@ list_type_list ltypelist[] = {
   {DBREF_LOCATION_LIST, gen_db_loc, i_comp, IS_DB},
   {DBREF_ATTR_LIST, gen_db_attr, s_comp, IS_DB | IS_STRING},
   {DBREF_ATTRI_LIST, gen_db_attr, si_comp, IS_DB | IS_STRING},
+  {ATTRNAME_LIST, gen_alphanum, attr_comp, IS_STRING},
   /* This stops the loop, so is default */
   {NULL, gen_alphanum, s_comp, IS_STRING}
 };
 
-char *
+SortType
 get_list_type(char *args[], int nargs, int type_pos, char *ptrs[], int nptrs)
 {
-  static char stype[BUFFER_LEN];
-  int i;
-  char *str;
-  sort_order = ASCENDING;
-  if (nargs >= type_pos) {
-    str = args[type_pos - 1];
-    if (str && *str == '-') {
-      str++;
-      sort_order = DESCENDING;
-    }
-    if (str && *str) {
-      copy_up_to(stype, str, ':');
-      for (i = 0; ltypelist[i].name && strcasecmp(ltypelist[i].name, stype);
-           i++) ;
-      /* return ltypelist[i].name; */
-      if (ltypelist[i].name) {
-        return args[type_pos - 1];
-      }
-    }
-  }
-  return autodetect_list(ptrs, nptrs);
-}
-
-char *
-get_list_type_noauto(char *args[], int nargs, int type_pos)
-{
-  static char stype[BUFFER_LEN];
-  int i;
-  char *str;
+  int i, len;
+  char *str, *ptr;
   sort_order = ASCENDING;
   if (nargs >= type_pos) {
     str = args[type_pos - 1];
@@ -624,9 +653,42 @@ get_list_type_noauto(char *args[], int nargs, int type_pos)
         str++;
         sort_order = DESCENDING;
       }
-      copy_up_to(stype, str, ':');
-      for (i = 0; ltypelist[i].name && strcasecmp(ltypelist[i].name, stype);
-           i++) ;
+      ptr = strchr(str, ':');
+      if (ptr) {
+        len = ptr - str;
+      } else {
+        len = strlen(str);
+      }
+      for (i = 0; ltypelist[i].name &&
+           strncasecmp(ltypelist[i].name, str, len); i++) ;
+      /* return ltypelist[i].name; */
+      return args[type_pos - 1];
+    }
+  }
+  return autodetect_list(ptrs, nptrs);
+}
+
+SortType
+get_list_type_noauto(char *args[], int nargs, int type_pos)
+{
+  int i, len;
+  char *str, *ptr;
+  sort_order = ASCENDING;
+  if (nargs >= type_pos) {
+    str = args[type_pos - 1];
+    if (*str) {
+      if (*str == '-') {
+        str++;
+        sort_order = DESCENDING;
+      }
+      ptr = strchr(str, ':');
+      if (ptr) {
+        len = ptr - str;
+      } else {
+        len = strlen(str);
+      }
+      for (i = 0; ltypelist[i].name &&
+           strncasecmp(ltypelist[i].name, str, len); i++) ;
       /* return ltypelist[i].name; */
       return args[type_pos - 1];
     }
@@ -639,7 +701,7 @@ get_list_type_noauto(char *args[], int nargs, int type_pos)
  * \param
  */
 int
-gencomp(dbref player, char *a, char *b, char *sort_type)
+gencomp(dbref player, char *a, char *b, SortType sort_type)
 {
   char *ptr;
   int i, len;
@@ -695,7 +757,7 @@ gencomp(dbref player, char *a, char *b, char *sort_type)
  */
 
 void
-do_gensort(dbref player, char *keys[], char *strs[], int n, char *sort_type)
+do_gensort(dbref player, char *keys[], char *strs[], int n, SortType sort_type)
 {
   char *ptr;
   static char stype[BUFFER_LEN];
@@ -751,6 +813,26 @@ do_gensort(dbref player, char *keys[], char *strs[], int n, char *sort_type)
   mush_free(sp, "do_gensort");
 }
 
+SortType
+autodetect_2lists(char *ptrs[], int nptrs, char *ptrs2[], int nptrs2)
+{
+  SortType a = autodetect_list(ptrs, nptrs);
+  SortType b = autodetect_list(ptrs2, nptrs2);
+
+  /* If they're equal, no problem. */
+  if (a == b) {
+    return a;
+  }
+  /* Float and numeric means float. */
+  if ((a == NUMERIC_LIST || a == FLOAT_LIST) &&
+      (b == NUMERIC_LIST || b == FLOAT_LIST)) {
+    return FLOAT_LIST;
+  }
+
+  /* Magic list by default. */
+  return MAGIC_LIST;
+}
+
 typedef enum {
   L_NUMERIC,
   L_FLOAT,
@@ -758,48 +840,33 @@ typedef enum {
   L_DBREF
 } ltype;
 
-char *
+SortType
 autodetect_list(char *ptrs[], int nptrs)
 {
-  char *sort_type;
-  ltype lt;
   int i;
+  ltype lt;
+  SortType sort_type = NUMERIC_LIST;
 
   lt = L_NUMERIC;
-  sort_type = NUMERIC_LIST;
-
   for (i = 0; i < nptrs; i++) {
+    /* Just one big chain of fall-throughs =). */
     switch (lt) {
     case L_NUMERIC:
-      if (!is_strict_integer(ptrs[i])) {
-        /* If it's not an integer, see if it's a floating-point number */
-        if (is_strict_number(ptrs[i])) {
-          lt = L_FLOAT;
-          sort_type = FLOAT_LIST;
-        } else if (i == 0) {
-
-          /* If we get something non-numeric, switch to an
-           * alphanumeric guess, unless this is the first
-           * element and we have a dbref.
-           */
-          if (is_objid(ptrs[i])) {
-            lt = L_DBREF;
-            sort_type = DBREF_LIST;
-          } else
-            return ALPHANUM_LIST;
-        }
+      if (is_strict_integer(ptrs[i])) {
+        break;
       }
-      break;
     case L_FLOAT:
-      if (!is_strict_number(ptrs[i]))
-        return ALPHANUM_LIST;
-      break;
+      if (is_strict_number(ptrs[i])) {
+        lt = L_FLOAT;
+        sort_type = FLOAT_LIST;
+      }
     case L_DBREF:
-      if (!is_objid(ptrs[i]))
-        return ALPHANUM_LIST;
-      break;
-    default:
-      return ALPHANUM_LIST;
+      if (is_objid(ptrs[i]) && (i == 0 || lt == L_DBREF)) {
+        lt = L_DBREF;
+        sort_type = DBREF_LIST;
+      }
+    case L_ALPHANUM:
+      return MAGIC_LIST;
     }
   }
   return sort_type;

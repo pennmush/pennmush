@@ -70,80 +70,75 @@ do_name(dbref player, const char *name, char *newname_)
   int i;
   char *newname;
 
-  if ((thing = match_controlled(player, name)) != NOTHING) {
-    newname = mush_strdup(trim_space_sep(newname_, ' '), "name.newname");
-    bon = newname;
+  if ((thing = match_controlled(player, name)) == NOTHING)
+    return;
 
-    /* check for bad name */
-    if ((*newname == '\0') || strchr(newname, '[')) {
-      notify(player, T("Give it what new name?"));
+  newname = mush_strdup(trim_space_sep(newname_, ' '), "name.newname");
+  bon = newname;
+
+  /* check for bad name */
+  if ((*newname == '\0') || strchr(newname, '[')) {
+    notify(player, T("Give it what new name?"));
+    mush_free(newname, "name.newname");
+    return;
+  }
+  /* check for renaming a player */
+  if (IsPlayer(thing)) {
+    // If it has "s, it's surrounding a spaced name, likely. So bon
+    // is beginning of name.
+    // I'm going to cheat here and make it so
+    // @name me="foo"bar names somebody foo, since " is an invalid name.
+    if (*bon == '"') {
+      bon++;
+      eon = bon;
+      while (*eon && *eon != '"') {
+        eon++;
+      }
+      if (*eon) {
+        *eon = '\0';
+      }
+    }
+    if (!ok_player_name(bon, player, thing)) {
+      notify(player, T("You can't give a player that name."));
       mush_free(newname, "name.newname");
       return;
     }
-    /* check for renaming a player */
-    if (IsPlayer(thing)) {
-      // If it has "s, it's surrounding a spaced name, likely. So bon
-      // is beginning of name.
-      // I'm going to cheat here and make it so
-      // @name me="foo"bar names somebody foo, since " is an invalid name.
-      if (*bon == '"') {
-        bon++;
-        eon = bon;
-        while (*eon && *eon != '"') {
-          eon++;
-        }
-        if (*eon) {
-          *eon = '\0';
-        }
-      } else {
-        eon = bon;
-        while (*eon && !isspace((unsigned char) *eon))
-          eon++;
-        if (*eon)
-          *eon = '\0';
-      }
-      if (!ok_player_name(bon, player, thing)) {
-        notify(player, T("You can't give a player that name."));
-        mush_free(newname, "name.newname");
-        return;
-      }
-      /* everything ok, notify */
-      do_log(LT_CONN, 0, 0, "Name change by %s(#%d) to %s",
-             Name(thing), thing, bon);
-      if (Suspect(thing))
-        flag_broadcast("WIZARD", 0,
-                       T("Broadcast: Suspect %s changed name to %s."),
-                       Name(thing), bon);
-      /* everything ok, we can fall through to change the name */
-    } else {
-      bon = newname;
-      if (!ok_name(newname)) {
-        notify(player, T("That is not a reasonable name."));
-        mush_free(newname, "name.newname");
-        return;
-      }
+    /* everything ok, notify */
+    do_log(LT_CONN, 0, 0, "Name change by %s(#%d) to %s",
+           Name(thing), thing, bon);
+    if (Suspect(thing))
+      flag_broadcast("WIZARD", 0,
+                     T("Broadcast: Suspect %s changed name to %s."),
+                     Name(thing), bon);
+    /* everything ok, we can fall through to change the name */
+  } else {
+    bon = newname;
+    if (!ok_name(newname)) {
+      notify(player, T("That is not a reasonable name."));
+      mush_free(newname, "name.newname");
+      return;
     }
-
-    /* everything ok, change the name */
-    myenv[0] = (char *) mush_malloc(BUFFER_LEN, "string");
-    myenv[1] = (char *) mush_malloc(BUFFER_LEN, "string");
-    mush_strncpy(myenv[0], Name(thing), BUFFER_LEN);
-    strcpy(myenv[1], bon);
-    for (i = 2; i < 10; i++)
-      myenv[i] = NULL;
-
-    if (IsPlayer(thing))
-      reset_player_list(thing, Name(thing), NULL, bon, NULL);
-    set_name(thing, bon);
-
-    if (!AreQuiet(player, thing))
-      notify(player, T("Name set."));
-    real_did_it(player, thing, NULL, NULL, "ONAME", NULL, "ANAME", NOTHING,
-                myenv, NA_INTER_PRESENCE);
-    mush_free(newname, "name.newname");
-    mush_free(myenv[0], "string");
-    mush_free(myenv[1], "string");
   }
+
+  /* everything ok, change the name */
+  myenv[0] = (char *) mush_malloc(BUFFER_LEN, "string");
+  myenv[1] = (char *) mush_malloc(BUFFER_LEN, "string");
+  mush_strncpy(myenv[0], Name(thing), BUFFER_LEN);
+  strcpy(myenv[1], bon);
+  for (i = 2; i < 10; i++)
+    myenv[i] = NULL;
+
+  if (IsPlayer(thing))
+    reset_player_list(thing, Name(thing), NULL, bon, NULL);
+  set_name(thing, bon);
+
+  if (!AreQuiet(player, thing))
+    notify(player, T("Name set."));
+  real_did_it(player, thing, NULL, NULL, "ONAME", NULL, "ANAME", NOTHING,
+              myenv, NA_INTER_PRESENCE);
+  mush_free(newname, "name.newname");
+  mush_free(myenv[0], "string");
+  mush_free(myenv[1], "string");
 }
 
 /** Change an object's owner.
@@ -519,6 +514,10 @@ copy_attrib_flags(dbref player, dbref target, ATTR *atr, int flags)
                   AL_NAME(atr));
     return;
   }
+  if (AL_FLAGS(atr) & AF_ROOT)
+    flags |= AF_ROOT;
+  else
+    flags &= ~AF_ROOT;
   AL_FLAGS(atr) = flags;
 }
 
@@ -1141,7 +1140,7 @@ wipe_helper(dbref player, dbref thing,
    */
   int saved_count = AttrCount(thing);
 
-  if (wildcard(pattern) && AF_Wizard(atr) && !God(player))
+  if (wildcard((char *) pattern) && AF_Wizard(atr) && !God(player))
     return 0;
 
   switch (wipe_atr(thing, AL_NAME(atr), player)) {

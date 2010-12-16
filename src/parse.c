@@ -51,6 +51,7 @@ extern int cpu_limit_warning_sent;
 /** Structure for storing DEBUG output in a linked list */
 struct debug_info {
   char *string;         /**< A DEBUG string */
+  dbref executor;
   Debug_Info *prev;     /**< Previous node in the linked list */
   Debug_Info *next;     /**< Next node in the linked list */
 };
@@ -74,6 +75,7 @@ char e_match[] = "#-1 NO MATCH";
 char e_notvis[] = "#-1 NO SUCH OBJECT VISIBLE";
 char e_disabled[] = "#-1 FUNCTION DISABLED";
 char e_range[] = "#-1 OUT OF RANGE";
+char e_argrange[] = "#-1 ARGUMENT OUT OF RANGE";
 
 #endif
 
@@ -100,6 +102,7 @@ dummy_errors()
   temp = T("#-1 NO SUCH OBJECT VISIBLE");
   temp = T("#-1 FUNCTION DISABLED");
   temp = T("#-1 OUT OF RANGE");
+  temp = T("#-1 ARGUMENT OUT OF RANGE");
 }
 
 #endif
@@ -371,10 +374,11 @@ bool
 is_strict_number(char const *str)
 {
   char *end;
+  int throwaway;
   if (!str)
     return 0;
   errno = 0;
-  strtod(str, &end);
+  throwaway = strtod(str, &end);
   if (errno == ERANGE || *end != '\0')
     return 0;
   return end > str;
@@ -597,6 +601,11 @@ make_pe_info()
   pe_info->debug_strings = NULL;
   pe_info->arg_count = 0;
   pe_info->iter_nesting = -1;
+  pe_info->local_iter_nesting = -1;
+  pe_info->iter_break = -1;
+  pe_info->dolists = 0;
+  pe_info->switch_nesting = -1;
+  pe_info->local_switch_nesting = -1;
 
   return pe_info;
 }
@@ -604,6 +613,20 @@ make_pe_info()
 void
 free_pe_info(PE_Info *pe_info)
 {
+  if (!pe_info)
+    return;
+  if (pe_info->iter_nesting >= 0) {
+    int i;
+    for (i = pe_info->iter_nesting; i >= 0; i--) {
+      mush_free(pe_info->iter_itext[i], "dolist_arg");
+    }
+  }
+  if (pe_info->switch_nesting >= 0) {
+    int j;
+    for (j = pe_info->switch_nesting; j >= 0; j--) {
+      mush_free(pe_info->switch_text[j], "switch_arg");
+    }
+  }
   mush_free(pe_info, "process_expression.pe_info");
   return;
 }
@@ -766,6 +789,7 @@ process_expression(char *buff, char **bp, char const **str,
       node = (Debug_Info *) mush_malloc(sizeof(Debug_Info),
                                         "process_expression.debug_node");
       node->string = debugstr;
+      node->executor = executor;
       node->prev = pe_info->debug_strings;
       node->next = NULL;
       if (node->prev)
@@ -968,7 +992,7 @@ process_expression(char *buff, char **bp, char const **str,
             safe_chr(':', buff, bp);
             safe_integer(CreTime(enactor), buff, bp);
           } else {
-            safe_str("#-1 NO SUCH OBJECT VISIBLE", buff, bp);
+            safe_str(T(e_notvis), buff, bp);
           }
           break;
         case '?':              /* function limits */
@@ -984,7 +1008,7 @@ process_expression(char *buff, char **bp, char const **str,
           if (GoodObject(enactor)) {
             safe_str(accented_name(enactor), buff, bp);
           } else {
-            safe_str("Nothing", buff, bp);
+            safe_str(T(e_notvis), buff, bp);
           }
           break;
         case '+':              /* argument count */
@@ -1013,7 +1037,7 @@ process_expression(char *buff, char **bp, char const **str,
               gender = get_gender(enactor);
             safe_str(absp[gender], buff, bp);
           } else {
-            safe_str("#-1 NO SUCH OBJECT VISIBLE", buff, bp);
+            safe_str(T(e_notvis), buff, bp);
           }
           break;
         case 'B':
@@ -1030,17 +1054,54 @@ process_expression(char *buff, char **bp, char const **str,
           if (!nextc)
             goto exit_sequence;
           (*str)++;
-          if (!isdigit((unsigned char) nextc)) {
-            safe_str(T(e_int), buff, bp);
-            break;
-          }
-          inum_this = nextc - '0';
-          if (inum_this < 0 || inum_this > pe_info->iter_nesting
-              || (pe_info->iter_nesting - inum_this) < 0) {
-            safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
+          if (pe_info->iter_nesting >= 0 && pe_info->local_iter_nesting >= 0) {
+            if (nextc == 'l') {
+              safe_str(pe_info->
+                       iter_itext[pe_info->iter_nesting -
+                                  pe_info->local_iter_nesting], buff, bp);
+              break;
+            }
+            if (!isdigit((unsigned char) nextc)) {
+              safe_str(T(e_int), buff, bp);
+              break;
+            }
+            inum_this = nextc - '0';
+            if (inum_this < 0 || inum_this > pe_info->local_iter_nesting
+                || (pe_info->local_iter_nesting - inum_this) < 0) {
+              safe_str(T(e_argrange), buff, bp);
+            } else {
+              safe_str(pe_info->iter_itext[pe_info->iter_nesting - inum_this],
+                       buff, bp);
+            }
           } else {
-            safe_str(pe_info->iter_itext[pe_info->iter_nesting - inum_this],
-                     buff, bp);
+            safe_str(T(e_argrange), buff, bp);
+          }
+          break;
+        case '$':
+          nextc = **str;
+          if (!nextc)
+            goto exit_sequence;
+          (*str)++;
+          if (pe_info->switch_nesting >= 0
+              && pe_info->local_switch_nesting >= 0) {
+            if (nextc == 'l') {
+              inum_this = pe_info->local_switch_nesting;
+            } else if (!isdigit((unsigned char) nextc)) {
+              safe_str(T(e_int), buff, bp);
+              break;
+            } else {
+              inum_this = nextc - '0';
+            }
+            if (inum_this < 0 || inum_this > pe_info->local_switch_nesting ||
+                (pe_info->local_switch_nesting - inum_this) < 0) {
+              safe_str(T(e_argrange), buff, bp);
+            } else {
+              safe_str(pe_info->
+                       switch_text[pe_info->switch_nesting - inum_this], buff,
+                       bp);
+            }
+          } else {
+            safe_str(T(e_argrange), buff, bp);
           }
           break;
         case 'U':
@@ -1062,7 +1123,7 @@ process_expression(char *buff, char **bp, char const **str,
           if (GoodObject(enactor)) {
             safe_str(Name(enactor), buff, bp);
           } else {
-            safe_str("#-1 NO SUCH OBJECT VISIBLE", buff, bp);
+            safe_str(T(e_notvis), buff, bp);
           }
           break;
         case 'O':
@@ -1072,7 +1133,7 @@ process_expression(char *buff, char **bp, char const **str,
               gender = get_gender(enactor);
             safe_str(obj[gender], buff, bp);
           } else {
-            safe_str("#-1 NO SUCH OBJECT VISIBLE", buff, bp);
+            safe_str(T(e_notvis), buff, bp);
           }
           break;
         case 'P':
@@ -1082,7 +1143,7 @@ process_expression(char *buff, char **bp, char const **str,
               gender = get_gender(enactor);
             safe_str(poss[gender], buff, bp);
           } else {
-            safe_str("#-1 NO SUCH OBJECT VISIBLE", buff, bp);
+            safe_str(T(e_notvis), buff, bp);
           }
           break;
         case 'Q':
@@ -1110,7 +1171,7 @@ process_expression(char *buff, char **bp, char const **str,
               gender = get_gender(enactor);
             safe_str(subj[gender], buff, bp);
           } else {
-            safe_str("#-1 NO SUCH OBJECT VISIBLE", buff, bp);
+            safe_str(T(e_notvis), buff, bp);
           }
           break;
         case 'T':
@@ -1535,17 +1596,19 @@ exit_sequence:
       if (strcmp(sourcestr, startpos)) {
         static char dbuf[BUFFER_LEN];
         char *dbp;
+        dbref dbe;
         if (pe_info->debug_strings) {
           while (pe_info->debug_strings->prev)
             pe_info->debug_strings = pe_info->debug_strings->prev;
           while (pe_info->debug_strings->next) {
+            dbe = pe_info->debug_strings->executor;
             dbp = dbuf;
             dbuf[0] = '\0';
             safe_format(dbuf, &dbp, "%s :", pe_info->debug_strings->string);
             *dbp = '\0';
-            if (Connected(Owner(executor)))
-              raw_notify(Owner(executor), dbuf);
-            notify_list(executor, executor, "DEBUGFORWARDLIST", dbuf,
+            if (Connected(Owner(dbe)))
+              raw_notify(Owner(dbe), dbuf);
+            notify_list(dbe, dbe, "DEBUGFORWARDLIST", dbuf,
                         NA_NOLISTEN | NA_NOPREFIX);
             pe_info->debug_strings = pe_info->debug_strings->next;
             mush_free(pe_info->debug_strings->prev,

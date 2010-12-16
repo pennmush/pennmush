@@ -25,6 +25,7 @@
 #include "mushdb.h"
 #include "lock.h"
 #include "log.h"
+#include "sort.h"
 #include "confmagic.h"
 
 #ifdef WIN32
@@ -260,7 +261,7 @@ find_atr_pos_in_list(ATTR ***pos, char const *name)
   int comp;
 
   while (**pos) {
-    comp = strcoll(name, AL_NAME(**pos));
+    comp = compare_attr_names(name, AL_NAME(**pos));
     if (comp < 0)
       return NULL;
     if (comp == 0)
@@ -1111,7 +1112,8 @@ atr_iter_get(dbref player, dbref thing, const char *name, int mortal,
   }
   len = strlen(name);
 
-  if (!regexp && !wildcard(name) && name[len - 1] != '`') {
+  /* Must check name[len-1] first as wildcard_count() can destructively modify name */
+  if (!regexp && name[len - 1] != '`' && wildcard_count((char *) name, 1) != -1) {
     ptr = atr_get_noparent(thing, strupper(name));
     if (ptr && (mortal ? Is_Visible_Attr(thing, ptr)
                 : Can_Read_Attr(player, thing, ptr)))
@@ -1164,7 +1166,8 @@ atr_pattern_count(dbref player, dbref thing, const char *name,
   }
   len = strlen(name);
 
-  if (!regexp && !wildcard(name) && name[len - 1] != '`') {
+  /* Must check name[len-1] first as wildcard_count() can destructively modify name */
+  if (!regexp && name[len - 1] != '`' && wildcard_count((char *) name, 1) != -1) {
     parent = thing;
     if (doparent)
       ptr = atr_get_with_parent(thing, strupper(name), &parent);
@@ -1237,7 +1240,8 @@ atr_iter_get_parent(dbref player, dbref thing, const char *name, int mortal,
   }
   len = strlen(name);
 
-  if (!regexp && !wildcard(name) && name[len - 1] != '`') {
+  /* Must check name[len-1] first as wildcard_count() can destructively modify name */
+  if (!regexp && name[len - 1] != '`' && wildcard_count((char *) name, 1) != -1) {
     ptr = atr_get_with_parent(thing, strupper(name), &parent);
     if (ptr && (mortal ? Is_Visible_Attr(parent, ptr)
                 : Can_Read_Attr(player, parent, ptr)))
@@ -1355,7 +1359,7 @@ find_attr(UsedAttr ***prev, char const *name)
 
   comp = 1;
   while (**prev) {
-    comp = strcoll(name, prev[0][0]->name);
+    comp = compare_attr_names(name, prev[0][0]->name);
     if (comp <= 0)
       break;
     *prev = &prev[0][0]->next;
@@ -1548,7 +1552,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
         safe_str(AL_NAME(ptr), atrname, abp);
       }
       if (!just_match)
-        parse_que(thing, s, player);
+        parse_que(thing, s, player, NULL);
     }
   }
 
@@ -1674,7 +1678,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
         }
         if (!just_match) {
           /* do_rawlog(LT_TRACE, "MATCHED %s:", AL_NAME(ptr)); */
-          parse_que(thing, s, player);
+          parse_que(thing, s, player, NULL);
         }
       }
     }
@@ -1750,7 +1754,7 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str)
     if (!eval_lock(player, thing, Command_Lock)
         || !eval_lock(player, thing, Use_Lock))
       return 0;
-    parse_que(thing, s, player);
+    parse_que(thing, s, player, NULL);
     return 1;
   }
   return 0;
@@ -1785,6 +1789,7 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
   int was_hearer;
   int was_listener;
   dbref contents;
+  const char *new;
   if (!EMPTY_ATTRS && s && !*s)
     s = NULL;
   if (IsGarbage(thing)) {
@@ -1886,6 +1891,15 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
       }
     }
     /* If you made it here, all your dbrefs were ok */
+  }
+
+  /* For ENUM and RLIMIT */
+  new = check_attr_value(player, name, s);
+  if (s && !new) {
+    /* Invalid set - Return, don't clear. */
+    return -1;
+  } else if (new) {
+    s = new;
   }
 
   was_hearer = Hearer(thing);

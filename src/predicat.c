@@ -44,11 +44,9 @@ int forbidden_name(const char *name);
 void do_switch(dbref player, char *expression, char **argv,
                dbref cause, int first, int notifyme, int regexp);
 void do_verb(dbref player, dbref cause, char *arg1, char **argv);
-static int grep_util_helper(dbref player, dbref thing, dbref parent,
-                            char const *pattern, ATTR *atr, void *args);
-static int grep_helper(dbref player, dbref thing, dbref parent,
-                       char const *pattern, ATTR *atr, void *args);
-void do_grep(dbref player, char *obj, char *lookfor, int flag, int insensitive);
+static void grep_add_attr(char *buff, char **bp, dbref player, int count,
+                          ATTR *attr, char *atrval);
+void do_grep(dbref player, char *obj, char *lookfor, int print, int flags);
 static int pay_quota(dbref, int);
 extern PRIV attr_privs_view[];
 
@@ -894,10 +892,9 @@ ok_command_name(const char *name)
 }
 
 /** Is a name ok for a function?
- * It must start with uppercase alpha or punctuation and may contain only
- * uppercase alpha, numbers, or punctuation thereafter.
- * It must contain at least one uppercase alpha.
- * It may not begin with " : ; & ] \ and # (the special tokens).
+ * It must contain only uppercase alpha, numbers or punctuation, must
+ * contain at least one uppercase alpha, and may not begin with
+ * " : ; & ] \ or # (the special tokens).
  * \param name name to check.
  * \retval 1 name is acceptable.
  * \retval 0 name is not acceptable.
@@ -917,9 +914,6 @@ ok_function_name(const char *name)
   case NUMBER_TOKEN:
   case '&':
     return 0;
-  default:
-    if (!isupper((unsigned char) *name) && !ispunct((unsigned char) *name))
-      return 0;
   }
   /* Everything else must be printable and non-space, and we need
    * to find at least one uppercase alpha
@@ -1003,6 +997,8 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
   char buff[BUFFER_LEN], *bp;
   char const *ap;
   char *tbuf1;
+  PE_Info *pe_info;
+  int i = 0;
 
   if (!argv[1])
     return;
@@ -1029,7 +1025,18 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
         : local_wild_match(buff, expression)) {
       any = 1;
       tbuf1 = replace_string("#$", expression, argv[a + 1]);
-      parse_que(player, tbuf1, cause);
+      pe_info = make_pe_info();
+      if (global_eval_context.pe_info->switch_nesting >= 0) {
+        for (i = 0; i <= global_eval_context.pe_info->switch_nesting; i++) {
+          pe_info->switch_text[i] =
+            mush_strdup(global_eval_context.pe_info->switch_text[i],
+                        "switch_arg");
+        }
+      }
+      pe_info->switch_text[i] = mush_strdup(expression, "switch_arg");
+      pe_info->switch_nesting = i;
+      pe_info->local_switch_nesting = i;
+      parse_que(player, tbuf1, cause, pe_info);
       mush_free(tbuf1, "replace_string.buff");
     }
   }
@@ -1037,13 +1044,24 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
   /* do default if nothing has been matched */
   if ((a < MAX_ARG) && !any && argv[a]) {
     tbuf1 = replace_string("#$", expression, argv[a]);
-    parse_que(player, tbuf1, cause);
+    pe_info = make_pe_info();
+    if (global_eval_context.pe_info->switch_nesting >= 0) {
+      for (i = 0; i <= global_eval_context.pe_info->switch_nesting; i++) {
+        pe_info->switch_text[i] =
+          mush_strdup(global_eval_context.pe_info->switch_text[i],
+                      "switch_arg");
+      }
+    }
+    pe_info->switch_text[i] = mush_strdup(expression, "switch_arg");
+    pe_info->switch_nesting = i;
+    pe_info->local_switch_nesting = i;
+    parse_que(player, tbuf1, cause, pe_info);
     mush_free(tbuf1, "replace_string.buff");
   }
 
   /* Pop on @notify me, if requested */
   if (notifyme)
-    parse_que(player, "@notify me", cause);
+    parse_que(player, "@notify me", cause, NULL);
 }
 
 /** Parse possessive matches for the possessor.
@@ -1254,138 +1272,231 @@ do_verb(dbref player, dbref cause, char *arg1, char **argv)
     queue_attribute(victim, upcasestr(argv[6]), actor);
 }
 
-/** Structure for passing arguments to grep_util_helper().
- */
-struct guh_args {
-  char *buff;           /**< Buffer for output */
-  char *bp;             /**< Pointer to buff's current position */
-  char *lookfor;        /**< Pattern to grep for */
-  int sensitive;        /**< If 1, case-sensitive match; if 0, insensitive */
+struct regrep_data {
+  pcre *re;             /**< Pointer to compiled regular expression */
+  pcre_extra *study;    /**< Pointer to studied data about re */
+  char *buff;           /**< Buffer to store regrep results, or NULL to report to player */
+  char **bp;            /**< Pointer to address of insertion point in buff, or NULL */
+  int count;            /**< Number of matches found */
 };
 
-static int
-grep_util_helper(dbref player __attribute__ ((__unused__)),
-                 dbref thing __attribute__ ((__unused__)),
-                 dbref parent __attribute__ ((__unused__)),
-                 char const *pattern
-                 __attribute__ ((__unused__)), ATTR *atr, void *args)
-{
-  struct guh_args *guh = args;
-  int found = 0;
-  char *s;
-  int len;
-
-  s = (char *) atr_value(atr);  /* warning: static */
-  len = strlen(guh->lookfor);
-  found = 0;
-  while (*s && !found) {
-    if ((guh->sensitive && !strncmp(guh->lookfor, s, len)) ||
-        (!guh->sensitive && !strncasecmp(guh->lookfor, s, len)))
-      found = 1;
-    else
-      s++;
-  }
-  if (found) {
-    if (guh->bp != guh->buff)
-      safe_chr(' ', guh->buff, &guh->bp);
-    safe_str(AL_NAME(atr), guh->buff, &guh->bp);
-  }
-  return found;
-}
-
-static int
-wildgrep_util_helper(dbref player __attribute__ ((__unused__)),
-                     dbref thing __attribute__ ((__unused__)),
-                     dbref parent __attribute__ ((__unused__)),
-                     char const *pattern
-                     __attribute__ ((__unused__)), ATTR *atr, void *args)
-{
-  struct guh_args *guh = args;
-  int found = 0;
-
-  if (quick_wild_new(guh->lookfor, atr_value(atr), guh->sensitive)) {
-    if (guh->bp != guh->buff)
-      safe_chr(' ', guh->buff, &guh->bp);
-    safe_str(AL_NAME(atr), guh->buff, &guh->bp);
-    found = 1;
-  }
-  return found;
-}
-
-/** Utility function for grep funtions/commands.
- * This function returns a list of attributes on an object that
- * match a name pattern and contain another string.
- * \param player the enactor.
- * \param thing object to check attributes on.
- * \param pattern wildcard or substring pattern for attributes to check.
- * \param lookfor string to find within each attribute.
- * \param sensitive if 1, case-sensitive matching; if 0, case-insensitive.
- * \param wild if 1, wildcard matching, if 0, substring
- * \return string containing list of attribute names with matching data.
- */
-char *
-grep_util(dbref player, dbref thing, char *pattern, char *lookfor,
-          int sensitive, int wild)
-{
-  struct guh_args guh;
-
-  guh.buff = (char *) mush_malloc(BUFFER_LEN + 1, "grep_util.buff");
-  guh.bp = guh.buff;
-  guh.lookfor = lookfor;
-  guh.sensitive = sensitive;
-  (void) atr_iter_get(player, thing, pattern, 0, 0, wild ? wildgrep_util_helper
-                      : grep_util_helper, &guh);
-  *guh.bp = '\0';
-  return guh.buff;
-}
-
-/** Structure for grep_helper() arguments. */
-struct gh_args {
-  char *lookfor;        /**< Pattern to look for. */
-  int len;              /**< Length of lookfor. */
-  int insensitive;      /**< if 1, case-insensitive matching; if 0, sensitive */
+struct grep_data {
+  char *findstr;        /**< String to find */
+  int findlen;              /**< Length of findstr */
+  char *buff;           /**< Buffer to store regrep results, or NULL to report to player */
+  char **bp;            /**< Pointer to address of insertion point in buff, or NULL */
+  int count;            /**< Number of matches found */
+  int flags;            /**< Type of grep: wildcard, case-sensitive */
 };
+
+static void
+grep_add_attr(char *buff, char **bp, dbref player, int count, ATTR *attr,
+              char *atrval)
+{
+
+  if (buff) {
+    if (count)
+      safe_chr(' ', buff, bp);
+    safe_str(AL_NAME(attr), buff, bp);
+  } else {
+    notify_format(player, "%s%s [#%d%s]:%s %s",
+                  ANSI_HILITE, AL_NAME(attr),
+                  Owner(AL_CREATOR(attr)),
+                  privs_to_letters(attr_privs_view, AL_FLAGS(attr)),
+                  ANSI_END, atrval);
+  }
+}
+
+extern const unsigned char *tables;
 
 static int
 grep_helper(dbref player, dbref thing __attribute__ ((__unused__)),
             dbref parent __attribute__ ((__unused__)),
             char const *pattern
-            __attribute__ ((__unused__)), ATTR *atr, void *args)
+            __attribute__ ((__unused__)), ATTR *attr, void *args)
 {
-  struct gh_args *gh = args;
-  int found;
+  struct grep_data *gd = args;
   char *s;
-  char tbuf1[BUFFER_LEN];
-  char buf[BUFFER_LEN];
-  char *tbp;
+  char b1[BUFFER_LEN], b2[BUFFER_LEN];
+  char *tp = b1;
+  int matched = 0;
+  int cs;
 
-  found = 0;
-  tbp = tbuf1;
+  cs = ((gd->flags & GREP_NOCASE) == 0);
+  s = (char *) atr_value(attr); /* warning: static */
+  if (gd->flags & GREP_WILD) {
+    if ((matched = quick_wild_new(gd->findstr, s, cs))) {
+      /* Since, in order for a wildcard match to succeed, the _entire
+         attribute_ value had to match the pattern, not just a substring,
+         highlighting is totally pointless */
+      strcpy(b1, s);
+    }
+  } else {
+    while (s && *s) {
+      if (!
+          (cs ? strncmp(s, gd->findstr, gd->findlen) :
+           strncasecmp(s, gd->findstr, gd->findlen))) {
+        matched = 1;
+        strncpy(b2, s, gd->findlen);
+        b2[gd->findlen] = '\0';
+        s += gd->findlen;
+        safe_format(b1, &tp, "%s%s%s", ANSI_HILITE, b2, ANSI_END);
+      } else {
+        safe_chr(*s, b1, &tp);
+        s++;
+      }
+    }
+    *tp = '\0';
+  }
 
-  s = (char *) atr_value(atr);  /* warning: static */
-  while (s && *s) {
-    if ((gh->insensitive && !strncasecmp(gh->lookfor, s, gh->len)) ||
-        (!gh->insensitive && !strncmp(gh->lookfor, s, gh->len))) {
-      found = 1;
-      strncpy(buf, s, gh->len);
-      buf[gh->len] = '\0';
-      s += gh->len;
-      safe_format(tbuf1, &tbp, "%s%s%s", ANSI_HILITE, buf, ANSI_END);
-    } else {
-      safe_chr(*s, tbuf1, &tbp);
-      s++;
+  if (!matched)
+    return 0;
+
+  grep_add_attr(gd->buff, gd->bp, player, gd->count, attr, b1);
+  gd->count++;
+  return 1;
+}
+
+static int
+regrep_helper(dbref player, dbref thing __attribute__ ((__unused__)),
+              dbref parent __attribute__ ((__unused__)),
+              char const *pattern
+              __attribute__ ((__unused__)), ATTR *attr, void *args)
+{
+  struct regrep_data *rgd = args;
+  char *s;
+  int offsets[99];
+  int subpatterns, search = 0;
+  ansi_string *orig, *repl;
+  char rbuff[BUFFER_LEN];
+  char *rbp = rbuff;
+
+  s = atr_value(attr);
+  orig = parse_ansi_string(s);
+  if ((subpatterns =
+       pcre_exec(rgd->re, rgd->study, orig->text, orig->len, search, 0, offsets,
+                 99))
+      < 0) {
+    free_ansi_string(orig);
+    return 0;
+  }
+  while (subpatterns >= 0) {
+    safe_str(ANSI_HILITE, rbuff, &rbp);
+    ansi_pcre_copy_substring(orig, offsets, subpatterns, 0, 0, rbuff, &rbp);
+    safe_str(ANSI_END, rbuff, &rbp);
+    *rbp = '\0';
+    if (offsets[0] >= search) {
+      repl = parse_ansi_string(rbuff);
+
+      /* Do the replacement */
+      ansi_string_replace(orig, offsets[0], offsets[1] - offsets[0], repl);
+
+      /* Advance search */
+      if (search == offsets[1]) {
+        search = offsets[0] + repl->len;
+        search++;
+      } else {
+        search = offsets[0] + repl->len;
+      }
+
+      free_ansi_string(repl);
+      rbp = rbuff;
+      if (search >= orig->len)
+        break;
+      subpatterns =
+        pcre_exec(rgd->re, rgd->study, orig->text, orig->len, search, 0,
+                  offsets, 99);
     }
   }
-  *tbp = '\0';
+  safe_ansi_string(orig, 0, orig->len, rbuff, &rbp);
+  *rbp = '\0';
+  free_ansi_string(orig);
+  grep_add_attr(rgd->buff, rgd->bp, player, rgd->count, attr, rbuff);
+  rgd->count++;
+  return 1;
+}
 
-  /* if we got it, display it */
-  if (found)
-    notify_format(player, "%s%s [#%d%s]:%s %s",
-                  ANSI_HILITE, AL_NAME(atr),
-                  Owner(AL_CREATOR(atr)),
-                  privs_to_letters(attr_privs_view, AL_FLAGS(atr)),
-                  ANSI_END, tbuf1);
-  return found;
+int
+grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff,
+          char **bp, int flags)
+{
+  if (!findstr || !*findstr) {
+    if (buff)
+      safe_str(T("#-1 INVALID GREP PATTERN"), buff, bp);
+    else
+      notify(player, T("What pattern do you want to grep for?"));
+    return 0;
+  }
+
+  if (!attrs || !*attrs)
+    attrs = "**";
+
+  if (flags & GREP_REGEXP) {
+    /* regexp grep */
+    struct regrep_data rgd;
+    const char *errptr;
+    int erroffset;
+    int reflags = 0;
+    bool free_study = false;
+
+    if (flags & GREP_NOCASE)
+      reflags |= PCRE_CASELESS;
+
+    if ((rgd.re = pcre_compile(findstr, reflags,
+                               &errptr, &erroffset, tables)) == NULL) {
+      /* Matching error. */
+      if (buff) {
+        safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
+        safe_str(errptr, buff, bp);
+      } else {
+        notify_format(player, T("Invalid regexp: %s"), errptr);
+      }
+      return 0;
+    }
+    add_check("pcre");
+    rgd.study = pcre_study(rgd.re, 0, &errptr);
+    if (errptr != NULL) {
+      if (buff) {
+        safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
+        safe_str(errptr, buff, bp);
+      } else {
+        notify_format(player, T("Invalid regexp: %s"), errptr);
+      }
+      mush_free(rgd.re, "pcre");
+      return 0;
+    }
+    if (rgd.study) {
+      add_check("pcre.extra");
+      free_study = true;
+      set_match_limit(rgd.study);
+    } else {
+      rgd.study = default_match_limit();
+    }
+    rgd.buff = buff;
+    rgd.bp = bp;
+    rgd.count = 0;
+
+    atr_iter_get(player, thing, attrs, 0, 0, regrep_helper, (void *) &rgd);
+    /* Do itttt */
+    if (free_study)
+      mush_free(rgd.study, "pcre.extra");
+
+    return rgd.count;
+  } else {
+    /* Wildcard or plain substring grep */
+    struct grep_data gd;
+    gd.findstr = findstr;
+    gd.findlen = strlen(findstr);
+    gd.buff = buff;
+    gd.bp = bp;
+    gd.count = 0;
+    gd.flags = flags;
+
+    atr_iter_get(player, thing, attrs, 0, 0, grep_helper, (void *) &gd);
+
+    return gd.count;
+  }
+
 }
 
 /** The grep command
@@ -1395,19 +1506,16 @@ grep_helper(dbref player, dbref thing __attribute__ ((__unused__)),
  * \param player the enactor.
  * \param obj string containing obj/attr pattern to grep through.
  * \param lookfor unparsed string to search for.
- * \param flag if 0, return attribute names; if 1, return attrib text.
- * \param insensitive if 1, case-insensitive match; if 0, sensitive.
+ * \param print if 0, show attribute names; if 1, show attrib text.
+ * \param flags type of grep: wild, regexp, nocase
  */
 void
-do_grep(dbref player, char *obj, char *lookfor, int flag, int insensitive)
+do_grep(dbref player, char *obj, char *lookfor, int print, int flags)
 {
-  struct gh_args gh;
   dbref thing;
   char *pattern;
-  int len;
-  char *tp;
 
-  if ((len = strlen(lookfor)) < 1) {
+  if (!lookfor || !*lookfor) {
     notify(player, T("What pattern do you want to grep for?"));
     return;
   }
@@ -1422,21 +1530,19 @@ do_grep(dbref player, char *obj, char *lookfor, int flag, int insensitive)
   if ((thing = noisy_match_result(player, obj, NOTYPE, MAT_EVERYTHING)) ==
       NOTHING)
     return;
-  if (!Can_Examine(player, thing)) {
-    notify(player, T("Permission denied."));
-    return;
-  }
 
-  if (flag) {
-    gh.lookfor = lookfor;
-    gh.len = len;
-    gh.insensitive = insensitive;
-    if (!atr_iter_get(player, thing, pattern, 0, 0, grep_helper, &gh))
-      notify(player, T("No matching attributes."));
+  if (print) {
+    if (!grep_util(player, thing, pattern, lookfor, NULL, NULL, flags))
+      notify(player, T("No matches."));
   } else {
-    tp = grep_util(player, thing, pattern, lookfor, !insensitive, 0);
-    notify_format(player, T("Matches of '%s' on %s(#%d): %s"), lookfor,
-                  Name(thing), thing, tp);
-    mush_free(tp, "grep_util.buff");
+    char buff[BUFFER_LEN];
+    char *bp = buff;
+
+    if (grep_util(player, thing, pattern, lookfor, buff, &bp, flags)) {
+      *bp = '\0';
+      notify_format(player, T("Matches of '%s' on %s(#%d): %s"), lookfor,
+                    Name(thing), thing, buff);
+    } else
+      notify(player, T("No matches."));
   }
 }

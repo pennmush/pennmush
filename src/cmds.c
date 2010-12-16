@@ -41,7 +41,7 @@ void do_list_memstats(dbref player);
 
 void do_dolist(dbref player, char *list, char *command,
                dbref cause, unsigned int flags);
-void do_list(dbref player, char *arg, int lc);
+void do_list(dbref player, char *arg, int lc, int which);
 void do_writelog(dbref player, char *str, int ltype);
 void do_readcache(dbref player);
 void do_scan(dbref player, char *command, int flag);
@@ -84,6 +84,16 @@ COMMAND(cmd_attribute)
   } else if (SW_ISSET(sw, SWITCH_RENAME)) {
     if (Wizard(player))
       do_attribute_rename(player, arg_left, arg_right);
+    else
+      notify(player, T("Permission denied."));
+  } else if (SW_ISSET(sw, SWITCH_LIMIT)) {
+    if (Wizard(player))
+      do_attribute_limit(player, arg_left, AF_RLIMIT, arg_right);
+    else
+      notify(player, T("Permission denied."));
+  } else if (SW_ISSET(sw, SWITCH_ENUM)) {
+    if (Wizard(player))
+      do_attribute_limit(player, arg_left, AF_ENUM, arg_right);
     else
       notify(player, T("Permission denied."));
   } else
@@ -454,13 +464,24 @@ COMMAND(cmd_function)
   }
 }
 
-
 COMMAND(cmd_grep)
 {
-  do_grep(player, arg_left, arg_right, ((SW_ISSET(sw, SWITCH_IPRINT))
-                                        || (SW_ISSET(sw, SWITCH_PRINT))),
-          ((SW_ISSET(sw, SWITCH_IPRINT))
-           || (SW_ISSET(sw, SWITCH_ILIST))));
+  int flags = 0;
+  int print = 0;
+
+  if (SW_ISSET(sw, SWITCH_IPRINT) || SW_ISSET(sw, SWITCH_ILIST)
+      || SW_ISSET(sw, SWITCH_NOCASE))
+    flags |= GREP_NOCASE;
+
+  if (SW_ISSET(sw, SWITCH_REGEXP))
+    flags |= GREP_REGEXP;
+  else if (SW_ISSET(sw, SWITCH_WILD))
+    flags |= GREP_WILD;
+
+  if (SW_ISSET(sw, SWITCH_IPRINT) || SW_ISSET(sw, SWITCH_PRINT))
+    print = 1;
+
+  do_grep(player, arg_left, arg_right, print, flags);
 }
 
 COMMAND(cmd_halt)
@@ -540,13 +561,22 @@ COMMAND(cmd_listmotd)
 COMMAND(cmd_list)
 {
   int lc;
+  int which = 3;
+  char *fwhich[3] = { "builtin", "local", "all" };
   lc = SW_ISSET(sw, SWITCH_LOWERCASE);
+  if (SW_ISSET(sw, SWITCH_ALL))
+    which = 3;
+  else if (SW_ISSET(sw, SWITCH_LOCAL))
+    which = 2;
+  else if (SW_ISSET(sw, SWITCH_BUILTIN))
+    which = 1;
+
   if (SW_ISSET(sw, SWITCH_MOTD))
     do_motd(player, MOTD_LIST, "");
   else if (SW_ISSET(sw, SWITCH_FUNCTIONS))
-    do_list_functions(player, lc);
+    do_list_functions(player, lc, fwhich[which - 1]);
   else if (SW_ISSET(sw, SWITCH_COMMANDS))
-    do_list_commands(player, lc);
+    do_list_commands(player, lc, which);
   else if (SW_ISSET(sw, SWITCH_ATTRIBS))
     do_list_attribs(player, lc);
   else if (SW_ISSET(sw, SWITCH_LOCKS))
@@ -558,7 +588,7 @@ COMMAND(cmd_list)
   else if (SW_ISSET(sw, SWITCH_ALLOCATIONS))
     do_list_allocations(player);
   else
-    do_list(player, arg_left, lc);
+    do_list(player, arg_left, lc, which);
 }
 
 COMMAND(cmd_lock)
@@ -899,6 +929,8 @@ COMMAND(cmd_ps)
     do_queue(player, arg_left, QUEUE_SUMMARY);
   else if (SW_ISSET(sw, SWITCH_QUICK))
     do_queue(player, arg_left, QUEUE_QUICK);
+  else if (arg_left && *arg_left && is_uinteger(arg_left))
+    do_queue_single(player, arg_left);
   else
     do_queue(player, arg_left, QUEUE_NORMAL);
 }

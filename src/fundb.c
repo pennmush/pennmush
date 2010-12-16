@@ -160,7 +160,7 @@ FUNCTION(fun_lattr)
     lh.count = parse_integer(args[2]);
 
     if (lh.start < 1 || lh.count < 1) {
-      safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
+      safe_str(T(e_argrange), buff, bp);
       return;
     }
 
@@ -773,7 +773,7 @@ FUNCTION(fun_dbwalker)
       start = parse_integer(args[1]);
       count = parse_integer(args[2]);
       if (start < 1 || count < 1) {
-        safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
+        safe_str(T(e_argrange), buff, bp);
         return;
       }
       break;
@@ -1914,7 +1914,7 @@ FUNCTION(fun_namelist)
   char *wenv[2];
 
   if (nargs > 1 && args[1] && *args[1]) {
-    if (fetch_ufun_attrib(args[1], executor, &ufun, 1)) {
+    if (fetch_ufun_attrib(args[1], executor, &ufun, UFUN_DEFAULT)) {
       report = 1;
     } else {
       safe_str(ufun.errmess, buff, bp);
@@ -2299,9 +2299,7 @@ FUNCTION(fun_isobjid)
 /* ARGSUSED */
 FUNCTION(fun_grep)
 {
-  char *tp;
-  int wild;
-  int sensitive;
+  int flags = 0;
 
   dbref it = match_thing(executor, args[0]);
   if (!GoodObject(it)) {
@@ -2318,11 +2316,16 @@ FUNCTION(fun_grep)
     return;
   }
 
-  sensitive = !strcmp(called_as, "GREP") || !strcmp(called_as, "WILDGREP");
-  wild = !strcmp(called_as, "WILDGREPI") || !strcmp(called_as, "WILDGREP");
-  tp = grep_util(executor, it, args[1], args[2], sensitive, wild);
-  safe_str(tp, buff, bp);
-  mush_free(tp, "grep_util.buff");
+  if (!strcmp(called_as, "GREPI") || !strcmp(called_as, "WILDGREPI")
+      || !strcmp(called_as, "REGREPI"))
+    flags |= GREP_NOCASE;
+
+  if (*called_as == 'W')
+    flags |= GREP_WILD;
+  else if (*called_as == 'R')
+    flags |= GREP_REGEXP;
+
+  grep_util(executor, it, args[1], args[2], buff, bp, flags);
 }
 
 /* Get database size statistics */

@@ -217,8 +217,8 @@ void command_argparse
   (dbref player, dbref cause, char **from, char *to, char **argv,
    COMMAND_INFO *cmd, int side, int forcenoparse);
 char *command_parse(dbref player, dbref cause, char *string, int fromport);
-void do_list_commands(dbref player, int lc);
-char *list_commands(void);
+void do_list_commands(dbref player, int lc, int type);
+char *list_commands(int type);
 int command_check(dbref player, COMMAND_INFO *cmd, int noisy);
 int command_check_byname(dbref player, const char *name);
 int command_check_byname_quiet(dbref player, const char *name);

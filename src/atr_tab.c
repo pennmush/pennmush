@@ -22,7 +22,9 @@
 #include "log.h"
 #include "parse.h"
 #include "confmagic.h"
+#include "ansi.h"
 
+extern const unsigned char *tables;
 
 /** An alias for an attribute.
  */
@@ -190,6 +192,262 @@ cnf_attribute_access(char *attrname, char *opts)
   return 1;
 }
 
+/** Since enum adds a delim before and after the string, edit them out. */
+const char *
+display_attr_limit(ATTR *ap)
+{
+  char *ptr;
+  char *s;
+
+  if (ap->data && (ap->flags & AF_ENUM)) {
+    ptr = atr_value(ap);
+    *(ptr++) = '\0';
+    s = ptr + strlen(ptr);
+    s--;
+    *(s) = '\0';
+    return ptr;
+  } else if (ap->data && (ap->flags & AF_RLIMIT)) {
+    return atr_value(ap);
+  }
+  return "unset";
+}
+
+/** Check an attribute's value against /limit or /enum restrictions.
+ * \player Player attempting to set the attribute. Used for notify()
+ * \param name the attribute name.
+ * \param value The desired attribute value.
+ * \retval The new value to set if valid, NULL if not.
+ */
+const char *
+check_attr_value(dbref player, const char *name, const char *value)
+{
+  /* Check for attribute limits and enums. */
+  ATTR *ap;
+  char *attrval;
+  pcre *re;
+  int subpatterns;
+  const char *errptr;
+  int erroffset;
+  char *ptr, *ptr2;
+  char delim;
+  int len;
+  static char buff[BUFFER_LEN];
+  char vbuff[BUFFER_LEN];
+
+  if (!name || !*name)
+    return value;
+  if (!value)
+    return value;
+
+  upcasestr((char *) name);
+  ap = (ATTR *) ptab_find_exact(&ptab_attrib, name);
+  if (!ap)
+    return value;
+
+  attrval = atr_value(ap);
+  if (!attrval) {
+    return value;
+  }
+
+  if (ap->flags & AF_RLIMIT) {
+    re = pcre_compile(remove_markup(attrval, NULL), PCRE_CASELESS,
+                      &errptr, &erroffset, tables);
+    if (!re)
+      return value;
+
+    subpatterns = pcre_exec(re, default_match_limit(), value, strlen(value),
+                            0, 0, NULL, 0);
+    free(re);
+
+    if (subpatterns >= 0) {
+      return value;
+    } else {
+      notify(player, T("Attribute value does not match the /limit regexp."));
+      return NULL;
+    }
+  } else if (ap->flags & AF_ENUM) {
+    /* Delimiter is always the first character of the enum string.
+     * and the value cannot have the delimiter in it. */
+    delim = *attrval;
+    if (!*value || strchr(value, delim)) {
+      notify_format(player,
+                    T("Value for %s needs to be one of: %s"),
+                    ap->name, display_attr_limit(ap));
+      return NULL;
+    }
+
+    /* We match the enum case-insensitively, BUT we use the case
+     * that is defined in the enum, so we copy the attr value
+     * to buff and use that. */
+    snprintf(buff, BUFFER_LEN, "%s", attrval);
+    upcasestr(buff);
+
+    len = strlen(value);
+    snprintf(vbuff, BUFFER_LEN, "%c%s%c", delim, value, delim);
+    upcasestr(vbuff);
+
+    ptr = strstr(buff, vbuff);
+    if (!ptr) {
+      *(vbuff + len + 1) = '\0';        /* Remove the second delim */
+      ptr = strstr(buff, vbuff);
+    }
+
+    /* Do we have a match? */
+    if (ptr) {
+      /* ptr is pointing at the delim before the value. */
+      ptr++;
+      ptr2 = strchr(ptr, delim);
+      if (!ptr2)
+        return NULL;            /* Shouldn't happen, but sanity check. */
+
+      /* Now we need to copy over the _original case_ version of the
+       * enumerated string. Nasty pointer arithmetic. */
+      strncpy(buff, attrval + (ptr - buff), (int) (ptr2 - ptr));
+      buff[ptr2 - ptr] = '\0';
+      return buff;
+    } else {
+      notify_format(player,
+                    T("Value for %s needs to be one of: %s"),
+                    ap->name, display_attr_limit(ap));
+      return NULL;
+    }
+  }
+  return value;
+}
+
+/** Limit an attribute's possible values, using either an enum or a
+ *  regexp /limit.
+ * \verbatim
+ * Given a name, restriction type and string for an attribute,
+ * set its data value to said data and set a flag for limit or
+ * enum.
+ *
+ * For an enum, the attr's data will be set to
+ * <delim><pattern><delim>, so a simple strstr() can be used when
+ * matching the pattern.
+ *
+ * An optional delimiter can be provided on the left hand side by using
+ * @attr/enum <delim> <attrname>=<enum list>
+ * \endverbatim
+ * \param player the enactor.
+ * \param name the attribute name.
+ * \param type AF_RLIMIT for regexp, AF_ENUM for enum.
+ * \param pattern The allowed pattern for the attribute.
+ */
+void
+do_attribute_limit(dbref player, char *name, int type, char *pattern)
+{
+  ATTR *ap;
+  char buff[BUFFER_LEN];
+  char *ptr, *bp;
+  char delim = ' ';
+  pcre *re;
+  const char *errptr;
+  int erroffset;
+  int unset = 0;
+
+  if (pattern && *pattern) {
+    if (type == AF_RLIMIT) {
+      /* Compile to regexp. */
+      re = pcre_compile(remove_markup(pattern, NULL), PCRE_CASELESS,
+                        &errptr, &erroffset, tables);
+      if (!re) {
+        notify(player, T("Invalid Regular Expression."));
+        return;
+      }
+      /* We only care if it's valid, we're not using it. */
+      free(re);
+
+      /* Copy it to buff to be placed into ap->data. */
+      snprintf(buff, BUFFER_LEN, "%s", pattern);
+    } else if (type == AF_ENUM) {
+      ptr = name;
+      /* Check for a delimiter: @attr/enum | attrname=foo */
+      if ((name = strchr(ptr, ' ')) != NULL) {
+        *(name++) = '\0';
+        if (strlen(ptr) > 1) {
+          notify(player, T("Delimiter must be one character."));
+          return;
+        }
+        delim = *ptr;
+      } else {
+        name = ptr;
+        delim = ' ';
+      }
+
+      /* For speed purposes, we require the pattern to begin and end with
+       * a delimiter. */
+      snprintf(buff, BUFFER_LEN, "%c%s%c", delim, pattern, delim);
+      buff[BUFFER_LEN - 1] = '\0';
+
+      /* For sanity's sake, we'll enforce a properly delimited enum
+       * with a quick and dirty squish().
+       * We already know we start with a delim, hence the +1 =). */
+      for (ptr = buff + 1, bp = buff + 1; *ptr; ptr++) {
+        if (!(*ptr == delim && *(ptr - 1) == delim)) {
+          *(bp++) = *ptr;
+        }
+      }
+      *bp = '\0';
+    } else {
+      /* Err, we got called with the wrong limit type? */
+      notify(player, T("Unknown limit type?"));
+      return;
+    }
+  } else {
+    unset = 1;
+  }
+
+  /* Parse name and perms */
+  if (!name || !*name) {
+    notify(player, T("Which attribute do you mean?"));
+    return;
+  }
+  upcasestr(name);
+  if (*name == '@')
+    name++;
+
+  /* Is this attribute already in the table? */
+  ap = (ATTR *) ptab_find_exact(&ptab_attrib, name);
+
+  if (!ap) {
+    notify(player,
+           T
+           ("I don't know that attribute. Please use @attribute/access to create it, first."));
+    return;
+  }
+
+  if (AF_Internal(ap)) {
+    /* Don't muck with internal attributes */
+    notify(player, T("That attribute's permissions cannot be changed."));
+    return;
+  }
+
+  /* All's good, set the data and the AF_RLIMIT or AF_ENUM flag. */
+  if (ap->data != NULL_CHUNK_REFERENCE) {
+    chunk_delete(ap->data);
+  }
+  /* Clear any extant rlimit or enum flags */
+  ap->flags &= ~(AF_RLIMIT | AF_ENUM);
+  if (unset) {
+    if (ap->data != NULL_CHUNK_REFERENCE) {
+      ap->data = NULL_CHUNK_REFERENCE;
+      notify_format(player, T("%s -- Attribute limit or enum unset."), name);
+    } else {
+      notify_format(player,
+                    T("%s -- Attribute limit or enum already unset."), name);
+    }
+  } else {
+    unsigned char *t = compress(buff);
+    ap->data = chunk_create(t, u_strlen(t), 0);
+    free(t);
+    ap->flags |= type;
+    notify_format(player,
+                  T("%s -- Attribute %s set to: %s"), name,
+                  type == AF_RLIMIT ? "limit" : "enum", display_attr_limit(ap));
+  }
+}
+
 /** Add new standard attributes, or change permissions on them.
  * \verbatim
  * Given the name and permission string for an attribute, add it to
@@ -301,6 +559,11 @@ do_attribute_delete(dbref player, char *name)
     return;
   }
 
+  /* Free everything it uses. */
+  if (ap->data != NULL_CHUNK_REFERENCE) {
+    chunk_delete(ap->data);
+  }
+
   /* Ok, take it out of the hash table */
   ptab_delete(&ptab_attrib, name);
   notify_format(player, T("Removed %s from attribute table."), name);
@@ -383,6 +646,11 @@ do_attribute_info(dbref player, char *name)
     return;
   }
   notify_format(player, "%9s: %s", T("Attribute"), AL_NAME(ap));
+  if (ap->flags & AF_RLIMIT) {
+    notify_format(player, "%9s: %s", T("Limit"), display_attr_limit(ap));
+  } else if (ap->flags & AF_ENUM) {
+    notify_format(player, "%9s: %s", T("Enum"), display_attr_limit(ap));
+  }
   notify_format(player,
                 "%9s: %s", T("Flags"), privs_to_string(attr_privs_view,
                                                        AL_FLAGS(ap)));

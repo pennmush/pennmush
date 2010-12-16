@@ -252,13 +252,15 @@ extern EVAL_CONTEXT global_eval_context;
 void do_second(void);
 int do_top(int ncom);
 void do_halt(dbref owner, const char *ncom, dbref victim);
-void parse_que(dbref player, const char *command, dbref cause);
-int queue_attribute_base
-  (dbref executor, const char *atrname, dbref enactor, int noparent);
+void parse_que(dbref player, const char *command, dbref cause,
+               PE_Info *pe_info);
+int queue_attribute_base(dbref executor, const char *atrname, dbref enactor,
+                         int noparent);
 ATTR *queue_attribute_getatr(dbref executor, const char *atrname, int noparent);
 int queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor);
 int inplace_queue_attribute(dbref thing, const char *atrname,
                             dbref enactor, int rsargs);
+void run_user_input(dbref player, char *input);
 
 /** Queue the code in an attribute, including parent objects */
 #define queue_attribute(a,b,c) queue_attribute_base(a,b,c,0)
@@ -407,11 +409,17 @@ int ok_tag_attribute(dbref player, const char *params);
 dbref parse_match_possessor(dbref player, char **str, int exits);
 void page_return(dbref player, dbref target, const char *type,
                  const char *message, const char *def);
-char *grep_util(dbref player, dbref thing, char *pattern,
-                char *lookfor, int sensitive, int wild);
 dbref where_is(dbref thing);
 int charge_action(dbref thing);
 dbref first_visible(dbref player, dbref thing);
+
+#define GREP_NOCASE 1
+#define GREP_WILD 2
+#define GREP_REGEXP 4
+int grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff,
+              char **bp, int flags);
+
+
 
 /* From rob.c */
 void s_Pennies(dbref thing, int amount);
@@ -575,9 +583,23 @@ mush_strndup(const char *src, size_t len, const char *check)
       char contents[BUFFER_LEN];
       int pe_flags;
       char *errmess;
+      int ufun_flags;
     } ufun_attrib;
-    bool fetch_ufun_attrib(char *attrname, dbref executor,
-                           ufun_attrib * ufun, bool accept_lambda);
+/* Only 'attr', not 'obj/attr' */
+#define UFUN_NONE 0
+/* Does this string accept obj/attr? */
+#define UFUN_OBJECT 0x01
+/* If it accepts obj/attr, does it accept #lambda/attr? */
+#define UFUN_LAMBDA 0x02
+/* If this is set, a nonexistant attribute is an error, instead of empty. */
+#define UFUN_REQUIRE_ATTR 0x04
+/* When calling the ufun, don't check caller's perms */
+#define UFUN_IGNORE_PERMS 0x08
+/* When calling the ufun, save and restore the Q-registers. */
+#define UFUN_LOCALIZE 0x10
+#define UFUN_DEFAULT (UFUN_OBJECT | UFUN_LAMBDA)
+    bool fetch_ufun_attrib(const char *attrstring, dbref executor,
+                           ufun_attrib * ufun, int flags);
     bool call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc,
                    char *ret, dbref executor, dbref enactor, PE_Info *pe_info);
     bool call_attrib(dbref thing, const char *attrname,
@@ -617,21 +639,26 @@ mush_strndup(const char *src, size_t len, const char *check)
     warn_type parse_warnings(dbref player, const char *warnings);
 
 /* From wild.c */
+    bool wild_match_test(const char *restrict s, const char *restrict d,
+                         bool cs, int *matches, int nmatches);
     bool local_wild_match_case(const char *restrict s,
                                const char *restrict d, bool cs);
-    bool wildcard(const char *s);
+    int wildcard_count(char *s, bool unescape);
+    /** Return 1 if s contains unescaped wildcards, 0 if not */
+#define wildcard(s) (wildcard_count(s, 0) == -1)
     bool quick_wild_new(const char *restrict tstr,
                         const char *restrict dstr, bool cs);
+    bool wild_match_case_r(const char *restrict s,
+                           const char *restrict d, bool cs,
+                           char **ary, int max, char *ata, int len);
+    bool quick_wild(const char *restrict tsr, const char *restrict dstr);
+    bool atr_wild(const char *restrict tstr, const char *restrict dstr);
+
     bool regexp_match_case_r(const char *restrict s, const char *restrict d,
                              bool cs, char **, size_t, char *restrict, ssize_t);
     bool quick_regexp_match(const char *restrict s,
                             const char *restrict d, bool cs);
     bool qcomp_regexp_match(const pcre * re, const char *s);
-    bool wild_match_case_r(const char *restrict s,
-                           const char *restrict d, bool cs,
-                           char **ary, size_t max, char *ata, ssize_t len);
-    bool quick_wild(const char *restrict tsr, const char *restrict dstr);
-    bool atr_wild(const char *restrict tstr, const char *restrict dstr);
 /** Default (case-insensitive) local wildcard match */
 #define local_wild_match(s,d) local_wild_match_case(s, d, 0)
 

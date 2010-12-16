@@ -125,6 +125,7 @@ static PRIV chanuser_priv[] = {
   {"Quiet", 'Q', CU_QUIET, CU_QUIET},
   {"Hide", 'H', CU_HIDE, CU_HIDE},
   {"Gag", 'G', CU_GAG, CU_GAG},
+  {"Combine", 'C', CU_COMBINE, CU_COMBINE},
   {NULL, '\0', 0, 0}
 };
 
@@ -1864,7 +1865,7 @@ ok_channel_name(const char *n)
 
   /* only printable characters */
   for (p = name; p && *p; p++) {
-    if (!isprint((unsigned char) *p))
+    if (!isprint((unsigned char) *p) || *p == '|')
       return 0;
   }
 
@@ -1886,7 +1887,7 @@ ok_channel_name(const char *n)
  * \param player the enactor.
  * \param name the name of the channel.
  * \param isyn a yes/no string.
- * \param flag switch indicator: 0=mute, 1=hide, 2=gag
+ * \param flag CU_* option
  * \param silent if 1, no notification of actions.
  */
 void
@@ -1899,6 +1900,11 @@ do_chan_user_flags(dbref player, char *name, const char *isyn, int flag,
   int setting = abs(yesno(isyn));
   p = NULL;
 
+  if (!IsPlayer(player) && flag == CU_COMBINE) {
+    notify(player, T("Only players can use that option."));
+	   return;
+  }
+
   if (!name || !*name) {
     p = Chanlist(player);
     if (!p) {
@@ -1907,17 +1913,21 @@ do_chan_user_flags(dbref player, char *name, const char *isyn, int flag,
     }
     silent = 1;
     switch (flag) {
-    case 0:
+    case CU_QUIET:
       notify(player, setting ? T("All channels have been muted.")
              : T("All channels have been unmuted."));
       break;
-    case 1:
+    case CU_HIDE:
       notify(player, setting ? T("You hide on all the channels you can.")
              : T("You unhide on all channels."));
       break;
-    case 2:
+    case CU_GAG:
       notify(player, setting ? T("All channels have been gagged.")
              : T("All channels have been ungagged."));
+      break;
+    case CU_COMBINE:
+      notify(player, setting ? T("All channels have been combined.")
+             : T("All channels have been uncombined."));
       break;
     }
   } else {
@@ -1943,7 +1953,7 @@ do_chan_user_flags(dbref player, char *name, const char *isyn, int flag,
     }
 
     switch (flag) {
-    case 0:
+    case CU_QUIET:
       /* Mute */
       if (setting) {
         CUtype(u) |= CU_QUIET;
@@ -1962,7 +1972,7 @@ do_chan_user_flags(dbref player, char *name, const char *isyn, int flag,
       }
       break;
 
-    case 1:
+    case CU_HIDE:
       /* Hide */
       if (setting) {
         if (!Chan_Can_Hide(c, player) && !Wizard(player)) {
@@ -1986,7 +1996,7 @@ do_chan_user_flags(dbref player, char *name, const char *isyn, int flag,
                         ChanName(c));
       }
       break;
-    case 2:
+    case CU_GAG:
       /* Gag */
       if (setting) {
         CUtype(u) |= CU_GAG;
@@ -2000,6 +2010,23 @@ do_chan_user_flags(dbref player, char *name, const char *isyn, int flag,
         if (!silent)
           notify_format(player,
                         T("You will now hear messages on channel <%s>."),
+                        ChanName(c));
+      }
+      break;
+    case CU_COMBINE:
+      /* Combine */
+      if (setting) {
+        CUtype(u) |= CU_COMBINE;
+        if (!silent)
+          notify_format(player,
+                        T
+                        ("Connect messages on channel <%s> will now be combined with others."),
+                        ChanName(c));
+      } else {
+        CUtype(u) &= ~CU_COMBINE;
+        if (!silent)
+          notify_format(player,
+                        T("Connect messages on channel <%s> will no longer be combined with others."),
                         ChanName(c));
       }
       break;
@@ -2090,7 +2117,7 @@ do_channel_list(dbref player, const char *partname)
 
   if (SUPPORT_PUEBLO)
     notify_noenter(player, open_tag("SAMP"));
-  notify_format(player, "%-30s %-5s %8s %-16s %-8s %-3s",
+  notify_format(player, "%-30s %-5s %8s %-16s %-9s %-3s",
                 T("Name"), T("Users"), T("Msgs"), T("Chan Type"), T("Status"),
                 T("Buf"));
   for (c = channels; c; c = c->next) {
@@ -2124,7 +2151,7 @@ do_channel_list(dbref player, const char *partname)
         blanks[0] = '\0';
       }
       notify_format(player,
-                    "%-30s%s %s %8ld [%c%c%c%c%c%c%c %c%c%c%c%c%c] [%-3s %c%c] %3d",
+                    "%-30s%s %s %8ld [%c%c%c%c%c%c%c %c%c%c%c%c%c] [%-3s %c%c%c] %3d",
                     ChanName(c), blanks, numusers, ChanNumMsgs(c),
                     Channel_Disabled(c) ? 'D' : '-',
                     Channel_Player(c) ? 'P' : '-',
@@ -2144,6 +2171,7 @@ do_channel_list(dbref player, const char *partname)
                     u ? (Chanuser_Gag(u) ? T("Gag") : T("On")) : T("Off"),
                     (u && Chanuser_Quiet(u)) ? 'Q' : ' ',
                     (u && Chanuser_Hide(u)) ? 'H' : ' ',
+                    (u && Chanuser_Combine(u)) ? 'C' : ' ',
                     bufferq_blocks(ChanBufferQ(c)));
     }
   }
@@ -3036,7 +3064,7 @@ canstilladd(dbref player)
   return (num < MAX_PLAYER_CHANS);
 }
 
-
+extern DESC *descriptor_list;
 
 /** Tell players on a channel when someone connects or disconnects.
  * \param player player that is connecting or disconnecting.
@@ -3046,18 +3074,80 @@ canstilladd(dbref player)
 void
 chat_player_announce(dbref player, char *msg, int ungag)
 {
+  DESC *d;
+  size_t msglen;
   CHAN *c;
-  CHANUSER *u;
+  CHANUSER *up, *uv;
+  char buff[BUFFER_LEN], *bp;
+  dbref viewer;
+  bool shared = false;
 
+  msglen = strlen(msg);
+
+  /* Use the regular channel_send() for all non-combined players. */
   for (c = channels; c; c = c->next) {
-    u = onchannel(player, c);
-    if (u) {
+    up = onchannel(player, c);
+    if (up) {
       if (!Channel_Quiet(c) && (Channel_Admin(c) || Channel_Wizard(c)
-                                || (!Chanuser_Hide(u) && !Dark(player)))) {
-        channel_send(c, player, CB_CHECKQUIET | CB_PRESENCE | CB_POSE, msg);
+            || (!Chanuser_Hide(up) && !Dark(player)))) {
+        channel_send(c, player,
+                     CB_NOCOMBINE | CB_CHECKQUIET | CB_PRESENCE | CB_POSE,
+                     msg);
       }
-      if (ungag)
-        CUtype(u) &= ~CU_GAG;
+      if (ungag) {
+        CUtype(up) &= ~CU_GAG;
+      }
+    }
+  }
+  for (d = descriptor_list; d != NULL; d = d->next) {
+    viewer = d->player;
+    if (d->connected) {
+      shared = false;
+      bp = buff;
+
+      for (c = channels; c; c = c->next) {
+        up = onchannel(player, c);
+        uv = onchannel(viewer, c);
+        if (up && uv) {
+          if (!Channel_Quiet(c) && !Chanuser_Quiet(uv)
+              && (Channel_Admin(c) || Channel_Wizard(c)
+                  || (!Chanuser_Hide(up) && !Dark(player)))) {
+            if (Chanuser_Combine(uv)) {
+              shared = true;
+              safe_str(ChanName(c), buff, &bp);
+              safe_strl(" | ", 3, buff, &bp);
+            }
+          }
+        }
+        if (up && ungag)
+          CUtype(up) &= ~CU_GAG;
+      }
+      
+      bp -= 3;
+      *bp = '\0';   
+
+      if (shared) {
+	char defmsg[BUFFER_LEN], *dmp;
+	char shrtmsg[BUFFER_LEN], *smp;
+	char *accname;
+
+	dmp = defmsg;
+	smp = shrtmsg;
+	
+	accname = mush_strdup(accented_name(player), "chat_announce.name");
+
+	safe_format(shrtmsg, &smp, "%s %s", accname, msg);
+	*smp = '\0';
+          
+        safe_format(defmsg, &dmp, "<%s> %s %s", buff, accname, msg);
+        *dmp = '\0';
+
+	if (!vmessageformat(viewer, "CHATFORMAT", player, NA_INTER_PRESENCE, 6,
+			    "@", buff, shrtmsg, accname, "", defmsg)) 
+	  notify_anything(player, na_one, &viewer, ns_esnotify, NA_INTER_PRESENCE, defmsg);
+	
+	mush_free(accname, "chat_announce.name");
+      }
     }
   }
 }
@@ -3401,17 +3491,21 @@ COMMAND(cmd_channel)
   else if (SW_ISSET(sw, SWITCH_WIPE))
     do_chan_wipe(player, arg_left);
   else if (SW_ISSET(sw, SWITCH_MUTE))
-    do_chan_user_flags(player, arg_left, args_right[1], 0, 0);
+    do_chan_user_flags(player, arg_left, args_right[1], CU_QUIET, 0);
   else if (SW_ISSET(sw, SWITCH_UNMUTE))
-    do_chan_user_flags(player, arg_left, "n", 0, 0);
+    do_chan_user_flags(player, arg_left, "n", CU_QUIET, 0);
   else if (SW_ISSET(sw, SWITCH_HIDE))
-    do_chan_user_flags(player, arg_left, args_right[1], 1, 0);
+    do_chan_user_flags(player, arg_left, args_right[1], CU_HIDE, 0);
   else if (SW_ISSET(sw, SWITCH_UNHIDE))
-    do_chan_user_flags(player, arg_left, "n", 1, 0);
+    do_chan_user_flags(player, arg_left, "n", CU_HIDE, 0);
   else if (SW_ISSET(sw, SWITCH_GAG))
-    do_chan_user_flags(player, arg_left, args_right[1], 2, 0);
+    do_chan_user_flags(player, arg_left, args_right[1], CU_GAG, 0);
   else if (SW_ISSET(sw, SWITCH_UNGAG))
-    do_chan_user_flags(player, arg_left, "n", 2, 0);
+    do_chan_user_flags(player, arg_left, "n", CU_GAG, 0);
+  else if (SW_ISSET(sw, SWITCH_COMBINE))
+    do_chan_user_flags(player, arg_left, args_right[1], CU_COMBINE, 0);
+  else if (SW_ISSET(sw, SWITCH_UNCOMBINE))
+    do_chan_user_flags(player, arg_left, "n", CU_COMBINE, 0);
   else if (SW_ISSET(sw, SWITCH_WHAT))
     do_chan_what(player, arg_left);
   else if (SW_ISSET(sw, SWITCH_BUFFER))
@@ -3515,6 +3609,7 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
 {
 /* flags:
  *     CB_CHECKQUIET CB_NOSPOOF CB_PRESENCE CB_POSE CB_EMIT CB_SPEECH
+ *     CB_NOCOMBINE
  */
 
   /* These are static only to prevent them from chewing up
@@ -3595,7 +3690,7 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
         notify(player, blockstr);
         return;
       }
-      // Do we override chatformats?
+      /* Do we override chatformats? */
       if (parse_boolean
           (mogrify(mogrifier, "MOGRIFY`OVERRIDE", player, 6, argv, ""))) {
         override_chatformat = 1;
@@ -3666,7 +3761,7 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
   }
   *bp = '\0';
 
-  // @chatformat
+  /* @chatformat */
   if (flags & CB_PRESENCE) {
     snprintf(title, BUFFER_LEN, "%s", message);
     snprintf(message, BUFFER_LEN, "%s %s", Name(player), title);
@@ -3695,6 +3790,9 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
   for (u = ChanUsers(channel); u; u = u->next) {
     current = CUdbref(u);
 
+    if ((flags & CB_NOCOMBINE) && Chanuser_Combine(u)) {
+      continue;
+    }
     if (!(((flags & CB_CHECKQUIET) && Chanuser_Quiet(u)) ||
           Chanuser_Gag(u) || (IsPlayer(current) && !Connected(current)))) {
       if (override_chatformat
@@ -3726,7 +3824,7 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
  * \endverbatim
  * \param player the enactor.
  * \param name the name of the channel.
- * \param lineinfo point to array containing lines, optoinal start
+ * \param lineinfo point to array containing lines, optional start
  * \param quiet if true, don't show timestamps.
  */
 void

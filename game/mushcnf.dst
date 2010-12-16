@@ -211,9 +211,19 @@ ssl_require_client_cert no
 ### Limits, costs, and other constants
 ###
 
-# name of the monetary units
-money_singular Penny
-money_plural Pennies
+# name of the monetary units. Uncomment before changing. By leaving it
+# commented, the translated value will be used.
+# OPTIONAL
+# money_singular Penny
+# money_plural Pennies
+
+# How many times in a 10 minute period should a given IP address be
+# allowed to attempt to log in before being rejected?
+# If you want this to really be successful, you should probably also
+# block Tor exit nodes at the firewall level:
+# http://doc.norang.ca/iptables.html#sec-3
+# Set to 0 for unlimited.
+connect_fail_limit 10
 
 # Should there be a limit on how long players can be idle?
 # If you want one, set idle_timeout to the # number of MINUTES 
@@ -433,10 +443,13 @@ forking_dump yes
 # leave messages you don't want blank, but don't comment
 # them out or remove them from the file or you'll get the
 # default messages.
-dump_warning_5min GAME: Database save in 5 minutes.
-dump_warning_1min GAME: Database save in 1 minute.
-dump_message GAME: Saving database. Game may freeze for a few moments.
-dump_complete GAME: Save complete. 
+# Leaving these undefined lets the game use the default, translated
+# messages.
+# OPTIONAL
+# dump_warning_5min GAME: Database save in 5 minutes.
+# dump_warning_1min GAME: Database save in 1 minute.
+# dump_message GAME: Saving database. Game may freeze for a few moments.
+# dump_complete GAME: Save complete. 
 
 
 ### 
@@ -734,9 +747,11 @@ count_all no
 exits_connect_rooms no
 
 # Prefixes for various broadcast messages
-wizwall_prefix Broadcast:
-rwall_prefix Admin:
-wall_prefix Announcement:
+# Leaving these commented lets the game use the translated default messages.
+# OPTIONAL
+# wizwall_prefix Broadcast:
+# rwall_prefix Admin:
+# wall_prefix Announcement:
 
 # Should we announce connections/disconnections to rooms and on channels?
 # If this is disabled, only MONITOR players will see connect/disconnect.

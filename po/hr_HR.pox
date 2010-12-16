@@ -553,10 +553,6 @@ msgstr "#-1 TAJ IGRAÈ NE POSTOJI"
 msgid "#-1 NO SUCH TYPE"
 msgstr "#-1 TAJ TIP NE POSTOJI"
 
-#: src/funufun.c:310
-msgid "#-1 NO SUCH USER FUNCTION"
-msgstr "#-1 TA KORISNIÈKA FUNKCIJA NE POSTOJI"
-
 #: extchat.c:2279
 msgid "#-1 NO TEXT GIVEN"
 msgstr "#-1 NIJE ZADAN TEKST"
@@ -645,6 +641,10 @@ msgstr "#-1 PREVI©E STUPACA ZA ALIGN"
 #: src/funlist.c:1815
 msgid "#-1 TOO MANY ITERS"
 msgstr "#-1 PREVI©E ITERA"
+
+#: funmisc.c:495 funmisc.c:612
+msgid "#-1 TOO MANY SWITCHES"
+msgstr "#-1 PREVI©E SWITCHEVA"
 
 #: src/funlist.c:1782
 msgid "#-1 TOO MANY WORDS"
@@ -837,6 +837,21 @@ msgstr "%s - Postavljeno: %s"
 #, c-format
 msgid "%s - Triggered."
 msgstr "%s - Okinuto."
+
+#: atr_tab.c:440
+#, c-format
+msgid "%s -- Attribute %s set to: %s"
+msgstr "%s -- Atribut %s postavljen na: %s"
+
+#: atr_tab.c:432
+#, c-format
+msgid "%s -- Attribute limit or enum already unset."
+msgstr "%s -- Atributova granica ili enum je veæ maknut."
+
+#: atr_tab.c:429
+#, c-format
+msgid "%s -- Attribute limit or enum unset."
+msgstr "%s -- Atributova granica ili enum maknut."
 
 #: src/atr_tab.c:226
 #, c-format
@@ -1479,6 +1494,10 @@ msgstr "Gnj!  Nisam uspio ponovo otvoriti stderr!"
 msgid "Address: %s"
 msgstr "Adresa: %s"
 
+#: conf.c:1386
+msgid "Admin:"
+msgstr "Administratorima:"
+
 #: src/destroy.c:405
 msgid "Alas, your efforts of mercy are in vain."
 msgstr "Na¾alost, tvoj poku¹aj milosrða je uzaludan."
@@ -1515,6 +1534,10 @@ msgstr "Svi osim administratora"
 msgid "All but wizards"
 msgstr "Svi osim administratora"
 
+#: extchat.c:1924
+msgid "All channels have been combined."
+msgstr "Svi kanali su kombinirani."
+
 #: extchat.c:1597
 msgid "All channels have been gagged."
 msgstr "Gag stavljen na sve kanale."
@@ -1522,6 +1545,10 @@ msgstr "Gag stavljen na sve kanale."
 #: extchat.c:1589
 msgid "All channels have been muted."
 msgstr "Vi¹e neæe¹ èuti poruke o spajanjima ni na jednom kanalu."
+
+#: extchat.c:1925
+msgid "All channels have been uncombined."
+msgstr "Svi kanali su odkombinirani."
 
 #: extchat.c:1598
 msgid "All channels have been ungagged."
@@ -1567,6 +1594,10 @@ msgstr "Sve quote su promijenjene u %d."
 #: access.c:412
 msgid "All"
 msgstr "Svi"
+
+#: conf.c:1387
+msgid "Announcement:"
+msgstr "Obavijest:"
 
 #: wiz.c:1810
 msgid "Any name matching these wildcard patterns is banned:"
@@ -1629,6 +1660,10 @@ msgstr "Vlasnik atributa promijenjen."
 msgid "Attribute unlocked."
 msgstr "Atribut otkljuèan."
 
+#: atr_tab.c:259
+msgid "Attribute value does not match the /limit regexp."
+msgstr "Atributova vrijednost se ne podudara sa /limitovim regexpom."
+
 #: atr_tab.c:349
 msgid "Attribute"
 msgstr "Atribut"
@@ -1684,6 +1719,10 @@ msgstr "Obavijest: Sumnjivi igraè '%s' promijeni ime u '%s'."
 #, c-format
 msgid "Broadcast: Suspect %s tried to kill %s(#%d)."
 msgstr "Obavijest: Sumnjivi igraè '%s' poku¹a ubiti korisnika '%s'(#%d)."
+
+#: conf.c:1385
+msgid "Broadcast:"
+msgstr "Odaslana poruka:"
 
 #: extchat.c:2085
 msgid "Buf"
@@ -2092,6 +2131,16 @@ msgstr "Opcije pri kompajliranju"
 msgid "Compiler: %s"
 msgstr "Compiler: %s"
 
+#: extchat.c:2024
+#, c-format
+msgid "Connect messages on channel <%s> will no longer be combined with others."
+msgstr "Poruke o spajanju na kanalu <%s> vi¹e neæe biti kombinirane s ostalima."
+
+#: extchat.c:2018
+#, c-format
+msgid "Connect messages on channel <%s> will now be combined with others."
+msgstr "Poruke o spajanju na kanalu <%s> æe sada biti kombinirane s ostalima."
+
 #: bsd.c:4386 bsd.c:4395
 msgid "Connecting..."
 msgstr "Spajanje u tijeku..."
@@ -2183,6 +2232,10 @@ msgstr "Debug snima, interval provjere %d."
 #: conf.c:552
 msgid "Default flags for new objects"
 msgstr "Defaultni flagovi za nove objekte"
+
+#: atr_tab.c:364
+msgid "Delimiter must be one character."
+msgstr "Razdvojnik mora biti jedan znak."
 
 #: access.c:429
 msgid "Denied connections are not logged"
@@ -2316,6 +2369,10 @@ msgstr "Registracija putem elektronièke poste je dozvoljena"
 #: wiz.c:1013
 msgid "Enabled."
 msgstr "Ukljuèeno."
+
+#: atr_tab.c:647
+msgid "Enum"
+msgstr "Enum"
 
 #: src/game.c:1465
 msgid "Error -- cannot execute uptime."
@@ -2493,21 +2550,13 @@ msgstr "IGRA: %s(%s) poku¹a potro¹iti %d %s."
 msgid "GAME: Database consistency check complete."
 msgstr "IGRA: Provjera konzistencije baze podataka gotova."
 
-#: src/conf.c:570
-msgid "GAME: Database will be dumped in 1 minute."
-msgstr "IGRA: Baza podataka æe biti snimljena za 1 minutu."
+#: conf.c:1343
+msgid "GAME: Database save in 1 minute."
+msgstr "IGRA: Snimanje baze podataka za 1 minutu."
 
-#: src/conf.c:572
-msgid "GAME: Database will be dumped in 5 minutes."
-msgstr "IGRA: Baza podataka æe biti snimljena za 5 minuta."
-
-#: src/conf.c:502
-msgid "GAME: Dump complete. Time in."
-msgstr "IGRA: Snimanje gotovo."
-
-#: src/conf.c:501
-msgid "GAME: Dumping database. Game may freeze for a minute"
-msgstr "IGRA: Snimam bazu podataka. Server bi se mogao zablokirati na kraæe vrijeme"
+#: conf.c:1345
+msgid "GAME: Database save in 5 minutes."
+msgstr "IGRA: Snimanje baze podataka za 5 minuta."
 
 #: game.c:311
 msgid "GAME: ERROR! Database save failed!"
@@ -2558,6 +2607,14 @@ msgstr "IGRA: Ispis loga aktivnosti"
 #: bsd.c:294
 msgid "GAME: SSL connections must be dropped, sorry."
 msgstr "IGRA: SSL veze se moraju prekinuti, ¾ao mi je."
+
+#: conf.c:1282
+msgid "GAME: Save complete. "
+msgstr "IGRA: Snimanje gotovo. "
+
+#: conf.c:1281
+msgid "GAME: Saving database. Game may freeze for a few moments."
+msgstr "IGRA: Snimam bazu podataka. Igra bi se mogla zamrznuti na nekoliko trenutaka."
 
 #: src/game.c:273
 #, c-format
@@ -2796,6 +2853,10 @@ msgstr "Nisam mogao naæi tog igraèa."
 msgid "I don't know that %s."
 msgstr "Navedena stvar (%s) mi nije poznata."
 
+#: atr_tab.c:410
+msgid "I don't know that attribute. Please use @attribute/access to create it, first."
+msgstr "Ne znam za taj atribut. Molim te, prvo upotrijebi @attribute/access da ga stvori¹."
+
 #: rob.c:390
 msgid "I don't know what you mean."
 msgstr "Ne znam na ¹to misli¹."
@@ -2975,6 +3036,10 @@ msgstr "Unutarnja gre¹ka: Nepoznati flagovski prostor '%s'!"
 msgid "Internal error: weird object type."
 msgstr "Unutarnja gre¹ka: èudan tip objekta."
 
+#: atr_tab.c:350
+msgid "Invalid Regular Expression."
+msgstr "Neispravan regularan izraz."
+
 #: atr_tab.c:202 atr_tab.c:293
 msgid "Invalid attribute name."
 msgstr "Neispravno ime atributa."
@@ -3033,6 +3098,11 @@ msgstr "Neispravan port."
 #: src/wiz.c:1458 src/wiz.c:1465 src/wiz.c:1681 src/wiz.c:1689
 msgid "Invalid range argument"
 msgstr "Argument nije u ispravnom rasponu"
+
+#: predicat.c:1444 predicat.c:1455
+#, c-format
+msgid "Invalid regexp: %s"
+msgstr "Neispravan regexp: %s"
 
 #: wiz.c:1772
 msgid "Invalid search class+restriction format."
@@ -3124,6 +3194,10 @@ msgstr "Slovo maknuto za %s %s."
 #, c-format
 msgid "Letter for %s %s set to '%c'."
 msgstr "Slovo za %s %s postavljeno na '%c'."
+
+#: atr_tab.c:645
+msgid "Limit"
+msgstr "Granica"
 
 #: conf.c:554
 msgid "Limits and other constants"
@@ -3803,6 +3877,10 @@ msgstr "Nije navedeno ime brave."
 msgid "No match."
 msgstr "Taj objekt ne postoji."
 
+#: predicat.c:1528 predicat.c:1537
+msgid "No matches."
+msgstr "Nema podudaranja."
+
 #: access.c:431
 msgid "No matching access rule"
 msgstr "Nema podudarajuæeg pristupnog pravila"
@@ -3981,6 +4059,10 @@ msgstr "Samo Bog mo¾e izazvati financijsku propast."
 msgid "Only God can set himself!"
 msgstr "Samo Bog mo¾e definirati samoga sebe!"
 
+#: extchat.c:1904
+msgid "Only players can use that option."
+msgstr "Samo igraèi mogu koristiti tu opciju."
+
 #: src/wiz.c:162
 msgid "Only wizards may change a quota."
 msgstr "Samo administratori mogu promijeniti quotu."
@@ -4094,10 +4176,18 @@ msgstr "PennMUSH Uptime: %ld dana %ld sati %ld minuta %ld sekundi"
 msgid "PennMUSH version %s patchlevel %s %s"
 msgstr "PennMUSH verzija %s patchlevel %s %s"
 
+#: conf.c:1302
+msgid "Pennies"
+msgstr "Novèiæa"
+
 #: wiz.c:1062
 #, c-format
 msgid "Pennies: %d"
 msgstr "Novèiæi: %d"
+
+#: conf.c:1301
+msgid "Penny"
+msgstr "Novèiæ"
 
 #: src/extmail.c:1584
 msgid "Permission denied"
@@ -4547,6 +4637,10 @@ msgstr "Taj atribut nije u tablici atributa"
 msgid "That attribute's permissions can not be changed."
 msgstr "Dozvole za taj atribut se ne mogu promijeniti."
 
+#: atr_tab.c:421
+msgid "That attribute's permissions cannot be changed."
+msgstr "Dozvole za taj atribut ne mogu biti promijenjene."
+
 #: destroy.c:436
 msgid "That can't be undestroyed."
 msgstr "To ne mo¾e biti od-uni¹teno."
@@ -4647,6 +4741,10 @@ msgstr "Taj objekt ima flag SAFE. Mora¹ ga !SAFE-ati prije nego ¹to ga uni¹ti¹."
 #: src/destroy.c:287
 msgid "That object is set WIZARD. You must use @nuke to destroy it."
 msgstr "Taj objekt ima flag WIZARD. Ako ga ¾eli¹ uni¹titi, upotrijebi naredbu @nuke."
+
+#: conf.c:1829
+msgid "That option cannot be altered."
+msgstr "Ta opcija ne mo¾e biti promijenjena."
 
 #: src/look.c:1048
 msgid "That player does not seem to exist."
@@ -4855,6 +4953,10 @@ msgstr "Ovdje nema nikoga od koga bi se ne¹to moglo kupiti."
 #: src/create.c:496
 msgid "There's nothing left of it to clone!"
 msgstr "Od toga ni¹ta nije ostalo pa se ne mo¾e ni klonirati!"
+
+#: player.c:190
+msgid "This IP address has failed too many times. Please try again in 10 minutes."
+msgstr "Prevelik broj neuspje¹nih spajanja s te IP adrese. Molim, poku¹ati ponovo za 10 minuta."
 
 #: command.c:1562
 msgid "This command has not been implemented."
@@ -5091,6 +5193,10 @@ msgstr "Nepoznata gre¹ka u brisanju aliasa."
 msgid "Unknown hook type"
 msgstr "Nepoznata vrsta hooka"
 
+#: atr_tab.c:389
+msgid "Unknown limit type?"
+msgstr "Nepoznata vrsta granice?"
+
 #: src/lock.c:297 src/lock.c:303
 msgid "Unknown lock type."
 msgstr "Nepoznata vrsta brave."
@@ -5177,6 +5283,11 @@ msgstr "Korisnièke funkcije:"
 #: extchat.c:2084
 msgid "Users"
 msgstr "Korisnika"
+
+#: atr_tab.c:268 atr_tab.c:304
+#, c-format
+msgid "Value for %s needs to be one of: %s"
+msgstr "Vrijednost za %s mora biti jedna od: %s"
 
 #: move.c:423
 #, c-format

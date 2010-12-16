@@ -9,6 +9,8 @@
  * Thanks go to Andrew Molitor for debugging
  * Thanks also go to Rich $alz for code to benchmark against
  *
+ * Rather thoroughly rewritten by Walker, 2010
+ *
  * Copyright (c) 1993,2000 by T. Alexander Popiel
  * This code is available under the terms of the GPL,
  * see http://www.gnu.org/copyleft/gpl.html for details.
@@ -45,27 +47,7 @@
 /** Maximum number of wildcarded arguments */
 #define NUMARGS (10)
 
-/** Skip across all ansi and pueblo markup. */
-#define SKIP_ANSI(x) do { \
-      if (*x == TAG_START) { \
-        while (*x && (*x != TAG_END)) x++; \
-        if (*x) x++; \
-      } else if (*x == ESC_CHAR) { \
-        while (*x && (*x != 'm')) x++; \
-        if (*x) x++; \
-      } \
-  } while ((*x == TAG_START) || (*x == ESC_CHAR))
-
 const unsigned char *tables = NULL;  /** Pointer to character tables */
-
-static bool wild1
-  (const char *restrict tstr, const char *restrict dstr, int arg,
-   char **wbuf, ssize_t * len, bool cs, char **ary, size_t max);
-static bool wild(const char *restrict s, const char *restrict d, int p, bool cs,
-                 char **ary, size_t max, char *buffer, ssize_t len);
-static bool check_literals(const char *restrict tstr, const char *restrict dstr,
-                           bool cs);
-static char *strip_backslashes(const char *str);
 
 /** Do a wildcard match, without remembering the wild data.
  *
@@ -79,11 +61,6 @@ static char *strip_backslashes(const char *str);
 bool
 quick_wild(const char *restrict tstr, const char *restrict dstr)
 {
-  /* quick_wild_new does the real work, but before we call it,
-   * we do some sanity checking.
-   */
-  if (!check_literals(tstr, dstr, 0))
-    return 0;
   return quick_wild_new(tstr, dstr, 0);
 }
 
@@ -100,71 +77,12 @@ quick_wild(const char *restrict tstr, const char *restrict dstr)
 bool
 quick_wild_new(const char *restrict tstr, const char *restrict dstr, bool cs)
 {
-  while (*tstr != '*') {
-    SKIP_ANSI(dstr);
-    switch (*tstr) {
-    case '?':
-      /* Single character match.  Return false if at
-       * end of data.
-       */
-      if (!*dstr)
-        return 0;
-      break;
-    case '\\':
-      /* Escape character.  Move up, and force literal
-       * match of next character.
-       */
-      tstr++;
-      /* FALL THROUGH */
-    default:
-      /* Literal character.  Check for a match.
-       * If matching end of data, return true.
-       */
-      if (NOTEQUAL(cs, *dstr, *tstr))
-        return 0;
-      if (!*dstr)
-        return 1;
-    }
-    tstr++;
-    dstr++;
-  }
-
-  /* Skip over '*'. */
-  tstr++;
-
-  /* Return true on trailing '*'. */
-  if (!*tstr)
-    return 1;
-
-  /* Skip over wildcards. */
-  while ((*tstr == '?') || (*tstr == '*')) {
-    if (*tstr == '?') {
-      if (!*dstr)
-        return 0;
-      dstr++;
-      SKIP_ANSI(dstr);
-    }
-    tstr++;
-  }
-
-  /* Skip over a backslash in the pattern string if it is there. */
-  if (*tstr == '\\')
-    tstr++;
-
-  /* Return true on trailing '*'. */
-  if (!*tstr)
-    return 1;
-
-  /* Scan for possible matches. */
-  while (*dstr) {
-    if (EQUAL(cs, *dstr, *tstr) && quick_wild_new(tstr + 1, dstr + 1, cs))
-      return 1;
-    dstr++;
-    SKIP_ANSI(dstr);
-  }
-  return 0;
+  return wild_match_test(tstr, dstr, cs, NULL, 0);
 }
 
+static bool
+real_atr_wild(const char *restrict tstr,
+              const char *restrict dstr, int *invokes);
 /** Do an attribute name wildcard match.
  *
  * This probably crashes if fed NULLs instead of strings, too.
@@ -181,13 +99,25 @@ quick_wild_new(const char *restrict tstr, const char *restrict dstr, bool cs)
 bool
 atr_wild(const char *restrict tstr, const char *restrict dstr)
 {
+  int invokes = 10000;
+  return real_atr_wild(tstr, dstr, &invokes);
+}
+
+static bool
+real_atr_wild(const char *restrict tstr,
+              const char *restrict dstr, int *invokes)
+{
   int starcount;
+  if (*invokes > 0) {
+    (*invokes)--;
+  } else {
+    return 0;
+  }
 
   if (!*tstr)
     return !strchr(dstr, '`');
 
   while (*tstr != '*') {
-    SKIP_ANSI(dstr);
     switch (*tstr) {
     case '?':
       /* Single character match.  Return false if at
@@ -232,7 +162,6 @@ atr_wild(const char *restrict tstr, const char *restrict dstr)
       if (!*dstr || *dstr == '`')
         return 0;
       dstr++;
-      SKIP_ANSI(dstr);
       starcount = 0;
     } else
       starcount++;
@@ -250,10 +179,11 @@ atr_wild(const char *restrict tstr, const char *restrict dstr)
   if (*tstr == '?') {
     /* Scan for possible matches. */
     while (*dstr) {
-      if (*dstr != '`' && atr_wild(tstr + 1, dstr + 1))
+      if (*dstr != '`' && real_atr_wild(tstr + 1, dstr + 1, invokes))
         return 1;
       dstr++;
-      SKIP_ANSI(dstr);
+      if (*invokes <= 0)
+        return 0;
     }
   } else {
     /* Skip over a backslash in the pattern string if it is there. */
@@ -265,232 +195,125 @@ atr_wild(const char *restrict tstr, const char *restrict dstr)
       if (EQUAL(0, *dstr, *tstr)) {
         if (!*(tstr + 1) && *(dstr + 1))
           return 0;             /* No more in pattern string, but more in target */
-        if (atr_wild(tstr + 1, dstr + 1))
+        if (real_atr_wild(tstr + 1, dstr + 1, invokes))
           return 1;
       }
+      if (*invokes <= 0)
+        return 0;
       if (starcount < 2 && *dstr == '`')
         return 0;
       dstr++;
-      SKIP_ANSI(dstr);
     }
   }
   return 0;
 }
 
-/* ---------------------------------------------------------------------------
- * wild1: INTERNAL: do a wildcard match, remembering the wild data.
- *
- * DO NOT CALL THIS FUNCTION DIRECTLY - DOING SO MAY RESULT IN
- * SERVER CRASHES AND IMPROPER ARGUMENT RETURN.
- *
- * Side Effect: this routine modifies the 'wnxt' global variable,
- * and what it points to.
- */
-static bool
-wild1(const char *restrict tstr, const char *restrict dstr, int arg,
-      char **wbuf, ssize_t * len, bool cs, char **ary, size_t max)
-{
-  const char *datapos;
-  int argpos, numextra;
-
-  while (*tstr != '*') {
-    SKIP_ANSI(dstr);
-    switch (*tstr) {
-    case '?':
-      /* Single character match.  Return false if at
-       * end of data.
-       */
-      if (!*dstr)
-        return 0;
-
-      if (*len >= 2) {
-        ary[arg++] = *wbuf;
-        *(*wbuf)++ = *dstr;
-        *(*wbuf)++ = '\0';
-        *len -= 2;
-      }
-
-      /* Jump to the fast routine if we can. */
-
-      if (arg >= (int) max || *len < 2)
-        return quick_wild_new(tstr + 1, dstr + 1, cs);
-      break;
-    case '\\':
-      /* Escape character.  Move up, and force literal
-       * match of next character.
-       */
-      tstr++;
-      /* FALL THROUGH */
-    default:
-      /* Literal character.  Check for a match.
-       * If matching end of data, return true.
-       */
-      if (NOTEQUAL(cs, *dstr, *tstr))
-        return 0;
-      if (!*dstr)
-        return 1;
-    }
-    tstr++;
-    dstr++;
-  }
-
-  /* If at end of pattern, slurp the rest, and leave. */
-  if (!tstr[1]) {
-    ssize_t tlen;
-    tlen = strlen(dstr);
-    if (tlen < *len) {
-      ary[arg] = *wbuf;
-      strcpy(*wbuf, dstr);
-      *wbuf += tlen + 2;
-      *len -= tlen + 1;
-    }
-    return 1;
-  }
-  /* Remember current position for filling in the '*' return. */
-  datapos = dstr;
-  argpos = arg;
-
-  /* Scan forward until we find a non-wildcard. */
-  do {
-    if (argpos < arg) {
-      /* Fill in arguments if someone put another '*'
-       * before a fixed string.
-       */
-      if (*len >= 1) {
-        ary[argpos++] = *wbuf;
-        *(*wbuf)++ = '\0';
-        *len -= 1;
-      }
-
-      /* Jump to the fast routine if we can. */
-      if (argpos >= (int) max || *len < 2)
-        return quick_wild_new(tstr, dstr, cs);
-
-      /* Fill in any intervening '?'s */
-      while (argpos < arg) {
-        if (*len >= 2) {
-          ary[argpos++] = *wbuf;
-          *(*wbuf)++ = *datapos++;
-          *(*wbuf)++ = '\0';
-          *len -= 2;
-        }
-        SKIP_ANSI(datapos);
-
-        /* Jump to the fast routine if we can. */
-        if (argpos >= (int) max || *len < 1)
-          return quick_wild_new(tstr, dstr, cs);
-      }
-    }
-    /* Skip over the '*' for now... */
-    tstr++;
-    arg++;
-
-    /* Skip over '?'s for now... */
-    numextra = 0;
-    while (*tstr == '?') {
-      if (!*dstr)
-        return 0;
-      tstr++;
-      dstr++;
-      SKIP_ANSI(dstr);
-      arg++;
-      numextra++;
-    }
-  } while (*tstr == '*');
-
-  /* Skip over a backslash in the pattern string if it is there. */
-  if (*tstr == '\\')
-    tstr++;
-
-  /* Check for possible matches.  This loop terminates either at
-   * end of data (resulting in failure), or at a successful match.
-   */
-  if (!*tstr) {
-    while (*dstr) {
-      dstr++;
-      SKIP_ANSI(dstr);
-    }
-  } else {
-    while (1) {
-      if (EQUAL(cs, *dstr, *tstr) &&
-          ((arg < (int) max) ? wild1(tstr, dstr, arg, wbuf, len, cs, ary, max)
-           : quick_wild_new(tstr, dstr, cs)))
-        break;
-      if (!*dstr)
-        return 0;
-      dstr++;
-      SKIP_ANSI(dstr);
-    }
-  }
-
-  /* Found a match!  Fill in all remaining arguments.
-   * First do the '*'...
-   */
-  {
-    ssize_t datalen;
-    datalen = (dstr - datapos) - numextra;
-    if (datalen + 1 <= *len) {
-      ary[argpos++] = *wbuf;
-      strncpy(*wbuf, datapos, datalen);
-      *wbuf += datalen;
-      *(*wbuf)++ = '\0';
-      *len -= datalen + 1;
-      datapos = dstr - numextra;
-      SKIP_ANSI(datapos);
-    }
-  }
-
-  /* Fill in any trailing '?'s that are left. */
-  while (numextra) {
-    if (argpos >= (int) max || *len < 2)
-      return 1;
-    if (*len >= 2) {
-      ary[argpos++] = *wbuf;
-      *(*wbuf)++ = *datapos++;
-      *(*wbuf)++ = '\0';
-      *len -= 2;
-      numextra--;
-    }
-    SKIP_ANSI(datapos);
-  }
-
-  /* It's done! */
-  return 1;
-}
-
-/* ---------------------------------------------------------------------------
- * wild: do a wildcard match, remembering the wild data.
+/** Wildcard match, possibly case-sensitive, and remember the wild match
+ * start+lengths.
  *
  * This routine will cause crashes if fed NULLs instead of strings.
  *
- * This function may crash if malloc() fails.
- *
- * Side Effect: this routine modifies the 'wnxt' global variable.
+ * \param pat pattern to match against.
+ * \param str string to check.
+ * \param cs if 1, case-sensitive; if 0, case-insensitive.
+ * \param matches An int[nmatches*2] to store positions into. The result will
+ *                be [0start, 0len, 1start, 1len, 2start, 2len, ...]
+ * \param nmatches Number of elements ary can hold, divided by 2.
+ * \retval 1 d matches s.
+ * \retval 0 d doesn't match s.
  */
-static bool
-wild(const char *restrict s, const char *restrict d, int p, bool cs,
-     char **ary, size_t max, char *buffer, ssize_t len)
+bool
+wild_match_test(const char *restrict pat, const char *restrict str, bool cs,
+                int *matches, int nmatches)
 {
-  /* Do fast match to see if pattern matches. If yes, do it again,
-     remembering this time.. */
-  while ((*s != '*') && (*s != '?')) {
-    SKIP_ANSI(d);
-    if (*s == '\\')
-      s++;
-    if (NOTEQUAL(cs, *d, *s))
-      return 0;
-    if (!*d)
-      return 1;
-    s++;
-    d++;
+  int i, pi;
+  bool globbing = 0;            /* Are we in a glob match right now? */
+  int pbase = 0, sbase = 0;     /* Guaranteed matched so far. */
+  int matchi = 0, mbase = 0;
+  int slen = strlen(str);
+  char pbuff[BUFFER_LEN];
+  char tbuff[BUFFER_LEN];
+
+  for (i = 0; i < nmatches; i++) {
+    matches[i * 2] = -1;
+    matches[i * 2 + 1] = 0;
   }
 
-  /* Do sanity check */
-  if (!check_literals(s, d, cs))
-    return 0;
+  strncpy(pbuff, remove_markup(pat, NULL), BUFFER_LEN);
+  pbuff[BUFFER_LEN - 1] = '\0';
+  strncpy(tbuff, remove_markup(str, NULL), BUFFER_LEN);
+  tbuff[BUFFER_LEN - 1] = '\0';
+  pat = pbuff;
+  str = tbuff;
 
-  /* Do the match. */
-  return wild1(s, d, p, &buffer, &len, cs, ary, max);
+  if (!cs) {
+    upcasestr(pbuff);
+    upcasestr(tbuff);
+  }
+
+  for (i = 0, pi = 0; (sbase + i) < slen;) {
+    switch (pat[pbase + pi]) {
+    case '?':
+      /* No complaints here. Auto-match */
+      if (matchi < nmatches) {
+        matches[matchi * 2] = sbase + i;
+        matches[matchi * 2 + 1] = 1;
+      }
+      matchi++;
+      pi++;
+      i++;
+      break;
+    case '*':
+      /* Everything so far is guaranteed matched. */
+      pbase += pi;
+      sbase += i;
+      globbing = 1;
+      i = pi = 0;
+      /* Skip past multiple globs. */
+      while (pat[pbase] == '*') {
+        pbase++;
+        mbase = matchi++;
+        if (mbase < nmatches) {
+          matches[mbase * 2] = sbase;
+          matches[mbase * 2 + 1] = 0;
+        }
+      }
+      if (!pat[pbase]) {
+        /* This pattern is the last thing, we match the rest. */
+        if (mbase < nmatches) {
+          matches[mbase * 2 + 1] = slen - sbase;
+        }
+        return 1;
+      }
+      break;
+    case '\\':
+      /* Literal match of the next character, which may be a * or ?. */
+      pi++;
+    default:
+      if (str[sbase + i] == pat[pbase + pi]) {
+        pi++;
+        i++;
+        break;
+      }
+    case 0:                    /* Pattern is too short to match */
+      /* If we're dealing with a glob, advance it by 1 character. */
+      if (globbing) {
+        if (mbase < nmatches) {
+          /* Up glob length */
+          matches[mbase * 2 + 1]++;
+        }
+        sbase++;
+        /* Reset post-glob matches. */
+        i = pi = 0;
+        matchi = mbase + 1;
+      } else {
+        return 0;
+      }
+    }
+  }
+  while (pat[pbase + pi] == '*')
+    pi++;
+  return !pat[pbase + pi];
 }
 
 /** Wildcard match, possibly case-sensitive, and remember the wild data
@@ -504,7 +327,7 @@ wild(const char *restrict s, const char *restrict d, int p, bool cs,
  * \param matches An array to store the grabs in
  * \param nmatches Number of elements ary can hold
  * \param data Buffer used to hold the matches. The elements of ary
- *    are set to pointers into this  buffer.
+ *    are set to pointers into this buffer.
  * \param len The number of bytes in data. Twice the length of d should
  *    be enough.
  * \retval 1 d matches s.
@@ -512,14 +335,73 @@ wild(const char *restrict s, const char *restrict d, int p, bool cs,
  */
 bool
 wild_match_case_r(const char *restrict s, const char *restrict d, bool cs,
-                  char **matches, size_t nmatches, char *data, ssize_t len)
+                  char **matches, int nmatches, char *data, int len)
 {
-  size_t n;
+  int results[BUFFER_LEN * 2];
+  int n;
 
-  for (n = 0; n < nmatches; n++)
-    matches[n] = NULL;
+  ansi_string *as;
+  char *buff, *maxbuff;
+  char *bp;
+  int curlen, spaceleft;
 
-  return wild(s, d, 0, cs, matches, nmatches, data, len);
+  if (wild_match_test(s, d, cs, results, BUFFER_LEN)) {
+    /* Populate everything. Oi.
+     *
+     * Given that our best best is safe_ansi_string, but that data can be
+     * 2x BUFFER_LEN, we have to do ugly math in order to safely use
+     * safe_ansi_string while still using all of data. Hence all the
+     * math with buff and bp. We sorely need a better string system
+     * than inherent BUFFER_LENs everywhere.
+     *
+     * bp is always pointing to the right spot. We have to point buff
+     * at either bp, or at (data+len) - BUFFER_LEN, whichever is lowest.
+     */
+    if (nmatches > 0 && data && len > 0) {
+      /* For speed purposes, make sure we have an ansi'd string before
+       * we actually use parse_ansi_string */
+      if (has_markup(d)) {
+        as = parse_ansi_string(d);
+        bp = data;
+        maxbuff = data + len - BUFFER_LEN;
+
+        for (n = 0; (n < BUFFER_LEN) && (results[n * 2] >= 0)
+             && n < nmatches && bp < (data + len); n++) {
+          /* Eww, eww, eww, EWWW! */
+          buff = bp;
+          if (buff > maxbuff)
+            buff = maxbuff;
+
+          matches[n] = bp;
+          safe_ansi_string(as, results[n * 2], results[n * 2 + 1], buff, &bp);
+          *(bp++) = '\0';
+        }
+        free_ansi_string(as);
+      } else {
+        for (n = 0, curlen = 0;
+             (results[n * 2] >= 0) && n < nmatches && curlen < len; n++) {
+          spaceleft = len - curlen;
+          if (results[n * 2 + 1] < spaceleft) {
+            spaceleft = results[n * 2 + 1];
+          }
+          matches[n] = data + curlen;
+          strncpy(data + curlen, d + results[n * 2], spaceleft);
+          curlen += spaceleft;
+          data[curlen++] = '\0';
+        }
+      }
+      for (; n < nmatches; n++) {
+        matches[n] = NULL;
+      }
+    }
+    return 1;
+  } else {
+    /* Unset matches. */
+    for (n = 0; n < nmatches; n++) {
+      matches[n] = NULL;
+    }
+  }
+  return 0;
 }
 
 /** Regexp match, possibly case-sensitive, and remember matched subexpressions.
@@ -527,7 +409,7 @@ wild_match_case_r(const char *restrict s, const char *restrict d, bool cs,
  * This routine will cause crashes if fed NULLs instead of strings.
  *
  * \param s regexp to match against.
- * \param d string to check.
+ * \param val string to check.
  * \param cs if 1, case-sensitive; if 0, case-insensitive
  * \param matches array to store matched subexpressions in
  * \param nmatches the size of the matches array
@@ -596,8 +478,7 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
    * with other languages.
    */
   for (i = 0; i < nmatches && (int) i < subpatterns && totallen < len; i++) {
-    // Current data match.
-    /* This is more annoying than a jumping flea up the nose. Since 
+    /* This is more annoying than a jumping flea up the nose. Since
      * ansi_pcre_copy_substring() uses buff, bp instead of char *, len,
      * we have to mangle bp and 'buff' by hand. Sound easy? We also
      * have to make sure that 'buff' + len < BUFFER_LEN. Particularly since
@@ -725,66 +606,52 @@ local_wild_match_case(const char *restrict s, const char *restrict d, bool cs)
     return (!d || !*d) ? 1 : 0;
 }
 
-/** Does a string contain a wildcard character (* or ?)?
- * Not used by the wild matching routines, but suitable for outside use.
- * \param s string to check.
- * \retval 1 s contains a * or ?
- * \retval 0 s does not contain a * or ?
+/** Check to see if a string contains either wildcard characters (* or ?), or
+ * backslash-escaped characters. If there are no wildcards but there are escaped characters,
+ * destructively modify the string to remove the escapes, if requested.
+ * \param s string to check
+ * \param unescape If no unescaped wildcards are present, should we modify s to remove escapes?
+ * \retval -1 s contains unescaped wildcards
+ * \retval >-1 number of \-escaped characters remaining in s
  */
-bool
-wildcard(const char *s)
+int
+wildcard_count(char *s, bool unescape)
 {
-  if (strchr(s, '*') || strchr(s, '?'))
-    return 1;
-  return 0;
-}
+  char *c = s;
+  int escapes = 0;
 
-static bool
-check_literals(const char *restrict tstr, const char *restrict dstr, bool cs)
-{
-  /* Every literal string in tstr must appear, in order, in dstr,
-   * or no match can happen. That is, tstr is the pattern and dstr
-   * is the string-to-match
-   */
-  char tbuf1[BUFFER_LEN];
-  char dbuf1[BUFFER_LEN];
-  const char delims[] = "?*";
-  char *sp, *dp;
-  size_t len = 0;
-
-  dp = remove_markup(dstr, &len);
-  memcpy(dbuf1, dp, len);
-  mush_strncpy(tbuf1, strip_backslashes(tstr), BUFFER_LEN);
-  if (!cs) {
-    upcasestr(tbuf1);
-    upcasestr(dbuf1);
+  while (*c) {
+    if (*c == '?' || *c == '*')
+      return -1;
+    else if (*c == '\\') {
+      c++;
+      if (!*c)
+        break;
+      else
+        escapes++;
+    }
+    c++;
   }
-  dp = dbuf1;
-  sp = strtok(tbuf1, delims);
-  while (sp) {
-    if (!dp || !*dp)
-      return 0;
-    if (!(dp = strstr(dp, sp)))
-      return 0;
-    dp += strlen(sp);
-    sp = strtok(NULL, delims);
+
+  if (!escapes || !unescape)
+    return escapes;
+  else {
+    char *rep;
+
+    /* There are \-escapes, but no unescaped wildcards.
+     * Modify s to remove one layer of \'s. */
+    c = rep = strchr(s, '\\');
+    while (*c) {
+      if (escapes && *rep == '\\') {
+        rep++;
+        escapes--;
+      }
+      *c = *rep;
+      if (!*rep)
+        break;
+      c++;
+      rep++;
+    }
+    return 0;
   }
-  return 1;
-}
-
-
-static char *
-strip_backslashes(const char *str)
-{
-  /* Remove backslashes from a string, and return it in a static buffer */
-  static char buf[BUFFER_LEN];
-  int i = 0;
-
-  while (*str && (i < BUFFER_LEN - 1)) {
-    if (*str == '\\' && *(str + 1))
-      str++;
-    buf[i++] = *str++;
-  }
-  buf[i] = '\0';
-  return buf;
 }

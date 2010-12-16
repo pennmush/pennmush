@@ -703,6 +703,15 @@ skip_leading_ansi(const char *p)
 
 }
 
+int
+has_markup(const char *test)
+{
+  /* strtok modifies, so we don't use it. */
+  return (strchr(test, ESC_CHAR)
+          || strchr(test, TAG_START)
+          || strchr(test, TAG_END));
+}
+
 static char *
 parse_tagname(const char *ptr)
 {

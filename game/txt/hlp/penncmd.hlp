@@ -249,11 +249,18 @@ See also: enter, @enter, FAILURE, ACTION LISTS, VERBS
   @oufail <object>=[<message>]
   @aufail <object>=[<action list>]
  
-  Sets message shown to a player who fails to use an object via
-  the 'use' command (@ufail), message shown to others in the room
+  Sets the message shown to a player who fails to use an object via the 'use'
+  command (because they don't pass the @lock/use), the message shown to
+  others in the room when a player fails to use <object>, and the actions to
+  be taken by <object> when someone fails to use it, respectively.
 
   Note that these attributes are @ufail, NOT @ufailure, for
   TinyMUSH compatibility.
+  
+  Although the Use @lock also restricts who can trigger $-commands or
+  ^-listens on an object, these attributes will not be triggered for those
+  failures. Instead, the COMMAND_LOCK`* and LISTEN_LOCK`* attributes are
+  triggered. See 'help failure' for more information.
   
 See also: use, @use, FAILURE, ACTION LISTS, VERBS
 & @afailure
@@ -272,7 +279,7 @@ See also: use, @use, FAILURE, ACTION LISTS, VERBS
   "look" inside the room, though failure to pass the lock does not prevent
   the object from looking.
 
-See also: get, move, @lock, ACTION LISTS, VERBS, @succ
+See also: get, move, @lock, ACTION LISTS, VERBS, @success
 & @follow
 & @ofollow
 & @afollow
@@ -349,24 +356,23 @@ See also: leave, @leave, NO_LEAVE, locktypes, ACTION LISTS, VERBS
   @alias <player>[=<name1>[;<name2>[;...;<nameN>]]]
   @alias <object>[=<string>]
  
-  For players and exits, the ALIAS attribute has special meaning: it
-  contains a list of aliases (separated by semicolons) which can be
-  used instead of its name to refer to the player or exit.
+  For players and exits, the ALIAS attribute has special meaning: it contains
+  a list of aliases (separated by semicolons) which can be used instead of 
+  its name to refer to the player or exit.
   
-  The number of aliases allowed is controlled by the 'max_aliases'
-  @config option. The same rules which apply to player names also
-  apply to aliases, and you cannot use another player's name as your
-  alias (though you can include your own name in your aliases, and can
+  Players can only have a limited number of aliases; the number is controlled
+  by the 'max_aliases' @config option. The same rules which apply to player
+  names also apply to aliases, and you cannot use another player's name as
+  your alias (though you can include your own name in your aliases, and can
   change your name to one of your aliases).
   
-  If the page_aliases @config option is on, the first alias in the
-  list is shown along with the player's name when they page others.
+  If the 'page_aliases' @config option is on, the first alias in the list is 
+  shown along with the player's name when they page others.
   
-  Exits also support including the aliases directly in their name, but
-  doing so in new construction is depreciated and @alias should be used
-  instead.
+  Exits also support including the aliases directly in their name, but doing
+  so in new construction is depreciated and @alias should be used instead.
  
-  For other types of object, @alias has no special meaning.www
+  For other types of object, @alias has no special meaning.
 
 See also: @name, alias(), fullalias()
 & @allquota
@@ -546,6 +552,27 @@ See also: get, goto, @lock, SUCCESS, FAILURE, @odrop, ACTION LISTS, VERBS
   
   Only Wizards can modify the attribute table.
   
+  Continued in 'help @attribute3'.
+& @attribute3
+  @attribute/limit <attrib>=<regexp pattern>
+  @attribute/enum [<delim>] <attrib>=<list of choices>
+
+  @attribute/limit lets you restrict all _new_ values for an attribute to
+  those that match a regexp pattern. Case insensitive. (Use (?-i) to make
+  your regexp case-sensitive)
+
+  @attribute/enum lets you restrict all _new_ values for an attribute to
+  match an item in a list. It will also perform partial matching on the
+  list, much like a grab. Delimiter is optional, and defaults to a space.
+
+  Examples:
+
+    @attribute/enum sex=male female   <-- requires 'male' or 'female' as @sex
+    @attribute/enum | race=Wookie|Indy 500 <- Your race can be 'wookie' or
+                                              'Indy 500'
+    @attribute/limit score=^\\d+$    <-- @score can only contain digits.
+                                         (Remember, Penn parser eats a \)
+
 See also: ATTRIBUTEs, STANDARD ATTRIBUTES, attribute flags, @set, @atrchown
 & @ause
 & @use
@@ -1309,19 +1336,22 @@ See also: @poll, WHO, doing()
   
   If the string "##" appears anywhere in <action list>, it will be replaced
   with the current element of <list>. The string "#@" is replaced with the
-  position of the current element in the list.
+  position of the current element in the list. Note that these replacements
+  occur before evaluation. It is recommended that you use the itext() and
+  inum() functions instead, which serve the same purpose but are replaced
+  during evaluation. You can also use itext/inum to refer to nested @dolists.
  
   If the /notify switch is given, the command "@notify me" is queued after 
   all copies of <action list> have been queued. This is useful for object
   synchronization with semaphores.
   
   Example:
-    > @dolist a b c=say ## is number #@
+    > @dolist a b c=say %i0 is number [inum(0)]
     You say, "a is number 1"
     You say, "b is number 2"
     You say, "c is number 3"
     
-See also: iter(), map(), @notify, SEMAPHORES, ACTION LISTS
+See also: iter(), itext(), map(), @notify, SEMAPHORES, ACTION LISTS
 & @drain
   @drain[/any][/all] <object>[/<attribute>][=<number>]
   
@@ -1414,8 +1444,6 @@ See also: enter, leave, goto, ENTER_OK
 See also: edit(), regedit(), ATTRIBUTES,
 & @elock
 & @eunlock
-  @eunlock <object>
-
   @elock <object>[=<key>]
   @eunlock <object>
   
@@ -1849,31 +1877,32 @@ See also: FLAGS, @set, @power, flag permissions
 
 See also: RESTRICT, FUNCTIONS, @startup, fn()
 & @grep
-  @grep[/<switch>] <object>[/<attrs>]=<pattern>
+  @grep[/<switches>] <object>[/<attrs>]=<pattern>
   
-  This command searches attributes in an object for <pattern>. You must be
-  able to examine <object>. @grep takes four switches:
-  @grep/list
-    Lists the names of the attributes on the object containing <pattern>.
-    This is the default.
-  @grep/ilist
-    Same as above, but is case-insensitive when trying to match <pattern>.
-  @grep/print
-    Prints out all the attributes, ansi-highlighting the pattern itself.
-  @grep/iprint
-    Same as above, case-insensitive.
+  @grep returns a list of all attributes on <object> which match <pattern>.
+  If <attrs> is specified, only attributes which match the wildcard pattern
+  <attrs> are checked; it defaults to "*". Use "**" for all attributes.
+  
+  By default, attributes which contain the string <pattern> are returned.
+  However, if the /wild switch is given, <pattern> is treated as a wildcard
+  pattern, and attributes which match the pattern are returned. If the
+  /regexp switch is given, <pattern> is treated as a regular expression,
+  and attributes matching the regexp are returned. Please note that <pattern>
+  will NOT be evaluated, so you can easily grep for code strings.
+  
+  All matches are case-sensitive, unless the /nocase switch is given.
+  
+  @grep only shows a list of matching attributes. However, you can specify
+  the /print switch, in which case attribute values are also shown, with the
+  matching substrings ansi-highlighted if appropriate.
 
   Continued in 'help @grep2'.
 & @grep2
 
-  <attrs> is an optional wildcard pattern specifying attributes to check. If
-  <attrs> is not provided, it defaults to "*". Note that this does not
-  include attribute trees; use "**" to check branch attributes as well.
+  For backwards compatability, the /list switch provides the default
+  behaviour of listing attributes without printing the values, and /ilist and
+  /iprint are aliases for /list/nocase and /print/nocase.
    
-  <pattern> is not treated as a wildcard pattern, so you can grep for
-  patterns containing '*', '?', etc.  Also, <pattern> is NOT PARSED,
-  so '[v(0)]' and the like can be searched for.
-  
 See also: grep(), wildgrep(), regrep(), WILDCARDS
 & @halt
 & @allhalt
@@ -2000,11 +2029,37 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
   You are in Room Zero. It's very dark here.
   You're done looking.
   
-  > &cmd.say #3=$say *: @remit %L=[if(hasflag(%#,OOC),<OOC>%b)]%n says, "%0"
+  > &cmd.say #3=$say *: @remit %L=if(hasflag(%#,OOC),<OOC>%b)%n says, "%0"
   > @hook/override say=#3, cmd.say
   > @set me=OOC
   > "test
   <OOC> Robert says, "test"
+& HUH_COMMAND
+
+  This internal command is run whenever someone attempts to run a command
+  which doesn't match any built-in or softcoded commands. The huh_command
+  command cannot be run directly, but it can be @hook'd to perform custom
+  actions when an invalid command is entered.
+  
+  Examples:
+    > &cmd.huh #0=$huh_command: @pemit/sil %#=Whu?
+    > @hook/override huh_command=#0, cmd.huh
+    > dsfsdf
+    Whu?
+    
+    > &cmd.huh #0=$huh_command *: @pemit/sil %#=Whu? What is '%0'?
+    > sdfsdf ert
+    Whu? What is 'sdfsdf ert'?
+    
+    > &cmd.huh #0=$huh_command *: &typos %#=add(default(%#/typos,0),1) ;
+      @pemit/sil %#=Huh? %b(Type "help" for help.) ;
+      @break mod(get(%#/typos),10) ; 
+      @wall %n wins %p [ordinal(div(get(%#/typos),10))] typo trophy!
+    > asfdsf (10 times)
+    Huh?  (Type "help" for help.)  (10 times)
+    Announcement: Room Zero shouts, "Dunce wins his first typo trophy!"
+
+See also: @hook, EVALUATION ORDER
 & @idle
   @idle <player>[=<message>]
 
@@ -2076,7 +2131,7 @@ See also: @ps, QUEUE
     dbref instead of the executor's dbref, and requires control over
     the enactor or the Can_nspemit power.
 & @list
-  @list/<switch>[/lowercase]
+  @list/<switch>
   @list[/lowercase] <switch>
 
   The @list command lists useful MUSH information.
@@ -2084,7 +2139,7 @@ See also: @ps, QUEUE
   Switches include:
   motd        : Alias for @listmotd, shows current messages of the day.
   functions   : Lists all built-in functions and @functions.
-  commands    : Lists all built-in commands.
+  commands    : Lists all built-in commands and @commands.
   attribs     : Lists all standard attributes.
   locks       : Lists the built-in lock types.
   flags       : Alias for @flag/list, shows all flags.
@@ -2093,6 +2148,9 @@ See also: @ps, QUEUE
   
   By default, information is shown in upper-case. Add the /lowercase switch
   to show output in lowercase instead.
+  
+  "commands" and "functions" show built-in and local commands/functions by
+  default. The /builtin or /local switches can be given to limit this.
 
 See also: list(), @config, config(), functions(), @stats, @command,
     @function, @flag, @power, @attribute, @listmotd, @motd, locktypes
@@ -2572,10 +2630,6 @@ See also: message(), @chatformat, @pageformat
 
   Changes the name of <object> to <new name>.
 
-  When changing a player's name on games that support multi-word player
-  names, the name should be enclosed in quotes. For example:
-    > @name me="James Bond"
-
   Players can change their name to anything valid which is not currently in
   use by another player, as a name or alias. (They can change their name to
   something from their own @alias.)
@@ -2590,6 +2644,9 @@ See also: message(), @chatformat, @pageformat
     > @alias exit=east;e
     (Old-style)
     > @name exit=East <e>;east;e
+    
+  When <object>'s name is changed, its ONAME and ANAME verb attributes will
+  be triggered. See 'help @oname' for details.
   
 See also: @alias, @oname, name(), fullname()
 & @ONAME
@@ -2949,7 +3006,8 @@ See also: MONEY, give
 
 See also: @inprefix, AUDIBLE, @listen
 & @ps
-  @ps[/<switch>] [*<player>]
+  @ps[/<switch>] [<player>]
+  @ps <pid>
   
   @ps is a useful command for MUSHers.  It lists all commands currently on
   your 'to be executed' queue, thus allowing you to identify infinite (or
@@ -2962,8 +3020,10 @@ See also: @inprefix, AUDIBLE, @listen
   the /all switch, and see the full queue. They may also specify a player.
   @ps/summary just displays the queue totals for the whole queue.
   @ps/quick displays the queue totals for just your queue.
+  
+  With a <pid> argument, @ps shows information on a single queue entry.
 
-  Each line includes the proccess id of the queue entry, the object
+  Each line includes the process id of the queue entry, the object
   and attribute being used as a semaphore (If any), the number of
   seconds left before it executes (For waits and semaphores), the
   object that is going to execute the entry, and the command.
@@ -3082,10 +3142,9 @@ See also: $-commands, EVALUATION ORDER
   specifying <begin> and <end> as the first and last dbrefs to search.
   
   If a <player> argument is supplied, only objects owned by that player
-  will be listed.  Mortals can only search themselves or a ZMP whose
-  @lock/zone they pass. Those with the Search power can also specify "all"
-  to search all players. Defaults to "me" for mortals, and "all" for
-  players with the Search power.
+  will be listed, or all objects if "all" is used. Mortals attempting to
+  match other players (aside from ZMPs whose @lock/zone they pass) or "all"
+  will only get objects which they can examine.
   
   <class> and <restriction> arguments can be given to filter the match
   results. Possible <class>es include TYPE, NAME, ZONE, PARENT, EXITS,
@@ -3103,7 +3162,7 @@ See also: $-commands, EVALUATION ORDER
   If <class>=PARENT, only children of parent <restriction> will be listed.
   For ZONE and PARENT, <restriction> must be specified as a dbref number.
   
-  'help @search2' for more.
+  Continued in 'help @search2'.
 & @search2
   If <class>=FLAGS or LFLAGS, only objects with the list of flags
   specified by <restriction> will be listed. For FLAGS, flags to match
@@ -3123,7 +3182,7 @@ See also: $-commands, EVALUATION ORDER
   is a function, is replaced by each dbref sequentially. Classes EPLAYER,
   EROOM, EEXIT, and ETHING work like EVAL but are restricted to a single type.
   
-  See "help @search3" for more.
+  Continued in 'help @search3' for more.
 & @search3
   If <class>=MINDB, only objects with dbrefs of <restriction> or
   higher will be listed. If <class>=MAXDB, only objects with dbrefs
@@ -3140,7 +3199,7 @@ See also: $-commands, EVALUATION ORDER
   If <class>=LISTEN, then @search will only return objects that respond to
   <restriction> through a listen.
 
-  See "help @search4" for more.
+  Continued in 'help @search4'.
 & @search4
   
   For the class TYPE=PLAYER, and for PLAYER=<player-name>, anyone may
@@ -3161,7 +3220,8 @@ See also: $-commands, EVALUATION ORDER
   cost a number of pennies (the exact amount is configurable; see 
   @config find_cost).
   
-  See "help @search5" for some examples.
+  See 'help @search5' for some examples.
+See also: lsearch(), @find
 & @search5
   Examples:  
     @search all type=player,flags=W      <-- list all Wizard players
@@ -3174,31 +3234,6 @@ See also: $-commands, EVALUATION ORDER
                                                   wizard or royalty flags.
     @search wizard_bc command=+who    <-- Forgot what object has your +who?
 
-See also: lsearch, lsearchr 
-& @select
-  @select <string>=<expr1>,<action1>[,<exprN>,<actionN>]...[,<default>]
-  This is similar to @switch, except it only executes the action
-  associated with the first expression which matches <string> - the
-  targets are mutually exclusive. If no target is matched, the default
-  actions are executed. This is equivalent to "@switch/first".
-
-  Example:
-    > &FOO thing = $foo *:@select %0=*a*,:acks,*b*,:bars,*c*,:cheeps,:glurps
-    > foo abc
-    thing acks
-    > foo xxx
-    thing glurps
-
-  The string "#$" in <action>'s will be expanded to the evaluated result
-  of <string> before it is acted on.
-
-  If the /notify switch is given, a "@notify me" is queued after 
-  the selected <action>. This is useful for synchronization with semaphores.
-
-  If the /regexp switch is given, the expressions are case-insensitive regular
-  expressions.
-
-See also: @switch, switch()
 & @set
   @set <object>=[!]<flag> [[!]<flag> ...]
   @<pre-defined attribute> <object>=<value>
@@ -3422,30 +3457,33 @@ See also: @restart, @undestroy, ACTION LISTS, @function, @command, @hook,
   The "here" and "inventory" flags check only your location or
   inventory, respectively. "exits" only checks for AUDIBLE exits.
 & @switch
-  @switch [/<switch>] <string> = <expr1>, <action1> [,<exprN>, 
+  @switch[/<switch>] <string>=<expr1>, <action1> [,<exprN>, 
                                  <actionN>]... [,<default>]
-  For those of you familiar with programming, this command acts like
-  if/then/else or switch/case. It compares <string> against whatever
-  each <expr> evaluates to. If <string> and <expr> match, the action list
-  associated with that <expr> is carried out. If no match is found, the
-  <default> action list is carried out. 
-
-  The string "#$" in <action>'s will be expanded to the evaluated result
-  of <string> before it is acted on.
+  @select <string>=<expr1>, <action1> [,<exprN>, <actionN>]... [,<default>]
   
-  @switch/all   will carry out the action lists for -all- of the 
-                expressions that match <string>. This is the default.
-  @switch/first will carry out the action list for only the -first-
-                expression that matches <string>. This is the same as
-                @select, and it is less computationally expensive than 
-                /all in many cases.
-  @switch/notify will cause a "@notify me" to be queued after 
-                the selected <action>. 
-  @switch/regexp will cause the expressions to be matched as case-insensitive
-                 regular expressions.
+  For those of you familiar with programming, these command acts like
+  if/then/else or switch/case. It compares <string> against whatever each 
+  <expr> evaluates to. If <string> and <expr> match, the action list 
+  associated with that <expr> is carried out. If no match is found, the
+  <default> action list is carried out. @switch runs <action>s for all
+  matching <expr>s by default, while @select only runs the <action> for the
+  first matching <expr>.
+
+  The string "#$" in <action>'s will be replaced with the evaluated result
+  of <string> before it is acted on. Note that this replacement happens
+  BEFORE the <action> is queued and executed, and does not work well in
+  nested switches. It is recommended that you use the %$N substitution, or
+  the stext() function, instead.
+  
+  @switch/all   runs <action>s for all matching <expr>s. Default for @switch.
+  @switch/first runs <action> for the first matching <expr> only. Same as
+                @select, and often the desired behaviour.
+  @switch/notify queues "@notify me" after the last <action>. 
+  @switch/regexp makes <expr>s case-insensitive regular expressions, not
+                 wildcard/glob patterns.
 
   See 'help @switch2' for examples.
-See also: switch wildcards, @select, switch(), @break
+See also: switch wildcards, switch(), @break, stext(), slev()
 & @switch2
   Examples: 
     > &SWITCH_EX thing=$foo *: @switch %0=*a*, :acks, *b*, :bars, :glurps
@@ -3521,18 +3559,27 @@ See also: JUMP_OK, NO_TEL, @oxtport, @tport, @otport, @atport, @lock
 
 See also: @include, ufun()
 & @ulock
+& @uunlock
   @ulock <object>[=<key>]
+  @uunlock <object>
 
-  This is an abbreviation of @lock/use.
-
-  This lock determines who is allowed to "use" the object or to set off
-  any of the $-commands on the object. 
+  These commands set the Use lock for <object> to <key>, or clear the Use
+  lock. They are equivilent to
+    @lock/use <object>[=<key>]
+  and
+    @lock/use <object>
+    
+  The Use lock determines who is allowed to "use" the object or trigger any
+  $-commands or ^-listens on the object.
+  
+  To only lock who can use $-commands, use @lock/command. To only lock who
+  can trigger ^-listens, use @lock/listen.
 
   Example: if I want everyone but Bob to be able to use my toy, I would
   "@ulock toy=!*Bob". If I want only Bob to be able to use it, I would
-  "@ulock toy=*Bob".
+  "@ulock toy==*Bob".
 
-See also: @lock, @uunlock, locktypes
+See also: @lock, use, locktypes
 & @uptime
   @uptime[/mortal]
   
@@ -3576,12 +3623,6 @@ See also: @link, DROP-TO
   Removes the lock on <object>. It can take as many switches as @lock can. 
 
 See also: @lock, locktypes
-& @uunlock
-  @uunlock <object>
-
-  Un-use-locks the object.
-  
-See also: @lock, @ulock
 & @version
   @version
   Tells the player the name of the MUSH, which version of the code is 

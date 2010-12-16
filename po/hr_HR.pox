@@ -3660,6 +3660,11 @@ msgstr "PO©TA: Mora¹ navesti ime ili broj foldera"
 msgid "MAIL: You probably don't wanna send mail saying 'clear'."
 msgstr "PO©TA: Vjerojatno ne ¾eli¹ poslati pismo u kojem pi¹e 'clear'."
 
+#: extmail.c:1310
+#, c-format
+msgid "MAIL: You sent your message to %s, but they can't mail you!"
+msgstr "PO©TA: %s primi tvoju poruku, ali ne mo¾e tebi slati po¹tu!"
+
 #: src/extmail.c:1090
 #, c-format
 msgid "MAIL: You sent your message to %s."

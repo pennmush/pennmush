@@ -248,10 +248,6 @@ msgstr "#-1 NU EXISTA ASEMENEA JUCATOR"
 msgid "#-1 NO SUCH TYPE"
 msgstr "#-1 NU EXISTA ASEMENEA TIP"
 
-#: src/funufun.c:310
-msgid "#-1 NO SUCH USER FUNCTION"
-msgstr "#-1 NU EXISTA ASEMENEA FUNCTIE USER"
-
 #: src/bsd.c:4485 src/bsd.c:4498
 msgid "#-1 NOT CONNECTED"
 msgstr "#-1 NU ESTE CONECTAT"

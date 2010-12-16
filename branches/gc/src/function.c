@@ -463,6 +463,7 @@ FUNTAB flist[] = {
   {"HIDDEN", fun_hidden, 1, 1, FN_REG | FN_STRIPANSI},
   {"HOME", fun_home, 1, 1, FN_REG | FN_STRIPANSI},
   {"HOST", fun_hostname, 1, 1, FN_REG | FN_STRIPANSI},
+  {"IBREAK", fun_ibreak, 0, 1, FN_REG | FN_STRIPANSI},
   {"IDLE", fun_idlesecs, 1, 1, FN_REG | FN_STRIPANSI},
   {"IF", fun_if, 2, 3, FN_NOPARSE},
   {"IFELSE", fun_if, 3, 3, FN_NOPARSE},
@@ -495,7 +496,7 @@ FUNTAB flist[] = {
   {"LEXITS", fun_dbwalker, 1, 1, FN_REG | FN_STRIPANSI},
   {"LFLAGS", fun_lflags, 0, 1, FN_REG | FN_STRIPANSI},
   {"LINK", fun_link, 2, 3, FN_REG | FN_STRIPANSI},
-  {"LIST", fun_list, 1, 1, FN_REG | FN_STRIPANSI},
+  {"LIST", fun_list, 1, 2, FN_REG | FN_STRIPANSI},
   {"LIT", fun_lit, 1, -1, FN_LITERAL},
   {"LJUST", fun_ljust, 2, 3, FN_REG},
   {"LLOCKFLAGS", fun_lockflags, 0, 1, FN_REG | FN_STRIPANSI},
@@ -528,6 +529,7 @@ FUNTAB flist[] = {
   {"LWHO", fun_lwho, 0, 2, FN_REG | FN_STRIPANSI},
   {"LWHOID", fun_lwho, 0, 1, FN_REG | FN_STRIPANSI},
   {"MAIL", fun_mail, 0, 2, FN_REG | FN_STRIPANSI},
+  {"MAILLIST", fun_maillist, 0, 2, FN_REG | FN_STRIPANSI},
   {"MAILFROM", fun_mailfrom, 1, 2, FN_REG | FN_STRIPANSI},
   {"MAILSEND", fun_mailsend, 2, 2, FN_REG},
   {"MAILSTATS", fun_mailstats, 1, 1, FN_REG | FN_STRIPANSI},
@@ -641,8 +643,8 @@ FUNTAB flist[] = {
   {"REGRABALL", fun_regrab, 2, 4, FN_REG},
   {"REGRABALLI", fun_regrab, 2, 4, FN_REG},
   {"REGRABI", fun_regrab, 2, 3, FN_REG},
-  {"REGREP", fun_regrep, 3, 3, FN_REG},
-  {"REGREPI", fun_regrep, 3, 3, FN_REG},
+  {"REGREP", fun_grep, 3, 3, FN_REG},
+  {"REGREPI", fun_grep, 3, 3, FN_REG},
   {"REGLATTR", fun_lattr, 1, 2, FN_REG},
   {"REGLATTRP", fun_lattr, 1, 2, FN_REG},
   {"REGNATTR", fun_nattr, 1, 1, FN_REG},
@@ -716,6 +718,8 @@ FUNTAB flist[] = {
   {"SUBJ", fun_subj, 1, 1, FN_REG | FN_STRIPANSI},
   {"SWITCH", fun_switch, 3, INT_MAX, FN_NOPARSE},
   {"SWITCHALL", fun_switch, 3, INT_MAX, FN_NOPARSE},
+  {"SLEV", fun_slev, 0, 0, FN_REG},
+  {"STEXT", fun_stext, 1, 1, FN_REG | FN_STRIPANSI},
   {"T", fun_t, 1, 1, FN_REG | FN_STRIPANSI},
   {"TABLE", fun_table, 1, 5, FN_REG},
   {"TEL", fun_tel, 2, 4, FN_REG | FN_STRIPANSI},
@@ -821,10 +825,10 @@ FUNTAB flist[] = {
  * \param lc if 1, return functions in lowercase.
  */
 void
-do_list_functions(dbref player, int lc)
+do_list_functions(dbref player, int lc, char *type)
 {
   /* lists all built-in functions. */
-  char *b = list_functions(NULL);
+  char *b = list_functions(type);
   notify_format(player, T("Functions: %s"), lc ? strlower(b) : b);
 }
 
@@ -973,9 +977,7 @@ init_func_hashtab(void)
 }
 
 /** Function initization to perform after reading the config file.
- * This function performs post-config initialization. Specifically,
- * we need the max_globals value from the config file before we
- * can allocate the global user function table here.
+ * This function performs post-config initialization.
  */
 void
 function_init_postconfig(void)

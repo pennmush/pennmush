@@ -467,6 +467,10 @@ FUNCTION(fun_die)
   }
 }
 
+#define CLEAR_SWITCH_VALUE(pe) \
+  pe->switch_text[pe->switch_nesting] = NULL; \
+  pe->switch_nesting--; \
+  pe_info->local_switch_nesting--;
 /* ARGSUSED */
 FUNCTION(fun_switch)
 {
@@ -483,6 +487,11 @@ FUNCTION(fun_switch)
   char *tbuf1 = NULL;
   int first = 1, found = 0, exact = 0;
 
+  if (pe_info->switch_nesting >= MAX_ITERS) {
+    safe_str(T("#-1 TOO MANY SWITCHES"), buff, bp);
+    return;
+  }
+
   if (strstr(called_as, "ALL"))
     first = 0;
 
@@ -494,6 +503,10 @@ FUNCTION(fun_switch)
   process_expression(mstr, &dp, &sp, executor, caller, enactor,
                      PE_DEFAULT, PT_DEFAULT, pe_info);
   *dp = '\0';
+
+  pe_info->switch_nesting++;
+  pe_info->local_switch_nesting++;
+  pe_info->switch_text[pe_info->switch_nesting] = mstr;
 
   /* try matching, return match immediately when found */
 
@@ -521,8 +534,10 @@ FUNCTION(fun_switch)
                                executor, caller, enactor,
                                PE_DEFAULT, PT_DEFAULT, pe_info);
       found = 1;
-      if (per || first)
+      if (per || first) {
+        CLEAR_SWITCH_VALUE(pe_info);
         return;
+      }
     }
   }
 
@@ -536,8 +551,38 @@ FUNCTION(fun_switch)
     process_expression(buff, bp, &sp, executor, caller, enactor,
                        PE_DEFAULT, PT_DEFAULT, pe_info);
   }
+  CLEAR_SWITCH_VALUE(pe_info);
 }
 
+/* ARGSUSED */
+FUNCTION(fun_slev)
+{
+  safe_integer(pe_info->local_switch_nesting, buff, bp);
+}
+
+/* ARGSUSED */
+FUNCTION(fun_stext)
+{
+  int i;
+
+  if (!strcasecmp(args[0], "l")) {
+    i = pe_info->local_switch_nesting;
+  } else if (is_strict_integer(args[0])) {
+    i = parse_integer(args[0]);
+  } else {
+    safe_str(T(e_int), buff, bp);
+    return;
+  }
+
+  if (i < 0 || i > pe_info->local_switch_nesting
+      || (pe_info->local_switch_nesting - i) < 0) {
+    safe_str(T(e_argrange), buff, bp);
+    return;
+  }
+  safe_str(pe_info->switch_text[pe_info->local_switch_nesting - i], buff, bp);
+}
+
+/* ARGSUSED */
 FUNCTION(fun_reswitch)
 {
   /* this works a bit like the @switch/regexp command */
@@ -555,6 +600,11 @@ FUNCTION(fun_reswitch)
   int erroffset;
   pcre_extra *extra;
 
+  if (pe_info->switch_nesting >= MAX_ITERS) {
+    safe_str(T("#-1 TOO MANY SWITCHES"), buff, bp);
+    return;
+  }
+
   if (strstr(called_as, "ALL"))
     first = 0;
 
@@ -570,6 +620,10 @@ FUNCTION(fun_reswitch)
   mas = parse_ansi_string(mstr);
 
   save_regexp_context(&rsave);
+
+  pe_info->switch_nesting++;
+  pe_info->local_switch_nesting++;
+  pe_info->switch_text[pe_info->switch_nesting] = mstr;
 
   /* try matching, return match immediately when found */
 
@@ -609,6 +663,7 @@ FUNCTION(fun_reswitch)
     if (first && found) {
       free_ansi_string(mas);
       restore_regexp_context(&rsave);
+      CLEAR_SWITCH_VALUE(pe_info);
       return;
     }
     /* clear regexp context again here */
@@ -619,6 +674,7 @@ FUNCTION(fun_reswitch)
     if (per) {
       free_ansi_string(mas);
       restore_regexp_context(&rsave);
+      CLEAR_SWITCH_VALUE(pe_info);
       return;
     }
   }
@@ -630,8 +686,11 @@ FUNCTION(fun_reswitch)
                        PE_DEFAULT, PT_DEFAULT, pe_info);
   }
   free_ansi_string(mas);
+  CLEAR_SWITCH_VALUE(pe_info);
   restore_regexp_context(&rsave);
 }
+
+#undef CLEAR_SWITCH_VALUE
 
 /* ARGSUSED */
 FUNCTION(fun_if)
@@ -830,6 +889,18 @@ FUNCTION(fun_null)
 /* ARGSUSED */
 FUNCTION(fun_list)
 {
+  int which = 3;
+  char *fwhich[3] = { "builtin", "local", "all" };
+  if (nargs == 2) {
+    if (!strcasecmp(args[1], "local"))
+      which = 2;
+    else if (!strcasecmp(args[1], "builtin"))
+      which = 1;
+    else if (strcasecmp(args[1], "all")) {
+      safe_str("#-1", buff, bp);
+      return;
+    }
+  }
   if (!args[0] || !*args[0])
     safe_str("#-1", buff, bp);
   else if (string_prefix("motd", args[0]))
@@ -841,11 +912,11 @@ FUNCTION(fun_list)
   else if (string_prefix("fullmotd", args[0]) && Hasprivs(executor))
     safe_str(cf_fullmotd_msg, buff, bp);
   else if (string_prefix("functions", args[0]))
-    safe_str(list_functions(NULL), buff, bp);
+    safe_str(list_functions(fwhich[which - 1]), buff, bp);
   else if (string_prefix("@functions", args[0]))
     safe_str(list_functions("local"), buff, bp);
   else if (string_prefix("commands", args[0]))
-    safe_str(list_commands(), buff, bp);
+    safe_str(list_commands(which), buff, bp);
   else if (string_prefix("attribs", args[0]))
     safe_str(list_attribs(), buff, bp);
   else if (string_prefix("locks", args[0]))
@@ -986,7 +1057,7 @@ FUNCTION(fun_benchmark)
   unsigned int min = UINT_MAX;
   unsigned int max = 0;
   unsigned int total = 0;
-  int i;
+  int i = 0;
   dbref thing = NOTHING;
 
   if (!is_number(args[1])) {
@@ -1019,12 +1090,13 @@ FUNCTION(fun_benchmark)
     }
   }
 
-  for (i = 1; i <= n; i++) {
+  while (i < n) {
     uint64_t start;
     unsigned int elapsed;
     tp = tbuf;
     sp = args[0];
     start = get_tsc();
+    ++i;
     if (process_expression(tbuf, &tp, &sp, executor, caller, enactor,
                            PE_DEFAULT, PT_DEFAULT, pe_info)) {
       *tp = '\0';

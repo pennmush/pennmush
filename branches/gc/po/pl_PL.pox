@@ -488,10 +488,6 @@ msgstr "#-1 NIE MA TAKIEGO GRACZA"
 msgid "#-1 NO SUCH TYPE"
 msgstr "#-1 NIE MA TAKIEGO TYPU"
 
-#: src/funufun.c:310
-msgid "#-1 NO SUCH USER FUNCTION"
-msgstr "#-1 NIE MA TAKIEJ FUNKCJI U¯YTKOWNIKA"
-
 #: extchat.c:2279
 msgid "#-1 NO TEXT GIVEN"
 msgstr "#-1 NIE PODANO TEKSTU"
@@ -2156,22 +2152,6 @@ msgstr "GRA: %s(%s) próbowa³ wydaæ %d %s."
 #: src/destroy.c:1325
 msgid "GAME: Database consistency check complete."
 msgstr "GRA: Test spójno¶ci bazy danych ukoñczony."
-
-#: src/conf.c:570
-msgid "GAME: Database will be dumped in 1 minute."
-msgstr "GRA: Kopia zapasowa bazy danych zostanie wykonana za minutê."
-
-#: src/conf.c:572
-msgid "GAME: Database will be dumped in 5 minutes."
-msgstr "GRA: Kopia zapasowa bazy danych zostanie wykonana za 5 minut."
-
-#: src/conf.c:502
-msgid "GAME: Dump complete. Time in."
-msgstr "GRA: Kopia zapasowa wykonana. Wracamy."
-
-#: src/conf.c:501
-msgid "GAME: Dumping database. Game may freeze for a minute"
-msgstr "GRA: Zapisywanie bazy danych. Gra mo¿e zatrzymaæ siê na minutê."
 
 #: game.c:311
 msgid "GAME: ERROR! Database save failed!"

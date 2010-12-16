@@ -88,6 +88,11 @@ typedef struct options_table OPTTAB;
 typedef int (*config_func) (const char *opt, const char *val, void *loc,
                             int maxval, int source);
 
+#define CP_OVERRIDDEN 1         /* Set by .cnf file */
+#define CP_OPTIONAL   2         /* Doesn't complain if it's missing. */
+#define CP_CONFIGSET  4         /* Overridden/set by @config/set */
+#define CP_GODONLY    8         /* Only God can see. */
+
 /** Runtime configuration parameter.
  * This structure represents a runtime configuration option.
  */
@@ -97,9 +102,10 @@ typedef struct confparm {
   config_func handler;
   void *loc;                    /**< place to put this option. */
   int max;                      /**< max: string length, integer value. */
-  int overridden;               /**< Has the default been overridden? */
+  int flags;                    /**< Has the default been overridden? */
   const char *group;            /**< The option's group name */
 } PENNCONF;
+
 
 /** Runtime configuration options.
  * This large structure stores all of the runtime configuration options
@@ -120,6 +126,7 @@ struct options_table {
   dbref ancestor_exit;  /**< The ultimate parent exit */
   dbref ancestor_thing; /**< The ultimate parent thing */
   dbref ancestor_player; /**< The ultimate parent player */
+  int connect_fail_limit; /**< Maximum number of connect fails in 10 mins. */
   int idle_timeout;     /**< Maximum idle time allowed, in minutes */
   int unconnected_idle_timeout; /**< Maximum idle time for connections without dbrefs, in minutes */
   int keepalive_timeout; /**< Number of seconds between TCP keepalive pings */
@@ -325,6 +332,7 @@ int cf_time(const char *opt, const char *val, void *loc, int maxval,
 #define DUMP_INTERVAL       (options.dump_interval)
 #define DUMP_NOFORK_MESSAGE  (options.dump_message)
 #define DUMP_NOFORK_COMPLETE (options.dump_complete)
+#define CONNECT_FAIL_LIMIT   (options.connect_fail_limit)
 #define INACTIVITY_LIMIT    (options.idle_timeout)
 #define UNCONNECTED_LIMIT    (options.unconnected_idle_timeout)
 

@@ -481,7 +481,7 @@ FUNCTION(fun_mapsql)
     return;
   }
 
-  if (!fetch_ufun_attrib(args[0], executor, &ufun, 1))
+  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
     return;
   if (nargs > 2) {
     /* we have an output separator in args[2]. */

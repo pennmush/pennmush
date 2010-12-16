@@ -26,6 +26,8 @@ struct attr {
 /* Stuff that's actually in atr_tab.c */
 extern ATTR *aname_hash_lookup(const char *name);
 extern int alias_attribute(const char *atr, const char *alias);
+extern void do_attribute_limit
+  (dbref player, char *name, int type, char *pattern);
 extern void do_attribute_access
   (dbref player, char *name, char *perms, int retroactive);
 extern void do_attribute_delete(dbref player, char *name);
@@ -34,6 +36,8 @@ extern void do_attribute_info(dbref player, char *name);
 extern void do_list_attribs(dbref player, int lc);
 extern char *list_attribs(void);
 extern void attr_init_postconfig(void);
+extern const char *check_attr_value
+  (dbref player, const char *name, const char *value);
 
 extern int cnf_attribute_access(char *attrname, char *opts);
 
@@ -115,8 +119,8 @@ safe_atr_value(ATTR *atr)
 #define AF_CASE         0x800U  /**< Match $/^ patterns case-sensitive */
 #define AF_SAFE         0x1000U /**< This attribute may not be modified */
 #define AF_ROOT         0x2000U /**< Root of an attribute tree */
-#define AF_UNDEF1       0x4000U /**< Undefined; reserved for a future flag */
-#define AF_UNDEF2       0x8000U /**< Undefined; reserved for a future flag */
+#define AF_RLIMIT       0x4000U /**< Undefined; reserved for a future flag */
+#define AF_ENUM         0x8000U /**< Undefined; reserved for a future flag */
 #define AF_STATIC       0x10000U        /**< OBSOLETE! Leave here but don't use */
 #define AF_COMMAND      0x20000U        /**< INTERNAL: value starts with $ */
 #define AF_LISTEN       0x40000U        /**< INTERNAL: value starts with ^ */
@@ -135,7 +139,7 @@ safe_atr_value(ATTR *atr)
 #define AF_AHEAR        0x40000000U     /**< ^-listens can be triggered by anyone */
 #define AF_UNDEF3       0x80000000U     /**< Undefined; reserved for a future flag */
 
-#define AF_MAXVALUE          0x100000000U     /**< Largest attribute flag value. */
+#define AF_MAXVALUE     0x100000000U     /**< Largest attribute flag value. */
 
     extern ATTR attr[];
                     /**< external predefined attributes. */

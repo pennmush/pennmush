@@ -264,10 +264,6 @@ msgstr "3-1 NO HAY TAL JUGADOR"
 msgid "#-1 NO SUCH TYPE"
 msgstr "#-1 NO HAY TAL TIPO"
 
-#: src/funufun.c:310
-msgid "#-1 NO SUCH USER FUNCTION"
-msgstr "#-1 NO HAY TAL FUNCION DE USUARIO"
-
 #: src/bsd.c:4485 src/bsd.c:4498
 msgid "#-1 NOT CONNECTED"
 msgstr "#-1 NO ESTA CONECTADO"
@@ -1361,22 +1357,6 @@ msgstr "Fwd "
 #: src/destroy.c:1325
 msgid "GAME: Database consistency check complete."
 msgstr "JUEGO: Control de consistencia de base de datos completo."
-
-#: src/conf.c:570
-msgid "GAME: Database will be dumped in 1 minute."
-msgstr "JUEGO: La base de datos sera volcada en 1 minuto."
-
-#: src/conf.c:572
-msgid "GAME: Database will be dumped in 5 minutes."
-msgstr "JUEGO: La base de datos será volcada en 5 minutos."
-
-#: src/conf.c:502
-msgid "GAME: Dump complete. Time in."
-msgstr "JUEGO: Vuelco completo. Volviendo."
-
-#: src/conf.c:501
-msgid "GAME: Dumping database. Game may freeze for a minute"
-msgstr "JUEGO: Volcando base de datos. El juego puede congelarse por un minuto"
 
 #: game.c:311
 msgid "GAME: ERROR! Database save failed!"

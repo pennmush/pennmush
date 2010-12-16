@@ -130,8 +130,8 @@ just use our own implementation, as it makes things easier.
 
 PennMUSH understands the following signals, and performs the listed action:
 
-  -HUP   Performs a silent @readcache
-  -USR1  Performs an @shutdown/reboot
-  -USR2  Performs an @dump
-  -INT   Performs an @shutdown
-  -TERM  Performs an @shutdown/panic
+  -HUP   ( 1) Performs a silent @readcache
+  -USR1  (16) Performs an @shutdown/reboot
+  -USR2  (17) Performs an @dump
+  -INT   ( 2) Performs an @shutdown
+  -TERM  (15) Performs an @shutdown/panic

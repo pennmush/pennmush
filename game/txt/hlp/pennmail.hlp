@@ -152,6 +152,18 @@ See also: @mailfilter
   > @mailfilter me=if(strmatch(%3,*U*),1)
 
 See also: mail-folders
+& @mailsignature
+& mailsignature
+
+  @mailsignature <object>[=<signature>]
+  
+  When set, this attribute is evaluated and appended to any @mail messages
+  sent by <object>, unless the @mail/nosig command is used.
+  
+  Example:
+  > @mailsignature me=%r%r-- %n%r%r[u(funny_quote)]
+  
+See also: @mail, mail-sending
 & mail-admin
   
   The @mail command can also take the following switches:
@@ -251,8 +263,8 @@ number of aliases and members of aliases in use.
   Mail functions work with @mail.
 
   folderstats() mail()        maildstats()  mailfrom()    mailfstats()
-  mailsend()    mailstats()   mailstatus()  mailsubject() mailtime()
-  malias()
+  maillist()    mailsend()    mailstats()   mailstatus()  mailsubject()
+  mailtime()    malias()
   
 & FOLDERSTATS()
   folderstats()
@@ -284,6 +296,25 @@ number of aliases and members of aliases in use.
   > think mail(3:2)
   (text of the second message in the player's third folder)
   
+  See also: maillist(), mailfrom()
+& MAILLIST()
+  maillist([<player>, ]<message-list>)
+  
+  maillist() returns a list of all <player>'s @mail messages which match the
+  given <message-list> (the same as @mail/list <message-list>). If no
+  <player> is given, the executor's mail is matched. The <message-list> 
+  argument is described in 'help mail'.
+  
+  Examples:
+    > think maillist()
+    0:1 0:2 0:3
+    > think maillist(all)
+    0:1 0:2 0:3 1:1 1:2
+    > think maillist(1:)
+    1:1 1:2
+    
+See also: mail(), mailfrom()
+
 & MAILFROM()
 & MAILTIME()
 & MAILSTATUS()
@@ -299,6 +330,7 @@ number of aliases and members of aliases in use.
   mailstatus() returns the mail's status characters (as per
   @mail/list)
 
+  See also: mail(), maillist()
 & MAILSTATS()
 & MAILDSTATS()
 & MAILFSTATS()

@@ -467,7 +467,7 @@ set_keepalive(int s __attribute__ ((__unused__)))
  * From UNP, with changes. If nsec > 0, we set the socket
  * nonblocking and connect with timeout. The socket is STILL
  * nonblocking after it returns. If nsec == 0, a normal blocking
- * connect is done. 
+ * connect is done.
  * \param sockfd file descriptor of socket.
  * \param saptr pointer to sockaddr structure with connection data.
  * \param salen length of saptr.
@@ -539,7 +539,7 @@ wait_for_connect(int s, int secs)
 }
 
 /* The following functions are from W. Ridhard Steven's libgai,
- * modified by Shawn Wagner for PennMUSH. These arn't full
+ * modified by Shawn Wagner for PennMUSH. These aren't full
  * implementations- they don't handle unix-domain sockets or named
  * services, because we don't need them for what we're doing.  */
 

@@ -449,6 +449,10 @@ msgstr "#-1 UGYLDIG POWER"
 msgid "#-1 INVALID SECOND ARGUMENT"
 msgstr "#-1 UGYLDIG ANDREARGUMENT"
 
+#: fundb.c:2124
+msgid "#-1 INVALID SOURCE ROOM"
+msgstr "#-1 UGYLDIG KILDE ROM"
+
 #: funstr.c:369 funstr.c:425
 msgid "#-1 INVALID THIRD ARGUMENT"
 msgstr "#-1 UGYLDIG TREDJE ARGUMENT"
@@ -549,10 +553,6 @@ msgstr "#-1 SPILLEREN FINNES IKKE"
 msgid "#-1 NO SUCH TYPE"
 msgstr "#-1 INGEN SLIK TYPE"
 
-#: src/funufun.c:310
-msgid "#-1 NO SUCH USER FUNCTION"
-msgstr "#-1 INGEN SLIK BRUKERFUNKSJON"
-
 #: extchat.c:2279
 msgid "#-1 NO TEXT GIVEN"
 msgstr "#-1 INGEN TEKST GITT"
@@ -641,6 +641,10 @@ msgstr "#-1 FOR MANGE KOLONNER FOR ALIGN"
 #: src/funlist.c:1815
 msgid "#-1 TOO MANY ITERS"
 msgstr "#-1 FOR MANGE ITER-KALL"
+
+#: funmisc.c:495 funmisc.c:612
+msgid "#-1 TOO MANY SWITCHES"
+msgstr "#-1 FOR MANGE SWITCHER"
 
 #: src/funlist.c:1782
 msgid "#-1 TOO MANY WORDS"
@@ -788,6 +792,26 @@ msgstr "%s (dette rommet) [tale]. (tilkoblet)"
 #, c-format
 msgid "%s (this room) [speech]."
 msgstr "%s (dette rommet) [tale]."
+
+#: flags.c:1714
+#, c-format
+msgid "%s - %s (already) granted."
+msgstr "%s - %s (allerede) gitt."
+
+#: flags.c:1710
+#, c-format
+msgid "%s - %s (already) removed."
+msgstr "%s - %s (allerede) fjernet."
+
+#: flags.c:1716
+#, c-format
+msgid "%s - %s granted."
+msgstr "%s - %s tillatt."
+
+#: flags.c:1708
+#, c-format
+msgid "%s - %s removed."
+msgstr "%s - %s fjernet."
 
 #: flags.c:1357
 #, c-format
@@ -1304,6 +1328,11 @@ msgstr "%s: Objekter: %d  Grense: %d"
 msgid "%s: Objects: %d   Limit: UNLIMITED"
 msgstr "%s: Objekter: %d   Begrensning: UBEGRENSET"
 
+#: wiz.c:1327
+#, c-format
+msgid "%sGarbage%s(#%d)"
+msgstr "%sSøppel%s(#%d)"
+
 #: attrib.c:1566 attrib.c:1584
 #, c-format
 msgid "'%s' contains too many aliases."
@@ -1313,6 +1342,11 @@ msgstr "'%s' inneholder for mange aliaser."
 #, c-format
 msgid "'%s' is not a valid alias."
 msgstr "'%s' er ikke et gyldig alias."
+
+#: attrib.c:1851
+#, c-format
+msgid "'%s' is not a valid exit name."
+msgstr "'%s' er ikke et gyldig navn for en utgang."
 
 #: function.c:905
 msgid "(Commas okay in last argument)"
@@ -2449,22 +2483,6 @@ msgstr "SPILL: %s(%s) prøvde å bruke %d %s."
 msgid "GAME: Database consistency check complete."
 msgstr "SPILL: Database konsistenssjekk ferdig."
 
-#: src/conf.c:570
-msgid "GAME: Database will be dumped in 1 minute."
-msgstr "SPILL: Databasedump om 1 minutt."
-
-#: src/conf.c:572
-msgid "GAME: Database will be dumped in 5 minutes."
-msgstr "SPILL: Databasen vil bli dumpet om 5 minutter."
-
-#: src/conf.c:502
-msgid "GAME: Dump complete. Time in."
-msgstr "SPILL: Dump ferdig. Bare fortsett, dere."
-
-#: src/conf.c:501
-msgid "GAME: Dumping database. Game may freeze for a minute"
-msgstr "SPILL: Dumper database. Spillet kan fryse en stund"
-
 #: game.c:311
 msgid "GAME: ERROR! Database save failed!"
 msgstr "SPILL: FEIL! Databaselagring ble ikke fullført!"
@@ -2549,6 +2567,11 @@ msgstr "Søppel hører til på fyllinga."
 #: src/look.c:667 src/look.c:1306
 msgid "Garbage is garbage."
 msgstr "Søppel er søppel."
+
+#: wiz.c:1329
+#, c-format
+msgid "Garbage(#%d)"
+msgstr "Søppel(#%d)"
 
 #: src/set.c:82
 msgid "Give it what new name?"
@@ -2907,6 +2930,21 @@ msgstr "Inspeksjon av ansi streng er fullført"
 msgid "Inspecting ansi string"
 msgstr "Inspiserer ANSI-streng"
 
+#: flags.c:1534 flags.c:1697
+#, c-format
+msgid "Internal error: Unable to find flagspace '%s'!"
+msgstr "Intern feil: Kunne ikke finne flaggrom '%s'!"
+
+#: flags.c:2325
+#, c-format
+msgid "Internal error: Unknown flag space '%s'!"
+msgstr "Intern feil: Ukjent flaggrom '%s'!"
+
+#: flags.c:2515
+#, c-format
+msgid "Internal error: Unknown flagspace '%s'!"
+msgstr "Intern feil: Ukjent flaggrom '%s'!"
+
 #: create.c:373
 msgid "Internal error: weird object type."
 msgstr "Intern feil: rar objekt-type."
@@ -2969,6 +3007,11 @@ msgstr "Ugyldig port."
 #: src/wiz.c:1458 src/wiz.c:1465 src/wiz.c:1681 src/wiz.c:1689
 msgid "Invalid range argument"
 msgstr "Ugyldig range-argument"
+
+#: predicat.c:1444 predicat.c:1455
+#, c-format
+msgid "Invalid regexp: %s"
+msgstr "Ugyldig regexp: %s"
 
 #: wiz.c:1772
 msgid "Invalid search class+restriction format."
@@ -3217,6 +3260,10 @@ msgstr "MAIL: Alle meldinger lagret i folder %d [%s]"
 msgid "MAIL: All messages in all folders cleared."
 msgstr "MAIL: Alle meldinger i alle foldere avmerket."
 
+#: extmail.c:481
+msgid "MAIL: All messages in all folders marked as read."
+msgstr "MAIL: Alle meldinger i alle foldere merket som lest."
+
 #: extmail.c:428
 msgid "MAIL: All messages in all folders tagged."
 msgstr "MAIL: Alle meldinger i alle foldere tagget."
@@ -3224,6 +3271,10 @@ msgstr "MAIL: Alle meldinger i alle foldere tagget."
 #: extmail.c:445
 msgid "MAIL: All messages in all folders uncleared."
 msgstr "MAIL: Alle meldinger i alle foldere avmerket."
+
+#: extmail.c:479
+msgid "MAIL: All messages in all folders unread."
+msgstr "MAIL: Alle meldinger i alle foldere ulest."
 
 #: extmail.c:426
 msgid "MAIL: All messages in all folders untagged."
@@ -3346,6 +3397,11 @@ msgstr "MAIL: Meldingsaldre må være heltall"
 msgid "MAIL: Msg #%d:%d cleared."
 msgstr "MAIL: Melding #%d:%d fjernet."
 
+#: extmail.c:489
+#, c-format
+msgid "MAIL: Msg #%d:%d marked as read"
+msgstr "MAIL: Melding #%d:%d merket som lest"
+
 #: extmail.c:436
 #, c-format
 msgid "MAIL: Msg #%d:%d tagged"
@@ -3355,6 +3411,11 @@ msgstr "MAIL: Melding #%d:%d tagget"
 #, c-format
 msgid "MAIL: Msg #%d:%d uncleared."
 msgstr "MAIL: Melding #%d:%d gjenopprettet."
+
+#: extmail.c:487
+#, c-format
+msgid "MAIL: Msg #%d:%d unread"
+msgstr "MAIL: Melding #%d:%d ules"
 
 #: extmail.c:433
 #, c-format
@@ -3433,6 +3494,10 @@ msgstr "MAIL: Det er %d gamle meldinger i mailkøen, totalt %d tegn."
 msgid "MAIL: To whom should I forward?"
 msgstr "MAIL: Hvem skal jeg videresende meldingen til?"
 
+#: extmail.c:420
+msgid "MAIL: Unknown status."
+msgstr "MAIL: Ukjent status."
+
 #: src/extmail.c:378
 #, c-format
 msgid "MAIL: Unread Msg #%d:%d cleared! Use @mail/unclear %d:%d to recover."
@@ -3446,6 +3511,10 @@ msgstr "MAIL: Advarsel! Begrensning på innboks-meldinger er %d!"
 #: malias.c:145
 msgid "MAIL: What alias do you want to create?"
 msgstr "MAIL: Hvilket alias vil du lage?"
+
+#: extmail.c:409
+msgid "MAIL: What do you want to do with the messages?"
+msgstr "MAIL: Hva vil du gjøre med meldingene?"
 
 #: src/extmail.c:239 src/extmail.c:279
 msgid "MAIL: What folder is that?"
@@ -3711,6 +3780,10 @@ msgstr "Intet låsnavn gitt."
 
 #: src/create.c:303 src/fundb.c:1281 src/fundb.c:1300 src/wiz.c:386
 msgid "No match."
+msgstr "Ingen treff."
+
+#: predicat.c:1528 predicat.c:1537
+msgid "No matches."
 msgstr "Ingen treff."
 
 #: access.c:431
@@ -4860,6 +4933,11 @@ msgstr "Totalt restartet"
 msgid "Totals: Player...%d/%d[%ddel]  Object...%d/%d[%ddel]  Wait...%d/%d[%ddel]  Semaphore...%d/%d"
 msgstr "Totaler: Spillere...%d/5d[%ddel]  Objekt...%d/%d[%ddel]   Vent...%d/%d[%ddel]   Semafor...%d/%d"
 
+#: wiz.c:1337
+#, c-format
+msgid "Totals: Rooms...%d  Exits...%d  Things...%d  Players...%d  Garbage...%d"
+msgstr "Totaler: Rom...%d  Utganger...%d   Ting...%d Spillere...%d  Søppel...%d"
+
 #: wiz.c:1295
 #, c-format
 msgid "Totals: Rooms...%d  Exits...%d  Things...%d  Players...%d"
@@ -5566,6 +5644,10 @@ msgstr "Nei nei, det får du ikke lov til!"
 #: src/wiz.c:1934
 msgid "You can't see someone else's quota!"
 msgstr "Du kan ikke se andres kvoter!"
+
+#: look.c:754
+msgid "You can't see that from here."
+msgstr "Du kan ikke se det fra her."
 
 #: src/look.c:534
 msgid "You can't see through that."
@@ -6279,6 +6361,14 @@ msgid ""
 msgstr ""
 "\n"
 "UTGANGER:"
+
+#: wiz.c:1323
+msgid ""
+"\n"
+"GARBAGE:"
+msgstr ""
+"\n"
+"SØPPEL:"
 
 #: src/extmail.c:2507
 msgid ""

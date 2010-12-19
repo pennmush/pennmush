@@ -77,6 +77,7 @@ struct pe_info {
   int switch_nesting;           /**< switch()/@switch nesting depth */
   int local_switch_nesting;     /**< Expression-level switch nesting depth */
   char *switch_text[MAX_ITERS]; /**< #$-values for switch()/@switches */
+  int debugging;                /**< Show debug? 1 = yes, 0 = if DEBUG flag set, -1 = no */
 };
 
 

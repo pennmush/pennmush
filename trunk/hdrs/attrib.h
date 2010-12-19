@@ -137,7 +137,7 @@ safe_atr_value(ATTR *atr)
 #define AF_NOSPACE      0x10000000U     /**< No space in did_it */
 #define AF_MHEAR        0x20000000U     /**< ^-listens can be triggered by %! */
 #define AF_AHEAR        0x40000000U     /**< ^-listens can be triggered by anyone */
-#define AF_UNDEF3       0x80000000U     /**< Undefined; reserved for a future flag */
+#define AF_NODEBUG      0x80000000U     /**< Don't show debug when evaluated */
 
 #define AF_MAXVALUE     0x100000000U     /**< Largest attribute flag value. */
 

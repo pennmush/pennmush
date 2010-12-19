@@ -106,12 +106,12 @@ See also: @chat, @pageformat, @message, speak(), mogrify
 & CHAN_USEFIRSTMATCH
   Flag:  CHAN_USEFIRSTMATCH  (any type)
 
-  When this flag is set on an object that uses the chat system, channel name
-  matching will default to the first matching channel in cases of ambiguity.
-  Without this flag, attempting to use an ambiguous partial channel name
-  will produce an error.
+  Normally, when an object attempts to speak on the channel system with
+  @chat, using an ambiguous channel name produces an error message. With
+  this flag set, it will instead speak on the first channel whose name is
+  a match. Other commands in the chat system are not affected by the flag.
 
-See also: CHAT
+See also: CHAT, @chat, @cemit
 & @CEMIT
 & @NSCEMIT
 & CEMIT()

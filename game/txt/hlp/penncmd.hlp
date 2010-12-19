@@ -1066,8 +1066,8 @@ See also: look, @exitformat, @conformat, @descformat, @nameaccent,
     > @apay Exit Machine=@open %n-exit 
     > @pay Exit Machine=Your exit has been created.  
  
-    give Exit Machine=10
-    > Your exit has been created.
+    > give Exit Machine=10
+    Your exit has been created.
     (The exit will also have been opened by the machine.)
 
     > @cost charity=%0
@@ -2227,7 +2227,7 @@ See also: EXITS, @open, @dig, DROP-TO, HOME
   > @listen Recorder=@emit *
   > @ahear Recorder=:records %0
   > @emit Whee!
-  > Whee!
+  Whee!
     In this example, the Recorder's listen-pattern is NOT matched, because
     it doesn't hear the '@emit Whee!', it only hears the 'Whee!' part, which
     doesn't match.
@@ -4337,7 +4337,7 @@ See also: OPAQUE, FLAGS, @describe, @adescribe, @odescribe, DARK, LIGHT,
     You paged Airwolf with 'see, I don't have to retype the name.'.
     > page "John Lennon" Ringo=Paul's fine!
 
-(continued in help page2)
+  Continued in 'help page2'.
 & page2
   Page will attempt a partial match on the name, checking both for an
   @alias and to see if the name matches someone connected. If the
@@ -4366,11 +4366,11 @@ See also: @lock, @alias, @pageformat, pose, :, ;, HAVEN, NOSPOOF, FLAGS
 & pose
 & semipose
   pose[/noeval] <action>
-  :<action pose>
+  :<action>
 
-  pose[/nospace] <action>
+  pose/nospace[/noeval] <action>
   semipose[/noeval] <action>
-  ;<action pose>
+  ;<action>
  
   The pose and semipose commands allow you to perform actions. Pose shows
   your name, a space, and then <action>; semipose omits the space. They can 
@@ -4466,28 +4466,23 @@ See also: @use, @charges, @lock, @ufail
   whisper/noeval <player>=<message>
   whisper/list <players>=<message>
 
-  Whispers the message to the named person, if they are in the same
-  room as you. No one will see the message you whisper.  You can also
-  whisper to things you are carrying, or to things that are carrying
-  you. whisper <player>=:<pose> also works, in a fashion similar to
-  page-pose.
+  Whispers the message to the named person, if they are nearby. If <message>
+  is prefixed with a ':' or ';' it will be posed or semiposed, respectively.
+  
+  With the /noisy switch, other players in the room may be informed who you
+  whisper to (but not what you whisper); the probability that a noisy whisper
+  will be heard is set by the 'whisper_loudness' @config option. With the
+  /silent switch, the whisper will not be overheard. (When neither switch is
+  given, the default behaviour is controlled by the 'noisy_whisper' @config
+  option.)
 
-  In a noisy whisper, other players in the room may be told who you
-  whispered to (but not what you whispered): Polgara whispers to
-  Javelin.  The probability that a noisy whisper will be heard aloud
-  is configurable.  In a silent whisper, other players will not know
-  that you whispered.  The default whisper may be configured either
-  silent or noisy (check @config)
+  <message> will not be evaluated if the /noeval switch is given.
+  
+  The /list switch lets you whisper to multiple people at once. In this case,
+  <players> is a space-separated list of names, and names with spaces should
+  be enclosed in double-quotes, as per page/list.
 
-(continued in help whisper2)
-& whisper2
-  The /noeval switch prevents any evaluation of the message, and is
-  handy when you want to say things that use special characters like %
-  or []'s.
-
-  The /list switch lets you whisper to many people at once. Multiple
-  persons should be space-separated, and names with spaces should be
-  enclosed in double-quotes.
+See also: page, pose, @pemit
 & WHO
 & DOING
   WHO [<prefix>]

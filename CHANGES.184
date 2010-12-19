@@ -34,6 +34,10 @@ Commands:
  * @mapsql passes row results to attributes. Suggested by Mercutio. [GM]
  * @dig now takes an optional garbage dbref argument to specify the new
    dbref. Suggested by Paige. [GM]
+   
+Attributes:
+ * New no_debug flag, which prevents debug info being shown for an attribute
+   when the object is set DEBUG. [MG]
 
 Functions:
  * align() now has '$' (nofill) as an option. Ideal for rightmost columns.
@@ -53,6 +57,7 @@ Minor Changes:
    on whether to include empty items. [GM]
  * page and @mail will report to you if your recipient(s) cannot reply
    to you. Suggested by Paige. [GM]
+ * The debug attribute flag now shows more debug info. [MG]
 
 Fixes:
  * Help fixes by Daniel Powell. [MG]

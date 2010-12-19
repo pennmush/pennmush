@@ -635,6 +635,7 @@ make_pe_info()
   pe_info->dolists = 0;
   pe_info->switch_nesting = -1;
   pe_info->local_switch_nesting = -1;
+  pe_info->debugging = 0;
 
   return pe_info;
 }
@@ -729,6 +730,7 @@ process_expression(char *buff, char **bp, char const **str,
   int temp_eflags;
   int qindex;
   int retval = 0;
+  int old_debugging = 0;
 
   if (!buff || !bp || !str || !*str)
     return 0;
@@ -757,6 +759,10 @@ process_expression(char *buff, char **bp, char const **str,
   if (!pe_info) {
     made_info = 1;
     pe_info = make_pe_info();
+  } else {
+    old_debugging = pe_info->debugging;
+    if (caller != executor)
+      pe_info->debugging = 0;
   }
 
   /* If we've been asked to evaluate, log the expression if:
@@ -789,8 +795,13 @@ process_expression(char *buff, char **bp, char const **str,
     goto exit_sequence;
   }
 
+  if (eflags & PE_DEBUG)
+    pe_info->debugging = 1;
+  else if (eflags & PE_NODEBUG)
+    pe_info->debugging = -1;
+
   if (eflags != PE_NOTHING) {
-    debugging = (Debug(executor) || (eflags & PE_DEBUG))
+    debugging = ((Debug(executor) && pe_info->debugging != -1) || (pe_info->debugging == 1))
       && (Connected(Owner(executor)) || atr_get(executor, "DEBUGFORWARDLIST"));
     if (debugging) {
       int j;
@@ -1678,6 +1689,8 @@ exit_sequence:
     pe_info->call_depth--;
   if (made_info)
     free_pe_info(pe_info);
+  else
+    pe_info->debugging = old_debugging;
   return retval;
 }
 

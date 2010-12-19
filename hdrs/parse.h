@@ -194,6 +194,7 @@ void free_pe_info();
 #define PE_DEBUG                0x00000400
 #define PE_BUILTINONLY          0x00000800
 #define PE_USERFN               0x00001000
+#define PE_NODEBUG              0x00002000
 
 #define PE_DEFAULT (PE_COMPRESS_SPACES | PE_STRIP_BRACES | \
                     PE_DOLLAR | PE_EVALUATE | PE_FUNCTION_CHECK)
@@ -236,6 +237,8 @@ void free_pe_info();
  * not @functions. It's used for the fn() function.
  *
  * PE_USERFN means we're evaluating within an @function
+ *
+ * PE_NODEBUG means we're not debugging this evaluation.
  *
  *
  * tflags consists of one or more of the following termination flags:

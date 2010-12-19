@@ -38,8 +38,7 @@ This is the index to the MUSH online help files.
   
   You should not type the [] or <> brackets when entering a command.
   
-(continued in help newbie2 -- type 'help newbie2' without the single
-quotes)
+  Continued in 'help newbie2' -- type 'help newbie2' without the quotes.
   
 & newbie2
 
@@ -58,7 +57,7 @@ quotes)
   
   Just type help <command> for help. Example: help page
   
-(continued in help newbie3)
+  Continued in 'help newbie3'.
 & newbie3
 
   There is help available on every standard MUSH command. If you see a
@@ -95,7 +94,7 @@ Help is available on the following topics:
   LINKING                  LISTENING                LISTS                    
   LOOPING                  MASTER ROOM              MATCHING
 
-(continued in help topics2)
+  Continued in 'help topics2'.
 & topics2
   ME                       MONEY                    MUSHCODE
   NON-STANDARD ATTRIBUTES  PARENTS                  POWERS
@@ -126,7 +125,7 @@ Type "help <topic name>" for help.
   Substitution will be performed on the contents of action lists before
   they are executed.
 
-(continued in help action2)
+  Continued in 'help action2'.
 & ACTION2
   Example 1:
     > @asuccess Gift = @pemit %#={The box pops open; surprise!} ; 
@@ -196,7 +195,7 @@ See also: PARENTS, ORPHAN
   A typical usage of anonymous attributes would be to convert
   a list of dbrefs to names, as so:
 
-  >say map(#lambda/name(\%0), #3 #12 #23)
+  > say map(#lambda/name(\%0), #3 #12 #23)
   You say, "Joe Robert Sally"
 
   Because the code is parsed twice, you can actually build parts of it
@@ -204,16 +203,15 @@ See also: PARENTS, ORPHAN
   a lattrval function, which is like lattr() but it only returns
   non-empty attributes:
 
-  &lattrval me=
-   filter(#lambda/hasattrval([secure(before(%0, /))], \%0), lattr(%0))
+  > &lattrval me=
+     filter(#lambda/hasattrval([decompose(before(%0, /))], \%0), lattr(%0))
   
-  The first time '#lambda/hasattrval([secure(before(%0, /))], \%0)' is
+  The first time '#lambda/hasattrval([decompose(before(%0, /))], \%0)' is
   parsed in a call like 'u(lattrval, #1234)', it is turned into
   '#lambda/hasattrval(#1234, %0)', thus avoiding the need for a setq()
   or the like to store the top-level %0 for use in a real attribute
   called by filter(). However, this can lead to problems with
-  evaluating un-trusted code. Use secure() or escape() where
-  neccessary.
+  evaluating un-trusted code. Use decompose() where neccessary.
 
   See 'HELP ANONYMOUS3' for another example.
 & ANONYMOUS3
@@ -278,7 +276,7 @@ Standard Attributes: (see @list/attribs for the complete list)
   QUEUE (*)     RQUOTA (*)    RUNOUT        SEX           STARTUP       
   SUCCESS       TFPREFIX
 
-(continued in help attributes2)
+  Continued in 'help attributes2'.
 & ATTRIBUTES2
   An attribute is part of the code on an object that makes it
   unique. An attribute can contain any sort of text -- from a single
@@ -294,7 +292,7 @@ Standard Attributes: (see @list/attribs for the complete list)
   named anything you like. Please see 'help NON-STANDARD ATTRIBUTES'
   for more information on those.
 
-(continued in help attributes3)
+  Continued in 'help attributes3'.
 & ATTRIBUTES3
   Any attribute name can be shortened, but a shorter forms run the
   risk of conflicting with other attribute names.  This could result
@@ -309,7 +307,7 @@ Standard Attributes: (see @list/attribs for the complete list)
   To see the attributes that are set on you or on any of the objects
   you own, you should use the "examine" command. See 'help examine'.
   
-(continued in help attributes4)
+  Continued in 'help attributes4'.
 & ATTRIBUTES4
   Attributes can be owned by someone other than the object they are
   set on.  This allows the person to change the content of just that
@@ -358,7 +356,7 @@ See also: kill, slay, @death
   consider "true" or "false", however, depends on the setting of the
   "tiny_booleans" config option (@config tiny will show this).
 
-(continued in help boolean2)
+  Continued in 'help boolean2'.
 & BOOLEAN2 
   If tiny_booleans is...
   no                       FALSE: null string, 0, any negative db
@@ -378,7 +376,7 @@ See also: kill, slay, @death
   0<non-numbers..>      TRUE                    FALSE               *
   <non-numbers...>      TRUE                    FALSE               *
 
-(continued in help boolean3)
+  Continued in 'help boolean3'.
 & BOOLEAN3
 
   Examples (assuming tiny_booleans is "no"):     
@@ -505,7 +503,7 @@ See also: help code, help license
   immediately find the object rather than checking through all the
   contents of your area to see if one matches the name.
 
-(continued in help dbref2)
+  Continued in 'help dbref2'.
 & DBREF2
   
   If you own or control an object, you will see its dbref number
@@ -735,7 +733,7 @@ See also: DROP-TOS, @link, STICKY, LINK_OK, FIXED, EXITS
   @enter car=You get into the car.      { The plain messages are shown to 
   @leave car=You get out of the car.    { the one entering or leaving 
        
-(continued in help interiors2)
+  Continued in 'help interiors2'.
 & INTERIORS2
   Now, if you want people inside to be able to hear and communicate
   with the outside, you also need to do the following.
@@ -794,7 +792,7 @@ See also: LINK_OK, ABODE, @link
     Breaker has arrived.
     Welcome Mat says, "Welcome, Breaker!"
 
-(continued in help listening2)
+  Continued in 'help listening2'.
 & ^
 & ^-LISTENS
 & LISTENING2
@@ -817,7 +815,7 @@ See also: LINK_OK, ABODE, @link
   Such attributes can also be @triggered as if the ^<pattern>: did not
   exist.
 
-(continued in help listening3)
+  Continued in 'help listening3'.
 & LISTENING3
   By default, ^-patterns work like @ahear. To have them work like
   @amhear, set the AMHEAR attribute flag on the attribute; to have
@@ -922,7 +920,7 @@ See also: COSTS, give, @cost, @pay, @opay, @apay
   can be triggered by using a user-defined command or by using
   @trigger.
   
-(continued in help mushcode2)
+  Continued in 'help mushcode2'.
 & MUSHCODE2
 
   If you would like to learn more about mushcoding and how to create
@@ -981,7 +979,7 @@ See also: ATTRIBUTES, ATTRIB-OWNERSHIP, Attribute Functions, ATTRIBUTE TREES,
   also checked in similar fashion.  See 'help ANCESTORS' for more
   about ancestors.
 
-(continued in help parents2) 
+  Continued in 'help parents2'.
 & PARENTS2
  
   Note that the only properties inherited are attributes. In
@@ -1002,7 +1000,7 @@ See also: ATTRIBUTES, ATTRIB-OWNERSHIP, Attribute Functions, ATTRIBUTE TREES,
   executed, "me", for example, refers to the child, not the parent,
   and the $-command's associated actions are performed by the child.
 
-(continued in help parents3)
+  Continued in 'help parents3'.
 & PARENTS3
   Attributes with $-commands _are_ inherited from the parent and
   previous generations. Conflicts are resolved not by the $-command
@@ -1019,7 +1017,7 @@ See also: ATTRIBUTES, ATTRIB-OWNERSHIP, Attribute Functions, ATTRIBUTE TREES,
   > check
   I'm the child
 
-(continued in help parents4)
+  Continued in 'help parents4'.
 & PARENTS4
   If a parent has the same $-command name in a different attribute,
   however, BOTH the parent and child commands will execute:
@@ -1037,7 +1035,7 @@ See also: ATTRIBUTES, ATTRIB-OWNERSHIP, Attribute Functions, ATTRIBUTE TREES,
   parent object, rather than having the $commands checked on the
   parent object.
 
-(continued in help parents5)
+  Continued in 'help parents5'.
 & PARENTS5
  
   Parent-object $-command checking is at its most efficient when there
@@ -1052,7 +1050,7 @@ See also: ATTRIBUTES, ATTRIB-OWNERSHIP, Attribute Functions, ATTRIBUTE TREES,
   the parent that you want to make impossible to read, it's safe to
   allow the purchasers of your object to @chown their copy.
 
-See also: @parent, $-COMMANDS, ATTRIBUTES, ANCESTORS
+See also: @parent, $-COMMANDS, ATTRIBUTES, ANCESTORS, ORPHAN, pfun()
 & POWERS LIST
   Powers can be granted only by wizards, using the @power command.
   Powers cannot be granted to guest characters or players who are set
@@ -1075,7 +1073,7 @@ See also: @parent, $-COMMANDS, ATTRIBUTES, ANCESTORS
   long_fingers          Can do things remotely, like "get".
   many_attribs          Can exceed max_attrs_per_obj.
 
-(continued in help powers2)
+  Continued in 'help powers2'.
 & POWERS2
 & POWERS LIST2
   no_pay *              Doesn't need money for anything
@@ -1416,7 +1414,7 @@ Continued in 'help regexp classes2'
   > command whee+blert foo
   whee is in register 0 and blert foo is in register 1.
 
-(continued in help registers2)
+  Continued in 'help registers2'.
 & REGISTERS2
   As you can see from the above example, the command trigger had two
   wildcards separated by a "+" sign. When the user types in the
@@ -1464,7 +1462,7 @@ See also: @quota, @squota
   room) that you control or that is set LINK_OK can be used to wait
   actions on.
 
-(continued in help semaphores2)
+  Continued in 'help semaphores2'.
 & SEMAPHORES2
 
   An object is notified using the "@notify" command.  When you type
@@ -1487,7 +1485,7 @@ See also: @quota, @squota
   order, or to make sure that two players can't use the same object at
   the same time.
 
-(continued in help semaphores3)
+  Continued in 'help semaphores3'.
 & SEMAPHORES3
 
   It's important to remember that the actions will be carried out NOT
@@ -1505,7 +1503,7 @@ See also: @quota, @squota
   Wizard waits 30 seconds.
  
 See also: @wait, @drain, @notify
-(continued in help semaphores4)
+  Continued in 'help semaphores4'.
 & SEMAPHORES4
   Semaphores can be used to enforce mutual exclusion - to prevent
   the same object from being used simultaneously by two players.
@@ -1529,7 +1527,7 @@ See also: @wait, @drain, @notify
   the end of the REPORT attribute. Note the STARTUP attribute -
   because semaphores are cleared when the MUSH starts up, you must
   insure that the object gets @notify'd once when it starts up.
-(Continued in help semaphores5)
+  Continued in 'help semaphores5'.
 & SEMAPHORES5
  Normally, semaphores use the SEMAPHORE attribute. However, other
  attributes can be used, as long as they follow a few simple rules: If
@@ -1544,7 +1542,7 @@ See also: @wait, @drain, @notify
  would normally just use <object> in those commands. This means you
  can't have a un-timed semaphore on an attribute with a numeric name.
 
-(Continued in help semaphores6)
+  Continued in 'help semaphores6'.
 & SEMAPHORES6
  An example:
  
@@ -1633,7 +1631,7 @@ See also: string functions
   letter after the % will capitalize the first letter of the resulting
   substitution.
 
-(continued in help SUBSTITUTIONS2)
+  Continued in 'help substitutions2'.
 & SUBSTITUTIONS2
 & %2
   If the ENACTOR's gender is set, you can use these substitutions to get the
@@ -1650,7 +1648,7 @@ See also: string functions
      %wa-%wz, %xa-%xz = as above, for WA-WZ and XA-XZ
   These are the equivilent of get(me/<attribute>).
 
-(continued in help substitutions3)
+  Continued in 'help substitutions3'.
 & SUBSTITUTIONS3
 & %3
   Other substitutions:
@@ -1667,7 +1665,7 @@ See also: string functions
     %iN = equivilent of itext(N), the list element for iter()/@dolist.
     %$N = equivilent of stext(N), the <string> in switch()/@switch.
  
-(continued in help substitutions4)
+  Continued in 'help substitutions4'.
 & SUBSTITUTIONS4
 & %4
   Example: 
@@ -1804,7 +1802,7 @@ See also: TYPES OF OBJECTS, type(), hastype(), @open, @link
   are often named with the "+" prefix, and local $-commands often have
   a "+" or "." prefix.
   
-(continued in help user-defined2)
+  Continued in 'help user-defined2'.
 & $-COMMANDS2
 & MACROS2
 & USER-DEFINED2
@@ -1898,7 +1896,7 @@ See also: @verb, attribute flags
   my-desc               Warn on missing player description
   lock-checks           Warn on @lock problems
 
-(continued in help warnings list2)
+  Continued in 'help warnings list2'.
 & WARNINGS LIST2
   These warnings combine the functionality of multiple warnings above:
 
@@ -1921,17 +1919,17 @@ See also: @verb, attribute flags
   command. You could use a wildcard in the command trigger to match
   substrings of it:
 
-  &TOO_LONG_CMD object=$supercali*:@emit whee
-  super
-  > (nothing happens)
-  supercali
-  > whee
-  supercalifra
-  > whee
-  supercalifragalisticexpealidocious
-  > whee
-  supercalifoobert
-  > whee
+  > &TOO_LONG_CMD object=$supercali*:@emit whee
+  > super
+  (nothing happens)
+  > supercali
+  whee
+  > supercalifra
+  whee
+  > supercalifragalisticexpealidocious
+  whee
+  > supercalifoobert
+  whee
 
   A backslash (\) can be used to escape * and ? if you want to match 
   a literal asterisk or question mark.

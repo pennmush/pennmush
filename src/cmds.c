@@ -1039,20 +1039,21 @@ COMMAND(cmd_shutdown)
 
 COMMAND(cmd_sitelock)
 {
+  int psw = SW_ISSET(sw, SWITCH_PLAYER);
   if (SW_ISSET(sw, SWITCH_BAN))
-    do_sitelock(player, arg_left, NULL, NULL, SITELOCK_BAN);
+    do_sitelock(player, arg_left, NULL, NULL, SITELOCK_BAN, psw);
   else if (SW_ISSET(sw, SWITCH_REGISTER))
-    do_sitelock(player, arg_left, NULL, NULL, SITELOCK_REGISTER);
+    do_sitelock(player, arg_left, NULL, NULL, SITELOCK_REGISTER, psw);
   else if (SW_ISSET(sw, SWITCH_NAME))
     do_sitelock_name(player, arg_left);
   else if (SW_ISSET(sw, SWITCH_REMOVE))
-    do_sitelock(player, arg_left, NULL, NULL, SITELOCK_REMOVE);
+    do_sitelock(player, arg_left, NULL, NULL, SITELOCK_REMOVE, psw);
   else if (SW_ISSET(sw, SWITCH_CHECK))
-    do_sitelock(player, arg_left, NULL, NULL, SITELOCK_CHECK);
+    do_sitelock(player, arg_left, NULL, NULL, SITELOCK_CHECK, psw);
   else if (!arg_left || !*arg_left)
-    do_sitelock(player, NULL, NULL, NULL, SITELOCK_LIST);
+    do_sitelock(player, NULL, NULL, NULL, SITELOCK_LIST, psw);
   else
-    do_sitelock(player, arg_left, args_right[1], args_right[2], SITELOCK_ADD);
+    do_sitelock(player, arg_left, args_right[1], args_right[2], SITELOCK_ADD, psw);
 }
 
 COMMAND(cmd_stats)

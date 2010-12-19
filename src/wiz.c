@@ -91,6 +91,9 @@ static int raw_search(dbref player, const char *owner, int nargs,
                       const char **args, dbref **result, PE_Info *pe_info);
 static int fill_search_spec(dbref player, const char *owner, int nargs,
                             const char **args, struct search_spec *spec);
+static void
+sitelock_player(dbref player, const char *name, dbref who, uint32_t can, uint32_t cant);
+
 
 #ifdef INFO_SLAVE
 void kill_info_slave(void);
@@ -1452,6 +1455,36 @@ FUNCTION(fun_quota)
   return;
 }
 
+static void
+sitelock_player(dbref player, const char *name, dbref who, uint32_t can, uint32_t cant) {
+  dbref target;
+  ATTR *a;
+  int attrcount = 0;
+
+
+  if ((target = noisy_match_result(player, name, TYPE_PLAYER,
+                            MAT_ABSOLUTE | MAT_PMATCH | MAT_TYPE)) == NOTHING)
+    return;
+
+  a = atr_get(target, "LASTIP");
+  if (a && add_access_sitelock(player, atr_value(a), who, can, cant)) {
+    attrcount++;
+    do_log(LT_WIZ, player, NOTHING, "*** SITELOCK *** %s", atr_value(a));
+  }
+  a = atr_get(target, "LASTSITE");
+  if (a && add_access_sitelock(player, atr_value(a), who, can, cant)) {
+    attrcount++;
+    do_log(LT_WIZ, player, NOTHING, "*** SITELOCK *** %s", atr_value(a));
+  }
+  if (attrcount) {
+    write_access_file();
+    notify_format(player, T("Sitelocked %d known addresses for %s"), attrcount, Name(target));
+  } else {
+    notify_format(player, T("Unable to sitelock %s: No known ip/host to ban."), Name(target));
+  }
+
+}
+
 /** Modify access rules for a site.
  * \verbatim
  * This implements @sitelock.
@@ -1461,10 +1494,11 @@ FUNCTION(fun_quota)
  * \param opts access rules to apply.
  * \param who string containing dbref of player to whom rule applies.
  * \param type sitelock operation to do.
+ * \param psw was the /player switch given?
  */
 void
 do_sitelock(dbref player, const char *site, const char *opts, const char *who,
-            enum sitelock_type type)
+            enum sitelock_type type, int psw)
 {
   if (!Wizard(player)) {
     notify(player, T("Your delusions of grandeur have been noted."));
@@ -1490,7 +1524,10 @@ do_sitelock(dbref player, const char *site, const char *opts, const char *who,
         return;
       }
     }
-
+    if (psw) {
+      sitelock_player(player, site, whod, can, cant);
+      return;
+    }
     if (add_access_sitelock(player, site, whod, can, cant)) {
       write_access_file();
       if (whod != AMBIGUOUS) {
@@ -1518,6 +1555,10 @@ do_sitelock(dbref player, const char *site, const char *opts, const char *who,
       do_list_access(player);
       return;
     case SITELOCK_REGISTER:
+      if (psw) {
+        sitelock_player(player, site, AMBIGUOUS, ACS_REGISTER, ACS_CREATE);
+        return;
+      }
       if (add_access_sitelock
           (player, site, AMBIGUOUS, ACS_REGISTER, ACS_CREATE)) {
         write_access_file();
@@ -1526,6 +1567,10 @@ do_sitelock(dbref player, const char *site, const char *opts, const char *who,
       }
       break;
     case SITELOCK_ADD:
+      if (psw) {
+        sitelock_player(player, site, AMBIGUOUS, 0, ACS_CREATE);
+        return;
+      }
       if (add_access_sitelock(player, site, AMBIGUOUS, 0, ACS_CREATE)) {
         write_access_file();
         notify_format(player, T("Site %s locked"), site);
@@ -1533,6 +1578,10 @@ do_sitelock(dbref player, const char *site, const char *opts, const char *who,
       }
       break;
     case SITELOCK_BAN:
+      if (psw) {
+            sitelock_player(player, site, AMBIGUOUS, 0, ACS_DEFAULT);
+            return;
+      }
       if (add_access_sitelock(player, site, AMBIGUOUS, 0, ACS_DEFAULT)) {
         write_access_file();
         notify_format(player, T("Site %s banned"), site);
@@ -1555,8 +1604,20 @@ do_sitelock(dbref player, const char *site, const char *opts, const char *who,
         break;
       }
     case SITELOCK_REMOVE:{
-        int n;
-        n = remove_access_sitelock(site);
+        int n = 0;
+        if (psw) {
+          ATTR *a;
+          dbref target;
+          if ((target = noisy_match_result(player, site, TYPE_PLAYER,
+                                    MAT_ABSOLUTE | MAT_PMATCH | MAT_TYPE)) == NOTHING)
+            return;
+          if ((a = atr_get(target, "LASTIP")))
+            n += remove_access_sitelock(atr_value(a));
+          if ((a = atr_get(target, "LASTSITE")))
+            n += remove_access_sitelock(atr_value(a));
+        } else {
+          n = remove_access_sitelock(site);
+        }
         if (n > 0)
           write_access_file();
         notify_format(player, T("%d sitelocks removed."), n);

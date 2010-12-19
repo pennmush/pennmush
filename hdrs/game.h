@@ -181,7 +181,7 @@ enum sitelock_type { SITELOCK_ADD, SITELOCK_REMOVE, SITELOCK_BAN,
   SITELOCK_CHECK, SITELOCK_LIST, SITELOCK_REGISTER
 };
 extern void do_sitelock(dbref player, const char *site, const char *opts,
-                        const char *charname, enum sitelock_type type);
+                        const char *charname, enum sitelock_type type, int psw);
 extern void do_sitelock_name(dbref player, const char *name);
 extern void do_chownall
   (dbref player, const char *name, const char *target, int preserve);

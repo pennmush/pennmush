@@ -276,7 +276,7 @@ COMLIST commands[] = {
 #else
   {"@SQL", NULL, cmd_unimplemented, CMD_T_ANY, "WIZARD", "SQL_OK"},
 #endif
-  {"@SITELOCK", "BAN CHECK REGISTER REMOVE NAME", cmd_sitelock,
+  {"@SITELOCK", "BAN CHECK REGISTER REMOVE NAME PLAYER", cmd_sitelock,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, "WIZARD", 0},
   {"@STATS", "CHUNKS FREESPACE PAGING REGIONS TABLES", cmd_stats,
    CMD_T_ANY, 0, 0},

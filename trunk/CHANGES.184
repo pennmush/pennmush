@@ -34,6 +34,8 @@ Commands:
  * @mapsql passes row results to attributes. Suggested by Mercutio. [GM]
  * @dig now takes an optional garbage dbref argument to specify the new
    dbref. Suggested by Paige. [GM]
+ * The help command now does some auto-expansion of topics. For example,
+   'help @chan ad2' will be expanded to match 'help @channel admin2'. [MG]
    
 Attributes:
  * New no_debug flag, which prevents debug info being shown for an attribute

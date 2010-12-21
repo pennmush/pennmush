@@ -3861,6 +3861,11 @@ msgstr "Programski kod na objektu %s ne sadr¾i naredbu - ne zapoèinji programski
 msgid "No entries matching '%s' were found."
 msgstr "Nije naðen nijedan tekst koji se podudara s '%s'."
 
+#: help.c:119 help.c:129 help.c:139 help.c:146
+#, c-format
+msgid "No entry for '%s'"
+msgstr "Ni¹ta ne pi¹e pod '%s'"
+
 #: src/bsd.c:3090
 #, c-format
 msgid "No entry for '%s'."
@@ -4487,6 +4492,11 @@ msgstr "Internet adresa %s banana."
 #, c-format
 msgid "Site %s locked"
 msgstr "Internet adresa %s zakljuèana"
+
+#: wiz.c:1481
+#, c-format
+msgid "Sitelocked %d known addresses for %s"
+msgstr "Zakljuèano %d poznatih adresa za %s"
 
 #: src/destroy.c:266
 msgid "Sorry, no suicide allowed."
@@ -5161,6 +5171,11 @@ msgstr "Ne mogu postaviti '%s' jer stvaranje potrebnog nadatributa nije uspjelo.
 #: command.c:1694
 msgid "Unable to set alias."
 msgstr "Ne mogu postaviti alias."
+
+#: wiz.c:1483
+#, c-format
+msgid "Unable to sitelock %s: No known ip/host to ban."
+msgstr "Ne mogu zakljuèati adresu %s: Nema poznatog ip/hosta za bananje."
 
 #: speech.c:355
 #, c-format

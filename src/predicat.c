@@ -42,7 +42,8 @@
 
 int forbidden_name(const char *name);
 void do_switch(dbref player, char *expression, char **argv,
-               dbref cause, int first, int notifyme, int regexp);
+               dbref cause, int first, int notifyme, int regexp,
+               int inplace);
 void do_verb(dbref player, dbref cause, char *arg1, char **argv);
 static void grep_add_attr(char *buff, char **bp, dbref player, int count,
                           ATTR *attr, char *atrval);
@@ -991,7 +992,7 @@ ok_tag_attribute(dbref player, const char *params)
  */
 void
 do_switch(dbref player, char *expression, char **argv, dbref cause,
-          int first, int notifyme, int regexp)
+          int first, int notifyme, int regexp, int inplace)
 {
   int any = 0, a;
   char buff[BUFFER_LEN], *bp;
@@ -999,6 +1000,9 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
   char *tbuf1;
   PE_Info *pe_info;
   int i = 0;
+  char ibuff[BUFFER_LEN], *ibp;
+
+  ibp = ibuff;
 
   if (!argv[1])
     return;
@@ -1036,7 +1040,14 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
       pe_info->switch_text[i] = mush_strdup(expression, "switch_arg");
       pe_info->switch_nesting = i;
       pe_info->local_switch_nesting = i;
-      parse_que(player, tbuf1, cause, pe_info);
+      if (inplace) {
+        if (any) {
+          safe_chr(';', ibuff, &ibp);
+        }
+        safe_str(tbuf1, ibuff, &ibp);
+      } else {
+        parse_que(player, tbuf1, cause, pe_info);
+      }
       mush_free(tbuf1, "replace_string.buff");
     }
   }
@@ -1055,12 +1066,25 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
     pe_info->switch_text[i] = mush_strdup(expression, "switch_arg");
     pe_info->switch_nesting = i;
     pe_info->local_switch_nesting = i;
-    parse_que(player, tbuf1, cause, pe_info);
+    if (inplace) {
+      if (any) {
+        safe_chr(';', ibuff, &ibp);
+      }
+      safe_str(tbuf1, ibuff, &ibp);
+      any = 1;
+    } else {
+      parse_que(player, tbuf1, cause, pe_info);
+    }
     mush_free(tbuf1, "replace_string.buff");
   }
 
+  if (inplace && (ibp > ibuff)) {
+    *ibp = '\0';
+    inplace_queue_actionlist(player, ibuff);
+  }
+
   /* Pop on @notify me, if requested */
-  if (notifyme)
+  if (notifyme && !inplace)
     parse_que(player, "@notify me", cause, NULL);
 }
 

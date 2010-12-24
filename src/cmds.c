@@ -416,7 +416,7 @@ COMMAND(cmd_flag)
 
 COMMAND(cmd_force)
 {
-  do_force(player, arg_left, arg_right);
+  do_force(player, arg_left, arg_right, SW_ISSET(sw, SWITCH_INPLACE));
 }
 
 COMMAND(cmd_function)
@@ -1017,7 +1017,8 @@ COMMAND(cmd_search)
 COMMAND(cmd_select)
 {
   do_switch(player, arg_left, args_right, cause, 1,
-            SW_ISSET(sw, SWITCH_NOTIFY), SW_ISSET(sw, SWITCH_REGEXP));
+            SW_ISSET(sw, SWITCH_NOTIFY), SW_ISSET(sw, SWITCH_REGEXP),
+            SW_ISSET(sw, SWITCH_INPLACE));
 }
 
 COMMAND(cmd_set)
@@ -1092,7 +1093,8 @@ COMMAND(cmd_sweep)
 COMMAND(cmd_switch)
 {
   do_switch(player, arg_left, args_right, cause, SW_ISSET(sw, SWITCH_FIRST),
-            SW_ISSET(sw, SWITCH_NOTIFY), SW_ISSET(sw, SWITCH_REGEXP));
+            SW_ISSET(sw, SWITCH_NOTIFY), SW_ISSET(sw, SWITCH_REGEXP),
+            SW_ISSET(sw, SWITCH_INPLACE));
 }
 
 COMMAND(cmd_squota)

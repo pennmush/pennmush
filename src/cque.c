@@ -510,9 +510,22 @@ parse_que(dbref player, const char *command, dbref cause, PE_Info *pe_info)
   im_insert(queue_map, tmp->pid, tmp);
 }
 
+void
+inplace_queue_actionlist(dbref executor, const char *command)
+{
+  char *bp;
+
+  global_eval_context.include_called = 1;
+  global_eval_context.include_executor = executor;
+
+  bp = global_eval_context.include_replace;
+  safe_str(command, global_eval_context.include_replace, &bp);
+  *bp = '\0';
+}
+
 int
-inplace_queue_attribute(dbref thing, const char *atrname, dbref enactor,
-                        int rsargs)
+inplace_queue_attribute(dbref thing, const char *atrname,
+                        dbref executor, dbref enactor, int rsargs)
 {
   ATTR *a;
   char *start, *command;
@@ -526,6 +539,7 @@ inplace_queue_attribute(dbref thing, const char *atrname, dbref enactor,
     return 0;
 
   global_eval_context.include_called = 1 + rsargs;
+  global_eval_context.include_executor = executor;
   start = safe_atr_value(a);
   command = start;
   /* Trim off $-command or ^-command prefix */
@@ -918,12 +932,12 @@ do_entry(BQUE *entry, int include_recurses)
           tmp = mush_malloc(sizeof *tmp, "cqueue");
           tmp->pid = entry->pid;
           tmp->semattr = NULL;
-          tmp->player = save_player;
           tmp->queued = entry->queued;
           tmp->next = NULL;
           tmp->left = 0;
           tmp->cause = entry->cause;
           tmp->pe_info = NULL;
+          tmp->player = global_eval_context.include_executor;
           for (a = 0; a < 10; a++) {
             if (global_eval_context.include_called == 1) {
               tmp->env[a] =
@@ -942,20 +956,23 @@ do_entry(BQUE *entry, int include_recurses)
               global_eval_context.include_wenv[a] = NULL;
             }
           }
-          for (a = 0; a < NUMQ; a++)
-            if (!global_eval_context.renv[a] || !*global_eval_context.renv[a])
+          for (a = 0; a < NUMQ; a++) {
+            if (!global_eval_context.renv[a] || !*global_eval_context.renv[a]) {
               tmp->rval[a] = NULL;
-            else {
+            } else {
               tmp->rval[a] =
                 mush_strdup(global_eval_context.renv[a], "cqueue.rval");
             }
+          }
           global_eval_context.include_called = 0;
           /* Put the included actions in the clone */
           tmp->comm =
             mush_strdup(global_eval_context.include_replace, "cqueue.comm");
           local_break_called = do_entry(tmp, include_recurses + 1);
-          for (a = 0; a < 10; a++)
+          for (a = 0; a < 10; a++) {
             global_eval_context.wenv[a] = entry->env[a];
+          }
+          global_eval_context.cplr = save_player;
           free_qentry(tmp);
           if (local_break_called) {
             /* Propagate break */

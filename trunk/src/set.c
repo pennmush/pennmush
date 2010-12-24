@@ -1032,7 +1032,8 @@ do_include(dbref player, char *object, char **argv)
     else
       global_eval_context.include_wenv[a] = NULL;
   }
-  if (!inplace_queue_attribute(thing, upcasestr(s), player, rhs_present)) {
+  if (!inplace_queue_attribute(thing, upcasestr(s), player,
+                               player, rhs_present)) {
     notify(player, T("No such attribute."));
   }
 

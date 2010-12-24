@@ -31,6 +31,8 @@ Commands:
    dbref. Suggested by Paige. [GM]
  * The help command now does some auto-expansion of topics. For example,
    'help @chan ad2' will be expanded to match 'help @channel admin2'. [MG]
+ * @force/inplace, @switch/inplace and @select/inplace now run their commands
+   without queueing new events. These are limited by the @include limit. [GM]
    
 Attributes:
  * New no_debug flag, which prevents debug info being shown for an attribute

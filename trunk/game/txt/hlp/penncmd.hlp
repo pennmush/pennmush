@@ -1670,18 +1670,20 @@ See also: @filter, @prefix, AUDIBLE, PUPPET, @debugforwardlist, @lock
 
 See also: DEBUG, @forwardlist, @lock
 & @force
-  @force[/noeval] <object>=<action list>
+  @force[/noeval][/inplace] <object>=<action list>
 
   This command forces <object> to queue the given action list, as if the
   object had entered the action list itself. You must control <object> to
   @force it. @force is useful for manipulating puppets. 
+
+  If /inplace is given, <object> will run <action list> _now_, instead of
+  being queued for execution later.
 
   @force can be abbreviated as
     <dbref#> <action list>
 
   Continued in 'help @force2'.
 & @force2
-
   Normally, the action list is evaluated twice - once when @force is run, and 
   again when <object> runs the action list. If the /noeval switch is given, 
   <action list> is not evaluated until it is run by <object>.
@@ -1696,6 +1698,25 @@ See also: DEBUG, @forwardlist, @lock
     Lackey pages: Hi there!
     > #103 page Cyclonus=Whee
     Lackey pages: Whee
+
+  Continued in 'help @force3'.
+& @force3
+  Normally, @force creates a new queue entry. @force/inplace does not.
+
+  Examples:
+    > @create Lackey
+    Created: Object #103 
+    > &order me=$order *:say Lackey, %0 ; @force Lackey=%0 ; say Done?
+    > order pose salutes!
+    You say, "Lackey, pose salutes!"
+    You say, "Done?"
+    Lackey salutes!
+
+    > &order me=$order *:say Lackey, %0 ; @force/inplace Lackey=%0 ; say Done?
+    > order pose salutes!
+    You say, "Lackey, pose salutes!"
+    Lackey salutes!
+    You say, "Done?"
 
 See also: PUPPET, DBREF, objeval()
 & @flag
@@ -3507,6 +3528,8 @@ See also: @restart, @undestroy, ACTION LISTS, @function, @command, @hook,
   @switch/first runs <action> for the first matching <expr> only. Same as
                 @select, and often the desired behaviour.
   @switch/notify queues "@notify me" after the last <action>. 
+  @siwtch/inplace runs all actions in place, instead of creating a new queue
+                  entry for them.
   @switch/regexp makes <expr>s case-insensitive regular expressions, not
                  wildcard/glob patterns.
 
@@ -3530,6 +3553,21 @@ See also: switch wildcards, switch(), @break, stext(), slev()
                                       say Not Puppet!
     > test
     thing says, "Not Puppet!"
+  Continued in 'help @switch3'
+& @switch3
+  Examples: 
+    > &SWITCH_EX me=$foo *:think before ; @switch %0=1,think one ; think after
+    > foo 1
+    thing before
+    thing after
+    thing one
+
+    > &SWITCH_EX me=$foo *:think before ; @switch/inplace %0=1,think one ;
+                    think after
+    > foo 1
+    thing before
+    thing one
+    thing after
 & @teleport
   @teleport[/silent][/inside] [<object>=]<room>
 

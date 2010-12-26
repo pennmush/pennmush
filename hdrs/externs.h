@@ -744,7 +744,7 @@ mush_strndup(const char *src, size_t len, const char *check)
     void local_dump_database(void);
     void local_dbck(void);
     void local_shutdown(void);
-    void local_timer(void);
+    void local_timer(void *data);
     void local_connect(dbref player, int isnew, int num);
     void local_disconnect(dbref player, int num);
     void local_data_create(dbref object);

@@ -184,7 +184,9 @@ No arguments are passed to these events.
                      idle() secs, recv bytes/sent bytes/command count)
       Similar to @adisconnect, but for event system, and with more
       information available.
-  player`inactivity: Run after idle players are disconnected.
+  player`inactivity: Triggered when idle players are disconnected. Only run
+      if at least one player gets idlebooted (Or auto-hidden), not at every
+      inactivity check.
 & EVENT SOCKET
   socket`connect (descriptor, ip)
       Triggered when a socket first connects to the port. Using this and

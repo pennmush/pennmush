@@ -157,7 +157,6 @@ void rusage_stats(void);
 #endif
 int que_next(void);             /* from cque.c */
 
-void dispatch(void);            /* from timer.c */
 dbref email_register_player(DESC *d, const char *name, const char *email, const char *host, const char *ip);     /* from player.c */
 
 #ifdef SUN_OS
@@ -624,6 +623,8 @@ main(int argc, char **argv)
     load_reboot_db();
   }
 
+  init_sys_events();
+
   shovechars((Port_t) TINYPORT, (Port_t) SSLPORT);
 
   /* someone has told us to shut down */
@@ -989,7 +990,7 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
       break;
 
     /* test for events */
-    dispatch();
+    sq_run_all();
 
     /* any queued robot commands waiting? */
     /* timeout.tv_sec used to be set to que_next(), the number of

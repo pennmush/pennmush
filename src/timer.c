@@ -186,6 +186,45 @@ migrate_stuff(int amount)
   chunk_migration(actual, refs);
 }
 
+static void
+idle_event(void *data __attribute__((__unused__)))
+{
+  inactivity_check();
+  sq_register_in(60, idle_event, NULL, "PLAYER`INACTIVITY");
+}
+
+static void
+purge_event(void *data __attribute__((__unused__)))
+{
+  global_eval_context.cplr = NOTHING;
+  strcpy(global_eval_context.ccom, "purge");
+  purge();
+  strcpy(global_eval_context.ccom, "");
+  options.purge_counter = mudtime + PURGE_INTERVAL;
+  sq_register_in(PURGE_INTERVAL, purge_event, NULL, "DB`PURGE");
+}
+
+static void
+dbck_event(void *data __attribute__((__unused__)))
+{
+  global_eval_context.cplr = NOTHING;
+  strcpy(global_eval_context.ccom, "dbck");
+  dbck();
+  strcpy(global_eval_context.ccom, "");
+  options.dbck_counter = mudtime + DBCK_INTERVAL;
+  sq_register_in(DBCK_INTERVAL, dbck_event, NULL, "DB`DBCK");
+}
+
+static void
+warning_event(void *data __attribute__((__unused__)))
+{
+  options.warn_counter = options.warn_interval + mudtime;
+  strcpy(global_eval_context.ccom, "warnings");
+  run_topology();
+  strcpy(global_eval_context.ccom, "");
+  sq_register_in(options.warn_interval, warning_event, NULL, "DB`WCHECK");
+}
+
 /** Handle events that may need handling.
  * This routine is polled from bsd.c. At any call, it can handle
  * the HUP and USR1 signals. At calls that are 'on the second',
@@ -193,10 +232,9 @@ migrate_stuff(int amount)
  * check whether it's time to do other periodic processes like
  * purge, dump, or inactivity checks.
  */
-void
-dispatch(void)
+static void
+on_every_second(void *data __attribute__((__unused__)))
 {
-  static int idle_counter = 0;
 
   /* A HUP reloads configuration and reopens logs */
   if (hup_triggered) {
@@ -217,40 +255,19 @@ dispatch(void)
     }
     usr1_triggered = 0;         /* But just in case */
   }
+
+  /*
   if (!globals.on_second)
     return;
   globals.on_second = 0;
+  */
 
   mudtime = time(NULL);
 
   do_second();
-
   migrate_stuff(CHUNK_MIGRATE_AMOUNT);
 
-  if (options.purge_counter <= mudtime) {
-    /* Free list reconstruction */
-    options.purge_counter = options.purge_interval + mudtime;
-    global_eval_context.cplr = NOTHING;
-    strcpy(global_eval_context.ccom, "purge");
-    purge();
-    strcpy(global_eval_context.ccom, "");
-  }
-
-  if (options.dbck_counter <= mudtime) {
-    /* Database consistency check */
-    options.dbck_counter = options.dbck_interval + mudtime;
-    global_eval_context.cplr = NOTHING;
-    strcpy(global_eval_context.ccom, "dbck");
-    dbck();
-    strcpy(global_eval_context.ccom, "");
-  }
-
-  if (idle_counter <= mudtime) {
-    /* Inactivity check */
-    idle_counter = 60 + mudtime;
-    inactivity_check();
-  }
-
+  /* TO-DO: Move into separate events. */
   /* Database dump routines */
   if (options.dump_counter <= mudtime) {
     log_mem_check();
@@ -274,14 +291,17 @@ dispatch(void)
       flag_broadcast(0, 0, "%s", options.dump_warning_5min);
     }
   }
-  if (options.warn_interval && (options.warn_counter <= mudtime)) {
-    options.warn_counter = options.warn_interval + mudtime;
-    strcpy(global_eval_context.ccom, "warnings");
-    run_topology();
-    strcpy(global_eval_context.ccom, "");
-  }
+  sq_register_in(1, on_every_second, NULL, NULL);
+}
 
-  local_timer();
+void
+init_sys_events(void) {
+  time(&mudtime);
+  sq_register(mudtime + 60, idle_event, NULL, "PLAYER`INACTIVITY");
+  sq_register(mudtime + DBCK_INTERVAL, dbck_event, NULL, "DB`DBCK");
+  sq_register(mudtime + PURGE_INTERVAL, purge_event, NULL, "DB`PURGE");
+  sq_register(mudtime + options.warn_interval, warning_event, NULL, "DB`WCHECK");
+  sq_register(mudtime, on_every_second, NULL, NULL); 
 }
 
 sig_atomic_t cpu_time_limit_hit = 0;  /** Was the cpu time limit hit? */
@@ -385,4 +405,116 @@ reset_cpu_timer(void)
   cpu_limit_warning_sent = 0;
   timer_set = 0;
 #endif                          /* PROFILING */
+}
+
+ 
+/** System queue stuff. Timed events like dbcks and purges are handled
+ *  through this system. */
+ 
+struct squeue {
+   sq_func fun;
+   void *data;
+  time_t when;
+  char *event;
+  struct squeue *next;
+};
+
+struct squeue *sq_head = NULL;
+
+/** Register a callback function to be executed at a certain time.
+ *  \param w when to run the event
+ *  \param f the callback function
+ *  \param d data to pass to the callback
+ *  \param ev Softcode event to trigger at the same time.
+ */
+void
+sq_register(time_t w, sq_func f, void *d, const char *ev) {
+  struct squeue *sq;
+
+  sq = mush_malloc(sizeof *sq, "squeue.node");
+
+  sq->when = w;
+  sq->fun = f;
+  sq->data = d;
+  if (ev)
+    sq->event = mush_strdup(strupper(ev), "squeue.event");
+  else
+    sq->event = NULL;
+  sq->next = NULL;
+  
+  if (!sq_head)
+    sq_head = sq;
+  else if (difftime(w, sq_head->when) <= 0) {
+    sq->next = sq_head;
+    sq_head = sq;
+  } else {
+    struct squeue *c, *prev = NULL;
+    for (prev = sq_head, c = sq_head->next;
+	 c;
+	 prev = c, c = c->next) {      
+      if (difftime(w, c->when) <= 0) {
+	sq->next = c;
+	prev->next = sq;
+	return;	
+      }
+    }
+    prev->next = sq;
+  }
+}
+
+/** Register a callback function to be executed in N seconds.
+ * \param n the number of seconds to run the callback after.
+ * \param f the callback function.
+ * \param d data to pass to the callback.
+ * \param ev softcode event to trigger at the same time.
+ */
+void
+sq_register_in(int n, sq_func f, void *d, const char *ev)
+{
+  time_t now;
+  time(&now);
+  sq_register(now + n, f, d, ev);
+}
+
+/** Execute a single pending system queue event.
+ * \return true if work was done, false otherwise.
+ */
+bool
+sq_run_one(void)
+{
+  time_t now;
+  struct squeue *n;
+
+  time(&now);
+
+  if (sq_head) {
+    if (difftime(sq_head->when, now) <= 0) {      
+      sq_head->fun(sq_head->data);
+      if (sq_head->event) {
+	queue_event(SYSEVENT, sq_head->event, "%s", "");
+	mush_free(sq_head->event, "squeue.event");
+      }
+      n = sq_head->next;
+      mush_free(sq_head, "squeue.node");
+      sq_head = n;
+      return true;
+    }
+  }
+  return false;
+}
+
+/** Run all pending system queue events.
+ * \return true if work was done, false otherwise.
+ */
+bool
+sq_run_all(void)
+{
+  bool r, any = false;
+
+  do {
+    r = sq_run_one();
+    if (r)
+      any = true;
+  } while (r);
+  return any;
 }

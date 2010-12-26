@@ -393,7 +393,7 @@ static const char *time_format_1(time_t dt);
 static const char *time_format_2(time_t dt);
 static void announce_connect(DESC *d, int isnew, int num);
 static void announce_disconnect(DESC *saved, const char *reason);
-void inactivity_check(void);
+bool inactivity_check(void);
 void reopen_logs(void);
 void load_reboot_db(void);
 
@@ -4897,13 +4897,15 @@ hide_player(dbref player, int hide, char *victim)
 
 /** Perform the periodic check of inactive descriptors, and
  * disconnect them or autohide them as appropriate.
+ * \return true if any players were booted/autohidden.
  */
-void
+bool
 inactivity_check(void)
 {
   DESC *d, *nextd;
   time_t now;
   int idle, idle_for, unconnected_idle;
+  bool booted = false;
 
   now = mudtime;
   idle = INACTIVITY_LIMIT ? INACTIVITY_LIMIT : INT_MAX;
@@ -4931,6 +4933,7 @@ inactivity_check(void)
 
       if (!d->connected) {
         shutdownsock(d, "idle");
+	booted = true;
       } else if (!Can_Idle(d->player)) {
 
         queue_string(d, T("\n*** Inactivity timeout ***\n"));
@@ -4938,6 +4941,7 @@ inactivity_check(void)
                   "[%d/%s/%s] Logout by %s(#%d) <Inactivity Timeout>",
                   d->descriptor, d->addr, d->ip, Name(d->player), d->player);
         boot_desc(d, "idle");
+	booted = true;
       } else if (Unfind(d->player)) {
 
         if ((Can_Hide(d->player)) && (!Hidden(d))) {
@@ -4945,10 +4949,12 @@ inactivity_check(void)
                        T
                        ("\n*** Inactivity limit reached. You are now HIDDEN. ***\n"));
           d->hide = 1;
+	  booted = true;
         }
       }
     }
   }
+  return booted;
 }
 
 

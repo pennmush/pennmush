@@ -48,8 +48,8 @@
 static sig_atomic_t hup_triggered = 0;
 static sig_atomic_t usr1_triggered = 0;
 
-extern void inactivity_check(void);
-extern void reopen_logs(void);
+bool inactivity_check(void);
+void reopen_logs(void);
 static void migrate_stuff(int amount);
 
 #ifndef WIN32
@@ -186,14 +186,15 @@ migrate_stuff(int amount)
   chunk_migration(actual, refs);
 }
 
-static void
+static bool
 idle_event(void *data __attribute__((__unused__)))
 {
-  inactivity_check();
   sq_register_in(60, idle_event, NULL, "PLAYER`INACTIVITY");
+  return inactivity_check();
+
 }
 
-static void
+static bool
 purge_event(void *data __attribute__((__unused__)))
 {
   global_eval_context.cplr = NOTHING;
@@ -202,9 +203,10 @@ purge_event(void *data __attribute__((__unused__)))
   strcpy(global_eval_context.ccom, "");
   options.purge_counter = mudtime + PURGE_INTERVAL;
   sq_register_in(PURGE_INTERVAL, purge_event, NULL, "DB`PURGE");
+  return true;
 }
 
-static void
+static bool
 dbck_event(void *data __attribute__((__unused__)))
 {
   global_eval_context.cplr = NOTHING;
@@ -213,9 +215,10 @@ dbck_event(void *data __attribute__((__unused__)))
   strcpy(global_eval_context.ccom, "");
   options.dbck_counter = mudtime + DBCK_INTERVAL;
   sq_register_in(DBCK_INTERVAL, dbck_event, NULL, "DB`DBCK");
+  return true;
 }
 
-static void
+static bool
 warning_event(void *data __attribute__((__unused__)))
 {
   options.warn_counter = options.warn_interval + mudtime;
@@ -223,6 +226,7 @@ warning_event(void *data __attribute__((__unused__)))
   run_topology();
   strcpy(global_eval_context.ccom, "");
   sq_register_in(options.warn_interval, warning_event, NULL, "DB`WCHECK");
+  return true;
 }
 
 /** Handle events that may need handling.
@@ -232,7 +236,7 @@ warning_event(void *data __attribute__((__unused__)))
  * check whether it's time to do other periodic processes like
  * purge, dump, or inactivity checks.
  */
-static void
+static bool
 on_every_second(void *data __attribute__((__unused__)))
 {
 
@@ -292,6 +296,7 @@ on_every_second(void *data __attribute__((__unused__)))
     }
   }
   sq_register_in(1, on_every_second, NULL, NULL);
+  return false;
 }
 
 void
@@ -489,8 +494,8 @@ sq_run_one(void)
 
   if (sq_head) {
     if (difftime(sq_head->when, now) <= 0) {      
-      sq_head->fun(sq_head->data);
-      if (sq_head->event) {
+      bool r = sq_head->fun(sq_head->data);
+      if (r && sq_head->event) {
 	queue_event(SYSEVENT, sq_head->event, "%s", "");
 	mush_free(sq_head->event, "squeue.event");
       }

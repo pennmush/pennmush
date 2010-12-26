@@ -189,9 +189,7 @@ migrate_stuff(int amount)
 static bool
 idle_event(void *data __attribute__((__unused__)))
 {
-  sq_register_in(60, idle_event, NULL, "PLAYER`INACTIVITY");
   return inactivity_check();
-
 }
 
 static bool
@@ -295,18 +293,18 @@ on_every_second(void *data __attribute__((__unused__)))
       flag_broadcast(0, 0, "%s", options.dump_warning_5min);
     }
   }
-  sq_register_in(1, on_every_second, NULL, NULL);
+  //  sq_register_in(1, on_every_second, NULL, NULL);
   return false;
 }
 
 void
 init_sys_events(void) {
   time(&mudtime);
-  sq_register(mudtime + 60, idle_event, NULL, "PLAYER`INACTIVITY");
+  sq_register_loop(60, idle_event, NULL, "PLAYER`INACTIVITY");
   sq_register(mudtime + DBCK_INTERVAL, dbck_event, NULL, "DB`DBCK");
   sq_register(mudtime + PURGE_INTERVAL, purge_event, NULL, "DB`PURGE");
   sq_register(mudtime + options.warn_interval, warning_event, NULL, "DB`WCHECK");
-  sq_register(mudtime, on_every_second, NULL, NULL); 
+  sq_register_loop(1, on_every_second, NULL, NULL); 
 }
 
 sig_atomic_t cpu_time_limit_hit = 0;  /** Was the cpu time limit hit? */
@@ -479,6 +477,48 @@ sq_register_in(int n, sq_func f, void *d, const char *ev)
   time_t now;
   time(&now);
   sq_register(now + n, f, d, ev);
+}
+
+struct sq_loop {
+  sq_func fun;
+  void *data;
+  const char *event;
+  int secs;
+};
+
+static bool
+sq_loop_fun(void *arg)
+{
+  struct sq_loop *loop = arg;
+  bool res;
+
+  res = loop->fun(loop->data);
+  sq_register_in(loop->secs, sq_loop_fun, arg, loop->event);
+
+  return res; 
+}
+
+/** Register a callback function to run every N seconds.
+ * \param n the number of seconds to wait between calls.
+ * \param f the callback function.
+ * \param d data to pass to the callback.
+ * \param ev softcode event to trigger at the same time.
+ */
+void
+sq_register_loop(int n, sq_func f, void *d, const char *ev)
+{
+  struct sq_loop *loop;
+
+  loop = mush_malloc(sizeof *loop, "squeue.node");
+  loop->fun = f;
+  loop->data = d;
+  if (ev)
+    loop->event = mush_strdup(strupper(ev), "squeue.event");    
+  else
+    loop->event = NULL;
+  loop->secs = n;
+
+  sq_register_in(n, sq_loop_fun, loop, ev);
 }
 
 /** Execute a single pending system queue event.

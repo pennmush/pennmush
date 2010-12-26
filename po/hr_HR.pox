@@ -2364,7 +2364,7 @@ msgstr "Ili igraè s tim imenom veæ postoji, ili je to ime zabranjeno."
 
 #: access.c:425
 msgid "Email registration is allowed"
-msgstr "Registracija putem elektronièke poste je dozvoljena"
+msgstr "Registracija putem elektronièke po¹te je dozvoljena"
 
 #: wiz.c:1013
 msgid "Enabled."
@@ -4905,7 +4905,7 @@ msgstr "Brojaè semafora mora biti cijeli broj."
 #: src/destroy.c:341
 #, c-format
 msgid "The wrecking ball is on its way for %s's %s and its exits."
-msgstr "Slu¾ba za ru¹enje zgrada je na putu prema sobi %s korisnika '%s' i njenim izlazima."
+msgstr "Slu¾ba za ru¹enje zgrada je na putu prema sobi korisnika %s '%s' i njenim izlazima."
 
 #: src/extmail.c:1281
 #, c-format
@@ -6535,7 +6535,7 @@ msgid ""
 "MAIL: You have no mail.\n"
 msgstr ""
 "\n"
-"POSTA: Nema¹ po¹te.\n"
+"PO©TA: Nema¹ po¹te.\n"
 
 #: wiz.c:1284
 msgid ""

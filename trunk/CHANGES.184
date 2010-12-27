@@ -69,6 +69,7 @@ Minor Changes:
  * The debug attribute flag now shows more debug info. [MG]
 
 Fixes:
+ * Fixing list type autodetect. [GM]
  * Help fixes by Daniel Powell. [MG]
  * Connect/disconnect messages for combined channels incorrectly showed
    NOSPOOF data. Reported by Sketch. [MG]

@@ -974,6 +974,7 @@ autodetect_2lists(char *ptrs[], int nptrs, char *ptrs2[], int nptrs2)
   if (a == b) {
     return a;
   }
+
   /* Float and numeric means float. */
   if ((a == NUMERIC_LIST || a == FLOAT_LIST) &&
       (b == NUMERIC_LIST || b == FLOAT_LIST)) {
@@ -1010,11 +1011,13 @@ autodetect_list(char *ptrs[], int nptrs)
       if (is_strict_number(ptrs[i])) {
         lt = L_FLOAT;
         sort_type = FLOAT_LIST;
+        break;
       }
     case L_DBREF:
       if (is_objid(ptrs[i]) && (i == 0 || lt == L_DBREF)) {
         lt = L_DBREF;
         sort_type = DBREF_LIST;
+        break;
       }
     case L_ALPHANUM:
       return MAGIC_LIST;

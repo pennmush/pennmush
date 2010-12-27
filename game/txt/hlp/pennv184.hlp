@@ -22,8 +22,13 @@ Events:
  * sql events: sql`connect, sql`disconnect.
  * signal events: signal`usr1, signal`usr2.
  * player events: player`create, player`fail, player`connect,
-   player`disconnect.
+   player`disconnect, player`inactivity.
  * socket events: socket`connect, socket`disconnect
+ * database events: db`dbck, db`purge, db`wcheck
+ * Periodic system events like warnings checks and db consistency
+   checks are now handled by a timed queue and integrated with
+   softcode events. Local hackers: This involves changes to
+   local.c. [SW]
 
 Commands:
  * @mapsql passes row results to attributes. Suggested by Mercutio. [GM]
@@ -59,6 +64,7 @@ Minor Changes:
  * The debug attribute flag now shows more debug info. [MG]
 
 Fixes:
+ * Fixing list type autodetect. [GM]
  * Help fixes by Daniel Powell. [MG]
  * Connect/disconnect messages for combined channels incorrectly showed
    NOSPOOF data. Reported by Sketch. [MG]

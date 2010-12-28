@@ -227,6 +227,52 @@ warning_event(void *data __attribute__((__unused__)))
   return true;
 }
 
+struct dbsave_warn_data {
+  int secs;
+  const char *event;
+  char *msg;
+};
+
+struct dbsave_warn_data dbsave_5min = { 300, "DUMP`5MIN", options.dump_warning_5min };
+struct dbsave_warn_data dbsave_1min = { 60, "DUMP`1MIN", options.dump_warning_1min };
+
+static bool
+dbsave_warn_event(void *data)
+{
+  struct dbsave_warn_data *when = data;
+  
+  queue_event(SYSEVENT, when->event, "%s,%d",
+	      when->msg, NO_FORK ? 0 : 1);
+  if (NO_FORK && *(when->msg))
+    flag_broadcast(0, 0, "%s", when->msg);
+  return false;
+}
+
+static void
+reg_dbsave_warnings(void)
+{
+  if (DUMP_INTERVAL > 300)
+    sq_register_in(DUMP_INTERVAL - 300, dbsave_warn_event, &dbsave_5min, NULL);
+  if (DUMP_INTERVAL > 60)
+    sq_register_in(DUMP_INTERVAL - 60, dbsave_warn_event, &dbsave_1min, NULL);
+}
+
+static bool
+dbsave_event(void *data __attribute__((__unused__)))
+{
+  log_mem_check();
+  options.dump_counter = options.dump_interval + mudtime;
+  strcpy(global_eval_context.ccom, "dump");
+  fork_and_dump(1);
+  strcpy(global_eval_context.ccom, "");
+  flag_broadcast(0, "ON-VACATION", "%s",
+		 T
+		 ("Your ON-VACATION flag is set! If you're back, clear it."));  
+  reg_dbsave_warnings();
+  sq_register_in(DUMP_INTERVAL, dbsave_event, NULL, NULL);
+  return false;
+}
+
 /** Handle events that may need handling.
  * This routine is polled from bsd.c. At any call, it can handle
  * the HUP and USR1 signals. At calls that are 'on the second',
@@ -258,42 +304,11 @@ on_every_second(void *data __attribute__((__unused__)))
     usr1_triggered = 0;         /* But just in case */
   }
 
-  /*
-  if (!globals.on_second)
-    return;
-  globals.on_second = 0;
-  */
-
   mudtime = time(NULL);
 
   do_second();
   migrate_stuff(CHUNK_MIGRATE_AMOUNT);
 
-  /* TO-DO: Move into separate events. */
-  /* Database dump routines */
-  if (options.dump_counter <= mudtime) {
-    log_mem_check();
-    options.dump_counter = options.dump_interval + mudtime;
-    strcpy(global_eval_context.ccom, "dump");
-    fork_and_dump(1);
-    strcpy(global_eval_context.ccom, "");
-    flag_broadcast(0, "ON-VACATION", "%s",
-                   T
-                   ("Your ON-VACATION flag is set! If you're back, clear it."));
-  } else if (options.dump_counter - 60 == mudtime) {
-    queue_event(SYSEVENT, "DUMP`1MIN", "%s,%d",
-                options.dump_warning_1min, NO_FORK ? 0 : 1);
-    if (NO_FORK && *options.dump_warning_1min) {
-      flag_broadcast(0, 0, "%s", options.dump_warning_1min);
-    }
-  } else if (options.dump_counter - 300 == mudtime) {
-    queue_event(SYSEVENT, "DUMP`5MIN", "%s,%d",
-                options.dump_warning_5min, NO_FORK ? 0 : 1);
-    if (NO_FORK && *options.dump_warning_5min) {
-      flag_broadcast(0, 0, "%s", options.dump_warning_5min);
-    }
-  }
-  //  sq_register_in(1, on_every_second, NULL, NULL);
   return false;
 }
 
@@ -304,6 +319,8 @@ init_sys_events(void) {
   sq_register(mudtime + DBCK_INTERVAL, dbck_event, NULL, "DB`DBCK");
   sq_register(mudtime + PURGE_INTERVAL, purge_event, NULL, "DB`PURGE");
   sq_register(mudtime + options.warn_interval, warning_event, NULL, "DB`WCHECK");
+  reg_dbsave_warnings();
+  sq_register(mudtime + DUMP_INTERVAL, dbsave_event, NULL, NULL);
   sq_register_loop(1, on_every_second, NULL, NULL); 
 }
 

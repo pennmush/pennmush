@@ -40,7 +40,7 @@ local_startup(void)
 * if the softcode event should be triggered, false if it shouldn't.
 */
 #if 0 /* Change to 1 if you need local_timer functionality. */
-  sq_register_in(1, local_time, NULL, NULL);      
+  sq_register_in(1, local_timer, NULL, NULL);      
 #endif
 }
 

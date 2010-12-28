@@ -14,6 +14,7 @@
 #include <limits.h>
 #include <signal.h>
 #include <string.h>
+#include <stdarg.h>
 #ifdef I_SYS_TIME
 #include <sys/time.h>
 #ifdef TIME_WITH_SYS_TIME

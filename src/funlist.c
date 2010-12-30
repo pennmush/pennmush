@@ -106,6 +106,11 @@ list2arr(char *r[], int max, char *list, char sep, int nullok)
   char *aptr;
   size_t len;
 
+  /* Quick-casing an empty list. */
+  if (!*list) {
+    return 0;
+  }
+
   aptr = remove_markup(list, &len);
 
   memcpy(list, aptr, len);

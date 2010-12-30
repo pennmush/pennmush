@@ -75,6 +75,8 @@ Fixes:
    NOSPOOF data. Reported by Sketch. [MG]
  * The delimiter between combined channel names in @chatformat is now '|'
    instead of ' | ', as documented. Reported by Trinsec. [MG]
+ * ansi(h,) now returns absolutely nothing, instead of an ansi-highlighted
+   nothing. Fixes a few minor/obscure bugs. [MG]
 
 Version 1.8.4 patchlevel 2                                 Dec 06,  2010
 

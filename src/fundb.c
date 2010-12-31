@@ -565,6 +565,11 @@ FUNCTION(fun_powers)
 {
   dbref it;
 
+  if (nargs == 0) {
+    safe_str(list_all_flags("POWER", NULL, executor, 0x2), buff, bp);
+    return;
+  }
+
   if (nargs == 2) {
     if (!command_check_byname(executor, "@power") || fun->flags & FN_NOSIDEFX) {
       safe_str(T(e_perm), buff, bp);

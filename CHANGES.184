@@ -56,6 +56,8 @@ Functions:
    dbref. Suggested by Paige. [GM]
  * convutctime() and convtime(<time>, utc) to convert a timestring to
    # of seconds since UTC. Patch by Minion.
+ * powers() with no arguments now returns a list of powers, similar to
+   lflags() with no args. [MG]
 
 Minor Changes:
  * The Can_Nspemit @power has been renamed to Can_Spoof, to better reflect

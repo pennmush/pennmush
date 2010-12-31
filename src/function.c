@@ -633,7 +633,7 @@ FUNTAB flist[] = {
   {"PORTS", fun_ports, 1, 1, FN_REG | FN_STRIPANSI},
   {"POS", fun_pos, 2, 2, FN_REG | FN_STRIPANSI},
   {"POSS", fun_poss, 1, 1, FN_REG | FN_STRIPANSI},
-  {"POWERS", fun_powers, 1, 2, FN_REG | FN_STRIPANSI},
+  {"POWERS", fun_powers, 0, 2, FN_REG | FN_STRIPANSI},
   {"PROMPT", fun_prompt, 2, -2, FN_REG},
   {"PUEBLO", fun_pueblo, 1, 1, FN_REG | FN_STRIPANSI},
   {"QUOTA", fun_quota, 1, 1, FN_REG | FN_STRIPANSI},

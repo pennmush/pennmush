@@ -3672,15 +3672,18 @@ See also: subj(), obj(), aposs()
 
 See also: root()
 & POWERS()
+  powers()
   powers(<object>)
   powers(<object>, <power>)
 
-  The first form returns a space-separate list of powers possessed by
-  the object.  If the object does not exist, #-1 will be returned.
-
-  The second form attempts to set <power> on <object>, as per @power.
+  With no arguments, powers() returns a space-separated list of all defined
+  @powers on the MUSH. With one argument, it returns a list of the powers
+  possessed by <object>. 
   
-See also: andlpowers(), orlpowers()
+  With two arguments, it attempts to set <power> on <object>, as per
+  @power <object>=<power>.
+  
+See also: andlpowers(), orlpowers(), @power, POWERS LIST
 & QUOTA()
   quota(<player>)  
   

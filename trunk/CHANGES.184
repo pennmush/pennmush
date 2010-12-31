@@ -33,7 +33,8 @@ Events:
  * Periodic system events like warnings checks and db consistency
    checks are now handled by a timed queue and integrated with
    softcode events. Local hackers: This involves changes to
-   local.c. [SW]
+   local.c. If you have no changes in local.c, just delete the file.
+   Otherwise, see HACKING.184 for more info. [SW]
 
 Commands:
  * @mapsql passes row results to attributes. Suggested by Mercutio. [GM]

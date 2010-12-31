@@ -40,7 +40,7 @@ local_startup(void)
 * if the softcode event should be triggered, false if it shouldn't.
 */
 #if 0 /* Change to 1 if you need local_timer functionality. */
-  sq_register_in(1, local_timer, NULL, NULL);      
+  sq_register_loop(1, local_timer, NULL, NULL);      
 #endif
 }
 
@@ -124,7 +124,6 @@ local_timer(void *data __attribute__((__unused__)))
 {
 
   /* The callback has to be set back up or it'll only run once. */
-  sq_register_in(1, local_timer, NULL, NULL);
   return false;
 }
 

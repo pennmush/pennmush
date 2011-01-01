@@ -153,8 +153,13 @@ static lock_list *getlockstruct_noparent(dbref thing, lock_type type);
 slab *lock_slab = NULL;
 static lock_list *next_free_lock(const void *hint);
 static void free_lock(lock_list *ll);
+#ifdef USE_JIT
+static void maybe_free_jit_memory(dbref thing);
+#endif
 
 extern int unparsing_boolexp;
+
+
 
 /** Return a list of all available locks
  * \param buff the buffer
@@ -479,14 +484,13 @@ add_lock(dbref player, dbref thing, lock_type type, boolexp key, privbits flags)
     }
     /* We're replacing an existing lock. */
     free_boolexp(ll->key);
-    /* Libjit doesn't seem to let you free an individual function
-       without keeping a seperate context object for each one.  I'm
-       leaning towards per-object contexts for now. Potential memory
-       leak here. */
     ll->fun = NULL;
     ll->flags &= ~LF_JIT_FAIL;
     ll->key = key;
     ll->creator = player;
+#ifdef USE_JIT
+    maybe_free_jit_memory(thing);
+#endif
     if (flags != LF_DEFAULT)
       ll->flags = flags;
   } else {
@@ -591,6 +595,57 @@ free_one_lock_list(lock_list *ll)
   free_lock(ll);
 }
 
+#ifdef USE_JIT
+static void
+free_lock_jit_data(dbref thing)
+{
+  struct lock_jit_metadata *meta;
+  meta = get_objdata(thing, "lock-jit");
+  if (meta) {
+    jit_context_destroy(meta->context);
+    free_string_pool(meta->pool);
+    mush_free(meta, "lock.jit.metadata");
+    set_objdata(thing, "lock-jit", NULL);
+  }
+}
+
+static int
+lock_count(dbref thing)
+{
+  int n = 0;
+  lock_list *ll;
+
+  for (ll = Locks(thing); ll; ll = ll->next) 
+    n += 1;
+
+  return n;
+}
+
+/* How many extra compiled boolexps associated with an object but not
+   used in a lock key should there be before the extra space is
+   reclaimed? */
+#define LOCK_JIT_GC_THRESHOLD 5
+
+static void
+maybe_free_jit_memory(dbref thing)
+{
+  struct lock_jit_metadata *meta;
+  int nlocks;
+  lock_list *ll;
+  
+  meta = get_objdata(thing, "lock-jit");
+  nlocks = lock_count(thing);
+  
+  if (meta && (meta->nfuns - nlocks) >= LOCK_JIT_GC_THRESHOLD) {
+    do_rawlog(LT_TRACE, "Cleaning up jitted locks on #%d", thing);
+    for (ll = Locks(thing); ll; ll = ll->next)
+      ll->fun = NULL;
+    free_lock_jit_data(thing);
+  }      
+}
+
+#endif
+
 /** Delete a lock from an object (primitive).
  * Another primitive routine.
  * \param player the enactor, for permission checking.
@@ -613,12 +668,17 @@ delete_lock(dbref player, dbref thing, lock_type type)
       ll = *llp;
       *llp = ll->next;
       free_one_lock_list(ll);
+#ifdef USE_JIT
+      maybe_free_jit_memory(thing);
+#endif
       return 1;
     } else
       return 0;
   } else
     return 1;
 }
+
+
 
 /** Free all locks in a list.
  * Used by the object destruction routines.
@@ -635,16 +695,7 @@ free_locks(dbref thing)
   }
   Locks(thing) = NULL;
 #ifdef USE_JIT
-  {
-    struct lock_jit_metadata *meta;
-    meta = get_objdata(thing, "lock-jit");
-    if (meta) {
-      jit_context_destroy(meta->context);
-      free_string_pool(meta->pool);
-      mush_free(meta, "lock.jit.metadata");
-      set_objdata(thing, "lock-jit", NULL);
-    }
-  }
+  free_lock_jit_data(thing);
 #endif
 }
 

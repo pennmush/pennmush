@@ -2391,9 +2391,11 @@ compile_boolexp(dbref thing, boolexp b)
 
       if (j->loc == pc) {
 	jit_insn_label(fun, &j->label);
+	if (j == jumps)
+	  jumps = jt;
 	mush_free(j, "lock.jit.jump");
       }
-      j  = jt;
+      j = jt;
     }
 
     pc += INSN_LEN;
@@ -2578,11 +2580,13 @@ compile_boolexp(dbref thing, boolexp b)
 
  done:
 
+#if 0
   {
     /* For debugging. */
     extern FILE *tracelog_fp;
     jit_dump_function(tracelog_fp, fun, "boolexp");
   }
+#endif
 
   if (fail || !jit_function_compile(fun)) {
     jit_function_abandon(fun);

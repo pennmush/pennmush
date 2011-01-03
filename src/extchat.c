@@ -3120,7 +3120,7 @@ chat_player_announce(dbref player, char *msg, int ungag)
               safe_str(ChanName(c), buff, &bp);
               safe_strl(" | ", 3, buff, &bp);
               safe_str(ChanName(c), buff2, &bp2);
-              safe_chr('|', buff, &bp2);
+              safe_chr('|', buff2, &bp2);
             }
           }
         }

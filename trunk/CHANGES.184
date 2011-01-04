@@ -60,6 +60,7 @@ Functions:
    # of seconds since UTC. Patch by Minion.
  * powers() with no arguments now returns a list of powers, similar to
    lflags() with no args. [MG]
+ * trim() can now trim multiple characters. [MG] [GM]
 
 Minor Changes:
  * The Can_Nspemit @power has been renamed to Can_Spoof, to better reflect

@@ -70,6 +70,10 @@ Minor Changes:
  * page and @mail will report to you if your recipient(s) cannot reply
    to you. Suggested by Paige. [GM]
  * The debug attribute flag now shows more debug info. [MG]
+ * @oemit now does better object matching, can match names with spaces when
+   enclosed in double quotes, and, when given a <room> but no matching
+   objects, shows the message to everyone in the room, instead of noone.
+   From a bug reported by Paige. [MG]
 
 Fixes:
  * Fixing list type autodetect. [GM]

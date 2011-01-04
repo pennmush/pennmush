@@ -5245,14 +5245,14 @@ See also: merge(), splice()
 & TRIM()
 & TRIMPENN()
 & TRIMTINY()
-  trim(<string>[, <character to trim>[, <trim style>]])
-  trimpenn(<string>[, <character to trim>[, <trim style>]])
-  trimtiny(<string>[, <trim style>[, <character to trim>]])
+  trim(<string>[, <characters to trim>[, <trim style>]])
+  trimpenn(<string>[, <characters to trim>[, <trim style>]])
+  trimtiny(<string>[, <trim style>[, <characters to trim>]])
  
-  trim() strips leading and/or trailing occurances of <character to trim>
-  from <string>.
+  trim() strips leading and/or trailing occurances of each of the 
+  <characters to trim> from <string>.
 
-  <character to trim> defaults to a space.
+  <characters to trim> defaults to a space.
   
   If no <trim style> is specified, characters are trimmed from both the
   left and right sides of the string. If the 'l' trim style is specified, 
@@ -5262,7 +5262,7 @@ See also: merge(), splice()
   off of both sides of the string.
 
   Normally, the arguments for trim() are in the same order as trimpenn().
-  However, if the tiny_trim_fun @config option is on, the <character to trim>
+  However, if the tiny_trim_fun @config option is on, the <characters to trim>
   and <trim style> arguments are reversed. Use trimpenn() or trimtiny() if
   you want to specify a particular argument sequence no matter how the option
   is set.
@@ -5274,6 +5274,8 @@ See also: merge(), splice()
       You say, "BLAM"
       > say trim(-----> WOW <---,-,r)
       You say, "-----> WOW <"
+      > say trim(=~=~=~= Trim Test =~=~=~=,= ~)
+      You say "Trim Test"
 
 See also: squish(), edit()
 & TRUNC()

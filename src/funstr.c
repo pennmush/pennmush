@@ -1243,35 +1243,36 @@ FUNCTION(fun_trim)
    * takes a delimiter argument and trim style.
    */
 
-  char sep;
+
   enum trim_style { TRIM_LEFT, TRIM_RIGHT, TRIM_BOTH } trim;
   int trim_style_arg, trim_char_arg;
   ansi_string *as;
   int i;
+  char *delims;
+  char totrim[0x100];
+
+  memset(totrim, 0, 0x100);
 
   /* Alas, PennMUSH and TinyMUSH used different orders for the arguments.
    * We'll give the users an option about it
    */
   if (!strcmp(called_as, "TRIMTINY")) {
-    trim_style_arg = 2;
-    trim_char_arg = 3;
+    trim_style_arg = 1;
+    trim_char_arg = 2;
   } else if (!strcmp(called_as, "TRIMPENN")) {
-    trim_style_arg = 3;
-    trim_char_arg = 2;
-  } else if (TINY_TRIM_FUN) {
     trim_style_arg = 2;
-    trim_char_arg = 3;
-  } else {
-    trim_style_arg = 3;
+    trim_char_arg = 1;
+  } else if (TINY_TRIM_FUN) {
+    trim_style_arg = 1;
     trim_char_arg = 2;
+  } else {
+    trim_style_arg = 2;
+    trim_char_arg = 1;
   }
 
-  if (!delim_check(buff, bp, nargs, args, trim_char_arg, &sep))
-    return;
-
   /* If a trim style is provided, it must be the third argument. */
-  if (nargs >= trim_style_arg) {
-    switch (*args[trim_style_arg - 1]) {
+  if (nargs > trim_style_arg) {
+    switch (*args[trim_style_arg]) {
     case 'l':
     case 'L':
       trim = TRIM_LEFT;
@@ -1287,6 +1288,16 @@ FUNCTION(fun_trim)
   } else
     trim = TRIM_BOTH;
 
+  if (nargs > trim_char_arg && args[trim_char_arg] && *args[trim_char_arg]) {
+    delims = args[trim_char_arg];
+    while (*delims) {
+      totrim[(unsigned char) *delims] = 1;
+      delims++;
+    }
+  } else {
+    totrim[(unsigned char) " "] = 1;
+  }
+
   /* We will never need to check for buffer length overrunning, since
    * we will always get a smaller string. Thus, we can copy at the
    * same time we skip stuff.
@@ -1296,7 +1307,7 @@ FUNCTION(fun_trim)
   as = parse_ansi_string(args[0]);
   if (trim != TRIM_RIGHT) {
     for (i = 0; i < as->len; i++) {
-      if (as->text[i] != sep)
+      if (!totrim[(unsigned char) as->text[i]])
         break;
       as->text[i] = '\0';
     }
@@ -1304,7 +1315,7 @@ FUNCTION(fun_trim)
   /* Cut off the trailing stuff, if appropriate. */
   if ((trim != TRIM_LEFT)) {
     for (i = as->len - 1; i >= 0; i--) {
-      if (as->text[i] != sep)
+      if (!totrim[(unsigned char) as->text[i]])
         break;
       as->text[i] = '\0';
     }

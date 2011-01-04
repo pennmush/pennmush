@@ -496,8 +496,12 @@ COMMAND(cmd_halt)
 
 COMMAND(cmd_hide)
 {
-  hide_player(player, !(SW_ISSET(sw, SWITCH_NO) || SW_ISSET(sw, SWITCH_OFF)),
-              arg_left);
+  int status = 2;
+  if (SW_ISSET(sw, SWITCH_NO) || SW_ISSET(sw, SWITCH_OFF))
+    status = 0;
+  else if (SW_ISSET(sw, SWITCH_YES) || SW_ISSET(sw, SWITCH_ON))
+    status = 1;
+  hide_player(player, status, arg_left);
 }
 
 COMMAND(cmd_hook)

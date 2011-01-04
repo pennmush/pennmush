@@ -4819,11 +4819,12 @@ FUNCTION(fun_ports)
 }
 
 
-/** Hide or unhide a player.
+/** Hide or unhide the specified descriptor/player.
  * Although hiding is a per-descriptor state, this function sets all of
  * a player's connected descriptors to be hidden.
- * \param player dbref of player to hide.
- * \param hide if 1, hide; if 0, unhide.
+ * \param player dbref of player using command.
+ * \param hide if 1, hide; if 0, unhide. If 2, unhide if all connections are hidden, hide if any are unhidden
+ * \param victim descriptor, or name of player, to hide (or NULL to hide enacting player)
  */
 void
 hide_player(dbref player, int hide, char *victim)
@@ -4856,6 +4857,8 @@ hide_player(dbref player, int hide, char *victim)
         notify(player, T("Noone is connected to that descriptor."));
         return;
       }
+      if (hide == 2)
+        hide = !(d->hide);
       d->hide = hide;
       if (hide) {
         notify(player, T("Connection hidden."));
@@ -4877,6 +4880,17 @@ hide_player(dbref player, int hide, char *victim)
     notify(player, T("That player is not online."));
     return;
   }
+
+  if (hide == 2) {
+    hide = 0;
+    DESC_ITER_CONN(d) {
+      if (d->player == thing && !d->hide) {
+        hide = 1;
+        break;
+      }
+    }
+  }
+
   DESC_ITER_CONN(d) {
     if (d->player == thing)
       d->hide = hide;

@@ -1981,8 +1981,11 @@ See also: HAVEN, page, @lock, @away, @idle
   @power to affect your own connections; only Wizards can affect other
   players' connections.
   
-  The /on and /yes switches (which are the default, if no <switch> is given)
-  hide a connection, while /off and /no unhide the connection.
+  The /on and /yes switches hide connections, while /off and /no unhide
+  connections. If no switch is given, the command acts as a toggle: for a
+  single descriptor, the hide status is reversed. For a player, if all his
+  connections are hidden, they will be unhidden. If any are unhidden, they
+  will all be hidden.
 
 See also: hidden(), WHO, lwho(), lports(), ports()
 & @idescribe

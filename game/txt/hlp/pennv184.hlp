@@ -39,6 +39,8 @@ Commands:
    'help @chan ad2' will be expanded to match 'help @channel admin2'. [MG]
  * @force/inplace, @switch/inplace and @select/inplace now run their commands
    without queueing new events. These are limited by the @include limit. [GM]
+ * @hide without a switch now toggles hide status, rather than defaulting to
+   @hide/on. [MG]
    
 Attributes:
  * New no_debug flag, which prevents debug info being shown for an attribute

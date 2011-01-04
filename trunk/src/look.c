@@ -707,7 +707,7 @@ do_look_at(dbref player, const char *name, int key)
            results when the remote exit is set transparent, and possibly lets you look at the back
            of the door you're looking through, which is odd */
         thing =
-          match_result(box, objname, NOTYPE, MAT_POSSESSION | MAT_ENGLISH);
+          match_result_relative(player, box, objname, NOTYPE, MAT_OBJ_CONTENTS);
         if (!GoodObject(thing)) {
           notify(player, T("I don't see that here."));
           return;
@@ -715,7 +715,7 @@ do_look_at(dbref player, const char *name, int key)
         look_simple(player, thing);
         return;
       }
-      thing = match_result(box, objname, NOTYPE, MAT_POSSESSION | MAT_ENGLISH);
+      thing = match_result_relative(player, box, objname, NOTYPE, MAT_OBJ_CONTENTS);
       if (thing == NOTHING) {
         notify(player, T("I don't see that here."));
         return;
@@ -756,7 +756,6 @@ do_look_at(dbref player, const char *name, int key)
       return;
     }
   }
-
 
   switch (Typeof(thing)) {
   case TYPE_ROOM:

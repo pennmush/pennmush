@@ -192,7 +192,8 @@ do_say(dbref player, const char *tbuf1)
 void
 do_oemit_list(dbref player, char *list, const char *message, int flags)
 {
-  char *temp, *p, *s;
+  char *temp, *p;
+  const char *s;
   dbref who;
   dbref pass[12], locs[10];
   int i, oneloc = 0;
@@ -239,9 +240,9 @@ do_oemit_list(dbref player, char *list, const char *message, int flags)
     temp = list;
   }
 
-  s = trim_space_sep(temp, ' ');
-  while (s) {
-    p = split_token(&s, ' ');
+  s = temp;
+  while (s && *s) {
+    p = next_in_list(&s);
     /* If a room was given, we match relative to the room */
     if (oneloc)
       who = match_result_relative(player, pass[1], p, NOTYPE, MAT_OBJ_CONTENTS);
@@ -253,7 +254,8 @@ do_oemit_list(dbref player, char *list, const char *message, int flags)
      * locs[0..10] are corresponding dbrefs of locations
      */
     if (GoodObject(who) && GoodObject(Location(who))
-        && (Loud(player) || eval_lock(player, Location(who), Speech_Lock))
+        && (Loud(player) || (oneloc && Location(who) == pass[1]) ||
+            eval_lock(player, Location(who), Speech_Lock))
       ) {
       if (pass[0] < 10) {
         locs[pass[0]] = Location(who);
@@ -266,12 +268,23 @@ do_oemit_list(dbref player, char *list, const char *message, int flags)
     }
   }
 
+  if (flags & PEMIT_SPOOF)
+    na_flags |= NA_SPOOF;
+
+  if (oneloc && pass[0] == 0) {
+    /* A specific location was given, but there were no matching objects to
+     * omit, so just remit */
+    notify_anything_loc(player, na_loc, &pass[1], ns_esnotify, na_flags,
+                        message, pass[1]);
+    do_audible_stuff(pass[1], NULL, 0, message);
+    return;
+  }
+
+
   /* Sort the list of rooms to oemit to so we don't oemit to the same
    * room twice */
   qsort((void *) locs, pass[0], sizeof(locs[0]), dbref_comp);
 
-  if (flags & PEMIT_SPOOF)
-    na_flags |= NA_SPOOF;
   for (i = 0; i < pass[0]; i++) {
     if (i != 0 && locs[i] == locs[i - 1])
       continue;

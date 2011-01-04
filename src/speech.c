@@ -244,7 +244,7 @@ do_oemit_list(dbref player, char *list, const char *message, int flags)
     p = split_token(&s, ' ');
     /* If a room was given, we match relative to the room */
     if (oneloc)
-      who = match_result(pass[1], p, NOTYPE, MAT_POSSESSION | MAT_ABSOLUTE);
+      who = match_result_relative(player, pass[1], p, NOTYPE, MAT_OBJ_CONTENTS);
     else
       who = noisy_match_result(player, p, NOTYPE, MAT_OBJECTS);
     /* pass[0] tracks the number of valid players we've found.

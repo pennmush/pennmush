@@ -574,7 +574,7 @@ do_get(dbref player, const char *what)
         notify_format(player, T("I can't tell which %s."), boxname);
         return;
       }
-      thing = match_result(box, objname, NOTYPE, MAT_POSSESSION | MAT_ENGLISH);
+      thing = match_result_relative(player, box, objname, NOTYPE, MAT_OBJ_CONTENTS);
       if (thing == NOTHING) {
         notify(player, T("I don't see that here."));
         return;

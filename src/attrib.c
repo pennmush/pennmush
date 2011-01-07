@@ -1774,8 +1774,8 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str)
  * \param s value to set the attribute to (or NULL to clear).
  * \param player enactor, for permission checks.
  * \param flags attribute flags.
- * \retval -1 failure of one sort.
- * \retval 0 failure of another sort.
+ * \retval -1 failure - invalid value for attribute.
+ * \retval 0 failure for other reason
  * \retval 1 success.
  */
 int

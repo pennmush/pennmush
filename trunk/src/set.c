@@ -714,12 +714,13 @@ do_cpattr(dbref player, char *oldpair, char **newpair, int move, int noflagcopy)
       newobj = noisy_match_result(player, tbuf1, NOTYPE, MAT_EVERYTHING);
       if (GoodObject(newobj) &&
           ((newobj != oldobj) || strcasecmp(AL_NAME(a), q)) &&
-          do_set_atr(newobj, q, text, player, 1))
+          (do_set_atr(newobj, q, text, player, 1) == 1)) {
         copies++;
-      /* copy the attribute flags too */
-      if (!noflagcopy)
-        copy_attrib_flags(player, newobj,
-                          atr_get_noparent(newobj, strupper(q)), a->flags);
+        /* copy the attribute flags too */
+        if (!noflagcopy)
+          copy_attrib_flags(player, newobj,
+                            atr_get_noparent(newobj, strupper(q)), a->flags);
+      }
 
     }
   }
@@ -876,7 +877,7 @@ gedit_helper(dbref player, dbref thing,
   *tbufap = '\0';
 
   if (gargs->doit) {
-    if (do_set_atr(thing, AL_NAME(a), tbuf1, player, 0) &&
+    if ((do_set_atr(thing, AL_NAME(a), tbuf1, player, 0) == 1) &&
         !AreQuiet(player, thing)) {
       if (!ansi_long_flag && ShowAnsi(player))
         notify_format(player, T("%s - Set: %s"), AL_NAME(a), tbuf_ansi);

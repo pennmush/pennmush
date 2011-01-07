@@ -90,6 +90,8 @@ Fixes:
  * @edit sometimes displayed a success message even when it failed. [MG]
  * @cpattr/@mvattr would sometimes copy attribute flags, even when the
    attribute value couldn't be copied. [MG]
+ * Bug in attribute comparisons added in p2 could cause attributes to
+   not be found at times. [MG]
 
 Version 1.8.4 patchlevel 2                                 Dec 06,  2010
 

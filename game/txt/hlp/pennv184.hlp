@@ -82,6 +82,9 @@ Fixes:
    instead of ' | ', as documented. Reported by Trinsec. [MG]
  * ansi(h,) now returns absolutely nothing, instead of an ansi-highlighted
    nothing. Fixes a few minor/obscure bugs. [MG]
+ * @edit sometimes displayed a success message even when it failed. [MG]
+ * @cpattr/@mvattr would sometimes copy attribute flags, even when the
+   attribute value couldn't be copied. [MG]
 
 & 1.8.4p2
 Version 1.8.4 patchlevel 2                                 Dec 06,  2010

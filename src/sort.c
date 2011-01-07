@@ -494,7 +494,7 @@ attr_comp(const void *s1, const void *s2)
   const s_rec *sr1 = (const s_rec *) s1;
   const s_rec *sr2 = (const s_rec *) s2;
 
-  return compare_attr_names(sr1->memo.str.s, sr2->memo.str.s);
+  return compare_attr_names(sr1->memo.str.s, sr2->memo.str.s) * sort_order;
 
 }
 
@@ -526,11 +526,11 @@ compare_attr_names(const char *attr1, const char *attr2)
     cmp = strcoll(a1, a2);
     if (cmp != 0) {
       /* Current branch differs */
-      return cmp * sort_order;
+      return (cmp < 0 ? -1 : 1);
     }
     if (branches1 != branches2) {
       /* Current branch is the same, but one attr has more branches */
-      return (branches1 < branches2 ? -1 : 1) * sort_order;
+      return (branches1 < branches2 ? -1 : 1);
     }
     a1 = next1;
     a2 = next2;
@@ -883,7 +883,7 @@ slist_uniq(s_rec *sp, int n, ListTypeInfo *lti)
 
   /* Quick sanity check. */
   if (n < 2) return n;
-  
+
   /* First item's always 'unique' :D. */
   count = 1;
 

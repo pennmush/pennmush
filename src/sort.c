@@ -148,7 +148,7 @@ u_comp(const void *s1, const void *s2)
     return 0;
   n = parse_integer(result);
 
-  return n * sort_order;
+  return n;
 }
 
 

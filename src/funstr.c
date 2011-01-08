@@ -1295,7 +1295,7 @@ FUNCTION(fun_trim)
       delims++;
     }
   } else {
-    totrim[(unsigned char) " "] = 1;
+    totrim[(unsigned char) ' '] = 1;
   }
 
   /* We will never need to check for buffer length overrunning, since

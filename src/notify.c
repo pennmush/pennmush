@@ -791,7 +791,7 @@ notify_anything_loc(dbref speaker, na_lookup func,
             continue;
 
           if (!(flags & NA_SPOOF)
-              && (nsfunc && ((Nospoof(target) && (target != speaker))
+              && (nsfunc && ((Nospoof(target) && ((target != speaker) || Paranoid(target)))
                              || (flags & NA_NOSPOOF)))) {
             if (Paranoid(target) || (flags & NA_PARANOID)) {
               if (!havepara) {

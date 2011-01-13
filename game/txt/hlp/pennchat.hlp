@@ -441,10 +441,9 @@ See also: cflags(), clflags()
   @clock/hide <channel>[=<key>]
   @clock/mod <channel>[=<key>]
 
-  The @clock command modifies the a lock on a chat channel. If no <key> is
-  specified, the lock is removed. Evaluation locks will not work with @clock,
-  but you can use an indirect lock which uses evaluation locks. For an
-  explaination of the <key> argument, see 'help @lock'.
+  The @clock command modifies the @lock-style lock on a chat channel. If no 
+  <key> is specified, the lock is removed. See "help lockkeys" for an
+  explaination of <key>.
 
   The "join" lock restricts who can join the channel.
   The "speak" lock restricts who can speak on the channel.
@@ -453,18 +452,25 @@ See also: cflags(), clflags()
   The "mod" lock restricts who can modify the channel. If you pass the
   mod lock on the channel, you can do anything short of deleting it.
 
-  When new channels are added, the mod lock is set to the
-  creator/owner, and all other locks are unlocked.
-
+  When new channels are added, the mod lock is set to the creator/owner
+  (=<creator>), and all other locks are unlocked.
+  
   Continued in 'help @clock2'.
 & @clock2
-  You can use indirect @clocks to lock a channel to a lock of any type
-  (including evaluation locks) on a VISUAL object. This channel can only
-  be joined by an UNFINDABLE player:
+  Locks are checked as if they were set on the object attemping to pass
+  them - for example, in the channel lock:
+    > @clock/join Public=test/1
+  the attribute "test" will be evaluated on the object trying to join the
+  Public channel.
+
+  You can use indirect @clocks to lock a channel to an @lock on an object.
+  Objects attempting to pass the lock must be able to see the indirect lock,
+  so it's recommended you set either the lock or the object VISUAL. This
+  channel can only be joined by an UNFINDABLE player:
 
   > @clock/join unfindchannel=@#10
   > @lock/user:ChanJoinLock #10=!flag^unfindable
-  > @set #10=VISUAL
+  > @lset #10/ChanJoinLock=VISUAL   OR   @set #10=VISUAL
 
   @clock                  Corresponding default user: lock for object
   join                    ChanJoinLock
@@ -473,15 +479,15 @@ See also: cflags(), clflags()
   hide                    ChanHideLock
   mod                     ChanModLock
 
-  You can lock multiple channels to the same object by specfiying a
-  specific indirect lock instead of the default one:
+  If you want to store different locks for different channels on the same
+  object, you can use a specific indirect lock instead of the default one:
 
   > @lock/user:onechanneljoin #10=flag^foo
   > @clock/join onechannel=@#10/onechanneljoin
   > @lock/user:anotherchanneljoin #10=flag^bar
   > @clock/join anotherchannel=@#10/anotherchanneljoin
 
-See also: clock()
+See also: clock(), @lock
 & COWNER()
   cowner(<channel>)
 

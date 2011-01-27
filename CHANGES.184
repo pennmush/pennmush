@@ -94,6 +94,7 @@ Fixes:
  * Bug in attribute comparisons added in p2 could cause attributes to
    not be found at times. [MG]
  * sortby()s results would sometimes be reversed by mistake. [GM]
+ * Minor bugfix in @include. [MG]
 
 Version 1.8.4 patchlevel 2                                 Dec 06,  2010
 

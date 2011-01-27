@@ -383,7 +383,7 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
       }
       wenv[i] = s;
     }
-    
+
   }
 
   /* Let's queue this mother. */
@@ -925,10 +925,13 @@ do_entry(BQUE *entry, int include_recurses)
           /* @include was called. Check for recursion limit */
           if (include_recurses > 20) {
             notify(global_eval_context.cplr, T("@include recursion exceeded."));
+            global_eval_context.include_called = 0;
             break;
           }
-          if (!*global_eval_context.include_replace)
+          if (!*global_eval_context.include_replace) {
+            global_eval_context.include_called = 0;
             break;
+          }
           /* Clone qentry */
           tmp = mush_malloc(sizeof *tmp, "cqueue");
           tmp->pid = entry->pid;

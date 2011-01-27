@@ -2095,6 +2095,8 @@ This is the AHELP index.
    localize   %q-registers are saved/restored when evaluating, as if
               the @function were wrapped in localize().
    userfn     Function can only be called from within an @function.
+   nosidefx   Don't allow side-effects for this function. See also the
+              function_side_effects @config option.
 
   Commands only:
    noplayer   Cannot be used by players.

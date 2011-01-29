@@ -159,6 +159,7 @@ struct options_table {
   char chatdb[256];             /**< Name of the chat database file */
   int max_player_chans;         /**< Number of channels a player can create */
   int max_channels;             /**< Total maximum allowed channels */
+  int chan_title_len;           /**< Maximum length of a player's channel title */
   int chan_cost;                /**< Cost to create a channel */
   int noisy_cemit;              /**< Is @cemit noisy by default? */
   char connect_file[2][256];    /**< Names of text and html connection files */

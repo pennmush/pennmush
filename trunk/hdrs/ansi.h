@@ -186,4 +186,16 @@ parse_ansi_string(const char *src)
     int safe_tag_wrap(char const *a_tag, char const *params,
                       char const *data, char *buf, char **bp, dbref player);
 
+/* Walk through a string containing markup, skipping over the markup (ansi/pueblo) codes */
+#define WALK_ANSI_STRING(char, str) for((char) = (str); *(char); (char)++) \
+  if (*(char) == (TAG_START)) { \
+    while ((*(char)) && (*(char) != (TAG_END))) \
+      (char)++; \
+    continue; \
+  } else if (*(char) == ESC_CHAR) { \
+    while ((*(char)) && (*(char) != 'm')) \
+      (char)++; \
+    continue; \
+  } else
+
 #endif                          /* __ANSI_H */

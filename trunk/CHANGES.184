@@ -50,6 +50,10 @@ Commands:
 Attributes:
  * New no_debug flag, which prevents debug info being shown for an attribute
    when the object is set DEBUG. [MG]
+   
+Config:
+ * New @config option chan_title_len controls the length of @channel/title's.
+   Suggested by Paige. [MG]
 
 Functions:
  * align() now has '$' (nofill) as an option. Ideal for rightmost columns.
@@ -78,6 +82,8 @@ Minor Changes:
    objects, shows the message to everyone in the room, instead of noone.
    From a bug reported by Paige. [MG]
  * Paranoid objects now see nospoof messages for their emits. [MG]
+ * ANSI is now ignored when checking the length of channel titles. Suggested
+   by Paige. [MG]
 
 Fixes:
  * Fixing list type autodetect. [GM]

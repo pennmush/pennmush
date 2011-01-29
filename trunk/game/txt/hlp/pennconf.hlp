@@ -40,6 +40,7 @@
   max_player_chans=<number>: How many channels can each non-admin
    player create? If 0, mortals cannot create channels.
   noisy_cemit=<boolean>: Is @cemit/noisy the default?
+  chan_title_len=<number>: How long can @channel/title's be?
 & @config cmds
  These options affect command behavior.
 

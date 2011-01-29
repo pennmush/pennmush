@@ -45,7 +45,7 @@
 #include "boolexp.h"
 #include "bufferq.h"
 
-#define CU_TITLE_LEN 80
+#define CU_TITLE_LEN (options.chan_title_len)
 
 /** A channel user.
  * This structure represents an object joined to a chat channel.
@@ -54,7 +54,7 @@
 struct chanuser {
   dbref who;                    /**< Dbref of joined object */
   privbits type;                /**< Bitflags for this user */
-  char title[CU_TITLE_LEN];     /**< User's channel title */
+  char *title;                  /**< User's channel title */
   struct chanuser *next;        /**< Pointer to next user in list */
 };
 

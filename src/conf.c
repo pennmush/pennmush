@@ -365,6 +365,8 @@ PENNCONF conftable[] = {
   ,
   {"noisy_cemit", cf_bool, &options.noisy_cemit, 2, 0, "chat"}
   ,
+  {"chan_title_len", cf_int, &options.chan_title_len, 250, 0, "chat"}
+  ,
   {"log_commands", cf_bool, &options.log_commands, 2, 0, "log"}
   ,
   {"log_forces", cf_bool, &options.log_forces, 2, 0, "log"}
@@ -1275,6 +1277,7 @@ conf_default_set(void)
   options.noisy_cemit = 0;
   options.max_player_chans = 3;
   options.max_channels = 200;
+  options.chan_title_len = 80;
   strcpy(options.mail_db, "data/maildb");
   options.player_start = 0;
   options.master_room = 2;

@@ -226,6 +226,7 @@ See also: @channel/who, cstatus(), cowner(), cflags(), channels(),
   @channel/title lets you set a channel title, which is shown before your name
   whenever you speak on a channel. If =<message> is omitted, your current
   title on the channel is shown. Use an empty <message> to clear your title.
+  The maximum length of titles is set in the 'chan_title_len' @config option.
 
   @channel/recall shows you the most recent messages on the channel, if it has
   been given a recall buffer with @channel/buffer. With no extra arguments,

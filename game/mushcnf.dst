@@ -325,6 +325,10 @@ queue_entry_cpu_time 1500
 # This doesn't allocate memory, it just sets a maximum.
 max_channels 200
 
+# What's the maximum length a player's @channel/title can be?
+# This does not include ansi/markup.
+chan_title_len 80
+
 # How many channels can each non-admin create? Set this to some number
 # higher than zero to allow mortals to create channels.
 max_player_chans 0

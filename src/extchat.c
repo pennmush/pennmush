@@ -370,7 +370,7 @@ new_user(dbref who, const void *hint)
     mush_panic("Couldn't allocate memory in new_user in extchat.c");
   CUdbref(u) = who;
   CUtype(u) = CU_DEFAULT_FLAGS;
-  u->title[0] = '\0';
+  CUtitle(u) = NULL;
   CUnext(u) = NULL;
   return u;
 }
@@ -492,13 +492,18 @@ load_chanusers(PENNFILE *fp, CHAN *ch)
   int i, num = 0;
   CHANUSER *user;
   dbref player;
+  char title[BUFFER_LEN];
   for (i = 0; i < ChanNumUsers(ch); i++) {
     player = getref(fp);
     /* Don't bother if the player isn't a valid dbref or the wrong type */
     if (GoodObject(player) && Chan_Ok_Type(ch, player)) {
       user = new_user(player, ChanUsers(ch));
       CUtype(user) = getref(fp);
-      strcpy(CUtitle(user), getstring_noalloc(fp));
+      strncpy(title, getstring_noalloc(fp), BUFFER_LEN - 1);
+      if (title && *title)
+        CUtitle(user) = mush_strdup(title, "chan_user.title");
+      else
+        CUtitle(user) = NULL;
       CUnext(user) = NULL;
       if (insert_user(user, ch))
         num++;
@@ -529,7 +534,10 @@ load_labeled_chanusers(PENNFILE *fp, CHAN *ch)
       db_read_this_labeled_int(fp, "flags", &n);
       CUtype(user) = n;
       db_read_this_labeled_string(fp, "title", &tmp);
-      mush_strncpy(CUtitle(user), tmp, CU_TITLE_LEN);
+      if (tmp && *tmp)
+        CUtitle(user) = mush_strdup(tmp, "chan_user.title");
+      else
+        CUtitle(user) = NULL;
       CUnext(user) = NULL;
       if (insert_user(user, ch))
         num++;
@@ -859,7 +867,10 @@ save_chanuser(PENNFILE *fp, CHANUSER *user)
 {
   db_write_labeled_dbref(fp, "   dbref", CUdbref(user));
   db_write_labeled_int(fp, "    flags", CUtype(user));
-  db_write_labeled_string(fp, "    title", CUtitle(user));
+  if (CUtitle(user))
+    db_write_labeled_string(fp, "    title", CUtitle(user));
+  else
+    db_write_labeled_string(fp, "    title", "");
   return 1;
 }
 
@@ -1280,7 +1291,6 @@ do_channel(dbref player, const char *name, const char *target, const char *com)
     }
     return;
   } else if (!strcasecmp("off", com) || !strcasecmp("leave", com)) {
-    char title[CU_TITLE_LEN];
     /* You must control either the victim or the channel */
     if (!controls(player, victim) && !Chan_Can_Modify(chan, player)) {
       notify(player, T("Invalid target."));
@@ -1291,7 +1301,6 @@ do_channel(dbref player, const char *name, const char *target, const char *com)
       return;
     }
     u = onchannel(victim, chan);
-    strcpy(title, (u && CUtitle(u)) ? CUtitle(u) : "");
     if (remove_user(u, chan)) {
       if (!Channel_Quiet(chan) && !DarkLegal(victim)) {
         channel_send(chan, victim,
@@ -1383,7 +1392,6 @@ channel_leave_self(dbref player, const char *name)
 {
   CHAN *chan = NULL;
   CHANUSER *u;
-  char title[CU_TITLE_LEN];
 
   if (Guest(player)) {
     notify(player, T("Guests are not allowed to leave channels."));
@@ -1406,7 +1414,6 @@ channel_leave_self(dbref player, const char *name)
     break;
   }
   u = onchannel(player, chan);
-  strcpy(title, (u && CUtitle(u)) ? CUtitle(u) : "");
   if (remove_user(u, chan)) {
     if (!Channel_Quiet(chan) && !DarkLegal(player))
       channel_send(chan, player,
@@ -2064,7 +2071,7 @@ do_chan_title(dbref player, const char *name, const char *title)
   }
 
   if (!rhs_present) {
-    if (strlen(CUtitle(u)) == 0)
+    if (!CUtitle(u) || !*CUtitle(u))
       notify_format(player, T("You have no title set on <%s>."), ChanName(c));
     else
       notify_format(player, T("Your title on <%s> is '%s'."), ChanName(c),
@@ -2072,15 +2079,23 @@ do_chan_title(dbref player, const char *name, const char *title)
     return;
   }
 
-  if (!title)
-    title = (const char *) "";
+  if (!title) {
+    if (CUtitle(u)) {
+      mush_free(CUtitle(u), "chan_user.title");
+      CUtitle(u) = NULL;
+    }
+    if (!Quiet(player))
+      notify_format(player, T("Title cleared for %schannel <%s>."),
+                    Channel_NoTitles(c) ? "(NoTitles) " : "", ChanName(c));
+    return;
+  }
 
-  if (strlen(title) >= CU_TITLE_LEN) {
+  if (ansi_strlen(title) > CU_TITLE_LEN) {
     notify(player, T("Title too long."));
     return;
   }
+  WALK_ANSI_STRING(scan, title) {
   /* Stomp newlines and other weird whitespace */
-  for (scan = title; *scan; scan++) {
     if ((isspace((unsigned char) *scan) && (*scan != ' '))
         || (*scan == BEEP_CHAR)) {
       notify(player, T("Invalid character in title."));
@@ -2088,10 +2103,12 @@ do_chan_title(dbref player, const char *name, const char *title)
     }
   }
 
-  strcpy(CUtitle(u), title);
+  if (CUtitle(u))
+    mush_free(CUtitle(u), "chan_user.title");
+  CUtitle(u) = mush_strdup(title, "chan_user.title");
+
   if (!Quiet(player))
-    notify_format(player, T("Title %s for %schannel <%s>."),
-                  *title ? T("set") : T("cleared"),
+    notify_format(player, T("Title set for %schannel <%s>."),
                   Channel_NoTitles(c) ? "(NoTitles) " : "", ChanName(c));
   return;
 }

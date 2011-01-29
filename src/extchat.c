@@ -500,7 +500,7 @@ load_chanusers(PENNFILE *fp, CHAN *ch)
       user = new_user(player, ChanUsers(ch));
       CUtype(user) = getref(fp);
       strncpy(title, getstring_noalloc(fp), BUFFER_LEN - 1);
-      if (title && *title)
+      if (*title)
         CUtitle(user) = mush_strdup(title, "chan_user.title");
       else
         CUtitle(user) = NULL;

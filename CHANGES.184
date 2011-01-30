@@ -86,6 +86,8 @@ Minor Changes:
    by Paige. [MG]
  * @decompile with a <prefix> now shows cmds for setting attribute flags.
    @decompile/tf still omits cmds for attr flags. [MG]
+ * @mail <msg-lists> which don't specify a folder now act on your current
+   folder, instead of Folder 0. Suggested by Paige, patch by Minion.
 
 Fixes:
  * Fixing list type autodetect. [GM]

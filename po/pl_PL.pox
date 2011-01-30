@@ -4238,11 +4238,6 @@ msgstr "Ten pokój od teraz nadaje."
 msgid "TinyMUSH compatibility options"
 msgstr "Opcje kompatybilno¶ci z TinyMUSH"
 
-#: extchat.c:1836
-#, c-format
-msgid "Title %s for %schannel <%s>."
-msgstr "Tytu³ %s dla %skana³u <%s>."
-
 #: src/extchat.c:1358
 msgid "Title too long."
 msgstr "Tytu³ zbyt d³ugi."

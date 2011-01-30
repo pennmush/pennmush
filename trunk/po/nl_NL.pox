@@ -5017,11 +5017,6 @@ msgstr "Tijd tot volgende schoonmaak"
 msgid "TinyMUSH compatibility options"
 msgstr "TinyMUSH compatibiliteitsopties."
 
-#: extchat.c:1836
-#, c-format
-msgid "Title %s for %schannel <%s>."
-msgstr "Titel %s voor %skanaal <%s>."
-
 #: src/extchat.c:1358
 msgid "Title too long."
 msgstr "Titel te lang."

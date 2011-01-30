@@ -1189,12 +1189,13 @@ See also: give, @quota, MONEY, @clone, create(), @dig, @open, @pcreate
   The /tf works the same as if you'd typed:
     @decompile/db <obj>[/<attrs>]=[default(me/TFPREFIX, FugueEdit >%b)]
     
-  If you have a TFPREFIX attribute set, the (unevaluated) contents of that
-  attribute is used as the prefix. Otherwise, the string "FugueEdit > " is
-  used. It's useful for automatically copying @decompile output into your
-  client to alter. It is highly recommended  that you set a TFPREFIX
-  attribute, to prevent others from maliciously placing code in your client's
-  command line.
+  with the exception that @decompile/tf does not include commands for setting
+  attribute flags. If you have a TFPREFIX attribute set, the (unevaluated) 
+  contents of that attribute is used as the prefix. Otherwise, the string 
+  "FugueEdit > " is used. It's useful for automatically copying @decompile 
+  output into your client to alter. It is highly recommended  that you set a
+  TFPREFIX attribute, to prevent others from maliciously placing code in your
+  client's command line.
 
   To set up @decompile/tf:
   

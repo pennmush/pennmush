@@ -262,6 +262,7 @@ COMMAND(cmd_decompile)
     } else {
       strcpy(prefix, "FugueEdit > ");
     }
+    flags |= DEC_TF; /* Don't decompile attr flags */
   } else {
     strcpy(prefix, arg_right);
   }

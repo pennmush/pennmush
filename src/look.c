@@ -47,7 +47,7 @@ static int look_helper(dbref player, dbref thing, dbref parent,
 static int look_helper_veiled(dbref player, dbref thing, dbref parent,
                               char const *pattern, ATTR *atr, void *args);
 void decompile_atrs(dbref player, dbref thing, const char *name,
-                    const char *pattern, const char *prefix, int skipdef);
+                    const char *pattern, const char *prefix, int skipflags);
 void decompile_locks(dbref player, dbref thing, const char *name,
                      int skipdef, const char *prefix);
 static char *parent_chain(dbref player, dbref thing);
@@ -1464,7 +1464,7 @@ decompile_helper(dbref player, dbref thing __attribute__ ((__unused__)),
   *bp = '\0';
   notify(player, msg);
   /* Now deal with attribute flags, if not FugueEditing */
-  if (!*dh->prefix) {
+  if (dh->skipdef < 2) {
     /* If skipdef is on, only show sets that aren't the defaults */
     const char *privs = NULL;
     if (dh->skipdef && ptr) {
@@ -1477,7 +1477,7 @@ decompile_helper(dbref player, dbref thing __attribute__ ((__unused__)),
       privs = privs_to_string(attr_privs_view, AL_FLAGS(atr));
     }
     if (privs && *privs)
-      notify_format(player, "@set %s/%s=%s", dh->name, AL_NAME(atr), privs);
+      notify_format(player, "%s@set %s/%s=%s", dh->prefix, dh->name, AL_NAME(atr), privs);
   }
   return 1;
 }
@@ -1488,7 +1488,7 @@ decompile_helper(dbref player, dbref thing __attribute__ ((__unused__)),
  * \param name name to refer to object by in decompile.
  * \param pattern pattern to match attributes to decompile.
  * \param prefix prefix to use for decompile/tf.
- * \param skipdef if true, skip showing default attribute flags.
+ * \param skipflags if 0, show attribute flags. If 1, skip default attr flags. If 2, skip all attr flags.
  */
 void
 decompile_atrs(dbref player, dbref thing, const char *name, const char *pattern,
@@ -1557,7 +1557,12 @@ do_decompile(dbref player, const char *xname, const char *prefix, int dec_type)
   char object[BUFFER_LEN];
   char *objp, *attrib, *attrname, *name;
 
-  int skipdef = (dec_type & DEC_SKIPDEF);
+  int skipdef = 0;
+
+  if (dec_type & DEC_TF)
+    skipdef = 2;
+  else if (dec_type & DEC_SKIPDEF)
+    skipdef = 1;
 
   /* @decompile must always have an argument */
   if (!xname || !*xname) {

@@ -2528,14 +2528,13 @@ parse_msglist(const char *msglist, struct mail_selector *ms, dbref player)
   /* Initialize the mail selector - this matches all messages */
   ms->low = 0;
   ms->high = 0;
-  ms->flags = 0x00FF | M_MSUNREAD;
+  ms->flags = 0x00FF | M_MSUNREAD | M_FOLDER;
   ms->player = 0;
   ms->days = -1;
   ms->day_comp = 0;
   /* Now, parse the message list */
   if (!msglist || !*msglist) {
     /* All messages in current folder */
-    ms->flags |= M_FOLDER;
     return 1;
   }
   /* Don't mess with msglist itself */
@@ -2543,15 +2542,16 @@ parse_msglist(const char *msglist, struct mail_selector *ms, dbref player)
   p = tbuf1;
   while (p && *p && isspace((unsigned char) *p))
     p++;
-  if (!p || !*p) {
-    ms->flags |= M_FOLDER;
+  if (!p || !*p)
     return 1;                   /* all messages in current folder */
-  }
+
   if (isdigit((unsigned char) *p) || *p == '-') {
     if (!parse_message_spec(player, p, &ms->low, &ms->high, &folder)) {
       notify(player, T("MAIL: Invalid message specification"));
       return 0;
     }
+    /* remove current folder when other folder specified */
+    ms->flags &= ~M_FOLDER;
     ms->flags |= FolderBit(folder);
   } else if (*p == '~') {
     /* exact # of days old */
@@ -2630,7 +2630,7 @@ parse_msglist(const char *msglist, struct mail_selector *ms, dbref player)
   } else if (!strcasecmp(p, "all")) {
     ms->flags = M_ALL;
   } else if (!strcasecmp(p, "folder")) {
-    ms->flags = M_FOLDER;
+    ms->flags |= M_FOLDER;
   } else if (!strcasecmp(p, "urgent")) {
     ms->flags = M_URGENT | M_FOLDER;
   } else if (!strcasecmp(p, "unread")) {

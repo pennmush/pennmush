@@ -5017,6 +5017,16 @@ msgstr "Do sljedeæeg èi¹æenja"
 msgid "TinyMUSH compatibility options"
 msgstr "Opcije za kompatibilnost s TinyMUSHom"
 
+#: extchat.c:2088
+#, c-format
+msgid "Title cleared for %schannel <%s>."
+msgstr "Titula obrisana za %skanal <%s>."
+
+#: extchat.c:2111
+#, c-format
+msgid "Title set for %schannel <%s>."
+msgstr "Titula postavljena za %skanal <%s>."
+
 #: src/extchat.c:1358
 msgid "Title too long."
 msgstr "Titula predugaèka."

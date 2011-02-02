@@ -780,6 +780,123 @@ ok_player_name(const char *name, dbref player, dbref thing)
   return ((lookup == NOTHING) || (lookup == thing));
 }
 
+/** Is name a valid new name for thing, when set by player?
+ * Parses names and aliases for players/exits, validating each. If everything is valid,
+ * the new name and alias are set into newname and newalias, with memory malloc'd as necessary.
+ * For things/rooms, no parsing is done, and ok_name is called on the entire string to validate.
+ * For players and exits, if name takes the format <name>; then newname is set to <name> and
+ * newalias to ";", to signify that the existing alias should be cleared. If name contains a name and
+ * valid aliases, newname and newalias are set accordingly.
+ * \param name the new name to set
+ * \param player the player setting the name, for permission checks
+ * \param thing object getting the name, or NOTHING for new objects
+ * \param type type of object getting the name (necessary for new exits)
+ * \param newname pointer to place the new name, once validated
+ * \param newalias pointer to place the alias in, if any
+ * \retval 1 name and any given aliases are valid
+ * \retval 0 invalid name
+ * \retval OPAE_INVALID invalid aliases
+ * \retval OPAE_TOOMANY too many aliases for player
+ */
+int
+ok_object_name(char *name, dbref player, dbref thing, int type, char **newname, char **newalias)
+{
+  char *bon, *eon;
+  char nbuff[BUFFER_LEN], abuff[BUFFER_LEN];
+  char *ap = abuff;
+  int aliases = 0;
+  int empty = 0;
+
+  strncpy(nbuff, name, BUFFER_LEN - 1);
+  nbuff[BUFFER_LEN - 1] = '\0';
+  memset(abuff, 0, BUFFER_LEN);
+
+  /* First, check for a quoted player name */
+  if (type == TYPE_PLAYER && *name == '"') {
+    /* Quoted player name, no aliases allowed */
+    bon = nbuff;
+    bon++;
+    eon = bon;
+    while (*eon && *eon != '"')
+      eon++;
+    if (*eon)
+      *eon = '\0';
+    if (!ok_player_name(bon, player, thing))
+      return 0;
+    *newname = mush_strdup(bon, "name.newname");
+    return 1;
+  }
+
+  if (type & (TYPE_THING | TYPE_ROOM)) {
+    /* No aliases in the name */
+    if (!ok_name(nbuff))
+      return 0;
+    *newname = mush_strdup(nbuff, "name.newname");
+    return 1;
+  }
+
+  /* A player or exit name, with aliases allowed.
+   * Possible things to parse:
+   * <name>  - just a new name
+   * <name>; - new name with trailing ; to clear alias
+   * <name>;<alias1>[;<aliasN>] - name with one or more aliases, separated by ;
+   */
+
+  /* Validate name first */
+  bon = nbuff;
+  if ((eon = strchr(bon, ALIAS_DELIMITER))) {
+    *eon++ = '\0';
+    aliases++;
+  }
+  if (!(type == TYPE_PLAYER ? ok_player_name(bon, player, thing) : ok_name(bon)))
+    return 0;
+
+  *newname = mush_strdup(bon, "name.newname");
+
+  if (aliases) {
+    /* We had aliases, so parse them */
+    while (eon) {
+      if (empty)
+        return OPAE_NULL; /* Null alias only valid as a single, final alias */
+      bon = eon;
+      if ((eon = strchr(bon, ALIAS_DELIMITER))) {
+        *eon++ = '\0';
+      }
+      if (!*bon) {
+        empty = 1; /* empty alias, should only happen if we have no proper aliases */
+        continue;
+      }
+      if (!(type == TYPE_PLAYER ? ok_player_name(bon, player, thing) : ok_name(bon))) {
+        *newalias = mush_strdup(bon, "name.newname"); /* So we can report the invalid alias */
+        return OPAE_INVALID;
+      }
+      if (aliases > 1) {
+        safe_chr(ALIAS_DELIMITER, abuff, &ap);
+      }
+      safe_str(bon, abuff, &ap);
+      aliases++;
+    }
+  }
+  *ap = '\0';
+
+  if (aliases) {
+    if (!Wizard(player) && type == TYPE_PLAYER && aliases > MAX_ALIASES)
+      return OPAE_TOOMANY;
+    if (*abuff) {
+      /* We have actual aliases */
+      *newalias = mush_strdup(abuff, "name.newname");
+    } else {
+      ap = abuff;
+      safe_chr(ALIAS_DELIMITER, abuff, &ap);
+      *ap = '\0';
+      /* We just want to clear the existing alias */
+      *newalias = mush_strdup(abuff, "name.newname");
+    }
+  }
+
+  return 1;
+}
+
 
 /** Is a alias a valid player alias-list for thing?
  * It must be a semicolon-separated list of valid player names

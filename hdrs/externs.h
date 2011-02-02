@@ -411,6 +411,7 @@ int nearby(dbref obj1, dbref obj2);
 int get_current_quota(dbref who);
 void change_quota(dbref who, int payment);
 int ok_name(const char *name);
+int ok_object_name(char *name, dbref player, dbref thing, int type, char **newname, char **newalias);
 int ok_command_name(const char *name);
 int ok_function_name(const char *name);
 int ok_player_name(const char *name, dbref player, dbref thing);

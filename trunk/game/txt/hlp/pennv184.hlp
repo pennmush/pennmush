@@ -83,6 +83,10 @@ Minor Changes:
    @decompile/tf still omits cmds for attr flags. [MG]
  * @mail <msg-lists> which don't specify a folder now act on your current
    folder, instead of Folder 0. Suggested by Paige, patch by Minion.
+ * @dig, @open and @name now set exit aliases into the @alias attribute,
+   instead of including them in the exit name. Also, @name can now set/clear
+   the @alias of players/exits while changing the name. See help @name for
+   details. Suggested by Minion. [MG]
 
 Fixes:
  * Fixing list type autodetect. [GM]

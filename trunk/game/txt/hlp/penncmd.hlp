@@ -369,8 +369,8 @@ See also: leave, @leave, NO_LEAVE, locktypes, ACTION LISTS, VERBS
   If the 'page_aliases' @config option is on, the first alias in the list is 
   shown along with the player's name when they page others.
   
-  Exits also support including the aliases directly in their name, but doing
-  so in new construction is depreciated and @alias should be used instead.
+  Exit aliases used to be a part of their name, though all newly created
+  exits use @alias instead.
  
   For other types of object, @alias has no special meaning.
 
@@ -2655,26 +2655,31 @@ See also: message(), @chatformat, @pageformat
   /list   : list the MOTDs (like @listmotd, can be used by anyone)
 & @name
   @name <object>=<new name>
+  @name <player|exit>=<new name>;[<alias1>[;<aliasN>]]
 
   Changes the name of <object> to <new name>.
 
   Players can change their name to anything valid which is not currently in
   use by another player, as a name or alias. (They can change their name to
   something from their own @alias.)
+  
+  You can change the alias for a player or exit while renaming it, by giving
+  the alias(es) after the new name, each separated by a semicolon. If the
+  name is followed by a semicolon with no aliases, the existing alias will
+  be cleared instead.
 
-  An exit can have many names, each separated by a semicolon. In new
-  construction, the aliases should be in the @alias attribute, but
-  they are also supported in the name itself. The exit can be referred
-  to by any of these names in all commands. For example:
-
-    (New-style)
-    > @name exit=East <e>
-    > @alias exit=east;e
-    (Old-style)
-    > @name exit=East <e>;east;e
-    
   When <object>'s name is changed, its ONAME and ANAME verb attributes will
   be triggered. See 'help @oname' for details.
+  
+  Examples:
+    > @name here=My Room
+    Name set.
+    > @name me=Mike;Michael;m
+    Alias set.
+    Name set.
+    > @name me=Obi Wan;
+    Alias removed;
+    Name set.
   
 See also: @alias, @oname, name(), fullname()
 & @ONAME

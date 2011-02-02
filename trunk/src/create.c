@@ -95,6 +95,8 @@ do_real_open(dbref player, const char *direction, const char *linkto,
   dbref new_exit;
   char *flaglist, *flagname;
   char flagbuff[BUFFER_LEN];
+  char *name = NULL;
+  char *alias = NULL;
 
   if (!command_check_byname(player, "@dig")) {
     notify(player, T("Permission denied."));
@@ -111,8 +113,12 @@ do_real_open(dbref player, const char *direction, const char *linkto,
   if (!*direction) {
     notify(player, T("Open where?"));
     return NOTHING;
-  } else if (!ok_name(direction)) {
+  } else if (ok_object_name((char *) direction, player, NOTHING, TYPE_EXIT, &name, &alias) < 1) {
     notify(player, T("That's a strange name for an exit!"));
+    if (name)
+      mush_free(name, "name.newname");
+    if (alias)
+      mush_free(alias, "name.newname");
     return NOTHING;
   }
   if (!Open_Anywhere(player) && !controls(player, loc)) {
@@ -122,7 +128,9 @@ do_real_open(dbref player, const char *direction, const char *linkto,
     new_exit = new_object();
 
     /* initialize everything */
-    set_name(new_exit, direction);
+    set_name(new_exit, name);
+    if (alias && *alias != ALIAS_DELIMITER)
+      atr_add(new_exit, "ALIAS", alias, player, 0);
     Owner(new_exit) = Owner(player);
     Zone(new_exit) = Zone(player);
     Source(new_exit) = loc;
@@ -137,6 +145,9 @@ do_real_open(dbref player, const char *direction, const char *linkto,
       }
     }
 
+    mush_free(name, "name.newname");
+    if (alias)
+      mush_free(alias, "name.newname");
 
     /* link it in */
     PUSH(new_exit, Exits(loc));
@@ -164,6 +175,11 @@ do_real_open(dbref player, const char *direction, const char *linkto,
     queue_event(player, "OBJECT`CREATE", "%s", unparse_objid(new_exit));
     return new_exit;
   }
+  if (name)
+    mush_free(name, "name.newname");
+  if (alias)
+    mush_free(alias, "name.newname");
+
   return NOTHING;
 }
 

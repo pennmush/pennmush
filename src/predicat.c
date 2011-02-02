@@ -692,13 +692,14 @@ forbidden_name(const char *name)
  *   Names may not have leading or trailing spaces.
  *   Names must be only printable characters.
  *   Names may not exceed the length limit.
- *   Names may not start with certain tokens, or be "me", "home", "here"
+ *   Names may not start with certain tokens, or be "home", "here", or (for non-exits) "me"
  * \param n name to check.
+ * \param is_exit is the name for an exit/exit alias?
  * \retval 1 name is valid.
  * \retval 0 name is not valid.
  */
 int
-ok_name(const char *n)
+ok_name(const char *n, int is_exit)
 {
   const unsigned char *p, *name = (const unsigned char *) n;
 
@@ -733,7 +734,7 @@ ok_name(const char *n)
           && *name
           && *name != LOOKUP_TOKEN
           && *name != NUMBER_TOKEN
-          && *name != NOT_TOKEN && strcasecmp((char *) name, "me")
+          && *name != NOT_TOKEN && (is_exit || strcasecmp((char *) name, "me"))
           && strcasecmp((char *) name, "home")
           && strcasecmp((char *) name, "here"));
 }
@@ -756,7 +757,7 @@ ok_player_name(const char *name, dbref player, dbref thing)
   const unsigned char *scan, *good;
   dbref lookup;
 
-  if (!ok_name(name) || strlen(name) >= (size_t) PLAYER_NAME_LIMIT)
+  if (!ok_name(name, 0) || strlen(name) >= (size_t) PLAYER_NAME_LIMIT)
     return 0;
 
   good = (unsigned char *) (PLAYER_NAME_SPACES ? " `$_-.,'" : "`$_-.,'");
@@ -829,7 +830,7 @@ ok_object_name(char *name, dbref player, dbref thing, int type, char **newname, 
 
   if (type & (TYPE_THING | TYPE_ROOM)) {
     /* No aliases in the name */
-    if (!ok_name(nbuff))
+    if (!ok_name(nbuff, 0))
       return 0;
     *newname = mush_strdup(nbuff, "name.newname");
     return 1;
@@ -848,7 +849,7 @@ ok_object_name(char *name, dbref player, dbref thing, int type, char **newname, 
     *eon++ = '\0';
     aliases++;
   }
-  if (!(type == TYPE_PLAYER ? ok_player_name(bon, player, thing) : ok_name(bon)))
+  if (!(type == TYPE_PLAYER ? ok_player_name(bon, player, thing) : ok_name(bon, 1)))
     return 0;
 
   *newname = mush_strdup(bon, "name.newname");
@@ -862,11 +863,13 @@ ok_object_name(char *name, dbref player, dbref thing, int type, char **newname, 
       if ((eon = strchr(bon, ALIAS_DELIMITER))) {
         *eon++ = '\0';
       }
+      while (*bon && *bon == ' ')
+        bon++;
       if (!*bon) {
         empty = 1; /* empty alias, should only happen if we have no proper aliases */
         continue;
       }
-      if (!(type == TYPE_PLAYER ? ok_player_name(bon, player, thing) : ok_name(bon))) {
+      if (!(type == TYPE_PLAYER ? ok_player_name(bon, player, thing) : ok_name(bon, 1))) {
         *newalias = mush_strdup(bon, "name.newname"); /* So we can report the invalid alias */
         return OPAE_INVALID;
       }

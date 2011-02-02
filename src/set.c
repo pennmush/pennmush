@@ -107,7 +107,7 @@ do_name(dbref player, const char *name, char *newname_)
       break;
     case TYPE_THING:
     case TYPE_ROOM:
-      if (!ok_name(newname_)) {
+      if (!ok_name(newname_, 0)) {
         notify(player, T("That is not a reasonable name."));
         return;
       }

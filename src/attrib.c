@@ -1852,7 +1852,7 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
       strcpy(tbuf1, s);
       aliases = tbuf1;
       while ((alias = split_token(&aliases, ';')) != NULL) {
-        if (!ok_name(alias)) {
+        if (!ok_name(alias, 1)) {
           notify_format(player, T("'%s' is not a valid exit name."), alias);
           return -1;
         }

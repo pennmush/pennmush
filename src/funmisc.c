@@ -52,7 +52,7 @@ FUNCTION(fun_valid)
   if (!args[0] || !*args[0])
     safe_str("#-1", buff, bp);
   else if (!strcasecmp(args[0], "name"))
-    safe_boolean(ok_name(args[1]), buff, bp);
+    safe_boolean(ok_name(args[1], 0), buff, bp);
   else if (!strcasecmp(args[0], "attrname"))
     safe_boolean(good_atr_name(upcasestr(args[1])), buff, bp);
   else if (!strcasecmp(args[0], "playername"))

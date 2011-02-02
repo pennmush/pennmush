@@ -445,7 +445,7 @@ do_dig(dbref player, const char *name, char **argv, int tport)
   /* we don't need to know player's location!  hooray! */
   if (*name == '\0') {
     notify(player, T("Dig what?"));
-  } else if (!ok_name(name)) {
+  } else if (!ok_name(name, 0)) {
     notify(player, T("That's a silly name for a room!"));
   } else if (can_pay_fees(player, ROOM_COST)) {
     if (!make_first_free_wrapper(player, newdbref)) {
@@ -514,7 +514,7 @@ do_create(dbref player, char *name, int cost, char *newdbref)
   if (*name == '\0') {
     notify(player, T("Create what?"));
     return NOTHING;
-  } else if (!ok_name(name)) {
+  } else if (!ok_name(name, 0)) {
     notify(player, T("That's a silly name for a thing!"));
     return NOTHING;
   } else if (cost < OBJECT_COST) {
@@ -643,13 +643,14 @@ do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref)
   dbref clone, thing;
   char dbnum[BUFFER_LEN];
 
-  if (newname && *newname && !ok_name(newname)) {
-    notify(player, T("That is not a reasonable name."));
-    return NOTHING;
-  }
   thing = noisy_match_result(player, name, NOTYPE, MAT_EVERYTHING);
   if ((thing == NOTHING))
     return NOTHING;
+
+  if (newname && *newname && !ok_name(newname, IsExit(thing))) {
+    notify(player, T("That is not a reasonable name."));
+    return NOTHING;
+  }
 
   if (!controls(player, thing) || IsPlayer(thing) ||
       (IsRoom(thing) && !command_check_byname(player, "@dig")) ||

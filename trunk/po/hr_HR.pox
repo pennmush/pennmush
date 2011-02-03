@@ -5041,6 +5041,10 @@ msgstr "Da dobije¹ pristup ovom liku, spoji se na korisnika '%s' i napi¹i:\n"
 msgid "To channel %s: %s"
 msgstr "Na kanal %s: %s"
 
+#: set.c:88
+msgid "Too many aliases."
+msgstr "Previ¹e aliasa."
+
 #: src/set.c:906
 msgid "Too many ancestors."
 msgstr "Previ¹e predaka."

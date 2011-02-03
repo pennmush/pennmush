@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-30 02:00-0600\n"
+"POT-Creation-Date: 2011-02-03 02:00-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -238,7 +238,7 @@ msgstr ""
 msgid "Garbage is garbage."
 msgstr ""
 
-#: attrib.c:1811 attrib.c:1818 attrib.c:1836
+#: attrib.c:1811 attrib.c:1818 attrib.c:1836 set.c:92
 #, c-format
 msgid "'%s' is not a valid alias."
 msgstr ""
@@ -277,7 +277,7 @@ msgstr ""
 msgid "I don't think #%d wants %s's mail."
 msgstr ""
 
-#: attrib.c:1911 set.c:1153
+#: attrib.c:1911 set.c:1169
 #, c-format
 msgid "Attribute %s is SAFE. Set it !SAFE to modify it."
 msgstr ""
@@ -353,15 +353,15 @@ msgstr ""
 #: bsd.c:4836 bsd.c:4848 bsd.c:4853 cmds.c:78 cmds.c:83 cmds.c:88 cmds.c:93
 #: cmds.c:98 command.c:1701 command.c:1728 command.c:1820 command.c:1902
 #: command.c:2073 cque.c:1190 cque.c:1292 cque.c:1343 cque.c:1730 cque.c:1843
-#: cque.c:1901 cque.c:2018 create.c:100 create.c:119 create.c:238 create.c:303
-#: create.c:312 create.c:316 create.c:368 create.c:372 create.c:390
-#: create.c:642 destroy.c:234 destroy.c:914 extchat.c:1784 extchat.c:1801
+#: cque.c:1901 cque.c:2018 create.c:102 create.c:125 create.c:254 create.c:319
+#: create.c:328 create.c:332 create.c:384 create.c:388 create.c:406
+#: create.c:659 destroy.c:234 destroy.c:914 extchat.c:1784 extchat.c:1801
 #: extchat.c:1832 extchat.c:4008 flags.c:1550 flags.c:1555 flags.c:1715
 #: function.c:1039 function.c:1293 function.c:1517 function.c:1662
 #: function.c:1708 function.c:1755 funmisc.c:957 game.c:969 game.c:1542
 #: lock.c:715 lock.c:779 lock.c:975 look.c:1340 look.c:1634 malias.c:764
-#: malias.c:869 match.c:520 move.c:555 move.c:886 move.c:901 predicat.c:1272
-#: rob.c:438 set.c:191 set.c:975 set.c:1059 set.c:1096 set.c:1109 set.c:1194
+#: malias.c:869 match.c:520 move.c:555 move.c:886 move.c:901 predicat.c:1392
+#: rob.c:438 set.c:207 set.c:991 set.c:1075 set.c:1112 set.c:1125 set.c:1210
 #: speech.c:1538 sql.c:367 warnings.c:294 warnings.c:515 wiz.c:450 wiz.c:573
 #: wiz.c:584 wiz.c:863 wiz.c:1028 wiz.c:1058
 msgid "Permission denied."
@@ -388,7 +388,7 @@ msgstr ""
 msgid "Invalid status on atrlock.. Notify god."
 msgstr ""
 
-#: attrib.c:2066 attrib.c:2136 set.c:990 set.c:1038
+#: attrib.c:2066 attrib.c:2136 set.c:1006 set.c:1054
 msgid "No such attribute."
 msgstr ""
 
@@ -1392,7 +1392,7 @@ msgstr ""
 msgid "#-1 INVALID PID"
 msgstr ""
 
-#: cque.c:1669 set.c:180
+#: cque.c:1669 set.c:196
 msgid "I couldn't find that player."
 msgstr ""
 
@@ -1522,166 +1522,166 @@ msgstr ""
 msgid "You can't link to that."
 msgstr ""
 
-#: create.c:104
+#: create.c:106
 msgid "Sorry, you can only make exits out of rooms."
 msgstr ""
 
-#: create.c:108
+#: create.c:110
 msgid "You can't make an exit in a place that's crumbling."
 msgstr ""
 
-#: create.c:112
+#: create.c:114
 msgid "Open where?"
 msgstr ""
 
-#: create.c:115
+#: create.c:117
 msgid "That's a strange name for an exit!"
 msgstr ""
 
-#: create.c:145
+#: create.c:156
 #, c-format
 msgid "Opened exit %s"
 msgstr ""
 
-#: create.c:149
+#: create.c:160
 msgid "Trying to link..."
 msgstr ""
 
-#: create.c:154
+#: create.c:165
 #, c-format
 msgid "You don't have enough %s to link."
 msgstr ""
 
-#: create.c:158
+#: create.c:169
 #, c-format
 msgid "Linked exit #%d to #%d"
 msgstr ""
 
-#: create.c:190
+#: create.c:206
 msgid "Open from where?"
 msgstr ""
 
-#: create.c:231
+#: create.c:247
 msgid "Unlink what?"
 msgstr ""
 
-#: create.c:234 match.c:518 wiz.c:995
+#: create.c:250 match.c:518 wiz.c:995
 msgid "I don't know which one you mean!"
 msgstr ""
 
-#: create.c:244
+#: create.c:260
 #, c-format
 msgid "Unlinked exit #%d (Used to lead to %s)."
 msgstr ""
 
-#: create.c:249
+#: create.c:265
 msgid "Dropto removed."
 msgstr ""
 
-#: create.c:252
+#: create.c:268
 msgid "You can't unlink that!"
 msgstr ""
 
-#: create.c:291
+#: create.c:307
 msgid "You somehow wound up in a exit. No biscuit."
 msgstr ""
 
-#: create.c:322 create.c:329
+#: create.c:338 create.c:345
 #, c-format
 msgid "It costs %d %s to link this exit."
 msgstr ""
 
-#: create.c:347
+#: create.c:363
 #, c-format
 msgid "Linked exit #%d to %s"
 msgstr ""
 
-#: create.c:355 fundb.c:1900 wiz.c:407
+#: create.c:371 fundb.c:1900 wiz.c:407
 msgid "No match."
 msgstr ""
 
-#: create.c:359
+#: create.c:375
 msgid "That is an exit."
 msgstr ""
 
-#: create.c:363
+#: create.c:379
 msgid "You may not link something to itself."
 msgstr ""
 
-#: create.c:374
+#: create.c:390
 msgid "Can't set home to home."
 msgstr ""
 
-#: create.c:379
+#: create.c:395
 msgid "Home set."
 msgstr ""
 
-#: create.c:386
+#: create.c:402
 msgid "That is not a room!"
 msgstr ""
 
-#: create.c:394
+#: create.c:410
 msgid "Dropto set."
 msgstr ""
 
-#: create.c:398
+#: create.c:414
 msgid "Internal error: weird object type."
 msgstr ""
 
-#: create.c:431
+#: create.c:447
 msgid "Dig what?"
 msgstr ""
 
-#: create.c:433
+#: create.c:449
 msgid "That's a silly name for a room!"
 msgstr ""
 
-#: create.c:456
+#: create.c:472
 #, c-format
 msgid "%s created with room number %d."
 msgstr ""
 
-#: create.c:499
+#: create.c:515
 msgid "Create what?"
 msgstr ""
 
-#: create.c:502
+#: create.c:518
 msgid "That's a silly name for a thing!"
 msgstr ""
 
-#: create.c:552
+#: create.c:568
 #, c-format
 msgid "Created: Object %s."
 msgstr ""
 
-#: create.c:598 create.c:732
+#: create.c:614 create.c:749
 msgid ""
 "Warning: @CLONE/PRESERVE on an object with WIZ, ROY, @powers, or @warnings."
 msgstr ""
 
-#: create.c:631 set.c:117
+#: create.c:651 set.c:100 set.c:111
 msgid "That is not a reasonable name."
 msgstr ""
 
-#: create.c:647
+#: create.c:664
 msgid "There's nothing left of it to clone!"
 msgstr ""
 
-#: create.c:651
+#: create.c:668
 msgid "You cannot @CLONE/PRESERVE. Use normal @CLONE instead."
-msgstr ""
-
-#: create.c:664
-#, c-format
-msgid "Cloned: Object %s."
 msgstr ""
 
 #: create.c:681
 #, c-format
+msgid "Cloned: Object %s."
+msgstr ""
+
+#: create.c:698
+#, c-format
 msgid "Cloned: Room #%d."
 msgstr ""
 
-#: create.c:733
+#: create.c:750
 #, c-format
 msgid "Cloned: Exit #%d."
 msgstr ""
@@ -2373,7 +2373,7 @@ msgstr ""
 msgid "CHAT: Only a channel modifier can do that."
 msgstr ""
 
-#: extchat.c:2575 extchat.c:3246 match.c:375 match.c:522 set.c:587
+#: extchat.c:2575 extchat.c:3246 match.c:375 match.c:522 set.c:603
 msgid "I can't see that here."
 msgstr ""
 
@@ -3681,7 +3681,7 @@ msgstr ""
 msgid "#-1 NO SUCH ATTRIBUTE"
 msgstr ""
 
-#: fundb.c:2320 predicat.c:1448
+#: fundb.c:2320 predicat.c:1568
 msgid "#-1 INVALID GREP PATTERN"
 msgstr ""
 
@@ -3726,7 +3726,7 @@ msgid "#-1 STEP OUT OF RANGE"
 msgstr ""
 
 #: funlist.c:2572 funlist.c:2587 funlist.c:2680 funlist.c:2695 funlist.c:2811
-#: funlist.c:2945 funlist.c:2953 predicat.c:1472 predicat.c:1483
+#: funlist.c:2945 funlist.c:2953 predicat.c:1592 predicat.c:1603
 msgid "#-1 REGEXP ERROR: "
 msgstr ""
 
@@ -4061,7 +4061,8 @@ msgid "Invalid location on command execution: %s(#%d)"
 msgstr ""
 
 #: game.c:1290 game.c:1297 look.c:663 look.c:685 look.c:712 look.c:720
-#: move.c:571 move.c:579 move.c:615 move.c:893 move.c:1062 speech.c:580
+#: move.c:571 move.c:579 move.c:615 move.c:893 move.c:1062 set.c:118
+#: speech.c:580
 msgid "I don't see that here."
 msgstr ""
 
@@ -4439,7 +4440,7 @@ msgstr ""
 msgid "%s [#%d%s] is veiled"
 msgstr ""
 
-#: look.c:427 look.c:431 look.c:437 look.c:442 set.c:942
+#: look.c:427 look.c:431 look.c:437 look.c:442 set.c:958
 msgid "No matching attributes."
 msgstr ""
 
@@ -5400,42 +5401,42 @@ msgstr ""
 msgid "GAME: %s(%s) tried to spend %d %s."
 msgstr ""
 
-#: predicat.c:1157
+#: predicat.c:1277
 #, c-format
 msgid "%s message from %s: %s"
 msgstr ""
 
-#: predicat.c:1161
+#: predicat.c:1281
 #, c-format
 msgid "[%d:%02d] %s message sent to %s."
 msgstr ""
 
-#: predicat.c:1244
+#: predicat.c:1364
 msgid "What was the victim of the verb?"
 msgstr ""
 
-#: predicat.c:1250
+#: predicat.c:1370
 msgid "What do you want to do with the verb?"
 msgstr ""
 
-#: predicat.c:1256
+#: predicat.c:1376
 msgid "What do you want to do the verb?"
 msgstr ""
 
-#: predicat.c:1450 predicat.c:1542
+#: predicat.c:1570 predicat.c:1662
 msgid "What pattern do you want to grep for?"
 msgstr ""
 
-#: predicat.c:1475 predicat.c:1486
+#: predicat.c:1595 predicat.c:1606
 #, c-format
 msgid "Invalid regexp: %s"
 msgstr ""
 
-#: predicat.c:1559 predicat.c:1569
+#: predicat.c:1679 predicat.c:1689
 msgid "No matches."
 msgstr ""
 
-#: predicat.c:1566
+#: predicat.c:1686
 #, c-format
 msgid "Matches of '%s' on %s(#%d): %s"
 msgstr ""
@@ -5657,283 +5658,287 @@ msgstr ""
 msgid "GAME: Game shutdown by system operator"
 msgstr ""
 
-#: set.c:81
+#: set.c:78
 msgid "Give it what new name?"
 msgstr ""
 
-#: set.c:102
+#: set.c:85
 msgid "You can't give a player that name."
 msgstr ""
 
-#: set.c:111
+#: set.c:88
+msgid "Too many aliases."
+msgstr ""
+
+#: set.c:135
 #, c-format
 msgid "Broadcast: Suspect %s changed name to %s."
 msgstr ""
 
-#: set.c:139
+#: set.c:154
 msgid "Name set."
 msgstr ""
 
-#: set.c:186
+#: set.c:202
 msgid "Players always own themselves."
 msgstr ""
 
-#: set.c:196
+#: set.c:212
 msgid "You must carry the object to @chown it."
 msgstr ""
 
-#: set.c:200
+#: set.c:216
 msgid "You cannot @CHOWN/PRESERVE. Use normal @CHOWN."
 msgstr ""
 
-#: set.c:211
+#: set.c:227
 msgid "That player doesn't have enough money or quota to receive that object."
 msgstr ""
 
-#: set.c:219
+#: set.c:235
 msgid "Owner changed."
 msgstr ""
 
-#: set.c:295
+#: set.c:311
 msgid "Circular zone broken."
 msgstr ""
 
-#: set.c:304
+#: set.c:320
 msgid "Overly deep zone chain broken."
 msgstr ""
 
-#: set.c:324
+#: set.c:340
 #, c-format
 msgid ""
 "Warning: WIZ flag reset on #%d because @CHOWN/PRESERVE is to a third party."
 msgstr ""
 
-#: set.c:332
+#: set.c:348
 #, c-format
 msgid ""
 "Warning: @CHOWN/PRESERVE on an object (#%d) with WIZ, ROY, INHERIT, or "
 "@power privileges."
 msgstr ""
 
-#: set.c:369
+#: set.c:385
 msgid "That object is already in that zone."
 msgstr ""
 
-#: set.c:379
+#: set.c:395
 msgid "You don't have the power to shift reality."
 msgstr ""
 
-#: set.c:392
+#: set.c:408
 msgid "You cannot move that object to that zone."
 msgstr ""
 
-#: set.c:398
+#: set.c:414
 msgid "You shouldn't zone objects to themselves!"
 msgstr ""
 
-#: set.c:407
+#: set.c:423
 msgid "You can't make circular zones!"
 msgstr ""
 
-#: set.c:414
+#: set.c:430
 msgid "Overly deep zone chain."
 msgstr ""
 
-#: set.c:430
+#: set.c:446
 msgid "Warning: @chzoning admin-owned object!"
 msgstr ""
 
-#: set.c:454
+#: set.c:470
 msgid "Warning: @chzoning a privileged player."
 msgstr ""
 
-#: set.c:456
+#: set.c:472
 msgid "Warning: @chzoning a TRUST player."
 msgstr ""
 
-#: set.c:460
+#: set.c:476
 msgid "Zone changed."
 msgstr ""
 
-#: set.c:487
+#: set.c:503
 #, c-format
 msgid "You cannot change that flag on %s/%s"
 msgstr ""
 
-#: set.c:496
+#: set.c:512
 #, c-format
 msgid "%s/%s - %s reset."
 msgstr ""
 
-#: set.c:502
+#: set.c:518
 #, c-format
 msgid "%s/%s - %s set."
 msgstr ""
 
-#: set.c:516
+#: set.c:532
 #, c-format
 msgid "You cannot set attrib flags on %s/%s"
 msgstr ""
 
-#: set.c:545
+#: set.c:561
 msgid "What flag do you want to set?"
 msgstr ""
 
-#: set.c:556
+#: set.c:572
 msgid "Unrecognized attribute flag."
 msgstr ""
 
-#: set.c:562
+#: set.c:578
 msgid "No attribute found to change."
 msgstr ""
 
-#: set.c:591
+#: set.c:607
 msgid "What do you want to set?"
 msgstr ""
 
-#: set.c:613
+#: set.c:629
 msgid "Only God can set himself!"
 msgstr ""
 
-#: set.c:620
+#: set.c:636
 msgid "You may not set attributes."
 msgstr ""
 
-#: set.c:629
+#: set.c:645
 msgid "You must specify a flag to set."
 msgstr ""
 
-#: set.c:671
+#: set.c:687
 msgid "What do you want to copy from?"
 msgstr ""
 
-#: set.c:678
+#: set.c:694
 msgid "What object do you want to copy the attribute from?"
 msgstr ""
 
-#: set.c:691
+#: set.c:707
 msgid "No such attribute to copy from."
 msgstr ""
 
-#: set.c:696
+#: set.c:712
 msgid "Permission to read attribute denied."
 msgstr ""
 
-#: set.c:705
+#: set.c:721
 msgid "What do you want to copy to?"
 msgstr ""
 
-#: set.c:730
+#: set.c:746
 #, c-format
 msgid "Attribute %s (%d copies)"
 msgstr ""
 
-#: set.c:731
+#: set.c:747
 msgid "moved"
 msgstr ""
 
-#: set.c:731
+#: set.c:747
 msgid "copied"
 msgstr ""
 
-#: set.c:735
+#: set.c:751
 #, c-format
 msgid "Unable to %s attribute."
 msgstr ""
 
-#: set.c:736
+#: set.c:752
 msgid "move"
 msgstr ""
 
-#: set.c:736
+#: set.c:752
 msgid "copy"
 msgstr ""
 
-#: set.c:774
+#: set.c:790
 msgid "No such attribute, try set instead."
 msgstr ""
 
-#: set.c:778
+#: set.c:794
 msgid "You need to control an attribute to edit it."
 msgstr ""
 
-#: set.c:883 set.c:885 set.c:890 set.c:892
+#: set.c:899 set.c:901 set.c:906 set.c:908
 #, c-format
 msgid "%s - Set: %s"
 msgstr ""
 
-#: set.c:916 set.c:922
+#: set.c:932 set.c:938
 msgid "I need to know what you want to edit."
 msgstr ""
 
-#: set.c:933
+#: set.c:949
 msgid "Nothing to do."
 msgstr ""
 
-#: set.c:964 sql.c:354
+#: set.c:980 sql.c:354
 msgid "I need to know what attribute to trigger."
 msgstr ""
 
-#: set.c:979 sql.c:372
+#: set.c:995 sql.c:372
 msgid "You can't trigger God!"
 msgstr ""
 
-#: set.c:988
+#: set.c:1004
 #, c-format
 msgid "%s - Triggered."
 msgstr ""
 
-#: set.c:1014
+#: set.c:1030
 msgid "I need to know what attribute to include."
 msgstr ""
 
-#: set.c:1025
+#: set.c:1041
 msgid "You can't include God!"
 msgstr ""
 
-#: set.c:1062
+#: set.c:1078
 msgid "Used."
 msgstr ""
 
-#: set.c:1114
+#: set.c:1130
 msgid "A thing cannot be its own ancestor!"
 msgstr ""
 
-#: set.c:1121
+#: set.c:1137
 msgid "You are not allowed to be your own ancestor!"
 msgstr ""
 
-#: set.c:1126
+#: set.c:1142
 msgid "Too many ancestors."
 msgstr ""
 
-#: set.c:1133
+#: set.c:1149
 msgid "Parent changed."
 msgstr ""
 
-#: set.c:1157
+#: set.c:1173
 #, c-format
 msgid "Unable to wipe attribute %s"
 msgstr ""
 
-#: set.c:1162
+#: set.c:1178
 #, c-format
 msgid "Attribute %s cannot be wiped because a child attribute cannot be wiped."
 msgstr ""
 
-#: set.c:1199
+#: set.c:1215
 msgid "That object is protected."
 msgstr ""
 
-#: set.c:1206
+#: set.c:1222
 msgid "No attributes wiped."
 msgstr ""
 
-#: set.c:1209
+#: set.c:1225
 msgid "One attribute wiped."
 msgstr ""
 
-#: set.c:1212
+#: set.c:1228
 #, c-format
 msgid "%d attributes wiped."
 msgstr ""

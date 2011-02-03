@@ -34,6 +34,7 @@ void WIN32_CDECL do_log
 void WIN32_CDECL do_rawlog(enum log_type logtype, const char *fmt, ...)
   __attribute__ ((__format__(__printf__, 2, 3)));
 void do_logwipe(dbref player, enum log_type logtype, char *str);
+void do_log_recall(dbref, enum log_type, int);
 
 /* Activity log types */
 enum log_act_type { LA_CMD, LA_PE, LA_LOCK };

@@ -16,6 +16,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <limits.h>
 #ifdef I_SYS_TIME
 #include <sys/time.h>
 #ifdef TIME_WITH_SYS_TIME
@@ -325,6 +326,43 @@ do_log(enum log_type logtype, dbref player, dbref object, const char *fmt, ...)
   default:
     do_rawlog(LT_ERR, "ERR: %s", tbuf1);
   }
+}
+
+/** Recall lines from a log.
+ *
+ * \param player the enactor.
+ * \param type the log to recall from.
+ * \param lines the number of lines to recall. 0 for all.
+ */
+void
+do_log_recall(dbref player, enum log_type type, int lines)
+{
+  dbref dummy_dbref = NOTHING;
+  int dummy_type = 0, nlines = 0;
+  time_t dummy_ts;
+  char *line, *p;
+  struct log_stream *log;
+
+  if (lines <= 0)
+    lines = INT_MAX;
+
+  log = lookup_log(type);
+  
+  if (lines != INT_MAX) {
+    p = NULL;
+    while (iter_bufferq(log->buffer, &p, &dummy_dbref, &dummy_type, &dummy_ts))
+      nlines += 1;
+  } else
+    nlines = INT_MAX;
+
+  notify(player, T("Begin log recall."));
+  p = NULL;
+  while ((line = iter_bufferq(log->buffer, &p, &dummy_dbref, &dummy_type, &dummy_ts))) {
+    if (nlines <= lines)
+      notify(player, line);    
+    nlines -= 1;
+  }
+  notify(player, T("End log recall."));
 }
 
 /** Wipe out a game log. This is intended for those emergencies where

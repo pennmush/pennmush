@@ -191,7 +191,7 @@ COMLIST commands[] = {
    CMD_T_ANY, 0, 0},
   {"@LOCK", NULL, cmd_lock,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_SWITCHES | CMD_T_NOGAGGED, 0, 0},
-  {"@LOG", "CHECK CMD CONN ERR TRACE WIZ", cmd_log,
+  {"@LOG", "CHECK CMD CONN ERR TRACE WIZ RECALL", cmd_log,
    CMD_T_ANY | CMD_T_NOGAGGED, "WIZARD", 0},
   {"@LOGWIPE", "CHECK CMD CONN ERR TRACE WIZ", cmd_logwipe,
    CMD_T_ANY | CMD_T_NOGAGGED | CMD_T_GOD, 0, 0},

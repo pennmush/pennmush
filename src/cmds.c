@@ -604,38 +604,44 @@ COMMAND(cmd_lock)
     do_lock(player, arg_left, arg_right, Basic_Lock);
 }
 
+static enum log_type
+logtype_from_switch(switch_mask sw, enum log_type def)
+{
+  enum log_type type;
+
+  if (SW_ISSET(sw, SWITCH_CHECK))
+    type = LT_CHECK;
+  else if (SW_ISSET(sw, SWITCH_CMD))
+    type = LT_CMD;
+  else if (SW_ISSET(sw, SWITCH_CONN))
+    type = LT_CONN;
+  else if (SW_ISSET(sw, SWITCH_ERR))
+    type = LT_ERR;
+  else if (SW_ISSET(sw, SWITCH_TRACE))
+    type = LT_TRACE;
+  else if (SW_ISSET(sw, SWITCH_WIZ))
+    type = LT_WIZ;
+  else
+    type = def;
+
+  return type;
+}
+
 COMMAND(cmd_log)
 {
-  if (SW_ISSET(sw, SWITCH_CHECK))
-    do_writelog(player, arg_left, LT_CHECK);
-  else if (SW_ISSET(sw, SWITCH_CMD))
-    do_writelog(player, arg_left, LT_CMD);
-  else if (SW_ISSET(sw, SWITCH_CONN))
-    do_writelog(player, arg_left, LT_CONN);
-  else if (SW_ISSET(sw, SWITCH_ERR))
-    do_writelog(player, arg_left, LT_ERR);
-  else if (SW_ISSET(sw, SWITCH_TRACE))
-    do_writelog(player, arg_left, LT_TRACE);
-  else if (SW_ISSET(sw, SWITCH_WIZ))
-    do_writelog(player, arg_left, LT_WIZ);
-  else
-    do_writelog(player, arg_left, LT_CMD);
+  enum log_type type = logtype_from_switch(sw, LT_CMD);
+
+  if (SW_ISSET(sw, SWITCH_RECALL)) {
+    int lines = parse_integer(arg_left);
+    do_log_recall(player, type, lines);
+  } else
+    do_writelog(player, arg_left, type);
 }
 
 COMMAND(cmd_logwipe)
 {
-  if (SW_ISSET(sw, SWITCH_CHECK))
-    do_logwipe(player, LT_CHECK, arg_left);
-  else if (SW_ISSET(sw, SWITCH_CMD))
-    do_logwipe(player, LT_CMD, arg_left);
-  else if (SW_ISSET(sw, SWITCH_CONN))
-    do_logwipe(player, LT_CONN, arg_left);
-  else if (SW_ISSET(sw, SWITCH_TRACE))
-    do_logwipe(player, LT_TRACE, arg_left);
-  else if (SW_ISSET(sw, SWITCH_WIZ))
-    do_logwipe(player, LT_WIZ, arg_left);
-  else
-    do_logwipe(player, LT_ERR, arg_left);
+  enum log_type type = logtype_from_switch(sw, LT_ERR);
+  do_logwipe(player, type, arg_left);
 }
 
 COMMAND(cmd_lset)

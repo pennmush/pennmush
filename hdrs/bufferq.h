@@ -7,6 +7,8 @@
  */
 
 
+#ifndef BUFFERQ_H
+#define BUFFERQ_H
 
 typedef struct bufferq BUFFERQ;
 
@@ -33,3 +35,5 @@ char *iter_bufferq(BUFFERQ *bq, char **p, dbref *player, int *type,
 int bufferq_lines(BUFFERQ *bq);
 int bufferq_blocks(BUFFERQ *bq);
 bool isempty_bufferq(BUFFERQ *bq);
+
+#endif

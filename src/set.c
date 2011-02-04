@@ -111,7 +111,7 @@ do_name(dbref player, const char *name, char *newname_)
         notify(player, T("That is not a reasonable name."));
         return;
       }
-      mush_strdup(trim_space_sep(newname_, ' '), "name.newname");
+      newname = mush_strdup(trim_space_sep(newname_, ' '), "name.newname");
       break;
     default:
       /* Should never occur */

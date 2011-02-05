@@ -705,10 +705,6 @@ msgstr "@lock/drop está disponível."
 msgid "That function isn't deleted!"
 msgstr "Nome de função muito grande."
 
-#: src/log.c:355
-msgid "That is not a valid log."
-msgstr "Nome de função muito grande."
-
 #: src/extchat.c:1181
 msgid "That name is too long."
 msgstr "Nome de função muito grande."

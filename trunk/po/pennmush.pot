@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-02-03 02:00-0600\n"
+"POT-Creation-Date: 2011-02-05 02:00-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -471,7 +471,7 @@ msgstr ""
 msgid "Unable to open %s. Error output continues to stderr.\n"
 msgstr ""
 
-#: bsd.c:700 log.c:142
+#: bsd.c:700 log.c:162
 msgid "Ack!  Failed reopening stderr!"
 msgstr ""
 
@@ -914,39 +914,39 @@ msgstr ""
 msgid "Locks"
 msgstr ""
 
-#: cmds.c:592 cmds.c:908 game.c:2409
+#: cmds.c:592 cmds.c:914 game.c:2409
 msgid "Powers"
 msgstr ""
 
-#: cmds.c:690 extmail.c:1643
+#: cmds.c:696 extmail.c:1643
 msgid "You cannot do that while gagged."
 msgstr ""
 
-#: cmds.c:760
+#: cmds.c:766
 msgid "@message them with what?"
 msgstr ""
 
-#: cmds.c:763
+#: cmds.c:769
 msgid "Use what attribute for the @message?"
 msgstr ""
 
-#: cmds.c:767
+#: cmds.c:773
 msgid "@message who?"
 msgstr ""
 
-#: cmds.c:1114
+#: cmds.c:1120
 msgid "You can't teleport to nothing!"
 msgstr ""
 
-#: cmds.c:1306
+#: cmds.c:1312
 msgid "Buy for WHAT price?"
 msgstr ""
 
-#: cmds.c:1311
+#: cmds.c:1317
 msgid "You can't buy things by taking money."
 msgstr ""
 
-#: cmds.c:1428
+#: cmds.c:1434
 #, c-format
 msgid "No command found in code by %s - don't start code with functions."
 msgstr ""
@@ -4359,39 +4359,47 @@ msgid ""
 "Warning: Zone %s may have loose zone lock. Lock zones to =player, not player"
 msgstr ""
 
-#: log.c:65 unparse.c:131 unparse.c:134
+#: log.c:86 unparse.c:131 unparse.c:134
 msgid "*NOTHING*"
 msgstr ""
 
-#: log.c:68 unparse.c:136
+#: log.c:89 unparse.c:136
 msgid "*VARIABLE*"
 msgstr ""
 
-#: log.c:71 unparse.c:138
+#: log.c:92 unparse.c:138
 msgid "*HOME*"
 msgstr ""
 
-#: log.c:319
+#: log.c:323
 msgid "bad object"
 msgstr ""
 
-#: log.c:360
+#: log.c:358
+msgid "Begin log recall."
+msgstr ""
+
+#: log.c:365
+msgid "End log recall."
+msgstr ""
+
+#: log.c:385
 msgid "Wrong password."
 msgstr ""
 
-#: log.c:397
-msgid "That is not a valid log."
+#: log.c:402
+msgid "That is not a clearable log."
 msgstr ""
 
-#: log.c:400
+#: log.c:405
 msgid "Log wiped."
 msgstr ""
 
-#: log.c:469
+#: log.c:474
 msgid "GAME: Recall from activity log"
 msgstr ""
 
-#: log.c:502
+#: log.c:507
 msgid "GAME: End recall"
 msgstr ""
 

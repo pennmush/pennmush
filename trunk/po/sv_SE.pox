@@ -2959,10 +2959,6 @@ msgstr "Det är inte en giltig kanal."
 msgid "That is not a valid lock name."
 msgstr "Det är inte ett giltigt lås namn."
 
-#: src/log.c:355
-msgid "That is not a valid log."
-msgstr "Det är inte en giltig logg."
-
 #: src/create.c:54
 msgid "That is not a valid object."
 msgstr "Det är inte ett giltigt objekt."

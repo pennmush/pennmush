@@ -1862,10 +1862,6 @@ msgstr "Das ist kein Raum!"
 msgid "That is not a valid channel."
 msgstr "Das ist kein gültiger Channel."
 
-#: src/log.c:355
-msgid "That is not a valid log."
-msgstr "Das ist kein gültiges Log."
-
 #: src/create.c:54
 msgid "That is not a valid object."
 msgstr "Das ist kein gültiges Objekt."

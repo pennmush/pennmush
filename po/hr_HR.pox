@@ -1710,6 +1710,10 @@ msgstr "Lo¹ tip objekta."
 msgid "Bad password."
 msgstr "Lo¹a ¹ifra."
 
+#: log.c:358
+msgid "Begin log recall."
+msgstr "Poèetak ispisa loga."
+
 #: src/set.c:147
 #, c-format
 msgid "Broadcast: Suspect %s changed name to %s."
@@ -2369,6 +2373,10 @@ msgstr "Registracija putem elektronièke po¹te je dozvoljena"
 #: wiz.c:1013
 msgid "Enabled."
 msgstr "Ukljuèeno."
+
+#: log.c:365
+msgid "End log recall."
+msgstr "Kraj ispisa loga."
 
 #: atr_tab.c:647
 msgid "Enum"
@@ -4672,6 +4680,10 @@ msgstr "Ta funkcija nije obrisana!"
 msgid "That is an exit."
 msgstr "To je izlaz."
 
+#: log.c:402
+msgid "That is not a clearable log."
+msgstr "Taj log ne mo¾e biti obrisan."
+
 #: src/extmail.c:1218
 msgid "That is not a debugging option."
 msgstr "To nije opcija za debagiranje."
@@ -4695,10 +4707,6 @@ msgstr "To nije ispravan dbref."
 #: lock.c:326
 msgid "That is not a valid lock name."
 msgstr "To nije ispravno ime brave."
-
-#: src/log.c:355
-msgid "That is not a valid log."
-msgstr "To nije ispravan log."
 
 #: src/create.c:54
 msgid "That is not a valid object."

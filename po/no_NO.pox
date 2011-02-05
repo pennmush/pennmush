@@ -4560,10 +4560,6 @@ msgstr "Det er ikke en gyldig dbref."
 msgid "That is not a valid lock name."
 msgstr "Det er ikke et gyldig låsnavn."
 
-#: src/log.c:355
-msgid "That is not a valid log."
-msgstr "Det er ikke en gyldig logg."
-
 #: src/create.c:54
 msgid "That is not a valid object."
 msgstr "Det der er ikke et gyldig objekt."

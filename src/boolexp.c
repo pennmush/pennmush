@@ -2282,12 +2282,44 @@ tattr_impl(dbref player, dbref target, const char *aname, const char *pattern)
   }
 }
 
+static int
+tip_impl(dbref player, dbref target, char *pattern)
+{
+  if (!Connected(Owner(player)))
+    return 0;
+  else {
+    /* We use the attribute for permission checks, but we
+     * do the actual boolexp itself with the least idle
+     * descriptor's ip address.
+     */
+    ATTR *a = atr_get(Owner(player), "LASTIP");
+    if (!a || !Can_Read_Attr(target, player, a))
+      return 0;
+    else {
+      char *p = least_idle_ip(Owner(player));
+      return p ? quick_wild(pattern, p) : 0;
+    }
+  }
+}
 
 struct jump_list {
   jit_label_t label;
   const uint8_t *loc;
   struct jump_list *next;
 };
+
+char *
+alloc_jit_string(struct lock_jit_metadata *meta, const char *s)
+{
+  struct string_pool *newstr;
+
+  newstr = mush_malloc(sizeof *newstr, "lock.jit.constant");
+  newstr->s = mush_strdup(s, "lock.jit.constant.string");
+  newstr->next = meta->pool;
+  meta->pool = newstr;  
+  return newstr->s;
+}
+
 
 /** Compile a boolexp into native code using libjit.
  * \param thing the object the lock is on.
@@ -2302,7 +2334,8 @@ compile_boolexp(dbref thing, boolexp b)
   jit_function_t fun;
   static jit_type_t sig = NULL, params[4] = { NULL };
   static jit_type_t member_sig = NULL, eval_lock_sig = NULL, ind_lock_sig = NULL;
-  static jit_type_t flag_lock_sig = NULL;
+  static jit_type_t parse_objid_sig = NULL, flag_lock_sig = NULL;
+  static jit_type_t ip_lock_sig = NULL, hostname_lock_sig = NULL;
   jit_value_t j_arg, j_s, j_player, j_thing;
   jit_value_t temp1, temp2, temp3, temp4;
   jit_value_t func_args[4] = { NULL };
@@ -2346,15 +2379,24 @@ compile_boolexp(dbref thing, boolexp b)
     params[3] = jit_type_cstr;
     ind_lock_sig = jit_type_create_signature(jit_abi_cdecl, jit_type_int, params, 4, 1);
 
-
     /* Sig for sees_flag */
     params[0] = jit_type_cstr;
     params[1] = jit_type_int;
     params[2] = jit_type_int;
     params[3] = jit_type_cstr;
     flag_lock_sig = jit_type_create_signature(jit_abi_cdecl, jit_type_int, params, 4, 1);
-  }
 
+    /* Sig for parse_objid */
+    params[0] = jit_type_cstr;
+    parse_objid_sig = jit_type_create_signature(jit_abi_cdecl, jit_type_int, params, 1, 1);
+
+    /* Sigs for tip_impl and thostname_impl */
+    params[0] = jit_type_int;
+    params[1] = jit_type_int;
+    params[2] = jit_type_cstr;
+    ip_lock_sig = jit_type_create_signature(jit_abi_cdecl, jit_type_int, params, 3, 1);
+    hostname_lock_sig = jit_type_create_signature(jit_abi_cdecl, jit_type_int, params, 3, 1);
+  }
 
   fun = jit_function_create(meta->context, sig);
   
@@ -2430,13 +2472,8 @@ compile_boolexp(dbref thing, boolexp b)
       break;
     case OP_LOADS:
       {
-	struct string_pool *newstr;
-	newstr = mush_malloc(sizeof *newstr, "lock.jit.constant");
-	newstr->s = mush_strdup((char *) bytecode + arg, "lock.jit.constant.string");
-	newstr->next = meta->pool;
-	meta->pool = newstr;
-
-	temp1 = jit_value_create_nint_constant(fun, jit_type_cstr, (jit_nint)newstr->s);
+	char *newstr = alloc_jit_string(meta, (const char *)bytecode + arg);
+	temp1 = jit_value_create_nint_constant(fun, jit_type_cstr, (jit_nint)newstr);
 	jit_insn_store(fun, j_s, temp1);	
       }
       break;
@@ -2494,13 +2531,9 @@ compile_boolexp(dbref thing, boolexp b)
       break;
     case OP_TATR:
       {
-	struct string_pool *newstr;
-	newstr = mush_malloc(sizeof *newstr, "lock.jit.constant");
-	newstr->s = mush_strdup((char *) bytecode + arg, "lock.jit.constant.string");
-	newstr->next = meta->pool;
-	meta->pool = newstr;
+	char *newstr = alloc_jit_string(meta, (const char *)bytecode + arg);
 
-	j_arg = jit_value_create_nint_constant(fun, jit_type_cstr, (jit_nint)newstr->s);
+	j_arg = jit_value_create_nint_constant(fun, jit_type_cstr, (jit_nint)newstr);
 
 	incr_recursion(fun);
 	check_goodobject(fun, j_arg, &j_lab_end);
@@ -2516,13 +2549,9 @@ compile_boolexp(dbref thing, boolexp b)
       }
     case OP_TEVAL:
       {
-	struct string_pool *newstr;
-	newstr = mush_malloc(sizeof *newstr, "lock.jit.constant");
-	newstr->s = mush_strdup((char *) bytecode + arg, "lock.jit.constant.string");
-	newstr->next = meta->pool;
-	meta->pool = newstr;
+	char *newstr = alloc_jit_string(meta, (const char *)bytecode + arg);
 
-	temp1 = jit_value_create_nint_constant(fun, jit_type_cstr, (jit_nint)newstr->s);
+	temp1 = jit_value_create_nint_constant(fun, jit_type_cstr, (jit_nint)newstr);
 
 	incr_recursion(fun);
 	func_args[0] = j_player;
@@ -2537,13 +2566,9 @@ compile_boolexp(dbref thing, boolexp b)
     case OP_TFLAG:
     case OP_TPOWER:
       {
-	struct string_pool *newstr;
-	newstr = mush_malloc(sizeof *newstr, "lock.jit.constant");
-	newstr->s = mush_strdup((char *) bytecode + arg, "lock.jit.constant.string");
-	newstr->next = meta->pool;
-	meta->pool = newstr;
+	char *newstr = alloc_jit_string(meta, (const char *)bytecode + arg);
 
-	temp1 = jit_value_create_nint_constant(fun, jit_type_cstr, (jit_nint)newstr->s);
+	temp1 = jit_value_create_nint_constant(fun, jit_type_cstr, (jit_nint)newstr);
 	temp2 = jit_value_create_nint_constant(fun, jit_type_cstr, (jit_nint)(op == OP_TFLAG ? "FLAG" : "POWER"));
 	func_args[0] = temp2;
 	func_args[1] = j_thing;
@@ -2572,6 +2597,28 @@ compile_boolexp(dbref thing, boolexp b)
 	break;
       }
       break;
+    case OP_TOBJID:
+      {
+	char *newstr = alloc_jit_string(meta, (const char *)bytecode + arg);
+	
+	func_args[0] = jit_value_create_nint_constant(fun, jit_type_cstr, (jit_nint)newstr);
+	temp1 = jit_insn_call_native(fun, "parse_objid", (void*)parse_objid, parse_objid_sig, func_args, 1, 0);
+	temp2 = jit_insn_eq(fun, temp1, j_player);
+
+	jit_insn_store(fun, j_r, temp1);
+      }
+    case OP_TIP:
+      {
+	char *newstr = alloc_jit_string(meta, (const char *)bytecode + arg);
+	incr_recursion(fun);
+	func_args[0] = j_player;
+	func_args[1] = j_thing;
+	func_args[2] = jit_value_create_nint_constant(fun, jit_type_cstr, (jit_nint)newstr);
+
+	temp1 = jit_insn_call_native(fun, "tip_impl", (void*)tip_impl, ip_lock_sig, func_args, 3, 0);
+	jit_insn_store(fun, j_r, temp1);		
+	decr_recursion(fun);
+      }
     default:
       fail = 1;
       goto done;
@@ -2580,7 +2627,7 @@ compile_boolexp(dbref thing, boolexp b)
 
  done:
 
-#if 0
+#ifdef DEBUG_JIT
   {
     /* For debugging. */
     extern FILE *tracelog_fp;

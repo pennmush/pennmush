@@ -917,19 +917,12 @@ FUNCTION(fun_ceil)
   safe_number(ceil(parse_number(args[0])), buff, bp);
 }
 
-double
-fround(double n, int d)
-{
-  double ex = pow(10.0, d);
-  return floor(n * ex + 0.5) / ex;
-}
-
 /* ARGSUSED */
 FUNCTION(fun_round)
 {
-  int places;
-  double n, rounded;
-  char *sbp;
+  unsigned int places;
+  double n;
+  char *sbp, *decimal;
   bool pad = 0;
 
   if (!is_number(args[0])) {
@@ -939,47 +932,44 @@ FUNCTION(fun_round)
     n = parse_number(args[0]);
 
   if (nargs >= 2) {
-    if (!is_integer(args[1])) {
+    if (!is_uinteger(args[1])) {
       safe_str(T(e_int), buff, bp);
       return;
     }
-    places = parse_integer(args[1]);
+    places = parse_uinteger(args[1]);
   } else
     places = 0;
 
   if (nargs == 3)
     pad = parse_boolean(args[2]);
 
-  if (places < 0)
-    places = 0;
-  else if (places > FLOAT_PRECISION)
+  if (places > (unsigned int)FLOAT_PRECISION)
     places = FLOAT_PRECISION;
 
 #ifdef HAVE_ROUND
-  if (places == 0)
-    rounded = round(n);
+  if (places == 0) 
+    safe_number(round(n), buff, bp);
   else
-    rounded = fround(n, places);
-#else
-  rounded = fround(n, places);
 #endif
-
-  sbp = *bp;
-  safe_number(rounded, buff, bp);
-
-  if (pad && places > 0) {
-    char *decimal;
-
-    *(*bp) = '\0';
-    decimal = strchr(sbp, '.');
-    if (!decimal) {
-      safe_chr('.', buff, bp);
-      safe_fill('0', places, buff, bp);
-    } else {
-      size_t padding = places - (*bp - decimal) + 1;
-      safe_fill('0', padding, buff, bp);
+    {
+      sbp = *bp;
+      safe_format(buff, bp, "%.*f", places, n);
+      *(*bp) = '\0';
+      
+      decimal = strchr(sbp, '.');
+      if (!pad && decimal) {
+	int n, trailing;
+	decimal += 1;
+	trailing = strlen(decimal);
+	for (n = 0; n < trailing; n++, decimal++) {
+	  size_t len = strspn(decimal, "0");
+	  if (*(decimal + len) == '\0') {
+	    *bp = decimal;
+	    break;
+	  }
+	}
+      }
     }
-  }
 }
 
 /* ARGSUSED */

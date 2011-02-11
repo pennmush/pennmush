@@ -126,6 +126,9 @@ See also: CHAT, @chat, @cemit
   /silent is given - if neither is given, the default behaviour is controlled
   by the noisy_cemit @config option. The /noeval switch prevents <message> 
   from being evaluated.
+  
+  You must be able to speak on the channel, or have the See_All and Pemit_All
+  @powers, to @cemit on the channel.
 
   @nscemit is exactly the same, but does not produce nospoof information when
   used by players with the Can_spoof @power.

@@ -2583,12 +2583,12 @@ See also: letq(), setq(), setr(), r(), ulocal(), uldefault()
     m - If <name> is "me", return <looker>'s dbref
     n - Match <name> against the names of objects in <looker>'s location
     p - If <name> begins with a *, match the rest against player names
-    x - Only match objects with the exact name <name>, no partial matches
     y - Match <name> against player names whether it begins with a * or not
     z - English-style matching (my 2nd book) of <name> (see 'help matching')
     * - All of the above (try a complete match). Default when no match
         parameters are given.
- 
+    x - Only match objects with the exact name <name>, no partial matches
+
   Just string all the parameters together. Spaces are ignored, so you can
   use spaces between paramaters for clarity if you wish.
   

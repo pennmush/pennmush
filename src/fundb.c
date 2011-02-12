@@ -1993,7 +1993,7 @@ FUNCTION(fun_locate)
       match_flags |= MAT_TYPE;
       break;
     case '*':
-      match_flags |= MAT_EVERYTHING;
+      match_flags |= (MAT_EVERYTHING | MAT_CONTAINER | MAT_CARRIED_EXIT);
       break;
     case 'a':
       match_flags |= MAT_ABSOLUTE;
@@ -2045,7 +2045,7 @@ FUNCTION(fun_locate)
     pref_type = NOTYPE;
 
   if (!(match_flags & ~(MAT_CHECK_KEYS | MAT_TYPE | MAT_EXACT)))
-    match_flags |= MAT_EVERYTHING;
+    match_flags |= (MAT_EVERYTHING | MAT_CONTAINER | MAT_CARRIED_EXIT);
 
   if ((match_flags & (MAT_NEIGHBOR | MAT_CONTAINER | MAT_POSSESSION | MAT_HERE | MAT_EXIT | MAT_CARRIED_EXIT))) {
     if (!nearby(executor, looker) && !See_All(executor) && !controls(executor, looker)) {

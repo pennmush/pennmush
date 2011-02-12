@@ -1966,10 +1966,6 @@ FUNCTION(fun_locate)
     safe_str("#-1", buff, bp);
     return;
   }
-  if (!See_All(executor) && !controls(executor, looker)) {
-    safe_str("#-1", buff, bp);
-    return;
-  }
 
   /* find out our preferred match type and flags */
   pref_type = 0;
@@ -2050,6 +2046,13 @@ FUNCTION(fun_locate)
 
   if (!(match_flags & ~(MAT_CHECK_KEYS | MAT_TYPE | MAT_EXACT)))
     match_flags |= MAT_EVERYTHING;
+
+  if ((match_flags & (MAT_NEIGHBOR | MAT_CONTAINER | MAT_POSSESSION | MAT_HERE | MAT_EXIT | MAT_CARRIED_EXIT))) {
+    if (!nearby(executor, looker) && !See_All(executor) && !controls(executor, looker)) {
+      safe_str("#-1", buff, bp);
+      return;
+    }
+  }
 
   /* report the results */
   if (!ambig_ok)

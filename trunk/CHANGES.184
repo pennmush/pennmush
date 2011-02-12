@@ -116,6 +116,7 @@ Fixes:
  * Minor bugfix in @include. [MG]
  * round() sometimes returned numbers with more decimal digits than
    desired. 
+ * The '*' option in locate() didn't actually include all match types. [MG]
 
 Version 1.8.4 patchlevel 2                                 Dec 06,  2010
 

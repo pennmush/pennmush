@@ -41,6 +41,8 @@ Commands:
    without queueing new events. These are limited by the @include limit. [GM]
  * @hide without a switch now toggles hide status, rather than defaulting to
    @hide/on. [MG]
+ * @log now takes a /recall switch for showing wizards the most recent activity
+   in a log file. [SW]
    
 Attributes:
  * New no_debug flag, which prevents debug info being shown for an attribute
@@ -60,6 +62,7 @@ Functions:
  * powers() with no arguments now returns a list of powers, similar to
    lflags() with no args. [MG]
  * trim() can now trim multiple characters. [MG] [GM]
+ * In some cases, privs are no longer needed to use locate(). [MG]
 
 Minor Changes:
  * The Can_Nspemit @power has been renamed to Can_Spoof, to better reflect
@@ -87,6 +90,8 @@ Minor Changes:
    instead of including them in the exit name. Also, @name can now set/clear
    the @alias of players/exits while changing the name. See help @name for
    details. Suggested by Minion. [MG]
+ * The logging code has been rewritten to make extending it with further
+   log files easier. [SW]
 
 Fixes:
  * Fixing list type autodetect. [GM]
@@ -104,6 +109,8 @@ Fixes:
    not be found at times. [MG]
  * sortby()s results would sometimes be reversed by mistake. [GM]
  * Minor bugfix in @include. [MG]
+ * round() sometimes returned numbers with more decimal digits than
+   desired. 
 
 & 1.8.4p2
 Version 1.8.4 patchlevel 2                                 Dec 06,  2010

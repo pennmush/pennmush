@@ -2544,19 +2544,20 @@ See also: letq(), setq(), setr(), r(), ulocal(), uldefault()
 & LOCATE()
   locate(<looker>, <name>, <parameters>)
  
-  This function attemps to find an object called <name>, relative to
-  the object <looker>. It's similar to the num() function, but you can
-  be more specific about which type of object to find, and where to look
-  for it. You must control <looker> or have the See_All power to use this
-  function.
+  This function attemps to find an object called <name>, relative to the
+  object <looker>. It's similar to the num() function, but you can be more
+  specific about which type of object to find, and where to look for it. 
+  When attempting to match objects near to <looker> (anything but absolute,
+  player name or "me" matches), you must control <looker>, have the See_All
+  power or be nearby.
   
   <parameters> is a string of characters which control the type of the object
   to find, and where (relative to <looker>) to look for it.
   
-  You can control the preferred type of the match with:
-    E - Exits
-    L - Unlocked exits preferred over locked exits
+  You can control the preferred types of the match with:
     N - No type (this is the default)
+    E - Exits
+    L - Prefer an object whose Basic @lock <looker> passes
     P - Players
     R - Rooms
     T - Things

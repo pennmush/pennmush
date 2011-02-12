@@ -67,6 +67,7 @@ Functions:
  * powers() with no arguments now returns a list of powers, similar to
    lflags() with no args. [MG]
  * trim() can now trim multiple characters. [MG] [GM]
+ * In some cases, privs are no longer needed to use locate(). [MG]
 
 Minor Changes:
  * The Can_Nspemit @power has been renamed to Can_Spoof, to better reflect

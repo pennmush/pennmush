@@ -515,6 +515,7 @@ FUNTAB flist[] = {
   {"LOCALIZE", fun_localize, 1, 1, FN_NOPARSE},
   {"LOCATE", fun_locate, 3, 3, FN_REG | FN_STRIPANSI},
   {"LOCK", fun_lock, 1, 2, FN_REG | FN_STRIPANSI},
+  {"LOCKFILTER", fun_lockfilter, 2, 3, FN_REG | FN_STRIPANSI},
   {"LOCKFLAGS", fun_lockflags, 0, 1, FN_REG | FN_STRIPANSI},
   {"LOCKOWNER", fun_lockowner, 1, 1, FN_REG | FN_STRIPANSI},
   {"LOCKS", fun_locks, 1, 1, FN_REG | FN_STRIPANSI},

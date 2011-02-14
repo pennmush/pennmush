@@ -37,6 +37,8 @@ Events:
    Otherwise, see HACKING.184 for more info. [SW]
 
 Commands:
+ * @lock (and all lock keys) now accepts NAME^<pattern> for matching against
+   an object's name. [GM]
  * @mapsql passes row results to attributes. Suggested by Mercutio. [GM]
  * @dig now takes an optional garbage dbref argument to specify the new
    dbref. Suggested by Paige. [GM]
@@ -58,6 +60,7 @@ Config:
    Suggested by Paige. [MG]
 
 Functions:
+ * lockfilter() lets you filter a list of dbrefs using a lock key. [GM]
  * align() now has '$' (nofill) as an option. Ideal for rightmost columns.
    Suggested by Minion. [GM]
  * dig() now takes an optional garbage dbref argument to specify the new

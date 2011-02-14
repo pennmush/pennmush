@@ -1447,6 +1447,51 @@ FUNCTION(fun_elock)
 }
 
 /* ARGSUSED */
+FUNCTION(fun_lockfilter)
+{
+  dbref victim;
+  char *r, *s;
+  char delim = ' ';
+  int first = 1;
+  boolexp elock = TRUE_BOOLEXP;
+
+  elock = parse_boolexp(executor, args[0], "Search");
+
+  if (elock == TRUE_BOOLEXP) {
+    safe_str(T("#-1 INVALID BOOLEXP"), buff, bp);
+    return;
+  }
+
+  if (nargs > 2) {
+    if (strlen(args[2]) > 2) {
+      safe_str(T("#-1 SEPARATOR MUST BE ONE CHARACTER"), buff, bp);
+      return;
+    }
+    delim = args[2][0];
+    if (!delim) {
+      delim = ' ';
+    }
+  }
+
+  s = trim_space_sep(args[1], delim);
+  while ((r = split_token(&s, delim)) != NULL) {
+    victim = noisy_match_result(executor, r, NOTYPE, MAT_ABSOLUTE);
+    if (victim != NOTHING  && Can_Locate(executor, victim)) {
+      if (eval_boolexp(victim, elock, executor)) {
+        if (first) {
+          first = 0;
+        } else {
+          safe_chr(delim, buff, bp);
+        }
+        safe_dbref(victim, buff, bp);
+      }
+    }
+  }
+  free_boolexp(elock);
+  return;
+}
+
+/* ARGSUSED */
 FUNCTION(fun_testlock)
 {
   dbref victim = match_thing(executor, args[1]);

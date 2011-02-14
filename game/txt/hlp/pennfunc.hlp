@@ -2643,6 +2643,28 @@ See also: @lock, locktypes, elock(), lockflags(), llockflags(), lset(),
     Basic USER:ITSME Use
 
 See also: lock(), lset(), lockflags(), llockflags(), lockowner()
+& LOCKFILTER()
+  lockfilter(<key>, <dbrefs>[, <delim>])
+
+  lockfilter() goes through <dbrefs> and tests them all against the
+  lock <key>, returning a list of all dbrefs that pass the <key>
+ 
+ <key> is evaluated from the caller's perspective.
+
+  Example:
+    Get all male players with a name starting with 'W'.
+    > think iter(lockfilter(NAME^W*&SEX:M*,lwho()),name(##))
+    Walker WalkerBot Wilco
+
+    List all wizroys online:
+    > think iter(lockfilter(FLAG^WIZARD|FLAG^ROYALTY,lwho()),name(##))
+    Sketch Viila Tanaku Raevnos Zebranky Cheetah Walker
+
+    List all players with an IC age > 20.
+    > think lockfilter(age:>20,lwho())
+    #123 #456 #789
+  
+See also: @lock, lock(), elock(), locktypes
 & LOCKFLAGS()
   lockflags(<object>[/<locktype>])
   lockflags()

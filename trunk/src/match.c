@@ -68,7 +68,6 @@
 static int parse_english(char **name, long *flags);
 static dbref match_player(dbref who, const char *name, int partial);
 extern int check_alias(const char *command, const char *list);  /* game.c */
-static int match_aliases(dbref match, const char *name);
 static dbref choose_thing(const dbref who, const int preferred_type, long flags,
                           dbref thing1, dbref thing2);
 static dbref match_result_internal(dbref who, dbref where, const char *xname, int type, long flags);
@@ -311,7 +310,7 @@ match_player(dbref who, const char *name, int partial)
   return (GoodObject(who) && partial ? visible_short_page(who, name) : NOTHING);
 }
 
-static int
+int
 match_aliases(dbref match, const char *name)
 {
 

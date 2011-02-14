@@ -2424,6 +2424,18 @@ EVALUATION LOCK
   you should probably use a bit lock instead.
 
 See also: @lock-bit
+& @lock-name
+NAME LOCKS
+  You can test for objects matching a given name by using the below format
+
+    @lock <object>=name^<pattern>
+
+  It is identical to performing strmatch(%n,<pattern>)
+
+  For example, to lock "Bob's Tools" to only people with a name beginning
+  with Bob:
+    @lock/use Bob's Tools=name^bob*
+
 & @lock-bit
 & @lock-flag
 & @lock-type
@@ -2504,6 +2516,7 @@ See also: ipaddr(), hostname(), LASTSITE
 
   Simple     - Always true, always false, or locking to an object.
   Objid      - Check if the object trying to pass the lock matches an objid.
+  Name       - Check the name of the object attempting to pass the lock.
   Owner      - Lock to objects owned by the owner of an object.
   Carry      - Lock to someone carrying an object such as a key.
   Indirect   - Use the result of a lock on another object.

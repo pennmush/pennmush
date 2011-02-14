@@ -61,6 +61,7 @@ extern dbref noisy_match_result
 extern dbref last_match_result
   (const dbref who, const char *name, const int type, const long flags);
 extern dbref match_controlled(dbref player, const char *name);
+extern int match_aliases(dbref match, const char *name);
 
 #define match_thing(player,name) \
   noisy_match_result((player), (name), NOTYPE, MAT_EVERYTHING)

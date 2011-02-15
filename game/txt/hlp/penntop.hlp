@@ -2033,12 +2033,13 @@ See also: @chzone, SHARED PLAYERS
   do matching in different ways, but most will allow you to specify an
   object as:
     * its dbref (#7) or objid (#7:123456789)
-    * its full name (Box of chocolates)
-    * part of any word in its name, if nothing else shares that part (Box)
     * the string "me" (yourself)
     * the string "here" (the room you're in)
-  Usually, you can also qualify an object with an adjective to help
-  the MUSH determine which object you mean.  Adjectives include:
+    * a '*' followed by a playername (*javelin)
+    * its full name (Box of chocolates)
+    * part of any word in its name, if nothing else shares that part (Box)
+  You can usually qualify an object with an adjective (English matching)
+  to help the MUSH determine which object you mean Adjectives include:
     * my <obj> - an object you're carrying
     * this <obj> - an object in your location (also: this here <obj>)
     * toward <exit> - an exit in your location
@@ -2046,7 +2047,7 @@ See also: @chzone, SHARED PLAYERS
       Objects are ordered in the order in which they're listed in your
       inventory, room contents, and exit list (in that order). If there
       aren't enough objects, this will fail.
-   You may combine some adjectives (my 1st box, this here 2nd box).
+  You can use an adjective with an ordinal (my 1st <obj>, this 2nd <obj>, etc)
 & &HELP
 This is the AHELP index.
 & RESTRICT

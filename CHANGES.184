@@ -103,7 +103,7 @@ Minor Changes:
 
 Fixes:
  * Fixing list type autodetect. [GM]
- * Help fixes by Daniel Powell and others. [MG]
+ * Help fixes by Daniel Powell, AnneLions and others. [MG]
  * Connect/disconnect messages for combined channels incorrectly showed
    NOSPOOF data. Reported by Sketch. [MG]
  * The delimiter between combined channel names in @chatformat is now '|'

@@ -1346,7 +1346,7 @@ See also: extract(), index(), grab()
     > think elock(map/test,*Snape)
     0
 
-See also: @lock, locktypes, testlock()
+See also: @lock, locktypes, testlock(), lockfilter()
 & EMIT()
 & NSEMIT()
   emit(<message>)
@@ -1499,7 +1499,7 @@ See also: div(), mod()
     > say filter(test/is_odd, 1 2 3 4 5 6)
     You say, "1 3 5"
 
-See also: anonymous attributes, firstof(), allof()
+See also: anonymous attributes, firstof(), allof(), lockfilter()
 & FINDABLE()
   findable(<object>, <victim>)
  
@@ -2623,7 +2623,7 @@ See also: num(), rnum(), pmatch(), room(), where(), rloc()
   would. You must control the object..
  
 See also: @lock, locktypes, elock(), lockflags(), llockflags(), lset(),
-  llocks(), lockowner()
+  llocks(), lockowner(), lockfilter()
 & LLOCKS()
 & LOCKS()
   llocks([<object>])
@@ -2646,10 +2646,13 @@ See also: lock(), lset(), lockflags(), llockflags(), lockowner()
 & LOCKFILTER()
   lockfilter(<key>, <dbrefs>[, <delim>])
 
-  lockfilter() goes through <dbrefs> and tests them all against the
-  lock <key>, returning a list of all dbrefs that pass the <key>
- 
- <key> is evaluated from the caller's perspective.
+  lockfilter() goes through <dbrefs> and tests them all against the lock 
+  <key>, returning a list of all dbrefs that pass the <key>.
+  
+  <key> is evaluated from the caller's perspective.
+  
+  This is equivilent to filter(#lambda/testlock(<key>, %%0), <dbrefs>) but
+  much more efficient, as the lock <key> is only parsed/compiled once.
 
   Example:
     Get all male players with a name starting with 'W'.
@@ -2664,7 +2667,7 @@ See also: lock(), lset(), lockflags(), llockflags(), lockowner()
     > think lockfilter(age:>20,lwho())
     #123 #456 #789
   
-See also: @lock, lock(), elock(), locktypes
+See also: @lock, lock(), elock(), locktypes, filter(), testlock()
 & LOCKFLAGS()
   lockflags(<object>[/<locktype>])
   lockflags()
@@ -3226,7 +3229,7 @@ See also: lwho(), nwho()
   
   alias() returns the first of <object>'s aliases. fullalias() returns all
   the aliases set for <object>. Note that, while any object can have an alias
-  set, they are only meaningful for players.
+  set, they are only meaningful for players and exits.
   
   With two arguments, alias() attempts to change the alias for <object> to
   <new alias>, as per @alias.
@@ -3236,7 +3239,7 @@ See also: lwho(), nwho()
     ALIAS [#7$v]: $;No;Nol;Noli;Nolt
     > say alias(*Noltar)
     You say, "$"
-    > say fullalias(Noltar)
+    > say fullalias(*Noltar)
     You say, "$;No;Nol;Noli;Nolt"
 
 See also: fullname()
@@ -5092,7 +5095,7 @@ See also: pueblo(), width(), height(), ssl()
     > think testlock(TYPE^PLAYER&FLAG^WIZARD, *Bilbo)
     0
   
-See also: @lock, lock(), elock(), locktypes
+See also: @lock, lock(), elock(), lockfilter(), locktypes
 & TEXTFILE()
 & TEXTENTRIES()
 & DYNHELP()

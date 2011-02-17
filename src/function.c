@@ -375,6 +375,7 @@ FUNTAB flist[] = {
   {"CHANNELS", fun_channels, 0, 2, FN_REG | FN_STRIPANSI},
   {"CLFLAGS", fun_cflags, 1, 2, FN_REG | FN_STRIPANSI},
   {"CLOCK", fun_clock, 1, 2, FN_REG | FN_STRIPANSI},
+  {"CMOGRIFIER", fun_cmogrifier, 1, 1, FN_REG | FN_STRIPANSI},
   {"CMSGS", fun_cinfo, 1, 1, FN_REG | FN_STRIPANSI},
   {"COWNER", fun_cowner, 1, 1, FN_REG | FN_STRIPANSI},
   {"CRECALL", fun_crecall, 1, 5, FN_REG | FN_STRIPANSI},

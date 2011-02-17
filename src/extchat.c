@@ -2498,6 +2498,29 @@ FUNCTION(fun_cowner)
 
 }
 
+FUNCTION(fun_cmogrifier)
+{
+  /* Return the dbref of the mogrifier of a channel. */
+  CHAN *c;
+
+  if (!args[0] || !*args[0]) {
+    safe_str(T("#-1 NO CHANNEL GIVEN"), buff, bp);
+    return;
+  }
+  switch (find_channel(args[0], &c, executor)) {
+  case CMATCH_NONE:
+    safe_str(T("#-1 NO SUCH CHANNEL"), buff, bp);
+    break;
+  case CMATCH_AMBIG:
+    safe_str(T("#-1 AMBIGUOUS CHANNEL NAME"), buff, bp);
+    break;
+  default:
+    safe_dbref(ChanMogrifier(c), buff, bp);
+  }
+
+}
+
+
 /* Remove all players from a channel, notifying them. This is the
  * utility routine for handling it. The command @channel/wipe
  * calls do_chan_wipe, below

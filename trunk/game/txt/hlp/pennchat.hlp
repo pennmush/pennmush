@@ -325,6 +325,7 @@ See also: @clock
 
   See 'help mogrify2' for info on specific mogrifiers, and 'help mogrify3'
   for some examples.
+See also: cmogrifier()
 & mogrify2
 
   There are mogrify attributes for each individual piece of the channel
@@ -606,7 +607,8 @@ See also: @channel/recall, cbufferadd()
   Channel functions work with the channel system.
 
   cbuffer()     cbufferadd()  cdesc()       cemit()       cflags()
-  channels()    clflags()     clock()       cmsgs()       cowner()
-  crecall()     cstatus()     ctitle()      cusers()      cwho()
+  channels()    clflags()     clock()       cmogrifier()  cmsgs()
+  cowner()      crecall()     cstatus()     ctitle()      cusers()
+  cwho()
 
 See also: CHAT, @channel, @cemit, @clock

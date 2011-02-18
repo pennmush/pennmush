@@ -3540,6 +3540,7 @@ See also: @restart, @undestroy, ACTION LISTS, @function, @command, @hook,
   The "here" and "inventory" flags check only your location or
   inventory, respectively. "exits" only checks for AUDIBLE exits.
 & @switch
+& @select
   @switch[/<switch>] <string>=<expr1>, <action1> [,<exprN>, 
                                  <actionN>]... [,<default>]
   @select <string>=<expr1>, <action1> [,<exprN>, <actionN>]... [,<default>]

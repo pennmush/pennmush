@@ -97,6 +97,8 @@ Minor Changes:
    details. Suggested by Minion. [MG]
  * The logging code has been rewritten to make extending it with further
    log files easier. [SW]
+ * When used by a non-player, @search and related functions now search from
+   the perspective of the object's owner. Suggested by Covenent. [MG]
 
 Fixes:
  * Fixing list type autodetect. [GM]

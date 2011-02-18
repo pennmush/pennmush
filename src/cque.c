@@ -864,7 +864,7 @@ do_entry(BQUE *entry, int include_recurses)
 
   if (GoodObject(entry->player) && !IsGarbage(entry->player)) {
     save_player = global_eval_context.cplr = entry->player;
-    if (!global_eval_context.include_called && pt_flag != PT_NOTHING) {
+    if (!include_recurses && pt_flag != PT_NOTHING) {
       giveto(global_eval_context.cplr, QUEUE_COST);
       add_to(entry->queued, -1);
     }

@@ -1856,11 +1856,11 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
 
   /* set limits on who we search */
   if (!owner || !*owner)
-    spec->owner = (See_All(player) || Search_All(player)) ? ANY_OWNER : player;
+    spec->owner = (See_All(player) || Search_All(player)) ? ANY_OWNER : Owner(player);
   else if (strcasecmp(owner, "all") == 0)
     spec->owner = ANY_OWNER;    /* Will only show visual objects for mortals */
   else if (strcasecmp(owner, "me") == 0)
-    spec->owner = player;
+    spec->owner = Owner(player);
   else
     spec->owner = lookup_player(owner);
   if (spec->owner == NOTHING) {

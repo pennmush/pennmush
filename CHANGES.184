@@ -122,6 +122,8 @@ Fixes:
  * round() sometimes returned numbers with more decimal digits than
    desired. 
  * The '*' option in locate() didn't actually include all match types. [MG]
+ * @include incorrectly refunded the queue_cost, giving people free pennies.
+   Reported by Covenent. [MG]
 
 Version 1.8.4 patchlevel 2                                 Dec 06,  2010
 

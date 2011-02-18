@@ -1149,6 +1149,39 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
         : local_wild_match(buff, expression)) {
       any = 1;
       tbuf1 = replace_string("#$", expression, argv[a + 1]);
+      if (inplace) {
+        if (any) {
+          safe_chr(';', ibuff, &ibp);
+        }
+        safe_str(tbuf1, ibuff, &ibp);
+      } else {
+        pe_info = make_pe_info();
+        if (global_eval_context.pe_info->switch_nesting >= 0) {
+          for (i = 0; i <= global_eval_context.pe_info->switch_nesting; i++) {
+            pe_info->switch_text[i] =
+              mush_strdup(global_eval_context.pe_info->switch_text[i],
+                          "switch_arg");
+          }
+        }
+        pe_info->switch_text[i] = mush_strdup(expression, "switch_arg");
+        pe_info->switch_nesting = i;
+        pe_info->local_switch_nesting = i;
+        parse_que(player, tbuf1, cause, pe_info);
+      }
+      mush_free(tbuf1, "replace_string.buff");
+    }
+  }
+
+  /* do default if nothing has been matched */
+  if ((a < MAX_ARG) && !any && argv[a]) {
+    tbuf1 = replace_string("#$", expression, argv[a]);
+    if (inplace) {
+      if (any) {
+        safe_chr(';', ibuff, &ibp);
+      }
+      safe_str(tbuf1, ibuff, &ibp);
+      any = 1;
+    } else {
       pe_info = make_pe_info();
       if (global_eval_context.pe_info->switch_nesting >= 0) {
         for (i = 0; i <= global_eval_context.pe_info->switch_nesting; i++) {
@@ -1160,39 +1193,6 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
       pe_info->switch_text[i] = mush_strdup(expression, "switch_arg");
       pe_info->switch_nesting = i;
       pe_info->local_switch_nesting = i;
-      if (inplace) {
-        if (any) {
-          safe_chr(';', ibuff, &ibp);
-        }
-        safe_str(tbuf1, ibuff, &ibp);
-      } else {
-        parse_que(player, tbuf1, cause, pe_info);
-      }
-      mush_free(tbuf1, "replace_string.buff");
-    }
-  }
-
-  /* do default if nothing has been matched */
-  if ((a < MAX_ARG) && !any && argv[a]) {
-    tbuf1 = replace_string("#$", expression, argv[a]);
-    pe_info = make_pe_info();
-    if (global_eval_context.pe_info->switch_nesting >= 0) {
-      for (i = 0; i <= global_eval_context.pe_info->switch_nesting; i++) {
-        pe_info->switch_text[i] =
-          mush_strdup(global_eval_context.pe_info->switch_text[i],
-                      "switch_arg");
-      }
-    }
-    pe_info->switch_text[i] = mush_strdup(expression, "switch_arg");
-    pe_info->switch_nesting = i;
-    pe_info->local_switch_nesting = i;
-    if (inplace) {
-      if (any) {
-        safe_chr(';', ibuff, &ibp);
-      }
-      safe_str(tbuf1, ibuff, &ibp);
-      any = 1;
-    } else {
       parse_que(player, tbuf1, cause, pe_info);
     }
     mush_free(tbuf1, "replace_string.buff");

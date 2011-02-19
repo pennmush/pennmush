@@ -603,6 +603,12 @@ See also: @clock, @lock
   include their timestamps; otherwise, they will not.
 
 See also: @channel/recall, cbufferadd()
+& CMOGRIFIER()
+  cmogrifier(<channel>)
+
+  Returns the dbref of the mogrifier of a channel.
+  
+See also: @channel/mogrifier, @chatformat
 & Channel functions
   Channel functions work with the channel system.
 

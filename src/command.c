@@ -172,7 +172,7 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_NOGAGGED, 0, 0},
   {"@HALT", "ALL PID", cmd_halt, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@HIDE", "NO OFF YES ON", cmd_hide, CMD_T_ANY, 0, 0},
-  {"@HOOK", "LIST AFTER BEFORE IGNORE OVERRIDE", cmd_hook,
+  {"@HOOK", "LIST AFTER BEFORE IGNORE OVERRIDE INPLACE", cmd_hook,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS,
    "WIZARD", "hook"},
   {"@INCLUDE", NULL, cmd_include,
@@ -532,12 +532,16 @@ make_command(const char *name, int type,
   }
   cmd->hooks.before.obj = NOTHING;
   cmd->hooks.before.attrname = NULL;
+  cmd->hooks.before.inplace = 0;
   cmd->hooks.after.obj = NOTHING;
   cmd->hooks.after.attrname = NULL;
+  cmd->hooks.after.inplace = 0;
   cmd->hooks.ignore.obj = NOTHING;
   cmd->hooks.ignore.attrname = NULL;
+  cmd->hooks.ignore.inplace = 0;
   cmd->hooks.override.obj = NOTHING;
   cmd->hooks.override.attrname = NULL;
+  cmd->hooks.override.inplace = 0;
   /* Restrict with no flags/powers, then manually parse flagstr and powerstr
      separately and add to restriction, to avoid issues with flags/powers with
      the same name (HALT flag and Halt power) */
@@ -2181,10 +2185,11 @@ run_hook_override(COMMAND_INFO *cmd, dbref player, const char *commandraw)
 
   if (cmd->hooks.override.attrname) {
     return one_comm_match(cmd->hooks.override.obj, player,
-                          cmd->hooks.override.attrname, commandraw);
+                          cmd->hooks.override.attrname, commandraw,
+                          cmd->hooks.override.inplace);
   } else {
     return atr_comm_match(cmd->hooks.override.obj, player, '$', ':', commandraw,
-                          0, 1, NULL, NULL, NULL);
+                          0, 1, NULL, NULL, NULL, cmd->hooks.override.inplace);
   }
 }
 
@@ -2197,6 +2202,7 @@ cnf_hook_command(char *command, char *opts)
   enum hook_type flag;
   COMMAND_INFO *cmd;
   struct hook_data *h;
+  int inplace = 0;
 
   if (!opts || !*opts)
     return 0;
@@ -2215,6 +2221,10 @@ cnf_hook_command(char *command, char *opts)
   } else if (string_prefix("after", one)) {
     flag = HOOK_AFTER;
     h = &cmd->hooks.after;
+  } else if (string_prefix("override/inplace", one)) {
+    flag = HOOK_OVERRIDE;
+    h = &cmd->hooks.override;
+    inplace = 1;
   } else if (string_prefix("override", one)) {
     flag = HOOK_OVERRIDE;
     h = &cmd->hooks.override;
@@ -2244,6 +2254,9 @@ cnf_hook_command(char *command, char *opts)
     upcasestr(attrname);
   }
 
+  /* Account for #dbref */
+  if (*one == '#') one++;
+
   if (!is_strict_integer(one))
     return 0;
 
@@ -2263,6 +2276,7 @@ cnf_hook_command(char *command, char *opts)
     h->attrname = mush_strdup(attrname, "hook.attr");
   else
     h->attrname = NULL;
+  h->inplace = inplace;
   return 1;
 
 }
@@ -2277,10 +2291,11 @@ cnf_hook_command(char *command, char *opts)
  * \param obj name of object containing the hook attribute.
  * \param attrname of hook attribute on obj.
  * \param flag type of hook
+ * \param inplace If override hook, whether to run it inplace.
  */
 void
 do_hook(dbref player, char *command, char *obj, char *attrname,
-        enum hook_type flag)
+        enum hook_type flag, int inplace)
 {
   COMMAND_INFO *cmd;
   struct hook_data *h;
@@ -2336,6 +2351,7 @@ do_hook(dbref player, char *command, char *obj, char *attrname,
     } else {
       h->attrname = mush_strdup(strupper(attrname), "hook.attr");
     }
+    h->inplace = inplace;
     notify_format(player, T("Hook set for %s"), cmd->name);
   }
 }
@@ -2404,7 +2420,8 @@ do_hook_list(dbref player, char *command)
         notify_format(player, "@hook/ignore: #%d/%s",
                       cmd->hooks.ignore.obj, cmd->hooks.ignore.attrname);
       if (GoodObject(cmd->hooks.override.obj))
-        notify_format(player, "@hook/override: #%d/%s",
+        notify_format(player, "@hook/override%s: #%d/%s",
+                      cmd->hooks.override.inplace ? "/inplace" : "",
                       cmd->hooks.override.obj, cmd->hooks.override.attrname);
     }
   }

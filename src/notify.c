@@ -951,7 +951,7 @@ notify_anything_loc(dbref speaker, na_lookup func,
       )
       atr_comm_match(target, speaker, '^', ':',
                      (char *) notify_makestring(msgbuf, messages, NA_COLOR, 0),
-                     0, 1, NULL, NULL, NULL);
+                     0, 1, NULL, NULL, NULL, 0);
 
     /* If object is flagged AUDIBLE and has a @FORWARDLIST, send
      *  stuff on */

@@ -628,7 +628,7 @@ do_force(dbref player, const char *what, char *command, int inplace)
   }
   /* force victim to do command */
   if (inplace) {
-    inplace_queue_actionlist(victim, command);
+    inplace_queue_actionlist(victim, victim, command, NULL);
   } else {
     for (j = 0; j < 10; j++)
       global_eval_context.wnxt[j] = global_eval_context.wenv[j];

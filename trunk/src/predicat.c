@@ -1200,7 +1200,7 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
 
   if (inplace && (ibp > ibuff)) {
     *ibp = '\0';
-    inplace_queue_actionlist(player, ibuff);
+    inplace_queue_actionlist(player, cause, ibuff, NULL);
   }
 
   /* Pop on @notify me, if requested */

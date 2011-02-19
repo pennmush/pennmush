@@ -46,7 +46,7 @@ void do_restart_com(dbref player, const char *arg1);
 /* From command.c */
 enum hook_type { HOOK_BEFORE, HOOK_AFTER, HOOK_IGNORE, HOOK_OVERRIDE };
 extern void do_hook(dbref player, char *command, char *obj, char *attrname,
-                    enum hook_type flag);
+                    enum hook_type flag, int inplace);
 extern void do_hook_list(dbref player, char *command);
 
 

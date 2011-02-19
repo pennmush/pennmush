@@ -1090,6 +1090,8 @@ config_set(const char *opt, char *val, int source, int restrictions)
     for (p = val; *p && !isspace((unsigned char) *p); p++) ;
     if (*p) {
       *p++ = '\0';
+      do_rawlog(LT_ERR, "CONFIG: Trying to hook command %s with options %s",
+                val, p);
       if (!cnf_hook_command(val, p)) {
         do_rawlog(LT_ERR, "CONFIG: Couldn't hook command %s with options %s",
                   val, p);
@@ -1520,16 +1522,12 @@ config_file_startup(const char *conf, int restrictions)
       *q++ = '\0';              /* split off command */
     for (; *q && isspace((unsigned char) *q); q++)      /* skip spaces */
       ;
-    /* If the first character of the value is a #, and that is
-       followed by a number, treat it as a dbref instead of a
-       comment. */
-    if (*q == '#' && isdigit((unsigned char) *(q + 1))) {
-      for (s = q + 1; *s && (*s != '#'); s++)   /* look for a real comment */
-        ;
-    } else {
-      for (s = q; *s && (*s != '#'); s++)       /* look for comment */
-        ;
-    }
+    /* We define a comment as a # followed by something other than a
+     * digit, so as no to be confused with dbrefs.
+     * followed by a number, treat it as a dbref instead of a
+     * comment. */
+    for (s = q; *s && ((*s != '#') || isdigit(*(s+1))); s++);
+
     if (*s)                     /* if found nuke it */
       *s = '\0';
     for (s = s - 1; (s >= q) && isspace((unsigned char) *s); s--)       /* smash trailing stuff */

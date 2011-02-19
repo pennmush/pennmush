@@ -101,6 +101,8 @@ Minor Changes:
    log files easier. [SW]
  * When used by a non-player, @search and related functions now search from
    the perspective of the object's owner. Suggested by Covenent. [MG]
+ * The LASTPAGED attribute now stores objids instead of names, allowing you
+   to repage even when the target changes their name. [MG]
 
 Fixes:
  * Fixing list type autodetect. [GM]

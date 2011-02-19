@@ -853,7 +853,28 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
       return;
     }
     if (!message || !*message) {
-      notify_format(player, T("You last paged %s."), head);
+      start = (const char **) &head;
+      while (head && *head) {
+        current = next_in_list(start);
+        if (is_objid(current))
+          target = parse_objid(current);
+        else
+          target = lookup_player(current);
+        if (RealGoodObject(target)) {
+          good[gcount] = target;
+          gcount++;
+        }
+      }
+      if (!gcount) {
+        notify(player, T("I can't find who you last paged."));
+      } else {
+        for (repage = 1; repage <= gcount; repage++) {
+          safe_itemizer(repage, (repage == gcount), ",", T("and"), " ", tbuf2, &tp2);
+          safe_str(Name(good[repage - 1]), tbuf2, &tp2);
+        }
+        *tp2 = '\0';
+        notify_format(player, T("You last paged %s."), tbuf2);
+      }
       mush_free(tbuf2, "page_buff");
       mush_free(namebuf, "page_buff");
       if (hp)
@@ -998,13 +1019,15 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
 
   /* namebuf is used to hold a fancy formatted list of names,
    * with commas and the word 'and' , if needed. */
-  /* tbuf holds a space-separated list of names for repaging */
+  /* tbuf holds a space-separated list of objids for repaging */
 
   /* Set up a pretty formatted list. */
   for (i = 0; i < gcount; i++) {
     if (i)
       safe_chr(' ', tbuf, &tp);
-    safe_str_space(Name(good[i]), tbuf, &tp);
+    safe_dbref(good[i], tbuf, &tp);
+    safe_chr(':', tbuf, &tp);
+    safe_integer(CreTime(good[i]), tbuf, &tp);
     safe_itemizer(i + 1, (i == gcount - 1), ",", T("and"), " ", namebuf, &nbp);
     safe_str(Name(good[i]), namebuf, &nbp);
   }

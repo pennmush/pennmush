@@ -434,7 +434,7 @@ See also: DBREF, TERSE
   The MISTRUST flag prevents an object from controlling another object via
   Control @locks, Zone @locks on ZMOs or SHARED players, or from controlling
   other objects with the same owner. It also prevents the object from
-  inheriting the no_pay, no_kill and no_quota powers from its owner.
+  inheriting the no_pay, unkillable and no_quota powers from its owner.
   
   This flag can be used when you with a single player to retain ownership
   of objects that other players will control or run arbitrary code on, and

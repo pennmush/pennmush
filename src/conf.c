@@ -1526,7 +1526,7 @@ config_file_startup(const char *conf, int restrictions)
      * digit, so as no to be confused with dbrefs.
      * followed by a number, treat it as a dbref instead of a
      * comment. */
-    for (s = q; *s && ((*s != '#') || isdigit(*(s+1))); s++);
+    for (s = q; *s && ((*s != '#') || isdigit((unsigned char) *(s+1))); s++);
 
     if (*s)                     /* if found nuke it */
       *s = '\0';

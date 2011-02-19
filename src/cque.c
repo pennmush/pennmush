@@ -64,6 +64,7 @@ typedef struct bque {
   char *rval[NUMQ];             /**< environment, from setq() */
   char *comm;                   /**< command to be executed */
   uint32_t pid;                 /**< Process id of this entry */
+  int  quetype;                 /**< Type of the queue entry. */
   PE_Info *pe_info;             /**< pe_info for evaluating queue, or NULL */
 } BQUE;
 
@@ -442,9 +443,6 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   return 1;
 }
 
-#define QUEUE_PLAYER 0
-#define QUEUE_OBJECT 1
-#define QUEUE_INPLACE 2
 /** Add a new queue entry: Either in place, or onto the player/object queues
  * This function adds a new entry to the back of the player or
  * object command queues (depending on whether the call was
@@ -490,6 +488,7 @@ insert_que(dbref player, const char *command, dbref cause, PE_Info *pe_info,
   tmp->left = 0;
   tmp->cause = cause;
   tmp->pe_info = pe_info;
+  tmp->quetype = quetype;
   /* Copy over env vars and rvals. */
   for (a = 0; a < 10; a++) {
     if (!env || !env[a]) {
@@ -523,6 +522,7 @@ insert_que(dbref player, const char *command, dbref cause, PE_Info *pe_info,
     }
     break;
   case QUEUE_INPLACE:
+  case QUEUE_RECURSE:
     tmp->next = global_eval_context.inplace_queue;
     global_eval_context.inplace_queue = tmp;
     break;
@@ -892,11 +892,15 @@ do_entry(BQUE *entry, int include_recurses)
   int break_count;
   int save_player;
   int local_break_called = 0;
-  int recurse_break_called = 0;
+  int inplace_break_called = 0;
   char *r;
   char const *s;
   BQUE *tmp;
+  BQUE *includes;
   int pt_flag = PT_SEMI;
+
+  includes = global_eval_context.inplace_queue;
+  global_eval_context.inplace_queue = NULL;
 
   if (include_recurses == -1) {
     include_recurses = 0;
@@ -935,7 +939,7 @@ do_entry(BQUE *entry, int include_recurses)
           global_eval_context.pe_info = make_pe_info();
         }
       }
-      while (!cpu_time_limit_hit && *s && !recurse_break_called) {
+      while (!cpu_time_limit_hit && *s && !inplace_break_called) {
         r = global_eval_context.ccom;
         process_expression(global_eval_context.ccom, &r, &s,
                            global_eval_context.cplr, entry->cause,
@@ -968,14 +972,17 @@ do_entry(BQUE *entry, int include_recurses)
             free_qentry(tmp);
           }
         } else {
-          while (global_eval_context.inplace_queue && !recurse_break_called) {
+          while (global_eval_context.inplace_queue && !inplace_break_called) {
             /* Pop tmp off the stack. */
             tmp = global_eval_context.inplace_queue;
             global_eval_context.inplace_queue = tmp->next;
             tmp->next = NULL;
 
             /* Run the queue entry. */
-            recurse_break_called = do_entry(tmp, include_recurses + 1);
+            inplace_break_called = do_entry(tmp, include_recurses + 1);
+            if (tmp->quetype == QUEUE_RECURSE) {
+              inplace_break_called = 0;
+            }
 
             /* Cleanup. */
             for (a = 0; a < 10; a++) {
@@ -1000,7 +1007,8 @@ do_entry(BQUE *entry, int include_recurses)
     global_eval_context.inplace_queue = tmp->next;
     free_qentry(global_eval_context.inplace_queue);
   }
-  return local_break_called || recurse_break_called;
+  global_eval_context.inplace_queue = includes;
+  return local_break_called || inplace_break_called;
 }
 
 /** Determine whether it's time to run a queued command.

@@ -223,6 +223,12 @@ extern char ucbuff[];
 #endif
 
 /* From cque.c */
+#define QUEUE_PLAYER 0
+#define QUEUE_OBJECT 1
+/* INPLACE and RECURSE are identical except that RECURSE does not
+ * propagate @breaks upward. */
+#define QUEUE_INPLACE 2
+#define QUEUE_RECURSE 3
 struct bque;
 struct _ansi_string;
 struct real_pcre;
@@ -254,6 +260,9 @@ void do_halt(dbref owner, const char *ncom, dbref victim);
 #define SYSEVENT -1
 bool queue_event(dbref enactor, const char *event, const char *fmt, ...)
   __attribute__ ((__format__(__printf__, 3, 4)));
+void insert_que(dbref player, const char *command, dbref cause, PE_Info *pe_info,
+                char **env, char **rval,
+                int quetype);
 void parse_que(dbref player, const char *command, dbref cause,
                PE_Info *pe_info);
 int queue_attribute_base(dbref executor, const char *atrname, dbref enactor,

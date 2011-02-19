@@ -32,6 +32,8 @@ Events:
    Otherwise, see HACKING.184 for more info. [SW]
 
 Commands:
+ * @hook/override/inplace - You can now run softcode with the same priority
+   as hardcode! [GM]
  * @lock (and all lock keys) now accepts NAME^<pattern> for matching against
    an object's name. [GM]
  * @mapsql passes row results to attributes. Suggested by Mercutio. [GM]

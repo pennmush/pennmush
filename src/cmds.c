@@ -508,6 +508,7 @@ COMMAND(cmd_hide)
 COMMAND(cmd_hook)
 {
   enum hook_type flags;
+  int inplace = 0;
 
   if (SW_ISSET(sw, SWITCH_AFTER))
     flags = HOOK_AFTER;
@@ -524,7 +525,14 @@ COMMAND(cmd_hook)
     notify(player, T("You must give a switch for @hook"));
     return;
   }
-  do_hook(player, arg_left, args_right[1], args_right[2], flags);
+  if (SW_ISSET(sw, SWITCH_INPLACE)) {
+    if (flags != HOOK_OVERRIDE) {
+      notify(player, T("You can only use /inplace with /override"));
+      return;
+    }
+    inplace = 1;
+  }
+  do_hook(player, arg_left, args_right[1], args_right[2], flags, inplace);
 }
 
 COMMAND(cmd_huh_command)

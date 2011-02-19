@@ -2028,6 +2028,8 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
                 $commands that might match). If the match fails, normal
                 built-in command processing continues. Note that all locks
                 and flags on the object (HALT, etc.) still apply.
+  @hook/override/inplace: Same as @hook/override, but the resulting matches
+                are run immediately - not queued for later execution!
   @hook/before: The attribute is evaluated before the built-in command is run.
   @hook/after: The attribute is evaluated after the built-in command is run.
 
@@ -2062,6 +2064,28 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
   > @set me=OOC
   > "test
   <OOC> Robert says, "test"
+
+  See 'help @hook3' for /inplace examples.
+& @hook3
+  > &dance me=$dance:pose sticks his right foot in ; say Do the hokey pokey
+                     ; pose sticks his right foot out
+  > dance
+  Walker sticks his right foot in
+  You say, "Do the hokey pokey"
+  Walker sticks his right foot out
+
+  > &cmd.say #3=$say *:@remit %l=%n declares, "%0"
+  > @hook/override say=#3,cmd.say
+  > dance
+  Walker sticks his right foot in
+  Walker sticks his right foot out
+  Walker declares, "Do the hokey pokey"
+
+  > @hook/override/inplace say=#3,cmd.say
+  > dance
+  Walker sticks his right foot in
+  Walker declares, "Do the hokey pokey"
+  Walker sticks his right foot out
 & HUH_COMMAND
 
   This internal command is run whenever someone attempts to run a command

@@ -976,7 +976,7 @@ do_readcache(dbref player)
 /** Check each attribute on each object in x for a $command matching cptr */
 #define list_match(x)        list_check(x, player, '$', ':', cptr, 0)
 /** Check each attribute on x for a $command matching cptr */
-#define cmd_match(x)         atr_comm_match(x, player, '$', ':', cptr, 0, 1, NULL, NULL, &errdb)
+#define cmd_match(x)         atr_comm_match(x, player, '$', ':', cptr, 0, 1, NULL, NULL, &errdb, 0)
 #define MAYBE_ADD_ERRDB(errdb)  \
         do { \
           if (GoodObject(errdb) && errdblist) { \
@@ -1374,8 +1374,8 @@ list_check(dbref thing, dbref player, char type, char end, char *str,
   dbref errdb = NOTHING;
 
   while (thing != NOTHING) {
-    if (atr_comm_match
-        (thing, player, type, end, str, just_match, 1, NULL, NULL, &errdb))
+    if (atr_comm_match(thing, player, type,
+                       end, str, just_match, 1, NULL, NULL, &errdb, 0))
       match = 1;
     else {
       MAYBE_ADD_ERRDB(errdb);
@@ -1594,7 +1594,7 @@ bind_and_queue(dbref player, dbref cause, char *action,
 /** Would the scan command find an matching attribute on x for player p? */
 #define ScanFind(p,x)  \
   (Can_Examine(p,x) && \
-      ((num = atr_comm_match(x, p, '$', ':', command, 1, 1, atrname, &ptr, NULL)) != 0))
+      ((num = atr_comm_match(x, p, '$', ':', command, 1, 1, atrname, &ptr, NULL, 0)) != 0))
 
 /** Scan for matches of $commands.
  * This function scans for possible matches of user-def'd commands from the

@@ -442,7 +442,10 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   return 1;
 }
 
-/** Add a new entry onto the player or object command queues.
+#define QUEUE_PLAYER 0
+#define QUEUE_OBJECT 1
+#define QUEUE_INPLACE 2
+/** Add a new queue entry: Either in place, or onto the player/object queues
  * This function adds a new entry to the back of the player or
  * object command queues (depending on whether the call was
  * caused by a player or an object).
@@ -452,7 +455,9 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
  * \param pe_info the pe_info to use for evaluating the queue, or NULL
  */
 void
-parse_que(dbref player, const char *command, dbref cause, PE_Info *pe_info)
+insert_que(dbref player, const char *command, dbref cause, PE_Info *pe_info,
+           char **env, char **rval,
+           int quetype)
 {
   int a;
   BQUE *tmp;
@@ -461,10 +466,12 @@ parse_que(dbref player, const char *command, dbref cause, PE_Info *pe_info)
     free_pe_info(pe_info);
     return;
   }
-  if (!pay_queue(player, command)) {
-    /* make sure player can afford to do it */
-    free_pe_info(pe_info);
-    return;
+  if (quetype != QUEUE_INPLACE) {
+    if (!pay_queue(player, command)) {
+      /* make sure player can afford to do it */
+      free_pe_info(pe_info);
+      return;
+    }
   }
   pid = next_pid();
   if (pid == 0) {
@@ -483,64 +490,93 @@ parse_que(dbref player, const char *command, dbref cause, PE_Info *pe_info)
   tmp->left = 0;
   tmp->cause = cause;
   tmp->pe_info = pe_info;
-  for (a = 0; a < 10; a++)
-    if (!global_eval_context.wnxt[a])
+  /* Copy over env vars and rvals. */
+  for (a = 0; a < 10; a++) {
+    if (!env || !env[a]) {
       tmp->env[a] = NULL;
-    else {
-      tmp->env[a] = mush_strdup(global_eval_context.wnxt[a], "cqueue.env");
+    } else {
+      tmp->env[a] = mush_strdup(env[a], "cqueue.env");
     }
-  for (a = 0; a < NUMQ; a++)
-    if (!global_eval_context.rnxt[a] || !global_eval_context.rnxt[a][0])
+  }
+  for (a = 0; a < NUMQ; a++) {
+    if (!rval || !rval[a] || !rval[a][0]) {
       tmp->rval[a] = NULL;
-    else {
-      tmp->rval[a] = mush_strdup(global_eval_context.rnxt[a], "cqueue.rval");
+    } else {
+      tmp->rval[a] = mush_strdup(rval[a], "cqueue.rval");
     }
-  if (IsPlayer(cause)) {
+  }
+  switch (quetype) {
+  case QUEUE_PLAYER:
     if (qlast) {
       qlast->next = tmp;
       qlast = tmp;
-    } else
+    } else {
       qlast = qfirst = tmp;
-  } else {
+    }
+    break;
+  case QUEUE_OBJECT:
     if (qllast) {
       qllast->next = tmp;
       qllast = tmp;
-    } else
+    } else {
       qllast = qlfirst = tmp;
+    }
+    break;
+  case QUEUE_INPLACE:
+    tmp->next = global_eval_context.inplace_queue;
+    global_eval_context.inplace_queue = tmp;
+    break;
   }
   im_insert(queue_map, tmp->pid, tmp);
 }
 
+/** Add a new entry onto the player or object command queues.
+ * This function adds a new entry to the back of the player or
+ * object command queues (depending on whether the call was
+ * caused by a player or an object).
+ * \param player the enactor for the queued command.
+ * \param command the command to enqueue.
+ * \param cause the player or object causing the command to be queued.
+ * \param pe_info the pe_info to use for evaluating the queue, or NULL
+ */
 void
-inplace_queue_actionlist(dbref executor, const char *command)
+parse_que(dbref player, const char *command, dbref cause, PE_Info *pe_info) {
+  if (IsPlayer(cause)) {
+    insert_que(player, command, cause, pe_info,
+               global_eval_context.wnxt, global_eval_context.rnxt,
+               QUEUE_PLAYER);
+  } else {
+    insert_que(player, command, cause, pe_info,
+               global_eval_context.wnxt, global_eval_context.rnxt,
+               QUEUE_OBJECT);
+  }
+}
+
+void
+inplace_queue_actionlist(dbref executor, dbref cause, const char *command,
+    char **args)
 {
-  char *bp;
-
-  global_eval_context.include_called = 1;
-  global_eval_context.include_executor = executor;
-
-  bp = global_eval_context.include_replace;
-  safe_str(command, global_eval_context.include_replace, &bp);
-  *bp = '\0';
+  insert_que(executor, command, cause, NULL,
+             (args != NULL) ? args : global_eval_context.wnxt,
+             global_eval_context.rnxt,
+             QUEUE_INPLACE);
 }
 
 int
-inplace_queue_attribute(dbref thing, const char *atrname,
-                        dbref executor, dbref enactor, int rsargs)
+queue_include_attribute(dbref thing, const char *atrname,
+                        dbref executor, dbref cause,
+                        char **args)
 {
   ATTR *a;
   char *start, *command;
   int noparent = 0;
-  char *bp;
 
   a = queue_attribute_getatr(thing, atrname, noparent);
   if (!a)
     return 0;
-  if (!Can_Read_Attr(enactor, thing, a))
+  if (!Can_Read_Attr(executor, thing, a))
     return 0;
 
-  global_eval_context.include_called = 1 + rsargs;
-  global_eval_context.include_executor = executor;
   start = safe_atr_value(a);
   command = start;
   /* Trim off $-command or ^-command prefix */
@@ -555,9 +591,12 @@ inplace_queue_attribute(dbref thing, const char *atrname,
       /* Skip the ':' */
       command++;
   }
-  bp = global_eval_context.include_replace;
-  safe_str(command, global_eval_context.include_replace, &bp);
-  *bp = '\0';
+
+  insert_que(executor, command, cause, NULL,
+             args ? args : global_eval_context.wnxt,
+             global_eval_context.rnxt,
+             QUEUE_INPLACE);
+
   free(start);
   return 1;
 }
@@ -853,8 +892,10 @@ do_entry(BQUE *entry, int include_recurses)
   int break_count;
   int save_player;
   int local_break_called = 0;
+  int recurse_break_called = 0;
   char *r;
   char const *s;
+  BQUE *tmp;
   int pt_flag = PT_SEMI;
 
   if (include_recurses == -1) {
@@ -894,7 +935,7 @@ do_entry(BQUE *entry, int include_recurses)
           global_eval_context.pe_info = make_pe_info();
         }
       }
-      while (!cpu_time_limit_hit && *s) {
+      while (!cpu_time_limit_hit && *s && !recurse_break_called) {
         r = global_eval_context.ccom;
         process_expression(global_eval_context.ccom, &r, &s,
                            global_eval_context.cplr, entry->cause,
@@ -920,67 +961,28 @@ do_entry(BQUE *entry, int include_recurses)
             break;
           }
         }
-        if (global_eval_context.include_called) {
-          BQUE *tmp;
-          /* @include was called. Check for recursion limit */
-          if (include_recurses > 20) {
-            notify(global_eval_context.cplr, T("@include recursion exceeded."));
-            global_eval_context.include_called = 0;
-            break;
+        if (include_recurses > 20) {
+          while (global_eval_context.inplace_queue) {
+            tmp = global_eval_context.inplace_queue;
+            global_eval_context.inplace_queue = tmp->next;
+            free_qentry(tmp);
           }
-          if (!*global_eval_context.include_replace) {
-            global_eval_context.include_called = 0;
-            break;
-          }
-          /* Clone qentry */
-          tmp = mush_malloc(sizeof *tmp, "cqueue");
-          tmp->pid = entry->pid;
-          tmp->semattr = NULL;
-          tmp->queued = entry->queued;
-          tmp->next = NULL;
-          tmp->left = 0;
-          tmp->cause = entry->cause;
-          tmp->pe_info = NULL;
-          tmp->player = global_eval_context.include_executor;
-          for (a = 0; a < 10; a++) {
-            if (global_eval_context.include_called == 1) {
-              tmp->env[a] =
-                entry->env[a] ? mush_strdup(entry->env[a], "cqueue.env") : NULL;
-            } else {
-              if (global_eval_context.include_wenv[a]) {
-                tmp->env[a] =
-                  mush_strdup(global_eval_context.include_wenv[a],
-                              "cqueue.env");
-              } else {
-                tmp->env[a] = NULL;
-              }
+        } else {
+          while (global_eval_context.inplace_queue && !recurse_break_called) {
+            /* Pop tmp off the stack. */
+            tmp = global_eval_context.inplace_queue;
+            global_eval_context.inplace_queue = tmp->next;
+            tmp->next = NULL;
+
+            /* Run the queue entry. */
+            recurse_break_called = do_entry(tmp, include_recurses + 1);
+
+            /* Cleanup. */
+            for (a = 0; a < 10; a++) {
+              global_eval_context.wenv[a] = entry->env[a];
             }
-            if (global_eval_context.include_wenv[a]) {
-              mush_free(global_eval_context.include_wenv[a], "include_wenv");
-              global_eval_context.include_wenv[a] = NULL;
-            }
-          }
-          for (a = 0; a < NUMQ; a++) {
-            if (!global_eval_context.renv[a] || !*global_eval_context.renv[a]) {
-              tmp->rval[a] = NULL;
-            } else {
-              tmp->rval[a] =
-                mush_strdup(global_eval_context.renv[a], "cqueue.rval");
-            }
-          }
-          global_eval_context.include_called = 0;
-          /* Put the included actions in the clone */
-          tmp->comm =
-            mush_strdup(global_eval_context.include_replace, "cqueue.comm");
-          local_break_called = do_entry(tmp, include_recurses + 1);
-          for (a = 0; a < 10; a++) {
-            global_eval_context.wenv[a] = entry->env[a];
-          }
-          global_eval_context.cplr = save_player;
-          free_qentry(tmp);
-          if (local_break_called) {
-            /* Propagate break */
-            break;
+            global_eval_context.cplr = save_player;
+            free_qentry(tmp);
           }
         }
       }
@@ -993,7 +995,12 @@ do_entry(BQUE *entry, int include_recurses)
       }
     }
   }
-  return local_break_called;
+  while (global_eval_context.inplace_queue) {
+    tmp = global_eval_context.inplace_queue;
+    global_eval_context.inplace_queue = tmp->next;
+    free_qentry(global_eval_context.inplace_queue);
+  }
+  return local_break_called || recurse_break_called;
 }
 
 /** Determine whether it's time to run a queued command.

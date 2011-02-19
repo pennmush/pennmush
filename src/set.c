@@ -1042,18 +1042,10 @@ do_include(dbref player, char *object, char **argv)
     return;
   }
   /* include modifies the stack, but only if arguments are given */
-  for (a = 0; a < 10; a++) {
-    if (rhs_present && argv[a + 1])
-      global_eval_context.include_wenv[a] =
-        mush_strdup(argv[a + 1], "include_wenv");
-    else
-      global_eval_context.include_wenv[a] = NULL;
-  }
-  if (!inplace_queue_attribute(thing, upcasestr(s), player,
-                               player, rhs_present)) {
+  if (!queue_include_attribute(thing, upcasestr(s), player,
+                               player, argv + 1)) {
     notify(player, T("No such attribute."));
   }
-
 }
 
 /** The use command.

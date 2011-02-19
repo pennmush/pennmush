@@ -223,6 +223,7 @@ extern char ucbuff[];
 #endif
 
 /* From cque.c */
+struct bque;
 struct _ansi_string;
 struct real_pcre;
 struct eval_context {
@@ -236,10 +237,7 @@ struct eval_context {
   char ucom[BUFFER_LEN];      /**< evaluated command */
   int break_called;           /**< Has the break command been called? */
   char break_replace[BUFFER_LEN];  /**< What to replace the break with */
-  dbref include_executor;       /**< Who to run the included command as. */
-  int include_called;           /**< Has the include command been called? */
-  char include_replace[BUFFER_LEN];  /**< What to replace the include with */
-  char *include_wenv[10];       /**< Working env for include */
+  struct bque *inplace_queue;          /**< Inplace (include, @switch/inplace) commands */
   struct real_pcre *re_code;              /**< The compiled re */
   int re_subpatterns;         /**< The number of re subpatterns */
   int *re_offsets;            /**< The offsets for the subpatterns */
@@ -262,9 +260,10 @@ int queue_attribute_base(dbref executor, const char *atrname, dbref enactor,
                          int noparent);
 ATTR *queue_attribute_getatr(dbref executor, const char *atrname, int noparent);
 int queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor);
-void inplace_queue_actionlist(dbref executor, const char *command);
-int inplace_queue_attribute(dbref thing, const char *atrname,
-                            dbref executor, dbref enactor, int rsargs);
+void inplace_queue_actionlist(dbref executor, dbref cause,
+                              const char *command, char **argv);
+int queue_include_attribute(dbref thing, const char *atrname,
+                            dbref executor, dbref cause, char **args);
 void run_user_input(dbref player, char *input);
 
 /** Queue the code in an attribute, including parent objects */

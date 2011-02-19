@@ -464,7 +464,7 @@ insert_que(dbref player, const char *command, dbref cause, PE_Info *pe_info,
     free_pe_info(pe_info);
     return;
   }
-  if (quetype != QUEUE_INPLACE) {
+  if (quetype != QUEUE_INPLACE && quetype != QUEUE_RECURSE) {
     if (!pay_queue(player, command)) {
       /* make sure player can afford to do it */
       free_pe_info(pe_info);

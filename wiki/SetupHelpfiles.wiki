@@ -1,0 +1,45 @@
+#summary Adding and editing help/news files, and creating help-like commands, using the hardcoded help system.
+
+= Adding and Editing Helpfiles =
+
+Your local help/news/events/etc files can now be kept separate from
+those distributed with PennMUSH, and can now be managed as a set of
+files rather than a single large file.
+
+Here's the details:
+
+  # The source files for `help.txt`, `news.txt`, and `events.txt` are kept in directories called `hlp`, `nws`, and `evt` respectively.
+  # Files in those directories which end in `.<directoryname>` are considered to be part of the text. That is, files in `hlp/` which end in `.hlp`, and files in `nws/` which end in `.nws` will be merged into the final `help.txt`, `news.txt`, or whatever.
+  # When the MUSH is restarted, a `make` is run in this directory.  For if a file in `hlp/` is newer than `help.txt`, it calls `compose.sh` to rebuild `help.txt`. Don't edit `help.txt`, `news.txt`, etc. directly; if you do, any changes will be lost. 
+ 
+If you've got perl on your system, `compose.sh` will also call `index-files.pl` to make a `help index` entry which lists all your help entries. The file `hlp/index.hlp` contains this index, and is overwritten each time the index is built. Don't use it for your own content!
+
+So, if you want to add your own news entries, make a file called `nws/local.nws` and put 'em there. Or maybe organize it into parts: `nws/theme.nws`, `nws/code.nws, etc. Don't `edit news.txt`, `help.txt`, etc. directly or those changes will be lost.
+
+Files distributed with PennMUSH always begin with "penn", so don't start your files with that.
+
+= Adding new "help"-like commands =
+
+You can add custom help-file commands, for example "rules", "index" or "theme". The easiest way to do add rules files is to:
+  # create a directory here called "rules"
+  # put your rules files there, each ending in `.rules`
+  # edit `game/txt/Makefile` and add `rules.txt` to the `TXT` line
+  # Add the command into your `game/mush.cnf` config file, `help_command <command> <file>`. In this case, `help_command rules txt/rules.txt`.
+  # For admin-only help commands, use `ahelp_command <command> <file>`. You can mix player and admin topics in the same file, using separate commands. For instance, `help_command arules txt/rules.txt`.
+
+For index files, do exactly the same process, but replace all references to 'rules' above with 'index'. You can use your own names as well, by adding to the Makefile using the template for existing directories, and adding the target .txt file to the TXT line. Files in a directory have to have the same extension as the directory name (`hlp/foo.hlp`, etc.). The special file `index.<extension>` will be
+overwritten. Don't use it for your own content.
+
+= Help file format =
+
+The help/news files use a simple format. The first line of each topic contains an ampersand (&) followed by the topic name. Then the body of the topic follows on the next lines. Admin topics have two ampersands. You can alias a topic by using several topic name lines, one after the other. For example:
+
+{{{
+& test topic
+& alias
+  This is an example topic.
+& &admin topic
+  Only admin, using an admin help command, can read this.
+}}}
+
+The helpfiles are not evaluated or formatted in any way (so you don't need to escape any code/special characters). The helpfiles distributed with PennMUSH are a good example of the right way to format your help files.

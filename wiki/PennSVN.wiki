@@ -1,0 +1,45 @@
+#summary How to switch your PennMUSH to use SVN
+
+= Introduction =
+
+There are many changes in the SVN branch at the time this writing that are yet to be released. Many of them are highly desired: Speed improvements, bugfixes, new features. This document is aimed at helping people migrate from using release tarballs and patch files to using svn to keep their version of PennMUSH updated.
+
+= Why use SVN? =
+
+SVN is the version control system provided by Google Code. (We'd use git, but it wasn't an option at the time we set it up!) SVN provides many features useful for both developers and for non-dev users:
+
+  * It will keep your changes across updates, and it does a little better of a job at it than diff and patch do.
+
+  * It lets you quickly and easily backtrack to an older version of PennMUSH in case you come across a recently introduced bug that you can't wait to get fixed.
+
+  * Updating your mush is now simply "svn update ; make all install" instead of downloading a patch, patching it in, then "make all install".
+
+  * Sure, you get our "bleeding edge" changes, but we try our hardest to make them not bleeding - And the turnaround time between telling us about a crashbug or a serious bug to when the fix is in SVN is usually pretty quick.
+
+  * You can get our latest features without having to wait for Raevnos to package up a release and patchfiles!
+
+= Process =
+
+  # Start this howto with your shell open to the directory containing your pennmush install. We'll assume your old pennmush directory is named "pennmush"
+  # Back up, just to be safe: {{{cp -r pennmush pennmush.bak}}}
+  # Check out a read-only version of PennMUSH. (This is read only on the server side: You can still make changes locally!): {{{svn checkout http://pennmush.googlecode.com/svn/trunk/ pennmush-read-only}}}
+  # Build and compile the pennmush-read-only checkout, selecting the options you like: {{{cd pennmush-read-only ; ./configure ; make update all install}}}
+  # @shutdown your currently running mush.
+  # Copy the data, restart, .cnf and any files you have created or changed over: {{{cp pennmush/game/data/* pennmush-read-only/game/data/ ; cp pennmush/game/*.cnf pennmush/game/restart pennmush-read-only/game/}}}
+  # If you have news files or other personalized text files, copy those over. You may want to remove the default files: {{{rm -rf pennmush-read-only/game/txt/nws ; cp -r pennmush/game/txt/nws pennmush/game/txt/nws}}}
+  # You may want to rename "pennmush-read-only" to the same as the old directory: {{{mv pennmush pennmush-old ; mv pennmush-read-only pennmush}}}
+  # Start the game: {{{./pennmush/game/restart}}}
+
+= Updating =
+
+Updating to the latest SVN version is a simple process:
+
+  # cd into your pennmush directory. NOT your src/ or game/ directories, or the update will be incomplete.
+  # Run {{{svn update}}} to fetch the latest changes.
+  # It may ask you what to do with the differences for svninfo.h. Just say {{{tf}}} for "theirs full" (It doesn't make a difference, it's regenerated with every compile.)
+  # Compile: {{{make versions all install}}}
+  # Do an @shutdown/reboot! =).
+
+= Hacking =
+
+If you have any changes, you can keep them up to date with by looking at HACKING.184, where we detail hardcode changes we feel may impact people with hardcode changes.

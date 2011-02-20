@@ -1448,10 +1448,6 @@ msgstr "Prekoraèeno ogranièenje rekurzije @break naredbe."
 msgid "@command is ALWAYS enabled."
 msgstr "@command je UVIJEK ukljuèen."
 
-#: cque.c:695
-msgid "@include recursion exceeded."
-msgstr "Prekoraèeno ogranièenje rekurzije naredbe @include."
-
 #: cmds.c:687
 msgid "@message them with what?"
 msgstr "Koju poruku im ¾eli¹ poslati s @message?"

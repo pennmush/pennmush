@@ -1448,10 +1448,6 @@ msgstr "@break recursie overschreden."
 msgid "@command is ALWAYS enabled."
 msgstr "@command is ALTIJD ingeschakeld."
 
-#: cque.c:695
-msgid "@include recursion exceeded."
-msgstr "@include recursie overschreden."
-
 #: cmds.c:687
 msgid "@message them with what?"
 msgstr "@message met wat?"

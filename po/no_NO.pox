@@ -1423,10 +1423,6 @@ msgstr "@break rekursjon for lang."
 msgid "@command is ALWAYS enabled."
 msgstr "@command er ALLTID tilgjengelig."
 
-#: cque.c:695
-msgid "@include recursion exceeded."
-msgstr "@include rekursjonsgrense overskredet."
-
 #: cmds.c:687
 msgid "@message them with what?"
 msgstr "@message dem med hva?"

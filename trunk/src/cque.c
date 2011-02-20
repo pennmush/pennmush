@@ -898,6 +898,8 @@ do_entry(BQUE *entry, int include_recurses)
   BQUE *tmp;
   BQUE *includes;
   int pt_flag = PT_SEMI;
+  char *preserves[10];
+  char *preserveq[NUMQ];
 
   includes = global_eval_context.inplace_queue;
   global_eval_context.inplace_queue = NULL;
@@ -978,10 +980,21 @@ do_entry(BQUE *entry, int include_recurses)
             global_eval_context.inplace_queue = tmp->next;
             tmp->next = NULL;
 
+            /* RECURSE queue entries have their own Q-registers, and we
+             * need to re-set our current one. */
+            if (tmp->quetype == QUEUE_RECURSE) {
+              save_global_regs("recurse_queue_save", preserveq);
+              save_global_env("recurse_queue_save", preserves);
+            }
+
             /* Run the queue entry. */
             inplace_break_called = do_entry(tmp, include_recurses + 1);
+
             if (tmp->quetype == QUEUE_RECURSE) {
+              /* Recursion causes breaks to be not propagate up. */
               inplace_break_called = 0;
+              restore_global_regs("recurse_queue_save", preserveq);
+              restore_global_env("recurse_queue_save", preserves);
             }
 
             /* Cleanup. */

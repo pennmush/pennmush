@@ -1020,7 +1020,6 @@ void
 do_include(dbref player, char *object, char **argv)
 {
   dbref thing;
-  int a;
   char *s;
   char tbuf1[BUFFER_LEN];
 
@@ -1042,9 +1041,16 @@ do_include(dbref player, char *object, char **argv)
     return;
   }
   /* include modifies the stack, but only if arguments are given */
-  if (!queue_include_attribute(thing, upcasestr(s), player,
-                               player, argv + 1)) {
-    notify(player, T("No such attribute."));
+  if (rhs_present) {
+    if (!queue_include_attribute(thing, upcasestr(s), player,
+                                 player, argv + 1)) {
+      notify(player, T("No such attribute."));
+    }
+  } else {
+    if (!queue_include_attribute(thing, upcasestr(s), player,
+                                 player, global_eval_context.wenv)) {
+      notify(player, T("No such attribute."));
+    }
   }
 }
 

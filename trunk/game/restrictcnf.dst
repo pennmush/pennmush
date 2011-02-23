@@ -130,6 +130,7 @@ restrict_function lstats noguest
 #restrict_function crecall nobody
 #restrict_function cstatus nobody
 #restrict_function cusers nobody
+#restrict_function cmogrifier nobody
 
 
 # Remove the hardcode mail system by uncommenting these

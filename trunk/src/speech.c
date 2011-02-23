@@ -61,19 +61,24 @@ spname(dbref thing)
  * \param player dbref attempting to pemit.
  * \param target target dbref to pemit to.
  * \param dofails If nonzero, run fail_lock()
+ * \param def default message if there is no appropriate failure message
  * \retval 1 player may pemit to target.
  * \retval 0 player may not pemit to target.
  */
 int
-okay_pemit(dbref player, dbref target, int dofails)
+okay_pemit(dbref player, dbref target, int dofails, const char *def)
 {
   if (Pemit_All(player))
     return 1;
-  if (IsPlayer(target) && Haven(target))
+
+  if (IsPlayer(target) && Haven(target)) {
+	  if (dofails && def && *def)
+	    notify(player, def);
     return 0;
+  }
   if (!eval_lock(player, target, Page_Lock)) {
     if (dofails) {
-      fail_lock(player, target, Page_Lock, NULL, NOTHING);
+      fail_lock(player, target, Page_Lock, def, NOTHING);
     }
     return 0;
   }
@@ -512,7 +517,7 @@ do_pemit_list(dbref player, char *list, const char *message, int flags)
 
   while (l && *l && (p = next_in_list(&l))) {
     who = noisy_match_result(player, p, NOTYPE, MAT_EVERYTHING);
-    if (GoodObject(who) && okay_pemit(player, who, 1)) {
+    if (GoodObject(who) && okay_pemit(player, who, 1, NULL)) {
       if (nospoof && Nospoof(who)) {
         if (Paranoid(who)) {
           if (!nspbuf) {
@@ -583,12 +588,10 @@ do_pemit(dbref player, const char *arg1, const char *arg2, int flags)
     notify(player, T("I don't know who you mean!"));
     break;
   default:
-    if (!okay_pemit(player, who, 1)) {
-      notify_format(player,
-                    T("I'm sorry, but %s wishes to be left alone now."),
-                    Name(who));
+    if (!okay_pemit(player, who, 1,
+    		        tprintf(T("I'm sorry, but %s wishes to be left alone now."),
+    		        		Name(who))))
       return;
-    }
     if (!silent)
       notify_format(player, T("You pemit \"%s\" to %s."), arg2, Name(who));
     if (nospoof && Nospoof(who)) {
@@ -1112,7 +1115,7 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
     }
 
     page_return(player, good[i], "Idle", "IDLE", NULL);
-    if (!okay_pemit(good[i], player, 0)) {
+    if (!okay_pemit(good[i], player, 0, NULL)) {
       notify_format(player,
           T("You paged %s, but they are unable to page you."),
           Name(good[i]));
@@ -1422,10 +1425,10 @@ do_one_remit(dbref player, const char *target, const char *msg, int flags)
   } else {
     if (IsExit(room)) {
       notify(player, T("There can't be anything in that!"));
-    } else if (!okay_pemit(player, room, 1)) {
-      notify_format(player,
-                    T("I'm sorry, but %s wishes to be left alone now."),
-                    Name(room));
+    } else if (!okay_pemit(player, room, 1,
+    		               tprintf(T("I'm sorry, but %s wishes to be left alone now."),
+    		            		   Name(room)))) {
+    	/* Do nothing, but do it well */
     } else if (!Loud(player) && !eval_lock(player, room, Speech_Lock)) {
       fail_lock(player, room, Speech_Lock, T("You may not speak there!"),
                 NOTHING);

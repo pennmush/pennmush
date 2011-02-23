@@ -108,6 +108,9 @@ Minor Changes:
    the perspective of the object's owner. Suggested by Covenent. [MG]
  * The LASTPAGED attribute now stores objids instead of names, allowing you
    to repage even when the target changes their name. [MG]
+ * When zwho() or @chzone fail because you don't pass the @lock/zone, zone
+   failure verbs are triggered (as per 'help failure'). Based on a patch by
+   Covenent. [MG]
 
 Fixes:
  * Fixing list type autodetect. [GM]

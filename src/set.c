@@ -368,6 +368,7 @@ do_chzone(dbref player, char const *name, char const *newobj, bool noisy,
 {
   dbref thing;
   dbref zone;
+  int has_lock;
 
   if ((thing = noisy_match_result(player, name, NOTYPE, MAT_NEARBY)) == NOTHING)
     return 0;
@@ -401,11 +402,16 @@ do_chzone(dbref player, char const *name, char const *newobj, bool noisy,
    * 3.  an object with a chzone-lock that the player passes.
    * Note that an object with no chzone-lock isn't valid
    */
+  has_lock = (getlock(zone, Chzone_Lock) != TRUE_BOOLEXP);
   if (!(Wizard(player) || (zone == NOTHING) || Owns(player, zone) ||
-        ((getlock(zone, Chzone_Lock) != TRUE_BOOLEXP) &&
-         eval_lock(player, zone, Chzone_Lock)))) {
-    if (noisy)
-      notify(player, T("You cannot move that object to that zone."));
+        (has_lock && eval_lock(player, zone, Chzone_Lock)))) {
+    if (noisy) {
+      if (has_lock) {
+        fail_lock(player, zone, Chzone_Lock, T("You cannot move that object to that zone."), NOTHING);
+      } else {
+        notify(player, T("You cannot move that object to that zone."));
+      }
+    }
     return 0;
   }
   /* Don't chzone object to itself for mortals! */

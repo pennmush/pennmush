@@ -60,7 +60,7 @@ spname(dbref thing)
  * pagelock and target isn't HAVEN.
  * \param player dbref attempting to pemit.
  * \param target target dbref to pemit to.
- * \param dofails If nonzero, run fail_lock()
+ * \param dofails If nonzero, send failure message 'def' or run fail_lock()
  * \param def default message if there is no appropriate failure message
  * \retval 1 player may pemit to target.
  * \retval 0 player may not pemit to target.

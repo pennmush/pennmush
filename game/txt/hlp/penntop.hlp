@@ -653,22 +653,44 @@ See also: ENACTOR, CALLER, SUBSTITUTION
 & FAILURE
   FAILURE  
 
-  A "failure" usually occurs when you try to do something that is
-  governed by an @lock and you don't pass the lock. If you try to take
-  a player or thing, and you don't pass their @lock, you will set off
-  their @fail/@ofail/@afail attributes. If you try to go through an
-  exit, and you don't pass its @lock, you will similarly set off its
-  @fail/@ofail/@afail. Other failure sets include:
+  A "failure" usually occurs when you try to do something that is governed 
+  by an @lock and you don't pass the lock. If you try to take a player or 
+  thing, or pass through an exit, and you don't pass its Basic @lock, you 
+  will set off their  @failure/@ofailure/@afailure attributes. A few failures
+  have special attributes, while others use <locktype>_LOCK`FAILURE,
+  <locktype>_LOCK`OFAILURE and <locktype>_LOCK`AFAILURE attributes.
 
-  Failing to enter an object (@efail, @oefail, @aefail)
-  Failing to leave an object (@lfail, @olfail, @alfail)
-  Failing to use an object (@ufail, @oufail, @aufail)
-  Other failures (&<locktype>_LOCK`FAILURE, &<locktype>_LOCK`OFAILURE, 
-    &<locktype>_LOCK`AFAILURE)
+  See 'help failure2' for a list of failure verbs and when they're triggered.
 
-  See @lock and locktypes for more information on lock types.
+  See 'help @lock' and 'help locktypes' for more information on lock types.
 
-See also: @lock, @fail, @efail, @lfail
+See also: verbs, @lock, @failure, @efail, @lfail
+
+& failure2
+  The following failures are defined in PennMUSH:
+  
+  Failure to...                                 Lock     Attribute
+  --------------------------------------------- -------- --------------------
+  "get" a player/thing, pass through an exit,   Basic    @failure
+    or "look" in a room
+  run an $-command on an object                 Command* COMMAND_LOCK`FAILURE
+  use zwho()                                    Zone     ZONE_LOCK`FAILURE
+  leave your current location                   Leave    @lfail
+  "take" from an object                         Take     TAKE_LOCK`FAILURE
+  "drop" a thing, or drop something in a room   Drop     DROP_LOCK_FAILURE
+   enter an object                              Enter    @efail
+  "follow" an object                            Follow   FOLLOW_LOCK`FAILURE
+  "give" an object away                         Give     GIVE_LOCK`FAILURE
+  "@chzone" something to a zone                 Chzone   CHZONE_LOCK`FAILURE
+  "use" an object                               Use      @ufail
+  speak via say/pose/@*emit/teach in a room     Speech   SPEECH_LOCK`FAILURE
+  "page" or "@pemit" to an object               Page     PAGE_LOCK`FAILURE**
+  
+  
+  * The Use lock can also prevent you from running an $-command, but it will
+    still trigger COMMAND_LOCK`FAILURE.
+  ** @haven or @away will also be shown on failure to "page", if set
+  
 & GENDER
 & SEX
   Gender on a MUSH is entirely up to you. You can set yourself (or any
@@ -1850,7 +1872,6 @@ See also: STACK, SUBSTITUTIONS, @lock
 & VERBS2
 & NONAME
 & NOSPACE
-
   Normally, the enactor's name and a space are prepended to the 'overb' and 
   'oxverb' attributes automatically. The NOSPACE attribute flag prevents a
   space being placed between the name and attribute value, and the NONAME
@@ -1861,7 +1882,7 @@ See also: STACK, SUBSTITUTIONS, @lock
     > use Foo
     Sketch has used Foo!
     
-    > @ouse Foo=;'s used Foo!
+    > @ouse Foo='s used Foo!
     > @set Foo/ouse=nospace
     > use Foo
     Sketch's used Foo!

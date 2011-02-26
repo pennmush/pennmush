@@ -4875,9 +4875,11 @@ See also: comp(), match(), setq(), r()
 
 See also: delete(), strinsert(), ldelete(), replace()
 & SUB()
-  sub(<number1>, <number2>)
- 
-  sub() subtracts <number2> from <number1> and returns the result.
+  sub(<number1>, <number>[, ... , <number>])
+
+  sub() subtracts <number> from <number1>. If more than one <number> argument
+  is given, each is subtracted from the result of the previous subtraction
+  in turn. The result of the final subtraction is returned.
   
 See also: add(), dec(), lmath(), vsub()
 & SUBJ()

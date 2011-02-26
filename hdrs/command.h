@@ -238,4 +238,7 @@ int cnf_add_command(char *name, char *opts);
 int cnf_hook_command(char *name, char *opts);
 
 
+#define SILENT_OR_NOISY(switches, default_silent) (SW_ISSET(switches, SWITCH_SILENT) ? PEMIT_SILENT : (SW_ISSET(switches, SWITCH_NOISY) ? 0 : (default_silent ? PEMIT_SILENT : 0)))
+
+
 #endif                          /* __COMMAND_H */

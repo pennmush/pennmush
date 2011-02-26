@@ -52,6 +52,9 @@ Commands:
    @hide/on. [MG]
  * @log now takes a /recall switch for showing wizards the most recent activity
    in a log file. [SW]
+ * @lemit and @zemit both have /noisy and /silent switches to suppress/show
+   confirmation messages. With no switch, silent_pemit determines whether
+   the message is shown. Suggested by Paige for consistancy. [MG]
    
 Attributes:
  * New no_debug flag, which prevents debug info being shown for an attribute

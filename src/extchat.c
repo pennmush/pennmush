@@ -3497,14 +3497,13 @@ FUNCTION(fun_crecall)
 
 COMMAND(cmd_cemit)
 {
-  int spflags = (!strcmp(cmd->name, "@NSCEMIT")
-                 && Can_Nspemit(player) ? PEMIT_SPOOF : 0);
+  int flags = SILENT_OR_NOISY(sw, !options.noisy_cemit);
+  if (!strcmp(cmd->name, "@NSCEMIT") && Can_Nspemit(player))
+    flags |= PEMIT_SPOOF;
+
   SPOOF(player, cause, sw);
-  if (SW_ISSET(sw, SWITCH_SILENT))
-    spflags |= PEMIT_SILENT;
-  else if (!SW_ISSET(sw, SWITCH_NOISY) && options.noisy_cemit == 0)
-    spflags |= PEMIT_SILENT;
-  do_cemit(player, arg_left, arg_right, spflags);
+
+  do_cemit(player, arg_left, arg_right, flags);
 }
 
 COMMAND(cmd_channel)

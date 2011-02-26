@@ -1545,7 +1545,7 @@ na_zemit(dbref current __attribute__ ((__unused__)), void *data)
  * \param player the enactor.
  * \param arg1 string containing dbref of ZMO.
  * \param arg2 message to emit.
- * \param flags bitmask of notificati flags.
+ * \param flags bitmask of notification flags.
  */
 void
 do_zemit(dbref player, const char *arg1, const char *arg2, int flags)
@@ -1565,8 +1565,10 @@ do_zemit(dbref player, const char *arg1, const char *arg2, int flags)
     return;
   }
 
-  where = unparse_object(player, zone);
-  notify_format(player, T("You zemit, \"%s\" in zone %s"), arg2, where);
+  if (!(flags & PEMIT_SILENT)) {
+    where = unparse_object(player, zone);
+    notify_format(player, T("You zemit, \"%s\" in zone %s"), arg2, where);
+  }
 
   pass[0] = NOTHING;
   pass[1] = 0;

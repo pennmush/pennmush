@@ -72,7 +72,7 @@ Attribute trees use the backtick (`) character to separate their
 components (much as filesystems use / or \). For example, the
 following attribute name would be a couple levels down in its tree:
 
-	CHAR`SKILLS`PHYSICAL
+  CHAR`SKILLS`PHYSICAL
 
 Attribute names may not start or end with the backtick, and may not
 contain two backticks in a row.

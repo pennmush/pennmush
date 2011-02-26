@@ -4618,7 +4618,7 @@ See also: page, pose, @pemit
   
     > &HOOK.WHO <object>=not(comp(left(%c,3),WHO))
     > @hook/ignore WHO=<object>,HOOK.WHO
-	  
+
   @hooks are not maintained across reboots, and should be placed into an
   @startup on a low-dbref object.
   

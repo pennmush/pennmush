@@ -112,6 +112,8 @@ Minor Changes:
    failure verbs are triggered (as per 'help failure'). Based on a patch by
    Covenent. [MG]
  * sub() can now take more than two arguments. Suggested by Paige. [MG]
+ * In the hardcode, disconnected players in the DESC struct are shown as -1
+   instead of 0, to avoid conflicts with #0. Based on patch by Paige. [MG]
 
 Fixes:
  * Fixing list type autodetect. [GM]

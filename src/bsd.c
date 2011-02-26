@@ -1262,12 +1262,10 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
   global_eval_context.wenv[0] = arg;
   sp = save = safe_atr_value(a);
   bp = buff;
-  // A disconnected descriptor has dbref of 0. Not right at all, but ...
-  // Nothing to do about it?
   process_expression(buff, &bp, &sp,
                      thing,
-                     d->player ? d->player : -1,
-                     d->player ? d->player : -1, PE_DEFAULT, PT_DEFAULT, NULL);
+                     d->player,
+                     d->player, PE_DEFAULT, PT_DEFAULT, NULL);
   safe_chr('\n', buff, &bp);
   *bp = '\0';
   free((void *) save);
@@ -1519,7 +1517,7 @@ logout_sock(DESC *d)
   d->output_suffix = 0;
   d->output_size = 0;
   d->output.head = 0;
-  d->player = 0;
+  d->player = NOTHING;
   d->output.tail = &d->output.head;
   d->input.head = 0;
   d->input.tail = &d->input.head;
@@ -1616,7 +1614,7 @@ initializesock(int s, char *addr, char *ip, int use_ssl
   d->output_suffix = 0;
   d->output_size = 0;
   d->output.head = 0;
-  d->player = 0;
+  d->player = NOTHING;
   d->output.tail = &d->output.head;
   d->input.head = 0;
   d->input.tail = &d->input.head;
@@ -3322,10 +3320,6 @@ dump_users(DESC *call_by, char *match)
   char tbuf1[BUFFER_LEN];
   char tbuf2[BUFFER_LEN];
 
-  if (!GoodObject(call_by->player)) {
-    do_rawlog(LT_ERR, "Bogus caller #%d of dump_users", call_by->player);
-    return;
-  }
   while (*match && *match == ' ')
     match++;
   now = mudtime;
@@ -3351,7 +3345,7 @@ dump_users(DESC *call_by, char *match)
     sprintf(tbuf1, "%-16s %10s   %4s%c %s", Name(d->player),
             time_format_1(now - d->connected_at),
             time_format_2(now - d->last_time),
-            (Dark(d->player) ? 'D' : (Hidden(d) ? 'H' : ' '))
+            (Dark(d->player) ? 'D' : ' ')
             , d->doing);
     queue_string_eol(call_by, tbuf1);
   }
@@ -3452,7 +3446,7 @@ do_who_admin(dbref player, char *name)
     if (d->connected)
       count++;
     if ((name && *name)
-        && (!d->connected || !string_prefix(Name(d->player), name)))
+        && (!d->connected || !GoodObject(d->player) || !string_prefix(Name(d->player), name)))
       continue;
     if (d->connected) {
       sprintf(tbuf, "%-16s %6s %9s %5s  %4d %3d%c %s", Name(d->player),
@@ -3533,7 +3527,7 @@ do_who_session(dbref player, char *name)
     if (d->connected)
       count++;
     if ((name && *name)
-        && (!d->connected || !string_prefix(Name(d->player), name)))
+        && (!d->connected || !GoodObject(d->player) || !string_prefix(Name(d->player), name)))
       continue;
     if (d->connected) {
       notify_format(player, "%-16s %6s %9s %5s %5d %3d%c %7lu %7lu %7d",
@@ -3620,7 +3614,7 @@ time_format_2(time_t dt)
 }
 
 /* connection messages
- * isnew: newly creaetd or not?
+ * isnew: newly created or not?
  * num: how many times connected?
  */
 static void
@@ -4307,7 +4301,7 @@ lookup_desc(dbref executor, const char *name)
     int fd = parse_integer(name);
 
     d = im_find(descs_by_fd, fd);
-    if (d && (Priv_Who(executor) || d->player == executor))
+    if (d && (Priv_Who(executor) || (d->connected && d->player == executor)))
       return d;
     else
       return NULL;
@@ -4938,7 +4932,7 @@ inactivity_check(void)
 
     /* If they've been idle for 60 seconds and are set KEEPALIVE and using
        a telnet-aware client, send a NOP */
-    if (d->conn_flags & CONN_TELNET && idle_for >= 60
+    if (d->connected && d->conn_flags & CONN_TELNET && idle_for >= 60
         && IS(d->player, TYPE_PLAYER, "KEEPALIVE")) {
       const uint8_t nopmsg[2] = { IAC, NOP };
       queue_newwrite(d, nopmsg, 2);
@@ -5281,12 +5275,12 @@ load_reboot_db(void)
       d->prev = NULL;
       descriptor_list = d;
       im_insert(descs_by_fd, d->descriptor, d);
-      if (d->connected && d->player && GoodObject(d->player) &&
+      if (d->connected && GoodObject(d->player) &&
           IsPlayer(d->player))
         set_flag_internal(d->player, "CONNECTED");
       else if ((!d->player || !GoodObject(d->player)) && d->connected) {
         d->connected = 0;
-        d->player = 0;
+        d->player = NOTHING;
       }
     }
   }                             /* while loop */

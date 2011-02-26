@@ -111,6 +111,7 @@ Minor Changes:
  * When zwho() or @chzone fail because you don't pass the @lock/zone, zone
    failure verbs are triggered (as per 'help failure'). Based on a patch by
    Covenent. [MG]
+ * sub() can now take more than two arguments. Suggested by Paige. [MG]
 
 Fixes:
  * Fixing list type autodetect. [GM]

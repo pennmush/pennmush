@@ -131,10 +131,10 @@ typedef struct descriptor_data DESC;
  */
 struct descriptor_data {
   int descriptor;       /**< Connection socket (fd) */
-  int connected;        /**< Connection status */
+  int connected;        /**< Connection status. 0 = not connected to a player, 1 = connected, 2 = connection denied due to login limits/sitelock */
   char addr[101];       /**< Hostname of connection source */
   char ip[101];         /**< IP address of connection source */
-  dbref player;         /**< Dbref of player associated with connection */
+  dbref player;         /**< Dbref of player associated with connection, or NOTHING if not connected */
   unsigned char *output_prefix; /**< Text to show before output */
   unsigned char *output_suffix; /**< Text to show after output */
   int output_size;              /**< Size of output left to send */

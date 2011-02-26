@@ -53,3 +53,7 @@ Version 1.8.4 patchlevel 3                                 ??? ??,  201?
      and change local_timer's signature to:
          bool local_timer(void *data __attribute__((__unused__)))
      and return false.
+
+
+ In the DESC struct, descriptors which have not connected to a player now have
+ d->player set to NOTHING (-1) instead of 0.

@@ -740,7 +740,7 @@ process_expression(char *buff, char **bp, char const **str,
       /* Can't just put #-1 CPU USAGE EXCEEDED in buff here, because
        * it might never get displayed.
        */
-      if (!Quiet(enactor))
+      if (GoodObject(enactor) && !Quiet(enactor))
         notify(enactor, T("CPU usage exceeded."));
       do_rawlog(LT_TRACE,
                 "CPU time limit exceeded. enactor=#%d executor=#%d caller=#%d code=%s",

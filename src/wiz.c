@@ -844,7 +844,7 @@ do_boot(dbref player, const char *name, enum boot_type flag, int silent)
       return;
     }
     d = port_desc(parse_integer(name));
-    if (!d || (!priv && d->player != player)) {
+    if (!d || (!priv && (!d->connected || d->player != player))) {
       if (priv)
         notify(player, T("There is noone connected on that descriptor."));
       else

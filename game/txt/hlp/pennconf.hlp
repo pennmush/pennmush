@@ -203,7 +203,7 @@ Continued in help @config limits3
   queue_entry_cpu_time=<number>: The maximum number of milliseconds a
    queue entry can take to run.
   use_quota=<boolean>: Controls if quotas are used to limit the number
-	   of objects a player can own.
+   of objects a player can own.
 
 Continued in help @config limits4
 & @config limits4

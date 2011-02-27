@@ -440,18 +440,15 @@ See also: BOOLEAN FUNCTIONS, not(), t()
 
 See also: controls(), TRUST, MISTRUST, ZONES, SHARED PLAYERS
 & COSTS
-  These are usually:
+  Some things on the MUSH cost pennies. The default costs are shown below:
   
           kill: 10 pennies (or more, up to 100 pennies)
-          page: 0 pennies
           @dig: 10 pennies
           @create: 10 pennies (or more)
-          @find: 100 pennies
-          @search: 100 pennies
-          @entrances: 100 pennies
+          @search: 100 pennies *
           @link: 1 penny (if you  didn't already own it,
                           +1 to the previous owner).
-          @open: 1 penny (2 pennies if linked at  the same time)
+          @open: 1 penny (2 pennies if linked at the same time)
   
   Type '@config/list costs' to get the costs for the MUSH you are on.
 
@@ -681,6 +678,7 @@ See also: verbs, @lock, @failure, @efail, @lfail
    enter an object                              Enter    @efail
   "follow" an object                            Follow   FOLLOW_LOCK`FAILURE
   "give" an object away                         Give     GIVE_LOCK`FAILURE
+  "give" money to or "buy" from an object       Pay      PAY_LOCK`FAILURE
   "@chzone" something to a zone                 Chzone   CHZONE_LOCK`FAILURE
   "use" an object                               Use      @ufail
   speak via say/pose/@*emit/teach in a room     Speech   SPEECH_LOCK`FAILURE
@@ -919,12 +917,15 @@ See also: NEWBIE, @lock, @describe, @sex, MATCHING
   control, since when all your money is spent, you can't queue any
   more commands.
 
-  The money system can also be used on player-created objects by
-  giving them @cost/@payment/@opayment/@apayment attributes. When
-  someone then pays the object by giving it the right number of
-  pennies, the attributes are triggered.
+  The money system can also be used on player-created objects by setting 
+  @cost/@payment/@opayment/@apayment attributes and using the "give" command
+  to give pennies, or by setting @pricelist/@buy/@obuy/@abuy attributes and
+  buying items with the "buy" command. The Pay @lock on an object controls
+  who can give it pennies.
+  
+  The "score" command tells you how many pennies you have.
 
-See also: COSTS, give, @cost, @pay, @opay, @apay
+See also: COSTS, give, @cost, @payment, @lock, buy, @buy, score, money()
 & MUSHCODE
 & SOFTCODE
 

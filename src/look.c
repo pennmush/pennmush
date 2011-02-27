@@ -715,7 +715,8 @@ do_look_at(dbref player, const char *name, int key)
         look_simple(player, thing);
         return;
       }
-      thing = match_result_relative(player, box, objname, NOTYPE, MAT_OBJ_CONTENTS);
+      thing =
+        match_result_relative(player, box, objname, NOTYPE, MAT_OBJ_CONTENTS);
       if (thing == NOTHING) {
         notify(player, T("I don't see that here."));
         return;
@@ -1477,7 +1478,8 @@ decompile_helper(dbref player, dbref thing __attribute__ ((__unused__)),
       privs = privs_to_string(attr_privs_view, AL_FLAGS(atr));
     }
     if (privs && *privs)
-      notify_format(player, "%s@set %s/%s=%s", dh->prefix, dh->name, AL_NAME(atr), privs);
+      notify_format(player, "%s@set %s/%s=%s", dh->prefix, dh->name,
+                    AL_NAME(atr), privs);
   }
   return 1;
 }

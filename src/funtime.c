@@ -452,7 +452,7 @@ FUNCTION(fun_convtime)
   struct tm ttm;
   char *tz = NULL;
   int doutc = (!strcmp(called_as, "CONVUTCTIME") ||
-              (nargs > 1 && !strcmp(args[1], "utc")));
+               (nargs > 1 && !strcmp(args[1], "utc")));
 
   if (do_convtime(args[0], &ttm)
 #ifdef HAS_GETDATE

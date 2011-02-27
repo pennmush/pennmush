@@ -142,9 +142,7 @@ moveit(dbref what, dbref where, int nomovemsgs,
   queue_event(enactor, "OBJECT`MOVE", "%s,%s,%s,%d,%s",
               unparse_objid(what),
               unparse_objid(where),
-              unparse_objid(old),
-              nomovemsgs ? 1 : 0,
-              cause);
+              unparse_objid(old), nomovemsgs ? 1 : 0, cause);
 }
 
 /** A dropper is an object that can hear and has a connected owner */
@@ -161,11 +159,11 @@ send_contents(dbref loc, dbref dest)
    *
    * Not now, as object`move depends on it. */
   /*
-  Contents(loc) = NOTHING;
-  DOLIST(rest, first) {
-    Location(rest) = NOTHING;
-  }
-  */
+     Contents(loc) = NOTHING;
+     DOLIST(rest, first) {
+     Location(rest) = NOTHING;
+     }
+   */
 
   while (first != NOTHING) {
     rest = Next(first);
@@ -176,8 +174,8 @@ send_contents(dbref loc, dbref dest)
   }
 
   /*
-  Contents(loc) = reverse(Contents(loc));
-  */
+     Contents(loc) = reverse(Contents(loc));
+   */
 }
 
 static void
@@ -574,7 +572,8 @@ do_get(dbref player, const char *what)
         notify_format(player, T("I can't tell which %s."), boxname);
         return;
       }
-      thing = match_result_relative(player, box, objname, NOTYPE, MAT_OBJ_CONTENTS);
+      thing =
+        match_result_relative(player, box, objname, NOTYPE, MAT_OBJ_CONTENTS);
       if (thing == NOTHING) {
         notify(player, T("I don't see that here."));
         return;

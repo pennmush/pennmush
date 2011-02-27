@@ -1091,7 +1091,8 @@ FUNCTION(fun_benchmark)
       return;
     }
     if (!okay_pemit(executor, thing, 1,
-    		        tprintf(T("I don't think #%d wants to hear from you."), thing))) {
+                    tprintf(T("I don't think #%d wants to hear from you."),
+                            thing))) {
       safe_str("#-1", buff, bp);
       return;
     }

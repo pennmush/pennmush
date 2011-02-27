@@ -171,7 +171,7 @@ do_userfn(char *buff, char **bp, dbref obj, ATTR *attrib, int nargs,
 
   tp = tbuf = safe_atr_value(attrib);
   if (AF_NoDebug(attrib))
-    pe_flags |= PE_NODEBUG; /* no_debug overrides debug */
+    pe_flags |= PE_NODEBUG;     /* no_debug overrides debug */
   else if (AF_Debug(attrib))
     pe_flags |= PE_DEBUG;
 
@@ -236,7 +236,7 @@ FUNCTION(fun_pfun)
 
   /* DEBUG attributes */
   if (AF_NoDebug(a))
-    pe_flags |= PE_NODEBUG; /* no_debug overrides debug */
+    pe_flags |= PE_NODEBUG;     /* no_debug overrides debug */
   else if (AF_Debug(a))
     pe_flags |= PE_DEBUG;
 

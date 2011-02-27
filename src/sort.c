@@ -259,13 +259,13 @@ GENRECORD(gen_magic)
       usedup = true;
       while (*s && *s != 'm')
         s++;
-      s++; /* Advance past m */
+      s++;                      /* Advance past m */
       break;
     case TAG_START:
       usedup = true;
       while (*s && *s != TAG_END)
         s++;
-      s++; /* Advance past tag_end */
+      s++;                      /* Advance past tag_end */
       break;
     case '0':
     case '1':
@@ -590,20 +590,23 @@ char *UNKNOWN_LIST = NULL;
 ListTypeInfo ltypelist[] = {
   /* List type name,            recordmaker,    comparer, dbrefs? */
   {ALPHANUM_LIST, NULL, 0, gen_alphanum, s_comp, IS_STRING},
-  {INSENS_ALPHANUM_LIST, NULL, 0, gen_alphanum, s_comp, IS_STRING | IS_CASE_INSENS},
+  {INSENS_ALPHANUM_LIST, NULL, 0, gen_alphanum, s_comp,
+   IS_STRING | IS_CASE_INSENS},
   {DBREF_LIST, NULL, 0, gen_dbref, i_comp, 0},
   {NUMERIC_LIST, NULL, 0, gen_num, i_comp, 0},
   {FLOAT_LIST, NULL, 0, gen_float, f_comp, 0},
   {MAGIC_LIST, NULL, 0, gen_magic, s_comp, IS_STRING | IS_CASE_INSENS},
   {DBREF_NAME_LIST, NULL, 0, gen_db_name, s_comp, IS_DB | IS_STRING},
-  {DBREF_NAMEI_LIST, NULL, 0, gen_db_name, s_comp, IS_DB | IS_STRING | IS_CASE_INSENS},
+  {DBREF_NAMEI_LIST, NULL, 0, gen_db_name, s_comp,
+   IS_DB | IS_STRING | IS_CASE_INSENS},
   {DBREF_IDLE_LIST, NULL, 0, gen_db_idle, i_comp, IS_DB},
   {DBREF_CONN_LIST, NULL, 0, gen_db_conn, i_comp, IS_DB},
   {DBREF_CTIME_LIST, NULL, 0, gen_db_ctime, tm_comp, IS_DB},
   {DBREF_OWNER_LIST, NULL, 0, gen_db_owner, i_comp, IS_DB},
   {DBREF_LOCATION_LIST, NULL, 0, gen_db_loc, i_comp, IS_DB},
   {DBREF_ATTR_LIST, NULL, 0, gen_db_attr, s_comp, IS_DB | IS_STRING},
-  {DBREF_ATTRI_LIST, NULL, 0, gen_db_attr, s_comp, IS_DB | IS_STRING | IS_CASE_INSENS},
+  {DBREF_ATTRI_LIST, NULL, 0, gen_db_attr, s_comp,
+   IS_DB | IS_STRING | IS_CASE_INSENS},
   {ATTRNAME_LIST, NULL, 0, gen_alphanum, attr_comp, IS_STRING},
   /* This stops the loop, so is default */
   {NULL, NULL, 0, gen_alphanum, s_comp, IS_STRING}
@@ -617,7 +620,8 @@ ListTypeInfo ltypelist[] = {
  *         needed.
  */
 ListTypeInfo *
-get_list_type_info(SortType sort_type) {
+get_list_type_info(SortType sort_type)
+{
   int i, len;
   char *ptr = NULL;
   ListTypeInfo *lti;
@@ -644,7 +648,7 @@ get_list_type_info(SortType sort_type) {
          i++) ;
   } else {
     for (i = 0; ltypelist[i].name && strcasecmp(ltypelist[i].name, sort_type);
-         i++);
+         i++) ;
   }
 
   lti->name = ltypelist[i].name;
@@ -664,7 +668,7 @@ get_list_type_info(SortType sort_type) {
  * \param lti The ListTypeInfo to free. Must be created by get_list_type_info.
  */
 void
-free_list_type_info(ListTypeInfo *lti)
+free_list_type_info(ListTypeInfo * lti)
 {
   if (lti->attrname) {
     mush_free(lti->attrname, "list_type_info_attrname");
@@ -746,7 +750,8 @@ get_list_type_noauto(char *args[], int nargs, int type_pos)
 }
 
 static void
-genrecord(s_rec *sp, dbref player, ListTypeInfo *lti) {
+genrecord(s_rec *sp, dbref player, ListTypeInfo * lti)
+{
   lti->make_record(sp, player, lti->attrname);
   if (lti->flags & IS_CASE_INSENS && sp->memo.str.s) {
     if (sp->memo.str.freestr == 0) {
@@ -828,8 +833,7 @@ gencomp(dbref player, char *a, char *b, SortType sort_type)
  * \retval A pointer to the first s_rec of an <n> s_rec array.
  */
 s_rec *
-slist_build(dbref player, char *keys[], char *strs[],
-            int n, ListTypeInfo *lti)
+slist_build(dbref player, char *keys[], char *strs[], int n, ListTypeInfo * lti)
 {
   int i;
   s_rec *sp;
@@ -863,7 +867,7 @@ slist_build(dbref player, char *keys[], char *strs[],
  * \param lti List Type Info describing how it's sorted and built.
  */
 void
-slist_qsort(s_rec *sp, int n, ListTypeInfo *lti)
+slist_qsort(s_rec *sp, int n, ListTypeInfo * lti)
 {
   qsort((void *) sp, n, sizeof(s_rec), lti->sorter);
 }
@@ -877,12 +881,13 @@ slist_qsort(s_rec *sp, int n, ListTypeInfo *lti)
  * \retval The count of unique items.
  */
 int
-slist_uniq(s_rec *sp, int n, ListTypeInfo *lti)
+slist_uniq(s_rec *sp, int n, ListTypeInfo * lti)
 {
   int count, i;
 
   /* Quick sanity check. */
-  if (n < 2) return n;
+  if (n < 2)
+    return n;
 
   /* First item's always 'unique' :D. */
   count = 1;
@@ -890,7 +895,7 @@ slist_uniq(s_rec *sp, int n, ListTypeInfo *lti)
   for (i = 1; i < n; i++) {
     /* If sp[i] is a duplicate of sp[count - 1], free it. If it's not,
      * move it to sp[count] and increment count. */
-    if (lti->sorter((const void *) &sp[count-1], (const void *) &sp[i])) {
+    if (lti->sorter((const void *) &sp[count - 1], (const void *) &sp[i])) {
       /* Not a duplicate. */
       sp[count++] = sp[i];
     } else {
@@ -916,7 +921,7 @@ slist_uniq(s_rec *sp, int n, ListTypeInfo *lti)
  * \param lti List Type Info describing how it's sorted and built.
  */
 void
-slist_free(s_rec *sp, int n, ListTypeInfo *lti)
+slist_free(s_rec *sp, int n, ListTypeInfo * lti)
 {
   int i;
   for (i = 0; i < n; i++) {
@@ -927,7 +932,7 @@ slist_free(s_rec *sp, int n, ListTypeInfo *lti)
 }
 
 int
-slist_comp(s_rec *s1, s_rec *s2, ListTypeInfo *lti)
+slist_comp(s_rec *s1, s_rec *s2, ListTypeInfo * lti)
 {
   return lti->sorter((const void *) s1, (const void *) s2);
 }

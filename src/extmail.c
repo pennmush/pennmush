@@ -1307,7 +1307,8 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
                     T("MAIL: You sent your message to %s."), Name(target));
     } else {
       notify_format(player,
-                    T("MAIL: You sent your message to %s, but they can't mail you!"),
+                    T
+                    ("MAIL: You sent your message to %s, but they can't mail you!"),
                     Name(target));
     }
   }

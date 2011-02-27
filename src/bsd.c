@@ -157,7 +157,7 @@ void rusage_stats(void);
 #endif
 int que_next(void);             /* from cque.c */
 
-dbref email_register_player(DESC *d, const char *name, const char *email, const char *host, const char *ip);     /* from player.c */
+dbref email_register_player(DESC *d, const char *name, const char *email, const char *host, const char *ip);    /* from player.c */
 
 #ifdef SUN_OS
 static int extrafd;
@@ -937,15 +937,15 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
         do_rawlog(LT_ERR, "ERROR! forking dump exited with signal %d",
                   WTERMSIG(dump_status));
         queue_event(SYSEVENT, "DUMP`ERROR", "%s,%d,SIGNAL %d",
-                         T("GAME: ERROR! Forking database save failed!"),
-                         1, dump_status);
+                    T("GAME: ERROR! Forking database save failed!"),
+                    1, dump_status);
         flag_broadcast("ROYALTY WIZARD", 0,
                        T("GAME: ERROR! Forking database save failed!"));
       } else if (WIFEXITED(dump_status)) {
         if (WEXITSTATUS(dump_status) == 0) {
           time(&globals.last_dump_time);
           queue_event(SYSEVENT, "DUMP`COMPLETE", "%s,%d",
-                           DUMP_NOFORK_COMPLETE, 1);
+                      DUMP_NOFORK_COMPLETE, 1);
           if (DUMP_NOFORK_COMPLETE && *DUMP_NOFORK_COMPLETE)
             flag_broadcast(0, 0, "%s", DUMP_NOFORK_COMPLETE);
         } else {
@@ -1263,9 +1263,7 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
   sp = save = safe_atr_value(a);
   bp = buff;
   process_expression(buff, &bp, &sp,
-                     thing,
-                     d->player,
-                     d->player, PE_DEFAULT, PT_DEFAULT, NULL);
+                     thing, d->player, d->player, PE_DEFAULT, PT_DEFAULT, NULL);
   safe_chr('\n', buff, &bp);
   *bp = '\0';
   free((void *) save);
@@ -1566,8 +1564,7 @@ shutdownsock(DESC *d, const char *reason)
   /* (descriptor, ip, cause, recv/sent/cmds) */
   queue_event(SYSEVENT, "SOCKET`DISCONNECT", "%d,%s,%s,%lu/%lu/%d",
               d->descriptor, d->ip,
-              reason,
-              d->input_chars, d->output_chars, d->cmds);
+              reason, d->input_chars, d->output_chars, d->cmds);
   process_output(d);
   clearstrings(d);
   shutdown(d->descriptor, 2);
@@ -2682,8 +2679,7 @@ check_connect(DESC *d, const char *msg)
                 d->descriptor, d->addr, d->ip, user);
     } else {
       queue_event(SYSEVENT, "PLAYER`CREATE", "%s,%s,%s,%d",
-                  unparse_objid(player), Name(player),
-                  "create", d->descriptor);
+                  unparse_objid(player), Name(player), "create", d->descriptor);
       do_rawlog(LT_CONN, "[%d/%s/%s] Created %s(#%d)",
                 d->descriptor, d->addr, d->ip, Name(player), player);
       if ((dump_messages(d, player, 1)) == 0) {
@@ -2711,9 +2707,9 @@ check_connect(DESC *d, const char *msg)
       do_rawlog(LT_CONN,
                 "Refused registration (creation disabled) for %s from %s on descriptor %d.\n",
                 user, d->addr, d->descriptor);
-        queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
-                    d->descriptor, d->ip, mark_failed(d->ip),
-                    "register: registration disabled", user);
+      queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
+                  d->descriptor, d->ip, mark_failed(d->ip),
+                  "register: registration disabled", user);
       return 0;
     }
     if ((player = email_register_player(d, user, password, d->addr, d->ip)) ==
@@ -3344,8 +3340,7 @@ dump_users(DESC *call_by, char *match)
 
     sprintf(tbuf1, "%-16s %10s   %4s%c %s", Name(d->player),
             time_format_1(now - d->connected_at),
-            time_format_2(now - d->last_time),
-            (Dark(d->player) ? 'D' : ' ')
+            time_format_2(now - d->last_time), (Dark(d->player) ? 'D' : ' ')
             , d->doing);
     queue_string_eol(call_by, tbuf1);
   }
@@ -3446,7 +3441,8 @@ do_who_admin(dbref player, char *name)
     if (d->connected)
       count++;
     if ((name && *name)
-        && (!d->connected || !GoodObject(d->player) || !string_prefix(Name(d->player), name)))
+        && (!d->connected || !GoodObject(d->player)
+            || !string_prefix(Name(d->player), name)))
       continue;
     if (d->connected) {
       sprintf(tbuf, "%-16s %6s %9s %5s  %4d %3d%c %s", Name(d->player),
@@ -3527,7 +3523,8 @@ do_who_session(dbref player, char *name)
     if (d->connected)
       count++;
     if ((name && *name)
-        && (!d->connected || !GoodObject(d->player) || !string_prefix(Name(d->player), name)))
+        && (!d->connected || !GoodObject(d->player)
+            || !string_prefix(Name(d->player), name)))
       continue;
     if (d->connected) {
       notify_format(player, "%-16s %6s %9s %5s %5d %3d%c %7lu %7lu %7d",
@@ -4943,7 +4940,7 @@ inactivity_check(void)
 
       if (!d->connected) {
         shutdownsock(d, "idle");
-	booted = true;
+        booted = true;
       } else if (!Can_Idle(d->player)) {
 
         queue_string(d, T("\n*** Inactivity timeout ***\n"));
@@ -4951,7 +4948,7 @@ inactivity_check(void)
                   "[%d/%s/%s] Logout by %s(#%d) <Inactivity Timeout>",
                   d->descriptor, d->addr, d->ip, Name(d->player), d->player);
         boot_desc(d, "idle");
-	booted = true;
+        booted = true;
       } else if (Unfind(d->player)) {
 
         if ((Can_Hide(d->player)) && (!Hidden(d))) {
@@ -4959,7 +4956,7 @@ inactivity_check(void)
                        T
                        ("\n*** Inactivity limit reached. You are now HIDDEN. ***\n"));
           d->hide = 1;
-	  booted = true;
+          booted = true;
         }
       }
     }
@@ -5275,8 +5272,7 @@ load_reboot_db(void)
       d->prev = NULL;
       descriptor_list = d;
       im_insert(descs_by_fd, d->descriptor, d);
-      if (d->connected && GoodObject(d->player) &&
-          IsPlayer(d->player))
+      if (d->connected && GoodObject(d->player) && IsPlayer(d->player))
         set_flag_internal(d->player, "CONNECTED");
       else if ((!d->player || !GoodObject(d->player)) && d->connected) {
         d->connected = 0;

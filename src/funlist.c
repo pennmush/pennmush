@@ -784,7 +784,7 @@ FUNCTION(fun_setmanip)
   bool dolt = 0, dogt = 0, doeq = 0;
   if (strstr(called_as, "DIFF")) {
     dolt = 1;
-  } else if (strstr(called_as,"INTER")) {
+  } else if (strstr(called_as, "INTER")) {
     doeq = 1;
   } else {
     /* Setunion. */

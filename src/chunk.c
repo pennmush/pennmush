@@ -757,7 +757,7 @@ debug_log(char const *format, ...)
   va_end(args);
 
   rolling_log[rolling_pos][ROLLING_LOG_ENTRY_LEN - 1] = '\0';
-  if (noisy_log) 
+  if (noisy_log)
     do_rawlog(LT_TRACE, "%s\n", rolling_log[rolling_pos]);
   rolling_pos = (rolling_pos + 1) % ROLLING_LOG_SIZE;
 #else

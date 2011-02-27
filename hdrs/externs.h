@@ -54,7 +54,7 @@ extern time_t mudtime;
 
 extern int shutdown_flag;       /* if non-zero, interface should shut down */
 void emergency_shutdown(void);
-void boot_desc(DESC *d, const char *cause);        /* remove a player */
+void boot_desc(DESC *d, const char *cause);     /* remove a player */
 int boot_player(dbref player, int idleonly, int slilent);
 DESC *player_desc(dbref player);        /* find descriptors */
 DESC *inactive_desc(dbref player);      /* find descriptors */
@@ -260,9 +260,8 @@ void do_halt(dbref owner, const char *ncom, dbref victim);
 #define SYSEVENT -1
 bool queue_event(dbref enactor, const char *event, const char *fmt, ...)
   __attribute__ ((__format__(__printf__, 3, 4)));
-void insert_que(dbref player, const char *command, dbref cause, PE_Info *pe_info,
-                char **env, char **rval,
-                int quetype);
+void insert_que(dbref player, const char *command, dbref cause,
+                PE_Info *pe_info, char **env, char **rval, int quetype);
 void parse_que(dbref player, const char *command, dbref cause,
                PE_Info *pe_info);
 int queue_attribute_base(dbref executor, const char *atrname, dbref enactor,
@@ -419,7 +418,8 @@ int nearby(dbref obj1, dbref obj2);
 int get_current_quota(dbref who);
 void change_quota(dbref who, int payment);
 int ok_name(const char *name, int is_exit);
-int ok_object_name(char *name, dbref player, dbref thing, int type, char **newname, char **newalias);
+int ok_object_name(char *name, dbref player, dbref thing, int type,
+                   char **newname, char **newalias);
 int ok_command_name(const char *name);
 int ok_function_name(const char *name);
 int ok_player_name(const char *name, dbref player, dbref thing);

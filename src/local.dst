@@ -39,8 +39,8 @@ local_startup(void)
 * time. The latter two can be null pointers. The callback function returns true
 * if the softcode event should be triggered, false if it shouldn't.
 */
-#if 0 /* Change to 1 if you need local_timer functionality. */
-  sq_register_loop(1, local_timer, NULL, NULL);      
+#if 0                           /* Change to 1 if you need local_timer functionality. */
+  sq_register_loop(1, local_timer, NULL, NULL);
 #endif
 }
 
@@ -120,7 +120,7 @@ local_dbck(void)
  * After the MUSH has done all it's stuff
  */
 bool
-local_timer(void *data __attribute__((__unused__)))
+local_timer(void *data __attribute__ ((__unused__)))
 {
 
   /* The callback has to be set back up or it'll only run once. */

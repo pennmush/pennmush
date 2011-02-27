@@ -51,9 +51,10 @@ extern char *crypt(const char *, const char *);
 #include "confmagic.h"
 
 dbref email_register_player
-  (DESC *d, const char *name, const char *email, const char *host, const char *ip);
-static dbref make_player
-  (const char *name, const char *password, const char *host, const char *ip);
+  (DESC *d, const char *name, const char *email, const char *host,
+   const char *ip);
+static dbref make_player(const char *name, const char *password,
+                         const char *host, const char *ip);
 void do_password(dbref player, dbref cause, const char *old,
                  const char *newobj);
 
@@ -118,7 +119,8 @@ check_fails(const char *ipaddr)
 }
 
 int
-count_failed(const char *ipaddr) {
+count_failed(const char *ipaddr)
+{
   int i, numFails;
   time_t since = time(NULL) - 600;
 
@@ -290,7 +292,8 @@ connect_player(DESC *d, const char *name, const char *password,
       do_log(LT_CONN, 0, 0, "Can't connect to a guest (too many connected)");
       strcpy(errbuf, T("Too many guests are connected now."));
       queue_event(SYSEVENT, "SOCKET`LOGINFAIL", "%d,%s,%d,%s,#%d",
-                  d->descriptor, ip, count_failed(ip), "too many guests", player);
+                  d->descriptor, ip, count_failed(ip), "too many guests",
+                  player);
       return NOTHING;
     }
   }
@@ -319,8 +322,7 @@ create_player(DESC *d, const char *name, const char *password,
     do_log(LT_CONN, 0, 0, "Failed creation (bad name) from %s", host);
     if (d) {
       queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
-                  d->descriptor, ip, mark_failed(ip),
-                  "create: bad name", name);
+                  d->descriptor, ip, mark_failed(ip), "create: bad name", name);
     }
     return NOTHING;
   }
@@ -388,8 +390,7 @@ email_register_player(DESC *d, const char *name, const char *email,
   if (!ok_player_name(name, NOTHING, NOTHING)) {
     do_log(LT_CONN, 0, 0, "Failed registration (bad name) from %s", host);
     queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
-                d->descriptor, ip, mark_failed(ip),
-                "register: bad name", name);
+                d->descriptor, ip, mark_failed(ip), "register: bad name", name);
     return NOTHING;
   }
   /* Make sure that the email address is valid. A valid address must
@@ -503,8 +504,9 @@ email_register_player(DESC *d, const char *name, const char *email,
 }
 #else
 dbref
-email_register_player(DESC *d, const char *name, const char *email, const char *host,
-                      const char *ip __attribute__ ((__unused__)))
+email_register_player(DESC *d, const char *name, const char *email,
+                      const char *host, const char *ip
+                      __attribute__ ((__unused__)))
 {
   do_log(LT_CONN, 0, 0, "Failed registration (no sendmail) from %s", host);
   do_log(LT_CONN, 0, 0, "Requested character: '%s'. Email address: %s\n",

@@ -187,13 +187,13 @@ migrate_stuff(int amount)
 }
 
 static bool
-idle_event(void *data __attribute__((__unused__)))
+idle_event(void *data __attribute__ ((__unused__)))
 {
   return inactivity_check();
 }
 
 static bool
-purge_event(void *data __attribute__((__unused__)))
+purge_event(void *data __attribute__ ((__unused__)))
 {
   global_eval_context.cplr = NOTHING;
   strcpy(global_eval_context.ccom, "purge");
@@ -205,7 +205,7 @@ purge_event(void *data __attribute__((__unused__)))
 }
 
 static bool
-dbck_event(void *data __attribute__((__unused__)))
+dbck_event(void *data __attribute__ ((__unused__)))
 {
   global_eval_context.cplr = NOTHING;
   strcpy(global_eval_context.ccom, "dbck");
@@ -217,7 +217,7 @@ dbck_event(void *data __attribute__((__unused__)))
 }
 
 static bool
-warning_event(void *data __attribute__((__unused__)))
+warning_event(void *data __attribute__ ((__unused__)))
 {
   options.warn_counter = options.warn_interval + mudtime;
   strcpy(global_eval_context.ccom, "warnings");
@@ -233,16 +233,17 @@ struct dbsave_warn_data {
   char *msg;
 };
 
-struct dbsave_warn_data dbsave_5min = { 300, "DUMP`5MIN", options.dump_warning_5min };
-struct dbsave_warn_data dbsave_1min = { 60, "DUMP`1MIN", options.dump_warning_1min };
+struct dbsave_warn_data dbsave_5min =
+  { 300, "DUMP`5MIN", options.dump_warning_5min };
+struct dbsave_warn_data dbsave_1min =
+  { 60, "DUMP`1MIN", options.dump_warning_1min };
 
 static bool
 dbsave_warn_event(void *data)
 {
   struct dbsave_warn_data *when = data;
-  
-  queue_event(SYSEVENT, when->event, "%s,%d",
-	      when->msg, NO_FORK ? 0 : 1);
+
+  queue_event(SYSEVENT, when->event, "%s,%d", when->msg, NO_FORK ? 0 : 1);
   if (NO_FORK && *(when->msg))
     flag_broadcast(0, 0, "%s", when->msg);
   return false;
@@ -258,7 +259,7 @@ reg_dbsave_warnings(void)
 }
 
 static bool
-dbsave_event(void *data __attribute__((__unused__)))
+dbsave_event(void *data __attribute__ ((__unused__)))
 {
   log_mem_check();
   options.dump_counter = options.dump_interval + mudtime;
@@ -266,8 +267,7 @@ dbsave_event(void *data __attribute__((__unused__)))
   fork_and_dump(1);
   strcpy(global_eval_context.ccom, "");
   flag_broadcast(0, "ON-VACATION", "%s",
-		 T
-		 ("Your ON-VACATION flag is set! If you're back, clear it."));  
+                 T("Your ON-VACATION flag is set! If you're back, clear it."));
   reg_dbsave_warnings();
   sq_register_in(DUMP_INTERVAL, dbsave_event, NULL, NULL);
   return false;
@@ -281,7 +281,7 @@ dbsave_event(void *data __attribute__((__unused__)))
  * purge, dump, or inactivity checks.
  */
 static bool
-on_every_second(void *data __attribute__((__unused__)))
+on_every_second(void *data __attribute__ ((__unused__)))
 {
 
   /* A HUP reloads configuration and reopens logs */
@@ -299,7 +299,7 @@ on_every_second(void *data __attribute__((__unused__)))
   if (usr1_triggered) {
     if (!queue_event(SYSEVENT, "SIGNAL`USR1", "%s", "")) {
       do_rawlog(LT_ERR, "SIGUSR1 received. Rebooting.");
-      do_reboot(NOTHING, 0);      /* We don't return from this */
+      do_reboot(NOTHING, 0);    /* We don't return from this */
     }
     usr1_triggered = 0;         /* But just in case */
   }
@@ -313,15 +313,17 @@ on_every_second(void *data __attribute__((__unused__)))
 }
 
 void
-init_sys_events(void) {
+init_sys_events(void)
+{
   time(&mudtime);
   sq_register_loop(60, idle_event, NULL, "PLAYER`INACTIVITY");
   sq_register(mudtime + DBCK_INTERVAL, dbck_event, NULL, "DB`DBCK");
   sq_register(mudtime + PURGE_INTERVAL, purge_event, NULL, "DB`PURGE");
-  sq_register(mudtime + options.warn_interval, warning_event, NULL, "DB`WCHECK");
+  sq_register(mudtime + options.warn_interval, warning_event, NULL,
+              "DB`WCHECK");
   reg_dbsave_warnings();
   sq_register(mudtime + DUMP_INTERVAL, dbsave_event, NULL, NULL);
-  sq_register_loop(1, on_every_second, NULL, NULL); 
+  sq_register_loop(1, on_every_second, NULL, NULL);
 }
 
 sig_atomic_t cpu_time_limit_hit = 0;  /** Was the cpu time limit hit? */
@@ -427,13 +429,13 @@ reset_cpu_timer(void)
 #endif                          /* PROFILING */
 }
 
- 
+
 /** System queue stuff. Timed events like dbcks and purges are handled
  *  through this system. */
- 
+
 struct squeue {
-   sq_func fun;
-   void *data;
+  sq_func fun;
+  void *data;
   time_t when;
   char *event;
   struct squeue *next;
@@ -448,7 +450,8 @@ struct squeue *sq_head = NULL;
  *  \param ev Softcode event to trigger at the same time.
  */
 void
-sq_register(time_t w, sq_func f, void *d, const char *ev) {
+sq_register(time_t w, sq_func f, void *d, const char *ev)
+{
   struct squeue *sq;
 
   sq = mush_malloc(sizeof *sq, "squeue.node");
@@ -461,7 +464,7 @@ sq_register(time_t w, sq_func f, void *d, const char *ev) {
   else
     sq->event = NULL;
   sq->next = NULL;
-  
+
   if (!sq_head)
     sq_head = sq;
   else if (difftime(w, sq_head->when) <= 0) {
@@ -469,13 +472,11 @@ sq_register(time_t w, sq_func f, void *d, const char *ev) {
     sq_head = sq;
   } else {
     struct squeue *c, *prev = NULL;
-    for (prev = sq_head, c = sq_head->next;
-	 c;
-	 prev = c, c = c->next) {      
+    for (prev = sq_head, c = sq_head->next; c; prev = c, c = c->next) {
       if (difftime(w, c->when) <= 0) {
-	sq->next = c;
-	prev->next = sq;
-	return;	
+        sq->next = c;
+        prev->next = sq;
+        return;
       }
     }
     prev->next = sq;
@@ -512,7 +513,7 @@ sq_loop_fun(void *arg)
   res = loop->fun(loop->data);
   sq_register_in(loop->secs, sq_loop_fun, arg, loop->event);
 
-  return res; 
+  return res;
 }
 
 /** Register a callback function to run every N seconds.
@@ -530,7 +531,7 @@ sq_register_loop(int n, sq_func f, void *d, const char *ev)
   loop->fun = f;
   loop->data = d;
   if (ev)
-    loop->event = mush_strdup(strupper(ev), "squeue.event");    
+    loop->event = mush_strdup(strupper(ev), "squeue.event");
   else
     loop->event = NULL;
   loop->secs = n;
@@ -550,11 +551,11 @@ sq_run_one(void)
   time(&now);
 
   if (sq_head) {
-    if (difftime(sq_head->when, now) <= 0) {      
+    if (difftime(sq_head->when, now) <= 0) {
       bool r = sq_head->fun(sq_head->data);
       if (r && sq_head->event) {
-	queue_event(SYSEVENT, sq_head->event, "%s", "");
-	mush_free(sq_head->event, "squeue.event");
+        queue_event(SYSEVENT, sq_head->event, "%s", "");
+        mush_free(sq_head->event, "squeue.event");
       }
       n = sq_head->next;
       mush_free(sq_head, "squeue.node");

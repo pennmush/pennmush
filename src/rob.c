@@ -103,8 +103,7 @@ do_kill(dbref player, const char *what, int cost, int slay)
       return;
     }
   }
-  if (((get_random32(0, 100) < (uint32_t) cost) || slay) &&
-      !Wizard(victim)) {
+  if (((get_random32(0, 100) < (uint32_t) cost) || slay) && !Wizard(victim)) {
     /* you killed him */
     tp = tbuf1;
     safe_format(tbuf1, &tp, T("You killed %s!"), Name(victim));
@@ -227,7 +226,7 @@ do_buy(dbref player, char *item, char *from, int price)
   affordable = 1;
   do {
     if (vendor == player)
-      continue; /* Can't buy from yourself. Only occurs with no "from <vendor>" arg */
+      continue;                 /* Can't buy from yourself. Only occurs with no "from <vendor>" arg */
     a = atr_get(vendor, "PRICELIST");
     if (!a)
       continue;
@@ -328,7 +327,8 @@ do_buy(dbref player, char *item, char *from, int price)
   if (failvendor != NOTHING) {
     /* Found someone selling, but they wouldn't take our money */
     fail_lock(player, failvendor, Pay_Lock,
-            tprintf(T("%s doesn't want your money."), Name(failvendor)), NOTHING);
+              tprintf(T("%s doesn't want your money."), Name(failvendor)),
+              NOTHING);
   } else if (price >= 0) {
     /* Noone we wanted to buy from selling for the right amount */
     if (!from) {
@@ -525,7 +525,8 @@ do_give(dbref player, char *recipient, char *amnt, int silent)
       }
       if (!eval_lock(player, who, Pay_Lock)) {
         giveto(player, amount);
-        fail_lock(player, who, Pay_Lock, tprintf(T("%s refuses your money."), Name(who)), NOTHING);
+        fail_lock(player, who, Pay_Lock,
+                  tprintf(T("%s refuses your money."), Name(who)), NOTHING);
       }
       if ((amount - cost) > 0) {
         notify_format(player, T("You get %d in change."), amount - cost);
@@ -544,7 +545,8 @@ do_give(dbref player, char *recipient, char *amnt, int silent)
     } else {
       /* give pennies to a player with no @cost, or "give" a negative amount to a player */
       if (!Wizard(player) && !eval_lock(player, who, Pay_Lock)) {
-        fail_lock(player, who, Pay_Lock, tprintf(T("%s refuses your money."), Name(who)), NOTHING);
+        fail_lock(player, who, Pay_Lock,
+                  tprintf(T("%s refuses your money."), Name(who)), NOTHING);
         giveto(player, amount);
         return;
       }

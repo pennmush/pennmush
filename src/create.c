@@ -113,7 +113,9 @@ do_real_open(dbref player, const char *direction, const char *linkto,
   if (!*direction) {
     notify(player, T("Open where?"));
     return NOTHING;
-  } else if (ok_object_name((char *) direction, player, NOTHING, TYPE_EXIT, &name, &alias) < 1) {
+  } else
+    if (ok_object_name
+        ((char *) direction, player, NOTHING, TYPE_EXIT, &name, &alias) < 1) {
     notify(player, T("That's a strange name for an exit!"));
     if (name)
       mush_free(name, "name.newname");

@@ -122,7 +122,7 @@ typedef void (*command_func) (COMMAND_INFO *, dbref, dbref, switch_mask,
 struct hook_data {
   dbref obj;            /**< Object where the hook attribute is stored. */
   char *attrname;       /**< Attribute name of the hook attribute */
-  int   inplace;        /**< Valid only for override: Run hook in place. */
+  int inplace;          /**< Valid only for override: Run hook in place. */
 };
 
 /** A command.

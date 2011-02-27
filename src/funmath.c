@@ -943,33 +943,33 @@ FUNCTION(fun_round)
   if (nargs == 3)
     pad = parse_boolean(args[2]);
 
-  if (places > (unsigned int)FLOAT_PRECISION)
+  if (places > (unsigned int) FLOAT_PRECISION)
     places = FLOAT_PRECISION;
 
 #ifdef HAVE_ROUND
-  if (places == 0) 
+  if (places == 0)
     safe_number(round(n), buff, bp);
   else
 #endif
-    {
-      sbp = *bp;
-      safe_format(buff, bp, "%.*f", places, n);
-      *(*bp) = '\0';
-      
-      decimal = strchr(sbp, '.');
-      if (!pad && decimal) {
-	int n, trailing;
-	decimal += 1;
-	trailing = strlen(decimal);
-	for (n = 0; n < trailing; n++, decimal++) {
-	  size_t len = strspn(decimal, "0");
-	  if (*(decimal + len) == '\0') {
-	    *bp = decimal;
-	    break;
-	  }
-	}
+  {
+    sbp = *bp;
+    safe_format(buff, bp, "%.*f", places, n);
+    *(*bp) = '\0';
+
+    decimal = strchr(sbp, '.');
+    if (!pad && decimal) {
+      int n, trailing;
+      decimal += 1;
+      trailing = strlen(decimal);
+      for (n = 0; n < trailing; n++, decimal++) {
+        size_t len = strspn(decimal, "0");
+        if (*(decimal + len) == '\0') {
+          *bp = decimal;
+          break;
+        }
       }
     }
+  }
 }
 
 /* ARGSUSED */

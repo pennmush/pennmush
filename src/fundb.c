@@ -1476,7 +1476,7 @@ FUNCTION(fun_lockfilter)
   s = trim_space_sep(args[1], delim);
   while ((r = split_token(&s, delim)) != NULL) {
     victim = noisy_match_result(executor, r, NOTYPE, MAT_ABSOLUTE);
-    if (victim != NOTHING  && Can_Locate(executor, victim)) {
+    if (victim != NOTHING && Can_Locate(executor, victim)) {
       if (eval_boolexp(victim, elock, executor)) {
         if (first) {
           first = 0;
@@ -2092,8 +2092,11 @@ FUNCTION(fun_locate)
   if (!(match_flags & ~(MAT_CHECK_KEYS | MAT_TYPE | MAT_EXACT)))
     match_flags |= (MAT_EVERYTHING | MAT_CONTAINER | MAT_CARRIED_EXIT);
 
-  if ((match_flags & (MAT_NEIGHBOR | MAT_CONTAINER | MAT_POSSESSION | MAT_HERE | MAT_EXIT | MAT_CARRIED_EXIT))) {
-    if (!nearby(executor, looker) && !See_All(executor) && !controls(executor, looker)) {
+  if ((match_flags &
+       (MAT_NEIGHBOR | MAT_CONTAINER | MAT_POSSESSION | MAT_HERE | MAT_EXIT |
+        MAT_CARRIED_EXIT))) {
+    if (!nearby(executor, looker) && !See_All(executor)
+        && !controls(executor, looker)) {
       safe_str("#-1", buff, bp);
       return;
     }

@@ -64,7 +64,7 @@ typedef struct bque {
   char *rval[NUMQ];             /**< environment, from setq() */
   char *comm;                   /**< command to be executed */
   uint32_t pid;                 /**< Process id of this entry */
-  int  quetype;                 /**< Type of the queue entry. */
+  int quetype;                  /**< Type of the queue entry. */
   PE_Info *pe_info;             /**< pe_info for evaluating queue, or NULL */
 } BQUE;
 
@@ -344,20 +344,23 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   }
 
   /* We have an event to call. Yay! */
-  for (i = 0; i < 10; i++) wenv[i] = NULL;
+  for (i = 0; i < 10; i++)
+    wenv[i] = NULL;
 
   /* Prep myfmt: Replace all commas with delim chars. */
   snprintf(myfmt, BUFFER_LEN, "%s", fmt);
   s = myfmt;
 
-  if (*s) argcount++; /* At least one arg. */
+  if (*s)
+    argcount++;                 /* At least one arg. */
   while ((s = strchr(s, ',')) != NULL) {
     *(s++) = DELIM_CHAR;
     argcount++;
   }
 
   /* Maximum number of args available is 10: %0-%9 */
-  if (argcount > 10) argcount = 10;
+  if (argcount > 10)
+    argcount = 10;
 
   if (argcount > 0) {
     /* Build the arguments. */
@@ -368,7 +371,7 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
     /* Danger! Danger, Will Robinson! */
     vsprintf(buff, myfmt, args);
 #endif
-    buff[(BUFFER_LEN*4) - 1] = '\0';
+    buff[(BUFFER_LEN * 4) - 1] = '\0';
     va_end(args);
 
     len = strlen(buff);
@@ -454,8 +457,7 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
  */
 void
 insert_que(dbref player, const char *command, dbref cause, PE_Info *pe_info,
-           char **env, char **rval,
-           int quetype)
+           char **env, char **rval, int quetype)
 {
   int a;
   BQUE *tmp;
@@ -540,7 +542,8 @@ insert_que(dbref player, const char *command, dbref cause, PE_Info *pe_info,
  * \param pe_info the pe_info to use for evaluating the queue, or NULL
  */
 void
-parse_que(dbref player, const char *command, dbref cause, PE_Info *pe_info) {
+parse_que(dbref player, const char *command, dbref cause, PE_Info *pe_info)
+{
   if (IsPlayer(cause)) {
     insert_que(player, command, cause, pe_info,
                global_eval_context.wnxt, global_eval_context.rnxt,
@@ -554,18 +557,16 @@ parse_que(dbref player, const char *command, dbref cause, PE_Info *pe_info) {
 
 void
 inplace_queue_actionlist(dbref executor, dbref cause, const char *command,
-    char **args)
+                         char **args)
 {
   insert_que(executor, command, cause, NULL,
              (args != NULL) ? args : global_eval_context.wnxt,
-             global_eval_context.rnxt,
-             QUEUE_INPLACE);
+             global_eval_context.rnxt, QUEUE_INPLACE);
 }
 
 int
 queue_include_attribute(dbref thing, const char *atrname,
-                        dbref executor, dbref cause,
-                        char **args)
+                        dbref executor, dbref cause, char **args)
 {
   ATTR *a;
   char *start, *command;
@@ -594,8 +595,7 @@ queue_include_attribute(dbref thing, const char *atrname,
 
   insert_que(executor, command, cause, NULL,
              args ? args : global_eval_context.wnxt,
-             global_eval_context.rnxt,
-             QUEUE_INPLACE);
+             global_eval_context.rnxt, QUEUE_INPLACE);
 
   free(start);
   return 1;

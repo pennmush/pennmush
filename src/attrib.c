@@ -1419,8 +1419,7 @@ use_attr(UsedAttr **prev, char const *name, uint32_t no_prog)
 int
 atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
                int just_match, int check_locks,
-               char *atrname, char **abp, dbref *errobj,
-               int inplace)
+               char *atrname, char **abp, dbref *errobj, int inplace)
 {
   uint32_t flag_mask;
   ATTR *ptr;
@@ -1657,8 +1656,8 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
           match_found = 1;
           match++;
           if (!just_match)
-            wild_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args, 10, match_space,
-                              match_space_len);
+            wild_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args, 10,
+                              match_space, match_space_len);
         }
       }
       if (match_found) {
@@ -1733,7 +1732,7 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
   char match_space[BUFFER_LEN * 2];
   char *args[10];
   char *rnull[NUMQ];
-  int  i;
+  int i;
   ssize_t match_space_len = BUFFER_LEN * 2;
 
   /* check for lots of easy ways out */

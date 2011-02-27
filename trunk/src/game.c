@@ -327,8 +327,7 @@ dump_database_internal(void)
        compression slave. Boo! */
     do_rawlog(LT_ERR, "ERROR! Database save failed.");
     queue_event(SYSEVENT, "DUMP`ERROR", "%s,%d,PERROR %s",
-                T("GAME: ERROR! Database save failed!"),
-                0, strerror(errno));
+                T("GAME: ERROR! Database save failed!"), 0, strerror(errno));
     flag_broadcast("WIZARD ROYALTY", 0,
                    T("GAME: ERROR! Database save failed!"));
     if (f)
@@ -1117,7 +1116,7 @@ process_command(dbref player, char *command, dbref cause, int from_port)
            "Command attempted by %s(#%d) in invalid location #%d.",
            Name(player), player, Location(player));
     if (Mobile(player)) {
-      moveto(player, PLAYER_START, SYSEVENT, "dbck"); /* move it someplace valid */
+      moveto(player, PLAYER_START, SYSEVENT, "dbck");   /* move it someplace valid */
     }
   }
   orator = player;

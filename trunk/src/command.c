@@ -162,7 +162,8 @@ COMLIST commands[] = {
    cmd_flag,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
 
-  {"@FORCE", "NOEVAL INPLACE", cmd_force, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED,
+  {"@FORCE", "NOEVAL INPLACE", cmd_force,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED,
    0, 0},
   {"@FUNCTION",
    "ALIAS BUILTIN CLONE DELETE ENABLE DISABLE PRESERVE RESTORE RESTRICT",
@@ -230,7 +231,8 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@NSREMIT", "LIST NOEVAL NOISY SILENT SPOOF", cmd_remit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
-  {"@NSZEMIT", "NOISY SILENT", cmd_zemit, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED,
+  {"@NSZEMIT", "NOISY SILENT", cmd_zemit,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED,
    0, 0},
   {"@NUKE", NULL, cmd_nuke, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
 
@@ -313,7 +315,8 @@ COMLIST commands[] = {
   {"@WIPE", NULL, cmd_wipe, CMD_T_ANY, 0, 0},
   {"@WIZWALL", "NOEVAL EMIT", cmd_wizwall, CMD_T_ANY, "WIZARD", 0},
   {"@WIZMOTD", NULL, cmd_wizmotd, CMD_T_ANY, "WIZARD", 0},
-  {"@ZEMIT", "NOISY SILENT", cmd_zemit, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED,
+  {"@ZEMIT", "NOISY SILENT", cmd_zemit,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED,
    0, 0},
 
   {"BUY", NULL, cmd_buy, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
@@ -2255,7 +2258,8 @@ cnf_hook_command(char *command, char *opts)
   }
 
   /* Account for #dbref */
-  if (*one == '#') one++;
+  if (*one == '#')
+    one++;
 
   if (!is_strict_integer(one))
     return 0;

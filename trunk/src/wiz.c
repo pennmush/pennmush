@@ -92,7 +92,9 @@ static int raw_search(dbref player, const char *owner, int nargs,
 static int fill_search_spec(dbref player, const char *owner, int nargs,
                             const char **args, struct search_spec *spec);
 static void
-sitelock_player(dbref player, const char *name, dbref who, uint32_t can, uint32_t cant);
+
+sitelock_player(dbref player, const char *name, dbref who, uint32_t can,
+                uint32_t cant);
 
 
 #ifdef INFO_SLAVE
@@ -1461,14 +1463,17 @@ FUNCTION(fun_quota)
 }
 
 static void
-sitelock_player(dbref player, const char *name, dbref who, uint32_t can, uint32_t cant) {
+sitelock_player(dbref player, const char *name, dbref who, uint32_t can,
+                uint32_t cant)
+{
   dbref target;
   ATTR *a;
   int attrcount = 0;
 
 
   if ((target = noisy_match_result(player, name, TYPE_PLAYER,
-                            MAT_ABSOLUTE | MAT_PMATCH | MAT_TYPE)) == NOTHING)
+                                   MAT_ABSOLUTE | MAT_PMATCH | MAT_TYPE)) ==
+      NOTHING)
     return;
 
   a = atr_get(target, "LASTIP");
@@ -1483,9 +1488,11 @@ sitelock_player(dbref player, const char *name, dbref who, uint32_t can, uint32_
   }
   if (attrcount) {
     write_access_file();
-    notify_format(player, T("Sitelocked %d known addresses for %s"), attrcount, Name(target));
+    notify_format(player, T("Sitelocked %d known addresses for %s"), attrcount,
+                  Name(target));
   } else {
-    notify_format(player, T("Unable to sitelock %s: No known ip/host to ban."), Name(target));
+    notify_format(player, T("Unable to sitelock %s: No known ip/host to ban."),
+                  Name(target));
   }
 
 }
@@ -1584,8 +1591,8 @@ do_sitelock(dbref player, const char *site, const char *opts, const char *who,
       break;
     case SITELOCK_BAN:
       if (psw) {
-            sitelock_player(player, site, AMBIGUOUS, 0, ACS_DEFAULT);
-            return;
+        sitelock_player(player, site, AMBIGUOUS, 0, ACS_DEFAULT);
+        return;
       }
       if (add_access_sitelock(player, site, AMBIGUOUS, 0, ACS_DEFAULT)) {
         write_access_file();
@@ -1614,7 +1621,8 @@ do_sitelock(dbref player, const char *site, const char *opts, const char *who,
           ATTR *a;
           dbref target;
           if ((target = noisy_match_result(player, site, TYPE_PLAYER,
-                                    MAT_ABSOLUTE | MAT_PMATCH | MAT_TYPE)) == NOTHING)
+                                           MAT_ABSOLUTE | MAT_PMATCH |
+                                           MAT_TYPE)) == NOTHING)
             return;
           if ((a = atr_get(target, "LASTIP")))
             n += remove_access_sitelock(atr_value(a));
@@ -1856,7 +1864,8 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
 
   /* set limits on who we search */
   if (!owner || !*owner)
-    spec->owner = (See_All(player) || Search_All(player)) ? ANY_OWNER : Owner(player);
+    spec->owner = (See_All(player)
+                   || Search_All(player)) ? ANY_OWNER : Owner(player);
   else if (strcasecmp(owner, "all") == 0)
     spec->owner = ANY_OWNER;    /* Will only show visual objects for mortals */
   else if (strcasecmp(owner, "me") == 0)

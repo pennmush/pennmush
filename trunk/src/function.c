@@ -1371,7 +1371,8 @@ cnf_add_function(char *name, char *opts)
   *attrname++ = '\0';
   upcasestr(attrname);
   /* Account for #dbref/foo */
-  if (*one == '#') one++;
+  if (*one == '#')
+    one++;
   /* Don't care if the attr exists, only if it /could/ exist */
   if (!is_integer(one) || !good_atr_name(attrname))
     return 0;

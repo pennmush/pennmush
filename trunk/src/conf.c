@@ -261,7 +261,8 @@ PENNCONF conftable[] = {
   ,
   {"only_ascii_in_names", cf_bool, &options.ascii_names, 2, 0, "cosmetic"}
   ,
-  {"float_precision", cf_int, &options.float_precision, DBL_DIG - 1, 0, "cosmetic"}
+  {"float_precision", cf_int, &options.float_precision, DBL_DIG - 1, 0,
+   "cosmetic"}
   ,
   {"comma_exit_list", cf_bool, &options.comma_exit_list, 2, 0, "cosmetic"}
   ,
@@ -1526,7 +1527,7 @@ config_file_startup(const char *conf, int restrictions)
      * digit, so as no to be confused with dbrefs.
      * followed by a number, treat it as a dbref instead of a
      * comment. */
-    for (s = q; *s && ((*s != '#') || isdigit((unsigned char) *(s+1))); s++);
+    for (s = q; *s && ((*s != '#') || isdigit((unsigned char) *(s + 1))); s++) ;
 
     if (*s)                     /* if found nuke it */
       *s = '\0';

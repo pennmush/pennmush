@@ -153,7 +153,8 @@ qparse_dbref(const char *s)
  * \return The objid string.
  */
 const char *
-unparse_objid(dbref thing) {
+unparse_objid(dbref thing)
+{
   static char obuff[BUFFER_LEN];
   static char *obp = obuff;
   char *retval;
@@ -173,6 +174,7 @@ unparse_objid(dbref thing) {
   *(obp++) = '\0';
   return retval;
 }
+
 /** Given a string, parse out an object id or dbref.
  * \param str string to parse.
  * \return dbref of object referenced by string, or NOTHING if not a valid
@@ -801,7 +803,8 @@ process_expression(char *buff, char **bp, char const **str,
     pe_info->debugging = -1;
 
   if (eflags != PE_NOTHING) {
-    debugging = ((Debug(executor) && pe_info->debugging != -1) || (pe_info->debugging == 1))
+    debugging = ((Debug(executor) && pe_info->debugging != -1)
+                 || (pe_info->debugging == 1))
       && (Connected(Owner(executor)) || atr_get(executor, "DEBUGFORWARDLIST"));
     if (debugging) {
       int j;
@@ -1096,9 +1099,9 @@ process_expression(char *buff, char **bp, char const **str,
           (*str)++;
           if (pe_info->iter_nesting >= 0 && pe_info->local_iter_nesting >= 0) {
             if (nextc == 'l') {
-              safe_str(pe_info->
-                       iter_itext[pe_info->iter_nesting -
-                                  pe_info->local_iter_nesting], buff, bp);
+              safe_str(pe_info->iter_itext[pe_info->iter_nesting -
+                                           pe_info->local_iter_nesting], buff,
+                       bp);
               break;
             }
             if (!isdigit((unsigned char) nextc)) {
@@ -1136,9 +1139,8 @@ process_expression(char *buff, char **bp, char const **str,
                 (pe_info->local_switch_nesting - inum_this) < 0) {
               safe_str(T(e_argrange), buff, bp);
             } else {
-              safe_str(pe_info->
-                       switch_text[pe_info->switch_nesting - inum_this], buff,
-                       bp);
+              safe_str(pe_info->switch_text
+                       [pe_info->switch_nesting - inum_this], buff, bp);
             }
           } else {
             safe_str(T(e_argrange), buff, bp);

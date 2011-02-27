@@ -196,7 +196,7 @@ extern void do_destroy(dbref player, char *name, int confirm);
 void init_timer(void);
 void signal_cpu_limit(int signo);
 
-typedef bool (*sq_func)(void *);
+typedef bool(*sq_func) (void *);
 void sq_register(time_t w, sq_func f, void *d, const char *ev);
 void sq_register_in(int n, sq_func f, void *d, const char *ev);
 void sq_register_loop(int n, sq_func f, void *d, const char *ev);

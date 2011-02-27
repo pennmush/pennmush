@@ -18,7 +18,7 @@
 #define MAT_PLAYER           0x000080
 #define MAT_NEIGHBOR         0x000100
 #define MAT_POSSESSION       0x000200
-#define MAT_CONTENTS         0x000400 /* Only match objects which are in the looker's contents */
+#define MAT_CONTENTS         0x000400   /* Only match objects which are in the looker's contents */
 #define MAT_EXIT             0x000800
 #define MAT_PMATCH           0x001000
   /* special things to match */
@@ -30,8 +30,8 @@
   /* types of match results - used internally */
 #define MAT_NOISY            0x040000
 #define MAT_LAST             0x080000
-#define MAT_TYPE             0x100000      /* don't accept objects of other types */
-#define MAT_EXACT            0x200000      /* don't do partial name matches */
+#define MAT_TYPE             0x100000   /* don't accept objects of other types */
+#define MAT_EXACT            0x200000   /* don't do partial name matches */
 
   /* groups of things to match */
 #define MAT_EVERYTHING   (MAT_ME|MAT_HERE|MAT_ABSOLUTE|MAT_PLAYER| \
@@ -55,11 +55,13 @@
 extern dbref
  match_result(dbref who, const char *xname, int type, long flags);
 extern dbref
- match_result_relative(dbref who, dbref where, const char *xname, int type, long flags);
-extern dbref noisy_match_result
-  (const dbref who, const char *name, const int type, const long flags);
-extern dbref last_match_result
-  (const dbref who, const char *name, const int type, const long flags);
+
+match_result_relative(dbref who, dbref where, const char *xname, int type,
+                      long flags);
+extern dbref noisy_match_result(const dbref who, const char *name,
+                                const int type, const long flags);
+extern dbref last_match_result(const dbref who, const char *name,
+                               const int type, const long flags);
 extern dbref match_controlled(dbref player, const char *name);
 extern int match_aliases(dbref match, const char *name);
 

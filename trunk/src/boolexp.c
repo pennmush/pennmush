@@ -515,7 +515,7 @@ eval_boolexp(dbref player /* The player trying to pass */ ,
       case OP_TNAME:
         boolexp_recursion++;
         r = quick_wild((char *) bytecode + arg, Name(player)) ||
-            match_aliases(player, (char *) bytecode + arg);
+          match_aliases(player, (char *) bytecode + arg);
         boolexp_recursion--;
         break;
       case OP_TFLAG:

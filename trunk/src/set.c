@@ -78,46 +78,49 @@ do_name(dbref player, const char *name, char *newname_)
     notify(player, T("Give it what new name?"));
     return;
   }
-  switch Typeof(thing) {
-    case TYPE_PLAYER:
-      switch (ok_object_name(newname_, player, thing, TYPE_PLAYER, &newname, &alias)) {
-        case 0:
-          notify(player, T("You can't give a player that name."));
-          return;
-        case OPAE_TOOMANY:
-          notify(player, T("Too many aliases."));
-          mush_free(newname, "name.newname");
-          return;
-        case OPAE_INVALID:
-          notify_format(player, T("'%s' is not a valid alias."), alias);
-          mush_free(newname, "name.newname");
-          mush_free(alias, "name.newname");
-          return;
-      }
-      break;
-    case TYPE_EXIT:
-      if (ok_object_name(newname_, player, thing, TYPE_EXIT, &newname, &alias) < 1) {
-        notify(player, T("That is not a reasonable name."));
-        if (newname)
-          mush_free(newname, "name.newname");
-        if (alias)
-          mush_free(alias, "name.newname");
-        return;
-      }
-      break;
-    case TYPE_THING:
-    case TYPE_ROOM:
-      if (!ok_name(newname_, 0)) {
-        notify(player, T("That is not a reasonable name."));
-        return;
-      }
-      newname = mush_strdup(trim_space_sep(newname_, ' '), "name.newname");
-      break;
-    default:
-      /* Should never occur */
-      notify(player, T("I don't see that here."));
+  switch Typeof
+    (thing) {
+  case TYPE_PLAYER:
+    switch (ok_object_name
+            (newname_, player, thing, TYPE_PLAYER, &newname, &alias)) {
+    case 0:
+      notify(player, T("You can't give a player that name."));
       return;
-  }
+    case OPAE_TOOMANY:
+      notify(player, T("Too many aliases."));
+      mush_free(newname, "name.newname");
+      return;
+    case OPAE_INVALID:
+      notify_format(player, T("'%s' is not a valid alias."), alias);
+      mush_free(newname, "name.newname");
+      mush_free(alias, "name.newname");
+      return;
+    }
+    break;
+  case TYPE_EXIT:
+    if (ok_object_name(newname_, player, thing, TYPE_EXIT, &newname, &alias) <
+        1) {
+      notify(player, T("That is not a reasonable name."));
+      if (newname)
+        mush_free(newname, "name.newname");
+      if (alias)
+        mush_free(alias, "name.newname");
+      return;
+    }
+    break;
+  case TYPE_THING:
+  case TYPE_ROOM:
+    if (!ok_name(newname_, 0)) {
+      notify(player, T("That is not a reasonable name."));
+      return;
+    }
+    newname = mush_strdup(trim_space_sep(newname_, ' '), "name.newname");
+    break;
+  default:
+    /* Should never occur */
+    notify(player, T("I don't see that here."));
+    return;
+    }
 
   /* Actually change it */
   myenv[0] = (char *) mush_malloc(BUFFER_LEN, "string");
@@ -407,7 +410,8 @@ do_chzone(dbref player, char const *name, char const *newobj, bool noisy,
         (has_lock && eval_lock(player, zone, Chzone_Lock)))) {
     if (noisy) {
       if (has_lock) {
-        fail_lock(player, zone, Chzone_Lock, T("You cannot move that object to that zone."), NOTHING);
+        fail_lock(player, zone, Chzone_Lock,
+                  T("You cannot move that object to that zone."), NOTHING);
       } else {
         notify(player, T("You cannot move that object to that zone."));
       }
@@ -1048,8 +1052,7 @@ do_include(dbref player, char *object, char **argv)
   }
   /* include modifies the stack, but only if arguments are given */
   if (rhs_present) {
-    if (!queue_include_attribute(thing, upcasestr(s), player,
-                                 player, argv + 1)) {
+    if (!queue_include_attribute(thing, upcasestr(s), player, player, argv + 1)) {
       notify(player, T("No such attribute."));
     }
   } else {

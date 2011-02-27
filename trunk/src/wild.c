@@ -105,7 +105,8 @@ atr_wild(const char *restrict tstr, const char *restrict dstr)
   return real_atr_wild(tstr, dstr, &invokes, '`');
 }
 
-bool help_wild(const char *restrict tstr, const char *restrict dstr)
+bool
+help_wild(const char *restrict tstr, const char *restrict dstr)
 {
   int invokes = 10000;
   return real_atr_wild(tstr, dstr, &invokes, ' ');

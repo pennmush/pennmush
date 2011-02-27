@@ -1729,7 +1729,7 @@ align_one_line(char *buff, char **bp, int ncols,
        * width and set the current column width to 0 (which we can
        * teach it to skip). */
       /* If the next column is marked NOFILL, we inherit that. */
-      if (calign[i+1] & AL_NOFILL) {
+      if (calign[i + 1] & AL_NOFILL) {
         calign[i] |= AL_NOFILL;
       }
       cols[i] += cols[i + 1] + fslen;
@@ -1952,7 +1952,7 @@ FUNCTION(fun_align)
       i += *ptr - '0';
     }
     while (*ptr && !isspace((unsigned char) *ptr)) {
-      switch(*ptr) {
+      switch (*ptr) {
       case '.':
         calign[ncols] |= AL_REPEAT;
         break;

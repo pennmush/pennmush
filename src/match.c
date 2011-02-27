@@ -70,7 +70,8 @@ static dbref match_player(dbref who, const char *name, int partial);
 extern int check_alias(const char *command, const char *list);  /* game.c */
 static dbref choose_thing(const dbref who, const int preferred_type, long flags,
                           dbref thing1, dbref thing2);
-static dbref match_result_internal(dbref who, dbref where, const char *xname, int type, long flags);
+static dbref match_result_internal(dbref who, dbref where, const char *xname,
+                                   int type, long flags);
 
 
 dbref
@@ -337,7 +338,8 @@ match_result(dbref who, const char *xname, int type, long flags)
 }
 
 dbref
-match_result_relative(dbref who, dbref where, const char *xname, int type, long flags)
+match_result_relative(dbref who, dbref where, const char *xname, int type,
+                      long flags)
 {
   return match_result_internal(who, where, xname, type, flags);
 }
@@ -345,7 +347,8 @@ match_result_relative(dbref who, dbref where, const char *xname, int type, long 
 /* The object 'who' is trying to find something called 'xname' relative to the object 'where'.
  * In most cases, 'who' and 'where' will be the same object. */
 static dbref
-match_result_internal(dbref who, dbref where, const char *xname, int type, long flags)
+match_result_internal(dbref who, dbref where, const char *xname, int type,
+                      long flags)
 {
   dbref match;                  /* object we're currently checking for a match */
   dbref loc;                    /* location of 'where' */
@@ -368,7 +371,8 @@ match_result_internal(dbref who, dbref where, const char *xname, int type, long 
 
   loc = (goodwhere ? (IsRoom(where) ? where : Location(where)) : NOTHING);
 
-  if (((flags & MAT_NEAR) && !goodwhere) || ((flags & MAT_CONTENTS) && !goodwhere)) {
+  if (((flags & MAT_NEAR) && !goodwhere)
+      || ((flags & MAT_CONTENTS) && !goodwhere)) {
     /* It can't be nearby/in where's contents if where is invalid */
     if ((flags & MAT_NOISY) && GoodObject(who)) {
       notify(who, T("I can't see that here."));
@@ -378,13 +382,15 @@ match_result_internal(dbref who, dbref where, const char *xname, int type, long 
 
   /* match "me" */
   match = where;
-  if (goodwhere && MATCH_TYPE && (flags & MAT_ME) && !(flags & MAT_CONTENTS) && !strcasecmp(xname, "me")) {
+  if (goodwhere && MATCH_TYPE && (flags & MAT_ME) && !(flags & MAT_CONTENTS)
+      && !strcasecmp(xname, "me")) {
     return match;
   }
 
   /* match "here" */
   match = (goodwhere ? (IsRoom(where) ? NOTHING : Location(where)) : NOTHING);
-  if ((flags & MAT_HERE) && !(flags & MAT_CONTENTS) && !strcasecmp(xname, "here") && GoodObject(match)
+  if ((flags & MAT_HERE) && !(flags & MAT_CONTENTS)
+      && !strcasecmp(xname, "here") && GoodObject(match)
       && MATCH_TYPE) {
     if (MATCH_CONTROLS) {
       return match;
@@ -416,7 +422,8 @@ match_result_internal(dbref who, dbref where, const char *xname, int type, long 
 
   /* dbref match */
   match = abs;
-  if (RealGoodObject(match) && (flags & MAT_ABSOLUTE) && MATCH_TYPE && MATCH_CONTENTS) {
+  if (RealGoodObject(match) && (flags & MAT_ABSOLUTE) && MATCH_TYPE
+      && MATCH_CONTENTS) {
     if (!(flags & MAT_NEAR) || Long_Fingers(who)
         || (nearby(who, match) || controls(who, match))) {
       /* valid dbref match */
@@ -443,9 +450,11 @@ match_result_internal(dbref who, dbref where, const char *xname, int type, long 
 #ifdef DEBUG_OBJECT_MATCHING
     notify_format(debugMatchTo, "Running for #%d in #%d", where, loc);
 #endif
-    if (goodwhere && ((flags & MAT_POSSESSION) || (flags & MAT_REMOTE_CONTENTS))) {
+    if (goodwhere
+        && ((flags & MAT_POSSESSION) || (flags & MAT_REMOTE_CONTENTS))) {
 #ifdef DEBUG_OBJECT_MATCHING
-      notify_format(debugMatchTo, "STARTING POSSESSION with #%d", Contents(where));
+      notify_format(debugMatchTo, "STARTING POSSESSION with #%d",
+                    Contents(where));
 #endif
       MATCH_LIST(Contents(where));
     }
@@ -460,7 +469,8 @@ match_result_internal(dbref who, dbref where, const char *xname, int type, long 
 #ifdef DEBUG_OBJECT_MATCHING
         notify_format(debugMatchTo, "STARTING EXIT");
 #endif
-        if ((flags & MAT_REMOTES) && !(flags & (MAT_NEAR | MAT_CONTENTS)) && GoodObject(Zone(loc)) && IsRoom(Zone(loc))) {
+        if ((flags & MAT_REMOTES) && !(flags & (MAT_NEAR | MAT_CONTENTS))
+            && GoodObject(Zone(loc)) && IsRoom(Zone(loc))) {
 #ifdef DEBUG_OBJECT_MATCHING
           notify(debugMatchTo, "STARTING EXIT-REMOTE");
 #endif

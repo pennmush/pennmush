@@ -1909,7 +1909,7 @@ do_chan_user_flags(dbref player, char *name, const char *isyn, int flag,
 
   if (!IsPlayer(player) && flag == CU_COMBINE) {
     notify(player, T("Only players can use that option."));
-	   return;
+    return;
   }
 
   if (!name || !*name) {
@@ -2033,7 +2033,8 @@ do_chan_user_flags(dbref player, char *name, const char *isyn, int flag,
         CUtype(u) &= ~CU_COMBINE;
         if (!silent)
           notify_format(player,
-                        T("Connect messages on channel <%s> will no longer be combined with others."),
+                        T
+                        ("Connect messages on channel <%s> will no longer be combined with others."),
                         ChanName(c));
       }
       break;
@@ -2095,7 +2096,7 @@ do_chan_title(dbref player, const char *name, const char *title)
     return;
   }
   WALK_ANSI_STRING(scan, title) {
-  /* Stomp newlines and other weird whitespace */
+    /* Stomp newlines and other weird whitespace */
     if ((isspace((unsigned char) *scan) && (*scan != ' '))
         || (*scan == BEEP_CHAR)) {
       notify(player, T("Invalid character in title."));
@@ -3131,10 +3132,9 @@ chat_player_announce(dbref player, char *msg, int ungag)
     up = onchannel(player, c);
     if (up) {
       if (!Channel_Quiet(c) && (Channel_Admin(c) || Channel_Wizard(c)
-            || (!Chanuser_Hide(up) && !Dark(player)))) {
+                                || (!Chanuser_Hide(up) && !Dark(player)))) {
         channel_send(c, player,
-                     CB_NOCOMBINE | CB_CHECKQUIET | CB_PRESENCE | CB_POSE,
-                     msg);
+                     CB_NOCOMBINE | CB_CHECKQUIET | CB_PRESENCE | CB_POSE, msg);
       }
       if (ungag) {
         CUtype(up) &= ~CU_GAG;
@@ -3174,26 +3174,27 @@ chat_player_announce(dbref player, char *msg, int ungag)
       *bp2 = '\0';
 
       if (shared) {
-	char defmsg[BUFFER_LEN], *dmp;
-	char shrtmsg[BUFFER_LEN], *smp;
-	char *accname;
+        char defmsg[BUFFER_LEN], *dmp;
+        char shrtmsg[BUFFER_LEN], *smp;
+        char *accname;
 
-	dmp = defmsg;
-	smp = shrtmsg;
+        dmp = defmsg;
+        smp = shrtmsg;
 
-	accname = mush_strdup(accented_name(player), "chat_announce.name");
+        accname = mush_strdup(accented_name(player), "chat_announce.name");
 
-	safe_format(shrtmsg, &smp, "%s %s", accname, msg);
-	*smp = '\0';
+        safe_format(shrtmsg, &smp, "%s %s", accname, msg);
+        *smp = '\0';
 
         safe_format(defmsg, &dmp, "<%s> %s %s", buff, accname, msg);
         *dmp = '\0';
 
-  if (!vmessageformat(viewer, "CHATFORMAT", player, na_flags, 6,
-			    "@", buff2, shrtmsg, accname, "", defmsg))
-    notify_anything(player, na_one, &viewer, ns_esnotify, na_flags, defmsg);
+        if (!vmessageformat(viewer, "CHATFORMAT", player, na_flags, 6,
+                            "@", buff2, shrtmsg, accname, "", defmsg))
+          notify_anything(player, na_one, &viewer, ns_esnotify, na_flags,
+                          defmsg);
 
-	mush_free(accname, "chat_announce.name");
+        mush_free(accname, "chat_announce.name");
       }
     }
   }

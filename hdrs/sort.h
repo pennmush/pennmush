@@ -48,13 +48,13 @@ SortType get_list_type_noauto(char *args[], int nargs, int type_pos);
 
 /** Routines to actually deal with (sort) lists. */
 ListTypeInfo *get_list_type_info(SortType sort_type);
-void free_list_type_info(ListTypeInfo *lti);
+void free_list_type_info(ListTypeInfo * lti);
 s_rec *slist_build(dbref player, char *keys[], char *strs[], int n,
-                   ListTypeInfo *lti);
-void slist_qsort(s_rec *sp, int n, ListTypeInfo *lti);
-int  slist_uniq(s_rec *sp, int n, ListTypeInfo *lti);
-void slist_free(s_rec *sp, int n, ListTypeInfo *lti);
-int  slist_comp(s_rec *s1, s_rec *s2, ListTypeInfo *lti);
+                   ListTypeInfo * lti);
+void slist_qsort(s_rec *sp, int n, ListTypeInfo * lti);
+int slist_uniq(s_rec *sp, int n, ListTypeInfo * lti);
+void slist_free(s_rec *sp, int n, ListTypeInfo * lti);
+int slist_comp(s_rec *s1, s_rec *s2, ListTypeInfo * lti);
 
 /** General-use sorting routines, good for most purposes. */
 int gencomp(dbref player, char *a, char *b, SortType sort_type);

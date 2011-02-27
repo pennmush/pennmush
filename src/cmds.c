@@ -262,7 +262,7 @@ COMMAND(cmd_decompile)
     } else {
       strcpy(prefix, "FugueEdit > ");
     }
-    flags |= DEC_TF; /* Don't decompile attr flags */
+    flags |= DEC_TF;            /* Don't decompile attr flags */
   } else {
     strcpy(prefix, arg_right);
   }
@@ -1057,7 +1057,8 @@ COMMAND(cmd_sitelock)
   else if (!arg_left || !*arg_left)
     do_sitelock(player, NULL, NULL, NULL, SITELOCK_LIST, psw);
   else
-    do_sitelock(player, arg_left, args_right[1], args_right[2], SITELOCK_ADD, psw);
+    do_sitelock(player, arg_left, args_right[1], args_right[2], SITELOCK_ADD,
+                psw);
 }
 
 COMMAND(cmd_stats)

@@ -36,7 +36,8 @@ static void do_new_spitfile(dbref player, char *arg1, help_file *help_dat);
 static const char *string_spitfile(help_file *help_dat, char *arg1);
 static help_indx *help_find_entry(help_file *help_dat, const char *the_topic);
 static char **list_matching_entries(const char *pattern,
-                                    help_file *help_dat, int *len, bool nospace);
+                                    help_file *help_dat, int *len,
+                                    bool nospace);
 static void free_entry_list(char **);
 static const char *normalize_entry(help_file *help_dat, const char *arg1);
 
@@ -104,7 +105,7 @@ COMMAND(cmd_helpcmd)
       do_new_spitfile(player, arg_left, h);
     } else {
       char pattern[BUFFER_LEN], *pp, *sp;
-      char ** entries;
+      char **entries;
       int len = 0;
       int type = 0;
       pp = pattern;
@@ -639,7 +640,8 @@ string_spitfile(help_file *help_dat, char *arg1)
 
 /** Return a string with all help entries that match a pattern */
 static char **
-list_matching_entries(const char *pattern, help_file *help_dat, int *len, bool nospace)
+list_matching_entries(const char *pattern, help_file *help_dat, int *len,
+                      bool nospace)
 {
   char **buff;
   int offset;
@@ -676,7 +678,7 @@ list_matching_entries(const char *pattern, help_file *help_dat, int *len, bool n
 
   for (n = 0; n < help_dat->entries; n++)
     if ((nospace ? help_wild(pattern, help_dat->indx[n].topic + offset)
-                 : quick_wild(pattern, help_dat->indx[n].topic + offset))) {
+         : quick_wild(pattern, help_dat->indx[n].topic + offset))) {
       buff[*len] = help_dat->indx[n].topic + offset;
       *len += 1;
     }

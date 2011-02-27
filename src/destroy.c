@@ -630,8 +630,7 @@ free_object(dbref thing)
               "%s,%s,%s,%s,%s,%s",
               unparse_objid(thing), Name(thing), type,
               unparse_objid(Owner(thing)),
-              unparse_objid(Parent(thing)),
-              unparse_objid(Zone(thing)));
+              unparse_objid(Parent(thing)), unparse_objid(Zone(thing)));
 
   change_quota(Owner(thing), QUOTA_COST);
   do_halt(thing, "", thing);

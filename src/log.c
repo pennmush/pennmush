@@ -52,20 +52,20 @@ HASHTAB htab_logfiles;  /**< Hash table of logfile names and descriptors */
 #define NLOGS 7
 
 struct log_stream logs[NLOGS] = {
-  { LT_ERR, "error", ERRLOG, NULL, NULL },
-  { LT_CMD, "command", CMDLOG, NULL, NULL },
-  { LT_WIZ, "wizard", WIZLOG, NULL, NULL },
-  { LT_CONN, "connection", CONNLOG, NULL, NULL },
-  { LT_TRACE, "trace", TRACELOG, NULL, NULL },
-  { LT_CHECK, "checkpoint", CHECKLOG, NULL, NULL },
-  { LT_HUH, "huh", CMDLOG, NULL, NULL },
+  {LT_ERR, "error", ERRLOG, NULL, NULL},
+  {LT_CMD, "command", CMDLOG, NULL, NULL},
+  {LT_WIZ, "wizard", WIZLOG, NULL, NULL},
+  {LT_CONN, "connection", CONNLOG, NULL, NULL},
+  {LT_TRACE, "trace", TRACELOG, NULL, NULL},
+  {LT_CHECK, "checkpoint", CHECKLOG, NULL, NULL},
+  {LT_HUH, "huh", CMDLOG, NULL, NULL},
 };
 
 struct log_stream *
-lookup_log(enum log_type type) 
+lookup_log(enum log_type type)
 {
   int n;
-  for (n = 0; n < NLOGS; n++) 
+  for (n = 0; n < NLOGS; n++)
     if (logs[n].type == type)
       return logs + n;
   return NULL;
@@ -120,7 +120,8 @@ start_log(struct log_stream *log)
     } else {
       log->fp = fopen(log->filename, "a");
       if (log->fp == NULL) {
-        fprintf(stderr, "WARNING: cannot open log %s: %s\n", log->filename, strerror(errno));
+        fprintf(stderr, "WARNING: cannot open log %s: %s\n", log->filename,
+                strerror(errno));
         log->fp = stderr;
       } else {
         hashadd(strupper(log->filename), log->fp, &htab_logfiles);
@@ -138,7 +139,7 @@ void
 start_all_logs(void)
 {
   int n;
-  
+
   for (n = 0; n < NLOGS; n++)
     start_log(logs + n);
 }
@@ -186,7 +187,7 @@ end_log(struct log_stream *log)
     fflush(fp);
     for (n = 0; n < NLOGS; n++)
       if (log->fp == fp)
-	log->fp = NULL;
+        log->fp = NULL;
     fclose(fp);                 /* Implicit lock removal */
     free_bufferq(log->buffer);
     log->fp = NULL;
@@ -237,7 +238,8 @@ do_rawlog(enum log_type logtype, const char *fmt, ...)
   log = lookup_log(logtype);
 
   if (!log->fp) {
-    fprintf(stderr, "Attempt to write to %s log before it was started!\n", log->name);
+    fprintf(stderr, "Attempt to write to %s log before it was started!\n",
+            log->name);
     start_log(log);
   }
 
@@ -347,7 +349,7 @@ do_log_recall(dbref player, enum log_type type, int lines)
     lines = INT_MAX;
 
   log = lookup_log(type);
-  
+
   if (lines != INT_MAX) {
     p = NULL;
     while (iter_bufferq(log->buffer, &p, &dummy_dbref, &dummy_type, &dummy_ts))
@@ -357,9 +359,11 @@ do_log_recall(dbref player, enum log_type type, int lines)
 
   notify(player, T("Begin log recall."));
   p = NULL;
-  while ((line = iter_bufferq(log->buffer, &p, &dummy_dbref, &dummy_type, &dummy_ts))) {
+  while ((line =
+          iter_bufferq(log->buffer, &p, &dummy_dbref, &dummy_type,
+                       &dummy_ts))) {
     if (nlines <= lines)
-      notify(player, line);    
+      notify(player, line);
     nlines -= 1;
   }
   notify(player, T("End log recall."));

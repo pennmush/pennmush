@@ -42,8 +42,7 @@
 
 int forbidden_name(const char *name);
 void do_switch(dbref player, char *expression, char **argv,
-               dbref cause, int first, int notifyme, int regexp,
-               int inplace);
+               dbref cause, int first, int notifyme, int regexp, int inplace);
 void do_verb(dbref player, dbref cause, char *arg1, char **argv);
 static void grep_add_attr(char *buff, char **bp, dbref player, int count,
                           ATTR *attr, char *atrval);
@@ -800,7 +799,8 @@ ok_player_name(const char *name, dbref player, dbref thing)
  * \retval OPAE_TOOMANY too many aliases for player
  */
 int
-ok_object_name(char *name, dbref player, dbref thing, int type, char **newname, char **newalias)
+ok_object_name(char *name, dbref player, dbref thing, int type, char **newname,
+               char **newalias)
 {
   char *bon, *eon;
   char nbuff[BUFFER_LEN], abuff[BUFFER_LEN];
@@ -849,7 +849,9 @@ ok_object_name(char *name, dbref player, dbref thing, int type, char **newname, 
     *eon++ = '\0';
     aliases++;
   }
-  if (!(type == TYPE_PLAYER ? ok_player_name(bon, player, thing) : ok_name(bon, 1)))
+  if (!
+      (type ==
+       TYPE_PLAYER ? ok_player_name(bon, player, thing) : ok_name(bon, 1)))
     return 0;
 
   *newname = mush_strdup(bon, "name.newname");
@@ -858,7 +860,7 @@ ok_object_name(char *name, dbref player, dbref thing, int type, char **newname, 
     /* We had aliases, so parse them */
     while (eon) {
       if (empty)
-        return OPAE_NULL; /* Null alias only valid as a single, final alias */
+        return OPAE_NULL;       /* Null alias only valid as a single, final alias */
       bon = eon;
       if ((eon = strchr(bon, ALIAS_DELIMITER))) {
         *eon++ = '\0';
@@ -866,11 +868,14 @@ ok_object_name(char *name, dbref player, dbref thing, int type, char **newname, 
       while (*bon && *bon == ' ')
         bon++;
       if (!*bon) {
-        empty = 1; /* empty alias, should only happen if we have no proper aliases */
+        empty = 1;              /* empty alias, should only happen if we have no proper aliases */
         continue;
       }
-      if (!(type == TYPE_PLAYER ? ok_player_name(bon, player, thing) : ok_name(bon, 1))) {
-        *newalias = mush_strdup(bon, "name.newname"); /* So we can report the invalid alias */
+      if (!
+          (type ==
+           TYPE_PLAYER ? ok_player_name(bon, player, thing) : ok_name(bon,
+                                                                      1))) {
+        *newalias = mush_strdup(bon, "name.newname");   /* So we can report the invalid alias */
         return OPAE_INVALID;
       }
       if (aliases > 1) {
@@ -1240,9 +1245,8 @@ parse_match_possessor(dbref player, char **str, int exits)
   *str = obj;
 
   /* we already have a terminating null, so we're okay to just do matches */
-  return match_result(player, box, NOTYPE, MAT_NEAR_THINGS | MAT_ENGLISH | (exits ?
-                                                                     MAT_EXIT :
-                                                                     0));
+  return match_result(player, box, NOTYPE,
+                      MAT_NEAR_THINGS | MAT_ENGLISH | (exits ? MAT_EXIT : 0));
 }
 
 

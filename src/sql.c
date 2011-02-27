@@ -445,20 +445,20 @@ COMMAND(cmd_mapsql)
         switch (sql_platform()) {
 #ifdef HAVE_MYSQL
         case SQL_PLATFORM_MYSQL:
-          cells[i+1] = row_p[i];
-          names[i+1] = fields[i].name;
+          cells[i + 1] = row_p[i];
+          names[i + 1] = fields[i].name;
           break;
 #endif
 #ifdef HAVE_POSTGRESQL
         case SQL_PLATFORM_POSTGRESQL:
-          cells[i+1] = PQgetvalue(qres, rownum, i);
-          names[i+1] = PQfname(qres, i);
+          cells[i + 1] = PQgetvalue(qres, rownum, i);
+          names[i + 1] = PQfname(qres, i);
           break;
 #endif
 #ifdef HAVE_SQLITE3
         case SQL_PLATFORM_SQLITE3:
-          cells[i+1] = (char *) sqlite3_column_text(qres, i);
-          names[i+1] = (char *) sqlite3_column_name(qres, i);
+          cells[i + 1] = (char *) sqlite3_column_text(qres, i);
+          names[i + 1] = (char *) sqlite3_column_name(qres, i);
           break;
 #endif
         default:
@@ -1035,7 +1035,7 @@ penn_mysql_sql_query(const char *q_string, int *affected_rows)
   if (fail && (mysql_errno(mysql_connp) == CR_SERVER_GONE_ERROR)) {
     if (mysql_connp) {
       queue_event(SYSEVENT, "SQL`DISCONNECT", "%s,%s",
-                    "mysql", mysql_error(mysql_connp));
+                  "mysql", mysql_error(mysql_connp));
     }
     /* If it's CR_SERVER_GONE_ERROR, the server went away.
      * Try reconnecting. */
@@ -1213,8 +1213,7 @@ penn_sqlite3_sql_init(void)
   sqlite3_connp = NULL;
   if (sqlite3_open(SQL_DB, &sqlite3_connp) != SQLITE_OK) {
     do_rawlog(LT_ERR, "sqlite3: Failed to open %s: %s", SQL_DB, sql_error());
-    queue_event(SYSEVENT, "SQL`CONNECTFAIL", "%s,%s",
-                "sqlite3", sql_error());
+    queue_event(SYSEVENT, "SQL`CONNECTFAIL", "%s,%s", "sqlite3", sql_error());
     if (sqlite3_connp) {
       sqlite3_close(sqlite3_connp);
       sqlite3_connp = NULL;

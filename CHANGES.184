@@ -64,6 +64,10 @@ Config:
  * New @config option chan_title_len controls the length of @channel/title's.
    Suggested by Paige. [MG]
 
+Locks:
+ * New @lock/pay, controls who can "give" an object pennies or "buy" items
+   from an object. Based on patch by Covenent. [MG]
+
 Functions:
  * lockfilter() lets you filter a list of dbrefs using a lock key. [GM]
  * align() now has '$' (nofill) as an option. Ideal for rightmost columns.
@@ -117,6 +121,7 @@ Minor Changes:
  * sub() can now take more than two arguments. Suggested by Paige. [MG]
  * In the hardcode, disconnected players in the DESC struct are shown as -1
    instead of 0, to avoid conflicts with #0. Based on patch by Paige. [MG]
+ * It was sometimes possible to "buy" items from yourself. [MG]
 
 Fixes:
  * Fixing list type autodetect. [GM]

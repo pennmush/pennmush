@@ -1058,6 +1058,7 @@ See also: look, @exitformat, @conformat, @descformat, @nameaccent,
   difference is refunded.
   
   This attribute is evaluated, with the amount being given passed as %0.
+  If the attribute returns a number less than 0, the money will be refused.
   Non-players must have this attribute set in order to receive pennies.
   Players who don't have a COST always accept the amount of pennies given.
 
@@ -2588,6 +2589,7 @@ See also: @lock, locktypes, @clock, objid()
   @lock/drop            Who can drop this object or in this room
   @lock/give            Who can give this object
   @lock/from            Who can give things to this object
+  @lock/pay             Who can give pennies to/buy from this object
   @lock/receive         What things can be given to this object
   @lock/follow          Who can follow this object
   @lock/examine         Who can examine this object if it's VISUAL
@@ -4211,69 +4213,63 @@ See also: get, drop
   'take' is usually an alias for the 'get' command.
 
 See also: @lock, ENTER_OK, give, drop, @success, inventory
-& @abuy
-  @abuy <object>[=<action list>]
-
-  Sets the actions to be taken after a player buys an item from
-  PRICELIST. The item purchased is passed in as %0, and the amount
-  paid as %1
-
-See also: buy, @buy, @obuy, @pricelist, MONEY, ACTION LISTS
 & @buy
   @buy <object>[=<message>]
-
-  Sets the message that is shown to anyone who buys something from
-  the object, using the 'buy' command. The item purchased is passed
-  in as %0, and the amount paid as %1.
-
-See also: buy, @abuy, @obuy, @pricelist, MONEY
-& @obuy
   @obuy <object>[=<message>]
+  @abuy <object>[=<message>]
+  
+  These attributes contain the message shown to a player who successfully
+  buys something from <object> using the "buy" command, the message shown to 
+  others in the room when something is bought from <object> (prefixed with
+  the buyer's name), and the actions to be taken by <object> when something
+  is bought from it, respectively. Each attribute is passed the item being
+  purchased as %0 and the amount paid for it as %1.
 
-  Sets the message that will be show to others whenever someone buys
-  an item from the object's PRICELIST using the 'buy' command. The
-  name of the person giving the money will be automatically inserted
-  at the beginning of the message. The item purchased is passed in as
-  %0, and the amount paid as %1.
+  Example:
+    > @buy Vendor=udefault(me/buy`%0,You buy %0 for %1 [money(%1)]., %0, %1)
+    > @obuy Vendor=hands some money to [name(me)] for [art(%0)] %0.
+    > @abuy Vendor=:goes into the storeroom. ; @wait 2=:returns with %n's %0.
 
-See also: buy, @abuy, @obuy, @pricelist, MONEY
+See also: buy, @pricelist, MONEY, @lock, VERBS, @cost, give
 & @pricelist
   @pricelist <object>=<item1>:<price1>[,<price2>][ <item2>:...]
 
-  The PRICELIST attribute is a space-delimited list of item names and
-  prices that are checked when the 'buy' command is run.
+  The PRICELIST attribute is a space-delimited list of item names and prices
+  that are checked when the 'buy' command is run.
   
-  An item name may have '_'s where the player would use a space in the
-  name.
+  An item name may have '_'s where the player would use a space in the name.
 
-  A price is either a number (20), a range of numbers (10-30), or a
-  minimum number (10+).
+  A price is either a number (20), a range of numbers (10-30), or a minimum 
+  number (10+). An item can also have several different prices, separated by
+  commas.
+  
+  A player must pass <object>'s @lock/pay in order to purchase from it.
 
-  ex:
-    @PRICELIST vendor=mansion:1000+ large_house:100-200 house:20,30,50
+  Example::
+    > @PRICELIST vendor=mansion:1000+ large_house:100-200 house:20,30,50
 
-See also: buy, @abuy, @buy, @obuy, MONEY, @cost
+See also: buy, @buy, MONEY, @cost, give, @lock
 & buy
   buy <item>[ from <vendor>][ for <cost>]
 
   When you try buying an item, PRICELIST attributes on nearby objects
-  (or <vendor> if given) will be checked for matching item:costs. If
-  <cost> is given, the first item that matches that cost will be
-  purchased.  Otherwise, the first matching item that you can afford
-  will be purchased.
+  (or <vendor> if given) will be checked for matching item:costs. If <cost>
+  is given, the first item that matches that cost will be purchased.
+  Otherwise, the first matching item that you can afford will be purchased.
+  You must pass the vendor's @lock/pay in order to purchase items.
 
-  If the pricelist match contains a list of prices, ITEM:30,20,10, the
-  first one you can afford will be the resulting price.
+  If the pricelist match contains a list of prices, ITEM:30,20,10, the first
+  one you can afford will be the resulting price.
 
-  ex:
-  > @PRICELIST vendor=coke:20 pepsi:20
-  > &drink`coke vendor=You enjoy a delicious coke.
-  > &drink`pepsi vendor=It tastes like a funny coke.
-  > @BUY vendor=u(drink`%0)
-  > buy coke
-  You enjoy a delicious coke.
+  Example:
+    > @PRICELIST vendor=coke:20 pepsi:20
+    > &drink`coke vendor=You enjoy a delicious coke.
+    > &drink`pepsi vendor=It tastes like a funny coke.
+    > @BUY vendor=u(drink`%0)
+    > buy coke
+    You enjoy a delicious coke.
 
-See also: @ABUY, @BUY, @PRICELIST, give, @COST
+See also: @BUY, @PRICELIST, give, @COST
 & give
   give[/silent] <recipient>=<number>
   give[/silent] <number> to <recipient>
@@ -4282,11 +4278,13 @@ See also: @ABUY, @BUY, @PRICELIST, give, @COST
 
   The first two forms of this command give <number> pennies to <recipient>.
   If <recipient> is a non-player, it must have an @COST, and any pennies
-  given to it will go to its owner. If /silent is given, the message 
-  informing the recipient how many pennies were given is suppressed. Wizards
-  may "give" a negative number of pennies to take from <recipient>. When you
-  give pennies, <recipient>'s PAYMENT/OPAYMENT/APAYMENT attributes are
-  triggered.
+  given to it will go to its owner. The amount given must match <recipient>'s
+  @cost (if set). If /silent is given, the message informing the recipient
+  how many pennies were given is suppressed. Wizards may "give" a negative 
+  number of pennies to take from players. When you give <recipient> pennies,
+  his PAYMENT/OPAYMENT/APAYMENT attributes are triggered. You must pass
+  <recipient>'s @lock/pay, unless you are a Wizard and are either giving a 
+  negative number of pennies, or giving to a player with no @cost.
   
   The last two forms of this command give an <object> from your inventory to
   <recipient>. The recipient must be set ENTER_OK, and you must pass his

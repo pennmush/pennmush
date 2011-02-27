@@ -154,12 +154,13 @@ do_kill(dbref player, const char *what, int cost, int slay)
  * \param player the enactor/buyer
  * \param item the item to buy
  * \param from who to buy it from
- * \param cost the cost
+ * \param price the price to pay for it, or -1 for any price
  */
 void
 do_buy(dbref player, char *item, char *from, int price)
 {
   dbref vendor;
+  dbref failvendor = NOTHING;
   char prices[BUFFER_LEN];
   char *plus;
   char *cost;
@@ -225,6 +226,8 @@ do_buy(dbref player, char *item, char *from, int price)
   boughtit = -1;
   affordable = 1;
   do {
+    if (vendor == player)
+      continue; /* Can't buy from yourself. Only occurs with no "from <vendor>" arg */
     a = atr_get(vendor, "PRICELIST");
     if (!a)
       continue;
@@ -279,6 +282,18 @@ do_buy(dbref player, char *item, char *from, int price)
             continue;
           }
           if (boughtit >= 0) {
+            /* No point checking the lock before this point, as
+               we don't try and give them money if they aren't
+               selling what we're buying */
+            if (!eval_lock(player, vendor, Pay_Lock)) {
+              boughtit = 0;
+              if (failvendor == NOTHING)
+                failvendor = vendor;
+              /* We don't run fail_lock here in case we end up successfully
+                 buying from someone else. Only fail_lock() if the failure
+                 stops us buying from anyone */
+              continue;
+            }
             if (!payfor(player, boughtit)) {
               affordable = 0;
               boughtit = 0;
@@ -310,7 +325,12 @@ do_buy(dbref player, char *item, char *from, int price)
     }
   } while (!from && ((vendor = Next(vendor)) != NOTHING));
 
-  if (price >= 0) {
+  if (failvendor != NOTHING) {
+    /* Found someone selling, but they wouldn't take our money */
+    fail_lock(player, failvendor, Pay_Lock,
+            tprintf(T("%s doesn't want your money."), Name(failvendor)), NOTHING);
+  } else if (price >= 0) {
+    /* Noone we wanted to buy from selling for the right amount */
     if (!from) {
       notify(player, T("I can't find that item with that price here."));
     } else {
@@ -318,12 +338,14 @@ do_buy(dbref player, char *item, char *from, int price)
                     Name(vendor));
     }
   } else if (affordable) {
+    /* Didn't find anyone selling it */
     if (!from) {
       notify(player, T("I can't find that item here."));
     } else {
       notify_format(player, T("%s isn't selling that item."), Name(vendor));
     }
   } else {
+    /* We found someone selling, but didn't have the pennies to buy it */
     notify(player, T("You can't afford that."));
   }
 }
@@ -468,7 +490,7 @@ do_give(dbref player, char *recipient, char *amnt, int silent)
       notify_format(player, T("%s refuses your money."), Name(who));
       giveto(player, amount);
       return;
-    } else if (a) {
+    } else if (a && (amount > 0 || !IsPlayer(who))) {
       /* give pennies to object with COST */
       int cost = 0;
       char *preserveq[NUMQ];
@@ -477,13 +499,6 @@ do_give(dbref player, char *recipient, char *amnt, int silent)
       char *fbp, *asave;
       char const *ap;
 
-      a = atr_get(who, "COST");
-      if (!a) {
-        /* No cost attribute */
-        notify_format(player, T("%s refuses your money."), Name(who));
-        giveto(player, amount);
-        return;
-      }
       save_global_regs("give_save", preserveq);
       save_global_env("give_save", preserves);
       asave = safe_atr_value(a);
@@ -508,6 +523,10 @@ do_give(dbref player, char *recipient, char *amnt, int silent)
         giveto(player, amount);
         return;
       }
+      if (!eval_lock(player, who, Pay_Lock)) {
+        giveto(player, amount);
+        fail_lock(player, who, Pay_Lock, tprintf(T("%s refuses your money."), Name(who)), NOTHING);
+      }
       if ((amount - cost) > 0) {
         notify_format(player, T("You get %d in change."), amount - cost);
       } else {
@@ -523,7 +542,12 @@ do_give(dbref player, char *recipient, char *amnt, int silent)
                   NOTHING, pay_env, NA_INTER_SEE);
       return;
     } else {
-      /* give pennies to a player */
+      /* give pennies to a player with no @cost, or "give" a negative amount to a player */
+      if (!Wizard(player) && !eval_lock(player, who, Pay_Lock)) {
+        fail_lock(player, who, Pay_Lock, tprintf(T("%s refuses your money."), Name(who)), NOTHING);
+        giveto(player, amount);
+        return;
+      }
       if (amount > 0) {
         notify_format(player,
                       T("You give %d %s to %s."), amount,

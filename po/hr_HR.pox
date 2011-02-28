@@ -2814,6 +2814,10 @@ msgstr "Ne mogu naæi tu sobu."
 msgid "I can't find that."
 msgstr "Ne mogu to pronaæi."
 
+#: speech.c:869
+msgid "I can't find who you last paged."
+msgstr "Ne mogu naæi zadnjeg primatelja tvojih privatnih poruka."
+
 #: speech.c:686
 #, c-format
 msgid "I can't find who you're trying to page with: %s"
@@ -5678,6 +5682,10 @@ msgstr "Za quotu mo¾e¹ postaviti samo broj."
 #: src/wiz.c:234
 msgid "You can only set quotas to a positive number."
 msgstr "Za quotu mo¾e¹ postaviti samo pozitivan broj."
+
+#: cmds.c:530
+msgid "You can only use /inplace with /override"
+msgstr "/inplace mo¾e¹ koristiti samo s /override"
 
 #: rob.c:326
 msgid "You can't afford that."

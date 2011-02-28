@@ -4214,6 +4214,8 @@ See also: get, drop
 
 See also: @lock, ENTER_OK, give, drop, @success, inventory
 & @buy
+& @abuy
+& @obuy
   @buy <object>[=<message>]
   @obuy <object>[=<message>]
   @abuy <object>[=<message>]

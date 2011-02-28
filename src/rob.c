@@ -527,6 +527,7 @@ do_give(dbref player, char *recipient, char *amnt, int silent)
         giveto(player, amount);
         fail_lock(player, who, Pay_Lock,
                   tprintf(T("%s refuses your money."), Name(who)), NOTHING);
+        return;
       }
       if ((amount - cost) > 0) {
         notify_format(player, T("You get %d in change."), amount - cost);
@@ -545,9 +546,9 @@ do_give(dbref player, char *recipient, char *amnt, int silent)
     } else {
       /* give pennies to a player with no @cost, or "give" a negative amount to a player */
       if (!Wizard(player) && !eval_lock(player, who, Pay_Lock)) {
+        giveto(player, amount);
         fail_lock(player, who, Pay_Lock,
                   tprintf(T("%s refuses your money."), Name(who)), NOTHING);
-        giveto(player, amount);
         return;
       }
       if (amount > 0) {

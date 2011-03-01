@@ -1118,7 +1118,8 @@ COMMAND(cmd_teleport)
 
 COMMAND(cmd_include)
 {
-  do_include(player, arg_left, args_right);
+  notify_format(player, "--> #%d #%d", player, cause);
+  do_include(player, cause, arg_left, args_right);
 }
 
 COMMAND(cmd_trigger)

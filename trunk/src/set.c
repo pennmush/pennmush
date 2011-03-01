@@ -1027,7 +1027,7 @@ do_trigger(dbref player, char *object, char **argv)
  * \param argv array of arguments. (not yet used)
  */
 void
-do_include(dbref player, char *object, char **argv)
+do_include(dbref player, dbref cause, char *object, char **argv)
 {
   dbref thing;
   char *s;
@@ -1057,7 +1057,7 @@ do_include(dbref player, char *object, char **argv)
     }
   } else {
     if (!queue_include_attribute(thing, upcasestr(s), player,
-                                 player, global_eval_context.wenv)) {
+                                 cause, global_eval_context.wenv)) {
       notify(player, T("No such attribute."));
     }
   }

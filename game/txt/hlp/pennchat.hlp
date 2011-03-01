@@ -471,7 +471,7 @@ See also: cflags(), clflags()
   You can use indirect @clocks to lock a channel to an @lock on an object.
   Objects attempting to pass the lock must be able to see the indirect lock,
   so it's recommended you set either the lock or the object VISUAL. This
-  channel can only be joined by an UNFINDABLE player:
+  channel can only be joined by objects which aren't set UNFINDABLE:
 
   > @clock/join unfindchannel=@#10
   > @lock/user:ChanJoinLock #10=!flag^unfindable
@@ -497,12 +497,16 @@ See also: clock(), @lock
   cowner(<channel>)
 
   Returns the dbref of the owner of a channel.
+  
+See also: @channel/chown
 & CTITLE()
   ctitle(<channel>, <object>)
 
   Returns <object>'s @channel/title on <channel>. You must either be able
   to examine the object, or it must be visibly on <channel>, and you must
   either be on <channel> on able to join it.
+  
+See also: @channel/title
 & CSTATUS()
   cstatus(<channel>, <object>)
 
@@ -511,7 +515,7 @@ See also: clock(), @lock
   object, or it must visible be on the channel; "Off" is returned for
   objects that you cannot see on the channel.
   
-See also: cwho(), cflags()
+See also: cwho(), cflags(), @channel/on, @channel/gag
 & CDESC()
 & CUSERS()
 & CMSGS()
@@ -548,7 +552,7 @@ See also: crecall(), cbuffer(), @channel/recall, @channel/buffer
   If <skip gagged?> is given, and is true, gagged objects will not be
   included in the results.
 
-See also: cstatus()
+See also: cstatus(), @channel/who
 & CFLAGS()
 & CLFLAGS()
   cflags(<channel>)
@@ -586,6 +590,8 @@ See also: cstatus()
   If you don't have permission to examine the object, you only see those
   channels to which the object belong for which you have permission to join
   (or are joined to).
+  
+See also: @channel/list
 & CLOCK()
   clock(<channel>[/<locktype>][, <new lock>])
 

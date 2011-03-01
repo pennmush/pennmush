@@ -963,6 +963,11 @@ msgstr "%s ne ¾eli ni¹ta od tebe."
 msgid "%s doesn't want that."
 msgstr "%s to ne ¾eli."
 
+#: rob.c:330
+#, c-format
+msgid "%s doesn't want your money."
+msgstr "%s ne ¾eli tvoj novac."
+
 #: move.c:641 move.c:644
 #, c-format
 msgid "%s drops you."

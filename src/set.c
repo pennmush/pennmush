@@ -1023,8 +1023,9 @@ do_trigger(dbref player, char *object, char **argv)
  * This implements @include obj/attribute
  * \endverbatim
  * \param player the enactor.
+ * \param cause the cause.
  * \param object the object/attribute pair.
- * \param argv array of arguments. (not yet used)
+ * \param argv array of arguments.
  */
 void
 do_include(dbref player, dbref cause, char *object, char **argv)

@@ -522,12 +522,12 @@ COMMAND(cmd_hook)
     do_hook_list(player, arg_left);
     return;
   } else {
-    notify(player, T("You must give a switch for @hook"));
+    notify(player, T("You must give a switch for @hook."));
     return;
   }
   if (SW_ISSET(sw, SWITCH_INPLACE)) {
     if (flags != HOOK_OVERRIDE) {
-      notify(player, T("You can only use /inplace with /override"));
+      notify(player, T("You can only use /inplace with /override."));
       return;
     }
     inplace = 1;
@@ -1118,7 +1118,6 @@ COMMAND(cmd_teleport)
 
 COMMAND(cmd_include)
 {
-  notify_format(player, "--> #%d #%d", player, cause);
   do_include(player, cause, arg_left, args_right);
 }
 

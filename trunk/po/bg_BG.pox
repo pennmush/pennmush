@@ -2335,10 +2335,6 @@ msgstr "Трябва да @lock/zone преди да можеш да настроиш играча на ZONE"
 msgid "You must carry the object to @chown it."
 msgstr "Трябва да носиш даден обект за да го @chown."
 
-#: cmds.c:424
-msgid "You must give a switch for @hook"
-msgstr "Трябва да дадеш ключ за @hook"
-
 #: flags.c:2006
 #, c-format
 msgid "You must provide a name for the %s."

@@ -3909,10 +3909,6 @@ msgstr "Vous devez être sur ce canal pour pouvoir y parler."
 msgid "You must carry the object to @chown it."
 msgstr "Vous devez porter l'objet pour utiliser @chown sur celui-ci."
 
-#: cmds.c:424
-msgid "You must give a switch for @hook"
-msgstr "Vous devez passer un switch à @hook"
-
 #: command.c:1357
 msgid "You must give both an object and attribute."
 msgstr "Vous devez spécifier à la fois un objet et un attribut."

@@ -5947,10 +5947,6 @@ msgstr "Du må gi en liste over power navn."
 msgid "You must give a string of flag characters."
 msgstr "Du må gi en streng med flagg-karakterer."
 
-#: cmds.c:424
-msgid "You must give a switch for @hook"
-msgstr "Du må gi en switch for @hook"
-
 #: command.c:2073
 msgid "You must give an object."
 msgstr "Du må angi et objekt."

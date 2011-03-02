@@ -4066,10 +4066,6 @@ msgstr "Meg kell adnod egy attribútum-név listát."
 msgid "You must give a string of flag characters."
 msgstr "Egy jelzõ betûkbõl álló szöveget kell megadnod."
 
-#: cmds.c:424
-msgid "You must give a switch for @hook"
-msgstr "Meg kell adnod egy kapcsolót a @hook részére"
-
 #: command.c:1357
 msgid "You must give both an object and attribute."
 msgstr "Meg kell adnod egy objektumot és egy attribútumot is."

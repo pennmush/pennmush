@@ -963,6 +963,11 @@ msgstr "%s wil niets van je hebben."
 msgid "%s doesn't want that."
 msgstr "%s wil dat niet."
 
+#: rob.c:330
+#, c-format
+msgid "%s doesn't want your money."
+msgstr "%s hoeft jouw geld niet."
+
 #: move.c:641 move.c:644
 #, c-format
 msgid "%s drops you."
@@ -1706,6 +1711,10 @@ msgstr "Ongeldig object type."
 msgid "Bad password."
 msgstr "Ongeldig wachtwoord."
 
+#: log.c:358
+msgid "Begin log recall."
+msgstr "Begin log recall."
+
 #: src/set.c:147
 #, c-format
 msgid "Broadcast: Suspect %s changed name to %s."
@@ -2366,6 +2375,10 @@ msgstr "Email registratie is toegestaan"
 msgid "Enabled."
 msgstr "Ingeschakeld."
 
+#: log.c:365
+msgid "End log recall."
+msgstr "Einde log recall."
+
 #: atr_tab.c:647
 msgid "Enum"
 msgstr "Enum"
@@ -2805,6 +2818,10 @@ msgstr "Ik kan die kamer niet vinden."
 #: src/speech.c:1365
 msgid "I can't find that."
 msgstr "Dat kan ik niet vinden."
+
+#: speech.c:869
+msgid "I can't find who you last paged."
+msgstr "Ik kan niet vinden wie je het laatst een bericht hebt gestuurd."
 
 #: speech.c:686
 #, c-format
@@ -4668,6 +4685,10 @@ msgstr "Die functie is niet verwijderd!"
 msgid "That is an exit."
 msgstr "Dat is een uitgang."
 
+#: log.c:402
+msgid "That is not a clearable log."
+msgstr "Dat is geen log wat je kunt legen."
+
 #: src/extmail.c:1218
 msgid "That is not a debugging option."
 msgstr "Dat is geen debug optie."
@@ -5009,6 +5030,16 @@ msgstr "Tijd tot volgende schoonmaak"
 msgid "TinyMUSH compatibility options"
 msgstr "TinyMUSH compatibiliteitsopties."
 
+#: extchat.c:2088
+#, c-format
+msgid "Title cleared for %schannel <%s>."
+msgstr "Titel gewist voor %skanaal <%s>."
+
+#: extchat.c:2111
+#, c-format
+msgid "Title set for %schannel <%s>."
+msgstr "Titel gezet voor %skanaal <%s>."
+
 #: src/extchat.c:1358
 msgid "Title too long."
 msgstr "Titel te lang."
@@ -5022,6 +5053,10 @@ msgstr "Om dit character te gebruiken, log in op %s en tik:\n"
 #, c-format
 msgid "To channel %s: %s"
 msgstr "Naar kanaal %s: %s"
+
+#: set.c:88
+msgid "Too many aliases."
+msgstr "Teveel aliasen."
 
 #: src/set.c:906
 msgid "Too many ancestors."
@@ -6100,10 +6135,6 @@ msgstr "Je moet een lijst van kracht namen opgeven."
 #: wiz.c:1453
 msgid "You must give a string of flag characters."
 msgstr "Je moet een reeks vlag karakters opgeven."
-
-#: cmds.c:424
-msgid "You must give a switch for @hook"
-msgstr "Je moet een shakeloptie voor @hook gebruiken."
 
 #: command.c:2073
 msgid "You must give an object."

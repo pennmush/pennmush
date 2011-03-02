@@ -5688,10 +5688,6 @@ msgstr "Za quotu mo¾e¹ postaviti samo broj."
 msgid "You can only set quotas to a positive number."
 msgstr "Za quotu mo¾e¹ postaviti samo pozitivan broj."
 
-#: cmds.c:530
-msgid "You can only use /inplace with /override"
-msgstr "/inplace mo¾e¹ koristiti samo s /override"
-
 #: rob.c:326
 msgid "You can't afford that."
 msgstr "Nema¹ novaca za to."
@@ -6139,10 +6135,6 @@ msgstr "Mora¹ navesti popis naziva moæi."
 #: wiz.c:1453
 msgid "You must give a string of flag characters."
 msgstr "Mora¹ navesti string znakova za flagove."
-
-#: cmds.c:424
-msgid "You must give a switch for @hook"
-msgstr "Mora¹ navesti switch za @hook"
 
 #: command.c:2073
 msgid "You must give an object."

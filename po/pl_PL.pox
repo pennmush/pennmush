@@ -5253,10 +5253,6 @@ msgstr "Musisz podaæ listê nazw mocy."
 msgid "You must give a string of flag characters."
 msgstr "Musisz podaæ ³añcuch znaków flagi"
 
-#: cmds.c:424
-msgid "You must give a switch for @hook"
-msgstr "Musisz podaæ w³±cznik dla @haka"
-
 #: command.c:2073
 msgid "You must give an object."
 msgstr "Musisz podaæ obiekt."

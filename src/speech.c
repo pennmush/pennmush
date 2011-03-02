@@ -924,7 +924,7 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
         if (fails_lock)
           fail_lock(player, target, Page_Lock, NULL, NOTHING);
         safe_chr(' ', tbuf, &tp);
-        safe_str_space(current, tbuf, &tp);
+        safe_str_space(Name(target), tbuf, &tp);
       } else if (is_haven) {
         page_return(player, target, "Haven", "HAVEN",
                     tprintf(T("%s is not accepting any pages."), Name(target)));

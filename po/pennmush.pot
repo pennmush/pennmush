@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-01 02:00-0600\n"
+"POT-Creation-Date: 2011-03-02 02:00-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -278,7 +278,7 @@ msgstr ""
 msgid "I don't think #%d wants %s's mail."
 msgstr ""
 
-#: attrib.c:1941 set.c:1176
+#: attrib.c:1941 set.c:1177
 #, c-format
 msgid "Attribute %s is SAFE. Set it !SAFE to modify it."
 msgstr ""
@@ -362,7 +362,7 @@ msgstr ""
 #: function.c:1713 function.c:1760 funmisc.c:957 game.c:968 game.c:1541
 #: lock.c:717 lock.c:781 lock.c:977 look.c:1341 look.c:1636 malias.c:764
 #: malias.c:869 match.c:529 move.c:553 move.c:885 move.c:900 predicat.c:1396
-#: rob.c:460 set.c:210 set.c:1001 set.c:1082 set.c:1119 set.c:1132 set.c:1217
+#: rob.c:460 set.c:210 set.c:1001 set.c:1083 set.c:1120 set.c:1133 set.c:1218
 #: speech.c:1566 sql.c:367 warnings.c:294 warnings.c:515 wiz.c:452 wiz.c:575
 #: wiz.c:586 wiz.c:865 wiz.c:1030 wiz.c:1060
 msgid "Permission denied."
@@ -389,7 +389,7 @@ msgstr ""
 msgid "Invalid status on atrlock.. Notify god."
 msgstr ""
 
-#: attrib.c:2096 attrib.c:2166 set.c:1016 set.c:1056 set.c:1061
+#: attrib.c:2096 attrib.c:2166 set.c:1016 set.c:1057 set.c:1062
 msgid "No such attribute."
 msgstr ""
 
@@ -904,11 +904,11 @@ msgid "Option set."
 msgstr ""
 
 #: cmds.c:525
-msgid "You must give a switch for @hook"
+msgid "You must give a switch for @hook."
 msgstr ""
 
 #: cmds.c:530
-msgid "You can only use /inplace with /override"
+msgid "You can only use /inplace with /override."
 msgstr ""
 
 #: cmds.c:540
@@ -5902,57 +5902,57 @@ msgstr ""
 msgid "%s - Triggered."
 msgstr ""
 
-#: set.c:1039
+#: set.c:1040
 msgid "I need to know what attribute to include."
 msgstr ""
 
-#: set.c:1050
+#: set.c:1051
 msgid "You can't include God!"
 msgstr ""
 
-#: set.c:1085
+#: set.c:1086
 msgid "Used."
 msgstr ""
 
-#: set.c:1137
+#: set.c:1138
 msgid "A thing cannot be its own ancestor!"
 msgstr ""
 
-#: set.c:1144
+#: set.c:1145
 msgid "You are not allowed to be your own ancestor!"
 msgstr ""
 
-#: set.c:1149
+#: set.c:1150
 msgid "Too many ancestors."
 msgstr ""
 
-#: set.c:1156
+#: set.c:1157
 msgid "Parent changed."
 msgstr ""
 
-#: set.c:1180
+#: set.c:1181
 #, c-format
 msgid "Unable to wipe attribute %s"
 msgstr ""
 
-#: set.c:1185
+#: set.c:1186
 #, c-format
 msgid "Attribute %s cannot be wiped because a child attribute cannot be wiped."
 msgstr ""
 
-#: set.c:1222
+#: set.c:1223
 msgid "That object is protected."
 msgstr ""
 
-#: set.c:1229
+#: set.c:1230
 msgid "No attributes wiped."
 msgstr ""
 
-#: set.c:1232
+#: set.c:1233
 msgid "One attribute wiped."
 msgstr ""
 
-#: set.c:1235
+#: set.c:1236
 #, c-format
 msgid "%d attributes wiped."
 msgstr ""

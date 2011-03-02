@@ -16,7 +16,7 @@ chronological order (most recent first)
 
 ==========================================================================
 
-Version 1.8.4 patchlevel 3                                 ??? ??,  201?
+Version 1.8.4 patchlevel 3                                 Mar 07,  2011
 
 Events:
  * Event system added. Certain things can now trigger events using @config

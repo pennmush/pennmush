@@ -2,6 +2,7 @@
 #define LOG_H
 
 #include "bufferq.h"
+#include <stdio.h>
 
 /* log types */
 enum log_type {

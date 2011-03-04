@@ -1152,7 +1152,6 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
     /* check for a match */
     if (regexp ? quick_regexp_match(buff, expression, 0)
         : local_wild_match(buff, expression)) {
-      any = 1;
       tbuf1 = replace_string("#$", expression, argv[a + 1]);
       if (inplace) {
         if (any) {
@@ -1174,6 +1173,7 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
         parse_que(player, tbuf1, cause, pe_info);
       }
       mush_free(tbuf1, "replace_string.buff");
+      any = 1;
     }
   }
 
@@ -1181,11 +1181,7 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
   if ((a < MAX_ARG) && !any && argv[a]) {
     tbuf1 = replace_string("#$", expression, argv[a]);
     if (inplace) {
-      if (any) {
-        safe_chr(';', ibuff, &ibp);
-      }
       safe_str(tbuf1, ibuff, &ibp);
-      any = 1;
     } else {
       pe_info = make_pe_info();
       if (global_eval_context.pe_info->switch_nesting >= 0) {
@@ -1204,8 +1200,14 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
   }
 
   if (inplace && (ibp > ibuff)) {
+    /* Set up %$* / stext() */
+    global_eval_context.pe_info->switch_nesting++;
+    global_eval_context.pe_info->local_switch_nesting++;
+    global_eval_context.pe_info->switch_text[global_eval_context.pe_info->switch_nesting] =
+      mush_strdup(expression, "switch_arg");
+    
     *ibp = '\0';
-    inplace_queue_actionlist(player, cause, ibuff, NULL);
+    inplace_queue_actionlist(player, cause, cause, ibuff, global_eval_context.wnxt, QUEUE_INPLACE);
   }
 
   /* Pop on @notify me, if requested */

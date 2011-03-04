@@ -166,7 +166,7 @@ extern void do_quota(dbref player, const char *arg1, const char *arg2,
 extern void do_allquota(dbref player, const char *arg1, int quiet);
 extern void do_teleport
   (dbref player, const char *arg1, const char *arg2, int silent, int inside);
-extern void do_force(dbref player, const char *what, char *command,
+extern void do_force(dbref player, dbref caller, const char *what, char *command,
                      int inplace);
 extern void do_stats(dbref player, const char *name);
 extern void do_newpassword

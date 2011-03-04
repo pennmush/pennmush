@@ -903,7 +903,7 @@ int rhs_present;
  * \param forcenoparse if true, do no evaluation during parsing.
  */
 void
-command_argparse(dbref player, dbref cause, char **from, char *to,
+command_argparse(dbref player, dbref cause, dbref caller, char **from, char *to,
                  char *argv[], COMMAND_INFO *cmd, int right_side,
                  int forcenoparse)
 {
@@ -954,7 +954,7 @@ command_argparse(dbref player, dbref cause, char **from, char *to,
     aold = t;
     while (*f == ' ')
       f++;
-    if (process_expression(to, &t, (const char **) &f, player, cause, cause,
+    if (process_expression(to, &t, (const char **) &f, player, caller, cause,
                            parse, (split | args),
                            global_eval_context.pe_info)) {
       done = 1;
@@ -1045,12 +1045,13 @@ command_isattr(char *command)
  * text to match against $-commands otherwise.
  * \param player the enactor.
  * \param cause dbref that caused the command to be executed.
+ * \param caller the caller (%@). Almost always the same as cause, differs for /inplace cmds
  * \param string the input to be parsed.
  * \param fromport if true, command was typed by a player at a socket.
  * \return NULL if a command was handled, otherwise the evaluated input.
  */
 char *
-command_parse(dbref player, dbref cause, char *string, int fromport)
+command_parse(dbref player, dbref cause, dbref caller, char *string, int fromport)
 {
   char *command, *swtch, *ls, *rs, *switches;
   static char commandraw[BUFFER_LEN];
@@ -1097,7 +1098,7 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
   if (*p == '[') {
     if ((cmd = command_find("WARN_ON_MISSING"))) {
       if (!(cmd->type & CMD_T_DISABLED)) {
-        cmd->func(cmd, player, cause, sw, string, NULL, NULL, ls, lsa, rs, rsa);
+        cmd->func(cmd, player, cause, caller, sw, string, NULL, NULL, ls, lsa, rs, rsa);
         command_parse_free_args;
         return NULL;
       }
@@ -1175,7 +1176,7 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
     c = command;
     while (*p == ' ')
       p++;
-    process_expression(command, &c, (const char **) &p, player, cause, cause,
+    process_expression(command, &c, (const char **) &p, player, caller, cause,
                        noevtoken ? PE_NOTHING :
                        ((PE_DEFAULT & ~PE_FUNCTION_CHECK) |
                         PE_COMMAND_BRACES), PT_SPACE,
@@ -1214,7 +1215,7 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
         safe_chr(' ', commandraw, &c2);
         p++;
       }
-      process_expression(commandraw, &c2, (const char **) &p, player, cause,
+      process_expression(commandraw, &c2, (const char **) &p, player, caller,
                          cause, noevtoken ? PE_NOTHING :
                          ((PE_DEFAULT & ~PE_FUNCTION_CHECK) |
                           PE_COMMAND_BRACES), PT_DEFAULT,
@@ -1314,22 +1315,22 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
 
   if ((cmd->func == command_atrset) && fromport) {
     /* Special case: eqsplit, noeval of rhs only */
-    command_argparse(player, cause, &p, ls, lsa, cmd, 0, 0);
-    command_argparse(player, cause, &p, rs, rsa, cmd, 1, 1);
+    command_argparse(player, cause, caller, &p, ls, lsa, cmd, 0, 0);
+    command_argparse(player, cause, caller, &p, rs, rsa, cmd, 1, 1);
     SW_SET(sw, SWITCH_NOEVAL);  /* Needed for ATTRIB_SET */
   } else {
     noeval = SW_ISSET(sw, SWITCH_NOEVAL) || noevtoken;
     if (cmd->type & CMD_T_EQSPLIT) {
       char *savep = p;
-      command_argparse(player, cause, &p, ls, lsa, cmd, 0, noeval);
+      command_argparse(player, cause, caller, &p, ls, lsa, cmd, 0, noeval);
       if (noeval && !noevtoken && *p) {
         /* oops, we have a right hand side, should have evaluated */
         p = savep;
-        command_argparse(player, cause, &p, ls, lsa, cmd, 0, 0);
+        command_argparse(player, cause, caller, &p, ls, lsa, cmd, 0, 0);
       }
-      command_argparse(player, cause, &p, rs, rsa, cmd, 1, noeval);
+      command_argparse(player, cause, caller, &p, rs, rsa, cmd, 1, noeval);
     } else {
-      command_argparse(player, cause, &p, ls, lsa, cmd, 0, noeval);
+      command_argparse(player, cause, caller, &p, ls, lsa, cmd, 0, noeval);
     }
   }
 
@@ -1378,7 +1379,7 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
   }
 #ifdef NEVER
   /* We used to do this, but we're not sure why */
-  process_expression(commandraw, &c2, (const char **) &p, player, cause,
+  process_expression(commandraw, &c2, (const char **) &p, player, caller,
                      cause, noevtoken ? PE_NOTHING :
                      ((PE_DEFAULT & ~PE_EVALUATE) |
                       PE_COMMAND_BRACES), PT_DEFAULT, NULL);
@@ -1438,7 +1439,7 @@ run_command(COMMAND_INFO *cmd, dbref player, dbref cause,
       return 1;
     }
     run_hook(player, cause, &cmd->hooks.before, saveregs, 1);
-    cmd->func(cmd, player, cause, sw, string, swp, ap, ls, lsa, rs, rsa);
+    cmd->func(cmd, player, cause, cause, sw, string, swp, ap, ls, lsa, rs, rsa);
     run_hook(player, cause, &cmd->hooks.after, saveregs, 0);
   }
   /* Either way, we might log */

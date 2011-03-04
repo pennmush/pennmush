@@ -1062,7 +1062,7 @@ passwd_filter(const char *cmd)
  * \param from_port if 1, the command was direct input from a socket.
  */
 void
-process_command(dbref player, char *command, dbref cause, int from_port)
+process_command(dbref player, char *command, dbref cause, dbref caller, int from_port)
 {
   int a;
   char *p;                      /* utility */
@@ -1147,7 +1147,7 @@ process_command(dbref player, char *command, dbref cause, int from_port)
 
   strcpy(unp, command);
 
-  cptr = command_parse(player, cause, command, from_port);
+  cptr = command_parse(player, cause, caller, command, from_port);
   if (cptr) {
     mush_strncpy(global_eval_context.ucom, cptr, BUFFER_LEN);
     a = 0;

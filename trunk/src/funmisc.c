@@ -475,7 +475,7 @@ FUNCTION(fun_die)
 #define CLEAR_SWITCH_VALUE(pe) \
   pe->switch_text[pe->switch_nesting] = NULL; \
   pe->switch_nesting--; \
-  pe_info->local_switch_nesting--;
+  pe->local_switch_nesting--;
 /* ARGSUSED */
 FUNCTION(fun_switch)
 {

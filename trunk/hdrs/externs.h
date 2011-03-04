@@ -71,7 +71,7 @@ dbref visible_short_page(dbref player, const char *match);
 void do_doing(dbref player, const char *message);
 
 /* the following symbols are provided by game.c */
-void process_command(dbref player, char *command, dbref cause, int from_port);
+void process_command(dbref player, char *command, dbref cause, dbref caller, int from_port);
 int init_game_dbs(void);
 void init_game_postdb(const char *conf);
 void init_game_config(const char *conf);
@@ -260,7 +260,7 @@ void do_halt(dbref owner, const char *ncom, dbref victim);
 #define SYSEVENT -1
 bool queue_event(dbref enactor, const char *event, const char *fmt, ...)
   __attribute__ ((__format__(__printf__, 3, 4)));
-void insert_que(dbref player, const char *command, dbref cause,
+void insert_que(dbref player, const char *command, dbref cause, dbref caller,
                 PE_Info *pe_info, char **env, char **rval, int quetype);
 void parse_que(dbref player, const char *command, dbref cause,
                PE_Info *pe_info);
@@ -268,10 +268,10 @@ int queue_attribute_base(dbref executor, const char *atrname, dbref enactor,
                          int noparent);
 ATTR *queue_attribute_getatr(dbref executor, const char *atrname, int noparent);
 int queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor);
-void inplace_queue_actionlist(dbref executor, dbref cause,
-                              const char *command, char **argv);
+void inplace_queue_actionlist(dbref executor, dbref cause, dbref caller,
+                              const char *command, char **argv, int quetype);
 int queue_include_attribute(dbref thing, const char *atrname,
-                            dbref executor, dbref cause, char **args);
+                            dbref executor, dbref cause, dbref caller, char **args);
 void run_user_input(dbref player, char *input);
 
 /** Queue the code in an attribute, including parent objects */

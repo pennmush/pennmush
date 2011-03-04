@@ -3591,7 +3591,7 @@ See also: @restart, @undestroy, ACTION LISTS, @function, @command, @hook,
   @switch/first runs <action> for the first matching <expr> only. Same as
                 @select, and often the desired behaviour.
   @switch/notify queues "@notify me" after the last <action>. 
-  @siwtch/inplace runs all actions in place, instead of creating a new queue
+  @switch/inplace runs all actions in place, instead of creating a new queue
                   entry for them.
   @switch/regexp makes <expr>s case-insensitive regular expressions, not
                  wildcard/glob patterns.

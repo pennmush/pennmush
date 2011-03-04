@@ -1558,7 +1558,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
       }
       if (!just_match) {
         if (inplace) {
-          insert_que(thing, s, player, NULL, args, rnull, QUEUE_RECURSE);
+          insert_que(thing, s, player, player, NULL, args, rnull, QUEUE_RECURSE);
         } else {
           for (i = 0; i < 10; i++) {
             global_eval_context.wnxt[i] = args[i];
@@ -1689,7 +1689,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
         }
         if (!just_match) {
           if (inplace) {
-            insert_que(thing, s, player, NULL, args, rnull, QUEUE_RECURSE);
+            insert_que(thing, s, player, player, NULL, args, rnull, QUEUE_RECURSE);
           } else {
             for (i = 0; i < 10; i++) {
               global_eval_context.wnxt[i] = args[i];
@@ -1778,7 +1778,7 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
       for (i = 0; i < NUMQ; i++) {
         rnull[i] = NULL;
       }
-      insert_que(thing, s, player, NULL, args, rnull, QUEUE_RECURSE);
+      insert_que(thing, s, player, player, NULL, args, rnull, QUEUE_RECURSE);
     } else {
       for (i = 0; i < 10; i++) {
         global_eval_context.wnxt[i] = args[i];

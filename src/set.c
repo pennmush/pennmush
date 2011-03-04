@@ -1053,12 +1053,12 @@ do_include(dbref player, dbref cause, char *object, char **argv)
   }
   /* include modifies the stack, but only if arguments are given */
   if (rhs_present) {
-    if (!queue_include_attribute(thing, upcasestr(s), player, cause, argv + 1)) {
+    if (!queue_include_attribute(thing, upcasestr(s), player, cause, cause, argv + 1)) {
       notify(player, T("No such attribute."));
     }
   } else {
     if (!queue_include_attribute(thing, upcasestr(s), player,
-                                 cause, global_eval_context.wenv)) {
+                                 cause, cause, global_eval_context.wenv)) {
       notify(player, T("No such attribute."));
     }
   }

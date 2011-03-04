@@ -141,7 +141,7 @@ do_teach(dbref player, dbref cause, const char *tbuf1)
                 tprintf(T("%s types --> %s%s%s"), spname(player),
                         ANSI_HILITE, tbuf1, ANSI_END), NA_INTER_HEAR);
   command = mush_strdup(tbuf1, "string");       /* process_command is destructive */
-  process_command(player, command, cause, 1);
+  process_command(player, command, cause, cause, 1);
   mush_free(command, "string");
   recurse = 0;                  /* Ok, we can be called again safely */
 }

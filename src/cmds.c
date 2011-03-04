@@ -417,7 +417,7 @@ COMMAND(cmd_flag)
 
 COMMAND(cmd_force)
 {
-  do_force(player, arg_left, arg_right, SW_ISSET(sw, SWITCH_INPLACE));
+  do_force(player, caller, arg_left, arg_right, SW_ISSET(sw, SWITCH_INPLACE));
 }
 
 COMMAND(cmd_function)

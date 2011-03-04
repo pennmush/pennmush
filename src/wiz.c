@@ -598,12 +598,13 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
  * This implements @force.
  * \endverbatim
  * \param player the enactor.
+ * \param caller the caller.
  * \param what name of the object to force.
  * \param command command to force the object to run.
  * \param inplace If true, use inplace_queue instead of parse_que
  */
 void
-do_force(dbref player, const char *what, char *command, int inplace)
+do_force(dbref player, dbref caller, const char *what, char *command, int inplace)
 {
   dbref victim;
   int j;
@@ -628,16 +629,18 @@ do_force(dbref player, const char *what, char *command, int inplace)
     notify(player, T("You can't force God!"));
     return;
   }
+
+  /* Set up the stack */
+  for (j = 0; j < 10; j++)
+    global_eval_context.wnxt[j] = global_eval_context.wenv[j];
+  for (j = 0; j < NUMQ; j++)
+    global_eval_context.rnxt[j] = global_eval_context.renv[j];
+
   /* force victim to do command */
-  if (inplace) {
-    inplace_queue_actionlist(victim, victim, command, NULL);
-  } else {
-    for (j = 0; j < 10; j++)
-      global_eval_context.wnxt[j] = global_eval_context.wenv[j];
-    for (j = 0; j < NUMQ; j++)
-      global_eval_context.rnxt[j] = global_eval_context.renv[j];
+  if (inplace)
+    inplace_queue_actionlist(victim, caller, player, command, NULL, QUEUE_RECURSE);
+  else
     parse_que(victim, command, player, NULL);
-  }
 }
 
 /** Parse a force token command, but don't force with it.

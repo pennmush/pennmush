@@ -1127,7 +1127,7 @@ process_expression(char *buff, char **bp, char const **str,
           (*str)++;
           if (pe_info->switch_nesting >= 0
               && pe_info->local_switch_nesting >= 0) {
-            if (nextc == 'l') {
+            if (nextc == 'l' || nextc == 'L') {
               inum_this = pe_info->local_switch_nesting;
             } else if (!isdigit((unsigned char) nextc)) {
               safe_str(T(e_int), buff, bp);

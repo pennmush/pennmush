@@ -1015,6 +1015,11 @@ FUNCTION(fun_lnum)
   strcpy(csep[cpos], osep);
   cp = cresult[cpos];
 
+  if (step == 0.0)
+    step = 1.0;
+  else if (step < 0.0)
+    step = step * -1.0;
+
   istart = (int) start;
   iend = (int) end;
   istep = (int) step;

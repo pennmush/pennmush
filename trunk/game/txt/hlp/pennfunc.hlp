@@ -608,14 +608,16 @@ See also: acos(), atan(), cos(), ctu(), sin(), tan()
 
 See also: acos(), asin(), cos(), ctu(), sin(), tan()
 & ATRLOCK()
-  atrlock(<object>/<attrib>[, <on|off>])
+  atrlock(<object>/<attrib>[, [on|off]])
 
   When given a single <object>/<attribute> pair as an argument, returns 1
   if the attribute is locked, 0 if unlocked, and #-1 if the attribute
   doesn't exist or can't be read by the function's caller.
 
   When given a second argument of "on" (or "off"), attempts to lock
-  (unlock) the specified attribute, as per @atrlock.
+  (or unlock) the specified attribute, as per @atrlock.
+  
+See also: @atrlock, @atrchown, hasflag()
 & ATTRIB_SET()
   attrib_set(<object>/<attrib>[, <value>])
 
@@ -632,7 +634,7 @@ See also: acos(), asin(), cos(), ctu(), sin(), tan()
   space. This means that attrib_set(me/foo,%0) will _always_
   create an attribute.
 
-See also: set()
+See also: set(), @set
 & BAND()
   band(<integer>, <integer>[, ... , <integerN>])
 

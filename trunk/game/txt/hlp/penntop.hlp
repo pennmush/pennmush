@@ -53,7 +53,7 @@ This is the index to the MUSH online help files.
   
   Some common commands that you should look at help for are:
   
-    look   say    go    page    pose    take     give    home
+    look   say    go    page    pose    get     give    home
   
   Just type help <command> for help. Example: help page
   
@@ -108,28 +108,26 @@ Help is available on the following topics:
   
 Type "help <topic name>" for help.
 & ACTION LISTS
-  Action lists are simply lists of actions that are all executed at
-  once.  You can have an action list in a user-defined command, in one
-  of the a-attributes, or in many other commands. Action lists may not
-  be executed directly from a client, except in the case of a command
-  which forces a re-insertion into the queue such as @switch or
-  @dolist.
+  An "action list" is simply a list of MUSH commands which are run together,
+  one after the other. Each command in the list is separated by a semicolon.
+  Action lists appear in many places: in user-defined commands, triggered in
+  @a-attributes by the MUSH, and even as arguments to other commands, like
+  @switch and @dolist.
 
-  Actions in an action list are separated by semicolons. Each action
-  is simply a separate MUSH command. If part of the action (such as
-  the text in an @emit, for example) contains a semi-colon or comma,
-  you may need to enclose that part in curly braces {}. You can also
-  nest action lists inside each other by enclosing each action list in
+  If part of the command (such as the text in an @emit, for example) contains
+  a semi-colon, you may need to enclose that part in curly braces {}. You can
+  also nest action lists inside each other by enclosing each action list in
   braces {}.
 
   Substitution will be performed on the contents of action lists before
   they are executed.
 
-  Continued in 'help action2'.
+  See 'help action2' for some examples.
+See also: @-ATTRIBUTES, VERBS, $-COMMANDS
 & ACTION2
   Example 1:
-    > @asuccess Gift = @pemit %#={The box pops open; surprise!} ; 
-        @name me=New Toy ; @desc me={A shiny new toy, just for %N!}
+    > @asuccess Gift=@pemit %#={The box pops open; surprise!} ; 
+        @name me=New Toy ; @desc me=A shiny new toy, just for %n!
     > take gift
     The box pops open; surprise!
     > look new toy
@@ -138,7 +136,7 @@ Type "help <topic name>" for help.
             
   Example 2:
     > &TEST me=$test:@emit {Testing; testing; one, two.} ; 
-        @dolist 1 2 3={think {Test ##, success.} }
+        @dolist 1 2 3={think Test ##, success.}
     > test
     Testing; testing; one, two.
     Test 1, success.
@@ -149,29 +147,27 @@ See also: ATTRIBUTES, SUBSTITUTION, @asuccess, @dolist
 & ANCESTORS
   ANCESTORS
 
-  Objects can inherit attributes from other objects through the use of
-  parents. An object's parent, its parent's parent, its parent's
-  parent's parent, etc. constitute the object's "parent chain" and
-  lookups work the way up the chain until an inheritance occurs.
+  Objects can inherit attributes and locks from other objects through the use
+  of parents. An object's parent, its parent's parent, its parent's parent's
+  parent, etc. constitute the object's "parent chain" and lookups work the 
+  way up the chain until an inheritance occurs.
 
-  Ancestors are "virtual parents" that are assumed to be last on every
-  parent chain. There is one ancestor for each object type (room,
-  exit, thing, player), and @config lists the dbref of each ancestor
-  object (@config ancestor_room, etc.) Under normal circumstances, if
-  an attribute can't be retrieved from an object or any of its
-  explicit parents, the attribute will be looked for on the
-  appropriate ancestor.  The ORPHAN flag may be set on an object to
-  cause lookups on that object to ignore ancestors (like the
+  Ancestors are "virtual parents" that are assumed to be last on every parent
+  chain. There is one ancestor for each object type (room, exit, thing,
+  player), and @config lists the dbref of each ancestor object (@config 
+  ancestor_room, etc). Under normal circumstances, if an attribute/lock can't
+  be retrieved from an object or any of its explicit parents, the attribute
+  will be looked for on the appropriate ancestor.  The ORPHAN flag may be set
+  on an object to cause lookups on that object to ignore ancestors (like the
   pre-ancestor behavior).
 
-  Ancestors may themselves have parent chains, but these are
-  (obviously) not virtually terminated by ancestors.
+  Ancestors may themselves have parent chains, but these are (obviously) not 
+  virtually terminated by ancestors.
 
-  Note that the choice of which ancestor to look up is based on the
-  type of the *child* object, as is the check of the ORPHAN flag.
-  Also note that ancestors are *not* checked for $-commands or
-  ^-commands; you should use the master room for global commands,
-  instead.
+  Note that the choice of which ancestor to look up is based on the type of 
+  the *child* object, as is the check of the ORPHAN flag. Also note that 
+  ancestors are *not* checked for $-commands or ^-commands; you should use 
+  the master room for global commands, instead.
 
 See also: PARENTS, ORPHAN
 & ANONYMOUS ATTRIBUTES
@@ -192,6 +188,8 @@ See also: PARENTS, ORPHAN
 
   See 'HELP ANONYMOUS2' for examples.
 & ANONYMOUS2
+& LAMBDA2
+& #LAMBDA2
   A typical usage of anonymous attributes would be to convert
   a list of dbrefs to names, as so:
 
@@ -215,6 +213,8 @@ See also: PARENTS, ORPHAN
 
   See 'HELP ANONYMOUS3' for another example.
 & ANONYMOUS3
+& LAMBDA3
+& #LAMBDA3
   
   You can also use lit() to avoid having the code evaluated twice, if
   needed. For example, this code, which returns all unlinked exits in
@@ -231,6 +231,8 @@ See also: PARENTS, ORPHAN
   See 'HELP ANONYMOUS4' for a list of functions that support anonymous
   attributes.
 & ANONYMOUS4
+& LAMBDA4
+& #LAMBDA4
   The following functions support anonymous attributes:
   
   filter()    filterbool()   fold()      foreach()   map()      mapsql()
@@ -238,16 +240,14 @@ See also: PARENTS, ORPHAN
 & ATTRIB-OWNERSHIP
   ATTRIBUTE OWNERSHIP
   
-  The latest person to set an attribute on an object is the owner of
-  that attribute. If you lock an attribute, using the @atrlock
-  command, only the person who owns the attribute will be able to
-  alter the attribute. This allows you to create standard commands on
-  objects and then @chown them to others without letting them alter
-  them.
+  The latest person to set an attribute on an object is the owner of that 
+  attribute. If you lock an attribute, using the @atrlock command, only 
+  the person who owns the attribute will be able to alter the attribute. 
+  This allows you to create standard commands on objects and then @chown 
+  them to others without letting them alter them.
 
-  Attribute ownership is NOT changed when the object itself is
-  @chown'ed.  To change attribute ownership, you must use the
-  @atrchown command.
+  Attribute ownership is NOT changed when the object itself is @chown'ed. 
+  To change attribute ownership, you must use the @atrchown command.
 
   You must control an object in order to set attributes on it.
 
@@ -503,23 +503,40 @@ See also: help code, help license
   Continued in 'help dbref2'.
 & DBREF2
   
-  If you own or control an object, you will see its dbref number
-  listed right after its name when you look at it (unless you are set
-  MYOPIC).
+  If you own or control an object, you will see its dbref number listed 
+  right after its name when you look at it (unless you are set MYOPIC).
 
   Example:
     > look me
     Cyclonus(#3PWenAMc)
     A very short desc.
 
-  The dbref number is indicated by the number/pound sign
-  (#). Cyclonus's dbref is #3. The letters following the dbref are the
-  abbreviations of the flags set on the object. NOTE: the abbreviation
-  of the OPAQUE flag is 'O' (o), which looks like '0' (zero) on some
-  clients. Make sure you have the right number before using it in your
-  code!
+  The dbref number is indicated by the number/pound sign (#). Cyclonus's 
+  dbref is #3. The letters following the dbref are the abbreviations of the
+  flags set on the object. NOTE: the abbreviation of the OPAQUE flag is 'O'
+  (o), which looks like '0' (zero) on some clients. Make sure you have the
+  right number before using it in your code!
 
-See also: MYOPIC, OPAQUE, MUSHCODE
+See also: MYOPIC, OPAQUE, MUSHCODE, MATCHING, OBJIDS
+& OBJIDS
+& OBJECT IDS
+
+  When an object is destroyed, its dbref number will eventually be recycled
+  and given to a newly created object. This can cause problems in code,
+  particularly in database code which stores members of a group, as code
+  which was meant to refer to the old object ends up referring to the new one
+  by mistake.
+  
+  To avoid this problem, you can use the "object id", or objid, instead of
+  the dbref. An object id consists of the object's dbref, a colon, and then
+  the object's creation time. Objids can be used anywhere dbrefs can and,
+  because the creation time is different each time the dbref is recycled, the
+  objid is totally unique to each object.
+  
+  The objid() function returns the object id of an object, and the %:
+  substitution evaluates to the objid of the enactor. 
+  
+See also: objid(), @lock-objid, DBREFS
 & DROP-TOS
 & DROPTOS
 
@@ -546,36 +563,65 @@ See also: @link, STICKY, LINK_OK, @lock
 & %~
 & %:
 & ENACTOR
-  The enactor is the object that does something (enacts something :).
-  This is an important concept in MUSH, because the way many commands
-  work will depend on who enters the command (ie, who the enactor is).
+  The enactor is the object which causes something to happen. This is an 
+  important concept in MUSH, because the way many commands work will depend
+  on who enters the command (ie, who the enactor is). Note that while the
+  enactor is the object which -caused- code/a command to run, it is not
+  necessarily the object which is running the code (that's the executor).
   Any type of object can be an enactor.
 
-  There are five %-substitutions that involve the enactor:
+  There are eight %-substitutions that involve the enactor:
     %# = the enactor's dbref
-    %N = the enactor's name, first letter capitalized
-    %n = the enactor's name, first letter as-is
+    %n = the enactor's name
     %~ = the enactor's accented name
     %: = the enactor's unique identifier, like objid(%#)
+    %a, %o, %p, %s = pronoun substitutions, based on the enactor's @sex.
+                     See 'help gender' for more information.
 
-  If, for example, you have an @osucc on an object that includes the
-  %n symbol, whenever someone picks up the object, that %n will be
-  replaced with the name of the enactor (the person who typed 'get
-  <object>' in this case).
+  If, for example, you have an @osuccess on an object that includes the %n
+  subtitution, whenever someone picks up the object, that %n will evaluate to
+  the name of the enactor (the person who typed 'get <object>' in this case).
   
-See also: EXECUTOR, CALLER, SUBSTITUTION, DBREF
+See also: EXECUTOR, CALLER, SUBSTITUTIONS, DBREF
+& %!
+& EXECUTOR
+  The executor of a command is the object actually carrying out the command
+  or running the code. This differs from the enactor, because the enactor is
+  the object that sets off the command. In some cases, the enactor and the
+  executor will be the same. The substitution %! evaluates to the dbref of
+  the executor of the code.
+
+  For example:
+    > @emit %n (%#) is the enactor and %! is the executor!
+    Cyclonus (#6) is the enactor and #6 is the executor!
+    > @create Box
+    Created: Object #10
+    > &EMIT box=$emit: @emit %n (%#) is the enactor and %! is the executor!
+    > emit
+    Cyclonus (#6) is the enactor and #10 is the executor!
+
+  In the first case, Cyclonus directly entered the command and was
+  therefore both the enactor and the executor. In the second, Cyclonus
+  set off the command on the box, so Cyclonus was still the enactor,
+  but the box was the object that was actually doing the @emit, and
+  was thus the executor.
+
+See also: ENACTOR, CALLER, SUBSTITUTIONS
 & %@
 & CALLER
-  In functions, the caller is the object which ran the function. The caller's
-  dbref is available using the %@ substitute, and is useful in code which is
-  evaluated using ufun() or similar functions, to tell who is evaluating the
-  attribute.
+  The caller is the object which causes an attribute to be evaluated (for
+  instance, by using ufun() or a similar function). The substitution %@ 
+  evaluates to the caller's dbref. It's particularly useful for functions
+  with side-effects, to check that the object evaluating the function has
+  permission.
   
   Example:
     > &cmd_test Foo=$test: @emit ufun(Bar/fun_test)
     > &fun_test Bar=%n(%#) typed 'test', and [name(%@)](%@) ufun()'d this!
     > test
     Mike(#5) typed 'test', and Foo(#6) ufun()'d this!
+    
+    > &wizfun Foo=if(hasflag(%@, Wizard), ufun(wizfun2), #-1 Sorry)
     
 See also: ENACTOR, EXECUTOR
 & EVALUATION ORDER
@@ -615,38 +661,14 @@ See also: ENACTOR, EXECUTOR
 
   Because local $-commands overrule global $-commands, you can easily
   prevent a global $-command from working in a specific room by setting
-  a copy of the global $-command in that room. Alternatively, if a
-  global $-command is oddly not working in a room, you should check for
-  copies of the command word in the room (using @scan). Wizards who want to
-  ensure a global $-command always takes precedence over a local one should
-  use @command/add and @hook/override, to make the command run as a regular
+  a copy of the global $-command in that room. Alternatively, if a global 
+  $-command is oddly not working in a room, you should check for copies of 
+  the command word in the room (using @scan). Wizards who want to ensure a
+  global $-command always takes precedence over a local one should use 
+  @command/add and @hook/override, to make the command run as a regular
   game command instead of a softcoded global.
   
 See also: @command, @hook, $-commands, huh_command
-& %!
-& EXECUTOR
-  The executor of a command is the object actually carrying out the
-  command.  This differs from the enactor, because the enactor is the
-  object that sets off the command. In some cases, the enactor and the
-  executor will be the same. There is a %-substitution, %!, that is
-  replaced by the dbref # of the executor of the command.
-
-  For example:
-    > @emit %n (%#) is the enactor and %! is the executor!
-    Cyclonus (#6) is the enactor and #6 is the executor!
-    > @create Box
-    Created: Object #10
-    > &DO_EMIT box=$emit:@emit %n (%#) is the enactor and %! is the executor!
-    > emit
-    Cyclonus (#6) is the enactor and #10 is the executor!
-
-  In the first case, Cyclonus directly entered the command and was
-  therefore both the enactor and the executor. In the second, Cyclonus
-  set off the command on the box, so Cyclonus was still the enactor,
-  but the box was the object that was actually doing the @emit, and
-  was thus the executor.
-
-See also: ENACTOR, CALLER, SUBSTITUTION
 & FAILURE
   FAILURE  
 
@@ -697,47 +719,52 @@ See also: verbs, @lock, @failure, @efail, @lfail
   the object is neuter. Setting a gender attribute will enable pronoun
   substitution by the MUSH. The SEX attribute is visual to anyone who
   wants to see it.
+  
+  The obj(), subj(), poss() and aposs() functions return different pronouns
+  for an object based on its @sex, and the %o, %s, %p and %a substitutions
+  return the same pronouns for the enactor.
 
 See also: @sex, SUBSTITUTION
 & GLOBALS
 & GLOBAL COMMANDS
   A command is "global" if it can be used anywhere in the world of the
-  MUSH. The standard MUSH commands are all global, so this term is
-  usually used to refer to user-defined commands on objects in the
-  Master Room of the MUSH. Global commands very greatly from MUSH to
-  MUSH, but you can usually find MUSH-specific help on them by typing
-  "+help".
+  MUSH. The standard/built-in MUSH commands are all global, so this term is
+  usually used to refer to user-defined commands on objects in the Master 
+  Room of the MUSH. Global commands very greatly from MUSH to MUSH, but you 
+  can usually find MUSH-specific help on them by typing "+help".
 
-See also: MASTER ROOM, USER-DEFINED COMMANDS, EVALUATION
+See also: MASTER ROOM, USER-DEFINED COMMANDS, EVALUATION ORDER
 & HERE
-  The word 'here' refers to the room you are in. For example, to
-  rename the room you're in (if you control it), you could enter
-  "@name here= <new name>".
+  The word 'here' refers to the room you are in. For example, to rename the 
+  room you're in (if you control it), you could use:
+
+    > @name here=<new name>
+    
+See also: MATCHING
 & HOMES
 & HOME
-  Every thing or player has a home, which is usually the room where it
-  was created. You can reset your home or the home of any object you
-  own with the @link command: @link <me|object>=<location>. You must
+  Every thing or player has a home, which is usually the room where it was
+  created. You can reset your home or the home of any object you own with
+  the @link command: @link [me | <object>]=<location>. You must
   also control <location>, unless that location (room or thing) is set
   ABODE or LINK_OK.
 
-  When a player types 'home', s/he is sent back to the home room. When
-  a thing with the STICKY flag set on it is dropped, it also goes to
-  its home location. Note that if the FIXED flag is set on a player,
-  he/she cannot use the 'home' command.
+  When a player types 'home', she is sent back to the home room. When a 
+  thing with the STICKY flag set on it is dropped, it also goes to its 
+  home location. Note that if the FIXED flag is set on a player, she cannot
+  use the 'home' command.
 
   You can create an exit that sends players home by doing:
         @link <exit name>=home
   You can set the drop-to in a room to home by doing:
         @link <room dbref or "here">=home
         
-  The home of an exit is its source (the room it's located in). You
-  can change the home/source of an exit by @teleporting it to another
-  room.
+  The home of an exit is its source (the room it's located in). You can
+  change the home/source of an exit by @teleporting it to another room.
 
   The home of a room is its drop-to.
 
-See also: DROP-TOS, @link, STICKY, LINK_OK, FIXED, EXITS
+See also: DROP-TOS, @link, STICKY, LINK_OK, FIXED, EXITS, home(), loc()
 & INTERIORS
   Here's a quick description of how to make things that can be
   entered:

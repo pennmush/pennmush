@@ -187,6 +187,8 @@ See also: look, @describe, @idescribe, ACTION LISTS
   is @destroyed, not when the object is actually purged from the database,
   it's possible for <object> to be @undestroyed after the adestroy has run.
   
+  Please note that there are no destroy or odestroy attributes.
+  
 See also: @destroy, @undestroy
 & @adisconnect
   @adisconnect <object>[=<action list>]
@@ -471,9 +473,9 @@ See also: @teleport, ACTION LISTS, VERBS
 & @atrchown
   @atrchown <object>/<attribute>=<new owner>
   
-  These command changes the ownership of the attribute <attribute> on
-  <object> to <new owner>. You can only @atrchown attributes which you can
-  set. Wizards can @atrchown to any player, while mortals can only @atrchown
+  This command changes the ownership of the attribute <attribute> on <object>
+  to <new owner>. You can only @atrchown attributes which you can set. 
+  Wizards can @atrchown to any player, while mortals can only @atrchown
   attributes to themselves. Only players can own attributes; if <new owner>
   is not a player, <new owner>'s owner is used instead.
 
@@ -492,7 +494,7 @@ See also: @atrlock, ATTRIBUTES, NON-STANDARD ATTRIBUTES
   alter the attribute for other reasons, such as not controlling <object>).
   You must be able to set an attribute in order to lock it.
 
-See also: @atrchown, ATTRIBUTES, NON-STANDARD ATTRIBUTES
+See also: atrlock(), @atrchown, ATTRIBUTES, NON-STANDARD ATTRIBUTES
 & @asuccess
 & @success
 & @osuccess
@@ -521,8 +523,8 @@ See also: get, goto, @lock, SUCCESS, FAILURE, @odrop, ACTION LISTS, VERBS
 & @attribute
   @attribute <attrib>
 
-  The @attribute command displays and modifies the MUSH's standard
-  attributes (see "@list/attribs" for a list of them).
+  The @attribute command displays and modifies the MUSH's standard attributes
+  (see "@list/attribs" for a list of them).
   
   *** Unlike TinyMUSH, changes to the PennMUSH attribute table are not saved 
   *** across shutdowns. Use these commands from God's @startup to ensure they
@@ -559,7 +561,7 @@ See also: get, goto, @lock, SUCCESS, FAILURE, @odrop, ACTION LISTS, VERBS
 
   @attribute/limit lets you restrict all _new_ values for an attribute to
   those that match a regexp pattern. Case insensitive. (Use (?-i) to make
-  your regexp case-sensitive)
+  your regexp case-sensitive.)
 
   @attribute/enum lets you restrict all _new_ values for an attribute to
   match an item in a list. It will also perform partial matching on the
@@ -1412,7 +1414,7 @@ See also: @shutdown
   "leave <object>" to enter/leave the object.
   
   These attributes only have meaning for players and things (as rooms/exits
-  cannot be "enter"ed) - the aliases for exits are part of their @name.
+  cannot be "enter"ed) - the aliases for exits are stored in @alias.
   
   Example:
     > @ealias Chair=Sit down;sit
@@ -1682,7 +1684,7 @@ See also: DEBUG, @forwardlist, @lock
   being queued for execution later.
 
   @force can be abbreviated as
-    <dbref#> <action list>
+    <dbref> <action list>
 
   Continued in 'help @force2'.
 & @force2
@@ -2108,7 +2110,7 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
       @pemit/sil %#=Huh? %b(Type "help" for help.) ;
       @break mod(get(%#/typos),10) ; 
       @wall %n wins %p [ordinal(div(get(%#/typos),10))] typo trophy!
-    > asfdsf (10 times)
+    > asfdsf  (10 times)
     Huh?  (Type "help" for help.)  (10 times)
     Announcement: Room Zero shouts, "Dunce wins his first typo trophy!"
 
@@ -2122,7 +2124,7 @@ See also: @hook, EVALUATION ORDER
   are in a meeting and cannot quickly return pages.
 
   Example: 
-    > @idle me=switch(idlesecs(me),>120,I'm idle. Use @mail)
+    > @idle me=switch(idle(me),>120,I'm idle. Use @mail)
 
   Players paging me will only see the "I'm idle" message if I've been
   idle for over 2 minutes (120 seconds).
@@ -2218,7 +2220,7 @@ See also: list(), @config, config(), functions(), @stats, @command,
 
 See also: @list
 & @link
-  @link[/preserve] <object>=<dbref | here | home | variable>
+  @link[/preserve] <object>=[<dbref> | here | home | variable]
 
   Links <object> to either a room or a thing. If a thing or player is
   linked, that sets the object's HOME. If a room is linked, that sets 
@@ -2230,7 +2232,7 @@ See also: @list
   control the room, OR the room must be set LINK_OK. If the exit is
   currently unlinked, and you pass its @lock/link, you may link it even
   if you do not own it. In this case, the exit will be @chowned to you
-  (and set HALT).  Linking an exit may have a cost (usually 1 penny.)
+  (and set HALT). Linking an exit may have a cost (usually 1 penny.)
   The Wizard-only /preserve switch can be used to link without @chowning
   and HALTing the exit.
 
@@ -2457,7 +2459,8 @@ NAME LOCKS
 
     @lock <object>=name^<pattern>
 
-  It is identical to performing strmatch(%n,<pattern>)
+  It is similar to performing strmatch(%n,<pattern>), though will also match
+  for a player/exit with <pattern> as one of its @aliases.
 
   For example, to lock "Bob's Tools" to only people with a name beginning
   with Bob:
@@ -2701,7 +2704,7 @@ See also: message(), @chatformat, @pageformat
   /list   : list the MOTDs (like @listmotd, can be used by anyone)
 & @name
   @name <object>=<new name>
-  @name <player|exit>=<new name>;[<alias1>[;<aliasN>]]
+  @name <player|exit>=<new name>[;<alias1>[;<aliasN>]]
 
   Changes the name of <object> to <new name>.
 
@@ -2786,9 +2789,9 @@ See also: SEMAPHORES, @drain, @wait
   @nslemit[/<switch>] <message>
   @nspemit[/switches] <object>=<message>
   @nsprompt[/switches] <object>=<message>
-  @nsremit[/switches] <object> = <message>.
-  @nsoemit[/<switch>] [<room>/]<object> [<object>...] = <message>
-  @nszemit <zone> = <message>
+  @nsremit[/switches] <object>=<message>.
+  @nsoemit[/<switch>] [<room>/]<object> [<object>...]=<message>
+  @nszemit <zone>=<message>
 
   These commands work like @emit, @lemit, @pemit, @prompt, @remit, @oemit, 
   and @zemit, respectively, but will not include nospoof information if used
@@ -4107,7 +4110,7 @@ See also: empty, get, STICKY, DROP-TO
   when you don't have a home. You can describe the interior of an
   object differently from its exterior by using @idescribe.
 
-See: @enter, @oenter, @oxenter, @aenter, leave, @lock, @idesc, INTERIORS
+See: @enter, @efail, @ealias, leave, @lock, @idescribe, INTERIORS
 & rules
   rules [<topic>]
   events [<topic>] 
@@ -4371,7 +4374,7 @@ See also: BEING KILLED, HAVEN, FLAGS, powers list
   fail to leave, the object's @lfail/@olfail/@alfail messages/actions
   will be triggered.
 
-See also: enter, @leave, @lfail, @lock, INTERIORS 
+See also: enter, @leave, @lfail, @lalias, @lock, INTERIORS 
 & LOGOUT
   LOGOUT
 

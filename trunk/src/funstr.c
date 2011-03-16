@@ -453,12 +453,14 @@ FUNCTION(fun_strreplace)
   free_ansi_string(src);
 }
 
+extern int sort_order; /* from sort.c */
+
 static int
 comp_gencomp(dbref executor, char *left, char *right, char *type)
 {
   int c;
   c = gencomp(executor, left, right, type);
-  return (c > 0 ? 1 : (c < 0 ? -1 : 0));
+  return (c > 0 ? 1 : (c < 0 ? -1 : 0)) * sort_order;
 }
 
 /* ARGSUSED */

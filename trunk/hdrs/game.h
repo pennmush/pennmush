@@ -31,7 +31,8 @@ void do_page_port(dbref player, dbref cause, const char *pc, const char *msg,
 void do_pemit_port(dbref player, const char *pc, const char *msg, int flags);
 /* From cque.c */
 void do_wait
-  (dbref player, dbref cause, char *arg1, const char *cmd, bool until);
+  (dbref player, dbref cause, char *arg1, const char *cmd, bool until,
+   MQUE * parent_queue);
 void do_waitpid(dbref, const char *, const char *, bool);
 enum queue_type { QUEUE_ALL, QUEUE_NORMAL, QUEUE_SUMMARY, QUEUE_QUICK };
 void do_queue(dbref player, const char *what, enum queue_type flag);
@@ -91,12 +92,13 @@ extern void do_firstexit(dbref player, const char **what);
 
 /* From player.c */
 extern void do_password(dbref player, dbref cause,
-                        const char *old, const char *newobj);
+                        const char *old, const char *newobj,
+                        MQUE * queue_entry);
 
 /* From predicat.c */
 extern void do_switch
   (dbref player, char *expression, char **argv, dbref cause, int first,
-   int notifyme, int regexp, int inplace);
+   int notifyme, int regexp, int inplace, MQUE * queue_entry);
 extern void do_verb(dbref player, dbref cause, char *arg1, char **argv);
 extern void do_grep
   (dbref player, char *obj, char *lookfor, int flag, int insensitive);
@@ -151,7 +153,8 @@ extern void do_zemit(dbref player, const char *arg1, const char *arg2,
                      int flags);
 extern void do_oemit_list(dbref player, char *arg1, const char *arg2,
                           int flags);
-extern void do_teach(dbref player, dbref cause, const char *tbuf1);
+extern void do_teach(dbref player, const char *tbuf1, int list,
+                     MQUE * parent_queue);
 
 /* From wiz.c */
 extern void do_debug_examine(dbref player, const char *name);
@@ -166,14 +169,15 @@ extern void do_quota(dbref player, const char *arg1, const char *arg2,
 extern void do_allquota(dbref player, const char *arg1, int quiet);
 extern void do_teleport
   (dbref player, const char *arg1, const char *arg2, int silent, int inside);
-extern void do_force(dbref player, dbref caller, const char *what, char *command,
-                     int inplace);
+extern void do_force(dbref player, dbref caller, const char *what,
+                     char *command, int inplace, MQUE * queue_entry);
 extern void do_stats(dbref player, const char *name);
 extern void do_newpassword
-  (dbref player, dbref cause, const char *name, const char *password);
+  (dbref player, dbref cause, const char *name, const char *password,
+   MQUE * queue_entry);
 enum boot_type { BOOT_NAME, BOOT_DESC, BOOT_SELF };
 extern void do_boot(dbref player, const char *name, enum boot_type flag,
-                    int silent);
+                    int silent, MQUE * queue_entry);
 extern void do_chzoneall(dbref player, const char *name, const char *target,
                          bool preserve);
 extern int parse_force(char *command);

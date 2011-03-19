@@ -718,7 +718,7 @@ notify_anything_loc(dbref speaker, na_lookup func,
   struct notify_strings messages[MESSAGE_TYPES];
   struct notify_strings nospoofs[MESSAGE_TYPES];
   struct notify_strings paranoids[MESSAGE_TYPES];
-  int i, j;
+  int i;
   DESC *d;
   enum na_type poutput;
   unsigned char *pstring;
@@ -727,10 +727,8 @@ notify_anything_loc(dbref speaker, na_lookup func,
   ATTR *a;
   char *asave;
   char const *ap;
-  char *preserve[NUMQ];
   int havespoof = 0;
   int havepara = 0;
-  char *wsave[10];
   char *tbuf1 = NULL, *nospoof = NULL, *paranoid = NULL, *msgbuf;
   static dbref puppet = NOTHING;
   int nsflags;
@@ -791,11 +789,9 @@ notify_anything_loc(dbref speaker, na_lookup func,
             continue;
 
           if (!(flags & NA_SPOOF)
-              && (nsfunc
-                  &&
-                  ((Nospoof(target)
-                    && ((target != speaker) || Paranoid(target)))
-                   || (flags & NA_NOSPOOF)))) {
+              && (nsfunc && ((Nospoof(target)
+                              && ((target != speaker) || Paranoid(target)))
+                             || (flags & NA_NOSPOOF)))) {
             if (Paranoid(target) || (flags & NA_PARANOID)) {
               if (!havepara) {
                 paranoid = nsfunc(speaker, func, fdata, 1);
@@ -887,6 +883,7 @@ notify_anything_loc(dbref speaker, na_lookup func,
     if (a) {
       char match_space[BUFFER_LEN * 2];
       ssize_t match_space_len = BUFFER_LEN * 2;
+      char *lenv[10];
 
       if (!tbuf1)
         tbuf1 = (char *) mush_malloc(BUFFER_LEN, "string");
@@ -895,20 +892,20 @@ notify_anything_loc(dbref speaker, na_lookup func,
           ? regexp_match_case_r(tbuf1,
                                 (char *) notify_makestring(msgbuf, messages,
                                                            NA_COLOR, 0),
-                                AF_Case(a), global_eval_context.wnxt, 10,
+                                AF_Case(a), lenv, 10,
                                 match_space, match_space_len)
           : wild_match_case_r(tbuf1,
                               (char *) notify_makestring(msgbuf, messages,
                                                          NA_COLOR, 0),
-                              AF_Case(a), global_eval_context.wnxt, 10,
+                              AF_Case(a), lenv, 10,
                               match_space, match_space_len)) {
         if (eval_lock(speaker, target, Listen_Lock))
           if (PLAYER_AHEAR || (!IsPlayer(target))) {
             if (speaker != target)
-              queue_attribute(target, "AHEAR", speaker);
+              queue_attribute_base(target, "AHEAR", speaker, 0, lenv);
             else
-              queue_attribute(target, "AMHEAR", speaker);
-            queue_attribute(target, "AAHEAR", speaker);
+              queue_attribute_base(target, "AMHEAR", speaker, 0, lenv);
+            queue_attribute_base(target, "AAHEAR", speaker, 0, lenv);
           }
         if (!(flags & NA_NORELAY) && (loc != target) &&
             !filter_found(target,
@@ -919,25 +916,20 @@ notify_anything_loc(dbref speaker, na_lookup func,
           passalong[2] = Owner(target);
           a = atr_get(target, "INPREFIX");
           if (a) {
-            for (j = 0; j < 10; j++)
-              wsave[j] = global_eval_context.wenv[j];
-            global_eval_context.wenv[0] = (char *) msgbuf;
-            for (j = 1; j < 10; j++)
-              global_eval_context.wenv[j] = NULL;
-            save_global_regs("inprefix_save", preserve);
+            NEW_PE_INFO *pe_info = make_pe_info("pe_info-notify");
+            pe_info->env[0] = mush_strdup((char *) msgbuf, "pe_info.env");
+            pe_info->arg_count = 1;
             asave = safe_atr_value(a);
             ap = asave;
             bp = tbuf1;
             process_expression(tbuf1, &bp, &ap, target, speaker, speaker,
-                               PE_DEFAULT, PT_DEFAULT, NULL);
+                               PE_DEFAULT, PT_DEFAULT, pe_info);
             if (bp != tbuf1)
               safe_chr(' ', tbuf1, &bp);
             safe_str(msgbuf, tbuf1, &bp);
             *bp = 0;
+            free_pe_info(pe_info);
             free(asave);
-            restore_global_regs("inprefix_save", preserve);
-            for (j = 0; j < 10; j++)
-              global_eval_context.wenv[j] = wsave[j];
           }
           notify_anything(speaker, Puppet(target) ? na_except2 : na_except,
                           passalong, NULL, flags | NA_NORELAY | NA_PUPPET,

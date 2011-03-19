@@ -1232,10 +1232,9 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
                  const unsigned char *prefix)
 {
   ATTR *a;
-  char *wsave[10], *rsave[NUMQ];
   char arg[BUFFER_LEN], *save, *buff, *bp;
   char const *sp;
-  int j;
+  NEW_PE_INFO *pe_info;
 
   if (!GoodObject(thing) || IsGarbage(thing))
     return 0;
@@ -1252,21 +1251,21 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
     mush_panic("Unable to allocate memory in fcache_dump_attr");
     return -2;
   }
-  save_global_regs("send_txt", rsave);
-  for (j = 0; j < 10; j++) {
-    wsave[j] = global_eval_context.wenv[j];
-    global_eval_context.wenv[j] = NULL;
-  }
-  for (j = 0; j < NUMQ; j++)
-    global_eval_context.renv[j][0] = '\0';
-  global_eval_context.wenv[0] = arg;
+  pe_info = make_pe_info("pe_info-fcache_dump_attr");
+  pe_info->env[0] = mush_strdup(arg, "pe_info.env");
+  pe_info->arg_count = 1;
+  bp = pe_info->attrname;
+  safe_format(pe_info->attrname, &bp, "#%d/%s", thing, attr);
+  *bp = '\0';
   sp = save = safe_atr_value(a);
   bp = buff;
   process_expression(buff, &bp, &sp,
-                     thing, d->player, d->player, PE_DEFAULT, PT_DEFAULT, NULL);
+                     thing, d->player, d->player, PE_DEFAULT, PT_DEFAULT,
+                     pe_info);
   safe_chr('\n', buff, &bp);
   *bp = '\0';
   free((void *) save);
+  free_pe_info(pe_info);
   if (prefix) {
     queue_newwrite(d, prefix, u_strlen(prefix));
     queue_eol(d);
@@ -1275,10 +1274,6 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
     queue_newwrite(d, (unsigned char *) buff, strlen(buff));
   else
     queue_write(d, (unsigned char *) buff, strlen(buff));
-  for (j = 0; j < 10; j++) {
-    global_eval_context.wenv[j] = wsave[j];
-  }
-  restore_global_regs("send_txt", rsave);
   mush_free((void *) buff, "string");
 
   return 1;
@@ -2396,12 +2391,8 @@ do_command(DESC *d, char *command)
   } else {
     if (d->connected) {
       send_prefix(d);
-      global_eval_context.cplr = d->player;
-      run_user_input(d->player, command);
+      run_user_input(d->player, d->descriptor, command);
       send_suffix(d);
-      strcpy(global_eval_context.ccom, "");
-      strcpy(global_eval_context.ucom, "");
-      global_eval_context.cplr = NOTHING;
     } else {
       j = 0;
       if (!strncmp(command, WHO_COMMAND, strlen(WHO_COMMAND))) {
@@ -3620,7 +3611,7 @@ announce_connect(DESC *d, int isnew, int num)
   dbref loc;
   char tbuf1[BUFFER_LEN];
   char *message;
-  char *myenv[2];
+  char *myenv[10];
   dbref zone;
   dbref obj;
   int j;
@@ -3687,42 +3678,34 @@ announce_connect(DESC *d, int isnew, int num)
     if (!Dark(player))
       notify_except(Contents(loc), player, tbuf1, NA_INTER_PRESENCE);
 
-  /* clear the environment for possible actions */
-  for (j = 0; j < 10; j++)
-    global_eval_context.wnxt[j] = NULL;
-  for (j = 0; j < NUMQ; j++)
-    global_eval_context.rnxt[j] = NULL;
-  strcpy(global_eval_context.ccom, "");
-
   queue_event(player, "PLAYER`CONNECT", "%s,%d,%d",
               unparse_objid(player), num, d->descriptor);
   /* And then load it up, as follows:
    * %0 (unused, reserved for "reason for disconnect")
    * %1 (number of connections after connect)
    */
-  myenv[0] = NULL;
+  for (j = 0; j < 10; j++)
+    myenv[j] = NULL;
   myenv[1] = mush_strdup(unparse_integer(num), "myenv");
-  for (j = 0; j < 2; j++)
-    global_eval_context.wnxt[j] = myenv[j];
 
   /* do the person's personal connect action */
-  (void) queue_attribute(player, "ACONNECT", player);
+  (void) queue_attribute_base(player, "ACONNECT", player, 0, myenv);
   if (ROOM_CONNECTS) {
     /* Do the room the player connected into */
     if (IsRoom(loc) || IsThing(loc)) {
-      (void) queue_attribute(loc, "ACONNECT", player);
+      (void) queue_attribute_base(loc, "ACONNECT", player, 0, myenv);
     }
   }
   /* do the zone of the player's location's possible aconnect */
   if ((zone = Zone(loc)) != NOTHING) {
     switch (Typeof(zone)) {
     case TYPE_THING:
-      (void) queue_attribute(zone, "ACONNECT", player);
+      (void) queue_attribute_base(zone, "ACONNECT", player, 0, myenv);
       break;
     case TYPE_ROOM:
       /* check every object in the room for a connect action */
       DOLIST(obj, Contents(zone)) {
-        (void) queue_attribute(obj, "ACONNECT", player);
+        (void) queue_attribute_base(obj, "ACONNECT", player, 0, myenv);
       }
       break;
     default:
@@ -3733,14 +3716,11 @@ announce_connect(DESC *d, int isnew, int num)
   }
   /* now try the master room */
   DOLIST(obj, Contents(MASTER_ROOM)) {
-    (void) queue_attribute(obj, "ACONNECT", player);
+    (void) queue_attribute_base(obj, "ACONNECT", player, 0, myenv);
   }
-  for (j = 0; j < 2; j++)
+  for (j = 0; j < 10; j++)
     if (myenv[j])
       mush_free(myenv[j], "myenv");
-  for (j = 0; j < 10; j++)
-    global_eval_context.wnxt[j] = NULL;
-  strcpy(global_eval_context.ccom, "");
 }
 
 static void
@@ -3753,7 +3733,8 @@ announce_disconnect(DESC *saved, const char *reason)
   char *message;
   dbref zone, obj;
   int j;
-  char *myenv[6];
+  char *myenv[10];
+  char *save;
   dbref player;
   ATTR *a;
 
@@ -3769,12 +3750,6 @@ announce_disconnect(DESC *saved, const char *reason)
       num++;
 
 
-  /* clear the environment for possible actions */
-  for (j = 0; j < 10; j++)
-    global_eval_context.wnxt[j] = NULL;
-  for (j = 0; j < NUMQ; j++)
-    global_eval_context.rnxt[j] = NULL;
-  strcpy(global_eval_context.ccom, "");
   /* And then load it up, as follows:
    * %0 (unused, reserved for "reason for disconnect")
    * %1 (number of connections remaining after disconnect)
@@ -3783,15 +3758,14 @@ announce_disconnect(DESC *saved, const char *reason)
    * %4 (commands queued)
    * %5 (hidden)
    */
-  myenv[0] = NULL;
-  myenv[1] = mush_strdup(unparse_integer(num - 1), "myenv");
+  for (j = 0; j < 10; j++) {
+    myenv[j] = NULL;
+  }
+  myenv[1] = save = mush_strdup(unparse_integer(num - 1), "myenv");
   myenv[2] = mush_strdup(unparse_integer(saved->input_chars), "myenv");
   myenv[3] = mush_strdup(unparse_integer(saved->output_chars), "myenv");
   myenv[4] = mush_strdup(unparse_integer(saved->cmds), "myenv");
   myenv[5] = mush_strdup(unparse_integer(Hidden(saved)), "myenv");
-  for (j = 0; j < 6; j++) {
-    global_eval_context.wnxt[j] = myenv[j];
-  }
 
   /* Eww. Unwieldy.
    * (objid, count, hidden, cause, ip, descriptor, conn,
@@ -3808,15 +3782,15 @@ announce_disconnect(DESC *saved, const char *reason)
               (int) difftime(mudtime, saved->last_time),
               saved->input_chars, saved->output_chars, saved->cmds);
 
-  (void) queue_attribute(player, "ADISCONNECT", player);
+  (void) queue_attribute_base(player, "ADISCONNECT", player, 0, myenv);
   if (ROOM_CONNECTS)
     if (IsRoom(loc) || IsThing(loc)) {
       a = queue_attribute_getatr(loc, "ADISCONNECT", 0);
       if (a) {
         if (!Priv_Who(loc) && !Can_Examine(loc, player))
-          global_eval_context.wnxt[1] = NULL;
-        (void) queue_attribute_useatr(loc, a, player);
-        global_eval_context.wnxt[1] = myenv[1];
+          myenv[1] = NULL;
+        (void) queue_attribute_useatr(loc, a, player, myenv);
+        myenv[1] = save;
       }
     }
   /* do the zone of the player's location's possible adisconnect */
@@ -3826,9 +3800,9 @@ announce_disconnect(DESC *saved, const char *reason)
       a = queue_attribute_getatr(zone, "ADISCONNECT", 0);
       if (a) {
         if (!Priv_Who(zone) && !Can_Examine(zone, player))
-          global_eval_context.wnxt[1] = NULL;
-        (void) queue_attribute_useatr(zone, a, player);
-        global_eval_context.wnxt[1] = myenv[1];
+          myenv[1] = NULL;
+        (void) queue_attribute_useatr(zone, a, player, myenv);
+        myenv[1] = save;
       }
       break;
     case TYPE_ROOM:
@@ -3837,9 +3811,9 @@ announce_disconnect(DESC *saved, const char *reason)
         a = queue_attribute_getatr(obj, "ADISCONNECT", 0);
         if (a) {
           if (!Priv_Who(obj) && !Can_Examine(obj, player))
-            global_eval_context.wnxt[1] = NULL;
-          (void) queue_attribute_useatr(obj, a, player);
-          global_eval_context.wnxt[1] = myenv[1];
+            myenv[1] = NULL;
+          (void) queue_attribute_useatr(obj, a, player, myenv);
+          myenv[1] = save;
         }
       }
       break;
@@ -3854,18 +3828,15 @@ announce_disconnect(DESC *saved, const char *reason)
     a = queue_attribute_getatr(obj, "ADISCONNECT", 0);
     if (a) {
       if (!Priv_Who(obj) && !Can_Examine(obj, player))
-        global_eval_context.wnxt[1] = NULL;
-      (void) queue_attribute_useatr(obj, a, player);
-      global_eval_context.wnxt[1] = myenv[1];
+        myenv[1] = NULL;
+      (void) queue_attribute_useatr(obj, a, player, myenv);
+      myenv[1] = save;
     }
   }
 
-  for (j = 0; j < 6; j++)
+  for (j = 0; j < 10; j++)
     if (myenv[j])
       mush_free(myenv[j], "myenv");
-  for (j = 0; j < 10; j++)
-    global_eval_context.wnxt[j] = NULL;
-  strcpy(global_eval_context.ccom, "");
 
   /* Redundant, but better for translators */
   if (Dark(player)) {

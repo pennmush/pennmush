@@ -4072,10 +4072,12 @@ See also: examine
 See also: KEEPALIVE, @idle
 & teach
   teach <command>
-
-  Shows <command> (unparsed) to others in your room and then causes
-  you to execute <command> as if you'd typed it in directly from 
-  the socket (even if you're an object). Useful for helping newbies:
+  teach/list <action list>
+  
+  The teach command shows <command> (unparsed) to others in your room, and
+  then causes you to execute <command>. If the /list switch is given, instead
+  of a single command it runs an action list of ; separated commands. Useful
+  for helping newbies and demonstrating commands.
 
   > say To do a pose, use :<action>
   You say "To do a pose, use :<action>"
@@ -4086,6 +4088,11 @@ See also: KEEPALIVE, @idle
   > teach "[sort(c b a)]
   Javelin types --> "[sort(c b a)]
   Javelin says, "a b c"
+  
+  > teach/list @switch 1=1, say Third; say First; @break 1; say Second
+  Javelin types, "@switch 1=1, say Third; say First; @break 1; say Second"
+  You say, "First"
+  You say, "Third"
 
 & drop 
   drop <object>

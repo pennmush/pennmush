@@ -252,8 +252,8 @@ FUNCTION(fun_setq)
   for (n = 0; n < nargs; n += 2) {
     if (*args[n] && (*(args[n] + 1) == '\0') &&
         ((qindex = qreg_indexes[(unsigned char) args[n][0]]) != -1)
-        && global_eval_context.renv[qindex]) {
-      strcpy(global_eval_context.renv[qindex], args[n + 1]);
+        && pe_info->qreg_values[qindex]) {
+      strcpy(pe_info->qreg_values[qindex], args[n + 1]);
       if (n == 0 && !strcmp(called_as, "SETR"))
         safe_strl(args[n + 1], arglens[n + 1], buff, bp);
     } else
@@ -323,8 +323,8 @@ FUNCTION(fun_letq)
     }
 
     for (n = 0; n < npairs; n++) {
-      save_partial_global_reg("letq", preserve, regs[n]);
-      mush_strncpy(global_eval_context.renv[regs[n]], values[n], BUFFER_LEN);
+      save_partial_global_reg("letq", preserve, regs[n], pe_info->qreg_values);
+      mush_strncpy(pe_info->qreg_values[regs[n]], values[n], BUFFER_LEN);
     }
   }
   p = args[nargs - 1];
@@ -335,7 +335,7 @@ cleanup:
   if (regs)
     mush_free(regs, "letq.registers");
   if (values) {
-    restore_partial_global_regs("letq", preserve);
+    restore_partial_global_regs("letq", preserve, pe_info->qreg_values);
     for (n = 0; n < npairs; n++)
       mush_free(values[n], "letq.value");
     mush_free(values, "letq.values");
@@ -352,14 +352,14 @@ FUNCTION(fun_unsetq)
 
   if (nargs == 0 || args[0][0] == '\0') {
     for (i = 0; i < NUMQ; i++) {
-      *(global_eval_context.renv[i]) = '\0';
+      *(pe_info->qreg_values[i]) = '\0';
     }
     return;
   }
 
   for (ptr = args[0]; *ptr; ptr++) {
     if ((qindex = qreg_indexes[(unsigned char) *ptr]) != -1) {
-      *(global_eval_context.renv[qindex]) = '\0';
+      *(pe_info->qreg_values[qindex]) = '\0';
     } else if (!isspace((int) *ptr)) {
       safe_str(T("#-1 REGISTER OUT OF RANGE"), buff, bp);
     }
@@ -374,8 +374,8 @@ FUNCTION(fun_r)
 
   if (*args[0] && (*(args[0] + 1) == '\0') &&
       ((qindex = qreg_indexes[(unsigned char) args[0][0]]) != -1)
-      && global_eval_context.renv[qindex])
-    safe_str(global_eval_context.renv[qindex], buff, bp);
+      && pe_info->qreg_values[qindex])
+    safe_str(pe_info->qreg_values[qindex], buff, bp);
   else
     safe_str(T("#-1 REGISTER OUT OF RANGE"), buff, bp);
 }
@@ -472,10 +472,11 @@ FUNCTION(fun_die)
   }
 }
 
+
 #define CLEAR_SWITCH_VALUE(pe) \
-  pe->switch_text[pe->switch_nesting] = NULL; \
-  pe->switch_nesting--; \
-  pe->local_switch_nesting--;
+  pe->switch_text[pe->switch_nestings] = NULL; \
+  pe->switch_nestings--; \
+  pe->switch_nestings_local--;
 /* ARGSUSED */
 FUNCTION(fun_switch)
 {
@@ -492,7 +493,7 @@ FUNCTION(fun_switch)
   char *tbuf1 = NULL;
   int first = 1, found = 0, exact = 0;
 
-  if (pe_info->switch_nesting >= MAX_ITERS) {
+  if (pe_info->switch_nestings >= MAX_ITERS) {
     safe_str(T("#-1 TOO MANY SWITCHES"), buff, bp);
     return;
   }
@@ -509,9 +510,9 @@ FUNCTION(fun_switch)
                      PE_DEFAULT, PT_DEFAULT, pe_info);
   *dp = '\0';
 
-  pe_info->switch_nesting++;
-  pe_info->local_switch_nesting++;
-  pe_info->switch_text[pe_info->switch_nesting] = mstr;
+  pe_info->switch_nestings++;
+  pe_info->switch_nestings_local++;
+  pe_info->switch_text[pe_info->switch_nestings] = mstr;
 
   /* try matching, return match immediately when found */
 
@@ -566,7 +567,7 @@ FUNCTION(fun_switch)
 /* ARGSUSED */
 FUNCTION(fun_slev)
 {
-  safe_integer(pe_info->local_switch_nesting, buff, bp);
+  safe_integer(pe_info->switch_nestings_local, buff, bp);
 }
 
 /* ARGSUSED */
@@ -575,7 +576,7 @@ FUNCTION(fun_stext)
   int i;
 
   if (!strcasecmp(args[0], "l")) {
-    i = pe_info->local_switch_nesting;
+    i = pe_info->switch_nestings_local;
   } else if (is_strict_integer(args[0])) {
     i = parse_integer(args[0]);
   } else {
@@ -583,12 +584,12 @@ FUNCTION(fun_stext)
     return;
   }
 
-  if (i < 0 || i > pe_info->local_switch_nesting
-      || (pe_info->local_switch_nesting - i) < 0) {
+  if (i < 0 || i > pe_info->switch_nestings_local
+      || (pe_info->switch_nestings_local - i) < 0) {
     safe_str(T(e_argrange), buff, bp);
     return;
   }
-  safe_str(pe_info->switch_text[pe_info->local_switch_nesting - i], buff, bp);
+  safe_str(pe_info->switch_text[pe_info->switch_nestings_local - i], buff, bp);
 }
 
 /* ARGSUSED */
@@ -603,13 +604,13 @@ FUNCTION(fun_reswitch)
   int first = 1, found = 0, flags = 0;
   int search, subpatterns, offsets[99];
   pcre *re;
-  struct re_save rsave;
+  struct re_context rsave;
   ansi_string *mas;
   const char *errptr;
   int erroffset;
   pcre_extra *extra;
 
-  if (pe_info->switch_nesting >= MAX_ITERS) {
+  if (pe_info->switch_nestings >= MAX_ITERS) {
     safe_str(T("#-1 TOO MANY SWITCHES"), buff, bp);
     return;
   }
@@ -628,11 +629,11 @@ FUNCTION(fun_reswitch)
   *dp = '\0';
   mas = parse_ansi_string(mstr);
 
-  save_regexp_context(&rsave);
+  save_regexp_context(&rsave, &pe_info->re_context);
 
-  pe_info->switch_nesting++;
-  pe_info->local_switch_nesting++;
-  pe_info->switch_text[pe_info->switch_nesting] = mstr;
+  pe_info->switch_nestings++;
+  pe_info->switch_nestings_local++;
+  pe_info->switch_text[pe_info->switch_nestings] = mstr;
 
   /* try matching, return match immediately when found */
 
@@ -661,10 +662,10 @@ FUNCTION(fun_reswitch)
       tbuf1 = replace_string("#$", mstr, args[j + 1]);
       sp = tbuf1;
       /* set regexp context here */
-      global_eval_context.re_code = re;
-      global_eval_context.re_from = mas;
-      global_eval_context.re_offsets = offsets;
-      global_eval_context.re_subpatterns = subpatterns;
+      pe_info->re_context.re_code = re;
+      pe_info->re_context.re_from = mas;
+      pe_info->re_context.re_offsets = offsets;
+      pe_info->re_context.re_subpatterns = subpatterns;
       per = process_expression(buff, bp, &sp,
                                executor, caller, enactor,
                                PE_DEFAULT | PE_DOLLAR, PT_DEFAULT, pe_info);
@@ -674,18 +675,16 @@ FUNCTION(fun_reswitch)
     mush_free(re, "pcre");
     if (first && found) {
       free_ansi_string(mas);
-      restore_regexp_context(&rsave);
+      restore_regexp_context(&rsave, &pe_info->re_context);
       CLEAR_SWITCH_VALUE(pe_info);
       return;
     }
     /* clear regexp context again here */
-    global_eval_context.re_code = NULL;
-    global_eval_context.re_subpatterns = -1;
-    global_eval_context.re_offsets = NULL;
-    global_eval_context.re_from = NULL;
+    reset_regexp_context(&pe_info->re_context);
+
     if (per) {
       free_ansi_string(mas);
-      restore_regexp_context(&rsave);
+      restore_regexp_context(&rsave, &pe_info->re_context);
       CLEAR_SWITCH_VALUE(pe_info);
       return;
     }
@@ -700,7 +699,7 @@ FUNCTION(fun_reswitch)
   }
   free_ansi_string(mas);
   CLEAR_SWITCH_VALUE(pe_info);
-  restore_regexp_context(&rsave);
+  restore_regexp_context(&rsave, &pe_info->re_context);
 }
 
 #undef CLEAR_SWITCH_VALUE
@@ -942,7 +941,6 @@ FUNCTION(fun_list)
 FUNCTION(fun_scan)
 {
   dbref thing;
-  char save_ccom[BUFFER_LEN];
   char *cmdptr;
   if (nargs == 1) {
     thing = executor;
@@ -960,11 +958,7 @@ FUNCTION(fun_scan)
     }
     cmdptr = args[1];
   }
-  strcpy(save_ccom, global_eval_context.ccom);
-  strncpy(global_eval_context.ccom, cmdptr, BUFFER_LEN);
-  global_eval_context.ccom[BUFFER_LEN - 1] = '\0';
   safe_str(scan_list(thing, cmdptr), buff, bp);
-  strcpy(global_eval_context.ccom, save_ccom);
 }
 
 
@@ -972,7 +966,7 @@ enum whichof_t { DO_FIRSTOF, DO_ALLOF };
 static void
 do_whichof(char *args[], int nargs, enum whichof_t flag,
            char *buff, char **bp, dbref executor,
-           dbref caller, dbref enactor, PE_Info *pe_info, int isbool)
+           dbref caller, dbref enactor, NEW_PE_INFO * pe_info, int isbool)
 {
   int j;
   char tbuf[BUFFER_LEN], *tp;

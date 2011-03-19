@@ -1417,7 +1417,7 @@ follower_command(dbref leader, dbref loc, const char *com)
             || See_All(follower))) {
       /* This is a follower who was in the room with the leader. Follow. */
       notify_format(follower, T("You follow %s."), Name(leader));
-      process_command(follower, combuf, follower, leader, 0);
+      parse_que(follower, leader, combuf, NULL);
     }
   }
 }

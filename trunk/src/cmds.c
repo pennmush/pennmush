@@ -40,11 +40,10 @@ void do_list_memstats(dbref player);
 #define DOL_DELIM 4             /**< dolist/delim bitflag */
 
 void do_dolist(dbref player, char *list, char *command,
-               dbref cause, unsigned int flags);
+               dbref cause, unsigned int flags, MQUE * queue_entry);
 void do_list(dbref player, char *arg, int lc, int which);
 void do_writelog(dbref player, char *str, int ltype);
 void do_readcache(dbref player);
-void do_scan(dbref player, char *command, int flag);
 void do_uptime(dbref player, int mortal);
 extern int config_set(const char *opt, char *val, int source, int restrictions);
 
@@ -111,27 +110,28 @@ COMMAND(cmd_boot)
   int silent = (SW_ISSET(sw, SWITCH_SILENT));
 
   if (SW_ISSET(sw, SWITCH_ME))
-    do_boot(player, (char *) NULL, BOOT_SELF, silent);
+    do_boot(player, (char *) NULL, BOOT_SELF, silent, queue_entry);
   else if (SW_ISSET(sw, SWITCH_PORT))
-    do_boot(player, arg_left, BOOT_DESC, silent);
+    do_boot(player, arg_left, BOOT_DESC, silent, queue_entry);
   else
-    do_boot(player, arg_left, BOOT_NAME, silent);
+    do_boot(player, arg_left, BOOT_NAME, silent, queue_entry);
 
 }
 
 COMMAND(cmd_break)
 {
   if (parse_boolean(arg_left)) {
-    global_eval_context.break_called = 1;
+    queue_entry->queue_type |= QUEUE_BREAK;
     if (arg_right && *arg_right) {
+      char break_cmd[BUFFER_LEN];
       char const *sp = arg_right;
-      char *bp = global_eval_context.break_replace;
-      process_expression(global_eval_context.break_replace, &bp, &sp,
+      char *bp = break_cmd;
+      process_expression(break_cmd, &bp, &sp,
                          player, player, cause,
                          PE_COMMAND_BRACES, PT_DEFAULT, NULL);
       *bp++ = '\0';
-    } else {
-      *(global_eval_context.break_replace) = '\0';
+      new_queue_actionlist(player, cause, caller, break_cmd, queue_entry,
+                           PE_INFO_SHARE, QUEUE_INPLACE, NULL, NULL);
     }
   }
 }
@@ -139,16 +139,17 @@ COMMAND(cmd_break)
 COMMAND(cmd_assert)
 {
   if (!parse_boolean(arg_left)) {
-    global_eval_context.break_called = 1;
+    queue_entry->queue_type |= QUEUE_BREAK;
     if (arg_right && *arg_right) {
+      char break_cmd[BUFFER_LEN];
       char const *sp = arg_right;
-      char *bp = global_eval_context.break_replace;
-      process_expression(global_eval_context.break_replace, &bp, &sp,
+      char *bp = break_cmd;
+      process_expression(break_cmd, &bp, &sp,
                          player, player, cause,
                          PE_COMMAND_BRACES, PT_DEFAULT, NULL);
       *bp++ = '\0';
-    } else {
-      *(global_eval_context.break_replace) = '\0';
+      new_queue_actionlist(player, cause, caller, break_cmd, queue_entry,
+                           PE_INFO_SHARE, QUEUE_INPLACE, NULL, NULL);
     }
   }
 }
@@ -283,7 +284,7 @@ COMMAND(cmd_decompile)
 
 COMMAND(cmd_teach)
 {
-  do_teach(player, cause, arg_left);
+  do_teach(player, arg_left, SW_ISSET(sw, SWITCH_LIST), queue_entry);
 }
 
 COMMAND(cmd_destroy)
@@ -316,7 +317,7 @@ COMMAND(cmd_dolist)
     flags |= DOL_NOTIFY;
   if (SW_ISSET(sw, SWITCH_DELIMIT))
     flags |= DOL_DELIM;
-  do_dolist(player, arg_left, arg_right, cause, flags);
+  do_dolist(player, arg_left, arg_right, cause, flags, queue_entry);
 }
 
 COMMAND(cmd_dump)
@@ -417,7 +418,8 @@ COMMAND(cmd_flag)
 
 COMMAND(cmd_force)
 {
-  do_force(player, caller, arg_left, arg_right, SW_ISSET(sw, SWITCH_INPLACE));
+  do_force(player, caller, arg_left, arg_right, SW_ISSET(sw, SWITCH_INPLACE),
+           queue_entry);
 }
 
 COMMAND(cmd_function)
@@ -821,7 +823,7 @@ COMMAND(cmd_name)
 
 COMMAND(cmd_newpassword)
 {
-  do_newpassword(player, cause, arg_left, arg_right);
+  do_newpassword(player, cause, arg_left, arg_right, queue_entry);
 }
 
 COMMAND(cmd_nuke)
@@ -849,7 +851,7 @@ COMMAND(cmd_parent)
 
 COMMAND(cmd_password)
 {
-  do_password(player, cause, arg_left, arg_right);
+  do_password(player, cause, arg_left, arg_right, queue_entry);
 }
 
 COMMAND(cmd_pcreate)
@@ -1021,7 +1023,7 @@ COMMAND(cmd_select)
 {
   do_switch(player, arg_left, args_right, cause, 1,
             SW_ISSET(sw, SWITCH_NOTIFY), SW_ISSET(sw, SWITCH_REGEXP),
-            SW_ISSET(sw, SWITCH_INPLACE));
+            SW_ISSET(sw, SWITCH_INPLACE), queue_entry);
 }
 
 COMMAND(cmd_set)
@@ -1098,7 +1100,7 @@ COMMAND(cmd_switch)
 {
   do_switch(player, arg_left, args_right, cause, SW_ISSET(sw, SWITCH_FIRST),
             SW_ISSET(sw, SWITCH_NOTIFY), SW_ISSET(sw, SWITCH_REGEXP),
-            SW_ISSET(sw, SWITCH_INPLACE));
+            SW_ISSET(sw, SWITCH_INPLACE), queue_entry);
 }
 
 COMMAND(cmd_squota)
@@ -1118,7 +1120,7 @@ COMMAND(cmd_teleport)
 
 COMMAND(cmd_include)
 {
-  do_include(player, cause, arg_left, args_right);
+  do_include(player, cause, arg_left, args_right, SW_ISSET(sw, SWITCH_LOCAL), queue_entry);
 }
 
 COMMAND(cmd_trigger)
@@ -1174,7 +1176,8 @@ COMMAND(cmd_wait)
   if (SW_BY_NAME(sw, "PID"))
     do_waitpid(player, arg_left, arg_right, SW_ISSET(sw, SWITCH_UNTIL));
   else
-    do_wait(player, cause, arg_left, arg_right, SW_ISSET(sw, SWITCH_UNTIL));
+    do_wait(player, cause, arg_left, arg_right, SW_ISSET(sw, SWITCH_UNTIL),
+            queue_entry);
 }
 
 COMMAND(cmd_wall)

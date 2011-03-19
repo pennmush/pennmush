@@ -83,9 +83,9 @@ extern char const *convert_atr(int oldatr);
 extern int atr_comm_match(dbref thing, dbref player, int type, int end,
                           char const *str, int just_match, int check_locks,
                           char *atrname, char **abp, dbref *errobj,
-                          int inplace);
+                          MQUE * from_queue);
 extern int one_comm_match(dbref thing, dbref player, const char *atr,
-                          const char *str, int inplace);
+                          const char *str, MQUE * from_queue);
 extern int do_set_atr(dbref thing, char const *RESTRICT atr,
                       char const *RESTRICT s, dbref player, uint32_t flags);
 extern void do_atrlock(dbref player, char const *arg1, char const *arg2);

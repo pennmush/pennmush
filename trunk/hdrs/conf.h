@@ -318,9 +318,6 @@ int cf_flag(const char *opt, const char *val, void *loc, int maxval,
 int cf_time(const char *opt, const char *val, void *loc, int maxval,
             int from_cmd);
 
-
-#define NUMQ    36
-
 /* Config group viewing permissions */
 #define CGP_GOD         0x1
 #define CGP_WIZARD      0x3

@@ -1,4 +1,4 @@
-& 1.8.4p3
+& 1.8.4p4
 & changes
 This is a list of changes in this patchlevel which are probably of
 interest to players. More information about new commands and functions
@@ -11,6 +11,26 @@ help topics named for each release (e.g. 'help 1.7.2p30').
 A list of the patchlevels associated with each release can
 be read in 'help patchlevels'.
 
+Version 1.8.4 patchlevel 4                                 ??? ??,  201?
+
+Major changes:
+ * Hardcode: global_eval_context has been removed. The BQUE, EVAL_CONTEXT
+   and PE_Info structs have been removed, replaced with MQUE and NEW_PE_INFO.
+   Shouldn't affect players, but will affect hardcode hacks. See HACKING.184
+   for more info. [MG]
+ 
+Commands:
+ * 'teach' now takes a /list switch, which lets it run an action list
+   instead of a single command. [MG]
+ * @include/local includes an attribute, but preserves q-registers and
+   doesn't propagate @breaks. [MG]
+   
+Substitutions:
+ * New %= substitution, which evaluates to the dbref/attribute currently
+   being evaluated. Useful for coding things which loop. [MG]
+
+
+& 1.8.4p3
 Version 1.8.4 patchlevel 3                                 Mar 18,  2011
 
 Events:

@@ -688,7 +688,7 @@ do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref)
       current_state.things++;
       local_data_clone(clone, thing);
       real_did_it(player, clone, NULL, NULL, NULL, NULL, "ACLONE", NOTHING,
-                  global_eval_context.wenv, 0);
+                  NULL, 0);
       return clone;
     }
     return NOTHING;
@@ -701,7 +701,7 @@ do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref)
       current_state.rooms++;
       local_data_clone(clone, thing);
       real_did_it(player, clone, NULL, NULL, NULL, NULL, "ACLONE", NOTHING,
-                  global_eval_context.wenv, 0);
+                  NULL, 0);
       return clone;
     }
     return NOTHING;

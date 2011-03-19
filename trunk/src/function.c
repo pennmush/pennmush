@@ -45,60 +45,48 @@ slab *function_slab; /**< slab for 'struct fun' allocations */
  * Utilities.
  */
 
-/* Save and restore regexp data */
 void
-save_regexp_context(struct re_save *save)
+save_regexp_context(struct re_context *save, struct re_context *orig)
 {
-  save->re_code = global_eval_context.re_code;
-  save->re_from = global_eval_context.re_from;
-  save->re_subpatterns = global_eval_context.re_subpatterns;
-  save->re_offsets = global_eval_context.re_offsets;
+  save->re_code = orig->re_code;
+  save->re_from = orig->re_from;
+  save->re_subpatterns = orig->re_subpatterns;
+  save->re_offsets = orig->re_offsets;
 }
 
 void
-restore_regexp_context(struct re_save *save)
+restore_regexp_context(struct re_context *save, struct re_context *orig)
 {
-  global_eval_context.re_code = save->re_code;
-  global_eval_context.re_from = save->re_from;
-  global_eval_context.re_subpatterns = save->re_subpatterns;
-  global_eval_context.re_offsets = save->re_offsets;
+  orig->re_code = save->re_code;
+  orig->re_from = save->re_from;
+  orig->re_subpatterns = save->re_subpatterns;
+  orig->re_offsets = save->re_offsets;
 }
 
-/** Save a single q-register
- */
 void
-save_partial_global_reg(const char *funcname, char *preserve[], int i)
+reset_regexp_context(struct re_context *re)
 {
-  preserve[i] = mush_strdup(global_eval_context.renv[i], funcname);
-}
-
-/** Restore q-registers saved with save_partial_global_reg()
- */
-void
-restore_partial_global_regs(const char *funcname, char *preserve[])
-{
-  int i;
-  for (i = 0; i < NUMQ; i++) {
-    if (preserve[i]) {
-      mush_strncpy(global_eval_context.renv[i], preserve[i], BUFFER_LEN);
-      mush_free(preserve[i], funcname);
-    }
-  }
+  re->re_code = NULL;
+  re->re_subpatterns = -1;
+  re->re_offsets = NULL;
+  re->re_from = NULL;
 }
 
 /** Save a copy of the q-registers.
  * \param funcname name of function calling (for memory leak testing)
  * \param preserve pointer to array to store the q-registers in.
+ * \param orig where to copy the q-registers from
  */
 void
-save_global_regs(const char *funcname, char *preserve[])
+save_global_regs(const char *funcname, char *preserve[],
+                 char orig[NUMQ][BUFFER_LEN])
 {
   int i;
   for (i = 0; i < NUMQ; i++) {
-    if (!global_eval_context.renv[i][0])
+    if (!orig[i][0])
       preserve[i] = NULL;
     else {
-      preserve[i] = mush_strdup(global_eval_context.renv[i], funcname);
+      preserve[i] = mush_strdup(orig[i], funcname);
     }
   }
 }
@@ -106,75 +94,60 @@ save_global_regs(const char *funcname, char *preserve[])
 /** Restore the q-registers, freeing the storage array.
  * \param funcname name of function calling (for memory leak testing)
  * \param preserve pointer to array to restore the q-registers from.
+ * \param orig where to restore the q-registers to
  */
 void
-restore_global_regs(const char *funcname, char *preserve[])
+restore_global_regs(const char *funcname, char *preserve[],
+                    char orig[NUMQ][BUFFER_LEN])
 {
   int i;
   for (i = 0; i < NUMQ; i++) {
     if (preserve[i]) {
-      mush_strncpy(global_eval_context.renv[i], preserve[i], BUFFER_LEN);
+      mush_strncpy(orig[i], preserve[i], BUFFER_LEN);
       mush_free(preserve[i], funcname);
       preserve[i] = NULL;
     } else {
-      global_eval_context.renv[i][0] = '\0';
+      orig[i][0] = '\0';
     }
   }
 }
 
-/** Free the storage array for the q-registers, without restoring
- * \param funcname name of function calling (for memory leak testing)
- * \param preserve pointer to array to free q-registers from.
+/** Save a single q-register
  */
 void
-free_global_regs(const char *funcname, char *preserve[])
+save_partial_global_reg(const char *funcname, char *preserve[], int i,
+                        char orig[NUMQ][BUFFER_LEN])
 {
-  int i;
-  for (i = 0; i < NUMQ; i++) {
-    if (preserve[i])
-      mush_free(preserve[i], funcname);
-  }
+  preserve[i] = mush_strdup(orig[i], funcname);
 }
 
-/** Initilalize an array for the q-registers, setting all NULL.
- * \param preserve pointer to array to free q-registers from.
+/** Restore q-registers saved with save_partial_global_reg()
  */
 void
-init_global_regs(char *preserve[])
-{
-  int i;
-  for (i = 0; i < NUMQ; i++) {
-    preserve[i] = NULL;
-  }
-}
-
-/** Restore the q-registers, without freeing the storage array.
- * \param preserve pointer to array to restore the q-registers from.
- */
-void
-load_global_regs(char *preserve[])
+restore_partial_global_regs(const char *funcname, char *preserve[],
+                            char orig[NUMQ][BUFFER_LEN])
 {
   int i;
   for (i = 0; i < NUMQ; i++) {
     if (preserve[i]) {
-      strcpy(global_eval_context.renv[i], preserve[i]);
-    } else {
-      global_eval_context.renv[i][0] = '\0';
+      mush_strncpy(orig[i], preserve[i], BUFFER_LEN);
+      mush_free(preserve[i], funcname);
     }
   }
 }
+
 
 /** Save a copy of the environment (%0-%9)
  * \param funcname name of function calling (for memory leak testing)
  * \param preserve pointer to array to store %0-%9 in.
  */
 void
-save_global_env(const char *funcname __attribute__ ((__unused__)),
-                char *preserve[])
+save_env(const char *funcname __attribute__ ((__unused__)),
+         char *preserve[], char *orig[])
 {
   int i;
   for (i = 0; i < 10; i++)
-    preserve[i] = global_eval_context.wenv[i];
+    preserve[i] = orig[i];
 }
 
 /** Restore the environment (%0-%9)
@@ -182,78 +155,14 @@ save_global_env(const char *funcname __attribute__ ((__unused__)),
  * \param preserve pointer to array to restore %0-%9 from.
  */
 void
-restore_global_env(const char *funcname __attribute__ ((__unused__)),
-                   char *preserve[])
+restore_env(const char *funcname __attribute__ ((__unused__)),
+            char *preserve[], char *orig[])
 {
   int i;
   for (i = 0; i < 10; i++)
-    global_eval_context.wenv[i] = preserve[i];
+    orig[i] = preserve[i];
 }
 
-/** Save a copy of the wnxt and rnxt state
- * This function must deal with both the addresses and the values
- * of these variables, because they get modified in all sorts of
- * nasty ways that we may not account for.
- * \param funcname name of function calling (for memory leak testing)
- * \param preservew pointer to array to store the wnxt address in.
- * \param preserver pointer to array to store the rnxt address in.
- * \param valw pointer to array to store the wnxt value in.
- * \param valr pointer to array to store the rnxt value in.
- */
-void
-save_global_nxt(const char *funcname, char *preservew[], char *preserver[],
-                char *valw[], char *valr[])
-{
-  int i;
-  for (i = 0; i < NUMQ; i++) {
-    preserver[i] = global_eval_context.rnxt[i];
-    if (!global_eval_context.rnxt[i])
-      valr[i] = NULL;
-    else {
-      valr[i] = mush_strdup(global_eval_context.rnxt[i], funcname);
-    }
-  }
-  for (i = 0; i < 10; i++) {
-    preservew[i] = global_eval_context.wnxt[i];
-    if (!global_eval_context.wnxt[i])
-      valw[i] = NULL;
-    else {
-      valw[i] = mush_strdup(global_eval_context.wnxt[i], funcname);
-    }
-  }
-}
-
-/** Restore a copy of the wnxt and rnxt state
- * \param funcname name of function calling (for memory leak testing)
- * \param preservew pointer to array to restore the wnxt address from.
- * \param preserver pointer to array to restore the rnxt address from.
- * \param valw pointer to array to restore the wnxt value from.
- * \param valr pointer to array to restore the rnxt value from.
- */
-void
-restore_global_nxt(const char *funcname, char *preservew[], char *preserver[],
-                   char *valw[], char *valr[])
-{
-  int i;
-  for (i = 0; i < NUMQ; i++) {
-    global_eval_context.rnxt[i] = preserver[i];
-    if (preserver[i]) {
-      /* There was a former address, so we can restore to it */
-      mush_strncpy(global_eval_context.rnxt[i], valr[i], BUFFER_LEN);
-      mush_free(valr[i], funcname);
-      valr[i] = NULL;
-    }
-  }
-  for (i = 0; i < 10; i++) {
-    global_eval_context.wnxt[i] = preservew[i];
-    if (preservew[i]) {
-      /* There was a former address, so we can restore to it */
-      mush_strncpy(global_eval_context.wnxt[i], valw[i], BUFFER_LEN);
-      mush_free(valw[i], funcname);
-      valw[i] = NULL;
-    }
-  }
-}
 
 
 /** Check for a delimiter in an argument of a function call.

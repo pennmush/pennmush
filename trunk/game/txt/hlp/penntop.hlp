@@ -1710,12 +1710,14 @@ See also: string functions
     %c = text of the last command, _before_ evaluation
     %u = text of the last command, after evaluation, available to locks/hooks
     %? = The current function invocation and depth counts
+    %= = The dbref/attribute currently being evaluated
     %+ = The number of arguments passed to the current ufun.
     %qN = the equivalent of r(N), a register set by a setq() function.
     %iN = equivilent of itext(N), the list element for iter()/@dolist.
     %$N = equivilent of stext(N), the <string> in switch()/@switch.
  
-  Continued in 'help substitutions4'.
+  See 'help substitutions4' for examples.
+See also: EVALUATION, ENACTOR, EXECUTOR, DBREFS, REGISTERS, v()
 & SUBSTITUTIONS4
 & %4
   Example: 
@@ -1736,7 +1738,6 @@ See also: string functions
   %! = #11
   %L = #13
 
-See also: EVALUATION, ENACTOR, EXECUTOR, DBREFS, REGISTERS, v()
 & SUCCESS
   A "success" normally occurs when you attempt to do something that is
   restricted by an @lock and you pass the @lock. (Note that if no lock

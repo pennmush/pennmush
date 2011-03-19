@@ -1018,6 +1018,10 @@ do_entry(MQUE * entry, int include_recurses)
     }
     if ((entry->queue_type & QUEUE_BREAK) || inplace_break_called)
       break;
+    if (entry->queue_type & QUEUE_RETRY) {
+      s = entry->action_list;
+      entry->queue_type &= ~QUEUE_RETRY;
+    }
   }
 
   if (!include_recurses)

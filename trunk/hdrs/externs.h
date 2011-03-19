@@ -236,6 +236,7 @@ extern char ucbuff[];
 #define QUEUE_RESTORE_ENV 32    /* At the end of this inplace queue entry, free pe_info->env and restore from saved_env */
 #define QUEUE_NOLIST 64         /* Queue is a single command, not an action list */
 #define QUEUE_BREAK 128         /* set by @break, stops further processing of queue entry */
+#define QUEUE_RETRY 256         /* Set by @retry, restart current queue entry from beginning, without recalling do_entry */
 #define QUEUE_RECURSE (QUEUE_INPLACE | QUEUE_NO_PROPAGATE)
 
 

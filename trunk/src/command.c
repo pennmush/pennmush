@@ -265,6 +265,7 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@REJECTMOTD", NULL, cmd_rejectmotd, CMD_T_ANY, "WIZARD", 0},
   {"@RESTART", "ALL", cmd_restart, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
+  {"@RETRY", NULL, cmd_retry, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE | CMD_T_NOGAGGED, 0, 0},
   {"@RWALL", "NOEVAL EMIT", cmd_rwall, CMD_T_ANY, "WIZARD ROYALTY", 0},
   {"@SCAN", "ROOM SELF ZONE GLOBALS", cmd_scan,
    CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},

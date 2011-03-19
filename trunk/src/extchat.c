@@ -3499,91 +3499,91 @@ FUNCTION(fun_crecall)
 COMMAND(cmd_cemit)
 {
   int flags = SILENT_OR_NOISY(sw, !options.noisy_cemit);
-  if (!strcmp(cmd->name, "@NSCEMIT") && Can_Nspemit(player))
+  if (!strcmp(cmd->name, "@NSCEMIT") && Can_Nspemit(executor))
     flags |= PEMIT_SPOOF;
 
-  SPOOF(player, cause, sw);
+  SPOOF(executor, enactor, sw);
 
-  do_cemit(player, arg_left, arg_right, flags);
+  do_cemit(executor, arg_left, arg_right, flags);
 }
 
 COMMAND(cmd_channel)
 {
   if (SW_ISSET(sw, SWITCH_LIST))
-    do_channel_list(player, arg_left);
+    do_channel_list(executor, arg_left);
   else if (SW_ISSET(sw, SWITCH_ADD))
-    do_chan_admin(player, arg_left, args_right[1], 0);
+    do_chan_admin(executor, arg_left, args_right[1], 0);
   else if (SW_ISSET(sw, SWITCH_DELETE))
-    do_chan_admin(player, arg_left, args_right[1], 1);
+    do_chan_admin(executor, arg_left, args_right[1], 1);
   else if (SW_ISSET(sw, SWITCH_NAME))
-    do_chan_admin(player, arg_left, args_right[1], 2);
+    do_chan_admin(executor, arg_left, args_right[1], 2);
   else if (SW_ISSET(sw, SWITCH_RENAME))
-    do_chan_admin(player, arg_left, args_right[1], 2);
+    do_chan_admin(executor, arg_left, args_right[1], 2);
   else if (SW_ISSET(sw, SWITCH_PRIVS))
-    do_chan_admin(player, arg_left, args_right[1], 3);
+    do_chan_admin(executor, arg_left, args_right[1], 3);
   else if (SW_ISSET(sw, SWITCH_RECALL))
-    do_chan_recall(player, arg_left, args_right, SW_ISSET(sw, SWITCH_QUIET));
+    do_chan_recall(executor, arg_left, args_right, SW_ISSET(sw, SWITCH_QUIET));
   else if (SW_ISSET(sw, SWITCH_DECOMPILE))
-    do_chan_decompile(player, arg_left, SW_ISSET(sw, SWITCH_BRIEF));
+    do_chan_decompile(executor, arg_left, SW_ISSET(sw, SWITCH_BRIEF));
   else if (SW_ISSET(sw, SWITCH_DESCRIBE))
-    do_chan_desc(player, arg_left, args_right[1]);
+    do_chan_desc(executor, arg_left, args_right[1]);
   else if (SW_ISSET(sw, SWITCH_TITLE))
-    do_chan_title(player, arg_left, args_right[1]);
+    do_chan_title(executor, arg_left, args_right[1]);
   else if (SW_ISSET(sw, SWITCH_MOGRIFIER))
-    do_chan_set_mogrifier(player, arg_left, args_right[1]);
+    do_chan_set_mogrifier(executor, arg_left, args_right[1]);
   else if (SW_ISSET(sw, SWITCH_CHOWN))
-    do_chan_chown(player, arg_left, args_right[1]);
+    do_chan_chown(executor, arg_left, args_right[1]);
   else if (SW_ISSET(sw, SWITCH_WIPE))
-    do_chan_wipe(player, arg_left);
+    do_chan_wipe(executor, arg_left);
   else if (SW_ISSET(sw, SWITCH_MUTE))
-    do_chan_user_flags(player, arg_left, args_right[1], CU_QUIET, 0);
+    do_chan_user_flags(executor, arg_left, args_right[1], CU_QUIET, 0);
   else if (SW_ISSET(sw, SWITCH_UNMUTE))
-    do_chan_user_flags(player, arg_left, "n", CU_QUIET, 0);
+    do_chan_user_flags(executor, arg_left, "n", CU_QUIET, 0);
   else if (SW_ISSET(sw, SWITCH_HIDE))
-    do_chan_user_flags(player, arg_left, args_right[1], CU_HIDE, 0);
+    do_chan_user_flags(executor, arg_left, args_right[1], CU_HIDE, 0);
   else if (SW_ISSET(sw, SWITCH_UNHIDE))
-    do_chan_user_flags(player, arg_left, "n", CU_HIDE, 0);
+    do_chan_user_flags(executor, arg_left, "n", CU_HIDE, 0);
   else if (SW_ISSET(sw, SWITCH_GAG))
-    do_chan_user_flags(player, arg_left, args_right[1], CU_GAG, 0);
+    do_chan_user_flags(executor, arg_left, args_right[1], CU_GAG, 0);
   else if (SW_ISSET(sw, SWITCH_UNGAG))
-    do_chan_user_flags(player, arg_left, "n", CU_GAG, 0);
+    do_chan_user_flags(executor, arg_left, "n", CU_GAG, 0);
   else if (SW_ISSET(sw, SWITCH_COMBINE))
-    do_chan_user_flags(player, arg_left, args_right[1], CU_COMBINE, 0);
+    do_chan_user_flags(executor, arg_left, args_right[1], CU_COMBINE, 0);
   else if (SW_ISSET(sw, SWITCH_UNCOMBINE))
-    do_chan_user_flags(player, arg_left, "n", CU_COMBINE, 0);
+    do_chan_user_flags(executor, arg_left, "n", CU_COMBINE, 0);
   else if (SW_ISSET(sw, SWITCH_WHAT))
-    do_chan_what(player, arg_left);
+    do_chan_what(executor, arg_left);
   else if (SW_ISSET(sw, SWITCH_BUFFER))
-    do_chan_buffer(player, arg_left, args_right[1]);
+    do_chan_buffer(executor, arg_left, args_right[1]);
   else if (SW_ISSET(sw, SWITCH_ON) || SW_ISSET(sw, SWITCH_JOIN))
-    do_channel(player, arg_left, args_right[1], "ON");
+    do_channel(executor, arg_left, args_right[1], "ON");
   else if (SW_ISSET(sw, SWITCH_OFF) || SW_ISSET(sw, SWITCH_LEAVE))
-    do_channel(player, arg_left, args_right[1], "OFF");
+    do_channel(executor, arg_left, args_right[1], "OFF");
   else if (SW_ISSET(sw, SWITCH_WHO))
-    do_channel(player, arg_left, args_right[1], "WHO");
+    do_channel(executor, arg_left, args_right[1], "WHO");
   else
-    do_channel(player, arg_left, NULL, args_right[1]);
+    do_channel(executor, arg_left, NULL, args_right[1]);
 }
 
 COMMAND(cmd_chat)
 {
-  do_chat_by_name(player, arg_left, arg_right, 1);
+  do_chat_by_name(executor, arg_left, arg_right, 1);
 }
 
 COMMAND(cmd_clock)
 {
   if (SW_ISSET(sw, SWITCH_JOIN))
-    do_chan_lock(player, arg_left, arg_right, CL_JOIN);
+    do_chan_lock(executor, arg_left, arg_right, CL_JOIN);
   else if (SW_ISSET(sw, SWITCH_SPEAK))
-    do_chan_lock(player, arg_left, arg_right, CL_SPEAK);
+    do_chan_lock(executor, arg_left, arg_right, CL_SPEAK);
   else if (SW_ISSET(sw, SWITCH_MOD))
-    do_chan_lock(player, arg_left, arg_right, CL_MOD);
+    do_chan_lock(executor, arg_left, arg_right, CL_MOD);
   else if (SW_ISSET(sw, SWITCH_SEE))
-    do_chan_lock(player, arg_left, arg_right, CL_SEE);
+    do_chan_lock(executor, arg_left, arg_right, CL_SEE);
   else if (SW_ISSET(sw, SWITCH_HIDE))
-    do_chan_lock(player, arg_left, arg_right, CL_HIDE);
+    do_chan_lock(executor, arg_left, arg_right, CL_HIDE);
   else
-    notify(player, T("You must specify a type of lock!"));
+    notify(executor, T("You must specify a type of lock!"));
 }
 
 /** Find the next player on a channel to notify.

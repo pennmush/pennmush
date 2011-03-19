@@ -13,11 +13,13 @@ be read in 'help patchlevels'.
 
 Version 1.8.4 patchlevel 4                                 ??? ??,  201?
 
-Major changes:
- * Hardcode: global_eval_context has been removed. The BQUE, EVAL_CONTEXT
-   and PE_Info structs have been removed, replaced with MQUE and NEW_PE_INFO.
-   Shouldn't affect players, but will affect hardcode hacks. See HACKING.184
-   for more info. [MG]
+Hardcode:
+ * global_eval_context has been removed. The BQUE, EVAL_CONTEXT and PE_Info
+   structs have been removed, replaced with MQUE and NEW_PE_INFO. Shouldn't
+   affect players, but will affect hardcode hacks. See HACKING.184 for more
+   info. [MG]
+ * Renamed some variables in COMMAND() definitions for consistency/clarity.
+   See HACKING.184 for more info. [MG]
  
 Commands:
  * 'teach' now takes a /list switch, which lets it run an action list

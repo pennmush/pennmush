@@ -52,10 +52,10 @@ reserve_aliases(void)
 COMMAND(cmd_local_silly)
 {
   if (SW_ISSET(sw, SWITCH_NOISY))
-    notify_format(player, "Noisy silly with %s", arg_left);
+    notify_format(executor, "Noisy silly with %s", arg_left);
   if (SW_BY_NAME(sw, "VERY"))
-    notify(player, "The following line will be very silly indeed.");
-  notify_format(player, "SillyCommand %s", arg_left);
+    notify(executor, "The following line will be very silly indeed.");
+  notify_format(executor, "SillyCommand %s", arg_left);
 }
 #endif
 

@@ -951,9 +951,9 @@ do_readcache(dbref player)
 }
 
 /** Check each attribute on each object in x for a $command matching cptr */
-#define list_match(x)        list_check(x, player, '$', ':', cptr, 0)
+#define list_match(x)        list_check(x, executor, '$', ':', cptr, 0)
 /** Check each attribute on x for a $command matching cptr */
-#define cmd_match(x)         atr_comm_match(x, player, '$', ':', cptr, 0, 1, NULL, NULL, &errdb, 0)
+#define cmd_match(x)         atr_comm_match(x, executor, '$', ':', cptr, 0, 1, NULL, NULL, &errdb, 0)
 #define MAYBE_ADD_ERRDB(errdb)  \
         do { \
           if (GoodObject(errdb) && errdblist) { \
@@ -1039,7 +1039,7 @@ passwd_filter(const char *cmd)
  * \param queue_entry the queue entry the command is being run for
  */
 void
-process_command(dbref player, char *command, MQUE * queue_entry)
+process_command(dbref executor, char *command, MQUE * queue_entry)
 {
   int a;
   char *p;                      /* utility */
@@ -1063,41 +1063,41 @@ process_command(dbref player, char *command, MQUE * queue_entry)
     do_log(LT_ERR, NOTHING, NOTHING, "ERROR: No command!!!");
     return;
   }
-  /* robustify player */
-  if (!GoodObject(player)) {
-    do_log(LT_ERR, NOTHING, NOTHING, "process_command bad player #%d", player);
+  /* robustify executor */
+  if (!GoodObject(executor)) {
+    do_log(LT_ERR, NOTHING, NOTHING, "process_command bad player #%d", executor);
     return;
   }
 
   /* Destroyed objects shouldn't execute commands */
-  if (IsGarbage(player))
+  if (IsGarbage(executor))
     /* No message - nobody to tell, and it's too easy to do to log. */
     return;
   /* Halted objects can't execute commands */
   /* And neither can halted players if the command isn't from_port */
-  if (Halted(player)
-      && (!IsPlayer(player) || !(queue_entry->queue_type & QUEUE_SOCKET))) {
-    notify_format(Owner(player),
-                  T("Attempt to execute command by halted object #%d"), player);
+  if (Halted(executor)
+      && (!IsPlayer(executor) || !(queue_entry->queue_type & QUEUE_SOCKET))) {
+    notify_format(Owner(executor),
+                  T("Attempt to execute command by halted object #%d"), executor);
     return;
   }
   /* Players, things, and exits should not have invalid locations. This check
    * must be done _after_ the destroyed-object check.
    */
-  check_loc = IsExit(player) ? Source(player) : (IsRoom(player) ? player :
-                                                 Location(player));
+  check_loc = IsExit(executor) ? Source(executor) : (IsRoom(executor) ? executor :
+                                                 Location(executor));
   if (!GoodObject(check_loc) || IsGarbage(check_loc)) {
-    notify_format(Owner(player),
+    notify_format(Owner(executor),
                   T("Invalid location on command execution: %s(#%d)"),
-                  Name(player), player);
+                  Name(executor), executor);
     do_log(LT_ERR, NOTHING, NOTHING,
            "Command attempted by %s(#%d) in invalid location #%d.",
-           Name(player), player, Location(player));
-    if (Mobile(player)) {
-      moveto(player, PLAYER_START, SYSEVENT, "dbck");   /* move it someplace valid */
+           Name(executor), executor, Location(executor));
+    if (Mobile(executor)) {
+      moveto(executor, PLAYER_START, SYSEVENT, "dbck");   /* move it someplace valid */
     }
   }
-  orator = player;
+  orator = executor;
 
   /* eat leading whitespace */
   while (*command && isspace((unsigned char) *command))
@@ -1116,30 +1116,30 @@ process_command(dbref player, char *command, MQUE * queue_entry)
   {
     char *msg = passwd_filter(command);
 
-    log_activity(LA_CMD, player, msg);
-    if (options.log_commands || Suspect(player))
-      do_log(LT_CMD, player, NOTHING, "%s", msg);
-    if (Verbose(player))
-      raw_notify(Owner(player), tprintf("#%d] %s", player, msg));
+    log_activity(LA_CMD, executor, msg);
+    if (options.log_commands || Suspect(executor))
+      do_log(LT_CMD, executor, NOTHING, "%s", msg);
+    if (Verbose(executor))
+      raw_notify(Owner(executor), tprintf("#%d] %s", executor, msg));
   }
 
   strcpy(unp, command);
 
-  cptr = command_parse(player, command, queue_entry);
+  cptr = command_parse(executor, command, queue_entry);
   if (cptr) {
     mush_strncpy(queue_entry->pe_info->cmd_evaled, cptr, BUFFER_LEN);
     a = 0;
-    if (!Gagged(player)) {
+    if (!Gagged(executor)) {
 
-      if (Mobile(player)) {
-        /* if the "player" is an exit or room, no need to do these checks */
+      if (Mobile(executor)) {
+        /* if the executor is an exit or room, no need to do these checks */
         /* try matching enter aliases */
         if (check_loc != NOTHING && (cmd = command_find("ENTER")) &&
             !(cmd->type & CMD_T_DISABLED) &&
             (i = alias_list_check(Contents(check_loc), cptr, "EALIAS")) != -1) {
-          if (command_check(player, cmd, 1)) {
+          if (command_check(executor, cmd, 1)) {
             sprintf(temp, "#%d", i);
-            run_command(cmd, player, queue_entry->enactor,
+            run_command(cmd, executor, queue_entry->enactor,
                         tprintf("ENTER #%d", i), NULL, NULL,
                         tprintf("ENTER #%d", i), NULL, NULL, temp, NULL, NULL,
                         NULL, queue_entry);
@@ -1150,8 +1150,8 @@ process_command(dbref player, char *command, MQUE * queue_entry)
         if (!IsRoom(check_loc) && (cmd = command_find("LEAVE"))
             && !(cmd->type & CMD_T_DISABLED)
             && (loc_alias_check(check_loc, cptr, "LALIAS"))) {
-          if (command_check(player, cmd, 1))
-            run_command(cmd, player, queue_entry->enactor, "LEAVE", NULL, NULL,
+          if (command_check(executor, cmd, 1))
+            run_command(cmd, executor, queue_entry->enactor, "LEAVE", NULL, NULL,
                         "LEAVE", NULL, NULL, NULL, NULL, NULL, NULL,
                         queue_entry);
           goto done;
@@ -1160,32 +1160,32 @@ process_command(dbref player, char *command, MQUE * queue_entry)
 
       /* try matching user defined functions before chopping */
 
-      /* try objects in the player's location, the location itself,
-       * and objects in the player's inventory.
+      /* try objects in the executor's location, the location itself,
+       * and objects in the executor's inventory.
        */
       if (GoodObject(check_loc)) {
         a += list_match(Contents(check_loc));
-        if (check_loc != player) {
+        if (check_loc != executor) {
           a += cmd_match(check_loc);
           MAYBE_ADD_ERRDB(errdb);
         }
       }
-      if (check_loc != player)
-        a += list_match(Contents(player));
+      if (check_loc != executor)
+        a += list_match(Contents(executor));
 
       /* now do check on zones */
       if ((!a) && (Zone(check_loc) != NOTHING)) {
         if (IsRoom(Zone(check_loc))) {
-          /* zone of player's location is a zone master room,
+          /* zone of executor's location is a zone master room,
            * so we check for exits and commands
            */
           /* check zone master room exits */
-          if (remote_exit(player, cptr) && (cmd = command_find("GOTO"))
+          if (remote_exit(executor, cptr) && (cmd = command_find("GOTO"))
               && !(cmd->type & CMD_T_DISABLED)) {
-            if (!Mobile(player) || !command_check(player, cmd, 1)) {
+            if (!Mobile(executor) || !command_check(executor, cmd, 1)) {
               goto done;
             } else {
-              run_command(cmd, player, queue_entry->enactor,
+              run_command(cmd, executor, queue_entry->enactor,
                           tprintf("GOTO %s", cptr), NULL, NULL,
                           tprintf("GOTO %s", cptr), NULL, NULL, cptr, NULL,
                           NULL, NULL, queue_entry);
@@ -1199,29 +1199,29 @@ process_command(dbref player, char *command, MQUE * queue_entry)
         }
       }
       /* if nothing matched with zone master room/zone object, try
-       * matching zone commands on the player's personal zone
+       * matching zone commands on the executor's personal zone
        */
-      if ((!a) && (Zone(player) != NOTHING) &&
-          (Zone(check_loc) != Zone(player))) {
-        if (IsRoom(Zone(player)))
+      if ((!a) && (Zone(executor) != NOTHING) &&
+          (Zone(check_loc) != Zone(executor))) {
+        if (IsRoom(Zone(executor)))
           /* Player's personal zone is a zone master room, so we
            * also check commands on objects in that room
            */
-          a += list_match(Contents(Zone(player)));
+          a += list_match(Contents(Zone(executor)));
         else {
-          a += cmd_match(Zone(player));
+          a += cmd_match(Zone(executor));
           MAYBE_ADD_ERRDB(errdb);
         }
       }
       /* end of zone stuff */
       /* check global exits only if no other commands are matched */
       if ((!a) && (check_loc != MASTER_ROOM)) {
-        if (global_exit(player, cptr) && (cmd = command_find("GOTO"))
+        if (global_exit(executor, cptr) && (cmd = command_find("GOTO"))
             && !(cmd->type & CMD_T_DISABLED)) {
-          if (!Mobile(player) || !command_check(player, cmd, 1))
+          if (!Mobile(executor) || !command_check(executor, cmd, 1))
             goto done;
           else {
-            run_command(cmd, player, queue_entry->enactor,
+            run_command(cmd, executor, queue_entry->enactor,
                         tprintf("GOTO %s", cptr), NULL, NULL, tprintf("GOTO %s",
                                                                       cptr),
                         NULL, NULL, cptr, NULL, NULL, NULL, queue_entry);
@@ -1239,9 +1239,9 @@ process_command(dbref player, char *command, MQUE * queue_entry)
       /* Do we have any error dbs queued up, and if so, do any
        * have associated failure messages?
        */
-      if ((errdblist == errdbtail) || (!fail_commands(player)))
+      if ((errdblist == errdbtail) || (!fail_commands(executor)))
         /* Nope. This is totally unmatched, run generic failure */
-        generic_command_failure(player, queue_entry->enactor, cptr,
+        generic_command_failure(executor, queue_entry->enactor, cptr,
                                 queue_entry);
     }
   }
@@ -1263,20 +1263,20 @@ COMMAND(cmd_with)
   char *cptr = arg_right;
   dbref errdb;
 
-  what = noisy_match_result(player, arg_left, NOTYPE, MAT_EVERYTHING);
+  what = noisy_match_result(executor, arg_left, NOTYPE, MAT_EVERYTHING);
   if (!GoodObject(what))
     return;
-  if (!(nearby(player, what) || Long_Fingers(player) || controls(player, what))) {
+  if (!(nearby(executor, what) || Long_Fingers(executor) || controls(executor, what))) {
     if (SW_ISSET(sw, SWITCH_ROOM)) {
-      if (what != MASTER_ROOM && what != Zone(player)) {
-        notify(player, T("I don't see that here."));
+      if (what != MASTER_ROOM && what != Zone(executor)) {
+        notify(executor, T("I don't see that here."));
         return;
-      } else if (what == Zone(player) && !IsRoom(what)) {
-        notify(player, T("Make room! Make room!"));
+      } else if (what == Zone(executor) && !IsRoom(what)) {
+        notify(executor, T("Make room! Make room!"));
         return;
       }
-    } else if (what != Zone(player) || IsRoom(what)) {
-      notify(player, T("I don't see that here."));
+    } else if (what != Zone(executor) || IsRoom(what)) {
+      notify(executor, T("I don't see that here."));
       return;
     }
   }
@@ -1287,18 +1287,18 @@ COMMAND(cmd_with)
     /* Run commands on a single object */
     if (!cmd_match(what)) {
       MAYBE_ADD_ERRDB(errdb);
-      notify(player, T("No matching command."));
+      notify(executor, T("No matching command."));
     }
   } else {
     /* Run commands on objects in a masterish room */
 
-    if (!IsRoom(what) && what != Location(player)) {
-      notify(player, T("Make room! Make room!"));
+    if (!IsRoom(what) && what != Location(executor)) {
+      notify(executor, T("Make room! Make room!"));
       return;
     }
 
     if (!list_match(Contents(what)))
-      notify(player, T("No matching command."));
+      notify(executor, T("No matching command."));
   }
 }
 

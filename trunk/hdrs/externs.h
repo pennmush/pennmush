@@ -71,7 +71,7 @@ dbref visible_short_page(dbref player, const char *match);
 void do_doing(dbref player, const char *message);
 
 /* the following symbols are provided by game.c */
-void process_command(dbref player, char *command,
+void process_command(dbref executor, char *command,
                      MQUE * queue_entry);
 int init_game_dbs(void);
 void init_game_postdb(const char *conf);

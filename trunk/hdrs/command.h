@@ -90,13 +90,13 @@ bool SW_BY_NAME(switch_mask, const char *);
  */
 
 #define COMMAND(command_name) \
-void command_name (COMMAND_INFO *cmd, dbref player, dbref cause, dbref caller, \
+void command_name (COMMAND_INFO *cmd, dbref executor, dbref enactor, dbref caller, \
  switch_mask sw, const char *raw, const char *switches, char *args_raw, \
                   char *arg_left, char *args_left[MAX_ARG], \
                   char *arg_right, char *args_right[MAX_ARG], MQUE *queue_entry __attribute__ ((__unused__))); \
 void command_name(COMMAND_INFO *cmd __attribute__ ((__unused__)), \
-                  dbref player __attribute__ ((__unused__)), \
-                  dbref cause __attribute__ ((__unused__)), \
+                  dbref executor __attribute__ ((__unused__)), \
+                  dbref enactor __attribute__ ((__unused__)), \
                   dbref caller __attribute__ ((__unused__)), \
                   switch_mask sw __attribute__ ((__unused__)), \
                   const char *raw __attribute__ ((__unused__)), \

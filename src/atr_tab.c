@@ -88,7 +88,7 @@ PRIV attr_privs_view[] = {
   {"nospace", 's', AF_NOSPACE, AF_NOSPACE},
   {"amhear", 'M', AF_MHEAR, AF_MHEAR},
   {"aahear", 'A', AF_AHEAR, AF_AHEAR},
-  {"", '`', AF_ROOT, AF_ROOT},
+  {"branch", '`', AF_ROOT, AF_ROOT},
   {NULL, '\0', 0, 0}
 };
 

@@ -105,15 +105,15 @@ speech_loc(dbref thing)
 
 /** The teach command.
  * \param player the enactor.
- * \param cause the object causing the command to run.
  * \param tbuf1 the command being taught.
+ * \param list is tbuf1 an action list, or a single command?
+ * \param parent_queue the queue entry to run the command in
  */
 void
-do_teach(dbref player, dbref cause, const char *tbuf1)
+do_teach(dbref player, const char *tbuf1, int list, MQUE * parent_queue)
 {
   dbref loc;
-  static int recurse = 0;
-  char *command;
+  int flags = QUEUE_RECURSE;
 
   loc = speech_loc(player);
   if (!GoodObject(loc))
@@ -124,26 +124,20 @@ do_teach(dbref player, dbref cause, const char *tbuf1)
     return;
   }
 
-  if (recurse) {
-    /* Somebody tried to teach the teach command. Cute. Dumb. */
-    notify(player, T("You can't teach 'teach', sorry."));
-    recurse = 0;
-    return;
-  }
-
   if (!tbuf1 || !*tbuf1) {
     notify(player, T("What command do you want to teach?"));
     return;
   }
 
-  recurse = 1;                  /* Protect use from recursive teach */
+  if (!list)
+    flags |= QUEUE_NOLIST;
+
   notify_except(Contents(loc), NOTHING,
                 tprintf(T("%s types --> %s%s%s"), spname(player),
                         ANSI_HILITE, tbuf1, ANSI_END), NA_INTER_HEAR);
-  command = mush_strdup(tbuf1, "string");       /* process_command is destructive */
-  process_command(player, command, cause, cause, 1);
-  mush_free(command, "string");
-  recurse = 0;                  /* Ok, we can be called again safely */
+  new_queue_actionlist(player, parent_queue->enactor, player, (char *) tbuf1,
+                       parent_queue, PE_INFO_SHARE,
+                       flags, NULL, NULL);
 }
 
 /** The say command.
@@ -1003,7 +997,7 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
     notify(player, T("You are set HAVEN and cannot receive pages."));
 
   /* Figure out what kind of message */
-  global_eval_context.wenv[0] = (char *) message;
+  /*G_E_C.wenv[0] = (char *) message; <-- Not sure why this was done */
   gap = " ";
   switch (*message) {
   case SEMI_POSE_TOKEN:
@@ -1195,9 +1189,7 @@ make_prefixstr(dbref thing, const char *msg, char *tbuf1)
 {
   char *bp, *asave;
   char const *ap;
-  char *wsave[10], *preserve[NUMQ];
   ATTR *a;
-  int j;
 
   a = atr_get(thing, "PREFIX");
 
@@ -1208,20 +1200,15 @@ make_prefixstr(dbref thing, const char *msg, char *tbuf1)
     safe_str(Name(IsExit(thing) ? Source(thing) : thing), tbuf1, &bp);
     safe_str(", ", tbuf1, &bp);
   } else {
-    for (j = 0; j < 10; j++) {
-      wsave[j] = global_eval_context.wenv[j];
-      global_eval_context.wenv[j] = NULL;
-    }
-    global_eval_context.wenv[0] = (char *) msg;
-    save_global_regs("prefix_save", preserve);
+    NEW_PE_INFO *pe_info = make_pe_info("pe_info-make_prefixstr");
+    pe_info->env[0] = mush_strdup((char *) msg, "pe_info.env");
+    pe_info->arg_count = 1;
     asave = safe_atr_value(a);
     ap = asave;
     process_expression(tbuf1, &bp, &ap, thing, orator, orator,
-                       PE_DEFAULT, PT_DEFAULT, NULL);
+                       PE_DEFAULT, PT_DEFAULT, pe_info);
     free(asave);
-    restore_global_regs("prefix_save", preserve);
-    for (j = 0; j < 10; j++)
-      global_eval_context.wenv[j] = wsave[j];
+    free_pe_info(pe_info);
     if (bp != tbuf1)
       safe_chr(' ', tbuf1, &bp);
   }

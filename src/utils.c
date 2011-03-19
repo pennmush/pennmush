@@ -180,6 +180,7 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
     thingname = NULL;
     ufun->thing = executor;
     mush_strncpy(ufun->contents, attrname, BUFFER_LEN);
+    ufun->attrname[0] = '\0';
     return 1;
   }
 
@@ -201,6 +202,7 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
         ufun->errmess = e_atrperm;
       return 0;
     } else {
+      mush_strncpy(ufun->attrname, attrname, ATTRIBUTE_NAME_LIMIT+1);
       return 1;
     }
   }
@@ -223,6 +225,7 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
 
   /* Populate the ufun object */
   mush_strncpy(ufun->contents, atr_value(attrib), BUFFER_LEN);
+  mush_strncpy(ufun->attrname, attrname, ATTRIBUTE_NAME_LIMIT+1);
 
   /* We're good */
   return 1;
@@ -233,7 +236,7 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
  *  wenv_args. The value returned is stored in the buffer pointed to
  *  by ret, if given.
  * \param ufun The ufun_attrib that was initialized by fetch_ufun_attrib
- * \param wenv_args An array of string values for global_eval_context.wenv
+ * \param wenv_args An array of string values for %0-%9
  * \param wenv_argc The number of wenv args to use.
  * \param ret If desired, a pointer to a buffer in which the results
  *            of the process_expression are stored in.
@@ -245,7 +248,7 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
  */
 bool
 call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
-          dbref executor, dbref enactor, PE_Info *pe_info)
+          dbref executor, dbref enactor, NEW_PE_INFO * pe_info)
 {
   char rbuff[BUFFER_LEN];
   char *rp;
@@ -257,12 +260,54 @@ call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
   int i;
   int pe_ret;
   char const *ap;
+  char old_attr[BUFFER_LEN];
 
-  struct re_save rsave;
+  struct re_context rsave;
 
   /* Make sure we have a ufun first */
   if (!ufun)
     return 1;
+
+  /* Save contexts, globals, regexp vals, etc */
+  if (pe_info) {
+    for (i = 0; i < wenv_argc; i++) {
+      old_wenv[i] = pe_info->env[i];
+      pe_info->env[i] = wenv_args[i];
+    }
+
+    for (; i < 10; i++) {
+      old_wenv[i] = pe_info->env[i];
+      pe_info->env[i] = NULL;
+    }
+    old_args = pe_info->arg_count;
+    pe_info->arg_count = wenv_argc;
+
+    save_regexp_context(&rsave, &pe_info->re_context);
+    if (ufun->ufun_flags & UFUN_LOCALIZE) {
+      save_global_regs("localize", saveqs, pe_info->qreg_values);
+    }
+    /* Set all the regexp patterns to NULL so they are not propogated */
+    reset_regexp_context(&pe_info->re_context);
+
+    /* Stop itext() and stext() propagating down ufuns */
+    iter_nest = pe_info->iter_nestings_local;
+    pe_info->iter_nestings_local = -1;
+    switch_nest = pe_info->switch_nestings_local;
+    pe_info->switch_nestings_local = -1;
+
+    strcpy(old_attr, pe_info->attrname);
+    rp = pe_info->attrname;
+    if (*ufun->attrname == '\0') {
+      safe_str("#LAMBDA", pe_info->attrname, &rp);
+      safe_chr('/', pe_info->attrname, &rp);
+      safe_str(ufun->contents, pe_info->attrname, &rp);
+    } else {
+      safe_dbref(ufun->thing, pe_info->attrname, &rp);
+      safe_chr('/', pe_info->attrname, &rp);
+      safe_str(ufun->attrname, pe_info->attrname, &rp);
+    }
+    *rp = '\0';
+  }
 
   /* If the user doesn't care about the return of the expression,
    * then use our own rbuff.  */
@@ -270,59 +315,34 @@ call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
     ret = rbuff;
   rp = ret;
 
-  /* Save contexts, globals, regexp vals, etc */
-  for (i = 0; i < wenv_argc; i++) {
-    old_wenv[i] = global_eval_context.wenv[i];
-    global_eval_context.wenv[i] = wenv_args[i];
-  }
-
-  for (; i < 10; i++) {
-    old_wenv[i] = global_eval_context.wenv[i];
-    global_eval_context.wenv[i] = NULL;
-  }
-
-  save_regexp_context(&rsave);
-  if (ufun->ufun_flags & UFUN_LOCALIZE) {
-    save_global_regs("localize", saveqs);
-  }
-
-  /* Set all the regexp patterns to NULL so they are not
-   * propogated */
-  global_eval_context.re_code = NULL;
-  global_eval_context.re_subpatterns = -1;
-  global_eval_context.re_offsets = NULL;
-  global_eval_context.re_from = NULL;
 
   /* And now, make the call! =) */
-  if (pe_info) {
-    old_args = pe_info->arg_count;
-    pe_info->arg_count = wenv_argc;
-    iter_nest = pe_info->local_iter_nesting;
-    pe_info->local_iter_nesting = -1;
-    switch_nest = pe_info->local_switch_nesting;
-    pe_info->local_switch_nesting = -1;
-  }
-
   ap = ufun->contents;
   pe_ret = process_expression(ret, &rp, &ap, ufun->thing, executor,
                               enactor, ufun->pe_flags, PT_DEFAULT, pe_info);
   *rp = '\0';
 
-  /* Restore the old wenv */
-  for (i = 0; i < 10; i++) {
-    global_eval_context.wenv[i] = old_wenv[i];
-  }
   if (pe_info) {
-    pe_info->local_iter_nesting = iter_nest;
-    pe_info->local_switch_nesting = switch_nest;
-    pe_info->arg_count = old_args;
-  }
+    /* Restore the old environment */
+    for (i = 0; i < 10; i++) {
+      pe_info->env[i] = old_wenv[i];
+    }
 
-  if (ufun->ufun_flags & UFUN_LOCALIZE) {
-    restore_global_regs("localize", saveqs);
+    /* Restore itext and stext values */
+    pe_info->iter_nestings_local = iter_nest;
+    pe_info->switch_nestings_local = switch_nest;
+    pe_info->arg_count = old_args;
+
+    /* Restore q-regs */
+    if (ufun->ufun_flags & UFUN_LOCALIZE) {
+      restore_global_regs("localize", saveqs, pe_info->qreg_values);
+    }
+
+    /* Restore regexp patterns */
+    restore_regexp_context(&rsave, &pe_info->re_context);
+
+    strcpy(pe_info->attrname, old_attr);
   }
-  /* Restore regexp patterns */
-  restore_regexp_context(&rsave);
 
   return pe_ret;
 }
@@ -333,7 +353,7 @@ call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
  * by ret, if given.
  * \param thing The thing that has the attribute to be called
  * \param attrname The name of the attribute to call.
- * \param wenv_args An array of string values for global_eval_context.wenv
+ * \param wenv_args An array of string values for %0-%9
  * \param wenv_argc The number of wenv args to use.
  * \param ret If desired, a pointer to a buffer in which the results
  * of the process_expression are stored in.
@@ -344,7 +364,7 @@ call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
  */
 bool
 call_attrib(dbref thing, const char *attrname, const char *wenv_args[],
-            int wenv_argc, char *ret, dbref enactor, PE_Info *pe_info)
+            int wenv_argc, char *ret, dbref enactor, NEW_PE_INFO * pe_info)
 {
   ufun_attrib ufun;
   if (!fetch_ufun_attrib(attrname, thing, &ufun,

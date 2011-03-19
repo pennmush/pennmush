@@ -493,26 +493,22 @@ do_give(dbref player, char *recipient, char *amnt, int silent)
     } else if (a && (amount > 0 || !IsPlayer(who))) {
       /* give pennies to object with COST */
       int cost = 0;
-      char *preserveq[NUMQ];
-      char *preserves[10];
       char fbuff[BUFFER_LEN];
       char *fbp, *asave;
       char const *ap;
+      NEW_PE_INFO *pe_info = make_pe_info("pe_info-do_give");
 
-      save_global_regs("give_save", preserveq);
-      save_global_env("give_save", preserves);
       asave = safe_atr_value(a);
       ap = asave;
       fbp = fbuff;
       safe_integer_sbuf(amount, paid, &pb);
       *pb = '\0';
-      global_eval_context.wenv[0] = paid;
+      pe_info->env[0] = mush_strdup(paid, "pe_info.env");
       process_expression(fbuff, &fbp, &ap, who, player, player,
-                         PE_DEFAULT, PT_DEFAULT, NULL);
+                         PE_DEFAULT, PT_DEFAULT, pe_info);
       *fbp = '\0';
+      free_pe_info(pe_info);
       free(asave);
-      restore_global_regs("give_save", preserveq);
-      restore_global_env("give_save", preserves);
       if (amount < (cost = atoi(fbuff))) {
         notify(player, T("Feeling poor today?"));
         giveto(player, amount);

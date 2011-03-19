@@ -4071,9 +4071,10 @@ do_chan_buffer(dbref player, const char *name, const char *lines)
 int
 eval_chan_lock(CHAN *c, dbref p, enum clock_type type)
 {
-  char *oldenv[10];
+  NEW_PE_INFO *pe_info;
+
   boolexp b = TRUE_BOOLEXP;
-  int retval, n;
+  int retval;
   if (!c || !GoodObject(p))
     return 0;
   switch (type) {
@@ -4093,11 +4094,10 @@ eval_chan_lock(CHAN *c, dbref p, enum clock_type type)
     b = ChanModLock(c);
   }
 
-  save_global_env("eval_chan_lock", oldenv);
-  global_eval_context.wenv[0] = ChanName(c);
-  for (n = 1; n < 10; n++)
-    global_eval_context.wenv[n] = NULL;
-  retval = eval_boolexp(p, b, p);
-  restore_global_env("eval_chan_lock", oldenv);
+  pe_info = make_pe_info("pe_info-eval_chan_lock");
+  pe_info->env[0] = mush_strdup(ChanName(c), "pe_info.env");
+  pe_info->arg_count = 1;
+  retval = eval_boolexp(p, b, p, pe_info);
+  free_pe_info(pe_info);
   return retval;
 }

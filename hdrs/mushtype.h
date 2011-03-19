@@ -8,6 +8,9 @@
 #include <stdint.h>
 #endif
 
+#define NUMQ    36
+
+
 /** Math function floating-point number type */
 typedef double NVAL;
 
@@ -50,35 +53,83 @@ typedef struct lock_list lock_list;
 /* Set this somewhere near the recursion limit */
 #define MAX_ITERS 100
 
-typedef struct pe_info PE_Info;
+/* max length of command argument to process_command */
+#define MAX_COMMAND_LEN 4096
+#define BUFFER_LEN ((MAX_COMMAND_LEN)*2)
+#define MAX_ARG 63
+
 typedef struct debug_info Debug_Info;
-/** process_expression() info
- * This type is used by process_expression().  In all but parse.c,
- * this should be left as an incompletely-specified type, making it
- * impossible to declare anything but pointers to it.
- *
- * Unfortunately, we need to know what it is in funlist.c, too,
- * to prevent denial-of-service attacks.  ARGH!  Don't look at
- * this struct unless you _really_ want to get your hands dirty.
- */
-struct pe_info {
-  int fun_invocations;          /**< Invocation count */
-  int fun_depth;                /**< Recursion count */
-  int nest_depth;               /**< Depth of function nesting, for DEBUG */
-  int call_depth;               /**< Function call counter */
-  Debug_Info *debug_strings;    /**< DEBUG infromation */
-  int arg_count;                /**< Number of arguments passed to function */
-  int iter_nesting;             /**< Current iter() nesting depth */
-  int local_iter_nesting;       /**< Expression-level iter() nesting depth */
-  char *iter_itext[MAX_ITERS];  /**< itext() replacements in iter() */
-  int iter_inum[MAX_ITERS];     /**< inum() values in iter() */
-  int iter_break;               /**< number of ibreak()s to break out of iter()s */
-  int dolists;                  /**< Number of @dolist values in iter_itext */
-  int switch_nesting;           /**< switch()/@switch nesting depth */
-  int local_switch_nesting;     /**< Expression-level switch nesting depth */
-  char *switch_text[MAX_ITERS]; /**< #$-values for switch()/@switches */
-  int debugging;                /**< Show debug? 1 = yes, 0 = if DEBUG flag set, -1 = no */
+/** process_expression() info */
+
+/* Regexp saving helpers */
+struct re_context {
+  struct real_pcre *re_code;    /**< The compiled re */
+  int re_subpatterns;           /**< The number of re subpatterns */
+  int *re_offsets;              /**< The offsets for the subpatterns */
+  struct _ansi_string *re_from; /**< The positions of the subpatterns */
 };
+
+typedef struct new_pe_info {
+  int fun_invocations;          /**< The number of functions invoked (%?) */
+  int fun_recursions;           /**< Function recursion depth (%?) */
+  int call_depth;               /**< Number of times the parser (process_expression()) has recursed */
+
+  Debug_Info *debug_strings;    /**< DEBUG information */
+  int nest_depth;               /**< Depth of function nesting, for DEBUG */
+  int debugging;                /**< Show debug? 1 = yes, 0 = if DEBUG flag set, -1 = no */
+
+  char *env[10];                /**< Current environment variables (%0-%9) */
+  int arg_count;                /**< Number of arguments available in env (%+) */
+  char qreg_values[NUMQ][BUFFER_LEN];      /**< Values of registers set with setq() */
+
+  int iter_nestings;            /**< Total number of iter()/@dolist nestings */
+  int iter_nestings_local;      /**< Number of iter() nestings accessible at present */
+  int iter_breaks;              /**< Number of iter()s to break out of */
+  int iter_dolists;             /**< Number of iter_nestings which are from @dolist, and can't be broken out of */
+  char *iter_itext[MAX_ITERS];  /**< itext() values */
+  int iter_inum[MAX_ITERS];     /**< inum() values */
+
+  int switch_nestings;          /**< Total number of switch()/@switch nestings */
+  int switch_nestings_local;    /**< Number of switch nestings available at present */
+  char *switch_text[MAX_ITERS]; /**< stext() values */
+
+  char cmd_raw[BUFFER_LEN];     /**< Unevaluated cmd executed (%c) */
+  char cmd_evaled[BUFFER_LEN];  /**< Evaluated cmd executed (%u) */
+
+  char attrname[BUFFER_LEN];    /**< The attr currently being evaluated */
+
+  struct re_context re_context; /**< regexp context, for $-replacements in re*() functions */
+
+  char name[BUFFER_LEN];        /**< TEMP: Used for memory-leak checking. Remove me later!!!! */
+
+  int refcount;                 /**< Number of times this pe_info is being used. > 1 when shared by sub-queues. free() when at 0 */
+} NEW_PE_INFO;
+
+
+typedef struct mque MQUE;
+struct mque {
+  dbref executor;               /**< Dbref of the executor, who is running this code (%!) */
+  dbref enactor;                /**< Dbref of the enactor, who caused this code to run initially (%#) */
+  dbref caller;                 /**< Dbref of the caller, who called/triggered this attribute (%@) */
+
+  NEW_PE_INFO *pe_info;         /**< New pe_info struct used for this queue entry */
+
+  MQUE *inplace;                /**< Queue entry to run, either via @include or @break, @foo/inplace, etc */
+  MQUE *next;                   /**< The next queue entry in the linked list */
+
+  dbref semaphore_obj;          /**< Object this queue was @wait'd on as a semaphore */
+  char *semaphore_attr;         /**< Attribute this queue was @wait'd on as a semaphore */
+  time_t wait_until;            /**< Time (epoch in seconds) this @wait'd queue entry runs */
+  uint32_t pid;                 /**< This queue's process id */
+  char *action_list;            /**< The action list of commands to run in this queue entry */
+  int queue_type;               /**< The type of queue entry, bitwise QUEUE_* values */
+  int port;                     /**< The port/descriptor the command came from, or 0 for queue entry not from a player's client */
+  char *save_env[10];           /**< If queue_type contains (QUEUE_INPLACE | QUEUE_RESTORE_ENV), at the end of this inplace queue
+                                     entry, free the stack (pe_info->env) and restore it to these values */
+  char *save_attrname;          /**< A saved copy of pe_info->attrname, to be reset and freed at the end of the include que */
+
+};
+
 
 
 /* new attribute foo */
@@ -163,10 +214,6 @@ struct descriptor_data {
   char checksum[PUEBLO_CHECKSUM_LEN + 1];       /**< Pueblo checksum */
 };
 
-/* max length of command argument to process_command */
-#define MAX_COMMAND_LEN 4096
-#define BUFFER_LEN ((MAX_COMMAND_LEN)*2)
-#define MAX_ARG 63
 
 /* Channel stuff */
 typedef struct chanuser CHANUSER;

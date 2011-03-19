@@ -618,53 +618,216 @@ extern signed char qreg_indexes[UCHAR_MAX + 1];
 #pragma warning( disable : 4761)        /* NJG: disable warning re conversion */
 #endif
 
-PE_Info *
-make_pe_info()
+/** Free a pe_info at the end of its use. Note that a pe_info may be in use
+ ** in more than one place, in which case this function simply decrements the
+ ** refcounter. Memory is only freed when the counter hits 0
+ * \param pe_info the pe_info to free
+ */
+void
+free_pe_info(NEW_PE_INFO * pe_info)
 {
-  PE_Info *pe_info;
+  int i;
 
-  pe_info = (PE_Info *) mush_malloc(sizeof(PE_Info),
-                                    "process_expression.pe_info");
+  if (!pe_info)
+    return;
+
+  pe_info->refcount--;
+  if (pe_info->refcount > 0)
+    return;                     /* Still in use */
+
+  /* Free any itext values left from @dolists */
+  while (pe_info->iter_nestings > -1) {
+    mush_free(pe_info->iter_itext[pe_info->iter_nestings],
+              "pe_info.dolist_arg");
+    pe_info->iter_nestings--;
+  }
+
+  /* Free any stext values left from @switches */
+  while (pe_info->switch_nestings > -1) {
+    mush_free(pe_info->switch_text[pe_info->switch_nestings],
+              "pe_info.switch_text");
+    pe_info->switch_nestings--;
+  }
+
+  /* Free the environment variables (%0-%9) */
+  for (i = 0; i < 10; i++) {
+    if (pe_info->env[i])
+      mush_free(pe_info->env[i], "pe_info.env");
+  }
+
+  mush_free(pe_info, pe_info->name);
+
+  return;
+}
+
+/** Create a new pe_info
+ * \param name name of the calling function, for memory checking
+ */
+NEW_PE_INFO *
+make_pe_info(char *name)
+{
+  NEW_PE_INFO *pe_info;
+  int i;
+
+  pe_info = (NEW_PE_INFO *) mush_malloc(sizeof(NEW_PE_INFO), name);
+
   pe_info->fun_invocations = 0;
-  pe_info->fun_depth = 0;
-  pe_info->nest_depth = 0;
+  pe_info->fun_recursions = 0;
   pe_info->call_depth = 0;
+
   pe_info->debug_strings = NULL;
-  pe_info->arg_count = 0;
-  pe_info->iter_nesting = -1;
-  pe_info->local_iter_nesting = -1;
-  pe_info->iter_break = -1;
-  pe_info->dolists = 0;
-  pe_info->switch_nesting = -1;
-  pe_info->local_switch_nesting = -1;
   pe_info->debugging = 0;
+  pe_info->nest_depth = 0;
+
+  *pe_info->attrname = '\0';
+  pe_info->arg_count = 0;
+
+  pe_info->iter_nestings = -1;
+  pe_info->iter_nestings_local = -1;
+  pe_info->iter_breaks = -1;
+  pe_info->iter_dolists = 0;
+
+  pe_info->switch_nestings = -1;
+  pe_info->switch_nestings_local = -1;
+
+  for (i = 0; i < 10; i++)
+    pe_info->env[i] = NULL;
+
+  for (i = 0; i < NUMQ; i++)
+    pe_info->qreg_values[i][0] = '\0';
+
+  *pe_info->cmd_raw = '\0';
+  *pe_info->cmd_evaled = '\0';
+
+  reset_regexp_context(&pe_info->re_context);
+
+  pe_info->refcount = 1;
+  strcpy(pe_info->name, name);
 
   return pe_info;
 }
 
-void
-free_pe_info(PE_Info *pe_info)
+/** Create an new pe_info based on an existing pe_info. Depending on flags, we may
+ ** simply increase the refcount of the existing pe_info and return that, or we
+ ** may create a new pe_info, possibly copying some information from the existing
+ ** pe_info into the new one
+ * \param old_pe_info the original pe_info to use as a base for the new one
+ * \param flags PE_INFO_* flags to determine exactly what to do
+ * \param env environment vars (%0-%9) for the new pe_info, or NULL
+ * \param qreg qreg values (%q*) for the new pe_info, or NULL
+ * \param return a new pe_info
+ */
+NEW_PE_INFO *
+pe_info_from(NEW_PE_INFO * old_pe_info, int flags, char *env[10],
+             char *qreg[NUMQ])
 {
-  if (!pe_info)
-    return;
-  if (pe_info->iter_nesting >= 0) {
-    int i;
-    for (i = pe_info->iter_nesting; i >= 0; i--) {
-      mush_free(pe_info->iter_itext[i], "dolist_arg");
+  NEW_PE_INFO *pe_info;
+  int i;
+
+  if (flags & PE_INFO_SHARE) {
+    /* Don't create a new pe_info, just increase the refcount for the existing one
+       and return that. Used for inplace queue entries */
+    if (!old_pe_info) {
+      /* No existing one to share, so make a new one */
+      pe_info = make_pe_info("pe_info-from_old-share");
+    } else {
+      pe_info = old_pe_info;
+      pe_info->refcount++;
+    }
+    return pe_info;
+  }
+
+  if (flags & PE_INFO_CLONE) {
+    /* Clone all the pertinent information in the original pe_info (env, q-reg, itext/stext info),
+       reset all the counters (like function invocation limit). Used for cmds that queue a
+       new actionlist for the current executor */
+    pe_info = make_pe_info("pe_info-from_old-clone");
+    if (!old_pe_info)
+      return pe_info;           /* nothing to do */
+
+    /* OK, copy everything over */
+    /* Env (%0-%9) */
+    for (i = 0; i < 10; i++) {
+      if (old_pe_info->env[i])
+        pe_info->env[i] = mush_strdup(old_pe_info->env[i], "pe_info.env");
+    }
+    pe_info->arg_count = old_pe_info->arg_count;
+
+    /* q-registers */
+    for (i = 0; i < NUMQ; i++) {
+      if (*old_pe_info->qreg_values[i])
+        strcpy(pe_info->qreg_values[i], old_pe_info->qreg_values[i]);
+    }
+
+    /* itext context */
+    if (old_pe_info->iter_nestings >= 0) {
+      for (i = 0; i <= old_pe_info->iter_nestings; i++) {
+        pe_info->iter_itext[i] =
+          mush_strdup(old_pe_info->iter_itext[i], "pe_info.dolist_arg");
+        pe_info->iter_inum[i] = old_pe_info->iter_inum[i];
+      }
+      pe_info->iter_nestings = pe_info->iter_nestings_local =
+        pe_info->iter_dolists = (i - 1);
+    }
+
+    /* stext context */
+    if (old_pe_info->switch_nestings >= 0) {
+      for (i = 0; i <= old_pe_info->switch_nestings; i++) {
+        pe_info->switch_text[i] =
+          mush_strdup(old_pe_info->switch_text[i], "pe_info.switch_text");
+      }
+      pe_info->switch_nestings = pe_info->switch_nestings_local = (i - 1);
+    }
+
+    return pe_info;
+  }
+
+  /* Make a new pe_info, and possibly add stack or q-registers to it, either from
+     the old pe_info or from the args passed. Used for most things queued by the hardcode
+     like @a-attributes, or queue entries with a different executor (@trigger) */
+
+  pe_info = make_pe_info("pe_info-from_old-generic");
+  if (flags & PE_INFO_COPY_ENV) {
+    if (old_pe_info) {
+      for (i = 0; i < 10; i++) {
+        if (old_pe_info->env[i]) {
+          pe_info->env[i] = mush_strdup(old_pe_info->env[i], "pe_info.env");
+          pe_info->arg_count = i+1;
+        } else {
+          pe_info->env[i] = NULL;
+        }
+      }
+    }
+  } else if (env) {
+    for (i = 0; i < 10; i++) {
+      if (env[i]) {
+        pe_info->env[i] = mush_strdup(env[i], "pe_info.env");
+        pe_info->arg_count = i+1;
+      } else {
+        pe_info->env[i] = NULL;
+      }
     }
   }
-  if (pe_info->switch_nesting >= 0) {
-    int j;
-    for (j = pe_info->switch_nesting; j >= 0; j--) {
-      mush_free(pe_info->switch_text[j], "switch_arg");
+  if (flags & PE_INFO_COPY_QREG) {
+    if (old_pe_info) {
+      for (i = 0; i < NUMQ; i++) {
+        if (old_pe_info->qreg_values[i][0])
+          strcpy(pe_info->qreg_values[i], old_pe_info->qreg_values[i]);
+        else
+          pe_info->qreg_values[i][0] = '\0';
+      }
+    }
+  } else {
+    for (i = 0; i < NUMQ; i++) {
+      if (qreg && qreg[i])
+        strcpy(pe_info->qreg_values[i], qreg[i]);
+      else
+        pe_info->qreg_values[i][0] = '\0';
     }
   }
-  mush_free(pe_info, "process_expression.pe_info");
-  return;
+
+  return pe_info;
 }
-
-
-
 
 /** Function and other substitution evaluation.
  * This is the PennMUSH function/expression parser. Big stuff.
@@ -719,7 +882,7 @@ free_pe_info(PE_Info *pe_info)
 int
 process_expression(char *buff, char **bp, char const **str,
                    dbref executor, dbref caller, dbref enactor,
-                   int eflags, int tflags, PE_Info *pe_info)
+                   int eflags, int tflags, NEW_PE_INFO * pe_info)
 {
   int debugging = 0, made_info = 0;
   char *debugstr = NULL, *sourcestr = NULL;
@@ -760,7 +923,7 @@ process_expression(char *buff, char **bp, char const **str,
 
   if (!pe_info) {
     made_info = 1;
-    pe_info = make_pe_info();
+    pe_info = make_pe_info("pe_info-p_e");
   } else {
     old_debugging = pe_info->debugging;
     if (caller != executor)
@@ -922,9 +1085,9 @@ process_expression(char *buff, char **bp, char const **str,
       break;
     case '$':                  /* Dollar subs for regedit() */
       if ((eflags & (PE_DOLLAR | PE_EVALUATE)) == (PE_DOLLAR | PE_EVALUATE) &&
-          global_eval_context.re_subpatterns >= 0 &&
-          global_eval_context.re_offsets != NULL &&
-          global_eval_context.re_from != NULL) {
+          pe_info->re_context.re_subpatterns >= 0 &&
+          pe_info->re_context.re_offsets != NULL &&
+          pe_info->re_context.re_from != NULL) {
         int p = -1;
         char subspace[BUFFER_LEN];
         char *named_substring = NULL;
@@ -953,15 +1116,15 @@ process_expression(char *buff, char **bp, char const **str,
         }
 
         if (named_substring != NULL) {
-          ansi_pcre_copy_named_substring(global_eval_context.re_code,
-                                         global_eval_context.re_from,
-                                         global_eval_context.re_offsets,
-                                         global_eval_context.re_subpatterns,
+          ansi_pcre_copy_named_substring(pe_info->re_context.re_code,
+                                         pe_info->re_context.re_from,
+                                         pe_info->re_context.re_offsets,
+                                         pe_info->re_context.re_subpatterns,
                                          named_substring, 0, buff, bp);
         } else {
-          ansi_pcre_copy_substring(global_eval_context.re_from,
-                                   global_eval_context.re_offsets,
-                                   global_eval_context.re_subpatterns,
+          ansi_pcre_copy_substring(pe_info->re_context.re_from,
+                                   pe_info->re_context.re_offsets,
+                                   pe_info->re_context.re_subpatterns,
                                    p, 0, buff, bp);
         }
       } else {
@@ -1042,7 +1205,7 @@ process_expression(char *buff, char **bp, char const **str,
           if (pe_info) {
             safe_integer(pe_info->fun_invocations, buff, bp);
             safe_chr(' ', buff, bp);
-            safe_integer(pe_info->fun_depth, buff, bp);
+            safe_integer(pe_info->fun_recursions, buff, bp);
           } else {
             safe_str("0 0", buff, bp);
           }
@@ -1060,6 +1223,10 @@ process_expression(char *buff, char **bp, char const **str,
           else
             safe_integer(0, buff, bp);
           break;
+        case '=':
+          if (pe_info)
+            safe_str(pe_info->attrname, buff, bp);
+          break;
         case '0':
         case '1':
         case '2':
@@ -1070,8 +1237,8 @@ process_expression(char *buff, char **bp, char const **str,
         case '7':
         case '8':
         case '9':              /* positional argument */
-          if (global_eval_context.wenv[savec - '0'])
-            safe_str(global_eval_context.wenv[savec - '0'], buff, bp);
+          if (pe_info->env[savec - '0'])
+            safe_str(pe_info->env[savec - '0'], buff, bp);
           break;
         case 'A':
         case 'a':              /* enactor absolute possessive pronoun */
@@ -1089,7 +1256,7 @@ process_expression(char *buff, char **bp, char const **str,
           break;
         case 'C':
         case 'c':              /* command line */
-          safe_str(global_eval_context.ccom, buff, bp);
+          safe_str(pe_info->cmd_raw, buff, bp);
           break;
         case 'I':
         case 'i':
@@ -1097,10 +1264,10 @@ process_expression(char *buff, char **bp, char const **str,
           if (!nextc)
             goto exit_sequence;
           (*str)++;
-          if (pe_info->iter_nesting >= 0 && pe_info->local_iter_nesting >= 0) {
-            if (nextc == 'l') {
-              safe_str(pe_info->iter_itext[pe_info->iter_nesting -
-                                           pe_info->local_iter_nesting], buff,
+          if (pe_info->iter_nestings >= 0 && pe_info->iter_nestings_local >= 0) {
+            if (nextc == 'l' || nextc == 'L') {
+              safe_str(pe_info->iter_itext[pe_info->iter_nestings -
+                                           pe_info->iter_nestings_local], buff,
                        bp);
               break;
             }
@@ -1109,11 +1276,11 @@ process_expression(char *buff, char **bp, char const **str,
               break;
             }
             inum_this = nextc - '0';
-            if (inum_this < 0 || inum_this > pe_info->local_iter_nesting
-                || (pe_info->local_iter_nesting - inum_this) < 0) {
+            if (inum_this < 0 || inum_this > pe_info->iter_nestings_local
+                || (pe_info->iter_nestings_local - inum_this) < 0) {
               safe_str(T(e_argrange), buff, bp);
             } else {
-              safe_str(pe_info->iter_itext[pe_info->iter_nesting - inum_this],
+              safe_str(pe_info->iter_itext[pe_info->iter_nestings - inum_this],
                        buff, bp);
             }
           } else {
@@ -1125,22 +1292,22 @@ process_expression(char *buff, char **bp, char const **str,
           if (!nextc)
             goto exit_sequence;
           (*str)++;
-          if (pe_info->switch_nesting >= 0
-              && pe_info->local_switch_nesting >= 0) {
+          if (pe_info->switch_nestings >= 0
+              && pe_info->switch_nestings_local >= 0) {
             if (nextc == 'l' || nextc == 'L') {
-              inum_this = pe_info->local_switch_nesting;
+              inum_this = pe_info->switch_nestings_local;
             } else if (!isdigit((unsigned char) nextc)) {
               safe_str(T(e_int), buff, bp);
               break;
             } else {
               inum_this = nextc - '0';
             }
-            if (inum_this < 0 || inum_this > pe_info->local_switch_nesting ||
-                (pe_info->local_switch_nesting - inum_this) < 0) {
+            if (inum_this < 0 || inum_this > pe_info->switch_nestings_local ||
+                (pe_info->switch_nestings_local - inum_this) < 0) {
               safe_str(T(e_argrange), buff, bp);
             } else {
               safe_str(pe_info->switch_text
-                       [pe_info->switch_nesting - inum_this], buff, bp);
+                       [pe_info->switch_nestings - inum_this], buff, bp);
             }
           } else {
             safe_str(T(e_argrange), buff, bp);
@@ -1148,7 +1315,7 @@ process_expression(char *buff, char **bp, char const **str,
           break;
         case 'U':
         case 'u':
-          safe_str(global_eval_context.ucom, buff, bp);
+          safe_str(pe_info->cmd_evaled, buff, bp);
           break;
         case 'L':
         case 'l':              /* enactor location dbref */
@@ -1196,8 +1363,8 @@ process_expression(char *buff, char **bp, char const **str,
           (*str)++;
           if ((qindex = qreg_indexes[(unsigned char) nextc]) == -1)
             break;
-          if (global_eval_context.renv[qindex])
-            safe_str(global_eval_context.renv[qindex], buff, bp);
+          if (pe_info->qreg_values[qindex])
+            safe_str(pe_info->qreg_values[qindex], buff, bp);
           break;
         case 'R':
         case 'r':              /* newline */
@@ -1410,7 +1577,7 @@ process_expression(char *buff, char **bp, char const **str,
           break;
         }
         /* Check for the recursion limit */
-        if ((pe_info->fun_depth + 1 >= RECURSION_LIMIT) ||
+        if ((pe_info->fun_recursions + 1 >= RECURSION_LIMIT) ||
             (global_fun_recursions + 1 >= RECURSION_LIMIT * 5)) {
           safe_str(T("#-1 FUNCTION RECURSION LIMIT EXCEEDED"), buff, bp);
           if (process_expression(name, &tp, str,
@@ -1530,9 +1697,10 @@ process_expression(char *buff, char **bp, char const **str,
           } else {
             char *preserve[NUMQ];
             global_fun_recursions++;
-            pe_info->fun_depth++;
+            pe_info->fun_recursions++;
             if (fp->flags & FN_LOCALIZE)
-              save_global_regs("@function.save", preserve);
+              save_global_regs("@function.save", preserve,
+                               pe_info->qreg_values);
             if (fp->flags & FN_BUILTIN) {
               global_fun_invocations++;
               pe_info->fun_invocations++;
@@ -1579,8 +1747,9 @@ process_expression(char *buff, char **bp, char const **str,
               }
             }
             if (fp->flags & FN_LOCALIZE)
-              restore_global_regs("@function.save", preserve);
-            pe_info->fun_depth--;
+              restore_global_regs("@function.save", preserve,
+                                  pe_info->qreg_values);
+            pe_info->fun_recursions--;
             global_fun_recursions--;
           }
         }

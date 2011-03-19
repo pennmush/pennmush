@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <math.h>
+#include "mushtype.h"
 
 #include "confmagic.h"
 
@@ -104,7 +105,7 @@ typedef struct fun FUN;
   /* ARGSUSED */ /* try to keep lint happy */ \
   void fun_name (FUN *fun, char *buff, char **bp, int nargs, char *args[], \
                    int arglens[], dbref executor, dbref caller, dbref enactor, \
-                   char const *called_as, PE_Info *pe_info); \
+                   char const *called_as, NEW_PE_INFO *pe_info); \
   void fun_name(FUN *fun __attribute__ ((__unused__)), \
                 char *buff __attribute__ ((__unused__)), \
                 char **bp  __attribute__ ((__unused__)), \
@@ -115,7 +116,7 @@ typedef struct fun FUN;
                 dbref caller  __attribute__ ((__unused__)), \
                 dbref enactor  __attribute__ ((__unused__)), \
                 char const *called_as  __attribute__ ((__unused__)), \
-                PE_Info *pe_info  __attribute__ ((__unused__)))
+                NEW_PE_INFO *pe_info  __attribute__ ((__unused__)))
 
 /* All results are returned in buff, at the point *bp.  *bp is likely
  * not equal to buff, so make no assumptions about writing at the
@@ -157,10 +158,12 @@ typedef struct fun FUN;
 
 int process_expression(char *buff, char **bp, char const **str,
                        dbref executor, dbref caller, dbref enactor,
-                       int eflags, int tflags, PE_Info *pe_info);
+                       int eflags, int tflags, NEW_PE_INFO * pe_info);
 
-PE_Info *make_pe_info();
-void free_pe_info();
+void free_pe_info(NEW_PE_INFO * pe_info);
+NEW_PE_INFO *make_pe_info(char *name);
+NEW_PE_INFO *pe_info_from(NEW_PE_INFO * old_pe_info, int flags, char *env[10],
+                          char *qreg[NUMQ]);
 
 /* buff is a pointer to a BUFFER_LEN string to contain the expression
  * result.  *bp is the point in buff at which the result should be written.

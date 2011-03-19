@@ -83,22 +83,19 @@ look_exits(dbref player, dbref loc, const char *exit_name)
 
   a = atr_get(loc, "EXITFORMAT");
   if (a) {
-    char *wsave[10], *rsave[NUMQ];
     char *arg, *buff, *bp, *save;
     char const *sp;
-    int j;
+    NEW_PE_INFO *pe_info;
 
     arg = (char *) mush_malloc(BUFFER_LEN, "string");
     buff = (char *) mush_malloc(BUFFER_LEN, "string");
     if (!arg || !buff)
       mush_panic("Unable to allocate memory in look_exits");
-    save_global_regs("look_exits", rsave);
-    for (j = 0; j < 10; j++) {
-      wsave[j] = global_eval_context.wenv[j];
-      global_eval_context.wenv[j] = NULL;
-    }
-    for (j = 0; j < NUMQ; j++)
-      global_eval_context.renv[j][0] = '\0';
+
+    pe_info = make_pe_info("pe_info-look_exits");
+    pe_info->env[0] = arg;
+    pe_info->arg_count = 1;
+
     bp = arg;
     DOLIST(thing, Exits(loc)) {
       if (((Light(loc) || Light(thing)) || !(Dark(loc) || Dark(thing)))
@@ -109,18 +106,15 @@ look_exits(dbref player, dbref loc, const char *exit_name)
       }
     }
     *bp = '\0';
-    global_eval_context.wenv[0] = arg;
+
     sp = save = safe_atr_value(a);
     bp = buff;
     process_expression(buff, &bp, &sp, loc, player, player,
-                       PE_DEFAULT, PT_DEFAULT, NULL);
+                       PE_DEFAULT, PT_DEFAULT, pe_info);
     *bp = '\0';
+    pe_info->env[0] = NULL;
     free(save);
     notify_by(loc, player, buff);
-    for (j = 0; j < 10; j++) {
-      global_eval_context.wenv[j] = wsave[j];
-    }
-    restore_global_regs("look_exits", rsave);
     mush_free(tbuf1, "string");
     mush_free(tbuf2, "string");
     mush_free(nbuf, "string");
@@ -241,24 +235,16 @@ look_contents(dbref player, dbref loc, const char *contents_name)
 
   a = atr_get(loc, "CONFORMAT");
   if (a) {
-    char *wsave[10], *rsave[NUMQ];
     char *arg, *buff, *bp, *save;
     char *arg2, *bp2;
     char const *sp;
-    int j;
+    NEW_PE_INFO *pe_info;
 
     arg = (char *) mush_malloc(BUFFER_LEN, "string");
     arg2 = (char *) mush_malloc(BUFFER_LEN, "string");
     buff = (char *) mush_malloc(BUFFER_LEN, "string");
     if (!arg || !buff || !arg2)
       mush_panic("Unable to allocate memory in look_contents");
-    save_global_regs("look_contents", rsave);
-    for (j = 0; j < 10; j++) {
-      wsave[j] = global_eval_context.wenv[j];
-      global_eval_context.wenv[j] = NULL;
-    }
-    for (j = 0; j < NUMQ; j++)
-      global_eval_context.renv[j][0] = '\0';
     bp = arg;
     bp2 = arg2;
     DOLIST(thing, Contents(loc)) {
@@ -273,19 +259,20 @@ look_contents(dbref player, dbref loc, const char *contents_name)
     }
     *bp = '\0';
     *bp2 = '\0';
-    global_eval_context.wenv[0] = arg;
-    global_eval_context.wenv[1] = arg2;
+    pe_info = make_pe_info("pe_info-look_contents");
+    pe_info->env[0] = arg;
+    pe_info->env[1] = arg2;
+    pe_info->arg_count = 2;
     sp = save = safe_atr_value(a);
     bp = buff;
     process_expression(buff, &bp, &sp, loc, player, player,
-                       PE_DEFAULT, PT_DEFAULT, NULL);
+                       PE_DEFAULT, PT_DEFAULT, pe_info);
     *bp = '\0';
+    pe_info->env[0] = NULL;
+    pe_info->env[1] = NULL;
+    free_pe_info(pe_info);
     free(save);
     notify_by(loc, player, buff);
-    for (j = 0; j < 10; j++) {
-      global_eval_context.wenv[j] = wsave[j];
-    }
-    restore_global_regs("look_contents", rsave);
     mush_free(arg, "string");
     mush_free(arg2, "string");
     mush_free(buff, "string");
@@ -568,16 +555,12 @@ look_description(dbref player, dbref thing, const char *def,
 {
   /* Show thing's description to player, obeying DESCFORMAT if set */
   ATTR *a, *f;
-  char *preserveq[NUMQ];
-  char *preserves[10];
   char buff[BUFFER_LEN], fbuff[BUFFER_LEN];
   char *bp, *fbp, *asave;
   char const *ap;
 
   if (!GoodObject(player) || !GoodObject(thing))
     return;
-  save_global_regs("look_desc_save", preserveq);
-  save_global_env("look_desc_save", preserves);
   a = atr_get(thing, descname);
   if (a) {
     /* We have a DESCRIBE, evaluate it into buff */
@@ -591,14 +574,21 @@ look_description(dbref player, dbref thing, const char *def,
   }
   f = atr_get(thing, descformatname);
   if (f) {
+    NEW_PE_INFO *pe_info = NULL;
+    if (a) {
+      pe_info = make_pe_info("pe_info-look_desc");
+      pe_info->env[0] = mush_strdup(buff, "pe_info.env");
+      pe_info->arg_count = 1;
+    }
     /* We have a DESCFORMAT, evaluate it into fbuff and use it */
     /* If we have a DESCRIBE, pass the evaluated version as %0 */
-    global_eval_context.wenv[0] = a ? buff : NULL;
     asave = safe_atr_value(f);
     ap = asave;
     fbp = fbuff;
     process_expression(fbuff, &fbp, &ap, thing, player, player,
-                       PE_DEFAULT, PT_DEFAULT, NULL);
+                       PE_DEFAULT, PT_DEFAULT, pe_info);
+    if (pe_info)
+      free_pe_info(pe_info);
     *fbp = '\0';
     free(asave);
     notify_by(thing, player, fbuff);
@@ -609,8 +599,6 @@ look_description(dbref player, dbref thing, const char *def,
     /* Nothing, go with the default message */
     notify_by(thing, player, def);
   }
-  restore_global_regs("look_desc_save", preserveq);
-  restore_global_env("look_desc_save", preserves);
 }
 
 /** An automatic look (due to motion).
@@ -1042,24 +1030,16 @@ do_inventory(dbref player)
 
   a = atr_get(player, "INVFORMAT");
   if (a) {
-    char *wsave[10], *rsave[NUMQ];
     char *arg, *buff, *bp, *save;
     char *arg2, *bp2;
     char const *sp;
-    int j;
+    NEW_PE_INFO *pe_info;
 
     arg = (char *) mush_malloc(BUFFER_LEN, "string");
     arg2 = (char *) mush_malloc(BUFFER_LEN, "string");
     buff = (char *) mush_malloc(BUFFER_LEN, "string");
     if (!arg || !buff || !arg2)
       mush_panic("Unable to allocate memory in do_inventory");
-    save_global_regs("do_inventory", rsave);
-    for (j = 0; j < 10; j++) {
-      wsave[j] = global_eval_context.wenv[j];
-      global_eval_context.wenv[j] = NULL;
-    }
-    for (j = 0; j < NUMQ; j++)
-      global_eval_context.renv[j][0] = '\0';
     bp = arg;
     bp2 = arg2;
     DOLIST(thing, Contents(player)) {
@@ -1072,19 +1052,19 @@ do_inventory(dbref player)
     }
     *bp = '\0';
     *bp2 = '\0';
-    global_eval_context.wenv[0] = arg;
-    global_eval_context.wenv[1] = arg2;
+    pe_info = make_pe_info("pe_info-do_inv");
+    pe_info->env[0] = arg;
+    pe_info->env[1] = arg2;
+    pe_info->arg_count = 2;
     sp = save = safe_atr_value(a);
     bp = buff;
     process_expression(buff, &bp, &sp, player, player, player,
-                       PE_DEFAULT, PT_DEFAULT, NULL);
+                       PE_DEFAULT, PT_DEFAULT, pe_info);
     *bp = '\0';
+    pe_info->env[0] = NULL;
+    pe_info->env[1] = NULL;
     free(save);
     notify(player, buff);
-    for (j = 0; j < 10; j++) {
-      global_eval_context.wenv[j] = wsave[j];
-    }
-    restore_global_regs("do_inventory", rsave);
     mush_free(arg, "string");
     mush_free(arg2, "string");
     mush_free(buff, "string");

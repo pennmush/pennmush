@@ -88,13 +88,13 @@ static int tport_dest_ok(dbref player, dbref victim, dbref dest);
 static int tport_control_ok(dbref player, dbref victim, dbref loc);
 static int mem_usage(dbref thing);
 static int raw_search(dbref player, const char *owner, int nargs,
-                      const char **args, dbref **result, PE_Info *pe_info);
+                      const char **args, dbref **result, NEW_PE_INFO * pe_info);
 static int fill_search_spec(dbref player, const char *owner, int nargs,
                             const char **args, struct search_spec *spec);
 static void
 
-sitelock_player(dbref player, const char *name, dbref who, uint32_t can,
-                uint32_t cant);
+ sitelock_player(dbref player, const char *name, dbref who, uint32_t can,
+                 uint32_t cant);
 
 
 #ifdef INFO_SLAVE
@@ -601,13 +601,14 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
  * \param caller the caller.
  * \param what name of the object to force.
  * \param command command to force the object to run.
- * \param inplace If true, use inplace_queue instead of parse_que
+ * \param inplace If true, run commands immediately instead of queueing to be run later
+ * \param queue_entry the queue_entry the @force was run in
  */
 void
-do_force(dbref player, dbref caller, const char *what, char *command, int inplace)
+do_force(dbref player, dbref caller, const char *what, char *command,
+         int inplace, MQUE * queue_entry)
 {
   dbref victim;
-  int j;
 
   if ((victim = match_controlled(player, what)) == NOTHING) {
     notify(player, T("Sorry."));
@@ -630,17 +631,13 @@ do_force(dbref player, dbref caller, const char *what, char *command, int inplac
     return;
   }
 
-  /* Set up the stack */
-  for (j = 0; j < 10; j++)
-    global_eval_context.wnxt[j] = global_eval_context.wenv[j];
-  for (j = 0; j < NUMQ; j++)
-    global_eval_context.rnxt[j] = global_eval_context.renv[j];
-
   /* force victim to do command */
   if (inplace)
-    inplace_queue_actionlist(victim, caller, player, command, NULL, QUEUE_RECURSE);
+    new_queue_actionlist(victim, player, caller, command, queue_entry,
+                         PE_INFO_SHARE, QUEUE_RECURSE, NULL, NULL);
   else
-    parse_que(victim, command, player, NULL);
+    new_queue_actionlist(victim, player, player, command, queue_entry,
+                         PE_INFO_CLONE, QUEUE_DEFAULT, NULL, NULL);
 }
 
 /** Parse a force token command, but don't force with it.
@@ -776,14 +773,16 @@ do_stats(dbref player, const char *name)
  * \param cause the enactor.
  * \param name the name of the player whose password is to be reset.
  * \param password the new password for the player.
+ * \param queue_entry the queue entry @newpassword was executed in
  */
 void
 do_newpassword(dbref player, dbref cause,
-               const char *name, const char *password)
+               const char *name, const char *password,
+               MQUE * queue_entry)
 {
   dbref victim;
 
-  if (!global_eval_context.process_command_port) {
+  if (!queue_entry->port) {
     char pass_eval[BUFFER_LEN];
     char const *sp;
     char *bp;
@@ -820,9 +819,12 @@ do_newpassword(dbref player, dbref cause,
  * \param player the enactor.
  * \param name name of the player or descriptor to boot.
  * \param flag the type of booting to do.
+ * \param silent suppress msg telling the player he's been booted?
+ * \param queue_entry the queue entry @boot was executed in
  */
 void
-do_boot(dbref player, const char *name, enum boot_type flag, int silent)
+do_boot(dbref player, const char *name, enum boot_type flag, int silent,
+        MQUE * queue_entry)
 {
   dbref victim = NOTHING;
   DESC *d = NULL;
@@ -857,7 +859,7 @@ do_boot(dbref player, const char *name, enum boot_type flag, int silent)
       return;
     }
     victim = (d->connected ? d->player : AMBIGUOUS);
-    if (d->descriptor == global_eval_context.process_command_port) {
+    if (d->descriptor == queue_entry->port) {
       notify(player, T("If you want to quit, use QUIT."));
       return;
     }
@@ -2068,7 +2070,7 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
 /* Does the actual searching */
 static int
 raw_search(dbref player, const char *owner, int nargs, const char **args,
-           dbref **result, PE_Info *pe_info)
+           dbref **result, NEW_PE_INFO * pe_info)
 {
   size_t result_size;
   size_t nresults = 0;
@@ -2149,7 +2151,7 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
     if (*spec.powers
         && (flaglist_check_long("POWER", player, n, spec.powers, 1) != 1))
       continue;
-    if (spec.lock != TRUE_BOOLEXP && !eval_boolexp(n, spec.lock, player))
+    if (spec.lock != TRUE_BOOLEXP && !eval_boolexp(n, spec.lock, player, NULL))
       continue;
     if (spec.cmdstring[0] &&
         !atr_comm_match(n, player, '$', ':', spec.cmdstring, 1, 0,

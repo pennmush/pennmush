@@ -453,7 +453,7 @@ FUNCTION(fun_strreplace)
   free_ansi_string(src);
 }
 
-extern int sort_order; /* from sort.c */
+extern int sort_order;          /* from sort.c */
 
 static int
 comp_gencomp(dbref executor, char *left, char *right, char *type)
@@ -581,8 +581,8 @@ FUNCTION(fun_strmatch)
       for (i = 0; i < nqregs; i++) {
         if (ret[i] && qregs[i][0] && !qregs[i][1]) {
           qindex = qreg_indexes[(unsigned char) qregs[i][0]];
-          if (qindex >= 0 && global_eval_context.renv[qindex]) {
-            strncpy(global_eval_context.renv[qindex], ret[i], BUFFER_LEN);
+          if (qindex >= 0 && pe_info->qreg_values[qindex]) {
+            strncpy(pe_info->qreg_values[qindex], ret[i], BUFFER_LEN);
           }
         }
       }
@@ -1110,7 +1110,7 @@ FUNCTION(fun_foreach)
   const char *ap;
   char *lp;
   char *asave, cbuf[2];
-  char *tptr[2];
+  char *tptr[10];
   char place[SBUF_LEN];
   int placenr = 0;
   int funccount;
@@ -1118,6 +1118,7 @@ FUNCTION(fun_foreach)
   char start, end;
   char letters[BUFFER_LEN];
   size_t len;
+  int save_argcount;
 
   if (nargs >= 3) {
     if (!delim_check(buff, bp, nargs, args, 3, &start))
@@ -1141,9 +1142,10 @@ FUNCTION(fun_foreach)
   asave = safe_atr_value(attrib);
 
   /* save our stack */
-  tptr[0] = global_eval_context.wenv[0];
-  tptr[1] = global_eval_context.wenv[1];
-  global_eval_context.wenv[1] = place;
+  save_env("fun_foreach.env", tptr, pe_info->env);
+  save_argcount = pe_info->arg_count;
+  pe_info->env[1] = mush_strdup(place, "pe_info.env");
+  pe_info->arg_count = 2;
 
   ap = remove_markup(args[1], &len);
   memcpy(letters, ap, len);
@@ -1156,7 +1158,9 @@ FUNCTION(fun_foreach)
       safe_str(lp, buff, bp);
       free(asave);
       free_anon_attrib(attrib);
-      global_eval_context.wenv[1] = tptr[1];
+      mush_free(pe_info->env[1], "pe_info.env");
+      restore_env("fun_foreach.env", tptr, pe_info->env);
+      pe_info->arg_count = save_argcount;
       return;
     }
     oldbp = place;
@@ -1170,7 +1174,7 @@ FUNCTION(fun_foreach)
   }
 
   cbuf[1] = '\0';
-  global_eval_context.wenv[0] = cbuf;
+  pe_info->env[0] = mush_strdup(cbuf, "pe_info.env");
   oldbp = *bp;
   funccount = pe_info->fun_invocations;
   while (*lp && *lp != end) {
@@ -1191,8 +1195,10 @@ FUNCTION(fun_foreach)
     safe_str(lp + 1, buff, bp);
   free(asave);
   free_anon_attrib(attrib);
-  global_eval_context.wenv[0] = tptr[0];
-  global_eval_context.wenv[1] = tptr[1];
+  mush_free(pe_info->env[0], "pe_info.env");
+  mush_free(pe_info->env[1], "pe_info.env");
+  restore_env("fun_foreach.env", tptr, pe_info->env);
+  pe_info->arg_count = save_argcount;
 }
 
 extern char escaped_chars[UCHAR_MAX + 1];

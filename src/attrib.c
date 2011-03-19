@@ -1414,12 +1414,15 @@ use_attr(UsedAttr **prev, char const *name, uint32_t no_prog)
  * \param abp pointer to end of atrname.
  * \param errobj if an attribute matches, but the lock fails, this pointer
  *        is used to return the failing dbref. If NULL, we don't bother.
+ * \param from_queue if we're running the matched cmds, run as a new queue entry,
+          if NULL, or as an inplace cmd for this queue entry if non-NULL
  * \return number of attributes that matched, or 0
  */
 int
 atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
                int just_match, int check_locks,
-               char *atrname, char **abp, dbref *errobj, int inplace)
+               char *atrname, char **abp, dbref *errobj,
+               MQUE * from_queue)
 {
   uint32_t flag_mask;
   ATTR *ptr;
@@ -1438,6 +1441,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
   int lock_checked = !check_locks;
   char match_space[BUFFER_LEN * 2];
   ssize_t match_space_len = BUFFER_LEN * 2;
+  NEW_PE_INFO *pe_info;
 
   /* check for lots of easy ways out */
   if (type != '$' && type != '^')
@@ -1466,6 +1470,10 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
   match = 0;
   used_list = NULL;
   prev = &used_list;
+
+  pe_info = make_pe_info("pe_info-atr_comm_match");
+  strcpy(pe_info->cmd_raw, str);
+  strcpy(pe_info->cmd_evaled, str);
 
   skipcount = 0;
   /* do_rawlog(LT_TRACE, "Searching %s:", Name(thing)); */
@@ -1540,9 +1548,11 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
        */
       if (!lock_checked) {
         lock_checked = 1;
-        if ((type == '$' && !eval_lock(player, thing, Command_Lock))
-            || (type == '^' && !eval_lock(player, thing, Listen_Lock))
-            || !eval_lock(player, thing, Use_Lock)) {
+        if ((type == '$'
+             && !eval_lock_with(player, thing, Command_Lock, pe_info))
+            || (type == '^'
+                && !eval_lock_with(player, thing, Listen_Lock, pe_info))
+            || !eval_lock_with(player, thing, Use_Lock, pe_info)) {
           match--;
           if (errobj)
             *errobj = thing;
@@ -1557,13 +1567,13 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
         safe_str(AL_NAME(ptr), atrname, abp);
       }
       if (!just_match) {
-        if (inplace) {
-          insert_que(thing, s, player, player, NULL, args, rnull, QUEUE_RECURSE);
+        if (from_queue) {
+          /* inplace queue */
+          new_queue_actionlist_int(thing, player, player, s, from_queue,
+                               PE_INFO_DEFAULT, QUEUE_RECURSE, args, NULL, tprintf("#%d/%s", thing, AL_NAME(ptr)));
         } else {
-          for (i = 0; i < 10; i++) {
-            global_eval_context.wnxt[i] = args[i];
-          }
-          parse_que(thing, s, player, NULL);
+          /* Normal queue */
+          parse_que_attr(thing, player, s, args, tprintf("#%d/%s", thing, AL_NAME(ptr)));
         }
       }
     }
@@ -1571,8 +1581,10 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
 
   /* Don't need to free used_list here, because if !parent_depth,
    * we would never have allocated it. */
-  if (!parent_depth)
+  if (!parent_depth) {
+    free_pe_info(pe_info);
     return match;
+  }
 
   for (parent_depth = MAX_PARENTS, parent = Parent(thing);
        parent_depth-- && parent != NOTHING; parent = Parent(parent)) {
@@ -1667,9 +1679,11 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
          *  - Alex */
         if (!lock_checked) {
           lock_checked = 1;
-          if ((type == '$' && !eval_lock(player, thing, Command_Lock))
-              || (type == '^' && !eval_lock(player, thing, Listen_Lock))
-              || !eval_lock(player, thing, Use_Lock)) {
+          if ((type == '$'
+               && !eval_lock_with(player, thing, Command_Lock, pe_info))
+              || (type == '^'
+                  && !eval_lock_with(player, thing, Listen_Lock, pe_info))
+              || !eval_lock_with(player, thing, Use_Lock, pe_info)) {
             match--;
             if (errobj)
               *errobj = thing;
@@ -1688,13 +1702,13 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
           safe_str(AL_NAME(ptr), atrname, abp);
         }
         if (!just_match) {
-          if (inplace) {
-            insert_que(thing, s, player, player, NULL, args, rnull, QUEUE_RECURSE);
+          if (from_queue) {
+            /* inplace queue */
+            new_queue_actionlist_int(thing, player, player, s, from_queue,
+                                 PE_INFO_DEFAULT, QUEUE_RECURSE, args, NULL, tprintf("#%d/%s", thing, AL_NAME(ptr)));
           } else {
-            for (i = 0; i < 10; i++) {
-              global_eval_context.wnxt[i] = args[i];
-            }
-            parse_que(thing, s, player, NULL);
+            /* Normal queue */
+            parse_que_attr(thing, player, s, args, tprintf("#%d/%s", thing, AL_NAME(ptr)));
           }
         }
       }
@@ -1708,6 +1722,7 @@ exit_sequence:
     mush_free(used_list, "used_attr");
     used_list = temp;
   }
+  free_pe_info(pe_info);
   return match;
 }
 
@@ -1718,12 +1733,14 @@ exit_sequence:
  * \param player the enactor, for privilege checks.
  * \param atr the name of the attribute
  * \param str the string to match
+ * \param from_queue if non-NULL, run matched $-command as an inplace queue
+          entry in from_queue. Else, run as a new queue entry.
  * \retval 1 attribute matched.
  * \retval 0 attribute failed to match.
  */
 int
 one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
-               int inplace)
+               MQUE * from_queue)
 {
   ATTR *ptr;
   char tbuf1[BUFFER_LEN];
@@ -1731,8 +1748,6 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
   char *s;
   char match_space[BUFFER_LEN * 2];
   char *args[10];
-  char *rnull[NUMQ];
-  int i;
   ssize_t match_space_len = BUFFER_LEN * 2;
 
   /* check for lots of easy ways out */
@@ -1771,21 +1786,30 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
                           match_space, match_space_len) :
       wild_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args,
                         10, match_space, match_space_len)) {
-    if (!eval_lock(player, thing, Command_Lock)
-        || !eval_lock(player, thing, Use_Lock))
-      return 0;
-    if (inplace) {
-      for (i = 0; i < NUMQ; i++) {
-        rnull[i] = NULL;
+    char save_cmd_raw[BUFFER_LEN], save_cmd_evaled[BUFFER_LEN];
+    int success = 1;
+    /* Save and reset %c/%u */
+    strcpy(save_cmd_raw, from_queue->pe_info->cmd_raw);
+    strcpy(save_cmd_evaled, from_queue->pe_info->cmd_evaled);
+    strcpy(from_queue->pe_info->cmd_raw, str);
+    strcpy(from_queue->pe_info->cmd_evaled, str);
+    if (!eval_lock_clear(player, thing, Command_Lock, from_queue->pe_info)
+        || !eval_lock_clear(player, thing, Use_Lock, from_queue->pe_info))
+      success = 0;
+    /* Restore */
+    strcpy(from_queue->pe_info->cmd_raw, save_cmd_raw);
+    strcpy(from_queue->pe_info->cmd_evaled, save_cmd_evaled);
+    if (success) {
+      if (from_queue) {
+        /* inplace queue */
+        new_queue_actionlist_int(thing, player, player, s, from_queue,
+                             PE_INFO_DEFAULT, QUEUE_RECURSE, args, NULL, tprintf("#%d/%s", thing, AL_NAME(ptr)));
+      } else {
+        /* Normal queue */
+        parse_que_attr(thing, player, s, args, tprintf("#%d/%s", thing, AL_NAME(ptr)));
       }
-      insert_que(thing, s, player, player, NULL, args, rnull, QUEUE_RECURSE);
-    } else {
-      for (i = 0; i < 10; i++) {
-        global_eval_context.wnxt[i] = args[i];
-      }
-      parse_que(thing, s, player, NULL);
     }
-    return 1;
+    return success;
   }
   return 0;
 }

@@ -282,24 +282,30 @@ new_queue_entry(NEW_PE_INFO * pe_info)
   int i;
 
   entry = mush_malloc(sizeof *entry, "cqueue");
-  entry->inplace = NULL;
-  entry->next = NULL;
-  entry->semaphore_obj = NOTHING;
-  entry->semaphore_attr = NULL;
-  entry->wait_until = 0;
-  entry->port = 0;
+
   entry->executor = NOTHING;
   entry->enactor = NOTHING;
   entry->caller = NOTHING;
-  entry->save_attrname = NULL;
+
   if (pe_info)
     entry->pe_info = pe_info;
   else
     entry->pe_info = make_pe_info("pe_info-new_queue_entry");
 
+  entry->inplace = NULL;
+  entry->next = NULL;
+
+  entry->semaphore_obj = NOTHING;
+  entry->semaphore_attr = NULL;
+  entry->wait_until = 0;
+  entry->pid = 0;
+  entry->action_list = NULL;
+  entry->queue_type = QUEUE_DEFAULT;
+  entry->port = 0;
   for (i = 0; i < 10; i++) {
     entry->save_env[i] = NULL;
   }
+  entry->save_attrname = NULL;
 
   return entry;
 }

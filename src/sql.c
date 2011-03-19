@@ -351,25 +351,25 @@ COMMAND(cmd_mapsql)
 
   s = strchr(tbuf, '/');
   if (!s) {
-    notify(player, T("I need to know what attribute to trigger."));
+    notify(executor, T("I need to know what attribute to trigger."));
     return;
   }
   *(s++) = '\0';
   upcasestr(s);
 
-  thing = noisy_match_result(player, tbuf, NOTYPE, MAT_EVERYTHING);
+  thing = noisy_match_result(executor, tbuf, NOTYPE, MAT_EVERYTHING);
 
   if (thing == NOTHING) {
     return;
   }
 
-  if (!controls(player, thing) && !(Owns(player, thing) && LinkOk(thing))) {
-    notify(player, T("Permission denied."));
+  if (!controls(executor, thing) && !(Owns(executor, thing) && LinkOk(thing))) {
+    notify(executor, T("Permission denied."));
     return;
   }
 
-  if (God(thing) && !God(player)) {
-    notify(player, T("You can't trigger God!"));
+  if (God(thing) && !God(executor)) {
+    notify(executor, T("You can't trigger God!"));
     return;
   }
 
@@ -383,11 +383,11 @@ COMMAND(cmd_mapsql)
 
   if (!qres) {
     if (affected_rows >= 0) {
-      notify_format(player, T("SQL: %d rows affected."), affected_rows);
+      notify_format(executor, T("SQL: %d rows affected."), affected_rows);
     } else if (!sql_connected()) {
-      notify(player, T("No SQL database connection."));
+      notify(executor, T("No SQL database connection."));
     } else {
-      notify_format(player, T("SQL: Error: %s"), sql_error());
+      notify_format(executor, T("SQL: Error: %s"), sql_error());
     }
     return;
   }
@@ -471,13 +471,13 @@ COMMAND(cmd_mapsql)
         /* Queue 0: <names> */
         snprintf(strrownum, 20, "%d", 0);
         names[0] = strrownum;
-        queue_attribute_base(thing, s, player, 0, names);
+        queue_attribute_base(thing, s, executor, 0, names);
       }
 
       /* Queue the rest. */
       snprintf(strrownum, 20, "%d", rownum + 1);
       cells[0] = strrownum;
-      queue_attribute_base(thing, s, player, 0, cells);
+      queue_attribute_base(thing, s, executor, 0, cells);
       /* Queue rownum: <names> */
     } else {
       /* What to do if there are no fields? This should be an error?. */
@@ -485,7 +485,7 @@ COMMAND(cmd_mapsql)
     }
   }
   if (donotify) {
-    parse_que(player, cause, "@notify me", NULL);
+    parse_que(executor, enactor, "@notify me", NULL);
   }
 
 finished:
@@ -514,11 +514,11 @@ COMMAND(cmd_sql)
 
   if (!qres) {
     if (affected_rows >= 0) {
-      notify_format(player, T("SQL: %d rows affected."), affected_rows);
+      notify_format(executor, T("SQL: %d rows affected."), affected_rows);
     } else if (!sql_connected()) {
-      notify(player, T("No SQL database connection."));
+      notify(executor, T("No SQL database connection."));
     } else {
-      notify_format(player, T("SQL: Error: %s"), sql_error());
+      notify_format(executor, T("SQL: Error: %s"), sql_error());
     }
     return;
   }
@@ -607,11 +607,11 @@ COMMAND(cmd_sql)
             cell = tbuf;
           }
         }
-        notify_format(player, T("Row %d, Field %s: %s"),
+        notify_format(executor, T("Row %d, Field %s: %s"),
                       rownum + 1, name, (cell && *cell) ? cell : "NULL");
       }
     } else
-      notify_format(player, T("Row %d: NULL"), rownum + 1);
+      notify_format(executor, T("Row %d: NULL"), rownum + 1);
   }
 
 finished:

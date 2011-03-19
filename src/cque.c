@@ -1195,7 +1195,7 @@ COMMAND(cmd_notify_drain)
 
   /* Make sure they gave an object ref */
   if (!arg_left || !*arg_left) {
-    notify(player, T("You must specify an object to use for the semaphore."));
+    notify(executor, T("You must specify an object to use for the semaphore."));
     return;
   }
 
@@ -1203,7 +1203,7 @@ COMMAND(cmd_notify_drain)
   pos = strchr(arg_left, '/');
   if (pos) {
     if (SW_ISSET(sw, SWITCH_ANY)) {
-      notify(player,
+      notify(executor,
              T
              ("You may not specify a semaphore attribute with the ANY switch."));
       return;
@@ -1220,15 +1220,15 @@ COMMAND(cmd_notify_drain)
   }
 
   /* Figure out which object we're using */
-  thing = noisy_match_result(player, arg_left, NOTYPE, MAT_EVERYTHING);
+  thing = noisy_match_result(executor, arg_left, NOTYPE, MAT_EVERYTHING);
   if (!GoodObject(thing))
     return;
   /* must control something or have it link_ok in order to use it as
    * as a semaphore.
    */
-  if ((!controls(player, thing) && !LinkOk(thing))
+  if ((!controls(executor, thing) && !LinkOk(thing))
       || (aname && !waitable_attr(thing, aname))) {
-    notify(player, T("Permission denied."));
+    notify(executor, T("Permission denied."));
     return;
   }
 
@@ -1236,12 +1236,12 @@ COMMAND(cmd_notify_drain)
   all = SW_ISSET(sw, SWITCH_ALL);
   if (arg_right && *arg_right) {
     if (all) {
-      notify(player,
+      notify(executor,
              T("You may not specify a semaphore count with the ALL switch."));
       return;
     }
     if (!is_uinteger(arg_right)) {
-      notify(player, T("The semaphore count must be an integer."));
+      notify(executor, T("The semaphore count must be an integer."));
       return;
     }
     count = parse_integer(arg_right);
@@ -1257,9 +1257,9 @@ COMMAND(cmd_notify_drain)
   dequeue_semaphores(thing, aname, count, all, drain);
 
   if (drain) {
-    quiet_notify(player, T("Drained."));
+    quiet_notify(executor, T("Drained."));
   } else {
-    quiet_notify(player, T("Notified."));
+    quiet_notify(executor, T("Notified."));
   }
 }
 

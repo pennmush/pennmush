@@ -980,7 +980,6 @@ void
 do_trigger(dbref player, char *object, char **argv)
 {
   dbref thing;
-  int a;
   char *s;
   char tbuf1[BUFFER_LEN];
 
@@ -1005,11 +1004,8 @@ do_trigger(dbref player, char *object, char **argv)
     notify(player, T("You can't trigger God!"));
     return;
   }
-  /* trigger modifies the stack */
-  for (a = 0; a < 10; a++)
-    global_eval_context.wnxt[a] = argv[a + 1];
 
-  if (queue_attribute(thing, upcasestr(s), player)) {
+  if (queue_attribute_base(thing, upcasestr(s), player, 0, argv + 1)) {
     if (!AreQuiet(player, thing))
       notify_format(player, T("%s - Triggered."), Name(thing));
   } else {
@@ -1026,9 +1022,12 @@ do_trigger(dbref player, char *object, char **argv)
  * \param cause the cause.
  * \param object the object/attribute pair.
  * \param argv array of arguments.
+ * \param recurse use QUEUE_RECURSE instead of QUEUE_INCLUDE?
+ * \param parent_queue the parent queue to include the new actionlist into
  */
 void
-do_include(dbref player, dbref cause, char *object, char **argv)
+do_include(dbref player, dbref cause, char *object, char **argv,
+           int recurse, MQUE * parent_queue)
 {
   dbref thing;
   char *s;
@@ -1051,17 +1050,12 @@ do_include(dbref player, dbref cause, char *object, char **argv)
     notify(player, T("You can't include God!"));
     return;
   }
+
   /* include modifies the stack, but only if arguments are given */
-  if (rhs_present) {
-    if (!queue_include_attribute(thing, upcasestr(s), player, cause, cause, argv + 1)) {
-      notify(player, T("No such attribute."));
-    }
-  } else {
-    if (!queue_include_attribute(thing, upcasestr(s), player,
-                                 cause, cause, global_eval_context.wenv)) {
-      notify(player, T("No such attribute."));
-    }
-  }
+  if (!queue_include_attribute
+      (thing, upcasestr(s), player, cause, cause,
+       (rhs_present ? argv + 1 : NULL), recurse, parent_queue))
+    notify(player, T("No such attribute."));
 }
 
 /** The use command.

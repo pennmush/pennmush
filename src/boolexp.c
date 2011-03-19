@@ -278,7 +278,8 @@ safe_get_bytecode(boolexp b)
     static struct boolexp_node *parse_boolexp_T(void);
     static struct boolexp_node *parse_boolexp_E(void);
     static int check_attrib_lock(dbref player, dbref target,
-                                 const char *atrname, const char *str);
+                                 const char *atrname, const char *str,
+                                 NEW_PE_INFO * pe_info);
     static void free_boolexp_node(struct boolexp_node *b);
     static int gen_label_id(struct bvm_asm *a);
     static void append_insn(struct bvm_asm *a, bvm_opcode op, int arg,
@@ -406,13 +407,12 @@ sizeof_boolexp(boolexp b)
  * \param player the player trying to pass the lock.
  * \param b the boolexp to evaluate.
  * \param target the object with the lock.
+ * \param pe_info pe_info to use for any softcode evaluation in the lock, or NULL to use a tmp one
  * \retval 0 player fails to pass lock.
  * \retval 1 player successfully passes lock.
  */
 int
-eval_boolexp(dbref player /* The player trying to pass */ ,
-             boolexp b /* The boolexp */ ,
-             dbref target /* The object with the lock */ )
+eval_boolexp(dbref player, boolexp b, dbref target, NEW_PE_INFO * pe_info)
 {
   static int boolexp_recursion = 0;
 
@@ -492,7 +492,7 @@ eval_boolexp(dbref player /* The player trying to pass */ ,
         else if (!Can_Read_Lock(target, arg, s))
           r = 0;
         else
-          r = eval_boolexp(player, getlock(arg, s), arg);
+          r = eval_boolexp(player, getlock(arg, s), arg, pe_info);
         boolexp_recursion--;
         break;
       case OP_TATR:
@@ -509,7 +509,9 @@ eval_boolexp(dbref player /* The player trying to pass */ ,
         break;
       case OP_TEVAL:
         boolexp_recursion++;
-        r = check_attrib_lock(player, target, s, (char *) bytecode + arg);
+        r =
+          check_attrib_lock(player, target, s, (char *) bytecode + arg,
+                            pe_info);
         boolexp_recursion--;
         break;
       case OP_TNAME:
@@ -1805,19 +1807,21 @@ parse_boolexp(dbref player, const char *buf, lock_type ltype)
  * \param target the object the lock is on.
  * \param atrname the name of the attribute to evaluate on target.
  * \param str What the attribute should evaluate to to succeed.
+ * \param pe_info the pe_info to eval the attr with, or NULL to use a tmp one
  * \retval 1 the lock succeeds.
  * \retval 0 the lock fails.
  */
 static int
 check_attrib_lock(dbref player, dbref target,
-                  const char *atrname, const char *str)
+                  const char *atrname, const char *str, NEW_PE_INFO * pe_info)
 {
 
   ATTR *a;
   char *asave;
   const char *ap;
   char buff[BUFFER_LEN], *bp;
-  char *preserve[NUMQ];
+  char save_attrname[BUFFER_LEN];
+
   if (!atrname || !*atrname || !str || !*str)
     return 0;
   /* fail if there's no matching attribute */
@@ -1828,13 +1832,14 @@ check_attrib_lock(dbref player, dbref target,
     return 0;
   asave = safe_atr_value(a);
   /* perform pronoun substitution */
-  save_global_regs("check_attrib_lock_save", preserve);
   bp = buff;
   ap = asave;
+  strcpy(save_attrname, pe_info->attrname);
+  strcpy(pe_info->attrname, atrname);
   process_expression(buff, &bp, &ap, target, player,
-                     player, PE_DEFAULT, PT_DEFAULT, NULL);
+                     player, PE_DEFAULT, PT_DEFAULT, pe_info);
+  strcpy(pe_info->attrname, save_attrname);
   *bp = '\0';
-  restore_global_regs("check_attrib_lock_save", preserve);
   free(asave);
 
   return !strcasecmp(buff, str);

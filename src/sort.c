@@ -120,7 +120,7 @@ dbref_comp(const void *s1, const void *s2)
 
 dbref ucomp_executor, ucomp_caller, ucomp_enactor;
 char ucomp_buff[BUFFER_LEN];
-PE_Info *ucomp_pe_info;
+NEW_PE_INFO *ucomp_pe_info;
 
 /** qsort() comparision routine used by sortby() */
 int
@@ -135,8 +135,8 @@ u_comp(const void *s1, const void *s2)
   /* Note that this function is for use in conjunction with our own
    * sane_qsort routine, NOT with the standard library qsort!
    */
-  global_eval_context.wenv[0] = (char *) s1;
-  global_eval_context.wenv[1] = (char *) s2;
+  ucomp_pe_info->env[0] = (char *) s1;
+  ucomp_pe_info->env[1] = (char *) s2;
 
   /* Run the u-function, which should return a number. */
 

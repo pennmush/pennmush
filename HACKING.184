@@ -20,7 +20,17 @@ that have altered hardcode will appear here.
 
 ==========================================================================
 
-Version 1.8.4 patchlevel 3                                 ??? ??,  201?
+Version 1.8.4 patchlevel 4                                 ??? ??,  201?
+
+  global_eval_context has been removed, as have the BQUE and PE_Info
+  sutrcts. All the information they contained has been merged into two new
+  structs, MQUE and NEW_PE_INFO. The environment (%0-%9) and q-regs (%q*)
+  are now part of NEW_PE_INFO. Commands are passed the MQUE (queue entry)
+  they're being evaluated as part of as 'queue_entry', and can access
+  queue_entry->pe_info if they need to evaluate anything/change environment
+  variables, etc.
+
+Version 1.8.4 patchlevel 3                                 Mar 18,  2011
 
  queue_event(<enactor or SYSEVENT>, <attribute name>, "argfmt", ...)
      lets you queue events on the event handler, if set.

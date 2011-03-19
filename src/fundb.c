@@ -447,8 +447,8 @@ FUNCTION(fun_v)
     case '7':
     case '8':
     case '9':
-      if (global_eval_context.wenv[c - '0'])
-        safe_str(global_eval_context.wenv[c - '0'], buff, bp);
+      if (pe_info->env[c - '0'])
+        safe_str(pe_info->env[c - '0'], buff, bp);
       return;
     case '#':
       /* enactor dbref */
@@ -475,7 +475,7 @@ FUNCTION(fun_v)
       return;
     case 'c':
     case 'C':
-      safe_str(global_eval_context.ccom, buff, bp);
+      safe_str(pe_info->cmd_raw, buff, bp);
       return;
     }
   }
@@ -1477,7 +1477,7 @@ FUNCTION(fun_lockfilter)
   while ((r = split_token(&s, delim)) != NULL) {
     victim = noisy_match_result(executor, r, NOTYPE, MAT_ABSOLUTE);
     if (victim != NOTHING && Can_Locate(executor, victim)) {
-      if (eval_boolexp(victim, elock, executor)) {
+      if (eval_boolexp(victim, elock, executor, NULL)) {
         if (first) {
           first = 0;
         } else {
@@ -1509,7 +1509,7 @@ FUNCTION(fun_testlock)
     return;
   }
   if (Can_Locate(executor, victim)) {
-    safe_boolean(eval_boolexp(victim, elock, executor), buff, bp);
+    safe_boolean(eval_boolexp(victim, elock, executor, NULL), buff, bp);
   } else {
     safe_str("#-1", buff, bp);
   }

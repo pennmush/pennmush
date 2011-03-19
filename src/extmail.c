@@ -2927,11 +2927,10 @@ filter_mail(dbref from, dbref player, char *subject,
   ATTR *f;
   char buff[BUFFER_LEN], *bp, *asave;
   char buf[FOLDER_NAME_LEN + 1];
-  char *wsave[10], *rsave[NUMQ];
-  char *arg, *arg2, *arg3, *arg4;
   int j;
   char const *ap;
   static char tbuf1[6];
+  NEW_PE_INFO *pe_info;
 
   /* Does the player have a @mailfilter? */
   f = atr_get(player, "MAILFILTER");
@@ -2948,42 +2947,25 @@ filter_mail(dbref from, dbref player, char *subject,
     tbuf1[j++] = 'R';
   tbuf1[j] = '\0';
 
-  arg = mush_malloc(BUFFER_LEN, "string");
-  arg2 = mush_malloc(BUFFER_LEN, "string");
-  arg3 = mush_malloc(BUFFER_LEN, "string");
-  arg4 = mush_malloc(BUFFER_LEN, "string");
-  if (!arg4)
-    mush_panic("Unable to allocate memory in mailfilter");
-  save_global_regs("filter_mail", rsave);
-  save_global_env("filter_mail", wsave);
-  for (j = 0; j < 10; j++)
-    global_eval_context.wenv[j] = NULL;
-  for (j = 0; j < NUMQ; j++)
-    global_eval_context.renv[j][0] = '\0';
-  strcpy(arg, unparse_dbref(from));
-  global_eval_context.wenv[0] = arg;
-  strcpy(arg2, subject);
-  global_eval_context.wenv[1] = arg2;
-  strcpy(arg3, message);
-  global_eval_context.wenv[2] = arg3;
-  strcpy(arg4, tbuf1);
-  global_eval_context.wenv[3] = arg4;
+  pe_info = make_pe_info("pe_info-filter_mail");
+  pe_info->env[0] = mush_strdup(unparse_dbref(from), "pe_info.env");
+  pe_info->env[1] = mush_strdup(subject, "pe_info.env");
+  pe_info->env[2] = mush_strdup(message, "pe_info.env");
+  pe_info->env[3] = mush_strdup(tbuf1, "pe_info.env");
+  pe_info->arg_count = 4;
+  bp = pe_info->attrname;
+  safe_format(pe_info->attrname, &bp, "#%d/%s", player, "MAILFILTER");
+  *bp = '\0';
 
   ap = asave = safe_atr_value(f);
   bp = buff;
   process_expression(buff, &bp, &ap, player, player, player,
-                     PE_DEFAULT, PT_DEFAULT, NULL);
+                     PE_DEFAULT, PT_DEFAULT, pe_info);
   *bp = '\0';
   free(asave);
+  free_pe_info(pe_info);
   if (*buff) {
     sprintf(buf, "0:%d", mailnumber);
     do_mail_file(player, buf, buff);
   }
-
-  mush_free(arg, "string");
-  mush_free(arg2, "string");
-  mush_free(arg3, "string");
-  mush_free(arg4, "string");
-  restore_global_env("filter_mail", wsave);
-  restore_global_regs("filter_mail", rsave);
 }

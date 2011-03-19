@@ -311,7 +311,7 @@ FUNCTION(fun_sql_escape)
 #endif
 #if defined(HAVE_SQLITE3) && defined(HAVE_MYSQL)
   case SQL_PLATFORM_SQLITE3:
-    /* sqlite3 doesn't have a escape function. Use one of my MySQL's 
+    /* sqlite3 doesn't have a escape function. Use one of my MySQL's
      * if we can. */
     chars_written = mysql_escape_string(bigbuff, args[0], arglens[0]);
     break;
@@ -471,19 +471,13 @@ COMMAND(cmd_mapsql)
         /* Queue 0: <names> */
         snprintf(strrownum, 20, "%d", 0);
         names[0] = strrownum;
-        for (a = 0; a < 10; a++) {
-          global_eval_context.wnxt[a] = names[a];
-        }
-        queue_attribute(thing, s, player);
+        queue_attribute_base(thing, s, player, 0, names);
       }
 
       /* Queue the rest. */
       snprintf(strrownum, 20, "%d", rownum + 1);
       cells[0] = strrownum;
-      for (a = 0; a < 10; a++) {
-        global_eval_context.wnxt[a] = cells[a];
-      }
-      queue_attribute(thing, s, player);
+      queue_attribute_base(thing, s, player, 0, cells);
       /* Queue rownum: <names> */
     } else {
       /* What to do if there are no fields? This should be an error?. */
@@ -491,7 +485,7 @@ COMMAND(cmd_mapsql)
     }
   }
   if (donotify) {
-    parse_que(player, "@notify me", cause, NULL);
+    parse_que(player, cause, "@notify me", NULL);
   }
 
 finished:
@@ -839,7 +833,7 @@ FUNCTION(fun_sql)
 
   qres = sql_query(args[0], &affected_rows);
   if (affected_rows >= 0 && qindex >= 0) {
-    strcpy(global_eval_context.renv[qindex], unparse_number(affected_rows));
+    strcpy(pe_info->qreg_values[qindex], unparse_number(affected_rows));
   }
   sql_test_result(qres);
   /* Get results. A silent query (INSERT, UPDATE, etc.) will return NULL */

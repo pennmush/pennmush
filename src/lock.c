@@ -807,59 +807,51 @@ clone_locks(dbref player, dbref orig, dbref clone)
  * \param player dbref attempting to pass the lock.
  * \param thing object containing the lock.
  * \param ltype type of lock to check.
+ * \param pe_info the pe_info to use when evaluating softcode in the lock
  * \retval 1 player passes the lock.
  * \retval 0 player does not pass the lock.
  */
 int
-eval_lock(dbref player, dbref thing, lock_type ltype)
+eval_lock_with(dbref player, dbref thing, lock_type ltype,
+               NEW_PE_INFO * pe_info)
 {
   boolexp b = getlock(thing, ltype);
   /* Prevent overwriting a static buffer in unparse_boolexp() */
   if (!unparsing_boolexp)
     log_activity(LA_LOCK, thing, unparse_boolexp(player, b, UB_DBREF));
-  return eval_boolexp(player, b, thing);
+  return eval_boolexp(player, b, thing, pe_info);
 }
 
-/** Evaluate a lock.
- * Evaluate lock ltype on thing for player, passing dbrefs for %0/%1.
- * \param player dbref attempting to pass the lock.
- * \param thing object containing the lock.
- * \param ltype type of lock to check.
- * \retval 1 player passes the lock.
- * \retval 0 player does not pass the lock.
+/* eval_lock(player,thing,ltype) is #defined to eval_lock_with(player,thing,ltype,NULL) */
+
+/** Evaluate a lock, saving/clearing the env (%0-%9) and qreg (%q*) first,
+ ** and restoring them after.
  */
 int
-eval_lock_with(dbref player, dbref thing, lock_type ltype, dbref env0,
-               dbref env1)
+eval_lock_clear(dbref player, dbref thing, lock_type ltype,
+                NEW_PE_INFO * pe_info)
 {
-  char *myenv[10] = { NULL };
-  char e0[SBUF_LEN], e1[SBUF_LEN], *ep;
-  char *preserves[10];
-  int result;
-  boolexp b;
+  if (!pe_info)
+    return eval_lock_with(player, thing, ltype, NULL);
+  else {
+    char *env[10];
+    char *qreg[NUMQ];
+    int i, result, save_args;
 
-  if (env0 != NOTHING) {
-    ep = e0;
-    safe_dbref(env0, e0, &ep);
-    *ep = '\0';
-    myenv[0] = e0;
+    save_env("eval_lock.env", env, pe_info->env);
+    save_global_regs("eval_lock.qreg", qreg, pe_info->qreg_values);
+    save_args = pe_info->arg_count;
+    for (i = 0; i < 10; i++)
+      pe_info->env[i] = NULL;
+    for (i = 0; i < NUMQ; i++)
+      pe_info->qreg_values[i][0] = '\0';
+    pe_info->arg_count = 0;
+    result = eval_lock_with(player, thing, ltype, pe_info);
+    restore_env("eval_lock.env", env, pe_info->env);
+    restore_global_regs("eval_lock.qreg", qreg, pe_info->qreg_values);
+    pe_info->arg_count = save_args;
+    return result;
   }
-
-  if (env1 != NOTHING) {
-    ep = e1;
-    safe_dbref(env1, e1, &ep);
-    *ep = '\0';
-    myenv[1] = e1;
-  }
-
-  save_global_env("eval_lock_save", preserves);
-  restore_global_env("eval_lock", myenv);
-
-  b = getlock(thing, ltype);
-  log_activity(LA_LOCK, thing, unparse_boolexp(player, b, UB_DBREF));
-  result = eval_boolexp(player, b, thing);
-  restore_global_env("eval_lock_save", preserves);
-  return result;
 }
 
 /** Active a lock's failure attributes.

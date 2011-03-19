@@ -109,11 +109,10 @@ int loc_alias_check(dbref loc, const char *command, const char *type);
 void do_poor(dbref player, char *arg1);
 void do_writelog(dbref player, char *str, int ltype);
 void bind_and_queue(dbref player, dbref cause, char *action, const char *arg,
-                    const char *placestr);
-void do_scan(dbref player, char *command, int flag);
+                    const char *placestr, MQUE * parent_queue);
 void do_list(dbref player, char *arg, int lc, int which);
 void do_dolist(dbref player, char *list, char *command,
-               dbref cause, unsigned int flags);
+               dbref cause, unsigned int flags, MQUE * queue_entry);
 void do_uptime(dbref player, int mortal);
 static char *make_new_epoch_file(const char *basename, int the_epoch);
 #ifdef HAS_GETRUSAGE
@@ -137,6 +136,9 @@ extern void compress_stats(long *entries,
                            long *total_uncompressed, long *total_compressed);
 #endif
 
+/* Set in do_entry(), used in report() */
+char report_cmd[BUFFER_LEN];
+dbref report_dbref = NOTHING;
 
 pid_t forked_dump_pid = -1;
 
@@ -228,13 +230,13 @@ do_dump(dbref player, char *num, enum dump_type flag)
 void
 report(void)
 {
-  if (GoodObject(global_eval_context.cplr))
+  if (GoodObject(report_dbref))
     do_rawlog(LT_TRACE, "TRACE: Cmd:%s\tby #%d at #%d",
-              global_eval_context.ccom, global_eval_context.cplr,
-              Location(global_eval_context.cplr));
+              (char *) report_cmd, report_dbref,
+              Location(report_dbref));
   else
-    do_rawlog(LT_TRACE, "TRACE: Cmd:%s\tby #%d", global_eval_context.ccom,
-              global_eval_context.cplr);
+    do_rawlog(LT_TRACE, "TRACE: Cmd:%s\tby #%d", report_cmd,
+              report_dbref);
   notify_activity(NOTHING, 0, 1);
 }
 
@@ -642,7 +644,6 @@ do_restart(void)
   ATTR *s;
   char buf[BUFFER_LEN];
   char *bp;
-  int j;
 
   /* Do stuff that needs to be done for players only: add stuff to the
    * alias table, and refund money from queued commands at shutdown.
@@ -662,16 +663,6 @@ do_restart(void)
    * begin queueing commands. Also, let's make sure that we get
    * rid of null names.
    */
-  for (j = 0; j < 10; j++)
-    global_eval_context.wnxt[j] = NULL;
-  for (j = 0; j < NUMQ; j++)
-    global_eval_context.rnxt[j] = NULL;
-
-  /* Initialize the regexp patterns to nothing */
-  global_eval_context.re_code = NULL;
-  global_eval_context.re_subpatterns = -1;
-  global_eval_context.re_offsets = NULL;
-  global_eval_context.re_from = NULL;
 
   for (thing = 0; thing < db_top; thing++) {
     if (Name(thing) == NULL) {
@@ -703,27 +694,14 @@ void init_queue(void);
 void
 init_game_config(const char *conf)
 {
-  int a;
   pid_t mypid = -1;
+
+  memset(report_cmd, 0, sizeof(report_cmd));
 
   /* initialize random number generator */
   initialize_mt();
 
   init_queue();
-
-  global_eval_context.process_command_port = 0;
-  global_eval_context.break_called = 0;
-  global_eval_context.cplr = NOTHING;
-  strcpy(global_eval_context.ccom, "");
-
-  for (a = 0; a < 10; a++) {
-    global_eval_context.wenv[a] = NULL;
-    global_eval_context.wnxt[a] = NULL;
-  }
-  for (a = 0; a < NUMQ; a++) {
-    global_eval_context.renv[a][0] = '\0';
-    global_eval_context.rnxt[a] = NULL;
-  }
 
   /* set MUSH start time */
   globals.start_time = time((time_t *) 0);
@@ -1051,18 +1029,17 @@ passwd_filter(const char *cmd)
  * the player, $commands on the container, $commands on inventory,
  * exits in the zone master room, $commands on objects in the ZMR,
  * $commands on the ZMO, $commands on the player's zone, exits in the
- * master room, and $commands on objectrs in the master room.
+ * master room, and $commands on objects in the master room.
  *
  * When a command is directly input from a socket, we don't parse
  * the value in attribute sets.
  *
- * \param player the enactor.
+ * \param executor the object running the command.
  * \param command command to match and execute.
- * \param cause object which caused the command to be executed.
- * \param from_port if 1, the command was direct input from a socket.
+ * \param queue_entry the queue entry the command is being run for
  */
 void
-process_command(dbref player, char *command, dbref cause, dbref caller, int from_port)
+process_command(dbref player, char *command, MQUE * queue_entry)
 {
   int a;
   char *p;                      /* utility */
@@ -1098,7 +1075,8 @@ process_command(dbref player, char *command, dbref cause, dbref caller, int from
     return;
   /* Halted objects can't execute commands */
   /* And neither can halted players if the command isn't from_port */
-  if (Halted(player) && (!IsPlayer(player) || !from_port)) {
+  if (Halted(player)
+      && (!IsPlayer(player) || !(queue_entry->queue_type & QUEUE_SOCKET))) {
     notify_format(Owner(player),
                   T("Attempt to execute command by halted object #%d"), player);
     return;
@@ -1132,7 +1110,7 @@ process_command(dbref player, char *command, dbref cause, dbref caller, int from
   *++p = '\0';
 
   /* ignore null commands that aren't from players */
-  if ((!command || !*command) && !from_port)
+  if ((!command || !*command) && !(queue_entry->queue_type & QUEUE_SOCKET))
     return;
 
   {
@@ -1147,9 +1125,9 @@ process_command(dbref player, char *command, dbref cause, dbref caller, int from
 
   strcpy(unp, command);
 
-  cptr = command_parse(player, cause, caller, command, from_port);
+  cptr = command_parse(player, command, queue_entry);
   if (cptr) {
-    mush_strncpy(global_eval_context.ucom, cptr, BUFFER_LEN);
+    mush_strncpy(queue_entry->pe_info->cmd_evaled, cptr, BUFFER_LEN);
     a = 0;
     if (!Gagged(player)) {
 
@@ -1161,9 +1139,10 @@ process_command(dbref player, char *command, dbref cause, dbref caller, int from
             (i = alias_list_check(Contents(check_loc), cptr, "EALIAS")) != -1) {
           if (command_check(player, cmd, 1)) {
             sprintf(temp, "#%d", i);
-            run_command(cmd, player, cause, tprintf("ENTER #%d", i), NULL, NULL,
+            run_command(cmd, player, queue_entry->enactor,
+                        tprintf("ENTER #%d", i), NULL, NULL,
                         tprintf("ENTER #%d", i), NULL, NULL, temp, NULL, NULL,
-                        NULL);
+                        NULL, queue_entry);
           }
           goto done;
         }
@@ -1172,8 +1151,9 @@ process_command(dbref player, char *command, dbref cause, dbref caller, int from
             && !(cmd->type & CMD_T_DISABLED)
             && (loc_alias_check(check_loc, cptr, "LALIAS"))) {
           if (command_check(player, cmd, 1))
-            run_command(cmd, player, cause, "LEAVE", NULL, NULL, "LEAVE", NULL,
-                        NULL, NULL, NULL, NULL, NULL);
+            run_command(cmd, player, queue_entry->enactor, "LEAVE", NULL, NULL,
+                        "LEAVE", NULL, NULL, NULL, NULL, NULL, NULL,
+                        queue_entry);
           goto done;
         }
       }
@@ -1205,9 +1185,10 @@ process_command(dbref player, char *command, dbref cause, dbref caller, int from
             if (!Mobile(player) || !command_check(player, cmd, 1)) {
               goto done;
             } else {
-              run_command(cmd, player, cause, tprintf("GOTO %s", cptr), NULL,
-                          NULL, tprintf("GOTO %s", cptr), NULL, NULL, cptr,
-                          NULL, NULL, NULL);
+              run_command(cmd, player, queue_entry->enactor,
+                          tprintf("GOTO %s", cptr), NULL, NULL,
+                          tprintf("GOTO %s", cptr), NULL, NULL, cptr, NULL,
+                          NULL, NULL, queue_entry);
               goto done;
             }
           } else
@@ -1240,9 +1221,10 @@ process_command(dbref player, char *command, dbref cause, dbref caller, int from
           if (!Mobile(player) || !command_check(player, cmd, 1))
             goto done;
           else {
-            run_command(cmd, player, cause, tprintf("GOTO %s", cptr), NULL,
-                        NULL, tprintf("GOTO %s", cptr), NULL, NULL, cptr, NULL,
-                        NULL, NULL);
+            run_command(cmd, player, queue_entry->enactor,
+                        tprintf("GOTO %s", cptr), NULL, NULL, tprintf("GOTO %s",
+                                                                      cptr),
+                        NULL, NULL, cptr, NULL, NULL, NULL, queue_entry);
             goto done;
           }
         } else
@@ -1259,7 +1241,8 @@ process_command(dbref player, char *command, dbref cause, dbref caller, int from
        */
       if ((errdblist == errdbtail) || (!fail_commands(player)))
         /* Nope. This is totally unmatched, run generic failure */
-        generic_command_failure(player, cause, cptr);
+        generic_command_failure(player, queue_entry->enactor, cptr,
+                                queue_entry);
     }
   }
 
@@ -1553,14 +1536,16 @@ do_writelog(dbref player, char *str, int ltype)
  * \param action command string which may contain tokens.
  * \param arg value for ## token.
  * \param placestr value for #@ token.
+ * \param parent_queue the queue entry this is being run from
  */
 void
 bind_and_queue(dbref player, dbref cause, char *action,
-               const char *arg, const char *placestr)
+               const char *arg, const char *placestr,
+               MQUE * parent_queue)
 {
   char *repl, *command;
   const char *replace[2];
-  PE_Info *pe_info;
+  NEW_PE_INFO *pe_info;
   int i = 0;
 
   replace[0] = arg;
@@ -1572,20 +1557,24 @@ bind_and_queue(dbref player, dbref cause, char *action,
 
   mush_free(repl, "replace_string.buff");
 
-  pe_info = make_pe_info();
-  if (global_eval_context.pe_info->iter_nesting >= 0) {
-    for (i = 0; i <= global_eval_context.pe_info->iter_nesting; i++) {
-      pe_info->iter_inum[i] = global_eval_context.pe_info->iter_inum[i];
-      pe_info->iter_itext[i] =
-        mush_strdup(global_eval_context.pe_info->iter_itext[i], "dolist_arg");
-    }
-  }
+  /* Add the new iter context to the parent queue entry's pe_info... */
+  pe_info = parent_queue->pe_info;
+  pe_info->iter_nestings++;
+  pe_info->iter_nestings_local++;
+  i = pe_info->iter_nestings;
   pe_info->iter_inum[i] = parse_integer(placestr);
-  pe_info->iter_itext[i] = mush_strdup(arg, "dolist_arg");
-  pe_info->iter_nesting = i;
-  pe_info->local_iter_nesting = i;
-  pe_info->dolists = global_eval_context.pe_info->dolists + 1;
-  parse_que(player, command, cause, pe_info);
+  pe_info->iter_itext[i] = mush_strdup(arg, "pe_info.dolist_arg");
+  pe_info->iter_dolists++;
+  /* Then queue the new command, using a cloned pe_info... */
+  new_queue_actionlist(player, cause, cause, command, parent_queue,
+                       PE_INFO_CLONE, QUEUE_DEFAULT, NULL, NULL);
+  /* And then pop it off the parent pe_info again */
+  mush_free(pe_info->iter_itext[i], "pe_info.dolist_arg");
+  pe_info->iter_itext[i] = NULL;
+  pe_info->iter_inum[i] = -1;
+  pe_info->iter_nestings--;
+  pe_info->iter_nestings_local--;
+  pe_info->iter_dolists--;
 
   mush_free(command, "strip_braces.buff");
 }
@@ -1719,7 +1708,6 @@ do_scan(dbref player, char *command, int flag)
   char *ptr;
   dbref thing;
   int num;
-  char save_ccom[BUFFER_LEN];
 
   ptr = atrname;
   if (!GoodObject(Location(player))) {
@@ -1730,9 +1718,6 @@ do_scan(dbref player, char *command, int flag)
     notify(player, T("What command do you want to scan for?"));
     return;
   }
-  strcpy(save_ccom, global_eval_context.ccom);
-  memmove(global_eval_context.ccom, (char *) global_eval_context.ccom + 5,
-          BUFFER_LEN - 5);
   if (flag & CHECK_NEIGHBORS) {
     notify(player, T("Matches on contents of this room:"));
     DOLIST(thing, Contents(Location(player))) {
@@ -1840,7 +1825,6 @@ do_scan(dbref player, char *command, int flag)
       }
     }
   }
-  strcpy(global_eval_context.ccom, save_ccom);
 }
 
 #define DOL_NOTIFY 2   /**< Add a notify after a dolist */
@@ -1855,22 +1839,22 @@ do_scan(dbref player, char *command, int flag)
  * \param command command to run for each list element.
  * \param cause object which caused this command to be run.
  * \param flags command switch flags.
+ * \param queue_entry the queue entry @dolist is being run in
  */
 void
 do_dolist(dbref player, char *list, char *command, dbref cause,
-          unsigned int flags)
+          unsigned int flags, MQUE * queue_entry)
 {
   char *curr, *objstring;
   char outbuf[BUFFER_LEN];
   char *bp;
   int place;
   char placestr[10];
-  int j;
   char delim = ' ';
   if (!command || !*command) {
     notify(player, T("What do you want to do with the list?"));
     if (flags & DOL_NOTIFY)
-      parse_que(player, "@notify me", cause, NULL);
+      parse_que(player, cause, "@notify me", NULL);
     return;
   }
 
@@ -1878,17 +1862,12 @@ do_dolist(dbref player, char *list, char *command, dbref cause,
     if (list[1] != ' ') {
       notify(player, T("Separator must be one character."));
       if (flags & DOL_NOTIFY)
-        parse_que(player, "@notify me", cause, NULL);
+        parse_que(player, cause, "@notify me", NULL);
       return;
     }
     delim = list[0];
   }
 
-  /* set up environment for any spawned commands */
-  for (j = 0; j < 10; j++)
-    global_eval_context.wnxt[j] = global_eval_context.wenv[j];
-  for (j = 0; j < NUMQ; j++)
-    global_eval_context.rnxt[j] = global_eval_context.renv[j];
   bp = outbuf;
   if (flags & DOL_DELIM)
     list += 2;
@@ -1897,7 +1876,7 @@ do_dolist(dbref player, char *list, char *command, dbref cause,
   if (objstring && !*objstring) {
     /* Blank list */
     if (flags & DOL_NOTIFY)
-      parse_que(player, "@notify me", cause, NULL);
+      parse_que(player, cause, "@notify me", NULL);
     return;
   }
 
@@ -1905,7 +1884,7 @@ do_dolist(dbref player, char *list, char *command, dbref cause,
     curr = split_token(&objstring, delim);
     place++;
     sprintf(placestr, "%d", place);
-    bind_and_queue(player, cause, command, curr, placestr);
+    bind_and_queue(player, cause, command, curr, placestr, queue_entry);
   }
 
   *bp = '\0';
@@ -1915,7 +1894,7 @@ do_dolist(dbref player, char *list, char *command, dbref cause,
      *  directly, since we want the command to be queued
      *  _after_ the list has executed.
      */
-    parse_que(player, "@notify me", cause, NULL);
+    parse_que(player, cause, "@notify me", NULL);
   }
 }
 

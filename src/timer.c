@@ -195,10 +195,7 @@ idle_event(void *data __attribute__ ((__unused__)))
 static bool
 purge_event(void *data __attribute__ ((__unused__)))
 {
-  global_eval_context.cplr = NOTHING;
-  strcpy(global_eval_context.ccom, "purge");
   purge();
-  strcpy(global_eval_context.ccom, "");
   options.purge_counter = mudtime + PURGE_INTERVAL;
   sq_register_in(PURGE_INTERVAL, purge_event, NULL, "DB`PURGE");
   return true;
@@ -207,10 +204,7 @@ purge_event(void *data __attribute__ ((__unused__)))
 static bool
 dbck_event(void *data __attribute__ ((__unused__)))
 {
-  global_eval_context.cplr = NOTHING;
-  strcpy(global_eval_context.ccom, "dbck");
   dbck();
-  strcpy(global_eval_context.ccom, "");
   options.dbck_counter = mudtime + DBCK_INTERVAL;
   sq_register_in(DBCK_INTERVAL, dbck_event, NULL, "DB`DBCK");
   return true;
@@ -220,9 +214,7 @@ static bool
 warning_event(void *data __attribute__ ((__unused__)))
 {
   options.warn_counter = options.warn_interval + mudtime;
-  strcpy(global_eval_context.ccom, "warnings");
   run_topology();
-  strcpy(global_eval_context.ccom, "");
   sq_register_in(options.warn_interval, warning_event, NULL, "DB`WCHECK");
   return true;
 }
@@ -263,9 +255,7 @@ dbsave_event(void *data __attribute__ ((__unused__)))
 {
   log_mem_check();
   options.dump_counter = options.dump_interval + mudtime;
-  strcpy(global_eval_context.ccom, "dump");
   fork_and_dump(1);
-  strcpy(global_eval_context.ccom, "");
   flag_broadcast(0, "ON-VACATION", "%s",
                  T("Your ON-VACATION flag is set! If you're back, clear it."));
   reg_dbsave_warnings();

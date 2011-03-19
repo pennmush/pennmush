@@ -22,10 +22,6 @@
 #include "function.h"
 #include "confmagic.h"
 
-void do_userfn(char *buff, char **bp, dbref obj, ATTR *attrib, int nargs,
-               char **args, dbref executor, dbref caller, dbref enactor,
-               PE_Info *pe_info, int extra_flags);
-
 /* ARGSUSED */
 FUNCTION(fun_s)
 {
@@ -79,13 +75,13 @@ FUNCTION(fun_localize)
   char const *p;
   char *saver[NUMQ];
 
-  save_global_regs("localize", saver);
+  save_global_regs("localize", saver, pe_info->qreg_values);
 
   p = args[0];
   process_expression(buff, bp, &p, executor, caller, enactor, PE_DEFAULT,
                      PT_DEFAULT, pe_info);
 
-  restore_global_regs("localize", saver);
+  restore_global_regs("localize", saver, pe_info->qreg_values);
 }
 
 /* ARGSUSED */
@@ -143,31 +139,35 @@ FUNCTION(fun_objeval)
 void
 do_userfn(char *buff, char **bp, dbref obj, ATTR *attrib, int nargs,
           char **args, dbref executor, dbref caller
-          __attribute__ ((__unused__)), dbref enactor, PE_Info *pe_info,
+          __attribute__ ((__unused__)), dbref enactor, NEW_PE_INFO * pe_info,
           int extra_flags)
 {
   int j;
+  int made_pe_info = 0;
   char *tptr[10];
   char *tbuf;
   char const *tp;
   int pe_flags = PE_DEFAULT | extra_flags;
   int old_args = 0;
 
-  /* save our stack */
-  for (j = 0; j < 10; j++)
-    tptr[j] = global_eval_context.wenv[j];
-
-  /* copy the appropriate args into the stack */
   if (nargs > 10)
     nargs = 10;                 /* maximum ten args */
-  for (j = 0; j < nargs; j++)
-    global_eval_context.wenv[j] = args[j];
-  for (; j < 10; j++)
-    global_eval_context.wenv[j] = NULL;
-  if (pe_info) {
+
+  /* save our stack */
+  if (!pe_info) {
+    made_pe_info = 1;
+    pe_info = make_pe_info("pe_info-do_userfn");
+    save_env("do_userfn_env", tptr, pe_info->env);
+  } else {
     old_args = pe_info->arg_count;
     pe_info->arg_count = nargs;
   }
+
+  /* copy the appropriate args into the stack */
+  for (j = 0; j < nargs; j++)
+    pe_info->env[j] = args[j];
+  for (; j < 10; j++)
+    pe_info->env[j] = NULL;
 
   tp = tbuf = safe_atr_value(attrib);
   if (AF_NoDebug(attrib))
@@ -179,11 +179,18 @@ do_userfn(char *buff, char **bp, dbref obj, ATTR *attrib, int nargs,
                      PT_DEFAULT, pe_info);
   free(tbuf);
 
-  /* restore the stack */
-  for (j = 0; j < 10; j++)
-    global_eval_context.wenv[j] = tptr[j];
-  if (pe_info)
+  if (made_pe_info) {
+    for (j = 0; j < 10; j++) {
+      pe_info->env[j] = NULL;
+    }
+    free_pe_info(pe_info);
+  } else {
+    /* restore the stack */
+    for (j = 0; j < 10; j++) {
+      pe_info->env[j] = tptr[j];
+    }
     pe_info->arg_count = old_args;
+  }
 }
 
 /* ARGSUSED */

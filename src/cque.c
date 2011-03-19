@@ -46,58 +46,39 @@
 #include "confmagic.h"
 
 
-EVAL_CONTEXT global_eval_context;
-
-/** A queue entry.
- * This structure reprsents a queue entry on a linked list of queue
- * entries (a queue). It is used for all of the queues.
- */
-typedef struct bque {
-  struct bque *next;            /**< pointer to next entry on queue */
-  dbref player;                 /**< player who will do command */
-  dbref queued;                 /**< object whose QUEUE gets incremented for this command */
-  dbref cause;                  /**< player causing command (for %N) */
-  dbref caller;                 /**< object who will be the initial caller (%@). Identical to cause, except for /inplace cmds */
-  dbref sem;                    /**< semaphore object to block on */
-  char *semattr;                /**< semaphore attribute to block on */
-  time_t left;                  /**< seconds left until execution */
-  char *env[10];                /**< environment, from wild match */
-  char *rval[NUMQ];             /**< environment, from setq() */
-  char *comm;                   /**< command to be executed */
-  uint32_t pid;                 /**< Process id of this entry */
-  int quetype;                  /**< Type of the queue entry. */
-  PE_Info *pe_info;             /**< pe_info for evaluating queue, or NULL */
-} BQUE;
-
 intmap *queue_map = NULL; /**< Intmap for looking up queue entries by pid */
 static uint32_t top_pid = 1;
 #define MAX_PID (1U << 15)
 
-static BQUE *qfirst = NULL, *qlast = NULL, *qwait = NULL;
-static BQUE *qlfirst = NULL, *qllast = NULL;
-static BQUE *qsemfirst = NULL, *qsemlast = NULL;
+static MQUE *qfirst = NULL, *qlast = NULL, *qwait = NULL;
+static MQUE *qlfirst = NULL, *qllast = NULL;
+static MQUE *qsemfirst = NULL, *qsemlast = NULL;
 
 static int add_to_generic(dbref player, int am, const char *name,
                           uint32_t flags);
 static int add_to(dbref player, int am);
 static int add_to_sem(dbref player, int am, const char *name);
 static int queue_limit(dbref player);
-void free_qentry(BQUE *point);
+void free_qentry(MQUE * point);
 static int pay_queue(dbref player, const char *command);
-void wait_que(dbref player, int waituntil, char *command,
-              dbref cause, dbref sem, const char *semattr, int until);
+void wait_que(dbref player, int waittill, char *command, dbref cause, dbref sem,
+              const char *semattr, int until, MQUE * parent_queue);
 int que_next(void);
 
 static void show_queue(dbref player, dbref victim, int q_type,
-                       int q_quiet, int q_all, BQUE *q_ptr, int *tot, int *self,
-                       int *del);
-static void show_queue_single(dbref player, BQUE *q, int q_type);
+                       int q_quiet, int q_all, MQUE * q_ptr,
+                       int *tot, int *self, int *del);
+static void show_queue_single(dbref player, MQUE * q, int q_type);
 static void do_raw_restart(dbref victim);
 static int waitable_attr(dbref thing, const char *atr);
-static void shutdown_a_queue(BQUE **head, BQUE **tail);
-static int do_entry(BQUE *entry, int include_recurses);
+static void shutdown_a_queue(MQUE ** head, MQUE ** tail);
+static int do_entry(MQUE * entry, int include_recurses);
 
 extern sig_atomic_t cpu_time_limit_hit; /**< Have we used too much CPU? */
+
+/* From game.c, for report() */
+extern char report_cmd[BUFFER_LEN];
+extern dbref report_dbref;
 
 /** Attribute flags to be set or checked on attributes to be used
  * as semaphores.
@@ -167,6 +148,8 @@ add_to_generic(dbref player, int am, const char *name, uint32_t flags)
 static int
 add_to(dbref player, int am)
 {
+  if (QUEUE_PER_OWNER)
+    player = Owner(player);
   return add_to_generic(player, am, "QUEUE", NOTHING);
 }
 
@@ -191,29 +174,44 @@ queue_limit(dbref player)
 }
 
 /** Free a queue entry.
- * \param point queue entry to free.
+ * \param entry queue entry to free.
  */
 void
-free_qentry(BQUE *point)
+free_qentry(MQUE * entry)
 {
-  int a;
-  for (a = 0; a < 10; a++)
-    if (point->env[a]) {
-      mush_free(point->env[a], "cqueue.env");
+  int i;
+  MQUE *tmp;
+
+  if (entry->inplace) {
+    tmp = entry->inplace;
+    entry->inplace = NULL;
+    free_qentry(tmp);           /* shouldn't happen when we get here */
+  }
+
+  if (entry->action_list) {
+    mush_free(entry->action_list, "cqueue.comm");
+    entry->action_list = NULL;
+  }
+
+  if (entry->semaphore_attr) {
+    mush_free(entry->semaphore_attr, "cqueue.semattr");
+    entry->semaphore_attr = NULL;
+  }
+
+  free_pe_info(entry->pe_info);
+
+  /* Shouldn't happen, but to be safe... */
+  for (i = 0; i < 10; i++) {
+    if (entry->save_env[i]) {
+      mush_free(entry->save_env[i], "pe_info.env");
+      entry->save_env[i] = NULL;
     }
-  for (a = 0; a < NUMQ; a++)
-    if (point->rval[a]) {
-      mush_free(point->rval[a], "cqueue.rval");
-    }
-  if (point->semattr)
-    mush_free(point->semattr, "cqueue.semattr");
-  if (point->comm)
-    mush_free(point->comm, "cqueue.comm");
-  if (point->pe_info)
-    free_pe_info(point->pe_info);
-  if (point->pid) /* INPLACE queue entries have no pid */
-    im_delete(queue_map, point->pid);
-  mush_free(point, "cqueue");
+  }
+
+  if (entry->save_attrname)
+    mush_free(entry->save_attrname, "cqueue.attrname");
+
+  mush_free(entry, "cqueue");
 }
 
 static int
@@ -230,23 +228,9 @@ pay_queue(dbref player, const char *command)
     return 0;
   }
   if (!NoPay(player) && (estcost != QUEUE_COST) && Track_Money(Owner(player))) {
-    char *preserve_wnxt[10];
-    char *preserve_rnxt[NUMQ];
-    char *val_wnxt[10];
-    char *val_rnxt[NUMQ];
-    char *preserves[10];
-    char *preserveq[NUMQ];
-    save_global_nxt("pay_queue_save", preserve_wnxt, preserve_rnxt, val_wnxt,
-                    val_rnxt);
-    save_global_regs("pay_queue_save", preserveq);
-    save_global_env("pay_queue_save", preserves);
     notify_format(Owner(player),
                   T("GAME: Object %s(%s) lost a %s to queue loss."),
                   Name(player), unparse_dbref(player), MONEY);
-    restore_global_regs("pay_queue_save", preserveq);
-    restore_global_env("pay_queue_save", preserves);
-    restore_global_nxt("pay_queue_save", preserve_wnxt, preserve_rnxt, val_wnxt,
-                       val_rnxt);
   }
   if (queue_limit(QUEUE_PER_OWNER ? Owner(player) : player)) {
     notify_format(Owner(player),
@@ -256,7 +240,7 @@ pay_queue(dbref player, const char *command)
            unparse_dbref(player), command);
     /* Refund the queue costs */
     giveto(player, QUEUE_COST);
-    add_to(QUEUE_PER_OWNER ? Owner(player) : player, -1);
+    add_to(player, -1);
     /* wipe out that object's queue and set it HALT */
     do_halt(Owner(player), "", player);
     set_flag_internal(player, "HALT");
@@ -289,6 +273,37 @@ next_pid(void)
   }
 }
 
+static MQUE *new_queue_entry(NEW_PE_INFO * pe_info);
+
+static MQUE *
+new_queue_entry(NEW_PE_INFO * pe_info)
+{
+  MQUE *entry;
+  int i;
+
+  entry = mush_malloc(sizeof *entry, "cqueue");
+  entry->inplace = NULL;
+  entry->next = NULL;
+  entry->semaphore_obj = NOTHING;
+  entry->semaphore_attr = NULL;
+  entry->wait_until = 0;
+  entry->port = 0;
+  entry->executor = NOTHING;
+  entry->enactor = NOTHING;
+  entry->caller = NOTHING;
+  entry->save_attrname = NULL;
+  if (pe_info)
+    entry->pe_info = pe_info;
+  else
+    entry->pe_info = make_pe_info("pe_info-new_queue_entry");
+
+  for (i = 0; i < 10; i++) {
+    entry->save_env[i] = NULL;
+  }
+
+  return entry;
+}
+
 #define DELIM_CHAR '\x11'
 /** If EVENT_HANDLER config option is set to a valid dbref, try triggering
  * its handler attribute
@@ -311,7 +326,7 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   int argcount = 0;
   char *wenv[10];
   int i, len;
-  BQUE *tmp;
+  MQUE *tmp;
   int pid;
 
   /* Make sure we have an event to call, first. */
@@ -396,33 +411,21 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
 
 
   /* Build tmp. */
-  tmp = mush_malloc(sizeof *tmp, "cqueue");
+  tmp = new_queue_entry(NULL);
   tmp->pid = pid;
-  tmp->semattr = NULL;
-  tmp->player = EVENT_HANDLER;
-  tmp->queued = QUEUE_PER_OWNER ? Owner(EVENT_HANDLER) : EVENT_HANDLER;
-  tmp->next = NULL;
-  tmp->left = 0;
-  tmp->cause = enactor;
+  tmp->executor = EVENT_HANDLER;
+  tmp->enactor = enactor;
   tmp->caller = enactor;
-  tmp->pe_info = NULL;
 
   aval = safe_atr_value(a);
-  tmp->comm = mush_strdup(aval, "cqueue.comm");
+  tmp->action_list = mush_strdup(aval, "cqueue.comm");
   free(aval);
 
   /* Set up %0-%9 */
   for (i = 0; i < 10; i++) {
     if (wenv[i]) {
-      tmp->env[i] = mush_strdup(wenv[i], "cqueue.env");
-    } else {
-      tmp->env[i] = NULL;
+      tmp->pe_info->env[i] = mush_strdup(wenv[i], "cqueue.env");
     }
-  }
-
-  /* All Q-registers cleared */
-  for (i = 0; i < NUMQ; i++) {
-    tmp->rval[i] = NULL;
   }
 
   /* Hmm, should events queue ahead of anything else?
@@ -453,131 +456,159 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
  * This function adds a new entry to the back of the player or
  * object command queues (depending on whether the call was
  * caused by a player or an object).
- * \param player the enactor for the queued command.
- * \param command the command to enqueue.
- * \param cause the player or object causing the command to be queued.
- * \param pe_info the pe_info to use for evaluating the queue, or NULL
+ * \param queue_entry the queue entry to insert
+ * \param parent_queue the parent queue entry, used for placing inplace queues, or NULL
  */
 void
-insert_que(dbref player, const char *command, dbref cause, dbref caller, PE_Info *pe_info,
-           char **env, char **rval, int quetype)
+insert_que(MQUE * queue_entry, MQUE * parent_queue)
 {
-  int a;
-  BQUE *tmp;
   int pid = 0;
-  if (!IsPlayer(player) && (Halted(player))) {
-    free_pe_info(pe_info);
+
+  if (!IsPlayer(queue_entry->executor) && (Halted(queue_entry->executor))) {
+    free_qentry(queue_entry);
     return;
   }
-  if (quetype != QUEUE_INPLACE && quetype != QUEUE_RECURSE) {
-    if (!pay_queue(player, command)) {
+
+  if (queue_entry->queue_type & QUEUE_INPLACE && !parent_queue) {
+    /* ruh-roh. Can't run inplace if we don't have a parent queue. But this
+       should never happen. We can either just quit now, or we can queue it
+       instead of running inplace. For now, let's just quit. */
+    free_qentry(queue_entry);
+    return;
+  }
+
+  if (!(queue_entry->queue_type & QUEUE_INPLACE)) {
+    if (!pay_queue(queue_entry->executor, queue_entry->action_list)) {
       /* make sure player can afford to do it */
-      free_pe_info(pe_info);
+      free_qentry(queue_entry);
       return;
     }
     pid = next_pid();
     if (pid == 0) {
       /* Too many queue entries */
-      notify(player, T("Queue entry table full. Try again later."));
-      free_pe_info(pe_info);
+      /* Should this be notifying the enactor instead? */
+      notify(queue_entry->executor,
+             T("Queue entry table full. Try again later."));
+      free_qentry(queue_entry);
       return;
     }
   }
 
-  tmp = mush_malloc(sizeof *tmp, "cqueue");
-  tmp->pid = pid;
-  tmp->comm = mush_strdup(command, "cqueue.comm");
-  tmp->semattr = NULL;
-  tmp->player = player;
-  tmp->queued = QUEUE_PER_OWNER ? Owner(player) : player;
-  tmp->next = NULL;
-  tmp->left = 0;
-  tmp->cause = cause;
-  tmp->caller = caller;
-  tmp->pe_info = pe_info;
-  tmp->quetype = quetype;
-
-  /* Copy over env vars and rvals. */
-  for (a = 0; a < 10; a++) {
-    if (!env || !env[a]) {
-      tmp->env[a] = NULL;
-    } else {
-      tmp->env[a] = mush_strdup(env[a], "cqueue.env");
-    }
-  }
-  for (a = 0; a < NUMQ; a++) {
-    if (!rval || !rval[a] || !rval[a][0]) {
-      tmp->rval[a] = NULL;
-    } else {
-      tmp->rval[a] = mush_strdup(rval[a], "cqueue.rval");
-    }
-  }
-  switch (quetype) {
+  switch ((queue_entry->
+           queue_type & (QUEUE_PLAYER | QUEUE_OBJECT | QUEUE_INPLACE))) {
   case QUEUE_PLAYER:
     if (qlast) {
-      qlast->next = tmp;
-      qlast = tmp;
+      qlast->next = queue_entry;
+      qlast = queue_entry;
     } else {
-      qlast = qfirst = tmp;
+      qlast = qfirst = queue_entry;
     }
     break;
   case QUEUE_OBJECT:
     if (qllast) {
-      qllast->next = tmp;
-      qllast = tmp;
+      qllast->next = queue_entry;
+      qllast = queue_entry;
     } else {
-      qllast = qlfirst = tmp;
+      qllast = qlfirst = queue_entry;
     }
     break;
   case QUEUE_INPLACE:
-  case QUEUE_RECURSE:
-    tmp->next = global_eval_context.inplace_queue;
-    global_eval_context.inplace_queue = tmp;
+    if (parent_queue->inplace) {
+      MQUE *tmp;
+      tmp = parent_queue->inplace;
+      while (tmp->next)
+        tmp = tmp->next;
+      tmp->next = queue_entry;
+    } else {
+      parent_queue->inplace = queue_entry;
+    }
     break;
   }
   if (pid)
-    im_insert(queue_map, tmp->pid, tmp);
+    im_insert(queue_map, queue_entry->pid, queue_entry);
 }
 
-/** Add a new entry onto the player or object command queues.
- * This function adds a new entry to the back of the player or
- * object command queues (depending on whether the call was
- * caused by a player or an object).
- * \param player the enactor for the queued command.
- * \param command the command to enqueue.
- * \param cause the player or object causing the command to be queued.
- * \param pe_info the pe_info to use for evaluating the queue, or NULL
+
+/** Replacement for parse_que and inplace_queue_actionlist - queue an action list
+ * Queue the given actionlist for executor to run.
+ * \param executor object queueing the action list
+ * \param enactor object which caused the action list to queue
+ * \param caller for @force/inplace queues, the object using @force. Otherwise, same as enactor.
+ * \param actionlist the actionlist of cmds to queue
+ * \param parent_queue the parent queue entry which caused this queueing, or NULL
+ * \param flags a bitwise collection of PE_INFO_* flags that determine the environment for the new queue
+ * \param queue_type bitwise collection of the QUEUE_* flags, to determine which queue this goes in
+ * \param env The environment (%0-%9) to use for the new queue, or NULL
+ * \param qreg The hash of qregisters to use for the new queue, or NULL
+ * \param fromattr The attribute the actionlist is queued from
  */
 void
-parse_que(dbref player, const char *command, dbref cause, PE_Info *pe_info)
+new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
+                     char *actionlist, MQUE * parent_queue,
+                     int flags, int queue_type, char *env[10], char *qreg[NUMQ], char *fromattr)
 {
-  if (IsPlayer(cause)) {
-    insert_que(player, command, cause, cause, pe_info,
-               global_eval_context.wnxt, global_eval_context.rnxt,
-               QUEUE_PLAYER);
-  } else {
-    insert_que(player, command, cause, cause, pe_info,
-               global_eval_context.wnxt, global_eval_context.rnxt,
-               QUEUE_OBJECT);
-  }
-}
 
-void
-inplace_queue_actionlist(dbref executor, dbref cause, dbref caller,
-                         const char *command, char **args, int quetype)
-{
-  insert_que(executor, command, cause, caller, NULL,
-             (args != NULL) ? args : global_eval_context.wnxt,
-             global_eval_context.rnxt, quetype);
+  NEW_PE_INFO *pe_info;
+  MQUE *queue_entry;
+  char *save_env[10];
+  int i = -1;
+
+  if (!(queue_type & QUEUE_INPLACE))
+    queue_type = (IsPlayer(enactor) ? QUEUE_PLAYER : QUEUE_OBJECT);
+
+  if (queue_type & QUEUE_RESTORE_ENV) {
+    if (parent_queue && (flags & PE_INFO_SHARE)) {
+      /* Save a copy of pe_info->env, then replace with env. do_entry will restore it later */
+      parent_queue->pe_info->arg_count = 0;
+      for (i = 0; i < 10; i++) {
+        save_env[i] = parent_queue->pe_info->env[i];
+        if (env[i]) {
+          parent_queue->pe_info->env[i] = mush_strdup(env[i], "pe_info.env");
+          parent_queue->pe_info->arg_count = i+1;
+        } else {
+          parent_queue->pe_info->env[i] = NULL;
+        }
+      }
+    } else {
+      queue_type &= ~QUEUE_RESTORE_ENV;
+    }
+  }
+
+  pe_info =
+    pe_info_from((parent_queue ? parent_queue->pe_info : NULL), flags, env,
+                 qreg);
+
+  queue_entry = new_queue_entry(pe_info);
+  queue_entry->executor = executor;
+  queue_entry->enactor = enactor;
+  queue_entry->caller = caller;
+  queue_entry->action_list = mush_strdup(actionlist, "cqueue.comm");
+  queue_entry->queue_type = queue_type;
+  if (i > -1) {
+    /* Set the previous env into queue_entry->save_env */
+    for (i = 0; i < 10; i++) {
+      queue_entry->save_env[i] = save_env[i];
+    }
+  }
+
+  if (fromattr) {
+    if (queue_type & QUEUE_INPLACE)
+      queue_entry->save_attrname = mush_strdup(pe_info->attrname, "cqueue.attrname");
+    strcpy(queue_entry->pe_info->attrname, fromattr);
+  }
+
+  insert_que(queue_entry, parent_queue);
 }
 
 int
 queue_include_attribute(dbref thing, const char *atrname,
-                        dbref executor, dbref cause, dbref caller, char **args)
+                        dbref executor, dbref enactor, dbref caller,
+                        char **args, int recurse, MQUE * parent_queue)
 {
   ATTR *a;
   char *start, *command;
   int noparent = 0;
+  int queue_flags;
 
   a = queue_attribute_getatr(thing, atrname, noparent);
   if (!a)
@@ -600,7 +631,16 @@ queue_include_attribute(dbref thing, const char *atrname,
       command++;
   }
 
-  inplace_queue_actionlist(executor, cause, caller, command, args, QUEUE_INPLACE);
+  if (recurse)
+    queue_flags = QUEUE_RECURSE;
+  else
+    queue_flags = QUEUE_INPLACE;
+
+  if (args != NULL)
+    queue_flags |= QUEUE_RESTORE_ENV;
+
+  new_queue_actionlist_int(executor, enactor, caller, command, parent_queue,
+                       PE_INFO_SHARE, queue_flags, args, NULL, tprintf("#%d/%s", thing, atrname));
 
   free(start);
   return 1;
@@ -618,14 +658,14 @@ queue_include_attribute(dbref thing, const char *atrname,
  */
 int
 queue_attribute_base(dbref executor, const char *atrname, dbref enactor,
-                     int noparent)
+                     int noparent, char *env[10])
 {
   ATTR *a;
 
   a = queue_attribute_getatr(executor, atrname, noparent);
   if (!a)
     return 0;
-  queue_attribute_useatr(executor, a, enactor);
+  queue_attribute_useatr(executor, a, enactor, env);
   return 1;
 }
 
@@ -637,7 +677,7 @@ queue_attribute_getatr(dbref executor, const char *atrname, int noparent)
 }
 
 int
-queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor)
+queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor, char *env[10])
 {
   char *start, *command;
   start = safe_atr_value(a);
@@ -654,7 +694,8 @@ queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor)
       /* Skip the ':' */
       command++;
   }
-  parse_que(executor, command, enactor, NULL);
+  new_queue_actionlist_int(executor, enactor, enactor, command, NULL,
+                       PE_INFO_DEFAULT, QUEUE_DEFAULT, env, NULL, tprintf("#%d/%s", executor, a->name));
   free(start);
   return 1;
 }
@@ -675,15 +716,17 @@ queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor)
  */
 void
 wait_que(dbref player, int waittill, char *command, dbref cause, dbref sem,
-         const char *semattr, int until)
+         const char *semattr, int until, MQUE * parent_queue)
 {
-  BQUE *tmp;
-  int a;
+  MQUE *tmp;
+  NEW_PE_INFO *pe_info;
   int pid;
   if (waittill == 0) {
     if (sem != NOTHING)
       add_to_sem(sem, -1, semattr);
-    parse_que(player, command, cause, NULL);
+    new_queue_actionlist(player, cause, cause, command, parent_queue,
+                         PE_INFO_COPY_ENV | PE_INFO_COPY_QREG, QUEUE_DEFAULT,
+                         NULL, NULL);
     return;
   }
   if (!pay_queue(player, command))      /* make sure player can afford to do it */
@@ -693,46 +736,34 @@ wait_que(dbref player, int waittill, char *command, dbref cause, dbref sem,
     notify(player, T("Queue entry table full. Try again later."));
     return;
   }
-  tmp = mush_malloc(sizeof *tmp, "cqueue");
-  tmp->comm = mush_strdup(command, "cqueue.comm");
+  if (parent_queue)
+    pe_info =
+      pe_info_from(parent_queue->pe_info, PE_INFO_COPY_ENV | PE_INFO_COPY_QREG,
+                   NULL, NULL);
+  else
+    pe_info = NULL;
+  tmp = new_queue_entry(pe_info);
+  tmp->action_list = mush_strdup(command, "cqueue.comm");
   tmp->pid = pid;
-  tmp->player = player;
-  tmp->queued = QUEUE_PER_OWNER ? Owner(player) : player;
-  tmp->cause = cause;
+  tmp->executor = player;
+  tmp->enactor = cause;
   tmp->caller = cause;
-  tmp->semattr = NULL;
-  tmp->next = NULL;
-  tmp->pe_info = NULL;
-  for (a = 0; a < 10; a++) {
-    if (!global_eval_context.wnxt[a])
-      tmp->env[a] = NULL;
-    else {
-      tmp->env[a] = mush_strdup(global_eval_context.wnxt[a], "cqueue.env");
-    }
-  }
-  for (a = 0; a < NUMQ; a++) {
-    if (!global_eval_context.rnxt[a] || !global_eval_context.rnxt[a][0])
-      tmp->rval[a] = NULL;
-    else {
-      tmp->rval[a] = mush_strdup(global_eval_context.rnxt[a], "cqueue.rval");
-    }
-  }
 
   if (until) {
-    tmp->left = (time_t) waittill;
+    tmp->wait_until = (time_t) waittill;
   } else {
     if (waittill >= 0)
-      tmp->left = mudtime + waittill;
+      tmp->wait_until = mudtime + waittill;
     else
-      tmp->left = 0;            /* semaphore wait without a timeout */
+      tmp->wait_until = 0;      /* semaphore wait without a timeout */
   }
-  tmp->sem = sem;
+  tmp->semaphore_obj = sem;
   if (sem == NOTHING) {
     /* No semaphore, put on normal wait queue, sorted by time */
-    BQUE *point, *trail = NULL;
+    MQUE *point, *trail = NULL;
 
     for (point = qwait;
-         point && (point->left <= tmp->left); point = point->next)
+         point && (point->wait_until <= tmp->wait_until); point = point->next)
       trail = point;
 
     tmp->next = point;
@@ -743,7 +774,7 @@ wait_que(dbref player, int waittill, char *command, dbref cause, dbref sem,
   } else {
 
     /* Put it on the end of the semaphore queue */
-    tmp->semattr =
+    tmp->semaphore_attr =
       mush_strdup(semattr ? semattr : "SEMAPHORE", "cqueue.semattr");
     if (qsemlast != NULL) {
       qsemlast->next = tmp;
@@ -764,7 +795,7 @@ wait_que(dbref player, int waittill, char *command, dbref cause, dbref sem,
 void
 do_second(void)
 {
-  BQUE *trail = NULL, *point, *next;
+  MQUE *trail = NULL, *point, *next;
   /* move contents of low priority queue onto end of normal one
    * this helps to keep objects from getting out of control since
    * its effects on other objects happen only after one second
@@ -781,12 +812,12 @@ do_second(void)
   }
   /* check regular wait queue */
 
-  while (qwait && qwait->left <= mudtime) {
+  while (qwait && qwait->wait_until <= mudtime) {
     point = qwait;
     qwait = point->next;
     point->next = NULL;
-    point->left = 0;
-    if (IsPlayer(point->cause)) {
+    point->wait_until = 0;
+    if (IsPlayer(point->enactor)) {
       if (qlast) {
         qlast->next = point;
         qlast = point;
@@ -804,7 +835,7 @@ do_second(void)
   /* check for semaphore timeouts */
 
   for (point = qsemfirst, trail = NULL; point; point = next) {
-    if (point->left == 0 || point->left > mudtime) {
+    if (point->wait_until == 0 || point->wait_until > mudtime) {
       next = (trail = point)->next;
       continue;                 /* skip non-timed and those that haven't gone off yet */
     }
@@ -814,10 +845,10 @@ do_second(void)
       qsemfirst = next = point->next;
     if (point == qsemlast)
       qsemlast = trail;
-    add_to_sem(point->sem, -1, point->semattr);
-    point->sem = NOTHING;
+    add_to_sem(point->semaphore_obj, -1, point->semaphore_attr);
+    point->semaphore_obj = NOTHING;
     point->next = NULL;
-    if (IsPlayer(point->cause)) {
+    if (IsPlayer(point->enactor)) {
       if (qlast) {
         qlast->next = point;
         qlast = point;
@@ -843,13 +874,12 @@ int
 do_top(int ncom)
 {
   int i;
-  BQUE *entry;
+  MQUE *entry;
 
   for (i = 0; i < ncom; i++) {
-    if (!qfirst) {
-      strcpy(global_eval_context.ccom, "");
+    if (!qfirst)
       return i;
-    }
+
     /* We must dequeue before execution, so that things like
      * queued @kick or @ps get a sane queue image.
      */
@@ -863,180 +893,137 @@ do_top(int ncom)
 }
 
 void
-run_user_input(dbref player, char *input)
+run_user_input(dbref player, int port, char *input)
 {
-  BQUE *entry;
-  int i;
+  MQUE *entry;
 
-  entry = mush_malloc(sizeof *entry, "cqueue");
-  entry->comm = mush_strdup(input, "cqueue.comm");
-  entry->pid = 0;
-  entry->player = player;
-  entry->queued = player;
-  entry->cause = player;
+
+  entry = new_queue_entry(NULL);
+  entry->action_list = mush_strdup(input, "cqueue.comm");
+  entry->enactor = player;
+  entry->executor = player;
   entry->caller = player;
-  entry->sem = NOTHING;
-  entry->semattr = NULL;
-  entry->next = NULL;
-  entry->pe_info = NULL;
-  entry->left = 0;
+  entry->port = port;
+  entry->queue_type = QUEUE_SOCKET | QUEUE_NOLIST;
 
-  for (i = 0; i < 10; i++)
-    entry->env[i] = NULL;
-  for (i = 0; i < NUMQ; i++)
-    entry->rval[i] = NULL;
-
-  do_entry(entry, -1);
+  do_entry(entry, 0);
   free_qentry(entry);
-
 }
 
+/* Return 1 if an @break needs to propagate up to the calling q entry, 0 otherwise */
 static int
-do_entry(BQUE *entry, int include_recurses)
+do_entry(MQUE * entry, int include_recurses)
 {
-  int a;
+  dbref executor;
   char tbuf[BUFFER_LEN];
-  int break_count;
+  char *save[NUMQ];
   int switch_nest;
-  int save_player;
-  int local_break_called = 0;
+  int iter_nest;
   int inplace_break_called = 0;
   char *r;
   char const *s;
-  BQUE *tmp;
-  BQUE *includes;
+  MQUE *tmp;
   int pt_flag = PT_SEMI;
-  char *preserves[10];
-  char *preserveq[NUMQ];
 
-  includes = global_eval_context.inplace_queue;
-  global_eval_context.inplace_queue = NULL;
-
-  if (include_recurses == -1) {
-    include_recurses = 0;
+  if (entry->queue_type & QUEUE_NOLIST)
     pt_flag = PT_NOTHING;
+
+  executor = entry->executor;
+  if (!RealGoodObject(executor))
+    return 0;
+
+  if (!(entry->queue_type & QUEUE_INPLACE)) {
+    giveto(executor, QUEUE_COST);
+    add_to(executor, -1);
   }
 
-  if (GoodObject(entry->player) && !IsGarbage(entry->player)) {
-    save_player = global_eval_context.cplr = entry->player;
-    if (!include_recurses && pt_flag != PT_NOTHING) {
-      giveto(global_eval_context.cplr, QUEUE_COST);
-      add_to(entry->queued, -1);
+  if (!IsPlayer(executor) && Halted(executor))
+    return 0;
+
+  s = entry->action_list;
+  if (!include_recurses) {
+    start_cpu_timer();
+    /* These vars are used in report() if mush_panic() is called, to print useful debug info */
+    strcpy(report_cmd, entry->pe_info->cmd_raw);
+    report_dbref = executor;
+  }
+
+  while (!cpu_time_limit_hit && *s) {
+    r = entry->pe_info->cmd_raw;
+    process_expression(entry->pe_info->cmd_raw, &r, &s, executor, entry->caller,
+                       entry->enactor, PE_NOTHING, pt_flag, entry->pe_info);
+    *r = '\0';
+    if (*s == ';')
+      s++;
+    /* process_command() destructively modifies the cmd, so we need to copy it */
+    strcpy(tbuf, entry->pe_info->cmd_raw);
+    process_command(executor, tbuf, entry);
+    while (entry->inplace) {
+      tmp = entry->inplace;
+      /* We have a new queue to process, via @include, @break, @switch/inplace or similar */
+      if (include_recurses < 50) {
+        switch_nest = entry->pe_info->switch_nestings;
+        iter_nest = entry->pe_info->iter_nestings;
+        if (tmp->queue_type & QUEUE_NO_PROPAGATE) {
+          /* Preserve q-registers */
+          save_global_regs("do_entry_qreg", save, entry->pe_info->qreg_values);
+        }
+        inplace_break_called = do_entry(tmp, include_recurses + 1);
+        if (tmp->queue_type & QUEUE_NO_PROPAGATE) {
+          restore_global_regs("do_entry_qreg", save,
+                              entry->pe_info->qreg_values);
+          inplace_break_called = 0;
+        }
+        if (inplace_break_called || !tmp->next) {
+          while (entry->pe_info->switch_nestings > switch_nest) {
+            mush_free(entry->pe_info->
+                      switch_text[entry->pe_info->switch_nestings],
+                      "pe_info.switch_text");
+            entry->pe_info->switch_text[entry->pe_info->switch_nestings] = NULL;
+            entry->pe_info->switch_nestings--;
+            entry->pe_info->switch_nestings_local--;
+          }
+          while (entry->pe_info->iter_nestings > iter_nest) {
+            mush_free(entry->pe_info->iter_itext[entry->pe_info->iter_nestings],
+                      "pe_info.dolist_arg");
+            entry->pe_info->iter_itext[entry->pe_info->iter_nestings] = NULL;
+            entry->pe_info->iter_inum[entry->pe_info->iter_nestings] = -1;
+            entry->pe_info->iter_nestings--;
+            entry->pe_info->iter_nestings_local--;
+          }
+        }
+        if (tmp->queue_type & QUEUE_RESTORE_ENV) {
+          /* This queue screwed with our env, but was nice enough to save the original one */
+          int i;
+          tmp->pe_info->arg_count = 0;
+          for (i = 0; i < 10; i++) {
+            if (tmp->pe_info->env[i])
+              mush_free(tmp->pe_info->env[i], "pe_info.env");
+            tmp->pe_info->env[i] = tmp->save_env[i];
+            if (tmp->save_env[i])
+              tmp->pe_info->arg_count = i+1;
+            tmp->save_env[i] = NULL;
+          }
+        }
+        if (tmp->save_attrname) {
+          strcpy(tmp->pe_info->attrname, tmp->save_attrname);
+          mush_free(tmp->save_attrname, "cqueue.attrname");
+          tmp->save_attrname = NULL;
+        }
+      }
+      entry->inplace = tmp->next;
+      free_qentry(tmp);
+      if (inplace_break_called)
+        break;
     }
-    entry->player = 0;
-    if (IsPlayer(global_eval_context.cplr)
-        || !Halted(global_eval_context.cplr)) {
-      for (a = 0; a < 10; a++)
-        global_eval_context.wenv[a] = entry->env[a];
-      for (a = 0; a < NUMQ; a++) {
-        if (entry->rval[a])
-          strcpy(global_eval_context.renv[a], entry->rval[a]);
-        else
-          global_eval_context.renv[a][0] = '\0';
-      }
-      if (pt_flag != PT_NOTHING)
-        global_eval_context.process_command_port = 0;
-      s = entry->comm;
-      global_eval_context.break_called = 0;
-      local_break_called = 0;
-      break_count = 100;
-      *(global_eval_context.break_replace) = '\0';
-      if (!include_recurses) {
-        start_cpu_timer();
-        if (entry->pe_info) {
-          global_eval_context.pe_info = entry->pe_info;
-        } else {
-          global_eval_context.pe_info = make_pe_info();
-        }
-      }
-      switch_nest = global_eval_context.pe_info->switch_nesting;
-      while (!cpu_time_limit_hit && *s && !inplace_break_called) {
-        r = global_eval_context.ccom;
-        process_expression(global_eval_context.ccom, &r, &s,
-                           global_eval_context.cplr, entry->caller,
-                           entry->cause, PE_NOTHING, pt_flag,
-                           global_eval_context.pe_info);
-        *r = '\0';
-        if (*s == ';')
-          s++;
-        strcpy(tbuf, global_eval_context.ccom);
-        process_command(global_eval_context.cplr, tbuf, entry->cause, entry->caller,
-                        (pt_flag == PT_NOTHING));
-        if (global_eval_context.break_called) {
-          /* Make sure we process semicolons in @break arg, even from socket */
-          pt_flag = PT_SEMI;
-          global_eval_context.break_called = 0;
-          local_break_called = 1;
-          s = global_eval_context.break_replace;
-          if (!*global_eval_context.break_replace)
-            break;
-          break_count--;
-          if (!break_count) {
-            notify(global_eval_context.cplr, T("@break recursion exceeded."));
-            break;
-          }
-        }
-        if (include_recurses > 20) {
-          while (global_eval_context.inplace_queue) {
-            tmp = global_eval_context.inplace_queue;
-            global_eval_context.inplace_queue = tmp->next;
-            free_qentry(tmp);
-          }
-        } else {
-          while (global_eval_context.inplace_queue && !inplace_break_called) {
-            /* Pop tmp off the stack. */
-            tmp = global_eval_context.inplace_queue;
-            global_eval_context.inplace_queue = tmp->next;
-            tmp->next = NULL;
-
-            /* RECURSE queue entries have their own Q-registers, and we
-             * need to re-set our current one. */
-            if (tmp->quetype == QUEUE_RECURSE) {
-              save_global_regs("recurse_queue_save", preserveq);
-              save_global_env("recurse_queue_save", preserves);
-            }
-
-            /* Run the queue entry. */
-            inplace_break_called = do_entry(tmp, include_recurses + 1);
-
-            if (tmp->quetype == QUEUE_RECURSE) {
-              /* Recursion causes breaks to be not propagate up. */
-              inplace_break_called = 0;
-              restore_global_regs("recurse_queue_save", preserveq);
-              restore_global_env("recurse_queue_save", preserves);
-            }
-
-            /* Cleanup. */
-            for (a = 0; a < 10; a++) {
-              global_eval_context.wenv[a] = entry->env[a];
-            }
-            global_eval_context.cplr = save_player;
-            free_qentry(tmp);
-            if (global_eval_context.pe_info->switch_nesting > switch_nest) {
-              mush_free(global_eval_context.pe_info->switch_text[global_eval_context.pe_info->switch_nesting],
-                        "switch_arg");
-              global_eval_context.pe_info->switch_nesting--;
-              global_eval_context.pe_info->local_switch_nesting--;
-            }
-          }
-        }
-      }
-      if (!include_recurses) {
-        reset_cpu_timer();
-        if (!entry->pe_info) {
-          free_pe_info(global_eval_context.pe_info);
-        }
-        global_eval_context.pe_info = NULL;
-      }
-    }
+    if ((entry->queue_type & QUEUE_BREAK) || inplace_break_called)
+      break;
   }
-  while (global_eval_context.inplace_queue) {
-    tmp = global_eval_context.inplace_queue;
-    global_eval_context.inplace_queue = tmp->next;
-    free_qentry(global_eval_context.inplace_queue);
-  }
-  global_eval_context.inplace_queue = includes;
-  return local_break_called || inplace_break_called;
+
+  if (!include_recurses)
+    reset_cpu_timer();
+
+  return ((entry->queue_type & QUEUE_BREAK) || inplace_break_called);
 }
 
 /** Determine whether it's time to run a queued command.
@@ -1051,7 +1038,7 @@ int
 que_next(void)
 {
   int min, curr;
-  BQUE *point;
+  MQUE *point;
   /* If there are commands in the player queue, they should be run
    * immediately.
    */
@@ -1071,7 +1058,7 @@ que_next(void)
   /* Wait queue is in sorted order so we only have to look at the first
      item on it. Anything else is wasted time. */
   if (qwait) {
-    curr = (int) difftime(qwait->left, mudtime);
+    curr = (int) difftime(qwait->wait_until, mudtime);
     if (curr <= 2)
       return 1;
     if (curr < min)
@@ -1079,9 +1066,9 @@ que_next(void)
   }
 
   for (point = qsemfirst; point; point = point->next) {
-    if (point->left == 0)       /* no timeout */
+    if (point->wait_until == 0) /* no timeout */
       continue;
-    curr = (int) difftime(point->left, mudtime);
+    curr = (int) difftime(point->wait_until, mudtime);
     if (curr <= 2)
       return 1;
     if (curr < min) {
@@ -1116,8 +1103,8 @@ void
 dequeue_semaphores(dbref thing, char const *aname, int count, int all,
                    int drain)
 {
-  BQUE **point;
-  BQUE *entry;
+  MQUE **point;
+  MQUE *entry;
 
   if (all)
     count = INT_MAX;
@@ -1126,7 +1113,8 @@ dequeue_semaphores(dbref thing, char const *aname, int count, int all,
   point = &qsemfirst;
   while (*point && count > 0) {
     entry = *point;
-    if (entry->sem != thing || (aname && strcmp(entry->semattr, aname))) {
+    if (entry->semaphore_obj != thing
+        || (aname && strcmp(entry->semaphore_attr, aname))) {
       point = &(entry->next);
       continue;
     }
@@ -1143,15 +1131,15 @@ dequeue_semaphores(dbref thing, char const *aname, int count, int all,
 
     /* Update bookkeeping */
     count--;
-    add_to_sem(entry->sem, -1, entry->semattr);
+    add_to_sem(entry->semaphore_obj, -1, entry->semaphore_attr);
 
     /* Dispose of the entry as appropriate: discard if @drain, or put
      * into either the player or the object queue. */
     if (drain) {
-      giveto(entry->player, QUEUE_COST);
-      add_to(entry->queued, -1);
+      giveto(entry->executor, QUEUE_COST);
+      add_to(entry->executor, -1);
       free_qentry(entry);
-    } else if (IsPlayer(entry->cause)) {
+    } else if (IsPlayer(entry->enactor)) {
       if (qlast) {
         qlast->next = entry;
         qlast = entry;
@@ -1274,25 +1262,23 @@ COMMAND(cmd_notify_drain)
  * \param arg1 the wait time, semaphore object/attribute, or both. Modified!
  * \param cmd command to queue.
  * \param until if 1, wait until an absolute time.
+ * \param parent_queue the parent queue entry to take env/qreg from
  */
 void
-do_wait(dbref player, dbref cause, char *arg1, const char *cmd, bool until)
+do_wait(dbref player, dbref cause, char *arg1, const char *cmd, bool until,
+        MQUE * parent_queue)
 {
   dbref thing;
   char *tcount = NULL, *aname = NULL;
   int waitfor, num;
   ATTR *a;
   char *arg2;
-  int j;
-  for (j = 0; j < 10; j++)
-    global_eval_context.wnxt[j] = global_eval_context.wenv[j];
-  for (j = 0; j < NUMQ; j++)
-    global_eval_context.rnxt[j] = global_eval_context.renv[j];
 
   arg2 = strip_braces(cmd);
   if (is_strict_integer(arg1)) {
     /* normal wait */
-    wait_que(player, parse_integer(arg1), arg2, cause, NOTHING, NULL, until);
+    wait_que(player, parse_integer(arg1), arg2, cause, NOTHING, NULL, until,
+             parent_queue);
     mush_free(arg2, "strip_braces.buff");
     return;
   }
@@ -1351,7 +1337,7 @@ do_wait(dbref player, dbref cause, char *arg1, const char *cmd, bool until)
     thing = NOTHING;
     waitfor = -1;               /* just in case there was a timeout given */
   }
-  wait_que(player, waitfor, arg2, cause, thing, aname, until);
+  wait_que(player, waitfor, arg2, cause, thing, aname, until, parent_queue);
   mush_free(arg2, "strip_braces.buff");
 }
 
@@ -1366,7 +1352,7 @@ void
 do_waitpid(dbref player, const char *pidstr, const char *timestr, bool until)
 {
   uint32_t pid;
-  BQUE *q, *tmp, *last;
+  MQUE *q, *tmp, *last;
   bool found;
 
   if (!is_uinteger(pidstr)) {
@@ -1382,12 +1368,12 @@ do_waitpid(dbref player, const char *pidstr, const char *timestr, bool until)
     return;
   }
 
-  if (!controls(player, q->player) && !HaltAny(player)) {
+  if (!controls(player, q->executor) && !HaltAny(player)) {
     notify(player, T("Permission denied."));
     return;
   }
 
-  if (q->sem != NOTHING && q->left == 0) {
+  if (q->semaphore_obj != NOTHING && q->wait_until == 0) {
     notify(player,
            T("You cannot adjust the timeout of an indefinite semaphore."));
     return;
@@ -1406,7 +1392,7 @@ do_waitpid(dbref player, const char *pidstr, const char *timestr, bool until)
     if (when < 0)
       when = 0;
 
-    q->left = (time_t) when;
+    q->wait_until = (time_t) when;
 
   } else {
     int offset = parse_integer(timestr);
@@ -1415,12 +1401,12 @@ do_waitpid(dbref player, const char *pidstr, const char *timestr, bool until)
        of seconds to the current timeout. Otherwise, change timeout.
      */
     if (timestr[0] == '+' || timestr[0] == '-')
-      q->left += offset;
+      q->wait_until += offset;
     else
-      q->left = mudtime + offset;
+      q->wait_until = mudtime + offset;
 
-    if (q->left < 0)
-      q->left = 0;
+    if (q->wait_until < 0)
+      q->wait_until = 0;
   }
 
   /* Now adjust it in the wait queue. Not a clever approach, but I
@@ -1439,7 +1425,7 @@ do_waitpid(dbref player, const char *pidstr, const char *timestr, bool until)
   if (found) {
     found = false;
     for (tmp = qwait, last = NULL; tmp; last = tmp, tmp = tmp->next) {
-      if (tmp->left > q->left) {
+      if (tmp->wait_until > q->wait_until) {
         if (last) {
           last->next = q;
           q->next = tmp;
@@ -1470,7 +1456,7 @@ FUNCTION(fun_pidinfo)
   char *osep, osepd[2] = { ' ', '\0' };
   char *fields, field[80] = "queue player time object attribute command";
   uint32_t pid;
-  BQUE *q;
+  MQUE *q;
   bool first = true;
 
   if (!is_uinteger(args[0])) {
@@ -1486,7 +1472,7 @@ FUNCTION(fun_pidinfo)
     return;
   }
 
-  if (!controls(executor, q->player) && !LookQueue(executor)) {
+  if (!controls(executor, q->executor) && !LookQueue(executor)) {
     safe_str(T(e_perm), buff, bp);
     return;
   }
@@ -1510,7 +1496,7 @@ FUNCTION(fun_pidinfo)
       if (!first)
         safe_str(osep, buff, bp);
       first = false;
-      if (GoodObject(q->sem))
+      if (GoodObject(q->semaphore_obj))
         safe_str("semaphore", buff, bp);
       else
         safe_str("wait", buff, bp);
@@ -1518,26 +1504,26 @@ FUNCTION(fun_pidinfo)
       if (!first)
         safe_str(osep, buff, bp);
       first = false;
-      safe_dbref(q->player, buff, bp);
+      safe_dbref(q->executor, buff, bp);
     } else if (string_prefix("time", r)) {
       if (!first)
         safe_str(osep, buff, bp);
       first = false;
-      if (q->left == 0)
+      if (q->wait_until == 0)
         safe_integer(-1, buff, bp);
       else
-        safe_integer(difftime(q->left, mudtime), buff, bp);
+        safe_integer(difftime(q->wait_until, mudtime), buff, bp);
     } else if (string_prefix("object", r)) {
       if (!first)
         safe_str(osep, buff, bp);
       first = false;
-      safe_dbref(q->sem, buff, bp);
+      safe_dbref(q->semaphore_obj, buff, bp);
     } else if (string_prefix("attribute", r)) {
       if (!first)
         safe_str(osep, buff, bp);
       first = false;
-      if (GoodObject(q->sem)) {
-        safe_str(q->semattr, buff, bp);
+      if (GoodObject(q->semaphore_obj)) {
+        safe_str(q->semaphore_attr, buff, bp);
       } else {
         safe_dbref(NOTHING, buff, bp);
       }
@@ -1545,7 +1531,7 @@ FUNCTION(fun_pidinfo)
       if (!first)
         safe_str(osep, buff, bp);
       first = false;
-      safe_str(q->comm, buff, bp);
+      safe_str(q->action_list, buff, bp);
     }
   } while (s);
 }
@@ -1553,7 +1539,7 @@ FUNCTION(fun_pidinfo)
 FUNCTION(fun_lpids)
 {
   /* Can be called as LPIDS or GETPIDS */
-  BQUE *tmp;
+  MQUE *tmp;
   int qmask = 3;
   dbref thing = -1;
   dbref player = -1;
@@ -1599,8 +1585,8 @@ FUNCTION(fun_lpids)
 
   if (qmask & 1) {
     for (tmp = qwait; tmp; tmp = tmp->next) {
-      if (GoodObject(player) && GoodObject(tmp->player)
-          && (!Owns(tmp->player, player)))
+      if (GoodObject(player) && GoodObject(tmp->executor)
+          && (!Owns(tmp->executor, player)))
         continue;
       if (!first)
         safe_chr(' ', buff, bp);
@@ -1610,12 +1596,12 @@ FUNCTION(fun_lpids)
   }
   if (qmask & 2) {
     for (tmp = qsemfirst; tmp; tmp = tmp->next) {
-      if (GoodObject(player) && GoodObject(tmp->player)
-          && (!Owns(tmp->player, player)))
+      if (GoodObject(player) && GoodObject(tmp->executor)
+          && (!Owns(tmp->executor, player)))
         continue;
-      if (GoodObject(thing) && (tmp->sem != thing))
+      if (GoodObject(thing) && (tmp->semaphore_obj != thing))
         continue;
-      if (attr && *attr && strcasecmp(tmp->semattr, attr))
+      if (attr && *attr && strcasecmp(tmp->semaphore_attr, attr))
         continue;
       if (!first)
         safe_chr(' ', buff, bp);
@@ -1627,16 +1613,16 @@ FUNCTION(fun_lpids)
 
 static void
 show_queue(dbref player, dbref victim, int q_type, int q_quiet,
-           int q_all, BQUE *q_ptr, int *tot, int *self, int *del)
+           int q_all, MQUE * q_ptr, int *tot, int *self, int *del)
 {
-  BQUE *tmp;
+  MQUE *tmp;
   for (tmp = q_ptr; tmp; tmp = tmp->next) {
     (*tot)++;
-    if (!GoodObject(tmp->player))
+    if (!GoodObject(tmp->executor))
       (*del)++;
-    else if (q_all || (Owner(tmp->player) == victim)) {
+    else if (q_all || (Owner(tmp->executor) == victim)) {
       if ((LookQueue(player)
-           || Owns(tmp->player, player))) {
+           || Owns(tmp->executor, player))) {
         (*self)++;
         if (!q_quiet)
           show_queue_single(player, tmp, q_type);
@@ -1647,30 +1633,30 @@ show_queue(dbref player, dbref victim, int q_type, int q_quiet,
 
 /* Show a single queue entry */
 static void
-show_queue_single(dbref player, BQUE *q, int q_type)
+show_queue_single(dbref player, MQUE * q, int q_type)
 {
   switch (q_type) {
   case 1:                      /* wait queue */
     notify_format(player, "(Pid: %u) [%ld]%s: %s",
-                  (unsigned int) q->pid, (long) difftime(q->left,
+                  (unsigned int) q->pid, (long) difftime(q->wait_until,
                                                          mudtime),
-                  unparse_object(player, q->player), q->comm);
+                  unparse_object(player, q->executor), q->action_list);
     break;
   case 2:                      /* semaphore queue */
-    if (q->left != 0) {
+    if (q->wait_until != 0) {
       notify_format(player, "(Pid: %u) [#%d/%s/%ld]%s: %s",
-                    (unsigned int) q->pid, q->sem, q->semattr,
-                    (long) difftime(q->left, mudtime),
-                    unparse_object(player, q->player), q->comm);
+                    (unsigned int) q->pid, q->semaphore_obj, q->semaphore_attr,
+                    (long) difftime(q->wait_until, mudtime),
+                    unparse_object(player, q->executor), q->action_list);
     } else {
       notify_format(player, "(Pid: %u) [#%d/%s]%s: %s",
-                    (unsigned int) q->pid, q->sem, q->semattr,
-                    unparse_object(player, q->player), q->comm);
+                    (unsigned int) q->pid, q->semaphore_obj, q->semaphore_attr,
+                    unparse_object(player, q->executor), q->action_list);
     }
     break;
   default:                     /* player or object queue */
     notify_format(player, "(Pid: %u) %s: %s", (unsigned int) q->pid,
-                  unparse_object(player, q->player), q->comm);
+                  unparse_object(player, q->executor), q->action_list);
   }
 }
 
@@ -1755,7 +1741,7 @@ void
 do_queue_single(dbref player, char *pidstr)
 {
   uint32_t pid;
-  BQUE *q;
+  MQUE *q;
 
   if (!is_uinteger(pidstr)) {
     notify(player, T("That is not a valid pid!"));
@@ -1769,14 +1755,14 @@ do_queue_single(dbref player, char *pidstr)
     return;
   }
 
-  if (!LookQueue(player) && Owner(player) != Owner(q->player)) {
+  if (!LookQueue(player) && Owner(player) != Owner(q->executor)) {
     notify(player, T("Permission denied."));
     return;
   }
 
-  if (GoodObject(q->sem))
+  if (GoodObject(q->semaphore_obj))
     show_queue_single(player, q, 2);
-  else if (q->left > 0)
+  else if (q->wait_until > 0)
     show_queue_single(player, q, 1);
   else
     show_queue_single(player, q, 0);
@@ -1793,7 +1779,7 @@ do_queue_single(dbref player, char *pidstr)
 void
 do_halt(dbref owner, const char *ncom, dbref victim)
 {
-  BQUE *tmp, *trail = NULL, *point, *next;
+  MQUE *tmp, *trail = NULL, *point, *next;
   int num = 0;
   dbref player;
   if (victim == NOTHING)
@@ -1803,25 +1789,25 @@ do_halt(dbref owner, const char *ncom, dbref victim)
   quiet_notify(Owner(player),
                tprintf("%s: %s(#%d).", T("Halted"), Name(player), player));
   for (tmp = qfirst; tmp; tmp = tmp->next)
-    if (GoodObject(tmp->player)
-        && ((tmp->player == player)
-            || (Owner(tmp->player) == player))) {
+    if (GoodObject(tmp->executor)
+        && ((tmp->executor == player)
+            || (Owner(tmp->executor) == player))) {
       num--;
       giveto(player, QUEUE_COST);
-      tmp->player = NOTHING;
+      tmp->executor = NOTHING;
     }
   for (tmp = qlfirst; tmp; tmp = tmp->next)
-    if (GoodObject(tmp->player)
-        && ((tmp->player == player)
-            || (Owner(tmp->player) == player))) {
+    if (GoodObject(tmp->executor)
+        && ((tmp->executor == player)
+            || (Owner(tmp->executor) == player))) {
       num--;
       giveto(player, QUEUE_COST);
-      tmp->player = NOTHING;
+      tmp->executor = NOTHING;
     }
   /* remove wait q stuff */
   for (point = qwait; point; point = next) {
-    if (((point->player == player)
-         || (Owner(point->player) == player))) {
+    if (((point->executor == player)
+         || (Owner(point->executor) == player))) {
       num--;
       giveto(player, QUEUE_COST);
       if (trail)
@@ -1836,8 +1822,8 @@ do_halt(dbref owner, const char *ncom, dbref victim)
   /* clear semaphore queue */
 
   for (point = qsemfirst, trail = NULL; point; point = next) {
-    if (((point->player == player)
-         || (Owner(point->player) == player))) {
+    if (((point->executor == player)
+         || (Owner(point->executor) == player))) {
       num--;
       giveto(player, QUEUE_COST);
       if (trail)
@@ -1846,20 +1832,16 @@ do_halt(dbref owner, const char *ncom, dbref victim)
         qsemfirst = next = point->next;
       if (point == qsemlast)
         qsemlast = trail;
-      add_to_sem(point->sem, -1, point->semattr);
+      add_to_sem(point->semaphore_obj, -1, point->semaphore_attr);
       free_qentry(point);
     } else
       next = (trail = point)->next;
   }
 
-  add_to(QUEUE_PER_OWNER ? Owner(player) : player, num);
+  add_to(player, num);
   if (ncom && *ncom) {
-    int j;
-    for (j = 0; j < 10; j++)
-      global_eval_context.wnxt[j] = global_eval_context.wenv[j];
-    for (j = 0; j < NUMQ; j++)
-      global_eval_context.rnxt[j] = global_eval_context.renv[j];
-    parse_que(player, ncom, player, NULL);
+    new_queue_actionlist(player, player, player, (char *) ncom, NULL,
+                         PE_INFO_DEFAULT, QUEUE_DEFAULT, NULL, NULL);
   }
 }
 
@@ -1925,7 +1907,7 @@ void
 do_haltpid(dbref player, const char *arg1)
 {
   uint32_t pid;
-  BQUE *q;
+  MQUE *q;
   dbref victim;
   if (!is_uinteger(arg1)) {
     notify(player, T("That is not a valid pid!"));
@@ -1939,7 +1921,7 @@ do_haltpid(dbref player, const char *arg1)
     return;
   }
 
-  victim = q->player;
+  victim = q->executor;
   if (!controls(player, victim) && !HaltAny(player)) {
     notify(player, T("Permission denied."));
     return;
@@ -1949,9 +1931,9 @@ do_haltpid(dbref player, const char *arg1)
      belongs too, flag it as halted and just not execute it when its
      turn comes up (Or show it in @ps, etc.).  Exception is for
      semaphores, which otherwise might wait forever. */
-  q->player = NOTHING;
-  if (q->semattr) {
-    BQUE *last = NULL, *tmp;
+  q->executor = NOTHING;
+  if (q->semaphore_attr) {
+    MQUE *last = NULL, *tmp;
     for (tmp = qsemfirst; tmp; last = tmp, tmp = tmp->next) {
       if (tmp == q) {
         if (last)
@@ -1965,7 +1947,7 @@ do_haltpid(dbref player, const char *arg1)
     }
 
     giveto(victim, QUEUE_COST);
-    add_to_sem(q->sem, -1, q->semattr);
+    add_to_sem(q->semaphore_obj, -1, q->semaphore_attr);
     free_qentry(q);
   }
 
@@ -2104,18 +2086,17 @@ shutdown_queues(void)
 
 
 static void
-shutdown_a_queue(BQUE **head, BQUE **tail)
+shutdown_a_queue(MQUE ** head, MQUE ** tail)
 {
-  BQUE *entry;
+  MQUE *entry;
   /* Drain out a queue */
   while (*head) {
     entry = *head;
     if (!(*head = entry->next) && tail)
       *tail = NULL;
-    if (GoodObject(entry->player) && !IsGarbage(entry->player)) {
-      global_eval_context.cplr = entry->player;
-      giveto(global_eval_context.cplr, QUEUE_COST);
-      add_to(entry->queued, -1);
+    if (GoodObject(entry->executor) && !IsGarbage(entry->executor)) {
+      giveto(entry->executor, QUEUE_COST);
+      add_to(entry->executor, -1);
     }
     free_qentry(entry);
   }

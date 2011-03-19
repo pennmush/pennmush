@@ -41,12 +41,8 @@
 #include "confmagic.h"
 
 int forbidden_name(const char *name);
-void do_switch(dbref player, char *expression, char **argv,
-               dbref cause, int first, int notifyme, int regexp, int inplace);
-void do_verb(dbref player, dbref cause, char *arg1, char **argv);
 static void grep_add_attr(char *buff, char **bp, dbref player, int count,
                           ATTR *attr, char *atrval);
-void do_grep(dbref player, char *obj, char *lookfor, int print, int flags);
 static int pay_quota(dbref, int);
 extern PRIV attr_privs_view[];
 
@@ -245,11 +241,9 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
   char buff[BUFFER_LEN], *bp, *sp, *asave;
   char const *ap;
   int j;
-  char *preserves[10];
-  char *preserveq[NUMQ];
   dbref preserve_orator = orator;
-  int need_pres = 0;
   int attribs_used = 0;
+  NEW_PE_INFO *pe_info = NULL;
 
   loc = (loc == NOTHING) ? Location(player) : loc;
   orator = player;
@@ -261,17 +255,19 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
       d = atr_get(thing, what);
       if (d) {
         attribs_used = 1;
-        if (!need_pres) {
-          need_pres = 1;
-          save_global_regs("did_it_save", preserveq);
-          save_global_env("did_it_save", preserves);
+        if (myenv) {
+          pe_info = make_pe_info("pe_info-real_did_it1");
+          for (j = 0; j < 10; j++)
+            if (myenv[j]) {
+              pe_info->env[j] = mush_strdup(myenv[j], "pe_info.env");
+              pe_info->arg_count = j+1;
+            }
         }
-        restore_global_env("did_it", myenv);
         asave = safe_atr_value(d);
         ap = asave;
         bp = buff;
         process_expression(buff, &bp, &ap, thing, player, player,
-                           PE_DEFAULT, PT_DEFAULT, NULL);
+                           PE_DEFAULT, PT_DEFAULT, pe_info);
         *bp = '\0';
         notify_by(thing, player, buff);
         free(asave);
@@ -284,12 +280,14 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
         d = atr_get(thing, owhat);
         if (d) {
           attribs_used = 1;
-          if (!need_pres) {
-            need_pres = 1;
-            save_global_regs("did_it_save", preserveq);
-            save_global_env("did_it_save", preserves);
+          if (myenv && !pe_info) {
+            pe_info = make_pe_info("pe_info-real_did_it2");
+            for (j = 0; j < 10; j++)
+              if (myenv[j]) {
+                pe_info->env[j] = mush_strdup(myenv[j], "pe_info.env");
+                pe_info->arg_count = j+1;
+              }
           }
-          restore_global_env("did_it", myenv);
           asave = safe_atr_value(d);
           ap = asave;
           bp = buff;
@@ -300,7 +298,7 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
           }
           sp = bp;
           process_expression(buff, &bp, &ap, thing, player, player,
-                             PE_DEFAULT, PT_DEFAULT, NULL);
+                             PE_DEFAULT, PT_DEFAULT, pe_info);
           *bp = '\0';
           if (bp != sp)
             notify_except2(Contents(loc), player, thing, buff, flags);
@@ -314,16 +312,12 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
       }
     }
   }
-  if (need_pres) {
-    restore_global_regs("did_it_save", preserveq);
-    restore_global_env("did_it_save", preserves);
-  }
-  for (j = 0; j < 10; j++)
-    global_eval_context.wnxt[j] = myenv[j];
-  for (j = 0; j < NUMQ; j++)
-    global_eval_context.rnxt[j] = NULL;
+  if (pe_info)
+    free_pe_info(pe_info);
+
   if (awhat && *awhat)
-    attribs_used = queue_attribute(thing, awhat, player) || attribs_used;
+    attribs_used = queue_attribute_base(thing, awhat, player, 0, myenv)
+      || attribs_used;
   orator = preserve_orator;
   return attribs_used;
 }
@@ -469,7 +463,7 @@ controls(dbref who, dbref what)
 
   c = getlock_noparent(what, Control_Lock);
   if (c != TRUE_BOOLEXP) {
-    if (eval_boolexp(who, c, what))
+    if (eval_boolexp(who, c, what, NULL))
       return 1;
   }
   return 0;
@@ -1114,29 +1108,24 @@ ok_tag_attribute(dbref player, const char *params)
  * \param first if 1, run only first matching case; if 0, run all matching cases.
  * \param notifyme if 1, perform a notify after executing matched cases.
  * \param regexp if 1, do regular expression matching; if 0, wildcard globbing.
+ * \param inplace run any queued commands inplace?
+ * \param queue_entry the queue entry @switch is being run in
  */
 void
 do_switch(dbref player, char *expression, char **argv, dbref cause,
-          int first, int notifyme, int regexp, int inplace)
+          int first, int notifyme, int regexp, int inplace,
+          MQUE * queue_entry)
 {
   int any = 0, a;
   char buff[BUFFER_LEN], *bp;
   char const *ap;
   char *tbuf1;
-  PE_Info *pe_info;
-  int i = 0;
   char ibuff[BUFFER_LEN], *ibp;
 
   ibp = ibuff;
 
   if (!argv[1])
     return;
-
-  /* set up environment for any spawned commands */
-  for (a = 0; a < 10; a++)
-    global_eval_context.wnxt[a] = global_eval_context.wenv[a];
-  for (a = 0; a < NUMQ; a++)
-    global_eval_context.rnxt[a] = global_eval_context.renv[a];
 
   /* now try a wild card match of buff with stuff in coms */
   for (a = 1;
@@ -1146,73 +1135,70 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
     ap = argv[a];
     bp = buff;
     process_expression(buff, &bp, &ap, player, cause, cause,
-                       PE_DEFAULT, PT_DEFAULT, NULL);
+                       PE_DEFAULT, PT_DEFAULT, queue_entry->pe_info);
     *bp = '\0';
 
     /* check for a match */
     if (regexp ? quick_regexp_match(buff, expression, 0)
         : local_wild_match(buff, expression)) {
       tbuf1 = replace_string("#$", expression, argv[a + 1]);
+      if (!any) {
+        /* Add the new switch context to the parent queue... */
+        queue_entry->pe_info->switch_nestings++;
+        queue_entry->pe_info->switch_nestings_local++;
+        queue_entry->pe_info->switch_text[queue_entry->pe_info->
+                                          switch_nestings] =
+          mush_strdup(expression, "pe_info.switch_text");
+        any = 1;
+      }
       if (inplace) {
-        if (any) {
-          safe_chr(';', ibuff, &ibp);
-        }
-        safe_str(tbuf1, ibuff, &ibp);
+        new_queue_actionlist(player, cause, cause, tbuf1, queue_entry,
+                             PE_INFO_SHARE, QUEUE_INPLACE, NULL, NULL);
       } else {
-        pe_info = make_pe_info();
-        if (global_eval_context.pe_info->switch_nesting >= 0) {
-          for (i = 0; i <= global_eval_context.pe_info->switch_nesting; i++) {
-            pe_info->switch_text[i] =
-              mush_strdup(global_eval_context.pe_info->switch_text[i],
-                          "switch_arg");
-          }
-        }
-        pe_info->switch_text[i] = mush_strdup(expression, "switch_arg");
-        pe_info->switch_nesting = i;
-        pe_info->local_switch_nesting = i;
-        parse_que(player, tbuf1, cause, pe_info);
+        new_queue_actionlist(player, cause, cause, tbuf1, queue_entry,
+                             PE_INFO_CLONE, QUEUE_DEFAULT, NULL, NULL);
       }
       mush_free(tbuf1, "replace_string.buff");
-      any = 1;
     }
   }
 
   /* do default if nothing has been matched */
   if ((a < MAX_ARG) && !any && argv[a]) {
     tbuf1 = replace_string("#$", expression, argv[a]);
+    if (!any) {
+      /* Add the new switch context to the parent queue... */
+      queue_entry->pe_info->switch_nestings++;
+      queue_entry->pe_info->switch_nestings_local++;
+      queue_entry->pe_info->switch_text[queue_entry->pe_info->
+                                        switch_nestings] =
+        mush_strdup(expression, "pe_info.switch_text");
+      any = 1;
+    }
     if (inplace) {
-      safe_str(tbuf1, ibuff, &ibp);
+      new_queue_actionlist(player, cause, cause, tbuf1, queue_entry,
+                           PE_INFO_SHARE, QUEUE_INPLACE, NULL, NULL);
     } else {
-      pe_info = make_pe_info();
-      if (global_eval_context.pe_info->switch_nesting >= 0) {
-        for (i = 0; i <= global_eval_context.pe_info->switch_nesting; i++) {
-          pe_info->switch_text[i] =
-            mush_strdup(global_eval_context.pe_info->switch_text[i],
-                        "switch_arg");
-        }
-      }
-      pe_info->switch_text[i] = mush_strdup(expression, "switch_arg");
-      pe_info->switch_nesting = i;
-      pe_info->local_switch_nesting = i;
-      parse_que(player, tbuf1, cause, pe_info);
+      new_queue_actionlist(player, cause, cause, tbuf1, queue_entry,
+                           PE_INFO_CLONE, QUEUE_DEFAULT, NULL, NULL);
     }
     mush_free(tbuf1, "replace_string.buff");
   }
 
-  if (inplace && (ibp > ibuff)) {
-    /* Set up %$* / stext() */
-    global_eval_context.pe_info->switch_nesting++;
-    global_eval_context.pe_info->local_switch_nesting++;
-    global_eval_context.pe_info->switch_text[global_eval_context.pe_info->switch_nesting] =
-      mush_strdup(expression, "switch_arg");
-    
-    *ibp = '\0';
-    inplace_queue_actionlist(player, cause, cause, ibuff, global_eval_context.wnxt, QUEUE_INPLACE);
+  if (!inplace) {
+    if (any) {
+      /* Clear out the switch data. We don't do this for inplace entries, as
+         it's done in do_entry */
+      mush_free(queue_entry->pe_info->
+                switch_text[queue_entry->pe_info->switch_nestings],
+                "pe_info.switch_text");
+      queue_entry->pe_info->switch_text[queue_entry->pe_info->switch_nestings] =
+        NULL;
+      queue_entry->pe_info->switch_nestings--;
+      queue_entry->pe_info->switch_nestings_local--;
+    }
+    if (notifyme)
+      parse_que(player, cause, "@notify me", NULL);
   }
-
-  /* Pop on @notify me, if requested */
-  if (notifyme && !inplace)
-    parse_que(player, "@notify me", cause, NULL);
 }
 
 /** Parse possessive matches for the possessor.
@@ -1357,7 +1343,7 @@ do_verb(dbref player, dbref cause, char *arg1, char **argv)
   dbref victim;
   dbref actor;
   int i;
-  char *wsave[10];
+  char *env[10];
 
   /* find the object that we want to read the attributes off
    * (the object that was the victim of the command)
@@ -1401,24 +1387,17 @@ do_verb(dbref player, dbref cause, char *arg1, char **argv)
   /* We're okay.  Send out messages. */
 
   for (i = 0; i < 10; i++) {
-    wsave[i] = global_eval_context.wenv[i];
-    global_eval_context.wenv[i] = argv[i + 7];
+    env[i] = argv[i + 7];
   }
 
   real_did_it(actor, victim,
               upcasestr(argv[2]), argv[3], upcasestr(argv[4]), argv[5],
-              NULL, Location(actor), global_eval_context.wenv, NA_INTER_HEAR);
-
-  for (i = 0; i < 10; i++)
-    global_eval_context.wenv[i] = wsave[i];
+              NULL, Location(actor), env, NA_INTER_HEAR);
 
   /* Now we copy our args into the stack, and do the command. */
 
-  for (i = 0; i < 10; i++)
-    global_eval_context.wnxt[i] = argv[i + 7];
-
   if (argv[6] && *argv[6])
-    queue_attribute(victim, upcasestr(argv[6]), actor);
+    queue_attribute_base(victim, upcasestr(argv[6]), actor, 0, env);
 }
 
 struct regrep_data {

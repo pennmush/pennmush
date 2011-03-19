@@ -24,6 +24,8 @@ Commands:
    instead of a single command. [MG]
  * @include/local includes an attribute, but preserves q-registers and
    doesn't propagate @breaks. [MG]
+ * @retry, which causes a queue entry to restart from the beginning. Useful
+   for coding loops without the queue delay. [GM]
    
 Substitutions:
  * New %= substitution, which evaluates to the dbref/attribute currently

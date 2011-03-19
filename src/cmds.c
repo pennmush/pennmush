@@ -154,6 +154,38 @@ COMMAND(cmd_assert)
   }
 }
 
+COMMAND(cmd_retry)
+{
+  char *rse[10];
+  char buff[BUFFER_LEN], *bp;
+  const char *sp;
+  int a;
+  if (!parse_boolean(arg_left))
+    return;
+
+  if (rhs_present) {
+    /* Now, to evaluate all of rsargs. Blah. */
+    for (a = 0; a < 10; a++) {
+      rse[a] = NULL;
+      sp = args_right[a+1];
+      if (sp) {
+        bp = buff;
+        process_expression(buff, &bp, &sp, player, caller, cause,
+                           PE_DEFAULT, PT_DEFAULT, queue_entry->pe_info);
+        *bp = '\0';
+        rse[a] = mush_strdup(buff, "pe_info.env");
+      }
+    }
+    for (a = 0; a < 10; a++) {
+      if (queue_entry->pe_info->env[a])
+        mush_free(queue_entry->pe_info->env[a], "pe_info.env");
+      queue_entry->pe_info->env[a] = rse[a];
+    }
+  }
+  queue_entry->queue_type |= QUEUE_RETRY;
+
+}
+
 COMMAND(cmd_chownall)
 {
   do_chownall(player, arg_left, arg_right, SW_ISSET(sw, SWITCH_PRESERVE));

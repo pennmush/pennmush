@@ -553,11 +553,11 @@ sq_run_one(void)
   if (sq_head) {
     if (difftime(sq_head->when, now) <= 0) {
       bool r = sq_head->fun(sq_head->data);
-      if (r && sq_head->event) {
+      if (r && sq_head->event)
         queue_event(SYSEVENT, sq_head->event, "%s", "");
-        mush_free(sq_head->event, "squeue.event");
-      }
       n = sq_head->next;
+      if (sq_head->event)
+        mush_free(sq_head->event, "squeue.event");
       mush_free(sq_head, "squeue.node");
       sq_head = n;
       return true;

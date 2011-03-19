@@ -29,6 +29,11 @@ Version 1.8.4 patchlevel 4                                 ??? ??,  201?
   they're being evaluated as part of as 'queue_entry', and can access
   queue_entry->pe_info if they need to evaluate anything/change environment
   variables, etc.
+  
+  In COMMAND() definitions, the variable 'player' (object running the
+  command) has been renamed 'executor' and 'cause' (object which caused the
+  command to be run) has been renamed 'enactor', for clarity and consistancy
+  with softcode. You will need to update your commands in cmdlocal.c
 
 Version 1.8.4 patchlevel 3                                 Mar 18,  2011
 

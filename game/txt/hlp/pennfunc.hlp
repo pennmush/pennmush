@@ -5545,7 +5545,7 @@ See also: setunion(), sort()
   accessed this way; only the following <variable>s are valid:
     0-9, #, @, !, n, l, and c.
   Unlike %-subs, the v() function is not case-sensitive: v(n) and v(N) are
-  both equivilent to %n (whereas %N is equivilent to [capstr(%N)]).
+  both equivilent to %n (whereas %N is equivilent to [capstr(%n)]).
   
   The second form of this function is equivilent to xget(me, <attribute>),
   but is usually slightly more efficient.

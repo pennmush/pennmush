@@ -1698,12 +1698,12 @@ COMMAND(cmd_unimplemented)
   if (strcmp(cmd->name, "UNIMPLEMENTED_COMMAND") != 0 &&
       (cmd = command_find("UNIMPLEMENTED_COMMAND")) &&
       !(cmd->type & CMD_T_DISABLED)) {
-    run_command(cmd, player, cause, "UNIMPLEMENTED_COMMAND", sw, NULL, raw,
+    run_command(cmd, executor, enactor, "UNIMPLEMENTED_COMMAND", sw, NULL, raw,
                 NULL, args_raw, arg_left, args_left, arg_right, args_right,
                 queue_entry);
   } else {
     /* Either we were already in UNIMPLEMENTED_COMMAND, or we couldn't find it */
-    notify(player, T("This command has not been implemented."));
+    notify(executor, T("This command has not been implemented."));
   }
 }
 
@@ -1895,7 +1895,7 @@ COMMAND(cmd_command)
   char *bp = buff;
 
   if (!arg_left[0]) {
-    notify(player, T("You must specify a command."));
+    notify(executor, T("You must specify a command."));
     return;
   }
   if (SW_ISSET(sw, SWITCH_ADD)) {
@@ -1906,42 +1906,42 @@ COMMAND(cmd_command)
     flags |= SW_ISSET(sw, SWITCH_LSARGS) ? CMD_T_LS_ARGS : 0;
     flags |= SW_ISSET(sw, SWITCH_EQSPLIT) ? CMD_T_EQSPLIT : 0;
     if (SW_ISSET(sw, SWITCH_NOEVAL))
-      notify(player,
+      notify(executor,
              T
              ("WARNING: /NOEVAL no longer creates a Noparse command.\n         Use /NOPARSE if that's what you meant."));
-    do_command_add(player, arg_left, flags);
+    do_command_add(executor, arg_left, flags);
     return;
   }
   if (SW_ISSET(sw, SWITCH_ALIAS)) {
-    if (Wizard(player)) {
+    if (Wizard(executor)) {
       if (!ok_command_name(upcasestr(arg_right))) {
-        notify(player, T("I can't alias a command to that!"));
+        notify(executor, T("I can't alias a command to that!"));
       } else if (!alias_command(arg_left, arg_right)) {
-        notify(player, T("Unable to set alias."));
+        notify(executor, T("Unable to set alias."));
       } else {
         if (!SW_ISSET(sw, SWITCH_QUIET))
-          notify(player, T("Alias set."));
+          notify(executor, T("Alias set."));
       }
     } else {
-      notify(player, T("Permission denied."));
+      notify(executor, T("Permission denied."));
     }
     return;
   }
   if (SW_ISSET(sw, SWITCH_CLONE)) {
-    do_command_clone(player, arg_left, arg_right);
+    do_command_clone(executor, arg_left, arg_right);
     return;
   }
 
   if (SW_ISSET(sw, SWITCH_DELETE)) {
-    do_command_delete(player, arg_left);
+    do_command_delete(executor, arg_left);
     return;
   }
   command = command_find(arg_left);
   if (!command) {
-    notify(player, T("No such command."));
+    notify(executor, T("No such command."));
     return;
   }
-  if (Wizard(player)) {
+  if (Wizard(executor)) {
     if (SW_ISSET(sw, SWITCH_ON) || SW_ISSET(sw, SWITCH_ENABLE))
       command->type &= ~CMD_T_DISABLED;
     else if (SW_ISSET(sw, SWITCH_OFF) || SW_ISSET(sw, SWITCH_DISABLE))
@@ -1949,21 +1949,21 @@ COMMAND(cmd_command)
 
     if (SW_ISSET(sw, SWITCH_RESTRICT)) {
       if (!arg_right || !arg_right[0]) {
-        notify(player, T("How do you want to restrict the command?"));
+        notify(executor, T("How do you want to restrict the command?"));
         return;
       }
 
-      if (!restrict_command(player, command, arg_right))
-        notify(player, T("Restrict attempt failed."));
+      if (!restrict_command(executor, command, arg_right))
+        notify(executor, T("Restrict attempt failed."));
     }
 
     if ((command->func == cmd_command) && (command->type & CMD_T_DISABLED)) {
-      notify(player, T("@command is ALWAYS enabled."));
+      notify(executor, T("@command is ALWAYS enabled."));
       command->type &= ~CMD_T_DISABLED;
     }
   }
   if (!SW_ISSET(sw, SWITCH_QUIET)) {
-    notify_format(player,
+    notify_format(executor,
                   T("Name       : %s (%s)"), command->name,
                   (command->type & CMD_T_DISABLED) ? "Disabled" : "Enabled");
     buff[0] = '\0';
@@ -1977,19 +1977,19 @@ COMMAND(cmd_command)
     else if (command->type & CMD_T_LOGNAME)
       strccat(buff, &bp, "LogName");
     *bp = '\0';
-    notify_format(player, T("Flags      : %s"), buff);
+    notify_format(executor, T("Flags      : %s"), buff);
     buff[0] = '\0';
-    notify_format(player, T("Lock       : %s"),
-                  unparse_boolexp(player, command->cmdlock, UB_DBREF));
+    notify_format(executor, T("Lock       : %s"),
+                  unparse_boolexp(executor, command->cmdlock, UB_DBREF));
     if (command->sw.mask) {
       bp = buff;
       for (sw_val = dyn_switch_list; sw_val->name; sw_val++)
         if (SW_ISSET(command->sw.mask, sw_val->value))
           strccat(buff, &bp, sw_val->name);
       *bp = '\0';
-      notify_format(player, T("Switches   : %s"), buff);
+      notify_format(executor, T("Switches   : %s"), buff);
     } else
-      notify(player, T("Switches   :"));
+      notify(executor, T("Switches   :"));
     buff[0] = '\0';
     bp = buff;
     if (command->type & CMD_T_LS_ARGS) {
@@ -2002,7 +2002,7 @@ COMMAND(cmd_command)
       strccat(buff, &bp, "Noparse");
     if (command->type & CMD_T_EQSPLIT) {
       *bp = '\0';
-      notify_format(player, T("Leftside   : %s"), buff);
+      notify_format(executor, T("Leftside   : %s"), buff);
       buff[0] = '\0';
       bp = buff;
       if (command->type & CMD_T_RS_ARGS) {
@@ -2014,12 +2014,12 @@ COMMAND(cmd_command)
       if (command->type & CMD_T_RS_NOPARSE)
         strccat(buff, &bp, "Noparse");
       *bp = '\0';
-      notify_format(player, T("Rightside  : %s"), buff);
+      notify_format(executor, T("Rightside  : %s"), buff);
     } else {
       *bp = '\0';
-      notify_format(player, T("Arguments  : %s"), buff);
+      notify_format(executor, T("Arguments  : %s"), buff);
     }
-    do_hook_list(player, arg_left);
+    do_hook_list(executor, arg_left);
   }
 }
 

@@ -29,6 +29,8 @@ Substitutions:
  * New %= substitution, which evaluates to the dbref/attribute currently
    being evaluated. Useful for coding things which loop. [MG]
 
+Attributes:
+ * Branch attributes now show the 'branch' attribute flag in lflags(). [MG]
 
 & 1.8.4p3
 Version 1.8.4 patchlevel 3                                 Mar 18,  2011

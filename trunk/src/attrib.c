@@ -285,7 +285,7 @@ int
 string_to_atrflag(dbref player, char const *p, privbits *bits)
 {
   privbits f;
-  f = string_to_privs(attr_privs_set, p, 0);
+  f = string_to_privs(attr_privs_view, p, 0);
   if (!f)
     return -1;
   if (!Hasprivs(player) && (f & AF_MDARK))

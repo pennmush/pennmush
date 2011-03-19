@@ -3201,7 +3201,7 @@ See also: @emit, @pemit, @oemit, SPOOFING, NOSPOOF, CONTROL.
   See 'help @retry2' for examples.
 
 See also: ACTION LISTS, BOOLEAN VALUES, @break, @include
-&@retry2
+& @retry2
   Example: 'while'
   > &sing me=$sing *:say %0 bottles of beer! ; @retry gt(%0,0)=dec(%0) ;
         say Go get some more!

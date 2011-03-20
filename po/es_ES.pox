@@ -3283,10 +3283,6 @@ msgstr "No puedes tomar eso de aquí."
 msgid "You can't take that!"
 msgstr "¡No puedes recoger eso!"
 
-#: src/speech.c:139
-msgid "You can't teach 'teach', sorry."
-msgstr "No puedes enseñar 'enseñar', lo siento."
-
 #: src/wiz.c:359
 msgid "You can't teleport rooms."
 msgstr "No puedes teleportar habitaciones."

@@ -2219,10 +2219,6 @@ msgstr "Не можеш да си позволиш %d %s."
 msgid "You can't delete that @function."
 msgstr "Не можеш да изтриеш тази @function."
 
-#: src/speech.c:139
-msgid "You can't teach 'teach', sorry."
-msgstr "Не можеш да преподаваш 'teach', съжалявам."
-
 #: src/set.c:214
 msgid "You cannot @CHOWN/PRESERVE. Use normal @CHOWN."
 msgstr "Не можеш да @CHOWN/PRESERVE. Използвай нормално @CHOWN."

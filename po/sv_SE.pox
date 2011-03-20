@@ -3687,10 +3687,6 @@ msgstr "Du kan inte ta det därifrån."
 msgid "You can't take that!"
 msgstr "Du kan inte ta det!"
 
-#: src/speech.c:139
-msgid "You can't teach 'teach', sorry."
-msgstr "Du kan tyvärr inte lära ut 'teach'."
-
 #: src/wiz.c:359
 msgid "You can't teleport rooms."
 msgstr "Du kan inte teleportera rum."

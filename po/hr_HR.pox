@@ -1445,10 +1445,6 @@ msgstr "---------------------------  PO©TA (folder %2d)  -----------------------
 msgid "@@ No attributes match '%s'. @@"
 msgstr "@@ Nijedan atribut se ne podudara sa '%s'. @@"
 
-#: cque.c:551
-msgid "@break recursion exceeded."
-msgstr "Prekoraèeno ogranièenje rekurzije @break naredbe."
-
 #: src/command.c:1118
 msgid "@command is ALWAYS enabled."
 msgstr "@command je UVIJEK ukljuèen."
@@ -5848,10 +5844,6 @@ msgstr "Ne mo¾e¹ to uzeti od tamo."
 #: src/move.c:544
 msgid "You can't take that!"
 msgstr "Ne mo¾e¹ to pokupiti!"
-
-#: src/speech.c:139
-msgid "You can't teach 'teach', sorry."
-msgstr "Ne mo¾e¹ teachati 'teach', ¾ao mi je."
 
 #: src/wiz.c:359
 msgid "You can't teleport rooms."

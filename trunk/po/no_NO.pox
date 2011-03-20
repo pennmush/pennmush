@@ -1415,10 +1415,6 @@ msgstr "---------------------------  MAIL (folder %2d)  ------------------------
 msgid "@@ No attributes match '%s'. @@"
 msgstr "@@ Ingen attributter passer '%s'. @@"
 
-#: cque.c:551
-msgid "@break recursion exceeded."
-msgstr "@break rekursjon for lang."
-
 #: src/command.c:1118
 msgid "@command is ALWAYS enabled."
 msgstr "@command er ALLTID tilgjengelig."
@@ -5655,10 +5651,6 @@ msgstr "Du kan ikke ta det fra der."
 #: src/move.c:544
 msgid "You can't take that!"
 msgstr "Du kan ikke ta det!"
-
-#: src/speech.c:139
-msgid "You can't teach 'teach', sorry."
-msgstr "Du kan ikke lære bort 'teach'. Beklager."
 
 #: src/wiz.c:359
 msgid "You can't teleport rooms."

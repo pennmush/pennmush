@@ -2089,10 +2089,6 @@ msgstr "Det kan du ikke samle op!"
 msgid "You can't take that!"
 msgstr "Det kan du ikke samle op!"
 
-#: src/speech.c:139
-msgid "You can't teach 'teach', sorry."
-msgstr "Du kan ikke teleportere rum."
-
 #: src/wiz.c:359
 msgid "You can't teleport rooms."
 msgstr "Du kan ikke teleportere rum."

@@ -1226,10 +1226,6 @@ msgstr "------------  Koniec kolejki  ------------"
 msgid "---------------------------  MAIL (folder %2d)  ------------------------------"
 msgstr "---------------------------  POCZTA (folder %2d)  ----------------------------"
 
-#: cque.c:551
-msgid "@break recursion exceeded."
-msgstr "Rekursja @break przekroczona."
-
 #: src/command.c:1118
 msgid "@command is ALWAYS enabled."
 msgstr "@komenda jest ZAWSZE dostêpna."
@@ -4969,10 +4965,6 @@ msgstr "Nie mo¿esz wzi±æ tego stamt±d."
 #: src/move.c:544
 msgid "You can't take that!"
 msgstr "Nie mozesz tego wzi±æ!"
-
-#: src/speech.c:139
-msgid "You can't teach 'teach', sorry."
-msgstr "Nie mo¿esz uczyæ 'uczenia', przykro mi."
 
 #: src/wiz.c:359
 msgid "You can't teleport rooms."

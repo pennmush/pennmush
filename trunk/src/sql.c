@@ -434,7 +434,7 @@ COMMAND(cmd_mapsql)
       if (retcode == SQLITE_DONE)
         break;
       else if (retcode != SQLITE_ROW) {
-        notify_format(player, T("SQL: Error: %s"), sql_error());
+        notify_format(executor, T("SQL: Error: %s"), sql_error());
         break;
       }
     }
@@ -481,7 +481,7 @@ COMMAND(cmd_mapsql)
       /* Queue rownum: <names> */
     } else {
       /* What to do if there are no fields? This should be an error?. */
-      /* notify_format(player, T("Row %d: NULL"), rownum + 1); */
+      /* notify_format(executor, T("Row %d: NULL"), rownum + 1); */
     }
   }
   if (donotify) {
@@ -565,7 +565,7 @@ COMMAND(cmd_sql)
       if (retcode == SQLITE_DONE)
         break;
       else if (retcode != SQLITE_ROW) {
-        notify_format(player, T("SQL: Error: %s"), sql_error());
+        notify_format(executor, T("SQL: Error: %s"), sql_error());
         break;
       }
     }

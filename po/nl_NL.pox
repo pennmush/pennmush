@@ -1445,10 +1445,6 @@ msgstr "--------------------------- POST (map %2d) ---------------------------"
 msgid "@@ No attributes match '%s'. @@"
 msgstr "@@ Geen attributen voldoen aan '%s'. @@"
 
-#: cque.c:551
-msgid "@break recursion exceeded."
-msgstr "@break recursie overschreden."
-
 #: src/command.c:1118
 msgid "@command is ALWAYS enabled."
 msgstr "@command is ALTIJD ingeschakeld."
@@ -5848,10 +5844,6 @@ msgstr "Dat kun je daar niet uit pakken."
 #: src/move.c:544
 msgid "You can't take that!"
 msgstr "Je kan dat niet pakken!"
-
-#: src/speech.c:139
-msgid "You can't teach 'teach', sorry."
-msgstr "Je kan 'teach' niet met teach gebruiken, sorry."
 
 #: src/wiz.c:359
 msgid "You can't teleport rooms."

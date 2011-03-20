@@ -978,10 +978,6 @@ msgstr "Aparentemente você não pode largar coisas aqui."
 msgid "You can't take that!"
 msgstr "Eu não consigo encontrar isso."
 
-#: src/speech.c:139
-msgid "You can't teach 'teach', sorry."
-msgstr "Aparentemente você não pode largar coisas aqui."
-
 #: src/wiz.c:359
 msgid "You can't teleport rooms."
 msgstr "Aparentemente você não pode largar coisas aqui."

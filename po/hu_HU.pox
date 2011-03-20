@@ -3810,10 +3810,6 @@ msgstr "Ezt onnan nem veheted fel."
 msgid "You can't take that!"
 msgstr "Ezt nem veheted fel!"
 
-#: src/speech.c:139
-msgid "You can't teach 'teach', sorry."
-msgstr "A 'teach' parancsot nem taníthatod, bocs."
-
 #: src/wiz.c:359
 msgid "You can't teleport rooms."
 msgstr "Szobákat nem teleportálhatsz."

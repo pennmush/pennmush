@@ -157,9 +157,9 @@ do_userfn(char *buff, char **bp, dbref obj, ATTR *attrib, int nargs,
   if (!pe_info) {
     made_pe_info = 1;
     pe_info = make_pe_info("pe_info-do_userfn");
-    save_env("do_userfn_env", tptr, pe_info->env);
   } else {
     old_args = pe_info->arg_count;
+    save_env("do_userfn_env", tptr, pe_info->env);
     pe_info->arg_count = nargs;
   }
 

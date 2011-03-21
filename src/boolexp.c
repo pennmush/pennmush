@@ -1821,6 +1821,7 @@ check_attrib_lock(dbref player, dbref target,
   const char *ap;
   char buff[BUFFER_LEN], *bp;
   char save_attrname[BUFFER_LEN];
+  int made_pe_info = 0;
 
   if (!atrname || !*atrname || !str || !*str)
     return 0;
@@ -1834,13 +1835,22 @@ check_attrib_lock(dbref player, dbref target,
   /* perform pronoun substitution */
   bp = buff;
   ap = asave;
-  strcpy(save_attrname, pe_info->attrname);
+  if (!pe_info) {
+    pe_info = make_pe_info("check_attrib_lock");
+    made_pe_info = 1;
+  } else {
+    strcpy(save_attrname, pe_info->attrname);
+  }
   strcpy(pe_info->attrname, atrname);
   process_expression(buff, &bp, &ap, target, player,
                      player, PE_DEFAULT, PT_DEFAULT, pe_info);
-  strcpy(pe_info->attrname, save_attrname);
   *bp = '\0';
   free(asave);
+
+  if (made_pe_info)
+    free_pe_info(pe_info);
+  else
+    strcpy(pe_info->attrname, save_attrname);
 
   return !strcasecmp(buff, str);
 }

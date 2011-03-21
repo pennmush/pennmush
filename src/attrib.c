@@ -1788,17 +1788,28 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
                         10, match_space, match_space_len)) {
     char save_cmd_raw[BUFFER_LEN], save_cmd_evaled[BUFFER_LEN];
     int success = 1;
-    /* Save and reset %c/%u */
-    strcpy(save_cmd_raw, from_queue->pe_info->cmd_raw);
-    strcpy(save_cmd_evaled, from_queue->pe_info->cmd_evaled);
-    strcpy(from_queue->pe_info->cmd_raw, str);
-    strcpy(from_queue->pe_info->cmd_evaled, str);
-    if (!eval_lock_clear(player, thing, Command_Lock, from_queue->pe_info)
-        || !eval_lock_clear(player, thing, Use_Lock, from_queue->pe_info))
+    NEW_PE_INFO *pe_info;
+
+    if (from_queue) {
+      pe_info = from_queue->pe_info;
+      /* Save and reset %c/%u */
+      strcpy(save_cmd_raw, from_queue->pe_info->cmd_raw);
+      strcpy(save_cmd_evaled, from_queue->pe_info->cmd_evaled);
+    } else {
+      pe_info = make_pe_info("pe_info-one_comm_match");
+    }
+    strcpy(pe_info->cmd_raw, str);
+    strcpy(pe_info->cmd_evaled, str);
+    if (!eval_lock_clear(player, thing, Command_Lock, pe_info)
+        || !eval_lock_clear(player, thing, Use_Lock, pe_info))
       success = 0;
-    /* Restore */
-    strcpy(from_queue->pe_info->cmd_raw, save_cmd_raw);
-    strcpy(from_queue->pe_info->cmd_evaled, save_cmd_evaled);
+    if (from_queue) {
+      /* Restore */
+      strcpy(from_queue->pe_info->cmd_raw, save_cmd_raw);
+      strcpy(from_queue->pe_info->cmd_evaled, save_cmd_evaled);
+    } else {
+      free_pe_info(pe_info);
+    }
     if (success) {
       if (from_queue) {
         /* inplace queue */

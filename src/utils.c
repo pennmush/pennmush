@@ -261,31 +261,26 @@ call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
   int pe_ret;
   char const *ap;
   char old_attr[BUFFER_LEN];
+  int made_pe_info = 0;
 
   struct re_context rsave;
 
   /* Make sure we have a ufun first */
   if (!ufun)
     return 1;
-
-  /* Save contexts, globals, regexp vals, etc */
-  if (pe_info) {
-    for (i = 0; i < wenv_argc; i++) {
-      old_wenv[i] = pe_info->env[i];
-      pe_info->env[i] = wenv_args[i];
-    }
-
-    for (; i < 10; i++) {
-      old_wenv[i] = pe_info->env[i];
-      pe_info->env[i] = NULL;
-    }
+  if (!pe_info) {
+    pe_info = make_pe_info("pe_info.call_ufun");
+    made_pe_info = 1;
+  } else {
+    save_env("call_ufun", old_wenv, pe_info->env);
     old_args = pe_info->arg_count;
-    pe_info->arg_count = wenv_argc;
 
     save_regexp_context(&rsave, &pe_info->re_context);
+
     if (ufun->ufun_flags & UFUN_LOCALIZE) {
       save_global_regs("localize", saveqs, pe_info->qreg_values);
     }
+
     /* Set all the regexp patterns to NULL so they are not propogated */
     reset_regexp_context(&pe_info->re_context);
 
@@ -296,18 +291,27 @@ call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
     pe_info->switch_nestings_local = -1;
 
     strcpy(old_attr, pe_info->attrname);
-    rp = pe_info->attrname;
-    if (*ufun->attrname == '\0') {
-      safe_str("#LAMBDA", pe_info->attrname, &rp);
-      safe_chr('/', pe_info->attrname, &rp);
-      safe_str(ufun->contents, pe_info->attrname, &rp);
-    } else {
-      safe_dbref(ufun->thing, pe_info->attrname, &rp);
-      safe_chr('/', pe_info->attrname, &rp);
-      safe_str(ufun->attrname, pe_info->attrname, &rp);
-    }
-    *rp = '\0';
   }
+  for (i = 0; i < wenv_argc; i++) {
+    pe_info->env[i] = wenv_args[i];
+  }
+  for (; i < 10; i++) {
+    pe_info->env[i] = NULL;
+  }
+
+  pe_info->arg_count = wenv_argc;
+
+  rp = pe_info->attrname;
+  if (*ufun->attrname == '\0') {
+    safe_str("#LAMBDA", pe_info->attrname, &rp);
+    safe_chr('/', pe_info->attrname, &rp);
+    safe_str(ufun->contents, pe_info->attrname, &rp);
+  } else {
+    safe_dbref(ufun->thing, pe_info->attrname, &rp);
+    safe_chr('/', pe_info->attrname, &rp);
+    safe_str(ufun->attrname, pe_info->attrname, &rp);
+  }
+  *rp = '\0';
 
   /* If the user doesn't care about the return of the expression,
    * then use our own rbuff.  */
@@ -315,33 +319,30 @@ call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
     ret = rbuff;
   rp = ret;
 
-
   /* And now, make the call! =) */
   ap = ufun->contents;
   pe_ret = process_expression(ret, &rp, &ap, ufun->thing, executor,
                               enactor, ufun->pe_flags, PT_DEFAULT, pe_info);
   *rp = '\0';
 
-  if (pe_info) {
+  if (!made_pe_info) {
     /* Restore the old environment */
-    for (i = 0; i < 10; i++) {
-      pe_info->env[i] = old_wenv[i];
-    }
-
+    restore_env("call_ufun", old_wenv, pe_info->env);
+    pe_info->arg_count = old_args;
     /* Restore itext and stext values */
     pe_info->iter_nestings_local = iter_nest;
     pe_info->switch_nestings_local = switch_nest;
-    pe_info->arg_count = old_args;
-
     /* Restore q-regs */
     if (ufun->ufun_flags & UFUN_LOCALIZE) {
       restore_global_regs("localize", saveqs, pe_info->qreg_values);
     }
-
     /* Restore regexp patterns */
     restore_regexp_context(&rsave, &pe_info->re_context);
-
     strcpy(pe_info->attrname, old_attr);
+  } else {
+    for (i = 0; i < 10; i++)
+      pe_info->env[i] = NULL;
+    free_pe_info(pe_info);
   }
 
   return pe_ret;

@@ -20,7 +20,7 @@ that have altered hardcode will appear here.
 
 ==========================================================================
 
-Version 1.8.4 patchlevel 4                                 ??? ??,  201?
+Version 1.8.4 patchlevel 4                                 Mar 18,  2011
 
   global_eval_context has been removed, as have the BQUE and PE_Info
   sutrcts. All the information they contained has been merged into two new

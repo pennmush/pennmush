@@ -1432,6 +1432,9 @@ run_command(COMMAND_INFO *cmd, dbref player, dbref enactor,
 
   /* Create a pe_info for the hooks, which share q-registers */
   pe_info = make_pe_info("pe_info-run_command");
+  strcpy(pe_info->cmd_evaled, commandraw);
+  strcpy(pe_info->cmd_raw, string);
+
 
   if (!run_hook(player, enactor, &cmd->hooks.ignore, pe_info)) {
     free_pe_info(pe_info);

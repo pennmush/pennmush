@@ -227,28 +227,27 @@ extern char ucbuff[];
 /* From cque.c */
 
 /* Queue types/flags */
-#define QUEUE_DEFAULT 0         /* select QUEUE_PLAYER or QUEUE_OBJECT based on enactor's Type() */
-#define QUEUE_PLAYER 1          /* command queued because of a player in-game */
-#define QUEUE_OBJECT 2          /* command queued because of a non-player in-game */
-#define QUEUE_SOCKET 4          /* command executed directly from a player's client */
-#define QUEUE_INPLACE 8         /* inplace queue entry */
-#define QUEUE_NO_PROPAGATE 16   /* Don't propagate @breaks, or preserve changes to q-registers, from this inplace queue */
-#define QUEUE_RESTORE_ENV 32    /* At the end of this inplace queue entry, free pe_info->env and restore from saved_env */
-#define QUEUE_NOLIST 64         /* Queue is a single command, not an action list */
-#define QUEUE_BREAK 128         /* set by @break, stops further processing of queue entry */
-#define QUEUE_RETRY 256         /* Set by @retry, restart current queue entry from beginning, without recalling do_entry */
+#define QUEUE_DEFAULT       0x000   /* select QUEUE_PLAYER or QUEUE_OBJECT based on enactor's Type() */
+#define QUEUE_PLAYER        0x001   /* command queued because of a player in-game */
+#define QUEUE_OBJECT        0x002   /* command queued because of a non-player in-game */
+#define QUEUE_SOCKET        0x004   /* command executed directly from a player's client */
+#define QUEUE_INPLACE       0x008   /* inplace queue entry */
+#define QUEUE_NO_PROPAGATE  0x010   /* Don't propagate @breaks, or preserve changes to q-registers, from this inplace queue */
+#define QUEUE_RESTORE_ENV   0x020   /* At the end of this inplace queue entry, free pe_info->env and restore from saved_env */
+#define QUEUE_NOLIST        0x040   /* Queue is a single command, not an action list */
+#define QUEUE_BREAK         0x080   /* set by @break, stops further processing of queue entry */
+#define QUEUE_RETRY         0x100   /* Set by @retry, restart current queue entry from beginning, without recalling do_entry */
 #define QUEUE_RECURSE (QUEUE_INPLACE | QUEUE_NO_PROPAGATE)
 
 
 /* Used when generating a new pe_info from an existing pe_info. Used by pe_info_from(). */
-#define PE_INFO_DEFAULT 0       /* create a new, empty pe_info */
-#define PE_INFO_SHARE 1         /* Share the existing pe_info */
-#define PE_INFO_CLONE 2         /* Clone entire pe_info */
-#define PE_INFO_COPY_ENV 4      /* Copy the env (%0-%9) of the parent pe_info into new pe_info */
-#define PE_INFO_COPY_QREG 8     /* Copy qregisters (%q*) from the parent pe_info */
+#define PE_INFO_DEFAULT     0x000   /* create a new, empty pe_info */
+#define PE_INFO_SHARE       0x001   /* Share the existing pe_info */
+#define PE_INFO_CLONE       0x002   /* Clone entire pe_info */
+#define PE_INFO_COPY_ENV    0x004   /* Copy the env (%0-%9) of the parent pe_info into new pe_info */
+#define PE_INFO_COPY_QREG   0x008   /* Copy q-registers (%q*) from the parent pe_info */
 
 
-struct bque;
 struct _ansi_string;
 struct real_pcre;
 

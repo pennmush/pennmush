@@ -938,7 +938,7 @@ do_entry(MQUE * entry, int include_recurses)
   if (!RealGoodObject(executor))
     return 0;
 
-  if (!(entry->queue_type & QUEUE_INPLACE)) {
+  if (!(entry->queue_type & (QUEUE_SOCKET | QUEUE_INPLACE))) {
     giveto(executor, QUEUE_COST);
     add_to(executor, -1);
   }

@@ -195,7 +195,7 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
   }
 
   attrib = (ATTR *) atr_get(ufun->thing, upcasestr(attrname));
-  // An empty attrib is the same as no attrib.
+  /* An empty attrib is the same as no attrib. */
   if (attrib == NULL) {
     if (flags & UFUN_REQUIRE_ATTR) {
       if (!(flags & UFUN_IGNORE_PERMS) && !Can_Examine(executor, ufun->thing))
@@ -225,7 +225,7 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
 
   /* Populate the ufun object */
   mush_strncpy(ufun->contents, atr_value(attrib), BUFFER_LEN);
-  mush_strncpy(ufun->attrname, attrname, ATTRIBUTE_NAME_LIMIT+1);
+  mush_strncpy(ufun->attrname, AL_NAME(attrib), ATTRIBUTE_NAME_LIMIT+1);
 
   /* We're good */
   return 1;

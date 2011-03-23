@@ -48,7 +48,7 @@ Functions:
    digits after it, like "5.". Reported by Minion. [MG]
    
 Fixes:
- * The sortby() function now uses call_ufun in the hardcode, fixing a number
+ * sortby() and foreach() now use call_ufun in the hardcode, fixing a number
    of minor bugs. [MG]
 
 Version 1.8.4 patchlevel 3                                 Mar 18,  2011

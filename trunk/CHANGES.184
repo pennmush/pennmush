@@ -29,8 +29,10 @@ Hardcode:
 Commands:
  * 'teach' now takes a /list switch, which lets it run an action list
    instead of a single command. [MG]
- * @include/local includes an attribute, but preserves q-registers and
-   doesn't propagate @breaks. [MG]
+ * @force, @switch and @hook/override now all take an /inline switch, which
+   can be further modified with /clearregs, /localize and /nobreak to run
+   their actionlists without queueing (replaces /inplace). @include also
+   takes those three switches. See the help for more info. [MG]
  * @retry, which causes a queue entry to restart from the beginning. Useful
    for coding loops without the queue delay. [GM]
    
@@ -44,6 +46,10 @@ Attributes:
 Functions:
  * round() would sometimes return a number with a decimal point but no
    digits after it, like "5.". Reported by Minion. [MG]
+   
+Fixes:
+ * The sortby() function now uses call_ufun in the hardcode, fixing a number
+   of minor bugs. [MG]
 
 Version 1.8.4 patchlevel 3                                 Mar 18,  2011
 

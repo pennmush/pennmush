@@ -697,22 +697,16 @@ FUNCTION(fun_sortkey)
 }
 
 
-/* From sort.c */
-extern dbref ucomp_executor, ucomp_caller, ucomp_enactor;
-extern char ucomp_buff[BUFFER_LEN];
-extern NEW_PE_INFO *ucomp_pe_info;
-
 
 /* ARGSUSED */
 FUNCTION(fun_sortby)
 {
-  char *ptrs[MAX_SORTSIZE], *tptr[10];
-  char *up, sep;
+  char *ptrs[MAX_SORTSIZE];
+  char sep;
   int nptrs;
-  dbref thing;
-  ATTR *attrib;
   char *osep, osepd[2] = { '\0', '\0' };
-  int save_argcount;
+  ufun_attrib ufun;
+
 
   if (!nargs || !*args[0])
     return;
@@ -727,39 +721,17 @@ FUNCTION(fun_sortby)
     osep = osepd;
   }
 
-  /* Find object and attribute to get sortby function from. */
-  parse_anon_attrib(executor, args[0], &thing, &attrib);
-  if (!GoodObject(thing) || !attrib || !Can_Read_Attr(executor, thing, attrib)) {
-    free_anon_attrib(attrib);
+  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
     return;
-  }
-  if (!CanEvalAttr(executor, thing, attrib)) {
-    free_anon_attrib(attrib);
-    return;
-  }
-  up = ucomp_buff;
-  safe_str(atr_value(attrib), ucomp_buff, &up);
-  *up = '\0';
-
-  ucomp_executor = thing;
-  ucomp_caller = executor;
-  ucomp_enactor = enactor;
-  ucomp_pe_info = pe_info;
-
-  save_env("sortby", tptr, pe_info->env);
-  save_argcount = pe_info->arg_count;
 
   /* Split up the list, sort it, reconstruct it. */
   nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, args[1], sep, 1);
   if (nptrs > 1)                /* pointless to sort less than 2 elements */
-    sane_qsort((void **) ptrs, 0, nptrs - 1, u_comp);
+    sane_qsort((void **) ptrs, 0, nptrs - 1, u_comp, executor, enactor, &ufun, pe_info);
 
   arr2list(ptrs, nptrs, buff, bp, osep);
   freearr(ptrs, nptrs);
 
-  restore_env("sortby", tptr, pe_info->env);
-  pe_info->arg_count = save_argcount;
-  free_anon_attrib(attrib);
 }
 
 #define OUTSEP() do { \

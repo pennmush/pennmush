@@ -1108,12 +1108,12 @@ ok_tag_attribute(dbref player, const char *params)
  * \param first if 1, run only first matching case; if 0, run all matching cases.
  * \param notifyme if 1, perform a notify after executing matched cases.
  * \param regexp if 1, do regular expression matching; if 0, wildcard globbing.
- * \param inplace run any queued commands inplace?
+ * \param queue_type the type of queue to run any new commands as
  * \param queue_entry the queue entry @switch is being run in
  */
 void
 do_switch(dbref player, char *expression, char **argv, dbref cause,
-          int first, int notifyme, int regexp, int inplace,
+          int first, int notifyme, int regexp, int queue_type,
           MQUE * queue_entry)
 {
   int any = 0, a;
@@ -1137,7 +1137,6 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
     process_expression(buff, &bp, &ap, player, cause, cause,
                        PE_DEFAULT, PT_DEFAULT, queue_entry->pe_info);
     *bp = '\0';
-
     /* check for a match */
     if (regexp ? quick_regexp_match(buff, expression, 0)
         : local_wild_match(buff, expression)) {
@@ -1151,9 +1150,9 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
           mush_strdup(expression, "pe_info.switch_text");
         any = 1;
       }
-      if (inplace) {
+      if (queue_type != QUEUE_DEFAULT) {
         new_queue_actionlist(player, cause, cause, tbuf1, queue_entry,
-                             PE_INFO_SHARE, QUEUE_INPLACE, NULL, NULL);
+                             PE_INFO_SHARE, queue_type, NULL, NULL);
       } else {
         new_queue_actionlist(player, cause, cause, tbuf1, queue_entry,
                              PE_INFO_CLONE, QUEUE_DEFAULT, NULL, NULL);
@@ -1161,7 +1160,6 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
       mush_free(tbuf1, "replace_string.buff");
     }
   }
-
   /* do default if nothing has been matched */
   if ((a < MAX_ARG) && !any && argv[a]) {
     tbuf1 = replace_string("#$", expression, argv[a]);
@@ -1174,17 +1172,16 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
         mush_strdup(expression, "pe_info.switch_text");
       any = 1;
     }
-    if (inplace) {
+    if (queue_type != QUEUE_DEFAULT) {
       new_queue_actionlist(player, cause, cause, tbuf1, queue_entry,
-                           PE_INFO_SHARE, QUEUE_INPLACE, NULL, NULL);
+                           PE_INFO_SHARE, queue_type, NULL, NULL);
     } else {
       new_queue_actionlist(player, cause, cause, tbuf1, queue_entry,
                            PE_INFO_CLONE, QUEUE_DEFAULT, NULL, NULL);
     }
     mush_free(tbuf1, "replace_string.buff");
   }
-
-  if (!inplace) {
+  if (queue_type == QUEUE_DEFAULT) {
     if (any) {
       /* Clear out the switch data. We don't do this for inplace entries, as
          it's done in do_entry */

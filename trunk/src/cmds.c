@@ -450,7 +450,22 @@ COMMAND(cmd_flag)
 
 COMMAND(cmd_force)
 {
-  do_force(executor, caller, arg_left, arg_right, SW_ISSET(sw, SWITCH_INPLACE),
+  int queue_type = QUEUE_DEFAULT;
+
+  if (SW_ISSET(sw, SWITCH_INPLACE))
+    queue_type = QUEUE_RECURSE;
+  else if (SW_ISSET(sw, SWITCH_INLINE))
+    queue_type = QUEUE_INPLACE;
+  if (queue_type != QUEUE_DEFAULT) {
+    if (SW_ISSET(sw, SWITCH_NOBREAK))
+      queue_type |= QUEUE_NO_BREAKS;
+    if (SW_ISSET(sw, SWITCH_CLEARREGS))
+      queue_type |= QUEUE_CLEAR_QREG;
+    if (SW_ISSET(sw, SWITCH_LOCALIZE))
+      queue_type |= QUEUE_PRESERVE_QREG;
+  }
+
+  do_force(executor, caller, arg_left, arg_right, queue_type,
            queue_entry);
 }
 
@@ -542,7 +557,20 @@ COMMAND(cmd_hide)
 COMMAND(cmd_hook)
 {
   enum hook_type flags;
-  int inplace = 0;
+  int queue_type = QUEUE_DEFAULT;
+
+  if (SW_ISSET(sw, SWITCH_INPLACE))
+    queue_type = QUEUE_RECURSE | QUEUE_CLEAR_QREG;
+  else if (SW_ISSET(sw, SWITCH_INLINE)) {
+    queue_type = QUEUE_INPLACE;
+    if (SW_ISSET(sw, SWITCH_NOBREAK))
+      queue_type |= QUEUE_NO_BREAKS;
+    if (SW_ISSET(sw, SWITCH_CLEARREGS))
+      queue_type |= QUEUE_CLEAR_QREG;
+    if (SW_ISSET(sw, SWITCH_LOCALIZE))
+      queue_type |= QUEUE_PRESERVE_QREG;
+  }
+
 
   if (SW_ISSET(sw, SWITCH_AFTER))
     flags = HOOK_AFTER;
@@ -559,14 +587,13 @@ COMMAND(cmd_hook)
     notify(executor, T("You must give a switch for @hook."));
     return;
   }
-  if (SW_ISSET(sw, SWITCH_INPLACE)) {
+  if (queue_type != QUEUE_DEFAULT) {
     if (flags != HOOK_OVERRIDE) {
-      notify(executor, T("You can only use /inplace with /override."));
+      notify(executor, T("You can only use /inplace and /inline with /override."));
       return;
     }
-    inplace = 1;
   }
-  do_hook(executor, arg_left, args_right[1], args_right[2], flags, inplace);
+  do_hook(executor, arg_left, args_right[1], args_right[2], flags, queue_type);
 }
 
 COMMAND(cmd_huh_command)
@@ -1125,9 +1152,24 @@ COMMAND(cmd_sweep)
 
 COMMAND(cmd_switch)
 {
+  int queue_type = QUEUE_DEFAULT;
+
+  if (SW_ISSET(sw, SWITCH_INPLACE))
+    queue_type = QUEUE_RECURSE;
+  else if (SW_ISSET(sw, SWITCH_INLINE))
+    queue_type = QUEUE_INPLACE;
+  if (queue_type != QUEUE_DEFAULT) {
+    if (SW_ISSET(sw, SWITCH_NOBREAK))
+      queue_type |= QUEUE_NO_BREAKS;
+    if (SW_ISSET(sw, SWITCH_CLEARREGS))
+      queue_type |= QUEUE_CLEAR_QREG;
+    if (SW_ISSET(sw, SWITCH_LOCALIZE))
+      queue_type |= QUEUE_PRESERVE_QREG;
+  }
+
   do_switch(executor, arg_left, args_right, enactor, SW_ISSET(sw, SWITCH_FIRST),
             SW_ISSET(sw, SWITCH_NOTIFY), SW_ISSET(sw, SWITCH_REGEXP),
-            SW_ISSET(sw, SWITCH_INPLACE), queue_entry);
+            queue_type, queue_entry);
 }
 
 COMMAND(cmd_squota)
@@ -1147,7 +1189,17 @@ COMMAND(cmd_teleport)
 
 COMMAND(cmd_include)
 {
-  do_include(executor, enactor, arg_left, args_right, SW_ISSET(sw, SWITCH_LOCAL), queue_entry);
+
+  int queue_type = QUEUE_INPLACE;
+
+  if (SW_ISSET(sw, SWITCH_NOBREAK))
+    queue_type |= QUEUE_NO_BREAKS;
+  if (SW_ISSET(sw, SWITCH_CLEARREGS))
+    queue_type |= QUEUE_CLEAR_QREG;
+  if (SW_ISSET(sw, SWITCH_LOCALIZE))
+    queue_type |= QUEUE_PRESERVE_QREG;
+
+  do_include(executor, enactor, arg_left, args_right, queue_type, queue_entry);
 }
 
 COMMAND(cmd_trigger)

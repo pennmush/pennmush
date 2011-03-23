@@ -1022,12 +1022,12 @@ do_trigger(dbref player, char *object, char **argv)
  * \param cause the cause.
  * \param object the object/attribute pair.
  * \param argv array of arguments.
- * \param recurse use QUEUE_RECURSE instead of QUEUE_INCLUDE?
+ * \param queue_type QUEUE_* flags to use for the new queue entry
  * \param parent_queue the parent queue to include the new actionlist into
  */
 void
 do_include(dbref player, dbref cause, char *object, char **argv,
-           int recurse, MQUE * parent_queue)
+           int queue_type, MQUE * parent_queue)
 {
   dbref thing;
   char *s;
@@ -1054,7 +1054,7 @@ do_include(dbref player, dbref cause, char *object, char **argv,
   /* include modifies the stack, but only if arguments are given */
   if (!queue_include_attribute
       (thing, upcasestr(s), player, cause, cause,
-       (rhs_present ? argv + 1 : NULL), recurse, parent_queue))
+       (rhs_present ? argv + 1 : NULL), queue_type, parent_queue))
     notify(player, T("No such attribute."));
 }
 

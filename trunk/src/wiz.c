@@ -601,12 +601,12 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
  * \param caller the caller.
  * \param what name of the object to force.
  * \param command command to force the object to run.
- * \param inplace If true, run commands immediately instead of queueing to be run later
+ * \param queue_type QUEUE_* flags for the type of queue to run
  * \param queue_entry the queue_entry the @force was run in
  */
 void
 do_force(dbref player, dbref caller, const char *what, char *command,
-         int inplace, MQUE * queue_entry)
+         int queue_type, MQUE * queue_entry)
 {
   dbref victim;
 
@@ -632,9 +632,9 @@ do_force(dbref player, dbref caller, const char *what, char *command,
   }
 
   /* force victim to do command */
-  if (inplace)
+  if (queue_type != QUEUE_DEFAULT)
     new_queue_actionlist(victim, player, caller, command, queue_entry,
-                         PE_INFO_SHARE, QUEUE_RECURSE, NULL, NULL);
+                         PE_INFO_SHARE, queue_type, NULL, NULL);
   else
     new_queue_actionlist(victim, player, player, command, queue_entry,
                          PE_INFO_CLONE, QUEUE_DEFAULT, NULL, NULL);
@@ -2155,7 +2155,7 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
       continue;
     if (spec.cmdstring[0] &&
         !atr_comm_match(n, player, '$', ':', spec.cmdstring, 1, 0,
-                        NULL, NULL, NULL, 0))
+                        NULL, NULL, NULL, NULL, QUEUE_DEFAULT))
       continue;
     if (spec.listenstring[0]) {
       ret = 0;
@@ -2171,7 +2171,7 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
       }
       if (!ret &&
           !atr_comm_match(n, player, '^', ':', spec.listenstring, 1, 0,
-                          NULL, NULL, NULL, 0))
+                          NULL, NULL, NULL, NULL, QUEUE_DEFAULT))
         continue;
     }
     if (*spec.eval) {

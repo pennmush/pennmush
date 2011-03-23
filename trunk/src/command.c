@@ -163,7 +163,7 @@ COMLIST commands[] = {
    cmd_flag,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
 
-  {"@FORCE", "NOEVAL INPLACE", cmd_force,
+  {"@FORCE", "NOEVAL INPLACE INLINE LOCALIZE CLEARREGS NOBREAK", cmd_force,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED,
    0, 0},
   {"@FUNCTION",
@@ -174,10 +174,10 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_NOGAGGED, 0, 0},
   {"@HALT", "ALL PID", cmd_halt, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@HIDE", "NO OFF YES ON", cmd_hide, CMD_T_ANY, 0, 0},
-  {"@HOOK", "LIST AFTER BEFORE IGNORE OVERRIDE INPLACE", cmd_hook,
+  {"@HOOK", "LIST AFTER BEFORE IGNORE OVERRIDE INPLACE INLINE LOCALIZE CLEARREGS NOBREAK", cmd_hook,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS,
    "WIZARD", "hook"},
-  {"@INCLUDE", "LOCAL", cmd_include,
+  {"@INCLUDE", "LOCALIZE CLEARREGS NOBREAK", cmd_include,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@KICK", NULL, cmd_kick, CMD_T_ANY, "WIZARD", 0},
 
@@ -271,7 +271,7 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"@SEARCH", NULL, cmd_search,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE, 0, 0},
-  {"@SELECT", "NOTIFY REGEXP INPLACE", cmd_select,
+  {"@SELECT", "NOTIFY REGEXP INPLACE INLINE LOCALIZE CLEARREGS NOBREAK", cmd_select,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE, 0, 0},
   {"@SET", NULL, cmd_set, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@SHUTDOWN", "PANIC REBOOT PARANOID", cmd_shutdown, CMD_T_ANY, "WIZARD", 0},
@@ -286,7 +286,7 @@ COMLIST commands[] = {
    CMD_T_ANY, 0, 0},
 
   {"@SWEEP", "CONNECTED HERE INVENTORY EXITS", cmd_sweep, CMD_T_ANY, 0, 0},
-  {"@SWITCH", "NOTIFY FIRST ALL REGEXP INPLACE", cmd_switch,
+  {"@SWITCH", "NOTIFY FIRST ALL REGEXP INPLACE INLINE LOCALIZE CLEARREGS NOBREAK", cmd_switch,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE |
    CMD_T_NOGAGGED, 0, 0},
   {"@SQUOTA", NULL, cmd_squota, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
@@ -2207,11 +2207,11 @@ run_hook_override(COMMAND_INFO *cmd, dbref player, const char *commandraw,
   if (cmd->hooks.override.attrname) {
     return one_comm_match(cmd->hooks.override.obj, player,
                           cmd->hooks.override.attrname, commandraw,
-                          (cmd->hooks.override.inplace ? from_queue : NULL));
+                          from_queue, cmd->hooks.override.inplace);
   } else {
     return atr_comm_match(cmd->hooks.override.obj, player, '$', ':', commandraw,
                           0, 1, NULL, NULL, NULL,
-                          (cmd->hooks.override.inplace ? from_queue : NULL));
+                          from_queue, cmd->hooks.override.inplace);
   }
 }
 
@@ -2314,11 +2314,11 @@ cnf_hook_command(char *command, char *opts)
  * \param obj name of object containing the hook attribute.
  * \param attrname of hook attribute on obj.
  * \param flag type of hook
- * \param inplace If override hook, whether to run it inplace.
+ * \param queue_type If override hook, QUEUE_* flags telling whether/how to run it inplace
  */
 void
 do_hook(dbref player, char *command, char *obj, char *attrname,
-        enum hook_type flag, int inplace)
+        enum hook_type flag, int queue_type)
 {
   COMMAND_INFO *cmd;
   struct hook_data *h;
@@ -2374,7 +2374,7 @@ do_hook(dbref player, char *command, char *obj, char *attrname,
     } else {
       h->attrname = mush_strdup(strupper(attrname), "hook.attr");
     }
-    h->inplace = inplace;
+    h->inplace = queue_type;
     notify_format(player, T("Hook set for %s"), cmd->name);
   }
 }
@@ -2433,6 +2433,23 @@ do_hook_list(dbref player, char *command)
       return;
     }
     if (Wizard(player) || has_power_by_name(player, "HOOK", NOTYPE)) {
+      char inplace[BUFFER_LEN], *bp;
+      bp = inplace;
+      if (cmd->hooks.override.inplace & QUEUE_INPLACE) {
+        if ((cmd->hooks.override.inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) == (QUEUE_RECURSE | QUEUE_CLEAR_QREG))
+          safe_str("/inplace", inplace, &bp);
+        else {
+          safe_str("/inline", inplace, &bp);
+          if (cmd->hooks.override.inplace & QUEUE_NO_BREAKS)
+            safe_str("/nobreak", inplace, &bp);
+          if (cmd->hooks.override.inplace & QUEUE_PRESERVE_QREG)
+            safe_str("/localize", inplace, &bp);
+          if (cmd->hooks.override.inplace & QUEUE_CLEAR_QREG)
+            safe_str("/clearregs", inplace, &bp);
+        }
+      }
+      *bp = '\0';
+
       if (GoodObject(cmd->hooks.before.obj))
         notify_format(player, "@hook/before: #%d/%s",
                       cmd->hooks.before.obj, cmd->hooks.before.attrname);
@@ -2444,7 +2461,7 @@ do_hook_list(dbref player, char *command)
                       cmd->hooks.ignore.obj, cmd->hooks.ignore.attrname);
       if (GoodObject(cmd->hooks.override.obj))
         notify_format(player, "@hook/override%s: #%d/%s",
-                      cmd->hooks.override.inplace ? "/inplace" : "",
+                      inplace,
                       cmd->hooks.override.obj, cmd->hooks.override.attrname);
     }
   }

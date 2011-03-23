@@ -227,17 +227,20 @@ extern char ucbuff[];
 /* From cque.c */
 
 /* Queue types/flags */
-#define QUEUE_DEFAULT       0x000   /* select QUEUE_PLAYER or QUEUE_OBJECT based on enactor's Type() */
-#define QUEUE_PLAYER        0x001   /* command queued because of a player in-game */
-#define QUEUE_OBJECT        0x002   /* command queued because of a non-player in-game */
-#define QUEUE_SOCKET        0x004   /* command executed directly from a player's client */
-#define QUEUE_INPLACE       0x008   /* inplace queue entry */
-#define QUEUE_NO_PROPAGATE  0x010   /* Don't propagate @breaks, or preserve changes to q-registers, from this inplace queue */
-#define QUEUE_RESTORE_ENV   0x020   /* At the end of this inplace queue entry, free pe_info->env and restore from saved_env */
-#define QUEUE_NOLIST        0x040   /* Queue is a single command, not an action list */
-#define QUEUE_BREAK         0x080   /* set by @break, stops further processing of queue entry */
-#define QUEUE_RETRY         0x100   /* Set by @retry, restart current queue entry from beginning, without recalling do_entry */
-#define QUEUE_RECURSE (QUEUE_INPLACE | QUEUE_NO_PROPAGATE)
+#define QUEUE_DEFAULT          0x000   /* select QUEUE_PLAYER or QUEUE_OBJECT based on enactor's Type() */
+#define QUEUE_PLAYER           0x001   /* command queued because of a player in-game */
+#define QUEUE_OBJECT           0x002   /* command queued because of a non-player in-game */
+#define QUEUE_SOCKET           0x004   /* command executed directly from a player's client */
+#define QUEUE_INPLACE          0x008   /* inplace queue entry */
+#define QUEUE_NO_BREAKS        0x010   /* Don't propagate @breaks from this inplace queue */
+#define QUEUE_PRESERVE_QREG    0x020   /* Preserve/restore q-registers before/after running this inplace queue */
+#define QUEUE_CLEAR_QREG       0x040   /* Clear q-registers before running this inplace queue */
+#define QUEUE_PROPAGATE_QREG   0x080   /* At the end of this inplace queue entry, copy our q-registers into the parent queue entry */
+#define QUEUE_RESTORE_ENV      0x100   /* At the end of this inplace queue entry, free pe_info->env and restore from saved_env */
+#define QUEUE_NOLIST           0x200   /* Queue is a single command, not an action list */
+#define QUEUE_BREAK            0x400   /* set by @break, stops further processing of queue entry */
+#define QUEUE_RETRY            0x800   /* Set by @retry, restart current queue entry from beginning, without recalling do_entry */
+#define QUEUE_RECURSE (QUEUE_INPLACE | QUEUE_NO_BREAKS | QUEUE_PRESERVE_QREG)
 
 
 /* Used when generating a new pe_info from an existing pe_info. Used by pe_info_from(). */

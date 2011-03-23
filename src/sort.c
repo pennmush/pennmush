@@ -117,35 +117,27 @@ dbref_comp(const void *s1, const void *s2)
     return 1 * sort_order;
 }
 
-
-dbref ucomp_executor, ucomp_caller, ucomp_enactor;
-char ucomp_buff[BUFFER_LEN];
-NEW_PE_INFO *ucomp_pe_info;
-
 /** qsort() comparision routine used by sortby() */
 int
-u_comp(const void *s1, const void *s2)
+u_comp(const void *s1, const void *s2, dbref executor, dbref enactor, ufun_attrib *ufun, NEW_PE_INFO *pe_info)
 {
-  char result[BUFFER_LEN], *rp;
-  char const *tbuf;
+  char result[BUFFER_LEN];
   int n;
+  char *wenv[2];
 
   /* Our two arguments are passed as %0 and %1 to the sortby u-function. */
 
   /* Note that this function is for use in conjunction with our own
    * sane_qsort routine, NOT with the standard library qsort!
    */
-  ucomp_pe_info->env[0] = (char *) s1;
-  ucomp_pe_info->env[1] = (char *) s2;
+  wenv[0] = (char *) s1;
+  wenv[1] = (char *) s2;
 
   /* Run the u-function, which should return a number. */
 
-  tbuf = ucomp_buff;
-  rp = result;
-  if (process_expression(result, &rp, &tbuf,
-                         ucomp_executor, ucomp_caller, ucomp_enactor,
-                         PE_DEFAULT, PT_DEFAULT, ucomp_pe_info))
+  if (call_ufun(ufun, wenv, 2, result, executor, enactor, pe_info))
     return 0;
+
   n = parse_integer(result);
 
   return n;
@@ -165,7 +157,7 @@ u_comp(const void *s1, const void *s2)
  */
 
 void
-sane_qsort(void *array[], int left, int right, comp_func compare)
+sane_qsort(void *array[], int left, int right, comp_func compare, dbref executor, dbref enactor, ufun_attrib *ufun, NEW_PE_INFO *pe_info)
 {
 
   int i, last;
@@ -189,7 +181,7 @@ loop:
     /* Walk the array, looking for stuff that's less than our */
     /* pivot. If it is, swap it with the next thing along     */
 
-    if (compare(array[i], array[left]) < 0) {
+    if (compare(array[i], array[left], executor, enactor, ufun, pe_info) < 0) {
       last++;
       if (last == i)
         continue;
@@ -211,11 +203,11 @@ loop:
   /* entry at 'last' and everything above it is not < it.          */
 
   if ((last - left) < (right - last)) {
-    sane_qsort(array, left, last - 1, compare);
+    sane_qsort(array, left, last - 1, compare, executor, enactor, ufun, pe_info);
     left = last + 1;
     goto loop;
   } else {
-    sane_qsort(array, last + 1, right, compare);
+    sane_qsort(array, last + 1, right, compare, executor, enactor, ufun, pe_info);
     right = last - 1;
     goto loop;
   }

@@ -939,7 +939,7 @@ See also: @@, @@()
 See also: look, @exitformat, @nameformat, @descformat, @invformat,
     @idescformat
 & @include
-  @include <object>/<attribute>[=<arg1>,<arg2>,...]
+  @include[/<switches>] <object>/<attribute>[=<arg1>,<arg2>,...]
 
   @include inserts the contents of the attribute provided into the
   action list in-place, without adding a new queue entry. It is
@@ -962,6 +962,16 @@ See also: look, @exitformat, @nameformat, @descformat, @invformat,
   If arguments are provided to @include, they are substituted for the
   environment's %0, %1, etc. while the included action list is running.
   The environment is then restored after the @include. 
+  
+  Continued in 'help @include2'.
+& @include2
+  
+  @include takes the following switches to alter its behaviour:
+  /nobreak:   Prevents an @break/@assert in the included attribute from
+              breaking the including action list.
+  /localize:  Saves all q-registers before including the attribute, and
+              restores them after including the attribute.
+  /clearregs: Clears all q-registers before including the attribute.
   
 See also: @trigger, ufun(), @break
 & @invformat
@@ -1674,14 +1684,24 @@ See also: @filter, @prefix, AUDIBLE, PUPPET, @debugforwardlist, @lock
 
 See also: DEBUG, @forwardlist, @lock
 & @force
-  @force[/noeval][/inplace] <object>=<action list>
+  @force[/noeval][/inline] <object>=<action list>
 
   This command forces <object> to queue the given action list, as if the
   object had entered the action list itself. You must control <object> to
   @force it. @force is useful for manipulating puppets. 
 
-  If /inplace is given, <object> will run <action list> _now_, instead of
-  being queued for execution later.
+  If /inline is given, <object> will run <action list> _now_, instead of
+  being queued for execution later. By default, <action list> will be able
+  to see/alter q-registers in the calling action list, and any @breaks in
+  <action list> will also stop the calling action list. The following switches
+  alter that behaviour:
+   /nobreak:   @breaks in <action list> will not stop the calling action list
+   /localize:  q-registers will be saved before <action list> is run, and
+               restored after.
+   /clearregs: q-registers will all be reset before <action list> is run.
+               You'll usually want to use /localize as well with this.
+               
+  @force/inplace is an alias for @force/inline/nobreak/localize.
 
   @force can be abbreviated as
     <dbref> <action list>
@@ -1705,7 +1725,7 @@ See also: DEBUG, @forwardlist, @lock
 
   Continued in 'help @force3'.
 & @force3
-  Normally, @force creates a new queue entry. @force/inplace does not.
+  Normally, @force creates a new queue entry. @force/inline does not.
 
   Examples:
     > @create Lackey
@@ -1716,7 +1736,7 @@ See also: DEBUG, @forwardlist, @lock
     You say, "Done?"
     Lackey salutes!
 
-    > &order me=$order *:say Lackey, %0 ; @force/inplace Lackey=%0 ; say Done?
+    > &order me=$order *:say Lackey, %0 ; @force/inline Lackey=%0 ; say Done?
     > order pose salutes!
     You say, "Lackey, pose salutes!"
     Lackey salutes!
@@ -2031,7 +2051,7 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
                 $commands that might match). If the match fails, normal
                 built-in command processing continues. Note that all locks
                 and flags on the object (HALT, etc.) still apply.
-  @hook/override/inplace: Same as @hook/override, but the resulting matches
+  @hook/override/inline: Same as @hook/override, but the resulting matches
                 are run immediately - not queued for later execution!
   @hook/before: The attribute is evaluated before the built-in command is run.
   @hook/after: The attribute is evaluated after the built-in command is run.
@@ -2048,8 +2068,37 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
   Leaving out the object and attribute clears an existing hook. Wizards can
   see existing hooks with @command or @hook/list.
 
-  See 'help @hook2' for examples.
+  See 'help @hook2' for more information about @hook/override/inline,
+  and 'help @hook3' for examples.
 & @hook2
+
+  @hook/override/inline allows you to write softcoded commands which act
+  exactly like built-in commands - because they're run immediately, instead
+  of being queued, output from the command appears in the right order
+  relative to other commands in the action list. By default, commands hooked
+  with /inline have access to the q-registers of the calling action list, and
+  @breaks in the hooked command propagate to the calling action list,
+  allowing you to write your own control structures.
+  
+  For example, this adds a new command, @qbreak, which works like @break but
+  stops command execution when %q0 contains a true value:
+    > &qbreak #123=$@qbreak: @break %q0=@pemit/silent %#=Stopping.
+    > @command/add @qbreak
+    > @hook/override/inline @qbreak=#123, qbreak
+    
+  This behaviour can be altered by adding the following switches to
+  @hook/inline:
+    /nobreak:   @breaks in the hooked command do not stop the calling action
+                list from running
+    /localize:  q-registers are saved before the hooked command is run, and
+                restored after it completes
+    /clearregs: All q-registers are reset before the hooked command is run.
+                Most useful when used with /localize.
+                
+  @hook/inplace is an alias for @hook/inline/localize/clearregs/nobreak.
+  
+  See 'help @hook4' for some examples of using @hook/inline.
+& @hook3
   An example of @hook:
 
   > &top_line #3=pemit(%#, What follows is the results of a look)
@@ -2068,8 +2117,8 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
   > "test
   <OOC> Robert says, "test"
 
-  See 'help @hook3' for /inplace examples.
-& @hook3
+  See 'help @hook4' for /inplace examples.
+& @hook4
   > &dance me=$dance:pose sticks his right foot in ; say Do the hokey pokey
                      ; pose sticks his right foot out
   > dance
@@ -3634,14 +3683,29 @@ See also: @restart, @undestroy, ACTION LISTS, @function, @command, @hook,
   @switch/first runs <action> for the first matching <expr> only. Same as
                 @select, and often the desired behaviour.
   @switch/notify queues "@notify me" after the last <action>. 
-  @switch/inplace runs all actions in place, instead of creating a new queue
+  @switch/inline runs all actions in place, instead of creating a new queue
                   entry for them.
   @switch/regexp makes <expr>s case-insensitive regular expressions, not
                  wildcard/glob patterns.
 
+  Continued in 'help @switch2'.
+& @switch2
+
+  When using @switch/inline, an @break in an <action> will stop the calling
+  action list (and any further <action>s) from running. Each <action> will
+  also be able to see/alter the q-registers for the calling action list. The
+  following switches can be used with /inline to alter this behaviour:
+   /nobreak:  @breaks in <action> do not effect to the calling action list
+   /localize: q-registers are saved before each <action> is run, and restored
+              after it completes
+   /clearreg: q-registers are all reset before each <action> is run. Most
+              useful when used in combination with /localize.
+              
+  @switch/inplace is an alias for @switch/inline/nobreak/localize.
+
   See 'help @switch2' for examples.
 See also: switch wildcards, switch(), @break, stext(), slev()
-& @switch2
+& @switch3
   Examples: 
     > &SWITCH_EX thing=$foo *: @switch %0=*a*, :acks, *b*, :bars, :glurps
     > foo abc
@@ -3659,8 +3723,9 @@ See also: switch wildcards, switch(), @break, stext(), slev()
                                       say Not Puppet!
     > test
     thing says, "Not Puppet!"
-  Continued in 'help @switch3'
-& @switch3
+    
+  Continued in 'help @switch4'
+& @switch4
   Examples: 
     > &SWITCH_EX me=$foo *:think before ; @switch %0=1,think one ; think after
     > foo 1
@@ -3668,7 +3733,7 @@ See also: switch wildcards, switch(), @break, stext(), slev()
     thing after
     thing one
 
-    > &SWITCH_EX me=$foo *:think before ; @switch/inplace %0=1,think one ;
+    > &SWITCH_EX me=$foo *:think before ; @switch/inline %0=1,think one ;
                     think after
     > foo 1
     thing before

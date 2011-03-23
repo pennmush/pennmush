@@ -609,12 +609,11 @@ new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
 int
 queue_include_attribute(dbref thing, const char *atrname,
                         dbref executor, dbref enactor, dbref caller,
-                        char **args, int recurse, MQUE * parent_queue)
+                        char **args, int queue_type, MQUE * parent_queue)
 {
   ATTR *a;
   char *start, *command;
   int noparent = 0;
-  int queue_flags;
 
   a = queue_attribute_getatr(thing, atrname, noparent);
   if (!a)
@@ -637,16 +636,11 @@ queue_include_attribute(dbref thing, const char *atrname,
       command++;
   }
 
-  if (recurse)
-    queue_flags = QUEUE_RECURSE;
-  else
-    queue_flags = QUEUE_INPLACE;
-
   if (args != NULL)
-    queue_flags |= QUEUE_RESTORE_ENV;
+    queue_type |= QUEUE_RESTORE_ENV;
 
   new_queue_actionlist_int(executor, enactor, caller, command, parent_queue,
-                       PE_INFO_SHARE, queue_flags, args, NULL, tprintf("#%d/%s", thing, atrname));
+                       PE_INFO_SHARE, queue_type, args, NULL, tprintf("#%d/%s", thing, atrname));
 
   free(start);
   return 1;
@@ -970,15 +964,22 @@ do_entry(MQUE * entry, int include_recurses)
       if (include_recurses < 50) {
         switch_nest = entry->pe_info->switch_nestings;
         iter_nest = entry->pe_info->iter_nestings;
-        if (tmp->queue_type & QUEUE_NO_PROPAGATE) {
+        if (tmp->queue_type & QUEUE_PRESERVE_QREG) {
           /* Preserve q-registers */
           save_global_regs("do_entry_qreg", save, entry->pe_info->qreg_values);
         }
+        if (tmp->queue_type & QUEUE_CLEAR_QREG) {
+          int i;
+          for (i = 0; i < NUMQ; i++)
+            tmp->pe_info->qreg_values[i][0] = '\0';
+        }
         inplace_break_called = do_entry(tmp, include_recurses + 1);
-        if (tmp->queue_type & QUEUE_NO_PROPAGATE) {
+        if (tmp->queue_type & QUEUE_NO_BREAKS) {
+          inplace_break_called = 0;
+        }
+        if (tmp->queue_type & QUEUE_PRESERVE_QREG) {
           restore_global_regs("do_entry_qreg", save,
                               entry->pe_info->qreg_values);
-          inplace_break_called = 0;
         }
         if (inplace_break_called || !tmp->next) {
           while (entry->pe_info->switch_nestings > switch_nest) {
@@ -1009,6 +1010,14 @@ do_entry(MQUE * entry, int include_recurses)
             if (tmp->save_env[i])
               tmp->pe_info->arg_count = i+1;
             tmp->save_env[i] = NULL;
+          }
+        }
+        if (tmp->queue_type & QUEUE_PROPAGATE_QREG) {
+          /* We have a separate pe_info the parent queue, but want to give it our modified
+             q-register values, so copy them over */
+          int i;
+          for (i = 0; i < NUMQ; i++) {
+            strcpy(entry->pe_info->qreg_values[i], tmp->pe_info->qreg_values[i]);
           }
         }
         if (tmp->save_attrname) {

@@ -98,7 +98,7 @@ extern void do_password(dbref player, dbref cause,
 /* From predicat.c */
 extern void do_switch
   (dbref player, char *expression, char **argv, dbref cause, int first,
-   int notifyme, int regexp, int inplace, MQUE * queue_entry);
+   int notifyme, int regexp, int queue_type, MQUE * queue_entry);
 extern void do_verb(dbref player, dbref cause, char *arg1, char **argv);
 extern void do_grep
   (dbref player, char *obj, char *lookfor, int flag, int insensitive);
@@ -170,7 +170,7 @@ extern void do_allquota(dbref player, const char *arg1, int quiet);
 extern void do_teleport
   (dbref player, const char *arg1, const char *arg2, int silent, int inside);
 extern void do_force(dbref player, dbref caller, const char *what,
-                     char *command, int inplace, MQUE * queue_entry);
+                     char *command, int queue_type, MQUE * queue_entry);
 extern void do_stats(dbref player, const char *name);
 extern void do_newpassword
   (dbref player, dbref cause, const char *name, const char *password,

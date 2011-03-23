@@ -1414,15 +1414,16 @@ use_attr(UsedAttr **prev, char const *name, uint32_t no_prog)
  * \param abp pointer to end of atrname.
  * \param errobj if an attribute matches, but the lock fails, this pointer
  *        is used to return the failing dbref. If NULL, we don't bother.
- * \param from_queue if we're running the matched cmds, run as a new queue entry,
-          if NULL, or as an inplace cmd for this queue entry if non-NULL
+ * \param from_queue the parent queue to run matching attrs inplace for,
+          if just_match is false and queue_type says to run inplace
+ * \param queue_type QUEUE_* flags of how to queue any matching attrs
  * \return number of attributes that matched, or 0
  */
 int
 atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
                int just_match, int check_locks,
                char *atrname, char **abp, dbref *errobj,
-               MQUE * from_queue)
+               MQUE * from_queue, int queue_type)
 {
   uint32_t flag_mask;
   ATTR *ptr;
@@ -1567,10 +1568,30 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
         safe_str(AL_NAME(ptr), atrname, abp);
       }
       if (!just_match) {
-        if (from_queue) {
+        if (from_queue && queue_type != QUEUE_DEFAULT) {
+          int pe_flags = PE_INFO_DEFAULT;
+          if (!(queue_type & QUEUE_CLEAR_QREG)) {
+            /* Copy parent q-registers into new queue */
+            pe_flags |= PE_INFO_COPY_QREG;
+          } else {
+            /* Since we use a new pe_info for this inplace entry, instead of
+               sharing the parent's, we don't need to explicitly clear the
+               q-registers, they're empty by default */
+            queue_type &= ~QUEUE_CLEAR_QREG;
+          }
+          if (!(queue_type & QUEUE_PRESERVE_QREG)) {
+            /* Cause q-registers from the end of the new queue entry to be
+               copied into the parent queue entry */
+            queue_type |= QUEUE_PROPAGATE_QREG;
+          } else {
+            /* Since we use a new pe_info for this inplace entry, instead of
+               sharing the parent's, we don't need to implicitly save/reset the
+               q-registers - we'll be altering different copies anyway */
+            queue_type &= ~QUEUE_PRESERVE_QREG;
+          }
           /* inplace queue */
           new_queue_actionlist_int(thing, player, player, s, from_queue,
-                               PE_INFO_DEFAULT, QUEUE_RECURSE, args, NULL, tprintf("#%d/%s", thing, AL_NAME(ptr)));
+                               pe_flags, queue_type, args, NULL, tprintf("#%d/%s", thing, AL_NAME(ptr)));
         } else {
           /* Normal queue */
           parse_que_attr(thing, player, s, args, tprintf("#%d/%s", thing, AL_NAME(ptr)));
@@ -1702,10 +1723,30 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
           safe_str(AL_NAME(ptr), atrname, abp);
         }
         if (!just_match) {
-          if (from_queue) {
+          if (from_queue && queue_type != QUEUE_DEFAULT) {
             /* inplace queue */
+            int pe_flags = PE_INFO_DEFAULT;
+            if (!(queue_type & QUEUE_CLEAR_QREG)) {
+              /* Copy parent q-registers into new queue */
+              pe_flags |= PE_INFO_COPY_QREG;
+            } else {
+              /* Since we use a new pe_info for this inplace entry, instead of
+                 sharing the parent's, we don't need to explicitly clear the
+                 q-registers, they're empty by default */
+              queue_type &= ~QUEUE_CLEAR_QREG;
+            }
+            if (!(queue_type & QUEUE_PRESERVE_QREG)) {
+              /* Cause q-registers from the end of the new queue entry to be
+                 copied into the parent queue entry */
+              queue_type |= QUEUE_PROPAGATE_QREG;
+            } else {
+              /* Since we use a new pe_info for this inplace entry, instead of
+                 sharing the parent's, we don't need to implicitly save/reset the
+                 q-registers - we'll be altering different copies anyway */
+              queue_type &= ~QUEUE_PRESERVE_QREG;
+            }
             new_queue_actionlist_int(thing, player, player, s, from_queue,
-                                 PE_INFO_DEFAULT, QUEUE_RECURSE, args, NULL, tprintf("#%d/%s", thing, AL_NAME(ptr)));
+                                 pe_flags, queue_type, args, NULL, tprintf("#%d/%s", thing, AL_NAME(ptr)));
           } else {
             /* Normal queue */
             parse_que_attr(thing, player, s, args, tprintf("#%d/%s", thing, AL_NAME(ptr)));
@@ -1733,14 +1774,14 @@ exit_sequence:
  * \param player the enactor, for privilege checks.
  * \param atr the name of the attribute
  * \param str the string to match
- * \param from_queue if non-NULL, run matched $-command as an inplace queue
-          entry in from_queue. Else, run as a new queue entry.
+ * \param from_queue parent queue to run the cmds inplace for, if queue_type says to do so
+ * \param queue_type QUEUE_* flags telling how to run the matched commands
  * \retval 1 attribute matched.
  * \retval 0 attribute failed to match.
  */
 int
 one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
-               MQUE * from_queue)
+               MQUE * from_queue, int queue_type)
 {
   ATTR *ptr;
   char tbuf1[BUFFER_LEN];
@@ -1790,7 +1831,7 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
     int success = 1;
     NEW_PE_INFO *pe_info;
 
-    if (from_queue) {
+    if (from_queue && queue_type != QUEUE_DEFAULT) {
       pe_info = from_queue->pe_info;
       /* Save and reset %c/%u */
       strcpy(save_cmd_raw, from_queue->pe_info->cmd_raw);
@@ -1803,7 +1844,7 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
     if (!eval_lock_clear(player, thing, Command_Lock, pe_info)
         || !eval_lock_clear(player, thing, Use_Lock, pe_info))
       success = 0;
-    if (from_queue) {
+    if (from_queue && queue_type != QUEUE_DEFAULT) {
       /* Restore */
       strcpy(from_queue->pe_info->cmd_raw, save_cmd_raw);
       strcpy(from_queue->pe_info->cmd_evaled, save_cmd_evaled);
@@ -1811,10 +1852,30 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
       free_pe_info(pe_info);
     }
     if (success) {
-      if (from_queue) {
+      if (from_queue && queue_type != QUEUE_DEFAULT) {
         /* inplace queue */
+        int pe_flags = PE_INFO_DEFAULT;
+        if (!(queue_type & QUEUE_CLEAR_QREG)) {
+          /* Copy parent q-registers into new queue */
+          pe_flags |= PE_INFO_COPY_QREG;
+        } else {
+          /* Since we use a new pe_info for this inplace entry, instead of
+             sharing the parent's, we don't need to explicitly clear the
+             q-registers, they're empty by default */
+          queue_type &= ~QUEUE_CLEAR_QREG;
+        }
+        if (!(queue_type & QUEUE_PRESERVE_QREG)) {
+          /* Cause q-registers from the end of the new queue entry to be
+             copied into the parent queue entry */
+          queue_type |= QUEUE_PROPAGATE_QREG;
+        } else {
+          /* Since we use a new pe_info for this inplace entry, instead of
+             sharing the parent's, we don't need to implicitly save/reset the
+             q-registers - we'll be altering different copies anyway */
+          queue_type &= ~QUEUE_PRESERVE_QREG;
+        }
         new_queue_actionlist_int(thing, player, player, s, from_queue,
-                             PE_INFO_DEFAULT, QUEUE_RECURSE, args, NULL, tprintf("#%d/%s", thing, AL_NAME(ptr)));
+                             pe_flags, queue_type, args, NULL, tprintf("#%d/%s", thing, AL_NAME(ptr)));
       } else {
         /* Normal queue */
         parse_que_attr(thing, player, s, args, tprintf("#%d/%s", thing, AL_NAME(ptr)));

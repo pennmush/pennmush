@@ -721,7 +721,7 @@ FUNCTION(fun_sortby)
     osep = osepd;
   }
 
-  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
+  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT | UFUN_REQUIRE_ATTR))
     return;
 
   /* Split up the list, sort it, reconstruct it. */

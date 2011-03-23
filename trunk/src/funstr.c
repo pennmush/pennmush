@@ -1105,20 +1105,19 @@ FUNCTION(fun_foreach)
    * No delimiter is inserted between the results.
    */
 
-  dbref thing;
-  ATTR *attrib;
   const char *ap;
   char *lp;
   char *asave, cbuf[2];
-  char *tptr[10];
+  char *wenv[2];
   char place[SBUF_LEN];
   int placenr = 0;
   int funccount;
   char *oldbp;
   char start, end;
   char letters[BUFFER_LEN];
+  char result[BUFFER_LEN];
   size_t len;
-  int save_argcount;
+  ufun_attrib ufun;
 
   if (nargs >= 3) {
     if (!delim_check(buff, bp, nargs, args, 3, &start))
@@ -1132,23 +1131,16 @@ FUNCTION(fun_foreach)
     end = '\0';
   }
 
-  /* find our object and attribute */
-  parse_anon_attrib(executor, args[0], &thing, &attrib);
-  if (!GoodObject(thing) || !attrib || !Can_Read_Attr(executor, thing, attrib)) {
-    free_anon_attrib(attrib);
+  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT | UFUN_REQUIRE_ATTR))
     return;
-  }
-  strcpy(place, "0");
-  asave = safe_atr_value(attrib);
 
-  /* save our stack */
-  save_env("fun_foreach.env", tptr, pe_info->env);
-  save_argcount = pe_info->arg_count;
-  pe_info->env[1] = mush_strdup(place, "pe_info.env");
-  pe_info->arg_count = 2;
+  strcpy(place, "0");
 
   ap = remove_markup(args[1], &len);
   memcpy(letters, ap, len);
+
+  wenv[0] = cbuf;
+  wenv[1] = place;
 
   lp = trim_space_sep(letters, ' ');
   if (nargs >= 3) {
@@ -1156,11 +1148,6 @@ FUNCTION(fun_foreach)
 
     if (!tmp) {
       safe_str(lp, buff, bp);
-      free(asave);
-      free_anon_attrib(attrib);
-      mush_free(pe_info->env[1], "pe_info.env");
-      restore_env("fun_foreach.env", tptr, pe_info->env);
-      pe_info->arg_count = save_argcount;
       return;
     }
     oldbp = place;
@@ -1174,15 +1161,14 @@ FUNCTION(fun_foreach)
   }
 
   cbuf[1] = '\0';
-  pe_info->env[0] = mush_strdup(cbuf, "pe_info.env");
   oldbp = *bp;
   funccount = pe_info->fun_invocations;
   while (*lp && *lp != end) {
     *cbuf = *lp++;
     ap = asave;
-    if (process_expression(buff, bp, &ap, thing, executor, enactor,
-                           PE_DEFAULT, PT_DEFAULT, pe_info))
+    if (call_ufun(&ufun, wenv, 2, result, executor, enactor, pe_info))
       break;
+    safe_str(result, buff, bp);
     if (*bp == oldbp && pe_info->fun_invocations == funccount)
       break;
     oldbp = place;
@@ -1193,12 +1179,6 @@ FUNCTION(fun_foreach)
   }
   if (*lp)
     safe_str(lp + 1, buff, bp);
-  free(asave);
-  free_anon_attrib(attrib);
-  mush_free(pe_info->env[0], "pe_info.env");
-  mush_free(pe_info->env[1], "pe_info.env");
-  restore_env("fun_foreach.env", tptr, pe_info->env);
-  pe_info->arg_count = save_argcount;
 }
 
 extern char escaped_chars[UCHAR_MAX + 1];

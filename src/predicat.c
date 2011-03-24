@@ -775,12 +775,14 @@ ok_player_name(const char *name, dbref player, dbref thing)
 }
 
 /** Is name a valid new name for thing, when set by player?
+ * \verbatim
  * Parses names and aliases for players/exits, validating each. If everything is valid,
  * the new name and alias are set into newname and newalias, with memory malloc'd as necessary.
  * For things/rooms, no parsing is done, and ok_name is called on the entire string to validate.
  * For players and exits, if name takes the format <name>; then newname is set to <name> and
  * newalias to ";", to signify that the existing alias should be cleared. If name contains a name and
  * valid aliases, newname and newalias are set accordingly.
+ * \endverbatim
  * \param name the new name to set
  * \param player the player setting the name, for permission checks
  * \param thing object getting the name, or NOTHING for new objects
@@ -1109,7 +1111,7 @@ ok_tag_attribute(dbref player, const char *params)
  * \param notifyme if 1, perform a notify after executing matched cases.
  * \param regexp if 1, do regular expression matching; if 0, wildcard globbing.
  * \param queue_type the type of queue to run any new commands as
- * \param queue_entry the queue entry @switch is being run in
+ * \param queue_entry the queue entry \@switch is being run in
  */
 void
 do_switch(dbref player, char *expression, char **argv, dbref cause,

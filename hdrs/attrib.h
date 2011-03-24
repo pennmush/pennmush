@@ -114,7 +114,7 @@ safe_atr_value(ATTR *atr)
 #define AF_NOPROG       0x20U   /**< won't be searched for $ commands. */
 #define AF_MDARK        0x40U   /**< Only wizards can see it */
 #define AF_PRIVATE      0x80U   /**< Children don't inherit it */
-#define AF_NOCOPY       0x100U  /**< atr_cpy (for @clone) doesn't copy it */
+#define AF_NOCOPY       0x100U  /**< atr_cpy (for \@clone) doesn't copy it */
 #define AF_VISUAL       0x200U  /**< Everyone can see this attribute */
 #define AF_REGEXP       0x400U  /**< Match $/^ patterns using regexps */
 #define AF_CASE         0x800U  /**< Match $/^ patterns case-sensitive */
@@ -126,7 +126,7 @@ safe_atr_value(ATTR *atr)
 #define AF_COMMAND      0x20000U        /**< INTERNAL: value starts with $ */
 #define AF_LISTEN       0x40000U        /**< INTERNAL: value starts with ^ */
 #define AF_NODUMP       0x80000U        /**< INTERNAL: attribute is not saved */
-#define AF_LISTED       0x100000U       /**< INTERNAL: Used in @list attribs */
+#define AF_LISTED       0x100000U       /**< INTERNAL: Used in \@list attribs */
 #define AF_PREFIXMATCH  0x200000U       /**< Subject to prefix-matching */
 #define AF_VEILED       0x400000U       /**< On ex, show presence, not value */
 #define AF_DEBUG        0x800000U       /**< Show debug when evaluated */

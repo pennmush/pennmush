@@ -283,10 +283,12 @@ is_dbref(char const *str)
 }
 
 /** Is a string an objid?
+ * \verbatim
  * An objid is a string starting with a #, optionally followed by a -,
  * and then followed by at least one digit, then optionally followed
  * by a : and at least one digit, and nothing else.
  * In regex: ^#-?\d+(:\d+)?$
+ * \endverbatim
  * \param str string to check.
  * \retval 1 string is an objid
  * \retval 0 string is not an objid.

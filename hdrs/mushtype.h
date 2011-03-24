@@ -32,10 +32,10 @@ typedef uint32_t warn_type;
 typedef uint32_t privbits;
 
 /* special dbref's */
-#define NOTHING (-1)            /* null dbref */
-#define AMBIGUOUS (-2)          /* multiple possibilities, for matchers */
-#define HOME (-3)               /* virtual room, represents mover's home */
-#define ANY_OWNER (-2)          /* For lstats and @stat */
+#define NOTHING (-1)            /**< null dbref */
+#define AMBIGUOUS (-2)          /**< multiple possibilities, for matchers */
+#define HOME (-3)               /**< virtual room, represents mover's home */
+#define ANY_OWNER (-2)          /**< For lstats and \@stat */
 
 
 #define INTERACT_SEE 0x1
@@ -82,14 +82,14 @@ typedef struct new_pe_info {
   int arg_count;                /**< Number of arguments available in env (%+) */
   char qreg_values[NUMQ][BUFFER_LEN];      /**< Values of registers set with setq() */
 
-  int iter_nestings;            /**< Total number of iter()/@dolist nestings */
+  int iter_nestings;            /**< Total number of iter()/\@dolist nestings */
   int iter_nestings_local;      /**< Number of iter() nestings accessible at present */
   int iter_breaks;              /**< Number of iter()s to break out of */
-  int iter_dolists;             /**< Number of iter_nestings which are from @dolist, and can't be broken out of */
+  int iter_dolists;             /**< Number of iter_nestings which are from \@dolist, and can't be broken out of */
   char *iter_itext[MAX_ITERS];  /**< itext() values */
   int iter_inum[MAX_ITERS];     /**< inum() values */
 
-  int switch_nestings;          /**< Total number of switch()/@switch nestings */
+  int switch_nestings;          /**< Total number of switch()/\@switch nestings */
   int switch_nestings_local;    /**< Number of switch nestings available at present */
   char *switch_text[MAX_ITERS]; /**< stext() values */
 
@@ -106,20 +106,23 @@ typedef struct new_pe_info {
 } NEW_PE_INFO;
 
 
+/** \struct mque
+ ** \brief Contains data on queued action lists. Used in all queues (wait, semaphore, player, object), and for inplace queue entries.
+ */
 typedef struct mque MQUE;
 struct mque {
   dbref executor;               /**< Dbref of the executor, who is running this code (%!) */
   dbref enactor;                /**< Dbref of the enactor, who caused this code to run initially (%#) */
-  dbref caller;                 /**< Dbref of the caller, who called/triggered this attribute (%@) */
+  dbref caller;                 /**< Dbref of the caller, who called/triggered this attribute (%\@) */
 
   NEW_PE_INFO *pe_info;         /**< New pe_info struct used for this queue entry */
 
-  MQUE *inplace;                /**< Queue entry to run, either via @include or @break, @foo/inplace, etc */
+  MQUE *inplace;                /**< Queue entry to run, either via \@include or \@break, \@foo/inplace, etc */
   MQUE *next;                   /**< The next queue entry in the linked list */
 
-  dbref semaphore_obj;          /**< Object this queue was @wait'd on as a semaphore */
-  char *semaphore_attr;         /**< Attribute this queue was @wait'd on as a semaphore */
-  time_t wait_until;            /**< Time (epoch in seconds) this @wait'd queue entry runs */
+  dbref semaphore_obj;          /**< Object this queue was \@wait'd on as a semaphore */
+  char *semaphore_attr;         /**< Attribute this queue was \@wait'd on as a semaphore */
+  time_t wait_until;            /**< Time (epoch in seconds) this \@wait'd queue entry runs */
   uint32_t pid;                 /**< This queue's process id */
   char *action_list;            /**< The action list of commands to run in this queue entry */
   int queue_type;               /**< The type of queue entry, bitwise QUEUE_* values */

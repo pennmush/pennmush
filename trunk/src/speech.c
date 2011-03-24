@@ -425,7 +425,7 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy)
   mush_free(tbuf, "string");
 }
 
-/** Send an @message to a list of dbrefs, using <attr> to format it
+/** Send an \@message to a list of dbrefs, using \<attr\> to format it
  * if present.
  * The list is destructively modified.
  * \param player the enactor.

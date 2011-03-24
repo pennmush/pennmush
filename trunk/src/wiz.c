@@ -354,7 +354,7 @@ tport_control_ok(dbref player, dbref victim, dbref loc)
  * \param arg1 the object to teleport (or location if no object given)
  * \param arg2 the location to teleport to.
  * \param silent if 1, don't trigger teleport messagse.
- * \param inside if 1, always @tel to inventory, even of a player
+ * \param inside if 1, always \@tel to inventory, even of a player
  */
 void
 do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
@@ -602,7 +602,7 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
  * \param what name of the object to force.
  * \param command command to force the object to run.
  * \param queue_type QUEUE_* flags for the type of queue to run
- * \param queue_entry the queue_entry the @force was run in
+ * \param queue_entry the queue_entry the command was run in
  */
 void
 do_force(dbref player, dbref caller, const char *what, char *command,
@@ -773,7 +773,7 @@ do_stats(dbref player, const char *name)
  * \param cause the enactor.
  * \param name the name of the player whose password is to be reset.
  * \param password the new password for the player.
- * \param queue_entry the queue entry @newpassword was executed in
+ * \param queue_entry the queue entry the command was executed in
  */
 void
 do_newpassword(dbref player, dbref cause,
@@ -820,7 +820,7 @@ do_newpassword(dbref player, dbref cause,
  * \param name name of the player or descriptor to boot.
  * \param flag the type of booting to do.
  * \param silent suppress msg telling the player he's been booted?
- * \param queue_entry the queue entry @boot was executed in
+ * \param queue_entry the queue entry the command was executed in
  */
 void
 do_boot(dbref player, const char *name, enum boot_type flag, int silent,

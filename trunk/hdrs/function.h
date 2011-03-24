@@ -56,7 +56,7 @@ typedef struct userfn_entry USERFN_ENTRY;
  */
 union fun_call {
   function_func fun;    /**< Pointer to compiled function code */
-  USERFN_ENTRY *ufun;   /**< Pointer to @function location */
+  USERFN_ENTRY *ufun;   /**< Pointer to \@function location */
 };
 
 

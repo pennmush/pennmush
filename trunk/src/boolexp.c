@@ -82,7 +82,7 @@
  * goes to that jump's destination.
  *
  * There's more useful room for improvement in the lock
- * @warnings. Checking things like flag and power keys for valid flags
+ * \@warnings. Checking things like flag and power keys for valid flags
  * comes to mind.
  *
  */
@@ -123,7 +123,7 @@ typedef enum boolexp_type {
   BOOLEXP_NOT, /**< !A */
   BOOLEXP_CONST, /**< A */
   BOOLEXP_ATR, /**< A:B */
-  BOOLEXP_IND, /**< @A/B */
+  BOOLEXP_IND, /**< \@A/B */
   BOOLEXP_CARRY, /**< +A */
   BOOLEXP_IS, /**< =A */
   BOOLEXP_OWNER, /**< $A */
@@ -2045,7 +2045,7 @@ warning_lock_type(const boolexp l)
     return W_LOCKED | W_UNLOCKED;
 }
 
-/** Check for lock-check @warnings.
+/** Check for lock-check \@warnings.
  * Things like non-existant attributes in eval locks, references to
  * garbage objects, or indirect locks that aren't present or visible.
  * \param player the object to report warnings to.

@@ -1515,8 +1515,9 @@ generic_command_failure(dbref player, dbref cause, char *string,
  *   logname    log just name when command is run
  * \endverbatim
  * Return 1 on success, 0 on failure.
- * \param name name of command to restrict.
- * \param restriction space-separated string of restrictions
+ * \param player player attempting to restrict command, or NOTHING for restrictions set when cmds are loaded
+ * \param command the command being restricted
+ * \param xrestriction either a space-separated string of restrictions, or an \@lock-style restriction
  * \retval 1 successfully restricted command.
  * \retval 0 failure (unable to find command name).
  */
@@ -2030,7 +2031,7 @@ COMMAND(cmd_command)
  * This function sends a player the list of commands.
  * \param player the enactor.
  * \param lc if true, list is in lowercase rather than uppercase.
- * \param type 3 = show all, 2 = show only local @commands, 1 = show only built-in @commands
+ * \param type 3 = show all, 2 = show only local \@commands, 1 = show only built-in \@commands
  */
 void
 do_list_commands(dbref player, int lc, int type)
@@ -2041,7 +2042,7 @@ do_list_commands(dbref player, int lc, int type)
 
 /** Return a list of defined commands.
  * This function returns a space-separated list of commands as a string.
- * \param type 3 = show all, 2 = show only local @commands, 1 = show only built-in @commands
+ * \param type 3 = show all, 2 = show only local \@commands, 1 = show only built-in \@commands
  */
 char *
 list_commands(int type)
@@ -2190,7 +2191,8 @@ run_hook(dbref player, dbref cause, struct hook_data *hook,
   return parse_boolean(buff);
 }
 
-/** Run the @hook/override for a command, if set
+/** Run the \@hook/override for a command, if set
+ * \param cmd the command with the hook
  * \param player the player running the command
  * \param commandraw the evaluated command string to match against the hook
  * \param from_queue the queue entry the command is being executed in

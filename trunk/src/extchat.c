@@ -54,7 +54,7 @@ static void insert_obj_chan(dbref who, CHAN **ch);
 static void remove_obj_chan(dbref who, CHAN *ch);
 void remove_all_obj_chan(dbref thing);
 static void chan_chown(CHAN *c, dbref victim);
-void chan_chownall(dbref old, dbref new);
+void chan_chownall(dbref old, dbref newowner);
 static int insert_user(CHANUSER *user, CHAN *ch);
 static int remove_user(CHANUSER *u, CHAN *ch);
 static int save_channel(PENNFILE *fp, CHAN *ch);

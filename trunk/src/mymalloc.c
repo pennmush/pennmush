@@ -243,7 +243,7 @@ slab_set_opt(slab *sl, enum slab_options opt, int val
 
 /** Allocate a new page.
  * \param sl Allocator to create the page for.
- * \return new page, NOT linked into the allocator's list of pages 
+ * \return new page, NOT linked into the allocator's list of pages
  */
 static struct slab_page *
 slab_alloc_page(struct slab *sl)
@@ -292,7 +292,7 @@ slab_alloc_page(struct slab *sl)
   return sp;
 }
 
-/** Allocate a new object from a page 
+/** Allocate a new object from a page
  * \param where the page to allocate from.
  * \return pointer to object, or NULL if no room left on page
  */
@@ -473,7 +473,7 @@ slab_destroy(slab *sl)
   free(sl);
 }
 
-/** Describe a slab for @list allocations
+/** Describe a slab for \@list allocations
  * \param player who to display to
  * \param sl the slab
  */

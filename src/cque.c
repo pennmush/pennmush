@@ -313,9 +313,9 @@ new_queue_entry(NEW_PE_INFO * pe_info)
 #define DELIM_CHAR '\x11'
 /** If EVENT_HANDLER config option is set to a valid dbref, try triggering
  * its handler attribute
- * \param event The event. No spaces, only alphanumerics and dashes.
  * \param enactor The enactor who caused it.
- * \param argstring A comma-deliminated string defining printf-style args.
+ * \param event The event. No spaces, only alphanumerics and dashes.
+ * \param fmt A comma-deliminated string defining printf-style args.
  * \param ... The args passed to argstring.
  * \retval 1 The event had a handler attribute.
  * \retval 0 No event handler or no attribute for the given event.
@@ -539,7 +539,7 @@ insert_que(MQUE * queue_entry, MQUE * parent_queue)
  * Queue the given actionlist for executor to run.
  * \param executor object queueing the action list
  * \param enactor object which caused the action list to queue
- * \param caller for @force/inplace queues, the object using @force. Otherwise, same as enactor.
+ * \param caller for \@force/inplace queues, the object using \@force. Otherwise, same as enactor.
  * \param actionlist the actionlist of cmds to queue
  * \param parent_queue the parent queue entry which caused this queueing, or NULL
  * \param flags a bitwise collection of PE_INFO_* flags that determine the environment for the new queue
@@ -653,6 +653,7 @@ queue_include_attribute(dbref thing, const char *atrname,
  * \param atrname attribute name.
  * \param enactor the enactor.
  * \param noparent if true, parents of executor are not checked for atrname.
+ * \param env array of environment vars (%0-%9) to use for the queued attribute, or NULL for none
  * \retval 0 failure.
  * \retval 1 success.
  */
@@ -713,6 +714,7 @@ queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor, char *env[10])
  * \param sem object to serve as a semaphore, or NOTHING.
  * \param semattr attribute to serve as a semaphore, or NULL (to use SEMAPHORE).
  * \param until 1 if we wait until an absolute time.
+ * \param parent_queue the queue entry the \@wait command was executed in
  */
 void
 wait_que(dbref player, int waittill, char *command, dbref cause, dbref sem,
@@ -1360,7 +1362,7 @@ do_wait(dbref player, dbref cause, char *arg1, const char *cmd, bool until,
   mush_free(arg2, "strip_braces.buff");
 }
 
-/** Interface to @wait/pid; modifies the wait times of queue
+/** Interface to \@wait/pid; modifies the wait times of queue
  * entries.
  * \param player the object doing the command.
  * \param pidstr the process id to modify.

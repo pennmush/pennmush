@@ -138,9 +138,9 @@ void sql_shutdown(void);
 #define NA_INTER_PRESENCE  0x0800       /**< Message is about presence */
 #define NA_NOSPOOF        0x1000        /**< Message comes via a NO_SPOOF object. */
 #define NA_PARANOID       0x2000        /**< Message comes via a PARANOID object. */
-#define NA_NOPREFIX       0x4000        /**< Don't use @prefix when forwarding */
-#define NA_SPOOF        0x8000  /**< @ns* message, overrides NOSPOOF */
-#define NA_INTER_LOCK  0x10000  /**< Message subject to @lock/interact even if not otherwise marked */
+#define NA_NOPREFIX       0x4000        /**< Don't use \@prefix when forwarding */
+#define NA_SPOOF        0x8000  /**< \@ns* message, overrides NOSPOOF */
+#define NA_INTER_LOCK  0x10000  /**< Message subject to \@lock/interact even if not otherwise marked */
 #define NA_INTERACTION  (NA_INTER_HEAR|NA_INTER_SEE|NA_INTER_PRESENCE|NA_INTER_LOCK)    /**< Message follows interaction rules */
 #define NA_PROMPT       0x20000  /**< Message is a prompt, add GOAHEAD */
 

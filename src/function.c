@@ -140,6 +140,7 @@ restore_partial_global_regs(const char *funcname, char *preserve[],
 /** Save a copy of the environment (%0-%9)
  * \param funcname name of function calling (for memory leak testing)
  * \param preserve pointer to array to store %0-%9 in.
+ * \param orig pointer to array to get %0-%9 values from
  */
 void
 save_env(const char *funcname __attribute__ ((__unused__)),
@@ -153,6 +154,7 @@ save_env(const char *funcname __attribute__ ((__unused__)),
 /** Restore the environment (%0-%9)
  * \param funcname name of function calling (for memory leak testing)
  * \param preserve pointer to array to restore %0-%9 from.
+ * \param orig pointer to array to restore env to
  */
 void
 restore_env(const char *funcname __attribute__ ((__unused__)),
@@ -742,6 +744,7 @@ FUNTAB flist[] = {
  * \endverbatim
  * \param player the enactor.
  * \param lc if 1, return functions in lowercase.
+ * \param type "local", "builtin", "all" or NULL, to limit which functions are shown
  */
 void
 do_list_functions(dbref player, int lc, char *type)
@@ -753,7 +756,7 @@ do_list_functions(dbref player, int lc, char *type)
 
 /** Return a list of function names.
  * This function returns the list of function names as a string.
- * \param type if "local", returns @functions only.  If "builtin",
+ * \param type if "local", returns \@functions only.  If "builtin",
  *   hardcoded functions. If omitted, both.
  * \return list of function names as a static string.
  */
@@ -935,9 +938,9 @@ check_func(dbref player, FUN *fp)
   return 1;
 }
 
-/** @function/clone, for creating a copy of a function.
+/** \@function/clone, for creating a copy of a function.
  * \param player the enactor
- * \param name name of function to clone
+ * \param function name of function to clone
  * \param clone name of the cloned function
  */
 void

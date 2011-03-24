@@ -1839,7 +1839,7 @@ do_scan(dbref player, char *command, int flag)
  * \param command command to run for each list element.
  * \param cause object which caused this command to be run.
  * \param flags command switch flags.
- * \param queue_entry the queue entry @dolist is being run in
+ * \param queue_entry the queue entry \@dolist is being run in
  */
 void
 do_dolist(dbref player, char *list, char *command, dbref cause,

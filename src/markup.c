@@ -1175,7 +1175,7 @@ inspect_ansi_string(ansi_string *as, dbref who)
  * \param start start point to remove
  * \param size length of string to remove
  * \retval 0 success
- * \reval 1 failure.
+ * \retval 1 failure.
  */
 
 int

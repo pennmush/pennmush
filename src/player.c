@@ -203,6 +203,7 @@ password_check(dbref player, const char *password)
 }
 
 /** Check to see if someone can connect to a player.
+ * \param d DESC the connect attempt is being made for
  * \param name name of player to connect to.
  * \param password password of player to connect to.
  * \param host host from which connection is being attempted.
@@ -306,6 +307,7 @@ connect_player(DESC *d, const char *name, const char *password,
 }
 
 /** Attempt to create a new player object.
+ * \param d DESC the creation attempt is being made on
  * \param name name of player to create.
  * \param password initial password of created player.
  * \param host host from which creation is attempted.
@@ -586,7 +588,7 @@ make_player(const char *name, const char *password, const char *host,
  * \param cause the enactor.
  * \param old player's current password.
  * \param newobj player's desired new password.
- * \param queue_entry the queue entry @password is being executed in
+ * \param queue_entry the queue entry \@password is being executed in
  */
 void
 do_password(dbref player, dbref cause, const char *old, const char *newobj,

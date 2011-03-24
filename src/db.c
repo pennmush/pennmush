@@ -534,7 +534,7 @@ db_read_this_labeled_dbref(PENNFILE *f, const char *label, dbref *val)
  * \param f the file to read from.
  * \param label pointer to update to the address of a static
  * buffer containing the label that was read.
- * \param value pointer to update to the dbref that was read.
+ * \param val pointer to update to the dbref that was read.
  */
 void
 db_read_labeled_dbref(PENNFILE *f, char **label, dbref *val)

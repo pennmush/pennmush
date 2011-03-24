@@ -59,7 +59,7 @@ extern int rhs_present;         /* from command.c */
  * \endverbatim
  * \param player the enactor.
  * \param name current name of object to rename.
- * \param newname new name for object.
+ * \param newname_ new name for object.
  */
 void
 do_name(dbref player, const char *name, char *newname_)
@@ -362,6 +362,7 @@ chown_object(dbref player, dbref thing, dbref newowner, int preserve)
  * \param name name of the object to change zone of.
  * \param newobj name of new ZMO.
  * \param noisy if 1, notify player about success and failure.
+ * \param preserve was the /preserve switch given?
  * \retval 0 failed to change zone.
  * \retval 1 successfully changed zone.
  */
@@ -596,7 +597,7 @@ do_attrib_flags(dbref player, const char *obj, const char *atrname,
  * This implements @set.
  * \endverbatim
  * \param player the enactor.
- * \param name the first (left) argument to the command.
+ * \param xname the first (left) argument to the command.
  * \param flag the second (right) argument to the command.
  * \retval 1 successful set.
  * \retval 0 failure to set.
@@ -928,6 +929,8 @@ gedit_helper(dbref player, dbref thing,
  * \param player the enactor.
  * \param it the object/attribute pair.
  * \param argv array containing the search and replace strings.
+ * \param target the type of edit
+ * \param doit actually edit the attrs, or just show what would happen if we did?
  */
 void
 do_gedit(dbref player, char *it, char **argv, enum edit_type target, int doit)

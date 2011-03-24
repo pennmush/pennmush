@@ -215,7 +215,7 @@ display_attr_limit(ATTR *ap)
 }
 
 /** Check an attribute's value against /limit or /enum restrictions.
- * \player Player attempting to set the attribute. Used for notify()
+ * \param player Player attempting to set the attribute. Used for notify()
  * \param name the attribute name.
  * \param value The desired attribute value.
  * \retval The new value to set if valid, NULL if not.

@@ -185,7 +185,7 @@ free_qentry(MQUE * entry)
   if (entry->inplace) {
     tmp = entry->inplace;
     entry->inplace = NULL;
-    free_qentry(tmp);           /* shouldn't happen when we get here */
+    free_qentry(tmp);
   }
 
   if (entry->action_list) {

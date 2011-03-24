@@ -144,9 +144,8 @@ start_all_logs(void)
     start_log(logs + n);
 }
 
-/** Redirect stderr to a error log file and close stdout and stdin. 
+/** Redirect stderr to a error log file and close stdout and stdin.
  * Should be called after start_all_logs().
- * \param log name of logfile to redirect stderr to.
  */
 void
 redirect_streams(void)

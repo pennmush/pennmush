@@ -3620,11 +3620,12 @@ na_channel(dbref current, void *data)
  *
  * \param mogrifier The object doing the mogrification
  * \param attrname The attribute on mogrifier to call.
- * \param channel The active channel. (%1)
- * \param value The value to mogrify (%0)
+ * \param player the enactor
+ * \param numargs the number of args in argv
+ * \param argv array of args
+ * \param orig the original string to mogrify
  * \retval Mogrified text.
  */
-
 char *
 mogrify(dbref mogrifier, const char *attrname,
         dbref player, int numargs, const char *argv[], const char *orig)

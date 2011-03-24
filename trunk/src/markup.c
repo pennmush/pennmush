@@ -272,8 +272,8 @@ ansi_strnlen(const char *p, size_t numchars)
 
 /** Compare two strings, ignoring all ansi and html markup from a string.
  *  Is *NOT* locale safe (a la strcoll)
- * \param a string to compare to
- * \param b Other string
+ * \param astr string to compare to
+ * \param bstr Other string
  * \return int - 0 is identical, -1 or 1 for difference.
  */
 int
@@ -1173,7 +1173,7 @@ inspect_ansi_string(ansi_string *as, dbref who)
 /** Delete a portion of an ansi string.
  * \param as ansi_string to delete from
  * \param start start point to remove
- * \param size length of string to remove
+ * \param count length of string to remove
  * \retval 0 success
  * \retval 1 failure.
  */
@@ -2141,7 +2141,7 @@ ansi_pcre_copy_substring(ansi_string *as, int *ovector,
  * \param ovector the offset vectors
  * \param stringcount the number of subpatterns
  * \param stringname the name of the desired subpattern
- * \param nonempty if true, copy empty registers as well.
+ * \param ne if true, copy empty registers as well.
  * \param buff buffer to copy the subpattern to
  * \param bp pointer to the end of buffer
  * \return size of subpattern, or -1 if unknown pattern

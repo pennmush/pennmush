@@ -765,8 +765,8 @@ do_look_at(dbref player, const char *name, int key)
 
 /** Examine an object.
  * \param player the enactor doing the examining.
- * \param name name of object to examine.
- * \param brief if 1, a brief examination. if 2, a mortal examination.
+ * \param xname name of object to examine.
+ * \param flag if 1, a brief examination. if 2, a mortal examination.
  * \param all if 1, include veiled attributes.
  * \param parent if 1, include parent attributes
  */
@@ -1293,7 +1293,7 @@ do_whereis(dbref player, const char *name)
  * \param player the enactor.
  * \param where name of object to find entrances on.
  * \param argv array of arguments for dbref range limitation.
- * \param val what type of 'entrances' to find.
+ * \param types what type of 'entrances' to find.
  */
 void
 do_entrances(dbref player, const char *where, char *argv[], int types)
@@ -1470,7 +1470,7 @@ decompile_helper(dbref player, dbref thing __attribute__ ((__unused__)),
  * \param name name to refer to object by in decompile.
  * \param pattern pattern to match attributes to decompile.
  * \param prefix prefix to use for decompile/tf.
- * \param skipflags if 0, show attribute flags. If 1, skip default attr flags. If 2, skip all attr flags.
+ * \param skipdef if 0, show attribute flags. If 1, skip default attr flags. If 2, skip all attr flags.
  */
 void
 decompile_atrs(dbref player, dbref thing, const char *name, const char *pattern,
@@ -1528,7 +1528,7 @@ decompile_locks(dbref player, dbref thing, const char *name,
  * This implements @decompile.
  * \endverbatim
  * \param player the enactor.
- * \param name name of object to decompile.
+ * \param xname name of object to decompile.
  * \param prefix the prefix to show before each line of output
  * \param dec_type flags for what to show in decompile, and how to show it
  */

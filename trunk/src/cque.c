@@ -211,6 +211,9 @@ free_qentry(MQUE * entry)
   if (entry->save_attrname)
     mush_free(entry->save_attrname, "cqueue.attrname");
 
+  if (entry->pid) /* INPLACE queue entries have no pid */
+    im_delete(queue_map, entry->pid);
+
   mush_free(entry, "cqueue");
 }
 

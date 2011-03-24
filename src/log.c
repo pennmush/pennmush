@@ -130,7 +130,8 @@ start_log(struct log_stream *log)
       }
     }
   }
-  log->buffer = allocate_bufferq(LOG_BUFFER_SIZE);
+  if (!log->buffer)
+    log->buffer = allocate_bufferq(LOG_BUFFER_SIZE);
 }
 
 /** Open all logfiles.

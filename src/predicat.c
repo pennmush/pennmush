@@ -1604,9 +1604,9 @@ grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff,
     rgd.count = 0;
 
     atr_iter_get(player, thing, attrs, 0, 0, regrep_helper, (void *) &rgd);
-    /* Do itttt */
     if (free_study)
       mush_free(rgd.study, "pcre.extra");
+    mush_free(rgd.re, "pcre");
 
     return rgd.count;
   } else {

@@ -416,15 +416,14 @@ FUNCTION(fun_rand)
     highint = parse_integer(args[1]);
     if (lowint > highint) {
       /* reverse numbers */
-      offset = lowint;
+      int temp = lowint;
       lowint = highint;
-      highint = offset;
-      offset = 0;
+      highint = temp;
     }
     if (lowint < 0) {
-      offset = 0 - lowint;
+      offset = abs(lowint);
       low = 0;
-      high = highint + offset;
+      high = abs(highint + offset);
     } else {
       low = lowint;
       high = highint;

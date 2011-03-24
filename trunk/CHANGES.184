@@ -44,12 +44,14 @@ Attributes:
  * Branch attributes now show the 'branch' attribute flag in lflags(). [MG]
  
 Functions:
- * round() would sometimes return a number with a decimal point but no
-   digits after it, like "5.". Reported by Minion. [MG]
    
 Fixes:
+ * round() would sometimes return a number with a decimal point but no
+   digits after it, like "5.". Reported by Minion. [MG]
  * sortby() and foreach() now use call_ufun in the hardcode, fixing a number
    of minor bugs. [MG]
+ * rand(-X, -Y) where -X > -Y was broken. [SW]
+ * Fix a couple of minor memory leaks. [SW]
 
 Version 1.8.4 patchlevel 3                                 Mar 18,  2011
 

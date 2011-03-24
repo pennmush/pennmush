@@ -113,6 +113,7 @@ look_exits(dbref player, dbref loc, const char *exit_name)
                        PE_DEFAULT, PT_DEFAULT, pe_info);
     *bp = '\0';
     pe_info->env[0] = NULL;
+    free_pe_info(pe_info);
     free(save);
     notify_by(loc, player, buff);
     mush_free(tbuf1, "string");
@@ -1063,6 +1064,7 @@ do_inventory(dbref player)
     *bp = '\0';
     pe_info->env[0] = NULL;
     pe_info->env[1] = NULL;
+    free_pe_info(pe_info);
     free(save);
     notify(player, buff);
     mush_free(arg, "string");

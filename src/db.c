@@ -511,7 +511,7 @@ db_read_labeled_uint32(PENNFILE *f, char **label, uint32_t *value)
  * database load will abort with an error.
  * \param f the file to read from.
  * \param label the label that should be read.
- * \param value pointer to update to the dbref that was read.
+ * \param val pointer to update to the dbref that was read.
  */
 void
 db_read_this_labeled_dbref(PENNFILE *f, const char *label, dbref *val)

@@ -425,16 +425,17 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy)
   mush_free(tbuf, "string");
 }
 
-/** Send an \@message to a list of dbrefs, using \<attr\> to format it
+/** Send an \@message to a list of dbrefs, using an attribute to format it
  * if present.
  * The list is destructively modified.
- * \param player the enactor.
+ * \param player the executor.
+ * \param enactor the enactor
  * \param list the list of players to pemit to, destructively modified.
- * \param attrib the ufun attribute to use to format the message.
+ * \param attrname the attribute to use to format the message.
  * \param message the default message.
  * \param flags PEMIT_* flags
  * \param numargs The number of arguments for the ufun.
- * \param ... The arguments for the ufun.
+ * \param argv The arguments for the ufun.
  */
 void
 do_message_list(dbref player, dbref enactor, char *list, char *attrname,
@@ -722,8 +723,8 @@ do_wall(dbref player, const char *message, enum wall_type target, int emit)
  * \param attribute The attribute on the player to call.
  * \param enactor The enactor who caused the message.
  * \param flags NA_INTER_HEAR and NA_SPOOF
- * \param arg0 First argument
- * \param arg4 Last argument.
+ * \param numargs the number of arguments to the attribute
+ * \param ... the arguments to the attribute
  * \retval 1 The player had the fooformat attribute.
  * \retval 0 The default message was sent.
  */
@@ -759,8 +760,8 @@ vmessageformat(dbref player, const char *attribute, dbref enactor, int flags,
  * \param attribute The attribute on the player to call.
  * \param enactor The enactor who caused the message.
  * \param flags NA_INTER_HEAR and NA_SPOOF
- * \param arg0 First argument
- * \param arg4 Last argument.
+ * \param numargs number of arguments in argv
+ * \param argv array of arguments
  * \retval 1 The player had the fooformat attribute.
  * \retval 0 The default message was sent.
  */

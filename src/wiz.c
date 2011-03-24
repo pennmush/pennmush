@@ -969,6 +969,7 @@ do_chownall(dbref player, const char *name, const char *target, int preserve)
  * \param player the enactor.
  * \param name name of player whose objects should be rezoned.
  * \param target string containing new zone master for objects.
+ * \param preserve was /preserve given?
  */
 void
 do_chzoneall(dbref player, const char *name, const char *target, bool preserve)

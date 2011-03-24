@@ -1136,8 +1136,10 @@ atr_iter_get(dbref player, dbref thing, const char *name, int mortal,
 }
 
 /** Count the number of attributes an object has that match a pattern,
+ * \verbatim
  * If <doparent> is true, then count parent attributes as well,
  * but excluding duplicates.
+ * \endverbatim
  * \param player the enactor.
  * \param thing the object containing the attribute.
  * \param name the pattern to match against the attribute name.
@@ -1218,6 +1220,7 @@ atr_pattern_count(dbref player, dbref thing, const char *name,
  * \param func the function to call for each matching attribute, with
  *  a pointer to the dbref of the object the attribute is really on passed
  *  as the function's args argument.
+ * \param args arguments passed to the func
  * \return the sum of the return values of the functions called.
  */
 int
@@ -1410,6 +1413,7 @@ use_attr(UsedAttr **prev, char const *name, uint32_t no_prog)
  * \param end character that denotes the end of a command (usually ':').
  * \param str string to match against attributes.
  * \param just_match if true, return match without executing code.
+ * \param check_locks check to make sure player passes thing's \@locks?
  * \param atrname used to return the list of matching object/attributes.
  * \param abp pointer to end of atrname.
  * \param errobj if an attribute matches, but the lock fails, this pointer
@@ -2113,7 +2117,7 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
  * Attribute locks are largely obsolete and should be deprecated,
  * but this is the code that does them.
  * \param player the enactor.
- * \param arg1 the object/attribute, as a string.
+ * \param xarg1 the object/attribute, as a string.
  * \param arg2 the desired lock status ('on' or 'off').
  */
 void
@@ -2198,7 +2202,7 @@ do_atrlock(dbref player, const char *xarg1, const char *arg2)
  * This function is used to implement @atrchown.
  * \endverbatim
  * \param player the enactor, for permission checking.
- * \param arg1 the object/attribute to change, as a string.
+ * \param xarg1 the object/attribute to change, as a string.
  * \param arg2 the name of the new owner (or "me").
  */
 void

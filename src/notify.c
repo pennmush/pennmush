@@ -1009,12 +1009,9 @@ notify_anything(dbref speaker, na_lookup func,
 
 /** Notify a player with a formatted string, easy version.
  * This is a safer replacement for notify(player, tprintf(fmt, ...))
- * \param speaker dbref of object producing the message.
- * \param func pointer to iterator function to look up each receiver.
- * \param fdata initial data to pass to func.
- * \param nsfunc function to call to do NOSPOOF formatting, or NULL.
- * \param flags flags to pass in (such as NA_INTERACT)
- * \param fmt format string.
+ * \param player the player to notify
+ * \param fmt the format string
+ * \param ... format args
  */
 void WIN32_CDECL
 notify_format(dbref player, const char *fmt, ...)
@@ -1452,12 +1449,12 @@ freeqs(DESC *d)
 }
 
 /** A notify_anything function for formatting speaker data for NOSPOOF.
- *  * \param speaker the speaker.
- *   * \param func unused.
- *    * \param fdata unused.
- *     * \param para if 1, format for paranoid nospoof; if 0, normal nospoof.
- *      * \return formatted string.
- *       */
+ * \param speaker the speaker.
+ * \param func unused.
+ * \param fdata unused.
+ * \param para if 1, format for paranoid nospoof; if 0, normal nospoof.
+ * \return formatted string.
+ **/
 char *
 ns_esnotify(dbref speaker, na_lookup func __attribute__ ((__unused__)),
             void *fdata __attribute__ ((__unused__)), int para)

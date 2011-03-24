@@ -1528,6 +1528,7 @@ logout_sock(DESC *d)
  * This sends appropriate disconnection text, flushes output, and
  * then closes the associated socket.
  * \param d pointer to descriptor to disconnect.
+ * \param reason reason for the descriptor being disconnected, used for events
  */
 static void
 shutdownsock(DESC *d, const char *reason)
@@ -2868,6 +2869,7 @@ boot_player(dbref player, int idleonly, int silent)
 
 /** Disconnect a descriptor.
  * \param d pointer to descriptor to disconnect.
+ * \param cause the reason for the descriptor being disconnected, used for events
  */
 void
 boot_desc(DESC *d, const char *cause)

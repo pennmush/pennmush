@@ -5684,10 +5684,6 @@ msgstr "Je kan quotas alleen als getal instellen."
 msgid "You can only set quotas to a positive number."
 msgstr "Je kunt quota alleen op een positief nummer instellen."
 
-#: cmds.c:530
-msgid "You can only use /inplace with /override."
-msgstr "Je kunt /inplace alleen gebruiken in combinatie met /override."
-
 #: rob.c:326
 msgid "You can't afford that."
 msgstr "Dat kun je niet betalen."

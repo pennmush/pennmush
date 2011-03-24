@@ -5684,10 +5684,6 @@ msgstr "Za quotu mo¾e¹ postaviti samo broj."
 msgid "You can only set quotas to a positive number."
 msgstr "Za quotu mo¾e¹ postaviti samo pozitivan broj."
 
-#: cmds.c:530
-msgid "You can only use /inplace with /override."
-msgstr "/inplace mo¾e¹ koristiti samo s /override."
-
 #: rob.c:326
 msgid "You can't afford that."
 msgstr "Nema¹ novaca za to."

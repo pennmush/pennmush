@@ -44,6 +44,7 @@ extern const unsigned char *tables;
  * \param max maximum number of words to split out.
  * \param list list of words as a string.
  * \param sep separator character between list items.
+ * \param nullok are null elements allowed? if not, they'll be removed
  * \return number of words split out.
  */
 int
@@ -96,6 +97,7 @@ list2arr_ansi(char *r[], int max, char *list, char sep, int nullok)
  * \param max maximum number of words to split out.
  * \param list list of words as a string.
  * \param sep separator character between list items.
+ * \param nullok are null elements allowed? if not, they'll be removed
  * \return number of words split out.
  */
 int

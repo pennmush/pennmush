@@ -85,9 +85,11 @@ parse_attrib(dbref player, char *str, dbref *thing, ATTR **attrib)
 }
 
 /** Parse an attribute or anonymous attribute into dbref and pointer.
+ * \verbatim
  * This function takes a string which is of the format #lambda/code,
  * <obj>/<attr> or <attr>,  and returns the dbref of the object,
  * and a pointer to the attribute.
+ * \endverbatim
  * \param player the executor, for permissions checks.
  * \param str string to parse.
  * \param thing pointer to address to return dbref parsed, or NOTHING
@@ -134,9 +136,11 @@ free_anon_attrib(ATTR *attrib)
   }
 }
 
-/** Given an attribute [<object>/]<name> pair (which may include #lambda),
+/** Populate a ufun_attrib struct from an obj/attr pair.
+ * \verbatim Given an attribute [<object>/]<name> pair (which may include #lambda),
  * fetch its value, owner (thing), and pe_flags, and store in the struct
  * pointed to by ufun
+ * \endverbatim
  * \param attrstring The obj/name of attribute.
  * \param executor Dbref of the executing object.
  * \param ufun Pointer to an allocated ufun_attrib struct to fill in.

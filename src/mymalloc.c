@@ -52,7 +52,7 @@
 /** A malloc wrapper that tracks type of allocation.
  * This should be used in preference to malloc() when possible,
  * to enable memory leak tracing with MEM_CHECK.
- * \param size bytes to allocate.
+ * \param bytes bytes to allocate.
  * \param check string to label allocation with.
  * \return allocated block of memory or NULL.
  */
@@ -97,7 +97,6 @@ mush_calloc(size_t count, size_t size, const char *check)
  * \param check string to label with
  * \param filename file name it was called from
  * \param line line it called from
- * \param new pointer or NULL
  */
 void *
 mush_realloc_where(void *restrict ptr, size_t newsize,

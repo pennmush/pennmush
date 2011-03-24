@@ -420,7 +420,7 @@ is_strict_number(char const *str)
 #ifndef HAVE_ISNORMAL
 /** Is string a number that isn't inf or nan?
  * Only needed for systems without isnormal()
- * \param num NVAL
+ * \param val NVAL
  * \retval 1 num is a good number.
  * \retval 0 num is not a good number.
  */
@@ -557,6 +557,8 @@ parse_int32(const char *s, char **end, int base)
  * Use this instead of strtoul() when storing to an int to avoid problems
  * where  sizeof(int) < sizeof(long).
  * \param s The string to convert
+ * \param end pointer to store the first invalid char at, or NULL
+ * \param base base for conversion
  * \return the number, or UINT_MAX on overflow
  * with errno set to ERANGE.
  */
@@ -717,7 +719,7 @@ make_pe_info(char *name)
  * \param flags PE_INFO_* flags to determine exactly what to do
  * \param env environment vars (%0-%9) for the new pe_info, or NULL
  * \param qreg qreg values (%q*) for the new pe_info, or NULL
- * \param return a new pe_info
+ * \retval a new pe_info
  */
 NEW_PE_INFO *
 pe_info_from(NEW_PE_INFO * old_pe_info, int flags, char *env[10],

@@ -161,6 +161,7 @@ extern int unparsing_boolexp;
 /** Return a list of all available locks
  * \param buff the buffer
  * \param bp a pointer to the current position in the buffer.
+ * \param name if not NULL, only show locks with this prefix
  */
 void
 list_locks(char *buff, char **bp, const char *name)

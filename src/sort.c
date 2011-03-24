@@ -672,10 +672,10 @@ free_list_type_info(ListTypeInfo * lti)
  * Get the type of a list, as provided by a user. If it is not specified,
  * try and guess the list type.
  * \param args The arguments to a function.
- * \param nargs # of <args>
+ * \param nargs number of items in args
  * \param type_pos where to look in args for the sort_type definition.
  * \param ptrs The list to autodetect on
- * \param nptrs # of items in <ptrs>
+ * \param nptrs number of items in ptrs
  * \retval A string that describes the comparison information.
  */
 SortType
@@ -709,7 +709,7 @@ get_list_type(char *args[], int nargs, int type_pos, char *ptrs[], int nptrs)
 /**
  * Get the type of a list, but return UNKNOWN if it is not specified.
  * \param args The arguments to a function.
- * \param nargs # of <args>
+ * \param nargs number of items in args
  * \param type_pos where to look in args for the sort_type definition.
  * \retval A string that describes the comparison information.
  */
@@ -819,10 +819,10 @@ gencomp(dbref player, char *a, char *b, SortType sort_type)
  * s_rec structures representing each item.
  * \param player the player executing the sort.
  * \param keys the array of items to sort.
- * \param strs If non-NULL, these are what to sort <keys> using.
- * \param n Number of items in <keys> and <strs>
+ * \param strs If non-NULL, these are what to sort keys using.
+ * \param n Number of items in keys and strs
  * \param lti List Type Info describing how it's sorted and built.
- * \retval A pointer to the first s_rec of an <n> s_rec array.
+ * \retval A pointer to the first s_rec of an n s_rec array.
  */
 s_rec *
 slist_build(dbref player, char *keys[], char *strs[], int n, ListTypeInfo * lti)
@@ -855,7 +855,7 @@ slist_build(dbref player, char *keys[], char *strs[], int n, ListTypeInfo * lti)
  * Given an array of s_rec items, sort them in-place using a specified
  * ListTypeInformation.
  * \param sp the array of sort_records, returned by slist_build
- * \param n Number of items in <sp>
+ * \param n Number of items in sp
  * \param lti List Type Info describing how it's sorted and built.
  */
 void
@@ -868,7 +868,7 @@ slist_qsort(s_rec *sp, int n, ListTypeInfo * lti)
  * Given an array of _sorted_ s_rec items, unique them in place by
  * freeing them and marking the final elements' freestr = 0.
  * \param sp the array of sort_records, returned by slist_build
- * \param n Number of items in <sp>
+ * \param n Number of items in sp
  * \param lti List Type Info describing how it's sorted and built.
  * \retval The count of unique items.
  */
@@ -932,8 +932,9 @@ slist_comp(s_rec *s1, s_rec *s2, ListTypeInfo * lti)
 /** A generic sort routine to sort several different
  * types of arrays, in place.
  * \param player the player executing the sort.
- * \param s the array to sort.
- * \param n number of elements in array s
+ * \param keys the array of items to sort.
+ * \param strs If non-NULL, these are what to sort keys using.
+ * \param n number of items in keys and strs
  * \param sort_type the string that describes the sort type.
  */
 void

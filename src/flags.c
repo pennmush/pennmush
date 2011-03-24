@@ -721,6 +721,7 @@ flag_alias_write(PENNFILE *out, FLAG *f, const char *name)
  * to receive file pointer that's already writing in a database file.
  * It writes the flags, writes the aliases.
  * \param out file pointer to write to.
+ * \param ns the namespace (FLAG/POWER) to write
  */
 void
 flag_write_all(PENNFILE *out, const char *ns)
@@ -1470,7 +1471,8 @@ flag_description(dbref player, dbref thing)
  * \param thing object being decompiled.
  * \param name name by which object is referred to in the decompile.
  * \param ns name of namespace to search.
- * \param command name of command used to set the 'flag'.
+ * \param command name of command used to set the 'flag'
+ * \param prefix string to prefix each line of output with
  */
 void
 decompile_flags_generic(dbref player, dbref thing, const char *name,

@@ -25,7 +25,7 @@
 #include "attrib.h"
 #include "confmagic.h"
 
-int do_convtime(const char *str, struct tm *ttm);
+int do_convtime(const char *mystr, struct tm *ttm);
 void do_timestring(char *buff, char **bp, const char *format,
                    unsigned long secs);
 

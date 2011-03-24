@@ -2356,6 +2356,7 @@ db_open_write(const char *fname)
  * \param player the enactor.
  * \param arg what to list.
  * \param lc if 1, list in lowercase.
+ * \param which 1 for builins, 2 for local, 3 for all
  */
 void
 do_list(dbref player, char *arg, int lc, int which)
@@ -2366,13 +2367,13 @@ do_list(dbref player, char *arg, int lc, int which)
     do_list_commands(player, lc, which);
   else if (string_prefix("functions", arg)) {
     switch (which) {
-    case '1':
+    case 1:
       do_list_functions(player, lc, "builtin");
       break;
-    case '2':
+    case 2:
       do_list_functions(player, lc, "local");
       break;
-    case '3':
+    case 3:
     default:
       do_list_functions(player, lc, "all");
       break;

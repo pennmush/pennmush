@@ -562,8 +562,18 @@ new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
   char *save_env[10];
   int i = -1;
 
-  if (!(queue_type & QUEUE_INPLACE))
+  if (!(queue_type & QUEUE_INPLACE)) {
     queue_type = (IsPlayer(enactor) ? QUEUE_PLAYER : QUEUE_OBJECT);
+    if (flags & PE_INFO_SHARE) {
+      /* You can only share the pe_info for an inplace queue entry. Since you've asked us
+       * to share for a fully queued entry, you're an idiot, because it will crash. I know;
+       * I'm an idiot too, and it crashed when I did it as well. I'll fix it for you; aren't
+       * you lucky? */
+      do_rawlog(LT_ERR, "Attempt to create a non-inplace queue entry using a shared pe_info by #%d from %s",
+                executor, (fromattr ? fromattr : "the socket, or an unknown attribute"));
+      flags = PE_INFO_CLONE; /* The closest we can come to what you asked for */
+    }
+  }
 
   if (queue_type & QUEUE_RESTORE_ENV) {
     if (parent_queue && (flags & PE_INFO_SHARE)) {

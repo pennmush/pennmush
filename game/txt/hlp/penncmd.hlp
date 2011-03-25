@@ -4195,7 +4195,7 @@ See also: KEEPALIVE, @idle
   Javelin says, "a b c"
   
   > teach/list @switch 1=1, say Third; say First; @break 1; say Second
-  Javelin types, "@switch 1=1, say Third; say First; @break 1; say Second"
+  Javelin types --> @switch 1=1, say Third; say First; @break 1; say Second
   You say, "First"
   You say, "Third"
 

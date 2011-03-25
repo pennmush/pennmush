@@ -1075,9 +1075,26 @@ COMMAND(cmd_search)
 
 COMMAND(cmd_select)
 {
+
+  int queue_type = QUEUE_DEFAULT;
+
+  if (SW_ISSET(sw, SWITCH_INPLACE))
+    queue_type = QUEUE_RECURSE;
+  else if (SW_ISSET(sw, SWITCH_INLINE))
+    queue_type = QUEUE_INPLACE;
+  if (queue_type != QUEUE_DEFAULT) {
+    if (SW_ISSET(sw, SWITCH_NOBREAK))
+      queue_type |= QUEUE_NO_BREAKS;
+    if (SW_ISSET(sw, SWITCH_CLEARREGS))
+      queue_type |= QUEUE_CLEAR_QREG;
+    if (SW_ISSET(sw, SWITCH_LOCALIZE))
+      queue_type |= QUEUE_PRESERVE_QREG;
+  }
+
   do_switch(executor, arg_left, args_right, enactor, 1,
             SW_ISSET(sw, SWITCH_NOTIFY), SW_ISSET(sw, SWITCH_REGEXP),
-            SW_ISSET(sw, SWITCH_INPLACE), queue_entry);
+            queue_type, queue_entry);
+
 }
 
 COMMAND(cmd_set)

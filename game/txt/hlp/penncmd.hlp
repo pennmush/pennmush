@@ -4179,10 +4179,12 @@ See also: KEEPALIVE, @idle
   teach <command>
   teach/list <action list>
   
-  The teach command shows <command> (unparsed) to others in your room, and
-  then causes you to execute <command>. If the /list switch is given, instead
-  of a single command it runs an action list of ; separated commands. Useful
-  for helping newbies and demonstrating commands.
+  The teach command shows its argument (unparsed) to others in your location,
+  and then executes it as a command. If the /list switch is given, it will
+  run an <action list> of commands in much the same way as @triggering an
+  attribute. Otherwise, it executes a single <command>, exactly as if you'd
+  entered <command> from your client. Useful for helping newbies and
+  demonstrating commands.
 
   > say To do a pose, use :<action>
   You say "To do a pose, use :<action>"
@@ -4199,6 +4201,7 @@ See also: KEEPALIVE, @idle
   You say, "First"
   You say, "Third"
 
+See also: @trigger, @include
 & drop 
   drop <object>
 

@@ -72,71 +72,6 @@ reset_regexp_context(struct re_context *re)
   re->re_from = NULL;
 }
 
-/** Save a copy of the q-registers.
- * \param funcname name of function calling (for memory leak testing)
- * \param preserve pointer to array to store the q-registers in.
- * \param orig where to copy the q-registers from
- */
-void
-save_global_regs(const char *funcname, char *preserve[],
-                 char orig[NUMQ][BUFFER_LEN])
-{
-  int i;
-  for (i = 0; i < NUMQ; i++) {
-    if (!orig[i][0])
-      preserve[i] = NULL;
-    else {
-      preserve[i] = mush_strdup(orig[i], funcname);
-    }
-  }
-}
-
-/** Restore the q-registers, freeing the storage array.
- * \param funcname name of function calling (for memory leak testing)
- * \param preserve pointer to array to restore the q-registers from.
- * \param orig where to restore the q-registers to
- */
-void
-restore_global_regs(const char *funcname, char *preserve[],
-                    char orig[NUMQ][BUFFER_LEN])
-{
-  int i;
-  for (i = 0; i < NUMQ; i++) {
-    if (preserve[i]) {
-      mush_strncpy(orig[i], preserve[i], BUFFER_LEN);
-      mush_free(preserve[i], funcname);
-      preserve[i] = NULL;
-    } else {
-      orig[i][0] = '\0';
-    }
-  }
-}
-
-/** Save a single q-register
- */
-void
-save_partial_global_reg(const char *funcname, char *preserve[], int i,
-                        char orig[NUMQ][BUFFER_LEN])
-{
-  preserve[i] = mush_strdup(orig[i], funcname);
-}
-
-/** Restore q-registers saved with save_partial_global_reg()
- */
-void
-restore_partial_global_regs(const char *funcname, char *preserve[],
-                            char orig[NUMQ][BUFFER_LEN])
-{
-  int i;
-  for (i = 0; i < NUMQ; i++) {
-    if (preserve[i]) {
-      mush_strncpy(orig[i], preserve[i], BUFFER_LEN);
-      mush_free(preserve[i], funcname);
-    }
-  }
-}
-
-
 /** Save a copy of the environment (%0-%9)
  * \param funcname name of function calling (for memory leak testing)
  * \param preserve pointer to array to store %0-%9 in.
@@ -417,6 +352,7 @@ FUNTAB flist[] = {
   {"LFLAGS", fun_lflags, 0, 1, FN_REG | FN_STRIPANSI},
   {"LINK", fun_link, 2, 3, FN_REG | FN_STRIPANSI},
   {"LIST", fun_list, 1, 2, FN_REG | FN_STRIPANSI},
+  {"LISTQ", fun_listq, 0, 1, FN_REG | FN_STRIPANSI},
   {"LIT", fun_lit, 1, -1, FN_LITERAL},
   {"LJUST", fun_ljust, 2, 3, FN_REG},
   {"LLOCKFLAGS", fun_lockflags, 0, 1, FN_REG | FN_STRIPANSI},

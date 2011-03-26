@@ -22,6 +22,22 @@ that have altered hardcode will appear here.
 
 Version 1.8.4 patchlevel 4                                 Mar 18,  2011
 
+  Q-registers are now stored in a PE_REGS structure, which will eventually
+  also consume all other forms of registers. To set a Q register, use
+  the macro PE_Setq(pe_info, name, val). To fetch a Q register, use
+  the macro PE_Getq(pe_info, name, val). To check if a (char *) is a
+  valid register name, use ValidQregName((char *)).
+
+  With the PE_REGS change, all Q-registers now have both their names and
+  their values kept in a string tree, reducing overhead caused by
+  duplicates. This also means that you should _NOT_ modify any values
+  returned by PE_Getq().
+
+  With PE_REGS containing q-registers across queue entries, the memory used
+  by a single entry in a player, object, @wait or semaphore queue is reduced
+  by about BUFFER_LEN*NUMQ bytes, assuming no Q-registers used. By default,
+  this amounts to 294KB!
+
   global_eval_context has been removed, as have the BQUE and PE_Info
   sutrcts. All the information they contained has been merged into two new
   structs, MQUE and NEW_PE_INFO. The environment (%0-%9) and q-regs (%q*)

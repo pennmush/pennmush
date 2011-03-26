@@ -49,7 +49,6 @@ typedef unsigned char *object_flag_type;
 typedef const char *lock_type;
 typedef struct lock_list lock_list;
 
-
 /* Set this somewhere near the recursion limit */
 #define MAX_ITERS 100
 
@@ -58,8 +57,86 @@ typedef struct lock_list lock_list;
 #define BUFFER_LEN ((MAX_COMMAND_LEN)*2)
 #define MAX_ARG 63
 
+typedef struct new_pe_info NEW_PE_INFO;
 typedef struct debug_info Debug_Info;
 /** process_expression() info */
+
+#define PE_KEY_LEN     64  /* The maximum key length. */
+
+/* Types for _pe_regs_ _and_ _pe_reg_vals_ */
+#define PE_REGS_Q      0x01 /* Q-registers. */
+#define PE_REGS_REGEXP 0x02 /* Regexps. */
+#define PE_REGS_SWITCH 0x04 /* switch(), %$0. */
+#define PE_REGS_ITER   0x08 /* iter() and @dol, %i0/etc */
+#define PE_REGS_ARG    0x10 /* %0-%9 */
+
+#define PE_REGS_TYPE   0xFF /* type & PE_REGS_TYPE always gets one type */
+
+#define PE_REGS_QUEUE  0xFF /* Every item. */
+
+/* Flags for _pe_regs_: */
+#define PE_REGS_LET     0x100 /* Used for let(): Only set qregs that already
+                               * exist otherwise pass them up. */
+#define PE_REGS_QSTOP   0x200 /* Q-reg get()s don't travel past this.
+                              * exist otherwise pass them up. */
+#define PE_REGS_NEWATTR 0x400 /* This _blocks_ iter, arg, switch */
+
+/* Typeflags for REG_VALs */
+#define PE_REGS_STR    0x100 /* It's a string */
+#define PE_REGS_INT    0x200 /* It's an integer */
+
+typedef struct _pe_reg_val {
+  int  type;
+  const char *name;
+  union {
+    const char *sval;
+    int   ival;
+  } val;
+  struct _pe_reg_val *next;
+} PE_REG_VAL;
+
+typedef struct _pe_regs_ {
+  struct   _pe_regs_ *prev;    /* Previous PE_REGS, for chaining up the stack */
+  uint32_t flags;              /* REG_* flags */
+  int      count;              /* Total register count. This includes
+                                * inherited registers. */
+  int      qcount;             /* Q-register count, including inherited
+                                * registers. */
+  PE_REG_VAL *vals;            /* The register values */
+} PE_REGS;
+
+/* Initialize the pe_regs strtrees */
+void init_pe_regs_trees();
+
+/* Functions used to create new pe_reg stacks */
+PE_REGS *pe_regs_create(uint32_t pr_flags);
+void pe_regs_free(PE_REGS *pe_regs);
+PE_REGS *pe_regs_localize(NEW_PE_INFO *pe_info, uint32_t pr_flags);
+void pe_regs_restore(NEW_PE_INFO *pe_info, PE_REGS *pe_regs);
+
+/* Copy all values from src to dst PE_REGS. */
+void pe_regs_copyto(PE_REGS *dst, PE_REGS *src);
+
+/* Copy a stack of PE_REGS into a new one: For creating new queue entries.
+ * This squashes all values in pe_regs to a single PE_REGS. The returned
+ * pe_regs type has PE_REGS_QUEUE. */
+PE_REGS *pe_regs_copystack(PE_REGS *pe_regs);
+
+/* Manipulating PE_REGS directly */
+void pe_regs_set(PE_REGS *pe_regs, int type,
+                 const char *key, const char *val);
+void pe_regs_set_int(PE_REGS *pe_regs, int type, const char *key, int val);
+const char *pe_regs_get(PE_REGS *pe_regs, int type, const char *key);
+int pe_regs_get_int(PE_REGS *pe_regs, int type, const char *key);
+
+/* Helper functions: Mostly used in process_expression, r(), itext(), etc */
+int pi_regs_valid_key(const char *key);
+#define ValidQregName(x) pi_regs_valid_key(x)
+
+int pi_regs_setq(NEW_PE_INFO *pe_info, const char *key, const char *val);
+#define PE_Setq(pi,k,v) pi_regs_setq(pi,k,v)
+const char *pi_regs_getq(NEW_PE_INFO *pe_info, const char *key);
+#define PE_Getq(pi,k) pi_regs_getq(pi,k)
 
 /* Regexp saving helpers */
 struct re_context {
@@ -69,7 +146,7 @@ struct re_context {
   struct _ansi_string *re_from; /**< The positions of the subpatterns */
 };
 
-typedef struct new_pe_info {
+struct new_pe_info {
   int fun_invocations;          /**< The number of functions invoked (%?) */
   int fun_recursions;           /**< Function recursion depth (%?) */
   int call_depth;               /**< Number of times the parser (process_expression()) has recursed */
@@ -78,9 +155,9 @@ typedef struct new_pe_info {
   int nest_depth;               /**< Depth of function nesting, for DEBUG */
   int debugging;                /**< Show debug? 1 = yes, 0 = if DEBUG flag set, -1 = no */
 
+  PE_REGS *regvals;      /**< Saved register values. */
   char *env[10];                /**< Current environment variables (%0-%9) */
   int arg_count;                /**< Number of arguments available in env (%+) */
-  char qreg_values[NUMQ][BUFFER_LEN];      /**< Values of registers set with setq() */
 
   int iter_nestings;            /**< Total number of iter()/\@dolist nestings */
   int iter_nestings_local;      /**< Number of iter() nestings accessible at present */
@@ -103,11 +180,12 @@ typedef struct new_pe_info {
   char name[BUFFER_LEN];        /**< TEMP: Used for memory-leak checking. Remove me later!!!! */
 
   int refcount;                 /**< Number of times this pe_info is being used. > 1 when shared by sub-queues. free() when at 0 */
-} NEW_PE_INFO;
+};
 
 
 /** \struct mque
- ** \brief Contains data on queued action lists. Used in all queues (wait, semaphore, player, object), and for inplace queue entries.
+ ** \brief Contains data on queued action lists. Used in all queues (wait,
+ **        semaphore, player, object), and for inplace queue entries.
  */
 typedef struct mque MQUE;
 struct mque {

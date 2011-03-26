@@ -79,28 +79,29 @@ static void st_traverse_stats
 
 void st_stats_header(dbref player);
 void st_stats(dbref player, StrTree *root, const char *name);
-static void delete_node(StrNode *node);
+static void delete_node(StrNode *node, const char *name);
 
 /** Initialize a string tree.
  * \param root pointer to root of string tree.
  */
 void
-st_init(StrTree *root)
+st_init(StrTree *root, const char *name)
 {
   assert(root);
   root->root = NULL;
   root->count = 0;
   root->mem = 0;
+  root->name = name;
 }
 
 static void
-delete_node(StrNode *node)
+delete_node(StrNode *node, const char *name)
 {
   if (node->left)
-    delete_node(node->left);
+    delete_node(node->left, name);
   if (node->right)
-    delete_node(node->right);
-  mush_free(node, "StrNode");
+    delete_node(node->right, name);
+  mush_free(node, name);
 }
 
 
@@ -112,7 +113,7 @@ st_flush(StrTree *root)
 {
   if (!root->root)
     return;
-  delete_node(root->root);
+  delete_node(root->root, root->name);
   root->root = NULL;
   root->count = 0;
   root->mem = 0;
@@ -232,7 +233,7 @@ st_insert(char const *s, StrTree *root)
 
   /* Need a new node.  Allocate and initialize it. */
   keylen = strlen(s) + 1;
-  n = mush_malloc(sizeof(StrNode) - BUFFER_LEN + keylen, "StrNode");
+  n = mush_malloc(sizeof(StrNode) - BUFFER_LEN + keylen, root->name);
   if (!n)
     return NULL;
   memcpy(n->string, s, keylen);
@@ -526,7 +527,7 @@ st_delete(char const *s, StrTree *root)
       x->info &= ~ST_RED;
   }
   root->mem -= strlen(s) + 1;
-  mush_free(y, "StrNode");
+  mush_free(y, root->name);
   root->count--;
 }
 

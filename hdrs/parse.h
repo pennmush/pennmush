@@ -34,6 +34,8 @@ extern char e_notvis[];         /* #-1 NO SUCH OBJECT VISIBLE */
 extern char e_disabled[];       /* #-1 FUNCTION DISABLED */
 extern char e_range[];          /* #-1 OUT OF RANGE */
 extern char e_argrange[];       /* #-1 ARGUMENT OUT OF RANGE */
+extern char e_badregname[];     /* #-1 REGISTER NAME INVALID */
+extern char e_toomanyregs[];    /* #-1 TOO MANY REGISTERS */
 
 /* The following routines all take strings as arguments, and return
  * data of the appropriate types.
@@ -162,8 +164,7 @@ int process_expression(char *buff, char **bp, char const **str,
 
 void free_pe_info(NEW_PE_INFO * pe_info);
 NEW_PE_INFO *make_pe_info(char *name);
-NEW_PE_INFO *pe_info_from(NEW_PE_INFO * old_pe_info, int flags, char *env[10],
-                          char *qreg[NUMQ]);
+NEW_PE_INFO *pe_info_from(NEW_PE_INFO * old_pe_info, int flags, char *env[10]);
 
 /* buff is a pointer to a BUFFER_LEN string to contain the expression
  * result.  *bp is the point in buff at which the result should be written.

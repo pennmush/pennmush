@@ -73,15 +73,16 @@ FUNCTION(fun_fn)
 FUNCTION(fun_localize)
 {
   char const *p;
-  char *saver[NUMQ];
+  PE_REGS *pe_regs;
 
-  save_global_regs("localize", saver, pe_info->qreg_values);
+  pe_regs = pe_regs_localize(pe_info, PE_REGS_Q);
 
   p = args[0];
   process_expression(buff, bp, &p, executor, caller, enactor, PE_DEFAULT,
                      PT_DEFAULT, pe_info);
 
-  restore_global_regs("localize", saver, pe_info->qreg_values);
+  pe_regs_restore(pe_info, pe_regs);
+  pe_regs_free(pe_regs);
 }
 
 /* ARGSUSED */

@@ -563,7 +563,6 @@ FUNCTION(fun_strmatch)
   int i;
   char *qregs[NUMQ];
   int nqregs;
-  int qindex;
   char match_space[BUFFER_LEN * 2];
   ssize_t match_space_len = BUFFER_LEN * 2;
 
@@ -579,11 +578,10 @@ FUNCTION(fun_strmatch)
       nqregs = list2arr(qregs, NUMQ, args[2], ' ', 0);
 
       for (i = 0; i < nqregs; i++) {
-        if (ret[i] && qregs[i][0] && !qregs[i][1]) {
-          qindex = qreg_indexes[(unsigned char) qregs[i][0]];
-          if (qindex >= 0 && pe_info->qreg_values[qindex]) {
-            strncpy(pe_info->qreg_values[qindex], ret[i], BUFFER_LEN);
-          }
+        if (ValidQregName(qregs[i])) {
+          PE_Setq(pe_info, qregs[i], ret[i]);
+        } else if (qregs[i][0] != '-' || qregs[i][1]) {
+          safe_str(T(e_badregname), buff, bp);
         }
       }
     }

@@ -131,7 +131,7 @@ COMMAND(cmd_break)
                          PE_COMMAND_BRACES, PT_DEFAULT, NULL);
       *bp++ = '\0';
       new_queue_actionlist(executor, enactor, caller, break_cmd, queue_entry,
-                           PE_INFO_SHARE, QUEUE_INPLACE, NULL, NULL);
+                           PE_INFO_SHARE, QUEUE_INPLACE, NULL);
     }
   }
 }
@@ -149,7 +149,7 @@ COMMAND(cmd_assert)
                          PE_COMMAND_BRACES, PT_DEFAULT, NULL);
       *bp++ = '\0';
       new_queue_actionlist(executor, enactor, caller, break_cmd, queue_entry,
-                           PE_INFO_SHARE, QUEUE_INPLACE, NULL, NULL);
+                           PE_INFO_SHARE, QUEUE_INPLACE, NULL);
     }
   }
 }

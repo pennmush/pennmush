@@ -1105,7 +1105,7 @@ FUNCTION(fun_foreach)
 
   const char *ap;
   char *lp;
-  char *asave, cbuf[2];
+  char cbuf[2];
   char *wenv[2];
   char place[SBUF_LEN];
   int placenr = 0;
@@ -1163,7 +1163,6 @@ FUNCTION(fun_foreach)
   funccount = pe_info->fun_invocations;
   while (*lp && *lp != end) {
     *cbuf = *lp++;
-    ap = asave;
     if (call_ufun(&ufun, wenv, 2, result, executor, enactor, pe_info))
       break;
     safe_str(result, buff, bp);

@@ -1129,6 +1129,11 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
   if (!argv[1])
     return;
 
+  if ((queue_entry->pe_info->switch_nestings + 1) >= MAX_ITERS) {
+    notify(player, T("Too many switches."));
+    return;
+  }
+
   /* now try a wild card match of buff with stuff in coms */
   for (a = 1;
        !(first && any) && (a < (MAX_ARG - 1)) && argv[a] && argv[a + 1];

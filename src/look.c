@@ -1453,11 +1453,11 @@ decompile_helper(dbref player, dbref thing __attribute__ ((__unused__)),
     if (dh->skipdef && ptr) {
       /* Standard attribute. Get the default perms, if any. */
       /* Are we different? If so, do as usual */
-      uint32_t npmflags = AL_FLAGS(ptr) & (~AF_PREFIXMATCH);
+      uint32_t npmflags = AL_FLAGS(ptr) & (~AF_PREFIXMATCH) & (~AF_ROOT);
       if (AL_FLAGS(atr) != AL_FLAGS(ptr) && AL_FLAGS(atr) != npmflags)
         privs = privs_to_string(attr_privs_view, AL_FLAGS(atr));
     } else {
-      privs = privs_to_string(attr_privs_view, AL_FLAGS(atr));
+      privs = privs_to_string(attr_privs_view, (AL_FLAGS(atr) & (~AF_ROOT)));
     }
     if (privs && *privs)
       notify_format(player, "%s@set %s/%s=%s", dh->prefix, dh->name,

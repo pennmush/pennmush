@@ -716,6 +716,7 @@ init_game_config(const char *conf)
   init_ansi_codes();
   init_aname_table();
   init_atr_name_tree();
+  init_pe_regs_trees();
   init_locks();
   init_names();
   init_pronouns();
@@ -1567,7 +1568,7 @@ bind_and_queue(dbref player, dbref cause, char *action,
   pe_info->iter_dolists++;
   /* Then queue the new command, using a cloned pe_info... */
   new_queue_actionlist(player, cause, cause, command, parent_queue,
-                       PE_INFO_CLONE, QUEUE_DEFAULT, NULL, NULL);
+                       PE_INFO_CLONE, QUEUE_DEFAULT, NULL);
   /* And then pop it off the parent pe_info again */
   mush_free(pe_info->iter_itext[i], "pe_info.dolist_arg");
   pe_info->iter_itext[i] = NULL;

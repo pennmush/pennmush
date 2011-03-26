@@ -759,7 +759,7 @@ command_init_preconfig(void)
   hashinit(&htab_reserved_aliases, 16);
 
   /* Build initial switch table. */
-  st_init(&switch_names);
+  st_init(&switch_names, "SwitchNameTree");
   for (sv = switch_list; sv->name; sv++)
     st_insert(sv->name, &switch_names);
 

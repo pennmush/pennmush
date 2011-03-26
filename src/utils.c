@@ -257,7 +257,6 @@ call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
   char rbuff[BUFFER_LEN];
   char *rp;
   char *old_wenv[10];
-  char *saveqs[NUMQ];
   int iter_nest = -1;
   int switch_nest = -1;
   int old_args = 0;
@@ -266,6 +265,7 @@ call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
   char const *ap;
   char old_attr[BUFFER_LEN];
   int made_pe_info = 0;
+  PE_REGS *pe_regs;
 
   struct re_context rsave;
 
@@ -281,10 +281,6 @@ call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
 
     save_regexp_context(&rsave, &pe_info->re_context);
 
-    if (ufun->ufun_flags & UFUN_LOCALIZE) {
-      save_global_regs("localize", saveqs, pe_info->qreg_values);
-    }
-
     /* Set all the regexp patterns to NULL so they are not propogated */
     reset_regexp_context(&pe_info->re_context);
 
@@ -296,6 +292,13 @@ call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
 
     strcpy(old_attr, pe_info->attrname);
   }
+
+  if (ufun->ufun_flags & UFUN_LOCALIZE) {
+    pe_regs = pe_regs_localize(pe_info, PE_REGS_Q | PE_REGS_NEWATTR);
+  } else {
+    pe_regs = pe_regs_localize(pe_info, PE_REGS_NEWATTR);
+  }
+
   for (i = 0; i < wenv_argc; i++) {
     pe_info->env[i] = wenv_args[i];
   }
@@ -329,6 +332,10 @@ call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
                               enactor, ufun->pe_flags, PT_DEFAULT, pe_info);
   *rp = '\0';
 
+  /* Restore q-regs */
+  pe_regs_restore(pe_info, pe_regs);
+  pe_regs_free(pe_regs);
+
   if (!made_pe_info) {
     /* Restore the old environment */
     restore_env("call_ufun", old_wenv, pe_info->env);
@@ -336,10 +343,6 @@ call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
     /* Restore itext and stext values */
     pe_info->iter_nestings_local = iter_nest;
     pe_info->switch_nestings_local = switch_nest;
-    /* Restore q-regs */
-    if (ufun->ufun_flags & UFUN_LOCALIZE) {
-      restore_global_regs("localize", saveqs, pe_info->qreg_values);
-    }
     /* Restore regexp patterns */
     restore_regexp_context(&rsave, &pe_info->re_context);
     strcpy(pe_info->attrname, old_attr);

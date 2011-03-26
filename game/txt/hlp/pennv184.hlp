@@ -13,11 +13,17 @@ be read in 'help patchlevels'.
 
 Version 1.8.4 patchlevel 4                                 ??? ??,  201?
 
+Major changes:
+ * Q-registers are no longer limited to single characters. setq(name,joe)
+   and r(name)! [GM]
+
 Hardcode:
  * global_eval_context has been removed. The BQUE, EVAL_CONTEXT and PE_Info
    structs have been removed, replaced with MQUE and NEW_PE_INFO. Shouldn't
    affect players, but will affect hardcode hacks. See HACKING.184 for more
    info. [MG]
+ * Q-registers are now kept in a PE_REGS stack. See HACKING.184 for more
+   information. This will be used for other registers. [GM]
  * Renamed some variables in COMMAND() definitions for consistency/clarity.
    See HACKING.184 for more info. [MG]
  
@@ -39,7 +45,12 @@ Attributes:
  * Branch attributes now show the 'branch' attribute flag in lflags(). [MG]
  
 Functions:
-   
+ * setq(), regmatch(), strmatch() and sql() accept q-register names of
+   more than one character. [GM]
+ * unsetq() now accepts patterns of q-register names. [GM]
+ * listq() lists q-registers available to r(), optionally limited to those
+   matching a pattern. [GM]
+
 Fixes:
  * round() would sometimes return a number with a decimal point but no
    digits after it, like "5.". Reported by Minion. [MG]

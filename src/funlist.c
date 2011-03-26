@@ -2755,7 +2755,7 @@ FUNCTION(fun_regmatch)
  * Registers are by position (old way) or name:register (new way)
  *
  */
-  int i, nqregs, curq;
+  int i, nqregs;
   char *qregs[NUMQ], *holder[NUMQ];
   pcre *re;
   pcre_extra *extra;
@@ -2763,11 +2763,10 @@ FUNCTION(fun_regmatch)
   int erroffset;
   int offsets[99];
   int subpatterns;
+  char lbuff[BUFFER_LEN], *lbp;
   int flags = 0;
-  int qindex;
   ansi_string *as;
   char *txt;
-  char *qptr;
   char *needle;
   size_t len;
 
@@ -2825,14 +2824,9 @@ FUNCTION(fun_regmatch)
       regname = holder[i];
     }
 
-    if (regname && regname[0] && !regname[1] &&
-        ((qindex = qreg_indexes[(unsigned char) regname[0]]) != -1))
-      curq = qindex;
-    else
-      curq = -1;
-    if (curq < 0 || curq >= NUMQ)
-      continue;
-    *(pe_info->qreg_values[curq]) = '\0';
+    if (ValidQregName(regname)) {
+      PE_Setq(pe_info, regname, "");
+    }
   }
   /* Now, only for those that have a pattern, copy text */
   for (i = 0; i < nqregs; i++) {
@@ -2852,31 +2846,28 @@ FUNCTION(fun_regmatch)
       regname = qregs[i];
     }
 
-    if (regname && regname[0] && !regname[1] &&
-        ((qindex = qreg_indexes[(unsigned char) regname[0]]) != -1))
-      curq = qindex;
-    else
-      curq = -1;
-    if (curq < 0 || curq >= NUMQ)
+    if (!ValidQregName(regname)) {
+      if (regname[0] != '-' || regname[1]) {
+        safe_str(T(e_badregname), buff, bp);
+      }
       continue;
+    }
 
     if (subpatterns < 0) {
-      pe_info->qreg_values[curq][0] = '\0';
+      lbuff[0] = '\0';
     } else if (named_subpattern) {
-      qptr = pe_info->qreg_values[curq];
+      lbp = lbuff;
       ansi_pcre_copy_named_substring(re, as, offsets, subpatterns,
                                      named_subpattern, 1,
-                                     pe_info->qreg_values[curq], &qptr);
-
-      if (qptr != pe_info->qreg_values[curq])
-        *qptr = '\0';
+                                     lbuff, &lbp);
+      *(lbp) = '\0';
     } else {
-      qptr = pe_info->qreg_values[curq];
+      lbp = lbuff;
       ansi_pcre_copy_substring(as, offsets, subpatterns, subpattern, 1,
-                               pe_info->qreg_values[curq], &qptr);
-      if (qptr != pe_info->qreg_values[curq])
-        *qptr = '\0';
+                               lbuff, &lbp);
+      *(lbp) = '\0';
     }
+    PE_Setq(pe_info, regname, lbuff);
   }
   for (i = 0; i < nqregs; i++) {
     mush_free(holder[i], "regmatch");

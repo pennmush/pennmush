@@ -137,7 +137,7 @@ do_teach(dbref player, const char *tbuf1, int list, MQUE * parent_queue)
                         ANSI_HILITE, tbuf1, ANSI_END), NA_INTER_HEAR);
   new_queue_actionlist(player, parent_queue->enactor, player, (char *) tbuf1,
                        parent_queue, PE_INFO_SHARE,
-                       flags, NULL, NULL);
+                       flags, NULL);
 }
 
 /** The say command.

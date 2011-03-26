@@ -804,7 +804,8 @@ FUNCTION(fun_sql)
   int i;
   int numfields, numrows;
   ansi_string *as;
-  int qindex = -1;
+  char *qreg_save = NULL;
+
   if (sql_platform() == SQL_PLATFORM_DISABLED) {
     safe_str(T(e_disabled), buff, bp);
     return;
@@ -826,14 +827,16 @@ FUNCTION(fun_sql)
 
   if (nargs >= 4) {
     /* return affected rows to the qreg in args[3]. */
-    if (args[3][0] && !args[3][1]) {
-      qindex = qreg_indexes[(unsigned char) args[3][0]];
+    if (args[3][0]) {
+      if (ValidQregName(args[3])) {
+        qreg_save = args[3];
+      }
     }
   }
 
   qres = sql_query(args[0], &affected_rows);
-  if (affected_rows >= 0 && qindex >= 0) {
-    strcpy(pe_info->qreg_values[qindex], unparse_number(affected_rows));
+  if (qreg_save && affected_rows >= 0) {
+    PE_Setq(pe_info, qreg_save, unparse_number(affected_rows));
   }
   sql_test_result(qres);
   /* Get results. A silent query (INSERT, UPDATE, etc.) will return NULL */

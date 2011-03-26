@@ -26,13 +26,13 @@ typedef struct strtree StrTree;
  */
 struct strtree {
   StrNode *root;        /**< Pointer to root node */
+  const char *name;     /**< For tracking memory use */
   size_t count;         /**< Number of nodes in the tree */
   size_t mem;           /**< Memory used by the tree */
 };
 
-void st_init(StrTree *root);
+void st_init(StrTree *root, const char *name);
 char const *st_insert(char const *s, StrTree *root);
-char const *st_insert_perm(char const *s, StrTree *root);
 char const *st_find(char const *s, StrTree *root);
 void st_delete(char const *s, StrTree *root);
 void st_print(StrTree *root);

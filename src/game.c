@@ -1858,6 +1858,13 @@ do_dolist(dbref player, char *list, char *command, dbref cause,
     return;
   }
 
+  if (queue_entry && (queue_entry->pe_info->iter_nestings + 1) > MAX_ITERS) {
+    notify(player, T("Too many @dolists."));
+    if (flags & DOL_NOTIFY)
+      parse_que(player, cause, "@notify me", NULL);
+    return;
+  }
+
   if (flags & DOL_DELIM) {
     if (list[1] != ' ') {
       notify(player, T("Separator must be one character."));

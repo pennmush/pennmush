@@ -492,7 +492,7 @@ FUNCTION(fun_switch)
   char *tbuf1 = NULL;
   int first = 1, found = 0, exact = 0;
 
-  if (pe_info->switch_nestings >= MAX_ITERS) {
+  if ((pe_info->switch_nestings + 1) >= MAX_ITERS) {
     safe_str(T("#-1 TOO MANY SWITCHES"), buff, bp);
     return;
   }

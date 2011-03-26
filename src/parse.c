@@ -1716,7 +1716,7 @@ process_expression(char *buff, char **bp, char const **str,
           if (!nextc)
             goto exit_sequence;
           (*str)++;
-          qv[0] = toupper(nextc);
+          qv[0] = UPCASE(nextc);
           qval = PE_Getq(pe_info, qv);
           if (qval) {
             safe_str(qval, buff, bp);

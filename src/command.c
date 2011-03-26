@@ -1316,7 +1316,7 @@ command_parse(dbref player, char *string, MQUE * queue_entry)
    * Treat like noeval, except for #2. Eval arg if no =.
    */
 
-  if ((cmd->func == command_atrset) && (queue_entry->queue_type & QUEUE_SOCKET)) {
+  if ((cmd->func == command_atrset) && (queue_entry->queue_type & QUEUE_NOLIST)) {
     /* Special case: eqsplit, noeval of rhs only */
     command_argparse(player, queue_entry->enactor, queue_entry->caller, pe_info,
                      &p, ls, lsa, cmd, 0, 0);

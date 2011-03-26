@@ -71,7 +71,7 @@ static ATTR *atr_get_with_parent(dbref obj, char const *atrname, dbref *parent);
 void
 init_atr_name_tree(void)
 {
-  st_init(&atr_names);
+  st_init(&atr_names, "AtrNameTree");
 }
 
 /** Lookup table for good_atr_name */
@@ -1181,7 +1181,7 @@ atr_pattern_count(dbref player, dbref thing, const char *name,
   } else {
     StrTree seen;
     int parent_depth;
-    st_init(&seen);
+    st_init(&seen, "AttrsSeenTree");
     for (parent_depth = MAX_PARENTS + 1, parent = thing;
          (parent_depth-- && parent != NOTHING) &&
          (doparent || (parent == thing)); parent = Parent(parent)) {
@@ -1252,7 +1252,7 @@ atr_iter_get_parent(dbref player, dbref thing, const char *name, int mortal,
   } else {
     StrTree seen;
     int parent_depth;
-    st_init(&seen);
+    st_init(&seen, "AttrsSeenTree");
     for (parent_depth = MAX_PARENTS + 1, parent = thing;
          parent_depth-- && parent != NOTHING; parent = Parent(parent)) {
       indirect = &List(parent);
@@ -1433,8 +1433,6 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
   ATTR *ptr;
   int parent_depth;
   char *args[10];
-  char *rnull[NUMQ];
-  int i;
   char tbuf1[BUFFER_LEN];
   char tbuf2[BUFFER_LEN];
   char *s;
@@ -1454,10 +1452,6 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
   if (check_locks && (!GoodObject(thing) || Halted(thing)
                       || (type == '$' && NoCommand(thing))))
     return 0;
-
-  for (i = 0; i < NUMQ; i++) {
-    rnull[i] = NULL;
-  }
 
   if (type == '$') {
     flag_mask = AF_COMMAND;
@@ -1595,7 +1589,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
           }
           /* inplace queue */
           new_queue_actionlist_int(thing, player, player, s, from_queue,
-                               pe_flags, queue_type, args, NULL, tprintf("#%d/%s", thing, AL_NAME(ptr)));
+                               pe_flags, queue_type, args, tprintf("#%d/%s", thing, AL_NAME(ptr)));
         } else {
           /* Normal queue */
           parse_que_attr(thing, player, s, args, tprintf("#%d/%s", thing, AL_NAME(ptr)));
@@ -1750,7 +1744,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
               queue_type &= ~QUEUE_PRESERVE_QREG;
             }
             new_queue_actionlist_int(thing, player, player, s, from_queue,
-                                 pe_flags, queue_type, args, NULL, tprintf("#%d/%s", thing, AL_NAME(ptr)));
+                                 pe_flags, queue_type, args, tprintf("#%d/%s", thing, AL_NAME(ptr)));
           } else {
             /* Normal queue */
             parse_que_attr(thing, player, s, args, tprintf("#%d/%s", thing, AL_NAME(ptr)));
@@ -1879,7 +1873,7 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
           queue_type &= ~QUEUE_PRESERVE_QREG;
         }
         new_queue_actionlist_int(thing, player, player, s, from_queue,
-                             pe_flags, queue_type, args, NULL, tprintf("#%d/%s", thing, AL_NAME(ptr)));
+                             pe_flags, queue_type, args, tprintf("#%d/%s", thing, AL_NAME(ptr)));
       } else {
         /* Normal queue */
         parse_que_attr(thing, player, s, args, tprintf("#%d/%s", thing, AL_NAME(ptr)));

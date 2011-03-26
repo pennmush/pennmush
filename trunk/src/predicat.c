@@ -1159,10 +1159,10 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
       }
       if (queue_type != QUEUE_DEFAULT) {
         new_queue_actionlist(player, cause, cause, tbuf1, queue_entry,
-                             PE_INFO_SHARE, queue_type, NULL, NULL);
+                             PE_INFO_SHARE, queue_type, NULL);
       } else {
         new_queue_actionlist(player, cause, cause, tbuf1, queue_entry,
-                             PE_INFO_CLONE, QUEUE_DEFAULT, NULL, NULL);
+                             PE_INFO_CLONE, QUEUE_DEFAULT, NULL);
       }
       mush_free(tbuf1, "replace_string.buff");
     }
@@ -1181,10 +1181,10 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
     }
     if (queue_type != QUEUE_DEFAULT) {
       new_queue_actionlist(player, cause, cause, tbuf1, queue_entry,
-                           PE_INFO_SHARE, queue_type, NULL, NULL);
+                           PE_INFO_SHARE, queue_type, NULL);
     } else {
       new_queue_actionlist(player, cause, cause, tbuf1, queue_entry,
-                           PE_INFO_CLONE, QUEUE_DEFAULT, NULL, NULL);
+                           PE_INFO_CLONE, QUEUE_DEFAULT, NULL);
     }
     mush_free(tbuf1, "replace_string.buff");
   }

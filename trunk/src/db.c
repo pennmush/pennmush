@@ -108,7 +108,7 @@ extern struct db_stat_info current_state;
 void
 init_names(void)
 {
-  st_init(&object_names);
+  st_init(&object_names, "ObjectNameTree");
 }
 
 /** Set an object's name through the name strtree.

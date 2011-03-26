@@ -232,11 +232,11 @@ See also: STRINGS
   checkpass()   clone()       create()      die()         dig()
   firstof()     functions()   isdbref()     isint()       isnum()
   isobjid()     isword()      letq()        localize()    link()
-  list()        lnum()        null()        numversion()  objeval()
-  open()        pcreate()     r()           rand()        s()
-  scan()        set()         setq()        setr()        soundex()
-  soundslike()  speak()       tel()         textentries() textfile()
-  valid()       wipe()        @@()
+  list()        listq()       lnum()        null()        numversion()
+  objeval()     open()        pcreate()     r()           rand()
+  s()           scan()        set()         setq()        setr()
+  soundex()     soundslike()  speak()       tel()         textentries()
+  textfile()    unsetq()      valid()       wipe()        @@()
 
 & @@()
 & NULL()
@@ -2370,7 +2370,7 @@ See also: @lemit, remit()
     > think setr(A, 1):[letq(A, 2, %qA)]:%qA
     1:2:1
 
-See also: setq(), setr(), localize(), ulocal(), r()
+See also: setq(), setr(), unsetq(), listq(), localize(), ulocal(), r()
 & LEXITS()
   lexits(<room>)
 
@@ -3731,7 +3731,7 @@ See also: @quota, @squota, @allquota
   The '%q<register>' percent-substitution can also be used to access these
   local registers.
   
-See also: setq(), letq()
+See also: setq(), letq(), listq(), unsetq()
 & RAND()
   rand(<num>)
   rand(<min>, <max>)
@@ -4107,10 +4107,8 @@ See also: setinter(), setunion()
 See also: setdiff(), setunion()
 & SETQ()
 & SETR()
-& UNSETQ()
   setq(<register1>, <string1>[, ... , <registerN>, <stringN>])
   setr(<register1>, <string1>[, ... , <registerN>, <stringN>])
-  unsetq([<register1> [ ... <registerN>]])
   
   The setq() and setr() functions are used to copy strings into local
   registers. setq() returns a null string; it is a purely "side
@@ -4122,21 +4120,26 @@ See also: setdiff(), setunion()
   registers are set; if you want to use the result of setting one
   register in setting another, use multiple setq()s.
 
-  There are thirty-six local registers, numbered 0 through 9 and A
-  through Z.  They are cleared at the start of each new queue cycle
-  (i.e. whenever a new command is evaluated). They are most useful for
-  storing complex function evaluations which are used repeatedly
-  within a single command.
+  Register names follow the same rules for attribute names, but they
+  must be shorter than 64 characters in length. 
 
-  Registers set via setq() or setr() can be accessed via the r()
-  function, or via the %qN percent-substitution.
+  Register names are case insensitive.
 
-  unsetq() without arguments clears all registers. unsetq() with
-  arguments clears the specified registers.
-
-  See 'help setq2' for examples.
+  See 'help setq2' for more.
+  See also: r(), listq(), unsetq(), letq(), localize(), ulocal()
 & SETQ2
+  The maximum number of q-registers you can have set is configured via
+  @config max_attrs_per_obj. That number is for the total number of
+  q-registers set in a queue entry: Including across localize()d calls.
+  Beyond that count, you can only use single character registers (a-z 0-9).
+  Attempts to create a new register will simply fail silently, with the
+  exception of setq().
 
+  Registers set via setq() or setr() can be accessed via the r() function.
+  Single-character registers can be accessed via %qN substitution.
+
+  See 'help setq3' for examples.
+& SETQ3
   The setq() function is probably best used at the start of the string
   being manipulated, such as in the following example:
 
@@ -4159,8 +4162,8 @@ See also: setdiff(), setunion()
     > think setq(0,foo,1,bar)%q0%q1 - [setq(0,%q1,1,%q0)]%q0%q1
     foobar - barfoo
 
-  See 'help setq3' for scoping rules of setq().
-& SETQ3
+  See 'help setq4' for scoping rules of setq().
+& SETQ4
   The registers set by setq() can be used in later commands in the same 
   thread. That is, the registers are set to null on all $-commands, 
   ^-commands, A-attribute triggers, etc., but are then retained from that 
@@ -4172,6 +4175,36 @@ See also: setdiff(), setunion()
     Object says "foo"
     Object says "bar"
     Object says "foo"
+& LISTQ()
+& UNSETQ()
+  listq()
+  listq(<pattern>)
+  unsetq(<pattern1> [<pattern2> [...]])
+
+  listq() returns a space-separated list of set q-registers with values
+  available in the current q-register scope. If <pattern> is provided,
+  then only those that match the glob pattern <pattern> will be returned.
+
+  unsetq() without arguments clears all registers. Otherwise, unsetq()
+  treats its argument as a list of register name patterns, and will
+  unset all those registers within the local scope.
+
+  If unsetq() is inside of a letq(), and does not have an argument,
+  it will clear the registers that letq() has protected.  unsetq()
+  with arguments clears the specified registers.
+
+  unsetq(<arg>) will clear all registers returned by listq(<arg>).
+
+  Example:
+    > think setq(name,Walker,num,#6061,loc,Bahamas)[listq()]
+    LOC NAME NUM
+    > think setq(name,Walker,num,#6061,loc,Bahamas)[listq(n*)]
+    NAME NUM
+    > think setq(name,Walker,num,#6061,loc,Bahamas)[unsetq(name)][listq()]
+    LOC NUM
+    > think setq(name,Walker,num,#6061,loc,Bahamas)[unsetq(n*)][listq()]
+    LOC
+
 & SETUNION()
   setunion(<list1>, <list2>[, <delimiter>[, <sort type>[, <osep>]]])
  

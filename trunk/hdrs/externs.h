@@ -260,17 +260,17 @@ void do_halt(dbref owner, const char *ncom, dbref victim);
 #define SYSEVENT -1
 bool queue_event(dbref enactor, const char *event, const char *fmt, ...)
   __attribute__ ((__format__(__printf__, 3, 4)));
-#define parse_que(executor,enactor,actionlist,env) new_queue_actionlist(executor,enactor,enactor,actionlist,NULL,PE_INFO_DEFAULT,QUEUE_DEFAULT,env,NULL)
-#define parse_que_attr(executor,enactor,actionlist,env,attr) new_queue_actionlist_int(executor,enactor,enactor,actionlist,NULL,PE_INFO_DEFAULT,QUEUE_DEFAULT,env,NULL,attr)
+#define parse_que(executor,enactor,actionlist,env) new_queue_actionlist(executor,enactor,enactor,actionlist,NULL,PE_INFO_DEFAULT,QUEUE_DEFAULT,env)
+#define parse_que_attr(executor,enactor,actionlist,env,attr) new_queue_actionlist_int(executor,enactor,enactor,actionlist,NULL,PE_INFO_DEFAULT,QUEUE_DEFAULT,env,attr)
 
 void insert_que(MQUE * queue_entry, MQUE * parent_queue);
 
 void new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
                           char *actionlist, MQUE * queue_entry,
                           int flags, int queue_type, char *env[10],
-                          char *qreg[NUMQ], char *fromattr);
-#define new_queue_actionlist(executor,enactor,caller,actionlist,parent_queue,flags,queue_type,env,qreg) \
-        new_queue_actionlist_int(executor,enactor,caller,actionlist,parent_queue,flags,queue_type,env,qreg,NULL)
+                          char *fromattr);
+#define new_queue_actionlist(executor,enactor,caller,actionlist,parent_queue,flags,queue_type,env) \
+        new_queue_actionlist_int(executor,enactor,caller,actionlist,parent_queue,flags,queue_type,env,NULL)
 
 int queue_attribute_base(dbref executor, const char *atrname, dbref enactor,
                          int noparent, char *env[10]);
@@ -711,17 +711,6 @@ mush_strndup(const char *src, size_t len, const char *check)
     void restore_regexp_context(struct re_context *save,
                                 struct re_context *orig);
     void reset_regexp_context(struct re_context *re);
-
-    void save_global_regs(const char *funcname, char *preserve[],
-                          char orig[NUMQ][BUFFER_LEN]);
-    void restore_global_regs(const char *funcname, char *preserve[],
-                             char orig[NUMQ][BUFFER_LEN]);
-
-    void save_partial_global_reg(const char *funcname, char *preserve[], int i,
-                                 char orig[NUMQ][BUFFER_LEN]);
-    void restore_partial_global_regs(const char *funcname, char *preserve[],
-                                     char orig[NUMQ][BUFFER_LEN]);
-
 
     void save_env(const char *funcname
                   __attribute__ ((__unused__)), char *preserve[], char *orig[]);

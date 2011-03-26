@@ -28,6 +28,7 @@
 #include "attrib.h"
 #include "confmagic.h"
 #include "ansi.h"
+#include "strtree.h"
 
 #ifdef WIN32
 #include <windows.h>
@@ -239,7 +240,6 @@ extern signed char qreg_indexes[UCHAR_MAX + 1];
 FUNCTION(fun_setq)
 {
   /* sets a variable into a local register */
-  int qindex;
   int n;
 
   if ((nargs % 2) != 0) {
@@ -250,26 +250,28 @@ FUNCTION(fun_setq)
   }
 
   for (n = 0; n < nargs; n += 2) {
-    if (*args[n] && (*(args[n] + 1) == '\0') &&
-        ((qindex = qreg_indexes[(unsigned char) args[n][0]]) != -1)
-        && pe_info->qreg_values[qindex]) {
-      strcpy(pe_info->qreg_values[qindex], args[n + 1]);
-      if (n == 0 && !strcmp(called_as, "SETR"))
-        safe_strl(args[n + 1], arglens[n + 1], buff, bp);
-    } else
-      safe_str(T("#-1 REGISTER OUT OF RANGE"), buff, bp);
+    if (ValidQregName(args[n])) {
+      if (!PE_Setq(pe_info, args[n], args[n+1])) {
+        safe_str(T(e_toomanyregs), buff, bp);
+      }
+    } else {
+      safe_str(T(e_badregname), buff, bp);
+    }
+  }
+  if (!strcmp(called_as, "SETR") && nargs >= 2) {
+    safe_strl(args[1], arglens[1], buff, bp);
   }
 }
 
 FUNCTION(fun_letq)
 {
-  char **values = NULL;
-  int *regs = NULL;
   int npairs;
   int n;
+  char nbuf[BUFFER_LEN], *nbp;
   char tbuf[BUFFER_LEN], *tbp;
-  char *preserve[NUMQ];
   const char *p;
+
+  PE_REGS *pe_regs;
 
   if ((nargs % 2) != 1) {
     safe_str(T("#-1 FUNCTION (LETQ) EXPECTS AN ODD NUMBER OF ARGUMENTS"),
@@ -279,34 +281,21 @@ FUNCTION(fun_letq)
 
   npairs = (nargs - 1) / 2;
 
-  for (n = 0; n < NUMQ; n++)
-    preserve[n] = NULL;
+  pe_regs = pe_regs_create(PE_REGS_Q | PE_REGS_LET);
 
   if (npairs) {
-    values = mush_calloc(npairs, sizeof(char *), "letq.values");
-    if (!values) {
-      safe_str(T("#-1 UNABLE TO ALLOCATE MEMORY"), buff, bp);
-      return;
-    }
-
-    regs = mush_calloc(npairs, sizeof(int), "letq.registers");
-    if (!regs) {
-      safe_str(T("#-1 UNABLE TO ALLOCATE MEMORY"), buff, bp);
-      mush_free(values, "letq.values");
-      return;
-    }
-
     for (n = 0; n < npairs; n++) {
       int i = n * 2;
 
-      tbp = tbuf;
+      /* The register */
+      nbp = nbuf;
       p = args[i];
-      process_expression(tbuf, &tbp, &p, executor, caller, enactor, PE_DEFAULT,
+      process_expression(nbuf, &nbp, &p, executor, caller, enactor, PE_DEFAULT,
                          PT_DEFAULT, pe_info);
-      *tbp = '\0';
-      regs[n] = qreg_indexes[(unsigned char) tbuf[0]];
-      if (regs[n] < 0) {
-        safe_str(T("#-1 REGISTER OUT OF RANGE"), buff, bp);
+      *nbp = '\0';
+
+      if (!ValidQregName(nbuf)) {
+        safe_str(T(e_badregname), buff, bp);
         goto cleanup;
       }
 
@@ -315,69 +304,231 @@ FUNCTION(fun_letq)
       process_expression(tbuf, &tbp, &p, executor, caller, enactor, PE_DEFAULT,
                          PT_DEFAULT, pe_info);
       *tbp = '\0';
-      values[n] = mush_strdup(tbuf, "letq.value");
-      if (!values[n]) {
-        safe_str(T("#-1 UNABLE TO ALLOCATE MEMORY"), buff, bp);
-        goto cleanup;
-      }
-    }
-
-    for (n = 0; n < npairs; n++) {
-      save_partial_global_reg("letq", preserve, regs[n], pe_info->qreg_values);
-      mush_strncpy(pe_info->qreg_values[regs[n]], values[n], BUFFER_LEN);
+      pe_regs_set(pe_regs, PE_REGS_Q, nbuf, tbuf);
     }
   }
+
+
+  /* Localize to our current pe_regs */
+  pe_regs->prev = pe_info->regvals;
+  pe_info->regvals = pe_regs;
+
   p = args[nargs - 1];
   process_expression(buff, bp, &p, executor, caller, enactor, PE_DEFAULT,
                      PT_DEFAULT, pe_info);
 
+  pe_info->regvals = pe_regs->prev;
 cleanup:
-  if (regs)
-    mush_free(regs, "letq.registers");
-  if (values) {
-    restore_partial_global_regs("letq", preserve, pe_info->qreg_values);
-    for (n = 0; n < npairs; n++)
-      mush_free(values[n], "letq.value");
-    mush_free(values, "letq.values");
+  if (pe_regs) {
+    pe_regs_free(pe_regs);
+  }
+}
+
+struct st_qreg_data {
+  char *buff;
+  char **bp;
+  char *wild;
+  int   count;
+};
+
+static void
+listq_walk(const char *cur, int count __attribute__ ((__unused__)),
+           void *userdata) {
+  struct st_qreg_data *st_data = (struct st_qreg_data *) userdata;
+
+  if (!st_data->wild || quick_wild(st_data->wild, cur)) {
+    if (st_data->count++) {
+      safe_chr(' ', st_data->buff, st_data->bp);
+    }
+    safe_str(cur, st_data->buff, st_data->bp);
+  }
+}
+
+/* ARGSUSED */
+FUNCTION(fun_listq)
+{
+  /* Build the Q-reg tree */
+  PE_REG_VAL *val;
+  PE_REGS *pe_regs;
+  StrTree qregs;
+  StrTree blanks;
+  struct st_qreg_data st_data;
+  st_data.buff = buff;
+  st_data.bp = bp;
+  st_data.wild = NULL;
+  st_data.count = 0;
+
+  /* Quick check: No q-regs */
+  if (pe_info->regvals == NULL) {
+    return;
+  }
+
+  if (nargs >= 1) {
+    st_data.wild = args[0];
+  }
+
+  st_init(&qregs, "ListQTree");
+  st_init(&blanks, "BlankQTree");
+
+  pe_regs = pe_info->regvals;
+  while (pe_regs) {
+    val = pe_regs->vals;
+    while (val) {
+      /* Insert it into the tree if it's non-blank. */
+      if ((val->type & PE_REGS_STR) && *(val->val.sval)
+          && !st_find(val->name, &blanks)) {
+        st_insert(val->name, &qregs);
+      } else {
+        st_insert(val->name, &blanks);
+      }
+      val = val->next;
+    }
+    /* If it's a QSTOP, we stop. */
+    if (pe_regs->flags & PE_REGS_QSTOP) {
+      break;
+    }
+    pe_regs = pe_regs->prev;
+  }
+  st_walk(&qregs, listq_walk, &st_data);
+  st_flush(&qregs);
+  st_flush(&blanks);
+}
+
+void
+clear_allq(NEW_PE_INFO *pe_info) {
+  PE_REGS *pe_regs;
+  PE_REG_VAL *pe_val;
+  pe_regs = pe_info->regvals;
+  while (pe_regs) {
+    if (pe_regs->flags & PE_REGS_Q) {
+      /* Do this for everything up to the lowest level q-reg that _isn't_ a
+       * letq() */
+      for (pe_val = pe_regs->vals; pe_val; pe_val = pe_val->next) {
+        if (pe_val->type & PE_REGS_Q) {
+          if (pe_val->type & PE_REGS_STR) {
+            /* Quick and dirty: Set it to "". */
+            pe_regs_set(pe_regs, pe_val->type, pe_val->name, "");
+          } else {
+            pe_val->val.ival = 0;
+          }
+        }
+      }
+    }
+    if (!(pe_regs->flags & PE_REGS_LET)) {
+      pe_regs->flags |= PE_REGS_QSTOP;
+      return;
+    }
+    pe_regs = pe_regs->prev;
+  } 
+}
+
+struct st_unsetq_data {
+  char *buff;
+  char **bp;
+  char *wild;
+  NEW_PE_INFO *pe_info;
+};
+
+static void
+unsetq_walk(const char *cur, int count __attribute__ ((__unused__)),
+           void *userdata) {
+  struct st_unsetq_data *st_data = (struct st_unsetq_data *) userdata;
+
+  /* If it matches the pattern, then set it to "" (blank / unset) */
+  if (!st_data->wild || quick_wild(st_data->wild, cur)) {
+    PE_Setq(st_data->pe_info, cur, "");
   }
 }
 
 /* ARGSUSED */
 FUNCTION(fun_unsetq)
 {
-  /* sets a variable into a local register */
-  char *ptr;
-  int qindex;
-  int i;
+  PE_REG_VAL *val;
+  PE_REGS *pe_regs;
+  StrTree qregs;
+  StrTree blanks;
+  struct st_unsetq_data st_data;
+  char *list, *cur;
 
-  if (nargs == 0 || args[0][0] == '\0') {
-    for (i = 0; i < NUMQ; i++) {
-      *(pe_info->qreg_values[i]) = '\0';
-    }
+  st_data.buff = buff;
+  st_data.bp = bp;
+  st_data.wild = NULL;
+  st_data.pe_info = pe_info;
+
+  /* Quick check: No q-regs */
+  if (pe_info->regvals == NULL) {
     return;
   }
 
-  for (ptr = args[0]; *ptr; ptr++) {
-    if ((qindex = qreg_indexes[(unsigned char) *ptr]) != -1) {
-      *(pe_info->qreg_values[qindex]) = '\0';
-    } else if (!isspace((int) *ptr)) {
-      safe_str(T("#-1 REGISTER OUT OF RANGE"), buff, bp);
+  /* An unsetq() with no arguments has special behavior: It clears all
+   * Q-registers up the stack until it finds the full scope (not marked
+   * PE_REGS_LET), then marks that scope as PE_REG_QSTOP, so that
+   * attempts to fetch q-registers will not go past it.
+   */
+  if (nargs == 0 || args[0][0] == '\0') {
+    clear_allq(pe_info);
+    return;
+  }
+
+  /* Special case: One arg, a "*" (will match all q-regs) */
+  if (nargs == 1 && args[0][0] == '*' && args[0][1] == '\0') {
+    clear_allq(pe_info);
+    return;
+  }
+
+  /* unsetq with arguments: We build a list of what q-registers we have
+   * and compare them with the tree */
+
+  st_init(&qregs, "ListQTree");
+  st_init(&blanks, "BlankQTree");
+
+  /* Build the Q-reg tree */
+  pe_regs = pe_info->regvals;
+  while (pe_regs) {
+    val = pe_regs->vals;
+    while (val) {
+      /* Insert it into the tree if it's non-blank. */
+      if ((val->type & PE_REGS_STR) && *(val->val.sval)
+          && !st_find(val->name, &blanks)) {
+        st_insert(val->name, &qregs);
+      } else {
+        st_insert(val->name, &blanks);
+      }
+      val = val->next;
+    }
+    /* If it's a QSTOP, we stop. */
+    if (pe_regs->flags & PE_REGS_QSTOP) {
+      break;
+    }
+    pe_regs = pe_regs->prev;
+  }
+
+  list = args[0];
+  while (list) {
+    cur = split_token(&list, ' ');
+    if (cur && *cur) {
+      if (*cur == '*' && *(cur+1) == '\0') {
+        clear_allq(pe_info);
+        break;
+      } else {
+        st_data.wild = cur;
+        st_walk(&qregs, unsetq_walk, &st_data);
+      }
     }
   }
+  st_flush(&qregs);
+  st_flush(&blanks);
 }
 
 /* ARGSUSED */
 FUNCTION(fun_r)
 {
   /* returns a local register */
-  int qindex;
-
-  if (*args[0] && (*(args[0] + 1) == '\0') &&
-      ((qindex = qreg_indexes[(unsigned char) args[0][0]]) != -1)
-      && pe_info->qreg_values[qindex])
-    safe_str(pe_info->qreg_values[qindex], buff, bp);
-  else
-    safe_str(T("#-1 REGISTER OUT OF RANGE"), buff, bp);
+  if (ValidQregName(args[0])) {
+    safe_str(PE_Getq(pe_info, args[0]), buff, bp);
+  } else {
+    safe_str(T(e_badregname), buff, bp);
+  }
 }
 
 /* --------------------------------------------------------------------------

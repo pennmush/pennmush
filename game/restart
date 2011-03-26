@@ -11,7 +11,7 @@ done
 
 # REQUIRED if the autodetect fails: set GAMEDIR to point to your game directory,
 # e.g. /home/mush/game.
-GAMEDIR=`cd $(dirname "$SCRIPTPATH"); pwd`
+GAMEDIR="`cd $(dirname "$SCRIPTPATH"); pwd`"
 
 # OPTIONAL things that you may want to tweak.
 
@@ -166,4 +166,4 @@ export DATEMSK
 
 export GAMEDIR
 
-LC_ALL=$LANG LANG=$LANG ./netmush $@ --pid-file=$PIDFILE $GAMEDIR/$CONF_FILE &
+LC_ALL=$LANG LANG=$LANG ./netmush $@ --pid-file=$PIDFILE "$GAMEDIR/$CONF_FILE" &

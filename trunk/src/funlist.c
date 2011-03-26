@@ -1941,7 +1941,7 @@ FUNCTION(fun_iter)
   const char *replace[2];
 
 
-  if (pe_info->iter_nestings >= MAX_ITERS) {
+  if ((pe_info->iter_nestings + 1) >= MAX_ITERS) {
     safe_str(T("#-1 TOO MANY ITERS"), buff, bp);
     return;
   }

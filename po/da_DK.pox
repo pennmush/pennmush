@@ -280,10 +280,6 @@ msgstr "#-1 ADGANG NÆGTET"
 msgid "#-1 REGEXP ERROR: "
 msgstr "#-1 REGEXP FEJL: "
 
-#: src/funmisc.c:158 src/funmisc.c:178
-msgid "#-1 REGISTER OUT OF RANGE"
-msgstr "#-1 REGISTER UDEN FOR LOVLIGT OMRÅDE"
-
 #: src/function.c:118
 msgid "#-1 SEPARATOR MUST BE ONE CHARACTER"
 msgstr "#-1 ADSKILLEREN SKAL VÆRE EN KARAKTER"

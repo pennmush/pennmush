@@ -593,10 +593,6 @@ msgstr "#-1 TOESTEMMING GEWEIGERD"
 msgid "#-1 REGEXP ERROR: "
 msgstr "#-1 REGEXP FOUT "
 
-#: src/funmisc.c:158 src/funmisc.c:178
-msgid "#-1 REGISTER OUT OF RANGE"
-msgstr "#-1 REGISTER BUITEN BEREIK"
-
 #: funmath.c:1057
 msgid "#-1 ROOT OUT OF RANGE"
 msgstr "#-1 WORTEL BUITEN BEREIK"
@@ -653,10 +649,6 @@ msgstr "#-1 TE VEEL WOORDEN"
 #: funstr.c:757 funstr.c:765 funstr.c:795 funstr.c:803
 msgid "#-1 TR CANNOT ACCEPT NONPRINTING CHARS"
 msgstr "#-1 TR KAN GEEN NIET-PRINTENDE KARAKTERS ACCEPTEREN"
-
-#: funmisc.c:235 funmisc.c:241 funmisc.c:267
-msgid "#-1 UNABLE TO ALLOCATE MEMORY"
-msgstr "#-1 KON GEEN GEHEUGEN TOEWIJZEN"
 
 #: help.c:516 help.c:519
 msgid "#-1 UNAVAILABLE"

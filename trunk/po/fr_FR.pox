@@ -345,10 +345,6 @@ msgstr "#-1 PERMISSION REFUSE"
 msgid "#-1 REGEXP ERROR: "
 msgstr "#-1 ERREUR REGEXP: "
 
-#: src/funmisc.c:158 src/funmisc.c:178
-msgid "#-1 REGISTER OUT OF RANGE"
-msgstr "#-1 REGISTRE HORS DE PORTEE"
-
 #: src/function.c:118
 msgid "#-1 SEPARATOR MUST BE ONE CHARACTER"
 msgstr "#-1 LE SEPARATEUR DOIT ETRE UN CARACTERE UNIQUE"

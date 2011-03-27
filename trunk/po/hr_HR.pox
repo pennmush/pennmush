@@ -593,10 +593,6 @@ msgstr "#-1 DOZVOLA USKRAÆENA"
 msgid "#-1 REGEXP ERROR: "
 msgstr "#-1 GRE©KA U REGEXPU: "
 
-#: src/funmisc.c:158 src/funmisc.c:178
-msgid "#-1 REGISTER OUT OF RANGE"
-msgstr "#-1 REGISTAR IZVAN RASPONA"
-
 #: funmath.c:1057
 msgid "#-1 ROOT OUT OF RANGE"
 msgstr "#-1 KORIJEN IZVAN RASPONA"
@@ -653,10 +649,6 @@ msgstr "#-1 PREVI©E RIJEÈI"
 #: funstr.c:757 funstr.c:765 funstr.c:795 funstr.c:803
 msgid "#-1 TR CANNOT ACCEPT NONPRINTING CHARS"
 msgstr "#-1 TR NE MO®E PRIMITI NEISPISIVE ZNAKOVE"
-
-#: funmisc.c:235 funmisc.c:241 funmisc.c:267
-msgid "#-1 UNABLE TO ALLOCATE MEMORY"
-msgstr "#-1 NE MOGU ALOCIRATI MEMORIJU"
 
 #: help.c:516 help.c:519
 msgid "#-1 UNAVAILABLE"
@@ -5050,6 +5042,10 @@ msgstr "Da dobije¹ pristup ovom liku, spoji se na korisnika '%s' i napi¹i:\n"
 msgid "To channel %s: %s"
 msgstr "Na kanal %s: %s"
 
+#: game.c:1862
+msgid "Too many @dolists."
+msgstr "Previ¹e @dolista."
+
 #: set.c:88
 msgid "Too many aliases."
 msgstr "Previ¹e aliasa."
@@ -5077,6 +5073,10 @@ msgstr "Ne mo¾e¹ oemitirati tolikom broju ljudi."
 #: src/speech.c:402
 msgid "Too many people to whisper to."
 msgstr "Ne mo¾e¹ ¹aptati tolikom broju ljudi."
+
+#: predicat.c:1133
+msgid "Too many switches."
+msgstr "Previ¹e switcheva."
 
 #: boolexp.c:245
 msgid "Too much recursion in lock!"

@@ -30,6 +30,7 @@ Hardcode:
  * Q-registers are now kept in a PE_REGS stack. See HACKING.184 for more
    information. This will be used for other registers. [GM]
  * Regexp information ($1, $<foo>) are now kept in the PE_REGS stack. [GM]
+ * Faster regexps in many cases when there is no markup. [GM]
  * Renamed some variables in COMMAND() definitions for consistency/clarity.
    See HACKING.184 for more info. [MG]
  

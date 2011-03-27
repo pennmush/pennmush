@@ -754,8 +754,10 @@ FUNCTION(fun_reswitch)
   int first = 1, found = 0, flags = 0;
   int search, subpatterns, offsets[99];
   pcre *re;
-  struct re_context rsave;
-  ansi_string *mas;
+  PE_REGS *pe_regs;
+  ansi_string *mas = NULL;
+  const char *haystack;
+  int haystacklen;
   const char *errptr;
   int erroffset;
   pcre_extra *extra;
@@ -777,9 +779,16 @@ FUNCTION(fun_reswitch)
   process_expression(mstr, &dp, &sp, executor, caller, enactor,
                      PE_DEFAULT, PT_DEFAULT, pe_info);
   *dp = '\0';
-  mas = parse_ansi_string(mstr);
+  if (has_markup(mstr)) {
+    mas = parse_ansi_string(mstr);
+    haystack = mas->text;
+    haystacklen = mas->len;
+  } else {
+    haystack = mstr;
+    haystacklen = dp - mstr;
+  }
 
-  save_regexp_context(&rsave, &pe_info->re_context);
+  pe_regs = pe_regs_localize(pe_info, PE_REGS_REGEXP);
 
   pe_info->switch_nestings++;
   pe_info->switch_nestings_local++;
@@ -804,18 +813,21 @@ FUNCTION(fun_reswitch)
     extra = default_match_limit();
     search = 0;
     subpatterns =
-      pcre_exec(re, extra, mas->text, mas->len, search, 0, offsets, 99);
+      pcre_exec(re, extra, haystack, haystacklen, search, 0, offsets, 99);
     if (subpatterns >= 0) {
       /* If there's a #$ in a switch's action-part, replace it with
        * the value of the conditional (mstr) before evaluating it.
        */
       tbuf1 = replace_string("#$", mstr, args[j + 1]);
       sp = tbuf1;
+
       /* set regexp context here */
-      pe_info->re_context.re_code = re;
-      pe_info->re_context.re_from = mas;
-      pe_info->re_context.re_offsets = offsets;
-      pe_info->re_context.re_subpatterns = subpatterns;
+      pe_regs_clear(pe_regs);
+      if (mas) {
+        pe_regs_set_rx_context_ansi(pe_regs, re, offsets, subpatterns, mas);
+      } else {
+        pe_regs_set_rx_context(pe_regs, re, offsets, subpatterns, mstr);
+      }
       per = process_expression(buff, bp, &sp,
                                executor, caller, enactor,
                                PE_DEFAULT | PE_DOLLAR, PT_DEFAULT, pe_info);
@@ -824,19 +836,11 @@ FUNCTION(fun_reswitch)
     }
     mush_free(re, "pcre");
     if (first && found) {
-      free_ansi_string(mas);
-      restore_regexp_context(&rsave, &pe_info->re_context);
       CLEAR_SWITCH_VALUE(pe_info);
-      return;
+      goto exit_sequence;
     }
-    /* clear regexp context again here */
-    reset_regexp_context(&pe_info->re_context);
-
     if (per) {
-      free_ansi_string(mas);
-      restore_regexp_context(&rsave, &pe_info->re_context);
-      CLEAR_SWITCH_VALUE(pe_info);
-      return;
+      goto exit_sequence;
     }
   }
   if (!(nargs & 1) && !found) {
@@ -847,9 +851,14 @@ FUNCTION(fun_reswitch)
                        PE_DEFAULT, PT_DEFAULT, pe_info);
     mush_free(tbuf1, "replace_string.buff");
   }
-  free_ansi_string(mas);
+exit_sequence:
+  if (mas) {
+    free_ansi_string(mas);
+  }
   CLEAR_SWITCH_VALUE(pe_info);
-  restore_regexp_context(&rsave, &pe_info->re_context);
+  pe_regs_restore(pe_info, pe_regs);
+  pe_regs_free(pe_regs);
+  return;
 }
 
 #undef CLEAR_SWITCH_VALUE

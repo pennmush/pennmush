@@ -20,7 +20,10 @@ that have altered hardcode will appear here.
 
 ==========================================================================
 
-Version 1.8.4 patchlevel 4                                 Mar 18,  2011
+Version 1.8.4 patchlevel 4                                 ??? ??,  2011
+
+  Regexps are now stored in the PE_REGS structure. re_context is gone
+  from NEW_PE_INFO. Instead, use pe_regs_*.
 
   Q-registers are now stored in a PE_REGS structure, which will eventually
   also consume all other forms of registers. To set a Q register, use

@@ -44,34 +44,6 @@ slab *function_slab; /**< slab for 'struct fun' allocations */
 /* -------------------------------------------------------------------------*
  * Utilities.
  */
-
-void
-save_regexp_context(struct re_context *save, struct re_context *orig)
-{
-  save->re_code = orig->re_code;
-  save->re_from = orig->re_from;
-  save->re_subpatterns = orig->re_subpatterns;
-  save->re_offsets = orig->re_offsets;
-}
-
-void
-restore_regexp_context(struct re_context *save, struct re_context *orig)
-{
-  orig->re_code = save->re_code;
-  orig->re_from = save->re_from;
-  orig->re_subpatterns = save->re_subpatterns;
-  orig->re_offsets = save->re_offsets;
-}
-
-void
-reset_regexp_context(struct re_context *re)
-{
-  re->re_code = NULL;
-  re->re_subpatterns = -1;
-  re->re_offsets = NULL;
-  re->re_from = NULL;
-}
-
 /** Save a copy of the environment (%0-%9)
  * \param funcname name of function calling (for memory leak testing)
  * \param preserve pointer to array to store %0-%9 in.

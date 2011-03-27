@@ -441,7 +441,7 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
   pcre_extra *extra;
   size_t i;
   const char *errptr;
-  ansi_string *as;
+  ansi_string *as = NULL;
   const char *d;
   size_t delenn;
   int erroffset;
@@ -464,9 +464,14 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
   add_check("pcre");
 
   /* The ansi string */
-  as = parse_ansi_string(val);
-  delenn = as->len;
-  d = as->text;
+  if (has_markup(val)) {
+    as = parse_ansi_string(val);
+    delenn = as->len;
+    d = as->text;
+  } else {
+    d = val;
+    delenn = strlen(d);
+  }
 
   extra = default_match_limit();
   /*
@@ -475,7 +480,7 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
    */
   if ((subpatterns = pcre_exec(re, extra, d, delenn, 0, 0, offsets, 99))
       < 0) {
-    free_ansi_string(as);
+    if (as) free_ansi_string(as);
     mush_free(re, "pcre");
     return 0;
   }
@@ -504,12 +509,16 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
     if ((len - totallen) < BUFFER_LEN) {
       buff = data + len - BUFFER_LEN;
     }
-    ansi_pcre_copy_substring(as, offsets, subpatterns, (int) i, 1, buff, &bp);
+    if (as) {
+      ansi_pcre_copy_substring(as, offsets, subpatterns, (int) i, 1, buff, &bp);
+    } else {
+      pcre_copy_substring(val, offsets, subpatterns, (int) i, buff, len);
+    }
     *(bp++) = '\0';
     totallen = bp - data;
   }
 
-  free_ansi_string(as);
+  if (as) free_ansi_string(as);
   mush_free(re, "pcre");
   return 1;
 }

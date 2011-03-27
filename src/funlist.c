@@ -2595,7 +2595,10 @@ FUNCTION(fun_regreplace)
 
     do {
       /* Copy up to the start of the matched area */
-      safe_strl(start, offsets[0], postbuf, &postp);
+      char tmp = prebuf[offsets[0]];
+      prebuf[offsets[0]] = '\0';
+      safe_str(start, postbuf, &postp);
+      prebuf[offsets[0]] = tmp;
 
       /* Now copy in the replacement, putting in captured sub-expressions */
       obp = args[i + 1];
@@ -2733,9 +2736,6 @@ exit_sequence:
   pe_regs_restore(pe_info, pe_regs);
   pe_regs_free(pe_regs);
 }
-
-/** array of indexes for %q registers during regexp matching */
-extern signed char qreg_indexes[UCHAR_MAX + 1];
 
 FUNCTION(fun_regmatch)
 {

@@ -65,6 +65,7 @@ char parse_interesting[UCHAR_MAX + 1] = {
   ['\\'] = 1,
   [' '] = 1,
   ['}'] = 1,
+  ['>'] = 1,
   [']'] = 1,
   [')'] = 1,
   [','] = 1,
@@ -282,7 +283,7 @@ int main(int argc, char *argv[]) {
         " * %s. Edit that file, not this one, when making changes. */\n"
         "#include <stdlib.h>\n\n",
          argv[0], __FILE__);
-  print_table_bool("signed char", "qreg_indexes", q_offsets, -1);
+  // print_table_bool("signed char", "qreg_indexes", q_offsets, -1);
   print_table_bool("char", "active_table", parse_interesting, 0);
   print_table_bool("char", "atr_name_table", attribute_names, 0);
   print_table_bool("char", "valid_timefmt_codes", valid_timefmt_codes, 0);

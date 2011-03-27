@@ -234,8 +234,6 @@ FUNCTION(fun_prompt)
   do_pemit_list(executor, args[0], args[1], flags);
 }
 
-
-extern signed char qreg_indexes[UCHAR_MAX + 1];
 /* ARGSUSED */
 FUNCTION(fun_setq)
 {

@@ -267,8 +267,6 @@ call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
   int made_pe_info = 0;
   PE_REGS *pe_regs;
 
-  struct re_context rsave;
-
   /* Make sure we have a ufun first */
   if (!ufun)
     return 1;
@@ -278,11 +276,6 @@ call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
   } else {
     save_env("call_ufun", old_wenv, pe_info->env);
     old_args = pe_info->arg_count;
-
-    save_regexp_context(&rsave, &pe_info->re_context);
-
-    /* Set all the regexp patterns to NULL so they are not propogated */
-    reset_regexp_context(&pe_info->re_context);
 
     /* Stop itext() and stext() propagating down ufuns */
     iter_nest = pe_info->iter_nestings_local;
@@ -344,7 +337,6 @@ call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
     pe_info->iter_nestings_local = iter_nest;
     pe_info->switch_nestings_local = switch_nest;
     /* Restore regexp patterns */
-    restore_regexp_context(&rsave, &pe_info->re_context);
     strcpy(pe_info->attrname, old_attr);
   } else {
     for (i = 0; i < 10; i++)

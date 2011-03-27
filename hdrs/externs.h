@@ -331,6 +331,8 @@ char *decompose_str(char *what);
 
 /* From memcheck.c */
 void add_check(const char *ref);
+#define ADD_CHECK(x) add_check(x)
+#define DEL_CHECK(x) del_check(x, __FILE__, __LINE__)
 void del_check(const char *ref, const char *filename, int line);
 void list_mem_check(dbref player);
 void log_mem_check(void);
@@ -707,11 +709,6 @@ mush_strndup(const char *src, size_t len, const char *check)
     extern char *UNKNOWN_LIST;
 
 /* From function.c and other fun*.c */
-    void save_regexp_context(struct re_context *save, struct re_context *orig);
-    void restore_regexp_context(struct re_context *save,
-                                struct re_context *orig);
-    void reset_regexp_context(struct re_context *re);
-
     void save_env(const char *funcname
                   __attribute__ ((__unused__)), char *preserve[], char *orig[]);
     void restore_env(const char *funcname

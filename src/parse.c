@@ -106,6 +106,8 @@ dummy_errors()
   temp = T("#-1 FUNCTION DISABLED");
   temp = T("#-1 OUT OF RANGE");
   temp = T("#-1 ARGUMENT OUT OF RANGE");
+  temp = T("#-1 REGISTER NAME INVALID");
+  temp = T("#-1 TOO MANY REGISTERS");
 }
 
 #endif
@@ -659,19 +661,19 @@ PE_REGS *
 pe_regs_create(uint32_t pr_flags)
 {
   PE_REGS *pe_regs = slab_malloc(pe_reg_slab, NULL);
-  add_check("pe_reg_slab");
+  ADD_CHECK("pe_reg_slab");
 
   memset(pe_regs, 0, sizeof(PE_REGS));
   pe_regs->flags = pr_flags;
   return pe_regs;
 }
 
-/** Free a PE_REGS context.
+/** Free all values from a PE_REGS context.
  *
- * \param pe_wregs The pe_regs to free up.
+ * \param pe_wregs The pe_regs to clear
  */
 void
-pe_regs_free(PE_REGS *pe_regs) {
+pe_regs_clear(PE_REGS *pe_regs) {
   PE_REG_VAL *val = pe_regs->vals;
   PE_REG_VAL *next;
 
@@ -682,11 +684,21 @@ pe_regs_free(PE_REGS *pe_regs) {
     }
     st_delete(val->name, &pe_reg_names);
     slab_free(pe_reg_val_slab, val);
-    del_check("pe_reg_val_slab", __FILE__, __LINE__);
+    DEL_CHECK("pe_reg_val_slab");
     val = next;
   }
+  pe_regs->vals = NULL;
+}
+
+/** Free a PE_REGS context.
+ *
+ * \param pe_wregs The pe_regs to free up.
+ */
+void
+pe_regs_free(PE_REGS *pe_regs) {
+  pe_regs_clear(pe_regs);
   slab_free(pe_reg_slab, pe_regs);
-  del_check("pe_reg_slab", __FILE__, __LINE__);
+  DEL_CHECK("pe_reg_slab");
 }
 
 /** Create a new PE_REGS context, and return it for manipulation.
@@ -752,7 +764,7 @@ pe_regs_set(PE_REGS *pe_regs, int type, const char *lckey, const char *val)
     }
   } else {
     pval = slab_malloc(pe_reg_val_slab, NULL);
-    add_check("pe_reg_val_slab");
+    ADD_CHECK("pe_reg_val_slab");
     pval->name = st_insert(key, &pe_reg_names);
     pval->next = pe_regs->vals;
     pe_regs->vals = pval;
@@ -790,7 +802,7 @@ pe_regs_set_int(PE_REGS *pe_regs, int type, const char *lckey, int val)
     }
   } else {
     pval = slab_malloc(pe_reg_val_slab, NULL);
-    add_check("pe_reg_val_slab");
+    ADD_CHECK("pe_reg_val_slab");
     pval->name = st_insert(key, &pe_reg_names);
     pval->next = pe_regs->vals;
     pe_regs->vals = pval;
@@ -878,6 +890,47 @@ pe_regs_copystack(PE_REGS *pe_regs)
   return new_regs;
 }
 
+/** Does PE_REGS have a register stack of a given type, within the 
+ * appropriate scope? This checks three things: For a PE_REGS with the
+ * appropriate type, for a stopping pe_regs (NEWATTR, etc), and for
+ * a value with the appropriate type.
+ *
+ * \param pe_info The NEW_PE_INFO to check.
+ * \param type The type to find.
+ * \retval 1 Has the requested type.
+ * \retval 0 Doesn't have it.
+ */
+int
+pi_regs_has_type(NEW_PE_INFO *pe_info, int type)
+{
+  PE_REGS *pe_regs;
+  PE_REG_VAL *val;
+  int breaker;
+
+  /* What flag will stop this search up? */
+  switch (type) {
+  case PE_REGS_Q:
+    breaker = PE_REGS_QSTOP;
+    break;
+  default:
+    breaker = PE_REGS_NEWATTR;
+  }
+  pe_regs = pe_info->regvals;
+
+  while (pe_regs) {
+    if (pe_regs->flags & type) {
+      val = pe_regs->vals;
+      while (val) {
+        if (val->type & type) return 1;
+        val = val->next;
+      }
+    }
+    if (pe_regs->flags & breaker) return 0;
+    pe_regs = pe_regs->prev;
+  }
+  return 0;
+}
+
 /** Is a string a valid name for a Q-register?
  *
  * \param key The key to check
@@ -957,6 +1010,130 @@ pi_regs_getq(NEW_PE_INFO *pe_info, const char *key)
     }
     /* If it's marked QSTOP, it stops. */
     if (pe_regs->flags & PE_REGS_QSTOP) {
+      return NULL;
+    }
+    pe_regs = pe_regs->prev;
+  }
+  return NULL;
+}
+
+/* REGEXPS */
+void
+pe_regs_set_rx_context(PE_REGS *pe_regs,
+                       struct real_pcre *re_code,
+                       int *re_offsets,
+                       int re_subpatterns,
+                       const char *re_from)
+{
+  int i;
+  unsigned char *entry, *nametable;
+  int entrysize;
+  int namecount;
+  int num;
+  char buff[BUFFER_LEN];
+  char namebuffer[BUFFER_LEN];
+
+  if (!re_from) return;
+  if (re_subpatterns < 0) return;
+
+  /* We assume every captured pattern is used. */
+  /* Copy all the numbered captures over */
+  for (i = 0; i < re_subpatterns && i < 1000; i++) {
+    pcre_copy_substring(re_from, re_offsets, re_subpatterns,
+                        i, buff, BUFFER_LEN);
+    snprintf(namebuffer, 4, "%d", i);
+    pe_regs_set(pe_regs, PE_REGS_REGEXP, namebuffer, buff);
+  }
+  /* Copy all the named captures over. This code is ganked from
+   * pcre_get_stringnumber */
+  /* Check to see if we have any named substrings, first. */
+  if (pcre_fullinfo(re_code, NULL, PCRE_INFO_NAMECOUNT, &namecount) != 0) {
+    return;
+  }
+  if (namecount <= 0) return;
+
+  /* Fetch entry size and nametable */
+  if (pcre_fullinfo(re_code, NULL, PCRE_INFO_NAMEENTRYSIZE, &entrysize) != 0)
+    return;
+  if (pcre_fullinfo(re_code, NULL, PCRE_INFO_NAMETABLE, &nametable) != 0)
+    return;
+  for (i = 0; i < namecount; i++) {
+    entry = nametable + (entrysize * i);
+    num = (entry[0] << 8) + entry[1];
+    pcre_copy_substring(re_from, re_offsets, re_subpatterns,
+                        num, buff, BUFFER_LEN);
+    snprintf(namebuffer, BUFFER_LEN, "%s", entry + 2);
+    pe_regs_set(pe_regs, PE_REGS_REGEXP, namebuffer, buff);
+  }
+}
+
+void
+pe_regs_set_rx_context_ansi(PE_REGS *pe_regs,
+                            struct real_pcre *re_code,
+                            int *re_offsets,
+                            int re_subpatterns,
+                            struct _ansi_string *re_from)
+{
+  int i;
+  unsigned char *entry, *nametable;
+  int entrysize;
+  int namecount;
+  int num;
+  char buff[BUFFER_LEN], *bp;
+  char namebuffer[BUFFER_LEN];
+
+  if (!re_from) return;
+  if (re_subpatterns < 0) return;
+
+  /* We assume every captured pattern is used. */
+  /* Copy all the numbered captures over */
+  for (i = 0; i < re_subpatterns && i < 1000; i++) {
+    bp = buff;
+    ansi_pcre_copy_substring(re_from, re_offsets, re_subpatterns,
+                             i, 1, buff, &bp);
+    *bp = '\0';
+    snprintf(namebuffer, 4, "%d", i);
+    pe_regs_set(pe_regs, PE_REGS_REGEXP, namebuffer, buff);
+  }
+  /* Copy all the named captures over. This code is ganked from
+   * pcre_get_stringnumber */
+  /* Check to see if we have any named substrings, first. */
+  if (pcre_fullinfo(re_code, NULL, PCRE_INFO_NAMECOUNT, &namecount) != 0) {
+    return;
+  }
+  if (namecount <= 0) return;
+
+  /* Fetch entry size and nametable */
+  if (pcre_fullinfo(re_code, NULL, PCRE_INFO_NAMEENTRYSIZE, &entrysize) != 0)
+    return;
+  if (pcre_fullinfo(re_code, NULL, PCRE_INFO_NAMETABLE, &nametable) != 0)
+    return;
+  for (i = 0; i < namecount; i++) {
+    entry = nametable + (entrysize * i);
+    num = (entry[0] << 8) + entry[1];
+    bp = buff;
+    ansi_pcre_copy_substring(re_from, re_offsets, re_subpatterns,
+                             num, 1, buff, &bp);
+    *bp = '\0';
+    snprintf(namebuffer, BUFFER_LEN, "%s", entry + 2);
+    pe_regs_set(pe_regs, PE_REGS_REGEXP, namebuffer, buff);
+  }
+}
+
+const char *
+pi_regs_get_rx(NEW_PE_INFO *pe_info, const char *key)
+{
+  const char *ret;
+  PE_REGS *pe_regs = pe_info->regvals;
+  while (pe_regs) {
+    if (pe_regs->flags & PE_REGS_REGEXP) {
+      ret = pe_regs_get(pe_regs, PE_REGS_REGEXP, key);
+      if (ret) return ret;
+      /* Only check the _first_ PE_REGS_REGEXP. */
+      return NULL;
+    }
+    /* If it's marked NEWATTR, it's done. */
+    if (pe_regs->flags & PE_REGS_NEWATTR) {
       return NULL;
     }
     pe_regs = pe_regs->prev;
@@ -1059,8 +1236,6 @@ make_pe_info(char *name)
 
   *pe_info->cmd_raw = '\0';
   *pe_info->cmd_evaled = '\0';
-
-  reset_regexp_context(&pe_info->re_context);
 
   pe_info->refcount = 1;
   strcpy(pe_info->name, name);
@@ -1440,18 +1615,16 @@ process_expression(char *buff, char **bp, char const **str,
       break;
     case '$':                  /* Dollar subs for regedit() */
       if ((eflags & (PE_DOLLAR | PE_EVALUATE)) == (PE_DOLLAR | PE_EVALUATE) &&
-          pe_info->re_context.re_subpatterns >= 0 &&
-          pe_info->re_context.re_offsets != NULL &&
-          pe_info->re_context.re_from != NULL) {
-        int p = -1;
+          PE_HAS_REGTYPE(pe_info, PE_REGS_REGEXP)) {
         char subspace[BUFFER_LEN];
-        char *named_substring = NULL;
 
         (*str)++;
         /* Check the first character after the $ for a number */
         if (isdigit((unsigned char) **str)) {
-          p = **str - '0';
+          subspace[0] = **str;
+          subspace[1] = '\0';
           (*str)++;
+          safe_str(PE_Get_re(pe_info, subspace), buff, bp);
         } else if (**str == '<') {
           /* Look for a named or numbered subexpression */
           char *nbuf = subspace;
@@ -1461,26 +1634,10 @@ process_expression(char *buff, char **bp, char const **str,
           *nbuf = '\0';
           if (*str && **str)
             (*str)++;
-          if (is_strict_integer(subspace))
-            p = abs(parse_integer(subspace));
-          else
-            named_substring = subspace;
+          safe_str(PE_Get_re(pe_info, subspace), buff, bp);
         } else {
           safe_chr('$', buff, bp);
           break;
-        }
-
-        if (named_substring != NULL) {
-          ansi_pcre_copy_named_substring(pe_info->re_context.re_code,
-                                         pe_info->re_context.re_from,
-                                         pe_info->re_context.re_offsets,
-                                         pe_info->re_context.re_subpatterns,
-                                         named_substring, 0, buff, bp);
-        } else {
-          ansi_pcre_copy_substring(pe_info->re_context.re_from,
-                                   pe_info->re_context.re_offsets,
-                                   pe_info->re_context.re_subpatterns,
-                                   p, 0, buff, bp);
         }
       } else {
         safe_chr('$', buff, bp);

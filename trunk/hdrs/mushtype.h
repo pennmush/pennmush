@@ -110,6 +110,7 @@ void init_pe_regs_trees();
 
 /* Functions used to create new pe_reg stacks */
 PE_REGS *pe_regs_create(uint32_t pr_flags);
+void pe_regs_clear(PE_REGS *pe_regs);
 void pe_regs_free(PE_REGS *pe_regs);
 PE_REGS *pe_regs_localize(NEW_PE_INFO *pe_info, uint32_t pr_flags);
 void pe_regs_restore(NEW_PE_INFO *pe_info, PE_REGS *pe_regs);
@@ -130,22 +131,34 @@ const char *pe_regs_get(PE_REGS *pe_regs, int type, const char *key);
 int pe_regs_get_int(PE_REGS *pe_regs, int type, const char *key);
 
 /* Helper functions: Mostly used in process_expression, r(), itext(), etc */
+int pi_regs_has_type(NEW_PE_INFO *pe_info, int type);
+#define PE_HAS_REGTYPE(p,t) pi_regs_has_type(p,t)
+
+/* PE_REGS_Q */
 int pi_regs_valid_key(const char *key);
 #define ValidQregName(x) pi_regs_valid_key(x)
-
 int pi_regs_setq(NEW_PE_INFO *pe_info, const char *key, const char *val);
 #define PE_Setq(pi,k,v) pi_regs_setq(pi,k,v)
 const char *pi_regs_getq(NEW_PE_INFO *pe_info, const char *key);
 #define PE_Getq(pi,k) pi_regs_getq(pi,k)
 
-/* Regexp saving helpers */
-struct re_context {
-  struct real_pcre *re_code;    /**< The compiled re */
-  int re_subpatterns;           /**< The number of re subpatterns */
-  int *re_offsets;              /**< The offsets for the subpatterns */
-  struct _ansi_string *re_from; /**< The positions of the subpatterns */
-};
+/* PE_REGS_REGEXP */
+struct real_pcre;
+struct _ansi_string;
+void pe_regs_set_rx_context(PE_REGS *regs,
+                            struct real_pcre *re_code,
+                            int *re_offsets,
+                            int re_subpatterns,
+                            const char *re_from);
+void pe_regs_set_rx_context_ansi(PE_REGS *regs,
+                                 struct real_pcre *re_code,
+                                 int *re_offsets,
+                                 int re_subpatterns,
+                                 struct _ansi_string *re_from);
+const char *pi_regs_get_rx(NEW_PE_INFO *pe_info, const char *key);
+#define PE_Get_re(pi,k) pi_regs_get_rx(pi,k)
 
+/* NEW_PE_INFO: May need more documentation.  */
 struct new_pe_info {
   int fun_invocations;          /**< The number of functions invoked (%?) */
   int fun_recursions;           /**< Function recursion depth (%?) */
@@ -174,8 +187,6 @@ struct new_pe_info {
   char cmd_evaled[BUFFER_LEN];  /**< Evaluated cmd executed (%u) */
 
   char attrname[BUFFER_LEN];    /**< The attr currently being evaluated */
-
-  struct re_context re_context; /**< regexp context, for $-replacements in re*() functions */
 
   char name[BUFFER_LEN];        /**< TEMP: Used for memory-leak checking. Remove me later!!!! */
 

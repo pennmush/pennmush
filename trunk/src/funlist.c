@@ -2495,7 +2495,7 @@ FUNCTION(fun_regreplace)
   int offsets[99];
   int erroffset;
   int flags = 0, all = 0, match_offset = 0;
-  struct re_context rsave;
+  PE_REGS *pe_regs;
 
   int i;
   const char *r, *obp;
@@ -2503,13 +2503,14 @@ FUNCTION(fun_regreplace)
   char tbuf[BUFFER_LEN], *tbp;
   char prebuf[BUFFER_LEN];
   char postbuf[BUFFER_LEN], *postp;
-  ansi_string *orig, *repl;
+  ansi_string *orig = NULL;
+  ansi_string *repl = NULL;
   int search;
   int prelen;
   size_t searchlen;
   int funccount;
 
-  save_regexp_context(&rsave, &pe_info->re_context);
+  pe_regs = pe_regs_localize(pe_info, PE_REGS_REGEXP);
 
   if (called_as[strlen(called_as) - 1] == 'I')
     flags = PCRE_CASELESS;
@@ -2527,15 +2528,13 @@ FUNCTION(fun_regreplace)
   /* Ansi-less regedits */
   for (i = 1; i < nargs - 1; i += 2) {
     /* If this string has ANSI, switch to using ansi only */
-    if (strchr(postbuf, TAG_START))
+    if (has_markup(postbuf))
       break;
 
     memcpy(prebuf, postbuf, BUFFER_LEN);
     prelen = strlen(prebuf);
 
     postp = postbuf;
-
-    orig = parse_ansi_string(prebuf);
 
     /* Get the needle */
     tbp = tbuf;
@@ -2549,9 +2548,7 @@ FUNCTION(fun_regreplace)
       /* Matching error. */
       safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
       safe_str(errptr, buff, bp);
-      free_ansi_string(orig);
-      restore_regexp_context(&rsave, &pe_info->re_context);
-      return;
+      goto exit_sequence;
     }
     add_check("pcre");          /* re */
     if (searchlen)
@@ -2564,9 +2561,7 @@ FUNCTION(fun_regreplace)
         mush_free(re, "pcre");
         safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
         safe_str(errptr, buff, bp);
-        free_ansi_string(orig);
-        restore_regexp_context(&rsave, &pe_info->re_context);
-        return;
+        goto exit_sequence;
       }
       if (study != NULL)
         /* study */
@@ -2576,8 +2571,9 @@ FUNCTION(fun_regreplace)
     if (study) {
       extra = study;
       set_match_limit(extra);
-    } else
+    } else {
       extra = default_match_limit();
+    }
 
     search = 0;
     /* Do all the searches and replaces we can */
@@ -2589,7 +2585,6 @@ FUNCTION(fun_regreplace)
     if (subpatterns < 0) {
       safe_str(prebuf, postbuf, &postp);
       mush_free(re, "pcre");
-      free_ansi_string(orig);
       if (study)
         mush_free(study, "pcre.extra");
       continue;
@@ -2600,16 +2595,14 @@ FUNCTION(fun_regreplace)
 
     do {
       /* Copy up to the start of the matched area */
-      char tmp = prebuf[offsets[0]];
-      prebuf[offsets[0]] = '\0';
-      safe_str(start, postbuf, &postp);
-      prebuf[offsets[0]] = tmp;
+      safe_strl(start, offsets[0], postbuf, &postp);
+
       /* Now copy in the replacement, putting in captured sub-expressions */
       obp = args[i + 1];
-      pe_info->re_context.re_code = re;
-      pe_info->re_context.re_from = orig;
-      pe_info->re_context.re_offsets = offsets;
-      pe_info->re_context.re_subpatterns = subpatterns;
+
+      pe_regs_clear(pe_regs);
+      pe_regs_set_rx_context(pe_regs, re, offsets, subpatterns, prebuf);
+
       process_expression(postbuf, &postp, &obp, executor, caller, enactor,
                          PE_DEFAULT | PE_DOLLAR, PT_DEFAULT, pe_info);
       if ((*bp == (buff + BUFFER_LEN - 1))
@@ -2635,6 +2628,7 @@ FUNCTION(fun_regreplace)
     if (study != NULL)
       mush_free(study, "pcre.extra");
     free_ansi_string(orig);
+    orig = NULL;
   }
 
   /* We get to this point if there is ansi in an 'orig' string */
@@ -2657,9 +2651,7 @@ FUNCTION(fun_regreplace)
         /* Matching error. */
         safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
         safe_str(errptr, buff, bp);
-        free_ansi_string(orig);
-        restore_regexp_context(&rsave, &pe_info->re_context);
-        return;
+        goto exit_sequence;
       }
       add_check("pcre");        /* re */
       if (searchlen)
@@ -2672,9 +2664,7 @@ FUNCTION(fun_regreplace)
           mush_free(re, "pcre");
           safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
           safe_str(errptr, buff, bp);
-          free_ansi_string(orig);
-          restore_regexp_context(&rsave, &pe_info->re_context);
-          return;
+          goto exit_sequence;
         }
         if (study != NULL)
           /* study */
@@ -2695,10 +2685,8 @@ FUNCTION(fun_regreplace)
           /* We have a match */
           /* Process the replacement */
           r = args[i + 1];
-          pe_info->re_context.re_code = re;
-          pe_info->re_context.re_from = orig;
-          pe_info->re_context.re_offsets = offsets;
-          pe_info->re_context.re_subpatterns = subpatterns;
+          pe_regs_clear(pe_regs);
+          pe_regs_set_rx_context_ansi(pe_regs, re, offsets, subpatterns, orig);
           tbp = tbuf;
           process_expression(tbuf, &tbp, &r, executor, caller, enactor,
                              PE_DEFAULT | PE_DOLLAR, PT_DEFAULT, pe_info);
@@ -2733,12 +2721,17 @@ FUNCTION(fun_regreplace)
     }
     safe_ansi_string(orig, 0, orig->len, buff, bp);
     free_ansi_string(orig);
+    orig = NULL;
   } else {
     safe_str(postbuf, buff, bp);
   }
 
-  restore_regexp_context(&rsave, &pe_info->re_context);
-
+exit_sequence:
+  if (orig) {
+    free_ansi_string(orig);
+  }
+  pe_regs_restore(pe_info, pe_regs);
+  pe_regs_free(pe_regs);
 }
 
 /** array of indexes for %q registers during regexp matching */

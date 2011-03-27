@@ -61,8 +61,6 @@ static sqlite3 *sqlite3_connp = NULL;
 #include "ansi.h"
 #include "match.h"
 
-extern signed char qreg_indexes[UCHAR_MAX + 1];
-
 /* Supported platforms */
 typedef enum { SQL_PLATFORM_DISABLED = -1,
   SQL_PLATFORM_MYSQL = 1,

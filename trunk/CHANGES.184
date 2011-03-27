@@ -20,7 +20,7 @@ Version 1.8.4 patchlevel 4                                 ??? ??,  201?
 
 Major changes:
  * Q-registers are no longer limited to single characters. setq(name,joe)
-   and r(name)! [GM]
+   and r(name) or %q<name>! [GM]
 
 Hardcode:
  * global_eval_context has been removed. The BQUE, EVAL_CONTEXT and PE_Info
@@ -45,6 +45,10 @@ Commands:
    for coding loops without the queue delay. [GM]
    
 Substitutions:
+ * $<name> for accessing regexp substitutions can now have evaluation inside
+   the <>s: $<%qa>. [GM]
+ * %q<foo> can access named Q-registers. %q<%qa> can work as a q-register
+   dereference. [GM]
  * New %= substitution, which evaluates to the dbref/attribute currently
    being evaluated. Useful for coding things which loop. [MG]
 

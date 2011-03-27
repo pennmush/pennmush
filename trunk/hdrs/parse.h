@@ -249,13 +249,14 @@ NEW_PE_INFO *pe_info_from(NEW_PE_INFO * old_pe_info, int flags, char *env[10]);
  */
 
 #define PT_NOTHING      0
-#define PT_BRACE        0x00000001
-#define PT_BRACKET      0x00000002
-#define PT_PAREN        0x00000004
-#define PT_COMMA        0x00000008
-#define PT_SEMI         0x00000010
-#define PT_EQUALS       0x00000020
-#define PT_SPACE        0x00000040
+#define PT_BRACE        0x00000001 /* '}' */
+#define PT_BRACKET      0x00000002 /* ']' */
+#define PT_PAREN        0x00000004 /* ')' */
+#define PT_COMMA        0x00000008 /* ',' */
+#define PT_SEMI         0x00000010 /* ';' */
+#define PT_EQUALS       0x00000020 /* '=' */
+#define PT_SPACE        0x00000040 /* ' ' */
+#define PT_GT           0x00000080 /* '>' */
 
 /* These represent '\0', '}', ']', ')', ',', ';', '=', and ' ', respectively.
  * If the character corresponding to a set flag is encountered, then

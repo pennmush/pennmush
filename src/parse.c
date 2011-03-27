@@ -1143,8 +1143,6 @@ pi_regs_get_rx(NEW_PE_INFO *pe_info, const char *key)
 
 /* Table of interesting characters for process_expression() */
 extern char active_table[UCHAR_MAX + 1];
-/* Indexes of valid q-regs into the renv array. -1 is error. */
-extern signed char qreg_indexes[UCHAR_MAX + 1];
 
 #ifdef WIN32
 #pragma warning( disable : 4761)        /* NJG: disable warning re conversion */
@@ -1590,6 +1588,10 @@ process_expression(char *buff, char **bp, char const **str,
       if (tflags & PT_SPACE)
         goto exit_sequence;
       break;
+    case '>':
+      if (tflags & PT_GT)
+        goto exit_sequence;
+      break;
     case '\0':
       goto exit_sequence;
     }
@@ -1627,21 +1629,31 @@ process_expression(char *buff, char **bp, char const **str,
           safe_str(PE_Get_re(pe_info, subspace), buff, bp);
         } else if (**str == '<') {
           /* Look for a named or numbered subexpression */
-          char *nbuf = subspace;
+          char *nbp = subspace;
           (*str)++;
-          for (; *str && **str && **str != '>'; (*str)++)
-            safe_chr(**str, subspace, &nbuf);
-          *nbuf = '\0';
-          if (*str && **str)
-            (*str)++;
+          if (process_expression(subspace, &nbp, str,
+                                 executor, caller, enactor,
+                                 eflags & ~PE_STRIP_BRACES, PT_GT, pe_info)) {
+            retval = 1;
+            break;
+          }
+          *nbp = '\0';
           safe_str(PE_Get_re(pe_info, subspace), buff, bp);
+          if (**str == '>') (*str)++;
         } else {
           safe_chr('$', buff, bp);
-          break;
         }
       } else {
         safe_chr('$', buff, bp);
         (*str)++;
+        if ((**str) == '<') {
+          if (process_expression(buff, bp, str,
+                                 executor, caller, enactor,
+                                 eflags & ~PE_STRIP_BRACES, PT_GT, pe_info)) {
+            retval = 1;
+            break;
+          }
+        }
       }
       break;
     case '%':                  /* Percent substitutions */
@@ -1659,6 +1671,21 @@ process_expression(char *buff, char **bp, char const **str,
         switch (savec) {
         case 'Q':
         case 'q':
+          /* Two characters, or if there's a <, then up until the next > */
+          savec = **str;
+          if (!savec)
+            goto exit_sequence;
+          safe_chr(savec, buff, bp);
+          if (savec == '<') {
+            (*str)++;
+            process_expression(buff, bp, str,
+                               executor, caller, enactor,
+                               eflags & ~PE_STRIP_BRACES,
+                               PT_GT, pe_info);
+          } else {
+            (*str)++;
+          }
+          break;
         case 'V':
         case 'v':
         case 'W':
@@ -1873,10 +1900,28 @@ process_expression(char *buff, char **bp, char const **str,
           if (!nextc)
             goto exit_sequence;
           (*str)++;
-          qv[0] = UPCASE(nextc);
-          qval = PE_Getq(pe_info, qv);
-          if (qval) {
-            safe_str(qval, buff, bp);
+          if (nextc == '<') {
+            char subspace[BUFFER_LEN];
+            char *nbp = subspace;
+            if (process_expression(subspace, &nbp, str,
+                                   executor, caller, enactor,
+                                   eflags & ~PE_STRIP_BRACES,
+                                   PT_GT, pe_info)) {
+              retval = 1;
+              break;
+            }
+            *nbp = '\0';
+            qval = PE_Getq(pe_info, subspace);
+            if (qval) {
+              safe_str(qval, buff, bp);
+            }
+            if (**str == '>') (*str)++;
+          } else {
+            qv[0] = UPCASE(nextc);
+            qval = PE_Getq(pe_info, qv);
+            if (qval) {
+              safe_str(qval, buff, bp);
+            }
           }
           break;
         case 'R':

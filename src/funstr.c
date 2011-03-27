@@ -45,8 +45,6 @@ static int align_one_line(char *buff, char **bp, int ncols,
 static int comp_gencomp(dbref executor, char *left, char *right, char *type);
 void init_pronouns(void);
 
-extern signed char qreg_indexes[UCHAR_MAX + 1];
-
 /** Return an indicator of a player's gender.
  * \param player player whose gender is to be checked.
  * \retval 0 neuter.

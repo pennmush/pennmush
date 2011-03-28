@@ -593,6 +593,10 @@ msgstr "#-1 DOZVOLA USKRAÆENA"
 msgid "#-1 REGEXP ERROR: "
 msgstr "#-1 GRE©KA U REGEXPU: "
 
+#: parse.c:109
+msgid "#-1 REGISTER NAME INVALID"
+msgstr "#-1 IME REGISTRA NEISPRAVNO"
+
 #: funmath.c:1057
 msgid "#-1 ROOT OUT OF RANGE"
 msgstr "#-1 KORIJEN IZVAN RASPONA"
@@ -637,6 +641,10 @@ msgstr "#-1 PREVI©E STUPACA ZA ALIGN"
 #: src/funlist.c:1815
 msgid "#-1 TOO MANY ITERS"
 msgstr "#-1 PREVI©E ITERA"
+
+#: parse.c:110
+msgid "#-1 TOO MANY REGISTERS"
+msgstr "#-1 PREVI©E REGISTARA"
 
 #: funmisc.c:495 funmisc.c:612
 msgid "#-1 TOO MANY SWITCHES"

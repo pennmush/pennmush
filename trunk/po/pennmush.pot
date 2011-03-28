@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-27 02:00-0500\n"
+"POT-Creation-Date: 2011-03-28 02:00-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -359,11 +359,11 @@ msgstr ""
 #: create.c:661 destroy.c:234 destroy.c:913 extchat.c:1784 extchat.c:1801
 #: extchat.c:1832 extchat.c:4032 flags.c:1552 flags.c:1557 flags.c:1717
 #: function.c:861 function.c:1115 function.c:1342 function.c:1487
-#: function.c:1533 function.c:1580 funmisc.c:1114 game.c:947 game.c:1525
+#: function.c:1533 function.c:1580 funmisc.c:1112 game.c:947 game.c:1525
 #: lock.c:718 lock.c:782 lock.c:979 look.c:1323 look.c:1618 malias.c:764
 #: malias.c:869 match.c:529 move.c:559 move.c:891 move.c:906 predicat.c:1388
 #: rob.c:460 set.c:210 set.c:1003 set.c:1080 set.c:1117 set.c:1130 set.c:1215
-#: speech.c:1554 sql.c:367 warnings.c:294 warnings.c:515 wiz.c:452 wiz.c:575
+#: speech.c:1554 sql.c:365 warnings.c:294 warnings.c:515 wiz.c:452 wiz.c:575
 #: wiz.c:586 wiz.c:870 wiz.c:1036 wiz.c:1066
 msgid "Permission denied."
 msgstr ""
@@ -3694,7 +3694,7 @@ msgstr ""
 msgid "#-1 LISTS MUST BE OF EQUAL SIZE"
 msgstr ""
 
-#: funlist.c:974 funmisc.c:606
+#: funlist.c:974 funmisc.c:604
 msgid "#-1 NUMBER OUT OF RANGE"
 msgstr ""
 
@@ -3722,7 +3722,7 @@ msgstr ""
 msgid "#-1 STEP OUT OF RANGE"
 msgstr ""
 
-#: funlist.c:2549 funlist.c:2562 funlist.c:2652 funlist.c:2665 funlist.c:2781
+#: funlist.c:2549 funlist.c:2562 funlist.c:2655 funlist.c:2668 funlist.c:2781
 #: funlist.c:2907 funlist.c:2915 predicat.c:1581 predicat.c:1592
 msgid "#-1 REGEXP ERROR: "
 msgstr ""
@@ -3807,166 +3807,166 @@ msgstr ""
 msgid "#-1 FUNCTION (DIST3D) EXPECTS 6 ARGUMENTS"
 msgstr ""
 
-#: funmisc.c:247
+#: funmisc.c:245
 #, c-format
 msgid "#-1 FUNCTION (%s) EXPECTS AN EVEN NUMBER OF ARGUMENTS"
 msgstr ""
 
-#: funmisc.c:277
+#: funmisc.c:275
 msgid "#-1 FUNCTION (LETQ) EXPECTS AN ODD NUMBER OF ARGUMENTS"
 msgstr ""
 
-#: funmisc.c:647 funmisc.c:766
+#: funmisc.c:645 funmisc.c:764
 msgid "#-1 TOO MANY SWITCHES"
 msgstr ""
 
-#: funmisc.c:1015
+#: funmisc.c:1013
 msgid "#-1 FUNCTION (SOUNDEX) REQUIRES A SINGLE WORD ARGUMENT"
 msgstr ""
 
-#: funmisc.c:1034
+#: funmisc.c:1032
 msgid "#-1 FUNCTION (SOUNDLIKE) REQUIRES TWO ONE-WORD ARGUMENTS"
 msgstr ""
 
-#: funmisc.c:1247
+#: funmisc.c:1245
 #, c-format
 msgid "I don't think #%d wants to hear from you."
 msgstr ""
 
-#: funmisc.c:1279 funmisc.c:1282
+#: funmisc.c:1277 funmisc.c:1280
 #, c-format
 msgid "Average: %.2f   Min: %u   Max: %u"
 msgstr ""
 
-#: funstr.c:110
+#: funstr.c:108
 msgid "pronoun:neuter,subjective"
 msgstr ""
 
-#: funstr.c:111
+#: funstr.c:109
 msgid "pronoun:feminine,subjective"
 msgstr ""
 
-#: funstr.c:112
+#: funstr.c:110
 msgid "pronoun:masculine,subjective"
 msgstr ""
 
-#: funstr.c:113
+#: funstr.c:111
 msgid "pronoun:plural,subjective"
 msgstr ""
 
-#: funstr.c:114
+#: funstr.c:112
 msgid "pronoun:neuter,possessive"
 msgstr ""
 
-#: funstr.c:115
+#: funstr.c:113
 msgid "pronoun:feminine,possessive"
 msgstr ""
 
-#: funstr.c:116
+#: funstr.c:114
 msgid "pronoun:masculine,possessive"
 msgstr ""
 
-#: funstr.c:117
+#: funstr.c:115
 msgid "pronoun:plural,possessive"
 msgstr ""
 
-#: funstr.c:118
+#: funstr.c:116
 msgid "pronoun:neuter,objective"
 msgstr ""
 
-#: funstr.c:119
+#: funstr.c:117
 msgid "pronoun:feminine,objective"
 msgstr ""
 
-#: funstr.c:120
+#: funstr.c:118
 msgid "pronoun:masculine,objective"
 msgstr ""
 
-#: funstr.c:121
+#: funstr.c:119
 msgid "pronoun:plural,objective"
 msgstr ""
 
-#: funstr.c:122
+#: funstr.c:120
 msgid "pronoun:neuter,absolute possessive"
 msgstr ""
 
-#: funstr.c:123
+#: funstr.c:121
 msgid "pronoun:feminine,absolute possessive"
 msgstr ""
 
-#: funstr.c:124
+#: funstr.c:122
 msgid "pronoun:masculine,absolute possessive"
 msgstr ""
 
-#: funstr.c:125
+#: funstr.c:123
 msgid "pronoun:plural,absolute possessive "
 msgstr ""
 
-#: funstr.c:472 funstr.c:522
+#: funstr.c:470 funstr.c:520
 msgid "#-1 INVALID THIRD ARGUMENT"
 msgstr ""
 
-#: funstr.c:514
+#: funstr.c:512
 msgid "#-1 INVALID DBREF"
 msgstr ""
 
-#: funstr.c:643 funstr.c:785 funstr.c:1442
+#: funstr.c:641 funstr.c:783 funstr.c:1440
 msgid "#-1 STRING LENGTHS MUST BE EQUAL"
 msgstr ""
 
-#: funstr.c:715 funstr.c:723 funstr.c:753 funstr.c:761
+#: funstr.c:713 funstr.c:721 funstr.c:751 funstr.c:759
 msgid "#-1 TR CANNOT ACCEPT NONPRINTING CHARS"
 msgstr ""
 
-#: funstr.c:860
+#: funstr.c:858
 msgid "#-1 ARGUMENT MUST BE NON-NEGATIVE INTEGER"
 msgstr ""
 
-#: funstr.c:940 funstr.c:991 funstr.c:1043 funstr.c:1062
+#: funstr.c:938 funstr.c:989 funstr.c:1041 funstr.c:1060
 msgid "#-1 FILL ARGUMENT MAY NOT BE ZERO-LENGTH"
 msgstr ""
 
-#: funstr.c:1408
+#: funstr.c:1406
 msgid "#-1 FUNCTION (ORD) EXPECTS ONE CHARACTER"
 msgstr ""
 
-#: funstr.c:1417 funstr.c:1435
+#: funstr.c:1415 funstr.c:1433
 msgid "#-1 UNPRINTABLE CHARACTER"
 msgstr ""
 
-#: funstr.c:1431
+#: funstr.c:1429
 msgid "#-1 THIS ISN'T UNICODE"
 msgstr ""
 
-#: funstr.c:1624
+#: funstr.c:1622
 msgid "#-1 WIDTH TOO SMALL"
 msgstr ""
 
-#: funstr.c:1932 funstr.c:1959
+#: funstr.c:1930 funstr.c:1957
 msgid "#-1 INVALID ALIGN STRING"
 msgstr ""
 
-#: funstr.c:1976
+#: funstr.c:1974
 msgid "#-1 CANNOT HAVE COLUMNS OF NEGATIVE SIZE"
 msgstr ""
 
-#: funstr.c:1980 funstr.c:1986
+#: funstr.c:1978 funstr.c:1984
 msgid "#-1 CANNOT HAVE COLUMNS THAT LARGE"
 msgstr ""
 
-#: funstr.c:1991
+#: funstr.c:1989
 msgid "#-1 NOT ENOUGH COLUMNS FOR ALIGN"
 msgstr ""
 
-#: funstr.c:1995
+#: funstr.c:1993
 msgid "#-1 TOO MANY COLUMNS FOR ALIGN"
 msgstr ""
 
-#: funstr.c:2001 funstr.c:2036
+#: funstr.c:1999 funstr.c:2034
 msgid "#-1 INVALID NUMBER OF ARGUMENTS TO ALIGN"
 msgstr ""
 
-#: funstr.c:2006 funstr.c:2041
+#: funstr.c:2004 funstr.c:2039
 msgid "#-1 FILLER MUST BE ONE CHARACTER"
 msgstr ""
 
@@ -3987,11 +3987,11 @@ msgstr ""
 msgid "#-1 INVALID TIMESTRING"
 msgstr ""
 
-#: funufun.c:53 parse.c:2044
+#: funufun.c:53 parse.c:2089
 msgid "#-1 FUNCTION ("
 msgstr ""
 
-#: funufun.c:55 parse.c:2046
+#: funufun.c:55 parse.c:2091
 msgid ") NOT FOUND"
 msgstr ""
 
@@ -5283,44 +5283,44 @@ msgstr ""
 msgid "#-1 TOO MANY REGISTERS"
 msgstr ""
 
-#: parse.c:1439
+#: parse.c:1437
 msgid "CPU usage exceeded."
 msgstr ""
 
-#: parse.c:2095
+#: parse.c:2140
 msgid "#-1 FUNCTION RECURSION LIMIT EXCEEDED"
 msgstr ""
 
-#: parse.c:2192
+#: parse.c:2237
 #, c-format
 msgid "#-1 FUNCTION (%s) EXPECTS "
 msgstr ""
 
-#: parse.c:2197
+#: parse.c:2242
 msgid " OR "
 msgstr ""
 
-#: parse.c:2200
+#: parse.c:2245
 msgid "AT LEAST "
 msgstr ""
 
-#: parse.c:2203
+#: parse.c:2248
 msgid "BETWEEN "
 msgstr ""
 
-#: parse.c:2205
+#: parse.c:2250
 msgid " AND "
 msgstr ""
 
-#: parse.c:2208
+#: parse.c:2253
 msgid " ARGUMENTS BUT GOT "
 msgstr ""
 
-#: parse.c:2251
+#: parse.c:2296
 msgid "#-1 @FUNCTION ("
 msgstr ""
 
-#: parse.c:2253
+#: parse.c:2298
 msgid ") MISSING ATTRIBUTE ("
 msgstr ""
 
@@ -5893,11 +5893,11 @@ msgstr ""
 msgid "Nothing to do."
 msgstr ""
 
-#: set.c:992 sql.c:354
+#: set.c:992 sql.c:352
 msgid "I need to know what attribute to trigger."
 msgstr ""
 
-#: set.c:1007 sql.c:372
+#: set.c:1007 sql.c:370
 msgid "You can't trigger God!"
 msgstr ""
 
@@ -6175,39 +6175,39 @@ msgstr ""
 msgid "You zemit, \"%s\" in zone %s"
 msgstr ""
 
-#: sql.c:80
+#: sql.c:78
 msgid "#-1 SQL ERROR: NO DATABASE CONNECTED"
 msgstr ""
 
-#: sql.c:82
+#: sql.c:80
 #, c-format
 msgid "#-1 SQL ERROR: %s"
 msgstr ""
 
-#: sql.c:294 sql.c:388 sql.c:519
+#: sql.c:292 sql.c:386 sql.c:517
 msgid "No SQL database connection."
 msgstr ""
 
-#: sql.c:326
+#: sql.c:324
 msgid "#-1 TOO LONG"
 msgstr ""
 
-#: sql.c:386 sql.c:517
+#: sql.c:384 sql.c:515
 #, c-format
 msgid "SQL: %d rows affected."
 msgstr ""
 
-#: sql.c:390 sql.c:437 sql.c:521 sql.c:568
+#: sql.c:388 sql.c:435 sql.c:519 sql.c:566
 #, c-format
 msgid "SQL: Error: %s"
 msgstr ""
 
-#: sql.c:610
+#: sql.c:608
 #, c-format
 msgid "Row %d, Field %s: %s"
 msgstr ""
 
-#: sql.c:614
+#: sql.c:612
 #, c-format
 msgid "Row %d: NULL"
 msgstr ""

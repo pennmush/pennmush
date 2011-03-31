@@ -506,13 +506,15 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
     char *buff = data + totallen;
     char *bp = buff;
     matches[i] = bp;
+    int plen = offsets[i*2+1] - offsets[i*2];
     if ((len - totallen) < BUFFER_LEN) {
       buff = data + len - BUFFER_LEN;
     }
     if (as) {
       ansi_pcre_copy_substring(as, offsets, subpatterns, (int) i, 1, buff, &bp);
     } else {
-      pcre_copy_substring(val, offsets, subpatterns, (int) i, buff, len);
+      pcre_copy_substring(val, offsets, subpatterns, (int) i, buff, len - totallen);
+      bp += plen;
     }
     *(bp++) = '\0';
     totallen = bp - data;

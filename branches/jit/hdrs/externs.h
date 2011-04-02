@@ -54,7 +54,7 @@ extern time_t mudtime;
 
 extern int shutdown_flag;       /* if non-zero, interface should shut down */
 void emergency_shutdown(void);
-void boot_desc(DESC *d);        /* remove a player */
+void boot_desc(DESC *d, const char *cause);     /* remove a player */
 int boot_player(dbref player, int idleonly, int slilent);
 DESC *player_desc(dbref player);        /* find descriptors */
 DESC *inactive_desc(dbref player);      /* find descriptors */
@@ -71,7 +71,7 @@ dbref visible_short_page(dbref player, const char *match);
 void do_doing(dbref player, const char *message);
 
 /* the following symbols are provided by game.c */
-void process_command(dbref player, char *command, dbref cause, int from_port);
+void process_command(dbref player, char *command, dbref cause, dbref caller, int from_port);
 int init_game_dbs(void);
 void init_game_postdb(const char *conf);
 void init_game_config(const char *conf);
@@ -223,6 +223,13 @@ extern char ucbuff[];
 #endif
 
 /* From cque.c */
+#define QUEUE_PLAYER 0
+#define QUEUE_OBJECT 1
+/* INPLACE and RECURSE are identical except that RECURSE does not
+ * propagate @breaks upward. */
+#define QUEUE_INPLACE 2
+#define QUEUE_RECURSE 3
+struct bque;
 struct _ansi_string;
 struct real_pcre;
 struct eval_context {
@@ -236,9 +243,7 @@ struct eval_context {
   char ucom[BUFFER_LEN];      /**< evaluated command */
   int break_called;           /**< Has the break command been called? */
   char break_replace[BUFFER_LEN];  /**< What to replace the break with */
-  int include_called;           /**< Has the include command been called? */
-  char include_replace[BUFFER_LEN];  /**< What to replace the include with */
-  char *include_wenv[10];       /**< Working env for include */
+  struct bque *inplace_queue;          /**< Inplace (include, @switch/inplace) commands */
   struct real_pcre *re_code;              /**< The compiled re */
   int re_subpatterns;         /**< The number of re subpatterns */
   int *re_offsets;            /**< The offsets for the subpatterns */
@@ -252,14 +257,21 @@ extern EVAL_CONTEXT global_eval_context;
 void do_second(void);
 int do_top(int ncom);
 void do_halt(dbref owner, const char *ncom, dbref victim);
+#define SYSEVENT -1
+bool queue_event(dbref enactor, const char *event, const char *fmt, ...)
+  __attribute__ ((__format__(__printf__, 3, 4)));
+void insert_que(dbref player, const char *command, dbref cause, dbref caller,
+                PE_Info *pe_info, char **env, char **rval, int quetype);
 void parse_que(dbref player, const char *command, dbref cause,
                PE_Info *pe_info);
 int queue_attribute_base(dbref executor, const char *atrname, dbref enactor,
                          int noparent);
 ATTR *queue_attribute_getatr(dbref executor, const char *atrname, int noparent);
 int queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor);
-int inplace_queue_attribute(dbref thing, const char *atrname,
-                            dbref enactor, int rsargs);
+void inplace_queue_actionlist(dbref executor, dbref cause, dbref caller,
+                              const char *command, char **argv, int quetype);
+int queue_include_attribute(dbref thing, const char *atrname,
+                            dbref executor, dbref cause, dbref caller, char **args);
 void run_user_input(dbref player, char *input);
 
 /** Queue the code in an attribute, including parent objects */
@@ -322,13 +334,15 @@ void list_mem_check(dbref player);
 void log_mem_check(void);
 
 /* From move.c */
-void enter_room(dbref player, dbref loc, int nomovemsgs);
+void enter_room(dbref player, dbref loc, int nomovemsgs,
+                dbref enactor, const char *cause);
 int can_move(dbref player, const char *direction);
 /** Enumeration of types of movements that can be performed */
 enum move_type { MOVE_NORMAL, MOVE_GLOBAL, MOVE_ZONE };
 void do_move(dbref player, const char *direction, enum move_type type);
-void moveto(dbref what, dbref where);
-void safe_tel(dbref player, dbref dest, int nomovemsgs);
+void moveto(dbref what, dbref where, dbref enactor, const char *cause);
+void safe_tel(dbref player, dbref dest, int nomovemsgs,
+              dbref enactor, const char *cause);
 int global_exit(dbref player, const char *direction);
 int remote_exit(dbref loc, const char *direction);
 void move_wrapper(dbref player, const char *command);
@@ -343,13 +357,17 @@ void clear_following(dbref follower, int noisy);
 char *mush_crypt(const char *key);
 
 /* From player.c */
+extern const char *connect_fail_limit_exceeded;
+int mark_failed(const char *ipaddr);
+int count_failed(const char *ipaddr);
+int check_fails(const char *ipaddr);
 int password_check(dbref player, const char *password);
 dbref lookup_player(const char *name);
 dbref lookup_player_name(const char *name);
 /* from player.c */
-dbref create_player(const char *name, const char *password,
+dbref create_player(DESC *d, const char *name, const char *password,
                     const char *host, const char *ip);
-dbref connect_player(const char *name, const char *password,
+dbref connect_player(DESC *d, const char *name, const char *password,
                      const char *host, const char *ip, char *errbuf);
 void check_last(dbref player, const char *host, const char *ip);
 void check_lastfailed(dbref player, const char *host);
@@ -399,7 +417,9 @@ int quiet_payfor(dbref who, int cost);
 int nearby(dbref obj1, dbref obj2);
 int get_current_quota(dbref who);
 void change_quota(dbref who, int payment);
-int ok_name(const char *name);
+int ok_name(const char *name, int is_exit);
+int ok_object_name(char *name, dbref player, dbref thing, int type,
+                   char **newname, char **newalias);
 int ok_command_name(const char *name);
 int ok_function_name(const char *name);
 int ok_player_name(const char *name, dbref player, dbref thing);
@@ -426,9 +446,9 @@ void s_Pennies(dbref thing, int amount);
 
 /* From set.c */
 void chown_object(dbref player, dbref thing, dbref newowner, int preserve);
-void do_include(dbref player, char *object, char **argv);
+void do_include(dbref player, dbref cause, char *object, char **argv);
 /* From speech.c */
-int okay_pemit(dbref player, dbref target);
+int okay_pemit(dbref player, dbref target, int dofails, const char *def);
 int vmessageformat(dbref player, const char *attribute,
                    dbref executor, int flags, int nargs, ...);
 int messageformat(dbref player, const char *attribute,
@@ -565,6 +585,7 @@ mush_strndup(const char *src, size_t len, const char *check)
     const char *real_unparse
       (dbref player, dbref loc, int obey_myopic, int use_nameformat,
        int use_nameaccent);
+    extern const char *unparse_objid(dbref thing);
     extern const char *unparse_object(dbref player, dbref loc);
 /** For back compatibility, an alias for unparse_object */
 #define object_header(p,l) unparse_object(p,l)
@@ -732,7 +753,7 @@ mush_strndup(const char *src, size_t len, const char *check)
     void local_dump_database(void);
     void local_dbck(void);
     void local_shutdown(void);
-    void local_timer(void);
+    bool local_timer(void *data);
     void local_connect(dbref player, int isnew, int num);
     void local_disconnect(dbref player, int num);
     void local_data_create(dbref object);

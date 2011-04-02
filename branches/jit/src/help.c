@@ -36,7 +36,8 @@ static void do_new_spitfile(dbref player, char *arg1, help_file *help_dat);
 static const char *string_spitfile(help_file *help_dat, char *arg1);
 static help_indx *help_find_entry(help_file *help_dat, const char *the_topic);
 static char **list_matching_entries(const char *pattern,
-                                    help_file *help_dat, int *len);
+                                    help_file *help_dat, int *len,
+                                    bool nospace);
 static void free_entry_list(char **);
 static const char *normalize_entry(help_file *help_dat, const char *arg1);
 
@@ -56,9 +57,12 @@ unsigned top_topics = 0;   /**< Maximum number of topics loaded */
 
 static void write_topic(long int p);
 
+extern bool help_wild(const char *restrict tstr, const char *restrict dstr);
+
 COMMAND(cmd_helpcmd)
 {
   help_file *h;
+  char save[BUFFER_LEN];
 
   h = hashfind(cmd->name, &help_files);
 
@@ -72,11 +76,12 @@ COMMAND(cmd_helpcmd)
     return;
   }
 
+  strcpy(save, arg_left);
   if (wildcard_count(arg_left, 1) == -1) {
     int len = 0;
     char **entries;
 
-    entries = list_matching_entries(arg_left, h, &len);
+    entries = list_matching_entries(arg_left, h, &len, 0);
     if (len == 0)
       notify_format(player, T("No entries matching '%s' were found."),
                     arg_left);
@@ -93,8 +98,66 @@ COMMAND(cmd_helpcmd)
                     arg_left, buff);
     }
     free_entry_list(entries);
-  } else
-    do_new_spitfile(player, arg_left, h);
+  } else {
+    help_indx *entry = NULL;
+    entry = help_find_entry(h, arg_left);
+    if (entry) {
+      do_new_spitfile(player, arg_left, h);
+    } else {
+      char pattern[BUFFER_LEN], *pp, *sp;
+      char **entries;
+      int len = 0;
+      int type = 0;
+      pp = pattern;
+      sp = save;
+      for (sp = save; *sp; sp++) {
+        if (isspace((unsigned char) *sp)) {
+          if (type) {
+            type = 0;
+            *pp = '*';
+            pp++;
+            if (pp >= (pattern + BUFFER_LEN)) {
+              notify_format(player, T("No entry for '%s'"), arg_left);
+              return;
+            }
+          }
+        } else if (strchr("0123456789", *sp)) {
+          if (type == 1) {
+            type = 2;
+            *pp = '*';
+            pp++;
+            if (pp >= (pattern + BUFFER_LEN)) {
+              notify_format(player, T("No entry for '%s'"), arg_left);
+              return;
+            }
+          }
+        } else if (type != 1) {
+          type = 1;
+        }
+        *pp = *sp;
+        pp++;
+        if (pp >= (pattern + BUFFER_LEN)) {
+          notify_format(player, T("No entry for '%s'"), arg_left);
+          return;
+        }
+      }
+      *pp = '\0';
+      entries = list_matching_entries(pattern, h, &len, 1);
+      if (len == 0)
+        notify_format(player, T("No entry for '%s'"), arg_left);
+      else if (len == 1)
+        do_new_spitfile(player, *entries, h);
+      else {
+        char buff[BUFFER_LEN];
+        char *bp;
+        bp = buff;
+        arr2list(entries, len, buff, &bp, ", ");
+        *bp = '\0';
+        notify_format(player, T("Here are the entries which match '%s':\n%s"),
+                      arg_left, buff);
+      }
+    }
+  }
 }
 
 /** Initialize the helpfile hashtable, which contains the names of thes
@@ -482,7 +545,7 @@ FUNCTION(fun_textfile)
   if (wildcard_count(args[1], 1) == -1) {
     char **entries;
     int len = 0;
-    entries = list_matching_entries(args[1], h, &len);
+    entries = list_matching_entries(args[1], h, &len, 0);
     if (len == 0)
       safe_str(T("No matching help topics."), buff, bp);
     else
@@ -512,7 +575,7 @@ FUNCTION(fun_textentries)
   if (nargs > 2)
     sep = args[2];
 
-  entries = list_matching_entries(args[1], h, &len);
+  entries = list_matching_entries(args[1], h, &len, 0);
   if (entries) {
     arr2list(entries, len, buff, bp, sep);
     free_entry_list(entries);
@@ -577,7 +640,8 @@ string_spitfile(help_file *help_dat, char *arg1)
 
 /** Return a string with all help entries that match a pattern */
 static char **
-list_matching_entries(const char *pattern, help_file *help_dat, int *len)
+list_matching_entries(const char *pattern, help_file *help_dat, int *len,
+                      bool nospace)
 {
   char **buff;
   int offset;
@@ -613,7 +677,8 @@ list_matching_entries(const char *pattern, help_file *help_dat, int *len)
   *len = 0;
 
   for (n = 0; n < help_dat->entries; n++)
-    if (quick_wild(pattern, help_dat->indx[n].topic + offset)) {
+    if ((nospace ? help_wild(pattern, help_dat->indx[n].topic + offset)
+         : quick_wild(pattern, help_dat->indx[n].topic + offset))) {
       buff[*len] = help_dat->indx[n].topic + offset;
       *len += 1;
     }

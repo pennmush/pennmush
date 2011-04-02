@@ -91,6 +91,11 @@ static int raw_search(dbref player, const char *owner, int nargs,
                       const char **args, dbref **result, PE_Info *pe_info);
 static int fill_search_spec(dbref player, const char *owner, int nargs,
                             const char **args, struct search_spec *spec);
+static void
+
+sitelock_player(dbref player, const char *name, dbref who, uint32_t can,
+                uint32_t cant);
+
 
 #ifdef INFO_SLAVE
 void kill_info_slave(void);
@@ -126,7 +131,7 @@ do_pcreate(dbref creator, const char *player_name, const char *player_password,
     return NOTHING;
   }
 
-  player = create_player(player_name, player_password, "None", "None");
+  player = create_player(NULL, player_name, player_password, "None", "None");
   if (player == NOTHING) {
     notify_format(creator, T("Failure creating '%s' (bad name)"), player_name);
     return NOTHING;
@@ -139,6 +144,8 @@ do_pcreate(dbref creator, const char *player_name, const char *player_password,
   notify_format(creator, T("New player '%s' (#%d) created with password '%s'"),
                 player_name, player, player_password);
   do_log(LT_WIZ, creator, player, "Player creation");
+  queue_event(creator, "PLAYER`CREATE", "%s,%s,%s",
+              unparse_objid(player), Name(player), "pcreate");
   return player;
 }
 
@@ -388,10 +395,11 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
      */
     if (player == victim) {
       if (command_check_byname(victim, "HOME"))
-        safe_tel(victim, HOME, silent);
+        safe_tel(victim, HOME, silent, player, "teleport");
       return;
-    } else
+    } else {
       destination = Home(victim);
+    }
   } else {
     destination = match_result(player, to, TYPE_PLAYER, MAT_EVERYTHING);
   }
@@ -463,7 +471,7 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
       if (!silent && loc != Location(destination))
         did_it_with(victim, victim, NULL, NULL, "OXTPORT", NULL, NULL, loc,
                     player, NOTHING, NA_INTER_HEAR);
-      safe_tel(victim, Location(destination), silent);
+      safe_tel(victim, Location(destination), silent, player, "teleport");
       if (!silent && loc != Location(destination))
         did_it_with(victim, victim, "TPORT", NULL, "OTPORT", NULL, "ATPORT",
                     Location(destination), player, loc, NA_INTER_HEAR);
@@ -552,7 +560,7 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
         if (!silent && loc != destination)
           did_it_with(victim, victim, NULL, NULL, "OXTPORT", NULL, NULL, loc,
                       player, NOTHING, NA_INTER_HEAR);
-        safe_tel(victim, destination, silent);
+        safe_tel(victim, destination, silent, player, "teleport");
         if (!silent && loc != destination)
           did_it_with(victim, victim, "TPORT", NULL, "OTPORT", NULL, "ATPORT",
                       destination, player, loc, NA_INTER_HEAR);
@@ -590,11 +598,13 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
  * This implements @force.
  * \endverbatim
  * \param player the enactor.
+ * \param caller the caller.
  * \param what name of the object to force.
  * \param command command to force the object to run.
+ * \param inplace If true, use inplace_queue instead of parse_que
  */
 void
-do_force(dbref player, const char *what, char *command)
+do_force(dbref player, dbref caller, const char *what, char *command, int inplace)
 {
   dbref victim;
   int j;
@@ -619,12 +629,18 @@ do_force(dbref player, const char *what, char *command)
     notify(player, T("You can't force God!"));
     return;
   }
-  /* force victim to do command */
+
+  /* Set up the stack */
   for (j = 0; j < 10; j++)
     global_eval_context.wnxt[j] = global_eval_context.wenv[j];
   for (j = 0; j < NUMQ; j++)
     global_eval_context.rnxt[j] = global_eval_context.renv[j];
-  parse_que(victim, command, player, NULL);
+
+  /* force victim to do command */
+  if (inplace)
+    inplace_queue_actionlist(victim, caller, player, command, NULL, QUEUE_RECURSE);
+  else
+    parse_que(victim, command, player, NULL);
 }
 
 /** Parse a force token command, but don't force with it.
@@ -833,7 +849,7 @@ do_boot(dbref player, const char *name, enum boot_type flag, int silent)
       return;
     }
     d = port_desc(parse_integer(name));
-    if (!d || (!priv && d->player != player)) {
+    if (!d || (!priv && (!d->connected || d->player != player))) {
       if (priv)
         notify(player, T("There is noone connected on that descriptor."));
       else
@@ -870,7 +886,7 @@ do_boot(dbref player, const char *name, enum boot_type flag, int silent)
       notify_format(player, T("You booted unconnected port %s!"), name);
     }
     do_log(LT_WIZ, player, victim, "*** BOOT ***");
-    boot_desc(d);
+    boot_desc(d, "boot");
     return;
   }
 
@@ -1449,6 +1465,41 @@ FUNCTION(fun_quota)
   return;
 }
 
+static void
+sitelock_player(dbref player, const char *name, dbref who, uint32_t can,
+                uint32_t cant)
+{
+  dbref target;
+  ATTR *a;
+  int attrcount = 0;
+
+
+  if ((target = noisy_match_result(player, name, TYPE_PLAYER,
+                                   MAT_ABSOLUTE | MAT_PMATCH | MAT_TYPE)) ==
+      NOTHING)
+    return;
+
+  a = atr_get(target, "LASTIP");
+  if (a && add_access_sitelock(player, atr_value(a), who, can, cant)) {
+    attrcount++;
+    do_log(LT_WIZ, player, NOTHING, "*** SITELOCK *** %s", atr_value(a));
+  }
+  a = atr_get(target, "LASTSITE");
+  if (a && add_access_sitelock(player, atr_value(a), who, can, cant)) {
+    attrcount++;
+    do_log(LT_WIZ, player, NOTHING, "*** SITELOCK *** %s", atr_value(a));
+  }
+  if (attrcount) {
+    write_access_file();
+    notify_format(player, T("Sitelocked %d known addresses for %s"), attrcount,
+                  Name(target));
+  } else {
+    notify_format(player, T("Unable to sitelock %s: No known ip/host to ban."),
+                  Name(target));
+  }
+
+}
+
 /** Modify access rules for a site.
  * \verbatim
  * This implements @sitelock.
@@ -1458,10 +1509,11 @@ FUNCTION(fun_quota)
  * \param opts access rules to apply.
  * \param who string containing dbref of player to whom rule applies.
  * \param type sitelock operation to do.
+ * \param psw was the /player switch given?
  */
 void
 do_sitelock(dbref player, const char *site, const char *opts, const char *who,
-            enum sitelock_type type)
+            enum sitelock_type type, int psw)
 {
   if (!Wizard(player)) {
     notify(player, T("Your delusions of grandeur have been noted."));
@@ -1487,7 +1539,10 @@ do_sitelock(dbref player, const char *site, const char *opts, const char *who,
         return;
       }
     }
-
+    if (psw) {
+      sitelock_player(player, site, whod, can, cant);
+      return;
+    }
     if (add_access_sitelock(player, site, whod, can, cant)) {
       write_access_file();
       if (whod != AMBIGUOUS) {
@@ -1515,6 +1570,10 @@ do_sitelock(dbref player, const char *site, const char *opts, const char *who,
       do_list_access(player);
       return;
     case SITELOCK_REGISTER:
+      if (psw) {
+        sitelock_player(player, site, AMBIGUOUS, ACS_REGISTER, ACS_CREATE);
+        return;
+      }
       if (add_access_sitelock
           (player, site, AMBIGUOUS, ACS_REGISTER, ACS_CREATE)) {
         write_access_file();
@@ -1523,6 +1582,10 @@ do_sitelock(dbref player, const char *site, const char *opts, const char *who,
       }
       break;
     case SITELOCK_ADD:
+      if (psw) {
+        sitelock_player(player, site, AMBIGUOUS, 0, ACS_CREATE);
+        return;
+      }
       if (add_access_sitelock(player, site, AMBIGUOUS, 0, ACS_CREATE)) {
         write_access_file();
         notify_format(player, T("Site %s locked"), site);
@@ -1530,6 +1593,10 @@ do_sitelock(dbref player, const char *site, const char *opts, const char *who,
       }
       break;
     case SITELOCK_BAN:
+      if (psw) {
+        sitelock_player(player, site, AMBIGUOUS, 0, ACS_DEFAULT);
+        return;
+      }
       if (add_access_sitelock(player, site, AMBIGUOUS, 0, ACS_DEFAULT)) {
         write_access_file();
         notify_format(player, T("Site %s banned"), site);
@@ -1552,8 +1619,21 @@ do_sitelock(dbref player, const char *site, const char *opts, const char *who,
         break;
       }
     case SITELOCK_REMOVE:{
-        int n;
-        n = remove_access_sitelock(site);
+        int n = 0;
+        if (psw) {
+          ATTR *a;
+          dbref target;
+          if ((target = noisy_match_result(player, site, TYPE_PLAYER,
+                                           MAT_ABSOLUTE | MAT_PMATCH |
+                                           MAT_TYPE)) == NOTHING)
+            return;
+          if ((a = atr_get(target, "LASTIP")))
+            n += remove_access_sitelock(atr_value(a));
+          if ((a = atr_get(target, "LASTSITE")))
+            n += remove_access_sitelock(atr_value(a));
+        } else {
+          n = remove_access_sitelock(site);
+        }
         if (n > 0)
           write_access_file();
         notify_format(player, T("%d sitelocks removed."), n);
@@ -1787,11 +1867,12 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
 
   /* set limits on who we search */
   if (!owner || !*owner)
-    spec->owner = (See_All(player) || Search_All(player)) ? ANY_OWNER : player;
+    spec->owner = (See_All(player)
+                   || Search_All(player)) ? ANY_OWNER : Owner(player);
   else if (strcasecmp(owner, "all") == 0)
     spec->owner = ANY_OWNER;    /* Will only show visual objects for mortals */
   else if (strcasecmp(owner, "me") == 0)
-    spec->owner = player;
+    spec->owner = Owner(player);
   else
     spec->owner = lookup_player(owner);
   if (spec->owner == NOTHING) {
@@ -2072,7 +2153,7 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
       continue;
     if (spec.cmdstring[0] &&
         !atr_comm_match(n, player, '$', ':', spec.cmdstring, 1, 0,
-                        NULL, NULL, NULL))
+                        NULL, NULL, NULL, 0))
       continue;
     if (spec.listenstring[0]) {
       ret = 0;
@@ -2088,7 +2169,7 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
       }
       if (!ret &&
           !atr_comm_match(n, player, '^', ':', spec.listenstring, 1, 0,
-                          NULL, NULL, NULL))
+                          NULL, NULL, NULL, 0))
         continue;
     }
     if (*spec.eval) {

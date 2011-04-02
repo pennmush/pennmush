@@ -2032,11 +2032,6 @@ msgstr "Има 1 свързан играч."
 msgid "This is an automated message.\n"
 msgstr "Това е автоматично съобщение.\n"
 
-#: extchat.c:1836
-#, c-format
-msgid "Title %s for %schannel <%s>."
-msgstr "Заглавие %s за %sканал <%s>."
-
 #: src/player.c:301
 #, c-format
 msgid "To access this character, connect to %s and type:\n"
@@ -2339,10 +2334,6 @@ msgstr "Трябва да @lock/zone преди да можеш да настроиш играча на ZONE"
 #: set.c:210
 msgid "You must carry the object to @chown it."
 msgstr "Трябва да носиш даден обект за да го @chown."
-
-#: cmds.c:424
-msgid "You must give a switch for @hook"
-msgstr "Трябва да дадеш ключ за @hook"
 
 #: flags.c:2006
 #, c-format

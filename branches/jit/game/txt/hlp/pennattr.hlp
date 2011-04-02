@@ -37,7 +37,8 @@
   ^-listens. They always only affect the attribute they're set on, regardless
   of attribute trees:
 
-  debug (b)         Show debug output when this attribute is evaluated.
+  debug (b)         Start showing debug output while this attr is evaluated.
+  no_debug (B)      Stop showing debug output when this attr is evaluated
   regexp (R)        Match $-commands and ^-listens using regular expressions.
                     See 'help regexps'.
   case (C)          Match $-commands and ^-listens case sensitively.
@@ -71,7 +72,7 @@ Attribute trees use the backtick (`) character to separate their
 components (much as filesystems use / or \). For example, the
 following attribute name would be a couple levels down in its tree:
 
-	CHAR`SKILLS`PHYSICAL
+  CHAR`SKILLS`PHYSICAL
 
 Attribute names may not start or end with the backtick, and may not
 contain two backticks in a row.

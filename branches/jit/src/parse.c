@@ -143,6 +143,37 @@ qparse_dbref(const char *s)
   return parse_integer(s + 1);
 }
 
+/** Given a thing, return a buffer with its objid.
+ * This thing cheats, it uses a static buffer so it can safely return
+ * around 400-ish objids before rewinding back to start. This is not
+ * intended for use with large lists, but for queue_event() or for calling
+ * functions that need multiple char *s
+ *
+ * \param thing thing to the return the objid of.
+ * \return The objid string.
+ */
+const char *
+unparse_objid(dbref thing)
+{
+  static char obuff[BUFFER_LEN];
+  static char *obp = obuff;
+  char *retval;
+
+  if (!GoodObject(thing)) {
+    return "#-1";
+  }
+
+  if ((obp - obuff) >= (BUFFER_LEN - 40)) {
+    obp = obuff;
+  }
+  retval = obp;
+
+  safe_dbref(thing, obuff, &obp);
+  safe_chr(':', obuff, &obp);
+  safe_integer(CreTime(thing), obuff, &obp);
+  *(obp++) = '\0';
+  return retval;
+}
 
 /** Given a string, parse out an object id or dbref.
  * \param str string to parse.
@@ -606,6 +637,7 @@ make_pe_info()
   pe_info->dolists = 0;
   pe_info->switch_nesting = -1;
   pe_info->local_switch_nesting = -1;
+  pe_info->debugging = 0;
 
   return pe_info;
 }
@@ -700,6 +732,7 @@ process_expression(char *buff, char **bp, char const **str,
   int temp_eflags;
   int qindex;
   int retval = 0;
+  int old_debugging = 0;
 
   if (!buff || !bp || !str || !*str)
     return 0;
@@ -709,7 +742,7 @@ process_expression(char *buff, char **bp, char const **str,
       /* Can't just put #-1 CPU USAGE EXCEEDED in buff here, because
        * it might never get displayed.
        */
-      if (!Quiet(enactor))
+      if (GoodObject(enactor) && !Quiet(enactor))
         notify(enactor, T("CPU usage exceeded."));
       do_rawlog(LT_TRACE,
                 "CPU time limit exceeded. enactor=#%d executor=#%d caller=#%d code=%s",
@@ -728,6 +761,10 @@ process_expression(char *buff, char **bp, char const **str,
   if (!pe_info) {
     made_info = 1;
     pe_info = make_pe_info();
+  } else {
+    old_debugging = pe_info->debugging;
+    if (caller != executor)
+      pe_info->debugging = 0;
   }
 
   /* If we've been asked to evaluate, log the expression if:
@@ -760,8 +797,14 @@ process_expression(char *buff, char **bp, char const **str,
     goto exit_sequence;
   }
 
+  if (eflags & PE_DEBUG)
+    pe_info->debugging = 1;
+  else if (eflags & PE_NODEBUG)
+    pe_info->debugging = -1;
+
   if (eflags != PE_NOTHING) {
-    debugging = (Debug(executor) || (eflags & PE_DEBUG))
+    debugging = ((Debug(executor) && pe_info->debugging != -1)
+                 || (pe_info->debugging == 1))
       && (Connected(Owner(executor)) || atr_get(executor, "DEBUGFORWARDLIST"));
     if (debugging) {
       int j;
@@ -1056,9 +1099,9 @@ process_expression(char *buff, char **bp, char const **str,
           (*str)++;
           if (pe_info->iter_nesting >= 0 && pe_info->local_iter_nesting >= 0) {
             if (nextc == 'l') {
-              safe_str(pe_info->
-                       iter_itext[pe_info->iter_nesting -
-                                  pe_info->local_iter_nesting], buff, bp);
+              safe_str(pe_info->iter_itext[pe_info->iter_nesting -
+                                           pe_info->local_iter_nesting], buff,
+                       bp);
               break;
             }
             if (!isdigit((unsigned char) nextc)) {
@@ -1084,7 +1127,7 @@ process_expression(char *buff, char **bp, char const **str,
           (*str)++;
           if (pe_info->switch_nesting >= 0
               && pe_info->local_switch_nesting >= 0) {
-            if (nextc == 'l') {
+            if (nextc == 'l' || nextc == 'L') {
               inum_this = pe_info->local_switch_nesting;
             } else if (!isdigit((unsigned char) nextc)) {
               safe_str(T(e_int), buff, bp);
@@ -1096,9 +1139,8 @@ process_expression(char *buff, char **bp, char const **str,
                 (pe_info->local_switch_nesting - inum_this) < 0) {
               safe_str(T(e_argrange), buff, bp);
             } else {
-              safe_str(pe_info->
-                       switch_text[pe_info->switch_nesting - inum_this], buff,
-                       bp);
+              safe_str(pe_info->switch_text
+                       [pe_info->switch_nesting - inum_this], buff, bp);
             }
           } else {
             safe_str(T(e_argrange), buff, bp);
@@ -1649,6 +1691,8 @@ exit_sequence:
     pe_info->call_depth--;
   if (made_info)
     free_pe_info(pe_info);
+  else
+    pe_info->debugging = old_debugging;
   return retval;
 }
 

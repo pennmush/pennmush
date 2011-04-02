@@ -52,7 +52,7 @@ FUNCTION(fun_valid)
   if (!args[0] || !*args[0])
     safe_str("#-1", buff, bp);
   else if (!strcasecmp(args[0], "name"))
-    safe_boolean(ok_name(args[1]), buff, bp);
+    safe_boolean(ok_name(args[1], 0), buff, bp);
   else if (!strcasecmp(args[0], "attrname"))
     safe_boolean(good_atr_name(upcasestr(args[1])), buff, bp);
   else if (!strcasecmp(args[0], "playername"))
@@ -475,7 +475,7 @@ FUNCTION(fun_die)
 #define CLEAR_SWITCH_VALUE(pe) \
   pe->switch_text[pe->switch_nesting] = NULL; \
   pe->switch_nesting--; \
-  pe_info->local_switch_nesting--;
+  pe->local_switch_nesting--;
 /* ARGSUSED */
 FUNCTION(fun_switch)
 {
@@ -1090,9 +1090,9 @@ FUNCTION(fun_benchmark)
       safe_dbref(thing, buff, bp);
       return;
     }
-    if (!okay_pemit(executor, thing)) {
-      notify_format(executor, T("I don't think #%d wants to hear from you."),
-                    thing);
+    if (!okay_pemit(executor, thing, 1,
+                    tprintf(T("I don't think #%d wants to hear from you."),
+                            thing))) {
       safe_str("#-1", buff, bp);
       return;
     }

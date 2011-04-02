@@ -148,7 +148,7 @@ u_comp(const void *s1, const void *s2)
     return 0;
   n = parse_integer(result);
 
-  return n * sort_order;
+  return n;
 }
 
 
@@ -226,27 +226,6 @@ loop:
 
 /****************************** gensort ************/
 
-typedef struct sort_record s_rec;
-
-/** Sorting strings by different values. We store both the string and
- * its 'key' to sort by. Sort of a hardcode munge.
- */
-struct sort_record {
-  char *ptr;     /**< NULL except for sortkey */
-  char *val;     /**< The string this is */
-  dbref db;      /**< dbref (default 0, bad is -1) */
-  union {
-    struct {
-      char *s;     /**< string comparisons */
-      bool freestr;   /**< free str on completion */
-    } str;
-    int num;       /**< integer comparisons */
-    NVAL numval;   /**< float comparisons */
-    time_t tm;     /**< time comparisions */
-  } memo;
-};
-
-
 #define GENRECORD(x) void x(s_rec *rec,dbref player,char *sortflags); \
   void x(s_rec *rec, \
     dbref player __attribute__ ((__unused__)), \
@@ -271,19 +250,22 @@ GENRECORD(gen_magic)
   char *s = rec->val;
   int intval;
   int numdigits;
+  bool usedup = false;
   dbref victim;
 
   while (s && *s) {
     switch (*s) {
     case ESC_CHAR:
+      usedup = true;
       while (*s && *s != 'm')
         s++;
-      s++; /* Advance past m */
+      s++;                      /* Advance past m */
       break;
     case TAG_START:
+      usedup = true;
       while (*s && *s != TAG_END)
         s++;
-      s++; /* Advance past tag_end */
+      s++;                      /* Advance past tag_end */
       break;
     case '0':
     case '1':
@@ -295,6 +277,7 @@ GENRECORD(gen_magic)
     case '7':
     case '8':
     case '9':
+      usedup = true;
       intval = 0;
       while (*s && isdigit((int) *s)) {
         intval *= 10;
@@ -324,6 +307,7 @@ GENRECORD(gen_magic)
       break;
     case NUMBER_TOKEN:
       if (isdigit((int) *(s + 1))) {
+        usedup = true;
         s++;
         victim = 0;
         while (*s && isdigit((int) *s)) {
@@ -345,8 +329,14 @@ GENRECORD(gen_magic)
     }
   }
   *bp = '\0';
-  rec->memo.str.s = mush_strdup(buff, "genrecord");
-  rec->memo.str.freestr = 1;
+
+  /* Don't strdup if we haven't done anything useful. */
+  if (usedup) {
+    rec->memo.str.s = mush_strdup(buff, "genrecord");
+    rec->memo.str.freestr = 1;
+  } else {
+    rec->memo.str.s = rec->val;
+  }
 }
 
 GENRECORD(gen_dbref)
@@ -430,11 +420,6 @@ GENRECORD(gen_db_attr)
   }
 }
 
-
-typedef int (*qsort_func) (const void *, const void *);
-typedef void (*makerecord) (s_rec *, dbref player, char *sortflags);
-
-
 /* Compare(r,x,y) {
  *   if (x->db < 0 && y->db < 0)
  *     return 0;  // Garbage is identical.
@@ -509,7 +494,7 @@ attr_comp(const void *s1, const void *s2)
   const s_rec *sr1 = (const s_rec *) s1;
   const s_rec *sr2 = (const s_rec *) s2;
 
-  return compare_attr_names(sr1->memo.str.s, sr2->memo.str.s);
+  return compare_attr_names(sr1->memo.str.s, sr2->memo.str.s) * sort_order;
 
 }
 
@@ -541,11 +526,11 @@ compare_attr_names(const char *attr1, const char *attr2)
     cmp = strcoll(a1, a2);
     if (cmp != 0) {
       /* Current branch differs */
-      return cmp * sort_order;
+      return (cmp < 0 ? -1 : 1);
     }
     if (branches1 != branches2) {
       /* Current branch is the same, but one attr has more branches */
-      return (branches1 < branches2 ? -1 : 1) * sort_order;
+      return (branches1 < branches2 ? -1 : 1);
     }
     a1 = next1;
     a2 = next2;
@@ -553,16 +538,6 @@ compare_attr_names(const char *attr1, const char *attr2)
   /* All branches were the same */
   return 0;
 
-}
-
-static int
-si_comp(const void *s1, const void *s2)
-{
-  const s_rec *sr1 = (const s_rec *) s1;
-  const s_rec *sr2 = (const s_rec *) s2;
-  int res = 0;
-  res = strcasecoll(sr1->memo.str.s, sr2->memo.str.s);
-  return Compare(res, sr1, sr2) * sort_order;
 }
 
 static int
@@ -590,15 +565,9 @@ f_comp(const void *s1, const void *s2)
   return Compare2F(sr1->memo.numval, sr2->memo.numval, sr1, sr2) * sort_order;
 }
 
-typedef struct _list_type_list_ {
-  SortType name;
-  makerecord make_record;
-  qsort_func sorter;
-  uint32_t flags;
-} list_type_list;
-
 #define IS_DB 0x1U
 #define IS_STRING 0x2U
+#define IS_CASE_INSENS 0x4U
 
 char ALPHANUM_LIST[] = "A";
 char INSENS_ALPHANUM_LIST[] = "I";
@@ -618,28 +587,105 @@ char DBREF_ATTRI_LIST[] = "ATTRI";
 char ATTRNAME_LIST[] = "LATTR";
 char *UNKNOWN_LIST = NULL;
 
-list_type_list ltypelist[] = {
+ListTypeInfo ltypelist[] = {
   /* List type name,            recordmaker,    comparer, dbrefs? */
-  {ALPHANUM_LIST, gen_alphanum, s_comp, IS_STRING},
-  {INSENS_ALPHANUM_LIST, gen_alphanum, si_comp, IS_STRING},
-  {DBREF_LIST, gen_dbref, i_comp, 0},
-  {NUMERIC_LIST, gen_num, i_comp, 0},
-  {FLOAT_LIST, gen_float, f_comp, 0},
-  {MAGIC_LIST, gen_magic, si_comp, IS_STRING},
-  {DBREF_NAME_LIST, gen_db_name, si_comp, IS_DB | IS_STRING},
-  {DBREF_NAMEI_LIST, gen_db_name, si_comp, IS_DB | IS_STRING},
-  {DBREF_IDLE_LIST, gen_db_idle, i_comp, IS_DB},
-  {DBREF_CONN_LIST, gen_db_conn, i_comp, IS_DB},
-  {DBREF_CTIME_LIST, gen_db_ctime, tm_comp, IS_DB},
-  {DBREF_OWNER_LIST, gen_db_owner, i_comp, IS_DB},
-  {DBREF_LOCATION_LIST, gen_db_loc, i_comp, IS_DB},
-  {DBREF_ATTR_LIST, gen_db_attr, s_comp, IS_DB | IS_STRING},
-  {DBREF_ATTRI_LIST, gen_db_attr, si_comp, IS_DB | IS_STRING},
-  {ATTRNAME_LIST, gen_alphanum, attr_comp, IS_STRING},
+  {ALPHANUM_LIST, NULL, 0, gen_alphanum, s_comp, IS_STRING},
+  {INSENS_ALPHANUM_LIST, NULL, 0, gen_alphanum, s_comp,
+   IS_STRING | IS_CASE_INSENS},
+  {DBREF_LIST, NULL, 0, gen_dbref, i_comp, 0},
+  {NUMERIC_LIST, NULL, 0, gen_num, i_comp, 0},
+  {FLOAT_LIST, NULL, 0, gen_float, f_comp, 0},
+  {MAGIC_LIST, NULL, 0, gen_magic, s_comp, IS_STRING | IS_CASE_INSENS},
+  {DBREF_NAME_LIST, NULL, 0, gen_db_name, s_comp, IS_DB | IS_STRING},
+  {DBREF_NAMEI_LIST, NULL, 0, gen_db_name, s_comp,
+   IS_DB | IS_STRING | IS_CASE_INSENS},
+  {DBREF_IDLE_LIST, NULL, 0, gen_db_idle, i_comp, IS_DB},
+  {DBREF_CONN_LIST, NULL, 0, gen_db_conn, i_comp, IS_DB},
+  {DBREF_CTIME_LIST, NULL, 0, gen_db_ctime, tm_comp, IS_DB},
+  {DBREF_OWNER_LIST, NULL, 0, gen_db_owner, i_comp, IS_DB},
+  {DBREF_LOCATION_LIST, NULL, 0, gen_db_loc, i_comp, IS_DB},
+  {DBREF_ATTR_LIST, NULL, 0, gen_db_attr, s_comp, IS_DB | IS_STRING},
+  {DBREF_ATTRI_LIST, NULL, 0, gen_db_attr, s_comp,
+   IS_DB | IS_STRING | IS_CASE_INSENS},
+  {ATTRNAME_LIST, NULL, 0, gen_alphanum, attr_comp, IS_STRING},
   /* This stops the loop, so is default */
-  {NULL, gen_alphanum, s_comp, IS_STRING}
+  {NULL, NULL, 0, gen_alphanum, s_comp, IS_STRING}
 };
 
+/**
+ * Given a string description of a sort type, generate and return a
+ * ListTypeInfo that can be passed to slist_* functions.
+ * \param sort_type A string describing a sort type.
+ * \retval ListTypeInfo containing all generating and comparison information
+ *         needed.
+ */
+ListTypeInfo *
+get_list_type_info(SortType sort_type)
+{
+  int i, len;
+  char *ptr = NULL;
+  ListTypeInfo *lti;
+
+  /* i is either the right one or the default, so we return it anyway. */
+  lti = mush_calloc(1, sizeof(ListTypeInfo), "list_type_info");
+
+  lti->sort_order = ASCENDING;
+
+  if (*sort_type == '-') {
+    lti->sort_order = DESCENDING;
+    sort_type++;
+  }
+  if (!sort_type) {
+    /* Advance i to the default */
+    for (i = 0; ltypelist[i].name; i++) ;
+  } else if ((ptr = strchr(sort_type, ':'))) {
+    len = ptr - sort_type;
+    ptr += 1;
+    if (!*ptr)
+      ptr = NULL;
+    for (i = 0;
+         ltypelist[i].name && strncasecmp(ltypelist[i].name, sort_type, len);
+         i++) ;
+  } else {
+    for (i = 0; ltypelist[i].name && strcasecmp(ltypelist[i].name, sort_type);
+         i++) ;
+  }
+
+  lti->name = ltypelist[i].name;
+  if (ptr) {
+    lti->attrname = mush_strdup(ptr, "list_type_info_attrname");
+  } else {
+    lti->attrname = NULL;
+  }
+  lti->make_record = ltypelist[i].make_record;
+  lti->sorter = ltypelist[i].sorter;
+  lti->flags = ltypelist[i].flags;
+  return lti;
+}
+
+/**
+ * Free a ListTypeInfo struct.
+ * \param lti The ListTypeInfo to free. Must be created by get_list_type_info.
+ */
+void
+free_list_type_info(ListTypeInfo * lti)
+{
+  if (lti->attrname) {
+    mush_free(lti->attrname, "list_type_info_attrname");
+  }
+  mush_free(lti, "list_type_info");
+}
+
+/**
+ * Get the type of a list, as provided by a user. If it is not specified,
+ * try and guess the list type.
+ * \param args The arguments to a function.
+ * \param nargs # of <args>
+ * \param type_pos where to look in args for the sort_type definition.
+ * \param ptrs The list to autodetect on
+ * \param nptrs # of items in <ptrs>
+ * \retval A string that describes the comparison information.
+ */
 SortType
 get_list_type(char *args[], int nargs, int type_pos, char *ptrs[], int nptrs)
 {
@@ -668,6 +714,13 @@ get_list_type(char *args[], int nargs, int type_pos, char *ptrs[], int nptrs)
   return autodetect_list(ptrs, nptrs);
 }
 
+/**
+ * Get the type of a list, but return UNKNOWN if it is not specified.
+ * \param args The arguments to a function.
+ * \param nargs # of <args>
+ * \param type_pos where to look in args for the sort_type definition.
+ * \retval A string that describes the comparison information.
+ */
 SortType
 get_list_type_noauto(char *args[], int nargs, int type_pos)
 {
@@ -696,9 +749,24 @@ get_list_type_noauto(char *args[], int nargs, int type_pos)
   return UNKNOWN_LIST;
 }
 
+static void
+genrecord(s_rec *sp, dbref player, ListTypeInfo * lti)
+{
+  lti->make_record(sp, player, lti->attrname);
+  if (lti->flags & IS_CASE_INSENS && sp->memo.str.s) {
+    if (sp->memo.str.freestr == 0) {
+      sp->memo.str.s = mush_strdup(sp->memo.str.s, "genrecord");
+      sp->memo.str.freestr = 1;
+    }
+    upcasestr(sp->memo.str.s);
+  }
+}
 
 /** A generic comparer routine to compare two values of any sort type.
- * \param
+ * \param player Player doing the comparison
+ * \param a Key 1 to compare
+ * \param b Key 2 to compare
+ * \param sort_type SortType describing what kind of comparison to make.
  */
 int
 gencomp(dbref player, char *a, char *b, SortType sort_type)
@@ -707,6 +775,7 @@ gencomp(dbref player, char *a, char *b, SortType sort_type)
   int i, len;
   int result;
   s_rec s1, s2;
+  ListTypeInfo *lti;
   ptr = NULL;
   if (!sort_type) {
     /* Advance i to the default */
@@ -723,6 +792,8 @@ gencomp(dbref player, char *a, char *b, SortType sort_type)
     for (i = 0; ltypelist[i].name && strcasecmp(ltypelist[i].name, sort_type);
          i++) ;
   }
+  lti = get_list_type_info(sort_type);
+
   if (ltypelist[i].flags & IS_DB) {
     s1.db = parse_objid(a);
     s2.db = parse_objid(b);
@@ -736,16 +807,134 @@ gencomp(dbref player, char *a, char *b, SortType sort_type)
 
   s1.val = a;
   s2.val = b;
-  ltypelist[i].make_record(&s1, player, ptr);
-  ltypelist[i].make_record(&s2, player, ptr);
-  result = ltypelist[i].sorter((const void *) &s1, (const void *) &s2);
-  if (ltypelist[i].flags & IS_STRING) {
+  genrecord(&s1, player, lti);
+  genrecord(&s2, player, lti);
+  result = lti->sorter((const void *) &s1, (const void *) &s2);
+  if (lti->flags & IS_STRING) {
     if (s1.memo.str.freestr)
       mush_free(s1.memo.str.s, "genrecord");
     if (s2.memo.str.freestr)
       mush_free(s2.memo.str.s, "genrecord");
   }
+  free_list_type_info(lti);
   return result;
+}
+
+/**
+ * Given a player dbref (For use with viewing permissions for attrs, etc),
+ * list of keys, list of strings it maps to (sortkey()-style),
+ * # of keys+strings and a list type info, build an array of
+ * s_rec structures representing each item.
+ * \param player the player executing the sort.
+ * \param keys the array of items to sort.
+ * \param strs If non-NULL, these are what to sort <keys> using.
+ * \param n Number of items in <keys> and <strs>
+ * \param lti List Type Info describing how it's sorted and built.
+ * \retval A pointer to the first s_rec of an <n> s_rec array.
+ */
+s_rec *
+slist_build(dbref player, char *keys[], char *strs[], int n, ListTypeInfo * lti)
+{
+  int i;
+  s_rec *sp;
+
+  sort_order = lti->sort_order;
+
+  sp = mush_calloc(n, sizeof(s_rec), "do_gensort");
+
+  for (i = 0; i < n; i++) {
+    /* Elements are 0 by default thanks to calloc. Only need to touch
+       those that need other values. */
+    sp[i].val = keys[i];
+    if (strs)
+      sp[i].ptr = strs[i];
+    if (lti->flags & IS_DB) {
+      sp[i].db = parse_objid(keys[i]);
+      if (!RealGoodObject(sp[i].db))
+        sp[i].db = NOTHING;
+    }
+    genrecord(&sp[i], player, lti);
+  }
+  return sp;
+}
+
+
+/**
+ * Given an array of s_rec items, sort them in-place using a specified
+ * ListTypeInformation.
+ * \param sp the array of sort_records, returned by slist_build
+ * \param n Number of items in <sp>
+ * \param lti List Type Info describing how it's sorted and built.
+ */
+void
+slist_qsort(s_rec *sp, int n, ListTypeInfo * lti)
+{
+  qsort((void *) sp, n, sizeof(s_rec), lti->sorter);
+}
+
+/**
+ * Given an array of _sorted_ s_rec items, unique them in place by
+ * freeing them and marking the final elements' freestr = 0.
+ * \param sp the array of sort_records, returned by slist_build
+ * \param n Number of items in <sp>
+ * \param lti List Type Info describing how it's sorted and built.
+ * \retval The count of unique items.
+ */
+int
+slist_uniq(s_rec *sp, int n, ListTypeInfo * lti)
+{
+  int count, i;
+
+  /* Quick sanity check. */
+  if (n < 2)
+    return n;
+
+  /* First item's always 'unique' :D. */
+  count = 1;
+
+  for (i = 1; i < n; i++) {
+    /* If sp[i] is a duplicate of sp[count - 1], free it. If it's not,
+     * move it to sp[count] and increment count. */
+    if (lti->sorter((const void *) &sp[count - 1], (const void *) &sp[i])) {
+      /* Not a duplicate. */
+      sp[count++] = sp[i];
+    } else {
+      /* Free it if needed. */
+      if ((lti->flags & IS_STRING) && sp[i].memo.str.freestr) {
+        mush_free(sp[i].memo.str.s, "genrecord");
+      }
+    }
+  }
+  for (i = count; i < n; i++) {
+    if ((lti->flags & IS_STRING) && sp[i].memo.str.freestr) {
+      sp[i].memo.str.freestr = 0;
+      sp[i].memo.str.s = NULL;
+    }
+  }
+  return count;
+}
+
+/**
+ * Given an array of s_rec items, free them if they are not NULL.
+ * \param sp the array of sort_records, returned by slist_build
+ * \param n Number of items in <keys> and <strs>
+ * \param lti List Type Info describing how it's sorted and built.
+ */
+void
+slist_free(s_rec *sp, int n, ListTypeInfo * lti)
+{
+  int i;
+  for (i = 0; i < n; i++) {
+    if ((lti->flags & IS_STRING) && sp[i].memo.str.freestr)
+      mush_free(sp[i].memo.str.s, "genrecord");
+  }
+  mush_free(sp, "do_gensort");
+}
+
+int
+slist_comp(s_rec *s1, s_rec *s2, ListTypeInfo * lti)
+{
+  return lti->sorter((const void *) s1, (const void *) s2);
 }
 
 /** A generic sort routine to sort several different
@@ -755,62 +944,29 @@ gencomp(dbref player, char *a, char *b, SortType sort_type)
  * \param n number of elements in array s
  * \param sort_type the string that describes the sort type.
  */
-
 void
 do_gensort(dbref player, char *keys[], char *strs[], int n, SortType sort_type)
 {
-  char *ptr;
-  static char stype[BUFFER_LEN];
-  int i, sorti;
   s_rec *sp;
-  ptr = NULL;
-  sort_order = ASCENDING;
-  if (sort_type && *sort_type == '-') {
-    sort_type++;
-    sort_order = DESCENDING;
-  }
-  if (!sort_type || !*sort_type) {
-    /* Advance sorti to the default */
-    for (sorti = 0; ltypelist[sorti].name; sorti++) ;
-  } else if (strchr(sort_type, ':') != NULL) {
-    strcpy(stype, sort_type);
-    ptr = strchr(stype, ':');
-    *ptr++ = '\0';
-    if (!*ptr)
-      ptr = NULL;
-    for (sorti = 0;
-         ltypelist[sorti].name && strcasecmp(ltypelist[sorti].name, stype);
-         sorti++) ;
-  } else {
-    for (sorti = 0;
-         ltypelist[sorti].name && strcasecmp(ltypelist[sorti].name, sort_type);
-         sorti++) ;
-  }
-  sp = mush_calloc(n, sizeof(s_rec), "do_gensort");
-  for (i = 0; i < n; i++) {
-    /* Elements are 0 by default thanks to calloc. Only need to touch
-       those that need other values. */
-    sp[i].val = keys[i];
-    if (strs)
-      sp[i].ptr = strs[i];
-    if (ltypelist[sorti].flags & IS_DB) {
-      sp[i].db = parse_objid(keys[i]);
-      if (!RealGoodObject(sp[i].db))
-        sp[i].db = NOTHING;
-    }
-    ltypelist[sorti].make_record(&(sp[i]), player, ptr);
-  }
-  qsort((void *) sp, n, sizeof(s_rec), ltypelist[sorti].sorter);
+  ListTypeInfo *lti;
+  int i;
 
+  lti = get_list_type_info(sort_type);
+  sp = slist_build(player, keys, strs, n, lti);
+  slist_qsort(sp, n, lti);
+
+  /* Change keys and strs around. */
   for (i = 0; i < n; i++) {
     keys[i] = sp[i].val;
     if (strs) {
       strs[i] = sp[i].ptr;
     }
-    if ((ltypelist[sorti].flags & IS_STRING) && sp[i].memo.str.freestr)
-      mush_free(sp[i].memo.str.s, "genrecord");
   }
-  mush_free(sp, "do_gensort");
+
+  /* Free the s_rec list */
+  slist_free(sp, n, lti);
+
+  free_list_type_info(lti);
 }
 
 SortType
@@ -823,6 +979,7 @@ autodetect_2lists(char *ptrs[], int nptrs, char *ptrs2[], int nptrs2)
   if (a == b) {
     return a;
   }
+
   /* Float and numeric means float. */
   if ((a == NUMERIC_LIST || a == FLOAT_LIST) &&
       (b == NUMERIC_LIST || b == FLOAT_LIST)) {
@@ -859,11 +1016,13 @@ autodetect_list(char *ptrs[], int nptrs)
       if (is_strict_number(ptrs[i])) {
         lt = L_FLOAT;
         sort_type = FLOAT_LIST;
+        break;
       }
     case L_DBREF:
       if (is_objid(ptrs[i]) && (i == 0 || lt == L_DBREF)) {
         lt = L_DBREF;
         sort_type = DBREF_LIST;
+        break;
       }
     case L_ALPHANUM:
       return MAGIC_LIST;

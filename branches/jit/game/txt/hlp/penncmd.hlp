@@ -187,6 +187,8 @@ See also: look, @describe, @idescribe, ACTION LISTS
   is @destroyed, not when the object is actually purged from the database,
   it's possible for <object> to be @undestroyed after the adestroy has run.
   
+  Please note that there are no destroy or odestroy attributes.
+  
 See also: @destroy, @undestroy
 & @adisconnect
   @adisconnect <object>[=<action list>]
@@ -369,8 +371,8 @@ See also: leave, @leave, NO_LEAVE, locktypes, ACTION LISTS, VERBS
   If the 'page_aliases' @config option is on, the first alias in the list is 
   shown along with the player's name when they page others.
   
-  Exits also support including the aliases directly in their name, but doing
-  so in new construction is depreciated and @alias should be used instead.
+  Exit aliases used to be a part of their name, though all newly created
+  exits use @alias instead.
  
   For other types of object, @alias has no special meaning.
 
@@ -471,9 +473,9 @@ See also: @teleport, ACTION LISTS, VERBS
 & @atrchown
   @atrchown <object>/<attribute>=<new owner>
   
-  These command changes the ownership of the attribute <attribute> on
-  <object> to <new owner>. You can only @atrchown attributes which you can
-  set. Wizards can @atrchown to any player, while mortals can only @atrchown
+  This command changes the ownership of the attribute <attribute> on <object>
+  to <new owner>. You can only @atrchown attributes which you can set. 
+  Wizards can @atrchown to any player, while mortals can only @atrchown
   attributes to themselves. Only players can own attributes; if <new owner>
   is not a player, <new owner>'s owner is used instead.
 
@@ -492,7 +494,7 @@ See also: @atrlock, ATTRIBUTES, NON-STANDARD ATTRIBUTES
   alter the attribute for other reasons, such as not controlling <object>).
   You must be able to set an attribute in order to lock it.
 
-See also: @atrchown, ATTRIBUTES, NON-STANDARD ATTRIBUTES
+See also: atrlock(), @atrchown, ATTRIBUTES, NON-STANDARD ATTRIBUTES
 & @asuccess
 & @success
 & @osuccess
@@ -521,8 +523,8 @@ See also: get, goto, @lock, SUCCESS, FAILURE, @odrop, ACTION LISTS, VERBS
 & @attribute
   @attribute <attrib>
 
-  The @attribute command displays and modifies the MUSH's standard
-  attributes (see "@list/attribs" for a list of them).
+  The @attribute command displays and modifies the MUSH's standard attributes
+  (see "@list/attribs" for a list of them).
   
   *** Unlike TinyMUSH, changes to the PennMUSH attribute table are not saved 
   *** across shutdowns. Use these commands from God's @startup to ensure they
@@ -559,7 +561,7 @@ See also: get, goto, @lock, SUCCESS, FAILURE, @odrop, ACTION LISTS, VERBS
 
   @attribute/limit lets you restrict all _new_ values for an attribute to
   those that match a regexp pattern. Case insensitive. (Use (?-i) to make
-  your regexp case-sensitive)
+  your regexp case-sensitive.)
 
   @attribute/enum lets you restrict all _new_ values for an attribute to
   match an item in a list. It will also perform partial matching on the
@@ -1058,6 +1060,7 @@ See also: look, @exitformat, @conformat, @descformat, @nameaccent,
   difference is refunded.
   
   This attribute is evaluated, with the amount being given passed as %0.
+  If the attribute returns a number less than 0, the money will be refused.
   Non-players must have this attribute set in order to receive pennies.
   Players who don't have a COST always accept the amount of pennies given.
 
@@ -1066,8 +1069,8 @@ See also: look, @exitformat, @conformat, @descformat, @nameaccent,
     > @apay Exit Machine=@open %n-exit 
     > @pay Exit Machine=Your exit has been created.  
  
-    give Exit Machine=10
-    > Your exit has been created.
+    > give Exit Machine=10
+    Your exit has been created.
     (The exit will also have been opened by the machine.)
 
     > @cost charity=%0
@@ -1189,12 +1192,13 @@ See also: give, @quota, MONEY, @clone, create(), @dig, @open, @pcreate
   The /tf works the same as if you'd typed:
     @decompile/db <obj>[/<attrs>]=[default(me/TFPREFIX, FugueEdit >%b)]
     
-  If you have a TFPREFIX attribute set, the (unevaluated) contents of that
-  attribute is used as the prefix. Otherwise, the string "FugueEdit > " is
-  used. It's useful for automatically copying @decompile output into your
-  client to alter. It is highly recommended  that you set a TFPREFIX
-  attribute, to prevent others from maliciously placing code in your client's
-  command line.
+  with the exception that @decompile/tf does not include commands for setting
+  attribute flags. If you have a TFPREFIX attribute set, the (unevaluated) 
+  contents of that attribute is used as the prefix. Otherwise, the string 
+  "FugueEdit > " is used. It's useful for automatically copying @decompile 
+  output into your client to alter. It is highly recommended  that you set a
+  TFPREFIX attribute, to prevent others from maliciously placing code in your
+  client's command line.
 
   To set up @decompile/tf:
   
@@ -1284,7 +1288,7 @@ See also: @undestroy, @create, @dig, @open, DESTROY_OK, SAFE
   
 See also: @destroy, GOING, @startup
 & @dig
-  @dig[/teleport] <room name>[=<exit to>[, <exit from>]]
+  @dig[/teleport] <room name>[=<exit to>[, <exit from>[, <dbref>]]]
   
   This command creates a new room named <room name>. Creating a room costs
   some pennies (see '@config room_cost' for exactly how many). If the
@@ -1297,6 +1301,9 @@ See also: @destroy, GOING, @startup
   to your current location. Opening exists also costs pennies; see 
   '@config exit_cost'. The exit names may contain multiple aliases, separated 
   with semicolons, as per 'help @name'.
+
+  Wizards can also specify the <dbref> of a garbage object to use when
+  creating the room. Otherwise, the room is given the next available dbref.
   
   See 'help @dig2' for examples.
 & @dig2
@@ -1407,7 +1414,7 @@ See also: @shutdown
   "leave <object>" to enter/leave the object.
   
   These attributes only have meaning for players and things (as rooms/exits
-  cannot be "enter"ed) - the aliases for exits are part of their @name.
+  cannot be "enter"ed) - the aliases for exits are stored in @alias.
   
   Example:
     > @ealias Chair=Sit down;sit
@@ -1472,7 +1479,7 @@ See also: @lock, locktypes, enter, ENTER_OK
   The /noeval switch prevents the MUSH from evaluating <message>.
   The /spoof switch causes nospoof notifications to show the enactor's
     dbref instead of the executor's dbref, and requires control over
-    the enactor or the Can_nspemit power.
+    the enactor or the Can_spoof power.
 
   @emit can be abbreviated "\"
 
@@ -1667,18 +1674,20 @@ See also: @filter, @prefix, AUDIBLE, PUPPET, @debugforwardlist, @lock
 
 See also: DEBUG, @forwardlist, @lock
 & @force
-  @force[/noeval] <object>=<action list>
+  @force[/noeval][/inplace] <object>=<action list>
 
   This command forces <object> to queue the given action list, as if the
   object had entered the action list itself. You must control <object> to
   @force it. @force is useful for manipulating puppets. 
 
+  If /inplace is given, <object> will run <action list> _now_, instead of
+  being queued for execution later.
+
   @force can be abbreviated as
-    <dbref#> <action list>
+    <dbref> <action list>
 
   Continued in 'help @force2'.
 & @force2
-
   Normally, the action list is evaluated twice - once when @force is run, and 
   again when <object> runs the action list. If the /noeval switch is given, 
   <action list> is not evaluated until it is run by <object>.
@@ -1693,6 +1702,25 @@ See also: DEBUG, @forwardlist, @lock
     Lackey pages: Hi there!
     > #103 page Cyclonus=Whee
     Lackey pages: Whee
+
+  Continued in 'help @force3'.
+& @force3
+  Normally, @force creates a new queue entry. @force/inplace does not.
+
+  Examples:
+    > @create Lackey
+    Created: Object #103 
+    > &order me=$order *:say Lackey, %0 ; @force Lackey=%0 ; say Done?
+    > order pose salutes!
+    You say, "Lackey, pose salutes!"
+    You say, "Done?"
+    Lackey salutes!
+
+    > &order me=$order *:say Lackey, %0 ; @force/inplace Lackey=%0 ; say Done?
+    > order pose salutes!
+    You say, "Lackey, pose salutes!"
+    Lackey salutes!
+    You say, "Done?"
 
 See also: PUPPET, DBREF, objeval()
 & @flag
@@ -1957,8 +1985,11 @@ See also: HAVEN, page, @lock, @away, @idle
   @power to affect your own connections; only Wizards can affect other
   players' connections.
   
-  The /on and /yes switches (which are the default, if no <switch> is given)
-  hide a connection, while /off and /no unhide the connection.
+  The /on and /yes switches hide connections, while /off and /no unhide
+  connections. If no switch is given, the command acts as a toggle: for a
+  single descriptor, the hide status is reversed. For a player, if all his
+  connections are hidden, they will be unhidden. If any are unhidden, they
+  will all be hidden.
 
 See also: hidden(), WHO, lwho(), lports(), ports()
 & @idescribe
@@ -2000,6 +2031,8 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
                 $commands that might match). If the match fails, normal
                 built-in command processing continues. Note that all locks
                 and flags on the object (HALT, etc.) still apply.
+  @hook/override/inplace: Same as @hook/override, but the resulting matches
+                are run immediately - not queued for later execution!
   @hook/before: The attribute is evaluated before the built-in command is run.
   @hook/after: The attribute is evaluated after the built-in command is run.
 
@@ -2034,6 +2067,28 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
   > @set me=OOC
   > "test
   <OOC> Robert says, "test"
+
+  See 'help @hook3' for /inplace examples.
+& @hook3
+  > &dance me=$dance:pose sticks his right foot in ; say Do the hokey pokey
+                     ; pose sticks his right foot out
+  > dance
+  Walker sticks his right foot in
+  You say, "Do the hokey pokey"
+  Walker sticks his right foot out
+
+  > &cmd.say #3=$say *:@remit %l=%n declares, "%0"
+  > @hook/override say=#3,cmd.say
+  > dance
+  Walker sticks his right foot in
+  Walker sticks his right foot out
+  Walker declares, "Do the hokey pokey"
+
+  > @hook/override/inplace say=#3,cmd.say
+  > dance
+  Walker sticks his right foot in
+  Walker declares, "Do the hokey pokey"
+  Walker sticks his right foot out
 & HUH_COMMAND
 
   This internal command is run whenever someone attempts to run a command
@@ -2055,7 +2110,7 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
       @pemit/sil %#=Huh? %b(Type "help" for help.) ;
       @break mod(get(%#/typos),10) ; 
       @wall %n wins %p [ordinal(div(get(%#/typos),10))] typo trophy!
-    > asfdsf (10 times)
+    > asfdsf  (10 times)
     Huh?  (Type "help" for help.)  (10 times)
     Announcement: Room Zero shouts, "Dunce wins his first typo trophy!"
 
@@ -2069,7 +2124,7 @@ See also: @hook, EVALUATION ORDER
   are in a meeting and cannot quickly return pages.
 
   Example: 
-    > @idle me=switch(idlesecs(me),>120,I'm idle. Use @mail)
+    > @idle me=switch(idle(me),>120,I'm idle. Use @mail)
 
   Players paging me will only see the "I'm idle" message if I've been
   idle for over 2 minutes (120 seconds).
@@ -2125,11 +2180,13 @@ See also: @ps, QUEUE
   you force the bird to @lemit "Cheep", everyone in room #10 will hear
   "Cheep". This command is the same as "@emit/room". 
 
+  With the /silent switch, no confirmation message is shown. With /noisy, it
+  is. If neither is given, the silent_pemit option determines if it is shown.
   The /silent switch suppresses the normal confirmation message.
   The /noeval switch prevents <message> from being evaluated.
   The /spoof switch causes nospoof notifications to show the enactor's
     dbref instead of the executor's dbref, and requires control over
-    the enactor or the Can_nspemit power.
+    the enactor or the Can_spoof power.
 & @list
   @list/<switch>
   @list[/lowercase] <switch>
@@ -2163,7 +2220,7 @@ See also: list(), @config, config(), functions(), @stats, @command,
 
 See also: @list
 & @link
-  @link[/preserve] <object>=<dbref | here | home | variable>
+  @link[/preserve] <object>=[<dbref> | here | home | variable]
 
   Links <object> to either a room or a thing. If a thing or player is
   linked, that sets the object's HOME. If a room is linked, that sets 
@@ -2175,7 +2232,7 @@ See also: @list
   control the room, OR the room must be set LINK_OK. If the exit is
   currently unlinked, and you pass its @lock/link, you may link it even
   if you do not own it. In this case, the exit will be @chowned to you
-  (and set HALT).  Linking an exit may have a cost (usually 1 penny.)
+  (and set HALT). Linking an exit may have a cost (usually 1 penny.)
   The Wizard-only /preserve switch can be used to link without @chowning
   and HALTing the exit.
 
@@ -2224,7 +2281,7 @@ See also: EXITS, @open, @dig, DROP-TO, HOME
   > @listen Recorder=@emit *
   > @ahear Recorder=:records %0
   > @emit Whee!
-  > Whee!
+  Whee!
     In this example, the Recorder's listen-pattern is NOT matched, because
     it doesn't hear the '@emit Whee!', it only hears the 'Whee!' part, which
     doesn't match.
@@ -2396,6 +2453,19 @@ EVALUATION LOCK
   you should probably use a bit lock instead.
 
 See also: @lock-bit
+& @lock-name
+NAME LOCKS
+  You can test for objects matching a given name by using the below format
+
+    @lock <object>=name^<pattern>
+
+  It is similar to performing strmatch(%n,<pattern>), though will also match
+  for a player/exit with <pattern> as one of its @aliases.
+
+  For example, to lock "Bob's Tools" to only people with a name beginning
+  with Bob:
+    @lock/use Bob's Tools=name^bob*
+
 & @lock-bit
 & @lock-flag
 & @lock-type
@@ -2476,6 +2546,7 @@ See also: ipaddr(), hostname(), LASTSITE
 
   Simple     - Always true, always false, or locking to an object.
   Objid      - Check if the object trying to pass the lock matches an objid.
+  Name       - Check the name of the object attempting to pass the lock.
   Owner      - Lock to objects owned by the owner of an object.
   Carry      - Lock to someone carrying an object such as a key.
   Indirect   - Use the result of a lock on another object.
@@ -2521,6 +2592,7 @@ See also: @lock, locktypes, @clock, objid()
   @lock/drop            Who can drop this object or in this room
   @lock/give            Who can give this object
   @lock/from            Who can give things to this object
+  @lock/pay             Who can give pennies to/buy from this object
   @lock/receive         What things can be given to this object
   @lock/follow          Who can follow this object
   @lock/examine         Who can examine this object if it's VISUAL
@@ -2550,11 +2622,16 @@ See also: @lock, @lset, @clock, FAILURE
 See also: @lock, lockflags(), llockflags(), lset()
 & @log
   @log[/<switch>] <message>
-
+  @log/recall/<switch> [<number>]
+ 
   This wizard-only command puts <message> in a log file, tagged with
   the time and object executing the command.  The available switches
   are /check, /cmd, /conn, /err, /trace, and /wiz, specifying which
   file to log to.  /cmd is default.
+
+  Adding the /recall switch will display the last <number> lines
+  written to that log file, or the entire log buffer (Which is the
+  last 1 kilobyte or so of data written to the log) if omitted.
 
 See also: @logwipe
 & @logwipe
@@ -2627,26 +2704,31 @@ See also: message(), @chatformat, @pageformat
   /list   : list the MOTDs (like @listmotd, can be used by anyone)
 & @name
   @name <object>=<new name>
+  @name <player|exit>=<new name>[;<alias1>[;<aliasN>]]
 
   Changes the name of <object> to <new name>.
 
   Players can change their name to anything valid which is not currently in
   use by another player, as a name or alias. (They can change their name to
   something from their own @alias.)
+  
+  You can change the alias for a player or exit while renaming it, by giving
+  the alias(es) after the new name, each separated by a semicolon. If the
+  name is followed by a semicolon with no aliases, the existing alias will
+  be cleared instead.
 
-  An exit can have many names, each separated by a semicolon. In new
-  construction, the aliases should be in the @alias attribute, but
-  they are also supported in the name itself. The exit can be referred
-  to by any of these names in all commands. For example:
-
-    (New-style)
-    > @name exit=East <e>
-    > @alias exit=east;e
-    (Old-style)
-    > @name exit=East <e>;east;e
-    
   When <object>'s name is changed, its ONAME and ANAME verb attributes will
   be triggered. See 'help @oname' for details.
+  
+  Examples:
+    > @name here=My Room
+    Name set.
+    > @name me=Mike;Michael;m
+    Alias set.
+    Name set.
+    > @name me=Obi Wan;
+    Alias removed;
+    Name set.
   
 See also: @alias, @oname, name(), fullname()
 & @ONAME
@@ -2707,13 +2789,13 @@ See also: SEMAPHORES, @drain, @wait
   @nslemit[/<switch>] <message>
   @nspemit[/switches] <object>=<message>
   @nsprompt[/switches] <object>=<message>
-  @nsremit[/switches] <object> = <message>.
-  @nsoemit[/<switch>] [<room>/]<object> [<object>...] = <message>
-  @nszemit <zone> = <message>
+  @nsremit[/switches] <object>=<message>.
+  @nsoemit[/<switch>] [<room>/]<object> [<object>...]=<message>
+  @nszemit <zone>=<message>
 
   These commands work like @emit, @lemit, @pemit, @prompt, @remit, @oemit, 
   and @zemit, respectively, but will not include nospoof information if used
-  by Wizards or someone with the Can_Nspemit @power. They are meant to be
+  by Wizards or someone with the Can_spoof @power. They are meant to be
   used by commands in the master room where the nospoof information is just
   useless noise. They take all switches of their respective commands.
 
@@ -2725,17 +2807,22 @@ See also: @emit, @lemit, @pemit, @prompt, @remit, @oemit, @zemit, nsemit(),
  
   This command shows <message> to everyone in the location of <object>
   EXCEPT <object>. A list of objects can be given, in which case the message
-  is shown in the locations of each, to everyone but those objects.
+  is shown in the locations of each, to everyone but those objects. If 
+  <object> contains a space, it should be enclosed in double-quotes.
   
   If <room> is specified (usually as a dbref), this command shows <message> 
   to everyone in <room> except for the given <object>s. In this case, each
-  <object> is matched relative to <room>.
+  <object> is matched relative to <room>. If no matching <object>s are found
+  in <room>, this is the equivilent of @remit <room>=<message>
   
   The /noeval switch prevents the MUSH from evaluating <message>.
   The /spoof switch causes nospoof notifications to show the enactor's
     dbref instead of the executor's dbref, and requires control over
-    the enactor or the Can_nspemit power.
-    
+    the enactor or the Can_spoof power.
+
+  See 'help @oemit2' for examples.
+See also: @emit, @pemit, @nsoemit, oemit(), nsoemit(), NOSPOOF, SPOOFING
+& @oemit2
   Examples:
     Show a message in the locations of players Bob and Fred, to everyone
     except those two players:
@@ -2743,8 +2830,10 @@ See also: @emit, @lemit, @pemit, @prompt, @remit, @oemit, @zemit, nsemit(),
     
     Show a message in #50 to everyone except the object 'Spy'.
     > @oemit #50/Spy=Sssh!
- 
-See also: @emit, @pemit, @nsoemit, oemit(), nsoemit(), NOSPOOF, SPOOFING
+    
+    Show a message to everyone in your current location, except the 2nd
+    object called 'foo'.
+    > @oemit %L/"2nd foo"=bar
 & @open
   @open <exit name>[=<destination>[, <return exit name>[, <source room>]]]
 
@@ -2908,7 +2997,7 @@ See also: @prompt, prompt(), terminfo()
     /noeval    -- <message> will not be evaluated for substitutions 
     /spoof     -- the enactor's dbref will be used for nospoof notifications
                   instead of the executor's dbref. Requires control
-                  over enactor or Can_nspemit power. 
+                  over enactor or Can_spoof power. 
 
   You cannot @pemit to objects set HAVEN, or objects whose @lock/page you do
   not pass, unless you are set WIZARD or have the pemit_all @power.
@@ -3087,7 +3176,7 @@ See also: @motd, @list, @listmotd
    space-separated list of targets.
   The /spoof switch causes nospoof notifications to show the enactor's
    dbref instead of the executor's dbref, and requires control over
-   the enactor or the Can_nspemit power.
+   the enactor or the Can_spoof power.
 
 See also: @emit, @pemit, @oemit, SPOOFING, NOSPOOF, CONTROL.
 & @restart
@@ -3289,31 +3378,33 @@ See also: GENDER, subj(), poss(), aposs(), obj()
 & @sitelock
   @sitelock
   @sitelock/name <name>
-  @sitelock <host-pattern>=<options>[, <name>]
-  @sitelock[/<ban|register>] <host-pattern>
+  @sitelock[/player] <host-pattern>=<options>[, <name>]
+  @sitelock[/<ban|register>][/player] <host-pattern>
   @sitelock/check <host>
-  @sitelock/remove <string>
+  @sitelock/remove[/player] <string>
 
-  The @sitelock command adds rules to the access.cnf file, controlling
-  a host's level of access to the MUSH, or adds banned player names to
-  the names.cnf file. Only Wizards may use @sitelock.
+  The @sitelock command adds rules to the access.cnf file, controlling a 
+  host's level of access to the MUSH, or adds banned player names to the 
+  names.cnf file. Only Wizards may use @sitelock.
+  
+  @sitelock without arguments lists all sites in access.cnf. Rules are 
+  processed in the order listed, and the first matching rule is applied. 
+  @sitelock/check tells you which rule will match for a given <host>.
 
-  @sitelock without arguments lists all sites in access.cnf.
-  Rules are processed in the order listed, and the first matching
-  rule is applied. @sitelock/check tells you which rule will match
-  for a given <host>.
-
-  @sitelock/name adds a name to the list of banned player names.
-  Use !<name> to remove a name from the list.
+  @sitelock/name adds a name to the list of banned player names.  Use 
+  !<name> to remove a name from the list.
 
   @sitelock <host-pattern>=<options>[, <name>] controls the access options
   for hosts which match <host-pattern>, which may include wildcard
-  characters "*" and "?". See help @sitelock2 for the list of options,
-  and help @sitelock3 for an explanation about the name argument.
+  characters "*" and "?". See help @sitelock2 for the list of options, and
+  help @sitelock3 for an explanation about the name argument.
 
-  For backward compatibility, @sitelock/ban is shorthand for
-  setting options "!connect !create !guest", and @sitelock/register
-  is shorthand for options "!create register".
+  For backward compatibility, @sitelock/ban is shorthand for setting options
+  "!connect !create !guest", and @sitelock/register is shorthand for options
+  "!create register".
+  
+  If the /player switch is given, <host-pattern> is treated as a player name,
+  and sitelock rules are added for that player's LASTIP and LASTSITE, if set.
 
 & @sitelock2
 
@@ -3358,7 +3449,10 @@ See also: GENDER, subj(), poss(), aposs(), obj()
   use @newpassword or @sitelock *=!connect,Twink.
 
   @sitelock/remove will delete entries that were added with @sitelock
-  if their host-pattern matches <string> exactly.
+  if their host-pattern matches <string> exactly. If the /player switch is
+  given, <string> is treated as a player name, and entries whose
+  host-patterns match the player's LASTIP or LASTSITE addresses exactly will
+  be deleted.
 
 & @SPEECHMOD
   @speechmod <object>[=<modifier>]
@@ -3387,10 +3481,30 @@ See also: GENDER, subj(), poss(), aposs(), obj()
     Test
     
 See also: say, pose, @emit, @chatformat, @pageformat
+& @mapsql
+  @mapsql[/notify][/colnames] <obj>/<attr>=<query>
+
+  This command issues an SQL query if the MUSH supports SQL and
+  can connect to an SQL server. You must be WIZARD or have the
+  Sql_Ok power to use @sql.
+
+  Returned rows are passed to <obj>/<attr>, with Row number passed as %0
+  and the columns passed as %1-%9. Row numbers start at 1.
+
+  The /notify switch causes @mapsql to do an "@notify me" at the end of
+  the list.
+
+  The /colnames switch causes @mapsql to first queue the obj/attr with
+  row number 0 and %0-%9 being the column names.
+
+  Example:
+  > &desctable me=think align(30 20 4 10 10,%0,%1,%2,%3,%4)
+  > @mapsql me/desctable=DESCRIBE table_name
+See also: sql(), sqlescape(), mapsql(), @sql
 & @sql
   @sql <query>
 
-  This command issues and SQL query if the MUSH supports SQL and
+  This command issues an SQL query if the MUSH supports SQL and
   can connect to an SQL server. You must be WIZARD or have the
   Sql_Ok power to use @sql.
 
@@ -3402,7 +3516,7 @@ See also: say, pose, @emit, @chatformat, @pageformat
   Example:
     > @sql SHOW TABLES
 
-See also: sql(), sqlescape(), mapsql()
+See also: sql(), sqlescape(), mapsql(), @mapsql
 & @squota
   @squota <victim> [= [+|-] <amount>]
 
@@ -3457,6 +3571,7 @@ See also: @restart, @undestroy, ACTION LISTS, @function, @command, @hook,
   The "here" and "inventory" flags check only your location or
   inventory, respectively. "exits" only checks for AUDIBLE exits.
 & @switch
+& @select
   @switch[/<switch>] <string>=<expr1>, <action1> [,<exprN>, 
                                  <actionN>]... [,<default>]
   @select <string>=<expr1>, <action1> [,<exprN>, <actionN>]... [,<default>]
@@ -3479,6 +3594,8 @@ See also: @restart, @undestroy, ACTION LISTS, @function, @command, @hook,
   @switch/first runs <action> for the first matching <expr> only. Same as
                 @select, and often the desired behaviour.
   @switch/notify queues "@notify me" after the last <action>. 
+  @switch/inplace runs all actions in place, instead of creating a new queue
+                  entry for them.
   @switch/regexp makes <expr>s case-insensitive regular expressions, not
                  wildcard/glob patterns.
 
@@ -3502,6 +3619,21 @@ See also: switch wildcards, switch(), @break, stext(), slev()
                                       say Not Puppet!
     > test
     thing says, "Not Puppet!"
+  Continued in 'help @switch3'
+& @switch3
+  Examples: 
+    > &SWITCH_EX me=$foo *:think before ; @switch %0=1,think one ; think after
+    > foo 1
+    thing before
+    thing after
+    thing one
+
+    > &SWITCH_EX me=$foo *:think before ; @switch/inplace %0=1,think one ;
+                    think after
+    > foo 1
+    thing before
+    thing one
+    thing after
 & @teleport
   @teleport[/silent][/inside] [<object>=]<room>
 
@@ -3861,10 +3993,14 @@ See also: @wall, @rwall
   @listmotd as the Wiz MOTD. A more permanent message can be set by
   the siteadmin by editing the file "wiz.txt".
 & @zemit
-  @zemit <zone>=<message>
+  @zemit[/silent|/noisy] <zone>=<message>
 
-  Emits a message to all rooms in <zone>. You must have control in that
-  zone in order to use this command.
+  Emits a message to all rooms in <zone>. You must have control <zone> in 
+  order to use this command.
+  
+  The /silent switch suppresses the confirmation message, and /noisy causes
+  it to be shown. With neither switch, the silent_pemit @config option
+  determines whether or not the message is shown.
   
 See also: @nszemit, zemit(), zone(), zwho(), ZONES
 & ahelp
@@ -3974,11 +4110,10 @@ See also: empty, get, STICKY, DROP-TO
   when you don't have a home. You can describe the interior of an
   object differently from its exterior by using @idescribe.
 
-See: @enter, @oenter, @oxenter, @aenter, leave, @lock, @idesc, INTERIORS
-& events
+See: @enter, @efail, @ealias, leave, @lock, @idescribe, INTERIORS
 & rules
-  events [<topic>]
   rules [<topic>]
+  events [<topic>] 
 
   These commands, like news, work the same way as the help command,
   except that the information provided in them is specific to this
@@ -4081,69 +4216,65 @@ See also: get, drop
   'take' is usually an alias for the 'get' command.
 
 See also: @lock, ENTER_OK, give, drop, @success, inventory
-& @abuy
-  @abuy <object>[=<action list>]
-
-  Sets the actions to be taken after a player buys an item from
-  PRICELIST. The item purchased is passed in as %0, and the amount
-  paid as %1
-
-See also: buy, @buy, @obuy, @pricelist, MONEY, ACTION LISTS
 & @buy
-  @buy <object>[=<message>]
-
-  Sets the message that is shown to anyone who buys something from
-  the object, using the 'buy' command. The item purchased is passed
-  in as %0, and the amount paid as %1.
-
-See also: buy, @abuy, @obuy, @pricelist, MONEY
+& @abuy
 & @obuy
+  @buy <object>[=<message>]
   @obuy <object>[=<message>]
+  @abuy <object>[=<message>]
+  
+  These attributes contain the message shown to a player who successfully
+  buys something from <object> using the "buy" command, the message shown to 
+  others in the room when something is bought from <object> (prefixed with
+  the buyer's name), and the actions to be taken by <object> when something
+  is bought from it, respectively. Each attribute is passed the item being
+  purchased as %0 and the amount paid for it as %1.
 
-  Sets the message that will be show to others whenever someone buys
-  an item from the object's PRICELIST using the 'buy' command. The
-  name of the person giving the money will be automatically inserted
-  at the beginning of the message. The item purchased is passed in as
-  %0, and the amount paid as %1.
+  Example:
+    > @buy Vendor=udefault(me/buy`%0,You buy %0 for %1 [money(%1)]., %0, %1)
+    > @obuy Vendor=hands some money to [name(me)] for [art(%0)] %0.
+    > @abuy Vendor=:goes into the storeroom. ; @wait 2=:returns with %n's %0.
 
-See also: buy, @abuy, @obuy, @pricelist, MONEY
+See also: buy, @pricelist, MONEY, @lock, VERBS, @cost, give
 & @pricelist
   @pricelist <object>=<item1>:<price1>[,<price2>][ <item2>:...]
 
-  The PRICELIST attribute is a space-delimited list of item names and
-  prices that are checked when the 'buy' command is run.
+  The PRICELIST attribute is a space-delimited list of item names and prices
+  that are checked when the 'buy' command is run.
   
-  An item name may have '_'s where the player would use a space in the
-  name.
+  An item name may have '_'s where the player would use a space in the name.
 
-  A price is either a number (20), a range of numbers (10-30), or a
-  minimum number (10+).
+  A price is either a number (20), a range of numbers (10-30), or a minimum 
+  number (10+). An item can also have several different prices, separated by
+  commas.
+  
+  A player must pass <object>'s @lock/pay in order to purchase from it.
 
-  ex:
-    @PRICELIST vendor=mansion:1000+ large_house:100-200 house:20,30,50
+  Example::
+    > @PRICELIST vendor=mansion:1000+ large_house:100-200 house:20,30,50
 
-See also: buy, @abuy, @buy, @obuy, MONEY, @cost
+See also: buy, @buy, MONEY, @cost, give, @lock
 & buy
   buy <item>[ from <vendor>][ for <cost>]
 
   When you try buying an item, PRICELIST attributes on nearby objects
-  (or <vendor> if given) will be checked for matching item:costs. If
-  <cost> is given, the first item that matches that cost will be
-  purchased.  Otherwise, the first matching item that you can afford
-  will be purchased.
+  (or <vendor> if given) will be checked for matching item:costs. If <cost>
+  is given, the first item that matches that cost will be purchased.
+  Otherwise, the first matching item that you can afford will be purchased.
+  You must pass the vendor's @lock/pay in order to purchase items.
 
-  If the pricelist match contains a list of prices, ITEM:30,20,10, the
-  first one you can afford will be the resulting price.
+  If the pricelist match contains a list of prices, ITEM:30,20,10, the first
+  one you can afford will be the resulting price.
 
-  ex:
-  > @PRICELIST vendor=coke:20 pepsi:20
-  > &drink`coke vendor=You enjoy a delicious coke.
-  > &drink`pepsi vendor=It tastes like a funny coke.
-  > @BUY vendor=u(drink`%0)
-  > buy coke
-  You enjoy a delicious coke.
+  Example:
+    > @PRICELIST vendor=coke:20 pepsi:20
+    > &drink`coke vendor=You enjoy a delicious coke.
+    > &drink`pepsi vendor=It tastes like a funny coke.
+    > @BUY vendor=u(drink`%0)
+    > buy coke
+    You enjoy a delicious coke.
 
-See also: @ABUY, @BUY, @PRICELIST, give, @COST
+See also: @BUY, @PRICELIST, give, @COST
 & give
   give[/silent] <recipient>=<number>
   give[/silent] <number> to <recipient>
@@ -4152,11 +4283,13 @@ See also: @ABUY, @BUY, @PRICELIST, give, @COST
 
   The first two forms of this command give <number> pennies to <recipient>.
   If <recipient> is a non-player, it must have an @COST, and any pennies
-  given to it will go to its owner. If /silent is given, the message 
-  informing the recipient how many pennies were given is suppressed. Wizards
-  may "give" a negative number of pennies to take from <recipient>. When you
-  give pennies, <recipient>'s PAYMENT/OPAYMENT/APAYMENT attributes are
-  triggered.
+  given to it will go to its owner. The amount given must match <recipient>'s
+  @cost (if set). If /silent is given, the message informing the recipient
+  how many pennies were given is suppressed. Wizards may "give" a negative 
+  number of pennies to take from players. When you give <recipient> pennies,
+  his PAYMENT/OPAYMENT/APAYMENT attributes are triggered. You must pass
+  <recipient>'s @lock/pay, unless you are a Wizard and are either giving a 
+  negative number of pennies, or giving to a player with no @cost.
   
   The last two forms of this command give an <object> from your inventory to
   <recipient>. The recipient must be set ENTER_OK, and you must pass his
@@ -4241,7 +4374,7 @@ See also: BEING KILLED, HAVEN, FLAGS, powers list
   fail to leave, the object's @lfail/@olfail/@alfail messages/actions
   will be triggered.
 
-See also: enter, @leave, @lfail, @lock, INTERIORS 
+See also: enter, @leave, @lfail, @lalias, @lock, INTERIORS 
 & LOGOUT
   LOGOUT
 
@@ -4315,7 +4448,7 @@ See also: OPAQUE, FLAGS, @describe, @adescribe, @odescribe, DARK, LIGHT,
     You paged Airwolf with 'see, I don't have to retype the name.'.
     > page "John Lennon" Ringo=Paul's fine!
 
-(continued in help page2)
+  Continued in 'help page2'.
 & page2
   Page will attempt a partial match on the name, checking both for an
   @alias and to see if the name matches someone connected. If the
@@ -4344,11 +4477,11 @@ See also: @lock, @alias, @pageformat, pose, :, ;, HAVEN, NOSPOOF, FLAGS
 & pose
 & semipose
   pose[/noeval] <action>
-  :<action pose>
+  :<action>
 
-  pose[/nospace] <action>
+  pose/nospace[/noeval] <action>
   semipose[/noeval] <action>
-  ;<action pose>
+  ;<action>
  
   The pose and semipose commands allow you to perform actions. Pose shows
   your name, a space, and then <action>; semipose omits the space. They can 
@@ -4444,28 +4577,23 @@ See also: @use, @charges, @lock, @ufail
   whisper/noeval <player>=<message>
   whisper/list <players>=<message>
 
-  Whispers the message to the named person, if they are in the same
-  room as you. No one will see the message you whisper.  You can also
-  whisper to things you are carrying, or to things that are carrying
-  you. whisper <player>=:<pose> also works, in a fashion similar to
-  page-pose.
+  Whispers the message to the named person, if they are nearby. If <message>
+  is prefixed with a ':' or ';' it will be posed or semiposed, respectively.
+  
+  With the /noisy switch, other players in the room may be informed who you
+  whisper to (but not what you whisper); the probability that a noisy whisper
+  will be heard is set by the 'whisper_loudness' @config option. With the
+  /silent switch, the whisper will not be overheard. (When neither switch is
+  given, the default behaviour is controlled by the 'noisy_whisper' @config
+  option.)
 
-  In a noisy whisper, other players in the room may be told who you
-  whispered to (but not what you whispered): Polgara whispers to
-  Javelin.  The probability that a noisy whisper will be heard aloud
-  is configurable.  In a silent whisper, other players will not know
-  that you whispered.  The default whisper may be configured either
-  silent or noisy (check @config)
+  <message> will not be evaluated if the /noeval switch is given.
+  
+  The /list switch lets you whisper to multiple people at once. In this case,
+  <players> is a space-separated list of names, and names with spaces should
+  be enclosed in double-quotes, as per page/list.
 
-(continued in help whisper2)
-& whisper2
-  The /noeval switch prevents any evaluation of the message, and is
-  handy when you want to say things that use special characters like %
-  or []'s.
-
-  The /list switch lets you whisper to many people at once. Multiple
-  persons should be space-separated, and names with spaces should be
-  enclosed in double-quotes.
+See also: page, pose, @pemit
 & WHO
 & DOING
   WHO [<prefix>]
@@ -4499,7 +4627,7 @@ See also: @use, @charges, @lock, @ufail
   
     > &HOOK.WHO <object>=not(comp(left(%c,3),WHO))
     > @hook/ignore WHO=<object>,HOOK.WHO
-	  
+
   @hooks are not maintained across reboots, and should be placed into an
   @startup on a low-dbref object.
   

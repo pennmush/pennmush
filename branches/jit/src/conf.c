@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <errno.h>
+#include <float.h>
 
 #include "conf.h"
 #include "externs.h"
@@ -172,6 +173,8 @@ PENNCONF conftable[] = {
   ,
   {"ancestor_player", cf_dbref, &options.ancestor_player, 100000, 0, "db"}
   ,
+  {"event_handler", cf_dbref, &options.event_handler, 100000, 0, "db"}
+  ,
   {"mud_name", cf_str, options.mud_name, 128, 0, "net"}
   ,
   {"mud_url", cf_str, options.mud_url, 256, 0, "net"}
@@ -258,7 +261,8 @@ PENNCONF conftable[] = {
   ,
   {"only_ascii_in_names", cf_bool, &options.ascii_names, 2, 0, "cosmetic"}
   ,
-  {"float_precision", cf_int, &options.float_precision, 10000, 0, "cosmetic"}
+  {"float_precision", cf_int, &options.float_precision, DBL_DIG - 1, 0,
+   "cosmetic"}
   ,
   {"comma_exit_list", cf_bool, &options.comma_exit_list, 2, 0, "cosmetic"}
   ,
@@ -362,6 +366,8 @@ PENNCONF conftable[] = {
   {"chan_cost", cf_int, &options.chan_cost, 10000, 0, "chat"}
   ,
   {"noisy_cemit", cf_bool, &options.noisy_cemit, 2, 0, "chat"}
+  ,
+  {"chan_title_len", cf_int, &options.chan_title_len, 250, 0, "chat"}
   ,
   {"log_commands", cf_bool, &options.log_commands, 2, 0, "log"}
   ,
@@ -1085,6 +1091,8 @@ config_set(const char *opt, char *val, int source, int restrictions)
     for (p = val; *p && !isspace((unsigned char) *p); p++) ;
     if (*p) {
       *p++ = '\0';
+      do_rawlog(LT_ERR, "CONFIG: Trying to hook command %s with options %s",
+                val, p);
       if (!cnf_hook_command(val, p)) {
         do_rawlog(LT_ERR, "CONFIG: Couldn't hook command %s with options %s",
                   val, p);
@@ -1273,6 +1281,7 @@ conf_default_set(void)
   options.noisy_cemit = 0;
   options.max_player_chans = 3;
   options.max_channels = 200;
+  options.chan_title_len = 80;
   strcpy(options.mail_db, "data/maildb");
   options.player_start = 0;
   options.master_room = 2;
@@ -1282,6 +1291,7 @@ conf_default_set(void)
   options.ancestor_exit = -1;
   options.ancestor_thing = -1;
   options.ancestor_player = -1;
+  options.event_handler = -1;
   options.connect_fail_limit = 10;
   options.idle_timeout = 0;
   options.unconnected_idle_timeout = 300;
@@ -1513,16 +1523,12 @@ config_file_startup(const char *conf, int restrictions)
       *q++ = '\0';              /* split off command */
     for (; *q && isspace((unsigned char) *q); q++)      /* skip spaces */
       ;
-    /* If the first character of the value is a #, and that is
-       followed by a number, treat it as a dbref instead of a
-       comment. */
-    if (*q == '#' && isdigit((unsigned char) *(q + 1))) {
-      for (s = q + 1; *s && (*s != '#'); s++)   /* look for a real comment */
-        ;
-    } else {
-      for (s = q; *s && (*s != '#'); s++)       /* look for comment */
-        ;
-    }
+    /* We define a comment as a # followed by something other than a
+     * digit, so as no to be confused with dbrefs.
+     * followed by a number, treat it as a dbref instead of a
+     * comment. */
+    for (s = q; *s && ((*s != '#') || isdigit((unsigned char) *(s + 1))); s++) ;
+
     if (*s)                     /* if found nuke it */
       *s = '\0';
     for (s = s - 1; (s >= q) && isspace((unsigned char) *s); s--)       /* smash trailing stuff */

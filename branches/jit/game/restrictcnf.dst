@@ -94,6 +94,7 @@ restrict_command @destroy noplayer " Use @recycle instead
 
 # And some of the more dangerous side-effect functions.
 #restrict_function set nobody
+#restrict_function attrib_set nobody
 #restrict_function wipe nobody
 #restrict_function create nobody
 #restrict_function clone nobody
@@ -118,6 +119,19 @@ restrict_function lstats noguest
 #restrict_function cwho nobody
 #restrict_function channels nobody
 #restrict_function cflags nobody
+#restrict_function cbuffer nobody
+#restrict_function cbufferadd nobody
+#restrict_function cdesc nobody
+#restrict_function cemit nobody
+#restrict_function clflags nobody
+#restrict_function clock nobody
+#restrict_function cmsgs nobody
+#restrict_function cowner nobody
+#restrict_function crecall nobody
+#restrict_function cstatus nobody
+#restrict_function cusers nobody
+#restrict_function cmogrifier nobody
+
 
 # Remove the hardcode mail system by uncommenting these
 #restrict_command @mail nobody
@@ -132,3 +146,5 @@ restrict_function lstats noguest
 #restrict_function mailtime nobody
 #restrict_function malias nobody
 #restrict_function folderstats nobody
+#restrict_function maillist nobody
+#restrict_function mailsend nobody

@@ -791,8 +791,11 @@ notify_anything_loc(dbref speaker, na_lookup func,
             continue;
 
           if (!(flags & NA_SPOOF)
-              && (nsfunc && ((Nospoof(target) && (target != speaker))
-                             || (flags & NA_NOSPOOF)))) {
+              && (nsfunc
+                  &&
+                  ((Nospoof(target)
+                    && ((target != speaker) || Paranoid(target)))
+                   || (flags & NA_NOSPOOF)))) {
             if (Paranoid(target) || (flags & NA_PARANOID)) {
               if (!havepara) {
                 paranoid = nsfunc(speaker, func, fdata, 1);
@@ -951,7 +954,7 @@ notify_anything_loc(dbref speaker, na_lookup func,
       )
       atr_comm_match(target, speaker, '^', ':',
                      (char *) notify_makestring(msgbuf, messages, NA_COLOR, 0),
-                     0, 1, NULL, NULL, NULL);
+                     0, 1, NULL, NULL, NULL, 0);
 
     /* If object is flagged AUDIBLE and has a @FORWARDLIST, send
      *  stuff on */

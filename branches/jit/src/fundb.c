@@ -565,6 +565,11 @@ FUNCTION(fun_powers)
 {
   dbref it;
 
+  if (nargs == 0) {
+    safe_str(list_all_flags("POWER", NULL, executor, 0x2), buff, bp);
+    return;
+  }
+
   if (nargs == 2) {
     if (!command_check_byname(executor, "@power") || fun->flags & FN_NOSIDEFX) {
       safe_str(T(e_perm), buff, bp);
@@ -1442,6 +1447,51 @@ FUNCTION(fun_elock)
 }
 
 /* ARGSUSED */
+FUNCTION(fun_lockfilter)
+{
+  dbref victim;
+  char *r, *s;
+  char delim = ' ';
+  int first = 1;
+  boolexp elock = TRUE_BOOLEXP;
+
+  elock = parse_boolexp(executor, args[0], "Search");
+
+  if (elock == TRUE_BOOLEXP) {
+    safe_str(T("#-1 INVALID BOOLEXP"), buff, bp);
+    return;
+  }
+
+  if (nargs > 2) {
+    if (strlen(args[2]) > 2) {
+      safe_str(T("#-1 SEPARATOR MUST BE ONE CHARACTER"), buff, bp);
+      return;
+    }
+    delim = args[2][0];
+    if (!delim) {
+      delim = ' ';
+    }
+  }
+
+  s = trim_space_sep(args[1], delim);
+  while ((r = split_token(&s, delim)) != NULL) {
+    victim = noisy_match_result(executor, r, NOTYPE, MAT_ABSOLUTE);
+    if (victim != NOTHING && Can_Locate(executor, victim)) {
+      if (eval_boolexp(victim, elock, executor)) {
+        if (first) {
+          first = 0;
+        } else {
+          safe_chr(delim, buff, bp);
+        }
+        safe_dbref(victim, buff, bp);
+      }
+    }
+  }
+  free_boolexp(elock);
+  return;
+}
+
+/* ARGSUSED */
 FUNCTION(fun_testlock)
 {
   dbref victim = match_thing(executor, args[1]);
@@ -1961,10 +2011,6 @@ FUNCTION(fun_locate)
     safe_str("#-1", buff, bp);
     return;
   }
-  if (!See_All(executor) && !controls(executor, looker)) {
-    safe_str("#-1", buff, bp);
-    return;
-  }
 
   /* find out our preferred match type and flags */
   pref_type = 0;
@@ -1992,7 +2038,7 @@ FUNCTION(fun_locate)
       match_flags |= MAT_TYPE;
       break;
     case '*':
-      match_flags |= MAT_EVERYTHING;
+      match_flags |= (MAT_EVERYTHING | MAT_CONTAINER | MAT_CARRIED_EXIT);
       break;
     case 'a':
       match_flags |= MAT_ABSOLUTE;
@@ -2044,7 +2090,17 @@ FUNCTION(fun_locate)
     pref_type = NOTYPE;
 
   if (!(match_flags & ~(MAT_CHECK_KEYS | MAT_TYPE | MAT_EXACT)))
-    match_flags |= MAT_EVERYTHING;
+    match_flags |= (MAT_EVERYTHING | MAT_CONTAINER | MAT_CARRIED_EXIT);
+
+  if ((match_flags &
+       (MAT_NEIGHBOR | MAT_CONTAINER | MAT_POSSESSION | MAT_HERE | MAT_EXIT |
+        MAT_CARRIED_EXIT))) {
+    if (!nearby(executor, looker) && !See_All(executor)
+        && !controls(executor, looker)) {
+      safe_str("#-1", buff, bp);
+      return;
+    }
+  }
 
   /* report the results */
   if (!ambig_ok)

@@ -42,7 +42,7 @@
 
 int forbidden_name(const char *name);
 void do_switch(dbref player, char *expression, char **argv,
-               dbref cause, int first, int notifyme, int regexp);
+               dbref cause, int first, int notifyme, int regexp, int inplace);
 void do_verb(dbref player, dbref cause, char *arg1, char **argv);
 static void grep_add_attr(char *buff, char **bp, dbref player, int count,
                           ATTR *attr, char *atrval);
@@ -691,13 +691,14 @@ forbidden_name(const char *name)
  *   Names may not have leading or trailing spaces.
  *   Names must be only printable characters.
  *   Names may not exceed the length limit.
- *   Names may not start with certain tokens, or be "me", "home", "here"
+ *   Names may not start with certain tokens, or be "home", "here", or (for non-exits) "me"
  * \param n name to check.
+ * \param is_exit is the name for an exit/exit alias?
  * \retval 1 name is valid.
  * \retval 0 name is not valid.
  */
 int
-ok_name(const char *n)
+ok_name(const char *n, int is_exit)
 {
   const unsigned char *p, *name = (const unsigned char *) n;
 
@@ -732,7 +733,7 @@ ok_name(const char *n)
           && *name
           && *name != LOOKUP_TOKEN
           && *name != NUMBER_TOKEN
-          && *name != NOT_TOKEN && strcasecmp((char *) name, "me")
+          && *name != NOT_TOKEN && (is_exit || strcasecmp((char *) name, "me"))
           && strcasecmp((char *) name, "home")
           && strcasecmp((char *) name, "here"));
 }
@@ -755,7 +756,7 @@ ok_player_name(const char *name, dbref player, dbref thing)
   const unsigned char *scan, *good;
   dbref lookup;
 
-  if (!ok_name(name) || strlen(name) >= (size_t) PLAYER_NAME_LIMIT)
+  if (!ok_name(name, 0) || strlen(name) >= (size_t) PLAYER_NAME_LIMIT)
     return 0;
 
   good = (unsigned char *) (PLAYER_NAME_SPACES ? " `$_-.,'" : "`$_-.,'");
@@ -777,6 +778,131 @@ ok_player_name(const char *name, dbref player, dbref thing)
     return 0;
 
   return ((lookup == NOTHING) || (lookup == thing));
+}
+
+/** Is name a valid new name for thing, when set by player?
+ * Parses names and aliases for players/exits, validating each. If everything is valid,
+ * the new name and alias are set into newname and newalias, with memory malloc'd as necessary.
+ * For things/rooms, no parsing is done, and ok_name is called on the entire string to validate.
+ * For players and exits, if name takes the format <name>; then newname is set to <name> and
+ * newalias to ";", to signify that the existing alias should be cleared. If name contains a name and
+ * valid aliases, newname and newalias are set accordingly.
+ * \param name the new name to set
+ * \param player the player setting the name, for permission checks
+ * \param thing object getting the name, or NOTHING for new objects
+ * \param type type of object getting the name (necessary for new exits)
+ * \param newname pointer to place the new name, once validated
+ * \param newalias pointer to place the alias in, if any
+ * \retval 1 name and any given aliases are valid
+ * \retval 0 invalid name
+ * \retval OPAE_INVALID invalid aliases
+ * \retval OPAE_TOOMANY too many aliases for player
+ */
+int
+ok_object_name(char *name, dbref player, dbref thing, int type, char **newname,
+               char **newalias)
+{
+  char *bon, *eon;
+  char nbuff[BUFFER_LEN], abuff[BUFFER_LEN];
+  char *ap = abuff;
+  int aliases = 0;
+  int empty = 0;
+
+  strncpy(nbuff, name, BUFFER_LEN - 1);
+  nbuff[BUFFER_LEN - 1] = '\0';
+  memset(abuff, 0, BUFFER_LEN);
+
+  /* First, check for a quoted player name */
+  if (type == TYPE_PLAYER && *name == '"') {
+    /* Quoted player name, no aliases allowed */
+    bon = nbuff;
+    bon++;
+    eon = bon;
+    while (*eon && *eon != '"')
+      eon++;
+    if (*eon)
+      *eon = '\0';
+    if (!ok_player_name(bon, player, thing))
+      return 0;
+    *newname = mush_strdup(bon, "name.newname");
+    return 1;
+  }
+
+  if (type & (TYPE_THING | TYPE_ROOM)) {
+    /* No aliases in the name */
+    if (!ok_name(nbuff, 0))
+      return 0;
+    *newname = mush_strdup(nbuff, "name.newname");
+    return 1;
+  }
+
+  /* A player or exit name, with aliases allowed.
+   * Possible things to parse:
+   * <name>  - just a new name
+   * <name>; - new name with trailing ; to clear alias
+   * <name>;<alias1>[;<aliasN>] - name with one or more aliases, separated by ;
+   */
+
+  /* Validate name first */
+  bon = nbuff;
+  if ((eon = strchr(bon, ALIAS_DELIMITER))) {
+    *eon++ = '\0';
+    aliases++;
+  }
+  if (!
+      (type ==
+       TYPE_PLAYER ? ok_player_name(bon, player, thing) : ok_name(bon, 1)))
+    return 0;
+
+  *newname = mush_strdup(bon, "name.newname");
+
+  if (aliases) {
+    /* We had aliases, so parse them */
+    while (eon) {
+      if (empty)
+        return OPAE_NULL;       /* Null alias only valid as a single, final alias */
+      bon = eon;
+      if ((eon = strchr(bon, ALIAS_DELIMITER))) {
+        *eon++ = '\0';
+      }
+      while (*bon && *bon == ' ')
+        bon++;
+      if (!*bon) {
+        empty = 1;              /* empty alias, should only happen if we have no proper aliases */
+        continue;
+      }
+      if (!
+          (type ==
+           TYPE_PLAYER ? ok_player_name(bon, player, thing) : ok_name(bon,
+                                                                      1))) {
+        *newalias = mush_strdup(bon, "name.newname");   /* So we can report the invalid alias */
+        return OPAE_INVALID;
+      }
+      if (aliases > 1) {
+        safe_chr(ALIAS_DELIMITER, abuff, &ap);
+      }
+      safe_str(bon, abuff, &ap);
+      aliases++;
+    }
+  }
+  *ap = '\0';
+
+  if (aliases) {
+    if (!Wizard(player) && type == TYPE_PLAYER && aliases > MAX_ALIASES)
+      return OPAE_TOOMANY;
+    if (*abuff) {
+      /* We have actual aliases */
+      *newalias = mush_strdup(abuff, "name.newname");
+    } else {
+      ap = abuff;
+      safe_chr(ALIAS_DELIMITER, abuff, &ap);
+      *ap = '\0';
+      /* We just want to clear the existing alias */
+      *newalias = mush_strdup(abuff, "name.newname");
+    }
+  }
+
+  return 1;
 }
 
 
@@ -991,7 +1117,7 @@ ok_tag_attribute(dbref player, const char *params)
  */
 void
 do_switch(dbref player, char *expression, char **argv, dbref cause,
-          int first, int notifyme, int regexp)
+          int first, int notifyme, int regexp, int inplace)
 {
   int any = 0, a;
   char buff[BUFFER_LEN], *bp;
@@ -999,6 +1125,9 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
   char *tbuf1;
   PE_Info *pe_info;
   int i = 0;
+  char ibuff[BUFFER_LEN], *ibp;
+
+  ibp = ibuff;
 
   if (!argv[1])
     return;
@@ -1023,8 +1152,37 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
     /* check for a match */
     if (regexp ? quick_regexp_match(buff, expression, 0)
         : local_wild_match(buff, expression)) {
-      any = 1;
       tbuf1 = replace_string("#$", expression, argv[a + 1]);
+      if (inplace) {
+        if (any) {
+          safe_chr(';', ibuff, &ibp);
+        }
+        safe_str(tbuf1, ibuff, &ibp);
+      } else {
+        pe_info = make_pe_info();
+        if (global_eval_context.pe_info->switch_nesting >= 0) {
+          for (i = 0; i <= global_eval_context.pe_info->switch_nesting; i++) {
+            pe_info->switch_text[i] =
+              mush_strdup(global_eval_context.pe_info->switch_text[i],
+                          "switch_arg");
+          }
+        }
+        pe_info->switch_text[i] = mush_strdup(expression, "switch_arg");
+        pe_info->switch_nesting = i;
+        pe_info->local_switch_nesting = i;
+        parse_que(player, tbuf1, cause, pe_info);
+      }
+      mush_free(tbuf1, "replace_string.buff");
+      any = 1;
+    }
+  }
+
+  /* do default if nothing has been matched */
+  if ((a < MAX_ARG) && !any && argv[a]) {
+    tbuf1 = replace_string("#$", expression, argv[a]);
+    if (inplace) {
+      safe_str(tbuf1, ibuff, &ibp);
+    } else {
       pe_info = make_pe_info();
       if (global_eval_context.pe_info->switch_nesting >= 0) {
         for (i = 0; i <= global_eval_context.pe_info->switch_nesting; i++) {
@@ -1037,30 +1195,23 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
       pe_info->switch_nesting = i;
       pe_info->local_switch_nesting = i;
       parse_que(player, tbuf1, cause, pe_info);
-      mush_free(tbuf1, "replace_string.buff");
     }
-  }
-
-  /* do default if nothing has been matched */
-  if ((a < MAX_ARG) && !any && argv[a]) {
-    tbuf1 = replace_string("#$", expression, argv[a]);
-    pe_info = make_pe_info();
-    if (global_eval_context.pe_info->switch_nesting >= 0) {
-      for (i = 0; i <= global_eval_context.pe_info->switch_nesting; i++) {
-        pe_info->switch_text[i] =
-          mush_strdup(global_eval_context.pe_info->switch_text[i],
-                      "switch_arg");
-      }
-    }
-    pe_info->switch_text[i] = mush_strdup(expression, "switch_arg");
-    pe_info->switch_nesting = i;
-    pe_info->local_switch_nesting = i;
-    parse_que(player, tbuf1, cause, pe_info);
     mush_free(tbuf1, "replace_string.buff");
   }
 
+  if (inplace && (ibp > ibuff)) {
+    /* Set up %$* / stext() */
+    global_eval_context.pe_info->switch_nesting++;
+    global_eval_context.pe_info->local_switch_nesting++;
+    global_eval_context.pe_info->switch_text[global_eval_context.pe_info->switch_nesting] =
+      mush_strdup(expression, "switch_arg");
+    
+    *ibp = '\0';
+    inplace_queue_actionlist(player, cause, cause, ibuff, global_eval_context.wnxt, QUEUE_INPLACE);
+  }
+
   /* Pop on @notify me, if requested */
-  if (notifyme)
+  if (notifyme && !inplace)
     parse_que(player, "@notify me", cause, NULL);
 }
 
@@ -1097,9 +1248,7 @@ parse_match_possessor(dbref player, char **str, int exits)
 
   /* we already have a terminating null, so we're okay to just do matches */
   return match_result(player, box, NOTYPE,
-                      MAT_NEIGHBOR | MAT_POSSESSION | MAT_ENGLISH | (exits ?
-                                                                     MAT_EXIT :
-                                                                     0));
+                      MAT_NEAR_THINGS | MAT_ENGLISH | (exits ? MAT_EXIT : 0));
 }
 
 

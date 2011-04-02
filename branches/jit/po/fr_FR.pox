@@ -2880,10 +2880,6 @@ msgstr "Ce canal n'est pas valide."
 msgid "That is not a valid lock name."
 msgstr "Ce nom de verrou n'est pas valide."
 
-#: src/log.c:355
-msgid "That is not a valid log."
-msgstr "Ce n'est pas un log valide."
-
 #: src/create.c:54
 msgid "That is not a valid object."
 msgstr "Cet objet n'est pas valide."
@@ -3912,10 +3908,6 @@ msgstr "Vous devez être sur ce canal pour pouvoir y parler."
 #: set.c:210
 msgid "You must carry the object to @chown it."
 msgstr "Vous devez porter l'objet pour utiliser @chown sur celui-ci."
-
-#: cmds.c:424
-msgid "You must give a switch for @hook"
-msgstr "Vous devez passer un switch à @hook"
 
 #: command.c:1357
 msgid "You must give both an object and attribute."

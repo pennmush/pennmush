@@ -51,9 +51,10 @@ extern char *crypt(const char *, const char *);
 #include "confmagic.h"
 
 dbref email_register_player
-  (const char *name, const char *email, const char *host, const char *ip);
-static dbref make_player
-  (const char *name, const char *password, const char *host, const char *ip);
+  (DESC *d, const char *name, const char *email, const char *host,
+   const char *ip);
+static dbref make_player(const char *name, const char *password,
+                         const char *host, const char *ip);
 void do_password(dbref player, dbref cause, const char *old,
                  const char *newobj);
 
@@ -83,6 +84,8 @@ static int failIdx = 0;
 #define IPFAIL(x) ipFails[((failIdx + FAIL_COUNT) - x) % FAIL_COUNT]
 
 static int failCount = 0;
+const char *connect_fail_limit_exceeded =
+  "This IP address has failed too many times. Please try again in 10 minutes.";
 
 /** Check if the given IP has had too many failures to be allowed
  * to log in.
@@ -90,7 +93,7 @@ static int failCount = 0;
  * \retval 1 Okay to log in.
  * \retval 0 Do not allow to log in.
  */
-static int
+int
 check_fails(const char *ipaddr)
 {
   int i;
@@ -102,28 +105,54 @@ check_fails(const char *ipaddr)
     return 1;
 
   for (i = 0; i < failCount; i++) {
-    if (IPFAIL(i).failTime > since) {
-      if (!strncmp(ipaddr, IPFAIL(i).ip, IP_LENGTH)) {
-        numFails++;
-        if (numFails >= CONNECT_FAIL_LIMIT) {
-          return 0;
-        }
+    if (IPFAIL(i).failTime < since) {
+      break;
+    }
+    if (!strncmp(ipaddr, IPFAIL(i).ip, IP_LENGTH)) {
+      numFails++;
+      if (numFails >= CONNECT_FAIL_LIMIT) {
+        return 0;
       }
     }
   }
   return 1;
 }
 
-static void
+int
+count_failed(const char *ipaddr)
+{
+  int i, numFails;
+  time_t since = time(NULL) - 600;
+
+  numFails = 0;
+  for (i = 0; i < failCount; i++) {
+    if (IPFAIL(i).failTime < since) {
+      break;
+    }
+    if (!strncmp(ipaddr, IPFAIL(i).ip, IP_LENGTH)) {
+      numFails++;
+    }
+  }
+  return numFails;
+}
+
+/** Mark the given IP as a failure.
+ * \param ipaddr The IP address to check.
+ * \retval The # of fails the IP has had in the past 10 minutes.
+ */
+int
 mark_failed(const char *ipaddr)
 {
   failIdx++;
   failIdx %= FAIL_COUNT;
 
-  if (failCount < FAIL_COUNT)
+  if (failCount < FAIL_COUNT) {
     failCount++;
+  }
   strncpy(IPFAIL(0).ip, ipaddr, IP_LENGTH);
   IPFAIL(0).failTime = time(NULL);
+
+  return count_failed(ipaddr);
 }
 
 
@@ -184,17 +213,11 @@ password_check(dbref player, const char *password)
  * (with reason for failure returned in errbuf).
  */
 dbref
-connect_player(const char *name, const char *password, const char *host,
-               const char *ip, char *errbuf)
+connect_player(DESC *d, const char *name, const char *password,
+               const char *host, const char *ip, char *errbuf)
 {
   dbref player;
-
-  if (!check_fails(ip)) {
-    strcpy(errbuf,
-           T
-           ("This IP address has failed too many times. Please try again in 10 minutes."));
-    return NOTHING;
-  }
+  int count;
 
   /* Default error */
   strcpy(errbuf,
@@ -206,7 +229,9 @@ connect_player(const char *name, const char *password, const char *host,
   /* validate name */
   if ((player = lookup_player(name)) == NOTHING) {
     /* Invalid player names are failures, too. */
-    mark_failed(ip);
+    count = mark_failed(ip);
+    queue_event(SYSEVENT, "SOCKET`LOGINFAIL", "%d,%s,%d,%s,#%d",
+                d->descriptor, ip, count, "invalid player", -1);
     return NOTHING;
   }
 
@@ -215,8 +240,11 @@ connect_player(const char *name, const char *password, const char *host,
     do_log(LT_CONN, 0, 0,
            "Connection to GOING player %s not allowed from %s (%s)", name,
            host, ip);
+    queue_event(SYSEVENT, "SOCKET`LOGINFAIL", "%d,%s,%d,%s,#%d",
+                d->descriptor, ip, count_failed(ip), "player is going", player);
     return NOTHING;
   }
+  /* Check sitelock patterns */
   if (Guest(player)
       && (!Site_Can_Guest(host, player) || !Site_Can_Guest(ip, player))) {
     if (!Deny_Silent_Site(host, AMBIGUOUS) && !Deny_Silent_Site(ip, AMBIGUOUS)) {
@@ -224,6 +252,9 @@ connect_player(const char *name, const char *password, const char *host,
              "Connection to %s (GUEST) not allowed from %s (%s)", name,
              host, ip);
       strcpy(errbuf, T("Guest connections not allowed."));
+      count = mark_failed(ip);
+      queue_event(SYSEVENT, "SOCKET`LOGINFAIL", "%d,%s,%d,%s,#%d",
+                  d->descriptor, ip, count, "failed sitelock", player);
     }
     return NOTHING;
   } else if (!Guest(player)
@@ -234,6 +265,9 @@ connect_player(const char *name, const char *password, const char *host,
              "Connection to %s (Non-GUEST) not allowed from %s (%s)", name,
              host, ip);
       strcpy(errbuf, T("Player connections not allowed."));
+      count = mark_failed(ip);
+      queue_event(SYSEVENT, "SOCKET`LOGINFAIL", "%d,%s,%d,%s,#%d",
+                  d->descriptor, ip, count, "failed sitelock", player);
     }
     return NOTHING;
   }
@@ -243,9 +277,12 @@ connect_player(const char *name, const char *password, const char *host,
       /* Increment count of login failures */
       ModTime(player)++;
       check_lastfailed(player, host);
-      mark_failed(ip);
+      count = mark_failed(ip);
+      queue_event(SYSEVENT, "SOCKET`LOGINFAIL", "%d,%s,%d,%s,#%d",
+                  d->descriptor, ip, count, "invalid password", player);
       return NOTHING;
     }
+
   /* If it's a Guest player, and already connected, search the
    * db for another Guest player to connect them to. */
   if (Guest(player)) {
@@ -254,6 +291,9 @@ connect_player(const char *name, const char *password, const char *host,
     if (!GoodObject(player)) {
       do_log(LT_CONN, 0, 0, "Can't connect to a guest (too many connected)");
       strcpy(errbuf, T("Too many guests are connected now."));
+      queue_event(SYSEVENT, "SOCKET`LOGINFAIL", "%d,%s,%d,%s,#%d",
+                  d->descriptor, ip, count_failed(ip), "too many guests",
+                  player);
       return NOTHING;
     }
   }
@@ -275,20 +315,34 @@ connect_player(const char *name, const char *password, const char *host,
  *  password.
  */
 dbref
-create_player(const char *name, const char *password, const char *host,
-              const char *ip)
+create_player(DESC *d, const char *name, const char *password,
+              const char *host, const char *ip)
 {
   if (!ok_player_name(name, NOTHING, NOTHING)) {
     do_log(LT_CONN, 0, 0, "Failed creation (bad name) from %s", host);
+    if (d) {
+      queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
+                  d->descriptor, ip, mark_failed(ip), "create: bad name", name);
+    }
     return NOTHING;
   }
   if (!ok_password(password)) {
     do_log(LT_CONN, 0, 0, "Failed creation (bad password) from %s", host);
+    if (d) {
+      queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
+                  d->descriptor, ip, mark_failed(ip),
+                  "create: bad password", name);
+    }
     return AMBIGUOUS;
   }
   if (DBTOP_MAX && (db_top >= DBTOP_MAX + 1) && (first_free == NOTHING)) {
     /* Oops, out of db space! */
     do_log(LT_CONN, 0, 0, "Failed creation (no db space) from %s", host);
+    if (d) {
+      queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
+                  d->descriptor, ip, mark_failed(ip),
+                  "create: no db space left to create!", name);
+    }
     return NOTHING;
   }
   /* else he doesn't already exist, create him */
@@ -318,8 +372,8 @@ create_player(const char *name, const char *password, const char *host,
  * \return dbref of created player or NOTHING if creation failed.
  */
 dbref
-email_register_player(const char *name, const char *email, const char *host,
-                      const char *ip)
+email_register_player(DESC *d, const char *name, const char *email,
+                      const char *host, const char *ip)
 {
   char *p;
   char passwd[BUFFER_LEN];
@@ -329,8 +383,14 @@ email_register_player(const char *name, const char *email, const char *host,
   dbref player;
   FILE *fp;
 
+  if (!check_fails(ip)) {
+    return NOTHING;
+  }
+
   if (!ok_player_name(name, NOTHING, NOTHING)) {
     do_log(LT_CONN, 0, 0, "Failed registration (bad name) from %s", host);
+    queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
+                d->descriptor, ip, mark_failed(ip), "register: bad name", name);
     return NOTHING;
   }
   /* Make sure that the email address is valid. A valid address must
@@ -349,25 +409,35 @@ email_register_player(const char *name, const char *email, const char *host,
         do_log(LT_CONN, 0, 0,
                "Failed registration (bad site in email: %s) from %s",
                email, host);
+        queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
+                    d->descriptor, ip, mark_failed(ip),
+                    "register: bad site in email", name);
       }
       return NOTHING;
     }
   } else if ((p = strchr(email, '!'))) {
     *p = '\0';
     if (!Site_Can_Register(email)) {
-      *p = '!';
       if (!Deny_Silent_Site(email, AMBIGUOUS)) {
+        *p = '!';
         do_log(LT_CONN, 0, 0,
                "Failed registration (bad site in email: %s) from %s",
                email, host);
+        queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
+                    d->descriptor, ip, mark_failed(ip),
+                    "register: bad site in email", name);
       }
       return NOTHING;
-    } else
+    } else {
       *p = '!';
+    }
   } else {
     if (!Deny_Silent_Site(host, AMBIGUOUS)) {
       do_log(LT_CONN, 0, 0, "Failed registration (bad email: %s) from %s",
              email, host);
+      queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
+                  d->descriptor, ip, mark_failed(ip),
+                  "register: sitelocked host", name);
     }
     return NOTHING;
   }
@@ -375,6 +445,9 @@ email_register_player(const char *name, const char *email, const char *host,
   if (DBTOP_MAX && (db_top >= DBTOP_MAX + 1) && (first_free == NOTHING)) {
     /* Oops, out of db space! */
     do_log(LT_CONN, 0, 0, "Failed registration (no db space) from %s", host);
+    queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
+                d->descriptor, ip, count_failed(ip),
+                "register: no db space left to create!", name);
     return NOTHING;
   }
 
@@ -388,6 +461,7 @@ email_register_player(const char *name, const char *email, const char *host,
    * character. Email first, since that's more likely to go bad.
    * Some security precautions we'll take:
    *  1) We'll use sendmail -t, so we don't pass user-given values to a shell.
+   *  2) We'll cross our fingers and hope nobody uses this to spam.
    */
 
   release_fd();
@@ -399,6 +473,9 @@ email_register_player(const char *name, const char *email, const char *host,
     do_log(LT_CONN, 0, 0,
            "Failed registration of %s by %s: unable to open sendmail",
            name, email);
+    queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
+                d->descriptor, ip, count_failed(ip),
+                "register: Unable to open sendmail!", name);
     reserve_fd();
     return NOTHING;
   }
@@ -420,13 +497,16 @@ email_register_player(const char *name, const char *email, const char *host,
   reserve_fd();
   /* Ok, all's well, make a player */
   player = make_player(name, passwd, host, ip);
+  queue_event(SYSEVENT, "PLAYER`CREATE", "%s,%s,%s,%d",
+              unparse_objid(player), name, "register", d->descriptor);
   (void) atr_add(player, "REGISTERED_EMAIL", email, GOD, 0);
   return player;
 }
 #else
 dbref
-email_register_player(const char *name, const char *email, const char *host,
-                      const char *ip __attribute__ ((__unused__)))
+email_register_player(DESC *d, const char *name, const char *email,
+                      const char *host, const char *ip
+                      __attribute__ ((__unused__)))
 {
   do_log(LT_CONN, 0, 0, "Failed registration (no sendmail) from %s", host);
   do_log(LT_CONN, 0, 0, "Requested character: '%s'. Email address: %s\n",

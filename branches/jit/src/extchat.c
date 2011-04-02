@@ -370,7 +370,7 @@ new_user(dbref who, const void *hint)
     mush_panic("Couldn't allocate memory in new_user in extchat.c");
   CUdbref(u) = who;
   CUtype(u) = CU_DEFAULT_FLAGS;
-  u->title[0] = '\0';
+  CUtitle(u) = NULL;
   CUnext(u) = NULL;
   return u;
 }
@@ -492,13 +492,18 @@ load_chanusers(PENNFILE *fp, CHAN *ch)
   int i, num = 0;
   CHANUSER *user;
   dbref player;
+  char title[BUFFER_LEN];
   for (i = 0; i < ChanNumUsers(ch); i++) {
     player = getref(fp);
     /* Don't bother if the player isn't a valid dbref or the wrong type */
     if (GoodObject(player) && Chan_Ok_Type(ch, player)) {
       user = new_user(player, ChanUsers(ch));
       CUtype(user) = getref(fp);
-      strcpy(CUtitle(user), getstring_noalloc(fp));
+      strncpy(title, getstring_noalloc(fp), BUFFER_LEN - 1);
+      if (*title)
+        CUtitle(user) = mush_strdup(title, "chan_user.title");
+      else
+        CUtitle(user) = NULL;
       CUnext(user) = NULL;
       if (insert_user(user, ch))
         num++;
@@ -529,7 +534,10 @@ load_labeled_chanusers(PENNFILE *fp, CHAN *ch)
       db_read_this_labeled_int(fp, "flags", &n);
       CUtype(user) = n;
       db_read_this_labeled_string(fp, "title", &tmp);
-      mush_strncpy(CUtitle(user), tmp, CU_TITLE_LEN);
+      if (tmp && *tmp)
+        CUtitle(user) = mush_strdup(tmp, "chan_user.title");
+      else
+        CUtitle(user) = NULL;
       CUnext(user) = NULL;
       if (insert_user(user, ch))
         num++;
@@ -859,7 +867,10 @@ save_chanuser(PENNFILE *fp, CHANUSER *user)
 {
   db_write_labeled_dbref(fp, "   dbref", CUdbref(user));
   db_write_labeled_int(fp, "    flags", CUtype(user));
-  db_write_labeled_string(fp, "    title", CUtitle(user));
+  if (CUtitle(user))
+    db_write_labeled_string(fp, "    title", CUtitle(user));
+  else
+    db_write_labeled_string(fp, "    title", "");
   return 1;
 }
 
@@ -1280,7 +1291,6 @@ do_channel(dbref player, const char *name, const char *target, const char *com)
     }
     return;
   } else if (!strcasecmp("off", com) || !strcasecmp("leave", com)) {
-    char title[CU_TITLE_LEN];
     /* You must control either the victim or the channel */
     if (!controls(player, victim) && !Chan_Can_Modify(chan, player)) {
       notify(player, T("Invalid target."));
@@ -1291,7 +1301,6 @@ do_channel(dbref player, const char *name, const char *target, const char *com)
       return;
     }
     u = onchannel(victim, chan);
-    strcpy(title, (u && CUtitle(u)) ? CUtitle(u) : "");
     if (remove_user(u, chan)) {
       if (!Channel_Quiet(chan) && !DarkLegal(victim)) {
         channel_send(chan, victim,
@@ -1383,7 +1392,6 @@ channel_leave_self(dbref player, const char *name)
 {
   CHAN *chan = NULL;
   CHANUSER *u;
-  char title[CU_TITLE_LEN];
 
   if (Guest(player)) {
     notify(player, T("Guests are not allowed to leave channels."));
@@ -1406,7 +1414,6 @@ channel_leave_self(dbref player, const char *name)
     break;
   }
   u = onchannel(player, chan);
-  strcpy(title, (u && CUtitle(u)) ? CUtitle(u) : "");
   if (remove_user(u, chan)) {
     if (!Channel_Quiet(chan) && !DarkLegal(player))
       channel_send(chan, player,
@@ -1902,7 +1909,7 @@ do_chan_user_flags(dbref player, char *name, const char *isyn, int flag,
 
   if (!IsPlayer(player) && flag == CU_COMBINE) {
     notify(player, T("Only players can use that option."));
-	   return;
+    return;
   }
 
   if (!name || !*name) {
@@ -2026,7 +2033,8 @@ do_chan_user_flags(dbref player, char *name, const char *isyn, int flag,
         CUtype(u) &= ~CU_COMBINE;
         if (!silent)
           notify_format(player,
-                        T("Connect messages on channel <%s> will no longer be combined with others."),
+                        T
+                        ("Connect messages on channel <%s> will no longer be combined with others."),
                         ChanName(c));
       }
       break;
@@ -2064,7 +2072,7 @@ do_chan_title(dbref player, const char *name, const char *title)
   }
 
   if (!rhs_present) {
-    if (strlen(CUtitle(u)) == 0)
+    if (!CUtitle(u) || !*CUtitle(u))
       notify_format(player, T("You have no title set on <%s>."), ChanName(c));
     else
       notify_format(player, T("Your title on <%s> is '%s'."), ChanName(c),
@@ -2072,15 +2080,23 @@ do_chan_title(dbref player, const char *name, const char *title)
     return;
   }
 
-  if (!title)
-    title = (const char *) "";
+  if (!title) {
+    if (CUtitle(u)) {
+      mush_free(CUtitle(u), "chan_user.title");
+      CUtitle(u) = NULL;
+    }
+    if (!Quiet(player))
+      notify_format(player, T("Title cleared for %schannel <%s>."),
+                    Channel_NoTitles(c) ? "(NoTitles) " : "", ChanName(c));
+    return;
+  }
 
-  if (strlen(title) >= CU_TITLE_LEN) {
+  if (ansi_strlen(title) > CU_TITLE_LEN) {
     notify(player, T("Title too long."));
     return;
   }
-  /* Stomp newlines and other weird whitespace */
-  for (scan = title; *scan; scan++) {
+  WALK_ANSI_STRING(scan, title) {
+    /* Stomp newlines and other weird whitespace */
     if ((isspace((unsigned char) *scan) && (*scan != ' '))
         || (*scan == BEEP_CHAR)) {
       notify(player, T("Invalid character in title."));
@@ -2088,10 +2104,12 @@ do_chan_title(dbref player, const char *name, const char *title)
     }
   }
 
-  strcpy(CUtitle(u), title);
+  if (CUtitle(u))
+    mush_free(CUtitle(u), "chan_user.title");
+  CUtitle(u) = mush_strdup(title, "chan_user.title");
+
   if (!Quiet(player))
-    notify_format(player, T("Title %s for %schannel <%s>."),
-                  *title ? T("set") : T("cleared"),
+    notify_format(player, T("Title set for %schannel <%s>."),
                   Channel_NoTitles(c) ? "(NoTitles) " : "", ChanName(c));
   return;
 }
@@ -2480,6 +2498,29 @@ FUNCTION(fun_cowner)
   }
 
 }
+
+FUNCTION(fun_cmogrifier)
+{
+  /* Return the dbref of the mogrifier of a channel. */
+  CHAN *c;
+
+  if (!args[0] || !*args[0]) {
+    safe_str(T("#-1 NO CHANNEL GIVEN"), buff, bp);
+    return;
+  }
+  switch (find_channel(args[0], &c, executor)) {
+  case CMATCH_NONE:
+    safe_str(T("#-1 NO SUCH CHANNEL"), buff, bp);
+    break;
+  case CMATCH_AMBIG:
+    safe_str(T("#-1 AMBIGUOUS CHANNEL NAME"), buff, bp);
+    break;
+  default:
+    safe_dbref(ChanMogrifier(c), buff, bp);
+  }
+
+}
+
 
 /* Remove all players from a channel, notifying them. This is the
  * utility routine for handling it. The command @channel/wipe
@@ -3079,8 +3120,10 @@ chat_player_announce(dbref player, char *msg, int ungag)
   CHAN *c;
   CHANUSER *up, *uv;
   char buff[BUFFER_LEN], *bp;
+  char buff2[BUFFER_LEN], *bp2;
   dbref viewer;
   bool shared = false;
+  int na_flags = NA_INTER_LOCK | NA_SPOOF | NA_INTER_PRESENCE;
 
   msglen = strlen(msg);
 
@@ -3089,10 +3132,9 @@ chat_player_announce(dbref player, char *msg, int ungag)
     up = onchannel(player, c);
     if (up) {
       if (!Channel_Quiet(c) && (Channel_Admin(c) || Channel_Wizard(c)
-            || (!Chanuser_Hide(up) && !Dark(player)))) {
+                                || (!Chanuser_Hide(up) && !Dark(player)))) {
         channel_send(c, player,
-                     CB_NOCOMBINE | CB_CHECKQUIET | CB_PRESENCE | CB_POSE,
-                     msg);
+                     CB_NOCOMBINE | CB_CHECKQUIET | CB_PRESENCE | CB_POSE, msg);
       }
       if (ungag) {
         CUtype(up) &= ~CU_GAG;
@@ -3104,6 +3146,7 @@ chat_player_announce(dbref player, char *msg, int ungag)
     if (d->connected) {
       shared = false;
       bp = buff;
+      bp2 = buff2;
 
       for (c = channels; c; c = c->next) {
         up = onchannel(player, c);
@@ -3116,37 +3159,42 @@ chat_player_announce(dbref player, char *msg, int ungag)
               shared = true;
               safe_str(ChanName(c), buff, &bp);
               safe_strl(" | ", 3, buff, &bp);
+              safe_str(ChanName(c), buff2, &bp2);
+              safe_chr('|', buff2, &bp2);
             }
           }
         }
         if (up && ungag)
           CUtype(up) &= ~CU_GAG;
       }
-      
+
       bp -= 3;
-      *bp = '\0';   
+      *bp = '\0';
+      bp2--;
+      *bp2 = '\0';
 
       if (shared) {
-	char defmsg[BUFFER_LEN], *dmp;
-	char shrtmsg[BUFFER_LEN], *smp;
-	char *accname;
+        char defmsg[BUFFER_LEN], *dmp;
+        char shrtmsg[BUFFER_LEN], *smp;
+        char *accname;
 
-	dmp = defmsg;
-	smp = shrtmsg;
-	
-	accname = mush_strdup(accented_name(player), "chat_announce.name");
+        dmp = defmsg;
+        smp = shrtmsg;
 
-	safe_format(shrtmsg, &smp, "%s %s", accname, msg);
-	*smp = '\0';
-          
+        accname = mush_strdup(accented_name(player), "chat_announce.name");
+
+        safe_format(shrtmsg, &smp, "%s %s", accname, msg);
+        *smp = '\0';
+
         safe_format(defmsg, &dmp, "<%s> %s %s", buff, accname, msg);
         *dmp = '\0';
 
-	if (!vmessageformat(viewer, "CHATFORMAT", player, NA_INTER_PRESENCE, 6,
-			    "@", buff, shrtmsg, accname, "", defmsg)) 
-	  notify_anything(player, na_one, &viewer, ns_esnotify, NA_INTER_PRESENCE, defmsg);
-	
-	mush_free(accname, "chat_announce.name");
+        if (!vmessageformat(viewer, "CHATFORMAT", player, na_flags, 6,
+                            "@", buff2, shrtmsg, accname, "", defmsg))
+          notify_anything(player, na_one, &viewer, ns_esnotify, na_flags,
+                          defmsg);
+
+        mush_free(accname, "chat_announce.name");
       }
     }
   }
@@ -3450,21 +3498,18 @@ FUNCTION(fun_crecall)
 
 COMMAND(cmd_cemit)
 {
-  int spflags = (!strcmp(cmd->name, "@NSCEMIT")
-                 && Can_Nspemit(player) ? PEMIT_SPOOF : 0);
+  int flags = SILENT_OR_NOISY(sw, !options.noisy_cemit);
+  if (!strcmp(cmd->name, "@NSCEMIT") && Can_Nspemit(player))
+    flags |= PEMIT_SPOOF;
+
   SPOOF(player, cause, sw);
-  if (SW_ISSET(sw, SWITCH_SILENT))
-    spflags |= PEMIT_SILENT;
-  else if (!SW_ISSET(sw, SWITCH_NOISY) && options.noisy_cemit == 0)
-    spflags |= PEMIT_SILENT;
-  do_cemit(player, arg_left, arg_right, spflags);
+
+  do_cemit(player, arg_left, arg_right, flags);
 }
 
 COMMAND(cmd_channel)
 {
-  if (switches)
-    do_channel(player, arg_left, args_right[1], switches);
-  else if (SW_ISSET(sw, SWITCH_LIST))
+  if (SW_ISSET(sw, SWITCH_LIST))
     do_channel_list(player, arg_left);
   else if (SW_ISSET(sw, SWITCH_ADD))
     do_chan_admin(player, arg_left, args_right[1], 0);
@@ -3510,6 +3555,12 @@ COMMAND(cmd_channel)
     do_chan_what(player, arg_left);
   else if (SW_ISSET(sw, SWITCH_BUFFER))
     do_chan_buffer(player, arg_left, args_right[1]);
+  else if (SW_ISSET(sw, SWITCH_ON) || SW_ISSET(sw, SWITCH_JOIN))
+    do_channel(player, arg_left, args_right[1], "ON");
+  else if (SW_ISSET(sw, SWITCH_OFF) || SW_ISSET(sw, SWITCH_LEAVE))
+    do_channel(player, arg_left, args_right[1], "OFF");
+  else if (SW_ISSET(sw, SWITCH_WHO))
+    do_channel(player, arg_left, args_right[1], "WHO");
   else
     do_channel(player, arg_left, NULL, args_right[1]);
 }

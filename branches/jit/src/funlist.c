@@ -47,7 +47,7 @@ extern const unsigned char *tables;
  * \return number of words split out.
  */
 int
-list2arr_ansi(char *r[], int max, char *list, char sep)
+list2arr_ansi(char *r[], int max, char *list, char sep, int nullok)
 {
   char *p, *lp;
   int i;
@@ -58,7 +58,7 @@ list2arr_ansi(char *r[], int max, char *list, char sep)
    * actually has markup. Unfortunately, freearr(), which is called only for
    * list2arr_ansi()'d stuff, requires we malloc each item. Sigh. */
   if (!has_markup(list)) {
-    int ret = list2arr(r, max, list, sep);
+    int ret = list2arr(r, max, list, sep, nullok);
     for (i = 0; i < ret; i++) {
       /* This is lame, but fortunately, assignment happens after we call
        * mush_strdup. A-hehehehe. */
@@ -73,12 +73,17 @@ list2arr_ansi(char *r[], int max, char *list, char sep)
   aptr = trim_space_sep(aptr, sep);
 
   lp = list;
-  p = split_token(&aptr, sep);
-  for (i = 0; p && (i < max); i++, p = split_token(&aptr, sep)) {
+  do {
+    p = split_token(&aptr, sep);
+  } while (!nullok && p && !*p);
+  for (i = 0; p && (i < max); i++) {
     lp = list;
     safe_ansi_string(as, p - (as->text), strlen(p), list, &lp);
     *lp = '\0';
     r[i] = mush_strdup(list, "list2arr_item");
+    do {
+      p = split_token(&aptr, sep);
+    } while (!nullok && p && !*p);
   }
   free_ansi_string(as);
   return i;
@@ -94,12 +99,17 @@ list2arr_ansi(char *r[], int max, char *list, char sep)
  * \return number of words split out.
  */
 int
-list2arr(char *r[], int max, char *list, char sep)
+list2arr(char *r[], int max, char *list, char sep, int nullok)
 {
   char *p;
   int i;
   char *aptr;
   size_t len;
+
+  /* Quick-casing an empty list. */
+  if (!*list) {
+    return 0;
+  }
 
   aptr = remove_markup(list, &len);
 
@@ -107,9 +117,14 @@ list2arr(char *r[], int max, char *list, char sep)
 
   aptr = trim_space_sep(list, sep);
 
-  p = split_token(&aptr, sep);
-  for (i = 0; p && (i < max); i++, p = split_token(&aptr, sep)) {
+  do {
+    p = split_token(&aptr, sep);
+  } while (!nullok && p && !*p);
+  for (i = 0; p && (i < max); i++) {
     r[i] = p;
+    do {
+      p = split_token(&aptr, sep);
+    } while (!nullok && p && !*p);
   }
   return i;
 }
@@ -213,8 +228,8 @@ FUNCTION(fun_munge)
 
   if (!ptrs1 || !ptrs2)
     mush_panic("Unable to allocate memory in fun_munge");
-  nptrs1 = list2arr_ansi(ptrs1, MAX_SORTSIZE, args[1], sep);
-  nptrs2 = list2arr_ansi(ptrs2, MAX_SORTSIZE, args[2], sep);
+  nptrs1 = list2arr_ansi(ptrs1, MAX_SORTSIZE, args[1], sep, 1);
+  nptrs2 = list2arr_ansi(ptrs2, MAX_SORTSIZE, args[2], sep, 1);
   memcpy(ptrs3, ptrs2, MAX_SORTSIZE * sizeof(char *));
 
   if (nptrs1 != nptrs2) {
@@ -242,7 +257,7 @@ FUNCTION(fun_munge)
   results = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
   if (!results)
     mush_panic("Unable to allocate memory in fun_munge");
-  nresults = list2arr_ansi(results, MAX_SORTSIZE, rlist, sep);
+  nresults = list2arr_ansi(results, MAX_SORTSIZE, rlist, sep, 1);
 
   first = 1;
   for (i = 0; i < nresults; i++) {
@@ -298,7 +313,7 @@ FUNCTION(fun_elements)
 
   /* Turn the first list into an array. */
   strcpy(wordlist, args[0]);
-  nwords = list2arr_ansi(ptrs, MAX_SORTSIZE, wordlist, sep);
+  nwords = list2arr_ansi(ptrs, MAX_SORTSIZE, wordlist, sep, 1);
 
   s = trim_space_sep(args[1], ' ');
 
@@ -586,7 +601,7 @@ FUNCTION(fun_shuffle)
   /* split the list up, or return if the list is empty */
   if (!*args[0])
     return;
-  n = list2arr_ansi(words, MAX_SORTSIZE, args[0], sep);
+  n = list2arr_ansi(words, MAX_SORTSIZE, args[0], sep, 1);
 
   /* shuffle it */
   for (i = 0; i < n; i++) {
@@ -623,7 +638,7 @@ FUNCTION(fun_sort)
   } else
     strcpy(outsep, args[3]);
 
-  nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, args[0], sep);
+  nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, args[0], sep, 1);
   sort_type = get_list_type(args, nargs, 2, ptrs, nptrs);
   do_gensort(executor, ptrs, NULL, nptrs, sort_type);
   arr2list(ptrs, nptrs, buff, bp, outsep);
@@ -662,7 +677,7 @@ FUNCTION(fun_sortkey)
   if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
     return;
 
-  nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, args[1], sep);
+  nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, args[1], sep, 1);
 
   /* Now we make a list of keys */
   for (i = 0; i < nptrs; i++) {
@@ -733,7 +748,7 @@ FUNCTION(fun_sortby)
   save_global_env("sortby", tptr);
 
   /* Split up the list, sort it, reconstruct it. */
-  nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, args[1], sep);
+  nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, args[1], sep, 1);
   if (nptrs > 1)                /* pointless to sort less than 2 elements */
     sane_qsort((void **) ptrs, 0, nptrs - 1, u_comp);
 
@@ -744,15 +759,37 @@ FUNCTION(fun_sortby)
   free_anon_attrib(attrib);
 }
 
+#define OUTSEP() do { \
+    if (found) { \
+      safe_strl(osep, osepl, buff, bp); \
+    } else { \
+      found = 1; \
+    } \
+} while (0)
+
 /* ARGSUSED */
-FUNCTION(fun_setinter)
+FUNCTION(fun_setmanip)
 {
   char sep;
   char **a1, **a2;
   int n1, n2, x1, x2, val;
+  int orign1, orign2;
+  int found = 0;
   SortType sort_type = UNKNOWN_LIST;
   int osepl = 0;
   char *osep = NULL, osepd[2] = { '\0', '\0' };
+  s_rec *sp1, *sp2;
+  ListTypeInfo *lti;
+
+  bool dolt = 0, dogt = 0, doeq = 0;
+  if (strstr(called_as, "DIFF")) {
+    dolt = 1;
+  } else if (strstr(called_as, "INTER")) {
+    doeq = 1;
+  } else {
+    /* Setunion. */
+    dolt = dogt = doeq = 1;
+  }
 
   /* if no lists, then no work */
   if (!*args[0] && !*args[1])
@@ -764,11 +801,11 @@ FUNCTION(fun_setinter)
   a1 = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
   a2 = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
   if (!a1 || !a2)
-    mush_panic("Unable to allocate memory in fun_inter");
+    mush_panic("Unable to allocate memory in fun_setmanip");
 
   /* make arrays out of the lists */
-  n1 = list2arr_ansi(a1, MAX_SORTSIZE, args[0], sep);
-  n2 = list2arr_ansi(a2, MAX_SORTSIZE, args[1], sep);
+  orign1 = n1 = list2arr_ansi(a1, MAX_SORTSIZE, args[0], sep, 1);
+  orign2 = n2 = list2arr_ansi(a2, MAX_SORTSIZE, args[1], sep, 1);
 
   if (nargs < 4) {
     sort_type = autodetect_2lists(a1, n1, a2, n2);
@@ -798,362 +835,73 @@ FUNCTION(fun_setinter)
   }
 
   /* sort each array */
-  do_gensort(executor, a1, NULL, n1, sort_type);
-  do_gensort(executor, a2, NULL, n2, sort_type);
+  lti = get_list_type_info(sort_type);
+  sp1 = slist_build(executor, a1, NULL, n1, lti);
+  sp2 = slist_build(executor, a2, NULL, n2, lti);
+  slist_qsort(sp1, n1, lti);
+  n1 = slist_uniq(sp1, n1, lti);
+  slist_qsort(sp2, n2, lti);
+  n2 = slist_uniq(sp2, n2, lti);
 
-  /* get the first value for the intersection, removing duplicates */
+  /* get the first value for the intersection, removing duplicates
+   * We already know that duplicates have been removed from each list. */
   x1 = x2 = 0;
-  while ((val = gencomp(executor, a1[x1], a2[x2], sort_type))) {
-    if (val < 0) {
-      x1++;
-      if (x1 >= n1) {
-        freearr(a1, n1);
-        freearr(a2, n2);
-        mush_free(a1, "ptrarray");
-        mush_free(a2, "ptrarray");
-        return;
-      }
-    } else {
-      x2++;
-      if (x2 >= n2) {
-        freearr(a1, n1);
-        freearr(a2, n2);
-        mush_free(a1, "ptrarray");
-        mush_free(a2, "ptrarray");
-        return;
-      }
-    }
-  }
-  safe_str(a1[x1], buff, bp);
-  while (!gencomp(executor, a1[x1], a2[x2], sort_type)) {
-    x1++;
-    if (x1 >= n1) {
-      freearr(a1, n1);
-      freearr(a2, n2);
-      mush_free(a1, "ptrarray");
-      mush_free(a2, "ptrarray");
-      return;
-    }
-  }
-
-  /* get values for the intersection, until at least one list is empty */
   while ((x1 < n1) && (x2 < n2)) {
-    while ((val = gencomp(executor, a1[x1], a2[x2], sort_type))) {
-      if (val < 0) {
-        x1++;
-        if (x1 >= n1) {
-          freearr(a1, n1);
-          freearr(a2, n2);
-          mush_free(a1, "ptrarray");
-          mush_free(a2, "ptrarray");
-          return;
-        }
-      } else {
-        x2++;
-        if (x2 >= n2) {
-          freearr(a1, n1);
-          freearr(a2, n2);
-          mush_free(a1, "ptrarray");
-          mush_free(a2, "ptrarray");
-          return;
-        }
+    val = slist_comp(&sp1[x1], &sp2[x2], lti);
+    if (val < 0) {
+      if (dolt) {
+        OUTSEP();
+        safe_str(sp1[x1].val, buff, bp);
       }
-    }
-    safe_strl(osep, osepl, buff, bp);
-    safe_str(a1[x1], buff, bp);
-    while (!gencomp(executor, a1[x1], a2[x2], sort_type)) {
       x1++;
-      if (x1 >= n1) {
-        freearr(a1, n1);
-        freearr(a2, n2);
-        mush_free(a1, "ptrarray");
-        mush_free(a2, "ptrarray");
-        return;
+    } else if (val > 0) {
+      if (dogt) {
+        OUTSEP();
+        safe_str(sp2[x2].val, buff, bp);
       }
-    }
-  }
-  freearr(a1, n1);
-  freearr(a2, n2);
-  mush_free(a1, "ptrarray");
-  mush_free(a2, "ptrarray");
-}
-
-/* ARGSUSED */
-FUNCTION(fun_setunion)
-{
-  char sep;
-  char **a1, **a2;
-  int n1, n2, x1, x2, val, orign1, orign2;
-  int lastx1, lastx2, found;
-  SortType sort_type = UNKNOWN_LIST;
-  int osepl = 0;
-  char *osep = NULL, osepd[2] = { '\0', '\0' };
-
-  /* if no lists, then no work */
-  if (!*args[0] && !*args[1])
-    return;
-
-  if (!delim_check(buff, bp, nargs, args, 3, &sep))
-    return;
-
-  a1 = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
-  a2 = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
-  if (!a1 || !a2)
-    mush_panic("Unable to allocate memory in fun_setunion");
-
-  /* make arrays out of the lists */
-  orign1 = n1 = list2arr_ansi(a1, MAX_SORTSIZE, args[0], sep);
-  orign2 = n2 = list2arr_ansi(a2, MAX_SORTSIZE, args[1], sep);
-
-  if (nargs < 4) {
-    osepd[0] = sep;
-    osep = osepd;
-    if (sep)
-      osepl = 1;
-  } else if (nargs == 4) {
-    sort_type = get_list_type_noauto(args, nargs, 4);
-    if (sort_type == UNKNOWN_LIST) {
-      osep = args[3];
-      osepl = arglens[3];
+      x2++;
     } else {
-      osepd[0] = sep;
-      osep = osepd;
-      if (sep)
-        osepl = 1;
-    }
-  } else if (nargs == 5) {
-    sort_type = get_list_type_noauto(args, nargs, 4);
-    osep = args[4];
-    osepl = arglens[4];
-  }
-
-  if (sort_type == UNKNOWN_LIST) {
-    sort_type = autodetect_2lists(a1, n1, a2, n2);
-  }
-
-  /* sort each array */
-  do_gensort(executor, a1, NULL, n1, sort_type);
-  do_gensort(executor, a2, NULL, n2, sort_type);
-
-  /* get values for the union, in order, skipping duplicates */
-  lastx1 = lastx2 = -1;
-  found = x1 = x2 = 0;
-  if (n1 == 1 && !*a1[0])
-    n1 = 0;
-  if (n2 == 1 && !*a2[0])
-    n2 = 0;
-  while ((x1 < n1) || (x2 < n2)) {
-    /* If we've already copied off something from a1, and our current
-     * look at a1 is the same element, or we've copied from a2 and
-     * our current look at a1 is the same element, skip forward in a1.
-     */
-    if (x1 < n1 && lastx1 >= 0) {
-      val = gencomp(executor, a1[lastx1], a1[x1], sort_type);
-      if (val == 0) {
-        x1++;
-        continue;
+      if (doeq) {
+        OUTSEP();
+        safe_str(sp1[x1].val, buff, bp);
       }
-    }
-    if (x1 < n1 && lastx2 >= 0) {
-      val = gencomp(executor, a2[lastx2], a1[x1], sort_type);
-      if (val == 0) {
-        x1++;
-        continue;
-      }
-    }
-    if (x2 < n2 && lastx1 >= 0) {
-      val = gencomp(executor, a1[lastx1], a2[x2], sort_type);
-      if (val == 0) {
-        x2++;
-        continue;
-      }
-    }
-    if (x2 < n2 && lastx2 >= 0) {
-      val = gencomp(executor, a2[lastx2], a2[x2], sort_type);
-      if (val == 0) {
-        x2++;
-        continue;
-      }
-    }
-    if (x1 >= n1) {
-      /* Just copy off the rest of a2 */
-      if (x2 < n2) {
-        if (found)
-          safe_strl(osep, osepl, buff, bp);
-        safe_str(a2[x2], buff, bp);
-        lastx2 = x2;
-        x2++;
-        found = 1;
-      }
-    } else if (x2 >= n2) {
-      /* Just copy off the rest of a1 */
-      if (x1 < n1) {
-        if (found)
-          safe_strl(osep, osepl, buff, bp);
-        safe_str(a1[x1], buff, bp);
-        lastx1 = x1;
-        x1++;
-        found = 1;
-      }
-    } else {
-      /* At this point, we're merging. Take the lower of the two. */
-      val = gencomp(executor, a1[x1], a2[x2], sort_type);
-      if (val <= 0) {
-        if (found)
-          safe_strl(osep, osepl, buff, bp);
-        safe_str(a1[x1], buff, bp);
-        lastx1 = x1;
-        x1++;
-        found = 1;
-      } else {
-        if (found)
-          safe_strl(osep, osepl, buff, bp);
-        safe_str(a2[x2], buff, bp);
-        lastx2 = x2;
-        x2++;
-        found = 1;
-      }
+      x1++;
+      x2++;
     }
   }
+  if (dolt) {
+    while (x1 < n1) {
+      OUTSEP();
+      safe_str(sp1[x1++].val, buff, bp);
+    }
+  }
+  if (dogt) {
+    while (x2 < n2) {
+      OUTSEP();
+      safe_str(sp2[x2++].val, buff, bp);
+    }
+  }
+
+  /* Free everything we've allocated. */
+  slist_free(sp1, n1, lti);
+  slist_free(sp2, n2, lti);
+  free_list_type_info(lti);
   freearr(a1, orign1);
   freearr(a2, orign2);
   mush_free(a1, "ptrarray");
   mush_free(a2, "ptrarray");
 }
 
-/* ARGSUSED */
-FUNCTION(fun_setdiff)
-{
-  char sep;
-  char **a1, **a2;
-  int n1, n2, x1, x2, val;
-  SortType sort_type = UNKNOWN_LIST;
-  int osepl = 0;
-  char *osep = NULL, osepd[2] = { '\0', '\0' };
-
-  /* if no lists, then no work */
-  if (!*args[0] && !*args[1])
-    return;
-
-  if (!delim_check(buff, bp, nargs, args, 3, &sep))
-    return;
-
-  a1 = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
-  a2 = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
-  if (!a1 || !a2)
-    mush_panic("Unable to allocate memory in fun_diff");
-
-  /* make arrays out of the lists */
-  n1 = list2arr_ansi(a1, MAX_SORTSIZE, args[0], sep);
-  n2 = list2arr_ansi(a2, MAX_SORTSIZE, args[1], sep);
-
-  if (nargs < 4) {
-    osepd[0] = sep;
-    osep = osepd;
-    if (sep)
-      osepl = 1;
-  } else if (nargs == 4) {
-    sort_type = get_list_type_noauto(args, nargs, 4);
-    if (sort_type == UNKNOWN_LIST) {
-      osep = args[3];
-      osepl = arglens[3];
-    } else {
-      osepd[0] = sep;
-      osep = osepd;
-      if (sep)
-        osepl = 1;
-    }
-  } else if (nargs == 5) {
-    sort_type = get_list_type_noauto(args, nargs, 4);
-    osep = args[4];
-    osepl = arglens[4];
-  }
-
-  if (sort_type == UNKNOWN_LIST) {
-    sort_type = autodetect_2lists(a1, n1, a2, n2);
-  }
-
-  /* sort each array */
-  do_gensort(executor, a1, NULL, n1, sort_type);
-  do_gensort(executor, a2, NULL, n2, sort_type);
-
-  /* get the first value for the difference, removing duplicates */
-  x1 = x2 = 0;
-  while ((val = gencomp(executor, a1[x1], a2[x2], sort_type)) >= 0) {
-    if (val > 0) {
-      x2++;
-      if (x2 >= n2)
-        break;
-    }
-    if (!val) {
-      x1++;
-      if (x1 >= n1) {
-        freearr(a1, n1);
-        freearr(a2, n2);
-        mush_free(a1, "ptrarray");
-        mush_free(a2, "ptrarray");
-        return;
-      }
-    }
-  }
-  safe_str(a1[x1], buff, bp);
-  do {
-    x1++;
-    if (x1 >= n1) {
-      freearr(a1, n1);
-      freearr(a2, n2);
-      mush_free(a1, "ptrarray");
-      mush_free(a2, "ptrarray");
-      return;
-    }
-  } while (!gencomp(executor, a1[x1], a1[x1 - 1], sort_type));
-
-  /* get values for the difference, until at least one list is empty */
-  while (x2 < n2) {
-    if ((val = gencomp(executor, a1[x1], a2[x2], sort_type)) < 0) {
-      safe_strl(osep, osepl, buff, bp);
-      safe_str(a1[x1], buff, bp);
-    }
-    if (val <= 0) {
-      do {
-        x1++;
-        if (x1 >= n1) {
-          freearr(a1, n1);
-          freearr(a2, n2);
-          mush_free(a1, "ptrarray");
-          mush_free(a2, "ptrarray");
-          return;
-        }
-      } while (!gencomp(executor, a1[x1], a1[x1 - 1], sort_type));
-    }
-    if (val >= 0)
-      x2++;
-  }
-
-  /* empty out remaining values, still removing duplicates */
-  while (x1 < n1) {
-    safe_strl(osep, osepl, buff, bp);
-    safe_str(a1[x1], buff, bp);
-    do {
-      x1++;
-    } while ((x1 < n1) && !gencomp(executor, a1[x1], a1[x1 - 1], sort_type));
-  }
-  freearr(a1, n1);
-  freearr(a2, n2);
-  mush_free(a1, "ptrarray");
-  mush_free(a2, "ptrarray");
-}
-
-#define CACHE_SIZE 8  /**< Maximum size of the lnum cache */
-
 FUNCTION(fun_unique)
 {
   char sep;
-  char **a1, **a2;
-  int n1, x1, x2;
-  SortType sort_type = ALPHANUM_LIST;
+  char **ary;
+  int orign, n, i;
   int osepl = 0;
   char *osep = NULL, osepd[2] = { '\0', '\0' };
+  SortType sort_type = ALPHANUM_LIST;
+  ListTypeInfo *lti;
+  s_rec *sp;
 
   /* if no lists, then no work */
   if (!*args[0])
@@ -1162,24 +910,16 @@ FUNCTION(fun_unique)
   if (!delim_check(buff, bp, nargs, args, 3, &sep))
     return;
 
-  a1 = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
+  ary = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
 
-  if (!a1)
+  if (!ary)
     mush_panic("Unable to allocate memory in fun_unique");
 
-  /* make array out of the list */
-  n1 = list2arr_ansi(a1, MAX_SORTSIZE, args[0], sep);
-
-  a2 = mush_calloc(n1, sizeof(char *), "ptrarray");
-  if (!a2)
-    mush_panic("Unable to allocate memory in fun_unique");
+  /* make an array out of the list */
+  orign = n = list2arr_ansi(ary, MAX_SORTSIZE, args[0], sep, 1);
 
   if (nargs >= 2)
-    sort_type = get_list_type_noauto(args, nargs, 2);
-
-  if (sort_type == UNKNOWN_LIST) {
-    sort_type = autodetect_list(a1, n1);
-  }
+    sort_type = get_list_type(args, nargs, 2, ary, n);
 
   if (nargs < 4) {
     osepd[0] = sep;
@@ -1191,28 +931,23 @@ FUNCTION(fun_unique)
     osepl = arglens[3];
   }
 
+  lti = get_list_type_info(sort_type);
+  sp = slist_build(executor, ary, NULL, n, lti);
+  n = slist_uniq(sp, n, lti);
 
-  a2[0] = a1[0];
-  for (x1 = x2 = 1; x1 < n1; x1++) {
-    if (gencomp(executor, a1[x1], a2[x2 - 1], sort_type) == 0)
-      continue;
-    a2[x2] = a1[x1];
-    x2++;
-  }
-
-  for (x1 = 0; x1 < x2; x1++) {
-    if (x1 > 0)
+  for (i = 0; i < n; i++) {
+    if (i > 0)
       safe_strl(osep, osepl, buff, bp);
-    safe_str(a2[x1], buff, bp);
+    safe_str(sp[i].val, buff, bp);
   }
 
-  freearr(a1, n1);
-  /* We don't freearr(a2) since it wasn't generated by
-   * list2arr, and is instead just pointers into a1 */
-  mush_free(a1, "ptrarray");
-  mush_free(a2, "ptrarray");
-
+  slist_free(sp, n, lti);
+  free_list_type_info(lti);
+  freearr(ary, orign);
+  mush_free(ary, "ptrarray");
 }
+
+#define CACHE_SIZE 8  /**< Maximum size of the lnum cache */
 
 /* ARGSUSED */
 FUNCTION(fun_lnum)
@@ -1279,6 +1014,11 @@ FUNCTION(fun_lnum)
   cend[cpos] = end;
   strcpy(csep[cpos], osep);
   cp = cresult[cpos];
+
+  if (step == 0.0)
+    step = 1.0;
+  else if (step < 0.0)
+    step = step * -1.0;
 
   istart = (int) start;
   iend = (int) end;
@@ -1979,7 +1719,7 @@ FUNCTION(fun_ldelete)
 
   /* Turn the first list into an array. */
   strcpy(wordlist, args[0]);
-  nwords = list2arr_ansi(ptrs, MAX_SORTSIZE, wordlist, sep);
+  nwords = list2arr_ansi(ptrs, MAX_SORTSIZE, wordlist, sep, 1);
 
   s = trim_space_sep(args[1], ' ');
 
@@ -2120,7 +1860,7 @@ FUNCTION(fun_revwords)
 
   words = mush_calloc(BUFFER_LEN, sizeof(char *), "wordlist");
 
-  origcount = count = list2arr_ansi(words, BUFFER_LEN, args[0], sep);
+  origcount = count = list2arr_ansi(words, BUFFER_LEN, args[0], sep, 1);
   if (count == 0) {
     mush_free(words, "wordlist");
     return;
@@ -2166,8 +1906,8 @@ FUNCTION(fun_splice)
   orig = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
   repl = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
   /* Turn them into lists */
-  ocount = list2arr(orig, MAX_SORTSIZE, args[0], sep);
-  rcount = list2arr(repl, MAX_SORTSIZE, args[1], sep);
+  ocount = list2arr(orig, MAX_SORTSIZE, args[0], sep, 1);
+  rcount = list2arr(repl, MAX_SORTSIZE, args[1], sep, 1);
 
   strncpy(haystack, remove_markup(args[2], NULL), BUFFER_LEN);
   if (!*haystack) {
@@ -2270,7 +2010,7 @@ FUNCTION(fun_iter)
 
   /* Split lp up into an ansi-safe list */
   ptrs = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
-  nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, lp, sep);
+  nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, lp, sep, 1);
 
   pe_info->iter_nesting++;
   pe_info->local_iter_nesting++;
@@ -2448,7 +2188,7 @@ FUNCTION(fun_step)
 
   /* Split lp up into an ansi-safe list */
   ptrs = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
-  nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, lp, sep);
+  nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, lp, sep, 1);
 
   /* Step through the list. */
   for (i = 0; i < nptrs;) {
@@ -2511,7 +2251,7 @@ FUNCTION(fun_map)
   strcpy(place, "1");
 
   ptrs = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
-  nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, lp, sep);
+  nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, lp, sep, 1);
 
   /* Build our %0 args */
   for (i = 0; i < nptrs; i++) {
@@ -2578,7 +2318,7 @@ FUNCTION(fun_mix)
     lp[n] = trim_space_sep(args[n + 1], sep);
     if (*lp[n]) {
       ptrs[n] = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
-      nptrs[n] = list2arr_ansi(ptrs[n], MAX_SORTSIZE, lp[n], sep);
+      nptrs[n] = list2arr_ansi(ptrs[n], MAX_SORTSIZE, lp[n], sep, 1);
     } else {
       ptrs[n] = NULL;
       nptrs[n] = 0;
@@ -3091,7 +2831,7 @@ FUNCTION(fun_regmatch)
    */
   if (subpatterns == 0)
     subpatterns = 33;
-  nqregs = list2arr(qregs, NUMQ, args[2], ' ');
+  nqregs = list2arr(qregs, NUMQ, args[2], ' ', 1);
 
   /* Initialize every q-register used to '' */
   for (i = 0; i < nqregs; i++) {

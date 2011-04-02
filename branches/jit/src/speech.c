@@ -60,18 +60,26 @@ spname(dbref thing)
  * pagelock and target isn't HAVEN.
  * \param player dbref attempting to pemit.
  * \param target target dbref to pemit to.
+ * \param dofails If nonzero, send failure message 'def' or run fail_lock()
+ * \param def default message if there is no appropriate failure message
  * \retval 1 player may pemit to target.
  * \retval 0 player may not pemit to target.
  */
 int
-okay_pemit(dbref player, dbref target)
+okay_pemit(dbref player, dbref target, int dofails, const char *def)
 {
   if (Pemit_All(player))
     return 1;
-  if (IsPlayer(target) && Haven(target))
+
+  if (IsPlayer(target) && Haven(target)) {
+    if (dofails && def && *def)
+      notify(player, def);
     return 0;
+  }
   if (!eval_lock(player, target, Page_Lock)) {
-    fail_lock(player, target, Page_Lock, NULL, NOTHING);
+    if (dofails) {
+      fail_lock(player, target, Page_Lock, def, NOTHING);
+    }
     return 0;
   }
   return 1;
@@ -133,7 +141,7 @@ do_teach(dbref player, dbref cause, const char *tbuf1)
                 tprintf(T("%s types --> %s%s%s"), spname(player),
                         ANSI_HILITE, tbuf1, ANSI_END), NA_INTER_HEAR);
   command = mush_strdup(tbuf1, "string");       /* process_command is destructive */
-  process_command(player, command, cause, 1);
+  process_command(player, command, cause, cause, 1);
   mush_free(command, "string");
   recurse = 0;                  /* Ok, we can be called again safely */
 }
@@ -189,7 +197,8 @@ do_say(dbref player, const char *tbuf1)
 void
 do_oemit_list(dbref player, char *list, const char *message, int flags)
 {
-  char *temp, *p, *s;
+  char *temp, *p;
+  const char *s;
   dbref who;
   dbref pass[12], locs[10];
   int i, oneloc = 0;
@@ -236,12 +245,12 @@ do_oemit_list(dbref player, char *list, const char *message, int flags)
     temp = list;
   }
 
-  s = trim_space_sep(temp, ' ');
-  while (s) {
-    p = split_token(&s, ' ');
+  s = temp;
+  while (s && *s) {
+    p = next_in_list(&s);
     /* If a room was given, we match relative to the room */
     if (oneloc)
-      who = match_result(pass[1], p, NOTYPE, MAT_POSSESSION | MAT_ABSOLUTE);
+      who = match_result_relative(player, pass[1], p, NOTYPE, MAT_OBJ_CONTENTS);
     else
       who = noisy_match_result(player, p, NOTYPE, MAT_OBJECTS);
     /* pass[0] tracks the number of valid players we've found.
@@ -250,7 +259,8 @@ do_oemit_list(dbref player, char *list, const char *message, int flags)
      * locs[0..10] are corresponding dbrefs of locations
      */
     if (GoodObject(who) && GoodObject(Location(who))
-        && (Loud(player) || eval_lock(player, Location(who), Speech_Lock))
+        && (Loud(player) || (oneloc && Location(who) == pass[1]) ||
+            eval_lock(player, Location(who), Speech_Lock))
       ) {
       if (pass[0] < 10) {
         locs[pass[0]] = Location(who);
@@ -263,12 +273,23 @@ do_oemit_list(dbref player, char *list, const char *message, int flags)
     }
   }
 
+  if (flags & PEMIT_SPOOF)
+    na_flags |= NA_SPOOF;
+
+  if (oneloc && pass[0] == 0) {
+    /* A specific location was given, but there were no matching objects to
+     * omit, so just remit */
+    notify_anything_loc(player, na_loc, &pass[1], ns_esnotify, na_flags,
+                        message, pass[1]);
+    do_audible_stuff(pass[1], NULL, 0, message);
+    return;
+  }
+
+
   /* Sort the list of rooms to oemit to so we don't oemit to the same
    * room twice */
   qsort((void *) locs, pass[0], sizeof(locs[0]), dbref_comp);
 
-  if (flags & PEMIT_SPOOF)
-    na_flags |= NA_SPOOF;
   for (i = 0; i < pass[0]; i++) {
     if (i != 0 && locs[i] == locs[i - 1])
       continue;
@@ -496,7 +517,7 @@ do_pemit_list(dbref player, char *list, const char *message, int flags)
 
   while (l && *l && (p = next_in_list(&l))) {
     who = noisy_match_result(player, p, NOTYPE, MAT_EVERYTHING);
-    if (GoodObject(who) && okay_pemit(player, who)) {
+    if (GoodObject(who) && okay_pemit(player, who, 1, NULL)) {
       if (nospoof && Nospoof(who)) {
         if (Paranoid(who)) {
           if (!nspbuf) {
@@ -567,12 +588,10 @@ do_pemit(dbref player, const char *arg1, const char *arg2, int flags)
     notify(player, T("I don't know who you mean!"));
     break;
   default:
-    if (!okay_pemit(player, who)) {
-      notify_format(player,
-                    T("I'm sorry, but %s wishes to be left alone now."),
-                    Name(who));
+    if (!okay_pemit(player, who, 1,
+                    tprintf(T("I'm sorry, but %s wishes to be left alone now."),
+                            Name(who))))
       return;
-    }
     if (!silent)
       notify_format(player, T("You pemit \"%s\" to %s."), arg2, Name(who));
     if (nospoof && Nospoof(who)) {
@@ -837,7 +856,29 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
       return;
     }
     if (!message || !*message) {
-      notify_format(player, T("You last paged %s."), head);
+      start = (const char **) &head;
+      while (head && *head) {
+        current = next_in_list(start);
+        if (is_objid(current))
+          target = parse_objid(current);
+        else
+          target = lookup_player(current);
+        if (RealGoodObject(target)) {
+          good[gcount] = target;
+          gcount++;
+        }
+      }
+      if (!gcount) {
+        notify(player, T("I can't find who you last paged."));
+      } else {
+        for (repage = 1; repage <= gcount; repage++) {
+          safe_itemizer(repage, (repage == gcount), ",", T("and"), " ", tbuf2,
+                        &tp2);
+          safe_str(Name(good[repage - 1]), tbuf2, &tp2);
+        }
+        *tp2 = '\0';
+        notify_format(player, T("You last paged %s."), tbuf2);
+      }
       mush_free(tbuf2, "page_buff");
       mush_free(namebuf, "page_buff");
       if (hp)
@@ -883,7 +924,7 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
         if (fails_lock)
           fail_lock(player, target, Page_Lock, NULL, NOTHING);
         safe_chr(' ', tbuf, &tp);
-        safe_str_space(current, tbuf, &tp);
+        safe_str_space(Name(target), tbuf, &tp);
       } else if (is_haven) {
         page_return(player, target, "Haven", "HAVEN",
                     tprintf(T("%s is not accepting any pages."), Name(target)));
@@ -982,13 +1023,15 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
 
   /* namebuf is used to hold a fancy formatted list of names,
    * with commas and the word 'and' , if needed. */
-  /* tbuf holds a space-separated list of names for repaging */
+  /* tbuf holds a space-separated list of objids for repaging */
 
   /* Set up a pretty formatted list. */
   for (i = 0; i < gcount; i++) {
     if (i)
       safe_chr(' ', tbuf, &tp);
-    safe_str_space(Name(good[i]), tbuf, &tp);
+    safe_dbref(good[i], tbuf, &tp);
+    safe_chr(':', tbuf, &tp);
+    safe_integer(CreTime(good[i]), tbuf, &tp);
     safe_itemizer(i + 1, (i == gcount - 1), ",", T("and"), " ", namebuf, &nbp);
     safe_str(Name(good[i]), namebuf, &nbp);
   }
@@ -1073,6 +1116,11 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
     }
 
     page_return(player, good[i], "Idle", "IDLE", NULL);
+    if (!okay_pemit(good[i], player, 0, NULL)) {
+      notify_format(player,
+                    T("You paged %s, but they are unable to page you."),
+                    Name(good[i]));
+    }
   }
 
   mush_free(tbuf, "page_buff");
@@ -1378,10 +1426,11 @@ do_one_remit(dbref player, const char *target, const char *msg, int flags)
   } else {
     if (IsExit(room)) {
       notify(player, T("There can't be anything in that!"));
-    } else if (!okay_pemit(player, room)) {
-      notify_format(player,
-                    T("I'm sorry, but %s wishes to be left alone now."),
-                    Name(room));
+    } else if (!okay_pemit(player, room, 1,
+                           tprintf(T
+                                   ("I'm sorry, but %s wishes to be left alone now."),
+                                   Name(room)))) {
+      /* Do nothing, but do it well */
     } else if (!Loud(player) && !eval_lock(player, room, Speech_Lock)) {
       fail_lock(player, room, Speech_Lock, T("You may not speak there!"),
                 NOTHING);
@@ -1498,7 +1547,7 @@ na_zemit(dbref current __attribute__ ((__unused__)), void *data)
  * \param player the enactor.
  * \param arg1 string containing dbref of ZMO.
  * \param arg2 message to emit.
- * \param flags bitmask of notificati flags.
+ * \param flags bitmask of notification flags.
  */
 void
 do_zemit(dbref player, const char *arg1, const char *arg2, int flags)
@@ -1518,8 +1567,10 @@ do_zemit(dbref player, const char *arg1, const char *arg2, int flags)
     return;
   }
 
-  where = unparse_object(player, zone);
-  notify_format(player, T("You zemit, \"%s\" in zone %s"), arg2, where);
+  if (!(flags & PEMIT_SILENT)) {
+    where = unparse_object(player, zone);
+    notify_format(player, T("You zemit, \"%s\" in zone %s"), arg2, where);
+  }
 
   pass[0] = NOTHING;
   pass[1] = 0;

@@ -26,7 +26,7 @@
 #define Open_Anywhere(x) (Hasprivs(x) || has_power_by_name(x,"OPEN_ANYWHERE",NOTYPE))
 #define Link_Anywhere(x)  (Hasprivs(x) || has_power_by_name(x,"LINK_ANYWHERE",NOTYPE))
 #define Can_Boot(x)      (Hasprivs(x) || has_power_by_name(x,"BOOT",NOTYPE))
-#define Can_Nspemit(x)   (Wizard(x) || has_power_by_name(x,"CAN_NSPEMIT",NOTYPE))
+#define Can_Nspemit(x)   (Wizard(x) || has_power_by_name(x,"CAN_SPOOF",NOTYPE))
 #define Do_Quotas(x)     (Wizard(x) || has_power_by_name(x,"QUOTAS",NOTYPE))
 #define Change_Poll(x)   (Wizard(x) || has_power_by_name(x,"POLL",NOTYPE))
 #define HugeQueue(x)     (Wizard(x) || has_power_by_name(x,"QUEUE",NOTYPE))

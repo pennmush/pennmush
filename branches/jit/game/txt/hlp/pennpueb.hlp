@@ -84,48 +84,53 @@ Function: html(<string>)
 This wizard-only function will output string as a HTML Tag.
 
 Example:
-  think [html(B)]
+  html(b)
 
 Will output (in HTML):
-  <B>
+  <b>
 
 Non-wizards should see the tag(), endtag(), and tagwrap() functions.
 & TAG()
-Function: tag(<name>,[param1[,param2...]])
+  tag(<name>[, <param1>[, ... , <paramN>]])
 
-This will output the tag 'name' with values from it's parameters.
+  This function outputs the named HTML/Pueblo tag with the given paramaters.
 
-Example:
- [tag(IMG,SRC=http://www.pennmush.org/someimage.jpg,ALIGN=LEFT,WIDTH=300)]
+  Example:
+   tag(img,src="http://www.pennmush.org/image.jpg",align="left",width="300")
 
 Will output (in HTML):
- <IMG SRC=http://www.pennmush.org/someimage.jpg ALIGN=LEFT WIDTH=300>
+  <img src="http://www.pennmush.org/image.jpg" align="left" width="300">
 
+See also: endtag(), tagwrap(), html()
 & ENDTAG()
-Function: endtag(<name>)
+  endtag(<name>)
 
-This will output an end tag 'name'.
 
-Example:
- [endtag(IMG)]
+  Outputs a closing HTML/Pueblo tag for the named tag.
+
+  Example:
+   endtag(img)
 
 Will output (in HTML):
- </IMG>
+ </img>
 
+See also: tag(), tagwrap(), html()
 & TAGWRAP()
-Function: tagwrap(<tag>[,<parameters>],<string>)
+Function: tagwrap(<name>[,<parameters>],<string>)
 
-This will output 'tag' with parameters, followed by 'string', and then
-a closing tag for 'tag'. 
+  This function outputs <string>, wrapped in the <name> HTML/Pueblo tag
+  with the specified paramaters.
 
-Example:
- [tagwrap(A,HREF=http://lists.pennmush.org,PennMUSH Lists)]
+  Example:
+   tagwrap(a,href="http://download.pennmush.org",PennMUSH Downloads)]
 Will output (in HTML):
- <A HREF=http://lists.pennmush.org>PennMUSH Lists</A>
+ <a href="http://download.pennmush.org">PennMUSH Downloads</a>
 
-A particularly important use of this function is tagwrap(PRE,<string>).
-Because Pueblo works like an html browser, spaces and tabs are compressed
-to a single space. If you have code (a +who function, for example) that
-relies on exact spacing, surround its output with a tagwrap(PRE,...)
-so that Pueblo will render it as "preformatted" text.
+  A particularly important use of this function is tagwrap(pre, <string>).
+  Because Pueblo works like an html browser, spaces and tabs are compressed
+  to a single space. If you have code (a +who function, for example) that
+  relies on exact spacing, surround its output with a tagwrap(pre,...)
+  so that Pueblo will render it as "preformatted" text.
+  
+See also: tag(), endtag(), html()
 

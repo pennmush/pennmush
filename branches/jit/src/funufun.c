@@ -170,8 +170,11 @@ do_userfn(char *buff, char **bp, dbref obj, ATTR *attrib, int nargs,
   }
 
   tp = tbuf = safe_atr_value(attrib);
-  if (attrib->flags & AF_DEBUG)
+  if (AF_NoDebug(attrib))
+    pe_flags |= PE_NODEBUG;     /* no_debug overrides debug */
+  else if (AF_Debug(attrib))
     pe_flags |= PE_DEBUG;
+
   process_expression(buff, bp, &tp, obj, executor, enactor, pe_flags,
                      PT_DEFAULT, pe_info);
   free(tbuf);
@@ -232,7 +235,9 @@ FUNCTION(fun_pfun)
     return;                     /* attr isn't inheritable */
 
   /* DEBUG attributes */
-  if (AF_Debug(a))
+  if (AF_NoDebug(a))
+    pe_flags |= PE_NODEBUG;     /* no_debug overrides debug */
+  else if (AF_Debug(a))
     pe_flags |= PE_DEBUG;
 
   ufun.thing = executor;

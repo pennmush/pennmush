@@ -174,6 +174,7 @@ extern dbref first_free;        /* pointer to free list */
 #define AF_Prefixmatch(a) ((a)->flags & AF_PREFIXMATCH)
 #define AF_Veiled(a) ((a)->flags & AF_VEILED)
 #define AF_Debug(a) ((a)->flags & AF_DEBUG)
+#define AF_NoDebug(a) ((a)->flags & AF_NODEBUG)
 #define AF_Nearby(a) ((a)->flags & AF_NEARBY)
 #define AF_Public(a) ((a)->flags & AF_PUBLIC)
 #define AF_Mhear(a) ((a)->flags & AF_MHEAR)

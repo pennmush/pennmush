@@ -216,9 +216,10 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
   }
 
   /* DEBUG attributes */
-  if (AF_Debug(attrib)) {
+  if (AF_NoDebug(attrib))
+    ufun->pe_flags |= PE_NODEBUG;       /* No_Debug overrides Debug */
+  else if (AF_Debug(attrib))
     ufun->pe_flags |= PE_DEBUG;
-  }
 
   /* Populate the ufun object */
   mush_strncpy(ufun->contents, atr_value(attrib), BUFFER_LEN);

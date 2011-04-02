@@ -46,7 +46,7 @@ void do_restart_com(dbref player, const char *arg1);
 /* From command.c */
 enum hook_type { HOOK_BEFORE, HOOK_AFTER, HOOK_IGNORE, HOOK_OVERRIDE };
 extern void do_hook(dbref player, char *command, char *obj, char *attrname,
-                    enum hook_type flag);
+                    enum hook_type flag, int inplace);
 extern void do_hook_list(dbref player, char *command);
 
 
@@ -76,7 +76,7 @@ extern void do_sweep(dbref player, const char *arg1);
 extern void do_entrances(dbref player, const char *where, char **argv,
                          int types);
 enum dec_type { DEC_NORMAL, DEC_DB = 1, DEC_FLAG = 2, DEC_ATTR =
-    4, DEC_SKIPDEF = 8
+    4, DEC_SKIPDEF = 8, DEC_TF = 16
 };
 extern void do_decompile(dbref player, const char *name, const char *prefix,
                          int dec_type);
@@ -96,7 +96,7 @@ extern void do_password(dbref player, dbref cause,
 /* From predicat.c */
 extern void do_switch
   (dbref player, char *expression, char **argv, dbref cause, int first,
-   int notifyme, int regexp);
+   int notifyme, int regexp, int inplace);
 extern void do_verb(dbref player, dbref cause, char *arg1, char **argv);
 extern void do_grep
   (dbref player, char *obj, char *lookfor, int flag, int insensitive);
@@ -166,7 +166,8 @@ extern void do_quota(dbref player, const char *arg1, const char *arg2,
 extern void do_allquota(dbref player, const char *arg1, int quiet);
 extern void do_teleport
   (dbref player, const char *arg1, const char *arg2, int silent, int inside);
-extern void do_force(dbref player, const char *what, char *command);
+extern void do_force(dbref player, dbref caller, const char *what, char *command,
+                     int inplace);
 extern void do_stats(dbref player, const char *name);
 extern void do_newpassword
   (dbref player, dbref cause, const char *name, const char *password);
@@ -181,7 +182,7 @@ enum sitelock_type { SITELOCK_ADD, SITELOCK_REMOVE, SITELOCK_BAN,
   SITELOCK_CHECK, SITELOCK_LIST, SITELOCK_REGISTER
 };
 extern void do_sitelock(dbref player, const char *site, const char *opts,
-                        const char *charname, enum sitelock_type type);
+                        const char *charname, enum sitelock_type type, int psw);
 extern void do_sitelock_name(dbref player, const char *name);
 extern void do_chownall
   (dbref player, const char *name, const char *target, int preserve);
@@ -192,8 +193,17 @@ extern void do_dbck(dbref player);
 extern void do_destroy(dbref player, char *name, int confirm);
 
 /* From timer.c */
-extern void init_timer(void);
-extern void signal_cpu_limit(int signo);
+void init_timer(void);
+void signal_cpu_limit(int signo);
+
+typedef bool(*sq_func) (void *);
+void sq_register(time_t w, sq_func f, void *d, const char *ev);
+void sq_register_in(int n, sq_func f, void *d, const char *ev);
+void sq_register_loop(int n, sq_func f, void *d, const char *ev);
+bool sq_run_one(void);
+bool sq_run_all(void);
+
+void init_sys_events(void);
 
 /* From version.c */
 extern void do_version(dbref player);

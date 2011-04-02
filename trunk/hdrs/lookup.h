@@ -24,7 +24,6 @@ struct request_dgram {
   union sockaddr_u remote; /**< The sockaddr struct for the remote address */
   socklen_t llen; /**< Length of local address */
   socklen_t rlen; /**< Length of remote address */
-  int use_ident; /**< True to do an ident lookup */
   int use_dns; /**< True to do hostname lookup */
   int timeout; /**< Timeout in seconds for lookups */
 };

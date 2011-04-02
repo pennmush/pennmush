@@ -135,7 +135,6 @@ struct options_table {
   char dump_message[256]; /**< Message shown at start of nonforking dump */
   char dump_complete[256]; /**< Message shown at end of nonforking dump */
   time_t dump_counter;  /**< Time since last dump */
-  int ident_timeout;    /**< Timeout for ident lookups */
   int max_logins;       /**< Maximum total logins allowed at once */
   int max_guests;       /**< Maximum guests logins allowed at once */
   int whisper_loudness; /**< % chance that a noisy whisper is overheard */
@@ -215,7 +214,6 @@ struct options_table {
   int link_to_object;   /**< Can exits be linked to objects? */
   int owner_queues;     /**< Are queues tracked by owner or individual object? */
   int wiz_noaenter;     /**< Do DARK wizards trigger aenters? */
-  int use_ident;        /**< Should we do ident checks on connections? */
   char ip_addr[64];     /**< What ip address should the server bind to? */
   char ssl_ip_addr[64]; /**< What ip address should the server bind to? */
   int player_name_spaces;       /**< Can players have multiword names? */
@@ -431,8 +429,6 @@ int cf_time(const char *opt, const char *val, void *loc, int maxval,
 #define NO_LINK_TO_OBJECT (!options.link_to_object)
 #define QUEUE_PER_OWNER (options.owner_queues)
 #define WIZ_NOAENTER (options.wiz_noaenter)
-#define USE_IDENT (options.use_ident)
-#define IDENT_TIMEOUT (options.ident_timeout)
 #define USE_DNS (options.use_dns)
 #define MUSH_IP_ADDR (options.ip_addr)
 #define SSL_IP_ADDR (options.ssl_ip_addr)

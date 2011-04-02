@@ -119,20 +119,23 @@ int
 lower_priority_by(pid_t pid, int prio)
 {
   int newprio = 0;
+
 #ifdef HAVE_GETPRIORITY
   errno = 0;
   if ((newprio = getpriority(PRIO_PROCESS, pid)) < 0) {
     if (errno != 0)
-      return -1;
+      return newprio;
   }
 #endif
   newprio += prio;
 
-  if (newprio > 20)
-    newprio = 20;
-
 #ifdef HAVE_SETPRIORITY
-  return setpriority(PRIO_PROCESS, pid, newprio);
+  {
+    int ret = setpriority(PRIO_PROCESS, pid, newprio);
+    if (ret < 0)
+      perror("setpriority");
+    return ret;
+  }
 #else
   return 0;
 #endif

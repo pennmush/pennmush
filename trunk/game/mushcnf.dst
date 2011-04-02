@@ -508,15 +508,6 @@ restrict_command ahelp admin
 ahelp_command anews txt/news.txt
 restrict_command anews admin
 
-### Config directive for IDENT.
-### If you want to do ident (RFC1143) lookups, set use_ident to "yes"
-### and select an ident_timeout to determine how long the MUSH
-### should wait for a response, in seconds. If you're using
-### INFO_SLAVE (in options.h), this is how long the info_slave waits.
-# Changing this while using info_slave requires a @shutdown/reboot
-# to make it take effect.
-use_ident yes
-ident_timeout 5s
 
 ###
 ### Logging

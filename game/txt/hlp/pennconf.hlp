@@ -231,9 +231,6 @@ Continued in help @config limits4
    bracketed in <!-- ... --> for all clients, and web browsers are
    redirected to the url described in mud_url.
   use_dns=<boolean>: Are IP addresses resolved into hostnames?
-  use_ident=<boolean>: Is ident information looked up for connections?
-  ident_timeout=<time>: How many seconds does the mush wait before an ident
-    request fails?
   logins=<boolean>: Are mortal logins enabled?
   player_creation=<boolean>: Can CREATE be used from the login screen?
   guests=<boolean>: Are guest logins allowed?

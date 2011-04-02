@@ -936,7 +936,7 @@ notify_anything_loc(dbref speaker, na_lookup func,
         }
       }
     }
-    /* if object is flagged LISTENER, check for ^ listen patterns
+    /* if object is flagged MONITOR, check for ^ listen patterns
      *    * unlike normal @listen, don't pass the message on.
      *    */
 

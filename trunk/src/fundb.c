@@ -1323,7 +1323,7 @@ FUNCTION(fun_lockflags)
   ltype = get_locktype(p);
 
   if (GoodObject(it) && (ltype !=NULL)
-      &&Can_Read_Lock(executor, it, ltype)) {
+      && Can_Read_Lock(executor, it, ltype)) {
     ll = getlockstruct(it, ltype);
     if (ll) {
       if (fullname)
@@ -1439,10 +1439,9 @@ FUNCTION(fun_elock)
     safe_str("#-1", buff, bp);
     return;
   }
-  if (Can_Locate(executor, victim))
-    safe_boolean(eval_lock(victim, it, ltype), buff, bp);
-  else
-    safe_str("#-1", buff, bp);
+
+  safe_boolean(eval_lock(victim, it, ltype), buff, bp);
+
   return;
 }
 

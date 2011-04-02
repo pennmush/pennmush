@@ -150,7 +150,7 @@ struct boolatr {
  */
 struct boolexp_node {
   /** Type of expression.
-   * The type of expressio is one of the boolexp_type's, such as
+   * The type of expression is one of the boolexp_type's, such as
    * and, or, not, constant, attribute, indirect, carry, is,
    * owner, eval, flag, etc.
    */

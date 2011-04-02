@@ -145,7 +145,7 @@ lower_priority_by(pid_t pid, int prio)
 static int
 lock_fp(FILE * f, bool what)
 {
-#ifdef HAVE_FCNTL
+#if defined(HAVE_FCNTL) && !defined(WIN32)
   struct flock lock;
   int ret;
 

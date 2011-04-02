@@ -28,16 +28,16 @@ reserve_alias dummy_exit_alias
 # And hook commands, with
 # hook_command <cmd> <hook> [<obj>[/<attr>]]
 # as per @hook/<hook> <cmd>=[<obj>[/<attr>]]. See 'help @hook'.
-# Don't include the '#' in <obj>, just use the number.
-# hook_command say override 123/cmd.say
+# inplace override hooks have use inplace/override as the hook.
+# hook_command say override #123/cmd.say
+# hook_command say override/inplace #123/cmd.say
 
 # You can also add new functions, with
 # add_function <function> <obj>/<attr> [<minargs> [<maxargs>]]
 # as per @function <function>=<obj>, <attr>[, <minargs>[, <maxargs>]]
-# Don't include the '#' in <obj>, just use the number. See 'help @function'
 # If <function> is the name of a built-in function, it will be disabled
 # and replaced with the user function (like @function/delete).
-# add_function foo 123/fun.foo 1 5
+# add_function foo #123/fun.foo 1 5
 
 # You can also alias commands to other names.
 # command_alias EXISTING_COMMAND ALIAS

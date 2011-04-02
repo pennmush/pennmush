@@ -1,4 +1,4 @@
-/*-----------------------------------------------------------------
+/*----------------------------------------------- -*- c -*-
  * Local stuff
  *
  * This file contains custom stuff, and some of the items here are
@@ -16,8 +16,10 @@
 #include "parse.h"
 #include "htab.h"
 #include "command.h"
-#include "confmagic.h"
 #include "lock.h"
+#include "game.h"
+#include "confmagic.h"
+
 
 extern HASHTAB htab_reserved_aliases;
 
@@ -26,6 +28,20 @@ extern HASHTAB htab_reserved_aliases;
 void
 local_startup(void)
 {
+
+/* Register local_timer to be called once a second. You can also
+* register other callbacks to run at other intervals. See local_timer()
+* below for an example of what the callback function needs to do if it
+* should be run more than once. 
+*
+* Arguments are: Number of seconds from now to run, the callback function,
+* a data argument to pass to it, and a softcoded event name to run at the same
+* time. The latter two can be null pointers. The callback function returns true
+* if the softcode event should be triggered, false if it shouldn't.
+*/
+#if 0                           /* Change to 1 if you need local_timer functionality. */
+  sq_register_loop(1, local_timer, NULL, NULL);
+#endif
 }
 
 /* Add you own runtime configuration options here, and you can set
@@ -103,9 +119,12 @@ local_dbck(void)
 /* This is called exactly once a second
  * After the MUSH has done all it's stuff
  */
-void
-local_timer(void)
+bool
+local_timer(void *data __attribute__ ((__unused__)))
 {
+
+  /* The callback has to be set back up or it'll only run once. */
+  return false;
 }
 
 /* Called when a player connects. If this is a new creation,

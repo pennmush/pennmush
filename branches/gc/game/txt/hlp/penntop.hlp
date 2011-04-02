@@ -38,8 +38,7 @@ This is the index to the MUSH online help files.
   
   You should not type the [] or <> brackets when entering a command.
   
-(continued in help newbie2 -- type 'help newbie2' without the single
-quotes)
+  Continued in 'help newbie2' -- type 'help newbie2' without the quotes.
   
 & newbie2
 
@@ -54,11 +53,11 @@ quotes)
   
   Some common commands that you should look at help for are:
   
-    look   say    go    page    pose    take     give    home
+    look   say    go    page    pose    get     give    home
   
   Just type help <command> for help. Example: help page
   
-(continued in help newbie3)
+  Continued in 'help newbie3'.
 & newbie3
 
   There is help available on every standard MUSH command. If you see a
@@ -95,7 +94,7 @@ Help is available on the following topics:
   LINKING                  LISTENING                LISTS                    
   LOOPING                  MASTER ROOM              MATCHING
 
-(continued in help topics2)
+  Continued in 'help topics2'.
 & topics2
   ME                       MONEY                    MUSHCODE
   NON-STANDARD ATTRIBUTES  PARENTS                  POWERS
@@ -109,28 +108,26 @@ Help is available on the following topics:
   
 Type "help <topic name>" for help.
 & ACTION LISTS
-  Action lists are simply lists of actions that are all executed at
-  once.  You can have an action list in a user-defined command, in one
-  of the a-attributes, or in many other commands. Action lists may not
-  be executed directly from a client, except in the case of a command
-  which forces a re-insertion into the queue such as @switch or
-  @dolist.
+  An "action list" is simply a list of MUSH commands which are run together,
+  one after the other. Each command in the list is separated by a semicolon.
+  Action lists appear in many places: in user-defined commands, triggered in
+  @a-attributes by the MUSH, and even as arguments to other commands, like
+  @switch and @dolist.
 
-  Actions in an action list are separated by semicolons. Each action
-  is simply a separate MUSH command. If part of the action (such as
-  the text in an @emit, for example) contains a semi-colon or comma,
-  you may need to enclose that part in curly braces {}. You can also
-  nest action lists inside each other by enclosing each action list in
+  If part of the command (such as the text in an @emit, for example) contains
+  a semi-colon, you may need to enclose that part in curly braces {}. You can
+  also nest action lists inside each other by enclosing each action list in
   braces {}.
 
   Substitution will be performed on the contents of action lists before
   they are executed.
 
-(continued in help action2)
+  See 'help action2' for some examples.
+See also: @-ATTRIBUTES, VERBS, $-COMMANDS
 & ACTION2
   Example 1:
-    > @asuccess Gift = @pemit %#={The box pops open; surprise!} ; 
-        @name me=New Toy ; @desc me={A shiny new toy, just for %N!}
+    > @asuccess Gift=@pemit %#={The box pops open; surprise!} ; 
+        @name me=New Toy ; @desc me=A shiny new toy, just for %n!
     > take gift
     The box pops open; surprise!
     > look new toy
@@ -139,7 +136,7 @@ Type "help <topic name>" for help.
             
   Example 2:
     > &TEST me=$test:@emit {Testing; testing; one, two.} ; 
-        @dolist 1 2 3={think {Test ##, success.} }
+        @dolist 1 2 3={think Test ##, success.}
     > test
     Testing; testing; one, two.
     Test 1, success.
@@ -150,29 +147,27 @@ See also: ATTRIBUTES, SUBSTITUTION, @asuccess, @dolist
 & ANCESTORS
   ANCESTORS
 
-  Objects can inherit attributes from other objects through the use of
-  parents. An object's parent, its parent's parent, its parent's
-  parent's parent, etc. constitute the object's "parent chain" and
-  lookups work the way up the chain until an inheritance occurs.
+  Objects can inherit attributes and locks from other objects through the use
+  of parents. An object's parent, its parent's parent, its parent's parent's
+  parent, etc. constitute the object's "parent chain" and lookups work the 
+  way up the chain until an inheritance occurs.
 
-  Ancestors are "virtual parents" that are assumed to be last on every
-  parent chain. There is one ancestor for each object type (room,
-  exit, thing, player), and @config lists the dbref of each ancestor
-  object (@config ancestor_room, etc.) Under normal circumstances, if
-  an attribute can't be retrieved from an object or any of its
-  explicit parents, the attribute will be looked for on the
-  appropriate ancestor.  The ORPHAN flag may be set on an object to
-  cause lookups on that object to ignore ancestors (like the
+  Ancestors are "virtual parents" that are assumed to be last on every parent
+  chain. There is one ancestor for each object type (room, exit, thing,
+  player), and @config lists the dbref of each ancestor object (@config 
+  ancestor_room, etc). Under normal circumstances, if an attribute/lock can't
+  be retrieved from an object or any of its explicit parents, the attribute
+  will be looked for on the appropriate ancestor.  The ORPHAN flag may be set
+  on an object to cause lookups on that object to ignore ancestors (like the
   pre-ancestor behavior).
 
-  Ancestors may themselves have parent chains, but these are
-  (obviously) not virtually terminated by ancestors.
+  Ancestors may themselves have parent chains, but these are (obviously) not 
+  virtually terminated by ancestors.
 
-  Note that the choice of which ancestor to look up is based on the
-  type of the *child* object, as is the check of the ORPHAN flag.
-  Also note that ancestors are *not* checked for $-commands or
-  ^-commands; you should use the master room for global commands,
-  instead.
+  Note that the choice of which ancestor to look up is based on the type of 
+  the *child* object, as is the check of the ORPHAN flag. Also note that 
+  ancestors are *not* checked for $-commands or ^-commands; you should use 
+  the master room for global commands, instead.
 
 See also: PARENTS, ORPHAN
 & ANONYMOUS ATTRIBUTES
@@ -193,10 +188,12 @@ See also: PARENTS, ORPHAN
 
   See 'HELP ANONYMOUS2' for examples.
 & ANONYMOUS2
+& LAMBDA2
+& #LAMBDA2
   A typical usage of anonymous attributes would be to convert
   a list of dbrefs to names, as so:
 
-  >say map(#lambda/name(\%0), #3 #12 #23)
+  > say map(#lambda/name(\%0), #3 #12 #23)
   You say, "Joe Robert Sally"
 
   Because the code is parsed twice, you can actually build parts of it
@@ -204,19 +201,20 @@ See also: PARENTS, ORPHAN
   a lattrval function, which is like lattr() but it only returns
   non-empty attributes:
 
-  &lattrval me=
-   filter(#lambda/hasattrval([secure(before(%0, /))], \%0), lattr(%0))
+  > &lattrval me=
+     filter(#lambda/hasattrval([decompose(before(%0, /))], \%0), lattr(%0))
   
-  The first time '#lambda/hasattrval([secure(before(%0, /))], \%0)' is
+  The first time '#lambda/hasattrval([decompose(before(%0, /))], \%0)' is
   parsed in a call like 'u(lattrval, #1234)', it is turned into
   '#lambda/hasattrval(#1234, %0)', thus avoiding the need for a setq()
   or the like to store the top-level %0 for use in a real attribute
   called by filter(). However, this can lead to problems with
-  evaluating un-trusted code. Use secure() or escape() where
-  neccessary.
+  evaluating un-trusted code. Use decompose() where neccessary.
 
   See 'HELP ANONYMOUS3' for another example.
 & ANONYMOUS3
+& LAMBDA3
+& #LAMBDA3
   
   You can also use lit() to avoid having the code evaluated twice, if
   needed. For example, this code, which returns all unlinked exits in
@@ -233,6 +231,8 @@ See also: PARENTS, ORPHAN
   See 'HELP ANONYMOUS4' for a list of functions that support anonymous
   attributes.
 & ANONYMOUS4
+& LAMBDA4
+& #LAMBDA4
   The following functions support anonymous attributes:
   
   filter()    filterbool()   fold()      foreach()   map()      mapsql()
@@ -240,16 +240,14 @@ See also: PARENTS, ORPHAN
 & ATTRIB-OWNERSHIP
   ATTRIBUTE OWNERSHIP
   
-  The latest person to set an attribute on an object is the owner of
-  that attribute. If you lock an attribute, using the @atrlock
-  command, only the person who owns the attribute will be able to
-  alter the attribute. This allows you to create standard commands on
-  objects and then @chown them to others without letting them alter
-  them.
+  The latest person to set an attribute on an object is the owner of that 
+  attribute. If you lock an attribute, using the @atrlock command, only 
+  the person who owns the attribute will be able to alter the attribute. 
+  This allows you to create standard commands on objects and then @chown 
+  them to others without letting them alter them.
 
-  Attribute ownership is NOT changed when the object itself is
-  @chown'ed.  To change attribute ownership, you must use the
-  @atrchown command.
+  Attribute ownership is NOT changed when the object itself is @chown'ed. 
+  To change attribute ownership, you must use the @atrchown command.
 
   You must control an object in order to set attributes on it.
 
@@ -278,7 +276,7 @@ Standard Attributes: (see @list/attribs for the complete list)
   QUEUE (*)     RQUOTA (*)    RUNOUT        SEX           STARTUP       
   SUCCESS       TFPREFIX
 
-(continued in help attributes2)
+  Continued in 'help attributes2'.
 & ATTRIBUTES2
   An attribute is part of the code on an object that makes it
   unique. An attribute can contain any sort of text -- from a single
@@ -294,7 +292,7 @@ Standard Attributes: (see @list/attribs for the complete list)
   named anything you like. Please see 'help NON-STANDARD ATTRIBUTES'
   for more information on those.
 
-(continued in help attributes3)
+  Continued in 'help attributes3'.
 & ATTRIBUTES3
   Any attribute name can be shortened, but a shorter forms run the
   risk of conflicting with other attribute names.  This could result
@@ -309,7 +307,7 @@ Standard Attributes: (see @list/attribs for the complete list)
   To see the attributes that are set on you or on any of the objects
   you own, you should use the "examine" command. See 'help examine'.
   
-(continued in help attributes4)
+  Continued in 'help attributes4'.
 & ATTRIBUTES4
   Attributes can be owned by someone other than the object they are
   set on.  This allows the person to change the content of just that
@@ -358,7 +356,7 @@ See also: kill, slay, @death
   consider "true" or "false", however, depends on the setting of the
   "tiny_booleans" config option (@config tiny will show this).
 
-(continued in help boolean2)
+  Continued in 'help boolean2'.
 & BOOLEAN2 
   If tiny_booleans is...
   no                       FALSE: null string, 0, any negative db
@@ -378,7 +376,7 @@ See also: kill, slay, @death
   0<non-numbers..>      TRUE                    FALSE               *
   <non-numbers...>      TRUE                    FALSE               *
 
-(continued in help boolean3)
+  Continued in 'help boolean3'.
 & BOOLEAN3
 
   Examples (assuming tiny_booleans is "no"):     
@@ -442,18 +440,15 @@ See also: BOOLEAN FUNCTIONS, not(), t()
 
 See also: controls(), TRUST, MISTRUST, ZONES, SHARED PLAYERS
 & COSTS
-  These are usually:
+  Some things on the MUSH cost pennies. The default costs are shown below:
   
           kill: 10 pennies (or more, up to 100 pennies)
-          page: 0 pennies
           @dig: 10 pennies
           @create: 10 pennies (or more)
-          @find: 100 pennies
-          @search: 100 pennies
-          @entrances: 100 pennies
+          @search: 100 pennies *
           @link: 1 penny (if you  didn't already own it,
                           +1 to the previous owner).
-          @open: 1 penny (2 pennies if linked at  the same time)
+          @open: 1 penny (2 pennies if linked at the same time)
   
   Type '@config/list costs' to get the costs for the MUSH you are on.
 
@@ -505,26 +500,43 @@ See also: help code, help license
   immediately find the object rather than checking through all the
   contents of your area to see if one matches the name.
 
-(continued in help dbref2)
+  Continued in 'help dbref2'.
 & DBREF2
   
-  If you own or control an object, you will see its dbref number
-  listed right after its name when you look at it (unless you are set
-  MYOPIC).
+  If you own or control an object, you will see its dbref number listed 
+  right after its name when you look at it (unless you are set MYOPIC).
 
   Example:
     > look me
     Cyclonus(#3PWenAMc)
     A very short desc.
 
-  The dbref number is indicated by the number/pound sign
-  (#). Cyclonus's dbref is #3. The letters following the dbref are the
-  abbreviations of the flags set on the object. NOTE: the abbreviation
-  of the OPAQUE flag is 'O' (o), which looks like '0' (zero) on some
-  clients. Make sure you have the right number before using it in your
-  code!
+  The dbref number is indicated by the number/pound sign (#). Cyclonus's 
+  dbref is #3. The letters following the dbref are the abbreviations of the
+  flags set on the object. NOTE: the abbreviation of the OPAQUE flag is 'O'
+  (o), which looks like '0' (zero) on some clients. Make sure you have the
+  right number before using it in your code!
 
-See also: MYOPIC, OPAQUE, MUSHCODE
+See also: MYOPIC, OPAQUE, MUSHCODE, MATCHING, OBJIDS
+& OBJIDS
+& OBJECT IDS
+
+  When an object is destroyed, its dbref number will eventually be recycled
+  and given to a newly created object. This can cause problems in code,
+  particularly in database code which stores members of a group, as code
+  which was meant to refer to the old object ends up referring to the new one
+  by mistake.
+  
+  To avoid this problem, you can use the "object id", or objid, instead of
+  the dbref. An object id consists of the object's dbref, a colon, and then
+  the object's creation time. Objids can be used anywhere dbrefs can and,
+  because the creation time is different each time the dbref is recycled, the
+  objid is totally unique to each object.
+  
+  The objid() function returns the object id of an object, and the %:
+  substitution evaluates to the objid of the enactor. 
+  
+See also: objid(), @lock-objid, DBREFS
 & DROP-TOS
 & DROPTOS
 
@@ -551,36 +563,65 @@ See also: @link, STICKY, LINK_OK, @lock
 & %~
 & %:
 & ENACTOR
-  The enactor is the object that does something (enacts something :).
-  This is an important concept in MUSH, because the way many commands
-  work will depend on who enters the command (ie, who the enactor is).
+  The enactor is the object which causes something to happen. This is an 
+  important concept in MUSH, because the way many commands work will depend
+  on who enters the command (ie, who the enactor is). Note that while the
+  enactor is the object which -caused- code/a command to run, it is not
+  necessarily the object which is running the code (that's the executor).
   Any type of object can be an enactor.
 
-  There are five %-substitutions that involve the enactor:
+  There are eight %-substitutions that involve the enactor:
     %# = the enactor's dbref
-    %N = the enactor's name, first letter capitalized
-    %n = the enactor's name, first letter as-is
+    %n = the enactor's name
     %~ = the enactor's accented name
     %: = the enactor's unique identifier, like objid(%#)
+    %a, %o, %p, %s = pronoun substitutions, based on the enactor's @sex.
+                     See 'help gender' for more information.
 
-  If, for example, you have an @osucc on an object that includes the
-  %n symbol, whenever someone picks up the object, that %n will be
-  replaced with the name of the enactor (the person who typed 'get
-  <object>' in this case).
+  If, for example, you have an @osuccess on an object that includes the %n
+  subtitution, whenever someone picks up the object, that %n will evaluate to
+  the name of the enactor (the person who typed 'get <object>' in this case).
   
-See also: EXECUTOR, CALLER, SUBSTITUTION, DBREF
+See also: EXECUTOR, CALLER, SUBSTITUTIONS, DBREF
+& %!
+& EXECUTOR
+  The executor of a command is the object actually carrying out the command
+  or running the code. This differs from the enactor, because the enactor is
+  the object that sets off the command. In some cases, the enactor and the
+  executor will be the same. The substitution %! evaluates to the dbref of
+  the executor of the code.
+
+  For example:
+    > @emit %n (%#) is the enactor and %! is the executor!
+    Cyclonus (#6) is the enactor and #6 is the executor!
+    > @create Box
+    Created: Object #10
+    > &EMIT box=$emit: @emit %n (%#) is the enactor and %! is the executor!
+    > emit
+    Cyclonus (#6) is the enactor and #10 is the executor!
+
+  In the first case, Cyclonus directly entered the command and was
+  therefore both the enactor and the executor. In the second, Cyclonus
+  set off the command on the box, so Cyclonus was still the enactor,
+  but the box was the object that was actually doing the @emit, and
+  was thus the executor.
+
+See also: ENACTOR, CALLER, SUBSTITUTIONS
 & %@
 & CALLER
-  In functions, the caller is the object which ran the function. The caller's
-  dbref is available using the %@ substitute, and is useful in code which is
-  evaluated using ufun() or similar functions, to tell who is evaluating the
-  attribute.
+  The caller is the object which causes an attribute to be evaluated (for
+  instance, by using ufun() or a similar function). The substitution %@ 
+  evaluates to the caller's dbref. It's particularly useful for functions
+  with side-effects, to check that the object evaluating the function has
+  permission.
   
   Example:
     > &cmd_test Foo=$test: @emit ufun(Bar/fun_test)
     > &fun_test Bar=%n(%#) typed 'test', and [name(%@)](%@) ufun()'d this!
     > test
     Mike(#5) typed 'test', and Foo(#6) ufun()'d this!
+    
+    > &wizfun Foo=if(hasflag(%@, Wizard), ufun(wizfun2), #-1 Sorry)
     
 See also: ENACTOR, EXECUTOR
 & EVALUATION ORDER
@@ -620,57 +661,56 @@ See also: ENACTOR, EXECUTOR
 
   Because local $-commands overrule global $-commands, you can easily
   prevent a global $-command from working in a specific room by setting
-  a copy of the global $-command in that room. Alternatively, if a
-  global $-command is oddly not working in a room, you should check for
-  copies of the command word in the room (using @scan). Wizards who want to
-  ensure a global $-command always takes precedence over a local one should
-  use @command/add and @hook/override, to make the command run as a regular
+  a copy of the global $-command in that room. Alternatively, if a global 
+  $-command is oddly not working in a room, you should check for copies of 
+  the command word in the room (using @scan). Wizards who want to ensure a
+  global $-command always takes precedence over a local one should use 
+  @command/add and @hook/override, to make the command run as a regular
   game command instead of a softcoded global.
   
 See also: @command, @hook, $-commands, huh_command
-& %!
-& EXECUTOR
-  The executor of a command is the object actually carrying out the
-  command.  This differs from the enactor, because the enactor is the
-  object that sets off the command. In some cases, the enactor and the
-  executor will be the same. There is a %-substitution, %!, that is
-  replaced by the dbref # of the executor of the command.
-
-  For example:
-    > @emit %n (%#) is the enactor and %! is the executor!
-    Cyclonus (#6) is the enactor and #6 is the executor!
-    > @create Box
-    Created: Object #10
-    > &DO_EMIT box=$emit:@emit %n (%#) is the enactor and %! is the executor!
-    > emit
-    Cyclonus (#6) is the enactor and #10 is the executor!
-
-  In the first case, Cyclonus directly entered the command and was
-  therefore both the enactor and the executor. In the second, Cyclonus
-  set off the command on the box, so Cyclonus was still the enactor,
-  but the box was the object that was actually doing the @emit, and
-  was thus the executor.
-
-See also: ENACTOR, CALLER, SUBSTITUTION
 & FAILURE
   FAILURE  
 
-  A "failure" usually occurs when you try to do something that is
-  governed by an @lock and you don't pass the lock. If you try to take
-  a player or thing, and you don't pass their @lock, you will set off
-  their @fail/@ofail/@afail attributes. If you try to go through an
-  exit, and you don't pass its @lock, you will similarly set off its
-  @fail/@ofail/@afail. Other failure sets include:
+  A "failure" usually occurs when you try to do something that is governed 
+  by an @lock and you don't pass the lock. If you try to take a player or 
+  thing, or pass through an exit, and you don't pass its Basic @lock, you 
+  will set off their  @failure/@ofailure/@afailure attributes. A few failures
+  have special attributes, while others use <locktype>_LOCK`FAILURE,
+  <locktype>_LOCK`OFAILURE and <locktype>_LOCK`AFAILURE attributes.
 
-  Failing to enter an object (@efail, @oefail, @aefail)
-  Failing to leave an object (@lfail, @olfail, @alfail)
-  Failing to use an object (@ufail, @oufail, @aufail)
-  Other failures (&<locktype>_LOCK`FAILURE, &<locktype>_LOCK`OFAILURE, 
-    &<locktype>_LOCK`AFAILURE)
+  See 'help failure2' for a list of failure verbs and when they're triggered.
 
-  See @lock and locktypes for more information on lock types.
+  See 'help @lock' and 'help locktypes' for more information on lock types.
 
-See also: @lock, @fail, @efail, @lfail
+See also: verbs, @lock, @failure, @efail, @lfail
+
+& failure2
+  The following failures are defined in PennMUSH:
+  
+  Failure to...                                 Lock     Attribute
+  --------------------------------------------- -------- --------------------
+  "get" a player/thing, pass through an exit,   Basic    @failure
+    or "look" in a room
+  run an $-command on an object                 Command* COMMAND_LOCK`FAILURE
+  use zwho()                                    Zone     ZONE_LOCK`FAILURE
+  leave your current location                   Leave    @lfail
+  "take" from an object                         Take     TAKE_LOCK`FAILURE
+  "drop" a thing, or drop something in a room   Drop     DROP_LOCK_FAILURE
+   enter an object                              Enter    @efail
+  "follow" an object                            Follow   FOLLOW_LOCK`FAILURE
+  "give" an object away                         Give     GIVE_LOCK`FAILURE
+  "give" money to or "buy" from an object       Pay      PAY_LOCK`FAILURE
+  "@chzone" something to a zone                 Chzone   CHZONE_LOCK`FAILURE
+  "use" an object                               Use      @ufail
+  speak via say/pose/@*emit/teach in a room     Speech   SPEECH_LOCK`FAILURE
+  "page" or "@pemit" to an object               Page     PAGE_LOCK`FAILURE**
+  
+  
+  * The Use lock can also prevent you from running an $-command, but it will
+    still trigger COMMAND_LOCK`FAILURE.
+  ** @haven or @away will also be shown on failure to "page", if set
+  
 & GENDER
 & SEX
   Gender on a MUSH is entirely up to you. You can set yourself (or any
@@ -679,47 +719,52 @@ See also: @lock, @fail, @efail, @lfail
   the object is neuter. Setting a gender attribute will enable pronoun
   substitution by the MUSH. The SEX attribute is visual to anyone who
   wants to see it.
+  
+  The obj(), subj(), poss() and aposs() functions return different pronouns
+  for an object based on its @sex, and the %o, %s, %p and %a substitutions
+  return the same pronouns for the enactor.
 
 See also: @sex, SUBSTITUTION
 & GLOBALS
 & GLOBAL COMMANDS
   A command is "global" if it can be used anywhere in the world of the
-  MUSH. The standard MUSH commands are all global, so this term is
-  usually used to refer to user-defined commands on objects in the
-  Master Room of the MUSH. Global commands very greatly from MUSH to
-  MUSH, but you can usually find MUSH-specific help on them by typing
-  "+help".
+  MUSH. The standard/built-in MUSH commands are all global, so this term is
+  usually used to refer to user-defined commands on objects in the Master 
+  Room of the MUSH. Global commands very greatly from MUSH to MUSH, but you 
+  can usually find MUSH-specific help on them by typing "+help".
 
-See also: MASTER ROOM, USER-DEFINED COMMANDS, EVALUATION
+See also: MASTER ROOM, USER-DEFINED COMMANDS, EVALUATION ORDER
 & HERE
-  The word 'here' refers to the room you are in. For example, to
-  rename the room you're in (if you control it), you could enter
-  "@name here= <new name>".
+  The word 'here' refers to the room you are in. For example, to rename the 
+  room you're in (if you control it), you could use:
+
+    > @name here=<new name>
+    
+See also: MATCHING
 & HOMES
 & HOME
-  Every thing or player has a home, which is usually the room where it
-  was created. You can reset your home or the home of any object you
-  own with the @link command: @link <me|object>=<location>. You must
+  Every thing or player has a home, which is usually the room where it was
+  created. You can reset your home or the home of any object you own with
+  the @link command: @link [me | <object>]=<location>. You must
   also control <location>, unless that location (room or thing) is set
   ABODE or LINK_OK.
 
-  When a player types 'home', s/he is sent back to the home room. When
-  a thing with the STICKY flag set on it is dropped, it also goes to
-  its home location. Note that if the FIXED flag is set on a player,
-  he/she cannot use the 'home' command.
+  When a player types 'home', she is sent back to the home room. When a 
+  thing with the STICKY flag set on it is dropped, it also goes to its 
+  home location. Note that if the FIXED flag is set on a player, she cannot
+  use the 'home' command.
 
   You can create an exit that sends players home by doing:
         @link <exit name>=home
   You can set the drop-to in a room to home by doing:
         @link <room dbref or "here">=home
         
-  The home of an exit is its source (the room it's located in). You
-  can change the home/source of an exit by @teleporting it to another
-  room.
+  The home of an exit is its source (the room it's located in). You can
+  change the home/source of an exit by @teleporting it to another room.
 
   The home of a room is its drop-to.
 
-See also: DROP-TOS, @link, STICKY, LINK_OK, FIXED, EXITS
+See also: DROP-TOS, @link, STICKY, LINK_OK, FIXED, EXITS, home(), loc()
 & INTERIORS
   Here's a quick description of how to make things that can be
   entered:
@@ -735,7 +780,7 @@ See also: DROP-TOS, @link, STICKY, LINK_OK, FIXED, EXITS
   @enter car=You get into the car.      { The plain messages are shown to 
   @leave car=You get out of the car.    { the one entering or leaving 
        
-(continued in help interiors2)
+  Continued in 'help interiors2'.
 & INTERIORS2
   Now, if you want people inside to be able to hear and communicate
   with the outside, you also need to do the following.
@@ -794,7 +839,7 @@ See also: LINK_OK, ABODE, @link
     Breaker has arrived.
     Welcome Mat says, "Welcome, Breaker!"
 
-(continued in help listening2)
+  Continued in 'help listening2'.
 & ^
 & ^-LISTENS
 & LISTENING2
@@ -817,7 +862,7 @@ See also: LINK_OK, ABODE, @link
   Such attributes can also be @triggered as if the ^<pattern>: did not
   exist.
 
-(continued in help listening3)
+  Continued in 'help listening3'.
 & LISTENING3
   By default, ^-patterns work like @ahear. To have them work like
   @amhear, set the AMHEAR attribute flag on the attribute; to have
@@ -899,12 +944,15 @@ See also: NEWBIE, @lock, @describe, @sex, MATCHING
   control, since when all your money is spent, you can't queue any
   more commands.
 
-  The money system can also be used on player-created objects by
-  giving them @cost/@payment/@opayment/@apayment attributes. When
-  someone then pays the object by giving it the right number of
-  pennies, the attributes are triggered.
+  The money system can also be used on player-created objects by setting 
+  @cost/@payment/@opayment/@apayment attributes and using the "give" command
+  to give pennies, or by setting @pricelist/@buy/@obuy/@abuy attributes and
+  buying items with the "buy" command. The Pay @lock on an object controls
+  who can give it pennies.
+  
+  The "score" command tells you how many pennies you have.
 
-See also: COSTS, give, @cost, @pay, @opay, @apay
+See also: COSTS, give, @cost, @payment, @lock, buy, @buy, score, money()
 & MUSHCODE
 & SOFTCODE
 
@@ -922,7 +970,7 @@ See also: COSTS, give, @cost, @pay, @opay, @apay
   can be triggered by using a user-defined command or by using
   @trigger.
   
-(continued in help mushcode2)
+  Continued in 'help mushcode2'.
 & MUSHCODE2
 
   If you would like to learn more about mushcoding and how to create
@@ -981,7 +1029,7 @@ See also: ATTRIBUTES, ATTRIB-OWNERSHIP, Attribute Functions, ATTRIBUTE TREES,
   also checked in similar fashion.  See 'help ANCESTORS' for more
   about ancestors.
 
-(continued in help parents2) 
+  Continued in 'help parents2'.
 & PARENTS2
  
   Note that the only properties inherited are attributes. In
@@ -1002,7 +1050,7 @@ See also: ATTRIBUTES, ATTRIB-OWNERSHIP, Attribute Functions, ATTRIBUTE TREES,
   executed, "me", for example, refers to the child, not the parent,
   and the $-command's associated actions are performed by the child.
 
-(continued in help parents3)
+  Continued in 'help parents3'.
 & PARENTS3
   Attributes with $-commands _are_ inherited from the parent and
   previous generations. Conflicts are resolved not by the $-command
@@ -1019,7 +1067,7 @@ See also: ATTRIBUTES, ATTRIB-OWNERSHIP, Attribute Functions, ATTRIBUTE TREES,
   > check
   I'm the child
 
-(continued in help parents4)
+  Continued in 'help parents4'.
 & PARENTS4
   If a parent has the same $-command name in a different attribute,
   however, BOTH the parent and child commands will execute:
@@ -1037,7 +1085,7 @@ See also: ATTRIBUTES, ATTRIB-OWNERSHIP, Attribute Functions, ATTRIBUTE TREES,
   parent object, rather than having the $commands checked on the
   parent object.
 
-(continued in help parents5)
+  Continued in 'help parents5'.
 & PARENTS5
  
   Parent-object $-command checking is at its most efficient when there
@@ -1052,7 +1100,7 @@ See also: ATTRIBUTES, ATTRIB-OWNERSHIP, Attribute Functions, ATTRIBUTE TREES,
   the parent that you want to make impossible to read, it's safe to
   allow the purchasers of your object to @chown their copy.
 
-See also: @parent, $-COMMANDS, ATTRIBUTES, ANCESTORS
+See also: @parent, $-COMMANDS, ATTRIBUTES, ANCESTORS, ORPHAN, pfun()
 & POWERS LIST
   Powers can be granted only by wizards, using the @power command.
   Powers cannot be granted to guest characters or players who are set
@@ -1075,7 +1123,7 @@ See also: @parent, $-COMMANDS, ATTRIBUTES, ANCESTORS
   long_fingers          Can do things remotely, like "get".
   many_attribs          Can exceed max_attrs_per_obj.
 
-(continued in help powers2)
+  Continued in 'help powers2'.
 & POWERS2
 & POWERS LIST2
   no_pay *              Doesn't need money for anything
@@ -1094,7 +1142,7 @@ See also: @parent, $-COMMANDS, ATTRIBUTES, ANCESTORS
   tport_anything        Can @teleport anything.
   tport_anywhere        Can @teleport to anywhere.
   unkillable *          Cannot be killed
-  can_nspemit           Can use @nspemit and nspemit()
+  can_spoof             Can use @ns*emit, ns*emit() and @*emit/spoof
   
   * When these powers are set on a player, all the objects they own which
     are not set MISTRUST are also considered to have the power.
@@ -1416,7 +1464,7 @@ Continued in 'help regexp classes2'
   > command whee+blert foo
   whee is in register 0 and blert foo is in register 1.
 
-(continued in help registers2)
+  Continued in 'help registers2'.
 & REGISTERS2
   As you can see from the above example, the command trigger had two
   wildcards separated by a "+" sign. When the user types in the
@@ -1464,7 +1512,7 @@ See also: @quota, @squota
   room) that you control or that is set LINK_OK can be used to wait
   actions on.
 
-(continued in help semaphores2)
+  Continued in 'help semaphores2'.
 & SEMAPHORES2
 
   An object is notified using the "@notify" command.  When you type
@@ -1487,7 +1535,7 @@ See also: @quota, @squota
   order, or to make sure that two players can't use the same object at
   the same time.
 
-(continued in help semaphores3)
+  Continued in 'help semaphores3'.
 & SEMAPHORES3
 
   It's important to remember that the actions will be carried out NOT
@@ -1505,7 +1553,7 @@ See also: @quota, @squota
   Wizard waits 30 seconds.
  
 See also: @wait, @drain, @notify
-(continued in help semaphores4)
+  Continued in 'help semaphores4'.
 & SEMAPHORES4
   Semaphores can be used to enforce mutual exclusion - to prevent
   the same object from being used simultaneously by two players.
@@ -1529,7 +1577,7 @@ See also: @wait, @drain, @notify
   the end of the REPORT attribute. Note the STARTUP attribute -
   because semaphores are cleared when the MUSH starts up, you must
   insure that the object gets @notify'd once when it starts up.
-(Continued in help semaphores5)
+  Continued in 'help semaphores5'.
 & SEMAPHORES5
  Normally, semaphores use the SEMAPHORE attribute. However, other
  attributes can be used, as long as they follow a few simple rules: If
@@ -1544,7 +1592,7 @@ See also: @wait, @drain, @notify
  would normally just use <object> in those commands. This means you
  can't have a un-timed semaphore on an attribute with a numeric name.
 
-(Continued in help semaphores6)
+  Continued in 'help semaphores6'.
 & SEMAPHORES6
  An example:
  
@@ -1633,7 +1681,7 @@ See also: string functions
   letter after the % will capitalize the first letter of the resulting
   substitution.
 
-(continued in help SUBSTITUTIONS2)
+  Continued in 'help substitutions2'.
 & SUBSTITUTIONS2
 & %2
   If the ENACTOR's gender is set, you can use these substitutions to get the
@@ -1650,7 +1698,7 @@ See also: string functions
      %wa-%wz, %xa-%xz = as above, for WA-WZ and XA-XZ
   These are the equivilent of get(me/<attribute>).
 
-(continued in help substitutions3)
+  Continued in 'help substitutions3'.
 & SUBSTITUTIONS3
 & %3
   Other substitutions:
@@ -1667,7 +1715,7 @@ See also: string functions
     %iN = equivilent of itext(N), the list element for iter()/@dolist.
     %$N = equivilent of stext(N), the <string> in switch()/@switch.
  
-(continued in help substitutions4)
+  Continued in 'help substitutions4'.
 & SUBSTITUTIONS4
 & %4
   Example: 
@@ -1804,7 +1852,7 @@ See also: TYPES OF OBJECTS, type(), hastype(), @open, @link
   are often named with the "+" prefix, and local $-commands often have
   a "+" or "." prefix.
   
-(continued in help user-defined2)
+  Continued in 'help user-defined2'.
 & $-COMMANDS2
 & MACROS2
 & USER-DEFINED2
@@ -1852,7 +1900,6 @@ See also: STACK, SUBSTITUTIONS, @lock
 & VERBS2
 & NONAME
 & NOSPACE
-
   Normally, the enactor's name and a space are prepended to the 'overb' and 
   'oxverb' attributes automatically. The NOSPACE attribute flag prevents a
   space being placed between the name and attribute value, and the NONAME
@@ -1863,7 +1910,7 @@ See also: STACK, SUBSTITUTIONS, @lock
     > use Foo
     Sketch has used Foo!
     
-    > @ouse Foo=;'s used Foo!
+    > @ouse Foo='s used Foo!
     > @set Foo/ouse=nospace
     > use Foo
     Sketch's used Foo!
@@ -1898,7 +1945,7 @@ See also: @verb, attribute flags
   my-desc               Warn on missing player description
   lock-checks           Warn on @lock problems
 
-(continued in help warnings list2)
+  Continued in 'help warnings list2'.
 & WARNINGS LIST2
   These warnings combine the functionality of multiple warnings above:
 
@@ -1921,17 +1968,17 @@ See also: @verb, attribute flags
   command. You could use a wildcard in the command trigger to match
   substrings of it:
 
-  &TOO_LONG_CMD object=$supercali*:@emit whee
-  super
-  > (nothing happens)
-  supercali
-  > whee
-  supercalifra
-  > whee
-  supercalifragalisticexpealidocious
-  > whee
-  supercalifoobert
-  > whee
+  > &TOO_LONG_CMD object=$supercali*:@emit whee
+  > super
+  (nothing happens)
+  > supercali
+  whee
+  > supercalifra
+  whee
+  > supercalifragalisticexpealidocious
+  whee
+  > supercalifoobert
+  whee
 
   A backslash (\) can be used to escape * and ? if you want to match 
   a literal asterisk or question mark.
@@ -2035,12 +2082,13 @@ See also: @chzone, SHARED PLAYERS
   do matching in different ways, but most will allow you to specify an
   object as:
     * its dbref (#7) or objid (#7:123456789)
-    * its full name (Box of chocolates)
-    * part of any word in its name, if nothing else shares that part (Box)
     * the string "me" (yourself)
     * the string "here" (the room you're in)
-  Usually, you can also qualify an object with an adjective to help
-  the MUSH determine which object you mean.  Adjectives include:
+    * a '*' followed by a playername (*javelin)
+    * its full name (Box of chocolates)
+    * part of any word in its name, if nothing else shares that part (Box)
+  You can usually qualify an object with an adjective (English matching)
+  to help the MUSH determine which object you mean Adjectives include:
     * my <obj> - an object you're carrying
     * this <obj> - an object in your location (also: this here <obj>)
     * toward <exit> - an exit in your location
@@ -2048,7 +2096,7 @@ See also: @chzone, SHARED PLAYERS
       Objects are ordered in the order in which they're listed in your
       inventory, room contents, and exit list (in that order). If there
       aren't enough objects, this will fail.
-   You may combine some adjectives (my 1st box, this here 2nd box).
+  You can use an adjective with an ordinal (my 1st <obj>, this 2nd <obj>, etc)
 & &HELP
 This is the AHELP index.
 & RESTRICT
@@ -2097,6 +2145,8 @@ This is the AHELP index.
    localize   %q-registers are saved/restored when evaluating, as if
               the @function were wrapped in localize().
    userfn     Function can only be called from within an @function.
+   nosidefx   Don't allow side-effects for this function. See also the
+              function_side_effects @config option.
 
   Commands only:
    noplayer   Cannot be used by players.

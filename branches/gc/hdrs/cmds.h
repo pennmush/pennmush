@@ -77,6 +77,7 @@ COMMAND_PROTO(cmd_look);
 COMMAND_PROTO(cmd_lset);
 COMMAND_PROTO(cmd_mail);
 COMMAND_PROTO(cmd_malias);
+COMMAND_PROTO(cmd_mapsql);
 COMMAND_PROTO(cmd_message);
 COMMAND_PROTO(cmd_motd);
 COMMAND_PROTO(cmd_mvattr);

@@ -96,9 +96,9 @@ COMLIST commands[] = {
   {"@CEMIT", "NOEVAL NOISY SILENT SPOOF", cmd_cemit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@CHANNEL",
-   "LIST ADD DELETE RENAME MOGRIFIER NAME PRIVS QUIET NOISY DECOMPILE DESCRIBE CHOWN WIPE MUTE UNMUTE GAG UNGAG HIDE UNHIDE WHAT TITLE BRIEF RECALL BUFFER SET COMBINE UNCOMBINE",
+   "LIST ADD DELETE RENAME MOGRIFIER NAME PRIVS QUIET DECOMPILE DESCRIBE CHOWN WIPE MUTE UNMUTE GAG UNGAG HIDE UNHIDE WHAT TITLE BRIEF RECALL BUFFER COMBINE UNCOMBINE ON JOIN OFF LEAVE WHO",
    cmd_channel,
-   CMD_T_ANY | CMD_T_SWITCHES | CMD_T_EQSPLIT | CMD_T_NOGAGGED | CMD_T_RS_ARGS,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED | CMD_T_RS_ARGS,
    0, 0},
   {"@CHAT", NULL, cmd_chat, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@CHOWNALL", "PRESERVE", cmd_chownall, CMD_T_ANY | CMD_T_EQSPLIT, "WIZARD",
@@ -161,7 +161,8 @@ COMLIST commands[] = {
    cmd_flag,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
 
-  {"@FORCE", "NOEVAL", cmd_force, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED,
+  {"@FORCE", "NOEVAL INPLACE", cmd_force,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED,
    0, 0},
   {"@FUNCTION",
    "ALIAS BUILTIN CLONE DELETE ENABLE DISABLE PRESERVE RESTORE RESTRICT",
@@ -171,14 +172,14 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_NOGAGGED, 0, 0},
   {"@HALT", "ALL PID", cmd_halt, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@HIDE", "NO OFF YES ON", cmd_hide, CMD_T_ANY, 0, 0},
-  {"@HOOK", "LIST AFTER BEFORE IGNORE OVERRIDE", cmd_hook,
+  {"@HOOK", "LIST AFTER BEFORE IGNORE OVERRIDE INPLACE", cmd_hook,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS,
    "WIZARD", "hook"},
   {"@INCLUDE", NULL, cmd_include,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@KICK", NULL, cmd_kick, CMD_T_ANY, "WIZARD", 0},
 
-  {"@LEMIT", "NOEVAL SILENT SPOOF", cmd_lemit,
+  {"@LEMIT", "NOEVAL NOISY SILENT SPOOF", cmd_lemit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@LINK", "PRESERVE", cmd_link, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0,
    0},
@@ -190,7 +191,7 @@ COMLIST commands[] = {
    CMD_T_ANY, 0, 0},
   {"@LOCK", NULL, cmd_lock,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_SWITCHES | CMD_T_NOGAGGED, 0, 0},
-  {"@LOG", "CHECK CMD CONN ERR TRACE WIZ", cmd_log,
+  {"@LOG", "CHECK CMD CONN ERR TRACE WIZ RECALL", cmd_log,
    CMD_T_ANY | CMD_T_NOGAGGED, "WIZARD", 0},
   {"@LOGWIPE", "CHECK CMD CONN ERR TRACE WIZ", cmd_logwipe,
    CMD_T_ANY | CMD_T_NOGAGGED | CMD_T_GOD, 0, 0},
@@ -199,11 +200,10 @@ COMLIST commands[] = {
   {"@MAIL",
    "NOEVAL NOSIG STATS DSTATS FSTATS DEBUG NUKE FOLDERS UNFOLDER LIST READ UNREAD CLEAR UNCLEAR STATUS PURGE FILE TAG UNTAG FWD FORWARD SEND SILENT URGENT",
    cmd_mail, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
-
   {"@MALIAS",
    "SET CREATE DESTROY DESCRIBE RENAME STATS CHOWN NUKE ADD REMOVE LIST ALL WHO MEMBERS USEFLAG SEEFLAG",
    cmd_malias, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
-
+  {"@MAPSQL", "NOTIFY COLNAMES", cmd_mapsql, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@MESSAGE", "NOEVAL SPOOF", cmd_message,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
   {"@MOTD", "CONNECT LIST WIZARD DOWN FULL", cmd_motd,
@@ -220,7 +220,7 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@NSEMIT", "ROOM NOEVAL SILENT SPOOF", cmd_emit, CMD_T_ANY | CMD_T_NOGAGGED,
    0, 0},
-  {"@NSLEMIT", "NOEVAL SILENT SPOOF", cmd_lemit,
+  {"@NSLEMIT", "NOEVAL NOISY SILENT SPOOF", cmd_lemit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@NSOEMIT", "NOEVAL SPOOF", cmd_oemit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
@@ -230,7 +230,8 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@NSREMIT", "LIST NOEVAL NOISY SILENT SPOOF", cmd_remit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
-  {"@NSZEMIT", NULL, cmd_zemit, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED,
+  {"@NSZEMIT", "NOISY SILENT", cmd_zemit,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED,
    0, 0},
   {"@NUKE", NULL, cmd_nuke, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
 
@@ -267,7 +268,7 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"@SEARCH", NULL, cmd_search,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE, 0, 0},
-  {"@SELECT", "NOTIFY REGEXP", cmd_select,
+  {"@SELECT", "NOTIFY REGEXP INPLACE", cmd_select,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE, 0, 0},
   {"@SET", NULL, cmd_set, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@SHUTDOWN", "PANIC REBOOT PARANOID", cmd_shutdown, CMD_T_ANY, "WIZARD", 0},
@@ -276,13 +277,13 @@ COMLIST commands[] = {
 #else
   {"@SQL", NULL, cmd_unimplemented, CMD_T_ANY, "WIZARD", "SQL_OK"},
 #endif
-  {"@SITELOCK", "BAN CHECK REGISTER REMOVE NAME", cmd_sitelock,
+  {"@SITELOCK", "BAN CHECK REGISTER REMOVE NAME PLAYER", cmd_sitelock,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, "WIZARD", 0},
   {"@STATS", "CHUNKS FREESPACE PAGING REGIONS TABLES", cmd_stats,
    CMD_T_ANY, 0, 0},
 
   {"@SWEEP", "CONNECTED HERE INVENTORY EXITS", cmd_sweep, CMD_T_ANY, 0, 0},
-  {"@SWITCH", "NOTIFY FIRST ALL REGEXP", cmd_switch,
+  {"@SWITCH", "NOTIFY FIRST ALL REGEXP INPLACE", cmd_switch,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE |
    CMD_T_NOGAGGED, 0, 0},
   {"@SQUOTA", NULL, cmd_squota, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
@@ -313,7 +314,8 @@ COMLIST commands[] = {
   {"@WIPE", NULL, cmd_wipe, CMD_T_ANY, 0, 0},
   {"@WIZWALL", "NOEVAL EMIT", cmd_wizwall, CMD_T_ANY, "WIZARD", 0},
   {"@WIZMOTD", NULL, cmd_wizmotd, CMD_T_ANY, "WIZARD", 0},
-  {"@ZEMIT", NULL, cmd_zemit, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED,
+  {"@ZEMIT", "NOISY SILENT", cmd_zemit,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED,
    0, 0},
 
   {"BUY", NULL, cmd_buy, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
@@ -534,12 +536,16 @@ make_command(const char *name, int type,
   }
   cmd->hooks.before.obj = NOTHING;
   cmd->hooks.before.attrname = NULL;
+  cmd->hooks.before.inplace = 0;
   cmd->hooks.after.obj = NOTHING;
   cmd->hooks.after.attrname = NULL;
+  cmd->hooks.after.inplace = 0;
   cmd->hooks.ignore.obj = NOTHING;
   cmd->hooks.ignore.attrname = NULL;
+  cmd->hooks.ignore.inplace = 0;
   cmd->hooks.override.obj = NOTHING;
   cmd->hooks.override.attrname = NULL;
+  cmd->hooks.override.inplace = 0;
   /* Restrict with no flags/powers, then manually parse flagstr and powerstr
      separately and add to restriction, to avoid issues with flags/powers with
      the same name (HALT flag and Halt power) */
@@ -898,7 +904,7 @@ int rhs_present;
  * \param forcenoparse if true, do no evaluation during parsing.
  */
 void
-command_argparse(dbref player, dbref cause, char **from, char *to,
+command_argparse(dbref player, dbref cause, dbref caller, char **from, char *to,
                  char *argv[], COMMAND_INFO *cmd, int right_side,
                  int forcenoparse)
 {
@@ -949,7 +955,7 @@ command_argparse(dbref player, dbref cause, char **from, char *to,
     aold = t;
     while (*f == ' ')
       f++;
-    if (process_expression(to, &t, (const char **) &f, player, cause, cause,
+    if (process_expression(to, &t, (const char **) &f, player, caller, cause,
                            parse, (split | args),
                            global_eval_context.pe_info)) {
       done = 1;
@@ -1031,12 +1037,13 @@ command_isattr(char *command)
  * text to match against $-commands otherwise.
  * \param player the enactor.
  * \param cause dbref that caused the command to be executed.
+ * \param caller the caller (%@). Almost always the same as cause, differs for /inplace cmds
  * \param string the input to be parsed.
  * \param fromport if true, command was typed by a player at a socket.
  * \return NULL if a command was handled, otherwise the evaluated input.
  */
 char *
-command_parse(dbref player, dbref cause, char *string, int fromport)
+command_parse(dbref player, dbref cause, dbref caller, char *string, int fromport)
 {
   char *command, *swtch, *ls, *rs, *switches;
   static char commandraw[BUFFER_LEN];
@@ -1083,7 +1090,7 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
   if (*p == '[') {
     if ((cmd = command_find("WARN_ON_MISSING"))) {
       if (!(cmd->type & CMD_T_DISABLED)) {
-        cmd->func(cmd, player, cause, sw, string, NULL, NULL, ls, lsa, rs, rsa);
+        cmd->func(cmd, player, cause, caller, sw, string, NULL, NULL, ls, lsa, rs, rsa);
         return NULL;
       }
     }
@@ -1159,7 +1166,7 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
     c = command;
     while (*p == ' ')
       p++;
-    process_expression(command, &c, (const char **) &p, player, cause, cause,
+    process_expression(command, &c, (const char **) &p, player, caller, cause,
                        noevtoken ? PE_NOTHING :
                        ((PE_DEFAULT & ~PE_FUNCTION_CHECK) |
                         PE_COMMAND_BRACES), PT_SPACE,
@@ -1198,7 +1205,7 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
         safe_chr(' ', commandraw, &c2);
         p++;
       }
-      process_expression(commandraw, &c2, (const char **) &p, player, cause,
+      process_expression(commandraw, &c2, (const char **) &p, player, caller,
                          cause, noevtoken ? PE_NOTHING :
                          ((PE_DEFAULT & ~PE_FUNCTION_CHECK) |
                           PE_COMMAND_BRACES), PT_DEFAULT,
@@ -1297,22 +1304,22 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
 
   if ((cmd->func == command_atrset) && fromport) {
     /* Special case: eqsplit, noeval of rhs only */
-    command_argparse(player, cause, &p, ls, lsa, cmd, 0, 0);
-    command_argparse(player, cause, &p, rs, rsa, cmd, 1, 1);
+    command_argparse(player, cause, caller, &p, ls, lsa, cmd, 0, 0);
+    command_argparse(player, cause, caller, &p, rs, rsa, cmd, 1, 1);
     SW_SET(sw, SWITCH_NOEVAL);  /* Needed for ATTRIB_SET */
   } else {
     noeval = SW_ISSET(sw, SWITCH_NOEVAL) || noevtoken;
     if (cmd->type & CMD_T_EQSPLIT) {
       char *savep = p;
-      command_argparse(player, cause, &p, ls, lsa, cmd, 0, noeval);
+      command_argparse(player, cause, caller, &p, ls, lsa, cmd, 0, noeval);
       if (noeval && !noevtoken && *p) {
         /* oops, we have a right hand side, should have evaluated */
         p = savep;
-        command_argparse(player, cause, &p, ls, lsa, cmd, 0, 0);
+        command_argparse(player, cause, caller, &p, ls, lsa, cmd, 0, 0);
       }
-      command_argparse(player, cause, &p, rs, rsa, cmd, 1, noeval);
+      command_argparse(player, cause, caller, &p, rs, rsa, cmd, 1, noeval);
     } else {
-      command_argparse(player, cause, &p, ls, lsa, cmd, 0, noeval);
+      command_argparse(player, cause, caller, &p, ls, lsa, cmd, 0, noeval);
     }
   }
 
@@ -1361,7 +1368,7 @@ command_parse(dbref player, dbref cause, char *string, int fromport)
   }
 #ifdef NEVER
   /* We used to do this, but we're not sure why */
-  process_expression(commandraw, &c2, (const char **) &p, player, cause,
+  process_expression(commandraw, &c2, (const char **) &p, player, caller,
                      cause, noevtoken ? PE_NOTHING :
                      ((PE_DEFAULT & ~PE_EVALUATE) |
                       PE_COMMAND_BRACES), PT_DEFAULT, NULL);
@@ -1418,7 +1425,7 @@ run_command(COMMAND_INFO *cmd, dbref player, dbref cause,
       return 1;
     }
     run_hook(player, cause, &cmd->hooks.before, saveregs, 1);
-    cmd->func(cmd, player, cause, sw, string, swp, ap, ls, lsa, rs, rsa);
+    cmd->func(cmd, player, cause, cause, sw, string, swp, ap, ls, lsa, rs, rsa);
     run_hook(player, cause, &cmd->hooks.after, saveregs, 0);
   }
   /* Either way, we might log */
@@ -2157,10 +2164,11 @@ run_hook_override(COMMAND_INFO *cmd, dbref player, const char *commandraw)
 
   if (cmd->hooks.override.attrname) {
     return one_comm_match(cmd->hooks.override.obj, player,
-                          cmd->hooks.override.attrname, commandraw);
+                          cmd->hooks.override.attrname, commandraw,
+                          cmd->hooks.override.inplace);
   } else {
     return atr_comm_match(cmd->hooks.override.obj, player, '$', ':', commandraw,
-                          0, 1, NULL, NULL, NULL);
+                          0, 1, NULL, NULL, NULL, cmd->hooks.override.inplace);
   }
 }
 
@@ -2173,6 +2181,7 @@ cnf_hook_command(char *command, char *opts)
   enum hook_type flag;
   COMMAND_INFO *cmd;
   struct hook_data *h;
+  int inplace = 0;
 
   if (!opts || !*opts)
     return 0;
@@ -2191,6 +2200,10 @@ cnf_hook_command(char *command, char *opts)
   } else if (string_prefix("after", one)) {
     flag = HOOK_AFTER;
     h = &cmd->hooks.after;
+  } else if (string_prefix("override/inplace", one)) {
+    flag = HOOK_OVERRIDE;
+    h = &cmd->hooks.override;
+    inplace = 1;
   } else if (string_prefix("override", one)) {
     flag = HOOK_OVERRIDE;
     h = &cmd->hooks.override;
@@ -2219,6 +2232,10 @@ cnf_hook_command(char *command, char *opts)
     upcasestr(attrname);
   }
 
+  /* Account for #dbref */
+  if (*one == '#')
+    one++;
+
   if (!is_strict_integer(one))
     return 0;
 
@@ -2235,6 +2252,7 @@ cnf_hook_command(char *command, char *opts)
     h->attrname = GC_STRDUP(attrname);
   else
     h->attrname = NULL;
+  h->inplace = inplace;
   return 1;
 
 }
@@ -2249,10 +2267,11 @@ cnf_hook_command(char *command, char *opts)
  * \param obj name of object containing the hook attribute.
  * \param attrname of hook attribute on obj.
  * \param flag type of hook
+ * \param inplace If override hook, whether to run it inplace.
  */
 void
 do_hook(dbref player, char *command, char *obj, char *attrname,
-        enum hook_type flag)
+        enum hook_type flag, int inplace)
 {
   COMMAND_INFO *cmd;
   struct hook_data *h;
@@ -2303,6 +2322,7 @@ do_hook(dbref player, char *command, char *obj, char *attrname,
     } else {
       h->attrname = strupper(attrname);
     }
+    h->inplace = inplace;
     notify_format(player, T("Hook set for %s"), cmd->name);
   }
 }
@@ -2371,7 +2391,8 @@ do_hook_list(dbref player, char *command)
         notify_format(player, "@hook/ignore: #%d/%s",
                       cmd->hooks.ignore.obj, cmd->hooks.ignore.attrname);
       if (GoodObject(cmd->hooks.override.obj))
-        notify_format(player, "@hook/override: #%d/%s",
+        notify_format(player, "@hook/override%s: #%d/%s",
+                      cmd->hooks.override.inplace ? "/inplace" : "",
                       cmd->hooks.override.obj, cmd->hooks.override.attrname);
     }
   }

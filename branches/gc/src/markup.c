@@ -121,6 +121,9 @@ FUNCTION(fun_ansi)
   char *p;
   int i;
 
+  if (!*args[1])
+    return;
+
   /* Populate the colors struct */
   define_ansi_data(&colors, args[0]);
 

@@ -1,4 +1,4 @@
-& 1.8.4p2
+& 1.8.4p3
 & changes
 This is a list of changes in this patchlevel which are probably of
 interest to players. More information about new commands and functions
@@ -11,6 +11,138 @@ help topics named for each release (e.g. 'help 1.7.2p30').
 A list of the patchlevels associated with each release can
 be read in 'help patchlevels'.
 
+Version 1.8.4 patchlevel 3                                 Mar 18,  2011
+
+Events:
+ * Event system added. Certain things can now trigger events using @config
+   event_handler. See "help events" and "help event <type>". [GM]
+ * dump events: dump`5min, dump`1min, dump`complete.
+ * object events: object`create, object`destroy, object`move,
+   object`rename, object`kill.
+ * sql events: sql`connect, sql`disconnect.
+ * signal events: signal`usr1, signal`usr2.
+ * player events: player`create, player`fail, player`connect,
+   player`disconnect, player`inactivity.
+ * socket events: socket`connect, socket`disconnect
+ * database events: db`dbck, db`purge, db`wcheck
+ * Periodic system events like warnings checks and db consistency
+   checks are now handled by a timed queue and integrated with
+   softcode events. Local hackers: This involves changes to
+   local.c. If you have no changes in local.c, just delete the file.
+   Otherwise, see HACKING.184 for more info. [SW]
+
+Commands:
+ * @hook/override/inplace - You can now run softcode with the same priority
+   as hardcode! [GM]
+ * @lock (and all lock keys) now accepts NAME^<pattern> for matching against
+   an object's name. [GM]
+ * @mapsql passes row results to attributes. Suggested by Mercutio. [GM]
+ * @dig now takes an optional garbage dbref argument to specify the new
+   dbref. Suggested by Paige. [GM]
+ * The help command now does some auto-expansion of topics. For example,
+   'help @chan ad2' will be expanded to match 'help @channel admin2'. [MG]
+ * @force/inplace, @switch/inplace and @select/inplace now run their commands
+   without queueing new events. These are limited by the @include limit. [GM]
+ * @hide without a switch now toggles hide status, rather than defaulting to
+   @hide/on. [MG]
+ * @log now takes a /recall switch for showing wizards the most recent activity
+   in a log file. [SW]
+ * @lemit and @zemit both have /noisy and /silent switches to suppress/show
+   confirmation messages. With no switch, silent_pemit determines whether
+   the message is shown. Suggested by Paige for consistancy. [MG]
+   
+Attributes:
+ * New no_debug flag, which prevents debug info being shown for an attribute
+   when the object is set DEBUG. [MG]
+   
+Config:
+ * New @config option chan_title_len controls the length of @channel/title's.
+   Suggested by Paige. [MG]
+
+Locks:
+ * New @lock/pay, controls who can "give" an object pennies or "buy" items
+   from an object. Based on patch by Covenent. [MG]
+
+Functions:
+ * lockfilter() lets you filter a list of dbrefs using a lock key. [GM]
+ * align() now has '$' (nofill) as an option. Ideal for rightmost columns.
+   Suggested by Minion. [GM]
+ * dig() now takes an optional garbage dbref argument to specify the new
+   dbref. Suggested by Paige. [GM]
+ * convutctime() and convtime(<time>, utc) to convert a timestring to
+   # of seconds since UTC. Patch by Minion.
+ * powers() with no arguments now returns a list of powers, similar to
+   lflags() with no args. [MG]
+ * trim() can now trim multiple characters. [MG] [GM]
+ * In some cases, privs are no longer needed to use locate(). [MG]
+ * cmogrifier(), returns the mogrifier object for a channel. Suggested by
+   Trinsec, patch by Minion.
+
+Minor Changes:
+ * The Can_Nspemit @power has been renamed to Can_Spoof, to better reflect
+   its uses. Can_Nspemit is still an alias. [MG]
+ * Considerable improvement in the speed of functions that sort
+   case-insensitively, particularly using 'm' sort (Now default). [GM]
+ * Combined fun_setinter, fun_setdiff and fun_setunion into fun_setmanip. [GM]
+ * For hardcoders: list2arr and list2arr_ansi now take a third argument
+   on whether to include empty items. [GM]
+ * page and @mail will report to you if your recipient(s) cannot reply
+   to you. Suggested by Paige. [GM]
+ * The debug attribute flag now shows more debug info. [MG]
+ * @oemit now does better object matching, can match names with spaces when
+   enclosed in double quotes, and, when given a <room> but no matching
+   objects, shows the message to everyone in the room, instead of noone.
+   From a bug reported by Paige. [MG]
+ * Paranoid objects now see nospoof messages for their emits. [MG]
+ * ANSI is now ignored when checking the length of channel titles. Suggested
+   by Paige. [MG]
+ * @decompile with a <prefix> now shows cmds for setting attribute flags.
+   @decompile/tf still omits cmds for attr flags. [MG]
+ * @mail <msg-lists> which don't specify a folder now act on your current
+   folder, instead of Folder 0. Suggested by Paige, patch by Minion.
+ * @dig, @open and @name now set exit aliases into the @alias attribute,
+   instead of including them in the exit name. Also, @name can now set/clear
+   the @alias of players/exits while changing the name. See help @name for
+   details. Suggested by Minion. [MG]
+ * The logging code has been rewritten to make extending it with further
+   log files easier. [SW]
+ * When used by a non-player, @search and related functions now search from
+   the perspective of the object's owner. Suggested by Covenent. [MG]
+ * The LASTPAGED attribute now stores objids instead of names, allowing you
+   to repage even when the target changes their name. [MG]
+ * When zwho() or @chzone fail because you don't pass the @lock/zone, zone
+   failure verbs are triggered (as per 'help failure'). Based on a patch by
+   Covenent. [MG]
+ * sub() can now take more than two arguments. Suggested by Paige. [MG]
+ * In the hardcode, disconnected players in the DESC struct are shown as -1
+   instead of 0, to avoid conflicts with #0. Based on patch by Paige. [MG]
+ * It was sometimes possible to "buy" items from yourself. [MG]
+
+Fixes:
+ * Fixing list type autodetect. [GM]
+ * Help fixes by Daniel Powell, AnneLions, Minion and others. [MG]
+ * Connect/disconnect messages for combined channels incorrectly showed
+   NOSPOOF data. Reported by Sketch. [MG]
+ * The delimiter between combined channel names in @chatformat is now '|'
+   instead of ' | ', as documented. Reported by Trinsec. [MG]
+ * ansi(h,) now returns absolutely nothing, instead of an ansi-highlighted
+   nothing. Fixes a few minor/obscure bugs. [MG]
+ * @edit sometimes displayed a success message even when it failed. [MG]
+ * @cpattr/@mvattr would sometimes copy attribute flags, even when the
+   attribute value couldn't be copied. [MG]
+ * Bug in attribute comparisons added in p2 could cause attributes to
+   not be found at times. [MG]
+ * sortby()s results would sometimes be reversed by mistake. [GM]
+ * Minor bugfix in @include. [MG]
+ * round() sometimes returned numbers with more decimal digits than
+   desired. 
+ * The '*' option in locate() didn't actually include all match types. [MG]
+ * @include incorrectly refunded the queue_cost, giving people free pennies.
+   Reported by Covenent. [MG]
+ * lnum() didn't handle negative <step>s well. Reported by Minion. [MG]
+ * comp()s results was sometimes negated. Reported by Covenent. [MG]
+
+& 1.8.4p2
 Version 1.8.4 patchlevel 2                                 Dec 06,  2010
 
 Major Changes:

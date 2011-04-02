@@ -68,7 +68,8 @@ lock_type Link_Lock = "Link";       /**< Name of link lock */
 lock_type Leave_Lock = "Leave";     /**< Name of leave lock */
 lock_type Drop_Lock = "Drop";       /**< Name of drop lock */
 lock_type Give_Lock = "Give";       /**< Name of give lock */
-lock_type From_Lock = "From";       /**< Name of frop lock */
+lock_type From_Lock = "From";       /**< Name of from lock */
+lock_type Pay_Lock = "Pay";         /**< Name of pay lock */
 lock_type Receive_Lock = "Receive"; /**< Name of receive lock */
 lock_type Mail_Lock = "Mail";       /**< Name of mail lock */
 lock_type Follow_Lock = "Follow";   /**< Name of follow lock */
@@ -100,6 +101,7 @@ lock_list lock_types[] = {
   {"Drop", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {"Give", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {"From", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
+  {"Pay", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {"Receive", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {"Mail", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {"Follow", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
@@ -1001,24 +1003,28 @@ check_zone_lock(dbref player, dbref zone, int noisy)
   if (key == TRUE_BOOLEXP) {
     add_lock(GOD, zone, Zone_Lock, parse_boolexp(zone, "=me", Zone_Lock),
              LF_DEFAULT);
-    if (noisy)
+    if (noisy) {
       notify_format(player,
                     T
                     ("Unlocked zone %s - automatically zone-locking to itself"),
                     unparse_object(player, zone));
+    }
+  } else if (!noisy) {
+    return;
   } else if (eval_lock(Location(player), zone, Zone_Lock)) {
     /* Does #0 and #2 pass it? If so, probably trivial elock */
     if (eval_lock(PLAYER_START, zone, Zone_Lock) &&
         eval_lock(MASTER_ROOM, zone, Zone_Lock)) {
-      if (noisy)
-        notify_format(player,
-                      T("Zone %s really should have a more secure zone-lock."),
-                      unparse_object(player, zone));
-    } else                      /* Probably inexact zone lock */
+      notify_format(player,
+                    T("Zone %s really should have a more secure zone-lock."),
+                    unparse_object(player, zone));
+    } else {
+      /* Probably inexact zone lock */
       notify_format(player,
                     T
                     ("Warning: Zone %s may have loose zone lock. Lock zones to =player, not player"),
                     unparse_object(player, zone));
+    }
   }
 }
 

@@ -52,6 +52,7 @@ static void copy_attrib_flags(dbref player, dbref target, ATTR *atr, int flags);
 
 extern int rhs_present;         /* from command.c */
 
+
 /** Rename something.
  * \verbatim
  * This implements @name.
@@ -64,76 +65,92 @@ void
 do_name(dbref player, const char *name, char *newname_)
 {
   dbref thing;
-  char *eon;                    /* End Of Name */
-  char *bon;                    /* Beginning of name */
   char *myenv[10];
   int i;
   char *newname;
+  char *alias = NULL;
 
   if ((thing = match_controlled(player, name)) == NOTHING)
     return;
 
-  newname_ = GC_STRDUP(newname_);
-  newname = trim_space_sep(newname_, ' ');
-  bon = newname;
-
   /* check for bad name */
-  if ((*newname == '\0') || strchr(newname, '[')) {
+  if ((*newname_ == '\0') || strchr(newname_, '[')) {
     notify(player, T("Give it what new name?"));
     return;
   }
-  /* check for renaming a player */
-  if (IsPlayer(thing)) {
-    // If it has "s, it's surrounding a spaced name, likely. So bon
-    // is beginning of name.
-    // I'm going to cheat here and make it so
-    // @name me="foo"bar names somebody foo, since " is an invalid name.
-    if (*bon == '"') {
-      bon++;
-      eon = bon;
-      while (*eon && *eon != '"') {
-        eon++;
-      }
-      if (*eon) {
-        *eon = '\0';
-      }
-    }
-    if (!ok_player_name(bon, player, thing)) {
+
+  switch Typeof
+    (thing) {
+  case TYPE_PLAYER:
+    switch (ok_object_name
+            (newname_, player, thing, TYPE_PLAYER, &newname, &alias)) {
+    case 0:
       notify(player, T("You can't give a player that name."));
       return;
+    case OPAE_TOOMANY:
+      notify(player, T("Too many aliases."));
+      return;
+    case OPAE_INVALID:
+      notify_format(player, T("'%s' is not a valid alias."), alias);
+      return;
     }
-    /* everything ok, notify */
-    do_log(LT_CONN, 0, 0, "Name change by %s(#%d) to %s",
-           Name(thing), thing, bon);
-    if (Suspect(thing))
-      flag_broadcast("WIZARD", 0,
-                     T("Broadcast: Suspect %s changed name to %s."),
-                     Name(thing), bon);
-    /* everything ok, we can fall through to change the name */
-  } else {
-    bon = newname;
-    if (!ok_name(newname)) {
+    break;
+  case TYPE_EXIT:
+    if (ok_object_name(newname_, player, thing, TYPE_EXIT, &newname, &alias) <
+        1) {
       notify(player, T("That is not a reasonable name."));
       return;
     }
-  }
+    break;
+  case TYPE_THING:
+  case TYPE_ROOM:
+    if (!ok_name(newname_, 0)) {
+      notify(player, T("That is not a reasonable name."));
+      return;
+    }
+    newname = GC_STRDUP(trim_space_sep(newname_, ' '));
+    break;
+  default:
+    /* Should never occur */
+    notify(player, T("I don't see that here."));
+    return;
+    }
 
     /* everything ok, change the name */
     myenv[0] = GC_MALLOC_ATOMIC(BUFFER_LEN);
     myenv[1] = GC_MALLOC_ATOMIC(BUFFER_LEN);
-    mush_strncpy(myenv[0], Name(thing), BUFFER_LEN);
-    strcpy(myenv[1], bon);
+    mush_strncpy(myenv[0], Name(thing), BUFFER_LEN); 
+    strcpy(myenv[1], newname);
     for (i = 2; i < 10; i++)
       myenv[i] = NULL;
 
-  if (IsPlayer(thing))
-    reset_player_list(thing, Name(thing), NULL, bon, NULL);
-  set_name(thing, bon);
+  if (IsPlayer(thing)) {
+    do_log(LT_CONN, 0, 0, "Name change by %s(#%d) to %s",
+           Name(thing), thing, newname);
+    if (Suspect(thing))
+      flag_broadcast("WIZARD", 0,
+                     T("Broadcast: Suspect %s changed name to %s."),
+                     Name(thing), newname);
+    reset_player_list(thing, Name(thing), NULL, newname, NULL);
+  }
+  set_name(thing, newname);
+  if (alias) {
+    if (*alias == ALIAS_DELIMITER) {
+      do_set_atr(thing, "ALIAS", NULL, player, 0);
+    } else {
+      /* New alias to set */
+      do_set_atr(thing, "ALIAS", alias, player, 0);
+    }
+  }
+
+  queue_event(player, "OBJECT`RENAME", "%s,%s,%s",
+              unparse_objid(thing), myenv[1], myenv[0]);
 
   if (!AreQuiet(player, thing))
     notify(player, T("Name set."));
   real_did_it(player, thing, NULL, NULL, "ONAME", NULL, "ANAME", NOTHING,
               myenv, NA_INTER_PRESENCE);
+
 }
 
 /** Change an object's owner.
@@ -343,6 +360,7 @@ do_chzone(dbref player, char const *name, char const *newobj, bool noisy,
 {
   dbref thing;
   dbref zone;
+  int has_lock;
 
   if ((thing = noisy_match_result(player, name, NOTYPE, MAT_NEARBY)) == NOTHING)
     return 0;
@@ -376,11 +394,17 @@ do_chzone(dbref player, char const *name, char const *newobj, bool noisy,
    * 3.  an object with a chzone-lock that the player passes.
    * Note that an object with no chzone-lock isn't valid
    */
+  has_lock = (getlock(zone, Chzone_Lock) != TRUE_BOOLEXP);
   if (!(Wizard(player) || (zone == NOTHING) || Owns(player, zone) ||
-        ((getlock(zone, Chzone_Lock) != TRUE_BOOLEXP) &&
-         eval_lock(player, zone, Chzone_Lock)))) {
-    if (noisy)
-      notify(player, T("You cannot move that object to that zone."));
+        (has_lock && eval_lock(player, zone, Chzone_Lock)))) {
+    if (noisy) {
+      if (has_lock) {
+        fail_lock(player, zone, Chzone_Lock,
+                  T("You cannot move that object to that zone."), NOTHING);
+      } else {
+        notify(player, T("You cannot move that object to that zone."));
+      }
+    }
     return 0;
   }
   /* Don't chzone object to itself for mortals! */
@@ -698,12 +722,13 @@ do_cpattr(dbref player, char *oldpair, char **newpair, int move, int noflagcopy)
       newobj = noisy_match_result(player, tbuf1, NOTYPE, MAT_EVERYTHING);
       if (GoodObject(newobj) &&
           ((newobj != oldobj) || strcasecmp(AL_NAME(a), q)) &&
-          do_set_atr(newobj, q, text, player, 1))
+          (do_set_atr(newobj, q, text, player, 1) == 1)) {
         copies++;
-      /* copy the attribute flags too */
-      if (!noflagcopy)
-        copy_attrib_flags(player, newobj,
-                          atr_get_noparent(newobj, strupper(q)), a->flags);
+        /* copy the attribute flags too */
+        if (!noflagcopy)
+          copy_attrib_flags(player, newobj,
+                            atr_get_noparent(newobj, strupper(q)), a->flags);
+      }
 
     }
   }
@@ -859,7 +884,7 @@ gedit_helper(dbref player, dbref thing,
   *tbufap = '\0';
 
   if (gargs->doit) {
-    if (do_set_atr(thing, AL_NAME(a), tbuf1, player, 0) &&
+    if ((do_set_atr(thing, AL_NAME(a), tbuf1, player, 0) == 1) &&
         !AreQuiet(player, thing)) {
       if (!ansi_long_flag && ShowAnsi(player))
         notify_format(player, T("%s - Set: %s"), AL_NAME(a), tbuf_ansi);
@@ -979,14 +1004,14 @@ do_trigger(dbref player, char *object, char **argv)
  * This implements @include obj/attribute
  * \endverbatim
  * \param player the enactor.
+ * \param cause the cause.
  * \param object the object/attribute pair.
- * \param argv array of arguments. (not yet used)
+ * \param argv array of arguments.
  */
 void
-do_include(dbref player, char *object, char **argv)
+do_include(dbref player, dbref cause, char *object, char **argv)
 {
   dbref thing;
-  int a;
   char *s;
   char tbuf1[BUFFER_LEN];
 
@@ -1008,17 +1033,16 @@ do_include(dbref player, char *object, char **argv)
     return;
   }
   /* include modifies the stack, but only if arguments are given */
-  for (a = 0; a < 10; a++) {
-    if (rhs_present && argv[a + 1])
-      global_eval_context.include_wenv[a] =
-        GC_STRDUP(argv[a + 1]);
-    else
-      global_eval_context.include_wenv[a] = NULL;
+  if (rhs_present) {
+    if (!queue_include_attribute(thing, upcasestr(s), player, cause, cause, argv + 1)) {
+      notify(player, T("No such attribute."));
+    }
+  } else {
+    if (!queue_include_attribute(thing, upcasestr(s), player,
+                                 cause, cause, global_eval_context.wenv)) {
+      notify(player, T("No such attribute."));
+    }
   }
-  if (!inplace_queue_attribute(thing, upcasestr(s), player, rhs_present)) {
-    notify(player, T("No such attribute."));
-  }
-
 }
 
 /** The use command.

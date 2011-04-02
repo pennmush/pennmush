@@ -1,0 +1,59 @@
+This is the most current changes file for PennMUSH Hardcode.
+
+If you are maintaining an add-on for PennMUSH, this details any changes
+to extant functions that are likely to be used by the embracers and
+extenders out there.
+
+Changes are in reverse chronological order. You can probably find the reason
+for most of these changes in the equivalent CHANGES file, but only those
+that have altered hardcode will appear here.
+
+[SW] is Shawn Wagner, a PennMUSH developer (aka Raevnos), also
+ responsible for most unattributed changes.
+[EEH] is Ervin Hearn III, a PennMUSH developer (aka Noltar)
+[GM] is Greg Millam, a PennMUSH developer (aka Walker)
+[MG] is Mike Griffiths, a PennMUSH developer (aka Talvo)
+[TAP] is T. Alexander Popiel, a former PennMUSH developer (aka Talek)
+[3] refers to code by (or inspired by) TinyMUSH 3.0
+[MUX] refers to code by (or inspired by) TinyMUX 2.x
+[Rhost] refers to code by (or inspired by) RhostMUSH
+
+==========================================================================
+
+Version 1.8.4 patchlevel 3                                 ??? ??,  201?
+
+ queue_event(<enactor or SYSEVENT>, <attribute name>, "argfmt", ...)
+     lets you queue events on the event handler, if set.
+
+ Using a bunch of gencomp() calls, such as for setunion, is now deprecated,
+     you should use get_list_type_info, slist_build, slist_qsort, slist_free
+     and free_list_type_info. Look at fun_setmanip and do_gensort for how
+     to do it.
+
+ list2arr_ansi() now calls list2arr() when there is no markup.
+
+ list2arr_ansi and list2arr now take a third argument, 'nullok'. If nullok
+     is 0, then it will ignore null items. For old behaviour, pass 1.
+
+ All timed events have been moved to a new system queue:
+     timed callbacks are of the type "bool (*sq_func)(void *data);".
+     To set up a callback, use:
+       sq_register_in(<wait time>, <sq_func>, <data>, <event name>)
+     To repeat it infinitely:
+       sq_register_loop(<wait time>, <sq_func>, <data>, <event name>)
+     sq_func() is called with <data> as its argument.
+     If <event name> is non-NULL and sq_func returns a boolean true, then
+     the queue will trigger the event <event name> with no arguments when it
+     is completed calling sq_func.
+ 
+ Because of the change to system queue for timed events, local_timer in local.c
+     has been changed. If you haven't changed local.c, just copy local.dst over
+     it. If you have, and you want local_timer to run every second, then
+     add sq_register_loop(1, local_timer, NULL, NULL); to local_startup(),
+     and change local_timer's signature to:
+         bool local_timer(void *data __attribute__((__unused__)))
+     and return false.
+
+
+ In the DESC struct, descriptors which have not connected to a player now have
+ d->player set to NOTHING (-1) instead of 0.

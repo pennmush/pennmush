@@ -96,7 +96,6 @@ hdrs/game.h
 hdrs/getpgsiz.h
 hdrs/help.h
 hdrs/htab.h
-hdrs/ident.h
 hdrs/intmap.h
 hdrs/intrface.h
 hdrs/lock.h
@@ -188,7 +187,6 @@ src/funufun.c
 src/game.c
 src/help.c
 src/htab.c
-src/ident.c
 src/info_master.c
 src/info_slave.c
 src/local.dst

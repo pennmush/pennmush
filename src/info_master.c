@@ -36,7 +36,6 @@
 #include "externs.h"
 #include "access.h"
 #include "mysocket.h"
-#include "ident.h"
 #include "lookup.h"
 #include "log.h"
 #include "wait.h"
@@ -277,8 +276,6 @@ query_info_slave(int fd)
 
   req.fd = fd;
   req.use_dns = USE_DNS;
-  req.use_ident = USE_IDENT;
-  req.timeout = IDENT_TIMEOUT;
 
   slen = send(info_slave, &req, sizeof req, 0);
   if (slen < 0) {
@@ -335,10 +332,6 @@ reap_info_slave(void)
   }
 
   hp = hostname;
-  if (resp.ident[0]) {
-    safe_str(resp.ident, hostname, &hp);
-    safe_chr('@', hostname, &hp);
-  }
   if (resp.hostname[0])
     safe_str(resp.hostname, hostname, &hp);
   else

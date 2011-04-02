@@ -327,7 +327,6 @@ bsd.o: ../hdrs/command.h
 bsd.o: ../hdrs/switches.h
 bsd.o: ../hdrs/version.h
 bsd.o: ../hdrs/mysocket.h
-bsd.o: ../hdrs/ident.h
 bsd.o: ../hdrs/lookup.h
 bsd.o: ../hdrs/strtree.h
 bsd.o: ../hdrs/log.h
@@ -932,6 +931,7 @@ funmisc.o: ../hdrs/switches.h
 funmisc.o: ../hdrs/game.h
 funmisc.o: ../hdrs/attrib.h
 funmisc.o: ../hdrs/ansi.h
+funmisc.o: ../hdrs/strtree.h
 funstr.o: ../hdrs/copyrite.h
 funstr.o: ../config.h
 funstr.o: ../hdrs/conf.h
@@ -1084,26 +1084,6 @@ htab.o: ../hdrs/mypcre.h
 htab.o: ../hdrs/log.h
 htab.o: ../hdrs/bufferq.h
 htab.o: ../hdrs/mymalloc.h
-ident.o: ../config.h
-ident.o: ../hdrs/conf.h
-ident.o: ../hdrs/copyrite.h
-ident.o: ../options.h
-ident.o: ../hdrs/mushtype.h
-ident.o: ../hdrs/htab.h
-ident.o: ../hdrs/externs.h
-ident.o: ../hdrs/compile.h
-ident.o: ../hdrs/dbdefs.h
-ident.o: ../hdrs/mushdb.h
-ident.o: ../hdrs/flags.h
-ident.o: ../hdrs/ptab.h
-ident.o: ../hdrs/dbio.h
-ident.o: ../hdrs/chunk.h
-ident.o: ../confmagic.h
-ident.o: ../hdrs/mypcre.h
-ident.o: ../hdrs/attrib.h
-ident.o: ../hdrs/ident.h
-ident.o: ../hdrs/mysocket.h
-ident.o: ../hdrs/mymalloc.h
 intmap.o: ../config.h
 intmap.o: ../hdrs/conf.h
 intmap.o: ../hdrs/copyrite.h
@@ -1378,7 +1358,6 @@ mysocket.o: ../confmagic.h
 mysocket.o: ../hdrs/mypcre.h
 mysocket.o: ../hdrs/mymalloc.h
 mysocket.o: ../hdrs/mysocket.h
-mysocket.o: ../hdrs/ident.h
 myrlimit.o: ../hdrs/copyrite.h
 myrlimit.o: ../config.h
 myrlimit.o: ../hdrs/conf.h
@@ -1444,7 +1423,6 @@ notify.o: ../hdrs/parse.h
 notify.o: ../hdrs/access.h
 notify.o: ../hdrs/version.h
 notify.o: ../hdrs/mysocket.h
-notify.o: ../hdrs/ident.h
 notify.o: ../hdrs/strtree.h
 notify.o: ../hdrs/log.h
 notify.o: ../hdrs/bufferq.h
@@ -1478,6 +1456,7 @@ parse.o: ../hdrs/attrib.h
 parse.o: ../hdrs/log.h
 parse.o: ../hdrs/bufferq.h
 parse.o: ../hdrs/mymalloc.h
+parse.o: ../hdrs/strtree.h
 pcre.o: ../config.h
 pcre.o: ../hdrs/mypcre.h
 player.o: ../hdrs/copyrite.h
@@ -1504,6 +1483,7 @@ player.o: ../hdrs/bufferq.h
 player.o: ../hdrs/lock.h
 player.o: ../hdrs/boolexp.h
 player.o: ../hdrs/parse.h
+player.o: ../hdrs/game.h
 player.o: ../hdrs/extmail.h
 plyrlist.o: ../config.h
 plyrlist.o: ../hdrs/copyrite.h
@@ -1583,7 +1563,6 @@ info_master.o: ../confmagic.h
 info_master.o: ../hdrs/mypcre.h
 info_master.o: ../hdrs/access.h
 info_master.o: ../hdrs/mysocket.h
-info_master.o: ../hdrs/ident.h
 info_master.o: ../hdrs/lookup.h
 info_master.o: ../hdrs/log.h
 info_master.o: ../hdrs/bufferq.h

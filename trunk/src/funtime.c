@@ -462,7 +462,11 @@ FUNCTION(fun_convtime)
     if (doutc) {
       tz = getenv("TZ");
       /* A blank, overridden TZ forces UTC. */
+#ifndef WIN32
       setenv("TZ", "", 1);
+#else
+      _putenv_s("TZ", "", 1);
+#endif
       tzset();
     }
 #ifdef SUN_OS
@@ -472,9 +476,17 @@ FUNCTION(fun_convtime)
 #endif                          /* SUN_OS */
     if (doutc) {
       if (tz) {
+#ifndef WIN32
         setenv("TZ", tz, 1);
+#else
+	_putenv_s("TZ", tz, 1);
+#endif
       } else {
+#ifndef WIN32
         unsetenv("TZ");
+#else
+	_putenv_s("TZ", 0, 1);
+#endif
       }
       tzset();
     }

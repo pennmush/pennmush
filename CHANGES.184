@@ -65,6 +65,8 @@ Functions:
  * unsetq() now accepts patterns of q-register names. [GM]
  * listq() lists q-registers available to r(), optionally limited to those
    matching a pattern. [GM]
+ * elock() now only requires that you can see the lock you're trying to test.
+   Suggested by Sketch@M*U*S*H. [MG]
 
 Fixes:
  * isword(ansi(r,foo)) would return 0. isword now removes markup before

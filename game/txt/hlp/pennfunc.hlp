@@ -1334,10 +1334,13 @@ See also: extract(), index(), grab()
   elock(<object>[/<locktype>], <victim>)
 
   elock() returns 1 if the <victim> would pass the @lock/<locktype> on
-  <object>, and 0 if it would fail. You must control <object>.
+  <object>, and 0 if it would fail. Any locktype can be given, including
+  user-defined "user:" @locks. If no <locktype> is given, it defaults to
+  the Basic lock.
   
-  If no <locktype> is specified, the Basic lock is checked. <locktype>
-  can be any @lock, including "user:" user-defined @locks.
+  You must be able to examine the lock, which means either that you must
+  control <object>, it must be @set VISUAL, or the <locktype> lock must be
+  @lset VISUAL.
 
   Example:
     > @lock/drop Dancing Slippers=#0
@@ -1348,7 +1351,7 @@ See also: extract(), index(), grab()
     > think elock(map/test,*Snape)
     0
 
-See also: @lock, locktypes, testlock(), lockfilter()
+See also: @lock, locktypes, testlock(), lockfilter(), @lset
 & EMIT()
 & NSEMIT()
   emit(<message>)

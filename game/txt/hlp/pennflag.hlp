@@ -709,7 +709,8 @@ See also: PUPPET, DEBUG
   for getting help with code.
   
   There is also a VISUAL attribute flag, which only affects a single
-  attribute. See 'help attribute flags' for details.
+  attribute, and a VISUAL lock flag, which affects @locks. See 
+  'help attribute flags' and 'help @lset' for details.
 
 See also: examine, brief, @lock
 & WIZARD

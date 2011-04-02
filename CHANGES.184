@@ -63,6 +63,8 @@ Functions:
    matching a pattern. [GM]
 
 Fixes:
+ * isword(ansi(r,foo)) would return 0. isword now removes markup before
+   checking. Ditto for isdbref, isnum, isint, isobjid. [GM]
  * round() would sometimes return a number with a decimal point but no
    digits after it, like "5.". Reported by Minion. [MG]
  * sortby() and foreach() now use call_ufun in the hardcode, fixing a number

@@ -33,6 +33,7 @@ Hardcode:
  * Faster regexps in many cases when there is no markup. [GM]
  * Renamed some variables in COMMAND() definitions for consistency/clarity.
    See HACKING.184 for more info. [MG]
+ * Assorted Windows fixes. [SW]
  
 Commands:
  * 'teach' now takes a /list switch, which lets it run an action list

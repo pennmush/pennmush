@@ -189,10 +189,6 @@ PENNCONF conftable[] = {
   ,
   {"use_dns", cf_bool, &options.use_dns, 2, 0, "net"}
   ,
-  {"use_ident", cf_bool, &options.use_ident, 2, 0, "net"}
-  ,
-  {"ident_timeout", cf_time, &options.ident_timeout, 60, 0, "net"}
-  ,
   {"logins", cf_bool, &options.login_allow, 2, 0, "net"}
   ,
   {"player_creation", cf_bool, &options.create_allow, 2, 0, "net"}
@@ -1300,7 +1296,6 @@ conf_default_set(void)
   strcpy(options.dump_message,
          T("GAME: Saving database. Game may freeze for a few moments."));
   strcpy(options.dump_complete, T("GAME: Save complete. "));
-  options.ident_timeout = 5;
   options.max_logins = 128;
   options.max_guests = 0;
   options.whisper_loudness = 100;
@@ -1386,7 +1381,6 @@ conf_default_set(void)
   options.link_to_object = 1;
   options.owner_queues = 0;
   options.wiz_noaenter = 0;
-  options.use_ident = 1;
   strcpy(options.ip_addr, "");
   strcpy(options.ssl_ip_addr, "");
   options.player_name_spaces = 0;
@@ -1895,9 +1889,9 @@ show_compile_options(dbref player)
 #endif
 
 #ifdef INFO_SLAVE
-  notify(player, T(" DNS and ident lookups are handled by a slave process."));
+  notify(player, T(" DNS lookups are handled by a slave process."));
 #else
-  notify(player, T(" DNS and ident lookups are handled by the MUSH process."));
+  notify(player, T(" DNS lookups are handled by the MUSH process."));
 #endif
 
 #ifdef HAS_GETDATE

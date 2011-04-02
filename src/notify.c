@@ -76,7 +76,6 @@
 #include "access.h"
 #include "version.h"
 #include "mysocket.h"
-#include "ident.h"
 #include "strtree.h"
 #include "log.h"
 #include "mymalloc.h"

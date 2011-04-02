@@ -109,7 +109,6 @@
 #include "command.h"
 #include "version.h"
 #include "mysocket.h"
-#include "ident.h"
 #include "htab.h"
 
 #ifndef WIN32
@@ -1165,8 +1164,6 @@ new_connection(int oldsock, int *result, bool use_ssl)
   char tbuf1[BUFFER_LEN];
   char tbuf2[BUFFER_LEN];
   char *bp;
-  char *socket_ident;
-  char *chp;
 
   *result = 0;
   addr_len = MAXSOCKADDR;
@@ -1180,18 +1177,6 @@ new_connection(int oldsock, int *result, bool use_ssl)
   safe_str(hi ? hi->hostname : "", tbuf2, &bp);
   *bp = '\0';
   bp = tbuf1;
-  if (USE_IDENT) {
-    int timeout = IDENT_TIMEOUT;
-    socket_ident = ident_id(newsock, &timeout);
-    if (socket_ident) {
-      /* Truncate at first non-printable character */
-      for (chp = socket_ident; *chp && isprint((unsigned char) *chp); chp++) ;
-      *chp = '\0';
-      safe_str(socket_ident, tbuf1, &bp);
-      safe_chr('@', tbuf1, &bp);
-      free(socket_ident);
-    }
-  }
   hi = hostname_convert(&addr.addr, addr_len);
   safe_str(hi ? hi->hostname : "", tbuf1, &bp);
   *bp = '\0';

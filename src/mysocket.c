@@ -105,7 +105,6 @@ extern int h_errno;
 #include "externs.h"
 #include "mymalloc.h"
 #include "mysocket.h"
-#include "ident.h"
 #include "confmagic.h"
 
 static int connect_nonb
@@ -229,20 +228,10 @@ make_socket_conn(const char *host, int socktype, struct sockaddr *myiterface,
   freeaddrinfo(save);
 
   if (server == NULL) {
-#ifndef DEBUG
-    /* Usually, we don't want to show this for failed connect to
-     * an ident server, as that just means they're not running one
-     */
-
-    if (port != IDPORT) {
-#endif
       lock_file(stderr);
       fprintf(stderr, "Couldn't connect to %s on port %hu\n", host, port);
       fflush(stderr);
       unlock_file(stderr);
-#ifndef DEBUG
-    }
-#endif
     return -1;
   }
   return s;

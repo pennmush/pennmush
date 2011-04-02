@@ -16,6 +16,9 @@ Version 1.8.4 patchlevel 4                                 ??? ??,  201?
 Major changes:
  * Q-registers are no longer limited to single characters. setq(name,joe)
    and r(name) or %q<name>! [GM]
+ * Ident lookup and associated config options have been removed. Between
+   lack of people running ident servers, NAT, and issues in the code, it
+   rarely got results. [SW].
 
 Hardcode:
  * global_eval_context has been removed. The BQUE, EVAL_CONTEXT and PE_Info
@@ -28,6 +31,7 @@ Hardcode:
  * Faster regexps in many cases when there is no markup. [GM]
  * Renamed some variables in COMMAND() definitions for consistency/clarity.
    See HACKING.184 for more info. [MG]
+ * Assorted Windows fixes. [SW]
  
 Commands:
  * 'teach' now takes a /list switch, which lets it run an action list
@@ -56,6 +60,8 @@ Functions:
  * unsetq() now accepts patterns of q-register names. [GM]
  * listq() lists q-registers available to r(), optionally limited to those
    matching a pattern. [GM]
+ * elock() now only requires that you can see the lock you're trying to test.
+   Suggested by Sketch@M*U*S*H. [MG]
 
 Fixes:
  * isword(ansi(r,foo)) would return 0. isword now removes markup before
@@ -290,7 +296,7 @@ Major Changes:
    commands, functions and standard attributes. Suggested by Paige. [MG]
  * Exits now use @alias for alternate names. The old style of
    including aliases directly in names is still supported, but
-   depreciated in new construction. Suggested by [MG]. [SW]
+   deprecated in new construction. Suggested by [MG]. [SW]
 
 Minor Changes:
  * @power now reports when you try and set a power which is already set (or

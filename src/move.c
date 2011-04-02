@@ -29,7 +29,8 @@
 #include "mymalloc.h"
 #include "confmagic.h"
 
-void moveit(dbref what, dbref where, int nomovemsgs);
+void moveit(dbref what, dbref where, int nomovemsgs,
+            dbref enactor, const char *cause);
 static void send_contents(dbref loc, dbref dest);
 static void maybe_dropto(dbref loc, dbref dropto);
 static dbref find_var_dest(dbref player, dbref exit_obj);
@@ -49,9 +50,9 @@ static void follower_command(dbref leader, dbref loc, const char *com);
  * \param where location to move it to.
  */
 void
-moveto(dbref what, dbref where)
+moveto(dbref what, dbref where, dbref enactor, const char *cause)
 {
-  enter_room(what, where, 0);
+  enter_room(what, where, 0, enactor, cause);
 }
 
 
@@ -61,7 +62,8 @@ moveto(dbref what, dbref where)
  * \param nomovemsgs if 1, don't show movement messages.
  */
 void
-moveit(dbref what, dbref where, int nomovemsgs)
+moveit(dbref what, dbref where, int nomovemsgs,
+       dbref enactor, const char *cause)
 {
   dbref loc, old;
   dbref absloc, absold;
@@ -82,7 +84,7 @@ moveit(dbref what, dbref where, int nomovemsgs)
     return;                     /* NOTHING doesn't have contents */
   case HOME:
     where = Home(what);         /* home */
-    safe_tel(what, where, nomovemsgs);
+    safe_tel(what, where, nomovemsgs, enactor, cause);
     return;
     /*NOTREACHED */
     break;
@@ -138,6 +140,10 @@ moveit(dbref what, dbref where, int nomovemsgs)
   if (!nomovemsgs)
     did_it_interact(what, what, "MOVE", NULL, "OMOVE", NULL,
                     "AMOVE", where, NA_INTER_SEE);
+  queue_event(enactor, "OBJECT`MOVE", "%s,%s,%s,%d,%s",
+              unparse_objid(what),
+              unparse_objid(where),
+              unparse_objid(old), nomovemsgs ? 1 : 0, cause);
 }
 
 /** A dropper is an object that can hear and has a connected owner */
@@ -149,24 +155,28 @@ send_contents(dbref loc, dbref dest)
   dbref first;
   dbref rest;
   first = Contents(loc);
-  Contents(loc) = NOTHING;
 
-  /* blast locations of everything in list */
-  DOLIST(rest, first) {
-    Location(rest) = NOTHING;
-  }
+  /* blast locations of everything in list.
+   *
+   * Not now, as object`move depends on it. */
+  /*
+     Contents(loc) = NOTHING;
+     DOLIST(rest, first) {
+     Location(rest) = NOTHING;
+     }
+   */
 
   while (first != NOTHING) {
     rest = Next(first);
-    if (Dropper(first) || !eval_lock(first, loc, Dropto_Lock)) {
-      Location(first) = loc;
-      PUSH(first, Contents(loc));
-    } else
-      enter_room(first, Sticky(first) ? HOME : dest, 0);
+    if (!(Dropper(first) || !eval_lock(first, loc, Dropto_Lock))) {
+      enter_room(first, Sticky(first) ? HOME : dest, 0, SYSEVENT, "dropto");
+    }
     first = rest;
   }
 
-  Contents(loc) = reverse(Contents(loc));
+  /*
+     Contents(loc) = reverse(Contents(loc));
+   */
 }
 
 static void
@@ -191,9 +201,12 @@ maybe_dropto(dbref loc, dbref dropto)
  * \param player object entering the container.
  * \param loc container to enter.
  * \param nomovemsgs if 1, don't give movement messages.
+ * \param enactor object that caused this moving
+ * \param cause what command or event caused this move
  */
 void
-enter_room(dbref player, dbref loc, int nomovemsgs)
+enter_room(dbref player, dbref loc, int nomovemsgs,
+           dbref enactor, const char *cause)
 {
   dbref old;
   dbref dropto;
@@ -236,7 +249,7 @@ enter_room(dbref player, dbref loc, int nomovemsgs)
   old = Location(player);
 
   /* go there */
-  moveit(player, loc, nomovemsgs);
+  moveit(player, loc, nomovemsgs, enactor, cause);
 
   /* if old location has STICKY dropto, send stuff through it */
 
@@ -258,14 +271,15 @@ enter_room(dbref player, dbref loc, int nomovemsgs)
  * \param nomovemsgs if 1, don't show movement messages
  */
 void
-safe_tel(dbref player, dbref dest, int nomovemsgs)
+safe_tel(dbref player, dbref dest, int nomovemsgs,
+         dbref enactor, const char *cause)
 {
   dbref first;
   dbref rest;
   if (dest == HOME)
     dest = Home(player);
   if (Owner(Location(player)) == Owner(dest)) {
-    enter_room(player, dest, nomovemsgs);
+    enter_room(player, dest, nomovemsgs, enactor, cause);
     return;
   }
   first = Contents(player);
@@ -285,7 +299,7 @@ safe_tel(dbref player, dbref dest, int nomovemsgs)
     if (!controls(player, first)
         && (Sticky(first)
             && (Home(first) != player)))
-      enter_room(first, HOME, nomovemsgs);
+      enter_room(first, HOME, nomovemsgs, enactor, cause);
     else {
       PUSH(first, Contents(player));
       Location(first) = player;
@@ -293,7 +307,7 @@ safe_tel(dbref player, dbref dest, int nomovemsgs)
     first = rest;
   }
   Contents(player) = reverse(Contents(player));
-  enter_room(player, dest, nomovemsgs);
+  enter_room(player, dest, nomovemsgs, enactor, cause);
 }
 
 /** Can a player go in a given direction?
@@ -382,7 +396,7 @@ do_move(dbref player, const char *direction, enum move_type type)
     notify(player, T("There's no place like home..."));
     notify(player, T("There's no place like home..."));
     notify(player, T("There's no place like home..."));
-    safe_tel(player, HOME, 0);
+    safe_tel(player, HOME, 0, player, "home");
   } else {
     /* find the exit */
     if (type == MOVE_GLOBAL)
@@ -456,7 +470,7 @@ do_move(dbref player, const char *direction, enum move_type type)
           /* Remember the current room */
           loc = Location(player);
           /* Move the leader */
-          enter_room(player, var_dest, 0);
+          enter_room(player, var_dest, 0, player, "move");
           /* Move the followers if the leader is elsewhere */
           if (Location(player) != loc)
             follower_command(player, loc, tprintf("%s #%d", "goto", exit_m));
@@ -472,7 +486,7 @@ do_move(dbref player, const char *direction, enum move_type type)
           /* Remember the current room */
           loc = Location(player);
           /* Move the leader */
-          safe_tel(player, var_dest, 0);
+          safe_tel(player, var_dest, 0, player, "move");
           /* Move the followers if the leader is elsewhere */
           if (Location(player) != loc)
             follower_command(player, loc, tprintf("%s #%d", "goto", exit_m));
@@ -557,7 +571,8 @@ do_get(dbref player, const char *what)
         notify_format(player, T("I can't tell which %s."), boxname);
         return;
       }
-      thing = match_result(box, objname, NOTYPE, MAT_POSSESSION | MAT_ENGLISH);
+      thing =
+        match_result_relative(player, box, objname, NOTYPE, MAT_OBJ_CONTENTS);
       if (thing == NOTHING) {
         notify(player, T("I don't see that here."));
         return;
@@ -586,7 +601,7 @@ do_get(dbref player, const char *what)
         safe_format(tbuf2, &tp, T("takes %s from %s."), Name(thing),
                     Name(Location(thing)));
         *tp = '\0';
-        moveto(thing, player);
+        moveto(thing, player, player, "get");
         did_it(player, thing, "SUCCESS", tbuf1, "OSUCCESS", tbuf2, "ASUCCESS",
                NOTHING);
         did_it_with(player, player, "RECEIVE", NULL, "ORECEIVE", NULL,
@@ -626,7 +641,7 @@ do_get(dbref player, const char *what)
           return;
         }
         if (could_doit(player, thing)) {
-          moveto(thing, player);
+          moveto(thing, player, player, "get");
           notify_format(thing, T("%s took you."), Name(player));
           tp = tbuf1;
           safe_format(tbuf1, &tp, T("You take %s."), Name(thing));
@@ -693,15 +708,15 @@ do_drop(dbref player, const char *name)
       return;
     } else if (Sticky(thing) && !Fixed(thing)) {
       notify(thing, T("Dropped."));
-      safe_tel(thing, HOME, 0);
+      safe_tel(thing, HOME, 0, player, "drop");
     } else if ((Location(loc) != NOTHING) && IsRoom(loc) && !Sticky(loc)
                && eval_lock(thing, loc, Dropto_Lock)) {
       /* location has immediate dropto */
       notify_format(thing, T("%s drops you."), Name(player));
-      moveto(thing, Location(loc));
+      moveto(thing, Location(loc), player, "drop");
     } else {
       notify_format(thing, T("%s drops you."), Name(player));
-      moveto(thing, loc);
+      moveto(thing, loc, player, "drop");
     }
     break;
   }
@@ -807,7 +822,7 @@ do_empty(dbref player, const char *what)
         safe_format(tbuf2, &tp, T("takes %s from %s."), Name(item),
                     Name(thing));
         *tp = '\0';
-        moveto(item, player);
+        moveto(item, player, player, "empty");
         did_it(player, item, "SUCCESS", tbuf1, "OSUCCESS", tbuf2, "ASUCCESS",
                NOTHING);
         did_it_with(player, player, "RECEIVE", NULL, "ORECEIVE", NULL,
@@ -816,16 +831,16 @@ do_empty(dbref player, const char *what)
       /* Drop messages */
       if (thing_loc != player) {
         if (Sticky(item) && !Fixed(item)) {
-          safe_tel(thing, HOME, 0);
+          safe_tel(thing, HOME, 0, player, "empty");
         } else if ((Location(thing_loc) != NOTHING) && IsRoom(thing_loc)
                    && !Sticky(thing_loc)
                    && eval_lock(item, thing_loc, Dropto_Lock)) {
           /* location has immediate dropto */
           notify_format(item, T("%s drops you."), Name(player));
-          moveto(item, Location(thing_loc));
+          moveto(item, Location(thing_loc), player, "empty");
         } else {
           notify_format(item, T("%s drops you."), Name(player));
-          moveto(item, thing_loc);
+          moveto(item, thing_loc, player, "empty");
         }
         tp = tbuf1;
         safe_format(tbuf1, &tp, T("You drop %s."), Name(item));
@@ -889,7 +904,7 @@ do_enter(dbref player, const char *what)
       return;
     }
     /* Move the leader */
-    safe_tel(player, thing, 0);
+    safe_tel(player, thing, 0, player, "enter");
     /* Move the followers if the leader is elsewhere */
     if (Location(player) != loc)
       follower_command(player, loc, tprintf("%s #%d", "enter", thing));
@@ -912,7 +927,7 @@ do_leave(dbref player)
     fail_lock(player, loc, Leave_Lock, T("You can't leave."), NOTHING);
     return;
   }
-  enter_room(player, Location(loc), 0);
+  enter_room(player, Location(loc), 0, player, "leave");
   if (Location(player) != loc)
     follower_command(player, loc, "leave");
 }
@@ -1399,7 +1414,7 @@ follower_command(dbref leader, dbref loc, const char *com)
             || See_All(follower))) {
       /* This is a follower who was in the room with the leader. Follow. */
       notify_format(follower, T("You follow %s."), Name(leader));
-      process_command(follower, combuf, follower, 0);
+      process_command(follower, combuf, follower, leader, 0);
     }
   }
 }

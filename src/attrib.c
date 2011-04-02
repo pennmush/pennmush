@@ -1412,11 +1412,14 @@ use_attr(UsedAttr **prev, char const *name, uint32_t no_prog)
 int
 atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
                int just_match, int check_locks,
-               char *atrname, char **abp, dbref *errobj)
+               char *atrname, char **abp, dbref *errobj, int inplace)
 {
   uint32_t flag_mask;
   ATTR *ptr;
   int parent_depth;
+  char *args[10];
+  char *rnull[NUMQ];
+  int i;
   char *tbuf1;
   char tbuf2[BUFFER_LEN];
   char *s;
@@ -1435,6 +1438,10 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
   if (check_locks && (!GoodObject(thing) || Halted(thing)
                       || (type == '$' && NoCommand(thing))))
     return 0;
+
+  for (i = 0; i < NUMQ; i++) {
+    rnull[i] = NULL;
+  }
 
   if (type == '$') {
     flag_mask = AF_COMMAND;
@@ -1503,8 +1510,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
 
     match_found = 0;
     if (AF_Regexp(ptr)) {
-      if (regexp_match_case_r(tbuf2 + 1, str, AF_Case(ptr),
-                              global_eval_context.wnxt, 10,
+      if (regexp_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args, 10,
                               match_space, match_space_len)) {
         match_found = 1;
         match++;
@@ -1514,8 +1520,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
         match_found = 1;
         match++;
         if (!just_match)
-          wild_match_case_r(tbuf2 + 1, str, AF_Case(ptr),
-                            global_eval_context.wnxt, 10,
+          wild_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args, 10,
                             match_space, match_space_len);
       }
     }
@@ -1543,8 +1548,16 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
         safe_chr('/', atrname, abp);
         safe_str(AL_NAME(ptr), atrname, abp);
       }
-      if (!just_match)
-        parse_que(thing, s, player, NULL);
+      if (!just_match) {
+        if (inplace) {
+          insert_que(thing, s, player, player, NULL, args, rnull, QUEUE_RECURSE);
+        } else {
+          for (i = 0; i < 10; i++) {
+            global_eval_context.wnxt[i] = args[i];
+          }
+          parse_que(thing, s, player, NULL);
+        }
+      }
     }
   }
 
@@ -1624,8 +1637,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
 
       match_found = 0;
       if (AF_Regexp(ptr)) {
-        if (regexp_match_case_r(tbuf2 + 1, str, AF_Case(ptr),
-                                global_eval_context.wnxt, 10,
+        if (regexp_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args, 10,
                                 match_space, match_space_len)) {
           match_found = 1;
           match++;
@@ -1635,9 +1647,8 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
           match_found = 1;
           match++;
           if (!just_match)
-            wild_match_case_r(tbuf2 + 1, str, AF_Case(ptr),
-                              global_eval_context.wnxt, 10, match_space,
-                              match_space_len);
+            wild_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args, 10,
+                              match_space, match_space_len);
         }
       }
       if (match_found) {
@@ -1668,8 +1679,14 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
           safe_str(AL_NAME(ptr), atrname, abp);
         }
         if (!just_match) {
-          /* do_rawlog(LT_TRACE, "MATCHED %s:", AL_NAME(ptr)); */
-          parse_que(thing, s, player, NULL);
+          if (inplace) {
+            insert_que(thing, s, player, player, NULL, args, rnull, QUEUE_RECURSE);
+          } else {
+            for (i = 0; i < 10; i++) {
+              global_eval_context.wnxt[i] = args[i];
+            }
+            parse_que(thing, s, player, NULL);
+          }
         }
       }
     }
@@ -1695,13 +1712,17 @@ exit_sequence:
  * \retval 0 attribute failed to match.
  */
 int
-one_comm_match(dbref thing, dbref player, const char *atr, const char *str)
+one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
+               int inplace)
 {
   ATTR *ptr;
   char *tbuf1;
   char tbuf2[BUFFER_LEN];
   char *s;
   char match_space[BUFFER_LEN * 2];
+  char *args[10];
+  char *rnull[NUMQ];
+  int i;
   ssize_t match_space_len = BUFFER_LEN * 2;
 
   /* check for lots of easy ways out */
@@ -1735,15 +1756,24 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str)
     strcpy(tbuf2, tbuf1);
 
   if (AF_Regexp(ptr) ?
-      regexp_match_case_r(tbuf2 + 1, str, AF_Case(ptr),
-                          global_eval_context.wnxt, 10,
+      regexp_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args, 10,
                           match_space, match_space_len) :
-      wild_match_case_r(tbuf2 + 1, str, AF_Case(ptr), global_eval_context.wnxt,
+      wild_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args,
                         10, match_space, match_space_len)) {
     if (!eval_lock(player, thing, Command_Lock)
         || !eval_lock(player, thing, Use_Lock))
       return 0;
-    parse_que(thing, s, player, NULL);
+    if (inplace) {
+      for (i = 0; i < NUMQ; i++) {
+        rnull[i] = NULL;
+      }
+      insert_que(thing, s, player, player, NULL, args, rnull, QUEUE_RECURSE);
+    } else {
+      for (i = 0; i < 10; i++) {
+        global_eval_context.wnxt[i] = args[i];
+      }
+      parse_que(thing, s, player, NULL);
+    }
     return 1;
   }
   return 0;
@@ -1763,8 +1793,8 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str)
  * \param s value to set the attribute to (or NULL to clear).
  * \param player enactor, for permission checks.
  * \param flags attribute flags.
- * \retval -1 failure of one sort.
- * \retval 0 failure of another sort.
+ * \retval -1 failure - invalid value for attribute.
+ * \retval 0 failure for other reason
  * \retval 1 success.
  */
 int
@@ -1837,7 +1867,7 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
 
       aliases = tbuf1 = GC_STRDUP(s);
       while ((alias = split_token(&aliases, ';')) != NULL) {
-        if (!ok_name(alias)) {
+        if (!ok_name(alias, 1)) {
           notify_format(player, T("'%s' is not a valid exit name."), alias);
           return -1;
         }

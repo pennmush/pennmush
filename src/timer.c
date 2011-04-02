@@ -49,8 +49,8 @@
 static sig_atomic_t hup_triggered = 0;
 static sig_atomic_t usr1_triggered = 0;
 
-extern void inactivity_check(void);
-extern void reopen_logs(void);
+bool inactivity_check(void);
+void reopen_logs(void);
 static void migrate_stuff(int amount);
 
 #ifndef WIN32
@@ -184,6 +184,92 @@ migrate_stuff(int amount)
   chunk_migration(actual, refs);
 }
 
+static bool
+idle_event(void *data __attribute__ ((__unused__)))
+{
+  return inactivity_check();
+}
+
+static bool
+purge_event(void *data __attribute__ ((__unused__)))
+{
+  global_eval_context.cplr = NOTHING;
+  strcpy(global_eval_context.ccom, "purge");
+  purge();
+  strcpy(global_eval_context.ccom, "");
+  options.purge_counter = mudtime + PURGE_INTERVAL;
+  sq_register_in(PURGE_INTERVAL, purge_event, NULL, "DB`PURGE");
+  return true;
+}
+
+static bool
+dbck_event(void *data __attribute__ ((__unused__)))
+{
+  global_eval_context.cplr = NOTHING;
+  strcpy(global_eval_context.ccom, "dbck");
+  dbck();
+  strcpy(global_eval_context.ccom, "");
+  options.dbck_counter = mudtime + DBCK_INTERVAL;
+  sq_register_in(DBCK_INTERVAL, dbck_event, NULL, "DB`DBCK");
+  return true;
+}
+
+static bool
+warning_event(void *data __attribute__ ((__unused__)))
+{
+  options.warn_counter = options.warn_interval + mudtime;
+  strcpy(global_eval_context.ccom, "warnings");
+  run_topology();
+  strcpy(global_eval_context.ccom, "");
+  sq_register_in(options.warn_interval, warning_event, NULL, "DB`WCHECK");
+  return true;
+}
+
+struct dbsave_warn_data {
+  int secs;
+  const char *event;
+  char *msg;
+};
+
+struct dbsave_warn_data dbsave_5min =
+  { 300, "DUMP`5MIN", options.dump_warning_5min };
+struct dbsave_warn_data dbsave_1min =
+  { 60, "DUMP`1MIN", options.dump_warning_1min };
+
+static bool
+dbsave_warn_event(void *data)
+{
+  struct dbsave_warn_data *when = data;
+
+  queue_event(SYSEVENT, when->event, "%s,%d", when->msg, NO_FORK ? 0 : 1);
+  if (NO_FORK && *(when->msg))
+    flag_broadcast(0, 0, "%s", when->msg);
+  return false;
+}
+
+static void
+reg_dbsave_warnings(void)
+{
+  if (DUMP_INTERVAL > 300)
+    sq_register_in(DUMP_INTERVAL - 300, dbsave_warn_event, &dbsave_5min, NULL);
+  if (DUMP_INTERVAL > 60)
+    sq_register_in(DUMP_INTERVAL - 60, dbsave_warn_event, &dbsave_1min, NULL);
+}
+
+static bool
+dbsave_event(void *data __attribute__ ((__unused__)))
+{
+  options.dump_counter = options.dump_interval + mudtime;
+  strcpy(global_eval_context.ccom, "dump");
+  fork_and_dump(1);
+  strcpy(global_eval_context.ccom, "");
+  flag_broadcast(0, "ON-VACATION", "%s",
+                 T("Your ON-VACATION flag is set! If you're back, clear it."));
+  reg_dbsave_warnings();
+  sq_register_in(DUMP_INTERVAL, dbsave_event, NULL, NULL);
+  return false;
+}
+
 /** Handle events that may need handling.
  * This routine is polled from bsd.c. At any call, it can handle
  * the HUP and USR1 signals. At calls that are 'on the second',
@@ -191,10 +277,9 @@ migrate_stuff(int amount)
  * check whether it's time to do other periodic processes like
  * purge, dump, or inactivity checks.
  */
-void
-dispatch(void)
+static bool
+on_every_second(void *data __attribute__ ((__unused__)))
 {
-  static int idle_counter = 0;
 
   /* A HUP reloads configuration and reopens logs */
   if (hup_triggered) {
@@ -209,70 +294,33 @@ dispatch(void)
   }
   /* A USR1 does a shutdown/reboot */
   if (usr1_triggered) {
-    do_rawlog(LT_ERR, "SIGUSR1 received. Rebooting.");
-    do_reboot(NOTHING, 0);      /* We don't return from this */
+    if (!queue_event(SYSEVENT, "SIGNAL`USR1", "%s", "")) {
+      do_rawlog(LT_ERR, "SIGUSR1 received. Rebooting.");
+      do_reboot(NOTHING, 0);    /* We don't return from this */
+    }
     usr1_triggered = 0;         /* But just in case */
   }
-  if (!globals.on_second)
-    return;
-  globals.on_second = 0;
 
   mudtime = time(NULL);
 
   do_second();
-
   migrate_stuff(CHUNK_MIGRATE_AMOUNT);
 
-  if (options.purge_counter <= mudtime) {
-    /* Free list reconstruction */
-    options.purge_counter = options.purge_interval + mudtime;
-    global_eval_context.cplr = NOTHING;
-    strcpy(global_eval_context.ccom, "purge");
-    purge();
-    strcpy(global_eval_context.ccom, "");
-  }
+  return false;
+}
 
-  if (options.dbck_counter <= mudtime) {
-    /* Database consistency check */
-    options.dbck_counter = options.dbck_interval + mudtime;
-    global_eval_context.cplr = NOTHING;
-    strcpy(global_eval_context.ccom, "dbck");
-    dbck();
-    strcpy(global_eval_context.ccom, "");
-  }
-
-  if (idle_counter <= mudtime) {
-    /* Inactivity check */
-    idle_counter = 60 + mudtime;
-    inactivity_check();
-  }
-
-  /* Database dump routines */
-  if (options.dump_counter <= mudtime) {
-    options.dump_counter = options.dump_interval + mudtime;
-    strcpy(global_eval_context.ccom, "dump");
-    fork_and_dump(1);
-    strcpy(global_eval_context.ccom, "");
-    flag_broadcast(0, "ON-VACATION", "%s",
-                   T
-                   ("Your ON-VACATION flag is set! If you're back, clear it."));
-  } else if (NO_FORK &&
-             (options.dump_counter - 60 == mudtime) &&
-             *options.dump_warning_1min) {
-    flag_broadcast(0, 0, "%s", options.dump_warning_1min);
-  } else if (NO_FORK &&
-             (options.dump_counter - 300 == mudtime) &&
-             *options.dump_warning_5min) {
-    flag_broadcast(0, 0, "%s", options.dump_warning_5min);
-  }
-  if (options.warn_interval && (options.warn_counter <= mudtime)) {
-    options.warn_counter = options.warn_interval + mudtime;
-    strcpy(global_eval_context.ccom, "warnings");
-    run_topology();
-    strcpy(global_eval_context.ccom, "");
-  }
-
-  local_timer();
+void
+init_sys_events(void)
+{
+  time(&mudtime);
+  sq_register_loop(60, idle_event, NULL, "PLAYER`INACTIVITY");
+  sq_register(mudtime + DBCK_INTERVAL, dbck_event, NULL, "DB`DBCK");
+  sq_register(mudtime + PURGE_INTERVAL, purge_event, NULL, "DB`PURGE");
+  sq_register(mudtime + options.warn_interval, warning_event, NULL,
+              "DB`WCHECK");
+  reg_dbsave_warnings();
+  sq_register(mudtime + DUMP_INTERVAL, dbsave_event, NULL, NULL);
+  sq_register_loop(1, on_every_second, NULL, NULL);
 }
 
 sig_atomic_t cpu_time_limit_hit = 0;  /** Was the cpu time limit hit? */
@@ -376,4 +424,155 @@ reset_cpu_timer(void)
   cpu_limit_warning_sent = 0;
   timer_set = 0;
 #endif                          /* PROFILING */
+}
+
+
+/** System queue stuff. Timed events like dbcks and purges are handled
+ *  through this system. */
+
+struct squeue {
+  sq_func fun;
+  void *data;
+  time_t when;
+  char *event;
+  struct squeue *next;
+};
+
+struct squeue *sq_head = NULL;
+
+/** Register a callback function to be executed at a certain time.
+ *  \param w when to run the event
+ *  \param f the callback function
+ *  \param d data to pass to the callback
+ *  \param ev Softcode event to trigger at the same time.
+ */
+void
+sq_register(time_t w, sq_func f, void *d, const char *ev)
+{
+  struct squeue *sq;
+
+  sq = GC_MALLOC(sizeof *sq);
+
+  sq->when = w;
+  sq->fun = f;
+  sq->data = d;
+  if (ev)
+    sq->event = strupper(ev);
+  else
+    sq->event = NULL;
+  sq->next = NULL;
+
+  if (!sq_head)
+    sq_head = sq;
+  else if (difftime(w, sq_head->when) <= 0) {
+    sq->next = sq_head;
+    sq_head = sq;
+  } else {
+    struct squeue *c, *prev = NULL;
+    for (prev = sq_head, c = sq_head->next; c; prev = c, c = c->next) {
+      if (difftime(w, c->when) <= 0) {
+        sq->next = c;
+        prev->next = sq;
+        return;
+      }
+    }
+    prev->next = sq;
+  }
+}
+
+/** Register a callback function to be executed in N seconds.
+ * \param n the number of seconds to run the callback after.
+ * \param f the callback function.
+ * \param d data to pass to the callback.
+ * \param ev softcode event to trigger at the same time.
+ */
+void
+sq_register_in(int n, sq_func f, void *d, const char *ev)
+{
+  time_t now;
+  time(&now);
+  sq_register(now + n, f, d, ev);
+}
+
+struct sq_loop {
+  sq_func fun;
+  void *data;
+  const char *event;
+  int secs;
+};
+
+static bool
+sq_loop_fun(void *arg)
+{
+  struct sq_loop *loop = arg;
+  bool res;
+
+  res = loop->fun(loop->data);
+  sq_register_in(loop->secs, sq_loop_fun, arg, loop->event);
+
+  return res;
+}
+
+/** Register a callback function to run every N seconds.
+ * \param n the number of seconds to wait between calls.
+ * \param f the callback function.
+ * \param d data to pass to the callback.
+ * \param ev softcode event to trigger at the same time.
+ */
+void
+sq_register_loop(int n, sq_func f, void *d, const char *ev)
+{
+  struct sq_loop *loop;
+
+  loop = GC_MALLOC(sizeof *loop);
+  loop->fun = f;
+  loop->data = d;
+  if (ev)
+    loop->event = strupper(ev);
+  else
+    loop->event = NULL;
+  loop->secs = n;
+
+  sq_register_in(n, sq_loop_fun, loop, ev);
+}
+
+/** Execute a single pending system queue event.
+ * \return true if work was done, false otherwise.
+ */
+bool
+sq_run_one(void)
+{
+  time_t now;
+  struct squeue *n;
+
+  time(&now);
+
+  if (sq_head) {
+    if (difftime(sq_head->when, now) <= 0) {
+      bool r = sq_head->fun(sq_head->data);
+      if (r && sq_head->event) {
+        queue_event(SYSEVENT, sq_head->event, "%s", "");
+      }
+      n = sq_head->next;
+      sq_head = n;
+      return true;
+    }
+  }
+  return false;
+}
+
+/** Run all pending system queue events.
+ * \return true if work was done, false otherwise.
+ */
+bool
+sq_run_all(void)
+{
+  bool r, any = false;
+
+  do {
+    r = sq_run_one();
+    if (r)
+      any = true;
+  } while (r);
+  return any;
 }

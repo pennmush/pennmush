@@ -330,7 +330,7 @@ See also: @teleport
   LOUD objects bypass all speech, channel speech, and interaction @locks.
   This flag can only be set by royalty or wizards.
 
-See also: can_nspemit
+See also: can_spoof (help powers2)
 & INHERIT
 & TRUST
   Flag:  TRUST  (all types)
@@ -434,7 +434,7 @@ See also: DBREF, TERSE
   The MISTRUST flag prevents an object from controlling another object via
   Control @locks, Zone @locks on ZMOs or SHARED players, or from controlling
   other objects with the same owner. It also prevents the object from
-  inheriting the no_pay, no_kill and no_quota powers from its owner.
+  inheriting the no_pay, unkillable and no_quota powers from its owner.
   
   This flag can be used when you with a single player to retain ownership
   of objects that other players will control or run arbitrary code on, and
@@ -506,32 +506,27 @@ See also: JUMP_OK, Z_TEL
 
 See also: warnings, @warnings, @wcheck
 & NOSPOOF
-  Flag:  NOSPOOF  (players)
+& PARANOID
+  Flag:  NOSPOOF  (all types)
+  Flag:  PARANOID  (all types)
 
-  If a player is set NOSPOOF, @emits of all sorts will be tagged with the
-  name of the person/object making them. This prevents spoofing and lets
-  you see where such messages originated. Objects belonging to NOSPOOF 
-  players are automatically considered NOSPOOF. 
+  If an object is set NOSPOOF, messages of all kinds will be tagged with the
+  name of the person/object causing them. This prevents spoofing and lets you
+  see where such messages originated. When a NOSPOOF object is also set
+  PARANOID, the dbref of the emitting object is also shown. You will not see
+  nospoof information for your own messages unless you are also set PARANOID.
+
+  When a player is set NOSPOOF or PARANOID, everything it owns is also
+  treated as having the flag.
   
   Note that NOSPOOF output can be spammy and that the output format of
   NOSPOOF can mess up @listen and ^-patterns, giving unexpected results.
-
-  Sample output:
-    > @set me=nospoof
-    Flag set.
-    > @pemit me=Testing
-    [Cyclonus->Cyclonus] Testing
-
-See also: PARANOID, SPOOFING, @emit, @pemit, @remit, @oemit, @nspemit
-& PARANOID
-  Flag:  PARANOID  (players)
-
-  Used in conjunction with the NOSPOOF flag. If a player is set PARANOID 
-  and NOSPOOF, @emits of all sorts are tagged with the name and dbref of
-  the person/object making them and the name of the object's owner, if the 
-  emit was not from a player.
-
-See also: NOSPOOF, SPOOFING, @emit, @pemit, @remit, @oemit, @nspemit
+  
+  For the @pemit command, the Nospoof tag is '[Source->Recipient]', or
+  '[Source(#dbref)->Recipient]' for Paranoid objects. For all other messages,
+  it's '[Source:]' for Nospoof, or '[Source(#dbref)]' for Paranoid objects.
+    
+See also: SPOOFING, @emit, @pemit, @remit, @oemit, @nspemit
 & ON-VACATION
   Flag:  ON-VACATION  (players)
 

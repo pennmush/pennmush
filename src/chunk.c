@@ -757,10 +757,8 @@ debug_log(char const *format, ...)
   va_end(args);
 
   rolling_log[rolling_pos][ROLLING_LOG_ENTRY_LEN - 1] = '\0';
-  if (noisy_log) {
-    fprintf(tracelog_fp, "%s\n", rolling_log[rolling_pos]);
-    fflush(tracelog_fp);
-  }
+  if (noisy_log)
+    do_rawlog(LT_TRACE, "%s\n", rolling_log[rolling_pos]);
   rolling_pos = (rolling_pos + 1) % ROLLING_LOG_SIZE;
 #else
   if (format)
@@ -1040,7 +1038,7 @@ region_is_valid(uint16_t region)
     result = 0;
   }
   if (dump) {
-    debug_dump_region(region, tracelog_fp);
+    debug_dump_region(region, lookup_log(LT_TRACE)->fp);
   }
   return result;
 }
@@ -2107,12 +2105,14 @@ migrate_slide(uint16_t region, uint16_t offset, int which)
 
 #ifdef CHUNK_PARANOID
   if (!region_is_valid(region)) {
+    struct log_stream *trace;
     do_rawlog(LT_TRACE, "Invalid region after migrate_slide!");
     do_rawlog(LT_TRACE, "Was moving %04x%04x to %04x%04x (became %08x)...",
               region, o_oth, region, o_off, m_references[which][0]);
     do_rawlog(LT_TRACE, "Chunk length %04x into hole length %04x", o_len, len);
-    debug_dump_region(region, tracelog_fp);
-    dump_debug_log(tracelog_fp);
+    trace = lookup_log(LT_TRACE);
+    debug_dump_region(region, trace->fp);
+    dump_debug_log(trace->fp);
     mush_panic("Invalid region after migrate_slide!");
   }
 #endif
@@ -2154,7 +2154,7 @@ migrate_move(uint16_t region, uint16_t offset, int which, int align)
   }
 #ifdef CHUNK_PARANOID
   if (!FitsInSpace(s_len, ChunkFullLen(region, offset))) {
-    dump_debug_log(tracelog_fp);
+    dump_debug_log(lookup_log(LT_TRACE)->fp);
     mush_panicf("Trying to migrate into too small a hole: %04x into %04x!",
                 s_len, length);
   }
@@ -2180,7 +2180,7 @@ migrate_move(uint16_t region, uint16_t offset, int which, int align)
               s_reg, s_off, region, o_off, region, offset);
     do_rawlog(LT_TRACE, "Chunk length %04x into hole length %04x, alignment %d",
               s_len, length, align);
-    debug_dump_region(region, tracelog_fp);
+    debug_dump_region(region, lookup_log(LT_TRACE)->fp);
     mush_panic("Invalid region after migrate_move!");
   }
 #endif

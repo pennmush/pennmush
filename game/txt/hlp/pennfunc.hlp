@@ -220,9 +220,10 @@ See also: STRINGS
 & Time functions
   These functions return times or format times.
 
-  convsecs()    convutcsecs() convtime()    ctime()       etimefmt()
-  isdaylight()  mtime()       restarttime() secs()        starttime()
-  stringsecs()  time()        timefmt()     timestring()  utctime()
+  convsecs()    convutcsecs() convtime()    convutctime() ctime()
+  etimefmt()    isdaylight()  mtime()       restarttime() secs()
+  starttime()   stringsecs()  time()        timefmt()     timestring()
+  utctime()
 
 & Utility functions
   These functions don't quite fit into any other category.
@@ -401,12 +402,13 @@ See also: before(), rest()
     < Left-justify       - Center-justify        > Right-justify
     _ Full-justify.      = Paragraph-justify.
  
-  Runout: Placing one of these characters after the width alters what
-  happens when the column runs out of text before the other columns.
-  (e.g: 30`)
-    . Repeat
-    ` Merge with the column on the left.
-    ' Merge with the column on the right.
+  Other options: Adding these after the width will alter the column's
+    behaviour in some situtations
+    . Repeat for as long as there is non-repeating text in another column.
+    ` Merge with the column on the left when it runs out of text.
+    ' Merge with the column on the right when it runs out of text.
+    $ nofill: Don't use filler after the text. If this is combined with
+      merge-left, the column to its left inherits the 'nofill' when merged.
 
   Ansi: Place ansi characters (as defined in 'help ansi()') within ()s to
   define a column's ansi markup.
@@ -433,9 +435,8 @@ See also: center(), ljust(), rjust(), table()
          +                  Luke                  +
          +----------------------------------------+
 
-  See 'help align4' for another example.
+  See 'help align4' for more examples.
 & ALIGN4
-
   > &dropcap me=%b_______%r|__%b%b%b__|%r%b%b%b|%b|%r%b%b%b|_|
   > &story me=%r'was the night before Christmas, when all through the house%r
               Not a creature was stirring, not even a mouse.%r
@@ -451,7 +452,11 @@ See also: center(), ljust(), rjust(), table()
   
   The dropcap 'T' will be in ANSI cyan-highlight, and merges with the 'story'
   column.
-  
+
+  > th align(>15 60,Walker,Staff & Developer,x,x)
+  xxxxxxxxxWalkerxStaff & Developerxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  > th align(>15 60$,Walker,Staff & Developer,x,x)
+  xxxxxxxxxWalkerxStaff & Developer
 & ALLOF()
   allof(<expr>[, ... , <exprN>], <osep>)
 
@@ -603,14 +608,16 @@ See also: acos(), atan(), cos(), ctu(), sin(), tan()
 
 See also: acos(), asin(), cos(), ctu(), sin(), tan()
 & ATRLOCK()
-  atrlock(<object>/<attrib>[, <on|off>])
+  atrlock(<object>/<attrib>[, [on|off]])
 
   When given a single <object>/<attribute> pair as an argument, returns 1
   if the attribute is locked, 0 if unlocked, and #-1 if the attribute
   doesn't exist or can't be read by the function's caller.
 
   When given a second argument of "on" (or "off"), attempts to lock
-  (unlock) the specified attribute, as per @atrlock.
+  (or unlock) the specified attribute, as per @atrlock.
+  
+See also: @atrlock, @atrchown, hasflag()
 & ATTRIB_SET()
   attrib_set(<object>/<attrib>[, <value>])
 
@@ -627,7 +634,7 @@ See also: acos(), asin(), cos(), ctu(), sin(), tan()
   space. This means that attrib_set(me/foo,%0) will _always_
   create an attribute.
 
-See also: set()
+See also: set(), @set
 & BAND()
   band(<integer>, <integer>[, ... , <integerN>])
 
@@ -977,7 +984,9 @@ See also: visible(), CONTROL
 
 See also: convtime(), time()
 & CONVTIME()
-  convtime(<time string>)
+& CONVUTCTIME()
+  convtime(<time string>,[utc])
+  convutctime(<time string>)
 
   This functions converts a time string (in the server's time zone) to
   the number of seconds since Jan 1, 1970 GMT. A time string is of the
@@ -986,6 +995,9 @@ See also: convtime(), time()
   24-hour time, MM is the minutes, SS is the seconds, and YYYY is the
   year.  If you supply an incorrectly formatted string, it will return
   -1.
+
+  convutctime() and convtime() with a second argument of 'utc' assume
+  the timestring is based on UTC time.
 
   If the extended convtime() is supported (See @config compile), more
   formats for the date are enabled, including ones missing the day of
@@ -1181,11 +1193,14 @@ See also: strreplace(), strinsert(), mid()
     > think die(3, 6, 1)
     5 2 1  
 & DIG()
-  dig(<name>[, <exit to>[, <exit from>]])
+  dig(<name>[, <exit to>[, <exit from>[, <dbref>]]])
  
   This function digs a room called <name>, and optionally opens and
   links <exit to> and <exit from>, like the normal @dig command. It
   returns the dbref number of the new room.
+  
+  Wizards can supply an optional fourth argument to specify a garbage
+  object to use for the new room.
 
   This is a side-effect function and may not be enabled on some MUSHes.
 & DIGEST()
@@ -1238,9 +1253,9 @@ See also: modulo(), fdiv()
 & DOING()
   doing(<player|descriptor>)
 
-	When given the name of a connected player or descriptor, doing()
-	returns the player's @doing. If <player> is offline, (or dark, and the
-	caller is mortal), doing() returns #-1.
+  When given the name of a connected player or descriptor, doing()
+  returns the player's @doing. If <player> is offline, (or dark, and the
+  caller is mortal), doing() returns #-1.
 
 See also: @poll, @doing, poll()
 & E()
@@ -1333,7 +1348,7 @@ See also: extract(), index(), grab()
     > think elock(map/test,*Snape)
     0
 
-See also: @lock, locktypes, testlock()
+See also: @lock, locktypes, testlock(), lockfilter()
 & EMIT()
 & NSEMIT()
   emit(<message>)
@@ -1486,7 +1501,7 @@ See also: div(), mod()
     > say filter(test/is_odd, 1 2 3 4 5 6)
     You say, "1 3 5"
 
-See also: anonymous attributes, firstof(), allof()
+See also: anonymous attributes, firstof(), allof(), lockfilter()
 & FINDABLE()
   findable(<object>, <victim>)
  
@@ -2005,7 +2020,7 @@ See also: extract(), elements(), grab()
   
   If a <delim> is not given, a space is assumed. Null items are counted
   when determining position, as in 'items()'.
-	  
+
   Examples:
     > say insert(This is a string,4,test)
     You say, "This is a test string"
@@ -2105,10 +2120,10 @@ See also: words()
   
   Prior to each evaluation, every occurrence of the string "##" in <pattern>
   is replaced with the current word from <list>. However, because this 
-  replacement occurs before substitution, it cannot be used well in nested
+  replacement occurs before evaluation, it cannot be used well in nested
   iter()s, and should not be used on user input or untrusted <list>s, as the
   word will be evaluated. Instead, you can use the %iX substitution, or the 
-  itext() function. The substitution '%il' refers to the outermost iter
+  itext() function. The substitution '%iL' refers to the outermost iter
   of the current expression, and is intended to replace ##.
   
   The string "#@" will be replaced with the position of the current word
@@ -2202,7 +2217,7 @@ See also: iter(), ibreak(), @dolist
     
     > @dolist red blue green=say iter(fish shoe, %i1:%i0)
     You say, "red:fish red:shoe"
-		You say, "blue:fish blue:shoe"
+    You say, "blue:fish blue:shoe"
     You say, "green:fish green:shoe"
     
 See also: iter(), @dolist
@@ -2531,19 +2546,20 @@ See also: letq(), setq(), setr(), r(), ulocal(), uldefault()
 & LOCATE()
   locate(<looker>, <name>, <parameters>)
  
-  This function attemps to find an object called <name>, relative to
-  the object <looker>. It's similar to the num() function, but you can
-  be more specific about which type of object to find, and where to look
-  for it. You must control <looker> or have the See_All power to use this
-  function.
+  This function attemps to find an object called <name>, relative to the
+  object <looker>. It's similar to the num() function, but you can be more
+  specific about which type of object to find, and where to look for it. 
+  When attempting to match objects near to <looker> (anything but absolute,
+  player name or "me" matches), you must control <looker>, have the See_All
+  power or be nearby.
   
   <parameters> is a string of characters which control the type of the object
   to find, and where (relative to <looker>) to look for it.
   
-  You can control the preferred type of the match with:
-    E - Exits
-    L - Unlocked exits preferred over locked exits
+  You can control the preferred types of the match with:
     N - No type (this is the default)
+    E - Exits
+    L - Prefer an object whose Basic @lock <looker> passes
     P - Players
     R - Rooms
     T - Things
@@ -2569,12 +2585,12 @@ See also: letq(), setq(), setr(), r(), ulocal(), uldefault()
     m - If <name> is "me", return <looker>'s dbref
     n - Match <name> against the names of objects in <looker>'s location
     p - If <name> begins with a *, match the rest against player names
-    x - Only match objects with the exact name <name>, no partial matches
     y - Match <name> against player names whether it begins with a * or not
     z - English-style matching (my 2nd book) of <name> (see 'help matching')
     * - All of the above (try a complete match). Default when no match
         parameters are given.
- 
+    x - Only match objects with the exact name <name>, no partial matches
+
   Just string all the parameters together. Spaces are ignored, so you can
   use spaces between paramaters for clarity if you wish.
   
@@ -2609,7 +2625,7 @@ See also: num(), rnum(), pmatch(), room(), where(), rloc()
   would. You must control the object..
  
 See also: @lock, locktypes, elock(), lockflags(), llockflags(), lset(),
-  llocks(), lockowner()
+  llocks(), lockowner(), lockfilter()
 & LLOCKS()
 & LOCKS()
   llocks([<object>])
@@ -2629,6 +2645,31 @@ See also: @lock, locktypes, elock(), lockflags(), llockflags(), lset(),
     Basic USER:ITSME Use
 
 See also: lock(), lset(), lockflags(), llockflags(), lockowner()
+& LOCKFILTER()
+  lockfilter(<key>, <dbrefs>[, <delim>])
+
+  lockfilter() goes through <dbrefs> and tests them all against the lock 
+  <key>, returning a list of all dbrefs that pass the <key>.
+  
+  <key> is evaluated from the caller's perspective.
+  
+  This is equivilent to filter(#lambda/testlock(<key>, %%0), <dbrefs>) but
+  much more efficient, as the lock <key> is only parsed/compiled once.
+
+  Example:
+    Get all male players with a name starting with 'W'.
+    > think iter(lockfilter(NAME^W*&SEX:M*,lwho()),name(##))
+    Walker WalkerBot Wilco
+
+    List all wizroys online:
+    > think iter(lockfilter(FLAG^WIZARD|FLAG^ROYALTY,lwho()),name(##))
+    Sketch Viila Tanaku Raevnos Zebranky Cheetah Walker
+
+    List all players with an IC age > 20.
+    > think lockfilter(age:>20,lwho())
+    #123 #456 #789
+  
+See also: @lock, lock(), elock(), locktypes, filter(), testlock()
 & LOCKFLAGS()
   lockflags(<object>[/<locktype>])
   lockflags()
@@ -3190,7 +3231,7 @@ See also: lwho(), nwho()
   
   alias() returns the first of <object>'s aliases. fullalias() returns all
   the aliases set for <object>. Note that, while any object can have an alias
-  set, they are only meaningful for players.
+  set, they are only meaningful for players and exits.
   
   With two arguments, alias() attempts to change the alias for <object> to
   <new alias>, as per @alias.
@@ -3200,7 +3241,7 @@ See also: lwho(), nwho()
     ALIAS [#7$v]: $;No;Nol;Noli;Nolt
     > say alias(*Noltar)
     You say, "$"
-    > say fullalias(Noltar)
+    > say fullalias(*Noltar)
     You say, "$;No;Nol;Noli;Nolt"
 
 See also: fullname()
@@ -3659,15 +3700,18 @@ See also: subj(), obj(), aposs()
 
 See also: root()
 & POWERS()
+  powers()
   powers(<object>)
   powers(<object>, <power>)
 
-  The first form returns a space-separate list of powers possessed by
-  the object.  If the object does not exist, #-1 will be returned.
-
-  The second form attempts to set <power> on <object>, as per @power.
+  With no arguments, powers() returns a space-separated list of all defined
+  @powers on the MUSH. With one argument, it returns a list of the powers
+  possessed by <object>. 
   
-See also: andlpowers(), orlpowers()
+  With two arguments, it attempts to set <power> on <object>, as per
+  @power <object>=<power>.
+  
+See also: andlpowers(), orlpowers(), @power, POWERS LIST
 & QUOTA()
   quota(<player>)  
   
@@ -4582,7 +4626,7 @@ See also: merge()
 
   See 'help sql examples' for examples.
 
-See also: anonymous attributes, sqlescape(), sql(), @sql
+See also: anonymous attributes, sqlescape(), sql(), @sql, @mapsql
 & SQL()
   sql(<query>[, <row separator>[, <field separator>[, <register>]]])
 
@@ -4608,7 +4652,7 @@ See also: anonymous attributes, sqlescape(), sql(), @sql
   
   See 'help sql examples' for examples.
 
-See also: sqlescape(), mapsql(), @sql, setq(), r()
+See also: sqlescape(), mapsql(), @sql, setq(), r(), @mapsql
 & SQL Examples
 
   Example of using sqlescape() to prevent injection attacks:
@@ -4657,7 +4701,7 @@ See also: sqlescape(), mapsql(), @sql, setq(), r()
 
   You must be a WIZARD or have the Sql_Ok power to use this function.
 
-See also: sql(), mapsql(), @sql
+See also: sql(), mapsql(), @sql, @mapsql
 & SQRT()
   sqrt(<number>)
  
@@ -4833,9 +4877,11 @@ See also: comp(), match(), setq(), r()
 
 See also: delete(), strinsert(), ldelete(), replace()
 & SUB()
-  sub(<number1>, <number2>)
- 
-  sub() subtracts <number2> from <number1> and returns the result.
+  sub(<number1>, <number>[, ... , <number>])
+
+  sub() subtracts <number> from <number1>. If more than one <number> argument
+  is given, each is subtracted from the result of the previous subtraction
+  in turn. The result of the final subtraction is returned.
   
 See also: add(), dec(), lmath(), vsub()
 & SUBJ()
@@ -5053,7 +5099,7 @@ See also: pueblo(), width(), height(), ssl()
     > think testlock(TYPE^PLAYER&FLAG^WIZARD, *Bilbo)
     0
   
-See also: @lock, lock(), elock(), locktypes
+See also: @lock, lock(), elock(), lockfilter(), locktypes
 & TEXTFILE()
 & TEXTENTRIES()
 & DYNHELP()
@@ -5229,14 +5275,14 @@ See also: merge(), splice()
 & TRIM()
 & TRIMPENN()
 & TRIMTINY()
-  trim(<string>[, <character to trim>[, <trim style>]])
-  trimpenn(<string>[, <character to trim>[, <trim style>]])
-  trimtiny(<string>[, <trim style>[, <character to trim>]])
+  trim(<string>[, <characters to trim>[, <trim style>]])
+  trimpenn(<string>[, <characters to trim>[, <trim style>]])
+  trimtiny(<string>[, <trim style>[, <characters to trim>]])
  
-  trim() strips leading and/or trailing occurances of <character to trim>
-  from <string>.
+  trim() strips leading and/or trailing occurances of each of the 
+  <characters to trim> from <string>.
 
-  <character to trim> defaults to a space.
+  <characters to trim> defaults to a space.
   
   If no <trim style> is specified, characters are trimmed from both the
   left and right sides of the string. If the 'l' trim style is specified, 
@@ -5246,7 +5292,7 @@ See also: merge(), splice()
   off of both sides of the string.
 
   Normally, the arguments for trim() are in the same order as trimpenn().
-  However, if the tiny_trim_fun @config option is on, the <character to trim>
+  However, if the tiny_trim_fun @config option is on, the <characters to trim>
   and <trim style> arguments are reversed. Use trimpenn() or trimtiny() if
   you want to specify a particular argument sequence no matter how the option
   is set.
@@ -5258,6 +5304,8 @@ See also: merge(), splice()
       You say, "BLAM"
       > say trim(-----> WOW <---,-,r)
       You say, "-----> WOW <"
+      > say trim(=~=~=~= Trim Test =~=~=~=,= ~)
+      You say "Trim Test"
 
 See also: squish(), edit()
 & TRUNC()

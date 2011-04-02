@@ -47,6 +47,8 @@
 /** Maximum number of wildcarded arguments */
 #define NUMARGS (10)
 
+bool help_wild(const char *restrict tstr, const char *restrict dstr);
+
 const unsigned char *tables = NULL;  /** Pointer to character tables */
 
 /** Do a wildcard match, without remembering the wild data.
@@ -82,7 +84,7 @@ quick_wild_new(const char *restrict tstr, const char *restrict dstr, bool cs)
 
 static bool
 real_atr_wild(const char *restrict tstr,
-              const char *restrict dstr, int *invokes);
+              const char *restrict dstr, int *invokes, char sep);
 /** Do an attribute name wildcard match.
  *
  * This probably crashes if fed NULLs instead of strings, too.
@@ -100,12 +102,19 @@ bool
 atr_wild(const char *restrict tstr, const char *restrict dstr)
 {
   int invokes = 10000;
-  return real_atr_wild(tstr, dstr, &invokes);
+  return real_atr_wild(tstr, dstr, &invokes, '`');
+}
+
+bool
+help_wild(const char *restrict tstr, const char *restrict dstr)
+{
+  int invokes = 10000;
+  return real_atr_wild(tstr, dstr, &invokes, ' ');
 }
 
 static bool
 real_atr_wild(const char *restrict tstr,
-              const char *restrict dstr, int *invokes)
+              const char *restrict dstr, int *invokes, char sep)
 {
   int starcount;
   if (*invokes > 0) {
@@ -115,7 +124,7 @@ real_atr_wild(const char *restrict tstr,
   }
 
   if (!*tstr)
-    return !strchr(dstr, '`');
+    return !strchr(dstr, sep);
 
   while (*tstr != '*') {
     switch (*tstr) {
@@ -123,16 +132,21 @@ real_atr_wild(const char *restrict tstr,
       /* Single character match.  Return false if at
        * end of data.
        */
-      if (!*dstr || *dstr == '`')
+      if (!*dstr || *dstr == sep)
         return 0;
       break;
     case '`':
       /* Delimiter match.  Special handling if at end of pattern. */
-      if (*dstr != '`')
-        return 0;
-      if (!tstr[1])
-        return !strchr(dstr + 1, '`');
-      break;
+      if (sep != '`') {
+        tstr--;
+        /* FALL THROUGH */
+      } else {
+        if (*dstr != sep)
+          return 0;
+        if (!tstr[1])
+          return !strchr(dstr + 1, sep);
+        break;
+      }
     case '\\':
       /* Escape character.  Move up, and force literal
        * match of next character.
@@ -159,7 +173,7 @@ real_atr_wild(const char *restrict tstr,
   /* Skip over wildcards. */
   while (starcount < 2 && ((*tstr == '?') || (*tstr == '*'))) {
     if (*tstr == '?') {
-      if (!*dstr || *dstr == '`')
+      if (!*dstr || *dstr == sep)
         return 0;
       dstr++;
       starcount = 0;
@@ -174,12 +188,12 @@ real_atr_wild(const char *restrict tstr,
 
   /* Return true on trailing '**'. */
   if (!*tstr)
-    return starcount == 2 || !strchr(dstr, '`');
+    return starcount == 2 || !strchr(dstr, sep);
 
   if (*tstr == '?') {
     /* Scan for possible matches. */
     while (*dstr) {
-      if (*dstr != '`' && real_atr_wild(tstr + 1, dstr + 1, invokes))
+      if (*dstr != sep && real_atr_wild(tstr + 1, dstr + 1, invokes, sep))
         return 1;
       dstr++;
       if (*invokes <= 0)
@@ -195,12 +209,12 @@ real_atr_wild(const char *restrict tstr,
       if (EQUAL(0, *dstr, *tstr)) {
         if (!*(tstr + 1) && *(dstr + 1))
           return 0;             /* No more in pattern string, but more in target */
-        if (real_atr_wild(tstr + 1, dstr + 1, invokes))
+        if (real_atr_wild(tstr + 1, dstr + 1, invokes, sep))
           return 1;
       }
       if (*invokes <= 0)
         return 0;
-      if (starcount < 2 && *dstr == '`')
+      if (starcount < 2 && *dstr == sep)
         return 0;
       dstr++;
     }

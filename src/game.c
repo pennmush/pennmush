@@ -326,6 +326,8 @@ dump_database_internal(void)
     /* The dump failed. Disk might be full or something went bad with the
        compression slave. Boo! */
     do_rawlog(LT_ERR, "ERROR! Database save failed.");
+    queue_event(SYSEVENT, "DUMP`ERROR", "%s,%d,PERROR %s",
+                T("GAME: ERROR! Database save failed!"), 0, strerror(errno));
     flag_broadcast("WIZARD ROYALTY", 0,
                    T("GAME: ERROR! Database save failed!"));
     if (f)
@@ -614,8 +616,13 @@ fork_and_dump(int forking)
       _exit(status ? 0 : 1);    /* d_d_i() returns true on success but exit code should be 0 on success */
     } else {
       reserve_fd();
-      if (status && DUMP_NOFORK_COMPLETE && *DUMP_NOFORK_COMPLETE)
-        flag_broadcast(0, 0, "%s", DUMP_NOFORK_COMPLETE);
+      if (status) {
+        queue_event(SYSEVENT, "DUMP`COMPLETE", "%s,%d",
+                    DUMP_NOFORK_COMPLETE, 0);
+        if (status && DUMP_NOFORK_COMPLETE && *DUMP_NOFORK_COMPLETE) {
+          flag_broadcast(0, 0, "%s", DUMP_NOFORK_COMPLETE);
+        }
+      }
     }
   }
 #ifdef LOG_CHUNK_STATS
@@ -969,7 +976,7 @@ do_readcache(dbref player)
 /** Check each attribute on each object in x for a $command matching cptr */
 #define list_match(x)        list_check(x, player, '$', ':', cptr, 0)
 /** Check each attribute on x for a $command matching cptr */
-#define cmd_match(x)         atr_comm_match(x, player, '$', ':', cptr, 0, 1, NULL, NULL, &errdb)
+#define cmd_match(x)         atr_comm_match(x, player, '$', ':', cptr, 0, 1, NULL, NULL, &errdb, 0)
 #define MAYBE_ADD_ERRDB(errdb)  \
         do { \
           if (GoodObject(errdb) && errdblist) { \
@@ -1057,7 +1064,7 @@ passwd_filter(const char *cmd)
  * \param from_port if 1, the command was direct input from a socket.
  */
 void
-process_command(dbref player, char *command, dbref cause, int from_port)
+process_command(dbref player, char *command, dbref cause, dbref caller, int from_port)
 {
   int a;
   char *p;                      /* utility */
@@ -1110,8 +1117,9 @@ process_command(dbref player, char *command, dbref cause, int from_port)
     do_log(LT_ERR, NOTHING, NOTHING,
            "Command attempted by %s(#%d) in invalid location #%d.",
            Name(player), player, Location(player));
-    if (Mobile(player))
-      moveto(player, PLAYER_START);     /* move it someplace valid */
+    if (Mobile(player)) {
+      moveto(player, PLAYER_START, SYSEVENT, "dbck");   /* move it someplace valid */
+    }
   }
   orator = player;
 
@@ -1141,7 +1149,7 @@ process_command(dbref player, char *command, dbref cause, int from_port)
 
   strcpy(unp, command);
 
-  cptr = command_parse(player, cause, command, from_port);
+  cptr = command_parse(player, cause, caller, command, from_port);
   if (cptr) {
     mush_strncpy(global_eval_context.ucom, cptr, BUFFER_LEN);
     a = 0;
@@ -1364,8 +1372,8 @@ list_check(dbref thing, dbref player, char type, char end, char *str,
   dbref errdb = NOTHING;
 
   while (thing != NOTHING) {
-    if (atr_comm_match
-        (thing, player, type, end, str, just_match, 1, NULL, NULL, &errdb))
+    if (atr_comm_match(thing, player, type,
+                       end, str, just_match, 1, NULL, NULL, &errdb, 0))
       match = 1;
     else {
       MAYBE_ADD_ERRDB(errdb);
@@ -1580,7 +1588,7 @@ bind_and_queue(dbref player, dbref cause, char *action,
 /** Would the scan command find an matching attribute on x for player p? */
 #define ScanFind(p,x)  \
   (Can_Examine(p,x) && \
-      ((num = atr_comm_match(x, p, '$', ':', command, 1, 1, atrname, &ptr, NULL)) != 0))
+      ((num = atr_comm_match(x, p, '$', ':', command, 1, 1, atrname, &ptr, NULL, 0)) != 0))
 
 /** Scan for matches of $commands.
  * This function scans for possible matches of user-def'd commands from the

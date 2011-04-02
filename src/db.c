@@ -1084,7 +1084,12 @@ get_new_locks(dbref i, PENNFILE *f, int c)
     /* boolexp */
     db_read_this_labeled_string(f, "key", &key);
     b = parse_boolexp_d(GOD, key, type, derefs);
-    add_lock_raw(creator, i, type, b, flags);
+    if (b == TRUE_BOOLEXP)
+      /* Malformed lock key in the db! Oops. */
+      do_rawlog(LT_ERR, "WARNING: Invalid lock key '%s' for lock #%d/%s!",
+		key, i, type);
+    else
+      add_lock_raw(creator, i, type, b, flags);
   }
 
   if (found != count)

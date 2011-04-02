@@ -22,6 +22,7 @@
 #include "flags.h"
 #include "htab.h"
 #include "mymalloc.h"
+#include "parse.h"
 #include "confmagic.h"
 
 
@@ -115,16 +116,16 @@ add_player_alias(dbref player, const char *alias)
 dbref
 lookup_player(const char *name)
 {
-  int p;
+  dbref d;
 
   if (!name || !*name)
     return NOTHING;
   if (*name == NUMBER_TOKEN) {
-    name++;
-    if (!is_strict_number(name))
+    d = parse_objid(name);
+    if (GoodObject(d) && IsPlayer(d))
+      return d;
+    else
       return NOTHING;
-    p = atoi(name);
-    return ((GoodObject(p) && IsPlayer(p)) ? p : NOTHING);
   }
   if (*name == LOOKUP_TOKEN)
     name++;

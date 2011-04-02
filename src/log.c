@@ -16,6 +16,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <limits.h>
 #ifdef I_SYS_TIME
 #include <sys/time.h>
 #ifdef TIME_WITH_SYS_TIME
@@ -36,20 +37,40 @@
 #include "log.h"
 #include "confmagic.h"
 
+struct log_stream;
+
+#define LOG_BUFFER_SIZE 1
+
 static char *quick_unparse(dbref object);
-static void start_log(FILE ** fp, const char *filename);
-static void end_log(const char *filename);
+static void start_log(struct log_stream *);
+static void end_log(struct log_stream *);
 
 BUFFERQ *activity_bq = NULL;
 
 HASHTAB htab_logfiles;  /**< Hash table of logfile names and descriptors */
 
-/* log file pointers */
-FILE *connlog_fp;  /**< Connect log */
-FILE *checklog_fp; /**< Checkpoint log */
-FILE *wizlog_fp;   /**< Wizard log */
-FILE *tracelog_fp; /**< Trace log */
-FILE *cmdlog_fp;   /**< Command log */
+#define NLOGS 7
+
+struct log_stream logs[NLOGS] = {
+  {LT_ERR, "error", ERRLOG, NULL, NULL},
+  {LT_CMD, "command", CMDLOG, NULL, NULL},
+  {LT_WIZ, "wizard", WIZLOG, NULL, NULL},
+  {LT_CONN, "connection", CONNLOG, NULL, NULL},
+  {LT_TRACE, "trace", TRACELOG, NULL, NULL},
+  {LT_CHECK, "checkpoint", CHECKLOG, NULL, NULL},
+  {LT_HUH, "huh", CMDLOG, NULL, NULL},
+};
+
+struct log_stream *
+lookup_log(enum log_type type)
+{
+  int n;
+  for (n = 0; n < NLOGS; n++)
+    if (logs[n].type == type)
+      return logs + n;
+  return NULL;
+}
+
 
 /* From wait.c */
 int lock_file(FILE *);
@@ -81,34 +102,35 @@ quick_unparse(dbref object)
 }
 
 static void
-start_log(FILE ** fp, const char *filename)
+start_log(struct log_stream *log)
 {
   static int ht_initialized = 0;
   FILE *f;
 
-  if (!filename || !*filename) {
-    *fp = stderr;
+  if (!log->filename || !log->filename) {
+    log->fp = stderr;
   } else {
     if (!ht_initialized) {
       hashinit(&htab_logfiles, 8);
       ht_initialized = 1;
     }
-    if ((f = (FILE *) hashfind(strupper(filename), &htab_logfiles))) {
-      /* We've already opened this file, so just use that pointer */
-      *fp = f;
+    if ((f = hashfind(strupper(log->filename), &htab_logfiles))) {
+      /* We've already opened this file for another log, so just use that pointer */
+      log->fp = f;
     } else {
-
-      *fp = fopen(filename, "a");
-      if (*fp == NULL) {
-        fprintf(stderr, "WARNING: cannot open log %s\n", filename);
-        *fp = stderr;
+      log->fp = fopen(log->filename, "a");
+      if (log->fp == NULL) {
+        fprintf(stderr, "WARNING: cannot open log %s: %s\n", log->filename,
+                strerror(errno));
+        log->fp = stderr;
       } else {
-        hashadd(strupper(filename), (void *) *fp, &htab_logfiles);
-        fprintf(*fp, "START OF LOG.\n");
-        fflush(*fp);
+        hashadd(strupper(log->filename), log->fp, &htab_logfiles);
+        fprintf(log->fp, "START OF LOG.\n");
+        fflush(log->fp);
       }
     }
   }
+  log->buffer = allocate_bufferq(LOG_BUFFER_SIZE);
 }
 
 /** Open all logfiles.
@@ -116,11 +138,10 @@ start_log(FILE ** fp, const char *filename)
 void
 start_all_logs(void)
 {
-  start_log(&connlog_fp, CONNLOG);
-  start_log(&checklog_fp, CHECKLOG);
-  start_log(&wizlog_fp, WIZLOG);
-  start_log(&tracelog_fp, TRACELOG);
-  start_log(&cmdlog_fp, CMDLOG);
+  int n;
+
+  for (n = 0; n < NLOGS; n++)
+    start_log(logs + n);
 }
 
 /** Redirect stderr to a error log file and close stdout and stdin. 
@@ -130,14 +151,14 @@ start_all_logs(void)
 void
 redirect_streams(void)
 {
-  FILE *errlog_fp;
+  FILE *fp;
 
   fprintf(stderr, "Redirecting stderr to %s\n", ERRLOG);
-  errlog_fp = fopen(ERRLOG, "a");
-  if (!errlog_fp) {
+  fp = fopen(ERRLOG, "a");
+  if (!fp) {
     fprintf(stderr, "Unable to open %s. Error output to stderr.\n", ERRLOG);
   } else {
-    fclose(errlog_fp);
+    fclose(fp);
     if (!freopen(ERRLOG, "a", stderr)) {
       printf(T("Ack!  Failed reopening stderr!"));
       exit(1);
@@ -152,17 +173,26 @@ redirect_streams(void)
 
 
 static void
-end_log(const char *filename)
+end_log(struct log_stream *log)
 {
   FILE *fp;
-  if (!filename || !*filename)
+
+  if (!log->filename || !*log->filename || !log->fp)
     return;
-  if ((fp = (FILE *) hashfind(strupper(filename), &htab_logfiles))) {
+  if ((fp = hashfind(strupper(log->filename), &htab_logfiles))) {
+    int n;
+
     lock_file(fp);
     fprintf(fp, "END OF LOG.\n");
     fflush(fp);
+    for (n = 0; n < NLOGS; n++)
+      if (log->fp == fp)
+        log->fp = NULL;
     fclose(fp);                 /* Implicit lock removal */
-    hashdelete(strupper(filename), &htab_logfiles);
+    free_bufferq(log->buffer);
+    log->fp = NULL;
+    log->buffer = NULL;
+    hashdelete(strupper(log->filename), &htab_logfiles);
   }
 }
 
@@ -171,13 +201,9 @@ end_log(const char *filename)
 void
 end_all_logs(void)
 {
-  const char *name, *next;
-  name = hash_firstentry_key(&htab_logfiles);
-  while (name) {
-    next = hash_nextentry_key(&htab_logfiles);
-    end_log(name);
-    name = next;
-  }
+  int n;
+  for (n = 0; n < NLOGS; n++)
+    end_log(logs + n);
 }
 
 
@@ -188,13 +214,13 @@ end_all_logs(void)
  * \param fmt format string for message.
  */
 void WIN32_CDECL
-do_rawlog(int logtype, const char *fmt, ...)
+do_rawlog(enum log_type logtype, const char *fmt, ...)
 {
+  struct log_stream *log;
   struct tm *ttm;
   char timebuf[18];
   char tbuf1[BUFFER_LEN + 50];
   va_list args;
-  FILE *f = NULL;
   va_start(args, fmt);
 
 #ifdef HAS_VSNPRINTF
@@ -209,39 +235,19 @@ do_rawlog(int logtype, const char *fmt, ...)
 
   strftime(timebuf, sizeof timebuf, "[%m/%d %H:%M:%S]", ttm);
 
-  switch (logtype) {
-  case LT_ERR:
-    f = stderr;
-    break;
-  case LT_HUH:
-  case LT_CMD:
-    start_log(&cmdlog_fp, CMDLOG);
-    f = cmdlog_fp;
-    break;
-  case LT_WIZ:
-    start_log(&wizlog_fp, WIZLOG);
-    f = wizlog_fp;
-    break;
-  case LT_CONN:
-    start_log(&connlog_fp, CONNLOG);
-    f = connlog_fp;
-    break;
-  case LT_TRACE:
-    start_log(&tracelog_fp, TRACELOG);
-    f = tracelog_fp;
-    break;
-  case LT_CHECK:
-    start_log(&checklog_fp, CHECKLOG);
-    f = checklog_fp;
-    break;
-  default:
-    f = stderr;
-    break;
+  log = lookup_log(logtype);
+
+  if (!log->fp) {
+    fprintf(stderr, "Attempt to write to %s log before it was started!\n",
+            log->name);
+    start_log(log);
   }
-  lock_file(f);
-  fprintf(f, "%s %s\n", timebuf, tbuf1);
-  fflush(f);
-  unlock_file(f);
+
+  lock_file(log->fp);
+  fprintf(log->fp, "%s %s\n", timebuf, tbuf1);
+  fflush(log->fp);
+  unlock_file(log->fp);
+  add_to_bufferq(log->buffer, logtype, GOD, tbuf1);
 }
 
 /** Log a message, with useful information.
@@ -254,7 +260,7 @@ do_rawlog(int logtype, const char *fmt, ...)
  * \param fmt mesage format string.
  */
 void WIN32_CDECL
-do_log(int logtype, dbref player, dbref object, const char *fmt, ...)
+do_log(enum log_type logtype, dbref player, dbref object, const char *fmt, ...)
 {
   /* tbuf1 had 50 extra chars because we might pass this function
    * both a label string and a command which could be up to BUFFER_LEN
@@ -324,6 +330,45 @@ do_log(int logtype, dbref player, dbref object, const char *fmt, ...)
   }
 }
 
+/** Recall lines from a log.
+ *
+ * \param player the enactor.
+ * \param type the log to recall from.
+ * \param lines the number of lines to recall. 0 for all.
+ */
+void
+do_log_recall(dbref player, enum log_type type, int lines)
+{
+  dbref dummy_dbref = NOTHING;
+  int dummy_type = 0, nlines = 0;
+  time_t dummy_ts;
+  char *line, *p;
+  struct log_stream *log;
+
+  if (lines <= 0)
+    lines = INT_MAX;
+
+  log = lookup_log(type);
+
+  if (lines != INT_MAX) {
+    p = NULL;
+    while (iter_bufferq(log->buffer, &p, &dummy_dbref, &dummy_type, &dummy_ts))
+      nlines += 1;
+  } else
+    nlines = INT_MAX;
+
+  notify(player, T("Begin log recall."));
+  p = NULL;
+  while ((line =
+          iter_bufferq(log->buffer, &p, &dummy_dbref, &dummy_type,
+                       &dummy_ts))) {
+    if (nlines <= lines)
+      notify(player, line);
+    nlines -= 1;
+  }
+  notify(player, T("End log recall."));
+}
+
 /** Wipe out a game log. This is intended for those emergencies where
  * the log has grown out of bounds, overflowing the disk quota, etc.
  * Because someone with the god password can use this command to wipe
@@ -334,67 +379,31 @@ do_log(int logtype, dbref player, dbref object, const char *fmt, ...)
  * \param str password for wiping logs.
  */
 void
-do_logwipe(dbref player, int logtype, char *str)
+do_logwipe(dbref player, enum log_type logtype, char *str)
 {
+  struct log_stream *log;
+
+  log = lookup_log(logtype);
+
   if (strcmp(str, LOG_WIPE_PASSWD)) {
-    const char *lname;
-    switch (logtype) {
-    case LT_CONN:
-      lname = "connection";
-      break;
-    case LT_CHECK:
-      lname = "checkpoint";
-      break;
-    case LT_CMD:
-      lname = "command";
-      break;
-    case LT_TRACE:
-      lname = "trace";
-      break;
-    case LT_WIZ:
-      lname = "wizard";
-      break;
-    default:
-      lname = "unspecified";
-    }
     notify(player, T("Wrong password."));
     do_log(LT_WIZ, player, NOTHING,
-           "Invalid attempt to wipe the %s log, password %s", lname, str);
+           "Invalid attempt to wipe the %s log, password %s", log->name, str);
     return;
   }
   switch (logtype) {
   case LT_CONN:
-    end_log(CONNLOG);
-    unlink(CONNLOG);
-    start_log(&connlog_fp, CONNLOG);
-    do_log(LT_ERR, player, NOTHING, "Connect log wiped.");
-    break;
   case LT_CHECK:
-    end_log(CHECKLOG);
-    unlink(CHECKLOG);
-    start_log(&checklog_fp, CHECKLOG);
-    do_log(LT_ERR, player, NOTHING, "Checkpoint log wiped.");
-    break;
   case LT_CMD:
-    end_log(CMDLOG);
-    unlink(CMDLOG);
-    start_log(&cmdlog_fp, CMDLOG);
-    do_log(LT_ERR, player, NOTHING, "Command log wiped.");
-    break;
   case LT_TRACE:
-    end_log(TRACELOG);
-    unlink(TRACELOG);
-    start_log(&tracelog_fp, TRACELOG);
-    do_log(LT_ERR, player, NOTHING, "Trace log wiped.");
-    break;
   case LT_WIZ:
-    end_log(WIZLOG);
-    unlink(WIZLOG);
-    start_log(&wizlog_fp, WIZLOG);
-    do_log(LT_ERR, player, NOTHING, "Wizard log wiped.");
+    end_log(log);
+    unlink(log->filename);
+    start_log(log);
+    do_log(LT_ERR, player, NOTHING, "%s log wiped.", log->name);
     break;
   default:
-    notify(player, T("That is not a valid log."));
+    notify(player, T("That is not a clearable log."));
     return;
   }
   notify(player, T("Log wiped."));
@@ -407,7 +416,7 @@ do_logwipe(dbref player, int logtype, char *str)
  * \param action message to log.
  */
 void
-log_activity(int type, dbref player, const char *action)
+log_activity(enum log_act_type type, dbref player, const char *action)
 {
   if (!activity_bq)
     activity_bq = allocate_bufferq(ACTIVITY_LOG_SIZE);

@@ -375,6 +375,7 @@ FUNTAB flist[] = {
   {"CHANNELS", fun_channels, 0, 2, FN_REG | FN_STRIPANSI},
   {"CLFLAGS", fun_cflags, 1, 2, FN_REG | FN_STRIPANSI},
   {"CLOCK", fun_clock, 1, 2, FN_REG | FN_STRIPANSI},
+  {"CMOGRIFIER", fun_cmogrifier, 1, 1, FN_REG | FN_STRIPANSI},
   {"CMSGS", fun_cinfo, 1, 1, FN_REG | FN_STRIPANSI},
   {"COWNER", fun_cowner, 1, 1, FN_REG | FN_STRIPANSI},
   {"CRECALL", fun_crecall, 1, 5, FN_REG | FN_STRIPANSI},
@@ -397,7 +398,8 @@ FUNTAB flist[] = {
   {"CONTROLS", fun_controls, 2, 2, FN_REG | FN_STRIPANSI},
   {"CONVSECS", fun_convsecs, 1, 2, FN_REG | FN_STRIPANSI},
   {"CONVUTCSECS", fun_convsecs, 1, 1, FN_REG | FN_STRIPANSI},
-  {"CONVTIME", fun_convtime, 1, 1, FN_REG | FN_STRIPANSI},
+  {"CONVTIME", fun_convtime, 1, 2, FN_REG | FN_STRIPANSI},
+  {"CONVUTCTIME", fun_convtime, 1, 1, FN_REG | FN_STRIPANSI},
   {"COR", fun_cor, 2, INT_MAX, FN_NOPARSE | FN_STRIPANSI},
   {"NCOR", fun_cor, 1, INT_MAX, FN_NOPARSE | FN_STRIPANSI},
   {"CREATE", fun_create, 1, 3, FN_REG},
@@ -410,7 +412,7 @@ FUNTAB flist[] = {
   {"DEFAULT", fun_default, 2, INT_MAX, FN_NOPARSE},
   {"DELETE", fun_delete, 3, 3, FN_REG},
   {"DIE", fun_die, 2, 3, FN_REG | FN_STRIPANSI},
-  {"DIG", fun_dig, 1, 3, FN_REG},
+  {"DIG", fun_dig, 1, 4, FN_REG},
   {"DIGEST", fun_digest, 2, -2, FN_REG},
   {"DIST2D", fun_dist2d, 4, 4, FN_REG | FN_STRIPANSI},
   {"DIST3D", fun_dist3d, 6, 6, FN_REG | FN_STRIPANSI},
@@ -514,6 +516,7 @@ FUNTAB flist[] = {
   {"LOCALIZE", fun_localize, 1, 1, FN_NOPARSE},
   {"LOCATE", fun_locate, 3, 3, FN_REG | FN_STRIPANSI},
   {"LOCK", fun_lock, 1, 2, FN_REG | FN_STRIPANSI},
+  {"LOCKFILTER", fun_lockfilter, 2, 3, FN_REG | FN_STRIPANSI},
   {"LOCKFLAGS", fun_lockflags, 0, 1, FN_REG | FN_STRIPANSI},
   {"LOCKOWNER", fun_lockowner, 1, 1, FN_REG | FN_STRIPANSI},
   {"LOCKS", fun_locks, 1, 1, FN_REG | FN_STRIPANSI},
@@ -632,7 +635,7 @@ FUNTAB flist[] = {
   {"PORTS", fun_ports, 1, 1, FN_REG | FN_STRIPANSI},
   {"POS", fun_pos, 2, 2, FN_REG | FN_STRIPANSI},
   {"POSS", fun_poss, 1, 1, FN_REG | FN_STRIPANSI},
-  {"POWERS", fun_powers, 1, 2, FN_REG | FN_STRIPANSI},
+  {"POWERS", fun_powers, 0, 2, FN_REG | FN_STRIPANSI},
   {"PROMPT", fun_prompt, 2, -2, FN_REG},
   {"PUEBLO", fun_pueblo, 1, 1, FN_REG | FN_STRIPANSI},
   {"QUOTA", fun_quota, 1, 1, FN_REG | FN_STRIPANSI},
@@ -687,9 +690,9 @@ FUNTAB flist[] = {
   {"SET", fun_set, 2, 2, FN_REG},
   {"SETQ", fun_setq, 2, INT_MAX, FN_REG},
   {"SETR", fun_setq, 2, INT_MAX, FN_REG},
-  {"SETDIFF", fun_setdiff, 2, 5, FN_REG},
-  {"SETINTER", fun_setinter, 2, 5, FN_REG},
-  {"SETUNION", fun_setunion, 2, 5, FN_REG},
+  {"SETDIFF", fun_setmanip, 2, 5, FN_REG},
+  {"SETINTER", fun_setmanip, 2, 5, FN_REG},
+  {"SETUNION", fun_setmanip, 2, 5, FN_REG},
   {"SHA0", fun_sha0, 1, 1, FN_REG},
   {"SHL", fun_shl, 2, 2, FN_REG | FN_STRIPANSI},
   {"SHR", fun_shr, 2, 2, FN_REG | FN_STRIPANSI},
@@ -721,7 +724,7 @@ FUNTAB flist[] = {
   {"STRLEN", fun_strlen, 1, -1, FN_REG},
   {"STRMATCH", fun_strmatch, 2, 3, FN_REG},
   {"STRREPLACE", fun_strreplace, 4, 4, FN_REG},
-  {"SUB", fun_sub, 2, 2, FN_REG | FN_STRIPANSI},
+  {"SUB", fun_sub, 2, INT_MAX, FN_REG | FN_STRIPANSI},
   {"SUBJ", fun_subj, 1, 1, FN_REG | FN_STRIPANSI},
   {"SWITCH", fun_switch, 3, INT_MAX, FN_NOPARSE},
   {"SWITCHALL", fun_switch, 3, INT_MAX, FN_NOPARSE},
@@ -1367,6 +1370,9 @@ cnf_add_function(char *name, char *opts)
     return 0;
   *attrname++ = '\0';
   upcasestr(attrname);
+  /* Account for #dbref/foo */
+  if (*one == '#')
+    one++;
   /* Don't care if the attr exists, only if it /could/ exist */
   if (!is_integer(one) || !good_atr_name(attrname))
     return 0;

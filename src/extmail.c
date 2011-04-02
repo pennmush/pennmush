@@ -1159,6 +1159,18 @@ send_mail(dbref player, dbref target, char *subject, char *message,
 }
 
 static int
+can_mail_to(dbref player, dbref target)
+{
+  if (!can_mail(player)) {
+    return 0;
+  }
+  if (!(Hasprivs(player) || eval_lock(player, target, Mail_Lock))) {
+    return 0;
+  }
+  return 1;
+}
+
+static int
 real_send_mail(dbref player, dbref target, char *subject, char *message,
                mail_flag flags, int silent, int nosig)
 {
@@ -1289,9 +1301,17 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
   mdb_top++;
 
   /* notify people */
-  if (!silent)
-    notify_format(player,
-                  T("MAIL: You sent your message to %s."), Name(target));
+  if (!silent) {
+    if (can_mail_to(target, player)) {
+      notify_format(player,
+                    T("MAIL: You sent your message to %s."), Name(target));
+    } else {
+      notify_format(player,
+                    T
+                    ("MAIL: You sent your message to %s, but they can't mail you!"),
+                    Name(target));
+    }
+  }
   notify_format(target,
                 T("MAIL: You have a new message (%d) from %s."),
                 rc + uc + cc + 1, Name(player));
@@ -2509,14 +2529,13 @@ parse_msglist(const char *msglist, struct mail_selector *ms, dbref player)
   /* Initialize the mail selector - this matches all messages */
   ms->low = 0;
   ms->high = 0;
-  ms->flags = 0x00FF | M_MSUNREAD;
+  ms->flags = 0x00FF | M_MSUNREAD | M_FOLDER;
   ms->player = 0;
   ms->days = -1;
   ms->day_comp = 0;
   /* Now, parse the message list */
   if (!msglist || !*msglist) {
     /* All messages in current folder */
-    ms->flags |= M_FOLDER;
     return 1;
   }
   /* Don't mess with msglist itself */
@@ -2524,15 +2543,16 @@ parse_msglist(const char *msglist, struct mail_selector *ms, dbref player)
   p = tbuf1;
   while (p && *p && isspace((unsigned char) *p))
     p++;
-  if (!p || !*p) {
-    ms->flags |= M_FOLDER;
+  if (!p || !*p)
     return 1;                   /* all messages in current folder */
-  }
+
   if (isdigit((unsigned char) *p) || *p == '-') {
     if (!parse_message_spec(player, p, &ms->low, &ms->high, &folder)) {
       notify(player, T("MAIL: Invalid message specification"));
       return 0;
     }
+    /* remove current folder when other folder specified */
+    ms->flags &= ~M_FOLDER;
     ms->flags |= FolderBit(folder);
   } else if (*p == '~') {
     /* exact # of days old */
@@ -2611,7 +2631,7 @@ parse_msglist(const char *msglist, struct mail_selector *ms, dbref player)
   } else if (!strcasecmp(p, "all")) {
     ms->flags = M_ALL;
   } else if (!strcasecmp(p, "folder")) {
-    ms->flags = M_FOLDER;
+    ms->flags |= M_FOLDER;
   } else if (!strcasecmp(p, "urgent")) {
     ms->flags = M_URGENT | M_FOLDER;
   } else if (!strcasecmp(p, "unread")) {

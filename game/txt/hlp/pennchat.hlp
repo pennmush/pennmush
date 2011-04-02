@@ -106,12 +106,12 @@ See also: @chat, @pageformat, @message, speak(), mogrify
 & CHAN_USEFIRSTMATCH
   Flag:  CHAN_USEFIRSTMATCH  (any type)
 
-  When this flag is set on an object that uses the chat system, channel name
-  matching will default to the first matching channel in cases of ambiguity.
-  Without this flag, attempting to use an ambiguous partial channel name
-  will produce an error.
+  Normally, when an object attempts to speak on the channel system with
+  @chat, using an ambiguous channel name produces an error message. With
+  this flag set, it will instead speak on the first channel whose name is
+  a match. Other commands in the chat system are not affected by the flag.
 
-See also: CHAT
+See also: CHAT, @chat, @cemit
 & @CEMIT
 & @NSCEMIT
 & CEMIT()
@@ -126,9 +126,12 @@ See also: CHAT
   /silent is given - if neither is given, the default behaviour is controlled
   by the noisy_cemit @config option. The /noeval switch prevents <message> 
   from being evaluated.
+  
+  You must be able to speak on the channel, or have the See_All and Pemit_All
+  @powers, to @cemit on the channel.
 
   @nscemit is exactly the same, but does not produce nospoof information when
-  used by players with the Can_nspemit @power.
+  used by players with the Can_spoof @power.
 
   cemit() and nscemit() work the same as @cemit/silent and @nscemit/silent,
   respectively. If <noisy> is given as a true value, they work like
@@ -142,9 +145,9 @@ See also: @chat
   The @channel command is used to add, join, list and modify channels in the
   chat system. It takes many different switches.
 
-  Help for @channel system is split into a number of topics. Please see 'help 
-  @channel <topic>' for more, where <topic> is one of the words below. You
-  can also use 'help @channel/<switch>' for help on a particular switch.
+  Help for @channel is split into a number of topics. Please see 'help 
+  @channel <topic>' for more, where <topic> is one of the words below. For
+  help on a specific switch to @command, use 'help @channel/<switch>'.
 
   Joining    - How to find, join, and leave channels
   Other      - Setting channel titles, recalling previous chat messages
@@ -158,7 +161,7 @@ See also: CHAT, @chat, @cemit
 & @channel/on
 & @channel/join
 & @channel/off
-& @channel/unjoin
+& @channel/leave
   @channel/list [<prefix>]
   @channel/what [<prefix>]
   @channel/who <channel>
@@ -178,7 +181,7 @@ See also: CHAT, @chat, @cemit
 
   @channel/on and @channel/off add or remove you from the given <channel>.
   You only hear messages for channels you're on, and most channels require you
-  to join them before you can speak on them. /join and /unjoin are aliases for
+  to join them before you can speak on them. /join and /leave are aliases for
   /on and /off.
 
   Continued in 'help @channel joining2'.
@@ -226,6 +229,7 @@ See also: @channel/who, cstatus(), cowner(), cflags(), channels(),
   @channel/title lets you set a channel title, which is shown before your name
   whenever you speak on a channel. If =<message> is omitted, your current
   title on the channel is shown. Use an empty <message> to clear your title.
+  The maximum length of titles is set in the 'chan_title_len' @config option.
 
   @channel/recall shows you the most recent messages on the channel, if it has
   been given a recall buffer with @channel/buffer. With no extra arguments,
@@ -321,6 +325,7 @@ See also: @clock
 
   See 'help mogrify2' for info on specific mogrifiers, and 'help mogrify3'
   for some examples.
+See also: cmogrifier()
 & mogrify2
 
   There are mogrify attributes for each individual piece of the channel
@@ -441,10 +446,9 @@ See also: cflags(), clflags()
   @clock/hide <channel>[=<key>]
   @clock/mod <channel>[=<key>]
 
-  The @clock command modifies the a lock on a chat channel. If no <key> is
-  specified, the lock is removed. Evaluation locks will not work with @clock,
-  but you can use an indirect lock which uses evaluation locks. For an
-  explaination of the <key> argument, see 'help @lock'.
+  The @clock command modifies the @lock-style lock on a chat channel. If no 
+  <key> is specified, the lock is removed. See "help lockkeys" for an
+  explaination of <key>.
 
   The "join" lock restricts who can join the channel.
   The "speak" lock restricts who can speak on the channel.
@@ -453,18 +457,25 @@ See also: cflags(), clflags()
   The "mod" lock restricts who can modify the channel. If you pass the
   mod lock on the channel, you can do anything short of deleting it.
 
-  When new channels are added, the mod lock is set to the
-  creator/owner, and all other locks are unlocked.
-
+  When new channels are added, the mod lock is set to the creator/owner
+  (=<creator>), and all other locks are unlocked.
+  
   Continued in 'help @clock2'.
 & @clock2
-  You can use indirect @clocks to lock a channel to a lock of any type
-  (including evaluation locks) on a VISUAL object. This channel can only
-  be joined by an UNFINDABLE player:
+  Locks are checked as if they were set on the object attemping to pass
+  them - for example, in the channel lock:
+    > @clock/join Public=test/1
+  the attribute "test" will be evaluated on the object trying to join the
+  Public channel.
+
+  You can use indirect @clocks to lock a channel to an @lock on an object.
+  Objects attempting to pass the lock must be able to see the indirect lock,
+  so it's recommended you set either the lock or the object VISUAL. This
+  channel can only be joined by objects which aren't set UNFINDABLE:
 
   > @clock/join unfindchannel=@#10
   > @lock/user:ChanJoinLock #10=!flag^unfindable
-  > @set #10=VISUAL
+  > @lset #10/ChanJoinLock=VISUAL   OR   @set #10=VISUAL
 
   @clock                  Corresponding default user: lock for object
   join                    ChanJoinLock
@@ -473,25 +484,29 @@ See also: cflags(), clflags()
   hide                    ChanHideLock
   mod                     ChanModLock
 
-  You can lock multiple channels to the same object by specfiying a
-  specific indirect lock instead of the default one:
+  If you want to store different locks for different channels on the same
+  object, you can use a specific indirect lock instead of the default one:
 
   > @lock/user:onechanneljoin #10=flag^foo
   > @clock/join onechannel=@#10/onechanneljoin
   > @lock/user:anotherchanneljoin #10=flag^bar
   > @clock/join anotherchannel=@#10/anotherchanneljoin
 
-See also: clock()
+See also: clock(), @lock
 & COWNER()
   cowner(<channel>)
 
   Returns the dbref of the owner of a channel.
+  
+See also: @channel/chown
 & CTITLE()
   ctitle(<channel>, <object>)
 
   Returns <object>'s @channel/title on <channel>. You must either be able
   to examine the object, or it must be visibly on <channel>, and you must
   either be on <channel> on able to join it.
+  
+See also: @channel/title
 & CSTATUS()
   cstatus(<channel>, <object>)
 
@@ -500,7 +515,7 @@ See also: clock()
   object, or it must visible be on the channel; "Off" is returned for
   objects that you cannot see on the channel.
   
-See also: cwho(), cflags()
+See also: cwho(), cflags(), @channel/on, @channel/gag
 & CDESC()
 & CUSERS()
 & CMSGS()
@@ -537,7 +552,7 @@ See also: crecall(), cbuffer(), @channel/recall, @channel/buffer
   If <skip gagged?> is given, and is true, gagged objects will not be
   included in the results.
 
-See also: cstatus()
+See also: cstatus(), @channel/who
 & CFLAGS()
 & CLFLAGS()
   cflags(<channel>)
@@ -550,8 +565,8 @@ See also: cstatus()
   for the list. You must be able to see the channel to use this function.
 
   With two arguments, cflags() returns a list of flags for that object on 
-  that channel, currently a string consisting of zero or more of 
-  "G" (gagging), "Q" (muted), and "H" (hidden). You must be able to see that
+  that channel, currently a string consisting of zero or more of "G" (Gag),
+  "Q" (Quiet), "H" (Hide) and "C" (Combine). You must be able to see that
   channel and to examine the object to use this function. If the object is
   not on the channel, an error is returned.
 
@@ -575,6 +590,8 @@ See also: cstatus()
   If you don't have permission to examine the object, you only see those
   channels to which the object belong for which you have permission to join
   (or are joined to).
+  
+See also: @channel/list
 & CLOCK()
   clock(<channel>[/<locktype>][, <new lock>])
 
@@ -592,11 +609,18 @@ See also: @clock, @lock
   include their timestamps; otherwise, they will not.
 
 See also: @channel/recall, cbufferadd()
+& CMOGRIFIER()
+  cmogrifier(<channel>)
+
+  Returns the dbref of the mogrifier of a channel.
+  
+See also: @channel/mogrifier, @chatformat
 & Channel functions
   Channel functions work with the channel system.
 
   cbuffer()     cbufferadd()  cdesc()       cemit()       cflags()
-  channels()    clflags()     clock()       cmsgs()       cowner()
-  crecall()     cstatus()     ctitle()      cusers()      cwho()
+  channels()    clflags()     clock()       cmogrifier()  cmsgs()
+  cowner()      crecall()     cstatus()     ctitle()      cusers()
+  cwho()
 
 See also: CHAT, @channel, @cemit, @clock

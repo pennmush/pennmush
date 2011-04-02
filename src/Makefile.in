@@ -221,6 +221,7 @@ access.o: ../hdrs/mymalloc.h
 access.o: ../hdrs/match.h
 access.o: ../hdrs/parse.h
 access.o: ../hdrs/log.h
+access.o: ../hdrs/bufferq.h
 atr_tab.o: ../config.h
 atr_tab.o: ../hdrs/conf.h
 atr_tab.o: ../hdrs/copyrite.h
@@ -242,6 +243,7 @@ atr_tab.o: ../hdrs/atr_tab.h
 atr_tab.o: ../hdrs/privtab.h
 atr_tab.o: ../hdrs/mymalloc.h
 atr_tab.o: ../hdrs/log.h
+atr_tab.o: ../hdrs/bufferq.h
 atr_tab.o: ../hdrs/parse.h
 atr_tab.o: ../hdrs/ansi.h
 attrib.o: ../hdrs/copyrite.h
@@ -269,6 +271,7 @@ attrib.o: ../hdrs/strtree.h
 attrib.o: ../hdrs/lock.h
 attrib.o: ../hdrs/boolexp.h
 attrib.o: ../hdrs/log.h
+attrib.o: ../hdrs/bufferq.h
 attrib.o: ../hdrs/sort.h
 boolexp.o: ../hdrs/copyrite.h
 boolexp.o: ../config.h
@@ -292,8 +295,8 @@ boolexp.o: ../hdrs/boolexp.h
 boolexp.o: ../hdrs/parse.h
 boolexp.o: ../hdrs/attrib.h
 boolexp.o: ../hdrs/log.h
-boolexp.o: ../hdrs/extchat.h
 boolexp.o: ../hdrs/bufferq.h
+boolexp.o: ../hdrs/extchat.h
 boolexp.o: ../hdrs/strtree.h
 boolexp.o: ../hdrs/mymalloc.h
 bsd.o: ../hdrs/copyrite.h
@@ -328,6 +331,7 @@ bsd.o: ../hdrs/ident.h
 bsd.o: ../hdrs/lookup.h
 bsd.o: ../hdrs/strtree.h
 bsd.o: ../hdrs/log.h
+bsd.o: ../hdrs/bufferq.h
 bsd.o: ../hdrs/myssl.h
 bsd.o: ../hdrs/mymalloc.h
 bsd.o: ../hdrs/extmail.h
@@ -374,6 +378,7 @@ chunk.o: ../hdrs/boolexp.h
 chunk.o: ../hdrs/switches.h
 chunk.o: ../hdrs/intrface.h
 chunk.o: ../hdrs/log.h
+chunk.o: ../hdrs/bufferq.h
 chunk.o: ../hdrs/mymalloc.h
 cmdlocal.o: ../hdrs/copyrite.h
 cmdlocal.o: ../config.h
@@ -426,6 +431,7 @@ cmds.o: ../hdrs/function.h
 cmds.o: ../hdrs/command.h
 cmds.o: ../hdrs/switches.h
 cmds.o: ../hdrs/log.h
+cmds.o: ../hdrs/bufferq.h
 command.o: ../hdrs/copyrite.h
 command.o: ../config.h
 command.o: ../hdrs/conf.h
@@ -456,6 +462,7 @@ command.o: ../hdrs/boolexp.h
 command.o: ../hdrs/switches.h
 command.o: ../hdrs/mymalloc.h
 command.o: ../hdrs/log.h
+command.o: ../hdrs/bufferq.h
 command.o: ../hdrs/sort.h
 command.o: ../hdrs/cmds.h
 command.o: switchinc.c
@@ -464,6 +471,7 @@ compress.o: ../options.h
 compress.o: ../hdrs/mushtype.h
 compress.o: ../hdrs/copyrite.h
 compress.o: ../hdrs/log.h
+compress.o: ../hdrs/bufferq.h
 compress.o: comp_h.c
 compress.o: ../hdrs/conf.h
 compress.o: ../hdrs/htab.h
@@ -501,6 +509,7 @@ conf.o: ../hdrs/command.h
 conf.o: ../hdrs/boolexp.h
 conf.o: ../hdrs/switches.h
 conf.o: ../hdrs/log.h
+conf.o: ../hdrs/bufferq.h
 conf.o: ../hdrs/game.h
 conf.o: ../hdrs/attrib.h
 conf.o: ../hdrs/help.h
@@ -533,6 +542,7 @@ cque.o: ../hdrs/attrib.h
 cque.o: ../hdrs/function.h
 cque.o: ../hdrs/case.h
 cque.o: ../hdrs/log.h
+cque.o: ../hdrs/bufferq.h
 cque.o: ../hdrs/intmap.h
 create.o: ../hdrs/copyrite.h
 create.o: ../config.h
@@ -583,11 +593,11 @@ db.o: ../hdrs/game.h
 db.o: ../hdrs/lock.h
 db.o: ../hdrs/boolexp.h
 db.o: ../hdrs/log.h
+db.o: ../hdrs/bufferq.h
 db.o: ../hdrs/strtree.h
 db.o: ../hdrs/parse.h
 db.o: ../hdrs/privtab.h
 db.o: ../hdrs/extchat.h
-db.o: ../hdrs/bufferq.h
 db.o: ../hdrs/extmail.h
 db.o: ../hdrs/ansi.h
 destroy.o: ../config.h
@@ -608,6 +618,7 @@ destroy.o: ../hdrs/chunk.h
 destroy.o: ../confmagic.h
 destroy.o: ../hdrs/mypcre.h
 destroy.o: ../hdrs/log.h
+destroy.o: ../hdrs/bufferq.h
 destroy.o: ../hdrs/game.h
 destroy.o: ../hdrs/extmail.h
 destroy.o: ../hdrs/malias.h
@@ -673,6 +684,7 @@ extmail.o: ../hdrs/mymalloc.h
 extmail.o: ../hdrs/ansi.h
 extmail.o: ../hdrs/pueblo.h
 extmail.o: ../hdrs/log.h
+extmail.o: ../hdrs/bufferq.h
 extmail.o: ../hdrs/lock.h
 extmail.o: ../hdrs/boolexp.h
 extmail.o: ../hdrs/command.h
@@ -696,6 +708,7 @@ filecopy.o: ../confmagic.h
 filecopy.o: ../hdrs/mypcre.h
 filecopy.o: ../hdrs/mymalloc.h
 filecopy.o: ../hdrs/log.h
+filecopy.o: ../hdrs/bufferq.h
 flaglocal.o: ../hdrs/copyrite.h
 flaglocal.o: ../config.h
 flaglocal.o: ../hdrs/conf.h
@@ -738,6 +751,7 @@ flags.o: ../hdrs/privtab.h
 flags.o: ../hdrs/game.h
 flags.o: ../hdrs/lock.h
 flags.o: ../hdrs/log.h
+flags.o: ../hdrs/bufferq.h
 flags.o: ../hdrs/sort.h
 flags.o: ../hdrs/mymalloc.h
 flags.o: ../hdrs/oldflags.h
@@ -822,6 +836,7 @@ fundb.o: ../hdrs/game.h
 fundb.o: ../hdrs/privtab.h
 fundb.o: ../hdrs/lock.h
 fundb.o: ../hdrs/log.h
+fundb.o: ../hdrs/bufferq.h
 fundb.o: ../hdrs/attrib.h
 fundb.o: ../hdrs/function.h
 funlist.o: ../hdrs/copyrite.h
@@ -960,6 +975,7 @@ funtime.o: ../confmagic.h
 funtime.o: ../hdrs/mypcre.h
 funtime.o: ../hdrs/parse.h
 funtime.o: ../hdrs/log.h
+funtime.o: ../hdrs/bufferq.h
 funtime.o: ../hdrs/match.h
 funtime.o: ../hdrs/attrib.h
 funufun.o: ../hdrs/copyrite.h
@@ -1044,6 +1060,7 @@ help.o: ../hdrs/boolexp.h
 help.o: ../hdrs/switches.h
 help.o: ../hdrs/help.h
 help.o: ../hdrs/log.h
+help.o: ../hdrs/bufferq.h
 help.o: ../hdrs/ansi.h
 help.o: ../hdrs/parse.h
 help.o: ../hdrs/pueblo.h
@@ -1065,6 +1082,7 @@ htab.o: ../hdrs/chunk.h
 htab.o: ../confmagic.h
 htab.o: ../hdrs/mypcre.h
 htab.o: ../hdrs/log.h
+htab.o: ../hdrs/bufferq.h
 htab.o: ../hdrs/mymalloc.h
 ident.o: ../config.h
 ident.o: ../hdrs/conf.h
@@ -1125,6 +1143,7 @@ local.o: ../hdrs/command.h
 local.o: ../hdrs/boolexp.h
 local.o: ../hdrs/switches.h
 local.o: ../hdrs/lock.h
+local.o: ../hdrs/game.h
 lock.o: ../hdrs/copyrite.h
 lock.o: ../config.h
 lock.o: ../hdrs/conf.h
@@ -1146,6 +1165,7 @@ lock.o: ../hdrs/attrib.h
 lock.o: ../hdrs/lock.h
 lock.o: ../hdrs/match.h
 lock.o: ../hdrs/log.h
+lock.o: ../hdrs/bufferq.h
 lock.o: ../hdrs/mymalloc.h
 lock.o: ../hdrs/strtree.h
 lock.o: ../hdrs/privtab.h
@@ -1221,6 +1241,7 @@ malias.o: ../hdrs/privtab.h
 malias.o: ../hdrs/mymalloc.h
 malias.o: ../hdrs/pueblo.h
 malias.o: ../hdrs/log.h
+malias.o: ../hdrs/bufferq.h
 markup.o: ../config.h
 markup.o: ../hdrs/copyrite.h
 markup.o: ../hdrs/conf.h
@@ -1243,6 +1264,7 @@ markup.o: ../hdrs/mypcre.h
 markup.o: ../hdrs/ansi.h
 markup.o: ../hdrs/mymalloc.h
 markup.o: ../hdrs/log.h
+markup.o: ../hdrs/bufferq.h
 markup.o: ../hdrs/game.h
 markup.o: htmltab.c
 match.o: ../hdrs/copyrite.h
@@ -1283,6 +1305,7 @@ memcheck.o: ../confmagic.h
 memcheck.o: ../hdrs/mypcre.h
 memcheck.o: ../hdrs/mymalloc.h
 memcheck.o: ../hdrs/log.h
+memcheck.o: ../hdrs/bufferq.h
 move.o: ../hdrs/copyrite.h
 move.o: ../config.h
 move.o: ../hdrs/conf.h
@@ -1305,6 +1328,7 @@ move.o: ../hdrs/lock.h
 move.o: ../hdrs/boolexp.h
 move.o: ../hdrs/parse.h
 move.o: ../hdrs/log.h
+move.o: ../hdrs/bufferq.h
 move.o: ../hdrs/command.h
 move.o: ../hdrs/switches.h
 move.o: ../hdrs/cmds.h
@@ -1329,6 +1353,7 @@ mymalloc.o: ../hdrs/ptab.h
 mymalloc.o: ../hdrs/dbio.h
 mymalloc.o: ../hdrs/chunk.h
 mymalloc.o: ../hdrs/log.h
+mymalloc.o: ../hdrs/bufferq.h
 mymalloc.o: ../hdrs/externs.h
 mymalloc.o: ../hdrs/compile.h
 mymalloc.o: ../confmagic.h
@@ -1390,6 +1415,7 @@ myssl.o: ../hdrs/chunk.h
 myssl.o: ../hdrs/mypcre.h
 myssl.o: ../hdrs/myssl.h
 myssl.o: ../hdrs/log.h
+myssl.o: ../hdrs/bufferq.h
 myssl.o: ../hdrs/parse.h
 myssl.o: ../hdrs/SFMT.h
 notify.o: ../hdrs/copyrite.h
@@ -1421,9 +1447,9 @@ notify.o: ../hdrs/mysocket.h
 notify.o: ../hdrs/ident.h
 notify.o: ../hdrs/strtree.h
 notify.o: ../hdrs/log.h
+notify.o: ../hdrs/bufferq.h
 notify.o: ../hdrs/mymalloc.h
 notify.o: ../hdrs/extchat.h
-notify.o: ../hdrs/bufferq.h
 notify.o: ../hdrs/extmail.h
 notify.o: ../hdrs/attrib.h
 notify.o: ../hdrs/game.h
@@ -1450,6 +1476,7 @@ parse.o: ../hdrs/match.h
 parse.o: ../hdrs/parse.h
 parse.o: ../hdrs/attrib.h
 parse.o: ../hdrs/log.h
+parse.o: ../hdrs/bufferq.h
 parse.o: ../hdrs/mymalloc.h
 pcre.o: ../config.h
 pcre.o: ../hdrs/mypcre.h
@@ -1473,6 +1500,7 @@ player.o: ../hdrs/attrib.h
 player.o: ../hdrs/access.h
 player.o: ../hdrs/mymalloc.h
 player.o: ../hdrs/log.h
+player.o: ../hdrs/bufferq.h
 player.o: ../hdrs/lock.h
 player.o: ../hdrs/boolexp.h
 player.o: ../hdrs/parse.h
@@ -1495,6 +1523,7 @@ plyrlist.o: ../confmagic.h
 plyrlist.o: ../hdrs/mypcre.h
 plyrlist.o: ../hdrs/attrib.h
 plyrlist.o: ../hdrs/mymalloc.h
+plyrlist.o: ../hdrs/parse.h
 predicat.o: ../hdrs/copyrite.h
 predicat.o: ../config.h
 predicat.o: ../hdrs/conf.h
@@ -1557,6 +1586,7 @@ info_master.o: ../hdrs/mysocket.h
 info_master.o: ../hdrs/ident.h
 info_master.o: ../hdrs/lookup.h
 info_master.o: ../hdrs/log.h
+info_master.o: ../hdrs/bufferq.h
 ptab.o: ../config.h
 ptab.o: ../hdrs/copyrite.h
 ptab.o: ../hdrs/conf.h
@@ -1593,6 +1623,7 @@ rob.o: ../hdrs/attrib.h
 rob.o: ../hdrs/match.h
 rob.o: ../hdrs/parse.h
 rob.o: ../hdrs/log.h
+rob.o: ../hdrs/bufferq.h
 rob.o: ../hdrs/lock.h
 rob.o: ../hdrs/boolexp.h
 rob.o: ../hdrs/game.h
@@ -1624,6 +1655,7 @@ set.o: ../hdrs/switches.h
 set.o: ../hdrs/mymalloc.h
 set.o: ../hdrs/lock.h
 set.o: ../hdrs/log.h
+set.o: ../hdrs/bufferq.h
 set.o: ../hdrs/game.h
 SFMT.o: ../config.h
 SFMT.o: ../hdrs/SFMT.h
@@ -1690,6 +1722,7 @@ speech.o: ../hdrs/ansi.h
 speech.o: ../hdrs/lock.h
 speech.o: ../hdrs/boolexp.h
 speech.o: ../hdrs/log.h
+speech.o: ../hdrs/bufferq.h
 speech.o: ../hdrs/match.h
 speech.o: ../hdrs/attrib.h
 speech.o: ../hdrs/parse.h
@@ -1712,12 +1745,14 @@ sql.o: ../hdrs/chunk.h
 sql.o: ../confmagic.h
 sql.o: ../hdrs/mypcre.h
 sql.o: ../hdrs/log.h
+sql.o: ../hdrs/bufferq.h
 sql.o: ../hdrs/parse.h
 sql.o: ../hdrs/command.h
 sql.o: ../hdrs/boolexp.h
 sql.o: ../hdrs/switches.h
 sql.o: ../hdrs/function.h
 sql.o: ../hdrs/ansi.h
+sql.o: ../hdrs/match.h
 strdup.o: ../config.h
 strdup.o: ../hdrs/conf.h
 strdup.o: ../hdrs/copyrite.h
@@ -1765,6 +1800,7 @@ strutil.o: ../hdrs/mypcre.h
 strutil.o: ../hdrs/ansi.h
 strutil.o: ../hdrs/mymalloc.h
 strutil.o: ../hdrs/log.h
+strutil.o: ../hdrs/bufferq.h
 timer.o: ../hdrs/copyrite.h
 timer.o: ../config.h
 timer.o: ../hdrs/conf.h
@@ -1787,6 +1823,7 @@ timer.o: ../hdrs/extmail.h
 timer.o: ../hdrs/match.h
 timer.o: ../hdrs/access.h
 timer.o: ../hdrs/log.h
+timer.o: ../hdrs/bufferq.h
 timer.o: ../hdrs/game.h
 timer.o: ../hdrs/help.h
 timer.o: ../hdrs/parse.h
@@ -1833,6 +1870,7 @@ utils.o: ../hdrs/mypcre.h
 utils.o: ../hdrs/ansi.h
 utils.o: ../hdrs/mymalloc.h
 utils.o: ../hdrs/log.h
+utils.o: ../hdrs/bufferq.h
 utils.o: ../hdrs/attrib.h
 utils.o: ../hdrs/parse.h
 utils.o: ../hdrs/lock.h
@@ -1922,6 +1960,7 @@ wiz.o: ../hdrs/mymalloc.h
 wiz.o: ../hdrs/lock.h
 wiz.o: ../hdrs/boolexp.h
 wiz.o: ../hdrs/log.h
+wiz.o: ../hdrs/bufferq.h
 wiz.o: ../hdrs/game.h
 wiz.o: ../hdrs/command.h
 wiz.o: ../hdrs/switches.h

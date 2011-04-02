@@ -492,8 +492,9 @@ pre_destroy(dbref player, dbref thing)
     return;
   }
 
-  if (ADESTROY_ATTR)
+  if (ADESTROY_ATTR) {
     did_it(player, thing, NULL, NULL, NULL, NULL, "ADESTROY", NOTHING);
+  }
 
   return;
 
@@ -591,20 +592,25 @@ static void
 free_object(dbref thing)
 {
   dbref i, loc;
+  const char *type;
   if (!GoodObject(thing))
     return;
   local_data_free(thing);
   switch (Typeof(thing)) {
   case TYPE_THING:
+    type = "THING";
     clear_thing(thing);
     break;
   case TYPE_PLAYER:
+    type = "PLAYER";
     clear_player(thing);
     break;
   case TYPE_EXIT:
+    type = "EXIT";
     clear_exit(thing);
     break;
   case TYPE_ROOM:
+    type = "ROOM";
     clear_room(thing);
     break;
   default:
@@ -612,6 +618,20 @@ free_object(dbref thing)
            thing);
     return;
   }
+  /* We queue the object-destroy event. Since the event will deal with an
+   * object that doesn't exist anymore, we pass it what information we can,
+   * but as strings.
+   * It's okay to pass it information that will be freed shortly.
+   *
+   * Information needed:
+   *   dbref, type, owner dbref, parent dbref, zone dbref
+   */
+  queue_event(SYSEVENT, "OBJECT`DESTROY",
+              "%s,%s,%s,%s,%s,%s",
+              unparse_objid(thing), Name(thing), type,
+              unparse_objid(Owner(thing)),
+              unparse_objid(Parent(thing)), unparse_objid(Zone(thing)));
+
   change_quota(Owner(thing), QUOTA_COST);
   do_halt(thing, "", thing);
   /* The equivalent of an @drain/any/all: */
@@ -654,7 +674,7 @@ free_object(dbref thing)
       case TYPE_PLAYER:
       case TYPE_THING:
         /* Huh.  It thought it was here, but we didn't agree. */
-        enter_room(i, Home(i), 0);
+        moveto(i, Home(i), SYSEVENT, "container destroyed");
         break;
       case TYPE_EXIT:
         /* If our destination is destroyed, then we relink to the
@@ -774,9 +794,9 @@ empty_contents(dbref thing)
       if (!GoodObject(target) || recursive_member(target, first, 0))
         target = DEFAULT_HOME;
       if (target != NOTHING) {
-        /* Use enter_room() on everything so that AENTER and such
+        /* Use moveto() on everything so that AENTER and such
          * are all triggered properly. */
-        enter_room(first, target, 0);
+        moveto(first, target, SYSEVENT, "container destroyed");
       }
       break;
     }
@@ -986,8 +1006,6 @@ fix_free_list(void)
   }
 }
 
-
-
 /** Destroy all the objects we said we would destroy later. */
 void
 purge(void)
@@ -1095,8 +1113,9 @@ check_fields(void)
       case TYPE_THING:
         if (!GoodObject(home) || IsGarbage(home) || IsExit(home))
           Home(thing) = DEFAULT_HOME;
-        if (!GoodObject(loc) || IsGarbage(loc) || IsExit(loc))
-          enter_room(thing, Home(thing), 0);
+        if (!GoodObject(loc) || IsGarbage(loc) || IsExit(loc)) {
+          moveto(thing, Home(thing), SYSEVENT, "dbck");
+        }
         break;
       case TYPE_EXIT:
         if (Contents(thing) != NOTHING) {
@@ -1354,7 +1373,7 @@ check_contents(void)
           PUSH(thing, Contents(DEFAULT_HOME));
           Location(thing) = DEFAULT_HOME;
         }
-        enter_room(thing, Location(thing), 0);
+        moveto(thing, Location(thing), SYSEVENT, "dbck");
         /* If we've managed to reconnect it, then we've reconnected
          * its contents. */
         mark_contents(Contents(thing));
@@ -1451,7 +1470,7 @@ check_locations(void)
       ClearMarked(thing);
     else if (Mobile(thing)) {
       do_rawlog(LT_ERR, "ERROR DBCK: Moved object %d", thing);
-      moveto(thing, DEFAULT_HOME);
+      moveto(thing, DEFAULT_HOME, SYSEVENT, "dbck");
     }
 }
 

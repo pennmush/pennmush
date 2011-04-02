@@ -1423,10 +1423,6 @@ msgstr "@break rekursjon for lang."
 msgid "@command is ALWAYS enabled."
 msgstr "@command er ALLTID tilgjengelig."
 
-#: cque.c:695
-msgid "@include recursion exceeded."
-msgstr "@include rekursjonsgrense overskredet."
-
 #: cmds.c:687
 msgid "@message them with what?"
 msgstr "@message dem med hva?"
@@ -4560,10 +4556,6 @@ msgstr "Det er ikke en gyldig dbref."
 msgid "That is not a valid lock name."
 msgstr "Det er ikke et gyldig låsnavn."
 
-#: src/log.c:355
-msgid "That is not a valid log."
-msgstr "Det er ikke en gyldig logg."
-
 #: src/create.c:54
 msgid "That is not a valid object."
 msgstr "Det der er ikke et gyldig objekt."
@@ -4876,11 +4868,6 @@ msgstr "Tid til neste purge"
 #: conf.c:558
 msgid "TinyMUSH compatibility options"
 msgstr "TinyMUSH kompabilitetsalternativer"
-
-#: extchat.c:1836
-#, c-format
-msgid "Title %s for %schannel <%s>."
-msgstr "Tittel %s for %skanal <%s>."
 
 #: src/extchat.c:1358
 msgid "Title too long."
@@ -5959,10 +5946,6 @@ msgstr "Du må gi en liste over power navn."
 #: wiz.c:1453
 msgid "You must give a string of flag characters."
 msgstr "Du må gi en streng med flagg-karakterer."
-
-#: cmds.c:424
-msgid "You must give a switch for @hook"
-msgstr "Du må gi en switch for @hook"
 
 #: command.c:2073
 msgid "You must give an object."

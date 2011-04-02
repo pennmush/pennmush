@@ -14,6 +14,7 @@
 #include <limits.h>
 #include <signal.h>
 #include <string.h>
+#include <stdarg.h>
 #ifdef I_SYS_TIME
 #include <sys/time.h>
 #ifdef TIME_WITH_SYS_TIME
@@ -52,10 +53,11 @@ EVAL_CONTEXT global_eval_context;
  * entries (a queue). It is used for all of the queues.
  */
 typedef struct bque {
-  struct bque *next;                    /**< pointer to next entry on queue */
+  struct bque *next;            /**< pointer to next entry on queue */
   dbref player;                 /**< player who will do command */
   dbref queued;                 /**< object whose QUEUE gets incremented for this command */
   dbref cause;                  /**< player causing command (for %N) */
+  dbref caller;                 /**< object who will be the initial caller (%@). Identical to cause, except for /inplace cmds */
   dbref sem;                    /**< semaphore object to block on */
   char *semattr;                /**< semaphore attribute to block on */
   time_t left;                  /**< seconds left until execution */
@@ -63,6 +65,7 @@ typedef struct bque {
   char *rval[NUMQ];             /**< environment, from setq() */
   char *comm;                   /**< command to be executed */
   uint32_t pid;                 /**< Process id of this entry */
+  int quetype;                  /**< Type of the queue entry. */
   PE_Info *pe_info;             /**< pe_info for evaluating queue, or NULL */
 } BQUE;
 
@@ -208,7 +211,8 @@ free_qentry(BQUE *point)
     mush_free(point->comm, "cqueue.comm");
   if (point->pe_info)
     free_pe_info(point->pe_info);
-  im_delete(queue_map, point->pid);
+  if (point->pid) /* INPLACE queue entries have no pid */
+    im_delete(queue_map, point->pid);
   mush_free(point, "cqueue");
 }
 
@@ -285,6 +289,256 @@ next_pid(void)
   }
 }
 
+#define DELIM_CHAR '\x11'
+/** If EVENT_HANDLER config option is set to a valid dbref, try triggering
+ * its handler attribute
+ * \param event The event. No spaces, only alphanumerics and dashes.
+ * \param enactor The enactor who caused it.
+ * \param argstring A comma-deliminated string defining printf-style args.
+ * \param ... The args passed to argstring.
+ * \retval 1 The event had a handler attribute.
+ * \retval 0 No event handler or no attribute for the given event.
+ */
+bool
+queue_event(dbref enactor, const char *event, const char *fmt, ...)
+{
+  char myfmt[BUFFER_LEN];
+  char buff[BUFFER_LEN * 4];
+  va_list args;
+  char *s, *snext;
+  ATTR *a;
+  char *aval;
+  int argcount = 0;
+  char *wenv[10];
+  int i, len;
+  BQUE *tmp;
+  int pid;
+
+  /* Make sure we have an event to call, first. */
+  if (!GoodObject(EVENT_HANDLER) || IsGarbage(EVENT_HANDLER) ||
+      Halted(EVENT_HANDLER)) {
+    return 0;
+  }
+
+  /* <0 means system event, -1. Just in case, this also covers
+   * Garbage and !GoodObject enactors. */
+  if (!GoodObject(enactor) || IsGarbage(enactor)) {
+    enactor = -1;
+  }
+
+  a = atr_get_noparent(EVENT_HANDLER, event);
+  if (!(a && AL_STR(a) && *AL_STR(a))) {
+    /* Nonexistant or empty attrib. */
+    return 0;
+  }
+
+  /* Because Event is so easy to run away. */
+  if (!pay_queue(EVENT_HANDLER, event)) {
+    return 0;
+  }
+
+  /* Fetch the next available pid. */
+  pid = next_pid();
+  if (pid == 0) {
+    /* Too many queue entries */
+    notify(Owner(EVENT_HANDLER), T("Queue entry table full. Try again later."));
+    return 0;
+  }
+
+  /* We have an event to call. Yay! */
+  for (i = 0; i < 10; i++)
+    wenv[i] = NULL;
+
+  /* Prep myfmt: Replace all commas with delim chars. */
+  snprintf(myfmt, BUFFER_LEN, "%s", fmt);
+  s = myfmt;
+
+  if (*s)
+    argcount++;                 /* At least one arg. */
+  while ((s = strchr(s, ',')) != NULL) {
+    *(s++) = DELIM_CHAR;
+    argcount++;
+  }
+
+  /* Maximum number of args available is 10: %0-%9 */
+  if (argcount > 10)
+    argcount = 10;
+
+  if (argcount > 0) {
+    /* Build the arguments. */
+    va_start(args, fmt);
+#ifdef HAS_VSNPRINTF
+    vsnprintf(buff, sizeof buff, myfmt, args);
+#else
+    /* Danger! Danger, Will Robinson! */
+    vsprintf(buff, myfmt, args);
+#endif
+    buff[(BUFFER_LEN * 4) - 1] = '\0';
+    va_end(args);
+
+    len = strlen(buff);
+    for (i = 0, s = buff; i < argcount && s; i++, s = snext) {
+      snext = strchr(s, DELIM_CHAR);
+      if ((snext ? (snext - s) : (len - (s - buff))) > BUFFER_LEN) {
+        /* It's theoretically possible to have an arg that's longer than
+         * BUFFER_LEN */
+        s[BUFFER_LEN - 1] = '\0';
+      }
+      if (snext) {
+        *(snext++) = '\0';
+      }
+      wenv[i] = s;
+    }
+
+  }
+
+  /* Let's queue this mother. */
+
+
+  /* Build tmp. */
+  tmp = mush_malloc(sizeof *tmp, "cqueue");
+  tmp->pid = pid;
+  tmp->semattr = NULL;
+  tmp->player = EVENT_HANDLER;
+  tmp->queued = QUEUE_PER_OWNER ? Owner(EVENT_HANDLER) : EVENT_HANDLER;
+  tmp->next = NULL;
+  tmp->left = 0;
+  tmp->cause = enactor;
+  tmp->caller = enactor;
+  tmp->pe_info = NULL;
+
+  aval = safe_atr_value(a);
+  tmp->comm = mush_strdup(aval, "cqueue.comm");
+  free(aval);
+
+  /* Set up %0-%9 */
+  for (i = 0; i < 10; i++) {
+    if (wenv[i]) {
+      tmp->env[i] = mush_strdup(wenv[i], "cqueue.env");
+    } else {
+      tmp->env[i] = NULL;
+    }
+  }
+
+  /* All Q-registers cleared */
+  for (i = 0; i < NUMQ; i++) {
+    tmp->rval[i] = NULL;
+  }
+
+  /* Hmm, should events queue ahead of anything else?
+   * For now, yes, but leaving code here anyway.
+   */
+  if (1) {
+    if (qlast) {
+      qlast->next = tmp;
+      qlast = tmp;
+    } else {
+      qlast = qfirst = tmp;
+    }
+  } else {
+    if (qllast) {
+      qllast->next = tmp;
+      qllast = tmp;
+    } else {
+      qllast = qlfirst = tmp;
+    }
+  }
+
+  /* All good! */
+  im_insert(queue_map, tmp->pid, tmp);
+  return 1;
+}
+
+/** Add a new queue entry: Either in place, or onto the player/object queues
+ * This function adds a new entry to the back of the player or
+ * object command queues (depending on whether the call was
+ * caused by a player or an object).
+ * \param player the enactor for the queued command.
+ * \param command the command to enqueue.
+ * \param cause the player or object causing the command to be queued.
+ * \param pe_info the pe_info to use for evaluating the queue, or NULL
+ */
+void
+insert_que(dbref player, const char *command, dbref cause, dbref caller, PE_Info *pe_info,
+           char **env, char **rval, int quetype)
+{
+  int a;
+  BQUE *tmp;
+  int pid = 0;
+  if (!IsPlayer(player) && (Halted(player))) {
+    free_pe_info(pe_info);
+    return;
+  }
+  if (quetype != QUEUE_INPLACE && quetype != QUEUE_RECURSE) {
+    if (!pay_queue(player, command)) {
+      /* make sure player can afford to do it */
+      free_pe_info(pe_info);
+      return;
+    }
+    pid = next_pid();
+    if (pid == 0) {
+      /* Too many queue entries */
+      notify(player, T("Queue entry table full. Try again later."));
+      free_pe_info(pe_info);
+      return;
+    }
+  }
+
+  tmp = mush_malloc(sizeof *tmp, "cqueue");
+  tmp->pid = pid;
+  tmp->comm = mush_strdup(command, "cqueue.comm");
+  tmp->semattr = NULL;
+  tmp->player = player;
+  tmp->queued = QUEUE_PER_OWNER ? Owner(player) : player;
+  tmp->next = NULL;
+  tmp->left = 0;
+  tmp->cause = cause;
+  tmp->caller = caller;
+  tmp->pe_info = pe_info;
+  tmp->quetype = quetype;
+
+  /* Copy over env vars and rvals. */
+  for (a = 0; a < 10; a++) {
+    if (!env || !env[a]) {
+      tmp->env[a] = NULL;
+    } else {
+      tmp->env[a] = mush_strdup(env[a], "cqueue.env");
+    }
+  }
+  for (a = 0; a < NUMQ; a++) {
+    if (!rval || !rval[a] || !rval[a][0]) {
+      tmp->rval[a] = NULL;
+    } else {
+      tmp->rval[a] = mush_strdup(rval[a], "cqueue.rval");
+    }
+  }
+  switch (quetype) {
+  case QUEUE_PLAYER:
+    if (qlast) {
+      qlast->next = tmp;
+      qlast = tmp;
+    } else {
+      qlast = qfirst = tmp;
+    }
+    break;
+  case QUEUE_OBJECT:
+    if (qllast) {
+      qllast->next = tmp;
+      qllast = tmp;
+    } else {
+      qllast = qlfirst = tmp;
+    }
+    break;
+  case QUEUE_INPLACE:
+  case QUEUE_RECURSE:
+    tmp->next = global_eval_context.inplace_queue;
+    global_eval_context.inplace_queue = tmp;
+    break;
+  }
+  if (pid)
+    im_insert(queue_map, tmp->pid, tmp);
+}
+
 /** Add a new entry onto the player or object command queues.
  * This function adds a new entry to the back of the player or
  * object command queues (depending on whether the call was
@@ -297,79 +551,40 @@ next_pid(void)
 void
 parse_que(dbref player, const char *command, dbref cause, PE_Info *pe_info)
 {
-  int a;
-  BQUE *tmp;
-  int pid;
-  if (!IsPlayer(player) && (Halted(player))) {
-    free_pe_info(pe_info);
-    return;
-  }
-  if (!pay_queue(player, command)) {
-    /* make sure player can afford to do it */
-    free_pe_info(pe_info);
-    return;
-  }
-  pid = next_pid();
-  if (pid == 0) {
-    /* Too many queue entries */
-    notify(player, T("Queue entry table full. Try again later."));
-    free_pe_info(pe_info);
-    return;
-  }
-  tmp = mush_malloc(sizeof *tmp, "cqueue");
-  tmp->pid = pid;
-  tmp->comm = mush_strdup(command, "cqueue.comm");
-  tmp->semattr = NULL;
-  tmp->player = player;
-  tmp->queued = QUEUE_PER_OWNER ? Owner(player) : player;
-  tmp->next = NULL;
-  tmp->left = 0;
-  tmp->cause = cause;
-  tmp->pe_info = pe_info;
-  for (a = 0; a < 10; a++)
-    if (!global_eval_context.wnxt[a])
-      tmp->env[a] = NULL;
-    else {
-      tmp->env[a] = mush_strdup(global_eval_context.wnxt[a], "cqueue.env");
-    }
-  for (a = 0; a < NUMQ; a++)
-    if (!global_eval_context.rnxt[a] || !global_eval_context.rnxt[a][0])
-      tmp->rval[a] = NULL;
-    else {
-      tmp->rval[a] = mush_strdup(global_eval_context.rnxt[a], "cqueue.rval");
-    }
   if (IsPlayer(cause)) {
-    if (qlast) {
-      qlast->next = tmp;
-      qlast = tmp;
-    } else
-      qlast = qfirst = tmp;
+    insert_que(player, command, cause, cause, pe_info,
+               global_eval_context.wnxt, global_eval_context.rnxt,
+               QUEUE_PLAYER);
   } else {
-    if (qllast) {
-      qllast->next = tmp;
-      qllast = tmp;
-    } else
-      qllast = qlfirst = tmp;
+    insert_que(player, command, cause, cause, pe_info,
+               global_eval_context.wnxt, global_eval_context.rnxt,
+               QUEUE_OBJECT);
   }
-  im_insert(queue_map, tmp->pid, tmp);
+}
+
+void
+inplace_queue_actionlist(dbref executor, dbref cause, dbref caller,
+                         const char *command, char **args, int quetype)
+{
+  insert_que(executor, command, cause, caller, NULL,
+             (args != NULL) ? args : global_eval_context.wnxt,
+             global_eval_context.rnxt, quetype);
 }
 
 int
-inplace_queue_attribute(dbref thing, const char *atrname, dbref enactor,
-                        int rsargs)
+queue_include_attribute(dbref thing, const char *atrname,
+                        dbref executor, dbref cause, dbref caller, char **args)
 {
   ATTR *a;
   char *start, *command;
   int noparent = 0;
-  char *bp;
 
   a = queue_attribute_getatr(thing, atrname, noparent);
   if (!a)
     return 0;
-  if (!Can_Read_Attr(enactor, thing, a))
+  if (!Can_Read_Attr(executor, thing, a))
     return 0;
 
-  global_eval_context.include_called = 1 + rsargs;
   start = safe_atr_value(a);
   command = start;
   /* Trim off $-command or ^-command prefix */
@@ -384,9 +599,9 @@ inplace_queue_attribute(dbref thing, const char *atrname, dbref enactor,
       /* Skip the ':' */
       command++;
   }
-  bp = global_eval_context.include_replace;
-  safe_str(command, global_eval_context.include_replace, &bp);
-  *bp = '\0';
+
+  inplace_queue_actionlist(executor, cause, caller, command, args, QUEUE_INPLACE);
+
   free(start);
   return 1;
 }
@@ -484,6 +699,7 @@ wait_que(dbref player, int waittill, char *command, dbref cause, dbref sem,
   tmp->player = player;
   tmp->queued = QUEUE_PER_OWNER ? Owner(player) : player;
   tmp->cause = cause;
+  tmp->caller = cause;
   tmp->semattr = NULL;
   tmp->next = NULL;
   tmp->pe_info = NULL;
@@ -658,6 +874,7 @@ run_user_input(dbref player, char *input)
   entry->player = player;
   entry->queued = player;
   entry->cause = player;
+  entry->caller = player;
   entry->sem = NOTHING;
   entry->semattr = NULL;
   entry->next = NULL;
@@ -680,11 +897,20 @@ do_entry(BQUE *entry, int include_recurses)
   int a;
   char tbuf[BUFFER_LEN];
   int break_count;
+  int switch_nest;
   int save_player;
   int local_break_called = 0;
+  int inplace_break_called = 0;
   char *r;
   char const *s;
+  BQUE *tmp;
+  BQUE *includes;
   int pt_flag = PT_SEMI;
+  char *preserves[10];
+  char *preserveq[NUMQ];
+
+  includes = global_eval_context.inplace_queue;
+  global_eval_context.inplace_queue = NULL;
 
   if (include_recurses == -1) {
     include_recurses = 0;
@@ -693,7 +919,7 @@ do_entry(BQUE *entry, int include_recurses)
 
   if (GoodObject(entry->player) && !IsGarbage(entry->player)) {
     save_player = global_eval_context.cplr = entry->player;
-    if (!global_eval_context.include_called && pt_flag != PT_NOTHING) {
+    if (!include_recurses && pt_flag != PT_NOTHING) {
       giveto(global_eval_context.cplr, QUEUE_COST);
       add_to(entry->queued, -1);
     }
@@ -723,17 +949,18 @@ do_entry(BQUE *entry, int include_recurses)
           global_eval_context.pe_info = make_pe_info();
         }
       }
-      while (!cpu_time_limit_hit && *s) {
+      switch_nest = global_eval_context.pe_info->switch_nesting;
+      while (!cpu_time_limit_hit && *s && !inplace_break_called) {
         r = global_eval_context.ccom;
         process_expression(global_eval_context.ccom, &r, &s,
-                           global_eval_context.cplr, entry->cause,
+                           global_eval_context.cplr, entry->caller,
                            entry->cause, PE_NOTHING, pt_flag,
                            global_eval_context.pe_info);
         *r = '\0';
         if (*s == ';')
           s++;
         strcpy(tbuf, global_eval_context.ccom);
-        process_command(global_eval_context.cplr, tbuf, entry->cause,
+        process_command(global_eval_context.cplr, tbuf, entry->cause, entry->caller,
                         (pt_flag == PT_NOTHING));
         if (global_eval_context.break_called) {
           /* Make sure we process semicolons in @break arg, even from socket */
@@ -749,61 +976,48 @@ do_entry(BQUE *entry, int include_recurses)
             break;
           }
         }
-        if (global_eval_context.include_called) {
-          BQUE *tmp;
-          /* @include was called. Check for recursion limit */
-          if (include_recurses > 20) {
-            notify(global_eval_context.cplr, T("@include recursion exceeded."));
-            break;
+        if (include_recurses > 20) {
+          while (global_eval_context.inplace_queue) {
+            tmp = global_eval_context.inplace_queue;
+            global_eval_context.inplace_queue = tmp->next;
+            free_qentry(tmp);
           }
-          if (!*global_eval_context.include_replace)
-            break;
-          /* Clone qentry */
-          tmp = mush_malloc(sizeof *tmp, "cqueue");
-          tmp->pid = entry->pid;
-          tmp->semattr = NULL;
-          tmp->player = save_player;
-          tmp->queued = entry->queued;
-          tmp->next = NULL;
-          tmp->left = 0;
-          tmp->cause = entry->cause;
-          tmp->pe_info = NULL;
-          for (a = 0; a < 10; a++) {
-            if (global_eval_context.include_called == 1) {
-              tmp->env[a] =
-                entry->env[a] ? mush_strdup(entry->env[a], "cqueue.env") : NULL;
-            } else {
-              if (global_eval_context.include_wenv[a]) {
-                tmp->env[a] =
-                  mush_strdup(global_eval_context.include_wenv[a],
-                              "cqueue.env");
-              } else {
-                tmp->env[a] = NULL;
-              }
+        } else {
+          while (global_eval_context.inplace_queue && !inplace_break_called) {
+            /* Pop tmp off the stack. */
+            tmp = global_eval_context.inplace_queue;
+            global_eval_context.inplace_queue = tmp->next;
+            tmp->next = NULL;
+
+            /* RECURSE queue entries have their own Q-registers, and we
+             * need to re-set our current one. */
+            if (tmp->quetype == QUEUE_RECURSE) {
+              save_global_regs("recurse_queue_save", preserveq);
+              save_global_env("recurse_queue_save", preserves);
             }
-            if (global_eval_context.include_wenv[a]) {
-              mush_free(global_eval_context.include_wenv[a], "include_wenv");
-              global_eval_context.include_wenv[a] = NULL;
+
+            /* Run the queue entry. */
+            inplace_break_called = do_entry(tmp, include_recurses + 1);
+
+            if (tmp->quetype == QUEUE_RECURSE) {
+              /* Recursion causes breaks to be not propagate up. */
+              inplace_break_called = 0;
+              restore_global_regs("recurse_queue_save", preserveq);
+              restore_global_env("recurse_queue_save", preserves);
             }
-          }
-          for (a = 0; a < NUMQ; a++)
-            if (!global_eval_context.renv[a] || !*global_eval_context.renv[a])
-              tmp->rval[a] = NULL;
-            else {
-              tmp->rval[a] =
-                mush_strdup(global_eval_context.renv[a], "cqueue.rval");
+
+            /* Cleanup. */
+            for (a = 0; a < 10; a++) {
+              global_eval_context.wenv[a] = entry->env[a];
             }
-          global_eval_context.include_called = 0;
-          /* Put the included actions in the clone */
-          tmp->comm =
-            mush_strdup(global_eval_context.include_replace, "cqueue.comm");
-          local_break_called = do_entry(tmp, include_recurses + 1);
-          for (a = 0; a < 10; a++)
-            global_eval_context.wenv[a] = entry->env[a];
-          free_qentry(tmp);
-          if (local_break_called) {
-            /* Propagate break */
-            break;
+            global_eval_context.cplr = save_player;
+            free_qentry(tmp);
+            if (global_eval_context.pe_info->switch_nesting > switch_nest) {
+              mush_free(global_eval_context.pe_info->switch_text[global_eval_context.pe_info->switch_nesting],
+                        "switch_arg");
+              global_eval_context.pe_info->switch_nesting--;
+              global_eval_context.pe_info->local_switch_nesting--;
+            }
           }
         }
       }
@@ -816,7 +1030,13 @@ do_entry(BQUE *entry, int include_recurses)
       }
     }
   }
-  return local_break_called;
+  while (global_eval_context.inplace_queue) {
+    tmp = global_eval_context.inplace_queue;
+    global_eval_context.inplace_queue = tmp->next;
+    free_qentry(global_eval_context.inplace_queue);
+  }
+  global_eval_context.inplace_queue = includes;
+  return local_break_called || inplace_break_called;
 }
 
 /** Determine whether it's time to run a queued command.

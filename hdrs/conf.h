@@ -126,6 +126,7 @@ struct options_table {
   dbref ancestor_exit;  /**< The ultimate parent exit */
   dbref ancestor_thing; /**< The ultimate parent thing */
   dbref ancestor_player; /**< The ultimate parent player */
+  dbref event_handler;  /**< The object events. */
   int connect_fail_limit; /**< Maximum number of connect fails in 10 mins. */
   int idle_timeout;     /**< Maximum idle time allowed, in minutes */
   int unconnected_idle_timeout; /**< Maximum idle time for connections without dbrefs, in minutes */
@@ -158,6 +159,7 @@ struct options_table {
   char chatdb[256];             /**< Name of the chat database file */
   int max_player_chans;         /**< Number of channels a player can create */
   int max_channels;             /**< Total maximum allowed channels */
+  int chan_title_len;           /**< Maximum length of a player's channel title */
   int chan_cost;                /**< Cost to create a channel */
   int noisy_cemit;              /**< Is @cemit noisy by default? */
   char connect_file[2][256];    /**< Names of text and html connection files */
@@ -349,6 +351,7 @@ int cf_time(const char *opt, const char *val, void *loc, int maxval,
 #define ANCESTOR_EXIT           (options.ancestor_exit)
 #define ANCESTOR_THING          (options.ancestor_thing)
 #define ANCESTOR_PLAYER         (options.ancestor_player)
+#define EVENT_HANDLER    (options.event_handler)
 #define MONEY            (options.money_singular)
 #define MONIES           (options.money_plural)
 #define WHISPER_LOUDNESS        (options.whisper_loudness)

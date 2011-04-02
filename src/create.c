@@ -95,6 +95,8 @@ do_real_open(dbref player, const char *direction, const char *linkto,
   dbref new_exit;
   char *flaglist, *flagname;
   char flagbuff[BUFFER_LEN];
+  char *name = NULL;
+  char *alias = NULL;
 
   if (!command_check_byname(player, "@dig")) {
     notify(player, T("Permission denied."));
@@ -111,8 +113,14 @@ do_real_open(dbref player, const char *direction, const char *linkto,
   if (!*direction) {
     notify(player, T("Open where?"));
     return NOTHING;
-  } else if (!ok_name(direction)) {
+  } else
+    if (ok_object_name
+        ((char *) direction, player, NOTHING, TYPE_EXIT, &name, &alias) < 1) {
     notify(player, T("That's a strange name for an exit!"));
+    if (name)
+      mush_free(name, "name.newname");
+    if (alias)
+      mush_free(alias, "name.newname");
     return NOTHING;
   }
   if (!Open_Anywhere(player) && !controls(player, loc)) {
@@ -122,7 +130,9 @@ do_real_open(dbref player, const char *direction, const char *linkto,
     new_exit = new_object();
 
     /* initialize everything */
-    set_name(new_exit, direction);
+    set_name(new_exit, name);
+    if (alias && *alias != ALIAS_DELIMITER)
+      atr_add(new_exit, "ALIAS", alias, player, 0);
     Owner(new_exit) = Owner(player);
     Zone(new_exit) = Zone(player);
     Source(new_exit) = loc;
@@ -137,6 +147,9 @@ do_real_open(dbref player, const char *direction, const char *linkto,
       }
     }
 
+    mush_free(name, "name.newname");
+    if (alias)
+      mush_free(alias, "name.newname");
 
     /* link it in */
     PUSH(new_exit, Exits(loc));
@@ -161,8 +174,14 @@ do_real_open(dbref player, const char *direction, const char *linkto,
     }
     current_state.exits++;
     local_data_create(new_exit);
+    queue_event(player, "OBJECT`CREATE", "%s", unparse_objid(new_exit));
     return new_exit;
   }
+  if (name)
+    mush_free(name, "name.newname");
+  if (alias)
+    mush_free(alias, "name.newname");
+
   return NOTHING;
 }
 
@@ -408,7 +427,8 @@ do_link(dbref player, const char *name, const char *room_name, int preserve)
  * \endverbatim
  * \param player the enactor.
  * \param name the name of the room to create.
- * \param argv array of additional arguments to command (exit forward,exit back)
+ * \param argv array of additional arguments to command
+ *             (exit forward,exit back,newdbref)
  * \param tport if 1, teleport the player to the new room.
  * \return dbref of new room, or NOTHING.
  */
@@ -418,13 +438,22 @@ do_dig(dbref player, const char *name, char **argv, int tport)
   dbref room;
   char *flaglist, *flagname;
   char flagbuff[BUFFER_LEN];
+  char *newdbref = NULL;
+
+  if (argv[3] && *argv[3]) {
+    newdbref = argv[3];
+  }
 
   /* we don't need to know player's location!  hooray! */
   if (*name == '\0') {
     notify(player, T("Dig what?"));
-  } else if (!ok_name(name)) {
+  } else if (!ok_name(name, 0)) {
     notify(player, T("That's a silly name for a room!"));
   } else if (can_pay_fees(player, ROOM_COST)) {
+    if (!make_first_free_wrapper(player, newdbref)) {
+      return NOTHING;
+    }
+
     room = new_object();
 
     /* Initialize everything */
@@ -460,6 +489,7 @@ do_dig(dbref player, const char *name, char **argv, int tport)
       sprintf(roomstr, "#%d", room);
       do_teleport(player, "me", roomstr, 0, 0); /* if flag, move the player */
     }
+    queue_event(player, "OBJECT`CREATE", "%s", unparse_objid(room));
     return room;
   }
   return NOTHING;
@@ -486,7 +516,7 @@ do_create(dbref player, char *name, int cost, char *newdbref)
   if (*name == '\0') {
     notify(player, T("Create what?"));
     return NOTHING;
-  } else if (!ok_name(name)) {
+  } else if (!ok_name(name, 0)) {
     notify(player, T("That's a silly name for a thing!"));
     return NOTHING;
   } else if (cost < OBJECT_COST) {
@@ -540,6 +570,9 @@ do_create(dbref player, char *name, int cost, char *newdbref)
     notify_format(player, T("Created: Object %s."), unparse_dbref(thing));
     current_state.things++;
     local_data_create(thing);
+
+    queue_event(player, "OBJECT`CREATE", "%s", unparse_objid(thing));
+
     return thing;
   }
   return NOTHING;
@@ -588,6 +621,8 @@ clone_object(dbref player, dbref thing, const char *newname, int preserve)
 
   Contents(clone) = Location(clone) = Next(clone) = NOTHING;
 
+  queue_event(player, "OBJECT`CREATE", "%s,%s",
+              unparse_objid(clone), unparse_objid(thing));
   return clone;
 
 }
@@ -610,13 +645,14 @@ do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref)
   dbref clone, thing;
   char dbnum[BUFFER_LEN];
 
-  if (newname && *newname && !ok_name(newname)) {
-    notify(player, T("That is not a reasonable name."));
-    return NOTHING;
-  }
   thing = noisy_match_result(player, name, NOTYPE, MAT_EVERYTHING);
   if ((thing == NOTHING))
     return NOTHING;
+
+  if (newname && *newname && !ok_name(newname, IsExit(thing))) {
+    notify(player, T("That is not a reasonable name."));
+    return NOTHING;
+  }
 
   if (!controls(player, thing) || IsPlayer(thing) ||
       (IsRoom(thing) && !command_check_byname(player, "@dig")) ||
@@ -646,9 +682,9 @@ do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref)
       clone = clone_object(player, thing, newname, preserve);
       notify_format(player, T("Cloned: Object %s."), unparse_dbref(clone));
       if (IsRoom(player))
-        moveto(clone, player);
+        moveto(clone, player, player, "cloned");
       else
-        moveto(clone, Location(player));
+        moveto(clone, Location(player), player, "cloned");
       current_state.things++;
       local_data_clone(clone, thing);
       real_did_it(player, clone, NULL, NULL, NULL, NULL, "ACLONE", NOTHING,
@@ -691,9 +727,9 @@ do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref)
       clone = do_real_open(player, newname, dbnum, NOTHING);
     else
       clone = do_real_open(player, Name(thing), dbnum, NOTHING);
-    if (!GoodObject(clone))
+    if (!GoodObject(clone)) {
       return NOTHING;
-    else {
+    } else {
       atr_cpy(clone, thing);
       clone_locks(player, thing, clone);
       Zone(clone) = Zone(thing);

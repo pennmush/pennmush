@@ -59,6 +59,7 @@ static sqlite3 *sqlite3_connp = NULL;
 #include "mushdb.h"
 #include "confmagic.h"
 #include "ansi.h"
+#include "match.h"
 
 extern signed char qreg_indexes[UCHAR_MAX + 1];
 
@@ -323,6 +324,178 @@ FUNCTION(fun_sql_escape)
     safe_str(bigbuff, buff, bp);
   else
     safe_str(T("#-1 TOO LONG"), buff, bp);
+}
+
+COMMAND(cmd_mapsql)
+{
+#ifdef HAVE_MYSQL
+  MYSQL_FIELD *fields = NULL;
+#endif
+  void *qres;
+  int affected_rows = -1;
+  int rownum;
+  int numfields;
+  int numrows;
+  char *names[10];
+  char *cells[10];
+  char tbuf[BUFFER_LEN];
+  char strrownum[20];
+  char *s;
+  int i, a;
+  dbref thing;
+  int dofieldnames = SW_ISSET(sw, SWITCH_COLNAMES);
+  int donotify = SW_ISSET(sw, SWITCH_NOTIFY);
+
+  /* Find and fetch the attribute, first. */
+  strncpy(tbuf, arg_left, BUFFER_LEN);
+
+  s = strchr(tbuf, '/');
+  if (!s) {
+    notify(player, T("I need to know what attribute to trigger."));
+    return;
+  }
+  *(s++) = '\0';
+  upcasestr(s);
+
+  thing = noisy_match_result(player, tbuf, NOTYPE, MAT_EVERYTHING);
+
+  if (thing == NOTHING) {
+    return;
+  }
+
+  if (!controls(player, thing) && !(Owns(player, thing) && LinkOk(thing))) {
+    notify(player, T("Permission denied."));
+    return;
+  }
+
+  if (God(thing) && !God(player)) {
+    notify(player, T("You can't trigger God!"));
+    return;
+  }
+
+  for (a = 0; a < 10; a++) {
+    cells[a] = NULL;
+    names[a] = NULL;
+  }
+
+  /* Do the query. */
+  qres = sql_query(arg_right, &affected_rows);
+
+  if (!qres) {
+    if (affected_rows >= 0) {
+      notify_format(player, T("SQL: %d rows affected."), affected_rows);
+    } else if (!sql_connected()) {
+      notify(player, T("No SQL database connection."));
+    } else {
+      notify_format(player, T("SQL: Error: %s"), sql_error());
+    }
+    return;
+  }
+
+  /* Get results. A silent query (INSERT, UPDATE, etc.) will return NULL */
+  switch (sql_platform()) {
+#ifdef HAVE_MYSQL
+  case SQL_PLATFORM_MYSQL:
+    affected_rows = mysql_affected_rows(mysql_connp);
+    numfields = mysql_num_fields(qres);
+    numrows = INT_MAX;          /* Using mysql_use_result() doesn't know the number
+                                   of rows ahead of time. */
+    fields = mysql_fetch_fields(qres);
+    break;
+#endif
+#ifdef HAVE_POSTGRESQL
+  case SQL_PLATFORM_POSTGRESQL:
+    numfields = PQnfields(qres);
+    numrows = PQntuples(qres);
+    break;
+#endif
+#ifdef HAVE_SQLITE3
+  case SQL_PLATFORM_SQLITE3:
+    numfields = sqlite3_column_count(qres);
+    numrows = INT_MAX;
+    break;
+#endif
+  default:
+    goto finished;
+  }
+
+  for (rownum = 0; rownum < numrows; rownum++) {
+#ifdef HAVE_MYSQL
+    MYSQL_ROW row_p = NULL;
+    if (sql_platform() == SQL_PLATFORM_MYSQL) {
+      row_p = mysql_fetch_row(qres);
+      if (!row_p)
+        break;
+    }
+#endif
+#ifdef HAVE_SQLITE3
+    if (sql_platform() == SQL_PLATFORM_SQLITE3) {
+      int retcode = sqlite3_step(qres);
+      if (retcode == SQLITE_DONE)
+        break;
+      else if (retcode != SQLITE_ROW) {
+        notify_format(player, T("SQL: Error: %s"), sql_error());
+        break;
+      }
+    }
+#endif
+
+    if (numfields > 0) {
+      for (i = 0; i < numfields && i < 9; i++) {
+        switch (sql_platform()) {
+#ifdef HAVE_MYSQL
+        case SQL_PLATFORM_MYSQL:
+          cells[i + 1] = row_p[i];
+          names[i + 1] = fields[i].name;
+          break;
+#endif
+#ifdef HAVE_POSTGRESQL
+        case SQL_PLATFORM_POSTGRESQL:
+          cells[i + 1] = PQgetvalue(qres, rownum, i);
+          names[i + 1] = PQfname(qres, i);
+          break;
+#endif
+#ifdef HAVE_SQLITE3
+        case SQL_PLATFORM_SQLITE3:
+          cells[i + 1] = (char *) sqlite3_column_text(qres, i);
+          names[i + 1] = (char *) sqlite3_column_name(qres, i);
+          break;
+#endif
+        default:
+          /* Not reached, shuts up compiler */
+          break;
+        }
+      }
+
+      if ((rownum == 0) && dofieldnames) {
+        /* Queue 0: <names> */
+        snprintf(strrownum, 20, "%d", 0);
+        names[0] = strrownum;
+        for (a = 0; a < 10; a++) {
+          global_eval_context.wnxt[a] = names[a];
+        }
+        queue_attribute(thing, s, player);
+      }
+
+      /* Queue the rest. */
+      snprintf(strrownum, 20, "%d", rownum + 1);
+      cells[0] = strrownum;
+      for (a = 0; a < 10; a++) {
+        global_eval_context.wnxt[a] = cells[a];
+      }
+      queue_attribute(thing, s, player);
+      /* Queue rownum: <names> */
+    } else {
+      /* What to do if there are no fields? This should be an error?. */
+      /* notify_format(player, T("Row %d: NULL"), rownum + 1); */
+    }
+  }
+  if (donotify) {
+    parse_que(player, "@notify me", cause, NULL);
+  }
+
+finished:
+  free_sql_query(qres);
 }
 
 
@@ -795,8 +968,9 @@ penn_mysql_sql_init(void)
   /* If we are already connected, drop and retry the connection, in
    * case for some reason the server went away.
    */
-  if (sql_connected())
-    sql_shutdown();
+  if (penn_mysql_sql_connected()) {
+    penn_mysql_sql_shutdown();
+  }
 
   /* Parse SQL_HOST into sql_host and sql_port */
   mush_strncpy(sql_host, SQL_HOST, BUFFER_LEN);
@@ -817,13 +991,20 @@ penn_mysql_sql_init(void)
         (mysql_connp, sql_host, SQL_USER, SQL_PASS, SQL_DB, sql_port, 0, 0)) {
       do_rawlog(LT_ERR, "Failed mysql connection: %s\n",
                 mysql_error(mysql_connp));
-      sql_shutdown();
+      queue_event(SYSEVENT, "SQL`CONNECTFAIL", "%s,%s",
+                  "mysql", mysql_error(mysql_connp));
+      penn_mysql_sql_shutdown();
       sleep(1);
     }
     retries--;
   }
 
-  return sql_connected();
+  if (penn_mysql_sql_connected()) {
+    queue_event(SYSEVENT, "SQL`CONNECT", "%s", "mysql");
+    last_retry = 0;
+  }
+
+  return penn_mysql_sql_connected();
 }
 
 static MYSQL_RES *
@@ -842,9 +1023,9 @@ penn_mysql_sql_query(const char *q_string, int *affected_rows)
   /* If we have no connection, and we don't have auto-reconnect on
    * (or we try to auto-reconnect and we fail), return NULL.
    */
-  if (!sql_connected()) {
-    sql_init();
-    if (!sql_connected()) {
+  if (!penn_mysql_sql_connected()) {
+    penn_mysql_sql_init();
+    if (!penn_mysql_sql_connected()) {
       return NULL;
     }
   }
@@ -852,11 +1033,16 @@ penn_mysql_sql_query(const char *q_string, int *affected_rows)
   /* Send the query. If it returns non-zero, we have an error. */
   fail = mysql_real_query(mysql_connp, q_string, strlen(q_string));
   if (fail && (mysql_errno(mysql_connp) == CR_SERVER_GONE_ERROR)) {
+    if (mysql_connp) {
+      queue_event(SYSEVENT, "SQL`DISCONNECT", "%s,%s",
+                  "mysql", mysql_error(mysql_connp));
+    }
     /* If it's CR_SERVER_GONE_ERROR, the server went away.
      * Try reconnecting. */
-    sql_init();
-    if (mysql_connp)
+    penn_mysql_sql_init();
+    if (mysql_connp) {
       fail = mysql_real_query(mysql_connp, q_string, strlen(q_string));
+    }
   }
   /* If we still fail, it's an error. */
   if (fail) {
@@ -892,7 +1078,7 @@ penn_mysql_free_sql_query(MYSQL_RES * qres)
 static void
 penn_pg_sql_shutdown(void)
 {
-  if (!sql_connected())
+  if (!penn_pg_sql_connected())
     return;
   PQfinish(postgres_connp);
   postgres_connp = NULL;
@@ -923,8 +1109,9 @@ penn_pg_sql_init(void)
   /* If we are already connected, drop and retry the connection, in
    * case for some reason the server went away.
    */
-  if (sql_connected())
-    sql_shutdown();
+  if (penn_pg_sql_connected()) {
+    penn_pg_sql_shutdown();
+  }
 
   /* Parse SQL_HOST into sql_host and sql_port */
   mush_strncpy(sql_host, SQL_HOST, BUFFER_LEN);
@@ -945,13 +1132,20 @@ penn_pg_sql_init(void)
     if (PQstatus(postgres_connp) != CONNECTION_OK) {
       do_rawlog(LT_ERR, "Failed postgresql connection to %s: %s\n",
                 PQdb(postgres_connp), PQerrorMessage(postgres_connp));
-      sql_shutdown();
+      queue_event(SYSEVENT, "SQL`CONNECTFAIL", "%s,%s",
+                  "postgresql", PQerrorMessage(postgres_connp));
+      penn_pg_sql_shutdown();
       sleep(1);
     }
     retries--;
   }
 
-  return sql_connected();
+  if (penn_pg_sql_connected()) {
+    queue_event(SYSEVENT, "SQL`CONNECT", "%s", "postgresql");
+    last_retry = 0;
+  }
+
+  return penn_pg_sql_connected();
 }
 
 static PGresult *
@@ -970,8 +1164,8 @@ penn_pg_sql_query(const char *q_string, int *affected_rows)
   /* If we have no connection, and we don't have auto-reconnect on
    * (or we try to auto-reconnect and we fail), return NULL.
    */
-  if (!sql_connected()) {
-    sql_init();
+  if (!penn_pg_sql_connected()) {
+    penn_pg_sql_init();
     if (!sql_connected()) {
       return NULL;
     }
@@ -982,8 +1176,12 @@ penn_pg_sql_query(const char *q_string, int *affected_rows)
   if (!qres || (PQresultStatus(qres) != PGRES_COMMAND_OK &&
                 PQresultStatus(qres) != PGRES_TUPLES_OK)) {
     /* Serious error, try one more time */
-    sql_init();
-    if (sql_connected())
+    if (postgres_connp) {
+      queue_event(SYSEVENT, "SQL`DISCONNECT", "%s,%s",
+                  "postgresql", PQerrorMessage(postgres_connp));
+    }
+    penn_pg_sql_init();
+    if (penn_pg_sql_connected())
       qres = PQexec(postgres_connp, q_string);
     if (!qres || (PQresultStatus(qres) != PGRES_COMMAND_OK &&
                   PQresultStatus(qres) != PGRES_TUPLES_OK)) {
@@ -1015,13 +1213,16 @@ penn_sqlite3_sql_init(void)
   sqlite3_connp = NULL;
   if (sqlite3_open(SQL_DB, &sqlite3_connp) != SQLITE_OK) {
     do_rawlog(LT_ERR, "sqlite3: Failed to open %s: %s", SQL_DB, sql_error());
+    queue_event(SYSEVENT, "SQL`CONNECTFAIL", "%s,%s", "sqlite3", sql_error());
     if (sqlite3_connp) {
       sqlite3_close(sqlite3_connp);
       sqlite3_connp = NULL;
     }
     return 0;
-  } else
+  } else {
+    queue_event(SYSEVENT, "SQL`CONNECT", "%s", "sqlite3");
     return 1;
+  }
 }
 
 static void
@@ -1044,9 +1245,9 @@ penn_sqlite3_sql_query(const char *query, int *affected_rows)
   const char *eoq = NULL;
   sqlite3_stmt *statement = NULL;
 
-  if (!sql_connected()) {
-    sql_init();
-    if (!sql_connected())
+  if (!penn_sqlite3_sql_connected()) {
+    penn_sqlite3_sql_init();
+    if (!penn_sqlite3_sql_connected())
       return NULL;
   }
 

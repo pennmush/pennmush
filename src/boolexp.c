@@ -193,6 +193,7 @@ typedef enum bvm_opcode {
   OP_TEVAL, /**< Tests S/ARG */
   OP_TFLAG, /**< Tests FLAG^ARG */
   OP_TTYPE, /**< Tests TYPE^ARG */
+  OP_TNAME, /**< Tests name == ARG */
   OP_TPOWER, /**< Tests POWER^ARG */
   OP_TCHANNEL, /**< Tests CHANNEL^ARG */
   OP_TIP, /**< Tests IP^ARG */
@@ -253,6 +254,7 @@ static struct flag_lock_types flag_locks[] = {
   {"FLAG", OP_TFLAG},
   {"POWER", OP_TPOWER},
   {"TYPE", OP_TTYPE},
+  {"NAME", OP_TNAME},
   {"CHANNEL", OP_TCHANNEL},
   {"OBJID", OP_TOBJID},
   {"IP", OP_TIP},
@@ -516,6 +518,12 @@ eval_boolexp(dbref player /* The player trying to pass */ ,
         r = check_attrib_lock(player, target, s, (char *) bytecode + arg);
         boolexp_recursion--;
         break;
+      case OP_TNAME:
+        boolexp_recursion++;
+        r = quick_wild((char *) bytecode + arg, Name(player)) ||
+          match_aliases(player, (char *) bytecode + arg);
+        boolexp_recursion--;
+        break;
       case OP_TFLAG:
         /* Note that both fields of a boolattr struct are upper-cased */
         if (sees_flag("FLAG", target, player, (char *) bytecode + arg))
@@ -764,6 +772,9 @@ unparse_boolexp(dbref player, boolexp b, enum u_b_f flag)
         break;
       case OP_TEVAL:
         safe_format(boolexp_buf, &buftop, "%s/%s", s, bytecode + arg);
+        break;
+      case OP_TNAME:
+        safe_format(boolexp_buf, &buftop, "NAME^%s", bytecode + arg);
         break;
       case OP_TFLAG:
         safe_format(boolexp_buf, &buftop, "FLAG^%s", bytecode + arg);
@@ -1709,6 +1720,7 @@ emit_bytecode(struct bvm_asm *a, int derefs)
     case OP_TEVAL:
     case OP_TATR:
     case OP_TFLAG:
+    case OP_TNAME:
     case OP_TPOWER:
     case OP_TOBJID:
     case OP_TTYPE:
@@ -1953,6 +1965,9 @@ print_bytecode(boolexp b)
       break;
     case OP_TEVAL:
       printf("TEVAL \"%s\"\n", bytecode + arg);
+      break;
+    case OP_TNAME:
+      printf("NAME \"%s\"\n", bytecode + arg);
       break;
     case OP_TFLAG:
       printf("TFLAG \"%s\"\n", bytecode + arg);

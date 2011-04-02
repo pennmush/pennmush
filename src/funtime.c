@@ -328,7 +328,7 @@ do_convtime_gd(const char *str, struct tm *ttm)
 {
   /* converts time string to a struct tm. Returns 1 on success, 0 on fail.
    * Formats of the time string are taken from the file listed in the
-   * DATEMSK env variable 
+   * DATEMSK env variable
    */
   struct tm *tc;
 
@@ -449,19 +449,35 @@ do_convtime(const char *mystr, struct tm *ttm)
 FUNCTION(fun_convtime)
 {
   /* converts time string to seconds */
-
   struct tm ttm;
+  char *tz = NULL;
+  int doutc = (!strcmp(called_as, "CONVUTCTIME") ||
+               (nargs > 1 && !strcmp(args[1], "utc")));
 
   if (do_convtime(args[0], &ttm)
 #ifdef HAS_GETDATE
       || do_convtime_gd(args[0], &ttm)
 #endif
     ) {
+    if (doutc) {
+      tz = getenv("TZ");
+      /* A blank, overridden TZ forces UTC. */
+      setenv("TZ", "", 1);
+      tzset();
+    }
 #ifdef SUN_OS
     safe_integer(timelocal(&ttm), buff, bp);
 #else
     safe_integer(mktime(&ttm), buff, bp);
 #endif                          /* SUN_OS */
+    if (doutc) {
+      if (tz) {
+        setenv("TZ", tz, 1);
+      } else {
+        unsetenv("TZ");
+      }
+      tzset();
+    }
   } else {
     safe_str("-1", buff, bp);
   }

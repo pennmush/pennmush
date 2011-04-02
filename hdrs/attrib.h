@@ -82,9 +82,10 @@ extern void atr_cpy(dbref dest, dbref source);
 extern char const *convert_atr(int oldatr);
 extern int atr_comm_match(dbref thing, dbref player, int type, int end,
                           char const *str, int just_match, int check_locks,
-                          char *atrname, char **abp, dbref *errobj);
+                          char *atrname, char **abp, dbref *errobj,
+                          int inplace);
 extern int one_comm_match(dbref thing, dbref player, const char *atr,
-                          const char *str);
+                          const char *str, int inplace);
 extern int do_set_atr(dbref thing, char const *RESTRICT atr,
                       char const *RESTRICT s, dbref player, uint32_t flags);
 extern void do_atrlock(dbref player, char const *arg1, char const *arg2);
@@ -137,7 +138,7 @@ safe_atr_value(ATTR *atr)
 #define AF_NOSPACE      0x10000000U     /**< No space in did_it */
 #define AF_MHEAR        0x20000000U     /**< ^-listens can be triggered by %! */
 #define AF_AHEAR        0x40000000U     /**< ^-listens can be triggered by anyone */
-#define AF_UNDEF3       0x80000000U     /**< Undefined; reserved for a future flag */
+#define AF_NODEBUG      0x80000000U     /**< Don't show debug when evaluated */
 
 #define AF_MAXVALUE     0x100000000U     /**< Largest attribute flag value. */
 

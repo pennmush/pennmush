@@ -248,7 +248,7 @@ static FLAG power_table[] = {
   {"Tport_Anything", '\0', NOTYPE, TEL_OTHER, F_WIZARD | F_LOG, F_WIZARD},
   {"Tport_Anywhere", '\0', NOTYPE, TEL_ANYWHERE, F_WIZARD | F_LOG, F_WIZARD},
   {"Unkillable", '\0', NOTYPE, UNKILLABLE, F_WIZARD | F_LOG, F_WIZARD},
-  {"Can_nspemit", '\0', NOTYPE, CAN_NSPEMIT, F_WIZARD | F_LOG, F_WIZARD},
+  {"Can_spoof", '\0', NOTYPE, CAN_NSPEMIT, F_WIZARD | F_LOG, F_WIZARD},
   {NULL, '\0', 0, 0, 0, 0}
 };
 
@@ -895,6 +895,11 @@ flag_add_additional(FLAGSPACE *n)
     f = add_power("Sql_Ok", '\0', NOTYPE, F_WIZARD | F_LOG, F_ANY);
     if (!match_power("Use_SQL"))
       flag_add(flags, "Use_SQL", f);
+    if ((f = match_power("Can_nspemit")) && !match_power("Can_spoof")) {
+      mush_free((void *) f->name, "flag.name");
+      f->name = mush_strdup("Can_spoof", "flag.name");
+      flag_add(flags, "Can_spoof", f);
+    }
     add_power("Debit", '\0', NOTYPE, F_WIZARD | F_LOG, F_ANY);
     add_power("Pueblo_Send", '\0', NOTYPE, F_WIZARD | F_LOG, F_ANY);
     add_power("Many_Attribs", '\0', NOTYPE, F_WIZARD | F_LOG, F_ANY);

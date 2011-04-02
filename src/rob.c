@@ -55,6 +55,7 @@ void
 do_kill(dbref player, const char *what, int cost, int slay)
 {
   dbref victim;
+  int overridekill = 0;
   char tbuf1[BUFFER_LEN], tbuf2[BUFFER_LEN], *tp;
 
   if (slay && !Wizard(player)) {
@@ -102,8 +103,7 @@ do_kill(dbref player, const char *what, int cost, int slay)
       return;
     }
   }
-  if (((get_random32(0, KILL_BASE_COST) < (uint32_t) cost) || slay) &&
-      !Wizard(victim)) {
+  if (((get_random32(0, 100) < (uint32_t) cost) || slay) && !Wizard(victim)) {
     /* you killed him */
     tp = tbuf1;
     safe_format(tbuf1, &tp, T("You killed %s!"), Name(victim));
@@ -111,28 +111,36 @@ do_kill(dbref player, const char *what, int cost, int slay)
     tp = tbuf2;
     safe_format(tbuf2, &tp, T("killed %s!"), Name(victim));
     *tp = '\0';
-    do_halt(victim, "", victim);
+
+    overridekill = queue_event(player, "OBJECT`KILL", "%s,%d,%d",
+                               unparse_objid(victim), cost, slay);
+    if (!overridekill) {
+      do_halt(victim, "", victim);
+    }
     did_it(player, victim, "DEATH", tbuf1, "ODEATH", tbuf2, "ADEATH", NOTHING);
 
     /* notify victim */
     notify_format(victim, T("%s killed you!"), Name(player));
 
-    /* maybe pay off the bonus */
-    /* if we were not called via slay */
-    if (!slay) {
-      int payoff = cost * KILL_BONUS / 100;
-      if (payoff + Pennies(Owner(victim)) > Max_Pennies(Owner(victim)))
-        payoff = Max_Pennies(Owner(victim)) - Pennies(Owner(victim));
-      if (payoff > 0) {
-        notify_format(victim, T("Your insurance policy pays %d %s."),
-                      payoff, ((payoff == 1) ? MONEY : MONIES));
-        giveto(Owner(victim), payoff);
-      } else {
-        notify(victim, T("Your insurance policy has been revoked."));
+    if (!overridekill) {
+      /* Overriding the kill event with the events system prevents do_halt,
+       * @tel and the payoff. */
+      /* Pay off the bonus, if we were not called via slay */
+      if (!slay) {
+        int payoff = cost * KILL_BONUS / 100;
+        if (payoff + Pennies(Owner(victim)) > Max_Pennies(Owner(victim)))
+          payoff = Max_Pennies(Owner(victim)) - Pennies(Owner(victim));
+        if (payoff > 0) {
+          notify_format(victim, T("Your insurance policy pays %d %s."),
+                        payoff, ((payoff == 1) ? MONEY : MONIES));
+          giveto(Owner(victim), payoff);
+        } else {
+          notify(victim, T("Your insurance policy has been revoked."));
+        }
       }
+      /* send him home */
+      safe_tel(victim, HOME, 0, player, "killed");
     }
-    /* send him home */
-    safe_tel(victim, HOME, 0);
     /* if victim is object also dequeue all commands */
   } else {
     /* notify player and victim only */
@@ -145,12 +153,13 @@ do_kill(dbref player, const char *what, int cost, int slay)
  * \param player the enactor/buyer
  * \param item the item to buy
  * \param from who to buy it from
- * \param cost the cost
+ * \param price the price to pay for it, or -1 for any price
  */
 void
 do_buy(dbref player, char *item, char *from, int price)
 {
   dbref vendor;
+  dbref failvendor = NOTHING;
   char prices[BUFFER_LEN];
   char *plus;
   char *cost;
@@ -216,12 +225,14 @@ do_buy(dbref player, char *item, char *from, int price)
   boughtit = -1;
   affordable = 1;
   do {
+    if (vendor == player)
+      continue;                 /* Can't buy from yourself. Only occurs with no "from <vendor>" arg */
     a = atr_get(vendor, "PRICELIST");
     if (!a)
       continue;
     mush_strncpy(prices, atr_value(a), BUFFER_LEN);
     upcasestr(prices);
-    count = list2arr(r, BUFFER_LEN / 2, prices, ' ');
+    count = list2arr(r, BUFFER_LEN / 2, prices, ' ', 0);
     if (!count)
       continue;
     for (i = 0; i < count; i++) {
@@ -230,7 +241,7 @@ do_buy(dbref player, char *item, char *from, int price)
         cost = r[i] + len;
         if (!*cost)
           continue;
-        costcount = list2arr(c, BUFFER_LEN / 2, cost, ',');
+        costcount = list2arr(c, BUFFER_LEN / 2, cost, ',', 0);
         for (ci = 0; ci < costcount; ci++) {
           cost = c[ci];
           /* Formats:
@@ -270,6 +281,18 @@ do_buy(dbref player, char *item, char *from, int price)
             continue;
           }
           if (boughtit >= 0) {
+            /* No point checking the lock before this point, as
+               we don't try and give them money if they aren't
+               selling what we're buying */
+            if (!eval_lock(player, vendor, Pay_Lock)) {
+              boughtit = 0;
+              if (failvendor == NOTHING)
+                failvendor = vendor;
+              /* We don't run fail_lock here in case we end up successfully
+                 buying from someone else. Only fail_lock() if the failure
+                 stops us buying from anyone */
+              continue;
+            }
             if (!payfor(player, boughtit)) {
               affordable = 0;
               boughtit = 0;
@@ -301,7 +324,13 @@ do_buy(dbref player, char *item, char *from, int price)
     }
   } while (!from && ((vendor = Next(vendor)) != NOTHING));
 
-  if (price >= 0) {
+  if (failvendor != NOTHING) {
+    /* Found someone selling, but they wouldn't take our money */
+    fail_lock(player, failvendor, Pay_Lock,
+              tprintf(T("%s doesn't want your money."), Name(failvendor)),
+              NOTHING);
+  } else if (price >= 0) {
+    /* Noone we wanted to buy from selling for the right amount */
     if (!from) {
       notify(player, T("I can't find that item with that price here."));
     } else {
@@ -309,12 +338,14 @@ do_buy(dbref player, char *item, char *from, int price)
                     Name(vendor));
     }
   } else if (affordable) {
+    /* Didn't find anyone selling it */
     if (!from) {
       notify(player, T("I can't find that item here."));
     } else {
       notify_format(player, T("%s isn't selling that item."), Name(vendor));
     }
   } else {
+    /* We found someone selling, but didn't have the pennies to buy it */
     notify(player, T("You can't afford that."));
   }
 }
@@ -403,7 +434,7 @@ do_give(dbref player, char *recipient, char *amnt, int silent)
       }
 
       if (Mobile(thing) && (EnterOk(who) || controls(player, who))) {
-        moveto(thing, who);
+        moveto(thing, who, player, "give");
 
         /* Notify the giver with their GIVE message */
         bp = tbuf1;
@@ -459,7 +490,7 @@ do_give(dbref player, char *recipient, char *amnt, int silent)
       notify_format(player, T("%s refuses your money."), Name(who));
       giveto(player, amount);
       return;
-    } else if (a) {
+    } else if (a && (amount > 0 || !IsPlayer(who))) {
       /* give pennies to object with COST */
       int cost = 0;
       char *preserveq[NUMQ];
@@ -468,13 +499,6 @@ do_give(dbref player, char *recipient, char *amnt, int silent)
       char *fbp, *asave;
       char const *ap;
 
-      a = atr_get(who, "COST");
-      if (!a) {
-        /* No cost attribute */
-        notify_format(player, T("%s refuses your money."), Name(who));
-        giveto(player, amount);
-        return;
-      }
       save_global_regs("give_save", preserveq);
       save_global_env("give_save", preserves);
       asave = safe_atr_value(a);
@@ -499,6 +523,12 @@ do_give(dbref player, char *recipient, char *amnt, int silent)
         giveto(player, amount);
         return;
       }
+      if (!eval_lock(player, who, Pay_Lock)) {
+        giveto(player, amount);
+        fail_lock(player, who, Pay_Lock,
+                  tprintf(T("%s refuses your money."), Name(who)), NOTHING);
+        return;
+      }
       if ((amount - cost) > 0) {
         notify_format(player, T("You get %d in change."), amount - cost);
       } else {
@@ -514,7 +544,13 @@ do_give(dbref player, char *recipient, char *amnt, int silent)
                   NOTHING, pay_env, NA_INTER_SEE);
       return;
     } else {
-      /* give pennies to a player */
+      /* give pennies to a player with no @cost, or "give" a negative amount to a player */
+      if (!Wizard(player) && !eval_lock(player, who, Pay_Lock)) {
+        giveto(player, amount);
+        fail_lock(player, who, Pay_Lock,
+                  tprintf(T("%s refuses your money."), Name(who)), NOTHING);
+        return;
+      }
       if (amount > 0) {
         notify_format(player,
                       T("You give %d %s to %s."), amount,

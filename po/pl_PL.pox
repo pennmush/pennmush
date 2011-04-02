@@ -3970,10 +3970,6 @@ msgstr "To nie jest prawid³owy dbref."
 msgid "That is not a valid lock name."
 msgstr "To nie jest prawid³owa nazwa blokady."
 
-#: src/log.c:355
-msgid "That is not a valid log."
-msgstr "To nie jest prawid³owy log."
-
 #: src/create.c:54
 msgid "That is not a valid object."
 msgstr "To nie jest poprawny obiekt."
@@ -4237,11 +4233,6 @@ msgstr "Ten pokój od teraz nadaje."
 #: conf.c:558
 msgid "TinyMUSH compatibility options"
 msgstr "Opcje kompatybilno¶ci z TinyMUSH"
-
-#: extchat.c:1836
-#, c-format
-msgid "Title %s for %schannel <%s>."
-msgstr "Tytu³ %s dla %skana³u <%s>."
 
 #: src/extchat.c:1358
 msgid "Title too long."
@@ -5261,10 +5252,6 @@ msgstr "Musisz podaæ listê nazw mocy."
 #: wiz.c:1453
 msgid "You must give a string of flag characters."
 msgstr "Musisz podaæ ³añcuch znaków flagi"
-
-#: cmds.c:424
-msgid "You must give a switch for @hook"
-msgstr "Musisz podaæ w³±cznik dla @haka"
 
 #: command.c:2073
 msgid "You must give an object."

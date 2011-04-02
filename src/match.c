@@ -4,15 +4,19 @@
  * \brief Matching of object names.
  *
  * These are the PennMUSH name-matching routines, fully re-entrant.
+ *  match_result_relative(who,where,name,type,flags) return match, AMBIGUOUS or NOTHING
  *  match_result(who,name,type,flags) - return match, AMBIGUOUS, or NOTHING
  *  noisy_match_result(who,name,type,flags) - return match or NOTHING,
  *      and notify player on failures
  *  last_match_result(who,name,type,flags) - return match or NOTHING,
  *      and return the last match found in ambiguous situations
  *
+ *  match_result_internal() does the legwork for all of the above.
+ *
  * who = dbref of player to match for
+ * where = dbref of object to match relative to. For all functions which don't take a 'where' arg, use 'who'.
  * name = string to match on
- * type = preferred type of match (TYPE_THING, etc.) or NOTYPE
+ * type = preferred type(s) of match (TYPE_THING, etc.) or NOTYPE
  * flags = a set of bits indicating what kind of matching to do
  *
  * flags are defined in match.h, but here they are for reference:
@@ -26,11 +30,11 @@
  * MAT_ABSOLUTE         - match any <#dbref>
  * MAT_PMATCH           - match <playerName> or *<playerName>
  * MAT_PLAYER           - match *<playerName>
- * MAT_NEIGHBOR         - match something in 'who's location
- * MAT_POSSESSION       - match something in 'who's inventory
- * MAT_EXIT             - match an exit in 'who's location
- * MAT_CARRIED_EXIT     - match an exit in the room 'who'
- * MAT_CONTAINER        - match the name of 'who's location
+ * MAT_NEIGHBOR         - match something in 'where's location
+ * MAT_POSSESSION       - match something in 'where's inventory
+ * MAT_EXIT             - match an exit in 'where's location
+ * MAT_CARRIED_EXIT     - match an exit in the room 'where'
+ * MAT_CONTAINER        - match the name of 'where's location
  * MAT_REMOTE_CONTENTS  - matches the same as MAT_POSSESSION
  * MAT_ENGLISH          - match natural english 'my 2nd flower'
  * MAT_TYPE             - match only objects of the given type(s)
@@ -41,6 +45,8 @@
  * MAT_NEAR_THINGS      - objects,near
  * MAT_REMOTE           - absolute,player,remote_contents,exit,remotes
  * MAT_LIMITED          - absolute,player,neighbor
+ * MAT_CONTENTS         - only match objects located inside 'where'
+ * MAT_OBJ_CONTENTS     - possession,player,absolute,english,contents
  */
 
 #include "copyrite.h"
@@ -62,9 +68,11 @@
 static int parse_english(char **name, long *flags);
 static dbref match_player(dbref who, const char *name, int partial);
 extern int check_alias(const char *command, const char *list);  /* game.c */
-static int match_aliases(dbref match, const char *name);
 static dbref choose_thing(const dbref who, const int preferred_type, long flags,
                           dbref thing1, dbref thing2);
+static dbref match_result_internal(dbref who, dbref where, const char *xname,
+                                   int type, long flags);
+
 
 dbref
 noisy_match_result(const dbref who, const char *name, const int type,
@@ -217,6 +225,8 @@ static dbref debugMatchTo = 1;
 
 #define MATCH_TYPE ((type & Typeof(match)) ? 1 : ((flags & MAT_TYPE) ? 0 : -1))
 
+#define MATCH_CONTENTS (!(flags & MAT_CONTENTS) || (Location(match) == where))
+
 #define BEST_MATCH choose_thing(who, type, flags, bestmatch, match)
 
 static dbref
@@ -301,7 +311,7 @@ match_player(dbref who, const char *name, int partial)
   return (GoodObject(who) && partial ? visible_short_page(who, name) : NOTHING);
 }
 
-static int
+int
 match_aliases(dbref match, const char *name)
 {
 
@@ -324,8 +334,24 @@ match_aliases(dbref match, const char *name)
 dbref
 match_result(dbref who, const char *xname, int type, long flags)
 {
+  return match_result_internal(who, who, xname, type, flags);
+}
+
+dbref
+match_result_relative(dbref who, dbref where, const char *xname, int type,
+                      long flags)
+{
+  return match_result_internal(who, where, xname, type, flags);
+}
+
+/* The object 'who' is trying to find something called 'xname' relative to the object 'where'.
+ * In most cases, 'who' and 'where' will be the same object. */
+static dbref
+match_result_internal(dbref who, dbref where, const char *xname, int type,
+                      long flags)
+{
   dbref match;                  /* object we're currently checking for a match */
-  dbref loc;                    /* location of 'who' */
+  dbref loc;                    /* location of 'where' */
   dbref bestmatch = NOTHING;    /* the best match we've found so bar */
   dbref abs = parse_objid(xname);       /* try to match xname as a dbref/objid */
   int final = 0;                /* the Xth object we want, with english matching (5th foo) */
@@ -334,22 +360,37 @@ match_result(dbref who, const char *xname, int type, long flags)
   int right_type = 0;           /* number of objects of preferred type found, when we have a type but MAT_TYPE isn't given */
   int exact = 0;                /* set to 1 when we've found an exact match, not just a partial one */
   int done = 0;                 /* set to 1 when we're using final, and have found the Xth object */
-  int goodwho = GoodObject(who);
+  int goodwhere = RealGoodObject(where);
   char *name, *sname;           /* name contains the object name searched for, after english matching tokens are stripped from xname */
+
 #ifdef DEBUG_OBJECT_MATCHING
-  debugMatchTo = (goodwho && IsPlayer(who) ? who : 1);
+  debugMatchTo = (GoodObject(who) && IsPlayer(who) ? who : 1);
   notify(debugMatchTo, "ENTERING MATCH_RESULT");
   notify_format(debugMatchTo, "FLAGS: %ld, TYPE: %d", flags, (type == NOTYPE));
 #endif
+
+  loc = (goodwhere ? (IsRoom(where) ? where : Location(where)) : NOTHING);
+
+  if (((flags & MAT_NEAR) && !goodwhere)
+      || ((flags & MAT_CONTENTS) && !goodwhere)) {
+    /* It can't be nearby/in where's contents if where is invalid */
+    if ((flags & MAT_NOISY) && GoodObject(who)) {
+      notify(who, T("I can't see that here."));
+    }
+    return NOTHING;
+  }
+
   /* match "me" */
-  match = who;
-  if (goodwho && MATCH_TYPE && (flags & MAT_ME) && !strcasecmp(xname, "me")) {
+  match = where;
+  if (goodwhere && MATCH_TYPE && (flags & MAT_ME) && !(flags & MAT_CONTENTS)
+      && !strcasecmp(xname, "me")) {
     return match;
   }
 
   /* match "here" */
-  match = (goodwho ? (IsRoom(who) ? NOTHING : Location(who)) : NOTHING);
-  if ((flags & MAT_HERE) && !strcasecmp(xname, "here") && GoodObject(match)
+  match = (goodwhere ? (IsRoom(where) ? NOTHING : Location(where)) : NOTHING);
+  if ((flags & MAT_HERE) && !(flags & MAT_CONTENTS)
+      && !strcasecmp(xname, "here") && GoodObject(match)
       && MATCH_TYPE) {
     if (MATCH_CONTROLS) {
       return match;
@@ -363,23 +404,26 @@ match_result(dbref who, const char *xname, int type, long flags)
        ((flags & MAT_PLAYER) && *xname == LOOKUP_TOKEN)) &&
       ((type & TYPE_PLAYER) || !(flags & MAT_TYPE))) {
     match = match_player(who, xname, !(flags & MAT_EXACT));
-    if (GoodObject(match)) {
-      if (!(flags & MAT_NEAR) || Long_Fingers(who) ||
-          (nearby(who, match) || controls(who, match))) {
-        if (MATCH_CONTROLS) {
-          return match;
-        } else {
-          nocontrol = 1;
+    if (MATCH_CONTENTS) {
+      if (GoodObject(match)) {
+        if (!(flags & MAT_NEAR) || Long_Fingers(who) ||
+            (nearby(who, match) || controls(who, match))) {
+          if (MATCH_CONTROLS) {
+            return match;
+          } else {
+            nocontrol = 1;
+          }
         }
+      } else {
+        bestmatch = BEST_MATCH;
       }
-    } else {
-      bestmatch = BEST_MATCH;
     }
   }
 
   /* dbref match */
   match = abs;
-  if (RealGoodObject(match) && (flags & MAT_ABSOLUTE) && MATCH_TYPE) {
+  if (RealGoodObject(match) && (flags & MAT_ABSOLUTE) && MATCH_TYPE
+      && MATCH_CONTENTS) {
     if (!(flags & MAT_NEAR) || Long_Fingers(who)
         || (nearby(who, match) || controls(who, match))) {
       /* valid dbref match */
@@ -403,17 +447,18 @@ match_result(dbref who, const char *xname, int type, long flags)
 #endif
 
   while (1) {
-    loc = (goodwho ? (IsRoom(who) ? who : Location(who)) : NOTHING);
 #ifdef DEBUG_OBJECT_MATCHING
-    notify_format(debugMatchTo, "Running for #%d in #%d", who, loc);
+    notify_format(debugMatchTo, "Running for #%d in #%d", where, loc);
 #endif
-    if (goodwho && ((flags & MAT_POSSESSION) || (flags & MAT_REMOTE_CONTENTS))) {
+    if (goodwhere
+        && ((flags & MAT_POSSESSION) || (flags & MAT_REMOTE_CONTENTS))) {
 #ifdef DEBUG_OBJECT_MATCHING
-      notify(debugMatchTo, "STARTING POSSESSION");
+      notify_format(debugMatchTo, "STARTING POSSESSION with #%d",
+                    Contents(where));
 #endif
-      MATCH_LIST(Contents(who));
+      MATCH_LIST(Contents(where));
     }
-    if (GoodObject(loc) && (flags & MAT_NEIGHBOR)) {
+    if (GoodObject(loc) && (flags & MAT_NEIGHBOR) && !(flags & MAT_CONTENTS)) {
 #ifdef DEBUG_OBJECT_MATCHING
       notify(debugMatchTo, "STARTING NEIGHBOURS");
 #endif
@@ -424,13 +469,14 @@ match_result(dbref who, const char *xname, int type, long flags)
 #ifdef DEBUG_OBJECT_MATCHING
         notify_format(debugMatchTo, "STARTING EXIT");
 #endif
-        if (flags & MAT_REMOTES && GoodObject(Zone(loc)) && IsRoom(Zone(loc))) {
+        if ((flags & MAT_REMOTES) && !(flags & (MAT_NEAR | MAT_CONTENTS))
+            && GoodObject(Zone(loc)) && IsRoom(Zone(loc))) {
 #ifdef DEBUG_OBJECT_MATCHING
           notify(debugMatchTo, "STARTING EXIT-REMOTE");
 #endif
           MATCH_LIST(Exits(Zone(loc)));
         }
-        if (flags & MAT_GLOBAL) {
+        if ((flags & MAT_GLOBAL) && !(flags & (MAT_NEAR | MAT_CONTENTS))) {
 #ifdef DEBUG_OBJECT_MATCHING
           notify(debugMatchTo, "STARTING EXIT-GLOBAL");
 #endif
@@ -444,18 +490,18 @@ match_result(dbref who, const char *xname, int type, long flags)
         }
       }
     }
-    if ((flags & MAT_CONTAINER) && goodwho) {
+    if ((flags & MAT_CONTAINER) && !(flags & MAT_CONTENTS) && goodwhere) {
 #ifdef DEBUG_OBJECT_MATCHING
       notify(debugMatchTo, "STARTING CONTAINER");
 #endif
       MATCH_LIST(loc);
     }
     if ((type & TYPE_EXIT) || !(flags & MAT_TYPE)) {
-      if ((flags & MAT_CARRIED_EXIT) && goodwho && IsRoom(who)) {
+      if ((flags & MAT_CARRIED_EXIT) && goodwhere && IsRoom(where)) {
 #ifdef DEBUG_OBJECT_MATCHING
         notify_format(debugMatchTo, "STARTING CEXIT");
 #endif
-        MATCH_LIST(Exits(who));
+        MATCH_LIST(Exits(where));
       }
     }
     break;
@@ -475,7 +521,7 @@ match_result(dbref who, const char *xname, int type, long flags)
     }
   }
 
-  if (!GoodObject(bestmatch) && (flags & MAT_NOISY)) {
+  if (!GoodObject(bestmatch) && (flags & MAT_NOISY) && GoodObject(who)) {
     /* give error message */
     if (bestmatch == AMBIGUOUS) {
       notify(who, T("I don't know which one you mean!"));

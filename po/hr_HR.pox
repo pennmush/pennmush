@@ -963,6 +963,11 @@ msgstr "%s ne ¾eli ni¹ta od tebe."
 msgid "%s doesn't want that."
 msgstr "%s to ne ¾eli."
 
+#: rob.c:330
+#, c-format
+msgid "%s doesn't want your money."
+msgstr "%s ne ¾eli tvoj novac."
+
 #: move.c:641 move.c:644
 #, c-format
 msgid "%s drops you."
@@ -1448,10 +1453,6 @@ msgstr "Prekoraèeno ogranièenje rekurzije @break naredbe."
 msgid "@command is ALWAYS enabled."
 msgstr "@command je UVIJEK ukljuèen."
 
-#: cque.c:695
-msgid "@include recursion exceeded."
-msgstr "Prekoraèeno ogranièenje rekurzije naredbe @include."
-
 #: cmds.c:687
 msgid "@message them with what?"
 msgstr "Koju poruku im ¾eli¹ poslati s @message?"
@@ -1709,6 +1710,10 @@ msgstr "Lo¹ tip objekta."
 #: src/wiz.c:732
 msgid "Bad password."
 msgstr "Lo¹a ¹ifra."
+
+#: log.c:358
+msgid "Begin log recall."
+msgstr "Poèetak ispisa loga."
 
 #: src/set.c:147
 #, c-format
@@ -2364,11 +2369,15 @@ msgstr "Ili igraè s tim imenom veæ postoji, ili je to ime zabranjeno."
 
 #: access.c:425
 msgid "Email registration is allowed"
-msgstr "Registracija putem elektronièke poste je dozvoljena"
+msgstr "Registracija putem elektronièke po¹te je dozvoljena"
 
 #: wiz.c:1013
 msgid "Enabled."
 msgstr "Ukljuèeno."
+
+#: log.c:365
+msgid "End log recall."
+msgstr "Kraj ispisa loga."
 
 #: atr_tab.c:647
 msgid "Enum"
@@ -2809,6 +2818,10 @@ msgstr "Ne mogu naæi tu sobu."
 #: src/speech.c:1365
 msgid "I can't find that."
 msgstr "Ne mogu to pronaæi."
+
+#: speech.c:869
+msgid "I can't find who you last paged."
+msgstr "Ne mogu naæi zadnjeg primatelja tvojih privatnih poruka."
 
 #: speech.c:686
 #, c-format
@@ -3660,6 +3673,11 @@ msgstr "PO©TA: Mora¹ navesti ime ili broj foldera"
 msgid "MAIL: You probably don't wanna send mail saying 'clear'."
 msgstr "PO©TA: Vjerojatno ne ¾eli¹ poslati pismo u kojem pi¹e 'clear'."
 
+#: extmail.c:1310
+#, c-format
+msgid "MAIL: You sent your message to %s, but they can't mail you!"
+msgstr "PO©TA: %s primi tvoju poruku, ali ne mo¾e tebi slati po¹tu!"
+
 #: src/extmail.c:1090
 #, c-format
 msgid "MAIL: You sent your message to %s."
@@ -3855,6 +3873,11 @@ msgstr "Programski kod na objektu %s ne sadr¾i naredbu - ne zapoèinji programski
 #, c-format
 msgid "No entries matching '%s' were found."
 msgstr "Nije naðen nijedan tekst koji se podudara s '%s'."
+
+#: help.c:119 help.c:129 help.c:139 help.c:146
+#, c-format
+msgid "No entry for '%s'"
+msgstr "Ni¹ta ne pi¹e pod '%s'"
 
 #: src/bsd.c:3090
 #, c-format
@@ -4483,6 +4506,11 @@ msgstr "Internet adresa %s banana."
 msgid "Site %s locked"
 msgstr "Internet adresa %s zakljuèana"
 
+#: wiz.c:1481
+#, c-format
+msgid "Sitelocked %d known addresses for %s"
+msgstr "Zakljuèano %d poznatih adresa za %s"
+
 #: src/destroy.c:266
 msgid "Sorry, no suicide allowed."
 msgstr "Na¾alost, samoubojstvo je zabranjeno."
@@ -4657,6 +4685,10 @@ msgstr "Ta funkcija nije obrisana!"
 msgid "That is an exit."
 msgstr "To je izlaz."
 
+#: log.c:402
+msgid "That is not a clearable log."
+msgstr "Taj log ne mo¾e biti obrisan."
+
 #: src/extmail.c:1218
 msgid "That is not a debugging option."
 msgstr "To nije opcija za debagiranje."
@@ -4680,10 +4712,6 @@ msgstr "To nije ispravan dbref."
 #: lock.c:326
 msgid "That is not a valid lock name."
 msgstr "To nije ispravno ime brave."
-
-#: src/log.c:355
-msgid "That is not a valid log."
-msgstr "To nije ispravan log."
 
 #: src/create.c:54
 msgid "That is not a valid object."
@@ -4890,7 +4918,7 @@ msgstr "Brojaè semafora mora biti cijeli broj."
 #: src/destroy.c:341
 #, c-format
 msgid "The wrecking ball is on its way for %s's %s and its exits."
-msgstr "Slu¾ba za ru¹enje zgrada je na putu prema sobi %s korisnika '%s' i njenim izlazima."
+msgstr "Slu¾ba za ru¹enje zgrada je na putu prema sobi korisnika %s '%s' i njenim izlazima."
 
 #: src/extmail.c:1281
 #, c-format
@@ -4954,10 +4982,6 @@ msgstr "Ovdje nema nikoga od koga bi se ne¹to moglo kupiti."
 msgid "There's nothing left of it to clone!"
 msgstr "Od toga ni¹ta nije ostalo pa se ne mo¾e ni klonirati!"
 
-#: player.c:190
-msgid "This IP address has failed too many times. Please try again in 10 minutes."
-msgstr "Prevelik broj neuspje¹nih spajanja s te IP adrese. Molim, poku¹ati ponovo za 10 minuta."
-
 #: command.c:1562
 msgid "This command has not been implemented."
 msgstr "Ova naredba se ne koristi."
@@ -5006,10 +5030,15 @@ msgstr "Do sljedeæeg èi¹æenja"
 msgid "TinyMUSH compatibility options"
 msgstr "Opcije za kompatibilnost s TinyMUSHom"
 
-#: extchat.c:1836
+#: extchat.c:2088
 #, c-format
-msgid "Title %s for %schannel <%s>."
-msgstr "Titula %s za %skanal <%s>."
+msgid "Title cleared for %schannel <%s>."
+msgstr "Titula obrisana za %skanal <%s>."
+
+#: extchat.c:2111
+#, c-format
+msgid "Title set for %schannel <%s>."
+msgstr "Titula postavljena za %skanal <%s>."
 
 #: src/extchat.c:1358
 msgid "Title too long."
@@ -5024,6 +5053,10 @@ msgstr "Da dobije¹ pristup ovom liku, spoji se na korisnika '%s' i napi¹i:\n"
 #, c-format
 msgid "To channel %s: %s"
 msgstr "Na kanal %s: %s"
+
+#: set.c:88
+msgid "Too many aliases."
+msgstr "Previ¹e aliasa."
 
 #: src/set.c:906
 msgid "Too many ancestors."
@@ -5160,6 +5193,11 @@ msgstr "Ne mogu postaviti '%s' jer stvaranje potrebnog nadatributa nije uspjelo.
 #: command.c:1694
 msgid "Unable to set alias."
 msgstr "Ne mogu postaviti alias."
+
+#: wiz.c:1483
+#, c-format
+msgid "Unable to sitelock %s: No known ip/host to ban."
+msgstr "Ne mogu zakljuèati adresu %s: Nema poznatog ip/hosta za bananje."
 
 #: speech.c:355
 #, c-format
@@ -5650,6 +5688,10 @@ msgstr "Za quotu mo¾e¹ postaviti samo broj."
 msgid "You can only set quotas to a positive number."
 msgstr "Za quotu mo¾e¹ postaviti samo pozitivan broj."
 
+#: cmds.c:530
+msgid "You can only use /inplace with /override."
+msgstr "/inplace mo¾e¹ koristiti samo s /override."
+
 #: rob.c:326
 msgid "You can't afford that."
 msgstr "Nema¹ novaca za to."
@@ -6098,9 +6140,9 @@ msgstr "Mora¹ navesti popis naziva moæi."
 msgid "You must give a string of flag characters."
 msgstr "Mora¹ navesti string znakova za flagove."
 
-#: cmds.c:424
-msgid "You must give a switch for @hook"
-msgstr "Mora¹ navesti switch za @hook"
+#: cmds.c:525
+msgid "You must give a switch for @hook."
+msgstr "Mora¹ navesti switch za @hook."
 
 #: command.c:2073
 msgid "You must give an object."
@@ -6239,6 +6281,11 @@ msgstr "Posjeduje¹ objekt bez zonske brave koji je kori¹ten kao zona: %s"
 #, c-format
 msgid "You paged %s with '%s'"
 msgstr "%s dobije tvoju poruku '%s'"
+
+#: speech.c:1081
+#, c-format
+msgid "You paged %s, but they are unable to page you."
+msgstr "%s primi tvoju privatnu poruku, ali ne mo¾e tebi slati privatne poruke."
 
 #: src/rob.c:263
 #, c-format
@@ -6514,7 +6561,7 @@ msgid ""
 "MAIL: You have no mail.\n"
 msgstr ""
 "\n"
-"POSTA: Nema¹ po¹te.\n"
+"PO©TA: Nema¹ po¹te.\n"
 
 #: wiz.c:1284
 msgid ""

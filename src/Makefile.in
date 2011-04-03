@@ -17,7 +17,7 @@ C_FILES=access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c chunk.c	\
 	db.c destroy.c extchat.c extmail.c filecopy.c flaglocal.c	\
 	flags.c funcrypt.c function.c fundb.c funlist.c funlocal.c	\
 	funmath.c funmisc.c funstr.c funtime.c funufun.c game.c help.c	\
-	htab.c ident.c intmap.c local.c lock.c log.c look.c malias.c	\
+	htab.c intmap.c local.c lock.c log.c look.c malias.c	\
 	markup.c match.c memcheck.c move.c mycrypt.c mymalloc.c		\
 	mysocket.c myrlimit.c myssl.c notify.c parse.c pcre.c player.c	\
 	plyrlist.c predicat.c privtab.c info_master.c ptab.c rob.c	\
@@ -32,7 +32,7 @@ O_FILES=access.o atr_tab.o attrib.o boolexp.o bsd.o bufferq.o chunk.o	\
 	db.o destroy.o extchat.o extmail.o filecopy.o flaglocal.o	\
 	flags.o funcrypt.o function.o fundb.o funlist.o funlocal.o	\
 	funmath.o funmisc.o funstr.o funtime.o funufun.o game.o help.o	\
-	htab.o ident.o intmap.o local.o lock.o log.o look.o malias.o	\
+	htab.o intmap.o local.o lock.o log.o look.o malias.o	\
 	markup.o match.o memcheck.o move.o mycrypt.o mymalloc.o		\
 	mysocket.o myrlimit.o myssl.o notify.o parse.o pcre.o player.o	\
 	plyrlist.o info_master.o predicat.o privtab.o ptab.o rob.o	\
@@ -55,13 +55,13 @@ netmud: $(O_FILES)
 
 # We recompile mysocket.c instead of reusing mysocket.o because we
 # want to do some error handing differently for info_slave.
-info_slave: info_slave.c ident.o strdup.o sig.o wait.o mysocket.c ../hdrs/lookup.h
+info_slave: info_slave.c strdup.o sig.o wait.o mysocket.c ../hdrs/lookup.h
 	@echo "Making info_slave."
 	$(CC) $(CCFLAGS) -c info_slave.c
 	$(CC) $(CCFLAGS) -DINFOSLAVE -o info_slave info_slave.o \
-	ident.o strdup.o sig.o wait.o mysocket.c $(LDFLAGS) $(LIBS)
+	strdup.o sig.o wait.o mysocket.c $(LDFLAGS) $(LIBS)
 
-SSL_SLAVE_OBJS = strdup.o sig.o mymalloc.o mysocket.o myssl.o notify.o myrlimit.o strutil.o ident.o utils.o
+SSL_SLAVE_OBJS = strdup.o sig.o mymalloc.o mysocket.o myssl.o notify.o myrlimit.o strutil.o utils.o
 ssl_slave: ssl_slave.c $(SSL_SLAVE_OBJS)
 	@echo "Making ssl_slave."
 	$(CC) $(CCFLAGS) -c ssl_slave.c

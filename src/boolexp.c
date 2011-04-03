@@ -950,22 +950,31 @@ test_atr(char *s, char c)
 	struct boolexp_node *t;
 	const char *savebuf = parsebuf;
 
+	/* This does some simple validation of objid's target to try
+	 * to make sure it at least refers to a dbref. Because this part
+	 * is run during database loading, full validation like we can do
+	 * when a user uses a @lock on a running game is impossible. This
+	 * means that it's possible for an existing objid lock that refers
+	 * to a now-deleted object to pass a new object using the same dbref.
+	 * Not sure of a good way to work around this.
+	 */
+
 	parsebuf = s;
 	t = parse_boolexp_R();
 	parsebuf = savebuf;
+
+	/* Malformed to a certain extent. Fail. */
 	if (!t) {
 	  free_boolexp_node(b);
 	  return NULL;
-	}
-	if (t->type != BOOLEXP_CONST) {
-	  /* Malformed to a certain extent. Fail.
-	  * This won't catch locks like objid^#1234:somethingnotatimestpamp */
+	} else if (t->type != BOOLEXP_CONST) {
 	  free_boolexp_node(t);
 	  free_boolexp_node(b);
 	  return NULL;
 	}
+	b->type = BOOLEXP_IS;
+	b->thing = t->thing;
 	free_boolexp_node(t);
-
       } else {
 	dbref d = parse_objid(s);
 	if (GoodObject(d)) {	

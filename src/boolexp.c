@@ -193,7 +193,6 @@ typedef enum bvm_opcode {
   OP_TCHANNEL, /**< Tests CHANNEL^ARG */
   OP_TIP, /**< Tests IP^ARG */
   OP_THOSTNAME, /**< Tests HOSTNAME^ARG */
-  OP_TOBJID, /**< Tests OBJID^ARG */
   OP_TDBREFLIST,        /**< Tests DBREFLIST^ARG */
   OP_LOADS, /**< Load ARG into S */
   OP_LOADR, /**< Load ARG into R */
@@ -251,7 +250,7 @@ static struct flag_lock_types flag_locks[] = {
   {"TYPE", OP_TTYPE},
   {"NAME", OP_TNAME},
   {"CHANNEL", OP_TCHANNEL},
-  {"OBJID", OP_TOBJID},
+  {"OBJID", OP_TIS},
   {"IP", OP_TIP},
   {"HOSTNAME", OP_THOSTNAME},
   {"DBREFLIST", OP_TDBREFLIST},
@@ -533,13 +532,6 @@ eval_boolexp(dbref player, boolexp b, dbref target, NEW_PE_INFO * pe_info)
         else
           r = 0;
         break;
-      case OP_TOBJID:
-        {
-          dbref d;
-          d = parse_objid((char *) bytecode + arg);
-          r = (player == d);
-          break;
-        }
       case OP_TCHANNEL:
         {
           CHAN *chan;
@@ -781,9 +773,6 @@ unparse_boolexp(dbref player, boolexp b, enum u_b_f flag)
       case OP_TPOWER:
         safe_format(boolexp_buf, &buftop, "POWER^%s", bytecode + arg);
         break;
-      case OP_TOBJID:
-        safe_format(boolexp_buf, &buftop, "OBJID^%s", bytecode + arg);
-        break;
       case OP_TCHANNEL:
         safe_format(boolexp_buf, &buftop, "CHANNEL^%s", bytecode + arg);
         break;
@@ -926,6 +915,7 @@ skip_whitespace(void)
     parsebuf++;
 }
 
+/* Handle attribute, eval, flag, etc. lock parsing. */
 static struct boolexp_node *
 test_atr(char *s, char c)
 {
@@ -952,9 +942,47 @@ test_atr(char *s, char c)
     b->type = BOOLEXP_ATR;
   else if (c == '/')
     b->type = BOOLEXP_EVAL;
-  else if (c == '^')
-    b->type = BOOLEXP_FLAG;
-  b->data.atr_lock = alloc_atr(tbuf1, s);
+  else if (c == '^') {
+    if (strcmp(tbuf1, "OBJID") == 0) {
+      /* Convert objid^blah to =blah */
+      
+      if (loading_db) {
+	struct boolexp_node *t;
+	const char *savebuf = parsebuf;
+
+	parsebuf = s;
+	t = parse_boolexp_R();
+	parsebuf = savebuf;
+	if (!t) {
+	  free_boolexp_node(b);
+	  return NULL;
+	}
+	if (t->type != BOOLEXP_CONST) {
+	  /* Malformed to a certain extent. Fail.
+	  * This won't catch locks like objid^#1234:somethingnotatimestpamp */
+	  free_boolexp_node(t);
+	  free_boolexp_node(b);
+	  return NULL;
+	}
+	free_boolexp_node(t);
+
+      } else {
+	dbref d = parse_objid(s);
+	if (GoodObject(d)) {	
+	  b->type = BOOLEXP_IS;
+	  b->thing = d;
+	} else {
+	  /* Fail on invalid objids */
+	  notify_format(parse_player, T("I don't see %s here."), s);
+	  free_boolexp_node(b);
+	  return NULL;
+	}
+      }
+    } else {
+      b->type = BOOLEXP_FLAG;
+      b->data.atr_lock = alloc_atr(tbuf1, s);
+    }
+  }
   return b;
 }
 
@@ -1090,6 +1118,10 @@ parse_boolexp_O(void)
     if (t == NULL) {
       free_boolexp_node(b2);
       return NULL;
+    } else if (t->type != BOOLEXP_CONST) {
+      free_boolexp_node(b2);
+      free_boolexp_node(t);
+      return NULL;    
     } else {
       b2->thing = t->thing;
       free_boolexp_node(t);
@@ -1112,6 +1144,10 @@ parse_boolexp_C(void)
     t = parse_boolexp_R();
     if (t == NULL) {
       free_boolexp_node(b2);
+      return NULL;
+    } else if (t->type != BOOLEXP_CONST) {
+      free_boolexp_node(b2);
+      free_boolexp_node(t);
       return NULL;
     } else {
       b2->thing = t->thing;
@@ -1136,6 +1172,10 @@ parse_boolexp_I(void)
     if (t == NULL) {
       free_boolexp_node(b2);
       return NULL;
+    } else if (t->type != BOOLEXP_CONST) {
+      free_boolexp_node(b2);
+      free_boolexp_node(t);
+      return NULL;
     } else {
       b2->thing = t->thing;
       free_boolexp_node(t);
@@ -1158,6 +1198,10 @@ parse_boolexp_A(void)
     t = parse_boolexp_R();
     if (t == NULL) {
       free_boolexp_node(b2);
+      return NULL;
+    } else if (t->type != BOOLEXP_CONST) {
+      free_boolexp_node(b2);
+      free_boolexp_node(t);
       return NULL;
     }
     b2->thing = t->thing;
@@ -1718,7 +1762,6 @@ emit_bytecode(struct bvm_asm *a, int derefs)
     case OP_TFLAG:
     case OP_TNAME:
     case OP_TPOWER:
-    case OP_TOBJID:
     case OP_TTYPE:
     case OP_TCHANNEL:
     case OP_TIP:
@@ -1983,9 +2026,6 @@ print_bytecode(boolexp b)
       break;
     case OP_TPOWER:
       printf("TPOWER \"%s\"\n", bytecode + arg);
-      break;
-    case OP_TOBJID:
-      printf("TOBJID \"%s\"\n", bytecode + arg);
       break;
     case OP_TTYPE:
       printf("TTYPE \"%s\"\n", bytecode + arg);

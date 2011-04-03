@@ -987,11 +987,12 @@ test_atr(char *s, char c)
 	  return NULL;
 	}
       }
+      return b;
     } else {
       b->type = BOOLEXP_FLAG;
-      b->data.atr_lock = alloc_atr(tbuf1, s);
     }
   }
+  b->data.atr_lock = alloc_atr(tbuf1, s);
   return b;
 }
 

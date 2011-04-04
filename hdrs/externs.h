@@ -136,7 +136,7 @@ void sql_shutdown(void);
 #define NA_INTER_HEAR   0x0200  /**< Message is auditory in nature */
 #define NA_INTER_SEE    0x0400  /**< Message is visual in nature */
 #define NA_INTER_PRESENCE  0x0800       /**< Message is about presence */
-#define NA_NOSPOOF        0x1000        /**< Message comes via a NO_SPOOF object. */
+#define NA_NOSPOOF        0x1000        /**< Message comes via a NOSPOOF object. */
 #define NA_PARANOID       0x2000        /**< Message comes via a PARANOID object. */
 #define NA_NOPREFIX       0x4000        /**< Don't use \@prefix when forwarding */
 #define NA_SPOOF        0x8000  /**< \@ns* message, overrides NOSPOOF */

@@ -207,10 +207,8 @@ FUNCTION(fun_munge)
     osep = osepd;
   }
 
-
-
   /* find our object and attribute */
-  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
+  if (!fetch_ufun_attrib(args[0], executor, &ufun, (UFUN_DEFAULT | UFUN_REQUIRE_ATTR)))
     return;
 
   /* Copy the first list, since we need to pass it to two destructive
@@ -432,7 +430,7 @@ FUNCTION(fun_fold)
   if (!delim_check(buff, bp, nargs, args, 4, &sep))
     return;
 
-  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
+  if (!fetch_ufun_attrib(args[0], executor, &ufun, (UFUN_DEFAULT | UFUN_REQUIRE_ATTR)))
     return;
 
   cp = args[1];
@@ -544,7 +542,7 @@ FUNCTION(fun_filter)
     check_bool = 1;
 
   /* find our object and attribute */
-  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
+  if (!fetch_ufun_attrib(args[0], executor, &ufun, (UFUN_DEFAULT | UFUN_REQUIRE_ATTR)))
     return;
 
   /* Go through each argument */
@@ -676,7 +674,7 @@ FUNCTION(fun_sortkey)
     strcpy(outsep, args[4]);
 
   /* find our object and attribute */
-  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
+  if (!fetch_ufun_attrib(args[0], executor, &ufun, (UFUN_DEFAULT | UFUN_REQUIRE_ATTR)))
     return;
 
   nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, args[1], sep, 1);
@@ -2156,7 +2154,7 @@ FUNCTION(fun_step)
     return;
 
   /* find our object and attribute */
-  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
+  if (!fetch_ufun_attrib(args[0], executor, &ufun, (UFUN_DEFAULT | UFUN_REQUIRE_ATTR)))
     return;
 
   /* Split lp up into an ansi-safe list */
@@ -2218,7 +2216,7 @@ FUNCTION(fun_map)
   if (!*lp)
     return;
 
-  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
+  if (!fetch_ufun_attrib(args[0], executor, &ufun, (UFUN_DEFAULT | UFUN_REQUIRE_ATTR)))
     return;
 
   strcpy(place, "1");
@@ -2283,7 +2281,7 @@ FUNCTION(fun_mix)
     return;
 
   /* find our object and attribute */
-  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
+  if (!fetch_ufun_attrib(args[0], executor, &ufun, (UFUN_DEFAULT | UFUN_REQUIRE_ATTR)))
     return;
 
   maxi = 0;

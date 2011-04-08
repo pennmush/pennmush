@@ -26,7 +26,7 @@ SVN is the version control system provided by Google Code. (We'd use git, but it
   # Build and compile the pennmush-read-only checkout, selecting the options you like: {{{cd pennmush-read-only ; ./configure ; make update all install}}}
   # @shutdown your currently running mush.
   # Copy the data, restart, .cnf and any files you have created or changed over: {{{cp pennmush/game/data/* pennmush-read-only/game/data/ ; cp pennmush/game/*.cnf pennmush/game/restart pennmush-read-only/game/}}}
-  # If you have news files or other personalized text files, copy those over. You may want to remove the default files: {{{rm -rf pennmush-read-only/game/txt/nws ; cp -r pennmush/game/txt/nws pennmush/game/txt/nws}}}
+  # If you have news files or other personalized text files, copy those over. You may want to remove the default files: {{{rm -rf pennmush-read-only/game/txt/nws ; cp -r pennmush/game/txt/nws pennmush-read-only/game/txt/nws}}}
   # You may want to rename "pennmush-read-only" to the same as the old directory: {{{mv pennmush pennmush-old ; mv pennmush-read-only pennmush}}}
   # Start the game: {{{./pennmush/game/restart}}}
 

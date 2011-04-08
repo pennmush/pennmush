@@ -126,7 +126,7 @@ match_controlled(dbref player, const char *name)
  *  a. "me" if requested
  *  b. "here" if requested
  *  c. #dbref, possibly with a control check
- *  c. *player
+ *  d. *player
  * 2. Parse for adj-phrases and restrict further matching and/or
  *    remember the object count
  * 3. Look for matches (remote contents, neighbor, inventory, exits,

@@ -1,4 +1,4 @@
-run test:
+run tests:
 test('null.1', $god, 'think null()', '');
 test('null.2', $god, 'think null(a)', '');
 test('null.3', $god, 'think null(a,b,c)', '');

@@ -111,8 +111,6 @@ void do_writelog(dbref player, char *str, int ltype);
 void bind_and_queue(dbref player, dbref cause, char *action, const char *arg,
                     const char *placestr, MQUE * parent_queue);
 void do_list(dbref player, char *arg, int lc, int which);
-void do_dolist(dbref player, char *list, char *command,
-               dbref cause, unsigned int flags, MQUE * queue_entry);
 void do_uptime(dbref player, int mortal);
 static char *make_new_epoch_file(const char *basename, int the_epoch);
 #ifdef HAS_GETRUSAGE
@@ -1835,15 +1833,15 @@ do_scan(dbref player, char *command, int flag)
  * \verbatim
  * This function implements @dolist.
  * \endverbatim
- * \param player the enactor.
+ * \param player the executor.
  * \param list string containing the list to iterate over.
  * \param command command to run for each list element.
- * \param cause object which caused this command to be run.
+ * \param enactor the enactor
  * \param flags command switch flags.
  * \param queue_entry the queue entry \@dolist is being run in
  */
 void
-do_dolist(dbref player, char *list, char *command, dbref cause,
+do_dolist(dbref player, char *list, char *command, dbref enactor,
           unsigned int flags, MQUE * queue_entry)
 {
   char *curr, *objstring;
@@ -1855,14 +1853,14 @@ do_dolist(dbref player, char *list, char *command, dbref cause,
   if (!command || !*command) {
     notify(player, T("What do you want to do with the list?"));
     if (flags & DOL_NOTIFY)
-      parse_que(player, cause, "@notify me", NULL);
+      parse_que(player, enactor, "@notify me", NULL);
     return;
   }
 
   if (queue_entry && (queue_entry->pe_info->iter_nestings + 1) > MAX_ITERS) {
     notify(player, T("Too many @dolists."));
     if (flags & DOL_NOTIFY)
-      parse_que(player, cause, "@notify me", NULL);
+      parse_que(player, enactor, "@notify me", NULL);
     return;
   }
 
@@ -1870,7 +1868,7 @@ do_dolist(dbref player, char *list, char *command, dbref cause,
     if (list[1] != ' ') {
       notify(player, T("Separator must be one character."));
       if (flags & DOL_NOTIFY)
-        parse_que(player, cause, "@notify me", NULL);
+        parse_que(player, enactor, "@notify me", NULL);
       return;
     }
     delim = list[0];
@@ -1884,7 +1882,7 @@ do_dolist(dbref player, char *list, char *command, dbref cause,
   if (objstring && !*objstring) {
     /* Blank list */
     if (flags & DOL_NOTIFY)
-      parse_que(player, cause, "@notify me", NULL);
+      parse_que(player, enactor, "@notify me", NULL);
     return;
   }
 
@@ -1892,7 +1890,7 @@ do_dolist(dbref player, char *list, char *command, dbref cause,
     curr = split_token(&objstring, delim);
     place++;
     sprintf(placestr, "%d", place);
-    bind_and_queue(player, cause, command, curr, placestr, queue_entry);
+    bind_and_queue(player, enactor, command, curr, placestr, queue_entry);
   }
 
   *bp = '\0';
@@ -1902,7 +1900,7 @@ do_dolist(dbref player, char *list, char *command, dbref cause,
      *  directly, since we want the command to be queued
      *  _after_ the list has executed.
      */
-    parse_que(player, cause, "@notify me", NULL);
+    parse_que(player, enactor, "@notify me", NULL);
   }
 }
 

@@ -39,8 +39,6 @@ void do_list_memstats(dbref player);
 #define DOL_NOTIFY 2            /**< dolist/notify bitflag */
 #define DOL_DELIM 4             /**< dolist/delim bitflag */
 
-void do_dolist(dbref player, char *list, char *command,
-               dbref cause, unsigned int flags, MQUE * queue_entry);
 void do_list(dbref player, char *arg, int lc, int which);
 void do_writelog(dbref player, char *str, int ltype);
 void do_readcache(dbref player);

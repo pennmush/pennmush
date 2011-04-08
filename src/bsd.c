@@ -2920,14 +2920,14 @@ do_pemit_port(dbref player, const char *pc, const char *message, int flags)
 }
 
 /** Page a specified socket.
- * \param player the enactor.
- * \param cause the cause.
+ * \param player the executor.
+ * \param enactor the enactor.
  * \param pc string containing port number to send message to.
  * \param message message to send.
  * \param eval_msg Should the message be evaluated?
  */
 void
-do_page_port(dbref player, dbref cause, const char *pc, const char *message,
+do_page_port(dbref player, dbref enactor, const char *pc, const char *message,
              bool eval_msg)
 {
   int p, key;
@@ -2942,7 +2942,7 @@ do_page_port(dbref player, dbref cause, const char *pc, const char *message,
     return;
   }
 
-  process_expression(tbuf, &tbp, &pc, player, cause, cause, PE_DEFAULT,
+  process_expression(tbuf, &tbp, &pc, player, enactor, enactor, PE_DEFAULT,
                      PT_DEFAULT, NULL);
   *tbp = '\0';
   p = atoi(tbuf);
@@ -2959,7 +2959,7 @@ do_page_port(dbref player, dbref cause, const char *pc, const char *message,
   }
 
   if (eval_msg) {
-    process_expression(mbuf, &mbp, &message, player, cause, cause, PE_DEFAULT,
+    process_expression(mbuf, &mbp, &message, player, enactor, enactor, PE_DEFAULT,
                        PT_DEFAULT, NULL);
     *mbp = '\0';
     message = mbuf;

@@ -55,6 +55,11 @@ static char *parent_chain(dbref player, dbref thing);
 extern PRIV attr_privs_view[];
 extern int real_decompose_str(char *str, char *buff, char **bp);
 
+/* Show the 'Obvious Exits' list for a room. Used in 'look' and 'examine'.
+ * \param player The player looking
+ * \param loc room whose exits we're showing
+ * \param exit_name "Obvious Exits" string
+ */
 static void
 look_exits(dbref player, dbref loc, const char *exit_name)
 {
@@ -219,7 +224,11 @@ look_exits(dbref player, dbref loc, const char *exit_name)
   mush_free(nbuf, "string");
 }
 
-
+/** Show the contents list of an object when it's looked at, obeying @conformat
+ * \param player object looking
+ * \param object looked at
+ * \param contents_name String to show before contents list. "Contents" for rooms, "Carrying" for players/things
+ */
 static void
 look_contents(dbref player, dbref loc, const char *contents_name)
 {
@@ -307,6 +316,7 @@ look_contents(dbref player, dbref loc, const char *contents_name)
   }
 }
 
+/* Helper function for atr_iter_get, obeying VEILED attrflag */
 static int
 look_helper_veiled(dbref player, dbref thing __attribute__ ((__unused__)),
                    dbref parent __attribute__ ((__unused__)),
@@ -366,6 +376,7 @@ look_helper_veiled(dbref player, dbref thing __attribute__ ((__unused__)),
   return 1;
 }
 
+/* Helper function for atr_iter_get(), ignoring VEILED attrflag */
 static int
 look_helper(dbref player, dbref thing __attribute__ ((__unused__)),
             dbref parent __attribute__ ((__unused__)),
@@ -403,6 +414,14 @@ look_helper(dbref player, dbref thing __attribute__ ((__unused__)),
   return 1;
 }
 
+/** Show attributes on an object, for the 'examine' command
+ * \param player object using 'examine'
+ * \param thing object being examined
+ * \param mstr wildcard pattern of attrs to show, or NULL for all
+ * \param all show contents of veiled attributes?
+ * \param mortal only show attrs vis to mortals, ignoring player's privs?
+ * \param parent include inherited attributes from @parent?
+ */
 static void
 look_atrs(dbref player, dbref thing, const char *mstr, int all, int mortal,
           int parent)
@@ -432,6 +451,7 @@ look_atrs(dbref player, dbref thing, const char *mstr, int all, int mortal,
   }
 }
 
+/* Wrapper for look_atrs which only shows attrs visible to mortals */
 static void
 mortal_look_atrs(dbref player, dbref thing, const char *mstr, int all,
                  int parent)

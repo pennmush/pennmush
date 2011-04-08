@@ -64,6 +64,9 @@ enum dump_type { DUMP_NORMAL, DUMP_DEBUG, DUMP_PARANOID };
 extern void do_dump(dbref player, char *num, enum dump_type flag);
 enum shutdown_type { SHUT_NORMAL, SHUT_PANIC, SHUT_PARANOID };
 extern void do_shutdown(dbref player, enum shutdown_type panic_flag);
+extern void do_dolist(dbref player, char *list, char *command,
+               dbref enactor, unsigned int flags, MQUE * queue_entry);
+
 
 /* From look.c */
 enum exam_type { EXAM_NORMAL, EXAM_BRIEF, EXAM_MORTAL };

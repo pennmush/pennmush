@@ -189,12 +189,12 @@ free_qentry(MQUE * entry)
   }
 
   if (entry->action_list) {
-    mush_free(entry->action_list, "cqueue.comm");
+    mush_free(entry->action_list, "mque.action_list");
     entry->action_list = NULL;
   }
 
   if (entry->semaphore_attr) {
-    mush_free(entry->semaphore_attr, "cqueue.semattr");
+    mush_free(entry->semaphore_attr, "mque.semaphore_attr");
     entry->semaphore_attr = NULL;
   }
 
@@ -209,12 +209,12 @@ free_qentry(MQUE * entry)
   }
 
   if (entry->save_attrname)
-    mush_free(entry->save_attrname, "cqueue.attrname");
+    mush_free(entry->save_attrname, "mque.attrname");
 
   if (entry->pid) /* INPLACE queue entries have no pid */
     im_delete(queue_map, entry->pid);
 
-  mush_free(entry, "cqueue");
+  mush_free(entry, "mque");
 }
 
 static int
@@ -284,7 +284,7 @@ new_queue_entry(NEW_PE_INFO * pe_info)
   MQUE *entry;
   int i;
 
-  entry = mush_malloc(sizeof *entry, "cqueue");
+  entry = mush_malloc(sizeof *entry, "mque");
 
   entry->executor = NOTHING;
   entry->enactor = NOTHING;
@@ -427,13 +427,13 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   tmp->caller = enactor;
 
   aval = safe_atr_value(a);
-  tmp->action_list = mush_strdup(aval, "cqueue.comm");
+  tmp->action_list = mush_strdup(aval, "mque.action_list");
   free(aval);
 
   /* Set up %0-%9 */
   for (i = 0; i < 10; i++) {
     if (wenv[i]) {
-      tmp->pe_info->env[i] = mush_strdup(wenv[i], "cqueue.env");
+      tmp->pe_info->env[i] = mush_strdup(wenv[i], "pe_info.env");
     }
   }
 
@@ -602,7 +602,7 @@ new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
   queue_entry->executor = executor;
   queue_entry->enactor = enactor;
   queue_entry->caller = caller;
-  queue_entry->action_list = mush_strdup(actionlist, "cqueue.comm");
+  queue_entry->action_list = mush_strdup(actionlist, "mque.action_list");
   queue_entry->queue_type = queue_type;
   if (i > -1) {
     /* Set the previous env into queue_entry->save_env */
@@ -613,7 +613,7 @@ new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
 
   if (fromattr) {
     if (queue_type & QUEUE_INPLACE)
-      queue_entry->save_attrname = mush_strdup(pe_info->attrname, "cqueue.attrname");
+      queue_entry->save_attrname = mush_strdup(pe_info->attrname, "mque.attrname");
     strcpy(queue_entry->pe_info->attrname, fromattr);
   }
 
@@ -761,7 +761,7 @@ wait_que(dbref player, int waittill, char *command, dbref cause, dbref sem,
   else
     pe_info = NULL;
   tmp = new_queue_entry(pe_info);
-  tmp->action_list = mush_strdup(command, "cqueue.comm");
+  tmp->action_list = mush_strdup(command, "mque.action_list");
   tmp->pid = pid;
   tmp->executor = player;
   tmp->enactor = cause;
@@ -793,7 +793,7 @@ wait_que(dbref player, int waittill, char *command, dbref cause, dbref sem,
 
     /* Put it on the end of the semaphore queue */
     tmp->semaphore_attr =
-      mush_strdup(semattr ? semattr : "SEMAPHORE", "cqueue.semattr");
+      mush_strdup(semattr ? semattr : "SEMAPHORE", "mque.semaphore_attr");
     if (qsemlast != NULL) {
       qsemlast->next = tmp;
       qsemlast = tmp;
@@ -917,7 +917,7 @@ run_user_input(dbref player, int port, char *input)
 
 
   entry = new_queue_entry(NULL);
-  entry->action_list = mush_strdup(input, "cqueue.comm");
+  entry->action_list = mush_strdup(input, "mque.action_list");
   entry->enactor = player;
   entry->executor = player;
   entry->caller = player;
@@ -1044,7 +1044,7 @@ do_entry(MQUE * entry, int include_recurses)
         }
         if (tmp->save_attrname) {
           strcpy(tmp->pe_info->attrname, tmp->save_attrname);
-          mush_free(tmp->save_attrname, "cqueue.attrname");
+          mush_free(tmp->save_attrname, "mque.attrname");
           tmp->save_attrname = NULL;
         }
       }

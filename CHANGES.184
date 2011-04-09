@@ -85,6 +85,7 @@ Fixes:
  * Fix crash when reading a database with an invalid lock key. Reported by
    Covenant. [SW]
  * Some fixes to the test suite by Sketch.
+ * Help fixes by misskaly and others. [MG]
 
 Version 1.8.4 patchlevel 3                                 Mar 18,  2011
 

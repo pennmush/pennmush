@@ -62,6 +62,8 @@ Substitutions:
 
 Attributes:
  * Branch attributes now show the 'branch' attribute flag in lflags(). [MG]
+ * no_inherit and no_clone weren't propagated down attribute trees as
+   stated in the help, but now are. [MG]
  
 Functions:
  * setq(), regmatch(), strmatch() and sql() accept q-register names of

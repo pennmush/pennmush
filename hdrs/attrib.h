@@ -61,7 +61,7 @@ extern ATTR *atr_sub_branch(ATTR *branch);
 extern ATTR *atr_sub_branch_prev(ATTR *branch);
 extern void atr_new_add(dbref thing, char const *RESTRICT atr,
                         char const *RESTRICT s, dbref player, uint32_t flags,
-                        uint8_t derefs);
+                        uint8_t derefs, bool makeroots);
 extern atr_err atr_add(dbref thing, char const *RESTRICT atr,
                        char const *RESTRICT s, dbref player, uint32_t flags);
 extern atr_err atr_clr(dbref thing, char const *atr, dbref player);

@@ -625,10 +625,12 @@ create_atr(dbref thing, char const *atr_name, const ATTR *hint)
  * \param player the attribute creator.
  * \param flags bitmask of attribute flags for this attribute.
  * \param derefs the initial deref count to use for the attribute value.
+ * \param makeroots if creating a branch (FOO`BAR) attr, and the root (FOO)
+ *                  doesn't exist, should we create it instead of aborting?
  */
 void
 atr_new_add(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
-            dbref player, uint32_t flags, uint8_t derefs)
+            dbref player, uint32_t flags, uint8_t derefs, bool makeroots)
 {
   ATTR *ptr;
   char *p, root_name[ATTRIBUTE_NAME_LIMIT + 1];
@@ -641,19 +643,17 @@ atr_new_add(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
     do_rawlog(LT_ERR, "Bad attribute name %s on object %s", atr,
               unparse_dbref(thing));
 
-  ptr = create_atr(thing, atr, List(thing));
-  if (!ptr)
-    return;
-
   strcpy(root_name, atr);
   if ((p = strrchr(root_name, '`'))) {
     ATTR *root = NULL;
     *p = '\0';
     root = find_atr_in_list(List(thing), root_name);
     if (!root) {
+      if (!makeroots)
+        return;
       do_rawlog(LT_ERR, "Missing root attribute '%s' on object #%d!\n",
                 root_name, thing);
-      root = create_atr(thing, root_name, ptr);
+      root = create_atr(thing, root_name, List(thing));
       set_default_flags(root, 0);
       AL_FLAGS(root) |= AF_ROOT;
       AL_CREATOR(root) = player;
@@ -670,6 +670,10 @@ atr_new_add(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
         AL_FLAGS(root) |= AF_ROOT;
     }
   }
+
+  ptr = create_atr(thing, atr, List(thing));
+  if (!ptr)
+    return;
 
   AL_FLAGS(ptr) = flags;
   AL_FLAGS(ptr) &= ~AF_COMMAND & ~AF_LISTEN;
@@ -1006,17 +1010,21 @@ atr_get_with_parent(dbref obj, char const *atrname, dbref *parent)
         for (p = strchr(name, '`'); p; p = strchr(p + 1, '`')) {
           *p = '\0';
           atr = find_atr_in_list(atr, name);
-          if (!atr || AF_Private(atr)) {
-            *p = '`';
-            goto continue_target;
-          }
           *p = '`';
+          if (!atr)
+            goto continue_target;
+          else if (AF_Private(atr)) {
+            /* Can't inherit the attr or branches */
+            return NULL;
+          }
         }
       }
 
       /* Now actually find the attribute. */
       atr = find_atr_in_list(atr, name);
-      if (atr && (target == obj || !AF_Private(atr))) {
+      if (atr) {
+        if (target != obj && AF_Private(atr))
+          return NULL;
         if (parent)
           *parent = target;
         return atr;
@@ -1326,8 +1334,10 @@ atr_cpy(dbref dest, dbref source)
   for (ptr = List(source); ptr; ptr = AL_NEXT(ptr))
     if (!AF_Nocopy(ptr)
         && (AttrCount(dest) < max_attrs)) {
+      do_rawlog(LT_ERR, "Preparing to copy %s. AttrCount is %d...", AL_NAME(ptr), AttrCount(dest));
       atr_new_add(dest, AL_NAME(ptr), atr_value(ptr),
-                  AL_CREATOR(ptr), AL_FLAGS(ptr), AL_DEREFS(ptr));
+                  AL_CREATOR(ptr), AL_FLAGS(ptr), AL_DEREFS(ptr), 0);
+do_rawlog(LT_ERR, "Copied %s. AttrCount is %d...", AL_NAME(ptr), AttrCount(dest));
     }
 }
 

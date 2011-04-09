@@ -583,6 +583,11 @@ do_attrib_flags(dbref player, const char *obj, const char *atrname,
     notify(player, T("Unrecognized attribute flag."));
     return;
   }
+  if (af.clrf == 0 && af.setf == 0) {
+    notify(player, T("What flag do you want to set?"));
+    return;
+  }
+
   af.clrflags = mush_strdup(atrflag_to_string(af.clrf), "af_flag list");
   af.setflags = mush_strdup(atrflag_to_string(af.setf), "af_flag list");
   if (!atr_iter_get(player, thing, atrname, 0, 0, af_helper, &af))

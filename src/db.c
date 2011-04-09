@@ -1230,7 +1230,7 @@ get_list(PENNFILE *f, dbref i)
         free_ansi_string(as);
       }
 
-      atr_new_add(i, tbuf1, tb2, atoi(p), flags, derefs);
+      atr_new_add(i, tbuf1, tb2, atoi(p), flags, derefs, 1);
       count++;
       /* Check removed for atoi(q) == 0  (which results in NOTHING for that
        * parameter, and thus no flags), since this eliminates 'visual'
@@ -1314,7 +1314,7 @@ db_read_attrs(PENNFILE *f, dbref i, int count)
         free_ansi_string(as);
       }
     }
-    atr_new_add(i, name, value, owner, flags, derefs);
+    atr_new_add(i, name, value, owner, flags, derefs, 1);
   }
 
   if (found != count)
@@ -1891,7 +1891,7 @@ create_minimal_db(void)
   Type(start_room) = TYPE_ROOM;
   Flags(start_room) = string_to_bits("FLAG", "LINK_OK");
   atr_new_add(start_room, "DESCRIBE", "You are in Room Zero.", GOD, desc_flags,
-              1);
+              1, 1);
   CreTime(start_room) = ModTime(start_room) = mudtime;
   current_state.rooms++;
 
@@ -1908,8 +1908,8 @@ create_minimal_db(void)
   add_lock(god, god, Enter_Lock, parse_boolexp(god, "=me", Enter_Lock),
            LF_DEFAULT);
   add_lock(god, god, Use_Lock, parse_boolexp(god, "=me", Use_Lock), LF_DEFAULT);
-  atr_new_add(god, "DESCRIBE", "You see Number One.", god, desc_flags, 1);
-  atr_new_add(god, "MAILCURF", "0", god, AF_LOCKED | AF_NOPROG | AF_WIZARD, 1);
+  atr_new_add(god, "DESCRIBE", "You see Number One.", god, desc_flags, 1, 1);
+  atr_new_add(god, "MAILCURF", "0", god, AF_LOCKED | AF_NOPROG | AF_WIZARD, 1, 1);
   add_folder_name(god, 0, "inbox");
   PUSH(god, Contents(start_room));
   add_player(god);
@@ -1924,7 +1924,7 @@ create_minimal_db(void)
   CreTime(master_room) = ModTime(master_room) = mudtime;
   atr_new_add(master_room, "DESCRIBE",
               "This is the master room. Any exit in here is considered global. The same is true for objects with $-commands placed here.",
-              god, desc_flags, 1);
+              god, desc_flags, 1, 1);
   current_state.rooms++;
 
 

@@ -25,8 +25,8 @@
   Continued in 'help attribute flags2'
 & ATTRIBUTE FLAGS2
   These attribute flags grant access. They are not inherited down attribute
-  trees, and must be set a branch attribute as well as a leaf to take effect
-  (to make FOO`BAR visual, FOO must be visual too):
+  trees, and must be set on a branch attribute as well as a leaf to take 
+  effect (to make FOO`BAR visual, FOO must be visual too):
   
   visual (v)        Attribute can be seen by anyone via get(), eval(),
                     ufun(), zfun(), and similar functions.

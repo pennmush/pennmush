@@ -60,6 +60,7 @@ PRIV attr_privs_set[] = {
   {"nospace", 's', AF_NOSPACE, AF_NOSPACE},
   {"amhear", 'M', AF_MHEAR, AF_MHEAR},
   {"aahear", 'A', AF_AHEAR, AF_AHEAR},
+  {"branch", '`', 0, 0},
   {NULL, '\0', 0, 0}
 };
 

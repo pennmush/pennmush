@@ -307,12 +307,16 @@ init_sys_events(void)
 {
   time(&mudtime);
   sq_register_loop(60, idle_event, NULL, "PLAYER`INACTIVITY");
-  sq_register(mudtime + DBCK_INTERVAL, dbck_event, NULL, "DB`DBCK");
-  sq_register(mudtime + PURGE_INTERVAL, purge_event, NULL, "DB`PURGE");
-  sq_register(mudtime + options.warn_interval, warning_event, NULL,
-              "DB`WCHECK");
+  if (DBCK_INTERVAL > 0)
+    sq_register(mudtime + DBCK_INTERVAL, dbck_event, NULL, "DB`DBCK");
+  if (PURGE_INTERVAL > 0)
+    sq_register(mudtime + PURGE_INTERVAL, purge_event, NULL, "DB`PURGE");
+  if (options.warn_interval > 0)
+    sq_register(mudtime + options.warn_interval, warning_event, NULL,
+                "DB`WCHECK");
   reg_dbsave_warnings();
-  sq_register(mudtime + DUMP_INTERVAL, dbsave_event, NULL, NULL);
+  if (DUMP_INTERVAL > 0)
+    sq_register(mudtime + DUMP_INTERVAL, dbsave_event, NULL, NULL);
   sq_register_loop(1, on_every_second, NULL, NULL);
 }
 

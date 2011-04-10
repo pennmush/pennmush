@@ -88,6 +88,8 @@ Fixes:
    Covenant. [SW]
  * Some fixes to the test suite by Sketch.
  * Help fixes by misskaly and others. [MG]
+ * warn_interval set to 0 would cause the MUSH to hang. Reported by
+   Nymeria @ Blood of Dragons.
 
 Version 1.8.4 patchlevel 3                                 Mar 18,  2011
 

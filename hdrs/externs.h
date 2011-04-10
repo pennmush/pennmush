@@ -612,6 +612,9 @@ mush_strndup(const char *src, size_t len, const char *check)
       char *errmess;
       int ufun_flags;
     } ufun_attrib;
+
+dbref next_parent(dbref thing, dbref current, int *parent_count, int *use_ancestor);
+
 /* Only 'attr', not 'obj/attr' */
 #define UFUN_NONE 0
 /* Does this string accept obj/attr? */

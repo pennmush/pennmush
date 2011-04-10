@@ -747,3 +747,43 @@ can_interact(dbref from, dbref to, int type)
 
   return 1;
 }
+
+/** Return the next parent in an object's parent chain
+ * \verbatim
+ * For a given thing, return the next object in its parent chain. current is
+ * the current parent being looked at (initially the same as thing).
+ * parent_count is a pointer to an int which stores the number of parents
+ * we've looked at, for MAX_PARENTS checks. use_ancestor is a pointer to an
+ * int, initially set to 1, if we should include thing's ancestor object,
+ * which we set to 2 when we've seen the ancestor in the chain. Use a NULL
+ * pointer for no ancestor check.
+ * \endverbatim
+ * \param thing the child object
+ * \param current the current object
+ * \param parent_count pointer to int of how many parents we've used
+ * \param use_ancestor pointer to int of whether we should/have used the
+ *                     ancestor object, or NULL if we don't want to use it
+ * \return dbref of next parent object in chain
+ */
+dbref
+next_parent(dbref thing, dbref current, int *parent_count, int *use_ancestor)
+{
+  dbref next;
+
+  if ((*parent_count) > MAX_PARENTS)
+    next = NOTHING;
+  else
+    next = Parent(current);
+
+  (*parent_count)++;
+
+
+  if (!GoodObject(next) && use_ancestor && (*use_ancestor) == 1 && !Orphan(thing)) {
+    /* Check for ancestor */
+    next = Ancestor_Parent(thing);
+    (*use_ancestor) = 2;
+  } else if (next == Ancestor_Parent(thing) && use_ancestor)
+    (*use_ancestor) = 0;
+
+  return next;
+}

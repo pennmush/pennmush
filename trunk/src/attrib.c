@@ -1447,7 +1447,6 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
   char tbuf2[BUFFER_LEN];
   char *s;
   int match, match_found;
-  dbref parent;
   UsedAttr *used_list, **prev;
   ATTR *skip[ATTRIBUTE_NAME_LIMIT / 2];
   int skipcount;
@@ -1455,6 +1454,8 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
   char match_space[BUFFER_LEN * 2];
   ssize_t match_space_len = BUFFER_LEN * 2;
   NEW_PE_INFO *pe_info;
+  dbref current = thing, next = NOTHING;
+  int parent_count = 0;
 
   /* check for lots of easy ways out */
   if (type != '$' && type != '^')
@@ -1475,7 +1476,6 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
       parent_depth = 0;
     }
   }
-
   match = 0;
   used_list = NULL;
   prev = &used_list;
@@ -1484,143 +1484,14 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
   strcpy(pe_info->cmd_raw, str);
   strcpy(pe_info->cmd_evaled, str);
 
+
   skipcount = 0;
-  /* do_rawlog(LT_TRACE, "Searching %s:", Name(thing)); */
-  for (ptr = List(thing); ptr; ptr = AL_NEXT(ptr)) {
-    if (skipcount && ptr == skip[skipcount - 1]) {
-      size_t len = strrchr(AL_NAME(ptr), '`') - AL_NAME(ptr);
-      while (AL_NEXT(ptr) && strlen(AL_NAME(AL_NEXT(ptr))) > len &&
-             AL_NAME(AL_NEXT(ptr))[len] == '`') {
-        ptr = AL_NEXT(ptr);
-        /* do_rawlog(LT_TRACE, "  Skipping %s", AL_NAME(ptr)); */
-      }
-      skipcount--;
-      continue;
-    }
-    if (parent_depth)
-      prev = use_attr(prev, AL_NAME(ptr), AF_Noprog(ptr));
-    if (AF_Noprog(ptr)) {
-      skip[skipcount] = atr_sub_branch(ptr);
-      if (skip[skipcount])
-        skipcount++;
-      continue;
-    }
-    if (!(AL_FLAGS(ptr) & flag_mask))
-      continue;
-    strcpy(tbuf1, atr_value(ptr));
-    s = tbuf1;
-    do {
-      s = strchr(s + 1, end);
-    } while (s && s[-1] == '\\');
-    if (!s)
-      continue;
-    *s++ = '\0';
-    if (type == '^' && !AF_Ahear(ptr)) {
-      if ((thing == player && !AF_Mhear(ptr))
-          || (thing != player && AF_Mhear(ptr)))
-        continue;
-    }
-
-    if (AF_Regexp(ptr)) {
-      /* Turn \: into : */
-      char *from, *to;
-      for (from = tbuf1, to = tbuf2; *from; from++, to++) {
-        if (*from == '\\' && *(from + 1) == ':')
-          from++;
-        *to = *from;
-      }
-      *to = '\0';
-    } else
-      strcpy(tbuf2, tbuf1);
-
-    match_found = 0;
-    if (AF_Regexp(ptr)) {
-      if (regexp_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args, 10,
-                              match_space, match_space_len)) {
-        match_found = 1;
-        match++;
-      }
-    } else {
-      if (quick_wild_new(tbuf2 + 1, str, AF_Case(ptr))) {
-        match_found = 1;
-        match++;
-        if (!just_match)
-          wild_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args, 10,
-                            match_space, match_space_len);
-      }
-    }
-    if (match_found) {
-      /* We only want to do the lock check once, so that any side
-       * effects in the lock are only performed once per utterance.
-       * Thus, '$foo *r:' and '$foo b*:' on the same object will only
-       * run the lock once for 'foo bar'.
-       */
-      if (!lock_checked) {
-        lock_checked = 1;
-        if ((type == '$'
-             && !eval_lock_with(player, thing, Command_Lock, pe_info))
-            || (type == '^'
-                && !eval_lock_with(player, thing, Listen_Lock, pe_info))
-            || !eval_lock_with(player, thing, Use_Lock, pe_info)) {
-          match--;
-          if (errobj)
-            *errobj = thing;
-          /* If we failed the lock, there's no point in continuing at all. */
-          goto exit_sequence;
-        }
-      }
-      if (atrname && abp) {
-        safe_chr(' ', atrname, abp);
-        safe_dbref(thing, atrname, abp);
-        safe_chr('/', atrname, abp);
-        safe_str(AL_NAME(ptr), atrname, abp);
-      }
-      if (!just_match) {
-        if (from_queue && queue_type != QUEUE_DEFAULT) {
-          int pe_flags = PE_INFO_DEFAULT;
-          if (!(queue_type & QUEUE_CLEAR_QREG)) {
-            /* Copy parent q-registers into new queue */
-            pe_flags |= PE_INFO_COPY_QREG;
-          } else {
-            /* Since we use a new pe_info for this inplace entry, instead of
-               sharing the parent's, we don't need to explicitly clear the
-               q-registers, they're empty by default */
-            queue_type &= ~QUEUE_CLEAR_QREG;
-          }
-          if (!(queue_type & QUEUE_PRESERVE_QREG)) {
-            /* Cause q-registers from the end of the new queue entry to be
-               copied into the parent queue entry */
-            queue_type |= QUEUE_PROPAGATE_QREG;
-          } else {
-            /* Since we use a new pe_info for this inplace entry, instead of
-               sharing the parent's, we don't need to implicitly save/reset the
-               q-registers - we'll be altering different copies anyway */
-            queue_type &= ~QUEUE_PRESERVE_QREG;
-          }
-          /* inplace queue */
-          new_queue_actionlist_int(thing, player, player, s, from_queue,
-                               pe_flags, queue_type, args, tprintf("#%d/%s", thing, AL_NAME(ptr)));
-        } else {
-          /* Normal queue */
-          parse_que_attr(thing, player, s, args, tprintf("#%d/%s", thing, AL_NAME(ptr)));
-        }
-      }
-    }
-  }
-
-  /* Don't need to free used_list here, because if !parent_depth,
-   * we would never have allocated it. */
-  if (!parent_depth) {
-    free_pe_info(pe_info);
-    return match;
-  }
-
-  for (parent_depth = MAX_PARENTS, parent = Parent(thing);
-       parent_depth-- && parent != NOTHING; parent = Parent(parent)) {
-    /* do_rawlog(LT_TRACE, "Searching %s:", Name(parent)); */
-    skipcount = 0;
+  do {
+    next = (parent_depth ? next_parent(thing, current, &parent_count, NULL) : NOTHING);
     prev = &used_list;
-    for (ptr = List(parent); ptr; ptr = AL_NEXT(ptr)) {
+
+    /* do_rawlog(LT_TRACE, "Searching %s:", Name(current)); */
+    for (ptr = List(current); ptr; ptr = AL_NEXT(ptr)) {
       if (skipcount && ptr == skip[skipcount - 1]) {
         size_t len = strrchr(AL_NAME(ptr), '`') - AL_NAME(ptr);
         while (AL_NEXT(ptr) && strlen(AL_NAME(AL_NEXT(ptr))) > len &&
@@ -1631,34 +1502,38 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
         skipcount--;
         continue;
       }
-      if (AF_Private(ptr)) {
-        /* do_rawlog(LT_TRACE, "Private %s:", AL_NAME(ptr)); */
-        skip[skipcount] = atr_sub_branch(ptr);
-        if (skip[skipcount])
-          skipcount++;
-        continue;
-      }
-      if (find_attr(&prev, AL_NAME(ptr))) {
-        /* do_rawlog(LT_TRACE, "Found %s:", AL_NAME(ptr)); */
-        if (prev[0]->no_prog || AF_Noprog(ptr)) {
+      if (current != thing) {
+        /* Parent */
+        if (AF_Private(ptr)) {
+          /* do_rawlog(LT_TRACE, "Private %s:", AL_NAME(ptr)); */
           skip[skipcount] = atr_sub_branch(ptr);
           if (skip[skipcount])
             skipcount++;
-          prev[0]->no_prog = AF_NOPROG;
+          continue;
         }
-        continue;
+        if (find_attr(&prev, AL_NAME(ptr))) {
+          /* do_rawlog(LT_TRACE, "Found %s:", AL_NAME(ptr)); */
+          if (prev[0]->no_prog || AF_Noprog(ptr)) {
+            skip[skipcount] = atr_sub_branch(ptr);
+            if (skip[skipcount])
+              skipcount++;
+            prev[0]->no_prog = AF_NOPROG;
+          }
+          continue;
+        }
       }
-      if (GoodObject(Parent(parent)))
+      if (GoodObject(next)) {
         prev = use_attr(prev, AL_NAME(ptr), AF_Noprog(ptr));
+      }
       if (AF_Noprog(ptr)) {
-        /* do_rawlog(LT_TRACE, "NoProg %s:", AL_NAME(ptr)); */
         skip[skipcount] = atr_sub_branch(ptr);
         if (skip[skipcount])
           skipcount++;
         continue;
       }
-      if (!(AL_FLAGS(ptr) & flag_mask))
+      if (!(AL_FLAGS(ptr) & flag_mask)) {
         continue;
+      }
       strcpy(tbuf1, atr_value(ptr));
       s = tbuf1;
       do {
@@ -1702,10 +1577,12 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
         }
       }
       if (match_found) {
-        /* Since we're still checking the lock on the child, not the
-         * parent, we don't actually want to reset lock_checked with
-         * each parent checked.  Sorry for the misdirection, Alan.
-         *  - Alex */
+        /* We only want to do the lock check once, so that any side
+         * effects in the lock are only performed once per utterance.
+         * Thus, '$foo *r:' and '$foo b*:' on the same object will only
+         * run the lock once for 'foo bar'. Locks are always checked on
+         * the child, even when the attr is inherited.
+         */
         if (!lock_checked) {
           lock_checked = 1;
           if ((type == '$'
@@ -1717,22 +1594,21 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
             if (errobj)
               *errobj = thing;
             /* If we failed the lock, there's no point in continuing at all. */
-            goto exit_sequence;
+            next = NOTHING;
+            break;
           }
         }
         if (atrname && abp) {
           safe_chr(' ', atrname, abp);
-          if (Can_Examine(player, parent))
-            safe_dbref(parent, atrname, abp);
-          else
+          if (current == thing || !Can_Examine(player, current))
             safe_dbref(thing, atrname, abp);
-
+          else
+            safe_dbref(current, atrname, abp);
           safe_chr('/', atrname, abp);
           safe_str(AL_NAME(ptr), atrname, abp);
         }
         if (!just_match) {
           if (from_queue && queue_type != QUEUE_DEFAULT) {
-            /* inplace queue */
             int pe_flags = PE_INFO_DEFAULT;
             if (!(queue_type & QUEUE_CLEAR_QREG)) {
               /* Copy parent q-registers into new queue */
@@ -1753,19 +1629,20 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
                  q-registers - we'll be altering different copies anyway */
               queue_type &= ~QUEUE_PRESERVE_QREG;
             }
+            /* inplace queue */
             new_queue_actionlist_int(thing, player, player, s, from_queue,
-                                 pe_flags, queue_type, args, tprintf("#%d/%s", thing, AL_NAME(ptr)));
+                                     pe_flags, queue_type, args,
+                                     tprintf("#%d/%s", thing, AL_NAME(ptr)));
           } else {
             /* Normal queue */
-            parse_que_attr(thing, player, s, args, tprintf("#%d/%s", thing, AL_NAME(ptr)));
+            parse_que_attr(thing, player, s, args,
+                           tprintf("#%d/%s", thing, AL_NAME(ptr)));
           }
         }
       }
     }
-  }
+  } while ((current = next) != NOTHING);
 
-  /* This is where I wish for 'try {} finally {}'... */
-exit_sequence:
   while (used_list) {
     UsedAttr *temp = used_list->next;
     mush_free(used_list, "used_attr");
@@ -1774,6 +1651,7 @@ exit_sequence:
   free_pe_info(pe_info);
   return match;
 }
+
 
 /** Match input against a specified object's specified $command
  * attribute. Matches may be glob or regex matches. Used in command hooks.
@@ -1882,11 +1760,14 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
              q-registers - we'll be altering different copies anyway */
           queue_type &= ~QUEUE_PRESERVE_QREG;
         }
+        /* inplace queue */
         new_queue_actionlist_int(thing, player, player, s, from_queue,
-                             pe_flags, queue_type, args, tprintf("#%d/%s", thing, AL_NAME(ptr)));
+                                pe_flags, queue_type, args,
+                                tprintf("#%d/%s", thing, AL_NAME(ptr)));
       } else {
         /* Normal queue */
-        parse_que_attr(thing, player, s, args, tprintf("#%d/%s", thing, AL_NAME(ptr)));
+        parse_que_attr(thing, player, s, args,
+                       tprintf("#%d/%s", thing, AL_NAME(ptr)));
       }
     }
     return success;

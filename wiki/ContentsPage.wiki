@@ -10,6 +10,7 @@
   * Setting up the MUSH
     * [SetupOptions mush.cnf options]
     * [SetupHelpfiles Help and News Files]
+  * [Backups Setting up Backups]
   * More...
 
 

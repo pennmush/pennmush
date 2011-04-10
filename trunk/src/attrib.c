@@ -62,7 +62,7 @@ static ATTR *find_atr_pos_in_list(ATTR ***pos, char const *name);
 static atr_err can_create_attr(dbref player, dbref obj, char const *atr_name,
                                uint32_t flags);
 static ATTR *find_atr_in_list(ATTR *atr, char const *name);
-static ATTR *atr_get_with_parent(dbref obj, char const *atrname, dbref *parent);
+static ATTR *atr_get_with_parent(dbref obj, char const *atrname, dbref *parent, int cmd);
 
 /*======================================================================*/
 
@@ -960,6 +960,20 @@ wipe_atr(dbref thing, char const *atr, dbref player)
   return real_atr_clr(thing, atr, player, 1);
 }
 
+/** Wrapper for atr_get_with_parent()
+ * \verbatim
+ * Get an attribute from an object, checking its parents/ancestor if
+ * the object does not have the attribute itself. Return a pointer to
+ * the attribute structure (not its value), or NULL if the attr is
+ * not found.
+ * \endverbatim
+ */
+ATTR *
+atr_get(dbref obj, char const *atrname)
+{
+  return atr_get_with_parent(obj, atrname, NULL, 0);
+}
+
 /** Retrieve an attribute from an object or its ancestors.
  * This function retrieves an attribute from an object, or from its
  * parent chain, returning a pointer to the first attribute that
@@ -968,16 +982,13 @@ wipe_atr(dbref thing, char const *atr, dbref player)
  * through atr_value() or safe_atr_value().
  * \param obj the object containing the attribute.
  * \param atrname the name of the attribute.
+ * \param parent if non-NULL, a dbref pointer to be set to the dbref of
+ *               the object the attr was found on
+ * \param cmd return NULL for no_command attributes?
  * \return pointer to the attribute structure retrieved, or NULL.
  */
-ATTR *
-atr_get(dbref obj, char const *atrname)
-{
-  return atr_get_with_parent(obj, atrname, NULL);
-}
-
 static ATTR *
-atr_get_with_parent(dbref obj, char const *atrname, dbref *parent)
+atr_get_with_parent(dbref obj, char const *atrname, dbref *parent, int cmd)
 {
   static char name[ATTRIBUTE_NAME_LIMIT + 1];
   char *p;
@@ -1005,16 +1016,20 @@ atr_get_with_parent(dbref obj, char const *atrname, dbref *parent)
       atr = List(target);
 
       /* If we're looking at a parent/ancestor, then we
-       * need to check the branch path for privacy... */
-      if (target != obj) {
+       * need to check the branch path for privacy. We also
+       * need to check the branch path if we're looking for no_command */
+      if (target != obj || cmd) {
         for (p = strchr(name, '`'); p; p = strchr(p + 1, '`')) {
           *p = '\0';
           atr = find_atr_in_list(atr, name);
           *p = '`';
           if (!atr)
             goto continue_target;
-          else if (AF_Private(atr)) {
+          else if (target != obj && AF_Private(atr)) {
             /* Can't inherit the attr or branches */
+            return NULL;
+          } else if (cmd && AF_Noprog(atr)) {
+            /* Can't run commands in attr or branches */
             return NULL;
           }
         }
@@ -1024,6 +1039,8 @@ atr_get_with_parent(dbref obj, char const *atrname, dbref *parent)
       atr = find_atr_in_list(atr, name);
       if (atr) {
         if (target != obj && AF_Private(atr))
+          return NULL;
+        if (cmd && AF_Noprog(atr))
           return NULL;
         if (parent)
           *parent = target;
@@ -1180,7 +1197,7 @@ atr_pattern_count(dbref player, dbref thing, const char *name,
   if (!regexp && name[len - 1] != '`' && wildcard_count((char *) name, 1) != -1) {
     parent = thing;
     if (doparent)
-      ptr = atr_get_with_parent(thing, strupper(name), &parent);
+      ptr = atr_get_with_parent(thing, strupper(name), &parent, 0);
     else
       ptr = atr_get_noparent(thing, strupper(name));
     if (ptr && (mortal ? Is_Visible_Attr(parent, ptr)
@@ -1253,7 +1270,7 @@ atr_iter_get_parent(dbref player, dbref thing, const char *name, int mortal,
 
   /* Must check name[len-1] first as wildcard_count() can destructively modify name */
   if (!regexp && name[len - 1] != '`' && wildcard_count((char *) name, 1) != -1) {
-    ptr = atr_get_with_parent(thing, strupper(name), &parent);
+    ptr = atr_get_with_parent(thing, strupper(name), &parent, 0);
     if (ptr && (mortal ? Is_Visible_Attr(parent, ptr)
                 : Can_Read_Attr(player, parent, ptr)))
       result = func(player, thing, parent, name, ptr, args);
@@ -1681,10 +1698,10 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
   if (!GoodObject(thing) || Halted(thing) || NoCommand(thing))
     return 0;
 
-  if (!(ptr = atr_get(thing, atr)))
+  if (!(ptr = atr_get_with_parent(thing, atr, NULL, 1)))
     return 0;
 
-  if (AF_Noprog(ptr) || !AF_Command(ptr))
+  if (!AF_Command(ptr))
     return 0;
 
   strcpy(tbuf1, atr_value(ptr));

@@ -1,0 +1,144 @@
+#summary Onsite and Offsite Backups
+
+= Introduction =
+
+You've probably heard this one: there are two types of people in the world -- those who have lost data and those who will.  Whether through mechanical failure, ISP going out of business, or corruption/accidental deletion of game files, the odds of your game experiencing some sort of need for some sort of restoration during its lifespan are nontrivial.  Whether, where, and how often you back up will determine whether your players lose a few hours, a few days, or a few years of their efforts -- the last case usually spells the end of a game.  
+
+Deciding on a backup strategy and setting it up to happen automatically takes less than an hour up front, but can save you countless hours of frustration when the inevitable happens.  This article is intended to give you a generic backup strategy that you can modify as your own particular needs/capacities require.
+
+== Assumptions ==
+
+This article assumes you have installed PennMUSH on a linux server with the default options including gzip compression, and no use of "make customize".  If you've gone beyond the defaults, hopefully you're aware enough of the difference to modify the instructions below to adapt accordingly.
+  
+== Where to back up ==
+
+Your backup storage location is dependent on several factors, including your quota on your host, backup policies your host may provide (and that you trust), and any other server space you might have access to.  Backups fall in to two categories: onsite and offsite.
+
+  * Onsite.  This refers to backing up your game files on the same server it runs on.  This is typically fast, easy, and provides for backups for most of the common needs, including file corruption, accidental deletion of objects on the game, attacks using softcode/hardcode bugs, etc.  
+  
+  * Offsite.  In the event your game server becomes inaccessable/unrecoverable due to hardware failure, theft, you didn't pay your host provider's bill, or your server admin quits your staff in a snit and changes the password.  While these situations are more rare, having a database elsewhere that is more recent than last year can make the difference in a game's survival.
+
+== When to back up ==
+
+  * You should always back up before (and after, presuming success) performing any significant manipulation of your game data such as switching patchlevels, switching between patches and subversion (svn), doing a lot of building/coding work on the game, performing major rewrite of help/theme/other game files, etc.
+
+  * How often you back up is primarily a function of how often your game information changes and your level of comfort in recreating work.  A minimum suggested interval is a daily onsite backup and two times per month for off site backups.  Your needs may vary.
+  
+  * Backups work best when they are done automatically and you don't have to remember to do them.  This article will assist you in setting up automated daily on-site and semimonthly off-site backups.
+
+== What to back up ==
+
+There is no need to save copies of the PennMUSH source code, compiled files, or temporary files.  Should the need arise you can always download new copies of the latest version.  What you're most interested in are the data files specific to your game.  These are:
+
+  * Your current database.  All of the *db.gz files in the game/data directory.  The indb.gz isn't actually the most recent saved db, but it's the most recent one which you successfully started up with, and is good to keep as a double backup.
+  
+  * Your text files.  All of the *.txt files in the game/txt directory.  Note that help.txt, news.txt, and events.txt are built by the code from files in the hlp, nws, and evt subdirectories.  You don't need these three files but if you have modified any of the files in the subdirectories you should copy those as well.
+  
+  * Your configuration files.  All of the *.cnf files in the game directory.  Possibly options.h and restart but these are easily rebuilt.
+  
+  * (Optional) Your log files.  Contents of the game/log (current) and game/save (previous) directories.
+
+= On Site Backup =
+
+  # We'll create a backup directory to store your backups.
+  # We'll set up a script to do an on-site backup.
+  # We'll set up a cron job to execute this script daily.
+  # Assuming we don't have unlimited quota, we'll only keep the last 2 days of daily backups.
+
+== The backup directory ==
+
+This doesn't need to be anything complicated: let's just put a directory called *`backup`* in your home directory.
+{{{
+cd ~
+mkdir backup
+cd backup
+}}}
+
+== A backup script ==
+
+Next, we'll set up a list of the files we want to archive.  The below default should handle most PennMUSH games.  Edit the list of files if you have a unique setup or need/don't need particular files from the list.  Create a file *`filelist.txt`* using nano (or your favorite editor):
+
+{{{
+options.h
+game/alias.cnf
+game/access.cnf
+game/mush.cnf
+game/restrict.cnf
+game/names.cnf
+game/restart
+game/data/indb.gz
+game/data/maildb.gz
+game/data/outdb.gz
+game/data/chatdb.gz
+game/txt/connect.txt
+game/txt/down.txt
+game/txt/guest.txt
+game/txt/full.txt
+game/txt/motd.txt
+game/txt/wizmotd.txt
+game/txt/help.txt
+game/txt/newuser.txt
+game/txt/register.txt
+game/txt/events.txt
+game/txt/quit.txt
+game/txt/news.txt
+game/log/checkpt.log
+game/log/command.log
+game/log/connect.log
+game/log/netmush.log
+game/log/trace.log
+game/log/wizard.log
+}}}
+
+Next, create your backup script *`pennback.sh`*:
+
+{{{
+#!/bin/bash
+
+# edit these to match your directory structure
+homedir=/home/yourhomedir
+backupdir=pennmush
+archivedir=backup
+
+# customize your archive filename here if you like
+filename=yourgamename-archive
+year=`date +%Y`
+date=`date +%m%d`
+time=`date +%H%M%S`
+
+backup="$filename.$year.$date.$time.tar.bz2"
+
+cd $homedir/$backupdir
+
+# create the backup
+tar cjf $homedir/$archivedir/$backup -T $homedir/$archivedir/filelist.txt
+
+# to save space, delete other backups more than 2 days old
+find $homedir/$archivedir -type f -daystart -mtime +2 -delete
+}}}
+
+== Running your script from cron ==
+
+First, capture your existing cron schedule in a text file:
+{{{
+cd ~
+crontab -l > mycrontab.txt
+}}}
+Then edit the `mycrontab.txt` file you just created to delete the comment lines and add a new entry for your `pennback.sh` script daily at 02:00 server time:
+{{{
+0 2 * * * /bin/bash /home/yourhomedir/backup/pennback.sh
+}}}
+Then update:
+{{{
+crontab mycrontab.txt
+}}}
+
+= Offsite Backups =
+
+If you've gotten this far, congratulations. You've set up a system to back up your database to the same machine.  But if something happens that prevents your access to both your game and your on-site backups, you need a backup plan to your backup plan.  Here, there are numerous choices on locations and ways to copy your backups elsewhere.  This article introduces two possibilities, one from a different linux-based server (or Mac OS X), and a second from a Windows machine.  The concepts are similar and can be adapted to your own capabilities:
+
+  # Set up a public/private keypair to allow copying without requiring password. 
+  # Set up a script or batch file to copy an archive file between servers.
+  # Schedule the script using a cron, task scheduler, etc.
+  
+Because there are numerous ways to do this, depending on your operating system and the operating system where you want to copy the files, step-by-step instructions are not provided.  

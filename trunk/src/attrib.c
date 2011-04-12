@@ -1646,14 +1646,18 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
                  q-registers - we'll be altering different copies anyway */
               queue_type &= ~QUEUE_PRESERVE_QREG;
             }
+            if (AF_NoDebug(ptr))
+              queue_type |= QUEUE_NODEBUG;
+            else if (AF_Debug(ptr))
+              queue_type |= QUEUE_DEBUG;
+
             /* inplace queue */
             new_queue_actionlist_int(thing, player, player, s, from_queue,
                                      pe_flags, queue_type, args,
                                      tprintf("#%d/%s", thing, AL_NAME(ptr)));
           } else {
             /* Normal queue */
-            parse_que_attr(thing, player, s, args,
-                           tprintf("#%d/%s", thing, AL_NAME(ptr)));
+            parse_que_attr(thing, player, s, args, ptr);
           }
         }
       }
@@ -1777,14 +1781,18 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
              q-registers - we'll be altering different copies anyway */
           queue_type &= ~QUEUE_PRESERVE_QREG;
         }
+        if (AF_NoDebug(ptr))
+          queue_type |= QUEUE_NODEBUG;
+        else if (AF_Debug(ptr))
+          queue_type |= QUEUE_DEBUG;
+
         /* inplace queue */
         new_queue_actionlist_int(thing, player, player, s, from_queue,
                                 pe_flags, queue_type, args,
                                 tprintf("#%d/%s", thing, AL_NAME(ptr)));
       } else {
         /* Normal queue */
-        parse_que_attr(thing, player, s, args,
-                       tprintf("#%d/%s", thing, AL_NAME(ptr)));
+        parse_que_attr(thing, player, s, args, ptr);
       }
     }
     return success;

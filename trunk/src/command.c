@@ -905,11 +905,12 @@ int rhs_present;
  * \param cmd pointer to command data.
  * \param right_side if true, parse on the right of the =. Otherwise, left.
  * \param forcenoparse if true, do no evaluation during parsing.
+ * \param pe_flags default pe_flags, used for debug/no_debug action lists
  */
 void
 command_argparse(dbref executor, dbref enactor, dbref caller,
                  NEW_PE_INFO * pe_info, char **from, char *to, char *argv[],
-                 COMMAND_INFO *cmd, int right_side, int forcenoparse)
+                 COMMAND_INFO *cmd, int right_side, int forcenoparse, int pe_flags)
 {
   int parse, split, args, i, done;
   char *t, *f;
@@ -922,7 +923,7 @@ command_argparse(dbref executor, dbref enactor, dbref caller,
   if (parse || forcenoparse)
     parse = PE_NOTHING;
   else
-    parse = PE_DEFAULT | PE_COMMAND_BRACES;
+    parse = PE_DEFAULT | PE_COMMAND_BRACES | pe_flags;
 
   if (right_side)
     split = PT_NOTHING;
@@ -1073,6 +1074,7 @@ command_parse(dbref player, char *string, MQUE * queue_entry)
   int noevtoken = 0;
   char *retval;
   NEW_PE_INFO *pe_info = queue_entry->pe_info;
+  int pe_flags = 0;
 
   rhs_present = 0;
 
@@ -1097,6 +1099,7 @@ command_parse(dbref player, char *string, MQUE * queue_entry)
     string = p;
     memmove(pe_info->cmd_raw, (char *) pe_info->cmd_raw + 1, BUFFER_LEN - 1);
   }
+
   if (*p == '[') {
     if ((cmd = command_find("WARN_ON_MISSING"))) {
       if (!(cmd->type & CMD_T_DISABLED)) {
@@ -1107,6 +1110,12 @@ command_parse(dbref player, char *string, MQUE * queue_entry)
       }
     }
   }
+
+  if (queue_entry->queue_type & QUEUE_NODEBUG)
+    pe_flags = PE_NODEBUG;
+  else if (queue_entry->queue_type & QUEUE_DEBUG)
+    pe_flags = PE_DEBUG;
+
   switch (*p) {
   case '\0':
     /* Just in case. You never know */
@@ -1182,7 +1191,7 @@ command_parse(dbref player, char *string, MQUE * queue_entry)
     process_expression(command, &c, (const char **) &p, player,
                        queue_entry->caller, queue_entry->enactor,
                        noevtoken ? PE_NOTHING
-                       : ((PE_DEFAULT & ~PE_FUNCTION_CHECK) |
+                       : ((PE_DEFAULT & ~PE_FUNCTION_CHECK) | pe_flags |
                           PE_COMMAND_BRACES), PT_SPACE, pe_info);
     *c = '\0';
     strcpy(commandraw, command);
@@ -1221,7 +1230,7 @@ command_parse(dbref player, char *string, MQUE * queue_entry)
       process_expression(commandraw, &c2, (const char **) &p, player,
                          queue_entry->caller, queue_entry->enactor,
                          noevtoken ? PE_NOTHING
-                         : ((PE_DEFAULT & ~PE_FUNCTION_CHECK) |
+                         : ((PE_DEFAULT & ~PE_FUNCTION_CHECK) | pe_flags |
                             PE_COMMAND_BRACES), PT_DEFAULT, pe_info);
     }
     *c2 = '\0';
@@ -1319,27 +1328,27 @@ command_parse(dbref player, char *string, MQUE * queue_entry)
   if ((cmd->func == command_atrset) && (queue_entry->queue_type & QUEUE_NOLIST)) {
     /* Special case: eqsplit, noeval of rhs only */
     command_argparse(player, queue_entry->enactor, queue_entry->caller, pe_info,
-                     &p, ls, lsa, cmd, 0, 0);
+                     &p, ls, lsa, cmd, 0, 0, pe_flags);
     command_argparse(player, queue_entry->enactor, queue_entry->caller, pe_info,
-                     &p, rs, rsa, cmd, 1, 1);
+                     &p, rs, rsa, cmd, 1, 1, pe_flags);
     SW_SET(sw, SWITCH_NOEVAL);  /* Needed for ATTRIB_SET */
   } else {
     noeval = SW_ISSET(sw, SWITCH_NOEVAL) || noevtoken;
     if (cmd->type & CMD_T_EQSPLIT) {
       char *savep = p;
       command_argparse(player, queue_entry->enactor, queue_entry->caller,
-                       pe_info, &p, ls, lsa, cmd, 0, noeval);
+                       pe_info, &p, ls, lsa, cmd, 0, noeval, pe_flags);
       if (noeval && !noevtoken && *p) {
         /* oops, we have a right hand side, should have evaluated */
         p = savep;
         command_argparse(player, queue_entry->enactor, queue_entry->caller,
-                         pe_info, &p, ls, lsa, cmd, 0, 0);
+                         pe_info, &p, ls, lsa, cmd, 0, 0, pe_flags);
       }
       command_argparse(player, queue_entry->enactor, queue_entry->caller,
-                       pe_info, &p, rs, rsa, cmd, 1, noeval);
+                       pe_info, &p, rs, rsa, cmd, 1, noeval, pe_flags);
     } else {
       command_argparse(player, queue_entry->enactor, queue_entry->caller,
-                       pe_info, &p, ls, lsa, cmd, 0, noeval);
+                       pe_info, &p, ls, lsa, cmd, 0, noeval, pe_flags);
     }
   }
 

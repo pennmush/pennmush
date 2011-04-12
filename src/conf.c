@@ -1643,12 +1643,9 @@ do_config_list(dbref player, const char *type, int lc)
   if (type && *type) {
     /* Look up the type in the group table */
     int found = 0;
-    do_rawlog(LT_ERR, "here...");
     for (cgp = confgroups; cgp->name; cgp++) {
-      do_rawlog(LT_ERR, "Checking group %s", cgp->name);
       if (string_prefix(T(cgp->name), type)
           && Can_View_Config_Group(player, cgp)) {
-            do_rawlog(LT_ERR, "Found!");
         found = 1;
         break;
       }

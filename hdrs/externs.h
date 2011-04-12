@@ -227,19 +227,21 @@ extern char ucbuff[];
 /* From cque.c */
 
 /* Queue types/flags */
-#define QUEUE_DEFAULT          0x000   /* select QUEUE_PLAYER or QUEUE_OBJECT based on enactor's Type() */
-#define QUEUE_PLAYER           0x001   /* command queued because of a player in-game */
-#define QUEUE_OBJECT           0x002   /* command queued because of a non-player in-game */
-#define QUEUE_SOCKET           0x004   /* command executed directly from a player's client */
-#define QUEUE_INPLACE          0x008   /* inplace queue entry */
-#define QUEUE_NO_BREAKS        0x010   /* Don't propagate @breaks from this inplace queue */
-#define QUEUE_PRESERVE_QREG    0x020   /* Preserve/restore q-registers before/after running this inplace queue */
-#define QUEUE_CLEAR_QREG       0x040   /* Clear q-registers before running this inplace queue */
-#define QUEUE_PROPAGATE_QREG   0x080   /* At the end of this inplace queue entry, copy our q-registers into the parent queue entry */
-#define QUEUE_RESTORE_ENV      0x100   /* At the end of this inplace queue entry, free pe_info->env and restore from saved_env */
-#define QUEUE_NOLIST           0x200   /* Don't separate commands at semicolons, and don't parse rhs in &attr setting */
-#define QUEUE_BREAK            0x400   /* set by @break, stops further processing of queue entry */
-#define QUEUE_RETRY            0x800   /* Set by @retry, restart current queue entry from beginning, without recalling do_entry */
+#define QUEUE_DEFAULT          0x0000   /* select QUEUE_PLAYER or QUEUE_OBJECT based on enactor's Type() */
+#define QUEUE_PLAYER           0x0001   /* command queued because of a player in-game */
+#define QUEUE_OBJECT           0x0002   /* command queued because of a non-player in-game */
+#define QUEUE_SOCKET           0x0004   /* command executed directly from a player's client */
+#define QUEUE_INPLACE          0x0008   /* inplace queue entry */
+#define QUEUE_NO_BREAKS        0x0010   /* Don't propagate @breaks from this inplace queue */
+#define QUEUE_PRESERVE_QREG    0x0020   /* Preserve/restore q-registers before/after running this inplace queue */
+#define QUEUE_CLEAR_QREG       0x0040   /* Clear q-registers before running this inplace queue */
+#define QUEUE_PROPAGATE_QREG   0x0080   /* At the end of this inplace queue entry, copy our q-registers into the parent queue entry */
+#define QUEUE_RESTORE_ENV      0x0100   /* At the end of this inplace queue entry, free pe_info->env and restore from saved_env */
+#define QUEUE_NOLIST           0x0200   /* Don't separate commands at semicolons, and don't parse rhs in &attr setting */
+#define QUEUE_BREAK            0x0400   /* set by @break, stops further processing of queue entry */
+#define QUEUE_RETRY            0x0800   /* Set by @retry, restart current queue entry from beginning, without recalling do_entry */
+#define QUEUE_DEBUG            0x1000   /* Show DEBUG info for queue (queued from a DEBUG attribute) */
+#define QUEUE_NODEBUG          0x2000   /* Don't show DEBUG info for queue (queued from a NO_DEBUG attribute) */
 #define QUEUE_RECURSE (QUEUE_INPLACE | QUEUE_NO_BREAKS | QUEUE_PRESERVE_QREG)
 
 
@@ -261,8 +263,7 @@ void do_halt(dbref owner, const char *ncom, dbref victim);
 bool queue_event(dbref enactor, const char *event, const char *fmt, ...)
   __attribute__ ((__format__(__printf__, 3, 4)));
 #define parse_que(executor,enactor,actionlist,env) new_queue_actionlist(executor,enactor,enactor,actionlist,NULL,PE_INFO_DEFAULT,QUEUE_DEFAULT,env)
-#define parse_que_attr(executor,enactor,actionlist,env,attr) new_queue_actionlist_int(executor,enactor,enactor,actionlist,NULL,PE_INFO_DEFAULT,QUEUE_DEFAULT,env,attr)
-
+void parse_que_attr(dbref executor, dbref enactor, char *actionlist, char *env[10], ATTR *a);
 void insert_que(MQUE * queue_entry, MQUE * parent_queue);
 
 void new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,

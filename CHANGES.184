@@ -64,6 +64,9 @@ Attributes:
  * Branch attributes now show the 'branch' attribute flag in lflags(). [MG]
  * no_inherit and no_clone weren't propagated down attribute trees as
    stated in the help, but now are. [MG]
+ * The debug and no_debug attribute flags now affect attributes which are
+   queued (via $-commands, @trigger, etc) as well as ufun()'d. Suggested
+   by Wiggles. [MG]
  
 Functions:
  * setq(), regmatch(), strmatch() and sql() accept q-register names of

@@ -325,6 +325,8 @@ int cf_time(const char *opt, const char *val, void *loc, int maxval,
          (Wizard(p) && (g->viewperms & CGP_WIZARD)) || \
          (Hasprivs(p) && (g->viewperms & CGP_ADMIN)))
 
+int can_view_config_option(dbref player, PENNCONF *opt);
+
 
 #define DUMP_INTERVAL       (options.dump_interval)
 #define DUMP_NOFORK_MESSAGE  (options.dump_message)

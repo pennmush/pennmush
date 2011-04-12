@@ -1596,6 +1596,37 @@ config_file_startup(const char *conf, int restrictions)
   return 1;
 }
 
+/** Can a player see a config option?
+ * \param player dbref of player trying to look
+ * \param opt the config option
+ * \retval 1 or 0
+ */
+int
+can_view_config_option(dbref player, PENNCONF *opt)
+{
+  PENNCONFGROUP *group;
+
+  /* Options in a group cannot be viewed at all */
+  if (!opt->group) {
+    return 0;
+  }
+
+  /* Some options are God-only */
+  if ((opt->flags & CP_GODONLY) && !God(player)) {
+    return 0;
+  }
+
+  /* Check group privs */
+  for (group = confgroups; group->name; group++) {
+    if (!strcmp(group->name, opt->group)) {
+      return Can_View_Config_Group(player, group);
+    }
+  }
+
+  /* Didn't find group */
+  return 0;
+}
+
 /** List configuration directives or groups.
  * \param player the enactor.
  * \param type the directive or group name.
@@ -1612,9 +1643,12 @@ do_config_list(dbref player, const char *type, int lc)
   if (type && *type) {
     /* Look up the type in the group table */
     int found = 0;
+    do_rawlog(LT_ERR, "here...");
     for (cgp = confgroups; cgp->name; cgp++) {
+      do_rawlog(LT_ERR, "Checking group %s", cgp->name);
       if (string_prefix(T(cgp->name), type)
           && Can_View_Config_Group(player, cgp)) {
+            do_rawlog(LT_ERR, "Found!");
         found = 1;
         break;
       }
@@ -1622,8 +1656,7 @@ do_config_list(dbref player, const char *type, int lc)
     if (!found) {
       /* It wasn't a group. Is is one or more specific options? */
       for (cp = conftable; cp->name; cp++) {
-        if (cp->group && (God(player) || !(cp->flags & CP_GODONLY))
-            && string_prefix(cp->name, type)) {
+        if (string_prefix(cp->name, type) && can_view_config_option(player, cp)) {
           notify(player, config_to_string(player, cp, lc));
           found = 1;
         }
@@ -1632,8 +1665,7 @@ do_config_list(dbref player, const char *type, int lc)
         /* Ok, maybe a local option? */
         for (cp = (PENNCONF *) hash_firstentry(&local_options); cp;
              cp = (PENNCONF *) hash_nextentry(&local_options)) {
-          if (cp->group && (God(player) || !(cp->flags & CP_GODONLY))
-              && !strcasecmp(cp->name, type)) {
+          if (!strcasecmp(cp->name, type) && can_view_config_option(player, cp)) {
             notify(player, config_to_string(player, cp, lc));
             found = 1;
           }
@@ -1643,14 +1675,14 @@ do_config_list(dbref player, const char *type, int lc)
         /* Try a wildcard search of option names, including local options */
         char *wild = tprintf("*%s*", type);
         for (cp = conftable; cp->name; cp++) {
-          if (cp->group && quick_wild(wild, cp->name)) {
+          if (quick_wild(wild, cp->name) && can_view_config_option(player, cp)) {
             found = 1;
             notify(player, config_to_string(player, cp, lc));
           }
         }
         for (cp = (PENNCONF *) hash_firstentry(&local_options); cp;
              cp = (PENNCONF *) hash_nextentry(&local_options)) {
-          if (cp->group && quick_wild(wild, cp->name)) {
+          if (quick_wild(wild, cp->name) && can_view_config_option(player, cp)) {
             found = 1;
             notify(player, config_to_string(player, cp, lc));
           }
@@ -1671,15 +1703,13 @@ do_config_list(dbref player, const char *type, int lc)
         show_compile_options(player);
       else {
         for (cp = conftable; cp->name; cp++) {
-          if (cp->group && (God(player) || !(cp->flags & CP_GODONLY))
-              && !strcmp(cp->group, cgp->name)) {
+          if (cp->group && !strcmp(cp->group, cgp->name) && can_view_config_option(player, cp)) {
             notify(player, config_to_string(player, cp, lc));
           }
         }
         for (cp = (PENNCONF *) hash_firstentry(&local_options); cp;
              cp = (PENNCONF *) hash_nextentry(&local_options)) {
-          if (cp->group && (God(player) || !(cp->flags & CP_GODONLY))
-              && !strcasecmp(cp->group, cgp->name)) {
+          if (cp->group && !strcasecmp(cp->group, cgp->name) && can_view_config_option(player, cp)) {
             notify(player, config_to_string(player, cp, lc));
           }
         }
@@ -1787,16 +1817,14 @@ FUNCTION(fun_config)
 
   if (args[0] && *args[0]) {
     for (cp = conftable; cp->name; cp++) {
-      if (cp->group && (God(executor) || !(cp->flags & CP_GODONLY))
-          && !strcasecmp(cp->name, args[0])) {
+      if (!strcasecmp(cp->name, args[0]) && can_view_config_option(executor, cp)) {
         safe_str(config_to_string2(executor, cp, 0), buff, bp);
         return;
       }
     }
     for (cp = (PENNCONF *) hash_firstentry(&local_options); cp;
          cp = (PENNCONF *) hash_nextentry(&local_options)) {
-      if (cp->group && (God(executor) || !(cp->flags & CP_GODONLY))
-          && !strcasecmp(cp->name, args[0])) {
+      if (!strcasecmp(cp->name, args[0]) && can_view_config_option(executor, cp)) {
         safe_str(config_to_string2(executor, cp, 0), buff, bp);
         return;
       }
@@ -1806,7 +1834,7 @@ FUNCTION(fun_config)
   } else {
     int first = 1;
     for (cp = conftable; cp->name; cp++) {
-      if (cp->group && (God(executor) || !(cp->flags & CP_GODONLY))) {
+      if (can_view_config_option(executor, cp)) {
         if (first)
           first = 0;
         else
@@ -1816,7 +1844,7 @@ FUNCTION(fun_config)
     }
     for (cp = (PENNCONF *) hash_firstentry(&local_options); cp;
          cp = (PENNCONF *) hash_nextentry(&local_options)) {
-      if (cp->group && (God(executor) || !(cp->flags & CP_GODONLY))) {
+      if (can_view_config_option(executor, cp)) {
         if (first)
           first = 0;
         else
@@ -1838,7 +1866,7 @@ do_enable(dbref player, const char *param, int state)
   PENNCONF *cp;
 
   for (cp = conftable; cp->name; cp++) {
-    if (cp->group && !strcasecmp(cp->name, param)) {
+    if (!strcasecmp(cp->name, param) && can_view_config_option(player, cp)) {
       if (cp->flags & CP_GODONLY) {
         notify(player, T("That option cannot be altered."));
         return;

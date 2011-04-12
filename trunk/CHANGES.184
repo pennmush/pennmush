@@ -93,6 +93,8 @@ Fixes:
  * Help fixes by misskaly and others. [MG]
  * warn_interval set to 0 would cause the MUSH to hang. Reported by
    Nymeria @ Blood of Dragons.
+ * It was sometimes possible for a player to view config options he 
+   shouldn't have. Reported by qa'toq. [MG]
 
 Version 1.8.4 patchlevel 3                                 Mar 18,  2011
 

@@ -220,7 +220,7 @@ void command_splitup
 void command_argparse
   (dbref executor, dbref enactor, dbref caller, NEW_PE_INFO * pe_info,
    char **from, char *to, char **argv, COMMAND_INFO *cmd, int side,
-   int forcenoparse);
+   int forcenoparse, int pe_flags);
 char *command_parse(dbref player, char *string, MQUE * queue_entry);
 void do_list_commands(dbref player, int lc, int type);
 char *list_commands(int type);

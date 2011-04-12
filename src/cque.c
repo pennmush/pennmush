@@ -565,7 +565,9 @@ new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
   int i = -1;
 
   if (!(queue_type & QUEUE_INPLACE)) {
-    queue_type = (IsPlayer(enactor) ? QUEUE_PLAYER : QUEUE_OBJECT);
+    /* Remove all QUEUE_* flags which aren't safe for non-inplace queues */
+    queue_type = (queue_type & (QUEUE_NODEBUG | QUEUE_DEBUG | QUEUE_NOLIST));
+    queue_type |= (IsPlayer(enactor) ? QUEUE_PLAYER : QUEUE_OBJECT);
     if (flags & PE_INFO_SHARE) {
       /* You can only share the pe_info for an inplace queue entry. Since you've asked us
        * to share for a fully queued entry, you're an idiot, because it will crash. I know;
@@ -620,6 +622,21 @@ new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
   insert_que(queue_entry, parent_queue);
 }
 
+void
+parse_que_attr(dbref executor, dbref enactor, char *actionlist, char *env[10], ATTR *a)
+{
+  int flags = QUEUE_DEFAULT;
+
+  if (AF_NoDebug(a))
+    flags |= QUEUE_NODEBUG;
+  else if (AF_Debug(a))
+    flags |= QUEUE_DEBUG;
+
+  new_queue_actionlist_int(executor, enactor, enactor, actionlist, NULL,
+                           PE_INFO_DEFAULT, flags, env,
+                           tprintf("#%d/%s", executor, AL_NAME(a)));
+}
+
 int
 queue_include_attribute(dbref thing, const char *atrname,
                         dbref executor, dbref enactor, dbref caller,
@@ -652,6 +669,15 @@ queue_include_attribute(dbref thing, const char *atrname,
 
   if (args != NULL)
     queue_type |= QUEUE_RESTORE_ENV;
+
+  if (AF_NoDebug(a))
+    queue_type |= QUEUE_NODEBUG;
+  else if (AF_Debug(a))
+    queue_type |= QUEUE_DEBUG;
+  else {
+    /* Inherit debug style from parent queue */
+    queue_type |= (parent_queue->queue_type & (QUEUE_DEBUG | QUEUE_NODEBUG));
+  }
 
   new_queue_actionlist_int(executor, enactor, caller, command, parent_queue,
                        PE_INFO_SHARE, queue_type, args, tprintf("#%d/%s", thing, atrname));
@@ -695,6 +721,8 @@ int
 queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor, char *env[10])
 {
   char *start, *command;
+  int queue_type = QUEUE_DEFAULT;
+
   start = safe_atr_value(a);
   command = start;
   /* Trim off $-command or ^-command prefix */
@@ -709,9 +737,16 @@ queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor, char *env[10])
       /* Skip the ':' */
       command++;
   }
+
+  if (AF_NoDebug(a))
+    queue_type |= QUEUE_NODEBUG;
+  else if (AF_Debug(a))
+    queue_type |= QUEUE_DEBUG;
+
+
   new_queue_actionlist_int(executor, enactor, enactor, command, NULL,
-                       PE_INFO_DEFAULT, QUEUE_DEFAULT, env,
-                       tprintf("#%d/%s", executor, a->name));
+                       PE_INFO_DEFAULT, queue_type, env,
+                       tprintf("#%d/%s", executor, AL_NAME(a)));
   free(start);
   return 1;
 }

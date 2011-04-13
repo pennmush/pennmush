@@ -2808,6 +2808,7 @@ See also: @name, name(), VERBS
 See also: @password, checkpass()
 & @notify
   @notify[/any][/all] <object>[/<attribute>][=<number>]
+  @notify/setq <object>[/<attribute>]=<qreg1>,<qval1>[,...]
   
   This command notifies a semaphore, allowing commands queued for that 
   semaphore to be executed.
@@ -2828,7 +2829,21 @@ See also: @password, checkpass()
   You may not specify both the /any switch and a specific attribute.
   Similarly, you may not specify both the /all switch and a number.
 
-See also: SEMAPHORES, @drain, @wait
+  Continued in 'help @notify2'.
+& @notify2
+  @notify/setq is a special form of @notify: It requires that a queue entry
+  exists and is waiting on <object>[/<attr>]. When this is the case, then
+  @notify/setq will modify the Q-registers of the extant queue entry.
+
+  /setq supercedes all other switches: You cannot @notify/all/setq or
+  @notify/any/setq - it deals with just one queue entry.
+
+  Example:
+  > @wait me=think Hello, %q0!
+  > @notify/setq me=0,Walker
+  Hello, Walker!
+
+  See also: SEMAPHORES, @drain, @wait
 & @nspemit
 & @nsemit
 & @nslemit

@@ -1128,6 +1128,72 @@ drain_helper(dbref player __attribute__ ((__unused__)), dbref thing,
   return 0;
 }
 
+/** Notify a semaphore, with PE_REGS to integrate to its own pe_regs.
+ * This function dequeues an entry in the semaphore queue and executes
+ * it. 
+ * \param thing object serving as semaphore.
+ * \param aname attribute serving as semaphore.
+ * \param pe_regs Q-registers (or other Q-regs) 
+ * \retval 1 Successfully notified an existing entry.
+ * \retval 0 No existing entry.
+ */
+int
+execute_one_semaphore(dbref thing, char const *aname, PE_REGS *pe_regs)
+{
+  MQUE **point;
+  MQUE *entry;
+
+  /* Go through the semaphore queue and do it */
+  point = &qsemfirst;
+  while (*point) {
+    entry = *point;
+    if (entry->semaphore_obj != thing
+        || (aname && strcmp(entry->semaphore_attr, aname))) {
+      point = &(entry->next);
+      continue;
+    }
+
+    /* Remove the queue entry from the semaphore list */
+    *point = entry->next;
+    entry->next = NULL;
+    if (qsemlast == entry) {
+      qsemlast = qsemfirst;
+      if (qsemlast)
+        while (qsemlast->next)
+          qsemlast = qsemlast->next;
+    }
+
+    /* Update bookkeeping */
+    add_to_sem(entry->semaphore_obj, -1, entry->semaphore_attr);
+
+    if (pe_regs) {
+      if (entry->pe_info == NULL) {
+        entry->pe_info = make_pe_info("pe_info-execute_one_semaphore");
+      }
+      pe_regs_copystack(entry->pe_info->regvals, pe_regs, PE_REGS_QUEUE, 1);
+    }
+
+    /* Place entry into the player or object queue. */
+    if (IsPlayer(entry->enactor)) {
+      if (qlast) {
+        qlast->next = entry;
+        qlast = entry;
+      } else {
+        qlast = qfirst = entry;
+      }
+    } else {
+      if (qllast) {
+        qllast->next = entry;
+        qllast = entry;
+      } else {
+        qllast = qlfirst = entry;
+      }
+    }
+    return 1;
+  }
+  return 0;
+}
+
 /** Drain or notify a semaphore.
  * This function dequeues an entry in the semaphore queue and either
  * discards it (drain) or executes it (notify). Maybe more than one.
@@ -1141,6 +1207,7 @@ void
 dequeue_semaphores(dbref thing, char const *aname, int count, int all,
                    int drain)
 {
+  
   MQUE **point;
   MQUE *entry;
 
@@ -1217,6 +1284,8 @@ COMMAND(cmd_notify_drain)
   dbref thing;
   int count;
   int all;
+  int i;
+  PE_REGS *pe_regs;
 
   /* Figure out whether we're in notify or drain */
   drain = (cmd->name[1] == 'D');
@@ -1261,33 +1330,52 @@ COMMAND(cmd_notify_drain)
   }
 
   /* Figure out how many times to notify */
-  all = SW_ISSET(sw, SWITCH_ALL);
-  if (arg_right && *arg_right) {
-    if (all) {
-      notify(executor,
-             T("You may not specify a semaphore count with the ALL switch."));
-      return;
+  if (SW_ISSET(sw, SWITCH_SETQ)) {
+    pe_regs = pe_regs_create(PE_REGS_Q, "cmd_notify_drain");
+    for (i = 1; args_right[i]; i += 2) {
+      if (args_right[i+1]) {
+        pe_regs_set(pe_regs, PE_REGS_Q | PE_REGS_NOCOPY,
+                    args_right[i], args_right[i+1]);
+      } else {
+        pe_regs_set(pe_regs, PE_REGS_Q | PE_REGS_NOCOPY,
+                    args_right[i], "");
+      }
     }
-    if (!is_uinteger(arg_right)) {
-      notify(executor, T("The semaphore count must be an integer."));
-      return;
+    if (execute_one_semaphore(thing, aname, pe_regs)) {
+      quiet_notify(executor, T("Notified."));
+    } else {
+      notify_format(executor, T("No such semaphore entry to notify."));
     }
-    count = parse_integer(arg_right);
+    pe_regs_free(pe_regs);
   } else {
-    if (drain)
-      all = 1;
-    if (all)
-      count = INT_MAX;
-    else
-      count = 1;
-  }
+    all = SW_ISSET(sw, SWITCH_ALL);
+    if (args_right[1] && *args_right[1]) {
+      if (all) {
+        notify(executor,
+               T("You may not specify a semaphore count with the ALL switch."));
+        return;
+      }
+      if (!is_uinteger(args_right[1])) {
+        notify(executor, T("The semaphore count must be an integer."));
+        return;
+      }
+      count = parse_integer(args_right[1]);
+    } else {
+      if (drain)
+        all = 1;
+      if (all)
+        count = INT_MAX;
+      else
+        count = 1;
+    }
 
-  dequeue_semaphores(thing, aname, count, all, drain);
+    dequeue_semaphores(thing, aname, count, all, drain);
 
-  if (drain) {
-    quiet_notify(executor, T("Drained."));
-  } else {
-    quiet_notify(executor, T("Notified."));
+    if (drain) {
+      quiet_notify(executor, T("Drained."));
+    } else {
+      quiet_notify(executor, T("Notified."));
+    }
   }
 }
 

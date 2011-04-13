@@ -67,7 +67,7 @@ do_name(dbref player, const char *name, char *newname_)
   dbref thing;
   char *myenv[10];
   int i;
-  char *newname;
+  char *newname = NULL;
   char *alias = NULL;
 
   if ((thing = match_controlled(player, name)) == NOTHING)
@@ -78,8 +78,7 @@ do_name(dbref player, const char *name, char *newname_)
     notify(player, T("Give it what new name?"));
     return;
   }
-  switch Typeof
-    (thing) {
+  switch (Typeof(thing)) {
   case TYPE_PLAYER:
     switch (ok_object_name
             (newname_, player, thing, TYPE_PLAYER, &newname, &alias)) {

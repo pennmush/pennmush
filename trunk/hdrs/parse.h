@@ -164,7 +164,8 @@ int process_expression(char *buff, char **bp, char const **str,
 
 void free_pe_info(NEW_PE_INFO * pe_info);
 NEW_PE_INFO *make_pe_info(char *name);
-NEW_PE_INFO *pe_info_from(NEW_PE_INFO * old_pe_info, int flags, char *env[10]);
+NEW_PE_INFO *pe_info_from(NEW_PE_INFO * old_pe_info, int flags,
+                          PE_REGS *pe_regs);
 
 /* buff is a pointer to a BUFFER_LEN string to contain the expression
  * result.  *bp is the point in buff at which the result should be written.

@@ -1460,6 +1460,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
   ATTR *ptr;
   int parent_depth;
   char *args[10];
+  PE_REGS *pe_regs;
   char tbuf1[BUFFER_LEN];
   char tbuf2[BUFFER_LEN];
   char *s;
@@ -1467,6 +1468,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
   UsedAttr *used_list, **prev;
   ATTR *skip[ATTRIBUTE_NAME_LIMIT / 2];
   int skipcount;
+  int i;
   int lock_checked = !check_locks;
   char match_space[BUFFER_LEN * 2];
   ssize_t match_space_len = BUFFER_LEN * 2;
@@ -1504,7 +1506,8 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
 
   skipcount = 0;
   do {
-    next = (parent_depth ? next_parent(thing, current, &parent_count, NULL) : NOTHING);
+    next = parent_depth ?
+           next_parent(thing, current, &parent_count, NULL) : NOTHING;
     prev = &used_list;
 
     /* do_rawlog(LT_TRACE, "Searching %s:", Name(current)); */
@@ -1625,6 +1628,12 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
           safe_str(AL_NAME(ptr), atrname, abp);
         }
         if (!just_match) {
+          pe_regs = pe_regs_create(PE_REGS_ARG, "atr_comm_match");
+          for (i = 0; i < 10; i++) {
+            if (args[i]) {
+              pe_regs_setenv_nocopy(pe_regs, i, args[i]);
+            }
+          }
           if (from_queue && queue_type != QUEUE_DEFAULT) {
             int pe_flags = PE_INFO_DEFAULT;
             if (!(queue_type & QUEUE_CLEAR_QREG)) {
@@ -1653,12 +1662,13 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
 
             /* inplace queue */
             new_queue_actionlist_int(thing, player, player, s, from_queue,
-                                     pe_flags, queue_type, args,
-                                     tprintf("#%d/%s", thing, AL_NAME(ptr)));
+                                 pe_flags, queue_type, pe_regs,
+                                 tprintf("#%d/%s", thing, AL_NAME(ptr)));
           } else {
             /* Normal queue */
-            parse_que_attr(thing, player, s, args, ptr);
+            parse_que_attr(thing, player, s, pe_regs, ptr);
           }
+          pe_regs_free(pe_regs);
         }
       }
     }
@@ -1694,6 +1704,8 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
   char tbuf1[BUFFER_LEN];
   char tbuf2[BUFFER_LEN];
   char *s;
+  PE_REGS *pe_regs;
+  int i;
   char match_space[BUFFER_LEN * 2];
   char *args[10];
   ssize_t match_space_len = BUFFER_LEN * 2;
@@ -1759,6 +1771,12 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
       free_pe_info(pe_info);
     }
     if (success) {
+      pe_regs = pe_regs_create(PE_REGS_ARG, "one_comm_match");
+      for (i = 0; i < 10; i++) {
+        if (args[i]) {
+          pe_regs_setenv_nocopy(pe_regs, i, args[i]);
+        }
+      }
       if (from_queue && queue_type != QUEUE_DEFAULT) {
         /* inplace queue */
         int pe_flags = PE_INFO_DEFAULT;
@@ -1788,12 +1806,13 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
 
         /* inplace queue */
         new_queue_actionlist_int(thing, player, player, s, from_queue,
-                                pe_flags, queue_type, args,
-                                tprintf("#%d/%s", thing, AL_NAME(ptr)));
+                                 pe_flags, queue_type, pe_regs,
+                                 tprintf("#%d/%s", thing, AL_NAME(ptr)));
       } else {
         /* Normal queue */
-        parse_que_attr(thing, player, s, args, ptr);
+        parse_que_attr(thing, player, s, pe_regs, ptr);
       }
+      pe_regs_free(pe_regs);
     }
     return success;
   }

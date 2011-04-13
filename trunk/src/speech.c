@@ -148,7 +148,7 @@ void
 do_say(dbref player, const char *tbuf1)
 {
   dbref loc;
-  const char *args[2];
+  PE_REGS *pe_regs;
   char tbuf2[BUFFER_LEN];
   int mod = 0;
   loc = speech_loc(player);
@@ -163,20 +163,21 @@ do_say(dbref player, const char *tbuf1)
   if (*tbuf1 == SAY_TOKEN && CHAT_STRIP_QUOTE)
     tbuf1++;
 
-  args[0] = tbuf1;
-  args[1] = "\"";
+  pe_regs = pe_regs_create(PE_REGS_ARG, "do_say");
+  pe_regs_setenv_nocopy(pe_regs, 0, tbuf1);
+  pe_regs_setenv_nocopy(pe_regs, 1, "\"");
   tbuf2[0] = '\0';
 
-  if (call_attrib(player, "SPEECHMOD", args, 2, tbuf2, player, NULL)
+  if (call_attrib(player, "SPEECHMOD", tbuf2, player, NULL, pe_regs)
       && *tbuf2 != '\0')
     mod = 1;
+  pe_regs_free(pe_regs);
 
   /* notify everybody */
   notify_format(player, T("You say, \"%s\""), (mod ? tbuf2 : tbuf1));
   notify_except(Contents(loc), player,
                 tprintf(T("%s says, \"%s\""), spname(player),
                         (mod ? tbuf2 : tbuf1)), NA_INTER_HEAR);
-
 }
 
 /** The oemit(/list) command.
@@ -616,8 +617,8 @@ void
 do_pose(dbref player, const char *tbuf1, int space)
 {
   dbref loc;
-  const char *args[2];
   char tbuf2[BUFFER_LEN];
+  PE_REGS *pe_regs;
   int mod = 0;
 
   loc = speech_loc(player);
@@ -629,13 +630,16 @@ do_pose(dbref player, const char *tbuf1, int space)
     return;
   }
 
-  args[0] = tbuf1;
-  args[1] = (space ? ";" : ":");
+  pe_regs = pe_regs_create(PE_REGS_ARG, "do_pose");
+  pe_regs_setenv_nocopy(pe_regs, 0, tbuf1);
+  pe_regs_setenv_nocopy(pe_regs, 1, space ? ";" : ":");
   tbuf2[0] = '\0';
 
-  if (call_attrib(player, "SPEECHMOD", args, 2, tbuf2, player, NULL)
+  if (call_attrib(player, "SPEECHMOD", tbuf2, player, NULL, pe_regs)
       && *tbuf2 != '\0')
     mod = 1;
+
+  pe_regs_free(pe_regs);
 
   /* notify everybody */
   if (!space)
@@ -772,10 +776,18 @@ messageformat(dbref player, const char *attribute, dbref enactor, int flags,
   /* It's only static because I expect this thing to get
    * called a LOT, so it may or may not save time. */
   static char messbuff[BUFFER_LEN];
+  PE_REGS *pe_regs;
+  int i;
+  int ret;
 
   *messbuff = '\0';
-  if (call_attrib(player, attribute, (const char **) argv, numargs,
-                  messbuff, enactor, NULL)) {
+  pe_regs = pe_regs_create(PE_REGS_ARG, "messageformat");
+  for (i = 0; i < numargs && i < 10; i++) {
+    pe_regs_setenv_nocopy(pe_regs, i, argv[i]);
+  }
+  ret = call_attrib(player, attribute, messbuff, enactor, NULL, pe_regs);
+  pe_regs_free(pe_regs);
+  if (ret) {
     /* We have a returned value. Notify the player. */
     if (*messbuff)
       notify_anything(enactor, na_one, &player, ns_esnotify, flags, messbuff);
@@ -1202,8 +1214,7 @@ make_prefixstr(dbref thing, const char *msg, char *tbuf1)
     safe_str(", ", tbuf1, &bp);
   } else {
     NEW_PE_INFO *pe_info = make_pe_info("pe_info-make_prefixstr");
-    pe_info->env[0] = mush_strdup((char *) msg, "pe_info.env");
-    pe_info->arg_count = 1;
+    pe_regs_setenv_nocopy(pe_info->regvals, 0, msg);
     asave = safe_atr_value(a);
     ap = asave;
     process_expression(tbuf1, &bp, &ap, thing, orator, orator,
@@ -1367,9 +1378,9 @@ do_emit(dbref player, const char *tbuf1, int flags)
 {
   dbref loc;
   int na_flags = NA_INTER_HEAR;
-  const char *args[2];
   char tbuf2[BUFFER_LEN];
   int mod = 0;
+  PE_REGS *pe_regs;
 
   loc = speech_loc(player);
   if (!GoodObject(loc))
@@ -1380,13 +1391,16 @@ do_emit(dbref player, const char *tbuf1, int flags)
     return;
   }
 
-  args[0] = tbuf1;
-  args[1] = "|";
+  pe_regs = pe_regs_create(PE_REGS_ARG, "do_emit");
+  pe_regs_setenv_nocopy(pe_regs, 0, tbuf1);
+  pe_regs_setenv_nocopy(pe_regs, 1, "|");
   tbuf2[0] = '\0';
 
-  if (call_attrib(player, "SPEECHMOD", args, 2, tbuf2, player, NULL)
+  if (call_attrib(player, "SPEECHMOD", tbuf2, player, NULL, pe_regs)
       && *tbuf2 != '\0')
     mod = 1;
+
+  pe_regs_free(pe_regs);
 
   /* notify everybody */
   if (flags & PEMIT_SPOOF)

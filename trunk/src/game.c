@@ -109,7 +109,7 @@ int loc_alias_check(dbref loc, const char *command, const char *type);
 void do_poor(dbref player, char *arg1);
 void do_writelog(dbref player, char *str, int ltype);
 void bind_and_queue(dbref player, dbref cause, char *action, const char *arg,
-                    const char *placestr, MQUE * parent_queue);
+                    int num, MQUE * parent_queue);
 void do_list(dbref player, char *arg, int lc, int which);
 void do_uptime(dbref player, int mortal);
 static char *make_new_epoch_file(const char *basename, int the_epoch);
@@ -1539,15 +1539,16 @@ do_writelog(dbref player, char *str, int ltype)
  */
 void
 bind_and_queue(dbref player, dbref cause, char *action,
-               const char *arg, const char *placestr,
+               const char *arg, int num,
                MQUE * parent_queue)
 {
   char *repl, *command;
   const char *replace[2];
-  NEW_PE_INFO *pe_info;
-  int i = 0;
+  char placestr[10];
+  PE_REGS *pe_regs;
 
-  replace[0] = arg;
+  replace[0] = "%il";
+  snprintf(placestr, 10, "%d", num);
   replace[1] = placestr;
 
   repl = replace_string2(standard_tokens, replace, action);
@@ -1557,23 +1558,14 @@ bind_and_queue(dbref player, dbref cause, char *action,
   mush_free(repl, "replace_string.buff");
 
   /* Add the new iter context to the parent queue entry's pe_info... */
-  pe_info = parent_queue->pe_info;
-  pe_info->iter_nestings++;
-  pe_info->iter_nestings_local++;
-  i = pe_info->iter_nestings;
-  pe_info->iter_inum[i] = parse_integer(placestr);
-  pe_info->iter_itext[i] = mush_strdup(arg, "pe_info.dolist_arg");
-  pe_info->iter_dolists++;
+  pe_regs = pe_regs_create(PE_REGS_ITER, "bind_and_queue");
+  pe_regs_set(pe_regs, PE_REGS_ITER, "t0", arg);
+  pe_regs_set_int(pe_regs, PE_REGS_ITER, "n0", num);
   /* Then queue the new command, using a cloned pe_info... */
   new_queue_actionlist(player, cause, cause, command, parent_queue,
-                       PE_INFO_CLONE, QUEUE_DEFAULT, NULL);
+                       PE_INFO_CLONE, QUEUE_DEFAULT, pe_regs);
   /* And then pop it off the parent pe_info again */
-  mush_free(pe_info->iter_itext[i], "pe_info.dolist_arg");
-  pe_info->iter_itext[i] = NULL;
-  pe_info->iter_inum[i] = -1;
-  pe_info->iter_nestings--;
-  pe_info->iter_nestings_local--;
-  pe_info->iter_dolists--;
+  pe_regs_free(pe_regs);
 
   mush_free(command, "strip_braces.buff");
 }
@@ -1848,17 +1840,9 @@ do_dolist(dbref player, char *list, char *command, dbref enactor,
   char outbuf[BUFFER_LEN];
   char *bp;
   int place;
-  char placestr[10];
   char delim = ' ';
   if (!command || !*command) {
     notify(player, T("What do you want to do with the list?"));
-    if (flags & DOL_NOTIFY)
-      parse_que(player, enactor, "@notify me", NULL);
-    return;
-  }
-
-  if (queue_entry && (queue_entry->pe_info->iter_nestings + 1) > MAX_ITERS) {
-    notify(player, T("Too many @dolists."));
     if (flags & DOL_NOTIFY)
       parse_que(player, enactor, "@notify me", NULL);
     return;
@@ -1889,8 +1873,7 @@ do_dolist(dbref player, char *list, char *command, dbref enactor,
   while (objstring) {
     curr = split_token(&objstring, delim);
     place++;
-    sprintf(placestr, "%d", place);
-    bind_and_queue(player, enactor, command, curr, placestr, queue_entry);
+    bind_and_queue(player, enactor, command, curr, place, queue_entry);
   }
 
   *bp = '\0';

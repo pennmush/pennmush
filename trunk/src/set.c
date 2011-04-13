@@ -69,6 +69,7 @@ do_name(dbref player, const char *name, char *newname_)
   int i;
   char *newname = NULL;
   char *alias = NULL;
+  PE_REGS *pe_regs;
 
   if ((thing = match_controlled(player, name)) == NOTHING)
     return;
@@ -154,8 +155,12 @@ do_name(dbref player, const char *name, char *newname_)
 
   if (!AreQuiet(player, thing))
     notify(player, T("Name set."));
+  pe_regs = pe_regs_create(PE_REGS_ARG, "do_name");
+  pe_regs_setenv_nocopy(pe_regs, 0, myenv[0]);
+  pe_regs_setenv_nocopy(pe_regs, 1, myenv[1]);
   real_did_it(player, thing, NULL, NULL, "ONAME", NULL, "ANAME", NOTHING,
-              myenv, NA_INTER_PRESENCE);
+              pe_regs, NA_INTER_PRESENCE);
+  pe_regs_free(pe_regs);
   mush_free(newname, "name.newname");
   mush_free(myenv[0], "string");
   mush_free(myenv[1], "string");
@@ -989,6 +994,8 @@ do_trigger(dbref player, char *object, char **argv)
   dbref thing;
   char *s;
   char tbuf1[BUFFER_LEN];
+  PE_REGS *pe_regs;
+  int i;
 
   strcpy(tbuf1, object);
   for (s = tbuf1; *s && (*s != '/'); s++) ;
@@ -1012,12 +1019,19 @@ do_trigger(dbref player, char *object, char **argv)
     return;
   }
 
-  if (queue_attribute_base(thing, upcasestr(s), player, 0, argv + 1)) {
+  pe_regs = pe_regs_create(PE_REGS_ARG, "do_trigger");
+  for (i = 0; i < 10; i++) {
+    if (argv[i+1])
+      pe_regs_setenv_nocopy(pe_regs, i, argv[i+1]);
+  }
+
+  if (queue_attribute_base(thing, upcasestr(s), player, 0, pe_regs)) {
     if (!AreQuiet(player, thing))
       notify_format(player, T("%s - Triggered."), Name(thing));
   } else {
     notify(player, T("No such attribute."));
   }
+  pe_regs_free(pe_regs);
 }
 
 

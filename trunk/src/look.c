@@ -98,8 +98,6 @@ look_exits(dbref player, dbref loc, const char *exit_name)
       mush_panic("Unable to allocate memory in look_exits");
 
     pe_info = make_pe_info("pe_info-look_exits");
-    pe_info->env[0] = arg;
-    pe_info->arg_count = 1;
 
     bp = arg;
     DOLIST(thing, Exits(loc)) {
@@ -114,10 +112,10 @@ look_exits(dbref player, dbref loc, const char *exit_name)
 
     sp = save = safe_atr_value(a);
     bp = buff;
+    pe_regs_setenv_nocopy(pe_info->regvals, 0, arg);
     process_expression(buff, &bp, &sp, loc, player, player,
                        PE_DEFAULT, PT_DEFAULT, pe_info);
     *bp = '\0';
-    pe_info->env[0] = NULL;
     free_pe_info(pe_info);
     free(save);
     notify_by(loc, player, buff);
@@ -270,16 +268,13 @@ look_contents(dbref player, dbref loc, const char *contents_name)
     *bp = '\0';
     *bp2 = '\0';
     pe_info = make_pe_info("pe_info-look_contents");
-    pe_info->env[0] = arg;
-    pe_info->env[1] = arg2;
-    pe_info->arg_count = 2;
+    pe_regs_setenv_nocopy(pe_info->regvals, 0, arg);
+    pe_regs_setenv_nocopy(pe_info->regvals, 1, arg2);
     sp = save = safe_atr_value(a);
     bp = buff;
     process_expression(buff, &bp, &sp, loc, player, player,
                        PE_DEFAULT, PT_DEFAULT, pe_info);
     *bp = '\0';
-    pe_info->env[0] = NULL;
-    pe_info->env[1] = NULL;
     free_pe_info(pe_info);
     free(save);
     notify_by(loc, player, buff);
@@ -598,8 +593,7 @@ look_description(dbref player, dbref thing, const char *def,
     NEW_PE_INFO *pe_info = NULL;
     if (a) {
       pe_info = make_pe_info("pe_info-look_desc");
-      pe_info->env[0] = mush_strdup(buff, "pe_info.env");
-      pe_info->arg_count = 1;
+      pe_regs_setenv_nocopy(pe_info->regvals, 0, buff);
     }
     /* We have a DESCFORMAT, evaluate it into fbuff and use it */
     /* If we have a DESCRIBE, pass the evaluated version as %0 */
@@ -1074,16 +1068,13 @@ do_inventory(dbref player)
     *bp = '\0';
     *bp2 = '\0';
     pe_info = make_pe_info("pe_info-do_inv");
-    pe_info->env[0] = arg;
-    pe_info->env[1] = arg2;
-    pe_info->arg_count = 2;
+    pe_regs_setenv_nocopy(pe_info->regvals, 0, arg);
+    pe_regs_setenv_nocopy(pe_info->regvals, 1, arg2);
     sp = save = safe_atr_value(a);
     bp = buff;
     process_expression(buff, &bp, &sp, player, player, player,
                        PE_DEFAULT, PT_DEFAULT, pe_info);
     *bp = '\0';
-    pe_info->env[0] = NULL;
-    pe_info->env[1] = NULL;
     free_pe_info(pe_info);
     free(save);
     notify(player, buff);

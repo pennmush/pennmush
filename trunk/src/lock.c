@@ -832,34 +832,20 @@ int
 eval_lock_clear(dbref player, dbref thing, lock_type ltype,
                 NEW_PE_INFO * pe_info)
 {
-  PE_REGS *pe_regs;
   if (!pe_info)
     return eval_lock_with(player, thing, ltype, NULL);
   else {
-    char *env[10];
-    int i, result, save_args;
+    PE_REGS *pe_regs;
+    int result;
 
-    pe_regs = pe_regs_localize(pe_info, PE_REGS_Q | PE_REGS_QSTOP);
-
-    /* Save args */
-    save_env("eval_lock.env", env, pe_info->env);
-    /* Localize Q-regs */
-    save_args = pe_info->arg_count;
-    for (i = 0; i < 10; i++)
-      pe_info->env[i] = NULL;
-    pe_info->arg_count = 0;
+    pe_regs = pe_regs_localize(pe_info, PE_REGS_ISOLATE, "eval_lock_clear");
 
     /* Run the lock */
     result = eval_lock_with(player, thing, ltype, pe_info);
 
-    /* Restore environment. */
-    restore_env("eval_lock.env", env, pe_info->env);
-
     /* Restore q-regs */
     pe_regs_restore(pe_info, pe_regs);
     pe_regs_free(pe_regs);
-
-    pe_info->arg_count = save_args;
     return result;
   }
 }

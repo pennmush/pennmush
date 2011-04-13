@@ -267,6 +267,7 @@ slab_alloc_page(struct slab *sl)
 #else
   page = malloc(pgsize);
 #endif
+  memset(page, 0, pgsize);
 
   sp = (struct slab_page *) page;
   sp->nfree = sl->items_per_page;

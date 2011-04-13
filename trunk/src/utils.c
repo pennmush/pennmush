@@ -240,32 +240,28 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
  *  wenv_args. The value returned is stored in the buffer pointed to
  *  by ret, if given.
  * \param ufun The ufun_attrib that was initialized by fetch_ufun_attrib
- * \param wenv_args An array of string values for %0-%9
- * \param wenv_argc The number of wenv args to use.
  * \param ret If desired, a pointer to a buffer in which the results
  *            of the process_expression are stored in.
  * \param executor The executor.
  * \param enactor The enactor.
  * \param pe_info The pe_info passed to the FUNCTION
+ * \param pe_regs Other arguments that may want to be added. This nests BELOW
+ *                the pe_regs created by call_ufun. (It is checked first)
  * \retval 0 success
  * \retval 1 process_expression failed. (CPU time limit)
  */
 bool
-call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
-          dbref executor, dbref enactor, NEW_PE_INFO * pe_info)
+call_ufun(ufun_attrib * ufun, char *ret, dbref executor, dbref enactor,
+          NEW_PE_INFO * pe_info, PE_REGS *user_regs)
 {
   char rbuff[BUFFER_LEN];
   char *rp;
-  char *old_wenv[10];
-  int iter_nest = -1;
-  int switch_nest = -1;
-  int old_args = 0;
-  int i;
   int pe_ret;
   char const *ap;
   char old_attr[BUFFER_LEN];
   int made_pe_info = 0;
   PE_REGS *pe_regs;
+  PE_REGS *pe_regs_old;
 
   /* Make sure we have a ufun first */
   if (!ufun)
@@ -274,32 +270,17 @@ call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
     pe_info = make_pe_info("pe_info.call_ufun");
     made_pe_info = 1;
   } else {
-    save_env("call_ufun", old_wenv, pe_info->env);
-    old_args = pe_info->arg_count;
-
-    /* Stop itext() and stext() propagating down ufuns */
-    iter_nest = pe_info->iter_nestings_local;
-    pe_info->iter_nestings_local = -1;
-    switch_nest = pe_info->switch_nestings_local;
-    pe_info->switch_nestings_local = -1;
-
     strcpy(old_attr, pe_info->attrname);
   }
 
+  pe_regs_old = pe_info->regvals;
+
   if (ufun->ufun_flags & UFUN_LOCALIZE) {
-    pe_regs = pe_regs_localize(pe_info, PE_REGS_Q | PE_REGS_NEWATTR);
+    pe_regs = pe_regs_localize(pe_info, PE_REGS_Q | PE_REGS_NEWATTR,
+                               "call_ufun");
   } else {
-    pe_regs = pe_regs_localize(pe_info, PE_REGS_NEWATTR);
+    pe_regs = pe_regs_localize(pe_info, PE_REGS_NEWATTR, "call_ufun");
   }
-
-  for (i = 0; i < wenv_argc; i++) {
-    pe_info->env[i] = wenv_args[i];
-  }
-  for (; i < 10; i++) {
-    pe_info->env[i] = NULL;
-  }
-
-  pe_info->arg_count = wenv_argc;
 
   rp = pe_info->attrname;
   if (*ufun->attrname == '\0') {
@@ -319,28 +300,33 @@ call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
     ret = rbuff;
   rp = ret;
 
+  /* Anything the caller wants available goes on the bottom of the stack */
+  if (user_regs) {
+    user_regs->prev = pe_info->regvals;
+    pe_info->regvals = user_regs;
+  }
+
   /* And now, make the call! =) */
   ap = ufun->contents;
   pe_ret = process_expression(ret, &rp, &ap, ufun->thing, executor,
                               enactor, ufun->pe_flags, PT_DEFAULT, pe_info);
   *rp = '\0';
 
-  /* Restore q-regs */
+  /* Restore call_ufun's pe_regs */
+  if (user_regs) {
+    pe_info->regvals = user_regs->prev;
+  }
+
+  /* Restore the pe_regs stack. */
   pe_regs_restore(pe_info, pe_regs);
   pe_regs_free(pe_regs);
 
+  pe_info->regvals = pe_regs_old;
+
   if (!made_pe_info) {
-    /* Restore the old environment */
-    restore_env("call_ufun", old_wenv, pe_info->env);
-    pe_info->arg_count = old_args;
-    /* Restore itext and stext values */
-    pe_info->iter_nestings_local = iter_nest;
-    pe_info->switch_nestings_local = switch_nest;
-    /* Restore regexp patterns */
+    /* Restore the old attrname. */
     strcpy(pe_info->attrname, old_attr);
   } else {
-    for (i = 0; i < 10; i++)
-      pe_info->env[i] = NULL;
     free_pe_info(pe_info);
   }
 
@@ -363,8 +349,8 @@ call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
  * \retval 0 No such attribute, or failed.
  */
 bool
-call_attrib(dbref thing, const char *attrname, const char *wenv_args[],
-            int wenv_argc, char *ret, dbref enactor, NEW_PE_INFO * pe_info)
+call_attrib(dbref thing, const char *attrname, char *ret, dbref enactor,
+            NEW_PE_INFO * pe_info, PE_REGS *pe_regs)
 {
   ufun_attrib ufun;
   if (!fetch_ufun_attrib(attrname, thing, &ufun,
@@ -372,8 +358,7 @@ call_attrib(dbref thing, const char *attrname, const char *wenv_args[],
   {
     return 0;
   }
-  return !call_ufun(&ufun, (char **) wenv_args, wenv_argc, ret, thing, enactor,
-                    pe_info);
+  return !call_ufun(&ufun, ret, thing, enactor, pe_info, pe_regs);
 }
 
 /** Given an exit, find the room that is its source through brute force.

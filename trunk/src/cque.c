@@ -179,7 +179,6 @@ queue_limit(dbref player)
 void
 free_qentry(MQUE * entry)
 {
-  int i;
   MQUE *tmp;
 
   if (entry->inplace) {
@@ -201,18 +200,14 @@ free_qentry(MQUE * entry)
   free_pe_info(entry->pe_info);
 
   /* Shouldn't happen, but to be safe... */
-  for (i = 0; i < 10; i++) {
-    if (entry->save_env[i]) {
-      mush_free(entry->save_env[i], "pe_info.env");
-      entry->save_env[i] = NULL;
-    }
-  }
-
   if (entry->save_attrname)
     mush_free(entry->save_attrname, "mque.attrname");
 
   if (entry->pid) /* INPLACE queue entries have no pid */
     im_delete(queue_map, entry->pid);
+
+  if (entry->regvals) /* Nested pe_regs */
+    pe_regs_free(entry->regvals);
 
   mush_free(entry, "mque");
 }
@@ -282,7 +277,6 @@ static MQUE *
 new_queue_entry(NEW_PE_INFO * pe_info)
 {
   MQUE *entry;
-  int i;
 
   entry = mush_malloc(sizeof *entry, "mque");
 
@@ -305,10 +299,8 @@ new_queue_entry(NEW_PE_INFO * pe_info)
   entry->action_list = NULL;
   entry->queue_type = QUEUE_DEFAULT;
   entry->port = 0;
-  for (i = 0; i < 10; i++) {
-    entry->save_env[i] = NULL;
-  }
   entry->save_attrname = NULL;
+  entry->regvals = NULL;
 
   return entry;
 }
@@ -331,6 +323,7 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   va_list args;
   char *s, *snext;
   ATTR *a;
+  PE_REGS *pe_regs;
   char *aval;
   int argcount = 0;
   char *wenv[10];
@@ -418,7 +411,6 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
 
   /* Let's queue this mother. */
 
-
   /* Build tmp. */
   tmp = new_queue_entry(NULL);
   tmp->pid = pid;
@@ -431,9 +423,14 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   free(aval);
 
   /* Set up %0-%9 */
+  if (tmp->pe_info->regvals == NULL) {
+    tmp->pe_info->regvals = pe_regs_create(PE_REGS_QUEUE, "queue_event");
+  }
+  pe_regs = tmp->pe_info->regvals;
   for (i = 0; i < 10; i++) {
     if (wenv[i]) {
-      tmp->pe_info->env[i] = mush_strdup(wenv[i], "pe_info.env");
+      pe_regs_setenv(pe_regs, i, wenv[i]);
+      pe_regs_setenv_nocopy(pe_regs, i, wenv[i]);
     }
   }
 
@@ -556,13 +553,12 @@ insert_que(MQUE * queue_entry, MQUE * parent_queue)
 void
 new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
                      char *actionlist, MQUE * parent_queue,
-                     int flags, int queue_type, char *env[10], char *fromattr)
+                     int flags, int queue_type, PE_REGS *pe_regs,
+                     char *fromattr)
 {
 
   NEW_PE_INFO *pe_info;
   MQUE *queue_entry;
-  char *save_env[10];
-  int i = -1;
 
   if (!(queue_type & QUEUE_INPLACE)) {
     /* Remove all QUEUE_* flags which aren't safe for non-inplace queues */
@@ -579,26 +575,9 @@ new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
     }
   }
 
-  if (queue_type & QUEUE_RESTORE_ENV) {
-    if (parent_queue && (flags & PE_INFO_SHARE)) {
-      /* Save a copy of pe_info->env, then replace with env. do_entry will restore it later */
-      parent_queue->pe_info->arg_count = 0;
-      for (i = 0; i < 10; i++) {
-        save_env[i] = parent_queue->pe_info->env[i];
-        if (env[i]) {
-          parent_queue->pe_info->env[i] = mush_strdup(env[i], "pe_info.env");
-          parent_queue->pe_info->arg_count = i+1;
-        } else {
-          parent_queue->pe_info->env[i] = NULL;
-        }
-      }
-    } else {
-      queue_type &= ~QUEUE_RESTORE_ENV;
-    }
-  }
-
   pe_info =
-    pe_info_from((parent_queue ? parent_queue->pe_info : NULL), flags, env);
+    pe_info_from((parent_queue ? parent_queue->pe_info : NULL),
+                 flags, pe_regs);
 
   queue_entry = new_queue_entry(pe_info);
   queue_entry->executor = executor;
@@ -606,11 +585,9 @@ new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
   queue_entry->caller = caller;
   queue_entry->action_list = mush_strdup(actionlist, "mque.action_list");
   queue_entry->queue_type = queue_type;
-  if (i > -1) {
-    /* Set the previous env into queue_entry->save_env */
-    for (i = 0; i < 10; i++) {
-      queue_entry->save_env[i] = save_env[i];
-    }
+  if (pe_regs && (flags & PE_INFO_SHARE)) {
+    queue_entry->regvals = pe_regs_create(pe_regs->flags, "new_queue_actionlist");
+    pe_regs_copystack(queue_entry->regvals, pe_regs, PE_REGS_QUEUE, 0);
   }
 
   if (fromattr) {
@@ -623,7 +600,8 @@ new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
 }
 
 void
-parse_que_attr(dbref executor, dbref enactor, char *actionlist, char *env[10], ATTR *a)
+parse_que_attr(dbref executor, dbref enactor, char *actionlist,
+               PE_REGS *pe_regs, ATTR *a)
 {
   int flags = QUEUE_DEFAULT;
 
@@ -633,7 +611,7 @@ parse_que_attr(dbref executor, dbref enactor, char *actionlist, char *env[10], A
     flags |= QUEUE_DEBUG;
 
   new_queue_actionlist_int(executor, enactor, enactor, actionlist, NULL,
-                           PE_INFO_DEFAULT, flags, env,
+                           PE_INFO_DEFAULT, flags, pe_regs,
                            tprintf("#%d/%s", executor, AL_NAME(a)));
 }
 
@@ -645,6 +623,8 @@ queue_include_attribute(dbref thing, const char *atrname,
   ATTR *a;
   char *start, *command;
   int noparent = 0;
+  PE_REGS *pe_regs = NULL;
+  int i;
 
   a = queue_attribute_getatr(thing, atrname, noparent);
   if (!a)
@@ -667,8 +647,15 @@ queue_include_attribute(dbref thing, const char *atrname,
       command++;
   }
 
-  if (args != NULL)
+  if (args != NULL) {
     queue_type |= QUEUE_RESTORE_ENV;
+    pe_regs = pe_regs_create(PE_REGS_ARG, "queue_include_attribute");
+    for (i = 0; i < 10; i++) {
+      if (args[i] && *args[i]) {
+        pe_regs_setenv_nocopy(pe_regs, i, args[i]);
+      }
+    }
+  }
 
   if (AF_NoDebug(a))
     queue_type |= QUEUE_NODEBUG;
@@ -680,8 +667,10 @@ queue_include_attribute(dbref thing, const char *atrname,
   }
 
   new_queue_actionlist_int(executor, enactor, caller, command, parent_queue,
-                       PE_INFO_SHARE, queue_type, args, tprintf("#%d/%s", thing, atrname));
+                       PE_INFO_SHARE, queue_type, pe_regs,
+                       tprintf("#%d/%s", thing, atrname));
 
+  if (pe_regs) pe_regs_free(pe_regs);
   free(start);
   return 1;
 }
@@ -699,14 +688,14 @@ queue_include_attribute(dbref thing, const char *atrname,
  */
 int
 queue_attribute_base(dbref executor, const char *atrname, dbref enactor,
-                     int noparent, char *env[10])
+                     int noparent, PE_REGS *pe_regs)
 {
   ATTR *a;
 
   a = queue_attribute_getatr(executor, atrname, noparent);
   if (!a)
     return 0;
-  queue_attribute_useatr(executor, a, enactor, env);
+  queue_attribute_useatr(executor, a, enactor, pe_regs);
   return 1;
 }
 
@@ -718,7 +707,7 @@ queue_attribute_getatr(dbref executor, const char *atrname, int noparent)
 }
 
 int
-queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor, char *env[10])
+queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor, PE_REGS *pe_regs)
 {
   char *start, *command;
   int queue_type = QUEUE_DEFAULT;
@@ -745,8 +734,8 @@ queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor, char *env[10])
 
 
   new_queue_actionlist_int(executor, enactor, enactor, command, NULL,
-                       PE_INFO_DEFAULT, queue_type, env,
-                       tprintf("#%d/%s", executor, AL_NAME(a)));
+                           PE_INFO_DEFAULT, queue_type, pe_regs,
+                           tprintf("#%d/%s", executor, AL_NAME(a)));
   free(start);
   return 1;
 }
@@ -777,8 +766,7 @@ wait_que(dbref player, int waittill, char *command, dbref cause, dbref sem,
     if (sem != NOTHING)
       add_to_sem(sem, -1, semattr);
     new_queue_actionlist(player, cause, cause, command, parent_queue,
-                         PE_INFO_COPY_ENV | PE_INFO_COPY_QREG, QUEUE_DEFAULT,
-                         NULL);
+                         PE_INFO_CLONE, QUEUE_DEFAULT, NULL);
     return;
   }
   if (!pay_queue(player, command))      /* make sure player can afford to do it */
@@ -790,9 +778,7 @@ wait_que(dbref player, int waittill, char *command, dbref cause, dbref sem,
   }
   if (parent_queue)
     pe_info =
-      pe_info_from(parent_queue->pe_info,
-                   PE_INFO_COPY_ENV | PE_INFO_COPY_QREG,
-                   NULL);
+      pe_info_from(parent_queue->pe_info, PE_INFO_CLONE, NULL);
   else
     pe_info = NULL;
   tmp = new_queue_entry(pe_info);
@@ -963,14 +949,13 @@ run_user_input(dbref player, int port, char *input)
   free_qentry(entry);
 }
 
-/* Return 1 if an @break needs to propagate up to the calling q entry, 0 otherwise */
+/* Return 1 if an @break needs to propagate up to the calling q entry, 0
+ * otherwise */
 static int
 do_entry(MQUE * entry, int include_recurses)
 {
   dbref executor;
   char tbuf[BUFFER_LEN];
-  int switch_nest;
-  int iter_nest;
   int inplace_break_called = 0;
   char *r;
   char const *s;
@@ -1015,19 +1000,28 @@ do_entry(MQUE * entry, int include_recurses)
       tmp = entry->inplace;
       /* We have a new queue to process, via @include, @break, @switch/inplace or similar */
       if (include_recurses < 50) {
-        switch_nest = entry->pe_info->switch_nestings;
-        iter_nest = entry->pe_info->iter_nestings;
         if (tmp->queue_type & QUEUE_PRESERVE_QREG) {
           if (tmp->queue_type & QUEUE_CLEAR_QREG) {
             pe_regs = pe_regs_localize(entry->pe_info,
-                                       PE_REGS_QUEUE | PE_REGS_QSTOP );
+                                       PE_REGS_QUEUE | PE_REGS_QSTOP,
+                                       "do_entry");
           } else {
-            pe_regs = pe_regs_localize(entry->pe_info, PE_REGS_QUEUE);
+            pe_regs = pe_regs_localize(entry->pe_info, PE_REGS_QUEUE,
+                                       "do_entry");
           }
         } else {
           pe_regs = NULL;
         }
-        inplace_break_called = do_entry(tmp, include_recurses + 1);
+        if (tmp->regvals) {
+          /* PE_INFO_SHARE - This comes after the localizing. */
+          tmp->regvals->prev = tmp->pe_info->regvals;
+          tmp->pe_info->regvals = tmp->regvals;
+          inplace_break_called = do_entry(tmp, include_recurses + 1);
+          tmp->pe_info->regvals = tmp->regvals->prev;
+          tmp->regvals->prev = NULL;
+        } else {
+          inplace_break_called = do_entry(tmp, include_recurses + 1);
+        }
         if (tmp->queue_type & QUEUE_NO_BREAKS) {
           inplace_break_called = 0;
         }
@@ -1035,46 +1029,14 @@ do_entry(MQUE * entry, int include_recurses)
           pe_regs_restore(entry->pe_info, pe_regs);
           pe_regs_free(pe_regs);
         }
-        if (inplace_break_called || !tmp->next) {
-          while (entry->pe_info->switch_nestings > switch_nest) {
-            mush_free(entry->pe_info->
-                      switch_text[entry->pe_info->switch_nestings],
-                      "pe_info.switch_text");
-            entry->pe_info->switch_text[entry->pe_info->switch_nestings] = NULL;
-            entry->pe_info->switch_nestings--;
-            entry->pe_info->switch_nestings_local--;
-          }
-          while (entry->pe_info->iter_nestings > iter_nest) {
-            mush_free(entry->pe_info->iter_itext[entry->pe_info->iter_nestings],
-                      "pe_info.dolist_arg");
-            entry->pe_info->iter_itext[entry->pe_info->iter_nestings] = NULL;
-            entry->pe_info->iter_inum[entry->pe_info->iter_nestings] = -1;
-            entry->pe_info->iter_nestings--;
-            entry->pe_info->iter_nestings_local--;
-          }
-        }
-        if (tmp->queue_type & QUEUE_RESTORE_ENV) {
-          /* This queue screwed with our env, but was nice enough to
-           * save the original one */
-          int i;
-          tmp->pe_info->arg_count = 0;
-          for (i = 0; i < 10; i++) {
-            if (tmp->pe_info->env[i])
-              mush_free(tmp->pe_info->env[i], "pe_info.env");
-            tmp->pe_info->env[i] = tmp->save_env[i];
-            if (tmp->save_env[i])
-              tmp->pe_info->arg_count = i+1;
-            tmp->save_env[i] = NULL;
-          }
-        }
         /* Propagate qreg values. This is because this was a queue entry with
-         * a new pe_info. We use pe_regs_copyto for this. */
+         * a new pe_info. We use pe_regs_qcopy for this. */
         if (tmp->queue_type & QUEUE_PROPAGATE_QREG) {
           if (tmp->pe_info->regvals && !(entry->pe_info->regvals)) {
-            entry->pe_info->regvals = pe_regs_create(PE_REGS_QUEUE);
+            entry->pe_info->regvals = pe_regs_create(PE_REGS_QUEUE, "do_entry");
           }
           if (tmp->pe_info->regvals) {
-            pe_regs_copyto(entry->pe_info->regvals, tmp->pe_info->regvals);
+            pe_regs_qcopy(entry->pe_info->regvals, tmp->pe_info->regvals);
           }
         }
         if (tmp->save_attrname) {

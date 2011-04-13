@@ -188,7 +188,7 @@ FUNCTION(fun_helloworld)
 
   /* Call the ufun. In the ufun, "Hello world" will be %0 and the number
      will be %1. */
-  call_ufun(*ufun, rbuff, executor, enactor, pe_info, pe_regs);
+  call_ufun(&ufun, rbuff, executor, enactor, pe_info, pe_regs);
 
   pe_regs_free(pe_regs);
 
@@ -196,3 +196,32 @@ FUNCTION(fun_helloworld)
   safe_str(rbuff, buff, bp);
 }
 
+FROM:
+
+  int argcount = 2;
+  const char *myenv[2];
+
+  myenv[0] = mush_strdup(unparse_dbref(executor), "dbcpy");
+  myenv[1] = message;
+
+  call_attrib(player, attrname, myenv, argcount, obuf, player, pe_info)
+
+  mush_free(myenv[0], "dbcpy");
+
+TO:
+
+  PE_REGS *pe_regs = pe_regs_create(PE_REGS_ARG, "my_function_name");
+
+  pe_regs_setenv(pe_regs, 0, unparse_dbref(executor));
+  pe_regs_setenv(pe_regs, 1, message);
+
+  call_attrib(player, attrname, obuf, player, pe_info, pe_regs)
+
+  pe_regs_free(pe_regs);
+
+NOTE: 
+If you don't know when to use pe_regs_setenv_nocopy instead of pe_regs_setenv,
+then just use pe_regs_setenv. pe_regs_setenv will create an in-memory clone of
+what's passed to it, so this is a memory leak:
+
+  pe_regs_setenv(pe_regs, 0, mush_strdup(message, "messagecopy"));

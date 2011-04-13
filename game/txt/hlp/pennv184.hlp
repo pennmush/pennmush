@@ -41,6 +41,8 @@ Locks:
    of references to deleted objects makes objid locks extraneous. [SW]
  
 Commands:
+ * @notify/setq can alter Q-registers of a semaphore queue entry before
+   dequeueing it. [GM]
  * 'teach' now takes a /list switch, which lets it run an action list
    instead of a single command. [MG]
  * @force, @switch and @hook/override now all take an /inline switch, which

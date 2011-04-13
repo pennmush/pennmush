@@ -154,34 +154,39 @@ COMMAND(cmd_assert)
 
 COMMAND(cmd_retry)
 {
-  char *rse[10];
   char buff[BUFFER_LEN], *bp;
   const char *sp;
+  PE_REGS *pe_regs = NULL;
+  PE_REGS *pr;
   int a;
+
   if (!parse_boolean(arg_left))
     return;
 
   if (rhs_present) {
     /* Now, to evaluate all of rsargs. Blah. */
+    pe_regs = pe_regs_create(PE_REGS_ARG, "cmd_retry");
     for (a = 0; a < 10; a++) {
-      rse[a] = NULL;
       sp = args_right[a+1];
       if (sp) {
         bp = buff;
         process_expression(buff, &bp, &sp, executor, caller, enactor,
                            PE_DEFAULT, PT_DEFAULT, queue_entry->pe_info);
         *bp = '\0';
-        rse[a] = mush_strdup(buff, "pe_info.env");
+        pe_regs_setenv(pe_regs, a, buff);
       }
     }
-    for (a = 0; a < 10; a++) {
-      if (queue_entry->pe_info->env[a])
-        mush_free(queue_entry->pe_info->env[a], "pe_info.env");
-      queue_entry->pe_info->env[a] = rse[a];
+    /* Find the pe_regs relevant to this queue entry, and copy our
+     * new args onto it */
+    for (pr = queue_entry->pe_info->regvals; pr; pr = pr->prev) {
+      if (pr->flags & PE_REGS_ARG) {
+        pe_regs_copystack(pr, pe_regs, PE_REGS_ARG, 1);
+        break;
+      }
     }
   }
   queue_entry->queue_type |= QUEUE_RETRY;
-
+  if (pe_regs) pe_regs_free(pe_regs);
 }
 
 COMMAND(cmd_chownall)

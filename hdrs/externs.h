@@ -242,6 +242,7 @@ extern char ucbuff[];
 #define QUEUE_RETRY            0x0800   /* Set by @retry, restart current queue entry from beginning, without recalling do_entry */
 #define QUEUE_DEBUG            0x1000   /* Show DEBUG info for queue (queued from a DEBUG attribute) */
 #define QUEUE_NODEBUG          0x2000   /* Don't show DEBUG info for queue (queued from a NO_DEBUG attribute) */
+
 #define QUEUE_RECURSE (QUEUE_INPLACE | QUEUE_NO_BREAKS | QUEUE_PRESERVE_QREG)
 
 
@@ -249,7 +250,7 @@ extern char ucbuff[];
 #define PE_INFO_DEFAULT     0x000   /* create a new, empty pe_info */
 #define PE_INFO_SHARE       0x001   /* Share the existing pe_info */
 #define PE_INFO_CLONE       0x002   /* Clone entire pe_info */
-#define PE_INFO_COPY_ENV    0x004   /* Copy the env (%0-%9) of the parent pe_info into new pe_info */
+#define PE_INFO_COPY_ENV    0x004   /* Copy env-vars (%0-%9) from the parent */
 #define PE_INFO_COPY_QREG   0x008   /* Copy q-registers (%q*) from the parent pe_info */
 
 
@@ -262,22 +263,23 @@ void do_halt(dbref owner, const char *ncom, dbref victim);
 #define SYSEVENT -1
 bool queue_event(dbref enactor, const char *event, const char *fmt, ...)
   __attribute__ ((__format__(__printf__, 3, 4)));
-#define parse_que(executor,enactor,actionlist,env) new_queue_actionlist(executor,enactor,enactor,actionlist,NULL,PE_INFO_DEFAULT,QUEUE_DEFAULT,env)
-void parse_que_attr(dbref executor, dbref enactor, char *actionlist, char *env[10], ATTR *a);
+void parse_que_attr(dbref executor, dbref enactor, char *actionlist,
+                    PE_REGS *pe_regs, ATTR *a);
 void insert_que(MQUE * queue_entry, MQUE * parent_queue);
 
 void new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
                           char *actionlist, MQUE * queue_entry,
-                          int flags, int queue_type, char *env[10],
+                          int flags, int queue_type, PE_REGS *pe_regs,
                           char *fromattr);
-#define new_queue_actionlist(executor,enactor,caller,actionlist,parent_queue,flags,queue_type,env) \
-        new_queue_actionlist_int(executor,enactor,caller,actionlist,parent_queue,flags,queue_type,env,NULL)
+#define parse_que(executor,enactor,actionlist,regs) new_queue_actionlist(executor,enactor,enactor,actionlist,NULL,PE_INFO_DEFAULT,QUEUE_DEFAULT,regs)
+#define new_queue_actionlist(executor,enactor,caller,actionlist,parent_queue,flags,queue_type,regs) \
+        new_queue_actionlist_int(executor,enactor,caller,actionlist,parent_queue,flags,queue_type,regs,NULL)
 
 int queue_attribute_base(dbref executor, const char *atrname, dbref enactor,
-                         int noparent, char *env[10]);
+                         int noparent, PE_REGS *pe_regs);
 ATTR *queue_attribute_getatr(dbref executor, const char *atrname, int noparent);
 int queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor,
-                           char *env[10]);
+                           PE_REGS *pe_regs);
 int queue_include_attribute(dbref thing, const char *atrname, dbref executor,
                             dbref cause, dbref caller, char **args, int recurse,
                             MQUE * parent_queue);
@@ -412,7 +414,7 @@ int did_it_interact(dbref player, dbref thing, const char *what,
                     const char *odef, const char *awhat, dbref loc, int flags);
 int real_did_it(dbref player, dbref thing, const char *what,
                 const char *def, const char *owhat, const char *odef,
-                const char *awhat, dbref loc, char *myenv[10], int flags);
+                const char *awhat, dbref loc, PE_REGS *pe_regs, int flags);
 int can_see(dbref player, dbref thing, int can_see_loc);
 int controls(dbref who, dbref what);
 int can_pay_fees(dbref who, int pennies);
@@ -631,12 +633,10 @@ dbref next_parent(dbref thing, dbref current, int *parent_count, int *use_ancest
 #define UFUN_DEFAULT (UFUN_OBJECT | UFUN_LAMBDA)
     bool fetch_ufun_attrib(const char *attrstring, dbref executor,
                            ufun_attrib * ufun, int flags);
-    bool call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc,
-                   char *ret, dbref executor, dbref enactor,
-                   NEW_PE_INFO * pe_info);
-    bool call_attrib(dbref thing, const char *attrname, const char *wenv_args[],
-                     int wenv_argc, char *ret, dbref enactor,
-                     NEW_PE_INFO * pe_info);
+    bool call_ufun(ufun_attrib * ufun, char *ret, dbref executor,
+                   dbref enactor, NEW_PE_INFO * pe_info, PE_REGS *pe_regs);
+    bool call_attrib(dbref thing, const char *attrname, char *ret,
+                     dbref enactor, NEW_PE_INFO * pe_info, PE_REGS *pe_regs);
     bool member(dbref thing, dbref list);
     bool recursive_member(dbref disallow, dbref from, int count);
     dbref remove_first(dbref first, dbref what);
@@ -713,12 +713,6 @@ dbref next_parent(dbref thing, dbref current, int *parent_count, int *use_ancest
     extern char *UNKNOWN_LIST;
 
 /* From function.c and other fun*.c */
-    void save_env(const char *funcname
-                  __attribute__ ((__unused__)), char *preserve[], char *orig[]);
-    void restore_env(const char *funcname
-                     __attribute__ ((__unused__)), char *preserve[],
-                     char *orig[]);
-
     char *strip_braces(char const *line);
 
     int delim_check(char *buff, char **bp, int nfargs, char **fargs,

@@ -3631,14 +3631,22 @@ mogrify(dbref mogrifier, const char *attrname,
         dbref player, int numargs, const char *argv[], const char *orig)
 {
   static char buff[BUFFER_LEN];
-  const char *wenv[10] = { 0 };
   int i;
+  PE_REGS *pe_regs;
   buff[0] = '\0';
+
+  pe_regs = pe_regs_create(PE_REGS_ARG, "mogrify");
   for (i = 0; i < numargs; i++) {
-    wenv[i] = argv[i];
+    if (argv[i]) {
+      pe_regs_setenv_nocopy(pe_regs, i, argv[i]);
+    }
   }
 
-  if (call_attrib(mogrifier, attrname, wenv, numargs, buff, player, NULL)) {
+  i = call_attrib(mogrifier, attrname, buff, player, NULL, pe_regs);
+
+  pe_regs_free(pe_regs);
+
+  if (i) {
     if (buff[0]) {
       return buff;
     }
@@ -4096,8 +4104,7 @@ eval_chan_lock(CHAN *c, dbref p, enum clock_type type)
   }
 
   pe_info = make_pe_info("pe_info-eval_chan_lock");
-  pe_info->env[0] = mush_strdup(ChanName(c), "pe_info.env");
-  pe_info->arg_count = 1;
+  pe_regs_setenv_nocopy(pe_info->regvals, 0, ChanName(c));
   retval = eval_boolexp(p, b, p, pe_info);
   free_pe_info(pe_info);
   return retval;

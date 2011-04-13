@@ -199,9 +199,8 @@ nameformat(dbref player, dbref loc, char *tbuf1, char *defname)
   a = atr_get(loc, "NAMEFORMAT");
   if (a) {
     NEW_PE_INFO *pe_info = make_pe_info("pe_info-nameformat");
-    pe_info->env[0] = mush_strdup(unparse_dbref(loc), "pe_info.env");
-    pe_info->env[1] = mush_strdup(defname, "pe_info.env");
-    pe_info->arg_count = 2;
+    pe_regs_setenv(pe_info->regvals, 0, unparse_dbref(loc));
+    pe_regs_setenv_nocopy(pe_info->regvals, 1, defname);
     sp = save = safe_atr_value(a);
     bp = tbuf1;
     process_expression(tbuf1, &bp, &sp, loc, player, player,

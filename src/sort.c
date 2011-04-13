@@ -123,20 +123,25 @@ u_comp(const void *s1, const void *s2, dbref executor, dbref enactor, ufun_attri
 {
   char result[BUFFER_LEN];
   int n;
-  char *wenv[2];
+  PE_REGS *pe_regs;
+  int ret;
 
   /* Our two arguments are passed as %0 and %1 to the sortby u-function. */
 
   /* Note that this function is for use in conjunction with our own
    * sane_qsort routine, NOT with the standard library qsort!
    */
-  wenv[0] = (char *) s1;
-  wenv[1] = (char *) s2;
+  pe_regs = pe_regs_create(PE_REGS_ARG, "u_comp");
+  pe_regs_setenv_nocopy(pe_regs, 0, (char *) s1);
+  pe_regs_setenv_nocopy(pe_regs, 1, (char *) s2);
 
   /* Run the u-function, which should return a number. */
+  ret = call_ufun(ufun, result, executor, enactor, pe_info, pe_regs);
+  pe_regs_free(pe_regs);
 
-  if (call_ufun(ufun, wenv, 2, result, executor, enactor, pe_info))
+  if (ret) {
     return 0;
+  }
 
   n = parse_integer(result);
 

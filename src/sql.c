@@ -334,6 +334,7 @@ COMMAND(cmd_mapsql)
   int rownum;
   int numfields;
   int numrows;
+  PE_REGS *pe_regs = NULL;
   char *names[10];
   char *cells[10];
   char tbuf[BUFFER_LEN];
@@ -417,6 +418,7 @@ COMMAND(cmd_mapsql)
     goto finished;
   }
 
+  pe_regs = pe_regs_create(PE_REGS_ARG, "cmd_mapsql");
   for (rownum = 0; rownum < numrows; rownum++) {
 #ifdef HAVE_MYSQL
     MYSQL_ROW row_p = NULL;
@@ -469,14 +471,20 @@ COMMAND(cmd_mapsql)
         /* Queue 0: <names> */
         snprintf(strrownum, 20, "%d", 0);
         names[0] = strrownum;
-        queue_attribute_base(thing, s, executor, 0, names);
+        for (i = 0; i < (numfields + 1) && i < 10; i++) {
+          pe_regs_setenv(pe_regs, i, names[i]);
+        }
+        queue_attribute_base(thing, s, executor, 0, pe_regs);
       }
 
       /* Queue the rest. */
       snprintf(strrownum, 20, "%d", rownum + 1);
       cells[0] = strrownum;
-      queue_attribute_base(thing, s, executor, 0, cells);
-      /* Queue rownum: <names> */
+      pe_regs_clear(pe_regs);
+      for (i = 0; i < (numfields + 1) && i < 10; i++) {
+        pe_regs_setenv(pe_regs, i, cells[i]);
+      }
+      queue_attribute_base(thing, s, executor, 0, pe_regs);
     } else {
       /* What to do if there are no fields? This should be an error?. */
       /* notify_format(executor, T("Row %d: NULL"), rownum + 1); */
@@ -487,6 +495,7 @@ COMMAND(cmd_mapsql)
   }
 
 finished:
+  if (pe_regs) pe_regs_free(pe_regs);
   free_sql_query(qres);
 }
 
@@ -624,15 +633,15 @@ FUNCTION(fun_mapsql)
   char *osep = (char *) " ";
   int affected_rows;
   int rownum;
-  char numbuff[20];
   int numfields, numrows;
   char rbuff[BUFFER_LEN];
   int funccount = 0;
   int do_fieldnames = 0;
-  int i;
+  int i, j;
   char buffs[9][BUFFER_LEN];
   char *tbp;
   char *cell = NULL;
+  PE_REGS *pe_regs = NULL;
   ansi_string *as;
 #ifdef HAVE_MYSQL
   MYSQL_FIELD *fields = NULL;
@@ -687,9 +696,9 @@ FUNCTION(fun_mapsql)
     goto finished;
   }
 
+  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_mapsql");
   if (do_fieldnames) {
-    mush_strncpy(numbuff, unparse_integer(0), 20);
-    wenv[0] = numbuff;
+    pe_regs_setenv(pe_regs, 0, unparse_integer(0));
 #ifdef HAVE_MYSQL
     if (sql_platform() == SQL_PLATFORM_MYSQL)
       fields = mysql_fetch_fields(qres);
@@ -698,24 +707,26 @@ FUNCTION(fun_mapsql)
       switch (sql_platform()) {
 #ifdef HAVE_MYSQL
       case SQL_PLATFORM_MYSQL:
-        wenv[i + 1] = fields[i].name;
+        pe_regs_setenv(pe_regs, i + 1, fields[i].name);
         break;
 #endif
 #ifdef HAVE_POSTGRESQL
       case SQL_PLATFORM_POSTGRESQL:
-        wenv[i + 1] = PQfname(qres, i);
+        pe_regs_setenv(pe_regs, i + 1, PQfname(qres, i));
         break;
 #endif
 #ifdef HAVE_SQLITE3
       case SQL_PLATFORM_SQLITE3:
-        wenv[i + 1] = (char *) sqlite3_column_name(qres, i);
+        pe_regs_setenv(pe_regs, i + 1, (char *) sqlite3_column_name(qres, i));
         break;
 #endif
       default:
         break;
       }
     }
-    if (call_ufun(&ufun, wenv, i + 1, rbuff, executor, enactor, pe_info))
+    for (j = 0; j < (i + 1); j++) {
+    }
+    if (call_ufun(&ufun, rbuff, executor, enactor, pe_info, pe_regs))
       goto finished;
     safe_str(rbuff, buff, bp);
   }
@@ -741,8 +752,8 @@ FUNCTION(fun_mapsql)
     if (rownum > 0 || do_fieldnames) {
       safe_str(osep, buff, bp);
     }
-    mush_strncpy(numbuff, unparse_integer(rownum + 1), 20);
-    wenv[0] = numbuff;
+    pe_regs_clear(pe_regs);
+    pe_regs_setenv(pe_regs, 0, unparse_integer(rownum + 1));
     for (i = 0; (i < numfields) && (i < 9); i++) {
       switch (sql_platform()) {
 #ifdef HAVE_MYSQL
@@ -774,12 +785,11 @@ FUNCTION(fun_mapsql)
           cell = buffs[i];
         }
       }
-      wenv[i + 1] = cell;
-      if (!wenv[i + 1])
-        wenv[i + 1] = (char *) "";
+      if (cell)
+        pe_regs_setenv(pe_regs, i + 1, cell);
     }
     /* Now call the ufun. */
-    if (call_ufun(&ufun, wenv, i + 1, rbuff, executor, enactor, pe_info))
+    if (call_ufun(&ufun, rbuff, executor, enactor, pe_info, pe_regs))
       goto finished;
     if (safe_str(rbuff, buff, bp)
         && funccount == pe_info->fun_invocations)
@@ -787,6 +797,7 @@ FUNCTION(fun_mapsql)
     funccount = pe_info->fun_invocations;
   }
 finished:
+  if (pe_regs) pe_regs_free(pe_regs);
   free_sql_query(qres);
 }
 

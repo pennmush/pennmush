@@ -2948,11 +2948,10 @@ filter_mail(dbref from, dbref player, char *subject,
   tbuf1[j] = '\0';
 
   pe_info = make_pe_info("pe_info-filter_mail");
-  pe_info->env[0] = mush_strdup(unparse_dbref(from), "pe_info.env");
-  pe_info->env[1] = mush_strdup(subject, "pe_info.env");
-  pe_info->env[2] = mush_strdup(message, "pe_info.env");
-  pe_info->env[3] = mush_strdup(tbuf1, "pe_info.env");
-  pe_info->arg_count = 4;
+  pe_regs_setenv(pe_info->regvals, 0, unparse_dbref(from));
+  pe_regs_setenv_nocopy(pe_info->regvals, 1, subject);
+  pe_regs_setenv_nocopy(pe_info->regvals, 2, message);
+  pe_regs_setenv_nocopy(pe_info->regvals, 3, tbuf1);
   bp = pe_info->attrname;
   safe_format(pe_info->attrname, &bp, "#%d/%s", player, "MAILFILTER");
   *bp = '\0';

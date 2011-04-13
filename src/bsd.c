@@ -1237,8 +1237,7 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
     return -2;
   }
   pe_info = make_pe_info("pe_info-fcache_dump_attr");
-  pe_info->env[0] = mush_strdup(arg, "pe_info.env");
-  pe_info->arg_count = 1;
+  pe_regs_setenv_nocopy(pe_info->regvals, 0, arg);
   bp = pe_info->attrname;
   safe_format(pe_info->attrname, &bp, "#%d/%s", thing, attr);
   *bp = '\0';
@@ -2759,6 +2758,7 @@ close_sockets(void)
   DESC *d, *dnext;
   const char *shutmsg;
   int shutlen;
+  int ignoreme;
 
   shutmsg = T(shutdown_message);
   shutlen = strlen(shutmsg);
@@ -2774,7 +2774,7 @@ close_sockets(void)
       byebye[0].iov_len = shutlen;
       byebye[1].iov_base = (char *) "\r\n";
       byebye[1].iov_len = 2;
-      writev(d->descriptor, byebye, 2);
+      ignoreme = writev(d->descriptor, byebye, 2);
 #else
       send(d->descriptor, shutmsg, shutlen, 0);
       send(d->descriptor, (char *) "\r\n", 2, 0);
@@ -3598,10 +3598,9 @@ announce_connect(DESC *d, int isnew, int num)
   dbref loc;
   char tbuf1[BUFFER_LEN];
   char *message;
-  char *myenv[10];
+  PE_REGS *pe_regs;
   dbref zone;
   dbref obj;
-  int j;
 
   dbref player = d->player;
 
@@ -3671,28 +3670,27 @@ announce_connect(DESC *d, int isnew, int num)
    * %0 (unused, reserved for "reason for disconnect")
    * %1 (number of connections after connect)
    */
-  for (j = 0; j < 10; j++)
-    myenv[j] = NULL;
-  myenv[1] = mush_strdup(unparse_integer(num), "myenv");
+  pe_regs = pe_regs_create(PE_REGS_ARG, "announce_connect");
+  pe_regs_setenv(pe_regs, 1, unparse_integer(num));
 
   /* do the person's personal connect action */
-  (void) queue_attribute_base(player, "ACONNECT", player, 0, myenv);
+  (void) queue_attribute_base(player, "ACONNECT", player, 0, pe_regs);
   if (ROOM_CONNECTS) {
     /* Do the room the player connected into */
     if (IsRoom(loc) || IsThing(loc)) {
-      (void) queue_attribute_base(loc, "ACONNECT", player, 0, myenv);
+      (void) queue_attribute_base(loc, "ACONNECT", player, 0, pe_regs);
     }
   }
   /* do the zone of the player's location's possible aconnect */
   if ((zone = Zone(loc)) != NOTHING) {
     switch (Typeof(zone)) {
     case TYPE_THING:
-      (void) queue_attribute_base(zone, "ACONNECT", player, 0, myenv);
+      (void) queue_attribute_base(zone, "ACONNECT", player, 0, pe_regs);
       break;
     case TYPE_ROOM:
       /* check every object in the room for a connect action */
       DOLIST(obj, Contents(zone)) {
-        (void) queue_attribute_base(obj, "ACONNECT", player, 0, myenv);
+        (void) queue_attribute_base(obj, "ACONNECT", player, 0, pe_regs);
       }
       break;
     default:
@@ -3703,11 +3701,9 @@ announce_connect(DESC *d, int isnew, int num)
   }
   /* now try the master room */
   DOLIST(obj, Contents(MASTER_ROOM)) {
-    (void) queue_attribute_base(obj, "ACONNECT", player, 0, myenv);
+    (void) queue_attribute_base(obj, "ACONNECT", player, 0, pe_regs);
   }
-  for (j = 0; j < 10; j++)
-    if (myenv[j])
-      mush_free(myenv[j], "myenv");
+  pe_regs_free(pe_regs);
 }
 
 static void
@@ -3719,11 +3715,9 @@ announce_disconnect(DESC *saved, const char *reason)
   char tbuf1[BUFFER_LEN];
   char *message;
   dbref zone, obj;
-  int j;
-  char *myenv[10];
-  char *save;
   dbref player;
   ATTR *a;
+  PE_REGS *pe_regs;
 
   player = saved->player;
   loc = Location(player);
@@ -3745,14 +3739,12 @@ announce_disconnect(DESC *saved, const char *reason)
    * %4 (commands queued)
    * %5 (hidden)
    */
-  for (j = 0; j < 10; j++) {
-    myenv[j] = NULL;
-  }
-  myenv[1] = save = mush_strdup(unparse_integer(num - 1), "myenv");
-  myenv[2] = mush_strdup(unparse_integer(saved->input_chars), "myenv");
-  myenv[3] = mush_strdup(unparse_integer(saved->output_chars), "myenv");
-  myenv[4] = mush_strdup(unparse_integer(saved->cmds), "myenv");
-  myenv[5] = mush_strdup(unparse_integer(Hidden(saved)), "myenv");
+  pe_regs = pe_regs_create(PE_REGS_ARG, "announce_disconnect");
+  pe_regs_setenv(pe_regs, 1, unparse_integer(num - 1));
+  pe_regs_setenv(pe_regs, 2, unparse_integer(saved->input_chars));
+  pe_regs_setenv(pe_regs, 3, unparse_integer(saved->output_chars));
+  pe_regs_setenv(pe_regs, 4, unparse_integer(saved->cmds));
+  pe_regs_setenv(pe_regs, 5, unparse_integer(Hidden(saved)));
 
   /* Eww. Unwieldy.
    * (objid, count, hidden, cause, ip, descriptor, conn,
@@ -3769,15 +3761,16 @@ announce_disconnect(DESC *saved, const char *reason)
               (int) difftime(mudtime, saved->last_time),
               saved->input_chars, saved->output_chars, saved->cmds);
 
-  (void) queue_attribute_base(player, "ADISCONNECT", player, 0, myenv);
+  (void) queue_attribute_base(player, "ADISCONNECT", player, 0, pe_regs);
   if (ROOM_CONNECTS)
     if (IsRoom(loc) || IsThing(loc)) {
       a = queue_attribute_getatr(loc, "ADISCONNECT", 0);
       if (a) {
         if (!Priv_Who(loc) && !Can_Examine(loc, player))
-          myenv[1] = NULL;
-        (void) queue_attribute_useatr(loc, a, player, myenv);
-        myenv[1] = save;
+          pe_regs_setenv_nocopy(pe_regs, 1, "");
+        (void) queue_attribute_useatr(loc, a, player, pe_regs);
+        if (!Priv_Who(loc) && !Can_Examine(loc, player))
+          pe_regs_setenv(pe_regs, 1, unparse_integer(num - 1));
       }
     }
   /* do the zone of the player's location's possible adisconnect */
@@ -3787,9 +3780,10 @@ announce_disconnect(DESC *saved, const char *reason)
       a = queue_attribute_getatr(zone, "ADISCONNECT", 0);
       if (a) {
         if (!Priv_Who(zone) && !Can_Examine(zone, player))
-          myenv[1] = NULL;
-        (void) queue_attribute_useatr(zone, a, player, myenv);
-        myenv[1] = save;
+          pe_regs_setenv_nocopy(pe_regs, 1, "");
+        (void) queue_attribute_useatr(zone, a, player, pe_regs);
+        if (!Priv_Who(zone) && !Can_Examine(zone, player))
+          pe_regs_setenv(pe_regs, 1, unparse_integer(num - 1));
       }
       break;
     case TYPE_ROOM:
@@ -3798,9 +3792,10 @@ announce_disconnect(DESC *saved, const char *reason)
         a = queue_attribute_getatr(obj, "ADISCONNECT", 0);
         if (a) {
           if (!Priv_Who(obj) && !Can_Examine(obj, player))
-            myenv[1] = NULL;
-          (void) queue_attribute_useatr(obj, a, player, myenv);
-          myenv[1] = save;
+            pe_regs_setenv_nocopy(pe_regs, 1, "");
+          (void) queue_attribute_useatr(obj, a, player, pe_regs);
+          if (!Priv_Who(obj) && !Can_Examine(obj, player))
+            pe_regs_setenv(pe_regs, 1, unparse_integer(num - 1));
         }
       }
       break;
@@ -3815,15 +3810,14 @@ announce_disconnect(DESC *saved, const char *reason)
     a = queue_attribute_getatr(obj, "ADISCONNECT", 0);
     if (a) {
       if (!Priv_Who(obj) && !Can_Examine(obj, player))
-        myenv[1] = NULL;
-      (void) queue_attribute_useatr(obj, a, player, myenv);
-      myenv[1] = save;
+        pe_regs_setenv_nocopy(pe_regs, 1, "");
+      (void) queue_attribute_useatr(obj, a, player, pe_regs);
+      if (!Priv_Who(obj) && !Can_Examine(obj, player))
+        pe_regs_setenv(pe_regs, 1, unparse_integer(num - 1));
     }
   }
 
-  for (j = 0; j < 10; j++)
-    if (myenv[j])
-      mush_free(myenv[j], "myenv");
+  pe_regs_free(pe_regs);
 
   /* Redundant, but better for translators */
   if (Dark(player)) {

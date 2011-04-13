@@ -22,6 +22,12 @@ that have altered hardcode will appear here.
 
 Version 1.8.4 patchlevel 4                                 ??? ??,  2011
 
+  PE_REGS now contains switch, @switch, iter, @dol and env (%0-%9).
+  The old way of passing arguments will no longer work. Instead, read
+  the HACKING.PE_REGS file for information on PE_REGS. This is paving
+  the way for a more flexible arg/environment structure: Possible more
+  than 10 %-args (Named %-args? Who knows?)
+
   Regexps are now stored in the PE_REGS structure. re_context is gone
   from NEW_PE_INFO. Instead, use pe_regs_*.
 

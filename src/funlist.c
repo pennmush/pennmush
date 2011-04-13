@@ -185,7 +185,6 @@ FUNCTION(fun_munge)
    * This rearranged list is returned by MUNGE.
    * A fourth argument (separator) is optional.
    */
-
   char list1[BUFFER_LEN], *lp, rlist[BUFFER_LEN], *rp;
   char **ptrs1, **ptrs2, **results;
   char **ptrs3;
@@ -194,7 +193,7 @@ FUNCTION(fun_munge)
   char sep, isep[2] = { '\0', '\0' }, *osep, osepd[2] = {
   '\0', '\0'};
   int first;
-  char *uargs[2];
+  PE_REGS *pe_regs;
 
   if (!delim_check(buff, bp, nargs, args, 4, &sep))
     return;
@@ -245,9 +244,11 @@ FUNCTION(fun_munge)
   /* Call the user function */
   lp = list1;
   rp = rlist;
-  uargs[0] = lp;
-  uargs[1] = isep;
-  call_ufun(&ufun, uargs, 2, rlist, executor, enactor, pe_info);
+  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_munge");
+  pe_regs_setenv_nocopy(pe_regs, 0, lp);
+  pe_regs_setenv_nocopy(pe_regs, 1, isep);
+  call_ufun(&ufun, rlist, executor, enactor, pe_info, pe_regs);
+  pe_regs_free(pe_regs);
 
   /* Now that we have our result, put it back into array form. Search
    * through list1 until we find the element position, then copy the
@@ -421,7 +422,7 @@ FUNCTION(fun_fold)
 
   ufun_attrib ufun;
   char *cp;
-  char *wenv[2];
+  PE_REGS *pe_regs;
   char sep;
   int funccount, per;
   char base[BUFFER_LEN];
@@ -441,10 +442,11 @@ FUNCTION(fun_fold)
   } else {
     strncpy(base, split_token(&cp, sep), BUFFER_LEN);
   }
-  wenv[0] = base;
-  wenv[1] = split_token(&cp, sep);
+  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_fold");
+  pe_regs_setenv_nocopy(pe_regs, 0, base);
+  pe_regs_setenv_nocopy(pe_regs, 1, split_token(&cp, sep));
 
-  call_ufun(&ufun, wenv, 2, result, executor, enactor, pe_info);
+  call_ufun(&ufun, result, executor, enactor, pe_info, pe_regs);
 
   strncpy(base, result, BUFFER_LEN);
 
@@ -452,14 +454,15 @@ FUNCTION(fun_fold)
 
   /* handle the rest of the cases */
   while (cp && *cp) {
-    wenv[1] = split_token(&cp, sep);
-    per = call_ufun(&ufun, wenv, 2, result, executor, enactor, pe_info);
+    pe_regs_setenv_nocopy(pe_regs, 1, split_token(&cp, sep));
+    per = call_ufun(&ufun, result, executor, enactor, pe_info, pe_regs);
     if (per || (pe_info->fun_invocations >= FUNCTION_LIMIT &&
                 pe_info->fun_invocations == funccount && !strcmp(base, result)))
       break;
     funccount = pe_info->fun_invocations;
-    strcpy(base, result);
+    strncpy(base, result, BUFFER_LEN);
   }
+  pe_regs_free(pe_regs);
   safe_str(base, buff, bp);
 }
 
@@ -525,7 +528,8 @@ FUNCTION(fun_filter)
   ufun_attrib ufun;
   char result[BUFFER_LEN];
   char *cp;
-  char *wenv[1];
+  PE_REGS *pe_regs;
+  const char *cur;
   char sep;
   int first;
   int check_bool = 0;
@@ -549,9 +553,11 @@ FUNCTION(fun_filter)
   cp = trim_space_sep(args[1], sep);
   first = 1;
   funccount = pe_info->fun_invocations;
+  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_filter");
   while (cp && *cp) {
-    wenv[0] = split_token(&cp, sep);
-    if (call_ufun(&ufun, wenv, 1, result, executor, enactor, pe_info))
+    cur = split_token(&cp, sep);
+    pe_regs_setenv_nocopy(pe_regs, 0, cur);
+    if (call_ufun(&ufun, result, executor, enactor, pe_info, pe_regs))
       break;
     if ((check_bool == 0)
         ? (*result == '1' && *(result + 1) == '\0')
@@ -560,7 +566,7 @@ FUNCTION(fun_filter)
         first = 0;
       else
         safe_str(osep, buff, bp);
-      safe_str(wenv[0], buff, bp);
+      safe_str(cur, buff, bp);
     }
     /* Can't do *bp == oldbp like in all the others, because bp might not
      * move even when not full, if one of the list elements is null and
@@ -569,6 +575,7 @@ FUNCTION(fun_filter)
       break;
     funccount = pe_info->fun_invocations;
   }
+  pe_regs_free(pe_regs);
 }
 
 /* ARGSUSED */
@@ -652,12 +659,12 @@ FUNCTION(fun_sortkey)
   char *keys[MAX_SORTSIZE];
   int nptrs;
   SortType sort_type;
+  PE_REGS *pe_regs;
   char sep;
   char outsep[BUFFER_LEN];
   int i;
   char result[BUFFER_LEN];
   ufun_attrib ufun;
-  char *wenv[1];
 
   /* sortkey(attr,list,sort_type,delim,osep) */
 
@@ -679,13 +686,16 @@ FUNCTION(fun_sortkey)
 
   nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, args[1], sep, 1);
 
+  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_sortkey");
+
   /* Now we make a list of keys */
   for (i = 0; i < nptrs; i++) {
     /* Build our %0 args */
-    wenv[0] = (char *) ptrs[i];
-    call_ufun(&ufun, wenv, 1, result, executor, enactor, pe_info);
+    pe_regs_setenv_nocopy(pe_regs, 0, ptrs[i]);
+    call_ufun(&ufun, result, executor, enactor, pe_info, pe_regs);
     keys[i] = mush_strdup(result, "sortkey");
   }
+  pe_regs_free(pe_regs);
 
   sort_type = get_list_type(args, nargs, 3, keys, nptrs);
   do_gensort(executor, keys, ptrs, nptrs, sort_type);
@@ -695,8 +705,6 @@ FUNCTION(fun_sortkey)
     mush_free(keys[i], "sortkey");
   }
 }
-
-
 
 /* ARGSUSED */
 FUNCTION(fun_sortby)
@@ -1931,18 +1939,12 @@ FUNCTION(fun_iter)
 
   char sep;
   char *outsep, *list;
-  char *tbuf1, *tbuf2, *lp;
+  char *tbuf2, *lp;
   char const *sp;
-  int *place;
   int funccount;
   char *oldbp;
   const char *replace[2];
-
-
-  if ((pe_info->iter_nestings + 1) >= MAX_ITERS) {
-    safe_str(T("#-1 TOO MANY ITERS"), buff, bp);
-    return;
-  }
+  PE_REGS *pe_regs;
 
   if (nargs >= 3) {
     /* We have a delimiter. We've got to parse the third arg in place */
@@ -1987,20 +1989,19 @@ FUNCTION(fun_iter)
   ptrs = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
   nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, lp, sep, 1);
 
-  pe_info->iter_nestings++;
-  pe_info->iter_nestings_local++;
-  place = &pe_info->iter_inum[pe_info->iter_nestings];
-  *place = 0;
   funccount = pe_info->fun_invocations;
   oldbp = *bp;
+
+  pe_regs = pe_regs_localize(pe_info, PE_REGS_ITER, "fun_iter");
   for (i = 0; i < nptrs; i++) {
-    if (*place) {
+    if (i > 0) {
       safe_str(outsep, buff, bp);
     }
-    *place = *place + 1;
-    pe_info->iter_itext[pe_info->iter_nestings] = tbuf1 = ptrs[i];
-    replace[0] = tbuf1;
-    replace[1] = unparse_integer(*place);
+    pe_regs_set(pe_regs, PE_REGS_ITER, "t0", ptrs[i]);
+    pe_regs_set_int(pe_regs, PE_REGS_ITER, "n0", i+1);
+    replace[0] = "%il";
+    replace[1] = unparse_integer(i+1);
+
     tbuf2 = replace_string2(standard_tokens, replace, args[1]);
     sp = tbuf2;
     if (process_expression(buff, bp, &sp, executor, caller, enactor,
@@ -2015,15 +2016,12 @@ FUNCTION(fun_iter)
     funccount = pe_info->fun_invocations;
     oldbp = *bp;
     mush_free(tbuf2, "replace_string.buff");
-    if (pe_info->iter_breaks >= 0) {
-      pe_info->iter_breaks--;
+    if (pe_regs->flags & PE_REGS_IBREAK) {
       break;
     }
   }
-  *place = 0;
-  pe_info->iter_itext[pe_info->iter_nestings] = NULL;
-  pe_info->iter_nestings--;
-  pe_info->iter_nestings_local--;
+  pe_regs_restore(pe_info, pe_regs);
+  pe_regs_free(pe_regs);
   mush_free(outsep, "string");
   mush_free(list, "string");
   freearr(ptrs, nptrs);
@@ -2034,6 +2032,11 @@ FUNCTION(fun_iter)
 FUNCTION(fun_ibreak)
 {
   int i = 1;
+  PE_REGS *pe_regs;
+  int maxlev = PE_Get_Ilev(pe_info);
+
+  /* maxlev is 0-based. ibreak is 1-based. Blah */
+  maxlev += 1;
 
   if (nargs && args[0] && *args[0]) {
     if (!is_strict_integer(args[0])) {
@@ -2043,30 +2046,38 @@ FUNCTION(fun_ibreak)
     i = parse_integer(args[0]);
   }
 
-  if (i < 0
-      || (i + pe_info->iter_breaks) >
-      (pe_info->iter_nestings_local - pe_info->iter_dolists)) {
+  if (i == 0) return;
+
+  if (i < 0 || i > maxlev) {
     safe_str(T(e_range), buff, bp);
     return;
   }
 
-  pe_info->iter_breaks += i;
-
+  for (pe_regs = pe_info->regvals; i > 0 && pe_regs; pe_regs = pe_regs->prev) {
+    if (pe_regs->flags & PE_REGS_ITER) {
+      pe_regs->flags |= PE_REGS_IBREAK;
+      i--;
+    }
+    if (pe_regs->flags & PE_REGS_NEWATTR) {
+      break;
+    }
+  }
 }
 
 /* ARGSUSED */
 FUNCTION(fun_ilev)
 {
-  safe_integer(pe_info->iter_nestings_local, buff, bp);
+  safe_integer(PE_Get_Ilev(pe_info), buff, bp);
 }
 
 /* ARGSUSED */
 FUNCTION(fun_itext)
 {
   int i;
+  int maxlev = PE_Get_Ilev(pe_info);
 
   if (!strcasecmp(args[0], "l")) {
-    i = pe_info->iter_nestings_local;
+    i = maxlev;
   } else {
     if (!is_strict_integer(args[0])) {
       safe_str(T(e_int), buff, bp);
@@ -2075,23 +2086,23 @@ FUNCTION(fun_itext)
     i = parse_integer(args[0]);
   }
 
-  if (i < 0 || i > pe_info->iter_nestings_local
-      || (pe_info->iter_nestings_local - i) < 0) {
+  if (i < 0 || i > maxlev) {
     safe_str(T(e_argrange), buff, bp);
     return;
   }
 
-  safe_str(pe_info->iter_itext[pe_info->iter_nestings - i], buff, bp);
+  safe_str(PE_Get_Itext(pe_info, i), buff, bp);
 }
 
 /* ARGSUSED */
 FUNCTION(fun_inum)
 {
   int i;
+  int maxlev = PE_Get_Ilev(pe_info);
 
-  if (!strcasecmp(args[0], "l"))
-    i = pe_info->iter_nestings_local;
-  else {
+  if (!strcasecmp(args[0], "l")) {
+    i = maxlev;
+  } else {
     if (!is_strict_integer(args[0])) {
       safe_str(T(e_int), buff, bp);
       return;
@@ -2099,13 +2110,12 @@ FUNCTION(fun_inum)
     i = parse_integer(args[0]);
   }
 
-  if (i < 0 || i > pe_info->iter_nestings_local
-      || (pe_info->iter_nestings_local - i) < 0) {
+  if (i < 0 || i > maxlev) {
     safe_str(T(e_argrange), buff, bp);
     return;
   }
 
-  safe_integer(pe_info->iter_inum[pe_info->iter_nestings - i], buff, bp);
+  safe_integer(PE_Get_Inum(pe_info, i), buff, bp);
 }
 
 /* ARGSUSED */
@@ -2121,7 +2131,7 @@ FUNCTION(fun_step)
   int n;
   int step;
   char *osep, osepd[2] = { '\0', '\0' };
-  char *wenv[10];
+  PE_REGS *pe_regs;
   ufun_attrib ufun;
   char rbuff[BUFFER_LEN];
   char **ptrs = NULL;
@@ -2162,18 +2172,17 @@ FUNCTION(fun_step)
   nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, lp, sep, 1);
 
   /* Step through the list. */
+  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_step");
   for (i = 0; i < nptrs;) {
     for (n = 0; n < step; n++) {
       if (i < nptrs) {
-        wenv[n] = ptrs[i++];
+        pe_regs_setenv_nocopy(pe_regs, n, ptrs[i++]);
       } else {
-        break;
+        pe_regs_setenv_nocopy(pe_regs, n, "");
       }
     }
-    for (; n < 10; n++) {
-      wenv[n] = NULL;
-    }
-    if (call_ufun(&ufun, wenv, step, rbuff, executor, enactor, pe_info)) {
+    if (call_ufun(&ufun, rbuff, executor, enactor, pe_info, pe_regs)) {
+      freearr(ptrs, nptrs);
       mush_free(ptrs, "ptrarray");
       return;
     }
@@ -2197,10 +2206,10 @@ FUNCTION(fun_map)
 
   ufun_attrib ufun;
   char *lp;
-  char *wenv[2];
-  char place[16];
+  PE_REGS *pe_regs;
   char sep;
   int funccount;
+  char place[16];
   char *osep, osepd[2] = { '\0', '\0' };
   char rbuff[BUFFER_LEN];
   char **ptrs = NULL;
@@ -2225,15 +2234,15 @@ FUNCTION(fun_map)
   nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, lp, sep, 1);
 
   /* Build our %0 args */
+  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_map");
   for (i = 0; i < nptrs; i++) {
-
-    wenv[0] = ptrs[i];
+    pe_regs_setenv_nocopy(pe_regs, 0, ptrs[i]);
     snprintf(place, 16, "%d", i + 1);
-    wenv[1] = place;
+    pe_regs_setenv_nocopy(pe_regs, 1, place);
 
     funccount = pe_info->fun_invocations;
 
-    if (call_ufun(&ufun, wenv, 2, rbuff, executor, enactor, pe_info)) {
+    if (call_ufun(&ufun, rbuff, executor, enactor, pe_info, pe_regs)) {
       break;
     }
 
@@ -2246,6 +2255,7 @@ FUNCTION(fun_map)
       break;
     }
   }
+  pe_regs_free(pe_regs);
   freearr(ptrs, nptrs);
   mush_free(ptrs, "ptrarray");
 }
@@ -2262,8 +2272,8 @@ FUNCTION(fun_mix)
   ufun_attrib ufun;
   char rbuff[BUFFER_LEN];
   char *lp[10];
-  char *list[10];
   char sep;
+  PE_REGS *pe_regs;
   int funccount;
   int n, lists;
   char **ptrs[10] = { NULL };
@@ -2299,16 +2309,17 @@ FUNCTION(fun_mix)
     }
   }
 
+  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_mix");
   for (i = 0; i < maxi; i++) {
     for (n = 0; n < lists; n++) {
       if (nptrs[n] > i) {
-        list[n] = ptrs[n][i];
+        pe_regs_setenv_nocopy(pe_regs, n, ptrs[n][i]);
       } else {
-        list[n] = NULL;
+        pe_regs_setenv_nocopy(pe_regs, n, "");
       }
     }
     funccount = pe_info->fun_invocations;
-    if (call_ufun(&ufun, list, lists, rbuff, executor, enactor, pe_info)) {
+    if (call_ufun(&ufun, rbuff, executor, enactor, pe_info, pe_regs)) {
       break;
     }
     if (i > 0) {
@@ -2321,6 +2332,7 @@ FUNCTION(fun_mix)
     }
   }
 
+  pe_regs_free(pe_regs);
   for (n = 0; n < lists; n++) {
     if (ptrs[n]) {
       freearr(ptrs[n], nptrs[n]);
@@ -2493,7 +2505,7 @@ FUNCTION(fun_regreplace)
   int offsets[99];
   int erroffset;
   int flags = 0, all = 0, match_offset = 0;
-  PE_REGS *pe_regs;
+  PE_REGS *pe_regs = NULL;
 
   int i;
   const char *r, *obp;
@@ -2508,8 +2520,6 @@ FUNCTION(fun_regreplace)
   size_t searchlen;
   int funccount;
 
-  pe_regs = pe_regs_localize(pe_info, PE_REGS_REGEXP);
-
   if (called_as[strlen(called_as) - 1] == 'I')
     flags = PCRE_CASELESS;
 
@@ -2522,6 +2532,8 @@ FUNCTION(fun_regreplace)
   process_expression(postbuf, &postp, &r, executor, caller, enactor, PE_DEFAULT,
                      PT_DEFAULT, pe_info);
   *postp = '\0';
+
+  pe_regs = pe_regs_localize(pe_info, PE_REGS_REGEXP, "fun_regreplace");
 
   /* Ansi-less regedits */
   for (i = 1; i < nargs - 1; i += 2) {

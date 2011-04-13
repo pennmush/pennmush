@@ -171,12 +171,12 @@ do_buy(dbref player, char *item, char *from, int price)
   char obuff[BUFFER_LEN];
   char *r[BUFFER_LEN / 2];
   char *c[BUFFER_LEN / 2];
-  char *buy_env[10] = { NULL };
   int affordable;
   int costcount, ci;
   int count, i;
   int low, high;                /* lower bound, upper bound of cost */
   ATTR *a;
+  PE_REGS *pe_regs;
 
   if (!GoodObject(Location(player)))
     return;
@@ -310,13 +310,15 @@ do_buy(dbref player, char *item, char *from, int price)
             bp = obuff;
             safe_format(obuff, &bp, T("buys a %s from %s."),
                         finditem, Name(vendor));
-            buy_env[0] = finditem;
-            buy_env[1] = buycost;
             bp = buycost;
             safe_integer(boughtit, buycost, &bp);
             *bp = '\0';
+            pe_regs = pe_regs_create(PE_REGS_ARG, "do_buy");
+            pe_regs_setenv_nocopy(pe_regs, 0, finditem);
+            pe_regs_setenv_nocopy(pe_regs, 1, buycost);
             real_did_it(player, vendor, "BUY", buff, "OBUY", obuff, "ABUY",
-                        NOTHING, buy_env, NA_INTER_SEE);
+                        NOTHING, pe_regs, NA_INTER_SEE);
+            pe_regs_free(pe_regs);
             return;
           }
         }
@@ -479,11 +481,8 @@ do_give(dbref player, char *recipient, char *amnt, int silent)
   if (!Moneybags(player) && !payfor(player, amount)) {
     notify_format(player, T("You don't have that many %s to give!"), MONIES);
   } else {
-    char *pay_env[10] = { NULL };
     char paid[SBUF_LEN], *pb;
     ATTR *a;
-
-    pay_env[0] = pb = paid;
 
     a = atr_get(who, "COST");
     if (!a && !IsPlayer(who)) {
@@ -497,13 +496,14 @@ do_give(dbref player, char *recipient, char *amnt, int silent)
       char *fbp, *asave;
       char const *ap;
       NEW_PE_INFO *pe_info = make_pe_info("pe_info-do_give");
+      PE_REGS *pe_regs;
 
       asave = safe_atr_value(a);
       ap = asave;
       fbp = fbuff;
       safe_integer_sbuf(amount, paid, &pb);
       *pb = '\0';
-      pe_info->env[0] = mush_strdup(paid, "pe_info.env");
+      pe_regs_setenv_nocopy(pe_info->regvals, 0, paid);
       process_expression(fbuff, &fbp, &ap, who, player, player,
                          PE_DEFAULT, PT_DEFAULT, pe_info);
       *fbp = '\0';
@@ -536,10 +536,14 @@ do_give(dbref player, char *recipient, char *amnt, int silent)
       pb = paid;
       safe_integer_sbuf(cost, paid, &pb);
       *pb = '\0';
+      pe_regs = pe_regs_create(PE_REGS_ARG, "do_give");
+      pe_regs_setenv_nocopy(pe_regs, 0, paid);
       real_did_it(player, who, "PAYMENT", NULL, "OPAYMENT", NULL, "APAYMENT",
-                  NOTHING, pay_env, NA_INTER_SEE);
+                  NOTHING, pe_regs, NA_INTER_SEE);
+      pe_regs_free(pe_regs);
       return;
     } else {
+      PE_REGS *pe_regs;
       /* give pennies to a player with no @cost, or "give" a negative amount to a player */
       if (!Wizard(player) && !eval_lock(player, who, Pay_Lock)) {
         giveto(player, amount);
@@ -567,13 +571,14 @@ do_give(dbref player, char *recipient, char *amnt, int silent)
       giveto(who, amount);
       safe_integer_sbuf(amount, paid, &pb);
       *pb = '\0';
+      pe_regs = pe_regs_create(PE_REGS_ARG, "do_give");
+      pe_regs_setenv_nocopy(pe_regs, 0, paid);
       real_did_it(player, who, "PAYMENT", NULL, "OPAYMENT", NULL, "APAYMENT",
-                  NOTHING, pay_env, NA_INTER_SEE);
+                  NOTHING, pe_regs, NA_INTER_SEE);
+      pe_regs_free(pe_regs);
     }
   }
 }
-
-
 
 /** The other syntax of the give command.
  * \param player the enactor/giver.

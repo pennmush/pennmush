@@ -432,7 +432,7 @@ FUNCTION(fun_edefault)
 FUNCTION(fun_v)
 {
   /* handle 0-9, va-vz, n, l, # */
-
+  const char *s;
   int c;
 
   if (args[0][0] && !args[0][1]) {
@@ -447,8 +447,10 @@ FUNCTION(fun_v)
     case '7':
     case '8':
     case '9':
-      if (pe_info->env[c - '0'])
-        safe_str(pe_info->env[c - '0'], buff, bp);
+      s = PE_Get_Env(pe_info, c - '0');
+      if (s) {
+        safe_str(s, buff, bp);
+      }
       return;
     case '#':
       /* enactor dbref */
@@ -1953,14 +1955,13 @@ FUNCTION(fun_pmatch)
 /* ARGUSED */
 FUNCTION(fun_namelist)
 {
-
   int first = 1;
   char *current;
   dbref target;
   const char *start;
   int report = 0;
   ufun_attrib ufun;
-  char *wenv[2];
+  PE_REGS *pe_regs;
 
   if (nargs > 1 && args[1] && *args[1]) {
     if (fetch_ufun_attrib(args[1], executor, &ufun, UFUN_DEFAULT)) {
@@ -1972,6 +1973,7 @@ FUNCTION(fun_namelist)
   }
 
   start = (const char *) args[0];
+  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_namelist");
   while (start && *start) {
     if (!first)
       safe_chr(' ', buff, bp);
@@ -1985,13 +1987,14 @@ FUNCTION(fun_namelist)
     safe_dbref(target, buff, bp);
     if (target == NOTHING || target == AMBIGUOUS) {
       if (report) {
-        wenv[0] = current;
-        wenv[1] = unparse_dbref(target);
-        if (call_ufun(&ufun, wenv, 2, NULL, executor, enactor, pe_info))
+        pe_regs_setenv_nocopy(pe_regs, 0, current);
+        pe_regs_setenv(pe_regs, 1, unparse_dbref(target));
+        if (call_ufun(&ufun, NULL, executor, enactor, pe_info, pe_regs))
           report = 0;
       }
     }
   }
+  pe_regs_free(pe_regs);
 }
 
 /* ARGSUSED */

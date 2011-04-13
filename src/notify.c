@@ -883,6 +883,8 @@ notify_anything_loc(dbref speaker, na_lookup func,
       char match_space[BUFFER_LEN * 2];
       ssize_t match_space_len = BUFFER_LEN * 2;
       char *lenv[10];
+      int i;
+      PE_REGS *pe_regs;
 
       if (!tbuf1)
         tbuf1 = (char *) mush_malloc(BUFFER_LEN, "string");
@@ -898,14 +900,22 @@ notify_anything_loc(dbref speaker, na_lookup func,
                                                          NA_COLOR, 0),
                               AF_Case(a), lenv, 10,
                               match_space, match_space_len)) {
-        if (eval_lock(speaker, target, Listen_Lock))
+        if (eval_lock(speaker, target, Listen_Lock)) {
+          pe_regs = pe_regs_create(PE_REGS_ARG, "notify_anything_loc");
+          for (i = 0; i < 10; i++) {
+            if (lenv[i]) {
+              pe_regs_setenv_nocopy(pe_regs, i, lenv[i]);
+            }
+          }
           if (PLAYER_AHEAR || (!IsPlayer(target))) {
             if (speaker != target)
-              queue_attribute_base(target, "AHEAR", speaker, 0, lenv);
+              queue_attribute_base(target, "AHEAR", speaker, 0, pe_regs);
             else
-              queue_attribute_base(target, "AMHEAR", speaker, 0, lenv);
-            queue_attribute_base(target, "AAHEAR", speaker, 0, lenv);
+              queue_attribute_base(target, "AMHEAR", speaker, 0, pe_regs);
+            queue_attribute_base(target, "AAHEAR", speaker, 0, pe_regs);
           }
+          pe_regs_free(pe_regs);
+        }
         if (!(flags & NA_NORELAY) && (loc != target) &&
             !filter_found(target,
                           (char *) notify_makestring(msgbuf, messages,
@@ -916,8 +926,7 @@ notify_anything_loc(dbref speaker, na_lookup func,
           a = atr_get(target, "INPREFIX");
           if (a) {
             NEW_PE_INFO *pe_info = make_pe_info("pe_info-notify");
-            pe_info->env[0] = mush_strdup((char *) msgbuf, "pe_info.env");
-            pe_info->arg_count = 1;
+            pe_regs_setenv_nocopy(pe_info->regvals, 0, msgbuf);
             asave = safe_atr_value(a);
             ap = asave;
             bp = tbuf1;

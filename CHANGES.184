@@ -34,6 +34,9 @@ Hardcode:
    information. This will be used for other registers. [GM]
  * Regexp information ($1, $<foo>) are now kept in the PE_REGS stack. [GM]
  * Faster regexps in many cases when there is no markup. [GM]
+ * Switch, iter, and env (%0-%9) information are now kept in PE_REGS stack.
+   switch, iter, @switch and @dol are no longer limited, but new queue
+   entries only keep the last 50 @switch/@dols. [GM]
  * Renamed some variables in COMMAND() definitions for consistency/clarity.
    See HACKING.184 for more info. [MG]
  * Assorted Windows fixes. [SW]

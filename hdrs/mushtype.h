@@ -69,21 +69,25 @@ typedef struct debug_info Debug_Info;
 #define PE_REGS_SWITCH 0x04 /* switch(), %$0. */
 #define PE_REGS_ITER   0x08 /* iter() and @dol, %i0/etc */
 #define PE_REGS_ARG    0x10 /* %0-%9 */
+#define PE_REGS_SYS    0x20 /* %c, %z, %= */
 
-#define PE_REGS_TYPE   0xFF /* type & PE_REGS_TYPE always gets one type */
-
-#define PE_REGS_QUEUE  0xFF /* Every item. */
+#define PE_REGS_QUEUE  0xFF /* Every type for a queue. */
 
 /* Flags for _pe_regs_: */
-#define PE_REGS_LET     0x100 /* Used for let(): Only set qregs that already
-                               * exist otherwise pass them up. */
-#define PE_REGS_QSTOP   0x200 /* Q-reg get()s don't travel past this.
-                              * exist otherwise pass them up. */
-#define PE_REGS_NEWATTR 0x400 /* This _blocks_ iter, arg, switch */
+#define PE_REGS_LET     0x100  /* Used for let(): Only set qregs that already
+                                * exist otherwise pass them up. */
+#define PE_REGS_QSTOP   0x200  /* Q-reg get()s don't travel past this. */
+#define PE_REGS_NEWATTR 0x400  /* This _blocks_ iter, arg, switch */
+#define PE_REGS_IBREAK  0x800  /* This pe_reg has been ibreak()'d out */
+#define PE_REGS_ARGPASS 0x1000 /* This pe_reg has been ibreak()'d out */
+
+/* Isolate: Don't propagate anything down, essentially wiping the slate. */
+#define PE_REGS_ISOLATE (PE_REGS_QUEUE | PE_REGS_QSTOP | PE_REGS_NEWATTR)
 
 /* Typeflags for REG_VALs */
 #define PE_REGS_STR    0x100 /* It's a string */
 #define PE_REGS_INT    0x200 /* It's an integer */
+#define PE_REGS_NOCOPY 0x400 /* Don't insert the value into a string */
 
 typedef struct _pe_reg_val {
   int  type;
@@ -97,36 +101,43 @@ typedef struct _pe_reg_val {
 
 typedef struct _pe_regs_ {
   struct   _pe_regs_ *prev;    /* Previous PE_REGS, for chaining up the stack */
-  uint32_t flags;              /* REG_* flags */
+  int      flags;              /* REG_* flags */
   int      count;              /* Total register count. This includes
                                 * inherited registers. */
   int      qcount;             /* Q-register count, including inherited
                                 * registers. */
   PE_REG_VAL *vals;            /* The register values */
+  const char *name;            /* For debugging */
 } PE_REGS;
 
 /* Initialize the pe_regs strtrees */
 void init_pe_regs_trees();
+void free_pe_regs_trees();
 
 /* Functions used to create new pe_reg stacks */
-PE_REGS *pe_regs_create(uint32_t pr_flags);
+void pe_regs_dump(PE_REGS *pe_regs, dbref who);
+PE_REGS *pe_regs_create_real(int pr_flags, const char *name);
+#define pe_regs_create(x,y) pe_regs_create_real(x, "pe_regs-" y)
+void pe_reg_val_free(PE_REG_VAL *val);
 void pe_regs_clear(PE_REGS *pe_regs);
 void pe_regs_free(PE_REGS *pe_regs);
-PE_REGS *pe_regs_localize(NEW_PE_INFO *pe_info, uint32_t pr_flags);
+PE_REGS *pe_regs_localize_real(NEW_PE_INFO *pe_info, uint32_t pr_flags, const char *name);
+#define pe_regs_localize(p,x,y) pe_regs_localize_real(p, x, "pe_regs-" y)
 void pe_regs_restore(NEW_PE_INFO *pe_info, PE_REGS *pe_regs);
-
-/* Copy all values from src to dst PE_REGS. */
-void pe_regs_copyto(PE_REGS *dst, PE_REGS *src);
 
 /* Copy a stack of PE_REGS into a new one: For creating new queue entries.
  * This squashes all values in pe_regs to a single PE_REGS. The returned
  * pe_regs type has PE_REGS_QUEUE. */
-PE_REGS *pe_regs_copystack(PE_REGS *pe_regs);
+void pe_regs_copystack(PE_REGS *new_regs, PE_REGS *pe_regs,
+                       int copytypes, int override);
 
 /* Manipulating PE_REGS directly */
-void pe_regs_set(PE_REGS *pe_regs, int type,
-                 const char *key, const char *val);
-void pe_regs_set_int(PE_REGS *pe_regs, int type, const char *key, int val);
+void pe_regs_set_if(PE_REGS *pe_regs, int type,
+                   const char *key, const char *val, int override);
+#define pe_regs_set(p,t,k,v) pe_regs_set_if(p,t,k,v,1)
+void pe_regs_set_int_if(PE_REGS *pe_regs, int type,
+                   const char *key, int val, int override);
+#define pe_regs_set_int(p,t,k,v) pe_regs_set_int_if(p,t,k,v,1)
 const char *pe_regs_get(PE_REGS *pe_regs, int type, const char *key);
 int pe_regs_get_int(PE_REGS *pe_regs, int type, const char *key);
 
@@ -141,6 +152,8 @@ int pi_regs_setq(NEW_PE_INFO *pe_info, const char *key, const char *val);
 #define PE_Setq(pi,k,v) pi_regs_setq(pi,k,v)
 const char *pi_regs_getq(NEW_PE_INFO *pe_info, const char *key);
 #define PE_Getq(pi,k) pi_regs_getq(pi,k)
+/* Copy all Q registers from src to dst PE_REGS. */
+void pe_regs_qcopy(PE_REGS *dst, PE_REGS *src);
 
 /* PE_REGS_REGEXP */
 struct real_pcre;
@@ -158,6 +171,46 @@ void pe_regs_set_rx_context_ansi(PE_REGS *regs,
 const char *pi_regs_get_rx(NEW_PE_INFO *pe_info, const char *key);
 #define PE_Get_re(pi,k) pi_regs_get_rx(pi,k)
 
+/* PE_REGS_SWITCH and PE_REGS_ITER
+ *
+ * Here is how SWITCH and ITER fetching works.
+ *
+ * + Only the topmost PE_REGS (the one associated with the pe_info directly)
+ *   will ever have more than one switch or iter value.
+ * + If a non-top PE_REGS_ITER is encountered, it is considered to have
+ *   1 itext/stext
+ * + ilev is caculated by counting the number of PE_REGS_ITER up to the top.
+ *   Topmost queue entries will have an int "ilev" set with the appropriate
+ *   PE_REGS_foo type.
+ * + inum is saved as "n%d", itext as "t%d"
+ * + Each non-top level saves as "i0" or "n0" for itext and inum,
+ *    respectively.
+ * + Copystack will rebuild the itext(0)-itext(MAX_ITERS) count, increasing
+ *   them as needed.
+ * + Switches are just iters without inums, so they're functionally the same.
+ *   The only difference from above is the type of the value.
+ */
+const char * pi_regs_get_itext(NEW_PE_INFO *pe_info, int type, int lev);
+int pi_regs_get_ilev(NEW_PE_INFO *pe_info, int type);
+int pi_regs_get_inum(NEW_PE_INFO *pe_info, int type, int lev);
+
+/* Get iter info */
+#define PE_Get_Itext(pi,k) pi_regs_get_itext(pi, PE_REGS_ITER, k)
+#define PE_Get_Ilev(pi) pi_regs_get_ilev(pi, PE_REGS_ITER)
+#define PE_Get_Inum(pi,k) pi_regs_get_inum(pi, PE_REGS_ITER, k)
+/* Get switch info */
+#define PE_Get_Stext(pi,k) pi_regs_get_itext(pi, PE_REGS_SWITCH, k)
+#define PE_Get_Slev(pi) pi_regs_get_ilev(pi, PE_REGS_SWITCH)
+
+/* Get env (%0-%9) info */
+
+void pe_regs_setenv(PE_REGS *pe_regs, int num, const char *val);
+void pe_regs_setenv_nocopy(PE_REGS *pe_regs, int num, const char *val);
+const char * pi_regs_get_env(NEW_PE_INFO *pe_info, int num);
+int pi_regs_get_envc(NEW_PE_INFO *pe_info);
+#define PE_Get_Env(pi,n) pi_regs_get_env(pi, n)
+#define PE_Get_Envc(pi) pi_regs_get_envc(pi)
+
 /* NEW_PE_INFO: May need more documentation.  */
 struct new_pe_info {
   int fun_invocations;          /**< The number of functions invoked (%?) */
@@ -169,19 +222,6 @@ struct new_pe_info {
   int debugging;                /**< Show debug? 1 = yes, 0 = if DEBUG flag set, -1 = no */
 
   PE_REGS *regvals;      /**< Saved register values. */
-  char *env[10];                /**< Current environment variables (%0-%9) */
-  int arg_count;                /**< Number of arguments available in env (%+) */
-
-  int iter_nestings;            /**< Total number of iter()/\@dolist nestings */
-  int iter_nestings_local;      /**< Number of iter() nestings accessible at present */
-  int iter_breaks;              /**< Number of iter()s to break out of */
-  int iter_dolists;             /**< Number of iter_nestings which are from \@dolist, and can't be broken out of */
-  char *iter_itext[MAX_ITERS];  /**< itext() values */
-  int iter_inum[MAX_ITERS];     /**< inum() values */
-
-  int switch_nestings;          /**< Total number of switch()/\@switch nestings */
-  int switch_nestings_local;    /**< Number of switch nestings available at present */
-  char *switch_text[MAX_ITERS]; /**< stext() values */
 
   char cmd_raw[BUFFER_LEN];     /**< Unevaluated cmd executed (%c) */
   char cmd_evaled[BUFFER_LEN];  /**< Evaluated cmd executed (%u) */
@@ -206,6 +246,8 @@ struct mque {
 
   NEW_PE_INFO *pe_info;         /**< New pe_info struct used for this queue entry */
 
+  PE_REGS *regvals;             /**< Queue-specific PE_REGS for inplace queues. */
+
   MQUE *inplace;                /**< Queue entry to run, either via \@include or \@break, \@foo/inplace, etc */
   MQUE *next;                   /**< The next queue entry in the linked list */
 
@@ -216,13 +258,8 @@ struct mque {
   char *action_list;            /**< The action list of commands to run in this queue entry */
   int queue_type;               /**< The type of queue entry, bitwise QUEUE_* values */
   int port;                     /**< The port/descriptor the command came from, or 0 for queue entry not from a player's client */
-  char *save_env[10];           /**< If queue_type contains (QUEUE_INPLACE | QUEUE_RESTORE_ENV), at the end of this inplace queue
-                                     entry, free the stack (pe_info->env) and restore it to these values */
   char *save_attrname;          /**< A saved copy of pe_info->attrname, to be reset and freed at the end of the include que */
-
 };
-
-
 
 /* new attribute foo */
 typedef struct attr ATTR;

@@ -279,7 +279,7 @@ FUNCTION(fun_letq)
 
   npairs = (nargs - 1) / 2;
 
-  pe_regs = pe_regs_create(PE_REGS_Q | PE_REGS_LET);
+  pe_regs = pe_regs_create(PE_REGS_Q | PE_REGS_LET, "fun_letq");
 
   if (npairs) {
     for (n = 0; n < npairs; n++) {
@@ -305,7 +305,6 @@ FUNCTION(fun_letq)
       pe_regs_set(pe_regs, PE_REGS_Q, nbuf, tbuf);
     }
   }
-
 
   /* Localize to our current pe_regs */
   pe_regs->prev = pe_info->regvals;
@@ -621,10 +620,6 @@ FUNCTION(fun_die)
 }
 
 
-#define CLEAR_SWITCH_VALUE(pe) \
-  pe->switch_text[pe->switch_nestings] = NULL; \
-  pe->switch_nestings--; \
-  pe->switch_nestings_local--;
 /* ARGSUSED */
 FUNCTION(fun_switch)
 {
@@ -640,11 +635,7 @@ FUNCTION(fun_switch)
   char const *sp;
   char *tbuf1 = NULL;
   int first = 1, found = 0, exact = 0;
-
-  if ((pe_info->switch_nestings + 1) >= MAX_ITERS) {
-    safe_str(T("#-1 TOO MANY SWITCHES"), buff, bp);
-    return;
-  }
+  PE_REGS *pe_regs = NULL;
 
   if (strstr(called_as, "ALL"))
     first = 0;
@@ -658,9 +649,8 @@ FUNCTION(fun_switch)
                      PE_DEFAULT, PT_DEFAULT, pe_info);
   *dp = '\0';
 
-  pe_info->switch_nestings++;
-  pe_info->switch_nestings_local++;
-  pe_info->switch_text[pe_info->switch_nestings] = mstr;
+  pe_regs = pe_regs_localize(pe_info, PE_REGS_SWITCH, "fun_switch");
+  pe_regs_set(pe_regs, PE_REGS_NOCOPY | PE_REGS_SWITCH, "t0", mstr);
 
   /* try matching, return match immediately when found */
 
@@ -691,8 +681,7 @@ FUNCTION(fun_switch)
         mush_free(tbuf1, "replace_string.buff");
       found = 1;
       if (per || first) {
-        CLEAR_SWITCH_VALUE(pe_info);
-        return;
+        goto exit_sequence;
       }
     }
   }
@@ -709,22 +698,27 @@ FUNCTION(fun_switch)
     if (!exact)
       mush_free(tbuf1, "replace_string.buff");
   }
-  CLEAR_SWITCH_VALUE(pe_info);
+exit_sequence:
+  if (pe_regs) {
+    pe_regs_restore(pe_info, pe_regs);
+    pe_regs_free(pe_regs);
+  }
 }
 
 /* ARGSUSED */
 FUNCTION(fun_slev)
 {
-  safe_integer(pe_info->switch_nestings_local, buff, bp);
+  safe_integer(PE_Get_Slev(pe_info), buff, bp);
 }
 
 /* ARGSUSED */
 FUNCTION(fun_stext)
 {
   int i;
+  int maxlev = PE_Get_Slev(pe_info);
 
   if (!strcasecmp(args[0], "l")) {
-    i = pe_info->switch_nestings_local;
+    i = maxlev;
   } else if (is_strict_integer(args[0])) {
     i = parse_integer(args[0]);
   } else {
@@ -732,12 +726,11 @@ FUNCTION(fun_stext)
     return;
   }
 
-  if (i < 0 || i > pe_info->switch_nestings_local
-      || (pe_info->switch_nestings_local - i) < 0) {
+  if (i < 0 || i > maxlev) {
     safe_str(T(e_argrange), buff, bp);
     return;
   }
-  safe_str(pe_info->switch_text[pe_info->switch_nestings_local - i], buff, bp);
+  safe_str(PE_Get_Stext(pe_info, i), buff, bp);
 }
 
 /* ARGSUSED */
@@ -760,11 +753,6 @@ FUNCTION(fun_reswitch)
   int erroffset;
   pcre_extra *extra;
 
-  if (pe_info->switch_nestings >= MAX_ITERS) {
-    safe_str(T("#-1 TOO MANY SWITCHES"), buff, bp);
-    return;
-  }
-
   if (strstr(called_as, "ALL"))
     first = 0;
 
@@ -786,11 +774,9 @@ FUNCTION(fun_reswitch)
     haystacklen = dp - mstr;
   }
 
-  pe_regs = pe_regs_localize(pe_info, PE_REGS_REGEXP);
-
-  pe_info->switch_nestings++;
-  pe_info->switch_nestings_local++;
-  pe_info->switch_text[pe_info->switch_nestings] = mstr;
+  pe_regs = pe_regs_localize(pe_info, PE_REGS_REGEXP | PE_REGS_SWITCH,
+                             "fun_reswitch");
+  pe_regs_set(pe_regs, PE_REGS_SWITCH | PE_REGS_NOCOPY, "t0", mstr);
 
   /* try matching, return match immediately when found */
 
@@ -833,11 +819,7 @@ FUNCTION(fun_reswitch)
       found = 1;
     }
     mush_free(re, "pcre");
-    if (first && found) {
-      CLEAR_SWITCH_VALUE(pe_info);
-      goto exit_sequence;
-    }
-    if (per) {
+    if ((first && found) || per) {
       goto exit_sequence;
     }
   }
@@ -853,13 +835,10 @@ exit_sequence:
   if (mas) {
     free_ansi_string(mas);
   }
-  CLEAR_SWITCH_VALUE(pe_info);
   pe_regs_restore(pe_info, pe_regs);
   pe_regs_free(pe_regs);
   return;
 }
-
-#undef CLEAR_SWITCH_VALUE
 
 /* ARGSUSED */
 FUNCTION(fun_if)

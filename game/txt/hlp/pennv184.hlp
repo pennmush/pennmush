@@ -90,6 +90,7 @@ Fixes:
    Nymeria @ Blood of Dragons.
  * It was sometimes possible for a player to view config options he 
    shouldn't have. Reported by qa'toq. [MG]
+ * Possible crashbug in @name reported by Wiggles. [MG]
 
 & 1.8.4p3
 Version 1.8.4 patchlevel 3                                 Mar 18,  2011

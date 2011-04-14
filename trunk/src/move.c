@@ -396,7 +396,7 @@ do_move(dbref player, const char *direction, enum move_type type)
     }
     if ((loc = Location(player)) != NOTHING && !Dark(player) && !Dark(loc)) {
       /* tell everybody else */
-      notify_except(Contents(loc), player,
+      notify_except(loc, player,
                     tprintf(T("%s goes home."), Name(player)), NA_INTER_SEE);
     }
     /* give the player the messages */

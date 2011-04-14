@@ -1847,7 +1847,7 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
   atr_err res;
   int was_hearer;
   int was_listener;
-  dbref contents;
+  dbref announceloc;
   const char *new;
   if (!EMPTY_ATTRS && s && !*s)
     s = NULL;
@@ -2017,19 +2017,17 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
     return 1;
   } else if (!strcmp(name, "LISTEN")) {
     if (IsRoom(thing))
-      contents = Contents(thing);
+      announceloc = thing;
     else {
-      contents = Location(thing);
-      if (GoodObject(contents))
-        contents = Contents(contents);
+      announceloc = Location(thing);
     }
-    if (GoodObject(contents)) {
+    if (GoodObject(announceloc)) {
       if (!s && !was_listener && !Hearer(thing)) {
-        notify_except(contents, thing,
+        notify_except(announceloc, thing,
                       tprintf(T("%s loses its ears and becomes deaf."),
                               Name(thing)), NA_INTER_PRESENCE);
       } else if (s && !was_hearer && !was_listener) {
-        notify_except(contents, thing,
+        notify_except(announceloc, thing,
                       tprintf(T("%s grows ears and can now hear."),
                               Name(thing)), NA_INTER_PRESENCE);
       }

@@ -3657,12 +3657,12 @@ announce_connect(DESC *d, int isnew, int num)
   }
 
   if (ANNOUNCE_CONNECTS)
-    notify_except(Contents(player), player, tbuf1, 0);
+    notify_except(player, player, tbuf1, 0);
 
   /* added to allow player's inventory to hear a player connect */
   if (ANNOUNCE_CONNECTS)
     if (!Dark(player))
-      notify_except(Contents(loc), player, tbuf1, NA_INTER_PRESENCE);
+      notify_except(loc, player, tbuf1, NA_INTER_PRESENCE);
 
   queue_event(player, "PLAYER`CONNECT", "%s,%d,%d",
               unparse_objid(player), num, d->descriptor);
@@ -3834,9 +3834,9 @@ announce_disconnect(DESC *saved, const char *reason)
 
   if (ANNOUNCE_CONNECTS) {
     if (!Dark(player))
-      notify_except(Contents(loc), player, tbuf1, NA_INTER_PRESENCE);
+      notify_except(loc, player, tbuf1, NA_INTER_PRESENCE);
     /* notify contents */
-    notify_except(Contents(player), player, tbuf1, 0);
+    notify_except(player, player, tbuf1, 0);
     /* notify channels */
     chat_player_announce(player, message, 0);
   }

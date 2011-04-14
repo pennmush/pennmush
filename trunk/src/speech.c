@@ -1529,8 +1529,10 @@ na_zemit(dbref current __attribute__ ((__unused__)), void *data)
     } else {
       this = Next(this);
     }
-  } while ((this == NOTHING) || (this == dbrefs[4]));
+  } while ((this == NOTHING));
   dbrefs[0] = this;
+  if (dbrefs[4] == this)
+    dbrefs[4] = NOTHING;
   return this;
 }
 
@@ -1561,17 +1563,23 @@ do_zemit(dbref player, const char *arg1, const char *arg2, int flags)
     return;
   }
 
-  if (!(flags & PEMIT_SILENT)) {
-    where = unparse_object(player, zone);
-    notify_format(player, T("You zemit, \"%s\" in zone %s"), arg2, where);
-  }
-
   pass[0] = NOTHING;
   pass[1] = 0;
   pass[2] = zone;
   pass[3] = player;
-  pass[4] = player;
+  if (IsRoom(player))
+    pass[4] = player;
+  else if (IsExit(player))
+    pass[4] = Source(player);
+  else
+    pass[4] = Location(player);
   if (flags & PEMIT_SPOOF)
     na_flags |= NA_SPOOF;
   notify_anything(player, na_zemit, pass, ns_esnotify, na_flags, arg2);
+
+  if (!(flags & PEMIT_SILENT) && pass[4] != NOTHING) {
+    where = unparse_object(player, zone);
+    notify_format(player, T("You zemit, \"%s\" in zone %s"), arg2, where);
+  }
+
 }

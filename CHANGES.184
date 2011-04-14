@@ -44,6 +44,8 @@ Hardcode:
 Minor changes:
  * All @o* messages are now heard by rooms even when they're empty. Makes
    room @listens and similar things work right. Suggested by Padraic. [MG]
+ * @zemit and zemit() will now show the executor the message, if he's in a
+   a room on the right zone. Suggested by Paige. [MG]
 
 Locks:
  * objid locks are now turned into =-locks by the lock parser. The clearing

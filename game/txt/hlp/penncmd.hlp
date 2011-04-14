@@ -4122,7 +4122,8 @@ See also: @wall, @rwall
   
   The /silent switch suppresses the confirmation message, and /noisy causes
   it to be shown. With neither switch, the silent_pemit @config option
-  determines whether or not the message is shown.
+  determines whether or not the message is shown. The confirmation message
+  is only shown if you are not in a room which would receive <message>.
   
 See also: @nszemit, zemit(), zone(), zwho(), ZONES
 & ahelp

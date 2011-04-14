@@ -132,7 +132,7 @@ do_teach(dbref player, const char *tbuf1, int list, MQUE * parent_queue)
   if (!list)
     flags |= QUEUE_NOLIST;
 
-  notify_except(Contents(loc), NOTHING,
+  notify_except(loc, NOTHING,
                 tprintf(T("%s types --> %s%s%s"), spname(player),
                         ANSI_HILITE, tbuf1, ANSI_END), NA_INTER_HEAR);
   new_queue_actionlist(player, parent_queue->enactor, player, (char *) tbuf1,
@@ -175,7 +175,7 @@ do_say(dbref player, const char *tbuf1)
 
   /* notify everybody */
   notify_format(player, T("You say, \"%s\""), (mod ? tbuf2 : tbuf1));
-  notify_except(Contents(loc), player,
+  notify_except(loc, player,
                 tprintf(T("%s says, \"%s\""), spname(player),
                         (mod ? tbuf2 : tbuf1)), NA_INTER_HEAR);
 }
@@ -643,11 +643,11 @@ do_pose(dbref player, const char *tbuf1, int space)
 
   /* notify everybody */
   if (!space)
-    notify_except(Contents(loc), NOTHING,
+    notify_except(loc, NOTHING,
                   tprintf("%s %s", spname(player), (mod ? tbuf2 : tbuf1)),
                   NA_INTER_HEAR);
   else
-    notify_except(Contents(loc), NOTHING,
+    notify_except(loc, NOTHING,
                   tprintf("%s%s", spname(player), (mod ? tbuf2 : tbuf1)),
                   NA_INTER_HEAR);
 }
@@ -1291,21 +1291,17 @@ do_audible_stuff(dbref loc, dbref *excs, int numexcs, const char *msg)
 }
 
 /** notify_anthing() wrapper to notify everyone in a location except one
- * object.
- * \param first object in location to notify.
+ * object. The location itself is also notified.
+ * \param loc location to notify objects in
  * \param exception dbref of object not to notify, or NOTHING.
  * \param msg message to send.
  * \param flags flags to pass to notify_anything().
  */
 void
-notify_except(dbref first, dbref exception, const char *msg, int flags)
+notify_except(dbref loc, dbref exception, const char *msg, int flags)
 {
-  dbref loc;
   dbref pass[2];
 
-  if (!GoodObject(first))
-    return;
-  loc = Location(first);
   if (!GoodObject(loc))
     return;
 
@@ -1321,22 +1317,18 @@ notify_except(dbref first, dbref exception, const char *msg, int flags)
 }
 
 /** notify_anthing() wrapper to notify everyone in a location except two
- * objects.
- * \param first object in location to notify.
+ * objects. The location itself is also notified.
+ * \param loc location to notify objects in
  * \param exc1 dbref of one object not to notify, or NOTHING.
  * \param exc2 dbref of another object not to notify, or NOTHING.
  * \param msg message to send.
  * \param flags interaction flags to control type of interaction.
  */
 void
-notify_except2(dbref first, dbref exc1, dbref exc2, const char *msg, int flags)
+notify_except2(dbref loc, dbref exc1, dbref exc2, const char *msg, int flags)
 {
-  dbref loc;
   dbref pass[3];
 
-  if (!GoodObject(first))
-    return;
-  loc = Location(first);
   if (!GoodObject(loc))
     return;
 

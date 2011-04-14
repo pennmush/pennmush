@@ -36,6 +36,10 @@ Hardcode:
    See HACKING.184 for more info. [MG]
  * Assorted Windows fixes. [SW]
 
+Minor changes:
+ * All @o* messages are now heard by rooms even when they're empty. Makes
+   room @listens and similar things work right. Suggested by Padraic. [MG]
+
 Locks:
  * objid locks are now turned into =-locks by the lock parser. The clearing
    of references to deleted objects makes objid locks extraneous. [SW]

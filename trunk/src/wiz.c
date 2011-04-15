@@ -2166,9 +2166,9 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
         strcpy(lbuff, atr_value(a));
         ret = AF_Regexp(a)
           ? regexp_match_case_r(lbuff, spec.listenstring,
-                                AF_Case(a), NULL, 0, NULL, 0)
+                                AF_Case(a), NULL, 0, NULL, 0, NULL)
           : wild_match_case_r(lbuff, spec.listenstring,
-                              AF_Case(a), NULL, 0, NULL, 0);
+                              AF_Case(a), NULL, 0, NULL, 0, NULL);
       }
       if (!ret &&
           !atr_comm_match(n, player, '^', ':', spec.listenstring, 1, 0,

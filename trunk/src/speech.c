@@ -1185,7 +1185,7 @@ filter_found(dbref thing, const char *msg, int flag)
     if (AF_Regexp(a))
       matched = quick_regexp_match(p, msg, AF_Case(a));
     else
-      matched = local_wild_match_case(p, msg, AF_Case(a));
+      matched = local_wild_match_case(p, msg, AF_Case(a), NULL);
   }
 
   free(temp);

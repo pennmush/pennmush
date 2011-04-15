@@ -629,7 +629,7 @@ FUNCTION(fun_switch)
    * Args to this function are passed unparsed. Args are not evaluated
    * until they are needed.
    */
-
+  int ret;
   int j, per;
   char mstr[BUFFER_LEN], pstr[BUFFER_LEN], *dp;
   char const *sp;
@@ -649,11 +649,11 @@ FUNCTION(fun_switch)
                      PE_DEFAULT, PT_DEFAULT, pe_info);
   *dp = '\0';
 
-  pe_regs = pe_regs_localize(pe_info, PE_REGS_SWITCH, "fun_switch");
+  pe_regs = pe_regs_localize(pe_info, PE_REGS_SWITCH | PE_REGS_CAPTURE,
+                             "fun_switch");
   pe_regs_set(pe_regs, PE_REGS_NOCOPY | PE_REGS_SWITCH, "t0", mstr);
 
   /* try matching, return match immediately when found */
-
   for (j = 1; j < (nargs - 1); j += 2) {
     dp = pstr;
     sp = args[j];
@@ -661,9 +661,14 @@ FUNCTION(fun_switch)
                        PE_DEFAULT, PT_DEFAULT, pe_info);
     *dp = '\0';
 
-    if ((!exact)
-        ? local_wild_match(pstr, mstr)
-        : (strcmp(pstr, mstr) == 0)) {
+    if (exact) {
+      ret = (strcmp(pstr, mstr) == 0);
+    } else {
+      pe_regs_clear_type(pe_regs, PE_REGS_CAPTURE);
+      ret = local_wild_match(pstr, mstr, pe_regs);
+    }
+        
+    if (ret) {
       /* If there's a #$ in a switch's action-part, replace it with
        * the value of the conditional (mstr) before evaluating it.
        */

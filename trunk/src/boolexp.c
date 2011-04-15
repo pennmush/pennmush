@@ -502,7 +502,7 @@ eval_boolexp(dbref player, boolexp b, dbref target, NEW_PE_INFO * pe_info)
         else {
           char tbuf[BUFFER_LEN];
           strcpy(tbuf, atr_value(a));
-          r = local_wild_match((char *) bytecode + arg, tbuf);
+          r = local_wild_match((char *) bytecode + arg, tbuf, NULL);
         }
         boolexp_recursion--;
         break;

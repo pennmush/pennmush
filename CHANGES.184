@@ -111,6 +111,8 @@ Fixes:
  * It was sometimes possible for a player to view config options he 
    shouldn't have. Reported by qa'toq. [MG]
  * Possible crashbug in @name reported by Wiggles. [MG]
+ * Object matching (a la locate()) with an exit as the looker didn't work
+   correctly. Reported by Covenent. [MG]
 
 Version 1.8.4 patchlevel 3                                 Mar 18,  2011
 

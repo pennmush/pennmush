@@ -336,7 +336,14 @@ match_result_internal(dbref who, dbref where, const char *xname, int type,
   int goodwhere = RealGoodObject(where);
   char *name, *sname;           /* name contains the object name searched for, after english matching tokens are stripped from xname */
 
-  loc = (goodwhere ? (IsRoom(where) ? where : Location(where)) : NOTHING);
+  if (!goodwhere)
+    loc = NOTHING;
+  else if (IsRoom(where))
+    loc = where;
+  else if (IsExit(where))
+    loc = Source(where);
+  else
+    loc = Location(where);
 
   if (((flags & MAT_NEAR) && !goodwhere)
       || ((flags & MAT_CONTENTS) && !goodwhere)) {

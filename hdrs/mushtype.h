@@ -66,6 +66,7 @@ typedef struct debug_info Debug_Info;
 /* Types for _pe_regs_ _and_ _pe_reg_vals_ */
 #define PE_REGS_Q      0x01 /* Q-registers. */
 #define PE_REGS_REGEXP 0x02 /* Regexps. */
+#define PE_REGS_CAPTURE PE_REGS_REGEXP /* Alias for REGEXP */
 #define PE_REGS_SWITCH 0x04 /* switch(), %$0. */
 #define PE_REGS_ITER   0x08 /* iter() and @dol, %i0/etc */
 #define PE_REGS_ARG    0x10 /* %0-%9 */
@@ -120,6 +121,7 @@ PE_REGS *pe_regs_create_real(int pr_flags, const char *name);
 #define pe_regs_create(x,y) pe_regs_create_real(x, "pe_regs-" y)
 void pe_reg_val_free(PE_REG_VAL *val);
 void pe_regs_clear(PE_REGS *pe_regs);
+void pe_regs_clear_type(PE_REGS *pe_regs, int type);
 void pe_regs_free(PE_REGS *pe_regs);
 PE_REGS *pe_regs_localize_real(NEW_PE_INFO *pe_info, uint32_t pr_flags, const char *name);
 #define pe_regs_localize(p,x,y) pe_regs_localize_real(p, x, "pe_regs-" y)
@@ -204,6 +206,7 @@ int pi_regs_get_inum(NEW_PE_INFO *pe_info, int type, int lev);
 
 /* Get env (%0-%9) info */
 
+const char *pe_regs_intname(int num);
 void pe_regs_setenv(PE_REGS *pe_regs, int num, const char *val);
 void pe_regs_setenv_nocopy(PE_REGS *pe_regs, int num, const char *val);
 const char * pi_regs_get_env(NEW_PE_INFO *pe_info, int num);

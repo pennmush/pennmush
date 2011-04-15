@@ -3690,6 +3690,9 @@ See also: @restart, @undestroy, ACTION LISTS, @function, @command, @hook,
   matching <expr>s by default, while @select only runs the <action> for the
   first matching <expr>.
 
+  If <expr> is a regexp or a wildcard glob, then $0-$9 will be set with
+  capture data. (In wildcard globbing, every wildcard captures.)
+
   The string "#$" in <action>'s will be replaced with the evaluated result
   of <string> before it is acted on. Note that this replacement happens
   BEFORE the <action> is queued and executed, and does not work well in
@@ -3740,6 +3743,10 @@ See also: switch wildcards, switch(), @break, stext(), slev()
                                       say Not Puppet!
     > test
     thing says, "Not Puppet!"
+
+    > &SWITCH_EX thing=$foo *: @switch %0=*a*,say Before: '$0'. After: '$1'
+    > foo foobarbaz
+    thing says, "Before: 'foob'. After: 'rbaz'
     
   Continued in 'help @switch4'
 & @switch4

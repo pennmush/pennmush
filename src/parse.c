@@ -678,9 +678,11 @@ pe_regs_dump(PE_REGS *pe_regs, dbref who)
     }
     for (val = pe_regs->vals; val; val = val->next) {
       if (val->type & PE_REGS_STR) {
-        notify_format(who, "%-10s: %s", val->name, val->val.sval);
+        notify_format(who, " %.2X %-10s: %s", val->type & 0xFF,
+                      val->name, val->val.sval);
       } else {
-        notify_format(who, "%-10s: %d", val->name, val->val.ival);
+        notify_format(who, " %.2X %-10s: %d", val->type & 0xFF,
+                      val->name, val->val.ival);
       }
     }
     pe_regs = pe_regs->prev;
@@ -744,6 +746,33 @@ pe_regs_clear(PE_REGS *pe_regs) {
     val = next;
   }
   pe_regs->vals = NULL;
+}
+
+/** Free all values of a specific type from a PE_REGS context.
+ *
+ * \param pe_wregs The pe_regs to clear
+ * \param type     The type(s) of pe_reg_vals to clear.
+ */
+void
+pe_regs_clear_type(PE_REGS *pe_regs, int type) {
+  PE_REG_VAL *val = pe_regs->vals;
+  PE_REG_VAL *next;
+  PE_REG_VAL *prev = NULL;
+
+  while (val) {
+    next = val->next;
+    if (val->type & type) {
+      if (prev) {
+        prev->next = next;
+      } else {
+        pe_regs->vals = next;
+      }
+      pe_reg_val_free(val);
+    } else {
+      prev = val;
+    }
+    val = next;
+  }
 }
 
 /** Free a PE_REGS context.
@@ -1163,7 +1192,6 @@ pe_regs_set_rx_context(PE_REGS *pe_regs,
   int namecount;
   int num;
   char buff[BUFFER_LEN];
-  char namebuffer[BUFFER_LEN];
 
   if (!re_from) return;
   if (re_subpatterns < 0) return;
@@ -1173,8 +1201,7 @@ pe_regs_set_rx_context(PE_REGS *pe_regs,
   for (i = 0; i < re_subpatterns && i < 1000; i++) {
     pcre_copy_substring(re_from, re_offsets, re_subpatterns,
                         i, buff, BUFFER_LEN);
-    snprintf(namebuffer, 4, "%d", i);
-    pe_regs_set(pe_regs, PE_REGS_REGEXP, namebuffer, buff);
+    pe_regs_set(pe_regs, PE_REGS_REGEXP, pe_regs_intname(i), buff);
   }
   /* Copy all the named captures over. This code is ganked from
    * pcre_get_stringnumber */
@@ -1194,8 +1221,7 @@ pe_regs_set_rx_context(PE_REGS *pe_regs,
     num = (entry[0] << 8) + entry[1];
     pcre_copy_substring(re_from, re_offsets, re_subpatterns,
                         num, buff, BUFFER_LEN);
-    snprintf(namebuffer, BUFFER_LEN, "%s", entry + 2);
-    pe_regs_set(pe_regs, PE_REGS_REGEXP, namebuffer, buff);
+    pe_regs_set(pe_regs, PE_REGS_REGEXP, pe_regs_intname(i), buff);
   }
 }
 
@@ -1212,7 +1238,6 @@ pe_regs_set_rx_context_ansi(PE_REGS *pe_regs,
   int namecount;
   int num;
   char buff[BUFFER_LEN], *bp;
-  char namebuffer[BUFFER_LEN];
 
   if (!re_from) return;
   if (re_subpatterns < 0) return;
@@ -1224,8 +1249,7 @@ pe_regs_set_rx_context_ansi(PE_REGS *pe_regs,
     ansi_pcre_copy_substring(re_from, re_offsets, re_subpatterns,
                              i, 1, buff, &bp);
     *bp = '\0';
-    snprintf(namebuffer, 4, "%d", i);
-    pe_regs_set(pe_regs, PE_REGS_REGEXP, namebuffer, buff);
+    pe_regs_set(pe_regs, PE_REGS_REGEXP, pe_regs_intname(i), buff);
   }
   /* Copy all the named captures over. This code is ganked from
    * pcre_get_stringnumber */
@@ -1247,8 +1271,7 @@ pe_regs_set_rx_context_ansi(PE_REGS *pe_regs,
     ansi_pcre_copy_substring(re_from, re_offsets, re_subpatterns,
                              num, 1, buff, &bp);
     *bp = '\0';
-    snprintf(namebuffer, BUFFER_LEN, "%s", entry + 2);
-    pe_regs_set(pe_regs, PE_REGS_REGEXP, namebuffer, buff);
+    pe_regs_set(pe_regs, PE_REGS_REGEXP, pe_regs_intname(i), buff);
   }
 }
 
@@ -1355,6 +1378,21 @@ pi_regs_get_ilev(NEW_PE_INFO *pe_info, int type)
     pe_regs = pe_regs->prev;
   }
   return count;
+}
+
+/**
+ * Fast way to turn 0-9 into a string, while falling back on tprintf for
+ * non-single-digit ones.
+ * \param num Number of the name
+ * \retval char * representation of the name.
+ */
+const char *
+pe_regs_intname(int num) {
+  if (num < 10 && num >= 0) {
+    return envid[num];
+  } else {
+    return tprintf("%d", num);
+  }
 }
 
 void

@@ -4971,7 +4971,8 @@ See also: switch(), regmatch(), regedit()
 
   switch() and switchall() use wildcard <expr>s, as described in 'help switch
   wildcards'. case() and caseall() do a case-sensitive exact match, like
-  member() or comp().
+  member() or comp(). In this case, $0-$9 will be set to the text that the
+  nth wildcard character met.
 
   If the string "#$" appears in the <list> to be evaluated, it will be 
   replaced with the evaluated value of <str> /before/ evaluation of 
@@ -5000,6 +5001,9 @@ See also: reswitch(), stext(), slev(), if(), cond(), firstof()
     
     > say case(moof, *f, foo, moof, bar, baz)
     You say, "bar"
+
+    > say switch(foo bazaar,f?o b*r,$0-$1)
+    You say, "o-azaa"
 & SWITCH WILDCARDS
   @switch, @select, switch() and switchall() normally do wildcard
   matching between their first argument and the <expr>ession

@@ -1135,7 +1135,7 @@ process_command(dbref executor, char *command, MQUE * queue_entry)
         /* try matching enter aliases */
         if (check_loc != NOTHING && (cmd = command_find("ENTER")) &&
             !(cmd->type & CMD_T_DISABLED) &&
-            (i = alias_list_check(Contents(check_loc), cptr, "EALIAS")) != -1) {
+            (i = alias_list_check(Contents(check_loc), cptr, "EALIAS")) != NOTHING) {
           if (command_check(executor, cmd, 1)) {
             sprintf(temp, "#%d", i);
             run_command(cmd, executor, queue_entry->enactor,
@@ -1374,7 +1374,7 @@ list_check(dbref thing, dbref player, char type, char end, char *str,
  * \param thing first object on list.
  * \param command command to attempt to match.
  * \param type name of attribute of aliases to match against.
- * \return dbref of first matching object, or -1 if none.
+ * \return dbref of first matching object, or NOTHING if none.
  */
 int
 alias_list_check(dbref thing, const char *command, const char *type)
@@ -1391,7 +1391,7 @@ alias_list_check(dbref thing, const char *command, const char *type)
     }
     thing = Next(thing);
   }
-  return -1;
+  return NOTHING;
 }
 
 /** Check a command against a list of aliases on a location

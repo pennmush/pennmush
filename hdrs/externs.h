@@ -674,7 +674,8 @@ dbref next_parent(dbref thing, dbref current, int *parent_count, int *use_ancest
     bool wild_match_test(const char *restrict s, const char *restrict d,
                          bool cs, int *matches, int nmatches);
     bool local_wild_match_case(const char *restrict s,
-                               const char *restrict d, bool cs);
+                               const char *restrict d, bool cs,
+                               PE_REGS *pe_regs);
     int wildcard_count(char *s, bool unescape);
     /** Return 1 if s contains unescaped wildcards, 0 if not */
 #define wildcard(s) (wildcard_count(s, 0) == -1)
@@ -682,17 +683,19 @@ dbref next_parent(dbref thing, dbref current, int *parent_count, int *use_ancest
                         const char *restrict dstr, bool cs);
     bool wild_match_case_r(const char *restrict s,
                            const char *restrict d, bool cs,
-                           char **ary, int max, char *ata, int len);
+                           char **ary, int max, char *ata, int len,
+                           PE_REGS *pe_regs);
     bool quick_wild(const char *restrict tsr, const char *restrict dstr);
     bool atr_wild(const char *restrict tstr, const char *restrict dstr);
 
     bool regexp_match_case_r(const char *restrict s, const char *restrict d,
-                             bool cs, char **, size_t, char *restrict, ssize_t);
+                             bool cs, char **, size_t, char *restrict, ssize_t,
+                             PE_REGS *pe_regs);
     bool quick_regexp_match(const char *restrict s,
                             const char *restrict d, bool cs);
     bool qcomp_regexp_match(const pcre * re, const char *s);
 /** Default (case-insensitive) local wildcard match */
-#define local_wild_match(s,d) local_wild_match_case(s, d, 0)
+#define local_wild_match(s,d,p) local_wild_match_case(s, d, 0, p)
 
 /** Types of lists */
 

@@ -47,6 +47,10 @@ Version 1.8.4 patchlevel 4                                 ??? ??,  2011
   by about BUFFER_LEN*NUMQ bytes, assuming no Q-registers used. By default,
   this amounts to 294KB!
 
+  wild_match_case_r, regexp_match_case_r and local_wild_match all accept
+  a new parameter after the last: a PE_REGS. For old behavior, simply add
+  a NULL parameter at the end.
+
   global_eval_context has been removed, as have the BQUE and PE_Info
   sutrcts. All the information they contained has been merged into two new
   structs, MQUE and NEW_PE_INFO. The environment (%0-%9) and q-regs (%q*)

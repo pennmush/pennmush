@@ -37,6 +37,8 @@ Hardcode:
  * Assorted Windows fixes. [SW]
 
 Minor changes:
+ * Because switch() and @switch() now store capture data, it can change
+   the nesting of $0-$9/$<foo> in rare cases. [GM]
  * All @o* messages are now heard by rooms even when they're empty. Makes
    room @listens and similar things work right. Suggested by Padraic. [MG]
  * @zemit and zemit() will now show the executor the message, if he's in a
@@ -47,6 +49,7 @@ Locks:
    of references to deleted objects makes objid locks extraneous. [SW]
  
 Commands:
+ * @switch and @switch/regexp set $0-$9 for glob or pattern captures. [GM]
  * @notify/setq can alter Q-registers of a semaphore queue entry before
    dequeueing it. [GM]
  * 'teach' now takes a /list switch, which lets it run an action list
@@ -75,6 +78,7 @@ Attributes:
    by Wiggles. [MG]
  
 Functions:
+ * switch() sets $0-$9 for glob captures.
  * setq(), regmatch(), strmatch() and sql() accept q-register names of
    more than one character. [GM]
  * unsetq() now accepts patterns of q-register names. [GM]

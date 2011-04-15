@@ -894,12 +894,12 @@ notify_anything_loc(dbref speaker, na_lookup func,
                                 (char *) notify_makestring(msgbuf, messages,
                                                            NA_COLOR, 0),
                                 AF_Case(a), lenv, 10,
-                                match_space, match_space_len)
+                                match_space, match_space_len, NULL)
           : wild_match_case_r(tbuf1,
                               (char *) notify_makestring(msgbuf, messages,
                                                          NA_COLOR, 0),
                               AF_Case(a), lenv, 10,
-                              match_space, match_space_len)) {
+                              match_space, match_space_len, NULL)) {
         if (eval_lock(speaker, target, Listen_Lock)) {
           pe_regs = pe_regs_create(PE_REGS_ARG, "notify_anything_loc");
           for (i = 0; i < 10; i++) {

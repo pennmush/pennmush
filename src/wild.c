@@ -344,15 +344,18 @@ wild_match_test(const char *restrict pat, const char *restrict str, bool cs,
  *    are set to pointers into this buffer.
  * \param len The number of bytes in data. Twice the length of d should
  *    be enough.
+ * \param pe_regs If given, store match results in here as well.
  * \retval 1 d matches s.
  * \retval 0 d doesn't match s.
  */
 bool
 wild_match_case_r(const char *restrict s, const char *restrict d, bool cs,
-                  char **matches, int nmatches, char *data, int len)
+                  char **matches, int nmatches, char *data, int len,
+                  PE_REGS *pe_regs)
 {
   int results[BUFFER_LEN * 2];
   int n;
+  int count = 0;
 
   ansi_string *as;
   char *buff, *maxbuff;
@@ -382,6 +385,7 @@ wild_match_case_r(const char *restrict s, const char *restrict d, bool cs,
         for (n = 0; (n < BUFFER_LEN) && (results[n * 2] >= 0)
              && n < nmatches && bp < (data + len); n++) {
           /* Eww, eww, eww, EWWW! */
+          count = n + 1;
           buff = bp;
           if (buff > maxbuff)
             buff = maxbuff;
@@ -395,6 +399,7 @@ wild_match_case_r(const char *restrict s, const char *restrict d, bool cs,
         for (n = 0, curlen = 0;
              (results[n * 2] >= 0) && n < nmatches && curlen < len; n++) {
           spaceleft = len - curlen;
+          count = n + 1;
           if (results[n * 2 + 1] < spaceleft) {
             spaceleft = results[n * 2 + 1];
           }
@@ -406,6 +411,12 @@ wild_match_case_r(const char *restrict s, const char *restrict d, bool cs,
       }
       for (; n < nmatches; n++) {
         matches[n] = NULL;
+      }
+      if (pe_regs) {
+        for (n = 0; n < count; n++) {
+          pe_regs_set(pe_regs, PE_REGS_CAPTURE, pe_regs_intname(n),
+              matches[n] ? matches[n] : "");
+        }
       }
     }
     return 1;
@@ -430,12 +441,14 @@ wild_match_case_r(const char *restrict s, const char *restrict d, bool cs,
  * \param data buffer space to copy matches into. The elements of
  *   array point into here
  * \param len The size of data
+ * \param pe_regs If given, store match results in here as well.
  * \retval 1 d matches s
  * \retval 0 d doesn't match s
  */
 bool
 regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
-                    char **matches, size_t nmatches, char *data, ssize_t len)
+                    char **matches, size_t nmatches, char *data, ssize_t len,
+                    PE_REGS *pe_regs)
 {
   pcre *re;
   pcre_extra *extra;
@@ -484,6 +497,16 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
     mush_free(re, "pcre");
     return 0;
   }
+
+  /* If we have pe_regs, populate it. */
+  if (pe_regs) {
+    if (as) {
+      pe_regs_set_rx_context_ansi(pe_regs, re, offsets, subpatterns, as);
+    } else {
+      pe_regs_set_rx_context(pe_regs, re, offsets, subpatterns, val);
+    }
+  }
+
   /* If we had too many subpatterns for the offsets vector, set the number
    * to 1/3 of the size of the offsets vector
    */
@@ -524,7 +547,6 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
   mush_free(re, "pcre");
   return 1;
 }
-
 
 /** Regexp match, possibly case-sensitive, and with no memory.
  *
@@ -598,8 +620,8 @@ qcomp_regexp_match(const pcre * re, const char *subj)
 }
 
 
-/** Either an order comparison or a wildcard match with no memory.
- *
+/** Either an order comparison or a wildcard match with optional
+ *  pe_regs memory.
  *
  * \param s pattern to match against.
  * \param d string to check.
@@ -608,7 +630,8 @@ qcomp_regexp_match(const pcre * re, const char *subj)
  * \retval 0 d doesn't match s.
  */
 bool
-local_wild_match_case(const char *restrict s, const char *restrict d, bool cs)
+local_wild_match_case(const char *restrict s, const char *restrict d, bool cs,
+                      PE_REGS *pe_regs)
 {
   if (s && *s) {
     switch (*s) {
@@ -625,10 +648,18 @@ local_wild_match_case(const char *restrict s, const char *restrict d, bool cs)
       else
         return (strcoll(s, d) > 0);
     default:
-      return quick_wild_new(s, d, cs);
+      if (pe_regs != NULL) {
+        char data[BUFFER_LEN*2];
+        char *matches[100];
+        return wild_match_case_r(s, d, cs, matches, 100, data, BUFFER_LEN * 2,
+                                 pe_regs);
+      } else {
+        return quick_wild_new(s, d, cs);
+      }
     }
-  } else
+  } else {
     return (!d || !*d) ? 1 : 0;
+  }
 }
 
 /** Check to see if a string contains either wildcard characters (* or ?), or

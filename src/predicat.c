@@ -1118,7 +1118,7 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
   if (!argv[1])
     return;
 
-  pe_regs = pe_regs_create(PE_REGS_SWITCH, "do_switch");
+  pe_regs = pe_regs_create(PE_REGS_SWITCH | PE_REGS_CAPTURE, "do_switch");
   pe_regs_clear(pe_regs);
   pe_regs_set(pe_regs, PE_REGS_SWITCH, "t0", expression);
 
@@ -1133,8 +1133,10 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
                        PE_DEFAULT, PT_DEFAULT, queue_entry->pe_info);
     *bp = '\0';
     /* check for a match */
-    if (regexp ? quick_regexp_match(buff, expression, 0)
-        : local_wild_match(buff, expression)) {
+    pe_regs_clear_type(pe_regs, PE_REGS_CAPTURE);
+    if (regexp ? regexp_match_case_r(buff, expression, 0,
+                                     NULL, 0, NULL, 0, pe_regs)
+        : local_wild_match(buff, expression, pe_regs)) {
       tbuf1 = replace_string("#$", expression, argv[a + 1]);
       if (!any) {
         /* Add the new switch context to the parent queue... */

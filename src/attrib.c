@@ -1583,7 +1583,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
       match_found = 0;
       if (AF_Regexp(ptr)) {
         if (regexp_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args, 10,
-                                match_space, match_space_len)) {
+                                match_space, match_space_len, NULL)) {
           match_found = 1;
           match++;
         }
@@ -1593,7 +1593,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
           match++;
           if (!just_match)
             wild_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args, 10,
-                              match_space, match_space_len);
+                              match_space, match_space_len, NULL);
         }
       }
       if (match_found) {
@@ -1743,9 +1743,9 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
 
   if (AF_Regexp(ptr) ?
       regexp_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args, 10,
-                          match_space, match_space_len) :
+                          match_space, match_space_len, NULL) :
       wild_match_case_r(tbuf2 + 1, str, AF_Case(ptr), args,
-                        10, match_space, match_space_len)) {
+                        10, match_space, match_space_len, NULL)) {
     char save_cmd_raw[BUFFER_LEN], save_cmd_evaled[BUFFER_LEN];
     int success = 1;
     NEW_PE_INFO *pe_info;

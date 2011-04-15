@@ -140,7 +140,7 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_NOPARSE | CMD_T_NOGAGGED, 0, 0},
   {"@DOLIST", "NOTIFY DELIMIT", cmd_dolist,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE, 0, 0},
-  {"@DRAIN", "ALL ANY", cmd_notify_drain, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
+  {"@DRAIN", "ALL ANY", cmd_notify_drain, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
   {"@DUMP", "PARANOID DEBUG", cmd_dump, CMD_T_ANY, "WIZARD", 0},
 
   {"@EDIT", "FIRST CHECK", cmd_edit,

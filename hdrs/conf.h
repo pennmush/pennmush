@@ -81,7 +81,12 @@
 
 
 /* From conf.c */
-extern void do_config_list(dbref player, const char *type, int lc);
+
+/* From conf.c */
+bool config_file_startup(const char *conf, int restrictions);
+void config_file_checks(void);
+
+void do_config_list(dbref player, const char *type, int lc);
 
 typedef struct options_table OPTTAB;
 

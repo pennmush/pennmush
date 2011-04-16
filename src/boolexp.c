@@ -397,12 +397,19 @@ int
 eval_boolexp(dbref player, boolexp b, dbref target, NEW_PE_INFO * pe_info)
 {
   static int boolexp_recursion = 0;
+  static bool recurse_err_shown = 0;
+
+  if (boolexp_recursion == 0)
+    recurse_err_shown = 0;
 
   if (!GoodObject(player))
     return 0;
 
   if (boolexp_recursion > MAX_DEPTH) {
-    notify(player, T("Too much recursion in lock!"));
+    if (!recurse_err_shown) {
+      recurse_err_shown = 1;
+      notify(player, T("Too much recursion in lock!"));
+    }
     return 0;
   }
   if (b == TRUE_BOOLEXP) {

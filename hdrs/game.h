@@ -56,9 +56,6 @@ extern void do_hook_list(dbref player, char *command);
 int init_compress(PENNFILE *f);
 #endif
 
-/* From conf.c */
-extern int config_file_startup(const char *conf, int restrictions);
-
 /* From game.c */
 enum dump_type { DUMP_NORMAL, DUMP_DEBUG, DUMP_PARANOID };
 extern void do_dump(dbref player, char *num, enum dump_type flag);

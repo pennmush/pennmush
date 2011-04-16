@@ -898,6 +898,14 @@ skip_whitespace(void)
     parsebuf++;
 }
 
+
+enum test_atr_errs {
+  TAE_NONE, /*< Nt an attribute-type lock; continue parsing. */
+  TAE_PARSE /*< Fatal parsing error. */
+};
+
+static enum test_atr_errs test_atr_err = TAE_NONE;
+
 /* Handle attribute, eval, flag, etc. lock parsing. */
 static struct boolexp_node *
 test_atr(char *s, char c)
@@ -906,16 +914,27 @@ test_atr(char *s, char c)
   char tbuf1[BUFFER_LEN];
   size_t tbuflen;
 
+  test_atr_err = TAE_NONE;
+
   strcpy(tbuf1, strupper(s));
   for (s = tbuf1; *s && (*s != c); s++) ;
   if (!*s)
-    return 0;
-  *s++ = 0;
+    return NULL;
+  *s++ = '\0';
   tbuflen = strlen(tbuf1);
-  if (tbuflen == 0 || !good_atr_name(tbuf1))
-    return 0;
-  if (c == '^' && !is_allowed_bflag(tbuf1, tbuflen))
-      return NULL;
+  if ((c == ':' || c == '/') && (tbuflen == 0 || !good_atr_name(tbuf1))) {
+    /* To do: Return a meaningful error message for this case and not
+     * mess up later tests.... in the case of a flag lock, test_atr()
+     * is called 3 times and only successfully completes the third
+     * time, failing here on the first two (Tests for attribute and
+     * eval locks). */
+    return NULL;
+  }
+  if (c == '^' && !is_allowed_bflag(tbuf1, tbuflen)) {
+    notify_format(parse_player, T("'%s' is not a valid flag lock name."), tbuf1);
+    test_atr_err = TAE_PARSE;
+    return NULL;
+  }
 
   b = alloc_bool();
   if (c == ':')
@@ -946,10 +965,12 @@ test_atr(char *s, char c)
 	/* Malformed to a certain extent. Fail. */
 	if (!t) {
 	  free_boolexp_node(b);
+	  test_atr_err = TAE_PARSE;
 	  return NULL;
 	} else if (t->type != BOOLEXP_CONST) {
 	  free_boolexp_node(t);
 	  free_boolexp_node(b);
+	  test_atr_err = TAE_PARSE;
 	  return NULL;
 	}
 	b->type = BOOLEXP_IS;
@@ -964,6 +985,7 @@ test_atr(char *s, char c)
 	  /* Fail on invalid objids */
 	  notify_format(parse_player, T("I don't see %s here."), s);
 	  free_boolexp_node(b);
+	  test_atr_err = TAE_PARSE;
 	  return NULL;
 	}
       }
@@ -1078,17 +1100,18 @@ parse_boolexp_L(void)
       *p-- = '\0';
     /* check for an attribute */
     b = test_atr(tbuf1, ':');
-    if (b)
+    if (b || test_atr_err != TAE_NONE)
       return b;
     /* check for an eval */
     b = test_atr(tbuf1, '/');
-    if (b)
+    if (b || test_atr_err != TAE_NONE)
       return b;
     /* Check for a flag */
     b = test_atr(tbuf1, '^');
-    if (b)
+    if (b || test_atr_err != TAE_NONE)
       return b;
     /* Nope. Check for an object reference */
+
     parsebuf = savebuf;
     return parse_boolexp_R();
   }

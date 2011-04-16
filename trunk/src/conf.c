@@ -1456,7 +1456,7 @@ static int conf_recursion = 0;
  * \retval 1 success.
  * \retval 0 failure.
  */
-int
+bool
 config_file_startup(const char *conf, int restrictions)
 {
   /* read a configuration file. Return 0 on failure, 1 on success */
@@ -1465,7 +1465,6 @@ config_file_startup(const char *conf, int restrictions)
    */
 
   FILE *fp = NULL;
-  PENNCONF *cp;
   char tbuf1[BUFFER_LEN];
   char *p, *q, *s;
   static char cfile[BUFFER_LEN];        /* Remember the last one */
@@ -1542,58 +1541,57 @@ config_file_startup(const char *conf, int restrictions)
         config_set(p, q, 0, restrictions);
     }
   }
-
-  /* Warn about any config options that aren't overridden by the
-   * config file.
-   */
-  if (conf_recursion == 0) {
-    for (cp = conftable; cp->name; cp++) {
-      if (!(cp->flags & (CP_OVERRIDDEN | CP_OPTIONAL))) {
-        do_rawlog(LT_ERR,
-                  "CONFIG: directive '%s' missing from cnf file, using default value.",
-                  cp->name);
-      }
-    }
-    for (cp = (PENNCONF *) hash_firstentry(&local_options); cp;
-         cp = (PENNCONF *) hash_nextentry(&local_options)) {
-      if (!(cp->flags & (CP_OVERRIDDEN | CP_OPTIONAL))) {
-        do_rawlog(LT_ERR,
-                  "CONFIG: local directive '%s' missing from cnf file. Using default value.",
-                  cp->name);
-      }
-    }
-
-    /* these directives aren't player-settable but need to be initialized */
-    mudtime = time(NULL);
-    options.dump_counter = mudtime + options.dump_interval;
-    options.purge_counter = mudtime + options.purge_interval;
-    options.dbck_counter = mudtime + options.dbck_interval;
-    options.warn_counter = mudtime + options.warn_interval;
-
-#ifdef WIN32
-    /* if we're on Win32, complain about compression */
-    if ((options.compressprog && *options.compressprog)) {
-      do_rawlog(LT_ERR,
-                "CONFIG: compression program is specified but not used in Win32, ignoring",
-                options.compressprog);
-    }
-
-    if (((options.compresssuff && *options.compresssuff))) {
-      do_rawlog(LT_ERR,
-                "CONFIG: compression suffix is specified but not used in Win32, ignoring",
-                options.compresssuff);
-    }
-
-    /* Also remove the compression options */
-    *options.uncompressprog = 0;
-    *options.compressprog = 0;
-    *options.compresssuff = 0;
-
-#endif
-
-  }
   fclose(fp);
   return 1;
+}
+
+/** Warn about config options that weren't set in the files read. */
+void
+config_file_checks(void)
+{
+  PENNCONF *cp;
+  for (cp = conftable; cp->name; cp++) {
+    if (!(cp->flags & (CP_OVERRIDDEN | CP_OPTIONAL))) {
+      do_rawlog(LT_ERR,
+		"CONFIG: directive '%s' missing from cnf file, using default value.",
+		cp->name);
+    }
+  }
+  for (cp = hash_firstentry(&local_options); cp;
+       cp = hash_nextentry(&local_options)) {
+    if (!(cp->flags & (CP_OVERRIDDEN | CP_OPTIONAL))) {
+      do_rawlog(LT_ERR,
+		"CONFIG: local directive '%s' missing from cnf file. Using default value.",
+		cp->name);
+    }
+  }
+
+  /* these directives aren't player-settable but need to be initialized */
+  mudtime = time(NULL);
+  options.dump_counter = mudtime + options.dump_interval;
+  options.purge_counter = mudtime + options.purge_interval;
+  options.dbck_counter = mudtime + options.dbck_interval;
+  options.warn_counter = mudtime + options.warn_interval;
+
+#ifdef WIN32
+  /* if we're on Win32, complain about compression */
+  if ((options.compressprog && *options.compressprog)) {
+    do_rawlog(LT_ERR,
+	      "CONFIG: compression program is specified but not used in Win32, ignoring",
+	      options.compressprog);
+  }
+
+  if (((options.compresssuff && *options.compresssuff))) {
+    do_rawlog(LT_ERR,
+	      "CONFIG: compression suffix is specified but not used in Win32, ignoring",
+	      options.compresssuff);
+  }
+
+  /* Also remove the compression options */
+  *options.uncompressprog = 0;
+  *options.compressprog = 0;
+  *options.compresssuff = 0;
+#endif
 }
 
 /** Can a player see a config option?

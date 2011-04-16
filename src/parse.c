@@ -814,10 +814,10 @@ pe_regs_restore(NEW_PE_INFO *pe_info, PE_REGS *pe_regs)
   pe_info->regvals = pe_regs->prev;
 }
 
-#define FIND_PVAL(pval, key) \
+#define FIND_PVAL(pval, key, type) \
   do { \
     if (!pval) break; \
-    if (!strcmp(pval->name, key) && (pval->type & type)) { \
+    if ((pval->type & type) && !strcmp(pval->name, key)) { \
       break; \
     } \
     pval = pval->next; \
@@ -846,7 +846,7 @@ pe_regs_set_if(PE_REGS *pe_regs, int type,
   static const char *noval = "";
   strncpy(key, lckey, PE_KEY_LEN);
   upcasestr(key);
-  FIND_PVAL(pval, key);
+  FIND_PVAL(pval, key, type);
   if (!(val && val[0]) && !(type | PE_REGS_NOCOPY)) {
     val = noval;
     type |= PE_REGS_NOCOPY;
@@ -897,7 +897,7 @@ pe_regs_set_int_if(PE_REGS *pe_regs, int type,
   char key[PE_KEY_LEN];
   strncpy(key, lckey, PE_KEY_LEN);
   upcasestr(key);
-  FIND_PVAL(pval, key);
+  FIND_PVAL(pval, key, type);
   if (pval) {
     if (!override) return;
     pe_reg_val_free_val(pval);
@@ -923,7 +923,7 @@ pe_regs_get(PE_REGS *pe_regs, int type, const char *lckey) {
   char key[PE_KEY_LEN];
   strncpy(key, lckey, PE_KEY_LEN);
   upcasestr(key);
-  FIND_PVAL(pval, key);
+  FIND_PVAL(pval, key, type);
   if (!pval) return NULL;
   if (pval->type & PE_REGS_STR) {
     return pval->val.sval;
@@ -946,7 +946,7 @@ pe_regs_get_int(PE_REGS *pe_regs, int type, const char *lckey) {
   char key[PE_KEY_LEN];
   strncpy(key, lckey, PE_KEY_LEN);
   upcasestr(key);
-  FIND_PVAL(pval, key);
+  FIND_PVAL(pval, key, type);
   if (!pval) return 0;
   if (pval->type & PE_REGS_STR) {
     return parse_integer(pval->val.sval);
@@ -981,10 +981,12 @@ pe_regs_copystack(PE_REGS *new_regs, PE_REGS *pe_regs,
 {
   int scount = 0; /* stext counts */
   int icount = 0; /* itext counts */
+  int smax = 0;
+  int imax = 0;
   char itype;
   int  inum;
   /* Disable PE_REGS_NOCOPY: If we're copying, we want to copy. */
-  int andflags = ~PE_REGS_NOCOPY;
+  int andflags = 0xFF;
   char numbuff[10];
   PE_REG_VAL *val, *prev, *next;
   prev = NULL;
@@ -1018,7 +1020,14 @@ pe_regs_copystack(PE_REGS *new_regs, PE_REGS *pe_regs,
         if (val->type & (PE_REGS_SWITCH | PE_REGS_ITER)) {
           /* It is t<num> or n<num>. Bump it up as necessary. */
           sscanf(val->name, "%c%d", &itype, &inum);
-          inum += (val->type & PE_REGS_SWITCH) ? scount : icount;
+          inum += (val->type & PE_REGS_SWITCH) ? smax : imax;
+          if (*(val->name) == 'T') {
+            if (val->type & PE_REGS_SWITCH) {
+              if (inum >= scount) scount = inum + 1;
+            } else {
+              if (inum >= icount) icount = inum + 1;
+            }
+          }
           if (inum < MAX_ITERS) {
             snprintf(numbuff, 10, "%c%d", itype, inum);
             if (val->type & PE_REGS_STR) {
@@ -1030,7 +1039,7 @@ pe_regs_copystack(PE_REGS *new_regs, PE_REGS *pe_regs,
             }
           }
         } else {
-          /* Set, but don't override. */
+          /* Set, but maybe don't override. */
           if (val->type & PE_REGS_STR) {
             pe_regs_set_if(new_regs, val->type & andflags,
                            val->name, val->val.sval,
@@ -1042,12 +1051,13 @@ pe_regs_copystack(PE_REGS *new_regs, PE_REGS *pe_regs,
         }
       }
     }
-    if (pe_regs->flags & PE_REGS_SWITCH) scount += 1;
-    if (pe_regs->flags & PE_REGS_ITER) icount += 1;
+    smax = scount;
+    imax = icount;
     if (pe_regs->flags & PE_REGS_ARG) {
       /* Only the most recent %0-%9 count */
       copytypes &= ~PE_REGS_ARG;
     }
+    override = 0;
   }
 }
 
@@ -1582,8 +1592,13 @@ pe_info_from(NEW_PE_INFO * old_pe_info, int flags, PE_REGS *pe_regs)
        reset all the counters (like function invocation limit). Used for cmds that queue a
        new actionlist for the current executor */
     pe_info = make_pe_info("pe_info-from_old-clone");
-    if (!old_pe_info)
+    if (!old_pe_info) {
+      if (pe_regs) {
+        pe_regs->prev = NULL;
+        pe_regs_copystack(pe_info->regvals, pe_regs, PE_REGS_QUEUE, 0);
+      }
       return pe_info;           /* nothing to do */
+    }
 
     /* OK, copy everything over */
     /* Copy the Q-registers, @switch, @dol and env over to the new pe_info. */
@@ -1591,6 +1606,7 @@ pe_info_from(NEW_PE_INFO * old_pe_info, int flags, PE_REGS *pe_regs)
       pe_regs->prev = old_pe_info->regvals;
       pe_regs_copystack(pe_info->regvals, pe_regs,
                         PE_REGS_QUEUE, 0);
+      pe_regs->prev = NULL;
     } else {
       pe_regs_copystack(pe_info->regvals, old_pe_info->regvals,
                         PE_REGS_QUEUE, 0);

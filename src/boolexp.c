@@ -234,28 +234,11 @@ struct bvm_asm {
   size_t strcount;      /**< The number of nodes in the string list */
 };
 
-/** The flag lock key (A^B) only allows a few values for A. This
- * struct and the the following table define the allowable ones. When
- * adding a new type here, a matching new bytecode instruction should
- * be added. */
-struct flag_lock_types {
-  const char *name; /**< The value of A */
-  bvm_opcode op;  /**< The associated opcode */
-};
-
-/** What's allowed on the left-hand-side of LHS^RHS lock keys */
-static struct flag_lock_types flag_locks[] = {
-  {"FLAG", OP_TFLAG},
-  {"POWER", OP_TPOWER},
-  {"TYPE", OP_TTYPE},
-  {"NAME", OP_TNAME},
-  {"CHANNEL", OP_TCHANNEL},
-  {"OBJID", OP_TIS},
-  {"IP", OP_TIP},
-  {"HOSTNAME", OP_THOSTNAME},
-  {"DBREFLIST", OP_TDBREFLIST},
-  {NULL, OP_RET}
-};
+/* The flag lock key (A^B) only allows a few values for A. The list of
+ * values are in bflags.gperf, which is used to generate a validation
+ * function for them. Look in that file if you need to add a new
+ * type.  */
+#include "bflags.c"
 
 static uint8_t *
 safe_get_bytecode(boolexp b)
@@ -919,24 +902,21 @@ skip_whitespace(void)
 static struct boolexp_node *
 test_atr(char *s, char c)
 {
-  struct boolexp_node *b;
+  struct boolexp_node *b;  
   char tbuf1[BUFFER_LEN];
+  size_t tbuflen;
+
   strcpy(tbuf1, strupper(s));
   for (s = tbuf1; *s && (*s != c); s++) ;
   if (!*s)
     return 0;
   *s++ = 0;
-  if (strlen(tbuf1) == 0 || !good_atr_name(tbuf1))
+  tbuflen = strlen(tbuf1);
+  if (tbuflen == 0 || !good_atr_name(tbuf1))
     return 0;
-  if (c == '^') {
-    int n;
-    for (n = 0; flag_locks[n].name; n++) {
-      if (strcmp(flag_locks[n].name, tbuf1) == 0)
-        break;
-    }
-    if (!flag_locks[n].name)
-      return 0;
-  }
+  if (c == '^' && !is_allowed_bflag(tbuf1, tbuflen))
+      return NULL;
+
   b = alloc_bool();
   if (c == ':')
     b->type = BOOLEXP_ATR;
@@ -1463,15 +1443,10 @@ generate_bvm_asm1(struct bvm_asm *a, struct boolexp_node *b, boolexp_type outer)
     break;
   case BOOLEXP_FLAG:
     {
-      enum bvm_opcode op = OP_RET;
-      int n;
-      for (n = 0; flag_locks[n].name; n++) {
-        if (strcmp(b->data.atr_lock->name, flag_locks[n].name) == 0) {
-          op = flag_locks[n].op;
-          break;
-        }
-      }
-      append_insn(a, op, 0, b->data.atr_lock->text);
+      const struct flag_lock_types *bflag;
+      /* Always returns non-null at this point. */
+      bflag = is_allowed_bflag(b->data.atr_lock->name, strlen(b->data.atr_lock->name));
+      append_insn(a, bflag->op, 0, b->data.atr_lock->text);
       break;
     }
   }

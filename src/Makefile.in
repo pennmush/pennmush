@@ -135,6 +135,10 @@ local.c: local.dst
 ../po/pennmush.pot: $(C_FILES) $(H_FILES)
 	xgettext -d pennmush -kT -o ../po/pennmush.pot $(C_FILES) $(H_FILES)
 
+# The following source files are auto-generated with gperf.
+bflags.c: bflags.gperf
+	gperf --output-file bflags.c bflags.gperf
+
 htmltab.c: htmltab.gperf
 	gperf --output-file htmltab.c htmltab.gperf
 
@@ -299,6 +303,7 @@ boolexp.o: ../hdrs/bufferq.h
 boolexp.o: ../hdrs/extchat.h
 boolexp.o: ../hdrs/strtree.h
 boolexp.o: ../hdrs/mymalloc.h
+boolexp.o: bflags.c
 bsd.o: ../hdrs/copyrite.h
 bsd.o: ../config.h
 bsd.o: ../hdrs/conf.h

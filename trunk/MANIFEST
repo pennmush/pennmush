@@ -151,6 +151,8 @@ src/SWITCHES
 src/access.c
 src/atr_tab.c
 src/attrib.c
+src/bflags.gperf
+src/bflags.c
 src/boolexp.c
 src/bsd.c
 src/bufferq.c

@@ -52,6 +52,8 @@ Minor changes:
 Locks:
  * objid locks are now turned into =-locks by the lock parser. The clearing
    of references to deleted objects makes objid locks extraneous. [SW]
+ * Internal changes to validation of 'name^string' locks to use perfect
+   hash tables to validate the name. [SW]
  
 Commands:
  * @switch and @switch/regexp set $0-$9 for glob or pattern captures. [GM]

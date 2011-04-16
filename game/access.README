@@ -16,7 +16,7 @@ FILE SYNTAX
 The syntax of the file is simple. Each line gives information about
 a host or host-pattern:
 
-[user@]host [dbref] [options] [# comment]
+host [dbref] [options] [# comment]
 
 host - the only required file, this is a hostname or a wildcard pattern
        to match. Examples: 
@@ -24,10 +24,10 @@ host - the only required file, this is a hostname or a wildcard pattern
 	 *.berkeley.edu - matches hostname <anystring>.berkeley.edu
          *berkeley.edu  - matches either of the above
          *              - matches all hosts
-user@ - if the host supports ident, and you trust the ident response,
-        and you're sure that the link is fast enough that you'll always
-        get an ident response in time, you can match for specific
-        users. Example: johnq@netcom.com
+    
+       user@host also works, but since Penn no longer attempts to
+       resolve a user name, existing rules that use this will always
+       fail to match.
 dbref   - The dbref of a character to restrict the rule too.
           (Only makes sense for connect rules). Leave it out
           or use '-2' to match all characters. Leave out the '#'

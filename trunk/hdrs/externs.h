@@ -80,7 +80,7 @@ void dump_database(void);
 void NORETURN mush_panic(const char *message);
 void NORETURN mush_panicf(const char *fmt, ...)
   __attribute__ ((__format__(__printf__, 1, 2)));
-char *scan_list(dbref player, char *command);
+char *scan_list(dbref player, char *command, int flag);
 
 
 #ifdef WIN32

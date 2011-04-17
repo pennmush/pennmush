@@ -42,7 +42,7 @@ Hardcode:
  * Assorted Windows fixes. [SW]
 
 Minor changes:
- * Because switch() and @switch() now store capture data, it can change
+ * Because switch() and @switch now store capture data, it can change
    the nesting of $0-$9/$<foo> in rare cases. [GM]
  * All @o* messages are now heard by rooms even when they're empty. Makes
    room @listens and similar things work right. Suggested by Padraic. [MG]
@@ -93,6 +93,10 @@ Functions:
    matching a pattern. [GM]
  * elock() now only requires that you can see the lock you're trying to test.
    Suggested by Sketch@M*U*S*H. [MG]
+ * Changes to scan(): Returned value now always returns the object which
+   would run the $-command (even if it's actually set on a parent). scan()
+   can also take a 3rd argument, to limit which objects are checked. Based
+   on a patch by Covenent. [MG]   
 
 Fixes:
  * isword(ansi(r,foo)) would return 0. isword now removes markup before

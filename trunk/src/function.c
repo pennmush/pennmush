@@ -501,7 +501,7 @@ FUNTAB flist[] = {
   {"ROOM", fun_room, 1, 1, FN_REG | FN_STRIPANSI},
   {"ROOT", fun_root, 2, 2, FN_REG | FN_STRIPANSI},
   {"S", fun_s, 1, -1, FN_REG},
-  {"SCAN", fun_scan, 1, -2, FN_REG | FN_STRIPANSI},
+  {"SCAN", fun_scan, 1, 3, FN_REG | FN_STRIPANSI},
   {"SCRAMBLE", fun_scramble, 1, -1, FN_REG},
   {"SECS", fun_secs, 0, 0, FN_REG},
   {"SECURE", fun_secure, 1, -1, FN_REG},

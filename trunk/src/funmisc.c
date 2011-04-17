@@ -416,7 +416,7 @@ clear_allq(NEW_PE_INFO *pe_info) {
       return;
     }
     pe_regs = pe_regs->prev;
-  } 
+  }
 }
 
 struct st_unsetq_data {
@@ -667,7 +667,7 @@ FUNCTION(fun_switch)
       pe_regs_clear_type(pe_regs, PE_REGS_CAPTURE);
       ret = local_wild_match(pstr, mstr, pe_regs);
     }
-        
+
     if (ret) {
       /* If there's a #$ in a switch's action-part, replace it with
        * the value of the conditional (mstr) before evaluating it.
@@ -1081,25 +1081,51 @@ FUNCTION(fun_list)
 /* ARGSUSED */
 FUNCTION(fun_scan)
 {
-  dbref thing;
-  char *cmdptr;
-  if (nargs == 1) {
-    thing = executor;
-    cmdptr = args[0];
-  } else {
-    thing = match_thing(executor, args[0]);
-    if (!GoodObject(thing)) {
-      safe_str(T(e_notvis), buff, bp);
-      return;
-    }
-    if (!See_All(executor) && !controls(executor, thing)) {
-      notify(executor, T("Permission denied."));
-      safe_str("#-1", buff, bp);
-      return;
-    }
+  dbref thing = executor;
+  char *cmdptr = args[0];
+  char *prefstr, *thispref;
+  int scan_type = 0;
+
+  if (nargs > 1) {
     cmdptr = args[1];
+    if (arglens[0]) {
+      thing = match_thing(executor, args[0]);
+      if (!GoodObject(thing)) {
+        safe_str(T(e_notvis), buff, bp);
+        return;
+      }
+      if (!See_All(executor) && !controls(executor, thing)) {
+        notify(executor, T("Permission denied."));
+        safe_str("#-1", buff, bp);
+        return;
+      }
+    }
   }
-  safe_str(scan_list(thing, cmdptr), buff, bp);
+  if (nargs == 3 && arglens[2]) {
+    prefstr = trim_space_sep(args[2], ' ');
+    while ((thispref = split_token(&prefstr, ' '))) {
+      if (string_prefix("room", thispref))
+        scan_type |= CHECK_HERE | CHECK_NEIGHBORS;
+      else if (string_prefix("self", thispref))
+        scan_type |= CHECK_SELF | CHECK_INVENTORY;
+      else if (string_prefix("zone", thispref))
+        scan_type |= CHECK_ZONE;
+      else if (string_prefix("globals", thispref))
+        scan_type |= CHECK_GLOBAL;
+      else if (string_prefix("break", thispref))
+        scan_type |= CHECK_BREAK;
+      else if (string_prefix("all", thispref)) {
+        scan_type |= CHECK_ALL;
+      } else {
+        notify(executor, T("Invalid type."));
+        safe_str("#-1", buff, bp);
+        return;
+      }
+    }
+  }
+  if ((scan_type & ~CHECK_BREAK) == 0)
+    scan_type |= CHECK_ALL;
+  safe_str(scan_list(thing, cmdptr, scan_type), buff, bp);
 }
 
 

@@ -1443,6 +1443,8 @@ use_attr(UsedAttr **prev, char const *name, uint32_t no_prog)
  * \param check_locks check to make sure player passes thing's \@locks?
  * \param atrname used to return the list of matching object/attributes.
  * \param abp pointer to end of atrname.
+ * \param show_child always show the child in atrname, even if the command
+          was found on the parent?
  * \param errobj if an attribute matches, but the lock fails, this pointer
  *        is used to return the failing dbref. If NULL, we don't bother.
  * \param from_queue the parent queue to run matching attrs inplace for,
@@ -1453,7 +1455,7 @@ use_attr(UsedAttr **prev, char const *name, uint32_t no_prog)
 int
 atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
                int just_match, int check_locks,
-               char *atrname, char **abp, dbref *errobj,
+               char *atrname, char **abp, int show_child, dbref *errobj,
                MQUE * from_queue, int queue_type)
 {
   uint32_t flag_mask;
@@ -1620,7 +1622,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
         }
         if (atrname && abp) {
           safe_chr(' ', atrname, abp);
-          if (current == thing || !Can_Examine(player, current))
+          if (current == thing || show_child || !Can_Examine(player, current))
             safe_dbref(thing, atrname, abp);
           else
             safe_dbref(current, atrname, abp);

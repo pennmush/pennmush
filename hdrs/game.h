@@ -4,13 +4,16 @@
 #ifndef __GAME_H
 #define __GAME_H
 
-/* Miscellaneous flags */
-#define CHECK_INVENTORY            0x10
-#define CHECK_NEIGHBORS            0x20
-#define CHECK_SELF                 0x40
-#define CHECK_HERE                 0x80
-#define CHECK_ZONE                 0x100
-#define CHECK_GLOBAL               0x200
+/* @scan flags */
+#define CHECK_INVENTORY            0x010 /*<< Check player's inventory for $-commands */
+#define CHECK_NEIGHBORS            0x020 /*<< Check objects in player's location for $-commands, including player */
+#define CHECK_SELF                 0x040 /*<< Check player for $-commands */
+#define CHECK_HERE                 0x080 /*<< Check player's location for $-commands */
+#define CHECK_ZONE                 0x100 /*<< Check player's ZMT/ZMR for $-commands */
+#define CHECK_GLOBAL               0x200 /*<< Check for Master Room $-commands */
+#define CHECK_BREAK                0x400 /*<< Do no further checks after a round of $-command matching succeeds */
+/* Does NOT include CHECK_BREAK */
+#define CHECK_ALL (CHECK_INVENTORY | CHECK_NEIGHBORS | CHECK_SELF | CHECK_HERE | CHECK_ZONE | CHECK_GLOBAL)
 
 /* hash table stuff */
 extern void init_func_hashtab(void);    /* eval.c */

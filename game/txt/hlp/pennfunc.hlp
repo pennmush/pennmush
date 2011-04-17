@@ -4021,16 +4021,31 @@ See also: @function, RESTRICT
   
 See also: objeval(), decompose()
 & SCAN()
-  scan(<object>, <command>)
+  scan(<object>, <command>[, <switches>])
   scan(<command>)
 
-  This function works like @scan, and returns a space-separated list
-  of dbref/attribute pairs containing $commands that would be
-  triggered if <command> were run by <object>. You must control
-  <object> or be See_All to use this function.
+  This function works like @scan, and returns a space-separated list of 
+  dbref/attribute pairs containing $-commands that would be triggered if 
+  <command> were run by <object>. You must control <object> or be See_All 
+  to use this function. Only objects you can examine are included in the
+  output.
 
-  If no <object> is specified, this function works like @scan run
-  by the function's executor.
+  If no <object> is specified, this function works like @scan run by the 
+  function's executor.
+  
+  <switches> is a space-separated list of strings to limit which objects are
+  checked for $-commands. Valid switches are:
+    room     --  match your location and its contents
+    self     --  match yourself and your inventory
+    zone     --  match your zone and your location's zone
+    globals  --  match objects in the Master Room
+    all      --  all of the above (the default)
+    break    --  once a match is found, don't check in other locations 
+    
+  The order of searching for the "break" switch is the same as the order for
+  normal $-command matching, as described in 'help evaluation order'.
+  
+See also: @scan, @sweep, MASTER ROOM, EVALUATION ORDER, $-COMMANDS
 & SCRAMBLE()
   scramble(<string>)
 

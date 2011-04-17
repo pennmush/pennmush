@@ -953,7 +953,7 @@ do_readcache(dbref player)
 /** Check each attribute on each object in x for a $command matching cptr */
 #define list_match(x)        list_check(x, executor, '$', ':', cptr, 0)
 /** Check each attribute on x for a $command matching cptr */
-#define cmd_match(x)         atr_comm_match(x, executor, '$', ':', cptr, 0, 1, NULL, NULL, &errdb, NULL, QUEUE_DEFAULT)
+#define cmd_match(x)         atr_comm_match(x, executor, '$', ':', cptr, 0, 1, NULL, NULL, 0, &errdb, NULL, QUEUE_DEFAULT)
 #define MAYBE_ADD_ERRDB(errdb)  \
         do { \
           if (GoodObject(errdb) && errdblist) { \
@@ -1357,7 +1357,7 @@ list_check(dbref thing, dbref player, char type, char end, char *str,
 
   while (thing != NOTHING) {
     if (atr_comm_match(thing, player, type,
-                       end, str, just_match, 1, NULL, NULL, &errdb, NULL, QUEUE_DEFAULT))
+                       end, str, just_match, 1, NULL, NULL, 0, &errdb, NULL, QUEUE_DEFAULT))
       match = 1;
     else {
       MAYBE_ADD_ERRDB(errdb);
@@ -1572,9 +1572,9 @@ bind_and_queue(dbref player, dbref cause, char *action,
 }
 
 /** Would the scan command find an matching attribute on x for player p? */
-#define ScanFind(p,x)  \
+#define ScanFind(p,x,c)  \
   (Can_Examine(p,x) && \
-      ((num = atr_comm_match(x, p, '$', ':', command, 1, 1, atrname, &ptr, NULL, NULL, QUEUE_DEFAULT)) != 0))
+      ((num = atr_comm_match(x, p, '$', ':', command, 1, 1, atrname, &ptr, c, NULL, NULL, QUEUE_DEFAULT)) != 0))
 
 /** Scan for matches of $commands.
  * This function scans for possible matches of user-def'd commands from the
@@ -1582,10 +1582,11 @@ bind_and_queue(dbref player, dbref cause, char *action,
  * It assumes that atr_comm_match() returns atrname with a leading space.
  * \param player the object from whose viewpoint to scan.
  * \param command the command to scan for matches to.
+ * \param flag CHECK_* flags to limit objects searched
  * \return string of obj/attrib pairs with matching $commands.
  */
 char *
-scan_list(dbref player, char *command)
+scan_list(dbref player, char *command, int flag)
 {
   static char tbuf[BUFFER_LEN];
   char *tp;
@@ -1593,6 +1594,7 @@ scan_list(dbref player, char *command)
   char atrname[BUFFER_LEN];
   char *ptr;
   int num;
+  int matches = 0;
 
   if (!GoodObject(Location(player))) {
     strcpy(tbuf, T("#-1 INVALID LOCATION"));
@@ -1604,77 +1606,109 @@ scan_list(dbref player, char *command)
   }
   tp = tbuf;
   ptr = atrname;
-  DOLIST(thing, Contents(Location(player))) {
-    if (ScanFind(player, thing)) {
+
+  if (flag & CHECK_HERE) {
+    if (ScanFind(player, Location(player), 1)) {
       *ptr = '\0';
       safe_str(atrname, tbuf, &tp);
       ptr = atrname;
+      matches++;
     }
   }
-  ptr = atrname;
-  if (ScanFind(player, Location(player))) {
-    *ptr = '\0';
-    safe_str(atrname, tbuf, &tp);
-  }
-  ptr = atrname;
-  DOLIST(thing, Contents(player)) {
-    if (ScanFind(player, thing)) {
-      *ptr = '\0';
-      safe_str(atrname, tbuf, &tp);
-      ptr = atrname;
-    }
-  }
-  /* zone checks */
-  ptr = atrname;
-  if (Zone(Location(player)) != NOTHING) {
-    if (IsRoom(Zone(Location(player)))) {
-      /* zone of player's location is a zone master room */
-      if (Location(player) != Zone(player)) {
-        DOLIST(thing, Contents(Zone(Location(player)))) {
-          if (ScanFind(player, thing)) {
-            *ptr = '\0';
-            safe_str(atrname, tbuf, &tp);
-            ptr = atrname;
-          }
-        }
-      }
-    } else {
-      /* regular zone object */
-      if (ScanFind(player, Zone(Location(player)))) {
+
+  if (flag & CHECK_NEIGHBORS) {
+    flag &= ~CHECK_SELF;
+    DOLIST(thing, Contents(Location(player))) {
+      if (ScanFind(player, thing, 1)) {
         *ptr = '\0';
         safe_str(atrname, tbuf, &tp);
+        ptr = atrname;
+        matches++;
       }
     }
   }
-  ptr = atrname;
-  if ((Zone(player) != NOTHING)
-      && (Zone(player) != Zone(Location(player)))) {
-    /* check the player's personal zone */
-    if (IsRoom(Zone(player))) {
-      if (Location(player) != Zone(player)) {
-        DOLIST(thing, Contents(Zone(player))) {
-          if (ScanFind(player, thing)) {
-            *ptr = '\0';
-            safe_str(atrname, tbuf, &tp);
-            ptr = atrname;
-          }
-        }
-      }
-    } else if (ScanFind(player, Zone(player))) {
+
+  if (flag & CHECK_SELF) {
+    if (ScanFind(player, player, 1)) {
       *ptr = '\0';
       safe_str(atrname, tbuf, &tp);
+      ptr = atrname;
+      matches++;
     }
   }
-  ptr = atrname;
-  if ((Location(player) != MASTER_ROOM)
+
+  if (flag & CHECK_INVENTORY) {
+    DOLIST(thing, Contents(player)) {
+      if (ScanFind(player, thing, 1)) {
+        *ptr = '\0';
+        safe_str(atrname, tbuf, &tp);
+        ptr = atrname;
+        matches++;
+      }
+    }
+  }
+
+  /* zone checks */
+  if ((flag & CHECK_ZONE)) {
+    if (Zone(Location(player)) != NOTHING
+        && !(matches && (flag & CHECK_BREAK))) {
+      if (IsRoom(Zone(Location(player)))) {
+        /* zone of player's location is a zone master room */
+        if (Location(player) != Zone(player)) {
+          DOLIST(thing, Contents(Zone(Location(player)))) {
+            if (ScanFind(player, thing, 1)) {
+              *ptr = '\0';
+              safe_str(atrname, tbuf, &tp);
+              ptr = atrname;
+              matches++;
+            }
+          }
+        }
+      } else {
+        /* regular zone object */
+        if (ScanFind(player, Zone(Location(player)), 1)) {
+          *ptr = '\0';
+          safe_str(atrname, tbuf, &tp);
+          ptr = atrname;
+          matches++;
+        }
+      }
+    }
+    if ((Zone(player) != NOTHING) && !(matches && (flag & CHECK_BREAK))
+        && (Zone(player) != Zone(Location(player)))) {
+      /* check the player's personal zone */
+      if (IsRoom(Zone(player))) {
+        if (Location(player) != Zone(player)) {
+          DOLIST(thing, Contents(Zone(player))) {
+            if (ScanFind(player, thing, 1)) {
+              *ptr = '\0';
+              safe_str(atrname, tbuf, &tp);
+              ptr = atrname;
+              matches++;
+            }
+          }
+        }
+      } else if (ScanFind(player, Zone(player), 1)) {
+        *ptr = '\0';
+        safe_str(atrname, tbuf, &tp);
+        ptr = atrname;
+        matches++;
+      }
+    }
+  }
+
+  if ((flag & CHECK_GLOBAL)
+      && !(matches && (flag & CHECK_BREAK))
+      && (Location(player) != MASTER_ROOM)
       && (Zone(Location(player)) != MASTER_ROOM)
       && (Zone(player) != MASTER_ROOM)) {
     /* try Master Room stuff */
     DOLIST(thing, Contents(MASTER_ROOM)) {
-      if (ScanFind(player, thing)) {
+      if (ScanFind(player, thing, 1)) {
         *ptr = '\0';
         safe_str(atrname, tbuf, &tp);
         ptr = atrname;
+        matches++;
       }
     }
   }
@@ -1713,7 +1747,7 @@ do_scan(dbref player, char *command, int flag)
   if (flag & CHECK_NEIGHBORS) {
     notify(player, T("Matches on contents of this room:"));
     DOLIST(thing, Contents(Location(player))) {
-      if (ScanFind(player, thing)) {
+      if (ScanFind(player, thing, 0)) {
         *ptr = '\0';
         notify_format(player,
                       "%s  [%d:%s]", unparse_object(player, thing),
@@ -1724,7 +1758,7 @@ do_scan(dbref player, char *command, int flag)
   }
   ptr = atrname;
   if (flag & CHECK_HERE) {
-    if (ScanFind(player, Location(player))) {
+    if (ScanFind(player, Location(player), 0)) {
       *ptr = '\0';
       notify_format(player, T("Matched here: %s  [%d:%s]"),
                     unparse_object(player, Location(player)), num, atrname);
@@ -1734,7 +1768,7 @@ do_scan(dbref player, char *command, int flag)
   if (flag & CHECK_INVENTORY) {
     notify(player, T("Matches on carried objects:"));
     DOLIST(thing, Contents(player)) {
-      if (ScanFind(player, thing)) {
+      if (ScanFind(player, thing, 0)) {
         *ptr = '\0';
         notify_format(player, "%s  [%d:%s]",
                       unparse_object(player, thing), num, atrname);
@@ -1744,7 +1778,7 @@ do_scan(dbref player, char *command, int flag)
   }
   ptr = atrname;
   if (flag & CHECK_SELF) {
-    if (ScanFind(player, player)) {
+    if (ScanFind(player, player, 0)) {
       *ptr = '\0';
       notify_format(player, T("Matched self: %s  [%d:%s]"),
                     unparse_object(player, player), num, atrname);
@@ -1759,7 +1793,7 @@ do_scan(dbref player, char *command, int flag)
         if (Location(player) != Zone(player)) {
           notify(player, T("Matches on zone master room of location:"));
           DOLIST(thing, Contents(Zone(Location(player)))) {
-            if (ScanFind(player, thing)) {
+            if (ScanFind(player, thing, 0)) {
               *ptr = '\0';
               notify_format(player, "%s  [%d:%s]",
                             unparse_object(player, thing), num, atrname);
@@ -1769,7 +1803,7 @@ do_scan(dbref player, char *command, int flag)
         }
       } else {
         /* regular zone object */
-        if (ScanFind(player, Zone(Location(player)))) {
+        if (ScanFind(player, Zone(Location(player)), 0)) {
           *ptr = '\0';
           notify_format(player,
                         T("Matched zone of location: %s  [%d:%s]"),
@@ -1786,7 +1820,7 @@ do_scan(dbref player, char *command, int flag)
         if (Location(player) != Zone(player)) {
           notify(player, T("Matches on personal zone master room:"));
           DOLIST(thing, Contents(Zone(player))) {
-            if (ScanFind(player, thing)) {
+            if (ScanFind(player, thing, 0)) {
               *ptr = '\0';
               notify_format(player, "%s  [%d:%s]",
                             unparse_object(player, thing), num, atrname);
@@ -1794,7 +1828,7 @@ do_scan(dbref player, char *command, int flag)
             }
           }
         }
-      } else if (ScanFind(player, Zone(player))) {
+      } else if (ScanFind(player, Zone(player), 0)) {
         *ptr = '\0';
         notify_format(player, T("Matched personal zone: %s  [%d:%s]"),
                       unparse_object(player, Zone(player)), num, atrname);
@@ -1809,7 +1843,7 @@ do_scan(dbref player, char *command, int flag)
     /* try Master Room stuff */
     notify(player, T("Matches on objects in the Master Room:"));
     DOLIST(thing, Contents(MASTER_ROOM)) {
-      if (ScanFind(player, thing)) {
+      if (ScanFind(player, thing, 0)) {
         *ptr = '\0';
         notify_format(player, "%s  [%d:%s]",
                       unparse_object(player, thing), num, atrname);

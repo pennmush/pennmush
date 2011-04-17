@@ -82,7 +82,7 @@ extern void atr_cpy(dbref dest, dbref source);
 extern char const *convert_atr(int oldatr);
 extern int atr_comm_match(dbref thing, dbref player, int type, int end,
                           char const *str, int just_match, int check_locks,
-                          char *atrname, char **abp, dbref *errobj,
+                          char *atrname, char **abp, int show_child, dbref *errobj,
                           MQUE * from_queue, int queue_type);
 extern int one_comm_match(dbref thing, dbref player, const char *atr,
                           const char *str, MQUE * from_queue, int queue_type);

@@ -2221,7 +2221,7 @@ run_hook_override(COMMAND_INFO *cmd, dbref player, const char *commandraw,
                           from_queue, cmd->hooks.override.inplace);
   } else {
     return atr_comm_match(cmd->hooks.override.obj, player, '$', ':', commandraw,
-                          0, 1, NULL, NULL, NULL,
+                          0, 1, NULL, NULL, 0, NULL,
                           from_queue, cmd->hooks.override.inplace);
   }
 }

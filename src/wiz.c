@@ -2156,7 +2156,7 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
       continue;
     if (spec.cmdstring[0] &&
         !atr_comm_match(n, player, '$', ':', spec.cmdstring, 1, 0,
-                        NULL, NULL, NULL, NULL, QUEUE_DEFAULT))
+                        NULL, NULL, 0,  NULL, NULL, QUEUE_DEFAULT))
       continue;
     if (spec.listenstring[0]) {
       ret = 0;
@@ -2172,7 +2172,7 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
       }
       if (!ret &&
           !atr_comm_match(n, player, '^', ':', spec.listenstring, 1, 0,
-                          NULL, NULL, NULL, NULL, QUEUE_DEFAULT))
+                          NULL, NULL, 0, NULL, NULL, QUEUE_DEFAULT))
         continue;
     }
     if (*spec.eval) {

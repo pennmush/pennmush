@@ -49,7 +49,13 @@ void set_match_limit(struct pcre_extra *);
 struct pcre_extra *default_match_limit(void);
 
 #ifdef HAVE_PCRE
+
+#ifdef HAVE_PCRE_H
 #include <pcre.h>
+#else
+#error "You appear to have a system PCRE library but not the pcre.h header. Install it or re-run configure with --without-pcre"
+#endif
+
 #else
 
 

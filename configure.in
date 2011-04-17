@@ -203,7 +203,8 @@ fi
 
 # system libpcre
 AX_PATH_LIB_PCRE()
-if test "${PCRE_LIBS+set}" = "set"; then
+AC_CHECK_HEADERS([pcre.h])
+if test "${PCRE_LIBS+set}" = "set" -a "x${ac_cv_header_pcre_h}" = "xyes"; then
    AC_DEFINE(HAVE_PCRE)
 fi
 
@@ -227,10 +228,12 @@ AC_CHECK_FUNC(crypt, [AC_DEFINE(HAS_CRYPT)])
 AC_CHECK_FUNCS([fpsetmask fpsetround])
 AC_MSG_CHECKING([for isnormal])
 AC_LINK_IFELSE([
+AC_LANG_SOURCE([
 #include <math.h>
 int main(void) {
  return !isnormal(1.0);
 }
+])
 ], 
 [AC_MSG_RESULT(yes)]
 [AC_DEFINE(HAVE_ISNORMAL)],
@@ -263,6 +266,7 @@ AC_CHECK_FUNCS([pread pwrite])
 # them in source. 
 AC_MSG_CHECKING([for posix_fallocate])
 AC_LINK_IFELSE([
+AC_LANG_SOURCE([
 #define _XOPEN_SOURCE 600
 #include <fcntl.h>
 
@@ -272,12 +276,14 @@ main(void)
  posix_fallocate(0, 0, 100);
  return 0;
 }
+])
 ],
 [AC_MSG_RESULT(yes)]
 [AC_DEFINE(HAVE_POSIX_FALLOCATE)],
 AC_MSG_RESULT(no))
 AC_MSG_CHECKING([for posix_fadvise and associated constants])
 AC_LINK_IFELSE([
+AC_LANG_SOURCE([
 #define _XOPEN_SOURCE 600
 #include <fcntl.h>
 
@@ -287,6 +293,7 @@ main(void)
   posix_fadvise(0, 0, 0, POSIX_FADV_SEQUENTIAL);
   return 0;
 }
+])
 ],
 [AC_MSG_RESULT(yes)]
 [AC_DEFINE(HAVE_POSIX_FADVISE)],

@@ -501,6 +501,7 @@ do_give(dbref player, char *recipient, char *amnt, int silent)
       asave = safe_atr_value(a);
       ap = asave;
       fbp = fbuff;
+      pb = paid;
       safe_integer_sbuf(amount, paid, &pb);
       *pb = '\0';
       pe_regs_setenv_nocopy(pe_info->regvals, 0, paid);
@@ -569,6 +570,7 @@ do_give(dbref player, char *recipient, char *amnt, int silent)
         }
       }
       giveto(who, amount);
+      pb = paid;
       safe_integer_sbuf(amount, paid, &pb);
       *pb = '\0';
       pe_regs = pe_regs_create(PE_REGS_ARG, "do_give");

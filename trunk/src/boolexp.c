@@ -1022,7 +1022,7 @@ parse_boolexp_R(void)
   }
   /* strip trailing whitespace */
   *p-- = '\0';
-  while (isspace((unsigned char) *p))
+  while (p >= tbuf1 && isspace((unsigned char) *p))
     *p-- = '\0';
   /* do the match */
   if (loading_db) {
@@ -1103,7 +1103,7 @@ parse_boolexp_L(void)
     }
     /* strip trailing whitespace */
     *p-- = '\0';
-    while (isspace((unsigned char) *p))
+    while (p >= tbuf1 && isspace((unsigned char) *p))
       *p-- = '\0';
     /* check for an attribute */
     b = test_atr(tbuf1, ':');

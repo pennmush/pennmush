@@ -339,9 +339,6 @@ max_parents 10
 # What's the max chain length of indirect locks allowed?
 max_depth 10
 
-# What's the maximum number of zones allowed in an object's zone list?
-max_zones 30
-
 # How much does it cost a mortal to create a channel?
 chan_cost 1000
 

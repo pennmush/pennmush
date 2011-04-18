@@ -68,7 +68,8 @@ sub start {
   } elsif (defined($child)) {
     chdir("testgame");
     my @execargs = ("./netmush", "--no-session", "test.cnf");
-    unshift @execargs, "valgrind", "--tool=memcheck", '--log-file=../valgrind-%p.log', "--leak-check=full"
+    unshift @execargs, "valgrind", "--tool=memcheck", '--log-file=../valgrind-%p.log',
+                       "--leak-check=full", "--track-origins=yes"
 	if $self->{VALGRIND};
     exec @execargs;
   } else {

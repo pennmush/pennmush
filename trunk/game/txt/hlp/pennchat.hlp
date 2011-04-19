@@ -264,9 +264,9 @@ See also: crecall(), cbufferadd(), @channel/buffer
   players in @channel/what. Limited to 256 characters. If the desc includes
   commas, the whole desc should be enclosed in {}s.
 
-  @channel/buffer sets the maximum number of full-length lines that the
-  channel will buffer for @channel/recall. Many more shorter lines may
-  actually be buffered. Setting it to 0 turns off buffering.
+  @channel/buffer sets the maximum number of full-length lines (8192 bytes)
+  that the channel will buffer for @channel/recall. Many more shorter lines
+  may actually be buffered. Setting it to 0 turns off buffering.
 
   @channel/decompile produces a decompile of all channels whose name begin
   with <prefix>, showing the commands needed to recreate the channels. If

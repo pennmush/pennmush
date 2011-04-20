@@ -105,22 +105,11 @@ static tcheck checklist[] = {
 void
 complain(dbref player, dbref i, const char *name, const char *desc, ...)
 {
-#ifdef HAS_VSNPRINTF
   char buff[BUFFER_LEN];
-#else
-  char buff[BUFFER_LEN * 3];    /* safety margin */
-#endif
   va_list args;
 
   va_start(args, desc);
-
-#ifdef HAS_VSNPRINTF
-  vsnprintf(buff, sizeof buff, desc, args);
-#else
-  vsprintf(buff, desc, args);
-#endif
-
-  buff[BUFFER_LEN - 1] = '\0';
+  my_vsnprintf(buff, sizeof buff, desc, args);
   va_end(args);
 
   notify_format(player, T("Warning '%s' for %s:"),

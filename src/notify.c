@@ -1024,20 +1024,13 @@ notify_anything(dbref speaker, na_lookup func,
 void WIN32_CDECL
 notify_format(dbref player, const char *fmt, ...)
 {
-#ifdef HAS_VSNPRINTF
   char buff[BUFFER_LEN];
-#else
-  char buff[BUFFER_LEN * 3];
-#endif
   va_list args;
+
   va_start(args, fmt);
-#ifdef HAS_VSNPRINTF
-  vsnprintf(buff, sizeof buff, fmt, args);
-#else
-  vsprintf(buff, fmt, args);
-#endif
-  buff[BUFFER_LEN - 1] = '\0';
+  my_vsnprintf(buff, sizeof buff, fmt, args);
   va_end(args);
+
   notify(player, buff);
 }
 
@@ -1057,20 +1050,13 @@ notify_anything_format(dbref speaker, na_lookup func,
                                                      void *, int), int flags,
                        const char *fmt, ...)
 {
-#ifdef HAS_VSNPRINTF
   char buff[BUFFER_LEN];
-#else
-  char buff[BUFFER_LEN * 3];
-#endif
   va_list args;
+
   va_start(args, fmt);
-#ifdef HAS_VSNPRINTF
-  vsnprintf(buff, sizeof buff, fmt, args);
-#else
-  vsprintf(buff, fmt, args);
-#endif
-  buff[BUFFER_LEN - 1] = '\0';
+  my_vsnprintf(buff, sizeof buff, fmt, args);
   va_end(args);
+
   notify_anything(speaker, func, fdata, nsfunc, flags, buff);
 }
 
@@ -1161,13 +1147,8 @@ flag_broadcast(const char *flag1, const char *flag2, const char *fmt, ...)
   int ok;
 
   va_start(args, fmt);
-#ifdef HAS_VSNPRINTF
-  (void) vsnprintf(tbuf1, sizeof tbuf1, fmt, args);
-#else
-  (void) vsprintf(tbuf1, fmt, args);
-#endif
+  my_vsnprintf(tbuf1, sizeof tbuf1, fmt, args);
   va_end(args);
-  tbuf1[BUFFER_LEN - 1] = '\0';
 
   DESC_ITER_CONN(d) {
     ok = 1;

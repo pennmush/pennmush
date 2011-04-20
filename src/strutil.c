@@ -76,6 +76,22 @@ mush_strdup(const char *s, const char *check __attribute__ ((__unused__)))
   return x;
 }
 
+/* Windows wrapper for snprintf */
+#if !defined (HAVE_SNPRINTF) && defined(HAVE__VSNPRINTF_S)
+int
+sane_snprintf_s(char *str, size_t len, const char *fmt, ...)
+{
+  va_list args;
+  int ret;
+
+  va_start(args, fmt);
+  ret = _vsnprintf_s(str, len, _TRUNCATE, fmt, args);
+  va_end(args);
+
+  return ret;
+}
+#endif
+
 /* Wrapper for systems without vsnprintf. */
 int
 my_vsnprintf(char *str, size_t len, const char *fmt, va_list ap)

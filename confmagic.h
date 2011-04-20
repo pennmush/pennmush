@@ -46,7 +46,7 @@ int sane_snprintf_s(char *, size_t, const char *, ...);
 #endif
 #endif
 
-#if !defined(HAVE_VSNPRINTF)
+#if !defined(HAS_VSNPRINTF)
 #if defined(HAVE__VSNPRINTF_S)
 #define vsnprintf(str, size, fmt, args)  _vsnprintf_s((str), (size), \
 						      _TRUNCATE,     \

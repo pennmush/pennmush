@@ -76,19 +76,35 @@ mush_strdup(const char *s, const char *check __attribute__ ((__unused__)))
   return x;
 }
 
-#ifdef HAVE__VSNPRINTF_S
-/** Wrapper for the Win32 _snprintf_s() function */
+/* Wrapper for systems without vsnprintf. */
 int
-sane_snprintf_s(char *str, size_t len, const char *fmt, ...)
+my_vsnprintf(char *str, size_t len, const char *fmt, va_list ap)
 {
-  va_list args;
   int ret;
-  va_start(args, fmt);
-  ret = _vsnprintf_s(str, len, _TRUNCATE, fmt, args);
-  va_end(args);
+
+#if defined(HAVE__VSNPRINTF_S)
+  /* Windows version */
+  ret = _vsnprintf_s(str, len, _TRUNCATE, fmt, ap);
+#elif defined(HAS_VSNPRINTF)
+  /* C99 version */
+  ret = vsnprintf(str, len, fmt, ap);
+#else
+  /* Old school icky unsafe version */
+  {
+    static char buff[BUFFER_LEN * 3];
+
+    ret = vsprintf(buff, fmt, ap);
+    
+    if ((size_t)ret > len)
+      ret = len;
+
+    memcpy(str, buff, ret);
+    str[ret - 1] = '\0';      
+  }
+#endif
+
   return ret;
 }
-#endif
 
 /** Return the string chopped at lim characters.
  * lim must be <= BUFFER_LEN
@@ -630,22 +646,12 @@ int
 safe_format(char *buff, char **bp, const char *RESTRICT fmt, ...)
 {
   APPEND_ARGS;
-#ifdef HAS_VSNPRINTF
   char c[BUFFER_LEN];
-#else
-  char c[BUFFER_LEN * 3];
-#endif
   va_list args;
 
   va_start(args, fmt);
 
-#ifdef HAS_VSNPRINTF
-  vsnprintf(c, sizeof c, fmt, args);
-#else
-  vsprintf(c, fmt, args);
-#endif
-  c[BUFFER_LEN - 1] = '\0';
-  va_end(args);
+  my_vsnprintf(c, sizeof c, fmt, args);
 
   APPEND_TO_BUF;
 }

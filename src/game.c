@@ -490,21 +490,12 @@ mush_panic(const char *message)
 void
 mush_panicf(const char *msg, ...)
 {
-#ifdef HAS_VSNPRINTF
   char c[BUFFER_LEN];
-#else
-  char c[BUFFER_LEN * 3];
-#endif
   va_list args;
 
   va_start(args, msg);
 
-#ifdef HAS_VSNPRINTF
-  vsnprintf(c, sizeof c, msg, args);
-#else
-  vsprintf(c, msg, args);
-#endif
-  c[BUFFER_LEN - 1] = '\0';
+  my_vsnprintf(c, sizeof c, msg, args);
   va_end(args);
 
   mush_panic(c);

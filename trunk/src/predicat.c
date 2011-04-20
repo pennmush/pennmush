@@ -55,24 +55,14 @@ extern PRIV attr_privs_view[];
 char *WIN32_CDECL
 tprintf(const char *fmt, ...)
 {
-#ifdef HAS_VSNPRINTF
   static char buff[BUFFER_LEN];
-#else
-  static char buff[BUFFER_LEN * 3];     /* safety margin */
-#endif
   va_list args;
 
   va_start(args, fmt);
-
-#ifdef HAS_VSNPRINTF
-  vsnprintf(buff, sizeof buff, fmt, args);
-#else
-  vsprintf(buff, fmt, args);
-#endif
-
-  buff[BUFFER_LEN - 1] = '\0';
+  my_vsnprintf(buff, sizeof buff, fmt, args);
   va_end(args);
-  return (buff);
+
+  return buff;
 }
 
 /** lock evaluation -- determines if player passes lock on thing, for

@@ -494,7 +494,7 @@ unsigned char *u_strncpy
 char *
 mush_strndup(const char *src, size_t len, const char *check)
   __attribute_malloc__;
-
+int my_vsnprintf(char *, size_t, const char *, va_list);
 
 /** Unsigned char strdup. Why is this a macro when the others functions? */
 #define u_strdup(x) (unsigned char *)strdup((const char *) x)

@@ -40,6 +40,7 @@ Hardcode:
  * Renamed some variables in COMMAND() definitions for consistency/clarity.
    See HACKING.184 for more info. [MG]
  * Assorted Windows fixes. [SW]
+ * Clean up code using vsnprintf() to remove #ifdefs. [SW]
 
 Minor changes:
  * Because switch() and @switch now store capture data, it can change

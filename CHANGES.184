@@ -41,6 +41,8 @@ Hardcode:
    See HACKING.184 for more info. [MG]
  * Assorted Windows fixes. [SW]
  * Clean up code using vsnprintf() to remove #ifdefs. [SW]
+ * String trees are now fully reference counted with no undeletable
+   entries. [SW]
 
 Minor changes:
  * Because switch() and @switch now store capture data, it can change

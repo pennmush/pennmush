@@ -2182,9 +2182,7 @@ FUNCTION(fun_step)
       }
     }
     if (call_ufun(&ufun, rbuff, executor, enactor, pe_info, pe_regs)) {
-      freearr(ptrs, nptrs);
-      mush_free(ptrs, "ptrarray");
-      return;
+      goto exitsequence;
     }
     if (i > step) {
       /* At least second loop */
@@ -2192,6 +2190,8 @@ FUNCTION(fun_step)
     }
     safe_str(rbuff, buff, bp);
   }
+exitsequence:
+  pe_regs_free(pe_regs);
   freearr(ptrs, nptrs);
   mush_free(ptrs, "ptrarray");
 }

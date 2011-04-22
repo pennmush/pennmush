@@ -847,9 +847,11 @@ pe_regs_set_if(PE_REGS *pe_regs, int type,
   strncpy(key, lckey, PE_KEY_LEN);
   upcasestr(key);
   FIND_PVAL(pval, key, type);
-  if (!(val && val[0]) && !(type | PE_REGS_NOCOPY)) {
-    val = noval;
-    type |= PE_REGS_NOCOPY;
+  if (!(type & PE_REGS_NOCOPY)) {
+    if (!val || !val[0]) {
+      val = noval;
+      type |= PE_REGS_NOCOPY;
+    }
   }
   if (pval) {
     if (!override) return;

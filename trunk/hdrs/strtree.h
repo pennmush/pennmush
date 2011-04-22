@@ -16,7 +16,7 @@ typedef struct strnode StrNode;
 struct strnode {
   StrNode *left;                /**< Pointer to left child */
   StrNode *right;               /**< Pointer to right child */
-  unsigned char info;           /**< Red/black and other internal state */
+  uint32_t info;           /**< Red/black and other internal state */
   char string[BUFFER_LEN];      /**< Node label (value) */
 };
 

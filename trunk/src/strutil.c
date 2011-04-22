@@ -666,8 +666,8 @@ safe_format(char *buff, char **bp, const char *RESTRICT fmt, ...)
   va_list args;
 
   va_start(args, fmt);
-
   my_vsnprintf(c, sizeof c, fmt, args);
+  va_end(args);
 
   APPEND_TO_BUF;
 }

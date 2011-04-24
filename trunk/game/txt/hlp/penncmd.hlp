@@ -3102,6 +3102,7 @@ See also: MONEY, give
 
   God can add, delete, and otherwise manipulate power definitions.
   See help @power2 for these commands.
+See also: powers(), @flag
 & @power2
   @power/add <power>=[<letter>], [<type(s)>], [<setperms>], [<unsetperms>]
   @power/delete <power>

@@ -410,8 +410,8 @@ bool
 is_strict_number(char const *str)
 {
   char *end;
-  int throwaway;
-  if (!str)
+  int throwaway __attribute__((__unused__));
+  if (!str)  
     return 0;
   errno = 0;
   throwaway = strtod(str, &end);

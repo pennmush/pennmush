@@ -2095,13 +2095,15 @@ do_chan_title(dbref player, const char *name, const char *title)
     notify(player, T("Title too long."));
     return;
   }
-  WALK_ANSI_STRING(scan, title) {
+  scan = title;
+  WALK_ANSI_STRING(scan) {
     /* Stomp newlines and other weird whitespace */
     if ((isspace((unsigned char) *scan) && (*scan != ' '))
         || (*scan == BEEP_CHAR)) {
       notify(player, T("Invalid character in title."));
       return;
     }
+    scan++;
   }
 
   if (CUtitle(u))

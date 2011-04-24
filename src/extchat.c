@@ -3118,7 +3118,6 @@ void
 chat_player_announce(dbref player, char *msg, int ungag)
 {
   DESC *d;
-  size_t msglen;
   CHAN *c;
   CHANUSER *up, *uv;
   char buff[BUFFER_LEN], *bp;
@@ -3126,8 +3125,6 @@ chat_player_announce(dbref player, char *msg, int ungag)
   dbref viewer;
   bool shared = false;
   int na_flags = NA_INTER_LOCK | NA_SPOOF | NA_INTER_PRESENCE;
-
-  msglen = strlen(msg);
 
   /* Use the regular channel_send() for all non-combined players. */
   for (c = channels; c; c = c->next) {

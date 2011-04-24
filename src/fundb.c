@@ -110,7 +110,6 @@ FUNCTION(fun_nattr)
   int doparent;
   const char *pattern;
   int regexp = 0;
-  int matchall = 0;
 
   if (*called_as == 'R')
     regexp = 1;
@@ -125,7 +124,6 @@ FUNCTION(fun_nattr)
   }
   if (!strcmp(pattern, "**") || !strlen(pattern)) {
     regexp = 0;
-    matchall = 1;
   }
 
   thing = match_thing(executor, args[0]);

@@ -3700,6 +3700,8 @@ See also: subj(), obj(), aposs()
   power(<number>, <exponent>)
  
   Returns <number> to the power of <exponent>.
+  
+  (For the functional version of @power, see 'help powers()'.)
 
 See also: root()
 & POWERS()
@@ -3727,9 +3729,9 @@ See also: @quota, @squota, @allquota
 & R-FUNCTION
   r(<register>)
   
-  The r() function is used to access "local registers", and returns the 
-  contents of the specified register. There are 36 such registers, numbered 
-  0 through 9, and A through Z.
+  The r() function is used to access "local registers", as set by the setq(),
+  setr() orletq() functions, and returns the contents of the specified
+  register. Available register names can be found with the listq() function.
  
   The '%q<register>' percent-substitution can also be used to access these
   local registers.
@@ -4144,7 +4146,7 @@ See also: setdiff(), setunion()
   Register names are case insensitive.
 
   See 'help setq2' for more.
-  See also: r(), listq(), unsetq(), letq(), localize(), ulocal()
+See also: r(), listq(), unsetq(), letq(), localize(), ulocal()
 & SETQ2
   The maximum number of q-registers you can have set is configured via
   @config max_attrs_per_obj. That number is for the total number of
@@ -4195,20 +4197,19 @@ See also: setdiff(), setunion()
     Object says "foo"
 & LISTQ()
 & UNSETQ()
-  listq()
-  listq(<pattern>)
-  unsetq(<pattern1> [<pattern2> [...]])
+  listq([<pattern>])
+  unsetq([<pattern1> [<pattern2> [...]]])
 
   listq() returns a space-separated list of set q-registers with values
-  available in the current q-register scope. If <pattern> is provided,
-  then only those that match the glob pattern <pattern> will be returned.
+  available in the current q-register scope. If <pattern> is provided, then
+  only those that match the wildcard pattern <pattern> will be returned.
 
   unsetq() without arguments clears all registers. Otherwise, unsetq()
   treats its argument as a list of register name patterns, and will
   unset all those registers within the local scope.
 
   If unsetq() is inside of a letq(), and does not have an argument,
-  it will clear the registers that letq() has protected.  unsetq()
+  it will clear the registers that letq() has protected. unsetq()
   with arguments clears the specified registers.
 
   unsetq(<arg>) will clear all registers returned by listq(<arg>).
@@ -4223,6 +4224,7 @@ See also: setdiff(), setunion()
     > think setq(name,Walker,num,#6061,loc,Bahamas)[unsetq(n*)][listq()]
     LOC
 
+See also: setq(), letq(), r(), localize()
 & SETUNION()
   setunion(<list1>, <list2>[, <delimiter>[, <sort type>[, <osep>]]])
  

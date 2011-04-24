@@ -255,12 +255,10 @@ ansi_strnlen(const char *p, size_t numchars)
     if (*p == ESC_CHAR) {
       while ((*p) && (*p != 'm')) {
         p++;
-        i++;
       }
     } else if (*p == TAG_START) {
       while ((*p) && (*p != TAG_END)) {
         p++;
-        i++;
       }
     } else
       numchars--;

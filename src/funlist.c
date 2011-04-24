@@ -185,7 +185,7 @@ FUNCTION(fun_munge)
    * This rearranged list is returned by MUNGE.
    * A fourth argument (separator) is optional.
    */
-  char list1[BUFFER_LEN], *lp, rlist[BUFFER_LEN], *rp;
+  char list1[BUFFER_LEN], *lp, rlist[BUFFER_LEN];
   char **ptrs1, **ptrs2, **results;
   char **ptrs3;
   int i, j, nptrs1, nptrs2, nresults;
@@ -243,7 +243,6 @@ FUNCTION(fun_munge)
 
   /* Call the user function */
   lp = list1;
-  rp = rlist;
   pe_regs = pe_regs_create(PE_REGS_ARG, "fun_munge");
   pe_regs_setenv_nocopy(pe_regs, 0, lp);
   pe_regs_setenv_nocopy(pe_regs, 1, isep);
@@ -1942,7 +1941,6 @@ FUNCTION(fun_iter)
   char *tbuf2, *lp;
   char const *sp;
   int funccount;
-  char *oldbp;
   const char *replace[2];
   PE_REGS *pe_regs;
 
@@ -1990,7 +1988,6 @@ FUNCTION(fun_iter)
   nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, lp, sep, 1);
 
   funccount = pe_info->fun_invocations;
-  oldbp = *bp;
 
   pe_regs = pe_regs_localize(pe_info, PE_REGS_ITER, "fun_iter");
   for (i = 0; i < nptrs; i++) {
@@ -2014,7 +2011,6 @@ FUNCTION(fun_iter)
       break;
     }
     funccount = pe_info->fun_invocations;
-    oldbp = *bp;
     mush_free(tbuf2, "replace_string.buff");
     if (pe_regs->flags & PE_REGS_IBREAK) {
       break;
@@ -2509,7 +2505,7 @@ FUNCTION(fun_regreplace)
 
   int i;
   const char *r, *obp;
-  char *start, *oldbp;
+  char *start;
   char tbuf[BUFFER_LEN], *tbp;
   char prebuf[BUFFER_LEN];
   char postbuf[BUFFER_LEN], *postp;
@@ -2601,7 +2597,6 @@ FUNCTION(fun_regreplace)
     }
 
     funccount = pe_info->fun_invocations;
-    oldbp = postp;
 
     do {
       /* Copy up to the start of the matched area */
@@ -2622,7 +2617,6 @@ FUNCTION(fun_regreplace)
           && (pe_info->fun_invocations == funccount))
         break;
 
-      oldbp = postp;
       funccount = pe_info->fun_invocations;
 
       start = prebuf + offsets[1];
@@ -2811,19 +2805,12 @@ FUNCTION(fun_regmatch)
   /* Initialize every q-register used to '' */
   for (i = 0; i < nqregs; i++) {
     char *regname;
-    char *named_subpattern = NULL;
-    int subpattern = 0;
     holder[i] = mush_strdup(qregs[i], "regmatch");
     if ((regname = strchr(holder[i], ':'))) {
       /* subexpr:register */
       *regname++ = '\0';
-      if (is_strict_integer(holder[i]))
-        subpattern = parse_integer(holder[i]);
-      else
-        named_subpattern = holder[i];
     } else {
       /* Get subexper by position in list */
-      subpattern = i;
       regname = holder[i];
     }
 

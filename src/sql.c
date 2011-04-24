@@ -629,7 +629,6 @@ FUNCTION(fun_mapsql)
 {
   void *qres;
   ufun_attrib ufun;
-  char *wenv[10];
   char *osep = (char *) " ";
   int affected_rows;
   int rownum;
@@ -668,8 +667,6 @@ FUNCTION(fun_mapsql)
     do_fieldnames = parse_boolean(args[3]);
   }
 
-  for (i = 0; i < 10; i++)
-    wenv[i] = NULL;
   qres = sql_query(args[1], &affected_rows);
   sql_test_result(qres);
   /* Get results. A silent query (INSERT, UPDATE, etc.) will return NULL */

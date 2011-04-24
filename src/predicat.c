@@ -1100,10 +1100,7 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
   char buff[BUFFER_LEN], *bp;
   char const *ap;
   char *tbuf1;
-  char ibuff[BUFFER_LEN], *ibp;
   PE_REGS *pe_regs;
-
-  ibp = ibuff;
 
   if (!argv[1])
     return;

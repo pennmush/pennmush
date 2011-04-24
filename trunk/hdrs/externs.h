@@ -10,6 +10,7 @@
 #define __EXTERNS_H
 /* Get the time_t definition that we use in prototypes here */
 #include <time.h>
+#include <stdarg.h>
 #ifdef I_LIBINTL
 #include <libintl.h>
 #endif

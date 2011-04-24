@@ -146,23 +146,12 @@ FUNCTION(fun_isword)
 /* ARGSUSED */
 FUNCTION(fun_capstr)
 {
-  char *p;
-  p = skip_leading_ansi(args[0]);
-  if (!p) {
-    safe_strl(args[0], arglens[0], buff, bp);
-    return;
-  } else if (p != args[0]) {
-    char x = *p;
-    *p = '\0';
-    safe_strl(args[0], p - args[0], buff, bp);
-    *p = x;
+  char *p = args[0];
+  WALK_ANSI_STRING(p) {
+    *p = UPCASE(*p);
+    break;
   }
-  if (*p) {
-    safe_chr(UPCASE(*p), buff, bp);
-    p++;
-  }
-  if (*p)
-    safe_str(p, buff, bp);
+  safe_strl(args[0], arglens[0], buff, bp);
 }
 
 /* ARGSUSED */
@@ -802,45 +791,27 @@ FUNCTION(fun_tr)
 /* ARGSUSED */
 FUNCTION(fun_lcstr)
 {
-  char *p, *y;
+  char *p;
   p = args[0];
-  while (*p) {
-    y = skip_leading_ansi(p);
-    if (y != p) {
-      char t;
-      t = *y;
-      *y = '\0';
-      safe_str(p, buff, bp);
-      *y = t;
-      p = y;
-    }
-    if (*p) {
-      safe_chr(DOWNCASE(*p), buff, bp);
-      p++;
-    }
+  WALK_ANSI_STRING(p) {
+    *p = DOWNCASE(*p);
+    p++;
   }
+  safe_str(args[0], buff, bp);
+  return;
 }
 
 /* ARGSUSED */
 FUNCTION(fun_ucstr)
 {
-  char *p, *y;
+  char *p;
   p = args[0];
-  while (*p) {
-    y = skip_leading_ansi(p);
-    if (y != p) {
-      char t;
-      t = *y;
-      *y = '\0';
-      safe_str(p, buff, bp);
-      *y = t;
-      p = y;
-    }
-    if (*p) {
-      safe_chr(UPCASE(*p), buff, bp);
-      p++;
-    }
+  WALK_ANSI_STRING(p) {
+    *p = UPCASE(*p);
+    p++;
   }
+  safe_str(args[0], buff, bp);
+  return;
 }
 
 /* ARGSUSED */

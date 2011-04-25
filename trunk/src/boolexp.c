@@ -95,6 +95,7 @@
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
 #endif
+#include "case.h"
 #include "conf.h"
 #include "dbdefs.h"
 #include "mushdb.h"
@@ -643,6 +644,58 @@ safe_boref(dbref player, dbref thing, enum u_b_f flag, char *buff, char **bp)
   }
 }
 
+/** Escape dangerous characters in strings for unparse_boolexp().
+ * \param s string to be unparsed
+ * \param op opcode for which s is an argument
+ * \param buff The start of the output buffer
+ * \param bp Pointer to the current position in buff
+ * \return 0 on success, true on buffer overflow.
+ */
+static int
+safe_bstr(const unsigned char *s, bvm_opcode op, char *buff, char **bp)
+{
+  const unsigned char *p, *name = (const unsigned char *) s;
+  int n;
+  int preserve;
+  
+  switch (op) {
+  case OP_TATR:
+  case OP_TNAME:
+  case OP_TIP:
+  case OP_THOSTNAME:
+  case OP_TDBREFLIST:
+    preserve = 1;
+    break;
+  default:
+    preserve = 0;
+  }
+  for (p = name; p && *p; p++) {
+    /* Escape these characters */
+    if (!preserve) {
+      switch (*p) {
+      case '\\':
+      case NOT_TOKEN:
+      case AND_TOKEN:
+      case OR_TOKEN:
+      case AT_TOKEN:
+      case IN_TOKEN:
+      case IS_TOKEN:
+      case OWNER_TOKEN:
+      case ATR_TOKEN:
+      case EVAL_TOKEN:
+      case FLAG_TOKEN:
+      case ')':
+        if ((n = safe_chr('\\', buff, bp)) != 0)
+          return n;
+      }
+    }
+    if ((n = safe_chr(*p, buff, bp)) != 0)
+      return n;
+  }
+  
+  return 0;
+}
+
 /** True if unparse_boolexp() is being evaluated. */
 int unparsing_boolexp = 0;
 
@@ -678,13 +731,13 @@ unparse_boolexp(dbref player, boolexp b, enum u_b_f flag)
       pc += INSN_LEN;
       /* Handle most negation cases */
       if (op != OP_RET && (bvm_opcode) *pc == OP_NEGR && op != OP_PAREN)
-        safe_chr('!', boolexp_buf, &buftop);
+        safe_chr(NOT_TOKEN, boolexp_buf, &buftop);
       switch (op) {
       case OP_JMPT:
-        safe_chr('|', boolexp_buf, &buftop);
+        safe_chr(OR_TOKEN, boolexp_buf, &buftop);
         break;
       case OP_JMPF:
-        safe_chr('&', boolexp_buf, &buftop);
+        safe_chr(AND_TOKEN, boolexp_buf, &buftop);
         break;
       case OP_RET:
         goto done;
@@ -729,12 +782,15 @@ unparse_boolexp(dbref player, boolexp b, enum u_b_f flag)
         safe_boref(player, arg, flag, boolexp_buf, &buftop);
         break;
       case OP_TATR:
-        safe_format(boolexp_buf, &buftop, "%s:%s", s, bytecode + arg);
+        safe_bstr(s, OP_LOADS, boolexp_buf, &buftop);
+        safe_chr(ATR_TOKEN, boolexp_buf, &buftop);
+        safe_bstr(bytecode + arg, OP_TATR, boolexp_buf, &buftop);
         break;
       case OP_TIND:
         safe_chr(AT_TOKEN, boolexp_buf, &buftop);
         safe_boref(player, arg, flag, boolexp_buf, &buftop);
-        safe_format(boolexp_buf, &buftop, "/%s", s);
+        safe_chr(EVAL_TOKEN, boolexp_buf, &buftop);
+        safe_bstr(s, op, boolexp_buf, &buftop);
         break;
       case OP_TCARRY:
         safe_chr(IN_TOKEN, boolexp_buf, &buftop);
@@ -749,31 +805,41 @@ unparse_boolexp(dbref player, boolexp b, enum u_b_f flag)
         safe_boref(player, arg, flag, boolexp_buf, &buftop);
         break;
       case OP_TEVAL:
-        safe_format(boolexp_buf, &buftop, "%s/%s", s, bytecode + arg);
+        safe_bstr(s, OP_LOADS, boolexp_buf, &buftop);
+        safe_chr(EVAL_TOKEN, boolexp_buf, &buftop);
+        safe_bstr(bytecode + arg, op, boolexp_buf, &buftop);
         break;
       case OP_TNAME:
-        safe_format(boolexp_buf, &buftop, "NAME^%s", bytecode + arg);
+        safe_format(boolexp_buf, &buftop, "NAME%c", FLAG_TOKEN);
+        safe_bstr(bytecode + arg, op, boolexp_buf, &buftop);
         break;
       case OP_TFLAG:
-        safe_format(boolexp_buf, &buftop, "FLAG^%s", bytecode + arg);
+        safe_format(boolexp_buf, &buftop, "FLAG%c", FLAG_TOKEN);
+        safe_bstr(bytecode + arg, op, boolexp_buf, &buftop);
         break;
       case OP_TTYPE:
-        safe_format(boolexp_buf, &buftop, "TYPE^%s", bytecode + arg);
+        safe_format(boolexp_buf, &buftop, "TYPE%c", FLAG_TOKEN);
+        safe_bstr(bytecode + arg, op, boolexp_buf, &buftop);
         break;
       case OP_TPOWER:
-        safe_format(boolexp_buf, &buftop, "POWER^%s", bytecode + arg);
+        safe_format(boolexp_buf, &buftop, "POWER%c", FLAG_TOKEN);
+        safe_bstr(bytecode + arg, op, boolexp_buf, &buftop);
         break;
       case OP_TCHANNEL:
-        safe_format(boolexp_buf, &buftop, "CHANNEL^%s", bytecode + arg);
+        safe_format(boolexp_buf, &buftop, "CHANNEL%c", FLAG_TOKEN);
+        safe_bstr(bytecode + arg, op, boolexp_buf, &buftop);
         break;
       case OP_TIP:
-        safe_format(boolexp_buf, &buftop, "IP^%s", bytecode + arg);
+        safe_format(boolexp_buf, &buftop, "IP%c", FLAG_TOKEN);
+        safe_bstr(bytecode + arg, op, boolexp_buf, &buftop);
         break;
       case OP_THOSTNAME:
-        safe_format(boolexp_buf, &buftop, "HOSTNAME^%s", bytecode + arg);
+        safe_format(boolexp_buf, &buftop, "HOSTNAME%c", FLAG_TOKEN);
+        safe_bstr(bytecode + arg, op, boolexp_buf, &buftop);
         break;
       case OP_TDBREFLIST:
-        safe_format(boolexp_buf, &buftop, "DBREFLIST^%s", bytecode + arg);
+        safe_format(boolexp_buf, &buftop, "DBREFLIST%c", FLAG_TOKEN);
+        safe_bstr(bytecode + arg, op, boolexp_buf, &buftop);
         break;
       }
     }
@@ -917,38 +983,59 @@ static enum test_atr_errs test_atr_err = TAE_NONE;
 static struct boolexp_node *
 test_atr(char *s, char c)
 {
+  int preserve;
+  char *tbp, *abp;
+  bool escaped;
   struct boolexp_node *b;  
   char tbuf1[BUFFER_LEN];
-  size_t tbuflen;
 
   test_atr_err = TAE_NONE;
 
-  strcpy(tbuf1, strupper(s));
-  for (s = tbuf1; *s && (*s != c); s++) ;
-  if (!*s)
-    return NULL;
-  *s++ = '\0';
-  tbuflen = strlen(tbuf1);
-  if ((c == ':' || c == '/') && (tbuflen == 0 || !good_atr_name(tbuf1))) {
-    /* To do: Return a meaningful error message for this case and not
-     * mess up later tests.... in the case of a flag lock, test_atr()
-     * is called 3 times and only successfully completes the third
-     * time, failing here on the first two (Tests for attribute and
-     * eval locks). */
-    return NULL;
+  preserve = 0;
+  abp = NULL;
+  escaped = 0;
+
+  for (tbp = tbuf1; *s; s++) {
+    if (!abp && !escaped && *s == c) {
+      if (tbp == tbuf1)
+        return 0;
+      safe_chr('\0', tbuf1, &tbp);
+      if (!good_atr_name(tbuf1))
+        return 0;
+      abp = tbp;
+      if (c == FLAG_TOKEN) {
+	const struct flag_lock_types *flag = is_allowed_bflag(tbuf1, strlen(tbuf1));
+	
+	if (!flag) {
+	  notify_format(parse_player, T("'%s' is not a valid flag lock name."), tbuf1);
+	  test_atr_err = TAE_PARSE;
+	  return NULL;
+	}
+	
+	preserve = flag->preserve;
+      }
+      else if (c == ATR_TOKEN)
+        preserve = 1;
+    } else if (!escaped && *s == '\\' && !preserve)
+      escaped = 1;
+    else {
+      safe_chr(UPCASE(*s), tbuf1, &tbp);
+      escaped = 0;
+    }   
   }
-  if (c == '^' && !is_allowed_bflag(tbuf1, tbuflen)) {
-    notify_format(parse_player, T("'%s' is not a valid flag lock name."), tbuf1);
-    test_atr_err = TAE_PARSE;
+  
+  *tbp = '\0';
+  if (!abp) {
+    test_atr_err = TAE_NONE;
     return NULL;
   }
 
   b = alloc_bool();
-  if (c == ':')
+  if (c == ATR_TOKEN)
     b->type = BOOLEXP_ATR;
-  else if (c == '/')
+  else if (c == EVAL_TOKEN)
     b->type = BOOLEXP_EVAL;
-  else if (c == '^') {
+  else if (c == FLAG_TOKEN) {
     if (strcmp(tbuf1, "OBJID") == 0) {
       /* Convert objid^blah to =blah */
       
@@ -1001,7 +1088,7 @@ test_atr(char *s, char c)
       b->type = BOOLEXP_FLAG;
     }
   }
-  b->data.atr_lock = alloc_atr(tbuf1, s);
+  b->data.atr_lock = alloc_atr(tbuf1, abp);
   return b;
 }
 
@@ -1012,18 +1099,31 @@ parse_boolexp_R(void)
   struct boolexp_node *b;
   char tbuf1[BUFFER_LEN];
   char *p;
+  bool escaped;
+
   b = alloc_bool();
   b->type = BOOLEXP_CONST;
   p = tbuf1;
+  escaped = 0;
+
+
   while (*parsebuf
-         && *parsebuf != AND_TOKEN && *parsebuf != '/'
-         && *parsebuf != OR_TOKEN && *parsebuf != ')') {
-    *p++ = *parsebuf++;
+         && (escaped || !(*parsebuf == AND_TOKEN || *parsebuf == OR_TOKEN ||
+                          *parsebuf == EVAL_TOKEN || *parsebuf == ')'))) {
+    if (escaped || *parsebuf != '\\') {
+      safe_chr(*parsebuf, tbuf1, &p);
+      escaped = 0;
+    }
+    else
+      escaped = 1;
+    parsebuf++;
   }
+
   /* strip trailing whitespace */
-  *p-- = '\0';
-  while (p >= tbuf1 && isspace((unsigned char) *p))
-    *p-- = '\0';
+  *p = '\0';
+  while (p != tbuf1 && isspace((unsigned char) *(--p)))
+    *p = '\0';
+
   /* do the match */
   if (loading_db) {
     if (*tbuf1 == '#' && *(tbuf1 + 1)) {
@@ -1077,6 +1177,7 @@ parse_boolexp_L(void)
   struct boolexp_node *b;
   char *p;
   const char *savebuf;
+  bool escaped;
   char tbuf1[BUFFER_LEN];
   skip_whitespace();
   switch (*parsebuf) {
@@ -1096,25 +1197,29 @@ parse_boolexp_L(void)
     /* load the name into our buffer */
     p = tbuf1;
     savebuf = parsebuf;
-    while (*parsebuf
-           && *parsebuf != AND_TOKEN
-           && *parsebuf != OR_TOKEN && *parsebuf != ')') {
+    escaped = 0;
+    while (*parsebuf &&
+           (escaped || !(*parsebuf == AND_TOKEN || *parsebuf == OR_TOKEN ||
+                         *parsebuf == ')'))) {
+      escaped = escaped ? 0 : (*parsebuf == '\\');
       *p++ = *parsebuf++;
     }
+
     /* strip trailing whitespace */
-    *p-- = '\0';
-    while (p >= tbuf1 && isspace((unsigned char) *p))
-      *p-- = '\0';
+    *p = '\0';
+    while (p != tbuf1 && isspace((unsigned char) *(--p)))
+      *p = '\0';
+
     /* check for an attribute */
-    b = test_atr(tbuf1, ':');
+    b = test_atr(tbuf1, ATR_TOKEN);
     if (b || test_atr_err != TAE_NONE)
       return b;
     /* check for an eval */
-    b = test_atr(tbuf1, '/');
+    b = test_atr(tbuf1, EVAL_TOKEN);
     if (b || test_atr_err != TAE_NONE)
       return b;
     /* Check for a flag */
-    b = test_atr(tbuf1, '^');
+    b = test_atr(tbuf1, FLAG_TOKEN);
     if (b || test_atr_err != TAE_NONE)
       return b;
     /* Nope. Check for an object reference */
@@ -1210,6 +1315,7 @@ static struct boolexp_node *
 parse_boolexp_A(void)
 {
   struct boolexp_node *b2, *t;
+  bool escaped = 0;
   skip_whitespace();
   if (*parsebuf == AT_TOKEN) {
     parsebuf++;
@@ -1226,21 +1332,27 @@ parse_boolexp_A(void)
     }
     b2->thing = t->thing;
     free_boolexp_node(t);
-    if (*parsebuf == '/') {
+    if (*parsebuf == EVAL_TOKEN) {
       char tbuf1[BUFFER_LEN], *p;
       const char *m;
       parsebuf++;
       p = tbuf1;
-      while (*parsebuf
-             && *parsebuf != AND_TOKEN
-             && *parsebuf != OR_TOKEN && *parsebuf != ')') {
-        *p++ = *parsebuf++;
+      while (*parsebuf &&
+             (escaped || !(*parsebuf == AND_TOKEN || *parsebuf == OR_TOKEN ||
+                           *parsebuf == ')'))) {
+        if (escaped || *parsebuf != '\\') {
+          safe_chr(UPCASE(*parsebuf), tbuf1, &p);
+          escaped = 0;
+        }
+        else
+          escaped = 1;
+        parsebuf++;
       }
       /* strip trailing whitespace */
-      *p-- = '\0';
-      while (isspace((unsigned char) *p))
-        *p-- = '\0';
-      upcasestr(tbuf1);
+      
+      *p = '\0';
+      while (p != tbuf1 && isspace((unsigned char) *(--p)))
+        *p = '\0';
       if (!good_atr_name(tbuf1)) {
         free_boolexp_node(b2);
         return NULL;

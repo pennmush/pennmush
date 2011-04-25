@@ -781,9 +781,10 @@ init_game_dbs(void)
 {
   PENNFILE *f;
   int c;
-  const char *infile, *outfile;
+  const char * volatile infile;
+  const char *outfile;
   const char *mailfile;
-  int panicdb;
+  volatile int panicdb;
 
 #ifdef WIN32
   Win32MUSH_setup();            /* create index files, copy databases etc. */
@@ -815,7 +816,10 @@ init_game_dbs(void)
     penn_ungetc(c, f);
   }
 
-  if (setjmp(db_err) == 0) {
+  if (setjmp(db_err) == 1) {
+    do_rawlog(LT_ERR, "ERROR: Unable to read %s. Giving up.\n", infile);
+    return -1;
+  } else {
     /* ok, read it in */
     do_rawlog(LT_ERR, "ANALYZING: %s", infile);
     if (init_compress(f) < 0) {
@@ -865,7 +869,13 @@ init_game_dbs(void)
     if (!GoodObject(GOD) || (!IsPlayer(GOD)))
       do_rawlog(LT_ERR, "WARNING: God (#%d) is NOT a player.", GOD);
 
-    /* read mail database */
+
+  }   
+
+  /* read mail database */
+  if (setjmp(db_err) == 1) {
+    do_rawlog(LT_ERR, "ERROR: Unable to read mail database! Continuing with startup.");
+  } else {
     mail_init();
 
     if (panicdb) {
@@ -888,7 +898,12 @@ init_game_dbs(void)
         penn_fclose(f);
       }
     }
-
+  }
+  
+  /* read chat database */
+  if (setjmp(db_err) == 1) {
+    do_rawlog(LT_ERR, "ERROR: Unable to read chat database! Continuing with startup.");
+  } else {
     init_chatdb();
 
     if (panicdb) {
@@ -909,16 +924,11 @@ init_game_dbs(void)
           do_rawlog(LT_ERR, "LOADING: %s (done)", options.chatdb);
         } else {
           do_rawlog(LT_ERR, "ERROR LOADING %s", options.chatdb);
-          return -1;
         }
         penn_fclose(f);
       }
     } else                      /* Close the panicdb file handle */
       penn_fclose(f);
-
-  } else {
-    do_rawlog(LT_ERR, "ERROR READING DATABASE");
-    return -1;
   }
 
   return 0;

@@ -37,7 +37,7 @@ Updating to the latest SVN version is a simple process:
   # cd into your pennmush directory. NOT your src/ or game/ directories, or the update will be incomplete.
   # Run {{{svn update}}} to fetch the latest changes.
   # It may ask you what to do with the differences for svninfo.h. Just say {{{tf}}} for "theirs full" (It doesn't make a difference, it's regenerated with every compile.)
-  # Compile: {{{make versions all install}}}
+  # Compile: {{{make all install}}}
   # Do an @shutdown/reboot! =).
 
 = Hacking =

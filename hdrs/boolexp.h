@@ -14,6 +14,9 @@ typedef chunk_reference_t boolexp;
 #define IN_TOKEN '+'
 #define IS_TOKEN '='
 #define OWNER_TOKEN '$'
+#define ATR_TOKEN ':'
+#define EVAL_TOKEN '/'
+#define FLAG_TOKEN '^'
 
 enum { TRUE_BOOLEXP = NULL_CHUNK_REFERENCE };
 

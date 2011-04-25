@@ -122,6 +122,10 @@ Fixes:
  * Possible crashbug in @name reported by Wiggles. [MG]
  * Object matching (a la locate()) with an exit as the looker didn't work
    correctly. Reported by Covenent. [MG]
+ * Panic database dumps weren't always loading correctly. Reported by [MG],
+   fixed by [SW].
+ * A missing mail or chat database caused failures in mush startup. Reported
+   by Nveid. [SW]
 
 Version 1.8.4 patchlevel 3                                 Mar 18,  2011
 

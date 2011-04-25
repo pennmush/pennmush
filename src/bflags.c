@@ -39,6 +39,7 @@
 struct flag_lock_types {
   const char *name; /**< The value of A */
   bvm_opcode op;  /**< The associated opcode */
+  int preserve; /**< If true, the parser preserves \\s in the match string */
 };
 /* maximum key range = 18, duplicates = 0 */
 
@@ -109,29 +110,29 @@ is_allowed_bflag (register const char *str, register unsigned int len)
     };
   static const struct flag_lock_types wordlist[] =
     {
-      {"",-1}, {"",-1},
-#line 33 "bflags.gperf"
-      {"IP", OP_TIP},
-      {"",-1},
-#line 29 "bflags.gperf"
-      {"TYPE", OP_TTYPE},
-#line 28 "bflags.gperf"
-      {"POWER", OP_TPOWER},
-      {"",-1},
-#line 31 "bflags.gperf"
-      {"CHANNEL", OP_TCHANNEL},
+      {"",-1,0}, {"",-1,0},
 #line 34 "bflags.gperf"
-      {"HOSTNAME", OP_THOSTNAME},
+      {"IP", OP_TIP, 1},
+      {"",-1,0},
 #line 30 "bflags.gperf"
-      {"NAME", OP_TNAME},
+      {"TYPE", OP_TTYPE, 0},
+#line 29 "bflags.gperf"
+      {"POWER", OP_TPOWER, 0},
+      {"",-1,0},
 #line 32 "bflags.gperf"
-      {"OBJID", OP_TIS},
-      {"",-1}, {"",-1}, {"",-1},
-#line 27 "bflags.gperf"
-      {"FLAG", OP_TFLAG},
-      {"",-1}, {"",-1}, {"",-1}, {"",-1},
+      {"CHANNEL", OP_TCHANNEL, 0},
 #line 35 "bflags.gperf"
-      {"DBREFLIST", OP_TDBREFLIST}
+      {"HOSTNAME", OP_THOSTNAME, 1},
+#line 31 "bflags.gperf"
+      {"NAME", OP_TNAME, 1},
+#line 33 "bflags.gperf"
+      {"OBJID", OP_TIS, 0},
+      {"",-1,0}, {"",-1,0}, {"",-1,0},
+#line 28 "bflags.gperf"
+      {"FLAG", OP_TFLAG, 0},
+      {"",-1,0}, {"",-1,0}, {"",-1,0}, {"",-1,0},
+#line 36 "bflags.gperf"
+      {"DBREFLIST", OP_TDBREFLIST, 1}
     };
 
   if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)
@@ -149,6 +150,6 @@ is_allowed_bflag (register const char *str, register unsigned int len)
     }
   return 0;
 }
-#line 36 "bflags.gperf"
+#line 37 "bflags.gperf"
 
 

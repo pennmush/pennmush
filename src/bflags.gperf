@@ -10,7 +10,7 @@
 %compare-lengths
 
 %struct-type
-%define initializer-suffix ,-1
+%define initializer-suffix ,-1,0
 
 %{
 /** The flag lock key (A^B) only allows a few values for A. This
@@ -21,17 +21,18 @@
 struct flag_lock_types {
   const char *name; /**< The value of A */
   bvm_opcode op;  /**< The associated opcode */
+  int preserve; /**< If true, the parser preserves \\s in the match string */
 };
 
 %%
-FLAG, OP_TFLAG
-POWER, OP_TPOWER
-TYPE, OP_TTYPE
-NAME, OP_TNAME
-CHANNEL, OP_TCHANNEL
-OBJID, OP_TIS
-IP, OP_TIP
-HOSTNAME, OP_THOSTNAME
-DBREFLIST, OP_TDBREFLIST
+FLAG, OP_TFLAG, 0
+POWER, OP_TPOWER, 0
+TYPE, OP_TTYPE, 0
+NAME, OP_TNAME, 1
+CHANNEL, OP_TCHANNEL, 0
+OBJID, OP_TIS, 0
+IP, OP_TIP, 1
+HOSTNAME, OP_THOSTNAME, 1
+DBREFLIST, OP_TDBREFLIST, 1
 %%
 

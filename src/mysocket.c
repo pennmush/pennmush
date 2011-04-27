@@ -228,10 +228,10 @@ make_socket_conn(const char *host, int socktype, struct sockaddr *myiterface,
   freeaddrinfo(save);
 
   if (server == NULL) {
-      lock_file(stderr);
-      fprintf(stderr, "Couldn't connect to %s on port %hu\n", host, port);
-      fflush(stderr);
-      unlock_file(stderr);
+    lock_file(stderr);
+    fprintf(stderr, "Couldn't connect to %s on port %hu\n", host, port);
+    fflush(stderr);
+    unlock_file(stderr);
     return -1;
   }
   return s;

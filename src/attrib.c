@@ -62,7 +62,8 @@ static ATTR *find_atr_pos_in_list(ATTR ***pos, char const *name);
 static atr_err can_create_attr(dbref player, dbref obj, char const *atr_name,
                                uint32_t flags);
 static ATTR *find_atr_in_list(ATTR *atr, char const *name);
-static ATTR *atr_get_with_parent(dbref obj, char const *atrname, dbref *parent, int cmd);
+static ATTR *atr_get_with_parent(dbref obj, char const *atrname, dbref *parent,
+                                 int cmd);
 
 /*======================================================================*/
 
@@ -1351,10 +1352,12 @@ atr_cpy(dbref dest, dbref source)
   for (ptr = List(source); ptr; ptr = AL_NEXT(ptr))
     if (!AF_Nocopy(ptr)
         && (AttrCount(dest) < max_attrs)) {
-      do_rawlog(LT_ERR, "Preparing to copy %s. AttrCount is %d...", AL_NAME(ptr), AttrCount(dest));
-      atr_new_add(dest, AL_NAME(ptr), atr_value(ptr),
-                  AL_CREATOR(ptr), AL_FLAGS(ptr), AL_DEREFS(ptr), 0);
-do_rawlog(LT_ERR, "Copied %s. AttrCount is %d...", AL_NAME(ptr), AttrCount(dest));
+      do_rawlog(LT_ERR, "Preparing to copy %s. AttrCount is %d...",
+                AL_NAME(ptr), AttrCount(dest));
+      atr_new_add(dest, AL_NAME(ptr), atr_value(ptr), AL_CREATOR(ptr),
+                  AL_FLAGS(ptr), AL_DEREFS(ptr), 0);
+      do_rawlog(LT_ERR, "Copied %s. AttrCount is %d...", AL_NAME(ptr),
+                AttrCount(dest));
     }
 }
 
@@ -1456,7 +1459,7 @@ int
 atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
                int just_match, int check_locks,
                char *atrname, char **abp, int show_child, dbref *errobj,
-               MQUE * from_queue, int queue_type)
+               MQUE *from_queue, int queue_type)
 {
   uint32_t flag_mask;
   ATTR *ptr;
@@ -1509,7 +1512,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
   skipcount = 0;
   do {
     next = parent_depth ?
-           next_parent(thing, current, &parent_count, NULL) : NOTHING;
+      next_parent(thing, current, &parent_count, NULL) : NOTHING;
     prev = &used_list;
 
     /* do_rawlog(LT_TRACE, "Searching %s:", Name(current)); */
@@ -1664,8 +1667,8 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
 
             /* inplace queue */
             new_queue_actionlist_int(thing, player, player, s, from_queue,
-                                 pe_flags, queue_type, pe_regs,
-                                 tprintf("#%d/%s", thing, AL_NAME(ptr)));
+                                     pe_flags, queue_type, pe_regs,
+                                     tprintf("#%d/%s", thing, AL_NAME(ptr)));
           } else {
             /* Normal queue */
             parse_que_attr(thing, player, s, pe_regs, ptr);
@@ -1700,7 +1703,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
  */
 int
 one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
-               MQUE * from_queue, int queue_type)
+               MQUE *from_queue, int queue_type)
 {
   ATTR *ptr;
   char tbuf1[BUFFER_LEN];

@@ -109,7 +109,7 @@ int loc_alias_check(dbref loc, const char *command, const char *type);
 void do_poor(dbref player, char *arg1);
 void do_writelog(dbref player, char *str, int ltype);
 void bind_and_queue(dbref player, dbref cause, char *action, const char *arg,
-                    int num, MQUE * parent_queue);
+                    int num, MQUE *parent_queue);
 void do_list(dbref player, char *arg, int lc, int which);
 void do_uptime(dbref player, int mortal);
 static char *make_new_epoch_file(const char *basename, int the_epoch);
@@ -230,11 +230,9 @@ report(void)
 {
   if (GoodObject(report_dbref))
     do_rawlog(LT_TRACE, "TRACE: Cmd:%s\tby #%d at #%d",
-              (char *) report_cmd, report_dbref,
-              Location(report_dbref));
+              (char *) report_cmd, report_dbref, Location(report_dbref));
   else
-    do_rawlog(LT_TRACE, "TRACE: Cmd:%s\tby #%d", report_cmd,
-              report_dbref);
+    do_rawlog(LT_TRACE, "TRACE: Cmd:%s\tby #%d", report_cmd, report_dbref);
   notify_activity(NOTHING, 0, 1);
 }
 
@@ -781,7 +779,7 @@ init_game_dbs(void)
 {
   PENNFILE *f;
   int c;
-  const char * volatile infile;
+  const char *volatile infile;
   const char *outfile;
   const char *mailfile;
   volatile int panicdb;
@@ -870,11 +868,12 @@ init_game_dbs(void)
       do_rawlog(LT_ERR, "WARNING: God (#%d) is NOT a player.", GOD);
 
 
-  }   
+  }
 
   /* read mail database */
   if (setjmp(db_err) == 1) {
-    do_rawlog(LT_ERR, "ERROR: Unable to read mail database! Continuing with startup.");
+    do_rawlog(LT_ERR,
+              "ERROR: Unable to read mail database! Continuing with startup.");
   } else {
     mail_init();
 
@@ -899,10 +898,11 @@ init_game_dbs(void)
       }
     }
   }
-  
+
   /* read chat database */
   if (setjmp(db_err) == 1) {
-    do_rawlog(LT_ERR, "ERROR: Unable to read chat database! Continuing with startup.");
+    do_rawlog(LT_ERR,
+              "ERROR: Unable to read chat database! Continuing with startup.");
   } else {
     init_chatdb();
 
@@ -1040,7 +1040,7 @@ passwd_filter(const char *cmd)
  * \param queue_entry the queue entry the command is being run for
  */
 void
-process_command(dbref executor, char *command, MQUE * queue_entry)
+process_command(dbref executor, char *command, MQUE *queue_entry)
 {
   int a;
   char *p;                      /* utility */
@@ -1066,7 +1066,8 @@ process_command(dbref executor, char *command, MQUE * queue_entry)
   }
   /* robustify executor */
   if (!GoodObject(executor)) {
-    do_log(LT_ERR, NOTHING, NOTHING, "process_command bad player #%d", executor);
+    do_log(LT_ERR, NOTHING, NOTHING, "process_command bad player #%d",
+           executor);
     return;
   }
 
@@ -1079,14 +1080,16 @@ process_command(dbref executor, char *command, MQUE * queue_entry)
   if (Halted(executor)
       && (!IsPlayer(executor) || !(queue_entry->queue_type & QUEUE_SOCKET))) {
     notify_format(Owner(executor),
-                  T("Attempt to execute command by halted object #%d"), executor);
+                  T("Attempt to execute command by halted object #%d"),
+                  executor);
     return;
   }
   /* Players, things, and exits should not have invalid locations. This check
    * must be done _after_ the destroyed-object check.
    */
-  check_loc = IsExit(executor) ? Source(executor) : (IsRoom(executor) ? executor :
-                                                 Location(executor));
+  check_loc =
+    IsExit(executor) ? Source(executor) : (IsRoom(executor) ? executor :
+                                           Location(executor));
   if (!GoodObject(check_loc) || IsGarbage(check_loc)) {
     notify_format(Owner(executor),
                   T("Invalid location on command execution: %s(#%d)"),
@@ -1095,7 +1098,7 @@ process_command(dbref executor, char *command, MQUE * queue_entry)
            "Command attempted by %s(#%d) in invalid location #%d.",
            Name(executor), executor, Location(executor));
     if (Mobile(executor)) {
-      moveto(executor, PLAYER_START, SYSEVENT, "dbck");   /* move it someplace valid */
+      moveto(executor, PLAYER_START, SYSEVENT, "dbck"); /* move it someplace valid */
     }
   }
   orator = executor;
@@ -1137,7 +1140,9 @@ process_command(dbref executor, char *command, MQUE * queue_entry)
         /* try matching enter aliases */
         if (check_loc != NOTHING && (cmd = command_find("ENTER")) &&
             !(cmd->type & CMD_T_DISABLED) &&
-            (i = alias_list_check(Contents(check_loc), cptr, "EALIAS")) != NOTHING) {
+            (i =
+             alias_list_check(Contents(check_loc), cptr,
+                              "EALIAS")) != NOTHING) {
           if (command_check(executor, cmd, 1)) {
             sprintf(temp, "#%d", i);
             run_command(cmd, executor, queue_entry->enactor,
@@ -1152,8 +1157,8 @@ process_command(dbref executor, char *command, MQUE * queue_entry)
             && !(cmd->type & CMD_T_DISABLED)
             && (loc_alias_check(check_loc, cptr, "LALIAS"))) {
           if (command_check(executor, cmd, 1))
-            run_command(cmd, executor, queue_entry->enactor, "LEAVE", NULL, NULL,
-                        "LEAVE", NULL, NULL, NULL, NULL, NULL, NULL,
+            run_command(cmd, executor, queue_entry->enactor, "LEAVE", NULL,
+                        NULL, "LEAVE", NULL, NULL, NULL, NULL, NULL, NULL,
                         queue_entry);
           goto done;
         }
@@ -1267,7 +1272,8 @@ COMMAND(cmd_with)
   what = noisy_match_result(executor, arg_left, NOTYPE, MAT_EVERYTHING);
   if (!GoodObject(what))
     return;
-  if (!(nearby(executor, what) || Long_Fingers(executor) || controls(executor, what))) {
+  if (!(nearby(executor, what) || Long_Fingers(executor)
+        || controls(executor, what))) {
     if (SW_ISSET(sw, SWITCH_ROOM)) {
       if (what != MASTER_ROOM && what != Zone(executor)) {
         notify(executor, T("I don't see that here."));
@@ -1358,7 +1364,8 @@ list_check(dbref thing, dbref player, char type, char end, char *str,
 
   while (thing != NOTHING) {
     if (atr_comm_match(thing, player, type,
-                       end, str, just_match, 1, NULL, NULL, 0, &errdb, NULL, QUEUE_DEFAULT))
+                       end, str, just_match, 1, NULL, NULL, 0, &errdb, NULL,
+                       QUEUE_DEFAULT))
       match = 1;
     else {
       MAYBE_ADD_ERRDB(errdb);
@@ -1541,8 +1548,7 @@ do_writelog(dbref player, char *str, int ltype)
  */
 void
 bind_and_queue(dbref player, dbref cause, char *action,
-               const char *arg, int num,
-               MQUE * parent_queue)
+               const char *arg, int num, MQUE *parent_queue)
 {
   char *repl, *command;
   const char *replace[2];
@@ -1651,8 +1657,7 @@ scan_list(dbref player, char *command, int flag)
 
   /* zone checks */
   if ((flag & CHECK_ZONE)) {
-    if (Zone(Location(player)) != NOTHING
-        && !(matches && (flag & CHECK_BREAK))) {
+    if (Zone(Location(player)) != NOTHING && !(matches && (flag & CHECK_BREAK))) {
       if (IsRoom(Zone(Location(player)))) {
         /* zone of player's location is a zone master room */
         if (Location(player) != Zone(player)) {
@@ -1870,7 +1875,7 @@ do_scan(dbref player, char *command, int flag)
  */
 void
 do_dolist(dbref player, char *list, char *command, dbref enactor,
-          unsigned int flags, MQUE * queue_entry)
+          unsigned int flags, MQUE *queue_entry)
 {
   char *curr, *objstring;
   char outbuf[BUFFER_LEN];

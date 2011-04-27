@@ -72,8 +72,7 @@ dbref visible_short_page(dbref player, const char *match);
 void do_doing(dbref player, const char *message);
 
 /* the following symbols are provided by game.c */
-void process_command(dbref executor, char *command,
-                     MQUE * queue_entry);
+void process_command(dbref executor, char *command, MQUE *queue_entry);
 int init_game_dbs(void);
 void init_game_postdb(const char *conf);
 void init_game_config(const char *conf);
@@ -202,7 +201,7 @@ void notify_format(dbref player, const char *fmt, ...)
 
 /* From command.c */
 void generic_command_failure(dbref player, dbref cause, char *string,
-                             MQUE * queue_entry);
+                             MQUE *queue_entry);
 
 /* From compress.c */
 /* Define this to get some statistics on the attribute compression
@@ -248,11 +247,11 @@ extern char ucbuff[];
 
 
 /* Used when generating a new pe_info from an existing pe_info. Used by pe_info_from(). */
-#define PE_INFO_DEFAULT     0x000   /* create a new, empty pe_info */
-#define PE_INFO_SHARE       0x001   /* Share the existing pe_info */
-#define PE_INFO_CLONE       0x002   /* Clone entire pe_info */
-#define PE_INFO_COPY_ENV    0x004   /* Copy env-vars (%0-%9) from the parent */
-#define PE_INFO_COPY_QREG   0x008   /* Copy q-registers (%q*) from the parent pe_info */
+#define PE_INFO_DEFAULT     0x000       /* create a new, empty pe_info */
+#define PE_INFO_SHARE       0x001       /* Share the existing pe_info */
+#define PE_INFO_CLONE       0x002       /* Clone entire pe_info */
+#define PE_INFO_COPY_ENV    0x004       /* Copy env-vars (%0-%9) from the parent */
+#define PE_INFO_COPY_QREG   0x008       /* Copy q-registers (%q*) from the parent pe_info */
 
 
 struct _ansi_string;
@@ -266,12 +265,12 @@ bool queue_event(dbref enactor, const char *event, const char *fmt, ...)
   __attribute__ ((__format__(__printf__, 3, 4)));
 void parse_que_attr(dbref executor, dbref enactor, char *actionlist,
                     PE_REGS *pe_regs, ATTR *a);
-void insert_que(MQUE * queue_entry, MQUE * parent_queue);
+void insert_que(MQUE *queue_entry, MQUE *parent_queue);
 
 void new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
-                          char *actionlist, MQUE * queue_entry,
-                          int flags, int queue_type, PE_REGS *pe_regs,
-                          char *fromattr);
+                              char *actionlist, MQUE *queue_entry,
+                              int flags, int queue_type, PE_REGS *pe_regs,
+                              char *fromattr);
 #define parse_que(executor,enactor,actionlist,regs) new_queue_actionlist(executor,enactor,enactor,actionlist,NULL,PE_INFO_DEFAULT,QUEUE_DEFAULT,regs)
 #define new_queue_actionlist(executor,enactor,caller,actionlist,parent_queue,flags,queue_type,regs) \
         new_queue_actionlist_int(executor,enactor,caller,actionlist,parent_queue,flags,queue_type,regs,NULL)
@@ -283,7 +282,7 @@ int queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor,
                            PE_REGS *pe_regs);
 int queue_include_attribute(dbref thing, const char *atrname, dbref executor,
                             dbref cause, dbref caller, char **args, int recurse,
-                            MQUE * parent_queue);
+                            MQUE *parent_queue);
 void run_user_input(dbref player, int port, char *input);
 
 /** Queue the code in an attribute, including parent objects */
@@ -455,7 +454,7 @@ void s_Pennies(dbref thing, int amount);
 /* From set.c */
 void chown_object(dbref player, dbref thing, dbref newowner, int preserve);
 void do_include(dbref player, dbref cause, char *object, char **argv,
-                int recurse, MQUE * parent_queue);
+                int recurse, MQUE *parent_queue);
 /* From speech.c */
 int okay_pemit(dbref player, dbref target, int dofails, const char *def);
 int vmessageformat(dbref player, const char *attribute,
@@ -495,7 +494,7 @@ unsigned char *u_strncpy
 char *
 mush_strndup(const char *src, size_t len, const char *check)
   __attribute_malloc__;
-int my_vsnprintf(char *, size_t, const char *, va_list);
+    int my_vsnprintf(char *, size_t, const char *, va_list);
 
 /** Unsigned char strdup. Why is this a macro when the others functions? */
 #define u_strdup(x) (unsigned char *)strdup((const char *) x)
@@ -611,13 +610,14 @@ int my_vsnprintf(char *, size_t, const char *, va_list);
     typedef struct _ufun_attrib {
       dbref thing;
       char contents[BUFFER_LEN];
-      char attrname[ATTRIBUTE_NAME_LIMIT+1];
+      char attrname[ATTRIBUTE_NAME_LIMIT + 1];
       int pe_flags;
       char *errmess;
       int ufun_flags;
     } ufun_attrib;
 
-dbref next_parent(dbref thing, dbref current, int *parent_count, int *use_ancestor);
+    dbref next_parent(dbref thing, dbref current, int *parent_count,
+                      int *use_ancestor);
 
 /* Only 'attr', not 'obj/attr' */
 #define UFUN_NONE 0
@@ -635,9 +635,9 @@ dbref next_parent(dbref thing, dbref current, int *parent_count, int *use_ancest
     bool fetch_ufun_attrib(const char *attrstring, dbref executor,
                            ufun_attrib * ufun, int flags);
     bool call_ufun(ufun_attrib * ufun, char *ret, dbref executor,
-                   dbref enactor, NEW_PE_INFO * pe_info, PE_REGS *pe_regs);
+                   dbref enactor, NEW_PE_INFO *pe_info, PE_REGS *pe_regs);
     bool call_attrib(dbref thing, const char *attrname, char *ret,
-                     dbref enactor, NEW_PE_INFO * pe_info, PE_REGS *pe_regs);
+                     dbref enactor, NEW_PE_INFO *pe_info, PE_REGS *pe_regs);
     bool member(dbref thing, dbref list);
     bool recursive_member(dbref disallow, dbref from, int count);
     dbref remove_first(dbref first, dbref what);

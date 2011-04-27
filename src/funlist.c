@@ -728,13 +728,15 @@ FUNCTION(fun_sortby)
     osep = osepd;
   }
 
-  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT | UFUN_REQUIRE_ATTR))
+  if (!fetch_ufun_attrib
+      (args[0], executor, &ufun, UFUN_DEFAULT | UFUN_REQUIRE_ATTR))
     return;
 
   /* Split up the list, sort it, reconstruct it. */
   nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, args[1], sep, 1);
   if (nptrs > 1)                /* pointless to sort less than 2 elements */
-    sane_qsort((void **) ptrs, 0, nptrs - 1, u_comp, executor, enactor, &ufun, pe_info);
+    sane_qsort((void **) ptrs, 0, nptrs - 1, u_comp, executor, enactor, &ufun,
+               pe_info);
 
   arr2list(ptrs, nptrs, buff, bp, osep);
   freearr(ptrs, nptrs);
@@ -1995,9 +1997,9 @@ FUNCTION(fun_iter)
       safe_str(outsep, buff, bp);
     }
     pe_regs_set(pe_regs, PE_REGS_ITER, "t0", ptrs[i]);
-    pe_regs_set_int(pe_regs, PE_REGS_ITER, "n0", i+1);
+    pe_regs_set_int(pe_regs, PE_REGS_ITER, "n0", i + 1);
     replace[0] = "%il";
-    replace[1] = unparse_integer(i+1);
+    replace[1] = unparse_integer(i + 1);
 
     tbuf2 = replace_string2(standard_tokens, replace, args[1]);
     sp = tbuf2;
@@ -2042,7 +2044,8 @@ FUNCTION(fun_ibreak)
     i = parse_integer(args[0]);
   }
 
-  if (i == 0) return;
+  if (i == 0)
+    return;
 
   if (i < 0 || i > maxlev) {
     safe_str(T(e_range), buff, bp);
@@ -2848,8 +2851,7 @@ FUNCTION(fun_regmatch)
     } else if (named_subpattern) {
       lbp = lbuff;
       ansi_pcre_copy_named_substring(re, as, offsets, subpatterns,
-                                     named_subpattern, 1,
-                                     lbuff, &lbp);
+                                     named_subpattern, 1, lbuff, &lbp);
       *(lbp) = '\0';
     } else {
       lbp = lbuff;

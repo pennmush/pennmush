@@ -88,13 +88,15 @@ static int tport_dest_ok(dbref player, dbref victim, dbref dest);
 static int tport_control_ok(dbref player, dbref victim, dbref loc);
 static int mem_usage(dbref thing);
 static int raw_search(dbref player, const char *owner, int nargs,
-                      const char **args, dbref **result, NEW_PE_INFO * pe_info);
+                      const char **args, dbref **result, NEW_PE_INFO *pe_info);
 static int fill_search_spec(dbref player, const char *owner, int nargs,
                             const char **args, struct search_spec *spec);
 static void
 
- sitelock_player(dbref player, const char *name, dbref who, uint32_t can,
-                 uint32_t cant);
+
+
+sitelock_player(dbref player, const char *name, dbref who, uint32_t can,
+                uint32_t cant);
 
 
 #ifdef INFO_SLAVE
@@ -606,7 +608,7 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
  */
 void
 do_force(dbref player, dbref caller, const char *what, char *command,
-         int queue_type, MQUE * queue_entry)
+         int queue_type, MQUE *queue_entry)
 {
   dbref victim;
 
@@ -777,8 +779,7 @@ do_stats(dbref player, const char *name)
  */
 void
 do_newpassword(dbref player, dbref cause,
-               const char *name, const char *password,
-               MQUE * queue_entry)
+               const char *name, const char *password, MQUE *queue_entry)
 {
   dbref victim;
 
@@ -824,7 +825,7 @@ do_newpassword(dbref player, dbref cause,
  */
 void
 do_boot(dbref player, const char *name, enum boot_type flag, int silent,
-        MQUE * queue_entry)
+        MQUE *queue_entry)
 {
   dbref victim = NOTHING;
   DESC *d = NULL;
@@ -2071,7 +2072,7 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
 /* Does the actual searching */
 static int
 raw_search(dbref player, const char *owner, int nargs, const char **args,
-           dbref **result, NEW_PE_INFO * pe_info)
+           dbref **result, NEW_PE_INFO *pe_info)
 {
   size_t result_size;
   size_t nresults = 0;
@@ -2156,7 +2157,7 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
       continue;
     if (spec.cmdstring[0] &&
         !atr_comm_match(n, player, '$', ':', spec.cmdstring, 1, 0,
-                        NULL, NULL, 0,  NULL, NULL, QUEUE_DEFAULT))
+                        NULL, NULL, 0, NULL, NULL, QUEUE_DEFAULT))
       continue;
     if (spec.listenstring[0]) {
       ret = 0;

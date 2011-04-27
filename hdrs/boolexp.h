@@ -23,7 +23,7 @@ enum { TRUE_BOOLEXP = NULL_CHUNK_REFERENCE };
 /* From boolexp.c */
 boolexp dup_bool(boolexp b);
 int sizeof_boolexp(boolexp b);
-int eval_boolexp(dbref player, boolexp b, dbref target, NEW_PE_INFO * pe_info);
+int eval_boolexp(dbref player, boolexp b, dbref target, NEW_PE_INFO *pe_info);
 boolexp parse_boolexp(dbref player, const char *buf, lock_type ltype);
 boolexp parse_boolexp_d(dbref player, const char *buf, lock_type ltype,
                         int derefs);

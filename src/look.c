@@ -1515,8 +1515,8 @@ decompile_locks(dbref player, dbref thing, const char *name,
     if (p) {
       notify_format(player, "%s@lock/%s %s=%s", prefix,
                     L_TYPE(ll), name,
-		    decompose_str(unparse_boolexp(player, L_KEY(ll),
-						  UB_MEREF)));
+                    decompose_str(unparse_boolexp(player, L_KEY(ll),
+                                                  UB_MEREF)));
       if (skipdef) {
         if (p && L_FLAGS(ll) == L_FLAGS(p))
           continue;
@@ -1530,7 +1530,7 @@ decompile_locks(dbref player, dbref thing, const char *name,
     } else {
       notify_format(player, "%s@lock/user:%s %s=%s", prefix,
                     ll->type, name,
-		    decompose_str(unparse_boolexp(player, ll->key, UB_MEREF)));
+                    decompose_str(unparse_boolexp(player, ll->key, UB_MEREF)));
       if (L_FLAGS(ll))
         notify_format(player, "%s@lset %s/%s=%s", prefix, name,
                       L_TYPE(ll), lock_flags_long(ll));

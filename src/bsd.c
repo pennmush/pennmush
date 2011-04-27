@@ -2959,8 +2959,8 @@ do_page_port(dbref player, dbref enactor, const char *pc, const char *message,
   }
 
   if (eval_msg) {
-    process_expression(mbuf, &mbp, &message, player, enactor, enactor, PE_DEFAULT,
-                       PT_DEFAULT, NULL);
+    process_expression(mbuf, &mbp, &message, player, enactor, enactor,
+                       PE_DEFAULT, PT_DEFAULT, NULL);
     *mbp = '\0';
     message = mbuf;
   }

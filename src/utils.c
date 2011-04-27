@@ -206,7 +206,7 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
         ufun->errmess = e_atrperm;
       return 0;
     } else {
-      mush_strncpy(ufun->attrname, attrname, ATTRIBUTE_NAME_LIMIT+1);
+      mush_strncpy(ufun->attrname, attrname, ATTRIBUTE_NAME_LIMIT + 1);
       return 1;
     }
   }
@@ -229,7 +229,7 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
 
   /* Populate the ufun object */
   mush_strncpy(ufun->contents, atr_value(attrib), BUFFER_LEN);
-  mush_strncpy(ufun->attrname, AL_NAME(attrib), ATTRIBUTE_NAME_LIMIT+1);
+  mush_strncpy(ufun->attrname, AL_NAME(attrib), ATTRIBUTE_NAME_LIMIT + 1);
 
   /* We're good */
   return 1;
@@ -252,7 +252,7 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
  */
 bool
 call_ufun(ufun_attrib * ufun, char *ret, dbref executor, dbref enactor,
-          NEW_PE_INFO * pe_info, PE_REGS *user_regs)
+          NEW_PE_INFO *pe_info, PE_REGS *user_regs)
 {
   char rbuff[BUFFER_LEN];
   char *rp;
@@ -350,7 +350,7 @@ call_ufun(ufun_attrib * ufun, char *ret, dbref executor, dbref enactor,
  */
 bool
 call_attrib(dbref thing, const char *attrname, char *ret, dbref enactor,
-            NEW_PE_INFO * pe_info, PE_REGS *pe_regs)
+            NEW_PE_INFO *pe_info, PE_REGS *pe_regs)
 {
   ufun_attrib ufun;
   if (!fetch_ufun_attrib(attrname, thing, &ufun,
@@ -763,7 +763,8 @@ next_parent(dbref thing, dbref current, int *parent_count, int *use_ancestor)
   (*parent_count)++;
 
 
-  if (!GoodObject(next) && use_ancestor && (*use_ancestor) == 1 && !Orphan(thing)) {
+  if (!GoodObject(next) && use_ancestor && (*use_ancestor) == 1
+      && !Orphan(thing)) {
     /* Check for ancestor */
     next = Ancestor_Parent(thing);
     (*use_ancestor) = 2;

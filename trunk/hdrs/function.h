@@ -90,7 +90,7 @@ void do_userfn(char *buff, char **bp,
                dbref obj, ATTR *attrib,
                int nargs, char **args,
                dbref executor, dbref caller, dbref enactor,
-               NEW_PE_INFO * pe_info, int extra_flags);
+               NEW_PE_INFO *pe_info, int extra_flags);
 
 FUN *func_hash_lookup(const char *name);
 FUN *builtin_func_hash_lookup(const char *name);

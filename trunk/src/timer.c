@@ -196,7 +196,7 @@ static bool
 purge_event(void *data __attribute__ ((__unused__)))
 {
   if (!PURGE_INTERVAL)
-    return false; /* in case purge_interval is set to 0 with @config */
+    return false;               /* in case purge_interval is set to 0 with @config */
   purge();
   options.purge_counter = mudtime + PURGE_INTERVAL;
   sq_register_in(PURGE_INTERVAL, purge_event, NULL, "DB`PURGE");
@@ -207,7 +207,7 @@ static bool
 dbck_event(void *data __attribute__ ((__unused__)))
 {
   if (!DBCK_INTERVAL)
-    return false; /* in case dbck_interval is set to 0 with @config */
+    return false;               /* in case dbck_interval is set to 0 with @config */
   dbck();
   options.dbck_counter = mudtime + DBCK_INTERVAL;
   sq_register_in(DBCK_INTERVAL, dbck_event, NULL, "DB`DBCK");
@@ -218,7 +218,7 @@ static bool
 warning_event(void *data __attribute__ ((__unused__)))
 {
   if (!options.warn_interval)
-    return false; /* in case warn_interval is set to 0 with @config */
+    return false;               /* in case warn_interval is set to 0 with @config */
   options.warn_counter = options.warn_interval + mudtime;
   run_topology();
   sq_register_in(options.warn_interval, warning_event, NULL, "DB`WCHECK");
@@ -260,7 +260,7 @@ static bool
 dbsave_event(void *data __attribute__ ((__unused__)))
 {
   if (!options.dump_interval)
-    return false; /* in case dump_interval is set to 0 with @config */
+    return false;               /* in case dump_interval is set to 0 with @config */
 
   log_mem_check();
   options.dump_counter = options.dump_interval + mudtime;

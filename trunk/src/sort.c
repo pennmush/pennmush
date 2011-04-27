@@ -119,7 +119,8 @@ dbref_comp(const void *s1, const void *s2)
 
 /** qsort() comparision routine used by sortby() */
 int
-u_comp(const void *s1, const void *s2, dbref executor, dbref enactor, ufun_attrib *ufun, NEW_PE_INFO *pe_info)
+u_comp(const void *s1, const void *s2, dbref executor, dbref enactor,
+       ufun_attrib * ufun, NEW_PE_INFO *pe_info)
 {
   char result[BUFFER_LEN];
   int n;
@@ -162,7 +163,9 @@ u_comp(const void *s1, const void *s2, dbref executor, dbref enactor, ufun_attri
  */
 
 void
-sane_qsort(void *array[], int left, int right, comp_func compare, dbref executor, dbref enactor, ufun_attrib *ufun, NEW_PE_INFO *pe_info)
+sane_qsort(void *array[], int left, int right, comp_func compare,
+           dbref executor, dbref enactor, ufun_attrib * ufun,
+           NEW_PE_INFO *pe_info)
 {
 
   int i, last;
@@ -208,11 +211,13 @@ loop:
   /* entry at 'last' and everything above it is not < it.          */
 
   if ((last - left) < (right - last)) {
-    sane_qsort(array, left, last - 1, compare, executor, enactor, ufun, pe_info);
+    sane_qsort(array, left, last - 1, compare, executor, enactor, ufun,
+               pe_info);
     left = last + 1;
     goto loop;
   } else {
-    sane_qsort(array, last + 1, right, compare, executor, enactor, ufun, pe_info);
+    sane_qsort(array, last + 1, right, compare, executor, enactor, ufun,
+               pe_info);
     right = last - 1;
     goto loop;
   }
@@ -665,7 +670,7 @@ get_list_type_info(SortType sort_type)
  * \param lti The ListTypeInfo to free. Must be created by get_list_type_info.
  */
 void
-free_list_type_info(ListTypeInfo * lti)
+free_list_type_info(ListTypeInfo *lti)
 {
   if (lti->attrname) {
     mush_free(lti->attrname, "list_type_info_attrname");
@@ -747,7 +752,7 @@ get_list_type_noauto(char *args[], int nargs, int type_pos)
 }
 
 static void
-genrecord(s_rec *sp, dbref player, ListTypeInfo * lti)
+genrecord(s_rec *sp, dbref player, ListTypeInfo *lti)
 {
   lti->make_record(sp, player, lti->attrname);
   if (lti->flags & IS_CASE_INSENS && sp->memo.str.s) {
@@ -830,7 +835,7 @@ gencomp(dbref player, char *a, char *b, SortType sort_type)
  * \retval A pointer to the first s_rec of an n s_rec array.
  */
 s_rec *
-slist_build(dbref player, char *keys[], char *strs[], int n, ListTypeInfo * lti)
+slist_build(dbref player, char *keys[], char *strs[], int n, ListTypeInfo *lti)
 {
   int i;
   s_rec *sp;
@@ -864,7 +869,7 @@ slist_build(dbref player, char *keys[], char *strs[], int n, ListTypeInfo * lti)
  * \param lti List Type Info describing how it's sorted and built.
  */
 void
-slist_qsort(s_rec *sp, int n, ListTypeInfo * lti)
+slist_qsort(s_rec *sp, int n, ListTypeInfo *lti)
 {
   qsort((void *) sp, n, sizeof(s_rec), lti->sorter);
 }
@@ -878,7 +883,7 @@ slist_qsort(s_rec *sp, int n, ListTypeInfo * lti)
  * \retval The count of unique items.
  */
 int
-slist_uniq(s_rec *sp, int n, ListTypeInfo * lti)
+slist_uniq(s_rec *sp, int n, ListTypeInfo *lti)
 {
   int count, i;
 
@@ -918,7 +923,7 @@ slist_uniq(s_rec *sp, int n, ListTypeInfo * lti)
  * \param lti List Type Info describing how it's sorted and built.
  */
 void
-slist_free(s_rec *sp, int n, ListTypeInfo * lti)
+slist_free(s_rec *sp, int n, ListTypeInfo *lti)
 {
   int i;
   for (i = 0; i < n; i++) {
@@ -929,7 +934,7 @@ slist_free(s_rec *sp, int n, ListTypeInfo * lti)
 }
 
 int
-slist_comp(s_rec *s1, s_rec *s2, ListTypeInfo * lti)
+slist_comp(s_rec *s1, s_rec *s2, ListTypeInfo *lti)
 {
   return lti->sorter((const void *) s1, (const void *) s2);
 }

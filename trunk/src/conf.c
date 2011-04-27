@@ -1553,16 +1553,16 @@ config_file_checks(void)
   for (cp = conftable; cp->name; cp++) {
     if (!(cp->flags & (CP_OVERRIDDEN | CP_OPTIONAL))) {
       do_rawlog(LT_ERR,
-		"CONFIG: directive '%s' missing from cnf file, using default value.",
-		cp->name);
+                "CONFIG: directive '%s' missing from cnf file, using default value.",
+                cp->name);
     }
   }
   for (cp = hash_firstentry(&local_options); cp;
        cp = hash_nextentry(&local_options)) {
     if (!(cp->flags & (CP_OVERRIDDEN | CP_OPTIONAL))) {
       do_rawlog(LT_ERR,
-		"CONFIG: local directive '%s' missing from cnf file. Using default value.",
-		cp->name);
+                "CONFIG: local directive '%s' missing from cnf file. Using default value.",
+                cp->name);
     }
   }
 
@@ -1577,14 +1577,14 @@ config_file_checks(void)
   /* if we're on Win32, complain about compression */
   if ((options.compressprog && *options.compressprog)) {
     do_rawlog(LT_ERR,
-	      "CONFIG: compression program is specified but not used in Win32, ignoring",
-	      options.compressprog);
+              "CONFIG: compression program is specified but not used in Win32, ignoring",
+              options.compressprog);
   }
 
   if (((options.compresssuff && *options.compresssuff))) {
     do_rawlog(LT_ERR,
-	      "CONFIG: compression suffix is specified but not used in Win32, ignoring",
-	      options.compresssuff);
+              "CONFIG: compression suffix is specified but not used in Win32, ignoring",
+              options.compresssuff);
   }
 
   /* Also remove the compression options */
@@ -1698,13 +1698,15 @@ do_config_list(dbref player, const char *type, int lc)
         show_compile_options(player);
       else {
         for (cp = conftable; cp->name; cp++) {
-          if (cp->group && !strcmp(cp->group, cgp->name) && can_view_config_option(player, cp)) {
+          if (cp->group && !strcmp(cp->group, cgp->name)
+              && can_view_config_option(player, cp)) {
             notify(player, config_to_string(player, cp, lc));
           }
         }
         for (cp = (PENNCONF *) hash_firstentry(&local_options); cp;
              cp = (PENNCONF *) hash_nextentry(&local_options)) {
-          if (cp->group && !strcasecmp(cp->group, cgp->name) && can_view_config_option(player, cp)) {
+          if (cp->group && !strcasecmp(cp->group, cgp->name)
+              && can_view_config_option(player, cp)) {
             notify(player, config_to_string(player, cp, lc));
           }
         }
@@ -1812,14 +1814,16 @@ FUNCTION(fun_config)
 
   if (args[0] && *args[0]) {
     for (cp = conftable; cp->name; cp++) {
-      if (!strcasecmp(cp->name, args[0]) && can_view_config_option(executor, cp)) {
+      if (!strcasecmp(cp->name, args[0])
+          && can_view_config_option(executor, cp)) {
         safe_str(config_to_string2(executor, cp, 0), buff, bp);
         return;
       }
     }
     for (cp = (PENNCONF *) hash_firstentry(&local_options); cp;
          cp = (PENNCONF *) hash_nextentry(&local_options)) {
-      if (!strcasecmp(cp->name, args[0]) && can_view_config_option(executor, cp)) {
+      if (!strcasecmp(cp->name, args[0])
+          && can_view_config_option(executor, cp)) {
         safe_str(config_to_string2(executor, cp, 0), buff, bp);
         return;
       }

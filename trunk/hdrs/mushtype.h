@@ -61,54 +61,54 @@ typedef struct new_pe_info NEW_PE_INFO;
 typedef struct debug_info Debug_Info;
 /** process_expression() info */
 
-#define PE_KEY_LEN     64  /* The maximum key length. */
+#define PE_KEY_LEN     64       /* The maximum key length. */
 
 /* Types for _pe_regs_ _and_ _pe_reg_vals_ */
-#define PE_REGS_Q      0x01 /* Q-registers. */
-#define PE_REGS_REGEXP 0x02 /* Regexps. */
-#define PE_REGS_CAPTURE PE_REGS_REGEXP /* Alias for REGEXP */
-#define PE_REGS_SWITCH 0x04 /* switch(), %$0. */
-#define PE_REGS_ITER   0x08 /* iter() and @dol, %i0/etc */
-#define PE_REGS_ARG    0x10 /* %0-%9 */
-#define PE_REGS_SYS    0x20 /* %c, %z, %= */
+#define PE_REGS_Q      0x01     /* Q-registers. */
+#define PE_REGS_REGEXP 0x02     /* Regexps. */
+#define PE_REGS_CAPTURE PE_REGS_REGEXP  /* Alias for REGEXP */
+#define PE_REGS_SWITCH 0x04     /* switch(), %$0. */
+#define PE_REGS_ITER   0x08     /* iter() and @dol, %i0/etc */
+#define PE_REGS_ARG    0x10     /* %0-%9 */
+#define PE_REGS_SYS    0x20     /* %c, %z, %= */
 
-#define PE_REGS_QUEUE  0xFF /* Every type for a queue. */
+#define PE_REGS_QUEUE  0xFF     /* Every type for a queue. */
 
 /* Flags for _pe_regs_: */
-#define PE_REGS_LET     0x100  /* Used for let(): Only set qregs that already
-                                * exist otherwise pass them up. */
-#define PE_REGS_QSTOP   0x200  /* Q-reg get()s don't travel past this. */
-#define PE_REGS_NEWATTR 0x400  /* This _blocks_ iter, arg, switch */
-#define PE_REGS_IBREAK  0x800  /* This pe_reg has been ibreak()'d out */
-#define PE_REGS_ARGPASS 0x1000 /* This pe_reg has been ibreak()'d out */
+#define PE_REGS_LET     0x100   /* Used for let(): Only set qregs that already
+                                 * exist otherwise pass them up. */
+#define PE_REGS_QSTOP   0x200   /* Q-reg get()s don't travel past this. */
+#define PE_REGS_NEWATTR 0x400   /* This _blocks_ iter, arg, switch */
+#define PE_REGS_IBREAK  0x800   /* This pe_reg has been ibreak()'d out */
+#define PE_REGS_ARGPASS 0x1000  /* This pe_reg has been ibreak()'d out */
 
 /* Isolate: Don't propagate anything down, essentially wiping the slate. */
 #define PE_REGS_ISOLATE (PE_REGS_QUEUE | PE_REGS_QSTOP | PE_REGS_NEWATTR)
 
 /* Typeflags for REG_VALs */
-#define PE_REGS_STR    0x100 /* It's a string */
-#define PE_REGS_INT    0x200 /* It's an integer */
-#define PE_REGS_NOCOPY 0x400 /* Don't insert the value into a string */
+#define PE_REGS_STR    0x100    /* It's a string */
+#define PE_REGS_INT    0x200    /* It's an integer */
+#define PE_REGS_NOCOPY 0x400    /* Don't insert the value into a string */
 
 typedef struct _pe_reg_val {
-  int  type;
+  int type;
   const char *name;
   union {
     const char *sval;
-    int   ival;
+    int ival;
   } val;
   struct _pe_reg_val *next;
 } PE_REG_VAL;
 
 typedef struct _pe_regs_ {
-  struct   _pe_regs_ *prev;    /* Previous PE_REGS, for chaining up the stack */
-  int      flags;              /* REG_* flags */
-  int      count;              /* Total register count. This includes
-                                * inherited registers. */
-  int      qcount;             /* Q-register count, including inherited
-                                * registers. */
-  PE_REG_VAL *vals;            /* The register values */
-  const char *name;            /* For debugging */
+  struct _pe_regs_ *prev;       /* Previous PE_REGS, for chaining up the stack */
+  int flags;                    /* REG_* flags */
+  int count;                    /* Total register count. This includes
+                                 * inherited registers. */
+  int qcount;                   /* Q-register count, including inherited
+                                 * registers. */
+  PE_REG_VAL *vals;             /* The register values */
+  const char *name;             /* For debugging */
 } PE_REGS;
 
 /* Initialize the pe_regs strtrees */
@@ -123,7 +123,8 @@ void pe_reg_val_free(PE_REG_VAL *val);
 void pe_regs_clear(PE_REGS *pe_regs);
 void pe_regs_clear_type(PE_REGS *pe_regs, int type);
 void pe_regs_free(PE_REGS *pe_regs);
-PE_REGS *pe_regs_localize_real(NEW_PE_INFO *pe_info, uint32_t pr_flags, const char *name);
+PE_REGS *pe_regs_localize_real(NEW_PE_INFO *pe_info, uint32_t pr_flags,
+                               const char *name);
 #define pe_regs_localize(p,x,y) pe_regs_localize_real(p, x, "pe_regs-" y)
 void pe_regs_restore(NEW_PE_INFO *pe_info, PE_REGS *pe_regs);
 
@@ -135,10 +136,10 @@ void pe_regs_copystack(PE_REGS *new_regs, PE_REGS *pe_regs,
 
 /* Manipulating PE_REGS directly */
 void pe_regs_set_if(PE_REGS *pe_regs, int type,
-                   const char *key, const char *val, int override);
+                    const char *key, const char *val, int override);
 #define pe_regs_set(p,t,k,v) pe_regs_set_if(p,t,k,v,1)
 void pe_regs_set_int_if(PE_REGS *pe_regs, int type,
-                   const char *key, int val, int override);
+                        const char *key, int val, int override);
 #define pe_regs_set_int(p,t,k,v) pe_regs_set_int_if(p,t,k,v,1)
 const char *pe_regs_get(PE_REGS *pe_regs, int type, const char *key);
 int pe_regs_get_int(PE_REGS *pe_regs, int type, const char *key);
@@ -163,8 +164,7 @@ struct _ansi_string;
 void pe_regs_set_rx_context(PE_REGS *regs,
                             struct real_pcre *re_code,
                             int *re_offsets,
-                            int re_subpatterns,
-                            const char *re_from);
+                            int re_subpatterns, const char *re_from);
 void pe_regs_set_rx_context_ansi(PE_REGS *regs,
                                  struct real_pcre *re_code,
                                  int *re_offsets,
@@ -192,7 +192,7 @@ const char *pi_regs_get_rx(NEW_PE_INFO *pe_info, const char *key);
  * + Switches are just iters without inums, so they're functionally the same.
  *   The only difference from above is the type of the value.
  */
-const char * pi_regs_get_itext(NEW_PE_INFO *pe_info, int type, int lev);
+const char *pi_regs_get_itext(NEW_PE_INFO *pe_info, int type, int lev);
 int pi_regs_get_ilev(NEW_PE_INFO *pe_info, int type);
 int pi_regs_get_inum(NEW_PE_INFO *pe_info, int type, int lev);
 
@@ -209,7 +209,7 @@ int pi_regs_get_inum(NEW_PE_INFO *pe_info, int type, int lev);
 const char *pe_regs_intname(int num);
 void pe_regs_setenv(PE_REGS *pe_regs, int num, const char *val);
 void pe_regs_setenv_nocopy(PE_REGS *pe_regs, int num, const char *val);
-const char * pi_regs_get_env(NEW_PE_INFO *pe_info, int num);
+const char *pi_regs_get_env(NEW_PE_INFO *pe_info, int num);
 int pi_regs_get_envc(NEW_PE_INFO *pe_info);
 #define PE_Get_Env(pi,n) pi_regs_get_env(pi, n)
 #define PE_Get_Envc(pi) pi_regs_get_envc(pi)

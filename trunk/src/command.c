@@ -66,10 +66,10 @@ static enum command_load_state command_state = CMD_LOAD_BUILTIN;
 static StrTree switch_names;
 
 int run_hook(dbref player, dbref cause, struct hook_data *hook,
-             NEW_PE_INFO * pe_info);
+             NEW_PE_INFO *pe_info);
 
 int run_hook_override(COMMAND_INFO *cmd, dbref player, const char *commandraw,
-                      MQUE * from_queue);
+                      MQUE *from_queue);
 
 const char *CommandLock = "CommandLock";
 
@@ -140,7 +140,8 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_NOPARSE | CMD_T_NOGAGGED, 0, 0},
   {"@DOLIST", "NOTIFY DELIMIT", cmd_dolist,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE, 0, 0},
-  {"@DRAIN", "ALL ANY", cmd_notify_drain, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
+  {"@DRAIN", "ALL ANY", cmd_notify_drain,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
   {"@DUMP", "PARANOID DEBUG", cmd_dump, CMD_T_ANY, "WIZARD", 0},
 
   {"@EDIT", "FIRST CHECK", cmd_edit,
@@ -174,7 +175,9 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_NOGAGGED, 0, 0},
   {"@HALT", "ALL PID", cmd_halt, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@HIDE", "NO OFF YES ON", cmd_hide, CMD_T_ANY, 0, 0},
-  {"@HOOK", "LIST AFTER BEFORE IGNORE OVERRIDE INPLACE INLINE LOCALIZE CLEARREGS NOBREAK", cmd_hook,
+  {"@HOOK",
+   "LIST AFTER BEFORE IGNORE OVERRIDE INPLACE INLINE LOCALIZE CLEARREGS NOBREAK",
+   cmd_hook,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS,
    "WIZARD", "hook"},
   {"@INCLUDE", "LOCALIZE CLEARREGS NOBREAK", cmd_include,
@@ -217,7 +220,8 @@ COMLIST commands[] = {
    | CMD_T_NOGUEST, 0, 0},
   {"@NEWPASSWORD", NULL, cmd_newpassword, CMD_T_ANY | CMD_T_EQSPLIT
    | CMD_T_RS_NOPARSE, "WIZARD", 0},
-  {"@NOTIFY", "ALL ANY SETQ", cmd_notify_drain, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
+  {"@NOTIFY", "ALL ANY SETQ", cmd_notify_drain,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
   {"@NSCEMIT", "NOEVAL NOISY SILENT SPOOF", cmd_cemit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@NSEMIT", "ROOM NOEVAL SILENT SPOOF", cmd_emit, CMD_T_ANY | CMD_T_NOGAGGED,
@@ -265,13 +269,16 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@REJECTMOTD", NULL, cmd_rejectmotd, CMD_T_ANY, "WIZARD", 0},
   {"@RESTART", "ALL", cmd_restart, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
-  {"@RETRY", NULL, cmd_retry, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE | CMD_T_NOGAGGED, 0, 0},
+  {"@RETRY", NULL, cmd_retry,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE |
+   CMD_T_NOGAGGED, 0, 0},
   {"@RWALL", "NOEVAL EMIT", cmd_rwall, CMD_T_ANY, "WIZARD ROYALTY", 0},
   {"@SCAN", "ROOM SELF ZONE GLOBALS", cmd_scan,
    CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"@SEARCH", NULL, cmd_search,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE, 0, 0},
-  {"@SELECT", "NOTIFY REGEXP INPLACE INLINE LOCALIZE CLEARREGS NOBREAK", cmd_select,
+  {"@SELECT", "NOTIFY REGEXP INPLACE INLINE LOCALIZE CLEARREGS NOBREAK",
+   cmd_select,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE, 0, 0},
   {"@SET", NULL, cmd_set, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@SHUTDOWN", "PANIC REBOOT PARANOID", cmd_shutdown, CMD_T_ANY, "WIZARD", 0},
@@ -286,7 +293,9 @@ COMLIST commands[] = {
    CMD_T_ANY, 0, 0},
 
   {"@SWEEP", "CONNECTED HERE INVENTORY EXITS", cmd_sweep, CMD_T_ANY, 0, 0},
-  {"@SWITCH", "NOTIFY FIRST ALL REGEXP INPLACE INLINE LOCALIZE CLEARREGS NOBREAK", cmd_switch,
+  {"@SWITCH",
+   "NOTIFY FIRST ALL REGEXP INPLACE INLINE LOCALIZE CLEARREGS NOBREAK",
+   cmd_switch,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE |
    CMD_T_NOGAGGED, 0, 0},
   {"@SQUOTA", NULL, cmd_squota, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
@@ -909,8 +918,9 @@ int rhs_present;
  */
 void
 command_argparse(dbref executor, dbref enactor, dbref caller,
-                 NEW_PE_INFO * pe_info, char **from, char *to, char *argv[],
-                 COMMAND_INFO *cmd, int right_side, int forcenoparse, int pe_flags)
+                 NEW_PE_INFO *pe_info, char **from, char *to, char *argv[],
+                 COMMAND_INFO *cmd, int right_side, int forcenoparse,
+                 int pe_flags)
 {
   int parse, split, args, i, done;
   char *t, *f;
@@ -1054,7 +1064,7 @@ command_isattr(char *command)
  * \return NULL if a command was handled, otherwise the evaluated input.
  */
 char *
-command_parse(dbref player, char *string, MQUE * queue_entry)
+command_parse(dbref player, char *string, MQUE *queue_entry)
 {
   char *command, *swtch, *ls, *rs, *switches;
   static char commandraw[BUFFER_LEN];
@@ -1431,8 +1441,7 @@ int
 run_command(COMMAND_INFO *cmd, dbref player, dbref enactor,
             const char *commandraw, switch_mask sw, char switch_err[BUFFER_LEN],
             const char *string, char *swp, char *ap, char *ls,
-            char *lsa[MAX_ARG], char *rs, char *rsa[MAX_ARG],
-            MQUE * queue_entry)
+            char *lsa[MAX_ARG], char *rs, char *rsa[MAX_ARG], MQUE *queue_entry)
 {
   NEW_PE_INFO *pe_info;
 
@@ -1491,7 +1500,7 @@ run_command(COMMAND_INFO *cmd, dbref player, dbref enactor,
  */
 void
 generic_command_failure(dbref player, dbref cause, char *string,
-                        MQUE * queue_entry)
+                        MQUE *queue_entry)
 {
   COMMAND_INFO *cmd;
 
@@ -2169,7 +2178,7 @@ has_hook(struct hook_data *hook)
  */
 int
 run_hook(dbref player, dbref cause, struct hook_data *hook,
-         NEW_PE_INFO * pe_info)
+         NEW_PE_INFO *pe_info)
 {
   ATTR *atr;
   char *code;
@@ -2209,7 +2218,7 @@ run_hook(dbref player, dbref cause, struct hook_data *hook,
  */
 int
 run_hook_override(COMMAND_INFO *cmd, dbref player, const char *commandraw,
-                  MQUE * from_queue)
+                  MQUE *from_queue)
 {
 
   if (!has_hook(&cmd->hooks.override))
@@ -2447,7 +2456,9 @@ do_hook_list(dbref player, char *command)
       char inplace[BUFFER_LEN], *bp;
       bp = inplace;
       if (cmd->hooks.override.inplace & QUEUE_INPLACE) {
-        if ((cmd->hooks.override.inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) == (QUEUE_RECURSE | QUEUE_CLEAR_QREG))
+        if ((cmd->hooks.
+             override.inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
+            (QUEUE_RECURSE | QUEUE_CLEAR_QREG))
           safe_str("/inplace", inplace, &bp);
         else {
           safe_str("/inline", inplace, &bp);

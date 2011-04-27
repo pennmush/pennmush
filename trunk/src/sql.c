@@ -495,7 +495,8 @@ COMMAND(cmd_mapsql)
   }
 
 finished:
-  if (pe_regs) pe_regs_free(pe_regs);
+  if (pe_regs)
+    pe_regs_free(pe_regs);
   free_sql_query(qres);
 }
 
@@ -794,7 +795,8 @@ FUNCTION(fun_mapsql)
     funccount = pe_info->fun_invocations;
   }
 finished:
-  if (pe_regs) pe_regs_free(pe_regs);
+  if (pe_regs)
+    pe_regs_free(pe_regs);
   free_sql_query(qres);
 }
 

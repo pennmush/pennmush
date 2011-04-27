@@ -1094,7 +1094,7 @@ ok_tag_attribute(dbref player, const char *params)
 void
 do_switch(dbref player, char *expression, char **argv, dbref cause,
           int first, int notifyme, int regexp, int queue_type,
-          MQUE * queue_entry)
+          MQUE *queue_entry)
 {
   int any = 0, a;
   char buff[BUFFER_LEN], *bp;
@@ -1350,7 +1350,7 @@ do_verb(dbref player, dbref cause, char *arg1, char **argv)
   pe_regs = pe_regs_create(PE_REGS_ARG, "do_verb");
   for (i = 0; i < 10; i++) {
     if (argv[i + 7]) {
-      pe_regs_setenv_nocopy(pe_regs, i, argv[i+7]);
+      pe_regs_setenv_nocopy(pe_regs, i, argv[i + 7]);
     }
   }
 

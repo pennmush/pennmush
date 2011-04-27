@@ -167,7 +167,7 @@ COMMAND(cmd_retry)
     /* Now, to evaluate all of rsargs. Blah. */
     pe_regs = pe_regs_create(PE_REGS_ARG, "cmd_retry");
     for (a = 0; a < 10; a++) {
-      sp = args_right[a+1];
+      sp = args_right[a + 1];
       if (sp) {
         bp = buff;
         process_expression(buff, &bp, &sp, executor, caller, enactor,
@@ -186,7 +186,8 @@ COMMAND(cmd_retry)
     }
   }
   queue_entry->queue_type |= QUEUE_RETRY;
-  if (pe_regs) pe_regs_free(pe_regs);
+  if (pe_regs)
+    pe_regs_free(pe_regs);
 }
 
 COMMAND(cmd_chownall)
@@ -468,8 +469,7 @@ COMMAND(cmd_force)
       queue_type |= QUEUE_PRESERVE_QREG;
   }
 
-  do_force(executor, caller, arg_left, arg_right, queue_type,
-           queue_entry);
+  do_force(executor, caller, arg_left, arg_right, queue_type, queue_entry);
 }
 
 COMMAND(cmd_function)
@@ -504,7 +504,8 @@ COMMAND(cmd_function)
       *args_right[2]++ = '\0';
     }
     if (args_right[1] && *args_right[1])
-      do_function(executor, arg_left, args_right, SW_ISSET(sw, SWITCH_PRESERVE));
+      do_function(executor, arg_left, args_right,
+                  SW_ISSET(sw, SWITCH_PRESERVE));
     else if (arg_left && *arg_left)
       do_function_report(executor, arg_left);
     else
@@ -592,7 +593,8 @@ COMMAND(cmd_hook)
   }
   if (queue_type != QUEUE_DEFAULT) {
     if (flags != HOOK_OVERRIDE) {
-      notify(executor, T("You can only use /inplace and /inline with /override."));
+      notify(executor,
+             T("You can only use /inplace and /inline with /override."));
       return;
     }
   }
@@ -777,7 +779,7 @@ COMMAND(cmd_mail)
       do_mail_send(executor, arg_left, arg_right,
                    urgent ? M_URGENT : 0, silent, nosig);
   } else
-    do_mail(executor, arg_left, arg_right);       /* Does its own gagged check */
+    do_mail(executor, arg_left, arg_right);     /* Does its own gagged check */
 }
 
 

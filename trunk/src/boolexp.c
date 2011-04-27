@@ -262,7 +262,7 @@ safe_get_bytecode(boolexp b)
     static struct boolexp_node *parse_boolexp_E(void);
     static int check_attrib_lock(dbref player, dbref target,
                                  const char *atrname, const char *str,
-                                 NEW_PE_INFO * pe_info);
+                                 NEW_PE_INFO *pe_info);
     static void free_boolexp_node(struct boolexp_node *b);
     static int gen_label_id(struct bvm_asm *a);
     static void append_insn(struct bvm_asm *a, bvm_opcode op, int arg,
@@ -395,7 +395,7 @@ sizeof_boolexp(boolexp b)
  * \retval 1 player successfully passes lock.
  */
 int
-eval_boolexp(dbref player, boolexp b, dbref target, NEW_PE_INFO * pe_info)
+eval_boolexp(dbref player, boolexp b, dbref target, NEW_PE_INFO *pe_info)
 {
   static int boolexp_recursion = 0;
   static bool recurse_err_shown = 0;
@@ -657,7 +657,7 @@ safe_bstr(const unsigned char *s, bvm_opcode op, char *buff, char **bp)
   const unsigned char *p, *name = (const unsigned char *) s;
   int n;
   int preserve;
-  
+
   switch (op) {
   case OP_TATR:
   case OP_TNAME:
@@ -692,7 +692,7 @@ safe_bstr(const unsigned char *s, bvm_opcode op, char *buff, char **bp)
     if ((n = safe_chr(*p, buff, bp)) != 0)
       return n;
   }
-  
+
   return 0;
 }
 
@@ -973,8 +973,8 @@ skip_whitespace(void)
 
 
 enum test_atr_errs {
-  TAE_NONE, /*< Nt an attribute-type lock; continue parsing. */
-  TAE_PARSE /*< Fatal parsing error. */
+  TAE_NONE,                     /*< Nt an attribute-type lock; continue parsing. */
+  TAE_PARSE                     /*< Fatal parsing error. */
 };
 
 static enum test_atr_errs test_atr_err = TAE_NONE;
@@ -986,7 +986,7 @@ test_atr(char *s, char c)
   int preserve;
   char *tbp, *abp;
   bool escaped;
-  struct boolexp_node *b;  
+  struct boolexp_node *b;
   char tbuf1[BUFFER_LEN];
 
   test_atr_err = TAE_NONE;
@@ -1004,26 +1004,27 @@ test_atr(char *s, char c)
         return 0;
       abp = tbp;
       if (c == FLAG_TOKEN) {
-	const struct flag_lock_types *flag = is_allowed_bflag(tbuf1, strlen(tbuf1));
-	
-	if (!flag) {
-	  notify_format(parse_player, T("'%s' is not a valid flag lock name."), tbuf1);
-	  test_atr_err = TAE_PARSE;
-	  return NULL;
-	}
-	
-	preserve = flag->preserve;
-      }
-      else if (c == ATR_TOKEN)
+        const struct flag_lock_types *flag =
+          is_allowed_bflag(tbuf1, strlen(tbuf1));
+
+        if (!flag) {
+          notify_format(parse_player, T("'%s' is not a valid flag lock name."),
+                        tbuf1);
+          test_atr_err = TAE_PARSE;
+          return NULL;
+        }
+
+        preserve = flag->preserve;
+      } else if (c == ATR_TOKEN)
         preserve = 1;
     } else if (!escaped && *s == '\\' && !preserve)
       escaped = 1;
     else {
       safe_chr(UPCASE(*s), tbuf1, &tbp);
       escaped = 0;
-    }   
+    }
   }
-  
+
   *tbp = '\0';
   if (!abp) {
     test_atr_err = TAE_NONE;
@@ -1038,50 +1039,50 @@ test_atr(char *s, char c)
   else if (c == FLAG_TOKEN) {
     if (strcmp(tbuf1, "OBJID") == 0) {
       /* Convert objid^blah to =blah */
-      
+
       if (loading_db) {
-	struct boolexp_node *t;
-	const char *savebuf = parsebuf;
+        struct boolexp_node *t;
+        const char *savebuf = parsebuf;
 
-	/* This does some simple validation of objid's target to try
-	 * to make sure it at least refers to a dbref. Because this part
-	 * is run during database loading, full validation like we can do
-	 * when a user uses a @lock on a running game is impossible. This
-	 * means that it's possible for an existing objid lock that refers
-	 * to a now-deleted object to pass a new object using the same dbref.
-	 * Not sure of a good way to work around this.
-	 */
+        /* This does some simple validation of objid's target to try
+         * to make sure it at least refers to a dbref. Because this part
+         * is run during database loading, full validation like we can do
+         * when a user uses a @lock on a running game is impossible. This
+         * means that it's possible for an existing objid lock that refers
+         * to a now-deleted object to pass a new object using the same dbref.
+         * Not sure of a good way to work around this.
+         */
 
-	parsebuf = s;
-	t = parse_boolexp_R();
-	parsebuf = savebuf;
+        parsebuf = s;
+        t = parse_boolexp_R();
+        parsebuf = savebuf;
 
-	/* Malformed to a certain extent. Fail. */
-	if (!t) {
-	  free_boolexp_node(b);
-	  test_atr_err = TAE_PARSE;
-	  return NULL;
-	} else if (t->type != BOOLEXP_CONST) {
-	  free_boolexp_node(t);
-	  free_boolexp_node(b);
-	  test_atr_err = TAE_PARSE;
-	  return NULL;
-	}
-	b->type = BOOLEXP_IS;
-	b->thing = t->thing;
-	free_boolexp_node(t);
+        /* Malformed to a certain extent. Fail. */
+        if (!t) {
+          free_boolexp_node(b);
+          test_atr_err = TAE_PARSE;
+          return NULL;
+        } else if (t->type != BOOLEXP_CONST) {
+          free_boolexp_node(t);
+          free_boolexp_node(b);
+          test_atr_err = TAE_PARSE;
+          return NULL;
+        }
+        b->type = BOOLEXP_IS;
+        b->thing = t->thing;
+        free_boolexp_node(t);
       } else {
-	dbref d = parse_objid(s);
-	if (GoodObject(d)) {	
-	  b->type = BOOLEXP_IS;
-	  b->thing = d;
-	} else {
-	  /* Fail on invalid objids */
-	  notify_format(parse_player, T("I don't see %s here."), s);
-	  free_boolexp_node(b);
-	  test_atr_err = TAE_PARSE;
-	  return NULL;
-	}
+        dbref d = parse_objid(s);
+        if (GoodObject(d)) {
+          b->type = BOOLEXP_IS;
+          b->thing = d;
+        } else {
+          /* Fail on invalid objids */
+          notify_format(parse_player, T("I don't see %s here."), s);
+          free_boolexp_node(b);
+          test_atr_err = TAE_PARSE;
+          return NULL;
+        }
       }
       return b;
     } else {
@@ -1113,8 +1114,7 @@ parse_boolexp_R(void)
     if (escaped || *parsebuf != '\\') {
       safe_chr(*parsebuf, tbuf1, &p);
       escaped = 0;
-    }
-    else
+    } else
       escaped = 1;
     parsebuf++;
   }
@@ -1246,7 +1246,7 @@ parse_boolexp_O(void)
     } else if (t->type != BOOLEXP_CONST) {
       free_boolexp_node(b2);
       free_boolexp_node(t);
-      return NULL;    
+      return NULL;
     } else {
       b2->thing = t->thing;
       free_boolexp_node(t);
@@ -1343,13 +1343,12 @@ parse_boolexp_A(void)
         if (escaped || *parsebuf != '\\') {
           safe_chr(UPCASE(*parsebuf), tbuf1, &p);
           escaped = 0;
-        }
-        else
+        } else
           escaped = 1;
         parsebuf++;
       }
       /* strip trailing whitespace */
-      
+
       *p = '\0';
       while (p != tbuf1 && isspace((unsigned char) *(--p)))
         *p = '\0';
@@ -1587,7 +1586,9 @@ generate_bvm_asm1(struct bvm_asm *a, struct boolexp_node *b, boolexp_type outer)
     {
       const struct flag_lock_types *bflag;
       /* Always returns non-null at this point. */
-      bflag = is_allowed_bflag(b->data.atr_lock->name, strlen(b->data.atr_lock->name));
+      bflag =
+        is_allowed_bflag(b->data.atr_lock->name,
+                         strlen(b->data.atr_lock->name));
       append_insn(a, bflag->op, 0, b->data.atr_lock->text);
       break;
     }
@@ -1983,7 +1984,7 @@ parse_boolexp(dbref player, const char *buf, lock_type ltype)
  */
 static int
 check_attrib_lock(dbref player, dbref target,
-                  const char *atrname, const char *str, NEW_PE_INFO * pe_info)
+                  const char *atrname, const char *str, NEW_PE_INFO *pe_info)
 {
 
   ATTR *a;

@@ -1573,8 +1573,7 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
       safe_format(tbuf1, &tp, T("%s is no longer listening."), Name(thing));
       *tp = '\0';
       if (GoodObject(Location(thing)))
-        notify_except(Location(thing), NOTHING, tbuf1,
-                      NA_INTER_PRESENCE);
+        notify_except(Location(thing), NOTHING, tbuf1, NA_INTER_PRESENCE);
       notify_except(thing, NOTHING, tbuf1, 0);
     }
     if (IsRoom(thing) && is_flag(f, "MONITOR") && !hear && !Listener(thing)) {
@@ -1634,8 +1633,7 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
       safe_format(tbuf1, &tp, T("%s is now listening."), Name(thing));
       *tp = '\0';
       if (GoodObject(Location(thing)))
-        notify_except(Location(thing), NOTHING, tbuf1,
-                      NA_INTER_PRESENCE);
+        notify_except(Location(thing), NOTHING, tbuf1, NA_INTER_PRESENCE);
       notify_except(thing, NOTHING, tbuf1, 0);
     }
     if (IsRoom(thing) && is_flag(f, "MONITOR") && !hear && !listener) {
@@ -1662,8 +1660,7 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
         break;
       case TYPE_PLAYER:
       case TYPE_THING:
-        notify_except(thing, thing,
-                      T("This room is now broadcasting."), 0);
+        notify_except(thing, thing, T("This room is now broadcasting."), 0);
         notify(thing, T("Your contents can now be heard from outside."));
         break;
       }

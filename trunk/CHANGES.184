@@ -57,7 +57,7 @@ Locks:
    of references to deleted objects makes objid locks extraneous. [SW]
  * Internal changes to validation of 'name^string' locks to use perfect
    hash tables to validate the name. [SW]
- * Locks worth better with escaped special characters. Patch by Covenant.
+ * Locks worth better with escaped special characters. Patch by Covenent.
  
 Commands:
  * @switch and @switch/regexp set $0-$9 for glob or pattern captures. [GM]

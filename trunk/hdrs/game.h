@@ -5,13 +5,13 @@
 #define __GAME_H
 
 /* @scan flags */
-#define CHECK_INVENTORY            0x010 /*<< Check player's inventory for $-commands */
-#define CHECK_NEIGHBORS            0x020 /*<< Check objects in player's location for $-commands, including player */
-#define CHECK_SELF                 0x040 /*<< Check player for $-commands */
-#define CHECK_HERE                 0x080 /*<< Check player's location for $-commands */
-#define CHECK_ZONE                 0x100 /*<< Check player's ZMT/ZMR for $-commands */
-#define CHECK_GLOBAL               0x200 /*<< Check for Master Room $-commands */
-#define CHECK_BREAK                0x400 /*<< Do no further checks after a round of $-command matching succeeds */
+#define CHECK_INVENTORY            0x010        /*<< Check player's inventory for $-commands */
+#define CHECK_NEIGHBORS            0x020        /*<< Check objects in player's location for $-commands, including player */
+#define CHECK_SELF                 0x040        /*<< Check player for $-commands */
+#define CHECK_HERE                 0x080        /*<< Check player's location for $-commands */
+#define CHECK_ZONE                 0x100        /*<< Check player's ZMT/ZMR for $-commands */
+#define CHECK_GLOBAL               0x200        /*<< Check for Master Room $-commands */
+#define CHECK_BREAK                0x400        /*<< Do no further checks after a round of $-command matching succeeds */
 /* Does NOT include CHECK_BREAK */
 #define CHECK_ALL (CHECK_INVENTORY | CHECK_NEIGHBORS | CHECK_SELF | CHECK_HERE | CHECK_ZONE | CHECK_GLOBAL)
 
@@ -35,7 +35,7 @@ void do_pemit_port(dbref player, const char *pc, const char *msg, int flags);
 /* From cque.c */
 void do_wait
   (dbref player, dbref cause, char *arg1, const char *cmd, bool until,
-   MQUE * parent_queue);
+   MQUE *parent_queue);
 void do_waitpid(dbref, const char *, const char *, bool);
 enum queue_type { QUEUE_ALL, QUEUE_NORMAL, QUEUE_SUMMARY, QUEUE_QUICK };
 void do_queue(dbref player, const char *what, enum queue_type flag);
@@ -65,7 +65,7 @@ extern void do_dump(dbref player, char *num, enum dump_type flag);
 enum shutdown_type { SHUT_NORMAL, SHUT_PANIC, SHUT_PARANOID };
 extern void do_shutdown(dbref player, enum shutdown_type panic_flag);
 extern void do_dolist(dbref player, char *list, char *command,
-               dbref enactor, unsigned int flags, MQUE * queue_entry);
+                      dbref enactor, unsigned int flags, MQUE *queue_entry);
 
 
 /* From look.c */
@@ -95,13 +95,12 @@ extern void do_firstexit(dbref player, const char **what);
 
 /* From player.c */
 extern void do_password(dbref player, dbref cause,
-                        const char *old, const char *newobj,
-                        MQUE * queue_entry);
+                        const char *old, const char *newobj, MQUE *queue_entry);
 
 /* From predicat.c */
 extern void do_switch
   (dbref player, char *expression, char **argv, dbref cause, int first,
-   int notifyme, int regexp, int queue_type, MQUE * queue_entry);
+   int notifyme, int regexp, int queue_type, MQUE *queue_entry);
 extern void do_verb(dbref player, dbref cause, char *arg1, char **argv);
 extern void do_grep
   (dbref player, char *obj, char *lookfor, int flag, int insensitive);
@@ -157,7 +156,7 @@ extern void do_zemit(dbref player, const char *arg1, const char *arg2,
 extern void do_oemit_list(dbref player, char *arg1, const char *arg2,
                           int flags);
 extern void do_teach(dbref player, const char *tbuf1, int list,
-                     MQUE * parent_queue);
+                     MQUE *parent_queue);
 
 /* From wiz.c */
 extern void do_debug_examine(dbref player, const char *name);
@@ -173,14 +172,14 @@ extern void do_allquota(dbref player, const char *arg1, int quiet);
 extern void do_teleport
   (dbref player, const char *arg1, const char *arg2, int silent, int inside);
 extern void do_force(dbref player, dbref caller, const char *what,
-                     char *command, int queue_type, MQUE * queue_entry);
+                     char *command, int queue_type, MQUE *queue_entry);
 extern void do_stats(dbref player, const char *name);
 extern void do_newpassword
   (dbref player, dbref cause, const char *name, const char *password,
-   MQUE * queue_entry);
+   MQUE *queue_entry);
 enum boot_type { BOOT_NAME, BOOT_DESC, BOOT_SELF };
 extern void do_boot(dbref player, const char *name, enum boot_type flag,
-                    int silent, MQUE * queue_entry);
+                    int silent, MQUE *queue_entry);
 extern void do_chzoneall(dbref player, const char *name, const char *target,
                          bool preserve);
 extern int parse_force(char *command);

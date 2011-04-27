@@ -410,8 +410,8 @@ bool
 is_strict_number(char const *str)
 {
   char *end;
-  int throwaway __attribute__((__unused__));
-  if (!str)  
+  int throwaway __attribute__ ((__unused__));
+  if (!str)
     return 0;
   errno = 0;
   throwaway = strtod(str, &end);
@@ -627,7 +627,7 @@ slab *pe_reg_val_slab;
 
 /* Lame speed-up so we don't constantly call tprintf :D */
 static const char *envid[10] =
-    { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+  { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 
 void
 init_pe_regs_trees()
@@ -711,9 +711,11 @@ pe_regs_create_real(int pr_flags, const char *name)
 
 /* Delete the _value_ of a single val, leave its name alone */
 inline void
-pe_reg_val_free_val(PE_REG_VAL *val) {
+pe_reg_val_free_val(PE_REG_VAL *val)
+{
   /* Don't do anything if it's NOCOPY or if it's an integer. */
-  if (val->type & (PE_REGS_INT | PE_REGS_NOCOPY)) return;
+  if (val->type & (PE_REGS_INT | PE_REGS_NOCOPY))
+    return;
 
   if (val->type & PE_REGS_STR) {
     st_delete(val->val.sval, &pe_reg_vals);
@@ -723,7 +725,8 @@ pe_reg_val_free_val(PE_REG_VAL *val) {
 
 /* Delete a single val. */
 void
-pe_reg_val_free(PE_REG_VAL *val) {
+pe_reg_val_free(PE_REG_VAL *val)
+{
   pe_reg_val_free_val(val);
   st_delete(val->name, &pe_reg_names);
   DEL_CHECK("pe_reg_val-name");
@@ -736,7 +739,8 @@ pe_reg_val_free(PE_REG_VAL *val) {
  * \param pe_wregs The pe_regs to clear
  */
 void
-pe_regs_clear(PE_REGS *pe_regs) {
+pe_regs_clear(PE_REGS *pe_regs)
+{
   PE_REG_VAL *val = pe_regs->vals;
   PE_REG_VAL *next;
 
@@ -754,7 +758,8 @@ pe_regs_clear(PE_REGS *pe_regs) {
  * \param type     The type(s) of pe_reg_vals to clear.
  */
 void
-pe_regs_clear_type(PE_REGS *pe_regs, int type) {
+pe_regs_clear_type(PE_REGS *pe_regs, int type)
+{
   PE_REG_VAL *val = pe_regs->vals;
   PE_REG_VAL *next;
   PE_REG_VAL *prev = NULL;
@@ -780,7 +785,8 @@ pe_regs_clear_type(PE_REGS *pe_regs, int type) {
  * \param pe_wregs The pe_regs to free up.
  */
 void
-pe_regs_free(PE_REGS *pe_regs) {
+pe_regs_free(PE_REGS *pe_regs)
+{
   pe_regs_clear(pe_regs);
   DEL_CHECK(pe_regs->name);
   slab_free(pe_reg_slab, pe_regs);
@@ -854,7 +860,8 @@ pe_regs_set_if(PE_REGS *pe_regs, int type,
     }
   }
   if (pval) {
-    if (!override) return;
+    if (!override)
+      return;
     /* Delete its value */
     pe_reg_val_free_val(pval);
   } else {
@@ -901,7 +908,8 @@ pe_regs_set_int_if(PE_REGS *pe_regs, int type,
   upcasestr(key);
   FIND_PVAL(pval, key, type);
   if (pval) {
-    if (!override) return;
+    if (!override)
+      return;
     pe_reg_val_free_val(pval);
   } else {
     pval = slab_malloc(pe_reg_val_slab, NULL);
@@ -920,13 +928,15 @@ pe_regs_set_int_if(PE_REGS *pe_regs, int type,
 }
 
 const char *
-pe_regs_get(PE_REGS *pe_regs, int type, const char *lckey) {
+pe_regs_get(PE_REGS *pe_regs, int type, const char *lckey)
+{
   PE_REG_VAL *pval = pe_regs->vals;
   char key[PE_KEY_LEN];
   strncpy(key, lckey, PE_KEY_LEN);
   upcasestr(key);
   FIND_PVAL(pval, key, type);
-  if (!pval) return NULL;
+  if (!pval)
+    return NULL;
   if (pval->type & PE_REGS_STR) {
     return pval->val.sval;
   } else if (pval->type & PE_REGS_INT) {
@@ -943,13 +953,15 @@ pe_regs_get(PE_REGS *pe_regs, int type, const char *lckey) {
  * \param key Q-register name.
  */
 int
-pe_regs_get_int(PE_REGS *pe_regs, int type, const char *lckey) {
+pe_regs_get_int(PE_REGS *pe_regs, int type, const char *lckey)
+{
   PE_REG_VAL *pval = pe_regs->vals;
   char key[PE_KEY_LEN];
   strncpy(key, lckey, PE_KEY_LEN);
   upcasestr(key);
   FIND_PVAL(pval, key, type);
-  if (!pval) return 0;
+  if (!pval)
+    return 0;
   if (pval->type & PE_REGS_STR) {
     return parse_integer(pval->val.sval);
   } else if (pval->type & PE_REGS_INT) {
@@ -981,19 +993,20 @@ void
 pe_regs_copystack(PE_REGS *new_regs, PE_REGS *pe_regs,
                   int copytypes, int override)
 {
-  int scount = 0; /* stext counts */
-  int icount = 0; /* itext counts */
+  int scount = 0;               /* stext counts */
+  int icount = 0;               /* itext counts */
   int smax = 0;
   int imax = 0;
   char itype;
-  int  inum;
+  int inum;
   /* Disable PE_REGS_NOCOPY: If we're copying, we want to copy. */
   int andflags = 0xFF;
   char numbuff[10];
   PE_REG_VAL *val, *prev, *next;
   prev = NULL;
 
-  if (!pe_regs) return;
+  if (!pe_regs)
+    return;
 
   if (override && (copytypes & PE_REGS_ARG)
       && (pe_regs->flags & PE_REGS_ARG)) {
@@ -1025,9 +1038,11 @@ pe_regs_copystack(PE_REGS *new_regs, PE_REGS *pe_regs,
           inum += (val->type & PE_REGS_SWITCH) ? smax : imax;
           if (*(val->name) == 'T') {
             if (val->type & PE_REGS_SWITCH) {
-              if (inum >= scount) scount = inum + 1;
+              if (inum >= scount)
+                scount = inum + 1;
             } else {
-              if (inum >= icount) icount = inum + 1;
+              if (inum >= icount)
+                icount = inum + 1;
             }
           }
           if (inum < MAX_ITERS) {
@@ -1044,8 +1059,7 @@ pe_regs_copystack(PE_REGS *new_regs, PE_REGS *pe_regs,
           /* Set, but maybe don't override. */
           if (val->type & PE_REGS_STR) {
             pe_regs_set_if(new_regs, val->type & andflags,
-                           val->name, val->val.sval,
-                           override);
+                           val->name, val->val.sval, override);
           } else {
             pe_regs_set_int_if(new_regs, val->type & andflags,
                                val->name, val->val.ival, override);
@@ -1094,11 +1108,13 @@ pi_regs_has_type(NEW_PE_INFO *pe_info, int type)
     if (pe_regs->flags & type) {
       val = pe_regs->vals;
       while (val) {
-        if (val->type & type) return 1;
+        if (val->type & type)
+          return 1;
         val = val->next;
       }
     }
-    if (pe_regs->flags & breaker) return 0;
+    if (pe_regs->flags & breaker)
+      return 0;
     pe_regs = pe_regs->prev;
   }
   return 0;
@@ -1179,7 +1195,8 @@ pi_regs_getq(NEW_PE_INFO *pe_info, const char *key)
   while (pe_regs) {
     if (pe_regs->flags & PE_REGS_Q) {
       ret = pe_regs_get(pe_regs, PE_REGS_Q, key);
-      if (ret) return ret;
+      if (ret)
+        return ret;
     }
     /* If it's marked QSTOP, it stops. */
     if (pe_regs->flags & PE_REGS_QSTOP) {
@@ -1194,9 +1211,7 @@ pi_regs_getq(NEW_PE_INFO *pe_info, const char *key)
 void
 pe_regs_set_rx_context(PE_REGS *pe_regs,
                        struct real_pcre *re_code,
-                       int *re_offsets,
-                       int re_subpatterns,
-                       const char *re_from)
+                       int *re_offsets, int re_subpatterns, const char *re_from)
 {
   int i;
   unsigned char *entry, *nametable;
@@ -1205,8 +1220,10 @@ pe_regs_set_rx_context(PE_REGS *pe_regs,
   int num;
   char buff[BUFFER_LEN];
 
-  if (!re_from) return;
-  if (re_subpatterns < 0) return;
+  if (!re_from)
+    return;
+  if (re_subpatterns < 0)
+    return;
 
   /* We assume every captured pattern is used. */
   /* Copy all the numbered captures over */
@@ -1221,7 +1238,8 @@ pe_regs_set_rx_context(PE_REGS *pe_regs,
   if (pcre_fullinfo(re_code, NULL, PCRE_INFO_NAMECOUNT, &namecount) != 0) {
     return;
   }
-  if (namecount <= 0) return;
+  if (namecount <= 0)
+    return;
 
   /* Fetch entry size and nametable */
   if (pcre_fullinfo(re_code, NULL, PCRE_INFO_NAMEENTRYSIZE, &entrysize) != 0)
@@ -1241,8 +1259,7 @@ void
 pe_regs_set_rx_context_ansi(PE_REGS *pe_regs,
                             struct real_pcre *re_code,
                             int *re_offsets,
-                            int re_subpatterns,
-                            struct _ansi_string *re_from)
+                            int re_subpatterns, struct _ansi_string *re_from)
 {
   int i;
   unsigned char *entry, *nametable;
@@ -1251,8 +1268,10 @@ pe_regs_set_rx_context_ansi(PE_REGS *pe_regs,
   int num;
   char buff[BUFFER_LEN], *bp;
 
-  if (!re_from) return;
-  if (re_subpatterns < 0) return;
+  if (!re_from)
+    return;
+  if (re_subpatterns < 0)
+    return;
 
   /* We assume every captured pattern is used. */
   /* Copy all the numbered captures over */
@@ -1269,7 +1288,8 @@ pe_regs_set_rx_context_ansi(PE_REGS *pe_regs,
   if (pcre_fullinfo(re_code, NULL, PCRE_INFO_NAMECOUNT, &namecount) != 0) {
     return;
   }
-  if (namecount <= 0) return;
+  if (namecount <= 0)
+    return;
 
   /* Fetch entry size and nametable */
   if (pcre_fullinfo(re_code, NULL, PCRE_INFO_NAMEENTRYSIZE, &entrysize) != 0)
@@ -1295,7 +1315,8 @@ pi_regs_get_rx(NEW_PE_INFO *pe_info, const char *key)
   while (pe_regs) {
     if (pe_regs->flags & PE_REGS_REGEXP) {
       ret = pe_regs_get(pe_regs, PE_REGS_REGEXP, key);
-      if (ret) return ret;
+      if (ret)
+        return ret;
       /* Only check the _first_ PE_REGS_REGEXP. */
       return NULL;
     }
@@ -1317,7 +1338,7 @@ pi_regs_get_itext(NEW_PE_INFO *pe_info, int type, int lev)
   const char *ret;
 
   pe_regs = pe_info->regvals;
-  
+
   while (pe_regs) {
     if (pe_regs->flags & type) {
       snprintf(numbuff, 10, "t%d", lev);
@@ -1325,7 +1346,7 @@ pi_regs_get_itext(NEW_PE_INFO *pe_info, int type, int lev)
       if (ret) {
         return ret;
       }
-      lev--; /* Not this level, go up one. */
+      lev--;                    /* Not this level, go up one. */
     }
     /* NEWATTR halts switch and itext. */
     if (pe_regs->flags & PE_REGS_NEWATTR) {
@@ -1344,7 +1365,7 @@ pi_regs_get_inum(NEW_PE_INFO *pe_info, int type, int lev)
   int ret;
 
   pe_regs = pe_info->regvals;
-  
+
   while (pe_regs) {
     if (pe_regs->flags & type) {
       snprintf(numbuff, 10, "n%d", lev);
@@ -1352,7 +1373,7 @@ pi_regs_get_inum(NEW_PE_INFO *pe_info, int type, int lev)
       if (ret) {
         return ret;
       }
-      lev--; /* Not this level, go up one. */
+      lev--;                    /* Not this level, go up one. */
     }
     /* NEWATTR halts switch and itext. */
     if (pe_regs->flags & PE_REGS_NEWATTR) {
@@ -1372,7 +1393,7 @@ pi_regs_get_ilev(NEW_PE_INFO *pe_info, int type)
   int count = -1;
 
   pe_regs = pe_info->regvals;
- 
+
   while (pe_regs) {
     if (pe_regs->flags & type) {
       val = pe_regs->vals;
@@ -1399,7 +1420,8 @@ pi_regs_get_ilev(NEW_PE_INFO *pe_info, int type)
  * \retval char * representation of the name.
  */
 const char *
-pe_regs_intname(int num) {
+pe_regs_intname(int num)
+{
   if (num < 10 && num >= 0) {
     return envid[num];
   } else {
@@ -1445,15 +1467,15 @@ pi_regs_get_env(NEW_PE_INFO *pe_info, int num)
   const char *ret;
 
   pe_regs = pe_info->regvals;
-  
+
   while (pe_regs) {
     if (pe_regs->flags & PE_REGS_ARG) {
       ret = pe_regs_get(pe_regs, PE_REGS_ARG, name);
       return ret;
     }
     /* NEWATTR without ARGPASS halts switch and itext. */
-    if ((pe_regs->flags & (PE_REGS_NEWATTR | PE_REGS_ARGPASS)) 
-            == (PE_REGS_NEWATTR)) {
+    if ((pe_regs->flags & (PE_REGS_NEWATTR | PE_REGS_ARGPASS))
+        == (PE_REGS_NEWATTR)) {
       return NULL;
     }
     pe_regs = pe_regs->prev;
@@ -1470,22 +1492,22 @@ pi_regs_get_envc(NEW_PE_INFO *pe_info)
   max = 0;
 
   pe_regs = pe_info->regvals;
-  
+
   while (pe_regs) {
     if (pe_regs->flags & PE_REGS_ARG) {
       for (val = pe_regs->vals; val; val = val->next) {
         if (val->type & PE_REGS_ARG) {
           sscanf(val->name, "%d", &num);
           if (num >= max) {
-            max = num + 1; /* %0 is 1 arg */
+            max = num + 1;      /* %0 is 1 arg */
           }
         }
       }
       return max;
     }
     /* NEWATTR without ARGPASS halts switch and itext. */
-    if ((pe_regs->flags & (PE_REGS_NEWATTR | PE_REGS_ARGPASS)) 
-            == (PE_REGS_NEWATTR)) {
+    if ((pe_regs->flags & (PE_REGS_NEWATTR | PE_REGS_ARGPASS))
+        == (PE_REGS_NEWATTR)) {
       return 0;
     }
     pe_regs = pe_regs->prev;
@@ -1506,7 +1528,7 @@ extern char active_table[UCHAR_MAX + 1];
  * \param pe_info the pe_info to free
  */
 void
-free_pe_info(NEW_PE_INFO * pe_info)
+free_pe_info(NEW_PE_INFO *pe_info)
 {
   PE_REGS *pe_regs;
 
@@ -1570,7 +1592,7 @@ make_pe_info(char *name)
  * \retval a new pe_info
  */
 NEW_PE_INFO *
-pe_info_from(NEW_PE_INFO * old_pe_info, int flags, PE_REGS *pe_regs)
+pe_info_from(NEW_PE_INFO *old_pe_info, int flags, PE_REGS *pe_regs)
 {
   NEW_PE_INFO *pe_info;
 
@@ -1606,8 +1628,7 @@ pe_info_from(NEW_PE_INFO * old_pe_info, int flags, PE_REGS *pe_regs)
     /* Copy the Q-registers, @switch, @dol and env over to the new pe_info. */
     if (pe_regs) {
       pe_regs->prev = old_pe_info->regvals;
-      pe_regs_copystack(pe_info->regvals, pe_regs,
-                        PE_REGS_QUEUE, 0);
+      pe_regs_copystack(pe_info->regvals, pe_regs, PE_REGS_QUEUE, 0);
       pe_regs->prev = NULL;
     } else {
       pe_regs_copystack(pe_info->regvals, old_pe_info->regvals,
@@ -1624,13 +1645,11 @@ pe_info_from(NEW_PE_INFO * old_pe_info, int flags, PE_REGS *pe_regs)
 
   pe_info = make_pe_info("pe_info-from_old-generic");
   if (flags & PE_INFO_COPY_ENV) {
-    pe_regs_copystack(pe_info->regvals, old_pe_info->regvals,
-                      PE_REGS_ARG, 0);
+    pe_regs_copystack(pe_info->regvals, old_pe_info->regvals, PE_REGS_ARG, 0);
   }
   /* Copy Q-registers. */
   if (flags & PE_INFO_COPY_QREG) {
-    pe_regs_copystack(pe_info->regvals, old_pe_info->regvals,
-                      PE_REGS_Q, 0);
+    pe_regs_copystack(pe_info->regvals, old_pe_info->regvals, PE_REGS_Q, 0);
   }
 
   /* Whatever we do, we copy the passed pe_regs. */
@@ -1694,7 +1713,7 @@ pe_info_from(NEW_PE_INFO * old_pe_info, int flags, PE_REGS *pe_regs)
 int
 process_expression(char *buff, char **bp, char const **str,
                    dbref executor, dbref caller, dbref enactor,
-                   int eflags, int tflags, NEW_PE_INFO * pe_info)
+                   int eflags, int tflags, NEW_PE_INFO *pe_info)
 {
   int debugging = 0, made_info = 0;
   char *debugstr = NULL, *sourcestr = NULL;
@@ -1927,7 +1946,8 @@ process_expression(char *buff, char **bp, char const **str,
           }
           *nbp = '\0';
           safe_str(PE_Get_re(pe_info, subspace), buff, bp);
-          if (**str == '>') (*str)++;
+          if (**str == '>')
+            (*str)++;
         } else {
           safe_chr('$', buff, bp);
         }
@@ -1968,8 +1988,7 @@ process_expression(char *buff, char **bp, char const **str,
             (*str)++;
             process_expression(buff, bp, str,
                                executor, caller, enactor,
-                               eflags & ~PE_STRIP_BRACES,
-                               PT_GT, pe_info);
+                               eflags & ~PE_STRIP_BRACES, PT_GT, pe_info);
           } else {
             (*str)++;
           }
@@ -2096,7 +2115,7 @@ process_expression(char *buff, char **bp, char const **str,
           itmp = PE_Get_Ilev(pe_info);
           if (itmp >= 0) {
             if (nextc == 'l' || nextc == 'L') {
-              safe_str(PE_Get_Itext(pe_info, itmp) , buff, bp);
+              safe_str(PE_Get_Itext(pe_info, itmp), buff, bp);
               break;
             }
             if (!isdigit((unsigned char) nextc)) {
@@ -2107,7 +2126,7 @@ process_expression(char *buff, char **bp, char const **str,
             if (inum_this < 0 || inum_this > itmp) {
               safe_str(T(e_argrange), buff, bp);
             } else {
-              safe_str(PE_Get_Itext(pe_info, inum_this) , buff, bp);
+              safe_str(PE_Get_Itext(pe_info, inum_this), buff, bp);
             }
           } else {
             safe_str(T(e_argrange), buff, bp);
@@ -2191,8 +2210,7 @@ process_expression(char *buff, char **bp, char const **str,
             char *nbp = subspace;
             if (process_expression(subspace, &nbp, str,
                                    executor, caller, enactor,
-                                   eflags & ~PE_STRIP_BRACES,
-                                   PT_GT, pe_info)) {
+                                   eflags & ~PE_STRIP_BRACES, PT_GT, pe_info)) {
               retval = 1;
               break;
             }
@@ -2201,7 +2219,8 @@ process_expression(char *buff, char **bp, char const **str,
             if (qval) {
               safe_str(qval, buff, bp);
             }
-            if (**str == '>') (*str)++;
+            if (**str == '>')
+              (*str)++;
           } else {
             qv[0] = UPCASE(nextc);
             qval = PE_Getq(pe_info, qv);

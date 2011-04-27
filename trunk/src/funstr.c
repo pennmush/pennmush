@@ -1098,7 +1098,8 @@ FUNCTION(fun_foreach)
     end = '\0';
   }
 
-  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT | UFUN_REQUIRE_ATTR))
+  if (!fetch_ufun_attrib
+      (args[0], executor, &ufun, UFUN_DEFAULT | UFUN_REQUIRE_ATTR))
     return;
 
   ap = remove_markup(args[1], &len);

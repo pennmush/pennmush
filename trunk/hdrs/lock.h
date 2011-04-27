@@ -62,10 +62,10 @@ int add_lock_raw(dbref player, dbref thing, lock_type type,
                  boolexp key, privbits flags);
 void free_locks(lock_list *ll);
 int eval_lock_with(dbref player, dbref thing, lock_type ltype,
-                   NEW_PE_INFO * pe_info);
+                   NEW_PE_INFO *pe_info);
 #define eval_lock(player,thing,ltype) eval_lock_with(player,thing,ltype,NULL)
 int eval_lock_clear(dbref player, dbref thing, lock_type ltype,
-                    NEW_PE_INFO * pe_info);
+                    NEW_PE_INFO *pe_info);
 int fail_lock(dbref player, dbref thing, lock_type ltype, const char *def,
               dbref loc);
 void do_unlock(dbref player, const char *name, lock_type type);

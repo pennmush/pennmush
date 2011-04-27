@@ -280,6 +280,7 @@ attrib.o: ../hdrs/bufferq.h
 attrib.o: ../hdrs/sort.h
 boolexp.o: ../hdrs/copyrite.h
 boolexp.o: ../config.h
+boolexp.o: ../hdrs/case.h
 boolexp.o: ../hdrs/conf.h
 boolexp.o: ../options.h
 boolexp.o: ../hdrs/mushtype.h

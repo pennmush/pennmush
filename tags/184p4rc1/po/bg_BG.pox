@@ -1,0 +1,2588 @@
+# SOME DESCRIPTIVE TITLE.\nCopyright (C) YEAR Free Software Foundation, Inc.\nFIRST AUTHOR <EMAIL@ADDRESS>, YEAR.\n
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2004-11-04 13:52-0600\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=cp1251\n"
+"Content-Transfer-Encoding: 8bit"
+
+#: conf.c:1044
+msgid " Attributes are 8-bit word compressed in memory."
+msgstr " Атрибутите са 8-битово word компресирани в паметта."
+
+#: conf.c:1035
+msgid " Attributes are Huffman compressed in memory."
+msgstr " Атрибутите са Huffman компресирани в паметта."
+
+#: conf.c:1041
+msgid " Attributes are word compressed in memory."
+msgstr " Атрибутите са word компресирани в паметта."
+
+#: src/conf.c:980
+msgid " DNS and ident lookups are handled by a slave process."
+msgstr " DNS и ident проверките се управляват от вторичен процес."
+
+#: src/conf.c:982
+msgid " DNS and ident lookups are handled by the MUSH process."
+msgstr " DNS и ident проверките се управляват от MUSH процес."
+
+#: src/conf.c:1111
+msgid " Extended convtime() is supported."
+msgstr " Поддържа се разширено convtime()."
+
+#: conf.c:1594
+msgid " The MUSH was compiled with SSL support."
+msgstr " MUSH-ът е компилиран с поддръжка на SSL."
+
+#: wiz.c:1605
+#, c-format
+msgid " [location: %s]"
+msgstr " [участък: %s]"
+
+#: src/conf.c:1113
+msgid " convtime() is stricter."
+msgstr " convtime() е по-стриктно."
+
+#: extchat.c:1503
+msgid "#-1 AMBIGUOUS CHANNEL NAME"
+msgstr "#-1 ПОВТАРЯЩО СЕ ИМЕ НА КАНАЛ"
+
+#: src/fundb.c:784 src/fundb.c:1001
+msgid "#-1 ARG1 NOT FOUND"
+msgstr "#-1 ARG1 НЕ Е НАМЕРЕН"
+
+#: src/fundb.c:786 src/fundb.c:1003
+msgid "#-1 ARG2 NOT FOUND"
+msgstr "#-1 ARG2 НЕ Е НАМЕРЕН"
+
+#: src/funlist.c:1886 src/funlist.c:1905
+msgid "#-1 ARGUMENT MUST BE INTEGER"
+msgstr "#-1 АРГУМЕНТЪТ ТРЯБВА ДА Е ЧИСЛО"
+
+#: src/funstr.c:421
+msgid "#-1 ARGUMENT MUST BE NON-NEGATIVE INTEGER"
+msgstr "#-1 АРГУМЕНТА ТРЯБВА ДА Е ПОЛОЖИТЕЛНО ЧИСЛО"
+
+#: parse.c:89
+msgid "#-1 ARGUMENT MUST BE NUMBER"
+msgstr "#-1 АРГУМЕНТЪТ ТРЯБВА ДА Е ЧИСЛО"
+
+#: src/fundb.c:1691 src/fundb.c:1695
+msgid "#-1 ARGUMENT MUST BE OBJ/ATTR"
+msgstr "#-1 АРГУМЕНТЪТ ТРЯБВА ДА Е ОБЕКТ/АТТРИБ"
+
+#: parse.c:87
+msgid "#-1 ARGUMENT MUST BE POSITIVE INTEGER"
+msgstr "#-1 АРГУМЕНТЪТ ТРЯБВА ДА Е ПОЛОЖИТЕЛНО ЧИСЛО"
+
+#: src/funmath.c:218 src/funmath.c:250
+msgid "#-1 ARGUMENT MUST END IN AN INTEGER"
+msgstr "#-1 АРГУМЕНТЪТ ТРЯБВА ДА ЗАВЪРШВА С ЧИСЛО"
+
+#: src/funlist.c:1892 src/funlist.c:1911
+msgid "#-1 ARGUMENT OUT OF RANGE"
+msgstr "#-1 АРГУМЕНТЪТ Е ИЗВЪН ОБСЕГ"
+
+#: parse.c:86
+msgid "#-1 ARGUMENTS MUST BE INTEGERS"
+msgstr "#-1 АРГУМЕНТИТЕ ТРЯБВА ДА СА ЧИСЛЕНИ"
+
+#: parse.c:90
+msgid "#-1 ARGUMENTS MUST BE NUMBERS"
+msgstr "#-1 АРГУМЕНТИТЕ ТРЯБВА ДА СА ЧИСЛА"
+
+#: parse.c:88
+msgid "#-1 ARGUMENTS MUST BE POSITIVE INTEGERS"
+msgstr "#-1 АРГУМЕНТИТЕ ТРЯБВА ДА СА ПОЛОЖИТЕЛНИ ЧИСЛА"
+
+#: src/fundb.c:61
+msgid "#-1 ATTRIBUTE LENGTH TOO LONG"
+msgstr "#-1 ДЪЛЖИНАТА НА АТРИБУТА Е ТВЪРДЕ ГОЛЯМА"
+
+#: src/fundb.c:183
+msgid "#-1 BAD ARGUMENT FORMAT TO GET"
+msgstr "#-1 ГРЕШЕН ТИП АРГУМЕНТ ЗА GET"
+
+#: src/fundb.c:291
+msgid "#-1 BAD ARGUMENT FORMAT TO GET_EVAL"
+msgstr "#-1 ГРЕШЕН ФОРМАТ НА АРГУМЕНТ ЗА GET_EVAL"
+
+#: src/funmath.c:987
+msgid "#-1 BASE OUT OF RANGE"
+msgstr "#-1 ОСНОВА ИЗВЪН ОБСЕГ"
+
+#: parse.c:83
+msgid "#-1 CALL LIMIT EXCEEDED"
+msgstr "#-1 ОГРАНИЧЕНИЕТО ЗА ПОВИКВАНИЯ Е НАДХВЪРлЕНО"
+
+#: src/funlist.c:1456 src/funlist.c:1680
+msgid "#-1 CAN ONLY TEST ONE ELEMENT"
+msgstr "#-1 МОЖЕ ДА СЕ ТЕСТВА САМО ЕДИН ЕЛЕМЕНТ"
+
+#: src/funmath.c:754 src/funmath.c:1584 src/funmath.c:1628 src/funmath.c:1673\nsrc/funmath.c:1707 src/funmath.c:1751
+msgid "#-1 DIVISION BY ZERO"
+msgstr "#-1 ДЕЛЕНИЕ НА НУЛА"
+
+#: funstr.c:1990
+msgid "#-1 FILLER MUST BE ONE CHARACTER"
+msgstr "#-1 ЗАПЪлВАЩИЯ СИМВОл ТРЯБВА ДА БЪДЕ ЕДИН"
+
+#: src/extmail.c:1496
+msgid "#-1 FOLDER MUST BE INTEGER"
+msgstr "#-1 ПАПКАТА ТРЯБВА ДА Е ЧИСЛО"
+
+#: src/funmath.c:925
+msgid "#-1 FRACTIONAL POWER OF NEGATIVE"
+msgstr "#-1 ОТРИЦАТЕЛНА СТЕПЕН"
+
+#: funmath.c:1631
+msgid "#-1 FROM BASE OUT OF RANGE"
+msgstr "#-1 ОТ БАЗА ИЗВЪН ОБСЕГ"
+
+#: src/parse.c:671 src/parse.c:759
+msgid "#-1 FUNCTION ("
+msgstr "#-1 ФУНКЦИЯ ("
+
+#: src/funmisc.c:406
+msgid "#-1 FUNCTION (SOUNDEX) REQUIRES A SINGLE WORD ARGUMENT"
+msgstr "#-1 ФУНКЦИЯ (SOUNDEX) ИЗИСКВА ЕДНА ДУМА ЗА АРГУМЕНТ"
+
+#: src/funmisc.c:424
+msgid "#-1 FUNCTION (SOUNDLIKE) REQUIRES TWO ONE-WORD ARGUMENTS"
+msgstr "#-1 ФУНКЦИЯ (SOUNDLIKE) ИЗИСКВА ДВА АРГУМЕНТА ОТ ПО ЕДНА ДУМА"
+
+#: src/fundb.c:959 src/fundb.c:1120 src/fundb.c:1145 src/fundb.c:1254\nsrc/fundb.c:1549 src/fundb.c:1555 src/fundb.c:1561 src/fundb.c:1567\nsrc/fundb.c:1573 src/fundb.c:1579 src/fundb.c:1585 src/fundb.c:1591\nsrc/fundb.c:1864 src/funstr.c:901
+msgid "#-1 FUNCTION DISABLED"
+msgstr "#-1 ФУНКЦИЯТА ИЗКЛЮЧЕНА"
+
+#: parse.c:91
+msgid "#-1 FUNCTION INVOCATION LIMIT EXCEEDED"
+msgstr "#-1 ОГРАНИЧЕНИЕТО ЗА ИЗПОЛЗВАНЕ НА ФУНКЦИЯТА ДОСТИГНАТО"
+
+#: src/parse.c:790
+msgid "#-1 FUNCTION RECURSION LIMIT EXCEEDED"
+msgstr "#-1 ПОВТОРИТЕЛНОТО ОГРАНИЧЕНИЕ НА ФУНКЦИЯТА ДОСТИГНАТО"
+
+#: bsd.c:4955 bsd.c:4966
+msgid "#-1 FUNCTION REQUIRES ONE ARGUMENT"
+msgstr "#-1 ФУНКЦИЯТА ИЗИСКВА ЕДИН АРГУМЕНТ"
+
+#: funmath.c:1033 funmath.c:1066
+msgid "#-1 IMAGINARY NUMBER"
+msgstr "#-1 ВЪОБРАЖАЕМО ЧИСлО"
+
+#: src/funmath.c:949 src/funmath.c:972
+msgid "#-1 INFINITY"
+msgstr "#-1 БЕЗКРАЙНОСТ"
+
+#: funstr.c:1953
+msgid "#-1 INVALID ALIGN STRING"
+msgstr "#-1 НЕВАлИДЕН ПОДРАВНЯВАЩ НИЗ"
+
+#: funmath.c:73
+msgid "#-1 INVALID ANGLE TYPE"
+msgstr "#-1 НЕВАлИДЕН ТИП ЪГЪл"
+
+#: funstr.c:418
+msgid "#-1 INVALID DBREF"
+msgstr "#-1 НЕВАЛИДЕН DBREF"
+
+#: help.c:454
+msgid "#-1 INVALID ENTRY"
+msgstr "#-1 НЕВАЛИДНО ВПИСВАНЕ"
+
+#: src/fundb.c:1618 src/funlist.c:2324 src/funlist.c:2367
+msgid "#-1 INVALID GREP PATTERN"
+msgstr "#-1 НЕВАЛИДНА GREP РАМКА"
+
+#: src/fundb.c:657
+msgid "#-1 INVALID LOCATION"
+msgstr "#-1 НЕВАЛИДЕН УЧАСТЪК"
+
+#: src/extmail.c:1549
+msgid "#-1 INVALID MESSAGE OR PLAYER"
+msgstr "#-1 НЕВАЛИДНО СЪОБЩЕНИЕ ИЛИ ИГРАЧ"
+
+#: src/fundb.c:1890 src/fundb.c:1912 src/funufun.c:113 src/funufun.c:144
+msgid "#-1 INVALID OBJECT"
+msgstr "#-1 НЕВАЛИДЕН ОБЕКТ"
+
+#: src/fundb.c:663 src/fundb.c:690
+msgid "#-1 INVALID SECOND ARGUMENT"
+msgstr "#-1 НЕВАЛИДЕН ВТОРИ АРГУМЕНТ"
+
+#: funstr.c:369 funstr.c:425
+msgid "#-1 INVALID THIRD ARGUMENT"
+msgstr "#-1 НЕВАлИДЕН ТРЕТИ АРГУМЕНТ"
+
+#: funtime.c:95
+msgid "#-1 INVALID TIME ZONE"
+msgstr "#-1 НЕВАлИДНА ЧАСОВА ЗОНА"
+
+#: src/funufun.c:293
+msgid "#-1 INVALID ZONE"
+msgstr "#-1 НЕВАЛИДНА ЗОНА"
+
+#: src/funlist.c:194 src/funlist.c:2088
+msgid "#-1 LISTS MUST BE OF EQUAL SIZE"
+msgstr "#-1 СПИСЪЦИТЕ ТРЯБВА ДА СА ЕДНАКВА ГОЛЕМИНА"
+
+#: funmath.c:1643
+msgid "#-1 MALFORMED NUMBER"
+msgstr "#-1 ПОВРЕДЕНО ЧИСлО"
+
+#: src/funlist.c:1778
+msgid "#-1 NEED A WORD"
+msgstr "#-1 ТРЯБВА ДУМА"
+
+#: extchat.c:1495
+msgid "#-1 NO CHANNEL GIVEN"
+msgstr "#-1 НЯМА ДАДЕН КАНАЛ"
+
+#: game.c:1352
+msgid "#-1 NO COMMAND"
+msgstr "#-1 НЯМА КОМАНДА"
+
+#: help.c:512
+msgid "#-1 NO ENTRY"
+msgstr "#-1 НЯМА РЕГИСТЪР"
+
+#: help.c:464
+msgid "#-1 NO INDEX FOR FILE"
+msgstr "#-1 ФАЙлЪТ НЯМА ИНДЕКС"
+
+#: src/fundb.c:118 src/fundb.c:137 src/fundb.c:460 src/funstr.c:118\nsrc/funstr.c:131 src/funstr.c:144 src/funstr.c:157
+msgid "#-1 NO MATCH"
+msgstr "#-1 НЯМА СЪВПАДЕНИЕ"
+
+#: src/fundb.c:767
+msgid "#-1 NO OBJECTS CONTROLLED"
+msgstr "#-1 НЯМА КОНТРОЛИРАНИ ОБЕКТИ"
+
+#: src/fundb.c:63 src/fundb.c:69 src/fundb.c:72 src/fundb.c:273\nsrc/fundb.c:315 src/funlist.c:366 src/funlist.c:450 src/funufun.c:125\nsrc/funufun.c:158 src/funufun.c:307
+msgid "#-1 NO PERMISSION TO GET ATTRIBUTE"
+msgstr "#-1 НЯМАШ РАЗРЕШЕНИЕ ЗА ВЗЕМАНЕ НА АТРИБУТ"
+
+#: src/bsd.c:4827
+msgid "#-1 NO PERMISSIONS FOR CHANNEL"
+msgstr "#-1 НЯМА РАЗРЕШЕНИЕ ЗА КАНАЛ"
+
+#: src/fundb.c:1614 src/fundb.c:1762 src/funlist.c:2320 src/funlist.c:2363
+msgid "#-1 NO SUCH ATTRIBUTE"
+msgstr "#-1 НЯМА ТАКЪВ АТРИБУТ"
+
+#: src/fundb.c:1828
+msgid "#-1 NO SUCH CHANNEL"
+msgstr "#-1 НЯМА ТАКЪВ КАНАЛ"
+
+#: src/conf.c:926
+msgid "#-1 NO SUCH CONFIG OPTION"
+msgstr "#-1 НЯМА ТАКАВА КОНФИГУРАЦИОННА ОПЦИЯ"
+
+#: src/fundb.c:1851
+msgid "#-1 NO SUCH LOCK TYPE"
+msgstr "#-1 НЯМА ТАКЪВ ТИП КЛЮЧ"
+
+#: src/fundb.c:155 src/fundb.c:189 src/fundb.c:205 src/fundb.c:255\nsrc/fundb.c:297 src/fundb.c:1609 src/funlist.c:2315 src/funlist.c:2358
+msgid "#-1 NO SUCH OBJECT VISIBLE"
+msgstr "#-1 НЯМА ТАКЪВ ВИДИМ ОБЕКТ"
+
+#: src/extmail.c:1468 src/extmail.c:1489
+msgid "#-1 NO SUCH PLAYER"
+msgstr "#-1 НЯМА ТАКЪВ ИГРАЧ"
+
+#: src/fundb.c:907
+msgid "#-1 NO SUCH TYPE"
+msgstr "#-1 НЯМА ТАКЪВ ТИП"
+
+#: src/bsd.c:4485 src/bsd.c:4498
+msgid "#-1 NOT CONNECTED"
+msgstr "#-1 НЯМА ВРЪЗКА"
+
+#: funstr.c:1977
+msgid "#-1 NOT ENOUGH COLUMNS FOR ALIGN"
+msgstr "#-1 НЕДОСТАТЪЧНО КОЛОНИ ЗА НАСОЧВАНЕ"
+
+#: extchat.c:1525
+msgid "#-1 NOT ON CHANNEL"
+msgstr "#-1 НЕ НА КАНАЛ"
+
+#: src/funlist.c:1786
+msgid "#-1 NUMBER OF WORDS MUST BE EQUAL"
+msgstr "#-1 БРОЯТ ДУМИ ТРЯБВА ДА Е ЕДНАКЪВ"
+
+#: src/funlist.c:1179 src/funmisc.c:222
+msgid "#-1 NUMBER OUT OF RANGE"
+msgstr "#-1 ЧИСЛОТО Е ИЗВЪН ОБСЕГ"
+
+#: src/funmath.c:850 src/funmath.c:876 src/funmath.c:930 src/funmath.c:954\nsrc/funmath.c:977 src/funmath.c:1238 src/funstr.c:212 src/funstr.c:234\nsrc/funstr.c:254 src/funstr.c:281 src/funtime.c:152
+msgid "#-1 OUT OF RANGE"
+msgstr "#-1 ИЗВЪН ОБСЕГ"
+
+#: src/funmath.c:336 src/funmath.c:366
+msgid "#-1 OVERFLOW ERROR"
+msgstr "#-1 ГРЕШКА ПРЕПЪЛВАНЕ"
+
+#: src/extmail.c:1471 src/extmail.c:1492 src/extmail.c:1531 src/fundb.c:122\nsrc/fundb.c:141 src/fundb.c:169 src/fundb.c:261 src/fundb.c:303\nsrc/fundb.c:341 src/fundb.c:789 src/fundb.c:953 src/fundb.c:1114\nsrc/fundb.c:1139 src/fundb.c:1248 src/fundb.c:1442 src/fundb.c:1456\nsrc/fundb.c:1466 src/fundb.c:1477 src/fundb.c:1487 src/fundb.c:1502\nsrc/fundb.c:1512 src/fundb.c:1522 src/fundb.c:1537 src/fundb.c:1651\nsrc/fundb.c:1737 src/fundb.c:1741 src/fundb.c:1748 src/fundb.c:1752\nsrc/fundb.c:1858 src/fundb.c:1872 src/funlist.c:1966 src/funmisc.c:60\nsrc/funmisc.c:72 src/funmisc.c:84 src/funmisc.c:96 src/funmisc.c:108\nsrc/funmisc.c:120 src/funmisc.c:134 src/funstr.c:778 src/funufun.c:118\nsrc/funufun.c:149 src/funufun.c:300 src/wiz.c:2155 src/wiz.c:2167\nsrc/wiz.c:2189 src/wiz.c:2202
+msgid "#-1 PERMISSION DENIED"
+msgstr "#-1 РАЗРЕШЕНИЕ ОТКАЗАНО"
+
+#: src/funlist.c:2256 src/funlist.c:2335 src/funlist.c:2378 src/funlist.c:2437\nsrc/funlist.c:2478
+msgid "#-1 REGEXP ERROR: "
+msgstr "#-1 REGEXP ГРЕШКА: "
+
+#: funmath.c:1057
+msgid "#-1 ROOT OUT OF RANGE"
+msgstr "#-1 ROOT-а Е ИЗВЪН ОБСЕГ"
+
+#: src/function.c:118
+msgid "#-1 SEPARATOR MUST BE ONE CHARACTER"
+msgstr "#-1 СЕПАРАТОРЪТ ТРЯБВА ДА Е ЕДИН СИМВОЛ"
+
+#: src/funlist.c:1943
+msgid "#-1 STEP OUT OF RANGE"
+msgstr "#-1 СТЪПКАТА ИЗВЪН ОБСЕГ"
+
+#: src/funstr.c:353
+msgid "#-1 STRING LENGTHS MUST BE EQUAL"
+msgstr "#-1 ДЪЛЖИНИТЕ НА НИЗОВЕТЕ ТРЯБВА ДА СА РАВНИ"
+
+#: funstr.c:1034
+msgid "#-1 THIS ISN'T UNICODE"
+msgstr "#-1 ТОВА НЕ Е УНИКОД"
+
+#: funmath.c:1636
+msgid "#-1 TO BASE OUT OF RANGE"
+msgstr "#-1 ИЗВЪН ОБХВАТ"
+
+#: funstr.c:1981
+msgid "#-1 TOO MANY COLUMNS FOR ALIGN"
+msgstr "#-1 ТВЪРДЕ МНОГО КОлОНИ ЗА ПОДРЕЖДАНЕ"
+
+#: src/funlist.c:1815
+msgid "#-1 TOO MANY ITERS"
+msgstr "#-1 ТВЪРДЕ МНОГО ПОВТОРЕНИЯ"
+
+#: src/funlist.c:1782
+msgid "#-1 TOO MANY WORDS"
+msgstr "#-1 ТВЪРДЕ МНОГО ДУМИ"
+
+#: help.c:516 help.c:519
+msgid "#-1 UNAVAILABLE"
+msgstr "#-1 НЕДОСТЪПНО"
+
+#: src/funmath.c:1385
+msgid "#-1 UNKNOWN OPERATION"
+msgstr "#-1 НЕПОЗНАТА ОПЕРАЦИЯ"
+
+#: funstr.c:1021 funstr.c:1038
+msgid "#-1 UNPRINTABLE CHARACTER"
+msgstr "#-1 НЕПРИЛОЖИМ СИМВОЛ"
+
+#: funcrypt.c:160 funcrypt.c:183
+msgid "#-1 UNSUPPORTED DIGEST TYPE"
+msgstr "#-1 НЕПОДЪРЖАН ДАЙЖЕСТ ТИП"
+
+#: src/funmath.c:420 src/funmath.c:462 src/funmath.c:501 src/funmath.c:540\nsrc/funmath.c:598 src/funmath.c:632
+msgid "#-1 VECTORS MUST BE SAME DIMENSIONS"
+msgstr "#-1 ВЕКТОРИТЕ ТРЯБВА ДА ИМАТ ЕДНАКВИ МЕРКИ"
+
+#: funmath.c:761
+msgid "#-1 VECTORS MUST BE THREE-DIMENSIONAL"
+msgstr "#-1 ВЕКТОРИТЕ ТРЯБВА ДА СА ТРИМЕРНИ"
+
+#: src/funstr.c:1097
+msgid "#-1 WIDTH TOO SMALL"
+msgstr "#-1 ШИРИНАТА Е ТВЪРДЕ МАЛКА"
+
+#: src/extmail.c:1641
+msgid "#-? fun_mailstats called with invalid called_as!"
+msgstr "#-? fun_mailstats извикано с невалидно called_as!"
+
+#: src/wiz.c:1044
+#, c-format
+msgid "%d commands executed."
+msgstr "%d команди изпълнени."
+
+#: src/extmail.c:1379
+#, c-format
+msgid "%d messages received, %d unread, %d cleared, totalling %d characters."
+msgstr "%d получени съобщения, %d непрочетени, %d изтрити, общо %d символа."
+
+#: src/extmail.c:1370
+#, c-format
+msgid "%d messages received, %d unread, %d cleared."
+msgstr "%d получени съобщения, %d непрочетени, %d изтрити."
+
+#: src/extmail.c:1375
+#, c-format
+msgid "%d messages sent, %d unread, %d cleared, totalling %d characters."
+msgstr "%d изпратени съобщения, %d непрочетени, %d изтрити, общо %d символа."
+
+#: src/extmail.c:1368
+#, c-format
+msgid "%d messages sent, %d unread, %d cleared."
+msgstr "%d изпратени съобщения, %d непрочетени, %d изтрити."
+
+#: src/wiz.c:686
+#, c-format
+msgid "%d objects = %d rooms, %d exits, %d things, %d players, %d garbage."
+msgstr "%d обекти = %d стаи, %d изходи, %d неща, %d играчи, %d боклук."
+
+#: src/wiz.c:692
+#, c-format
+msgid "%d objects = %d rooms, %d exits, %d things, %d players."
+msgstr "%d обекти = %d стаи, %d изходи, %d неща, %d играчи."
+
+#: wiz.c:1745
+#, c-format
+msgid "%d sitelocks removed."
+msgstr "%d ключове са премахнати."
+
+#: src/bsd.c:3405
+#, c-format
+msgid "%ld failed connections since last login."
+msgstr "%ld неуспешни връзки от последното включване."
+
+#: flags.c:2283
+#, c-format
+msgid "%s %s deleted."
+msgstr "%s %s е изтрито."
+
+#: flags.c:2223
+#, c-format
+msgid "%s %s disabled."
+msgstr "%s %s изключено."
+
+#: flags.c:2319
+#, c-format
+msgid "%s %s enabled."
+msgstr "%s %s включено."
+
+#: src/look.c:969
+#, c-format
+msgid "%s (this room) [broadcasting]."
+msgstr "%s (тази стая) [излъчва]."
+
+#: src/look.c:967
+#, c-format
+msgid "%s (this room) [commands]."
+msgstr "%s (тази стая) [команди]."
+
+#: src/look.c:961
+#, c-format
+msgid "%s (this room) [speech]. (connected)"
+msgstr "%s (тази стая) [говор]. (свързано)"
+
+#: src/look.c:964
+#, c-format
+msgid "%s (this room) [speech]."
+msgstr "%s (тази стая) [говор]."
+
+#: flags.c:1357
+#, c-format
+msgid "%s - I don't recognize that flag."
+msgstr "%s - Не разпознавам тази отметка."
+
+#: flags.c:1515
+#, c-format
+msgid "%s - I don't recognize that power."
+msgstr "%s - не познавам тази сила."
+
+#: src/atr_tab.c:226
+#, c-format
+msgid "%s -- Attribute permissions now: %s"
+msgstr "%s -- Разрешения на атрибута: %s"
+
+#: look.c:706
+#, c-format
+msgid "%s Lock [#%d%s]: %s"
+msgstr "%s Ключ [#%d%s]: %s"
+
+#: src/look.c:954 src/look.c:979 src/look.c:1019
+#, c-format
+msgid "%s [owner: %s] is listening."
+msgstr "%s [собственик: %s] слуша."
+
+#: flags.c:2112
+#, c-format
+msgid "%s aliases may not contain spaces."
+msgstr "%s псевдонимите не могат да съдържат интервали."
+
+#: flags.c:2107
+#, c-format
+msgid "%s aliases must be longer than one character."
+msgstr "Псевдонимите на %s трябва да са по-дълги от един символ."
+
+#: destroy.c:353
+#, c-format
+msgid "%s and all their (non-SAFE) objects are scheduled to be destroyed."
+msgstr "%s и всички техни (немаркирани като SAFE) обекти са насрочени за унищожение."
+
+#: src/destroy.c:352
+#, c-format
+msgid "%s and all their objects are scheduled to be destroyed."
+msgstr "%s и всички техни обекти са насрочени за унищожение."
+
+#: src/move.c:862
+#, c-format
+msgid "%s begins following you."
+msgstr "%s започва да те следва."
+
+#: speech.c:332
+#, c-format
+msgid "%s can't hear you."
+msgstr "%s не може да те чуе."
+
+#: flags.c:2028 flags.c:2169
+#, c-format
+msgid "%s characters must be single characters."
+msgstr "Символите %s трябва да се единични."
+
+#: src/create.c:388
+#, c-format
+msgid "%s created with room number %d."
+msgstr "%s е създадена с номер %d."
+
+#: src/bsd.c:3978
+#, c-format
+msgid "%s created."
+msgstr "%s е създаден."
+
+#: src/command.c:960
+#, c-format
+msgid "%s doesn't know switch %s."
+msgstr "%s не познава ключе %s."
+
+#: move.c:641 move.c:644
+#, c-format
+msgid "%s drops you."
+msgstr "%s те пуска."
+
+#: src/rob.c:213
+#, c-format
+msgid "%s gave you %s."
+msgstr "%s ти даде %s."
+
+#: src/rob.c:215
+#, c-format
+msgid "%s gave you to %s."
+msgstr "%s те даде на %s."
+
+#: src/rob.c:285
+#, c-format
+msgid "%s gives you %d %s."
+msgstr "%s ти даде %d %s."
+
+#: src/move.c:332
+#, c-format
+msgid "%s goes home."
+msgstr "%s отива в дома."
+
+#: src/attrib.c:953
+#, c-format
+msgid "%s grows ears and can now hear."
+msgstr "На %s му порастват уши и той вече може да чува."
+
+#: src/extmail.c:1336
+#, c-format
+msgid "%s has %d messages."
+msgstr "%s има %d съобщения."
+
+#: src/destroy.c:414 src/destroy.c:510
+#, c-format
+msgid "%s has been spared from destruction."
+msgstr "%s бе пощадено от унищожение."
+
+#: src/look.c:1060
+#, c-format
+msgid "%s has just located your position."
+msgstr "%s откри твоето местонахождение."
+
+#: src/destroy.c:361 src/destroy.c:371 src/destroy.c:464
+#, c-format
+msgid "%s has scheduled your %s for destruction."
+msgstr "%s е насрочил твоето %s за разрушаване."
+
+#: src/destroy.c:344
+#, c-format
+msgid "%s has scheduled your room %s to be destroyed."
+msgstr "%s е насрочил твоята стая %s за разрушаване."
+
+#: attrib.c:1508
+#, c-format
+msgid "%s is a branch attribute; remove its children first."
+msgstr "%s е разклонен атрибут; премахни първо разклоненията му."
+
+#: src/extchat.c:803 src/extchat.c:835
+#, c-format
+msgid "%s is already on channel <%s>."
+msgstr "%s е вече на канал <%s>."
+
+#: src/look.c:1057
+#, c-format
+msgid "%s is at: %s."
+msgstr "%s е в: %s."
+
+#: look.c:205
+#, c-format
+msgid "%s is corrupt!"
+msgstr "%s е повреден!"
+
+#: look.c:954 look.c:979 look.c:1019
+#, c-format
+msgid "%s is listening."
+msgstr "%s слуша."
+
+#: src/flags.c:1067 src/flags.c:1073
+#, c-format
+msgid "%s is no longer listening."
+msgstr "%s не слуша повече."
+
+#: speech.c:708
+#, c-format
+msgid "%s is not accepting any pages."
+msgstr "%s не приема никакви повиквания."
+
+#: speech.c:713
+#, c-format
+msgid "%s is not accepting your pages."
+msgstr "%s не отговаря на твоите повиквания."
+
+#: speech.c:703
+#, c-format
+msgid "%s is not connected."
+msgstr "%s не се е свързал."
+
+#: src/extchat.c:865
+#, c-format
+msgid "%s is not on channel <%s>."
+msgstr "%s не е на канал <%s>."
+
+#: src/flags.c:1127 src/flags.c:1133
+#, c-format
+msgid "%s is now listening."
+msgstr "%s сега слуша."
+
+#: src/destroy.c:364 src/destroy.c:378
+#, c-format
+msgid "%s is scheduled to be destroyed."
+msgstr "%s е насрочено за унищожение."
+
+#: move.c:888
+#, c-format
+msgid "%s isn't following you, nor vice versa."
+msgstr "%s не следва теб, нито пък обратното."
+
+#: move.c:858
+#, c-format
+msgid "%s isn't following you."
+msgstr "%s не те следва."
+
+#: src/rob.c:134
+#, c-format
+msgid "%s killed you!"
+msgstr "%s те уби!"
+
+#: look.c:200
+#, c-format
+msgid "%s leads home."
+msgstr "%s води към дома."
+
+#: look.c:198
+#, c-format
+msgid "%s leads nowhere."
+msgstr "%s не води никъде."
+
+#: look.c:207
+#, c-format
+msgid "%s leads to %s."
+msgstr "%s води към %s."
+
+#: look.c:202
+#, c-format
+msgid "%s leads to a variable location."
+msgstr "%s води към променлив участък."
+
+#: warnings.c:162
+#, c-format
+msgid "%s lock has eval-lock that uses a nonexistant attribute '%s'."
+msgstr "%s ключа има eval-lock, който използва несъществуващ атрибут '%s'."
+
+#: warnings.c:173
+#, c-format
+msgid "%s lock has indirect lock to %s/%s that it can't read"
+msgstr "ключа %s води до индиректно заключване към %s/%s, което не може да бъде прочетено"
+
+#: warnings.c:145 warnings.c:169
+#, c-format
+msgid "%s lock refers to garbage object"
+msgstr "%s ключалката се отнася за боклучен обект"
+
+#: src/attrib.c:949
+#, c-format
+msgid "%s loses its ears and becomes deaf."
+msgstr "Ушите на %s изчезват и той оглушава."
+
+#: src/predicat.c:760
+#, c-format
+msgid "%s message from %s: %s"
+msgstr "%s съобщение от %s: %s"
+
+#: flags.c:2016
+#, c-format
+msgid "%s names may not contain spaces."
+msgstr "Имената %s не могат да съдържат интервали."
+
+#: flags.c:2011
+#, c-format
+msgid "%s names must be longer than one character."
+msgstr "Имената на %s трябва да са по-дълги от един символ."
+
+#: src/player.c:486
+#, c-format
+msgid "%s on %s"
+msgstr "%s на %s"
+
+#: help.c:256
+#, c-format
+msgid "%s output truncated."
+msgstr "%s резултат е съкратен."
+
+#: bsd.c:4130
+#, c-format
+msgid "%s pages: %s"
+msgstr "%s повиква: %s"
+
+#: rob.c:284
+#, c-format
+msgid "%s refuses your money."
+msgstr "%s отказва да вземе парите ти."
+
+#: src/speech.c:179
+#, c-format
+msgid "%s says, \"%s\""
+msgstr "%s казва, \"%s\""
+
+#: speech.c:378
+#, c-format
+msgid "%s senses: %s%s%s"
+msgstr "%s почувства: %s%s%s"
+
+#: src/extmail.c:1335
+#, c-format
+msgid "%s sent %d messages."
+msgstr "%s изпрати %d съобщения."
+
+#: attrib.c:1474
+#, c-format
+msgid "%s should contain only dbrefs."
+msgstr "%s трябва да съдържа само dbrefs."
+
+#: src/bsd.c:2100
+#, c-format
+msgid "%s sizes:  NewUser...%d  Connect...%d  Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  Register...%d  Down...%d  Full...%d"
+msgstr "%s размери:  Нов Потребител...%d  Връзка...%d  Гост...%d  СнД...%d  МагСнД...%d  Изход...%d  Регистр...%d  Изкл...%d  Пълн...%d"
+
+#: src/move.c:918 src/move.c:1063
+#, c-format
+msgid "%s stops following you."
+msgstr "%s спира да те следва."
+
+#: src/rob.c:288
+#, c-format
+msgid "%s took %d %s from you!"
+msgstr "%s взе %d %s от теб!"
+
+#: move.c:526 move.c:572
+#, c-format
+msgid "%s took you."
+msgstr "%s те взе."
+
+#: src/rob.c:156
+#, c-format
+msgid "%s tried to kill you!"
+msgstr "%s се опита да те убие!"
+
+#: src/look.c:1053
+#, c-format
+msgid "%s tried to locate you and failed."
+msgstr "%s се опита да те открие, но не успя."
+
+#: src/wiz.c:548
+#, c-format
+msgid "%s tries to impose his will on you and fails."
+msgstr "%s се опитва да наложи волята си върху теб, но не успява."
+
+#: src/speech.c:151
+#, c-format
+msgid "%s types --> %s%s%s"
+msgstr "%s пише --> %s%s%s"
+
+#: src/move.c:495
+#, c-format
+msgid "%s was taken from you."
+msgstr "%s бе взет от теб."
+
+#: destroy.c:412
+#, c-format
+msgid "%s's %s has been spared from destruction."
+msgstr "%2$s на %1$s бе пощадено от унищожение."
+
+#: src/destroy.c:357 src/destroy.c:374
+#, c-format
+msgid "%s's %s is scheduled to be destroyed."
+msgstr "%2$s на %1$s е насрочено за унищожение."
+
+#: src/extmail.c:1168
+#, c-format
+msgid "%s(#%d) has mail but is not a player."
+msgstr "%s(#%d) има поща, но това е не е играч."
+
+#: lock.c:541
+#, c-format
+msgid "%s(%s) - %s (already) unlocked."
+msgstr "%s(%s) - %s (вече) отключено."
+
+#: lock.c:603
+#, c-format
+msgid "%s(%s) - %s locked."
+msgstr "%s(%s) - %s заключен."
+
+#: lock.c:544
+#, c-format
+msgid "%s(%s) - %s unlocked."
+msgstr "%s(%s) - %s отключено."
+
+#: set.c:482
+#, c-format
+msgid "%s/%s - %s reset."
+msgstr "%s/%s - %s пренастроено."
+
+#: set.c:487
+#, c-format
+msgid "%s/%s - %s set."
+msgstr "%s/%s - %s приложено."
+
+#: src/extmail.c:1260 src/extmail.c:1668 src/wiz.c:673 src/wiz.c:1277
+#, c-format
+msgid "%s: No such player."
+msgstr "%s: Няма такъв играч."
+
+#: src/look.c:911
+#, c-format
+msgid "*** %d objects found ***"
+msgstr "*** %d намерени обекта ***"
+
+#: src/access.c:476
+msgid "---- @sitelock will add sites immediately below this line ----"
+msgstr "---- @sitelock ще добавя сайтове директно под тази линия ----"
+
+#: extmail.c:543
+#, c-format
+msgid "---------------------------  MAIL (folder %2d)  ------------------------------"
+msgstr "---------------------------  ПОЩА (папка %2d)  ------------------------------"
+
+#: src/command.c:1118
+msgid "@command is ALWAYS enabled."
+msgstr "@command ВИНАГИ е включена."
+
+#: src/warnings.c:450
+msgid "@wcheck complete."
+msgstr "@wcheck готово."
+
+#: src/bsd.c:559 src/bsd.c:761
+msgid "Ack!  Failed reopening stderr!"
+msgstr "Ух!  Не успях да отворя отново stderr!"
+
+#: src/cque.c:1045
+#, c-format
+msgid "All objects for %s are being restarted."
+msgstr "Всички обекти на %s са рестартирани."
+
+#: src/cque.c:924
+#, c-format
+msgid "All objects for %s have been halted."
+msgstr "Всички обекти на %s са замразени."
+
+#: src/cque.c:1048
+#, c-format
+msgid "All of your objects are being restarted by %s."
+msgstr "Всички твои обекти са рестартирани от %s."
+
+#: src/cque.c:927
+#, c-format
+msgid "All of your objects have been halted by %s."
+msgstr "Всички твои обекти са замразени от %s."
+
+#: src/wiz.c:273
+#, c-format
+msgid "All quotas changed to %d."
+msgstr "Всички квоти променени на %d."
+
+#: function.c:910
+#, c-format
+msgid "Arguments : %d %s"
+msgstr "Аргументи : %d %s"
+
+#: function.c:914
+#, c-format
+msgid "Arguments : %d to %d %s"
+msgstr "Аргументи : %d до %d %s"
+
+#: function.c:912
+#, c-format
+msgid "Arguments : At least %d %s"
+msgstr "Аргументи : Поне %d %s"
+
+#: src/game.c:851
+#, c-format
+msgid "Attempt to execute command by halted object #%d"
+msgstr "Опит за изпълнение на команда от замразен обект #%d"
+
+#: src/set.c:633
+#, c-format
+msgid "Attribute %s (%d copies)"
+msgstr "Атрибут %s (%d копия)"
+
+#: src/extmail.c:1166
+#, c-format
+msgid "Bad object #%d has mail."
+msgstr "Грешен обект #%d има поща."
+
+#: src/set.c:147
+#, c-format
+msgid "Broadcast: Suspect %s changed name to %s."
+msgstr "Излъчване: Заподозреният %s смени името си на %s."
+
+#: src/rob.c:99
+#, c-format
+msgid "Broadcast: Suspect %s tried to kill %s(#%d)."
+msgstr "Излъчване: Заподозряният %s се опита да убие %s(#%d)."
+
+#: src/version.c:44 src/version.c:46
+#, c-format
+msgid "Build date: %s"
+msgstr "Дата на построяване: %s"
+
+#: src/extchat.c:1443
+#, c-format
+msgid "CHAT: %s has removed all users from <%s>."
+msgstr "ЧАТ: %s откачи всички потребители от <%s>."
+
+#: src/extchat.c:821
+#, c-format
+msgid "CHAT: %s joins you to channel <%s>."
+msgstr "ЧАТ: %s те закача на канал <%s>."
+
+#: src/extchat.c:856
+#, c-format
+msgid "CHAT: %s removes you from channel <%s>."
+msgstr "ЧАТ: %s  те откачи от канал <%s>."
+
+#: extchat.c:3027
+#, c-format
+msgid "CHAT: Buffering enabled on channel <%s>."
+msgstr "ЧАТ: Буферирането на канал <%s> е включено."
+
+#: extchat.c:1150
+#, c-format
+msgid "CHAT: Channel <%s> created."
+msgstr "ЧАТ: Канал <%s> създаден."
+
+#: extchat.c:1998
+#, c-format
+msgid "CHAT: Channel <%s> description cleared."
+msgstr "ЧАТ: Описанието на канал <%s> е изчистено."
+
+#: extchat.c:2001
+#, c-format
+msgid "CHAT: Channel <%s> description set."
+msgstr "ЧАТ: Описанието на канал <%s> е записано."
+
+#: src/extchat.c:1496
+#, c-format
+msgid "CHAT: Channel <%s> now owned by %s."
+msgstr "ЧАТ: Канал <%s> сега се стопанисва от %s."
+
+#: extchat.c:1548
+#, c-format
+msgid "CHAT: Channel <%s> resists."
+msgstr "ЧАТ: Канал <%s> се опъва."
+
+#: extchat.c:1742
+#, c-format
+msgid "CHAT: Channel <%s> wiped."
+msgstr "ЧАТ: Канал <%s> изчистен."
+
+#: extchat.c:3014
+#, c-format
+msgid "CHAT: Channel buffering already disabled for channel <%s>."
+msgstr "ЧАТ: Вече е изключено буферирането на канал <%s>."
+
+#: extchat.c:3009
+#, c-format
+msgid "CHAT: Channel buffering disabled for channel <%s>."
+msgstr "ЧАТ: Буферирането на канал <%s> е изключено."
+
+#: extchat.c:1595
+#, c-format
+msgid "CHAT: Hidelock on <%s> reset."
+msgstr "ЧАТ: Hidelock на <%s> премахнат."
+
+#: extchat.c:1596
+#, c-format
+msgid "CHAT: Hidelock on <%s> set."
+msgstr "ЧАТ: Hidelock на <%s> поставен."
+
+#: extchat.c:1568
+#, c-format
+msgid "CHAT: Joinlock on <%s> reset."
+msgstr "ЧАТ: Joinlock на <%s> премахнат."
+
+#: extchat.c:1569
+#, c-format
+msgid "CHAT: Joinlock on <%s> set."
+msgstr "ЧАТ: Joinlock на <%s> поставен."
+
+#: extchat.c:1604
+#, c-format
+msgid "CHAT: Modlock on <%s> reset."
+msgstr "ЧАТ: Modlock на <%s> премахнат."
+
+#: extchat.c:1605
+#, c-format
+msgid "CHAT: Modlock on <%s> set."
+msgstr "ЧАТ: Modlock на <%s> поставен."
+
+#: extchat.c:2958
+#, c-format
+msgid "CHAT: Recall from channel <%s>"
+msgstr "ЧАТ: Извек от канал <%s>"
+
+#: extchat.c:3021
+#, c-format
+msgid "CHAT: Resizing buffer of channel <%s>"
+msgstr "ЧАТ: Променям размера на буфера в канал <%s>"
+
+#: extchat.c:1586
+#, c-format
+msgid "CHAT: Seelock on <%s> reset."
+msgstr "ЧАТ: Seelock на <%s> премахнат."
+
+#: extchat.c:1587
+#, c-format
+msgid "CHAT: Seelock on <%s> set."
+msgstr "ЧАТ: Seelock на <%s> поставен."
+
+#: extchat.c:1577
+#, c-format
+msgid "CHAT: Speaklock on <%s> reset."
+msgstr "ЧАТ: Speaklock на <%s> премахнат."
+
+#: extchat.c:1578
+#, c-format
+msgid "CHAT: Speaklock on <%s> set."
+msgstr "ЧАТ: Speaklock на <%s> поставен."
+
+#: extchat.c:3016
+#, c-format
+msgid "CHAT: To recall the entire buffer, use @chan/recall %s=0"
+msgstr "ЧАТ: За да извикаш целия буфер, използвай @chan/recall %s=0"
+
+#: extchat.c:1331
+#, c-format
+msgid "CHAT: You are already on channel <%s>."
+msgstr "ЧАТ: Ти вече си на канал <%s>."
+
+#: extchat.c:1385
+#, c-format
+msgid "CHAT: You are not on channel <%s>."
+msgstr "ЧАТ: Ти не си на канал <%s>."
+
+#: src/extchat.c:757
+#, c-format
+msgid "CHAT: You can't do that with channel <%s>."
+msgstr "ЧАТ: Не можеш да правиш това с канал <%s>."
+
+#: src/extchat.c:824
+#, c-format
+msgid "CHAT: You join %s to channel <%s>."
+msgstr "ЧАТ: Ти закачи %s на канал <%s>."
+
+#: src/extchat.c:827
+#, c-format
+msgid "CHAT: You join channel <%s>."
+msgstr "ЧАТ: Ти се закачи на канал <%s>."
+
+#: src/extchat.c:863
+#, c-format
+msgid "CHAT: You leave channel <%s>."
+msgstr "ЧАТ: Ти напусна канал <%s>."
+
+#: src/extchat.c:859
+#, c-format
+msgid "CHAT: You remove %s from channel <%s>."
+msgstr "ЧАТ: Ти откачи %s от канал <%s>."
+
+#: src/extchat.c:1047
+#, c-format
+msgid "Cemit to channel %s: %s"
+msgstr "Cemit на канал %s: %s"
+
+#: create.c:680
+#, c-format
+msgid "Cloned: Exit #%d."
+msgstr "Клонирано: Изход #%d."
+
+#: create.c:565
+#, c-format
+msgid "Cloned: Object %s."
+msgstr "Клонирано: Обект %s."
+
+#: create.c:628
+#, c-format
+msgid "Cloned: Room #%d."
+msgstr "Клонирано: Стая #%d."
+
+#: command.c:1318
+#, c-format
+msgid "Command %s added."
+msgstr "Команда %s е добавена."
+
+#: access.c:400
+#, c-format
+msgid "Comment: %s"
+msgstr "Коментар: %s"
+
+#: src/version.c:48
+#, c-format
+msgid "Compilation flags: %s"
+msgstr "Компилационни флагчета: %s"
+
+#: version.c:47
+#, c-format
+msgid "Compiler: %s"
+msgstr "Компилатор: %s"
+
+#: look.c:730
+#, c-format
+msgid "Created: %s"
+msgstr "Създадено: %s"
+
+#: src/game.c:188
+#, c-format
+msgid "Debug dumping, checkpoint interval %d."
+msgstr "Дебъг запис, чекпойнт интервал %d."
+
+#: extchat.c:2186
+#, c-format
+msgid "Description: %s"
+msgstr "Описание: %s"
+
+#: look.c:828
+#, c-format
+msgid "Destination: %s"
+msgstr "Направление: %s"
+
+#: src/bsd.c:4316
+#, c-format
+msgid "Doing set. %d characters lost."
+msgstr "Записвам. %d символа са загубени."
+
+#: src/bsd.c:4280
+#, c-format
+msgid "Down MOTD: %s"
+msgstr "Изкл СнД: %s"
+
+#: src/look.c:789
+#, c-format
+msgid "Dropped objects go to: %s"
+msgstr "Хвърлените обекти отиват в: %s"
+
+#: src/create.c:210
+msgid "Dropto removed."
+msgstr "Dropto премахнато."
+
+#: src/create.c:341
+msgid "Dropto set."
+msgstr "Dropto настроено."
+
+#: src/game.c:1465
+msgid "Error -- cannot execute uptime."
+msgstr "Грешка -- не мога да изпълня uptime."
+
+#: src/flags.c:1080
+#, c-format
+msgid "Exit %s is no longer broadcasting."
+msgstr "Изход %s не излъчва повече."
+
+#: src/flags.c:1141
+#, c-format
+msgid "Exit %s is now broadcasting."
+msgstr "Изход %s сега излъчва."
+
+#: function.c:1018
+msgid "Expected between 1 and 5 arguments."
+msgstr "Очаквах между 1 и 5 аргумента."
+
+#: wiz.c:109
+#, c-format
+msgid "Failure creating '%s' (bad name)"
+msgstr "Неуспешно създаване на '%s' (грешно име)"
+
+#: wiz.c:113
+#, c-format
+msgid "Failure creating '%s' (bad password)"
+msgstr "Неуспешно създаване на '%s' (грешна парола)"
+
+#: src/extmail.c:1182
+#, c-format
+msgid "Fixing mail for #%d."
+msgstr "Поправям пощата на #%d."
+
+#: function.c:897
+#, c-format
+msgid "Flags     : %s"
+msgstr "Флагчета     : %s"
+
+#: wiz.c:936
+#, c-format
+msgid "Flags value: %s"
+msgstr "Стойност на отметката: %s"
+
+#: flags.c:1284
+#, c-format
+msgid "Flags: %s"
+msgstr "Отметки: %s"
+
+#: bsd.c:4123
+#, c-format
+msgid "From afar, %s%s%s"
+msgstr "От afar, %s%s%s"
+
+#: extmail.c:471
+#, c-format
+msgid ""
+"From: %-55s %s\n"
+"Date: %-25s   %s %2d   Message: %d\n"
+"Status: %s"
+msgstr ""
+"От: %-55s %s\n"
+"Дата: %-25s   %s %2d   Съобщение: %d\n"
+"Статус: %s"
+
+#: src/bsd.c:4281
+#, c-format
+msgid "Full MOTD: %s"
+msgstr "Пълно СнД: %s"
+
+#: src/function.c:633
+msgid "Function Name                   Dbref #    Attrib"
+msgstr "Функция Име                   Dbref #    Атрибути"
+
+#: src/wiz.c:2295
+#, c-format
+msgid "GAME: Reboot w/o disconnect by %s, please wait."
+msgstr "ИГРА: Рестартиране без изключване от %s, моля изчакай."
+
+#: bsd.c:294
+msgid "GAME: SSL connections must be dropped, sorry."
+msgstr "ИГРА: SSL връзките трябва да бъдат прекъснати, съжалявам."
+
+#: src/game.c:273
+#, c-format
+msgid "GAME: Shutdown by %s"
+msgstr "ИГРА: Изключен от %s"
+
+#: bsd.c:4064
+#, c-format
+msgid "GAME: Suspect %s created."
+msgstr "ИГРА: Подозрителен %s е създаден."
+
+#: bsd.c:4081 bsd.c:4259
+#, c-format
+msgid "GAME: Suspect %s"
+msgstr "ИГРА: Подозрителен %s"
+
+#: src/extmail.c:1147
+msgid "Go get some bugspray."
+msgstr "Ходи да вземеш един RAID."
+
+#: help.c:71
+#, c-format
+msgid ""
+"Here are the entries which match '%s':\n"
+"%s"
+msgstr ""
+"Ето записите, които съвпадат с '%s':\n"
+"%s"
+
+#: look.c:787
+#, c-format
+msgid "Home: %s"
+msgstr "Дом: %s"
+
+#: command.c:1352
+#, c-format
+msgid "Hook removed from %s."
+msgstr "Куката от %s е преместена."
+
+#: command.c:1375
+#, c-format
+msgid "Hook set for %s"
+msgstr "Куката за %s е закачена"
+
+#: flags.c:1882
+#, c-format
+msgid "How do you want to restrict that %s?"
+msgstr "Как искаш да ограничиш това %s?"
+
+#: src/game.c:999
+msgid "Huh?  (Type \"help\" for help.)"
+msgstr "А?  (Type \"help\" за помощ.)"
+
+#: speech.c:686
+#, c-format
+msgid "I can't find who you're trying to page with: %s"
+msgstr "Не виждам кой се опитваш да повикаш с: %s"
+
+#: look.c:669 look.c:677 move.c:534 move.c:542
+#, c-format
+msgid "I can't tell which %s."
+msgstr "Не мога да кажа кой %s."
+
+#: flags.c:2125 flags.c:2162 flags.c:2214 flags.c:2253 flags.c:2310
+#, c-format
+msgid "I don't know that %s."
+msgstr "Не знам това %s."
+
+#: src/boolexp.c:265
+#, c-format
+msgid "I don't know which %s you mean!"
+msgstr "Не знам кой %s имаш предвид!"
+
+#: src/boolexp.c:261
+#, c-format
+msgid "I don't see %s here."
+msgstr "Не виждам %s тук."
+
+#: attrib.c:935
+#, c-format
+msgid "I don't think #%d wants to hear from you."
+msgstr "Мисля, че #%d не иска и да чуе за теб."
+
+#: src/fundb.c:1412
+#, c-format
+msgid "I don't understand switch '%c'."
+msgstr "Не разбирам ключе '%c'."
+
+#: src/game.c:1606 src/game.c:1616
+msgid "I don't understand what you want to @list."
+msgstr "Не мога да разбера, какво искаш да @list."
+
+#: speech.c:692
+#, c-format
+msgid "I'm not sure who you want to page with: %s"
+msgstr "Не съм сигурен, кого искаш да повикаш с: %s"
+
+#: src/speech.c:611 src/speech.c:1371
+#, c-format
+msgid "I'm sorry, but %s wishes to be left alone now."
+msgstr "Съжалявам, но %s желае да бъде оставен на мира в момента."
+
+#: wiz.c:807
+msgid "If you want to quit, use QUIT."
+msgstr "Ако искаш да излезеш, използвай QUIT."
+
+#: attrib.c:1479
+#, c-format
+msgid "Invalid dbref #%d in %s."
+msgstr "Невалиден dbref #%d в %s."
+
+#: src/game.c:860
+#, c-format
+msgid "Invalid location on command execution: %s(#%d)"
+msgstr "Невалиден участък при изпълнение на команда: %s(#%d)"
+
+#: extchat.c:1359
+#, c-format
+msgid "Invalid or same permissions on channel <%s>. No changes made."
+msgstr "Невалидни или съвпадащи разрешения на канал <%s>. Няма извършени промени."
+
+#: src/attrib.c:1038
+msgid "Invalid status on atrlock.. Notify god."
+msgstr "Невалидно състояние на atrlock.. Предупреди Бог."
+
+#: src/create.c:265 src/create.c:279
+#, c-format
+msgid "It costs %d %s to link this exit."
+msgstr "Струва %d %s за да закачиш този изход."
+
+#: src/destroy.c:1210 src/destroy.c:1218
+#, c-format
+msgid "It was moved to %s."
+msgstr "То бе преместено на %s."
+
+#: src/player.c:460
+#, c-format
+msgid "Last FAILED connect was from %s."
+msgstr "Последната НЕУСПЕШНА връзка бе от %s."
+
+#: src/look.c:743
+#, c-format
+msgid "Last Modification: %s"
+msgstr "Последна промяна: %s"
+
+#: src/player.c:452
+#, c-format
+msgid "Last connect was from %s on %s."
+msgstr "Последната връзка бе от %s на %s."
+
+#: src/extmail.c:1384
+#, c-format
+msgid "Last is dated %s"
+msgstr "Последното е с дата %s"
+
+#: src/version.c:37
+#, c-format
+msgid "Last restarted: %s"
+msgstr "Последно рестартиране: %s"
+
+#: flags.c:2045 flags.c:2175
+#, c-format
+msgid "Letter conflicts with the %s %s."
+msgstr "Писмото е в конфликт с %s %s."
+
+#: flags.c:2185
+#, c-format
+msgid "Letter for %s %s cleared."
+msgstr "Писмото за %s %s е изтрито."
+
+#: flags.c:2181
+#, c-format
+msgid "Letter for %s %s set to '%c'."
+msgstr "Писмото за %s %s е зададено на '%c'."
+
+#: create.c:156 create.c:296
+#, c-format
+msgid "Linked exit #%d to #%d"
+msgstr "Закачен изход #%d към #%d"
+
+#: look.c:791
+#, c-format
+msgid "Location: %s"
+msgstr "Участък: %s"
+
+#: bsd.c:4125
+#, c-format
+msgid "Long distance to %s: %s%s%s"
+msgstr "Дълго разстояние до %s: %s%s%s"
+
+#: src/extmail.c:763
+#, c-format
+msgid "MAIL: %d messages forwarded."
+msgstr "ПОЩА: %d съобщения препратени."
+
+#: src/extmail.c:2504
+#, c-format
+msgid "MAIL: %d messages in folder %d [%s] (%d unread, %d cleared)."
+msgstr "ПОЩА: %d съобщения в папка %d [%s] (%d непрочетени, %d изтрити)."
+
+#: src/malias.c:223 src/malias.c:679
+#, c-format
+msgid "MAIL: %s added to alias %s"
+msgstr "ПОЩА: %s добавен към псевдоним %s"
+
+#: src/extmail.c:984
+#, c-format
+msgid "MAIL: %s is not accepting mail from you right now."
+msgstr "ПОЩА: %s не приема поща от теб в момента."
+
+#: src/malias.c:782
+#, c-format
+msgid "MAIL: %s removed from alias %s"
+msgstr "ПОЩА: %s е премахнат от псевдоним %s"
+
+#: src/extmail.c:990
+#, c-format
+msgid "MAIL: %s's mailbox is full. Can't send."
+msgstr "ПОЩА: Пощенската кутия на %s е препълнена. Не мога да изпратя."
+
+#: malias.c:315
+#, c-format
+msgid "MAIL: Alias %c%s: "
+msgstr "ПОЩА: Псевдоним %c%s: "
+
+#: src/malias.c:348 src/malias.c:370
+#, c-format
+msgid "MAIL: Alias %s not found."
+msgstr "ПОЩА: Псевдоним %s неоткрит."
+
+#: src/malias.c:316
+#, c-format
+msgid "MAIL: Alias '%s' not found."
+msgstr "ПОЩА: Псевдоним '%s' не е открит."
+
+#: src/malias.c:239 src/malias.c:696
+msgid "MAIL: Alias list is restricted to maximal 100 entries!"
+msgstr "ПОЩА: Списъкът с псевдоними е ограничен до максимум 100 записа!"
+
+#: src/malias.c:264
+#, c-format
+msgid "MAIL: Alias set '%s' defined."
+msgstr "ПОЩА: Псевдоним настроен на '%s'."
+
+#: src/malias.c:711 src/malias.c:794
+#, c-format
+msgid "MAIL: Alias set '%s' redefined."
+msgstr "ПОЩА: Псевдоним поставен '%s' предефиниран."
+
+#: src/malias.c:148
+#, c-format
+msgid "MAIL: All Mail aliases must begin with '%c'."
+msgstr "ПОЩА: Всички пощенски псевдоними трябва да започват с '%c'."
+
+#: src/extmail.c:432
+#, c-format
+msgid "MAIL: All messages filed in folder %d [%s]"
+msgstr "ПОЩА: Всички съобщения пъхнати в папка %d [%s]"
+
+#: src/malias.c:485
+#, c-format
+msgid "MAIL: Allocated slots %d"
+msgstr "ПОЩА: Заделени гнезда %d"
+
+#: src/malias.c:403
+#, c-format
+msgid "MAIL: Bad alias. Aliases must start with '%c'."
+msgstr "ПОЩА: Грешен псевдоним. Псевн'донимите трябва да започват с '%c'."
+
+#: src/extmail.c:233
+#, c-format
+msgid "MAIL: Current folder is %d [%s]."
+msgstr "ПОЩА: Настоящата папка е %d [%s]."
+
+#: src/extmail.c:260
+#, c-format
+msgid "MAIL: Current folder set to %d [%s]."
+msgstr "ПОЩА: Настоящата папка е %d [%s]."
+
+#: src/extmail.c:283
+#, c-format
+msgid "MAIL: Folder %d now has no name"
+msgstr "ПОЩА: Папка %d вече няма име"
+
+#: src/extmail.c:255
+#, c-format
+msgid "MAIL: Folder %d now named '%s'"
+msgstr "ПОЩА: Папка %d е преименувана на '%s'"
+
+#: src/extmail.c:2395 src/extmail.c:2400
+msgid "MAIL: Invalid dbref #"
+msgstr "ПОЩА: Невалиден dbref #"
+
+#: src/malias.c:107
+msgid "MAIL: Invalid malias command."
+msgstr "ПОЩА: Невалидна malias команда."
+
+#: src/malias.c:164
+#, c-format
+msgid "MAIL: Mail Alias '%s' already exists."
+msgstr "ПОЩА: Пощенски псевдоним '%s' вече съществува."
+
+#: src/malias.c:629 src/malias.c:732
+#, c-format
+msgid "MAIL: Mail Alias '%s' not found."
+msgstr "ПОЩА: Пощенски псевдоним '%s' не е намерен."
+
+#: extmail.c:362
+#, c-format
+msgid "MAIL: Msg #%d:%d cleared."
+msgstr "ПОЩА: Съобщ. #%d:%d изтрити."
+
+#: extmail.c:361
+#, c-format
+msgid "MAIL: Msg #%d:%d uncleared."
+msgstr "ПОЩА: Съобщ. #%d:%d възстановени."
+
+#: src/extmail.c:438
+#, c-format
+msgid "MAIL: Msg %d:%d filed in folder %d [%s]"
+msgstr "ПОЩА: Съобщ. %d:%d пъхнато в папка %d [%s]"
+
+#: src/malias.c:220 src/malias.c:671 src/malias.c:774
+#, c-format
+msgid "MAIL: No such player '%s'."
+msgstr "ПОЩА: Няма такъв играч '%s'."
+
+#: malias.c:450
+#, c-format
+msgid "MAIL: Not a valid alias. Remember to prefix the alias name with %c."
+msgstr "ПОЩА: Невалиден псевдоним. Не забравяй да сложиш %c пред името на псевдонима."
+
+#: src/malias.c:484
+#, c-format
+msgid "MAIL: Number of mail aliases defined: %d"
+msgstr "ПОЩА: Броят на пощенските псевдоними определен на: %d"
+
+#: src/malias.c:539
+#, c-format
+msgid "MAIL: Permission to see/use alias '%s' changed to %s"
+msgstr "ПОЩА: Разрешението за използване/виждане на псевдоним '%s'променено на %s"
+
+#: src/extmail.c:1294
+#, c-format
+msgid "MAIL: There are %d msgs in the mail spool, %d unread, %d cleared."
+msgstr "ПОЩА: Има %d съобщ. чакащи на ред, %d непрочетени, %d изтрити."
+
+#: src/extmail.c:1316
+#, c-format
+msgid "MAIL: There are %d new msgs in the mail spool, totalling %d characters."
+msgstr "ПОЩА: Има %d нови съобщ чакащи на ред, общо %d символа."
+
+#: src/extmail.c:1312
+#, c-format
+msgid "MAIL: There are %d old msgs in the mail spool, totalling %d characters."
+msgstr "ПОЩА: Има %d стари съобщ чакащи на ред в пощата, общо %d символа."
+
+#: src/extmail.c:378
+#, c-format
+msgid "MAIL: Unread Msg #%d:%d cleared! Use @mail/unclear %d:%d to recover."
+msgstr "ПОЩА: Непрочетени съобщ. #%d:%d изтрити! Използвай @mail/unclear %d:%d за да ги възстановиш."
+
+#: src/extmail.c:2509
+#, c-format
+msgid "MAIL: Warning! Limit on inbox messages is %d!"
+msgstr "ПОЩА: Предупреждение! Лимитът на пощенската кутия е %d!"
+
+#: src/extmail.c:1091
+#, c-format
+msgid "MAIL: You have a new message (%d) from %s."
+msgstr "ПОЩА: Имаш ново съобщение (%d) от %s."
+
+#: src/extmail.c:1090
+#, c-format
+msgid "MAIL: You sent your message to %s."
+msgstr "ПОЩА: Изпрати съобщение на %s."
+
+#: src/malias.c:675
+#, c-format
+msgid "MAIL: player '%s' exists already in alias %s."
+msgstr "ПОЩА: играч '%s' присъства вече в псевдоним %s."
+
+#: src/malias.c:777
+#, c-format
+msgid "MAIL: player '%s' is not in alias %s."
+msgstr "ПОЩА: играч '%s' не е в псевдоним %s."
+
+#: src/extmail.c:1161
+#, c-format
+msgid "Mail cleared for %s(#%d)."
+msgstr "Пощата изтрита за %s(#%d)."
+
+#: src/extmail.c:1174
+#, c-format
+msgid "Mail database top is %d, actual message count is %d. Fixing."
+msgstr "Броят на записите в пощенската база данни е %d, а реалния брой съобщения е %d. Поправям."
+
+#: src/extmail.c:1365
+#, c-format
+msgid "Mail statistics for %s:"
+msgstr "Пощенска статистика на %s:"
+
+#: src/game.c:1253
+#, c-format
+msgid "Matched here: %s  [%d:%s]"
+msgstr "Тук съвпадат: %s  [%d:%s]"
+
+#: access.c:397
+#, c-format
+msgid "Matched line %d: %s %s"
+msgstr "Съвпадащ ред %d: %s %s"
+
+#: src/game.c:1296
+#, c-format
+msgid "Matched personal zone: %s  [%d:%s]"
+msgstr "Съвпадаща лична зона: %s  [%d:%s]"
+
+#: src/game.c:1267
+#, c-format
+msgid "Matched self: %s  [%d:%s]"
+msgstr "Собствени съвпадения: %s  [%d:%s]"
+
+#: src/game.c:1288
+#, c-format
+msgid "Matched zone of location: %s  [%d:%s]"
+msgstr "Съвпадаща зона на участък: %s  [%d:%s]"
+
+#: src/predicat.c:1051
+#, c-format
+msgid "Matches of '%s' on %s(#%d): %s"
+msgstr "Съвпадения на '%s' на %s(#%d): %s"
+
+#: extchat.c:2007
+#, c-format
+msgid "Members of channel <%s> are:"
+msgstr "Членове на канал <%s> са:"
+
+#: function.c:1090
+#, c-format
+msgid "Name      : %s() (%s%s)"
+msgstr "Име      : %s() (%s%s)"
+
+#: wiz.c:1890
+#, c-format
+msgid "Name %s locked."
+msgstr "Името %s е заключено."
+
+#: src/wiz.c:131
+#, c-format
+msgid "New player '%s' (#%d) created with password '%s'"
+msgstr "Създаден нов играч '%s' (#%d) с парола '%s'"
+
+#: cmds.c:1069
+#, c-format
+msgid "No command found in code by %s - don't start code with functions."
+msgstr "Не е намерена команда в кода от %s - не започвай код с функции."
+
+#: src/bsd.c:3090
+#, c-format
+msgid "No entry for '%s'."
+msgstr "Няма запис за '%s'."
+
+#: flags.c:1839 flags.c:1878 flags.c:1941
+#, c-format
+msgid "No such %s."
+msgstr "Няма такъв %s."
+
+#: src/extmail.c:747 src/extmail.c:859
+#, c-format
+msgid "No such unique player: %s."
+msgstr "Няма такъв играч: %s."
+
+#: flags.c:1964
+#, c-format
+msgid "Objects of other types already have this %s set. Search for them and remove it first."
+msgstr "Обектите от различни типове вече имат това %s нагласено. Първо ги потърси и ги премахни."
+
+#: wiz.c:175 wiz.c:181 wiz.c:195
+#, c-format
+msgid "Objects: %d   Limit: %d"
+msgstr "Обекти: %d   Лимит: %d"
+
+#: wiz.c:166
+#, c-format
+msgid "Objects: %d   Limit: UNLIMITED"
+msgstr "Обекти: %d   Лимит: НЕОГРАНИЧЕН"
+
+#: create.c:140
+#, c-format
+msgid "Opened exit %s"
+msgstr "Отворен изход %s"
+
+#: look.c:704
+#, c-format
+msgid "Owner: %s  Zone: %s  %s: %d"
+msgstr "Собственик: %s  Зона: %s  %s: %d"
+
+#: extchat.c:2318
+#, c-format
+msgid "Owner: %s"
+msgstr "Собственик %s"
+
+#: src/wiz.c:910
+#, c-format
+msgid "Ownership changed for %d objects."
+msgstr "Собствеността на %d обекти е променена."
+
+#: src/game.c:182
+#, c-format
+msgid "Paranoid dumping, checkpoint interval %d."
+msgstr "Параноичен запис, чекпойнт интервал %d."
+
+#: look.c:707
+#, c-format
+msgid "Parent: %s"
+msgstr "Родител: %s"
+
+#: wiz.c:724
+#, c-format
+msgid "Password for %s changed."
+msgstr "Паролата на %s е променена."
+
+#: flags.c:1910
+#, c-format
+msgid "Permissions on %s %s set."
+msgstr "Разрешенията на %s %s са сложени."
+
+#: src/extchat.c:1210
+#, c-format
+msgid "Permissions on channel <%s> changed."
+msgstr "Разрешенията на канал <%s> променени."
+
+#: wiz.c:995
+#, c-format
+msgid "Powers value: %s"
+msgstr "Стойност на силата: %s"
+
+#: look.c:716
+#, c-format
+msgid "Powers: %s"
+msgstr "Права: %s"
+
+#: src/cque.c:786
+#, c-format
+msgid "Queue for : %s"
+msgstr "Ред на : %s"
+
+#: extchat.c:2192
+#, c-format
+msgid "Recall buffer: %dk, with %d lines stored."
+msgstr "Буфер на извадка: %dk, с %d записани линии."
+
+#: bsd.c:275
+msgid "Registration successful! You will receive your password by email."
+msgstr "Регистрацията е успешна! Ще получиш паролата си по email."
+
+#: src/atr_tab.c:252
+#, c-format
+msgid "Removed %s from attribute table."
+msgstr "Премахнат %s от таблицата с атрибутите."
+
+#: command.c:1347
+#, c-format
+msgid "Removed %s from command table."
+msgstr "Премахнато %s от командната таблица."
+
+#: src/atr_tab.c:288
+#, c-format
+msgid "Renamed %s to %s in attribute table."
+msgstr "%s е преименуван на %s в таблицата с атрибутите."
+
+#: cque.c:201
+#, c-format
+msgid "Runaway object: %s(%s). Commands halted."
+msgstr "Обект-беглец: %s(%s). Командите са замразени."
+
+#: src/wiz.c:1471
+#, c-format
+msgid "Searches cost %d %s."
+msgstr "Търсенето струва %d %s."
+
+#: src/wiz.c:1999
+#, c-format
+msgid "Site %s access options for %s(%s) set to %s"
+msgstr "Опциите за достъп на сайт %s за %s(%s) за зададени на %s"
+
+#: src/wiz.c:2004
+#, c-format
+msgid "Site %s access options set to %s"
+msgstr "Опциите за достъп на сайт %s зададени на %s"
+
+#: wiz.c:1754
+#, c-format
+msgid "Site %s banned"
+msgstr "Обект %s е баннат"
+
+#: src/wiz.c:2026
+#, c-format
+msgid "Site %s locked"
+msgstr "Сайт %s заключен"
+
+#: src/extchat.c:787
+#, c-format
+msgid "Sorry, wrong type of thing for channel <%s>."
+msgstr "Съжалявам, грешен тип нещо за канал <%s>."
+
+#: src/predicat.c:369
+#, c-format
+msgid "Sorry, you don't have enough %s."
+msgstr "Съжалявам, но нямаш достатъчно %s."
+
+#: extchat.c:1429
+#, c-format
+msgid "Sorry, you're not allowed to @cemit on channel <%s>."
+msgstr "Извинявай, нямаш право да @cemit в канал <%s>."
+
+#: src/extchat.c:927 src/extchat.c:1034
+#, c-format
+msgid "Sorry, you're not allowed to speak on channel <%s>."
+msgstr "Съжалявам, не ти е позволено да говориш по канал <%s>."
+
+#: src/extchat.c:916 src/extchat.c:1021
+#, c-format
+msgid "Sorry, you're not the right type to be on channel <%s>."
+msgstr "Съжалявам, ти не си подходящ тип за да бъдеш на канал <%s>."
+
+#: look.c:815
+#, c-format
+msgid "Source: %s"
+msgstr "Източник: %s"
+
+#: extmail.c:482
+#, c-format
+msgid "Subject: %s"
+msgstr "Тема: %s"
+
+#: flags.c:2218
+#, c-format
+msgid "That %s is already disabled."
+msgstr "Тази %s е вече изключена."
+
+#: flags.c:2129
+#, c-format
+msgid "That %s is disabled."
+msgstr "%s е изключено."
+
+#: flags.c:2314
+#, c-format
+msgid "That %s is not disabled."
+msgstr "Това %s не е изключено."
+
+#: flags.c:2119
+#, c-format
+msgid "That alias already matches the %s %s."
+msgstr "Този псевдоним вече съвпада с %s %s."
+
+#: src/attrib.c:1022
+#, c-format
+msgid "That attribute is %slocked."
+msgstr "Този атрибут е %slocked."
+
+#: src/destroy.c:250
+msgid "That object does not belong to you. Use @nuke to destroy it."
+msgstr "Този обект не ти принадлежи. Използвай @nuke за да го унищожиш."
+
+#: src/destroy.c:243
+msgid "That object is marked SAFE. Use @nuke to destroy it."
+msgstr "Този обект е маркиран SAFE. Използвай @nuke за да го унищожиш."
+
+#: src/destroy.c:238
+msgid "That object is set SAFE. You must set it !SAFE before destroying it."
+msgstr "Този обект е маркиран SAFE. Трябва да го маркираш !SAFE преди да го унищожиш."
+
+#: src/destroy.c:287
+msgid "That object is set WIZARD. You must use @nuke to destroy it."
+msgstr "Този обект е маркиран като WIZARD. Трябва да използваш @nuke за да го унищожиш."
+
+#: src/game.c:1163
+#, c-format
+msgid "The money supply of all players has been reset to %d %s."
+msgstr "Паричният запас на всички играчи е настроен на %d %s."
+
+#: src/atr_tab.c:273
+#, c-format
+msgid "The name %s is already used in the attribute table."
+msgstr "Името %s съществува в таблицата с атрибутите."
+
+#: wiz.c:694
+#, c-format
+msgid "The next object to be created will be #%d."
+msgstr "Следващият обект, който ще бъде създаден е #%d."
+
+#: src/player.c:299
+#, c-format
+msgid "The password is %s\n"
+msgstr "Паролата е %s\n"
+
+#: src/destroy.c:548
+#, c-format
+msgid "The room %s has been spared from destruction by %s."
+msgstr "Стаята %s бе пощадена от унищожение от %s."
+
+#: src/destroy.c:543
+#, c-format
+msgid "The room %s has been spared from destruction."
+msgstr "Стаята %s бе пощадена от унищожение."
+
+#: src/destroy.c:341
+#, c-format
+msgid "The wrecking ball is on its way for %s's %s and its exits."
+msgstr "Булдозерът тръгва към %2$s на %1$s и нейните изходи."
+
+#: src/extmail.c:1281
+#, c-format
+msgid "There are %d messages in the mail spool."
+msgstr "Има %d съобщения чакащи на ред в пощата."
+
+#: bsd.c:3925
+#, c-format
+msgid "There are %d players connected."
+msgstr "Има %d свързани играчи."
+
+#: flags.c:1542
+msgid "There are probably easier ways to crash your MUSH."
+msgstr "Предполагам, че има и по-лесни начини да забиеш MUSH-а"
+
+#: bsd.c:3922
+msgid "There is 1 player connected."
+msgstr "Има 1 свързан играч."
+
+#: src/player.c:296
+msgid "This is an automated message.\n"
+msgstr "Това е автоматично съобщение.\n"
+
+#: src/player.c:301
+#, c-format
+msgid "To access this character, connect to %s and type:\n"
+msgstr "За да получиш достъп до персонажа, свържи се с %s и напиши:\n"
+
+#: src/speech.c:302
+msgid "Too many people to oemit to."
+msgstr "Твърде много хора да oemit."
+
+#: flags.c:1971
+#, c-format
+msgid "Type of %s %s set."
+msgstr "Типът на %s %s е зададен."
+
+#: src/set.c:638
+#, c-format
+msgid "Unable to %s attribute."
+msgstr "Невъзможно е %s на атрибут."
+
+#: src/bsd.c:758
+#, c-format
+msgid "Unable to open %s. Error output continues to stderr.\n"
+msgstr "Не успях да отворя %s. Съобщението за грешка препратено към stderr.\n"
+
+#: speech.c:745
+#, c-format
+msgid "Unable to page:%s"
+msgstr "Невъзможно е повикването на: %s"
+
+#: bsd.c:274
+msgid "Unable to register that player with that email address."
+msgstr "Не успях да регистрирам играч с този email адрес."
+
+#: speech.c:355
+#, c-format
+msgid "Unable to whisper to:%s"
+msgstr "Не можеш да прошепнеш на:%s"
+
+#: src/access.c:547
+#, c-format
+msgid "Unknown access option: %s"
+msgstr "Непозната опция за достъп: %s"
+
+#: flags.c:2081
+#, c-format
+msgid "Unknown failure adding %s."
+msgstr "Непозната грешка при добавяне на %s."
+
+#: src/warnings.c:301
+#, c-format
+msgid "Unknown warning: %s"
+msgstr "Непознато предупреждение: %s"
+
+#: lock.c:880
+#, c-format
+msgid "Unlocked zone %s - automatically zone-locking to itself"
+msgstr "Отключена зона %s - автоматично се заключва към себе си"
+
+#: src/conf.c:799
+msgid "Use: @config/list <type of options> where type is one of:"
+msgstr "Употреба: @config/list <типове опции>, където тип е едно от следните:"
+
+#: warnings.c:232
+#, c-format
+msgid "Variable exit has empty %s attribute"
+msgstr "Променливият изход има празен %s атрибут"
+
+#: warnings.c:227
+#, c-format
+msgid "Variable exit has no %s attribute"
+msgstr "Променливият изход няма %s атрибут"
+
+#: warnings.c:119
+#, c-format
+msgid "Warning '%s' for %s:"
+msgstr "Предупреждение '%s' за %s:"
+
+#: src/create.c:547
+msgid "Warning: @CLONE/PRESERVE on an object with WIZ, ROY, @powers, or @warnings."
+msgstr "Предупреждение: @CLONE/PRESERVE на обект с WIZ, ROY, @powers, или @warnings."
+
+#: src/set.c:417
+msgid "Warning: @chzoning a privileged player."
+msgstr "Предупреждение: @chzoning превилегирован играч."
+
+#: src/set.c:396
+msgid "Warning: @chzoning admin-owned object!"
+msgstr "Предупреждение: @chzoning притежаван от администратор обект!"
+
+#: destroy.c:329
+msgid "Warning: Target is set SAFE, but scheduling for destruction anyway."
+msgstr "Внимание: Целта е настроена SAFE, но наредена за унищожаване въпреки това."
+
+#: set.c:328
+#, c-format
+msgid "Warning: WIZ flag reset on #%d because @CHOWN/PRESERVE is to a third party."
+msgstr "Предупреждение: WIZ нулиране на отметка на #%d защото @CHOWN/PRESERV е на трето лице."
+
+#: lock.c:893
+#, c-format
+msgid "Warning: Zone %s may have loose zone lock. Lock zones to =player, not player"
+msgstr "Предупреждение: Зона %s може да изгуби своя зонов ключ. Заключвай зоните към =играч, не играч"
+
+#: src/look.c:733
+#, c-format
+msgid "Warnings checked: %s"
+msgstr "Проверени предупреждения: %s"
+
+#: bsd.c:3796
+msgid "Welcome back from vacation! Don't forget to unset your ON-VACATION flag"
+msgstr "Ооо, върнал си се от почивка?! Не забравяй да махнеш своята ON-VACATION отметка"
+
+#: src/look.c:1294
+msgid "What do you want to @decompile?"
+msgstr "Какво искаш да @decompile?"
+
+#: src/predicat.c:1023
+msgid "What pattern do you want to grep for?"
+msgstr "Каква рамка искаш да ползваш за grep?"
+
+#: flags.c:1945
+#, c-format
+msgid "What type do you want to make that %s?"
+msgstr "Какъв тип искаш да направиш това %s?"
+
+#: src/bsd.c:4279
+#, c-format
+msgid "Wiz MOTD: %s"
+msgstr "Маг СнД: %s"
+
+#: src/version.c:33
+#, c-format
+msgid "You are connected to %s"
+msgstr "Ти си свързан към %s"
+
+#: src/move.c:771
+#, c-format
+msgid "You are followed by: %s"
+msgstr "Ти си следван от: %s"
+
+#: src/move.c:770
+#, c-format
+msgid "You are following: %s"
+msgstr "Следваш: %s"
+
+#: src/extchat.c:1254 src/extchat.c:1364
+#, c-format
+msgid "You are not on channel <%s>."
+msgstr "Ти не си на канал <%s>."
+
+#: src/extchat.c:1291
+#, c-format
+msgid "You are not permitted to hide on channel <%s>."
+msgstr "Нямаш право да се криеш на канал <%s>."
+
+#: src/speech.c:857
+msgid "You are set HAVEN and cannot receive pages."
+msgstr "Маркиран си като HAVEN и не можеш да получаваш повиквания."
+
+#: src/move.c:861
+#, c-format
+msgid "You begin following %s."
+msgstr "Започваш да следваш %s."
+
+#: src/wiz.c:835
+#, c-format
+msgid "You booted %s off!"
+msgstr "Ти изрита %s!"
+
+#: wiz.c:776
+#, c-format
+msgid "You booted unconnected port %s!"
+msgstr "Ти изрита несвързан порт %s!"
+
+#: attrib.c:1078
+msgid "You can only chown an attribute to yourself."
+msgstr "Можеш единствено да chown даден атрибут към себе си."
+
+#: src/extchat.c:1119
+#, c-format
+msgid "You can't afford the %d %s."
+msgstr "Не можеш да си позволиш %d %s."
+
+#: src/function.c:773
+msgid "You can't delete that @function."
+msgstr "Не можеш да изтриеш тази @function."
+
+#: src/set.c:214
+msgid "You cannot @CHOWN/PRESERVE. Use normal @CHOWN."
+msgstr "Не можеш да @CHOWN/PRESERVE. Използвай нормално @CHOWN."
+
+#: set.c:474
+#, c-format
+msgid "You cannot change that flag on %s/%s"
+msgstr "Не можеш да промениш отметката на %s/%s"
+
+#: src/set.c:469
+#, c-format
+msgid "You cannot set attrib flags on %s/%s"
+msgstr "Не можеш да поставиш атрибут-флагчета на %s/%s"
+
+#: src/create.c:152
+#, c-format
+msgid "You don't have enough %s to link."
+msgstr "Нямаш достатъчно %s за да закачаш."
+
+#: src/rob.c:120 src/speech.c:935
+#, c-format
+msgid "You don't have enough %s."
+msgstr "Нямаш достатъчно %s."
+
+#: src/rob.c:246
+#, c-format
+msgid "You don't have that many %s to give!"
+msgstr "Нямаш толкова %s за дадавне!"
+
+#: src/attrib.c:1114
+msgid "You don't have the permission to chown that."
+msgstr "Нямаш разрешение да chown това."
+
+#: move.c:649
+#, c-format
+msgid "You drop %s."
+msgstr "Ти хвърли %s."
+
+#: move.c:1128
+#, c-format
+msgid "You follow %s."
+msgstr "Следваш %s."
+
+#: rob.c:182
+#, c-format
+msgid "You gave %s to %s."
+msgstr "Ти даде %s на %s."
+
+#: src/rob.c:261
+#, c-format
+msgid "You get %d in change."
+msgstr "Ти взе в замяна %d."
+
+#: src/destroy.c:759
+#, c-format
+msgid "You get your %d %s deposit back for %s."
+msgstr "Вземаш обратно своя %d %s депозит за %s."
+
+#: src/rob.c:276
+#, c-format
+msgid "You give %d %s to %s."
+msgstr "Ти даде %d %s на %s."
+
+#: src/look.c:853
+#, c-format
+msgid "You have %d %s."
+msgstr "Имаш %d %s."
+
+#: src/destroy.c:514
+#, c-format
+msgid "You have been spared from destruction by %s."
+msgstr "%s те пощади от унищожение."
+
+#: src/rob.c:127
+#, c-format
+msgid "You killed %s!"
+msgstr "Ти уби %s!"
+
+#: src/speech.c:842
+#, c-format
+msgid "You last paged %s."
+msgstr "Последно повика %s."
+
+#: src/speech.c:1424
+#, c-format
+msgid "You lemit: \"%s\""
+msgstr "Ти lemit: \"%s\""
+
+#: src/bsd.c:4256
+msgid "You may get 15 minutes of fame and glory in life, but not right now."
+msgstr "Един ден ще получиш своите 15 минути слава, но няма да е точно сега."
+
+#: cque.c:662
+msgid "You may not specify a semaphore attribute with the ANY switch."
+msgstr "Не можеш да определиш семафорен атрибут с ключ ANY."
+
+#: cque.c:690
+msgid "You may not specify a semaphore count with the ALL switch."
+msgstr "Не можеш да сложиш семафорен брояч с ключ ALL."
+
+#: src/cque.c:913
+msgid "You may not use @halt obj=command on this object."
+msgstr "Не можеш да използваш @halt obj=command върху този обект."
+
+#: src/flags.c:595
+msgid "You must @lock/zone before you can set a player ZONE"
+msgstr "Трябва да @lock/zone преди да можеш да настроиш играча на ZONE"
+
+#: set.c:210
+msgid "You must carry the object to @chown it."
+msgstr "Трябва да носиш даден обект за да го @chown."
+
+#: flags.c:2006
+#, c-format
+msgid "You must provide a name for the %s."
+msgstr "Трябва да дадеш име на %s."
+
+#: src/rob.c:230
+#, c-format
+msgid "You must specify a positive number of %s."
+msgstr "Трябва да дадеш положително число от %s."
+
+#: src/destroy.c:280
+msgid "You must use @nuke to destroy a player."
+msgstr "Трябва да използваш @nuke за да унищожиш играч."
+
+#: src/extchat.c:1298
+#, c-format
+msgid "You no longer appear on channel <%s>'s who list."
+msgstr "Вече не присъстваш в списъка who на канал <%s>."
+
+#: src/bsd.c:4639
+msgid "You no longer appear on the WHO list."
+msgstr "Вече не присъстваш в WHO списъка."
+
+#: src/extchat.c:1305
+#, c-format
+msgid "You now appear on channel <%s>'s who list."
+msgstr "Вече те има в списъка who на канал <%s>."
+
+#: src/bsd.c:4641
+msgid "You now appear on the WHO list."
+msgstr "Сега те има в WHO списъка."
+
+#: src/destroy.c:1103
+#, c-format
+msgid "You own a disconnected room, %s"
+msgstr "Притежаваш несвързана стая, %s"
+
+#: src/destroy.c:1181
+#, c-format
+msgid "You own an object %s that was 'orphaned'."
+msgstr "Притежаваш обект %s, който е 'осиротял'."
+
+#: destroy.c:1170
+#, c-format
+msgid "You own an object in a circular zone chain: %s"
+msgstr "Притежаваш обект от верига циркулярни зони:  %s"
+
+#: destroy.c:1143
+#, c-format
+msgid "You own an object without a @lock/zone being used as a zone: %s"
+msgstr "Притежаваш обект без @lock/zone, който се ползва като зона: %s"
+
+#: src/rob.c:263
+#, c-format
+msgid "You paid %d %s."
+msgstr "Ти плати %d %s."
+
+#: src/speech.c:616
+#, c-format
+msgid "You pemit \"%s\" to %s."
+msgstr "Ти pemit \"%s\" в %s."
+
+#: src/speech.c:1383
+#, c-format
+msgid "You remit, \"%s\" in %s"
+msgstr "Ти remit, \"%s\" в %s"
+
+#: src/speech.c:177
+#, c-format
+msgid "You say, \"%s\""
+msgstr "Ти казваш, \"%s\""
+
+#: extmail.c:2685
+#, c-format
+msgid "You sent your message to the '%s' alias"
+msgstr "Ти изпрати своето съобщение на '%s' псевдоним"
+
+#: src/move.c:917 src/move.c:1036
+#, c-format
+msgid "You stop following %s."
+msgstr "Спираш да следваш %s."
+
+#: move.c:527
+#, c-format
+msgid "You take %s from %s."
+msgstr "Ти взимаш %s от %s."
+
+#: move.c:573
+#, c-format
+msgid "You take %s."
+msgstr "Ти взе %s."
+
+#: src/rob.c:279
+#, c-format
+msgid "You took %d %s from %s!"
+msgstr "Ти взе %d %s от %s!"
+
+#: speech.c:395
+#, c-format
+msgid "You whisper, \"%s\"%s."
+msgstr "Прошепваш, \"%s\"%s."
+
+#: src/destroy.c:336
+#, c-format
+msgid "You will be rewarded shortly for %s."
+msgstr "Скоро ще бъдеш възнаграден за %s."
+
+#: src/extchat.c:1266
+#, c-format
+msgid "You will no longer hear connection messages on channel <%s>."
+msgstr "Повече не чуваш съобщенията при свързване на канал <%s>."
+
+#: src/extchat.c:1322
+#, c-format
+msgid "You will no longer hear messages on channel <%s>."
+msgstr "Повече няма да чуваш съобщенията на канал <%s>."
+
+#: src/extchat.c:1274
+#, c-format
+msgid "You will now hear connection messages on channel <%s>."
+msgstr "Сега ще чуваш съобщенията при свързване на канал <%s>."
+
+#: src/extchat.c:1329
+#, c-format
+msgid "You will now hear messages on channel <%s>."
+msgstr "Сега ще чуваш съобщенията на канал <%s>."
+
+#: src/speech.c:1488
+#, c-format
+msgid "You zemit, \"%s\" in zone %s"
+msgstr "Ти zemit, \"%s\" в зона %s"
+
+#: src/warnings.c:412
+msgid "You'd better check your wizbit first."
+msgstr "По-добре първо провери своя wizbit."
+
+#: move.c:788
+#, c-format
+msgid "You're already following %s."
+msgstr "Ти следваш вече %s."
+
+#: move.c:845
+#, c-format
+msgid "You're not following %s."
+msgstr "Не следваш %s."
+
+#: src/destroy.c:410
+#, c-format
+msgid "Your %s has been spared from destruction."
+msgstr "Твоето %s бе пощадено от унищожение."
+
+#: src/bsd.c:3419
+msgid "Your HAVEN flag is set. You cannot receive pages."
+msgstr "Твоте флагче HAVEN е поставено. Не можеш да получаваш повиквания."
+
+#: timer.c:158
+msgid "Your ON-VACATION flag is set! If you're back, clear it."
+msgstr "Твоята ON-VACATION отметка е поставена! Махни я, когато се върнеш."
+
+#: src/rob.c:143
+#, c-format
+msgid "Your insurance policy pays %d %s."
+msgstr "Застрахователната ти полица изплаща %d %s."
+
+#: src/cque.c:988
+#, c-format
+msgid "Your objects are being globally restarted by %s"
+msgstr "Твоите обекти са глобално рестартирани от %s"
+
+#: src/cque.c:956
+#, c-format
+msgid "Your objects have been globally halted by %s"
+msgstr "Твоите обекти са глобално замразени от %s"
+
+#: src/wiz.c:739
+#, c-format
+msgid "Your password has been changed by %s."
+msgstr "Паролата ти е променена от %s."
+
+#: src/player.c:298
+#, c-format
+msgid "Your requested player, %s, has been created.\n"
+msgstr "Твоят пожелан играч, %s, бе създаден.\n"
+
+#: lock.c:888
+#, c-format
+msgid "Zone %s really should have a more secure zone-lock."
+msgstr "Зона %s трябва да има по-сигурен ключ."
+
+#: src/wiz.c:959
+#, c-format
+msgid "Zone changed for %d objects."
+msgstr "Зоната за %d обекти е променена."
+
+#: src/predicat.c:764
+#, c-format
+msgid "[%d:%02d] %s message sent to %s."
+msgstr "[%d:%02d] %s съобщение изпратено на %s."
+
+#: src/bsd.c:4683
+msgid ""
+"\n"
+"*** Inactivity limit reached. You are now HIDDEN. ***\n"
+msgstr ""
+"\n"
+"*** Границата за неактивност достигната. Сега си маркиран като СКРИТ ***\n"
+
+#: src/bsd.c:4673
+msgid ""
+"\n"
+"*** Inactivity timeout ***\n"
+msgstr ""
+"\n"
+"*** Неактивност таймаут ***\n"
+
+#: src/extmail.c:2507
+msgid ""
+"\n"
+"MAIL: You have no mail.\n"
+msgstr ""
+"\n"
+"ПОЩА: Нямаш поща.\n"
+
+#: move.c:608
+#, c-format
+msgid "drops %s."
+msgstr "пуска %s."
+
+#: src/warnings.c:186
+#, c-format
+msgid "exit has multiple (%d) return exits"
+msgstr "изход има множество (%d) обратни изходи"
+
+#: src/warnings.c:159
+msgid "possibly locked exit missing fail"
+msgstr "възможно заключен изход няма fail"
+
+#: src/warnings.c:229
+msgid "possibly locked thing missing fail"
+msgstr "възможно заключено нещо няма fail"
+
+#: src/warnings.c:157
+msgid "possibly unlocked exit missing succ/osucc/odrop"
+msgstr "възможно отключен изход няма succ/osucc/odrop"
+
+#: src/warnings.c:227
+msgid "possibly unlocked thing missing succ/osucc/drop/odrop"
+msgstr "възможно отключено нещо няма succ/osucc/drop/odrop"
+
+#: move.c:529
+#, c-format
+msgid "takes %s from %s."
+msgstr "взема %s от %s."
+
+#: move.c:492 move.c:534
+#, c-format
+msgid "takes %s."
+msgstr "взема %s."
+

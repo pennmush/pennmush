@@ -592,7 +592,7 @@ make_player(const char *name, const char *password, const char *host,
  */
 void
 do_password(dbref player, dbref cause, const char *old, const char *newobj,
-            MQUE * queue_entry)
+            MQUE *queue_entry)
 {
   if (!queue_entry->port) {
     char old_eval[BUFFER_LEN];

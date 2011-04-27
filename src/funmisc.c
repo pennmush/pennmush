@@ -249,7 +249,7 @@ FUNCTION(fun_setq)
 
   for (n = 0; n < nargs; n += 2) {
     if (ValidQregName(args[n])) {
-      if (!PE_Setq(pe_info, args[n], args[n+1])) {
+      if (!PE_Setq(pe_info, args[n], args[n + 1])) {
         safe_str(T(e_toomanyregs), buff, bp);
       }
     } else {
@@ -325,12 +325,13 @@ struct st_qreg_data {
   char *buff;
   char **bp;
   char *wild;
-  int   count;
+  int count;
 };
 
 static void
 listq_walk(const char *cur, int count __attribute__ ((__unused__)),
-           void *userdata) {
+           void *userdata)
+{
   struct st_qreg_data *st_data = (struct st_qreg_data *) userdata;
 
   if (!st_data->wild || quick_wild(st_data->wild, cur)) {
@@ -392,7 +393,8 @@ FUNCTION(fun_listq)
 }
 
 void
-clear_allq(NEW_PE_INFO *pe_info) {
+clear_allq(NEW_PE_INFO *pe_info)
+{
   PE_REGS *pe_regs;
   PE_REG_VAL *pe_val;
   pe_regs = pe_info->regvals;
@@ -428,7 +430,8 @@ struct st_unsetq_data {
 
 static void
 unsetq_walk(const char *cur, int count __attribute__ ((__unused__)),
-           void *userdata) {
+            void *userdata)
+{
   struct st_unsetq_data *st_data = (struct st_unsetq_data *) userdata;
 
   /* If it matches the pattern, then set it to "" (blank / unset) */
@@ -504,7 +507,7 @@ FUNCTION(fun_unsetq)
   while (list) {
     cur = split_token(&list, ' ');
     if (cur && *cur) {
-      if (*cur == '*' && *(cur+1) == '\0') {
+      if (*cur == '*' && *(cur + 1) == '\0') {
         clear_allq(pe_info);
         break;
       } else {
@@ -1133,7 +1136,7 @@ enum whichof_t { DO_FIRSTOF, DO_ALLOF };
 static void
 do_whichof(char *args[], int nargs, enum whichof_t flag,
            char *buff, char **bp, dbref executor,
-           dbref caller, dbref enactor, NEW_PE_INFO * pe_info, int isbool)
+           dbref caller, dbref enactor, NEW_PE_INFO *pe_info, int isbool)
 {
   int j;
   char tbuf[BUFFER_LEN], *tp;

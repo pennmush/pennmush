@@ -813,8 +813,7 @@ clone_locks(dbref player, dbref orig, dbref clone)
  * \retval 0 player does not pass the lock.
  */
 int
-eval_lock_with(dbref player, dbref thing, lock_type ltype,
-               NEW_PE_INFO * pe_info)
+eval_lock_with(dbref player, dbref thing, lock_type ltype, NEW_PE_INFO *pe_info)
 {
   boolexp b = getlock(thing, ltype);
   /* Prevent overwriting a static buffer in unparse_boolexp() */
@@ -830,7 +829,7 @@ eval_lock_with(dbref player, dbref thing, lock_type ltype,
  */
 int
 eval_lock_clear(dbref player, dbref thing, lock_type ltype,
-                NEW_PE_INFO * pe_info)
+                NEW_PE_INFO *pe_info)
 {
   if (!pe_info)
     return eval_lock_with(player, thing, ltype, NULL);

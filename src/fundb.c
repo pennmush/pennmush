@@ -1323,7 +1323,7 @@ FUNCTION(fun_lockflags)
   ltype = get_locktype(p);
 
   if (GoodObject(it) && (ltype !=NULL)
-      && Can_Read_Lock(executor, it, ltype)) {
+      &&Can_Read_Lock(executor, it, ltype)) {
     ll = getlockstruct(it, ltype);
     if (ll) {
       if (fullname)

@@ -474,7 +474,7 @@ db_read_labeled_int(PENNFILE *f, char **label, int *value)
  * \param value pointer to update to the number that was read.
  */
 void
-db_read_this_labeled_uint32(PENNFILE *f, const char *label, uint32_t *value)
+db_read_this_labeled_uint32(PENNFILE *f, const char *label, uint32_t * value)
 {
   char *readlabel;
   char *readvalue;
@@ -498,7 +498,7 @@ db_read_this_labeled_uint32(PENNFILE *f, const char *label, uint32_t *value)
  * \param value pointer to update to the number that was read.
  */
 void
-db_read_labeled_uint32(PENNFILE *f, char **label, uint32_t *value)
+db_read_labeled_uint32(PENNFILE *f, char **label, uint32_t * value)
 {
   char *readvalue;
   db_read_labeled_string(f, label, &readvalue);
@@ -1087,7 +1087,7 @@ get_new_locks(dbref i, PENNFILE *f, int c)
     if (b == TRUE_BOOLEXP)
       /* Malformed lock key in the db! Oops. */
       do_rawlog(LT_ERR, "WARNING: Invalid lock key '%s' for lock #%d/%s!",
-		key, i, type);
+                key, i, type);
     else
       add_lock_raw(creator, i, type, b, flags);
   }
@@ -1909,7 +1909,8 @@ create_minimal_db(void)
            LF_DEFAULT);
   add_lock(god, god, Use_Lock, parse_boolexp(god, "=me", Use_Lock), LF_DEFAULT);
   atr_new_add(god, "DESCRIBE", "You see Number One.", god, desc_flags, 1, 1);
-  atr_new_add(god, "MAILCURF", "0", god, AF_LOCKED | AF_NOPROG | AF_WIZARD, 1, 1);
+  atr_new_add(god, "MAILCURF", "0", god, AF_LOCKED | AF_NOPROG | AF_WIZARD, 1,
+              1);
   add_folder_name(god, 0, "inbox");
   PUSH(god, Contents(start_room));
   add_player(god);

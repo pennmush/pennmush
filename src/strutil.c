@@ -110,12 +110,12 @@ my_vsnprintf(char *str, size_t len, const char *fmt, va_list ap)
     static char buff[BUFFER_LEN * 3];
 
     ret = vsprintf(buff, fmt, ap);
-    
-    if ((size_t)ret > len)
+
+    if ((size_t) ret > len)
       ret = len;
 
     memcpy(str, buff, ret);
-    str[ret - 1] = '\0';      
+    str[ret - 1] = '\0';
   }
 #endif
 

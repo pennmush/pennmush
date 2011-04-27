@@ -59,20 +59,20 @@ static int add_to_generic(dbref player, int am, const char *name,
 static int add_to(dbref player, int am);
 static int add_to_sem(dbref player, int am, const char *name);
 static int queue_limit(dbref player);
-void free_qentry(MQUE * point);
+void free_qentry(MQUE *point);
 static int pay_queue(dbref player, const char *command);
 void wait_que(dbref player, int waittill, char *command, dbref cause, dbref sem,
-              const char *semattr, int until, MQUE * parent_queue);
+              const char *semattr, int until, MQUE *parent_queue);
 int que_next(void);
 
 static void show_queue(dbref player, dbref victim, int q_type,
-                       int q_quiet, int q_all, MQUE * q_ptr,
+                       int q_quiet, int q_all, MQUE *q_ptr,
                        int *tot, int *self, int *del);
-static void show_queue_single(dbref player, MQUE * q, int q_type);
+static void show_queue_single(dbref player, MQUE *q, int q_type);
 static void do_raw_restart(dbref victim);
 static int waitable_attr(dbref thing, const char *atr);
-static void shutdown_a_queue(MQUE ** head, MQUE ** tail);
-static int do_entry(MQUE * entry, int include_recurses);
+static void shutdown_a_queue(MQUE **head, MQUE **tail);
+static int do_entry(MQUE *entry, int include_recurses);
 
 extern sig_atomic_t cpu_time_limit_hit; /**< Have we used too much CPU? */
 
@@ -177,7 +177,7 @@ queue_limit(dbref player)
  * \param entry queue entry to free.
  */
 void
-free_qentry(MQUE * entry)
+free_qentry(MQUE *entry)
 {
   MQUE *tmp;
 
@@ -203,10 +203,10 @@ free_qentry(MQUE * entry)
   if (entry->save_attrname)
     mush_free(entry->save_attrname, "mque.attrname");
 
-  if (entry->pid) /* INPLACE queue entries have no pid */
+  if (entry->pid)               /* INPLACE queue entries have no pid */
     im_delete(queue_map, entry->pid);
 
-  if (entry->regvals) /* Nested pe_regs */
+  if (entry->regvals)           /* Nested pe_regs */
     pe_regs_free(entry->regvals);
 
   mush_free(entry, "mque");
@@ -271,10 +271,10 @@ next_pid(void)
   }
 }
 
-static MQUE *new_queue_entry(NEW_PE_INFO * pe_info);
+static MQUE *new_queue_entry(NEW_PE_INFO *pe_info);
 
 static MQUE *
-new_queue_entry(NEW_PE_INFO * pe_info)
+new_queue_entry(NEW_PE_INFO *pe_info)
 {
   MQUE *entry;
 
@@ -461,7 +461,7 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
  * \param parent_queue the parent queue entry, used for placing inplace queues, or NULL
  */
 void
-insert_que(MQUE * queue_entry, MQUE * parent_queue)
+insert_que(MQUE *queue_entry, MQUE *parent_queue)
 {
   int pid = 0;
 
@@ -495,8 +495,8 @@ insert_que(MQUE * queue_entry, MQUE * parent_queue)
     }
   }
 
-  switch ((queue_entry->
-           queue_type & (QUEUE_PLAYER | QUEUE_OBJECT | QUEUE_INPLACE))) {
+  switch ((queue_entry->queue_type &
+           (QUEUE_PLAYER | QUEUE_OBJECT | QUEUE_INPLACE))) {
   case QUEUE_PLAYER:
     if (qlast) {
       qlast->next = queue_entry;
@@ -547,9 +547,9 @@ insert_que(MQUE * queue_entry, MQUE * parent_queue)
  */
 void
 new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
-                     char *actionlist, MQUE * parent_queue,
-                     int flags, int queue_type, PE_REGS *pe_regs,
-                     char *fromattr)
+                         char *actionlist, MQUE *parent_queue,
+                         int flags, int queue_type, PE_REGS *pe_regs,
+                         char *fromattr)
 {
 
   NEW_PE_INFO *pe_info;
@@ -564,15 +564,16 @@ new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
        * to share for a fully queued entry, you're an idiot, because it will crash. I know;
        * I'm an idiot too, and it crashed when I did it as well. I'll fix it for you; aren't
        * you lucky? */
-      do_rawlog(LT_ERR, "Attempt to create a non-inplace queue entry using a shared pe_info by #%d from %s",
-                executor, (fromattr ? fromattr : "the socket, or an unknown attribute"));
-      flags = PE_INFO_CLONE; /* The closest we can come to what you asked for */
+      do_rawlog(LT_ERR,
+                "Attempt to create a non-inplace queue entry using a shared pe_info by #%d from %s",
+                executor,
+                (fromattr ? fromattr : "the socket, or an unknown attribute"));
+      flags = PE_INFO_CLONE;    /* The closest we can come to what you asked for */
     }
   }
 
   pe_info =
-    pe_info_from((parent_queue ? parent_queue->pe_info : NULL),
-                 flags, pe_regs);
+    pe_info_from((parent_queue ? parent_queue->pe_info : NULL), flags, pe_regs);
 
   queue_entry = new_queue_entry(pe_info);
   queue_entry->executor = executor;
@@ -581,13 +582,15 @@ new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
   queue_entry->action_list = mush_strdup(actionlist, "mque.action_list");
   queue_entry->queue_type = queue_type;
   if (pe_regs && (flags & PE_INFO_SHARE)) {
-    queue_entry->regvals = pe_regs_create(pe_regs->flags, "new_queue_actionlist");
+    queue_entry->regvals =
+      pe_regs_create(pe_regs->flags, "new_queue_actionlist");
     pe_regs_copystack(queue_entry->regvals, pe_regs, PE_REGS_QUEUE, 0);
   }
 
   if (fromattr) {
     if (queue_type & QUEUE_INPLACE)
-      queue_entry->save_attrname = mush_strdup(pe_info->attrname, "mque.attrname");
+      queue_entry->save_attrname =
+        mush_strdup(pe_info->attrname, "mque.attrname");
     strcpy(queue_entry->pe_info->attrname, fromattr);
   }
 
@@ -613,7 +616,7 @@ parse_que_attr(dbref executor, dbref enactor, char *actionlist,
 int
 queue_include_attribute(dbref thing, const char *atrname,
                         dbref executor, dbref enactor, dbref caller,
-                        char **args, int queue_type, MQUE * parent_queue)
+                        char **args, int queue_type, MQUE *parent_queue)
 {
   ATTR *a;
   char *start, *command;
@@ -662,10 +665,11 @@ queue_include_attribute(dbref thing, const char *atrname,
   }
 
   new_queue_actionlist_int(executor, enactor, caller, command, parent_queue,
-                       PE_INFO_SHARE, queue_type, pe_regs,
-                       tprintf("#%d/%s", thing, atrname));
+                           PE_INFO_SHARE, queue_type, pe_regs,
+                           tprintf("#%d/%s", thing, atrname));
 
-  if (pe_regs) pe_regs_free(pe_regs);
+  if (pe_regs)
+    pe_regs_free(pe_regs);
   free(start);
   return 1;
 }
@@ -752,7 +756,7 @@ queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor, PE_REGS *pe_regs)
  */
 void
 wait_que(dbref player, int waittill, char *command, dbref cause, dbref sem,
-         const char *semattr, int until, MQUE * parent_queue)
+         const char *semattr, int until, MQUE *parent_queue)
 {
   MQUE *tmp;
   NEW_PE_INFO *pe_info;
@@ -772,8 +776,7 @@ wait_que(dbref player, int waittill, char *command, dbref cause, dbref sem,
     return;
   }
   if (parent_queue)
-    pe_info =
-      pe_info_from(parent_queue->pe_info, PE_INFO_CLONE, NULL);
+    pe_info = pe_info_from(parent_queue->pe_info, PE_INFO_CLONE, NULL);
   else
     pe_info = NULL;
   tmp = new_queue_entry(pe_info);
@@ -947,7 +950,7 @@ run_user_input(dbref player, int port, char *input)
 /* Return 1 if an @break needs to propagate up to the calling q entry, 0
  * otherwise */
 static int
-do_entry(MQUE * entry, int include_recurses)
+do_entry(MQUE *entry, int include_recurses)
 {
   dbref executor;
   char tbuf[BUFFER_LEN];
@@ -1202,7 +1205,7 @@ void
 dequeue_semaphores(dbref thing, char const *aname, int count, int all,
                    int drain)
 {
-  
+
   MQUE **point;
   MQUE *entry;
 
@@ -1328,12 +1331,11 @@ COMMAND(cmd_notify_drain)
   if (SW_ISSET(sw, SWITCH_SETQ)) {
     pe_regs = pe_regs_create(PE_REGS_Q, "cmd_notify_drain");
     for (i = 1; args_right[i]; i += 2) {
-      if (args_right[i+1]) {
+      if (args_right[i + 1]) {
         pe_regs_set(pe_regs, PE_REGS_Q | PE_REGS_NOCOPY,
-                    args_right[i], args_right[i+1]);
+                    args_right[i], args_right[i + 1]);
       } else {
-        pe_regs_set(pe_regs, PE_REGS_Q | PE_REGS_NOCOPY,
-                    args_right[i], "");
+        pe_regs_set(pe_regs, PE_REGS_Q | PE_REGS_NOCOPY, args_right[i], "");
       }
     }
     if (execute_one_semaphore(thing, aname, pe_regs)) {
@@ -1387,7 +1389,7 @@ COMMAND(cmd_notify_drain)
  */
 void
 do_wait(dbref player, dbref cause, char *arg1, const char *cmd, bool until,
-        MQUE * parent_queue)
+        MQUE *parent_queue)
 {
   dbref thing;
   char *tcount = NULL, *aname = NULL;
@@ -1734,7 +1736,7 @@ FUNCTION(fun_lpids)
 
 static void
 show_queue(dbref player, dbref victim, int q_type, int q_quiet,
-           int q_all, MQUE * q_ptr, int *tot, int *self, int *del)
+           int q_all, MQUE *q_ptr, int *tot, int *self, int *del)
 {
   MQUE *tmp;
   for (tmp = q_ptr; tmp; tmp = tmp->next) {
@@ -1754,7 +1756,7 @@ show_queue(dbref player, dbref victim, int q_type, int q_quiet,
 
 /* Show a single queue entry */
 static void
-show_queue_single(dbref player, MQUE * q, int q_type)
+show_queue_single(dbref player, MQUE *q, int q_type)
 {
   switch (q_type) {
   case 1:                      /* wait queue */
@@ -2207,7 +2209,7 @@ shutdown_queues(void)
 
 
 static void
-shutdown_a_queue(MQUE ** head, MQUE ** tail)
+shutdown_a_queue(MQUE **head, MQUE **tail)
 {
   MQUE *entry;
   /* Drain out a queue */

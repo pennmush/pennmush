@@ -110,7 +110,7 @@ speech_loc(dbref thing)
  * \param parent_queue the queue entry to run the command in
  */
 void
-do_teach(dbref player, const char *tbuf1, int list, MQUE * parent_queue)
+do_teach(dbref player, const char *tbuf1, int list, MQUE *parent_queue)
 {
   dbref loc;
   int flags = QUEUE_RECURSE;
@@ -136,8 +136,7 @@ do_teach(dbref player, const char *tbuf1, int list, MQUE * parent_queue)
                 tprintf(T("%s types --> %s%s%s"), spname(player),
                         ANSI_HILITE, tbuf1, ANSI_END), NA_INTER_HEAR);
   new_queue_actionlist(player, parent_queue->enactor, player, (char *) tbuf1,
-                       parent_queue, PE_INFO_SHARE,
-                       flags, NULL);
+                       parent_queue, PE_INFO_SHARE, flags, NULL);
 }
 
 /** The say command.

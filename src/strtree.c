@@ -120,8 +120,7 @@ st_flush(StrTree *root)
 void
 st_stats_header(dbref player)
 {
-  notify(player,
-         "Tree       Entries  Leaves MinDep  Max  Avg   ~Memory");
+  notify(player, "Tree       Entries  Leaves MinDep  Max  Avg   ~Memory");
 }
 
 /** Statistics about the tree.
@@ -601,11 +600,13 @@ st_depth_helper(StrNode *node, int *maxdepth, int *mindepth,
 
   if (node->left) {
     /* Inner node */
-    st_depth_helper(node->left, maxdepth, mindepth, avgdepth, leaves, count + 1);
+    st_depth_helper(node->left, maxdepth, mindepth, avgdepth, leaves,
+                    count + 1);
   }
   if (node->right) {
     /* Inner node */
-    st_depth_helper(node->right, maxdepth, mindepth, avgdepth, leaves, count + 1);
+    st_depth_helper(node->right, maxdepth, mindepth, avgdepth, leaves,
+                    count + 1);
   }
   if (!node->left && !node->right) {    /* This is a leaf node */
     (*leaves)++;

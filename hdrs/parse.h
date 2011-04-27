@@ -160,11 +160,11 @@ typedef struct fun FUN;
 
 int process_expression(char *buff, char **bp, char const **str,
                        dbref executor, dbref caller, dbref enactor,
-                       int eflags, int tflags, NEW_PE_INFO * pe_info);
+                       int eflags, int tflags, NEW_PE_INFO *pe_info);
 
-void free_pe_info(NEW_PE_INFO * pe_info);
+void free_pe_info(NEW_PE_INFO *pe_info);
 NEW_PE_INFO *make_pe_info(char *name);
-NEW_PE_INFO *pe_info_from(NEW_PE_INFO * old_pe_info, int flags,
+NEW_PE_INFO *pe_info_from(NEW_PE_INFO *old_pe_info, int flags,
                           PE_REGS *pe_regs);
 
 /* buff is a pointer to a BUFFER_LEN string to contain the expression
@@ -250,14 +250,14 @@ NEW_PE_INFO *pe_info_from(NEW_PE_INFO * old_pe_info, int flags,
  */
 
 #define PT_NOTHING      0
-#define PT_BRACE        0x00000001 /* '}' */
-#define PT_BRACKET      0x00000002 /* ']' */
-#define PT_PAREN        0x00000004 /* ')' */
-#define PT_COMMA        0x00000008 /* ',' */
-#define PT_SEMI         0x00000010 /* ';' */
-#define PT_EQUALS       0x00000020 /* '=' */
-#define PT_SPACE        0x00000040 /* ' ' */
-#define PT_GT           0x00000080 /* '>' */
+#define PT_BRACE        0x00000001      /* '}' */
+#define PT_BRACKET      0x00000002      /* ']' */
+#define PT_PAREN        0x00000004      /* ')' */
+#define PT_COMMA        0x00000008      /* ',' */
+#define PT_SEMI         0x00000010      /* ';' */
+#define PT_EQUALS       0x00000020      /* '=' */
+#define PT_SPACE        0x00000040      /* ' ' */
+#define PT_GT           0x00000080      /* '>' */
 
 /* These represent '\0', '}', ']', ')', ',', ';', '=', and ' ', respectively.
  * If the character corresponding to a set flag is encountered, then

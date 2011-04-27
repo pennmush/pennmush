@@ -2817,8 +2817,10 @@ do_chan_what(dbref player, const char *partname)
                     privs_to_string(priv_table, ChanType(c)));
       if (ChanBufferQ(c))
         notify_format(player,
-                      T("Recall buffer: %db (%d full lines), with %d lines stored."),
-                      BufferQSize(ChanBufferQ(c)), bufferq_blocks(ChanBufferQ(c)),
+                      T
+                      ("Recall buffer: %db (%d full lines), with %d lines stored."),
+                      BufferQSize(ChanBufferQ(c)),
+                      bufferq_blocks(ChanBufferQ(c)),
                       bufferq_lines(ChanBufferQ(c)));
       found++;
     }

@@ -120,7 +120,7 @@ do_name(dbref player, const char *name, char *newname_)
     /* Should never occur */
     notify(player, T("I don't see that here."));
     return;
-    }
+  }
 
   /* Actually change it */
   myenv[0] = (char *) mush_malloc(BUFFER_LEN, "string");
@@ -1021,8 +1021,8 @@ do_trigger(dbref player, char *object, char **argv)
 
   pe_regs = pe_regs_create(PE_REGS_ARG, "do_trigger");
   for (i = 0; i < 10; i++) {
-    if (argv[i+1])
-      pe_regs_setenv_nocopy(pe_regs, i, argv[i+1]);
+    if (argv[i + 1])
+      pe_regs_setenv_nocopy(pe_regs, i, argv[i + 1]);
   }
 
   if (queue_attribute_base(thing, upcasestr(s), player, 0, pe_regs)) {
@@ -1048,7 +1048,7 @@ do_trigger(dbref player, char *object, char **argv)
  */
 void
 do_include(dbref player, dbref cause, char *object, char **argv,
-           int queue_type, MQUE * parent_queue)
+           int queue_type, MQUE *parent_queue)
 {
   dbref thing;
   char *s;

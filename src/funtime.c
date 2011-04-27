@@ -479,13 +479,13 @@ FUNCTION(fun_convtime)
 #ifndef WIN32
         setenv("TZ", tz, 1);
 #else
-	_putenv_s("TZ", tz, 1);
+        _putenv_s("TZ", tz, 1);
 #endif
       } else {
 #ifndef WIN32
         unsetenv("TZ");
 #else
-	_putenv_s("TZ", 0, 1);
+        _putenv_s("TZ", 0, 1);
 #endif
       }
       tzset();

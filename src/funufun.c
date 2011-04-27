@@ -140,7 +140,7 @@ FUNCTION(fun_objeval)
 void
 do_userfn(char *buff, char **bp, dbref obj, ATTR *attrib, int nargs,
           char **args, dbref executor, dbref caller
-          __attribute__ ((__unused__)), dbref enactor, NEW_PE_INFO * pe_info,
+          __attribute__ ((__unused__)), dbref enactor, NEW_PE_INFO *pe_info,
           int extra_flags)
 {
   int j;
@@ -204,7 +204,7 @@ FUNCTION(fun_ufun)
 
   pe_regs = pe_regs_create(PE_REGS_ARG, "fun_ufun");
   for (i = 1; i < nargs; i++) {
-    pe_regs_setenv_nocopy(pe_regs, i-1, args[i]);
+    pe_regs_setenv_nocopy(pe_regs, i - 1, args[i]);
   }
 
   call_ufun(&ufun, rbuff, executor, enactor, pe_info, pe_regs);
@@ -251,7 +251,7 @@ FUNCTION(fun_pfun)
 
   ufun.thing = executor;
   mush_strncpy(ufun.contents, atr_value(a), BUFFER_LEN);
-  mush_strncpy(ufun.attrname, AL_NAME(a), ATTRIBUTE_NAME_LIMIT+1);
+  mush_strncpy(ufun.attrname, AL_NAME(a), ATTRIBUTE_NAME_LIMIT + 1);
   ufun.pe_flags = pe_flags;
   ufun.errmess = (char *) "";
   ufun.ufun_flags = UFUN_NONE;

@@ -16,7 +16,7 @@ chronological order (most recent first)
 
 ==========================================================================
 
-Version 1.8.4 patchlevel 4                                 ??? ??,  201?
+Version 1.8.4 patchlevel 4                                 Apr ??,  2011
 
 Major changes:
  * Q-registers are no longer limited to single characters. setq(name,joe)

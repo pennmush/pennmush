@@ -11,11 +11,11 @@ help topics named for each release (e.g. 'help 1.7.2p30').
 A list of the patchlevels associated with each release can
 be read in 'help patchlevels'.
 
-Version 1.8.4 patchlevel 4                                 ??? ??,  201?
+Version 1.8.4 patchlevel 4                                 Apr ??,  2011
 
 Major changes:
  * Q-registers are no longer limited to single characters. setq(name,joe)
-   and r(name) or %q<name>! [GM]
+   and r(name) or %q<name>! Limited by max_named_qregs. [GM]
  * Ident lookup and associated config options have been removed. Between
    lack of people running ident servers, NAT, and issues in the code, it
    rarely got results. [SW].
@@ -52,6 +52,7 @@ Locks:
    of references to deleted objects makes objid locks extraneous. [SW]
  * Internal changes to validation of 'name^string' locks to use perfect
    hash tables to validate the name. [SW]
+ * Locks worth better with escaped special characters. Patch by Covenent.
  
 Commands:
  * @switch and @switch/regexp set $0-$9 for glob or pattern captures. [GM]
@@ -117,6 +118,10 @@ Fixes:
  * Possible crashbug in @name reported by Wiggles. [MG]
  * Object matching (a la locate()) with an exit as the looker didn't work
    correctly. Reported by Covenent. [MG]
+ * Panic database dumps weren't always loading correctly. Reported by [MG],
+   fixed by [SW].
+ * A missing mail or chat database caused failures in mush startup. Reported
+   by Nveid. [SW]
 
 & 1.8.4p3
 Version 1.8.4 patchlevel 3                                 Mar 18,  2011

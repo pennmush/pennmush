@@ -296,8 +296,8 @@ PENNCONF conftable[] = {
   ,
   {"max_logins", cf_int, &options.max_logins, 128, 0, "limits"}
   ,
-  {"max_guests", cf_int, &options.max_guests, 128, 0, "limits"}
-  ,
+  {"max_guests", cf_int, &options.max_guests, 128, 0, "limits"},
+  {"max_named_qregs", cf_int, &options.max_named_qregs, 8192, 0, "limits"},
   {"connect_fail_limit", cf_int, &options.connect_fail_limit, 50, 0, "limits"}
   ,
   {"idle_timeout", cf_time, &options.idle_timeout, 100000, 0, "limits"}
@@ -1298,6 +1298,7 @@ conf_default_set(void)
   strcpy(options.dump_complete, T("GAME: Save complete. "));
   options.max_logins = 128;
   options.max_guests = 0;
+  options.max_named_qregs = 50;
   options.whisper_loudness = 100;
   options.page_aliases = 0;
   options.paycheck = 50;

@@ -160,6 +160,8 @@ Continued in help @config cosmetic2
   max_logins=<number>: The maximum number of connected players.
   max_guests=<number>: The maximum number of connected guests. If 0, 
    no limit. If -1, limited by the number of guest players in the db.
+  max_named_qregs=<number>: The maximum number of qregs except for a-z
+   and 0-9. The limit is per-localize()-call.
   connect_fail_limit=<count>: The maximum number of times in a 10 minute
    period that an IP can attempt to log in and fail. Maximum is 50,
    0 means no limit.

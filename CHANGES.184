@@ -20,7 +20,7 @@ Version 1.8.4 patchlevel 4                                 Apr ??,  2011
 
 Major changes:
  * Q-registers are no longer limited to single characters. setq(name,joe)
-   and r(name) or %q<name>! [GM]
+   and r(name) or %q<name>! Limited by max_named_qregs. [GM]
  * Ident lookup and associated config options have been removed. Between
    lack of people running ident servers, NAT, and issues in the code, it
    rarely got results. [SW].

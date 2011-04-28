@@ -239,6 +239,7 @@ FUNCTION(fun_setq)
 {
   /* sets a variable into a local register */
   int n;
+  int invalid = 0;
 
   if ((nargs % 2) != 0) {
     safe_format(buff, bp,
@@ -250,14 +251,20 @@ FUNCTION(fun_setq)
   for (n = 0; n < nargs; n += 2) {
     if (ValidQregName(args[n])) {
       if (!PE_Setq(pe_info, args[n], args[n + 1])) {
-        safe_str(T(e_toomanyregs), buff, bp);
+        if (!invalid)
+          safe_str(T(e_toomanyregs), buff, bp);
+        invalid = 1;
       }
     } else {
-      safe_str(T(e_badregname), buff, bp);
+      if (!invalid)
+        safe_str(T(e_badregname), buff, bp);
+      invalid = 1;
     }
   }
-  if (!strcmp(called_as, "SETR") && nargs >= 2) {
-    safe_strl(args[1], arglens[1], buff, bp);
+  if (!invalid) {
+    if (!strcmp(called_as, "SETR") && nargs >= 2) {
+      safe_strl(args[1], arglens[1], buff, bp);
+    }
   }
 }
 

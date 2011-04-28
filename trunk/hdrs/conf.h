@@ -142,6 +142,7 @@ struct options_table {
   time_t dump_counter;  /**< Time since last dump */
   int max_logins;       /**< Maximum total logins allowed at once */
   int max_guests;       /**< Maximum guests logins allowed at once */
+  int max_named_qregs;  /**< Maximum # of non-a-z0-9 qregs per pe_regs. */
   int whisper_loudness; /**< % chance that a noisy whisper is overheard */
   int page_aliases;     /**< Does page include aliases? */
   int paycheck;         /**< Number of pennies awarded each day of connection */
@@ -342,6 +343,7 @@ int can_view_config_option(dbref player, PENNCONF *opt);
 
 #define MAX_LOGINS      (options.max_logins)
 #define MAX_GUESTS      (options.max_guests)
+#define MAX_NAMED_QREGS (options.max_named_qregs)
 
 /* dbrefs are in the conf file */
 

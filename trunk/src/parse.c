@@ -749,6 +749,8 @@ pe_regs_clear(PE_REGS *pe_regs)
     pe_reg_val_free(val);
     val = next;
   }
+  pe_regs->count = 0;
+  pe_regs->qcount = 0;
   pe_regs->vals = NULL;
 }
 
@@ -873,7 +875,11 @@ pe_regs_set_if(PE_REGS *pe_regs, int type,
     pe_regs->vals = pval;
     pe_regs->count++;
     if (type & PE_REGS_Q) {
-      pe_regs->qcount++;
+      if (!((key[1] == '\0') &&
+          ((key[0] >= 'A' && key[0] <= 'Z') ||
+           (key[0] >= '0' && key[0] <= '9')))) {
+        pe_regs->qcount++;
+      }
     }
   }
   if (type & PE_REGS_NOCOPY) {
@@ -920,7 +926,11 @@ pe_regs_set_int_if(PE_REGS *pe_regs, int type,
     pe_regs->vals = pval;
     pe_regs->count++;
     if (type & PE_REGS_Q) {
-      pe_regs->qcount++;
+      if (!((key[1] == '\0') &&
+          ((key[0] >= 'A' && key[0] <= 'Z') ||
+           (key[0] >= '0' && key[0] <= '9')))) {
+        pe_regs->qcount++;
+      }
     }
   }
   pval->type = type | PE_REGS_INT;
@@ -1153,11 +1163,14 @@ pi_regs_setq(NEW_PE_INFO *pe_info, const char *key, const char *val)
   PE_REGS *pe_tmp = NULL;
   int count = 0;
   while (pe_regs) {
-    count += pe_regs->qcount;
+    if ((pe_regs->flags & (PE_REGS_Q | PE_REGS_LET)) == PE_REGS_Q) {
+      count = pe_regs->qcount;
+      break;
+    }
     pe_regs = pe_regs->prev;
   }
   /* Single-character keys ignore attrcount. */
-  if ((count >= MAX_ATTRCOUNT) && key[1]) {
+  if ((count >= MAX_NAMED_QREGS) && key[1]) {
     return 0;
   }
   /* Find the p_regs to setq() in. */

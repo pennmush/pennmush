@@ -1576,12 +1576,6 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
         notify_except(Location(thing), NOTHING, tbuf1, NA_INTER_PRESENCE);
       notify_except(thing, NOTHING, tbuf1, 0);
     }
-    if (IsRoom(thing) && is_flag(f, "MONITOR") && !hear && !Listener(thing)) {
-      tp = tbuf1;
-      safe_format(tbuf1, &tp, T("%s is no longer listening."), Name(thing));
-      *tp = '\0';
-      notify_except(thing, NOTHING, tbuf1, NA_INTER_PRESENCE);
-    }
     if (is_flag(f, "AUDIBLE")) {
       switch (Typeof(thing)) {
       case TYPE_EXIT:
@@ -1634,12 +1628,6 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
       *tp = '\0';
       if (GoodObject(Location(thing)))
         notify_except(Location(thing), NOTHING, tbuf1, NA_INTER_PRESENCE);
-      notify_except(thing, NOTHING, tbuf1, 0);
-    }
-    if (IsRoom(thing) && is_flag(f, "MONITOR") && !hear && !listener) {
-      tp = tbuf1;
-      safe_format(tbuf1, &tp, T("%s is now listening."), Name(thing));
-      *tp = '\0';
       notify_except(thing, NOTHING, tbuf1, 0);
     }
     /* notify for audible exits */

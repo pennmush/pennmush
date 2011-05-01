@@ -1354,21 +1354,47 @@ See also: @poll, WHO, doing()
   If the string "##" appears anywhere in <action list>, it will be replaced
   with the current element of <list>. The string "#@" is replaced with the
   position of the current element in the list. Note that these replacements
-  occur before evaluation. It is recommended that you use the itext() and
-  inum() functions instead, which serve the same purpose but are replaced
-  during evaluation. You can also use itext/inum to refer to nested @dolists.
+  occur before evaluation, so are unsafe on user input, and cannot be used
+  in nested in nested @dolists. It is HIGHLY recommended that you use itext()
+  and inum() instead, which serve the same purpose but are evaluated normally
+  and can be used with nested @dolists. The %iL substitution safely refers to
+  the outermost @dolist, much the same as ##.
  
   If the /notify switch is given, the command "@notify me" is queued after 
   all copies of <action list> have been queued. This is useful for object
   synchronization with semaphores.
-  
-  Example:
+
+  See 'help @dolist2' for examples.  
+See also: iter(), itext(), map(), @notify, SEMAPHORES, ACTION LISTS
+& @dolist2
+
+  Examples:
     > @dolist a b c=say %i0 is number [inum(0)]
     You say, "a is number 1"
     You say, "b is number 2"
     You say, "c is number 3"
-    
-See also: iter(), itext(), map(), @notify, SEMAPHORES, ACTION LISTS
+
+   > &test me=$test: say Starting ; @wait me={say Done} ;
+                     @dolist/notify a b c=say %i0 is [inum(0)]
+   > test
+   You say, "Starting"
+   You say, "a is 1"
+   You say, "b is 2"
+   You say, "c is 3"
+   Notified.
+   You say, "Done"
+   
+   > @dolist a b c=@dolist 1 2 3=say %iL/%i0
+   You say, "a/1"
+   You say, "a/2"
+   You say, "a/3"
+   You say, "b/1"
+   You say, "b/2"
+   You say, "b/3"
+   You say, "c/1"
+   You say, "c/2"
+   You say, "c/3"
+
 & @drain
   @drain[/any][/all] <object>[/<attribute>][=<number>]
   

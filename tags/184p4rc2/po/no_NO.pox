@@ -1,0 +1,6626 @@
+# SOME DESCRIPTIVE TITLE.\nCopyright (C) YEAR Free Software Foundation, Inc.\nFIRST AUTHOR <EMAIL@ADDRESS>, YEAR.\n
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2004-11-04 13:52-0600\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=iso-8859-1\n"
+"Content-Transfer-Encoding: 8bit"
+
+#: markup.c:1155
+#, c-format
+msgid "    %d (%s): (start: %d end: %d) start_code: %s stop_code: %s"
+msgstr "    %d (%s): (start: %d slutt: %d) start_code: %s stop_code: %s"
+
+#: markup.c:1150
+#, c-format
+msgid "  Nmarkups: %d"
+msgstr "  Nmarkups: %d"
+
+#: markup.c:1149
+#, c-format
+msgid "  Text: %s"
+msgstr "  Tekst: %s"
+
+#: extmail.c:572
+msgid " (Conn)"
+msgstr " (Conn)"
+
+#: flags.c:1617 flags.c:1678
+msgid " (already)"
+msgstr " (allerede)"
+
+#: flags.c:2391
+msgid " (disabled)"
+msgstr " (avslått)"
+
+#: speech.c:856
+msgid " (to "
+msgstr " (til "
+
+#: conf.c:1786
+msgid " @config/save is disabled."
+msgstr " @config/save er slått av."
+
+#: conf.c:1784
+msgid " @config/save is enabled."
+msgstr " @config/save er skrudd av."
+
+#: parse.c:1332
+msgid " AND "
+msgstr " OG "
+
+#: parse.c:1335
+msgid " ARGUMENTS BUT GOT "
+msgstr " ARGUMENTER MEN FIKK "
+
+#: conf.c:1780
+msgid " Altivec instructions are being used."
+msgstr " Altivec instruksjoner blir brukt."
+
+#: conf.c:1044
+msgid " Attributes are 8-bit word compressed in memory."
+msgstr " Attributter er 8-bit komprimert i minnet."
+
+#: conf.c:1035
+msgid " Attributes are Huffman compressed in memory."
+msgstr " Attributter er Huffman-komprimert i minnet."
+
+#: conf.c:1032
+msgid " Attributes are not compressed in memory."
+msgstr " Attributter er ikke komprimert i minnet."
+
+#: conf.c:1041
+msgid " Attributes are word compressed in memory."
+msgstr " Attributter er ordkomprimert i minnet."
+
+#: access.c:667
+#, c-format
+msgid " COMMENT: %s"
+msgstr " KOMMENTAR: %s"
+
+#: conf.c:1498
+msgid " CPU usage limiting is NOT supported."
+msgstr " CPU bruksbegrensning er IKKE støttet."
+
+#: conf.c:1496
+msgid " CPU usage limiting is supported."
+msgstr " CPU-bruks begrensning er støttet."
+
+#: conf.c:1713
+msgid " Changed help files will be automatically reindexed."
+msgstr " Forandrede hjelpefiler vil automatisk bli reindeksert."
+
+#: src/conf.c:980
+msgid " DNS and ident lookups are handled by a slave process."
+msgstr " DNS og ident oppslag er håndtert av en slaveprosess."
+
+#: src/conf.c:982
+msgid " DNS and ident lookups are handled by the MUSH process."
+msgstr " DNS og ident oppslag blir håndtert av MUSH-prosessen."
+
+#: src/conf.c:1111
+msgid " Extended convtime() is supported."
+msgstr " Utvidet convtime() er støttet."
+
+#: flags.c:917
+msgid " Flags: "
+msgstr " Flagg: "
+
+#: parse.c:1324
+msgid " OR "
+msgstr " ELLER "
+
+#: conf.c:1772
+msgid " SSE2 instructions are being used."
+msgstr " SSE2 instruksjoner blir brukt."
+
+#: conf.c:1776
+msgid " SSE3 instructions are being used."
+msgstr " SSE3 instruksjoner blir brukt."
+
+#: conf.c:1607
+msgid " The MUSH was compiled with MySQL support."
+msgstr " MUSHen ble kompilert med MySQL støtte."
+
+#: conf.c:1687
+msgid " The MUSH was compiled with Postgresql support."
+msgstr " MUSHen ble kompilert med Postgresql støtte."
+
+#: conf.c:1594
+msgid " The MUSH was compiled with SSL support."
+msgstr " MUSHen ble kompilert med SSL støtte."
+
+#: conf.c:1690
+msgid " The MUSH was compiled with Sqlite3 support."
+msgstr " Denne MUSH ble kompilert med Sqlite3 støtte."
+
+#: wiz.c:1605
+#, c-format
+msgid " [location: %s]"
+msgstr " [lokasjon: %s]"
+
+#: src/conf.c:1113
+msgid " convtime() is stricter."
+msgstr " convtime() er streng."
+
+#: src/look.c:688 src/look.c:770
+msgid " is owned by "
+msgstr " er eid av "
+
+#: speech.c:1021
+msgid " pages"
+msgstr " kaller"
+
+#: flags.c:764
+msgid " reset."
+msgstr " resatt."
+
+#: flags.c:831
+msgid " set."
+msgstr " satt."
+
+#: speech.c:359 wiz.c:1260
+msgid " to "
+msgstr " til "
+
+#: extmail.c:233 extmail.c:235
+msgid "!Purged!"
+msgstr "!Tømt!"
+
+#: look.c:350
+#, c-format
+msgid "#%d/%s [#%d%s] is veiled"
+msgstr "#%d/%s [#%d%s] er skjult"
+
+#: parse.c:1441
+msgid "#-1 @FUNCTION ("
+msgstr "#-1 @FUNCTION ("
+
+#: funcrypt.c:53 funcrypt.c:61 funcrypt.c:100 funcrypt.c:107
+msgid "#-1 ALLOCATION ERROR"
+msgstr "#-1 ALLOKASJONSFEIL"
+
+#: extchat.c:1503
+msgid "#-1 AMBIGUOUS CHANNEL NAME"
+msgstr "#-1 IKKE UNIKT KANALNAVN"
+
+#: src/fundb.c:784 src/fundb.c:1001
+msgid "#-1 ARG1 NOT FOUND"
+msgstr "#-1 ARG1 IKKE FUNNET"
+
+#: src/fundb.c:786 src/fundb.c:1003
+msgid "#-1 ARG2 NOT FOUND"
+msgstr "#-1 ARG2 IKKE FUNNET"
+
+#: src/funlist.c:1886 src/funlist.c:1905
+msgid "#-1 ARGUMENT MUST BE INTEGER"
+msgstr "#-1 ARGUMENT MÅ VÆRE EN INTEGER"
+
+#: src/funstr.c:421
+msgid "#-1 ARGUMENT MUST BE NON-NEGATIVE INTEGER"
+msgstr "#-1 ARGUMENTET MÅ VÆRE ET IKKE NEGATIVT HELTALL"
+
+#: parse.c:89
+msgid "#-1 ARGUMENT MUST BE NUMBER"
+msgstr "#-1 ARGUMENTET MÅ VÆRE ET TALL"
+
+#: src/fundb.c:1691 src/fundb.c:1695
+msgid "#-1 ARGUMENT MUST BE OBJ/ATTR"
+msgstr "#-1 ARGUMENTET MÅ VÆRE OBJ/ATTR"
+
+#: parse.c:87
+msgid "#-1 ARGUMENT MUST BE POSITIVE INTEGER"
+msgstr "#-1 ARGUMENTET MÅ VÆRE ET POSITIVT HELTALL"
+
+#: src/funmath.c:218 src/funmath.c:250
+msgid "#-1 ARGUMENT MUST END IN AN INTEGER"
+msgstr "#-1 ARGUMENTET MÅ SLUTTE MED ET HELTALL"
+
+#: src/funlist.c:1892 src/funlist.c:1911
+msgid "#-1 ARGUMENT OUT OF RANGE"
+msgstr "#-1 ARGUMENTET UTENFOR REKKEVIDDE"
+
+#: parse.c:86
+msgid "#-1 ARGUMENTS MUST BE INTEGERS"
+msgstr "#-1 ARGUMENTER MÅ VÆRE HELTALL"
+
+#: parse.c:90
+msgid "#-1 ARGUMENTS MUST BE NUMBERS"
+msgstr "#-1 ARGUMENTER MÅ VÆRE TALL"
+
+#: parse.c:88
+msgid "#-1 ARGUMENTS MUST BE POSITIVE INTEGERS"
+msgstr "#-1 ARGUMENTER MÅ VÆRE POSITIVE HELTALL"
+
+#: src/fundb.c:61
+msgid "#-1 ATTRIBUTE LENGTH TOO LONG"
+msgstr "#-1 ATTRIBUTELENGDE FOR LANG"
+
+#: fundb.c:204
+#, c-format
+msgid "#-1 BAD ARGUMENT FORMAT TO %s"
+msgstr "#-1 FEIL ARGUMENTFORMAT FOR %s"
+
+#: fundb.c:1998
+msgid "#-1 BAD ARGUMENT FORMAT TO ATTRIB_SET"
+msgstr "#-1 FEIL ARGUMENTFORMAT FOR ATTRIB_SET"
+
+#: src/fundb.c:183
+msgid "#-1 BAD ARGUMENT FORMAT TO GET"
+msgstr "#-1 FEIL ARGUMENTFORMAT FOR GET"
+
+#: src/fundb.c:291
+msgid "#-1 BAD ARGUMENT FORMAT TO GET_EVAL"
+msgstr "#-1 FEIL ARGUMENTFORMAT FOR GET_EVAL"
+
+#: fundb.c:981
+msgid "#-1 BAD ATTR NAME"
+msgstr "#-1 UGYLDIG ATTR NAVN"
+
+#: src/funmath.c:987
+msgid "#-1 BASE OUT OF RANGE"
+msgstr "#-1 BASE UTENFOR REKKEVIDDE"
+
+#: parse.c:83
+msgid "#-1 CALL LIMIT EXCEEDED"
+msgstr "#-1 CALL BEGRENSNING OVERSKREDET"
+
+#: src/funlist.c:1456 src/funlist.c:1680
+msgid "#-1 CAN ONLY TEST ONE ELEMENT"
+msgstr "#-1 KAN BARE TESTE ETT ELEMENT"
+
+#: funstr.c:1893
+msgid "#-1 CANNOT HAVE COLUMNS OF NEGATIVE SIZE"
+msgstr "#-1 KAN IKKE HA KOLONNER MED NEGATIV STØRRELSE"
+
+#: funstr.c:1897 funstr.c:1903
+msgid "#-1 CANNOT HAVE COLUMNS THAT LARGE"
+msgstr "#-1 KAN IKKE HA KOLONNER SOM ER SÅ STORE"
+
+#: extchat.c:2307
+msgid "#-1 CHANNEL DOES NOT HAVE A BUFFER"
+msgstr "#-1 KANALEN HAR IKKE ET BUFFER"
+
+#: funmath.c:2490 funmath.c:2526
+msgid "#-1 COMPARISON REQUIRES 2 OR MORE NUMBERS"
+msgstr "#-1 SAMMENLIGNING KREVER 2 ELLER FLERE TALL"
+
+#: funcrypt.c:69 funcrypt.c:134 funcrypt.c:141 funcrypt.c:154
+msgid "#-1 CONVERSION ERROR"
+msgstr "#-1 KONVERTERINGSFEIL"
+
+#: funtime.c:89
+msgid "#-1 COULDN'T FORMAT TIME"
+msgstr "#-1 KUNNE IKKE FORMATERE TID"
+
+#: src/funmath.c:754 src/funmath.c:1584 src/funmath.c:1628 src/funmath.c:1673\nsrc/funmath.c:1707 src/funmath.c:1751
+msgid "#-1 DIVISION BY ZERO"
+msgstr "#-1 DELING MED NULL"
+
+#: funstr.c:962 funstr.c:981
+msgid "#-1 FILL ARGUMENT MAY NOT BE ZERO-LENGTH"
+msgstr "#-1 FYLLARGUMENTET KAN IKKE VÆRE NULL-LENGDE"
+
+#: funstr.c:1990
+msgid "#-1 FILLER MUST BE ONE CHARACTER"
+msgstr "#-1 FYLL MÅ VÆRE EN KARAKTER"
+
+#: src/extmail.c:1496
+msgid "#-1 FOLDER MUST BE INTEGER"
+msgstr "#-1 FOLDER MÅ VÆRE HELTALL"
+
+#: src/funmath.c:925
+msgid "#-1 FRACTIONAL POWER OF NEGATIVE"
+msgstr "#-1 FRAKSJONAL OPPHØYNING AV NEGATIV"
+
+#: funmath.c:1631
+msgid "#-1 FROM BASE OUT OF RANGE"
+msgstr "#-1 FRA BASE UT AV REKKEVIDE"
+
+#: src/parse.c:671 src/parse.c:759
+msgid "#-1 FUNCTION ("
+msgstr "#-1 FUNKSJON ("
+
+#: parse.c:1319
+#, c-format
+msgid "#-1 FUNCTION (%s) EXPECTS "
+msgstr "#-1 FUNKSJON (%s) FORVENTER "
+
+#: funmisc.c:163
+#, c-format
+msgid "#-1 FUNCTION (%s) EXPECTS AN EVEN NUMBER OF ARGUMENTS"
+msgstr "#-1 FUNKSJON (%s) FORVENTER ET PARTALLS ANTALL ARGUMENTER"
+
+#: funmath.c:2652
+msgid "#-1 FUNCTION (DIST2D) EXPECTS 4 ARGUMENTS"
+msgstr "#-1 FUNKSJON (DIST2D)  FORVENTER 4 ARGUMENTER"
+
+#: funmath.c:2679
+msgid "#-1 FUNCTION (DIST3D) EXPECTS 6 ARGUMENTS"
+msgstr "#-1 FUNKSJON (DIST3D) forventer 6 argumenter"
+
+#: funmisc.c:228
+msgid "#-1 FUNCTION (LETQ) EXPECTS AN ODD NUMBER OF ARGUMENTS"
+msgstr "#-1 FUNKSJON (LETQ) FORVENTER ET ODDETALLS ANTALL ARGUMENTER"
+
+#: funstr.c:1313 funstr.c:1319
+msgid "#-1 FUNCTION (ORD) EXPECTS ONE CHARACTER"
+msgstr "#-1 FUNKSJON (ORD) FORVENTER EN KARAKTER"
+
+#: src/funmisc.c:406
+msgid "#-1 FUNCTION (SOUNDEX) REQUIRES A SINGLE WORD ARGUMENT"
+msgstr "#-1 FUNKSJON (SOUNDEX) KREVER ET ENKELT ORG SOM ARGUMENT"
+
+#: src/funmisc.c:424
+msgid "#-1 FUNCTION (SOUNDLIKE) REQUIRES TWO ONE-WORD ARGUMENTS"
+msgstr "#-1 FUNKSJON (SOUNDLIKE) KREVER TO ETT-ORDS ARGUMENTER"
+
+#: src/fundb.c:959 src/fundb.c:1120 src/fundb.c:1145 src/fundb.c:1254\nsrc/fundb.c:1549 src/fundb.c:1555 src/fundb.c:1561 src/fundb.c:1567\nsrc/fundb.c:1573 src/fundb.c:1579 src/fundb.c:1585 src/fundb.c:1591\nsrc/fundb.c:1864 src/funstr.c:901
+msgid "#-1 FUNCTION DISABLED"
+msgstr "#-1 FUNKSJONEN IKKE TILGJENGELIG"
+
+#: parse.c:91
+msgid "#-1 FUNCTION INVOCATION LIMIT EXCEEDED"
+msgstr "#-1 FUNKSJONEN OVERSKRIDER INVOKASJONSBEGRENSNING"
+
+#: src/parse.c:790
+msgid "#-1 FUNCTION RECURSION LIMIT EXCEEDED"
+msgstr "#-1 FUNKSJONENS REKURSJONSGRENSE NÅDD"
+
+#: bsd.c:4955 bsd.c:4966
+msgid "#-1 FUNCTION REQUIRES ONE ARGUMENT"
+msgstr "#-1 FUNKSJON KREVER ET ARGUMENT"
+
+#: funmath.c:1033 funmath.c:1066
+msgid "#-1 IMAGINARY NUMBER"
+msgstr "#-1 IMAGINÆRT TALL"
+
+#: src/funmath.c:949 src/funmath.c:972
+msgid "#-1 INFINITY"
+msgstr "#-1 UENDELIG"
+
+#: funstr.c:1953
+msgid "#-1 INVALID ALIGN STRING"
+msgstr "#-1 UGYLDIG ALIGN-STRENG"
+
+#: funmath.c:73
+msgid "#-1 INVALID ANGLE TYPE"
+msgstr "#-1 UGYLDIG VINKELTYPE"
+
+#: function.c:836
+msgid "#-1 INVALID ARGUMENT"
+msgstr "#-1 UGYLDIG ARGUMENT"
+
+#: fundb.c:1410
+msgid "#-1 INVALID BOOLEXP"
+msgstr "#-1 UGYLDIG BOOLEXP"
+
+#: funstr.c:418
+msgid "#-1 INVALID DBREF"
+msgstr "#-1 UGYLDIG DBREF"
+
+#: help.c:454
+msgid "#-1 INVALID ENTRY"
+msgstr "#-1 UGYLDIG OPPFØRING"
+
+#: funtime.c:55
+#, c-format
+msgid "#-1 INVALID ESCAPE CODE '$%c'"
+msgstr "#-1 UGYLDIG ESCAPEKODE '$%c'"
+
+#: fundb.c:1143 fundb.c:1155 fundb.c:1173 fundb.c:1191
+msgid "#-1 INVALID FLAG"
+msgstr "#-1 UGYLDIG FLAGG"
+
+#: src/fundb.c:1618 src/funlist.c:2324 src/funlist.c:2367
+msgid "#-1 INVALID GREP PATTERN"
+msgstr "#-1 UGYLDIG GREP-MØNSTER"
+
+#: src/fundb.c:657
+msgid "#-1 INVALID LOCATION"
+msgstr "#-1 UGYLDIG LOKASJON"
+
+#: src/extmail.c:1549
+msgid "#-1 INVALID MESSAGE OR PLAYER"
+msgstr "#-1 UGYLDIG MELDING ELLER SPILLER"
+
+#: funstr.c:1985
+msgid "#-1 INVALID NUMBER OF ARGUMENTS TO ALIGN"
+msgstr "#-1 UGYLDIG ANTALL ARGUMENTER FOR ALIGN"
+
+#: src/fundb.c:1890 src/fundb.c:1912 src/funufun.c:113 src/funufun.c:144
+msgid "#-1 INVALID OBJECT"
+msgstr "#-1 UGYLDIG OBJEKT"
+
+#: cque.c:1091
+msgid "#-1 INVALID PID"
+msgstr "#-1 UGYLDIG PID"
+
+#: fundb.c:1171 fundb.c:1189
+msgid "#-1 INVALID POWER"
+msgstr "#-1 UGYLDIG POWER"
+
+#: src/fundb.c:663 src/fundb.c:690
+msgid "#-1 INVALID SECOND ARGUMENT"
+msgstr "#-1 UGYLDIG ANDREARGUMENT"
+
+#: fundb.c:2124
+msgid "#-1 INVALID SOURCE ROOM"
+msgstr "#-1 UGYLDIG KILDE ROM"
+
+#: funstr.c:369 funstr.c:425
+msgid "#-1 INVALID THIRD ARGUMENT"
+msgstr "#-1 UGYLDIG TREDJE ARGUMENT"
+
+#: funtime.c:95
+msgid "#-1 INVALID TIME ZONE"
+msgstr "#-1 UGYLDIG TIDSSONE"
+
+#: funtime.c:222 funtime.c:249
+msgid "#-1 INVALID TIMESTRING"
+msgstr "#-1 UGYLDIG TIDSSTRENG"
+
+#: src/funufun.c:293
+msgid "#-1 INVALID ZONE"
+msgstr "#-1 UGYLDIG SONE"
+
+#: src/funlist.c:194 src/funlist.c:2088
+msgid "#-1 LISTS MUST BE OF EQUAL SIZE"
+msgstr "#-1 LISTER MÅ VÆRE AV LIK STØRRELSE"
+
+#: funmath.c:1643
+msgid "#-1 MALFORMED NUMBER"
+msgstr "#-1 FEILFORMET NUMMER"
+
+#: src/funlist.c:1778
+msgid "#-1 NEED A WORD"
+msgstr "#-1 TRENGER ET ORD"
+
+#: extchat.c:1495
+msgid "#-1 NO CHANNEL GIVEN"
+msgstr "#-1 INGEN KANAL ANGITT"
+
+#: game.c:1352
+msgid "#-1 NO COMMAND"
+msgstr "#-1 INGEN KOMMANDO"
+
+#: help.c:512
+msgid "#-1 NO ENTRY"
+msgstr "#-1 INGEN OPPFØRING"
+
+#: help.c:464
+msgid "#-1 NO INDEX FOR FILE"
+msgstr "#-1 INGEN INDEKS FOR FIL"
+
+#: src/fundb.c:118 src/fundb.c:137 src/fundb.c:460 src/funstr.c:118\nsrc/funstr.c:131 src/funstr.c:144 src/funstr.c:157
+msgid "#-1 NO MATCH"
+msgstr "#-1 INGEN TREFF"
+
+#: src/fundb.c:767
+msgid "#-1 NO OBJECTS CONTROLLED"
+msgstr "#-1 INGEN OBJEKTER KONTROLLERT"
+
+#: src/fundb.c:63 src/fundb.c:69 src/fundb.c:72 src/fundb.c:273\nsrc/fundb.c:315 src/funlist.c:366 src/funlist.c:450 src/funufun.c:125\nsrc/funufun.c:158 src/funufun.c:307
+msgid "#-1 NO PERMISSION TO GET ATTRIBUTE"
+msgstr "#-1 INGEN TILLATELSE TIL Å HENTE ATTRIBUTT"
+
+#: src/bsd.c:4827
+msgid "#-1 NO PERMISSIONS FOR CHANNEL"
+msgstr "#-1 INGEN TILLATELSER FOR KANALEN"
+
+#: extchat.c:3100
+msgid "#-1 NO RECALL BUFFER"
+msgstr "#-1 MANGLER LOGG-BUFFER"
+
+#: src/fundb.c:1614 src/fundb.c:1762 src/funlist.c:2320 src/funlist.c:2363
+msgid "#-1 NO SUCH ATTRIBUTE"
+msgstr "#-1 INGEN SLIK ATTRIBUTT"
+
+#: src/fundb.c:1828
+msgid "#-1 NO SUCH CHANNEL"
+msgstr "#-1 KANALEN FINNES IKKE"
+
+#: src/conf.c:926
+msgid "#-1 NO SUCH CONFIG OPTION"
+msgstr "#-1 INTET SLIKT KONFIGURASJONSALTERNATIV"
+
+#: help.c:429
+msgid "#-1 NO SUCH FILE"
+msgstr "#-1 INGEN SLIK FIL"
+
+#: src/fundb.c:1851
+msgid "#-1 NO SUCH LOCK TYPE"
+msgstr "#-1 INGEN SLIK LÅSTYPE"
+
+#: fundb.c:1282 fundb.c:1289
+msgid "#-1 NO SUCH LOCK"
+msgstr "#-1 INGEN SLIK LÅS"
+
+#: src/fundb.c:155 src/fundb.c:189 src/fundb.c:205 src/fundb.c:255\nsrc/fundb.c:297 src/fundb.c:1609 src/funlist.c:2315 src/funlist.c:2358
+msgid "#-1 NO SUCH OBJECT VISIBLE"
+msgstr "#-1 INTET SLIKT OBJEKT SYNELIG"
+
+#: src/extmail.c:1468 src/extmail.c:1489
+msgid "#-1 NO SUCH PLAYER"
+msgstr "#-1 SPILLEREN FINNES IKKE"
+
+#: src/fundb.c:907
+msgid "#-1 NO SUCH TYPE"
+msgstr "#-1 INGEN SLIK TYPE"
+
+#: extchat.c:2279
+msgid "#-1 NO TEXT GIVEN"
+msgstr "#-1 INGEN TEKST GITT"
+
+#: src/bsd.c:4485 src/bsd.c:4498
+msgid "#-1 NOT CONNECTED"
+msgstr "#-1 IKKE TILKOBLET"
+
+#: funstr.c:1977
+msgid "#-1 NOT ENOUGH COLUMNS FOR ALIGN"
+msgstr "#-1 IKKE NOK KOLONNER FOR ALIGN"
+
+#: extchat.c:1525
+msgid "#-1 NOT ON CHANNEL"
+msgstr "#-1 IKKE PÅ KANALEN"
+
+#: src/funlist.c:1786
+msgid "#-1 NUMBER OF WORDS MUST BE EQUAL"
+msgstr "#-1 ANTALL ORD MÅ VÆRE LIKE"
+
+#: src/funlist.c:1179 src/funmisc.c:222
+msgid "#-1 NUMBER OUT OF RANGE"
+msgstr "#-1 NUMMERET ER UTENFOR REKKEVIDDE"
+
+#: src/funmath.c:850 src/funmath.c:876 src/funmath.c:930 src/funmath.c:954\nsrc/funmath.c:977 src/funmath.c:1238 src/funstr.c:212 src/funstr.c:234\nsrc/funstr.c:254 src/funstr.c:281 src/funtime.c:152
+msgid "#-1 OUT OF RANGE"
+msgstr "#-1 UTENFOR RANGE"
+
+#: src/funmath.c:336 src/funmath.c:366
+msgid "#-1 OVERFLOW ERROR"
+msgstr "#-1 OVERFLYTFEIL"
+
+#: src/extmail.c:1471 src/extmail.c:1492 src/extmail.c:1531 src/fundb.c:122\nsrc/fundb.c:141 src/fundb.c:169 src/fundb.c:261 src/fundb.c:303\nsrc/fundb.c:341 src/fundb.c:789 src/fundb.c:953 src/fundb.c:1114\nsrc/fundb.c:1139 src/fundb.c:1248 src/fundb.c:1442 src/fundb.c:1456\nsrc/fundb.c:1466 src/fundb.c:1477 src/fundb.c:1487 src/fundb.c:1502\nsrc/fundb.c:1512 src/fundb.c:1522 src/fundb.c:1537 src/fundb.c:1651\nsrc/fundb.c:1737 src/fundb.c:1741 src/fundb.c:1748 src/fundb.c:1752\nsrc/fundb.c:1858 src/fundb.c:1872 src/funlist.c:1966 src/funmisc.c:60\nsrc/funmisc.c:72 src/funmisc.c:84 src/funmisc.c:96 src/funmisc.c:108\nsrc/funmisc.c:120 src/funmisc.c:134 src/funstr.c:778 src/funufun.c:118\nsrc/funufun.c:149 src/funufun.c:300 src/wiz.c:2155 src/wiz.c:2167\nsrc/wiz.c:2189 src/wiz.c:2202
+msgid "#-1 PERMISSION DENIED"
+msgstr "#-1 TILLATELSE IKKE GITT"
+
+#: src/funlist.c:2256 src/funlist.c:2335 src/funlist.c:2378 src/funlist.c:2437\nsrc/funlist.c:2478
+msgid "#-1 REGEXP ERROR: "
+msgstr "#-1 REGEXP FEIL: "
+
+#: funmath.c:1057
+msgid "#-1 ROOT OUT OF RANGE"
+msgstr "#-1 ROT UTENFOR REKKEVIDDE"
+
+#: src/function.c:118
+msgid "#-1 SEPARATOR MUST BE ONE CHARACTER"
+msgstr "#-1 SEPARATOR MÅ VÆRE EN CHARACTER"
+
+#: sql.c:81
+#, c-format
+msgid "#-1 SQL ERROR: %s"
+msgstr "#-1 SQL FEIL: %s"
+
+#: sql.c:79
+msgid "#-1 SQL ERROR: NO DATABASE CONNECTED"
+msgstr "#-1 SQL FEIL: INGEN DATABASE TILKOBLET"
+
+#: src/funlist.c:1943
+msgid "#-1 STEP OUT OF RANGE"
+msgstr "#-1 STEP OUT OF RANGE"
+
+#: src/funstr.c:353
+msgid "#-1 STRING LENGTHS MUST BE EQUAL"
+msgstr "#-1 STRENGLENGDER MÅ VÆRE LIKE"
+
+#: funstr.c:1034
+msgid "#-1 THIS ISN'T UNICODE"
+msgstr "#-1 DETTE ER IKKE UNICODE"
+
+#: funmath.c:1636
+msgid "#-1 TO BASE OUT OF RANGE"
+msgstr "#-1 TIL BASE UTENFOR REKKEVIDDE"
+
+#: sql.c:325
+msgid "#-1 TOO LONG"
+msgstr "#-1 FOR LANG"
+
+#: funstr.c:1981
+msgid "#-1 TOO MANY COLUMNS FOR ALIGN"
+msgstr "#-1 FOR MANGE KOLONNER FOR ALIGN"
+
+#: src/funlist.c:1815
+msgid "#-1 TOO MANY ITERS"
+msgstr "#-1 FOR MANGE ITER-KALL"
+
+#: funmisc.c:495 funmisc.c:612
+msgid "#-1 TOO MANY SWITCHES"
+msgstr "#-1 FOR MANGE SWITCHER"
+
+#: src/funlist.c:1782
+msgid "#-1 TOO MANY WORDS"
+msgstr "#-1 FOR MANGE ORD"
+
+#: funstr.c:757 funstr.c:765 funstr.c:795 funstr.c:803
+msgid "#-1 TR CANNOT ACCEPT NONPRINTING CHARS"
+msgstr "#-1 TR KAN IKKE TA KARAKTERER SOM IKKE KAN SKRIVES"
+
+#: help.c:516 help.c:519
+msgid "#-1 UNAVAILABLE"
+msgstr "#-1 UTILGJENGELIG"
+
+#: src/funmath.c:1385
+msgid "#-1 UNKNOWN OPERATION"
+msgstr "#-1 UKJENT OPERASJON"
+
+#: funstr.c:1021 funstr.c:1038
+msgid "#-1 UNPRINTABLE CHARACTER"
+msgstr "#-1 KAN IKKE SKRIVE TEGNET"
+
+#: funcrypt.c:160 funcrypt.c:183
+msgid "#-1 UNSUPPORTED DIGEST TYPE"
+msgstr "#-1 DIGEST IKKE STØTTET"
+
+#: funmath.c:711 funmath.c:721 funmath.c:746 funmath.c:756
+msgid "#-1 VECTOR MUST NOT BE EMPTY"
+msgstr "#-1 VEKTOR KAN IKKE VÆRE TOM"
+
+#: src/funmath.c:420 src/funmath.c:462 src/funmath.c:501 src/funmath.c:540\nsrc/funmath.c:598 src/funmath.c:632
+msgid "#-1 VECTORS MUST BE SAME DIMENSIONS"
+msgstr "#-1 VEKTORER MÅ HA SAMME DIMENSJON"
+
+#: funmath.c:761
+msgid "#-1 VECTORS MUST BE THREE-DIMENSIONAL"
+msgstr "#-1 VEKTORER MÅ VÆRE TREDIMENSJONALE"
+
+#: src/funstr.c:1097
+msgid "#-1 WIDTH TOO SMALL"
+msgstr "#-1 BREDDE FOR LITEN"
+
+#: extchat.c:3144
+msgid "#-2 AMBIGUOUS CHANNEL MATCH"
+msgstr "#-2 IKKE UNIKT KANALNAVNSTREFF"
+
+#: src/extmail.c:1641
+msgid "#-? fun_mailstats called with invalid called_as!"
+msgstr "#-? fun_mailstats kall med ugyldig kalled_as!"
+
+#: access.c:665
+#, c-format
+msgid "%3d SITE: %-20s  DBREF: %-6s FLAGS:%s"
+msgstr "%3d SITE: %-20s  DBREF %-6s FLAGG:%s"
+
+#: set.c:1145
+#, c-format
+msgid "%d attributes wiped."
+msgstr "%d attributter slettet."
+
+#: src/wiz.c:1044
+#, c-format
+msgid "%d commands executed."
+msgstr "%d kommandoer utført."
+
+#: src/extmail.c:1379
+#, c-format
+msgid "%d messages received, %d unread, %d cleared, totalling %d characters."
+msgstr "%d meldinger mottatt, %d uleste, %d slettede, totalt %d karakterer."
+
+#: src/extmail.c:1370
+#, c-format
+msgid "%d messages received, %d unread, %d cleared."
+msgstr "%d meldinger mottatt, %d uleste, %d slettede."
+
+#: src/extmail.c:1375
+#, c-format
+msgid "%d messages sent, %d unread, %d cleared, totalling %d characters."
+msgstr "%d meldinger sendt, %d uleste, %d slettede, totalt %d tegn."
+
+#: src/extmail.c:1368
+#, c-format
+msgid "%d messages sent, %d unread, %d cleared."
+msgstr "%d meldinger sendt, %d ulest, %d slettet."
+
+#: src/wiz.c:686
+#, c-format
+msgid "%d objects = %d rooms, %d exits, %d things, %d players, %d garbage."
+msgstr "%d objekter = %d rom, %d utganger, %d ting, %d spillere, %d søppel."
+
+#: src/wiz.c:692
+#, c-format
+msgid "%d objects = %d rooms, %d exits, %d things, %d players."
+msgstr "%d objekter = %d rom, %d utganger, %d ting, %d spillere."
+
+#: wiz.c:1745
+#, c-format
+msgid "%d sitelocks removed."
+msgstr "%d nettstedslåser låst."
+
+#: src/bsd.c:3405
+#, c-format
+msgid "%ld failed connections since last login."
+msgstr "%ld mislykkede oppkoblinger siden siste innlogging."
+
+#: flags.c:2283
+#, c-format
+msgid "%s %s deleted."
+msgstr "%s %s slettet."
+
+#: flags.c:2223
+#, c-format
+msgid "%s %s disabled."
+msgstr "%s %s avslått."
+
+#: flags.c:2319
+#, c-format
+msgid "%s %s enabled."
+msgstr "%s %s skrudd på."
+
+#: extmail.c:239
+#, c-format
+msgid "%s (owner: %s)"
+msgstr "%s (eier: %s)"
+
+#: src/look.c:969
+#, c-format
+msgid "%s (this room) [broadcasting]."
+msgstr "%s (dette rommet)  [kringkaster]."
+
+#: src/look.c:967
+#, c-format
+msgid "%s (this room) [commands]."
+msgstr "%s (dette rommet)  [kommandoer]."
+
+#: src/look.c:961
+#, c-format
+msgid "%s (this room) [speech]. (connected)"
+msgstr "%s (dette rommet) [tale]. (tilkoblet)"
+
+#: src/look.c:964
+#, c-format
+msgid "%s (this room) [speech]."
+msgstr "%s (dette rommet) [tale]."
+
+#: flags.c:1714
+#, c-format
+msgid "%s - %s (already) granted."
+msgstr "%s - %s (allerede) gitt."
+
+#: flags.c:1710
+#, c-format
+msgid "%s - %s (already) removed."
+msgstr "%s - %s (allerede) fjernet."
+
+#: flags.c:1716
+#, c-format
+msgid "%s - %s granted."
+msgstr "%s - %s tillatt."
+
+#: flags.c:1708
+#, c-format
+msgid "%s - %s removed."
+msgstr "%s - %s fjernet."
+
+#: flags.c:1357
+#, c-format
+msgid "%s - I don't recognize that flag."
+msgstr "%s - Jeg gjenkjenner ikke det flagget."
+
+#: flags.c:1515
+#, c-format
+msgid "%s - I don't recognize that power."
+msgstr "%s - Jeg gjenkjenner ikke den poweren."
+
+#: set.c:889 set.c:891
+#, c-format
+msgid "%s - Set: %s"
+msgstr "%s - Satt: %s"
+
+#: set.c:983
+#, c-format
+msgid "%s - Triggered."
+msgstr "%s - Trigget."
+
+#: src/atr_tab.c:226
+#, c-format
+msgid "%s -- Attribute permissions now: %s"
+msgstr "%s -- Attributtillatelser nå: %s"
+
+#: look.c:706
+#, c-format
+msgid "%s Lock [#%d%s]: %s"
+msgstr "%s Lås [#%d%s]: %s"
+
+#: look.c:354
+#, c-format
+msgid "%s [#%d%s] is veiled"
+msgstr "%s [#%d%s] er skjult"
+
+#: look.c:1206
+#, c-format
+msgid "%s [broadcasting]."
+msgstr "%s [kringkaster]."
+
+#: look.c:1193 look.c:1233
+#, c-format
+msgid "%s [commands]."
+msgstr "%s [kommandoer]."
+
+#: wiz.c:1256
+#, c-format
+msgid "%s [from "
+msgstr "%s [fra "
+
+#: wiz.c:1236 wiz.c:1273
+#, c-format
+msgid "%s [owner: "
+msgstr "%s [eier: "
+
+#: src/look.c:954 src/look.c:979 src/look.c:1019
+#, c-format
+msgid "%s [owner: %s] is listening."
+msgstr "%s [eier: %s] lytter."
+
+#: look.c:1188 look.c:1228
+#, c-format
+msgid "%s [speech]. (connected)"
+msgstr "%s [tale]. (koblet til)"
+
+#: look.c:1190 look.c:1230
+#, c-format
+msgid "%s [speech]."
+msgstr "%s [tale]."
+
+#: flags.c:2112
+#, c-format
+msgid "%s aliases may not contain spaces."
+msgstr "%s aliaser kan ikke inneholde mellomrom."
+
+#: flags.c:2107
+#, c-format
+msgid "%s aliases must be longer than one character."
+msgstr "%s aliaser må være lengre enn en karakter."
+
+#: destroy.c:353
+#, c-format
+msgid "%s and all their (non-SAFE) objects are scheduled to be destroyed."
+msgstr "%s og alle deres objekter er på vei til å bli ødelagt."
+
+#: src/destroy.c:352
+#, c-format
+msgid "%s and all their objects are scheduled to be destroyed."
+msgstr "%s og alle deres objekter er på vei til å bli ødelagt."
+
+#: src/move.c:862
+#, c-format
+msgid "%s begins following you."
+msgstr "%s begynner å følge etter deg."
+
+#: speech.c:332
+#, c-format
+msgid "%s can't hear you."
+msgstr "%s kan ikke høre deg."
+
+#: flags.c:2028 flags.c:2169
+#, c-format
+msgid "%s characters must be single characters."
+msgstr "%s tegn må være enkle tegn."
+
+#: src/create.c:388
+#, c-format
+msgid "%s created with room number %d."
+msgstr "%s skapt med rom nummer %d."
+
+#: src/bsd.c:3978
+#, c-format
+msgid "%s created."
+msgstr "%s skapt."
+
+#: src/command.c:960
+#, c-format
+msgid "%s doesn't know switch %s."
+msgstr "%s vet ikke av switch %s."
+
+#: rob.c:395
+#, c-format
+msgid "%s doesn't want anything from you."
+msgstr "%s vil ikke ha noe fra deg."
+
+#: rob.c:400
+#, c-format
+msgid "%s doesn't want that."
+msgstr "%s vil ikke ha det der."
+
+#: move.c:641 move.c:644
+#, c-format
+msgid "%s drops you."
+msgstr "%s slipper deg."
+
+#: src/rob.c:213
+#, c-format
+msgid "%s gave you %s."
+msgstr "%s ga deg %s."
+
+#: src/rob.c:215
+#, c-format
+msgid "%s gave you to %s."
+msgstr "%s ga deg til %s."
+
+#: src/rob.c:285
+#, c-format
+msgid "%s gives you %d %s."
+msgstr "%s gir deg %d %s."
+
+#: src/move.c:332
+#, c-format
+msgid "%s goes home."
+msgstr "%s drar hjem."
+
+#: src/attrib.c:953
+#, c-format
+msgid "%s grows ears and can now hear."
+msgstr "%s får ører og kan nå høre."
+
+#: src/extmail.c:1336
+#, c-format
+msgid "%s has %d messages."
+msgstr "%s har %d meldinger."
+
+#: src/destroy.c:414 src/destroy.c:510
+#, c-format
+msgid "%s has been spared from destruction."
+msgstr "%s har blitt reddet fra ødeleggelse."
+
+#: src/look.c:1060
+#, c-format
+msgid "%s has just located your position."
+msgstr "%s har funnet ut hvor du er."
+
+#: src/destroy.c:361 src/destroy.c:371 src/destroy.c:464
+#, c-format
+msgid "%s has scheduled your %s for destruction."
+msgstr "%s har satt av tid for å ødelegge din %s."
+
+#: src/destroy.c:344
+#, c-format
+msgid "%s has scheduled your room %s to be destroyed."
+msgstr "%s har kondemnert rommet %s som tilhører deg."
+
+#: attrib.c:1508
+#, c-format
+msgid "%s is a branch attribute; remove its children first."
+msgstr "%s er en grenattributt; fjern underattributter først."
+
+#: src/extchat.c:803 src/extchat.c:835
+#, c-format
+msgid "%s is already on channel <%s>."
+msgstr "%s er allerede på kanalen <%s>."
+
+#: src/look.c:1057
+#, c-format
+msgid "%s is at: %s."
+msgstr "%s er i: %s."
+
+#: look.c:205
+#, c-format
+msgid "%s is corrupt!"
+msgstr "%s er korruptert!"
+
+#: look.c:954 look.c:979 look.c:1019
+#, c-format
+msgid "%s is listening."
+msgstr "%s lytter."
+
+#: src/flags.c:1067 src/flags.c:1073
+#, c-format
+msgid "%s is no longer listening."
+msgstr "%s lytter ikke lenger."
+
+#: speech.c:708
+#, c-format
+msgid "%s is not accepting any pages."
+msgstr "%s mottar ikke meldinger."
+
+#: speech.c:713
+#, c-format
+msgid "%s is not accepting your pages."
+msgstr "%s mottar ikke dine meldinger."
+
+#: speech.c:703
+#, c-format
+msgid "%s is not connected."
+msgstr "%s er ikke tilkoblet."
+
+#: src/extchat.c:865
+#, c-format
+msgid "%s is not on channel <%s>."
+msgstr "%s er ikke på kanal <%s>."
+
+#: src/flags.c:1127 src/flags.c:1133
+#, c-format
+msgid "%s is now listening."
+msgstr "%s har fått ører og lytter."
+
+#: move.c:517
+#, c-format
+msgid "%s is now the first exit in %s."
+msgstr "%s er nå den første utgangen i %s."
+
+#: src/destroy.c:364 src/destroy.c:378
+#, c-format
+msgid "%s is scheduled to be destroyed."
+msgstr "%s er kondemnert."
+
+#: move.c:888
+#, c-format
+msgid "%s isn't following you, nor vice versa."
+msgstr "%s følger ikke etter deg, eller motsatt."
+
+#: move.c:858
+#, c-format
+msgid "%s isn't following you."
+msgstr "%s følger ikke etter deg."
+
+#: rob.c:316
+#, c-format
+msgid "%s isn't selling that item for that price"
+msgstr "%s selger ikke den tingen for den prisen"
+
+#: rob.c:323
+#, c-format
+msgid "%s isn't selling that item."
+msgstr "%s selger ikke den tingen."
+
+#: src/rob.c:134
+#, c-format
+msgid "%s killed you!"
+msgstr "%s drepte deg!"
+
+#: look.c:200
+#, c-format
+msgid "%s leads home."
+msgstr "%s fører hjem."
+
+#: look.c:198
+#, c-format
+msgid "%s leads nowhere."
+msgstr "%s leder ingensteds."
+
+#: look.c:207
+#, c-format
+msgid "%s leads to %s."
+msgstr "%s leder til %s."
+
+#: look.c:202
+#, c-format
+msgid "%s leads to a variable location."
+msgstr "%s fører til et variabelt mål."
+
+#: warnings.c:162
+#, c-format
+msgid "%s lock has eval-lock that uses a nonexistant attribute '%s'."
+msgstr "%s lås har evalueringslås som bruker en ikkeeksisterende attributt '%s'."
+
+#: warnings.c:173
+#, c-format
+msgid "%s lock has indirect lock to %s/%s that it can't read"
+msgstr "%s lås har indirekte lås til %s/%s som ikke kan leses"
+
+#: warnings.c:145 warnings.c:169
+#, c-format
+msgid "%s lock refers to garbage object"
+msgstr "%s sin lås refererer til et søppelobjekt"
+
+#: src/attrib.c:949
+#, c-format
+msgid "%s loses its ears and becomes deaf."
+msgstr "%s mister ørene sine og hører ikke lenger."
+
+#: src/predicat.c:760
+#, c-format
+msgid "%s message from %s: %s"
+msgstr "%s melding fra %s: %s"
+
+#: flags.c:2016
+#, c-format
+msgid "%s names may not contain spaces."
+msgstr "%s navn kan ikke inneholde mellomrom."
+
+#: flags.c:2011
+#, c-format
+msgid "%s names must be longer than one character."
+msgstr "%s navn må være lengre enn en karakter."
+
+#: bsd.c:4692
+#, c-format
+msgid "%s no longer appears on the WHO list."
+msgstr "%s vil ikke lenger vises på WHO listen."
+
+#: bsd.c:4697
+#, c-format
+msgid "%s now appears on the WHO list."
+msgstr "%s vises nå på WHO listen."
+
+#: src/player.c:486
+#, c-format
+msgid "%s on %s"
+msgstr "%s på %s"
+
+#: help.c:256
+#, c-format
+msgid "%s output truncated."
+msgstr "%s output trunkert."
+
+#: bsd.c:4130
+#, c-format
+msgid "%s pages: %s"
+msgstr "%s melder: %s"
+
+#: rob.c:284
+#, c-format
+msgid "%s refuses your money."
+msgstr "%s vil ikke ha pengene dine."
+
+#: src/speech.c:179
+#, c-format
+msgid "%s says, \"%s\""
+msgstr "%s sier, \"%s\""
+
+#: speech.c:380
+#, c-format
+msgid "%s sense: %s%s%s"
+msgstr "%s mottar: %s%s%s"
+
+#: speech.c:378
+#, c-format
+msgid "%s senses: %s%s%s"
+msgstr "%s mottar: %s%s%s"
+
+#: src/extmail.c:1335
+#, c-format
+msgid "%s sent %d messages."
+msgstr "%s sendte %d meldinger."
+
+#: attrib.c:1474
+#, c-format
+msgid "%s should contain only dbrefs."
+msgstr "%s bør bare inneholde dbrefer."
+
+#: src/bsd.c:2100
+#, c-format
+msgid "%s sizes:  NewUser...%d  Connect...%d  Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  Register...%d  Down...%d  Full...%d"
+msgstr "%s størrelser: NewUser...%d  Connect...%d  Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d Register...%d Down...%d  Full...%d"
+
+#: src/move.c:918 src/move.c:1063
+#, c-format
+msgid "%s stops following you."
+msgstr "%s slutter å følge etter deg."
+
+#: src/rob.c:288
+#, c-format
+msgid "%s took %d %s from you!"
+msgstr "%s tok %d %s fra deg!"
+
+#: move.c:526 move.c:572
+#, c-format
+msgid "%s took you."
+msgstr "%s tok deg."
+
+#: src/rob.c:156
+#, c-format
+msgid "%s tried to kill you!"
+msgstr "%s prøvde å drepe deg!"
+
+#: src/look.c:1053
+#, c-format
+msgid "%s tried to locate you and failed."
+msgstr "%s prøvde å finne deg, men feilet."
+
+#: src/wiz.c:548
+#, c-format
+msgid "%s tries to impose his will on you and fails."
+msgstr "%s prøver å bryte ned din mentale vilje, men får det ikke helt til."
+
+#: src/speech.c:151
+#, c-format
+msgid "%s types --> %s%s%s"
+msgstr "%s types --> %s%s%s"
+
+#: src/move.c:495
+#, c-format
+msgid "%s was taken from you."
+msgstr "%s ble tatt fra deg."
+
+#: speech.c:387
+#, c-format
+msgid "%s whispers%s."
+msgstr "%s hvisker%s."
+
+#: speech.c:374
+#, c-format
+msgid "%s whispers%s: %s"
+msgstr "%s hvisker%s: %s"
+
+#: look.c:341
+#, c-format
+msgid "%s#%d/%s [#%d%s]%s is veiled"
+msgstr "%s#%d/%s [#%d%s]%s er skjult"
+
+#: look.c:345
+#, c-format
+msgid "%s%s [#%d%s]%s is veiled"
+msgstr "%s%s [#%d%s]%s er skjult"
+
+#: src/destroy.c:357 src/destroy.c:374
+#, c-format
+msgid "%s's %s is scheduled to be destroyed."
+msgstr "%s's %s er lagt inn i ødeleggelseskøen."
+
+#: look.c:1360
+#, c-format
+msgid "%s(#%d) [dropto]"
+msgstr "%s(#%d) [dropto]"
+
+#: look.c:1351
+#, c-format
+msgid "%s(#%d) [from: %s(#%d)]"
+msgstr "%s(#%d) [fra: %s(#%d)]"
+
+#: look.c:1369 look.c:1377
+#, c-format
+msgid "%s(#%d) [home]"
+msgstr "%s(#%d) [hjem]"
+
+#: src/extmail.c:1168
+#, c-format
+msgid "%s(#%d) has mail but is not a player."
+msgstr "%s(#%d) har mail, men er ikke en spiller."
+
+#: lock.c:541
+#, c-format
+msgid "%s(%s) - %s (already) unlocked."
+msgstr "%s(%s) - %s (allerede) låst opp."
+
+#: lock.c:603
+#, c-format
+msgid "%s(%s) - %s locked."
+msgstr "%s(%s) - %s låst."
+
+#: lock.c:544
+#, c-format
+msgid "%s(%s) - %s unlocked."
+msgstr "%s(%s) - %s låst opp."
+
+#: set.c:482
+#, c-format
+msgid "%s/%s - %s reset."
+msgstr "%s/%s - %s resatt."
+
+#: set.c:487
+#, c-format
+msgid "%s/%s - %s set."
+msgstr "%s/%s - %s satt."
+
+#: src/extmail.c:1260 src/extmail.c:1668 src/wiz.c:673 src/wiz.c:1277
+#, c-format
+msgid "%s: No such player."
+msgstr "%s: Ingen slik spiller."
+
+#: wiz.c:275
+#, c-format
+msgid "%s: Objects: %d   Limit: %d"
+msgstr "%s: Objekter: %d  Grense: %d"
+
+#: wiz.c:269
+#, c-format
+msgid "%s: Objects: %d   Limit: UNLIMITED"
+msgstr "%s: Objekter: %d   Begrensning: UBEGRENSET"
+
+#: wiz.c:1327
+#, c-format
+msgid "%sGarbage%s(#%d)"
+msgstr "%sSøppel%s(#%d)"
+
+#: attrib.c:1566 attrib.c:1584
+#, c-format
+msgid "'%s' contains too many aliases."
+msgstr "'%s' inneholder for mange aliaser."
+
+#: attrib.c:1556 attrib.c:1563 attrib.c:1581
+#, c-format
+msgid "'%s' is not a valid alias."
+msgstr "'%s' er ikke et gyldig alias."
+
+#: attrib.c:1851
+#, c-format
+msgid "'%s' is not a valid exit name."
+msgstr "'%s' er ikke et gyldig navn for en utgang."
+
+#: function.c:905
+msgid "(Commas okay in last argument)"
+msgstr "(Komma er OK i siste argument)"
+
+#: src/extmail.c:211 src/extmail.c:810 src/extmail.c:1004
+msgid "(no subject)"
+msgstr "(intet emne)"
+
+#: parse.c:1443
+msgid ") MISSING ATTRIBUTE ("
+msgstr ") MANGLER ATTRIBUTT ("
+
+#: parse.c:1246
+msgid ") NOT FOUND"
+msgstr ") IKKE FUNNET"
+
+#: src/look.c:911
+#, c-format
+msgid "*** %d objects found ***"
+msgstr "*** %d objekter funnet ***"
+
+#: src/malias.c:300
+msgid "*****  End of Mail Aliases *****"
+msgstr "***** Slutt på mailaliaser *****"
+
+#: src/malias.c:471
+msgid "***** End of Mail Aliases *****"
+msgstr "****** Slutt på Mailaliaser *****"
+
+#: unparse.c:105
+msgid "*HOME*"
+msgstr "*HJEM*"
+
+#: unparse.c:98 unparse.c:101
+msgid "*NOTHING*"
+msgstr "*INGENTING*"
+
+#: unparse.c:103
+msgid "*VARIABLE*"
+msgstr "*VARIABEL*"
+
+#: src/access.c:476
+msgid "---- @sitelock will add sites immediately below this line ----"
+msgstr "---- @sitelock legger til sites etter denne linjen ----"
+
+#: src/look.c:1180
+msgid "----------  Entrances Done  ----------"
+msgstr "---------- Innganger fullført ----------"
+
+#: src/wiz.c:1606
+msgid "----------  Search Done  ----------"
+msgstr "------------- Søk ferdig -------------"
+
+#: src/cque.c:807
+msgid "------------  Queue Done  ------------"
+msgstr "------------  Kø utført  ------------"
+
+#: extmail.c:543
+#, c-format
+msgid "---------------------------  MAIL (folder %2d)  ------------------------------"
+msgstr "---------------------------  MAIL (folder %2d)  ------------------------------"
+
+#: look.c:1494
+#, c-format
+msgid "@@ No attributes match '%s'. @@"
+msgstr "@@ Ingen attributter passer '%s'. @@"
+
+#: src/command.c:1118
+msgid "@command is ALWAYS enabled."
+msgstr "@command er ALLTID tilgjengelig."
+
+#: cmds.c:687
+msgid "@message them with what?"
+msgstr "@message dem med hva?"
+
+#: cmds.c:694
+msgid "@message who?"
+msgstr "@message til hvem?"
+
+#: warnings.c:311
+msgid "@warnings cleared."
+msgstr "@warning slettet."
+
+#: warnings.c:313
+msgid "@warnings not changed."
+msgstr "@warnings ikke endret."
+
+#: warnings.c:308
+#, c-format
+msgid "@warnings set to: %s"
+msgstr "@warnings satt til: %s"
+
+#: src/warnings.c:450
+msgid "@wcheck complete."
+msgstr "@wcheck fullført."
+
+#: src/set.c:894
+msgid "A thing cannot be its own ancestor!"
+msgstr "En ting kan ikke være sitt eget opphav!"
+
+#: parse.c:1327
+msgid "AT LEAST "
+msgstr "MINST "
+
+#: src/bsd.c:559 src/bsd.c:761
+msgid "Ack!  Failed reopening stderr!"
+msgstr "Ack! Kan ikke gjenåpne stderr!"
+
+#: version.c:33
+#, c-format
+msgid "Address: %s"
+msgstr "Adresse: %s"
+
+#: src/destroy.c:405
+msgid "Alas, your efforts of mercy are in vain."
+msgstr "Sukk. Dine barmhjertige handlinger er for ingenting..."
+
+#: malias.c:269
+msgid "Alias Description"
+msgstr "Alias Beskrivelse"
+
+#: function.c:1094
+msgid "Alias added."
+msgstr "Alias lagt til."
+
+#: src/attrib.c:939
+msgid "Alias removed."
+msgstr "Alias fjernet."
+
+#: src/attrib.c:937
+msgid "Alias set."
+msgstr "Alias satt."
+
+#: flags.c:2031
+msgid "Aliases"
+msgstr "Aliaser"
+
+#: access.c:410
+msgid "All but God"
+msgstr "Alle unntatt Gud"
+
+#: access.c:406
+msgid "All but admin"
+msgstr "Alle unntatt admin"
+
+#: access.c:408
+msgid "All but wizards"
+msgstr "Alle unntatt wizards"
+
+#: extchat.c:1597
+msgid "All channels have been gagged."
+msgstr "Alle kanaler har blitt kneblet."
+
+#: extchat.c:1589
+msgid "All channels have been muted."
+msgstr "Alle kanaler har blitt mutet."
+
+#: extchat.c:1598
+msgid "All channels have been ungagged."
+msgstr "Alle kanaler har blitt åpnet."
+
+#: extchat.c:1590
+msgid "All channels have been unmuted."
+msgstr "Du lytter nå til alle kanaler."
+
+#: src/cque.c:1045
+#, c-format
+msgid "All objects for %s are being restarted."
+msgstr "Alle objekter for %s blir restartet."
+
+#: src/cque.c:924
+#, c-format
+msgid "All objects for %s have been halted."
+msgstr "Alle objekter for %s har blitt stoppet."
+
+#: src/cque.c:1048
+#, c-format
+msgid "All of your objects are being restarted by %s."
+msgstr "Alle dine objekter blir restartet av %s."
+
+#: src/cque.c:1059
+msgid "All of your objects are being restarted."
+msgstr "Alle dine objekter blir restartet."
+
+#: src/cque.c:927
+#, c-format
+msgid "All of your objects have been halted by %s."
+msgstr "Alle dine objekter har blitt stoppet av %s."
+
+#: src/cque.c:922
+msgid "All of your objects have been halted."
+msgstr "Alle dine objekter har blitt stoppet."
+
+#: src/wiz.c:273
+#, c-format
+msgid "All quotas changed to %d."
+msgstr "Alle kvoter satt til %d."
+
+#: access.c:412
+msgid "All"
+msgstr "Alle"
+
+#: wiz.c:1810
+msgid "Any name matching these wildcard patterns is banned:"
+msgstr "Alle navn som passer disse mønstrene er blokkert:"
+
+#: command.c:1812
+#, c-format
+msgid "Arguments  : %s"
+msgstr "Argumenter  : %s"
+
+#: function.c:910
+#, c-format
+msgid "Arguments : %d %s"
+msgstr "Argumenter: %d %s"
+
+#: function.c:914
+#, c-format
+msgid "Arguments : %d to %d %s"
+msgstr "Argumenter: %d til %d %s"
+
+#: function.c:912
+#, c-format
+msgid "Arguments : At least %d %s"
+msgstr "Argumenter: Minst %d %s"
+
+#: src/game.c:851
+#, c-format
+msgid "Attempt to execute command by halted object #%d"
+msgstr "Forsøkt å utføre kommando av stoppet objekt #%d"
+
+#: atr_tab.c:368
+#, c-format
+msgid "Attribs: %s"
+msgstr "Attribs: %s"
+
+#: src/set.c:633
+#, c-format
+msgid "Attribute %s (%d copies)"
+msgstr "Attributt %s (%d kopier)"
+
+#: set.c:1118
+#, c-format
+msgid "Attribute %s cannot be wiped because a child attribute cannot be wiped."
+msgstr "Attributt %s kan ikke bli slettet fordi en underattributt ikke kan slettes."
+
+#: attrib.c:1592
+#, c-format
+msgid "Attribute %s is SAFE. Set it !SAFE to modify it."
+msgstr "Attributt %s er SAFE. Sett den !SAFE for å modifisere den."
+
+#: src/attrib.c:1031
+msgid "Attribute locked."
+msgstr "Attributt låst."
+
+#: src/attrib.c:1111
+msgid "Attribute owner changed."
+msgstr "Attributt-eier forandret."
+
+#: src/attrib.c:1035
+msgid "Attribute unlocked."
+msgstr "Attributt låst opp."
+
+#: atr_tab.c:349
+msgid "Attribute"
+msgstr "Attributt"
+
+#: src/flags.c:1147
+msgid "Audible exits in this room have been activated."
+msgstr "Lyttende utganger i dette rommet er nå aktivert."
+
+#: src/flags.c:1086
+msgid "Audible exits in this room have been deactivated."
+msgstr "Exits i dette rommet med audible-flagget har blitt deaktivert."
+
+#: funmisc.c:915
+#, c-format
+msgid "Average: %.2f   Min: %u   Max: %u"
+msgstr "Gjeennomsnitt: %.2f   Min: %u   Max: %u"
+
+#: parse.c:1330
+msgid "BETWEEN "
+msgstr "MELLOM "
+
+#: command.c:1312
+msgid "Bad command name."
+msgstr "Ugyldig kommandonavn."
+
+#: src/move.c:326 src/move.c:520 src/wiz.c:397 src/wiz.c:402 src/wiz.c:406
+msgid "Bad destination."
+msgstr "Ikke gyldig destinasjon."
+
+#: src/player.c:420
+msgid "Bad new password."
+msgstr "Ugyldig nytt passord."
+
+#: src/extmail.c:1166
+#, c-format
+msgid "Bad object #%d has mail."
+msgstr "Ugyldig objekt #%d har mail."
+
+#: src/wiz.c:1096
+msgid "Bad object type."
+msgstr "Feil objekttype"
+
+#: src/wiz.c:732
+msgid "Bad password."
+msgstr "Ugyldig passord."
+
+#: src/set.c:147
+#, c-format
+msgid "Broadcast: Suspect %s changed name to %s."
+msgstr "Kringkasting: Mistent %s skiftet navn til %s."
+
+#: src/rob.c:99
+#, c-format
+msgid "Broadcast: Suspect %s tried to kill %s(#%d)."
+msgstr "Kringkasting: Mistenkt %s prøvde å drepe %s(#%d)."
+
+#: extchat.c:2085
+msgid "Buf"
+msgstr "Buf"
+
+#: src/version.c:44 src/version.c:46
+#, c-format
+msgid "Build date: %s"
+msgstr "Build-dato: %s"
+
+#: function.c:1193
+msgid "Builtin function"
+msgstr "Innebygd funksjon"
+
+#: cmds.c:1036
+msgid "Buy for WHAT price?"
+msgstr "Kjøp til hvilken pris?"
+
+#: rob.c:191
+msgid "Buy from whom?"
+msgstr "Kjøp fra hvem?"
+
+#: rob.c:209
+msgid "Buy what?"
+msgstr "Kjøp hva?"
+
+#: src/extchat.c:1443
+#, c-format
+msgid "CHAT: %s has removed all users from <%s>."
+msgstr "CHAT: %s har fjernet alle brukere fra <%s>."
+
+#: src/extchat.c:821
+#, c-format
+msgid "CHAT: %s joins you to channel <%s>."
+msgstr "CHAT: %s har lagt deg til kanal <%s>."
+
+#: src/extchat.c:856
+#, c-format
+msgid "CHAT: %s removes you from channel <%s>."
+msgstr "CHAT: %s fjerner deg fra kanal <%s>."
+
+#: extchat.c:3027
+#, c-format
+msgid "CHAT: Buffering enabled on channel <%s>."
+msgstr "CHAT: Bufring skrudd på for kanal <%s>."
+
+#: extchat.c:1150
+#, c-format
+msgid "CHAT: Channel <%s> created."
+msgstr "CHAT: Kanal <%s> lagd."
+
+#: extchat.c:1998
+#, c-format
+msgid "CHAT: Channel <%s> description cleared."
+msgstr "CHAT: Kanal <%s> tittel fjernet."
+
+#: extchat.c:2001
+#, c-format
+msgid "CHAT: Channel <%s> description set."
+msgstr "CHAT: Kanal <%s> tittel satt."
+
+#: extchat.c:2531
+#, c-format
+msgid "CHAT: Channel <%s> isn't being mogrified."
+msgstr "CHAT: Kanal <%s> blir ikke mogrifisert."
+
+#: extchat.c:2525
+#, c-format
+msgid "CHAT: Channel <%s> no longer mogrified by %s."
+msgstr "CHAT: Kanal <%s> ikke lenger modifisert av %s."
+
+#: extchat.c:2542
+#, c-format
+msgid "CHAT: Channel <%s> now mogrified by %s."
+msgstr "CHAT: Kanal <%s> er nå mogrifisert av %s."
+
+#: src/extchat.c:1496
+#, c-format
+msgid "CHAT: Channel <%s> now owned by %s."
+msgstr "CHAT: Kanal <%s> eies nå av %s."
+
+#: extchat.c:1548
+#, c-format
+msgid "CHAT: Channel <%s> resists."
+msgstr "CHAT: Kanalen <%s> motstår dette."
+
+#: extchat.c:1742
+#, c-format
+msgid "CHAT: Channel <%s> wiped."
+msgstr "CHAT: Kanal <%s> lagd."
+
+#: extchat.c:3014
+#, c-format
+msgid "CHAT: Channel buffering already disabled for channel <%s>."
+msgstr "CHAT: Kanalbuffering allerede avslått for kanal <%s>."
+
+#: extchat.c:3009
+#, c-format
+msgid "CHAT: Channel buffering disabled for channel <%s>."
+msgstr "CHAT: Logging skrudd av for kanal <%s>."
+
+#: extchat.c:2969
+msgid "CHAT: End recall"
+msgstr "CHAT: Slutt på logg"
+
+#: extchat.c:1595
+#, c-format
+msgid "CHAT: Hidelock on <%s> reset."
+msgstr "CHAT: Hidelock på <%s> resatt."
+
+#: extchat.c:1596
+#, c-format
+msgid "CHAT: Hidelock on <%s> set."
+msgstr "CHAT: Hidelock på <%s> satt."
+
+#: extchat.c:955 extchat.c:1008
+msgid "CHAT: I don't know which channel you mean."
+msgstr "CHAT: Jeg vet ikke hvilken kanal du mener."
+
+#: src/extchat.c:760 src/extchat.c:1015 src/extchat.c:1635
+msgid "CHAT: I don't recognize that channel."
+msgstr "CHAT: Jeg kjenner ikke til den kanalen."
+
+#: src/extchat.c:1554
+msgid "CHAT: I don't understand that key."
+msgstr "CHAT: Jeg forstår ikke den nøkkelen."
+
+#: src/extchat.c:1488
+msgid "CHAT: Invalid owner."
+msgstr "CHAT: Ugyldig eier."
+
+#: extchat.c:1568
+#, c-format
+msgid "CHAT: Joinlock on <%s> reset."
+msgstr "CHAT: Joinlock på <%s> resatt."
+
+#: extchat.c:1569
+#, c-format
+msgid "CHAT: Joinlock on <%s> set."
+msgstr "CHAT: Joinlås på <%s> satt."
+
+#: extchat.c:1604
+#, c-format
+msgid "CHAT: Modlock on <%s> reset."
+msgstr "CHAT: Modlås på <%s> resatt."
+
+#: extchat.c:1605
+#, c-format
+msgid "CHAT: Modlock on <%s> set."
+msgstr "CHAT: Modlock på <%s> satt."
+
+#: extchat.c:1985
+msgid "CHAT: New description too long."
+msgstr "CHAT: Ny tittel er for lang."
+
+#: src/extchat.c:1703
+msgid "CHAT: No channel matches that string."
+msgstr "CHAT: Ingen kanaler passer den strengen."
+
+#: extchat.c:1132 extchat.c:1139
+msgid "CHAT: No more memory for channels!"
+msgstr "CHAT: Ikke nok minne for flere kanaler!"
+
+#: extchat.c:1274
+msgid "CHAT: No such channel."
+msgstr "CHAT: Ingen slik kanal."
+
+#: extchat.c:2943
+msgid "CHAT: Nothing to recall."
+msgstr "CHAT: Ingen logg å hente."
+
+#: src/extchat.c:1481
+msgid "CHAT: Only a Wizard can do that."
+msgstr "CHAT: Bare en Wizard kan gjøre det."
+
+#: extchat.c:2510
+msgid "CHAT: Only a channel modifier can do that."
+msgstr "CHAT: Bare en kanalmodifisering kan gjøre det."
+
+#: extchat.c:797
+msgid "CHAT: Partial matches are:"
+msgstr "CHAT: Delvise treff er:"
+
+#: extchat.c:2958
+#, c-format
+msgid "CHAT: Recall from channel <%s>"
+msgstr "CHAT: Logg fra kanal <%s>"
+
+#: extchat.c:3021
+#, c-format
+msgid "CHAT: Resizing buffer of channel <%s>"
+msgstr "CHAT: Omdimensjonerer buffer på kanal <%s>"
+
+#: extchat.c:1586
+#, c-format
+msgid "CHAT: Seelock on <%s> reset."
+msgstr "CHAT: Seelock på <%s> resatt."
+
+#: extchat.c:1587
+#, c-format
+msgid "CHAT: Seelock on <%s> set."
+msgstr "CHAT: Selås på <%s> satt."
+
+#: extchat.c:1577
+#, c-format
+msgid "CHAT: Speaklock on <%s> reset."
+msgstr "CHAT: Snakkelås på <%s> fjernet."
+
+#: extchat.c:1578
+#, c-format
+msgid "CHAT: Speaklock on <%s> set."
+msgstr "CHAT: Speaklås på <%s> satt."
+
+#: extchat.c:2939
+msgid "CHAT: That channel doesn't have a recall buffer."
+msgstr "CHAT: Den kanalen har ikke noe tilbakekalls-buffer."
+
+#: src/extchat.c:1106
+msgid "CHAT: The channel needs a more unique name."
+msgstr "CHAT: Kanalen trenger et mer unikt navn."
+
+#: extchat.c:3016
+#, c-format
+msgid "CHAT: To recall the entire buffer, use @chan/recall %s=0"
+msgstr "CHAT: For å hente tilbake hele loggen, bruk @chan/recall %s=0"
+
+#: extchat.c:1244
+msgid "CHAT: Warning: Target does not meet channel join permissions! (joining anyway)"
+msgstr "CHAT: Advarsel: Målet oppfyller ikke kravene for å bli med i kanalen! (Lagt til i kanalen uansett)"
+
+#: extchat.c:1348
+msgid "CHAT: Warning: You don't meet channel join permissions! (joining anyway)"
+msgstr "CHAT: Advarsel: Du oppfyller ikke kravene til å bli med i kanalen! (Blir med uansett)"
+
+#: src/extchat.c:1461
+msgid "CHAT: Wipe that silly grin off your face instead."
+msgstr "CHAT: Slutt å glis i stedet."
+
+#: extchat.c:1331
+#, c-format
+msgid "CHAT: You are already on channel <%s>."
+msgstr "CHAT: Du er allerede på kanalen <%s>."
+
+#: extchat.c:1385
+#, c-format
+msgid "CHAT: You are not on channel <%s>."
+msgstr "CHAT: Du er ikke på kanal <%s>."
+
+#: src/extchat.c:757
+#, c-format
+msgid "CHAT: You can't do that with channel <%s>."
+msgstr "CHAT: Du kan ikke gjøre det med kanalen <%s>."
+
+#: extchat.c:2775
+#, c-format
+msgid "CHAT: You don't have permission to decompile <%s>."
+msgstr "CHAT: Du har ikke tillatelse til å dekompilere <%s>."
+
+#: src/extchat.c:824
+#, c-format
+msgid "CHAT: You join %s to channel <%s>."
+msgstr "CHAT: Du har skrudd på kanal <%s> for %s."
+
+#: src/extchat.c:827
+#, c-format
+msgid "CHAT: You join channel <%s>."
+msgstr "CHAT: Du har gått inn på kanal <%s>."
+
+#: src/extchat.c:863
+#, c-format
+msgid "CHAT: You leave channel <%s>."
+msgstr "CHAT: Du har forlatt kanal <%s>."
+
+#: extchat.c:1433
+msgid "CHAT: You may wish to set the CHAN_USEFIRSTMATCH flag on yourself."
+msgstr "CHAT: Du vil kanskje sette CHAN_USEFIRSTMATCH flagget på deg selv."
+
+#: extchat.c:3772
+msgid "CHAT: You must be able to join a channel to recall from it."
+msgstr "CHAT: Du må være i stand til å bli med i kanalen for å vise loggen fra den."
+
+#: extchat.c:2537
+msgid "CHAT: You must control the mogrifier."
+msgstr "CHAT: Du må kontrollere mogrifikatoren."
+
+#: src/extchat.c:859
+#, c-format
+msgid "CHAT: You remove %s from channel <%s>."
+msgstr "CHAT: Du fjerner %s fra kanal <%s>."
+
+#: flags.c:1738
+msgid "CLEARED"
+msgstr "FJERNET"
+
+#: parse.c:301
+msgid "CPU usage exceeded."
+msgstr "CPU bruk for høy."
+
+#: src/create.c:322
+msgid "Can't set home to home."
+msgstr "Du kan ikke sette hjem til hjem."
+
+#: look.c:748
+msgid "Carrying:"
+msgstr "Holder:"
+
+#: src/extchat.c:1047
+#, c-format
+msgid "Cemit to channel %s: %s"
+msgstr "Cemit til kanal %s: %s"
+
+#: src/extchat.c:1387
+msgid "Chan Type"
+msgstr "Kanal Type"
+
+#: src/extchat.c:1161
+msgid "Channel removed."
+msgstr "Kanalen fjernet."
+
+#: src/extchat.c:1192
+msgid "Channel renamed."
+msgstr "Kanalen har fått nytt navn."
+
+#: look.c:616
+msgid "Channels: *NONE*"
+msgstr "Kanaler: *INGEN*"
+
+#: look.c:612
+msgid "Channels:"
+msgstr "Kanaler:"
+
+#: flags.c:2030
+msgid "Character"
+msgstr "Karakter"
+
+#: conf.c:544
+msgid "Chat system options"
+msgstr "Chat system alternativer"
+
+#: set.c:308
+msgid "Circular zone broken."
+msgstr "Sirkulær sone brutt."
+
+#: extmail.c:2473
+msgid "Cleared "
+msgstr "Fjernet "
+
+#: attrib.c:942
+msgid "Cleared"
+msgstr "Fjernet"
+
+#: create.c:680
+#, c-format
+msgid "Cloned: Exit #%d."
+msgstr "Klonet: Utgang #%d."
+
+#: create.c:565
+#, c-format
+msgid "Cloned: Object %s."
+msgstr "Klonet: Objekt %s."
+
+#: create.c:628
+#, c-format
+msgid "Cloned: Room #%d."
+msgstr "Klonet: Rom #%d."
+
+#: bsd.c:3855 bsd.c:3859
+msgid "Cmds"
+msgstr "Cmds"
+
+#: command.c:1318
+#, c-format
+msgid "Command %s added."
+msgstr "Kommando %s lagt til."
+
+#: command.c:1597
+#, c-format
+msgid "Command %s already exists."
+msgstr "Kommando %s finnes allerede."
+
+#: command.c:1683
+msgid "Command cloned."
+msgstr "Kommando klonet."
+
+#: command.c:1818
+#, c-format
+msgid "Commands: %s"
+msgstr "Kommandoer: %s"
+
+#: access.c:400
+#, c-format
+msgid "Comment: %s"
+msgstr "Kommentar: %s"
+
+#: src/version.c:48
+#, c-format
+msgid "Compilation flags: %s"
+msgstr "Kompileringsflagg: %s"
+
+#: conf.c:546
+msgid "Compile-time options"
+msgstr "Alternativer ved kompilering"
+
+#: version.c:47
+#, c-format
+msgid "Compiler: %s"
+msgstr "Hjem: %s"
+
+#: bsd.c:4386 bsd.c:4395
+msgid "Connecting..."
+msgstr "Kobler til..."
+
+#: bsd.c:4667
+msgid "Connection hidden."
+msgstr "Tilkobling gjemt."
+
+#: bsd.c:4669
+msgid "Connection unhidden."
+msgstr "Tilkobling ikke lenger gjemt."
+
+#: access.c:402
+msgid "Connections allowed by: "
+msgstr "Tilkoblinger tillatt av: "
+
+#: wiz.c:1061
+#, c-format
+msgid "Contents: %d"
+msgstr "Innhold: %d"
+
+#: look.c:494 look.c:750
+msgid "Contents:"
+msgstr "Innhold:"
+
+#: conf.c:547
+msgid "Cosmetic options"
+msgstr "Kosmetiske alternativer"
+
+#: conf.c:548
+msgid "Costs"
+msgstr "Kostnader"
+
+#: bsd.c:4045
+msgid "Couldn't find that descriptor."
+msgstr "Kunne ikke finne den descriptoren."
+
+#: src/wiz.c:1635 src/wiz.c:1929
+msgid "Couldn't find that player."
+msgstr "Kan ikke finne den spilleren."
+
+#: cmds.c:182
+msgid "Couldn't set that option."
+msgstr "Kunne ikke sette det alternativet."
+
+#: src/create.c:431
+msgid "Create what?"
+msgstr "@create hva?"
+
+#: look.c:730
+#, c-format
+msgid "Created: %s"
+msgstr "Bygd: %s"
+
+#: create.c:475
+#, c-format
+msgid "Created: Object %s."
+msgstr "Skapt: Objekt %s."
+
+#: access.c:420
+msgid "Creation is NOT allowed"
+msgstr "Det er IKKE tillatt å lage ting."
+
+#: access.c:422
+msgid "Creation is allowed"
+msgstr "Skapning er tillatt"
+
+#: extchat.c:1626 extchat.c:1636
+msgid "Creator"
+msgstr "Skaper"
+
+#: atr_tab.c:211
+msgid "Critical memory failure - Alert God!"
+msgstr "Kritisk minnefeil - si fra til God!"
+
+#: game.c:560
+msgid "DUMP: Data are swapped to disk, so nonforking dumps will be used."
+msgstr "DUMP: Data har blitt mellomlagret på disk, og synkrone dumps vil bli benyttet."
+
+#: conf.c:549
+msgid "Database options"
+msgstr "Database alternativer"
+
+#: src/game.c:188
+#, c-format
+msgid "Debug dumping, checkpoint interval %d."
+msgstr "Debug-dumping, checkpoint intervall %d"
+
+#: conf.c:552
+msgid "Default flags for new objects"
+msgstr "Standard flagg for nye objekter"
+
+#: access.c:429
+msgid "Denied connections are not logged"
+msgstr "Blokkerte tilkoblinger blir ikke logget"
+
+#: bsd.c:3324
+msgid "Des"
+msgstr "Des"
+
+#: extchat.c:2186
+#, c-format
+msgid "Description: %s"
+msgstr "Beskrivelse: %s"
+
+#: wiz.c:1072
+#, c-format
+msgid "Destination: %d"
+msgstr "Destinasjon: %d"
+
+#: look.c:828
+#, c-format
+msgid "Destination: %s"
+msgstr "Destinasjon: %s"
+
+#: look.c:824
+msgid "Destination: *HOME*"
+msgstr "Destinasjon: *HJEM*"
+
+#: look.c:821
+msgid "Destination: *UNLINKED*"
+msgstr "Mållokasjon: *UTEN LENKE*"
+
+#: destroy.c:320
+msgid "Destroyed."
+msgstr "Ødelagt."
+
+#: src/destroy.c:216
+msgid "Destroying God would be blasphemous."
+msgstr "Slike former for ateisme godtar vi ikke her."
+
+#: src/destroy.c:212
+msgid "Destroying that again is hardly necessary."
+msgstr "Å ødelegge det igjen er vel ikke nødvendig?"
+
+#: rob.c:367
+msgid "Did you want to give something *to* someone?"
+msgstr "Ville du gi noe *til* noen?"
+
+#: src/create.c:374
+msgid "Dig what?"
+msgstr "@dig hva?"
+
+#: wiz.c:1011
+msgid "Disabled."
+msgstr "Utilgjengelig."
+
+#: function.c:735
+msgid "Do what with the function?"
+msgstr "Gjøre hva med funksjonen?"
+
+#: src/bsd.c:4316
+#, c-format
+msgid "Doing set. %d characters lost."
+msgstr "Doing satt. %d tegn tapt."
+
+#: src/bsd.c:4319
+msgid "Doing set."
+msgstr "Gjøremål satt."
+
+#: src/extchat.c:889
+msgid "Don't you have anything to say?"
+msgstr "Har du ikke noe å si?"
+
+#: src/bsd.c:4280
+#, c-format
+msgid "Down MOTD: %s"
+msgstr "Nede MOTD: %s"
+
+#: bsd.c:3457
+#, c-format
+msgid "Down motd %s."
+msgstr "Nede-MOTD %s."
+
+#: cque.c:710
+msgid "Drained."
+msgstr "Tappet."
+
+#: wiz.c:1076
+#, c-format
+msgid "Drop-to: %d"
+msgstr "Drop-til: %d"
+
+#: src/look.c:789
+#, c-format
+msgid "Dropped objects go to: %s"
+msgstr "Objekter som blir sluppet går til: %s"
+
+#: move.c:596 move.c:600 move.c:603 move.c:609
+msgid "Dropped."
+msgstr "Sluppet."
+
+#: src/create.c:210
+msgid "Dropto removed."
+msgstr "Dropto fjernet."
+
+#: src/create.c:341
+msgid "Dropto set."
+msgstr "Dropto satt."
+
+#: game.c:213
+msgid "Dumping..."
+msgstr "Dumper..."
+
+#: game.c:446
+#, c-format
+msgid "EMERGENCY SHUTDOWN: %s"
+msgstr "NØDNEDSTEGNING: %s"
+
+#: bsd.c:272
+msgid "Either that player does not exist, or has a different password."
+msgstr "Enten eksisterer ikke den spilleren, ellers har den et annet passord."
+
+#: bsd.c:273
+msgid "Either there is already a player with that name, or that name is illegal."
+msgstr "Enten fins den spilleren allerede, ellers er navnet ikke tillatt."
+
+#: access.c:425
+msgid "Email registration is allowed"
+msgstr "Epost registrering er tillatt."
+
+#: wiz.c:1013
+msgid "Enabled."
+msgstr "Skrudd på."
+
+#: src/game.c:1465
+msgid "Error -- cannot execute uptime."
+msgstr "Feil -- Kan ikke utføre uptime."
+
+#: src/destroy.c:271
+msgid "Even you can't do that!"
+msgstr "Til og med du kan ikke gjøre det!"
+
+#: src/flags.c:1080
+#, c-format
+msgid "Exit %s is no longer broadcasting."
+msgstr "Utgangen %s kringkaster ikke lenger."
+
+#: src/flags.c:1141
+#, c-format
+msgid "Exit %s is now broadcasting."
+msgstr "Exit %s kringkaster nå."
+
+#: src/move.c:386 src/move.c:390
+msgid "Exit destination is invalid."
+msgstr "Utgangens mål er ugyldig."
+
+#: src/wiz.c:412
+msgid "Exits can only be teleported to other rooms."
+msgstr "Utganger kan bare bli teleportert til andre rom."
+
+#: wiz.c:1077
+#, c-format
+msgid "Exits: %d"
+msgstr "Utganger: %d"
+
+#: look.c:772
+msgid "Exits:"
+msgstr "Utganger:"
+
+#: function.c:1018
+msgid "Expected between 1 and 5 arguments."
+msgstr "Forventet mellom 1 og 5 argumenter."
+
+#: extmail.c:997
+#, c-format
+msgid "Failed attempt to forward @mail to #%d"
+msgstr "Kunne ikke videresende @mail til #%d"
+
+#: wiz.c:109
+#, c-format
+msgid "Failure creating '%s' (bad name)"
+msgstr "Kunne ikke lage '%s' (Ugyldig navn)"
+
+#: wiz.c:113
+#, c-format
+msgid "Failure creating '%s' (bad password)"
+msgstr "Kan ikke lage '%s' (Ugyldig passord)"
+
+#: src/rob.c:254
+msgid "Feeling poor today?"
+msgstr "Føler du deg fattig i dag, eller?"
+
+#: conf.c:551
+msgid "Files used by the MUSH"
+msgstr "Filer brukt av MUSHen"
+
+#: src/extmail.c:1182
+#, c-format
+msgid "Fixing mail for #%d."
+msgstr "Fikser mail for #%d."
+
+#: command.c:1922
+#, c-format
+msgid "Flags      : %s"
+msgstr "Flagg      : %s"
+
+#: function.c:897
+#, c-format
+msgid "Flags     : %s"
+msgstr "Flagg     : %s"
+
+#: wiz.c:936
+#, c-format
+msgid "Flags value: %s"
+msgstr "Flaggverdi: %s"
+
+#: cmds.c:135 cmds.c:280 cmds.c:420
+msgid "Flags"
+msgstr "Flagg"
+
+#: flags.c:1284
+#, c-format
+msgid "Flags: %s"
+msgstr "Flagg: %s"
+
+#: extmail.c:462 extmail.c:465
+msgid "Folder:"
+msgstr "Folder:"
+
+#: speech.c:1122
+msgid "From "
+msgstr "Fra "
+
+#: src/speech.c:1010
+msgid "From afar"
+msgstr "Fra langt unna"
+
+#: bsd.c:4123
+#, c-format
+msgid "From afar, %s%s%s"
+msgstr "Langdistanse, %s%s%s"
+
+#: extmail.c:471
+#, c-format
+msgid ""
+"From: %-55s %s\n"
+"Date: %-25s   %s %2d   Message: %d\n"
+"Status: %s"
+msgstr ""
+"Fra: %-55s %s\n"
+"Dato: %-25s    %s %2d    Melding: %d\n"
+"Status: %s"
+
+#: src/bsd.c:4281
+#, c-format
+msgid "Full MOTD: %s"
+msgstr "Full MOTD: %s"
+
+#: bsd.c:3461
+#, c-format
+msgid "Full motd %s."
+msgstr "Full motd %s."
+
+#: src/function.c:633
+msgid "Function Name                   Dbref #    Attrib"
+msgstr "Funksjon Navn                   Dbref #    Attrib"
+
+#: src/function.c:725
+msgid "Function added."
+msgstr "Funksjon lagt til."
+
+#: function.c:1614
+msgid "Function alias deleted."
+msgstr "Funksjonsalias slettet."
+
+#: function.c:1053
+msgid "Function cloned."
+msgstr "Funksjon klonet."
+
+#: src/function.c:802
+msgid "Function deleted."
+msgstr "Funksjon slettet."
+
+#: src/function.c:741
+msgid "Function updated."
+msgstr "Funksjonen oppdatert."
+
+#: function.c:807
+#, c-format
+msgid "Functions: %s"
+msgstr "Funksjoner: %s"
+
+#: extmail.c:2479
+msgid "Fwd "
+msgstr "Fwd "
+
+#: predicat.c:545
+#, c-format
+msgid "GAME: %s(%s) spent %d %s."
+msgstr "SPILL: %s(%s) brukte %d %s."
+
+#: predicat.c:553
+#, c-format
+msgid "GAME: %s(%s) tried to spend %d %s."
+msgstr "SPILL: %s(%s) prøvde å bruke %d %s."
+
+#: src/destroy.c:1325
+msgid "GAME: Database consistency check complete."
+msgstr "SPILL: Database konsistenssjekk ferdig."
+
+#: game.c:311
+msgid "GAME: ERROR! Database save failed!"
+msgstr "SPILL: FEIL! Databaselagring ble ikke fullført!"
+
+#: bsd.c:4244
+msgid "GAME: ERROR! Forking database save failed!"
+msgstr "SPILL: FEIL! Systemkall for databaselagring feilet (forking)!"
+
+#: log.c:492
+msgid "GAME: End recall"
+msgstr "SPILL: Slutt på logg"
+
+#: src/bsd.c:5057
+msgid "GAME: Error writing reboot database!"
+msgstr "SPILL: Feil under skriving av reboot-database!"
+
+#: src/services.c:257
+msgid "GAME: Game shutdown by system operator"
+msgstr "SPILL: Spillet avsluttet av systemadministrator"
+
+#: cque.c:207
+#, c-format
+msgid "GAME: Object %s(%s) lost a %s to queue loss."
+msgstr "SPILL: Objekt %s(%s) mistet en %s på grunn av køtap."
+
+#: src/destroy.c:1322
+msgid "GAME: Performing database consistency check."
+msgstr "SPILL: Foretar database-sjekk."
+
+#: src/bsd.c:5185
+msgid "GAME: Reboot finished."
+msgstr "SPILL: Restart ferdig."
+
+#: src/wiz.c:2295
+#, c-format
+msgid "GAME: Reboot w/o disconnect by %s, please wait."
+msgstr "GAME: Restart uten nedkobling under ordre fra %s. Vennligst vent."
+
+#: src/wiz.c:2289
+msgid "GAME: Reboot w/o disconnect from game account, please wait."
+msgstr "SPILL: Restart uten nedkobling fra spillkontoen. Vennligst vent."
+
+#: log.c:459
+msgid "GAME: Recall from activity log"
+msgstr "SPILL: Hentet fra aktivitetslogg"
+
+#: bsd.c:294
+msgid "GAME: SSL connections must be dropped, sorry."
+msgstr "GAME: SSL tilkoblinger må stenges, beklager."
+
+#: src/game.c:273
+#, c-format
+msgid "GAME: Shutdown by %s"
+msgstr "SPILL: Avslutter på ordre fra %s"
+
+#: src/bsd.c:1748
+msgid "GAME: Shutdown by external signal"
+msgstr "SPILL: Avslutter på eksternt signal"
+
+#: bsd.c:4064
+#, c-format
+msgid "GAME: Suspect %s created."
+msgstr "SPILL: Mistenkt %s laget."
+
+#: bsd.c:4081 bsd.c:4259
+#, c-format
+msgid "GAME: Suspect %s"
+msgstr "SPILL: Mistenkt %s"
+
+#: bsd.c:4032 bsd.c:4055 bsd.c:4058 bsd.c:4061 bsd.c:4234 bsd.c:4237\nbsd.c:4240
+msgid "GAME:"
+msgstr "SPILL:"
+
+#: extchat.c:2134
+msgid "Gag"
+msgstr "Kneble"
+
+#: src/wiz.c:363
+msgid "Garbage belongs in the garbage dump."
+msgstr "Søppel hører til på fyllinga."
+
+#: src/look.c:667 src/look.c:1306
+msgid "Garbage is garbage."
+msgstr "Søppel er søppel."
+
+#: wiz.c:1329
+#, c-format
+msgid "Garbage(#%d)"
+msgstr "Søppel(#%d)"
+
+#: src/set.c:82
+msgid "Give it what new name?"
+msgstr "Gi det hvilket nytt navn?"
+
+#: src/rob.c:177
+msgid "Give to whom?"
+msgstr "Gi til hvem?"
+
+#: rob.c:374
+msgid "Give what?"
+msgstr "Gi hva?"
+
+#: src/extmail.c:1147
+msgid "Go get some bugspray."
+msgstr "Gå og hent litt Radar-spray."
+
+#: src/wiz.c:1180
+msgid "God is already all-powerful."
+msgstr "Gud er allerede allmektig."
+
+#: bsd.c:276
+msgid "Going down - Bye"
+msgstr "Avslutter - Bibi!"
+
+#: access.c:415
+msgid "Guest connections are NOT allowed"
+msgstr "Gjestetilkoblinger er IKKE tillatt"
+
+#: access.c:417
+msgid "Guest connections are allowed"
+msgstr "Gjestetilkoblinger er ikke tillatt"
+
+#: player.c:154
+msgid "Guest connections not allowed."
+msgstr "Tilkobling som gjest er ikke tillatt."
+
+#: src/extchat.c:793
+msgid "Guests are not allowed to join channels."
+msgstr "Gjester kan ikke bli med i kanaler."
+
+#: extchat.c:1000
+msgid "Guests are not allowed to leave channels."
+msgstr "Gjester kan ikke forlate kanaler."
+
+#: src/extchat.c:846
+msgid "Guests may not leave channels."
+msgstr "Gjester kan ikke forlate kanaler."
+
+#: src/extchat.c:1078
+msgid "Guests may not modify channels."
+msgstr "Gjester kan ikke modifisere kanaler."
+
+#: cque.c:830 cque.c:934 cque.c:937
+msgid "Halted"
+msgstr "Stoppet"
+
+#: help.c:122 help.c:126
+msgid "Help files reindexed."
+msgstr "Hjelpefiler reindeksert."
+
+#: src/bsd.c:3065
+msgid "Help topics don't start with '&'."
+msgstr "Hjelp-emner starter ikke med '&'."
+
+#: help.c:71
+#, c-format
+msgid ""
+"Here are the entries which match '%s':\n"
+"%s"
+msgstr ""
+"Her er poster som passer '%s':\n"
+"%s"
+
+#: src/create.c:326
+msgid "Home set."
+msgstr "Hjem satt."
+
+#: wiz.c:1069
+#, c-format
+msgid "Home: %d"
+msgstr "Hjem: %d"
+
+#: look.c:787
+#, c-format
+msgid "Home: %s"
+msgstr "Hjem: %s"
+
+#: command.c:1352
+#, c-format
+msgid "Hook removed from %s."
+msgstr "Hook fjernet fra %s."
+
+#: command.c:1375
+#, c-format
+msgid "Hook set for %s"
+msgstr "Hook satt for %s"
+
+#: command.c:1480
+msgid "Hooks not allowed with that command."
+msgstr "Hooks er ikke tillatt med den kommandoen."
+
+#: bsd.c:3311
+msgid "Host"
+msgstr "Tjener"
+
+#: flags.c:1882
+#, c-format
+msgid "How do you want to restrict that %s?"
+msgstr "Hvordan vil du begrense den %s?"
+
+#: src/command.c:1109
+msgid "How do you want to restrict the command?"
+msgstr "Hvordan vil du restriktere kommandoen?"
+
+#: src/destroy.c:276
+msgid "How gruesome. You may not destroy players who are connected."
+msgstr "Så grusomt! Du kan ikke ødelegge spillere som er koblet til!"
+
+#: src/wiz.c:1033
+msgid "How many commands do you want to execute?"
+msgstr "Hvor mange kommandoer vil du utføre?"
+
+#: extchat.c:2914 extchat.c:2919
+msgid "How many lines did you want to recall?"
+msgstr "Hvor mange linjer vil du hente fra loggen?"
+
+#: src/game.c:999
+msgid "Huh?  (Type \"help\" for help.)"
+msgstr "Høh? (Prøv \"help\" for hjelp.)"
+
+#: command.c:1692
+msgid "I can't alias a command to that!"
+msgstr "Jeg kan ikke sette et kommandoalias til det!"
+
+#: rob.c:321
+msgid "I can't find that item here."
+msgstr "Jeg kan ikke finne den tingen her."
+
+#: rob.c:314
+msgid "I can't find that item with that price here."
+msgstr "Jeg kan ikke finne den tingen med den prisen her."
+
+#: src/attrib.c:1076
+msgid "I can't find that player"
+msgstr "Jeg finner ikke den spilleren"
+
+#: src/speech.c:209 src/speech.c:265
+msgid "I can't find that room."
+msgstr "Jeg finner ikke det rommet."
+
+#: src/speech.c:1365
+msgid "I can't find that."
+msgstr "Jeg finner ikke det."
+
+#: speech.c:686
+#, c-format
+msgid "I can't find who you're trying to page with: %s"
+msgstr "Jeg kan ikke finne den du prøver å sende melding til: %s"
+
+#: src/fundb.c:1795 src/match.c:271
+msgid "I can't see that here."
+msgstr "Jeg ser ikke den her."
+
+#: src/wiz.c:941
+msgid "I can't seem to find that."
+msgstr "Jeg kan ikke finne det."
+
+#: look.c:669 look.c:677 move.c:534 move.c:542
+#, c-format
+msgid "I can't tell which %s."
+msgstr "Jeg vet ikke hvilken %s."
+
+#: src/bsd.c:4810
+msgid "I can't tell which channel you mean."
+msgstr "Jeg vet ikke hvilken kanal du mener."
+
+#: move.c:785
+msgid "I can't tell which one to follow."
+msgstr "Jeg vet ikke hvilken jeg skal følge."
+
+#: move.c:837
+msgid "I can't tell which one to stop following."
+msgstr "Jeg vet ikke hvilken jeg skal slutte å følge etter."
+
+#: src/look.c:576
+msgid "I can't tell which one you mean."
+msgstr "Jeg vet ikke hvilken du mener."
+
+#: src/cque.c:775 src/set.c:199
+msgid "I couldn't find that player."
+msgstr "Jeg fant ikke den spilleren."
+
+#: flags.c:2125 flags.c:2162 flags.c:2214 flags.c:2253 flags.c:2310
+#, c-format
+msgid "I don't know that %s."
+msgstr "Jeg vet ikke av det %s."
+
+#: rob.c:390
+msgid "I don't know what you mean."
+msgstr "Jeg vet ikke hvilken du mener."
+
+#: src/boolexp.c:265
+#, c-format
+msgid "I don't know which %s you mean!"
+msgstr "Jeg vet ikke hvilke %s du mener!"
+
+#: src/extchat.c:1011
+msgid "I don't know which channel you mean."
+msgstr "Jeg vet ikke hvilken kanal du mener."
+
+#: src/wiz.c:389
+msgid "I don't know which destination you mean!"
+msgstr "Jeg vet ikke hvilken destinasjon du mener!"
+
+#: src/create.c:197 src/match.c:274 src/wiz.c:944
+msgid "I don't know which one you mean!"
+msgstr "Jeg vet ikke hvilken du mener!"
+
+#: src/look.c:554 src/warnings.c:259 src/warnings.c:435
+msgid "I don't know which one you mean."
+msgstr "Jeg vet ikke hvilken du mener."
+
+#: src/lock.c:365
+msgid "I don't know which one you want to lock!"
+msgstr "Jeg vet ikke hvilken du vil låse!"
+
+#: src/fundb.c:1797
+msgid "I don't know which thing you mean."
+msgstr "Jeg vet ikke hvilken ting du mener."
+
+#: src/move.c:362
+msgid "I don't know which way you mean!"
+msgstr "Jeg vet ikke hvilken du mener!"
+
+#: src/move.c:571 src/rob.c:194
+msgid "I don't know which you mean!"
+msgstr "Jeg vet ikke hvilken du mener!"
+
+#: src/cque.c:778 src/rob.c:41 src/rob.c:180 src/speech.c:602
+msgid "I don't know who you mean!"
+msgstr "Jeg vet ikke hvilken du mener!"
+
+#: src/extchat.c:1008
+msgid "I don't recognize that channel."
+msgstr "Jeg kjenner ikke til den kanalen."
+
+#: move.c:883
+msgid "I don't recognize who you want to desert."
+msgstr "Jeg vet ikke hvem du vil desertere fra."
+
+#: move.c:853
+msgid "I don't recognize who you want to dismiss."
+msgstr "Jeg vet ikke hvem du vil dimme."
+
+#: src/boolexp.c:261
+#, c-format
+msgid "I don't see %s here."
+msgstr "Jeg ser ikke %s her."
+
+#: src/fundb.c:1327 src/look.c:551 src/look.c:566 src/move.c:482\nsrc/move.c:505 src/rob.c:91 src/speech.c:599
+msgid "I don't see that here."
+msgstr "Jeg ser ikke det her."
+
+#: src/warnings.c:256 src/warnings.c:432
+msgid "I don't see that object."
+msgstr "Jeg ser ikke det objektet."
+
+#: src/lock.c:362
+msgid "I don't see what you want to lock!"
+msgstr "Jeg ser ikke hva du vil låse!"
+
+#: attrib.c:1578
+#, c-format
+msgid "I don't think #%d wants %s's mail."
+msgstr "Jeg tror ikke #%d vil ha %ss post."
+
+#: attrib.c:1573
+#, c-format
+msgid "I don't think #%d wants to hear from %s."
+msgstr "Jeg tror ikke #%d vil høre fra %s."
+
+#: attrib.c:935
+#, c-format
+msgid "I don't think #%d wants to hear from you."
+msgstr "Jeg tror ikke #%d vil høre fra deg."
+
+#: src/fundb.c:1412
+#, c-format
+msgid "I don't understand switch '%c'."
+msgstr "Jeg forstår ikke switch '%c'."
+
+#: src/lock.c:383
+msgid "I don't understand that key."
+msgstr "Jeg forstår ikke den nøkkelen."
+
+#: flags.c:1405
+msgid "I don't understand the list of types."
+msgstr "Jeg forstår ikke den listen av typer."
+
+#: src/atr_tab.c:189
+msgid "I don't understand those permissions."
+msgstr "Jeg forstår ikke de tillatelsene."
+
+#: src/game.c:1606 src/game.c:1616
+msgid "I don't understand what you want to @list."
+msgstr "Jeg skjønner ikke hva du vil @list'e."
+
+#: src/extchat.c:870
+msgid "I don't understand what you want to do."
+msgstr "Jeg skjønner ikke hva du vil gjøre."
+
+#: set.c:1010
+msgid "I need to know what attribute to include."
+msgstr "Jeg må vite hvilken attributt jeg skal ta med."
+
+#: src/set.c:798
+msgid "I need to know what attribute to trigger."
+msgstr "Jeg må vite hvilken attributt jeg skal utføre."
+
+#: src/set.c:667 src/set.c:673
+msgid "I need to know what you want to edit."
+msgstr "Jeg må vite hva du vil editere."
+
+#: src/conf.c:779
+msgid "I only know the following types of options:"
+msgstr "Jeg vet bare om følgende alternativer:"
+
+#: src/fundb.c:1304
+msgid "I'm not sure who you mean."
+msgstr "Jeg er ikke sikker på hvem du mener."
+
+#: speech.c:692
+#, c-format
+msgid "I'm not sure who you want to page with: %s"
+msgstr "Jeg er ikke sikker på hvem du vil melde med: %s"
+
+#: src/speech.c:611 src/speech.c:1371
+#, c-format
+msgid "I'm sorry, but %s wishes to be left alone now."
+msgstr "Jeg beklager, men %s vil være alene akkurat nå."
+
+#: bsd.c:3848 bsd.c:3851 bsd.c:3855 bsd.c:3859
+msgid "Idle"
+msgstr "Inaktiv"
+
+#: wiz.c:807
+msgid "If you want to quit, use QUIT."
+msgstr "Hvis du vil avslutte, skriv QUIT."
+
+#: markup.c:1160
+msgid "Inspecting ansi string complete"
+msgstr "Inspeksjon av ansi streng er fullført"
+
+#: markup.c:1148
+msgid "Inspecting ansi string"
+msgstr "Inspiserer ANSI-streng"
+
+#: flags.c:1534 flags.c:1697
+#, c-format
+msgid "Internal error: Unable to find flagspace '%s'!"
+msgstr "Intern feil: Kunne ikke finne flaggrom '%s'!"
+
+#: flags.c:2325
+#, c-format
+msgid "Internal error: Unknown flag space '%s'!"
+msgstr "Intern feil: Ukjent flaggrom '%s'!"
+
+#: flags.c:2515
+#, c-format
+msgid "Internal error: Unknown flagspace '%s'!"
+msgstr "Intern feil: Ukjent flaggrom '%s'!"
+
+#: create.c:373
+msgid "Internal error: weird object type."
+msgstr "Intern feil: rar objekt-type."
+
+#: atr_tab.c:202 atr_tab.c:293
+msgid "Invalid attribute name."
+msgstr "Ugyldig attributtnavn."
+
+#: extchat.c:2996
+msgid "Invalid buffer size."
+msgstr "Ugyldig bufferstørrelse."
+
+#: extchat.c:1598
+msgid "Invalid character in title."
+msgstr "Ugyldig karakter i tittel."
+
+#: wiz.c:1924
+msgid "Invalid count index"
+msgstr "Ugyldig count-indeks"
+
+#: attrib.c:1479
+#, c-format
+msgid "Invalid dbref #%d in %s."
+msgstr "Ugyldig dbref #%d i %s."
+
+#: function.c:1046 function.c:1087 function.c:1437
+msgid "Invalid function name."
+msgstr "Ugyldig funksjonsnavn."
+
+#: command.c:1735
+msgid "Invalid hook object."
+msgstr "Ugyldig hook objekt."
+
+#: src/game.c:860
+#, c-format
+msgid "Invalid location on command execution: %s(#%d)"
+msgstr "Ugyldig lokasjon ved kommandoutførelse: %s(#%d)"
+
+#: src/extmail.c:1590
+msgid "Invalid message specification"
+msgstr "Ugyldig meldingsspesifikasjon"
+
+#: extchat.c:1389
+msgid "Invalid name for a channel."
+msgstr "Ugyldig navn for en kanal."
+
+#: extchat.c:1359
+#, c-format
+msgid "Invalid or same permissions on channel <%s>. No changes made."
+msgstr "Tillatelser på kanalen <%s> forandret."
+
+#: src/look.c:941
+msgid "Invalid parameter."
+msgstr "Ugyldig parameter."
+
+#: wiz.c:831
+msgid "Invalid port."
+msgstr "Ugyldig port."
+
+#: src/wiz.c:1458 src/wiz.c:1465 src/wiz.c:1681 src/wiz.c:1689
+msgid "Invalid range argument"
+msgstr "Ugyldig range-argument"
+
+#: predicat.c:1444 predicat.c:1455
+#, c-format
+msgid "Invalid regexp: %s"
+msgstr "Ugyldig regexp: %s"
+
+#: wiz.c:1772
+msgid "Invalid search class+restriction format."
+msgstr "Ugyldig klasse+restriksjonsformat for søk."
+
+#: wiz.c:1918
+msgid "Invalid start index"
+msgstr "Ugyldig startindeks"
+
+#: src/attrib.c:1038
+msgid "Invalid status on atrlock.. Notify god."
+msgstr "Ugyldig status på atrlock.. Si fra til Gud."
+
+#: src/extchat.c:782 src/extchat.c:797 src/extchat.c:842
+msgid "Invalid target."
+msgstr "Ugyldig mål."
+
+#: src/speech.c:1475
+msgid "Invalid zone."
+msgstr "Ugyldig sone."
+
+#: src/create.c:265 src/create.c:279
+#, c-format
+msgid "It costs %d %s to link this exit."
+msgstr "Det koster %d %s for å linke denne utgangen."
+
+#: src/game.c:269
+msgid "It takes a God to make me panic."
+msgstr "Det må en Gud til for å få meg til å få panikk."
+
+#: src/destroy.c:1225
+msgid "It was destroyed."
+msgstr "Det ble ødelagt."
+
+#: src/destroy.c:1210 src/destroy.c:1218
+#, c-format
+msgid "It was moved to %s."
+msgstr "Det ble flyttet til %s."
+
+#: src/move.c:516
+msgid "It's all around you!"
+msgstr "Det er overalt rundt deg!"
+
+#: src/player.c:460
+#, c-format
+msgid "Last FAILED connect was from %s."
+msgstr "Siste mislykkede tilkobling fra %s."
+
+#: src/look.c:743
+#, c-format
+msgid "Last Modification: %s"
+msgstr "Sist modifisert: %s"
+
+#: src/player.c:452
+#, c-format
+msgid "Last connect was from %s on %s."
+msgstr "Siste tilkobling var fra %s den %s."
+
+#: src/extmail.c:1384
+#, c-format
+msgid "Last is dated %s"
+msgstr "Siste datert %s"
+
+#: game.c:2091
+msgid "Last reboot"
+msgstr "Siste omstart"
+
+#: src/version.c:37
+#, c-format
+msgid "Last restarted: %s"
+msgstr "Siste restart: %s"
+
+#: command.c:1797
+#, c-format
+msgid "Leftside   : %s"
+msgstr "Venstreside  : %s"
+
+#: flags.c:2045 flags.c:2175
+#, c-format
+msgid "Letter conflicts with the %s %s."
+msgstr "Bokstav i konflikt med %s %s."
+
+#: flags.c:2185
+#, c-format
+msgid "Letter for %s %s cleared."
+msgstr "Bokstav for %s %s slettet."
+
+#: flags.c:2181
+#, c-format
+msgid "Letter for %s %s set to '%c'."
+msgstr "Bokstav for %s %s satt til '%c'."
+
+#: conf.c:554
+msgid "Limits and other constants"
+msgstr "Begrensninger og andre konstanter"
+
+#: create.c:156 create.c:296
+#, c-format
+msgid "Linked exit #%d to #%d"
+msgstr "Lenket utgang #%d til #%d"
+
+#: create.c:309
+#, c-format
+msgid "Linked exit #%d to %s"
+msgstr "Lenket utgang #%d til %s"
+
+#: src/look.c:996
+msgid "Listening EXITS:"
+msgstr "Lyttende utganger:"
+
+#: src/look.c:946
+msgid "Listening in ROOM:"
+msgstr "Disse lytter i rommet:"
+
+#: src/look.c:1010
+msgid "Listening in your INVENTORY:"
+msgstr "Lytter i ditt INNHOLD:"
+
+#: bsd.c:3855 bsd.c:3859
+msgid "Loc #"
+msgstr "Loc #"
+
+#: function.c:1711
+#, c-format
+msgid "Location  : #%d/%s\n"
+msgstr "Lokasjon  : #%d/%s\n"
+
+#: wiz.c:1068
+#, c-format
+msgid "Location: %d"
+msgstr "Lokasjon: %d"
+
+#: look.c:791
+#, c-format
+msgid "Location: %s"
+msgstr "Lokasjon: %s"
+
+#: command.c:1814
+#, c-format
+msgid "Lock       : %s"
+msgstr "Lås        : %s"
+
+#: cmds.c:466
+msgid "Locks"
+msgstr "Låser"
+
+#: src/log.c:358
+msgid "Log wiped."
+msgstr "Logg slettet."
+
+#: game.c:1505
+msgid "Logged."
+msgstr "Logget."
+
+#: conf.c:555
+msgid "Logging options"
+msgstr "Loggingsalternativer"
+
+#: bsd.c:4125
+#, c-format
+msgid "Long distance to %s: %s%s%s"
+msgstr "Langdistanse til %s: %s%s%s"
+
+#: src/extmail.c:763
+#, c-format
+msgid "MAIL: %d messages forwarded."
+msgstr "MAIL: %d meldinger videresendt."
+
+#: src/extmail.c:2504
+#, c-format
+msgid "MAIL: %d messages in folder %d [%s] (%d unread, %d cleared)."
+msgstr "MAIL: %d meldinger i folder %d [%s] (%d uleste, %d slettede)."
+
+#: src/malias.c:223 src/malias.c:679
+#, c-format
+msgid "MAIL: %s added to alias %s"
+msgstr "MAIL: %s lagt til alias %s"
+
+#: src/extmail.c:984
+#, c-format
+msgid "MAIL: %s is not accepting mail from you right now."
+msgstr "MAIL: %s aksepterer ikke mail fra deg akkurat nå."
+
+#: src/malias.c:782
+#, c-format
+msgid "MAIL: %s removed from alias %s"
+msgstr "MAIL: %s fjernet fra alias %s"
+
+#: src/extmail.c:990
+#, c-format
+msgid "MAIL: %s's mailbox is full. Can't send."
+msgstr "MAIL: %s's mailboks er full. Kan ikke sende."
+
+#: malias.c:315
+#, c-format
+msgid "MAIL: Alias %c%s: "
+msgstr "MAIL: Alias %c%s: "
+
+#: src/malias.c:348 src/malias.c:370
+#, c-format
+msgid "MAIL: Alias %s not found."
+msgstr "MAIL: Alias %s ikke funnet."
+
+#: src/malias.c:316
+#, c-format
+msgid "MAIL: Alias '%s' not found."
+msgstr "MAIL: Alias '%s' ikke funnet."
+
+#: src/malias.c:438
+msgid "MAIL: Alias Destroyed."
+msgstr "MAIL: Alias slettet."
+
+#: src/malias.c:239 src/malias.c:696
+msgid "MAIL: Alias list is restricted to maximal 100 entries!"
+msgstr "MAIL: Aliaslisten er begrenset til maksimalt 100 adresser."
+
+#: malias.c:518
+msgid "MAIL: Alias list set."
+msgstr "MAIL: Aliasliste satt."
+
+#: src/malias.c:264
+#, c-format
+msgid "MAIL: Alias set '%s' defined."
+msgstr "MAIL: Alias sett '%s' definert."
+
+#: src/malias.c:711 src/malias.c:794
+#, c-format
+msgid "MAIL: Alias set '%s' redefined."
+msgstr "MAIL: Alias sett '%s' redefinert."
+
+#: src/malias.c:148
+#, c-format
+msgid "MAIL: All Mail aliases must begin with '%c'."
+msgstr "MAIL: Alle mailalias må begynne med '%c'."
+
+#: src/malias.c:513
+msgid "MAIL: All mail aliases destroyed!"
+msgstr "MAIL: Alle mailalias slettet!"
+
+#: src/extmail.c:432
+#, c-format
+msgid "MAIL: All messages filed in folder %d [%s]"
+msgstr "MAIL: Alle meldinger lagret i folder %d [%s]"
+
+#: extmail.c:447
+msgid "MAIL: All messages in all folders cleared."
+msgstr "MAIL: Alle meldinger i alle foldere avmerket."
+
+#: extmail.c:481
+msgid "MAIL: All messages in all folders marked as read."
+msgstr "MAIL: Alle meldinger i alle foldere merket som lest."
+
+#: extmail.c:428
+msgid "MAIL: All messages in all folders tagged."
+msgstr "MAIL: Alle meldinger i alle foldere tagget."
+
+#: extmail.c:445
+msgid "MAIL: All messages in all folders uncleared."
+msgstr "MAIL: Alle meldinger i alle foldere avmerket."
+
+#: extmail.c:479
+msgid "MAIL: All messages in all folders unread."
+msgstr "MAIL: Alle meldinger i alle foldere ulest."
+
+#: extmail.c:426
+msgid "MAIL: All messages in all folders untagged."
+msgstr "MAIL: Alle meldinger i alle foldere avtagget."
+
+#: src/malias.c:485
+#, c-format
+msgid "MAIL: Allocated slots %d"
+msgstr "MAIL: Allokerte slots %d"
+
+#: src/malias.c:403
+#, c-format
+msgid "MAIL: Bad alias. Aliases must start with '%c'."
+msgstr "MAIL: Ugyldig alias. Aliaser må begynne med '%c'."
+
+#: src/extmail.c:233
+#, c-format
+msgid "MAIL: Current folder is %d [%s]."
+msgstr "MAIL: Nåværende folder er %d [%s]."
+
+#: src/extmail.c:260
+#, c-format
+msgid "MAIL: Current folder set to %d [%s]."
+msgstr "MAIL: Nåværende folder satt til %d [%s]."
+
+#: src/malias.c:353
+msgid "MAIL: Description changed."
+msgstr "MAIL: Beskrivelse forandret."
+
+#: src/extmail.c:283
+#, c-format
+msgid "MAIL: Folder %d now has no name"
+msgstr "MAIL: Folder %d har nå intet navn"
+
+#: src/extmail.c:255
+#, c-format
+msgid "MAIL: Folder %d now named '%s'"
+msgstr "MAIL: Folder %d heter nå '%s'"
+
+#: src/extmail.c:245
+msgid "MAIL: Folder name too long"
+msgstr "MAIL: Foldernavn for langt"
+
+#: src/extmail.c:792
+msgid "MAIL: I can't figure out what you want to send."
+msgstr "MAIL: Jeg vet ikke hva du vil sende."
+
+#: src/extmail.c:788
+msgid "MAIL: I can't figure out who you want to mail to."
+msgstr "MAIL: Jeg vet ikke hvem du vil sende mail til."
+
+#: src/malias.c:398 src/malias.c:529 src/malias.c:555
+msgid "MAIL: I cannot find that alias!"
+msgstr "MAIL: Jeg finner ikke det aliaset!"
+
+#: src/malias.c:378
+msgid "MAIL: I cannot find that player."
+msgstr "MAIL: Finner ikke den spilleren."
+
+#: src/extmail.c:250
+msgid "MAIL: Illegal folder name"
+msgstr "MAIL: Ugyldig foldernavn"
+
+#: src/extmail.c:2345 src/extmail.c:2355 src/extmail.c:2362 src/extmail.c:2372\nsrc/extmail.c:2379 src/extmail.c:2389
+msgid "MAIL: Invalid age"
+msgstr "MAIL: Ugyldig alder."
+
+#: src/malias.c:158
+msgid "MAIL: Invalid character in mail alias."
+msgstr "MAIL: Ugyldig tegn i mailaliaset."
+
+#: src/extmail.c:2395 src/extmail.c:2400
+msgid "MAIL: Invalid dbref #"
+msgstr "MAIL: Ugyldig dbref #"
+
+#: src/extmail.c:415
+msgid "MAIL: Invalid folder specification"
+msgstr "MAIL: Ugyldig folderspesifikasjon"
+
+#: src/extmail.c:1407
+msgid "MAIL: Invalid mail command."
+msgstr "MAIL: Ugyldig mailkommando."
+
+#: src/malias.c:107
+msgid "MAIL: Invalid malias command."
+msgstr "MAIL: Ugyldig malias kommando."
+
+#: src/extmail.c:2337 src/extmail.c:2434
+msgid "MAIL: Invalid message specification"
+msgstr "MAIL: Feil meldingsspesifikasjon."
+
+#: src/extmail.c:2407 src/extmail.c:2412
+msgid "MAIL: Invalid player"
+msgstr "MAIL: Ugyldig spiller"
+
+#: src/malias.c:164
+#, c-format
+msgid "MAIL: Mail Alias '%s' already exists."
+msgstr "MAIL: Mailalias '%s' eksisterer allerede."
+
+#: src/malias.c:629 src/malias.c:732
+#, c-format
+msgid "MAIL: Mail Alias '%s' not found."
+msgstr "MAIL: Mail alias '%s' ikke funnet."
+
+#: src/malias.c:418
+msgid "MAIL: Mail Alias renamed."
+msgstr "MAIL: Mailalias omdøpt."
+
+#: src/extmail.c:668
+msgid "MAIL: Mailbox purged."
+msgstr "MAIL: Mailboks slettet."
+
+#: src/extmail.c:2349 src/extmail.c:2366 src/extmail.c:2383
+msgid "MAIL: Message ages must be integers"
+msgstr "MAIL: Meldingsaldre må være heltall"
+
+#: extmail.c:362
+#, c-format
+msgid "MAIL: Msg #%d:%d cleared."
+msgstr "MAIL: Melding #%d:%d fjernet."
+
+#: extmail.c:489
+#, c-format
+msgid "MAIL: Msg #%d:%d marked as read"
+msgstr "MAIL: Melding #%d:%d merket som lest"
+
+#: extmail.c:436
+#, c-format
+msgid "MAIL: Msg #%d:%d tagged"
+msgstr "MAIL: Melding #%d:%d tagget"
+
+#: extmail.c:361
+#, c-format
+msgid "MAIL: Msg #%d:%d uncleared."
+msgstr "MAIL: Melding #%d:%d gjenopprettet."
+
+#: extmail.c:487
+#, c-format
+msgid "MAIL: Msg #%d:%d unread"
+msgstr "MAIL: Melding #%d:%d ules"
+
+#: extmail.c:433
+#, c-format
+msgid "MAIL: Msg #%d:%d untagged"
+msgstr "MAIL: Melding #%d:%d avmerket"
+
+#: src/extmail.c:438
+#, c-format
+msgid "MAIL: Msg %d:%d filed in folder %d [%s]"
+msgstr "MAIL: Mld %d%d lagret i folder %d [%s]"
+
+#: src/malias.c:220 src/malias.c:671 src/malias.c:774
+#, c-format
+msgid "MAIL: No such player '%s'."
+msgstr "MAIL: Ingen slik spiller '%s'."
+
+#: src/malias.c:242 src/malias.c:699
+msgid "MAIL: No valid recipients for alias-list!"
+msgstr "MAIL: Ingen gyldige mottakere for aliaslisten!"
+
+#: malias.c:450
+#, c-format
+msgid "MAIL: Not a valid alias. Remember to prefix the alias name with %c."
+msgstr "MAIL: Ikke et gyldig alias. Husk å prefikse aliaset med %c."
+
+#: src/malias.c:484
+#, c-format
+msgid "MAIL: Number of mail aliases defined: %d"
+msgstr "MAIL: Antall mailaliaser definert: %d"
+
+#: src/malias.c:497
+msgid "MAIL: Only god can do that!"
+msgstr "MAIL: Bare Gud kan gjøre det!"
+
+#: src/malias.c:139
+msgid "MAIL: Only players may create mail aliases."
+msgstr "MAIL: Bare spillere kan lage mailaliaser."
+
+#: src/malias.c:382
+msgid "MAIL: Owner changed for alias."
+msgstr "MAIL: Eier forandret for alias."
+
+#: src/malias.c:443
+msgid "MAIL: Permission denied!"
+msgstr "MAIL: Tillatelse nektet!"
+
+#: src/malias.c:324 src/malias.c:355 src/malias.c:412 src/malias.c:482\nsrc/malias.c:533 src/malias.c:559
+msgid "MAIL: Permission denied."
+msgstr "MAIL: Tillatelse nektes."
+
+#: src/malias.c:539
+#, c-format
+msgid "MAIL: Permission to see/use alias '%s' changed to %s"
+msgstr "MAIL: Tillatelse for å se/bruke alias '%s' forandret til %s"
+
+#: src/malias.c:408
+msgid "MAIL: That name already exists!"
+msgstr "MAIL: Det navnet eksisterer allerede!"
+
+#: src/extmail.c:1294
+#, c-format
+msgid "MAIL: There are %d msgs in the mail spool, %d unread, %d cleared."
+msgstr "MAIL: Det er %d meldinger i mailkøen, %d uleste, %d slettede."
+
+#: src/extmail.c:1316
+#, c-format
+msgid "MAIL: There are %d new msgs in the mail spool, totalling %d characters."
+msgstr "MAIL: Det er %d nye meldinger i mailkøen, totalt %d karakterer."
+
+#: src/extmail.c:1312
+#, c-format
+msgid "MAIL: There are %d old msgs in the mail spool, totalling %d characters."
+msgstr "MAIL: Det er %d gamle meldinger i mailkøen, totalt %d tegn."
+
+#: src/extmail.c:695
+msgid "MAIL: To whom should I forward?"
+msgstr "MAIL: Hvem skal jeg videresende meldingen til?"
+
+#: extmail.c:420
+msgid "MAIL: Unknown status."
+msgstr "MAIL: Ukjent status."
+
+#: src/extmail.c:378
+#, c-format
+msgid "MAIL: Unread Msg #%d:%d cleared! Use @mail/unclear %d:%d to recover."
+msgstr "MAIL: Ulest melding #%d:%d fjernet! Bruk @mail/unclear %d:%d for å gjenopprette."
+
+#: src/extmail.c:2509
+#, c-format
+msgid "MAIL: Warning! Limit on inbox messages is %d!"
+msgstr "MAIL: Advarsel! Begrensning på innboks-meldinger er %d!"
+
+#: malias.c:145
+msgid "MAIL: What alias do you want to create?"
+msgstr "MAIL: Hvilket alias vil du lage?"
+
+#: extmail.c:409
+msgid "MAIL: What do you want to do with the messages?"
+msgstr "MAIL: Hva vil du gjøre med meldingene?"
+
+#: src/extmail.c:239 src/extmail.c:279
+msgid "MAIL: What folder is that?"
+msgstr "MAIL: Hvilken folder er det?"
+
+#: src/extmail.c:726
+msgid "MAIL: You can't reply to nonexistant mail."
+msgstr "MAIL: Du kan ikke besvare ikke-eksisterende mail."
+
+#: src/extmail.c:826
+msgid "MAIL: You can't reply to nonexistent mail."
+msgstr "MAIL: Du kan ikke svare på mail du ikke har."
+
+#: src/malias.c:374
+msgid "MAIL: You cannot do that!"
+msgstr "MAIL: Du kan ikke gjøre det!"
+
+#: src/extmail.c:975
+msgid "MAIL: You cannot send mail to non-existent people."
+msgstr "MAIL: Du kan ikke sende mail til folk som ikke eksisterer."
+
+#: src/extmail.c:393 src/extmail.c:446
+msgid "MAIL: You don't have any matching messages!"
+msgstr "MAIL: Du har ikke så mange meldinger!"
+
+#: src/extmail.c:518
+msgid "MAIL: You don't have that many matching messages!"
+msgstr "MAIL: Du har ikke så mange meldinger!"
+
+#: src/extmail.c:1091
+#, c-format
+msgid "MAIL: You have a new message (%d) from %s."
+msgstr "MAIL: Du har en ny melding (%d) fra %s."
+
+#: src/extmail.c:705
+msgid "MAIL: You have no messages to forward."
+msgstr "MAIL: Du har ingen meldinger å videresende."
+
+#: malias.c:447
+msgid "MAIL: You must set the alias to a non-empty list."
+msgstr "MAIL: Du må sette aliaset til en liste som ikke er tom."
+
+#: src/extmail.c:274
+msgid "MAIL: You must specify a folder name or number"
+msgstr "MAIL: Du må spesifisere et foldernavn eller nummer"
+
+#: src/extmail.c:979
+msgid "MAIL: You probably don't wanna send mail saying 'clear'."
+msgstr "MAIL: Du vil nok ikke sende mail som sier 'clear'."
+
+#: src/extmail.c:1090
+#, c-format
+msgid "MAIL: You sent your message to %s."
+msgstr "MAIL: Du sendte meldingen din til %s."
+
+#: extmail.c:1010
+#, c-format
+msgid "MAIL: Your message was not sent to %s due to a mail forwarding problem."
+msgstr "MAIL: Din melding ble ikke sendt til %s på grunn av et videresendingsproblem."
+
+#: src/malias.c:675
+#, c-format
+msgid "MAIL: player '%s' exists already in alias %s."
+msgstr "MAIL: Spiller '%s' eksisterer allerede i alias %s."
+
+#: src/malias.c:777
+#, c-format
+msgid "MAIL: player '%s' is not in alias %s."
+msgstr "MAIL: spiller '%s' er ikke i aliaset %s."
+
+#: bsd.c:3464
+#, c-format
+msgid "MOTD: %s"
+msgstr "MOTD: %s"
+
+#: src/extmail.c:1161
+#, c-format
+msgid "Mail cleared for %s(#%d)."
+msgstr "Mail fjernet for %s(#%d)."
+
+#: src/extmail.c:1174
+#, c-format
+msgid "Mail database top is %d, actual message count is %d. Fixing."
+msgstr "Mail databasetopp er %d, faktisk meldingsantall er %d. Fikser."
+
+#: src/extmail.c:1178
+msgid "Mail sanity check completed."
+msgstr "Mail sanity check completed."
+
+#: src/extmail.c:1216
+msgid "Mail sanity fix completed."
+msgstr "Mail sanity fix completed."
+
+#: src/extmail.c:1365
+#, c-format
+msgid "Mail statistics for %s:"
+msgstr "Mailstatistikk for %s:"
+
+#: game.c:1207
+msgid "Make room! Make room!"
+msgstr "Lag rom! Lag rom!"
+
+#: extmail.c:2477
+msgid "Mass "
+msgstr "Masse "
+
+#: src/game.c:1253
+#, c-format
+msgid "Matched here: %s  [%d:%s]"
+msgstr "Treff her: %s  [%d:%s]"
+
+#: access.c:397
+#, c-format
+msgid "Matched line %d: %s %s"
+msgstr "Passet linje %d: %s %s"
+
+#: src/game.c:1296
+#, c-format
+msgid "Matched personal zone: %s  [%d:%s]"
+msgstr "Matchet personlig sone: %s  [%d:%s]"
+
+#: src/game.c:1267
+#, c-format
+msgid "Matched self: %s  [%d:%s]"
+msgstr "Matchet selv: %s  [%d:%s]"
+
+#: src/game.c:1288
+#, c-format
+msgid "Matched zone of location: %s  [%d:%s]"
+msgstr "Fant sone for rommet: %s  [%d:%s]"
+
+#: src/predicat.c:1051
+#, c-format
+msgid "Matches of '%s' on %s(#%d): %s"
+msgstr "Treff av '%s' på %s(#%d): %s"
+
+#: src/game.c:1258
+msgid "Matches on carried objects:"
+msgstr "Treff på objekter du har:"
+
+#: src/game.c:1243
+msgid "Matches on contents of this room:"
+msgstr "Treff i rommets innhold:"
+
+#: src/game.c:1306
+msgid "Matches on objects in the Master Room:"
+msgstr "Treff på objekter i Master rommet:"
+
+#: game.c:1535
+msgid "Matches on personal zone master room:"
+msgstr "Treff på personlige sone master rom:"
+
+#: src/game.c:1276
+msgid "Matches on zone master room of location:"
+msgstr "Treff på sonens master-rom for denne lokasjon"
+
+#: extchat.c:2007
+#, c-format
+msgid "Members of channel <%s> are:"
+msgstr "Tilkoblede spillere på kanal <%s> er:"
+
+#: conf.c:556
+msgid "Message files sent by the MUSH"
+msgstr "Meldingsfiler sendt av MUSHen"
+
+#: extchat.c:2730
+#, c-format
+msgid "Mogrifier: %s (#%d)"
+msgstr "Mogrifier: %s (#%d)"
+
+#: bsd.c:3449
+#, c-format
+msgid "Motd %s."
+msgstr "Motd %s."
+
+#: extchat.c:2084
+msgid "Msgs"
+msgstr "Msgs"
+
+#: wiz.c:1258 wiz.c:1261
+msgid "NOWHERE"
+msgstr "INGENSTEDS"
+
+#: command.c:1737
+#, c-format
+msgid "Name       : %s (%s)"
+msgstr "Navn         : %s (%s)"
+
+#: function.c:1090
+#, c-format
+msgid "Name      : %s() (%s%s)"
+msgstr "Navn         : %s ()  (%s%s)"
+
+#: wiz.c:1890
+#, c-format
+msgid "Name %s locked."
+msgstr "Navn %s låst."
+
+#: src/wiz.c:2069
+msgid "Name removed."
+msgstr "Navn fjernet."
+
+#: src/set.c:152 src/set.c:163
+msgid "Name set."
+msgstr "Navn satt."
+
+#: malias.c:269
+msgid "Name"
+msgstr "Navn"
+
+#: conf.c:557
+msgid "Networking and connection-related options"
+msgstr "Nettverk og tilkoblingsrelaterte alternativer"
+
+#: src/wiz.c:131
+#, c-format
+msgid "New player '%s' (#%d) created with password '%s'"
+msgstr "Ny spiller '%s' (#%d) laget med passord '%s'"
+
+#: wiz.c:1060
+#, c-format
+msgid "Next: %d"
+msgstr "Neste: %d"
+
+#: sql.c:291 sql.c:350
+msgid "No SQL database connection."
+msgstr "Ingen SQL databasetilkobling."
+
+#: set.c:525
+msgid "No attribute found to change."
+msgstr "Ingen attributter å forandre ble funnet."
+
+#: set.c:1126
+msgid "No attributes wiped."
+msgstr "Ingen attributter slettet."
+
+#: cmds.c:1069
+#, c-format
+msgid "No command found in code by %s - don't start code with functions."
+msgstr "Ingen kommando funnet i koden av %s - ikke start kode med funksjoner."
+
+#: help.c:78
+#, c-format
+msgid "No entries matching '%s' were found."
+msgstr "Ingen oppslag som passet '%s' ble funnet."
+
+#: src/bsd.c:3090
+#, c-format
+msgid "No entry for '%s'."
+msgstr "Ingen oppføring for '%s'."
+
+#: src/look.c:785
+msgid "No exits."
+msgstr "Ingen utganger."
+
+#: src/function.c:626
+msgid "No global user-defined functions exist."
+msgstr "Ingen globale brukerdefinerte funksjoner eksisterer."
+
+#: lock.c:600
+msgid "No lock name given."
+msgstr "Intet låsnavn gitt."
+
+#: src/create.c:303 src/fundb.c:1281 src/fundb.c:1300 src/wiz.c:386
+msgid "No match."
+msgstr "Ingen treff."
+
+#: predicat.c:1528 predicat.c:1537
+msgid "No matches."
+msgstr "Ingen treff."
+
+#: access.c:431
+msgid "No matching access rule"
+msgstr "Ingen tilgangsregel"
+
+#: src/look.c:395
+msgid "No matching attributes."
+msgstr "Ingen matchende attributter."
+
+#: src/set.c:973
+msgid "No matching command."
+msgstr "Ingen matchende kommando."
+
+#: help.c:540
+msgid "No matching help topics."
+msgstr "Ingen matchende hjelpefiler."
+
+#: src/extchat.c:1093
+msgid "No more room for channels."
+msgstr "Ikke plass til flere kanaler."
+
+#: access.c:404
+msgid "No one"
+msgstr "Ingen"
+
+#: function.c:1166
+msgid "No permission to control object."
+msgstr "Ingen tillatelse til å kontrollere objektet."
+
+#: src/function.c:687
+msgid "No permission to examine object."
+msgstr "Ingen tillatelse til å undersøke objektet."
+
+#: flags.c:1839 flags.c:1878 flags.c:1941
+#, c-format
+msgid "No such %s."
+msgstr "Ingen slik %s."
+
+#: src/set.c:596
+msgid "No such attribute to copy from."
+msgstr "Ingen slik attributt å kopiere fra."
+
+#: src/attrib.c:931
+msgid "No such attribute to reset."
+msgstr "Ingen slik attributt for å resette."
+
+#: src/set.c:711
+msgid "No such attribute, try set instead."
+msgstr "Ingen slik attributt, prøv set istedet."
+
+#: src/attrib.c:1043 src/attrib.c:1118
+msgid "No such attribute."
+msgstr "Ingen slik attributt."
+
+#: src/bsd.c:4807 src/extchat.c:894
+msgid "No such channel."
+msgstr "Ingen slik kanal."
+
+#: src/command.c:1095
+msgid "No such command."
+msgstr "Ingen slik kommando."
+
+#: src/wiz.c:789
+msgid "No such connected player."
+msgstr "Ingen slik tilkoblet spiller."
+
+#: src/function.c:764
+msgid "No such function."
+msgstr "Ingen slik funksjon."
+
+#: lock.c:620
+msgid "No such lock."
+msgstr "Ingen slik lås."
+
+#: conf.c:962
+msgid "No such option."
+msgstr "Intet slikt alternativ."
+
+#: src/wiz.c:155 src/wiz.c:729 src/wiz.c:1703
+msgid "No such player."
+msgstr "Ingen slik spiller."
+
+#: src/extmail.c:747 src/extmail.c:859
+#, c-format
+msgid "No such unique player: %s."
+msgstr "Ingen slik unik spiller: %s."
+
+#: src/rob.c:83
+msgid "No suicide allowed."
+msgstr "Selvmord er ikke tillatt."
+
+#: src/wiz.c:1985
+msgid "No valid options found."
+msgstr "Ingen gyldige alternativer funnet."
+
+#: src/wiz.c:933
+msgid "No zone specified."
+msgstr "Ingen sone spesifisert."
+
+#: wiz.c:885
+msgid "None of your connections are idle. If you want to quit, use QUIT."
+msgstr "Ingen av dine tilkoblinger er inaktive. Hvis du vil avslutte, bruk QUIT."
+
+#: bsd.c:4662
+msgid "Noone is connected to that descriptor."
+msgstr "Ingen er tilkoblet den descriptoren."
+
+#: cque.c:218
+#, c-format
+msgid "Not enough money to queue command for %s(#%d)."
+msgstr "Ikke nok penger for å sette kommando i kø for %s(#%d)."
+
+#: src/fundb.c:1424 src/look.c:1177 src/wiz.c:1553 src/wiz.c:1913
+msgid "Nothing found."
+msgstr "Ingenting funnet."
+
+#: src/set.c:684
+msgid "Nothing to do."
+msgstr "Ingenting å gjøre."
+
+#: cque.c:712
+msgid "Notified."
+msgstr "Varslet."
+
+#: attrib.c:1569 attrib.c:1587
+msgid "Null aliases are not valid."
+msgstr "Null aliaser er ikke gyldige."
+
+#: src/wiz.c:1039
+msgid "Number out of range."
+msgstr "Nummeret utenfor rekkevidde."
+
+#: src/cque.c:795
+msgid "Object Queue:"
+msgstr "Objektkø:"
+
+#: flags.c:1964
+#, c-format
+msgid "Objects of other types already have this %s set. Search for them and remove it first."
+msgstr "Objekter av andre typer har allerede denne %s satt. Søk for dem og fjern dem først."
+
+#: wiz.c:175 wiz.c:181 wiz.c:195
+#, c-format
+msgid "Objects: %d   Limit: %d"
+msgstr "Objekter: %d   Grense: %d"
+
+#: wiz.c:166
+#, c-format
+msgid "Objects: %d   Limit: UNLIMITED"
+msgstr "Objekter: %d    Grense: UBEGRENSET"
+
+#: src/look.c:505 src/look.c:767
+msgid "Obvious exits:"
+msgstr "Du ser utganger til:"
+
+#: extchat.c:2134
+msgid "Off"
+msgstr "Av"
+
+#: bsd.c:3848 bsd.c:3851 bsd.c:3855 bsd.c:3859
+msgid "On For"
+msgstr "Pålogget"
+
+#: extchat.c:2134
+msgid "On"
+msgstr "På"
+
+#: set.c:1142
+msgid "One attribute wiped."
+msgstr "En attributt slettet."
+
+#: src/game.c:1155
+msgid "Only God can cause financial ruin."
+msgstr "Bare Gud kan forårsake børskrakk."
+
+#: src/set.c:526
+msgid "Only God can set himself!"
+msgstr "Bare Gud kan sette seg selv!"
+
+#: src/wiz.c:162
+msgid "Only wizards may change a quota."
+msgstr "Bare wizards kan forandre kvoter."
+
+#: src/wiz.c:1168
+msgid "Only wizards may grant powers."
+msgstr "Bare wizards kan gi powers."
+
+#: create.c:187
+msgid "Open from where?"
+msgstr "Åpne fra hvor?"
+
+#: src/create.c:118
+msgid "Open where?"
+msgstr "Åpne hvor?"
+
+#: create.c:140
+#, c-format
+msgid "Opened exit %s"
+msgstr "Åpnet utgang %s"
+
+#: cmds.c:205
+msgid "Option set and saved."
+msgstr "Alternativ satt og lagert."
+
+#: cmds.c:207
+msgid "Option set but not saved (Saves disabled.)"
+msgstr "Alternativ satt, men ikke lagret (Lagring skrudd av.)"
+
+#: src/cmds.c:195
+msgid "Option set."
+msgstr "Alternativ satt."
+
+#: conf.c:543
+msgid "Options affecting attributes"
+msgstr "Valg som påvirker attributter"
+
+#: conf.c:545
+msgid "Options affecting command behavior"
+msgstr "Alternativer som påvirker kommandoer"
+
+#: conf.c:550
+msgid "Options affecting dumps and other periodic processes"
+msgstr "Valg som påvirker dumping og andre periodiske prosesser"
+
+#: conf.c:553
+msgid "Options affecting function behavior"
+msgstr "Alternativer som påvirker funksjoner"
+
+#: set.c:317
+msgid "Overly deep zone chain broken."
+msgstr "For dyp sonekjede brutt."
+
+#: set.c:426
+msgid "Overly deep zone chain."
+msgstr "For dyp sonekjede."
+
+#: src/set.c:227
+msgid "Owner changed."
+msgstr "Eier skiftet."
+
+#: malias.c:269
+msgid "Owner"
+msgstr "Eier"
+
+#: look.c:704
+#, c-format
+msgid "Owner: %s  Zone: %s  %s: %d"
+msgstr "Eier: %s  Sone: %s  %s: %d"
+
+#: extchat.c:2318
+#, c-format
+msgid "Owner: %s"
+msgstr "Eier: %s"
+
+#: src/wiz.c:910
+#, c-format
+msgid "Ownership changed for %d objects."
+msgstr "Eierskap forandret for %d objekter."
+
+#: src/game.c:182
+#, c-format
+msgid "Paranoid dumping, checkpoint interval %d."
+msgstr "Paranoid dumping, checkpoint intervall %d."
+
+#: src/set.c:912
+msgid "Parent changed."
+msgstr "Parent forandret."
+
+#: look.c:707
+#, c-format
+msgid "Parent: %s"
+msgstr "Forelder: %s"
+
+#: bsd.c:3324
+msgid "Pend"
+msgstr "Pend"
+
+#: version.c:35
+#, c-format
+msgid "PennMUSH version %s patchlevel %s %s"
+msgstr "PennMUSH versjon %s patchnivå %s %s"
+
+#: wiz.c:1062
+#, c-format
+msgid "Pennies: %d"
+msgstr "Penger: %d"
+
+#: src/extmail.c:1584
+msgid "Permission denied"
+msgstr "Tillatelse nektes"
+
+#: src/game.c:171
+msgid "Permission denied. Invalid checkpoint interval."
+msgstr "Tillatelse nektes. Ugyldig checkpointintervall."
+
+#: src/bsd.c:4589 src/bsd.c:4627 src/command.c:1288 src/cque.c:611\nsrc/cque.c:669 src/cque.c:909 src/cque.c:1040 src/create.c:125\nsrc/create.c:201 src/create.c:252 src/create.c:259 src/create.c:316\nsrc/create.c:320 src/create.c:337 src/create.c:491 src/destroy.c:228\nsrc/extchat.c:1150 src/extchat.c:1167 src/extchat.c:1197 src/flags.c:1021\nsrc/flags.c:1027 src/flags.c:1033 src/function.c:664 src/function.c:759\nsrc/fundb.c:1080 src/fundb.c:1332 src/game.c:771 src/game.c:1177\nsrc/log.c:295 src/look.c:1093 src/look.c:1333 src/malias.c:633\nsrc/malias.c:736 src/match.c:158 src/move.c:471 src/move.c:630\nsrc/move.c:638 src/predicat.c:865 src/predicat.c:1037 src/rob.c:219\nsrc/set.c:210 src/set.c:680 src/set.c:809 src/set.c:872 src/set.c:889\nsrc/set.c:952 src/speech.c:1479 src/warnings.c:263 src/warnings.c:439\nsrc/wiz.c:428 src/wiz.c:538 src/wiz.c:1029 src/wiz.c:1059 src/wiz.c:1630\nsrc/wiz.c:1855
+msgid "Permission denied."
+msgstr "Tillatelse nektes."
+
+#: src/extchat.c:814
+msgid "Permission to join denied."
+msgstr "Tillatelse til å bli med nektet."
+
+#: src/set.c:601
+msgid "Permission to read attribute denied."
+msgstr "Tillatelse til å lese attributt ikke gitt."
+
+#: flags.c:1910
+#, c-format
+msgid "Permissions on %s %s set."
+msgstr "Tillatelser på %s %s satt."
+
+#: src/extchat.c:1210
+#, c-format
+msgid "Permissions on channel <%s> changed."
+msgstr "Tillatelser på kanalen <%s> forandret."
+
+#: flags.c:2033
+msgid "Perms"
+msgstr "Tillatelser"
+
+#: bsd.c:3848 bsd.c:3851 bsd.c:3855 bsd.c:3859
+msgid "Player Name"
+msgstr "Spiller Navn"
+
+#: src/cque.c:791
+msgid "Player Queue:"
+msgstr "Spiller Kø:"
+
+#: player.c:164
+msgid "Player connections not allowed."
+msgstr "Spiller tilkoblinger er ikke tillatt."
+
+#: src/set.c:205
+msgid "Players always own themselves."
+msgstr "Spillerene eier alltid seg selv."
+
+#: access.c:427
+msgid "Players connecting are set SUSPECT"
+msgstr "Spillere som kobler til blir satt SUSPECT"
+
+#: bsd.c:3704
+msgid "Poll reset."
+msgstr "Poll resatt."
+
+#: bsd.c:3719
+#, c-format
+msgid "Poll set to '%s'. %d characters lost."
+msgstr "Poll satt til '%s'. %d tegn tapt."
+
+#: bsd.c:3722
+#, c-format
+msgid "Poll set to: %s"
+msgstr "Poll satt til: %s"
+
+#: src/speech.c:679
+msgid "Posing as a wizard could be hazardous to your health."
+msgstr "Å late som om du er en Wizard kan være farlig for helsa."
+
+#: wiz.c:995
+#, c-format
+msgid "Powers value: %s"
+msgstr "Powers verdi: %s"
+
+#: cmds.c:137 cmds.c:422 cmds.c:650
+msgid "Powers"
+msgstr "Powers"
+
+#: look.c:716
+#, c-format
+msgid "Powers: %s"
+msgstr "Powers: %s"
+
+#: src/destroy.c:257
+msgid "Programs don't kill people; people kill people!"
+msgstr "Programmer dreper ikke folk; folk dreper folk!"
+
+#: src/destroy.c:924
+msgid "Purge complete."
+msgstr "Søppeltømming fullført."
+
+#: cque.c:303 cque.c:428
+msgid "Queue entry table full. Try again later."
+msgstr "Køtabell full. Prøv igjen senere."
+
+#: cque.c:1368
+#, c-format
+msgid "Queue entry with pid %u halted."
+msgstr "PID %u stoppet i køen."
+
+#: cque.c:1056
+#, c-format
+msgid "Queue entry with pid %u updated."
+msgstr "Køoppføring med PID %u oppdatert."
+
+#: src/cque.c:786
+#, c-format
+msgid "Queue for : %s"
+msgstr "Kø for : %s"
+
+#: src/cque.c:784
+msgid "Queue for : all"
+msgstr "Kø for : alle"
+
+#: src/wiz.c:271
+msgid "Quotas not changed."
+msgstr "Kvoter ikke forandret."
+
+#: extmail.c:2469
+msgid "Read "
+msgstr "Lest "
+
+#: extchat.c:2192
+#, c-format
+msgid "Recall buffer: %dk, with %d lines stored."
+msgstr "Loggbuffer: %dk, med %d linjer lagret."
+
+#: bsd.c:3324
+msgid "Recv"
+msgstr "Recv"
+
+#: bsd.c:275
+msgid "Registration successful! You will receive your password by email."
+msgstr "Registrasjon fullført! Du vil motta passordet ditt via epost."
+
+#: command.c:1435
+#, c-format
+msgid "Removed %s and aliases from command table."
+msgstr "Fjernet %s og aliaser fra kommandotabellen."
+
+#: src/atr_tab.c:252
+#, c-format
+msgid "Removed %s from attribute table."
+msgstr "Fjernet %s fra attributt-tabell."
+
+#: command.c:1347
+#, c-format
+msgid "Removed %s from command table."
+msgstr "Fjernet %s fra kommandotabellen."
+
+#: src/atr_tab.c:288
+#, c-format
+msgid "Renamed %s to %s in attribute table."
+msgstr "Omdøpte %s til %s i attributt-tabell."
+
+#: flags.c:2035
+msgid "ResetPrms"
+msgstr "ResetPrms"
+
+#: cque.c:1637
+#, c-format
+msgid "Restarting: %s's %s(%s)"
+msgstr "Starter om: %s's %s(%s)"
+
+#: cque.c:1646
+#, c-format
+msgid "Restarting: %s(%s)"
+msgstr "Restarter: %s(%s)"
+
+#: cque.c:1639
+#, c-format
+msgid "Restarting: %s(%s), by %s"
+msgstr "Starter om: %s(%s), by %s"
+
+#: function.c:916
+msgid "Restore what?"
+msgstr "Gjenopprett hva?"
+
+#: function.c:933
+msgid "Restored."
+msgstr "Gjenopprettet."
+
+#: src/command.c:1114
+msgid "Restrict attempt failed."
+msgstr "Restriksjonen kunne ikke bli gitt."
+
+#: function.c:731
+msgid "Restrict what function?"
+msgstr "Sett restriksjoner på hvilken funksjon?"
+
+#: function.c:863
+msgid "Restrictions modified."
+msgstr "Restriksjoner modifisert."
+
+#: function.c:1078
+msgid "Restrictions unchanged."
+msgstr "Begrensninger ikke endret."
+
+#: command.c:1809
+#, c-format
+msgid "Rightside  : %s"
+msgstr "Høyreside  : %s"
+
+#: sql.c:441
+#, c-format
+msgid "Row %d, Field %s: %s"
+msgstr "Rad %d, Felt %s: %s"
+
+#: sql.c:445
+#, c-format
+msgid "Row %d: NULL"
+msgstr "Rad %d: NULL"
+
+#: cque.c:201
+#, c-format
+msgid "Runaway object: %s(%s). Commands halted."
+msgstr "Løpsk objekt: %s(%s). Kommandoer stoppet."
+
+#: src/warnings.c:415
+msgid "Running database topology warning checks"
+msgstr "Kjører databasetopologi-sjekk."
+
+#: flags.c:1738
+msgid "SET"
+msgstr "SATT"
+
+#: sql.c:348
+#, c-format
+msgid "SQL: %d rows affected."
+msgstr "SQL: %d rader påvirket."
+
+#: sql.c:352
+#, c-format
+msgid "SQL: Error: %s"
+msgstr "SQL: Feil: %s"
+
+#: version.c:50
+#, c-format
+msgid "SVN revision: %d [%s]"
+msgstr "SVN revisjon: %d [%s]"
+
+#: version.c:52 version.c:54
+#, c-format
+msgid "SVN revision: %d"
+msgstr "SVN revisjon: %d"
+
+#: src/wiz.c:1471
+#, c-format
+msgid "Searches cost %d %s."
+msgstr "Søk koster %d %s."
+
+#: src/cque.c:803
+msgid "Semaphore Queue:"
+msgstr "Semaforkø:"
+
+#: bsd.c:3324
+msgid "Sent"
+msgstr "Sent"
+
+#: game.c:1408
+msgid "Separator must be one character."
+msgstr "Separator må være ett tegn."
+
+#: attrib.c:942
+msgid "Set"
+msgstr "Satt"
+
+#: destroy.c:1444
+msgid "Silly mortal, chicks are for kids!"
+msgstr "Dumme dødlige, damer er for unger!"
+
+#: src/wiz.c:1999
+#, c-format
+msgid "Site %s access options for %s(%s) set to %s"
+msgstr "Site %s tilgangsalternativer for %s(%s) satt til %s"
+
+#: src/wiz.c:2004
+#, c-format
+msgid "Site %s access options set to %s"
+msgstr "Site %s aksess alternativer satt til %s"
+
+#: wiz.c:1754
+#, c-format
+msgid "Site %s banned"
+msgstr "Nettsted %s blokkert"
+
+#: src/wiz.c:2026
+#, c-format
+msgid "Site %s locked"
+msgstr "Site %s låst."
+
+#: src/destroy.c:266
+msgid "Sorry, no suicide allowed."
+msgstr "Beklager, selvmord er ikke tillatt."
+
+#: help.c:161
+msgid "Sorry, that command is temporarily unvailable."
+msgstr "Beklager, den kommandoen er midlertidig utilgjengelig."
+
+#: src/bsd.c:3081 src/bsd.c:3094 src/bsd.c:3099
+msgid "Sorry, that function is temporarily unavailable."
+msgstr "Beklager, den funksjonen er midlertidig utilgjengelig."
+
+#: src/predicat.c:364
+msgid "Sorry, there is no more room in the database."
+msgstr "Beklager, det er ikke mere plass i databasen."
+
+#: src/extchat.c:787
+#, c-format
+msgid "Sorry, wrong type of thing for channel <%s>."
+msgstr "Beklager, feil type av ting for kanal <%s>."
+
+#: src/destroy.c:926
+msgid "Sorry, you are a mortal."
+msgstr "Beklager, du er dødelig."
+
+#: src/game.c:206
+msgid "Sorry, you are in a no dumping zone."
+msgstr "Beklager, du er i en no-dumping sone."
+
+#: src/game.c:1235
+msgid "Sorry, you are in an invalid location."
+msgstr "Beklager, du er i en ugyldig lokasjon."
+
+#: src/rob.c:102
+msgid "Sorry, you can only kill players and objects."
+msgstr "Beklager, du kan bare drepe spillere og objekter."
+
+#: create.c:104
+msgid "Sorry, you can only make exits out of rooms."
+msgstr "Beklager, du kan bare lage utganger fra rom."
+
+#: move.c:681
+msgid "Sorry, you can't drop exits."
+msgstr "Beklager, du kan ikke slippe utganger."
+
+#: src/predicat.c:369
+#, c-format
+msgid "Sorry, you don't have enough %s."
+msgstr "Beklager, du har ikke nok %s."
+
+#: src/move.c:643
+msgid "Sorry, you must remain beside yourself!"
+msgstr "Beklager, men du må forbli ved deg selv."
+
+#: extchat.c:1429
+#, c-format
+msgid "Sorry, you're not allowed to @cemit on channel <%s>."
+msgstr "Beklager, du kan ikke @cemit til kanal <%s>."
+
+#: src/extchat.c:927 src/extchat.c:1034
+#, c-format
+msgid "Sorry, you're not allowed to speak on channel <%s>."
+msgstr "Beklager, du kan ikke snakke på kanalen <%s>."
+
+#: src/extchat.c:916 src/extchat.c:1021
+#, c-format
+msgid "Sorry, you're not the right type to be on channel <%s>."
+msgstr "Beklager, men du er ikke riktig type for å kunne være på kanalen <%s>."
+
+#: src/predicat.c:375
+msgid "Sorry, your building quota has run out."
+msgstr "Beklager, men byggekvoten din er tom."
+
+#: mymalloc.c:566 wiz.c:592
+msgid "Sorry."
+msgstr "Beklager."
+
+#: wiz.c:1073
+#, c-format
+msgid "Source: %d"
+msgstr "Kilde: %d"
+
+#: look.c:815
+#, c-format
+msgid "Source: %s"
+msgstr "Kilde: %s"
+
+#: extchat.c:2084
+msgid "Status"
+msgstr "Status"
+
+#: extmail.c:482
+#, c-format
+msgid "Subject: %s"
+msgstr "Emne: %s"
+
+#: command.c:1782
+#, c-format
+msgid "Switches   : %s"
+msgstr "Switcher    : %s"
+
+#: command.c:1784
+msgid "Switches   :"
+msgstr "Svitsjer    :"
+
+#: extmail.c:2481
+msgid "Tagged"
+msgstr "Merket"
+
+#: wiz.c:423 wiz.c:522
+msgid "Teleported."
+msgstr "Teleportert."
+
+#: src/wiz.c:503
+msgid "Teleports are not allowed in this room."
+msgstr "Teleport er ikke tillatt i dette rommet."
+
+#: flags.c:2218
+#, c-format
+msgid "That %s is already disabled."
+msgstr "Den %s er allerede skrudd av."
+
+#: flags.c:2129
+#, c-format
+msgid "That %s is disabled."
+msgstr "Den %s er slått av."
+
+#: flags.c:2314
+#, c-format
+msgid "That %s is not disabled."
+msgstr "Den %s er ikke skrudd av."
+
+#: flags.c:2119
+#, c-format
+msgid "That alias already matches the %s %s."
+msgstr "Det aliaset passer allerede %s %s."
+
+#: src/attrib.c:928
+msgid "That attribute cannot be changed by you."
+msgstr "Den attributten kan ikke forandres av deg."
+
+#: src/attrib.c:1022
+#, c-format
+msgid "That attribute is %slocked."
+msgstr "Den attributten er %slåst."
+
+#: src/atr_tab.c:246 src/atr_tab.c:280 src/atr_tab.c:307
+msgid "That attribute isn't in the attribute table"
+msgstr "Den attributten er ikke i attributt-tabellen"
+
+#: atr_tab.c:198
+msgid "That attribute's permissions can not be changed."
+msgstr "Den attributtens tillatelser kan ikke forandres."
+
+#: destroy.c:436
+msgid "That can't be undestroyed."
+msgstr "Det objektet kan ikke bli reddet fra ødeleggelse."
+
+#: help.c:55
+msgid "That command is unavailable."
+msgstr "Den kommandoen er ikke tilgjengelig."
+
+#: function.c:928
+msgid "That function isn't deleted!"
+msgstr "Den funksjonen er ikke slettet!"
+
+#: src/create.c:307
+msgid "That is an exit."
+msgstr "Det er en utgang."
+
+#: src/extmail.c:1218
+msgid "That is not a debugging option."
+msgstr "Det er ikke et debug alternativ."
+
+#: src/set.c:156
+msgid "That is not a reasonable name."
+msgstr "Det er ikke et fornuftig navn."
+
+#: src/create.c:333
+msgid "That is not a room!"
+msgstr "Det er ikke et rom!"
+
+#: src/extchat.c:1003
+msgid "That is not a valid channel."
+msgstr "Det er ikke en gyldig kanal."
+
+#: create.c:480
+msgid "That is not a valid dbref."
+msgstr "Det er ikke en gyldig dbref."
+
+#: lock.c:326
+msgid "That is not a valid lock name."
+msgstr "Det er ikke et gyldig låsnavn."
+
+#: src/create.c:54
+msgid "That is not a valid object."
+msgstr "Det der er ikke et gyldig objekt."
+
+#: cque.c:966 cque.c:974 cque.c:1321 cque.c:1330
+msgid "That is not a valid pid!"
+msgstr "Det er ikke en gyldig PID!"
+
+#: cque.c:990
+msgid "That is not a valid timestamp."
+msgstr "Det er ikke en gyldig tidsmarkering."
+
+#: src/destroy.c:232
+msgid "That is too special to be destroyed."
+msgstr "Objektet er for spesielt til å bli ødelagt."
+
+#: flags.c:2253
+#, c-format
+msgid "That isn't an alias of the %s %s."
+msgstr "Det er ikke et alias av %s %s."
+
+#: conf.c:1693
+msgid "That isn't an on/off option."
+msgstr "Det er ikke et av/på alternativ."
+
+#: src/extchat.c:1181
+msgid "That name is too long."
+msgstr "Det navnet er for langt."
+
+#: src/rob.c:109
+msgid "That object cannot be killed."
+msgstr "Det objektet kan ikke drepes."
+
+#: src/destroy.c:250
+msgid "That object does not belong to you. Use @nuke to destroy it."
+msgstr "Det objektet tilhører ikke deg. Bruk @nuke for å ødelegge det."
+
+#: set.c:330
+msgid "That object is already in that zone."
+msgstr "Det objektet er allerede i den sonen."
+
+#: src/destroy.c:243
+msgid "That object is marked SAFE. Use @nuke to destroy it."
+msgstr "Det objektet er satt SAFE. Bruk @nuke for å ødelegge det."
+
+#: src/set.c:957
+msgid "That object is protected."
+msgstr "Det objektet er beskyttet."
+
+#: src/destroy.c:238
+msgid "That object is set SAFE. You must set it !SAFE before destroying it."
+msgstr "Det objektet er satt SAFE. Du må sette det !SAFE før du ødelegger det."
+
+#: src/destroy.c:287
+msgid "That object is set WIZARD. You must use @nuke to destroy it."
+msgstr "Det objektet er satt WIZARD. Du må bruke @nuke for å ødelegge det."
+
+#: src/look.c:1048
+msgid "That player does not seem to exist."
+msgstr "Ser ut som om den spilleren ikke finnes."
+
+#: set.c:214
+msgid "That player doesn't have enough money or quota to receive that object."
+msgstr "Den spilleren har ikke nok penger eller kvote til å motta det objektet."
+
+#: bsd.c:4681
+msgid "That player is not online."
+msgstr "Den spilleren er ikke tilkoblet."
+
+#: src/look.c:1052
+msgid "That player wishes to have some privacy."
+msgstr "Den spilleren ønsker litt privatliv."
+
+#: bsd.c:2801
+msgid "That port is not active."
+msgstr "Den porten er ikke aktiv."
+
+#: bsd.c:4116
+msgid "That port's not active."
+msgstr "Den porten er ikke aktiv."
+
+#: src/create.c:57
+msgid "That room is being destroyed. Sorry."
+msgstr "Det rommet er kondemnert. Beklager."
+
+#: src/create.c:376
+msgid "That's a silly name for a room!"
+msgstr "Det er et dumt navn for et rom!"
+
+#: src/create.c:434
+msgid "That's a silly name for a thing!"
+msgstr "Det er et dumt navn for en ting!"
+
+#: src/create.c:121
+msgid "That's a strange name for an exit!"
+msgstr "Det er et litt rart navn for en utgang!"
+
+#: function.c:923
+msgid "That's not a builtin function."
+msgstr "Det er ikke en innebygd funksjon."
+
+#: bsd.c:4093
+msgid "That's not a port number."
+msgstr "Det der er ikke et portnummer."
+
+#: flags.c:2212
+#, c-format
+msgid "That's not a valid %s name."
+msgstr "Det er ikke et gyldig %s navn."
+
+#: attrib.c:930
+msgid "That's not a very good name for an attribute."
+msgstr "Det er ikke noe særlig godt navn for en attributt."
+
+#: flags.c:2260
+#, c-format
+msgid "That's the %s's name, not an alias."
+msgstr "Det er %ss navn, ikke et alias."
+
+#: src/extchat.c:1176
+msgid "The channel needs a more unique new name."
+msgstr "Den kanalen trenger et mer unikt nytt navn."
+
+#: src/extchat.c:1097
+msgid "The channel needs a shorter name."
+msgstr "Kanalen må ha et kortere navn."
+
+#: src/lock.c:307
+msgid "The character '|' may not be used in lock names."
+msgstr "Du kan ikke bruke tegnet '|' i låsnavn."
+
+#: bsd.c:3693
+#, c-format
+msgid "The current poll is: %s"
+msgstr "Den nåværende pollen er: %s"
+
+#: src/destroy.c:705
+msgid "The floor disappears under your feet, you fall through NOTHINGness and then:"
+msgstr "Gulvet forsvinner under føttene dine. Du faller gjennom det store Intet.. Og så:"
+
+#: command.c:2138
+msgid "The following commands have hooks: "
+msgstr "Disse kommandoene har hooks: "
+
+#: src/game.c:1163
+#, c-format
+msgid "The money supply of all players has been reset to %d %s."
+msgstr "Inntekt for alle spillere har blitt resatt til %d %s."
+
+#: src/atr_tab.c:273
+#, c-format
+msgid "The name %s is already used in the attribute table."
+msgstr "Navnet %s er allere brukt i attributt-tabellen."
+
+#: wiz.c:694
+#, c-format
+msgid "The next object to be created will be #%d."
+msgstr "Neste objekt lagd vil ha nummer #%d."
+
+#: player.c:420
+msgid "The old password that you entered was incorrect."
+msgstr "Det gamle passordet du skrev inn var ugyldig."
+
+#: src/player.c:299
+#, c-format
+msgid "The password is %s\n"
+msgstr "Passordet er %s\n"
+
+#: bsd.c:290
+msgid "The password is invalid (or missing)."
+msgstr "Passordet er ugyldig (eller mangler)."
+
+#: src/extmail.c:1264 src/extmail.c:1672
+msgid "The post office protects privacy!"
+msgstr "Postkontoret beskytter privatlivet!"
+
+#: src/extmail.c:1111
+msgid "The postal service issues a warrant for your arrest."
+msgstr "Postverket setter purken på deg."
+
+#: src/destroy.c:548
+#, c-format
+msgid "The room %s has been spared from destruction by %s."
+msgstr "Rommet %s har blitt spart fra ødeleggelse av %s"
+
+#: src/destroy.c:543
+#, c-format
+msgid "The room %s has been spared from destruction."
+msgstr "Rommet %s har blitt reddet fra ødeleggelse"
+
+#: src/destroy.c:333
+msgid "The room shakes and begins to crumble."
+msgstr "Rommet rister og begynner å falle sammen."
+
+#: cque.c:694
+msgid "The semaphore count must be an integer."
+msgstr "Semafor tellingen må være en integer."
+
+#: src/destroy.c:341
+#, c-format
+msgid "The wrecking ball is on its way for %s's %s and its exits."
+msgstr "Bulldozeren er på vei for %s' %s og dens utganger."
+
+#: src/extmail.c:1281
+#, c-format
+msgid "There are %d messages in the mail spool."
+msgstr "Det er %d meldinger i mailkøen."
+
+#: bsd.c:3925
+#, c-format
+msgid "There are %d players connected."
+msgstr "Det er %d spillere på."
+
+#: access.c:687
+msgid "There are no access rules."
+msgstr "Det fins ingen tilgangsregler."
+
+#: src/bsd.c:4788
+msgid "There are no connected players on that channel."
+msgstr "Det er ingen tilkoblede spillere på den kanalen."
+
+#: command.c:2133
+msgid "There are no hooks currently set."
+msgstr "Det er ingen hooks satt for øyeblikket."
+
+#: bsd.c:3919
+msgid "There are no players connected."
+msgstr "Det er ingen spillere koblet til."
+
+#: flags.c:1542
+msgid "There are probably easier ways to crash your MUSH."
+msgstr "Det fins trolig enklere måter å crashe MUSHen din på."
+
+#: src/speech.c:1368
+msgid "There can't be anything in that!"
+msgstr "Det kan ikke være noe inni det!"
+
+#: bsd.c:3922
+msgid "There is 1 player connected."
+msgstr "Det er 1 spiller på."
+
+#: wiz.c:837
+msgid "There is noone connected on that descriptor."
+msgstr "Det er ingen tilkoblet på den deskriptoren."
+
+#: bsd.c:3211 bsd.c:3291 bsd.c:3361
+msgid "There is one player connected."
+msgstr "En spiller er tilkoblet."
+
+#: function.c:1040 function.c:1072
+msgid "There's already a function with that name."
+msgstr "Det er allerede en funksjon med det navnet."
+
+#: src/move.c:335 src/move.c:336 src/move.c:337
+msgid "There's no place like home..."
+msgstr "Hjem kjære hjem..."
+
+#: rob.c:202
+msgid "There's nobody here to buy things from."
+msgstr "Det er ingen her du kan kjøpe ting fra."
+
+#: src/create.c:496
+msgid "There's nothing left of it to clone!"
+msgstr "Det er ikke mer igjen å klone!"
+
+#: command.c:1562
+msgid "This command has not been implemented."
+msgstr "Denne kommandoen er ikke implementert."
+
+#: src/move.c:426
+msgid "This feature coming soon."
+msgstr "Ikke implementert enda."
+
+#: src/player.c:296
+msgid "This is an automated message.\n"
+msgstr "Dette er en automatisk melding.\n"
+
+#: src/flags.c:1091
+msgid "This room is no longer broadcasting."
+msgstr "Dette rommet kringkaster ikke lenger."
+
+#: src/flags.c:1151
+msgid "This room is now broadcasting."
+msgstr "Dette rommet kringkaster fra nå av."
+
+#: game.c:2097
+msgid "Time now"
+msgstr "Tid nå"
+
+#: game.c:2103
+msgid "Time of last database save"
+msgstr "Tid for siste lagring av database"
+
+#: game.c:2137
+msgid "Time until next @warnings"
+msgstr "Tid til neste @warnings"
+
+#: game.c:2112
+msgid "Time until next database save"
+msgstr "Tid til neste databaselagring"
+
+#: game.c:2120
+msgid "Time until next dbck check"
+msgstr "Tid til neste dbck sjekk"
+
+#: game.c:2128
+msgid "Time until next purge"
+msgstr "Tid til neste purge"
+
+#: conf.c:558
+msgid "TinyMUSH compatibility options"
+msgstr "TinyMUSH kompabilitetsalternativer"
+
+#: src/extchat.c:1358
+msgid "Title too long."
+msgstr "Tittel er for lang."
+
+#: src/player.c:301
+#, c-format
+msgid "To access this character, connect to %s and type:\n"
+msgstr "For å aksessere denne personen, koble til %s og skriv:\n"
+
+#: extchat.c:3693
+#, c-format
+msgid "To channel %s: %s"
+msgstr "Til kanal %s: %s"
+
+#: src/set.c:906
+msgid "Too many ancestors."
+msgstr "For mange foreldre."
+
+#: attrib.c:1653
+msgid "Too many attributes on that object to add another."
+msgstr "For mange attributter på det objektet for å legge til en attributt til."
+
+#: src/fundb.c:1073 src/speech.c:1416
+msgid "Too many containers."
+msgstr "For mange containere."
+
+#: player.c:183
+msgid "Too many guests are connected now."
+msgstr "For mange gjester er tilkoblet nå."
+
+#: src/speech.c:302
+msgid "Too many people to oemit to."
+msgstr "For mange personer for oemit."
+
+#: src/speech.c:402
+msgid "Too many people to whisper to."
+msgstr "For mange folk å hviske til."
+
+#: boolexp.c:245
+msgid "Too much recursion in lock!"
+msgstr "For mye rekursjon i låsen!"
+
+#: game.c:2093
+msgid "Total reboots"
+msgstr "Totalt restartet"
+
+#: cque.c:1168
+#, c-format
+msgid "Totals: Player...%d/%d[%ddel]  Object...%d/%d[%ddel]  Wait...%d/%d[%ddel]  Semaphore...%d/%d"
+msgstr "Totaler: Spillere...%d/5d[%ddel]  Objekt...%d/%d[%ddel]   Vent...%d/%d[%ddel]   Semafor...%d/%d"
+
+#: wiz.c:1337
+#, c-format
+msgid "Totals: Rooms...%d  Exits...%d  Things...%d  Players...%d  Garbage...%d"
+msgstr "Totaler: Rom...%d  Utganger...%d   Ting...%d Spillere...%d  Søppel...%d"
+
+#: wiz.c:1295
+#, c-format
+msgid "Totals: Rooms...%d  Exits...%d  Things...%d  Players...%d"
+msgstr "Totalt: Rom...%d  Utganger...%d  Ting...%d   Spillere...%d"
+
+#: speech.c:825
+msgid "Try again after you get the pemit_all power."
+msgstr "Prøv igjen etter at du har fått pemit_all power."
+
+#: src/wiz.c:878
+msgid "Try asking them first!"
+msgstr "Prøv å spørre først!"
+
+#: src/create.c:147
+msgid "Trying to link..."
+msgstr "Forsøker å åpne lenke..."
+
+#: flags.c:1971
+#, c-format
+msgid "Type of %s %s set."
+msgstr "Type av %s %s satt."
+
+#: flags.c:2032
+msgid "Type(s)"
+msgstr "Type(r)"
+
+#: flags.c:688
+msgid "Type: "
+msgstr "Type: "
+
+#: src/set.c:638
+#, c-format
+msgid "Unable to %s attribute."
+msgstr "Kan ikke %s attributten."
+
+#: access.c:549 access.c:562
+#, c-format
+msgid "Unable to add @sitelock separator: %s"
+msgstr "Kunne ikke legge til @sitelock separator: %s"
+
+#: access.c:542
+#, c-format
+msgid "Unable to add sitelock entry: %s"
+msgstr "Kunne ikke legge til nettstedsblokkering: %s"
+
+#: create.c:485
+msgid "Unable to create object with that dbref."
+msgstr "Kan ikke lage objekt med en slik dbref."
+
+#: src/wiz.c:2073 src/wiz.c:2076 src/wiz.c:2080
+msgid "Unable to delete name."
+msgstr "Kunne ikke slette navn."
+
+#: wiz.c:1858 wiz.c:1886 wiz.c:1893
+msgid "Unable to lock name."
+msgstr "Kan ikke låse navnet."
+
+#: src/bsd.c:758
+#, c-format
+msgid "Unable to open %s. Error output continues to stderr.\n"
+msgstr "Kan ikke åpne %s. Error output fortsetter til stderr.\n"
+
+#: src/wiz.c:2036 src/wiz.c:2056
+msgid "Unable to open names file."
+msgstr "Ikke i stand til å åpne navnefil."
+
+#: speech.c:745
+#, c-format
+msgid "Unable to page:%s"
+msgstr "Kunne ikke sende melding:%s"
+
+#: bsd.c:5033
+#, c-format
+msgid "Unable to reboot using executable '%s': %s"
+msgstr "Kunne ikke reboote med executable '%s': %s"
+
+#: bsd.c:274
+msgid "Unable to register that player with that email address."
+msgstr "Kan ikke registrere spiller med den emailadressen."
+
+#: attrib.c:1767
+#, c-format
+msgid "Unable to remove '%s' because of a protected tree attribute."
+msgstr "Kunne ikke fjerne '%s' fordi det er en beskyttet treattributt."
+
+#: attrib.c:1773
+#, c-format
+msgid "Unable to set '%s' because of a failure to create a needed parent attribute."
+msgstr "Kunne ikke sette '%s' fordi en påkrevd foreldre-attributt ikke kunne lages."
+
+#: command.c:1694
+msgid "Unable to set alias."
+msgstr "Kan ikke sette alias."
+
+#: speech.c:355
+#, c-format
+msgid "Unable to whisper to:%s"
+msgstr "Kunne ikke hviske til:%s"
+
+#: set.c:1096
+#, c-format
+msgid "Unable to wipe attribute %s"
+msgstr "Kunne ikke slette attributt %s"
+
+#: src/access.c:547
+#, c-format
+msgid "Unknown access option: %s"
+msgstr "Ukjent tilgangsalternativ: %s"
+
+#: flags.c:2081
+#, c-format
+msgid "Unknown failure adding %s."
+msgstr "Ukjent feil mens %s ble lagt til."
+
+#: flags.c:1492
+msgid "Unknown failure adding alias."
+msgstr "Ukjent feil mens alias ble lagt til."
+
+#: flags.c:2266
+msgid "Unknown failure deleting alias."
+msgstr "Ukjent feil mens alias ble fjernet."
+
+#: command.c:1349 command.c:1368
+msgid "Unknown hook type"
+msgstr "Ukjent hook type"
+
+#: src/lock.c:297 src/lock.c:303
+msgid "Unknown lock type."
+msgstr "Ukjent låstype."
+
+#: wiz.c:1413
+msgid "Unknown owner."
+msgstr "Ukjent eier."
+
+#: src/wiz.c:1349 src/wiz.c:1772
+msgid "Unknown parent."
+msgstr "Ukjent parent."
+
+#: wiz.c:1503
+msgid "Unknown search class."
+msgstr "Ukjent søksklasse."
+
+#: src/wiz.c:1825 src/wiz.c:1848
+msgid "Unknown type."
+msgstr "Ukjent type."
+
+#: src/warnings.c:301
+#, c-format
+msgid "Unknown warning: %s"
+msgstr "Ukjent advarsel: %s"
+
+#: src/wiz.c:1435 src/wiz.c:1837
+msgid "Unknown zone."
+msgstr "Ukjent sone."
+
+#: src/create.c:194
+msgid "Unlink what?"
+msgstr "Unlink hva?"
+
+#: create.c:206
+#, c-format
+msgid "Unlinked exit #%d (Used to lead to %s)."
+msgstr "Fjernet lenke på utgang #%d (Brukte å føre til %s)."
+
+#: lock.c:880
+#, c-format
+msgid "Unlocked zone %s - automatically zone-locking to itself"
+msgstr "Ulåst sone %s - låser sonen til seg selv automatisk"
+
+#: extmail.c:2471
+msgid "Unread "
+msgstr "Ulest "
+
+#: src/set.c:498
+msgid "Unrecognized attribute flag."
+msgstr "Ukjent attributt-flagg."
+
+#: lock.c:620
+msgid "Unrecognized lock flag."
+msgstr "Ukjent låsflagg."
+
+#: game.c:2087
+msgid "Up since"
+msgstr "Oppe siden"
+
+#: extmail.c:2475
+msgid "Urgent "
+msgstr "Viktig "
+
+#: malias.c:269
+msgid "Use See"
+msgstr "Bruk Se"
+
+#: cmds.c:690
+msgid "Use what attribute for the @message?"
+msgstr "Bruk hvilken attributt for @message?"
+
+#: src/conf.c:799
+msgid "Use: @config/list <type of options> where type is one of:"
+msgstr "Bruk: @config/list <type av alternativer> hvor type er en av:"
+
+#: set.c:1021
+msgid "Used."
+msgstr "Brukt."
+
+#: src/function.c:644
+msgid "User functions:"
+msgstr "Brukerfunksjoner:"
+
+#: extchat.c:2084
+msgid "Users"
+msgstr "Brukere"
+
+#: move.c:423
+#, c-format
+msgid "Variable exit destination #%d is invalid or not permitted."
+msgstr "Variabel utgangsmål #%d er ikke gyldig eller ikke tillatt."
+
+#: warnings.c:232
+#, c-format
+msgid "Variable exit has empty %s attribute"
+msgstr "Variabel utgang har tom %s attributt"
+
+#: warnings.c:227
+#, c-format
+msgid "Variable exit has no %s attribute"
+msgstr "Variabel utgang har ingen %s attributt"
+
+#: command.c:1522
+msgid ""
+"WARNING: /NOEVAL no longer creates a Noparse command.\n"
+"         Use /NOPARSE if that's what you meant."
+msgstr ""
+"ADVARSEL: /NOEVAL lager ikke lenger en Noparse kommando.\n"
+"         Bruk /NOPARSE hvis det var det du ville gjøre."
+
+#: src/cque.c:799
+msgid "Wait Queue:"
+msgstr "Ventekø:"
+
+#: warnings.c:119
+#, c-format
+msgid "Warning '%s' for %s:"
+msgstr "Advarsel til '%s' for %s:"
+
+#: src/warnings.c:417
+msgid "Warning checks complete."
+msgstr "Advarselsjekker ferdige."
+
+#: set.c:345
+#, c-format
+msgid "Warning: @CHOWN/PRESERVE on an object (#%d) with WIZ, ROY, INHERIT, or @power privileges."
+msgstr "Advarsel: @CHOWN/PRESERVE på et objekt (#%d) med WIZ, ROY, INHERIT, eller @power privilegier."
+
+#: src/create.c:547
+msgid "Warning: @CLONE/PRESERVE on an object with WIZ, ROY, @powers, or @warnings."
+msgstr "Advarsel: @CLONE/PRESERVE på et objekt med WIZ, ROY, @powers eller @warnings."
+
+#: set.c:453
+msgid "Warning: @chzoning a TRUST player."
+msgstr "Advarsel: @chzone på en spiller satt TRUST."
+
+#: src/set.c:417
+msgid "Warning: @chzoning a privileged player."
+msgstr "Advarsel: @chzone på en priviligert spiller."
+
+#: src/set.c:396
+msgid "Warning: @chzoning admin-owned object!"
+msgstr "Advarsel: @chzone på admin-eid objekt!"
+
+#: flags.c:1049
+msgid "Warning: Setting trust flag on zoned object"
+msgstr "Advarsel: Setter trust flag på sonet objekt."
+
+#: destroy.c:329
+msgid "Warning: Target is set SAFE, but scheduling for destruction anyway."
+msgstr "Advarsel: Målet er satt SAFE, men klargjør for destruksjon uansett."
+
+#: set.c:328
+#, c-format
+msgid "Warning: WIZ flag reset on #%d because @CHOWN/PRESERVE is to a third party."
+msgstr "Advarsel: WIZ flag resatt på #%d fordi @CHOWN/PRESERVE er til en tredjepart."
+
+#: lock.c:893
+#, c-format
+msgid "Warning: Zone %s may have loose zone lock. Lock zones to =player, not player"
+msgstr "Advarsel: Sone %s kan ha en løs sonelås. Lås soner til =spiller, ikke spiller"
+
+#: src/extchat.c:1116
+msgid "Warning: channel will be created disabled."
+msgstr "Advarsel: Kanalen blir skapt i inaktiv modus."
+
+#: src/extchat.c:1207
+msgid "Warning: channel will be disabled."
+msgstr "Advarsel: Kanalen blir satt inaktiv."
+
+#: src/look.c:733
+#, c-format
+msgid "Warnings checked: %s"
+msgstr "Advarsler sjekket: %s"
+
+#: bsd.c:3796
+msgid "Welcome back from vacation! Don't forget to unset your ON-VACATION flag"
+msgstr "Velkommen tilbake fra ferie! Ikke glem å skru av ditt ON-VACATION flagg"
+
+#: src/wiz.c:465
+msgid "What are you doing inside of yourself?"
+msgstr "Hva iall verden gjør du inni deg selv?"
+
+#: src/game.c:1239
+msgid "What command do you want to scan for?"
+msgstr "Hvilken kommando vil du lete etter?"
+
+#: src/speech.c:145
+msgid "What command do you want to teach?"
+msgstr "Hvilken kommando vil du lære bort?"
+
+#: src/speech.c:698
+msgid "What did you want to say?"
+msgstr "Hva var det du ville si?"
+
+#: src/cmds.c:185
+msgid "What did you want to set?"
+msgstr "Hva ville du sette?"
+
+#: src/look.c:1294
+msgid "What do you want to @decompile?"
+msgstr "Hva vil du @decompile?"
+
+#: src/set.c:576
+msgid "What do you want to copy from?"
+msgstr "Hva vil du kopiere fra?"
+
+#: src/set.c:610
+msgid "What do you want to copy to?"
+msgstr "Hva vil du kopiere fra?"
+
+#: src/predicat.c:849
+msgid "What do you want to do the verb?"
+msgstr "Hva vil du gjøre med verbet?"
+
+#: src/extchat.c:1082
+msgid "What do you want to do with the channel?"
+msgstr "Hva vil du gjøre med kanalen?"
+
+#: src/game.c:1331
+msgid "What do you want to do with the list?"
+msgstr "Hva vil du gjøre med listen?"
+
+#: src/predicat.c:843
+msgid "What do you want to do with the verb?"
+msgstr "Hva vil du gjøre med verbet?"
+
+#: src/extchat.c:1039
+msgid "What do you want to emit?"
+msgstr "Hva vil du emit'e?"
+
+#: bsd.c:4098
+msgid "What do you want to page with?"
+msgstr "Hva vil du sende melding om?"
+
+#: src/extchat.c:981
+msgid "What do you want to say to that channel?"
+msgstr "Hva vil du si på kanalen?"
+
+#: src/wiz.c:196
+msgid "What do you want to set the quota to?"
+msgstr "Hva vil du sette kvoten til?"
+
+#: set.c:595
+msgid "What do you want to set?"
+msgstr "Hva vil du sette?"
+
+#: src/set.c:491
+msgid "What flag do you want to set?"
+msgstr "Hvilket flagg vil du sette?"
+
+#: rob.c:210
+msgid "What is this, a holdup?"
+msgstr "Hva er dette for no? Et ran?"
+
+#: src/set.c:583
+msgid "What object do you want to copy the attribute from?"
+msgstr "Hvilket objekt vil du kopiere attributten fra?"
+
+#: src/predicat.c:1023
+msgid "What pattern do you want to grep for?"
+msgstr "Hvilket mønster vil du søke etter?"
+
+#: src/wiz.c:1980
+msgid "What site did you want to lock?"
+msgstr "Hvilken site vil du låse?"
+
+#: flags.c:1945
+#, c-format
+msgid "What type do you want to make that %s?"
+msgstr "Hvilken type vil du gi den %s?"
+
+#: src/predicat.c:837
+msgid "What was the victim of the verb?"
+msgstr "Hva var verbets offer?"
+
+#: src/atr_tab.c:184 src/atr_tab.c:239 src/atr_tab.c:300
+msgid "Which attribute do you mean?"
+msgstr "Hvilken attributt mener du?"
+
+#: src/atr_tab.c:264
+msgid "Which attributes do you mean?"
+msgstr "Hvilke attributter mener du?"
+
+#: extchat.c:3328
+msgid "Which line do you want to start recall from?"
+msgstr "Hvilken linje vil du starte loggen fra?"
+
+#: src/speech.c:355
+msgid "Whisper to whom?"
+msgstr "Hviske til hvem?"
+
+#: src/speech.c:359
+msgid "Whisper what?"
+msgstr "Hviske til hvem?"
+
+#: src/wiz.c:223
+msgid "Who do you think you are, GOD?"
+msgstr "Hvem tror du at du er? GUD?"
+
+#: src/bsd.c:4330
+msgid "Who do you think you are, Gallup?"
+msgstr "Hvem tror du at du er? Norsk Gallup?"
+
+#: src/wiz.c:1991
+msgid "Who do you want to lock?"
+msgstr "Hvem vil du låse?"
+
+#: src/warnings.c:267 src/warnings.c:443
+msgid "Why would you want to be warned about garbage?"
+msgstr "Hvorfor vil du bli varslet om søppel?"
+
+#: src/bsd.c:4297
+msgid "Why would you want to do that?"
+msgstr "Hvorfor i all verden vil du gjøre det?"
+
+#: src/lock.c:373
+msgid "Why would you want to lock garbage?"
+msgstr "Hvorfor vil du låse søppel?"
+
+#: src/bsd.c:4279
+#, c-format
+msgid "Wiz MOTD: %s"
+msgstr "Wiz MOTD: %s"
+
+#: bsd.c:3453
+#, c-format
+msgid "Wizard motd %s."
+msgstr "Wizard motd %s."
+
+#: log.c:297
+msgid "Wrong password."
+msgstr "Feil passord."
+
+#: src/move.c:512
+msgid "You already have that!"
+msgstr "Du har allerede den!"
+
+#: src/extchat.c:1101
+msgid "You already own too many channels."
+msgstr "Du har allerede for mange kanaler."
+
+#: src/extmail.c:1131
+msgid "You annihilate the post office. All messages cleared."
+msgstr "Du raider postkontoret. Alle meldinger fjernet."
+
+#: src/look.c:865
+msgid "You are carrying:"
+msgstr "Du holder:"
+
+#: src/version.c:33
+#, c-format
+msgid "You are connected to %s"
+msgstr "Du er koblet til mot %s"
+
+#: src/move.c:771
+#, c-format
+msgid "You are followed by: %s"
+msgstr "Du blir fulgt av: %s"
+
+#: src/move.c:770
+#, c-format
+msgid "You are following: %s"
+msgstr "Du følger etter: %s"
+
+#: src/set.c:901
+msgid "You are not allowed to be your own ancestor!"
+msgstr "Du kan ikke være dine egne foreldre."
+
+#: extchat.c:1430
+msgid "You are not on any channels."
+msgstr "Du er ikke på kanal."
+
+#: src/extchat.c:1254 src/extchat.c:1364
+#, c-format
+msgid "You are not on channel <%s>."
+msgstr "Du er ikke på kanal <%s>."
+
+#: src/extchat.c:1291
+#, c-format
+msgid "You are not permitted to hide on channel <%s>."
+msgstr "Du har ikke lov til å gjemme deg på kanalen <%s>."
+
+#: src/bsd.c:4015
+msgid "You are nowhere!"
+msgstr "Du er ingensteds!"
+
+#: src/wiz.c:836
+msgid "You are politely shown to the door."
+msgstr "Du blir vist døra."
+
+#: src/speech.c:857
+msgid "You are set HAVEN and cannot receive pages."
+msgstr "Du er satt HAVEN, og kan ikke motta meldinger."
+
+#: src/look.c:863
+msgid "You aren't carrying anything."
+msgstr "Du har ikke noe med deg."
+
+#: src/move.c:861
+#, c-format
+msgid "You begin following %s."
+msgstr "Du følger nå etter %s."
+
+#: bsd.c:2813
+#, c-format
+msgid "You boot %d idle selves."
+msgstr "Du kastet ut %d inaktive kopier av deg selv."
+
+#: wiz.c:824
+msgid "You boot a duplicate self."
+msgstr "Du koblet fra et duplikat av deg selv."
+
+#: src/wiz.c:833
+msgid "You boot an idle self."
+msgstr "Du kaster ut en inaktiv kopi av deg selv."
+
+#: src/wiz.c:835
+#, c-format
+msgid "You booted %s off!"
+msgstr "Du sparket %s ut!"
+
+#: wiz.c:776
+#, c-format
+msgid "You booted unconnected port %s!"
+msgstr "Inaktiv port %s stengt!"
+
+#: rob.c:291
+#, c-format
+msgid "You buy a %s from %s."
+msgstr "Du kjøper en %s fra %s."
+
+#: attrib.c:1078
+msgid "You can only chown an attribute to yourself."
+msgstr "Du kan bare chown'e en attributt på deg selv."
+
+#: src/move.c:749
+msgid "You can only follow players and things."
+msgstr "Du kan bare følge etter spillere eller ting."
+
+#: src/wiz.c:229
+msgid "You can only set quotas to a number."
+msgstr "Du kan bare sette kvoter til et tall."
+
+#: src/wiz.c:234
+msgid "You can only set quotas to a positive number."
+msgstr "Du kan bare sette kvoter til et positivt nummer."
+
+#: rob.c:326
+msgid "You can't afford that."
+msgstr "Du har ikke råd til det."
+
+#: src/extchat.c:1119
+#, c-format
+msgid "You can't afford the %d %s."
+msgstr "Du kan ikke betale %d %s."
+
+#: src/wiz.c:798
+msgid "You can't boot other people!"
+msgstr "Du kan ikke sparke ut andre personer!"
+
+#: rob.c:198
+msgid "You can't buy from yourself!"
+msgstr "Du kan ikke kjøpe fra deg selv!"
+
+#: cmds.c:1041
+msgid "You can't buy things by taking money."
+msgstr "Du kan ikke kjøpe ting ved å ta penger."
+
+#: src/extchat.c:1112
+msgid "You can't create channels of that type."
+msgstr "Du kan ikke lage kanaler av den typen."
+
+#: command.c:1419
+msgid "You can't delete built-in commands. @command/disable instead."
+msgstr "Du kan ikke slette innebygde kommandoer. Bruk @command/disable istedet."
+
+#: src/function.c:773
+msgid "You can't delete that @function."
+msgstr "Du kan ikke slette den funksjonen definert av @function."
+
+#: function.c:1660
+msgid "You can't disable aliases."
+msgstr "Du kan ikke skru av aliaser."
+
+#: src/move.c:576
+msgid "You can't drop that."
+msgstr "Du kan ikke slippe det."
+
+#: move.c:731
+msgid "You can't empty that from here."
+msgstr "Du kan ikke tømme det herifra."
+
+#: src/wiz.c:584
+msgid "You can't force God!"
+msgstr "Du kan ikke betvinge Gud!"
+
+#: src/set.c:139
+msgid "You can't give a player that name."
+msgstr "Du kan ikke gi en spiller det navnet."
+
+#: rob.c:212
+msgid "You can't give an object to itself!"
+msgstr "Du kan ikke gi et objekt til seg selv!"
+
+#: src/rob.c:207
+msgid "You can't give that away."
+msgstr "Du kan ikke gi bort det."
+
+#: src/rob.c:202
+msgid "You can't give yourself away!"
+msgstr "Du kan ikke gi bort deg selv!"
+
+#: src/move.c:359 src/move.c:412 src/move.c:430
+msgid "You can't go that way."
+msgstr "Du kan ikke gå den veien."
+
+#: src/wiz.c:1175
+msgid "You can't grant powers to unregistered players."
+msgstr "Du kan ikke gi powers til uregistrerte spillere."
+
+#: set.c:1021
+msgid "You can't include God!"
+msgstr "Du kan ikke inkludere God!"
+
+#: src/move.c:670
+msgid "You can't leave."
+msgstr "Du kan ikke forlate rommet."
+
+#: src/create.c:60
+msgid "You can't link to that."
+msgstr "Du kan ikke linke til det."
+
+#: src/lock.c:369
+msgid "You can't lock that!"
+msgstr "Du kan ikke låse det!"
+
+#: src/wiz.c:166
+msgid "You can't look at someone else's quota."
+msgstr "Du kan ikke se andres kvoter."
+
+#: src/look.c:572
+msgid "You can't look at that from here."
+msgstr "Du kan ikke se på det fra her."
+
+#: src/wiz.c:1202
+msgid "You can't make admin into guests."
+msgstr "Du kan ikke gjøre admin til en gjest."
+
+#: src/create.c:114
+msgid "You can't make an exit in a place that's crumbling."
+msgstr "Du kan ikke lage en exit i et rom som holder på å kollapse."
+
+#: src/extchat.c:1203
+msgid "You can't make channels that type."
+msgstr "Du kan ikke lage kanaler av den typen."
+
+#: set.c:391
+msgid "You can't make circular zones!"
+msgstr "Du kan ikke lage sirkulære soner!"
+
+#: src/wiz.c:416
+msgid "You can't move an exit to someplace that's crumbling."
+msgstr "Du kan ikke flytte en utgang til et sted som holder på å ødelegges."
+
+#: src/move.c:537
+msgid "You can't pick that up."
+msgstr "Du kan ikke plukke opp det."
+
+#: src/move.c:541
+msgid "You can't pick up exits."
+msgstr "Du kan ikke plukke opp utganger."
+
+#: src/cmds.c:181
+msgid "You can't remake the world in your image."
+msgstr "Nei nei, det får du ikke lov til!"
+
+#: src/wiz.c:1934
+msgid "You can't see someone else's quota!"
+msgstr "Du kan ikke se andres kvoter!"
+
+#: look.c:754
+msgid "You can't see that from here."
+msgstr "Du kan ikke se det fra her."
+
+#: src/look.c:534
+msgid "You can't see through that."
+msgstr "Du kan ikke se gjennom det."
+
+#: src/move.c:586
+msgid "You can't seem to drop things here."
+msgstr "Det ser ikke ut som om du kan slippe ting her."
+
+#: src/move.c:583
+msgid "You can't seem to get rid of that."
+msgstr "Det ser ut som du kan ikke bli kvitt det."
+
+#: src/move.c:502
+msgid "You can't take that from there."
+msgstr "Du kan ikke ta det fra der."
+
+#: src/move.c:544
+msgid "You can't take that!"
+msgstr "Du kan ikke ta det!"
+
+#: src/wiz.c:359
+msgid "You can't teleport rooms."
+msgstr "Du kan ikke teleportere rom."
+
+#: cmds.c:835
+msgid "You can't teleport to nothing!"
+msgstr "Du kan ikke teleportere til ingenting!"
+
+#: src/set.c:813
+msgid "You can't trigger God!"
+msgstr "Du kan ikke utføre ting på Gud!"
+
+#: src/create.c:213
+msgid "You can't unlink that!"
+msgstr "Du kan ikke unlink'e det!"
+
+#: src/set.c:214
+msgid "You cannot @CHOWN/PRESERVE. Use normal @CHOWN."
+msgstr "Du kan ikke @chown/PRESERVE. Bruk normal @CHOWN."
+
+#: create.c:624
+msgid "You cannot @CLONE/PRESERVE. Use normal @CLONE instead."
+msgstr "Du kan ikke @CLONE/PRESERVE. Bruk vanlig @CLONE istedet."
+
+#: cque.c:985
+msgid "You cannot adjust the timeout of an indefinite semaphore."
+msgstr "Du kan ikke justere tidsavbruddet på en indefinitiv semafor."
+
+#: function.c:1087
+msgid "You cannot alias @functions."
+msgstr "Du kan ikke sette alias for @functions."
+
+#: function.c:869
+msgid "You cannot change that built-in function."
+msgstr "Du kan ikke forandre den innebygde funksjonen."
+
+#: set.c:474
+#, c-format
+msgid "You cannot change that flag on %s/%s"
+msgstr "Du kan ikke forandre det flagget på %s/%s"
+
+#: src/wiz.c:734
+msgid "You cannot change that player's password."
+msgstr "Du kan ikke forandre den spillerens passord."
+
+#: src/command.c:1244
+msgid "You cannot do that while gagged."
+msgstr "Du kan ikke gjøre det mens du er kneblet."
+
+#: src/move.c:527
+msgid "You cannot get yourself!"
+msgstr "Du kan ikke plukke opp deg selv."
+
+#: src/move.c:450
+msgid "You cannot modify exits in that room."
+msgstr "Du kan ikke modifisere utganger i det rommet."
+
+#: src/set.c:357
+msgid "You cannot move that object to that zone."
+msgstr "Du kan ikke flytte det objektet til den sonen."
+
+#: src/set.c:469
+#, c-format
+msgid "You cannot set attrib flags on %s/%s"
+msgstr "Du kan ikke sette attributtflagg på %s/%s"
+
+#: src/move.c:753
+msgid "You chase your tail for a while and feel silly."
+msgstr "Du jager halen din for en stund, og føler deg ganske dum."
+
+#: move.c:899
+msgid "You desert everyone you're leading or following."
+msgstr "Du forlater alle du leder eller følger."
+
+#: move.c:866
+msgid "You dismiss all your followers."
+msgstr "Du dimmer alle følgerene dine."
+
+#: src/rob.c:77
+msgid "You do not have such power."
+msgstr "Du har ikke en slik power."
+
+#: src/wiz.c:117
+msgid "You do not have the power over body and mind!"
+msgstr "Du har ikke makt over kropp og sinn!"
+
+#: src/cque.c:950
+msgid "You do not have the power to bring the world to a halt."
+msgstr "Du kan ikke bringe verden til å stoppe."
+
+#: src/wiz.c:925
+msgid "You do not have the power to change reality."
+msgstr "Du har ikke makten til å forandre virkeligheten."
+
+#: src/cque.c:972
+msgid "You do not have the power to restart the world."
+msgstr "Du har ikke makten til å starte verden på nytt."
+
+#: src/create.c:152
+#, c-format
+msgid "You don't have enough %s to link."
+msgstr "Du har ikke nok %s for å linke."
+
+#: src/rob.c:120 src/speech.c:935
+#, c-format
+msgid "You don't have enough %s."
+msgstr "Du har ikke nok %s."
+
+#: flags.c:1319 flags.c:1374
+msgid "You don't have enough magic for that."
+msgstr "Du har ikke nok magi for det."
+
+#: src/rob.c:246
+#, c-format
+msgid "You don't have that many %s to give!"
+msgstr "Du har ikke så mange %s å gi bort!"
+
+#: src/move.c:568 src/rob.c:191
+msgid "You don't have that!"
+msgstr "Du har ikke det!"
+
+#: src/attrib.c:1114
+msgid "You don't have the permission to chown that."
+msgstr "Du har ikke tillatelse til å chown'e det."
+
+#: src/set.c:352
+msgid "You don't have the power to shift reality."
+msgstr "Du har ikke makten til å forandre virkeligheten."
+
+#: flags.c:1455 flags.c:1504 flags.c:1533 flags.c:1579
+msgid "You don't look like God."
+msgstr "Du ser ikke ut som Gud."
+
+#: src/bsd.c:3073
+msgid "You don't look like an admin to me."
+msgstr "Du ser ikke ut som en admin for meg."
+
+#: src/move.c:745
+msgid "You don't see that here."
+msgstr "Du ser ikke det her."
+
+#: move.c:649
+#, c-format
+msgid "You drop %s."
+msgstr "Du slipper %s."
+
+#: move.c:1128
+#, c-format
+msgid "You follow %s."
+msgstr "Du følger %s"
+
+#: rob.c:182
+#, c-format
+msgid "You gave %s to %s."
+msgstr "Du ga %s til %s."
+
+#: src/rob.c:261
+#, c-format
+msgid "You get %d in change."
+msgstr "Du får %d tilbake."
+
+#: src/destroy.c:759
+#, c-format
+msgid "You get your %d %s deposit back for %s."
+msgstr "Du får tilbake ditt %d %s depositum for %s."
+
+#: src/rob.c:276
+#, c-format
+msgid "You give %d %s to %s."
+msgstr "Du gir %d %s til %s."
+
+#: src/look.c:853
+#, c-format
+msgid "You have %d %s."
+msgstr "Du har %d %s."
+
+#: src/destroy.c:514
+#, c-format
+msgid "You have been spared from destruction by %s."
+msgstr "Du har blitt reddet fra ødeleggelse av %s."
+
+#: src/destroy.c:517
+msgid "You have been spared from destruction."
+msgstr "Du har blitt spart fra ødeleggelse."
+
+#: player.c:425
+msgid "You have changed your password."
+msgstr "Du har endret passordet ditt."
+
+#: extchat.c:2034
+#, c-format
+msgid "You have no title set on <%s>."
+msgstr "Du har ingen tittel satt på <%s>."
+
+#: look.c:953
+#, c-format
+msgid "You have unlimited %s."
+msgstr "Du har ubegrenset antall %s."
+
+#: src/speech.c:832
+msgid "You haven't paged anyone since connecting."
+msgstr "Du har ikke sendt melding til noen siden du koblet til."
+
+#: extchat.c:1593
+msgid "You hide on all the channels you can."
+msgstr "Du gjemmer deg på alle kanalene du kan."
+
+#: src/rob.c:127
+#, c-format
+msgid "You killed %s!"
+msgstr "Du drepte %s!"
+
+#: src/speech.c:842
+#, c-format
+msgid "You last paged %s."
+msgstr "Du sendte sist melding til %s."
+
+#: src/speech.c:1424
+#, c-format
+msgid "You lemit: \"%s\""
+msgstr "Du lemit'er: \"%s\""
+
+#: src/bsd.c:4256
+msgid "You may get 15 minutes of fame and glory in life, but not right now."
+msgstr "Du får kanskje din tid i rampelyset, men det blir ikke akkurat nå."
+
+#: look.c:959
+#, c-format
+msgid "You may give unlimited %s"
+msgstr "Du kan gi ubegrenset %s"
+
+#: src/create.c:311
+msgid "You may not link something to itself."
+msgstr "Du kan ikke linke noe til deg selv."
+
+#: src/set.c:535
+msgid "You may not set attributes."
+msgstr "Du kan ikke sette attributter."
+
+#: src/speech.c:132 src/speech.c:171 src/speech.c:644 src/speech.c:1342
+msgid "You may not speak here!"
+msgstr "Du kan ikke snakke her!"
+
+#: src/speech.c:218 src/speech.c:270 src/speech.c:1375 src/speech.c:1420
+msgid "You may not speak there!"
+msgstr "Du kan ikke tale der!"
+
+#: cque.c:662
+msgid "You may not specify a semaphore attribute with the ANY switch."
+msgstr "Du kan ikke spesifisere en semafor attributt med ANY valget."
+
+#: cque.c:690
+msgid "You may not specify a semaphore count with the ALL switch."
+msgstr "Du kan ikke spesifisere en semafor-telling med ALL variabelen."
+
+#: src/wiz.c:514
+msgid "You may not teleport out of the zone from this room."
+msgstr "Du kan ikke teleportere ut av sonen fra dette rommet."
+
+#: src/cque.c:913
+msgid "You may not use @halt obj=command on this object."
+msgstr "Du kan ikke bruke @halt obj=kommando på dette objektet."
+
+#: src/flags.c:595
+msgid "You must @lock/zone before you can set a player ZONE"
+msgstr "Du må @lock/zone før du kan sette en spiller ZONE"
+
+#: src/extchat.c:922 src/extchat.c:1029
+msgid "You must be on that channel to speak on it."
+msgstr "Du må være på den kanalen for å snakke på den."
+
+#: set.c:210
+msgid "You must carry the object to @chown it."
+msgstr "Du må ha objektet med deg for å @chown'e det."
+
+#: wiz.c:1460
+msgid "You must give a list of flag names."
+msgstr "Du må gi en liste over flaggnavn."
+
+#: wiz.c:1437
+msgid "You must give a list of power names."
+msgstr "Du må gi en liste over power navn."
+
+#: wiz.c:1453
+msgid "You must give a string of flag characters."
+msgstr "Du må gi en streng med flagg-karakterer."
+
+#: command.c:2073
+msgid "You must give an object."
+msgstr "Du må angi et objekt."
+
+#: command.c:1357
+msgid "You must give both an object and attribute."
+msgstr "Du må gi både et objekt og en attributt."
+
+#: flags.c:2006
+#, c-format
+msgid "You must provide a name for the %s."
+msgstr "Du må gi et navn til %s."
+
+#: flags.c:1459
+msgid "You must provide a name for the alias."
+msgstr "Du må gi et navn til det aliaset."
+
+#: flags.c:2023
+msgid "You must provide more information."
+msgstr "Du må gi mer informasjon."
+
+#: attrib.c:1505
+#, c-format
+msgid "You must set %s first."
+msgstr "Du må sette %s først."
+
+#: src/extchat.c:1074 src/extchat.c:1247 src/extchat.c:1354
+msgid "You must specify a channel."
+msgstr "Du må spesifisere en kanal."
+
+#: src/command.c:1090
+msgid "You must specify a command."
+msgstr "Du må spesifisere en kommando."
+
+#: src/set.c:547
+msgid "You must specify a flag to set."
+msgstr "Du må spesifisere et flagg å sette."
+
+#: src/rob.c:230
+#, c-format
+msgid "You must specify a positive number of %s."
+msgstr "Du må spesifisere et positivt nummer av %s."
+
+#: wiz.c:1067
+msgid "You must specify a power to set."
+msgstr "Du må spesifisere en power du vil sette."
+
+#: extchat.c:3416
+msgid "You must specify a type of lock!"
+msgstr "Du må spesifisere en låstype!"
+
+#: src/look.c:1044
+msgid "You must specify a valid player name."
+msgstr "Du må spesifisere et gyldig spillernavn."
+
+#: src/function.c:672
+msgid "You must specify an object and an attribute."
+msgstr "Du må spesifisere et objekt og en attributt."
+
+#: cque.c:652
+msgid "You must specify an object to use for the semaphore."
+msgstr "Du må spesifisere et objekt for å bruke den semaforen."
+
+#: extchat.c:1171 extchat.c:1266
+msgid "You must stop gagging that channel to speak on it."
+msgstr "Du må skru på kanalen for å snakke på den."
+
+#: src/destroy.c:280
+msgid "You must use @nuke to destroy a player."
+msgstr "Du må bruke @nuke for å slette en spiller."
+
+#: src/wiz.c:678 src/wiz.c:1451
+msgid "You need a search warrant to do that!"
+msgstr "Du trenger en ransakingsordre for å gjøre det!"
+
+#: attrib.c:1017
+msgid "You need to be able to set the attribute to change its lock."
+msgstr "Du må være i stand til å sette attributten for å forandre låsen på den."
+
+#: src/set.c:715
+msgid "You need to control an attribute to edit it."
+msgstr "Du må kontrollere en attributt for å editere den."
+
+#: src/attrib.c:985 src/attrib.c:989 src/attrib.c:1058 src/attrib.c:1062
+msgid "You need to give an object/attribute pair."
+msgstr "Du må gi et objekt/attributt par."
+
+#: src/extchat.c:746
+msgid "You need to specify a channel."
+msgstr "Du må spesifisere en kanal."
+
+#: extchat.c:2991
+msgid "You need to specify the number of lines to buffer."
+msgstr "Du må spesifisere et antall linjer å legge i bufferet."
+
+#: src/extchat.c:1298
+#, c-format
+msgid "You no longer appear on channel <%s>'s who list."
+msgstr "Du er ikke lenger synlig på kanalen <%s>'s who-liste."
+
+#: src/bsd.c:4639
+msgid "You no longer appear on the WHO list."
+msgstr "Du vises ikke lengre på WHO-listen."
+
+#: src/extchat.c:1305
+#, c-format
+msgid "You now appear on channel <%s>'s who list."
+msgstr "Du kommer nå frem på kanalen <%s>'s wholiste."
+
+#: src/bsd.c:4641
+msgid "You now appear on the WHO list."
+msgstr "Du vises nå på WHO-listen."
+
+#: src/destroy.c:1103
+#, c-format
+msgid "You own a disconnected room, %s"
+msgstr "Du eier et frakoblet rom, %s"
+
+#: src/destroy.c:1181
+#, c-format
+msgid "You own an object %s that was 'orphaned'."
+msgstr "Du eier et objekt %s som er 'foreldreløst'."
+
+#: destroy.c:1170
+#, c-format
+msgid "You own an object in a circular zone chain: %s"
+msgstr "Du eier et objekt i en sirkulær sonekjede: %s"
+
+#: destroy.c:1143
+#, c-format
+msgid "You own an object without a @lock/zone being used as a zone: %s"
+msgstr "Du eier et objekt uten et @lock/zone som blir brukt som en sone: %s"
+
+#: speech.c:975
+#, c-format
+msgid "You paged %s with '%s'"
+msgstr "Du meldet %s med '%s'"
+
+#: src/rob.c:263
+#, c-format
+msgid "You paid %d %s."
+msgstr "Du betalte %d %s."
+
+#: src/speech.c:616
+#, c-format
+msgid "You pemit \"%s\" to %s."
+msgstr "Du pemit'er \"%s\" til %s."
+
+#: src/speech.c:1383
+#, c-format
+msgid "You remit, \"%s\" in %s"
+msgstr "Du remiter, \"%s\" i %s"
+
+#: move.c:840
+#, c-format
+msgid "You remove %d objects from %s."
+msgstr "Du fjerner %d objekter fra %s."
+
+#: move.c:838
+#, c-format
+msgid "You remove 1 object from %s."
+msgstr "Du fjernet 1 objekt fra %s."
+
+#: src/speech.c:177
+#, c-format
+msgid "You say, \"%s\""
+msgstr "Du sier, \"%s\""
+
+#: src/look.c:412
+msgid "You see nothing special."
+msgstr "Du ser ikke noe spesielt."
+
+#: extmail.c:2685
+#, c-format
+msgid "You sent your message to the '%s' alias"
+msgstr "Du sendte meldingen din til '%s' aliaset."
+
+#: src/set.c:367
+msgid "You shouldn't zone objects to themselves!"
+msgstr "Du bør ikke sone objekter til dem selv!"
+
+#: src/create.c:240
+msgid "You somehow wound up in a exit. No biscuit."
+msgstr "Hm. Du endte opp i en utgang på et eller annet vis. Slem gutt. Ingen kjeks."
+
+#: src/move.c:917 src/move.c:1036
+#, c-format
+msgid "You stop following %s."
+msgstr "Du slutter å følge %s."
+
+#: move.c:835
+msgid "You stop following anyone."
+msgstr "Du slutter å følge etter folk."
+
+#: move.c:527
+#, c-format
+msgid "You take %s from %s."
+msgstr "Du tar %s fra %s."
+
+#: move.c:573
+#, c-format
+msgid "You take %s."
+msgstr "Du tar %s."
+
+#: src/rob.c:279
+#, c-format
+msgid "You took %d %s from %s!"
+msgstr "Du tok %d %s fra %s!"
+
+#: extchat.c:1594
+msgid "You unhide on all channels."
+msgstr "Du er ikke lenger gjemt på alle kanaler."
+
+#: speech.c:395
+#, c-format
+msgid "You whisper, \"%s\"%s."
+msgstr "Du hvisker, \"%s\"%s."
+
+#: src/destroy.c:336
+#, c-format
+msgid "You will be rewarded shortly for %s."
+msgstr "Du vil få betaling for %s snart."
+
+#: src/extchat.c:1266
+#, c-format
+msgid "You will no longer hear connection messages on channel <%s>."
+msgstr "Du vil ikke lenger høre tilkoblingsmeldinger på kanalen <%s>."
+
+#: src/extchat.c:1322
+#, c-format
+msgid "You will no longer hear messages on channel <%s>."
+msgstr "Du hører ikke lenger meldinger på kanal <%s>."
+
+#: src/extchat.c:1274
+#, c-format
+msgid "You will now hear connection messages on channel <%s>."
+msgstr "Du vil nå høre tilkoblingsmeldinger på kanalen <%s>."
+
+#: src/extchat.c:1329
+#, c-format
+msgid "You will now hear messages on channel <%s>."
+msgstr "Du vil nå høre meldinger på kanal <%s>."
+
+#: src/speech.c:1488
+#, c-format
+msgid "You zemit, \"%s\" in zone %s"
+msgstr "Du Zemit, \"%s\" i zone %s"
+
+#: src/warnings.c:412
+msgid "You'd better check your wizbit first."
+msgstr "Hm, jeg tror du må sjekke wizbit'en din først."
+
+#: move.c:788
+#, c-format
+msgid "You're already following %s."
+msgstr "Du følger allerede %s."
+
+#: src/wiz.c:453
+msgid "You're in the Void. This is not a good thing."
+msgstr "Du er i Limbo. Dette er IKKE bra."
+
+#: src/wiz.c:479
+msgid "You're in the void - sending you home."
+msgstr "Du er i limbo - sender deg hjem."
+
+#: src/wiz.c:487
+msgid "You're in too many containers."
+msgstr "Du er i for mange containere."
+
+#: move.c:1005
+msgid "You're not allowed to follow."
+msgstr "Du har ikke lov til å følge etter."
+
+#: move.c:845
+#, c-format
+msgid "You're not following %s."
+msgstr "Du følger ikke etter %s."
+
+#: speech.c:733
+msgid "You're trying to page too many people at once."
+msgstr "Du prøver å sende meldinger til for mange samtidig."
+
+#: src/destroy.c:410
+#, c-format
+msgid "Your %s has been spared from destruction."
+msgstr "Din %s har blitt reddet fra ødeleggelse."
+
+#: src/bsd.c:3419
+msgid "Your HAVEN flag is set. You cannot receive pages."
+msgstr "HAVEN-flagget ditt er satt. Du kan ikke motta meldinger."
+
+#: timer.c:158
+msgid "Your ON-VACATION flag is set! If you're back, clear it."
+msgstr "Ditt ON-VACATION flagg er satt! Hvis du er tilbake fra ferie, fjern det."
+
+#: src/flags.c:1092
+msgid "Your contents can no longer be heard from outside."
+msgstr "Innholdet ditt kan ikke lenger høres fra utsiden."
+
+#: src/flags.c:1152
+msgid "Your contents can now be heard from outside."
+msgstr "Innholdet ditt kan nå høres fra utsiden."
+
+#: src/wiz.c:1971
+msgid "Your delusions of grandeur have been noted."
+msgstr "Dine grandiøse illusjoner er behørlig notert."
+
+#: src/rob.c:147
+msgid "Your insurance policy has been revoked."
+msgstr "Forsikringspolisen din har blitt fjernet."
+
+#: src/rob.c:143
+#, c-format
+msgid "Your insurance policy pays %d %s."
+msgstr "Forsikringspolisen din betaler %d %s."
+
+#: src/rob.c:155
+msgid "Your murder attempt failed."
+msgstr "Mordforsøket ditt gikk ikke som planlagt."
+
+#: src/cque.c:988
+#, c-format
+msgid "Your objects are being globally restarted by %s"
+msgstr "Dine objekter blir globalt startet på nytt av %s"
+
+#: src/cque.c:956
+#, c-format
+msgid "Your objects have been globally halted by %s"
+msgstr "Dine objekter har blitt stoppet globalt av %s"
+
+#: src/wiz.c:739
+#, c-format
+msgid "Your password has been changed by %s."
+msgstr "Passordet ditt har blitt forandret av %s."
+
+#: src/player.c:298
+#, c-format
+msgid "Your requested player, %s, has been created.\n"
+msgstr "Din forespurte spiller, %s, har blitt lagd.\n"
+
+#: extchat.c:2036
+#, c-format
+msgid "Your title on <%s> is '%s'."
+msgstr "Din tittel på <%s> er '%s'."
+
+#: lock.c:888
+#, c-format
+msgid "Zone %s really should have a more secure zone-lock."
+msgstr "Sone %s burde virkelig ha en sikrere sonelås."
+
+#: src/wiz.c:959
+#, c-format
+msgid "Zone changed for %d objects."
+msgstr "Sone forandret for %d objekter."
+
+#: src/set.c:422
+msgid "Zone changed."
+msgstr "Sone forandret."
+
+#: src/predicat.c:764
+#, c-format
+msgid "[%d:%02d] %s message sent to %s."
+msgstr "[%d:%02d] %s melding sendt til %s."
+
+#: notify.c:1482
+#, c-format
+msgid "[%s(#%d)'s %s(#%d)] "
+msgstr "[%s(#%d)s %s(#%d)] "
+
+#: player.c:331
+#, c-format
+msgid "[%s] Registration of %s\n"
+msgstr "[%s] Registrering av %s\n"
+
+#: src/bsd.c:4683
+msgid ""
+"\n"
+"*** Inactivity limit reached. You are now HIDDEN. ***\n"
+msgstr ""
+"\n"
+"*** Inaktivitetsgrense nådd. Du er nå HIDDEN. ***\n"
+
+#: src/bsd.c:4673
+msgid ""
+"\n"
+"*** Inactivity timeout ***\n"
+msgstr ""
+"\n"
+"*** Inaktivitet forårsaket frakobling ***\n"
+
+#: wiz.c:1248
+msgid ""
+"\n"
+"EXITS:"
+msgstr ""
+"\n"
+"UTGANGER:"
+
+#: wiz.c:1323
+msgid ""
+"\n"
+"GARBAGE:"
+msgstr ""
+"\n"
+"SØPPEL:"
+
+#: src/extmail.c:2507
+msgid ""
+"\n"
+"MAIL: You have no mail.\n"
+msgstr ""
+"\n"
+"MAIL: Du har ingen mail.\n"
+
+#: wiz.c:1284
+msgid ""
+"\n"
+"PLAYERS:"
+msgstr ""
+"\n"
+"SPILLERE:"
+
+#: wiz.c:1233
+msgid ""
+"\n"
+"ROOMS:"
+msgstr ""
+"\n"
+"ROM:"
+
+#: wiz.c:1270
+msgid ""
+"\n"
+"THINGS:"
+msgstr ""
+"\n"
+"TING:"
+
+#: bsd.c:4127 bsd.c:4133
+msgid "a connecting player"
+msgstr "en spiller under tilkobling"
+
+#: extchat.c:2150 look.c:209 speech.c:372 speech.c:806
+msgid "and"
+msgstr "og"
+
+#: src/log.c:273
+msgid "bad object"
+msgstr "feil objekt"
+
+#: rob.c:295
+#, c-format
+msgid "buys a %s from %s."
+msgstr "kjøper en %s fra %s."
+
+#: extchat.c:1377
+msgid "cleared"
+msgstr "fjernet"
+
+#: set.c:734
+msgid "copied"
+msgstr "kopiert"
+
+#: set.c:739
+msgid "copy"
+msgstr "kopi"
+
+#: move.c:608
+#, c-format
+msgid "drops %s."
+msgstr "slipper %s."
+
+#: src/warnings.c:186
+#, c-format
+msgid "exit has multiple (%d) return exits"
+msgstr "Exit'en har flere (%d) motgående exits."
+
+#: src/warnings.c:183
+msgid "exit has no return exit"
+msgstr "utgangen har ingen tilbakevirkende utgang"
+
+#: src/warnings.c:163
+msgid "exit is missing description"
+msgstr "utgangen mangler beskrivelse"
+
+#: src/warnings.c:148
+msgid "exit is unlinked; anyone can steal it"
+msgstr "exit'en er ikke linket; Hvem som helst kan stjele den"
+
+#: bsd.c:3443
+msgid "has DARK-connected."
+msgstr "har koblet til DARK."
+
+#: bsd.c:3655
+msgid "has DARK-disconnected."
+msgstr "har koblet til MØRK."
+
+#: bsd.c:3443
+msgid "has DARK-reconnected."
+msgstr "har koblet til på nytt DARK."
+
+#: bsd.c:3446
+msgid "has HIDDEN-connected."
+msgstr "har HIDDEN-tilkoblet."
+
+#: bsd.c:3658
+msgid "has HIDDEN-disconnected."
+msgstr "har koblet fra HIDDEN."
+
+#: bsd.c:3445
+msgid "has HIDDEN-reconnected."
+msgstr "har koblet til på nytt HIDDEN."
+
+#: src/move.c:101
+msgid "has arrived."
+msgstr "har ankommet."
+
+#: bsd.c:3448
+msgid "has connected."
+msgstr "har koblet til."
+
+#: bsd.c:3661
+msgid "has disconnected."
+msgstr "har koblet fra."
+
+#: extchat.c:1262
+msgid "has joined this channel."
+msgstr "har blitt med i kanalen."
+
+#: extchat.c:1287
+msgid "has left this channel."
+msgstr "har forlatt kanalen."
+
+#: src/move.c:96
+msgid "has left."
+msgstr "har dratt."
+
+#: bsd.c:3654
+msgid "has partially DARK-disconnected."
+msgstr "has delvis DARK-frakoblet"
+
+#: bsd.c:3657
+msgid "has partially HIDDEN-disconnected."
+msgstr "har delvis HIDDEN-frakoblet."
+
+#: bsd.c:3660
+msgid "has partially disconnected."
+msgstr "har delvis frakoblet."
+
+#: bsd.c:3448
+msgid "has reconnected."
+msgstr "har koblet til på nytt."
+
+#: extchat.c:1808
+#, c-format
+msgid "has renamed %s to %s."
+msgstr "har gitt nytt navn %s til %s."
+
+#: rob.c:115
+#, c-format
+msgid "killed %s!"
+msgstr "drepte %s!"
+
+#: lock.c:685
+msgid "lock flags set"
+msgstr "låseflagg satt"
+
+#: lock.c:685
+msgid "lock flags unset"
+msgstr "låseflagg slettet"
+
+#: set.c:739
+msgid "move"
+msgstr "flytt"
+
+#: set.c:734
+msgid "moved"
+msgstr "flyttet"
+
+#: src/warnings.c:202
+msgid "player is missing description"
+msgstr "spiller mangler beskrivelse"
+
+#: src/warnings.c:159
+msgid "possibly locked exit missing fail"
+msgstr "mulig låst utgang mangler fail"
+
+#: src/warnings.c:229
+msgid "possibly locked thing missing fail"
+msgstr "mulig låst ting mangler fail"
+
+#: src/warnings.c:157
+msgid "possibly unlocked exit missing succ/osucc/odrop"
+msgstr "mulig ulåst utgang mangler succ/osucc/odrop"
+
+#: src/warnings.c:227
+msgid "possibly unlocked thing missing succ/osucc/drop/odrop"
+msgstr "Mulig ulåst ting mangler succ/osucc/drop/odrop"
+
+#: funstr.c:100
+msgid "pronoun:feminine,absolute possessive"
+msgstr "hennes"
+
+#: funstr.c:88
+msgid "pronoun:feminine,objective"
+msgstr "hennes"
+
+#: funstr.c:92
+msgid "pronoun:feminine,possessive"
+msgstr "hennes"
+
+#: funstr.c:88
+msgid "pronoun:feminine,subjective"
+msgstr "hennes"
+
+#: funstr.c:101
+msgid "pronoun:masculine,absolute possessive"
+msgstr "hans"
+
+#: funstr.c:97
+msgid "pronoun:masculine,objective"
+msgstr "pronomen:maskulint,objektivt"
+
+#: funstr.c:85
+msgid "pronoun:masculine,possessive"
+msgstr "hans"
+
+#: funstr.c:89
+msgid "pronoun:masculine,subjective"
+msgstr "hans"
+
+#: funstr.c:91
+msgid "pronoun:neuter,absolute possessive"
+msgstr "dens"
+
+#: funstr.c:87
+msgid "pronoun:neuter,objective"
+msgstr "dens"
+
+#: funstr.c:91
+msgid "pronoun:neuter,possessive"
+msgstr "pronomen:intetkjønn,possessivt"
+
+#: funstr.c:87
+msgid "pronoun:neuter,subjective"
+msgstr "dens"
+
+#: funstr.c:94
+msgid "pronoun:plural,absolute possessive "
+msgstr "deres "
+
+#: funstr.c:98
+msgid "pronoun:plural,objective"
+msgstr "sine"
+
+#: funstr.c:86
+msgid "pronoun:plural,possessive"
+msgstr "sine"
+
+#: funstr.c:82
+msgid "pronoun:plural,subjective"
+msgstr "deres"
+
+#: src/warnings.c:126
+msgid "room has no description"
+msgstr "rommet har ingen beskrivelse"
+
+#: speech.c:676
+msgid "says"
+msgstr "sier"
+
+#: extchat.c:1377
+msgid "set"
+msgstr "satt"
+
+#: speech.c:676
+msgid "shouts"
+msgstr "roper"
+
+#: move.c:529
+#, c-format
+msgid "takes %s from %s."
+msgstr "tar %s fra %s."
+
+#: move.c:492 move.c:534
+#, c-format
+msgid "takes %s."
+msgstr "plukker opp %s."
+
+#: src/warnings.c:219
+msgid "thing is missing description"
+msgstr "tingen mangler beskrivelse"
+

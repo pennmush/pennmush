@@ -1555,7 +1555,7 @@ bind_and_queue(dbref player, dbref cause, char *action,
   char placestr[10];
   PE_REGS *pe_regs;
 
-  replace[0] = "%il";
+  replace[0] = arg;
   snprintf(placestr, 10, "%d", num);
   replace[1] = placestr;
 

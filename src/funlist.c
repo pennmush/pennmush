@@ -1998,7 +1998,7 @@ FUNCTION(fun_iter)
     }
     pe_regs_set(pe_regs, PE_REGS_ITER, "t0", ptrs[i]);
     pe_regs_set_int(pe_regs, PE_REGS_ITER, "n0", i + 1);
-    replace[0] = "%il";
+    replace[0] = ptrs[i];
     replace[1] = unparse_integer(i + 1);
 
     tbuf2 = replace_string2(standard_tokens, replace, args[1]);

@@ -23,12 +23,14 @@ reserve_alias dummy_exit_alias
 # command_add <command> [<options>], where <options> is a space-separated
 # list of 0 or more of "noparse", "eqsplit", "lsargs" and "rsargs".
 # Equiv of @command/add[/<options>] <command>. See 'help @command'.
+# OPTIONAL
 # add_command @foo eqsplit rsargs
 
 # And hook commands, with
 # hook_command <cmd> <hook> [<obj>[/<attr>]]
 # as per @hook/<hook> <cmd>=[<obj>[/<attr>]]. See 'help @hook'.
 # inplace override hooks have use inplace/override as the hook.
+# OPTIONAL
 # hook_command say override #123/cmd.say
 # hook_command say override/inplace #123/cmd.say
 
@@ -37,6 +39,7 @@ reserve_alias dummy_exit_alias
 # as per @function <function>=<obj>, <attr>[, <minargs>[, <maxargs>]]
 # If <function> is the name of a built-in function, it will be disabled
 # and replaced with the user function (like @function/delete).
+# OPTIONAL
 # add_function foo #123/fun.foo 1 5
 
 # You can also alias commands to other names.

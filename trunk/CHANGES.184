@@ -127,6 +127,7 @@ Fixes:
    fixed by [SW].
  * A missing mail or chat database caused failures in mush startup. Reported
    by Nveid. [SW]
+ * Various fixes to update-cnf.pl by Minion.
 
 Version 1.8.4 patchlevel 3                                 Mar 18,  2011
 

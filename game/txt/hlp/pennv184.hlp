@@ -125,6 +125,8 @@ Fixes:
  * Various fixes to update-cnf.pl by Minion.
  * Setting or clearing the MONITOR flag on rooms caused duplicate messages.
    Reported by Minion. [SW]
+ * @mapsql/notify would sometimes run the "@notify me" before the triggered
+   attributes. Reported by Mercutio. [MG]
 
 & 1.8.4p3
 Version 1.8.4 patchlevel 3                                 Mar 18,  2011

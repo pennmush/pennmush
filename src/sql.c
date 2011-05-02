@@ -491,7 +491,7 @@ COMMAND(cmd_mapsql)
     }
   }
   if (donotify) {
-    parse_que(executor, enactor, "@notify me", NULL);
+    parse_que(executor, executor, "@notify me", NULL);
   }
 
 finished:

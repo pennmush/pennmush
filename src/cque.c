@@ -425,7 +425,6 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   for (i = 0; i < 10; i++) {
     if (wenv[i]) {
       pe_regs_setenv(pe_regs, i, wenv[i]);
-      pe_regs_setenv_nocopy(pe_regs, i, wenv[i]);
     }
   }
 
@@ -1128,10 +1127,10 @@ drain_helper(dbref player __attribute__ ((__unused__)), dbref thing,
 
 /** Notify a semaphore, with PE_REGS to integrate to its own pe_regs.
  * This function dequeues an entry in the semaphore queue and executes
- * it. 
+ * it.
  * \param thing object serving as semaphore.
  * \param aname attribute serving as semaphore.
- * \param pe_regs Q-registers (or other Q-regs) 
+ * \param pe_regs Q-registers (or other Q-regs)
  * \retval 1 Successfully notified an existing entry.
  * \retval 0 No existing entry.
  */

@@ -3179,12 +3179,12 @@ chat_player_announce(dbref player, char *msg, int ungag)
       bp2--;
       *bp2 = '\0';
 
-      if (shared && !im_exists(seen, player)) {
+      if (shared && !im_exists(seen, viewer)) {
         char defmsg[BUFFER_LEN], *dmp;
         char shrtmsg[BUFFER_LEN], *smp;
         char *accname;
 
-	im_insert(seen, player, up);
+	im_insert(seen, viewer, up);
 
         dmp = defmsg;
         smp = shrtmsg;

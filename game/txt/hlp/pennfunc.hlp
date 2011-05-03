@@ -1210,7 +1210,10 @@ See also: strreplace(), strinsert(), mid()
   <algorithm>. If the mush is compiled with SSL support (See @config
   compile), <algorithm> can be one of:
 
-  md2 md4 md5 sha sha1 dss1 mdc2 ripemd160
+  dss1 md2 md4 md5 ripemd160 sha sha1 sha256 sha384 sha512 whirlpool
+
+  Not all checksum algorithms are supported on all games, depending on
+  the host's OpenSSL version and how it was configured.
 
   Without SSL, only the sha algorithm is enabled. In both cases, sha
   returns the same thing as the sha0() function.

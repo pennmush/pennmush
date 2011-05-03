@@ -664,6 +664,7 @@ extchat.o: ../hdrs/game.h
 extchat.o: ../hdrs/function.h
 extchat.o: ../hdrs/command.h
 extchat.o: ../hdrs/switches.h
+extchat.o: ../hdrs/intmap.h
 extmail.o: ../config.h
 extmail.o: ../hdrs/copyrite.h
 extmail.o: ../hdrs/conf.h
@@ -1647,7 +1648,6 @@ SFMT.o: ../config.h
 SFMT.o: ../hdrs/SFMT.h
 SFMT.o: ../hdrs/SFMT-params.h
 SFMT.o: ../hdrs/SFMT-params19937.h
-SFMT.o: ../hdrs/SFMT-sse2.h
 shs.o: ../hdrs/copyrite.h
 shs.o: ../config.h
 sig.o: ../config.h

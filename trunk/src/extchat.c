@@ -34,6 +34,7 @@
 #include "function.h"
 #include "command.h"
 #include "dbio.h"
+#include "intmap.h"
 #include "confmagic.h"
 
 
@@ -3127,6 +3128,7 @@ chat_player_announce(dbref player, char *msg, int ungag)
   dbref viewer;
   bool shared = false;
   int na_flags = NA_INTER_LOCK | NA_SPOOF | NA_INTER_PRESENCE;
+  intmap *seen;
 
   /* Use the regular channel_send() for all non-combined players. */
   for (c = channels; c; c = c->next) {
@@ -3142,6 +3144,9 @@ chat_player_announce(dbref player, char *msg, int ungag)
       }
     }
   }
+  
+  seen = im_new();
+
   for (d = descriptor_list; d != NULL; d = d->next) {
     viewer = d->player;
     if (d->connected) {
@@ -3174,10 +3179,12 @@ chat_player_announce(dbref player, char *msg, int ungag)
       bp2--;
       *bp2 = '\0';
 
-      if (shared) {
+      if (shared && !im_exists(seen, player)) {
         char defmsg[BUFFER_LEN], *dmp;
         char shrtmsg[BUFFER_LEN], *smp;
         char *accname;
+
+	im_insert(seen, player, up);
 
         dmp = defmsg;
         smp = shrtmsg;
@@ -3199,6 +3206,7 @@ chat_player_announce(dbref player, char *msg, int ungag)
       }
     }
   }
+  im_destroy(seen);
 }
 
 /** Return a list of channels that the player is on.

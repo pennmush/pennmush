@@ -30,11 +30,11 @@ Your backup storage location is dependent on several factors, including your quo
 
 There is no need to save copies of the PennMUSH source code, compiled files, or temporary files.  Should the need arise you can always download new copies of the latest version.  What you're most interested in are the data files specific to your game.  These are:
 
-  * Your current database.  All of the *db.gz files in the game/data directory.  The indb.gz isn't actually the most recent saved db, but it's the most recent one which you successfully started up with, and is good to keep as a double backup.
+  * Your current database.  All of the `*`db.gz files in the game/data directory.  The indb.gz isn't actually the most recent saved db, but it's the most recent one which you successfully started up with, and is good to keep as a double backup.
   
-  * Your text files.  All of the *.txt files in the game/txt directory.  Note that help.txt, news.txt, and events.txt are built by the code from files in the hlp, nws, and evt subdirectories.  You don't need these three files but if you have modified any of the files in the subdirectories you should copy those as well.
+  * Your text files.  All of the `*`.txt files in the game/txt directory.  Note that help.txt, news.txt, and events.txt are built by the code from files in the hlp, nws, and evt subdirectories.  You don't need these three files but if you have modified any of the files in the subdirectories you should copy those as well.
   
-  * Your configuration files.  All of the *.cnf files in the game directory.  Possibly options.h and restart but these are easily rebuilt.
+  * Your configuration files.  All of the `*`.cnf files in the game directory.  Possibly options.h and restart but these are easily rebuilt.
   
   * (Optional) Your log files.  Contents of the game/log (current) and game/save (previous) directories.
 
@@ -138,7 +138,59 @@ crontab mycrontab.txt
 If you've gotten this far, congratulations. You've set up a system to back up your database to the same machine.  But if something happens that prevents your access to both your game and your on-site backups, you need a backup plan to your backup plan.  Here, there are numerous choices on locations and ways to copy your backups elsewhere.  This article introduces two possibilities, one from a different linux-based server (or Mac OS X), and a second from a Windows machine.  The concepts are similar and can be adapted to your own capabilities:
 
   # Set up a public/private keypair to allow copying without requiring password. 
+  # Upload the public key to your server
   # Set up a script or batch file to copy an archive file between servers.
   # Schedule the script using a cron, task scheduler, etc.
   
-Because there are numerous ways to do this, depending on your operating system and the operating system where you want to copy the files, step-by-step instructions are not provided.  
+Because there are numerous ways to do this, depending on your operating system and the operating system where you want to copy the files, step-by-step instructions are not provided for all possibilities.  However, the following general outline and examples should get you started: you may consult internet sources for the particular details of your configuration.
+
+== Public/Private Keypair Generation ==
+
+If you're on a unix-based system or Mac OS X (your home machine, not your PennMUSH server), this is easily done in the terminal using ssh-keygen:
+{{{
+ssh-keygen -v -t rsa
+}}}
+This command will prompt you for a passphrase.  Since the intent here is to automate connections to your game's server, you will be leaving the passphrase blank.  However, this means that anybody who can access the private key on your machine will thus be able to log into your game's server.  You must decide if the convenience of automated backups is worth the reduced security that this setup offers. 
+
+If your'e on a Windows machine, two popular ssh clients are PuTTY or Tunnelier.  PuTTY has a utility for generating keypairs called *PuTTYgen*.  Instructions can be found [http://the.earth.li/~sgtatham/putty/0.60/htmldoc/Chapter8.html here].  There is also a tool for use with PuTTY called Pageant which can provide at least some level of security (login-passphrase) for your keys, with instructions linked in the last line of the above instructions link.  Tunnelier has its own built-in keypair manager.  Instructions for its use are [http://theillustratednetwork.mvps.org/Ssh/Private-publicKey-Tunnelier.html here].
+
+== Uploading the Public Key ==
+
+Following the above step, you will have two keys, a private key (which will remain on your home system) and a public key (which you will upload to your PennMUSH server).  You will create or append your public key to the file *`~/.ssh/authorized_keys`* on that server.  There are multiple ways to do this.
+
+For unix or Mac, use scp to copy the public key to your penn server's home directory:
+{{{
+scp ~/.ssh/id_rsa.pub pennuser@pennhostname:~
+}}}
+Then, connect to your server via ssh.  If the `.ssh` directory does not exist, create it, then:
+{{{
+cat id_rsa.pub >> ~/.ssh/authorized_keys
+rm id_rsa.pub
+chmod 600 ~/.ssh/authorized_keys
+}}}
+Log out, then log in again to test that it worked.
+
+For windows, both PuTTYgen and Tunnelier's keypair manager have utilities to either display your public key or save it to a text file.  From there, you can either use scp as above, or login using ssh and edit your authorized_keys file to paste the additional text.  Note that all the text must be on one line, so if you use `nano` be sure to use the -w option to avoid linewrapping.
+
+== Using a script to copy backups ==
+
+From Unix/Mac home machines, simply create a bash (or your favorite terminal) script to copy the appropriate files.  An example copy script:
+{{{
+#!/bin/bash
+
+scp pennuser@pennhostname:~/backup/*.bz2 ~/mygamebackups
+}}}
+You might even consider using rsync to synchronize the files rather than copy.  
+
+Schedule the script to run by cron at your desired interval and you're done!
+
+From a Windows machine, you'll want to create a batch (`.bat`) file which calls your appropriate secure copy program.  For PuTTY, you will probably want to use PSCP or PSFTP.  Tunnelier comes with a program called SFTPC.  The following example *`download.bat`* file works with Tunnelier's version to download backups to your Windows desktop and can be adapted for the PuTTY versions (consult documentation for switches):
+
+{{{
+cd \Users\YourWindowsName\Desktop
+sftpc pennuser@pennhostname -cmd="get backup/*.bz2 -r" -pk=1 
+pause
+}}}
+(The -pk=1 switch is the Tunnelier key slot for your key pair; the pause at the end is optional, so you can see the script's feedback before the window closes.)
+
+You can then use the Windows Task Scheduler to run this batch file at a frequency of your choosing.

@@ -1,0 +1,36 @@
+With the Xcode Developer Tools installed, configuring and building
+just works. OS X includes OpenSSL and Sqlite3. MySQL and gettext-style
+message translation isn't bundled with OS X, and must be installed
+seperately. The fink package manager is recommended. It can be
+downloaded at http://fink.sourceforge.net/
+
+Once fink is installed, use the 'Fink Commander' application to
+install packages, or, from the command line as an administrator, 'sudo
+fink install PACKAGE'.
+
+The important packages for Penn:
+
+mysql15-dev      : MySQL
+postgresql82-dev : Postgresql
+libgettext3-dev  : Message translation.
+
+Answer yes when if asked if you want to install additional packages
+that they depend on.
+
+fink installs packages in the /sw tree, which configure does not
+normally check. Run it like so for message translation:
+
+% CPPFLAGS=-I/sw/include LDFLAGS=-L/sw/lib ./configure
+
+The database servers will be detected as long as /sw/bin is your path,
+which, if you followed the installation istructions for fink,
+will. Otherwise, run configure as:
+
+% ./configure --with-mysql=/sw/bin/mysql_config
+or
+% ./configure --with-postgresql=/sw/bin/pgconfig
+
+Misc. Stuff:
+
+On PowerPC Macs, consider adding -mdynamic-no-pic to CFLAGS.
+

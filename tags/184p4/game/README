@@ -1,0 +1,145 @@
+             Run-time Installation and Configuration of PennMUSH
+
+This document assumes that you've successfully compiled and installed
+PennMUSH as described in the main PennMUSH README file.
+
+The next step is to create your configuration file. In the game
+directory is a file called "mush.cnf". If you don't have mush.cnf, but
+you have mushcnf.dst, you can copy mushcnf.dst to mush.cnf.  This file
+is a list of all runtime configuration options with their default
+settting. Change them as you see fit.  IMPORTANT: do not _delete_ any
+parameters. If you do, the defaults will still be used. Some options can
+be set to empty values to effectively clear them, though.
+
+WIN32 WITH MSVC++:
+  Under win32 using the Microsoft compiler, ignore the restart script.
+  In the configuration file, turn off disk database compression; it is
+  not supported.  Then go to the game directory and run PennMUSH.exe.
+  Poof, you're done.
+
+UNIX or WIN32 VIA CYGWIN/MINGW:
+  You may need to edit the restart script to change GAMEDIR to the path to 
+  the directory containing mush.cnf. Read about the optional settings in 
+  that file. The restart script is written for sh, and assumes a fairly 
+  standard Berkeley UNIX setup. If you're on a HP-UX or SysV machine, 
+  for example, you may need to change the restart script a bit. Then run
+  it, with 'sh restart' or './restart'.
+
+You should now be able to log into the game.  This distribution can
+generate a minimal database - a God character, starting room, and
+master room.  The server will generate this database if it doesn't
+find another database to load.
+
+If you're starting with the minimal database, the god character "One"
+has no password, so you can log in without one. Of course, you should
+immediately set one (via @newpasswd).  mush.cnf has the Master Room
+as #2 by default; in the minimal database, this room is created for
+you.
+
+Now you should be set -- all you have to do now is customize the .txt
+files in the game directory.
+
+The logfiles in the "log" directory generally contain useful
+information. You will probably want to read your error logfile
+(defined in mush.cnf) every time, since errors and other important
+messages get printed to that logfile.
+
+After your first startup, it's a good idea to make some small change
+to the database (e.g., @create an object) and then do an
+@shutdown. Restart the game again and ensure that your object is still
+present - this verifies that the server is successfully dumping.
+
+============================================================================
+
+                            Game Trouble-shooting
+
+If you ever run into trouble, the your first reaction should ALWAYS be
+to back up your database. indb.Z.old is the file that the MUSH saves
+indb.Z to when the game is restarted, indb.Z is the file that the MUSH
+loaded at startup, and outdb.Z is the file to which the MUSH is
+currently dumping the database.
+
+You can tell if a dump is (theoretically) complete by doing a
+"zcat <database file name> | tail -10".  The last line should read
+"***END OF DUMP***". If it doesn't, your database has been truncated
+for some reason. Check the logfile. Possible causes include a full
+process table, a full disk partition, or running out of disk quota.
+
+Occasionally the dump process may dump core. This is caused by some
+sort of corruption in an attribute, normally. You can tell if the dump
+process has died by looking in your data directory; you will see
+something like "outdb.Z.#5#". Wait a few moments and check on the file
+again. If it has grown, then the game is in the process of a normal
+dump. If it hasn't, and there's a core file, then something has gone
+wrong. You should definitely shout a warning that building is not being
+saved.
+
+To attempt to fix the problem, do a @dbck to take care of any possible
+minor weirdness in the database, then try doing a "@dump/paranoid",
+and reading the checkpoint logfile (default is log/checkpt.log). This
+is slow, but it will write out an uncorrupted database, and tell you
+what it fixed. Back up that database and indb.Z, then figure out what
+you're going to do next: you can take the game down with a kill -9, or
+attempt to manually fix the problem by either @destroying the
+offending object, or attempting to reset the attributes on the object
+that are causing a problem.  If "@dump/paranoid" dies, you are more or
+less out of luck.
+
+The game may crash from time to time. It will generate a core file,
+usually; if you don't limit the coredumpsize or strip the executable,
+you should be able to get some useful information out of it, using a
+debugger. The developers are interested in stack traces. You can do a
+stack trace in the following manner: Go into the directory where you
+keep your source code, and type
+	<name of debugger> netmud ../game/core
+If you don't call your executable "netmud", substitute in whatever you
+do call it.
+
+You are looking for variables set to bizarre values - attempts to
+access objects that aren't there, attempts to use pointers which point
+to nothing, and the like.
+
+If you are using the "adb" debugger (don't do this unless you really
+have absolutely nothing else available), you will see nothing. It's
+loaded and ready, though. Type "$c". This will print out a list of the
+functions it called. Type "$q" to quit. You can't really get much more
+useful information out of adb.
+
+If you are using the "dbx" debugger, type "where" to see the stack
+trace. You can move through it using "up" and "down", and see exactly
+what the sequence of calls was. You can also use "print <variable
+name>" to see the value of a variable at the time the game crashed.
+The "gdb" debugger is similar to "dbx"; with that, you can abbreviate
+"print" as "p". It is the reccomended debugger to use; when gdb is
+present on your system and you're using gcc as the compiler, gcc is
+told to use a gdb-specific debugging format.
+
+If you want to start PennMUSH running under a debugger, instead of
+attaching to an already-running process, it'll need two arguments:
+--no-session, and the name of your config file if it is different than
+mush.cnf. Without --no-session, the server will immediately fork off a
+detatched child process, and the debugger will tell you that the
+process exited normally..
+
+The PennMUSH developers appreciate news of any bugs found, and any
+patches that have been written to deal with them. We are also
+interested in any extensions that people make to the code, and
+requests that ones that are of more than just local interest be sent
+to us for inclusion in the next release of this code. See
+http://code.google.com/p/pennmush/.
+
+One important thing to remember is, if the MUSH refuses to start,
+there is probably a good reason. Check the MUSH log, and the core
+file, if there is one. Make sure to back up your database before
+attempting to restart -- remember that every time it restarts, it
+overwrites indb.Z.old. If you restart three times and somehow manage
+to trash your database each time (for example, a full process table
+zero'ing out your files), you won't have a backup to restart from,
+unless you've backed up your database before trying!
+
+You can also find helpful tips in Javelin's Guide for Gods,
+which is available on the WWW as
+	http://javelin.pennmush.org/~alansz/guide.html
+and by ftp from ftp.pennmush.org as 
+	/PennMUSH/Guide/guide-single.txt
+

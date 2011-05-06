@@ -59,9 +59,10 @@ long getref(PENNFILE *f);
 void db_read_this_labeled_string(PENNFILE *f, const char *label, char **val);
 void db_read_labeled_string(PENNFILE *f, char **label, char **val);
 void db_read_this_labeled_int(PENNFILE *f, const char *label, int *val);
-void db_read_this_labeled_uint32(PENNFILE *f, const char *lable, uint32_t *val);
+void db_read_this_labeled_uint32(PENNFILE *f, const char *lable,
+                                 uint32_t * val);
 void db_read_labeled_int(PENNFILE *f, char **label, int *val);
-void db_read_labeled_uint32(PENNFILE *f, char **label, uint32_t *val);
+void db_read_labeled_uint32(PENNFILE *f, char **label, uint32_t * val);
 void db_read_this_labeled_dbref(PENNFILE *f, const char *label, dbref *val);
 void db_read_labeled_dbref(PENNFILE *f, char **label, dbref *val);
 

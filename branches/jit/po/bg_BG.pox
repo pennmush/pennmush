@@ -336,10 +336,6 @@ msgstr "#-1 РАЗРЕШЕНИЕ ОТКАЗАНО"
 msgid "#-1 REGEXP ERROR: "
 msgstr "#-1 REGEXP ГРЕШКА: "
 
-#: src/funmisc.c:158 src/funmisc.c:178
-msgid "#-1 REGISTER OUT OF RANGE"
-msgstr "#-1 РЕГИСТЪР ИЗВЪН ОБСЕГ"
-
 #: funmath.c:1057
 msgid "#-1 ROOT OUT OF RANGE"
 msgstr "#-1 ROOT-а Е ИЗВЪН ОБСЕГ"
@@ -2218,10 +2214,6 @@ msgstr "Не можеш да си позволиш %d %s."
 #: src/function.c:773
 msgid "You can't delete that @function."
 msgstr "Не можеш да изтриеш тази @function."
-
-#: src/speech.c:139
-msgid "You can't teach 'teach', sorry."
-msgstr "Не можеш да преподаваш 'teach', съжалявам."
 
 #: src/set.c:214
 msgid "You cannot @CHOWN/PRESERVE. Use normal @CHOWN."

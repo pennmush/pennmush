@@ -130,7 +130,8 @@ start_log(struct log_stream *log)
       }
     }
   }
-  log->buffer = allocate_bufferq(LOG_BUFFER_SIZE);
+  if (!log->buffer)
+    log->buffer = allocate_bufferq(LOG_BUFFER_SIZE);
 }
 
 /** Open all logfiles.
@@ -144,9 +145,8 @@ start_all_logs(void)
     start_log(logs + n);
 }
 
-/** Redirect stderr to a error log file and close stdout and stdin. 
+/** Redirect stderr to a error log file and close stdout and stdin.
  * Should be called after start_all_logs().
- * \param log name of logfile to redirect stderr to.
  */
 void
 redirect_streams(void)
@@ -221,14 +221,9 @@ do_rawlog(enum log_type logtype, const char *fmt, ...)
   char timebuf[18];
   char tbuf1[BUFFER_LEN + 50];
   va_list args;
-  va_start(args, fmt);
 
-#ifdef HAS_VSNPRINTF
-  (void) vsnprintf(tbuf1, sizeof tbuf1, fmt, args);
-#else
-  (void) vsprintf(tbuf1, fmt, args);
-#endif
-  tbuf1[BUFFER_LEN - 1] = '\0';
+  va_start(args, fmt);
+  my_vsnprintf(tbuf1, sizeof tbuf1, fmt, args);
   va_end(args);
 
   ttm = localtime(&mudtime);
@@ -271,12 +266,7 @@ do_log(enum log_type logtype, dbref player, dbref object, const char *fmt, ...)
   char unp1[BUFFER_LEN], unp2[BUFFER_LEN];
 
   va_start(args, fmt);
-
-#ifdef HAS_VSNPRINTF
-  (void) vsnprintf(tbuf1, sizeof tbuf1, fmt, args);
-#else
-  (void) vsprintf(tbuf1, fmt, args);
-#endif
+  my_vsnprintf(tbuf1, sizeof tbuf1, fmt, args);
   va_end(args);
 
   switch (logtype) {

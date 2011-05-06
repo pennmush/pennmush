@@ -81,7 +81,12 @@
 
 
 /* From conf.c */
-extern void do_config_list(dbref player, const char *type, int lc);
+
+/* From conf.c */
+bool config_file_startup(const char *conf, int restrictions);
+void config_file_checks(void);
+
+void do_config_list(dbref player, const char *type, int lc);
 
 typedef struct options_table OPTTAB;
 
@@ -135,9 +140,9 @@ struct options_table {
   char dump_message[256]; /**< Message shown at start of nonforking dump */
   char dump_complete[256]; /**< Message shown at end of nonforking dump */
   time_t dump_counter;  /**< Time since last dump */
-  int ident_timeout;    /**< Timeout for ident lookups */
   int max_logins;       /**< Maximum total logins allowed at once */
   int max_guests;       /**< Maximum guests logins allowed at once */
+  int max_named_qregs;  /**< Maximum # of non-a-z0-9 qregs per pe_regs. */
   int whisper_loudness; /**< % chance that a noisy whisper is overheard */
   int page_aliases;     /**< Does page include aliases? */
   int paycheck;         /**< Number of pennies awarded each day of connection */
@@ -161,7 +166,7 @@ struct options_table {
   int max_channels;             /**< Total maximum allowed channels */
   int chan_title_len;           /**< Maximum length of a player's channel title */
   int chan_cost;                /**< Cost to create a channel */
-  int noisy_cemit;              /**< Is @cemit noisy by default? */
+  int noisy_cemit;              /**< Is \@cemit noisy by default? */
   char connect_file[2][256];    /**< Names of text and html connection files */
   char motd_file[2][256];       /**< Names of text and html motd files */
   char wizmotd_file[2][256];    /**< Names of text and html wizmotd files */
@@ -215,7 +220,6 @@ struct options_table {
   int link_to_object;   /**< Can exits be linked to objects? */
   int owner_queues;     /**< Are queues tracked by owner or individual object? */
   int wiz_noaenter;     /**< Do DARK wizards trigger aenters? */
-  int use_ident;        /**< Should we do ident checks on connections? */
   char ip_addr[64];     /**< What ip address should the server bind to? */
   char ssl_ip_addr[64]; /**< What ip address should the server bind to? */
   int player_name_spaces;       /**< Can players have multiword names? */
@@ -318,9 +322,6 @@ int cf_flag(const char *opt, const char *val, void *loc, int maxval,
 int cf_time(const char *opt, const char *val, void *loc, int maxval,
             int from_cmd);
 
-
-#define NUMQ    36
-
 /* Config group viewing permissions */
 #define CGP_GOD         0x1
 #define CGP_WIZARD      0x3
@@ -329,6 +330,8 @@ int cf_time(const char *opt, const char *val, void *loc, int maxval,
         (!(g->viewperms) || (God(p) && (g->viewperms & CGP_GOD)) || \
          (Wizard(p) && (g->viewperms & CGP_WIZARD)) || \
          (Hasprivs(p) && (g->viewperms & CGP_ADMIN)))
+
+int can_view_config_option(dbref player, PENNCONF *opt);
 
 
 #define DUMP_INTERVAL       (options.dump_interval)
@@ -340,6 +343,7 @@ int cf_time(const char *opt, const char *val, void *loc, int maxval,
 
 #define MAX_LOGINS      (options.max_logins)
 #define MAX_GUESTS      (options.max_guests)
+#define MAX_NAMED_QREGS (options.max_named_qregs)
 
 /* dbrefs are in the conf file */
 
@@ -434,8 +438,6 @@ int cf_time(const char *opt, const char *val, void *loc, int maxval,
 #define NO_LINK_TO_OBJECT (!options.link_to_object)
 #define QUEUE_PER_OWNER (options.owner_queues)
 #define WIZ_NOAENTER (options.wiz_noaenter)
-#define USE_IDENT (options.use_ident)
-#define IDENT_TIMEOUT (options.ident_timeout)
 #define USE_DNS (options.use_dns)
 #define MUSH_IP_ADDR (options.ip_addr)
 #define SSL_IP_ADDR (options.ssl_ip_addr)

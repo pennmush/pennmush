@@ -321,6 +321,13 @@ call_limit 100
 # idea. Remember there are 1000 milliseconds in a second.
 queue_entry_cpu_time 1500
 
+# The maximum number of Q registers one level of qregs can have. That is:
+# each localize(), ulocal(), etc will allow <max_named_qregs> to be set.
+# This is in addition to the default 36 of a-z and 0-9. For old behavior,
+# use 0. A very high limit will let an abusive player suck up quite a lot
+# of RAM.
+max_named_qregs 50
+
 # How many channels total can be created?
 # This doesn't allocate memory, it just sets a maximum.
 max_channels 200
@@ -508,15 +515,6 @@ restrict_command ahelp admin
 ahelp_command anews txt/news.txt
 restrict_command anews admin
 
-### Config directive for IDENT.
-### If you want to do ident (RFC1143) lookups, set use_ident to "yes"
-### and select an ident_timeout to determine how long the MUSH
-### should wait for a response, in seconds. If you're using
-### INFO_SLAVE (in options.h), this is how long the info_slave waits.
-# Changing this while using info_slave requires a @shutdown/reboot
-# to make it take effect.
-use_ident yes
-ident_timeout 5s
 
 ###
 ### Logging

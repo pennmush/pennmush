@@ -117,35 +117,33 @@ dbref_comp(const void *s1, const void *s2)
     return 1 * sort_order;
 }
 
-
-dbref ucomp_executor, ucomp_caller, ucomp_enactor;
-char ucomp_buff[BUFFER_LEN];
-PE_Info *ucomp_pe_info;
-
 /** qsort() comparision routine used by sortby() */
 int
-u_comp(const void *s1, const void *s2)
+u_comp(const void *s1, const void *s2, dbref executor, dbref enactor,
+       ufun_attrib * ufun, NEW_PE_INFO *pe_info)
 {
-  char result[BUFFER_LEN], *rp;
-  char const *tbuf;
+  char result[BUFFER_LEN];
   int n;
+  PE_REGS *pe_regs;
+  int ret;
 
   /* Our two arguments are passed as %0 and %1 to the sortby u-function. */
 
   /* Note that this function is for use in conjunction with our own
    * sane_qsort routine, NOT with the standard library qsort!
    */
-  global_eval_context.wenv[0] = (char *) s1;
-  global_eval_context.wenv[1] = (char *) s2;
+  pe_regs = pe_regs_create(PE_REGS_ARG, "u_comp");
+  pe_regs_setenv_nocopy(pe_regs, 0, (char *) s1);
+  pe_regs_setenv_nocopy(pe_regs, 1, (char *) s2);
 
   /* Run the u-function, which should return a number. */
+  ret = call_ufun(ufun, result, executor, enactor, pe_info, pe_regs);
+  pe_regs_free(pe_regs);
 
-  tbuf = ucomp_buff;
-  rp = result;
-  if (process_expression(result, &rp, &tbuf,
-                         ucomp_executor, ucomp_caller, ucomp_enactor,
-                         PE_DEFAULT, PT_DEFAULT, ucomp_pe_info))
+  if (ret) {
     return 0;
+  }
+
   n = parse_integer(result);
 
   return n;
@@ -165,7 +163,9 @@ u_comp(const void *s1, const void *s2)
  */
 
 void
-sane_qsort(void *array[], int left, int right, comp_func compare)
+sane_qsort(void *array[], int left, int right, comp_func compare,
+           dbref executor, dbref enactor, ufun_attrib * ufun,
+           NEW_PE_INFO *pe_info)
 {
 
   int i, last;
@@ -189,7 +189,7 @@ loop:
     /* Walk the array, looking for stuff that's less than our */
     /* pivot. If it is, swap it with the next thing along     */
 
-    if (compare(array[i], array[left]) < 0) {
+    if (compare(array[i], array[left], executor, enactor, ufun, pe_info) < 0) {
       last++;
       if (last == i)
         continue;
@@ -211,11 +211,13 @@ loop:
   /* entry at 'last' and everything above it is not < it.          */
 
   if ((last - left) < (right - last)) {
-    sane_qsort(array, left, last - 1, compare);
+    sane_qsort(array, left, last - 1, compare, executor, enactor, ufun,
+               pe_info);
     left = last + 1;
     goto loop;
   } else {
-    sane_qsort(array, last + 1, right, compare);
+    sane_qsort(array, last + 1, right, compare, executor, enactor, ufun,
+               pe_info);
     right = last - 1;
     goto loop;
   }
@@ -668,7 +670,7 @@ get_list_type_info(SortType sort_type)
  * \param lti The ListTypeInfo to free. Must be created by get_list_type_info.
  */
 void
-free_list_type_info(ListTypeInfo * lti)
+free_list_type_info(ListTypeInfo *lti)
 {
   if (lti->attrname) {
     mush_free(lti->attrname, "list_type_info_attrname");
@@ -680,10 +682,10 @@ free_list_type_info(ListTypeInfo * lti)
  * Get the type of a list, as provided by a user. If it is not specified,
  * try and guess the list type.
  * \param args The arguments to a function.
- * \param nargs # of <args>
+ * \param nargs number of items in args
  * \param type_pos where to look in args for the sort_type definition.
  * \param ptrs The list to autodetect on
- * \param nptrs # of items in <ptrs>
+ * \param nptrs number of items in ptrs
  * \retval A string that describes the comparison information.
  */
 SortType
@@ -717,7 +719,7 @@ get_list_type(char *args[], int nargs, int type_pos, char *ptrs[], int nptrs)
 /**
  * Get the type of a list, but return UNKNOWN if it is not specified.
  * \param args The arguments to a function.
- * \param nargs # of <args>
+ * \param nargs number of items in args
  * \param type_pos where to look in args for the sort_type definition.
  * \retval A string that describes the comparison information.
  */
@@ -750,7 +752,7 @@ get_list_type_noauto(char *args[], int nargs, int type_pos)
 }
 
 static void
-genrecord(s_rec *sp, dbref player, ListTypeInfo * lti)
+genrecord(s_rec *sp, dbref player, ListTypeInfo *lti)
 {
   lti->make_record(sp, player, lti->attrname);
   if (lti->flags & IS_CASE_INSENS && sp->memo.str.s) {
@@ -827,13 +829,13 @@ gencomp(dbref player, char *a, char *b, SortType sort_type)
  * s_rec structures representing each item.
  * \param player the player executing the sort.
  * \param keys the array of items to sort.
- * \param strs If non-NULL, these are what to sort <keys> using.
- * \param n Number of items in <keys> and <strs>
+ * \param strs If non-NULL, these are what to sort keys using.
+ * \param n Number of items in keys and strs
  * \param lti List Type Info describing how it's sorted and built.
- * \retval A pointer to the first s_rec of an <n> s_rec array.
+ * \retval A pointer to the first s_rec of an n s_rec array.
  */
 s_rec *
-slist_build(dbref player, char *keys[], char *strs[], int n, ListTypeInfo * lti)
+slist_build(dbref player, char *keys[], char *strs[], int n, ListTypeInfo *lti)
 {
   int i;
   s_rec *sp;
@@ -863,11 +865,11 @@ slist_build(dbref player, char *keys[], char *strs[], int n, ListTypeInfo * lti)
  * Given an array of s_rec items, sort them in-place using a specified
  * ListTypeInformation.
  * \param sp the array of sort_records, returned by slist_build
- * \param n Number of items in <sp>
+ * \param n Number of items in sp
  * \param lti List Type Info describing how it's sorted and built.
  */
 void
-slist_qsort(s_rec *sp, int n, ListTypeInfo * lti)
+slist_qsort(s_rec *sp, int n, ListTypeInfo *lti)
 {
   qsort((void *) sp, n, sizeof(s_rec), lti->sorter);
 }
@@ -876,12 +878,12 @@ slist_qsort(s_rec *sp, int n, ListTypeInfo * lti)
  * Given an array of _sorted_ s_rec items, unique them in place by
  * freeing them and marking the final elements' freestr = 0.
  * \param sp the array of sort_records, returned by slist_build
- * \param n Number of items in <sp>
+ * \param n Number of items in sp
  * \param lti List Type Info describing how it's sorted and built.
  * \retval The count of unique items.
  */
 int
-slist_uniq(s_rec *sp, int n, ListTypeInfo * lti)
+slist_uniq(s_rec *sp, int n, ListTypeInfo *lti)
 {
   int count, i;
 
@@ -921,7 +923,7 @@ slist_uniq(s_rec *sp, int n, ListTypeInfo * lti)
  * \param lti List Type Info describing how it's sorted and built.
  */
 void
-slist_free(s_rec *sp, int n, ListTypeInfo * lti)
+slist_free(s_rec *sp, int n, ListTypeInfo *lti)
 {
   int i;
   for (i = 0; i < n; i++) {
@@ -932,7 +934,7 @@ slist_free(s_rec *sp, int n, ListTypeInfo * lti)
 }
 
 int
-slist_comp(s_rec *s1, s_rec *s2, ListTypeInfo * lti)
+slist_comp(s_rec *s1, s_rec *s2, ListTypeInfo *lti)
 {
   return lti->sorter((const void *) s1, (const void *) s2);
 }
@@ -940,8 +942,9 @@ slist_comp(s_rec *s1, s_rec *s2, ListTypeInfo * lti)
 /** A generic sort routine to sort several different
  * types of arrays, in place.
  * \param player the player executing the sort.
- * \param s the array to sort.
- * \param n number of elements in array s
+ * \param keys the array of items to sort.
+ * \param strs If non-NULL, these are what to sort keys using.
+ * \param n number of items in keys and strs
  * \param sort_type the string that describes the sort type.
  */
 void

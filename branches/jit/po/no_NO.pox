@@ -593,10 +593,6 @@ msgstr "#-1 TILLATELSE IKKE GITT"
 msgid "#-1 REGEXP ERROR: "
 msgstr "#-1 REGEXP FEIL: "
 
-#: src/funmisc.c:158 src/funmisc.c:178
-msgid "#-1 REGISTER OUT OF RANGE"
-msgstr "#-1 REGISTER UTENFOR RANGE"
-
 #: funmath.c:1057
 msgid "#-1 ROOT OUT OF RANGE"
 msgstr "#-1 ROT UTENFOR REKKEVIDDE"
@@ -653,10 +649,6 @@ msgstr "#-1 FOR MANGE ORD"
 #: funstr.c:757 funstr.c:765 funstr.c:795 funstr.c:803
 msgid "#-1 TR CANNOT ACCEPT NONPRINTING CHARS"
 msgstr "#-1 TR KAN IKKE TA KARAKTERER SOM IKKE KAN SKRIVES"
-
-#: funmisc.c:235 funmisc.c:241 funmisc.c:267
-msgid "#-1 UNABLE TO ALLOCATE MEMORY"
-msgstr "#-1 KAN IKKE ALLOKERE MINNE"
 
 #: help.c:516 help.c:519
 msgid "#-1 UNAVAILABLE"
@@ -1414,10 +1406,6 @@ msgstr "---------------------------  MAIL (folder %2d)  ------------------------
 #, c-format
 msgid "@@ No attributes match '%s'. @@"
 msgstr "@@ Ingen attributter passer '%s'. @@"
-
-#: cque.c:551
-msgid "@break recursion exceeded."
-msgstr "@break rekursjon for lang."
 
 #: src/command.c:1118
 msgid "@command is ALWAYS enabled."
@@ -5655,10 +5643,6 @@ msgstr "Du kan ikke ta det fra der."
 #: src/move.c:544
 msgid "You can't take that!"
 msgstr "Du kan ikke ta det!"
-
-#: src/speech.c:139
-msgid "You can't teach 'teach', sorry."
-msgstr "Du kan ikke lære bort 'teach'. Beklager."
 
 #: src/wiz.c:359
 msgid "You can't teleport rooms."

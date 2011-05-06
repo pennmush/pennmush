@@ -110,7 +110,6 @@ FUNCTION(fun_nattr)
   int doparent;
   const char *pattern;
   int regexp = 0;
-  int matchall = 0;
 
   if (*called_as == 'R')
     regexp = 1;
@@ -125,7 +124,6 @@ FUNCTION(fun_nattr)
   }
   if (!strcmp(pattern, "**") || !strlen(pattern)) {
     regexp = 0;
-    matchall = 1;
   }
 
   thing = match_thing(executor, args[0]);
@@ -432,7 +430,7 @@ FUNCTION(fun_edefault)
 FUNCTION(fun_v)
 {
   /* handle 0-9, va-vz, n, l, # */
-
+  const char *s;
   int c;
 
   if (args[0][0] && !args[0][1]) {
@@ -447,8 +445,10 @@ FUNCTION(fun_v)
     case '7':
     case '8':
     case '9':
-      if (global_eval_context.wenv[c - '0'])
-        safe_str(global_eval_context.wenv[c - '0'], buff, bp);
+      s = PE_Get_Env(pe_info, c - '0');
+      if (s) {
+        safe_str(s, buff, bp);
+      }
       return;
     case '#':
       /* enactor dbref */
@@ -475,7 +475,7 @@ FUNCTION(fun_v)
       return;
     case 'c':
     case 'C':
-      safe_str(global_eval_context.ccom, buff, bp);
+      safe_str(pe_info->cmd_raw, buff, bp);
       return;
     }
   }
@@ -1439,10 +1439,9 @@ FUNCTION(fun_elock)
     safe_str("#-1", buff, bp);
     return;
   }
-  if (Can_Locate(executor, victim))
-    safe_boolean(eval_lock(victim, it, ltype), buff, bp);
-  else
-    safe_str("#-1", buff, bp);
+
+  safe_boolean(eval_lock(victim, it, ltype), buff, bp);
+
   return;
 }
 
@@ -1477,7 +1476,7 @@ FUNCTION(fun_lockfilter)
   while ((r = split_token(&s, delim)) != NULL) {
     victim = noisy_match_result(executor, r, NOTYPE, MAT_ABSOLUTE);
     if (victim != NOTHING && Can_Locate(executor, victim)) {
-      if (eval_boolexp(victim, elock, executor)) {
+      if (eval_boolexp(victim, elock, executor, NULL)) {
         if (first) {
           first = 0;
         } else {
@@ -1509,7 +1508,7 @@ FUNCTION(fun_testlock)
     return;
   }
   if (Can_Locate(executor, victim)) {
-    safe_boolean(eval_boolexp(victim, elock, executor), buff, bp);
+    safe_boolean(eval_boolexp(victim, elock, executor, NULL), buff, bp);
   } else {
     safe_str("#-1", buff, bp);
   }
@@ -1954,14 +1953,13 @@ FUNCTION(fun_pmatch)
 /* ARGUSED */
 FUNCTION(fun_namelist)
 {
-
   int first = 1;
   char *current;
   dbref target;
   const char *start;
   int report = 0;
   ufun_attrib ufun;
-  char *wenv[2];
+  PE_REGS *pe_regs;
 
   if (nargs > 1 && args[1] && *args[1]) {
     if (fetch_ufun_attrib(args[1], executor, &ufun, UFUN_DEFAULT)) {
@@ -1973,6 +1971,7 @@ FUNCTION(fun_namelist)
   }
 
   start = (const char *) args[0];
+  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_namelist");
   while (start && *start) {
     if (!first)
       safe_chr(' ', buff, bp);
@@ -1986,13 +1985,14 @@ FUNCTION(fun_namelist)
     safe_dbref(target, buff, bp);
     if (target == NOTHING || target == AMBIGUOUS) {
       if (report) {
-        wenv[0] = current;
-        wenv[1] = unparse_dbref(target);
-        if (call_ufun(&ufun, wenv, 2, NULL, executor, enactor, pe_info))
+        pe_regs_setenv_nocopy(pe_regs, 0, current);
+        pe_regs_setenv(pe_regs, 1, unparse_dbref(target));
+        if (call_ufun(&ufun, NULL, executor, enactor, pe_info, pe_regs))
           report = 0;
       }
     }
   }
+  pe_regs_free(pe_regs);
 }
 
 /* ARGSUSED */

@@ -593,10 +593,6 @@ msgstr "#-1 TOESTEMMING GEWEIGERD"
 msgid "#-1 REGEXP ERROR: "
 msgstr "#-1 REGEXP FOUT "
 
-#: src/funmisc.c:158 src/funmisc.c:178
-msgid "#-1 REGISTER OUT OF RANGE"
-msgstr "#-1 REGISTER BUITEN BEREIK"
-
 #: funmath.c:1057
 msgid "#-1 ROOT OUT OF RANGE"
 msgstr "#-1 WORTEL BUITEN BEREIK"
@@ -653,10 +649,6 @@ msgstr "#-1 TE VEEL WOORDEN"
 #: funstr.c:757 funstr.c:765 funstr.c:795 funstr.c:803
 msgid "#-1 TR CANNOT ACCEPT NONPRINTING CHARS"
 msgstr "#-1 TR KAN GEEN NIET-PRINTENDE KARAKTERS ACCEPTEREN"
-
-#: funmisc.c:235 funmisc.c:241 funmisc.c:267
-msgid "#-1 UNABLE TO ALLOCATE MEMORY"
-msgstr "#-1 KON GEEN GEHEUGEN TOEWIJZEN"
 
 #: help.c:516 help.c:519
 msgid "#-1 UNAVAILABLE"
@@ -1444,10 +1436,6 @@ msgstr "--------------------------- POST (map %2d) ---------------------------"
 #, c-format
 msgid "@@ No attributes match '%s'. @@"
 msgstr "@@ Geen attributen voldoen aan '%s'. @@"
-
-#: cque.c:551
-msgid "@break recursion exceeded."
-msgstr "@break recursie overschreden."
 
 #: src/command.c:1118
 msgid "@command is ALWAYS enabled."
@@ -5688,10 +5676,6 @@ msgstr "Je kan quotas alleen als getal instellen."
 msgid "You can only set quotas to a positive number."
 msgstr "Je kunt quota alleen op een positief nummer instellen."
 
-#: cmds.c:530
-msgid "You can only use /inplace with /override."
-msgstr "Je kunt /inplace alleen gebruiken in combinatie met /override."
-
 #: rob.c:326
 msgid "You can't afford that."
 msgstr "Dat kun je niet betalen."
@@ -5848,10 +5832,6 @@ msgstr "Dat kun je daar niet uit pakken."
 #: src/move.c:544
 msgid "You can't take that!"
 msgstr "Je kan dat niet pakken!"
-
-#: src/speech.c:139
-msgid "You can't teach 'teach', sorry."
-msgstr "Je kan 'teach' niet met teach gebruiken, sorry."
 
 #: src/wiz.c:359
 msgid "You can't teleport rooms."

@@ -721,6 +721,7 @@ flag_alias_write(PENNFILE *out, FLAG *f, const char *name)
  * to receive file pointer that's already writing in a database file.
  * It writes the flags, writes the aliases.
  * \param out file pointer to write to.
+ * \param ns the namespace (FLAG/POWER) to write
  */
 void
 flag_write_all(PENNFILE *out, const char *ns)
@@ -1470,7 +1471,8 @@ flag_description(dbref player, dbref thing)
  * \param thing object being decompiled.
  * \param name name by which object is referred to in the decompile.
  * \param ns name of namespace to search.
- * \param command name of command used to set the 'flag'.
+ * \param command name of command used to set the 'flag'
+ * \param prefix string to prefix each line of output with
  */
 void
 decompile_flags_generic(dbref player, dbref thing, const char *name,
@@ -1571,15 +1573,8 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
       safe_format(tbuf1, &tp, T("%s is no longer listening."), Name(thing));
       *tp = '\0';
       if (GoodObject(Location(thing)))
-        notify_except(Contents(Location(thing)), NOTHING, tbuf1,
-                      NA_INTER_PRESENCE);
-      notify_except(Contents(thing), NOTHING, tbuf1, 0);
-    }
-    if (IsRoom(thing) && is_flag(f, "MONITOR") && !hear && !Listener(thing)) {
-      tp = tbuf1;
-      safe_format(tbuf1, &tp, T("%s is no longer listening."), Name(thing));
-      *tp = '\0';
-      notify_except(Contents(thing), NOTHING, tbuf1, NA_INTER_PRESENCE);
+        notify_except(Location(thing), NOTHING, tbuf1, NA_INTER_PRESENCE);
+      notify_except(thing, NOTHING, tbuf1, 0);
     }
     if (is_flag(f, "AUDIBLE")) {
       switch (Typeof(thing)) {
@@ -1589,17 +1584,17 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
           safe_format(tbuf1, &tp, T("Exit %s is no longer broadcasting."),
                       Name(thing));
           *tp = '\0';
-          notify_except(Contents(Source(thing)), NOTHING, tbuf1, 0);
+          notify_except(Source(thing), NOTHING, tbuf1, 0);
         }
         break;
       case TYPE_ROOM:
-        notify_except(Contents(thing), NOTHING,
+        notify_except(thing, NOTHING,
                       T("Audible exits in this room have been deactivated."),
                       0);
         break;
       case TYPE_THING:
       case TYPE_PLAYER:
-        notify_except(Contents(thing), thing,
+        notify_except(thing, thing,
                       T("This room is no longer broadcasting."), 0);
         notify(thing, T("Your contents can no longer be heard from outside."));
         break;
@@ -1632,15 +1627,8 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
       safe_format(tbuf1, &tp, T("%s is now listening."), Name(thing));
       *tp = '\0';
       if (GoodObject(Location(thing)))
-        notify_except(Contents(Location(thing)), NOTHING, tbuf1,
-                      NA_INTER_PRESENCE);
-      notify_except(Contents(thing), NOTHING, tbuf1, 0);
-    }
-    if (IsRoom(thing) && is_flag(f, "MONITOR") && !hear && !listener) {
-      tp = tbuf1;
-      safe_format(tbuf1, &tp, T("%s is now listening."), Name(thing));
-      *tp = '\0';
-      notify_except(Contents(thing), NOTHING, tbuf1, 0);
+        notify_except(Location(thing), NOTHING, tbuf1, NA_INTER_PRESENCE);
+      notify_except(thing, NOTHING, tbuf1, 0);
     }
     /* notify for audible exits */
     if (is_flag(f, "AUDIBLE")) {
@@ -1651,17 +1639,16 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
           safe_format(tbuf1, &tp, T("Exit %s is now broadcasting."),
                       Name(thing));
           *tp = '\0';
-          notify_except(Contents(Source(thing)), NOTHING, tbuf1, 0);
+          notify_except(Source(thing), NOTHING, tbuf1, 0);
         }
         break;
       case TYPE_ROOM:
-        notify_except(Contents(thing), NOTHING,
+        notify_except(thing, NOTHING,
                       T("Audible exits in this room have been activated."), 0);
         break;
       case TYPE_PLAYER:
       case TYPE_THING:
-        notify_except(Contents(thing), thing,
-                      T("This room is now broadcasting."), 0);
+        notify_except(thing, thing, T("This room is now broadcasting."), 0);
         notify(thing, T("Your contents can now be heard from outside."));
         break;
       }

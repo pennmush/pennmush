@@ -55,6 +55,11 @@ static char *parent_chain(dbref player, dbref thing);
 extern PRIV attr_privs_view[];
 extern int real_decompose_str(char *str, char *buff, char **bp);
 
+/* Show the 'Obvious Exits' list for a room. Used in 'look' and 'examine'.
+ * \param player The player looking
+ * \param loc room whose exits we're showing
+ * \param exit_name "Obvious Exits" string
+ */
 static void
 look_exits(dbref player, dbref loc, const char *exit_name)
 {
@@ -83,22 +88,17 @@ look_exits(dbref player, dbref loc, const char *exit_name)
 
   a = atr_get(loc, "EXITFORMAT");
   if (a) {
-    char *wsave[10], *rsave[NUMQ];
     char *arg, *buff, *bp, *save;
     char const *sp;
-    int j;
+    NEW_PE_INFO *pe_info;
 
     arg = (char *) mush_malloc(BUFFER_LEN, "string");
     buff = (char *) mush_malloc(BUFFER_LEN, "string");
     if (!arg || !buff)
       mush_panic("Unable to allocate memory in look_exits");
-    save_global_regs("look_exits", rsave);
-    for (j = 0; j < 10; j++) {
-      wsave[j] = global_eval_context.wenv[j];
-      global_eval_context.wenv[j] = NULL;
-    }
-    for (j = 0; j < NUMQ; j++)
-      global_eval_context.renv[j][0] = '\0';
+
+    pe_info = make_pe_info("pe_info-look_exits");
+
     bp = arg;
     DOLIST(thing, Exits(loc)) {
       if (((Light(loc) || Light(thing)) || !(Dark(loc) || Dark(thing)))
@@ -109,18 +109,16 @@ look_exits(dbref player, dbref loc, const char *exit_name)
       }
     }
     *bp = '\0';
-    global_eval_context.wenv[0] = arg;
+
     sp = save = safe_atr_value(a);
     bp = buff;
+    pe_regs_setenv_nocopy(pe_info->regvals, 0, arg);
     process_expression(buff, &bp, &sp, loc, player, player,
-                       PE_DEFAULT, PT_DEFAULT, NULL);
+                       PE_DEFAULT, PT_DEFAULT, pe_info);
     *bp = '\0';
+    free_pe_info(pe_info);
     free(save);
     notify_by(loc, player, buff);
-    for (j = 0; j < 10; j++) {
-      global_eval_context.wenv[j] = wsave[j];
-    }
-    restore_global_regs("look_exits", rsave);
     mush_free(tbuf1, "string");
     mush_free(tbuf2, "string");
     mush_free(nbuf, "string");
@@ -224,7 +222,11 @@ look_exits(dbref player, dbref loc, const char *exit_name)
   mush_free(nbuf, "string");
 }
 
-
+/** Show the contents list of an object when it's looked at, obeying @conformat
+ * \param player object looking
+ * \param object looked at
+ * \param contents_name String to show before contents list. "Contents" for rooms, "Carrying" for players/things
+ */
 static void
 look_contents(dbref player, dbref loc, const char *contents_name)
 {
@@ -241,24 +243,16 @@ look_contents(dbref player, dbref loc, const char *contents_name)
 
   a = atr_get(loc, "CONFORMAT");
   if (a) {
-    char *wsave[10], *rsave[NUMQ];
     char *arg, *buff, *bp, *save;
     char *arg2, *bp2;
     char const *sp;
-    int j;
+    NEW_PE_INFO *pe_info;
 
     arg = (char *) mush_malloc(BUFFER_LEN, "string");
     arg2 = (char *) mush_malloc(BUFFER_LEN, "string");
     buff = (char *) mush_malloc(BUFFER_LEN, "string");
     if (!arg || !buff || !arg2)
       mush_panic("Unable to allocate memory in look_contents");
-    save_global_regs("look_contents", rsave);
-    for (j = 0; j < 10; j++) {
-      wsave[j] = global_eval_context.wenv[j];
-      global_eval_context.wenv[j] = NULL;
-    }
-    for (j = 0; j < NUMQ; j++)
-      global_eval_context.renv[j][0] = '\0';
     bp = arg;
     bp2 = arg2;
     DOLIST(thing, Contents(loc)) {
@@ -273,19 +267,17 @@ look_contents(dbref player, dbref loc, const char *contents_name)
     }
     *bp = '\0';
     *bp2 = '\0';
-    global_eval_context.wenv[0] = arg;
-    global_eval_context.wenv[1] = arg2;
+    pe_info = make_pe_info("pe_info-look_contents");
+    pe_regs_setenv_nocopy(pe_info->regvals, 0, arg);
+    pe_regs_setenv_nocopy(pe_info->regvals, 1, arg2);
     sp = save = safe_atr_value(a);
     bp = buff;
     process_expression(buff, &bp, &sp, loc, player, player,
-                       PE_DEFAULT, PT_DEFAULT, NULL);
+                       PE_DEFAULT, PT_DEFAULT, pe_info);
     *bp = '\0';
+    free_pe_info(pe_info);
     free(save);
     notify_by(loc, player, buff);
-    for (j = 0; j < 10; j++) {
-      global_eval_context.wenv[j] = wsave[j];
-    }
-    restore_global_regs("look_contents", rsave);
     mush_free(arg, "string");
     mush_free(arg2, "string");
     mush_free(buff, "string");
@@ -319,6 +311,7 @@ look_contents(dbref player, dbref loc, const char *contents_name)
   }
 }
 
+/* Helper function for atr_iter_get, obeying VEILED attrflag */
 static int
 look_helper_veiled(dbref player, dbref thing __attribute__ ((__unused__)),
                    dbref parent __attribute__ ((__unused__)),
@@ -378,6 +371,7 @@ look_helper_veiled(dbref player, dbref thing __attribute__ ((__unused__)),
   return 1;
 }
 
+/* Helper function for atr_iter_get(), ignoring VEILED attrflag */
 static int
 look_helper(dbref player, dbref thing __attribute__ ((__unused__)),
             dbref parent __attribute__ ((__unused__)),
@@ -415,6 +409,14 @@ look_helper(dbref player, dbref thing __attribute__ ((__unused__)),
   return 1;
 }
 
+/** Show attributes on an object, for the 'examine' command
+ * \param player object using 'examine'
+ * \param thing object being examined
+ * \param mstr wildcard pattern of attrs to show, or NULL for all
+ * \param all show contents of veiled attributes?
+ * \param mortal only show attrs vis to mortals, ignoring player's privs?
+ * \param parent include inherited attributes from @parent?
+ */
 static void
 look_atrs(dbref player, dbref thing, const char *mstr, int all, int mortal,
           int parent)
@@ -444,6 +446,7 @@ look_atrs(dbref player, dbref thing, const char *mstr, int all, int mortal,
   }
 }
 
+/* Wrapper for look_atrs which only shows attrs visible to mortals */
 static void
 mortal_look_atrs(dbref player, dbref thing, const char *mstr, int all,
                  int parent)
@@ -568,16 +571,12 @@ look_description(dbref player, dbref thing, const char *def,
 {
   /* Show thing's description to player, obeying DESCFORMAT if set */
   ATTR *a, *f;
-  char *preserveq[NUMQ];
-  char *preserves[10];
   char buff[BUFFER_LEN], fbuff[BUFFER_LEN];
   char *bp, *fbp, *asave;
   char const *ap;
 
   if (!GoodObject(player) || !GoodObject(thing))
     return;
-  save_global_regs("look_desc_save", preserveq);
-  save_global_env("look_desc_save", preserves);
   a = atr_get(thing, descname);
   if (a) {
     /* We have a DESCRIBE, evaluate it into buff */
@@ -591,14 +590,20 @@ look_description(dbref player, dbref thing, const char *def,
   }
   f = atr_get(thing, descformatname);
   if (f) {
+    NEW_PE_INFO *pe_info = NULL;
+    if (a) {
+      pe_info = make_pe_info("pe_info-look_desc");
+      pe_regs_setenv_nocopy(pe_info->regvals, 0, buff);
+    }
     /* We have a DESCFORMAT, evaluate it into fbuff and use it */
     /* If we have a DESCRIBE, pass the evaluated version as %0 */
-    global_eval_context.wenv[0] = a ? buff : NULL;
     asave = safe_atr_value(f);
     ap = asave;
     fbp = fbuff;
     process_expression(fbuff, &fbp, &ap, thing, player, player,
-                       PE_DEFAULT, PT_DEFAULT, NULL);
+                       PE_DEFAULT, PT_DEFAULT, pe_info);
+    if (pe_info)
+      free_pe_info(pe_info);
     *fbp = '\0';
     free(asave);
     notify_by(thing, player, fbuff);
@@ -609,8 +614,6 @@ look_description(dbref player, dbref thing, const char *def,
     /* Nothing, go with the default message */
     notify_by(thing, player, def);
   }
-  restore_global_regs("look_desc_save", preserveq);
-  restore_global_env("look_desc_save", preserves);
 }
 
 /** An automatic look (due to motion).
@@ -777,8 +780,8 @@ do_look_at(dbref player, const char *name, int key)
 
 /** Examine an object.
  * \param player the enactor doing the examining.
- * \param name name of object to examine.
- * \param brief if 1, a brief examination. if 2, a mortal examination.
+ * \param xname name of object to examine.
+ * \param flag if 1, a brief examination. if 2, a mortal examination.
  * \param all if 1, include veiled attributes.
  * \param parent if 1, include parent attributes
  */
@@ -1042,24 +1045,16 @@ do_inventory(dbref player)
 
   a = atr_get(player, "INVFORMAT");
   if (a) {
-    char *wsave[10], *rsave[NUMQ];
     char *arg, *buff, *bp, *save;
     char *arg2, *bp2;
     char const *sp;
-    int j;
+    NEW_PE_INFO *pe_info;
 
     arg = (char *) mush_malloc(BUFFER_LEN, "string");
     arg2 = (char *) mush_malloc(BUFFER_LEN, "string");
     buff = (char *) mush_malloc(BUFFER_LEN, "string");
     if (!arg || !buff || !arg2)
       mush_panic("Unable to allocate memory in do_inventory");
-    save_global_regs("do_inventory", rsave);
-    for (j = 0; j < 10; j++) {
-      wsave[j] = global_eval_context.wenv[j];
-      global_eval_context.wenv[j] = NULL;
-    }
-    for (j = 0; j < NUMQ; j++)
-      global_eval_context.renv[j][0] = '\0';
     bp = arg;
     bp2 = arg2;
     DOLIST(thing, Contents(player)) {
@@ -1072,19 +1067,17 @@ do_inventory(dbref player)
     }
     *bp = '\0';
     *bp2 = '\0';
-    global_eval_context.wenv[0] = arg;
-    global_eval_context.wenv[1] = arg2;
+    pe_info = make_pe_info("pe_info-do_inv");
+    pe_regs_setenv_nocopy(pe_info->regvals, 0, arg);
+    pe_regs_setenv_nocopy(pe_info->regvals, 1, arg2);
     sp = save = safe_atr_value(a);
     bp = buff;
     process_expression(buff, &bp, &sp, player, player, player,
-                       PE_DEFAULT, PT_DEFAULT, NULL);
+                       PE_DEFAULT, PT_DEFAULT, pe_info);
     *bp = '\0';
+    free_pe_info(pe_info);
     free(save);
     notify(player, buff);
-    for (j = 0; j < 10; j++) {
-      global_eval_context.wenv[j] = wsave[j];
-    }
-    restore_global_regs("do_inventory", rsave);
     mush_free(arg, "string");
     mush_free(arg2, "string");
     mush_free(buff, "string");
@@ -1313,7 +1306,7 @@ do_whereis(dbref player, const char *name)
  * \param player the enactor.
  * \param where name of object to find entrances on.
  * \param argv array of arguments for dbref range limitation.
- * \param val what type of 'entrances' to find.
+ * \param types what type of 'entrances' to find.
  */
 void
 do_entrances(dbref player, const char *where, char *argv[], int types)
@@ -1471,11 +1464,11 @@ decompile_helper(dbref player, dbref thing __attribute__ ((__unused__)),
     if (dh->skipdef && ptr) {
       /* Standard attribute. Get the default perms, if any. */
       /* Are we different? If so, do as usual */
-      uint32_t npmflags = AL_FLAGS(ptr) & (~AF_PREFIXMATCH);
+      uint32_t npmflags = AL_FLAGS(ptr) & (~AF_PREFIXMATCH) & (~AF_ROOT);
       if (AL_FLAGS(atr) != AL_FLAGS(ptr) && AL_FLAGS(atr) != npmflags)
         privs = privs_to_string(attr_privs_view, AL_FLAGS(atr));
     } else {
-      privs = privs_to_string(attr_privs_view, AL_FLAGS(atr));
+      privs = privs_to_string(attr_privs_view, (AL_FLAGS(atr) & (~AF_ROOT)));
     }
     if (privs && *privs)
       notify_format(player, "%s@set %s/%s=%s", dh->prefix, dh->name,
@@ -1490,7 +1483,7 @@ decompile_helper(dbref player, dbref thing __attribute__ ((__unused__)),
  * \param name name to refer to object by in decompile.
  * \param pattern pattern to match attributes to decompile.
  * \param prefix prefix to use for decompile/tf.
- * \param skipflags if 0, show attribute flags. If 1, skip default attr flags. If 2, skip all attr flags.
+ * \param skipdef if 0, show attribute flags. If 1, skip default attr flags. If 2, skip all attr flags.
  */
 void
 decompile_atrs(dbref player, dbref thing, const char *name, const char *pattern,
@@ -1521,8 +1514,9 @@ decompile_locks(dbref player, dbref thing, const char *name,
     const lock_list *p = get_lockproto(L_TYPE(ll));
     if (p) {
       notify_format(player, "%s@lock/%s %s=%s", prefix,
-                    L_TYPE(ll), name, unparse_boolexp(player, L_KEY(ll),
-                                                      UB_MEREF));
+                    L_TYPE(ll), name,
+                    decompose_str(unparse_boolexp(player, L_KEY(ll),
+                                                  UB_MEREF)));
       if (skipdef) {
         if (p && L_FLAGS(ll) == L_FLAGS(p))
           continue;
@@ -1535,7 +1529,8 @@ decompile_locks(dbref player, dbref thing, const char *name,
                       name, L_TYPE(ll));
     } else {
       notify_format(player, "%s@lock/user:%s %s=%s", prefix,
-                    ll->type, name, unparse_boolexp(player, ll->key, UB_MEREF));
+                    ll->type, name,
+                    decompose_str(unparse_boolexp(player, ll->key, UB_MEREF)));
       if (L_FLAGS(ll))
         notify_format(player, "%s@lset %s/%s=%s", prefix, name,
                       L_TYPE(ll), lock_flags_long(ll));
@@ -1548,7 +1543,7 @@ decompile_locks(dbref player, dbref thing, const char *name,
  * This implements @decompile.
  * \endverbatim
  * \param player the enactor.
- * \param name name of object to decompile.
+ * \param xname name of object to decompile.
  * \param prefix the prefix to show before each line of output
  * \param dec_type flags for what to show in decompile, and how to show it
  */

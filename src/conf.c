@@ -189,10 +189,6 @@ PENNCONF conftable[] = {
   ,
   {"use_dns", cf_bool, &options.use_dns, 2, 0, "net"}
   ,
-  {"use_ident", cf_bool, &options.use_ident, 2, 0, "net"}
-  ,
-  {"ident_timeout", cf_time, &options.ident_timeout, 60, 0, "net"}
-  ,
   {"logins", cf_bool, &options.login_allow, 2, 0, "net"}
   ,
   {"player_creation", cf_bool, &options.create_allow, 2, 0, "net"}
@@ -300,8 +296,8 @@ PENNCONF conftable[] = {
   ,
   {"max_logins", cf_int, &options.max_logins, 128, 0, "limits"}
   ,
-  {"max_guests", cf_int, &options.max_guests, 128, 0, "limits"}
-  ,
+  {"max_guests", cf_int, &options.max_guests, 128, 0, "limits"},
+  {"max_named_qregs", cf_int, &options.max_named_qregs, 8192, 0, "limits"},
   {"connect_fail_limit", cf_int, &options.connect_fail_limit, 50, 0, "limits"}
   ,
   {"idle_timeout", cf_time, &options.idle_timeout, 100000, 0, "limits"}
@@ -686,7 +682,7 @@ cf_str(const char *opt, const char *val, void *loc, int maxval, int from_cmd)
 
 /** Parse a dbref configuration option.
  * dbrefs can be a raw number N or #N, even though # normally starts a comment
- * in the config file. #-1 is allowed. Limits are -1 to db_max for @config,
+ * in the config file. #-1 is allowed. Limits are -1 to db_max for \@config,
  * -1 to INT_MAX for reading mush.cnf (And validated elsewhere).
  * \param opt name of the configuration option.
  * \param val value of the option.
@@ -1300,9 +1296,9 @@ conf_default_set(void)
   strcpy(options.dump_message,
          T("GAME: Saving database. Game may freeze for a few moments."));
   strcpy(options.dump_complete, T("GAME: Save complete. "));
-  options.ident_timeout = 5;
   options.max_logins = 128;
   options.max_guests = 0;
+  options.max_named_qregs = 50;
   options.whisper_loudness = 100;
   options.page_aliases = 0;
   options.paycheck = 50;
@@ -1386,7 +1382,6 @@ conf_default_set(void)
   options.link_to_object = 1;
   options.owner_queues = 0;
   options.wiz_noaenter = 0;
-  options.use_ident = 1;
   strcpy(options.ip_addr, "");
   strcpy(options.ssl_ip_addr, "");
   options.player_name_spaces = 0;
@@ -1462,7 +1457,7 @@ static int conf_recursion = 0;
  * \retval 1 success.
  * \retval 0 failure.
  */
-int
+bool
 config_file_startup(const char *conf, int restrictions)
 {
   /* read a configuration file. Return 0 on failure, 1 on success */
@@ -1471,7 +1466,6 @@ config_file_startup(const char *conf, int restrictions)
    */
 
   FILE *fp = NULL;
-  PENNCONF *cp;
   char tbuf1[BUFFER_LEN];
   char *p, *q, *s;
   static char cfile[BUFFER_LEN];        /* Remember the last one */
@@ -1548,58 +1542,88 @@ config_file_startup(const char *conf, int restrictions)
         config_set(p, q, 0, restrictions);
     }
   }
-
-  /* Warn about any config options that aren't overridden by the
-   * config file.
-   */
-  if (conf_recursion == 0) {
-    for (cp = conftable; cp->name; cp++) {
-      if (!(cp->flags & (CP_OVERRIDDEN | CP_OPTIONAL))) {
-        do_rawlog(LT_ERR,
-                  "CONFIG: directive '%s' missing from cnf file, using default value.",
-                  cp->name);
-      }
-    }
-    for (cp = (PENNCONF *) hash_firstentry(&local_options); cp;
-         cp = (PENNCONF *) hash_nextentry(&local_options)) {
-      if (!(cp->flags & (CP_OVERRIDDEN | CP_OPTIONAL))) {
-        do_rawlog(LT_ERR,
-                  "CONFIG: local directive '%s' missing from cnf file. Using default value.",
-                  cp->name);
-      }
-    }
-
-    /* these directives aren't player-settable but need to be initialized */
-    mudtime = time(NULL);
-    options.dump_counter = mudtime + options.dump_interval;
-    options.purge_counter = mudtime + options.purge_interval;
-    options.dbck_counter = mudtime + options.dbck_interval;
-    options.warn_counter = mudtime + options.warn_interval;
-
-#ifdef WIN32
-    /* if we're on Win32, complain about compression */
-    if ((options.compressprog && *options.compressprog)) {
-      do_rawlog(LT_ERR,
-                "CONFIG: compression program is specified but not used in Win32, ignoring",
-                options.compressprog);
-    }
-
-    if (((options.compresssuff && *options.compresssuff))) {
-      do_rawlog(LT_ERR,
-                "CONFIG: compression suffix is specified but not used in Win32, ignoring",
-                options.compresssuff);
-    }
-
-    /* Also remove the compression options */
-    *options.uncompressprog = 0;
-    *options.compressprog = 0;
-    *options.compresssuff = 0;
-
-#endif
-
-  }
   fclose(fp);
   return 1;
+}
+
+/** Warn about config options that weren't set in the files read. */
+void
+config_file_checks(void)
+{
+  PENNCONF *cp;
+  for (cp = conftable; cp->name; cp++) {
+    if (!(cp->flags & (CP_OVERRIDDEN | CP_OPTIONAL))) {
+      do_rawlog(LT_ERR,
+                "CONFIG: directive '%s' missing from cnf file, using default value.",
+                cp->name);
+    }
+  }
+  for (cp = hash_firstentry(&local_options); cp;
+       cp = hash_nextentry(&local_options)) {
+    if (!(cp->flags & (CP_OVERRIDDEN | CP_OPTIONAL))) {
+      do_rawlog(LT_ERR,
+                "CONFIG: local directive '%s' missing from cnf file. Using default value.",
+                cp->name);
+    }
+  }
+
+  /* these directives aren't player-settable but need to be initialized */
+  mudtime = time(NULL);
+  options.dump_counter = mudtime + options.dump_interval;
+  options.purge_counter = mudtime + options.purge_interval;
+  options.dbck_counter = mudtime + options.dbck_interval;
+  options.warn_counter = mudtime + options.warn_interval;
+
+#ifdef WIN32
+  /* if we're on Win32, complain about compression */
+  if ((options.compressprog && *options.compressprog)) {
+    do_rawlog(LT_ERR,
+              "CONFIG: compression program is specified but not used in Win32, ignoring",
+              options.compressprog);
+  }
+
+  if (((options.compresssuff && *options.compresssuff))) {
+    do_rawlog(LT_ERR,
+              "CONFIG: compression suffix is specified but not used in Win32, ignoring",
+              options.compresssuff);
+  }
+
+  /* Also remove the compression options */
+  *options.uncompressprog = 0;
+  *options.compressprog = 0;
+  *options.compresssuff = 0;
+#endif
+}
+
+/** Can a player see a config option?
+ * \param player dbref of player trying to look
+ * \param opt the config option
+ * \retval 1 or 0
+ */
+int
+can_view_config_option(dbref player, PENNCONF *opt)
+{
+  PENNCONFGROUP *group;
+
+  /* Options in a group cannot be viewed at all */
+  if (!opt->group) {
+    return 0;
+  }
+
+  /* Some options are God-only */
+  if ((opt->flags & CP_GODONLY) && !God(player)) {
+    return 0;
+  }
+
+  /* Check group privs */
+  for (group = confgroups; group->name; group++) {
+    if (!strcmp(group->name, opt->group)) {
+      return Can_View_Config_Group(player, group);
+    }
+  }
+
+  /* Didn't find group */
+  return 0;
 }
 
 /** List configuration directives or groups.
@@ -1628,8 +1652,7 @@ do_config_list(dbref player, const char *type, int lc)
     if (!found) {
       /* It wasn't a group. Is is one or more specific options? */
       for (cp = conftable; cp->name; cp++) {
-        if (cp->group && (God(player) || !(cp->flags & CP_GODONLY))
-            && string_prefix(cp->name, type)) {
+        if (string_prefix(cp->name, type) && can_view_config_option(player, cp)) {
           notify(player, config_to_string(player, cp, lc));
           found = 1;
         }
@@ -1638,8 +1661,7 @@ do_config_list(dbref player, const char *type, int lc)
         /* Ok, maybe a local option? */
         for (cp = (PENNCONF *) hash_firstentry(&local_options); cp;
              cp = (PENNCONF *) hash_nextentry(&local_options)) {
-          if (cp->group && (God(player) || !(cp->flags & CP_GODONLY))
-              && !strcasecmp(cp->name, type)) {
+          if (!strcasecmp(cp->name, type) && can_view_config_option(player, cp)) {
             notify(player, config_to_string(player, cp, lc));
             found = 1;
           }
@@ -1649,14 +1671,14 @@ do_config_list(dbref player, const char *type, int lc)
         /* Try a wildcard search of option names, including local options */
         char *wild = tprintf("*%s*", type);
         for (cp = conftable; cp->name; cp++) {
-          if (cp->group && quick_wild(wild, cp->name)) {
+          if (quick_wild(wild, cp->name) && can_view_config_option(player, cp)) {
             found = 1;
             notify(player, config_to_string(player, cp, lc));
           }
         }
         for (cp = (PENNCONF *) hash_firstentry(&local_options); cp;
              cp = (PENNCONF *) hash_nextentry(&local_options)) {
-          if (cp->group && quick_wild(wild, cp->name)) {
+          if (quick_wild(wild, cp->name) && can_view_config_option(player, cp)) {
             found = 1;
             notify(player, config_to_string(player, cp, lc));
           }
@@ -1677,15 +1699,15 @@ do_config_list(dbref player, const char *type, int lc)
         show_compile_options(player);
       else {
         for (cp = conftable; cp->name; cp++) {
-          if (cp->group && (God(player) || !(cp->flags & CP_GODONLY))
-              && !strcmp(cp->group, cgp->name)) {
+          if (cp->group && !strcmp(cp->group, cgp->name)
+              && can_view_config_option(player, cp)) {
             notify(player, config_to_string(player, cp, lc));
           }
         }
         for (cp = (PENNCONF *) hash_firstentry(&local_options); cp;
              cp = (PENNCONF *) hash_nextentry(&local_options)) {
-          if (cp->group && (God(player) || !(cp->flags & CP_GODONLY))
-              && !strcasecmp(cp->group, cgp->name)) {
+          if (cp->group && !strcasecmp(cp->group, cgp->name)
+              && can_view_config_option(player, cp)) {
             notify(player, config_to_string(player, cp, lc));
           }
         }
@@ -1793,16 +1815,16 @@ FUNCTION(fun_config)
 
   if (args[0] && *args[0]) {
     for (cp = conftable; cp->name; cp++) {
-      if (cp->group && (God(executor) || !(cp->flags & CP_GODONLY))
-          && !strcasecmp(cp->name, args[0])) {
+      if (!strcasecmp(cp->name, args[0])
+          && can_view_config_option(executor, cp)) {
         safe_str(config_to_string2(executor, cp, 0), buff, bp);
         return;
       }
     }
     for (cp = (PENNCONF *) hash_firstentry(&local_options); cp;
          cp = (PENNCONF *) hash_nextentry(&local_options)) {
-      if (cp->group && (God(executor) || !(cp->flags & CP_GODONLY))
-          && !strcasecmp(cp->name, args[0])) {
+      if (!strcasecmp(cp->name, args[0])
+          && can_view_config_option(executor, cp)) {
         safe_str(config_to_string2(executor, cp, 0), buff, bp);
         return;
       }
@@ -1812,7 +1834,7 @@ FUNCTION(fun_config)
   } else {
     int first = 1;
     for (cp = conftable; cp->name; cp++) {
-      if (cp->group && (God(executor) || !(cp->flags & CP_GODONLY))) {
+      if (can_view_config_option(executor, cp)) {
         if (first)
           first = 0;
         else
@@ -1822,7 +1844,7 @@ FUNCTION(fun_config)
     }
     for (cp = (PENNCONF *) hash_firstentry(&local_options); cp;
          cp = (PENNCONF *) hash_nextentry(&local_options)) {
-      if (cp->group && (God(executor) || !(cp->flags & CP_GODONLY))) {
+      if (can_view_config_option(executor, cp)) {
         if (first)
           first = 0;
         else
@@ -1844,7 +1866,7 @@ do_enable(dbref player, const char *param, int state)
   PENNCONF *cp;
 
   for (cp = conftable; cp->name; cp++) {
-    if (cp->group && !strcasecmp(cp->name, param)) {
+    if (!strcasecmp(cp->name, param) && can_view_config_option(player, cp)) {
       if (cp->flags & CP_GODONLY) {
         notify(player, T("That option cannot be altered."));
         return;
@@ -1895,9 +1917,9 @@ show_compile_options(dbref player)
 #endif
 
 #ifdef INFO_SLAVE
-  notify(player, T(" DNS and ident lookups are handled by a slave process."));
+  notify(player, T(" DNS lookups are handled by a slave process."));
 #else
-  notify(player, T(" DNS and ident lookups are handled by the MUSH process."));
+  notify(player, T(" DNS lookups are handled by the MUSH process."));
 #endif
 
 #ifdef HAS_GETDATE

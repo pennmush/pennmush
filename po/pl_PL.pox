@@ -528,10 +528,6 @@ msgstr "#-1 BRAK UPRAWNIEÑ"
 msgid "#-1 REGEXP ERROR: "
 msgstr "#-1 B£¡D WYRA¯ENIA REGULARNEGO: "
 
-#: src/funmisc.c:158 src/funmisc.c:178
-msgid "#-1 REGISTER OUT OF RANGE"
-msgstr "#-1 WYKAZ POZA ZASIÊGIEM"
-
 #: funmath.c:1057
 msgid "#-1 ROOT OUT OF RANGE"
 msgstr "#-1 ¬RÓD£O POZA ZASIÊGIEM"
@@ -571,10 +567,6 @@ msgstr "#-1 ZBYT WIELE S£ÓW"
 #: funstr.c:757 funstr.c:765 funstr.c:795 funstr.c:803
 msgid "#-1 TR CANNOT ACCEPT NONPRINTING CHARS"
 msgstr "#-1 TR NIE PRZYJMUJE NIEDRUKOWALNYCH ZNAKÓW"
-
-#: funmisc.c:235 funmisc.c:241 funmisc.c:267
-msgid "#-1 UNABLE TO ALLOCATE MEMORY"
-msgstr "#-1 NIE MO¯NA PRZYDZIELIÆ PAMIÊCI"
 
 #: help.c:516 help.c:519
 msgid "#-1 UNAVAILABLE"
@@ -1225,10 +1217,6 @@ msgstr "------------  Koniec kolejki  ------------"
 #, c-format
 msgid "---------------------------  MAIL (folder %2d)  ------------------------------"
 msgstr "---------------------------  POCZTA (folder %2d)  ----------------------------"
-
-#: cque.c:551
-msgid "@break recursion exceeded."
-msgstr "Rekursja @break przekroczona."
 
 #: src/command.c:1118
 msgid "@command is ALWAYS enabled."
@@ -4969,10 +4957,6 @@ msgstr "Nie mo¿esz wzi±æ tego stamt±d."
 #: src/move.c:544
 msgid "You can't take that!"
 msgstr "Nie mozesz tego wzi±æ!"
-
-#: src/speech.c:139
-msgid "You can't teach 'teach', sorry."
-msgstr "Nie mo¿esz uczyæ 'uczenia', przykro mi."
 
 #: src/wiz.c:359
 msgid "You can't teleport rooms."

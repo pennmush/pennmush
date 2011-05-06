@@ -502,7 +502,7 @@ do_dig(dbref player, const char *name, char **argv, int tport)
  * \param player the enactor.
  * \param name name of thing to create.
  * \param cost pennies spent in creation.
- * \paran newdbref the (unparsed) dbref to give the object, or NULL to use the next free
+ * \param newdbref the (unparsed) dbref to give the object, or NULL to use the next free
  * \return dbref of new thing, or NOTHING.
  */
 dbref
@@ -636,7 +636,7 @@ clone_object(dbref player, dbref thing, const char *newname, int preserve)
  * \param name the name of the object to clone.
  * \param newname the name to give the duplicate.
  * \param preserve if 1, preserve ownership and privileges on duplicate.
- * \paran newdbref the (unparsed) dbref to give the object, or NULL to use the next free
+ * \param newdbref the (unparsed) dbref to give the object, or NULL to use the next free
  * \return dbref of the duplicate, or NOTHING.
  */
 dbref
@@ -688,7 +688,7 @@ do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref)
       current_state.things++;
       local_data_clone(clone, thing);
       real_did_it(player, clone, NULL, NULL, NULL, NULL, "ACLONE", NOTHING,
-                  global_eval_context.wenv, 0);
+                  NULL, 0);
       return clone;
     }
     return NOTHING;
@@ -701,7 +701,7 @@ do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref)
       current_state.rooms++;
       local_data_clone(clone, thing);
       real_did_it(player, clone, NULL, NULL, NULL, NULL, "ACLONE", NOTHING,
-                  global_eval_context.wenv, 0);
+                  NULL, 0);
       return clone;
     }
     return NOTHING;

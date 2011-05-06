@@ -109,10 +109,10 @@
  * the allocation pool, both to maintain good operation through active
  * encouragement of locality, and to satisfy the curiosity of people
  * using the system (and its designer ;-)).  These statistics are
- * reported (in PennMUSH) through the use of the @stats command,
+ * reported (in PennMUSH) through the use of the \@stats command,
  * with /chunks switch.
  *
- * @stats/chunks generates output similar to this:
+ * \@stats/chunks generates output similar to this:
  * \verbatim
  * Chunks:         99407 allocated (   8372875 bytes,     223808 ( 2%) overhead)
  *                   74413 short     (   1530973 bytes,     148826 ( 9%) overhead)
@@ -165,10 +165,10 @@
  * <h3>Histograms:</h3>
  * The chunk memory management system can also display a few
  * histograms about itself.  These histograms are reported (in PennMUSH)
- * through the use of the @stats command, with the /regions, /freespace,
+ * through the use of the \@stats command, with the /regions, /freespace,
  * or /paging switches.
  *
- * All of @stats/regions, @stats/freespace, and @stas/paging produce
+ * All of \@stats/regions, \@stats/freespace, and \@stats/paging produce
  * histograms vs. region average dereference count.  The histograms
  * use buckets four counts wide, so all regions from 0-3 will be in
  * the first bucket, 4-7 in the second, etc., up to 252-255 in the
@@ -177,7 +177,7 @@
  * the top of the histogram (with their real values labeled in
  * parenthesis next to them).
  *
- * @stats/regions is a histogram of how many regions at each count
+ * \@stats/regions is a histogram of how many regions at each count
  * currently exist.  In a healthy game, there should be a large spike
  * at some dereference count between 64 and 128 (representing the
  * largely unused portion of the database), a lesser spike at 255
@@ -188,11 +188,11 @@
  * the large spike would pass 128, at which point everything is halved
  * and the spike is pushed back down to 64.
  *
- * @stats/freespace is a histogram of how much free space exists in
+ * \@stats/freespace is a histogram of how much free space exists in
  * regions at each dereference count.  This histogram is included
  * to aid in diagnosis of the cause for dropping saturation rates.
  *
- * @stats/paging is a histogram of the number of regions being paged
+ * \@stats/paging is a histogram of the number of regions being paged
  * in or out at each dereference count.  As of this writing, a very
  * unhealthy behaviour is observed, wherein the histogram shows a
  * trapeziod between 64 and 128, drowning out most of the rest of the

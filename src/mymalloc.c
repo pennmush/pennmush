@@ -52,7 +52,7 @@
 /** A malloc wrapper that tracks type of allocation.
  * This should be used in preference to malloc() when possible,
  * to enable memory leak tracing with MEM_CHECK.
- * \param size bytes to allocate.
+ * \param bytes bytes to allocate.
  * \param check string to label allocation with.
  * \return allocated block of memory or NULL.
  */
@@ -97,7 +97,6 @@ mush_calloc(size_t count, size_t size, const char *check)
  * \param check string to label with
  * \param filename file name it was called from
  * \param line line it called from
- * \param new pointer or NULL
  */
 void *
 mush_realloc_where(void *restrict ptr, size_t newsize,
@@ -243,7 +242,7 @@ slab_set_opt(slab *sl, enum slab_options opt, int val
 
 /** Allocate a new page.
  * \param sl Allocator to create the page for.
- * \return new page, NOT linked into the allocator's list of pages 
+ * \return new page, NOT linked into the allocator's list of pages
  */
 static struct slab_page *
 slab_alloc_page(struct slab *sl)
@@ -268,6 +267,7 @@ slab_alloc_page(struct slab *sl)
 #else
   page = malloc(pgsize);
 #endif
+  memset(page, 0, pgsize);
 
   sp = (struct slab_page *) page;
   sp->nfree = sl->items_per_page;
@@ -292,7 +292,7 @@ slab_alloc_page(struct slab *sl)
   return sp;
 }
 
-/** Allocate a new object from a page 
+/** Allocate a new object from a page
  * \param where the page to allocate from.
  * \return pointer to object, or NULL if no room left on page
  */
@@ -473,7 +473,7 @@ slab_destroy(slab *sl)
   free(sl);
 }
 
-/** Describe a slab for @list allocations
+/** Describe a slab for \@list allocations
  * \param player who to display to
  * \param sl the slab
  */
@@ -542,7 +542,8 @@ slab_describe(dbref player, slab *sl)
 extern slab *attrib_slab, *lock_slab, *boolexp_slab, *bvm_asmnode_slab,
   *bvm_strnode_slab, *flag_slab, *player_dbref_slab,
   *command_slab, *channel_slab, *chanuser_slab, *chanlist_slab, *mail_slab,
-  *text_block_slab, *function_slab, *memcheck_slab, *intmap_slab;
+  *text_block_slab, *function_slab, *memcheck_slab, *intmap_slab,
+  *pe_reg_slab, *pe_reg_val_slab;
 
 #if COMPRESSION_TYPE == 1 || COMPRESSION_TYPE == 2
 extern slab *huffman_slab;
@@ -579,6 +580,8 @@ do_list_allocations(dbref player)
   slab_describe(player, text_block_slab);
   slab_describe(player, player_dbref_slab);
   slab_describe(player, intmap_slab);
+  slab_describe(player, pe_reg_slab);
+  slab_describe(player, pe_reg_val_slab);
 
   if (options.mem_check) {
     notify(player, "malloc allocations:");

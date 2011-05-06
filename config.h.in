@@ -104,6 +104,8 @@
 #define HAS_OPENSSL
 #endif
 
+#undef HAVE_PCRE_H
+
 #undef HAVE_PCRE
 
 /* JIT library */

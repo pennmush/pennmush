@@ -61,8 +61,6 @@ static sqlite3 *sqlite3_connp = NULL;
 #include "ansi.h"
 #include "match.h"
 
-extern signed char qreg_indexes[UCHAR_MAX + 1];
-
 /* Supported platforms */
 typedef enum { SQL_PLATFORM_DISABLED = -1,
   SQL_PLATFORM_MYSQL = 1,
@@ -311,7 +309,7 @@ FUNCTION(fun_sql_escape)
 #endif
 #if defined(HAVE_SQLITE3) && defined(HAVE_MYSQL)
   case SQL_PLATFORM_SQLITE3:
-    /* sqlite3 doesn't have a escape function. Use one of my MySQL's 
+    /* sqlite3 doesn't have a escape function. Use one of my MySQL's
      * if we can. */
     chars_written = mysql_escape_string(bigbuff, args[0], arglens[0]);
     break;
@@ -336,6 +334,7 @@ COMMAND(cmd_mapsql)
   int rownum;
   int numfields;
   int numrows;
+  PE_REGS *pe_regs = NULL;
   char *names[10];
   char *cells[10];
   char tbuf[BUFFER_LEN];
@@ -351,25 +350,25 @@ COMMAND(cmd_mapsql)
 
   s = strchr(tbuf, '/');
   if (!s) {
-    notify(player, T("I need to know what attribute to trigger."));
+    notify(executor, T("I need to know what attribute to trigger."));
     return;
   }
   *(s++) = '\0';
   upcasestr(s);
 
-  thing = noisy_match_result(player, tbuf, NOTYPE, MAT_EVERYTHING);
+  thing = noisy_match_result(executor, tbuf, NOTYPE, MAT_EVERYTHING);
 
   if (thing == NOTHING) {
     return;
   }
 
-  if (!controls(player, thing) && !(Owns(player, thing) && LinkOk(thing))) {
-    notify(player, T("Permission denied."));
+  if (!controls(executor, thing) && !(Owns(executor, thing) && LinkOk(thing))) {
+    notify(executor, T("Permission denied."));
     return;
   }
 
-  if (God(thing) && !God(player)) {
-    notify(player, T("You can't trigger God!"));
+  if (God(thing) && !God(executor)) {
+    notify(executor, T("You can't trigger God!"));
     return;
   }
 
@@ -383,11 +382,11 @@ COMMAND(cmd_mapsql)
 
   if (!qres) {
     if (affected_rows >= 0) {
-      notify_format(player, T("SQL: %d rows affected."), affected_rows);
+      notify_format(executor, T("SQL: %d rows affected."), affected_rows);
     } else if (!sql_connected()) {
-      notify(player, T("No SQL database connection."));
+      notify(executor, T("No SQL database connection."));
     } else {
-      notify_format(player, T("SQL: Error: %s"), sql_error());
+      notify_format(executor, T("SQL: Error: %s"), sql_error());
     }
     return;
   }
@@ -419,6 +418,7 @@ COMMAND(cmd_mapsql)
     goto finished;
   }
 
+  pe_regs = pe_regs_create(PE_REGS_ARG, "cmd_mapsql");
   for (rownum = 0; rownum < numrows; rownum++) {
 #ifdef HAVE_MYSQL
     MYSQL_ROW row_p = NULL;
@@ -434,7 +434,7 @@ COMMAND(cmd_mapsql)
       if (retcode == SQLITE_DONE)
         break;
       else if (retcode != SQLITE_ROW) {
-        notify_format(player, T("SQL: Error: %s"), sql_error());
+        notify_format(executor, T("SQL: Error: %s"), sql_error());
         break;
       }
     }
@@ -471,30 +471,32 @@ COMMAND(cmd_mapsql)
         /* Queue 0: <names> */
         snprintf(strrownum, 20, "%d", 0);
         names[0] = strrownum;
-        for (a = 0; a < 10; a++) {
-          global_eval_context.wnxt[a] = names[a];
+        for (i = 0; i < (numfields + 1) && i < 10; i++) {
+          pe_regs_setenv(pe_regs, i, names[i]);
         }
-        queue_attribute(thing, s, player);
+        queue_attribute_base(thing, s, executor, 0, pe_regs);
       }
 
       /* Queue the rest. */
       snprintf(strrownum, 20, "%d", rownum + 1);
       cells[0] = strrownum;
-      for (a = 0; a < 10; a++) {
-        global_eval_context.wnxt[a] = cells[a];
+      pe_regs_clear(pe_regs);
+      for (i = 0; i < (numfields + 1) && i < 10; i++) {
+        pe_regs_setenv(pe_regs, i, cells[i]);
       }
-      queue_attribute(thing, s, player);
-      /* Queue rownum: <names> */
+      queue_attribute_base(thing, s, executor, 0, pe_regs);
     } else {
       /* What to do if there are no fields? This should be an error?. */
-      /* notify_format(player, T("Row %d: NULL"), rownum + 1); */
+      /* notify_format(executor, T("Row %d: NULL"), rownum + 1); */
     }
   }
   if (donotify) {
-    parse_que(player, "@notify me", cause, NULL);
+    parse_que(executor, executor, "@notify me", NULL);
   }
 
 finished:
+  if (pe_regs)
+    pe_regs_free(pe_regs);
   free_sql_query(qres);
 }
 
@@ -520,11 +522,11 @@ COMMAND(cmd_sql)
 
   if (!qres) {
     if (affected_rows >= 0) {
-      notify_format(player, T("SQL: %d rows affected."), affected_rows);
+      notify_format(executor, T("SQL: %d rows affected."), affected_rows);
     } else if (!sql_connected()) {
-      notify(player, T("No SQL database connection."));
+      notify(executor, T("No SQL database connection."));
     } else {
-      notify_format(player, T("SQL: Error: %s"), sql_error());
+      notify_format(executor, T("SQL: Error: %s"), sql_error());
     }
     return;
   }
@@ -571,7 +573,7 @@ COMMAND(cmd_sql)
       if (retcode == SQLITE_DONE)
         break;
       else if (retcode != SQLITE_ROW) {
-        notify_format(player, T("SQL: Error: %s"), sql_error());
+        notify_format(executor, T("SQL: Error: %s"), sql_error());
         break;
       }
     }
@@ -613,11 +615,11 @@ COMMAND(cmd_sql)
             cell = tbuf;
           }
         }
-        notify_format(player, T("Row %d, Field %s: %s"),
+        notify_format(executor, T("Row %d, Field %s: %s"),
                       rownum + 1, name, (cell && *cell) ? cell : "NULL");
       }
     } else
-      notify_format(player, T("Row %d: NULL"), rownum + 1);
+      notify_format(executor, T("Row %d: NULL"), rownum + 1);
   }
 
 finished:
@@ -628,19 +630,18 @@ FUNCTION(fun_mapsql)
 {
   void *qres;
   ufun_attrib ufun;
-  char *wenv[10];
   char *osep = (char *) " ";
   int affected_rows;
   int rownum;
-  char numbuff[20];
   int numfields, numrows;
   char rbuff[BUFFER_LEN];
   int funccount = 0;
   int do_fieldnames = 0;
-  int i;
+  int i, j;
   char buffs[9][BUFFER_LEN];
   char *tbp;
   char *cell = NULL;
+  PE_REGS *pe_regs = NULL;
   ansi_string *as;
 #ifdef HAVE_MYSQL
   MYSQL_FIELD *fields = NULL;
@@ -667,8 +668,6 @@ FUNCTION(fun_mapsql)
     do_fieldnames = parse_boolean(args[3]);
   }
 
-  for (i = 0; i < 10; i++)
-    wenv[i] = NULL;
   qres = sql_query(args[1], &affected_rows);
   sql_test_result(qres);
   /* Get results. A silent query (INSERT, UPDATE, etc.) will return NULL */
@@ -695,9 +694,9 @@ FUNCTION(fun_mapsql)
     goto finished;
   }
 
+  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_mapsql");
   if (do_fieldnames) {
-    mush_strncpy(numbuff, unparse_integer(0), 20);
-    wenv[0] = numbuff;
+    pe_regs_setenv(pe_regs, 0, unparse_integer(0));
 #ifdef HAVE_MYSQL
     if (sql_platform() == SQL_PLATFORM_MYSQL)
       fields = mysql_fetch_fields(qres);
@@ -706,24 +705,26 @@ FUNCTION(fun_mapsql)
       switch (sql_platform()) {
 #ifdef HAVE_MYSQL
       case SQL_PLATFORM_MYSQL:
-        wenv[i + 1] = fields[i].name;
+        pe_regs_setenv(pe_regs, i + 1, fields[i].name);
         break;
 #endif
 #ifdef HAVE_POSTGRESQL
       case SQL_PLATFORM_POSTGRESQL:
-        wenv[i + 1] = PQfname(qres, i);
+        pe_regs_setenv(pe_regs, i + 1, PQfname(qres, i));
         break;
 #endif
 #ifdef HAVE_SQLITE3
       case SQL_PLATFORM_SQLITE3:
-        wenv[i + 1] = (char *) sqlite3_column_name(qres, i);
+        pe_regs_setenv(pe_regs, i + 1, (char *) sqlite3_column_name(qres, i));
         break;
 #endif
       default:
         break;
       }
     }
-    if (call_ufun(&ufun, wenv, i + 1, rbuff, executor, enactor, pe_info))
+    for (j = 0; j < (i + 1); j++) {
+    }
+    if (call_ufun(&ufun, rbuff, executor, enactor, pe_info, pe_regs))
       goto finished;
     safe_str(rbuff, buff, bp);
   }
@@ -749,8 +750,8 @@ FUNCTION(fun_mapsql)
     if (rownum > 0 || do_fieldnames) {
       safe_str(osep, buff, bp);
     }
-    mush_strncpy(numbuff, unparse_integer(rownum + 1), 20);
-    wenv[0] = numbuff;
+    pe_regs_clear(pe_regs);
+    pe_regs_setenv(pe_regs, 0, unparse_integer(rownum + 1));
     for (i = 0; (i < numfields) && (i < 9); i++) {
       switch (sql_platform()) {
 #ifdef HAVE_MYSQL
@@ -782,12 +783,11 @@ FUNCTION(fun_mapsql)
           cell = buffs[i];
         }
       }
-      wenv[i + 1] = cell;
-      if (!wenv[i + 1])
-        wenv[i + 1] = (char *) "";
+      if (cell)
+        pe_regs_setenv(pe_regs, i + 1, cell);
     }
     /* Now call the ufun. */
-    if (call_ufun(&ufun, wenv, i + 1, rbuff, executor, enactor, pe_info))
+    if (call_ufun(&ufun, rbuff, executor, enactor, pe_info, pe_regs))
       goto finished;
     if (safe_str(rbuff, buff, bp)
         && funccount == pe_info->fun_invocations)
@@ -795,6 +795,8 @@ FUNCTION(fun_mapsql)
     funccount = pe_info->fun_invocations;
   }
 finished:
+  if (pe_regs)
+    pe_regs_free(pe_regs);
   free_sql_query(qres);
 }
 
@@ -810,7 +812,8 @@ FUNCTION(fun_sql)
   int i;
   int numfields, numrows;
   ansi_string *as;
-  int qindex = -1;
+  char *qreg_save = NULL;
+
   if (sql_platform() == SQL_PLATFORM_DISABLED) {
     safe_str(T(e_disabled), buff, bp);
     return;
@@ -832,14 +835,16 @@ FUNCTION(fun_sql)
 
   if (nargs >= 4) {
     /* return affected rows to the qreg in args[3]. */
-    if (args[3][0] && !args[3][1]) {
-      qindex = qreg_indexes[(unsigned char) args[3][0]];
+    if (args[3][0]) {
+      if (ValidQregName(args[3])) {
+        qreg_save = args[3];
+      }
     }
   }
 
   qres = sql_query(args[0], &affected_rows);
-  if (affected_rows >= 0 && qindex >= 0) {
-    strcpy(global_eval_context.renv[qindex], unparse_number(affected_rows));
+  if (qreg_save && affected_rows >= 0) {
+    PE_Setq(pe_info, qreg_save, unparse_number(affected_rows));
   }
   sql_test_result(qres);
   /* Get results. A silent query (INSERT, UPDATE, etc.) will return NULL */

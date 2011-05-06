@@ -166,6 +166,7 @@ extern int unparsing_boolexp;
 /** Return a list of all available locks
  * \param buff the buffer
  * \param bp a pointer to the current position in the buffer.
+ * \param name if not NULL, only show locks with this prefix
  */
 void
 list_locks(char *buff, char **bp, const char *name)
@@ -285,7 +286,7 @@ void
 init_locks(void)
 {
   lock_list *ll;
-  st_init(&lock_names);
+  st_init(&lock_names, "LockNameTree");
 
   hashinit(&htab_locks, 25);
 
@@ -877,16 +878,19 @@ clone_locks(dbref player, dbref orig, dbref clone)
 }
 
 
+extern NEW_PE_INFO *pe_info_context;
+
 /** Evaluate a lock.
  * Evaluate lock ltype on thing for player.
  * \param player dbref attempting to pass the lock.
  * \param thing object containing the lock.
  * \param ltype type of lock to check.
+ * \param pe_info the pe_info to use when evaluating softcode in the lock
  * \retval 1 player passes the lock.
  * \retval 0 player does not pass the lock.
  */
 int
-eval_lock(dbref player, dbref thing, lock_type ltype)
+eval_lock_with(dbref player, dbref thing, lock_type ltype, NEW_PE_INFO *pe_info)
 {
   boolexp b;
   lock_list *ll = getlockstruct(thing, ltype);
@@ -916,6 +920,8 @@ eval_lock(dbref player, dbref thing, lock_type ltype)
     args[0] = &arg_player;
     args[1] = &arg_thing;
 
+    pe_info_context = pe_info; /* For indirect locks */
+
     do_rawlog(LT_TRACE, "Evaluating JIT lock #%d/%s", thing, ltype);
 
     if (jit_function_apply(ll->fun, args, &result))
@@ -923,49 +929,34 @@ eval_lock(dbref player, dbref thing, lock_type ltype)
   }
 #endif
 
-  return eval_boolexp(player, b, thing);
+  return eval_boolexp(player, b, thing, pe_info);
 }
 
-/** Evaluate a lock.
- * Evaluate lock ltype on thing for player, passing dbrefs for %0/%1.
- * \param player dbref attempting to pass the lock.
- * \param thing object containing the lock.
- * \param ltype type of lock to check.
- * \retval 1 player passes the lock.
- * \retval 0 player does not pass the lock.
+/* eval_lock(player,thing,ltype) is #defined to eval_lock_with(player,thing,ltype,NULL) */
+
+/** Evaluate a lock, saving/clearing the env (%0-%9) and qreg (%q*) first,
+ ** and restoring them after.
  */
 int
-eval_lock_with(dbref player, dbref thing, lock_type ltype, dbref env0,
-               dbref env1)
+eval_lock_clear(dbref player, dbref thing, lock_type ltype,
+                NEW_PE_INFO *pe_info)
 {
-  char *myenv[10] = { NULL };
-  char e0[SBUF_LEN], e1[SBUF_LEN], *ep;
-  char *preserves[10];
-  int result;
-  boolexp b;
+  if (!pe_info)
+    return eval_lock_with(player, thing, ltype, NULL);
+  else {
+    PE_REGS *pe_regs;
+    int result;
 
-  if (env0 != NOTHING) {
-    ep = e0;
-    safe_dbref(env0, e0, &ep);
-    *ep = '\0';
-    myenv[0] = e0;
+    pe_regs = pe_regs_localize(pe_info, PE_REGS_ISOLATE, "eval_lock_clear");
+
+    /* Run the lock */
+    result = eval_lock_with(player, thing, ltype, pe_info);
+
+    /* Restore q-regs */
+    pe_regs_restore(pe_info, pe_regs);
+    pe_regs_free(pe_regs);
+    return result;
   }
-
-  if (env1 != NOTHING) {
-    ep = e1;
-    safe_dbref(env1, e1, &ep);
-    *ep = '\0';
-    myenv[1] = e1;
-  }
-
-  save_global_env("eval_lock_save", preserves);
-  restore_global_env("eval_lock", myenv);
-
-  b = getlock(thing, ltype);
-  log_activity(LA_LOCK, thing, unparse_boolexp(player, b, UB_DBREF));
-  result = eval_boolexp(player, b, thing);
-  restore_global_env("eval_lock_save", preserves);
-  return result;
 }
 
 /** Active a lock's failure attributes.

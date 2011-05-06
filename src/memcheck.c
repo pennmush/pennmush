@@ -79,6 +79,8 @@ add_check(const char *ref)
 
 /** Remove an allocation check.
  * \param ref type of allocation to remove.
+ * \param filename file del_check was called from
+ * \param line linenumber in filename where del_check was called
  */
 void
 del_check(const char *ref, const char *filename, int line)

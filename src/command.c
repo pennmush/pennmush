@@ -66,9 +66,10 @@ static enum command_load_state command_state = CMD_LOAD_BUILTIN;
 static StrTree switch_names;
 
 int run_hook(dbref player, dbref cause, struct hook_data *hook,
-             char *saveregs[], int save);
+             NEW_PE_INFO *pe_info);
 
-int run_hook_override(COMMAND_INFO *cmd, dbref player, const char *commandraw);
+int run_hook_override(COMMAND_INFO *cmd, dbref player, const char *commandraw,
+                      MQUE *from_queue);
 
 const char *CommandLock = "CommandLock";
 
@@ -139,7 +140,8 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_NOPARSE | CMD_T_NOGAGGED, 0, 0},
   {"@DOLIST", "NOTIFY DELIMIT", cmd_dolist,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE, 0, 0},
-  {"@DRAIN", "ALL ANY", cmd_notify_drain, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
+  {"@DRAIN", "ALL ANY", cmd_notify_drain,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
   {"@DUMP", "PARANOID DEBUG", cmd_dump, CMD_T_ANY, "WIZARD", 0},
 
   {"@EDIT", "FIRST CHECK", cmd_edit,
@@ -162,7 +164,7 @@ COMLIST commands[] = {
    cmd_flag,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
 
-  {"@FORCE", "NOEVAL INPLACE", cmd_force,
+  {"@FORCE", "NOEVAL INPLACE INLINE LOCALIZE CLEARREGS NOBREAK", cmd_force,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED,
    0, 0},
   {"@FUNCTION",
@@ -173,10 +175,12 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_NOGAGGED, 0, 0},
   {"@HALT", "ALL PID", cmd_halt, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@HIDE", "NO OFF YES ON", cmd_hide, CMD_T_ANY, 0, 0},
-  {"@HOOK", "LIST AFTER BEFORE IGNORE OVERRIDE INPLACE", cmd_hook,
+  {"@HOOK",
+   "LIST AFTER BEFORE IGNORE OVERRIDE INPLACE INLINE LOCALIZE CLEARREGS NOBREAK",
+   cmd_hook,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS,
    "WIZARD", "hook"},
-  {"@INCLUDE", NULL, cmd_include,
+  {"@INCLUDE", "LOCALIZE CLEARREGS NOBREAK", cmd_include,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@KICK", NULL, cmd_kick, CMD_T_ANY, "WIZARD", 0},
 
@@ -216,7 +220,8 @@ COMLIST commands[] = {
    | CMD_T_NOGUEST, 0, 0},
   {"@NEWPASSWORD", NULL, cmd_newpassword, CMD_T_ANY | CMD_T_EQSPLIT
    | CMD_T_RS_NOPARSE, "WIZARD", 0},
-  {"@NOTIFY", "ALL ANY", cmd_notify_drain, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
+  {"@NOTIFY", "ALL ANY SETQ", cmd_notify_drain,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
   {"@NSCEMIT", "NOEVAL NOISY SILENT SPOOF", cmd_cemit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@NSEMIT", "ROOM NOEVAL SILENT SPOOF", cmd_emit, CMD_T_ANY | CMD_T_NOGAGGED,
@@ -264,12 +269,16 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@REJECTMOTD", NULL, cmd_rejectmotd, CMD_T_ANY, "WIZARD", 0},
   {"@RESTART", "ALL", cmd_restart, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
+  {"@RETRY", NULL, cmd_retry,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE |
+   CMD_T_NOGAGGED, 0, 0},
   {"@RWALL", "NOEVAL EMIT", cmd_rwall, CMD_T_ANY, "WIZARD ROYALTY", 0},
   {"@SCAN", "ROOM SELF ZONE GLOBALS", cmd_scan,
    CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"@SEARCH", NULL, cmd_search,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE, 0, 0},
-  {"@SELECT", "NOTIFY REGEXP INPLACE", cmd_select,
+  {"@SELECT", "NOTIFY REGEXP INPLACE INLINE LOCALIZE CLEARREGS NOBREAK",
+   cmd_select,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE, 0, 0},
   {"@SET", NULL, cmd_set, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@SHUTDOWN", "PANIC REBOOT PARANOID", cmd_shutdown, CMD_T_ANY, "WIZARD", 0},
@@ -284,7 +293,9 @@ COMLIST commands[] = {
    CMD_T_ANY, 0, 0},
 
   {"@SWEEP", "CONNECTED HERE INVENTORY EXITS", cmd_sweep, CMD_T_ANY, 0, 0},
-  {"@SWITCH", "NOTIFY FIRST ALL REGEXP INPLACE", cmd_switch,
+  {"@SWITCH",
+   "NOTIFY FIRST ALL REGEXP INPLACE INLINE LOCALIZE CLEARREGS NOBREAK",
+   cmd_switch,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE |
    CMD_T_NOGAGGED, 0, 0},
   {"@SQUOTA", NULL, cmd_squota, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
@@ -351,7 +362,7 @@ COMLIST commands[] = {
   {"SEMIPOSE", "NOEVAL", cmd_semipose, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"SLAY", NULL, cmd_slay, CMD_T_ANY, 0, 0},
 
-  {"TEACH", NULL, cmd_teach, CMD_T_ANY | CMD_T_NOPARSE, 0, 0},
+  {"TEACH", "LIST", cmd_teach, CMD_T_ANY | CMD_T_NOPARSE, 0, 0},
   {"THINK", "NOEVAL", cmd_think, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
 
   {"UNFOLLOW", NULL, cmd_unfollow,
@@ -757,7 +768,7 @@ command_init_preconfig(void)
   hashinit(&htab_reserved_aliases, 16);
 
   /* Build initial switch table. */
-  st_init(&switch_names);
+  st_init(&switch_names, "SwitchNameTree");
   for (sv = switch_list; sv->name; sv++)
     st_insert(sv->name, &switch_names);
 
@@ -893,19 +904,23 @@ int rhs_present;
  * This function does the real work of parsing command arguments into
  * argument arrays. It is called separately to parse the left and
  * right sides of commands that are split at equal signs.
- * \param player the enactor.
- * \param cause the dbref causing the execution.
+ * \param executor the executor.
+ * \param enactor the enactor
+ * \param caller the caller
+ * \param pe_info the pe_info to use to evaluate the args
  * \param from pointer to address of where to parse arguments from.
  * \param to string to store parsed arguments into.
  * \param argv array of parsed arguments.
  * \param cmd pointer to command data.
  * \param right_side if true, parse on the right of the =. Otherwise, left.
  * \param forcenoparse if true, do no evaluation during parsing.
+ * \param pe_flags default pe_flags, used for debug/no_debug action lists
  */
 void
-command_argparse(dbref player, dbref cause, dbref caller, char **from, char *to,
-                 char *argv[], COMMAND_INFO *cmd, int right_side,
-                 int forcenoparse)
+command_argparse(dbref executor, dbref enactor, dbref caller,
+                 NEW_PE_INFO *pe_info, char **from, char *to, char *argv[],
+                 COMMAND_INFO *cmd, int right_side, int forcenoparse,
+                 int pe_flags)
 {
   int parse, split, args, i, done;
   char *t, *f;
@@ -918,7 +933,7 @@ command_argparse(dbref player, dbref cause, dbref caller, char **from, char *to,
   if (parse || forcenoparse)
     parse = PE_NOTHING;
   else
-    parse = PE_DEFAULT | PE_COMMAND_BRACES;
+    parse = PE_DEFAULT | PE_COMMAND_BRACES | pe_flags;
 
   if (right_side)
     split = PT_NOTHING;
@@ -954,9 +969,9 @@ command_argparse(dbref player, dbref cause, dbref caller, char **from, char *to,
     aold = t;
     while (*f == ' ')
       f++;
-    if (process_expression(to, &t, (const char **) &f, player, caller, cause,
-                           parse, (split | args),
-                           global_eval_context.pe_info)) {
+    if (process_expression
+        (to, &t, (const char **) &f, executor, caller, enactor, parse,
+         (split | args), pe_info)) {
       done = 1;
     }
     *t = '\0';
@@ -1044,14 +1059,12 @@ command_isattr(char *command)
  * Return NULL if the command was recognized and handled, the evaluated
  * text to match against $-commands otherwise.
  * \param player the enactor.
- * \param cause dbref that caused the command to be executed.
- * \param caller the caller (%@). Almost always the same as cause, differs for /inplace cmds
  * \param string the input to be parsed.
- * \param fromport if true, command was typed by a player at a socket.
+ * \param queue_entry the queue_entry the command is a part of
  * \return NULL if a command was handled, otherwise the evaluated input.
  */
 char *
-command_parse(dbref player, dbref cause, dbref caller, char *string, int fromport)
+command_parse(dbref player, char *string, MQUE *queue_entry)
 {
   char *command, *swtch, *ls, *rs, *switches;
   static char commandraw[BUFFER_LEN];
@@ -1070,6 +1083,8 @@ command_parse(dbref player, dbref cause, dbref caller, char *string, int frompor
   int noeval;
   int noevtoken = 0;
   char *retval;
+  NEW_PE_INFO *pe_info = queue_entry->pe_info;
+  int pe_flags = 0;
 
   rhs_present = 0;
 
@@ -1092,18 +1107,25 @@ command_parse(dbref player, dbref cause, dbref caller, char *string, int frompor
     noevtoken = 1;
     p = string + 1;
     string = p;
-    memmove(global_eval_context.ccom, (char *) global_eval_context.ccom + 1,
-            BUFFER_LEN - 1);
+    memmove(pe_info->cmd_raw, (char *) pe_info->cmd_raw + 1, BUFFER_LEN - 1);
   }
+
   if (*p == '[') {
     if ((cmd = command_find("WARN_ON_MISSING"))) {
       if (!(cmd->type & CMD_T_DISABLED)) {
-        cmd->func(cmd, player, cause, caller, sw, string, NULL, NULL, ls, lsa, rs, rsa);
+        cmd->func(cmd, player, queue_entry->enactor, queue_entry->caller, sw,
+                  string, NULL, NULL, ls, lsa, rs, rsa, queue_entry);
         command_parse_free_args;
         return NULL;
       }
     }
   }
+
+  if (queue_entry->queue_type & QUEUE_NODEBUG)
+    pe_flags = PE_NODEBUG;
+  else if (queue_entry->queue_type & QUEUE_DEBUG)
+    pe_flags = PE_DEBUG;
+
   switch (*p) {
   case '\0':
     /* Just in case. You never know */
@@ -1176,11 +1198,11 @@ command_parse(dbref player, dbref cause, dbref caller, char *string, int frompor
     c = command;
     while (*p == ' ')
       p++;
-    process_expression(command, &c, (const char **) &p, player, caller, cause,
-                       noevtoken ? PE_NOTHING :
-                       ((PE_DEFAULT & ~PE_FUNCTION_CHECK) |
-                        PE_COMMAND_BRACES), PT_SPACE,
-                       global_eval_context.pe_info);
+    process_expression(command, &c, (const char **) &p, player,
+                       queue_entry->caller, queue_entry->enactor,
+                       noevtoken ? PE_NOTHING
+                       : ((PE_DEFAULT & ~PE_FUNCTION_CHECK) | pe_flags |
+                          PE_COMMAND_BRACES), PT_SPACE, pe_info);
     *c = '\0';
     strcpy(commandraw, command);
     upcasestr(command);
@@ -1215,11 +1237,11 @@ command_parse(dbref player, dbref cause, dbref caller, char *string, int frompor
         safe_chr(' ', commandraw, &c2);
         p++;
       }
-      process_expression(commandraw, &c2, (const char **) &p, player, caller,
-                         cause, noevtoken ? PE_NOTHING :
-                         ((PE_DEFAULT & ~PE_FUNCTION_CHECK) |
-                          PE_COMMAND_BRACES), PT_DEFAULT,
-                         global_eval_context.pe_info);
+      process_expression(commandraw, &c2, (const char **) &p, player,
+                         queue_entry->caller, queue_entry->enactor,
+                         noevtoken ? PE_NOTHING
+                         : ((PE_DEFAULT & ~PE_FUNCTION_CHECK) | pe_flags |
+                            PE_COMMAND_BRACES), PT_DEFAULT, pe_info);
     }
     *c2 = '\0';
     command_parse_free_args;
@@ -1313,24 +1335,30 @@ command_parse(dbref player, dbref cause, dbref caller, char *string, int frompor
    * Treat like noeval, except for #2. Eval arg if no =.
    */
 
-  if ((cmd->func == command_atrset) && fromport) {
+  if ((cmd->func == command_atrset) && (queue_entry->queue_type & QUEUE_NOLIST)) {
     /* Special case: eqsplit, noeval of rhs only */
-    command_argparse(player, cause, caller, &p, ls, lsa, cmd, 0, 0);
-    command_argparse(player, cause, caller, &p, rs, rsa, cmd, 1, 1);
+    command_argparse(player, queue_entry->enactor, queue_entry->caller, pe_info,
+                     &p, ls, lsa, cmd, 0, 0, pe_flags);
+    command_argparse(player, queue_entry->enactor, queue_entry->caller, pe_info,
+                     &p, rs, rsa, cmd, 1, 1, pe_flags);
     SW_SET(sw, SWITCH_NOEVAL);  /* Needed for ATTRIB_SET */
   } else {
     noeval = SW_ISSET(sw, SWITCH_NOEVAL) || noevtoken;
     if (cmd->type & CMD_T_EQSPLIT) {
       char *savep = p;
-      command_argparse(player, cause, caller, &p, ls, lsa, cmd, 0, noeval);
+      command_argparse(player, queue_entry->enactor, queue_entry->caller,
+                       pe_info, &p, ls, lsa, cmd, 0, noeval, pe_flags);
       if (noeval && !noevtoken && *p) {
         /* oops, we have a right hand side, should have evaluated */
         p = savep;
-        command_argparse(player, cause, caller, &p, ls, lsa, cmd, 0, 0);
+        command_argparse(player, queue_entry->enactor, queue_entry->caller,
+                         pe_info, &p, ls, lsa, cmd, 0, 0, pe_flags);
       }
-      command_argparse(player, cause, caller, &p, rs, rsa, cmd, 1, noeval);
+      command_argparse(player, queue_entry->enactor, queue_entry->caller,
+                       pe_info, &p, rs, rsa, cmd, 1, noeval, pe_flags);
     } else {
-      command_argparse(player, cause, caller, &p, ls, lsa, cmd, 0, noeval);
+      command_argparse(player, queue_entry->enactor, queue_entry->caller,
+                       pe_info, &p, ls, lsa, cmd, 0, noeval, pe_flags);
     }
   }
 
@@ -1385,7 +1413,7 @@ command_parse(dbref player, dbref cause, dbref caller, char *string, int frompor
                       PE_COMMAND_BRACES), PT_DEFAULT, NULL);
 #endif
   *c2 = '\0';
-  mush_strncpy(global_eval_context.ucom, commandraw, BUFFER_LEN);
+  mush_strncpy(queue_entry->pe_info->cmd_evaled, commandraw, BUFFER_LEN);
 
   retval = NULL;
   if (cmd->func == NULL) {
@@ -1395,8 +1423,8 @@ command_parse(dbref player, dbref cause, dbref caller, char *string, int frompor
   } else {
     /* If we have a hook/ignore that returns false, we don't do the command */
     if (run_command
-        (cmd, player, cause, commandraw, sw, switch_err, string, swp, ap, ls,
-         lsa, rs, rsa)) {
+        (cmd, player, queue_entry->enactor, commandraw, sw, switch_err, string,
+         swp, ap, ls, lsa, rs, rsa, queue_entry)) {
       retval = NULL;
     } else {
       retval = commandraw;
@@ -1410,50 +1438,56 @@ command_parse(dbref player, dbref cause, dbref caller, char *string, int frompor
 #undef command_parse_free_args
 
 int
-run_command(COMMAND_INFO *cmd, dbref player, dbref cause,
+run_command(COMMAND_INFO *cmd, dbref player, dbref enactor,
             const char *commandraw, switch_mask sw, char switch_err[BUFFER_LEN],
             const char *string, char *swp, char *ap, char *ls,
-            char *lsa[MAX_ARG], char *rs, char *rsa[MAX_ARG])
+            char *lsa[MAX_ARG], char *rs, char *rsa[MAX_ARG], MQUE *queue_entry)
 {
-
-  char *saveregs[NUMQ];
+  NEW_PE_INFO *pe_info;
 
   if (!cmd)
     return 0;
 
-  init_global_regs(saveregs);
+  /* Create a pe_info for the hooks, which share q-registers */
+  pe_info = make_pe_info("pe_info-run_command");
+  strcpy(pe_info->cmd_evaled, commandraw);
+  strcpy(pe_info->cmd_raw, string);
 
-  if (!run_hook(player, cause, &cmd->hooks.ignore, saveregs, 1)) {
-    free_global_regs("hook.regs", saveregs);
+
+  if (!run_hook(player, enactor, &cmd->hooks.ignore, pe_info)) {
+    free_pe_info(pe_info);
     return 0;
   }
 
   /* If we have a hook/override, we use that instead */
-  if (!run_hook_override(cmd, player, commandraw) &&
+  if (!run_hook_override(cmd, player, commandraw, queue_entry) &&
       !(!strcmp(cmd->name, "HUH_COMMAND") &&
-        run_hook_override(cmd, player, tprintf("HUH_COMMAND %s", ls)))) {
+        run_hook_override(cmd, player, tprintf("HUH_COMMAND %s", ls),
+                          queue_entry))) {
     /* Otherwise, we do hook/before, the command, and hook/after */
     /* But first, let's see if we had an invalid switch */
     if (switch_err && *switch_err) {
       notify(player, switch_err);
+      free_pe_info(pe_info);
       return 1;
     }
-    run_hook(player, cause, &cmd->hooks.before, saveregs, 1);
-    cmd->func(cmd, player, cause, cause, sw, string, swp, ap, ls, lsa, rs, rsa);
-    run_hook(player, cause, &cmd->hooks.after, saveregs, 0);
+    run_hook(player, enactor, &cmd->hooks.before, pe_info);
+    cmd->func(cmd, player, enactor, enactor, sw, string, swp, ap, ls, lsa, rs,
+              rsa, queue_entry);
+    run_hook(player, enactor, &cmd->hooks.after, pe_info);
   }
   /* Either way, we might log */
   if (cmd->type & CMD_T_LOGARGS)
     if (cmd->func == cmd_password || cmd->func == cmd_newpassword
         || cmd->func == cmd_pcreate)
-      do_log(LT_CMD, player, cause, "%s %s=***", cmd->name,
+      do_log(LT_CMD, player, enactor, "%s %s=***", cmd->name,
              (cmd->func == cmd_password ? "***" : ls));
     else
-      do_log(LT_CMD, player, cause, "%s", commandraw);
+      do_log(LT_CMD, player, enactor, "%s", commandraw);
   else if (cmd->type & CMD_T_LOGNAME)
-    do_log(LT_CMD, player, cause, "%s", cmd->name);
+    do_log(LT_CMD, player, enactor, "%s", cmd->name);
 
-  free_global_regs("hook.regs", saveregs);
+  free_pe_info(pe_info);
   return 1;
 
 }
@@ -1462,15 +1496,17 @@ run_command(COMMAND_INFO *cmd, dbref player, dbref cause,
  * \param player the enactor.
  * \param cause dbref that caused the command to be executed.
  * \param string the input given.
+ * \param queue_entry the queue entry the invalid cmd was run from
  */
 void
-generic_command_failure(dbref player, dbref cause, char *string)
+generic_command_failure(dbref player, dbref cause, char *string,
+                        MQUE *queue_entry)
 {
   COMMAND_INFO *cmd;
 
   if ((cmd = command_find("HUH_COMMAND")) && !(cmd->type & CMD_T_DISABLED)) {
     run_command(cmd, player, cause, "HUH_COMMAND", NULL, NULL, string, NULL,
-                NULL, string, NULL, NULL, NULL);
+                NULL, string, NULL, NULL, NULL, queue_entry);
   }
 }
 
@@ -1497,8 +1533,9 @@ generic_command_failure(dbref player, dbref cause, char *string)
  *   logname    log just name when command is run
  * \endverbatim
  * Return 1 on success, 0 on failure.
- * \param name name of command to restrict.
- * \param restriction space-separated string of restrictions
+ * \param player player attempting to restrict command, or NOTHING for restrictions set when cmds are loaded
+ * \param command the command being restricted
+ * \param xrestriction either a space-separated string of restrictions, or an \@lock-style restriction
  * \retval 1 successfully restricted command.
  * \retval 0 failure (unable to find command name).
  */
@@ -1683,11 +1720,12 @@ COMMAND(cmd_unimplemented)
   if (strcmp(cmd->name, "UNIMPLEMENTED_COMMAND") != 0 &&
       (cmd = command_find("UNIMPLEMENTED_COMMAND")) &&
       !(cmd->type & CMD_T_DISABLED)) {
-    run_command(cmd, player, cause, "UNIMPLEMENTED_COMMAND", sw, NULL, raw,
-                NULL, args_raw, arg_left, args_left, arg_right, args_right);
+    run_command(cmd, executor, enactor, "UNIMPLEMENTED_COMMAND", sw, NULL, raw,
+                NULL, args_raw, arg_left, args_left, arg_right, args_right,
+                queue_entry);
   } else {
     /* Either we were already in UNIMPLEMENTED_COMMAND, or we couldn't find it */
-    notify(player, T("This command has not been implemented."));
+    notify(executor, T("This command has not been implemented."));
   }
 }
 
@@ -1879,7 +1917,7 @@ COMMAND(cmd_command)
   char *bp = buff;
 
   if (!arg_left[0]) {
-    notify(player, T("You must specify a command."));
+    notify(executor, T("You must specify a command."));
     return;
   }
   if (SW_ISSET(sw, SWITCH_ADD)) {
@@ -1890,42 +1928,42 @@ COMMAND(cmd_command)
     flags |= SW_ISSET(sw, SWITCH_LSARGS) ? CMD_T_LS_ARGS : 0;
     flags |= SW_ISSET(sw, SWITCH_EQSPLIT) ? CMD_T_EQSPLIT : 0;
     if (SW_ISSET(sw, SWITCH_NOEVAL))
-      notify(player,
+      notify(executor,
              T
              ("WARNING: /NOEVAL no longer creates a Noparse command.\n         Use /NOPARSE if that's what you meant."));
-    do_command_add(player, arg_left, flags);
+    do_command_add(executor, arg_left, flags);
     return;
   }
   if (SW_ISSET(sw, SWITCH_ALIAS)) {
-    if (Wizard(player)) {
+    if (Wizard(executor)) {
       if (!ok_command_name(upcasestr(arg_right))) {
-        notify(player, T("I can't alias a command to that!"));
+        notify(executor, T("I can't alias a command to that!"));
       } else if (!alias_command(arg_left, arg_right)) {
-        notify(player, T("Unable to set alias."));
+        notify(executor, T("Unable to set alias."));
       } else {
         if (!SW_ISSET(sw, SWITCH_QUIET))
-          notify(player, T("Alias set."));
+          notify(executor, T("Alias set."));
       }
     } else {
-      notify(player, T("Permission denied."));
+      notify(executor, T("Permission denied."));
     }
     return;
   }
   if (SW_ISSET(sw, SWITCH_CLONE)) {
-    do_command_clone(player, arg_left, arg_right);
+    do_command_clone(executor, arg_left, arg_right);
     return;
   }
 
   if (SW_ISSET(sw, SWITCH_DELETE)) {
-    do_command_delete(player, arg_left);
+    do_command_delete(executor, arg_left);
     return;
   }
   command = command_find(arg_left);
   if (!command) {
-    notify(player, T("No such command."));
+    notify(executor, T("No such command."));
     return;
   }
-  if (Wizard(player)) {
+  if (Wizard(executor)) {
     if (SW_ISSET(sw, SWITCH_ON) || SW_ISSET(sw, SWITCH_ENABLE))
       command->type &= ~CMD_T_DISABLED;
     else if (SW_ISSET(sw, SWITCH_OFF) || SW_ISSET(sw, SWITCH_DISABLE))
@@ -1933,21 +1971,21 @@ COMMAND(cmd_command)
 
     if (SW_ISSET(sw, SWITCH_RESTRICT)) {
       if (!arg_right || !arg_right[0]) {
-        notify(player, T("How do you want to restrict the command?"));
+        notify(executor, T("How do you want to restrict the command?"));
         return;
       }
 
-      if (!restrict_command(player, command, arg_right))
-        notify(player, T("Restrict attempt failed."));
+      if (!restrict_command(executor, command, arg_right))
+        notify(executor, T("Restrict attempt failed."));
     }
 
     if ((command->func == cmd_command) && (command->type & CMD_T_DISABLED)) {
-      notify(player, T("@command is ALWAYS enabled."));
+      notify(executor, T("@command is ALWAYS enabled."));
       command->type &= ~CMD_T_DISABLED;
     }
   }
   if (!SW_ISSET(sw, SWITCH_QUIET)) {
-    notify_format(player,
+    notify_format(executor,
                   T("Name       : %s (%s)"), command->name,
                   (command->type & CMD_T_DISABLED) ? "Disabled" : "Enabled");
     buff[0] = '\0';
@@ -1961,19 +1999,19 @@ COMMAND(cmd_command)
     else if (command->type & CMD_T_LOGNAME)
       strccat(buff, &bp, "LogName");
     *bp = '\0';
-    notify_format(player, T("Flags      : %s"), buff);
+    notify_format(executor, T("Flags      : %s"), buff);
     buff[0] = '\0';
-    notify_format(player, T("Lock       : %s"),
-                  unparse_boolexp(player, command->cmdlock, UB_DBREF));
+    notify_format(executor, T("Lock       : %s"),
+                  unparse_boolexp(executor, command->cmdlock, UB_DBREF));
     if (command->sw.mask) {
       bp = buff;
       for (sw_val = dyn_switch_list; sw_val->name; sw_val++)
         if (SW_ISSET(command->sw.mask, sw_val->value))
           strccat(buff, &bp, sw_val->name);
       *bp = '\0';
-      notify_format(player, T("Switches   : %s"), buff);
+      notify_format(executor, T("Switches   : %s"), buff);
     } else
-      notify(player, T("Switches   :"));
+      notify(executor, T("Switches   :"));
     buff[0] = '\0';
     bp = buff;
     if (command->type & CMD_T_LS_ARGS) {
@@ -1986,7 +2024,7 @@ COMMAND(cmd_command)
       strccat(buff, &bp, "Noparse");
     if (command->type & CMD_T_EQSPLIT) {
       *bp = '\0';
-      notify_format(player, T("Leftside   : %s"), buff);
+      notify_format(executor, T("Leftside   : %s"), buff);
       buff[0] = '\0';
       bp = buff;
       if (command->type & CMD_T_RS_ARGS) {
@@ -1998,12 +2036,12 @@ COMMAND(cmd_command)
       if (command->type & CMD_T_RS_NOPARSE)
         strccat(buff, &bp, "Noparse");
       *bp = '\0';
-      notify_format(player, T("Rightside  : %s"), buff);
+      notify_format(executor, T("Rightside  : %s"), buff);
     } else {
       *bp = '\0';
-      notify_format(player, T("Arguments  : %s"), buff);
+      notify_format(executor, T("Arguments  : %s"), buff);
     }
-    do_hook_list(player, arg_left);
+    do_hook_list(executor, arg_left);
   }
 }
 
@@ -2011,7 +2049,7 @@ COMMAND(cmd_command)
  * This function sends a player the list of commands.
  * \param player the enactor.
  * \param lc if true, list is in lowercase rather than uppercase.
- * \param type 3 = show all, 2 = show only local @commands, 1 = show only built-in @commands
+ * \param type 3 = show all, 2 = show only local \@commands, 1 = show only built-in \@commands
  */
 void
 do_list_commands(dbref player, int lc, int type)
@@ -2022,7 +2060,7 @@ do_list_commands(dbref player, int lc, int type)
 
 /** Return a list of defined commands.
  * This function returns a space-separated list of commands as a string.
- * \param type 3 = show all, 2 = show only local @commands, 1 = show only built-in @commands
+ * \param type 3 = show all, 2 = show only local \@commands, 1 = show only built-in \@commands
  */
 char *
 list_commands(int type)
@@ -2071,7 +2109,7 @@ command_check(dbref player, COMMAND_INFO *cmd, int noisy)
   if (cmd->type & CMD_T_DISABLED)
     return 0;
 
-  if (eval_boolexp(player, cmd->cmdlock, player)) {
+  if (eval_boolexp(player, cmd->cmdlock, player, NULL)) {
     return 1;
   } else {
     if (noisy) {
@@ -2134,20 +2172,18 @@ has_hook(struct hook_data *hook)
  * \param player the enactor.
  * \param cause dbref that caused command to execute.
  * \param hook pointer to the hook.
- * \param saveregs array to store a copy of the final q-registers.
- * \param save if true, use saveregs to store a ending q-registers.
+ * \param pe_info pe_info to evaluate hook with
  * \retval 1 Hook doesn't exist, or evaluates to a non-false value
  * \retval 0 Hook exists and evaluates to a false value
  */
 int
-run_hook(dbref player, dbref cause, struct hook_data *hook, char *saveregs[],
-         int save)
+run_hook(dbref player, dbref cause, struct hook_data *hook,
+         NEW_PE_INFO *pe_info)
 {
   ATTR *atr;
   char *code;
   const char *cp;
   char buff[BUFFER_LEN], *bp;
-  char *origregs[NUMQ];
 
   if (!has_hook(hook))
     return 1;
@@ -2162,26 +2198,27 @@ run_hook(dbref player, dbref cause, struct hook_data *hook, char *saveregs[],
     return 1;
   add_check("hook.code");
 
-  save_global_regs("run_hook", origregs);
-  restore_global_regs("hook.regs", saveregs);
-
   cp = code;
   bp = buff;
 
   process_expression(buff, &bp, &cp, hook->obj, cause, player, PE_DEFAULT,
-                     PT_DEFAULT, NULL);
+                     PT_DEFAULT, pe_info);
   *bp = '\0';
-
-  if (save)
-    save_global_regs("hook.regs", saveregs);
-  restore_global_regs("run_hook", origregs);
 
   mush_free(code, "hook.code");
   return parse_boolean(buff);
 }
 
+/** Run the \@hook/override for a command, if set
+ * \param cmd the command with the hook
+ * \param player the player running the command
+ * \param commandraw the evaluated command string to match against the hook
+ * \param from_queue the queue entry the command is being executed in
+ * \return 1 if the hook has been run successfully, 0 otherwise
+ */
 int
-run_hook_override(COMMAND_INFO *cmd, dbref player, const char *commandraw)
+run_hook_override(COMMAND_INFO *cmd, dbref player, const char *commandraw,
+                  MQUE *from_queue)
 {
 
   if (!has_hook(&cmd->hooks.override))
@@ -2190,10 +2227,11 @@ run_hook_override(COMMAND_INFO *cmd, dbref player, const char *commandraw)
   if (cmd->hooks.override.attrname) {
     return one_comm_match(cmd->hooks.override.obj, player,
                           cmd->hooks.override.attrname, commandraw,
-                          cmd->hooks.override.inplace);
+                          from_queue, cmd->hooks.override.inplace);
   } else {
     return atr_comm_match(cmd->hooks.override.obj, player, '$', ':', commandraw,
-                          0, 1, NULL, NULL, NULL, cmd->hooks.override.inplace);
+                          0, 1, NULL, NULL, 0, NULL,
+                          from_queue, cmd->hooks.override.inplace);
   }
 }
 
@@ -2296,11 +2334,11 @@ cnf_hook_command(char *command, char *opts)
  * \param obj name of object containing the hook attribute.
  * \param attrname of hook attribute on obj.
  * \param flag type of hook
- * \param inplace If override hook, whether to run it inplace.
+ * \param queue_type If override hook, QUEUE_* flags telling whether/how to run it inplace
  */
 void
 do_hook(dbref player, char *command, char *obj, char *attrname,
-        enum hook_type flag, int inplace)
+        enum hook_type flag, int queue_type)
 {
   COMMAND_INFO *cmd;
   struct hook_data *h;
@@ -2356,7 +2394,7 @@ do_hook(dbref player, char *command, char *obj, char *attrname,
     } else {
       h->attrname = mush_strdup(strupper(attrname), "hook.attr");
     }
-    h->inplace = inplace;
+    h->inplace = queue_type;
     notify_format(player, T("Hook set for %s"), cmd->name);
   }
 }
@@ -2415,6 +2453,25 @@ do_hook_list(dbref player, char *command)
       return;
     }
     if (Wizard(player) || has_power_by_name(player, "HOOK", NOTYPE)) {
+      char inplace[BUFFER_LEN], *bp;
+      bp = inplace;
+      if (cmd->hooks.override.inplace & QUEUE_INPLACE) {
+        if ((cmd->hooks.
+             override.inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
+            (QUEUE_RECURSE | QUEUE_CLEAR_QREG))
+          safe_str("/inplace", inplace, &bp);
+        else {
+          safe_str("/inline", inplace, &bp);
+          if (cmd->hooks.override.inplace & QUEUE_NO_BREAKS)
+            safe_str("/nobreak", inplace, &bp);
+          if (cmd->hooks.override.inplace & QUEUE_PRESERVE_QREG)
+            safe_str("/localize", inplace, &bp);
+          if (cmd->hooks.override.inplace & QUEUE_CLEAR_QREG)
+            safe_str("/clearregs", inplace, &bp);
+        }
+      }
+      *bp = '\0';
+
       if (GoodObject(cmd->hooks.before.obj))
         notify_format(player, "@hook/before: #%d/%s",
                       cmd->hooks.before.obj, cmd->hooks.before.attrname);
@@ -2426,7 +2483,7 @@ do_hook_list(dbref player, char *command)
                       cmd->hooks.ignore.obj, cmd->hooks.ignore.attrname);
       if (GoodObject(cmd->hooks.override.obj))
         notify_format(player, "@hook/override%s: #%d/%s",
-                      cmd->hooks.override.inplace ? "/inplace" : "",
+                      inplace,
                       cmd->hooks.override.obj, cmd->hooks.override.attrname);
     }
   }

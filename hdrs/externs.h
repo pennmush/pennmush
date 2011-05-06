@@ -10,6 +10,7 @@
 #define __EXTERNS_H
 /* Get the time_t definition that we use in prototypes here */
 #include <time.h>
+#include <stdarg.h>
 #ifdef I_LIBINTL
 #include <libintl.h>
 #endif
@@ -71,7 +72,7 @@ dbref visible_short_page(dbref player, const char *match);
 void do_doing(dbref player, const char *message);
 
 /* the following symbols are provided by game.c */
-void process_command(dbref player, char *command, dbref cause, dbref caller, int from_port);
+void process_command(dbref executor, char *command, MQUE *queue_entry);
 int init_game_dbs(void);
 void init_game_postdb(const char *conf);
 void init_game_config(const char *conf);
@@ -79,7 +80,7 @@ void dump_database(void);
 void NORETURN mush_panic(const char *message);
 void NORETURN mush_panicf(const char *fmt, ...)
   __attribute__ ((__format__(__printf__, 1, 2)));
-char *scan_list(dbref player, char *command);
+char *scan_list(dbref player, char *command, int flag);
 
 
 #ifdef WIN32
@@ -135,11 +136,11 @@ void sql_shutdown(void);
 #define NA_INTER_HEAR   0x0200  /**< Message is auditory in nature */
 #define NA_INTER_SEE    0x0400  /**< Message is visual in nature */
 #define NA_INTER_PRESENCE  0x0800       /**< Message is about presence */
-#define NA_NOSPOOF        0x1000        /**< Message comes via a NO_SPOOF object. */
+#define NA_NOSPOOF        0x1000        /**< Message comes via a NOSPOOF object. */
 #define NA_PARANOID       0x2000        /**< Message comes via a PARANOID object. */
-#define NA_NOPREFIX       0x4000        /**< Don't use @prefix when forwarding */
-#define NA_SPOOF        0x8000  /**< @ns* message, overrides NOSPOOF */
-#define NA_INTER_LOCK  0x10000  /**< Message subject to @lock/interact even if not otherwise marked */
+#define NA_NOPREFIX       0x4000        /**< Don't use \@prefix when forwarding */
+#define NA_SPOOF        0x8000  /**< \@ns* message, overrides NOSPOOF */
+#define NA_INTER_LOCK  0x10000  /**< Message subject to \@lock/interact even if not otherwise marked */
 #define NA_INTERACTION  (NA_INTER_HEAR|NA_INTER_SEE|NA_INTER_PRESENCE|NA_INTER_LOCK)    /**< Message follows interaction rules */
 #define NA_PROMPT       0x20000  /**< Message is a prompt, add GOAHEAD */
 
@@ -199,7 +200,8 @@ void notify_format(dbref player, const char *fmt, ...)
   __attribute__ ((__format__(__printf__, 2, 3)));
 
 /* From command.c */
-void generic_command_failure(dbref player, dbref cause, char *string);
+void generic_command_failure(dbref player, dbref cause, char *string,
+                             MQUE *queue_entry);
 
 /* From compress.c */
 /* Define this to get some statistics on the attribute compression
@@ -223,36 +225,37 @@ extern char ucbuff[];
 #endif
 
 /* From cque.c */
-#define QUEUE_PLAYER 0
-#define QUEUE_OBJECT 1
-/* INPLACE and RECURSE are identical except that RECURSE does not
- * propagate @breaks upward. */
-#define QUEUE_INPLACE 2
-#define QUEUE_RECURSE 3
-struct bque;
+
+/* Queue types/flags */
+#define QUEUE_DEFAULT          0x0000   /* select QUEUE_PLAYER or QUEUE_OBJECT based on enactor's Type() */
+#define QUEUE_PLAYER           0x0001   /* command queued because of a player in-game */
+#define QUEUE_OBJECT           0x0002   /* command queued because of a non-player in-game */
+#define QUEUE_SOCKET           0x0004   /* command executed directly from a player's client */
+#define QUEUE_INPLACE          0x0008   /* inplace queue entry */
+#define QUEUE_NO_BREAKS        0x0010   /* Don't propagate @breaks from this inplace queue */
+#define QUEUE_PRESERVE_QREG    0x0020   /* Preserve/restore q-registers before/after running this inplace queue */
+#define QUEUE_CLEAR_QREG       0x0040   /* Clear q-registers before running this inplace queue */
+#define QUEUE_PROPAGATE_QREG   0x0080   /* At the end of this inplace queue entry, copy our q-registers into the parent queue entry */
+#define QUEUE_RESTORE_ENV      0x0100   /* At the end of this inplace queue entry, free pe_info->env and restore from saved_env */
+#define QUEUE_NOLIST           0x0200   /* Don't separate commands at semicolons, and don't parse rhs in &attr setting */
+#define QUEUE_BREAK            0x0400   /* set by @break, stops further processing of queue entry */
+#define QUEUE_RETRY            0x0800   /* Set by @retry, restart current queue entry from beginning, without recalling do_entry */
+#define QUEUE_DEBUG            0x1000   /* Show DEBUG info for queue (queued from a DEBUG attribute) */
+#define QUEUE_NODEBUG          0x2000   /* Don't show DEBUG info for queue (queued from a NO_DEBUG attribute) */
+
+#define QUEUE_RECURSE (QUEUE_INPLACE | QUEUE_NO_BREAKS | QUEUE_PRESERVE_QREG)
+
+
+/* Used when generating a new pe_info from an existing pe_info. Used by pe_info_from(). */
+#define PE_INFO_DEFAULT     0x000       /* create a new, empty pe_info */
+#define PE_INFO_SHARE       0x001       /* Share the existing pe_info */
+#define PE_INFO_CLONE       0x002       /* Clone entire pe_info */
+#define PE_INFO_COPY_ENV    0x004       /* Copy env-vars (%0-%9) from the parent */
+#define PE_INFO_COPY_QREG   0x008       /* Copy q-registers (%q*) from the parent pe_info */
+
+
 struct _ansi_string;
 struct real_pcre;
-struct eval_context {
-  char *wenv[10];                 /**< working environment (%0-%9) */
-  char renv[NUMQ][BUFFER_LEN];    /**< working registers q0-q9,qa-qz */
-  char *wnxt[10];                 /**< environment to shove into the queue */
-  char *rnxt[NUMQ];               /**< registers to shove into the queue */
-  int process_command_port;   /**< port number that a command came from */
-  dbref cplr;                     /**< initiating player */
-  char ccom[BUFFER_LEN];          /**< raw command */
-  char ucom[BUFFER_LEN];      /**< evaluated command */
-  int break_called;           /**< Has the break command been called? */
-  char break_replace[BUFFER_LEN];  /**< What to replace the break with */
-  struct bque *inplace_queue;          /**< Inplace (include, @switch/inplace) commands */
-  struct real_pcre *re_code;              /**< The compiled re */
-  int re_subpatterns;         /**< The number of re subpatterns */
-  int *re_offsets;            /**< The offsets for the subpatterns */
-  struct _ansi_string *re_from;             /**< The positions of the subpatterns */
-  PE_Info *pe_info;           /**< The PE_Info to evaluate the queue with */
-};
-
-typedef struct eval_context EVAL_CONTEXT;
-extern EVAL_CONTEXT global_eval_context;
 
 void do_second(void);
 int do_top(int ncom);
@@ -260,35 +263,36 @@ void do_halt(dbref owner, const char *ncom, dbref victim);
 #define SYSEVENT -1
 bool queue_event(dbref enactor, const char *event, const char *fmt, ...)
   __attribute__ ((__format__(__printf__, 3, 4)));
-void insert_que(dbref player, const char *command, dbref cause, dbref caller,
-                PE_Info *pe_info, char **env, char **rval, int quetype);
-void parse_que(dbref player, const char *command, dbref cause,
-               PE_Info *pe_info);
+void parse_que_attr(dbref executor, dbref enactor, char *actionlist,
+                    PE_REGS *pe_regs, ATTR *a);
+void insert_que(MQUE *queue_entry, MQUE *parent_queue);
+
+void new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
+                              char *actionlist, MQUE *queue_entry,
+                              int flags, int queue_type, PE_REGS *pe_regs,
+                              char *fromattr);
+#define parse_que(executor,enactor,actionlist,regs) new_queue_actionlist(executor,enactor,enactor,actionlist,NULL,PE_INFO_DEFAULT,QUEUE_DEFAULT,regs)
+#define new_queue_actionlist(executor,enactor,caller,actionlist,parent_queue,flags,queue_type,regs) \
+        new_queue_actionlist_int(executor,enactor,caller,actionlist,parent_queue,flags,queue_type,regs,NULL)
+
 int queue_attribute_base(dbref executor, const char *atrname, dbref enactor,
-                         int noparent);
+                         int noparent, PE_REGS *pe_regs);
 ATTR *queue_attribute_getatr(dbref executor, const char *atrname, int noparent);
-int queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor);
-void inplace_queue_actionlist(dbref executor, dbref cause, dbref caller,
-                              const char *command, char **argv, int quetype);
-int queue_include_attribute(dbref thing, const char *atrname,
-                            dbref executor, dbref cause, dbref caller, char **args);
-void run_user_input(dbref player, char *input);
+int queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor,
+                           PE_REGS *pe_regs);
+int queue_include_attribute(dbref thing, const char *atrname, dbref executor,
+                            dbref cause, dbref caller, char **args, int recurse,
+                            MQUE *parent_queue);
+void run_user_input(dbref player, int port, char *input);
 
 /** Queue the code in an attribute, including parent objects */
-#define queue_attribute(a,b,c) queue_attribute_base(a,b,c,0)
+#define queue_attribute(a,b,c) queue_attribute_base(a,b,c,0,NULL)
 /** Queue the code in an attribute, excluding parent objects */
-#define queue_attribute_noparent(a,b,c) queue_attribute_base(a,b,c,1)
+#define queue_attribute_noparent(a,b,c) queue_attribute_base(a,b,c,1,NULL)
 void dequeue_semaphores(dbref thing, char const *aname, int count,
                         int all, int drain);
 void shutdown_queues(void);
 
-/* Regexp saving helpers */
-struct re_save {
-  struct real_pcre *re_code;              /**< The compiled re */
-  int re_subpatterns;         /**< The number of re subpatterns */
-  int *re_offsets;            /**< The offsets for the subpatterns */
-  struct _ansi_string *re_from;             /**< The positions of the subpatterns */
-};
 
 /* From create.c */
 dbref do_dig(dbref player, const char *name, char **argv, int tport);
@@ -315,6 +319,7 @@ int parse_chat(dbref player, char *command);
 void fork_and_dump(int forking);
 void reserve_fd(void);
 void release_fd(void);
+void do_scan(dbref player, char *command, int flag);
 
 
 /* From look.c */
@@ -329,6 +334,8 @@ char *decompose_str(char *what);
 
 /* From memcheck.c */
 void add_check(const char *ref);
+#define ADD_CHECK(x) add_check(x)
+#define DEL_CHECK(x) del_check(x, __FILE__, __LINE__)
 void del_check(const char *ref, const char *filename, int line);
 void list_mem_check(dbref player);
 void log_mem_check(void);
@@ -407,7 +414,7 @@ int did_it_interact(dbref player, dbref thing, const char *what,
                     const char *odef, const char *awhat, dbref loc, int flags);
 int real_did_it(dbref player, dbref thing, const char *what,
                 const char *def, const char *owhat, const char *odef,
-                const char *awhat, dbref loc, char *myenv[10], int flags);
+                const char *awhat, dbref loc, PE_REGS *pe_regs, int flags);
 int can_see(dbref player, dbref thing, int can_see_loc);
 int controls(dbref who, dbref what);
 int can_pay_fees(dbref who, int pennies);
@@ -446,7 +453,8 @@ void s_Pennies(dbref thing, int amount);
 
 /* From set.c */
 void chown_object(dbref player, dbref thing, dbref newowner, int preserve);
-void do_include(dbref player, dbref cause, char *object, char **argv);
+void do_include(dbref player, dbref cause, char *object, char **argv,
+                int recurse, MQUE *parent_queue);
 /* From speech.c */
 int okay_pemit(dbref player, dbref target, int dofails, const char *def);
 int vmessageformat(dbref player, const char *attribute,
@@ -486,7 +494,7 @@ unsigned char *u_strncpy
 char *
 mush_strndup(const char *src, size_t len, const char *check)
   __attribute_malloc__;
-
+    int my_vsnprintf(char *, size_t, const char *, va_list);
 
 /** Unsigned char strdup. Why is this a macro when the others functions? */
 #define u_strdup(x) (unsigned char *)strdup((const char *) x)
@@ -602,10 +610,15 @@ mush_strndup(const char *src, size_t len, const char *check)
     typedef struct _ufun_attrib {
       dbref thing;
       char contents[BUFFER_LEN];
+      char attrname[ATTRIBUTE_NAME_LIMIT + 1];
       int pe_flags;
       char *errmess;
       int ufun_flags;
     } ufun_attrib;
+
+    dbref next_parent(dbref thing, dbref current, int *parent_count,
+                      int *use_ancestor);
+
 /* Only 'attr', not 'obj/attr' */
 #define UFUN_NONE 0
 /* Does this string accept obj/attr? */
@@ -621,11 +634,10 @@ mush_strndup(const char *src, size_t len, const char *check)
 #define UFUN_DEFAULT (UFUN_OBJECT | UFUN_LAMBDA)
     bool fetch_ufun_attrib(const char *attrstring, dbref executor,
                            ufun_attrib * ufun, int flags);
-    bool call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc,
-                   char *ret, dbref executor, dbref enactor, PE_Info *pe_info);
-    bool call_attrib(dbref thing, const char *attrname,
-                     const char *wenv_args[], int wenv_argc, char *ret,
-                     dbref enactor, PE_Info *pe_info);
+    bool call_ufun(ufun_attrib * ufun, char *ret, dbref executor,
+                   dbref enactor, NEW_PE_INFO *pe_info, PE_REGS *pe_regs);
+    bool call_attrib(dbref thing, const char *attrname, char *ret,
+                     dbref enactor, NEW_PE_INFO *pe_info, PE_REGS *pe_regs);
     bool member(dbref thing, dbref list);
     bool recursive_member(dbref disallow, dbref from, int count);
     dbref remove_first(dbref first, dbref what);
@@ -663,7 +675,8 @@ mush_strndup(const char *src, size_t len, const char *check)
     bool wild_match_test(const char *restrict s, const char *restrict d,
                          bool cs, int *matches, int nmatches);
     bool local_wild_match_case(const char *restrict s,
-                               const char *restrict d, bool cs);
+                               const char *restrict d, bool cs,
+                               PE_REGS *pe_regs);
     int wildcard_count(char *s, bool unescape);
     /** Return 1 if s contains unescaped wildcards, 0 if not */
 #define wildcard(s) (wildcard_count(s, 0) == -1)
@@ -671,17 +684,19 @@ mush_strndup(const char *src, size_t len, const char *check)
                         const char *restrict dstr, bool cs);
     bool wild_match_case_r(const char *restrict s,
                            const char *restrict d, bool cs,
-                           char **ary, int max, char *ata, int len);
+                           char **ary, int max, char *ata, int len,
+                           PE_REGS *pe_regs);
     bool quick_wild(const char *restrict tsr, const char *restrict dstr);
     bool atr_wild(const char *restrict tstr, const char *restrict dstr);
 
     bool regexp_match_case_r(const char *restrict s, const char *restrict d,
-                             bool cs, char **, size_t, char *restrict, ssize_t);
+                             bool cs, char **, size_t, char *restrict, ssize_t,
+                             PE_REGS *pe_regs);
     bool quick_regexp_match(const char *restrict s,
                             const char *restrict d, bool cs);
     bool qcomp_regexp_match(const pcre * re, const char *s);
 /** Default (case-insensitive) local wildcard match */
-#define local_wild_match(s,d) local_wild_match_case(s, d, 0)
+#define local_wild_match(s,d,p) local_wild_match_case(s, d, 0, p)
 
 /** Types of lists */
 
@@ -704,23 +719,6 @@ mush_strndup(const char *src, size_t len, const char *check)
 /* From function.c and other fun*.c */
     char *strip_braces(char const *line);
 
-    void save_regexp_context(struct re_save *);
-    void restore_regexp_context(struct re_save *);
-    void save_global_regs(const char *funcname, char *preserve[]);
-    void restore_global_regs(const char *funcname, char *preserve[]);
-    void save_partial_global_reg(const char *funcname, char
-                                 *preserve[], int num);
-    void restore_partial_global_regs(const char *funcname, char
-                                     *preserve[]);
-    void free_global_regs(const char *funcname, char *preserve[]);
-    void init_global_regs(char *preserve[]);
-    void load_global_regs(char *preserve[]);
-    void save_global_env(const char *funcname, char *preserve[]);
-    void restore_global_env(const char *funcname, char *preserve[]);
-    void save_global_nxt(const char *funcname, char *preservew[],
-                         char *preserver[], char *valw[], char *valr[]);
-    void restore_global_nxt(const char *funcname, char *preservew[],
-                            char *preserver[], char *valw[], char *valr[]);
     int delim_check(char *buff, char **bp, int nfargs, char **fargs,
                     int sep_arg, char *sep);
     int get_gender(dbref player);

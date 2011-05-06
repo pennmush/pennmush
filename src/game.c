@@ -109,11 +109,8 @@ int loc_alias_check(dbref loc, const char *command, const char *type);
 void do_poor(dbref player, char *arg1);
 void do_writelog(dbref player, char *str, int ltype);
 void bind_and_queue(dbref player, dbref cause, char *action, const char *arg,
-                    const char *placestr);
-void do_scan(dbref player, char *command, int flag);
+                    int num, MQUE *parent_queue);
 void do_list(dbref player, char *arg, int lc, int which);
-void do_dolist(dbref player, char *list, char *command,
-               dbref cause, unsigned int flags);
 void do_uptime(dbref player, int mortal);
 static char *make_new_epoch_file(const char *basename, int the_epoch);
 #ifdef HAS_GETRUSAGE
@@ -137,6 +134,9 @@ extern void compress_stats(long *entries,
                            long *total_uncompressed, long *total_compressed);
 #endif
 
+/* Set in do_entry(), used in report() */
+char report_cmd[BUFFER_LEN];
+dbref report_dbref = NOTHING;
 
 pid_t forked_dump_pid = -1;
 
@@ -228,13 +228,11 @@ do_dump(dbref player, char *num, enum dump_type flag)
 void
 report(void)
 {
-  if (GoodObject(global_eval_context.cplr))
+  if (GoodObject(report_dbref))
     do_rawlog(LT_TRACE, "TRACE: Cmd:%s\tby #%d at #%d",
-              global_eval_context.ccom, global_eval_context.cplr,
-              Location(global_eval_context.cplr));
+              (char *) report_cmd, report_dbref, Location(report_dbref));
   else
-    do_rawlog(LT_TRACE, "TRACE: Cmd:%s\tby #%d", global_eval_context.ccom,
-              global_eval_context.cplr);
+    do_rawlog(LT_TRACE, "TRACE: Cmd:%s\tby #%d", report_cmd, report_dbref);
   notify_activity(NOTHING, 0, 1);
 }
 
@@ -490,21 +488,12 @@ mush_panic(const char *message)
 void
 mush_panicf(const char *msg, ...)
 {
-#ifdef HAS_VSNPRINTF
   char c[BUFFER_LEN];
-#else
-  char c[BUFFER_LEN * 3];
-#endif
   va_list args;
 
   va_start(args, msg);
 
-#ifdef HAS_VSNPRINTF
-  vsnprintf(c, sizeof c, msg, args);
-#else
-  vsprintf(c, msg, args);
-#endif
-  c[BUFFER_LEN - 1] = '\0';
+  my_vsnprintf(c, sizeof c, msg, args);
   va_end(args);
 
   mush_panic(c);
@@ -642,7 +631,6 @@ do_restart(void)
   ATTR *s;
   char buf[BUFFER_LEN];
   char *bp;
-  int j;
 
   /* Do stuff that needs to be done for players only: add stuff to the
    * alias table, and refund money from queued commands at shutdown.
@@ -662,16 +650,6 @@ do_restart(void)
    * begin queueing commands. Also, let's make sure that we get
    * rid of null names.
    */
-  for (j = 0; j < 10; j++)
-    global_eval_context.wnxt[j] = NULL;
-  for (j = 0; j < NUMQ; j++)
-    global_eval_context.rnxt[j] = NULL;
-
-  /* Initialize the regexp patterns to nothing */
-  global_eval_context.re_code = NULL;
-  global_eval_context.re_subpatterns = -1;
-  global_eval_context.re_offsets = NULL;
-  global_eval_context.re_from = NULL;
 
   for (thing = 0; thing < db_top; thing++) {
     if (Name(thing) == NULL) {
@@ -703,27 +681,14 @@ void init_queue(void);
 void
 init_game_config(const char *conf)
 {
-  int a;
   pid_t mypid = -1;
+
+  memset(report_cmd, 0, sizeof(report_cmd));
 
   /* initialize random number generator */
   initialize_mt();
 
   init_queue();
-
-  global_eval_context.process_command_port = 0;
-  global_eval_context.break_called = 0;
-  global_eval_context.cplr = NOTHING;
-  strcpy(global_eval_context.ccom, "");
-
-  for (a = 0; a < 10; a++) {
-    global_eval_context.wenv[a] = NULL;
-    global_eval_context.wnxt[a] = NULL;
-  }
-  for (a = 0; a < NUMQ; a++) {
-    global_eval_context.renv[a][0] = '\0';
-    global_eval_context.rnxt[a] = NULL;
-  }
 
   /* set MUSH start time */
   globals.start_time = time((time_t *) 0);
@@ -738,6 +703,7 @@ init_game_config(const char *conf)
   init_ansi_codes();
   init_aname_table();
   init_atr_name_tree();
+  init_pe_regs_trees();
   init_locks();
   init_names();
   init_pronouns();
@@ -748,6 +714,7 @@ init_game_config(const char *conf)
   local_configs();
   conf_default_set();
   config_file_startup(conf, 0);
+  config_file_checks();
   start_all_logs();
   redirect_streams();
 
@@ -812,9 +779,10 @@ init_game_dbs(void)
 {
   PENNFILE *f;
   int c;
-  const char *infile, *outfile;
+  const char *volatile infile;
+  const char *outfile;
   const char *mailfile;
-  int panicdb;
+  volatile int panicdb;
 
 #ifdef WIN32
   Win32MUSH_setup();            /* create index files, copy databases etc. */
@@ -846,7 +814,10 @@ init_game_dbs(void)
     penn_ungetc(c, f);
   }
 
-  if (setjmp(db_err) == 0) {
+  if (setjmp(db_err) == 1) {
+    do_rawlog(LT_ERR, "ERROR: Unable to read %s. Giving up.\n", infile);
+    return -1;
+  } else {
     /* ok, read it in */
     do_rawlog(LT_ERR, "ANALYZING: %s", infile);
     if (init_compress(f) < 0) {
@@ -896,7 +867,14 @@ init_game_dbs(void)
     if (!GoodObject(GOD) || (!IsPlayer(GOD)))
       do_rawlog(LT_ERR, "WARNING: God (#%d) is NOT a player.", GOD);
 
-    /* read mail database */
+
+  }
+
+  /* read mail database */
+  if (setjmp(db_err) == 1) {
+    do_rawlog(LT_ERR,
+              "ERROR: Unable to read mail database! Continuing with startup.");
+  } else {
     mail_init();
 
     if (panicdb) {
@@ -919,7 +897,13 @@ init_game_dbs(void)
         penn_fclose(f);
       }
     }
+  }
 
+  /* read chat database */
+  if (setjmp(db_err) == 1) {
+    do_rawlog(LT_ERR,
+              "ERROR: Unable to read chat database! Continuing with startup.");
+  } else {
     init_chatdb();
 
     if (panicdb) {
@@ -940,16 +924,11 @@ init_game_dbs(void)
           do_rawlog(LT_ERR, "LOADING: %s (done)", options.chatdb);
         } else {
           do_rawlog(LT_ERR, "ERROR LOADING %s", options.chatdb);
-          return -1;
         }
         penn_fclose(f);
       }
     } else                      /* Close the panicdb file handle */
       penn_fclose(f);
-
-  } else {
-    do_rawlog(LT_ERR, "ERROR READING DATABASE");
-    return -1;
   }
 
   return 0;
@@ -973,9 +952,9 @@ do_readcache(dbref player)
 }
 
 /** Check each attribute on each object in x for a $command matching cptr */
-#define list_match(x)        list_check(x, player, '$', ':', cptr, 0)
+#define list_match(x)        list_check(x, executor, '$', ':', cptr, 0)
 /** Check each attribute on x for a $command matching cptr */
-#define cmd_match(x)         atr_comm_match(x, player, '$', ':', cptr, 0, 1, NULL, NULL, &errdb, 0)
+#define cmd_match(x)         atr_comm_match(x, executor, '$', ':', cptr, 0, 1, NULL, NULL, 0, &errdb, NULL, QUEUE_DEFAULT)
 #define MAYBE_ADD_ERRDB(errdb)  \
         do { \
           if (GoodObject(errdb) && errdblist) { \
@@ -1051,18 +1030,17 @@ passwd_filter(const char *cmd)
  * the player, $commands on the container, $commands on inventory,
  * exits in the zone master room, $commands on objects in the ZMR,
  * $commands on the ZMO, $commands on the player's zone, exits in the
- * master room, and $commands on objectrs in the master room.
+ * master room, and $commands on objects in the master room.
  *
  * When a command is directly input from a socket, we don't parse
  * the value in attribute sets.
  *
- * \param player the enactor.
+ * \param executor the object running the command.
  * \param command command to match and execute.
- * \param cause object which caused the command to be executed.
- * \param from_port if 1, the command was direct input from a socket.
+ * \param queue_entry the queue entry the command is being run for
  */
 void
-process_command(dbref player, char *command, dbref cause, dbref caller, int from_port)
+process_command(dbref executor, char *command, MQUE *queue_entry)
 {
   int a;
   char *p;                      /* utility */
@@ -1086,40 +1064,44 @@ process_command(dbref player, char *command, dbref cause, dbref caller, int from
     do_log(LT_ERR, NOTHING, NOTHING, "ERROR: No command!!!");
     return;
   }
-  /* robustify player */
-  if (!GoodObject(player)) {
-    do_log(LT_ERR, NOTHING, NOTHING, "process_command bad player #%d", player);
+  /* robustify executor */
+  if (!GoodObject(executor)) {
+    do_log(LT_ERR, NOTHING, NOTHING, "process_command bad player #%d",
+           executor);
     return;
   }
 
   /* Destroyed objects shouldn't execute commands */
-  if (IsGarbage(player))
+  if (IsGarbage(executor))
     /* No message - nobody to tell, and it's too easy to do to log. */
     return;
   /* Halted objects can't execute commands */
   /* And neither can halted players if the command isn't from_port */
-  if (Halted(player) && (!IsPlayer(player) || !from_port)) {
-    notify_format(Owner(player),
-                  T("Attempt to execute command by halted object #%d"), player);
+  if (Halted(executor)
+      && (!IsPlayer(executor) || !(queue_entry->queue_type & QUEUE_SOCKET))) {
+    notify_format(Owner(executor),
+                  T("Attempt to execute command by halted object #%d"),
+                  executor);
     return;
   }
   /* Players, things, and exits should not have invalid locations. This check
    * must be done _after_ the destroyed-object check.
    */
-  check_loc = IsExit(player) ? Source(player) : (IsRoom(player) ? player :
-                                                 Location(player));
+  check_loc =
+    IsExit(executor) ? Source(executor) : (IsRoom(executor) ? executor :
+                                           Location(executor));
   if (!GoodObject(check_loc) || IsGarbage(check_loc)) {
-    notify_format(Owner(player),
+    notify_format(Owner(executor),
                   T("Invalid location on command execution: %s(#%d)"),
-                  Name(player), player);
+                  Name(executor), executor);
     do_log(LT_ERR, NOTHING, NOTHING,
            "Command attempted by %s(#%d) in invalid location #%d.",
-           Name(player), player, Location(player));
-    if (Mobile(player)) {
-      moveto(player, PLAYER_START, SYSEVENT, "dbck");   /* move it someplace valid */
+           Name(executor), executor, Location(executor));
+    if (Mobile(executor)) {
+      moveto(executor, PLAYER_START, SYSEVENT, "dbck"); /* move it someplace valid */
     }
   }
-  orator = player;
+  orator = executor;
 
   /* eat leading whitespace */
   while (*command && isspace((unsigned char) *command))
@@ -1132,38 +1114,41 @@ process_command(dbref player, char *command, dbref cause, dbref caller, int from
   *++p = '\0';
 
   /* ignore null commands that aren't from players */
-  if ((!command || !*command) && !from_port)
+  if ((!command || !*command) && !(queue_entry->queue_type & QUEUE_SOCKET))
     return;
 
   {
     char *msg = passwd_filter(command);
 
-    log_activity(LA_CMD, player, msg);
-    if (options.log_commands || Suspect(player))
-      do_log(LT_CMD, player, NOTHING, "%s", msg);
-    if (Verbose(player))
-      raw_notify(Owner(player), tprintf("#%d] %s", player, msg));
+    log_activity(LA_CMD, executor, msg);
+    if (options.log_commands || Suspect(executor))
+      do_log(LT_CMD, executor, NOTHING, "%s", msg);
+    if (Verbose(executor))
+      raw_notify(Owner(executor), tprintf("#%d] %s", executor, msg));
   }
 
   strcpy(unp, command);
 
-  cptr = command_parse(player, cause, caller, command, from_port);
+  cptr = command_parse(executor, command, queue_entry);
   if (cptr) {
-    mush_strncpy(global_eval_context.ucom, cptr, BUFFER_LEN);
+    mush_strncpy(queue_entry->pe_info->cmd_evaled, cptr, BUFFER_LEN);
     a = 0;
-    if (!Gagged(player)) {
+    if (!Gagged(executor)) {
 
-      if (Mobile(player)) {
-        /* if the "player" is an exit or room, no need to do these checks */
+      if (Mobile(executor)) {
+        /* if the executor is an exit or room, no need to do these checks */
         /* try matching enter aliases */
         if (check_loc != NOTHING && (cmd = command_find("ENTER")) &&
             !(cmd->type & CMD_T_DISABLED) &&
-            (i = alias_list_check(Contents(check_loc), cptr, "EALIAS")) != -1) {
-          if (command_check(player, cmd, 1)) {
+            (i =
+             alias_list_check(Contents(check_loc), cptr,
+                              "EALIAS")) != NOTHING) {
+          if (command_check(executor, cmd, 1)) {
             sprintf(temp, "#%d", i);
-            run_command(cmd, player, cause, tprintf("ENTER #%d", i), NULL, NULL,
+            run_command(cmd, executor, queue_entry->enactor,
+                        tprintf("ENTER #%d", i), NULL, NULL,
                         tprintf("ENTER #%d", i), NULL, NULL, temp, NULL, NULL,
-                        NULL);
+                        NULL, queue_entry);
           }
           goto done;
         }
@@ -1171,43 +1156,45 @@ process_command(dbref player, char *command, dbref cause, dbref caller, int from
         if (!IsRoom(check_loc) && (cmd = command_find("LEAVE"))
             && !(cmd->type & CMD_T_DISABLED)
             && (loc_alias_check(check_loc, cptr, "LALIAS"))) {
-          if (command_check(player, cmd, 1))
-            run_command(cmd, player, cause, "LEAVE", NULL, NULL, "LEAVE", NULL,
-                        NULL, NULL, NULL, NULL, NULL);
+          if (command_check(executor, cmd, 1))
+            run_command(cmd, executor, queue_entry->enactor, "LEAVE", NULL,
+                        NULL, "LEAVE", NULL, NULL, NULL, NULL, NULL, NULL,
+                        queue_entry);
           goto done;
         }
       }
 
       /* try matching user defined functions before chopping */
 
-      /* try objects in the player's location, the location itself,
-       * and objects in the player's inventory.
+      /* try objects in the executor's location, the location itself,
+       * and objects in the executor's inventory.
        */
       if (GoodObject(check_loc)) {
         a += list_match(Contents(check_loc));
-        if (check_loc != player) {
+        if (check_loc != executor) {
           a += cmd_match(check_loc);
           MAYBE_ADD_ERRDB(errdb);
         }
       }
-      if (check_loc != player)
-        a += list_match(Contents(player));
+      if (check_loc != executor)
+        a += list_match(Contents(executor));
 
       /* now do check on zones */
       if ((!a) && (Zone(check_loc) != NOTHING)) {
         if (IsRoom(Zone(check_loc))) {
-          /* zone of player's location is a zone master room,
+          /* zone of executor's location is a zone master room,
            * so we check for exits and commands
            */
           /* check zone master room exits */
-          if (remote_exit(player, cptr) && (cmd = command_find("GOTO"))
+          if (remote_exit(executor, cptr) && (cmd = command_find("GOTO"))
               && !(cmd->type & CMD_T_DISABLED)) {
-            if (!Mobile(player) || !command_check(player, cmd, 1)) {
+            if (!Mobile(executor) || !command_check(executor, cmd, 1)) {
               goto done;
             } else {
-              run_command(cmd, player, cause, tprintf("GOTO %s", cptr), NULL,
-                          NULL, tprintf("GOTO %s", cptr), NULL, NULL, cptr,
-                          NULL, NULL, NULL);
+              run_command(cmd, executor, queue_entry->enactor,
+                          tprintf("GOTO %s", cptr), NULL, NULL,
+                          tprintf("GOTO %s", cptr), NULL, NULL, cptr, NULL,
+                          NULL, NULL, queue_entry);
               goto done;
             }
           } else
@@ -1218,31 +1205,32 @@ process_command(dbref player, char *command, dbref cause, dbref caller, int from
         }
       }
       /* if nothing matched with zone master room/zone object, try
-       * matching zone commands on the player's personal zone
+       * matching zone commands on the executor's personal zone
        */
-      if ((!a) && (Zone(player) != NOTHING) &&
-          (Zone(check_loc) != Zone(player))) {
-        if (IsRoom(Zone(player)))
+      if ((!a) && (Zone(executor) != NOTHING) &&
+          (Zone(check_loc) != Zone(executor))) {
+        if (IsRoom(Zone(executor)))
           /* Player's personal zone is a zone master room, so we
            * also check commands on objects in that room
            */
-          a += list_match(Contents(Zone(player)));
+          a += list_match(Contents(Zone(executor)));
         else {
-          a += cmd_match(Zone(player));
+          a += cmd_match(Zone(executor));
           MAYBE_ADD_ERRDB(errdb);
         }
       }
       /* end of zone stuff */
       /* check global exits only if no other commands are matched */
       if ((!a) && (check_loc != MASTER_ROOM)) {
-        if (global_exit(player, cptr) && (cmd = command_find("GOTO"))
+        if (global_exit(executor, cptr) && (cmd = command_find("GOTO"))
             && !(cmd->type & CMD_T_DISABLED)) {
-          if (!Mobile(player) || !command_check(player, cmd, 1))
+          if (!Mobile(executor) || !command_check(executor, cmd, 1))
             goto done;
           else {
-            run_command(cmd, player, cause, tprintf("GOTO %s", cptr), NULL,
-                        NULL, tprintf("GOTO %s", cptr), NULL, NULL, cptr, NULL,
-                        NULL, NULL);
+            run_command(cmd, executor, queue_entry->enactor,
+                        tprintf("GOTO %s", cptr), NULL, NULL, tprintf("GOTO %s",
+                                                                      cptr),
+                        NULL, NULL, cptr, NULL, NULL, NULL, queue_entry);
             goto done;
           }
         } else
@@ -1257,9 +1245,10 @@ process_command(dbref player, char *command, dbref cause, dbref caller, int from
       /* Do we have any error dbs queued up, and if so, do any
        * have associated failure messages?
        */
-      if ((errdblist == errdbtail) || (!fail_commands(player)))
+      if ((errdblist == errdbtail) || (!fail_commands(executor)))
         /* Nope. This is totally unmatched, run generic failure */
-        generic_command_failure(player, cause, cptr);
+        generic_command_failure(executor, queue_entry->enactor, cptr,
+                                queue_entry);
     }
   }
 
@@ -1280,20 +1269,21 @@ COMMAND(cmd_with)
   char *cptr = arg_right;
   dbref errdb;
 
-  what = noisy_match_result(player, arg_left, NOTYPE, MAT_EVERYTHING);
+  what = noisy_match_result(executor, arg_left, NOTYPE, MAT_EVERYTHING);
   if (!GoodObject(what))
     return;
-  if (!(nearby(player, what) || Long_Fingers(player) || controls(player, what))) {
+  if (!(nearby(executor, what) || Long_Fingers(executor)
+        || controls(executor, what))) {
     if (SW_ISSET(sw, SWITCH_ROOM)) {
-      if (what != MASTER_ROOM && what != Zone(player)) {
-        notify(player, T("I don't see that here."));
+      if (what != MASTER_ROOM && what != Zone(executor)) {
+        notify(executor, T("I don't see that here."));
         return;
-      } else if (what == Zone(player) && !IsRoom(what)) {
-        notify(player, T("Make room! Make room!"));
+      } else if (what == Zone(executor) && !IsRoom(what)) {
+        notify(executor, T("Make room! Make room!"));
         return;
       }
-    } else if (what != Zone(player) || IsRoom(what)) {
-      notify(player, T("I don't see that here."));
+    } else if (what != Zone(executor) || IsRoom(what)) {
+      notify(executor, T("I don't see that here."));
       return;
     }
   }
@@ -1304,18 +1294,18 @@ COMMAND(cmd_with)
     /* Run commands on a single object */
     if (!cmd_match(what)) {
       MAYBE_ADD_ERRDB(errdb);
-      notify(player, T("No matching command."));
+      notify(executor, T("No matching command."));
     }
   } else {
     /* Run commands on objects in a masterish room */
 
-    if (!IsRoom(what) && what != Location(player)) {
-      notify(player, T("Make room! Make room!"));
+    if (!IsRoom(what) && what != Location(executor)) {
+      notify(executor, T("Make room! Make room!"));
       return;
     }
 
     if (!list_match(Contents(what)))
-      notify(player, T("No matching command."));
+      notify(executor, T("No matching command."));
   }
 }
 
@@ -1374,7 +1364,8 @@ list_check(dbref thing, dbref player, char type, char end, char *str,
 
   while (thing != NOTHING) {
     if (atr_comm_match(thing, player, type,
-                       end, str, just_match, 1, NULL, NULL, &errdb, 0))
+                       end, str, just_match, 1, NULL, NULL, 0, &errdb, NULL,
+                       QUEUE_DEFAULT))
       match = 1;
     else {
       MAYBE_ADD_ERRDB(errdb);
@@ -1392,7 +1383,7 @@ list_check(dbref thing, dbref player, char type, char end, char *str,
  * \param thing first object on list.
  * \param command command to attempt to match.
  * \param type name of attribute of aliases to match against.
- * \return dbref of first matching object, or -1 if none.
+ * \return dbref of first matching object, or NOTHING if none.
  */
 int
 alias_list_check(dbref thing, const char *command, const char *type)
@@ -1409,7 +1400,7 @@ alias_list_check(dbref thing, const char *command, const char *type)
     }
     thing = Next(thing);
   }
-  return -1;
+  return NOTHING;
 }
 
 /** Check a command against a list of aliases on a location
@@ -1553,17 +1544,19 @@ do_writelog(dbref player, char *str, int ltype)
  * \param action command string which may contain tokens.
  * \param arg value for ## token.
  * \param placestr value for #@ token.
+ * \param parent_queue the queue entry this is being run from
  */
 void
 bind_and_queue(dbref player, dbref cause, char *action,
-               const char *arg, const char *placestr)
+               const char *arg, int num, MQUE *parent_queue)
 {
   char *repl, *command;
   const char *replace[2];
-  PE_Info *pe_info;
-  int i = 0;
+  char placestr[10];
+  PE_REGS *pe_regs;
 
   replace[0] = arg;
+  snprintf(placestr, 10, "%d", num);
   replace[1] = placestr;
 
   repl = replace_string2(standard_tokens, replace, action);
@@ -1572,28 +1565,23 @@ bind_and_queue(dbref player, dbref cause, char *action,
 
   mush_free(repl, "replace_string.buff");
 
-  pe_info = make_pe_info();
-  if (global_eval_context.pe_info->iter_nesting >= 0) {
-    for (i = 0; i <= global_eval_context.pe_info->iter_nesting; i++) {
-      pe_info->iter_inum[i] = global_eval_context.pe_info->iter_inum[i];
-      pe_info->iter_itext[i] =
-        mush_strdup(global_eval_context.pe_info->iter_itext[i], "dolist_arg");
-    }
-  }
-  pe_info->iter_inum[i] = parse_integer(placestr);
-  pe_info->iter_itext[i] = mush_strdup(arg, "dolist_arg");
-  pe_info->iter_nesting = i;
-  pe_info->local_iter_nesting = i;
-  pe_info->dolists = global_eval_context.pe_info->dolists + 1;
-  parse_que(player, command, cause, pe_info);
+  /* Add the new iter context to the parent queue entry's pe_info... */
+  pe_regs = pe_regs_create(PE_REGS_ITER, "bind_and_queue");
+  pe_regs_set(pe_regs, PE_REGS_ITER, "t0", arg);
+  pe_regs_set_int(pe_regs, PE_REGS_ITER, "n0", num);
+  /* Then queue the new command, using a cloned pe_info... */
+  new_queue_actionlist(player, cause, cause, command, parent_queue,
+                       PE_INFO_CLONE, QUEUE_DEFAULT, pe_regs);
+  /* And then pop it off the parent pe_info again */
+  pe_regs_free(pe_regs);
 
   mush_free(command, "strip_braces.buff");
 }
 
 /** Would the scan command find an matching attribute on x for player p? */
-#define ScanFind(p,x)  \
+#define ScanFind(p,x,c)  \
   (Can_Examine(p,x) && \
-      ((num = atr_comm_match(x, p, '$', ':', command, 1, 1, atrname, &ptr, NULL, 0)) != 0))
+      ((num = atr_comm_match(x, p, '$', ':', command, 1, 1, atrname, &ptr, c, NULL, NULL, QUEUE_DEFAULT)) != 0))
 
 /** Scan for matches of $commands.
  * This function scans for possible matches of user-def'd commands from the
@@ -1601,10 +1589,11 @@ bind_and_queue(dbref player, dbref cause, char *action,
  * It assumes that atr_comm_match() returns atrname with a leading space.
  * \param player the object from whose viewpoint to scan.
  * \param command the command to scan for matches to.
+ * \param flag CHECK_* flags to limit objects searched
  * \return string of obj/attrib pairs with matching $commands.
  */
 char *
-scan_list(dbref player, char *command)
+scan_list(dbref player, char *command, int flag)
 {
   static char tbuf[BUFFER_LEN];
   char *tp;
@@ -1612,6 +1601,7 @@ scan_list(dbref player, char *command)
   char atrname[BUFFER_LEN];
   char *ptr;
   int num;
+  int matches = 0;
 
   if (!GoodObject(Location(player))) {
     strcpy(tbuf, T("#-1 INVALID LOCATION"));
@@ -1623,77 +1613,108 @@ scan_list(dbref player, char *command)
   }
   tp = tbuf;
   ptr = atrname;
-  DOLIST(thing, Contents(Location(player))) {
-    if (ScanFind(player, thing)) {
+
+  if (flag & CHECK_HERE) {
+    if (ScanFind(player, Location(player), 1)) {
       *ptr = '\0';
       safe_str(atrname, tbuf, &tp);
       ptr = atrname;
+      matches++;
     }
   }
-  ptr = atrname;
-  if (ScanFind(player, Location(player))) {
-    *ptr = '\0';
-    safe_str(atrname, tbuf, &tp);
-  }
-  ptr = atrname;
-  DOLIST(thing, Contents(player)) {
-    if (ScanFind(player, thing)) {
-      *ptr = '\0';
-      safe_str(atrname, tbuf, &tp);
-      ptr = atrname;
-    }
-  }
-  /* zone checks */
-  ptr = atrname;
-  if (Zone(Location(player)) != NOTHING) {
-    if (IsRoom(Zone(Location(player)))) {
-      /* zone of player's location is a zone master room */
-      if (Location(player) != Zone(player)) {
-        DOLIST(thing, Contents(Zone(Location(player)))) {
-          if (ScanFind(player, thing)) {
-            *ptr = '\0';
-            safe_str(atrname, tbuf, &tp);
-            ptr = atrname;
-          }
-        }
-      }
-    } else {
-      /* regular zone object */
-      if (ScanFind(player, Zone(Location(player)))) {
+
+  if (flag & CHECK_NEIGHBORS) {
+    flag &= ~CHECK_SELF;
+    DOLIST(thing, Contents(Location(player))) {
+      if (ScanFind(player, thing, 1)) {
         *ptr = '\0';
         safe_str(atrname, tbuf, &tp);
+        ptr = atrname;
+        matches++;
       }
     }
   }
-  ptr = atrname;
-  if ((Zone(player) != NOTHING)
-      && (Zone(player) != Zone(Location(player)))) {
-    /* check the player's personal zone */
-    if (IsRoom(Zone(player))) {
-      if (Location(player) != Zone(player)) {
-        DOLIST(thing, Contents(Zone(player))) {
-          if (ScanFind(player, thing)) {
-            *ptr = '\0';
-            safe_str(atrname, tbuf, &tp);
-            ptr = atrname;
-          }
-        }
-      }
-    } else if (ScanFind(player, Zone(player))) {
+
+  if (flag & CHECK_SELF) {
+    if (ScanFind(player, player, 1)) {
       *ptr = '\0';
       safe_str(atrname, tbuf, &tp);
+      ptr = atrname;
+      matches++;
     }
   }
-  ptr = atrname;
-  if ((Location(player) != MASTER_ROOM)
+
+  if (flag & CHECK_INVENTORY) {
+    DOLIST(thing, Contents(player)) {
+      if (ScanFind(player, thing, 1)) {
+        *ptr = '\0';
+        safe_str(atrname, tbuf, &tp);
+        ptr = atrname;
+        matches++;
+      }
+    }
+  }
+
+  /* zone checks */
+  if ((flag & CHECK_ZONE)) {
+    if (Zone(Location(player)) != NOTHING && !(matches && (flag & CHECK_BREAK))) {
+      if (IsRoom(Zone(Location(player)))) {
+        /* zone of player's location is a zone master room */
+        if (Location(player) != Zone(player)) {
+          DOLIST(thing, Contents(Zone(Location(player)))) {
+            if (ScanFind(player, thing, 1)) {
+              *ptr = '\0';
+              safe_str(atrname, tbuf, &tp);
+              ptr = atrname;
+              matches++;
+            }
+          }
+        }
+      } else {
+        /* regular zone object */
+        if (ScanFind(player, Zone(Location(player)), 1)) {
+          *ptr = '\0';
+          safe_str(atrname, tbuf, &tp);
+          ptr = atrname;
+          matches++;
+        }
+      }
+    }
+    if ((Zone(player) != NOTHING) && !(matches && (flag & CHECK_BREAK))
+        && (Zone(player) != Zone(Location(player)))) {
+      /* check the player's personal zone */
+      if (IsRoom(Zone(player))) {
+        if (Location(player) != Zone(player)) {
+          DOLIST(thing, Contents(Zone(player))) {
+            if (ScanFind(player, thing, 1)) {
+              *ptr = '\0';
+              safe_str(atrname, tbuf, &tp);
+              ptr = atrname;
+              matches++;
+            }
+          }
+        }
+      } else if (ScanFind(player, Zone(player), 1)) {
+        *ptr = '\0';
+        safe_str(atrname, tbuf, &tp);
+        ptr = atrname;
+        matches++;
+      }
+    }
+  }
+
+  if ((flag & CHECK_GLOBAL)
+      && !(matches && (flag & CHECK_BREAK))
+      && (Location(player) != MASTER_ROOM)
       && (Zone(Location(player)) != MASTER_ROOM)
       && (Zone(player) != MASTER_ROOM)) {
     /* try Master Room stuff */
     DOLIST(thing, Contents(MASTER_ROOM)) {
-      if (ScanFind(player, thing)) {
+      if (ScanFind(player, thing, 1)) {
         *ptr = '\0';
         safe_str(atrname, tbuf, &tp);
         ptr = atrname;
+        matches++;
       }
     }
   }
@@ -1719,7 +1740,6 @@ do_scan(dbref player, char *command, int flag)
   char *ptr;
   dbref thing;
   int num;
-  char save_ccom[BUFFER_LEN];
 
   ptr = atrname;
   if (!GoodObject(Location(player))) {
@@ -1730,13 +1750,10 @@ do_scan(dbref player, char *command, int flag)
     notify(player, T("What command do you want to scan for?"));
     return;
   }
-  strcpy(save_ccom, global_eval_context.ccom);
-  memmove(global_eval_context.ccom, (char *) global_eval_context.ccom + 5,
-          BUFFER_LEN - 5);
   if (flag & CHECK_NEIGHBORS) {
     notify(player, T("Matches on contents of this room:"));
     DOLIST(thing, Contents(Location(player))) {
-      if (ScanFind(player, thing)) {
+      if (ScanFind(player, thing, 0)) {
         *ptr = '\0';
         notify_format(player,
                       "%s  [%d:%s]", unparse_object(player, thing),
@@ -1747,7 +1764,7 @@ do_scan(dbref player, char *command, int flag)
   }
   ptr = atrname;
   if (flag & CHECK_HERE) {
-    if (ScanFind(player, Location(player))) {
+    if (ScanFind(player, Location(player), 0)) {
       *ptr = '\0';
       notify_format(player, T("Matched here: %s  [%d:%s]"),
                     unparse_object(player, Location(player)), num, atrname);
@@ -1757,7 +1774,7 @@ do_scan(dbref player, char *command, int flag)
   if (flag & CHECK_INVENTORY) {
     notify(player, T("Matches on carried objects:"));
     DOLIST(thing, Contents(player)) {
-      if (ScanFind(player, thing)) {
+      if (ScanFind(player, thing, 0)) {
         *ptr = '\0';
         notify_format(player, "%s  [%d:%s]",
                       unparse_object(player, thing), num, atrname);
@@ -1767,7 +1784,7 @@ do_scan(dbref player, char *command, int flag)
   }
   ptr = atrname;
   if (flag & CHECK_SELF) {
-    if (ScanFind(player, player)) {
+    if (ScanFind(player, player, 0)) {
       *ptr = '\0';
       notify_format(player, T("Matched self: %s  [%d:%s]"),
                     unparse_object(player, player), num, atrname);
@@ -1782,7 +1799,7 @@ do_scan(dbref player, char *command, int flag)
         if (Location(player) != Zone(player)) {
           notify(player, T("Matches on zone master room of location:"));
           DOLIST(thing, Contents(Zone(Location(player)))) {
-            if (ScanFind(player, thing)) {
+            if (ScanFind(player, thing, 0)) {
               *ptr = '\0';
               notify_format(player, "%s  [%d:%s]",
                             unparse_object(player, thing), num, atrname);
@@ -1792,7 +1809,7 @@ do_scan(dbref player, char *command, int flag)
         }
       } else {
         /* regular zone object */
-        if (ScanFind(player, Zone(Location(player)))) {
+        if (ScanFind(player, Zone(Location(player)), 0)) {
           *ptr = '\0';
           notify_format(player,
                         T("Matched zone of location: %s  [%d:%s]"),
@@ -1809,7 +1826,7 @@ do_scan(dbref player, char *command, int flag)
         if (Location(player) != Zone(player)) {
           notify(player, T("Matches on personal zone master room:"));
           DOLIST(thing, Contents(Zone(player))) {
-            if (ScanFind(player, thing)) {
+            if (ScanFind(player, thing, 0)) {
               *ptr = '\0';
               notify_format(player, "%s  [%d:%s]",
                             unparse_object(player, thing), num, atrname);
@@ -1817,7 +1834,7 @@ do_scan(dbref player, char *command, int flag)
             }
           }
         }
-      } else if (ScanFind(player, Zone(player))) {
+      } else if (ScanFind(player, Zone(player), 0)) {
         *ptr = '\0';
         notify_format(player, T("Matched personal zone: %s  [%d:%s]"),
                       unparse_object(player, Zone(player)), num, atrname);
@@ -1832,7 +1849,7 @@ do_scan(dbref player, char *command, int flag)
     /* try Master Room stuff */
     notify(player, T("Matches on objects in the Master Room:"));
     DOLIST(thing, Contents(MASTER_ROOM)) {
-      if (ScanFind(player, thing)) {
+      if (ScanFind(player, thing, 0)) {
         *ptr = '\0';
         notify_format(player, "%s  [%d:%s]",
                       unparse_object(player, thing), num, atrname);
@@ -1840,7 +1857,6 @@ do_scan(dbref player, char *command, int flag)
       }
     }
   }
-  strcpy(global_eval_context.ccom, save_ccom);
 }
 
 #define DOL_NOTIFY 2   /**< Add a notify after a dolist */
@@ -1850,27 +1866,26 @@ do_scan(dbref player, char *command, int flag)
  * \verbatim
  * This function implements @dolist.
  * \endverbatim
- * \param player the enactor.
+ * \param player the executor.
  * \param list string containing the list to iterate over.
  * \param command command to run for each list element.
- * \param cause object which caused this command to be run.
+ * \param enactor the enactor
  * \param flags command switch flags.
+ * \param queue_entry the queue entry \@dolist is being run in
  */
 void
-do_dolist(dbref player, char *list, char *command, dbref cause,
-          unsigned int flags)
+do_dolist(dbref player, char *list, char *command, dbref enactor,
+          unsigned int flags, MQUE *queue_entry)
 {
   char *curr, *objstring;
   char outbuf[BUFFER_LEN];
   char *bp;
   int place;
-  char placestr[10];
-  int j;
   char delim = ' ';
   if (!command || !*command) {
     notify(player, T("What do you want to do with the list?"));
     if (flags & DOL_NOTIFY)
-      parse_que(player, "@notify me", cause, NULL);
+      parse_que(player, enactor, "@notify me", NULL);
     return;
   }
 
@@ -1878,17 +1893,12 @@ do_dolist(dbref player, char *list, char *command, dbref cause,
     if (list[1] != ' ') {
       notify(player, T("Separator must be one character."));
       if (flags & DOL_NOTIFY)
-        parse_que(player, "@notify me", cause, NULL);
+        parse_que(player, enactor, "@notify me", NULL);
       return;
     }
     delim = list[0];
   }
 
-  /* set up environment for any spawned commands */
-  for (j = 0; j < 10; j++)
-    global_eval_context.wnxt[j] = global_eval_context.wenv[j];
-  for (j = 0; j < NUMQ; j++)
-    global_eval_context.rnxt[j] = global_eval_context.renv[j];
   bp = outbuf;
   if (flags & DOL_DELIM)
     list += 2;
@@ -1897,15 +1907,14 @@ do_dolist(dbref player, char *list, char *command, dbref cause,
   if (objstring && !*objstring) {
     /* Blank list */
     if (flags & DOL_NOTIFY)
-      parse_que(player, "@notify me", cause, NULL);
+      parse_que(player, enactor, "@notify me", NULL);
     return;
   }
 
   while (objstring) {
     curr = split_token(&objstring, delim);
     place++;
-    sprintf(placestr, "%d", place);
-    bind_and_queue(player, cause, command, curr, placestr);
+    bind_and_queue(player, enactor, command, curr, place, queue_entry);
   }
 
   *bp = '\0';
@@ -1915,7 +1924,7 @@ do_dolist(dbref player, char *list, char *command, dbref cause,
      *  directly, since we want the command to be queued
      *  _after_ the list has executed.
      */
-    parse_que(player, "@notify me", cause, NULL);
+    parse_que(player, enactor, "@notify me", NULL);
   }
 }
 
@@ -2377,6 +2386,7 @@ db_open_write(const char *fname)
  * \param player the enactor.
  * \param arg what to list.
  * \param lc if 1, list in lowercase.
+ * \param which 1 for builins, 2 for local, 3 for all
  */
 void
 do_list(dbref player, char *arg, int lc, int which)
@@ -2387,13 +2397,13 @@ do_list(dbref player, char *arg, int lc, int which)
     do_list_commands(player, lc, which);
   else if (string_prefix("functions", arg)) {
     switch (which) {
-    case '1':
+    case 1:
       do_list_functions(player, lc, "builtin");
       break;
-    case '2':
+    case 2:
       do_list_functions(player, lc, "local");
       break;
-    case '3':
+    case 3:
     default:
       do_list_functions(player, lc, "all");
       break;

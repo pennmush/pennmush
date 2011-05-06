@@ -85,9 +85,11 @@ parse_attrib(dbref player, char *str, dbref *thing, ATTR **attrib)
 }
 
 /** Parse an attribute or anonymous attribute into dbref and pointer.
+ * \verbatim
  * This function takes a string which is of the format #lambda/code,
  * <obj>/<attr> or <attr>,  and returns the dbref of the object,
  * and a pointer to the attribute.
+ * \endverbatim
  * \param player the executor, for permissions checks.
  * \param str string to parse.
  * \param thing pointer to address to return dbref parsed, or NOTHING
@@ -134,9 +136,11 @@ free_anon_attrib(ATTR *attrib)
   }
 }
 
-/** Given an attribute [<object>/]<name> pair (which may include #lambda),
+/** Populate a ufun_attrib struct from an obj/attr pair.
+ * \verbatim Given an attribute [<object>/]<name> pair (which may include #lambda),
  * fetch its value, owner (thing), and pe_flags, and store in the struct
  * pointed to by ufun
+ * \endverbatim
  * \param attrstring The obj/name of attribute.
  * \param executor Dbref of the executing object.
  * \param ufun Pointer to an allocated ufun_attrib struct to fill in.
@@ -180,6 +184,7 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
     thingname = NULL;
     ufun->thing = executor;
     mush_strncpy(ufun->contents, attrname, BUFFER_LEN);
+    ufun->attrname[0] = '\0';
     return 1;
   }
 
@@ -194,13 +199,14 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
   }
 
   attrib = (ATTR *) atr_get(ufun->thing, upcasestr(attrname));
-  // An empty attrib is the same as no attrib.
+  /* An empty attrib is the same as no attrib. */
   if (attrib == NULL) {
     if (flags & UFUN_REQUIRE_ATTR) {
       if (!(flags & UFUN_IGNORE_PERMS) && !Can_Examine(executor, ufun->thing))
         ufun->errmess = e_atrperm;
       return 0;
     } else {
+      mush_strncpy(ufun->attrname, attrname, ATTRIBUTE_NAME_LIMIT + 1);
       return 1;
     }
   }
@@ -223,6 +229,7 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
 
   /* Populate the ufun object */
   mush_strncpy(ufun->contents, atr_value(attrib), BUFFER_LEN);
+  mush_strncpy(ufun->attrname, AL_NAME(attrib), ATTRIBUTE_NAME_LIMIT + 1);
 
   /* We're good */
   return 1;
@@ -233,36 +240,59 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
  *  wenv_args. The value returned is stored in the buffer pointed to
  *  by ret, if given.
  * \param ufun The ufun_attrib that was initialized by fetch_ufun_attrib
- * \param wenv_args An array of string values for global_eval_context.wenv
- * \param wenv_argc The number of wenv args to use.
  * \param ret If desired, a pointer to a buffer in which the results
  *            of the process_expression are stored in.
  * \param executor The executor.
  * \param enactor The enactor.
  * \param pe_info The pe_info passed to the FUNCTION
+ * \param pe_regs Other arguments that may want to be added. This nests BELOW
+ *                the pe_regs created by call_ufun. (It is checked first)
  * \retval 0 success
  * \retval 1 process_expression failed. (CPU time limit)
  */
 bool
-call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
-          dbref executor, dbref enactor, PE_Info *pe_info)
+call_ufun(ufun_attrib * ufun, char *ret, dbref executor, dbref enactor,
+          NEW_PE_INFO *pe_info, PE_REGS *user_regs)
 {
   char rbuff[BUFFER_LEN];
   char *rp;
-  char *old_wenv[10];
-  char *saveqs[NUMQ];
-  int iter_nest = -1;
-  int switch_nest = -1;
-  int old_args = 0;
-  int i;
   int pe_ret;
   char const *ap;
-
-  struct re_save rsave;
+  char old_attr[BUFFER_LEN];
+  int made_pe_info = 0;
+  PE_REGS *pe_regs;
+  PE_REGS *pe_regs_old;
 
   /* Make sure we have a ufun first */
   if (!ufun)
     return 1;
+  if (!pe_info) {
+    pe_info = make_pe_info("pe_info.call_ufun");
+    made_pe_info = 1;
+  } else {
+    strcpy(old_attr, pe_info->attrname);
+  }
+
+  pe_regs_old = pe_info->regvals;
+
+  if (ufun->ufun_flags & UFUN_LOCALIZE) {
+    pe_regs = pe_regs_localize(pe_info, PE_REGS_Q | PE_REGS_NEWATTR,
+                               "call_ufun");
+  } else {
+    pe_regs = pe_regs_localize(pe_info, PE_REGS_NEWATTR, "call_ufun");
+  }
+
+  rp = pe_info->attrname;
+  if (*ufun->attrname == '\0') {
+    safe_str("#LAMBDA", pe_info->attrname, &rp);
+    safe_chr('/', pe_info->attrname, &rp);
+    safe_str(ufun->contents, pe_info->attrname, &rp);
+  } else {
+    safe_dbref(ufun->thing, pe_info->attrname, &rp);
+    safe_chr('/', pe_info->attrname, &rp);
+    safe_str(ufun->attrname, pe_info->attrname, &rp);
+  }
+  *rp = '\0';
 
   /* If the user doesn't care about the return of the expression,
    * then use our own rbuff.  */
@@ -270,59 +300,35 @@ call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
     ret = rbuff;
   rp = ret;
 
-  /* Save contexts, globals, regexp vals, etc */
-  for (i = 0; i < wenv_argc; i++) {
-    old_wenv[i] = global_eval_context.wenv[i];
-    global_eval_context.wenv[i] = wenv_args[i];
+  /* Anything the caller wants available goes on the bottom of the stack */
+  if (user_regs) {
+    user_regs->prev = pe_info->regvals;
+    pe_info->regvals = user_regs;
   }
-
-  for (; i < 10; i++) {
-    old_wenv[i] = global_eval_context.wenv[i];
-    global_eval_context.wenv[i] = NULL;
-  }
-
-  save_regexp_context(&rsave);
-  if (ufun->ufun_flags & UFUN_LOCALIZE) {
-    save_global_regs("localize", saveqs);
-  }
-
-  /* Set all the regexp patterns to NULL so they are not
-   * propogated */
-  global_eval_context.re_code = NULL;
-  global_eval_context.re_subpatterns = -1;
-  global_eval_context.re_offsets = NULL;
-  global_eval_context.re_from = NULL;
 
   /* And now, make the call! =) */
-  if (pe_info) {
-    old_args = pe_info->arg_count;
-    pe_info->arg_count = wenv_argc;
-    iter_nest = pe_info->local_iter_nesting;
-    pe_info->local_iter_nesting = -1;
-    switch_nest = pe_info->local_switch_nesting;
-    pe_info->local_switch_nesting = -1;
-  }
-
   ap = ufun->contents;
   pe_ret = process_expression(ret, &rp, &ap, ufun->thing, executor,
                               enactor, ufun->pe_flags, PT_DEFAULT, pe_info);
   *rp = '\0';
 
-  /* Restore the old wenv */
-  for (i = 0; i < 10; i++) {
-    global_eval_context.wenv[i] = old_wenv[i];
-  }
-  if (pe_info) {
-    pe_info->local_iter_nesting = iter_nest;
-    pe_info->local_switch_nesting = switch_nest;
-    pe_info->arg_count = old_args;
+  /* Restore call_ufun's pe_regs */
+  if (user_regs) {
+    pe_info->regvals = user_regs->prev;
   }
 
-  if (ufun->ufun_flags & UFUN_LOCALIZE) {
-    restore_global_regs("localize", saveqs);
+  /* Restore the pe_regs stack. */
+  pe_regs_restore(pe_info, pe_regs);
+  pe_regs_free(pe_regs);
+
+  pe_info->regvals = pe_regs_old;
+
+  if (!made_pe_info) {
+    /* Restore the old attrname. */
+    strcpy(pe_info->attrname, old_attr);
+  } else {
+    free_pe_info(pe_info);
   }
-  /* Restore regexp patterns */
-  restore_regexp_context(&rsave);
 
   return pe_ret;
 }
@@ -333,7 +339,7 @@ call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
  * by ret, if given.
  * \param thing The thing that has the attribute to be called
  * \param attrname The name of the attribute to call.
- * \param wenv_args An array of string values for global_eval_context.wenv
+ * \param wenv_args An array of string values for %0-%9
  * \param wenv_argc The number of wenv args to use.
  * \param ret If desired, a pointer to a buffer in which the results
  * of the process_expression are stored in.
@@ -343,8 +349,8 @@ call_ufun(ufun_attrib * ufun, char **wenv_args, int wenv_argc, char *ret,
  * \retval 0 No such attribute, or failed.
  */
 bool
-call_attrib(dbref thing, const char *attrname, const char *wenv_args[],
-            int wenv_argc, char *ret, dbref enactor, PE_Info *pe_info)
+call_attrib(dbref thing, const char *attrname, char *ret, dbref enactor,
+            NEW_PE_INFO *pe_info, PE_REGS *pe_regs)
 {
   ufun_attrib ufun;
   if (!fetch_ufun_attrib(attrname, thing, &ufun,
@@ -352,8 +358,7 @@ call_attrib(dbref thing, const char *attrname, const char *wenv_args[],
   {
     return 0;
   }
-  return !call_ufun(&ufun, (char **) wenv_args, wenv_argc, ret, thing, enactor,
-                    pe_info);
+  return !call_ufun(&ufun, ret, thing, enactor, pe_info, pe_regs);
 }
 
 /** Given an exit, find the room that is its source through brute force.
@@ -726,4 +731,45 @@ can_interact(dbref from, dbref to, int type)
     return lci;
 
   return 1;
+}
+
+/** Return the next parent in an object's parent chain
+ * \verbatim
+ * For a given thing, return the next object in its parent chain. current is
+ * the current parent being looked at (initially the same as thing).
+ * parent_count is a pointer to an int which stores the number of parents
+ * we've looked at, for MAX_PARENTS checks. use_ancestor is a pointer to an
+ * int, initially set to 1, if we should include thing's ancestor object,
+ * which we set to 2 when we've seen the ancestor in the chain. Use a NULL
+ * pointer for no ancestor check.
+ * \endverbatim
+ * \param thing the child object
+ * \param current the current object
+ * \param parent_count pointer to int of how many parents we've used
+ * \param use_ancestor pointer to int of whether we should/have used the
+ *                     ancestor object, or NULL if we don't want to use it
+ * \return dbref of next parent object in chain
+ */
+dbref
+next_parent(dbref thing, dbref current, int *parent_count, int *use_ancestor)
+{
+  dbref next;
+
+  if ((*parent_count) > MAX_PARENTS)
+    next = NOTHING;
+  else
+    next = Parent(current);
+
+  (*parent_count)++;
+
+
+  if (!GoodObject(next) && use_ancestor && (*use_ancestor) == 1
+      && !Orphan(thing)) {
+    /* Check for ancestor */
+    next = Ancestor_Parent(thing);
+    (*use_ancestor) = 2;
+  } else if (next == Ancestor_Parent(thing) && use_ancestor)
+    (*use_ancestor) = 0;
+
+  return next;
 }

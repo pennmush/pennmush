@@ -44,6 +44,7 @@ extern const unsigned char *tables;
  * \param max maximum number of words to split out.
  * \param list list of words as a string.
  * \param sep separator character between list items.
+ * \param nullok are null elements allowed? if not, they'll be removed
  * \return number of words split out.
  */
 int
@@ -96,6 +97,7 @@ list2arr_ansi(char *r[], int max, char *list, char sep, int nullok)
  * \param max maximum number of words to split out.
  * \param list list of words as a string.
  * \param sep separator character between list items.
+ * \param nullok are null elements allowed? if not, they'll be removed
  * \return number of words split out.
  */
 int
@@ -183,8 +185,7 @@ FUNCTION(fun_munge)
    * This rearranged list is returned by MUNGE.
    * A fourth argument (separator) is optional.
    */
-
-  char list1[BUFFER_LEN], *lp, rlist[BUFFER_LEN], *rp;
+  char list1[BUFFER_LEN], *lp, rlist[BUFFER_LEN];
   char **ptrs1, **ptrs2, **results;
   char **ptrs3;
   int i, j, nptrs1, nptrs2, nresults;
@@ -192,7 +193,7 @@ FUNCTION(fun_munge)
   char sep, isep[2] = { '\0', '\0' }, *osep, osepd[2] = {
   '\0', '\0'};
   int first;
-  char *uargs[2];
+  PE_REGS *pe_regs;
 
   if (!delim_check(buff, bp, nargs, args, 4, &sep))
     return;
@@ -204,8 +205,6 @@ FUNCTION(fun_munge)
     osepd[0] = sep;
     osep = osepd;
   }
-
-
 
   /* find our object and attribute */
   if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
@@ -244,10 +243,11 @@ FUNCTION(fun_munge)
 
   /* Call the user function */
   lp = list1;
-  rp = rlist;
-  uargs[0] = lp;
-  uargs[1] = isep;
-  call_ufun(&ufun, uargs, 2, rlist, executor, enactor, pe_info);
+  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_munge");
+  pe_regs_setenv_nocopy(pe_regs, 0, lp);
+  pe_regs_setenv_nocopy(pe_regs, 1, isep);
+  call_ufun(&ufun, rlist, executor, enactor, pe_info, pe_regs);
+  pe_regs_free(pe_regs);
 
   /* Now that we have our result, put it back into array form. Search
    * through list1 until we find the element position, then copy the
@@ -421,7 +421,7 @@ FUNCTION(fun_fold)
 
   ufun_attrib ufun;
   char *cp;
-  char *wenv[2];
+  PE_REGS *pe_regs;
   char sep;
   int funccount, per;
   char base[BUFFER_LEN];
@@ -441,10 +441,11 @@ FUNCTION(fun_fold)
   } else {
     strncpy(base, split_token(&cp, sep), BUFFER_LEN);
   }
-  wenv[0] = base;
-  wenv[1] = split_token(&cp, sep);
+  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_fold");
+  pe_regs_setenv_nocopy(pe_regs, 0, base);
+  pe_regs_setenv_nocopy(pe_regs, 1, split_token(&cp, sep));
 
-  call_ufun(&ufun, wenv, 2, result, executor, enactor, pe_info);
+  call_ufun(&ufun, result, executor, enactor, pe_info, pe_regs);
 
   strncpy(base, result, BUFFER_LEN);
 
@@ -452,14 +453,15 @@ FUNCTION(fun_fold)
 
   /* handle the rest of the cases */
   while (cp && *cp) {
-    wenv[1] = split_token(&cp, sep);
-    per = call_ufun(&ufun, wenv, 2, result, executor, enactor, pe_info);
+    pe_regs_setenv_nocopy(pe_regs, 1, split_token(&cp, sep));
+    per = call_ufun(&ufun, result, executor, enactor, pe_info, pe_regs);
     if (per || (pe_info->fun_invocations >= FUNCTION_LIMIT &&
                 pe_info->fun_invocations == funccount && !strcmp(base, result)))
       break;
     funccount = pe_info->fun_invocations;
-    strcpy(base, result);
+    strncpy(base, result, BUFFER_LEN);
   }
+  pe_regs_free(pe_regs);
   safe_str(base, buff, bp);
 }
 
@@ -525,7 +527,8 @@ FUNCTION(fun_filter)
   ufun_attrib ufun;
   char result[BUFFER_LEN];
   char *cp;
-  char *wenv[1];
+  PE_REGS *pe_regs;
+  const char *cur;
   char sep;
   int first;
   int check_bool = 0;
@@ -549,9 +552,11 @@ FUNCTION(fun_filter)
   cp = trim_space_sep(args[1], sep);
   first = 1;
   funccount = pe_info->fun_invocations;
+  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_filter");
   while (cp && *cp) {
-    wenv[0] = split_token(&cp, sep);
-    if (call_ufun(&ufun, wenv, 1, result, executor, enactor, pe_info))
+    cur = split_token(&cp, sep);
+    pe_regs_setenv_nocopy(pe_regs, 0, cur);
+    if (call_ufun(&ufun, result, executor, enactor, pe_info, pe_regs))
       break;
     if ((check_bool == 0)
         ? (*result == '1' && *(result + 1) == '\0')
@@ -560,7 +565,7 @@ FUNCTION(fun_filter)
         first = 0;
       else
         safe_str(osep, buff, bp);
-      safe_str(wenv[0], buff, bp);
+      safe_str(cur, buff, bp);
     }
     /* Can't do *bp == oldbp like in all the others, because bp might not
      * move even when not full, if one of the list elements is null and
@@ -569,6 +574,7 @@ FUNCTION(fun_filter)
       break;
     funccount = pe_info->fun_invocations;
   }
+  pe_regs_free(pe_regs);
 }
 
 /* ARGSUSED */
@@ -652,12 +658,12 @@ FUNCTION(fun_sortkey)
   char *keys[MAX_SORTSIZE];
   int nptrs;
   SortType sort_type;
+  PE_REGS *pe_regs;
   char sep;
   char outsep[BUFFER_LEN];
   int i;
   char result[BUFFER_LEN];
   ufun_attrib ufun;
-  char *wenv[1];
 
   /* sortkey(attr,list,sort_type,delim,osep) */
 
@@ -679,13 +685,16 @@ FUNCTION(fun_sortkey)
 
   nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, args[1], sep, 1);
 
+  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_sortkey");
+
   /* Now we make a list of keys */
   for (i = 0; i < nptrs; i++) {
     /* Build our %0 args */
-    wenv[0] = (char *) ptrs[i];
-    call_ufun(&ufun, wenv, 1, result, executor, enactor, pe_info);
+    pe_regs_setenv_nocopy(pe_regs, 0, ptrs[i]);
+    call_ufun(&ufun, result, executor, enactor, pe_info, pe_regs);
     keys[i] = mush_strdup(result, "sortkey");
   }
+  pe_regs_free(pe_regs);
 
   sort_type = get_list_type(args, nargs, 3, keys, nptrs);
   do_gensort(executor, keys, ptrs, nptrs, sort_type);
@@ -696,22 +705,15 @@ FUNCTION(fun_sortkey)
   }
 }
 
-
-/* From sort.c */
-extern dbref ucomp_executor, ucomp_caller, ucomp_enactor;
-extern char ucomp_buff[BUFFER_LEN];
-extern PE_Info *ucomp_pe_info;
-
-
 /* ARGSUSED */
 FUNCTION(fun_sortby)
 {
-  char *ptrs[MAX_SORTSIZE], *tptr[10];
-  char *up, sep;
+  char *ptrs[MAX_SORTSIZE];
+  char sep;
   int nptrs;
-  dbref thing;
-  ATTR *attrib;
   char *osep, osepd[2] = { '\0', '\0' };
+  ufun_attrib ufun;
+
 
   if (!nargs || !*args[0])
     return;
@@ -726,37 +728,19 @@ FUNCTION(fun_sortby)
     osep = osepd;
   }
 
-  /* Find object and attribute to get sortby function from. */
-  parse_anon_attrib(executor, args[0], &thing, &attrib);
-  if (!GoodObject(thing) || !attrib || !Can_Read_Attr(executor, thing, attrib)) {
-    free_anon_attrib(attrib);
+  if (!fetch_ufun_attrib
+      (args[0], executor, &ufun, UFUN_DEFAULT | UFUN_REQUIRE_ATTR))
     return;
-  }
-  if (!CanEvalAttr(executor, thing, attrib)) {
-    free_anon_attrib(attrib);
-    return;
-  }
-  up = ucomp_buff;
-  safe_str(atr_value(attrib), ucomp_buff, &up);
-  *up = '\0';
-
-  ucomp_executor = thing;
-  ucomp_caller = executor;
-  ucomp_enactor = enactor;
-  ucomp_pe_info = pe_info;
-
-  save_global_env("sortby", tptr);
 
   /* Split up the list, sort it, reconstruct it. */
   nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, args[1], sep, 1);
   if (nptrs > 1)                /* pointless to sort less than 2 elements */
-    sane_qsort((void **) ptrs, 0, nptrs - 1, u_comp);
+    sane_qsort((void **) ptrs, 0, nptrs - 1, u_comp, executor, enactor, &ufun,
+               pe_info);
 
   arr2list(ptrs, nptrs, buff, bp, osep);
   freearr(ptrs, nptrs);
 
-  restore_global_env("sortby", tptr);
-  free_anon_attrib(attrib);
 }
 
 #define OUTSEP() do { \
@@ -1956,18 +1940,11 @@ FUNCTION(fun_iter)
 
   char sep;
   char *outsep, *list;
-  char *tbuf1, *tbuf2, *lp;
+  char *tbuf2, *lp;
   char const *sp;
-  int *place;
   int funccount;
-  char *oldbp;
   const char *replace[2];
-
-
-  if (pe_info->iter_nesting >= MAX_ITERS) {
-    safe_str(T("#-1 TOO MANY ITERS"), buff, bp);
-    return;
-  }
+  PE_REGS *pe_regs;
 
   if (nargs >= 3) {
     /* We have a delimiter. We've got to parse the third arg in place */
@@ -2012,20 +1989,18 @@ FUNCTION(fun_iter)
   ptrs = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
   nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, lp, sep, 1);
 
-  pe_info->iter_nesting++;
-  pe_info->local_iter_nesting++;
-  place = &pe_info->iter_inum[pe_info->iter_nesting];
-  *place = 0;
   funccount = pe_info->fun_invocations;
-  oldbp = *bp;
+
+  pe_regs = pe_regs_localize(pe_info, PE_REGS_ITER, "fun_iter");
   for (i = 0; i < nptrs; i++) {
-    if (*place) {
+    if (i > 0) {
       safe_str(outsep, buff, bp);
     }
-    *place = *place + 1;
-    pe_info->iter_itext[pe_info->iter_nesting] = tbuf1 = ptrs[i];
-    replace[0] = tbuf1;
-    replace[1] = unparse_integer(*place);
+    pe_regs_set(pe_regs, PE_REGS_ITER, "t0", ptrs[i]);
+    pe_regs_set_int(pe_regs, PE_REGS_ITER, "n0", i + 1);
+    replace[0] = ptrs[i];
+    replace[1] = unparse_integer(i + 1);
+
     tbuf2 = replace_string2(standard_tokens, replace, args[1]);
     sp = tbuf2;
     if (process_expression(buff, bp, &sp, executor, caller, enactor,
@@ -2038,17 +2013,13 @@ FUNCTION(fun_iter)
       break;
     }
     funccount = pe_info->fun_invocations;
-    oldbp = *bp;
     mush_free(tbuf2, "replace_string.buff");
-    if (pe_info->iter_break >= 0) {
-      pe_info->iter_break--;
+    if (pe_regs->flags & PE_REGS_IBREAK) {
       break;
     }
   }
-  *place = 0;
-  pe_info->iter_itext[pe_info->iter_nesting] = NULL;
-  pe_info->iter_nesting--;
-  pe_info->local_iter_nesting--;
+  pe_regs_restore(pe_info, pe_regs);
+  pe_regs_free(pe_regs);
   mush_free(outsep, "string");
   mush_free(list, "string");
   freearr(ptrs, nptrs);
@@ -2059,6 +2030,11 @@ FUNCTION(fun_iter)
 FUNCTION(fun_ibreak)
 {
   int i = 1;
+  PE_REGS *pe_regs;
+  int maxlev = PE_Get_Ilev(pe_info);
+
+  /* maxlev is 0-based. ibreak is 1-based. Blah */
+  maxlev += 1;
 
   if (nargs && args[0] && *args[0]) {
     if (!is_strict_integer(args[0])) {
@@ -2068,30 +2044,39 @@ FUNCTION(fun_ibreak)
     i = parse_integer(args[0]);
   }
 
-  if (i < 0
-      || (i + pe_info->iter_break) >
-      (pe_info->local_iter_nesting - pe_info->dolists)) {
+  if (i == 0)
+    return;
+
+  if (i < 0 || i > maxlev) {
     safe_str(T(e_range), buff, bp);
     return;
   }
 
-  pe_info->iter_break += i;
-
+  for (pe_regs = pe_info->regvals; i > 0 && pe_regs; pe_regs = pe_regs->prev) {
+    if (pe_regs->flags & PE_REGS_ITER) {
+      pe_regs->flags |= PE_REGS_IBREAK;
+      i--;
+    }
+    if (pe_regs->flags & PE_REGS_NEWATTR) {
+      break;
+    }
+  }
 }
 
 /* ARGSUSED */
 FUNCTION(fun_ilev)
 {
-  safe_integer(pe_info->local_iter_nesting, buff, bp);
+  safe_integer(PE_Get_Ilev(pe_info), buff, bp);
 }
 
 /* ARGSUSED */
 FUNCTION(fun_itext)
 {
   int i;
+  int maxlev = PE_Get_Ilev(pe_info);
 
   if (!strcasecmp(args[0], "l")) {
-    i = pe_info->local_iter_nesting;
+    i = maxlev;
   } else {
     if (!is_strict_integer(args[0])) {
       safe_str(T(e_int), buff, bp);
@@ -2100,23 +2085,23 @@ FUNCTION(fun_itext)
     i = parse_integer(args[0]);
   }
 
-  if (i < 0 || i > pe_info->local_iter_nesting
-      || (pe_info->local_iter_nesting - i) < 0) {
+  if (i < 0 || i > maxlev) {
     safe_str(T(e_argrange), buff, bp);
     return;
   }
 
-  safe_str(pe_info->iter_itext[pe_info->iter_nesting - i], buff, bp);
+  safe_str(PE_Get_Itext(pe_info, i), buff, bp);
 }
 
 /* ARGSUSED */
 FUNCTION(fun_inum)
 {
   int i;
+  int maxlev = PE_Get_Ilev(pe_info);
 
-  if (!strcasecmp(args[0], "l"))
-    i = pe_info->local_iter_nesting;
-  else {
+  if (!strcasecmp(args[0], "l")) {
+    i = maxlev;
+  } else {
     if (!is_strict_integer(args[0])) {
       safe_str(T(e_int), buff, bp);
       return;
@@ -2124,13 +2109,12 @@ FUNCTION(fun_inum)
     i = parse_integer(args[0]);
   }
 
-  if (i < 0 || i > pe_info->local_iter_nesting
-      || (pe_info->local_iter_nesting - i) < 0) {
+  if (i < 0 || i > maxlev) {
     safe_str(T(e_argrange), buff, bp);
     return;
   }
 
-  safe_integer(pe_info->iter_inum[pe_info->iter_nesting - i], buff, bp);
+  safe_integer(PE_Get_Inum(pe_info, i), buff, bp);
 }
 
 /* ARGSUSED */
@@ -2141,13 +2125,12 @@ FUNCTION(fun_step)
    * This function takes delimiters.
    */
 
-  char *preserve[10];
   char *lp;
   char sep;
   int n;
   int step;
   char *osep, osepd[2] = { '\0', '\0' };
-  char *wenv[10];
+  PE_REGS *pe_regs;
   ufun_attrib ufun;
   char rbuff[BUFFER_LEN];
   char **ptrs = NULL;
@@ -2183,28 +2166,22 @@ FUNCTION(fun_step)
   if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
     return;
 
-  /* save our stack */
-  save_global_env("step", preserve);
-
   /* Split lp up into an ansi-safe list */
   ptrs = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
   nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, lp, sep, 1);
 
   /* Step through the list. */
+  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_step");
   for (i = 0; i < nptrs;) {
     for (n = 0; n < step; n++) {
       if (i < nptrs) {
-        wenv[n] = ptrs[i++];
+        pe_regs_setenv_nocopy(pe_regs, n, ptrs[i++]);
       } else {
-        break;
+        pe_regs_setenv_nocopy(pe_regs, n, "");
       }
     }
-    for (; n < 10; n++) {
-      wenv[n] = NULL;
-    }
-    if (call_ufun(&ufun, wenv, step, rbuff, executor, enactor, pe_info)) {
-      mush_free(ptrs, "ptrarray");
-      return;
+    if (call_ufun(&ufun, rbuff, executor, enactor, pe_info, pe_regs)) {
+      goto exitsequence;
     }
     if (i > step) {
       /* At least second loop */
@@ -2212,6 +2189,8 @@ FUNCTION(fun_step)
     }
     safe_str(rbuff, buff, bp);
   }
+exitsequence:
+  pe_regs_free(pe_regs);
   freearr(ptrs, nptrs);
   mush_free(ptrs, "ptrarray");
 }
@@ -2226,10 +2205,10 @@ FUNCTION(fun_map)
 
   ufun_attrib ufun;
   char *lp;
-  char *wenv[2];
-  char place[16];
+  PE_REGS *pe_regs;
   char sep;
   int funccount;
+  char place[16];
   char *osep, osepd[2] = { '\0', '\0' };
   char rbuff[BUFFER_LEN];
   char **ptrs = NULL;
@@ -2254,15 +2233,15 @@ FUNCTION(fun_map)
   nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, lp, sep, 1);
 
   /* Build our %0 args */
+  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_map");
   for (i = 0; i < nptrs; i++) {
-
-    wenv[0] = ptrs[i];
+    pe_regs_setenv_nocopy(pe_regs, 0, ptrs[i]);
     snprintf(place, 16, "%d", i + 1);
-    wenv[1] = place;
+    pe_regs_setenv_nocopy(pe_regs, 1, place);
 
     funccount = pe_info->fun_invocations;
 
-    if (call_ufun(&ufun, wenv, 2, rbuff, executor, enactor, pe_info)) {
+    if (call_ufun(&ufun, rbuff, executor, enactor, pe_info, pe_regs)) {
       break;
     }
 
@@ -2275,6 +2254,7 @@ FUNCTION(fun_map)
       break;
     }
   }
+  pe_regs_free(pe_regs);
   freearr(ptrs, nptrs);
   mush_free(ptrs, "ptrarray");
 }
@@ -2291,8 +2271,8 @@ FUNCTION(fun_mix)
   ufun_attrib ufun;
   char rbuff[BUFFER_LEN];
   char *lp[10];
-  char *list[10];
   char sep;
+  PE_REGS *pe_regs;
   int funccount;
   int n, lists;
   char **ptrs[10] = { NULL };
@@ -2328,16 +2308,17 @@ FUNCTION(fun_mix)
     }
   }
 
+  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_mix");
   for (i = 0; i < maxi; i++) {
     for (n = 0; n < lists; n++) {
       if (nptrs[n] > i) {
-        list[n] = ptrs[n][i];
+        pe_regs_setenv_nocopy(pe_regs, n, ptrs[n][i]);
       } else {
-        list[n] = NULL;
+        pe_regs_setenv_nocopy(pe_regs, n, "");
       }
     }
     funccount = pe_info->fun_invocations;
-    if (call_ufun(&ufun, list, lists, rbuff, executor, enactor, pe_info)) {
+    if (call_ufun(&ufun, rbuff, executor, enactor, pe_info, pe_regs)) {
       break;
     }
     if (i > 0) {
@@ -2350,6 +2331,7 @@ FUNCTION(fun_mix)
     }
   }
 
+  pe_regs_free(pe_regs);
   for (n = 0; n < lists; n++) {
     if (ptrs[n]) {
       freearr(ptrs[n], nptrs[n]);
@@ -2522,21 +2504,20 @@ FUNCTION(fun_regreplace)
   int offsets[99];
   int erroffset;
   int flags = 0, all = 0, match_offset = 0;
-  struct re_save rsave;
+  PE_REGS *pe_regs = NULL;
 
   int i;
   const char *r, *obp;
-  char *start, *oldbp;
+  char *start;
   char tbuf[BUFFER_LEN], *tbp;
   char prebuf[BUFFER_LEN];
   char postbuf[BUFFER_LEN], *postp;
-  ansi_string *orig, *repl;
+  ansi_string *orig = NULL;
+  ansi_string *repl = NULL;
   int search;
   int prelen;
   size_t searchlen;
   int funccount;
-
-  save_regexp_context(&rsave);
 
   if (called_as[strlen(called_as) - 1] == 'I')
     flags = PCRE_CASELESS;
@@ -2551,18 +2532,18 @@ FUNCTION(fun_regreplace)
                      PT_DEFAULT, pe_info);
   *postp = '\0';
 
+  pe_regs = pe_regs_localize(pe_info, PE_REGS_REGEXP, "fun_regreplace");
+
   /* Ansi-less regedits */
   for (i = 1; i < nargs - 1; i += 2) {
     /* If this string has ANSI, switch to using ansi only */
-    if (strchr(postbuf, TAG_START))
+    if (has_markup(postbuf))
       break;
 
     memcpy(prebuf, postbuf, BUFFER_LEN);
     prelen = strlen(prebuf);
 
     postp = postbuf;
-
-    orig = parse_ansi_string(prebuf);
 
     /* Get the needle */
     tbp = tbuf;
@@ -2576,9 +2557,7 @@ FUNCTION(fun_regreplace)
       /* Matching error. */
       safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
       safe_str(errptr, buff, bp);
-      free_ansi_string(orig);
-      restore_regexp_context(&rsave);
-      return;
+      goto exit_sequence;
     }
     add_check("pcre");          /* re */
     if (searchlen)
@@ -2591,9 +2570,7 @@ FUNCTION(fun_regreplace)
         mush_free(re, "pcre");
         safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
         safe_str(errptr, buff, bp);
-        free_ansi_string(orig);
-        restore_regexp_context(&rsave);
-        return;
+        goto exit_sequence;
       }
       if (study != NULL)
         /* study */
@@ -2603,8 +2580,9 @@ FUNCTION(fun_regreplace)
     if (study) {
       extra = study;
       set_match_limit(extra);
-    } else
+    } else {
       extra = default_match_limit();
+    }
 
     search = 0;
     /* Do all the searches and replaces we can */
@@ -2616,14 +2594,12 @@ FUNCTION(fun_regreplace)
     if (subpatterns < 0) {
       safe_str(prebuf, postbuf, &postp);
       mush_free(re, "pcre");
-      free_ansi_string(orig);
       if (study)
         mush_free(study, "pcre.extra");
       continue;
     }
 
     funccount = pe_info->fun_invocations;
-    oldbp = postp;
 
     do {
       /* Copy up to the start of the matched area */
@@ -2631,19 +2607,19 @@ FUNCTION(fun_regreplace)
       prebuf[offsets[0]] = '\0';
       safe_str(start, postbuf, &postp);
       prebuf[offsets[0]] = tmp;
+
       /* Now copy in the replacement, putting in captured sub-expressions */
       obp = args[i + 1];
-      global_eval_context.re_code = re;
-      global_eval_context.re_from = orig;
-      global_eval_context.re_offsets = offsets;
-      global_eval_context.re_subpatterns = subpatterns;
+
+      pe_regs_clear(pe_regs);
+      pe_regs_set_rx_context(pe_regs, re, offsets, subpatterns, prebuf);
+
       process_expression(postbuf, &postp, &obp, executor, caller, enactor,
                          PE_DEFAULT | PE_DOLLAR, PT_DEFAULT, pe_info);
       if ((*bp == (buff + BUFFER_LEN - 1))
           && (pe_info->fun_invocations == funccount))
         break;
 
-      oldbp = postp;
       funccount = pe_info->fun_invocations;
 
       start = prebuf + offsets[1];
@@ -2662,6 +2638,7 @@ FUNCTION(fun_regreplace)
     if (study != NULL)
       mush_free(study, "pcre.extra");
     free_ansi_string(orig);
+    orig = NULL;
   }
 
   /* We get to this point if there is ansi in an 'orig' string */
@@ -2684,9 +2661,7 @@ FUNCTION(fun_regreplace)
         /* Matching error. */
         safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
         safe_str(errptr, buff, bp);
-        free_ansi_string(orig);
-        restore_regexp_context(&rsave);
-        return;
+        goto exit_sequence;
       }
       add_check("pcre");        /* re */
       if (searchlen)
@@ -2699,9 +2674,7 @@ FUNCTION(fun_regreplace)
           mush_free(re, "pcre");
           safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
           safe_str(errptr, buff, bp);
-          free_ansi_string(orig);
-          restore_regexp_context(&rsave);
-          return;
+          goto exit_sequence;
         }
         if (study != NULL)
           /* study */
@@ -2722,10 +2695,8 @@ FUNCTION(fun_regreplace)
           /* We have a match */
           /* Process the replacement */
           r = args[i + 1];
-          global_eval_context.re_code = re;
-          global_eval_context.re_from = orig;
-          global_eval_context.re_offsets = offsets;
-          global_eval_context.re_subpatterns = subpatterns;
+          pe_regs_clear(pe_regs);
+          pe_regs_set_rx_context_ansi(pe_regs, re, offsets, subpatterns, orig);
           tbp = tbuf;
           process_expression(tbuf, &tbp, &r, executor, caller, enactor,
                              PE_DEFAULT | PE_DOLLAR, PT_DEFAULT, pe_info);
@@ -2760,16 +2731,18 @@ FUNCTION(fun_regreplace)
     }
     safe_ansi_string(orig, 0, orig->len, buff, bp);
     free_ansi_string(orig);
+    orig = NULL;
   } else {
     safe_str(postbuf, buff, bp);
   }
 
-  restore_regexp_context(&rsave);
-
+exit_sequence:
+  if (orig) {
+    free_ansi_string(orig);
+  }
+  pe_regs_restore(pe_info, pe_regs);
+  pe_regs_free(pe_regs);
 }
-
-/** array of indexes for %q registers during regexp matching */
-extern signed char qreg_indexes[UCHAR_MAX + 1];
 
 FUNCTION(fun_regmatch)
 {
@@ -2782,7 +2755,7 @@ FUNCTION(fun_regmatch)
  * Registers are by position (old way) or name:register (new way)
  *
  */
-  int i, nqregs, curq;
+  int i, nqregs;
   char *qregs[NUMQ], *holder[NUMQ];
   pcre *re;
   pcre_extra *extra;
@@ -2790,11 +2763,10 @@ FUNCTION(fun_regmatch)
   int erroffset;
   int offsets[99];
   int subpatterns;
+  char lbuff[BUFFER_LEN], *lbp;
   int flags = 0;
-  int qindex;
   ansi_string *as;
   char *txt;
-  char *qptr;
   char *needle;
   size_t len;
 
@@ -2836,30 +2808,18 @@ FUNCTION(fun_regmatch)
   /* Initialize every q-register used to '' */
   for (i = 0; i < nqregs; i++) {
     char *regname;
-    char *named_subpattern = NULL;
-    int subpattern = 0;
     holder[i] = mush_strdup(qregs[i], "regmatch");
     if ((regname = strchr(holder[i], ':'))) {
       /* subexpr:register */
       *regname++ = '\0';
-      if (is_strict_integer(holder[i]))
-        subpattern = parse_integer(holder[i]);
-      else
-        named_subpattern = holder[i];
     } else {
       /* Get subexper by position in list */
-      subpattern = i;
       regname = holder[i];
     }
 
-    if (regname && regname[0] && !regname[1] &&
-        ((qindex = qreg_indexes[(unsigned char) regname[0]]) != -1))
-      curq = qindex;
-    else
-      curq = -1;
-    if (curq < 0 || curq >= NUMQ)
-      continue;
-    *(global_eval_context.renv[curq]) = '\0';
+    if (ValidQregName(regname)) {
+      PE_Setq(pe_info, regname, "");
+    }
   }
   /* Now, only for those that have a pattern, copy text */
   for (i = 0; i < nqregs; i++) {
@@ -2879,31 +2839,27 @@ FUNCTION(fun_regmatch)
       regname = qregs[i];
     }
 
-    if (regname && regname[0] && !regname[1] &&
-        ((qindex = qreg_indexes[(unsigned char) regname[0]]) != -1))
-      curq = qindex;
-    else
-      curq = -1;
-    if (curq < 0 || curq >= NUMQ)
+    if (!ValidQregName(regname)) {
+      if (regname[0] != '-' || regname[1]) {
+        safe_str(T(e_badregname), buff, bp);
+      }
       continue;
+    }
 
     if (subpatterns < 0) {
-      global_eval_context.renv[curq][0] = '\0';
+      lbuff[0] = '\0';
     } else if (named_subpattern) {
-      qptr = global_eval_context.renv[curq];
+      lbp = lbuff;
       ansi_pcre_copy_named_substring(re, as, offsets, subpatterns,
-                                     named_subpattern, 1,
-                                     global_eval_context.renv[curq], &qptr);
-
-      if (qptr != global_eval_context.renv[curq])
-        *qptr = '\0';
+                                     named_subpattern, 1, lbuff, &lbp);
+      *(lbp) = '\0';
     } else {
-      qptr = global_eval_context.renv[curq];
+      lbp = lbuff;
       ansi_pcre_copy_substring(as, offsets, subpatterns, subpattern, 1,
-                               global_eval_context.renv[curq], &qptr);
-      if (qptr != global_eval_context.renv[curq])
-        *qptr = '\0';
+                               lbuff, &lbp);
+      *(lbp) = '\0';
     }
+    PE_Setq(pe_info, regname, lbuff);
   }
   for (i = 0; i < nqregs; i++) {
     mush_free(holder[i], "regmatch");

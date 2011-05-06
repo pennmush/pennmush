@@ -72,10 +72,10 @@
 
 uint32_t gen_rand32(void);
 uint64_t gen_rand64(void);
-void fill_array32(uint32_t *array, int size);
-void fill_array64(uint64_t *array, int size);
+void fill_array32(uint32_t * array, int size);
+void fill_array64(uint64_t * array, int size);
 void init_gen_rand(uint32_t seed);
-void init_by_array(uint32_t *init_key, int key_length);
+void init_by_array(uint32_t * init_key, int key_length);
 const char *get_idstring(void);
 int get_min_array_size32(void);
 int get_min_array_size64(void);

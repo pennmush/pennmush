@@ -44,216 +44,34 @@ slab *function_slab; /**< slab for 'struct fun' allocations */
 /* -------------------------------------------------------------------------*
  * Utilities.
  */
-
-/* Save and restore regexp data */
-void
-save_regexp_context(struct re_save *save)
-{
-  save->re_code = global_eval_context.re_code;
-  save->re_from = global_eval_context.re_from;
-  save->re_subpatterns = global_eval_context.re_subpatterns;
-  save->re_offsets = global_eval_context.re_offsets;
-}
-
-void
-restore_regexp_context(struct re_save *save)
-{
-  global_eval_context.re_code = save->re_code;
-  global_eval_context.re_from = save->re_from;
-  global_eval_context.re_subpatterns = save->re_subpatterns;
-  global_eval_context.re_offsets = save->re_offsets;
-}
-
-/** Save a single q-register
- */
-void
-save_partial_global_reg(const char *funcname, char *preserve[], int i)
-{
-  preserve[i] = mush_strdup(global_eval_context.renv[i], funcname);
-}
-
-/** Restore q-registers saved with save_partial_global_reg()
- */
-void
-restore_partial_global_regs(const char *funcname, char *preserve[])
-{
-  int i;
-  for (i = 0; i < NUMQ; i++) {
-    if (preserve[i]) {
-      mush_strncpy(global_eval_context.renv[i], preserve[i], BUFFER_LEN);
-      mush_free(preserve[i], funcname);
-    }
-  }
-}
-
-/** Save a copy of the q-registers.
- * \param funcname name of function calling (for memory leak testing)
- * \param preserve pointer to array to store the q-registers in.
- */
-void
-save_global_regs(const char *funcname, char *preserve[])
-{
-  int i;
-  for (i = 0; i < NUMQ; i++) {
-    if (!global_eval_context.renv[i][0])
-      preserve[i] = NULL;
-    else {
-      preserve[i] = mush_strdup(global_eval_context.renv[i], funcname);
-    }
-  }
-}
-
-/** Restore the q-registers, freeing the storage array.
- * \param funcname name of function calling (for memory leak testing)
- * \param preserve pointer to array to restore the q-registers from.
- */
-void
-restore_global_regs(const char *funcname, char *preserve[])
-{
-  int i;
-  for (i = 0; i < NUMQ; i++) {
-    if (preserve[i]) {
-      mush_strncpy(global_eval_context.renv[i], preserve[i], BUFFER_LEN);
-      mush_free(preserve[i], funcname);
-      preserve[i] = NULL;
-    } else {
-      global_eval_context.renv[i][0] = '\0';
-    }
-  }
-}
-
-/** Free the storage array for the q-registers, without restoring
- * \param funcname name of function calling (for memory leak testing)
- * \param preserve pointer to array to free q-registers from.
- */
-void
-free_global_regs(const char *funcname, char *preserve[])
-{
-  int i;
-  for (i = 0; i < NUMQ; i++) {
-    if (preserve[i])
-      mush_free(preserve[i], funcname);
-  }
-}
-
-/** Initilalize an array for the q-registers, setting all NULL.
- * \param preserve pointer to array to free q-registers from.
- */
-void
-init_global_regs(char *preserve[])
-{
-  int i;
-  for (i = 0; i < NUMQ; i++) {
-    preserve[i] = NULL;
-  }
-}
-
-/** Restore the q-registers, without freeing the storage array.
- * \param preserve pointer to array to restore the q-registers from.
- */
-void
-load_global_regs(char *preserve[])
-{
-  int i;
-  for (i = 0; i < NUMQ; i++) {
-    if (preserve[i]) {
-      strcpy(global_eval_context.renv[i], preserve[i]);
-    } else {
-      global_eval_context.renv[i][0] = '\0';
-    }
-  }
-}
-
 /** Save a copy of the environment (%0-%9)
  * \param funcname name of function calling (for memory leak testing)
  * \param preserve pointer to array to store %0-%9 in.
+ * \param orig pointer to array to get %0-%9 values from
  */
 void
-save_global_env(const char *funcname __attribute__ ((__unused__)),
-                char *preserve[])
+save_env(const char *funcname __attribute__ ((__unused__)),
+         char *preserve[], char *orig[])
 {
   int i;
   for (i = 0; i < 10; i++)
-    preserve[i] = global_eval_context.wenv[i];
+    preserve[i] = orig[i];
 }
 
 /** Restore the environment (%0-%9)
  * \param funcname name of function calling (for memory leak testing)
  * \param preserve pointer to array to restore %0-%9 from.
+ * \param orig pointer to array to restore env to
  */
 void
-restore_global_env(const char *funcname __attribute__ ((__unused__)),
-                   char *preserve[])
+restore_env(const char *funcname __attribute__ ((__unused__)),
+            char *preserve[], char *orig[])
 {
   int i;
   for (i = 0; i < 10; i++)
-    global_eval_context.wenv[i] = preserve[i];
+    orig[i] = preserve[i];
 }
 
-/** Save a copy of the wnxt and rnxt state
- * This function must deal with both the addresses and the values
- * of these variables, because they get modified in all sorts of
- * nasty ways that we may not account for.
- * \param funcname name of function calling (for memory leak testing)
- * \param preservew pointer to array to store the wnxt address in.
- * \param preserver pointer to array to store the rnxt address in.
- * \param valw pointer to array to store the wnxt value in.
- * \param valr pointer to array to store the rnxt value in.
- */
-void
-save_global_nxt(const char *funcname, char *preservew[], char *preserver[],
-                char *valw[], char *valr[])
-{
-  int i;
-  for (i = 0; i < NUMQ; i++) {
-    preserver[i] = global_eval_context.rnxt[i];
-    if (!global_eval_context.rnxt[i])
-      valr[i] = NULL;
-    else {
-      valr[i] = mush_strdup(global_eval_context.rnxt[i], funcname);
-    }
-  }
-  for (i = 0; i < 10; i++) {
-    preservew[i] = global_eval_context.wnxt[i];
-    if (!global_eval_context.wnxt[i])
-      valw[i] = NULL;
-    else {
-      valw[i] = mush_strdup(global_eval_context.wnxt[i], funcname);
-    }
-  }
-}
-
-/** Restore a copy of the wnxt and rnxt state
- * \param funcname name of function calling (for memory leak testing)
- * \param preservew pointer to array to restore the wnxt address from.
- * \param preserver pointer to array to restore the rnxt address from.
- * \param valw pointer to array to restore the wnxt value from.
- * \param valr pointer to array to restore the rnxt value from.
- */
-void
-restore_global_nxt(const char *funcname, char *preservew[], char *preserver[],
-                   char *valw[], char *valr[])
-{
-  int i;
-  for (i = 0; i < NUMQ; i++) {
-    global_eval_context.rnxt[i] = preserver[i];
-    if (preserver[i]) {
-      /* There was a former address, so we can restore to it */
-      mush_strncpy(global_eval_context.rnxt[i], valr[i], BUFFER_LEN);
-      mush_free(valr[i], funcname);
-      valr[i] = NULL;
-    }
-  }
-  for (i = 0; i < 10; i++) {
-    global_eval_context.wnxt[i] = preservew[i];
-    if (preservew[i]) {
-      /* There was a former address, so we can restore to it */
-      mush_strncpy(global_eval_context.wnxt[i], valw[i], BUFFER_LEN);
-      mush_free(valw[i], funcname);
-      valw[i] = NULL;
-    }
-  }
-}
 
 
 /** Check for a delimiter in an argument of a function call.
@@ -484,11 +302,11 @@ FUNTAB flist[] = {
   {"INUM", fun_inum, 1, 1, FN_REG | FN_STRIPANSI},
   {"IPADDR", fun_ipaddr, 1, 1, FN_REG | FN_STRIPANSI},
   {"ISDAYLIGHT", fun_isdaylight, 0, 0, FN_REG},
-  {"ISDBREF", fun_isdbref, 1, 1, FN_REG},
-  {"ISINT", fun_isint, 1, 1, FN_REG},
-  {"ISNUM", fun_isnum, 1, 1, FN_REG},
-  {"ISOBJID", fun_isobjid, 1, 1, FN_REG},
-  {"ISWORD", fun_isword, 1, 1, FN_REG},
+  {"ISDBREF", fun_isdbref, 1, 1, FN_REG | FN_STRIPANSI},
+  {"ISINT", fun_isint, 1, 1, FN_REG | FN_STRIPANSI},
+  {"ISNUM", fun_isnum, 1, 1, FN_REG | FN_STRIPANSI},
+  {"ISOBJID", fun_isobjid, 1, 1, FN_REG | FN_STRIPANSI},
+  {"ISWORD", fun_isword, 1, 1, FN_REG | FN_STRIPANSI},
   {"ITER", fun_iter, 2, 4, FN_NOPARSE},
   {"ITEMS", fun_items, 2, 2, FN_REG | FN_STRIPANSI},
   {"ITEMIZE", fun_itemize, 1, 4, FN_REG},
@@ -506,6 +324,7 @@ FUNTAB flist[] = {
   {"LFLAGS", fun_lflags, 0, 1, FN_REG | FN_STRIPANSI},
   {"LINK", fun_link, 2, 3, FN_REG | FN_STRIPANSI},
   {"LIST", fun_list, 1, 2, FN_REG | FN_STRIPANSI},
+  {"LISTQ", fun_listq, 0, 1, FN_REG | FN_STRIPANSI},
   {"LIT", fun_lit, 1, -1, FN_LITERAL},
   {"LJUST", fun_ljust, 2, 3, FN_REG},
   {"LLOCKFLAGS", fun_lockflags, 0, 1, FN_REG | FN_STRIPANSI},
@@ -682,7 +501,7 @@ FUNTAB flist[] = {
   {"ROOM", fun_room, 1, 1, FN_REG | FN_STRIPANSI},
   {"ROOT", fun_root, 2, 2, FN_REG | FN_STRIPANSI},
   {"S", fun_s, 1, -1, FN_REG},
-  {"SCAN", fun_scan, 1, -2, FN_REG | FN_STRIPANSI},
+  {"SCAN", fun_scan, 1, 3, FN_REG | FN_STRIPANSI},
   {"SCRAMBLE", fun_scramble, 1, -1, FN_REG},
   {"SECS", fun_secs, 0, 0, FN_REG},
   {"SECURE", fun_secure, 1, -1, FN_REG},
@@ -833,6 +652,7 @@ FUNTAB flist[] = {
  * \endverbatim
  * \param player the enactor.
  * \param lc if 1, return functions in lowercase.
+ * \param type "local", "builtin", "all" or NULL, to limit which functions are shown
  */
 void
 do_list_functions(dbref player, int lc, char *type)
@@ -844,7 +664,7 @@ do_list_functions(dbref player, int lc, char *type)
 
 /** Return a list of function names.
  * This function returns the list of function names as a string.
- * \param type if "local", returns @functions only.  If "builtin",
+ * \param type if "local", returns \@functions only.  If "builtin",
  *   hardcoded functions. If omitted, both.
  * \return list of function names as a static string.
  */
@@ -1026,9 +846,9 @@ check_func(dbref player, FUN *fp)
   return 1;
 }
 
-/** @function/clone, for creating a copy of a function.
+/** \@function/clone, for creating a copy of a function.
  * \param player the enactor
- * \param name name of function to clone
+ * \param function name of function to clone
  * \param clone name of the cloned function
  */
 void

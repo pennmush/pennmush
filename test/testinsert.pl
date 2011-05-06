@@ -1,10 +1,4 @@
-use PennMUSH;
-use MUSHConnection;
-use TestHarness;
-
-$mush = PennMUSH->new();
-$god = $mush->loginGod();
-
+run tests:
 test('insert.1', $god, 'think insert(a b c,0,X)', 'a b c');
 test('insert.2', $god, 'think insert(a b c,1,X)', 'X a b c');
 test('insert.3', $god, 'think insert(a b c,2,X)', 'a X b c');

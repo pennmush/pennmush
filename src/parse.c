@@ -1087,7 +1087,7 @@ pe_regs_copystack(PE_REGS *new_regs, PE_REGS *pe_regs,
   }
 }
 
-/** Does PE_REGS have a register stack of a given type, within the 
+/** Does PE_REGS have a register stack of a given type, within the
  * appropriate scope? This checks three things: For a PE_REGS with the
  * appropriate type, for a stopping pe_regs (NEWATTR, etc), and for
  * a value with the appropriate type.
@@ -1472,12 +1472,13 @@ pi_regs_get_env(NEW_PE_INFO *pe_info, int num)
 {
   PE_REGS *pe_regs;
   const char *name;
+  const char *ret;
+
   if (num < 10 && num >= 0) {
     name = envid[num];
   } else {
     name = tprintf("%d", num);
   }
-  const char *ret;
 
   pe_regs = pe_info->regvals;
 

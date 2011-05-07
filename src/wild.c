@@ -529,8 +529,9 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
      */
     char *buff = data + totallen;
     char *bp = buff;
-    matches[i] = bp;
     int plen = offsets[i * 2 + 1] - offsets[i * 2];
+    matches[i] = bp;
+
     if ((len - totallen) < BUFFER_LEN) {
       buff = data + len - BUFFER_LEN;
     }

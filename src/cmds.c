@@ -368,9 +368,16 @@ COMMAND(cmd_dump)
 
 COMMAND(cmd_edit)
 {
-  do_gedit(executor, arg_left, args_right,
-           SW_ISSET(sw, SWITCH_FIRST) ? EDIT_FIRST : EDIT_ALL,
-           SW_ISSET(sw, SWITCH_CHECK) ? 0 : 1);
+  int type = EDIT_DEFAULT;
+
+  if (SW_ISSET(sw, SWITCH_FIRST))
+    type |= EDIT_FIRST;
+  if (SW_ISSET(sw, SWITCH_CHECK))
+    type |= EDIT_CHECK;
+  if (SW_ISSET(sw, SWITCH_QUIET))
+    type |= EDIT_QUIET;
+
+  do_gedit(executor, arg_left, args_right, type);
 }
 
 COMMAND(cmd_elock)

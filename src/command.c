@@ -144,7 +144,7 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
   {"@DUMP", "PARANOID DEBUG", cmd_dump, CMD_T_ANY, "WIZARD", 0},
 
-  {"@EDIT", "FIRST CHECK", cmd_edit,
+  {"@EDIT", "FIRST CHECK QUIET", cmd_edit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE |
    CMD_T_NOGAGGED, 0, 0},
   {"@ELOCK", NULL, cmd_elock, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED,

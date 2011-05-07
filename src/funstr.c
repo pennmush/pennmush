@@ -1363,7 +1363,7 @@ FUNCTION(fun_beep)
   } else
     k = 1;
 
-  if (!Hasprivs(executor) || (k <= 0) || (k > 5)) {
+  if ((k <= 0) || (k > 5)) {
     safe_str(T(e_perm), buff, bp);
     return;
   }

@@ -18,6 +18,9 @@ chronological order (most recent first)
 
 Version 1.8.4 patchlevel 5                                 ??? ??,  2012
 
+Functions:
+ * Restrictions for the beep() function can now be modified with @function.
+   Suggested by Paige. [MG]
 
 Version 1.8.4 patchlevel 4                                 May 05,  2011
 

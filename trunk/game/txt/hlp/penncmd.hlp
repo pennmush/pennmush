@@ -1459,9 +1459,9 @@ See also: @shutdown
 See also: enter, leave, goto, ENTER_OK
 & @edit
 & @gedit
-  @edit[/first][/check] <object>/<attributes>=<search>, <replace> 
-  @edit[/check] <object>/<attributes> = $,<string to append>
-  @edit[/check] <object>/<attributes> = ^,<string to prepend>
+  @edit[/first][/check][/quiet] <object>/<attributes>=<search>, <replace> 
+  @edit[/check][/quiet] <object>/<attributes> = $,<string to append>
+  @edit[/check][/quiet] <object>/<attributes> = ^,<string to prepend>
 
   This command allows you to edit the contents of attributes, without having
   to retype the entire attribute.
@@ -1479,6 +1479,10 @@ See also: enter, leave, goto, ENTER_OK
   each attribute is replaced. If the /check switch is given, the attributes
   are not altered, you'll just be shown what would be changed (with the
   changes ansi-highlighted).
+  
+  If the /quiet switch is given, you won't be shown the modified text, you'll
+  just be told how many of the matching attributes were/weren't edited.
+  Useful when edited a lot of large/spammy attributes.
   
   <search> and <replace> are not evaluated, so you don't need to escape
   special characters. If either contains commas, however, you may need to

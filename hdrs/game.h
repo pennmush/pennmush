@@ -119,9 +119,12 @@ extern int do_chzone(dbref player, const char *name, const char *newobj,
 extern int do_set(dbref player, const char *name, char *flag);
 extern void do_cpattr
   (dbref player, char *oldpair, char **newpair, int move, int noflagcopy);
-enum edit_type { EDIT_FIRST, EDIT_ALL };
-extern void do_gedit(dbref player, char *it, char **argv,
-                     enum edit_type target, int doit);
+#define EDIT_DEFAULT 0  /**< Edit all occurrences. Default. */
+#define EDIT_FIRST   1  /**< Only edit the first occurrence in each attribute. */
+#define EDIT_CHECK   2  /**< Don't actually edit the attr, just show what would happen if we did */
+#define EDIT_QUIET   4  /**< Don't show new values, just report total changes */
+//enum edit_type { EDIT_FIRST, EDIT_ALL };
+extern void do_gedit(dbref player, char *it, char **argv, int flags);
 extern void do_trigger(dbref player, char *object, char **argv);
 extern void do_use(dbref player, const char *what);
 extern void do_parent(dbref player, char *name, char *parent_name);

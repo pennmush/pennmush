@@ -13,6 +13,15 @@ be read in 'help patchlevels'.
 
 Version 1.8.4 patchlevel 5                                 ??? ??,  2012
 
+Commands:
+ * @edit/quiet edits attributes, but doesn't spam you with the modified
+   values, just gives you a count of modified attributes. Suggested by
+   Padraic. [MG]
+   
+Minor Changes:
+ * @edit no longer shows the full value of attributes which aren't edited,
+   it just shows that they are unchanged. Suggested by Minion. [MG]
+
 Fixes:
  * You couldn't @chat on open channels. Reported by Padraic. [MG]
  * Win32 compile fixes by Daniel Powell. [MG]

@@ -776,10 +776,11 @@ do_cpattr(dbref player, char *oldpair, char **newpair, int move, int noflagcopy)
 
 /** Argument struct for gedit_helper */
 struct gedit_args {
-  enum edit_type target; /**< The type of edit */
-  int doit;  /**< Do we actually replace the attribute, or just pretend? */
+  int flags; /**< The type of edit */
   char *from; /**< What is going to be replaced? */
   char *to; /**< What it gets replaced with. */
+  int edited; /**< Number of attributes edited */
+  int skipped; /**< Number of attributes skipped */
 };
 
 static int
@@ -795,6 +796,7 @@ gedit_helper(dbref player, dbref thing,
   char *tbufp, *tbufap;
   size_t rlen, vlen;
   struct gedit_args *gargs;
+  int edited = 0;
 
   gargs = args;
 
@@ -812,6 +814,7 @@ gedit_helper(dbref player, dbref thing,
   }
   if (!Can_Write_Attr(player, thing, a)) {
     notify(player, T("You need to control an attribute to edit it."));
+    gargs->skipped++;
     return 0;
   }
   s = (char *) atr_value(a);    /* warning: pointer to static buffer */
@@ -824,6 +827,7 @@ gedit_helper(dbref player, dbref thing,
     if (safe_format(tbuf_ansi, &tbufap, "%s%s%s%s", s, ANSI_HILITE, r,
                     ANSI_END))
       ansi_long_flag = 1;
+      edited = 1;
   } else if (vlen == 1 && *val == '^') {
     /* prepend */
     safe_str(r, tbuf1, &tbufp);
@@ -832,6 +836,7 @@ gedit_helper(dbref player, dbref thing,
     if (safe_format(tbuf_ansi, &tbufap, "%s%s%s%s", ANSI_HILITE, r, ANSI_END,
                     s))
       ansi_long_flag = 1;
+      edited = 1;
   } else if (!*val) {
     /* insert replacement string between every character */
     ansi_string *haystack;
@@ -841,7 +846,8 @@ gedit_helper(dbref player, dbref thing,
 
     /* Add one at the start */
     if (!safe_strl(r, rlen, tbuf1, &tbufp)) {
-      if (gargs->target != EDIT_FIRST) {
+      edited++;
+      if (!(gargs->flags & EDIT_FIRST)) {
         for (last = 0; last < (size_t) haystack->len; last++) {
           /* Add the next character */
           if (safe_ansi_string(haystack, last, 1, tbuf1, &tbufp)) {
@@ -875,6 +881,7 @@ gedit_helper(dbref player, dbref thing,
 
     while (last < (size_t) haystack->len
            && (p = strstr(haystack->text + last, val)) != NULL) {
+      edited = 1;
       if (safe_ansi_string(haystack, last, p - (haystack->text + last),
                            tbuf1, &tbufp)) {
         too_long = 1;
@@ -896,7 +903,7 @@ gedit_helper(dbref player, dbref thing,
           ansi_long_flag = 1;
       }
       last = p - haystack->text + vlen;
-      if (gargs->target == EDIT_FIRST)
+      if (gargs->flags & EDIT_FIRST)
         break;
     }
     if (last < (size_t) haystack->len && !too_long) {
@@ -912,15 +919,25 @@ gedit_helper(dbref player, dbref thing,
   *tbufp = '\0';
   *tbufap = '\0';
 
-  if (gargs->doit) {
+
+  if (edited)
+    gargs->edited++;
+  else
+    gargs->skipped++;
+
+  if (!edited) {
+    if (!(gargs->flags & EDIT_QUIET)) {
+      notify_format(player, T("%s - Unchanged."), AL_NAME(a));
+    }
+  } else if (!(gargs->flags & EDIT_CHECK)) {
     if ((do_set_atr(thing, AL_NAME(a), tbuf1, player, 0) == 1) &&
-        !AreQuiet(player, thing)) {
+        !(gargs->flags & EDIT_QUIET) && !AreQuiet(player, thing)) {
       if (!ansi_long_flag && ShowAnsi(player))
         notify_format(player, T("%s - Set: %s"), AL_NAME(a), tbuf_ansi);
       else
         notify_format(player, T("%s - Set: %s"), AL_NAME(a), tbuf1);
     }
-  } else {
+  } else if (!(gargs->flags & EDIT_QUIET)) {
     /* We don't do it - we just pemit it. */
     if (!ansi_long_flag && ShowAnsi(player))
       notify_format(player, T("%s - Set: %s"), AL_NAME(a), tbuf_ansi);
@@ -938,11 +955,10 @@ gedit_helper(dbref player, dbref thing,
  * \param player the enactor.
  * \param it the object/attribute pair.
  * \param argv array containing the search and replace strings.
- * \param target the type of edit
- * \param doit actually edit the attrs, or just show what would happen if we did?
+ * \param flags type of @edit to do
  */
 void
-do_gedit(dbref player, char *it, char **argv, enum edit_type target, int doit)
+do_gedit(dbref player, char *it, char **argv, int flags)
 {
   dbref thing;
   char tbuf1[BUFFER_LEN];
@@ -973,11 +989,14 @@ do_gedit(dbref player, char *it, char **argv, enum edit_type target, int doit)
   }
   args.from = argv[1];
   args.to = argv[2];
-  args.target = target;
-  args.doit = doit;
+  args.flags = flags;
+  args.skipped = 0;
+  args.edited = 0;
 
   if (!atr_iter_get(player, thing, q, 0, 0, gedit_helper, &args))
     notify(player, T("No matching attributes."));
+  else if (flags & EDIT_QUIET)
+    notify_format(player, T("%d attributes edited, %d skipped."), args.edited, args.skipped);
 }
 
 /** Trigger an attribute.

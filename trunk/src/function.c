@@ -170,7 +170,7 @@ FUNTAB flist[] = {
   {"ATTRIB_SET", fun_attrib_set, 1, -2, FN_REG},
   {"BAND", fun_band, 1, INT_MAX, FN_REG | FN_STRIPANSI},
   {"BASECONV", fun_baseconv, 3, 3, FN_REG | FN_STRIPANSI},
-  {"BEEP", fun_beep, 0, 1, FN_REG | FN_STRIPANSI},
+  {"BEEP", fun_beep, 0, 1, FN_REG | FN_ADMIN | FN_STRIPANSI},
   {"BEFORE", fun_before, 2, 2, FN_REG},
   {"BENCHMARK", fun_benchmark, 2, 3, FN_NOPARSE},
   {"BNAND", fun_bnand, 2, 2, FN_REG | FN_STRIPANSI},

@@ -306,10 +306,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\ident.c"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\intmap.c"
 				>
 			</File>
@@ -597,10 +593,6 @@
 			</File>
 			<File
 				RelativePath="..\..\hdrs\htab.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\hdrs\ident.h"
 				>
 			</File>
 			<File

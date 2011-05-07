@@ -1495,6 +1495,7 @@ do_chat_by_name(dbref player, const char *name, const char *msg, int source)
 {
   CHAN *c;
   c = NULL;
+  enum cmatch_type res;
   if (!msg || !*msg) {
     if (source)
       notify(player, T("Don't you have anything to say?"));
@@ -1503,7 +1504,12 @@ do_chat_by_name(dbref player, const char *name, const char *msg, int source)
   /* First try to find a channel that the player's on. If that fails,
    * look for one that the player's not on.
    */
-  switch (find_channel_partial_on(name, &c, player)) {
+  res = find_channel_partial_on(name, &c, player);
+  if (source && res == CMATCH_NONE) {
+    /* Check for channels he's not on */
+    res = find_channel_partial(name, &c, player);
+  }
+  switch (res) {
   case CMATCH_AMBIG:
     if (!ChanUseFirstMatch(player)) {
       notify(player, T("CHAT: I don't know which channel you mean."));
@@ -3122,7 +3128,7 @@ chat_player_announce(dbref player, char *msg, int ungag)
 {
   DESC *d;
   CHAN *c;
-  CHANUSER *up, *uv;
+  CHANUSER *up = NULL, *uv;
   char buff[BUFFER_LEN], *bp;
   char buff2[BUFFER_LEN], *bp2;
   dbref viewer;
@@ -3144,7 +3150,7 @@ chat_player_announce(dbref player, char *msg, int ungag)
       }
     }
   }
-  
+
   seen = im_new();
 
   for (d = descriptor_list; d != NULL; d = d->next) {
@@ -3184,7 +3190,7 @@ chat_player_announce(dbref player, char *msg, int ungag)
         char shrtmsg[BUFFER_LEN], *smp;
         char *accname;
 
-	im_insert(seen, viewer, up);
+        im_insert(seen, viewer, up);
 
         dmp = defmsg;
         smp = shrtmsg;

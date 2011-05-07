@@ -2812,7 +2812,7 @@ do_chan_what(dbref player, const char *partname)
   cleanname = normalize_channel_name(partname);
   for (c = channels; c; c = c->next) {
     strcpy(cleanp, remove_markup(ChanName(c), NULL));
-    if (Chan_Can_See(c, player) && string_prefix(cleanp, cleanname)) {
+    if (string_prefix(cleanp, cleanname) && Chan_Can_See(c, player)) {
       notify(player, ChanName(c));
       notify_format(player, T("Description: %s"), ChanTitle(c));
       notify_format(player, T("Owner: %s"), Name(ChanCreator(c)));

@@ -18,6 +18,9 @@ chronological order (most recent first)
 
 Version 1.8.4 patchlevel 5                                 ??? ??,  2012
 
+Fixes:
+ * You couldn't @chat on open channels. Reported by Padraic. [MG]
+
 Functions:
  * Restrictions for the beep() function can now be modified with @function.
    Suggested by Paige. [MG]

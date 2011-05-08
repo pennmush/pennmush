@@ -162,7 +162,7 @@ FUNTAB flist[] = {
   {"ANDLPOWERS", fun_andlflags, 2, 2, FN_REG | FN_STRIPANSI},
   {"ANSI", fun_ansi, 2, -2, FN_REG},
 #ifdef ANSI_DEBUG
-  {"ANSIINSPECT", fun_ansiinspect, 1, 2, FN_REG},
+  {"ANSIGEN", fun_ansigen, 1, 1, FN_REG},
 #endif
   {"APOSS", fun_aposs, 1, 1, FN_REG | FN_STRIPANSI},
   {"ART", fun_art, 1, 1, FN_REG | FN_STRIPANSI},

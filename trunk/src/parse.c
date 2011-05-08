@@ -710,7 +710,7 @@ pe_regs_create_real(int pr_flags, const char *name)
 }
 
 /* Delete the _value_ of a single val, leave its name alone */
-inline void
+void
 pe_reg_val_free_val(PE_REG_VAL *val)
 {
   /* Don't do anything if it's NOCOPY or if it's an integer. */

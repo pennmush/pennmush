@@ -57,7 +57,6 @@ static int write_ansi_letters(const ansi_data *cur, char *buff, char **bp);
 static int safe_markup(char const *a_tag, char *buf, char **bp, char type);
 static int
  safe_markup_cancel(char const *a_tag, char *buf, char **bp, char type);
-static int compare_starts(const void *a, const void *b);
 static int escape_marked_str(char **str, char *buff, char **bp);
 
 const char *is_allowed_tag(const char *s, unsigned int len);
@@ -72,46 +71,19 @@ FUNCTION(fun_stripansi)
   safe_str(cp, buff, bp);
 }
 
-#ifdef ANSI_DEBUG
-/* ARGSUSED */
-void inspect_ansi_string(ansi_string *as, dbref who);
-FUNCTION(fun_ansiinspect)
+FUNCTION(fun_ansigen)
 {
+  if (nargs < 1) return;
   char *ptr;
-  ansi_string *as;
-  char choice;
-  int strnum;
-  if (nargs < 2 || !args[0] || !*args[0]) {
-    choice = 'r';
-    strnum = 0;
-  } else {
-    choice = *args[0];
-    strnum = 1;
-  }
-  switch (choice) {
-  case 'i':
-    as = parse_ansi_string(args[strnum]);
-    inspect_ansi_string(as, executor);
-    free_ansi_string(as);
-    break;
-  case 'r':
-    for (ptr = args[strnum]; *ptr; ptr++) {
-      if (*ptr == TAG_START)
-        *ptr = '<';
-      if (*ptr == TAG_END)
-        *ptr = '>';
+  for (ptr = args[0]; *ptr; ptr++) {
+    switch (*ptr) {
+    case '<': safe_chr(TAG_START, buff, bp); break;
+    case '>': safe_chr(TAG_END, buff, bp); break;
+    case '&': safe_chr(ESC_CHAR, buff, bp); break;
+    default: safe_chr(*ptr, buff, bp);
     }
-    safe_str(args[strnum], buff, bp);
-    break;
-  case 'l':
-    safe_integer(arglens[strnum], buff, bp);
-    break;
-  default:
-    safe_str("i: inspect r: raw l: length", buff, bp);
-    break;
   }
 }
-#endif
 
 /* ARGSUSED */
 FUNCTION(fun_ansi)
@@ -727,20 +699,47 @@ parse_tagname(const char *ptr)
   return tagname;
 }
 
-static void
-free_markup_info(markup_information *info)
-{
-  if (info) {
-    if (info->start_code) {
-      mush_free(info->start_code, "markup_code");
-      info->start_code = NULL;
-    }
-    if (info->stop_code) {
-      mush_free(info->stop_code, "markup_code");
-      info->stop_code = NULL;
+static const char *
+as_get_tag(ansi_string *as, const char *tag) {
+  if (*tag == '/' && *(tag+1) == '\0') {
+    return "/";
+  }
+  if (as->tags == NULL) {
+    as->tags = mush_malloc(sizeof(StrTree), "ansi_string.tags");
+    st_init(as->tags, "ansi_string.tags");
+  }
+  return st_insert(tag, as->tags);
+}
+
+/** Make sure an ansi_string has room for one more markup_information, and
+ *  return its index. */
+static new_markup_information *
+grow_mi(ansi_string *as, char type) {
+  if (as->micount >= as->misize) {
+    if (as->mi == NULL) {
+      as->misize = 30;
+      as->mi = mush_malloc(as->misize * sizeof(new_markup_information),
+                           "ansi_string.mi");
+    } else {
+      as->misize *= 2;
+      as->mi = mush_realloc(as->mi,
+                            as->misize * sizeof(new_markup_information),
+                            "ansi_string.mi");
     }
   }
+  memset(&as->mi[as->micount], 0, sizeof(new_markup_information));
+  as->mi[as->micount].parentIdx = NOMARKUP;
+  as->mi[as->micount].idx = as->micount;
+  as->mi[as->micount].type = type;
+  return &as->mi[as->micount++];
 }
+
+#define MI_FOR(as, idx) (((idx) < 0) ? NULL : &as->mi[idx])
+
+#define DOFREE_START   0x01
+#define DOFREE_END     0x02
+
+static char *colend = "/";
 
 /** Convert a string into an ansi_string.
  * This takes a string that may contain ansi/html markup codes and
@@ -752,208 +751,308 @@ free_markup_info(markup_information *info)
 ansi_string *
 parse_ansi_string(const char *source)
 {
-  return real_parse_ansi_string(source);
-}
+  ansi_string *as = mush_malloc(sizeof(ansi_string), "ansi_string");
+  int c;
+  char *s; 
+  char *tag, type;
+  int len;
 
-/* This does the actual work of parse_ansi_string. */
-ansi_string *
-real_parse_ansi_string(const char *source)
-{
-  ansi_string *data = NULL;
-  char src[BUFFER_LEN], *sptr;
-  char tagbuff[BUFFER_LEN];
-  char *ptr, *txt;
-  ansi_data *col;
-  char *tmp;
-  char type;
+  /* For stacking information. */
+  new_markup_information *mi = NULL;
+  new_markup_information *mip = NULL;
+  int idx = NOMARKUP;
+  int pidx = NOMARKUP;
 
-  int pos = 0;
-  int num = 0;
-
-  int priority = 0;
-  markup_information *info;
-
-  ansi_data ansistack[BUFFER_LEN];
-  int stacktop = 0;
-
-  ansi_data tmpansi;
-  int oldcodes = 0;
-
-  ansistack[0] = ansi_null;
-
-  if (!source)
+  /* Zero it out. */
+  memset(as, 0, sizeof(ansi_string));
+ 
+  if (!source) {
     return NULL;
+  }
 
-  info = NULL;
+  /* Quick check for no markup */
+  if (!has_markup(source)) {
+    as->len = strlen(source);
+    if (as->len >= BUFFER_LEN - 1) {
+      as->len = BUFFER_LEN - 1;
+    }
+    strncpy(as->text, source, as->len);
+    return as;
+  }
+  as->source = mush_strdup(source, "ansi_string.source");
 
-  sptr = src;
-  safe_str(source, src, &sptr);
-  *sptr = '\0';
+  /* The string has markup. Nuts. */
+  as->flags |= AS_HAS_MARKUP;
+  as->markup = mush_malloc(sizeof(uint16_t) * BUFFER_LEN,
+                           "ansi_string.markup");
 
-  data = mush_malloc(sizeof(ansi_string), "ansi_string");
-  if (!data)
-    return NULL;
-
-  /* Set it to zero */
-  memset(data, 0, sizeof(ansi_string));
-
-  txt = data->text;
-  col = data->ansi;
-
-  for (ptr = src; *ptr;) {
-    switch (*ptr) {
+  c = 0;
+  for (s = as->source; *s;) {
+    switch (*s) {
     case TAG_START:
-      /* In modern Penn, this is both Pueblo/HTML and color defining code */
+      s++;
+      tag = s;
+      while (*s && *s != TAG_END) {
+        s++;
+      }
+      if (*s) *(s++) = '\0';
 
-      for (tmp = ptr; *tmp && *tmp != TAG_END; tmp++) ;
-      if (*tmp)
-        *tmp = '\0';
-      else
-        tmp--;
-      ptr++;
-      /* Now ptr is at TAG_START and tmp is at TAG_END (nulled) */
-
-      type = *(ptr++);
+      /* <tag> contains the entire tag, now. */
+      if (!*tag) break;
+      type = *(tag++);
+      if (!*tag) break;
       switch (type) {
       case MARKUP_COLOR:
-        if (!*ptr)
-          break;
-        if (oldcodes == 1) {
-          oldcodes = 0;
-          stacktop--;
-        }
-        /* Start or end tag? */
-        if (*ptr != '/') {
-          define_ansi_data(&tmpansi, ptr);
-          nest_ansi_data(&(ansistack[stacktop]), &tmpansi);
-          stacktop++;
-          ansistack[stacktop] = tmpansi;
+        if (*tag != '/') {
+          /* Start tag */
+          pidx = idx;
+          mi = grow_mi(as, MARKUP_COLOR);
+          mi->start_code = as_get_tag(as, tag);
+          mi->end_code = colend;
+          mi->parentIdx = pidx;
+          idx = mi->idx;
         } else {
-          if (*(ptr + 1) == 'a') {
-            stacktop = 0;       /* Endall tag */
-          } else {
-            if (stacktop > 0)
-              stacktop--;
-          }
-        }
-        break;
-      case MARKUP_HTML:
-        if (*ptr && *ptr != '/') {
-          /* We're at the start tag. */
-          info = &(data->markup[data->nmarkups++]);
-          info->start_code = mush_strdup(ptr, "markup_code");
-          snprintf(tagbuff, BUFFER_LEN, "/%s", parse_tagname(ptr));
-          info->stop_code = mush_strdup(tagbuff, "markup_code");
-          info->type = MARKUP_HTML;
-          info->start = pos;
-          info->end = -1;
-          info->priority = priority++;
-        } else if (*ptr) {
-          /* Closing tag */
-          for (num = data->nmarkups - 1; num >= 0; num--) {
-            if (data->markup[num].end < 0 && data->markup[num].stop_code &&
-                strcasecmp(data->markup[num].stop_code, ptr) == 0) {
-              break;
+          /* End tag */
+          if (*(tag + 1) == 'a') {
+            if (AS_HasTags(as)) {
+              /* Color endall in a pueblo tag. Blah, we should
+               * never see this in actual use. So let's just pretend
+               * it's an end-all-tags until somebody complains. */
             }
-          }
-          if (num >= 0) {
-            data->markup[num].end = pos;
+            mi = NULL;
+            idx = NOMARKUP;
           } else {
-            /* This is greviously wrong, we can't find the begin tag?
-             * Consider this a standalone tag with no close tag. */
-            info = &(data->markup[data->nmarkups++]);
-            /* Start code is where we are */
-            info->stop_code = mush_strdup(ptr, "markup_code");
-            info->type = MARKUP_HTML;
-            info->priority = priority++;
-            info->start = -1;
-            info->end = pos;
+            if (mi) {
+              /* Close all tags above the latest color tag and mark them
+               * as standalone. Anybody who complains about it closing
+               * overlapping pueblo tags can learn how to code nicely. The only
+               * time this should close non-color tags is when they do
+               * something silly like:
+               *
+               *   ansi(r,foo[tag(SAMP)]bar) hello [ansi(g,tag(/SAMP))].
+               *
+               * Use of tagwrap and responsible use of tag means this
+               * won't happen. */
+              for (; mi && mi->type != MARKUP_COLOR;
+                    mi = MI_FOR(as, mi->parentIdx)) {
+                mi->end_code = NULL;
+                mi->standalone = 1;
+                as->flags |= AS_HAS_STANDALONE;
+              }
+              if (mi) {
+                idx = mi->parentIdx;
+                mi = MI_FOR(as, idx);
+              }
+            }
           }
         }
         break;
       default:
-        /* This is a broken string. Are we near or at buffer_len? */
-        if (ptr - source < BUFFER_LEN - 4) {
-          /* If we're not, this is broken in more ways than I can think */
-          goto broken_string;
+        if (*tag != '/') {
+          /* Start tag */
+          as->flags |= AS_HAS_TAGS;
+          pidx = idx;
+          mi = grow_mi(as, type);
+          mi->start_code = as_get_tag(as, tag);
+          mi->parentIdx = pidx;
+          mi->start = c;
+          idx = mi->idx;
+        } else {
+          /* End tag */
+          if (mi) {
+            tag++;
+            len = strlen(tag);
+            /* Find the tag that this closes. */
+            for (mip = mi; mip; mip = MI_FOR(as, mip->parentIdx)) {
+              if ((mip->type == type) &&
+                  (!strncasecmp(mip->start_code, tag, len)) &&
+                  ((mip->start_code[len] == ' ') ||
+                   (mip->start_code[len] == '\0'))) {
+                break;
+              }
+            }
+            if (mip) {
+              /* Close the stack of stuff above mip. All non-'c' types
+               * are standalones. all C types are force-closed. Because,
+               * y'know, people really shouldn't be using overlapping
+               * tags. */
+              for (; mi != mip; mi = MI_FOR(as, mi->parentIdx)) {
+                if (mi->type != MARKUP_COLOR) {
+                  mi->end_code = NULL;
+                  mi->standalone = 1;
+                  as->flags |= AS_HAS_STANDALONE;
+                }
+              }
+              tag--;
+              mip->end_code = as_get_tag(as, tag);
+              idx = mip->parentIdx;
+              mi = MI_FOR(as, idx);
+            } else {
+              /* Yes, goto is useful here. Yes it is. Shut up, it is. */
+              goto standalone_end;
+            }
+          } else {
+standalone_end:
+            /* Standalone end tag?! Lame. We turn it into a start tag
+             * and attach it to the next character. */
+            as->flags |= AS_HAS_TAGS;
+            as->flags |= AS_HAS_STANDALONE;
+            pidx = idx;
+            mi = grow_mi(as, type);
+            mi->end_code = mi->start_code = as_get_tag(as, tag);
+            mi->parentIdx = pidx;
+            mi->start = c;
+            mi->standalone = 1;
+            idx = mi->idx;
+          }
         }
         break;
+      case '\0':
+        /* Do nothing: Empty tag?! We'll shove it under the carpet
+         * and forget about it. */
+        break;
       }
-      ptr = tmp;
-      ptr++;
       break;
     case ESC_CHAR:
-      /* ESC_CHAR tags shouldn't be used anymore, so hopefully
-       * we won't get here.
-       * To parse these, we assume they can't have the new tag-style
-       * ANSI codes in them, as this should always be true when loading
-       * from attributes. Assuming that, this code is separate from the
-       * "actual" tags, creating a single temporary holding space on the
-       * top of the ansi-stack and playing with the colors there.
-       */
-      for (tmp = ptr; *tmp && *tmp != 'm'; tmp++) ;
-
-      /* Store the "background" colors */
-      tmpansi = ansistack[stacktop];
-      if (oldcodes == 0) {
-        oldcodes = 1;
-        stacktop++;
-        ansistack[stacktop] = tmpansi;
-        ansistack[stacktop].offbits = 0;
+      /* Here's what I'm going to do: An ESC_CHAR is an old escape code,
+       * so we'll treat it as if it's a standalone tag. It's a MARKUP_OLDANSI
+       * tag, which receives special handling. */
+      pidx = idx;
+      mi = grow_mi(as, MARKUP_OLDANSI);
+      *(s++) = '\0';
+      mi->start_code = s;
+      mi->standalone = 1;
+      /* Find the end of the ansi code, or series of ansi codes. */
+      while (*s) {
+        if (*s == 'm' && *(s+1) != ESC_CHAR) break;
+        s++;
       }
-
-      read_raw_ansi_data(&tmpansi, ptr);
-      ansistack[stacktop].bits |= tmpansi.bits;
-      ansistack[stacktop].bits &= ~(tmpansi.offbits);   /* ANSI_RAW_NORMAL */
-      if (tmpansi.fore)
-        ansistack[stacktop].fore = tmpansi.fore;
-      if (tmpansi.back)
-        ansistack[stacktop].back = tmpansi.back;
-
-      ptr = tmp;
-      if (*tmp)
-        ptr++;
+      if (*s) *(s++) = '\0';
+      mi->start_code = as_get_tag(as, mi->start_code);
+      mi->end_code = NULL;
+      mi->parentIdx = pidx;
+      idx = mi->idx;
       break;
     default:
-      col[pos] = ansistack[stacktop];
-      txt[pos++] = *(ptr++);
-    }
-  }
-
-  txt[pos] = '\0';
-  data->len = pos;
-
-  /* For everything left on the stack:
-   * If it's an HTML code, assume it's a standalone, and leave
-   *   its stop point where it is. */
-  for (num = 0; num < data->nmarkups; num++) {
-    info = &(data->markup[num]);
-    switch (info->type) {
-    case MARKUP_HTML:
-      /* If it's HTML, we treat it as standalone (<IMG>, <BR>, etc)
-       * This is ugly - it's not a "start" but a "stop" */
-      if (info->end < 0) {
-        mush_free(info->stop_code, "markup_code");
-        info->stop_code = info->start_code;
-        info->start_code = NULL;
-        info->end = info->start;
-        info->start = -1;
+      as->text[c] = *s;
+      as->markup[c] = idx;
+      c++;
+      s++;
+      while (idx >= 0 && as->mi[idx].standalone) {
+        idx = as->mi[idx].parentIdx;
       }
-      break;
+      mi = MI_FOR(as, idx);
     }
   }
-  return data;
-broken_string:
-  /* This stinks. We treat this as if it's not pueblo-safe */
-  if (data == NULL)
-    return NULL;
-  strncpy(data->text, source, BUFFER_LEN);
-  data->len = strlen(data->text);
-  for (num = data->nmarkups - 1; num >= 0; num--) {
-    free_markup_info(&(data->markup[num]));
+  as->len = c;
+  if (mi) {
+    for (; mi; mi = MI_FOR(as, mi->parentIdx)) {
+      if (mi->type != MARKUP_COLOR) {
+        /* Turn this tag into a standalone. */
+        mi->standalone = 1;
+        as->flags |= AS_HAS_STANDALONE;
+      }
+    }
   }
-  data->nmarkups = 0;
-  return data;
+  if (as->flags & AS_HAS_STANDALONE ||
+      as->mi[as->micount - 1].start == as->len) {
+    /* If there are any markup tags at the very end (start == as->len),
+     * then we have to move them forward, change start to end code, and
+     * advance them. Unless length is 0, in which case the only thing this
+     * string has is a standalone tag. Ew.  */
+    if (as->len > 0) {
+      if (as->mi[as->micount - 1].start == as->len) {
+        /* Attach to the last character's markup. */
+        pidx = as->markup[as->len - 1];
+        for (idx = pidx + 1; idx < as->micount; idx++) {
+          if (as->mi[idx].start == as->len &&
+              as->mi[idx].type != MARKUP_COLOR) {
+            as->flags |= AS_HAS_STANDALONE;
+            as->mi[idx].end_code = as->mi[idx].start_code;
+            as->mi[idx].start_code = NULL;
+            as->mi[idx].standalone = 1;
+            pidx = idx;
+          }
+        }
+        as->markup[as->len - 1] = pidx;
+      }
+    }
+  }
+  return as;
+}
+
+/** Free an ansi_string.
+ * \param as pointer to ansi_string to free.
+ */
+void
+free_ansi_string(ansi_string *as)
+{
+  if (!as)
+    return;
+
+  if (as->source) {
+    mush_free(as->source, "ansi_string.source");
+  }
+  if (as->tags) {
+    st_flush(as->tags);
+    mush_free(as->tags, "ansi_string.tags");
+  }
+  if (as->markup) {
+    mush_free(as->markup, "ansi_string.markup");
+  }
+  if (as->mi) {
+    mush_free(as->mi, "ansi_string.mi");
+  }
+
+  mush_free(as, "ansi_string");
+}
+
+/* Copy the start code for a particular markup_info */
+static int
+safe_start_code(new_markup_information *info, char *buff, char **bp)
+{
+  int retval = 0;
+  char *save;
+  save = *bp;
+  if (info && info->start_code) {
+    if (info->type == MARKUP_OLDANSI) {
+      retval += safe_chr(ESC_CHAR, buff, bp);
+      retval += safe_str(info->start_code, buff, bp);
+      retval += safe_chr('m', buff, bp);
+    } else {
+      retval += safe_chr(TAG_START, buff, bp);
+      retval += safe_chr(info->type, buff, bp);
+      retval += safe_str(info->start_code, buff, bp);
+      retval += safe_chr(TAG_END, buff, bp);
+    }
+  }
+  if (retval)
+    *bp = save;
+  return retval;
+}
+
+/* Copy the stop code for a particular markup_info */
+static int
+safe_end_code(new_markup_information *info, char *buff, char **bp)
+{
+  int retval = 0;
+  char *save;
+  save = *bp;
+  if (info && info->end_code) {
+    if (info->type == MARKUP_OLDANSI) {
+      retval += safe_chr(ESC_CHAR, buff, bp);
+      retval += safe_str(info->end_code, buff, bp);
+      retval += safe_chr('m', buff, bp);
+    } else {
+      retval += safe_chr(TAG_START, buff, bp);
+      retval += safe_chr(info->type, buff, bp);
+      retval += safe_str(info->end_code, buff, bp);
+      retval += safe_chr(TAG_END, buff, bp);
+    }
+  }
+  if (retval)
+    *bp = save;
+  return retval;
 }
 
 /** Reverse an ansi string, preserving its ansification.
@@ -963,210 +1062,22 @@ broken_string:
 void
 flip_ansi_string(ansi_string *as)
 {
-  int i, j;
-  markup_information *info;
-  char tmptext;
-  ansi_data tmpansi;
-  int mid;
-  int len = as->len;
+  int s;
+  int e;
+  char tmp;
+  uint16_t mitmp;
 
-  /* Reverse the text */
-  mid = len / 2;                /* Midpoint */
-  for (i = len - 1, j = 0; i >= mid; j++, i--) {
-    tmptext = as->text[i];
-    as->text[i] = as->text[j];
-    as->text[j] = tmptext;
-
-    tmpansi = as->ansi[i];
-    as->ansi[i] = as->ansi[j];
-    as->ansi[j] = tmpansi;
-  }
-
-  /* Now reverse the html-markup. */
-  for (i = as->nmarkups - 1; i >= 0; i--) {
-    int start, end;
-    info = &(as->markup[i]);
-    if (info->start == -1) {
-      /* Standalones */
-      info->end = len - info->end;
-    } else {
-      end = len - info->start;
-      start = len - info->end;
-      info->start = start;
-      info->end = end;
+  for (s = 0, e = as->len - 1; s < e; s++, e--) {
+    tmp = as->text[s];
+    as->text[s] = as->text[e];
+    as->text[e] = tmp;
+    if (as->markup) {
+      mitmp = as->markup[s];
+      as->markup[s] = as->markup[e];
+      as->markup[e] = mitmp;
     }
   }
 }
-
-/** Free an ansi_string.
- * \param as pointer to ansi_string to free.
- */
-void
-free_ansi_string(ansi_string *as)
-{
-  int i;
-
-  if (!as)
-    return;
-
-  for (i = as->nmarkups - 1; i >= 0; i--) {
-    free_markup_info(&(as->markup[i]));
-  }
-  mush_free(as, "ansi_string");
-}
-
-
-static int
-compare_starts(const void *a, const void *b)
-{
-  markup_information *ai, *bi;
-
-  ai = (markup_information *) a;
-  bi = (markup_information *) b;
-
-  return ai->start - bi->start;
-}
-
-
-
-void
-optimize_ansi_string(ansi_string *as)
-{
-  int i, j;
-  int target = -1;
-  int len = 0;
-
-  if (!as)
-    return;
-
-  /* If we've only got 1 or 0, or we've already optimized, do nothing. */
-  if (as->nmarkups > 1 && as->optimized == 0) {
-    /* Sort the markup codes by their start position */
-    qsort(as->markup, as->nmarkups, sizeof(markup_information), compare_starts);
-
-    for (i = 0; i < as->nmarkups; i++) {
-
-      /* If end is negative, it's removed or broken. Either way... */
-      if (as->markup[i].end < 0)
-        continue;
-
-      for (j = i + 1; j < as->nmarkups; j++) {
-
-        /* Already removed? */
-        if (as->markup[j].end < 0 && as->markup[j].start < 0)
-          continue;
-
-        /* End if we can't stretch markup[i] any farther */
-        if (as->markup[i].end < as->markup[j].start)
-          break;
-
-        /* If there's an identical code within our bounds, merge it. */
-        if (as->markup[i].start_code && as->markup[j].start_code &&
-            (strcmp(as->markup[j].start_code, as->markup[i].start_code) == 0)
-          ) {
-          if (as->markup[j].end > as->markup[i].end)
-            as->markup[i].end = as->markup[j].end;
-          as->markup[j].start = -1;
-          as->markup[j].end = -1;
-        }                       /* end if_indentical */
-      }                         /* end inner loop */
-    }                           /* end outer loop */
-  }
-  /* end if_optimized */
-  j = 0;
-
-  /* Get rid of all removed markups
-   * "target" is non-negative when we've pegged a destination
-   * "len" begins counting when we have a target set and we hit a
-   *   block of non-removed markup
-   * If len is non-zero and we hit a removed markup, shift the block left.
-   * The end of the removed string is our new target (it's removable anyway)
-   */
-
-  for (i = 0; i < as->nmarkups; i++) {
-    /* Valid tag? */
-    if (as->markup[i].end >= 0 && (as->markup[i].start < as->markup[i].end)) {
-      if (target != -1)
-        len++;
-      j++;
-    } else {
-      free_markup_info(&(as->markup[i]));
-      if (len > 0 && target != -1)
-        memmove(&(as->markup[target]), &(as->markup[i - len]),
-                len * sizeof(markup_information));
-      if (len > 0 || target == -1) {
-        target = j;
-        len = 0;
-      }
-    }
-  }
-  if (len > 0)
-    memmove(&(as->markup[target]), &(as->markup[i - len]),
-            len * sizeof(markup_information));
-
-  as->nmarkups = j;
-  as->optimized = 1;
-}
-
-/* Copy the start code for a particular markup_info */
-static int
-copy_start_code(markup_information *info, char *buff, char **bp)
-{
-  int retval = 0;
-  char *save;
-  save = *bp;
-  if (info && info->start_code) {
-    retval += safe_chr(TAG_START, buff, bp);
-    retval += safe_chr(info->type, buff, bp);
-    retval += safe_str(info->start_code, buff, bp);
-    retval += safe_chr(TAG_END, buff, bp);
-  }
-  if (retval)
-    *bp = save;
-  return retval;
-}
-
-/* Copy the stop code for a particular markup_info */
-static int
-copy_stop_code(markup_information *info, char *buff, char **bp)
-{
-  int retval = 0;
-  char *save;
-  save = *bp;
-  if (info && info->stop_code) {
-    retval += safe_chr(TAG_START, buff, bp);
-    retval += safe_chr(info->type, buff, bp);
-    retval += safe_str(info->stop_code, buff, bp);
-    retval += safe_chr(TAG_END, buff, bp);
-  }
-  if (retval)
-    *bp = save;
-  return retval;
-}
-
-#ifdef ANSI_DEBUG
-void
-inspect_ansi_string(ansi_string *as, dbref who)
-{
-  markup_information *info;
-  int count = 0;
-  int j;
-  notify_format(who, T("Inspecting ansi string"));
-  notify_format(who, T("  Text: %s"), as->text);
-  notify_format(who, T("  Nmarkups: %d"), as->nmarkups);
-  for (j = 0; j < as->nmarkups; j++) {
-    info = &(as->markup[j]);
-    if (info->type == MARKUP_HTML) {
-      notify_format(who,
-                    T
-                    ("    %d (%s): (start: %d end: %d) start_code: %s stop_code: %s"),
-                    count++, (info->type == MARKUP_HTML ? "html" : "ansi"),
-                    info->start, info->end, info->start_code, info->stop_code);
-    }
-  }
-  notify_format(who, T("Inspecting ansi string complete"));
-}
-#endif
 
 /** Delete a portion of an ansi string.
  * \param as ansi_string to delete from
@@ -1175,77 +1086,39 @@ inspect_ansi_string(ansi_string *as, dbref who)
  * \retval 0 success
  * \retval 1 failure.
  */
-
 int
 ansi_string_delete(ansi_string *as, int start, int count)
 {
+  int s, c, l;
   int i;
-  int end;
-  markup_information *dm;
-
-  /* Nothing to delete */
-  if (start >= as->len || count <= 0)
-    return 0;
-
-  /* We can't delete from a negative index */
-  if (start < 0) {
-    /* start is negative: this *decreases* count. */
-    count += start;
-    start = 0;
+  if (count < 1) return 0;
+  if (start > as->len) return 1;
+  if ((start + count) > as->len) {
+    count = (as->len - start);
   }
-
-  /* We can't delete past the end of our string */
-  if ((start + count) > as->len)
-    count = as->len - start;
-
-  /* Nothing to delete */
-  if (count <= 0)
-    return 0;
-
-  end = start + count;
-
-  dm = as->markup;
-
-  /* Remove or shrink the Pueblo markup on dst */
-  for (i = 0; i < as->nmarkups; i++) {
-    if (dm[i].start >= start && dm[i].end <= end) {
-      dm[i].start = -1;
-      dm[i].end = -1;
-    }
-    if (dm[i].start >= start) {
-      dm[i].start -= count;
-      if (dm[i].start < start)
-        dm[i].start = start;
-    }
-    if (dm[i].end > start) {
-      dm[i].end -= count;
-      if (dm[i].end < start)
-        dm[i].end = start;
+  if (count < 1) return 1;
+  /* Move text left */
+  s = start;
+  c = start + count;
+  l = as->len - c;
+  memmove(as->text + s, as->text + c, l);
+  /* Move markup left. */
+  if (as->markup) {
+    l *= sizeof(uint16_t);
+    memmove(as->markup + s, as->markup + c, l);
+  }
+  if (as->flags & AS_HAS_STANDALONE) {
+    /* If we have standalone markup, move the start. */
+    for (i = 0; i < as->micount; i++) {
+      if (as->mi[i].start > c) {
+        as->mi[i].start -= count;
+      }
     }
   }
-
-  if (as->nmarkups > 0)
-    as->optimized = 0;
-
-  /* Shift text over */
-  memmove(as->text + start, as->text + end, as->len - end);
-  memmove(as->ansi + start, as->ansi + end,
-          (as->len - end) * sizeof(ansi_data));
   as->len -= count;
   as->text[as->len] = '\0';
-  as->ansi[as->len] = ansi_null;
   return 0;
 }
-
-#define copyto(x,y) \
-do { \
-  x.type = y.type; \
-  x.priority = y.priority; \
-  if (y.start_code) x.start_code = mush_strdup(y.start_code,"markup_code"); \
-  else (x.start_code = NULL); \
-  if (y.stop_code) x.stop_code = mush_strdup(y.stop_code,"markup_code"); \
-  else (x.stop_code = NULL); \
-} while (0)
 
 /** Insert an ansi string into another ansi_string
  * with markups kept as straight as possible.
@@ -1255,135 +1128,11 @@ do { \
  * \retval 0 success
  * \retval 1 failure.
  */
-
 int
 ansi_string_insert(ansi_string *dst, int loc, ansi_string *src)
 {
-  int i, j;
-  int len;
-  int retval = 0;
-  int src_len = src->len;
-
-  markup_information *dm, *sm;
-
-  ansi_data backansi;
-
-
-  /* If src->len == 0, we might have only markup. Stand-alones. Ew! */
-  if (src->len <= 0 && src->nmarkups <= 0)
-    return 0;
-  if (dst->len >= BUFFER_LEN)
-    return 1;
-
-  if (src_len >= BUFFER_LEN)
-    src_len = BUFFER_LEN - 1;
-  if (src_len < 0)
-    src_len = 0;
-
-  if (loc > dst->len)
-    loc = dst->len;
-  if (loc < 0)
-    loc = 0;
-
-  if (dst->nmarkups > 0 || src->nmarkups > 0)
-    dst->optimized = 0;
-
-  dm = dst->markup;
-  sm = src->markup;
-
-  /* shift or widen the Pueblo markup on dst */
-  for (i = 0; i < dst->nmarkups; i++) {
-    if (loc <= dm[i].start)
-      dm[i].start += src_len;
-    if (loc < dm[i].end)
-      dm[i].end += src_len;
-  }
-
-  /* Copy markup onto the end of dst */
-  for (j = 0; j < src->nmarkups; j++) {
-
-    /* It's possible, but not at all easy, to get this much Pueblo markup */
-    if (i >= BUFFER_LEN)
-      break;
-
-    /* Is it a valid tag? */
-    if (sm[j].end >= 0 && sm[j].start < sm[j].end &&
-        ((sm[j].start < 0 && sm[j].end <= src_len)
-         || (sm[j].start < src_len && sm[j].start >= 0))) {
-
-      copyto(dm[i], sm[j]);
-
-      /* If our start is non-negative, start+loc is its position in dm */
-      if (sm[j].start >= 0)
-        dm[i].start = sm[j].start + loc;
-      else
-        dm[i].start = -1;
-
-      /* Make sure the end position is within the bounds of its own string */
-      if (sm[j].end <= src_len)
-        dm[i].end = sm[j].end + loc;
-      else
-        dm[i].end = src_len + loc;
-
-      i++;
-    }
-  }
-
-  for (; i >= BUFFER_LEN; i--)
-    free_markup_info(&(dm[i]));
-  dst->nmarkups = i;
-
-  dst->len += src_len;
-  if (dst->len >= BUFFER_LEN) {
-    retval = 1;
-    dst->len = BUFFER_LEN - 1;
-  }
-
-  len = dst->len - src->len - loc;
-
-  /* Determine what old ansi might stretch across the new text.
-   * This sets backansi to any ansi values (bits, colors) that
-   * are continuous across an entire length of text. */
-  backansi = ansi_null;
-  if (0 < loc && loc < dst->len) {
-    backansi.offbits = dst->ansi[loc - 1].offbits & dst->ansi[loc].offbits;
-    backansi.bits = dst->ansi[loc - 1].bits & dst->ansi[loc].bits;
-    if (dst->ansi[loc - 1].fore == dst->ansi[loc].fore)
-      backansi.fore = dst->ansi[loc].fore;
-    if (dst->ansi[loc - 1].back == dst->ansi[loc].back)
-      backansi.back = dst->ansi[loc].back;
-  }
-
-  /* Shift text over */
-  if (0 < len) {
-    /* The length beyond our insertion that can *actually* be moved. */
-    if (loc + src_len + len >= BUFFER_LEN)
-      len = BUFFER_LEN - loc - src_len - len - 1;
-    memmove(dst->text + loc + src_len, dst->text + loc, len);
-    memmove(dst->ansi + loc + src_len, dst->ansi + loc,
-            len * sizeof(ansi_data));
-  }
-
-
-  /* Copy text from src */
-  if (loc + src_len >= BUFFER_LEN)
-    src_len = BUFFER_LEN - 1 - loc;
-  if (src_len > 0) {
-    memcpy(dst->text + loc, src->text, src_len);
-    for (i = 0; i < src_len; i++) {
-      j = loc + i;
-      dst->ansi[j].back = src->ansi[i].back ? src->ansi[i].back : backansi.back;
-      dst->ansi[j].fore = src->ansi[i].fore ? src->ansi[i].fore : backansi.fore;
-      dst->ansi[j].offbits = src->ansi[i].offbits | backansi.offbits;
-      dst->ansi[j].bits =
-        ~(dst->ansi[j].offbits) & (src->ansi[i].bits | backansi.bits);
-    }
-  }
-  dst->text[dst->len] = '\0';
-  dst->ansi[dst->len] = ansi_null;
-  return retval;
+  return ansi_string_replace(dst, loc, 0, src);
 }
-
 
 /** Replace a portion of an ansi string with
  *  another ansi string, keeping markups as
@@ -1396,253 +1145,311 @@ ansi_string_insert(ansi_string *dst, int loc, ansi_string *src)
  * \retval 1 failure.
  */
 int
-ansi_string_replace(ansi_string *dst, int loc, int len, ansi_string *src)
+ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
 {
-  int i, j;
-  int end, d_end;
-  int diff;
-  int retval = 0;
-  ansi_data backansi;
-  markup_information *dm, *sm;
+  int len = dst->len + src->len - count;
+  int dstleft = dst->len - (loc + count);
+  int srclen = src->len;
+  int srcend = loc + srclen;
+  int idx, sidx, baseidx;
+  int i, j, k;
+  int truncated = 0;
+  new_markup_information *basemi, *mis, *mi, *mie;
 
-  if (loc < 0)
-    loc = 0;
-
-  /* Is it really an insert? */
-  if (loc >= dst->len || len <= 0)
-    return ansi_string_insert(dst, loc, src);
-
-  /* Is it really a delete? */
-  if (src->len <= 0)
-    return ansi_string_delete(dst, loc, len);
-
-  /* We can't delete past the end of our string. */
-  if ((len + loc) > dst->len)
-    len = dst->len - loc;
-
-  end = loc + len;              /* End of the removed section */
-  d_end = loc + src->len;       /* End of the new string within the dst string */
-  diff = src->len - len;        /* Total change in length */
-
-  if (diff > 0 && dst->len >= BUFFER_LEN)
-    return 1;
-
-  dst->optimized = 0;
-
-  dm = dst->markup;
-  sm = src->markup;
-
-  /* Modify, remove, stretch, and mangle Pueblo markup */
-  for (i = 0; i < dst->nmarkups; i++) {
-
-    /* If it doesn't cross into the replaced part, leave as is */
-    if (dm[i].end <= loc)
-      continue;
-
-    /* Debatable: If it surrounds the replaced part exactly, try
-     * to keep it, stretching it to wrap around the replacement. */
-    if (loc <= dm[i].start && dm[i].end <= end) {
-      /* If the locations match, stretch it, otherwise overwrite it. */
-      if (dm[i].start == loc && dm[i].end == end) {
-        dm[i].end = loc + src->len;
-      } else {
-        dm[i].start = -1;
-        dm[i].end = -1;
-      }
-      continue;
+  if (len >= BUFFER_LEN) {
+    if (loc >= BUFFER_LEN - 1) {
+      return 1;
     }
-
-    /* Shift the beginning if necessary */
-    if (loc < dm[i].start) {
-      /* If we're beyond the markup, just shift start. */
-      if (end < dm[i].start) {
-        dm[i].start += diff;
-      } else {
-        /* Otherwise it's inside; push it to the right of the new markup. */
-        dm[i].start = loc + src->len;
-      }
-      if (dm[i].start > BUFFER_LEN) {
-        dm[i].start = -1;
-        dm[i].end = -1;
-      }
-    }
-
-    /* If this markup ends before the new one, squish it. */
-    if (dm[i].end < end) {
-      dm[i].end = (dm[i].start >= 0) ? loc : -1;        /* Or erase stand-alones */
+    len = BUFFER_LEN - 1;
+    truncated = 1;
+    if (srcend >= BUFFER_LEN) {
+      srclen = len - loc;
+      dstleft = 0;
     } else {
-      dm[i].end += diff;        /* Otherwise, shift it. */
-      if (dm[i].end > BUFFER_LEN)
-        dm[i].end = BUFFER_LEN;
-    }
-
-  }
-
-  /* Copy markup. Code taken from ansi_string_insert. */
-  for (j = 0; j < src->nmarkups; j++) {
-
-    /* It's possible, but not at all easy, to get this much pueblo markup */
-    if (i >= BUFFER_LEN)
-      break;
-
-    /* Is it a valid tag? */
-    if (sm[j].end >= 0 && sm[j].start < sm[j].end &&
-        ((sm[j].start < 0 && sm[j].end <= src->len)
-         || (sm[j].start < src->len && sm[j].start >= 0))) {
-
-      copyto(dm[i], sm[j]);
-
-      /* If our start is non-negative, start+loc is its position in dm */
-      if (sm[j].start >= 0)
-        dm[i].start = sm[j].start + loc;
-      else
-        dm[i].start = -1;
-
-      /* Make sure the end position is within the bounds of its own string */
-      if (sm[j].end <= src->len)
-        dm[i].end = sm[j].end + loc;
-      else
-        dm[i].end = src->len + loc;
-
-      i++;
+      dstleft = len - srcend;
     }
   }
+  /* Nothing to copy? */
+  if (src->len < 1) {
+    if (count > 0) {
+      ansi_string_delete(dst, loc, count);
+    }
+    if (src->markup && src->flags & AS_HAS_STANDALONE) {
+      dst->flags |= AS_HAS_STANDALONE;
+      /* Special case: src has only standalone tags. */
+      if (!dst->markup) {
+        dst->markup = mush_malloc(sizeof(uint16_t) * BUFFER_LEN,
+                                  "ansi_string.markup");
+        for (i = 0; i < dst->len; i++) {
+          dst->markup[i] = NOMARKUP;
+        }
+        dst->flags |= AS_HAS_MARKUP;
+      }
+      /* Add the incoming markup, but only the standalone. */
+      baseidx = NOMARKUP;
+      idx = NOMARKUP;
+      for (sidx = 0; sidx < src->micount; sidx++) {
+        if (!src->mi[sidx].standalone) continue;
+        mi = grow_mi(dst, src->mi[sidx].type);
+        k = dst->micount;
+        mi->start_code = as_get_tag(dst, src->mi[sidx].start_code);
+        mi->end_code = as_get_tag(dst, src->mi[sidx].end_code);
+        mi->standalone = 1;
+        mi->start = loc;
 
-  for (; i >= BUFFER_LEN; i--)
-    free_markup_info(&(dm[i]));
-  dst->nmarkups = i;
-
-  /* length of original string after replace bits */
-  len = dst->len - end;
-
-  dst->len += diff;
-  if (dst->len >= BUFFER_LEN) {
-    retval = 1;
-    dst->len = BUFFER_LEN - 1;
-  }
-
-  /* Determine what old ansi might stretch across the new text.
-   * This sets backansi to any ansi values (bits, colors) that
-   * are continuous across an entire length of text.
-   */
-  backansi = dst->ansi[loc];
-  for (i = loc; i < end && !ansi_isnull(backansi); i++) {
-    backansi.offbits &= dst->ansi[i].offbits;
-    backansi.bits &= dst->ansi[i].bits;
-    if (backansi.fore != dst->ansi[i].fore)
-      backansi.fore = 0;
-    if (backansi.back != dst->ansi[i].back)
-      backansi.back = 0;
-  }
-
-  /* Shift text over */
-  if (diff != 0) {
-    if (d_end + len >= BUFFER_LEN)
-      len = BUFFER_LEN - (1 + d_end);
-    if (len > 0) {
-      memmove(dst->text + d_end, dst->text + end, len);
-      memmove(dst->ansi + d_end, dst->ansi + end, len * sizeof(ansi_data));
+        mi->parentIdx = idx;
+        if (baseidx < 0) baseidx = mi->idx;
+        idx = mi->idx;
+      }
+      /* Now integrate them into the proper location */
+      if (baseidx >= 0) {
+        if (loc <= (dst->len - 1)) {
+          /* Add the incoming markup to the character at dst->markup[loc] */
+          dst->mi[baseidx].parentIdx = dst->markup[loc];
+          dst->markup[loc] = idx;
+        } else if (dst->len > 0) {
+          dst->mi[baseidx].parentIdx = dst->markup[dst->len - 1];
+          dst->markup[dst->len - 1] = idx;
+          /* Now ensure all start tags are end tags */
+          while (baseidx <= idx) {
+            if (dst->mi[baseidx].start_code) {
+              dst->mi[baseidx].end_code = dst->mi[baseidx].start_code;
+              dst->mi[baseidx].start_code = NULL;
+            }
+            baseidx++;
+          }
+        }
+      }
+      return 0;
+      /* If dst->len == 0, then it's just an empty string with standalone
+       * markup. */
+    } else {
+      return 0;
     }
   }
+  /* If we don't have anything to copy, then return. */
+  if (srclen < 1) {
+    return 1;
+  }
 
-  /* Copy text from src */
-  len = src->len;
-  if (loc + len >= BUFFER_LEN)
-    len = BUFFER_LEN - loc - 1;
-  if (len > 0) {
-    memcpy(dst->text + loc, src->text, len);
+  /* Move the text over. */
+  if (dstleft > 0) {
+    memmove(dst->text + srcend, dst->text + loc + count, dstleft);
+  }
+
+  /* Copy src over */
+  memcpy(dst->text + loc, src->text, srclen);
+  dst->len = len;
+  dst->text[len] = '\0';
+
+  /* If there's no markup, we're done. */
+  if (!(src->markup || dst->markup)) {
+    return truncated;
+  }
+
+  /* In case of copying from marked up string to non-marked-up. */
+  if (!dst->markup) {
+    dst->markup = mush_malloc(sizeof(uint16_t) * BUFFER_LEN,
+                              "ansi_string.markup");
     for (i = 0; i < len; i++) {
-      j = loc + i;
-      dst->ansi[j].back = src->ansi[i].back ? src->ansi[i].back : backansi.back;
-      dst->ansi[j].fore = src->ansi[i].fore ? src->ansi[i].fore : backansi.fore;
-      dst->ansi[j].offbits = src->ansi[i].offbits | backansi.offbits;
-      dst->ansi[j].bits =
-        ~(dst->ansi[j].offbits) & (src->ansi[i].bits | backansi.bits);
+      dst->markup[i] = NOMARKUP;
+    }
+    dst->flags |= AS_HAS_MARKUP;
+  } else if (dstleft > 0) {
+    memmove(dst->markup + srcend,
+            dst->markup + (loc + count),
+            dstleft * sizeof(int16_t));
+  }
+  if (!src->markup) {
+    src->markup = mush_malloc(sizeof(uint16_t) * BUFFER_LEN,
+                              "ansi_string.markup");
+    for (i = 0; i < srclen; i++) {
+      src->markup[i] = NOMARKUP;
     }
   }
-  dst->text[dst->len] = '\0';
-  dst->ansi[dst->len] = ansi_null;
-  return retval;
+
+  /* Save the markup info pointers for loc and loc-1 */
+  mis = NULL;
+  mie = NULL;
+  if (count == 0) {
+    if (loc > 0 && dst->markup[loc - 1] >= 0) {
+      if (dst->markup[loc] >= 0)
+        mis = &dst->mi[dst->markup[loc - 1]];
+    }
+    if (dst->markup[loc] >= 0) {
+      if (dst->markup[loc] >= 0)
+        mie = &dst->mi[dst->markup[loc]];
+    }
+  } else {
+    i = loc;
+    if (i < dst->len) {
+      if (dst->markup[i] >= 0)
+        mis = &dst->mi[dst->markup[i]];
+    }
+    i = loc + count - 1;
+    if (i < dst->len) {
+      if (dst->markup[i] >= 0)
+        mie = &dst->mi[dst->markup[i]];
+    }
+  }
+
+  /* If, and only if, mis and mie have a markup_information in common,
+   * use that as basemi for the _entire_ inserted string. */
+  basemi = NULL;
+  if (mis && mie) {
+    while (mie) {
+      basemi = mis;
+      while (basemi) {
+        if (basemi->idx == mie->idx) {
+          break;
+        }
+        basemi = MI_FOR(dst, basemi->parentIdx);
+      }
+      if (basemi) break;
+      mie = MI_FOR(dst, mie->parentIdx);
+    }
+    /* basemi is either NULL or set at this point. */
+  }
+  baseidx = NOMARKUP;
+  if (basemi) {
+    baseidx = basemi->idx;
+  }
+
+  /* Copy the markup info of src over. */
+  idx = dst->micount;
+  for (sidx = 0; sidx < src->micount; sidx++) {
+    mi = grow_mi(dst, src->mi[sidx].type);
+    k = mi->idx;
+    mi->start_code = as_get_tag(dst, src->mi[sidx].start_code);
+    mi->end_code = as_get_tag(dst, src->mi[sidx].end_code);
+    mi->standalone = src->mi[sidx].standalone;
+    mi->start = src->mi[sidx].start + loc;
+    if (src->mi[sidx].parentIdx >= 0) {
+      mi->parentIdx = src->mi[sidx].parentIdx + idx;
+    } else {
+      mi->parentIdx = baseidx;
+    }
+  }
+
+  /* Copy src's markup over, updating to new idx. */
+  if (src->markup) {
+    memcpy(dst->markup + loc,
+           src->markup,
+           srclen * sizeof(uint16_t));
+    for (i = loc, j = 0; i < srcend; i++, j++) {
+      if (src->markup[j] >= 0) {
+        dst->markup[i] = src->markup[j] + idx;
+      } else {
+        dst->markup[i] = baseidx;
+      }
+    }
+  } else {
+    for (i = loc; i < srcend; i++) {
+      dst->markup[i] = baseidx;
+    }
+  }
+  return truncated;
 }
 
 
-/** Scrambles an ansi_string, returning a pointer to the new string.
- * \param as ansi_string to scramble.
+/** Scrambles an ansi_string in place.
  */
-ansi_string *
+void
 scramble_ansi_string(ansi_string *as)
 {
-  int i, j, k;
+  int i, j;
+  char tmp;
+  uint16_t idxtmp;
   int pos[BUFFER_LEN];
-  markup_information *dm;
-  ansi_string *tmp = NULL;
-
-  if (!as)
-    return NULL;
-
-  optimize_ansi_string(as);
-
-  tmp = mush_malloc(sizeof(ansi_string), "ansi_string");
-  if (!tmp)
-    return NULL;
-
-  memset(tmp, 0, sizeof(ansi_string));
-
-  /* Scramble the text */
-  tmp->len = as->len;
-
-  for (i = 0; i < as->len; i++)
+  for (i = 0; i < as->len; i++) {
     pos[i] = i;
-
+  }
   for (i = 0; i < as->len; i++) {
     j = get_random32(0, as->len - 1);
-    k = pos[i];
-    pos[i] = pos[j];
-    pos[j] = k;
-  }
-
-  /* The old scramble did new[i] = old[pos[i]],
-   * but handling markup tags is easier if we do it this way. */
-  /* Scramble the text and ansi... */
-  for (i = 0; i < as->len; i++) {
-    tmp->text[pos[i]] = as->text[i];
-    tmp->ansi[pos[i]] = as->ansi[i];
-  }
-
-  /* Scramble the Pueblo markup */
-  dm = tmp->markup;
-  if (as->nmarkups > 0)
-    tmp->optimized = 0;
-
-  /* Copy the standalones (tags with -1 for start) */
-  for (i = 0; i < as->nmarkups && as->markup[i].start == -1; i++) {
-    copyto(dm[i], as->markup[i]);
-    dm[i].end = pos[i];
-  }
-
-  /* Copy the rest */
-  j = i;
-  for (; i < as->nmarkups; i++) {
-    for (k = as->markup[i].start; k < as->markup[i].end; k++) {
-      copyto(dm[j], as->markup[i]);
-      dm[j].start = pos[k];
-      dm[j].end = dm[j].start + 1;
-      j++;
-      if (j >= BUFFER_LEN) {
-        optimize_ansi_string(tmp);
-        tmp->optimized = 0;
-        j = tmp->nmarkups;
-        if (j >= BUFFER_LEN)
-          return tmp;
-      }
+    tmp = as->text[i];
+    as->text[i] = as->text[j];
+    as->text[j] = tmp;
+    if (as->markup) {
+      idxtmp = as->markup[i];
+      as->markup[i] = as->markup[j];
+      as->markup[j] = idxtmp;
     }
   }
-  tmp->nmarkups = j;
-  optimize_ansi_string(tmp);
-  return tmp;
 }
 
-#undef copyto
+/** Safely append markup tags onto a buffer
+ * \param mi markup_information to write
+ * \param end If true, end_code. Otherwise start_code.
+ * \param buff buffer to write to
+ * \param bp where to write to
+ * \retval 0 safely written
+ * \retval 1 unable to safely write.
+ */
+int
+safe_markup_codes(new_markup_information *mi, int end, char *buff, char **bp)
+{
+  if (end) {
+    if (mi->end_code) return safe_str(mi->end_code, buff, bp);
+  } else {
+    if (mi->start_code) return safe_str(mi->start_code, buff, bp);
+  }
+  return 0;
+}
+
+/** Safely append markup changes between one idx and the other
+ * \param as the ansi string
+ * \param lastidx idx to close
+ * \param nextidx idx to open
+ * \param buff buffer to write to
+ * \param bp where to write to
+ * \retval 0 safely written
+ * \retval 1 unable to safely write.
+ */
+static int
+safe_markup_change(ansi_string *as, int lastidx, int nextidx, int pos,
+                   char *buff, char **bp) {
+  new_markup_information *lastmi, *nextmi;
+  new_markup_information *mil = NULL, *mir = NULL;
+  int i = 0;
+  new_markup_information *endbuff[BUFFER_LEN];
+
+  if (lastidx >= 0) {
+    lastmi = &as->mi[lastidx];
+  } else {
+    lastmi = NULL;
+  }
+
+  if (nextidx >= 0) {
+    nextmi = &as->mi[nextidx];
+  } else {
+    nextmi = NULL;
+  }
+
+  /* dump closing tags for that which is in mil that isn't in mir. */
+  /* Look for the highest mil that exists in mir. */
+  for (mil = lastmi; mil; mil = MI_FOR(as, mil->parentIdx)) {
+    for (mir = nextmi; mir; mir = MI_FOR(as, mir->parentIdx)) {
+      if (mil == mir) break;
+    }
+    if (mir) break;
+  }
+  /* Dump the end codes for everything from lastmi down to mil. */
+  for (; lastmi != mil; lastmi = MI_FOR(as, lastmi->parentIdx)) {
+    if (safe_end_code(lastmi, buff, bp)) return 1;
+  }
+  /* Now we do the start codes for everything on the right. We have to
+   * do this from the bottom of the stack (or rmi)-up, though. */
+  i = 0;
+  for (i = 0; nextmi && nextmi != mir; nextmi = MI_FOR(as, nextmi->parentIdx)) {
+    endbuff[i++] = nextmi;
+  }
+  while (i--) {
+    if (!(endbuff[i]->standalone && pos != endbuff[i]->start)) {
+      if (safe_start_code(endbuff[i], buff, bp)) return 1;
+    }
+  }
+  return 0;
+}
 
 /** Safely append an ansi_string into a buffer as a real string,
  * \param as pointer to ansi_string to append.
@@ -1656,168 +1463,65 @@ scramble_ansi_string(ansi_string *as)
 int
 safe_ansi_string(ansi_string *as, int start, int len, char *buff, char **bp)
 {
-  int i, j;
-  int cur;
-  markup_information *info;
-  int nextstart, nextend, next;
+  int i;
   int end = start + len;
   int retval = 0;
-  ansi_data curansi;
+  int lastidx;
+  char *buffend = buff + BUFFER_LEN;
 
   if (!as)
     return 0;
 
-  optimize_ansi_string(as);
-
-  if (len <= 0)
-    return 0;
-  if (as->len > BUFFER_LEN)
-    as->len = BUFFER_LEN;
-  if (start >= as->len)
-    return 0;
-  if (end > as->len)
-    end = as->len;
-
-  /* Standalones (Stop codes with -1 for start) */
-  for (j = 0; j < as->nmarkups; j++) {
-    info = &(as->markup[j]);
-    if (info->start != -1)
-      break;                    /* No more standalone tags to copy */
-    if (info->stop_code && info->end == start)
-      retval += safe_str(info->stop_code, buff, bp);
-  }
-
-  /* Now, start codes of everything that impacts us. */
-  for (; j < as->nmarkups; j++) {
-    info = &(as->markup[j]);
-    if (info->start > start)
-      break;                    /* No more tags to copy. */
-    if (info->end > start)
-      retval += copy_start_code(info, buff, bp);
-  }
-
-  /* Find the next changes--new tags, or a prior tag ending. */
-  i = start;
-  nextend = BUFFER_LEN + 1;
-
-  /* If there is another start, it's our next one; we have a sorted list. */
-  if (j < as->nmarkups)
-    nextstart = as->markup[j].start;
-  else
-    nextstart = BUFFER_LEN + 1;
-
-  /* To find the next END is harder, since it isn't sorted... */
-  /* Scan forward. Stop once we find a tag with a start beyond
-   * this one's end. Anything beyond that can't be the nextend,
-   * so we'll backtrack from there. */
-  if (as->nmarkups > 0) {
-    cur = j;
-    if (cur >= as->nmarkups)
-      cur--;
-    info = &(as->markup[cur]);
-    while (cur < as->nmarkups && as->markup[cur].start < info->end)
-      cur++;
-    cur--;
-    if (info->end > as->markup[cur].start) {
-      for (; cur >= 0; cur--) {
-        if (as->markup[cur].end > i && as->markup[cur].end < nextend)
-          nextend = as->markup[cur].end;
+  if (start == 0 && as->len == 0 && (as->flags & AS_HAS_STANDALONE)) {
+    for (i = 0; i < as->micount; i++) {
+      if (!as->mi[i].standalone) continue;
+      if (as->mi[i].start_code) {
+        safe_start_code(&as->mi[i], buff, bp);
+      }
+      if (as->mi[i].end_code) {
+        safe_end_code(&as->mi[i], buff, bp);
       }
     }
   }
-
-  next = (nextend < nextstart) ? nextend : nextstart;
-
-  if (end < next)
-    next = end;
-
-  curansi = as->ansi[start];
-  if (!ansi_isnull(curansi))
-    write_ansi_data(&curansi, buff, bp);
-  /* If there's any text/ansi between start and next, print it */
-  for (i = start; i < next && i < as->len; i++) {
-    if (as->text[i]) {
-      if (!ansi_equal(curansi, as->ansi[i])) {
-        if (!ansi_isnull(curansi))
-          write_ansi_close(buff, bp);
-        curansi = as->ansi[i];
-        if (!ansi_isnull(curansi))
-          write_ansi_data(&curansi, buff, bp);
-      }
-      safe_chr(as->text[i], buff, bp);
-    }
+  if ((start >= as->len) ||
+      (start < 0) ||
+      (len < 1)) {
   }
 
-  cur = j;                      /* Our current markup */
-  i = next;                     /* Our current position */
+  if (start + len >= as->len) {
+    len = (as->len - start);
+  }
 
-  /* Basically the same thing as above, in loop form. */
-  while (i < end) {
+  /* Quick check: If no markup, no markup =). */
+  if (!(as->flags & AS_HAS_MARKUP)) {
+    return safe_strl(as->text + start, len, buff, bp);
+  }
 
-    if (i >= nextend) {
-      nextend = BUFFER_LEN + 2;
-      j = cur;
-      /* Find the last markup that could possibly have a relevant end code */
-      while (j < as->nmarkups && as->markup[j].start < as->markup[cur].end)
-        j++;
-      j--;
-      /* We MUST have markup if we're here, so no nmarkup > 0 check. */
-      /* Print relevant stop codes, and find our nextend */
-      for (; j >= 0; j--) {
-        info = &(as->markup[j]);
-        if (info->end >= i) {
-          if (info->end == i)
-            retval += copy_stop_code(info, buff, bp);
-          else if (info->end < nextend)
-            nextend = info->end;
+  end = start + len;
+
+  lastidx = NOMARKUP;
+
+  /* The string has markup. Let's dump it. */
+  for (i = start; i < end; ) {
+    while (lastidx == as->markup[i] && (i < end) && ((*bp) < buffend)) {
+      *((*bp)++) = as->text[i++];
+    }
+    if ((*bp) >= buffend) {
+      return 1;
+    }
+    if (i < end) {
+      if (lastidx != as->markup[i]) {
+        if (safe_markup_change(as, lastidx, as->markup[i], i, buff, bp)) {
+          return 1;
         }
+        lastidx = as->markup[i];
       }
-    }
-
-    if (i >= nextstart) {
-      /* Print out all the relevant start codes */
-      for (; cur < as->nmarkups && as->markup[cur].start == i; cur++)
-        retval += copy_start_code(&(as->markup[cur]), buff, bp);
-      if (cur < as->nmarkups)
-        nextstart = as->markup[cur].start;
-      else
-        nextstart = BUFFER_LEN + 2;
-    }
-
-    next = (nextend < nextstart) ? nextend : nextstart;
-    if (end < next)
-      next = end;
-
-
-    for (; i < next && i < as->len; i++) {
-      if (as->text[i]) {
-        if (!ansi_equal(curansi, as->ansi[i])) {
-          if (!ansi_isnull(curansi))
-            write_ansi_close(buff, bp);
-          curansi = as->ansi[i];
-          if (!ansi_isnull(curansi))
-            write_ansi_data(&curansi, buff, bp);
-        }
-        safe_chr(as->text[i], buff, bp);
+    } else if (lastidx != NOMARKUP) {
+      if (safe_markup_change(as, lastidx, NOMARKUP, i, buff, bp)) {
+        return 1;
       }
     }
   }
-
-  /* Now, find all things that end for us */
-  if (as->nmarkups > 0) {
-    j = cur;
-    while (cur < as->nmarkups && as->markup[j].end > as->markup[cur].start)
-      cur++;
-    cur--;
-    for (; cur >= 0; cur--) {
-      info = &(as->markup[cur]);
-      if (info->start < i && info->end >= i)
-        retval += copy_stop_code(info, buff, bp);
-    }
-  }
-
-  if (!retval && !ansi_isnull(curansi))
-    retval += write_ansi_close(buff, bp);
   return retval;
 }
 
@@ -1910,7 +1614,6 @@ escape_marked_str(char **str, char *buff, char **bp)
 
 /* Does the work of decompose_str, which is found in look.c.
  * Even handles ANSI and Pueblo, which is why it's so ugly.
- * Code based off of real_parse_ansi_string, not safe_ansi_string.
  */
 int
 real_decompose_str(char *orig, char *buff, char **bp)

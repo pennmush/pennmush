@@ -1148,6 +1148,7 @@ int
 ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
 {
   int len = dst->len + src->len - count;
+  int oldlen = dst->len;
   int dstleft = dst->len - (loc + count);
   int srclen = src->len;
   int srcend = loc + srclen;
@@ -1255,10 +1256,6 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
       dst->markup[i] = NOMARKUP;
     }
     dst->flags |= AS_HAS_MARKUP;
-  } else if (dstleft > 0) {
-    memmove(dst->markup + srcend,
-            dst->markup + (loc + count),
-            dstleft * sizeof(int16_t));
   }
   if (!src->markup) {
     src->markup = mush_malloc(sizeof(uint16_t) * BUFFER_LEN,
@@ -1282,15 +1279,22 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
     }
   } else {
     i = loc;
-    if (i < dst->len) {
+    if (i <= oldlen) {
       if (dst->markup[i] >= 0)
         mis = &dst->mi[dst->markup[i]];
     }
     i = loc + count - 1;
-    if (i < dst->len) {
+    if (i <= oldlen) {
       if (dst->markup[i] >= 0)
         mie = &dst->mi[dst->markup[i]];
     }
+  }
+
+  // Move markup as necessary.
+  if (dstleft > 0) {
+    memmove(dst->markup + srcend,
+            dst->markup + (loc + count),
+            dstleft * sizeof(int16_t));
   }
 
   /* If, and only if, mis and mie have a markup_information in common,

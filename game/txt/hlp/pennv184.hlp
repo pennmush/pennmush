@@ -19,6 +19,13 @@ Commands:
    Padraic. [MG]
    
 Minor Changes:
+ * ansi_string has been rewritten to be much faster for non-marked up
+   strings, to take up considerably less memory, and has received general
+   all-around improvements in speed. Rewrite is in preparation for
+   256 color and 24 bit color ansi. [GM]
+ * ansi_string no longer optimizes markup. In some pathological cases,
+   buffer_len will be hit much earlier than it used to be. Use ansi()
+   with wisdom! [GM]
  * @edit no longer shows the full value of attributes which aren't edited,
    it just shows that they are unchanged. Suggested by Minion. [MG]
 

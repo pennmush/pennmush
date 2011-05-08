@@ -815,12 +815,12 @@ safe_strl(const char *s, size_t len, char *buff, char **bp)
     return safe_chr(*s, buff, bp);
 
   blen = *bp - buff;
-  if (blen > BUFFER_LEN - 2)
+  if (blen > BUFFER_LEN - 1)
     return len;
-  if ((len + blen) <= BUFFER_LEN - 2)
+  if ((len + blen) <= BUFFER_LEN - 1)
     clen = len;
   else
-    clen = BUFFER_LEN - 2 - blen;
+    clen = BUFFER_LEN - 1 - blen;
   memcpy(*bp, s, clen);
   *bp += clen;
   return len - clen;

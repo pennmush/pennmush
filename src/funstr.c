@@ -857,17 +857,13 @@ FUNCTION(fun_repeat)
 /* ARGSUSED */
 FUNCTION(fun_scramble)
 {
-  ansi_string *as, *dst;
+  ansi_string *as;
 
   if (!*args[0])
     return;
 
   as = parse_ansi_string(args[0]);
-  dst = scramble_ansi_string(as);
-  if (dst) {
-    free_ansi_string(as);
-    as = dst;
-  }
+  scramble_ansi_string(as);
 
   safe_ansi_string(as, 0, as->len, buff, bp);
   free_ansi_string(as);
@@ -1455,13 +1451,14 @@ FUNCTION(fun_edit)
       search = orig->text;
       /* Find each occurrence */
       while ((ptr = strstr(search, needle)) != NULL) {
+        if ((ptr - orig->text) > orig->len) break;
         /* Perform the replacement */
-        ansi_string_replace(orig, ptr - orig->text, nlen, repl);
+        if (ansi_string_replace(orig, ptr - orig->text, nlen, repl))
+          break;
         search = ptr + repl->len;
       }
     }
     free_ansi_string(repl);
-    optimize_ansi_string(orig);
   }
 
   safe_ansi_string(orig, 0, orig->len, buff, bp);

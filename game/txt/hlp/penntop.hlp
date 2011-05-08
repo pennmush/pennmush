@@ -550,13 +550,12 @@ See also: objid(), @lock-objid, DBREFS
   last player leaves or disconnects, at which point they will be
   transported as described above.
 
+  Drop-tos work on things and players alike.
+
   If the room has a @lock/dropto set on it, only objects that pass the
   lock will be transported (either immediately or when the last player
   leaves if the room is STICKY). This can be used to prevent the
   dropto from acting on, say, objects containing connected players.
-
-  Drop-tos are useful for keeping rooms uncluttered. Also, they work
-  on players and things alike.
 
 See also: @link, STICKY, LINK_OK, @lock
 & %#

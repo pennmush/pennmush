@@ -1198,7 +1198,7 @@ FUNCTION(fun_trim)
   enum trim_style { TRIM_LEFT, TRIM_RIGHT, TRIM_BOTH } trim;
   int trim_style_arg, trim_char_arg;
   ansi_string *as;
-  int i;
+  int s, e;
   char *delims;
   char totrim[0x100];
 
@@ -1254,24 +1254,16 @@ FUNCTION(fun_trim)
    * same time we skip stuff.
    */
 
-  /* If necessary, skip over the leading stuff. */
   as = parse_ansi_string(args[0]);
+  s = 0;
+  e = as->len;
+  if (trim != TRIM_LEFT) {
+    while (e > 0 && totrim[(unsigned char) as->text[e-1]]) e--;
+  }
   if (trim != TRIM_RIGHT) {
-    for (i = 0; i < as->len; i++) {
-      if (!totrim[(unsigned char) as->text[i]])
-        break;
-      as->text[i] = '\0';
-    }
+    while (s < e && totrim[(unsigned char) as->text[s]]) s++;
   }
-  /* Cut off the trailing stuff, if appropriate. */
-  if ((trim != TRIM_LEFT)) {
-    for (i = as->len - 1; i >= 0; i--) {
-      if (!totrim[(unsigned char) as->text[i]])
-        break;
-      as->text[i] = '\0';
-    }
-  }
-  safe_ansi_string(as, 0, as->len, buff, bp);
+  safe_ansi_string(as, s, e - s, buff, bp);
   free_ansi_string(as);
 }
 
@@ -1292,7 +1284,7 @@ FUNCTION(fun_squish)
    * never going to end up with a longer string.
    */
 
-  int i;
+  int i, j;
   char sep;
   int insep = 1;
   ansi_string *as;
@@ -1307,21 +1299,27 @@ FUNCTION(fun_squish)
    * them later.
    */
   for (i = as->len - 1; i >= 0; i--) {
-    if (as->text[i] == sep)
-      as->text[i] = '\0';
-    else
-      break;
+    if (as->text[i] != sep) break;
   }
+  as->len = i + 1;
   /* Now trim leading and sequences */
-  for (i = 0; i < as->len; i++) {
+  for (i = 0, j = 0; i < as->len; i++) {
     if (as->text[i] == sep) {
-      if (insep)
-        as->text[i] = '\0';
+      if (insep) continue;
       insep = 1;
     } else {
       insep = 0;
     }
+    if (i != j) {
+      as->text[j] = as->text[i];
+      if (as->markup) {
+        as->markup[j] = as->markup[i];
+      }
+    }
+    j++;
   }
+  as->len = j;
+  as->text[j] = '\0';
   safe_ansi_string(as, 0, as->len, buff, bp);
   free_ansi_string(as);
 }

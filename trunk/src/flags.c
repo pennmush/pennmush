@@ -905,6 +905,7 @@ flag_add_additional(FLAGSPACE *n)
     add_power("Pueblo_Send", '\0', NOTYPE, F_WIZARD | F_LOG, F_ANY);
     add_power("Many_Attribs", '\0', NOTYPE, F_WIZARD | F_LOG, F_ANY);
     add_power("hook", '\0', NOTYPE, F_WIZARD | F_LOG, F_ANY);
+    add_power("Can_dark", '\0', TYPE_PLAYER, F_WIZARD | F_LOG, F_ANY);
     /* Aliases for other servers */
     if ((f = match_power("tport_anything")) && !match_power("tel_anything"))
       flag_add(flags, "tel_anything", f);
@@ -1553,7 +1554,9 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
     return;
   }
   /* The only players who can be Dark are wizards. */
-  if (is_flag(f, "DARK") && !negate && Alive(thing) && !Wizard(thing)) {
+  if (is_flag(f, "DARK") && !negate
+      && Alive(thing) && !Wizard(thing)
+      && !has_power_by_name(thing, "Can_dark", NOTYPE)) {
     notify(player, T("Permission denied."));
     return;
   }

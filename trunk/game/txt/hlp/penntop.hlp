@@ -1146,6 +1146,7 @@ See also: @parent, $-COMMANDS, ATTRIBUTES, ANCESTORS, ORPHAN, pfun()
   tport_anywhere        Can @teleport to anywhere.
   unkillable *          Cannot be killed
   can_spoof             Can use @ns*emit, ns*emit() and @*emit/spoof
+  can_dark              Can @set themselves dark
   
   * When these powers are set on a player, all the objects they own which
     are not set MISTRUST are also considered to have the power.

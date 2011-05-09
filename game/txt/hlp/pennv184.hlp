@@ -17,7 +17,11 @@ Commands:
  * @edit/quiet edits attributes, but doesn't spam you with the modified
    values, just gives you a count of modified attributes. Suggested by
    Padraic. [MG]
-   
+
+Powers:
+ * can_dark power lets non-wizard players set themselves dark. Suggested by 
+   AnneLions. [GM]
+
 Minor Changes:
  * ansi_string has been rewritten to be much faster for non-marked up
    strings, to take up considerably less memory, and has received general

@@ -65,10 +65,10 @@ enum command_load_state { CMD_LOAD_BUILTIN,
 static enum command_load_state command_state = CMD_LOAD_BUILTIN;
 static StrTree switch_names;
 
-int run_hook(dbref player, dbref cause, struct hook_data *hook,
+int run_hook(dbref executor, dbref enactor, struct hook_data *hook,
              NEW_PE_INFO *pe_info);
 
-int run_hook_override(COMMAND_INFO *cmd, dbref player, const char *commandraw,
+int run_hook_override(COMMAND_INFO *cmd, dbref executor, const char *commandraw,
                       MQUE *from_queue);
 
 const char *CommandLock = "CommandLock";
@@ -1438,7 +1438,7 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
 #undef command_parse_free_args
 
 int
-run_command(COMMAND_INFO *cmd, dbref player, dbref enactor,
+run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
             const char *commandraw, switch_mask sw, char switch_err[BUFFER_LEN],
             const char *string, char *swp, char *ap, char *ls,
             char *lsa[MAX_ARG], char *rs, char *rsa[MAX_ARG], MQUE *queue_entry)
@@ -1454,38 +1454,38 @@ run_command(COMMAND_INFO *cmd, dbref player, dbref enactor,
   strcpy(pe_info->cmd_raw, string);
 
 
-  if (!run_hook(player, enactor, &cmd->hooks.ignore, pe_info)) {
+  if (!run_hook(executor, enactor, &cmd->hooks.ignore, pe_info)) {
     free_pe_info(pe_info);
     return 0;
   }
 
   /* If we have a hook/override, we use that instead */
-  if (!run_hook_override(cmd, player, commandraw, queue_entry) &&
+  if (!run_hook_override(cmd, executor, commandraw, queue_entry) &&
       !(!strcmp(cmd->name, "HUH_COMMAND") &&
-        run_hook_override(cmd, player, tprintf("HUH_COMMAND %s", ls),
+        run_hook_override(cmd, executor, tprintf("HUH_COMMAND %s", ls),
                           queue_entry))) {
     /* Otherwise, we do hook/before, the command, and hook/after */
     /* But first, let's see if we had an invalid switch */
     if (switch_err && *switch_err) {
-      notify(player, switch_err);
+      notify(executor, switch_err);
       free_pe_info(pe_info);
       return 1;
     }
-    run_hook(player, enactor, &cmd->hooks.before, pe_info);
-    cmd->func(cmd, player, enactor, enactor, sw, string, swp, ap, ls, lsa, rs,
+    run_hook(executor, enactor, &cmd->hooks.before, pe_info);
+    cmd->func(cmd, executor, enactor, enactor, sw, string, swp, ap, ls, lsa, rs,
               rsa, queue_entry);
-    run_hook(player, enactor, &cmd->hooks.after, pe_info);
+    run_hook(executor, enactor, &cmd->hooks.after, pe_info);
   }
   /* Either way, we might log */
   if (cmd->type & CMD_T_LOGARGS)
     if (cmd->func == cmd_password || cmd->func == cmd_newpassword
         || cmd->func == cmd_pcreate)
-      do_log(LT_CMD, player, enactor, "%s %s=***", cmd->name,
+      do_log(LT_CMD, executor, enactor, "%s %s=***", cmd->name,
              (cmd->func == cmd_password ? "***" : ls));
     else
-      do_log(LT_CMD, player, enactor, "%s", commandraw);
+      do_log(LT_CMD, executor, enactor, "%s", commandraw);
   else if (cmd->type & CMD_T_LOGNAME)
-    do_log(LT_CMD, player, enactor, "%s", cmd->name);
+    do_log(LT_CMD, executor, enactor, "%s", cmd->name);
 
   free_pe_info(pe_info);
   return 1;
@@ -1493,19 +1493,19 @@ run_command(COMMAND_INFO *cmd, dbref player, dbref enactor,
 }
 
 /** Execute the huh_command when no command is matched.
- * \param player the enactor.
- * \param cause dbref that caused the command to be executed.
+ * \param executor the executor running the command.
+ * \param enactor dbref that caused the command to be executed.
  * \param string the input given.
  * \param queue_entry the queue entry the invalid cmd was run from
  */
 void
-generic_command_failure(dbref player, dbref cause, char *string,
+generic_command_failure(dbref executor, dbref enactor, char *string,
                         MQUE *queue_entry)
 {
   COMMAND_INFO *cmd;
 
   if ((cmd = command_find("HUH_COMMAND")) && !(cmd->type & CMD_T_DISABLED)) {
-    run_command(cmd, player, cause, "HUH_COMMAND", NULL, NULL, string, NULL,
+    run_command(cmd, executor, enactor, "HUH_COMMAND", NULL, NULL, string, NULL,
                 NULL, string, NULL, NULL, NULL, queue_entry);
   }
 }
@@ -2169,15 +2169,15 @@ has_hook(struct hook_data *hook)
 
 /** Run a command hook.
  * This function runs a hook before or after a command execution.
- * \param player the enactor.
- * \param cause dbref that caused command to execute.
+ * \param executor the executor.
+ * \param enactor dbref that caused command to execute.
  * \param hook pointer to the hook.
  * \param pe_info pe_info to evaluate hook with
  * \retval 1 Hook doesn't exist, or evaluates to a non-false value
  * \retval 0 Hook exists and evaluates to a false value
  */
 int
-run_hook(dbref player, dbref cause, struct hook_data *hook,
+run_hook(dbref executor, dbref enactor, struct hook_data *hook,
          NEW_PE_INFO *pe_info)
 {
   ATTR *atr;
@@ -2201,7 +2201,7 @@ run_hook(dbref player, dbref cause, struct hook_data *hook,
   cp = code;
   bp = buff;
 
-  process_expression(buff, &bp, &cp, hook->obj, cause, player, PE_DEFAULT,
+  process_expression(buff, &bp, &cp, hook->obj, enactor, executor, PE_DEFAULT,
                      PT_DEFAULT, pe_info);
   *bp = '\0';
 
@@ -2211,13 +2211,13 @@ run_hook(dbref player, dbref cause, struct hook_data *hook,
 
 /** Run the \@hook/override for a command, if set
  * \param cmd the command with the hook
- * \param player the player running the command
+ * \param executor the player running the command
  * \param commandraw the evaluated command string to match against the hook
  * \param from_queue the queue entry the command is being executed in
  * \return 1 if the hook has been run successfully, 0 otherwise
  */
 int
-run_hook_override(COMMAND_INFO *cmd, dbref player, const char *commandraw,
+run_hook_override(COMMAND_INFO *cmd, dbref executor, const char *commandraw,
                   MQUE *from_queue)
 {
 
@@ -2225,11 +2225,11 @@ run_hook_override(COMMAND_INFO *cmd, dbref player, const char *commandraw,
     return 0;
 
   if (cmd->hooks.override.attrname) {
-    return one_comm_match(cmd->hooks.override.obj, player,
+    return one_comm_match(cmd->hooks.override.obj, executor,
                           cmd->hooks.override.attrname, commandraw,
                           from_queue, cmd->hooks.override.inplace);
   } else {
-    return atr_comm_match(cmd->hooks.override.obj, player, '$', ':', commandraw,
+    return atr_comm_match(cmd->hooks.override.obj, executor, '$', ':', commandraw,
                           0, 1, NULL, NULL, 0, NULL,
                           from_queue, cmd->hooks.override.inplace);
   }

@@ -771,14 +771,14 @@ do_stats(dbref player, const char *name)
  * \verbatim
  * This implements @newpassword.
  * \endverbatim
- * \param player the executor.
- * \param cause the enactor.
+ * \param executor the executor.
+ * \param enactor the enactor.
  * \param name the name of the player whose password is to be reset.
  * \param password the new password for the player.
  * \param queue_entry the queue entry the command was executed in
  */
 void
-do_newpassword(dbref player, dbref cause,
+do_newpassword(dbref executor, dbref enactor,
                const char *name, const char *password, MQUE *queue_entry)
 {
   dbref victim;
@@ -790,26 +790,26 @@ do_newpassword(dbref player, dbref cause,
 
     sp = password;
     bp = pass_eval;
-    process_expression(pass_eval, &bp, &sp, player, player, cause,
+    process_expression(pass_eval, &bp, &sp, executor, executor, enactor,
                        PE_DEFAULT, PT_DEFAULT, NULL);
     *bp = '\0';
     password = pass_eval;
   }
 
   if ((victim = lookup_player(name)) == NOTHING) {
-    notify(player, T("No such player."));
+    notify(executor, T("No such player."));
   } else if (*password != '\0' && !ok_password(password)) {
     /* Wiz can set null passwords, but not bad passwords */
-    notify(player, T("Bad password."));
-  } else if (God(victim) && !God(player)) {
-    notify(player, T("You cannot change that player's password."));
+    notify(executor, T("Bad password."));
+  } else if (God(victim) && !God(executor)) {
+    notify(executor, T("You cannot change that player's password."));
   } else {
     /* it's ok, do it */
     (void) atr_add(victim, "XYXXY", mush_crypt(password), GOD, 0);
-    notify_format(player, T("Password for %s changed."), Name(victim));
+    notify_format(executor, T("Password for %s changed."), Name(victim));
     notify_format(victim, T("Your password has been changed by %s."),
-                  Name(player));
-    do_log(LT_WIZ, player, victim, "*** NEWPASSWORD ***");
+                  Name(executor));
+    do_log(LT_WIZ, executor, victim, "*** NEWPASSWORD ***");
   }
 }
 

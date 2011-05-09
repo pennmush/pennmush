@@ -2920,14 +2920,14 @@ do_pemit_port(dbref player, const char *pc, const char *message, int flags)
 }
 
 /** Page a specified socket.
- * \param player the executor.
+ * \param executor the executor.
  * \param enactor the enactor.
  * \param pc string containing port number to send message to.
  * \param message message to send.
  * \param eval_msg Should the message be evaluated?
  */
 void
-do_page_port(dbref player, dbref enactor, const char *pc, const char *message,
+do_page_port(dbref executor, dbref enactor, const char *pc, const char *message,
              bool eval_msg)
 {
   int p, key;
@@ -2937,36 +2937,36 @@ do_page_port(dbref player, dbref enactor, const char *pc, const char *message,
   char mbuf[BUFFER_LEN], *mbp = mbuf;
   dbref target = NOTHING;
 
-  if (!Hasprivs(player)) {
-    notify(player, T("Permission denied."));
+  if (!Hasprivs(executor)) {
+    notify(executor, T("Permission denied."));
     return;
   }
 
-  process_expression(tbuf, &tbp, &pc, player, enactor, enactor, PE_DEFAULT,
+  process_expression(tbuf, &tbp, &pc, executor, enactor, enactor, PE_DEFAULT,
                      PT_DEFAULT, NULL);
   *tbp = '\0';
   p = atoi(tbuf);
   tbp = tbuf;
 
   if (p <= 0) {
-    notify(player, T("That's not a port number."));
+    notify(executor, T("That's not a port number."));
     return;
   }
 
   if (!message) {
-    notify(player, T("What do you want to page with?"));
+    notify(executor, T("What do you want to page with?"));
     return;
   }
 
   if (eval_msg) {
-    process_expression(mbuf, &mbp, &message, player, enactor, enactor,
+    process_expression(mbuf, &mbp, &message, executor, enactor, enactor,
                        PE_DEFAULT, PT_DEFAULT, NULL);
     *mbp = '\0';
     message = mbuf;
   }
 
   if (!*message) {
-    notify(player, T("What do you want to page with?"));
+    notify(executor, T("What do you want to page with?"));
     return;
   }
 
@@ -2984,31 +2984,31 @@ do_page_port(dbref player, dbref enactor, const char *pc, const char *message,
 
   d = port_desc(p);
   if (!d) {
-    notify(player, T("That port's not active."));
+    notify(executor, T("That port's not active."));
     return;
   }
   if (d->connected)
     target = d->player;
   switch (key) {
   case 1:
-    safe_format(tbuf, &tbp, T("From afar, %s%s%s"), Name(player), gap,
+    safe_format(tbuf, &tbp, T("From afar, %s%s%s"), Name(executor), gap,
                 message + 1);
-    notify_format(player, T("Long distance to %s: %s%s%s"),
+    notify_format(executor, T("Long distance to %s: %s%s%s"),
                   target != NOTHING ? Name(target) :
-                  T("a connecting player"), Name(player), gap, message + 1);
+                  T("a connecting player"), Name(executor), gap, message + 1);
     break;
   case 3:
-    safe_format(tbuf, &tbp, T("%s pages: %s"), Name(player), message);
-    notify_format(player, T("You paged %s with '%s'"),
+    safe_format(tbuf, &tbp, T("%s pages: %s"), Name(executor), message);
+    notify_format(executor, T("You paged %s with '%s'"),
                   target != NOTHING ? Name(target) :
                   T("a connecting player"), message);
     break;
   }
   *tbp = '\0';
   if (target != NOTHING)
-    page_return(player, target, "Idle", "IDLE", NULL);
-  if (Typeof(player) != TYPE_PLAYER && Nospoof(target))
-    queue_string_eol(d, tprintf("[#%d] %s", player, tbuf));
+    page_return(executor, target, "Idle", "IDLE", NULL);
+  if (Typeof(executor) != TYPE_PLAYER && Nospoof(target))
+    queue_string_eol(d, tprintf("[#%d] %s", executor, tbuf));
   else
     queue_string_eol(d, tbuf);
 }

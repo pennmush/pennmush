@@ -232,7 +232,7 @@ void reserve_aliases(void);
 void local_commands(void);
 void do_command_add(dbref player, char *name, int flags);
 void do_command_delete(dbref player, char *name);
-int run_command(COMMAND_INFO *cmd, dbref player, dbref enactor,
+int run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
                 const char *commandraw, switch_mask sw,
                 char switch_err[BUFFER_LEN], const char *string, char *swp,
                 char *ap, char *ls, char *lsa[MAX_ARG], char *rs,

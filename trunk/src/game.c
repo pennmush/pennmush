@@ -108,7 +108,7 @@ int alias_list_check(dbref thing, const char *command, const char *type);
 int loc_alias_check(dbref loc, const char *command, const char *type);
 void do_poor(dbref player, char *arg1);
 void do_writelog(dbref player, char *str, int ltype);
-void bind_and_queue(dbref player, dbref cause, char *action, const char *arg,
+void bind_and_queue(dbref executor, dbref enactor, char *action, const char *arg,
                     int num, MQUE *parent_queue);
 void do_list(dbref player, char *arg, int lc, int which);
 void do_uptime(dbref player, int mortal);
@@ -1539,15 +1539,15 @@ do_writelog(dbref player, char *str, int ltype)
 }
 
 /** Bind occurences of '##' in "action" to "arg", then run "action".
- * \param player the enactor.
- * \param cause object that caused command to run.
+ * \param executor the executor.
+ * \param enactor object that caused command to run.
  * \param action command string which may contain tokens.
  * \param arg value for ## token.
  * \param placestr value for #@ token.
  * \param parent_queue the queue entry this is being run from
  */
 void
-bind_and_queue(dbref player, dbref cause, char *action,
+bind_and_queue(dbref executor, dbref enactor, char *action,
                const char *arg, int num, MQUE *parent_queue)
 {
   char *repl, *command;
@@ -1570,7 +1570,7 @@ bind_and_queue(dbref player, dbref cause, char *action,
   pe_regs_set(pe_regs, PE_REGS_ITER, "t0", arg);
   pe_regs_set_int(pe_regs, PE_REGS_ITER, "n0", num);
   /* Then queue the new command, using a cloned pe_info... */
-  new_queue_actionlist(player, cause, cause, command, parent_queue,
+  new_queue_actionlist(executor, enactor, enactor, command, parent_queue,
                        PE_INFO_CLONE, QUEUE_DEFAULT, pe_regs);
   /* And then pop it off the parent pe_info again */
   pe_regs_free(pe_regs);
@@ -1866,7 +1866,7 @@ do_scan(dbref player, char *command, int flag)
  * \verbatim
  * This function implements @dolist.
  * \endverbatim
- * \param player the executor.
+ * \param executor the executor.
  * \param list string containing the list to iterate over.
  * \param command command to run for each list element.
  * \param enactor the enactor
@@ -1874,7 +1874,7 @@ do_scan(dbref player, char *command, int flag)
  * \param queue_entry the queue entry \@dolist is being run in
  */
 void
-do_dolist(dbref player, char *list, char *command, dbref enactor,
+do_dolist(dbref executor, char *list, char *command, dbref enactor,
           unsigned int flags, MQUE *queue_entry)
 {
   char *curr, *objstring;
@@ -1883,17 +1883,17 @@ do_dolist(dbref player, char *list, char *command, dbref enactor,
   int place;
   char delim = ' ';
   if (!command || !*command) {
-    notify(player, T("What do you want to do with the list?"));
+    notify(executor, T("What do you want to do with the list?"));
     if (flags & DOL_NOTIFY)
-      parse_que(player, enactor, "@notify me", NULL);
+      parse_que(executor, enactor, "@notify me", NULL);
     return;
   }
 
   if (flags & DOL_DELIM) {
     if (list[1] != ' ') {
-      notify(player, T("Separator must be one character."));
+      notify(executor, T("Separator must be one character."));
       if (flags & DOL_NOTIFY)
-        parse_que(player, enactor, "@notify me", NULL);
+        parse_que(executor, enactor, "@notify me", NULL);
       return;
     }
     delim = list[0];
@@ -1907,14 +1907,14 @@ do_dolist(dbref player, char *list, char *command, dbref enactor,
   if (objstring && !*objstring) {
     /* Blank list */
     if (flags & DOL_NOTIFY)
-      parse_que(player, enactor, "@notify me", NULL);
+      parse_que(executor, enactor, "@notify me", NULL);
     return;
   }
 
   while (objstring) {
     curr = split_token(&objstring, delim);
     place++;
-    bind_and_queue(player, enactor, command, curr, place, queue_entry);
+    bind_and_queue(executor, enactor, command, curr, place, queue_entry);
   }
 
   *bp = '\0';
@@ -1924,7 +1924,7 @@ do_dolist(dbref player, char *list, char *command, dbref enactor,
      *  directly, since we want the command to be queued
      *  _after_ the list has executed.
      */
-    parse_que(player, enactor, "@notify me", NULL);
+    parse_que(executor, enactor, "@notify me", NULL);
   }
 }
 

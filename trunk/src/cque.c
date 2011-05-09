@@ -61,7 +61,7 @@ static int add_to_sem(dbref player, int am, const char *name);
 static int queue_limit(dbref player);
 void free_qentry(MQUE *point);
 static int pay_queue(dbref player, const char *command);
-void wait_que(dbref player, int waittill, char *command, dbref cause, dbref sem,
+void wait_que(dbref executor, int waittill, char *command, dbref enactor, dbref sem,
               const char *semattr, int until, MQUE *parent_queue);
 int que_next(void);
 
@@ -540,8 +540,7 @@ insert_que(MQUE *queue_entry, MQUE *parent_queue)
  * \param parent_queue the parent queue entry which caused this queueing, or NULL
  * \param flags a bitwise collection of PE_INFO_* flags that determine the environment for the new queue
  * \param queue_type bitwise collection of the QUEUE_* flags, to determine which queue this goes in
- * \param env The environment (%0-%9) to use for the new queue, or NULL
- * \param qreg The hash of qregisters to use for the new queue, or NULL
+ * \param pe_regs the pe_regs for the queue entry
  * \param fromattr The attribute the actionlist is queued from
  */
 void
@@ -680,7 +679,7 @@ queue_include_attribute(dbref thing, const char *atrname,
  * \param atrname attribute name.
  * \param enactor the enactor.
  * \param noparent if true, parents of executor are not checked for atrname.
- * \param env array of environment vars (%0-%9) to use for the queued attribute, or NULL for none
+ * \param pe_regs the pe_regs args for the queue entry
  * \retval 0 failure.
  * \retval 1 success.
  */
@@ -744,17 +743,17 @@ queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor, PE_REGS *pe_regs)
  * or the semaphore queue. Wait queue entries are sorted by when
  * they're due to expire; semaphore queue entries are just added
  * to the back of the queue.
- * \param player the enqueuing object.
+ * \param executor the enqueuing object.
  * \param waittill time to wait, or 0.
  * \param command command to enqueue.
- * \param cause object that caused command to be enqueued.
+ * \param enactor object that caused command to be enqueued.
  * \param sem object to serve as a semaphore, or NOTHING.
  * \param semattr attribute to serve as a semaphore, or NULL (to use SEMAPHORE).
  * \param until 1 if we wait until an absolute time.
  * \param parent_queue the queue entry the \@wait command was executed in
  */
 void
-wait_que(dbref player, int waittill, char *command, dbref cause, dbref sem,
+wait_que(dbref executor, int waittill, char *command, dbref enactor, dbref sem,
          const char *semattr, int until, MQUE *parent_queue)
 {
   MQUE *tmp;
@@ -763,15 +762,15 @@ wait_que(dbref player, int waittill, char *command, dbref cause, dbref sem,
   if (waittill == 0) {
     if (sem != NOTHING)
       add_to_sem(sem, -1, semattr);
-    new_queue_actionlist(player, cause, cause, command, parent_queue,
+    new_queue_actionlist(executor, enactor, enactor, command, parent_queue,
                          PE_INFO_CLONE, QUEUE_DEFAULT, NULL);
     return;
   }
-  if (!pay_queue(player, command))      /* make sure player can afford to do it */
+  if (!pay_queue(executor, command))      /* make sure player can afford to do it */
     return;
   pid = next_pid();
   if (pid == 0) {
-    notify(player, T("Queue entry table full. Try again later."));
+    notify(executor, T("Queue entry table full. Try again later."));
     return;
   }
   if (parent_queue)
@@ -781,9 +780,9 @@ wait_que(dbref player, int waittill, char *command, dbref cause, dbref sem,
   tmp = new_queue_entry(pe_info);
   tmp->action_list = mush_strdup(command, "mque.action_list");
   tmp->pid = pid;
-  tmp->executor = player;
-  tmp->enactor = cause;
-  tmp->caller = cause;
+  tmp->executor = executor;
+  tmp->enactor = enactor;
+  tmp->caller = enactor;
 
   if (until) {
     tmp->wait_until = (time_t) waittill;
@@ -1379,15 +1378,15 @@ COMMAND(cmd_notify_drain)
  * \verbatim
  * This is the top-level function for @wait.
  * \endverbatim
- * \param player the enactor
- * \param cause the object causing the command to be added.
+ * \param executor the executor
+ * \param enactor the object causing the command to be added.
  * \param arg1 the wait time, semaphore object/attribute, or both. Modified!
  * \param cmd command to queue.
  * \param until if 1, wait until an absolute time.
  * \param parent_queue the parent queue entry to take env/qreg from
  */
 void
-do_wait(dbref player, dbref cause, char *arg1, const char *cmd, bool until,
+do_wait(dbref executor, dbref enactor, char *arg1, const char *cmd, bool until,
         MQUE *parent_queue)
 {
   dbref thing;
@@ -1399,7 +1398,7 @@ do_wait(dbref player, dbref cause, char *arg1, const char *cmd, bool until,
   arg2 = strip_braces(cmd);
   if (is_strict_integer(arg1)) {
     /* normal wait */
-    wait_que(player, parse_integer(arg1), arg2, cause, NOTHING, NULL, until,
+    wait_que(executor, parse_integer(arg1), arg2, enactor, NOTHING, NULL, until,
              parent_queue);
     mush_free(arg2, "strip_braces.buff");
     return;
@@ -1411,7 +1410,7 @@ do_wait(dbref player, dbref cause, char *arg1, const char *cmd, bool until,
   if (aname)
     *aname++ = '\0';
   if ((thing =
-       noisy_match_result(player, arg1, NOTYPE, MAT_EVERYTHING)) == NOTHING) {
+       noisy_match_result(executor, arg1, NOTYPE, MAT_EVERYTHING)) == NOTHING) {
     mush_free(arg2, "strip_braces.buff");
     return;
   }
@@ -1438,9 +1437,9 @@ do_wait(dbref player, dbref cause, char *arg1, const char *cmd, bool until,
     aname = (char *) "SEMAPHORE";
   }
 
-  if ((!controls(player, thing) && !LinkOk(thing))
+  if ((!controls(executor, thing) && !LinkOk(thing))
       || (aname && !waitable_attr(thing, aname))) {
-    notify(player, T("Permission denied."));
+    notify(executor, T("Permission denied."));
     mush_free(arg2, "strip_braces.buff");
     return;
   }
@@ -1459,7 +1458,7 @@ do_wait(dbref player, dbref cause, char *arg1, const char *cmd, bool until,
     thing = NOTHING;
     waitfor = -1;               /* just in case there was a timeout given */
   }
-  wait_que(player, waitfor, arg2, cause, thing, aname, until, parent_queue);
+  wait_que(executor, waitfor, arg2, enactor, thing, aname, until, parent_queue);
   mush_free(arg2, "strip_braces.buff");
 }
 

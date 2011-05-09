@@ -2,6 +2,7 @@
  * \file intmap.c
  * \brief Implementation of integer-keyed maps.
  *
+ * \verbatim
  * Uses patricia trees to efficiently store sparse integer maps. Keys
  * are unsigned 32 bit integers, and thus well suited for a radix tree
  * implementation. Simpler than balanced binary trees (Compare the
@@ -36,6 +37,7 @@
  * The implementation is based loosely on ones found at
  * http://www.mcdowella.demon.co.uk/Patricia.html and in the book
  * <ul>Algorithms in C, 3rd Edition</ul> by Robert Sedgewick.
+ * \endverbatim
  */
 
 #include "config.h"

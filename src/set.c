@@ -1058,15 +1058,15 @@ do_trigger(dbref player, char *object, char **argv)
  * \verbatim
  * This implements @include obj/attribute
  * \endverbatim
- * \param player the enactor.
- * \param cause the cause.
+ * \param executor the executor.
+ * \param enactor the enactor.
  * \param object the object/attribute pair.
  * \param argv array of arguments.
  * \param queue_type QUEUE_* flags to use for the new queue entry
  * \param parent_queue the parent queue to include the new actionlist into
  */
 void
-do_include(dbref player, dbref cause, char *object, char **argv,
+do_include(dbref executor, dbref enactor, char *object, char **argv,
            int queue_type, MQUE *parent_queue)
 {
   dbref thing;
@@ -1076,26 +1076,26 @@ do_include(dbref player, dbref cause, char *object, char **argv,
   strcpy(tbuf1, object);
   for (s = tbuf1; *s && (*s != '/'); s++) ;
   if (!*s) {
-    notify(player, T("I need to know what attribute to include."));
+    notify(executor, T("I need to know what attribute to include."));
     return;
   }
   *s++ = '\0';
 
-  thing = noisy_match_result(player, tbuf1, NOTYPE, MAT_EVERYTHING);
+  thing = noisy_match_result(executor, tbuf1, NOTYPE, MAT_EVERYTHING);
 
   if (thing == NOTHING)
     return;
 
-  if (God(thing) && !God(player)) {
-    notify(player, T("You can't include God!"));
+  if (God(thing) && !God(executor)) {
+    notify(executor, T("You can't include God!"));
     return;
   }
 
   /* include modifies the stack, but only if arguments are given */
   if (!queue_include_attribute
-      (thing, upcasestr(s), player, cause, cause,
+      (thing, upcasestr(s), executor, enactor, enactor,
        (rhs_present ? argv + 1 : NULL), queue_type, parent_queue))
-    notify(player, T("No such attribute."));
+    notify(executor, T("No such attribute."));
 }
 
 /** The use command.

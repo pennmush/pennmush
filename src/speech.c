@@ -797,16 +797,16 @@ messageformat(dbref player, const char *attribute, dbref enactor, int flags,
 }
 
 /** The page command.
- * \param player the enactor.
+ * \param executor the executor.
  * \param arg1 the list of players to page.
  * \param arg2 the message to page.
- * \param cause the object that caused the command to run.
+ * \param enactor the object that caused the command to run.
  * \param noeval if 1, page/noeval.
  * \param override if 1, page/override.
  * \param has_eq if 1, the command had an = in it.
  */
 void
-do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
+do_page(dbref executor, const char *arg1, const char *arg2, dbref enactor,
         int noeval, int override, int has_eq)
 {
   dbref target;
@@ -839,7 +839,7 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
 
   if (*arg1 && has_eq) {
     /* page to=[msg]. Always evaluate to, maybe evaluate msg */
-    process_expression(tbuf2, &tp2, &arg1, player, cause, cause,
+    process_expression(tbuf2, &tp2, &arg1, executor, enactor, enactor,
                        PE_DEFAULT, PT_DEFAULT, NULL);
     *tp2 = '\0';
     head = tbuf2;
@@ -854,9 +854,9 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
     repage = 1;
   }
   if (repage) {
-    a = atr_get_noparent(player, "LASTPAGED");
+    a = atr_get_noparent(executor, "LASTPAGED");
     if (!a || !*((hp = head = safe_atr_value(a)))) {
-      notify(player, T("You haven't paged anyone since connecting."));
+      notify(executor, T("You haven't paged anyone since connecting."));
       mush_free(tbuf2, "page_buff");
       mush_free(namebuf, "page_buff");
       return;
@@ -875,7 +875,7 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
         }
       }
       if (!gcount) {
-        notify(player, T("I can't find who you last paged."));
+        notify(executor, T("I can't find who you last paged."));
       } else {
         for (repage = 1; repage <= gcount; repage++) {
           safe_itemizer(repage, (repage == gcount), ",", T("and"), " ", tbuf2,
@@ -883,7 +883,7 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
           safe_str(Name(good[repage - 1]), tbuf2, &tp2);
         }
         *tp2 = '\0';
-        notify_format(player, T("You last paged %s."), tbuf2);
+        notify_format(executor, T("You last paged %s."), tbuf2);
       }
       mush_free(tbuf2, "page_buff");
       mush_free(namebuf, "page_buff");
@@ -897,8 +897,8 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
   if (!tbuf)
     mush_panic("Unable to allocate memory in do_page");
 
-  if (override && !Pemit_All(player)) {
-    notify(player, T("Try again after you get the pemit_all power."));
+  if (override && !Pemit_All(executor)) {
+    notify(executor, T("Try again after you get the pemit_all power."));
     override = 0;
   }
 
@@ -909,38 +909,38 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
     if (!GoodObject(target))
       target = short_page(current);
     if (target == NOTHING) {
-      notify_format(player,
+      notify_format(executor,
                     T("I can't find who you're trying to page with: %s"),
                     current);
       safe_chr(' ', tbuf, &tp);
       safe_str_space(current, tbuf, &tp);
     } else if (target == AMBIGUOUS) {
-      notify_format(player,
+      notify_format(executor,
                     T("I'm not sure who you want to page with: %s"), current);
       safe_chr(' ', tbuf, &tp);
       safe_str_space(current, tbuf, &tp);
     } else {
-      fails_lock = !(override || eval_lock(player, target, Page_Lock));
+      fails_lock = !(override || eval_lock(executor, target, Page_Lock));
       is_haven = !override && Haven(target);
       if (!Connected(target) || (Dark(target) && (is_haven || fails_lock))) {
         /* A player isn't connected if they aren't connected, or if
          * they're DARK and HAVEN, or DARK and the pagelock fails. */
-        page_return(player, target, "Away", "AWAY",
+        page_return(executor, target, "Away", "AWAY",
                     tprintf(T("%s is not connected."), Name(target)));
         if (fails_lock)
-          fail_lock(player, target, Page_Lock, NULL, NOTHING);
+          fail_lock(executor, target, Page_Lock, NULL, NOTHING);
         safe_chr(' ', tbuf, &tp);
         safe_str_space(Name(target), tbuf, &tp);
       } else if (is_haven) {
-        page_return(player, target, "Haven", "HAVEN",
+        page_return(executor, target, "Haven", "HAVEN",
                     tprintf(T("%s is not accepting any pages."), Name(target)));
         safe_chr(' ', tbuf, &tp);
         safe_str_space(Name(target), tbuf, &tp);
       } else if (fails_lock) {
-        page_return(player, target, "Haven", "HAVEN",
+        page_return(executor, target, "Haven", "HAVEN",
                     tprintf(T("%s is not accepting your pages."),
                             Name(target)));
-        fail_lock(player, target, Page_Lock, NULL, NOTHING);
+        fail_lock(executor, target, Page_Lock, NULL, NOTHING);
         safe_chr(' ', tbuf, &tp);
         safe_str_space(Name(target), tbuf, &tp);
       } else {
@@ -961,7 +961,7 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
   /* We don't know what the heck's going on here, but we're not paging
    * anyone, this looks like a spam attack. */
   if (gcount == 99) {
-    notify(player, T("You're trying to page too many people at once."));
+    notify(executor, T("You're trying to page too many people at once."));
     mush_free(tbuf, "page_buff");
     mush_free(tbuf2, "page_buff");
     mush_free(namebuf, "page_buff");
@@ -976,7 +976,7 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
    * name if we're repaging, which is probably 75% of all pages */
   *tp = '\0';
   if (*tbuf)
-    notify_format(player, T("Unable to page:%s"), tbuf);
+    notify_format(executor, T("Unable to page:%s"), tbuf);
 
   if (!gcount) {
     /* Well, that was a total waste of time. */
@@ -999,14 +999,14 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
     if (!msgbuf)
       mush_panic("Unable to allocate memory in do_page");
 
-    process_expression(msgbuf, &mb, &message, player, cause, cause,
+    process_expression(msgbuf, &mb, &message, executor, enactor, enactor,
                        PE_DEFAULT, PT_DEFAULT, NULL);
     *mb = '\0';
     message = msgbuf;
   }
 
-  if (Haven(player))
-    notify(player, T("You are set HAVEN and cannot receive pages."));
+  if (Haven(executor))
+    notify(executor, T("You are set HAVEN and cannot receive pages."));
 
   /* Figure out what kind of message */
   /*G_E_C.wenv[0] = (char *) message; <-- Not sure why this was done */
@@ -1043,17 +1043,17 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
   }
   *tp = '\0';
   *nbp = '\0';
-  (void) atr_add(player, "LASTPAGED", tbuf, GOD, 0);
+  (void) atr_add(executor, "LASTPAGED", tbuf, GOD, 0);
 
   /* Reset tbuf to use later */
   tp = tbuf;
 
   /* Figure out the 'name' of the player */
-  if ((alias = shortalias(player)) && *alias && PAGE_ALIASES
-      && strcasecmp(alias, Name(player)))
-    current = tprintf("%s (%s)", Name(player), alias);
+  if ((alias = shortalias(executor)) && *alias && PAGE_ALIASES
+      && strcasecmp(alias, Name(executor)))
+    current = tprintf("%s (%s)", Name(executor), alias);
   else
-    current = (char *) Name(player);
+    current = (char *) Name(executor);
 
   /* Now, build the thing we want to send to the pagees,
    * and put it in tbuf */
@@ -1093,37 +1093,37 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
   tosend = mush_malloc(BUFFER_LEN, "page_buff");
   if (key == 1) {
     snprintf(tosend, BUFFER_LEN, T("Long distance to %s: %s%s%s"), namebuf,
-             Name(player), gap, message);
+             Name(executor), gap, message);
   } else {
     snprintf(tosend, BUFFER_LEN, T("You paged %s with '%s'"), namebuf, message);
   }
-  if (!vmessageformat(player, "OUTPAGEFORMAT", player, 0, 5, message,
+  if (!vmessageformat(executor, "OUTPAGEFORMAT", executor, 0, 5, message,
                       (key == 1) ? (*gap ? ":" : ";") : "\"",
                       (alias && *alias) ? alias : "", tbuf2, tosend)) {
-    notify(player, tosend);
+    notify(executor, tosend);
   }
   mush_free(tosend, "page_buff");
 
   /* And send the page to everyone. */
   for (i = 0; i < gcount; i++) {
     tosend = tbuf;
-    if (!IsPlayer(player) && Nospoof(good[i])) {
+    if (!IsPlayer(executor) && Nospoof(good[i])) {
       if (nsbuf == NULL) {
         nsbuf = mush_malloc(BUFFER_LEN, "page buffer");
-        snprintf(nsbuf, BUFFER_LEN, "[#%d] %s", player, tbuf);
+        snprintf(nsbuf, BUFFER_LEN, "[#%d] %s", executor, tbuf);
       }
       tosend = nsbuf;
     }
-    if (!vmessageformat(good[i], "PAGEFORMAT", player, 0, 5, message,
+    if (!vmessageformat(good[i], "PAGEFORMAT", executor, 0, 5, message,
                         (key == 1) ? (*gap ? ":" : ";") : "\"",
                         (alias && *alias) ? alias : "", tbuf2, tbuf)) {
       /* Player doesn't have Pageformat, or it eval'd to 0 */
       notify(good[i], tosend);
     }
 
-    page_return(player, good[i], "Idle", "IDLE", NULL);
-    if (!okay_pemit(good[i], player, 0, NULL)) {
-      notify_format(player,
+    page_return(executor, good[i], "Idle", "IDLE", NULL);
+    if (!okay_pemit(good[i], executor, 0, NULL)) {
+      notify_format(executor,
                     T("You paged %s, but they are unable to page you."),
                     Name(good[i]));
     }

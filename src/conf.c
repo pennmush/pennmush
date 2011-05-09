@@ -681,9 +681,11 @@ cf_str(const char *opt, const char *val, void *loc, int maxval, int from_cmd)
 }
 
 /** Parse a dbref configuration option.
+ * \verbatim
  * dbrefs can be a raw number N or #N, even though # normally starts a comment
- * in the config file. #-1 is allowed. Limits are -1 to db_max for \@config,
+ * in the config file. #-1 is allowed. Limits are -1 to db_max for @config,
  * -1 to INT_MAX for reading mush.cnf (And validated elsewhere).
+ * \endverbatim
  * \param opt name of the configuration option.
  * \param val value of the option.
  * \param loc address to store the value.

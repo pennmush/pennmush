@@ -630,6 +630,7 @@ qcomp_regexp_match(const pcre * re, const char *subj)
  * \param s pattern to match against.
  * \param d string to check.
  * \param cs if 1, case-sensitive; if 0, case-insensitive.
+ * \param pe_regs if non-NULL, a pe_regs to save matching patterns into as $0-$9
  * \retval 1 d matches s.
  * \retval 0 d doesn't match s.
  */

@@ -124,7 +124,7 @@ FUNCTION(fun_objeval)
                      PT_DEFAULT, pe_info);
 }
 
-/** Helper function for calling @functioned funs.
+/** Helper function for calling \@functioned funs.
  * \param buff string to store result of evaluation.
  * \param bp pointer into end of buff.
  * \param obj object on which the ufun is stored.

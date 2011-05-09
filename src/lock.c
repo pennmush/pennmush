@@ -120,11 +120,14 @@ lock_list lock_types[] = {
 
 HASHTAB htab_locks;
 
- /** Table of base attributes associated with success and failure of
+ /**
+  * \verbatim
+  * Table of base attributes associated with success and failure of
   * locks. These are the historical ones; we automatically generate
- * such attribute names for those that aren't in this table using
- * <lock>_LOCK`<message>
- */
+  * such attribute names for those that aren't in this table using
+  * <lock>_LOCK`<message>
+  * \endverbatim
+  */
 const LOCKMSGINFO lock_msgs[] = {
   {"Basic", "SUCCESS", "FAILURE"},
   {"Enter", "ENTER", "EFAIL"},

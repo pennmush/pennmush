@@ -3,6 +3,7 @@
  *
  * \brief Code to support PennMUSH connection to SQL databases.
  *
+ * \verbatim
  * Each sql database we support must define its own set of the
  * following functions:
  *
@@ -22,6 +23,7 @@
  *  fun_mapsql
  *  cmd_sql
  *
+ * \endverbatim
  */
 
 #include "copyrite.h"

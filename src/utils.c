@@ -245,7 +245,7 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
  * \param executor The executor.
  * \param enactor The enactor.
  * \param pe_info The pe_info passed to the FUNCTION
- * \param pe_regs Other arguments that may want to be added. This nests BELOW
+ * \param user_regs Other arguments that may want to be added. This nests BELOW
  *                the pe_regs created by call_ufun. (It is checked first)
  * \retval 0 success
  * \retval 1 process_expression failed. (CPU time limit)
@@ -339,12 +339,12 @@ call_ufun(ufun_attrib * ufun, char *ret, dbref executor, dbref enactor,
  * by ret, if given.
  * \param thing The thing that has the attribute to be called
  * \param attrname The name of the attribute to call.
- * \param wenv_args An array of string values for %0-%9
- * \param wenv_argc The number of wenv args to use.
  * \param ret If desired, a pointer to a buffer in which the results
  * of the process_expression are stored in.
  * \param enactor The enactor.
  * \param pe_info The pe_info passed to the FUNCTION
+ * \param pe_regs Other arguments that may want to be added. This nests BELOW
+ *                the pe_regs created by call_ufun. (It is checked first)
  * \retval 1 success
  * \retval 0 No such attribute, or failed.
  */

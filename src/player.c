@@ -584,14 +584,14 @@ make_player(const char *name, const char *password, const char *host,
  * \verbatim
  * This function implements @password.
  * \endverbatim
- * \param player the executor.
- * \param cause the enactor.
+ * \param executor the executor.
+ * \param enactor the enactor.
  * \param old player's current password.
  * \param newobj player's desired new password.
  * \param queue_entry the queue entry \@password is being executed in
  */
 void
-do_password(dbref player, dbref cause, const char *old, const char *newobj,
+do_password(dbref executor, dbref enactor, const char *old, const char *newobj,
             MQUE *queue_entry)
 {
   if (!queue_entry->port) {
@@ -602,26 +602,26 @@ do_password(dbref player, dbref cause, const char *old, const char *newobj,
 
     sp = old;
     bp = old_eval;
-    process_expression(old_eval, &bp, &sp, player, player, cause,
+    process_expression(old_eval, &bp, &sp, executor, executor, enactor,
                        PE_DEFAULT, PT_DEFAULT, NULL);
     *bp = '\0';
     old = old_eval;
 
     sp = newobj;
     bp = new_eval;
-    process_expression(new_eval, &bp, &sp, player, player, cause,
+    process_expression(new_eval, &bp, &sp, executor, executor, enactor,
                        PE_DEFAULT, PT_DEFAULT, NULL);
     *bp = '\0';
     newobj = new_eval;
   }
 
-  if (!password_check(player, old)) {
-    notify(player, T("The old password that you entered was incorrect."));
+  if (!password_check(executor, old)) {
+    notify(executor, T("The old password that you entered was incorrect."));
   } else if (!ok_password(newobj)) {
-    notify(player, T("Bad new password."));
+    notify(executor, T("Bad new password."));
   } else {
-    (void) atr_add(player, "XYXXY", mush_crypt(newobj), GOD, 0);
-    notify(player, T("You have changed your password."));
+    (void) atr_add(executor, "XYXXY", mush_crypt(newobj), GOD, 0);
+    notify(executor, T("You have changed your password."));
   }
 }
 

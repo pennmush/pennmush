@@ -29,12 +29,12 @@ void hide_player(dbref player, int hide, char *victim);
 enum motd_type { MOTD_MOTD, MOTD_WIZ, MOTD_DOWN, MOTD_FULL, MOTD_LIST };
 void do_motd(dbref player, enum motd_type key, const char *message);
 void do_poll(dbref player, const char *message, int clear);
-void do_page_port(dbref player, dbref cause, const char *pc, const char *msg,
+void do_page_port(dbref executor, dbref enactor, const char *pc, const char *msg,
                   bool eval_msg);
 void do_pemit_port(dbref player, const char *pc, const char *msg, int flags);
 /* From cque.c */
 void do_wait
-  (dbref player, dbref cause, char *arg1, const char *cmd, bool until,
+  (dbref executor, dbref enactor, char *arg1, const char *cmd, bool until,
    MQUE *parent_queue);
 void do_waitpid(dbref, const char *, const char *, bool);
 enum queue_type { QUEUE_ALL, QUEUE_NORMAL, QUEUE_SUMMARY, QUEUE_QUICK };
@@ -64,7 +64,7 @@ enum dump_type { DUMP_NORMAL, DUMP_DEBUG, DUMP_PARANOID };
 extern void do_dump(dbref player, char *num, enum dump_type flag);
 enum shutdown_type { SHUT_NORMAL, SHUT_PANIC, SHUT_PARANOID };
 extern void do_shutdown(dbref player, enum shutdown_type panic_flag);
-extern void do_dolist(dbref player, char *list, char *command,
+extern void do_dolist(dbref executor, char *list, char *command,
                       dbref enactor, unsigned int flags, MQUE *queue_entry);
 
 
@@ -94,14 +94,14 @@ extern void do_empty(dbref player, const char *what);
 extern void do_firstexit(dbref player, const char **what);
 
 /* From player.c */
-extern void do_password(dbref player, dbref cause,
+extern void do_password(dbref executor, dbref enactor,
                         const char *old, const char *newobj, MQUE *queue_entry);
 
 /* From predicat.c */
 extern void do_switch
-  (dbref player, char *expression, char **argv, dbref cause, int first,
+  (dbref executor, char *expression, char **argv, dbref enactor, int first,
    int notifyme, int regexp, int queue_type, MQUE *queue_entry);
-extern void do_verb(dbref player, dbref cause, char *arg1, char **argv);
+extern void do_verb(dbref executor, dbref enactor, char *arg1, char **argv);
 extern void do_grep
   (dbref player, char *obj, char *lookfor, int flag, int insensitive);
 
@@ -140,8 +140,8 @@ extern void do_pose(dbref player, const char *tbuf1, int space);
 enum wall_type { WALL_ALL, WALL_RW, WALL_WIZ };
 void do_wall(dbref player, const char *message, enum wall_type target,
              int emit);
-void do_page(dbref player, const char *arg1, const char *arg2,
-             dbref cause, int noeval, int override, int has_eq);
+void do_page(dbref executor, const char *arg1, const char *arg2,
+             dbref enactor, int noeval, int override, int has_eq);
 void do_think(dbref player, const char *message);
 #define PEMIT_SILENT 0x1
 #define PEMIT_LIST   0x2
@@ -178,7 +178,7 @@ extern void do_force(dbref player, dbref caller, const char *what,
                      char *command, int queue_type, MQUE *queue_entry);
 extern void do_stats(dbref player, const char *name);
 extern void do_newpassword
-  (dbref player, dbref cause, const char *name, const char *password,
+  (dbref executor, dbref enactor, const char *name, const char *password,
    MQUE *queue_entry);
 enum boot_type { BOOT_NAME, BOOT_DESC, BOOT_SELF };
 extern void do_boot(dbref player, const char *name, enum boot_type flag,

@@ -736,7 +736,7 @@ pe_reg_val_free(PE_REG_VAL *val)
 
 /** Free all values from a PE_REGS context.
  *
- * \param pe_wregs The pe_regs to clear
+ * \param pe_regs The pe_regs to clear
  */
 void
 pe_regs_clear(PE_REGS *pe_regs)
@@ -756,7 +756,7 @@ pe_regs_clear(PE_REGS *pe_regs)
 
 /** Free all values of a specific type from a PE_REGS context.
  *
- * \param pe_wregs The pe_regs to clear
+ * \param pe_regs The pe_regs to clear
  * \param type     The type(s) of pe_reg_vals to clear.
  */
 void
@@ -784,7 +784,7 @@ pe_regs_clear_type(PE_REGS *pe_regs, int type)
 
 /** Free a PE_REGS context.
  *
- * \param pe_wregs The pe_regs to free up.
+ * \param pe_regs The pe_regs to free up.
  */
 void
 pe_regs_free(PE_REGS *pe_regs)
@@ -799,6 +799,7 @@ pe_regs_free(PE_REGS *pe_regs)
  *
  * \param pe_info The pe_info to push the new PE_REGS into.
  * \param pr_flags PR_* flags, bitwise or'd.
+ * \param name name, used for memory checks
  */
 PE_REGS *
 pe_regs_localize_real(NEW_PE_INFO *pe_info, uint32_t pr_flags, const char *name)
@@ -839,7 +840,7 @@ pe_regs_restore(NEW_PE_INFO *pe_info, PE_REGS *pe_regs)
  *
  * \param pe_regs The pe_regs to set it in.
  * \param type The type (REG_QREG, REG-... etc) of the register to set.
- * \param key Register name
+ * \param lckey Register name
  * \param val Register value.
  * \param override If it already exists, then overwrite it.
  */
@@ -900,9 +901,9 @@ pe_regs_set_if(PE_REGS *pe_regs, int type,
  *
  * \param pe_regs The pe_regs to set it in.
  * \param type The type (REG_QREG, REG-... etc) of the register to set.
- * \param key Register name
+ * \param lckey Register name
  * \param val Register value.
- * \param override If 1, then replace any extant value for <name>
+ * \param override If 1, then replace any extant value for the register
  */
 void
 pe_regs_set_int_if(PE_REGS *pe_regs, int type,
@@ -960,7 +961,7 @@ pe_regs_get(PE_REGS *pe_regs, int type, const char *lckey)
  *
  * \param pe_regs The PE_REGS to fetch from.
  * \param type The type of the value to get
- * \param key Q-register name.
+ * \param lckey Q-register name.
  */
 int
 pe_regs_get_int(PE_REGS *pe_regs, int type, const char *lckey)
@@ -1132,7 +1133,7 @@ pi_regs_has_type(NEW_PE_INFO *pe_info, int type)
 
 /** Is a string a valid name for a Q-register?
  *
- * \param key The key to check
+ * \param lckey The key to check
  * \return 0 not valid
  * \return 1 valid
  */

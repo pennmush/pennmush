@@ -200,7 +200,7 @@ void notify_format(dbref player, const char *fmt, ...)
   __attribute__ ((__format__(__printf__, 2, 3)));
 
 /* From command.c */
-void generic_command_failure(dbref player, dbref cause, char *string,
+void generic_command_failure(dbref executor, dbref enactor, char *string,
                              MQUE *queue_entry);
 
 /* From compress.c */
@@ -453,7 +453,7 @@ void s_Pennies(dbref thing, int amount);
 
 /* From set.c */
 void chown_object(dbref player, dbref thing, dbref newowner, int preserve);
-void do_include(dbref player, dbref cause, char *object, char **argv,
+void do_include(dbref executor, dbref enactor, char *object, char **argv,
                 int recurse, MQUE *parent_queue);
 /* From speech.c */
 int okay_pemit(dbref player, dbref target, int dofails, const char *def);

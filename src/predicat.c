@@ -209,7 +209,7 @@ did_it_interact(dbref player, dbref thing, const char *what, const char *def,
  * \param odef default message to others.
  * \param awhat action attribute to trigger.
  * \param loc location in which action is taking place.
- * \param myenv copy of the environment.
+ * \param pe_regs the pe_regs arguments for the evaluation/queueing
  * \param flags flags controlling type of interaction involved.
  * \retval 0 no attributes were present, only defaults were used if given.
  * \retval 1 some attributes were evaluated and used.
@@ -1081,10 +1081,10 @@ ok_tag_attribute(dbref player, const char *params)
  * For lack of better place the @switch code is here.
  * @switch expression=args
  * \endverbatim
- * \param player the enactor.
+ * \param executor the executor.
  * \param expression the expression to test against cases.
  * \param argv array of cases and actions.
- * \param cause the object that caused this code to run.
+ * \param enactor the object that caused this code to run.
  * \param first if 1, run only first matching case; if 0, run all matching cases.
  * \param notifyme if 1, perform a notify after executing matched cases.
  * \param regexp if 1, do regular expression matching; if 0, wildcard globbing.
@@ -1092,7 +1092,7 @@ ok_tag_attribute(dbref player, const char *params)
  * \param queue_entry the queue entry \@switch is being run in
  */
 void
-do_switch(dbref player, char *expression, char **argv, dbref cause,
+do_switch(dbref executor, char *expression, char **argv, dbref enactor,
           int first, int notifyme, int regexp, int queue_type,
           MQUE *queue_entry)
 {
@@ -1116,7 +1116,7 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
     /* eval expression */
     ap = argv[a];
     bp = buff;
-    process_expression(buff, &bp, &ap, player, cause, cause,
+    process_expression(buff, &bp, &ap, executor, enactor, enactor,
                        PE_DEFAULT, PT_DEFAULT, queue_entry->pe_info);
     *bp = '\0';
     /* check for a match */
@@ -1130,10 +1130,10 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
         any = 1;
       }
       if (queue_type != QUEUE_DEFAULT) {
-        new_queue_actionlist(player, cause, cause, tbuf1, queue_entry,
+        new_queue_actionlist(executor, enactor, enactor, tbuf1, queue_entry,
                              PE_INFO_SHARE, queue_type, pe_regs);
       } else {
-        new_queue_actionlist(player, cause, cause, tbuf1, queue_entry,
+        new_queue_actionlist(executor, enactor, enactor, tbuf1, queue_entry,
                              PE_INFO_CLONE, QUEUE_DEFAULT, pe_regs);
       }
       mush_free(tbuf1, "replace_string.buff");
@@ -1147,10 +1147,10 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
       any = 1;
     }
     if (queue_type != QUEUE_DEFAULT) {
-      new_queue_actionlist(player, cause, cause, tbuf1, queue_entry,
+      new_queue_actionlist(executor, enactor, enactor, tbuf1, queue_entry,
                            PE_INFO_SHARE, queue_type, pe_regs);
     } else {
-      new_queue_actionlist(player, cause, cause, tbuf1, queue_entry,
+      new_queue_actionlist(executor, enactor, enactor, tbuf1, queue_entry,
                            PE_INFO_CLONE, QUEUE_DEFAULT, pe_regs);
     }
     mush_free(tbuf1, "replace_string.buff");
@@ -1158,7 +1158,7 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
   pe_regs_free(pe_regs);
   if (queue_type == QUEUE_DEFAULT) {
     if (notifyme)
-      parse_que(player, cause, "@notify me", NULL);
+      parse_que(executor, enactor, "@notify me", NULL);
   }
 }
 
@@ -1293,13 +1293,13 @@ nearby(dbref obj1, dbref obj2)
  * \verbatim
  * This implements the @verb command.
  * \endverbatim
- * \param player the enactor.
- * \param cause the object causing this command to run.
+ * \param executor the executor.
+ * \param enactor the object causing this command to run.
  * \param arg1 the object to read verb attributes from.
  * \param argv the array of remaining arguments to the verb command.
  */
 void
-do_verb(dbref player, dbref cause, char *arg1, char **argv)
+do_verb(dbref executor, dbref enactor, char *arg1, char **argv)
 {
   dbref victim;
   dbref actor;
@@ -1311,22 +1311,22 @@ do_verb(dbref player, dbref cause, char *arg1, char **argv)
    */
 
   /* our victim object can be anything */
-  victim = match_result(player, arg1, NOTYPE, MAT_EVERYTHING);
+  victim = match_result(executor, arg1, NOTYPE, MAT_EVERYTHING);
 
   if (!GoodObject(victim)) {
-    notify(player, T("What was the victim of the verb?"));
+    notify(executor, T("What was the victim of the verb?"));
     return;
   }
   /* find the object that executes the action */
 
   if (!argv || !argv[1] || !*argv[1]) {
-    notify(player, T("What do you want to do with the verb?"));
+    notify(executor, T("What do you want to do with the verb?"));
     return;
   }
-  actor = match_result(player, argv[1], NOTYPE, MAT_EVERYTHING);
+  actor = match_result(executor, argv[1], NOTYPE, MAT_EVERYTHING);
 
   if (!GoodObject(actor)) {
-    notify(player, T("What do you want to do the verb?"));
+    notify(executor, T("What do you want to do the verb?"));
     return;
   }
   /* Control check is fascist.
@@ -1339,10 +1339,10 @@ do_verb(dbref player, dbref cause, char *arg1, char **argv)
    *   must be priviledged, or the victim has to be VISUAL.
    */
 
-  if (!(Wizard(player) ||
-        (controls(player, victim) && controls(player, actor)) ||
-        ((controls(cause, actor) && Can_Examine(player, victim))))) {
-    notify(player, T("Permission denied."));
+  if (!(Wizard(executor) ||
+        (controls(executor, victim) && controls(executor, actor)) ||
+        ((controls(enactor, actor) && Can_Examine(executor, victim))))) {
+    notify(executor, T("Permission denied."));
     return;
   }
   /* We're okay.  Send out messages. */

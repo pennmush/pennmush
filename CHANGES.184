@@ -35,6 +35,8 @@ Minor Changes:
    it just shows that they are unchanged. Suggested by Minion. [MG]
 
 Fixes:
+ * %$-subs didn't work inside @switch's default case. Patch by Covenent.
+ * %0-9 were being overridden when using /inline/localize. Patch by Covenent.
  * You couldn't @chat on open channels. Reported by Padraic. [MG]
  * Win32 compile fixes by Daniel Powell. [MG]
  * The Open_Anywhere power didn't fully work as intended. Patch by Covenent.

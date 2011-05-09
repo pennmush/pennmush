@@ -1148,10 +1148,10 @@ do_switch(dbref player, char *expression, char **argv, dbref cause,
     }
     if (queue_type != QUEUE_DEFAULT) {
       new_queue_actionlist(player, cause, cause, tbuf1, queue_entry,
-                           PE_INFO_SHARE, queue_type, NULL);
+                           PE_INFO_SHARE, queue_type, pe_regs);
     } else {
       new_queue_actionlist(player, cause, cause, tbuf1, queue_entry,
-                           PE_INFO_CLONE, QUEUE_DEFAULT, NULL);
+                           PE_INFO_CLONE, QUEUE_DEFAULT, pe_regs);
     }
     mush_free(tbuf1, "replace_string.buff");
   }

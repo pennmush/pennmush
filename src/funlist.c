@@ -2881,7 +2881,8 @@ FUNCTION(fun_regrab)
   int offsets[99];
   int flags = 0, all = 0;
   char *osep, osepd[2] = { '\0', '\0' };
-
+  char **ptrs;
+  int nptrs, i;
   if (!delim_check(buff, bp, nargs, args, 3, &sep))
     return;
 
@@ -2922,17 +2923,22 @@ FUNCTION(fun_regrab)
     set_match_limit(extra);
   } else
     extra = default_match_limit();
-
-  do {
-    r = remove_markup(split_token(&s, sep), &rlen);
+  ptrs = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
+  if (!ptrs)
+    mush_panic("Unable to allocate memory in fun_regrab");
+  nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, s, sep, 1);
+  for (i = 0; i < nptrs; i++) {
+    r = remove_markup(ptrs[i], &rlen);
     if (pcre_exec(re, extra, r, rlen - 1, 0, 0, offsets, 99) >= 0) {
       if (all && *bp != b)
         safe_str(osep, buff, bp);
-      safe_str(r, buff, bp);
+      safe_str(ptrs[i], buff, bp);
       if (!all)
         break;
     }
-  } while (s);
+  }
+  freearr(ptrs, nptrs);
+  mush_free(ptrs, "ptrarray");
 
   mush_free(re, "pcre");
   if (study)

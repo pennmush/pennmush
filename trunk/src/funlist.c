@@ -214,7 +214,7 @@ FUNCTION(fun_munge)
    * routines.
    */
 
-  strcpy(list1, args[1]);
+  strcpy(list1, remove_markup(args[1], NULL));
 
   /* Break up the two lists into their respective elements. */
 
@@ -227,7 +227,7 @@ FUNCTION(fun_munge)
 
   if (!ptrs1 || !ptrs2)
     mush_panic("Unable to allocate memory in fun_munge");
-  nptrs1 = list2arr_ansi(ptrs1, MAX_SORTSIZE, args[1], sep, 1);
+  nptrs1 = list2arr_ansi(ptrs1, MAX_SORTSIZE, list1, sep, 1);
   nptrs2 = list2arr_ansi(ptrs2, MAX_SORTSIZE, args[2], sep, 1);
   memcpy(ptrs3, ptrs2, MAX_SORTSIZE * sizeof(char *));
 
@@ -242,12 +242,13 @@ FUNCTION(fun_munge)
   }
 
   /* Call the user function */
-  lp = list1;
+  lp = args[1];
   pe_regs = pe_regs_create(PE_REGS_ARG, "fun_munge");
   pe_regs_setenv_nocopy(pe_regs, 0, lp);
   pe_regs_setenv_nocopy(pe_regs, 1, isep);
   call_ufun(&ufun, rlist, executor, enactor, pe_info, pe_regs);
   pe_regs_free(pe_regs);
+  strcpy(rlist, remove_markup(rlist, NULL));
 
   /* Now that we have our result, put it back into array form. Search
    * through list1 until we find the element position, then copy the

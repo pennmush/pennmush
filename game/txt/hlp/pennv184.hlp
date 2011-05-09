@@ -36,6 +36,7 @@ Fixes:
  * Win32 compile fixes by Daniel Powell. [MG]
  * The Open_Anywhere power didn't fully work as intended. Patch by Covenent.
  * regrab*() functions removed ansi. Reported by Covenent. [MG]
+ * munge() didn't play nice with ansi. [MG]
 
 Functions:
  * Restrictions for the beep() function can now be modified with @function.

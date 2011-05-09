@@ -1000,10 +1000,10 @@ do_entry(MQUE *entry, int include_recurses)
         if (tmp->queue_type & QUEUE_PRESERVE_QREG) {
           if (tmp->queue_type & QUEUE_CLEAR_QREG) {
             pe_regs = pe_regs_localize(entry->pe_info,
-                                       PE_REGS_QUEUE | PE_REGS_QSTOP,
+                                       PE_REGS_Q | PE_REGS_QSTOP,
                                        "do_entry");
           } else {
-            pe_regs = pe_regs_localize(entry->pe_info, PE_REGS_QUEUE,
+            pe_regs = pe_regs_localize(entry->pe_info, PE_REGS_Q,
                                        "do_entry");
           }
         } else {

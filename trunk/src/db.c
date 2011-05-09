@@ -675,6 +675,7 @@ db_write_object(PENNFILE *f, dbref i)
  * This function writes the databsae out to disk. The database
  * structure currently looks something like this:
  * +V<header line>
+ * savedtime <timestamp>
  * +FLAGS LIST
  * <flag data>
  * +POWERS LIST

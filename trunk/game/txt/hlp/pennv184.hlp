@@ -32,6 +32,7 @@ Minor Changes:
 Fixes:
  * You couldn't @chat on open channels. Reported by Padraic. [MG]
  * Win32 compile fixes by Daniel Powell. [MG]
+ * The Open_Anywhere power didn't fully work as intended. Patch by Covenent.
 
 Functions:
  * Restrictions for the beep() function can now be modified with @function.

@@ -1131,7 +1131,7 @@ See also: @parent, $-COMMANDS, ATTRIBUTES, ANCESTORS, ORPHAN, pfun()
 & POWERS LIST2
   no_pay *              Doesn't need money for anything
   no_quota *            Has an unlimited quota
-  open_anywhere         Can @open a link from any room.
+  open_anywhere         Can @open an exit from any room.
   pemit_all             Can @pemit to HAVEN/ulocked players.
   player_create         Can use @pcreate command.
   poll                  Can use @poll command.

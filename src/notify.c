@@ -890,14 +890,10 @@ notify_anything_loc(dbref speaker, na_lookup func,
         tbuf1 = (char *) mush_malloc(BUFFER_LEN, "string");
       strcpy(tbuf1, atr_value(a));
       if (AF_Regexp(a)
-          ? regexp_match_case_r(tbuf1,
-                                (char *) notify_makestring(msgbuf, messages,
-                                                           NA_COLOR, 0),
+          ? regexp_match_case_r(tbuf1, msgbuf,
                                 AF_Case(a), lenv, 10,
                                 match_space, match_space_len, NULL)
-          : wild_match_case_r(tbuf1,
-                              (char *) notify_makestring(msgbuf, messages,
-                                                         NA_COLOR, 0),
+          : wild_match_case_r(tbuf1, msgbuf,
                               AF_Case(a), lenv, 10,
                               match_space, match_space_len, NULL)) {
         if (eval_lock(speaker, target, Listen_Lock)) {
@@ -953,7 +949,7 @@ notify_anything_loc(dbref speaker, na_lookup func,
         && eval_lock(speaker, target, Listen_Lock)
       )
       atr_comm_match(target, speaker, '^', ':',
-                     (char *) notify_makestring(msgbuf, messages, NA_COLOR, 0),
+                     msgbuf,
                      0, 1, NULL, NULL, 0, NULL, NULL, QUEUE_DEFAULT);
 
     /* If object is flagged AUDIBLE and has a @FORWARDLIST, send

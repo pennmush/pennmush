@@ -73,6 +73,7 @@ static void do_raw_restart(dbref victim);
 static int waitable_attr(dbref thing, const char *atr);
 static void shutdown_a_queue(MQUE **head, MQUE **tail);
 static int do_entry(MQUE *entry, int include_recurses);
+static MQUE *new_queue_entry(NEW_PE_INFO *pe_info);
 
 extern sig_atomic_t cpu_time_limit_hit; /**< Have we used too much CPU? */
 
@@ -85,7 +86,7 @@ extern dbref report_dbref;
  */
 #define SEMAPHORE_FLAGS (AF_LOCKED | AF_PRIVATE | AF_NOCOPY | AF_NODUMP)
 
-/** Queue initializtion function. Must  be called before anything
+/** Queue initializtion function. Must be called before anything
  * is added to the queue.
  */
 void
@@ -94,7 +95,7 @@ init_queue(void)
   queue_map = im_new();
 }
 
-/* Returns true if the attribute on thing can be used as a semaphore.
+/** Returns true if the attribute on thing can be used as a semaphore.
  * atr should be given in UPPERCASE.
  */
 static int
@@ -123,6 +124,13 @@ waitable_attr(dbref thing, const char *atr)
   return 0;                     /* Not reached */
 }
 
+/** Incrememt an integer attribute.
+ * \param player the object the attribute is on
+ * \param am the amount to incrememnt by
+ * \param name the name of the attribute to increment
+ * \param flags the attribute flags to set on the attr
+ * \retval the new value of the attribute
+ */
 static int
 add_to_generic(dbref player, int am, const char *name, uint32_t flags)
 {
@@ -145,6 +153,11 @@ add_to_generic(dbref player, int am, const char *name, uint32_t flags)
   return num;
 }
 
+/** Wrapper for add_to_generic() to incremement a player's QUEUE attribute.
+ * \param player object whose QUEUE should be incremented
+ * \param am amount to increment the QUEUE by
+ * \retval new value of QUEUE
+ */
 static int
 add_to(dbref player, int am)
 {
@@ -153,17 +166,28 @@ add_to(dbref player, int am)
   return add_to_generic(player, am, "QUEUE", NOTHING);
 }
 
+/** Wrapper for add_to_generic() to incrememnt an attribute when a
+ * semaphore is queued.
+ * \param player object whose attribute should be incremented
+ * \param am amount to increment the attr by
+ * \param name attr to increment, or NULL to use the default (SEMAPHORE)
+ * \retval new value of attr
+ */
 static int
 add_to_sem(dbref player, int am, const char *name)
 {
   return add_to_generic(player, am, name ? name : "SEMAPHORE", SEMAPHORE_FLAGS);
 }
 
+/** Increment an object's queue by 1, and then return 1 if he has exceeded his
+ * queue limit.
+ * \param player objects whose queue should be incremented
+ * \retval 1 player has exceeded his queue limit
+ * \retval 0 player has not exceeded his queue limit
+ */
 static int
 queue_limit(dbref player)
 {
-  /* returns 1 if player has exceeded his queue limit, and always
-     increments QUEUE by one. */
   int nlimit;
 
   nlimit = add_to(player, 1);
@@ -271,8 +295,6 @@ next_pid(void)
   }
 }
 
-static MQUE *new_queue_entry(NEW_PE_INFO *pe_info);
-
 static MQUE *
 new_queue_entry(NEW_PE_INFO *pe_info)
 {
@@ -305,7 +327,11 @@ new_queue_entry(NEW_PE_INFO *pe_info)
   return entry;
 }
 
-#define DELIM_CHAR '\x11'
+/** A non-printing char used internally to delimit args for events during
+ * arg parsing
+ */
+#define EVENT_DELIM_CHAR '\x11'
+
 /** If EVENT_HANDLER config option is set to a valid dbref, try triggering
  * its handler attribute
  * \param enactor The enactor who caused it.
@@ -373,7 +399,7 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   if (*s)
     argcount++;                 /* At least one arg. */
   while ((s = strchr(s, ',')) != NULL) {
-    *(s++) = DELIM_CHAR;
+    *(s++) = EVENT_DELIM_CHAR;
     argcount++;
   }
 
@@ -390,7 +416,7 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
 
     len = strlen(buff);
     for (i = 0, s = buff; i < argcount && s; i++, s = snext) {
-      snext = strchr(s, DELIM_CHAR);
+      snext = strchr(s, EVENT_DELIM_CHAR);
       if ((snext ? (snext - s) : (len - (s - buff))) > BUFFER_LEN) {
         /* It's theoretically possible to have an arg that's longer than
          * BUFFER_LEN */

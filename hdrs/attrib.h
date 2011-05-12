@@ -142,8 +142,7 @@ safe_atr_value(ATTR *atr)
 
 #define AF_MAXVALUE     0x100000000U     /**< Largest attribute flag value. */
 
-    extern ATTR attr[];
-                    /**< external predefined attributes. */
+extern ATTR attr[];                   /**< external predefined attributes. */
 
 #define AL_ATTR(alist)          (alist)
 #define AL_NAME(alist)          ((alist)->name)

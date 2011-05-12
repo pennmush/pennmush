@@ -1,7 +1,12 @@
-/* ansi.h */
-
-/* ANSI control codes for various neat-o terminal effects
-
+/**
+ * \file ansi.h
+ *
+ * \brief ANSI control codes for various neat-o terminal effects
+ *
+ * \verbatim
+ * Routines for dealing with ANSI and Pueblo, and the internal
+ * markup system Penn uses to handle them.
+ *
  * Some older versions of Ultrix don't appear to be able to
  * handle these escape sequences. If lowercase 'a's are being
  * stripped from @doings, and/or the output of the ANSI flag
@@ -11,20 +16,22 @@
  * To fix the problem with 'a's, replace all occurrences of '\a'
  * in the code with '\07'.
  *
+ * \endverbatim
  */
+
 
 #ifndef __ANSI_H
 #define __ANSI_H
 
 /* If we want to debug ansi stuff. */
-/* #define ANSI_DEBUG */
+/* #define ANSI_DEBUG /**/
 
 #include "mushtype.h"
 #include "mypcre.h"
 #include "strtree.h"
 
-#define BEEP_CHAR     '\a'
-#define ESC_CHAR      '\x1B'
+#define BEEP_CHAR     '\a'    /**< The character used by beep() */
+#define ESC_CHAR      '\x1B'  /**< ANSI escape character */
 
 #define ANSI_RAW_NORMAL "\x1B[0m"
 
@@ -133,7 +140,7 @@ typedef struct _new_markup_information {
   uint16_t idx;                /**< For parse_ansi_string: Index of this mi */
 } new_markup_information;
 
-#define NOMARKUP (-1)
+#define NOMARKUP (-1) /**< Character has no markup */
 
 #define AS_OPTIMIZED    0x01  /**< If the markup has been optimized. */
 #define AS_HAS_MARKUP   0x02  /**< If the string has markup or not */
@@ -154,12 +161,12 @@ typedef struct _ansi_string {
   int  misize;                  /**< Size of the malloc in ->mi */
 } ansi_string;
 
-#define AS_Text(as) (as->text)
-#define AS_Len(as) (as->len)
+#define AS_Text(as) (as->text) /**< Raw text in an ansi_string */
+#define AS_Len(as) (as->len)   /**< Length of the raw text in an ansi_string */
 #define AS_IS(as,flag) (as->flags & flag)
-#define AS_HasMarkup(as) AS_IS(as, AS_HAS_MARKUP)
-#define AS_HasTags(as) AS_IS(as, AS_HAS_TAGS)
-#define AS_IsOptimized(as) AS_IS(as, AS_OPTIMIZED)
+#define AS_HasMarkup(as) AS_IS(as, AS_HAS_MARKUP) /**< Does the ansi_string have markup */
+#define AS_HasTags(as) AS_IS(as, AS_HAS_TAGS) /**< Does the ansi_string have non-color tags */
+#define AS_IsOptimized(as) AS_IS(as, AS_OPTIMIZED) /**< Has the ansi_string been optimized */
 
 int ansi_strcmp(const char *astr, const char *bstr);
 char *remove_markup(const char *orig, size_t * stripped_len);

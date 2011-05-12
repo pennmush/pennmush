@@ -17,6 +17,8 @@ Commands:
  * @edit/quiet edits attributes, but doesn't spam you with the modified
    values, just gives you a count of modified attributes. Suggested by
    Padraic. [MG]
+ * You can now have more than one command (with the action list enclosed in
+   {curly braces}) in the rhs arg of @force/noeval. [MG]
 
 Powers:
  * can_dark power lets non-wizard players set themselves dark. Suggested by 

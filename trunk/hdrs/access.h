@@ -17,22 +17,22 @@ struct access {
 
 
 /* These flags are can/can't - a site may or may not be allowed to do them */
-#define ACS_CONNECT     0x1U    /* Connect to non-guests */
-#define ACS_CREATE      0x2U    /* Create new players */
-#define ACS_GUEST       0x4U    /* Connect to guests */
-#define ACS_REGISTER    0x8U    /* Site can use the 'register' command */
+#define ACS_CONNECT     0x1U    /**< Connect to non-guests */
+#define ACS_CREATE      0x2U    /**< Create new players */
+#define ACS_GUEST       0x4U    /**< Connect to guests */
+#define ACS_REGISTER    0x8U    /**< Site can use the 'register' command */
 /* These flags are set in the 'can' bit, but they mark special processing */
-#define ACS_SITELOCK    0x10U   /* Marker for where to insert @sitelock */
-#define ACS_SUSPECT     0x20U   /* All players from this site get SUSPECT */
-#define ACS_DENY_SILENT 0x40U   /* Don't log failed attempts */
-#define ACS_REGEXP      0x80U   /* Treat the host pattern as a regexp */
+#define ACS_SITELOCK    0x10U   /**< Marker for where to insert @sitelock */
+#define ACS_SUSPECT     0x20U   /**< All players from this site get SUSPECT */
+#define ACS_DENY_SILENT 0x40U   /**< Don't log failed attempts */
+#define ACS_REGEXP      0x80U   /**< Treat the host pattern as a regexp */
 
-#define ACS_GOD         0x100U  /* God can connect from this site */
-#define ACS_WIZARD      0x200U  /* Wizards can connect from this site */
-#define ACS_ADMIN       0x400U  /* Admins can connect from this site */
+#define ACS_GOD         0x100U  /**< God can connect from this site */
+#define ACS_WIZARD      0x200U  /**< Wizards can connect from this site */
+#define ACS_ADMIN       0x400U  /**< Admins can connect from this site */
 
 /* This is the usual default access */
-#define ACS_DEFAULT             (ACS_CONNECT|ACS_CREATE|ACS_GUEST)
+#define ACS_DEFAULT             (ACS_CONNECT|ACS_CREATE|ACS_GUEST) /**< Default access rules */
 
 /* Usefile macros */
 

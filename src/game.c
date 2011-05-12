@@ -1326,15 +1326,15 @@ check_alias(const char *command, const char *list)
   const char *p;
   while (*list) {
     for (p = command; (*p && DOWNCASE(*p) == DOWNCASE(*list)
-                       && *list != EXIT_DELIMITER); p++, list++) ;
+                       && *list != ALIAS_DELIMITER); p++, list++) ;
     if (*p == '\0') {
       while (isspace((unsigned char) *list))
         list++;
-      if (*list == '\0' || *list == EXIT_DELIMITER)
+      if (*list == '\0' || *list == ALIAS_DELIMITER)
         return 1;               /* word matched */
     }
     /* didn't match. check next word in list */
-    while (*list && *list++ != EXIT_DELIMITER) ;
+    while (*list && *list++ != ALIAS_DELIMITER) ;
     while (isspace((unsigned char) *list))
       list++;
   }

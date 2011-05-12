@@ -1,5 +1,6 @@
-/* dbdefs.h */
-
+/**
+ * \file dbdefs.h
+ */
 
 #ifndef __DBDEFS_H
 #define __DBDEFS_H

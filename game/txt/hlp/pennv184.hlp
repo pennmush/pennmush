@@ -32,6 +32,8 @@ Minor Changes:
    with wisdom! [GM]
  * @edit no longer shows the full value of attributes which aren't edited,
    it just shows that they are unchanged. Suggested by Minion. [MG]
+ * @mail now shows the dbref of the sender for mail from non-players.
+   Suggested by Minion. [MG]
 
 Fixes:
  * %$-subs didn't work inside @switch's default case. Patch by Covenent.

@@ -236,8 +236,8 @@ get_sender(MAIL *mp, int full)
   else if (IsPlayer(mp->from) || !full)
     safe_str(Name(mp->from), tbuf1, &bp);
   else
-    safe_format(tbuf1, &bp, T("%s (owner: %s)"), Name(mp->from),
-                Name(Owner(mp->from)));
+    safe_format(tbuf1, &bp, T("%s (#%d, owner: %s)"), Name(mp->from),
+                mp->from, Name(Owner(mp->from)));
   *bp = '\0';
   return tbuf1;
 }

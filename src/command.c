@@ -85,7 +85,7 @@ COMLIST commands[] = {
   {"@@", NULL, cmd_null, CMD_T_ANY | CMD_T_NOPARSE, 0, 0},
   {"@ALLHALT", NULL, cmd_allhalt, CMD_T_ANY, "WIZARD", "HALT"},
   {"@ALLQUOTA", "QUIET", cmd_allquota, CMD_T_ANY, "WIZARD", "QUOTA"},
-  {"@ASSERT", NULL, cmd_assert, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE, 0,
+  {"@ASSERT", NULL, cmd_assert, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_RS_BRACE, 0,
    0},
   {"@ATRLOCK", NULL, cmd_atrlock, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@ATRCHOWN", NULL, cmd_atrchown, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
@@ -93,7 +93,7 @@ COMLIST commands[] = {
   {"@ATTRIBUTE", "ACCESS DELETE RENAME RETROACTIVE LIMIT ENUM", cmd_attribute,
    CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@BOOT", "PORT ME SILENT", cmd_boot, CMD_T_ANY, 0, 0},
-  {"@BREAK", NULL, cmd_break, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE, 0,
+  {"@BREAK", NULL, cmd_break, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_RS_BRACE, 0,
    0},
   {"@CEMIT", "NOEVAL NOISY SILENT SPOOF", cmd_cemit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
@@ -165,7 +165,7 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
 
   {"@FORCE", "NOEVAL INPLACE INLINE LOCALIZE CLEARREGS NOBREAK", cmd_force,
-   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED | CMD_T_RS_BRACE,
    0, 0},
   {"@FUNCTION",
    "ALIAS BUILTIN CLONE DELETE ENABLE DISABLE PRESERVE RESTORE RESTRICT",
@@ -930,10 +930,15 @@ command_argparse(dbref executor, dbref enactor, dbref caller,
 
   parse =
     (right_side) ? (cmd->type & CMD_T_RS_NOPARSE) : (cmd->type & CMD_T_NOPARSE);
-  if (parse || forcenoparse)
-    parse = PE_NOTHING;
-  else
+  if (parse || forcenoparse) {
+    if (right_side && (cmd->type & CMD_T_RS_BRACE)) {
+      parse = PE_COMMAND_BRACES;
+    } else {
+      parse = PE_NOTHING;
+    }
+  } else {
     parse = PE_DEFAULT | PE_COMMAND_BRACES | pe_flags;
+  }
 
   if (right_side)
     split = PT_NOTHING;

@@ -121,14 +121,7 @@ COMMAND(cmd_break)
   if (parse_boolean(arg_left)) {
     queue_entry->queue_type |= QUEUE_BREAK;
     if (arg_right && *arg_right) {
-      char break_cmd[BUFFER_LEN];
-      char const *sp = arg_right;
-      char *bp = break_cmd;
-      process_expression(break_cmd, &bp, &sp,
-                         executor, caller, enactor,
-                         PE_COMMAND_BRACES, PT_DEFAULT, NULL);
-      *bp++ = '\0';
-      new_queue_actionlist(executor, enactor, caller, break_cmd, queue_entry,
+      new_queue_actionlist(executor, enactor, caller, arg_right, queue_entry,
                            PE_INFO_SHARE, QUEUE_INPLACE, NULL);
     }
   }
@@ -139,14 +132,7 @@ COMMAND(cmd_assert)
   if (!parse_boolean(arg_left)) {
     queue_entry->queue_type |= QUEUE_BREAK;
     if (arg_right && *arg_right) {
-      char break_cmd[BUFFER_LEN];
-      char const *sp = arg_right;
-      char *bp = break_cmd;
-      process_expression(break_cmd, &bp, &sp,
-                         executor, caller, enactor,
-                         PE_COMMAND_BRACES, PT_DEFAULT, NULL);
-      *bp++ = '\0';
-      new_queue_actionlist(executor, enactor, caller, break_cmd, queue_entry,
+      new_queue_actionlist(executor, enactor, caller, arg_right, queue_entry,
                            PE_INFO_SHARE, QUEUE_INPLACE, NULL);
     }
   }
@@ -476,18 +462,7 @@ COMMAND(cmd_force)
       queue_type |= QUEUE_PRESERVE_QREG;
   }
 
-  if (SW_ISSET(sw, SWITCH_NOEVAL)) {
-    char force_cmd[BUFFER_LEN];
-    char const *sp = arg_right;
-    char *bp = force_cmd;
-    process_expression(force_cmd, &bp, &sp,
-                       executor, caller, enactor,
-                       PE_COMMAND_BRACES, PT_DEFAULT, NULL);
-    *bp++ = '\0';
-    do_force(executor, caller, arg_left, force_cmd, queue_type, queue_entry);
-  } else {
-    do_force(executor, caller, arg_left, arg_right, queue_type, queue_entry);
-  }
+  do_force(executor, caller, arg_left, arg_right, queue_type, queue_entry);
 }
 
 COMMAND(cmd_function)

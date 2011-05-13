@@ -3839,7 +3839,7 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
   /* @chatformat */
   if (flags & CB_PRESENCE) {
     snprintf(title, BUFFER_LEN, "%s", message);
-    snprintf(message, BUFFER_LEN, "%s %s", Name(player), title);
+    snprintf(message, BUFFER_LEN, "%s %s", playername, title);
     title[0] = '\0';
   }
 

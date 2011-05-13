@@ -1816,7 +1816,7 @@ show_queue_env(dbref player, MQUE *q)
   PE_REGS *regs;
   int i = 0;
   PTAB qregs;
-  char qreg_name[PE_KEY_LEN];
+  const char *qreg_name;
   char *qreg_val;
 
   notify_format(player, "Envronment:\n %%#: #%d\t%%!: #%d\t%%@: #%d", q->enactor, q->executor, q->caller);
@@ -1845,9 +1845,9 @@ show_queue_env(dbref player, MQUE *q)
 
   if (qregs.len) {
     notify(player, "Registers:");
-    for (qreg_val = ptab_firstentry_new(&qregs, qreg_name);
+    for (qreg_val = ptab_firstentry_new(&qregs, &qreg_name);
 	 qreg_val;
-	 qreg_val = ptab_nextentry_new(&qregs, qreg_name)) {    
+	 qreg_val = ptab_nextentry_new(&qregs, &qreg_name)) {    
       int len = strlen(qreg_name);
       if (len > 1) {
 	int spacer = 19 - len;

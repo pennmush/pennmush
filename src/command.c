@@ -1863,7 +1863,7 @@ void
 do_command_delete(dbref player, char *name)
 {
   int acount;
-  char alias[BUFFER_LEN];
+  const char *alias;
   COMMAND_INFO *cptr;
   COMMAND_INFO *command;
 
@@ -1886,14 +1886,14 @@ do_command_delete(dbref player, char *name)
       return;
     } else {
       acount = 0;
-      cptr = ptab_firstentry_new(&ptab_command, alias);
+      cptr = ptab_firstentry_new(&ptab_command, &alias);
       while (cptr) {
         if (cptr == command) {
           ptab_delete(&ptab_command, alias);
           acount++;
-          cptr = ptab_firstentry_new(&ptab_command, alias);
+          cptr = ptab_firstentry_new(&ptab_command, &alias);
         } else
-          cptr = ptab_nextentry_new(&ptab_command, alias);
+          cptr = ptab_nextentry_new(&ptab_command, &alias);
       }
       mush_free((void *) command->name, "command_add");
       slab_free(command_slab, command);

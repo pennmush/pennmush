@@ -1,7 +1,7 @@
 /**
  * \file mushtype.h
  *
- * \brief Several commonly-used structs, #defines, and other stuff
+ * \brief Several commonly-used structs, \#defines, and other stuff
  */
 
 #ifndef MUSH_TYPES_H
@@ -96,6 +96,7 @@ typedef struct debug_info Debug_Info;
 #define PE_REGS_INT    0x200    /**< It's an integer */
 #define PE_REGS_NOCOPY 0x400    /**< Don't insert the value into a string */
 
+/** A single value in a pe_regs structure */
 typedef struct _pe_reg_val {
   int type;                     /**< The type of the value */
   const char *name;             /**< The register name */
@@ -106,6 +107,8 @@ typedef struct _pe_reg_val {
   struct _pe_reg_val *next;     /**< Pointer to next value */
 } PE_REG_VAL;
 
+/** pe_regs structs store environment (%0-%9), q-registers, itext(),
+ * stext() and regexp ($0-$9) context, as well as a few %-sub values. */
 typedef struct _pe_regs_ {
   struct _pe_regs_ *prev;       /**< Previous PE_REGS, for chaining up the stack */
   int flags;                    /**< REG_* flags */
@@ -220,7 +223,7 @@ int pi_regs_get_envc(NEW_PE_INFO *pe_info);
 #define PE_Get_Env(pi,n) pi_regs_get_env(pi, n)
 #define PE_Get_Envc(pi) pi_regs_get_envc(pi)
 
-/* NEW_PE_INFO: May need more documentation.  */
+/** NEW_PE_INFO holds data about string evaluation via process_expression().  */
 struct new_pe_info {
   int fun_invocations;          /**< The number of functions invoked (%?) */
   int fun_recursions;           /**< Function recursion depth (%?) */

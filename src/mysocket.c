@@ -1025,8 +1025,8 @@ getnameinfo(const struct sockaddr *sa, socklen_t salen
 
 /* include ga1 */
 struct search {
-  const char *host;             /* hostname or address string */
-  int family;                   /* AF_xxx */
+  const char *host;             /**< hostname or address string */
+  int family;                   /**< AF_xxx */
 };
 
 static int ga_aistruct(struct addrinfo ***, const struct addrinfo *,

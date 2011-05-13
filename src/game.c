@@ -1543,7 +1543,7 @@ do_writelog(dbref player, char *str, int ltype)
  * \param enactor object that caused command to run.
  * \param action command string which may contain tokens.
  * \param arg value for ## token.
- * \param placestr value for #@ token.
+ * \param num value for #@ token.
  * \param parent_queue the queue entry this is being run from
  */
 void

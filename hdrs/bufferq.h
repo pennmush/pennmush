@@ -12,6 +12,7 @@
 
 typedef struct bufferq BUFFERQ;
 
+/** A bufferq. */
 struct bufferq {
   char *buffer;         /**< Pointer to start of buffer */
   char *buffer_end;     /**< Pointer to insertion point in buffer */

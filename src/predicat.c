@@ -1366,6 +1366,7 @@ do_verb(dbref executor, dbref enactor, char *arg1, char **argv)
   pe_regs_free(pe_regs);
 }
 
+/** Helper data for regexp \@greps */
 struct regrep_data {
   pcre *re;             /**< Pointer to compiled regular expression */
   pcre_extra *study;    /**< Pointer to studied data about re */
@@ -1374,9 +1375,10 @@ struct regrep_data {
   int count;            /**< Number of matches found */
 };
 
+/** Helper data for non-regexp \@greps */
 struct grep_data {
   char *findstr;        /**< String to find */
-  int findlen;              /**< Length of findstr */
+  int findlen;          /**< Length of findstr */
   char *buff;           /**< Buffer to store regrep results, or NULL to report to player */
   char **bp;            /**< Pointer to address of insertion point in buff, or NULL */
   int count;            /**< Number of matches found */

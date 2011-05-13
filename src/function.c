@@ -123,6 +123,10 @@ typedef struct fun_tab {
   int flags;    /**< Flags to control how the function is parsed. */
 } FUNTAB;
 
+/** A hardcoded function alias.
+ * These are functions which used to be duplicated, but are now properly aliased.
+ * They're added here instead of alias.cnf to avoid breakage for people who
+ * don't update their alias.cnf immediately. */
 typedef struct fun_alias {
   const char *name;   /**< Name of function to alias */
   const char *alias;  /**< Name of alias to create */

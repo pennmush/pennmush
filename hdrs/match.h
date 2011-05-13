@@ -4,11 +4,14 @@
  * \brief object matching routines from match.c
  *
  * \verbatim
+ *
  * These functions do the matching and return the result:
  * match_result() - returns match, NOTHING, or AMBIGUOUS
  * noisy_match_result() - notifies player, returns match or NOTHING
  * last_match_result() - returns a match or NOTHING
  * match_controlled() - returns match if player controls, or NOTHING
+ *
+ * \endverbatim
  */
 
 #ifndef __MATCH_H

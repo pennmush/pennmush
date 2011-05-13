@@ -1,3 +1,10 @@
+/**
+ * \file shs.h
+ *
+ * \brief SHS digest stuff
+ */
+
+
 #ifndef _SHS_H
 #define _SHS_H
 

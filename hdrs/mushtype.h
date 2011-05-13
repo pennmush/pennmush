@@ -1,3 +1,9 @@
+/**
+ * \file mushtype.h
+ *
+ * \brief Several commonly-used structs, #defines, and other stuff
+ */
+
 #ifndef MUSH_TYPES_H
 #define MUSH_TYPES_H
 #include "copyrite.h"
@@ -61,54 +67,54 @@ typedef struct new_pe_info NEW_PE_INFO;
 typedef struct debug_info Debug_Info;
 /** process_expression() info */
 
-#define PE_KEY_LEN     64       /* The maximum key length. */
+#define PE_KEY_LEN     64       /**< The maximum key length. */
 
 /* Types for _pe_regs_ _and_ _pe_reg_vals_ */
-#define PE_REGS_Q      0x01     /* Q-registers. */
-#define PE_REGS_REGEXP 0x02     /* Regexps. */
-#define PE_REGS_CAPTURE PE_REGS_REGEXP  /* Alias for REGEXP */
-#define PE_REGS_SWITCH 0x04     /* switch(), %$0. */
-#define PE_REGS_ITER   0x08     /* iter() and @dol, %i0/etc */
-#define PE_REGS_ARG    0x10     /* %0-%9 */
-#define PE_REGS_SYS    0x20     /* %c, %z, %= */
+#define PE_REGS_Q      0x01     /**< Q-registers. */
+#define PE_REGS_REGEXP 0x02     /**< Regexps. */
+#define PE_REGS_CAPTURE PE_REGS_REGEXP  /**< Alias for REGEXP */
+#define PE_REGS_SWITCH 0x04     /**< switch(), %$0. */
+#define PE_REGS_ITER   0x08     /**< iter() and @dol, %i0/etc */
+#define PE_REGS_ARG    0x10     /**< %0-%9 */
+#define PE_REGS_SYS    0x20     /**< %c, %z, %= */
 
-#define PE_REGS_QUEUE  0xFF     /* Every type for a queue. */
+#define PE_REGS_QUEUE  0xFF     /**< Every type for a queue. */
 
 /* Flags for _pe_regs_: */
-#define PE_REGS_LET     0x100   /* Used for let(): Only set qregs that already
-                                 * exist otherwise pass them up. */
-#define PE_REGS_QSTOP   0x200   /* Q-reg get()s don't travel past this. */
-#define PE_REGS_NEWATTR 0x400   /* This _blocks_ iter, arg, switch */
-#define PE_REGS_IBREAK  0x800   /* This pe_reg has been ibreak()'d out */
-#define PE_REGS_ARGPASS 0x1000  /* This pe_reg has been ibreak()'d out */
+#define PE_REGS_LET     0x100   /**< Used for let(): Only set qregs that already
+                                 **< exist otherwise pass them up. */
+#define PE_REGS_QSTOP   0x200   /**< Q-reg get()s don't travel past this. */
+#define PE_REGS_NEWATTR 0x400   /**< This _blocks_ iter, arg, switch */
+#define PE_REGS_IBREAK  0x800   /**< This pe_reg has been ibreak()'d out */
+#define PE_REGS_ARGPASS 0x1000  /**< This pe_reg has been ibreak()'d out */
 
 /* Isolate: Don't propagate anything down, essentially wiping the slate. */
 #define PE_REGS_ISOLATE (PE_REGS_QUEUE | PE_REGS_QSTOP | PE_REGS_NEWATTR)
 
 /* Typeflags for REG_VALs */
-#define PE_REGS_STR    0x100    /* It's a string */
-#define PE_REGS_INT    0x200    /* It's an integer */
-#define PE_REGS_NOCOPY 0x400    /* Don't insert the value into a string */
+#define PE_REGS_STR    0x100    /**< It's a string */
+#define PE_REGS_INT    0x200    /**< It's an integer */
+#define PE_REGS_NOCOPY 0x400    /**< Don't insert the value into a string */
 
 typedef struct _pe_reg_val {
-  int type;
-  const char *name;
+  int type;                     /**< The type of the value */
+  const char *name;             /**< The register name */
   union {
-    const char *sval;
-    int ival;
+    const char *sval;           /**< Pointer to value for str-type registers */
+    int ival;                   /**< The value for int-type registers */
   } val;
-  struct _pe_reg_val *next;
+  struct _pe_reg_val *next;     /**< Pointer to next value */
 } PE_REG_VAL;
 
 typedef struct _pe_regs_ {
-  struct _pe_regs_ *prev;       /* Previous PE_REGS, for chaining up the stack */
-  int flags;                    /* REG_* flags */
-  int count;                    /* Total register count. This includes
+  struct _pe_regs_ *prev;       /**< Previous PE_REGS, for chaining up the stack */
+  int flags;                    /**< REG_* flags */
+  int count;                    /**< Total register count. This includes
                                  * inherited registers. */
-  int qcount;                   /* Q-register count, including inherited
+  int qcount;                   /**< Q-register count, including inherited
                                  * registers. */
-  PE_REG_VAL *vals;             /* The register values */
-  const char *name;             /* For debugging */
+  PE_REG_VAL *vals;             /**< The register values */
+  const char *name;             /**< For debugging */
 } PE_REGS;
 
 /* Initialize the pe_regs strtrees */
@@ -224,7 +230,7 @@ struct new_pe_info {
   int nest_depth;               /**< Depth of function nesting, for DEBUG */
   int debugging;                /**< Show debug? 1 = yes, 0 = if DEBUG flag set, -1 = no */
 
-  PE_REGS *regvals;      /**< Saved register values. */
+  PE_REGS *regvals;             /**< Saved register values. */
 
   char cmd_raw[BUFFER_LEN];     /**< Unevaluated cmd executed (%c) */
   char cmd_evaled[BUFFER_LEN];  /**< Evaluated cmd executed (%u) */
@@ -285,28 +291,31 @@ struct text_queue {
 
 /* Descriptor foo */
 /** Using Pueblo, Smial, Mushclient, Simplemu, or some other
- *  *  pueblo-style HTML aware client */
+ *  pueblo-style HTML aware client */
 #define CONN_HTML 0x1
 /** Using a client that understands telnet options */
 #define CONN_TELNET 0x2
 /** Send a telnet option to test client */
 #define CONN_TELNET_QUERY 0x4
-/** Connection that should be close on load from reboot.db */
+/** Connection that should be closed on load from reboot.db */
 #define CONN_CLOSE_READY 0x8
 /** Validated connection from an SSL concentrator */
 #define CONN_SSL_CONCENTRATOR 0x10
 /** Player would like to receive newlines after prompts, because
- *  * their client mucks up output after a GOAHEAD */
+ *  their client mucks up output after a GOAHEAD */
 #define CONN_PROMPT_NEWLINES 0x20
 /** Default connection, nothing special */
 #define CONN_DEFAULT (CONN_PROMPT_NEWLINES)
 
+/** Maximum \@doing length */
 #define DOING_LEN 40
+
 /** Pueblo checksum length.
  * Pueblo uses md5 now, but if they switch to sha1, this will still
  * be safe.
  */
 #define PUEBLO_CHECKSUM_LEN 40
+
 typedef struct descriptor_data DESC;
 /** A player descriptor's data.
  * This structure associates a connection's socket (file descriptor)

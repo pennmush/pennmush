@@ -1,4 +1,9 @@
-/*------------------------------------------------------------------
+/**
+ * \file extchat.h
+ *
+ * \brief Header file for the PennMUSH chat system
+ *
+ * \verbatim
  * Header file for Javelin's extended @chat system
  * Based on the Battletech MUSE comsystem ported to PennMUSH by Kalkin
  *
@@ -36,7 +41,8 @@
  * @channel/buffer channel = <maxlines>
  * @channel/recall channel [= <lines>]
  *
- *------------------------------------------------------------------*/
+ * \endverbatim
+ */
 
 #ifndef __EXTCHAT_H
 #define __EXTCHAT_H

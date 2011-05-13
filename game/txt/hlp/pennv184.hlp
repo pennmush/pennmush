@@ -38,6 +38,9 @@ Minor Changes:
    Suggested by Minion. [MG]
 
 Fixes:
+ * No_Pay was implicit if executor is #1, but was _not_ implicit if 
+   Owner(executor) was #1. Caused some obscure queue cost bugs.
+   Discovered by Padraic@M*U*S*H. [GM]
  * %$-subs didn't work inside @switch's default case. Patch by Covenent.
  * %0-9 were being overridden when using /inline/localize. Patch by Covenent.
  * You couldn't @chat on open channels. Reported by Padraic. [MG]

@@ -52,6 +52,8 @@ Fixes:
  * munge() didn't play nice with ansi. [MG]
  * @shutdown/reboot would cause hang unencrypted sockets for players with
    both SSL and normal connections. Reported by Padraic. [SW]
+ * @chatformat sometimes received the player's name without accents by
+   mistake. Reported by Sketch. [MG]
 
 Functions:
  * Restrictions for the beep() function can now be modified with @function.

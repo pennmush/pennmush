@@ -992,7 +992,7 @@ COMMAND(cmd_ps)
   else if (SW_ISSET(sw, SWITCH_QUICK))
     do_queue(executor, arg_left, QUEUE_QUICK);
   else if (arg_left && *arg_left && is_uinteger(arg_left))
-    do_queue_single(executor, arg_left);
+    do_queue_single(executor, arg_left, SW_ISSET(sw, SWITCH_DEBUG));
   else
     do_queue(executor, arg_left, QUEUE_NORMAL);
 }

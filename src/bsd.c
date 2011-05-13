@@ -391,7 +391,7 @@ static void dump_users(DESC *call_by, char *match);
 static const char *time_format_1(time_t dt);
 static const char *time_format_2(time_t dt);
 static void announce_connect(DESC *d, int isnew, int num);
-static void announce_disconnect(DESC *saved, const char *reason);
+static void announce_disconnect(DESC *saved, const char *reason, bool reboot);
 bool inactivity_check(void);
 void reopen_logs(void);
 void load_reboot_db(void);
@@ -1469,7 +1469,7 @@ logout_sock(DESC *d)
     do_rawlog(LT_CONN,
               "[%d/%s/%s] Logout by %s(#%d) <Connection not dropped>",
               d->descriptor, d->addr, d->ip, Name(d->player), d->player);
-    announce_disconnect(d, "logout");
+    announce_disconnect(d, "logout", 0);
     if (can_mail(d->player)) {
       do_mail_purge(d->player);
     }
@@ -1523,7 +1523,7 @@ shutdownsock(DESC *d, const char *reason)
     if (d->connected != 2) {
       fcache_dump(d, fcache.quit_fcache, NULL);
       /* Player was not allowed to log in from the connect screen */
-      announce_disconnect(d, reason);
+      announce_disconnect(d, reason, 0);
       if (can_mail(d->player)) {
         do_mail_purge(d->player);
       }
@@ -3707,7 +3707,7 @@ announce_connect(DESC *d, int isnew, int num)
 }
 
 static void
-announce_disconnect(DESC *saved, const char *reason)
+announce_disconnect(DESC *saved, const char *reason, bool reboot)
 {
   dbref loc;
   int num;
@@ -3728,8 +3728,10 @@ announce_disconnect(DESC *saved, const char *reason)
 
   for (num = 0, d = descriptor_list; d; d = d->next)
     if (d->connected && (d->player == player))
-      num++;
+      num += 1;
 
+  if (reboot)
+    num += 1;
 
   /* And then load it up, as follows:
    * %0 (unused, reserved for "reason for disconnect")
@@ -5138,125 +5140,139 @@ load_reboot_db(void)
     return;
   }
   restarting = 1;
-  /* Get the first line and see if it's a set of reboot db flags.
-   * Those start with V<number>
-   * If not, assume we're using the original format, in which the
-   * sock appears first
-   * */
-  c = penn_fgetc(f);            /* Skip the V */
-  if (c == 'V') {
-    flags = getref(f);
+
+  if (setjmp(db_err)) {
+    do_rawlog(LT_ERR, "GAME: Unable to read reboot database!");
+    return;
   } else {
-    penn_ungetc(c, f);
-  }
-
-  sock = getref(f);
-  val = getref(f);
-  if (val > maxd)
-    maxd = val;
-
-  while ((val = getref(f)) != 0) {
-    ndescriptors++;
-    d = (DESC *) mush_malloc(sizeof(DESC), "descriptor");
-    d->descriptor = val;
-    d->connected_at = getref(f);
-    d->hide = getref(f);
-    d->cmds = getref(f);
-    d->player = getref(f);
-    d->last_time = getref(f);
-    d->connected = GoodObject(d->player) ? 1 : 0;
-    temp = getstring_noalloc(f);
-    d->output_prefix = NULL;
-    if (strcmp(temp, "__NONE__"))
-      set_userstring(&d->output_prefix, temp);
-    temp = getstring_noalloc(f);
-    d->output_suffix = NULL;
-    if (strcmp(temp, "__NONE__"))
-      set_userstring(&d->output_suffix, temp);
-    mush_strncpy(d->addr, getstring_noalloc(f), 100);
-    mush_strncpy(d->ip, getstring_noalloc(f), 100);
-    mush_strncpy(d->doing, getstring_noalloc(f), DOING_LEN);
-    d->conn_flags = getref(f);
-    if (flags & RDBF_SCREENSIZE) {
-      d->width = getref(f);
-      d->height = getref(f);
+    /* Get the first line and see if it's a set of reboot db flags.
+     * Those start with V<number>
+     * If not, assume we're using the original format, in which the
+     * sock appears first
+     * */
+    c = penn_fgetc(f);            /* Skip the V */
+    if (c == 'V') {
+      flags = getref(f);
     } else {
-      d->width = 78;
-      d->height = 24;
+      penn_ungetc(c, f);
     }
-    if (flags & RDBF_TTYPE)
-      d->ttype = mush_strdup(getstring_noalloc(f), "terminal description");
-    else
-      d->ttype = mush_strdup("unknown", "terminal description");
-    if (flags & RDBF_PUEBLO_CHECKSUM)
-      strcpy(d->checksum, getstring_noalloc(f));
-    else
-      d->checksum[0] = '\0';
-    d->input_chars = 0;
-    d->output_chars = 0;
-    d->output_size = 0;
-    d->output.head = 0;
-    d->output.tail = &d->output.head;
-    d->input.head = 0;
-    d->input.tail = &d->input.head;
-    d->raw_input = NULL;
-    d->raw_input_at = NULL;
-    d->quota = options.starting_quota;
-#ifdef HAS_OPENSSL
-    d->ssl = NULL;
-    d->ssl_state = 0;
-#endif
-    if (d->conn_flags & CONN_CLOSE_READY) {
-      /* This isn't really an open descriptor, we're just tracking
-       * it so we can announce the disconnect properly. Do so, but
-       * don't link it into the descriptor list. Instead, keep a
-       * separate list.
-       */
-      if (closed)
-        closed->prev = d;
-      d->next = closed;
-      d->prev = NULL;
-      closed = d;
-    } else {
-      if (descriptor_list)
-        descriptor_list->prev = d;
-      d->next = descriptor_list;
-      d->prev = NULL;
-      descriptor_list = d;
-      im_insert(descs_by_fd, d->descriptor, d);
-      if (d->connected && GoodObject(d->player) && IsPlayer(d->player))
-        set_flag_internal(d->player, "CONNECTED");
-      else if ((!d->player || !GoodObject(d->player)) && d->connected) {
-        d->connected = 0;
-        d->player = NOTHING;
+  
+    sock = getref(f);
+    val = getref(f);
+    if (val > maxd)
+      maxd = val;
+  
+    while ((val = getref(f)) != 0) {
+      ndescriptors++;
+      d = mush_malloc(sizeof(DESC), "descriptor");
+      d->descriptor = val;
+      d->connected_at = getref(f);
+      d->hide = getref(f);
+      d->cmds = getref(f);
+      d->player = getref(f);
+      d->last_time = getref(f);
+      d->connected = GoodObject(d->player) ? 1 : 0;
+      temp = getstring_noalloc(f);
+      d->output_prefix = NULL;
+      if (strcmp(temp, "__NONE__"))
+	set_userstring(&d->output_prefix, temp);
+      temp = getstring_noalloc(f);
+      d->output_suffix = NULL;
+      if (strcmp(temp, "__NONE__"))
+	set_userstring(&d->output_suffix, temp);
+      mush_strncpy(d->addr, getstring_noalloc(f), 100);
+      mush_strncpy(d->ip, getstring_noalloc(f), 100);
+      mush_strncpy(d->doing, getstring_noalloc(f), DOING_LEN);
+      d->conn_flags = getref(f);
+      if (flags & RDBF_SCREENSIZE) {
+	d->width = getref(f);
+	d->height = getref(f);
+      } else {
+	d->width = 78;
+	d->height = 24;
       }
+      if (flags & RDBF_TTYPE)
+	d->ttype = mush_strdup(getstring_noalloc(f), "terminal description");
+      else
+	d->ttype = mush_strdup("unknown", "terminal description");
+      if (flags & RDBF_PUEBLO_CHECKSUM)
+	strcpy(d->checksum, getstring_noalloc(f));
+      else
+	d->checksum[0] = '\0';
+      d->input_chars = 0;
+      d->output_chars = 0;
+      d->output_size = 0;
+      d->output.head = 0;
+      d->output.tail = &d->output.head;
+      d->input.head = 0;
+      d->input.tail = &d->input.head;
+      d->raw_input = NULL;
+      d->raw_input_at = NULL;
+      d->quota = options.starting_quota;
+#ifdef HAS_OPENSSL
+      d->ssl = NULL;
+      d->ssl_state = 0;
+#endif
+
+      if (d->conn_flags & CONN_CLOSE_READY) {
+	/* This isn't really an open descriptor, we're just tracking
+	 * it so we can announce the disconnect properly. Do so, but
+	 * don't link it into the descriptor list. Instead, keep a
+	 * separate list.
+	 */
+	if (closed)
+	  closed->prev = d;
+	d->next = closed;
+	d->prev = NULL;
+	closed = d;
+      } else {
+	if (descriptor_list)
+	  descriptor_list->prev = d;
+	d->next = descriptor_list;
+	d->prev = NULL;
+	descriptor_list = d;
+	im_insert(descs_by_fd, d->descriptor, d);
+	if (d->connected && GoodObject(d->player) && IsPlayer(d->player))
+	  set_flag_internal(d->player, "CONNECTED");
+	else if ((!d->player || !GoodObject(d->player)) && d->connected) {
+	  d->connected = 0;
+	  d->player = NOTHING;
+	}
+      }
+    }                             /* while loop */
+
+    strcpy(poll_msg, getstring_noalloc(f));
+    globals.first_start_time = getref(f);
+    globals.reboot_count = getref(f) + 1;
+
+#ifdef HAS_OPENSSL
+    if (SSLPORT) {
+      sslsock = make_socket(SSLPORT, SOCK_STREAM, NULL, NULL, SSL_IP_ADDR);
+      ssl_master_socket = ssl_setup_socket(sslsock);
+      if (sslsock >= maxd)
+	maxd = sslsock + 1;
     }
-  }                             /* while loop */
+#endif
+    
+    penn_fclose(f);
+    remove(REBOOTFILE);
+  }
 
   /* Now announce disconnects of everyone who's not really here */
   while (closed) {
     nextclosed = closed->next;
-    announce_disconnect(closed, "disconnect");
+    announce_disconnect(closed, "disconnect", 1);
     mush_free(closed->ttype, "terminal description");
-    mush_free(closed, "descriptor");
+    if (closed->output_prefix)
+      mush_free(closed->output_prefix, "userstring");
+    if (closed->output_suffix)
+      mush_free(closed->output_suffix, "userstring");
+    mush_free(closed, "descriptor");    
     closed = nextclosed;
   }
-
-  strcpy(poll_msg, getstring_noalloc(f));
-  globals.first_start_time = getref(f);
-  globals.reboot_count = getref(f) + 1;
-#ifdef HAS_OPENSSL
-  if (SSLPORT) {
-    sslsock = make_socket(SSLPORT, SOCK_STREAM, NULL, NULL, SSL_IP_ADDR);
-    ssl_master_socket = ssl_setup_socket(sslsock);
-    if (sslsock >= maxd)
-      maxd = sslsock + 1;
-  }
-#endif
-
-  penn_fclose(f);
-  remove(REBOOTFILE);
+ 
   flag_broadcast(0, 0, T("GAME: Reboot finished."));
+
 }
 
 /** Reboot the game without disconnecting players.

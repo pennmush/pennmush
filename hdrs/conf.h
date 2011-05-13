@@ -1,7 +1,7 @@
 /**
  * \file conf.h
  *
- * \brief Routines for Penn's @config system, and options used in Penn's internals.
+ * \brief Routines for Penn's \@config system, and options used in Penn's internals.
  */
 
 #ifndef __PENNCONF_H

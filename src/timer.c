@@ -225,10 +225,11 @@ warning_event(void *data __attribute__ ((__unused__)))
   return true;
 }
 
+/** Info on the events run for impending dbsaves */
 struct dbsave_warn_data {
-  int secs;
-  const char *event;
-  char *msg;
+  int secs;           /**< How many seconds before the dbsave to run */
+  const char *event;  /**< The name of the event to trigger */
+  char *msg;          /**< The \@config'd message to show */
 };
 
 struct dbsave_warn_data dbsave_5min =
@@ -500,11 +501,12 @@ sq_register_in(int n, sq_func f, void *d, const char *ev)
   sq_register(now + n, f, d, ev);
 }
 
+/** A timed event that runs on a loop */
 struct sq_loop {
-  sq_func fun;
-  void *data;
-  const char *event;
-  int secs;
+  sq_func fun;  /**< The function to run for the event */
+  void *data;   /**< The data for the event */
+  const char *event;  /**< The name of the event attr to trigger */
+  int secs;     /**< How often to run the event */
 };
 
 static bool

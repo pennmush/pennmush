@@ -499,27 +499,26 @@ mush_strndup(const char *src, size_t len, const char *check)
 /** Unsigned char strdup. Why is this a macro when the others functions? */
 #define u_strdup(x) (unsigned char *)strdup((const char *) x)
 #ifndef HAVE_STRDUP
-    char *strdup(const char *s)
- __attribute_malloc__;
+char *strdup(const char *s) __attribute_malloc__;
 #endif
-    char *mush_strdup(const char *s, const char *check) __attribute_malloc__;
+char *mush_strdup(const char *s, const char *check) __attribute_malloc__;
 
 #ifdef HAVE__STRNCOLL
 #define strncoll(s1,s2,n) _strncoll((s1), (s2), (n))
 #else
-    int strncoll(const char *s1, const char *s2, size_t t);
+int strncoll(const char *s1, const char *s2, size_t t);
 #endif
 
 #ifdef HAVE__STRICOLL
 #define strcasecoll(s1,s2) _stricoll((s1), (s2))
 #else
-    int strcasecoll(const char *s1, const char *s2);
+int strcasecoll(const char *s1, const char *s2);
 #endif
 
 #ifdef HAVE__STRNICOLL
 #define strncasecoll(s1,s2,n) _strnicoll((s1), (s2), (n))
 #else
-    int strncasecoll(const char *s1, const char *s2, size_t t);
+int strncasecoll(const char *s1, const char *s2, size_t t);
 #endif
 
 /** Append a character to the end of a BUFFER_LEN long string.
@@ -529,95 +528,99 @@ mush_strndup(const char *src, size_t len, const char *check)
                     ((*(bp) - (buf) >= BUFFER_LEN - 1) ? \
                         1 : (*(*(bp))++ = (x), 0))
 /* Like sprintf */
-    int safe_format(char *buff, char **bp, const char *restrict fmt, ...)
+int safe_format(char *buff, char **bp, const char *restrict fmt, ...)
   __attribute__ ((__format__(__printf__, 3, 4)));
 /* Append an int to the end of a buffer */
-    int safe_integer(intmax_t i, char *buff, char **bp);
-    int safe_uinteger(uintmax_t, char *buff, char **bp);
+int safe_integer(intmax_t i, char *buff, char **bp);
+int safe_uinteger(uintmax_t, char *buff, char **bp);
 /* Same, but for a SBUF_LEN buffer, not BUFFER_LEN */
 #define SBUF_LEN 128    /**< A short buffer */
-    int safe_integer_sbuf(intmax_t i, char *buff, char **bp);
+int safe_integer_sbuf(intmax_t i, char *buff, char **bp);
 /* Append a NVAL to a string */
-    int safe_number(NVAL n, char *buff, char **bp);
+int safe_number(NVAL n, char *buff, char **bp);
 /* Append a dbref to a buffer */
-    int safe_dbref(dbref d, char *buff, char **bp);
+int safe_dbref(dbref d, char *buff, char **bp);
 /* Append a string to a buffer */
-    int safe_str(const char *s, char *buff, char **bp);
+int safe_str(const char *s, char *buff, char **bp);
 /* Append a string to a buffer, sticking it in quotes if there's a space */
-    int safe_str_space(const char *s, char *buff, char **bp);
+int safe_str_space(const char *s, char *buff, char **bp);
 /* Append len characters of a string to a buffer */
-    int safe_strl(const char *s, size_t len, char *buff, char **bp);
+int safe_strl(const char *s, size_t len, char *buff, char **bp);
 /** Append a boolean to the end of a string */
 #define safe_boolean(x, buf, bufp) \
                 safe_chr((x) ? '1' : '0', (buf), (bufp))
 /* Append N copies of the character X to the end of a string */
-    int safe_fill(char x, size_t n, char *buff, char **bp);
+int safe_fill(char x, size_t n, char *buff, char **bp);
 /* Append an accented string */
-    int safe_accent(const char *restrict base,
-                    const char *restrict tmplate, size_t len, char *buff,
-                    char **bp);
+int safe_accent(const char *restrict base,
+                const char *restrict tmplate, size_t len, char *buff,
+                char **bp);
 
-    char *mush_strncpy(char *restrict, const char *, size_t);
+char *mush_strncpy(char *restrict, const char *, size_t);
 
-    char *replace_string
-      (const char *restrict old, const char *restrict newbit,
-       const char *restrict string) __attribute_malloc__;
-    char *replace_string2(const char *old[2], const char *newbits[2],
-                          const char *restrict string)
+char *replace_string
+  (const char *restrict old, const char *restrict newbit,
+   const char *restrict string) __attribute_malloc__;
+char *replace_string2(const char *old[2], const char *newbits[2],
+                      const char *restrict string)
  __attribute_malloc__;
-    extern const char *standard_tokens[2];      /* ## and #@ */
-    char *copy_up_to(char *RESTRICT dest, const char *RESTRICT src, char c);
-    char *trim_space_sep(char *str, char sep);
-    int do_wordcount(char *str, char sep);
-    char *remove_word(char *list, char *word, char sep);
-    char *next_in_list(const char **head);
-    void safe_itemizer(int cur_num, int done, const char *delim,
-                       const char *conjoin, const char *space,
-                       char *buff, char **bp);
-    char *show_time(time_t t, bool utc);
-    char *show_tm(struct tm *t);
+extern const char *standard_tokens[2];      /* ## and #@ */
+char *copy_up_to(char *RESTRICT dest, const char *RESTRICT src, char c);
+char *trim_space_sep(char *str, char sep);
+int do_wordcount(char *str, char sep);
+char *remove_word(char *list, char *word, char sep);
+char *next_in_list(const char **head);
+void safe_itemizer(int cur_num, int done, const char *delim,
+                   const char *conjoin, const char *space,
+                   char *buff, char **bp);
+char *show_time(time_t t, bool utc);
+char *show_tm(struct tm *t);
 
 
 /** This structure associates html entities and base ascii representations */
-    typedef struct {
-      const char *base;         /**< Base ascii representation */
-      const char *entity;       /**< HTML entity */
-    } accent_info;
+typedef struct {
+  const char *base;         /**< Base ascii representation */
+  const char *entity;       /**< HTML entity */
+} accent_info;
 
-    extern accent_info accent_table[];
+extern accent_info accent_table[];
 
-    int ansi_strlen(const char *string);
-    int ansi_strnlen(const char *string, size_t numchars);
+int ansi_strlen(const char *string);
+int ansi_strnlen(const char *string, size_t numchars);
 
 /* From unparse.c */
-    const char *real_unparse
-      (dbref player, dbref loc, int obey_myopic, int use_nameformat,
-       int use_nameaccent);
-    extern const char *unparse_objid(dbref thing);
-    extern const char *unparse_object(dbref player, dbref loc);
+const char *real_unparse
+  (dbref player, dbref loc, int obey_myopic, int use_nameformat,
+   int use_nameaccent);
+extern const char *unparse_objid(dbref thing);
+extern const char *unparse_object(dbref player, dbref loc);
 /** For back compatibility, an alias for unparse_object */
 #define object_header(p,l) unparse_object(p,l)
-    const char *unparse_object_myopic(dbref player, dbref loc);
-    const char *unparse_room(dbref player, dbref loc);
-    int nameformat(dbref player, dbref loc, char *tbuf1, char *defname);
-    const char *accented_name(dbref thing);
+const char *unparse_object_myopic(dbref player, dbref loc);
+const char *unparse_room(dbref player, dbref loc);
+int nameformat(dbref player, dbref loc, char *tbuf1, char *defname);
+const char *accented_name(dbref thing);
 
 /* From utils.c */
-    void parse_attrib(dbref player, char *str, dbref *thing, ATTR **attrib);
-    void parse_anon_attrib(dbref player, char *str, dbref *thing,
-                           ATTR **attrib);
-    void free_anon_attrib(ATTR *attrib);
-    typedef struct _ufun_attrib {
-      dbref thing;
-      char contents[BUFFER_LEN];
-      char attrname[ATTRIBUTE_NAME_LIMIT + 1];
-      int pe_flags;
-      char *errmess;
-      int ufun_flags;
-    } ufun_attrib;
+void parse_attrib(dbref player, char *str, dbref *thing, ATTR **attrib);
+void parse_anon_attrib(dbref player, char *str, dbref *thing,
+                       ATTR **attrib);
+void free_anon_attrib(ATTR *attrib);
 
-    dbref next_parent(dbref thing, dbref current, int *parent_count,
-                      int *use_ancestor);
+/** Information about an attribute to ufun.
+ * Prepared via fetch_ufun_attrib, used in call_ufun
+ */
+typedef struct _ufun_attrib {
+  dbref thing;                             /**< Object with attribute */
+  char contents[BUFFER_LEN];               /**< Attribute value */
+  char attrname[ATTRIBUTE_NAME_LIMIT + 1]; /**< Name of attribute */
+  int pe_flags;                            /**< Flags to use when evaluating attr (for debug, no_debug) */
+  char *errmess;                           /**< Error message, if attr couldn't be retrieved */
+  int ufun_flags;                          /**< UFUN_* flags, for how to parse/eval the attr */
+} ufun_attrib;
+
+dbref next_parent(dbref thing, dbref current, int *parent_count,
+                  int *use_ancestor);
 
 /* Only 'attr', not 'obj/attr' */
 #define UFUN_NONE 0

@@ -70,9 +70,11 @@ extern struct db_stat_info current_state;
 #define IP_LENGTH 48
 /* How many failures to keep track of. */
 #define FAIL_COUNT 100
+
+/** For tracking failed login attempts by IPs */
 typedef struct _fail_info {
-  char ip[IP_LENGTH];           /* Extra long, just for ipv6. */
-  time_t failTime;
+  char ip[IP_LENGTH];     /**< The failed IP. Extra long, just for ipv6. */
+  time_t failTime;        /**< The time of the last failed login attempt */
 } Fail_Info;
 
 /* This is a rotating buffer of the FAIL_COUNT most recent failures. */

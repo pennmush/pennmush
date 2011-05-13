@@ -30,8 +30,8 @@
 #include "mypcre.h"
 #include "strtree.h"
 
-#define BEEP_CHAR     '\a'    /**< The character used by beep() */
-#define ESC_CHAR      '\x1B'  /**< ANSI escape character */
+#define BEEP_CHAR     '\a'
+#define ESC_CHAR      '\x1B'
 
 #define ANSI_RAW_NORMAL "\x1B[0m"
 
@@ -93,11 +93,12 @@ void init_ansi_codes(void);
 #include <stdint.h>
 #endif
 
+/** ANSI color data */
 typedef struct _ansi_data {
-  uint8_t bits;
-  uint8_t offbits;
-  char    fore;
-  char    back;
+  uint8_t bits;     /**< highlight/flash/invert/underline which are explicitly on */
+  uint8_t offbits;  /**< highlight/flash/invert/underline which are explicitly off */
+  char    fore;     /**< Foreground color */
+  char    back;     /**< Background color */
 } ansi_data;
 
 #define HAS_ANSI(adata) (adata.bits || adata.offbits || adata.fore || adata.back)
@@ -130,6 +131,7 @@ void nest_ansi_data(ansi_data *old, ansi_data *cur);
  * start = 1, end = 2. (Instead of end = 1)
  */
 
+/** Holds the markup information for an ansi_string struct */
 typedef struct _new_markup_information {
   int   parentIdx;             /**< If this is nested, its parent */
   char  type;                  /**< MARKUP_foo type. */

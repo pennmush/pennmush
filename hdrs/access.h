@@ -28,7 +28,7 @@ struct access {
 #define ACS_GUEST       0x4U    /**< Connect to guests */
 #define ACS_REGISTER    0x8U    /**< Site can use the 'register' command */
 /* These flags are set in the 'can' bit, but they mark special processing */
-#define ACS_SITELOCK    0x10U   /**< Marker for where to insert @sitelock */
+#define ACS_SITELOCK    0x10U   /**< Marker for where to insert \@sitelock */
 #define ACS_SUSPECT     0x20U   /**< All players from this site get SUSPECT */
 #define ACS_DENY_SILENT 0x40U   /**< Don't log failed attempts */
 #define ACS_REGEXP      0x80U   /**< Treat the host pattern as a regexp */

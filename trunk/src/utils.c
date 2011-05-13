@@ -144,9 +144,12 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
       if (*thingname)
 	nargs = parse_uinteger(thingname);
       
+      /* Limit between 1 and 10 arguments (%0-%9) */
       if (nargs == 0)
 	nargs = 1;
-      
+      if (nargs > 10)
+	nargs = 10;
+
       safe_str(attrname, ufun->contents, &ucb);
       safe_chr('(', ufun->contents, &ucb);
       for (n = 0; n < nargs; n++) {

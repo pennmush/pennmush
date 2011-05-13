@@ -43,6 +43,7 @@ Minor Changes:
    it just shows that they are unchanged. Suggested by Minion. [MG]
  * @mail now shows the dbref of the sender for mail from non-players.
    Suggested by Minion. [MG]
+ * Fix a potential buffer overflow in prefix table code. [SW]
 
 Fixes:
  * No_Pay was implicit if executor is #1, but was _not_ implicit if 

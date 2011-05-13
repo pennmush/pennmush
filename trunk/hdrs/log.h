@@ -21,6 +21,7 @@ enum log_type {
   LT_HUH     /**< Logs of huh_command's */
 };
 
+/** A logfile stream */
 struct log_stream {
   enum log_type type;    /**< Log type */
   const char *name;      /**< String to refer to log */

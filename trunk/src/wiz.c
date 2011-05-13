@@ -64,6 +64,7 @@ extern dbref find_player_by_desc(int port);
 #endif
 #endif
 
+/** \@search data */
 struct search_spec {
   dbref owner;  /**< Limit to this owner, if specified */
   int type;     /**< Limit to this type */
@@ -80,8 +81,8 @@ struct search_spec {
   int count;  /**< Limited results: return this many */
   int end;    /**< Limited results: return until this one.*/
   boolexp lock;  /**< Boolexp to check against the objects. */
-  char cmdstring[BUFFER_LEN];
-  char listenstring[BUFFER_LEN];
+  char cmdstring[BUFFER_LEN]; /**< Find objects who respond to this $-command */
+  char listenstring[BUFFER_LEN]; /**< Find objects who respond to this ^-listen */
 };
 
 static int tport_dest_ok(dbref player, dbref victim, dbref dest);

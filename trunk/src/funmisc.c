@@ -328,10 +328,11 @@ cleanup:
   }
 }
 
+/** Helper for listq() */
 struct st_qreg_data {
-  char *buff;
-  char **bp;
-  char *wild;
+  char *buff;  /** Buffer to write matching register names to */
+  char **bp;   /** Pointer into buff to write at */
+  char *wild;  /** Wildcard pattern of qregister names to list */
   int count;
 };
 
@@ -428,11 +429,12 @@ clear_allq(NEW_PE_INFO *pe_info)
   }
 }
 
+/** Helper function for unsetq() */
 struct st_unsetq_data {
-  char *buff;
-  char **bp;
-  char *wild;
-  NEW_PE_INFO *pe_info;
+  char *buff;  /**< Unused */
+  char **bp;   /**< Unused */
+  char *wild;  /**< Wildcard pattern of register names to unset */
+  NEW_PE_INFO *pe_info;  /**< pe_info to clear registers from */
 };
 
 static void

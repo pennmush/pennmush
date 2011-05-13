@@ -340,6 +340,7 @@ do { \
   ansi_codes[(unsigned char) letter] = ESCcode; \
 } while (0)
 
+/** Set up the table of ansi codes */
 void
 init_ansi_codes(void)
 {
@@ -372,6 +373,12 @@ init_ansi_codes(void)
 
 #undef BUILD_ANSI
 
+/** Write an internal markup tag for an ansi_data.
+ * \param cur the ansi_data to write
+ * \param buff buffer to write to
+ * \param bp pointer to buff to write at
+ * \retval number of chars written
+ */
 int
 write_ansi_data(ansi_data *cur, char *buff, char **bp)
 {
@@ -383,6 +390,10 @@ write_ansi_data(ansi_data *cur, char *buff, char **bp)
   return retval;
 }
 
+/** Write a closing internal markup tag for color.
+ * \param buff buffer to write to
+ * \param bp pointer to buff to write at
+ */
 int
 write_ansi_close(char *buff, char **bp)
 {
@@ -753,7 +764,7 @@ parse_ansi_string(const char *source)
 {
   ansi_string *as = mush_malloc(sizeof(ansi_string), "ansi_string");
   int c;
-  char *s; 
+  char *s;
   char *tag, type;
   int len;
 
@@ -765,7 +776,7 @@ parse_ansi_string(const char *source)
 
   /* Zero it out. */
   memset(as, 0, sizeof(ansi_string));
- 
+
   if (!source) {
     return NULL;
   }
@@ -1139,7 +1150,7 @@ ansi_string_insert(ansi_string *dst, int loc, ansi_string *src)
  *  straight as possible.
  * \param dst ansi_string to insert into.
  * \param loc Location to  insert into, 0-indexed
- * \param len Length of string inside dst to replace
+ * \param count Length of string inside dst to replace
  * \param src ansi_string to insert
  * \retval 0 success
  * \retval 1 failure.

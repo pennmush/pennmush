@@ -1,14 +1,17 @@
-/* pueblo.h */
+/**
+ * \file pueblo.h
+ *
+ * \brief Macros for dealing with Pueblo tags in strings
+ *
+ * Ok. The original idea for this came from seeing the Tiny patch for Pueblo.
+ * A few months later I felt the urge to add some pueblo thingies to Penn,
+ * and did so, though at a quite different level. This led to the
+ * discovery of the trouble with bsd.c, which also got partly rewritten.
+ */
 
 #ifndef __PUEBLO_H
 #define __PUEBLO_H
 
-/* Ok. The original idea for this came from seeing the Tiny patch for Pueblo. 
- * A few months later I felt the urge to add some pueblo thingies to Penn, 
- * and did so, though at a quite different level. This led to the 
- * discovery of the trouble with bsd.c, which also got partly rewritten.
- * The commands @emit/html and pemit_html() were added to have Tiny compability
- */
 
 #include "conf.h"
 
@@ -24,8 +27,8 @@
 #define tag(a) safe_tag(a,pbuff,&pp)
 #define tag_cancel(a) safe_tag_cancel(a,pbuff,&pp)
 
-/* Please STAY SANE when modifying. 
- * Making this something like 'x' and 'y' is a BAD IDEA 
+/* Please STAY SANE when modifying.
+ * Making this something like 'x' and 'y' is a BAD IDEA
  */
 
 #endif

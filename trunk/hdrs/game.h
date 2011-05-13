@@ -1,17 +1,22 @@
-/* game.h */
+/**
+ * \file game.h
+ *
+ * \brief Prototypes for a whole bunch of stuff with nowhere else to go
+ */
+
 /* Command handlers */
 
 #ifndef __GAME_H
 #define __GAME_H
 
 /* @scan flags */
-#define CHECK_INVENTORY            0x010        /*<< Check player's inventory for $-commands */
-#define CHECK_NEIGHBORS            0x020        /*<< Check objects in player's location for $-commands, including player */
-#define CHECK_SELF                 0x040        /*<< Check player for $-commands */
-#define CHECK_HERE                 0x080        /*<< Check player's location for $-commands */
-#define CHECK_ZONE                 0x100        /*<< Check player's ZMT/ZMR for $-commands */
-#define CHECK_GLOBAL               0x200        /*<< Check for Master Room $-commands */
-#define CHECK_BREAK                0x400        /*<< Do no further checks after a round of $-command matching succeeds */
+#define CHECK_INVENTORY  0x010    /*<< Check player's inventory for $-commands */
+#define CHECK_NEIGHBORS  0x020    /*<< Check objects in player's location for $-commands, including player */
+#define CHECK_SELF       0x040    /*<< Check player for $-commands */
+#define CHECK_HERE       0x080    /*<< Check player's location for $-commands */
+#define CHECK_ZONE       0x100    /*<< Check player's ZMT/ZMR for $-commands */
+#define CHECK_GLOBAL     0x200    /*<< Check for Master Room $-commands */
+#define CHECK_BREAK      0x400    /*<< Do no further checks after a round of $-command matching succeeds */
 /* Does NOT include CHECK_BREAK */
 #define CHECK_ALL (CHECK_INVENTORY | CHECK_NEIGHBORS | CHECK_SELF | CHECK_HERE | CHECK_ZONE | CHECK_GLOBAL)
 
@@ -143,10 +148,10 @@ void do_wall(dbref player, const char *message, enum wall_type target,
 void do_page(dbref executor, const char *arg1, const char *arg2,
              dbref enactor, int noeval, int override, int has_eq);
 void do_think(dbref player, const char *message);
-#define PEMIT_SILENT 0x1
-#define PEMIT_LIST   0x2
-#define PEMIT_SPOOF  0x4
-#define PEMIT_PROMPT 0x8
+#define PEMIT_SILENT 0x1  /**< Don't show confirmation msg to speaker */
+#define PEMIT_LIST   0x2  /**< Recipient is a list of names */
+#define PEMIT_SPOOF  0x4  /**< Show sound as being from %#, not %! */
+#define PEMIT_PROMPT 0x8  /**< Add a telnet GOAHEAD to the end. \@prompt */
 extern void do_emit(dbref player, const char *tbuf1, int flags);
 extern void do_pemit
   (dbref player, const char *arg1, const char *arg2, int flags);

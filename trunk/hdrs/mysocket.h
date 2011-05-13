@@ -1,8 +1,17 @@
-/* Define required structures and constants if they're needed. 
-* Most of these are in Posix 1001.g, but getnameinfo isn't (Though
-* it's in at least one RFC. Anyways, all this gives us IP version
-* independance.
-*/
+/**
+ * \file mysocket.h
+ *
+ * \brief Stuff relating to sockets.
+ *
+ * \verbatim
+ * Define required structures and constants if they're needed.
+ * Most of these are in Posix 1001.g, but getnameinfo isn't (though
+ * it's in at least one RFC). Anyways, all this gives us IP version
+ * independance.
+ * \endverbatim
+ */
+
+
 
 #ifndef __MYSOCKET_H
 #define __MYSOCKET_H

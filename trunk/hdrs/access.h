@@ -1,3 +1,9 @@
+/**
+ * \file access.h
+ *
+ * \brief Stuff related to \@sitelock and who can connect to the MUSH
+ */
+
 #ifndef __ACCESS_H
 #define __ACCESS_H
 
@@ -6,13 +12,13 @@
  * It's organized into a linked list of access rules.
  */
 struct access {
-  char *host;        /**< The host pattern */
-  char *comment;     /**< A comment about the rule */
-  dbref who;                    /**< Who created this rule if sitelock used */
-  uint32_t can;                      /**< Bitflags of what the host can do */
-  uint32_t cant;                     /**< Bitflags of what the host can't do */
-  pcre *re;                     /**< Compiled regexp */
-  struct access *next;          /**< Pointer to next rule in the list */
+  char *host;          /**< The host pattern */
+  char *comment;       /**< A comment about the rule */
+  dbref who;           /**< Who created this rule if sitelock used */
+  uint32_t can;        /**< Bitflags of what the host can do */
+  uint32_t cant;       /**< Bitflags of what the host can't do */
+  pcre *re;            /**< Compiled regexp */
+  struct access *next; /**< Pointer to next rule in the list */
 };
 
 

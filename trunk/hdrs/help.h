@@ -1,4 +1,8 @@
-/* help.h */
+/**
+ * \file help.h
+ *
+ * \brief Header file for the PennMUSH help system
+ */
 
 #ifndef __HELP_H
 #define __HELP_H

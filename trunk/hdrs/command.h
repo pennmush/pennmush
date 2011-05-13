@@ -38,7 +38,7 @@ bool SW_BY_NAME(switch_mask, const char *);
 
 #define CMD_T_NOFIXED    0x00200000  /**< Command will fail if object is fixed */
 
-#define CMD_T_LISTED     0x00080000  /**< INTERNAL : Command is listed in \@list commands */
+#define CMD_T_LISTED     0x00080000  /**< INTERNAL : Command is listed in \@list commands. NO LONGER USED */
 
 #define CMD_T_INTERNAL   0x00040000  /**< INTERNAL : Command is an internal command, and shouldn't be matched or aliased */
 

@@ -3193,7 +3193,7 @@ See also: powers(), @flag
 See also: @inprefix, AUDIBLE, @listen
 & @ps
   @ps[/<switch>] [<player>]
-  @ps <pid>
+  @ps[/debug] <pid>
   
   @ps is a useful command for MUSHers.  It lists all commands currently on
   your 'to be executed' queue, thus allowing you to identify infinite (or
@@ -3211,7 +3211,10 @@ See also: @inprefix, AUDIBLE, @listen
   @ps/summary just displays the queue totals for the whole queue.
   @ps/quick displays the queue totals for just your queue.
   
-  With a <pid> argument, @ps shows information on a single queue entry.
+  With a <pid> argument, @ps shows information on a single queue
+  entry.  The /debug switch will also display the queue entry's
+  environment: Arguments, q registers, executor, enactor and caller
+  dbrefs.
 
   Each line includes the process id of the queue entry, the object
   and attribute being used as a semaphore (If any), the number of

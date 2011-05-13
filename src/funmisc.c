@@ -26,9 +26,9 @@
 #include "command.h"
 #include "game.h"
 #include "attrib.h"
-#include "confmagic.h"
 #include "ansi.h"
 #include "strtree.h"
+#include "confmagic.h"
 
 #ifdef WIN32
 #include <windows.h>

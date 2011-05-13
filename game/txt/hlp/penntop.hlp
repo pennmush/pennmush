@@ -183,12 +183,12 @@ See also: PARENTS, ORPHAN
   code will normally be parsed twice, so special characters should be
   escaped where needed.
 
-  If the #lambda just calls another function with a single argument,
-  the form
+  If the #lambda just calls another function, the form
 
-  #apply/<function name>
+  #apply[<number of arguments>]/<function name>
 
-  can be used instead.
+  can be used instead. If the argument count is left out, it defaults
+  to 1.
 
   These anonymous attributes should be used for short and simple
   pieces of code. Anything long or complicated should go in an actual
@@ -204,11 +204,9 @@ See also: PARENTS, ORPHAN
   > say map(#lambda/name(\%0), #3 #12 #23)
   You say, "Joe Robert Sally"
   
-  or
+  The following version uses #apply instead:
 
   > say map(#apply/name, #3 #12 #23)
-
-  with the same results.
 
   Because the code is parsed twice, you can actually build parts of it
   in place, which is very convenient. Consider this implementation of
@@ -225,7 +223,7 @@ See also: PARENTS, ORPHAN
   called by filter(). However, this can lead to problems with
   evaluating un-trusted code. Use decompose() where neccessary.
 
-  See 'HELP ANONYMOUS3' for another example.
+  See 'HELP ANONYMOUS3' for more examples.
 & ANONYMOUS3
 & LAMBDA3
 & #LAMBDA3
@@ -242,6 +240,12 @@ See also: PARENTS, ORPHAN
   special characters. However, it also makes it harder to build the
   code string on the fly. Use what's most appropriate.
      
+  Finally, a multiple argument example of #apply, which requires less
+  escaping than #lambda for cases where you're just calling another
+  function:
+
+  > think mix(#apply2/ansi, r g b, foo bar baz)
+
   See 'HELP ANONYMOUS4' for a list of functions that support anonymous
   attributes.
 & ANONYMOUS4

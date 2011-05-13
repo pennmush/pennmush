@@ -129,14 +129,34 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
   }
 
   if (thingname && (flags & UFUN_LAMBDA) && (strcasecmp(thingname, "#lambda") == 0 ||
-					     strcasecmp(thingname, "#apply") == 0)) {
+					     strncasecmp(thingname, "#apply", 6) == 0)) {
     /* It's a lambda. */
 
     ufun->thing = executor;
     if (strcasecmp(thingname, "#lambda") == 0) 
       mush_strncpy(ufun->contents, attrname, BUFFER_LEN);
-    else /* #apply */
-      snprintf(ufun->contents, BUFFER_LEN, "%s(%%0)", attrname);
+    else { /* #apply */
+      char *ucb = ufun->contents;
+      unsigned nargs = 1, n;
+
+      thingname += 6;
+
+      if (*thingname)
+	nargs = parse_uinteger(thingname);
+      
+      if (nargs == 0)
+	nargs = 1;
+      
+      safe_str(attrname, ufun->contents, &ucb);
+      safe_chr('(', ufun->contents, &ucb);
+      for (n = 0; n < nargs; n++) {
+	if (n > 0)
+	  safe_chr(',', ufun->contents, &ucb);
+	safe_format(ufun->contents, &ucb, "%%%u", n);
+      }
+      safe_chr(')', ufun->contents, &ucb);
+      *ucb = '\0';
+    }
 
     ufun->attrname[0] = '\0';
     return 1;

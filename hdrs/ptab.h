@@ -1,11 +1,15 @@
-/* Prefix-matched-key lookups. */
+/**
+ * \file ptab.h
+ *
+ * \brief Prefix-matched-key lookups
+ */
 
 #ifndef PTAB_H
 #define PTAB_H
 
 struct ptab_entry;
 /** Prefix table.
- * This structure represents a prefix table. In a prefix table, 
+ * This structure represents a prefix table. In a prefix table,
  * data is looked up by the best matching prefix of the given key.
  */
 typedef struct ptab {

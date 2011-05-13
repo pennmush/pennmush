@@ -1,4 +1,8 @@
-/* htab.h - Structures and declarations needed for table hashing */
+/**
+ * \file htab.h
+ *
+ * \brief Structures and declarations needed for table hashing
+ */
 
 #ifndef __HTAB_H
 #define __HTAB_H

@@ -1,3 +1,11 @@
+/**
+ * \file strtree.h
+ *
+ * \brief String trees.
+ */
+
+
+
 #ifndef _STRTREE_H_
 #define _STRTREE_H_
 

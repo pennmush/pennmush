@@ -1,5 +1,8 @@
-/* parse.h - parser declarations and macros
-
+/**
+ * \file parse.h
+ *
+ * \brief parser declarations and macros
+ *
  * Written by T. Alexander Popiel, 13 May 1995
  * Last modified by T. Alexander Popiel, 26 May 1995
  *

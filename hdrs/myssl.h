@@ -1,4 +1,8 @@
-/* Code to support SSL connections */
+/**
+ * \file myssl.h
+ *
+ * \brief Code to support SSL connections
+ */
 
 #ifndef _MYSSL_H
 #define _MYSSL_H

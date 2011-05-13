@@ -259,7 +259,7 @@ COMLIST commands[] = {
    cmd_power, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
   {"@PROMPT", "SILENT NOISY NOEVAL SPOOF", cmd_prompt,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
-  {"@PS", "ALL SUMMARY COUNT QUICK", cmd_ps, CMD_T_ANY, 0, 0},
+  {"@PS", "ALL SUMMARY COUNT QUICK DEBUG", cmd_ps, CMD_T_ANY, 0, 0},
   {"@PURGE", NULL, cmd_purge, CMD_T_ANY, 0, 0},
   {"@QUOTA", "ALL SET", cmd_quota, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@READCACHE", NULL, cmd_readcache, CMD_T_ANY, "WIZARD", 0},

@@ -2235,10 +2235,10 @@ FUNCTION(fun_map)
 
   /* Build our %0 args */
   pe_regs = pe_regs_create(PE_REGS_ARG, "fun_map");
+  pe_regs_setenv_nocopy(pe_regs, 1, place);
   for (i = 0; i < nptrs; i++) {
     pe_regs_setenv_nocopy(pe_regs, 0, ptrs[i]);
     snprintf(place, 16, "%d", i + 1);
-    pe_regs_setenv_nocopy(pe_regs, 1, place);
 
     funccount = pe_info->fun_invocations;
 

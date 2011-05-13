@@ -43,6 +43,7 @@
 #include "dbdefs.h"
 #include "log.h"
 #include "intmap.h"
+#include "ptab.h"
 #include "confmagic.h"
 
 
@@ -69,6 +70,7 @@ static void show_queue(dbref player, dbref victim, int q_type,
                        int q_quiet, int q_all, MQUE *q_ptr,
                        int *tot, int *self, int *del);
 static void show_queue_single(dbref player, MQUE *q, int q_type);
+static void show_queue_env(dbref player, MQUE *q);
 static void do_raw_restart(dbref victim);
 static int waitable_attr(dbref thing, const char *atr);
 static void shutdown_a_queue(MQUE **head, MQUE **tail);
@@ -1807,6 +1809,56 @@ show_queue_single(dbref player, MQUE *q, int q_type)
   }
 }
 
+/* @ps/debug dump */
+static void
+show_queue_env(dbref player, MQUE *q)
+{
+  PE_REGS *regs;
+  int i = 0;
+  PTAB qregs;
+  char qreg_name[PE_KEY_LEN];
+  char *qreg_val;
+
+  notify_format(player, "Envronment:\n %%#: #%d\t%%!: #%d\t%%@: #%d", q->enactor, q->executor, q->caller);
+  
+  if (pi_regs_get_envc(q->pe_info)) {
+    notify(player, "Arguments: ");
+    for (i = 0; i < 10; i += 1) {
+      const char *arg = pi_regs_get_env(q->pe_info, i);
+      if (arg) 
+	notify_format(player, " %%%d : %s", i, arg);
+    }
+  }
+
+  ptab_init(&qregs);
+  ptab_start_inserts(&qregs);
+  for (regs = q->pe_info->regvals; regs; regs = regs->prev) {
+    PE_REG_VAL *val;
+    for (val = regs->vals; val; val = val->next) {
+      if ((val->type & PE_REGS_STR) && (val->type & PE_REGS_Q) && *(val->val.sval))
+	ptab_insert(&qregs, val->name, (char *)val->val.sval);
+    }
+    if (regs->flags & PE_REGS_QSTOP)
+      break;
+  }
+  ptab_end_inserts(&qregs);
+
+  if (qregs.len) {
+    notify(player, "Registers:");
+    for (qreg_val = ptab_firstentry_new(&qregs, qreg_name);
+	 qreg_val;
+	 qreg_val = ptab_nextentry_new(&qregs, qreg_name)) {    
+      int len = strlen(qreg_name);
+      if (len > 1) {
+	int spacer = 19 - len;
+	notify_format(player, " %%q<%s>%-*c: %s", qreg_name, spacer, ' ', qreg_val);
+      } else
+	notify_format(player, " %%q%-20s : %s", qreg_name, qreg_val);
+    }
+  }
+  ptab_free(&qregs);
+}
+
 /** Display a player's queued commands.
  * \verbatim
  * This is the top-level function for @ps.
@@ -1882,10 +1934,11 @@ do_queue(dbref player, const char *what, enum queue_type flag)
  * This is the top-level function for @ps <pid>.
  * \endverbatim
  * \param player the enactor.
- * \param pidstr the pid for the queue entry to show
+ * \param pidstr the pid for the queue entry to show.
+ * \param debug true to display expanded queue environment information.
  */
 void
-do_queue_single(dbref player, char *pidstr)
+do_queue_single(dbref player, char *pidstr, bool debug)
 {
   uint32_t pid;
   MQUE *q;
@@ -1913,7 +1966,9 @@ do_queue_single(dbref player, char *pidstr)
     show_queue_single(player, q, 1);
   else
     show_queue_single(player, q, 0);
-
+  
+  if (debug)
+    show_queue_env(player, q);
 }
 
 /** Halt an object, internal use.

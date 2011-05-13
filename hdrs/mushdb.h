@@ -33,7 +33,9 @@
 #define LookQueue(x)     (Hasprivs(x) || has_power_by_name(x,"SEE_QUEUE",NOTYPE))
 #define HaltAny(x)       (Wizard(x) || has_power_by_name(x,"HALT",NOTYPE))
 #define NoPay(x)         (God(x) || has_power_by_name(x,"NO_PAY",NOTYPE) || \
-                                ((!Mistrust(x) && has_power_by_name(Owner(x),"NO_PAY",NOTYPE))))
+                                (!Mistrust(x) && \
+                                  ((has_power_by_name(Owner(x),"NO_PAY",NOTYPE)) || \
+                                   God(Owner(x)))))
 #define Moneybags(x)    (NoPay(x) || Hasprivs(x))
 #define NoQuota(x)       (Hasprivs(x) || Hasprivs(Owner(x)) || \
                                 has_power_by_name(x,"NO_QUOTA",NOTYPE) || \

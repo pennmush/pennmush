@@ -603,9 +603,6 @@ const char *accented_name(dbref thing);
 
 /* From utils.c */
 void parse_attrib(dbref player, char *str, dbref *thing, ATTR **attrib);
-void parse_anon_attrib(dbref player, char *str, dbref *thing,
-                       ATTR **attrib);
-void free_anon_attrib(ATTR *attrib);
 
 /** Information about an attribute to ufun.
  * Prepared via fetch_ufun_attrib, used in call_ufun

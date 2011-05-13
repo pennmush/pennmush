@@ -173,6 +173,7 @@ See also: PARENTS, ORPHAN
 & ANONYMOUS ATTRIBUTES
 & LAMBDA
 & #LAMBDA
+& #APPLY
   In many cases where a function expects a object/attribute pair that
   refers to an attribute to evaluate, you can use the form
 
@@ -181,6 +182,13 @@ See also: PARENTS, ORPHAN
   instead, and the code will be treated as an attribute's body.  The
   code will normally be parsed twice, so special characters should be
   escaped where needed.
+
+  If the #lambda just calls another function with a single argument,
+  the form
+
+  #apply/<function name>
+
+  can be used instead.
 
   These anonymous attributes should be used for short and simple
   pieces of code. Anything long or complicated should go in an actual
@@ -195,6 +203,12 @@ See also: PARENTS, ORPHAN
 
   > say map(#lambda/name(\%0), #3 #12 #23)
   You say, "Joe Robert Sally"
+  
+  or
+
+  > say map(#apply/name, #3 #12 #23)
+
+  with the same results.
 
   Because the code is parsed twice, you can actually build parts of it
   in place, which is very convenient. Consider this implementation of

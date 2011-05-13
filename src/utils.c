@@ -84,57 +84,6 @@ parse_attrib(dbref player, char *str, dbref *thing, ATTR **attrib)
   *attrib = (ATTR *) atr_get(*thing, upcasestr(name));
 }
 
-/** Parse an attribute or anonymous attribute into dbref and pointer.
- * \verbatim
- * This function takes a string which is of the format #lambda/code,
- * <obj>/<attr> or <attr>,  and returns the dbref of the object,
- * and a pointer to the attribute.
- * \endverbatim
- * \param player the executor, for permissions checks.
- * \param str string to parse.
- * \param thing pointer to address to return dbref parsed, or NOTHING
- * if none could be parsed.
- * \param attrib pointer to address to return ATTR * of attrib parsed,
- * or NULL if none could be parsed.
- */
-void
-parse_anon_attrib(dbref player, char *str, dbref *thing, ATTR **attrib)
-{
-
-  if (string_prefix(str, "#lambda/")) {
-    unsigned char *t;
-    str += 8;
-    if (!*str) {
-      *attrib = NULL;
-      *thing = NOTHING;
-    } else {
-      *attrib = mush_malloc(sizeof(ATTR), "anon_attr");
-      AL_CREATOR(*attrib) = player;
-      AL_NAME(*attrib) = mush_strdup("#lambda", "anon_attr.lambda");
-      t = compress(str);
-      (*attrib)->data = chunk_create(t, u_strlen(t), 0);
-      free(t);
-      AL_FLAGS(*attrib) = AF_ANON;
-      AL_NEXT(*attrib) = NULL;
-      *thing = player;
-    }
-    return;
-  }
-  parse_attrib(player, str, thing, attrib);
-}
-
-/** Free the memory allocated for an anonymous attribute.
- * \param attrib pointer to attribute.
- */
-void
-free_anon_attrib(ATTR *attrib)
-{
-  if (attrib && (AL_FLAGS(attrib) & AF_ANON)) {
-    mush_free((void *) AL_NAME(attrib), "anon_attr.lambda");
-    chunk_delete(attrib->data);
-    mush_free(attrib, "anon_attr");
-  }
-}
 
 /** Populate a ufun_attrib struct from an obj/attr pair.
  * \verbatim Given an attribute [<object>/]<name> pair (which may include #lambda),
@@ -179,11 +128,16 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
     attrname = astring;
   }
 
-  if (thingname && (flags & UFUN_LAMBDA) && !strcasecmp(thingname, "#lambda")) {
+  if (thingname && (flags & UFUN_LAMBDA) && (strcasecmp(thingname, "#lambda") == 0 ||
+					     strcasecmp(thingname, "#apply") == 0)) {
     /* It's a lambda. */
-    thingname = NULL;
+
     ufun->thing = executor;
-    mush_strncpy(ufun->contents, attrname, BUFFER_LEN);
+    if (strcasecmp(thingname, "#lambda") == 0) 
+      mush_strncpy(ufun->contents, attrname, BUFFER_LEN);
+    else /* #apply */
+      snprintf(ufun->contents, BUFFER_LEN, "%s(%%0)", attrname);
+
     ufun->attrname[0] = '\0';
     return 1;
   }

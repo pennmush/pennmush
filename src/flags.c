@@ -729,7 +729,7 @@ flag_write_all(PENNFILE *out, const char *ns)
   int i, count;
   FLAG *f;
   FLAGSPACE *n;
-  char flagname[BUFFER_LEN];
+  const char *flagname;
 
   if (!(n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces))) {
     do_rawlog(LT_ERR, "FLAG WRITE: Unable to locate flagspace %s.", ns);
@@ -751,20 +751,20 @@ flag_write_all(PENNFILE *out, const char *ns)
    * bit position
    */
   count = 0;
-  f = ptab_firstentry_new(n->tab, flagname);
+  f = ptab_firstentry_new(n->tab, &flagname);
   while (f) {
     if (strcmp(n->flags[f->bitpos]->name, flagname))
       count++;
-    f = ptab_nextentry_new(n->tab, flagname);
+    f = ptab_nextentry_new(n->tab, &flagname);
   }
   db_write_labeled_int(out, "flagaliascount", count);
-  f = ptab_firstentry_new(n->tab, flagname);
+  f = ptab_firstentry_new(n->tab, &flagname);
   while (f) {
     if (strcmp(n->flags[f->bitpos]->name, flagname)) {
       /* This is an alias! */
       flag_alias_write(out, f, flagname);
     }
-    f = ptab_nextentry_new(n->tab, flagname);
+    f = ptab_nextentry_new(n->tab, &flagname);
   }
 }
 
@@ -2499,7 +2499,7 @@ void
 do_flag_delete(const char *ns, dbref player, const char *name)
 {
   FLAG *f, *tmpf;
-  char flagname[BUFFER_LEN];
+  const char *flagname;
   dbref i;
   int got_one;
   FLAGSPACE *n;
@@ -2527,7 +2527,7 @@ do_flag_delete(const char *ns, dbref player, const char *name)
    */
   do {
     got_one = 0;
-    tmpf = ptab_firstentry_new(n->tab, flagname);
+    tmpf = ptab_firstentry_new(n->tab, &flagname);
     while (tmpf) {
       if (!strcmp(tmpf->name, f->name) &&
           strcmp(n->flags[f->bitpos]->name, flagname)) {
@@ -2535,7 +2535,7 @@ do_flag_delete(const char *ns, dbref player, const char *name)
         got_one = 1;
         break;
       }
-      tmpf = ptab_nextentry_new(n->tab, flagname);
+      tmpf = ptab_nextentry_new(n->tab, &flagname);
     }
   } while (got_one);
   /* Reset the flag on all objects */
@@ -2591,10 +2591,11 @@ list_aliases(FLAGSPACE *n, FLAG *given)
   FLAG *f;
   static char buf[BUFFER_LEN];
   char *bp;
-  char flagname[BUFFER_LEN];
+  const char *flagname;
   int first = 1;
+
   bp = buf;
-  f = ptab_firstentry_new(n->tab, flagname);
+  f = ptab_firstentry_new(n->tab, &flagname);
   while (f) {
     if (!strcmp(given->name, f->name) &&
         strcmp(n->flags[f->bitpos]->name, flagname)) {
@@ -2604,7 +2605,7 @@ list_aliases(FLAGSPACE *n, FLAG *given)
       first = 0;
       safe_str(flagname, buf, &bp);
     }
-    f = ptab_nextentry_new(n->tab, flagname);
+    f = ptab_nextentry_new(n->tab, &flagname);
   }
   *bp = '\0';
   return buf;

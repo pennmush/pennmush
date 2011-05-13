@@ -32,8 +32,8 @@ void ptab_insert(PTAB *, const char *, void *);
 void ptab_insert_one(PTAB *, const char *, void *);
 void ptab_stats_header(dbref);
 void ptab_stats(dbref, PTAB *, const char *);
-void *ptab_firstentry_new(PTAB *, char *key);
-void *ptab_nextentry_new(PTAB *, char *key);
+void *ptab_firstentry_new(PTAB *, const char **key);
+void *ptab_nextentry_new(PTAB *, const char **key);
 #define ptab_firstentry(x) ptab_firstentry_new(x,NULL)
 #define ptab_nextentry(x) ptab_nextentry_new(x,NULL)
 

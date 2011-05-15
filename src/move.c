@@ -405,21 +405,18 @@ do_move(dbref player, const char *direction, enum move_type type)
     notify(player, T("There's no place like home..."));
     safe_tel(player, HOME, 0, player, "home");
   } else {
+    int matchtype;
     /* find the exit */
-    if (type == MOVE_GLOBAL)
-      exit_m =
-        match_result(player, direction, TYPE_EXIT,
-                     MAT_ENGLISH | MAT_EXIT | MAT_GLOBAL | MAT_CHECK_KEYS |
-                     MAT_TYPE);
-    else if (type == MOVE_ZONE)
-      exit_m =
-        match_result(player, direction, TYPE_EXIT,
-                     MAT_ENGLISH | MAT_EXIT | MAT_REMOTES | MAT_CHECK_KEYS |
-                     MAT_TYPE);
-    else
-      exit_m =
-        match_result(player, direction, TYPE_EXIT,
-                     MAT_ENGLISH | MAT_EXIT | MAT_CHECK_KEYS | MAT_TYPE);
+    if (type == MOVE_TELEPORT)
+      matchtype = MAT_ABSOLUTE | MAT_TYPE;
+    else {
+      matchtype = MAT_ENGLISH | MAT_EXIT | MAT_CHECK_KEYS | MAT_TYPE;
+      if (type == MOVE_GLOBAL)
+        matchtype |= MAT_GLOBAL;
+      else if (type == MOVE_ZONE)
+        matchtype |= MAT_REMOTES;
+    }
+    exit_m = match_result(player, direction, TYPE_EXIT, matchtype);
     switch (exit_m) {
     case NOTHING:
       /* try to force the object */
@@ -878,7 +875,7 @@ do_enter(dbref player, const char *what)
 {
   dbref thing;
   dbref loc;
-  long match_flags = MAT_NEIGHBOR | MAT_ENGLISH;
+  long match_flags = MAT_NEIGHBOR | MAT_ENGLISH | MAT_EXIT;
 
   if (Hasprivs(player))
     match_flags |= MAT_ABSOLUTE;
@@ -887,9 +884,11 @@ do_enter(dbref player, const char *what)
     return;
   switch (Typeof(thing)) {
   case TYPE_ROOM:
-  case TYPE_EXIT:
     notify(player, T("Permission denied."));
-    break;
+    return;
+  case TYPE_EXIT:
+    do_move(player, what, MOVE_NORMAL);
+    return;
   default:
     /* Remember the current room */
     loc = Location(player);
@@ -1101,7 +1100,7 @@ do_dismiss(dbref player, const char *arg)
       notify(player, T("I don't recognize who you want to dismiss."));
       return;
     }
-    /* Are we following them? */
+    /* Are we leading them? */
     if (!is_following(follower, player)) {
       notify_format(player, T("%s isn't following you."), Name(follower));
       return;

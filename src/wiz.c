@@ -541,7 +541,7 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
 
       /* Now check the Z_TEL status of the victim's room.
        * Just like NO_TEL above, except that if the room (or its
-       * Zone Master Room, if any, is Z_TEL,
+       * Zone Master Room, if any) is Z_TEL,
        * the destination must also be a room in the same zone
        */
       if (GoodObject(Zone(absroom)) && (ZTel(absroom) || ZTel(Zone(absroom)))
@@ -580,17 +580,26 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
       return;
     } else {
       /* attempted teleport to an exit */
-      if (tport_control_ok(player, victim, Location(victim))
-          && (Tel_Anything(player) ||
-              (Tel_Anywhere(player) && (player == victim)) ||
-              (!Fixed(Owner(victim)) && !Fixed(player)))) {
-        do_move(victim, to, MOVE_NORMAL);
-      } else {
+      if (!tport_control_ok(player, victim, Location(victim))) {
         notify(player, T("Permission denied."));
         if (victim != player)
           notify_format(victim,
                         T("%s tries to impose his will on you and fails."),
                         Name(player));
+        return;
+      }
+      if (Fixed(Owner(victim)) || Fixed(player)) {
+        notify(player, T("Permission denied."));
+        return;
+      }
+      if (!Tel_Anywhere(player) && !controls(player, destination) &&
+          !nearby(player, destination) && !nearby(victim, destination)) {
+        notify(player, T("Permission denied."));
+        return;
+      } else {
+        char absdest[SBUF_LEN];
+        strcpy(absdest, tprintf("#%d", destination));
+        do_move(victim, absdest, MOVE_TELEPORT);
       }
     }
   }

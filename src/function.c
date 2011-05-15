@@ -140,6 +140,7 @@ FUNALIAS faliases[] = {
   {"UFUN", "U"},
   {"IDLE", "IDLESECS"},
   {"HOST", "HOSTNAME"},
+  {"FLIP", "REVERSE"},
   {NULL, NULL}
 };
 
@@ -496,7 +497,6 @@ FUNTAB flist[] = {
   {"REST", fun_rest, 1, 2, FN_REG},
   {"RESTARTS", fun_restarts, 0, 0, FN_REG},
   {"RESTARTTIME", fun_restarttime, 0, 0, FN_REG},
-  {"REVERSE", fun_flip, 1, -1, FN_REG},
   {"REVWORDS", fun_revwords, 1, 3, FN_REG},
   {"RIGHT", fun_right, 2, 2, FN_REG},
   {"RJUST", fun_rjust, 2, 3, FN_REG},

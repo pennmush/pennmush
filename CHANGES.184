@@ -60,6 +60,7 @@ Fixes:
    both SSL and normal connections. Reported by Padraic. [SW]
  * @chatformat sometimes received the player's name without accents by
    mistake. Reported by Sketch. [MG]
+ * Bug in @wipe fixed by Padraic.
 
 Functions:
  * Restrictions for the beep() function can now be modified with @function.

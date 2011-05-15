@@ -1252,6 +1252,12 @@ do_wipe(dbref player, char *name)
     notify(player, T("Permission denied."));
     return;
   }
+
+  if (God(thing) && !God(player)) {
+    notify(player, T("Permission denied."));
+    return;
+  }
+
   /* protect SAFE objects unless doing a non-wildcard pattern */
   if (Safe(thing) && !(pattern && *pattern && !wildcard(pattern))) {
     notify(player, T("That object is protected."));

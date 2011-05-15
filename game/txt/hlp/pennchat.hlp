@@ -621,6 +621,6 @@ See also: @channel/mogrifier, @chatformat
   cbuffer()     cbufferadd()  cdesc()       cemit()       cflags()
   channels()    clflags()     clock()       cmogrifier()  cmsgs()
   cowner()      crecall()     cstatus()     ctitle()      cusers()
-  cwho()
+  cwho()        nscemit()
 
 See also: CHAT, @channel, @cemit, @clock

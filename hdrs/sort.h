@@ -1,3 +1,9 @@
+/**
+ * \file sort.h
+ *
+ * \brief Routines for sorting lists in Penn
+ */
+
 #ifndef __PENNSORT_H
 #define __PENNSORT_H
 #include "copyrite.h"

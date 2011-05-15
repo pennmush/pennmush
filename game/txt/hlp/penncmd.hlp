@@ -3802,15 +3802,15 @@ See also: switch wildcards, switch(), @break, stext(), slev()
     thing one
     thing after
 & @teleport
-  @teleport[/silent][/inside] [<object>=]<room>
+  @teleport[/silent][/inside] [<object>=]<destination>
 
-  Teleports <object> to <room>. <object> can be a player, thing or exit; if 
-  you do not supply an object, it is assumed to be yourself. The destination
-  must be either JUMP_OK or controlled by you, and you must either control 
-  <object> or <object>'s current location. Also, the destination, if a room,
-  cannot be teleport-locked against <object>. Mortals cannot teleport HEAVY
-  objects. If the target room has a drop-to, <object> may go to the drop-to
-  room instead.
+  Teleports <object> to <destination>. <object> can be a player, thing or
+  exit; if you do not supply an object, it is assumed to be yourself. The
+  destination must be either JUMP_OK or controlled by you, and you must
+  either control <object> or <object>'s current location. Also, the
+  destination, if a room, cannot be teleport-locked against <object>. Mortals
+  cannot teleport HEAVY objects. If the destination is a room with a drop-to,
+  <object> may go to the drop-to room instead.
   
   Admin and those with the tport_anything power can teleport an object even
   if they don't control it. Those with tport_anywhere can teleport objects 
@@ -3823,6 +3823,10 @@ See also: switch wildcards, switch(), @break, stext(), slev()
   
   Continued in "help @teleport2".
 & @teleport2
+  Teleporting to an exit works the same as using "goto". If you don't control
+  the exit and don't have the tport_anywhere power, either you or <object>
+  must be nearby the exit.
+
   Teleportation from a room can be stopped by setting the NO_TEL flag.
   Royalty and Wizards can _always_ teleport to any location, regardless of 
   NO_TEL or teleport locks.
@@ -3836,7 +3840,7 @@ See also: switch wildcards, switch(), @break, stext(), slev()
   As a special case, using "home" as the <room> has the same effect as the 
   home command, and does not act like a normal teleport.
 
-See also: JUMP_OK, NO_TEL, @oxtport, @tport, @otport, @atport, @lock
+See also: JUMP_OK, NO_TEL, Z_TEL, @tport, @lock
 & @trigger
   @trigger <object>/<attribute> [=<value 0>,<val. 1>,...,<val 9>]
 

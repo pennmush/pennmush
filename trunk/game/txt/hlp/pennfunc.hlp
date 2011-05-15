@@ -65,9 +65,9 @@ See also: MUSHCODE
   get()          grep()         grepi()        hasattr()      hasattrp()
   hasattrval()   lattr()        nattr()        obj()          pfun()
   poss()         reglattr()     regrep()       regrepi()      regxattr()
-  subj()         udefault()     ufun()         uldefault()    ulocal()       
-  v()            wildgrep()     wildgrepi()    xattr()        xget()         
-  zfun()         
+  subj()         udefault()     ufun()         ulambda()      uldefault()    
+  ulocal()       v()            wildgrep()     wildgrepi()    xattr()        
+  xget()         zfun()         
 
 See also: ATTRIBUTES, NON-STANDARD ATTRIBUTES
 & Bitwise functions
@@ -100,14 +100,17 @@ See also: BOOLEAN VALUES, @config
   Communication functions are side-effect functions that send a message
   to an object or objects.
 
-  cemit()       emit()        lemit()       nsemit()      nslemit()
-  nsoemit()     nspemit()     nsprompt()    nsremit()     nszemit()
-  oemit()       pemit()       prompt()      remit()       zemit()
+  cemit()       emit()        lemit()       message()     nsemit()      
+  nslemit()     nsoemit()     nspemit()     nsprompt()    nsremit()     
+  nszemit()     oemit()       pemit()       prompt()      remit()       
+  zemit()
+  
+See also: Channel functions, Mail functions
 & Connection functions
   Connection functions return information about the connections open 
   on a game, or about specific connections.
 
-  cmds()        conn()        doing()       height()      hostname()
+  cmds()        conn()        doing()       height()      host()
   hidden()      idle()        ipaddr()      lports()      lwho()
   lwhoid()      mwho()        mwhoid()      nmwho()       nwho()
   player()      ports()       pueblo()      recv()        sent()
@@ -124,20 +127,22 @@ See also: BOOLEAN VALUES, @config
   num()         owner()       parent()      pmatch()      rloc()
   rnum()        room()        where()       zone()
 
-See also: DBREF
+See also: DBREF, Information functions
 & Information functions
   Information functions return values related to objects or the game.
 
-  alias()        andflags()     andlflags()    andlpowers()   config()
-  controls()     ctime()        elock()        findable()     flags()
-  fullalias()    fullname()     getpids()      hasattr()      hasattrp       
-  hasflag()      haspower()     hastype()      iname()        lflags()       
-  lock()         lpids()        lstats()       money()        mtime()        
-  mudname()      name()         nattr()        nearby()       objid()        
-  objmem()       orflags()      orlflags()     orlpowers()    pidinfo()
-  playermem()    poll()         powers()       quota()        restarts()     
-  type()         version()      visible()
+  accname()      alias()        andflags()     andlflags()    andlpowers()   
+  config()       controls()     csecs()        ctime()        elock()        
+  findable()     flags()        fullalias()    fullname()     getpids()      
+  hasattr()      hasattrp()     hasflag()      haspower()     hastype()      
+  iname()        lflags()       lock()         lockflags()    lockowner()    
+  locks()        lpids()        lstats()       money()        msecs()      
+  mtime()        mudname()      mudulr()       name()         nattr()        
+  nearby()       objid()        objmem()       orflags()      orlflags()     
+  orlpowers()    pidinfo()      playermem()    poll()         powers()       
+  quota()        restarts()     type()         version()      visible()
 
+See also: Dbref functions
 & List functions
   List functions take at least one list of elements and return
   transformed lists or one or more members of those lists. Most of
@@ -148,12 +153,12 @@ See also: DBREF
   element()     elements()    extract()     filter()      filterbool()
   first()       fold()        grab()        graball()     index()
   insert()      itemize()     items()       iter()        last()
-  ldelete()     map()         match()       matchall()    member()
-  mix()         munge()       namegrab()    namegraball() remove()
-  replace()     rest()        revwords()    setdiff()     setinter()
-  setunion()    shuffle()     sort()        sortby()      sortkey()
-  splice()      step()        table()       unique()      wordpos()
-  words()
+  ldelete()     lockfilter()  map()         match()       matchall()    
+  member()      mix()         munge()       namegrab()    namegraball() 
+  randword()    remove()      replace()     rest()        revwords()    
+  setdiff()     setinter()    setunion()    shuffle()     sort()        
+  sortby()      sortkey()     splice()      step()        table()       
+  unique()      wordpos()     words()
 
 See also: LISTS
 & Math functions
@@ -173,20 +178,24 @@ See also: LISTS
   dec()         div()         floordiv()    inc()         mod()
   remainder()
 
-See also: VECTOR FUNCTIONS
+See also: Vector Functions
 & Vector functions
   These functions operate on n-dimensional vectors. A vector
   is a delimiter-separated list of numbers (space-separated, by default):
+  
   vadd()        vcross()      vdim()        vdot()        vmag()
   vmax()        vmin()        vmul()        vsub()        vunit()
+
+See also: Math functions
 & Regular expression functions
   These functions take a regular expression (regexp, or re) and match
   it against assorted things.
 
-  regedit()     regeditall()   regeditalli()  regediti()    reglattr()
-  reglattrp()   regmatch()     regmatchi()    regrab()      regraball()    
-  regraballi()  regrabi()      regrep()       regrepi()     reswitch()     
-  reswitchall() reswitchalli() reswitchi()    regxattr()    regxattrp()
+  regedit()     regeditall()   regeditalli()  regediti()     reglattr()
+  reglattrp()   regmatch()     regmatchi()    regnattr()     regnattrp()
+  regrab()      regraball()    regraballi()   regrabi()      regrep()       
+  regrepi()     reswitch()     reswitchall()  reswitchalli() reswitchi()    
+  regxattr()    regxattrp()
 
 See also: string functions, regexp
 & SQL functions
@@ -203,18 +212,20 @@ See also: string functions, regexp
   accent()         after()          align()          alphamax()
   alphamin()       art()            before()         brackets()
   capstr()         case()           caseall()        cat()
-  center()         chr()            comp()           decode64()
-  decompose()      decrypt()        delete()         digest()
-  edit()           encode64()       encrypt()        escape()
-  foreach()        if()             ifelse()         lcstr()
-  left()           lit()            ljust()          lpos()
-  merge()          mid()            ord()            ordinal()
-  pos()            regedit()        regmatch()       repeat()
-  reverse()        right()          rjust()          scramble()
-  secure()         sha0()           space()          spellnum()
-  squish()         strcat()         strinsert()      stripaccents()
-  stripansi()      strlen()         strmatch()       strreplace()
-  switch()         trim()           ucstr()          wrap()
+  center()         chr()            comp()           cond()
+  condall()        decode64()       decompose()      decrypt()        
+  delete()         digest()         edit()           encode64()       
+  encrypt()        escape()         flip()           foreach()        
+  if()             ifelse()         lcstr()          left()           
+  lit()            ljust()          lpos()           merge()          
+  mid()            ord()            ordinal()        pos()            
+  regedit()        regmatch()       repeat()         right()          
+  rjust()          scramble()       secure()         sha0()           
+  space()          spellnum()       squish()         strallof()       
+  strcat()         strfirstof()     strinsert()      stripaccents()   
+  stripansi()      strlen()         strmatch()       strreplace()     
+  switch()         tr()             trim()           ucstr()          
+  wrap()
 
 See also: STRINGS
 & Time functions
@@ -230,14 +241,16 @@ See also: STRINGS
 
   allof()       ansi()        atrlock()     beep()        benchmark()
   checkpass()   clone()       create()      die()         dig()
-  firstof()     functions()   isdbref()     isint()       isnum()
-  isobjid()     isword()      letq()        localize()    link()
-  list()        listq()       lnum()        null()        numversion()
-  objeval()     open()        pcreate()     r()           rand()
-  s()           scan()        set()         setq()        setr()
-  soundex()     soundslike()  speak()       tel()         textentries()
-  textfile()    unsetq()      valid()       wipe()        @@()
-
+  endtag()      firstof()     functions()   fn()          html()        
+  ibreak()      ilev()        inum()        isdbref()     isint()       
+  isnum()       isobjid()     isword()      itext()       letq()        
+  localize()    link()        list()        listq()       lnum()        
+  lset()        null()        numversion()  objeval()     open()        
+  pcreate()     r()           rand()        s()           scan()        
+  set()         setq()        setr()        slev()        soundex()     
+  soundslike()  speak()       stext()       tag()         tagwrap()      
+  tel()         testlock()    textentries() textfile()    unsetq()      
+  valid()       wipe()        @@()
 & @@()
 & NULL()
   @@(<expression>)

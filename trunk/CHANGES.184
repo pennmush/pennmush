@@ -44,6 +44,7 @@ Minor Changes:
  * @mail now shows the dbref of the sender for mail from non-players.
    Suggested by Minion. [MG]
  * Fix a potential buffer overflow in prefix table code. [SW]
+ * "enter <exit>" now works the same as "goto". Suggested bt [GM]. [MG]
 
 Fixes:
  * No_Pay was implicit if executor is #1, but was _not_ implicit if 
@@ -61,6 +62,8 @@ Fixes:
  * @chatformat sometimes received the player's name without accents by
    mistake. Reported by Sketch. [MG]
  * Bug in @wipe fixed by Padraic.
+ * Objects couldn't be @tel'd to exits which weren't in their current
+   location. Reported by Padraic.
 
 Functions:
  * Restrictions for the beep() function can now be modified with @function.

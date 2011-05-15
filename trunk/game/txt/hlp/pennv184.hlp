@@ -19,6 +19,8 @@ Commands:
    Padraic. [MG]
  * You can now have more than one command (with the action list enclosed in
    {curly braces}) in the rhs arg of @force/noeval. [MG]
+ * @ps/debug <pid> will display extra information about a queue entry's
+   evaluation environment. [SW]
 
 Powers:
  * can_dark power lets non-wizard players set themselves dark. Suggested by 
@@ -36,6 +38,8 @@ Minor Changes:
    it just shows that they are unchanged. Suggested by Minion. [MG]
  * @mail now shows the dbref of the sender for mail from non-players.
    Suggested by Minion. [MG]
+ * Fix a potential buffer overflow in prefix table code. [SW]
+ * "enter <exit>" now works the same as "goto". Suggested bt [GM]. [MG]
 
 Fixes:
  * No_Pay was implicit if executor is #1, but was _not_ implicit if 
@@ -52,10 +56,15 @@ Fixes:
    both SSL and normal connections. Reported by Padraic. [SW]
  * @chatformat sometimes received the player's name without accents by
    mistake. Reported by Sketch. [MG]
+ * Bug in @wipe fixed by Padraic.
+ * Objects couldn't be @tel'd to exits which weren't in their current
+   location. Reported by Padraic.
 
 Functions:
  * Restrictions for the beep() function can now be modified with @function.
    Suggested by Paige. [MG]
+ * Functions that take #lambda anonymous attributes also understand a new
+   #apply/<function name> shorthand for calling a single function. [SW]
 
 & 1.8.4p4
 Version 1.8.4 patchlevel 4                                 May 05,  2011

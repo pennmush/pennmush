@@ -345,7 +345,11 @@ void enter_room(dbref player, dbref loc, int nomovemsgs,
                 dbref enactor, const char *cause);
 int can_move(dbref player, const char *direction);
 /** Enumeration of types of movements that can be performed */
-enum move_type { MOVE_NORMAL, MOVE_GLOBAL, MOVE_ZONE };
+enum move_type { MOVE_NORMAL, /**< move through an exit in your location */
+                 MOVE_GLOBAL, /**< Master Room exit */
+                 MOVE_ZONE,   /**< ZMR Exit */
+                 MOVE_TELEPORT /**< \@tel'd into an exit */
+               };
 void do_move(dbref player, const char *direction, enum move_type type);
 void moveto(dbref what, dbref where, dbref enactor, const char *cause);
 void safe_tel(dbref player, dbref dest, int nomovemsgs,

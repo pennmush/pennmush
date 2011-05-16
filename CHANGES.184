@@ -23,6 +23,8 @@ Major Changes:
  * The experimental --enable-ssl_slave option for configure allows
    persistant SSL connections that won't get booted when the mush
    restarts. Requires libevent v2.X. [SW]
+ * info_slave, the sub-process used for resolving hostnames, now uses
+   libevent if available. [SW]
 
 Commands:
  * @edit/quiet edits attributes, but doesn't spam you with the modified

@@ -159,7 +159,7 @@ make_info_slave(void)
     info_slave = socks[0];
     closesocket(socks[1]);
     do_rawlog(LT_ERR,
-              "Spawning info slave, communicating using socketpair, pid %d",
+              "Spawning info slave, communicating using socketpair, pid %d.",
               child);
 #endif
     make_nonblocking(info_slave);

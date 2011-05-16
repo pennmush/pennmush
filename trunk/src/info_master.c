@@ -201,7 +201,7 @@ make_info_slave(void)
   if (info_slave >= maxd)
     maxd = info_slave + 1;
 
-  lower_priority_by(info_slave, 4);
+  lower_priority_by(info_slave_pid, 4);
 
   for (n = 0; n < maxd; n++)
     if (FD_ISSET(n, &info_pending))

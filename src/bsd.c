@@ -5158,7 +5158,11 @@ dump_reboot_db(void)
 {
   PENNFILE *f;
   DESC *d;
-  uint32_t flags = RDBF_SCREENSIZE | RDBF_TTYPE | RDBF_PUEBLO_CHECKSUM | RDBF_UNIX_SOCKET;
+  uint32_t flags = RDBF_SCREENSIZE | RDBF_TTYPE | RDBF_PUEBLO_CHECKSUM;
+
+#ifdef LOCAL_SOCKET  
+  flags |= RDBF_UNIX_SOCKET;
+#endif
 
 #ifdef SSL_SLAVE
   flags |= RDBF_SSL_SLAVE;
@@ -5178,7 +5182,9 @@ dump_reboot_db(void)
     /* Write out the reboot db flags here */
     penn_fprintf(f, "V%u\n", flags);
     putref(f, sock);
-    putref(f, sslsock);
+#ifdef LOCAL_SOCKET
+    putref(f, localsock);
+#endif
     putref(f, maxd);
     /* First, iterate through all descriptors to get to the end
      * we do this so the descriptor_list isn't reversed on reboot
@@ -5264,8 +5270,10 @@ load_reboot_db(void)
   
     sock = getref(f);
 
-    if (flags & RDBF_SSL_SLAVE)
-      sslsock = getref(f);
+#ifdef LOCAL_SOCK
+    if (flags & RDBF_LOCAL_SOCK)
+      localsock = getref(f);
+#endif
 
     val = getref(f);
     if (val > maxd)

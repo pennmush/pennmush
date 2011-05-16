@@ -267,9 +267,22 @@ address_resolved(int result, char type, int count, int ttl __attribute__((__unus
 static void
 ssl_connected(struct conn *c)
 {
+  X509 *peer;
+
 #if SSL_DEBUG_LEVEL > 0
   do_rawlog(LT_ERR, "ssl_slave: SSL connection attempt completed. Resolving remote host name.");
 #endif
+
+  /* Successful accept. Log peer certificate, if any. */
+  if ((peer = SSL_get_peer_certificate(c->ssl))) {
+    if (SSL_get_verify_result(c->ssl) == X509_V_OK) {
+      char buf[256];
+      /* The client sent a certificate which verified OK */
+      X509_NAME_oneline(X509_get_subject_name(peer), buf, 256);
+      do_rawlog(LT_CONN, "SSL client certificate accepted: %s", buf);
+    }
+  }
+
   c->state = C_HOSTNAME_LOOKUP;
   c->resolver_req = evdns_getnameinfo(resolver, &c->remote_addr.addr, 0, address_resolved, c);
 }

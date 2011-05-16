@@ -37,7 +37,6 @@ struct response_dgram {
   int fd; /**< The socket descriptor, used as an id number */
   char ipaddr[IPADDR_LEN]; /**< The ip address of the connection */
   char hostname[HOSTNAME_LEN]; /**< The resolved hostname of the connection */
-  char ident[IDENT_LEN]; /**< The ident name for the connection */
   Port_t connected_to; /**< The port connected to. */
 };
 

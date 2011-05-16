@@ -114,7 +114,6 @@ extern int h_errno;
 static int connect_nonb
   (int sockfd, const struct sockaddr *saptr, socklen_t salen, bool nonb);
 
-
 #ifndef INFOSLAVE
 /** Given a sockaddr structure, try to look up and return hostname info.
  * If we can't get a hostname from DNS (or if we're not using DNS),
@@ -138,6 +137,7 @@ hostname_convert(struct sockaddr *host, int len)
   hi.port = port;
   return &hi;
 }
+#endif
 
 /** Given a sockaddr structure, try to look up and return ip address info.
  * \param host pointer to a sockaddr structure.
@@ -159,7 +159,6 @@ ip_convert(struct sockaddr *host, int len)
   hi.port = port;
   return &hi;
 }
-#endif                          /* INFOSLAVE */
 
 /** Open a connection to a given host and port. Basically
  * tcp_connect from UNPv1

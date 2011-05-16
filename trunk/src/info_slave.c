@@ -58,6 +58,151 @@
 
 #include "confmagic.h"
 
+void fputerr(const char *);
+
+#ifdef HAVE_LIBEVENT
+
+/* Version using libevent's async dns routines. Much shorter because
+ * we don't have our own event loop implementation. It also runs all
+ * lookups asynchronously in one process instead of one blocking
+ * lookup per process.  If we ever use libevent for the main netmush
+ * loop, this can be moved into it with no need for an info_slave at
+ * all! 
+ *
+ * On BSD systems with kqueue(2), you can (And we do) register to
+ * watch for a process to exit, making checking to see if the parent
+ * mush process is still around easy. While libevent can use kqueue,
+ * it doesn't export a way to do that, so we just wake up every few
+ * seconds to see if it's still there, like the other version does on
+ * linux and other systems. Not as elegant, but it works.
+ */
+
+#include <event.h>
+#include <event2/dns.h>
+
+struct event_base *main_loop = NULL;
+struct evdns_base *resolver = NULL;
+
+/** Address to hostname lookup wrapper */
+static struct evdns_request *
+evdns_getnameinfo(struct evdns_base *base, const struct sockaddr *addr, int flags,
+		  evdns_callback_type callback, void *data)
+{
+  if (addr->sa_family == AF_INET) {
+    const struct sockaddr_in *a = (const struct sockaddr_in*) addr;
+    return evdns_base_resolve_reverse(base, &a->sin_addr, flags, callback, data);
+  } else if (addr->sa_family == AF_INET6) {
+    const struct sockaddr_in6 *a = (const struct sockaddr_in6*) addr;
+    return evdns_base_resolve_reverse_ipv6(base, &a->sin6_addr, flags, callback, data);
+  } else {
+    lock_file(stderr);
+    fprintf(stderr, "info_slave: Attempt to resolve unknown socket family %d", addr->sa_family);
+    unlock_file(stderr);
+    return NULL;
+  }
+}
+
+static void
+send_resp(evutil_socket_t fd, short what __attribute__((__unused__)), void *data)
+{
+  struct response_dgram *resp = data;
+  ssize_t len;
+
+  len = send(fd, resp, sizeof *resp, 0);
+  if (len != (int) sizeof *resp) {
+    penn_perror("error writing packet");
+    exit(EXIT_FAILURE);
+  }
+  free(resp);
+}
+
+static void
+address_resolved(int result, char type, int count, int ttl __attribute__((__unused__)),
+		 void *addresses, void *data)
+{
+  struct response_dgram *resp = data;
+  struct event *send_resp_ev;
+
+  if (result != DNS_ERR_NONE || !addresses || type != DNS_PTR || count == 0) {
+    strcpy(resp->hostname, resp->ipaddr);
+  } else {
+    strncpy(resp->hostname, ((const char **)addresses)[0], HOSTNAME_LEN);
+  }
+
+  /* One-shot event to write the response packet */
+  send_resp_ev = event_new(main_loop, 1, EV_WRITE, send_resp, resp);
+  event_add(send_resp_ev, NULL);
+}
+
+static void
+got_request(evutil_socket_t fd,
+	    short what __attribute__((__unused__)),
+	    void *data __attribute__((__unused__)))
+{
+  struct request_dgram req;
+  struct response_dgram *resp;
+  ssize_t len;
+  struct hostname_info *hi;
+
+  len = recv(fd, &req, sizeof req, 0);
+  if (len != sizeof req) {
+    penn_perror("reading request datagram");
+    exit(EXIT_FAILURE);
+  }
+  
+  resp = malloc(sizeof *resp);
+  resp->fd = req.fd;  
+  hi = ip_convert(&req.remote.addr, req.rlen);
+  strncpy(resp->ipaddr, hi->hostname, IPADDR_LEN);
+  
+  hi = ip_convert(&req.local.addr, req.llen);
+  resp->connected_to = strtol(hi->port, NULL, 10);
+
+  evdns_getnameinfo(resolver, &req.remote.addr, 0, address_resolved, resp); 
+}
+
+/** Called periodically to ensure the parent mush is still there. */
+static void
+check_parent(evutil_socket_t fd __attribute__((__unused__)),
+	     short what __attribute__((__unused__)),
+	     void *arg __attribute__((__unused__)))
+{
+  if (getppid() == 1) {
+    fputerr("ssl_slave: Parent mush process exited unexpectedly! Shutting down.");
+    event_base_loopbreak(main_loop);
+  }
+}
+
+int
+main(void)
+{
+  struct event *watch_parent, *watch_request;
+  struct timeval parent_timeout = { .tv_sec = 5, .tv_usec = 0 };
+  
+  main_loop = event_base_new();
+  resolver = evdns_base_new(main_loop, 1);
+
+  /* Run every 5 seconds to see if the parent mush process is still around. */
+  watch_parent = event_new(main_loop, -1, EV_TIMEOUT | EV_PERSIST, check_parent, NULL);
+  event_add(watch_parent, &parent_timeout);
+
+  /* Wait for an incoming request datagram from the mush */
+  watch_request = event_new(main_loop, 0, EV_READ | EV_PERSIST, got_request, NULL);
+  event_add(watch_request, NULL);
+  
+  lock_file(stderr);
+  fprintf(stderr, "info_slave: starting event loop using %s.",
+	  event_base_get_method(main_loop));
+  unlock_file(stderr);
+  event_base_dispatch(main_loop);
+  fputerr("info_slave: shutting down.");
+  
+  return EXIT_SUCCESS;
+}
+#else
+
+/* Old, forking version */
+
 #ifndef ENOTSUP
 #define ENOTSUP EPERM
 #endif
@@ -69,8 +214,6 @@ int eventwait_watch_fd_read(int);
 int eventwait_watch_parent_exit(void);
 int eventwait_watch_child_exit(void);
 int eventwait(void);
-
-void fputerr(const char *);
 
 enum methods { METHOD_KQUEUE, METHOD_POLL, METHOD_SELECT };
 
@@ -535,6 +678,8 @@ eventwait(void)
     return -1;
   }
 }
+
+#endif
 
 /* Wrappers for perror */
 void

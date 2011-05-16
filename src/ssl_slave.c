@@ -58,10 +58,8 @@ enum conn_state {
 
 struct conn {
   enum conn_state state;
-  int local_fd;
-  int remote_fd;
-  union sockaddr_u remote_addr;
   socklen_t remote_addrlen;
+  union sockaddr_u remote_addr;
   char *remote_host;
   char *remote_ip;
   SSL *ssl;
@@ -73,7 +71,6 @@ struct conn {
 };
  
 struct conn *connections = NULL;
-
 
 /* General utility routines */
 
@@ -127,7 +124,7 @@ delete_conn(struct conn *c)
 	  connections->prev = NULL;
       }
       break;
-      }
+    }
   }
   free_conn(c);
 }
@@ -334,6 +331,7 @@ static void
 new_conn_cb(evutil_socket_t s, short flags __attribute__((__unused__)), void *data __attribute__((__unused__)))
 {
   struct conn *c;
+  int fd;
 
   /* Accept a connection and do SSL handshaking */
 
@@ -351,15 +349,15 @@ new_conn_cb(evutil_socket_t s, short flags __attribute__((__unused__)), void *da
   c->state = C_SSL_CONNECTING;
 
   c->remote_addrlen = sizeof c->remote_addr;
-  c->remote_fd = accept(s, &c->remote_addr.addr, &c->remote_addrlen);
-  if (c->remote_fd < 0) {
+  fd = accept(s, &c->remote_addr.addr, &c->remote_addrlen);
+  if (fd < 0) {
     do_rawlog(LT_ERR, "ssl_slave: accept: %s", strerror(errno));
     delete_conn(c);
     return;
   }
 
   c->ssl = ssl_alloc_struct();
-  c->remote_bev = bufferevent_openssl_socket_new(main_loop, c->remote_fd, c->ssl, BUFFEREVENT_SSL_ACCEPTING, 
+  c->remote_bev = bufferevent_openssl_socket_new(main_loop, fd, c->ssl, BUFFEREVENT_SSL_ACCEPTING, 
 						 BEV_OPT_CLOSE_ON_FREE | BEV_OPT_DEFER_CALLBACKS);
   if (!c->remote_bev) {
     do_rawlog(LT_ERR, "ssl_slave: Unable to make SSL bufferevent!");
@@ -458,7 +456,8 @@ make_ssl_slave(Port_t port)
     return -1;
   } else {
     ssl_slave_state = SSL_SLAVE_RUNNING;
-    do_rawlog(LT_ERR, "Spawning ssl_slave, pid %d", ssl_slave_pid);
+    do_rawlog(LT_ERR, "Spawning ssl_slave, communicating over %s, pid %d.",
+	      options.socket_file, ssl_slave_pid);
     return make_unix_socket(options.socket_file, SOCK_STREAM);
   }  
 }

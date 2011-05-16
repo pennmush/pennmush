@@ -298,7 +298,7 @@ event_cb(struct bufferevent *bev, short e, void *data)
     if (c->local_bev == bev) {
       /* Mush side of the connection went away. Flush SSL buffer and shut down. */
 #if SSL_DEBUG_LEVEL > 0
-      do_rawlog(LT_ERR, "ssl_slave: Lost local connection.");
+      do_rawlog(LT_ERR, "ssl_slave: Lost local connection. State: %d", c->state);
 #endif
       bufferevent_disable(c->local_bev, EV_READ | EV_WRITE);
       bufferevent_free(c->local_bev);
@@ -312,7 +312,7 @@ event_cb(struct bufferevent *bev, short e, void *data)
     } else {
       /* Remote side of the connetion went away. Flush mush buffer and shut down. */
 #if SSL_DEBUG_LEVEL > 0
-      do_rawlog(LT_ERR, "ssl_slave: Lost SSL connection.");
+      do_rawlog(LT_ERR, "ssl_slave: Lost SSL connection. State: %d", c->state);
 #endif
       bufferevent_disable(c->remote_bev, EV_READ | EV_WRITE);
       bufferevent_free(c->remote_bev);
@@ -404,11 +404,17 @@ shutdown_cb(evutil_socket_t fd __attribute__((__unused__)),
 
 /** Create a new SSL slave.
  * \param port The port to listen on for SSL connections.
- * \return File descriptor to listen to connections on. 
+ * \return 0 on success, -1 on failure
  */
 int
 make_ssl_slave(Port_t port)
 {
+
+  if (ssl_slave_state != SSL_SLAVE_DOWN) {
+    do_rawlog(LT_ERR, "Attempt to start ssl slave when a copy is already running.");
+    return -1;
+  }
+
   parent_pid = getpid();
   
   if ((ssl_slave_pid = fork()) == 0) {
@@ -459,8 +465,8 @@ make_ssl_slave(Port_t port)
     ssl_slave_state = SSL_SLAVE_RUNNING;
     do_rawlog(LT_ERR, "Spawning ssl_slave, communicating over %s, pid %d.",
 	      options.socket_file, ssl_slave_pid);
-    return make_unix_socket(options.socket_file, SOCK_STREAM);
   }  
+  return 0;
 }
 
 void

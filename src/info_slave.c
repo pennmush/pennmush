@@ -190,7 +190,7 @@ main(void)
   event_add(watch_request, NULL);
   
   lock_file(stderr);
-  fprintf(stderr, "info_slave: starting event loop using %s.",
+  fprintf(stderr, "info_slave: starting event loop using %s.\n",
 	  event_base_get_method(main_loop));
   unlock_file(stderr);
   event_base_dispatch(main_loop);

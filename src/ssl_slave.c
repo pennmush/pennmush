@@ -134,17 +134,17 @@ evdns_getnameinfo(struct evdns_base *base, const struct sockaddr *addr, int flag
   if (addr->sa_family == AF_INET) {
     const struct sockaddr_in *a = (const struct sockaddr_in*) addr;
 #if SSL_DEBUG_LEVEL > 1
-    do_rawlog(LT_ERR, "ssl_slave: Remote connection is IPv4");
+    do_rawlog(LT_CONN, "ssl_slave: Remote connection is IPv4");
 #endif
     return evdns_base_resolve_reverse(base, &a->sin_addr, flags, callback, data);
   } else if (addr->sa_family == AF_INET6) {
     const struct sockaddr_in6 *a = (const struct sockaddr_in6*) addr;
 #if SSL_DEBUG_LEVEL > 1
-    do_rawlog(LT_ERR, "ssl_slave: Remote connection is IPv6");
+    do_rawlog(LT_CONN, "ssl_slave: Remote connection is IPv6");
 #endif
     return evdns_base_resolve_reverse_ipv6(base, &a->sin6_addr, flags, callback, data);
   } else {
-    do_rawlog(LT_ERR, "ssl_save: Attempt to resolve unknown socket family %d", addr->sa_family);
+    do_rawlog(LT_ERR, "ssl_slave: Attempt to resolve unknown socket family %d", addr->sa_family);
     return NULL;
   }
 }
@@ -162,12 +162,12 @@ pipe_cb(struct bufferevent *from_bev, void *data)
 
   if (c->local_bev == from_bev) {
 #if SSL_DEBUG_LEVEL > 1
-    do_rawlog(LT_ERR, "ssl_slave: got data from mush");
+    do_rawlog(LT_TRACE, "ssl_slave: got data from mush");
 #endif
     to_bev = c->remote_bev;
   } else {
 #if SSL_DEBUG_LEVEL > 1
-    do_rawlog(LT_ERR, "ssl_slave: got data from SSL");
+    do_rawlog(LT_TRACE, "ssl_slave: got data from SSL");
 #endif
     to_bev = c->local_bev;
   }
@@ -175,7 +175,7 @@ pipe_cb(struct bufferevent *from_bev, void *data)
   len = bufferevent_read(from_bev, buff, sizeof buff);
 
 #if SSL_DEBUG_LEVEL > 1
-  do_rawlog(LT_ERR, "ssl_slave: read %zu bytes", len);
+  do_rawlog(LT_TRACE, "ssl_slave: read %zu bytes", len);
 #endif
 
   if (to_bev && len > 0) {
@@ -204,7 +204,7 @@ local_connected(struct conn *c)
   int len;
 
 #if SSL_DEBUG_LEVEL > 0
-  do_rawlog(LT_ERR, "ssl_slave: Local connection attempt completed. Setting up pipe.");
+  do_rawlog(LT_CONN, "ssl_slave: Local connection attempt completed. Setting up pipe.");
 #endif
   bufferevent_setcb(c->local_bev, pipe_cb, NULL, event_cb, c);
   bufferevent_enable(c->local_bev, EV_READ | EV_WRITE);
@@ -249,7 +249,7 @@ address_resolved(int result, char type, int count, int ttl __attribute__((__unus
   c->remote_ip = strdup(ipaddr->hostname);  
 
 #if SSL_DEBUG_LEVEL > 0
-  do_rawlog(LT_ERR, "ssl_slave: resolved hostname as '%s(%s)'. Opening local connection to mush.", hostname, ipaddr->hostname);
+  do_rawlog(LT_CONN, "ssl_slave: resolved hostname as '%s(%s)'. Opening local connection to mush.", hostname, ipaddr->hostname);
 #endif
 
   c->state = C_LOCAL_CONNECTING;
@@ -293,7 +293,7 @@ event_cb(struct bufferevent *bev, short e, void *data)
   struct conn *c = data;
 
 #if SSL_DEBUG_LEVEL > 1
-  do_rawlog(LT_ERR, "ssl_slave: event callback triggered with flags 0x%hx", e);
+  do_rawlog(LT_TRACE, "ssl_slave: event callback triggered with flags 0x%hx", e);
 #endif
 
   if (e & BEV_EVENT_CONNECTED) {
@@ -346,7 +346,7 @@ new_conn_cb(evutil_socket_t s, short flags __attribute__((__unused__)), void *da
   /* Accept a connection and do SSL handshaking */
 
 #if SSL_DEBUG_LEVEL > 0
-  do_rawlog(LT_ERR, "Got new connection on SSL port.");
+  do_rawlog(LT_CONN, "Got new connection on SSL port.");
 #endif
 
   c = alloc_conn();
@@ -468,6 +468,7 @@ make_ssl_slave(Port_t port)
     return -1;
   } else {
     ssl_slave_state = SSL_SLAVE_RUNNING;
+    do_rawlog(LT_ERR, "Spawning ssl_slave, pid %d", ssl_slave_pid);
     return make_unix_socket(options.socket_file, SOCK_STREAM);
   }  
 }

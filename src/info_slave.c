@@ -153,8 +153,7 @@ got_request(evutil_socket_t fd,
   resp = malloc(sizeof *resp);
   resp->fd = req.fd;  
   hi = ip_convert(&req.remote.addr, req.rlen);
-  strncpy(resp->ipaddr, hi->hostname, IPADDR_LEN);
-  
+  strncpy(resp->ipaddr, hi->hostname, IPADDR_LEN);  
   hi = ip_convert(&req.local.addr, req.llen);
   resp->connected_to = strtol(hi->port, NULL, 10);
 

@@ -1910,6 +1910,10 @@ show_compile_options(dbref player)
   notify(player, T(" The MUSH was compiled with SSL support."));
 #endif
 
+#ifdef SSL_SLAVE
+  notify(player, T(" SSL connections are handled by a slave process."));
+#endif
+
 #ifdef HAVE_MYSQL
   notify(player, T(" The MUSH was compiled with MySQL support."));
 #endif

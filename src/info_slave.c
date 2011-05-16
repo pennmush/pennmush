@@ -83,6 +83,11 @@ void fputerr(const char *);
 struct event_base *main_loop = NULL;
 struct evdns_base *resolver = NULL;
 
+struct is_data {
+  struct response_dgram resp;
+  struct event *ev;
+};
+
 /** Address to hostname lookup wrapper */
 static struct evdns_request *
 evdns_getnameinfo(struct evdns_base *base, const struct sockaddr *addr, int flags,
@@ -103,44 +108,44 @@ evdns_getnameinfo(struct evdns_base *base, const struct sockaddr *addr, int flag
 }
 
 static void
-send_resp(evutil_socket_t fd, short what __attribute__((__unused__)), void *data)
+send_resp(evutil_socket_t fd, short what __attribute__((__unused__)), void *arg)
 {
-  struct response_dgram *resp = data;
+  struct is_data *data = arg;
   ssize_t len;
 
-  len = send(fd, resp, sizeof *resp, 0);
-  if (len != (int) sizeof *resp) {
+  len = send(fd, &data->resp, sizeof data->resp, 0);
+  if (len != (int) sizeof data->resp) {
     penn_perror("error writing packet");
     exit(EXIT_FAILURE);
   }
-  free(resp);
+  event_free(data->ev);
+  free(data);
 }
 
 static void
 address_resolved(int result, char type, int count, int ttl __attribute__((__unused__)),
-		 void *addresses, void *data)
+		 void *addresses, void *arg)
 {
-  struct response_dgram *resp = data;
-  struct event *send_resp_ev;
+  struct is_data *data = arg;
 
   if (result != DNS_ERR_NONE || !addresses || type != DNS_PTR || count == 0) {
-    strcpy(resp->hostname, resp->ipaddr);
+    strcpy(data->resp.hostname, data->resp.ipaddr);
   } else {
-    strncpy(resp->hostname, ((const char **)addresses)[0], HOSTNAME_LEN);
+    strncpy(data->resp.hostname, ((const char **)addresses)[0], HOSTNAME_LEN);
   }
 
   /* One-shot event to write the response packet */
-  send_resp_ev = event_new(main_loop, 1, EV_WRITE, send_resp, resp);
-  event_add(send_resp_ev, NULL);
+  data->ev = event_new(main_loop, 1, EV_WRITE, send_resp, data);
+  event_add(data->ev, NULL);
 }
 
 static void
 got_request(evutil_socket_t fd,
 	    short what __attribute__((__unused__)),
-	    void *data __attribute__((__unused__)))
+	    void *arg __attribute__((__unused__)))
 {
   struct request_dgram req;
-  struct response_dgram *resp;
+  struct is_data *data;
   ssize_t len;
   struct hostname_info *hi;
 
@@ -149,15 +154,17 @@ got_request(evutil_socket_t fd,
     penn_perror("reading request datagram");
     exit(EXIT_FAILURE);
   }
-  
-  resp = malloc(sizeof *resp);
-  resp->fd = req.fd;  
-  hi = ip_convert(&req.remote.addr, req.rlen);
-  strncpy(resp->ipaddr, hi->hostname, IPADDR_LEN);  
-  hi = ip_convert(&req.local.addr, req.llen);
-  resp->connected_to = strtol(hi->port, NULL, 10);
 
-  evdns_getnameinfo(resolver, &req.remote.addr, 0, address_resolved, resp); 
+  
+  data = malloc(sizeof *data);
+  memset(data, 0, sizeof *data);
+  data->resp.fd = req.fd;  
+  hi = ip_convert(&req.remote.addr, req.rlen);
+  strncpy(data->resp.ipaddr, hi->hostname, IPADDR_LEN);  
+  hi = ip_convert(&req.local.addr, req.llen);
+  data->resp.connected_to = strtol(hi->port, NULL, 10);
+
+  evdns_getnameinfo(resolver, &req.remote.addr, 0, address_resolved, data); 
 }
 
 /** Called periodically to ensure the parent mush is still there. */

@@ -121,6 +121,7 @@ struct options_table {
   char mud_url[256];   /**< The name of the mush */
   int port;             /**< The port to listen for connections */
   int ssl_port;         /**< The port to listen for SSL connections */
+  char socket_file[256];  /**< The socket filename to use for SSL slave */
   char input_db[256];   /**< Name of the input database file */
   char output_db[256];  /**< Name of the output database file */
   char crash_db[256];   /**< Name of the panic database file */

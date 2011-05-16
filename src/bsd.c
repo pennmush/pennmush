@@ -116,6 +116,9 @@
 #ifdef INFO_SLAVE
 #include "lookup.h"
 #endif
+#ifdef SSL_SLAVE
+#include "ssl_slave.h"
+#endif
 #endif
 
 #include "strtree.h"
@@ -132,10 +135,13 @@
 #include "intmap.h"
 #include "confmagic.h"
 
+#if defined(SSL_SLAVE) && !defined(WIN32)
+#define LOCAL_SOCKET 1
+#endif
+
 #ifdef HAS_GETRLIMIT
 void init_rlimit(void);
 #endif
-
 
 /* BSD 4.2 and maybe some others need these defined */
 #ifndef FD_ZERO
@@ -242,10 +248,6 @@ static const char *register_fail =
 static const char *register_success =
   "Registration successful! You will receive your password by email.";
 static const char *shutdown_message = "Going down - Bye";
-#ifdef HAS_OPENSSL
-static const char *ssl_shutdown_message =
-  "GAME: SSL connections must be dropped, sorry.";
-#endif
 static const char *asterisk_line =
   "**********************************************************************";
 /** Where we save the descriptor info across reboots. */
@@ -278,6 +280,11 @@ static int sock;
 #ifdef HAS_OPENSSL
 static int sslsock = 0;
 SSL *ssl_master_socket = NULL;  /**< Master SSL socket for ssl port */
+static const char *ssl_shutdown_message __attribute__((__unused__))  =
+  "GAME: SSL connections must be dropped, sorry.";
+#endif
+#ifdef LOCAL_SOCKET
+static int localsock = 0;
 #endif
 static int ndescriptors = 0;
 #ifdef WIN32
@@ -316,7 +323,7 @@ static void update_quotas(struct timeval *last, struct timeval *current);
 int how_many_fds(void);
 static void shovechars(Port_t port, Port_t sslport);
 static int test_connection(int newsock);
-static DESC *new_connection(int oldsock, int *result, bool use_ssl);
+static DESC *new_connection(int oldsock, int *result, conn_source source);
 
 static void clearstrings(DESC *d);
 
@@ -347,7 +354,7 @@ static int fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
 static int fcache_read(FBLOCK *cp, const char *filename);
 static void logout_sock(DESC *d);
 static void shutdownsock(DESC *d, const char *reason);
-DESC *initializesock(int s, char *addr, char *ip, int use_ssl);
+DESC *initializesock(int s, char *addr, char *ip, conn_source source);
 int process_output(DESC *d);
 /* Notify.c */
 extern void free_text_block(struct text_block *t);
@@ -384,6 +391,9 @@ sig_atomic_t dump_error = 0;
 WAIT_TYPE dump_status = 0;
 #ifdef INFO_SLAVE
 sig_atomic_t slave_error = 0;
+#endif
+#ifdef SSL_SLAVE
+sig_atomic_t ssl_slave_error = 0;
 #endif
 #endif
 extern pid_t forked_dump_pid;   /**< Process id of forking dump process */
@@ -479,7 +489,6 @@ main(int argc, char **argv)
       }
     }
   }
-
 
 #ifdef HAVE_FORK
   /* Fork off and detach from controlling terminal. */
@@ -600,6 +609,14 @@ main(int argc, char **argv)
     fclose(newerr);
   }
 
+#ifdef SSL_SLAVE
+  if (!restarting) {
+    localsock = make_ssl_slave(SSLPORT);
+    if (localsock >= maxd)
+      maxd = localsock + 1;
+  }
+#endif
+
   if (init_game_dbs() < 0) {
     do_rawlog(LT_ERR, "ERROR: Couldn't load databases! Exiting.");
     exit(2);
@@ -624,7 +641,7 @@ main(int argc, char **argv)
 
   init_sys_events();
 
-  shovechars((Port_t) TINYPORT, (Port_t) SSLPORT);
+  shovechars(TINYPORT, SSLPORT);
 
   /* someone has told us to shut down */
 #ifdef WIN32SERVICES
@@ -644,6 +661,10 @@ main(int argc, char **argv)
 
 #ifdef INFO_SLAVE
   kill_info_slave();
+#endif
+
+#ifdef SSL_SLAVE
+  kill_ssl_slave();
 #endif
 
 #ifdef WIN32SERVICES
@@ -846,13 +867,21 @@ update_quotas(struct timeval *last, struct timeval *current)
 
 extern slab *text_block_slab;
 
+static bool
+is_ssl_desc(DESC *d)
+{
+  if (!d)
+    return 0;
+  return d->source == CS_OPENSSL_SOCKET || d->source == CS_LOCAL_SOCKET;
+}
+
 static void
-setup_desc(int sock, bool use_ssl)
+setup_desc(int sock, conn_source source)
 {
   DESC *newd;
   int result;
 
-  if (!(newd = new_connection(sock, &result, use_ssl))) {
+  if (!(newd = new_connection(sock, &result, source))) {
     if (test_connection(result) < 0)
       return;
   } else {
@@ -888,7 +917,7 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
     sock = make_socket(port, SOCK_STREAM, NULL, NULL, MUSH_IP_ADDR);
     if (sock >= maxd)
       maxd = sock + 1;
-#ifdef HAS_OPENSSL
+#if defined(HAS_OPENSSL) && !defined(SSL_SLAVE)
     if (sslport) {
       sslsock = make_socket(sslport, SOCK_STREAM, NULL, NULL, SSL_IP_ADDR);
       ssl_master_socket = ssl_setup_socket(sslsock);
@@ -897,9 +926,10 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
     }
 #endif
   }
+
   our_gettimeofday(&last_slice);
 
-  avail_descriptors = how_many_fds() - 4;
+  avail_descriptors = how_many_fds() - 5;
 #ifdef INFO_SLAVE
   avail_descriptors -= 2;       /* reserve some more for setting up the slave */
 #endif
@@ -962,9 +992,19 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
     }
 #ifdef INFO_SLAVE
     if (slave_error) {
-      do_rawlog(LT_ERR, "info_slave on pid %d exited unexpectedly!",
+      do_rawlog(LT_ERR, "info_slave (Pid %d) exited unexpectedly!",
                 slave_error);
       slave_error = 0;
+    }
+#endif
+#ifdef SSL_SLAVE
+    if (ssl_slave_error) {
+      do_rawlog(LT_ERR, "ssl_slave (Pid %d) exited unexpectedly!",
+		ssl_slave_error);
+      ssl_slave_error = 0;
+      shutdown(localsock, 2);
+      closesocket(localsock);
+      localsock = 0;
     }
 #endif
 #endif                          /* !WIN32 */
@@ -1022,6 +1062,10 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
 #ifdef HAS_OPENSSL
     if (sslsock)
       FD_SET(sslsock, &input_set);
+#endif
+#ifdef LOCAL_SOCKET
+    if (localsock)
+      FD_SET(localsock, &input_set);
 #endif
 #ifdef INFO_SLAVE
     if (info_slave_state == INFO_SLAVE_PENDING)
@@ -1088,7 +1132,7 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
           if (newsock >= maxd)
             maxd = newsock + 1;
         } else
-          setup_desc(sock, false);
+          setup_desc(sock, CS_IP_SOCKET);
       }
 #ifdef HAS_OPENSSL
       if (sslsock && FD_ISSET(sslsock, &input_set)) {
@@ -1099,20 +1143,28 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
             if (test_connection(newsock) < 0)
               continue;         /* this should _not_ be return. */
           }
-          ndescriptors++;
+          ndescriptors++;	 
           query_info_slave(newsock);
           if (newsock >= maxd)
             maxd = newsock + 1;
         } else
-          setup_desc(sslsock, true);
+          setup_desc(sslsock, CS_OPENSSL_SOCKET);
       }
+#endif
+#ifdef LOCAL_SOCKET
+      if (localsock && FD_ISSET(localsock, &input_set))
+	setup_desc(localsock, CS_LOCAL_SOCKET);
 #endif
 #else                           /* INFO_SLAVE */
       if (FD_ISSET(sock, &input_set))
-        setup_desc(sock, false);
+        setup_desc(sock, CS_IP_SOCKET);
 #ifdef HAS_OPENSSL
       if (sslsock && FD_ISSET(sslsock, &input_set))
-        setup_desc(sslsock, true);
+        setup_desc(sslsock, CS_OPENSSL_SOCKET);
+#endif
+#ifdef LOCAL_SOCKET
+      if (localsock && FD_ISSET(localsock, &input_set))
+        setup_desc(localsock, CS_LOCAL_SOCKET);
 #endif
 #endif
 
@@ -1137,7 +1189,7 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
       }
     }
   }
-}
+  }
 
 static int
 test_connection(int newsock)
@@ -1154,12 +1206,27 @@ test_connection(int newsock)
   return newsock;
 }
 
+const char *
+source_to_s(conn_source source) {
+  switch (source) {
+  case CS_IP_SOCKET:
+    return "normal port";
+  case CS_OPENSSL_SOCKET:
+    return "OpenSSL port";
+  case CS_LOCAL_SOCKET:
+    return "OpenSSL proxy";
+  case CS_UNKNOWN:
+    return "unknown source";
+  }
+  return "(error)";
+}
+
 static DESC *
-new_connection(int oldsock, int *result, bool use_ssl)
+new_connection(int oldsock, int *result, conn_source source)
 {
   int newsock;
   union sockaddr_u addr;
-  struct hostname_info *hi;
+  struct hostname_info *hi = NULL;
   socklen_t addr_len;
   char tbuf1[BUFFER_LEN];
   char tbuf2[BUFFER_LEN];
@@ -1172,14 +1239,48 @@ new_connection(int oldsock, int *result, bool use_ssl)
     *result = newsock;
     return 0;
   }
-  bp = tbuf2;
-  hi = ip_convert(&addr.addr, addr_len);
-  safe_str(hi ? hi->hostname : "", tbuf2, &bp);
-  *bp = '\0';
-  bp = tbuf1;
-  hi = hostname_convert(&addr.addr, addr_len);
-  safe_str(hi ? hi->hostname : "", tbuf1, &bp);
-  *bp = '\0';
+  if (source != CS_LOCAL_SOCKET) {
+    bp = tbuf2;
+    hi = ip_convert(&addr.addr, addr_len);
+    safe_str(hi ? hi->hostname : "", tbuf2, &bp);
+    *bp = '\0';
+    bp = tbuf1;
+    hi = hostname_convert(&addr.addr, addr_len);
+    safe_str(hi ? hi->hostname : "", tbuf1, &bp);
+    *bp = '\0';
+  } else { /* source == CS_LOCAL_SOCKET */
+    int len;
+    char *split;
+
+    hi = ip_convert(&addr.addr, addr_len);
+
+    /* As soon as the SSL slave opens a new connection to the mush, it
+       writes a string of the format 'IP^HOSTNAME\r\n'. This will thus
+       not block.
+    */
+    len = read(newsock, tbuf2, sizeof tbuf2);
+    if (len < 3) {
+      /* This shouldn't happen! */
+      shutdown(newsock, 2);
+      closesocket(newsock);
+      return 0;
+    }
+
+    tbuf2[len] = '\0';
+
+    split = strchr(tbuf2, '^');
+    if (split) {
+      *split++ = '\0';
+      strcpy(tbuf1, split);
+      split = strchr(tbuf1, '\r');
+      if (split)
+	*split = '\0';
+    } else {
+      /* Again, shouldn't happen! */
+      strcpy(tbuf1, "(Unknown)");
+      strcpy(tbuf2, "(Unknown)");
+    }           
+  }
   if (Forbidden_Site(tbuf1) || Forbidden_Site(tbuf2)) {
     if (!Deny_Silent_Site(tbuf1, AMBIGUOUS)
         || !Deny_Silent_Site(tbuf2, AMBIGUOUS)) {
@@ -1194,9 +1295,11 @@ new_connection(int oldsock, int *result, bool use_ssl)
 #endif
     return 0;
   }
-  do_rawlog(LT_CONN, "[%d/%s/%s] Connection opened.", newsock, tbuf1, tbuf2);
-  set_keepalive(newsock);
-  return initializesock(newsock, tbuf1, tbuf2, use_ssl);
+  do_rawlog(LT_CONN, "[%d/%s/%s] Connection opened from %s.", newsock, tbuf1, tbuf2,
+	    source_to_s(source));
+  if (source != CS_LOCAL_SOCKET)
+    set_keepalive(newsock);
+  return initializesock(newsock, tbuf1, tbuf2, source);
 }
 
 static void
@@ -1576,8 +1679,7 @@ shutdownsock(DESC *d, const char *reason)
 
 /* ARGSUSED */
 DESC *
-initializesock(int s, char *addr, char *ip, int use_ssl
-               __attribute__ ((__unused__)))
+initializesock(int s, char *addr, char *ip, conn_source source)
 {
   DESC *d;
   d = (DESC *) mush_malloc(sizeof(DESC), "descriptor");
@@ -1617,13 +1719,14 @@ initializesock(int s, char *addr, char *ip, int use_ssl
   d->ssl = NULL;
   d->ssl_state = 0;
 #endif
+  d->source = source;
   if (descriptor_list)
     descriptor_list->prev = d;
   d->next = descriptor_list;
   d->prev = NULL;
   descriptor_list = d;
 #ifdef HAS_OPENSSL
-  if (use_ssl && sslsock) {
+  if (source == CS_OPENSSL_SOCKET) {
     d->ssl = ssl_listen(d->descriptor, &d->ssl_state);
     if (d->ssl_state < 0) {
       /* Error we can't handle */
@@ -1656,7 +1759,7 @@ process_output(DESC *d)
   int input_ready = 0;
 #endif
 
-#ifdef HAS_OPENSSL
+#if defined(HAS_OPENSSL) && !defined(SSL_SLAVE)
   /* Insure that we're not in a state where we need an SSL_handshake() */
   if (d->ssl && (ssl_need_handshake(d->ssl_state))) {
     d->ssl_state = ssl_handshake(d->ssl);
@@ -1719,7 +1822,7 @@ process_output(DESC *d)
   for (qp = &d->output.head; ((cur = *qp) != NULL);) {
 #ifdef HAVE_WRITEV
     if (cur->nxt
-#ifdef HAVE_SSL
+#ifdef HAS_OPENSSL
         && !d->ssl
 #endif
       ) {
@@ -2758,7 +2861,7 @@ close_sockets(void)
   DESC *d, *dnext;
   const char *shutmsg;
   int shutlen;
-  int ignoreme;
+  int ignoreme __attribute__((__unused__));
 
   shutmsg = T(shutdown_message);
   shutlen = strlen(shutmsg);
@@ -3124,6 +3227,13 @@ reaper(int sig __attribute__ ((__unused__)))
       info_slave_pid = -1;
     } else
 #endif
+#ifdef SSL_SLAVE
+      if (ssl_slave_pid > -1 && pid == ssl_slave_pid) {
+	ssl_slave_error = ssl_slave_pid;
+	ssl_slave_state = SSL_SLAVE_DOWN;
+	ssl_slave_pid = -1;
+      } else
+#endif      
     if (forked_dump_pid > -1 && pid == forked_dump_pid) {
       dump_error = forked_dump_pid;
       dump_status = my_stat;
@@ -3427,12 +3537,7 @@ do_who_admin(dbref player, char *name)
               unparse_dbref(Location(d->player)),
               time_format_1(now - d->connected_at),
               time_format_2(now - d->last_time), d->cmds, d->descriptor,
-#ifdef HAS_OPENSSL
-              d->ssl ? 'S' : ' ',
-#else
-              ' ',
-#endif
-              d->addr);
+              is_ssl_desc(d) ? 'S' : ' ', d->addr);
       if (Dark(d->player)) {
         tbuf[71] = '\0';
         strcat(tbuf, " (Dark)");
@@ -4570,23 +4675,15 @@ FUNCTION(fun_ssl)
   /* Return the status of the ssl flag on the least idle descriptor we
    * find that matches the player's dbref.
    */
-#ifdef HAS_OPENSSL
   DESC *match;
-  if (!sslsock) {
-    safe_boolean(0, buff, bp);
-    return;
-  }
   match = lookup_desc(executor, args[0]);
   if (match) {
     if (match->player == executor || See_All(executor))
-      safe_boolean((match->ssl != NULL), buff, bp);
+      safe_boolean(is_ssl_desc(match), buff, bp);
     else
       safe_str(T(e_perm), buff, bp);
   } else
     safe_str(T("#-1 NOT CONNECTED"), buff, bp);
-#else
-  safe_boolean(0, buff, bp);
-#endif
 }
 
 FUNCTION(fun_width)
@@ -4629,10 +4726,8 @@ FUNCTION(fun_terminfo)
         safe_str(" telnet", buff, bp);
       if (match->conn_flags & CONN_PROMPT_NEWLINES)
         safe_str(" prompt_newlines", buff, bp);
-#ifdef HAS_OPENSSL
-      if (sslsock && match->ssl)
+      if (is_ssl_desc(match))
         safe_str(" ssl", buff, bp);
-#endif
     } else
       safe_str(T(e_perm), buff, bp);
   } else
@@ -5024,7 +5119,7 @@ f_close(stream)
 #define fclose(x) f_close(x)
 #endif                          /* SUN_OS */
 
-#ifdef HAS_OPENSSL
+#if defined(HAS_OPENSSL) && !defined(SSL_SLAVE)
 /** Take down all SSL client connections and close the SSL server socket.
  * Typically, this is in preparation for a shutdown/reboot.
  */
@@ -5063,7 +5158,12 @@ dump_reboot_db(void)
 {
   PENNFILE *f;
   DESC *d;
-  long flags = RDBF_SCREENSIZE | RDBF_TTYPE | RDBF_PUEBLO_CHECKSUM;
+  uint32_t flags = RDBF_SCREENSIZE | RDBF_TTYPE | RDBF_PUEBLO_CHECKSUM | RDBF_UNIX_SOCKET;
+
+#ifdef SSL_SLAVE
+  flags |= RDBF_SSL_SLAVE;
+#endif
+
   if (setjmp(db_err)) {
     flag_broadcast(0, 0, T("GAME: Error writing reboot database!"));
     exit(0);
@@ -5076,8 +5176,9 @@ dump_reboot_db(void)
       exit(0);
     }
     /* Write out the reboot db flags here */
-    penn_fprintf(f, "V%ld\n", flags);
+    penn_fprintf(f, "V%u\n", flags);
     putref(f, sock);
+    putref(f, sslsock);
     putref(f, maxd);
     /* First, iterate through all descriptors to get to the end
      * we do this so the descriptor_list isn't reversed on reboot
@@ -5118,6 +5219,9 @@ dump_reboot_db(void)
     putstring(f, poll_msg);
     putref(f, globals.first_start_time);
     putref(f, globals.reboot_count);
+#ifdef SSL_SLAVE
+    putref(f, ssl_slave_pid);
+#endif
     penn_fclose(f);
   }
 }
@@ -5133,7 +5237,8 @@ load_reboot_db(void)
   int val;
   const char *temp;
   char c;
-  long flags = 0;
+  uint32_t flags = 0;
+
   f = penn_fopen(REBOOTFILE, "r");
   if (!f) {
     restarting = 0;
@@ -5158,6 +5263,10 @@ load_reboot_db(void)
     }
   
     sock = getref(f);
+
+    if (flags & RDBF_SSL_SLAVE)
+      sslsock = getref(f);
+
     val = getref(f);
     if (val > maxd)
       maxd = val;
@@ -5245,7 +5354,7 @@ load_reboot_db(void)
     globals.first_start_time = getref(f);
     globals.reboot_count = getref(f) + 1;
 
-#ifdef HAS_OPENSSL
+#if defined(HAS_OPENSSL) && !defined(SSL_SLAVE)
     if (SSLPORT) {
       sslsock = make_socket(SSLPORT, SOCK_STREAM, NULL, NULL, SSL_IP_ADDR);
       ssl_master_socket = ssl_setup_socket(sslsock);
@@ -5253,7 +5362,12 @@ load_reboot_db(void)
 	maxd = sslsock + 1;
     }
 #endif
-    
+
+#ifdef SSL_SLAVE
+    if (flags & RDBF_SSL_SLAVE)
+      ssl_slave_pid = getref(f);
+#endif    
+
     penn_fclose(f);
     remove(REBOOTFILE);
   }
@@ -5319,7 +5433,7 @@ do_reboot(dbref player, int flag)
     if (globals.paranoid_checkpt < 1)
       globals.paranoid_checkpt = 1;
   }
-#ifdef HAS_OPENSSL
+#if defined(HAS_OPENSSL) && !defined(SSL_SLAVE)
   close_ssl_connections();
 #endif
   sql_shutdown();

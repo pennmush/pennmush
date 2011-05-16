@@ -74,6 +74,10 @@ int make_socket
 int make_socket_conn(const char *host, int socktype,
                      struct sockaddr *myiterface, socklen_t myilen, Port_t port,
                      bool nonb);
+
+int make_unix_socket(const char *filename, int socktype);
+int connect_unix_socket(const char *filename, int socktype);
+
 int wait_for_connect(int, int);
 void make_nonblocking(int s);
 void make_blocking(int s);

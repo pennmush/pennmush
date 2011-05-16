@@ -38,6 +38,10 @@
 #endif
 #endif
 
+#ifdef HAVE_SYS_UN_H
+#include <sys/un.h>
+#endif
+
 #ifdef I_NETINET_TCP
 #include <netinet/tcp.h>
 #endif
@@ -341,6 +345,74 @@ make_socket(Port_t port, int socktype, union sockaddr_u *addr, socklen_t * len,
   return s;
 }
 
+#ifndef WIN32
+  /** Create a unix-domain socket .
+   * \param filename The name of the socket file.
+   * \param socktype The type of socket.
+   * \return a fd for the socket, or -1 on error.
+   */
+int
+make_unix_socket(const char *filename, int socktype)
+{
+  int s;
+  struct sockaddr_un addr;
+  
+  memset(&addr, 0, sizeof addr);
+  addr.sun_family = AF_LOCAL;
+  strncpy(addr.sun_path, filename, sizeof(addr.sun_path) - 1);
+
+  unlink(filename);
+
+  if ((s = socket(AF_LOCAL, socktype, 0)) < 0) {
+    perror("socket");
+    return -1;
+  }
+
+  if (bind(s, (const struct sockaddr*)&addr, sizeof addr) < 0) {
+    perror("bind");
+    close(s);
+    return -1;
+  }
+
+  if (listen(s, 5) < 0) {
+    perror("listen");
+    close(s);
+    return -1;
+  }
+
+  return s;
+}
+
+/** Connect to a unix-domain socket 
+ * \param filename The name of the socket file.
+ * \param socktyp the type of socket
+ * \return a fd for the socket or -1 on error.
+ */
+int
+connect_unix_socket(const char *filename, int socktype)
+{
+  int s;
+  struct sockaddr_un addr;
+
+  memset(&addr, 0, sizeof addr);
+  addr.sun_family = AF_LOCAL;
+  strncpy(addr.sun_path, filename, sizeof(addr.sun_path) - 1);
+
+  if ((s = socket(AF_LOCAL, socktype, 0)) < 0) {
+    perror("socket");
+    return -1;
+  }
+
+  if (connect_nonb(s, (const struct sockaddr *)&addr, sizeof addr, 1) == 0)
+    return s;
+  else {
+    close(s);
+    return -1;
+  }
+}
+
+
+#endif
 
 /** Make a socket do nonblocking i/o.
  * \param s file descriptor of socket.
@@ -432,7 +504,7 @@ set_keepalive(int s __attribute__ ((__unused__)))
   /* enable TCP keepalive */
   if (setsockopt(s, SOL_SOCKET, SO_KEEPALIVE,
                  (void *) &keepalive, sizeof(keepalive)) == -1)
-    fprintf(stderr, "[%d] could not set SO_KEEPALIVE: errno %d", s, errno);
+    fprintf(stderr, "[%d] could not set SO_KEEPALIVE: %s\n", s, strerror(errno));
 
   /* And set the ping time to something reasonable instead of the
      default 2 hours. Linux and possibly others use TCP_KEEPIDLE to do
@@ -440,11 +512,11 @@ set_keepalive(int s __attribute__ ((__unused__)))
 #if defined(TCP_KEEPIDLE)
   if (setsockopt(s, IPPROTO_TCP, TCP_KEEPIDLE,
                  (void *) &keepidle, sizeof(keepidle)) == -1)
-    fprintf(stderr, "[%d] could not set TCP_KEEPIDLE: errno %d", s, errno);
+    fprintf(stderr, "[%d] could not set TCP_KEEPIDLE: %s\n", s, strerror(errno));
 #elif defined(TCP_KEEPALIVE)
   if (setsockopt(s, IPPROTO_TCP, TCP_KEEPALIVE,
                  (void *) &keepidle, sizeof(keepidle)) == -1)
-    fprintf(stderr, "[%d] could not set TCP_KEEPALIVE: errno %d", s, errno);
+    fprintf(stderr, "[%d] could not set TCP_KEEPALIVE: %s\n", s, strerror(errno));
 #endif
 #endif
   return;

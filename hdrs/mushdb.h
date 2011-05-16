@@ -171,5 +171,7 @@ bool unfindable(dbref);
 #define RDBF_SCREENSIZE         0x01
 #define RDBF_TTYPE              0x02
 #define RDBF_PUEBLO_CHECKSUM    0x04
+#define RDBF_UNIX_SOCKET        0x08
+#define RDBF_SSL_SLAVE          0x10
 
 #endif                          /* __DB_H */

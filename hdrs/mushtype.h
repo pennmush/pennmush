@@ -319,6 +319,13 @@ struct text_queue {
  */
 #define PUEBLO_CHECKSUM_LEN 40
 
+typedef enum conn_source {
+  CS_IP_SOCKET,
+  CS_OPENSSL_SOCKET,
+  CS_LOCAL_SOCKET,
+  CS_UNKNOWN
+} conn_source;
+
 typedef struct descriptor_data DESC;
 /** A player descriptor's data.
  * This structure associates a connection's socket (file descriptor)
@@ -355,6 +362,7 @@ struct descriptor_data {
   SSL *ssl;                     /**< SSL object */
   int ssl_state;                /**< Keep track of state of SSL object */
 #endif
+  conn_source source;           /**< Where the connection came from. */
   char checksum[PUEBLO_CHECKSUM_LEN + 1];       /**< Pueblo checksum */
 };
 

@@ -26,7 +26,6 @@
 
 #include <event.h>
 #include <event2/dns.h>
-#include <event2/listener.h>
 #include <event2/bufferevent_ssl.h>
 
 #include "conf.h"

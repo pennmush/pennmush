@@ -14,6 +14,7 @@
 SSL_CTX *ssl_init(char *private_key_file, char *ca_file, int req_client_cert);
 SSL *ssl_setup_socket(int sock);
 void ssl_close_connection(SSL * ssl);
+SSL *ssl_alloc_struct(void);
 SSL *ssl_listen(int sock, int *state);
 SSL *ssl_resume(int sock, int *state);
 int ssl_accept(SSL * ssl);

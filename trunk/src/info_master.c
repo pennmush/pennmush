@@ -291,6 +291,8 @@ query_info_slave(int fd)
   info_slave_state = INFO_SLAVE_PENDING;
 }
 
+extern const char *source_to_s(conn_source);
+
 void
 reap_info_slave(void)
 {
@@ -298,6 +300,7 @@ reap_info_slave(void)
   ssize_t len;
   char hostname[BUFFER_LEN], *hp;
   int n, count;
+  conn_source source;
 
   if (info_slave_state != INFO_SLAVE_PENDING) {
     if (info_slave_state == INFO_SLAVE_DOWN)
@@ -349,11 +352,19 @@ reap_info_slave(void)
     return;
   }
 
-  do_log(LT_CONN, 0, 0, "[%d/%s/%s] Connection opened.", resp.fd,
-         hostname, resp.ipaddr);
+  if (resp.connected_to == TINYPORT)
+    source = CS_IP_SOCKET;
+  else if (resp.connected_to == SSLPORT)
+    source = CS_OPENSSL_SOCKET;
+  else
+    source = CS_UNKNOWN;
+
+  do_log(LT_CONN, 0, 0, "[%d/%s/%s] Connection opened from %s.", resp.fd,
+         hostname, resp.ipaddr, source_to_s(source));
   set_keepalive(resp.fd);
-  initializesock(resp.fd, hostname, resp.ipaddr,
-                 (resp.connected_to == SSLPORT));
+
+
+  initializesock(resp.fd, hostname, resp.ipaddr, source);
 }
 
 /** Kill the info_slave process, typically at shutdown.

@@ -55,6 +55,12 @@ II. Compiling with OpenSSL
   config.h. If you have SSL libraries but wish to avoid linking with them,
   give the --without-ssl argument to configure when you run it.
 
+  SSL connections are normally dropped on a @shutdown/reboot, because
+  there is no way to save and restore neccessary OpenSSL state
+  information. With the experimental --enable-ssl_slave option, SSL
+  connections are handled by a seperate process that will persist
+  across restarts. It will not work on Windows systems.
+
   You can compile the OpenSSL libraries yourself from source code
   at http://www.openssl.org. If you install it through your OS'es
   package management system, you need shared libraries and development
@@ -69,6 +75,18 @@ II. Compiling with OpenSSL
   libraries to the PennMUSH project file and link it in that way.
   Noltar has done this succesfully; it requires compiling both
   OpenSSL and PennMUSH in /MD (multithread dll) mode.
+
+  Normally, encrypted connections will be booted when a running game
+  restarts, because the internal OpenSSL state cannot be saved to disc
+  and restored later. To allow persistant ssl connections via a proxy
+  process, pass --enable-ssl_slave to configure when you run it. This
+  is experimental code (And thus not enabled by default) and does not
+  work on Windows. It requires the libevent 2.X library and headers to
+  be installed. Get it through your OS's package system or at
+  http://monkey.org/~provos/libevent/
+ 
+  Once the ssl slave proxy becomes more widely tested and debugged, it
+  will be enabled by default.
 
 III. Mush configuration overview
 
@@ -93,6 +111,9 @@ III. Mush configuration overview
   a CA for which ssl_ca_file holds a certificate) certificates in order
   to connect. As no mud clients currently do this, you probably want it 
   off. See section V below.
+
+  socket_file is the path to a file to use as a unix domain socket used
+  for talking to the optional SSL connection proxy.
 
 IV. Installing a server certificate
 

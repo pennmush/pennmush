@@ -202,9 +202,6 @@ ssl_init(char *private_key_file, char *ca_file, int req_client_cert)
   strncpy((char *) context, MUDNAME, 128);
   SSL_CTX_set_session_id_context(ctx, context, u_strlen(context));
 
-  /* Load hash algorithms */
-  OpenSSL_add_all_digests();
-
   return ctx;
 }
 
@@ -283,6 +280,12 @@ get_dh1024(void)
   return dh;
 }
 
+SSL *
+ssl_alloc_struct(void)
+{
+  return SSL_new(ctx);
+}
+
 /** Associate an SSL object with a socket and return it.
  * \param sock socket descriptor to associate with an SSL object.
  * \return pointer to SSL object.
@@ -293,7 +296,7 @@ ssl_setup_socket(int sock)
   SSL *ssl;
   BIO *bio;
 
-  ssl = SSL_new(ctx);
+  ssl = ssl_alloc_struct();
   bio = BIO_new_socket(sock, BIO_NOCLOSE);
   BIO_set_nbio(bio, 1);
   SSL_set_bio(ssl, bio, bio);
@@ -313,8 +316,6 @@ ssl_close_connection(SSL * ssl)
   SSL_shutdown(ssl);
   SSL_free(ssl);
 }
-
-
 
 /** Given an accepted connection on the listening socket, set up SSL.
  * \param sock an accepted socket (returned by accept())

@@ -187,6 +187,7 @@ PENNCONF conftable[] = {
   ,
   {"ssl_port", cf_int, &options.ssl_port, 65535, 0, "net"}
   ,
+  {"socket_file", cf_str, &options.socket_file, 256, 0, "net"},
   {"use_dns", cf_bool, &options.use_dns, 2, 0, "net"}
   ,
   {"logins", cf_bool, &options.login_allow, 2, 0, "net"}
@@ -1271,6 +1272,7 @@ conf_default_set(void)
   strcpy(options.mud_url, "");
   options.port = 4201;
   options.ssl_port = 0;
+  strcpy(options.socket_file, "data/netmush.sock");
   strcpy(options.input_db, "data/indb");
   strcpy(options.output_db, "data/outdb");
   strcpy(options.crash_db, "data/PANIC.db");

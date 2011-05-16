@@ -74,6 +74,8 @@
 
 #undef HAVE_SYS_INOTIFY_H
 
+#undef HAVE_SYS_PRCTL_H
+
 #undef HAVE_FAM_H
 
 #undef HAVE_LIBFAM
@@ -107,6 +109,10 @@
 #undef HAVE_PCRE_H
 
 #undef HAVE_PCRE
+
+#undef HAVE_EVENT_H
+
+#undef HAVE_LIBEVENT
 
 /* Types */
 
@@ -326,6 +332,8 @@ typedef bool _Bool;
 
 #undef HAVE_PWRITE
 
+#undef HAVE_PRCTL
+
 #undef HAVE_POSIX_FADVISE
 
 #undef HAVE_POSIX_FALLOCATE
@@ -351,6 +359,8 @@ typedef bool _Bool;
 #undef DONT_TRANSLATE
 
 #undef INFO_SLAVE
+
+#undef SSL_SLAVE
 
 #undef HAVE_UPTIME
 

@@ -18,6 +18,12 @@ chronological order (most recent first)
 
 Version 1.8.4 patchlevel 5                                 ??? ??,  2012
 
+Major Changes:
+
+ * The experimental --enable-ssl_slave option for configure allows
+   persistant SSL connections that won't get booted when the mush
+   restarts. Requires libevent v2.X. [SW]
+
 Commands:
  * @edit/quiet edits attributes, but doesn't spam you with the modified
    values, just gives you a count of modified attributes. Suggested by
@@ -57,8 +63,8 @@ Fixes:
  * The Open_Anywhere power didn't fully work as intended. Patch by Covenent.
  * regrab*() functions removed ansi. Reported by Covenent. [MG]
  * munge() didn't play nice with ansi. [MG]
- * @shutdown/reboot would cause hang unencrypted sockets for players with
-   both SSL and normal connections. Reported by Padraic. [SW]
+ * @shutdown/reboot would hang unencrypted sockets for players with both
+   SSL and normal connections. Reported by Padraic. [SW]
  * @chatformat sometimes received the player's name without accents by
    mistake. Reported by Sketch. [MG]
  * Bug in @wipe fixed by Padraic.

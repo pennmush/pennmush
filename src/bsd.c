@@ -1002,7 +1002,6 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
       do_rawlog(LT_ERR, "ssl_slave (Pid %d) exited unexpectedly!",
 		ssl_slave_error);
       ssl_slave_error = 0;
-      shutdown(localsock, 2);
       closesocket(localsock);
       localsock = 0;
     }
@@ -1261,7 +1260,6 @@ new_connection(int oldsock, int *result, conn_source source)
     len = read(newsock, tbuf2, sizeof tbuf2);
     if (len < 3) {
       /* This shouldn't happen! */
-      shutdown(newsock, 2);
       closesocket(newsock);
       return 0;
     }
@@ -1288,7 +1286,8 @@ new_connection(int oldsock, int *result, conn_source source)
                 "Refused connection", "remote port",
                 hi ? hi->port : "(unknown)");
     }
-    shutdown(newsock, 2);
+    if (source != CS_LOCAL_SOCKET)
+      shutdown(newsock, 2);
     closesocket(newsock);
 #ifndef WIN32
     errno = 0;
@@ -2895,7 +2894,7 @@ close_sockets(void)
       d->ssl_state = 0;
     }
 #endif
-    if (shutdown(d->descriptor, 2) < 0)
+    if (d->source != CS_LOCAL_SOCKET && shutdown(d->descriptor, 2) < 0)
       penn_perror("shutdown");
     closesocket(d->descriptor);
   }
@@ -5158,10 +5157,10 @@ dump_reboot_db(void)
 {
   PENNFILE *f;
   DESC *d;
-  uint32_t flags = RDBF_SCREENSIZE | RDBF_TTYPE | RDBF_PUEBLO_CHECKSUM;
+  uint32_t flags = RDBF_SCREENSIZE | RDBF_TTYPE | RDBF_PUEBLO_CHECKSUM | RDBF_SOCKET_SRC;
 
 #ifdef LOCAL_SOCKET  
-  flags |= RDBF_UNIX_SOCKET;
+  flags |= RDBF_LOCAL_SOCKET;
 #endif
 
 #ifdef SSL_SLAVE
@@ -5218,6 +5217,7 @@ dump_reboot_db(void)
       putref(f, d->width);
       putref(f, d->height);
       putstring(f, d->ttype);
+      putref(f, d->source);
       putstring(f, d->checksum);
     }                           /* for loop */
 
@@ -5270,8 +5270,8 @@ load_reboot_db(void)
   
     sock = getref(f);
 
-#ifdef LOCAL_SOCK
-    if (flags & RDBF_LOCAL_SOCK)
+#ifdef LOCAL_SOCKET
+    if (flags & RDBF_LOCAL_SOCKET)
       localsock = getref(f);
 #endif
 
@@ -5312,6 +5312,8 @@ load_reboot_db(void)
 	d->ttype = mush_strdup(getstring_noalloc(f), "terminal description");
       else
 	d->ttype = mush_strdup("unknown", "terminal description");
+      if (flags & RDBF_SOCKET_SRC)
+	d->source = getref(f);
       if (flags & RDBF_PUEBLO_CHECKSUM)
 	strcpy(d->checksum, getstring_noalloc(f));
       else
@@ -5394,7 +5396,6 @@ load_reboot_db(void)
   }
  
   flag_broadcast(0, 0, T("GAME: Reboot finished."));
-
 }
 
 /** Reboot the game without disconnecting players.

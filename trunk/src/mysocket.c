@@ -379,6 +379,8 @@ make_unix_socket(const char *filename, int socktype)
     return -1;
   }
 
+  fprintf(stderr, "Listening on socket file %s (fd %d)\n.", filename, s);
+
   return s;
 }
 

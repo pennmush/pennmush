@@ -404,7 +404,7 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
       destination = Home(victim);
     }
   } else {
-    destination = match_result(player, to, TYPE_PLAYER, MAT_EVERYTHING);
+    destination = match_result(player, to, NOTYPE, MAT_EVERYTHING);
   }
 
   switch (destination) {

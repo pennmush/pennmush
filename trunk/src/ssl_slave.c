@@ -225,6 +225,8 @@ address_resolved(int result, char type, int count, int ttl __attribute__((__unus
   struct sockaddr_un addr;
   struct hostname_info *ipaddr;
 
+  c->resolver_req = NULL;
+
   if (result != DNS_ERR_NONE || !addresses || type != DNS_PTR || count == 0) {
     do_rawlog(LT_ERR, "ssl_slave: Hostname lookup failed: %s. type = %d, count = %d", evdns_err_to_string(result),
 	      (int)type, count);
@@ -235,7 +237,6 @@ address_resolved(int result, char type, int count, int ttl __attribute__((__unus
   hostname = ((const char **)addresses)[0];
 
   c->remote_host = strdup(hostname);
-  c->resolver_req = NULL;
   ipaddr = ip_convert(&c->remote_addr.addr, c->remote_addrlen);
   c->remote_ip = strdup(ipaddr->hostname);  
 

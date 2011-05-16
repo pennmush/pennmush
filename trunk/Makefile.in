@@ -183,13 +183,6 @@ totallyclean: distclean
 	(cd src; rm -rf *.rej)
 	-rm -f Makefile
 
-diffs:
-	@make indent > /dev/null 2>&1
-	@make versions > /dev/null 2>&1
-	@make touchswitches > /dev/null 2>&1
-	@make autogen > /dev/null 2>&1
-	@(prcs diff -r$(VS) -N pennmush `cat MANIFEST` | grep -v 'Index:')
-
 commit: indent
 	@svn commit
 
@@ -208,19 +201,6 @@ cscope:
 
 touchswitches:
 	@@TOUCH@ src/SWITCHES
-
-dist.tar: 
-	svn checkout svn+ssh://svn.pennmush.org/svn/pennmush/$(VERSION)/trunk
-	sed -e "s#^#pennmush-$(VERSION)p$(PATCHLEVEL)/#" < trunk/MANIFEST \
-		> DISTFILES
-	mv -f trunk pennmush-$(VERSION)p$(PATCHLEVEL)
-	tar -cvf dist.tar --files-from=DISTFILES
-	-gpg -sb /tmp/dist.tar
-	bzip2 -k /tmp/dist.tar
-	openssl dgst -sha1 -out /tmp/dist.tar.bz2.sha1 /tmp/dist.tar.bz2 
-	gzip -k /tmp/dist.tar
-	openssl dgst -sha1 -out /tmp/dist.tar.gz.sha1 /tmp/dist.tar.gz
-	-rm -rf pennmush-$(VERSION)p$(PATCHLEVEL) DISTFILES
 
 globalinstall: install
 	(cd game/txt; make clean compose.sh)

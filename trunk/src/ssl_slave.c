@@ -425,8 +425,6 @@ make_ssl_slave(Port_t port)
       exit(EXIT_FAILURE);
     }
 
-    event_enable_debug_mode();
-
     main_loop = event_base_new();
     resolver = evdns_base_new(main_loop, 1);
 

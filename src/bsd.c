@@ -610,12 +610,19 @@ main(int argc, char **argv)
   }
 
 #ifdef SSL_SLAVE
+  if (!restarting && SSLPORT) {
+    if (make_ssl_slave(SSLPORT) < 0)
+      do_rawlog(LT_ERR, "Unable to start ssl_slave");
+  }
+#endif
+#ifdef LOCAL_SOCKET
   if (!restarting) {
-    localsock = make_ssl_slave(SSLPORT);
+    localsock = make_unix_socket(options.socket_file, SOCK_STREAM);
     if (localsock >= maxd)
       maxd = localsock + 1;
   }
 #endif
+
 
   if (init_game_dbs() < 0) {
     do_rawlog(LT_ERR, "ERROR: Couldn't load databases! Exiting.");
@@ -665,6 +672,12 @@ main(int argc, char **argv)
 
 #ifdef SSL_SLAVE
   kill_ssl_slave();
+#endif
+#ifdef LOCAL_SOCKET
+  if (localsock) {
+    closesocket(localsock);
+    unlink(options.socket_file);
+  }
 #endif
 
 #ifdef WIN32SERVICES
@@ -1002,8 +1015,6 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
       do_rawlog(LT_ERR, "ssl_slave (Pid %d) exited unexpectedly!",
 		ssl_slave_error);
       ssl_slave_error = 0;
-      closesocket(localsock);
-      localsock = 0;
     }
 #endif
 #endif                          /* !WIN32 */
@@ -5240,7 +5251,7 @@ load_reboot_db(void)
   PENNFILE *f;
   DESC *d = NULL;
   DESC *closed = NULL, *nextclosed;
-  int val;
+  int val = 0;
   const char *temp;
   char c;
   uint32_t flags = 0;
@@ -5270,9 +5281,11 @@ load_reboot_db(void)
   
     sock = getref(f);
 
-#ifdef LOCAL_SOCKET
     if (flags & RDBF_LOCAL_SOCKET)
-      localsock = getref(f);
+      val = getref(f);
+
+#ifdef LOCAL_SOCKET
+    localsock = val;
 #endif
 
     val = getref(f);
@@ -5373,10 +5386,21 @@ load_reboot_db(void)
     }
 #endif
 
-#ifdef SSL_SLAVE
     if (flags & RDBF_SSL_SLAVE)
-      ssl_slave_pid = getref(f);
-#endif    
+      val = getref(f);
+    else
+      val = -1;
+
+#ifdef SSL_SLAVE
+    ssl_slave_pid = val;
+    if (ssl_slave_pid == -1 && SSLPORT) {
+      /* Attempt to restart a missing ssl_slave on reboot */
+      do_rawlog(LT_ERR, "ssl_slave does not appear to be running on reboot. Restarting the slave.");
+      if (make_ssl_slave(SSLPORT) < 0)
+	do_rawlog(LT_ERR, "Unable to start ssl_slave");
+    } else
+      ssl_slave_state = SSL_SLAVE_RUNNING;
+#endif
 
     penn_fclose(f);
     remove(REBOOTFILE);

@@ -307,10 +307,10 @@ event_cb(struct bufferevent *bev, short e, void *data)
       if (c->remote_bev) {
 	bufferevent_disable(c->remote_bev, EV_READ);
 	bufferevent_flush(c->remote_bev, EV_WRITE, BEV_FINISHED);
-	delete_conn(c);
       }
+      delete_conn(c);
     } else {
-      /* Remote side of the connetion went away. Flush mush buffer and shut down. */
+      /* Remote side of the connection went away. Flush mush buffer and shut down. */
 #if SSL_DEBUG_LEVEL > 0
       do_rawlog(LT_ERR, "ssl_slave: Lost SSL connection. State: %d", c->state);
 #endif
@@ -321,8 +321,8 @@ event_cb(struct bufferevent *bev, short e, void *data)
       if (c->local_bev) {
 	bufferevent_disable(c->local_bev, EV_READ);
 	bufferevent_flush(c->local_bev, EV_WRITE, BEV_FINISHED);
-	delete_conn(c);
       }
+      delete_conn(c);
     }
   }
 }

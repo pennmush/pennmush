@@ -115,7 +115,7 @@ my_vsnprintf(char *str, size_t len, const char *fmt, va_list ap)
       ret = len;
 
     memcpy(str, buff, ret);
-    str[ret - 1] = '\0';
+    str[ret] = '\0';
   }
 #endif
 

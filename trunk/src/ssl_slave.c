@@ -89,10 +89,9 @@ alloc_conn(void)
 
 /** Free a connection object.
  * \param c the object to free
- * \param remove true to remove it from the connections list too
  */
 void
-free_conn(struct conn *c, bool remove)
+free_conn(struct conn *c)
 {
   if (c->local_bev)
     bufferevent_free(c->local_bev);
@@ -104,26 +103,33 @@ free_conn(struct conn *c, bool remove)
     free(c->remote_ip);
   if (c->resolver_req)
     evdns_cancel_request(resolver, c->resolver_req);
-
-  if (remove) {
-    struct conn *curr, *nxt;
-    for (curr = connections; curr; curr = nxt) {
-      nxt = curr->next;
-      if (curr == c) {
-	if (curr->prev) {
-	  curr->prev->next = nxt;
-	  if (nxt)
-	    nxt->prev = curr->prev;
-	} else {
-	  connections = nxt;
-	  connections->prev = NULL;
-	}
-	break;
-      }
-    }
-  }
-
   free(c);
+}
+
+/** Remove a connection object from the list of maintained
+ * connections.
+ * \param c the object to clean up.
+ */
+void
+delete_conn(struct conn *c)
+{
+  struct conn *curr, *nxt;
+  for (curr = connections; curr; curr = nxt) {
+    nxt = curr->next;
+    if (curr == c) {
+      if (curr->prev) {
+	curr->prev->next = nxt;
+	if (nxt)
+	  nxt->prev = curr->prev;
+	} else {
+	connections = nxt;
+	if (connections)
+	  connections->prev = NULL;
+      }
+      break;
+      }
+  }
+  free_conn(c);
 }
 
 /** Address to hostname lookup wrapper */
@@ -184,18 +190,6 @@ pipe_cb(struct bufferevent *from_bev, void *data)
   }
 }
 
-/** Clean up after one side of the pipe exits or errors */
-static void
-exit_cb(struct bufferevent *bev __attribute__((__unused__)), void *data)
-{
-  struct conn *c = data;  
-
-  if (c->state != C_SHUTTINGDOWN)
-    return; /* Should never happen */
-
-  free_conn(c, 1);
-}
-
 /** Called after the local connection to the mush has established */
 static void
 local_connected(struct conn *c)
@@ -237,7 +231,7 @@ address_resolved(int result, char type, int count, int ttl __attribute__((__unus
   if (result != DNS_ERR_NONE || !addresses || type != DNS_PTR || count == 0) {
     do_rawlog(LT_ERR, "ssl_slave: Hostname lookup failed: %s. type = %d, count = %d", evdns_err_to_string(result),
 	      (int)type, count);
-    free_conn(c, 1);
+    delete_conn(c);
     return;
   }
 
@@ -269,7 +263,7 @@ ssl_connected(struct conn *c)
   X509 *peer;
 
 #if SSL_DEBUG_LEVEL > 0
-  do_rawlog(LT_ERR, "ssl_slave: SSL connection attempt completed. Resolving remote host name.");
+  do_rawlog(LT_CONN, "ssl_slave: SSL connection attempt completed. Resolving remote host name.");
 #endif
 
   /* Successful accept. Log peer certificate, if any. */
@@ -314,10 +308,9 @@ event_cb(struct bufferevent *bev, short e, void *data)
       c->state = C_SHUTTINGDOWN;
       if (c->remote_bev) {
 	bufferevent_disable(c->remote_bev, EV_READ);
-	bufferevent_setcb(c->remote_bev, NULL, exit_cb, event_cb, c);
 	bufferevent_flush(c->remote_bev, EV_WRITE, BEV_FINISHED);
-      } else
-	free_conn(c, 1);
+	delete_conn(c);
+      }
     } else {
       /* Remote side of the connetion went away. Flush mush buffer and shut down. */
 #if SSL_DEBUG_LEVEL > 0
@@ -329,10 +322,9 @@ event_cb(struct bufferevent *bev, short e, void *data)
       c->state = C_SHUTTINGDOWN;
       if (c->local_bev) {
 	bufferevent_disable(c->local_bev, EV_READ);
-	bufferevent_setcb(c->local_bev, NULL, exit_cb, event_cb, c);
 	bufferevent_flush(c->local_bev, EV_WRITE, BEV_FINISHED);
-      } else
-	free_conn(c, 1);
+	delete_conn(c);
+      }
     }
   }
 }
@@ -362,7 +354,7 @@ new_conn_cb(evutil_socket_t s, short flags __attribute__((__unused__)), void *da
   c->remote_fd = accept(s, &c->remote_addr.addr, &c->remote_addrlen);
   if (c->remote_fd < 0) {
     do_rawlog(LT_ERR, "ssl_slave: accept: %s", strerror(errno));
-    free_conn(c, 1);
+    delete_conn(c);
     return;
   }
 
@@ -371,7 +363,7 @@ new_conn_cb(evutil_socket_t s, short flags __attribute__((__unused__)), void *da
 						 BEV_OPT_CLOSE_ON_FREE | BEV_OPT_DEFER_CALLBACKS);
   if (!c->remote_bev) {
     do_rawlog(LT_ERR, "ssl_slave: Unable to make SSL bufferevent!");
-    free_conn(c, 1);
+    delete_conn(c);
     return;
   }
   bufferevent_setcb(c->remote_bev, NULL, NULL, event_cb, c);
@@ -459,7 +451,7 @@ make_ssl_slave(Port_t port)
 
     for (c = connections; c; c = n) {
       n = c->next;
-      free_conn(c, 0);
+      free_conn(c);
     }
   
     exit(EXIT_SUCCESS);

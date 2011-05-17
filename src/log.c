@@ -226,6 +226,7 @@ do_rawlog(enum log_type logtype, const char *fmt, ...)
   my_vsnprintf(tbuf1, sizeof tbuf1, fmt, args);
   va_end(args);
 
+  time(&mudtime);
   ttm = localtime(&mudtime);
 
   strftime(timebuf, sizeof timebuf, "[%m/%d %H:%M:%S]", ttm);

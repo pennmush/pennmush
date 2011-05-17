@@ -123,10 +123,10 @@ delete_conn(struct conn *c)
 	if (connections)
 	  connections->prev = NULL;
       }
+      free_conn(c);
       break;
     }
   }
-  free_conn(c);
 }
 
 /** Address to hostname lookup wrapper */

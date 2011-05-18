@@ -11,7 +11,7 @@ enum ssl_slave_state {
 extern pid_t ssl_slave_pid;
 extern enum ssl_slave_state ssl_slave_state;
 
-int make_ssl_slave(Port_t port);
+int make_ssl_slave(void);
 void kill_ssl_slave(void);
 
 #endif

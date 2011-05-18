@@ -81,7 +81,7 @@ int connect_unix_socket(const char *filename, int socktype);
 int wait_for_connect(int, int);
 void make_nonblocking(int s);
 void make_blocking(int s);
-void set_keepalive(int s);
+void set_keepalive(int s, int timeout);
 /* Win32 uses closesocket() to close a socket, and so will we */
 #ifndef WIN32
 #define closesocket(s)  close(s)

@@ -361,7 +361,7 @@ reap_info_slave(void)
 
   do_log(LT_CONN, 0, 0, "[%d/%s/%s] Connection opened from %s.", resp.fd,
          hostname, resp.ipaddr, source_to_s(source));
-  set_keepalive(resp.fd);
+  set_keepalive(resp.fd, options.keepalive_timeout);
 
 
   initializesock(resp.fd, hostname, resp.ipaddr, source);

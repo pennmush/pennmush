@@ -611,7 +611,7 @@ main(int argc, char **argv)
 
 #ifdef SSL_SLAVE
   if (!restarting && SSLPORT) {
-    if (make_ssl_slave(SSLPORT) < 0)
+    if (make_ssl_slave() < 0)
       do_rawlog(LT_ERR, "Unable to start ssl_slave");
   }
 #endif
@@ -1308,7 +1308,7 @@ new_connection(int oldsock, int *result, conn_source source)
   do_rawlog(LT_CONN, "[%d/%s/%s] Connection opened from %s.", newsock, tbuf1, tbuf2,
 	    source_to_s(source));
   if (source != CS_LOCAL_SOCKET)
-    set_keepalive(newsock);
+    set_keepalive(newsock, options.keepalive_timeout);
   return initializesock(newsock, tbuf1, tbuf2, source);
 }
 
@@ -5396,7 +5396,7 @@ load_reboot_db(void)
     if (ssl_slave_pid == -1 && SSLPORT) {
       /* Attempt to restart a missing ssl_slave on reboot */
       do_rawlog(LT_ERR, "ssl_slave does not appear to be running on reboot. Restarting the slave.");
-      if (make_ssl_slave(SSLPORT) < 0)
+      if (make_ssl_slave() < 0)
 	do_rawlog(LT_ERR, "Unable to start ssl_slave");
     } else
       ssl_slave_state = SSL_SLAVE_RUNNING;

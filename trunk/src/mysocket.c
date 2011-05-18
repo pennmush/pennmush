@@ -114,7 +114,7 @@ extern int h_errno;
 static int connect_nonb
   (int sockfd, const struct sockaddr *saptr, socklen_t salen, bool nonb);
 
-#ifndef INFOSLAVE
+#ifndef SLAVE
 /** Given a sockaddr structure, try to look up and return hostname info.
  * If we can't get a hostname from DNS (or if we're not using DNS),
  * we settle for the IP address.
@@ -432,7 +432,7 @@ make_nonblocking(int s)
 
   if ((flags = fcntl(s, F_GETFL, 0)) == -1) {
     penn_perror("make_nonblocking: fcntl");
-#ifndef INFOSLAVE
+#ifndef SLAVE
     mush_panic("Fatal network error!");
 #else
     exit(1);
@@ -443,7 +443,7 @@ make_nonblocking(int s)
 
   if (fcntl(s, F_SETFL, flags) == -1) {
     penn_perror("make_nonblocking: fcntl");
-#ifndef INFOSLAVE
+#ifndef SLAVE
     mush_panic("Fatal network error!");
 #else
     exit(1);
@@ -469,7 +469,7 @@ make_blocking(int s)
 
   if ((flags = fcntl(s, F_GETFL, 0)) == -1) {
     penn_perror("make_blocking: fcntl");
-#ifndef INFOSLAVE
+#ifndef SLAVE
     mush_panic("Fatal network error!");
 #else
     exit(1);
@@ -479,7 +479,7 @@ make_blocking(int s)
   flags &= ~O_NDELAY;
   if (fcntl(s, F_SETFL, flags) == -1) {
     penn_perror("make_nonblocking: fcntl");
-#ifndef INFOSLAVE
+#ifndef SLAVE
     mush_panic("Fatal network error!");
 #else
     exit(1);
@@ -488,19 +488,15 @@ make_blocking(int s)
 #endif
 }
 
-#ifndef INFOSLAVE
 /** Enable TCP keepalive on the given socket if we can.
  * \param s socket.
  */
 /* ARGSUSED */
 void
-set_keepalive(int s __attribute__ ((__unused__)))
+set_keepalive(int s __attribute__ ((__unused__)), int keepidle __attribute__((__unused__)))
 {
 #ifdef SO_KEEPALIVE
   int keepalive = 1;
-#if defined(TCP_KEEPIDLE) || defined(TCP_KEEPALIVE)
-  int keepidle = options.keepalive_timeout;
-#endif
 
   /* enable TCP keepalive */
   if (setsockopt(s, SOL_SOCKET, SO_KEEPALIVE,
@@ -522,7 +518,6 @@ set_keepalive(int s __attribute__ ((__unused__)))
 #endif
   return;
 }
-#endif
 
 
 /** Connect a socket, possibly making it nonblocking first.

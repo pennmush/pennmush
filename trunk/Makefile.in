@@ -27,7 +27,7 @@ INSTALL=@INSTALL@
 INSTALLDIR=$installdir
 CP=@CP@
 CHMOD=@CHMOD@
-INSTALL_LINKS=@LN_S@ ../src/netmud netmush; @LN_S@ ../src/info_slave info_slave
+INSTALL_LINKS=@LN_S@ ../src/netmud netmush; @LN_S@ ../src/info_slave info_slave; @LN_S@ ../src/ssl_slave ssl_slave
 
 # stupid SYS V shell
 SHELL=/bin/sh
@@ -71,6 +71,7 @@ hdrs/funs.h: src/fun*.c src/bsd.c src/conf.c src/extmail.c src/help.c src/markup
 install: localized all
 	-rm -f game/netmush
 	-rm -f game/info_slave
+	-rm -f game/ssl_slave
 	(cd game; $(INSTALL_LINKS))
 	(cd game/txt; make)
 	@echo "If you plan to run multiple MUSHes, consider running 'make customize'"

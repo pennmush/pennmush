@@ -4,7 +4,7 @@
 #         You shouldn't have to change anything in this file.                 #
 ###############################################################################
 
-OUTFILES=buildinf netmud @INFO_SLAVE_TARGET@
+OUTFILES=buildinf netmud @INFO_SLAVE_TARGET@ @SSL_SLAVE_TARGET@
 
 # Libs EXCEPT for SQL ones
 LIBS=$(CLIBS)
@@ -22,7 +22,7 @@ C_FILES=access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c chunk.c	\
 	mysocket.c myrlimit.c myssl.c notify.c parse.c pcre.c		\
 	player.c plyrlist.c predicat.c privtab.c info_master.c ptab.c	\
 	rob.c services.c set.c SFMT.c shs.c sig.c sort.c speech.c	\
-	sql.c ssl_slave.c strdup.c strtree.c strutil.c tables.c		\
+	sql.c ssl_master.c strdup.c strtree.c strutil.c tables.c		\
 	timer.c unparse.c utils.c version.c wait.c warnings.c wild.c	\
 	wiz.c
 
@@ -38,7 +38,7 @@ O_FILES=access.o atr_tab.o attrib.o boolexp.o bsd.o bufferq.o chunk.o	\
 	mysocket.o myrlimit.o myssl.o notify.o parse.o pcre.o		\
 	player.o plyrlist.o info_master.o predicat.o privtab.o ptab.o	\
 	rob.o services.o set.o SFMT.o shs.o sig.o sort.o speech.o	\
-	sql.o ssl_slave.o strdup.o strtree.o strutil.o tables.o		\
+	sql.o ssl_master.o strdup.o strtree.o strutil.o tables.o		\
 	timer.o unparse.o utils.o version.o wait.o warnings.o wild.o	\
 	wiz.o
 
@@ -57,11 +57,17 @@ netmud: $(O_FILES)
 
 # We recompile mysocket.c instead of reusing mysocket.o because we
 # want to do some error handing differently for info_slave.
-info_slave: info_slave.c strdup.o sig.o wait.o mysocket.c ../hdrs/lookup.h
+info_slave: info_slave.o strdup.o sig.o wait.o mysocket.c ../hdrs/lookup.h
 	@echo "Making info_slave."
-	$(CC) $(CCFLAGS) -c info_slave.c
-	$(CC) $(CCFLAGS) -DINFOSLAVE -o info_slave info_slave.o \
-	strdup.o sig.o wait.o mysocket.c $(LDFLAGS) $(LIBS)
+	$(CC) $(CCFLAGS) -DSLAVE -o info_slave info_slave.o strdup.o	\
+	sig.o wait.o mysocket.c $(LDFLAGS) $(LIBS)
+
+# We recompile mysocket.c instead of reusing mysocket.o because we
+# want to do some error handing differently for ssl_slave.
+ssl_slave: ssl_slave.o strdup.o sig.o wait.o myssl.o SFMT.o mysocket.c
+	@echo "Making ssl_slave."
+	$(CC) $(CCFLAGS) -DSLAVE -o ssl_slave ssl_slave.o strdup.o	\
+	sig.o wait.o myssl.o SFMT.o mysocket.c $(LDFLAGS) $(LIBS)
 
 # It should always be out of date.
 buildinf:
@@ -127,8 +133,8 @@ local.c: local.dst
 	(cd ..; @PERL@ utils/mkcmds.pl patches); \
 	fi
 
-../po/pennmush.pot: $(C_FILES) $(H_FILES)
-	xgettext -d pennmush -kT -o ../po/pennmush.pot $(C_FILES) $(H_FILES)
+../po/pennmush.pot: $(C_FILES)
+	xgettext -d pennmush -kT -o ../po/pennmush.pot $(C_FILES)
 
 # The following source files are auto-generated with gperf.
 bflags.c: bflags.gperf
@@ -146,8 +152,8 @@ etags:
 ctags: 
 	@CTAGS@ *.c ../hdrs/*.h
 
-depend: funlocal.c cmdlocal.c local.c flaglocal.c
-	makedepend -fMakefile.in -w10 -- $(CFLAGS) -- $(C_FILES) $(H_FILES)
+depend: $(C_FILES) info_slave.c ssl_slave.c
+	makedepend -fMakefile.in -w10 -- $(CFLAGS) -- $(C_FILES) info_slave.c ssl_slave.c
 	@PERL@ ../utils/fixdepend.pl Makefile.in
 
 # Requires GNU indent 1.2 or better! 
@@ -1408,8 +1414,6 @@ myssl.o: ../hdrs/dbio.h
 myssl.o: ../hdrs/chunk.h
 myssl.o: ../hdrs/mypcre.h
 myssl.o: ../hdrs/myssl.h
-myssl.o: ../hdrs/log.h
-myssl.o: ../hdrs/bufferq.h
 myssl.o: ../hdrs/parse.h
 myssl.o: ../hdrs/SFMT.h
 notify.o: ../hdrs/copyrite.h
@@ -1751,27 +1755,27 @@ sql.o: ../hdrs/function.h
 sql.o: ../hdrs/ansi.h
 sql.o: ../hdrs/strtree.h
 sql.o: ../hdrs/match.h
-ssl_slave.o: ../hdrs/copyrite.h
-ssl_slave.o: ../config.h
-ssl_slave.o: ../hdrs/conf.h
-ssl_slave.o: ../options.h
-ssl_slave.o: ../hdrs/mushtype.h
-ssl_slave.o: ../hdrs/htab.h
-ssl_slave.o: ../hdrs/externs.h
-ssl_slave.o: ../hdrs/compile.h
-ssl_slave.o: ../hdrs/dbdefs.h
-ssl_slave.o: ../hdrs/mushdb.h
-ssl_slave.o: ../hdrs/flags.h
-ssl_slave.o: ../hdrs/ptab.h
-ssl_slave.o: ../hdrs/dbio.h
-ssl_slave.o: ../hdrs/chunk.h
-ssl_slave.o: ../confmagic.h
-ssl_slave.o: ../hdrs/mypcre.h
-ssl_slave.o: ../hdrs/myssl.h
-ssl_slave.o: ../hdrs/mysocket.h
-ssl_slave.o: ../hdrs/log.h
-ssl_slave.o: ../hdrs/bufferq.h
-ssl_slave.o: ../hdrs/ssl_slave.h
+ssl_master.o: ../hdrs/copyrite.h
+ssl_master.o: ../config.h
+ssl_master.o: ../hdrs/conf.h
+ssl_master.o: ../options.h
+ssl_master.o: ../hdrs/mushtype.h
+ssl_master.o: ../hdrs/htab.h
+ssl_master.o: ../hdrs/externs.h
+ssl_master.o: ../hdrs/compile.h
+ssl_master.o: ../hdrs/dbdefs.h
+ssl_master.o: ../hdrs/mushdb.h
+ssl_master.o: ../hdrs/flags.h
+ssl_master.o: ../hdrs/ptab.h
+ssl_master.o: ../hdrs/dbio.h
+ssl_master.o: ../hdrs/chunk.h
+ssl_master.o: ../confmagic.h
+ssl_master.o: ../hdrs/mypcre.h
+ssl_master.o: ../hdrs/log.h
+ssl_master.o: ../hdrs/bufferq.h
+ssl_master.o: ../hdrs/mysocket.h
+ssl_master.o: ../hdrs/ssl_slave.h
+ssl_master.o: ../hdrs/parse.h
 strdup.o: ../config.h
 strdup.o: ../hdrs/conf.h
 strdup.o: ../hdrs/copyrite.h
@@ -1990,3 +1994,41 @@ wiz.o: ../hdrs/switches.h
 wiz.o: ../hdrs/extmail.h
 wiz.o: ../hdrs/ansi.h
 wiz.o: ../hdrs/strtree.h
+info_slave.o: ../hdrs/copyrite.h
+info_slave.o: ../config.h
+info_slave.o: ../hdrs/conf.h
+info_slave.o: ../options.h
+info_slave.o: ../hdrs/mushtype.h
+info_slave.o: ../hdrs/htab.h
+info_slave.o: ../hdrs/externs.h
+info_slave.o: ../hdrs/compile.h
+info_slave.o: ../hdrs/dbdefs.h
+info_slave.o: ../hdrs/mushdb.h
+info_slave.o: ../hdrs/flags.h
+info_slave.o: ../hdrs/ptab.h
+info_slave.o: ../hdrs/dbio.h
+info_slave.o: ../hdrs/chunk.h
+info_slave.o: ../confmagic.h
+info_slave.o: ../hdrs/mypcre.h
+info_slave.o: ../hdrs/mysocket.h
+info_slave.o: ../hdrs/lookup.h
+ssl_slave.o: ../hdrs/copyrite.h
+ssl_slave.o: ../config.h
+ssl_slave.o: ../hdrs/conf.h
+ssl_slave.o: ../options.h
+ssl_slave.o: ../hdrs/mushtype.h
+ssl_slave.o: ../hdrs/htab.h
+ssl_slave.o: ../hdrs/externs.h
+ssl_slave.o: ../hdrs/compile.h
+ssl_slave.o: ../hdrs/dbdefs.h
+ssl_slave.o: ../hdrs/mushdb.h
+ssl_slave.o: ../hdrs/flags.h
+ssl_slave.o: ../hdrs/ptab.h
+ssl_slave.o: ../hdrs/dbio.h
+ssl_slave.o: ../hdrs/chunk.h
+ssl_slave.o: ../confmagic.h
+ssl_slave.o: ../hdrs/mypcre.h
+ssl_slave.o: ../hdrs/myssl.h
+ssl_slave.o: ../hdrs/mysocket.h
+ssl_slave.o: ../hdrs/SFMT.h
+ssl_slave.o: ../hdrs/ssl_slave.h

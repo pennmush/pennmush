@@ -166,7 +166,7 @@ slab_set_opt(slab *sl, enum slab_options opt, int val
 
 /** Allocate a new page.
  * \param sl Allocator to create the page for.
- * \return new page, NOT linked into the allocator's list of pages 
+ * \return new page, NOT linked into the allocator's list of pages
  */
 static struct slab_page *
 slab_alloc_page(struct slab *sl)
@@ -176,6 +176,7 @@ slab_alloc_page(struct slab *sl)
   int n;
 
   page = GC_MALLOC(getpagesize());
+
   sp = (struct slab_page *) page;
   sp->nfree = sl->items_per_page;
   sp->nalloced = 0;
@@ -199,7 +200,7 @@ slab_alloc_page(struct slab *sl)
   return sp;
 }
 
-/** Allocate a new object from a page 
+/** Allocate a new object from a page
  * \param where the page to allocate from.
  * \return pointer to object, or NULL if no room left on page
  */
@@ -380,7 +381,7 @@ slab_destroy(slab *sl)
   GC_FREE(sl);
 }
 
-/** Describe a slab for @list allocations
+/** Describe a slab for \@list allocations
  * \param player who to display to
  * \param sl the slab
  */
@@ -449,7 +450,8 @@ slab_describe(dbref player, slab *sl)
 extern slab *attrib_slab, *boolexp_slab, *bvm_asmnode_slab,
   *bvm_strnode_slab, *lock_slab,
   *command_slab, *channel_slab, *chanuser_slab, *chanlist_slab, *mail_slab,
-  *text_block_slab, *function_slab, *memcheck_slab, *intmap_slab;
+  *text_block_slab, *function_slab, *memcheck_slab, *intmap_slab,
+  *pe_reg_slab, *pe_reg_val_slab;
 
 #if COMPRESSION_TYPE == 1 || COMPRESSION_TYPE == 2
 extern slab *huffman_slab;
@@ -483,6 +485,8 @@ do_list_allocations(dbref player)
   slab_describe(player, mail_slab);
   slab_describe(player, text_block_slab);
   slab_describe(player, intmap_slab);
+  slab_describe(player, pe_reg_slab);
+  slab_describe(player, pe_reg_val_slab);
 
 
   notify(player, T("GC Stats:"));

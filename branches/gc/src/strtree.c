@@ -12,13 +12,11 @@
  *     current point in the tree, and use that path to determine
  *     parents.
  *
- * (2) A usage count is kept on items in the tree; when items
- *     have 127 concurrent uses, they become permanent, and
- *     may never be fully deleted.
+ * (2) A reference count is kept on items in the tree.
  *
  * (3) The red/black coloring is stored as the low order bit
- *     in the same byte as the usage count (which takes up
- *     the other 7 bits of that byte).
+ *     in the same byte as the reference count (which takes up
+ *     the other 31 bits of that word).
  *
  * (4) The data string is stored directly in the tree node,
  *     instead of hung in a pointer off the node.  This means
@@ -39,15 +37,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
 #include "conf.h"
 #include "externs.h"
-#include "mymalloc.h"
 #include "strtree.h"
+#include "mymalloc.h"
 #include "confmagic.h"
-
-#ifndef UCHAR_MAX
-#define UCHAR_MAX 255   /**< Largest unsigned character */
-#endif
 
 /* Various constants.  Their import is either bleedingly obvious
  * or explained below. */
@@ -56,7 +53,7 @@
 #define ST_BLACK 0              /**< This node is black */
 #define ST_COLOR 1              /**< Bit mask for colors */
 #define ST_USE_STEP 2
-#define ST_USE_LIMIT (UCHAR_MAX - ST_USE_STEP + 1)
+#define ST_USE_LIMIT (UINT32_MAX - ST_USE_STEP + 1)
 
 /* Here we have a global for the path info, just so we don't
  * eat tons of stack space.  (This code isn't reentrant no
@@ -74,8 +71,7 @@ static void st_left_rotate(int tree_depth, StrNode **root);
 static void st_right_rotate(int tree_depth, StrNode **root);
 static void st_print_tree(StrNode *node, int tree_depth, int lead);
 static void st_traverse_stats
-  (StrNode *node, int *maxdepth, int *mindepth, int *avgdepth, int *leaves,
-   unsigned long *perms, unsigned long *nperms);
+  (StrNode *node, int *maxdepth, int *mindepth, int *avgdepth, int *leaves);
 
 void st_stats_header(dbref player);
 void st_stats(dbref player, StrTree *root, const char *name);
@@ -84,12 +80,13 @@ void st_stats(dbref player, StrTree *root, const char *name);
  * \param root pointer to root of string tree.
  */
 void
-st_init(StrTree *root)
+st_init(StrTree *root, const char *name)
 {
   assert(root);
   root->root = NULL;
   root->count = 0;
   root->mem = 0;
+  root->name = name;
 }
 
 /** Clear a string tree.
@@ -111,8 +108,7 @@ st_flush(StrTree *root)
 void
 st_stats_header(dbref player)
 {
-  notify(player,
-         "Tree       Entries  Leaves MinDep  Max  Avg   PermEnt     AvgTmpC ~Memory");
+  notify(player, "Tree       Entries  Leaves MinDep  Max  Avg   ~Memory");
 }
 
 /** Statistics about the tree.
@@ -125,15 +121,12 @@ st_stats(dbref player, StrTree *root, const char *name)
 {
   unsigned long bytes;
   int maxdepth = 0, mindepth = 0, avgdepth = 0, leaves = 0;
-  unsigned long perms = 0, nperms = 0;
 
   bytes = (sizeof(StrNode) - BUFFER_LEN) * root->count + root->mem;
-  st_traverse_stats(root->root, &maxdepth, &mindepth, &avgdepth, &leaves,
-                    &perms, &nperms);
-  notify_format(player, "%-10s %7d %7d %6d %4d %4d %9lu %11.3f %7lu",
+  st_traverse_stats(root->root, &maxdepth, &mindepth, &avgdepth, &leaves);
+  notify_format(player, "%-10s %7d %7d %6d %4d %4d %7lu",
                 name, (int) root->count, leaves, mindepth, maxdepth,
-                avgdepth, perms,
-                ((double) nperms / (double) (root->count - perms)), bytes);
+                avgdepth, bytes);
 }
 
 /* Tree rotations.  These preserve left-to-right ordering,
@@ -581,32 +574,26 @@ st_print(StrTree *root)
 
 static void st_depth_helper
   (StrNode *node, int *maxdepth, int *mindepth, int *avgdepth, int *leaves,
-   unsigned long *perms, unsigned long *nperms, int count);
+   int count);
 static void
 st_depth_helper(StrNode *node, int *maxdepth, int *mindepth,
-                int *avgdepth, int *leaves, unsigned long *perms,
-                unsigned long *nperms, int count)
+                int *avgdepth, int *leaves, int count)
 {
   if (!node)
     return;
-
-  if (node->info >= ST_USE_LIMIT)
-    (*perms)++;
-  else
-    (*nperms) += node->info >> ST_COLOR;
 
   if (count > *maxdepth)
     *maxdepth = count;
 
   if (node->left) {
     /* Inner node */
-    st_depth_helper(node->left, maxdepth, mindepth, avgdepth, leaves, perms,
-                    nperms, count + 1);
+    st_depth_helper(node->left, maxdepth, mindepth, avgdepth, leaves,
+                    count + 1);
   }
   if (node->right) {
     /* Inner node */
-    st_depth_helper(node->right, maxdepth, mindepth, avgdepth, leaves, perms,
-                    nperms, count + 1);
+    st_depth_helper(node->right, maxdepth, mindepth, avgdepth, leaves,
+                    count + 1);
   }
   if (!node->left && !node->right) {    /* This is a leaf node */
     (*leaves)++;
@@ -620,15 +607,13 @@ st_depth_helper(StrNode *node, int *maxdepth, int *mindepth,
 /* Find the depth and number of permanment nodes */
 static void
 st_traverse_stats(StrNode *node, int *maxdepth, int *mindepth, int *avgdepth,
-                  int *leaves, unsigned long *perms, unsigned long *nperms)
+                  int *leaves)
 {
   *maxdepth = 0;
   *mindepth = node ? (ST_MAX_DEPTH + 1) : 0;
-  *perms = 0;
-  *nperms = 0;
   *avgdepth = 0;
   *leaves = 0;
-  st_depth_helper(node, maxdepth, mindepth, avgdepth, leaves, perms, nperms, 1);
+  st_depth_helper(node, maxdepth, mindepth, avgdepth, leaves, 1);
   if (*avgdepth)
     *avgdepth = *avgdepth / *leaves;
 }

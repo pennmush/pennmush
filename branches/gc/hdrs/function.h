@@ -45,7 +45,8 @@ typedef struct fun FUN;
 #endif
 
 typedef void (*function_func) (FUN *, char *, char **, int, char *[], int[],
-                               dbref, dbref, dbref, const char *, PE_Info *);
+                               dbref, dbref, dbref, const char *,
+                               NEW_PE_INFO *);
 
 typedef struct userfn_entry USERFN_ENTRY;
 
@@ -55,7 +56,7 @@ typedef struct userfn_entry USERFN_ENTRY;
  */
 union fun_call {
   function_func fun;    /**< Pointer to compiled function code */
-  USERFN_ENTRY *ufun;   /**< Pointer to @function location */
+  USERFN_ENTRY *ufun;   /**< Pointer to \@function location */
 };
 
 
@@ -90,7 +91,7 @@ void do_userfn(char *buff, char **bp,
                dbref obj, ATTR *attrib,
                int nargs, char **args,
                dbref executor, dbref caller, dbref enactor,
-               PE_Info *pe_info, int extra_flags);
+               NEW_PE_INFO *pe_info, int extra_flags);
 
 FUN *func_hash_lookup(const char *name);
 FUN *builtin_func_hash_lookup(const char *name);
@@ -114,7 +115,7 @@ void function_init_postconfig(void);
 #define FUNCTION_PROTO(fun_name) \
   extern void fun_name (FUN *fun, char *buff, char **bp, int nargs, char *args[], \
                    int arglen[], dbref executor, dbref caller, dbref enactor, \
-                   char const *called_as, PE_Info *pe_info)
+                   char const *called_as, NEW_PE_INFO *pe_info)
 extern void function_add(const char *name, function_func fun, int minargs,
                          int maxargs, int ftype);
 

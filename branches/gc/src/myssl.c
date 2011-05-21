@@ -115,7 +115,7 @@ SSL_CTX *
 ssl_init(char *private_key_file, char *ca_file, int req_client_cert)
 {
   const SSL_METHOD *meth;       /* If this const gives you a warning, you're
-                                   using an old version of OpenSSL. */
+                                   using an old version of OpenSSL. Walker, this means you! */
   unsigned char context[128];
   DH *dh;
   unsigned int reps = 1;

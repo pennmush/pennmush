@@ -958,9 +958,9 @@ FUNCTION(fun_round)
     *(*bp) = '\0';
 
     decimal = strchr(sbp, '.');
-    if (!pad && decimal) {
+    if (!pad && decimal && places > 1) {
       int n, trailing;
-      decimal += 1;
+      decimal += 2;
       trailing = strlen(decimal);
       for (n = 0; n < trailing; n++, decimal++) {
         size_t len = strspn(decimal, "0");

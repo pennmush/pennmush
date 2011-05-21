@@ -62,12 +62,6 @@
   (define fx+ +)
   (define fx= =)
   (define signal throw)
-  (define (for-each-line f in-port)
-    (let loop ((line (read-line in-port)))
-      (if (not (eof-object? line))
-	  (begin
-	    (f line)
-	    (loop (read-line in-port))))))
   (define-macro (handle-exceptions exn handler body)
     `(catch #t
 	    (lambda () ,body)
@@ -77,6 +71,12 @@
   (define-macro (define-constant sym val)
     `(define ,sym ,val))))
 
+(define (for-each-line f in-port)
+  (let loop ((line (read-line in-port)))
+    (if (not (eof-object? line))
+	(begin
+	  (f line)
+	  (loop (read-line in-port))))))
 
 ; Return what's between the first occurance of fc and the last of lc in
 ; a string. Raises an error if index(fc) > index(lc) or one of the two

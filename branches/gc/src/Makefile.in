@@ -17,7 +17,7 @@ C_FILES=access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c chunk.c	\
 	db.c destroy.c extchat.c extmail.c filecopy.c flaglocal.c	\
 	flags.c funcrypt.c function.c fundb.c funlist.c funlocal.c	\
 	funmath.c funmisc.c funstr.c funtime.c funufun.c game.c help.c	\
-	htab.c ident.c intmap.c local.c lock.c log.c look.c malias.c	\
+	htab.c intmap.c local.c lock.c log.c look.c malias.c	\
 	markup.c match.c move.c mycrypt.c mymalloc.c mysocket.c		\
 	myrlimit.c myssl.c notify.c parse.c pcre.c player.c plyrlist.c	\
 	predicat.c privtab.c info_master.c ptab.c rob.c services.c	\
@@ -31,7 +31,7 @@ O_FILES=access.o atr_tab.o attrib.o boolexp.o bsd.o bufferq.o chunk.o	\
 	db.o destroy.o extchat.o extmail.o filecopy.o flaglocal.o	\
 	flags.o funcrypt.o function.o fundb.o funlist.o funlocal.o	\
 	funmath.o funmisc.o funstr.o funtime.o funufun.o game.o help.o	\
-	htab.o ident.o intmap.o local.o lock.o log.o look.o malias.o	\
+	htab.o intmap.o local.o lock.o log.o look.o malias.o	\
 	markup.o match.o move.o mycrypt.o mymalloc.o mysocket.o		\
 	myrlimit.o myssl.o notify.o parse.o pcre.o player.o plyrlist.o	\
 	info_master.o predicat.o privtab.o ptab.o rob.o services.o	\
@@ -54,13 +54,13 @@ netmud: $(O_FILES)
 
 # We recompile mysocket.c instead of reusing mysocket.o because we
 # want to do some error handing differently for info_slave.
-info_slave: info_slave.c ident.o sig.o wait.o mysocket.c ../hdrs/lookup.h
+info_slave: info_slave.c strdup.o sig.o wait.o mysocket.c ../hdrs/lookup.h
 	@echo "Making info_slave."
 	$(CC) $(CCFLAGS) -c info_slave.c
 	$(CC) $(CCFLAGS) -DINFOSLAVE -o info_slave info_slave.o \
-	ident.o sig.o wait.o mysocket.c $(LDFLAGS) $(LIBS)
+	strdup.o sig.o wait.o mysocket.c $(LDFLAGS) $(LIBS)
 
-SSL_SLAVE_OBJS = sig.o mymalloc.o mysocket.o myssl.o notify.o myrlimit.o strutil.o ident.o utils.o
+SSL_SLAVE_OBJS = strdup.o sig.o mymalloc.o mysocket.o myssl.o notify.o myrlimit.o strutil.o utils.o
 ssl_slave: ssl_slave.c $(SSL_SLAVE_OBJS)
 	@echo "Making ssl_slave."
 	$(CC) $(CCFLAGS) -c ssl_slave.c
@@ -134,6 +134,10 @@ local.c: local.dst
 ../po/pennmush.pot: $(C_FILES) $(H_FILES)
 	xgettext -d pennmush -kT -o ../po/pennmush.pot $(C_FILES) $(H_FILES)
 
+# The following source files are auto-generated with gperf.
+bflags.c: bflags.gperf
+	gperf --output-file bflags.c bflags.gperf
+
 htmltab.c: htmltab.gperf
 	gperf --output-file htmltab.c htmltab.gperf
 
@@ -157,27 +161,28 @@ indent:
 	@INDENT@ -npro -kr -ci2 -ss -psl -ip4 -i2 -cs -l80 -lc75 -nut \
 	-T accent_info -T acsflag -T aig_func -T ALIST -T ansi_data \
 	-T ansi_string -T atr_err -T ATRALIAS -T ATTR -T BOOL -T boolexp \
-	-T boolexp_type -T BQUE -T branch_chain -T BUFFERQ -T bvm_opcode \
-	-T BYTE -T CHAN -T CHANLIST -T CHANUSER -T chunk_reference_t \
-	-T CNode -T COMLIST -T command_func -T COMMAND_INFO -T comp_func \
+	-T boolexp_type -T branch_chain -T BUFFERQ -T bvm_opcode -T BYTE \
+	-T CHAN -T CHANLIST -T CHANUSER -T chunk_reference_t -T CNode \
+	-T COMLIST -T command_func -T COMMAND_INFO -T comp_func \
 	-T compile_data -T COMSORTSTRUC -T config_func -T CType -T dbref \
-	-T Debug_Info -T DESC -T dfa_match_data -T eptrblock \
-	-T EVAL_CONTEXT -T FBLOCK -T fd_type -T FLAG -T FLAG_ALIAS \
-	-T FLAGSPACE -T folder_array -T FUN -T function_func -T FUNTAB \
+	-T Debug_Info -T DESC -T dfa_match_data -T eptrblock -T Fail_Info \
+	-T FBLOCK -T fd_type -T FLAG -T FLAG_ALIAS -T FLAGSPACE \
+	-T folder_array -T FUN -T FUNALIAS -T function_func -T FUNTAB \
 	-T GLOBALTAB -T hash_func -T HASHENT -T HASHTAB -T heapframe \
-	-T help_file -T help_indx -T ident_t -T im_key -T imaxdiv_t \
-	-T intmap -T IVAL -T list_type_list -T lock_list -T lock_type \
-	-T LOCKMSGINFO -T LONG -T ltype -T MAIL -T mail_flag \
-	-T makerecord -T markup_information -T match_data -T MATH -T MEM \
-	-T na_lookup -T NVAL -T object_flag_type -T OPTTAB -T patricia \
-	-T pcre_study_data -T pcre_uint16 -T pcre_uint32 -T PE_Info \
-	-T PENNCONF -T PENNCONFGROUP -T PENNFILE -T Port_t -T PRIV \
-	-T privbits -T PTAB -T ptab_entry -T qsort_func -T real_pcre \
+	-T help_file -T help_indx -T im_key -T imaxdiv_t -T intmap \
+	-T IVAL -T ListTypeInfo -T lock_list -T lock_type -T LOCKMSGINFO \
+	-T LONG -T ltype -T MAIL -T mail_flag -T makerecord \
+	-T markup_information -T match_data -T MATH -T MEM -T MQUE \
+	-T MSSP -T na_lookup -T NEW_PE_INFO -T NVAL -T object_flag_type \
+	-T OPTTAB -T patricia -T pcre_study_data -T pcre_uint16 \
+	-T pcre_uint32 -T PE_REG_VAL -T PE_REGS -T PENNCONF \
+	-T PENNCONFGROUP -T PENNFILE -T Port_t -T PRIV -T privbits \
+	-T PTAB -T ptab_entry -T qsort_func -T real_pcre \
 	-T recursion_info -T Region -T RegionHeader -T s_rec -T SHS_INFO \
-	-T slab -T sqlplatform -T STFunc -T StrNode -T StrTree \
-	-T switch_mask -T SWITCH_VALUE -T tcheck -T tlist \
-	-T ucp_type_table -T uint32_t -T uint64_t -T UIVAL -T uschar \
-	-T UsedAttr -T USERFN_ENTRY -T w128_t -T WAIT_TYPE -T warn_type \
+	-T slab -T SortType -T sq_func -T sqlplatform -T STFunc \
+	-T StrNode -T StrTree -T switch_mask -T SWITCH_VALUE -T tcheck \
+	-T tlist -T ucp_type_table -T UIVAL -T uschar -T UsedAttr \
+	-T USERFN_ENTRY -T w128_t -T WAIT_TYPE -T warn_type \
 	$$file ; done)
 
 clean:
@@ -274,6 +279,7 @@ attrib.o: ../hdrs/bufferq.h
 attrib.o: ../hdrs/sort.h
 boolexp.o: ../hdrs/copyrite.h
 boolexp.o: ../config.h
+boolexp.o: ../hdrs/case.h
 boolexp.o: ../hdrs/conf.h
 boolexp.o: ../options.h
 boolexp.o: ../hdrs/mushtype.h
@@ -298,6 +304,7 @@ boolexp.o: ../hdrs/bufferq.h
 boolexp.o: ../hdrs/extchat.h
 boolexp.o: ../hdrs/strtree.h
 boolexp.o: ../hdrs/mymalloc.h
+boolexp.o: bflags.c
 bsd.o: ../hdrs/copyrite.h
 bsd.o: ../config.h
 bsd.o: ../hdrs/conf.h
@@ -326,7 +333,6 @@ bsd.o: ../hdrs/command.h
 bsd.o: ../hdrs/switches.h
 bsd.o: ../hdrs/version.h
 bsd.o: ../hdrs/mysocket.h
-bsd.o: ../hdrs/ident.h
 bsd.o: ../hdrs/lookup.h
 bsd.o: ../hdrs/strtree.h
 bsd.o: ../hdrs/log.h
@@ -658,6 +664,7 @@ extchat.o: ../hdrs/game.h
 extchat.o: ../hdrs/function.h
 extchat.o: ../hdrs/command.h
 extchat.o: ../hdrs/switches.h
+extchat.o: ../hdrs/intmap.h
 extmail.o: ../config.h
 extmail.o: ../hdrs/copyrite.h
 extmail.o: ../hdrs/conf.h
@@ -935,6 +942,7 @@ funmisc.o: ../hdrs/game.h
 funmisc.o: ../hdrs/attrib.h
 funmisc.o: ../hdrs/mymalloc.h
 funmisc.o: ../hdrs/ansi.h
+funmisc.o: ../hdrs/strtree.h
 funstr.o: ../hdrs/copyrite.h
 funstr.o: ../config.h
 funstr.o: ../hdrs/conf.h
@@ -1089,26 +1097,6 @@ htab.o: ../hdrs/mypcre.h
 htab.o: ../hdrs/log.h
 htab.o: ../hdrs/bufferq.h
 htab.o: ../hdrs/mymalloc.h
-ident.o: ../config.h
-ident.o: ../hdrs/conf.h
-ident.o: ../hdrs/copyrite.h
-ident.o: ../options.h
-ident.o: ../hdrs/mushtype.h
-ident.o: ../hdrs/htab.h
-ident.o: ../hdrs/externs.h
-ident.o: ../hdrs/compile.h
-ident.o: ../hdrs/dbdefs.h
-ident.o: ../hdrs/mushdb.h
-ident.o: ../hdrs/flags.h
-ident.o: ../hdrs/ptab.h
-ident.o: ../hdrs/dbio.h
-ident.o: ../hdrs/chunk.h
-ident.o: ../confmagic.h
-ident.o: ../hdrs/mypcre.h
-ident.o: ../hdrs/attrib.h
-ident.o: ../hdrs/ident.h
-ident.o: ../hdrs/mysocket.h
-ident.o: ../hdrs/mymalloc.h
 intmap.o: ../config.h
 intmap.o: ../hdrs/conf.h
 intmap.o: ../hdrs/copyrite.h
@@ -1366,7 +1354,6 @@ mysocket.o: ../confmagic.h
 mysocket.o: ../hdrs/mypcre.h
 mysocket.o: ../hdrs/mymalloc.h
 mysocket.o: ../hdrs/mysocket.h
-mysocket.o: ../hdrs/ident.h
 myrlimit.o: ../hdrs/copyrite.h
 myrlimit.o: ../config.h
 myrlimit.o: ../hdrs/conf.h
@@ -1432,7 +1419,6 @@ notify.o: ../hdrs/parse.h
 notify.o: ../hdrs/access.h
 notify.o: ../hdrs/version.h
 notify.o: ../hdrs/mysocket.h
-notify.o: ../hdrs/ident.h
 notify.o: ../hdrs/strtree.h
 notify.o: ../hdrs/log.h
 notify.o: ../hdrs/bufferq.h
@@ -1466,6 +1452,7 @@ parse.o: ../hdrs/attrib.h
 parse.o: ../hdrs/log.h
 parse.o: ../hdrs/bufferq.h
 parse.o: ../hdrs/mymalloc.h
+parse.o: ../hdrs/strtree.h
 pcre.o: ../config.h
 pcre.o: ../hdrs/mypcre.h
 player.o: ../hdrs/copyrite.h
@@ -1492,6 +1479,7 @@ player.o: ../hdrs/bufferq.h
 player.o: ../hdrs/lock.h
 player.o: ../hdrs/boolexp.h
 player.o: ../hdrs/parse.h
+player.o: ../hdrs/game.h
 player.o: ../hdrs/extmail.h
 plyrlist.o: ../config.h
 plyrlist.o: ../hdrs/copyrite.h
@@ -1572,7 +1560,6 @@ info_master.o: ../confmagic.h
 info_master.o: ../hdrs/mypcre.h
 info_master.o: ../hdrs/access.h
 info_master.o: ../hdrs/mysocket.h
-info_master.o: ../hdrs/ident.h
 info_master.o: ../hdrs/lookup.h
 info_master.o: ../hdrs/log.h
 info_master.o: ../hdrs/bufferq.h

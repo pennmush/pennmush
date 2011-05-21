@@ -232,11 +232,11 @@ See also: STRINGS
   checkpass()   clone()       create()      die()         dig()
   firstof()     functions()   isdbref()     isint()       isnum()
   isobjid()     isword()      letq()        localize()    link()
-  list()        lnum()        null()        numversion()  objeval()
-  open()        pcreate()     r()           rand()        s()
-  scan()        set()         setq()        setr()        soundex()
-  soundslike()  speak()       tel()         textentries() textfile()
-  valid()       wipe()        @@()
+  list()        listq()       lnum()        null()        numversion()
+  objeval()     open()        pcreate()     r()           rand()
+  s()           scan()        set()         setq()        setr()
+  soundex()     soundslike()  speak()       tel()         textentries()
+  textfile()    unsetq()      valid()       wipe()        @@()
 
 & @@()
 & NULL()
@@ -1210,7 +1210,10 @@ See also: strreplace(), strinsert(), mid()
   <algorithm>. If the mush is compiled with SSL support (See @config
   compile), <algorithm> can be one of:
 
-  md2 md4 md5 sha sha1 dss1 mdc2 ripemd160
+  dss1 md2 md4 md5 ripemd160 sha sha1 sha256 sha384 sha512 whirlpool
+
+  Not all checksum algorithms are supported on all games, depending on
+  the host's OpenSSL version and how it was configured.
 
   Without SSL, only the sha algorithm is enabled. In both cases, sha
   returns the same thing as the sha0() function.
@@ -1334,10 +1337,13 @@ See also: extract(), index(), grab()
   elock(<object>[/<locktype>], <victim>)
 
   elock() returns 1 if the <victim> would pass the @lock/<locktype> on
-  <object>, and 0 if it would fail. You must control <object>.
+  <object>, and 0 if it would fail. Any locktype can be given, including
+  user-defined "user:" @locks. If no <locktype> is given, it defaults to
+  the Basic lock.
   
-  If no <locktype> is specified, the Basic lock is checked. <locktype>
-  can be any @lock, including "user:" user-defined @locks.
+  You must be able to examine the lock, which means either that you must
+  control <object>, it must be @set VISUAL, or the <locktype> lock must be
+  @lset VISUAL.
 
   Example:
     > @lock/drop Dancing Slippers=#0
@@ -1348,7 +1354,7 @@ See also: extract(), index(), grab()
     > think elock(map/test,*Snape)
     0
 
-See also: @lock, locktypes, testlock(), lockfilter()
+See also: @lock, locktypes, testlock(), lockfilter(), @lset
 & EMIT()
 & NSEMIT()
   emit(<message>)
@@ -2370,7 +2376,7 @@ See also: @lemit, remit()
     > think setr(A, 1):[letq(A, 2, %qA)]:%qA
     1:2:1
 
-See also: setq(), setr(), localize(), ulocal(), r()
+See also: setq(), setr(), unsetq(), listq(), localize(), ulocal(), r()
 & LEXITS()
   lexits(<room>)
 
@@ -3697,6 +3703,8 @@ See also: subj(), obj(), aposs()
   power(<number>, <exponent>)
  
   Returns <number> to the power of <exponent>.
+  
+  (For the functional version of @power, see 'help powers()'.)
 
 See also: root()
 & POWERS()
@@ -3724,14 +3732,14 @@ See also: @quota, @squota, @allquota
 & R-FUNCTION
   r(<register>)
   
-  The r() function is used to access "local registers", and returns the 
-  contents of the specified register. There are 36 such registers, numbered 
-  0 through 9, and A through Z.
+  The r() function is used to access "local registers", as set by the setq(),
+  setr() orletq() functions, and returns the contents of the specified
+  register. Available register names can be found with the listq() function.
  
   The '%q<register>' percent-substitution can also be used to access these
   local registers.
   
-See also: setq(), letq()
+See also: setq(), letq(), listq(), unsetq()
 & RAND()
   rand(<num>)
   rand(<min>, <max>)
@@ -4018,16 +4026,31 @@ See also: @function, RESTRICT
   
 See also: objeval(), decompose()
 & SCAN()
-  scan(<object>, <command>)
+  scan(<object>, <command>[, <switches>])
   scan(<command>)
 
-  This function works like @scan, and returns a space-separated list
-  of dbref/attribute pairs containing $commands that would be
-  triggered if <command> were run by <object>. You must control
-  <object> or be See_All to use this function.
+  This function works like @scan, and returns a space-separated list of 
+  dbref/attribute pairs containing $-commands that would be triggered if 
+  <command> were run by <object>. You must control <object> or be See_All 
+  to use this function. Only objects you can examine are included in the
+  output.
 
-  If no <object> is specified, this function works like @scan run
-  by the function's executor.
+  If no <object> is specified, this function works like @scan run by the 
+  function's executor.
+  
+  <switches> is a space-separated list of strings to limit which objects are
+  checked for $-commands. Valid switches are:
+    room     --  match your location and its contents
+    self     --  match yourself and your inventory
+    zone     --  match your zone and your location's zone
+    globals  --  match objects in the Master Room
+    all      --  all of the above (the default)
+    break    --  once a match is found, don't check in other locations 
+    
+  The order of searching for the "break" switch is the same as the order for
+  normal $-command matching, as described in 'help evaluation order'.
+  
+See also: @scan, @sweep, MASTER ROOM, EVALUATION ORDER, $-COMMANDS
 & SCRAMBLE()
   scramble(<string>)
 
@@ -4107,10 +4130,8 @@ See also: setinter(), setunion()
 See also: setdiff(), setunion()
 & SETQ()
 & SETR()
-& UNSETQ()
   setq(<register1>, <string1>[, ... , <registerN>, <stringN>])
   setr(<register1>, <string1>[, ... , <registerN>, <stringN>])
-  unsetq([<register1> [ ... <registerN>]])
   
   The setq() and setr() functions are used to copy strings into local
   registers. setq() returns a null string; it is a purely "side
@@ -4122,21 +4143,33 @@ See also: setdiff(), setunion()
   registers are set; if you want to use the result of setting one
   register in setting another, use multiple setq()s.
 
-  There are thirty-six local registers, numbered 0 through 9 and A
-  through Z.  They are cleared at the start of each new queue cycle
-  (i.e. whenever a new command is evaluated). They are most useful for
-  storing complex function evaluations which are used repeatedly
-  within a single command.
+  Register names follow the same rules for attribute names, but they
+  must be shorter than 64 characters in length. 
 
-  Registers set via setq() or setr() can be accessed via the r()
-  function, or via the %qN percent-substitution.
+  Register names other than a-z or 0-9 have a per-localize limit,
+  defined with @config max_named_qregs. If setq or setr tries to
+  set a named q-register and it exceeds the limit, it will return
+  the string "#-1 TOO MANY REGISTERS". This is the only time
+  setq will return a string. setq() and setr() with registers a-z or
+  0-9 have nothing to worry about.
 
-  unsetq() without arguments clears all registers. unsetq() with
-  arguments clears the specified registers.
+  Register names are case insensitive.
 
-  See 'help setq2' for examples.
+  See 'help setq2' for more.
+See also: r(), listq(), unsetq(), letq(), localize(), ulocal()
 & SETQ2
+  The maximum number of q-registers you can have set is configured via
+  @config max_attrs_per_obj. That number is for the total number of
+  q-registers set in a queue entry: Including across localize()d calls.
+  Beyond that count, you can only use single character registers (a-z 0-9).
+  Attempts to create a new register will simply fail silently, with the
+  exception of setq().
 
+  Registers set via setq() or setr() can be accessed via the r() function.
+  Single-character registers can be accessed via %qN substitution.
+
+  See 'help setq3' for examples.
+& SETQ3
   The setq() function is probably best used at the start of the string
   being manipulated, such as in the following example:
 
@@ -4159,8 +4192,8 @@ See also: setdiff(), setunion()
     > think setq(0,foo,1,bar)%q0%q1 - [setq(0,%q1,1,%q0)]%q0%q1
     foobar - barfoo
 
-  See 'help setq3' for scoping rules of setq().
-& SETQ3
+  See 'help setq4' for scoping rules of setq().
+& SETQ4
   The registers set by setq() can be used in later commands in the same 
   thread. That is, the registers are set to null on all $-commands, 
   ^-commands, A-attribute triggers, etc., but are then retained from that 
@@ -4172,6 +4205,36 @@ See also: setdiff(), setunion()
     Object says "foo"
     Object says "bar"
     Object says "foo"
+& LISTQ()
+& UNSETQ()
+  listq([<pattern>])
+  unsetq([<pattern1> [<pattern2> [...]]])
+
+  listq() returns a space-separated list of set q-registers with values
+  available in the current q-register scope. If <pattern> is provided, then
+  only those that match the wildcard pattern <pattern> will be returned.
+
+  unsetq() without arguments clears all registers. Otherwise, unsetq()
+  treats its argument as a list of register name patterns, and will
+  unset all those registers within the local scope.
+
+  If unsetq() is inside of a letq(), and does not have an argument,
+  it will clear the registers that letq() has protected. unsetq()
+  with arguments clears the specified registers.
+
+  unsetq(<arg>) will clear all registers returned by listq(<arg>).
+
+  Example:
+    > think setq(name,Walker,num,#6061,loc,Bahamas)[listq()]
+    LOC NAME NUM
+    > think setq(name,Walker,num,#6061,loc,Bahamas)[listq(n*)]
+    NAME NUM
+    > think setq(name,Walker,num,#6061,loc,Bahamas)[unsetq(name)][listq()]
+    LOC NUM
+    > think setq(name,Walker,num,#6061,loc,Bahamas)[unsetq(n*)][listq()]
+    LOC
+
+See also: setq(), letq(), r(), localize()
 & SETUNION()
   setunion(<list1>, <list2>[, <delimiter>[, <sort type>[, <osep>]]])
  
@@ -4935,7 +4998,8 @@ See also: switch(), regmatch(), regedit()
 
   switch() and switchall() use wildcard <expr>s, as described in 'help switch
   wildcards'. case() and caseall() do a case-sensitive exact match, like
-  member() or comp().
+  member() or comp(). In this case, $0-$9 will be set to the text that the
+  nth wildcard character met.
 
   If the string "#$" appears in the <list> to be evaluated, it will be 
   replaced with the evaluated value of <str> /before/ evaluation of 
@@ -4964,6 +5028,9 @@ See also: reswitch(), stext(), slev(), if(), cond(), firstof()
     
     > say case(moof, *f, foo, moof, bar, baz)
     You say, "bar"
+
+    > say switch(foo bazaar,f?o b*r,$0-$1)
+    You say, "o-azaa"
 & SWITCH WILDCARDS
   @switch, @select, switch() and switchall() normally do wildcard
   matching between their first argument and the <expr>ession
@@ -5545,7 +5612,7 @@ See also: setunion(), sort()
   accessed this way; only the following <variable>s are valid:
     0-9, #, @, !, n, l, and c.
   Unlike %-subs, the v() function is not case-sensitive: v(n) and v(N) are
-  both equivilent to %n (whereas %N is equivilent to [capstr(%N)]).
+  both equivilent to %n (whereas %N is equivilent to [capstr(%n)]).
   
   The second form of this function is equivilent to xget(me, <attribute>),
   but is usually slightly more efficient.

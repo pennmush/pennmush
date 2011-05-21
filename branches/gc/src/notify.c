@@ -76,7 +76,6 @@
 #include "access.h"
 #include "version.h"
 #include "mysocket.h"
-#include "ident.h"
 #include "strtree.h"
 #include "log.h"
 #include "mymalloc.h"
@@ -708,7 +707,7 @@ notify_anything_loc(dbref speaker, na_lookup func,
   struct notify_strings messages[MESSAGE_TYPES];
   struct notify_strings nospoofs[MESSAGE_TYPES];
   struct notify_strings paranoids[MESSAGE_TYPES];
-  int i, j;
+  int i;
   DESC *d;
   enum na_type poutput;
   unsigned char *pstring;
@@ -717,10 +716,8 @@ notify_anything_loc(dbref speaker, na_lookup func,
   ATTR *a;
   char *asave;
   char const *ap;
-  char *preserve[NUMQ];
   int havespoof = 0;
   int havepara = 0;
-  char *wsave[10];
   char *tbuf1 = NULL, *nospoof = NULL, *paranoid = NULL, *msgbuf;
   static dbref puppet = NOTHING;
   int nsflags;
@@ -781,11 +778,9 @@ notify_anything_loc(dbref speaker, na_lookup func,
             continue;
 
           if (!(flags & NA_SPOOF)
-              && (nsfunc
-                  &&
-                  ((Nospoof(target)
-                    && ((target != speaker) || Paranoid(target)))
-                   || (flags & NA_NOSPOOF)))) {
+              && (nsfunc && ((Nospoof(target)
+                              && ((target != speaker) || Paranoid(target)))
+                             || (flags & NA_NOSPOOF)))) {
             if (Paranoid(target) || (flags & NA_PARANOID)) {
               if (!havepara) {
                 paranoid = nsfunc(speaker, func, fdata, 1);
@@ -877,6 +872,9 @@ notify_anything_loc(dbref speaker, na_lookup func,
     if (a) {
       char match_space[BUFFER_LEN * 2];
       ssize_t match_space_len = BUFFER_LEN * 2;
+      char *lenv[10];
+      int i;
+      PE_REGS *pe_regs;
 
       if (!tbuf1)
         tbuf1 = GC_MALLOC_ATOMIC(BUFFER_LEN);
@@ -885,21 +883,29 @@ notify_anything_loc(dbref speaker, na_lookup func,
           ? regexp_match_case_r(tbuf1,
                                 (char *) notify_makestring(msgbuf, messages,
                                                            NA_COLOR, 0),
-                                AF_Case(a), global_eval_context.wnxt, 10,
-                                match_space, match_space_len)
+                                AF_Case(a), lenv, 10,
+                                match_space, match_space_len, NULL)
           : wild_match_case_r(tbuf1,
                               (char *) notify_makestring(msgbuf, messages,
                                                          NA_COLOR, 0),
-                              AF_Case(a), global_eval_context.wnxt, 10,
-                              match_space, match_space_len)) {
-        if (eval_lock(speaker, target, Listen_Lock))
+                              AF_Case(a), lenv, 10,
+                              match_space, match_space_len, NULL)) {
+        if (eval_lock(speaker, target, Listen_Lock)) {
+          pe_regs = pe_regs_create(PE_REGS_ARG, "notify_anything_loc");
+          for (i = 0; i < 10; i++) {
+            if (lenv[i]) {
+              pe_regs_setenv_nocopy(pe_regs, i, lenv[i]);
+            }
+          }
           if (PLAYER_AHEAR || (!IsPlayer(target))) {
             if (speaker != target)
-              queue_attribute(target, "AHEAR", speaker);
+              queue_attribute_base(target, "AHEAR", speaker, 0, pe_regs);
             else
-              queue_attribute(target, "AMHEAR", speaker);
-            queue_attribute(target, "AAHEAR", speaker);
+              queue_attribute_base(target, "AMHEAR", speaker, 0, pe_regs);
+            queue_attribute_base(target, "AAHEAR", speaker, 0, pe_regs);
           }
+          pe_regs_free(pe_regs);
+        }
         if (!(flags & NA_NORELAY) && (loc != target) &&
             !filter_found(target,
                           (char *) notify_makestring(msgbuf, messages,
@@ -909,24 +915,18 @@ notify_anything_loc(dbref speaker, na_lookup func,
           passalong[2] = Owner(target);
           a = atr_get(target, "INPREFIX");
           if (a) {
-            for (j = 0; j < 10; j++)
-              wsave[j] = global_eval_context.wenv[j];
-            global_eval_context.wenv[0] = (char *) msgbuf;
-            for (j = 1; j < 10; j++)
-              global_eval_context.wenv[j] = NULL;
-            save_global_regs("inprefix_save", preserve);
+            NEW_PE_INFO *pe_info = make_pe_info("pe_info-notify");
+            pe_regs_setenv_nocopy(pe_info->regvals, 0, msgbuf);
             asave = safe_atr_value(a);
             ap = asave;
             bp = tbuf1;
             process_expression(tbuf1, &bp, &ap, target, speaker, speaker,
-                               PE_DEFAULT, PT_DEFAULT, NULL);
+                               PE_DEFAULT, PT_DEFAULT, pe_info);
             if (bp != tbuf1)
               safe_chr(' ', tbuf1, &bp);
             safe_str(msgbuf, tbuf1, &bp);
             *bp = 0;
-            restore_global_regs("inprefix_save", preserve);
-            for (j = 0; j < 10; j++)
-              global_eval_context.wenv[j] = wsave[j];
+            free_pe_info(pe_info);
           }
           notify_anything(speaker, Puppet(target) ? na_except2 : na_except,
                           passalong, NULL, flags | NA_NORELAY | NA_PUPPET,
@@ -934,7 +934,7 @@ notify_anything_loc(dbref speaker, na_lookup func,
         }
       }
     }
-    /* if object is flagged LISTENER, check for ^ listen patterns
+    /* if object is flagged MONITOR, check for ^ listen patterns
      *    * unlike normal @listen, don't pass the message on.
      *    */
 
@@ -943,7 +943,7 @@ notify_anything_loc(dbref speaker, na_lookup func,
       )
       atr_comm_match(target, speaker, '^', ':',
                      (char *) notify_makestring(msgbuf, messages, NA_COLOR, 0),
-                     0, 1, NULL, NULL, NULL, 0);
+                     0, 1, NULL, NULL, 0, NULL, NULL, QUEUE_DEFAULT);
 
     /* If object is flagged AUDIBLE and has a @FORWARDLIST, send
      *  stuff on */
@@ -991,30 +991,20 @@ notify_anything(dbref speaker, na_lookup func,
 
 /** Notify a player with a formatted string, easy version.
  * This is a safer replacement for notify(player, tprintf(fmt, ...))
- * \param speaker dbref of object producing the message.
- * \param func pointer to iterator function to look up each receiver.
- * \param fdata initial data to pass to func.
- * \param nsfunc function to call to do NOSPOOF formatting, or NULL.
- * \param flags flags to pass in (such as NA_INTERACT)
- * \param fmt format string.
+ * \param player the player to notify
+ * \param fmt the format string
+ * \param ... format args
  */
 void WIN32_CDECL
 notify_format(dbref player, const char *fmt, ...)
 {
-#ifdef HAS_VSNPRINTF
   char buff[BUFFER_LEN];
-#else
-  char buff[BUFFER_LEN * 3];
-#endif
   va_list args;
+
   va_start(args, fmt);
-#ifdef HAS_VSNPRINTF
-  vsnprintf(buff, sizeof buff, fmt, args);
-#else
-  vsprintf(buff, fmt, args);
-#endif
-  buff[BUFFER_LEN - 1] = '\0';
+  my_vsnprintf(buff, sizeof buff, fmt, args);
   va_end(args);
+
   notify(player, buff);
 }
 
@@ -1034,20 +1024,13 @@ notify_anything_format(dbref speaker, na_lookup func,
                                                      void *, int), int flags,
                        const char *fmt, ...)
 {
-#ifdef HAS_VSNPRINTF
   char buff[BUFFER_LEN];
-#else
-  char buff[BUFFER_LEN * 3];
-#endif
   va_list args;
+
   va_start(args, fmt);
-#ifdef HAS_VSNPRINTF
-  vsnprintf(buff, sizeof buff, fmt, args);
-#else
-  vsprintf(buff, fmt, args);
-#endif
-  buff[BUFFER_LEN - 1] = '\0';
+  my_vsnprintf(buff, sizeof buff, fmt, args);
   va_end(args);
+
   notify_anything(speaker, func, fdata, nsfunc, flags, buff);
 }
 
@@ -1137,13 +1120,8 @@ flag_broadcast(const char *flag1, const char *flag2, const char *fmt, ...)
   int ok;
 
   va_start(args, fmt);
-#ifdef HAS_VSNPRINTF
-  (void) vsnprintf(tbuf1, sizeof tbuf1, fmt, args);
-#else
-  (void) vsprintf(tbuf1, fmt, args);
-#endif
+  my_vsnprintf(tbuf1, sizeof tbuf1, fmt, args);
   va_end(args);
-  tbuf1[BUFFER_LEN - 1] = '\0';
 
   DESC_ITER_CONN(d) {
     ok = 1;
@@ -1431,7 +1409,7 @@ freeqs(DESC *d)
  * \param fdata unused.
  * \param para if 1, format for paranoid nospoof; if 0, normal nospoof.
  * \return formatted string.
- */
+ **/
 char *
 ns_esnotify(dbref speaker, na_lookup func __attribute__ ((__unused__)),
             void *fdata __attribute__ ((__unused__)), int para)

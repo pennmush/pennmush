@@ -25,8 +25,8 @@
   Continued in 'help attribute flags2'
 & ATTRIBUTE FLAGS2
   These attribute flags grant access. They are not inherited down attribute
-  trees, and must be set a branch attribute as well as a leaf to take effect
-  (to make FOO`BAR visual, FOO must be visual too):
+  trees, and must be set on a branch attribute as well as a leaf to take 
+  effect (to make FOO`BAR visual, FOO must be visual too):
   
   visual (v)        Attribute can be seen by anyone via get(), eval(),
                     ufun(), zfun(), and similar functions.
@@ -54,8 +54,9 @@
                     down to its unique prefixes. This flag is primarily used
                     internally, but also useful in @attribute/access.
                     
-  These attribute flags are only used internally, and shown on 'examine':
-  `                 This attribute is a branch. See: help ATTRIBUTE TREES
+  These attribute flags are only used internally. They cannot be set, but
+  seen on 'examine' and flags()/lflags(), tested for with hasflag(), etc:
+  branch (`)        This attribute is a branch. See: help ATTRIBUTE TREES
   
 See also: @set, @attribute, ATTRIBUTE TREES
 & ATTRIBUTE TREES

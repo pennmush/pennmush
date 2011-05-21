@@ -46,8 +46,6 @@ static int align_one_line(char *buff, char **bp, int ncols,
 static int comp_gencomp(dbref executor, char *left, char *right, char *type);
 void init_pronouns(void);
 
-extern signed char qreg_indexes[UCHAR_MAX + 1];
-
 /** Return an indicator of a player's gender.
  * \param player player whose gender is to be checked.
  * \retval 0 neuter.
@@ -149,23 +147,12 @@ FUNCTION(fun_isword)
 /* ARGSUSED */
 FUNCTION(fun_capstr)
 {
-  char *p;
-  p = skip_leading_ansi(args[0]);
-  if (!p) {
-    safe_strl(args[0], arglens[0], buff, bp);
-    return;
-  } else if (p != args[0]) {
-    char x = *p;
-    *p = '\0';
-    safe_strl(args[0], p - args[0], buff, bp);
-    *p = x;
+  char *p = args[0];
+  WALK_ANSI_STRING(p) {
+    *p = UPCASE(*p);
+    break;
   }
-  if (*p) {
-    safe_chr(UPCASE(*p), buff, bp);
-    p++;
-  }
-  if (*p)
-    safe_str(p, buff, bp);
+  safe_strl(args[0], arglens[0], buff, bp);
 }
 
 /* ARGSUSED */
@@ -454,7 +441,7 @@ FUNCTION(fun_strreplace)
   free_ansi_string(src);
 }
 
-extern int sort_order; /* from sort.c */
+extern int sort_order;          /* from sort.c */
 
 static int
 comp_gencomp(dbref executor, char *left, char *right, char *type)
@@ -564,7 +551,6 @@ FUNCTION(fun_strmatch)
   int i;
   char *qregs[NUMQ];
   int nqregs;
-  int qindex;
   char match_space[BUFFER_LEN * 2];
   ssize_t match_space_len = BUFFER_LEN * 2;
 
@@ -572,7 +558,7 @@ FUNCTION(fun_strmatch)
 
   if (nargs > 2) {
     matches = wild_match_case_r(args[1], args[0], 0, ret,
-                                NUMQ, match_space, match_space_len);
+                                NUMQ, match_space, match_space_len, NULL);
     safe_boolean(matches, buff, bp);
 
     if (matches) {
@@ -580,16 +566,15 @@ FUNCTION(fun_strmatch)
       nqregs = list2arr(qregs, NUMQ, args[2], ' ', 0);
 
       for (i = 0; i < nqregs; i++) {
-        if (ret[i] && qregs[i][0] && !qregs[i][1]) {
-          qindex = qreg_indexes[(unsigned char) qregs[i][0]];
-          if (qindex >= 0 && global_eval_context.renv[qindex]) {
-            strncpy(global_eval_context.renv[qindex], ret[i], BUFFER_LEN);
-          }
+        if (ValidQregName(qregs[i])) {
+          PE_Setq(pe_info, qregs[i], ret[i]);
+        } else if (qregs[i][0] != '-' || qregs[i][1]) {
+          safe_str(T(e_badregname), buff, bp);
         }
       }
     }
   } else {
-    matches = wild_match_case_r(args[1], args[0], 0, NULL, 0, NULL, 0);
+    matches = wild_match_case_r(args[1], args[0], 0, NULL, 0, NULL, 0, NULL);
     safe_boolean(matches, buff, bp);
   }
 }
@@ -806,45 +791,27 @@ FUNCTION(fun_tr)
 /* ARGSUSED */
 FUNCTION(fun_lcstr)
 {
-  char *p, *y;
+  char *p;
   p = args[0];
-  while (*p) {
-    y = skip_leading_ansi(p);
-    if (y != p) {
-      char t;
-      t = *y;
-      *y = '\0';
-      safe_str(p, buff, bp);
-      *y = t;
-      p = y;
-    }
-    if (*p) {
-      safe_chr(DOWNCASE(*p), buff, bp);
-      p++;
-    }
+  WALK_ANSI_STRING(p) {
+    *p = DOWNCASE(*p);
+    p++;
   }
+  safe_str(args[0], buff, bp);
+  return;
 }
 
 /* ARGSUSED */
 FUNCTION(fun_ucstr)
 {
-  char *p, *y;
+  char *p;
   p = args[0];
-  while (*p) {
-    y = skip_leading_ansi(p);
-    if (y != p) {
-      char t;
-      t = *y;
-      *y = '\0';
-      safe_str(p, buff, bp);
-      *y = t;
-      p = y;
-    }
-    if (*p) {
-      safe_chr(UPCASE(*p), buff, bp);
-      p++;
-    }
+  WALK_ANSI_STRING(p) {
+    *p = UPCASE(*p);
+    p++;
   }
+  safe_str(args[0], buff, bp);
+  return;
 }
 
 /* ARGSUSED */
@@ -1105,18 +1072,19 @@ FUNCTION(fun_foreach)
    * No delimiter is inserted between the results.
    */
 
-  dbref thing;
-  ATTR *attrib;
   const char *ap;
   char *lp;
-  char *asave, cbuf[2];
-  char *tptr[2];
-  char place[SBUF_LEN];
+  char cbuf[2];
+  PE_REGS *pe_regs;
   int placenr = 0;
   int funccount;
   char *oldbp;
   char start, end;
   char *letters;
+  char result[BUFFER_LEN];
+  char placestr[10];
+  size_t len;
+  ufun_attrib ufun;
 
   if (nargs >= 3) {
     if (!delim_check(buff, bp, nargs, args, 3, &start))
@@ -1130,19 +1098,9 @@ FUNCTION(fun_foreach)
     end = '\0';
   }
 
-  /* find our object and attribute */
-  parse_anon_attrib(executor, args[0], &thing, &attrib);
-  if (!GoodObject(thing) || !attrib || !Can_Read_Attr(executor, thing, attrib)) {
-    free_anon_attrib(attrib);
+  if (!fetch_ufun_attrib
+      (args[0], executor, &ufun, UFUN_DEFAULT | UFUN_REQUIRE_ATTR))
     return;
-  }
-  strcpy(place, "0");
-  asave = safe_atr_value(attrib);
-
-  /* save our stack */
-  tptr[0] = global_eval_context.wenv[0];
-  tptr[1] = global_eval_context.wenv[1];
-  global_eval_context.wenv[1] = place;
 
   letters = remove_markup(args[1], NULL);
 
@@ -1152,43 +1110,41 @@ FUNCTION(fun_foreach)
 
     if (!tmp) {
       safe_str(lp, buff, bp);
-      free_anon_attrib(attrib);
-      global_eval_context.wenv[1] = tptr[1];
       return;
     }
-    oldbp = place;
-    placenr = (tmp + 1) - lp;
-    safe_integer_sbuf(placenr, place, &oldbp);
-    oldbp = *bp;
 
     *tmp = '\0';
     safe_str(lp, buff, bp);
+    placenr = (tmp + 1) - lp;
     lp = tmp + 1;
   }
 
   cbuf[1] = '\0';
-  global_eval_context.wenv[0] = cbuf;
+
   oldbp = *bp;
   funccount = pe_info->fun_invocations;
+  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_foreach");
+  pe_regs_setenv_nocopy(pe_regs, 0, cbuf);
+  pe_regs_setenv_nocopy(pe_regs, 1, placestr);
   while (*lp && *lp != end) {
+    /* Set env */
     *cbuf = *lp++;
-    ap = asave;
-    if (process_expression(buff, bp, &ap, thing, executor, enactor,
-                           PE_DEFAULT, PT_DEFAULT, pe_info))
+    snprintf(placestr, 10, "%d", placenr++);
+
+    if (call_ufun(&ufun, result, executor, enactor, pe_info, pe_regs))
       break;
+
+    safe_str(result, buff, bp);
+
+    /* Make sure we're actually doing stuff. */
     if (*bp == oldbp && pe_info->fun_invocations == funccount)
       break;
-    oldbp = place;
-    safe_integer_sbuf(++placenr, place, &oldbp);
-    *oldbp = '\0';
     oldbp = *bp;
     funccount = pe_info->fun_invocations;
   }
   if (*lp)
     safe_str(lp + 1, buff, bp);
-  free_anon_attrib(attrib);
-  global_eval_context.wenv[0] = tptr[0];
-  global_eval_context.wenv[1] = tptr[1];
+  pe_regs_free(pe_regs);
 }
 
 extern char escaped_chars[UCHAR_MAX + 1];
@@ -2100,12 +2056,12 @@ FUNCTION(fun_speak)
   char *open, *close;
   char *start, *end = NULL;
   bool transform = 0, null = 0, say = 0, starting_fragment = 0;
-  char *wenv[3];
   int funccount;
   int fragment = 0;
   char *say_string;
   char *string;
   char rbuff[BUFFER_LEN];
+  PE_REGS *pe_regs;
 
   if (*args[0] == '&') {
     speaker_str = args[0];
@@ -2248,22 +2204,25 @@ FUNCTION(fun_speak)
   }
 
   funccount = pe_info->fun_invocations;
+  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_speak");
   while (start && *start) {
     fragment++;
     /* Transform to the next close, or to the end of the string. */
     if ((end = strstr(start, close)) != NULL)
       *end++ = '\0';
-    wenv[0] = start;
-    wenv[1] = speaker_str;
-    wenv[2] = unparse_integer(fragment);
-    if (call_ufun(&transufun, wenv, 3, rbuff, executor, enactor, pe_info))
+    pe_regs_setenv_nocopy(pe_regs, 0, start);
+    pe_regs_setenv_nocopy(pe_regs, 1, speaker_str);
+    pe_regs_setenv(pe_regs, 2, unparse_integer(fragment));
+    if (call_ufun(&transufun, rbuff, executor, enactor, pe_info, pe_regs))
       break;
+    pe_regs_clear(pe_regs);
     funccount = pe_info->fun_invocations;
     if (!*rbuff && (null == 1)) {
-      wenv[0] = speaker_str;
-      wenv[1] = unparse_integer(fragment);
-      if (call_ufun(&nullufun, wenv, 2, rbuff, executor, enactor, pe_info))
+      pe_regs_setenv_nocopy(pe_regs, 0, speaker_str);
+      pe_regs_setenv(pe_regs, 1, unparse_integer(fragment));
+      if (call_ufun(&nullufun, rbuff, executor, enactor, pe_info, pe_regs))
         break;
+      pe_regs_clear(pe_regs);
     }
     if (*rbuff)
       safe_str(rbuff, buff, bp);
@@ -2296,4 +2255,5 @@ FUNCTION(fun_speak)
   }
   if (end && *end)
     safe_str(end, buff, bp);
+  pe_regs_free(pe_regs);
 }

@@ -1,0 +1,38 @@
+/* Gperf data file for creating the lookup function in boolexp.c to see
+ * if a given flag lock name is valid.	   
+ */
+
+%language=ANSI-C
+%define hash-function-name bflag_hash
+%define lookup-function-name is_allowed_bflag
+%readonly-tables
+%enum 
+%compare-lengths
+
+%struct-type
+%define initializer-suffix ,-1,0
+
+%{
+/** The flag lock key (A^B) only allows a few values for A. This
+ * struct and the the following table define the allowable ones. When
+ * adding a new type here, a matching new bytecode instruction should
+ * be added. */
+%}
+struct flag_lock_types {
+  const char *name; /**< The value of A */
+  bvm_opcode op;  /**< The associated opcode */
+  int preserve; /**< If true, the parser preserves \\s in the match string */
+};
+
+%%
+FLAG, OP_TFLAG, 0
+POWER, OP_TPOWER, 0
+TYPE, OP_TTYPE, 0
+NAME, OP_TNAME, 1
+CHANNEL, OP_TCHANNEL, 0
+OBJID, OP_TIS, 0
+IP, OP_TIP, 1
+HOSTNAME, OP_THOSTNAME, 1
+DBREFLIST, OP_TDBREFLIST, 1
+%%
+

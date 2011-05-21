@@ -35,11 +35,10 @@
 #include "flags.h"
 #include "log.h"
 #include "mymalloc.h"
+#include "strtree.h"
 #include "confmagic.h"
 
 extern char *absp[], *obj[], *poss[], *subj[];  /* fundb.c */
-extern int inum, inum_limit;
-extern char *iter_rep[];
 int global_fun_invocations;
 int global_fun_recursions;
 /* extern int re_subpatterns; */
@@ -76,6 +75,8 @@ char e_notvis[] = "#-1 NO SUCH OBJECT VISIBLE";
 char e_disabled[] = "#-1 FUNCTION DISABLED";
 char e_range[] = "#-1 OUT OF RANGE";
 char e_argrange[] = "#-1 ARGUMENT OUT OF RANGE";
+char e_badregname[] = "#-1 REGISTER NAME INVALID";
+char e_toomanyregs[] = "#-1 TOO MANY REGISTERS";
 
 #endif
 
@@ -103,6 +104,8 @@ dummy_errors()
   temp = T("#-1 FUNCTION DISABLED");
   temp = T("#-1 OUT OF RANGE");
   temp = T("#-1 ARGUMENT OUT OF RANGE");
+  temp = T("#-1 REGISTER NAME INVALID");
+  temp = T("#-1 TOO MANY REGISTERS");
 }
 
 #endif
@@ -283,10 +286,12 @@ is_dbref(char const *str)
 }
 
 /** Is a string an objid?
+ * \verbatim
  * An objid is a string starting with a #, optionally followed by a -,
  * and then followed by at least one digit, then optionally followed
  * by a : and at least one digit, and nothing else.
  * In regex: ^#-?\d+(:\d+)?$
+ * \endverbatim
  * \param str string to check.
  * \retval 1 string is an objid
  * \retval 0 string is not an objid.
@@ -405,7 +410,7 @@ bool
 is_strict_number(char const *str)
 {
   char *end;
-  int throwaway;
+  int throwaway __attribute__ ((__unused__));
   if (!str)
     return 0;
   errno = 0;
@@ -418,7 +423,7 @@ is_strict_number(char const *str)
 #ifndef HAVE_ISNORMAL
 /** Is string a number that isn't inf or nan?
  * Only needed for systems without isnormal()
- * \param num NVAL
+ * \param val NVAL
  * \retval 1 num is a good number.
  * \retval 0 num is not a good number.
  */
@@ -555,6 +560,8 @@ parse_int32(const char *s, char **end, int base)
  * Use this instead of strtoul() when storing to an int to avoid problems
  * where  sizeof(int) < sizeof(long).
  * \param s The string to convert
+ * \param end pointer to store the first invalid char at, or NULL
+ * \param base base for conversion
  * \return the number, or UINT_MAX on overflow
  * with errno set to ERANGE.
  */
@@ -608,39 +615,1047 @@ parse_uint32(const char *s, char **end, int base)
 #endif
 }
 
+/** PE_REGS: Named Q-registers. We have two strtrees: One for names,
+ * one for values.
+ */
+StrTree pe_reg_names;
+StrTree pe_reg_vals;
+
+/* Slabs for PE_REGS and PE_REG_VALs */
+slab *pe_reg_slab;
+slab *pe_reg_val_slab;
+
+/* Lame speed-up so we don't constantly call tprintf :D */
+static const char *envid[10] =
+  { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+
+void
+init_pe_regs_trees()
+{
+  int i;
+  char qv[2] = "0";
+
+  pe_reg_slab = slab_create("PE_REGS", sizeof(PE_REGS));
+  pe_reg_val_slab = slab_create("PE_REG_VAL", sizeof(PE_REG_VAL));
+
+  st_init(&pe_reg_names, "pe_reg_names");
+  st_init(&pe_reg_vals, "pe_reg_vals");
+
+  /* Permanently insert 0-9 A-Z into the qreg name table.
+   *
+   * Since st_insert_perm isn't coded, we just insert these once.
+   */
+  for (i = 0; i < 10; i++) {
+    qv[0] = '0' + i;
+    st_insert(qv, &pe_reg_names);
+  }
+  for (i = 0; i < 26; i++) {
+    qv[0] = 'A' + i;
+    st_insert(qv, &pe_reg_names);
+  }
+}
+
+void
+free_pe_regs_trees()
+{
+  st_flush(&pe_reg_names);
+  st_flush(&pe_reg_vals);
+}
+
+/* For debugging purposes. */
+void
+pe_regs_dump(PE_REGS *pe_regs, dbref who)
+{
+  int i = 0;
+  PE_REG_VAL *val;
+
+  while (pe_regs && i < 100) {
+    notify_format(who, "%d: %.4X '%s'", i, pe_regs->flags, pe_regs->name);
+    i++;
+    if (!pe_regs->flags) {
+      notify_format(who, "NULL pe_regs type found?! Quitting.");
+      break;
+    }
+    for (val = pe_regs->vals; val; val = val->next) {
+      if (val->type & PE_REGS_STR) {
+        notify_format(who, " %.2X %-10s: %s", val->type & 0xFF,
+                      val->name, val->val.sval);
+      } else {
+        notify_format(who, " %.2X %-10s: %d", val->type & 0xFF,
+                      val->name, val->val.ival);
+      }
+    }
+    pe_regs = pe_regs->prev;
+  }
+}
+
+/** Create a PE_REGS context.
+ *
+ * \param pr_flags PR_* flags, bitwise or'd.
+ */
+PE_REGS *
+pe_regs_create_real(int pr_flags, const char *name)
+{
+  PE_REGS *pe_regs = slab_malloc(pe_reg_slab, NULL);
+
+  pe_regs->name = name;
+  pe_regs->qcount = 0;
+  pe_regs->count = 0;
+  pe_regs->flags = pr_flags;
+  pe_regs->vals = NULL;
+  pe_regs->prev = NULL;
+  return pe_regs;
+}
+
+/* Delete the _value_ of a single val, leave its name alone */
+inline void
+pe_reg_val_free_val(PE_REG_VAL *val)
+{
+  /* Don't do anything if it's NOCOPY or if it's an integer. */
+  if (val->type & (PE_REGS_INT | PE_REGS_NOCOPY))
+    return;
+
+  if (val->type & PE_REGS_STR) {
+    st_delete(val->val.sval, &pe_reg_vals);
+  }
+}
+
+/* Delete a single val. */
+void
+pe_reg_val_free(PE_REG_VAL *val)
+{
+  pe_reg_val_free_val(val);
+  st_delete(val->name, &pe_reg_names);
+  slab_free(pe_reg_val_slab, val);
+}
+
+/** Free all values from a PE_REGS context.
+ *
+ * \param pe_wregs The pe_regs to clear
+ */
+void
+pe_regs_clear(PE_REGS *pe_regs)
+{
+  PE_REG_VAL *val = pe_regs->vals;
+  PE_REG_VAL *next;
+
+  while (val) {
+    next = val->next;
+    pe_reg_val_free(val);
+    val = next;
+  }
+  pe_regs->count = 0;
+  pe_regs->qcount = 0;
+  pe_regs->vals = NULL;
+}
+
+/** Free all values of a specific type from a PE_REGS context.
+ *
+ * \param pe_wregs The pe_regs to clear
+ * \param type     The type(s) of pe_reg_vals to clear.
+ */
+void
+pe_regs_clear_type(PE_REGS *pe_regs, int type)
+{
+  PE_REG_VAL *val = pe_regs->vals;
+  PE_REG_VAL *next;
+  PE_REG_VAL *prev = NULL;
+
+  while (val) {
+    next = val->next;
+    if (val->type & type) {
+      if (prev) {
+        prev->next = next;
+      } else {
+        pe_regs->vals = next;
+      }
+      pe_reg_val_free(val);
+    } else {
+      prev = val;
+    }
+    val = next;
+  }
+}
+
+/** Free a PE_REGS context.
+ *
+ * \param pe_wregs The pe_regs to free up.
+ */
+void
+pe_regs_free(PE_REGS *pe_regs)
+{
+  pe_regs_clear(pe_regs);
+  slab_free(pe_reg_slab, pe_regs);
+}
+
+/** Create a new PE_REGS context, and return it for manipulation.
+ *
+ * \param pe_info The pe_info to push the new PE_REGS into.
+ * \param pr_flags PR_* flags, bitwise or'd.
+ */
+PE_REGS *
+pe_regs_localize_real(NEW_PE_INFO *pe_info, uint32_t pr_flags, const char *name)
+{
+  PE_REGS *pe_regs = pe_regs_create_real(pr_flags, name);
+  pe_regs->prev = pe_info->regvals;
+  pe_info->regvals = pe_regs;
+
+  return pe_regs;
+}
+
+
+/** Restore a PE_REGS context.
+ *
+ * \param pe_info The pe_info to pop the pe_regs out of.
+ * \param pe_regs The pe_regs that formed the 'level' to pop out of.
+ */
+void
+pe_regs_restore(NEW_PE_INFO *pe_info, PE_REGS *pe_regs)
+{
+  pe_info->regvals = pe_regs->prev;
+}
+
+#define FIND_PVAL(pval, key, type) \
+  do { \
+    if (!pval) break; \
+    if ((pval->type & type) && !strcmp(pval->name, key)) { \
+      break; \
+    } \
+    pval = pval->next; \
+  } while (pval)
+
+/** Set a string value in a PE_REGS structure.
+ *
+ * pe_regs_set is authoritative: it ignores flags set on the PE_REGS,
+ * it doesn't recurse up the chain, etc. So it is intended to be used
+ * only in the same function where the PE_REGS is created.
+ *
+ * \param pe_regs The pe_regs to set it in.
+ * \param type The type (REG_QREG, REG-... etc) of the register to set.
+ * \param key Register name
+ * \param val Register value.
+ * \param override If it already exists, then overwrite it.
+ */
+void
+pe_regs_set_if(PE_REGS *pe_regs, int type,
+               const char *lckey, const char *val, int override)
+{
+  /* pe_regs_set is authoritative: it ignores flags set on the PE_REGS,
+   * it doesn't recurse up the chain, etc. */
+  PE_REG_VAL *pval = pe_regs->vals;
+  char key[PE_KEY_LEN];
+  static const char *noval = "";
+  strncpy(key, lckey, PE_KEY_LEN);
+  upcasestr(key);
+  FIND_PVAL(pval, key, type);
+  if (!(type & PE_REGS_NOCOPY)) {
+    if (!val || !val[0]) {
+      val = noval;
+      type |= PE_REGS_NOCOPY;
+    }
+  }
+  if (pval) {
+    if (!override)
+      return;
+    /* Delete its value */
+    pe_reg_val_free_val(pval);
+  } else {
+    pval = slab_malloc(pe_reg_val_slab, NULL);
+    pval->name = st_insert(key, &pe_reg_names);
+    pval->next = pe_regs->vals;
+    pe_regs->vals = pval;
+    pe_regs->count++;
+    if (type & PE_REGS_Q) {
+      if (!((key[1] == '\0') &&
+          ((key[0] >= 'A' && key[0] <= 'Z') ||
+           (key[0] >= '0' && key[0] <= '9')))) {
+        pe_regs->qcount++;
+      }
+    }
+  }
+  if (type & PE_REGS_NOCOPY) {
+    pval->type = type | PE_REGS_STR;
+    pval->val.sval = val;
+  } else {
+    pval->type = type | PE_REGS_STR;
+    pval->val.sval = st_insert(val, &pe_reg_vals);
+  }
+}
+
+/** Set an integer value in a PE_REGS structure.
+ *
+ * pe_regs_set is authoritative: it ignores flags set on the PE_REGS,
+ * it doesn't recurse up the chain, etc. So it is intended to be used
+ * only in the same function where the PE_REGS is created.
+ *
+ * \param pe_regs The pe_regs to set it in.
+ * \param type The type (REG_QREG, REG-... etc) of the register to set.
+ * \param key Register name
+ * \param val Register value.
+ * \param override If 1, then replace any extant value for <name>
+ */
+void
+pe_regs_set_int_if(PE_REGS *pe_regs, int type,
+                   const char *lckey, int val, int override)
+{
+  PE_REG_VAL *pval = pe_regs->vals;
+  char key[PE_KEY_LEN];
+  strncpy(key, lckey, PE_KEY_LEN);
+  upcasestr(key);
+  FIND_PVAL(pval, key, type);
+  if (pval) {
+    if (!override)
+      return;
+    pe_reg_val_free_val(pval);
+  } else {
+    pval = slab_malloc(pe_reg_val_slab, NULL);
+    pval->name = st_insert(key, &pe_reg_names);
+    pval->next = pe_regs->vals;
+    pe_regs->vals = pval;
+    pe_regs->count++;
+    if (type & PE_REGS_Q) {
+      if (!((key[1] == '\0') &&
+          ((key[0] >= 'A' && key[0] <= 'Z') ||
+           (key[0] >= '0' && key[0] <= '9')))) {
+        pe_regs->qcount++;
+      }
+    }
+  }
+  pval->type = type | PE_REGS_INT;
+  pval->val.ival = val;
+}
+
+const char *
+pe_regs_get(PE_REGS *pe_regs, int type, const char *lckey)
+{
+  PE_REG_VAL *pval = pe_regs->vals;
+  char key[PE_KEY_LEN];
+  strncpy(key, lckey, PE_KEY_LEN);
+  upcasestr(key);
+  FIND_PVAL(pval, key, type);
+  if (!pval)
+    return NULL;
+  if (pval->type & PE_REGS_STR) {
+    return pval->val.sval;
+  } else if (pval->type & PE_REGS_INT) {
+    return unparse_integer(pval->val.ival);
+  }
+  return NULL;
+}
+
+
+/** Get a typed value from a pe_regs structure, returned as an integer.
+ *
+ * \param pe_regs The PE_REGS to fetch from.
+ * \param type The type of the value to get
+ * \param key Q-register name.
+ */
+int
+pe_regs_get_int(PE_REGS *pe_regs, int type, const char *lckey)
+{
+  PE_REG_VAL *pval = pe_regs->vals;
+  char key[PE_KEY_LEN];
+  strncpy(key, lckey, PE_KEY_LEN);
+  upcasestr(key);
+  FIND_PVAL(pval, key, type);
+  if (!pval)
+    return 0;
+  if (pval->type & PE_REGS_STR) {
+    return parse_integer(pval->val.sval);
+  } else if (pval->type & PE_REGS_INT) {
+    return pval->val.ival;
+  }
+  return 0;
+}
+
+/** Copy Q-reg values to one PE_REGS from another.
+ * \param dst The PE_REGS to copy to.
+ * \param src The PE_REGS to copy from.
+ */
+void
+pe_regs_qcopy(PE_REGS *dst, PE_REGS *src)
+{
+  PE_REG_VAL *val;
+  for (val = src->vals; val; val = val->next) {
+    if (val->type & PE_REGS_Q) {
+      if (val->type & PE_REGS_STR) {
+        pe_regs_set(dst, val->type, val->name, val->val.sval);
+      } else {
+        pe_regs_set_int(dst, val->type, val->name, val->val.ival);
+      }
+    }
+  }
+}
+
+void
+pe_regs_copystack(PE_REGS *new_regs, PE_REGS *pe_regs,
+                  int copytypes, int override)
+{
+  int scount = 0;               /* stext counts */
+  int icount = 0;               /* itext counts */
+  int smax = 0;
+  int imax = 0;
+  char itype;
+  int inum;
+  /* Disable PE_REGS_NOCOPY: If we're copying, we want to copy. */
+  int andflags = 0xFF;
+  char numbuff[10];
+  PE_REG_VAL *val, *prev, *next;
+  prev = NULL;
+
+  if (!pe_regs)
+    return;
+
+  if (override && (copytypes & PE_REGS_ARG)
+      && (pe_regs->flags & PE_REGS_ARG)) {
+    /* Look for all PE_REGS_ARG flags in new_regs, and delete them. */
+    for (val = new_regs->vals; val; val = next) {
+      next = val->next;
+      if (val->type & PE_REGS_ARG) {
+        if (prev) {
+          prev->next = next;
+          val->next = NULL;
+          pe_reg_val_free(val);
+        } else {
+          new_regs->vals = next;
+          pe_reg_val_free(val);
+        }
+      } else {
+        prev = val;
+      }
+    }
+  }
+
+  /* Whatever it is, it's copied for a QUEUE entry */
+  for (; pe_regs; pe_regs = pe_regs->prev) {
+    for (val = pe_regs->vals; val; val = val->next) {
+      if (val->type & copytypes) {
+        if (val->type & (PE_REGS_SWITCH | PE_REGS_ITER)) {
+          /* It is t<num> or n<num>. Bump it up as necessary. */
+          sscanf(val->name, "%c%d", &itype, &inum);
+          inum += (val->type & PE_REGS_SWITCH) ? smax : imax;
+          if (*(val->name) == 'T') {
+            if (val->type & PE_REGS_SWITCH) {
+              if (inum >= scount)
+                scount = inum + 1;
+            } else {
+              if (inum >= icount)
+                icount = inum + 1;
+            }
+          }
+          if (inum < MAX_ITERS) {
+            snprintf(numbuff, 10, "%c%d", itype, inum);
+            if (val->type & PE_REGS_STR) {
+              pe_regs_set(new_regs, val->type & andflags,
+                          numbuff, val->val.sval);
+            } else {
+              pe_regs_set_int(new_regs, val->type & andflags,
+                              numbuff, val->val.ival);
+            }
+          }
+        } else {
+          /* Set, but maybe don't override. */
+          if (val->type & PE_REGS_STR) {
+            pe_regs_set_if(new_regs, val->type & andflags,
+                           val->name, val->val.sval, override);
+          } else {
+            pe_regs_set_int_if(new_regs, val->type & andflags,
+                               val->name, val->val.ival, override);
+          }
+        }
+      }
+    }
+    smax = scount;
+    imax = icount;
+    if (pe_regs->flags & PE_REGS_ARG) {
+      /* Only the most recent %0-%9 count */
+      copytypes &= ~PE_REGS_ARG;
+    }
+    override = 0;
+  }
+}
+
+/** Does PE_REGS have a register stack of a given type, within the 
+ * appropriate scope? This checks three things: For a PE_REGS with the
+ * appropriate type, for a stopping pe_regs (NEWATTR, etc), and for
+ * a value with the appropriate type.
+ *
+ * \param pe_info The NEW_PE_INFO to check.
+ * \param type The type to find.
+ * \retval 1 Has the requested type.
+ * \retval 0 Doesn't have it.
+ */
+int
+pi_regs_has_type(NEW_PE_INFO *pe_info, int type)
+{
+  PE_REGS *pe_regs;
+  PE_REG_VAL *val;
+  int breaker;
+
+  /* What flag will stop this search up? */
+  switch (type) {
+  case PE_REGS_Q:
+    breaker = PE_REGS_QSTOP;
+    break;
+  default:
+    breaker = PE_REGS_NEWATTR;
+  }
+  pe_regs = pe_info->regvals;
+
+  while (pe_regs) {
+    if (pe_regs->flags & type) {
+      val = pe_regs->vals;
+      while (val) {
+        if (val->type & type)
+          return 1;
+        val = val->next;
+      }
+    }
+    if (pe_regs->flags & breaker)
+      return 0;
+    pe_regs = pe_regs->prev;
+  }
+  return 0;
+}
+
+/** Is a string a valid name for a Q-register?
+ *
+ * \param key The key to check
+ * \return 0 not valid
+ * \return 1 valid
+ */
+int
+pi_regs_valid_key(const char *lckey)
+{
+  char key[PE_KEY_LEN];
+  strncpy(key, lckey, PE_KEY_LEN);
+  upcasestr(key);
+  return ((good_atr_name(key)) && (strlen(key) <= PE_KEY_LEN) && *key);
+}
+
+/** Set a q-register value in the appropriate PE_REGS context.
+ *
+ * If there is no available appropriate context to set a Q-register in,
+ * then create a toplevel one for the pe_info structure.
+ *
+ * \param pe_info The current PE_INFO struct.
+ * \param key Q-register name.
+ * \param val Q-register value.
+ * \retval 1 No problems setting
+ * \retval 0 Too many registers set.
+ */
+int
+pi_regs_setq(NEW_PE_INFO *pe_info, const char *key, const char *val)
+{
+  PE_REGS *pe_regs = pe_info->regvals;
+  PE_REGS *pe_tmp = NULL;
+  int count = 0;
+  while (pe_regs) {
+    if ((pe_regs->flags & (PE_REGS_Q | PE_REGS_LET)) == PE_REGS_Q) {
+      count = pe_regs->qcount;
+      break;
+    }
+    pe_regs = pe_regs->prev;
+  }
+  /* Single-character keys ignore attrcount. */
+  if ((count >= MAX_NAMED_QREGS) && key[1]) {
+    return 0;
+  }
+  /* Find the p_regs to setq() in. */
+  pe_regs = pe_info->regvals;
+  while (pe_regs) {
+    pe_tmp = pe_regs;
+    if (pe_regs->flags & PE_REGS_Q) {
+      if (pe_regs->flags & PE_REGS_LET) {
+        if (pe_regs_get(pe_regs, PE_REGS_Q, key)) {
+          break;
+        }
+      } else {
+        break;
+      }
+    }
+    pe_regs = pe_regs->prev;
+  }
+  if (pe_regs == NULL) {
+    pe_regs = pe_regs_create(PE_REGS_QUEUE, "pe_regs_setq");
+    if (pe_tmp) {
+      pe_tmp->prev = pe_regs;
+    } else {
+      pe_info->regvals = pe_regs;
+    }
+  }
+  pe_regs_set(pe_regs, PE_REGS_Q, key, val);
+  return 1;
+}
+
+const char *
+pi_regs_getq(NEW_PE_INFO *pe_info, const char *key)
+{
+  const char *ret;
+  PE_REGS *pe_regs = pe_info->regvals;
+  while (pe_regs) {
+    if (pe_regs->flags & PE_REGS_Q) {
+      ret = pe_regs_get(pe_regs, PE_REGS_Q, key);
+      if (ret)
+        return ret;
+    }
+    /* If it's marked QSTOP, it stops. */
+    if (pe_regs->flags & PE_REGS_QSTOP) {
+      return NULL;
+    }
+    pe_regs = pe_regs->prev;
+  }
+  return NULL;
+}
+
+/* REGEXPS */
+void
+pe_regs_set_rx_context(PE_REGS *pe_regs,
+                       struct real_pcre *re_code,
+                       int *re_offsets, int re_subpatterns, const char *re_from)
+{
+  int i;
+  unsigned char *entry, *nametable;
+  int entrysize;
+  int namecount;
+  int num;
+  char buff[BUFFER_LEN];
+
+  if (!re_from)
+    return;
+  if (re_subpatterns < 0)
+    return;
+
+  /* We assume every captured pattern is used. */
+  /* Copy all the numbered captures over */
+  for (i = 0; i < re_subpatterns && i < 1000; i++) {
+    pcre_copy_substring(re_from, re_offsets, re_subpatterns,
+                        i, buff, BUFFER_LEN);
+    pe_regs_set(pe_regs, PE_REGS_REGEXP, pe_regs_intname(i), buff);
+  }
+  /* Copy all the named captures over. This code is ganked from
+   * pcre_get_stringnumber */
+  /* Check to see if we have any named substrings, first. */
+  if (pcre_fullinfo(re_code, NULL, PCRE_INFO_NAMECOUNT, &namecount) != 0) {
+    return;
+  }
+  if (namecount <= 0)
+    return;
+
+  /* Fetch entry size and nametable */
+  if (pcre_fullinfo(re_code, NULL, PCRE_INFO_NAMEENTRYSIZE, &entrysize) != 0)
+    return;
+  if (pcre_fullinfo(re_code, NULL, PCRE_INFO_NAMETABLE, &nametable) != 0)
+    return;
+  for (i = 0; i < namecount; i++) {
+    entry = nametable + (entrysize * i);
+    num = (entry[0] << 8) + entry[1];
+    pcre_copy_substring(re_from, re_offsets, re_subpatterns,
+                        num, buff, BUFFER_LEN);
+    pe_regs_set(pe_regs, PE_REGS_REGEXP, pe_regs_intname(i), buff);
+  }
+}
+
+void
+pe_regs_set_rx_context_ansi(PE_REGS *pe_regs,
+                            struct real_pcre *re_code,
+                            int *re_offsets,
+                            int re_subpatterns, struct _ansi_string *re_from)
+{
+  int i;
+  unsigned char *entry, *nametable;
+  int entrysize;
+  int namecount;
+  int num;
+  char buff[BUFFER_LEN], *bp;
+
+  if (!re_from)
+    return;
+  if (re_subpatterns < 0)
+    return;
+
+  /* We assume every captured pattern is used. */
+  /* Copy all the numbered captures over */
+  for (i = 0; i < re_subpatterns && i < 1000; i++) {
+    bp = buff;
+    ansi_pcre_copy_substring(re_from, re_offsets, re_subpatterns,
+                             i, 1, buff, &bp);
+    *bp = '\0';
+    pe_regs_set(pe_regs, PE_REGS_REGEXP, pe_regs_intname(i), buff);
+  }
+  /* Copy all the named captures over. This code is ganked from
+   * pcre_get_stringnumber */
+  /* Check to see if we have any named substrings, first. */
+  if (pcre_fullinfo(re_code, NULL, PCRE_INFO_NAMECOUNT, &namecount) != 0) {
+    return;
+  }
+  if (namecount <= 0)
+    return;
+
+  /* Fetch entry size and nametable */
+  if (pcre_fullinfo(re_code, NULL, PCRE_INFO_NAMEENTRYSIZE, &entrysize) != 0)
+    return;
+  if (pcre_fullinfo(re_code, NULL, PCRE_INFO_NAMETABLE, &nametable) != 0)
+    return;
+  for (i = 0; i < namecount; i++) {
+    entry = nametable + (entrysize * i);
+    num = (entry[0] << 8) + entry[1];
+    bp = buff;
+    ansi_pcre_copy_substring(re_from, re_offsets, re_subpatterns,
+                             num, 1, buff, &bp);
+    *bp = '\0';
+    pe_regs_set(pe_regs, PE_REGS_REGEXP, pe_regs_intname(i), buff);
+  }
+}
+
+const char *
+pi_regs_get_rx(NEW_PE_INFO *pe_info, const char *key)
+{
+  const char *ret;
+  PE_REGS *pe_regs = pe_info->regvals;
+  while (pe_regs) {
+    if (pe_regs->flags & PE_REGS_REGEXP) {
+      ret = pe_regs_get(pe_regs, PE_REGS_REGEXP, key);
+      if (ret)
+        return ret;
+      /* Only check the _first_ PE_REGS_REGEXP. */
+      return NULL;
+    }
+    /* If it's marked NEWATTR, it's done. */
+    if (pe_regs->flags & PE_REGS_NEWATTR) {
+      return NULL;
+    }
+    pe_regs = pe_regs->prev;
+  }
+  return NULL;
+}
+
+/* ITER and SWITCH getters. */
+const char *
+pi_regs_get_itext(NEW_PE_INFO *pe_info, int type, int lev)
+{
+  PE_REGS *pe_regs;
+  char numbuff[10];
+  const char *ret;
+
+  pe_regs = pe_info->regvals;
+
+  while (pe_regs) {
+    if (pe_regs->flags & type) {
+      snprintf(numbuff, 10, "t%d", lev);
+      ret = pe_regs_get(pe_regs, type, numbuff);
+      if (ret) {
+        return ret;
+      }
+      lev--;                    /* Not this level, go up one. */
+    }
+    /* NEWATTR halts switch and itext. */
+    if (pe_regs->flags & PE_REGS_NEWATTR) {
+      return NULL;
+    }
+    pe_regs = pe_regs->prev;
+  }
+  return NULL;
+}
+
+int
+pi_regs_get_inum(NEW_PE_INFO *pe_info, int type, int lev)
+{
+  PE_REGS *pe_regs;
+  char numbuff[10];
+  int ret;
+
+  pe_regs = pe_info->regvals;
+
+  while (pe_regs) {
+    if (pe_regs->flags & type) {
+      snprintf(numbuff, 10, "n%d", lev);
+      ret = pe_regs_get_int(pe_regs, type, numbuff);
+      if (ret) {
+        return ret;
+      }
+      lev--;                    /* Not this level, go up one. */
+    }
+    /* NEWATTR halts switch and itext. */
+    if (pe_regs->flags & PE_REGS_NEWATTR) {
+      return 0;
+    }
+    pe_regs = pe_regs->prev;
+  }
+  return 0;
+}
+
+int
+pi_regs_get_ilev(NEW_PE_INFO *pe_info, int type)
+{
+  PE_REGS *pe_regs;
+  PE_REG_VAL *val;
+
+  int count = -1;
+
+  pe_regs = pe_info->regvals;
+
+  while (pe_regs) {
+    if (pe_regs->flags & type) {
+      val = pe_regs->vals;
+      while (val) {
+        if ((val->type & type) && *(val->name) == 'T') {
+          count++;
+        }
+        val = val->next;
+      }
+    }
+    /* NEWATTR halts switch and itext. */
+    if (pe_regs->flags & PE_REGS_NEWATTR) {
+      return count;
+    }
+    pe_regs = pe_regs->prev;
+  }
+  return count;
+}
+
+/**
+ * Fast way to turn 0-9 into a string, while falling back on tprintf for
+ * non-single-digit ones.
+ * \param num Number of the name
+ * \retval char * representation of the name.
+ */
+const char *
+pe_regs_intname(int num)
+{
+  if (num < 10 && num >= 0) {
+    return envid[num];
+  } else {
+    return tprintf("%d", num);
+  }
+}
+
+void
+pe_regs_setenv(PE_REGS *pe_regs, int num, const char *val)
+{
+  const char *name;
+  if (num < 10 && num >= 0) {
+    name = envid[num];
+  } else {
+    name = tprintf("%d", num);
+  }
+  pe_regs_set(pe_regs, PE_REGS_ARG, name, val);
+}
+
+void
+pe_regs_setenv_nocopy(PE_REGS *pe_regs, int num, const char *val)
+{
+  const char *name;
+  if (num < 10 && num >= 0) {
+    name = envid[num];
+  } else {
+    name = tprintf("%d", num);
+  }
+  pe_regs_set(pe_regs, PE_REGS_ARG | PE_REGS_NOCOPY, name, val);
+}
+
+/* Only the bottommost PE_REGS_ARG is checked. It stops at NEWATTR */
+const char *
+pi_regs_get_env(NEW_PE_INFO *pe_info, int num)
+{
+  PE_REGS *pe_regs;
+  const char *name;
+  if (num < 10 && num >= 0) {
+    name = envid[num];
+  } else {
+    name = tprintf("%d", num);
+  }
+  const char *ret;
+
+  pe_regs = pe_info->regvals;
+
+  while (pe_regs) {
+    if (pe_regs->flags & PE_REGS_ARG) {
+      ret = pe_regs_get(pe_regs, PE_REGS_ARG, name);
+      return ret;
+    }
+    /* NEWATTR without ARGPASS halts switch and itext. */
+    if ((pe_regs->flags & (PE_REGS_NEWATTR | PE_REGS_ARGPASS))
+        == (PE_REGS_NEWATTR)) {
+      return NULL;
+    }
+    pe_regs = pe_regs->prev;
+  }
+  return NULL;
+}
+
+int
+pi_regs_get_envc(NEW_PE_INFO *pe_info)
+{
+  PE_REGS *pe_regs;
+  PE_REG_VAL *val;
+  int max, num;
+  max = 0;
+
+  pe_regs = pe_info->regvals;
+
+  while (pe_regs) {
+    if (pe_regs->flags & PE_REGS_ARG) {
+      for (val = pe_regs->vals; val; val = val->next) {
+        if (val->type & PE_REGS_ARG) {
+          sscanf(val->name, "%d", &num);
+          if (num >= max) {
+            max = num + 1;      /* %0 is 1 arg */
+          }
+        }
+      }
+      return max;
+    }
+    /* NEWATTR without ARGPASS halts switch and itext. */
+    if ((pe_regs->flags & (PE_REGS_NEWATTR | PE_REGS_ARGPASS))
+        == (PE_REGS_NEWATTR)) {
+      return 0;
+    }
+    pe_regs = pe_regs->prev;
+  }
+  return 0;
+}
 
 /* Table of interesting characters for process_expression() */
 extern char active_table[UCHAR_MAX + 1];
-/* Indexes of valid q-regs into the renv array. -1 is error. */
-extern signed char qreg_indexes[UCHAR_MAX + 1];
 
 #ifdef WIN32
 #pragma warning( disable : 4761)        /* NJG: disable warning re conversion */
 #endif
 
-PE_Info *
-make_pe_info()
+/** Free a pe_info at the end of its use. Note that a pe_info may be in use
+ ** in more than one place, in which case this function simply decrements the
+ ** refcounter. Memory is only freed when the counter hits 0
+ * \param pe_info the pe_info to free
+ */
+void
+free_pe_info(NEW_PE_INFO *pe_info)
 {
-  PE_Info *pe_info;
+  PE_REGS *pe_regs;
 
-  pe_info = GC_MALLOC(sizeof(PE_Info));
+  if (!pe_info)
+    return;
+
+  pe_info->refcount--;
+  if (pe_info->refcount > 0)
+    return;                     /* Still in use */
+
+  while (pe_info->regvals) {
+    pe_regs = pe_info->regvals;
+    pe_info->regvals = pe_regs->prev;
+    pe_regs_free(pe_regs);
+  }
+}
+
+/** Create a new pe_info
+ * \param name name of the calling function, for memory checking
+ */
+NEW_PE_INFO *
+make_pe_info(char *name)
+{
+  NEW_PE_INFO *pe_info;
+
+  pe_info = GC_MALLOC(sizeof(NEW_PE_INFO));
+
   pe_info->fun_invocations = 0;
-  pe_info->fun_depth = 0;
-  pe_info->nest_depth = 0;
+  pe_info->fun_recursions = 0;
   pe_info->call_depth = 0;
+
   pe_info->debug_strings = NULL;
-  pe_info->arg_count = 0;
-  pe_info->iter_nesting = -1;
-  pe_info->local_iter_nesting = -1;
-  pe_info->iter_break = -1;
-  pe_info->dolists = 0;
-  pe_info->switch_nesting = -1;
-  pe_info->local_switch_nesting = -1;
   pe_info->debugging = 0;
+  pe_info->nest_depth = 0;
+
+  *pe_info->attrname = '\0';
+
+  pe_info->regvals = pe_regs_create(PE_REGS_QUEUE, "make_pe_info");
+
+  *pe_info->cmd_raw = '\0';
+  *pe_info->cmd_evaled = '\0';
+
+  pe_info->refcount = 1;
+  strcpy(pe_info->name, name);
 
   return pe_info;
 }
 
+/** Create an new pe_info based on an existing pe_info. Depending on flags, we
+ ** may simply increase the refcount of the existing pe_info and return
+ ** that, or we may create a new pe_info, possibly copying some information
+ ** from the existing pe_info into the new one
+ * \param old_pe_info the original pe_info to use as a base for the new one
+ * \param flags PE_INFO_* flags to determine exactly what to do
+ * \param env environment vars (%0-%9) for the new pe_info, or NULL
+ * \param qreg qreg values (%q*) for the new pe_info, or NULL
+ * \retval a new pe_info
+ */
+NEW_PE_INFO *
+pe_info_from(NEW_PE_INFO *old_pe_info, int flags, PE_REGS *pe_regs)
+{
+  NEW_PE_INFO *pe_info;
+
+  if (flags & PE_INFO_SHARE) {
+    /* Don't create a new pe_info, just increase the refcount for the existing one
+       and return that. Used for inplace queue entries */
+    /* Warning: Any function calling this with pe_regs also needs to set
+     * MQUE->regvals to pe_regs. */
+    if (!old_pe_info) {
+      /* No existing one to share, so make a new one */
+      pe_info = make_pe_info("pe_info-from_old-share");
+    } else {
+      pe_info = old_pe_info;
+      pe_info->refcount++;
+    }
+    return pe_info;
+  }
+
+  if (flags & PE_INFO_CLONE) {
+    /* Clone all the pertinent information in the original pe_info (env, q-reg, itext/stext info),
+       reset all the counters (like function invocation limit). Used for cmds that queue a
+       new actionlist for the current executor */
+    pe_info = make_pe_info("pe_info-from_old-clone");
+    if (!old_pe_info) {
+      if (pe_regs) {
+        pe_regs->prev = NULL;
+        pe_regs_copystack(pe_info->regvals, pe_regs, PE_REGS_QUEUE, 0);
+      }
+      return pe_info;           /* nothing to do */
+    }
+
+    /* OK, copy everything over */
+    /* Copy the Q-registers, @switch, @dol and env over to the new pe_info. */
+    if (pe_regs) {
+      pe_regs->prev = old_pe_info->regvals;
+      pe_regs_copystack(pe_info->regvals, pe_regs, PE_REGS_QUEUE, 0);
+      pe_regs->prev = NULL;
+    } else {
+      pe_regs_copystack(pe_info->regvals, old_pe_info->regvals,
+                        PE_REGS_QUEUE, 0);
+    }
+
+    return pe_info;
+  }
+
+  /* Make a new pe_info, and possibly add stack or q-registers to it, either
+   * from the old pe_info or from the args passed. Used for most things queued
+   * by the hardcode like @a-attributes, or queue entries with a different
+   * executor (@trigger) */
+
+  pe_info = make_pe_info("pe_info-from_old-generic");
+  if (flags & PE_INFO_COPY_ENV) {
+    pe_regs_copystack(pe_info->regvals, old_pe_info->regvals, PE_REGS_ARG, 0);
+  }
+  /* Copy Q-registers. */
+  if (flags & PE_INFO_COPY_QREG) {
+    pe_regs_copystack(pe_info->regvals, old_pe_info->regvals, PE_REGS_Q, 0);
+  }
+
+  /* Whatever we do, we copy the passed pe_regs. */
+  if (pe_regs) {
+    pe_regs_copystack(pe_info->regvals, pe_regs, PE_REGS_QUEUE, 1);
+  }
+
+  return pe_info;
+}
 
 /** Function and other substitution evaluation.
  * This is the PennMUSH function/expression parser. Big stuff.
@@ -695,7 +1710,7 @@ make_pe_info()
 int
 process_expression(char *buff, char **bp, char const **str,
                    dbref executor, dbref caller, dbref enactor,
-                   int eflags, int tflags, PE_Info *pe_info)
+                   int eflags, int tflags, NEW_PE_INFO *pe_info)
 {
   int debugging = 0, made_info = 0;
   char *debugstr = NULL, *sourcestr = NULL;
@@ -705,10 +1720,14 @@ process_expression(char *buff, char **bp, char const **str,
   char *startpos = *bp;
   int had_space = 0;
   char temp[3];
+  char qv[2] = "a";
+  const char *qval;
   int temp_eflags;
-  int qindex;
   int retval = 0;
   int old_debugging = 0;
+  PE_REGS *pe_regs;
+  const char *stmp;
+  int itmp;
 
   if (!buff || !bp || !str || !*str)
     return 0;
@@ -736,7 +1755,7 @@ process_expression(char *buff, char **bp, char const **str,
 
   if (!pe_info) {
     made_info = 1;
-    pe_info = make_pe_info();
+    pe_info = make_pe_info("pe_info-p_e");
   } else {
     old_debugging = pe_info->debugging;
     if (caller != executor)
@@ -870,6 +1889,10 @@ process_expression(char *buff, char **bp, char const **str,
       if (tflags & PT_SPACE)
         goto exit_sequence;
       break;
+    case '>':
+      if (tflags & PT_GT)
+        goto exit_sequence;
+      break;
     case '\0':
       goto exit_sequence;
     }
@@ -895,51 +1918,44 @@ process_expression(char *buff, char **bp, char const **str,
       break;
     case '$':                  /* Dollar subs for regedit() */
       if ((eflags & (PE_DOLLAR | PE_EVALUATE)) == (PE_DOLLAR | PE_EVALUATE) &&
-          global_eval_context.re_subpatterns >= 0 &&
-          global_eval_context.re_offsets != NULL &&
-          global_eval_context.re_from != NULL) {
-        int p = -1;
+          PE_HAS_REGTYPE(pe_info, PE_REGS_REGEXP)) {
         char subspace[BUFFER_LEN];
-        char *named_substring = NULL;
 
         (*str)++;
         /* Check the first character after the $ for a number */
         if (isdigit((unsigned char) **str)) {
-          p = **str - '0';
+          subspace[0] = **str;
+          subspace[1] = '\0';
           (*str)++;
+          safe_str(PE_Get_re(pe_info, subspace), buff, bp);
         } else if (**str == '<') {
           /* Look for a named or numbered subexpression */
-          char *nbuf = subspace;
+          char *nbp = subspace;
           (*str)++;
-          for (; *str && **str && **str != '>'; (*str)++)
-            safe_chr(**str, subspace, &nbuf);
-          *nbuf = '\0';
-          if (*str && **str)
+          if (process_expression(subspace, &nbp, str,
+                                 executor, caller, enactor,
+                                 eflags & ~PE_STRIP_BRACES, PT_GT, pe_info)) {
+            retval = 1;
+            break;
+          }
+          *nbp = '\0';
+          safe_str(PE_Get_re(pe_info, subspace), buff, bp);
+          if (**str == '>')
             (*str)++;
-          if (is_strict_integer(subspace))
-            p = abs(parse_integer(subspace));
-          else
-            named_substring = subspace;
         } else {
           safe_chr('$', buff, bp);
-          break;
-        }
-
-        if (named_substring != NULL) {
-          ansi_pcre_copy_named_substring(global_eval_context.re_code,
-                                         global_eval_context.re_from,
-                                         global_eval_context.re_offsets,
-                                         global_eval_context.re_subpatterns,
-                                         named_substring, 0, buff, bp);
-        } else {
-          ansi_pcre_copy_substring(global_eval_context.re_from,
-                                   global_eval_context.re_offsets,
-                                   global_eval_context.re_subpatterns,
-                                   p, 0, buff, bp);
         }
       } else {
         safe_chr('$', buff, bp);
         (*str)++;
+        if ((**str) == '<') {
+          if (process_expression(buff, bp, str,
+                                 executor, caller, enactor,
+                                 eflags & ~PE_STRIP_BRACES, PT_GT, pe_info)) {
+            retval = 1;
+            break;
+          }
+        }
       }
       break;
     case '%':                  /* Percent substitutions */
@@ -957,6 +1973,20 @@ process_expression(char *buff, char **bp, char const **str,
         switch (savec) {
         case 'Q':
         case 'q':
+          /* Two characters, or if there's a <, then up until the next > */
+          savec = **str;
+          if (!savec)
+            goto exit_sequence;
+          safe_chr(savec, buff, bp);
+          if (savec == '<') {
+            (*str)++;
+            process_expression(buff, bp, str,
+                               executor, caller, enactor,
+                               eflags & ~PE_STRIP_BRACES, PT_GT, pe_info);
+          } else {
+            (*str)++;
+          }
+          break;
         case 'V':
         case 'v':
         case 'W':
@@ -1015,7 +2045,7 @@ process_expression(char *buff, char **bp, char const **str,
           if (pe_info) {
             safe_integer(pe_info->fun_invocations, buff, bp);
             safe_chr(' ', buff, bp);
-            safe_integer(pe_info->fun_depth, buff, bp);
+            safe_integer(pe_info->fun_recursions, buff, bp);
           } else {
             safe_str("0 0", buff, bp);
           }
@@ -1028,10 +2058,15 @@ process_expression(char *buff, char **bp, char const **str,
           }
           break;
         case '+':              /* argument count */
-          if (pe_info)
-            safe_integer(pe_info->arg_count, buff, bp);
-          else
+          if (pe_info) {
+            safe_integer(PE_Get_Envc(pe_info), buff, bp);
+          } else {
             safe_integer(0, buff, bp);
+          }
+          break;
+        case '=':
+          if (pe_info)
+            safe_str(pe_info->attrname, buff, bp);
           break;
         case '0':
         case '1':
@@ -1043,8 +2078,9 @@ process_expression(char *buff, char **bp, char const **str,
         case '7':
         case '8':
         case '9':              /* positional argument */
-          if (global_eval_context.wenv[savec - '0'])
-            safe_str(global_eval_context.wenv[savec - '0'], buff, bp);
+          stmp = PE_Get_Env(pe_info, savec - '0');
+          if (stmp)
+            safe_str(stmp, buff, bp);
           break;
         case 'A':
         case 'a':              /* enactor absolute possessive pronoun */
@@ -1062,7 +2098,7 @@ process_expression(char *buff, char **bp, char const **str,
           break;
         case 'C':
         case 'c':              /* command line */
-          safe_str(global_eval_context.ccom, buff, bp);
+          safe_str(pe_info->cmd_raw, buff, bp);
           break;
         case 'I':
         case 'i':
@@ -1070,11 +2106,10 @@ process_expression(char *buff, char **bp, char const **str,
           if (!nextc)
             goto exit_sequence;
           (*str)++;
-          if (pe_info->iter_nesting >= 0 && pe_info->local_iter_nesting >= 0) {
-            if (nextc == 'l') {
-              safe_str(pe_info->iter_itext[pe_info->iter_nesting -
-                                           pe_info->local_iter_nesting], buff,
-                       bp);
+          itmp = PE_Get_Ilev(pe_info);
+          if (itmp >= 0) {
+            if (nextc == 'l' || nextc == 'L') {
+              safe_str(PE_Get_Itext(pe_info, itmp), buff, bp);
               break;
             }
             if (!isdigit((unsigned char) nextc)) {
@@ -1082,12 +2117,10 @@ process_expression(char *buff, char **bp, char const **str,
               break;
             }
             inum_this = nextc - '0';
-            if (inum_this < 0 || inum_this > pe_info->local_iter_nesting
-                || (pe_info->local_iter_nesting - inum_this) < 0) {
+            if (inum_this < 0 || inum_this > itmp) {
               safe_str(T(e_argrange), buff, bp);
             } else {
-              safe_str(pe_info->iter_itext[pe_info->iter_nesting - inum_this],
-                       buff, bp);
+              safe_str(PE_Get_Itext(pe_info, inum_this), buff, bp);
             }
           } else {
             safe_str(T(e_argrange), buff, bp);
@@ -1098,22 +2131,21 @@ process_expression(char *buff, char **bp, char const **str,
           if (!nextc)
             goto exit_sequence;
           (*str)++;
-          if (pe_info->switch_nesting >= 0
-              && pe_info->local_switch_nesting >= 0) {
+          itmp = PE_Get_Slev(pe_info);
+          if (itmp >= 0) {
+            inum_this = -1;
             if (nextc == 'l' || nextc == 'L') {
-              inum_this = pe_info->local_switch_nesting;
+              inum_this = itmp;
             } else if (!isdigit((unsigned char) nextc)) {
               safe_str(T(e_int), buff, bp);
               break;
             } else {
               inum_this = nextc - '0';
             }
-            if (inum_this < 0 || inum_this > pe_info->local_switch_nesting ||
-                (pe_info->local_switch_nesting - inum_this) < 0) {
+            if (inum_this < 0 || inum_this > itmp) {
               safe_str(T(e_argrange), buff, bp);
             } else {
-              safe_str(pe_info->switch_text
-                       [pe_info->switch_nesting - inum_this], buff, bp);
+              safe_str(PE_Get_Stext(pe_info, inum_this), buff, bp);
             }
           } else {
             safe_str(T(e_argrange), buff, bp);
@@ -1121,7 +2153,7 @@ process_expression(char *buff, char **bp, char const **str,
           break;
         case 'U':
         case 'u':
-          safe_str(global_eval_context.ucom, buff, bp);
+          safe_str(pe_info->cmd_evaled, buff, bp);
           break;
         case 'L':
         case 'l':              /* enactor location dbref */
@@ -1167,10 +2199,29 @@ process_expression(char *buff, char **bp, char const **str,
           if (!nextc)
             goto exit_sequence;
           (*str)++;
-          if ((qindex = qreg_indexes[(unsigned char) nextc]) == -1)
-            break;
-          if (global_eval_context.renv[qindex])
-            safe_str(global_eval_context.renv[qindex], buff, bp);
+          if (nextc == '<') {
+            char subspace[BUFFER_LEN];
+            char *nbp = subspace;
+            if (process_expression(subspace, &nbp, str,
+                                   executor, caller, enactor,
+                                   eflags & ~PE_STRIP_BRACES, PT_GT, pe_info)) {
+              retval = 1;
+              break;
+            }
+            *nbp = '\0';
+            qval = PE_Getq(pe_info, subspace);
+            if (qval) {
+              safe_str(qval, buff, bp);
+            }
+            if (**str == '>')
+              (*str)++;
+          } else {
+            qv[0] = UPCASE(nextc);
+            qval = PE_Getq(pe_info, qv);
+            if (qval) {
+              safe_str(qval, buff, bp);
+            }
+          }
           break;
         case 'R':
         case 'r':              /* newline */
@@ -1383,7 +2434,7 @@ process_expression(char *buff, char **bp, char const **str,
           break;
         }
         /* Check for the recursion limit */
-        if ((pe_info->fun_depth + 1 >= RECURSION_LIMIT) ||
+        if ((pe_info->fun_recursions + 1 >= RECURSION_LIMIT) ||
             (global_fun_recursions + 1 >= RECURSION_LIMIT * 5)) {
           safe_str(T("#-1 FUNCTION RECURSION LIMIT EXCEEDED"), buff, bp);
           if (process_expression(name, &tp, str,
@@ -1491,11 +2542,14 @@ process_expression(char *buff, char **bp, char const **str,
             safe_str(T(" ARGUMENTS BUT GOT "), buff, bp);
             safe_integer(nfargs, buff, bp);
           } else {
-            char *preserve[NUMQ];
             global_fun_recursions++;
-            pe_info->fun_depth++;
-            if (fp->flags & FN_LOCALIZE)
-              save_global_regs("@function.save", preserve);
+            pe_info->fun_recursions++;
+            if (fp->flags & FN_LOCALIZE) {
+              pe_regs = pe_regs_localize(pe_info, PE_REGS_Q,
+                                         "process_expression");
+            } else {
+              pe_regs = NULL;
+            }
             if (fp->flags & FN_BUILTIN) {
               global_fun_invocations++;
               pe_info->fun_invocations++;
@@ -1541,9 +2595,11 @@ process_expression(char *buff, char **bp, char const **str,
                           executor, caller, enactor, pe_info, PE_USERFN);
               }
             }
-            if (fp->flags & FN_LOCALIZE)
-              restore_global_regs("@function.save", preserve);
-            pe_info->fun_depth--;
+            if (pe_regs) {
+              pe_regs_restore(pe_info, pe_regs);
+              pe_regs_free(pe_regs);
+            }
+            pe_info->fun_recursions--;
             global_fun_recursions--;
           }
         }

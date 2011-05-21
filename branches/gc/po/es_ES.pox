@@ -296,10 +296,6 @@ msgstr "#-1 PERMISO DENEGADO"
 msgid "#-1 REGEXP ERROR: "
 msgstr "#-1 ERROR EN REGEXP: "
 
-#: src/funmisc.c:158 src/funmisc.c:178
-msgid "#-1 REGISTER OUT OF RANGE"
-msgstr "#-1 REGISTRO FUERA DE RANGO"
-
 #: src/function.c:118
 msgid "#-1 SEPARATOR MUST BE ONE CHARACTER"
 msgstr "#-1 EL SEPARADOR TIENE QUE SER UN CARACTER"
@@ -3282,10 +3278,6 @@ msgstr "No puedes tomar eso de aquí."
 #: src/move.c:544
 msgid "You can't take that!"
 msgstr "¡No puedes recoger eso!"
-
-#: src/speech.c:139
-msgid "You can't teach 'teach', sorry."
-msgstr "No puedes enseñar 'enseñar', lo siento."
 
 #: src/wiz.c:359
 msgid "You can't teleport rooms."

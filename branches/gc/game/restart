@@ -11,7 +11,7 @@ done
 
 # REQUIRED if the autodetect fails: set GAMEDIR to point to your game directory,
 # e.g. /home/mush/game.
-GAMEDIR=`cd $(dirname "$SCRIPTPATH"); pwd`
+GAMEDIR="`cd $(dirname "$SCRIPTPATH"); pwd`"
 
 # OPTIONAL things that you may want to tweak.
 
@@ -76,10 +76,20 @@ fi
 #
 # Read the cnf file and set some variables.
 #
-INDB=`egrep "^input_database" $CONF_FILE | tail -n1 | sed "s/[^[:space:]][[:space:]]*.*\/\(.*\)/\1/" | sed 's/\r$//'`
-OUTDB=`egrep "^output_database" $CONF_FILE | tail -n1 | sed "s/[^[:space:]][[:space:]]*.*\/\(.*\)/\1/" | sed 's/\r$//'`
-PANICDB=`egrep "^crash_database" $CONF_FILE | tail -n1 | sed "s/[^[:space:]][[:space:]]*.*\/\(.*\)/\1/" | sed 's/\r$//'`
-PANICDIR=`egrep "^crash_database" $CONF_FILE | tail -n1 | sed "s/[^[:space:]][[:space:]]*\(.*\)\/.*/\1/" | sed 's/\r$//'`
+
+RAW_INDB=`egrep "^input_database" $CONF_FILE | tail -n1`
+RAW_OUTDB=`egrep "^output_database" $CONF_FILE | tail -n1`
+RAW_PANICDB=`egrep "^crash_database" $CONF_FILE | tail -n1`
+
+INDIR=$(dirname ${RAW_INDB#input_database})
+INDB=$(basename ${RAW_INDB#input_database})
+
+OUTDIR=$(dirname ${RAW_OUTDB#output_database})
+OUTDB=$(basename ${RAW_OUTDB#output_database})
+
+PANICDIR=$(dirname ${RAW_PANICDB#crash_database})
+PANICDB=$(basename ${RAW_PANICDB#crash_database})
+
 COMPRESSOR="cat"
 SUFFIX=""
 
@@ -122,7 +132,7 @@ if [ -r "$PANICDIR/$PANICDB" ]; then
    end="`tail -1 $PANICDIR/$PANICDB`"
    if [ "$end" = "***END OF DUMP***" ]; then
       echo "Recovering PANIC dump."
-      cat $PANICDIR/$PANICDB | $COMPRESSOR > data/$OUTDB$SUFFIX
+      cat $PANICDIR/$PANICDB | $COMPRESSOR > $OUTDIR/$OUTDB$SUFFIX
       rm $PANICDIR/$PANICDB
       echo "PANIC dump successfully recovered."
    else
@@ -138,19 +148,19 @@ for log in log/*.log; do
     mv -f $log save/$BASE.$TIMESTAMP
 done
 
-if [ -r "data/$OUTDB$SUFFIX" ]; then
-   ln -f data/$INDB$SUFFIX save/$INDB$SUFFIX.old
-   mv -f data/$INDB$SUFFIX save/$INDB$SUFFIX.$TIMESTAMP
-   mv data/$OUTDB$SUFFIX data/$INDB$SUFFIX
+if [ -r "$OUTDIR/$OUTDB$SUFFIX" ]; then
+   ln -f $INDIR/$INDB$SUFFIX save/$INDB$SUFFIX.old
+   mv -f $INDIR/$INDB$SUFFIX save/$INDB$SUFFIX.$TIMESTAMP
+   mv $OUTDIR/$OUTDB$SUFFIX $INDIR/$INDB$SUFFIX
 else
-   echo "No $OUTDB$SUFFIX found."
-   if [ -r "data/$INDB$SUFFIX" ]; then
-      echo "Using $INDB$SUFFIX."
+   echo "No $OUTDIR/$OUTDB$SUFFIX found."
+   if [ -r "$INDIR/$INDB$SUFFIX" ]; then
+      echo "Using $INDIR/$INDB$SUFFIX."
    else
-      echo "No $INDB$SUFFIX found."
+      echo "No $INDIR/$INDB$SUFFIX found."
       if [ -r "save/$INDB$SUFFIX.old" ]; then
 	 echo "Using save/$INDB$SUFFIX.old."
-	 cp save/$INDB$SUFFIX.old data/$INDB$SUFFIX
+	 cp save/$INDB$SUFFIX.old $INDIR/$INDB$SUFFIX
       else
 	echo "No database found. Mush will start with a minimal world."
      fi
@@ -166,4 +176,4 @@ export DATEMSK
 
 export GAMEDIR
 
-LC_ALL=$LANG LANG=$LANG ./netmush $@ --pid-file=$PIDFILE $GAMEDIR/$CONF_FILE &
+LC_ALL=$LANG LANG=$LANG ./netmush $@ --pid-file=$PIDFILE "$GAMEDIR/$CONF_FILE" &

@@ -167,6 +167,7 @@ FUNCTION_PROTO(fun_letq);
 FUNCTION_PROTO(fun_lflags);
 FUNCTION_PROTO(fun_link);
 FUNCTION_PROTO(fun_list);
+FUNCTION_PROTO(fun_listq);
 FUNCTION_PROTO(fun_lit);
 FUNCTION_PROTO(fun_ljust);
 FUNCTION_PROTO(fun_lmath);

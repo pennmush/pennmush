@@ -48,6 +48,8 @@ static void follower_command(dbref leader, dbref loc, const char *com);
 /** A convenience wrapper for enter_room().
  * \param what object to move.
  * \param where location to move it to.
+ * \param enactor the enactor
+ * \param cause the reason for the object to move, for events
  */
 void
 moveto(dbref what, dbref where, dbref enactor, const char *cause)
@@ -60,6 +62,8 @@ moveto(dbref what, dbref where, dbref enactor, const char *cause)
  * \param what object to move.
  * \param where location to move it to.
  * \param nomovemsgs if 1, don't show movement messages.
+ * \param enactor the enactor
+ * \param cause the reason for the object moving, for events
  */
 void
 moveit(dbref what, dbref where, int nomovemsgs,
@@ -269,6 +273,8 @@ enter_room(dbref player, dbref loc, int nomovemsgs,
  * \param player player to teleport.
  * \param dest location to teleport player to.
  * \param nomovemsgs if 1, don't show movement messages
+ * \param enactor the enactor
+ * \param cause what command or event caused this move
  */
 void
 safe_tel(dbref player, dbref dest, int nomovemsgs,
@@ -389,7 +395,7 @@ do_move(dbref player, const char *direction, enum move_type type)
     }
     if ((loc = Location(player)) != NOTHING && !Dark(player) && !Dark(loc)) {
       /* tell everybody else */
-      notify_except(Contents(loc), player,
+      notify_except(loc, player,
                     tprintf(T("%s goes home."), Name(player)), NA_INTER_SEE);
     }
     /* give the player the messages */
@@ -1414,7 +1420,7 @@ follower_command(dbref leader, dbref loc, const char *com)
             || See_All(follower))) {
       /* This is a follower who was in the room with the leader. Follow. */
       notify_format(follower, T("You follow %s."), Name(leader));
-      process_command(follower, combuf, follower, leader, 0);
+      parse_que(follower, leader, combuf, NULL);
     }
   }
 }

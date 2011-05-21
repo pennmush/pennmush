@@ -22,10 +22,6 @@
 #include "function.h"
 #include "confmagic.h"
 
-void do_userfn(char *buff, char **bp, dbref obj, ATTR *attrib, int nargs,
-               char **args, dbref executor, dbref caller, dbref enactor,
-               PE_Info *pe_info, int extra_flags);
-
 /* ARGSUSED */
 FUNCTION(fun_s)
 {
@@ -77,15 +73,16 @@ FUNCTION(fun_fn)
 FUNCTION(fun_localize)
 {
   char const *p;
-  char *saver[NUMQ];
+  PE_REGS *pe_regs;
 
-  save_global_regs("localize", saver);
+  pe_regs = pe_regs_localize(pe_info, PE_REGS_Q, "fun_localize");
 
   p = args[0];
   process_expression(buff, bp, &p, executor, caller, enactor, PE_DEFAULT,
                      PT_DEFAULT, pe_info);
 
-  restore_global_regs("localize", saver);
+  pe_regs_restore(pe_info, pe_regs);
+  pe_regs_free(pe_regs);
 }
 
 /* ARGSUSED */
@@ -127,7 +124,7 @@ FUNCTION(fun_objeval)
                      PT_DEFAULT, pe_info);
 }
 
-/** Helper function for ufun and family.
+/** Helper function for calling @functioned funs.
  * \param buff string to store result of evaluation.
  * \param bp pointer into end of buff.
  * \param obj object on which the ufun is stored.
@@ -143,30 +140,29 @@ FUNCTION(fun_objeval)
 void
 do_userfn(char *buff, char **bp, dbref obj, ATTR *attrib, int nargs,
           char **args, dbref executor, dbref caller
-          __attribute__ ((__unused__)), dbref enactor, PE_Info *pe_info,
+          __attribute__ ((__unused__)), dbref enactor, NEW_PE_INFO *pe_info,
           int extra_flags)
 {
   int j;
-  char *tptr[10];
+  int made_pe_info = 0;
   char *tbuf;
   char const *tp;
   int pe_flags = PE_DEFAULT | extra_flags;
-  int old_args = 0;
+  PE_REGS *pe_regs;
 
-  /* save our stack */
-  for (j = 0; j < 10; j++)
-    tptr[j] = global_eval_context.wenv[j];
-
-  /* copy the appropriate args into the stack */
   if (nargs > 10)
     nargs = 10;                 /* maximum ten args */
-  for (j = 0; j < nargs; j++)
-    global_eval_context.wenv[j] = args[j];
-  for (; j < 10; j++)
-    global_eval_context.wenv[j] = NULL;
-  if (pe_info) {
-    old_args = pe_info->arg_count;
-    pe_info->arg_count = nargs;
+
+  /* save our stack */
+  if (!pe_info) {
+    made_pe_info = 1;
+    pe_info = make_pe_info("pe_info-do_userfn");
+  }
+
+  /* copy the appropriate args into pe_regs */
+  pe_regs = pe_regs_localize(pe_info, PE_REGS_ARG, "do_userfn");
+  for (j = 0; j < nargs; j++) {
+    pe_regs_setenv_nocopy(pe_regs, j, args[j]);
   }
 
   tp = tbuf = safe_atr_value(attrib);
@@ -178,11 +174,12 @@ do_userfn(char *buff, char **bp, dbref obj, ATTR *attrib, int nargs,
   process_expression(buff, bp, &tp, obj, executor, enactor, pe_flags,
                      PT_DEFAULT, pe_info);
 
-  /* restore the stack */
-  for (j = 0; j < 10; j++)
-    global_eval_context.wenv[j] = tptr[j];
-  if (pe_info)
-    pe_info->arg_count = old_args;
+  pe_regs_restore(pe_info, pe_regs);
+  pe_regs_free(pe_regs);
+
+  if (made_pe_info) {
+    free_pe_info(pe_info);
+  }
 }
 
 /* ARGSUSED */
@@ -191,6 +188,8 @@ FUNCTION(fun_ufun)
   char rbuff[BUFFER_LEN];
   ufun_attrib ufun;
   int flags = UFUN_OBJECT;
+  PE_REGS *pe_regs;
+  int i;
 
   if (!strcmp(called_as, "ULAMBDA")) {
     flags |= UFUN_LAMBDA;
@@ -201,7 +200,14 @@ FUNCTION(fun_ufun)
     return;
   }
 
-  call_ufun(&ufun, args + 1, nargs - 1, rbuff, executor, enactor, pe_info);
+  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_ufun");
+  for (i = 1; i < nargs; i++) {
+    pe_regs_setenv_nocopy(pe_regs, i - 1, args[i]);
+  }
+
+  call_ufun(&ufun, rbuff, executor, enactor, pe_info, pe_regs);
+
+  pe_regs_free(pe_regs);
 
   safe_str(rbuff, buff, bp);
 
@@ -214,9 +220,11 @@ FUNCTION(fun_pfun)
 
   char rbuff[BUFFER_LEN];
   ATTR *a;
+  int i;
   int pe_flags = PE_UDEFAULT;
   dbref parent;
   ufun_attrib ufun;
+  PE_REGS *pe_regs;
 
   parent = Parent(executor);
 
@@ -241,17 +249,23 @@ FUNCTION(fun_pfun)
 
   ufun.thing = executor;
   mush_strncpy(ufun.contents, atr_value(a), BUFFER_LEN);
+  mush_strncpy(ufun.attrname, AL_NAME(a), ATTRIBUTE_NAME_LIMIT + 1);
   ufun.pe_flags = pe_flags;
   ufun.errmess = (char *) "";
   ufun.ufun_flags = UFUN_NONE;
 
-  call_ufun(&ufun, args + 1, nargs - 1, rbuff, executor, enactor, pe_info);
+  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_pfun");
+  for (i = 1; i < nargs; i++) {
+    pe_regs_setenv_nocopy(pe_regs, i - 1, args[i]);
+  }
+
+  call_ufun(&ufun, rbuff, executor, enactor, pe_info, pe_regs);
 
   safe_str(rbuff, buff, bp);
+  pe_regs_free(pe_regs);
 
   return;
 }
-
 
 /* Like fun_ufun, but takes as second argument a default message
  * to use if the attribute isn't there.
@@ -265,6 +279,7 @@ FUNCTION(fun_udefault)
   char mstr[BUFFER_LEN];
   char rbuff[BUFFER_LEN];
   char **xargs;
+  PE_REGS *pe_regs;
   int i;
 
   /* find our object and attribute */
@@ -298,7 +313,13 @@ FUNCTION(fun_udefault)
       *dp = '\0';
     }
   }
-  call_ufun(&ufun, xargs, nargs - 2, rbuff, executor, enactor, pe_info);
+
+  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_udefault");
+  for (i = 0; i < (nargs - 2); i++) {
+    pe_regs_setenv_nocopy(pe_regs, i, xargs[i]);
+  }
+  call_ufun(&ufun, rbuff, executor, enactor, pe_info, pe_regs);
+  pe_regs_free(pe_regs);
   safe_str(rbuff, buff, bp);
 }
 
@@ -309,6 +330,8 @@ FUNCTION(fun_zfun)
   ufun_attrib ufun;
   dbref zone;
   char rbuff[BUFFER_LEN];
+  PE_REGS *pe_regs;
+  int i;
 
   zone = Zone(executor);
 
@@ -324,7 +347,14 @@ FUNCTION(fun_zfun)
     return;
   }
 
-  call_ufun(&ufun, args + 1, nargs - 1, rbuff, executor, enactor, pe_info);
+  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_zfun");
+  for (i = 1; i < nargs; i++) {
+    pe_regs_setenv_nocopy(pe_regs, i - 1, args[i]);
+  }
+
+  call_ufun(&ufun, rbuff, executor, enactor, pe_info, pe_regs);
+
+  pe_regs_free(pe_regs);
 
   safe_str(rbuff, buff, bp);
 }

@@ -7,7 +7,7 @@
  * to resolve collisions. This gives an O(1) worse-case performance
  * (As well as best, of course), compared to the worst-case O(N) of
  * chained or linear probing tables.
- * 
+ *
  * A lookup will require at most X hash functions and string
  * comparisions.  The old tables had, with data used by Penn, 1 hash
  * function and up to 6 or 7 comparisions in the worst case. Best case
@@ -267,7 +267,7 @@ penn_hash(const char *key, int len)
   return hash;
 }
 
-typedef uint32_t (*hash_func) (const char *, int);
+typedef uint32_t(*hash_func) (const char *, int);
 
 hash_func hash_functions[] = {
   hsieh_hash,
@@ -420,7 +420,6 @@ next_prime_after(unsigned int val)
 /** Initialize a hashtable.
  * \param htab pointer to hash table to initialize.
  * \param size size of hashtable.
- * \param data_size size of an individual datum to store in the table.
  */
 void
 hash_init(HASHTAB *htab, int size)
@@ -593,7 +592,6 @@ hash_resize(HASHTAB *htab, int size)
  * \param htab pointer to hash table.
  * \param key key string to store data under.
  * \param hashdata void pointer to data to be stored.
- * \param extra_size unused.
  * \retval false failure.
  * \retval true success.
  */
@@ -649,7 +647,7 @@ hash_flush(HASHTAB *htab, int size)
 }
 
 /** Return the first entry of a hash table.
- * This function is used with hash_nextentry() to iterate through a 
+ * This function is used with hash_nextentry() to iterate through a
  * hash table.
  * \param htab pointer to hash table.
  * \return first hash table entry.
@@ -668,7 +666,7 @@ hash_firstentry(HASHTAB *htab)
 }
 
 /** Return the first key of a hash table.
- * This function is used with hash_nextentry_key() to iterate through a 
+ * This function is used with hash_nextentry_key() to iterate through a
  * hash table.
  * \param htab pointer to hash table.
  * \return first hash table key.
@@ -687,7 +685,7 @@ hash_firstentry_key(HASHTAB *htab)
 }
 
 /** Return the next entry of a hash table.
- * This function is used with hash_firstentry() to iterate through a 
+ * This function is used with hash_firstentry() to iterate through a
  * hash table. hash_firstentry() must be called before calling
  * this function.
  * \param htab pointer to hash table.
@@ -708,7 +706,7 @@ hash_nextentry(HASHTAB *htab)
 }
 
 /** Return the next key of a hash table.
- * This function is used with hash_firstentry{,_key}() to iterate through a 
+ * This function is used with hash_firstentry{,_key}() to iterate through a
  * hash table. hash_firstentry{,_key}() must be called before calling
  * this function.
  * \param htab pointer to hash table.

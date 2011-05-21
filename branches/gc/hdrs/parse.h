@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <math.h>
+#include "mushtype.h"
 
 #include "confmagic.h"
 
@@ -33,6 +34,8 @@ extern char e_notvis[];         /* #-1 NO SUCH OBJECT VISIBLE */
 extern char e_disabled[];       /* #-1 FUNCTION DISABLED */
 extern char e_range[];          /* #-1 OUT OF RANGE */
 extern char e_argrange[];       /* #-1 ARGUMENT OUT OF RANGE */
+extern char e_badregname[];     /* #-1 REGISTER NAME INVALID */
+extern char e_toomanyregs[];    /* #-1 TOO MANY REGISTERS */
 
 /* The following routines all take strings as arguments, and return
  * data of the appropriate types.
@@ -104,7 +107,7 @@ typedef struct fun FUN;
   /* ARGSUSED */ /* try to keep lint happy */ \
   void fun_name (FUN *fun, char *buff, char **bp, int nargs, char *args[], \
                    int arglens[], dbref executor, dbref caller, dbref enactor, \
-                   char const *called_as, PE_Info *pe_info); \
+                   char const *called_as, NEW_PE_INFO *pe_info); \
   void fun_name(FUN *fun __attribute__ ((__unused__)), \
                 char *buff __attribute__ ((__unused__)), \
                 char **bp  __attribute__ ((__unused__)), \
@@ -115,7 +118,7 @@ typedef struct fun FUN;
                 dbref caller  __attribute__ ((__unused__)), \
                 dbref enactor  __attribute__ ((__unused__)), \
                 char const *called_as  __attribute__ ((__unused__)), \
-                PE_Info *pe_info  __attribute__ ((__unused__)))
+                NEW_PE_INFO *pe_info  __attribute__ ((__unused__)))
 
 /* All results are returned in buff, at the point *bp.  *bp is likely
  * not equal to buff, so make no assumptions about writing at the
@@ -157,9 +160,12 @@ typedef struct fun FUN;
 
 int process_expression(char *buff, char **bp, char const **str,
                        dbref executor, dbref caller, dbref enactor,
-                       int eflags, int tflags, PE_Info *pe_info);
+                       int eflags, int tflags, NEW_PE_INFO *pe_info);
 
-PE_Info *make_pe_info() __attribute_malloc__;
+void free_pe_info(NEW_PE_INFO *pe_info);
+NEW_PE_INFO *make_pe_info(char *name);
+NEW_PE_INFO *pe_info_from(NEW_PE_INFO *old_pe_info, int flags,
+                          PE_REGS *pe_regs);
 
 /* buff is a pointer to a BUFFER_LEN string to contain the expression
  * result.  *bp is the point in buff at which the result should be written.
@@ -244,13 +250,14 @@ PE_Info *make_pe_info() __attribute_malloc__;
  */
 
 #define PT_NOTHING      0
-#define PT_BRACE        0x00000001
-#define PT_BRACKET      0x00000002
-#define PT_PAREN        0x00000004
-#define PT_COMMA        0x00000008
-#define PT_SEMI         0x00000010
-#define PT_EQUALS       0x00000020
-#define PT_SPACE        0x00000040
+#define PT_BRACE        0x00000001      /* '}' */
+#define PT_BRACKET      0x00000002      /* ']' */
+#define PT_PAREN        0x00000004      /* ')' */
+#define PT_COMMA        0x00000008      /* ',' */
+#define PT_SEMI         0x00000010      /* ';' */
+#define PT_EQUALS       0x00000020      /* '=' */
+#define PT_SPACE        0x00000040      /* ' ' */
+#define PT_GT           0x00000080      /* '>' */
 
 /* These represent '\0', '}', ']', ')', ',', ';', '=', and ' ', respectively.
  * If the character corresponding to a set flag is encountered, then

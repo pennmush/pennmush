@@ -60,6 +60,7 @@ PRIV attr_privs_set[] = {
   {"nospace", 's', AF_NOSPACE, AF_NOSPACE},
   {"amhear", 'M', AF_MHEAR, AF_MHEAR},
   {"aahear", 'A', AF_AHEAR, AF_AHEAR},
+  {"branch", '`', 0, 0},
   {NULL, '\0', 0, 0}
 };
 
@@ -88,7 +89,7 @@ PRIV attr_privs_view[] = {
   {"nospace", 's', AF_NOSPACE, AF_NOSPACE},
   {"amhear", 'M', AF_MHEAR, AF_MHEAR},
   {"aahear", 'A', AF_AHEAR, AF_AHEAR},
-  {"", '`', AF_ROOT, AF_ROOT},
+  {"branch", '`', AF_ROOT, AF_ROOT},
   {NULL, '\0', 0, 0}
 };
 
@@ -215,7 +216,7 @@ display_attr_limit(ATTR *ap)
 }
 
 /** Check an attribute's value against /limit or /enum restrictions.
- * \player Player attempting to set the attribute. Used for notify()
+ * \param player Player attempting to set the attribute. Used for notify()
  * \param name the attribute name.
  * \param value The desired attribute value.
  * \retval The new value to set if valid, NULL if not.

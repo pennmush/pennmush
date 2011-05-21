@@ -357,10 +357,6 @@ msgstr "#-1 HOZZÁFÉRÉS MEGTAGADVA"
 msgid "#-1 REGEXP ERROR: "
 msgstr "#-1 REGEXP HIBA: "
 
-#: src/funmisc.c:158 src/funmisc.c:178
-msgid "#-1 REGISTER OUT OF RANGE"
-msgstr "#-1 ÉRTÉKTARTOMÁNYON KÍVÜLI REGISZTER"
-
 #: funmath.c:1057
 msgid "#-1 ROOT OUT OF RANGE"
 msgstr "#-1 HATÁRON kÍVÜL"
@@ -3809,10 +3805,6 @@ msgstr "Ezt onnan nem veheted fel."
 #: src/move.c:544
 msgid "You can't take that!"
 msgstr "Ezt nem veheted fel!"
-
-#: src/speech.c:139
-msgid "You can't teach 'teach', sorry."
-msgstr "A 'teach' parancsot nem taníthatod, bocs."
 
 #: src/wiz.c:359
 msgid "You can't teleport rooms."

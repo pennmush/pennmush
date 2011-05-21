@@ -82,7 +82,7 @@
  * goes to that jump's destination.
  *
  * There's more useful room for improvement in the lock
- * @warnings. Checking things like flag and power keys for valid flags
+ * \@warnings. Checking things like flag and power keys for valid flags
  * comes to mind.
  *
  */
@@ -95,6 +95,7 @@
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
 #endif
+#include "case.h"
 #include "conf.h"
 #include "dbdefs.h"
 #include "mushdb.h"
@@ -123,7 +124,7 @@ typedef enum boolexp_type {
   BOOLEXP_NOT, /**< !A */
   BOOLEXP_CONST, /**< A */
   BOOLEXP_ATR, /**< A:B */
-  BOOLEXP_IND, /**< @A/B */
+  BOOLEXP_IND, /**< \@A/B */
   BOOLEXP_CARRY, /**< +A */
   BOOLEXP_IS, /**< =A */
   BOOLEXP_OWNER, /**< $A */
@@ -150,7 +151,7 @@ struct boolatr {
  */
 struct boolexp_node {
   /** Type of expression.
-   * The type of expressio is one of the boolexp_type's, such as
+   * The type of expression is one of the boolexp_type's, such as
    * and, or, not, constant, attribute, indirect, carry, is,
    * owner, eval, flag, etc.
    */
@@ -193,7 +194,6 @@ typedef enum bvm_opcode {
   OP_TCHANNEL, /**< Tests CHANNEL^ARG */
   OP_TIP, /**< Tests IP^ARG */
   OP_THOSTNAME, /**< Tests HOSTNAME^ARG */
-  OP_TOBJID, /**< Tests OBJID^ARG */
   OP_TDBREFLIST,        /**< Tests DBREFLIST^ARG */
   OP_LOADS, /**< Load ARG into S */
   OP_LOADR, /**< Load ARG into R */
@@ -235,28 +235,11 @@ struct bvm_asm {
   size_t strcount;      /**< The number of nodes in the string list */
 };
 
-/** The flag lock key (A^B) only allows a few values for A. This
- * struct and the the following table define the allowable ones. When
- * adding a new type here, a matching new bytecode instruction should
- * be added. */
-struct flag_lock_types {
-  const char *name; /**< The value of A */
-  bvm_opcode op;  /**< The associated opcode */
-};
-
-/** What's allowed on the left-hand-side of LHS^RHS lock keys */
-static struct flag_lock_types flag_locks[] = {
-  {"FLAG", OP_TFLAG},
-  {"POWER", OP_TPOWER},
-  {"TYPE", OP_TTYPE},
-  {"NAME", OP_TNAME},
-  {"CHANNEL", OP_TCHANNEL},
-  {"OBJID", OP_TOBJID},
-  {"IP", OP_TIP},
-  {"HOSTNAME", OP_THOSTNAME},
-  {"DBREFLIST", OP_TDBREFLIST},
-  {NULL, OP_RET}
-};
+/* The flag lock key (A^B) only allows a few values for A. The list of
+ * values are in bflags.gperf, which is used to generate a validation
+ * function for them. Look in that file if you need to add a new
+ * type.  */
+#include "bflags.c"
 
 static uint8_t *
 safe_get_bytecode(boolexp b)
@@ -277,7 +260,8 @@ safe_get_bytecode(boolexp b)
     static struct boolexp_node *parse_boolexp_T(void);
     static struct boolexp_node *parse_boolexp_E(void);
     static int check_attrib_lock(dbref player, dbref target,
-                                 const char *atrname, const char *str);
+                                 const char *atrname, const char *str,
+                                 NEW_PE_INFO *pe_info);
     static int gen_label_id(struct bvm_asm *a);
     static void append_insn(struct bvm_asm *a, bvm_opcode op, int arg,
                             const char *s);
@@ -404,21 +388,27 @@ sizeof_boolexp(boolexp b)
  * \param player the player trying to pass the lock.
  * \param b the boolexp to evaluate.
  * \param target the object with the lock.
+ * \param pe_info pe_info to use for any softcode evaluation in the lock, or NULL to use a tmp one
  * \retval 0 player fails to pass lock.
  * \retval 1 player successfully passes lock.
  */
 int
-eval_boolexp(dbref player /* The player trying to pass */ ,
-             boolexp b /* The boolexp */ ,
-             dbref target /* The object with the lock */ )
+eval_boolexp(dbref player, boolexp b, dbref target, NEW_PE_INFO *pe_info)
 {
   static int boolexp_recursion = 0;
+  static bool recurse_err_shown = 0;
+
+  if (boolexp_recursion == 0)
+    recurse_err_shown = 0;
 
   if (!GoodObject(player))
     return 0;
 
   if (boolexp_recursion > MAX_DEPTH) {
-    notify(player, T("Too much recursion in lock!"));
+    if (!recurse_err_shown) {
+      recurse_err_shown = 1;
+      notify(player, T("Too much recursion in lock!"));
+    }
     return 0;
   }
   if (b == TRUE_BOOLEXP) {
@@ -490,7 +480,7 @@ eval_boolexp(dbref player /* The player trying to pass */ ,
         else if (!Can_Read_Lock(target, arg, s))
           r = 0;
         else
-          r = eval_boolexp(player, getlock(arg, s), arg);
+          r = eval_boolexp(player, getlock(arg, s), arg, pe_info);
         boolexp_recursion--;
         break;
       case OP_TATR:
@@ -500,13 +490,15 @@ eval_boolexp(dbref player /* The player trying to pass */ ,
           r = 0;
         else {
           char *tbuf = safe_atr_value(a);
-          r = local_wild_match((char *) bytecode + arg, tbuf);
+          r = local_wild_match((char *) bytecode + arg, tbuf, NULL);
         }
         boolexp_recursion--;
         break;
       case OP_TEVAL:
         boolexp_recursion++;
-        r = check_attrib_lock(player, target, s, (char *) bytecode + arg);
+        r =
+          check_attrib_lock(player, target, s, (char *) bytecode + arg,
+                            pe_info);
         boolexp_recursion--;
         break;
       case OP_TNAME:
@@ -528,13 +520,6 @@ eval_boolexp(dbref player /* The player trying to pass */ ,
         else
           r = 0;
         break;
-      case OP_TOBJID:
-        {
-          dbref d;
-          d = parse_objid((char *) bytecode + arg);
-          r = (player == d);
-          break;
-        }
       case OP_TCHANNEL:
         {
           CHAN *chan;
@@ -654,6 +639,58 @@ safe_boref(dbref player, dbref thing, enum u_b_f flag, char *buff, char **bp)
   }
 }
 
+/** Escape dangerous characters in strings for unparse_boolexp().
+ * \param s string to be unparsed
+ * \param op opcode for which s is an argument
+ * \param buff The start of the output buffer
+ * \param bp Pointer to the current position in buff
+ * \return 0 on success, true on buffer overflow.
+ */
+static int
+safe_bstr(const unsigned char *s, bvm_opcode op, char *buff, char **bp)
+{
+  const unsigned char *p, *name = (const unsigned char *) s;
+  int n;
+  int preserve;
+
+  switch (op) {
+  case OP_TATR:
+  case OP_TNAME:
+  case OP_TIP:
+  case OP_THOSTNAME:
+  case OP_TDBREFLIST:
+    preserve = 1;
+    break;
+  default:
+    preserve = 0;
+  }
+  for (p = name; p && *p; p++) {
+    /* Escape these characters */
+    if (!preserve) {
+      switch (*p) {
+      case '\\':
+      case NOT_TOKEN:
+      case AND_TOKEN:
+      case OR_TOKEN:
+      case AT_TOKEN:
+      case IN_TOKEN:
+      case IS_TOKEN:
+      case OWNER_TOKEN:
+      case ATR_TOKEN:
+      case EVAL_TOKEN:
+      case FLAG_TOKEN:
+      case ')':
+        if ((n = safe_chr('\\', buff, bp)) != 0)
+          return n;
+      }
+    }
+    if ((n = safe_chr(*p, buff, bp)) != 0)
+      return n;
+  }
+
+  return 0;
+}
+
 /** True if unparse_boolexp() is being evaluated. */
 int unparsing_boolexp = 0;
 
@@ -690,13 +727,13 @@ unparse_boolexp(dbref player, boolexp b, enum u_b_f flag)
       pc += INSN_LEN;
       /* Handle most negation cases */
       if (op != OP_RET && (bvm_opcode) *pc == OP_NEGR && op != OP_PAREN)
-        safe_chr('!', boolexp_buf, &buftop);
+        safe_chr(NOT_TOKEN, boolexp_buf, &buftop);
       switch (op) {
       case OP_JMPT:
-        safe_chr('|', boolexp_buf, &buftop);
+        safe_chr(OR_TOKEN, boolexp_buf, &buftop);
         break;
       case OP_JMPF:
-        safe_chr('&', boolexp_buf, &buftop);
+        safe_chr(AND_TOKEN, boolexp_buf, &buftop);
         break;
       case OP_RET:
         goto done;
@@ -741,12 +778,15 @@ unparse_boolexp(dbref player, boolexp b, enum u_b_f flag)
         safe_boref(player, arg, flag, boolexp_buf, &buftop);
         break;
       case OP_TATR:
-        safe_format(boolexp_buf, &buftop, "%s:%s", s, bytecode + arg);
+        safe_bstr(s, OP_LOADS, boolexp_buf, &buftop);
+        safe_chr(ATR_TOKEN, boolexp_buf, &buftop);
+        safe_bstr(bytecode + arg, OP_TATR, boolexp_buf, &buftop);
         break;
       case OP_TIND:
         safe_chr(AT_TOKEN, boolexp_buf, &buftop);
         safe_boref(player, arg, flag, boolexp_buf, &buftop);
-        safe_format(boolexp_buf, &buftop, "/%s", s);
+        safe_chr(EVAL_TOKEN, boolexp_buf, &buftop);
+        safe_bstr(s, op, boolexp_buf, &buftop);
         break;
       case OP_TCARRY:
         safe_chr(IN_TOKEN, boolexp_buf, &buftop);
@@ -761,34 +801,41 @@ unparse_boolexp(dbref player, boolexp b, enum u_b_f flag)
         safe_boref(player, arg, flag, boolexp_buf, &buftop);
         break;
       case OP_TEVAL:
-        safe_format(boolexp_buf, &buftop, "%s/%s", s, bytecode + arg);
+        safe_bstr(s, OP_LOADS, boolexp_buf, &buftop);
+        safe_chr(EVAL_TOKEN, boolexp_buf, &buftop);
+        safe_bstr(bytecode + arg, op, boolexp_buf, &buftop);
         break;
       case OP_TNAME:
-        safe_format(boolexp_buf, &buftop, "NAME^%s", bytecode + arg);
+        safe_format(boolexp_buf, &buftop, "NAME%c", FLAG_TOKEN);
+        safe_bstr(bytecode + arg, op, boolexp_buf, &buftop);
         break;
       case OP_TFLAG:
-        safe_format(boolexp_buf, &buftop, "FLAG^%s", bytecode + arg);
+        safe_format(boolexp_buf, &buftop, "FLAG%c", FLAG_TOKEN);
+        safe_bstr(bytecode + arg, op, boolexp_buf, &buftop);
         break;
       case OP_TTYPE:
-        safe_format(boolexp_buf, &buftop, "TYPE^%s", bytecode + arg);
+        safe_format(boolexp_buf, &buftop, "TYPE%c", FLAG_TOKEN);
+        safe_bstr(bytecode + arg, op, boolexp_buf, &buftop);
         break;
       case OP_TPOWER:
-        safe_format(boolexp_buf, &buftop, "POWER^%s", bytecode + arg);
-        break;
-      case OP_TOBJID:
-        safe_format(boolexp_buf, &buftop, "OBJID^%s", bytecode + arg);
+        safe_format(boolexp_buf, &buftop, "POWER%c", FLAG_TOKEN);
+        safe_bstr(bytecode + arg, op, boolexp_buf, &buftop);
         break;
       case OP_TCHANNEL:
-        safe_format(boolexp_buf, &buftop, "CHANNEL^%s", bytecode + arg);
+        safe_format(boolexp_buf, &buftop, "CHANNEL%c", FLAG_TOKEN);
+        safe_bstr(bytecode + arg, op, boolexp_buf, &buftop);
         break;
       case OP_TIP:
-        safe_format(boolexp_buf, &buftop, "IP^%s", bytecode + arg);
+        safe_format(boolexp_buf, &buftop, "IP%c", FLAG_TOKEN);
+        safe_bstr(bytecode + arg, op, boolexp_buf, &buftop);
         break;
       case OP_THOSTNAME:
-        safe_format(boolexp_buf, &buftop, "HOSTNAME^%s", bytecode + arg);
+        safe_format(boolexp_buf, &buftop, "HOSTNAME%c", FLAG_TOKEN);
+        safe_bstr(bytecode + arg, op, boolexp_buf, &buftop);
         break;
       case OP_TDBREFLIST:
-        safe_format(boolexp_buf, &buftop, "DBREFLIST^%s", bytecode + arg);
+        safe_format(boolexp_buf, &buftop, "DBREFLIST%c", FLAG_TOKEN);
+        safe_bstr(bytecode + arg, op, boolexp_buf, &buftop);
         break;
       }
     }
@@ -863,34 +910,120 @@ skip_whitespace(void)
     parsebuf++;
 }
 
+
+enum test_atr_errs {
+  TAE_NONE,                     /*< Nt an attribute-type lock; continue parsing. */
+  TAE_PARSE                     /*< Fatal parsing error. */
+};
+
+static enum test_atr_errs test_atr_err = TAE_NONE;
+
+/* Handle attribute, eval, flag, etc. lock parsing. */
 static struct boolexp_node *
 test_atr(char *s, char c)
 {
+  int preserve;
+  char *tbp, *abp;
+  bool escaped;
   struct boolexp_node *b;
-  char *tbuf1 = strupper(s);
-  for (s = tbuf1; *s && (*s != c); s++) ;
-  if (!*s)
-    return 0;
-  *s++ = 0;
-  if (strlen(tbuf1) == 0 || !good_atr_name(tbuf1))
-    return 0;
-  if (c == '^') {
-    int n;
-    for (n = 0; flag_locks[n].name; n++) {
-      if (strcmp(flag_locks[n].name, tbuf1) == 0)
-        break;
+  char tbuf1[BUFFER_LEN];
+
+  test_atr_err = TAE_NONE;
+
+  preserve = 0;
+  abp = NULL;
+  escaped = 0;
+
+  for (tbp = tbuf1; *s; s++) {
+    if (!abp && !escaped && *s == c) {
+      if (tbp == tbuf1)
+        return 0;
+      safe_chr('\0', tbuf1, &tbp);
+      if (!good_atr_name(tbuf1))
+        return 0;
+      abp = tbp;
+      if (c == FLAG_TOKEN) {
+        const struct flag_lock_types *flag =
+          is_allowed_bflag(tbuf1, strlen(tbuf1));
+
+        if (!flag) {
+          notify_format(parse_player, T("'%s' is not a valid flag lock name."),
+                        tbuf1);
+          test_atr_err = TAE_PARSE;
+          return NULL;
+        }
+
+        preserve = flag->preserve;
+      } else if (c == ATR_TOKEN)
+        preserve = 1;
+    } else if (!escaped && *s == '\\' && !preserve)
+      escaped = 1;
+    else {
+      safe_chr(UPCASE(*s), tbuf1, &tbp);
+      escaped = 0;
     }
-    if (!flag_locks[n].name)
-      return 0;
   }
+
+  *tbp = '\0';
+  if (!abp) {
+    test_atr_err = TAE_NONE;
+    return NULL;
+  }
+
   b = alloc_bool();
-  if (c == ':')
+  if (c == ATR_TOKEN)
     b->type = BOOLEXP_ATR;
-  else if (c == '/')
+  else if (c == EVAL_TOKEN)
     b->type = BOOLEXP_EVAL;
-  else if (c == '^')
-    b->type = BOOLEXP_FLAG;
-  b->data.atr_lock = alloc_atr(tbuf1, s);
+  else if (c == FLAG_TOKEN) {
+    if (strcmp(tbuf1, "OBJID") == 0) {
+      /* Convert objid^blah to =blah */
+
+      if (loading_db) {
+        struct boolexp_node *t;
+        const char *savebuf = parsebuf;
+
+        /* This does some simple validation of objid's target to try
+         * to make sure it at least refers to a dbref. Because this part
+         * is run during database loading, full validation like we can do
+         * when a user uses a @lock on a running game is impossible. This
+         * means that it's possible for an existing objid lock that refers
+         * to a now-deleted object to pass a new object using the same dbref.
+         * Not sure of a good way to work around this.
+         */
+
+        parsebuf = s;
+        t = parse_boolexp_R();
+        parsebuf = savebuf;
+
+        /* Malformed to a certain extent. Fail. */
+        if (!t) {
+          test_atr_err = TAE_PARSE;
+          return NULL;
+        } else if (t->type != BOOLEXP_CONST) {
+          test_atr_err = TAE_PARSE;
+          return NULL;
+        }
+        b->type = BOOLEXP_IS;
+        b->thing = t->thing;
+      } else {
+        dbref d = parse_objid(s);
+        if (GoodObject(d)) {
+          b->type = BOOLEXP_IS;
+          b->thing = d;
+        } else {
+          /* Fail on invalid objids */
+          notify_format(parse_player, T("I don't see %s here."), s);
+          test_atr_err = TAE_PARSE;
+          return NULL;
+        }
+      }
+      return b;
+    } else {
+      b->type = BOOLEXP_FLAG;
+    }
+  }
+  b->data.atr_lock = alloc_atr(tbuf1, abp);
   return b;
 }
 
@@ -901,18 +1034,30 @@ parse_boolexp_R(void)
   struct boolexp_node *b;
   char tbuf1[BUFFER_LEN];
   char *p;
+  bool escaped;
+
   b = alloc_bool();
   b->type = BOOLEXP_CONST;
   p = tbuf1;
+  escaped = 0;
+
+
   while (*parsebuf
-         && *parsebuf != AND_TOKEN && *parsebuf != '/'
-         && *parsebuf != OR_TOKEN && *parsebuf != ')') {
-    *p++ = *parsebuf++;
+         && (escaped || !(*parsebuf == AND_TOKEN || *parsebuf == OR_TOKEN ||
+                          *parsebuf == EVAL_TOKEN || *parsebuf == ')'))) {
+    if (escaped || *parsebuf != '\\') {
+      safe_chr(*parsebuf, tbuf1, &p);
+      escaped = 0;
+    } else
+      escaped = 1;
+    parsebuf++;
   }
+
   /* strip trailing whitespace */
-  *p-- = '\0';
-  while (isspace((unsigned char) *p))
-    *p-- = '\0';
+  *p = '\0';
+  while (p != tbuf1 && isspace((unsigned char) *(--p)))
+    *p = '\0';
+
   /* do the match */
   if (loading_db) {
     if (*tbuf1 == '#' && *(tbuf1 + 1)) {
@@ -963,6 +1108,7 @@ parse_boolexp_L(void)
   struct boolexp_node *b;
   char *p;
   const char *savebuf;
+  bool escaped;
   char tbuf1[BUFFER_LEN];
   skip_whitespace();
   switch (*parsebuf) {
@@ -981,28 +1127,33 @@ parse_boolexp_L(void)
     /* load the name into our buffer */
     p = tbuf1;
     savebuf = parsebuf;
-    while (*parsebuf
-           && *parsebuf != AND_TOKEN
-           && *parsebuf != OR_TOKEN && *parsebuf != ')') {
+    escaped = 0;
+    while (*parsebuf &&
+           (escaped || !(*parsebuf == AND_TOKEN || *parsebuf == OR_TOKEN ||
+                         *parsebuf == ')'))) {
+      escaped = escaped ? 0 : (*parsebuf == '\\');
       *p++ = *parsebuf++;
     }
+
     /* strip trailing whitespace */
-    *p-- = '\0';
-    while (isspace((unsigned char) *p))
-      *p-- = '\0';
+    *p = '\0';
+    while (p != tbuf1 && isspace((unsigned char) *(--p)))
+      *p = '\0';
+
     /* check for an attribute */
-    b = test_atr(tbuf1, ':');
-    if (b)
+    b = test_atr(tbuf1, ATR_TOKEN);
+    if (b || test_atr_err != TAE_NONE)
       return b;
     /* check for an eval */
-    b = test_atr(tbuf1, '/');
-    if (b)
+    b = test_atr(tbuf1, EVAL_TOKEN);
+    if (b || test_atr_err != TAE_NONE)
       return b;
     /* Check for a flag */
-    b = test_atr(tbuf1, '^');
-    if (b)
+    b = test_atr(tbuf1, FLAG_TOKEN);
+    if (b || test_atr_err != TAE_NONE)
       return b;
     /* Nope. Check for an object reference */
+
     parsebuf = savebuf;
     return parse_boolexp_R();
   }
@@ -1020,6 +1171,8 @@ parse_boolexp_O(void)
     b2->type = BOOLEXP_OWNER;
     t = parse_boolexp_R();
     if (t == NULL) {
+      return NULL;
+    } else if (t->type != BOOLEXP_CONST) {
       return NULL;
     } else {
       b2->thing = t->thing;
@@ -1042,6 +1195,8 @@ parse_boolexp_C(void)
     t = parse_boolexp_R();
     if (t == NULL) {
       return NULL;
+    } else if (t->type != BOOLEXP_CONST) {
+      return NULL;
     } else {
       b2->thing = t->thing;
       return b2;
@@ -1063,6 +1218,8 @@ parse_boolexp_I(void)
     t = parse_boolexp_R();
     if (t == NULL) {
       return NULL;
+    } else if (t->type != BOOLEXP_CONST) {
+      return NULL;
     } else {
       b2->thing = t->thing;
       return b2;
@@ -1076,6 +1233,7 @@ static struct boolexp_node *
 parse_boolexp_A(void)
 {
   struct boolexp_node *b2, *t;
+  bool escaped = 0;
   skip_whitespace();
   if (*parsebuf == AT_TOKEN) {
     parsebuf++;
@@ -1084,23 +1242,30 @@ parse_boolexp_A(void)
     t = parse_boolexp_R();
     if (t == NULL) {
       return NULL;
+    } else if (t->type != BOOLEXP_CONST) {
+      return NULL;
     }
     b2->thing = t->thing;
-    if (*parsebuf == '/') {
+    if (*parsebuf == EVAL_TOKEN) {
       char tbuf1[BUFFER_LEN], *p;
       const char *m;
       parsebuf++;
       p = tbuf1;
-      while (*parsebuf
-             && *parsebuf != AND_TOKEN
-             && *parsebuf != OR_TOKEN && *parsebuf != ')') {
-        *p++ = *parsebuf++;
+      while (*parsebuf &&
+             (escaped || !(*parsebuf == AND_TOKEN || *parsebuf == OR_TOKEN ||
+                           *parsebuf == ')'))) {
+        if (escaped || *parsebuf != '\\') {
+          safe_chr(UPCASE(*parsebuf), tbuf1, &p);
+          escaped = 0;
+        } else
+          escaped = 1;
+        parsebuf++;
       }
       /* strip trailing whitespace */
-      *p-- = '\0';
-      while (isspace((unsigned char) *p))
-        *p-- = '\0';
-      upcasestr(tbuf1);
+
+      *p = '\0';
+      while (p != tbuf1 && isspace((unsigned char) *(--p)))
+        *p = '\0';
       if (!good_atr_name(tbuf1)) {
         return NULL;
       }
@@ -1329,15 +1494,12 @@ generate_bvm_asm1(struct bvm_asm *a, struct boolexp_node *b, boolexp_type outer)
     break;
   case BOOLEXP_FLAG:
     {
-      enum bvm_opcode op = OP_RET;
-      int n;
-      for (n = 0; flag_locks[n].name; n++) {
-        if (strcmp(b->data.atr_lock->name, flag_locks[n].name) == 0) {
-          op = flag_locks[n].op;
-          break;
-        }
-      }
-      append_insn(a, op, 0, b->data.atr_lock->text);
+      const struct flag_lock_types *bflag;
+      /* Always returns non-null at this point. */
+      bflag =
+        is_allowed_bflag(b->data.atr_lock->name,
+                         strlen(b->data.atr_lock->name));
+      append_insn(a, bflag->op, 0, b->data.atr_lock->text);
       break;
     }
   }
@@ -1621,7 +1783,6 @@ emit_bytecode(struct bvm_asm *a, int derefs)
     case OP_TFLAG:
     case OP_TNAME:
     case OP_TPOWER:
-    case OP_TOBJID:
     case OP_TTYPE:
     case OP_TCHANNEL:
     case OP_TIP:
@@ -1707,19 +1868,22 @@ parse_boolexp(dbref player, const char *buf, lock_type ltype)
  * \param target the object the lock is on.
  * \param atrname the name of the attribute to evaluate on target.
  * \param str What the attribute should evaluate to to succeed.
+ * \param pe_info the pe_info to eval the attr with, or NULL to use a tmp one
  * \retval 1 the lock succeeds.
  * \retval 0 the lock fails.
  */
 static int
 check_attrib_lock(dbref player, dbref target,
-                  const char *atrname, const char *str)
+                  const char *atrname, const char *str, NEW_PE_INFO *pe_info)
 {
 
   ATTR *a;
   char *asave;
   const char *ap;
   char buff[BUFFER_LEN], *bp;
-  char *preserve[NUMQ];
+  char save_attrname[BUFFER_LEN];
+  int made_pe_info = 0;
+
   if (!atrname || !*atrname || !str || !*str)
     return 0;
   /* fail if there's no matching attribute */
@@ -1730,13 +1894,23 @@ check_attrib_lock(dbref player, dbref target,
     return 0;
   asave = safe_atr_value(a);
   /* perform pronoun substitution */
-  save_global_regs("check_attrib_lock_save", preserve);
   bp = buff;
   ap = asave;
+  if (!pe_info) {
+    pe_info = make_pe_info("check_attrib_lock");
+    made_pe_info = 1;
+  } else {
+    strcpy(save_attrname, pe_info->attrname);
+  }
+  strcpy(pe_info->attrname, atrname);
   process_expression(buff, &bp, &ap, target, player,
-                     player, PE_DEFAULT, PT_DEFAULT, NULL);
+                     player, PE_DEFAULT, PT_DEFAULT, pe_info);
   *bp = '\0';
-  restore_global_regs("check_attrib_lock_save", preserve);
+
+  if (made_pe_info)
+    free_pe_info(pe_info);
+  else
+    strcpy(pe_info->attrname, save_attrname);
 
   return !strcasecmp(buff, str);
 }
@@ -1872,9 +2046,6 @@ print_bytecode(boolexp b)
     case OP_TPOWER:
       printf("TPOWER \"%s\"\n", bytecode + arg);
       break;
-    case OP_TOBJID:
-      printf("TOBJID \"%s\"\n", bytecode + arg);
-      break;
     case OP_TTYPE:
       printf("TTYPE \"%s\"\n", bytecode + arg);
       break;
@@ -1933,7 +2104,7 @@ warning_lock_type(const boolexp l)
     return W_LOCKED | W_UNLOCKED;
 }
 
-/** Check for lock-check @warnings.
+/** Check for lock-check \@warnings.
  * Things like non-existant attributes in eval locks, references to
  * garbage objects, or indirect locks that aren't present or visible.
  * \param player the object to report warnings to.

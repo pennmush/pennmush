@@ -48,13 +48,13 @@ SortType get_list_type_noauto(char *args[], int nargs, int type_pos);
 
 /** Routines to actually deal with (sort) lists. */
 ListTypeInfo *get_list_type_info(SortType sort_type);
-void free_list_type_info(ListTypeInfo * lti);
+void free_list_type_info(ListTypeInfo *lti);
 s_rec *slist_build(dbref player, char *keys[], char *strs[], int n,
-                   ListTypeInfo * lti);
-void slist_qsort(s_rec *sp, int n, ListTypeInfo * lti);
-int slist_uniq(s_rec *sp, int n, ListTypeInfo * lti);
-void slist_free(s_rec *sp, int n, ListTypeInfo * lti);
-int slist_comp(s_rec *s1, s_rec *s2, ListTypeInfo * lti);
+                   ListTypeInfo *lti);
+void slist_qsort(s_rec *sp, int n, ListTypeInfo *lti);
+int slist_uniq(s_rec *sp, int n, ListTypeInfo *lti);
+void slist_free(s_rec *sp, int n, ListTypeInfo *lti);
+int slist_comp(s_rec *s1, s_rec *s2, ListTypeInfo *lti);
 
 /** General-use sorting routines, good for most purposes. */
 int gencomp(dbref player, char *a, char *b, SortType sort_type);
@@ -62,8 +62,11 @@ void do_gensort(dbref player, char *keys[], char *strs[], int n,
                 SortType sort_type);
 
 /** Type definition for a qsort comparison function */
-typedef int (*comp_func) (const void *, const void *);
-void sane_qsort(void **array, int left, int right, comp_func compare);
+typedef int (*comp_func) (const void *, const void *, dbref, dbref,
+                          ufun_attrib *, NEW_PE_INFO *);
+void sane_qsort(void **array, int left, int right, comp_func compare,
+                dbref executor, dbref enactor, ufun_attrib * ufun,
+                NEW_PE_INFO *pe_info);
 
 
 /* Comparison functions for qsort() and other routines.  */
@@ -74,7 +77,7 @@ int str_comp(const void *s1, const void *s2);
 int stri_comp(const void *s1, const void *s2);
 int dbref_comp(const void *s1, const void *s2);
 int attr_comp(const void *s1, const void *s2);
-int u_comp(const void *s1, const void *s2);     /* For sortby() */
+int u_comp(const void *s1, const void *s2, dbref executor, dbref enactor, ufun_attrib * ufun, NEW_PE_INFO *pe_info);    /* For sortby() */
 
 int compare_attr_names(const char *attr1, const char *attr2);
 

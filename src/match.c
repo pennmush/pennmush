@@ -127,7 +127,7 @@ match_controlled(dbref player, const char *name)
  *  a. "me" if requested
  *  b. "here" if requested
  *  c. #dbref, possibly with a control check
- *  c. *player
+ *  d. *player
  * 2. Parse for adj-phrases and restrict further matching and/or
  *    remember the object count
  * 3. Look for matches (remote contents, neighbor, inventory, exits,
@@ -144,13 +144,6 @@ match_controlled(dbref player, const char *name)
  *  d. If we got multiple partial matches, complain
  *  e. If we got no matches, complain
  */
-
-/*
-#define DEBUG_OBJECT_MATCHING
-/**/
-#ifdef DEBUG_OBJECT_MATCHING
-static dbref debugMatchTo = 1;
-#endif
 
 
 /* MATCHED() is called from inside the MATCH_LIST macro. full is 1 if the
@@ -253,17 +246,9 @@ choose_thing(const dbref who, const int preferred_type, long flags,
   if (preferred_type != NOTYPE) {
     if (Typeof(thing1) & preferred_type) {
       if (!(Typeof(thing2) & preferred_type)) {
-#ifdef DEBUG_OBJECT_MATCHING
-        notify_format(debugMatchTo, "Picking #%d over #%d (type)", thing1,
-                      thing2);
-#endif
         return thing1;
       }
     } else if (Typeof(thing2) & preferred_type) {
-#ifdef DEBUG_OBJECT_MATCHING
-      notify_format(debugMatchTo, "Picking #%d over #%d (type)", thing2,
-                    thing1);
-#endif
       return thing2;
     }
   }
@@ -271,23 +256,11 @@ choose_thing(const dbref who, const int preferred_type, long flags,
   if (flags & MAT_CHECK_KEYS) {
     key = could_doit(who, thing1);
     if (!key && could_doit(who, thing2)) {
-#ifdef DEBUG_OBJECT_MATCHING
-      notify_format(debugMatchTo, "Picking #%d over #%d (unlocked)", thing2,
-                    thing1);
-#endif
       return thing2;
     } else if (key && !could_doit(who, thing2)) {
-#ifdef DEBUG_OBJECT_MATCHING
-      notify_format(debugMatchTo, "Picking #%d over #%d (unlocked)", thing1,
-                    thing2);
-#endif
       return thing1;
     }
   }
-#ifdef DEBUG_OBJECT_MATCHING
-  notify_format(debugMatchTo, "Picking #%d over #%d (last matched)", thing2,
-                thing1);
-#endif
   /* No luck. Return last match */
   return thing2;
 }
@@ -364,13 +337,14 @@ match_result_internal(dbref who, dbref where, const char *xname, int type,
   int goodwhere = RealGoodObject(where);
   char *name, *sname;           /* name contains the object name searched for, after english matching tokens are stripped from xname */
 
-#ifdef DEBUG_OBJECT_MATCHING
-  debugMatchTo = (GoodObject(who) && IsPlayer(who) ? who : 1);
-  notify(debugMatchTo, "ENTERING MATCH_RESULT");
-  notify_format(debugMatchTo, "FLAGS: %ld, TYPE: %d", flags, (type == NOTYPE));
-#endif
-
-  loc = (goodwhere ? (IsRoom(where) ? where : Location(where)) : NOTHING);
+  if (!goodwhere)
+    loc = NOTHING;
+  else if (IsRoom(where))
+    loc = where;
+  else if (IsExit(where))
+    loc = Source(where);
+  else
+    loc = Location(where);
 
   if (((flags & MAT_NEAR) && !goodwhere)
       || ((flags & MAT_CONTENTS) && !goodwhere)) {
@@ -441,77 +415,40 @@ match_result_internal(dbref who, dbref where, const char *xname, int type,
     /* English-style matching */
     final = parse_english(&name, &flags);
   }
-#ifdef DEBUG_OBJECT_MATCHING
-  notify_format(debugMatchTo,
-                "AFTER ENGLISH, we have: name = %s, curr = %d, flags = %ld",
-                name, curr, flags);
-#endif
 
   while (1) {
-#ifdef DEBUG_OBJECT_MATCHING
-    notify_format(debugMatchTo, "Running for #%d in #%d", where, loc);
-#endif
     if (goodwhere
         && ((flags & MAT_POSSESSION) || (flags & MAT_REMOTE_CONTENTS))) {
-#ifdef DEBUG_OBJECT_MATCHING
-      notify_format(debugMatchTo, "STARTING POSSESSION with #%d",
-                    Contents(where));
-#endif
       MATCH_LIST(Contents(where));
     }
     if (GoodObject(loc) && (flags & MAT_NEIGHBOR) && !(flags & MAT_CONTENTS)) {
-#ifdef DEBUG_OBJECT_MATCHING
-      notify(debugMatchTo, "STARTING NEIGHBOURS");
-#endif
       MATCH_LIST(Contents(loc));
     }
     if ((type & TYPE_EXIT) || !(flags & MAT_TYPE)) {
       if (GoodObject(loc) && IsRoom(loc) && (flags & MAT_EXIT)) {
-#ifdef DEBUG_OBJECT_MATCHING
-        notify_format(debugMatchTo, "STARTING EXIT");
-#endif
         if ((flags & MAT_REMOTES) && !(flags & (MAT_NEAR | MAT_CONTENTS))
             && GoodObject(Zone(loc)) && IsRoom(Zone(loc))) {
-#ifdef DEBUG_OBJECT_MATCHING
-          notify(debugMatchTo, "STARTING EXIT-REMOTE");
-#endif
           MATCH_LIST(Exits(Zone(loc)));
         }
         if ((flags & MAT_GLOBAL) && !(flags & (MAT_NEAR | MAT_CONTENTS))) {
-#ifdef DEBUG_OBJECT_MATCHING
-          notify(debugMatchTo, "STARTING EXIT-GLOBAL");
-#endif
           MATCH_LIST(Exits(MASTER_ROOM));
         }
         if (GoodObject(loc) && IsRoom(loc)) {
-#ifdef DEBUG_OBJECT_MATCHING
-          notify(debugMatchTo, "STARTING EXITS");
-#endif
           MATCH_LIST(Exits(loc));
         }
       }
     }
     if ((flags & MAT_CONTAINER) && !(flags & MAT_CONTENTS) && goodwhere) {
-#ifdef DEBUG_OBJECT_MATCHING
-      notify(debugMatchTo, "STARTING CONTAINER");
-#endif
       MATCH_LIST(loc);
     }
     if ((type & TYPE_EXIT) || !(flags & MAT_TYPE)) {
       if ((flags & MAT_CARRIED_EXIT) && goodwhere && IsRoom(where)) {
-#ifdef DEBUG_OBJECT_MATCHING
-        notify_format(debugMatchTo, "STARTING CEXIT");
-#endif
         MATCH_LIST(Exits(where));
       }
     }
     break;
   }
-#ifdef DEBUG_OBJECT_MATCHING
-  notify_format(debugMatchTo,
-                "AT END, we have: final = %d, curr = %d, bestmatch = %d", final,
-                curr, bestmatch);
-#endif
+
   if (!GoodObject(bestmatch) && final) {
     /* we never found the Nth item */
     bestmatch = NOTHING;

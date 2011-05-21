@@ -177,7 +177,7 @@ real_unparse(dbref player, dbref loc, int obey_myopic, int use_nameformat,
 
 /** Build the name of loc as seen by a player inside it, but only
  * if it has a NAMEFORMAT.
- * This function needs to avoid using a static buffer, so pass in 
+ * This function needs to avoid using a static buffer, so pass in
  * a pointer to an allocated BUFFER_LEN array.
  * \param player the looker.
  * \param loc dbref of location being looked at.
@@ -190,38 +190,20 @@ int
 nameformat(dbref player, dbref loc, char *tbuf1, char *defname)
 {
   ATTR *a;
-  char *wsave[10], *rsave[NUMQ];
-  char *arg, *bp, *arg2;
+  char *bp, *save;
   char const *sp;
-  char *save;
 
-  int j;
   a = atr_get(loc, "NAMEFORMAT");
   if (a) {
-    arg = GC_MALLOC_ATOMIC(BUFFER_LEN);
-    arg2 = GC_MALLOC_ATOMIC(BUFFER_LEN);
-    if (!arg)
-      mush_panic("Unable to allocate memory in nameformat");
-    save_global_regs("nameformat", rsave);
-    for (j = 0; j < 10; j++) {
-      wsave[j] = global_eval_context.wenv[j];
-      global_eval_context.wenv[j] = NULL;
-    }
-    for (j = 0; j < NUMQ; j++)
-      global_eval_context.renv[j][0] = '\0';
-    strcpy(arg, unparse_dbref(loc));
-    global_eval_context.wenv[0] = arg;
-    strcpy(arg2, defname);
-    global_eval_context.wenv[1] = arg2;
+    NEW_PE_INFO *pe_info = make_pe_info("pe_info-nameformat");
+    pe_regs_setenv(pe_info->regvals, 0, unparse_dbref(loc));
+    pe_regs_setenv_nocopy(pe_info->regvals, 1, defname);
     sp = save = safe_atr_value(a);
     bp = tbuf1;
     process_expression(tbuf1, &bp, &sp, loc, player, player,
-                       PE_DEFAULT, PT_DEFAULT, NULL);
+                       PE_DEFAULT, PT_DEFAULT, pe_info);
     *bp = '\0';
-    for (j = 0; j < 10; j++) {
-      global_eval_context.wenv[j] = wsave[j];
-    }
-    restore_global_regs("nameformat", rsave);
+    free_pe_info(pe_info);
     return 1;
   } else {
     /* No @nameformat attribute */

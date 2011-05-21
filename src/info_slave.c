@@ -4,10 +4,10 @@
  * \brief The information slave process.
  *
  * When running PennMUSH under Unix, a second process (info_slave) is
- * started and the server farms out DNS and ident lookups to the
- * info_slave, and reads responses from the info_slave
- * asynchronously. Communication between server and slave is by means
- * of datagrams on a connected UDP socket.
+ * started and the server farms out DNS lookups to the info_slave, and
+ * reads responses from the info_slave asynchronously. Communication
+ * between server and slave is by means of datagrams on a connected
+ * UDP socket.
  *
  * info_slave takes one argument, the descriptor of the local socket.
  *
@@ -53,7 +53,6 @@
 #include "conf.h"
 #include "externs.h"
 #include "wait.h"
-#include "ident.h"
 #include "mysocket.h"
 #include "mymalloc.h"
 #include "lookup.h"
@@ -187,19 +186,6 @@ main(void)
       resp.connected_to = -1;
     else
       resp.connected_to = strtol(localport, NULL, 10);
-
-    if (req.use_ident) {
-      IDENT *ident_result;
-      int timeout = req.timeout;
-      ident_result =
-        ident_query(&req.local.addr, req.llen, &req.remote.addr, req.rlen,
-                    &timeout);
-      if (ident_result && ident_result->identifier) {
-        strncpy(resp.ident, ident_result->identifier, sizeof resp.ident);
-        resp.ident[(sizeof resp.ident) - 1] = '\0';
-      }
-
-    }
 
     if (req.use_dns) {
       if (getnameinfo(&req.remote.addr, req.rlen, resp.hostname,

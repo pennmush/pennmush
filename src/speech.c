@@ -106,15 +106,15 @@ speech_loc(dbref thing)
 
 /** The teach command.
  * \param player the enactor.
- * \param cause the object causing the command to run.
  * \param tbuf1 the command being taught.
+ * \param list is tbuf1 an action list, or a single command?
+ * \param parent_queue the queue entry to run the command in
  */
 void
-do_teach(dbref player, dbref cause, const char *tbuf1)
+do_teach(dbref player, const char *tbuf1, int list, MQUE *parent_queue)
 {
   dbref loc;
-  static int recurse = 0;
-  char *command;
+  int flags = QUEUE_RECURSE;
 
   loc = speech_loc(player);
   if (!GoodObject(loc))
@@ -125,25 +125,19 @@ do_teach(dbref player, dbref cause, const char *tbuf1)
     return;
   }
 
-  if (recurse) {
-    /* Somebody tried to teach the teach command. Cute. Dumb. */
-    notify(player, T("You can't teach 'teach', sorry."));
-    recurse = 0;
-    return;
-  }
-
   if (!tbuf1 || !*tbuf1) {
     notify(player, T("What command do you want to teach?"));
     return;
   }
 
-  recurse = 1;                  /* Protect use from recursive teach */
-  notify_except(Contents(loc), NOTHING,
+  if (!list)
+    flags |= QUEUE_NOLIST;
+
+  notify_except(loc, NOTHING,
                 tprintf(T("%s types --> %s%s%s"), spname(player),
                         ANSI_HILITE, tbuf1, ANSI_END), NA_INTER_HEAR);
-  command = GC_STRDUP(tbuf1);       /* process_command is destructive */
-  process_command(player, command, cause, cause, 1);
-  recurse = 0;                  /* Ok, we can be called again safely */
+  new_queue_actionlist(player, parent_queue->enactor, player, (char *) tbuf1,
+                       parent_queue, PE_INFO_SHARE, flags, NULL);
 }
 
 /** The say command.
@@ -154,7 +148,7 @@ void
 do_say(dbref player, const char *tbuf1)
 {
   dbref loc;
-  const char *args[2];
+  PE_REGS *pe_regs;
   char tbuf2[BUFFER_LEN];
   int mod = 0;
   loc = speech_loc(player);
@@ -169,20 +163,21 @@ do_say(dbref player, const char *tbuf1)
   if (*tbuf1 == SAY_TOKEN && CHAT_STRIP_QUOTE)
     tbuf1++;
 
-  args[0] = tbuf1;
-  args[1] = "\"";
+  pe_regs = pe_regs_create(PE_REGS_ARG, "do_say");
+  pe_regs_setenv_nocopy(pe_regs, 0, tbuf1);
+  pe_regs_setenv_nocopy(pe_regs, 1, "\"");
   tbuf2[0] = '\0';
 
-  if (call_attrib(player, "SPEECHMOD", args, 2, tbuf2, player, NULL)
+  if (call_attrib(player, "SPEECHMOD", tbuf2, player, NULL, pe_regs)
       && *tbuf2 != '\0')
     mod = 1;
+  pe_regs_free(pe_regs);
 
   /* notify everybody */
   notify_format(player, T("You say, \"%s\""), (mod ? tbuf2 : tbuf1));
-  notify_except(Contents(loc), player,
+  notify_except(loc, player,
                 tprintf(T("%s says, \"%s\""), spname(player),
                         (mod ? tbuf2 : tbuf1)), NA_INTER_HEAR);
-
 }
 
 /** The oemit(/list) command.
@@ -429,16 +424,17 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy)
   }
 }
 
-/** Send an @message to a list of dbrefs, using <attr> to format it
+/** Send an \@message to a list of dbrefs, using an attribute to format it
  * if present.
  * The list is destructively modified.
- * \param player the enactor.
+ * \param player the executor.
+ * \param enactor the enactor
  * \param list the list of players to pemit to, destructively modified.
- * \param attrib the ufun attribute to use to format the message.
+ * \param attrname the attribute to use to format the message.
  * \param message the default message.
  * \param flags PEMIT_* flags
  * \param numargs The number of arguments for the ufun.
- * \param ... The arguments for the ufun.
+ * \param argv The arguments for the ufun.
  */
 void
 do_message_list(dbref player, dbref enactor, char *list, char *attrname,
@@ -614,8 +610,8 @@ void
 do_pose(dbref player, const char *tbuf1, int space)
 {
   dbref loc;
-  const char *args[2];
   char tbuf2[BUFFER_LEN];
+  PE_REGS *pe_regs;
   int mod = 0;
 
   loc = speech_loc(player);
@@ -627,21 +623,24 @@ do_pose(dbref player, const char *tbuf1, int space)
     return;
   }
 
-  args[0] = tbuf1;
-  args[1] = (space ? ";" : ":");
+  pe_regs = pe_regs_create(PE_REGS_ARG, "do_pose");
+  pe_regs_setenv_nocopy(pe_regs, 0, tbuf1);
+  pe_regs_setenv_nocopy(pe_regs, 1, space ? ";" : ":");
   tbuf2[0] = '\0';
 
-  if (call_attrib(player, "SPEECHMOD", args, 2, tbuf2, player, NULL)
+  if (call_attrib(player, "SPEECHMOD", tbuf2, player, NULL, pe_regs)
       && *tbuf2 != '\0')
     mod = 1;
 
+  pe_regs_free(pe_regs);
+
   /* notify everybody */
   if (!space)
-    notify_except(Contents(loc), NOTHING,
+    notify_except(loc, NOTHING,
                   tprintf("%s %s", spname(player), (mod ? tbuf2 : tbuf1)),
                   NA_INTER_HEAR);
   else
-    notify_except(Contents(loc), NOTHING,
+    notify_except(loc, NOTHING,
                   tprintf("%s%s", spname(player), (mod ? tbuf2 : tbuf1)),
                   NA_INTER_HEAR);
 }
@@ -721,8 +720,8 @@ do_wall(dbref player, const char *message, enum wall_type target, int emit)
  * \param attribute The attribute on the player to call.
  * \param enactor The enactor who caused the message.
  * \param flags NA_INTER_HEAR and NA_SPOOF
- * \param arg0 First argument
- * \param arg4 Last argument.
+ * \param numargs the number of arguments to the attribute
+ * \param ... the arguments to the attribute
  * \retval 1 The player had the fooformat attribute.
  * \retval 0 The default message was sent.
  */
@@ -758,8 +757,8 @@ vmessageformat(dbref player, const char *attribute, dbref enactor, int flags,
  * \param attribute The attribute on the player to call.
  * \param enactor The enactor who caused the message.
  * \param flags NA_INTER_HEAR and NA_SPOOF
- * \param arg0 First argument
- * \param arg4 Last argument.
+ * \param numargs number of arguments in argv
+ * \param argv array of arguments
  * \retval 1 The player had the fooformat attribute.
  * \retval 0 The default message was sent.
  */
@@ -770,10 +769,18 @@ messageformat(dbref player, const char *attribute, dbref enactor, int flags,
   /* It's only static because I expect this thing to get
    * called a LOT, so it may or may not save time. */
   static char messbuff[BUFFER_LEN];
+  PE_REGS *pe_regs;
+  int i;
+  int ret;
 
   *messbuff = '\0';
-  if (call_attrib(player, attribute, (const char **) argv, numargs,
-                  messbuff, enactor, NULL)) {
+  pe_regs = pe_regs_create(PE_REGS_ARG, "messageformat");
+  for (i = 0; i < numargs && i < 10; i++) {
+    pe_regs_setenv_nocopy(pe_regs, i, argv[i]);
+  }
+  ret = call_attrib(player, attribute, messbuff, enactor, NULL, pe_regs);
+  pe_regs_free(pe_regs);
+  if (ret) {
     /* We have a returned value. Notify the player. */
     if (*messbuff)
       notify_anything(enactor, na_one, &player, ns_esnotify, flags, messbuff);
@@ -980,7 +987,7 @@ do_page(dbref player, const char *arg1, const char *arg2, dbref cause,
     notify(player, T("You are set HAVEN and cannot receive pages."));
 
   /* Figure out what kind of message */
-  global_eval_context.wenv[0] = (char *) message;
+  /*G_E_C.wenv[0] = (char *) message; <-- Not sure why this was done */
   gap = " ";
   switch (*message) {
   case SEMI_POSE_TOKEN:
@@ -1143,7 +1150,7 @@ filter_found(dbref thing, const char *msg, int flag)
     if (AF_Regexp(a))
       matched = quick_regexp_match(p, msg, AF_Case(a));
     else
-      matched = local_wild_match_case(p, msg, AF_Case(a));
+      matched = local_wild_match_case(p, msg, AF_Case(a), NULL);
   }
   return matched;
 }
@@ -1158,9 +1165,7 @@ make_prefixstr(dbref thing, const char *msg, char *tbuf1)
 {
   char *bp, *asave;
   char const *ap;
-  char *wsave[10], *preserve[NUMQ];
   ATTR *a;
-  int j;
 
   a = atr_get(thing, "PREFIX");
 
@@ -1171,19 +1176,13 @@ make_prefixstr(dbref thing, const char *msg, char *tbuf1)
     safe_str(Name(IsExit(thing) ? Source(thing) : thing), tbuf1, &bp);
     safe_str(", ", tbuf1, &bp);
   } else {
-    for (j = 0; j < 10; j++) {
-      wsave[j] = global_eval_context.wenv[j];
-      global_eval_context.wenv[j] = NULL;
-    }
-    global_eval_context.wenv[0] = (char *) msg;
-    save_global_regs("prefix_save", preserve);
+    NEW_PE_INFO *pe_info = make_pe_info("pe_info-make_prefixstr");
+    pe_regs_setenv_nocopy(pe_info->regvals, 0, msg);
     asave = safe_atr_value(a);
     ap = asave;
     process_expression(tbuf1, &bp, &ap, thing, orator, orator,
-                       PE_DEFAULT, PT_DEFAULT, NULL);
-    restore_global_regs("prefix_save", preserve);
-    for (j = 0; j < 10; j++)
-      global_eval_context.wenv[j] = wsave[j];
+                       PE_DEFAULT, PT_DEFAULT, pe_info);
+    free_pe_info(pe_info);
     if (bp != tbuf1)
       safe_chr(' ', tbuf1, &bp);
   }
@@ -1254,21 +1253,17 @@ do_audible_stuff(dbref loc, dbref *excs, int numexcs, const char *msg)
 }
 
 /** notify_anthing() wrapper to notify everyone in a location except one
- * object.
- * \param first object in location to notify.
+ * object. The location itself is also notified.
+ * \param loc location to notify objects in
  * \param exception dbref of object not to notify, or NOTHING.
  * \param msg message to send.
  * \param flags flags to pass to notify_anything().
  */
 void
-notify_except(dbref first, dbref exception, const char *msg, int flags)
+notify_except(dbref loc, dbref exception, const char *msg, int flags)
 {
-  dbref loc;
   dbref pass[2];
 
-  if (!GoodObject(first))
-    return;
-  loc = Location(first);
   if (!GoodObject(loc))
     return;
 
@@ -1284,22 +1279,18 @@ notify_except(dbref first, dbref exception, const char *msg, int flags)
 }
 
 /** notify_anthing() wrapper to notify everyone in a location except two
- * objects.
- * \param first object in location to notify.
+ * objects. The location itself is also notified.
+ * \param loc location to notify objects in
  * \param exc1 dbref of one object not to notify, or NOTHING.
  * \param exc2 dbref of another object not to notify, or NOTHING.
  * \param msg message to send.
  * \param flags interaction flags to control type of interaction.
  */
 void
-notify_except2(dbref first, dbref exc1, dbref exc2, const char *msg, int flags)
+notify_except2(dbref loc, dbref exc1, dbref exc2, const char *msg, int flags)
 {
-  dbref loc;
   dbref pass[3];
 
-  if (!GoodObject(first))
-    return;
-  loc = Location(first);
   if (!GoodObject(loc))
     return;
 
@@ -1341,9 +1332,9 @@ do_emit(dbref player, const char *tbuf1, int flags)
 {
   dbref loc;
   int na_flags = NA_INTER_HEAR;
-  const char *args[2];
   char tbuf2[BUFFER_LEN];
   int mod = 0;
+  PE_REGS *pe_regs;
 
   loc = speech_loc(player);
   if (!GoodObject(loc))
@@ -1354,13 +1345,16 @@ do_emit(dbref player, const char *tbuf1, int flags)
     return;
   }
 
-  args[0] = tbuf1;
-  args[1] = "|";
+  pe_regs = pe_regs_create(PE_REGS_ARG, "do_emit");
+  pe_regs_setenv_nocopy(pe_regs, 0, tbuf1);
+  pe_regs_setenv_nocopy(pe_regs, 1, "|");
   tbuf2[0] = '\0';
 
-  if (call_attrib(player, "SPEECHMOD", args, 2, tbuf2, player, NULL)
+  if (call_attrib(player, "SPEECHMOD", tbuf2, player, NULL, pe_regs)
       && *tbuf2 != '\0')
     mod = 1;
+
+  pe_regs_free(pe_regs);
 
   /* notify everybody */
   if (flags & PEMIT_SPOOF)
@@ -1497,8 +1491,10 @@ na_zemit(dbref current __attribute__ ((__unused__)), void *data)
     } else {
       this = Next(this);
     }
-  } while ((this == NOTHING) || (this == dbrefs[4]));
+  } while ((this == NOTHING));
   dbrefs[0] = this;
+  if (dbrefs[4] == this)
+    dbrefs[4] = NOTHING;
   return this;
 }
 
@@ -1529,17 +1525,23 @@ do_zemit(dbref player, const char *arg1, const char *arg2, int flags)
     return;
   }
 
-  if (!(flags & PEMIT_SILENT)) {
-    where = unparse_object(player, zone);
-    notify_format(player, T("You zemit, \"%s\" in zone %s"), arg2, where);
-  }
-
   pass[0] = NOTHING;
   pass[1] = 0;
   pass[2] = zone;
   pass[3] = player;
-  pass[4] = player;
+  if (IsRoom(player))
+    pass[4] = player;
+  else if (IsExit(player))
+    pass[4] = Source(player);
+  else
+    pass[4] = Location(player);
   if (flags & PEMIT_SPOOF)
     na_flags |= NA_SPOOF;
   notify_anything(player, na_zemit, pass, ns_esnotify, na_flags, arg2);
+
+  if (!(flags & PEMIT_SILENT) && pass[4] != NOTHING) {
+    where = unparse_object(player, zone);
+    notify_format(player, T("You zemit, \"%s\" in zone %s"), arg2, where);
+  }
+
 }

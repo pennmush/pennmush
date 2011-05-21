@@ -109,7 +109,6 @@
 #include "command.h"
 #include "version.h"
 #include "mysocket.h"
-#include "ident.h"
 #include "htab.h"
 
 #ifndef WIN32
@@ -1179,8 +1178,6 @@ new_connection(int oldsock, int *result, bool use_ssl)
   char tbuf1[BUFFER_LEN];
   char tbuf2[BUFFER_LEN];
   char *bp;
-  char *socket_ident;
-  char *chp;
 
   *result = 0;
   addr_len = MAXSOCKADDR;
@@ -1194,17 +1191,6 @@ new_connection(int oldsock, int *result, bool use_ssl)
   safe_str(hi ? hi->hostname : "", tbuf2, &bp);
   *bp = '\0';
   bp = tbuf1;
-  if (USE_IDENT) {
-    int timeout = IDENT_TIMEOUT;
-    socket_ident = ident_id(newsock, &timeout);
-    if (socket_ident) {
-      /* Truncate at first non-printable character */
-      for (chp = socket_ident; *chp && isprint((unsigned char) *chp); chp++) ;
-      *chp = '\0';
-      safe_str(socket_ident, tbuf1, &bp);
-      safe_chr('@', tbuf1, &bp);
-    }
-  }
   hi = hostname_convert(&addr.addr, addr_len);
   safe_str(hi ? hi->hostname : "", tbuf1, &bp);
   *bp = '\0';
@@ -1243,10 +1229,9 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
                  const unsigned char *prefix)
 {
   ATTR *a;
-  char *wsave[10], *rsave[NUMQ];
   char arg[BUFFER_LEN], *save, *buff, *bp;
   char const *sp;
-  int j;
+  NEW_PE_INFO *pe_info;
 
   if (!GoodObject(thing) || IsGarbage(thing))
     return 0;
@@ -1263,20 +1248,19 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
     mush_panic("Unable to allocate memory in fcache_dump_attr");
     return -2;
   }
-  save_global_regs("send_txt", rsave);
-  for (j = 0; j < 10; j++) {
-    wsave[j] = global_eval_context.wenv[j];
-    global_eval_context.wenv[j] = NULL;
-  }
-  for (j = 0; j < NUMQ; j++)
-    global_eval_context.renv[j][0] = '\0';
-  global_eval_context.wenv[0] = arg;
+  pe_info = make_pe_info("pe_info-fcache_dump_attr");
+  pe_regs_setenv_nocopy(pe_info->regvals, 0, arg);
+  bp = pe_info->attrname;
+  safe_format(pe_info->attrname, &bp, "#%d/%s", thing, attr);
+  *bp = '\0';
   sp = save = safe_atr_value(a);
   bp = buff;
   process_expression(buff, &bp, &sp,
-                     thing, d->player, d->player, PE_DEFAULT, PT_DEFAULT, NULL);
+                     thing, d->player, d->player, PE_DEFAULT, PT_DEFAULT,
+                     pe_info);
   safe_chr('\n', buff, &bp);
   *bp = '\0';
+  free_pe_info(pe_info);
   if (prefix) {
     queue_newwrite(d, prefix, u_strlen(prefix));
     queue_eol(d);
@@ -1285,10 +1269,6 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
     queue_newwrite(d, (unsigned char *) buff, strlen(buff));
   else
     queue_write(d, (unsigned char *) buff, strlen(buff));
-  for (j = 0; j < 10; j++) {
-    global_eval_context.wenv[j] = wsave[j];
-  }
-  restore_global_regs("send_txt", rsave);
 
   return 1;
 }
@@ -1535,6 +1515,7 @@ logout_sock(DESC *d)
  * This sends appropriate disconnection text, flushes output, and
  * then closes the associated socket.
  * \param d pointer to descriptor to disconnect.
+ * \param reason reason for the descriptor being disconnected, used for events
  */
 static void
 shutdownsock(DESC *d, const char *reason)
@@ -2393,12 +2374,8 @@ do_command(DESC *d, char *command)
   } else {
     if (d->connected) {
       send_prefix(d);
-      global_eval_context.cplr = d->player;
-      run_user_input(d->player, command);
+      run_user_input(d->player, d->descriptor, command);
       send_suffix(d);
-      strcpy(global_eval_context.ccom, "");
-      strcpy(global_eval_context.ucom, "");
-      global_eval_context.cplr = NOTHING;
     } else {
       j = 0;
       if (!strncmp(command, WHO_COMMAND, strlen(WHO_COMMAND))) {
@@ -2779,6 +2756,7 @@ close_sockets(void)
   DESC *d, *dnext;
   const char *shutmsg;
   int shutlen;
+  int ignoreme;
 
   shutmsg = T(shutdown_message);
   shutlen = strlen(shutmsg);
@@ -2794,7 +2772,7 @@ close_sockets(void)
       byebye[0].iov_len = shutlen;
       byebye[1].iov_base = (char *) "\r\n";
       byebye[1].iov_len = 2;
-      writev(d->descriptor, byebye, 2);
+      ignoreme = writev(d->descriptor, byebye, 2);
 #else
       send(d->descriptor, shutmsg, shutlen, 0);
       send(d->descriptor, (char *) "\r\n", 2, 0);
@@ -2880,6 +2858,7 @@ boot_player(dbref player, int idleonly, int silent)
 
 /** Disconnect a descriptor.
  * \param d pointer to descriptor to disconnect.
+ * \param cause the reason for the descriptor being disconnected, used for events
  */
 void
 boot_desc(DESC *d, const char *cause)
@@ -2945,14 +2924,14 @@ do_pemit_port(dbref player, const char *pc, const char *message, int flags)
 }
 
 /** Page a specified socket.
- * \param player the enactor.
- * \param cause the cause.
+ * \param player the executor.
+ * \param enactor the enactor.
  * \param pc string containing port number to send message to.
  * \param message message to send.
  * \param eval_msg Should the message be evaluated?
  */
 void
-do_page_port(dbref player, dbref cause, const char *pc, const char *message,
+do_page_port(dbref player, dbref enactor, const char *pc, const char *message,
              bool eval_msg)
 {
   int p, key;
@@ -2967,7 +2946,7 @@ do_page_port(dbref player, dbref cause, const char *pc, const char *message,
     return;
   }
 
-  process_expression(tbuf, &tbp, &pc, player, cause, cause, PE_DEFAULT,
+  process_expression(tbuf, &tbp, &pc, player, enactor, enactor, PE_DEFAULT,
                      PT_DEFAULT, NULL);
   *tbp = '\0';
   p = atoi(tbuf);
@@ -2984,8 +2963,8 @@ do_page_port(dbref player, dbref cause, const char *pc, const char *message,
   }
 
   if (eval_msg) {
-    process_expression(mbuf, &mbp, &message, player, cause, cause, PE_DEFAULT,
-                       PT_DEFAULT, NULL);
+    process_expression(mbuf, &mbp, &message, player, enactor, enactor,
+                       PE_DEFAULT, PT_DEFAULT, NULL);
     *mbp = '\0';
     message = mbuf;
   }
@@ -3623,10 +3602,9 @@ announce_connect(DESC *d, int isnew, int num)
   dbref loc;
   char tbuf1[BUFFER_LEN];
   char *message;
-  char *myenv[2];
+  PE_REGS *pe_regs;
   dbref zone;
   dbref obj;
-  int j;
 
   dbref player = d->player;
 
@@ -3683,19 +3661,12 @@ announce_connect(DESC *d, int isnew, int num)
   }
 
   if (ANNOUNCE_CONNECTS)
-    notify_except(Contents(player), player, tbuf1, 0);
+    notify_except(player, player, tbuf1, 0);
 
   /* added to allow player's inventory to hear a player connect */
   if (ANNOUNCE_CONNECTS)
     if (!Dark(player))
-      notify_except(Contents(loc), player, tbuf1, NA_INTER_PRESENCE);
-
-  /* clear the environment for possible actions */
-  for (j = 0; j < 10; j++)
-    global_eval_context.wnxt[j] = NULL;
-  for (j = 0; j < NUMQ; j++)
-    global_eval_context.rnxt[j] = NULL;
-  strcpy(global_eval_context.ccom, "");
+      notify_except(loc, player, tbuf1, NA_INTER_PRESENCE);
 
   queue_event(player, "PLAYER`CONNECT", "%s,%d,%d",
               unparse_objid(player), num, d->descriptor);
@@ -3703,29 +3674,27 @@ announce_connect(DESC *d, int isnew, int num)
    * %0 (unused, reserved for "reason for disconnect")
    * %1 (number of connections after connect)
    */
-  myenv[0] = NULL;
-  myenv[1] = unparse_integer(num);
-  for (j = 0; j < 2; j++)
-    global_eval_context.wnxt[j] = myenv[j];
+  pe_regs = pe_regs_create(PE_REGS_ARG, "announce_connect");
+  pe_regs_setenv(pe_regs, 1, unparse_integer(num));
 
   /* do the person's personal connect action */
-  (void) queue_attribute(player, "ACONNECT", player);
+  (void) queue_attribute_base(player, "ACONNECT", player, 0, pe_regs);
   if (ROOM_CONNECTS) {
     /* Do the room the player connected into */
     if (IsRoom(loc) || IsThing(loc)) {
-      (void) queue_attribute(loc, "ACONNECT", player);
+      (void) queue_attribute_base(loc, "ACONNECT", player, 0, pe_regs);
     }
   }
   /* do the zone of the player's location's possible aconnect */
   if ((zone = Zone(loc)) != NOTHING) {
     switch (Typeof(zone)) {
     case TYPE_THING:
-      (void) queue_attribute(zone, "ACONNECT", player);
+      (void) queue_attribute_base(zone, "ACONNECT", player, 0, pe_regs);
       break;
     case TYPE_ROOM:
       /* check every object in the room for a connect action */
       DOLIST(obj, Contents(zone)) {
-        (void) queue_attribute(obj, "ACONNECT", player);
+        (void) queue_attribute_base(obj, "ACONNECT", player, 0, pe_regs);
       }
       break;
     default:
@@ -3736,11 +3705,9 @@ announce_connect(DESC *d, int isnew, int num)
   }
   /* now try the master room */
   DOLIST(obj, Contents(MASTER_ROOM)) {
-    (void) queue_attribute(obj, "ACONNECT", player);
+    (void) queue_attribute_base(obj, "ACONNECT", player, 0, pe_regs);
   }
-  for (j = 0; j < 10; j++)
-    global_eval_context.wnxt[j] = NULL;
-  strcpy(global_eval_context.ccom, "");
+  pe_regs_free(pe_regs);
 }
 
 static void
@@ -3752,10 +3719,9 @@ announce_disconnect(DESC *saved, const char *reason)
   char tbuf1[BUFFER_LEN];
   char *message;
   dbref zone, obj;
-  int j;
-  char *myenv[6];
   dbref player;
   ATTR *a;
+  PE_REGS *pe_regs;
 
   player = saved->player;
   loc = Location(player);
@@ -3769,12 +3735,6 @@ announce_disconnect(DESC *saved, const char *reason)
       num++;
 
 
-  /* clear the environment for possible actions */
-  for (j = 0; j < 10; j++)
-    global_eval_context.wnxt[j] = NULL;
-  for (j = 0; j < NUMQ; j++)
-    global_eval_context.rnxt[j] = NULL;
-  strcpy(global_eval_context.ccom, "");
   /* And then load it up, as follows:
    * %0 (unused, reserved for "reason for disconnect")
    * %1 (number of connections remaining after disconnect)
@@ -3783,15 +3743,12 @@ announce_disconnect(DESC *saved, const char *reason)
    * %4 (commands queued)
    * %5 (hidden)
    */
-  myenv[0] = NULL;
-  myenv[1] = unparse_integer(num - 1);
-  myenv[2] = unparse_integer(saved->input_chars);
-  myenv[3] = unparse_integer(saved->output_chars);
-  myenv[4] = unparse_integer(saved->cmds);
-  myenv[5] = unparse_integer(Hidden(saved));
-  for (j = 0; j < 6; j++) {
-     global_eval_context.wnxt[j] = myenv[j];
-  }
+  pe_regs = pe_regs_create(PE_REGS_ARG, "announce_disconnect");
+  pe_regs_setenv(pe_regs, 1, unparse_integer(num - 1));
+  pe_regs_setenv(pe_regs, 2, unparse_integer(saved->input_chars));
+  pe_regs_setenv(pe_regs, 3, unparse_integer(saved->output_chars));
+  pe_regs_setenv(pe_regs, 4, unparse_integer(saved->cmds));
+  pe_regs_setenv(pe_regs, 5, unparse_integer(Hidden(saved)));
 
   /* Eww. Unwieldy.
    * (objid, count, hidden, cause, ip, descriptor, conn,
@@ -3808,15 +3765,16 @@ announce_disconnect(DESC *saved, const char *reason)
               (int) difftime(mudtime, saved->last_time),
               saved->input_chars, saved->output_chars, saved->cmds);
 
-  (void) queue_attribute(player, "ADISCONNECT", player);
+  (void) queue_attribute_base(player, "ADISCONNECT", player, 0, pe_regs);
   if (ROOM_CONNECTS)
     if (IsRoom(loc) || IsThing(loc)) {
       a = queue_attribute_getatr(loc, "ADISCONNECT", 0);
       if (a) {
         if (!Priv_Who(loc) && !Can_Examine(loc, player))
-          global_eval_context.wnxt[1] = NULL;
-        (void) queue_attribute_useatr(loc, a, player);
-        global_eval_context.wnxt[1] = myenv[1];
+          pe_regs_setenv_nocopy(pe_regs, 1, "");
+        (void) queue_attribute_useatr(loc, a, player, pe_regs);
+        if (!Priv_Who(loc) && !Can_Examine(loc, player))
+          pe_regs_setenv(pe_regs, 1, unparse_integer(num - 1));
       }
     }
   /* do the zone of the player's location's possible adisconnect */
@@ -3826,9 +3784,10 @@ announce_disconnect(DESC *saved, const char *reason)
       a = queue_attribute_getatr(zone, "ADISCONNECT", 0);
       if (a) {
         if (!Priv_Who(zone) && !Can_Examine(zone, player))
-          global_eval_context.wnxt[1] = NULL;
-        (void) queue_attribute_useatr(zone, a, player);
-        global_eval_context.wnxt[1] = myenv[1];
+          pe_regs_setenv_nocopy(pe_regs, 1, "");
+        (void) queue_attribute_useatr(zone, a, player, pe_regs);
+        if (!Priv_Who(zone) && !Can_Examine(zone, player))
+          pe_regs_setenv(pe_regs, 1, unparse_integer(num - 1));
       }
       break;
     case TYPE_ROOM:
@@ -3837,9 +3796,10 @@ announce_disconnect(DESC *saved, const char *reason)
         a = queue_attribute_getatr(obj, "ADISCONNECT", 0);
         if (a) {
           if (!Priv_Who(obj) && !Can_Examine(obj, player))
-            global_eval_context.wnxt[1] = NULL;
-          (void) queue_attribute_useatr(obj, a, player);
-          global_eval_context.wnxt[1] = myenv[1];
+            pe_regs_setenv_nocopy(pe_regs, 1, "");
+          (void) queue_attribute_useatr(obj, a, player, pe_regs);
+          if (!Priv_Who(obj) && !Can_Examine(obj, player))
+            pe_regs_setenv(pe_regs, 1, unparse_integer(num - 1));
         }
       }
       break;
@@ -3854,15 +3814,14 @@ announce_disconnect(DESC *saved, const char *reason)
     a = queue_attribute_getatr(obj, "ADISCONNECT", 0);
     if (a) {
       if (!Priv_Who(obj) && !Can_Examine(obj, player))
-        global_eval_context.wnxt[1] = NULL;
-      (void) queue_attribute_useatr(obj, a, player);
-      global_eval_context.wnxt[1] = myenv[1];
+        pe_regs_setenv_nocopy(pe_regs, 1, "");
+      (void) queue_attribute_useatr(obj, a, player, pe_regs);
+      if (!Priv_Who(obj) && !Can_Examine(obj, player))
+        pe_regs_setenv(pe_regs, 1, unparse_integer(num - 1));
     }
   }
 
-  for (j = 0; j < 10; j++)
-    global_eval_context.wnxt[j] = NULL;
-  strcpy(global_eval_context.ccom, "");
+  pe_regs_free(pe_regs);
 
   /* Redundant, but better for translators */
   if (Dark(player)) {
@@ -3879,9 +3838,9 @@ announce_disconnect(DESC *saved, const char *reason)
 
   if (ANNOUNCE_CONNECTS) {
     if (!Dark(player))
-      notify_except(Contents(loc), player, tbuf1, NA_INTER_PRESENCE);
+      notify_except(loc, player, tbuf1, NA_INTER_PRESENCE);
     /* notify contents */
-    notify_except(Contents(player), player, tbuf1, 0);
+    notify_except(player, player, tbuf1, 0);
     /* notify channels */
     chat_player_announce(player, message, 0);
   }

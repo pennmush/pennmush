@@ -66,12 +66,12 @@ COMMAND(cmd_helpcmd)
   h = hashfind(cmd->name, &help_files);
 
   if (!h) {
-    notify(player, T("That command is unavailable."));
+    notify(executor, T("That command is unavailable."));
     return;
   }
 
-  if (h->admin && !Hasprivs(player)) {
-    notify(player, T("You don't look like an admin to me."));
+  if (h->admin && !Hasprivs(executor)) {
+    notify(executor, T("You don't look like an admin to me."));
     return;
   }
 
@@ -82,10 +82,10 @@ COMMAND(cmd_helpcmd)
 
     entries = list_matching_entries(arg_left, h, &len, 0);
     if (len == 0)
-      notify_format(player, T("No entries matching '%s' were found."),
+      notify_format(executor, T("No entries matching '%s' were found."),
                     arg_left);
     else if (len == 1)
-      do_new_spitfile(player, *entries, h);
+      do_new_spitfile(executor, *entries, h);
     else {
       char buff[BUFFER_LEN];
       char *bp;
@@ -93,14 +93,14 @@ COMMAND(cmd_helpcmd)
       bp = buff;
       arr2list(entries, len, buff, &bp, ", ");
       *bp = '\0';
-      notify_format(player, T("Here are the entries which match '%s':\n%s"),
+      notify_format(executor, T("Here are the entries which match '%s':\n%s"),
                     arg_left, buff);
     }
   } else {
     help_indx *entry = NULL;
     entry = help_find_entry(h, arg_left);
     if (entry) {
-      do_new_spitfile(player, arg_left, h);
+      do_new_spitfile(executor, arg_left, h);
     } else {
       char pattern[BUFFER_LEN], *pp, *sp;
       char **entries;
@@ -115,7 +115,7 @@ COMMAND(cmd_helpcmd)
             *pp = '*';
             pp++;
             if (pp >= (pattern + BUFFER_LEN)) {
-              notify_format(player, T("No entry for '%s'"), arg_left);
+              notify_format(executor, T("No entry for '%s'"), arg_left);
               return;
             }
           }
@@ -125,7 +125,7 @@ COMMAND(cmd_helpcmd)
             *pp = '*';
             pp++;
             if (pp >= (pattern + BUFFER_LEN)) {
-              notify_format(player, T("No entry for '%s'"), arg_left);
+              notify_format(executor, T("No entry for '%s'"), arg_left);
               return;
             }
           }
@@ -135,23 +135,23 @@ COMMAND(cmd_helpcmd)
         *pp = *sp;
         pp++;
         if (pp >= (pattern + BUFFER_LEN)) {
-          notify_format(player, T("No entry for '%s'"), arg_left);
+          notify_format(executor, T("No entry for '%s'"), arg_left);
           return;
         }
       }
       *pp = '\0';
       entries = list_matching_entries(pattern, h, &len, 1);
       if (len == 0)
-        notify_format(player, T("No entry for '%s'"), arg_left);
+        notify_format(executor, T("No entry for '%s'"), arg_left);
       else if (len == 1)
-        do_new_spitfile(player, *entries, h);
+        do_new_spitfile(executor, *entries, h);
       else {
         char buff[BUFFER_LEN];
         char *bp;
         bp = buff;
         arr2list(entries, len, buff, &bp, ", ");
         *bp = '\0';
-        notify_format(player, T("Here are the entries which match '%s':\n%s"),
+        notify_format(executor, T("Here are the entries which match '%s':\n%s"),
                       arg_left, buff);
       }
     }

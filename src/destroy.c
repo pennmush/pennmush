@@ -339,7 +339,7 @@ do_destroy(dbref player, char *name, int confirm)
   switch (Typeof(thing)) {
   case TYPE_ROOM:
     /* wait until dbck */
-    notify_except(Contents(thing), NOTHING,
+    notify_except(thing, NOTHING,
                   T("The room shakes and begins to crumble."), 0);
     if (Owns(player, thing))
       notify_format(player,
@@ -764,7 +764,7 @@ empty_contents(dbref thing)
   dbref first;
   dbref rest;
   dbref target;
-  notify_except(Contents(thing), NOTHING,
+  notify_except(thing, NOTHING,
                 T
                 ("The floor disappears under your feet, you fall through NOTHINGness and then:"),
                 0);

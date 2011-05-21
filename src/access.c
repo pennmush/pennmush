@@ -16,8 +16,6 @@
  * *.edu will match all sites with names ending in .edu, and
  * *.*.*.*.* will match all sites with 4 periods in their name.
  * 128.32.*.* will match all sites starting with 128.32 (UC Berkeley).
- * You can also use user@host to match specific users if you know that
- * the host is running ident and you trust its responses (nontrivial).
  *
  * The options that can be specified are:
  * *CONNECT              Allow connections to non-guest players
@@ -315,7 +313,7 @@ write_access_file(void)
 }
 
 /** Decide if a host can access someway.
- * \param hname a host or user+host pattern.
+ * \param hname a host.
  * \param flag the access type we're testing.
  * \param who the player attempting access.
  * \retval 1 access permitted.
@@ -324,8 +322,6 @@ write_access_file(void)
  * Given a hostname and a flag decide if the host can do it.
  * Here's how it works:
  * We run the linked list and take the first match.
- *  (If the hostname is user@host, we try to match both user@host
- *   and just host to each line in the file.)
  * If we make a match, and the line tells us whether the site can/can't
  *   do the action, we're done.
  * Otherwise, we assume that the host can do any toggleable option
@@ -338,22 +334,16 @@ site_can_access(const char *hname, uint32_t flag, dbref who)
 {
   struct access *ap;
   acsflag *c;
-  const char *p;
 
   if (!hname || !*hname)
     return 0;
 
-  if ((p = strchr(hname, '@')))
-    p++;
-
   for (ap = access_top; ap; ap = ap->next) {
     if (ap->can & ACS_SITELOCK)
       continue;
-    if ((ap->can & ACS_REGEXP)
-        ? (qcomp_regexp_match(ap->re, hname)
-           || (p && qcomp_regexp_match(ap->re, p)))
-        : (quick_wild(ap->host, hname)
-           || (p && quick_wild(ap->host, p)))
+    if (((ap->can & ACS_REGEXP)
+         ? qcomp_regexp_match(ap->re, hname)
+         : quick_wild(ap->host, hname))
         && (ap->who == AMBIGUOUS || ap->who == who)) {
       /* Got one */
       if (flag & ACS_CONNECT) {
@@ -397,24 +387,18 @@ struct access *
 site_check_access(const char *hname, dbref who, int *rulenum)
 {
   struct access *ap;
-  const char *p;
 
   *rulenum = 0;
   if (!hname || !*hname)
     return 0;
-
-  if ((p = strchr(hname, '@')))
-    p++;
 
   for (ap = access_top; ap; ap = ap->next) {
     (*rulenum)++;
     if (ap->can & ACS_SITELOCK)
       continue;
     if (((ap->can & ACS_REGEXP)
-         ? (qcomp_regexp_match(ap->re, hname)
-            || (p && qcomp_regexp_match(ap->re, p)))
-         : (quick_wild(ap->host, hname)
-            || (p && quick_wild(ap->host, p))))
+         ? qcomp_regexp_match(ap->re, hname)
+         : quick_wild(ap->host, hname))
         && (ap->who == AMBIGUOUS || ap->who == who)) {
       /* Got one */
       return ap;
@@ -643,8 +627,8 @@ do_list_access(dbref player)
  * This makes a copy of the options string, so it's not modified.
  */
 int
-parse_access_options(const char *opts, dbref *who, uint32_t *can,
-                     uint32_t *cant, dbref player)
+parse_access_options(const char *opts, dbref *who, uint32_t * can,
+                     uint32_t * cant, dbref player)
 {
   char myopts[BUFFER_LEN];
   char *p;

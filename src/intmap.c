@@ -464,14 +464,14 @@ im_dump_graph(intmap *im, const char *filename)
   fclose(fp);
 }
 
-/** Header line for @stats/tables for intmaps */
+/** Header line for \@stats/tables for intmaps */
 void
 im_stats_header(dbref player)
 {
   notify(player, "Map         Entries ~Memory");
 }
 
-/** @stats/tables line */
+/** \@stats/tables line */
 void
 im_stats(dbref player, intmap *im, const char *name)
 {

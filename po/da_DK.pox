@@ -280,10 +280,6 @@ msgstr "#-1 ADGANG NÆGTET"
 msgid "#-1 REGEXP ERROR: "
 msgstr "#-1 REGEXP FEJL: "
 
-#: src/funmisc.c:158 src/funmisc.c:178
-msgid "#-1 REGISTER OUT OF RANGE"
-msgstr "#-1 REGISTER UDEN FOR LOVLIGT OMRÅDE"
-
 #: src/function.c:118
 msgid "#-1 SEPARATOR MUST BE ONE CHARACTER"
 msgstr "#-1 ADSKILLEREN SKAL VÆRE EN KARAKTER"
@@ -2088,10 +2084,6 @@ msgstr "Det kan du ikke samle op!"
 #: src/move.c:544
 msgid "You can't take that!"
 msgstr "Det kan du ikke samle op!"
-
-#: src/speech.c:139
-msgid "You can't teach 'teach', sorry."
-msgstr "Du kan ikke teleportere rum."
 
 #: src/wiz.c:359
 msgid "You can't teleport rooms."

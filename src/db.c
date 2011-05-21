@@ -108,7 +108,7 @@ extern struct db_stat_info current_state;
 void
 init_names(void)
 {
-  st_init(&object_names);
+  st_init(&object_names, "ObjectNameTree");
 }
 
 /** Set an object's name through the name strtree.
@@ -474,7 +474,7 @@ db_read_labeled_int(PENNFILE *f, char **label, int *value)
  * \param value pointer to update to the number that was read.
  */
 void
-db_read_this_labeled_uint32(PENNFILE *f, const char *label, uint32_t *value)
+db_read_this_labeled_uint32(PENNFILE *f, const char *label, uint32_t * value)
 {
   char *readlabel;
   char *readvalue;
@@ -498,7 +498,7 @@ db_read_this_labeled_uint32(PENNFILE *f, const char *label, uint32_t *value)
  * \param value pointer to update to the number that was read.
  */
 void
-db_read_labeled_uint32(PENNFILE *f, char **label, uint32_t *value)
+db_read_labeled_uint32(PENNFILE *f, char **label, uint32_t * value)
 {
   char *readvalue;
   db_read_labeled_string(f, label, &readvalue);
@@ -511,7 +511,7 @@ db_read_labeled_uint32(PENNFILE *f, char **label, uint32_t *value)
  * database load will abort with an error.
  * \param f the file to read from.
  * \param label the label that should be read.
- * \param value pointer to update to the dbref that was read.
+ * \param val pointer to update to the dbref that was read.
  */
 void
 db_read_this_labeled_dbref(PENNFILE *f, const char *label, dbref *val)
@@ -534,7 +534,7 @@ db_read_this_labeled_dbref(PENNFILE *f, const char *label, dbref *val)
  * \param f the file to read from.
  * \param label pointer to update to the address of a static
  * buffer containing the label that was read.
- * \param value pointer to update to the dbref that was read.
+ * \param val pointer to update to the dbref that was read.
  */
 void
 db_read_labeled_dbref(PENNFILE *f, char **label, dbref *val)
@@ -1084,7 +1084,12 @@ get_new_locks(dbref i, PENNFILE *f, int c)
     /* boolexp */
     db_read_this_labeled_string(f, "key", &key);
     b = parse_boolexp_d(GOD, key, type, derefs);
-    add_lock_raw(creator, i, type, b, flags);
+    if (b == TRUE_BOOLEXP)
+      /* Malformed lock key in the db! Oops. */
+      do_rawlog(LT_ERR, "WARNING: Invalid lock key '%s' for lock #%d/%s!",
+                key, i, type);
+    else
+      add_lock_raw(creator, i, type, b, flags);
   }
 
   if (found != count)
@@ -1224,7 +1229,7 @@ get_list(PENNFILE *f, dbref i)
         free_ansi_string(as);
       }
 
-      atr_new_add(i, tbuf1, tb2, atoi(p), flags, derefs);
+      atr_new_add(i, tbuf1, tb2, atoi(p), flags, derefs, 1);
       count++;
       /* Check removed for atoi(q) == 0  (which results in NOTHING for that
        * parameter, and thus no flags), since this eliminates 'visual'
@@ -1308,7 +1313,7 @@ db_read_attrs(PENNFILE *f, dbref i, int count)
         free_ansi_string(as);
       }
     }
-    atr_new_add(i, name, value, owner, flags, derefs);
+    atr_new_add(i, name, value, owner, flags, derefs, 1);
   }
 
   if (found != count)
@@ -1881,7 +1886,7 @@ create_minimal_db(void)
   Type(start_room) = TYPE_ROOM;
   Flags(start_room) = string_to_bits("FLAG", "LINK_OK");
   atr_new_add(start_room, "DESCRIBE", "You are in Room Zero.", GOD, desc_flags,
-              1);
+              1, 1);
   CreTime(start_room) = ModTime(start_room) = mudtime;
   current_state.rooms++;
 
@@ -1898,8 +1903,9 @@ create_minimal_db(void)
   add_lock(god, god, Enter_Lock, parse_boolexp(god, "=me", Enter_Lock),
            LF_DEFAULT);
   add_lock(god, god, Use_Lock, parse_boolexp(god, "=me", Use_Lock), LF_DEFAULT);
-  atr_new_add(god, "DESCRIBE", "You see Number One.", god, desc_flags, 1);
-  atr_new_add(god, "MAILCURF", "0", god, AF_LOCKED | AF_NOPROG | AF_WIZARD, 1);
+  atr_new_add(god, "DESCRIBE", "You see Number One.", god, desc_flags, 1, 1);
+  atr_new_add(god, "MAILCURF", "0", god, AF_LOCKED | AF_NOPROG | AF_WIZARD, 1,
+              1);
   add_folder_name(god, 0, "inbox");
   PUSH(god, Contents(start_room));
   add_player(god);
@@ -1914,7 +1920,7 @@ create_minimal_db(void)
   CreTime(master_room) = ModTime(master_room) = mudtime;
   atr_new_add(master_room, "DESCRIBE",
               "This is the master room. Any exit in here is considered global. The same is true for objects with $-commands placed here.",
-              god, desc_flags, 1);
+              god, desc_flags, 1, 1);
   current_state.rooms++;
 
 
@@ -2069,11 +2075,7 @@ penn_fprintf(PENNFILE *f, const char *fmt, ...)
       char line[BUFFER_LEN * 2];
 
       va_start(ap, fmt);
-#ifdef HAVE_VSNPRINTF
-      r = vsnprintf(line, sizeof line, fmt, ap);
-#else
-      r = vsprintf(line, fmt, ap);
-#endif
+      r = my_vsnprintf(line, sizeof line, fmt, ap);
       va_end(ap, fmt);
       if (r > -1)
         OUTPUT(gzputs(f->handle.g, line));

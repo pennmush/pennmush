@@ -12,7 +12,7 @@ typedef struct ptab {
   bool state;                   /**< Internal table state */
   size_t len;                   /**< Table size */
   size_t maxlen;                /**< Maximum table size */
-  size_t current;                       /**< Internal table state */
+  size_t current;               /**< Internal table state */
   struct ptab_entry **tab;      /**< Pointer to array of entries */
 } PTAB;
 

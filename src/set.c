@@ -59,7 +59,7 @@ extern int rhs_present;         /* from command.c */
  * \endverbatim
  * \param player the enactor.
  * \param name current name of object to rename.
- * \param newname new name for object.
+ * \param newname_ new name for object.
  */
 void
 do_name(dbref player, const char *name, char *newname_)
@@ -67,8 +67,9 @@ do_name(dbref player, const char *name, char *newname_)
   dbref thing;
   char *myenv[10];
   int i;
-  char *newname;
+  char *newname = NULL;
   char *alias = NULL;
+  PE_REGS *pe_regs;
 
   if ((thing = match_controlled(player, name)) == NOTHING)
     return;
@@ -78,9 +79,7 @@ do_name(dbref player, const char *name, char *newname_)
     notify(player, T("Give it what new name?"));
     return;
   }
-
-  switch Typeof
-    (thing) {
+  switch (Typeof(thing)) {
   case TYPE_PLAYER:
     switch (ok_object_name
             (newname_, player, thing, TYPE_PLAYER, &newname, &alias)) {
@@ -114,7 +113,7 @@ do_name(dbref player, const char *name, char *newname_)
     /* Should never occur */
     notify(player, T("I don't see that here."));
     return;
-    }
+  }
 
     /* everything ok, change the name */
     myenv[0] = GC_MALLOC_ATOMIC(BUFFER_LEN);
@@ -148,8 +147,12 @@ do_name(dbref player, const char *name, char *newname_)
 
   if (!AreQuiet(player, thing))
     notify(player, T("Name set."));
+  pe_regs = pe_regs_create(PE_REGS_ARG, "do_name");
+  pe_regs_setenv_nocopy(pe_regs, 0, myenv[0]);
+  pe_regs_setenv_nocopy(pe_regs, 1, myenv[1]);
   real_did_it(player, thing, NULL, NULL, "ONAME", NULL, "ANAME", NOTHING,
-              myenv, NA_INTER_PRESENCE);
+              pe_regs, NA_INTER_PRESENCE);
+  pe_regs_free(pe_regs);
 
 }
 
@@ -351,6 +354,7 @@ chown_object(dbref player, dbref thing, dbref newowner, int preserve)
  * \param name name of the object to change zone of.
  * \param newobj name of new ZMO.
  * \param noisy if 1, notify player about success and failure.
+ * \param preserve was the /preserve switch given?
  * \retval 0 failed to change zone.
  * \retval 1 successfully changed zone.
  */
@@ -570,8 +574,13 @@ do_attrib_flags(dbref player, const char *obj, const char *atrname,
     notify(player, T("Unrecognized attribute flag."));
     return;
   }
-  af.clrflags = atrflag_to_string(af.clrf);
-  af.setflags = atrflag_to_string(af.setf);
+  if (af.clrf == 0 && af.setf == 0) {
+    notify(player, T("What flag do you want to set?"));
+    return;
+  }
+
+  af.clrflags = GC_STRDUP(atrflag_to_string(af.clrf));
+  af.setflags = GC_STRDUP(atrflag_to_string(af.setf));
   if (!atr_iter_get(player, thing, atrname, 0, 0, af_helper, &af))
     notify(player, T("No attribute found to change."));
 }
@@ -582,7 +591,7 @@ do_attrib_flags(dbref player, const char *obj, const char *atrname,
  * This implements @set.
  * \endverbatim
  * \param player the enactor.
- * \param name the first (left) argument to the command.
+ * \param xname the first (left) argument to the command.
  * \param flag the second (right) argument to the command.
  * \retval 1 successful set.
  * \retval 0 failure to set.
@@ -909,6 +918,8 @@ gedit_helper(dbref player, dbref thing,
  * \param player the enactor.
  * \param it the object/attribute pair.
  * \param argv array containing the search and replace strings.
+ * \param target the type of edit
+ * \param doit actually edit the attrs, or just show what would happen if we did?
  */
 void
 do_gedit(dbref player, char *it, char **argv, enum edit_type target, int doit)
@@ -961,9 +972,10 @@ void
 do_trigger(dbref player, char *object, char **argv)
 {
   dbref thing;
-  int a;
   char *s;
   char tbuf1[BUFFER_LEN];
+  PE_REGS *pe_regs;
+  int i;
 
   strcpy(tbuf1, object);
   for (s = tbuf1; *s && (*s != '/'); s++) ;
@@ -986,16 +998,20 @@ do_trigger(dbref player, char *object, char **argv)
     notify(player, T("You can't trigger God!"));
     return;
   }
-  /* trigger modifies the stack */
-  for (a = 0; a < 10; a++)
-    global_eval_context.wnxt[a] = argv[a + 1];
 
-  if (queue_attribute(thing, upcasestr(s), player)) {
+  pe_regs = pe_regs_create(PE_REGS_ARG, "do_trigger");
+  for (i = 0; i < 10; i++) {
+    if (argv[i + 1])
+      pe_regs_setenv_nocopy(pe_regs, i, argv[i + 1]);
+  }
+
+  if (queue_attribute_base(thing, upcasestr(s), player, 0, pe_regs)) {
     if (!AreQuiet(player, thing))
       notify_format(player, T("%s - Triggered."), Name(thing));
   } else {
     notify(player, T("No such attribute."));
   }
+  pe_regs_free(pe_regs);
 }
 
 
@@ -1007,9 +1023,12 @@ do_trigger(dbref player, char *object, char **argv)
  * \param cause the cause.
  * \param object the object/attribute pair.
  * \param argv array of arguments.
+ * \param queue_type QUEUE_* flags to use for the new queue entry
+ * \param parent_queue the parent queue to include the new actionlist into
  */
 void
-do_include(dbref player, dbref cause, char *object, char **argv)
+do_include(dbref player, dbref cause, char *object, char **argv,
+           int queue_type, MQUE *parent_queue)
 {
   dbref thing;
   char *s;
@@ -1032,17 +1051,12 @@ do_include(dbref player, dbref cause, char *object, char **argv)
     notify(player, T("You can't include God!"));
     return;
   }
+
   /* include modifies the stack, but only if arguments are given */
-  if (rhs_present) {
-    if (!queue_include_attribute(thing, upcasestr(s), player, cause, cause, argv + 1)) {
-      notify(player, T("No such attribute."));
-    }
-  } else {
-    if (!queue_include_attribute(thing, upcasestr(s), player,
-                                 cause, cause, global_eval_context.wenv)) {
-      notify(player, T("No such attribute."));
-    }
-  }
+  if (!queue_include_attribute
+      (thing, upcasestr(s), player, cause, cause,
+       (rhs_present ? argv + 1 : NULL), queue_type, parent_queue))
+    notify(player, T("No such attribute."));
 }
 
 /** The use command.

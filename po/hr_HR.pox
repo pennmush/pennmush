@@ -593,9 +593,9 @@ msgstr "#-1 DOZVOLA USKRAÆENA"
 msgid "#-1 REGEXP ERROR: "
 msgstr "#-1 GRE©KA U REGEXPU: "
 
-#: src/funmisc.c:158 src/funmisc.c:178
-msgid "#-1 REGISTER OUT OF RANGE"
-msgstr "#-1 REGISTAR IZVAN RASPONA"
+#: parse.c:109
+msgid "#-1 REGISTER NAME INVALID"
+msgstr "#-1 IME REGISTRA NEISPRAVNO"
 
 #: funmath.c:1057
 msgid "#-1 ROOT OUT OF RANGE"
@@ -642,6 +642,10 @@ msgstr "#-1 PREVI©E STUPACA ZA ALIGN"
 msgid "#-1 TOO MANY ITERS"
 msgstr "#-1 PREVI©E ITERA"
 
+#: parse.c:110
+msgid "#-1 TOO MANY REGISTERS"
+msgstr "#-1 PREVI©E REGISTARA"
+
 #: funmisc.c:495 funmisc.c:612
 msgid "#-1 TOO MANY SWITCHES"
 msgstr "#-1 PREVI©E SWITCHEVA"
@@ -653,10 +657,6 @@ msgstr "#-1 PREVI©E RIJEÈI"
 #: funstr.c:757 funstr.c:765 funstr.c:795 funstr.c:803
 msgid "#-1 TR CANNOT ACCEPT NONPRINTING CHARS"
 msgstr "#-1 TR NE MO®E PRIMITI NEISPISIVE ZNAKOVE"
-
-#: funmisc.c:235 funmisc.c:241 funmisc.c:267
-msgid "#-1 UNABLE TO ALLOCATE MEMORY"
-msgstr "#-1 NE MOGU ALOCIRATI MEMORIJU"
 
 #: help.c:516 help.c:519
 msgid "#-1 UNAVAILABLE"
@@ -1444,10 +1444,6 @@ msgstr "---------------------------  PO©TA (folder %2d)  -----------------------
 #, c-format
 msgid "@@ No attributes match '%s'. @@"
 msgstr "@@ Nijedan atribut se ne podudara sa '%s'. @@"
-
-#: cque.c:551
-msgid "@break recursion exceeded."
-msgstr "Prekoraèeno ogranièenje rekurzije @break naredbe."
 
 #: src/command.c:1118
 msgid "@command is ALWAYS enabled."
@@ -5054,6 +5050,10 @@ msgstr "Da dobije¹ pristup ovom liku, spoji se na korisnika '%s' i napi¹i:\n"
 msgid "To channel %s: %s"
 msgstr "Na kanal %s: %s"
 
+#: game.c:1862
+msgid "Too many @dolists."
+msgstr "Previ¹e @dolista."
+
 #: set.c:88
 msgid "Too many aliases."
 msgstr "Previ¹e aliasa."
@@ -5081,6 +5081,10 @@ msgstr "Ne mo¾e¹ oemitirati tolikom broju ljudi."
 #: src/speech.c:402
 msgid "Too many people to whisper to."
 msgstr "Ne mo¾e¹ ¹aptati tolikom broju ljudi."
+
+#: predicat.c:1133
+msgid "Too many switches."
+msgstr "Previ¹e switcheva."
 
 #: boolexp.c:245
 msgid "Too much recursion in lock!"
@@ -5688,9 +5692,9 @@ msgstr "Za quotu mo¾e¹ postaviti samo broj."
 msgid "You can only set quotas to a positive number."
 msgstr "Za quotu mo¾e¹ postaviti samo pozitivan broj."
 
-#: cmds.c:530
-msgid "You can only use /inplace with /override."
-msgstr "/inplace mo¾e¹ koristiti samo s /override."
+#: cmds.c:592
+msgid "You can only use /inplace and /inline with /override."
+msgstr "/inplace i /inline mo¾e¹ koristiti samo s /override."
 
 #: rob.c:326
 msgid "You can't afford that."
@@ -5848,10 +5852,6 @@ msgstr "Ne mo¾e¹ to uzeti od tamo."
 #: src/move.c:544
 msgid "You can't take that!"
 msgstr "Ne mo¾e¹ to pokupiti!"
-
-#: src/speech.c:139
-msgid "You can't teach 'teach', sorry."
-msgstr "Ne mo¾e¹ teachati 'teach', ¾ao mi je."
 
 #: src/wiz.c:359
 msgid "You can't teleport rooms."

@@ -193,10 +193,9 @@ idle_event(void *data __attribute__ ((__unused__)))
 static bool
 purge_event(void *data __attribute__ ((__unused__)))
 {
-  global_eval_context.cplr = NOTHING;
-  strcpy(global_eval_context.ccom, "purge");
+  if (!PURGE_INTERVAL)
+    return false;               /* in case purge_interval is set to 0 with @config */
   purge();
-  strcpy(global_eval_context.ccom, "");
   options.purge_counter = mudtime + PURGE_INTERVAL;
   sq_register_in(PURGE_INTERVAL, purge_event, NULL, "DB`PURGE");
   return true;
@@ -205,10 +204,9 @@ purge_event(void *data __attribute__ ((__unused__)))
 static bool
 dbck_event(void *data __attribute__ ((__unused__)))
 {
-  global_eval_context.cplr = NOTHING;
-  strcpy(global_eval_context.ccom, "dbck");
+  if (!DBCK_INTERVAL)
+    return false;               /* in case dbck_interval is set to 0 with @config */
   dbck();
-  strcpy(global_eval_context.ccom, "");
   options.dbck_counter = mudtime + DBCK_INTERVAL;
   sq_register_in(DBCK_INTERVAL, dbck_event, NULL, "DB`DBCK");
   return true;
@@ -217,10 +215,10 @@ dbck_event(void *data __attribute__ ((__unused__)))
 static bool
 warning_event(void *data __attribute__ ((__unused__)))
 {
+  if (!options.warn_interval)
+    return false;               /* in case warn_interval is set to 0 with @config */
   options.warn_counter = options.warn_interval + mudtime;
-  strcpy(global_eval_context.ccom, "warnings");
   run_topology();
-  strcpy(global_eval_context.ccom, "");
   sq_register_in(options.warn_interval, warning_event, NULL, "DB`WCHECK");
   return true;
 }
@@ -259,10 +257,11 @@ reg_dbsave_warnings(void)
 static bool
 dbsave_event(void *data __attribute__ ((__unused__)))
 {
+  if (!options.dump_interval)
+    return false;               /* in case dump_interval is set to 0 with @config */
+
   options.dump_counter = options.dump_interval + mudtime;
-  strcpy(global_eval_context.ccom, "dump");
   fork_and_dump(1);
-  strcpy(global_eval_context.ccom, "");
   flag_broadcast(0, "ON-VACATION", "%s",
                  T("Your ON-VACATION flag is set! If you're back, clear it."));
   reg_dbsave_warnings();
@@ -314,12 +313,16 @@ init_sys_events(void)
 {
   time(&mudtime);
   sq_register_loop(60, idle_event, NULL, "PLAYER`INACTIVITY");
-  sq_register(mudtime + DBCK_INTERVAL, dbck_event, NULL, "DB`DBCK");
-  sq_register(mudtime + PURGE_INTERVAL, purge_event, NULL, "DB`PURGE");
-  sq_register(mudtime + options.warn_interval, warning_event, NULL,
-              "DB`WCHECK");
+  if (DBCK_INTERVAL > 0)
+    sq_register(mudtime + DBCK_INTERVAL, dbck_event, NULL, "DB`DBCK");
+  if (PURGE_INTERVAL > 0)
+    sq_register(mudtime + PURGE_INTERVAL, purge_event, NULL, "DB`PURGE");
+  if (options.warn_interval > 0)
+    sq_register(mudtime + options.warn_interval, warning_event, NULL,
+                "DB`WCHECK");
   reg_dbsave_warnings();
-  sq_register(mudtime + DUMP_INTERVAL, dbsave_event, NULL, NULL);
+  if (DUMP_INTERVAL > 0)
+    sq_register(mudtime + DUMP_INTERVAL, dbsave_event, NULL, NULL);
   sq_register_loop(1, on_every_second, NULL, NULL);
 }
 

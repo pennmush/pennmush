@@ -105,6 +105,7 @@ COMMAND_PROTO(cmd_readcache);
 COMMAND_PROTO(cmd_rejectmotd);
 COMMAND_PROTO(cmd_remit);
 COMMAND_PROTO(cmd_restart);
+COMMAND_PROTO(cmd_retry);
 COMMAND_PROTO(cmd_rwall);
 COMMAND_PROTO(cmd_say);
 COMMAND_PROTO(cmd_scan);

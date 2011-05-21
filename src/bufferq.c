@@ -113,7 +113,6 @@ shift_bufferq(BUFFERQ *bq, int space_needed)
 }
 
 /** Allocate memory for a buffer queue to hold a given number of lines.
- * \param bq pointer to buffer queue.
  * \param lines lines to allocate for buffer queue.
  * \retval address of allocated buffer queue.
  */
@@ -237,7 +236,7 @@ bufferq_blocks(BUFFERQ *bq)
  * \return line count
  */
 int
-bufferq_lines(BUFFERQ *bp)
+bufferq_lines(BUFFERQ *bq)
 {
   int lines = 0;
   char *p = NULL;
@@ -246,10 +245,10 @@ bufferq_lines(BUFFERQ *bp)
   time_t t;
 
 
-  if (isempty_bufferq(bp))
+  if (isempty_bufferq(bq))
     return 0;
 
-  while (iter_bufferq(bp, &p, &player, &type, &t))
+  while (iter_bufferq(bq, &p, &player, &type, &t))
     lines++;
 
   return lines;

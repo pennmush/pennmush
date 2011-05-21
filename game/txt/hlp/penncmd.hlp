@@ -939,7 +939,7 @@ See also: @@, @@()
 See also: look, @exitformat, @nameformat, @descformat, @invformat,
     @idescformat
 & @include
-  @include <object>/<attribute>[=<arg1>,<arg2>,...]
+  @include[/<switches>] <object>/<attribute>[=<arg1>,<arg2>,...]
 
   @include inserts the contents of the attribute provided into the
   action list in-place, without adding a new queue entry. It is
@@ -962,6 +962,16 @@ See also: look, @exitformat, @nameformat, @descformat, @invformat,
   If arguments are provided to @include, they are substituted for the
   environment's %0, %1, etc. while the included action list is running.
   The environment is then restored after the @include. 
+  
+  Continued in 'help @include2'.
+& @include2
+  
+  @include takes the following switches to alter its behaviour:
+  /nobreak:   Prevents an @break/@assert in the included attribute from
+              breaking the including action list.
+  /localize:  Saves all q-registers before including the attribute, and
+              restores them after including the attribute.
+  /clearregs: Clears all q-registers before including the attribute.
   
 See also: @trigger, ufun(), @break
 & @invformat
@@ -1344,21 +1354,47 @@ See also: @poll, WHO, doing()
   If the string "##" appears anywhere in <action list>, it will be replaced
   with the current element of <list>. The string "#@" is replaced with the
   position of the current element in the list. Note that these replacements
-  occur before evaluation. It is recommended that you use the itext() and
-  inum() functions instead, which serve the same purpose but are replaced
-  during evaluation. You can also use itext/inum to refer to nested @dolists.
+  occur before evaluation, so are unsafe on user input, and cannot be used
+  in nested in nested @dolists. It is HIGHLY recommended that you use itext()
+  and inum() instead, which serve the same purpose but are evaluated normally
+  and can be used with nested @dolists. The %iL substitution safely refers to
+  the outermost @dolist, much the same as ##.
  
   If the /notify switch is given, the command "@notify me" is queued after 
   all copies of <action list> have been queued. This is useful for object
   synchronization with semaphores.
-  
-  Example:
+
+  See 'help @dolist2' for examples.  
+See also: iter(), itext(), map(), @notify, SEMAPHORES, ACTION LISTS
+& @dolist2
+
+  Examples:
     > @dolist a b c=say %i0 is number [inum(0)]
     You say, "a is number 1"
     You say, "b is number 2"
     You say, "c is number 3"
-    
-See also: iter(), itext(), map(), @notify, SEMAPHORES, ACTION LISTS
+
+   > &test me=$test: say Starting ; @wait me={say Done} ;
+                     @dolist/notify a b c=say %i0 is [inum(0)]
+   > test
+   You say, "Starting"
+   You say, "a is 1"
+   You say, "b is 2"
+   You say, "c is 3"
+   Notified.
+   You say, "Done"
+   
+   > @dolist a b c=@dolist 1 2 3=say %iL/%i0
+   You say, "a/1"
+   You say, "a/2"
+   You say, "a/3"
+   You say, "b/1"
+   You say, "b/2"
+   You say, "b/3"
+   You say, "c/1"
+   You say, "c/2"
+   You say, "c/3"
+
 & @drain
   @drain[/any][/all] <object>[/<attribute>][=<number>]
   
@@ -1674,14 +1710,24 @@ See also: @filter, @prefix, AUDIBLE, PUPPET, @debugforwardlist, @lock
 
 See also: DEBUG, @forwardlist, @lock
 & @force
-  @force[/noeval][/inplace] <object>=<action list>
+  @force[/noeval][/inline] <object>=<action list>
 
   This command forces <object> to queue the given action list, as if the
   object had entered the action list itself. You must control <object> to
   @force it. @force is useful for manipulating puppets. 
 
-  If /inplace is given, <object> will run <action list> _now_, instead of
-  being queued for execution later.
+  If /inline is given, <object> will run <action list> _now_, instead of
+  being queued for execution later. By default, <action list> will be able
+  to see/alter q-registers in the calling action list, and any @breaks in
+  <action list> will also stop the calling action list. The following switches
+  alter that behaviour:
+   /nobreak:   @breaks in <action list> will not stop the calling action list
+   /localize:  q-registers will be saved before <action list> is run, and
+               restored after.
+   /clearregs: q-registers will all be reset before <action list> is run.
+               You'll usually want to use /localize as well with this.
+               
+  @force/inplace is an alias for @force/inline/nobreak/localize.
 
   @force can be abbreviated as
     <dbref> <action list>
@@ -1705,7 +1751,7 @@ See also: DEBUG, @forwardlist, @lock
 
   Continued in 'help @force3'.
 & @force3
-  Normally, @force creates a new queue entry. @force/inplace does not.
+  Normally, @force creates a new queue entry. @force/inline does not.
 
   Examples:
     > @create Lackey
@@ -1716,7 +1762,7 @@ See also: DEBUG, @forwardlist, @lock
     You say, "Done?"
     Lackey salutes!
 
-    > &order me=$order *:say Lackey, %0 ; @force/inplace Lackey=%0 ; say Done?
+    > &order me=$order *:say Lackey, %0 ; @force/inline Lackey=%0 ; say Done?
     > order pose salutes!
     You say, "Lackey, pose salutes!"
     Lackey salutes!
@@ -2031,7 +2077,7 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
                 $commands that might match). If the match fails, normal
                 built-in command processing continues. Note that all locks
                 and flags on the object (HALT, etc.) still apply.
-  @hook/override/inplace: Same as @hook/override, but the resulting matches
+  @hook/override/inline: Same as @hook/override, but the resulting matches
                 are run immediately - not queued for later execution!
   @hook/before: The attribute is evaluated before the built-in command is run.
   @hook/after: The attribute is evaluated after the built-in command is run.
@@ -2048,8 +2094,37 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
   Leaving out the object and attribute clears an existing hook. Wizards can
   see existing hooks with @command or @hook/list.
 
-  See 'help @hook2' for examples.
+  See 'help @hook2' for more information about @hook/override/inline,
+  and 'help @hook3' for examples.
 & @hook2
+
+  @hook/override/inline allows you to write softcoded commands which act
+  exactly like built-in commands - because they're run immediately, instead
+  of being queued, output from the command appears in the right order
+  relative to other commands in the action list. By default, commands hooked
+  with /inline have access to the q-registers of the calling action list, and
+  @breaks in the hooked command propagate to the calling action list,
+  allowing you to write your own control structures.
+  
+  For example, this adds a new command, @qbreak, which works like @break but
+  stops command execution when %q0 contains a true value:
+    > &qbreak #123=$@qbreak: @break %q0=@pemit/silent %#=Stopping.
+    > @command/add @qbreak
+    > @hook/override/inline @qbreak=#123, qbreak
+    
+  This behaviour can be altered by adding the following switches to
+  @hook/inline:
+    /nobreak:   @breaks in the hooked command do not stop the calling action
+                list from running
+    /localize:  q-registers are saved before the hooked command is run, and
+                restored after it completes
+    /clearregs: All q-registers are reset before the hooked command is run.
+                Most useful when used with /localize.
+                
+  @hook/inplace is an alias for @hook/inline/localize/clearregs/nobreak.
+  
+  See 'help @hook4' for some examples of using @hook/inline.
+& @hook3
   An example of @hook:
 
   > &top_line #3=pemit(%#, What follows is the results of a look)
@@ -2068,8 +2143,8 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
   > "test
   <OOC> Robert says, "test"
 
-  See 'help @hook3' for /inplace examples.
-& @hook3
+  See 'help @hook4' for /inplace examples.
+& @hook4
   > &dance me=$dance:pose sticks his right foot in ; say Do the hokey pokey
                      ; pose sticks his right foot out
   > dance
@@ -2354,6 +2429,8 @@ SIMPLE LOCKS
   also test for an object id, instead of a dbref, with:
     @lock <object>=objid^<object id>
 
+  This is turned into =<dbref>, which works because when an object is
+  deleted, references to it in locks are turned into #false.
 & @lock-owner
 & @lock-carry
 OWNER LOCK
@@ -2757,6 +2834,7 @@ See also: @name, name(), VERBS
 See also: @password, checkpass()
 & @notify
   @notify[/any][/all] <object>[/<attribute>][=<number>]
+  @notify/setq <object>[/<attribute>]=<qreg1>,<qval1>[,...]
   
   This command notifies a semaphore, allowing commands queued for that 
   semaphore to be executed.
@@ -2777,7 +2855,21 @@ See also: @password, checkpass()
   You may not specify both the /any switch and a specific attribute.
   Similarly, you may not specify both the /all switch and a number.
 
-See also: SEMAPHORES, @drain, @wait
+  Continued in 'help @notify2'.
+& @notify2
+  @notify/setq is a special form of @notify: It requires that a queue entry
+  exists and is waiting on <object>[/<attr>]. When this is the case, then
+  @notify/setq will modify the Q-registers of the extant queue entry.
+
+  /setq supercedes all other switches: You cannot @notify/all/setq or
+  @notify/any/setq - it deals with just one queue entry.
+
+  Example:
+  > @wait me=think Hello, %q0!
+  > @notify/setq me=0,Walker
+  Hello, Walker!
+
+  See also: SEMAPHORES, @drain, @wait
 & @nspemit
 & @nsemit
 & @nslemit
@@ -3036,6 +3128,7 @@ See also: MONEY, give
 
   God can add, delete, and otherwise manipulate power definitions.
   See help @power2 for these commands.
+See also: powers(), @flag
 & @power2
   @power/add <power>=[<letter>], [<type(s)>], [<setperms>], [<unsetperms>]
   @power/delete <power>
@@ -3104,6 +3197,10 @@ See also: @inprefix, AUDIBLE, @listen
   the total commands in each of the queues (Player, Object, Wait, and
   Semaphore), displayed in the format:
       <Number of your queued commands> / <Total number of queued commands>.
+
+  Some of the queues also include a [Ndel] after the total. That number is
+  the number of entries made by objects that have been halted but haven't
+  been removed from the queue yet.
       
   @ps with no arguments will show you your own queue. Wizards may specify
   the /all switch, and see the full queue. They may also specify a player.
@@ -3179,6 +3276,46 @@ See also: @motd, @list, @listmotd
    the enactor or the Can_spoof power.
 
 See also: @emit, @pemit, @oemit, SPOOFING, NOSPOOF, CONTROL.
+& @retry
+  @retry <boolean>
+  @retry <boolean>=<arg1>[,...]
+
+  The @retry command restarts the current queue entry, enabling people to
+  loop their command without requiring a wait for the next queue entry.
+  It can be a little tricky to understand at first. It basically tells the
+  parser: "If <boolean> is true, then go back to the beginning." It can also
+  modify %0-%9 with the arguments passed to it. (<arg1>,...).
+
+  Please note: @retry only restarts the action list it is currently in.
+  If you have: "@break 1=@retry 1=hello", then the action list is only
+  "@retry 1=hello" - which would thus create an infinite loop.
+
+  Watch out for infinite loops! @retry does respect all the limits (cpu_limit,
+  function_invocation_limit, etc). But because @retry causes the queue parser
+  to repeat itself _without_ invoking a new function, it doesn't risk hitting
+  any issues other than infinite loops.
+
+  See 'help @retry2' for examples.
+
+See also: ACTION LISTS, BOOLEAN VALUES, @break, @include
+& @retry2
+  Example: 'while'
+  > &sing me=$sing *:say %0 bottles of beer! ; @retry gt(%0,0)=dec(%0) ;
+        say Go get some more!
+  > sing 3
+  You say, "3 bottles of beer!"
+  You say, "2 bottles of beer!"
+  You say, "1 bottles of beer!"
+  You say, "0 bottles of beer!"
+  You say, "Go get some more!"
+
+  Implementing a folding algorithm:
+  (Yes, I know lmath is better, but this is just an example! :D)
+
+  > &add me=$add *:@retry words(%0)=rest(%0),add(first(%0),0%1) ; think %1
+  > add 4 3 2 1
+  10
+
 & @restart
   @restart <object>
   @restart/all
@@ -3584,6 +3721,9 @@ See also: @restart, @undestroy, ACTION LISTS, @function, @command, @hook,
   matching <expr>s by default, while @select only runs the <action> for the
   first matching <expr>.
 
+  If <expr> is a regexp or a wildcard glob, then $0-$9 will be set with
+  capture data. (In wildcard globbing, every wildcard captures.)
+
   The string "#$" in <action>'s will be replaced with the evaluated result
   of <string> before it is acted on. Note that this replacement happens
   BEFORE the <action> is queued and executed, and does not work well in
@@ -3594,14 +3734,29 @@ See also: @restart, @undestroy, ACTION LISTS, @function, @command, @hook,
   @switch/first runs <action> for the first matching <expr> only. Same as
                 @select, and often the desired behaviour.
   @switch/notify queues "@notify me" after the last <action>. 
-  @switch/inplace runs all actions in place, instead of creating a new queue
+  @switch/inline runs all actions in place, instead of creating a new queue
                   entry for them.
   @switch/regexp makes <expr>s case-insensitive regular expressions, not
                  wildcard/glob patterns.
 
+  Continued in 'help @switch2'.
+& @switch2
+
+  When using @switch/inline, an @break in an <action> will stop the calling
+  action list (and any further <action>s) from running. Each <action> will
+  also be able to see/alter the q-registers for the calling action list. The
+  following switches can be used with /inline to alter this behaviour:
+   /nobreak:  @breaks in <action> do not effect to the calling action list
+   /localize: q-registers are saved before each <action> is run, and restored
+              after it completes
+   /clearreg: q-registers are all reset before each <action> is run. Most
+              useful when used in combination with /localize.
+              
+  @switch/inplace is an alias for @switch/inline/nobreak/localize.
+
   See 'help @switch2' for examples.
 See also: switch wildcards, switch(), @break, stext(), slev()
-& @switch2
+& @switch3
   Examples: 
     > &SWITCH_EX thing=$foo *: @switch %0=*a*, :acks, *b*, :bars, :glurps
     > foo abc
@@ -3619,8 +3774,13 @@ See also: switch wildcards, switch(), @break, stext(), slev()
                                       say Not Puppet!
     > test
     thing says, "Not Puppet!"
-  Continued in 'help @switch3'
-& @switch3
+
+    > &SWITCH_EX thing=$foo *: @switch %0=*a*,say Before: '$0'. After: '$1'
+    > foo foobarbaz
+    thing says, "Before: 'foob'. After: 'rbaz'
+    
+  Continued in 'help @switch4'
+& @switch4
   Examples: 
     > &SWITCH_EX me=$foo *:think before ; @switch %0=1,think one ; think after
     > foo 1
@@ -3628,7 +3788,7 @@ See also: switch wildcards, switch(), @break, stext(), slev()
     thing after
     thing one
 
-    > &SWITCH_EX me=$foo *:think before ; @switch/inplace %0=1,think one ;
+    > &SWITCH_EX me=$foo *:think before ; @switch/inline %0=1,think one ;
                     think after
     > foo 1
     thing before
@@ -4000,7 +4160,8 @@ See also: @wall, @rwall
   
   The /silent switch suppresses the confirmation message, and /noisy causes
   it to be shown. With neither switch, the silent_pemit @config option
-  determines whether or not the message is shown.
+  determines whether or not the message is shown. The confirmation message
+  is only shown if you are not in a room which would receive <message>.
   
 See also: @nszemit, zemit(), zone(), zwho(), ZONES
 & ahelp
@@ -4072,10 +4233,14 @@ See also: examine
 See also: KEEPALIVE, @idle
 & teach
   teach <command>
-
-  Shows <command> (unparsed) to others in your room and then causes
-  you to execute <command> as if you'd typed it in directly from 
-  the socket (even if you're an object). Useful for helping newbies:
+  teach/list <action list>
+  
+  The teach command shows its argument (unparsed) to others in your location,
+  and then executes it as a command. If the /list switch is given, it will
+  run an <action list> of commands in much the same way as @triggering an
+  attribute. Otherwise, it executes a single <command>, exactly as if you'd
+  entered <command> from your client. Useful for helping newbies and
+  demonstrating commands.
 
   > say To do a pose, use :<action>
   You say "To do a pose, use :<action>"
@@ -4086,7 +4251,13 @@ See also: KEEPALIVE, @idle
   > teach "[sort(c b a)]
   Javelin types --> "[sort(c b a)]
   Javelin says, "a b c"
+  
+  > teach/list @switch 1=1, say Third; say First; @break 1; say Second
+  Javelin types --> @switch 1=1, say Third; say First; @break 1; say Second
+  You say, "First"
+  You say, "Third"
 
+See also: @trigger, @include
 & drop 
   drop <object>
 

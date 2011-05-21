@@ -89,13 +89,13 @@ bool SW_BY_NAME(switch_mask, const char *);
  */
 
 #define COMMAND(command_name) \
-void command_name (COMMAND_INFO *cmd, dbref player, dbref cause, dbref caller, \
+void command_name (COMMAND_INFO *cmd, dbref executor, dbref enactor, dbref caller, \
  switch_mask sw, const char *raw, const char *switches, char *args_raw, \
                   char *arg_left, char *args_left[MAX_ARG], \
-                  char *arg_right, char *args_right[MAX_ARG]); \
+                  char *arg_right, char *args_right[MAX_ARG], MQUE *queue_entry __attribute__ ((__unused__))); \
 void command_name(COMMAND_INFO *cmd __attribute__ ((__unused__)), \
-                  dbref player __attribute__ ((__unused__)), \
-                  dbref cause __attribute__ ((__unused__)), \
+                  dbref executor __attribute__ ((__unused__)), \
+                  dbref enactor __attribute__ ((__unused__)), \
                   dbref caller __attribute__ ((__unused__)), \
                   switch_mask sw __attribute__ ((__unused__)), \
                   const char *raw __attribute__ ((__unused__)), \
@@ -104,18 +104,19 @@ void command_name(COMMAND_INFO *cmd __attribute__ ((__unused__)), \
                   char *arg_left __attribute__ ((__unused__)), \
                   char *args_left[MAX_ARG] __attribute__ ((__unused__)), \
                   char *arg_right __attribute__ ((__unused__)), \
-                  char *args_right[MAX_ARG] __attribute__ ((__unused__)))
+                  char *args_right[MAX_ARG] __attribute__ ((__unused__)), \
+                  MQUE *queue_entry __attribute__ ((__unused__)))
 
 /** Common command prototype macro */
 #define COMMAND_PROTO(command_name) \
 void command_name (COMMAND_INFO *cmd, dbref player, dbref cause, dbref caller, switch_mask sw, const char *raw, const char *switches, char *args_raw, \
                   char *arg_left, char *args_left[MAX_ARG], \
-                  char *arg_right, char *args_right[MAX_ARG])
+                  char *arg_right, char *args_right[MAX_ARG], MQUE *queue_entry)
 
 typedef struct command_info COMMAND_INFO;
 typedef void (*command_func) (COMMAND_INFO *, dbref, dbref, dbref, switch_mask,
                               const char *, const char *, char *, char *,
-                              char *[MAX_ARG], char *, char *[MAX_ARG]);
+                              char *[MAX_ARG], char *, char *[MAX_ARG], MQUE *);
 
 /** A hook specification.
  */
@@ -215,9 +216,10 @@ void command_splitup
   (dbref player, dbref cause, char *from, char *to, char **args,
    COMMAND_INFO *cmd, int side);
 void command_argparse
-  (dbref player, dbref cause, dbref caller, char **from, char *to, char **argv,
-   COMMAND_INFO *cmd, int side, int forcenoparse);
-char *command_parse(dbref player, dbref cause, dbref caller, char *string, int fromport);
+  (dbref executor, dbref enactor, dbref caller, NEW_PE_INFO *pe_info,
+   char **from, char *to, char **argv, COMMAND_INFO *cmd, int side,
+   int forcenoparse, int pe_flags);
+char *command_parse(dbref player, char *string, MQUE *queue_entry);
 void do_list_commands(dbref player, int lc, int type);
 char *list_commands(int type);
 int command_check(dbref player, COMMAND_INFO *cmd, int noisy);
@@ -229,11 +231,11 @@ void reserve_aliases(void);
 void local_commands(void);
 void do_command_add(dbref player, char *name, int flags);
 void do_command_delete(dbref player, char *name);
-int run_command(COMMAND_INFO *cmd, dbref player, dbref cause,
+int run_command(COMMAND_INFO *cmd, dbref player, dbref enactor,
                 const char *commandraw, switch_mask sw,
                 char switch_err[BUFFER_LEN], const char *string, char *swp,
                 char *ap, char *ls, char *lsa[MAX_ARG], char *rs,
-                char *rsa[MAX_ARG]);
+                char *rsa[MAX_ARG], MQUE *queue_entry);
 int cnf_add_command(char *name, char *opts);
 int cnf_hook_command(char *name, char *opts);
 

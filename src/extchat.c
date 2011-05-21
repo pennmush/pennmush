@@ -34,6 +34,7 @@
 #include "function.h"
 #include "command.h"
 #include "dbio.h"
+#include "intmap.h"
 #include "confmagic.h"
 
 
@@ -54,7 +55,7 @@ static void insert_obj_chan(dbref who, CHAN **ch);
 static void remove_obj_chan(dbref who, CHAN *ch);
 void remove_all_obj_chan(dbref thing);
 static void chan_chown(CHAN *c, dbref victim);
-void chan_chownall(dbref old, dbref new);
+void chan_chownall(dbref old, dbref newowner);
 static int insert_user(CHANUSER *user, CHAN *ch);
 static int remove_user(CHANUSER *u, CHAN *ch);
 static int save_channel(PENNFILE *fp, CHAN *ch);
@@ -2091,13 +2092,15 @@ do_chan_title(dbref player, const char *name, const char *title)
     notify(player, T("Title too long."));
     return;
   }
-  WALK_ANSI_STRING(scan, title) {
+  scan = title;
+  WALK_ANSI_STRING(scan) {
     /* Stomp newlines and other weird whitespace */
     if ((isspace((unsigned char) *scan) && (*scan != ' '))
         || (*scan == BEEP_CHAR)) {
       notify(player, T("Invalid character in title."));
       return;
     }
+    scan++;
   }
 
   CUtitle(u) = GC_STRDUP(title);
@@ -2807,8 +2810,10 @@ do_chan_what(dbref player, const char *partname)
                     privs_to_string(priv_table, ChanType(c)));
       if (ChanBufferQ(c))
         notify_format(player,
-                      T("Recall buffer: %dk, with %d lines stored."),
+                      T
+                      ("Recall buffer: %db (%d full lines), with %d lines stored."),
                       BufferQSize(ChanBufferQ(c)),
+                      bufferq_blocks(ChanBufferQ(c)),
                       bufferq_lines(ChanBufferQ(c)));
       found++;
     }
@@ -3108,7 +3113,6 @@ void
 chat_player_announce(dbref player, char *msg, int ungag)
 {
   DESC *d;
-  size_t msglen;
   CHAN *c;
   CHANUSER *up, *uv;
   char buff[BUFFER_LEN], *bp;
@@ -3116,8 +3120,7 @@ chat_player_announce(dbref player, char *msg, int ungag)
   dbref viewer;
   bool shared = false;
   int na_flags = NA_INTER_LOCK | NA_SPOOF | NA_INTER_PRESENCE;
-
-  msglen = strlen(msg);
+  intmap *seen;
 
   /* Use the regular channel_send() for all non-combined players. */
   for (c = channels; c; c = c->next) {
@@ -3133,6 +3136,9 @@ chat_player_announce(dbref player, char *msg, int ungag)
       }
     }
   }
+  
+  seen = im_new();
+
   for (d = descriptor_list; d != NULL; d = d->next) {
     viewer = d->player;
     if (d->connected) {
@@ -3165,14 +3171,15 @@ chat_player_announce(dbref player, char *msg, int ungag)
       bp2--;
       *bp2 = '\0';
 
-      if (shared) {
+      if (shared && !im_exists(seen, viewer)) {
         char defmsg[BUFFER_LEN], *dmp;
         char shrtmsg[BUFFER_LEN], *smp;
         char *accname;
 
-	dmp = defmsg;
-	smp = shrtmsg;
-	
+	im_insert(seen, viewer, up);
+
+        dmp = defmsg;
+        smp = shrtmsg;
 	accname = GC_STRDUP(accented_name(player));
 
         safe_format(shrtmsg, &smp, "%s %s", accname, msg);
@@ -3189,6 +3196,7 @@ chat_player_announce(dbref player, char *msg, int ungag)
       }
     }
   }
+  im_destroy(seen);
 }
 
 /** Return a list of channels that the player is on.
@@ -3489,91 +3497,91 @@ FUNCTION(fun_crecall)
 COMMAND(cmd_cemit)
 {
   int flags = SILENT_OR_NOISY(sw, !options.noisy_cemit);
-  if (!strcmp(cmd->name, "@NSCEMIT") && Can_Nspemit(player))
+  if (!strcmp(cmd->name, "@NSCEMIT") && Can_Nspemit(executor))
     flags |= PEMIT_SPOOF;
 
-  SPOOF(player, cause, sw);
+  SPOOF(executor, enactor, sw);
 
-  do_cemit(player, arg_left, arg_right, flags);
+  do_cemit(executor, arg_left, arg_right, flags);
 }
 
 COMMAND(cmd_channel)
 {
   if (SW_ISSET(sw, SWITCH_LIST))
-    do_channel_list(player, arg_left);
+    do_channel_list(executor, arg_left);
   else if (SW_ISSET(sw, SWITCH_ADD))
-    do_chan_admin(player, arg_left, args_right[1], 0);
+    do_chan_admin(executor, arg_left, args_right[1], 0);
   else if (SW_ISSET(sw, SWITCH_DELETE))
-    do_chan_admin(player, arg_left, args_right[1], 1);
+    do_chan_admin(executor, arg_left, args_right[1], 1);
   else if (SW_ISSET(sw, SWITCH_NAME))
-    do_chan_admin(player, arg_left, args_right[1], 2);
+    do_chan_admin(executor, arg_left, args_right[1], 2);
   else if (SW_ISSET(sw, SWITCH_RENAME))
-    do_chan_admin(player, arg_left, args_right[1], 2);
+    do_chan_admin(executor, arg_left, args_right[1], 2);
   else if (SW_ISSET(sw, SWITCH_PRIVS))
-    do_chan_admin(player, arg_left, args_right[1], 3);
+    do_chan_admin(executor, arg_left, args_right[1], 3);
   else if (SW_ISSET(sw, SWITCH_RECALL))
-    do_chan_recall(player, arg_left, args_right, SW_ISSET(sw, SWITCH_QUIET));
+    do_chan_recall(executor, arg_left, args_right, SW_ISSET(sw, SWITCH_QUIET));
   else if (SW_ISSET(sw, SWITCH_DECOMPILE))
-    do_chan_decompile(player, arg_left, SW_ISSET(sw, SWITCH_BRIEF));
+    do_chan_decompile(executor, arg_left, SW_ISSET(sw, SWITCH_BRIEF));
   else if (SW_ISSET(sw, SWITCH_DESCRIBE))
-    do_chan_desc(player, arg_left, args_right[1]);
+    do_chan_desc(executor, arg_left, args_right[1]);
   else if (SW_ISSET(sw, SWITCH_TITLE))
-    do_chan_title(player, arg_left, args_right[1]);
+    do_chan_title(executor, arg_left, args_right[1]);
   else if (SW_ISSET(sw, SWITCH_MOGRIFIER))
-    do_chan_set_mogrifier(player, arg_left, args_right[1]);
+    do_chan_set_mogrifier(executor, arg_left, args_right[1]);
   else if (SW_ISSET(sw, SWITCH_CHOWN))
-    do_chan_chown(player, arg_left, args_right[1]);
+    do_chan_chown(executor, arg_left, args_right[1]);
   else if (SW_ISSET(sw, SWITCH_WIPE))
-    do_chan_wipe(player, arg_left);
+    do_chan_wipe(executor, arg_left);
   else if (SW_ISSET(sw, SWITCH_MUTE))
-    do_chan_user_flags(player, arg_left, args_right[1], CU_QUIET, 0);
+    do_chan_user_flags(executor, arg_left, args_right[1], CU_QUIET, 0);
   else if (SW_ISSET(sw, SWITCH_UNMUTE))
-    do_chan_user_flags(player, arg_left, "n", CU_QUIET, 0);
+    do_chan_user_flags(executor, arg_left, "n", CU_QUIET, 0);
   else if (SW_ISSET(sw, SWITCH_HIDE))
-    do_chan_user_flags(player, arg_left, args_right[1], CU_HIDE, 0);
+    do_chan_user_flags(executor, arg_left, args_right[1], CU_HIDE, 0);
   else if (SW_ISSET(sw, SWITCH_UNHIDE))
-    do_chan_user_flags(player, arg_left, "n", CU_HIDE, 0);
+    do_chan_user_flags(executor, arg_left, "n", CU_HIDE, 0);
   else if (SW_ISSET(sw, SWITCH_GAG))
-    do_chan_user_flags(player, arg_left, args_right[1], CU_GAG, 0);
+    do_chan_user_flags(executor, arg_left, args_right[1], CU_GAG, 0);
   else if (SW_ISSET(sw, SWITCH_UNGAG))
-    do_chan_user_flags(player, arg_left, "n", CU_GAG, 0);
+    do_chan_user_flags(executor, arg_left, "n", CU_GAG, 0);
   else if (SW_ISSET(sw, SWITCH_COMBINE))
-    do_chan_user_flags(player, arg_left, args_right[1], CU_COMBINE, 0);
+    do_chan_user_flags(executor, arg_left, args_right[1], CU_COMBINE, 0);
   else if (SW_ISSET(sw, SWITCH_UNCOMBINE))
-    do_chan_user_flags(player, arg_left, "n", CU_COMBINE, 0);
+    do_chan_user_flags(executor, arg_left, "n", CU_COMBINE, 0);
   else if (SW_ISSET(sw, SWITCH_WHAT))
-    do_chan_what(player, arg_left);
+    do_chan_what(executor, arg_left);
   else if (SW_ISSET(sw, SWITCH_BUFFER))
-    do_chan_buffer(player, arg_left, args_right[1]);
+    do_chan_buffer(executor, arg_left, args_right[1]);
   else if (SW_ISSET(sw, SWITCH_ON) || SW_ISSET(sw, SWITCH_JOIN))
-    do_channel(player, arg_left, args_right[1], "ON");
+    do_channel(executor, arg_left, args_right[1], "ON");
   else if (SW_ISSET(sw, SWITCH_OFF) || SW_ISSET(sw, SWITCH_LEAVE))
-    do_channel(player, arg_left, args_right[1], "OFF");
+    do_channel(executor, arg_left, args_right[1], "OFF");
   else if (SW_ISSET(sw, SWITCH_WHO))
-    do_channel(player, arg_left, args_right[1], "WHO");
+    do_channel(executor, arg_left, args_right[1], "WHO");
   else
-    do_channel(player, arg_left, NULL, args_right[1]);
+    do_channel(executor, arg_left, NULL, args_right[1]);
 }
 
 COMMAND(cmd_chat)
 {
-  do_chat_by_name(player, arg_left, arg_right, 1);
+  do_chat_by_name(executor, arg_left, arg_right, 1);
 }
 
 COMMAND(cmd_clock)
 {
   if (SW_ISSET(sw, SWITCH_JOIN))
-    do_chan_lock(player, arg_left, arg_right, CL_JOIN);
+    do_chan_lock(executor, arg_left, arg_right, CL_JOIN);
   else if (SW_ISSET(sw, SWITCH_SPEAK))
-    do_chan_lock(player, arg_left, arg_right, CL_SPEAK);
+    do_chan_lock(executor, arg_left, arg_right, CL_SPEAK);
   else if (SW_ISSET(sw, SWITCH_MOD))
-    do_chan_lock(player, arg_left, arg_right, CL_MOD);
+    do_chan_lock(executor, arg_left, arg_right, CL_MOD);
   else if (SW_ISSET(sw, SWITCH_SEE))
-    do_chan_lock(player, arg_left, arg_right, CL_SEE);
+    do_chan_lock(executor, arg_left, arg_right, CL_SEE);
   else if (SW_ISSET(sw, SWITCH_HIDE))
-    do_chan_lock(player, arg_left, arg_right, CL_HIDE);
+    do_chan_lock(executor, arg_left, arg_right, CL_HIDE);
   else
-    notify(player, T("You must specify a type of lock!"));
+    notify(executor, T("You must specify a type of lock!"));
 }
 
 /** Find the next player on a channel to notify.
@@ -3610,34 +3618,40 @@ na_channel(dbref current, void *data)
  *
  * \param mogrifier The object doing the mogrification
  * \param attrname The attribute on mogrifier to call.
- * \param channel The active channel. (%1)
- * \param value The value to mogrify (%0)
+ * \param player the enactor
+ * \param numargs the number of args in argv
+ * \param argv array of args
+ * \param orig the original string to mogrify
  * \retval Mogrified text.
  */
-
 char *
 mogrify(dbref mogrifier, const char *attrname,
         dbref player, int numargs, const char *argv[], const char *orig)
 {
-  char *buff;
-  const char *wenv[10] = { 0 };
+  char buff[BUFFER_LEN];
   int i;
+  PE_REGS *pe_regs;
 
-  buff = GC_MALLOC_ATOMIC(BUFFER_LEN);
   buff[0] = '\0';
-  for (i = 0; i < numargs; i++) {
-    wenv[i] = argv[i];
-  }
 
-  if (call_attrib(mogrifier, attrname, wenv, numargs, buff, player, NULL)) {
-    if (buff[0]) {
-      return buff;
+  pe_regs = pe_regs_create(PE_REGS_ARG, "mogrify");
+  for (i = 0; i < numargs; i++) {
+    if (argv[i]) {
+      pe_regs_setenv_nocopy(pe_regs, i, argv[i]);
     }
   }
 
-  snprintf(buff, BUFFER_LEN, "%s", orig);
+  i = call_attrib(mogrifier, attrname, buff, player, NULL, pe_regs);
 
-  return buff;
+  pe_regs_free(pe_regs);
+
+  if (i) {
+    if (buff[0]) {
+      return GC_STRDUP(buff);
+    }
+  }
+
+  return GC_STRDUP(orig);
 }
 
 /** Broadcast a message to a channel, using @chatformat if it's
@@ -4061,9 +4075,10 @@ do_chan_buffer(dbref player, const char *name, const char *lines)
 int
 eval_chan_lock(CHAN *c, dbref p, enum clock_type type)
 {
-  char *oldenv[10];
+  NEW_PE_INFO *pe_info;
+
   boolexp b = TRUE_BOOLEXP;
-  int retval, n;
+  int retval;
   if (!c || !GoodObject(p))
     return 0;
   switch (type) {
@@ -4083,11 +4098,9 @@ eval_chan_lock(CHAN *c, dbref p, enum clock_type type)
     b = ChanModLock(c);
   }
 
-  save_global_env("eval_chan_lock", oldenv);
-  global_eval_context.wenv[0] = ChanName(c);
-  for (n = 1; n < 10; n++)
-    global_eval_context.wenv[n] = NULL;
-  retval = eval_boolexp(p, b, p);
-  restore_global_env("eval_chan_lock", oldenv);
+  pe_info = make_pe_info("pe_info-eval_chan_lock");
+  pe_regs_setenv_nocopy(pe_info->regvals, 0, ChanName(c));
+  retval = eval_boolexp(p, b, p, pe_info);
+  free_pe_info(pe_info);
   return retval;
 }

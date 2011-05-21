@@ -212,10 +212,6 @@ msgstr "#-1 ERRO DE OVERFLOW"
 msgid "#-1 REGEXP ERROR: "
 msgstr "#-1 ERRO DE OVERFLOW "
 
-#: src/funmisc.c:158 src/funmisc.c:178
-msgid "#-1 REGISTER OUT OF RANGE"
-msgstr "#-1 BASE FORA DE LIMITE"
-
 #: src/function.c:118
 msgid "#-1 SEPARATOR MUST BE ONE CHARACTER"
 msgstr "#-1 ARGUMENTO DEVE SER INTEIRO"
@@ -977,10 +973,6 @@ msgstr "Aparentemente você não pode largar coisas aqui."
 #: src/move.c:544
 msgid "You can't take that!"
 msgstr "Eu não consigo encontrar isso."
-
-#: src/speech.c:139
-msgid "You can't teach 'teach', sorry."
-msgstr "Aparentemente você não pode largar coisas aqui."
 
 #: src/wiz.c:359
 msgid "You can't teleport rooms."

@@ -870,11 +870,11 @@ See also: LINK_OK, ABODE, @link
   attribute (Note that the triggering object is whatever happens to be
   %#, so, for example, when you @set an object MONITOR, you are %#
   with regard to the "Object is now listening" message, and this
-  message can be picked up with an ^pattern.)
+  message can be picked up with an ^-pattern.)
 
-  Additionally, unlike $-commands, @listen and ^-patterns are NOT
-  inherited via @parent, unless the LISTEN_PARENT flag is set on the
-  listener.
+  Additionally, unlike $-commands, ^-patterns are NOT inherited via 
+  @parent, unless the LISTEN_PARENT flag is set on the listener.
+  @listen is never inherited.
 
   Listen patterns are checked after the object's normal @listen
   attribute.
@@ -911,8 +911,11 @@ See also: STRINGS, List Functions
   command can be used to see if you are looping.  Beware!  A looping
   machine that isn't @halt'd will drain your pennies while you are
   away from the mush!
+  
+  The @retry and @include commands, and %= substitution, can also be useful
+  for building code which needs to loop.
 
-See also: @ps, HALT, COSTS, @trigger
+See also: @ps, HALT, COSTS, @trigger, @retry, SUBSTITUTIONS3
 & MASTER ROOM
   
   The Master Room enables global commands and exits. Exits in the
@@ -1710,12 +1713,14 @@ See also: string functions
     %c = text of the last command, _before_ evaluation
     %u = text of the last command, after evaluation, available to locks/hooks
     %? = The current function invocation and depth counts
+    %= = The dbref/attribute currently being evaluated
     %+ = The number of arguments passed to the current ufun.
     %qN = the equivalent of r(N), a register set by a setq() function.
     %iN = equivilent of itext(N), the list element for iter()/@dolist.
     %$N = equivilent of stext(N), the <string> in switch()/@switch.
  
-  Continued in 'help substitutions4'.
+  See 'help substitutions4' for examples.
+See also: EVALUATION, ENACTOR, EXECUTOR, DBREFS, REGISTERS, v()
 & SUBSTITUTIONS4
 & %4
   Example: 
@@ -1736,7 +1741,6 @@ See also: string functions
   %! = #11
   %L = #13
 
-See also: EVALUATION, ENACTOR, EXECUTOR, DBREFS, REGISTERS, v()
 & SUCCESS
   A "success" normally occurs when you attempt to do something that is
   restricted by an @lock and you pass the @lock. (Note that if no lock

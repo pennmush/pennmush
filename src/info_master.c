@@ -379,16 +379,11 @@ kill_info_slave(void)
       do_rawlog(LT_ERR, "Terminating info_slave pid %d", info_slave_pid);
 
       block_a_signal(SIGCHLD);
-
       closesocket(info_slave);
-      kill(info_slave_pid, 15);
-      /* Have to wait long enough for the info_slave to actually
-         die. This will hopefully be enough time. */
-      usleep(100);
-
-      mush_wait(info_slave_pid, &my_stat, WNOHANG);
+      kill(info_slave_pid, SIGTERM);
+      mush_wait(info_slave_pid, &my_stat, 0);
       info_slave_pid = -1;
-      unblock_a_signal(SIGCHLD);
+      unblock_a_signal(SIGCHLD);      
     }
     info_slave_state = INFO_SLAVE_DOWN;
   }

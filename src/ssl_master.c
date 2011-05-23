@@ -23,7 +23,7 @@
 #include "mysocket.h"
 #include "ssl_slave.h"
 #include "parse.h"
-
+#include "wait.h"
 #include "confmagic.h"
 
 
@@ -88,7 +88,15 @@ void
 kill_ssl_slave(void)
 {
   if (ssl_slave_pid > 0) {
+    WAIT_TYPE my_stat;
+
+    do_rawlog(LT_ERR, "Terminating ssl_slave pid %d", ssl_slave_pid);
+
+    block_a_signal(SIGCHLD);
     kill(ssl_slave_pid, SIGTERM);
+    mush_wait(ssl_slave_pid, &my_stat, 0);
+    unblock_a_signal(SIGCHLD);
+    ssl_slave_pid = -1;
     ssl_slave_state = SSL_SLAVE_DOWN;
   }
 }

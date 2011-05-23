@@ -231,16 +231,17 @@ address_resolved(int result, char type, int count, int ttl __attribute__((__unus
   struct sockaddr_un addr;
   struct hostname_info *ipaddr;
 
-  c->resolver_req = NULL;
-
   if (result != DNS_ERR_NONE || !addresses || type != DNS_PTR || count == 0) {
     errprintf("ssl_slave: Hostname lookup failed: %s. type = %d, count = %d\n", evdns_err_to_string(result),
 	      (int)type, count);
-    if (result != DNS_ERR_SHUTDOWN)
+    if (result != DNS_ERR_SHUTDOWN) {
+      c->resolver_req = NULL;
       delete_conn(c);
+    }
     return;
   }
 
+  c->resolver_req = NULL;
   hostname = ((const char **)addresses)[0];
 
   c->remote_host = strdup(hostname);
@@ -309,7 +310,7 @@ event_cb(struct bufferevent *bev, short e, void *data)
     if (c->local_bev == bev) {
       /* Mush side of the connection went away. Flush SSL buffer and shut down. */
 #if SSL_DEBUG_LEVEL > 0
-      errprintf("ssl_slave: Lost local connection. State: %d, reason %hd\n", c->state, e);
+      errprintf("ssl_slave: Lost local connection. State: %d, reason 0x%hx.\n", c->state, e);
 #endif
       bufferevent_disable(c->local_bev, EV_READ | EV_WRITE);
       bufferevent_free(c->local_bev);
@@ -323,7 +324,7 @@ event_cb(struct bufferevent *bev, short e, void *data)
     } else {
       /* Remote side of the connection went away. Flush mush buffer and shut down. */
 #if SSL_DEBUG_LEVEL > 0
-      errprintf("ssl_slave: Lost SSL connection. State: %d, reason %hd\n", c->state, e);
+      errprintf("ssl_slave: Lost SSL connection. State: %d, reason 0x%hx.\n", c->state, e);
 #endif
       bufferevent_disable(c->remote_bev, EV_READ | EV_WRITE);
       bufferevent_free(c->remote_bev);
@@ -446,7 +447,6 @@ main(int argc, char **argv)
   init_gen_rand(getpid());
   parent_pid = getppid();
 
-  
   if (!ssl_init(ssl_private_key_file, ssl_ca_file,
 		ssl_require_client_cert)) {
     errputs("SSL initialization failure!");

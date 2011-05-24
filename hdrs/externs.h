@@ -528,9 +528,22 @@ int strncasecoll(const char *s1, const char *s2, size_t t);
 /** Append a character to the end of a BUFFER_LEN long string.
  * You shouldn't use arguments with side effects with this macro.
  */
+#if 1
+static inline int
+safe_chr(char c, char *buff, char **bp)
+{
+  if ((*bp - buff) >= (BUFFER_LEN - 1))
+    return 1;
+  else {
+    *(*bp)++ = c;
+    return 0;
+  }
+}
+#else
 #define safe_chr(x, buf, bp) \
                     ((*(bp) - (buf) >= BUFFER_LEN - 1) ? \
                         1 : (*(*(bp))++ = (x), 0))
+#endif
 /* Like sprintf */
 int safe_format(char *buff, char **bp, const char *restrict fmt, ...)
   __attribute__ ((__format__(__printf__, 3, 4)));

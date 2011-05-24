@@ -108,7 +108,7 @@ sub loginGod {
 }
 
 END {
-  kill("TERM", @pids);
+  kill("INT", @pids);
 }
 
 1;

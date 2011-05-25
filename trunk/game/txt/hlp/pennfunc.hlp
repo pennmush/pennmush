@@ -1508,15 +1508,17 @@ See also: div(), mod()
   filter([<obj>/]<attr>, <list>[, <delimiter>[, <osep>]])
   filterbool([<obj>]/<attr>, <list>[, <delimiter>[, <osep>]])
 
-  This function returns the elements of <list> for which a
-  user-defined function evaluates to "1", or to a boolean true value
-  if filterbool() is used. That function is specified by the first
-  argument (just as with the ufun() function), and the element of the
-  list being tested is passed to that user-defined function as %0.
+  This function returns the elements of <list> for which a user-defined
+  function evaluates to "1", or to a boolean true value if filterbool() is 
+  used. That function is specified by the first argument (just as with the 
+  ufun() function), and the element of the list being tested is passed to 
+  that user-defined function as %0.
+  
+  <delimiter> defaults to a space, and <osep> defaults to <delimiter>.
   
   Thus, "filter(<obj>/<attr>, <list>)" is nearly equivalent to 
   "iter(<list>, switch(ufun(<obj>/<attr>, %i0),1,%i0,))" though the iter
-  version may have extra blank spaces.
+  version may have extra <osep>s.
   
   Example:
     > &IS_ODD test=mod(%0,2)
@@ -1788,10 +1790,10 @@ See also: @ps, @wait, lpids(), pidinfo(), SEMAPHORES
   regrab(<list>, <regexp>[, <delimiter>])
   regrabi(<list>, <regexp>[, <delimiter>])
   
-  These functions return the first word in <list> which matches the
-  pattern.  For grab(), <pattern> is a wildcard pattern ('help wildcards').
-  For regrab() and regrabi(), the pattern is a regular expression.
-  regrabi() is case-insensitive.
+  These functions return the first word in <list> which matches the pattern.
+  For grab(), <pattern> is a wildcard pattern ('help wildcards'). For
+  regrab() and regrabi(), the pattern is a regular expression. regrabi() is 
+  case-insensitive. <delimiter> defaults to a space.
   
   Basically, this is a much more efficient way to do:
     elements(<list>, match(<list>, <pattern>[, <delimiter>])[, <delimiter>])
@@ -1806,15 +1808,16 @@ See also: graball(), match(), extract(), element(), elements(), regmatch()
   regraballi(<list>, <regexp>[, <delim>[, <osep>]])
   
   These functions work identically to the grab() and regrab()/regrabi()
-  functions, except they return all matches, not just the first:
-  They return all words in the <list> which match <pattern>. If none
-  match, an empty string is returned.
+  functions, except they return all matches, not just the first: They return
+  all words in the <list> which match <pattern>. If none match, an empty
+  string is returned. <delim> defaults to a space, and <osep> defaults to
+  <delim>.
   
   Examples:
     > say graball(This is a test of a test,test)
     You say "test test"
-    > say graball(This is testing a test,tes*)
-    You say "testing test"
+    > say graball(This|is|testing|a|test,tes*,|)
+    You say "testing|test"
     > say regraball(This is testing a test,s$)
     You say "This is"
   
@@ -2137,8 +2140,8 @@ See also: words()
   For each word in <list>, iter() evaluates <pattern> once, and returns a
   list of the results of those evaluations. Words in <list> are separated
   by <delimiter>, if given, and spaces if not. Words in the resulting list
-  are separated by the given <ouput separator>, or the delimiter if no
-  output separator is used.
+  are separated by the given <ouput separator>, or a space if no output 
+  separator is given.
   
   Prior to each evaluation, every occurrence of the string "##" in <pattern>
   is replaced with the current word from <list>. However, because this 
@@ -2348,17 +2351,22 @@ See also: lexits(), lplayers(), lthings(), con(), next(), lvcon()
 
 See also: capstr(), ucstr()
 & LDELETE()
-  Ldelete(<list>, <position(s)>[, <delimiter>])
+  Ldelete(<list>, <position(s)>[, <delimiter>[, <osep>]])
   
-  This deletes the item(s) at <position(s)> in the list. If a delimiter is
-  not given, a space is assumed. Null items are counted, as in 'items()'.
-  Positions are numeric and must be separated by spaces.
+  This function deletes the element(s) of <list> at the given <position(s)>.
+  Elements of <list> are separated by <delimiter>, which defaults to a space.
+  Null items are counted, as in 'items()'. Elements of <position(s)> must be
+  numeric, and are always separated by a space, not by <delimiter>. Elements 
+  of the returned list are separated by <osep>, which defaults to the 
+  <delimiter>.
   
   Examples:
     > say ldelete(This is a long test string,4)
     You say, "This is a test string"
     > say ldelete(lemon|orange|pear|apple,2 3,|)
     You say, "lemon|apple"
+    > say ldelete(foo bar baz boing,3,,%b~%b)
+    You say, "foo ~ bar ~ boing"
 
 See also: delete(), remove(), insert()
 & LEFT()
@@ -4296,7 +4304,9 @@ See also: shl()
   shuffle(<list>[, <delimiter>[, <osep>]])
   
   This function shuffles the order of the items of a list, returning a
-  random permutation of its elements. 
+  random permutation of its elements.
+  
+  <delimiter> defaults to a space, and <osep> defaults to <delimiter>.
   
   Example:
     > say shuffle(foo bar baz gleep)
@@ -5606,8 +5616,9 @@ See also: ufun(), setq(), letq(), r(), localize()
   unique() returns a copy of <list> with consecutive duplicate items removed.
   It does not sort the list. The optional <sort type> describes what type of
   data is in the list; see 'help sorting' for details. If no type is given,
-  the elements are compared as strings. The optional third and fourth 
-  arguments are the list delimiter and output seperator.
+  the elements are compared as strings. Elements of <list> are separated by
+  <delim>, which defaults to a space. Each element of the output is separated
+  by <osep>, which defaults to <delim>.
 
   Examples:
   > think unique(a b b c b)

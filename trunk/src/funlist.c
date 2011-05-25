@@ -289,7 +289,6 @@ FUNCTION(fun_elements)
   /* Given a list and a list of numbers, return the corresponding
    * elements of the list. elements(ack bar eep foof yay,2 4) = bar foof
    * A separator for the first list is allowed.
-   * This code modified slightly from the Tiny 2.2.1 distribution
    */
   int nwords, cur;
   char **ptrs;
@@ -631,7 +630,7 @@ FUNCTION(fun_sort)
   int nptrs;
   SortType sort_type;
   char sep;
-  char outsep[BUFFER_LEN];
+  char *osep, osepd[2] = { '\0', '\0' };
 
   if (!nargs || !*args[0])
     return;
@@ -640,15 +639,15 @@ FUNCTION(fun_sort)
     return;
 
   if (nargs < 4) {
-    outsep[0] = sep;
-    outsep[1] = '\0';
+    osepd[0] = sep;
+    osep = osepd;
   } else
-    strcpy(outsep, args[3]);
+    osep = args[3];
 
   nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, args[0], sep, 1);
   sort_type = get_list_type(args, nargs, 2, ptrs, nptrs);
   do_gensort(executor, ptrs, NULL, nptrs, sort_type);
-  arr2list(ptrs, nptrs, buff, bp, outsep);
+  arr2list(ptrs, nptrs, buff, bp, osep);
   freearr(ptrs, nptrs);
 }
 
@@ -661,7 +660,7 @@ FUNCTION(fun_sortkey)
   SortType sort_type;
   PE_REGS *pe_regs;
   char sep;
-  char outsep[BUFFER_LEN];
+  char *osep, osepd[2] = { '\0', '\0' };
   int i;
   char result[BUFFER_LEN];
   ufun_attrib ufun;
@@ -675,10 +674,10 @@ FUNCTION(fun_sortkey)
     return;
 
   if (nargs < 5) {
-    outsep[0] = sep;
-    outsep[1] = '\0';
+    osepd[0] = sep;
+    osep = osepd;
   } else
-    strcpy(outsep, args[4]);
+    osep = args[4];
 
   /* find our object and attribute */
   if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
@@ -699,7 +698,7 @@ FUNCTION(fun_sortkey)
 
   sort_type = get_list_type(args, nargs, 3, keys, nptrs);
   do_gensort(executor, keys, ptrs, nptrs, sort_type);
-  arr2list(ptrs, nptrs, buff, bp, outsep);
+  arr2list(ptrs, nptrs, buff, bp, osep);
   freearr(ptrs, nptrs);
   for (i = 0; i < nptrs; i++) {
     mush_free(keys[i], "sortkey");

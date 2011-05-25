@@ -8,6 +8,8 @@
 
 #include "copyrite.h"
 
+#include <string.h>
+
 #include "config.h"
 #include "conf.h"
 #include "externs.h"

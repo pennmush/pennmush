@@ -32,6 +32,8 @@ enum ssl_slave_state ssl_slave_state = SSL_SLAVE_DOWN;
 
 extern int maxd;
 
+#ifdef SSL_SLAVE
+
 /** Create a new SSL slave.
  * \param port The port to listen on for SSL connections.
  * \return 0 on success, -1 on failure
@@ -100,3 +102,5 @@ kill_ssl_slave(void)
     ssl_slave_state = SSL_SLAVE_DOWN;
   }
 }
+
+#endif

@@ -42,7 +42,7 @@ static void del_follow(dbref follower, dbref leader, int noisy);
 static char *list_followers(dbref player);
 static char *list_following(dbref player);
 static int is_following(dbref follower, dbref leader);
-static void follower_command(dbref leader, dbref loc, const char *com);
+static void follower_command(dbref leader, dbref loc, const char *com, dbref towards);
 
 /** A convenience wrapper for enter_room().
  * \param what object to move.
@@ -395,9 +395,10 @@ do_move(dbref player, const char *direction, enum move_type type)
       return;
     }
     if ((loc = Location(player)) != NOTHING && !Dark(player) && !Dark(loc)) {
+      char msg[BUFFER_LEN];
+      sprintf(msg, T("%s goes home."), Name(player));
       /* tell everybody else */
-      notify_except(loc, player,
-                    tprintf(T("%s goes home."), Name(player)), NA_INTER_SEE);
+      notify_except(loc, player, msg, NA_INTER_SEE);
     }
     /* give the player the messages */
     notify(player, T("There's no place like home..."));
@@ -477,7 +478,7 @@ do_move(dbref player, const char *direction, enum move_type type)
           enter_room(player, var_dest, 0, player, "move");
           /* Move the followers if the leader is elsewhere */
           if (Location(player) != loc)
-            follower_command(player, loc, tprintf("%s #%d", "goto", exit_m));
+            follower_command(player, loc, "GOTO", exit_m);
           break;
         case TYPE_PLAYER:
         case TYPE_THING:
@@ -493,7 +494,7 @@ do_move(dbref player, const char *direction, enum move_type type)
           safe_tel(player, var_dest, 0, player, "move");
           /* Move the followers if the leader is elsewhere */
           if (Location(player) != loc)
-            follower_command(player, loc, tprintf("%s #%d", "goto", exit_m));
+            follower_command(player, loc, "GOTO", exit_m);
           break;
         case TYPE_EXIT:
           notify(player, T("This feature coming soon."));
@@ -913,7 +914,7 @@ do_enter(dbref player, const char *what)
     safe_tel(player, thing, 0, player, "enter");
     /* Move the followers if the leader is elsewhere */
     if (Location(player) != loc)
-      follower_command(player, loc, tprintf("%s #%d", "enter", thing));
+      follower_command(player, loc, "ENTER", thing);
     break;
   }
 }
@@ -935,7 +936,7 @@ do_leave(dbref player)
   }
   enter_room(player, Location(loc), 0, player, "leave");
   if (Location(player) != loc)
-    follower_command(player, loc, "leave");
+    follower_command(player, loc, "leave", NOTHING);
 }
 
 /** Is direction a global exit?
@@ -1397,7 +1398,7 @@ clear_following(dbref follower, int noisy)
  * leader, run the same command the leader just ran.
  */
 static void
-follower_command(dbref leader, dbref loc, const char *com)
+follower_command(dbref leader, dbref loc, const char *com, dbref toward)
 {
   dbref follower;
   ATTR *a;
@@ -1406,7 +1407,10 @@ follower_command(dbref leader, dbref loc, const char *com)
   char combuf[BUFFER_LEN];
   if (!com || !*com)
     return;
-  strcpy(combuf, com);
+  if (toward != NOTHING)
+    sprintf(combuf, "%s #%d", com, toward);
+  else
+    strcpy(combuf, com);
   a = atr_get_noparent(leader, "FOLLOWERS");
   if (!a)
     return;                     /* No followers */

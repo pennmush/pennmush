@@ -1449,6 +1449,7 @@ run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
             char *lsa[MAX_ARG], char *rs, char *rsa[MAX_ARG], MQUE *queue_entry)
 {
   NEW_PE_INFO *pe_info;
+  char huh_arg[BUFFER_LEN];
 
   if (!cmd)
     return 0;
@@ -1458,6 +1459,9 @@ run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
   strcpy(pe_info->cmd_evaled, commandraw);
   strcpy(pe_info->cmd_raw, string);
 
+  /* Done this way because another call to tprintf during
+   * run_hook_override will blitz the string */
+  strcpy(huh_arg, tprintf("HUH_COMMAND %s", ls));
 
   if (!run_hook(executor, enactor, &cmd->hooks.ignore, pe_info)) {
     free_pe_info(pe_info);
@@ -1467,8 +1471,7 @@ run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
   /* If we have a hook/override, we use that instead */
   if (!run_hook_override(cmd, executor, commandraw, queue_entry) &&
       !(!strcmp(cmd->name, "HUH_COMMAND") &&
-        run_hook_override(cmd, executor, tprintf("HUH_COMMAND %s", ls),
-                          queue_entry))) {
+        run_hook_override(cmd, executor, huh_arg, queue_entry))) {
     /* Otherwise, we do hook/before, the command, and hook/after */
     /* But first, let's see if we had an invalid switch */
     if (switch_err && *switch_err) {

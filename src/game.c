@@ -1148,11 +1148,12 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
              alias_list_check(Contents(check_loc), cptr,
                               "EALIAS")) != NOTHING) {
           if (command_check(executor, cmd, 1)) {
-            sprintf(temp, "#%d", i);
-            run_command(cmd, executor, queue_entry->enactor,
-                        tprintf("ENTER #%d", i), NULL, NULL,
-                        tprintf("ENTER #%d", i), NULL, NULL, temp, NULL, NULL,
-                        NULL, queue_entry);
+            char upd[SBUF_LEN];
+            sprintf(temp, "ENTER #%d", i);
+            sprintf(upd, "#%d", i);
+            run_command(cmd, executor, queue_entry->enactor, temp, NULL,
+                        NULL, temp, NULL, NULL, upd, NULL, NULL, NULL,
+                        queue_entry);
           }
           goto done;
         }
@@ -1195,9 +1196,10 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
             if (!Mobile(executor) || !command_check(executor, cmd, 1)) {
               goto done;
             } else {
+              sprintf(temp, "GOTO %s", cptr);
               run_command(cmd, executor, queue_entry->enactor,
-                          tprintf("GOTO %s", cptr), NULL, NULL,
-                          tprintf("GOTO %s", cptr), NULL, NULL, cptr, NULL,
+                          temp, NULL, NULL,
+                          temp, NULL, NULL, cptr, NULL,
                           NULL, NULL, queue_entry);
               goto done;
             }
@@ -1231,9 +1233,9 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
           if (!Mobile(executor) || !command_check(executor, cmd, 1))
             goto done;
           else {
+            sprintf(temp, "GOTO %s", cptr);
             run_command(cmd, executor, queue_entry->enactor,
-                        tprintf("GOTO %s", cptr), NULL, NULL, tprintf("GOTO %s",
-                                                                      cptr),
+                        temp, NULL, NULL, temp,
                         NULL, NULL, cptr, NULL, NULL, NULL, queue_entry);
             goto done;
           }

@@ -869,7 +869,10 @@ fail_lock(dbref player, dbref thing, lock_type ltype, const char *def,
   char atr[BUFFER_LEN];
   char oatr[BUFFER_LEN];
   char aatr[BUFFER_LEN];
+  char realdef[BUFFER_LEN];
   char *bp;
+
+  strcpy(realdef, def); /* Because a lot of default msgs use tprintf */
 
   /* Find the lock's failure attribute, if it's there */
   for (lm = lock_msgs; lm->type; lm++) {
@@ -901,7 +904,7 @@ fail_lock(dbref player, dbref thing, lock_type ltype, const char *def,
   upcasestr(atr);
   upcasestr(oatr);
   upcasestr(aatr);
-  return did_it(player, thing, atr, def, oatr, NULL, aatr, loc);
+  return did_it(player, thing, atr, realdef, oatr, NULL, aatr, loc);
 }
 
 

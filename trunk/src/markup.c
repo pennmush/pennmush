@@ -966,7 +966,7 @@ standalone_end:
     }
   }
   if (as->flags & AS_HAS_STANDALONE ||
-      as->mi[as->micount - 1].start == as->len) {
+      (as->mi && as->mi[as->micount - 1].start == as->len)) {
     /* If there are any markup tags at the very end (start == as->len),
      * then we have to move them forward, change start to end code, and
      * advance them. Unless length is 0, in which case the only thing this

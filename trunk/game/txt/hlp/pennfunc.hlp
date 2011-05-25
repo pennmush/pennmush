@@ -280,23 +280,25 @@ See also: sign()
 & ACCENT()
   accent(<string>, <template>)
 
-  The accent() function will return <string>, with characters in it
-  possibly changed to accented ones according to <template>. Both
-  arguments must be the same size.
+  The accent() function will return <string>, with characters in it possibly
+  changed to accented ones according to <template>. Both arguments must be 
+  the same size.
 
-  Whether or not the resulting string is actually displayed correctly
-  is client-dependent. Some OSes uses different character sets than
-  the one assumed (ISO 8859-1), and some clients strip these 8-bit
-  characters.
+  Whether or not the resulting string is actually displayed correctly is 
+  client-dependent. Some OSes uses different character sets than the one 
+  assumed (ISO 8859-1), and some clients strip these 8-bit characters.
 
-  See 'HELP ACCENT2' for a description of the <template> argument.
+  For each character in <string>, the corresponding character of <template>
+  is checked according to the table in 'help accents', and a replacement 
+  done. If either the current <string> or <template> characters aren't in 
+  the table, the <string> character is passed through unchanged.
 
-See also: stripaccents(), NOACCENTS, @nameaccent, accname()
-& ACCENT2
-  For each character in <string>, the corresponding character of
-  <template> is checked according to the table below, and a replacement
-  done. If either the current <string> or <template> characters aren't
-  in the table, the <string> character is passed through unchanged.
+  See 'help accent2' for some examples.
+
+See also: stripaccents(), NOACCENTS, @nameaccent, accname(), ACCENTS
+& ACCENTS
+  Below is the table of possible accents which can be used with accent()
+  and @nameformat.
 
   Accent                         Template   String
   Name       Description         Character  Character
@@ -316,8 +318,8 @@ See also: stripaccents(), NOACCENTS, @nameaccent, accname()
   cedilla    Small tail below    ,          C,c
              letter
 
-  Continued in 'HELP ACCENT3'
-& ACCENT3
+  Continued in 'HELP ACCENTS2'
+& ACCENTS2
   These are non-accent special characters, mostly punctuation and
   non-roman letters.
 
@@ -334,8 +336,9 @@ See also: stripaccents(), NOACCENTS, @nameaccent, accname()
   Capital eth         -          D
   Lower-case eth      &          o
   
-  See 'HELP ACCENT4' for examples
-& ACCENT4
+  See 'HELP ACCENTS3' for examples
+& ACCENT2
+& ACCENTS3
   Some examples of accent() and their expected outputs:
 
     > think accent(Aule, ---:)
@@ -352,7 +355,7 @@ See also: stripaccents(), NOACCENTS, @nameaccent, accname()
   accname() returns the name of <object>, applying the object's
   @nameaccent, if any.
 
-See also: name(), fullname(), iname()
+See also: name(), fullname(), iname(), ACCENTS
 & ACOS()
   acos(<cosine>[, <angle type>])
  

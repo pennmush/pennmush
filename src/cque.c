@@ -1421,14 +1421,11 @@ do_wait(dbref executor, dbref enactor, char *arg1, const char *cmd, bool until,
   char *tcount = NULL, *aname = NULL;
   int waitfor, num;
   ATTR *a;
-  char *arg2;
 
-  arg2 = strip_braces(cmd);
   if (is_strict_integer(arg1)) {
     /* normal wait */
-    wait_que(executor, parse_integer(arg1), arg2, enactor, NOTHING, NULL, until,
+    wait_que(executor, parse_integer(arg1), (char *) cmd, enactor, NOTHING, NULL, until,
              parent_queue);
-    mush_free(arg2, "strip_braces.buff");
     return;
   }
   /* semaphore wait with optional timeout */
@@ -1439,7 +1436,6 @@ do_wait(dbref executor, dbref enactor, char *arg1, const char *cmd, bool until,
     *aname++ = '\0';
   if ((thing =
        noisy_match_result(executor, arg1, NOTYPE, MAT_EVERYTHING)) == NOTHING) {
-    mush_free(arg2, "strip_braces.buff");
     return;
   }
 
@@ -1468,7 +1464,6 @@ do_wait(dbref executor, dbref enactor, char *arg1, const char *cmd, bool until,
   if ((!controls(executor, thing) && !LinkOk(thing))
       || (aname && !waitable_attr(thing, aname))) {
     notify(executor, T("Permission denied."));
-    mush_free(arg2, "strip_braces.buff");
     return;
   }
   /* get timeout, default of -1 */
@@ -1486,8 +1481,7 @@ do_wait(dbref executor, dbref enactor, char *arg1, const char *cmd, bool until,
     thing = NOTHING;
     waitfor = -1;               /* just in case there was a timeout given */
   }
-  wait_que(executor, waitfor, arg2, enactor, thing, aname, until, parent_queue);
-  mush_free(arg2, "strip_braces.buff");
+  wait_que(executor, waitfor, (char *) cmd, enactor, thing, aname, until, parent_queue);
 }
 
 /** Interface to \@wait/pid; modifies the wait times of queue

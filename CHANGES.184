@@ -72,6 +72,8 @@ Fixes:
  * Bug in @wipe fixed by Padraic.
  * Objects couldn't be @tel'd to exits which weren't in their current
    location. Reported by Padraic.
+ * Fixed an obscure bug in "say" when sound is propagated. From a report by
+   Padraic@M*U*S*H. [MG]
 
 Functions:
  * Restrictions for the beep() function can now be modified with @function.

@@ -484,9 +484,9 @@ typedef struct globals_table GLOBALTAB;
  * info on the current state of the MUSH in memory
  */
 struct globals_table {
-  int database_loaded;         /**< True after the database has been read. */
-  char dumpfile[200];             /**< File name to dump database to */
-  time_t start_time;              /**< MUSH start time (since process exec'd) */
+  int database_loaded;        /**< True after the database has been read. */
+  char dumpfile[200];         /**< File name to dump database to */
+  time_t start_time;          /**< MUSH start time (since process exec'd) */
   time_t first_start_time;    /**< MUSH start time (since last shutdown) */
   time_t last_dump_time;      /**< Time of last successful db save */
   int reboot_count;           /**< Number of reboots so far */

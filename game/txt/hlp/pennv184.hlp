@@ -48,6 +48,7 @@ Minor Changes:
    Suggested by Minion. [MG]
  * Fix a potential buffer overflow in prefix table code. [SW]
  * "enter <exit>" now works the same as "goto". Suggested bt [GM]. [MG]
+ * Tweaks to the system queue introduced in the last patchlevel. [SW]
 
 Fixes:
  * No_Pay was implicit if executor is #1, but was _not_ implicit if 

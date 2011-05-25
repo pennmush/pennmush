@@ -1534,6 +1534,44 @@ fcache_read(FBLOCK *fb, const char *filename)
   return fb->len;
 }
 
+/** Reload a single cached text file.
+ * \param filename the name of the file to reload.
+ * \return true if the filename was a cached text file, false if not
+ */
+bool
+fcache_read_one(const char *filename)
+{
+  FBLOCK *fb;
+  static HASHTAB lookup;
+  static bool lookup_init = 0;
+
+  if (!lookup_init) {
+    int i;
+
+    lookup_init = 1;
+    hashinit(&lookup, 20);
+
+    for (i = 0; i < (SUPPORT_PUEBLO ? 2 : 1); i += 1) {
+      hash_add(&lookup, options.connect_file[i], &fcache.connect_fcache[i]);
+      hash_add(&lookup, options.motd_file[i], &fcache.motd_fcache[i]);
+      hash_add(&lookup, options.wizmotd_file[i], &fcache.wizmotd_fcache[i]);
+      hash_add(&lookup, options.newuser_file[i], &fcache.newuser_fcache[i]);
+      hash_add(&lookup, options.register_file[i], &fcache.register_fcache[i]);
+      hash_add(&lookup, options.quit_file[i], &fcache.quit_fcache[i]);
+      hash_add(&lookup, options.down_file[i], &fcache.down_fcache[i]);
+      hash_add(&lookup, options.full_file[i], &fcache.full_fcache[i]);
+      hash_add(&lookup, options.guest_file[i], &fcache.guest_fcache[i]);
+    }
+  }
+  
+  fb = hashfind(filename, &lookup);
+  if (!fb)
+    return 0;
+
+  fcache_read(fb, filename);
+  return 1;
+}
+
 /** Load all of the cached text files.
  * \param player the enactor.
  */
@@ -5542,19 +5580,38 @@ reload_files(void)
 #ifdef HAVE_INOTIFY
 /* Linux 2.6 and greater inotify() file monitoring interface */
 
+intmap *watchtable = NULL;
+int watch_fd = -1;
+
+void
+WATCH(const char *name)
+{
+  int wd;
+
+  if (watch_fd < 0)
+    return;
+								
+  if (*name != NUMBER_TOKEN) {						
+    if ((wd = inotify_add_watch(watch_fd, name,				
+				IN_MODIFY | IN_DELETE_SELF | IN_MOVE_SELF)) < 0) 
+      do_rawlog(LT_TRACE, "file_watch_init:inotify_add_watch(\"%s\"): %s", 
+		name, strerror(errno));				
+    else							       
+      im_insert(watchtable, wd, (void*)name);				
+  }									
+}
+
 static void
-watch_files_in(int fd)
+watch_files_in(void)
 {
   int n;
   help_file *h;
 
-#define WATCH(name) do { \
-    if (*name != NUMBER_TOKEN) \
-      if (inotify_add_watch(fd, (name),					\
-		  	  IN_MODIFY | IN_DELETE_SELF | IN_MOVE_SELF) < 0) \
-        do_rawlog(LT_TRACE, "file_watch_init:inotify_add_watch(\"%s\"): %s", \
-		  (name), strerror(errno));				\
-  } while (0)
+  if (!watchtable)
+    watchtable = im_new();
+
+  if (watch_fd < 0)
+    return;
 
   do_rawlog(LT_TRACE,
             "'No such file or directory' errors immediately following are probably harmless.");
@@ -5571,39 +5628,53 @@ watch_files_in(int fd)
 
   for (h = hash_firstentry(&help_files); h; h = hash_nextentry(&help_files))
     WATCH(h->file);
-
-#undef WATCH
 }
 
 static int
 file_watch_init_in(void)
 {
-  int fd = inotify_init();
+  if (watch_fd != -1) {
+    close(watch_fd);
+    im_destroy(watchtable);
+    watchtable = NULL;
+  }
 
-  if (fd < 0) {
-    penn_perror("file_watch_init:inotify_init");
+  watch_fd = inotify_init1(IN_NONBLOCK);
+
+  if (watch_fd < 0) {
+    penn_perror("file_watch_init: inotify_init1");
     return -1;
   }
 
-  if (fd >= maxd)
-    maxd = fd + 1;
+  if (watch_fd >= maxd)
+    maxd = watch_fd + 1;
 
-  watch_files_in(fd);
+  watch_files_in();
 
-  make_nonblocking(fd);
-
-  return fd;
+  return watch_fd;
 }
 
 static void
 file_watch_event_in(int fd)
 {
-  struct inotify_event ev;
+  uint8_t raw[BUFFER_LEN];
 
-  while (read(fd, &ev, sizeof ev) > 0) {
-    if (ev.mask != IN_IGNORED) {
-      reload_files();
-      watch_files_in(fd);
+  while (read(fd, raw, sizeof raw) > 0) {
+    struct inotify_event *ev = (struct inotify_event *)raw;
+    const char *file = im_find(watchtable, ev->wd);
+    if (file) {
+      if (ev->mask != IN_IGNORED) {      
+	do_rawlog(LT_ERR, "Got inotify status change for file '%s'", file);
+	if (fcache_read_one(file)) {
+	  do_rawlog(LT_TRACE, "Updated cached copy of %s.", file);
+	  WATCH(file);
+	} else if (help_reindex_by_name(file)) {
+	  do_rawlog(LT_TRACE, "Reindexing help file %s.", file);	
+	  WATCH(file);
+	} else {
+	  do_rawlog(LT_ERR, "Got status change for file '%s' but I don't know what to do with it!", file);
+	}
+      }
     }
   }
 }

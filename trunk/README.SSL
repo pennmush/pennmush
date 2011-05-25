@@ -88,8 +88,9 @@ II.b Persistent SSL connections
   It requires the libevent 2.X library and headers to be
   installed. Get it through your OS's package system or at
   http://monkey.org/~provos/libevent/ . Note that some popular OSes
-  only seem to have packages for an older 1.X release of
-  libevent. You'll have to install libevent2 from source if that's the
+  only seem to have packages for an older 1.X release of libevent (As
+  of p5, Debian and derived distributions like Ubuntu, possibly
+  others). You'll have to install libevent2 from source if that's the
   case, and make sure the obsolete native package is removed to avoid
   conflicts.
  

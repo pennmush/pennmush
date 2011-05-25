@@ -1820,12 +1820,12 @@ show_queue_env(dbref player, MQUE *q)
   char *qreg_val;
 
   notify_format(player, "Envronment:\n %%#: #%d\t%%!: #%d\t%%@: #%d", q->enactor, q->executor, q->caller);
-  
+
   if (pi_regs_get_envc(q->pe_info)) {
     notify(player, "Arguments: ");
     for (i = 0; i < 10; i += 1) {
       const char *arg = pi_regs_get_env(q->pe_info, i);
-      if (arg) 
+      if (arg)
 	notify_format(player, " %%%d : %s", i, arg);
     }
   }
@@ -1847,7 +1847,7 @@ show_queue_env(dbref player, MQUE *q)
     notify(player, "Registers:");
     for (qreg_val = ptab_firstentry_new(&qregs, &qreg_name);
 	 qreg_val;
-	 qreg_val = ptab_nextentry_new(&qregs, &qreg_name)) {    
+	 qreg_val = ptab_nextentry_new(&qregs, &qreg_name)) {
       int len = strlen(qreg_name);
       if (len > 1) {
 	int spacer = 19 - len;
@@ -1966,7 +1966,7 @@ do_queue_single(dbref player, char *pidstr, bool debug)
     show_queue_single(player, q, 1);
   else
     show_queue_single(player, q, 0);
-  
+
   if (debug)
     show_queue_env(player, q);
 }
@@ -1988,8 +1988,8 @@ do_halt(dbref owner, const char *ncom, dbref victim)
     player = owner;
   else
     player = victim;
-  quiet_notify(Owner(player),
-               tprintf("%s: %s(#%d).", T("Halted"), Name(player), player));
+  if (!Quiet(Owner(player)))
+    notify_format(Owner(player), "%s: %s(#%d)", T("Halted"), Name(player), player);
   for (tmp = qfirst; tmp; tmp = tmp->next)
     if (GoodObject(tmp->executor)
         && ((tmp->executor == player)

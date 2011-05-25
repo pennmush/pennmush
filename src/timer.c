@@ -273,6 +273,13 @@ dbsave_event(void *data __attribute__ ((__unused__)))
   return false;
 }
 
+static bool
+migrate_event(void *data __attribute__ ((__unused__)))
+{
+  migrate_stuff(CHUNK_MIGRATE_AMOUNT);
+  return false;
+}
+
 /** Handle events that may need handling.
  * This routine is polled from bsd.c. At any call, it can handle
  * the HUP and USR1 signals. At calls that are 'on the second',
@@ -281,7 +288,7 @@ dbsave_event(void *data __attribute__ ((__unused__)))
  * purge, dump, or inactivity checks.
  */
 static bool
-on_every_second(void *data __attribute__ ((__unused__)))
+check_signals(void *data __attribute__ ((__unused__)))
 {
 
   /* A HUP reloads configuration and reopens logs */
@@ -304,11 +311,14 @@ on_every_second(void *data __attribute__ ((__unused__)))
     usr1_triggered = 0;         /* But just in case */
   }
 
-  mudtime = time(NULL);
+  return false;
+}
 
+static bool
+on_every_second(void *data __attribute__((__unused__)))
+{
+  time(&mudtime);
   do_second();
-  migrate_stuff(CHUNK_MIGRATE_AMOUNT);
-
   return false;
 }
 
@@ -327,6 +337,10 @@ init_sys_events(void)
   reg_dbsave_warnings();
   if (DUMP_INTERVAL > 0)
     sq_register(mudtime + DUMP_INTERVAL, dbsave_event, NULL, NULL);
+  /* The chunk migration normally runs every 1 second. Slow it down a bit
+     to see what affect it has on CPU time */
+  sq_register_loop(5, migrate_event, NULL, NULL);
+  sq_register_loop(2, check_signals, NULL, NULL);
   sq_register_loop(1, on_every_second, NULL, NULL);
 }
 

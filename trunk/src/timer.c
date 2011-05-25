@@ -280,6 +280,8 @@ migrate_event(void *data __attribute__ ((__unused__)))
   return false;
 }
 
+extern int file_watch_init(void);
+
 /** Handle events that may need handling.
  * This routine is polled from bsd.c. At any call, it can handle
  * the HUP and USR1 signals. At calls that are 'on the second',
@@ -296,6 +298,7 @@ check_signals(void *data __attribute__ ((__unused__)))
     do_rawlog(LT_ERR, "SIGHUP received: reloading .txt and .cnf files");
     config_file_startup(NULL, 0);
     config_file_startup(NULL, 1);
+    file_watch_init();
     fcache_load(NOTHING);
     help_reindex(NOTHING);
     read_access_file();

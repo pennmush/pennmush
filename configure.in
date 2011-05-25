@@ -144,7 +144,7 @@ AC_CHECK_HEADER(sys/stat.h, [AC_DEFINE(I_SYS_STAT)])
 AC_CHECK_HEADER(sys/types.h, [AC_DEFINE(I_SYS_TYPES)])
 AC_CHECK_HEADERS([sys/un.h ieeefp.h sys/resource.h sys/event.h sys/uio.h])
 AC_CHECK_HEADERS([poll.h sys/epoll.h sys/select.h sys/inotify.h fam.h])
-AC_CHECK_HEADERS([zlib.h event.h sys/prctl.h])
+AC_CHECK_HEADERS([zlib.h event.h event2/dns.h sys/prctl.h])
 
 ### C language support
 # Only need to check C99 and GNU extensions

@@ -1556,7 +1556,7 @@ void
 bind_and_queue(dbref executor, dbref enactor, char *action,
                const char *arg, int num, MQUE *parent_queue)
 {
-  char *repl, *command;
+  char *command;
   const char *replace[2];
   char placestr[10];
   PE_REGS *pe_regs;
@@ -1565,11 +1565,7 @@ bind_and_queue(dbref executor, dbref enactor, char *action,
   snprintf(placestr, 10, "%d", num);
   replace[1] = placestr;
 
-  repl = replace_string2(standard_tokens, replace, action);
-
-  command = strip_braces(repl);
-
-  mush_free(repl, "replace_string.buff");
+  command = replace_string2(standard_tokens, replace, action);
 
   /* Add the new iter context to the parent queue entry's pe_info... */
   pe_regs = pe_regs_create(PE_REGS_ITER, "bind_and_queue");
@@ -1581,7 +1577,7 @@ bind_and_queue(dbref executor, dbref enactor, char *action,
   /* And then pop it off the parent pe_info again */
   pe_regs_free(pe_regs);
 
-  mush_free(command, "strip_braces.buff");
+  mush_free(command, "replace_string.buff");
 }
 
 /** Would the scan command find an matching attribute on x for player p? */

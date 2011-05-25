@@ -139,7 +139,7 @@ COMLIST commands[] = {
   {"@DOING", "HEADER", cmd_doing,
    CMD_T_ANY | CMD_T_NOPARSE | CMD_T_NOGAGGED, 0, 0},
   {"@DOLIST", "NOTIFY DELIMIT", cmd_dolist,
-   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE, 0, 0},
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_RS_BRACE, 0, 0},
   {"@DRAIN", "ALL ANY", cmd_notify_drain,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
   {"@DUMP", "PARANOID DEBUG", cmd_dump, CMD_T_ANY, "WIZARD", 0},
@@ -316,7 +316,7 @@ COMLIST commands[] = {
   {"@UUNLOCK", NULL, cmd_uunlock, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"@VERB", NULL, cmd_verb, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
   {"@VERSION", NULL, cmd_version, CMD_T_ANY, 0, 0},
-  {"@WAIT", "PID UNTIL", cmd_wait, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE,
+  {"@WAIT", "PID UNTIL", cmd_wait, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_RS_BRACE,
    0, 0},
   {"@WALL", "NOEVAL EMIT", cmd_wall, CMD_T_ANY, "WIZARD ROYALTY", "ANNOUNCE"},
 

@@ -8705,7 +8705,7 @@ if test "${enable_ssl_slave+set}" = set; then :
   enableval=$enable_ssl_slave;
 fi
 
-if test "$enable_ssl_slave" = yes; then
+if test "$enable_ssl_slave" = yes -a "$HAVE_SSL" = yes; then
    SSL_SLAVE_TARGET=ssl_slave
 
    $as_echo "#define SSL_SLAVE 1" >>confdefs.h

@@ -403,7 +403,7 @@ fi
 
 AC_ARG_ENABLE(ssl_slave, AS_HELP_STRING([--enable-ssl_slave],
 			 [Use a seperate process for SSL connections that will persist across restarts. (Experimental. Unix-only.)]))
-if test "$enable_ssl_slave" = yes; then
+if test "$enable_ssl_slave" = yes -a "$HAVE_SSL" = yes; then
    AC_SUBST(SSL_SLAVE_TARGET, ssl_slave)
    AC_DEFINE(SSL_SLAVE)
 fi

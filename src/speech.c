@@ -149,6 +149,8 @@ do_say(dbref player, const char *tbuf1)
   dbref loc;
   PE_REGS *pe_regs;
   char tbuf2[BUFFER_LEN];
+  char msg[BUFFER_LEN];
+  char *mp;
   int mod = 0;
   loc = speech_loc(player);
   if (!GoodObject(loc))
@@ -174,9 +176,10 @@ do_say(dbref player, const char *tbuf1)
 
   /* notify everybody */
   notify_format(player, T("You say, \"%s\""), (mod ? tbuf2 : tbuf1));
-  notify_except(loc, player,
-                tprintf(T("%s says, \"%s\""), spname(player),
-                        (mod ? tbuf2 : tbuf1)), NA_INTER_HEAR);
+  mp = msg;
+  safe_format(msg, &mp, T("%s says, \"%s\""), spname(player), (mod ? tbuf2 : tbuf1));
+  *mp = '\0';
+  notify_except(loc, player, msg, NA_INTER_HEAR);
 }
 
 /** The oemit(/list) command.

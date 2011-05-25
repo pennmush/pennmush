@@ -1039,7 +1039,7 @@ See also: look, @exitformat, @nameformat, @conformat, @descformat,
   accented characters directly in a name, which can make it harder for
   people to type.
   
-  The <accent template> is explained in 'help accent2'.
+  The <accent template> is explained in 'help accents'.
 
   If a container has both a @nameaccent and a @nameformat, the
   @nameformat is used.
@@ -3761,7 +3761,7 @@ See also: @restart, @undestroy, ACTION LISTS, @function, @command, @hook,
               
   @switch/inplace is an alias for @switch/inline/nobreak/localize.
 
-  See 'help @switch2' for examples.
+  See 'help @switch3' for examples.
 See also: switch wildcards, switch(), @break, stext(), slev()
 & @switch3
   Examples: 
@@ -3969,6 +3969,7 @@ See also: version(), numversion()
        or <victim> must be VISUAL.
   
   See 'help @verb3' for examples.
+See also: USER-DEFINED COMMANDS, STACK, VERBS, @trigger
 & @verb3
   Examples:
   
@@ -4004,8 +4005,6 @@ See also: version(), numversion()
   You test this fun example.
   [others see] You test Example.
   Example has been tested!
-
-See also: USER-DEFINED COMMANDS, STACK, VERBS, @trigger
 & @wait
   @wait[/until] <time> = <command_list>
   @wait <object> = <command_list>

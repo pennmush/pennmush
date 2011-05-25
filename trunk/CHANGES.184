@@ -74,12 +74,16 @@ Fixes:
    location. Reported by Padraic.
  * Fixed an obscure bug in "say" when sound is propagated. From a report by
    Padraic@M*U*S*H. [MG]
+ * Various help fixes. [MG]
 
 Functions:
  * Restrictions for the beep() function can now be modified with @function.
    Suggested by Paige. [MG]
  * Functions that take #lambda anonymous attributes also understand a new
    #apply/<function name> shorthand for calling a single function. [SW]
+ * ldelete() now takes an osep. [MG]
+ * allof()/strallof() can now have mutli-char output separators, and null
+   oseps. Reported by Padraic. [MG]
 
 Version 1.8.4 patchlevel 4                                 May 05,  2011
 

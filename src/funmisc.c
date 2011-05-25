@@ -1149,33 +1149,29 @@ do_whichof(char *args[], int nargs, enum whichof_t flag,
 {
   int j;
   char tbuf[BUFFER_LEN], *tp;
-  char const *sp;
-  char sep = ' ';
+  char sep[BUFFER_LEN];
+  char const *ap;
   int first = 1;
   tbuf[0] = '\0';
   if (flag == DO_ALLOF) {
     /* The last arg is a delimiter. Parse it in place. */
-    char insep[BUFFER_LEN];
-    char *isep = insep;
+    char *sp = sep;
     const char *arglast = args[nargs - 1];
-    process_expression(insep, &isep, &arglast, executor,
+    process_expression(sep, &sp, &arglast, executor,
                        caller, enactor, PE_DEFAULT, PT_DEFAULT, pe_info);
-    *isep = '\0';
-    strcpy(args[nargs - 1], insep);
-    if (!delim_check(buff, bp, nargs, args, nargs, &sep))
-      return;
+    *sp = '\0';
     nargs--;
   }
 
   for (j = 0; j < nargs; j++) {
     tp = tbuf;
-    sp = args[j];
-    process_expression(tbuf, &tp, &sp, executor, caller,
+    ap = args[j];
+    process_expression(tbuf, &tp, &ap, executor, caller,
                        enactor, PE_DEFAULT, PT_DEFAULT, pe_info);
     *tp = '\0';
     if ((isbool && parse_boolean(tbuf)) || (!isbool && strlen(tbuf))) {
-      if (!first) {
-        safe_chr(sep, buff, bp);
+      if (!first && *sep) {
+        safe_str(sep, buff, bp);
       } else
         first = 0;
       safe_str(tbuf, buff, bp);

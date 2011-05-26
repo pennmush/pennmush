@@ -4099,7 +4099,7 @@ fi
 
 
 
-if test "${PERL+set}" != "set"; then
+if test -z "${PERL}"; then
    as_fn_error $? "perl is required to build and run PennMUSH" "$LINENO" 5
 fi
 
@@ -4388,9 +4388,9 @@ fi
 # and custom CFLAGS aren't being used.
 # Todo: Look into the warnings setting macros in the autoconf archive,
 # maybe use them instead?
-if test $DEFAULT_CFLAGS = yes; then
- if test "${GDB+set}" = "set"; then
-  if test "${ac_cv_c_compiler_gnu+set}" = "set"; then
+if test "${DEFAULT_CFLAGS}" = yes; then
+ if test -n "${GDB}"; then
+  if test "${ac_cv_c_compiler_gnu}" = yes; then
 CFLAGS="-ggdb $CFLAGS -W -Wall -pedantic -Wno-comment"
    else
 CFLAGS="-g $CFLAGS -W"
@@ -5001,11 +5001,11 @@ fi
 esac
 
 
-if test "${CTAGS+set}" != "set" -a "${EXCTAGS+set}" = "set"; then
+if test -z "${CTAGS}" -a -n "${EXCTAGS}"; then
 	CTAGS=$EXCTAGS
 fi
 
-if test "${ETAGS+set}" != "set" -a "${EXCTAGS+set}" = "set"; then
+if test -z "${ETAGS}" -a -n "${EXCTAGS}"; then
 	ETAGS="$EXCTAGS -e"
 fi
 
@@ -5049,7 +5049,7 @@ $as_echo "no" >&6; }
 fi
 
 
-if test "${UPTIME+set}" = "set"; then
+if test -n "${UPTIME}"; then
  $as_echo "#define HAVE_UPTIME 1" >>confdefs.h
 
  cat >>confdefs.h <<_ACEOF
@@ -5099,7 +5099,7 @@ $as_echo "no" >&6; }
 fi
 
 
-if test "${SENDMAIL+set}" = "set"; then
+if test -n "${SENDMAIL}"; then
  $as_echo "#define HAVE_SENDMAIL 1" >>confdefs.h
 
  cat >>confdefs.h <<_ACEOF
@@ -5149,7 +5149,7 @@ $as_echo "no" >&6; }
 fi
 
 
-if test "${ED+set}" = "set"; then
+if test -n "${ED}"; then
    $as_echo "#define HAVE_ED 1" >>confdefs.h
 
    cat >>confdefs.h <<_ACEOF

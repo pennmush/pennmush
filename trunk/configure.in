@@ -31,7 +31,7 @@ AC_PROG_LN_S
 AC_PATH_PROG(MAKE, make)
 
 AX_WITH_PERL
-if test "${PERL+set}" != "set"; then
+if test -z "${PERL}"; then
    AC_MSG_ERROR([perl is required to build and run PennMUSH])
 fi
 
@@ -47,9 +47,9 @@ AC_PATH_PROG(EXCTAGS, exctags)
 # and custom CFLAGS aren't being used.
 # Todo: Look into the warnings setting macros in the autoconf archive,
 # maybe use them instead?
-if test $DEFAULT_CFLAGS = yes; then
- if test "${GDB+set}" = "set"; then
-  if test "${ac_cv_c_compiler_gnu+set}" = "set"; then
+if test "${DEFAULT_CFLAGS}" = yes; then
+ if test -n "${GDB}"; then
+  if test "${ac_cv_c_compiler_gnu}" = yes; then
 CFLAGS="-ggdb $CFLAGS -W -Wall -pedantic -Wno-comment"
    else
 CFLAGS="-g $CFLAGS -W"
@@ -87,30 +87,30 @@ case "${build_os}" in
 esac
 
 
-if test "${CTAGS+set}" != "set" -a "${EXCTAGS+set}" = "set"; then
+if test -z "${CTAGS}" -a -n "${EXCTAGS}"; then
 	CTAGS=$EXCTAGS
 fi
 
-if test "${ETAGS+set}" != "set" -a "${EXCTAGS+set}" = "set"; then
+if test -z "${ETAGS}" -a -n "${EXCTAGS}"; then
 	ETAGS="$EXCTAGS -e"
 fi
 
 AC_PATH_PROG(UPTIME, uptime)
-if test "${UPTIME+set}" = "set"; then
+if test -n "${UPTIME}"; then
  AC_DEFINE([HAVE_UPTIME])
  AC_DEFINE_UNQUOTED([UPTIME], "$UPTIME")
 fi
 
 AC_ARG_VAR(SENDMAIL, [Path to sendmail])
 AC_PATH_PROG(SENDMAIL, sendmail)
-if test "${SENDMAIL+set}" = "set"; then
+if test -n "${SENDMAIL}"; then
  AC_DEFINE([HAVE_SENDMAIL])
  AC_DEFINE_UNQUOTED([SENDMAIL], "$SENDMAIL")
 fi
 
 AC_ARG_VAR(ED, [Path to ed])
 AC_PATH_PROG(ED, ed)
-if test "${ED+set}" = "set"; then
+if test -n "${ED}"; then
    AC_DEFINE([HAVE_ED])
    AC_DEFINE_UNQUOTED([ED_PATH], "$ED -s")
 fi

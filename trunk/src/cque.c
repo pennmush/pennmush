@@ -1813,7 +1813,7 @@ show_queue_env(dbref player, MQUE *q)
   const char *qreg_name;
   char *qreg_val;
 
-  notify_format(player, "Envronment:\n %%#: #%d\t%%!: #%d\t%%@: #%d", q->enactor, q->executor, q->caller);
+  notify_format(player, "Environment:\n %%#: #%d\t%%!: #%d\t%%@: #%d", q->enactor, q->executor, q->caller);
 
   if (pi_regs_get_envc(q->pe_info)) {
     notify(player, "Arguments: ");

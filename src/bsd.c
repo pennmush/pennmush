@@ -394,6 +394,7 @@ sig_atomic_t slave_error = 0;
 #endif
 #ifdef SSL_SLAVE
 sig_atomic_t ssl_slave_error = 0;
+extern bool ssl_slave_halted;
 #endif
 #endif
 extern pid_t forked_dump_pid;   /**< Process id of forking dump process */
@@ -1015,6 +1016,8 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
       do_rawlog(LT_ERR, "ssl_slave (Pid %d) exited unexpectedly!",
 		ssl_slave_error);
       ssl_slave_error = 0;
+      if (!ssl_slave_halted)
+	make_ssl_slave();
     }
 #endif
 #endif                          /* !WIN32 */

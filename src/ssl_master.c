@@ -14,6 +14,7 @@
 #include <sys/socket.h>
 #endif
 
+#include <time.h>
 #include <errno.h>
 #include <stdio.h>
 
@@ -32,6 +33,14 @@ enum ssl_slave_state ssl_slave_state = SSL_SLAVE_DOWN;
 
 extern int maxd;
 
+static int startup_attempts = 0;
+static time_t startup_window;
+bool ssl_slave_halted = false;
+enum {
+  MAX_ATTEMPTS = 5 /**< Error out after this many startup attempts in 60 seconds */
+}; 
+
+
 #ifdef SSL_SLAVE
 
 /** Create a new SSL slave.
@@ -44,6 +53,31 @@ make_ssl_slave(void)
   if (ssl_slave_state != SSL_SLAVE_DOWN) {
     do_rawlog(LT_ERR, "Attempt to start ssl slave when a copy is already running.");
     return -1;
+  }
+
+  if (ssl_slave_halted) {
+    do_rawlog(LT_ERR, "Attempt to start disabled ssl slave.");
+    return -1;
+  }
+  
+  if (startup_attempts == 0)
+    time(&startup_window);
+
+  startup_attempts += 1;
+
+  if (startup_attempts > MAX_ATTEMPTS) {
+    time_t now;
+
+    time(&now);
+    if (difftime(now, startup_window) <= 60.0) {
+      do_rawlog(LT_ERR, "Disabling ssl_slave due to too many errors.");
+      ssl_slave_halted = true;
+      return -1;
+    } else {
+      /* Reset counter */
+      startup_window = now;
+      startup_attempts = 0;
+    }
   }
 
   if ((ssl_slave_pid = fork()) == 0) {

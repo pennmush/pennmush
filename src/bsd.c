@@ -3602,12 +3602,7 @@ do_who_admin(dbref player, char *name)
       sprintf(tbuf, "%-16s %6s %9s %5s  %4d %3d%c %s", T("Connecting..."),
               "#-1", time_format_1(now - d->connected_at),
               time_format_2(now - d->last_time), d->cmds, d->descriptor,
-#ifdef HAS_OPENSSL
-              d->ssl ? 'S' : ' ',
-#else
-              ' ',
-#endif
-              d->addr);
+	      is_ssl_desc(d) ? 'S' : ' ', d->addr);
       tbuf[78] = '\0';
     }
     notify(player, tbuf);

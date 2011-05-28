@@ -17,6 +17,7 @@
 #include <time.h>
 #include <errno.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "conf.h"
 #include "externs.h"

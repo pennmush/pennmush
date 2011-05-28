@@ -333,6 +333,8 @@ typedef bool _Bool;
 
 #undef HAVE_INOTIFY_INIT
 
+#undef HAVE_INOTIFY_INIT1
+
 #ifdef HAVE_INOTIFY_INIT
 #define HAVE_INOTIFY
 #endif

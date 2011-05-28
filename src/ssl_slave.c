@@ -14,17 +14,17 @@
 #error "ssl_slave requires libevent!"
 #endif
 
-#include <stdlib.h>
-
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <sys/un.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <signal.h>
 #include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <event.h>
 #include <event2/dns.h>

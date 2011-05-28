@@ -260,7 +260,7 @@ fi
 AC_CHECK_FUNCS([cbrt log2 round imaxdiv])
 AC_CHECK_FUNCS([getuid geteuid seteuid getpriority setpriority])
 AC_CHECK_FUNCS([socketpair sigaction sigprocmask posix_memalign writev])
-AC_CHECK_FUNCS([fcntl pselect poll ppoll pollts kqueue epoll_ctl inotify_init])
+AC_CHECK_FUNCS([fcntl pselect poll ppoll pollts kqueue epoll_ctl inotify_init inotify_init1])
 AC_CHECK_FUNCS([pread pwrite prctl])
 # Some linux OSes (Old redhat, others?) will see these functions
 # through an AC_CHECK_FUNCS but not when it comes time to actually use

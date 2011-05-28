@@ -5637,7 +5637,13 @@ file_watch_init_in(void)
     watchtable = NULL;
   }
 
+
+#ifdef HAVE_INOTIFY_INIT1
   watch_fd = inotify_init1(IN_NONBLOCK);
+#else
+  if ((watch_fd = inotify_init()) >= 0)
+    make_nonblocking(watch_fd);
+#endif
 
   if (watch_fd < 0) {
     penn_perror("file_watch_init: inotify_init1");

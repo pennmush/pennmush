@@ -490,8 +490,6 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
 void
 insert_que(MQUE *queue_entry, MQUE *parent_queue)
 {
-  int pid = 0;
-
   if (!IsPlayer(queue_entry->executor) && (Halted(queue_entry->executor))) {
     free_qentry(queue_entry);
     return;
@@ -511,8 +509,8 @@ insert_que(MQUE *queue_entry, MQUE *parent_queue)
       free_qentry(queue_entry);
       return;
     }
-    pid = next_pid();
-    if (pid == 0) {
+    queue_entry->pid = next_pid();
+    if (queue_entry->pid == 0) {
       /* Too many queue entries */
       /* Should this be notifying the enactor instead? */
       notify(queue_entry->executor,
@@ -552,7 +550,7 @@ insert_que(MQUE *queue_entry, MQUE *parent_queue)
     }
     break;
   }
-  if (pid)
+  if (queue_entry->pid)
     im_insert(queue_map, queue_entry->pid, queue_entry);
 }
 

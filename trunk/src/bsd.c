@@ -690,8 +690,6 @@ main(int argc, char **argv)
 
   local_shutdown();
 
-  end_all_logs();
-
   if (pidfile)
     remove(pidfile);
 
@@ -705,6 +703,8 @@ main(int argc, char **argv)
 #endif                          /* HAS_RUSAGE */
 
   do_rawlog(LT_ERR, "MUSH shutdown completed.");
+
+  end_all_logs();
 
   closesocket(sock);
 #ifdef WIN32
@@ -1156,7 +1156,7 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
             if (test_connection(newsock) < 0)
               continue;         /* this should _not_ be return. */
           }
-          ndescriptors++;	 
+          ndescriptors++;
           query_info_slave(newsock);
           if (newsock >= maxd)
             maxd = newsock + 1;
@@ -1291,7 +1291,7 @@ new_connection(int oldsock, int *result, conn_source source)
       /* Again, shouldn't happen! */
       strcpy(tbuf1, "(Unknown)");
       strcpy(tbuf2, "(Unknown)");
-    }           
+    }
   }
   if (Forbidden_Site(tbuf1) || Forbidden_Site(tbuf2)) {
     if (!Deny_Silent_Site(tbuf1, AMBIGUOUS)
@@ -1566,7 +1566,7 @@ fcache_read_one(const char *filename)
       hash_add(&lookup, options.guest_file[i], &fcache.guest_fcache[i]);
     }
   }
-  
+
   fb = hashfind(filename, &lookup);
   if (!fb)
     return 0;
@@ -3284,7 +3284,7 @@ reaper(int sig __attribute__ ((__unused__)))
 	ssl_slave_state = SSL_SLAVE_DOWN;
 	ssl_slave_pid = -1;
       } else
-#endif      
+#endif
     if (forked_dump_pid > -1 && pid == forked_dump_pid) {
       dump_error = forked_dump_pid;
       dump_status = my_stat;
@@ -5206,7 +5206,7 @@ dump_reboot_db(void)
   DESC *d;
   uint32_t flags = RDBF_SCREENSIZE | RDBF_TTYPE | RDBF_PUEBLO_CHECKSUM | RDBF_SOCKET_SRC;
 
-#ifdef LOCAL_SOCKET  
+#ifdef LOCAL_SOCKET
   flags |= RDBF_LOCAL_SOCKET;
 #endif
 
@@ -5314,7 +5314,7 @@ load_reboot_db(void)
     } else {
       penn_ungetc(c, f);
     }
-  
+
     sock = getref(f);
 
     if (flags & RDBF_LOCAL_SOCKET)
@@ -5327,7 +5327,7 @@ load_reboot_db(void)
     val = getref(f);
     if (val > maxd)
       maxd = val;
-  
+
     while ((val = getref(f)) != 0) {
       ndescriptors++;
       d = mush_malloc(sizeof(DESC), "descriptor");
@@ -5451,10 +5451,10 @@ load_reboot_db(void)
       mush_free(closed->output_prefix, "userstring");
     if (closed->output_suffix)
       mush_free(closed->output_suffix, "userstring");
-    mush_free(closed, "descriptor");    
+    mush_free(closed, "descriptor");
     closed = nextclosed;
   }
- 
+
   flag_broadcast(0, 0, T("GAME: Reboot finished."));
 }
 
@@ -5588,15 +5588,15 @@ WATCH(const char *name)
 
   if (watch_fd < 0)
     return;
-								
-  if (*name != NUMBER_TOKEN) {						
-    if ((wd = inotify_add_watch(watch_fd, name,				
-				IN_MODIFY | IN_DELETE_SELF | IN_MOVE_SELF)) < 0) 
-      do_rawlog(LT_TRACE, "file_watch_init:inotify_add_watch(\"%s\"): %s", 
-		name, strerror(errno));				
-    else							       
-      im_insert(watchtable, wd, (void*)name);				
-  }									
+
+  if (*name != NUMBER_TOKEN) {
+    if ((wd = inotify_add_watch(watch_fd, name,
+				IN_MODIFY | IN_DELETE_SELF | IN_MOVE_SELF)) < 0)
+      do_rawlog(LT_TRACE, "file_watch_init:inotify_add_watch(\"%s\"): %s",
+		name, strerror(errno));
+    else
+      im_insert(watchtable, wd, (void*)name);
+  }
 }
 
 static void
@@ -5667,13 +5667,13 @@ file_watch_event_in(int fd)
     struct inotify_event *ev = (struct inotify_event *)raw;
     const char *file = im_find(watchtable, ev->wd);
     if (file) {
-      if (ev->mask != IN_IGNORED) {      
+      if (ev->mask != IN_IGNORED) {
 	do_rawlog(LT_ERR, "Got inotify status change for file '%s'", file);
 	if (fcache_read_one(file)) {
 	  do_rawlog(LT_TRACE, "Updated cached copy of %s.", file);
 	  WATCH(file);
 	} else if (help_reindex_by_name(file)) {
-	  do_rawlog(LT_TRACE, "Reindexing help file %s.", file);	
+	  do_rawlog(LT_TRACE, "Reindexing help file %s.", file);
 	  WATCH(file);
 	} else {
 	  do_rawlog(LT_ERR, "Got status change for file '%s' but I don't know what to do with it!", file);

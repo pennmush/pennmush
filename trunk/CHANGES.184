@@ -76,6 +76,8 @@ Fixes:
  * Fixed an obscure bug in "say" when sound is propagated. From a report by
    Padraic@M*U*S*H. [MG]
  * Various help fixes. [MG]
+ * Prevent persistant 'Attempt to write to error log before it was started!'
+   error in netmush.log [MG]
 
 Functions:
  * Restrictions for the beep() function can now be modified with @function.

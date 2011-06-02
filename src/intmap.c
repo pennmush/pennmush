@@ -96,10 +96,8 @@ im_new(void)
 {
   intmap *im;
   im = mush_malloc(sizeof *im, "int_map");
-  if (!intmap_slab) {
+  if (!intmap_slab) 
     intmap_slab = slab_create("patricia tree nodes", sizeof(struct patricia));
-    slab_set_opt(intmap_slab, SLAB_ALLOC_BEST_FIT, 1);
-  }
   im->count = 0;
   im->root = NULL;
   return im;

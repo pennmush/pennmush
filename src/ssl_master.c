@@ -6,6 +6,12 @@
 #ifdef I_SYS_TYPES
 #include <sys/types.h>
 #endif
+#ifdef I_SYS_STAT
+#include <sys/stat.h>
+#endif
+#ifdef I_FCNTL
+#include <fcntl.h>
+#endif
 #include <signal.h>
 #ifdef I_UNISTD
 #include <unistd.h>
@@ -84,15 +90,34 @@ make_ssl_slave(void)
   if ((ssl_slave_pid = fork()) == 0) {
     /* Set up and exec ssl_slave */
     char *args[9];
-    int n, errfd;
+    int n, errfd = -1, connfd = -1;
+    struct log_stream *lg;
 
-    /* Close extranenous file descriptors */
-    errfd = fileno(stderr);
-    for (n = 0; n < maxd; n++) {
-      if (n == errfd)
-	continue;
+    /* Close all open files but LT_CONN and LT_ERR, and assign them as
+       stdout and stderr, respectively. */
+
+    /* If called on startup, maxd is 0 but log files and such have
+       been opened. Use a reasonable max descriptor. If called because
+       ssl_slave went down, maxd will be set properly already. */
+    if (!maxd)
+      maxd = 20;
+    
+    lg = lookup_log(LT_ERR);
+    if (lg)
+      errfd = fileno(lg->fp);
+    
+    lg = lookup_log(LT_CONN);
+    if (lg)
+      connfd = fileno(lg->fp);
+    
+    n = open("/dev/null", O_RDONLY);
+    if (n >= 0)
+      dup2(n, 0); /* stdin */
+    dup2(connfd, 1); /* stdout */
+    dup2(errfd, 2); /* stderr */
+    
+    for (n = 3; n < maxd; n++)
       close(n);
-    }
 
     /* Set up arguments to the slave */
     args[0] = "ssl_slave";

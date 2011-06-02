@@ -44,8 +44,6 @@ PTAB ptab_command_perms;        /**< Prefix table for command permissions */
 
 HASHTAB htab_reserved_aliases;  /**< Hash table for reserved command aliases */
 
-slab *command_slab = NULL; /**< slab for command_info structs */
-
 static const char *command_isattr(char *command);
 static int switch_find(COMMAND_INFO *cmd, const char *sw);
 static void strccat(char *buff, char **bp, const char *from);
@@ -512,7 +510,7 @@ make_command(const char *name, int type,
              const char *sw, command_func func)
 {
   COMMAND_INFO *cmd;
-  cmd = slab_malloc(command_slab, NULL);
+  cmd = mush_malloc(sizeof *cmd, "command");
   memset(cmd, 0, sizeof(COMMAND_INFO));
   cmd->name = name;
   cmd->cmdlock = TRUE_BOOLEXP;
@@ -649,9 +647,9 @@ cnf_add_command(char *name, char *opts)
   command = command_find(name);
   if (command || !ok_command_name(name))
     return 0;
-  command_add(mush_strdup(name, "command_add"), flags, NULL, 0,
+  command_add(mush_strdup(name, "command.name"), flags, NULL, 0,
               (flags & CMD_T_NOPARSE ? NULL : "NOEVAL"), cmd_unimplemented);
-  return (command_find(name) != NULL);
+  return command_find(name) != NULL;
 }
 
 /** Search for a command by (partial) name.
@@ -772,7 +770,6 @@ command_init_preconfig(void)
   for (sv = switch_list; sv->name; sv++)
     st_insert(sv->name, &switch_names);
 
-  command_slab = slab_create("commands", sizeof(COMMAND_INFO));
   reserve_aliases();
 
   ptab_start_inserts(&ptab_command);
@@ -1898,8 +1895,8 @@ do_command_delete(dbref player, char *name)
         } else
           cptr = ptab_nextentry_new(&ptab_command, &alias);
       }
-      mush_free((void *) command->name, "command_add");
-      slab_free(command_slab, command);
+      mush_free((char *)command->name, "command.name");
+      mush_free(command, "command");
       if (acount > 1)
         notify_format(player, T("Removed %s and aliases from command table."),
                       name);

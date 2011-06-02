@@ -174,7 +174,7 @@ check_parent(evutil_socket_t fd __attribute__((__unused__)),
 	     void *arg __attribute__((__unused__)))
 {
   if (getppid() == 1) {
-    fputerr("ssl_slave: Parent mush process exited unexpectedly! Shutting down.");
+    fputerr("info_slave: Parent mush process exited unexpectedly! Shutting down.");
     event_base_loopbreak(main_loop);
   }
 }

@@ -1810,9 +1810,26 @@ show_queue_env(dbref player, MQUE *q)
   PTAB qregs;
   const char *qreg_name;
   char *qreg_val;
+  int level;
 
-  notify_format(player, "Environment:\n %%#: #%d\t%%!: #%d\t%%@: #%d", q->enactor, q->executor, q->caller);
+  notify_format(player, "Environment:\n %%#: #%-8d %%!: #%-8d %%@: #%d", q->enactor, q->executor, q->caller);
 
+  /* itext/inum for a @dolist-added queue entry. */
+  level = PE_Get_Ilev(q->pe_info);
+  if (level >= 0) {
+    for (i = 0; i <= level; i += 1) 
+      notify_format(player, " %%i%d (Position %d) : %s", i, PE_Get_Inum(q->pe_info, i), 
+		    PE_Get_Itext(q->pe_info, i));
+  }
+
+  /* stext for a @switch-added queue entry. */
+  level = PE_Get_Slev(q->pe_info);
+  if (level >= 0) {
+    for (i = 0; i <= level; i += 1)
+      notify_format(player, " %%$%d : %s", i, PE_Get_Stext(q->pe_info, i));
+  }
+  
+  /* %0 - %9 */
   if (pi_regs_get_envc(q->pe_info)) {
     notify(player, "Arguments: ");
     for (i = 0; i < 10; i += 1) {
@@ -1822,6 +1839,7 @@ show_queue_env(dbref player, MQUE *q)
     }
   }
 
+  /* Q registers */
   ptab_init(&qregs);
   ptab_start_inserts(&qregs);
   for (regs = q->pe_info->regvals; regs; regs = regs->prev) {

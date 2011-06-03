@@ -590,7 +590,7 @@ do_pemit(dbref player, const char *arg1, const char *arg2, int flags)
                     tprintf(T("I'm sorry, but %s wishes to be left alone now."),
                             Name(who))))
       return;
-    if (!silent)
+    if (!silent && player != who)
       notify_format(player, T("You pemit \"%s\" to %s."), arg2, Name(who));
     if (nospoof && Nospoof(who)) {
       if (Paranoid(who)) {

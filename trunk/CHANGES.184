@@ -34,6 +34,9 @@ Commands:
    {curly braces}) in the rhs arg of @force/noeval. [MG]
  * @ps/debug <pid> will display extra information about a queue entry's
    evaluation environment. [SW]
+ * @pemit now acts as if /silent was given when the executor and target
+   are the same object, for consistency with other sound-producing commands
+   and to fix an issue with @pemit/spoof. [SW]
 
 Powers:
  * can_dark power lets non-wizard players set themselves dark. Suggested by 

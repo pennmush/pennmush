@@ -155,6 +155,7 @@ extern dbref first_free;        /* pointer to free list */
 #define Unfind(x)       (has_flag_by_name(x, "UNFINDABLE", NOTYPE))
 #define Verbose(x)      (has_flag_by_name(x, "VERBOSE", NOTYPE))
 #define Visual(x)       (has_flag_by_name(x, "VISUAL", NOTYPE))
+#define Can_Dark(x)     (Wizard(x) || has_power_by_name(x, "Can_Dark", NOTYPE))
 
 /* Attribute flags */
 #define AF_Internal(a) ((a)->flags & AF_INTERNAL)
@@ -193,7 +194,7 @@ extern dbref first_free;        /* pointer to free list */
 #define Alive(x)        (IsPlayer(x) || Puppet(x) || \
    (Audible(x) && atr_get_noparent(x,"FORWARDLIST")))
 /* Was Dark() */
-#define DarkLegal(x)    (Dark(x) && (Wizard(x) || !Alive(x)))
+#define DarkLegal(x)    (Dark(x) && (Can_Dark(x) || !Alive(x)))
 
 
 

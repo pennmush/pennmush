@@ -90,6 +90,8 @@ Functions:
  * ldelete() now takes an osep. [MG]
  * allof()/strallof() can now have mutli-char output separators, and null
    oseps. Reported by Padraic. [MG]
+ * benchmark() warns when results are thrown off by hitting the
+   FIL. Reported by Padraic. [SW]
 
 Version 1.8.4 patchlevel 4                                 May 05,  2011
 

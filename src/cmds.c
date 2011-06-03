@@ -375,6 +375,7 @@ COMMAND(cmd_emit)
 {
   int spflags = (!strcmp(cmd->name, "@NSEMIT")
                  && Can_Nspemit(executor) ? PEMIT_SPOOF : 0);
+
   SPOOF(executor, enactor, sw);
 
   if (SW_ISSET(sw, SWITCH_ROOM))
@@ -820,8 +821,6 @@ COMMAND(cmd_message)
   int numargs, i;
   char *args[10];
 
-  SPOOF(executor, enactor, sw);
-
   for (numargs = 1; args_right[numargs] && numargs < 13; numargs++) ;
 
   switch (numargs) {
@@ -844,6 +843,7 @@ COMMAND(cmd_message)
     args[i] = args_right[i + 3];
   }
 
+  SPOOF(executor, enactor, sw);
   do_message_list(executor, enactor, arg_left, attrib, message, flags, i, args);
 }
 
@@ -927,10 +927,11 @@ COMMAND(cmd_pemit)
     return;
   }
 
-  SPOOF(executor, enactor, sw);
-
   if (!strcmp(cmd->name, "@NSPEMIT") && Can_Nspemit(executor))
     flags |= PEMIT_SPOOF;
+
+  SPOOF(executor, enactor, sw);
+
   if (SW_ISSET(sw, SWITCH_LIST))
     do_pemit_list(executor, arg_left, arg_right, flags);
   else if (SW_ISSET(sw, SWITCH_CONTENTS))
@@ -942,10 +943,11 @@ COMMAND(cmd_pemit)
 COMMAND(cmd_prompt)
 {
   int flags = SILENT_OR_NOISY(sw, SILENT_PEMIT) | PEMIT_PROMPT;
-  SPOOF(executor, enactor, sw);
 
   if (!strcmp(cmd->name, "@NSPEMIT") && Can_Nspemit(executor))
     flags |= PEMIT_SPOOF;
+
+  SPOOF(executor, enactor, sw);
   do_pemit_list(executor, arg_left, arg_right, flags);
 }
 
@@ -1020,12 +1022,13 @@ COMMAND(cmd_readcache)
 COMMAND(cmd_remit)
 {
   int flags = SILENT_OR_NOISY(sw, SILENT_PEMIT);
-  SPOOF(executor, enactor, sw);
 
   if (SW_ISSET(sw, SWITCH_LIST))
     flags |= PEMIT_LIST;
   if (!strcmp(cmd->name, "@NSREMIT") && Can_Nspemit(executor))
     flags |= PEMIT_SPOOF;
+
+  SPOOF(executor, enactor, sw);
   do_remit(executor, arg_left, arg_right, flags);
 }
 

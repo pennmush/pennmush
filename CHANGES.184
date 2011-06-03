@@ -81,6 +81,7 @@ Fixes:
  * Various help fixes. [MG]
  * Prevent persistant 'Attempt to write to error log before it was started!'
    error in netmush.log [MG]
+ * Rooms could not locate objects by name. Reported by Sketch. [MG]
 
 Functions:
  * Restrictions for the beep() function can now be modified with @function.

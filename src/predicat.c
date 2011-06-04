@@ -277,11 +277,11 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
           if (bp != sp)
             notify_except2(loc, player, thing, buff, flags);
           free(asave);
-        } else {
-          if (odef && *odef) {
-            notify_except2(loc, player, thing,
-                           tprintf("%s %s", Name(player), odef), flags);
-          }
+        } else if (odef && *odef) {
+          bp = buff;
+          safe_format(buff, &bp, "%s %s", Name(player), odef);
+          *bp = '\0';
+          notify_except2(loc, player, thing, buff, flags);
         }
       }
     }

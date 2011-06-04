@@ -955,7 +955,7 @@ gedit_helper(dbref player, dbref thing,
  * \param player the enactor.
  * \param it the object/attribute pair.
  * \param argv array containing the search and replace strings.
- * \param flags type of @edit to do
+ * \param flags type of \@edit to do
  */
 void
 do_gedit(dbref player, char *it, char **argv, int flags)

@@ -2253,3 +2253,35 @@ FUNCTION(fun_speak)
     safe_str(end, buff, bp);
   pe_regs_free(pe_regs);
 }
+
+/* ARGSUSED */
+FUNCTION(fun_render)
+{
+  int flags = 0;
+  char *word, *list;
+
+  list = trim_space_sep(args[1], ' ');
+
+  do {
+    word = split_token(&list, ' ');
+    if (!word || !*word)
+      continue;
+    if (string_prefix("ansi", word) && Can_Nspemit(executor))
+      flags |= MSG_ANSI;
+    else if (string_prefix("noaccents", word))
+      flags |= MSG_STRIPACCENTS;
+    else if (string_prefix("markup", word))
+      flags |= MSG_MARKUP;
+    else if (string_prefix("html", word))
+      flags |= MSG_PUEBLO;
+    else {
+      safe_str("#-1", buff, bp);
+      return;
+    }
+  } while (list);
+
+  if (!flags)
+    safe_str(remove_markup(args[0], NULL), buff, bp);
+  else
+    safe_str((char *) render_string((unsigned char *) args[0], flags), buff, bp);
+}

@@ -194,6 +194,7 @@ look_exits(dbref player, dbref loc, const char *exit_name)
           safe_format(tbuf1, &s1, T("%s leads to %s."), nbuf,
                       Name(Location(thing)));
         }
+        safe_tag_cancel("LI", tbuf1, &s1);
         *s1 = '\0';
         notify_nopenter_by(loc, player, tbuf1);
       } else {
@@ -298,8 +299,9 @@ look_contents(dbref player, dbref loc, const char *contents_name)
           tag("LI");
           tag_wrap("A", tprintf("XCH_CMD=\"look #%d\"", thing),
                    unparse_object_myopic(player, thing));
+          tag_cancel("LI");
           PEND;
-          notify_by(loc, player, pbuff);
+          notify_nopenter_by(loc, player, pbuff);
         }
       }
       PUSE;

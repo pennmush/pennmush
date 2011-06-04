@@ -287,7 +287,7 @@ Win32MUSH_setup(void)
 
 #endif                          /* WIN32 */
 
-/** Portably renames a file 
+/** Portably renames a file
  * \param origname the orignal name of the file
  * \param newname the new name of the file
  * \return 0 on success, negative on failure

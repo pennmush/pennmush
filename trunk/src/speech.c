@@ -473,7 +473,7 @@ do_message(dbref executor, char *list, char *attrname,
 
   if ((p = strchr(attrname, '/')) != NULL) {
     *p++ = '\0';
-    if (*attrname && strcmp(p, "#-2")) {
+    if (*attrname && strcmp(attrname, "#-2")) {
       thing = noisy_match_result(executor, attrname, NOTYPE, MAT_EVERYTHING);
       if (thing == NOTHING)
         return;

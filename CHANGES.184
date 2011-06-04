@@ -37,6 +37,8 @@ Commands:
  * @pemit now acts as if /silent was given when the executor and target
    are the same object, for consistency with other sound-producing commands
    and to fix an issue with @pemit/spoof. [SW]
+ * @command now shows the failure message that can be set with
+   restrict_command or @command/restrict. [SW]
 
 Powers:
  * can_dark power lets non-wizard players set themselves dark. Suggested by 

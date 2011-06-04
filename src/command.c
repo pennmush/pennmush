@@ -2008,6 +2008,8 @@ COMMAND(cmd_command)
     buff[0] = '\0';
     notify_format(executor, T("Lock       : %s"),
                   unparse_boolexp(executor, command->cmdlock, UB_DBREF));
+    if (command->restrict_message)
+      notify_format(executor, T("Failure Msg: %s"), command->restrict_message);
     if (command->sw.mask) {
       bp = buff;
       for (sw_val = dyn_switch_list; sw_val->name; sw_val++)

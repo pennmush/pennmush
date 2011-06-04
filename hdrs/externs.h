@@ -64,9 +64,6 @@ void WIN32_CDECL flag_broadcast(const char *flag1,
                                 const char *flag2, const char *fmt, ...)
   __attribute__ ((__format__(__printf__, 3, 4)));
 
-void raw_notify(dbref player, const char *msg);
-void notify_list(dbref speaker, dbref thing, const char *atr,
-                 const char *msg, int flags);
 dbref short_page(const char *match);
 dbref visible_short_page(dbref player, const char *match);
 void do_doing(dbref player, const char *message);
@@ -128,10 +125,12 @@ void sql_shutdown(void);
 #define NA_NORELAY      0x0001  /**< Don't relay sound */
 #define NA_NOENTER      0x0002  /**< No newline at end */
 #define NA_NOLISTEN     0x0004  /**< Implies NORELAY. Sorta. */
-#define NA_NOPENTER     0x0010  /**< No newline, Pueblo-stylee */
-#define NA_PONLY        0x0020  /**< Pueblo-only */
-#define NA_PUPPET       0x0040  /**< Ok to puppet */
-#define NA_PUPPET2      0x0080  /**< Message to a player from a puppet */
+#define NA_NOPENTER     0x0010  /**< No newline, Pueblo-stylee. UNUSED. */
+#define NA_PONLY        0x0020  /**< Pueblo-only. UNUSED. */
+#define NA_PUPPET_OK    0x0040  /**< Ok to puppet */
+#define NA_PUPPET NA_PUPPET_OK  /**< Backwards compatability */
+#define NA_PUPPET_MSG   0x0080  /**< Message to a player from a puppet */
+#define NA_PUPPET2 NA_PUPPET_MSG /**< Message to a player from a puppet */
 #define NA_MUST_PUPPET  0x0100  /**< Ok to puppet even in same room */
 #define NA_INTER_HEAR   0x0200  /**< Message is auditory in nature */
 #define NA_INTER_SEE    0x0400  /**< Message is visual in nature */
@@ -143,58 +142,88 @@ void sql_shutdown(void);
 #define NA_INTER_LOCK  0x10000  /**< Message subject to \@lock/interact even if not otherwise marked */
 #define NA_INTERACTION  (NA_INTER_HEAR|NA_INTER_SEE|NA_INTER_PRESENCE|NA_INTER_LOCK)    /**< Message follows interaction rules */
 #define NA_PROMPT       0x20000  /**< Message is a prompt, add GOAHEAD */
+#define NA_PROPAGATE    0x40000  /**< Propagate this sound through audible exits/things */
+
+/* notify.c */
+
+/** Bitwise options for render_string() */
+#define MSG_INTERNAL        0  /**< Original string containing internal markup, \n lineendings */
+#define MSG_PLAYER          1  /**< Being sent to a player. Uses \r\n lineendings, not \n */
+/* Any text sent to a player will be (MSG_PLAYER | modifiers below) */
+#define MSG_ANSI            2  /**< Colors as raw ANSI tags */
+#define MSG_PUEBLO          4  /**< HTML entities, Pueblo tags as HTML */
+#define MSG_TELNET          8  /**< Output to telnet-aware connection. Escape char 255 */
+#define MSG_STRIPACCENTS   16  /**< Strip/downgrade accents */
+
+#define MSG_MARKUP         32  /**< Leave markup in internal format, rather than stripping/converting */
+
+#define MSG_ALL_PLAYER (MSG_PLAYER | MSG_ANSI | MSG_PUEBLO \
+                        | MSG_TELNET | MSG_STRIPACCENTS)
 
 /** A notify_anything lookup function type definition */
 typedef dbref (*na_lookup) (dbref, void *);
-void notify_anything(dbref speaker, na_lookup func,
-                     void *fdata,
-                     char *(*nsfunc) (dbref,
-                                      na_lookup func,
-                                      void *, int), int flags,
-                     const char *message);
-void notify_anything_format(dbref speaker, na_lookup func,
-                            void *fdata,
-                            char *(*nsfunc) (dbref,
-                                             na_lookup func,
-                                             void *, int), int flags,
-                            const char *fmt, ...)
-  __attribute__ ((__format__(__printf__, 6, 7)));
-void notify_anything_loc(dbref speaker, na_lookup func,
-                         void *fdata,
-                         char *(*nsfunc) (dbref,
-                                          na_lookup func,
-                                          void *, int), int flags,
-                         const char *message, dbref loc);
+
+/**< Used by notify_anything() for formatting a message through a ufun for each listener */
+struct format_msg {
+  dbref thing;    /**< Object to ufun an attr from. Use AMBIGUOUS for the target */
+  char *attr;     /**< Attribute to ufun */
+  int checkprivs; /**< Check that the speaker has permission to get the attr? */
+  int targetarg;  /**< The arg to set to the target's dbref, or -1 to not */
+  int numargs;    /**< Number of arguments in args to pass to the ufun */
+  char *args[10];   /**< Array of arguments to pass to ufun */
+};
+unsigned char *render_string(unsigned char *message, int output_type);
+void notify_list(dbref speaker, dbref thing, const char *atr,
+                 const char *msg, int flags);
+
+/* No longer passes an ns_func, all things will use the same nospoof function. Where a NULL ns_func was used before, now just
+ * pass NA_SPOOF in the flags */
+void notify_anything(dbref speaker, na_lookup func, void *fdata, dbref *skips, int flags,
+                  const char *message, const char *prefix, dbref loc,
+                  struct format_msg *format);
+void notify_except2(dbref first, dbref exc1, dbref exc2,
+                    const char *msg, int flags);
+/**< Notify all objects in a single location, with one exception */
+#define notify_except(loc, exc, msg, flags) notify_except2(loc, exc, NOTHING, msg, flags)
+
 dbref na_one(dbref current, void *data);
 dbref na_next(dbref current, void *data);
 dbref na_loc(dbref current, void *data);
-dbref na_nextbut(dbref current, void *data);
-dbref na_except(dbref current, void *data);
-dbref na_except2(dbref current, void *data);
-dbref na_exceptN(dbref current, void *data);
 dbref na_channel(dbref current, void *data);
-char *ns_esnotify(dbref speaker, na_lookup func, void *fdata, int para);
 
-/** Basic 'notify player with message */
-#define notify(p,m)           notify_anything(orator, na_one, &(p), NULL, 0, m)
-/** Notify player as a prompt */
-#define notify_prompt(p,m)           notify_anything(orator, na_one, &(p), NULL, NA_PROMPT, m)
-/** Notify puppet with message, even if owner's there */
-#define notify_must_puppet(p,m)           notify_anything(orator, na_one, &(p), NULL, NA_MUST_PUPPET, m)
-/** Notify puppet with message as prompt, even if owner's there */
-#define notify_prompt_must_puppet(p,m)           notify_anything(orator, na_one, &(p), NULL, NA_MUST_PUPPET|NA_PROMPT, m)
-/** Notify player with message, as if from somethign specific */
-#define notify_by(t,p,m)           notify_anything(t, na_one, &(p), NULL, 0, m)
-/** Notfy player with message, but only puppet propagation */
-#define notify_noecho(p,m)    notify_anything(orator, na_one, &(p), NULL, NA_NORELAY | NA_PUPPET, m)
-/** Notify player with message if they're not set QUIET */
+#define notify_flags(p,m,f) notify_anything(orator, na_one, &(p), NULL, \
+                                            f, m, NULL, AMBIGUOUS, NULL)
+#define raw_notify(p,m) notify_anything(GOD, na_one, &(p), NULL, \
+                                        NA_NOLISTEN | NA_SPOOF, m, NULL, \
+                                        AMBIGUOUS, NULL)
+
+/**< Basic 'notify player with message */
+#define notify(p,m) notify_flags(p,m,NA_SPOOF)
+/**< Notify player as a prompt */
+#define notify_prompt(p,m) notify_flags(p, m, NA_PROMPT | NA_SPOOF)
+/**< Notify puppet with message, even if owner's there */
+#define notify_must_puppet(p,m) notify_flags(p, m, NA_MUST_PUPPET | NA_SPOOF)
+/**< Notify puppet with message as prompt, even if owner's there */
+#define notify_prompt_must_puppet(p,m) notify_flags(p, m, NA_MUST_PUPPET | \
+                                                    NA_PROMPT | NA_SPOOF)
+/**< Notify player with message, as if from somethign specific */
+#define notify_by(s,p,m) notify_anything(s, na_one, &(p), NULL,  NA_SPOOF, \
+                                         m, NULL, AMBIGUOUS, NULL)
+/**< Notfy player with message, but only puppet propagation */
+#define notify_noecho(p,m) notify_flags(p, m, NA_NORELAY | NA_PUPPET | \
+                                        NA_SPOOF)
+/**< Notify player with message if they're not set QUIET */
 #define quiet_notify(p,m)     if (!IsQuiet(p)) notify(p,m)
-/** Notify player but don't send \n */
-#define notify_noenter_by(t,a,b) notify_anything(t, na_one, &(a), NULL, NA_NOENTER, b)
-#define notify_noenter(a,b) notify_noenter_by(GOD, a, b)
-/** Notify player but don't send <BR> if they're using Pueblo */
-#define notify_nopenter_by(t,a,b) notify_anything(t, na_one, &(a), NULL, NA_NOPENTER, b)
-#define notify_nopenter(a,b) notify_nopenter_by(GOD, a, b)
+/**< Notify player but don't send \n */
+#define notify_noenter_by(s,p,m) notify_anything(s, na_one, &(p), NULL, \
+                                                 NA_NOENTER | NA_SPOOF, m, \
+                                                 NULL, AMBIGUOUS, NULL)
+#define notify_noenter(p,m) notify_noenter_by(GOD, p, m)
+/**< Notify player but don't send <BR> if they're using Pueblo */
+#define notify_nopenter_by(s,p,m) notify_anything(s, na_one, &(p), NULL, \
+                                                  NA_NOPENTER | NA_SPOOF, \
+                                                  m, NULL, AMBIGUOUS, NULL)
+#define notify_nopenter(p,m) notify_nopenter_by(GOD, p, m)
 /* Notify with a printf-style format */
 void notify_format(dbref player, const char *fmt, ...)
   __attribute__ ((__format__(__printf__, 2, 3)));
@@ -227,31 +256,31 @@ extern char ucbuff[];
 /* From cque.c */
 
 /* Queue types/flags */
-#define QUEUE_DEFAULT          0x0000   /* select QUEUE_PLAYER or QUEUE_OBJECT based on enactor's Type() */
-#define QUEUE_PLAYER           0x0001   /* command queued because of a player in-game */
-#define QUEUE_OBJECT           0x0002   /* command queued because of a non-player in-game */
-#define QUEUE_SOCKET           0x0004   /* command executed directly from a player's client */
-#define QUEUE_INPLACE          0x0008   /* inplace queue entry */
-#define QUEUE_NO_BREAKS        0x0010   /* Don't propagate @breaks from this inplace queue */
-#define QUEUE_PRESERVE_QREG    0x0020   /* Preserve/restore q-registers before/after running this inplace queue */
-#define QUEUE_CLEAR_QREG       0x0040   /* Clear q-registers before running this inplace queue */
-#define QUEUE_PROPAGATE_QREG   0x0080   /* At the end of this inplace queue entry, copy our q-registers into the parent queue entry */
-#define QUEUE_RESTORE_ENV      0x0100   /* At the end of this inplace queue entry, free pe_info->env and restore from saved_env */
-#define QUEUE_NOLIST           0x0200   /* Don't separate commands at semicolons, and don't parse rhs in &attr setting */
-#define QUEUE_BREAK            0x0400   /* set by @break, stops further processing of queue entry */
-#define QUEUE_RETRY            0x0800   /* Set by @retry, restart current queue entry from beginning, without recalling do_entry */
-#define QUEUE_DEBUG            0x1000   /* Show DEBUG info for queue (queued from a DEBUG attribute) */
-#define QUEUE_NODEBUG          0x2000   /* Don't show DEBUG info for queue (queued from a NO_DEBUG attribute) */
+#define QUEUE_DEFAULT          0x0000   /**< select QUEUE_PLAYER or QUEUE_OBJECT based on enactor's Type() */
+#define QUEUE_PLAYER           0x0001   /**< command queued because of a player in-game */
+#define QUEUE_OBJECT           0x0002   /**< command queued because of a non-player in-game */
+#define QUEUE_SOCKET           0x0004   /**< command executed directly from a player's client */
+#define QUEUE_INPLACE          0x0008   /**< inplace queue entry */
+#define QUEUE_NO_BREAKS        0x0010   /**< Don't propagate @breaks from this inplace queue */
+#define QUEUE_PRESERVE_QREG    0x0020   /**< Preserve/restore q-registers before/after running this inplace queue */
+#define QUEUE_CLEAR_QREG       0x0040   /**< Clear q-registers before running this inplace queue */
+#define QUEUE_PROPAGATE_QREG   0x0080   /**< At the end of this inplace queue entry, copy our q-registers into the parent queue entry */
+#define QUEUE_RESTORE_ENV      0x0100   /**< At the end of this inplace queue entry, free pe_info->env and restore from saved_env */
+#define QUEUE_NOLIST           0x0200   /**< Don't separate commands at semicolons, and don't parse rhs in &attr setting */
+#define QUEUE_BREAK            0x0400   /**< set by @break, stops further processing of queue entry */
+#define QUEUE_RETRY            0x0800   /**< Set by @retry, restart current queue entry from beginning, without recalling do_entry */
+#define QUEUE_DEBUG            0x1000   /**< Show DEBUG info for queue (queued from a DEBUG attribute) */
+#define QUEUE_NODEBUG          0x2000   /**< Don't show DEBUG info for queue (queued from a NO_DEBUG attribute) */
 
 #define QUEUE_RECURSE (QUEUE_INPLACE | QUEUE_NO_BREAKS | QUEUE_PRESERVE_QREG)
 
 
 /* Used when generating a new pe_info from an existing pe_info. Used by pe_info_from(). */
-#define PE_INFO_DEFAULT     0x000       /* create a new, empty pe_info */
-#define PE_INFO_SHARE       0x001       /* Share the existing pe_info */
-#define PE_INFO_CLONE       0x002       /* Clone entire pe_info */
-#define PE_INFO_COPY_ENV    0x004       /* Copy env-vars (%0-%9) from the parent */
-#define PE_INFO_COPY_QREG   0x008       /* Copy q-registers (%q*) from the parent pe_info */
+#define PE_INFO_DEFAULT     0x000       /**< create a new, empty pe_info */
+#define PE_INFO_SHARE       0x001       /**< Share the existing pe_info */
+#define PE_INFO_CLONE       0x002       /**< Clone entire pe_info */
+#define PE_INFO_COPY_ENV    0x004       /**< Copy env-vars (%0-%9) from the parent */
+#define PE_INFO_COPY_QREG   0x008       /**< Copy q-registers (%q*) from the parent pe_info */
 
 
 struct _ansi_string;
@@ -444,9 +473,9 @@ dbref where_is(dbref thing);
 int charge_action(dbref thing);
 dbref first_visible(dbref player, dbref thing);
 
-#define GREP_NOCASE 1
-#define GREP_WILD 2
-#define GREP_REGEXP 4
+#define GREP_NOCASE 1  /**< Grep pattern is case-insensitive */
+#define GREP_WILD 2    /**< Grep pattern is a glob pattern */
+#define GREP_REGEXP 4  /**< Grep pattern is a regexp */
 int grep_util(dbref player, dbref thing, char *attrs, char *findstr, char *buff,
               char **bp, int flags);
 
@@ -460,19 +489,22 @@ void chown_object(dbref player, dbref thing, dbref newowner, int preserve);
 void do_include(dbref executor, dbref enactor, char *object, char **argv,
                 int recurse, MQUE *parent_queue);
 /* From speech.c */
-int okay_pemit(dbref player, dbref target, int dofails, const char *def);
+
+/**< Type of emit to do. Used by \@message */
+enum emit_type {
+  EMIT_PEMIT, /**< pemit to given objects */
+  EMIT_REMIT, /**< remit in given rooms */
+  EMIT_OEMIT  /**< emit to all objects in location except the given objects */
+};
+int okay_pemit(dbref player, dbref target, int dofails, int def);
 int vmessageformat(dbref player, const char *attribute,
                    dbref executor, int flags, int nargs, ...);
 int messageformat(dbref player, const char *attribute,
                   dbref executor, int flags, int nargs, char *argv[]);
-void do_message_list(dbref player, dbref enactor, char *list, char *attrname,
-                     char *message, int flags, int numargs, char *argv[]);
+void do_message(dbref executor, char *list, char *attrname, char *message,
+                enum emit_type type, int flags, int numargs, char *argv[]);
+
 const char *spname(dbref thing);
-void notify_except(dbref first, dbref exception, const char *msg, int flags);
-void notify_except2(dbref first, dbref exc1, dbref exc2,
-                    const char *msg, int flags);
-/* Return thing/PREFIX + msg */
-void make_prefixstr(dbref thing, const char *msg, char *tbuf1);
 int filter_found(dbref thing, const char *msg, int flag);
 
 /* From strutil.c */

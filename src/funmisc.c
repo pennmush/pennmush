@@ -93,7 +93,7 @@ FUNCTION(fun_pemit)
   if (is_strict_integer(args[0]))
     do_pemit_port(executor, args[0], args[1], flags);
   else
-    do_pemit_list(executor, args[0], args[1], flags);
+    do_pemit(executor, args[0], args[1], flags, NULL);
   orator = saved_orator;
 }
 
@@ -101,12 +101,39 @@ FUNCTION(fun_message)
 {
   int i;
   char *argv[10];
+  int flags = PEMIT_LIST;
+  enum emit_type type = EMIT_PEMIT;
 
-  for (i = 0; (i + 3) < nargs; i++) {
+  for (i = 0; (i + 3) < nargs && i < 10; i++) {
     argv[i] = args[i + 3];
   }
 
-  do_message_list(executor, executor, args[0], args[2], args[1], 0, i, argv);
+  orator = executor;
+
+  if (nargs == 14) {
+    char *word, *list;
+
+    list = trim_space_sep(args[13], ' ');
+
+    do {
+      word = split_token(&list, ' ');
+      if (!word || !*word)
+        continue;
+      if (string_prefix("nospoof", word)) {
+        if (Can_Nspemit(executor))
+          flags |= PEMIT_SPOOF;
+      } else if (string_prefix("spoof", word)) {
+        if (Can_Nspemit(executor) || controls(executor, enactor))
+          orator = enactor;
+      } else if (string_prefix("remit", word))
+        type = EMIT_REMIT;
+      else if (string_prefix("oemit", word))
+        type = EMIT_OEMIT;
+    } while (list);
+  }
+
+  do_message(executor, args[0], args[2], args[1], type, flags, i, argv);
+
 }
 
 /* ARGSUSED */
@@ -126,7 +153,7 @@ FUNCTION(fun_oemit)
     return;
   }
   orator = executor;
-  do_oemit_list(executor, args[0], args[1], flags);
+  do_oemit_list(executor, args[0], args[1], flags, NULL);
 }
 
 /* ARGSUSED */
@@ -169,7 +196,7 @@ FUNCTION(fun_remit)
     return;
   }
   orator = executor;
-  do_remit(executor, args[0], args[1], flags);
+  do_remit(executor, args[0], args[1], flags, NULL);
 }
 
 /* ARGSUSED */
@@ -231,7 +258,7 @@ FUNCTION(fun_prompt)
   orator = executor;
   if (ns)
     flags |= PEMIT_SPOOF;
-  do_pemit_list(executor, args[0], args[1], flags);
+  do_pemit(executor, args[0], args[1], flags, NULL);
 }
 
 /* ARGSUSED */
@@ -1261,9 +1288,7 @@ FUNCTION(fun_benchmark)
       safe_dbref(thing, buff, bp);
       return;
     }
-    if (!okay_pemit(executor, thing, 1,
-                    tprintf(T("I don't think #%d wants to hear from you."),
-                            thing))) {
+    if (!okay_pemit(executor, thing, 1, 1)) {
       safe_str("#-1", buff, bp);
       return;
     }

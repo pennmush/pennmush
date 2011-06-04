@@ -25,6 +25,11 @@ Major Changes:
    restarts. Requires libevent v2.X. [SW]
  * info_slave, the sub-process used for resolving hostnames, now uses
    libevent if available. [SW]
+   
+Hardcode:
+ * Rewrite of large portions of notify.c. The main public function there,
+   notify_anything(), now takes different arguments. notify_format() and
+   notify() are unchanged. Should be largely unnoticable for players. [MG]
 
 Commands:
  * @edit/quiet edits attributes, but doesn't spam you with the modified
@@ -39,6 +44,10 @@ Commands:
    and to fix an issue with @pemit/spoof. [SW]
  * @command now shows the failure message that can be set with
    restrict_command or @command/restrict. [SW]
+ * @message now takes a /remit or /oemit switch, to make it work like those
+   commands instead of @pemit. Also takes a /nospoof switch to make it like
+   the @ns*emit versions. [MG]
+ * @pemit/list/noisy now shows a confirmation message. [MG]
 
 Powers:
  * can_dark power lets non-wizard players set themselves dark. Suggested by 
@@ -57,8 +66,9 @@ Minor Changes:
  * @mail now shows the dbref of the sender for mail from non-players.
    Suggested by Minion. [MG]
  * Fix a potential buffer overflow in prefix table code. [SW]
- * "enter <exit>" now works the same as "goto". Suggested bt [GM]. [MG]
+ * "enter <exit>" now works the same as "goto". Suggested by [GM]. [MG]
  * Tweaks to the system queue introduced in the last patchlevel. [SW]
+ * @pemit now uses the same nospoof header as other commands. [MG]
 
 Fixes:
  * No_Pay was implicit if executor is #1, but was _not_ implicit if 
@@ -84,6 +94,7 @@ Fixes:
  * Prevent persistant 'Attempt to write to error log before it was started!'
    error in netmush.log [MG]
  * Rooms could not locate objects by name. Reported by Sketch. [MG]
+ * Players using Pueblo who are not set ANSI will no longer see colors. [MG]
 
 Functions:
  * Restrictions for the beep() function can now be modified with @function.
@@ -95,6 +106,8 @@ Functions:
    oseps. Reported by Padraic. [MG]
  * benchmark() warns when results are thrown off by hitting the
    FIL. Reported by Padraic. [SW]
+ * New render() function which returns a string rendered as html, without
+   markup, etc. Useful for bots or storing data in SQL. [MG]
 
 Version 1.8.4 patchlevel 4                                 May 05,  2011
 

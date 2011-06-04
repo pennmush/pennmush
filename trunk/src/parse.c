@@ -1602,8 +1602,7 @@ make_pe_info(char *name)
  ** from the existing pe_info into the new one
  * \param old_pe_info the original pe_info to use as a base for the new one
  * \param flags PE_INFO_* flags to determine exactly what to do
- * \param env environment vars (%0-%9) for the new pe_info, or NULL
- * \param qreg qreg values (%q*) for the new pe_info, or NULL
+ * \param pe_regs a pe_regs struct with environment for the new pe_info
  * \retval a new pe_info
  */
 NEW_PE_INFO *

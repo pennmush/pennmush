@@ -2725,26 +2725,36 @@ See also: @logwipe
 
 See also: @log
 & @message
-  @message[/switch] <player list>=<message>,<attribute>[,<arg1>,...]
+  @message[/<switches>] <recipients>=<message>,[<obj>/]<attr>
+                                  [,<arg0>[, ... , <arg9>]]]
 
   @message is designed for the use of *format messages, such as
-  @pageformat or @chatformat.
+  @pageformat or @chatformat. It is intended for use with @hooking page, 
+  @chat, or say/pose/emit, or for coding language systems.
 
-  It sends <message> to each player given in <player list> unless they
-  have <attribute> set.  If the executor can u() the player's attribute,
-  then instead of <message>, they will see the output that is identical
-  to:
+  For each of the given <recipients>, <obj>/<attr> is evaluated (with up to
+  ten arguments, as if it was ufun()'d), and the object is shown the result
+  via @pemit. If the attribute does not exist, they are shown <message>
+  instead.
+  
+  If <obj> is not given, or is given as "#-2", the attribute will be checked
+  on the recipient.
 
-      u(<player>/<attribute>,<arg1>,...)
+  If one of the arguments matches "##", it will be replaced with the dbref of
+  the recipient.
+  
+  Switches:
+    /noeval   -- none of @message's arguments will be evaluated
+    /spoof    -- the message will appear to be from the enactor, not the
+                 recipient. Requires the Can_Spoof @power.
+    /remit    -- Works like @remit, treating <recipients> as a list of rooms
+                 to send <message> to
+    /oemit    -- Works like @oemit, with <recipients> as a list of objects
+                 not to emit to. See 'help @oemit' for more info.
+    /nospoof  -- don't show nospoof info, as per @nspemit/@nsremit/@nsoemit
 
-  It is intended for use with @hooking page, @chat, or say/pose/emit.
-
-  Switches: NOEVAL and SPOOF. If the executor is either wizard or has
-  the NsPemit power, then SPOOF will make the message appear to be
-  from the enactor.
-
-  See 'help @message2' for an example.
-See also: message(), @chatformat, @pageformat
+  See 'help @message2' for examples.
+See also: message(), @chatformat, @pageformat, @oemit, @remit, speak()
 & @message2
 
   Example:
@@ -2766,6 +2776,27 @@ See also: message(), @chatformat, @pageformat
          cwho(%1)=setr(0,<%1> [speak(&[squish(ctitle(%1, %#) %n)], %2%3)]),
          CHATFORMAT, firstof(%2, "), %1, %3, %n, ctitle(%1, %#), %q0
     > @set Globals/cmd.chat=regexp
+
+  See 'help @message3' for more examples.
+& @message3
+
+  A (very) basic language system:
+    > &skill`spanish Juan=2
+    > &skill`spanish Bob=1
+    > &cmd.spanish Globals=$+spanish *: @nspemit %#=You say (Spanish), "%0";
+      @message/oemit/spoof %#=setr(0,%n says (Spanish)\, "%0"), 
+                        %!/TRANSLATE, ##, SPANISH, %q0
+    > &translate Globals=switch(default(%0/skill`%1, 2), 2, %2,
+          speak(%#, |%2,, %!/translate`some))
+    > &translate`some Globals="[iter(%0,if(rand(2),%i0,...))]"
+    > +spanish The rain in Spain falls mainly on the plain
+    
+  You see:
+    You say (Spanish), "The rain in Spain falls mainly on the plain"
+  Bob sees (something like):
+    Mike says (Spanish), "The rain ... ... falls ... ... ... ..."
+  Juan says:
+    Mike says (Spanish), "The rain in Spain falls mainly on the plain"
 
 & @motd
   @motd[/<switch>] [<message>]

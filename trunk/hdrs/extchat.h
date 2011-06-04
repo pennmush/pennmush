@@ -132,13 +132,6 @@ struct chanlist {
 #define Chanlist(x) ((struct chanlist *)get_objdata(x, "CHANNELS"))
 #define s_Chanlist(x, y) set_objdata(x, "CHANNELS", (void *)y)
 
-/** A structure for passing channel data to notify_anything */
-struct na_cpass {
-  CHANUSER *u;            /**< Pointer to channel user */
-  bool checkquiet;          /**< Should quiet property be checked? */
-};
-
-
 /* Channel type flags and macros */
 #define CHANNEL_PLAYER  0x1U    /* Players may join */
 #define CHANNEL_OBJECT  0x2U    /* Objects may join */

@@ -952,7 +952,7 @@ notify_anything_sub(dbref speaker, na_lookup func, void *fdata, dbref *skips,
 }
 
 #define PUPPET_FLAGS(na_flags)  ((na_flags | NA_PUPPET_MSG | NA_NORELAY) & ~NA_PROMPT)
-#define RELAY_FLAGS(na_flags)  ((na_flags | NA_PUPPET | NA_NORELAY) & ~NA_PROMPT)
+#define RELAY_FLAGS(na_flags)  ((na_flags | NA_PUPPET_OK | NA_NORELAY) & ~NA_PROMPT)
 
 
 /** Notify a single object with a message. May recurse by calling itself or
@@ -1162,7 +1162,7 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
   } else if (heard && Puppet(target)
              && ((flags & NA_MUST_PUPPET) || Verbose(target)
                  || (Location(target) != Location(Owner(target))))
-             && ((flags & NA_PUPPET) || !(flags & NA_NORELAY))) {
+             && ((flags & NA_PUPPET_OK) || !(flags & NA_NORELAY))) {
     /* Puppet */
     int nospoof_flags = 0;
     char puppref[BUFFER_LEN];
@@ -1266,17 +1266,9 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
           free(atrval);
 
           if (!(flags & NA_NORELAY) && (loc != target) &&
-              !filter_found(target, fullmsg, 1)) {
+              !filter_found(target, fullmsg, 1) && Contents(target) != NOTHING) {
             /* Forward the sound to the object's contents */
             char inprefix[BUFFER_LEN];
-            dbref passalong[3];
-
-            passalong[0] = target;
-            if (Puppet(target))
-              passalong[1] = Owner(target);
-            else
-              passalong[1] = NOTHING;
-            passalong[2] = NOTHING;
 
             a = atr_get(target, "INPREFIX");
             if (a) {
@@ -1296,9 +1288,9 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
               free_pe_info(pe_info);
               free(atrval);
             }
-            notify_anything_sub(speaker, na_loc,
-                                passalong, skips,
-                                flags | NA_NORELAY | NA_PUPPET, message,
+            notify_anything_sub(speaker, na_next,
+                                &Contents(target), skips,
+                                RELAY_FLAGS(flags), message,
                                 (a) ? inprefix : NULL, loc, format);
           }
         }
@@ -1319,7 +1311,7 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
       }
 
       /* If object is flagged AUDIBLE and has a @FORWARDLIST, send it on */
-      if ((!(flags & NA_NORELAY) || (flags & NA_PUPPET)) && Audible(target)
+      if ((!(flags & NA_NORELAY) || (flags & NA_PUPPET_OK)) && Audible(target)
           && atr_get_noparent(target, "FORWARDLIST") != NULL
           && !filter_found(target, fullmsg, 0)) {
         notify_list(speaker, target, "FORWARDLIST", fullmsg, flags);

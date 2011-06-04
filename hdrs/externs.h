@@ -128,9 +128,7 @@ void sql_shutdown(void);
 #define NA_NOPENTER     0x0010  /**< No newline, Pueblo-stylee. UNUSED. */
 #define NA_PONLY        0x0020  /**< Pueblo-only. UNUSED. */
 #define NA_PUPPET_OK    0x0040  /**< Ok to puppet */
-#define NA_PUPPET NA_PUPPET_OK  /**< Backwards compatability */
 #define NA_PUPPET_MSG   0x0080  /**< Message to a player from a puppet */
-#define NA_PUPPET2 NA_PUPPET_MSG /**< Message to a player from a puppet */
 #define NA_MUST_PUPPET  0x0100  /**< Ok to puppet even in same room */
 #define NA_INTER_HEAR   0x0200  /**< Message is auditory in nature */
 #define NA_INTER_SEE    0x0400  /**< Message is visual in nature */
@@ -210,7 +208,7 @@ dbref na_channel(dbref current, void *data);
 #define notify_by(s,p,m) notify_anything(s, na_one, &(p), NULL,  NA_SPOOF, \
                                          m, NULL, AMBIGUOUS, NULL)
 /**< Notfy player with message, but only puppet propagation */
-#define notify_noecho(p,m) notify_flags(p, m, NA_NORELAY | NA_PUPPET | \
+#define notify_noecho(p,m) notify_flags(p, m, NA_NORELAY | NA_PUPPET_OK | \
                                         NA_SPOOF)
 /**< Notify player with message if they're not set QUIET */
 #define quiet_notify(p,m)     if (!IsQuiet(p)) notify(p,m)

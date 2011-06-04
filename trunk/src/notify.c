@@ -1344,7 +1344,7 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
                                 format);
           }
         }
-      } else {
+      } else if (target == loc) {
         dbref pass[2];
 
         pass[0] = target;

@@ -1164,7 +1164,7 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
   int srclen = src->len;
   int srcend = loc + srclen;
   int idx, sidx, baseidx;
-  int i, j, k;
+  int i, j;
   int truncated = 0;
   new_markup_information *basemi, *mis, *mi, *mie;
 
@@ -1203,7 +1203,6 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
       for (sidx = 0; sidx < src->micount; sidx++) {
         if (!src->mi[sidx].standalone) continue;
         mi = grow_mi(dst, src->mi[sidx].type);
-        k = dst->micount;
         mi->start_code = as_get_tag(dst, src->mi[sidx].start_code);
         mi->end_code = as_get_tag(dst, src->mi[sidx].end_code);
         mi->standalone = 1;
@@ -1334,7 +1333,6 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
   idx = dst->micount;
   for (sidx = 0; sidx < src->micount; sidx++) {
     mi = grow_mi(dst, src->mi[sidx].type);
-    k = mi->idx;
     mi->start_code = as_get_tag(dst, src->mi[sidx].start_code);
     mi->end_code = as_get_tag(dst, src->mi[sidx].end_code);
     mi->standalone = src->mi[sidx].standalone;
@@ -1375,10 +1373,7 @@ scramble_ansi_string(ansi_string *as)
   int i, j;
   char tmp;
   uint16_t idxtmp;
-  int pos[BUFFER_LEN];
-  for (i = 0; i < as->len; i++) {
-    pos[i] = i;
-  }
+
   for (i = 0; i < as->len; i++) {
     j = get_random32(0, as->len - 1);
     tmp = as->text[i];

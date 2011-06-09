@@ -787,10 +787,6 @@ notify_makestring(struct notify_message *message, int output_type)
 static unsigned char *
 notify_makestring_nocache(unsigned char *message, int output_type)
 {
-  enum na_type msgtype;
-
-  msgtype = msg_to_na(output_type);
-
   return (unsigned char *) mush_strdup((char *)
                                        render_string(message, output_type),
                                        "notify_str");

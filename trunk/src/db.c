@@ -1880,13 +1880,16 @@ void
 create_minimal_db(void)
 {
   dbref start_room, god, master_room;
-  uint32_t desc_flags = AF_VISUAL | AF_NOPROG | AF_PREFIXMATCH;
+  uint32_t desc_flags = AF_VISUAL | AF_NOPROG | AF_PREFIXMATCH | AF_PUBLIC;
 
   start_room = new_object();    /* #0 */
   god = new_object();           /* #1 */
   master_room = new_object();   /* #2 */
 
   init_objdata_htab(128, NULL);
+
+  if (!READ_REMOTE_DESC)
+    desc_flags |= AF_NEARBY;
 
   set_name(start_room, "Room Zero");
   Type(start_room) = TYPE_ROOM;

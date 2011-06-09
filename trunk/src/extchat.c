@@ -84,7 +84,6 @@ const char *chan_mod_lock = "ChanModLock";      /**< Name of modify lock */
 const char *chan_see_lock = "ChanSeeLock";      /**< Name of see lock */
 const char *chan_hide_lock = "ChanHideLock";    /**< Name of hide lock */
 
-slab *channel_slab; /**< slab for 'struct channel' allocations */
 slab *chanlist_slab; /**< slab for 'struct chanlist' allocations */
 slab *chanuser_slab; /**< slab for 'struct chanuser' allocations */
 
@@ -204,7 +203,6 @@ init_chatdb(void)
   if (!init_called) {
     init_called = 1;
     num_channels = 0;
-    channel_slab = slab_create("channels", sizeof(struct channel));
     chanuser_slab = slab_create("channel users", sizeof(struct chanuser));
     chanlist_slab = slab_create("channel lists", sizeof(struct chanlist));
     slab_set_opt(chanuser_slab, SLAB_ALLOC_BEST_FIT, 1);
@@ -335,7 +333,7 @@ new_channel(void)
 {
   CHAN *ch;
 
-  ch = slab_malloc(channel_slab, NULL);
+  ch = mush_malloc(sizeof *ch, "channel");
   if (!ch)
     return NULL;
   ch->name[0] = '\0';
@@ -1769,7 +1767,7 @@ do_chan_admin(dbref player, char *name, const char *perms, int flag)
     }
     key = parse_boolexp(player, tprintf("=#%d", player), chan_mod_lock);
     if (!key) {
-      slab_free(channel_slab, chan);
+      mush_free(chan, "channel");
       notify(player, T("CHAT: No more memory for channels!"));
       giveto(Owner(player), CHANNEL_COST);
       return;

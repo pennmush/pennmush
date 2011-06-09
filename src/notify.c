@@ -584,7 +584,6 @@ render_string(unsigned char *message, int output_type)
   static char *bp;
   const unsigned char *p;
 
-  /* Stolen from notify_makestring */
   static ansi_data states[BUFFER_LEN];
   int ansi_ptr, ansifix;
   ansi_ptr = 0;
@@ -1314,7 +1313,7 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
       }
     }
 
-    if ((flags & NA_PROPAGATE) && Audible(target)) {
+    if ((flags & NA_PROPAGATE) && !(flags & NA_NORELAY) && Audible(target)) {
       char propprefix[BUFFER_LEN];
 
       /* Propagate sound */
@@ -1409,15 +1408,18 @@ notify_list(dbref speaker, dbref thing, const char *atr, const char *msg,
     }
   }
 
+  flags |= NA_NORELAY;
+  flags &= ~ NA_PROPAGATE;
+
   while ((curr = split_token(&fwdstr, ' ')) != NULL) {
     if (is_objid(curr)) {
       fwd = parse_objid(curr);
       if (RealGoodObject(fwd) && (thing != fwd) && Can_Forward(thing, fwd)) {
         if (IsRoom(fwd)) {
-          notify_anything(speaker, na_loc, &fwd, NULL, flags | NA_NORELAY, msg,
+          notify_anything(speaker, na_loc, &fwd, NULL, flags, msg,
                           prefix, AMBIGUOUS, NULL);
         } else {
-          notify_anything(speaker, na_one, &fwd, NULL, flags | NA_NORELAY, msg,
+          notify_anything(speaker, na_one, &fwd, NULL, flags, msg,
                           prefix, AMBIGUOUS, NULL);
 
         }

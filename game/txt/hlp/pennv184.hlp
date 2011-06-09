@@ -64,6 +64,8 @@ Minor Changes:
  * "enter <exit>" now works the same as "goto". Suggested by [GM]. [MG]
  * Tweaks to the system queue introduced in the last patchlevel. [SW]
  * @pemit now uses the same nospoof header as other commands. [MG]
+ * When creating a minimal db, the MUSH now respects the read_remote_desc
+   option, and may set @descs "nearby". Reported by Paige. [MG]
 
 Fixes:
  * No_Pay was implicit if executor is #1, but was _not_ implicit if 

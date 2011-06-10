@@ -1261,7 +1261,7 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
           free(atrval);
 
           if (!(flags & NA_NORELAY) && (loc != target) &&
-              !filter_found(target, fullmsg, 1) && Contents(target) != NOTHING) {
+              Contents(target) != NOTHING && !filter_found(target, fullmsg, 1)) {
             /* Forward the sound to the object's contents */
             char inprefix[BUFFER_LEN];
 
@@ -1324,6 +1324,8 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
             loc = Location(exit);
             if (!RealGoodObject(loc))
               continue;         /* unlinked, variable dests, HOME */
+            if (filter_found(exit, fullmsg, 0))
+              continue;
             /* Need to make the prefix for each exit */
             make_prefix_str(exit, speaker, fullmsg, propprefix);
             notify_anything_sub(speaker, na_next, &Contents(loc), skips,
@@ -1331,7 +1333,7 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
                                 format);
           }
         }
-      } else if (target == loc) {
+      } else if (target == loc && !filter_found(target, fullmsg, 0)) {
         dbref pass[2];
 
         pass[0] = target;

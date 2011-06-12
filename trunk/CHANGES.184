@@ -97,6 +97,7 @@ Fixes:
    error in netmush.log [MG]
  * Rooms could not locate objects by name. Reported by Sketch. [MG]
  * Players using Pueblo who are not set ANSI will no longer see colors. [MG]
+ * The <inside> arg to tel() didn't work. Fixed by Padraic.
 
 Functions:
  * Restrictions for the beep() function can now be modified with @function.

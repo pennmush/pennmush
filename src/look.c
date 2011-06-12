@@ -167,7 +167,7 @@ look_exits(dbref player, dbref loc, const char *exit_name)
   for (thing = Exits(loc); thing != NOTHING; thing = Next(thing)) {
     if ((Light(loc) || Light(thing) || (!DarkLegal(thing) && !Dark(loc)))
         && can_interact(thing, player, INTERACT_SEE)) {
-      strcpy(pbuff, Name(thing));
+      strcpy(pbuff, accented_name(thing));
       if ((p = strchr(pbuff, ';')))
         *p = '\0';
       p = nbuf;

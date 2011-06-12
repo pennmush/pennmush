@@ -66,6 +66,8 @@ Minor Changes:
  * @pemit now uses the same nospoof header as other commands. [MG]
  * When creating a minimal db, the MUSH now respects the read_remote_desc
    option, and may set @descs "nearby". Reported by Paige. [MG]
+ * Exits now show accented names (via @nameaccent) in "look". Suggested by
+   Cheetah. [MG]
 
 Fixes:
  * No_Pay was implicit if executor is #1, but was _not_ implicit if 
@@ -92,6 +94,7 @@ Fixes:
    error in netmush.log [MG]
  * Rooms could not locate objects by name. Reported by Sketch. [MG]
  * Players using Pueblo who are not set ANSI will no longer see colors. [MG]
+ * The <inside> arg to tel() didn't work. Fixed by Padraic.
 
 Functions:
  * Restrictions for the beep() function can now be modified with @function.

@@ -130,10 +130,8 @@ For more, see Entries-7
  1.8.3p6                   1.8.3p7                   1.8.3p8                  
  1.8.3p9                   1.8.3p10                  1.8.3p11                 
  1.8.3p12                  1.8.3p13                  1.8.4p0                  
- 1.8.4p0                   1.8.4p1                   1.8.4p1                  
- 1.8.4p2                   1.8.4p2                   1.8.4p3                  
- 1.8.4p3                   1.8.4p4                   1.8.4p4                  
- 1.8.4p5                   1.8.4p5                   :                        
+ 1.8.4p1                   1.8.4p2                   1.8.4p3                  
+ 1.8.4p4                   1.8.4p5                   :                        
  ;                         @-attributes              @-building               
  @-general                 @-wizard                  @@                       
  @@()                      @aahear                   @abuy                    
@@ -143,13 +141,13 @@ For more, see Entries-7
  @afailure                 @afollow                  @agive                   
  @ahear                    @aidescribe               @aleave                  
  @alfail                   @alias                    @allhalt                 
+ @allquota                 @amail                    @amhear                  
+ @amove                    @aname                    @apayment                
 
 For more, see Entries-8
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-8
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- @allquota                 @amail                    @amhear                  
- @amove                    @aname                    @apayment                
  @areceive                 @assert                   @asuccess                
  @atport                   @atrchown                 @atrlock                 
  @attribute                @attribute2               @attribute3              
@@ -164,13 +162,13 @@ For more, see Entries-8
  @channel/delete           @channel/describe         @channel/gag             
  @channel/hide             @channel/join             @channel/leave           
  @channel/list             @channel/mogrifier        @channel/mute            
+ @channel/name             @channel/off              @channel/on              
+ @channel/privs            @channel/recall           @channel/rename          
 
 For more, see Entries-9
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-9
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- @channel/name             @channel/off              @channel/on              
- @channel/privs            @channel/recall           @channel/rename          
  @channel/title            @channel/uncombine        @channel/ungag           
  @channel/unhide           @channel/what             @channel/who             
  @channel/wipe             @charges                  @chat                    
@@ -185,13 +183,13 @@ For more, see Entries-9
  @config dump              @config flags             @config funcs            
  @config limits            @config limits2           @config limits3          
  @config limits4           @config log               @config net              
+ @config parameters        @config tiny              @conformat               
+ @cost                     @cpattr                   @create                  
 
 For more, see Entries-10
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-10
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- @config parameters        @config tiny              @conformat               
- @cost                     @cpattr                   @create                  
  @dbck                     @death                    @debugforwardlist        
  @decompile                @decompile2               @decompile3              
  @desc                     @descformat               @describe                
@@ -206,13 +204,13 @@ For more, see Entries-10
  @find                     @firstexit                @flag                    
  @flag2                    @follow                   @force                   
  @force2                   @force3                   @forwardlist             
+ @function                 @function2                @function3               
+ @function4                @gedit                    @give                    
 
 For more, see Entries-11
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-11
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- @function                 @function2                @function3               
- @function4                @gedit                    @give                    
  @grep2                    @grep                     @halt                    
  @haven                    @hide                     @hook                    
  @hook2                    @hook3                    @hook4                   
@@ -227,13 +225,13 @@ For more, see Entries-11
  @lock-eval2               @lock-evaluation          @lock-evaluation2        
  @lock-flag                @lock-host                @lock-indirect           
  @lock-list                @lock-name                @lock-objid              
+ @lock-owner               @lock-power               @lock-simple             
+ @lock-type                @log                      @logwipe                 
 
 For more, see Entries-12
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-12
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- @lock-owner               @lock-power               @lock-simple             
- @lock-type                @log                      @logwipe                 
  @lset                     @mail                     @mailfilter              
  @mailforwardlist          @mailsignature            @malias                  
  @malias2                  @malias3                  @malias4                 
@@ -248,13 +246,13 @@ For more, see Entries-12
  @odeath                   @odescribe                @odrop                   
  @oefail                   @oemit                    @oemit2                  
  @oenter                   @ofailure                 @ofollow                 
+ @ogive                    @oidescribe               @oleave                  
+ @olfail                   @omove                    @oname                   
 
 For more, see Entries-13
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-13
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- @ogive                    @oidescribe               @oleave                  
- @olfail                   @omove                    @oname                   
  @opayment                 @open                     @oreceive                
  @osuccess                 @otport                   @oufail                  
  @ounfollow                @ouse                     @outpageformat           
@@ -269,13 +267,13 @@ For more, see Entries-13
  @purge                    @quota                    @readcache               
  @receive                  @recycle                  @rejectmotd              
  @remit                    @restart                  @retry                   
+ @retry2                   @runout                   @rwall                   
+ @scan                     @search                   @search2                 
 
 For more, see Entries-14
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-14
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- @retry2                   @runout                   @rwall                   
- @scan                     @search                   @search2                 
  @search3                  @search4                  @search5                 
  @select                   @set                      @sex                     
  @shutdown                 @sitelock                 @sitelock2               
@@ -290,13 +288,13 @@ For more, see Entries-14
  @unrecycle                @uptime                   @uptime2                 
  @use                      @uunlock                  @verb                    
  @verb2                    @verb3                    @verb4                   
+ @version                  @vrml_url                 @wait                    
+ @wait2                    @wait3                    @wall                    
 
 For more, see Entries-15
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-15
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- @version                  @vrml_url                 @wait                    
- @wait2                    @wait3                    @wall                    
  @warnings                 @warnings2                @warnings3               
  @wcheck                   @whereis                  @wipe                    
  @wizmotd                  @wizwall                  @zemit                   
@@ -311,13 +309,13 @@ For more, see Entries-15
  alias()                   align()                   align2                   
  align3                    align4                    allof()                  
  alphamax()                alphamin()                ancestors                
+ and()                     andflags()                andlflags()              
+ andlpowers()              anews                     angles                   
 
 For more, see Entries-16
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-16
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- and()                     andflags()                andlflags()              
- andlpowers()              anews                     angles                   
  anonymous attributes      anonymous2                anonymous3               
  anonymous4                ansi                      ansi()                   
  aposs()                   art()                     asin()                   
@@ -332,13 +330,13 @@ For more, see Entries-16
  attributes list           attributes2               attributes3              
  attributes4               attrpcnt()                audible                  
  band()                    baseconv()                beep()                   
+ before()                  being killed              benchmark()              
+ bitwise functions         bnand()                   bnot()                   
 
 For more, see Entries-17
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-17
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- before()                  being killed              benchmark()              
- bitwise functions         bnand()                   bnot()                   
  boolean functions         boolean values            boolean2                 
  boolean3                  bor()                     bound()                  
  brackets()                brief                     builder                  
@@ -348,102 +346,102 @@ For more, see Entries-17
  cbufferadd()              cd                        cdesc()                  
  ceil()                    cemit()                   center()                 
  cflags()                  ch                        chan_usefirstmatch       
- changes                   changes                   channel functions        
- channel-list              channel-privs             channels()               
- charges2                  chat                      chat mogrifying          
- chat system               checkpass()               children()               
- chown_ok                  chr()                     clflags()                
+ changes                   channel functions         channel-list             
+ channel-privs             channels()                charges2                 
+ chat                      chat mogrifying           chat system              
+ checkpass()               children()                chown_ok                 
+ chr()                     clflags()                 clients                  
+ clock()                   clone()                   cloudy                   
+ cmds()                    cmogrifier()              cmsgs()                  
 
 For more, see Entries-18
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-18
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- clients                   clock()                   clone()                  
- cloudy                    cmds()                    cmogrifier()             
- cmsgs()                   code                      color                    
- commands                  communication functions   comp()                   
- comsys                    con()                     cond()                   
- condall()                 config()                  conn()                   
- connected                 connection functions      contact                  
- control                   controls()                convsecs()               
- convtime()                convutcsecs()             convutctime()            
- copyright                 copyrite                  cor()                    
- cos()                     costs                     cowner()                 
- create()                  crecall()                 credits                  
- csecs()                   cstatus()                 ctime()                  
- ctitle()                  ctu()                     cusers()                 
- cv                        cwho()                    dark                     
- database                  dbref #                   dbref functions          
+ code                      color                     commands                 
+ communication functions   comp()                    comsys                   
+ con()                     cond()                    condall()                
+ config()                  conn()                    connected                
+ connection functions      contact                   control                  
+ controls()                convsecs()                convtime()               
+ convutcsecs()             convutctime()             copyright                
+ copyrite                  cor()                     cos()                    
+ costs                     cowner()                  create()                 
+ crecall()                 credits                   csecs()                  
+ cstatus()                 ctime()                   ctitle()                 
+ ctu()                     cusers()                  cv                       
+ cwho()                    dark                      database                 
+ dbref #                   dbref functions           dbref number             
+ dbref2                    dbrefs                    debug                    
+ debug2                    debugforwardlist          dec()                    
 
 For more, see Entries-19
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-19
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- dbref number              dbref2                    dbrefs                   
- debug                     debug2                    debugforwardlist         
- dec()                     decode64()                decompose()              
- decrypt()                 default()                 delete()                 
- desert                    destroy_ok                die()                    
- dig()                     digest()                  dismiss                  
- dist2d()                  dist3d()                  div()                    
- doing                     doing()                   download                 
- drop                      drop-tos                  droptos                  
- dynhelp()                 e()                       edefault()               
- edit()                    element()                 elements()               
- elist()                   elock()                   emit()                   
- empty                     enactor                   encode64()               
- encrypt()                 endtag()                  enter                    
- enter_ok                  entrances()               eq()                     
- escape()                  etimefmt()                etimefmt2                
+ decode64()                decompose()               decrypt()                
+ default()                 delete()                  desert                   
+ destroy_ok                die()                     dig()                    
+ digest()                  dismiss                   dist2d()                 
+ dist3d()                  div()                     doing                    
+ doing()                   download                  drop                     
+ drop-tos                  droptos                   dynhelp()                
+ e()                       edefault()                edit()                   
+ element()                 elements()                elist()                  
+ elock()                   emit()                    empty                    
+ enactor                   encode64()                encrypt()                
+ endtag()                  enter                     enter_ok                 
+ entrances()               eq()                      escape()                 
+ etimefmt()                etimefmt2                 etimefmt3                
+ eval()                    evaluation order          evaluation2              
+ event                     event db                  event dump               
 
 For more, see Entries-20
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-20
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- etimefmt3                 eval()                    evaluation order         
- evaluation2               event                     event db                 
- event dump                event examples            event examples2          
- event list                event object              event player             
- event signal              event socket              event sql                
- events                    examine                   executor                 
- exit()                    exits                     exp()                    
- extract()                 failure                   failure2                 
- fdiv()                    filter()                  filterbool()             
- findable()                first()                   firstof()                
- fixed                     flag list                 flag permissions         
- flags                     flags list                flags()                  
- flags2                    flip()                    floating                 
- floor()                   floordiv()                fmod()                   
- fn()                      fold()                    fold2                    
- folderstats()             follow                    followers()              
+ event examples            event examples2           event list               
+ event object              event player              event signal             
+ event socket              event sql                 events                   
+ examine                   executor                  exit()                   
+ exits                     exp()                     extract()                
+ failure                   failure2                  fdiv()                   
+ filter()                  filterbool()              findable()               
+ first()                   firstof()                 fixed                    
+ flag list                 flag permissions          flags                    
+ flags list                flags()                   flags2                   
+ flip()                    floating                  floor()                  
+ floordiv()                fmod()                    fn()                     
+ fold()                    fold2                     folderstats()            
+ follow                    followers()               following()              
+ foreach()                 foreach2                  forwardlist              
+ fraction()                fullalias()               fullname()               
 
 For more, see Entries-21
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-21
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- following()               foreach()                 foreach2                 
- forwardlist               fraction()                fullalias()              
- fullname()                function list             functions                
- functions()               functions2                gagged                   
- gender                    get                       get()                    
- get_eval()                getpids()                 give                     
- global commands           globals                   go                       
- going                     going_twice               goto                     
- grab()                    graball()                 grep()                   
- grepi()                   gt()                      gte()                    
- halt                      hasattr()                 hasattrp()               
- hasattrpval()             hasattrval()              hasflag()                
- haspower()                hastype()                 haven                    
- hear_connect              heavy                     height()                 
+ function list             functions                 functions()              
+ functions2                gagged                    gender                   
+ get                       get()                     get_eval()               
+ getpids()                 give                      global commands          
+ globals                   go                        going                    
+ going_twice               goto                      grab()                   
+ graball()                 grep()                    grepi()                  
+ gt()                      gte()                     halt                     
+ hasattr()                 hasattrp()                hasattrpval()            
+ hasattrval()              hasflag()                 haspower()               
+ hastype()                 haven                     hear_connect             
+ heavy                     height()                  help                     
  here                      hidden()                  home                     
  home()                    homes                     host()                   
+ hostname()                html                      html functions           
+ html()                    huh_command               i18n                     
 
 For more, see Entries-22
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-22
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- hostname()                html                      html functions           
- html()                    huh_command               i18n                     
  ibreak()                  idle                      idle()                   
  idlesecs()                if()                      ifelse()                 
  ilev()                    iname()                   inc()                    
@@ -458,13 +456,13 @@ For more, see Entries-22
  judge                     jump_ok                   jury_ok                  
  keepalive                 kill                      lalign()                 
  lambda                    lambda2                   lambda3                  
+ lambda4                   last                      last & lastlogout        
+ last()                    lastip                    lastlogout               
 
 For more, see Entries-23
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-23
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- lambda4                   last                      last & lastlogout        
- last()                    lastip                    lastlogout               
  lastsite                  lattr()                   lattrp()                 
  lcon()                    lcstr()                   ldelete()                
  leave                     left()                    lemit()                  
@@ -479,13 +477,13 @@ For more, see Entries-23
  locale                    localize()                locate()                 
  locate2                   locate3                   lock keys                
  lock list                 lock types                lock types2              
+ lock()                    lockfilter()              lockflags()              
+ locking                   lockkeys                  locklist                 
 
 For more, see Entries-24
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-24
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- lock()                    lockfilter()              lockflags()              
- locking                   lockkeys                  locklist                 
  lockowner()               locks                     locks()                  
  locktypes                 locktypes2                log()                    
  logout                    look                      look2                    
@@ -500,13 +498,13 @@ For more, see Entries-24
  mail                      mail functions            mail()                   
  mail-admin                mail-folders              mail-forward             
  mail-other                mail-reading              mail-sending             
+ maildstats()              mailfilter                mailfrom()               
+ mailfstats()              maillist()                mailsend()               
 
 For more, see Entries-25
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-25
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- maildstats()              mailfilter                mailfrom()               
- mailfstats()              maillist()                mailsend()               
  mailsignature             mailstats()               mailstatus()             
  mailsubject()             mailtime()                malias()                 
  map()                     mapsql()                  master room              
@@ -521,13 +519,13 @@ For more, see Entries-25
  money                     money()                   monitor                  
  move                      msecs()                   mssp-request             
  mtime()                   mudname()                 mudurl()                 
+ mul()                     munge()                   munge2                   
+ munge3                    mushcode                  mushcode2                
 
 For more, see Entries-26
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-26
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- mul()                     munge()                   munge2                   
- munge3                    mushcode                  mushcode2                
  mwho()                    mwhoid()                  myopic                   
  name()                    namegrab()                namegraball()            
  namelist()                nand()                    nattr()                  
@@ -542,13 +540,13 @@ For more, see Entries-26
  noleave                   non-standard attributes   noname                   
  nor()                     nospace                   nospoof                  
  not()                     nowarn                    nplayers()               
+ nscemit()                 nsearch()                 nsemit()                 
+ nslemit()                 nsoemit()                 nspemit()                
 
 For more, see Entries-27
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-27
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- nscemit()                 nsearch()                 nsemit()                 
- nslemit()                 nsoemit()                 nspemit()                
  nsprompt()                nsremit()                 nszemit()                
  nthings()                 null()                    num()                    
  numversion()              nvcon()                   nvexits()                
@@ -563,13 +561,13 @@ For more, see Entries-27
  outputsuffix              owner()                   page                     
  page2                     paranoid                  parent                   
  parent()                  parents                   parents2                 
+ parents3                  parents4                  parents5                 
+ parse()                   patchlevels               pcreate()                
 
 For more, see Entries-28
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-28
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- parents3                  parents4                  parents5                 
- parse()                   patchlevels               pcreate()                
  pemit()                   pfun()                    pfun2                    
  pfun3                     pi()                      pickrand()               
  pidinfo()                 player()                  playermem()              
@@ -584,13 +582,13 @@ For more, see Entries-28
  quota()                   r()                       r-function               
  rand()                    randword()                read                     
  recv()                    regedit()                 regeditall()             
+ regeditalli()             regediti()                regexp                   
+ regexp classes            regexp classes2           regexp examples          
 
 For more, see Entries-29
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-29
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- regeditalli()             regediti()                regexp                   
- regexp classes            regexp classes2           regexp examples          
  regexp syntax             regexp syntax2            regexp syntax3           
  regexp syntax4            regexp syntax5            regexp syntax6           
  regexp syntax7            regexp syntax8            regexps                  
@@ -605,13 +603,13 @@ For more, see Entries-29
  replace()                 rest()                    restarts()               
  restarttime()             restrict                  restrict2                
  restrict3                 reswitch()                reswitchall()            
+ reswitchalli()            reswitchi()               reverse()                
+ revwords()                right()                   rjust()                  
 
 For more, see Entries-30
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-30
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- reswitchalli()            reswitchi()               reverse()                
- revwords()                right()                   rjust()                  
  rloc()                    rnum()                    room()                   
  rooms                     root()                    round()                  
  royalty                   rquota                    rules                    
@@ -626,13 +624,13 @@ For more, see Entries-30
  set()                     setdiff()                 setinter()               
  setq()                    setq2                     setq3                    
  setq4                     setr()                    setting-attributes       
+ setunion()                sex                       sha0()                   
+ shared                    shared players            shared players2          
 
 For more, see Entries-31
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-31
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- setunion()                sex                       sha0()                   
- shared                    shared players            shared players2          
  shl()                     shr()                     shuffle()                
  sign()                    sin()                     slay                     
  slev()                    socket commands           softcode                 
@@ -647,13 +645,13 @@ For more, see Entries-31
  sqrt()                    squish()                  ssl()                    
  stack                     starttime()               stats()                  
  stddev()                  step()                    stext()                  
+ sticky                    strallof()                strcat()                 
+ strfirstof()              string functions          strings                  
 
 For more, see Entries-32
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-32
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- sticky                    strallof()                strcat()                 
- strfirstof()              string functions          strings                  
  stringsecs()              strinsert()               stripaccents()           
  stripansi()               strlen()                  strmatch()               
  strreplace()              sub()                     subj()                   
@@ -668,13 +666,13 @@ For more, see Entries-32
  textfile()                things                    think                    
  time functions            time()                    timefmt()                
  timefmt2                  timestring()              topics                   
+ topics2                   tr()                      track_money              
+ translation               transparent               trim()                   
 
 For more, see Entries-33
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-33
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- topics2                   tr()                      track_money              
- translation               transparent               trim()                   
  trimpenn()                trimtiny()                trunc()                  
  trust                     type()                    types                    
  types of objects          u()                       u2                       
@@ -689,13 +687,13 @@ For more, see Entries-33
  val()                     valid()                   vcross()                 
  vdim()                    vdot()                    vector functions         
  verbose                   verbs                     verbs2                   
+ version()                 visible()                 visual                   
+ vmag()                    vmax()                    vmin()                   
 
 For more, see Entries-34
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-34
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- version()                 visible()                 visual                   
- vmag()                    vmax()                    vmin()                   
  vmul()                    vrml                      vsub()                   
  vunit()                   warnings                  warnings list            
  warnings list2            where()                   whisper                  
@@ -710,13 +708,13 @@ For more, see Entries-34
  xvplayers()               xvthings()                xwho()                   
  xwhoid()                  z_tel                     zemit()                  
  zfun()                    zmo                       zmp                      
+ zmr                       zmt                       zmwho()                  
+ zone                      zone master objects       zone master rooms        
 
 For more, see Entries-35
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-35
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- zmr                       zmt                       zmwho()                  
- zone                      zone master objects       zone master rooms        
  zone masters              zone objects              zone()                   
  zones                     zones2                    zwho()                   
 

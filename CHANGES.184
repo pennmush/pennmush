@@ -100,6 +100,8 @@ Fixes:
  * Rooms could not locate objects by name. Reported by Sketch. [MG]
  * Players using Pueblo who are not set ANSI will no longer see colors. [MG]
  * The <inside> arg to tel() didn't work. Fixed by Padraic.
+ * 'make clean' in game/txt no longer deletes the configure-generated
+   compose.sh file. Suggested by Padraic. [SW]
 
 Functions:
  * Restrictions for the beep() function can now be modified with @function.

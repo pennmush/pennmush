@@ -73,6 +73,9 @@ Minor Changes:
    option, and may set @descs "nearby". Reported by Paige. [MG]
  * Exits now show accented names (via @nameaccent) in "look". Suggested by
    Cheetah. [MG]
+ * @enter/@oenter/@aenter, @leave/@oleave/@aleave and
+   @move/@omove/@oxmove/@amove get passed the moving object's original and/or
+   new location as appropriate. Patch by Padraic.
 
 Fixes:
  * No_Pay was implicit if executor is #1, but was _not_ implicit if 
@@ -115,6 +118,8 @@ Functions:
    FIL. Reported by Padraic. [SW]
  * New render() function which returns a string rendered as html, without
    markup, etc. Useful for bots or storing data in SQL. [MG]
+ * The new q-register code wasn't passing registers on to new commands queued
+   by @wait, @trigger and @mapsql. [SW]
 
 Version 1.8.4 patchlevel 4                                 May 05,  2011
 

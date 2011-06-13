@@ -171,7 +171,7 @@ look_exits(dbref player, dbref loc, const char *exit_name)
       if ((p = strchr(pbuff, ';')))
         *p = '\0';
       p = nbuf;
-      safe_tag_wrap("A", tprintf("XCH_CMD=\"go #%d\"", thing), pbuff, nbuf, &p,
+      safe_tag_wrap("A", tprintf("XCH_CMD=\"goto #%d\"", thing), pbuff, nbuf, &p,
                     NOTHING);
       *p = '\0';
       if (Transparented(loc) && !(Opaque(thing))) {

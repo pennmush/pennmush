@@ -494,6 +494,7 @@ enum emit_type {
   EMIT_REMIT, /**< remit in given rooms */
   EMIT_OEMIT  /**< emit to all objects in location except the given objects */
 };
+dbref speech_loc(dbref thing);
 int okay_pemit(dbref player, dbref target, int dofails, int def);
 int vmessageformat(dbref player, const char *attribute,
                    dbref executor, int flags, int nargs, ...);

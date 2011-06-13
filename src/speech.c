@@ -29,7 +29,6 @@
 #include "sort.h"
 #include "confmagic.h"
 
-static dbref speech_loc(dbref thing);
 static void do_one_remit(dbref player, const char *target, const char *msg,
                          int flags, struct format_msg *format);
 dbref na_zemit(dbref current, void *data);
@@ -91,7 +90,7 @@ okay_pemit(dbref player, dbref target, int dofails, int def)
   return 1;
 }
 
-static dbref
+dbref
 speech_loc(dbref thing)
 {
   /* This is the place where speech, poses, and @emits by thing should be

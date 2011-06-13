@@ -853,8 +853,8 @@ notify_anything(dbref speaker, na_lookup func, void *fdata, dbref *skips,
   real_message.messages.strs[0].len = strlen(message);
   real_message.messages.type = str_type(message);
 
-  if (loc == AMBIGUOUS && GoodObject(speaker))
-    loc = Location(speaker);
+  if (loc == AMBIGUOUS)
+    loc = speech_loc(speaker);
 
   notify_anything_sub(speaker, func, fdata, skips, flags, &real_message, prefix,
                       loc, format);

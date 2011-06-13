@@ -337,6 +337,9 @@ See also: @listen, LISTENING, ACTION LISTS
   message shown to others in <object>'s location when someone leaves it, and 
   the actions to be taken by <object> when someone leaves it, respectively.
   
+  The leaver's new location is passed in %0, if <object> has
+  permission to see it there.
+
 See also: leave, @oxleave, @lfail, ACTION LISTS, VERBS
 & @lfail
 & @olfail
@@ -402,6 +405,9 @@ See also: @quota, @squota
   to be taken when <object> moves, respectively. Please note that long 
   @omoves are frequently found annoying.
 
+  The <object>'s new location is in %0 and the old location it moved
+  from in %1.
+
   Example:
    > @move me=You moved! You are now in the room: [name(here)].
    > @omove me=stalks into the room wearing a malevolent expression.
@@ -422,6 +428,9 @@ See also: goto, @oxmove, ACTION LISTS, VERBS
   message shown to those in <object>'s location when someone enters it, and
   the actions to be taken by <object> when someone enters it, respectively.
   
+  The old location of the entering object is passed in %0, if <object>
+  had permission to see it there.
+
   Example:
     > @enter Sofa=You sit on the comfy sofa.
     > @oenter Sofa=sits with you on the sofa.

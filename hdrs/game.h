@@ -106,7 +106,7 @@ extern void do_password(dbref executor, dbref enactor,
 extern void do_switch
   (dbref executor, char *expression, char **argv, dbref enactor, int first,
    int notifyme, int regexp, int queue_type, MQUE *queue_entry);
-extern void do_verb(dbref executor, dbref enactor, char *arg1, char **argv);
+extern void do_verb(dbref executor, dbref enactor, char *arg1, char **argv, MQUE *queue_entry);
 extern void do_grep
   (dbref player, char *obj, char *lookfor, int flag, int insensitive);
 
@@ -130,7 +130,7 @@ extern void do_cpattr
 #define EDIT_QUIET   4  /**< Don't show new values, just report total changes */
 //enum edit_type { EDIT_FIRST, EDIT_ALL };
 extern void do_gedit(dbref player, char *it, char **argv, int flags);
-extern void do_trigger(dbref player, char *object, char **argv);
+extern void do_trigger(dbref player, char *object, char **argv, MQUE *queue_entry);
 extern void do_use(dbref player, const char *what);
 extern void do_parent(dbref player, char *name, char *parent_name);
 extern void do_wipe(dbref player, char *name);

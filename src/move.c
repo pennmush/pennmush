@@ -70,10 +70,13 @@ moveit(dbref what, dbref where, int nomovemsgs,
 {
   dbref loc, old;
   dbref absloc, absold;
+  bool whereSeeswhat, oldSeeswhat;
 
   /* Don't move something into something it's holding */
   if (recursive_member(where, what, 0))
     return;
+
+  whereSeeswhat = Can_Locate(where, what); // spork
 
   /* remove what from old loc */
   absold = absolute_room(what);
@@ -96,14 +99,22 @@ moveit(dbref what, dbref where, int nomovemsgs,
   /* now put what in where */
   PUSH(what, Contents(where));
 
+  oldSeeswhat = Can_Locate(old, what);
+
   Location(what) = where;
   absloc = absolute_room(what);
   if (!WIZ_NOAENTER || !(Wizard(what) && DarkLegal(what)))
     if ((where != NOTHING) && (old != where)) {
-      did_it(what, what, NULL, NULL, "OXMOVE", NULL, NULL, old);
+      did_it_with(what, what, NULL, NULL, "OXMOVE", NULL,
+                  NULL, old, where, old, NA_INTER_HEAR);
       if (Hearer(what)) {
-        did_it_interact(what, old, "LEAVE", NULL, "OLEAVE", T("has left."),
-                        "ALEAVE", old, NA_INTER_PRESENCE);
+        if (GoodObject(where) && oldSeeswhat) {
+          did_it_with(what, old, "LEAVE", NULL, "OLEAVE", T("has left."),
+                      "ALEAVE", old, where, NOTHING, NA_INTER_PRESENCE);
+        } else {
+          did_it_interact(what, old, "LEAVE", NULL, "OLEAVE", T("has left."),
+                          "ALEAVE", old, NA_INTER_PRESENCE);
+        }
         /* If the player is leaving a zone, do zone messages */
         /* The tricky bit here is that we only care about the zone of
          * the outermost contents */
@@ -124,8 +135,14 @@ moveit(dbref what, dbref where, int nomovemsgs,
              (Zone(absloc) != Zone(absold))))
           did_it_interact(what, Zone(absloc), "ZENTER", NULL, "OZENTER", NULL,
                           "AZENTER", where, NA_INTER_SEE);
-        did_it_interact(what, where, "ENTER", NULL, "OENTER",
-                        T("has arrived."), "AENTER", where, NA_INTER_PRESENCE);
+        if (GoodObject(old) && whereSeeswhat) {
+          did_it_with(what, where, "ENTER", NULL, "OENTER", T("has arrived."),
+                      "AENTER", where, old, NOTHING, NA_INTER_PRESENCE);
+        } else {
+          did_it_interact(what, where, "ENTER", NULL, "OENTER",
+                          T("has arrived."), "AENTER", where,
+                          NA_INTER_PRESENCE);
+        }
       } else {
         /* non-listeners only trigger the actions not the messages */
         did_it(what, old, NULL, NULL, NULL, NULL, "ALEAVE", old);
@@ -141,8 +158,8 @@ moveit(dbref what, dbref where, int nomovemsgs,
       }
     }
   if (!nomovemsgs)
-    did_it_interact(what, what, "MOVE", NULL, "OMOVE", NULL,
-                    "AMOVE", where, NA_INTER_SEE);
+    did_it_with(what, what, "MOVE", NULL, "OMOVE", NULL,
+                "AMOVE", where, where, old, NA_INTER_SEE);
   queue_event(enactor, "OBJECT`MOVE", "%s,%s,%s,%d,%s",
               unparse_objid(what),
               unparse_objid(where),

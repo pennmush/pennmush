@@ -1238,7 +1238,7 @@ COMMAND(cmd_include)
 
 COMMAND(cmd_trigger)
 {
-  do_trigger(executor, arg_left, args_right);
+  do_trigger(executor, arg_left, args_right, queue_entry);
 }
 
 COMMAND(cmd_ulock)
@@ -1276,7 +1276,7 @@ COMMAND(cmd_uunlock)
 
 COMMAND(cmd_verb)
 {
-  do_verb(executor, enactor, arg_left, args_right);
+  do_verb(executor, enactor, arg_left, args_right, queue_entry);
 }
 
 COMMAND(cmd_version)

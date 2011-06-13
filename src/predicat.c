@@ -1299,7 +1299,7 @@ nearby(dbref obj1, dbref obj2)
  * \param argv the array of remaining arguments to the verb command.
  */
 void
-do_verb(dbref executor, dbref enactor, char *arg1, char **argv)
+do_verb(dbref executor, dbref enactor, char *arg1, char **argv, MQUE *queue_entry)
 {
   dbref victim;
   dbref actor;
@@ -1347,12 +1347,13 @@ do_verb(dbref executor, dbref enactor, char *arg1, char **argv)
   }
   /* We're okay.  Send out messages. */
 
-  pe_regs = pe_regs_create(PE_REGS_ARG, "do_verb");
+  pe_regs = pe_regs_create(PE_REGS_ARG | PE_REGS_Q, "do_verb");
   for (i = 0; i < 10; i++) {
     if (argv[i + 7]) {
       pe_regs_setenv_nocopy(pe_regs, i, argv[i + 7]);
     }
   }
+  pe_regs_qcopy(pe_regs, queue_entry->pe_info->regvals);
 
   real_did_it(actor, victim,
               upcasestr(argv[2]), argv[3], upcasestr(argv[4]), argv[5],

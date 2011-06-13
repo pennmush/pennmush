@@ -39,7 +39,6 @@ index.txt: index/*.index index compose.sh
 
 clean:
 	-rm -f $(IDX) $(TXT)
-	-rm -f compose.sh
 	-rm -f hlp/*.orig hlp/*.rej hlp/\#* hlp/*~
 
 

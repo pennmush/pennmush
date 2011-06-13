@@ -76,7 +76,7 @@ moveit(dbref what, dbref where, int nomovemsgs,
   if (recursive_member(where, what, 0))
     return;
 
-  whereSeeswhat = Can_Locate(where, what); // spork
+  whereSeeswhat = Can_Locate(where, what);
 
   /* remove what from old loc */
   absold = absolute_room(what);

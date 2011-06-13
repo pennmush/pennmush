@@ -1008,7 +1008,7 @@ do_gedit(dbref player, char *it, char **argv, int flags)
  * \param argv array of arguments.
  */
 void
-do_trigger(dbref player, char *object, char **argv)
+do_trigger(dbref player, char *object, char **argv, MQUE *queue_entry)
 {
   dbref thing;
   char *s;
@@ -1038,11 +1038,12 @@ do_trigger(dbref player, char *object, char **argv)
     return;
   }
 
-  pe_regs = pe_regs_create(PE_REGS_ARG, "do_trigger");
+  pe_regs = pe_regs_create(PE_REGS_ARG | PE_REGS_Q, "do_trigger");
   for (i = 0; i < 10; i++) {
     if (argv[i + 1])
       pe_regs_setenv_nocopy(pe_regs, i, argv[i + 1]);
   }
+  pe_regs_qcopy(pe_regs, queue_entry->pe_info->regvals);
 
   if (queue_attribute_base(thing, upcasestr(s), player, 0, pe_regs)) {
     if (!AreQuiet(player, thing))

@@ -11,7 +11,7 @@ help topics named for each release (e.g. 'help 1.7.2p30').
 A list of the patchlevels associated with each release can
 be read in 'help patchlevels'.
 
-Version 1.8.4 patchlevel 5                                 ??? ??,  2012
+Version 1.8.4 patchlevel 5                                 Jun ??,  2012
 
 Major Changes:
 
@@ -68,6 +68,9 @@ Minor Changes:
    option, and may set @descs "nearby". Reported by Paige. [MG]
  * Exits now show accented names (via @nameaccent) in "look". Suggested by
    Cheetah. [MG]
+ * @enter/@oenter/@aenter, @leave/@oleave/@aleave and
+   @move/@omove/@oxmove/@amove get passed the moving object's original and/or
+   new location as appropriate. Patch by Padraic.
 
 Fixes:
  * No_Pay was implicit if executor is #1, but was _not_ implicit if 
@@ -95,6 +98,10 @@ Fixes:
  * Rooms could not locate objects by name. Reported by Sketch. [MG]
  * Players using Pueblo who are not set ANSI will no longer see colors. [MG]
  * The <inside> arg to tel() didn't work. Fixed by Padraic.
+ * 'make clean' in game/txt no longer deletes the configure-generated
+   compose.sh file. Suggested by Padraic. [SW]
+ * The new q-register code wasn't passing registers on to new commands queued
+   by @wait, @trigger and @mapsql. [SW]
 
 Functions:
  * Restrictions for the beep() function can now be modified with @function.

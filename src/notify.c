@@ -1261,7 +1261,8 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
           free(atrval);
 
           if (!(flags & NA_NORELAY) && (loc != target) &&
-              Contents(target) != NOTHING && !filter_found(target, fullmsg, 1)) {
+              Contents(target) != NOTHING
+              && !filter_found(target, fullmsg, 1)) {
             /* Forward the sound to the object's contents */
             char inprefix[BUFFER_LEN];
 
@@ -1411,7 +1412,7 @@ notify_list(dbref speaker, dbref thing, const char *atr, const char *msg,
   }
 
   flags |= NA_NORELAY;
-  flags &= ~ NA_PROPAGATE;
+  flags &= ~NA_PROPAGATE;
 
   while ((curr = split_token(&fwdstr, ' ')) != NULL) {
     if (is_objid(curr)) {

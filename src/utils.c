@@ -97,7 +97,7 @@ parse_attrib(dbref player, char *str, dbref *thing, ATTR **attrib)
  * \return 0 on failure, true on success.
  */
 bool
-fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
+fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib *ufun,
                   int flags)
 {
   char *thingname, *attrname;
@@ -128,34 +128,35 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
     attrname = astring;
   }
 
-  if (thingname && (flags & UFUN_LAMBDA) && (strcasecmp(thingname, "#lambda") == 0 ||
-					     strncasecmp(thingname, "#apply", 6) == 0)) {
+  if (thingname && (flags & UFUN_LAMBDA)
+      && (strcasecmp(thingname, "#lambda") == 0
+          || strncasecmp(thingname, "#apply", 6) == 0)) {
     /* It's a lambda. */
 
     ufun->thing = executor;
-    if (strcasecmp(thingname, "#lambda") == 0) 
+    if (strcasecmp(thingname, "#lambda") == 0)
       mush_strncpy(ufun->contents, attrname, BUFFER_LEN);
-    else { /* #apply */
+    else {                      /* #apply */
       char *ucb = ufun->contents;
       unsigned nargs = 1, n;
 
       thingname += 6;
 
       if (*thingname)
-	nargs = parse_uinteger(thingname);
-      
+        nargs = parse_uinteger(thingname);
+
       /* Limit between 1 and 10 arguments (%0-%9) */
       if (nargs == 0)
-	nargs = 1;
+        nargs = 1;
       if (nargs > 10)
-	nargs = 10;
+        nargs = 10;
 
       safe_str(attrname, ufun->contents, &ucb);
       safe_chr('(', ufun->contents, &ucb);
       for (n = 0; n < nargs; n++) {
-	if (n > 0)
-	  safe_chr(',', ufun->contents, &ucb);
-	safe_format(ufun->contents, &ucb, "%%%u", n);
+        if (n > 0)
+          safe_chr(',', ufun->contents, &ucb);
+        safe_format(ufun->contents, &ucb, "%%%u", n);
       }
       safe_chr(')', ufun->contents, &ucb);
       *ucb = '\0';
@@ -228,7 +229,7 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
  * \retval 1 process_expression failed. (CPU time limit)
  */
 bool
-call_ufun(ufun_attrib * ufun, char *ret, dbref executor, dbref enactor,
+call_ufun(ufun_attrib *ufun, char *ret, dbref executor, dbref enactor,
           NEW_PE_INFO *pe_info, PE_REGS *user_regs)
 {
   char rbuff[BUFFER_LEN];

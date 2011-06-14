@@ -1258,10 +1258,12 @@ FUNCTION(fun_trim)
   s = 0;
   e = as->len;
   if (trim != TRIM_LEFT) {
-    while (e > 0 && totrim[(unsigned char) as->text[e-1]]) e--;
+    while (e > 0 && totrim[(unsigned char) as->text[e - 1]])
+      e--;
   }
   if (trim != TRIM_RIGHT) {
-    while (s < e && totrim[(unsigned char) as->text[s]]) s++;
+    while (s < e && totrim[(unsigned char) as->text[s]])
+      s++;
   }
   safe_ansi_string(as, s, e - s, buff, bp);
   free_ansi_string(as);
@@ -1299,13 +1301,15 @@ FUNCTION(fun_squish)
    * them later.
    */
   for (i = as->len - 1; i >= 0; i--) {
-    if (as->text[i] != sep) break;
+    if (as->text[i] != sep)
+      break;
   }
   as->len = i + 1;
   /* Now trim leading and sequences */
   for (i = 0, j = 0; i < as->len; i++) {
     if (as->text[i] == sep) {
-      if (insep) continue;
+      if (insep)
+        continue;
       insep = 1;
     } else {
       insep = 0;
@@ -1449,7 +1453,8 @@ FUNCTION(fun_edit)
       search = orig->text;
       /* Find each occurrence */
       while ((ptr = strstr(search, needle)) != NULL) {
-        if ((ptr - orig->text) > orig->len) break;
+        if ((ptr - orig->text) > orig->len)
+          break;
         /* Perform the replacement */
         if (ansi_string_replace(orig, ptr - orig->text, nlen, repl))
           break;
@@ -2283,5 +2288,6 @@ FUNCTION(fun_render)
   if (!flags)
     safe_str(remove_markup(args[0], NULL), buff, bp);
   else
-    safe_str((char *) render_string((unsigned char *) args[0], flags), buff, bp);
+    safe_str((char *) render_string((unsigned char *) args[0], flags), buff,
+             bp);
 }

@@ -203,9 +203,9 @@ ssl_init(char *private_key_file, char *ca_file, int req_client_cert)
 
   /* Set up session cache if we can */
   /*
-  strncpy((char *) context, MUDNAME, 128);
-  SSL_CTX_set_session_id_context(ctx, context, u_strlen(context));
-  */
+     strncpy((char *) context, MUDNAME, 128);
+     SSL_CTX_set_session_id_context(ctx, context, u_strlen(context));
+   */
 
   return ctx;
 }
@@ -225,7 +225,7 @@ client_verify_callback(int preverify_ok, X509_STORE_CTX * x509_ctx)
   if (!preverify_ok) {
     lock_file(stderr);
     fprintf(stderr, "verify error:num=%d:%s:depth=%d:%s\n", err,
-           X509_verify_cert_error_string(err), depth, buf);
+            X509_verify_cert_error_string(err), depth, buf);
     if (err == X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT) {
       X509_NAME_oneline(X509_get_issuer_name(x509_ctx->current_cert), buf, 256);
       fprintf(stderr, "issuer= %s\n", buf);
@@ -474,9 +474,9 @@ ssl_accept(SSL * ssl)
       if (SSL_get_verify_result(ssl) == X509_V_OK) {
         /* The client sent a certificate which verified OK */
         X509_NAME_oneline(X509_get_subject_name(peer), buf, 256);
-	lock_file(stderr);
+        lock_file(stderr);
         fprintf(stderr, "SSL client certificate accepted: %s", buf);
-	unlock_file(stderr);
+        unlock_file(stderr);
         state |= MYSSL_VERIFIED;
       }
     }

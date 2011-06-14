@@ -96,7 +96,7 @@ im_new(void)
 {
   intmap *im;
   im = mush_malloc(sizeof *im, "int_map");
-  if (!intmap_slab) 
+  if (!intmap_slab)
     intmap_slab = slab_create("patricia tree nodes", sizeof(struct patricia));
   im->count = 0;
   im->root = NULL;

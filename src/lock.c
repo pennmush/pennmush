@@ -873,7 +873,7 @@ fail_lock(dbref player, dbref thing, lock_type ltype, const char *def,
   char *bp;
 
   if (def)
-    strcpy(realdef, def); /* Because a lot of default msgs use tprintf */
+    strcpy(realdef, def);       /* Because a lot of default msgs use tprintf */
   else
     realdef[0] = '\0';
 

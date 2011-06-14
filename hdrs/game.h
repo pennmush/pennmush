@@ -10,13 +10,13 @@
 #define __GAME_H
 
 /* @scan flags */
-#define CHECK_INVENTORY  0x010    /*<< Check player's inventory for $-commands */
-#define CHECK_NEIGHBORS  0x020    /*<< Check objects in player's location for $-commands, including player */
-#define CHECK_SELF       0x040    /*<< Check player for $-commands */
-#define CHECK_HERE       0x080    /*<< Check player's location for $-commands */
-#define CHECK_ZONE       0x100    /*<< Check player's ZMT/ZMR for $-commands */
-#define CHECK_GLOBAL     0x200    /*<< Check for Master Room $-commands */
-#define CHECK_BREAK      0x400    /*<< Do no further checks after a round of $-command matching succeeds */
+#define CHECK_INVENTORY  0x010  /*<< Check player's inventory for $-commands */
+#define CHECK_NEIGHBORS  0x020  /*<< Check objects in player's location for $-commands, including player */
+#define CHECK_SELF       0x040  /*<< Check player for $-commands */
+#define CHECK_HERE       0x080  /*<< Check player's location for $-commands */
+#define CHECK_ZONE       0x100  /*<< Check player's ZMT/ZMR for $-commands */
+#define CHECK_GLOBAL     0x200  /*<< Check for Master Room $-commands */
+#define CHECK_BREAK      0x400  /*<< Do no further checks after a round of $-command matching succeeds */
 /* Does NOT include CHECK_BREAK */
 #define CHECK_ALL (CHECK_INVENTORY | CHECK_NEIGHBORS | CHECK_SELF | CHECK_HERE | CHECK_ZONE | CHECK_GLOBAL)
 
@@ -34,8 +34,8 @@ void hide_player(dbref player, int hide, char *victim);
 enum motd_type { MOTD_MOTD, MOTD_WIZ, MOTD_DOWN, MOTD_FULL, MOTD_LIST };
 void do_motd(dbref player, enum motd_type key, const char *message);
 void do_poll(dbref player, const char *message, int clear);
-void do_page_port(dbref executor, dbref enactor, const char *pc, const char *msg,
-                  bool eval_msg);
+void do_page_port(dbref executor, dbref enactor, const char *pc,
+                  const char *msg, bool eval_msg);
 void do_pemit_port(dbref player, const char *pc, const char *msg, int flags);
 /* From cque.c */
 void do_wait
@@ -106,9 +106,10 @@ extern void do_password(dbref executor, dbref enactor,
 extern void do_switch
   (dbref executor, char *expression, char **argv, dbref enactor, int first,
    int notifyme, int regexp, int queue_type, MQUE *queue_entry);
-extern void do_verb(dbref executor, dbref enactor, char *arg1, char **argv, MQUE *queue_entry);
-extern void do_grep
-  (dbref player, char *obj, char *lookfor, int flag, int insensitive);
+extern void do_verb(dbref executor, dbref enactor, char *arg1, char **argv,
+                    MQUE *queue_entry);
+extern void do_grep(dbref player, char *obj, char *lookfor, int flag,
+                    int insensitive);
 
 /* From rob.c */
 extern void do_kill(dbref player, const char *what, int cost, int slay);
@@ -130,7 +131,8 @@ extern void do_cpattr
 #define EDIT_QUIET   4  /**< Don't show new values, just report total changes */
 //enum edit_type { EDIT_FIRST, EDIT_ALL };
 extern void do_gedit(dbref player, char *it, char **argv, int flags);
-extern void do_trigger(dbref player, char *object, char **argv, MQUE *queue_entry);
+extern void do_trigger(dbref player, char *object, char **argv,
+                       MQUE *queue_entry);
 extern void do_use(dbref player, const char *what);
 extern void do_parent(dbref player, char *name, char *parent_name);
 extern void do_wipe(dbref player, char *name);

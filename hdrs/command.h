@@ -58,9 +58,9 @@ bool SW_BY_NAME(switch_mask, const char *);
 #define CMD_T_LS_ARGS    CMD_T_ARGS
 #define CMD_T_LS_SPACE   CMD_T_ARG_SPACE
 #define CMD_T_LS_NOPARSE CMD_T_NOPARSE
-#define CMD_T_RS_ARGS    0x00000100 /*CMD_T_ARGS<<4*/
-#define CMD_T_RS_SPACE   0x00000200 /*CMD_T_ARG_SPACE<<4*/
-#define CMD_T_RS_NOPARSE 0x00000400 /*CMD_T_NOPARSE<<4*/
+#define CMD_T_RS_ARGS    0x00000100     /*CMD_T_ARGS<<4 */
+#define CMD_T_RS_SPACE   0x00000200     /*CMD_T_ARG_SPACE<<4 */
+#define CMD_T_RS_NOPARSE 0x00000400     /*CMD_T_NOPARSE<<4 */
 
 /** COMMAND prototype.
  * \verbatim

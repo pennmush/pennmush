@@ -108,8 +108,8 @@ int alias_list_check(dbref thing, const char *command, const char *type);
 int loc_alias_check(dbref loc, const char *command, const char *type);
 void do_poor(dbref player, char *arg1);
 void do_writelog(dbref player, char *str, int ltype);
-void bind_and_queue(dbref executor, dbref enactor, char *action, const char *arg,
-                    int num, MQUE *parent_queue);
+void bind_and_queue(dbref executor, dbref enactor, char *action,
+                    const char *arg, int num, MQUE *parent_queue);
 void do_list(dbref player, char *arg, int lc, int which);
 void do_uptime(dbref player, int mortal);
 static char *make_new_epoch_file(const char *basename, int the_epoch);

@@ -32,8 +32,7 @@ typedef struct {
 
 
 void init_help_files(void);
-void add_help_file
-  (const char *command_name, const char *filename, int admin);
+void add_help_file(const char *command_name, const char *filename, int admin);
 void help_reindex(dbref player);
 bool help_reindex_by_name(const char *filename);
 #endif                          /* __HELP_H */

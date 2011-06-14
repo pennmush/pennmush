@@ -1299,7 +1299,8 @@ nearby(dbref obj1, dbref obj2)
  * \param argv the array of remaining arguments to the verb command.
  */
 void
-do_verb(dbref executor, dbref enactor, char *arg1, char **argv, MQUE *queue_entry)
+do_verb(dbref executor, dbref enactor, char *arg1, char **argv,
+        MQUE *queue_entry)
 {
   dbref victim;
   dbref actor;

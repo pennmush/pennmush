@@ -280,7 +280,7 @@ static int sock;
 #ifdef HAS_OPENSSL
 static int sslsock = 0;
 SSL *ssl_master_socket = NULL;  /**< Master SSL socket for ssl port */
-static const char *ssl_shutdown_message __attribute__((__unused__))  =
+static const char *ssl_shutdown_message __attribute__ ((__unused__)) =
   "GAME: SSL connections must be dropped, sorry.";
 #endif
 #ifdef LOCAL_SOCKET
@@ -609,7 +609,6 @@ main(int argc, char **argv)
     restarting = 1;
     fclose(newerr);
   }
-
 #ifdef SSL_SLAVE
   if (!restarting && SSLPORT) {
     if (make_ssl_slave() < 0)
@@ -1014,10 +1013,10 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
 #ifdef SSL_SLAVE
     if (ssl_slave_error) {
       do_rawlog(LT_ERR, "ssl_slave (Pid %d) exited unexpectedly!",
-		ssl_slave_error);
+                ssl_slave_error);
       ssl_slave_error = 0;
       if (!ssl_slave_halted)
-	make_ssl_slave();
+        make_ssl_slave();
     }
 #endif
 #endif                          /* !WIN32 */
@@ -1166,7 +1165,7 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
 #endif
 #ifdef LOCAL_SOCKET
       if (localsock && FD_ISSET(localsock, &input_set))
-	setup_desc(localsock, CS_LOCAL_SOCKET);
+        setup_desc(localsock, CS_LOCAL_SOCKET);
 #endif
 #else                           /* INFO_SLAVE */
       if (FD_ISSET(sock, &input_set))
@@ -1202,7 +1201,7 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
       }
     }
   }
-  }
+}
 
 static int
 test_connection(int newsock)
@@ -1220,7 +1219,8 @@ test_connection(int newsock)
 }
 
 const char *
-source_to_s(conn_source source) {
+source_to_s(conn_source source)
+{
   switch (source) {
   case CS_IP_SOCKET:
     return "normal port";
@@ -1261,7 +1261,7 @@ new_connection(int oldsock, int *result, conn_source source)
     hi = hostname_convert(&addr.addr, addr_len);
     safe_str(hi ? hi->hostname : "", tbuf1, &bp);
     *bp = '\0';
-  } else { /* source == CS_LOCAL_SOCKET */
+  } else {                      /* source == CS_LOCAL_SOCKET */
     int len;
     char *split;
 
@@ -1270,7 +1270,7 @@ new_connection(int oldsock, int *result, conn_source source)
     /* As soon as the SSL slave opens a new connection to the mush, it
        writes a string of the format 'IP^HOSTNAME\r\n'. This will thus
        not block.
-    */
+     */
     len = read(newsock, tbuf2, sizeof tbuf2);
     if (len < 3) {
       /* This shouldn't happen! */
@@ -1286,7 +1286,7 @@ new_connection(int oldsock, int *result, conn_source source)
       strcpy(tbuf1, split);
       split = strchr(tbuf1, '\r');
       if (split)
-	*split = '\0';
+        *split = '\0';
     } else {
       /* Again, shouldn't happen! */
       strcpy(tbuf1, "(Unknown)");
@@ -1308,8 +1308,8 @@ new_connection(int oldsock, int *result, conn_source source)
 #endif
     return 0;
   }
-  do_rawlog(LT_CONN, "[%d/%s/%s] Connection opened from %s.", newsock, tbuf1, tbuf2,
-	    source_to_s(source));
+  do_rawlog(LT_CONN, "[%d/%s/%s] Connection opened from %s.", newsock, tbuf1,
+            tbuf2, source_to_s(source));
   if (source != CS_LOCAL_SOCKET)
     set_keepalive(newsock, options.keepalive_timeout);
   return initializesock(newsock, tbuf1, tbuf2, source);
@@ -2912,7 +2912,7 @@ close_sockets(void)
   DESC *d, *dnext;
   const char *shutmsg;
   int shutlen;
-  int ignoreme __attribute__((__unused__));
+  int ignoreme __attribute__ ((__unused__));
 
   shutmsg = T(shutdown_message);
   shutlen = strlen(shutmsg);
@@ -3279,11 +3279,11 @@ reaper(int sig __attribute__ ((__unused__)))
     } else
 #endif
 #ifdef SSL_SLAVE
-      if (ssl_slave_pid > -1 && pid == ssl_slave_pid) {
-	ssl_slave_error = ssl_slave_pid;
-	ssl_slave_state = SSL_SLAVE_DOWN;
-	ssl_slave_pid = -1;
-      } else
+    if (ssl_slave_pid > -1 && pid == ssl_slave_pid) {
+      ssl_slave_error = ssl_slave_pid;
+      ssl_slave_state = SSL_SLAVE_DOWN;
+      ssl_slave_pid = -1;
+    } else
 #endif
     if (forked_dump_pid > -1 && pid == forked_dump_pid) {
       dump_error = forked_dump_pid;
@@ -3602,7 +3602,7 @@ do_who_admin(dbref player, char *name)
       sprintf(tbuf, "%-16s %6s %9s %5s  %4d %3d%c %s", T("Connecting..."),
               "#-1", time_format_1(now - d->connected_at),
               time_format_2(now - d->last_time), d->cmds, d->descriptor,
-	      is_ssl_desc(d) ? 'S' : ' ', d->addr);
+              is_ssl_desc(d) ? 'S' : ' ', d->addr);
       tbuf[78] = '\0';
     }
     notify(player, tbuf);
@@ -5204,7 +5204,8 @@ dump_reboot_db(void)
 {
   PENNFILE *f;
   DESC *d;
-  uint32_t flags = RDBF_SCREENSIZE | RDBF_TTYPE | RDBF_PUEBLO_CHECKSUM | RDBF_SOCKET_SRC;
+  uint32_t flags =
+    RDBF_SCREENSIZE | RDBF_TTYPE | RDBF_PUEBLO_CHECKSUM | RDBF_SOCKET_SRC;
 
 #ifdef LOCAL_SOCKET
   flags |= RDBF_LOCAL_SOCKET;
@@ -5308,7 +5309,7 @@ load_reboot_db(void)
      * If not, assume we're using the original format, in which the
      * sock appears first
      * */
-    c = penn_fgetc(f);            /* Skip the V */
+    c = penn_fgetc(f);          /* Skip the V */
     if (c == 'V') {
       flags = getref(f);
     } else {
@@ -5341,32 +5342,32 @@ load_reboot_db(void)
       temp = getstring_noalloc(f);
       d->output_prefix = NULL;
       if (strcmp(temp, "__NONE__"))
-	set_userstring(&d->output_prefix, temp);
+        set_userstring(&d->output_prefix, temp);
       temp = getstring_noalloc(f);
       d->output_suffix = NULL;
       if (strcmp(temp, "__NONE__"))
-	set_userstring(&d->output_suffix, temp);
+        set_userstring(&d->output_suffix, temp);
       mush_strncpy(d->addr, getstring_noalloc(f), 100);
       mush_strncpy(d->ip, getstring_noalloc(f), 100);
       mush_strncpy(d->doing, getstring_noalloc(f), DOING_LEN);
       d->conn_flags = getref(f);
       if (flags & RDBF_SCREENSIZE) {
-	d->width = getref(f);
-	d->height = getref(f);
+        d->width = getref(f);
+        d->height = getref(f);
       } else {
-	d->width = 78;
-	d->height = 24;
+        d->width = 78;
+        d->height = 24;
       }
       if (flags & RDBF_TTYPE)
-	d->ttype = mush_strdup(getstring_noalloc(f), "terminal description");
+        d->ttype = mush_strdup(getstring_noalloc(f), "terminal description");
       else
-	d->ttype = mush_strdup("unknown", "terminal description");
+        d->ttype = mush_strdup("unknown", "terminal description");
       if (flags & RDBF_SOCKET_SRC)
-	d->source = getref(f);
+        d->source = getref(f);
       if (flags & RDBF_PUEBLO_CHECKSUM)
-	strcpy(d->checksum, getstring_noalloc(f));
+        strcpy(d->checksum, getstring_noalloc(f));
       else
-	d->checksum[0] = '\0';
+        d->checksum[0] = '\0';
       d->input_chars = 0;
       d->output_chars = 0;
       d->output_size = 0;
@@ -5383,31 +5384,31 @@ load_reboot_db(void)
 #endif
 
       if (d->conn_flags & CONN_CLOSE_READY) {
-	/* This isn't really an open descriptor, we're just tracking
-	 * it so we can announce the disconnect properly. Do so, but
-	 * don't link it into the descriptor list. Instead, keep a
-	 * separate list.
-	 */
-	if (closed)
-	  closed->prev = d;
-	d->next = closed;
-	d->prev = NULL;
-	closed = d;
+        /* This isn't really an open descriptor, we're just tracking
+         * it so we can announce the disconnect properly. Do so, but
+         * don't link it into the descriptor list. Instead, keep a
+         * separate list.
+         */
+        if (closed)
+          closed->prev = d;
+        d->next = closed;
+        d->prev = NULL;
+        closed = d;
       } else {
-	if (descriptor_list)
-	  descriptor_list->prev = d;
-	d->next = descriptor_list;
-	d->prev = NULL;
-	descriptor_list = d;
-	im_insert(descs_by_fd, d->descriptor, d);
-	if (d->connected && GoodObject(d->player) && IsPlayer(d->player))
-	  set_flag_internal(d->player, "CONNECTED");
-	else if ((!d->player || !GoodObject(d->player)) && d->connected) {
-	  d->connected = 0;
-	  d->player = NOTHING;
-	}
+        if (descriptor_list)
+          descriptor_list->prev = d;
+        d->next = descriptor_list;
+        d->prev = NULL;
+        descriptor_list = d;
+        im_insert(descs_by_fd, d->descriptor, d);
+        if (d->connected && GoodObject(d->player) && IsPlayer(d->player))
+          set_flag_internal(d->player, "CONNECTED");
+        else if ((!d->player || !GoodObject(d->player)) && d->connected) {
+          d->connected = 0;
+          d->player = NOTHING;
+        }
       }
-    }                             /* while loop */
+    }                           /* while loop */
 
     strcpy(poll_msg, getstring_noalloc(f));
     globals.first_start_time = getref(f);
@@ -5418,7 +5419,7 @@ load_reboot_db(void)
       sslsock = make_socket(SSLPORT, SOCK_STREAM, NULL, NULL, SSL_IP_ADDR);
       ssl_master_socket = ssl_setup_socket(sslsock);
       if (sslsock >= maxd)
-	maxd = sslsock + 1;
+        maxd = sslsock + 1;
     }
 #endif
 
@@ -5431,9 +5432,10 @@ load_reboot_db(void)
     ssl_slave_pid = val;
     if (ssl_slave_pid == -1 && SSLPORT) {
       /* Attempt to restart a missing ssl_slave on reboot */
-      do_rawlog(LT_ERR, "ssl_slave does not appear to be running on reboot. Restarting the slave.");
+      do_rawlog(LT_ERR,
+                "ssl_slave does not appear to be running on reboot. Restarting the slave.");
       if (make_ssl_slave() < 0)
-	do_rawlog(LT_ERR, "Unable to start ssl_slave");
+        do_rawlog(LT_ERR, "Unable to start ssl_slave");
     } else
       ssl_slave_state = SSL_SLAVE_RUNNING;
 #endif
@@ -5591,11 +5593,11 @@ WATCH(const char *name)
 
   if (*name != NUMBER_TOKEN) {
     if ((wd = inotify_add_watch(watch_fd, name,
-				IN_MODIFY | IN_DELETE_SELF | IN_MOVE_SELF)) < 0)
+                                IN_MODIFY | IN_DELETE_SELF | IN_MOVE_SELF)) < 0)
       do_rawlog(LT_TRACE, "file_watch_init:inotify_add_watch(\"%s\"): %s",
-		name, strerror(errno));
+                name, strerror(errno));
     else
-      im_insert(watchtable, wd, (void*)name);
+      im_insert(watchtable, wd, (void *) name);
   }
 }
 
@@ -5637,7 +5639,6 @@ file_watch_init_in(void)
     watchtable = NULL;
   }
 
-
 #ifdef HAVE_INOTIFY_INIT1
   watch_fd = inotify_init1(IN_NONBLOCK);
 #else
@@ -5664,20 +5665,22 @@ file_watch_event_in(int fd)
   uint8_t raw[BUFFER_LEN];
 
   while (read(fd, raw, sizeof raw) > 0) {
-    struct inotify_event *ev = (struct inotify_event *)raw;
+    struct inotify_event *ev = (struct inotify_event *) raw;
     const char *file = im_find(watchtable, ev->wd);
     if (file) {
       if (ev->mask != IN_IGNORED) {
-	do_rawlog(LT_ERR, "Got inotify status change for file '%s'", file);
-	if (fcache_read_one(file)) {
-	  do_rawlog(LT_TRACE, "Updated cached copy of %s.", file);
-	  WATCH(file);
-	} else if (help_reindex_by_name(file)) {
-	  do_rawlog(LT_TRACE, "Reindexing help file %s.", file);
-	  WATCH(file);
-	} else {
-	  do_rawlog(LT_ERR, "Got status change for file '%s' but I don't know what to do with it!", file);
-	}
+        do_rawlog(LT_ERR, "Got inotify status change for file '%s'", file);
+        if (fcache_read_one(file)) {
+          do_rawlog(LT_TRACE, "Updated cached copy of %s.", file);
+          WATCH(file);
+        } else if (help_reindex_by_name(file)) {
+          do_rawlog(LT_TRACE, "Reindexing help file %s.", file);
+          WATCH(file);
+        } else {
+          do_rawlog(LT_ERR,
+                    "Got status change for file '%s' but I don't know what to do with it!",
+                    file);
+        }
       }
     }
   }

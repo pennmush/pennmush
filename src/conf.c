@@ -187,7 +187,8 @@ PENNCONF conftable[] = {
   ,
   {"ssl_port", cf_int, &options.ssl_port, 65535, 0, "net"}
   ,
-  {"socket_file", cf_str, &options.socket_file, 256, 0, "net"},
+  {"socket_file", cf_str, &options.socket_file, 256, 0, "net"}
+  ,
   {"use_dns", cf_bool, &options.use_dns, 2, 0, "net"}
   ,
   {"logins", cf_bool, &options.login_allow, 2, 0, "net"}
@@ -297,8 +298,10 @@ PENNCONF conftable[] = {
   ,
   {"max_logins", cf_int, &options.max_logins, 128, 0, "limits"}
   ,
-  {"max_guests", cf_int, &options.max_guests, 128, 0, "limits"},
-  {"max_named_qregs", cf_int, &options.max_named_qregs, 8192, 0, "limits"},
+  {"max_guests", cf_int, &options.max_guests, 128, 0, "limits"}
+  ,
+  {"max_named_qregs", cf_int, &options.max_named_qregs, 8192, 0, "limits"}
+  ,
   {"connect_fail_limit", cf_int, &options.connect_fail_limit, 50, 0, "limits"}
   ,
   {"idle_timeout", cf_time, &options.idle_timeout, 100000, 0, "limits"}

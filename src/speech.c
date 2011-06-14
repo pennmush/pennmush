@@ -71,7 +71,9 @@ okay_pemit(dbref player, dbref target, int dofails, int def)
 
   if (dofails && def) {
     dp = defmsg;
-    safe_format(defmsg, &dp, T("I'm sorry, but %s wishes to be left alone now."), Name(target));
+    safe_format(defmsg, &dp,
+                T("I'm sorry, but %s wishes to be left alone now."),
+                Name(target));
     *dp = '\0';
     dp = defmsg;
   }
@@ -139,9 +141,11 @@ do_teach(dbref player, const char *tbuf1, int list, MQUE *parent_queue)
     flags |= QUEUE_NOLIST;
 
   lp = lesson;
-  safe_format(lesson, &lp, T("%s types --> %s%s%s"), spname(player), ANSI_HILITE, tbuf1, ANSI_END);
+  safe_format(lesson, &lp, T("%s types --> %s%s%s"), spname(player),
+              ANSI_HILITE, tbuf1, ANSI_END);
   *lp = '\0';
-  notify_anything(player, na_loc, &loc, NULL, NA_INTER_HEAR | NA_PROPAGATE, lesson, NULL, loc, NULL);
+  notify_anything(player, na_loc, &loc, NULL, NA_INTER_HEAR | NA_PROPAGATE,
+                  lesson, NULL, loc, NULL);
   new_queue_actionlist(player, parent_queue->enactor, player, (char *) tbuf1,
                        parent_queue, PE_INFO_SHARE, flags, NULL);
 }
@@ -184,7 +188,8 @@ do_say(dbref player, const char *message)
   /* notify everybody */
   notify_format(player, T("You say, \"%s\""), (mod ? modmsg : message));
   sp = says;
-  safe_format(says, &sp, T("%s says, \"%s\""), spname(player), (mod ? modmsg : message));
+  safe_format(says, &sp, T("%s says, \"%s\""), spname(player),
+              (mod ? modmsg : message));
   *sp = '\0';
   notify_except(loc, player, says, NA_INTER_HEAR);
 }
@@ -200,7 +205,8 @@ do_say(dbref player, const char *message)
  * \param format a format_msg structure to pass to notify_anything() from \@message
  */
 void
-do_oemit_list(dbref player, char *list, const char *message, int flags, struct format_msg *format)
+do_oemit_list(dbref player, char *list, const char *message, int flags,
+              struct format_msg *format)
 {
   char *temp, *p;
   const char *s;
@@ -290,7 +296,8 @@ do_oemit_list(dbref player, char *list, const char *message, int flags, struct f
     if (oneloc) {
       /* A specific location was given, but there were no matching objects to
        * omit, so just remit */
-      notify_anything(orator, na_loc, &room, NULL, na_flags, message, NULL, room, format);
+      notify_anything(orator, na_loc, &room, NULL, na_flags, message, NULL,
+                      room, format);
     } else {
       notify(player, T("No matching objects."));
     }
@@ -304,7 +311,8 @@ do_oemit_list(dbref player, char *list, const char *message, int flags, struct f
   for (i = 0; i < matched; i++) {
     if (i != 0 && locs[i] == locs[i - 1])
       continue;
-    notify_anything(orator, na_loc, &locs[i], pass, na_flags, message, NULL, locs[i], format);
+    notify_anything(orator, na_loc, &locs[i], pass, na_flags, message, NULL,
+                    locs[i], format);
   }
 
 }
@@ -513,7 +521,8 @@ do_message(dbref executor, char *list, char *attrname,
  * \param format a format_msg structure to pass to notify_anything() from \@message
  */
 void
-do_pemit(dbref player, char *target, const char *message, int flags, struct format_msg *format)
+do_pemit(dbref player, char *target, const char *message, int flags,
+         struct format_msg *format)
 {
   dbref who, last = NOTHING;
   int na_flags = NA_MUST_PUPPET;
@@ -539,20 +548,24 @@ do_pemit(dbref player, char *target, const char *message, int flags, struct form
   }
 
   do {
-    who = match_result(player, p, NOTYPE, (one ? MAT_EVERYTHING | MAT_NOISY : MAT_EVERYTHING));
+    who =
+      match_result(player, p, NOTYPE,
+                   (one ? MAT_EVERYTHING | MAT_NOISY : MAT_EVERYTHING));
     if (!GoodObject(who))
       continue;
     if (!okay_pemit(player, who, 1, one))
       continue;
     count++;
     last = who;
-    notify_anything(orator, na_one, &who, NULL, na_flags, message, NULL, AMBIGUOUS, format);
+    notify_anything(orator, na_one, &who, NULL, na_flags, message, NULL,
+                    AMBIGUOUS, format);
   } while (!one && l && *l && (p = next_in_list(&l)));
 
 
   if (!(flags & PEMIT_SILENT) && count) {
     if (count > 1)
-      notify_format(player, T("You pemit \"%s\" to %d objects."), message, count);
+      notify_format(player, T("You pemit \"%s\" to %d objects."), message,
+                    count);
     else if (last != player)
       notify_format(player, T("You pemit \"%s\" to %s."), message, Name(last));
   }
@@ -593,10 +606,12 @@ do_pose(dbref player, const char *tbuf1, int nospace)
   pe_regs_free(pe_regs);
 
   mp = message;
-  safe_format(message, &mp, (nospace ? "%s%s" : "%s %s"), spname(player), (mod ? tbuf2 : tbuf1));
+  safe_format(message, &mp, (nospace ? "%s%s" : "%s %s"), spname(player),
+              (mod ? tbuf2 : tbuf1));
   *mp = '\0';
 
-  notify_anything(player, na_loc, &loc, NULL, NA_INTER_HEAR | NA_PROPAGATE, message, NULL, loc, NULL);
+  notify_anything(player, na_loc, &loc, NULL, NA_INTER_HEAR | NA_PROPAGATE,
+                  message, NULL, loc, NULL);
 }
 
 /** The *wall commands.
@@ -737,7 +752,8 @@ messageformat(dbref player, const char *attribute, dbref enactor, int flags,
   if (ret) {
     /* We have a returned value. Notify the player. */
     if (*messbuff)
-      notify_anything(enactor, na_one, &player, NULL, flags, messbuff, NULL, AMBIGUOUS, NULL);
+      notify_anything(enactor, na_one, &player, NULL, flags, messbuff, NULL,
+                      AMBIGUOUS, NULL);
     return 1;
   } else {
     return 0;
@@ -1177,7 +1193,8 @@ do_emit(dbref player, const char *message, int flags)
   /* notify everybody */
   if (flags & PEMIT_SPOOF)
     na_flags |= NA_SPOOF;
-  notify_anything(player, na_loc, &loc, NULL, na_flags, message, NULL, loc, NULL);
+  notify_anything(player, na_loc, &loc, NULL, na_flags, message, NULL, loc,
+                  NULL);
 }
 
 /** Remit a message to a single room.
@@ -1187,7 +1204,8 @@ do_emit(dbref player, const char *message, int flags)
  * \param flags PEMIT_* flags
  */
 static void
-do_one_remit(dbref player, const char *target, const char *msg, int flags, struct format_msg *format)
+do_one_remit(dbref player, const char *target, const char *msg, int flags,
+             struct format_msg *format)
 {
   dbref room;
   int na_flags = NA_INTER_HEAR | NA_PROPAGATE;
@@ -1210,7 +1228,8 @@ do_one_remit(dbref player, const char *target, const char *msg, int flags, struc
       }
       if (flags & PEMIT_SPOOF)
         na_flags |= NA_SPOOF;
-      notify_anything(orator, na_loc, &room, NULL, na_flags, msg, NULL, room, format);
+      notify_anything(orator, na_loc, &room, NULL, na_flags, msg, NULL, room,
+                      format);
     }
   }
 }
@@ -1226,7 +1245,8 @@ do_one_remit(dbref player, const char *target, const char *msg, int flags, struc
  * \param format a format_msg structure to pass to notify_anything() from \@message
  */
 void
-do_remit(dbref player, char *rooms, const char *message, int flags, struct format_msg *format)
+do_remit(dbref player, char *rooms, const char *message, int flags,
+         struct format_msg *format)
 {
   if (flags & PEMIT_LIST) {
     /* @remit/list */
@@ -1269,7 +1289,8 @@ do_lemit(dbref player, const char *message, int flags)
       notify_format(player, T("You lemit: \"%s\""), message);
     if (flags & PEMIT_SPOOF)
       na_flags |= NA_SPOOF;
-    notify_anything(player, na_loc, &room, NULL, na_flags, message, NULL, room, NULL);
+    notify_anything(player, na_loc, &room, NULL, na_flags, message, NULL, room,
+                    NULL);
   }
 }
 
@@ -1344,7 +1365,8 @@ do_zemit(dbref player, const char *target, const char *message, int flags)
     pass[3] = Location(player);
   if (flags & PEMIT_SPOOF)
     na_flags |= NA_SPOOF;
-  notify_anything(player, na_zemit, &pass, NULL, na_flags, message, NULL, NOTHING, NULL);
+  notify_anything(player, na_zemit, &pass, NULL, na_flags, message, NULL,
+                  NOTHING, NULL);
 
 
   if (!(flags & PEMIT_SILENT) && pass[3] != NOTHING) {

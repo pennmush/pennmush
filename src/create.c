@@ -211,7 +211,8 @@ do_open(dbref player, const char *direction, char **links)
   }
 
   forward = do_real_open(player, direction, links[1], source);
-  if (links[2] && *links[2] && GoodObject(forward) && GoodObject(Location(forward))) {
+  if (links[2] && *links[2] && GoodObject(forward)
+      && GoodObject(Location(forward))) {
     char sourcestr[SBUF_LEN];   /* SBUF_LEN is the size used by unparse_dbref */
     if (!GoodObject(source)) {
       if (IsRoom(player)) {

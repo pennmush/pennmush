@@ -355,7 +355,7 @@ make_unix_socket(const char *filename, int socktype)
 {
   int s;
   struct sockaddr_un addr;
-  
+
   memset(&addr, 0, sizeof addr);
   addr.sun_family = AF_LOCAL;
   strncpy(addr.sun_path, filename, sizeof(addr.sun_path) - 1);
@@ -367,7 +367,7 @@ make_unix_socket(const char *filename, int socktype)
     return -1;
   }
 
-  if (bind(s, (const struct sockaddr*)&addr, sizeof addr) < 0) {
+  if (bind(s, (const struct sockaddr *) &addr, sizeof addr) < 0) {
     perror("bind");
     close(s);
     return -1;
@@ -404,7 +404,7 @@ connect_unix_socket(const char *filename, int socktype)
     return -1;
   }
 
-  if (connect_nonb(s, (const struct sockaddr *)&addr, sizeof addr, 1) == 0)
+  if (connect_nonb(s, (const struct sockaddr *) &addr, sizeof addr, 1) == 0)
     return s;
   else {
     close(s);
@@ -493,7 +493,8 @@ make_blocking(int s)
  */
 /* ARGSUSED */
 void
-set_keepalive(int s __attribute__ ((__unused__)), int keepidle __attribute__((__unused__)))
+set_keepalive(int s __attribute__ ((__unused__)), int keepidle
+              __attribute__ ((__unused__)))
 {
 #ifdef SO_KEEPALIVE
   int keepalive = 1;
@@ -501,7 +502,8 @@ set_keepalive(int s __attribute__ ((__unused__)), int keepidle __attribute__((__
   /* enable TCP keepalive */
   if (setsockopt(s, SOL_SOCKET, SO_KEEPALIVE,
                  (void *) &keepalive, sizeof(keepalive)) == -1)
-    fprintf(stderr, "[%d] could not set SO_KEEPALIVE: %s\n", s, strerror(errno));
+    fprintf(stderr, "[%d] could not set SO_KEEPALIVE: %s\n", s,
+            strerror(errno));
 
   /* And set the ping time to something reasonable instead of the
      default 2 hours. Linux and possibly others use TCP_KEEPIDLE to do
@@ -509,11 +511,13 @@ set_keepalive(int s __attribute__ ((__unused__)), int keepidle __attribute__((__
 #if defined(TCP_KEEPIDLE)
   if (setsockopt(s, IPPROTO_TCP, TCP_KEEPIDLE,
                  (void *) &keepidle, sizeof(keepidle)) == -1)
-    fprintf(stderr, "[%d] could not set TCP_KEEPIDLE: %s\n", s, strerror(errno));
+    fprintf(stderr, "[%d] could not set TCP_KEEPIDLE: %s\n", s,
+            strerror(errno));
 #elif defined(TCP_KEEPALIVE)
   if (setsockopt(s, IPPROTO_TCP, TCP_KEEPALIVE,
                  (void *) &keepidle, sizeof(keepidle)) == -1)
-    fprintf(stderr, "[%d] could not set TCP_KEEPALIVE: %s\n", s, strerror(errno));
+    fprintf(stderr, "[%d] could not set TCP_KEEPALIVE: %s\n", s,
+            strerror(errno));
 #endif
 #endif
   return;

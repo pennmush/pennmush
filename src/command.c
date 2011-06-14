@@ -83,7 +83,8 @@ COMLIST commands[] = {
   {"@@", NULL, cmd_null, CMD_T_ANY | CMD_T_NOPARSE, 0, 0},
   {"@ALLHALT", NULL, cmd_allhalt, CMD_T_ANY, "WIZARD", "HALT"},
   {"@ALLQUOTA", "QUIET", cmd_allquota, CMD_T_ANY, "WIZARD", "QUOTA"},
-  {"@ASSERT", NULL, cmd_assert, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_RS_BRACE, 0,
+  {"@ASSERT", NULL, cmd_assert,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_RS_BRACE, 0,
    0},
   {"@ATRLOCK", NULL, cmd_atrlock, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@ATRCHOWN", NULL, cmd_atrchown, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
@@ -91,7 +92,8 @@ COMLIST commands[] = {
   {"@ATTRIBUTE", "ACCESS DELETE RENAME RETROACTIVE LIMIT ENUM", cmd_attribute,
    CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@BOOT", "PORT ME SILENT", cmd_boot, CMD_T_ANY, 0, 0},
-  {"@BREAK", NULL, cmd_break, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_RS_BRACE, 0,
+  {"@BREAK", NULL, cmd_break,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_RS_BRACE, 0,
    0},
   {"@CEMIT", "NOEVAL NOISY SILENT SPOOF", cmd_cemit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
@@ -314,7 +316,8 @@ COMLIST commands[] = {
   {"@UUNLOCK", NULL, cmd_uunlock, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"@VERB", NULL, cmd_verb, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
   {"@VERSION", NULL, cmd_version, CMD_T_ANY, 0, 0},
-  {"@WAIT", "PID UNTIL", cmd_wait, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_RS_BRACE,
+  {"@WAIT", "PID UNTIL", cmd_wait,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_RS_BRACE,
    0, 0},
   {"@WALL", "NOEVAL EMIT", cmd_wall, CMD_T_ANY, "WIZARD ROYALTY", "ANNOUNCE"},
 
@@ -1895,7 +1898,7 @@ do_command_delete(dbref player, char *name)
         } else
           cptr = ptab_nextentry_new(&ptab_command, &alias);
       }
-      mush_free((char *)command->name, "command.name");
+      mush_free((char *) command->name, "command.name");
       mush_free(command, "command");
       if (acount > 1)
         notify_format(player, T("Removed %s and aliases from command table."),
@@ -2236,9 +2239,9 @@ run_hook_override(COMMAND_INFO *cmd, dbref executor, const char *commandraw,
                           cmd->hooks.override.attrname, commandraw,
                           from_queue, cmd->hooks.override.inplace);
   } else {
-    return atr_comm_match(cmd->hooks.override.obj, executor, '$', ':', commandraw,
-                          0, 1, NULL, NULL, 0, NULL,
-                          from_queue, cmd->hooks.override.inplace);
+    return atr_comm_match(cmd->hooks.override.obj, executor, '$', ':',
+                          commandraw, 0, 1, NULL, NULL, 0, NULL, from_queue,
+                          cmd->hooks.override.inplace);
   }
 }
 
@@ -2463,8 +2466,8 @@ do_hook_list(dbref player, char *command)
       char inplace[BUFFER_LEN], *bp;
       bp = inplace;
       if (cmd->hooks.override.inplace & QUEUE_INPLACE) {
-        if ((cmd->hooks.
-             override.inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
+        if ((cmd->hooks.override.
+             inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
             (QUEUE_RECURSE | QUEUE_CLEAR_QREG))
           safe_str("/inplace", inplace, &bp);
         else {

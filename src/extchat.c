@@ -3215,7 +3215,8 @@ chat_player_announce(dbref player, char *msg, int ungag)
         *dmp = '\0';
         format.args[5] = defmsg;
 
-        notify_anything(player, na_one, &viewer, NULL, na_flags, defmsg, NULL, AMBIGUOUS, &format);
+        notify_anything(player, na_one, &viewer, NULL, na_flags, defmsg, NULL,
+                        AMBIGUOUS, &format);
 
       }
     }
@@ -3855,7 +3856,8 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
     }
     if (!(((flags & CB_CHECKQUIET) && Chanuser_Quiet(u)) ||
           Chanuser_Gag(u) || (IsPlayer(current) && !Connected(current)))) {
-      notify_anything(player, na_one, &current, NULL, na_flags, buff, NULL, AMBIGUOUS, (override_chatformat ? NULL : &format));
+      notify_anything(player, na_one, &current, NULL, na_flags, buff, NULL,
+                      AMBIGUOUS, (override_chatformat ? NULL : &format));
     }
   }
 

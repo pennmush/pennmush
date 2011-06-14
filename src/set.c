@@ -827,7 +827,7 @@ gedit_helper(dbref player, dbref thing,
     if (safe_format(tbuf_ansi, &tbufap, "%s%s%s%s", s, ANSI_HILITE, r,
                     ANSI_END))
       ansi_long_flag = 1;
-      edited = 1;
+    edited = 1;
   } else if (vlen == 1 && *val == '^') {
     /* prepend */
     safe_str(r, tbuf1, &tbufp);
@@ -836,7 +836,7 @@ gedit_helper(dbref player, dbref thing,
     if (safe_format(tbuf_ansi, &tbufap, "%s%s%s%s", ANSI_HILITE, r, ANSI_END,
                     s))
       ansi_long_flag = 1;
-      edited = 1;
+    edited = 1;
   } else if (!*val) {
     /* insert replacement string between every character */
     ansi_string *haystack;
@@ -996,7 +996,8 @@ do_gedit(dbref player, char *it, char **argv, int flags)
   if (!atr_iter_get(player, thing, q, 0, 0, gedit_helper, &args))
     notify(player, T("No matching attributes."));
   else if (flags & EDIT_QUIET)
-    notify_format(player, T("%d attributes edited, %d skipped."), args.edited, args.skipped);
+    notify_format(player, T("%d attributes edited, %d skipped."), args.edited,
+                  args.skipped);
 }
 
 /** Trigger an attribute.

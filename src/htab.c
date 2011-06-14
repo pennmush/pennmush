@@ -453,8 +453,8 @@ hash_find(HASHTAB *htab, const char *key)
     hash = hash_functions[hashindex];
     hval = hash(key, len) % htab->hashsize;
 
-    if (htab->buckets[hval].key && len == htab->buckets[hval].keylen && 
-	memcmp(htab->buckets[hval].key, key, len) == 0)
+    if (htab->buckets[hval].key && len == htab->buckets[hval].keylen &&
+        memcmp(htab->buckets[hval].key, key, len) == 0)
       return htab->buckets + hval;
   }
 

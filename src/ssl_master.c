@@ -58,7 +58,8 @@ int
 make_ssl_slave(void)
 {
   if (ssl_slave_state != SSL_SLAVE_DOWN) {
-    do_rawlog(LT_ERR, "Attempt to start ssl slave when a copy is already running.");
+    do_rawlog(LT_ERR,
+              "Attempt to start ssl slave when a copy is already running.");
     return -1;
   }
 
@@ -112,9 +113,9 @@ make_ssl_slave(void)
 
     n = open("/dev/null", O_RDONLY);
     if (n >= 0)
-      dup2(n, 0); /* stdin */
-    dup2(connfd, 1); /* stdout */
-    dup2(errfd, 2); /* stderr */
+      dup2(n, 0);               /* stdin */
+    dup2(connfd, 1);            /* stdout */
+    dup2(errfd, 2);             /* stderr */
 
     for (n = 3; n < maxd; n++)
       close(n);
@@ -139,7 +140,7 @@ make_ssl_slave(void)
   } else {
     ssl_slave_state = SSL_SLAVE_RUNNING;
     do_rawlog(LT_ERR, "Spawning ssl_slave, communicating over %s, pid %d.",
-	      options.socket_file, ssl_slave_pid);
+              options.socket_file, ssl_slave_pid);
     return 0;
   }
 

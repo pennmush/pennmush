@@ -1252,7 +1252,7 @@ tsc_diff_to_microseconds(uint64_t start, uint64_t end)
 #endif
 }
 
-extern int global_fun_invocations; /* From parse.c */
+extern int global_fun_invocations;      /* From parse.c */
 
 /* ARGSUSED */
 FUNCTION(fun_benchmark)
@@ -1319,15 +1319,21 @@ FUNCTION(fun_benchmark)
 
   if (thing != NOTHING) {
     safe_str(tbuf, buff, bp);
-    if (pe_info->fun_invocations >= FUNCTION_LIMIT || (global_fun_invocations >= FUNCTION_LIMIT * 5))
-      notify(thing, T("Function invocation limit reached. Benchmark timings may not be reliable."));
+    if (pe_info->fun_invocations >= FUNCTION_LIMIT
+        || (global_fun_invocations >= FUNCTION_LIMIT * 5))
+      notify(thing,
+             T
+             ("Function invocation limit reached. Benchmark timings may not be reliable."));
     notify_format(thing, T("Average: %.2f   Min: %u   Max: %u"),
                   ((double) total) / i, min, max);
   } else {
     safe_format(buff, bp, T("Average: %.2f   Min: %u   Max: %u"),
                 ((double) total) / i, min, max);
-    if (pe_info->fun_invocations >= FUNCTION_LIMIT || (global_fun_invocations >= FUNCTION_LIMIT * 5))
-      safe_str(T(" Note: Function invocation limit reached. Benchmark timings may not be reliable."), buff, bp);
+    if (pe_info->fun_invocations >= FUNCTION_LIMIT
+        || (global_fun_invocations >= FUNCTION_LIMIT * 5))
+      safe_str(T
+               (" Note: Function invocation limit reached. Benchmark timings may not be reliable."),
+               buff, bp);
   }
 
   return;

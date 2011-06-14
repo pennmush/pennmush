@@ -62,8 +62,8 @@ static int add_to_sem(dbref player, int am, const char *name);
 static int queue_limit(dbref player);
 void free_qentry(MQUE *point);
 static int pay_queue(dbref player, const char *command);
-void wait_que(dbref executor, int waittill, char *command, dbref enactor, dbref sem,
-              const char *semattr, int until, MQUE *parent_queue);
+void wait_que(dbref executor, int waittill, char *command, dbref enactor,
+              dbref sem, const char *semattr, int until, MQUE *parent_queue);
 int que_next(void);
 
 static void show_queue(dbref player, dbref victim, int q_type,
@@ -792,7 +792,7 @@ wait_que(dbref executor, int waittill, char *command, dbref enactor, dbref sem,
                          PE_INFO_CLONE, QUEUE_DEFAULT, NULL);
     return;
   }
-  if (!pay_queue(executor, command))      /* make sure player can afford to do it */
+  if (!pay_queue(executor, command))    /* make sure player can afford to do it */
     return;
   pid = next_pid();
   if (pid == 0) {
@@ -1025,11 +1025,9 @@ do_entry(MQUE *entry, int include_recurses)
         if (tmp->queue_type & QUEUE_PRESERVE_QREG) {
           if (tmp->queue_type & QUEUE_CLEAR_QREG) {
             pe_regs = pe_regs_localize(entry->pe_info,
-                                       PE_REGS_Q | PE_REGS_QSTOP,
-                                       "do_entry");
+                                       PE_REGS_Q | PE_REGS_QSTOP, "do_entry");
           } else {
-            pe_regs = pe_regs_localize(entry->pe_info, PE_REGS_Q,
-                                       "do_entry");
+            pe_regs = pe_regs_localize(entry->pe_info, PE_REGS_Q, "do_entry");
           }
         } else {
           pe_regs = NULL;
@@ -1422,8 +1420,8 @@ do_wait(dbref executor, dbref enactor, char *arg1, const char *cmd, bool until,
 
   if (is_strict_integer(arg1)) {
     /* normal wait */
-    wait_que(executor, parse_integer(arg1), (char *) cmd, enactor, NOTHING, NULL, until,
-             parent_queue);
+    wait_que(executor, parse_integer(arg1), (char *) cmd, enactor, NOTHING,
+             NULL, until, parent_queue);
     return;
   }
   /* semaphore wait with optional timeout */
@@ -1479,7 +1477,8 @@ do_wait(dbref executor, dbref enactor, char *arg1, const char *cmd, bool until,
     thing = NOTHING;
     waitfor = -1;               /* just in case there was a timeout given */
   }
-  wait_que(executor, waitfor, (char *) cmd, enactor, thing, aname, until, parent_queue);
+  wait_que(executor, waitfor, (char *) cmd, enactor, thing, aname, until,
+           parent_queue);
 }
 
 /** Interface to \@wait/pid; modifies the wait times of queue
@@ -1812,14 +1811,15 @@ show_queue_env(dbref player, MQUE *q)
   char *qreg_val;
   int level;
 
-  notify_format(player, "Environment:\n %%#: #%-8d %%!: #%-8d %%@: #%d", q->enactor, q->executor, q->caller);
+  notify_format(player, "Environment:\n %%#: #%-8d %%!: #%-8d %%@: #%d",
+                q->enactor, q->executor, q->caller);
 
   /* itext/inum for a @dolist-added queue entry. */
   level = PE_Get_Ilev(q->pe_info);
   if (level >= 0) {
-    for (i = 0; i <= level; i += 1) 
-      notify_format(player, " %%i%d (Position %d) : %s", i, PE_Get_Inum(q->pe_info, i), 
-		    PE_Get_Itext(q->pe_info, i));
+    for (i = 0; i <= level; i += 1)
+      notify_format(player, " %%i%d (Position %d) : %s", i,
+                    PE_Get_Inum(q->pe_info, i), PE_Get_Itext(q->pe_info, i));
   }
 
   /* stext for a @switch-added queue entry. */
@@ -1828,14 +1828,14 @@ show_queue_env(dbref player, MQUE *q)
     for (i = 0; i <= level; i += 1)
       notify_format(player, " %%$%d : %s", i, PE_Get_Stext(q->pe_info, i));
   }
-  
+
   /* %0 - %9 */
   if (pi_regs_get_envc(q->pe_info)) {
     notify(player, "Arguments: ");
     for (i = 0; i < 10; i += 1) {
       const char *arg = pi_regs_get_env(q->pe_info, i);
       if (arg)
-	notify_format(player, " %%%d : %s", i, arg);
+        notify_format(player, " %%%d : %s", i, arg);
     }
   }
 
@@ -1845,8 +1845,9 @@ show_queue_env(dbref player, MQUE *q)
   for (regs = q->pe_info->regvals; regs; regs = regs->prev) {
     PE_REG_VAL *val;
     for (val = regs->vals; val; val = val->next) {
-      if ((val->type & PE_REGS_STR) && (val->type & PE_REGS_Q) && *(val->val.sval))
-	ptab_insert(&qregs, val->name, (char *)val->val.sval);
+      if ((val->type & PE_REGS_STR) && (val->type & PE_REGS_Q)
+          && *(val->val.sval))
+        ptab_insert(&qregs, val->name, (char *) val->val.sval);
     }
     if (regs->flags & PE_REGS_QSTOP)
       break;
@@ -1856,14 +1857,14 @@ show_queue_env(dbref player, MQUE *q)
   if (qregs.len) {
     notify(player, "Registers:");
     for (qreg_val = ptab_firstentry_new(&qregs, &qreg_name);
-	 qreg_val;
-	 qreg_val = ptab_nextentry_new(&qregs, &qreg_name)) {
+         qreg_val; qreg_val = ptab_nextentry_new(&qregs, &qreg_name)) {
       int len = strlen(qreg_name);
       if (len > 1) {
-	int spacer = 19 - len;
-	notify_format(player, " %%q<%s>%-*c: %s", qreg_name, spacer, ' ', qreg_val);
+        int spacer = 19 - len;
+        notify_format(player, " %%q<%s>%-*c: %s", qreg_name, spacer, ' ',
+                      qreg_val);
       } else
-	notify_format(player, " %%q%-20s : %s", qreg_name, qreg_val);
+        notify_format(player, " %%q%-20s : %s", qreg_name, qreg_val);
     }
   }
   ptab_free(&qregs);
@@ -1999,7 +2000,8 @@ do_halt(dbref owner, const char *ncom, dbref victim)
   else
     player = victim;
   if (!Quiet(Owner(player)))
-    notify_format(Owner(player), "%s: %s(#%d)", T("Halted"), Name(player), player);
+    notify_format(Owner(player), "%s: %s(#%d)", T("Halted"), Name(player),
+                  player);
   for (tmp = qfirst; tmp; tmp = tmp->next)
     if (GoodObject(tmp->executor)
         && ((tmp->executor == player)

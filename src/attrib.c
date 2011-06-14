@@ -2029,11 +2029,13 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
     if (GoodObject(announceloc)) {
       char *bp = tbuf1;
       if (!s && !was_listener && !Hearer(thing)) {
-        safe_format(tbuf1, &bp, T("%s loses its ears and becomes deaf."), Name(thing));
+        safe_format(tbuf1, &bp, T("%s loses its ears and becomes deaf."),
+                    Name(thing));
         *bp = '\0';
         notify_except(announceloc, thing, tbuf1, NA_INTER_PRESENCE);
       } else if (s && !was_hearer && !was_listener) {
-        safe_format(tbuf1, &bp, T("%s grows ears and can now hear."), Name(thing));
+        safe_format(tbuf1, &bp, T("%s grows ears and can now hear."),
+                    Name(thing));
         *bp = '\0';
         notify_except(announceloc, thing, tbuf1, NA_INTER_PRESENCE);
       }

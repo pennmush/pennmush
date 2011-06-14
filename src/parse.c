@@ -877,8 +877,8 @@ pe_regs_set_if(PE_REGS *pe_regs, int type,
     pe_regs->count++;
     if (type & PE_REGS_Q) {
       if (!((key[1] == '\0') &&
-          ((key[0] >= 'A' && key[0] <= 'Z') ||
-           (key[0] >= '0' && key[0] <= '9')))) {
+            ((key[0] >= 'A' && key[0] <= 'Z') ||
+             (key[0] >= '0' && key[0] <= '9')))) {
         pe_regs->qcount++;
       }
     }
@@ -928,8 +928,8 @@ pe_regs_set_int_if(PE_REGS *pe_regs, int type,
     pe_regs->count++;
     if (type & PE_REGS_Q) {
       if (!((key[1] == '\0') &&
-          ((key[0] >= 'A' && key[0] <= 'Z') ||
-           (key[0] >= '0' && key[0] <= '9')))) {
+            ((key[0] >= 'A' && key[0] <= 'Z') ||
+             (key[0] >= '0' && key[0] <= '9')))) {
         pe_regs->qcount++;
       }
     }

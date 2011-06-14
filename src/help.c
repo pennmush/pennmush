@@ -252,11 +252,10 @@ help_reindex_by_name(const char *filename)
   bool retval = 0;
 
   for (curr = hash_firstentry(&help_files);
-       curr;
-       curr = hash_nextentry(&help_files)) {
+       curr; curr = hash_nextentry(&help_files)) {
     if (strcmp(curr->file, filename) == 0) {
       if (curr->indx)
-	mush_free(curr->indx, "help_index");
+        mush_free(curr->indx, "help_index");
       curr->indx = NULL;
       curr->entries = 0;
       help_build_index(curr, curr->admin);

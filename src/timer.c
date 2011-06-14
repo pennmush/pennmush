@@ -318,7 +318,7 @@ check_signals(void *data __attribute__ ((__unused__)))
 }
 
 static bool
-on_every_second(void *data __attribute__((__unused__)))
+on_every_second(void *data __attribute__ ((__unused__)))
 {
   time(&mudtime);
   do_second();

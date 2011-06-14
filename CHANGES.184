@@ -16,7 +16,7 @@ chronological order (most recent first)
 
 ==========================================================================
 
-Version 1.8.4 patchlevel 5                                 ??? ??,  2012
+Version 1.8.4 patchlevel 5                                 Jun ??,  2012
 
 Major Changes:
 
@@ -105,6 +105,8 @@ Fixes:
  * The <inside> arg to tel() didn't work. Fixed by Padraic.
  * 'make clean' in game/txt no longer deletes the configure-generated
    compose.sh file. Suggested by Padraic. [SW]
+ * The new q-register code wasn't passing registers on to new commands queued
+   by @wait, @trigger and @mapsql. [SW]
 
 Functions:
  * Restrictions for the beep() function can now be modified with @function.
@@ -118,8 +120,6 @@ Functions:
    FIL. Reported by Padraic. [SW]
  * New render() function which returns a string rendered as html, without
    markup, etc. Useful for bots or storing data in SQL. [MG]
- * The new q-register code wasn't passing registers on to new commands queued
-   by @wait, @trigger and @mapsql. [SW]
 
 Version 1.8.4 patchlevel 4                                 May 05,  2011
 

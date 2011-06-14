@@ -1554,8 +1554,7 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
     return;
   }
   /* The only players who can be Dark are wizards. */
-  if (is_flag(f, "DARK") && !negate
-      && Alive(thing) && !Wizard(thing)
+  if (is_flag(f, "DARK") && !negate && Alive(thing) && !Wizard(thing)
       && !has_power_by_name(thing, "Can_dark", NOTYPE)) {
     notify(player, T("Permission denied."));
     return;

@@ -42,7 +42,8 @@ static void del_follow(dbref follower, dbref leader, int noisy);
 static char *list_followers(dbref player);
 static char *list_following(dbref player);
 static int is_following(dbref follower, dbref leader);
-static void follower_command(dbref leader, dbref loc, const char *com, dbref towards);
+static void follower_command(dbref leader, dbref loc, const char *com,
+                             dbref towards);
 
 /** A convenience wrapper for enter_room().
  * \param what object to move.

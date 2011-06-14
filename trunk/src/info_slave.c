@@ -90,25 +90,29 @@ struct is_data {
 
 /** Address to hostname lookup wrapper */
 static struct evdns_request *
-evdns_getnameinfo(struct evdns_base *base, const struct sockaddr *addr, int flags,
-		  evdns_callback_type callback, void *data)
+evdns_getnameinfo(struct evdns_base *base, const struct sockaddr *addr,
+                  int flags, evdns_callback_type callback, void *data)
 {
   if (addr->sa_family == AF_INET) {
-    const struct sockaddr_in *a = (const struct sockaddr_in*) addr;
-    return evdns_base_resolve_reverse(base, &a->sin_addr, flags, callback, data);
+    const struct sockaddr_in *a = (const struct sockaddr_in *) addr;
+    return evdns_base_resolve_reverse(base, &a->sin_addr, flags, callback,
+                                      data);
   } else if (addr->sa_family == AF_INET6) {
-    const struct sockaddr_in6 *a = (const struct sockaddr_in6*) addr;
-    return evdns_base_resolve_reverse_ipv6(base, &a->sin6_addr, flags, callback, data);
+    const struct sockaddr_in6 *a = (const struct sockaddr_in6 *) addr;
+    return evdns_base_resolve_reverse_ipv6(base, &a->sin6_addr, flags, callback,
+                                           data);
   } else {
     lock_file(stderr);
-    fprintf(stderr, "info_slave: Attempt to resolve unknown socket family %d", addr->sa_family);
+    fprintf(stderr, "info_slave: Attempt to resolve unknown socket family %d",
+            addr->sa_family);
     unlock_file(stderr);
     return NULL;
   }
 }
 
 static void
-send_resp(evutil_socket_t fd, short what __attribute__((__unused__)), void *arg)
+send_resp(evutil_socket_t fd, short what
+          __attribute__ ((__unused__)), void *arg)
 {
   struct is_data *data = arg;
   ssize_t len;
@@ -123,15 +127,15 @@ send_resp(evutil_socket_t fd, short what __attribute__((__unused__)), void *arg)
 }
 
 static void
-address_resolved(int result, char type, int count, int ttl __attribute__((__unused__)),
-		 void *addresses, void *arg)
+address_resolved(int result, char type, int count, int ttl
+                 __attribute__ ((__unused__)), void *addresses, void *arg)
 {
   struct is_data *data = arg;
 
   if (result != DNS_ERR_NONE || !addresses || type != DNS_PTR || count == 0) {
     strcpy(data->resp.hostname, data->resp.ipaddr);
   } else {
-    strncpy(data->resp.hostname, ((const char **)addresses)[0], HOSTNAME_LEN);
+    strncpy(data->resp.hostname, ((const char **) addresses)[0], HOSTNAME_LEN);
   }
 
   /* One-shot event to write the response packet */
@@ -141,8 +145,8 @@ address_resolved(int result, char type, int count, int ttl __attribute__((__unus
 
 static void
 got_request(evutil_socket_t fd,
-	    short what __attribute__((__unused__)),
-	    void *arg __attribute__((__unused__)))
+            short what __attribute__ ((__unused__)),
+            void *arg __attribute__ ((__unused__)))
 {
   struct request_dgram req;
   struct is_data *data;
@@ -155,26 +159,27 @@ got_request(evutil_socket_t fd,
     exit(EXIT_FAILURE);
   }
 
-  
+
   data = malloc(sizeof *data);
   memset(data, 0, sizeof *data);
-  data->resp.fd = req.fd;  
+  data->resp.fd = req.fd;
   hi = ip_convert(&req.remote.addr, req.rlen);
-  strncpy(data->resp.ipaddr, hi->hostname, IPADDR_LEN);  
+  strncpy(data->resp.ipaddr, hi->hostname, IPADDR_LEN);
   hi = ip_convert(&req.local.addr, req.llen);
   data->resp.connected_to = strtol(hi->port, NULL, 10);
 
-  evdns_getnameinfo(resolver, &req.remote.addr, 0, address_resolved, data); 
+  evdns_getnameinfo(resolver, &req.remote.addr, 0, address_resolved, data);
 }
 
 /** Called periodically to ensure the parent mush is still there. */
 static void
-check_parent(evutil_socket_t fd __attribute__((__unused__)),
-	     short what __attribute__((__unused__)),
-	     void *arg __attribute__((__unused__)))
+check_parent(evutil_socket_t fd __attribute__ ((__unused__)),
+             short what __attribute__ ((__unused__)),
+             void *arg __attribute__ ((__unused__)))
 {
   if (getppid() == 1) {
-    fputerr("info_slave: Parent mush process exited unexpectedly! Shutting down.");
+    fputerr
+      ("info_slave: Parent mush process exited unexpectedly! Shutting down.");
     event_base_loopbreak(main_loop);
   }
 }
@@ -183,26 +188,28 @@ int
 main(void)
 {
   struct event *watch_parent, *watch_request;
-  struct timeval parent_timeout = { .tv_sec = 5, .tv_usec = 0 };
-  
+  struct timeval parent_timeout = {.tv_sec = 5,.tv_usec = 0 };
+
   main_loop = event_base_new();
   resolver = evdns_base_new(main_loop, 1);
 
   /* Run every 5 seconds to see if the parent mush process is still around. */
-  watch_parent = event_new(main_loop, -1, EV_TIMEOUT | EV_PERSIST, check_parent, NULL);
+  watch_parent =
+    event_new(main_loop, -1, EV_TIMEOUT | EV_PERSIST, check_parent, NULL);
   event_add(watch_parent, &parent_timeout);
 
   /* Wait for an incoming request datagram from the mush */
-  watch_request = event_new(main_loop, 0, EV_READ | EV_PERSIST, got_request, NULL);
+  watch_request =
+    event_new(main_loop, 0, EV_READ | EV_PERSIST, got_request, NULL);
   event_add(watch_request, NULL);
-  
+
   lock_file(stderr);
   fprintf(stderr, "info_slave: starting event loop using %s.\n",
-	  event_base_get_method(main_loop));
+          event_base_get_method(main_loop));
   unlock_file(stderr);
   event_base_dispatch(main_loop);
   fputerr("info_slave: shutting down.");
-  
+
   return EXIT_SUCCESS;
 }
 #else

@@ -97,8 +97,8 @@ void init_ansi_codes(void);
 typedef struct _ansi_data {
   uint8_t bits;     /**< highlight/flash/invert/underline which are explicitly on */
   uint8_t offbits;  /**< highlight/flash/invert/underline which are explicitly off */
-  char    fore;     /**< Foreground color */
-  char    back;     /**< Background color */
+  char fore;        /**< Foreground color */
+  char back;        /**< Background color */
 } ansi_data;
 
 #define HAS_ANSI(adata) (adata.bits || adata.offbits || adata.fore || adata.back)
@@ -133,10 +133,10 @@ void nest_ansi_data(ansi_data *old, ansi_data *cur);
 
 /** Holds the markup information for an ansi_string struct */
 typedef struct _new_markup_information {
-  int   parentIdx;             /**< If this is nested, its parent */
-  char  type;                  /**< MARKUP_foo type. */
-  char  standalone;            /**< If this is a standalone tag. */
-  int   start;                 /**< The start position of this tag.
+  int parentIdx;               /**< If this is nested, its parent */
+  char type;                   /**< MARKUP_foo type. */
+  char standalone;             /**< If this is a standalone tag. */
+  int start;                   /**< The start position of this tag.
                                 **  Only relevant for standalone tags. */
   const char *start_code, *end_code; /**< Markup start and end codes. */
   uint16_t idx;                /**< For parse_ansi_string: Index of this mi */
@@ -159,8 +159,8 @@ typedef struct _ansi_string {
   int16_t *markup;              /**< Indexes of markup, if it has any. */
   new_markup_information *mi;   /**< Markup information */
   StrTree *tags;                /**< Tags. */
-  int  micount;                 /**< # of used markup information in ->mi */
-  int  misize;                  /**< Size of the malloc in ->mi */
+  int micount;                  /**< # of used markup information in ->mi */
+  int misize;                   /**< Size of the malloc in ->mi */
 } ansi_string;
 
 #define AS_Text(as) (as->text) /**< Raw text in an ansi_string */
@@ -175,35 +175,37 @@ char *remove_markup(const char *orig, size_t * stripped_len);
 char *skip_leading_ansi(const char *p);
 
 int has_markup(const char *test);
-ansi_string * parse_ansi_string(const char *src) __attribute_malloc__;
-void flip_ansi_string(ansi_string *as);
-void free_ansi_string(ansi_string *as);
+ansi_string *
+parse_ansi_string(const char *src)
+  __attribute_malloc__;
+    void flip_ansi_string(ansi_string *as);
+    void free_ansi_string(ansi_string *as);
 
 /* Append X characters to the end of a string, taking ansi and html codes into
    account. */
-int safe_ansi_string(ansi_string *as, int start, int len,
-                     char *buff, char **bp);
+    int safe_ansi_string(ansi_string *as, int start, int len,
+                         char *buff, char **bp);
 
 /* Modifying ansi strings */
-ansi_string *real_parse_ansi_string(const char *src) __attribute_malloc__;
-int ansi_string_delete(ansi_string *as, int start, int count);
-int ansi_string_insert(ansi_string *dst, int loc, ansi_string *src);
-int ansi_string_replace(ansi_string *dst, int loc, int size,
-                        ansi_string *src);
-void scramble_ansi_string(ansi_string *as);
-void optimize_ansi_string(ansi_string *as);
+    ansi_string *real_parse_ansi_string(const char *src) __attribute_malloc__;
+    int ansi_string_delete(ansi_string *as, int start, int count);
+    int ansi_string_insert(ansi_string *dst, int loc, ansi_string *src);
+    int ansi_string_replace(ansi_string *dst, int loc, int size,
+                            ansi_string *src);
+    void scramble_ansi_string(ansi_string *as);
+    void optimize_ansi_string(ansi_string *as);
 
 /* Dump the penn code required to recreate the ansi_string */
-extern int dump_ansi_string(ansi_string *as, char *buff, char **bp);
+    extern int dump_ansi_string(ansi_string *as, char *buff, char **bp);
 
-int ansi_pcre_copy_substring(ansi_string *as, int *ovector, int stringcount,
-    int stringnumber, int nonempty, char *buffer,
-    char **bp);
+    int ansi_pcre_copy_substring(ansi_string *as, int *ovector, int stringcount,
+                                 int stringnumber, int nonempty, char *buffer,
+                                 char **bp);
 
-int ansi_pcre_copy_named_substring(const pcre * code, ansi_string *as,
-    int *ovector, int stringcount,
-    const char *stringname, int nonempty,
-    char *buffer, char **bp);
+    int ansi_pcre_copy_named_substring(const pcre * code, ansi_string *as,
+                                       int *ovector, int stringcount,
+                                       const char *stringname, int nonempty,
+                                       char *buffer, char **bp);
 
 /* Pueblo stuff */
 #define open_tag(x) tprintf("%c%c%s%c",TAG_START,MARKUP_HTML,x,TAG_END)
@@ -211,10 +213,10 @@ int ansi_pcre_copy_named_substring(const pcre * code, ansi_string *as,
 #define wrap_tag(x,y) tprintf("%c%c%s%c%s%c%c/%s%c", \
     TAG_START,MARKUP_HTML,x,TAG_END, \
     y, TAG_START,MARKUP_HTML,x,TAG_END)
-int safe_tag(char const *a_tag, char *buf, char **bp);
-int safe_tag_cancel(char const *a_tag, char *buf, char **bp);
-int safe_tag_wrap(char const *a_tag, char const *params,
-    char const *data, char *buf, char **bp, dbref player);
+    int safe_tag(char const *a_tag, char *buf, char **bp);
+    int safe_tag_cancel(char const *a_tag, char *buf, char **bp);
+    int safe_tag_wrap(char const *a_tag, char const *params,
+                      char const *data, char *buf, char **bp, dbref player);
 
 /* Walk through a string containing markup, skipping over the markup (ansi/pueblo) codes */
 #define WALK_ANSI_STRING(p) while ((p = skip_leading_ansi(p)) && *p)

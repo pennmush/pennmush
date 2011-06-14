@@ -75,14 +75,14 @@ struct conn {
   struct conn *next;
   struct conn *prev;
 };
- 
+
 struct conn *connections = NULL;
 
 /* General utility routines */
 
 /** Allocate a new connection object */
 struct conn *
-alloc_conn(void) 
+alloc_conn(void)
 {
   struct conn *c;
   c = malloc(sizeof *c);
@@ -121,13 +121,13 @@ delete_conn(struct conn *c)
     nxt = curr->next;
     if (curr == c) {
       if (curr->prev) {
-	curr->prev->next = nxt;
-	if (nxt)
-	  nxt->prev = curr->prev;
-	} else {
-	connections = nxt;
-	if (connections)
-	  connections->prev = NULL;
+        curr->prev->next = nxt;
+        if (nxt)
+          nxt->prev = curr->prev;
+      } else {
+        connections = nxt;
+        if (connections)
+          connections->prev = NULL;
       }
       free_conn(c);
       break;
@@ -137,23 +137,27 @@ delete_conn(struct conn *c)
 
 /** Address to hostname lookup wrapper */
 struct evdns_request *
-evdns_getnameinfo(struct evdns_base *base, const struct sockaddr *addr, int flags,
-		  evdns_callback_type callback, void *data)
+evdns_getnameinfo(struct evdns_base *base, const struct sockaddr *addr,
+                  int flags, evdns_callback_type callback, void *data)
 {
   if (addr->sa_family == AF_INET) {
-    const struct sockaddr_in *a = (const struct sockaddr_in*) addr;
+    const struct sockaddr_in *a = (const struct sockaddr_in *) addr;
 #if SSL_DEBUG_LEVEL > 1
     errputs(stdout, "ssl_slave: Remote connection is IPv4.");
 #endif
-    return evdns_base_resolve_reverse(base, &a->sin_addr, flags, callback, data);
+    return evdns_base_resolve_reverse(base, &a->sin_addr, flags, callback,
+                                      data);
   } else if (addr->sa_family == AF_INET6) {
-    const struct sockaddr_in6 *a = (const struct sockaddr_in6*) addr;
+    const struct sockaddr_in6 *a = (const struct sockaddr_in6 *) addr;
 #if SSL_DEBUG_LEVEL > 1
     errputs(stdout, "ssl_slave: Remote connection is IPv6.");
 #endif
-    return evdns_base_resolve_reverse_ipv6(base, &a->sin6_addr, flags, callback, data);
+    return evdns_base_resolve_reverse_ipv6(base, &a->sin6_addr, flags, callback,
+                                           data);
   } else {
-    errprintf(stdout, "ssl_slave: Attempt to resolve unknown socket family %d\n", addr->sa_family);
+    errprintf(stdout,
+              "ssl_slave: Attempt to resolve unknown socket family %d\n",
+              addr->sa_family);
     return NULL;
   }
 }
@@ -201,7 +205,8 @@ local_connected(struct conn *c)
   int len;
 
 #if SSL_DEBUG_LEVEL > 0
-  errputs(stdout, "ssl_slave: Local connection attempt completed. Setting up pipe.");
+  errputs(stdout,
+          "ssl_slave: Local connection attempt completed. Setting up pipe.");
 #endif
   bufferevent_setcb(c->local_bev, pipe_cb, NULL, event_cb, c);
   bufferevent_enable(c->local_bev, EV_READ | EV_WRITE);
@@ -223,8 +228,8 @@ local_connected(struct conn *c)
 
 /** Called after the remote hostname has been resolved. */
 void
-address_resolved(int result, char type, int count, int ttl __attribute__((__unused__)),
-		 void *addresses, void *data)
+address_resolved(int result, char type, int count, int ttl
+                 __attribute__ ((__unused__)), void *addresses, void *data)
 {
   const char *hostname;
   struct conn *c = data;
@@ -232,8 +237,9 @@ address_resolved(int result, char type, int count, int ttl __attribute__((__unus
   struct hostname_info *ipaddr;
 
   if (result != DNS_ERR_NONE || !addresses || type != DNS_PTR || count == 0) {
-    errprintf(stderr, "ssl_slave: Hostname lookup failed: %s. type = %d, count = %d\n", evdns_err_to_string(result),
-	      (int)type, count);
+    errprintf(stderr,
+              "ssl_slave: Hostname lookup failed: %s. type = %d, count = %d\n",
+              evdns_err_to_string(result), (int) type, count);
     if (result != DNS_ERR_SHUTDOWN) {
       c->resolver_req = NULL;
       delete_conn(c);
@@ -242,23 +248,27 @@ address_resolved(int result, char type, int count, int ttl __attribute__((__unus
   }
 
   c->resolver_req = NULL;
-  hostname = ((const char **)addresses)[0];
+  hostname = ((const char **) addresses)[0];
 
   c->remote_host = strdup(hostname);
   ipaddr = ip_convert(&c->remote_addr.addr, c->remote_addrlen);
-  c->remote_ip = strdup(ipaddr->hostname);  
+  c->remote_ip = strdup(ipaddr->hostname);
 
 #if SSL_DEBUG_LEVEL > 0
-  errprintf(stdout, "ssl_slave: resolved hostname as '%s(%s)'. Opening local connection to mush.\n",
-	    hostname, ipaddr->hostname);
+  errprintf(stdout,
+            "ssl_slave: resolved hostname as '%s(%s)'. Opening local connection to mush.\n",
+            hostname, ipaddr->hostname);
 #endif
 
   c->state = C_LOCAL_CONNECTING;
 
   addr.sun_family = AF_LOCAL;
   strncpy(addr.sun_path, socket_file, sizeof(addr.sun_path) - 1);
-  c->local_bev = bufferevent_socket_new(main_loop, -1, BEV_OPT_CLOSE_ON_FREE | BEV_OPT_DEFER_CALLBACKS);
-  bufferevent_socket_connect(c->local_bev, (struct sockaddr *)&addr, sizeof addr);
+  c->local_bev =
+    bufferevent_socket_new(main_loop, -1,
+                           BEV_OPT_CLOSE_ON_FREE | BEV_OPT_DEFER_CALLBACKS);
+  bufferevent_socket_connect(c->local_bev, (struct sockaddr *) &addr,
+                             sizeof addr);
   bufferevent_setcb(c->local_bev, NULL, NULL, event_cb, data);
   bufferevent_enable(c->local_bev, EV_WRITE);
 }
@@ -270,7 +280,8 @@ ssl_connected(struct conn *c)
   X509 *peer;
 
 #if SSL_DEBUG_LEVEL > 0
-  errputs(stdout, "ssl_slave: SSL connection attempt completed. Resolving remote host name.");
+  errputs(stdout,
+          "ssl_slave: SSL connection attempt completed. Resolving remote host name.");
 #endif
 
   bufferevent_set_timeouts(c->remote_bev, NULL, NULL);
@@ -286,7 +297,8 @@ ssl_connected(struct conn *c)
   }
 
   c->state = C_HOSTNAME_LOOKUP;
-  c->resolver_req = evdns_getnameinfo(resolver, &c->remote_addr.addr, 0, address_resolved, c);
+  c->resolver_req =
+    evdns_getnameinfo(resolver, &c->remote_addr.addr, 0, address_resolved, c);
 }
 
 /** Called on successful connections and errors */
@@ -294,10 +306,12 @@ void
 event_cb(struct bufferevent *bev, short e, void *data)
 {
   struct conn *c = data;
-  uint32_t error_conditions = BEV_EVENT_EOF | BEV_EVENT_ERROR | BEV_EVENT_TIMEOUT;
+  uint32_t error_conditions =
+    BEV_EVENT_EOF | BEV_EVENT_ERROR | BEV_EVENT_TIMEOUT;
 
 #if SSL_DEBUG_LEVEL > 1
-  errprintf(stdout, "ssl_slave: event callback triggered with flags 0x%hx\n", e);
+  errprintf(stdout, "ssl_slave: event callback triggered with flags 0x%hx\n",
+            e);
 #endif
 
   if (e & BEV_EVENT_CONNECTED) {
@@ -310,29 +324,33 @@ event_cb(struct bufferevent *bev, short e, void *data)
     if (c->local_bev == bev) {
       /* Mush side of the connection went away. Flush SSL buffer and shut down. */
 #if SSL_DEBUG_LEVEL > 0
-      errprintf(stdout, "ssl_slave: Lost local connection. State: %d, reason 0x%hx.\n", c->state, e);
+      errprintf(stdout,
+                "ssl_slave: Lost local connection. State: %d, reason 0x%hx.\n",
+                c->state, e);
 #endif
       bufferevent_disable(c->local_bev, EV_READ | EV_WRITE);
       bufferevent_free(c->local_bev);
       c->local_bev = NULL;
       c->state = C_SHUTTINGDOWN;
       if (c->remote_bev) {
-	bufferevent_disable(c->remote_bev, EV_READ);
-	bufferevent_flush(c->remote_bev, EV_WRITE, BEV_FINISHED);
+        bufferevent_disable(c->remote_bev, EV_READ);
+        bufferevent_flush(c->remote_bev, EV_WRITE, BEV_FINISHED);
       }
       delete_conn(c);
     } else {
       /* Remote side of the connection went away. Flush mush buffer and shut down. */
 #if SSL_DEBUG_LEVEL > 0
-      errprintf(stdout, "ssl_slave: Lost SSL connection. State: %d, reason 0x%hx.\n", c->state, e);
+      errprintf(stdout,
+                "ssl_slave: Lost SSL connection. State: %d, reason 0x%hx.\n",
+                c->state, e);
 #endif
       bufferevent_disable(c->remote_bev, EV_READ | EV_WRITE);
       bufferevent_free(c->remote_bev);
       c->remote_bev = NULL;
       c->state = C_SHUTTINGDOWN;
       if (c->local_bev) {
-	bufferevent_disable(c->local_bev, EV_READ);
-	bufferevent_flush(c->local_bev, EV_WRITE, BEV_FINISHED);
+        bufferevent_disable(c->local_bev, EV_READ);
+        bufferevent_flush(c->local_bev, EV_WRITE, BEV_FINISHED);
       }
       delete_conn(c);
     }
@@ -341,11 +359,13 @@ event_cb(struct bufferevent *bev, short e, void *data)
 
 /* Called when a new connection is made on the ssl port */
 static void
-new_conn_cb(evutil_socket_t s, short flags __attribute__((__unused__)), void *data __attribute__((__unused__)))
+new_conn_cb(evutil_socket_t s, short flags
+            __attribute__ ((__unused__)), void *data
+            __attribute__ ((__unused__)))
 {
   struct conn *c;
   int fd;
-  struct timeval handshake_timeout = { .tv_sec = 60, .tv_usec = 0 };
+  struct timeval handshake_timeout = {.tv_sec = 60,.tv_usec = 0 };
 
   /* Accept a connection and do SSL handshaking */
 
@@ -355,7 +375,7 @@ new_conn_cb(evutil_socket_t s, short flags __attribute__((__unused__)), void *da
 
   c = alloc_conn();
 
-  if (connections) 
+  if (connections)
     connections->prev = c;
   c->next = connections;
   connections = c;
@@ -372,8 +392,11 @@ new_conn_cb(evutil_socket_t s, short flags __attribute__((__unused__)), void *da
   set_keepalive(fd, keepalive_timeout);
   make_nonblocking(fd);
   c->ssl = ssl_alloc_struct();
-  c->remote_bev = bufferevent_openssl_socket_new(main_loop, fd, c->ssl, BUFFEREVENT_SSL_ACCEPTING, 
-						 BEV_OPT_CLOSE_ON_FREE | BEV_OPT_DEFER_CALLBACKS);
+  c->remote_bev =
+    bufferevent_openssl_socket_new(main_loop, fd, c->ssl,
+                                   BUFFEREVENT_SSL_ACCEPTING,
+                                   BEV_OPT_CLOSE_ON_FREE |
+                                   BEV_OPT_DEFER_CALLBACKS);
   if (!c->remote_bev) {
     errputs(stderr, "ssl_slave: Unable to make SSL bufferevent!");
     SSL_free(c->ssl);
@@ -382,27 +405,29 @@ new_conn_cb(evutil_socket_t s, short flags __attribute__((__unused__)), void *da
   }
 
   bufferevent_setcb(c->remote_bev, NULL, NULL, event_cb, c);
-  bufferevent_set_timeouts(c->remote_bev, &handshake_timeout, &handshake_timeout);
+  bufferevent_set_timeouts(c->remote_bev, &handshake_timeout,
+                           &handshake_timeout);
   bufferevent_enable(c->remote_bev, EV_WRITE);
 }
 
 /** Called periodically to ensure the parent mush is still there. */
 static void
-check_parent(evutil_socket_t fd __attribute__((__unused__)),
-	     short what __attribute__((__unused__)),
-	     void *arg __attribute__((__unused__)))
+check_parent(evutil_socket_t fd __attribute__ ((__unused__)),
+             short what __attribute__ ((__unused__)),
+             void *arg __attribute__ ((__unused__)))
 {
   if (getppid() != parent_pid) {
-    errputs(stderr, "ssl_slave: Parent mush process exited unexpectedly! Shutting down.");
+    errputs(stderr,
+            "ssl_slave: Parent mush process exited unexpectedly! Shutting down.");
     event_base_loopbreak(main_loop);
   }
 }
 
 /* Shut down gracefully on a SIGTERM */
 static void
-shutdown_cb(evutil_socket_t fd __attribute__((__unused__)),
-	     short what __attribute__((__unused__)),
-	     void *arg __attribute__((__unused__)))
+shutdown_cb(evutil_socket_t fd __attribute__ ((__unused__)),
+            short what __attribute__ ((__unused__)),
+            void *arg __attribute__ ((__unused__)))
 {
   struct conn *c;
   for (c = connections; c; c = c->next) {
@@ -427,7 +452,7 @@ main(int argc, char **argv)
   char *ssl_private_key_file, *ssl_ca_file;
   int ssl_require_client_cert;
   struct event *watch_parent, *sigterm_handler;
-  struct timeval parent_timeout = { .tv_sec = 5, .tv_usec = 0 };
+  struct timeval parent_timeout = {.tv_sec = 5,.tv_usec = 0 };
   struct event *ssl_listener;
   struct conn *c, *n;
 
@@ -447,39 +472,42 @@ main(int argc, char **argv)
   init_gen_rand(getpid());
   parent_pid = getppid();
 
-  if (!ssl_init(ssl_private_key_file, ssl_ca_file,
-		ssl_require_client_cert)) {
+  if (!ssl_init(ssl_private_key_file, ssl_ca_file, ssl_require_client_cert)) {
     errputs(stderr, "SSL initialization failure!");
     exit(EXIT_FAILURE);
   }
-  
+
   main_loop = event_base_new();
   resolver = evdns_base_new(main_loop, 1);
-    
+
   /* Listen for incoming connections on the SSL port */
-  ssl_sock = make_socket(ssl_port, SOCK_STREAM, NULL, NULL, ssl_ipaddr);        
-  ssl_listener = event_new(main_loop, ssl_sock, EV_READ | EV_PERSIST, new_conn_cb, NULL);
+  ssl_sock = make_socket(ssl_port, SOCK_STREAM, NULL, NULL, ssl_ipaddr);
+  ssl_listener =
+    event_new(main_loop, ssl_sock, EV_READ | EV_PERSIST, new_conn_cb, NULL);
   event_add(ssl_listener, NULL);
 
   /* Run every 5 seconds to see if the parent mush process is still around. */
-  watch_parent = event_new(main_loop, -1, EV_TIMEOUT | EV_PERSIST, check_parent, NULL);
+  watch_parent =
+    event_new(main_loop, -1, EV_TIMEOUT | EV_PERSIST, check_parent, NULL);
   event_add(watch_parent, &parent_timeout);
-  
+
   /* Catch shutdown requests from the parent mush */
-  sigterm_handler = event_new(main_loop, SIGTERM, EV_SIGNAL | EV_PERSIST, shutdown_cb, NULL);
+  sigterm_handler =
+    event_new(main_loop, SIGTERM, EV_SIGNAL | EV_PERSIST, shutdown_cb, NULL);
   event_add(sigterm_handler, NULL);
-  
-  errprintf(stderr, "ssl_slave: starting event loop using %s.\n", event_base_get_method(main_loop));
+
+  errprintf(stderr, "ssl_slave: starting event loop using %s.\n",
+            event_base_get_method(main_loop));
   event_base_dispatch(main_loop);
   errputs(stderr, "ssl_slave: shutting down.");
-  
+
   close(ssl_sock);
-  
+
   for (c = connections; c; c = n) {
     n = c->next;
     free_conn(c);
   }
-  
+
   return EXIT_SUCCESS;
 }
 
@@ -493,7 +521,7 @@ penn_perror(const char *err)
 }
 
 void
-errprintf(FILE *fp, const char *fmt, ...)
+errprintf(FILE * fp, const char *fmt, ...)
 {
   va_list ap;
 
@@ -507,7 +535,7 @@ errprintf(FILE *fp, const char *fmt, ...)
 
 /* Wrapper for fputs(foo,stderr) */
 void
-errputs(FILE *fp, const char *msg)
+errputs(FILE * fp, const char *msg)
 {
   lock_file(fp);
   fputs(msg, fp);

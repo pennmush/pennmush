@@ -11,7 +11,7 @@ typedef struct hashtable HASHTAB;
 
 /** Hash table bucket struct */
 struct hash_bucket {
-  const char *key;  
+  const char *key;
   void *data;
   int keylen;
 };

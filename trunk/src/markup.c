@@ -73,14 +73,22 @@ FUNCTION(fun_stripansi)
 
 FUNCTION(fun_ansigen)
 {
-  if (nargs < 1) return;
+  if (nargs < 1)
+    return;
   char *ptr;
   for (ptr = args[0]; *ptr; ptr++) {
     switch (*ptr) {
-    case '<': safe_chr(TAG_START, buff, bp); break;
-    case '>': safe_chr(TAG_END, buff, bp); break;
-    case '&': safe_chr(ESC_CHAR, buff, bp); break;
-    default: safe_chr(*ptr, buff, bp);
+    case '<':
+      safe_chr(TAG_START, buff, bp);
+      break;
+    case '>':
+      safe_chr(TAG_END, buff, bp);
+      break;
+    case '&':
+      safe_chr(ESC_CHAR, buff, bp);
+      break;
+    default:
+      safe_chr(*ptr, buff, bp);
     }
   }
 }
@@ -711,8 +719,9 @@ parse_tagname(const char *ptr)
 }
 
 static const char *
-as_get_tag(ansi_string *as, const char *tag) {
-  if (*tag == '/' && *(tag+1) == '\0') {
+as_get_tag(ansi_string *as, const char *tag)
+{
+  if (*tag == '/' && *(tag + 1) == '\0') {
     return "/";
   }
   if (as->tags == NULL) {
@@ -725,7 +734,8 @@ as_get_tag(ansi_string *as, const char *tag) {
 /** Make sure an ansi_string has room for one more markup_information, and
  *  return its index. */
 static new_markup_information *
-grow_mi(ansi_string *as, char type) {
+grow_mi(ansi_string *as, char type)
+{
   if (as->micount >= as->misize) {
     if (as->mi == NULL) {
       as->misize = 30;
@@ -794,8 +804,7 @@ parse_ansi_string(const char *source)
 
   /* The string has markup. Nuts. */
   as->flags |= AS_HAS_MARKUP;
-  as->markup = mush_malloc(sizeof(uint16_t) * BUFFER_LEN,
-                           "ansi_string.markup");
+  as->markup = mush_malloc(sizeof(uint16_t) * BUFFER_LEN, "ansi_string.markup");
 
   c = 0;
   for (s = as->source; *s;) {
@@ -806,12 +815,15 @@ parse_ansi_string(const char *source)
       while (*s && *s != TAG_END) {
         s++;
       }
-      if (*s) *(s++) = '\0';
+      if (*s)
+        *(s++) = '\0';
 
       /* <tag> contains the entire tag, now. */
-      if (!*tag) break;
+      if (!*tag)
+        break;
       type = *(tag++);
-      if (!*tag) break;
+      if (!*tag)
+        break;
       switch (type) {
       case MARKUP_COLOR:
         if (*tag != '/') {
@@ -845,7 +857,7 @@ parse_ansi_string(const char *source)
                * Use of tagwrap and responsible use of tag means this
                * won't happen. */
               for (; mi && mi->type != MARKUP_COLOR;
-                    mi = MI_FOR(as, mi->parentIdx)) {
+                   mi = MI_FOR(as, mi->parentIdx)) {
                 mi->end_code = NULL;
                 mi->standalone = 1;
                 as->flags |= AS_HAS_STANDALONE;
@@ -903,7 +915,7 @@ parse_ansi_string(const char *source)
               goto standalone_end;
             }
           } else {
-standalone_end:
+          standalone_end:
             /* Standalone end tag?! Lame. We turn it into a start tag
              * and attach it to the next character. */
             as->flags |= AS_HAS_TAGS;
@@ -935,10 +947,12 @@ standalone_end:
       mi->standalone = 1;
       /* Find the end of the ansi code, or series of ansi codes. */
       while (*s) {
-        if (*s == 'm' && *(s+1) != ESC_CHAR) break;
+        if (*s == 'm' && *(s + 1) != ESC_CHAR)
+          break;
         s++;
       }
-      if (*s) *(s++) = '\0';
+      if (*s)
+        *(s++) = '\0';
       mi->start_code = as_get_tag(as, mi->start_code);
       mi->end_code = NULL;
       mi->parentIdx = pidx;
@@ -976,8 +990,7 @@ standalone_end:
         /* Attach to the last character's markup. */
         pidx = as->markup[as->len - 1];
         for (idx = pidx + 1; idx < as->micount; idx++) {
-          if (as->mi[idx].start == as->len &&
-              as->mi[idx].type != MARKUP_COLOR) {
+          if (as->mi[idx].start == as->len && as->mi[idx].type != MARKUP_COLOR) {
             as->flags |= AS_HAS_STANDALONE;
             as->mi[idx].end_code = as->mi[idx].start_code;
             as->mi[idx].start_code = NULL;
@@ -1102,12 +1115,15 @@ ansi_string_delete(ansi_string *as, int start, int count)
 {
   int s, c, l;
   int i;
-  if (count < 1) return 0;
-  if (start > as->len) return 1;
+  if (count < 1)
+    return 0;
+  if (start > as->len)
+    return 1;
   if ((start + count) > as->len) {
     count = (as->len - start);
   }
-  if (count < 1) return 1;
+  if (count < 1)
+    return 1;
   /* Move text left */
   s = start;
   c = start + count;
@@ -1201,7 +1217,8 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
       baseidx = NOMARKUP;
       idx = NOMARKUP;
       for (sidx = 0; sidx < src->micount; sidx++) {
-        if (!src->mi[sidx].standalone) continue;
+        if (!src->mi[sidx].standalone)
+          continue;
         mi = grow_mi(dst, src->mi[sidx].type);
         mi->start_code = as_get_tag(dst, src->mi[sidx].start_code);
         mi->end_code = as_get_tag(dst, src->mi[sidx].end_code);
@@ -1209,7 +1226,8 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
         mi->start = loc;
 
         mi->parentIdx = idx;
-        if (baseidx < 0) baseidx = mi->idx;
+        if (baseidx < 0)
+          baseidx = mi->idx;
         idx = mi->idx;
       }
       /* Now integrate them into the proper location */
@@ -1303,8 +1321,7 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
   // Move markup as necessary.
   if (dstleft > 0) {
     memmove(dst->markup + srcend,
-            dst->markup + (loc + count),
-            dstleft * sizeof(int16_t));
+            dst->markup + (loc + count), dstleft * sizeof(int16_t));
   }
 
   /* If, and only if, mis and mie have a markup_information in common,
@@ -1319,7 +1336,8 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
         }
         basemi = MI_FOR(dst, basemi->parentIdx);
       }
-      if (basemi) break;
+      if (basemi)
+        break;
       mie = MI_FOR(dst, mie->parentIdx);
     }
     /* basemi is either NULL or set at this point. */
@@ -1346,9 +1364,7 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
 
   /* Copy src's markup over, updating to new idx. */
   if (src->markup) {
-    memcpy(dst->markup + loc,
-           src->markup,
-           srclen * sizeof(uint16_t));
+    memcpy(dst->markup + loc, src->markup, srclen * sizeof(uint16_t));
     for (i = loc, j = 0; i < srcend; i++, j++) {
       if (src->markup[j] >= 0) {
         dst->markup[i] = src->markup[j] + idx;
@@ -1399,9 +1415,11 @@ int
 safe_markup_codes(new_markup_information *mi, int end, char *buff, char **bp)
 {
   if (end) {
-    if (mi->end_code) return safe_str(mi->end_code, buff, bp);
+    if (mi->end_code)
+      return safe_str(mi->end_code, buff, bp);
   } else {
-    if (mi->start_code) return safe_str(mi->start_code, buff, bp);
+    if (mi->start_code)
+      return safe_str(mi->start_code, buff, bp);
   }
   return 0;
 }
@@ -1417,7 +1435,8 @@ safe_markup_codes(new_markup_information *mi, int end, char *buff, char **bp)
  */
 static int
 safe_markup_change(ansi_string *as, int lastidx, int nextidx, int pos,
-                   char *buff, char **bp) {
+                   char *buff, char **bp)
+{
   new_markup_information *lastmi, *nextmi;
   new_markup_information *mil = NULL, *mir = NULL;
   int i = 0;
@@ -1439,13 +1458,16 @@ safe_markup_change(ansi_string *as, int lastidx, int nextidx, int pos,
   /* Look for the highest mil that exists in mir. */
   for (mil = lastmi; mil; mil = MI_FOR(as, mil->parentIdx)) {
     for (mir = nextmi; mir; mir = MI_FOR(as, mir->parentIdx)) {
-      if (mil == mir) break;
+      if (mil == mir)
+        break;
     }
-    if (mir) break;
+    if (mir)
+      break;
   }
   /* Dump the end codes for everything from lastmi down to mil. */
   for (; lastmi != mil; lastmi = MI_FOR(as, lastmi->parentIdx)) {
-    if (safe_end_code(lastmi, buff, bp)) return 1;
+    if (safe_end_code(lastmi, buff, bp))
+      return 1;
   }
   /* Now we do the start codes for everything on the right. We have to
    * do this from the bottom of the stack (or rmi)-up, though. */
@@ -1455,7 +1477,8 @@ safe_markup_change(ansi_string *as, int lastidx, int nextidx, int pos,
   }
   while (i--) {
     if (!(endbuff[i]->standalone && pos != endbuff[i]->start)) {
-      if (safe_start_code(endbuff[i], buff, bp)) return 1;
+      if (safe_start_code(endbuff[i], buff, bp))
+        return 1;
     }
   }
   return 0;
@@ -1484,7 +1507,8 @@ safe_ansi_string(ansi_string *as, int start, int len, char *buff, char **bp)
 
   if (start == 0 && as->len == 0 && (as->flags & AS_HAS_STANDALONE)) {
     for (i = 0; i < as->micount; i++) {
-      if (!as->mi[i].standalone) continue;
+      if (!as->mi[i].standalone)
+        continue;
       if (as->mi[i].start_code) {
         safe_start_code(&as->mi[i], buff, bp);
       }
@@ -1493,9 +1517,7 @@ safe_ansi_string(ansi_string *as, int start, int len, char *buff, char **bp)
       }
     }
   }
-  if ((start >= as->len) ||
-      (start < 0) ||
-      (len < 1)) {
+  if ((start >= as->len) || (start < 0) || (len < 1)) {
   }
 
   if (start + len >= as->len) {
@@ -1512,7 +1534,7 @@ safe_ansi_string(ansi_string *as, int start, int len, char *buff, char **bp)
   lastidx = NOMARKUP;
 
   /* The string has markup. Let's dump it. */
-  for (i = start; i < end; ) {
+  for (i = start; i < end;) {
     while (lastidx == as->markup[i] && (i < end) && ((*bp) < buffend)) {
       *((*bp)++) = as->text[i++];
     }

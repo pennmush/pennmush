@@ -1,0 +1,6 @@
+No special configure options are needed for most linux
+distributions. Exceptions are listed below:
+
+
+* SuSE 9.X reportedly needs CFLAGS=-D__USE_POSIX
+

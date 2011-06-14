@@ -1,0 +1,1132 @@
+# SOME DESCRIPTIVE TITLE.\nCopyright (C) YEAR Free Software Foundation, Inc.\nFIRST AUTHOR <EMAIL@ADDRESS>, YEAR.\n
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2004-11-04 13:52-0600\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=iso-8859-1\n"
+"Content-Transfer-Encoding: 8bit"
+
+#: conf.c:1044
+msgid " Attributes are 8-bit word compressed in memory."
+msgstr " Atributos vazios não são despejados."
+
+#: conf.c:1035
+msgid " Attributes are Huffman compressed in memory."
+msgstr " Atributos vazios não são despejados."
+
+#: conf.c:1032
+msgid " Attributes are not compressed in memory."
+msgstr " Atributos vazios não são despejados."
+
+#: conf.c:1041
+msgid " Attributes are word compressed in memory."
+msgstr " Atributos vazios não são despejados."
+
+#: src/conf.c:980
+msgid " DNS and ident lookups are handled by a slave process."
+msgstr " Buscas DNS e ident são realizadas por um processo slave."
+
+#: src/conf.c:982
+msgid " DNS and ident lookups are handled by the MUSH process."
+msgstr " Buscas DNS e ident são realizadas pelos processos MUSH"
+
+#: src/conf.c:1111
+msgid " Extended convtime() is supported."
+msgstr " convtime() estendido está suportado."
+
+#: wiz.c:1605
+#, c-format
+msgid " [location: %s]"
+msgstr " [localização: %s]"
+
+#: src/conf.c:1113
+msgid " convtime() is stricter."
+msgstr " convtime() é mais exigente."
+
+#: src/look.c:688 src/look.c:770
+msgid " is owned by "
+msgstr " pertence a "
+
+#: speech.c:1021
+msgid " pages"
+msgstr " chama"
+
+#: extchat.c:1503
+msgid "#-1 AMBIGUOUS CHANNEL NAME"
+msgstr "#-1 AMBÍGUO"
+
+#: src/fundb.c:784 src/fundb.c:1001
+msgid "#-1 ARG1 NOT FOUND"
+msgstr "#-1 ARG1 NÃO ENCONTRADO"
+
+#: src/fundb.c:786 src/fundb.c:1003
+msgid "#-1 ARG2 NOT FOUND"
+msgstr "#-1 ARG2 NÃO ENCONTRADO"
+
+#: src/funlist.c:1886 src/funlist.c:1905
+msgid "#-1 ARGUMENT MUST BE INTEGER"
+msgstr "#-1 ARGUMENTO DEVE SER INTEIRO"
+
+#: src/funstr.c:421
+msgid "#-1 ARGUMENT MUST BE NON-NEGATIVE INTEGER"
+msgstr "#-1 ARGUMENTO DEVE SER INTEIRO NÃO NEGATIVO"
+
+#: parse.c:89
+msgid "#-1 ARGUMENT MUST BE NUMBER"
+msgstr "#-1 ARGUMENTO DEVE SER NUMÉRICO"
+
+#: src/fundb.c:1691 src/fundb.c:1695
+msgid "#-1 ARGUMENT MUST BE OBJ/ATTR"
+msgstr "#-1 ARGUMENTO DEVE SER OBJ/ATR"
+
+#: parse.c:87
+msgid "#-1 ARGUMENT MUST BE POSITIVE INTEGER"
+msgstr "#-1 ARGUMENTO DEVE SER INTEIRO POSITIVO"
+
+#: src/funmath.c:218 src/funmath.c:250
+msgid "#-1 ARGUMENT MUST END IN AN INTEGER"
+msgstr "#-1 ARGUMENTO DEVE TERMINAR POR UM INTEIRO"
+
+#: src/funlist.c:1892 src/funlist.c:1911
+msgid "#-1 ARGUMENT OUT OF RANGE"
+msgstr "#-1 ARGUMENTO FORA DO LIMITE"
+
+#: parse.c:86
+msgid "#-1 ARGUMENTS MUST BE INTEGERS"
+msgstr "#-1 ARGUMENTOS DEVEM SER INTEIROS"
+
+#: parse.c:90
+msgid "#-1 ARGUMENTS MUST BE NUMBERS"
+msgstr "#-1 ARGUMENTOS DEVEM SER NUMÉRICOS"
+
+#: parse.c:88
+msgid "#-1 ARGUMENTS MUST BE POSITIVE INTEGERS"
+msgstr "#-1 ARGUMENTOS DEVEM SER INTEIROS POSITIVOS"
+
+#: src/fundb.c:61
+msgid "#-1 ATTRIBUTE LENGTH TOO LONG"
+msgstr "#-1 COMPRIMENTO DO ARGUMENTO EXCESSIVO"
+
+#: src/fundb.c:183
+msgid "#-1 BAD ARGUMENT FORMAT TO GET"
+msgstr "#-1 FORMATO INVÁLIDO DE ARGUMENTO PARA GET"
+
+#: src/fundb.c:291
+msgid "#-1 BAD ARGUMENT FORMAT TO GET_EVAL"
+msgstr "#-1 FORMATO INVÁLIDO DE ARGUMENTO PARA GET_EVAL"
+
+#: src/funmath.c:987
+msgid "#-1 BASE OUT OF RANGE"
+msgstr "#-1 BASE FORA DE LIMITE"
+
+#: src/extmail.c:1496
+msgid "#-1 FOLDER MUST BE INTEGER"
+msgstr "#-1 ARGUMENTO DEVE SER INTEIRO"
+
+#: src/parse.c:671 src/parse.c:759
+msgid "#-1 FUNCTION ("
+msgstr "#-1 NÃO EXISTE ESTE TIPO"
+
+#: src/funlist.c:194 src/funlist.c:2088
+msgid "#-1 LISTS MUST BE OF EQUAL SIZE"
+msgstr "#-1 ARGUMENTO DEVE SER POSITIVO"
+
+#: extchat.c:1495
+msgid "#-1 NO CHANNEL GIVEN"
+msgstr "#-1 NÃO EXISTE ESTE TIPO"
+
+#: src/fundb.c:118 src/fundb.c:137 src/fundb.c:460 src/funstr.c:118\nsrc/funstr.c:131 src/funstr.c:144 src/funstr.c:157
+msgid "#-1 NO MATCH"
+msgstr "#-1 AMBÍGUO"
+
+#: src/fundb.c:767
+msgid "#-1 NO OBJECTS CONTROLLED"
+msgstr "#-1 ARG2 NÃO ENCONTRADO"
+
+#: src/fundb.c:63 src/fundb.c:69 src/fundb.c:72 src/fundb.c:273\nsrc/fundb.c:315 src/funlist.c:366 src/funlist.c:450 src/funufun.c:125\nsrc/funufun.c:158 src/funufun.c:307
+msgid "#-1 NO PERMISSION TO GET ATTRIBUTE"
+msgstr "#-1 NÃO EXISTE ESTE TIPO"
+
+#: src/bsd.c:4827
+msgid "#-1 NO PERMISSIONS FOR CHANNEL"
+msgstr "#-1 BASE FORA DE LIMITE"
+
+#: src/fundb.c:1614 src/fundb.c:1762 src/funlist.c:2320 src/funlist.c:2363
+msgid "#-1 NO SUCH ATTRIBUTE"
+msgstr "#-1 NÃO EXISTE ESTE TIPO"
+
+#: src/fundb.c:1828
+msgid "#-1 NO SUCH CHANNEL"
+msgstr "#-1 NÃO EXISTE ESTE TIPO"
+
+#: src/conf.c:926
+msgid "#-1 NO SUCH CONFIG OPTION"
+msgstr "#-1 NÃO EXISTE ESTE TIPO"
+
+#: src/fundb.c:1851
+msgid "#-1 NO SUCH LOCK TYPE"
+msgstr "#-1 NÃO EXISTE ESTE TIPO"
+
+#: src/fundb.c:155 src/fundb.c:189 src/fundb.c:205 src/fundb.c:255\nsrc/fundb.c:297 src/fundb.c:1609 src/funlist.c:2315 src/funlist.c:2358
+msgid "#-1 NO SUCH OBJECT VISIBLE"
+msgstr "#-1 NÃO EXISTE ESTE TIPO"
+
+#: src/extmail.c:1468 src/extmail.c:1489
+msgid "#-1 NO SUCH PLAYER"
+msgstr "#-1 NÃO EXISTE ESTE TIPO"
+
+#: src/fundb.c:907
+msgid "#-1 NO SUCH TYPE"
+msgstr "#-1 NÃO EXISTE ESTE TIPO"
+
+#: src/bsd.c:4485 src/bsd.c:4498
+msgid "#-1 NOT CONNECTED"
+msgstr "#-1 ARG2 NÃO ENCONTRADO"
+
+#: extchat.c:1525
+msgid "#-1 NOT ON CHANNEL"
+msgstr "#-1 BASE FORA DE LIMITE"
+
+#: src/funlist.c:1786
+msgid "#-1 NUMBER OF WORDS MUST BE EQUAL"
+msgstr "#-1 ARGUMENTOS DEVEM SER NUMÉRICOS"
+
+#: src/funlist.c:1179 src/funmisc.c:222
+msgid "#-1 NUMBER OUT OF RANGE"
+msgstr "#-1 BASE FORA DE LIMITE"
+
+#: src/funmath.c:850 src/funmath.c:876 src/funmath.c:930 src/funmath.c:954\nsrc/funmath.c:977 src/funmath.c:1238 src/funstr.c:212 src/funstr.c:234\nsrc/funstr.c:254 src/funstr.c:281 src/funtime.c:152
+msgid "#-1 OUT OF RANGE"
+msgstr "#-1 BASE FORA DE LIMITE"
+
+#: src/funmath.c:336 src/funmath.c:366
+msgid "#-1 OVERFLOW ERROR"
+msgstr "#-1 ERRO DE OVERFLOW"
+
+#: src/funlist.c:2256 src/funlist.c:2335 src/funlist.c:2378 src/funlist.c:2437\nsrc/funlist.c:2478
+msgid "#-1 REGEXP ERROR: "
+msgstr "#-1 ERRO DE OVERFLOW "
+
+#: src/function.c:118
+msgid "#-1 SEPARATOR MUST BE ONE CHARACTER"
+msgstr "#-1 ARGUMENTO DEVE SER INTEIRO"
+
+#: src/funlist.c:1943
+msgid "#-1 STEP OUT OF RANGE"
+msgstr "#-1 BASE FORA DE LIMITE"
+
+#: src/funstr.c:353
+msgid "#-1 STRING LENGTHS MUST BE EQUAL"
+msgstr "#-1 ARGUMENTOS DEVEM SER NUMÉRICOS"
+
+#: src/funlist.c:1815
+msgid "#-1 TOO MANY ITERS"
+msgstr "#-1 AMBÍGUO"
+
+#: src/funmath.c:1385
+msgid "#-1 UNKNOWN OPERATION"
+msgstr "#-1 NÃO EXISTE ESTE TIPO"
+
+#: src/extchat.c:803 src/extchat.c:835
+#, c-format
+msgid "%s is already on channel <%s>."
+msgstr "BATE-PAPO: Seelock em <%s> %s."
+
+#: look.c:205
+#, c-format
+msgid "%s is corrupt!"
+msgstr "%s está danificado!"
+
+#: src/extchat.c:865
+#, c-format
+msgid "%s is not on channel <%s>."
+msgstr "BATE-PAPO: Seelock em <%s> %s."
+
+#: src/rob.c:288
+#, c-format
+msgid "%s took %d %s from you!"
+msgstr "%s tomou %d %s de você!"
+
+#: src/command.c:1118
+msgid "@command is ALWAYS enabled."
+msgstr "@lock/drop está disponível."
+
+#: src/cque.c:1059
+msgid "All of your objects are being restarted."
+msgstr "Restrições de quota estão sendo aplicadas."
+
+#: src/cque.c:922
+msgid "All of your objects have been halted."
+msgstr "Restrições de quota estão sendo aplicadas."
+
+#: src/attrib.c:1031
+msgid "Attribute locked."
+msgstr "Atributos podem ser apagados."
+
+#: src/attrib.c:1111
+msgid "Attribute owner changed."
+msgstr "Atributos podem ser apagados."
+
+#: src/attrib.c:1035
+msgid "Attribute unlocked."
+msgstr "Atributos podem ser apagados."
+
+#: src/extchat.c:821
+#, c-format
+msgid "CHAT: %s joins you to channel <%s>."
+msgstr "BATE-PAPO: Seelock em <%s> %s."
+
+#: src/extchat.c:856
+#, c-format
+msgid "CHAT: %s removes you from channel <%s>."
+msgstr "BATE-PAPO: Seelock em <%s> %s."
+
+#: src/extchat.c:1496
+#, c-format
+msgid "CHAT: Channel <%s> now owned by %s."
+msgstr "BATE-PAPO: Seelock em <%s> %s."
+
+#: extchat.c:955 extchat.c:1008
+msgid "CHAT: I don't know which channel you mean."
+msgstr "Você não pode fazer isso enquanto estiver fixo."
+
+#: src/extchat.c:760 src/extchat.c:1015 src/extchat.c:1635
+msgid "CHAT: I don't recognize that channel."
+msgstr "Você não pode fazer isso enquanto estiver fixo."
+
+#: src/extchat.c:1554
+msgid "CHAT: I don't understand that key."
+msgstr "Eu não consigo encontrar isso."
+
+#: src/extchat.c:1481
+msgid "CHAT: Only a Wizard can do that."
+msgstr "Eu não consigo encontrar isso."
+
+#: src/extchat.c:824
+#, c-format
+msgid "CHAT: You join %s to channel <%s>."
+msgstr "BATE-PAPO: Seelock em <%s> %s."
+
+#: src/extchat.c:859
+#, c-format
+msgid "CHAT: You remove %s from channel <%s>."
+msgstr "BATE-PAPO: Seelock em <%s> %s."
+
+#: src/create.c:322
+msgid "Can't set home to home."
+msgstr "Eu não consigo encontrar isso."
+
+#: extmail.c:2473
+msgid "Cleared "
+msgstr "Criar o quê? "
+
+#: src/version.c:48
+#, c-format
+msgid "Compilation flags: %s"
+msgstr "[localização: %s]"
+
+#: src/wiz.c:1635 src/wiz.c:1929
+msgid "Couldn't find that player."
+msgstr "Eu não consigo encontrar isso."
+
+#: src/create.c:431
+msgid "Create what?"
+msgstr "Criar o quê?"
+
+#: look.c:828
+#, c-format
+msgid "Destination: %s"
+msgstr "[localização: %s]"
+
+#: function.c:735
+msgid "Do what with the function?"
+msgstr "Você não pode fazer isso enquanto estiver fixo."
+
+#: src/extchat.c:889
+msgid "Don't you have anything to say?"
+msgstr "Qual sinal você quer ativar?"
+
+#: src/destroy.c:271
+msgid "Even you can't do that!"
+msgstr "Eu não consigo encontrar isso."
+
+#: src/function.c:725
+msgid "Function added."
+msgstr "Nome de função muito grande."
+
+#: src/function.c:802
+msgid "Function deleted."
+msgstr "Nome de função muito grande."
+
+#: src/function.c:741
+msgid "Function updated."
+msgstr "Nome de função muito grande."
+
+#: src/extchat.c:846
+msgid "Guests may not leave channels."
+msgstr "Eu não consigo encontrar isso."
+
+#: src/extchat.c:1078
+msgid "Guests may not modify channels."
+msgstr "Eu não consigo encontrar isso."
+
+#: src/command.c:1109
+msgid "How do you want to restrict the command?"
+msgstr "Qual sinal você quer ativar?"
+
+#: src/wiz.c:1033
+msgid "How many commands do you want to execute?"
+msgstr "Qual comando você quer procurar?"
+
+#: src/attrib.c:1076
+msgid "I can't find that player"
+msgstr "Eu não consigo encontrar isso."
+
+#: src/speech.c:209 src/speech.c:265
+msgid "I can't find that room."
+msgstr "Eu não consigo encontrar isso."
+
+#: src/speech.c:1365
+msgid "I can't find that."
+msgstr "Eu não consigo encontrar isso."
+
+#: src/fundb.c:1795 src/match.c:271
+msgid "I can't see that here."
+msgstr "Eu não consigo encontrar isso."
+
+#: src/wiz.c:941
+msgid "I can't seem to find that."
+msgstr "Eu não consigo encontrar isso."
+
+#: src/cque.c:775 src/set.c:199
+msgid "I couldn't find that player."
+msgstr "Eu não consigo encontrar isso."
+
+#: src/lock.c:365
+msgid "I don't know which one you want to lock!"
+msgstr "Qual sinal você quer ativar?"
+
+#: src/extchat.c:1008
+msgid "I don't recognize that channel."
+msgstr "Eu não consigo encontrar isso."
+
+#: move.c:883
+msgid "I don't recognize who you want to desert."
+msgstr "Qual sinal você quer ativar?"
+
+#: move.c:853
+msgid "I don't recognize who you want to dismiss."
+msgstr "Qual sinal você quer ativar?"
+
+#: src/fundb.c:1327 src/look.c:551 src/look.c:566 src/move.c:482\nsrc/move.c:505 src/rob.c:91 src/speech.c:599
+msgid "I don't see that here."
+msgstr "Eu não consigo encontrar isso."
+
+#: src/warnings.c:256 src/warnings.c:432
+msgid "I don't see that object."
+msgstr "Eu não consigo encontrar isso."
+
+#: src/lock.c:362
+msgid "I don't see what you want to lock!"
+msgstr "Qual sinal você quer ativar?"
+
+#: src/lock.c:383
+msgid "I don't understand that key."
+msgstr "Eu não consigo encontrar isso."
+
+#: src/atr_tab.c:189
+msgid "I don't understand those permissions."
+msgstr "Eu não consigo encontrar isso."
+
+#: src/game.c:1606 src/game.c:1616
+msgid "I don't understand what you want to @list."
+msgstr "Eu não consigo encontrar isso."
+
+#: src/extchat.c:870
+msgid "I don't understand what you want to do."
+msgstr "Eu não consigo encontrar isso."
+
+#: src/set.c:667 src/set.c:673
+msgid "I need to know what you want to edit."
+msgstr "Qual sinal você quer ativar?"
+
+#: src/game.c:269
+msgid "It takes a God to make me panic."
+msgstr "Tem que ser um Deus para me causar pânico."
+
+#: src/look.c:743
+#, c-format
+msgid "Last Modification: %s"
+msgstr "[localização: %s]"
+
+#: src/extmail.c:1384
+#, c-format
+msgid "Last is dated %s"
+msgstr "Última reinicialização em %s"
+
+#: src/version.c:37
+#, c-format
+msgid "Last restarted: %s"
+msgstr "Última reinicialização em %s"
+
+#: look.c:791
+#, c-format
+msgid "Location: %s"
+msgstr "[localização: %s]"
+
+#: src/malias.c:148
+#, c-format
+msgid "MAIL: All Mail aliases must begin with '%c'."
+msgstr "CORREIO: Todos os codinomes de correio devem começar com '%c'."
+
+#: src/malias.c:403
+#, c-format
+msgid "MAIL: Bad alias. Aliases must start with '%c'."
+msgstr "CORREIO: Todos os codinomes de correio devem começar com '%c'."
+
+#: src/extmail.c:233
+#, c-format
+msgid "MAIL: Current folder is %d [%s]."
+msgstr "CORREIO: Você tem uma nova mensagem (%d) de %s."
+
+#: src/extmail.c:260
+#, c-format
+msgid "MAIL: Current folder set to %d [%s]."
+msgstr "CORREIO: Você tem uma nova mensagem (%d) de %s."
+
+#: src/malias.c:353
+msgid "MAIL: Description changed."
+msgstr "Atributos podem ser apagados."
+
+#: src/extmail.c:283
+#, c-format
+msgid "MAIL: Folder %d now has no name"
+msgstr "CORREIO: A pasta %d agora não tem nome."
+
+#: src/extmail.c:792
+msgid "MAIL: I can't figure out what you want to send."
+msgstr "CORREIO: Você não pode responder a uma mensagem inexistente."
+
+#: src/extmail.c:788
+msgid "MAIL: I can't figure out who you want to mail to."
+msgstr "CORREIO: Você não pode responder a uma mensagem inexistente."
+
+#: src/malias.c:398 src/malias.c:529 src/malias.c:555
+msgid "MAIL: I cannot find that alias!"
+msgstr "Eu não consigo encontrar isso."
+
+#: src/malias.c:378
+msgid "MAIL: I cannot find that player."
+msgstr "Eu não consigo encontrar isso."
+
+#: src/malias.c:158
+msgid "MAIL: Invalid character in mail alias."
+msgstr "Eu não consigo encontrar isso."
+
+#: src/extmail.c:2407 src/extmail.c:2412
+msgid "MAIL: Invalid player"
+msgstr "Eu não consigo encontrar isso."
+
+#: src/malias.c:497
+msgid "MAIL: Only god can do that!"
+msgstr "Eu não consigo encontrar isso."
+
+#: src/extmail.c:726
+msgid "MAIL: You can't reply to nonexistant mail."
+msgstr "CORREIO: Você não pode responder a uma mensagem inexistente."
+
+#: src/extmail.c:826
+msgid "MAIL: You can't reply to nonexistent mail."
+msgstr "CORREIO: Você não pode responder a uma mensagem inexistente."
+
+#: src/malias.c:374
+msgid "MAIL: You cannot do that!"
+msgstr "Você não pode fazer isso enquanto estiver fixo."
+
+#: src/extmail.c:975
+msgid "MAIL: You cannot send mail to non-existent people."
+msgstr "CORREIO: Você não pode responder a uma mensagem inexistente."
+
+#: src/extmail.c:1091
+#, c-format
+msgid "MAIL: You have a new message (%d) from %s."
+msgstr "CORREIO: Você tem uma nova mensagem (%d) de %s."
+
+#: malias.c:447
+msgid "MAIL: You must set the alias to a non-empty list."
+msgstr "CORREIO: Você não pode responder a uma mensagem inexistente."
+
+#: src/extmail.c:274
+msgid "MAIL: You must specify a folder name or number"
+msgstr "Você precisa especificar um comando."
+
+#: src/game.c:1258
+msgid "Matches on carried objects:"
+msgstr "Concordâncias encontradas no conteúdo desta sala:"
+
+#: src/game.c:1243
+msgid "Matches on contents of this room:"
+msgstr "Concordâncias encontradas no conteúdo desta sala:"
+
+#: src/game.c:1306
+msgid "Matches on objects in the Master Room:"
+msgstr "Concordâncias encontradas no conteúdo desta sala:"
+
+#: src/game.c:1276
+msgid "Matches on zone master room of location:"
+msgstr "Concordâncias encontradas no conteúdo desta sala:"
+
+#: src/create.c:303 src/fundb.c:1281 src/fundb.c:1300 src/wiz.c:386
+msgid "No match."
+msgstr "Você precisa especificar um comando."
+
+#: src/look.c:395
+msgid "No matching attributes."
+msgstr "Atributos vazios são mantidos."
+
+#: src/set.c:973
+msgid "No matching command."
+msgstr "Você precisa especificar um comando."
+
+#: src/set.c:596
+msgid "No such attribute to copy from."
+msgstr "Atributos vazios são mantidos."
+
+#: src/attrib.c:931
+msgid "No such attribute to reset."
+msgstr "Atributos vazios são mantidos."
+
+#: src/set.c:711
+msgid "No such attribute, try set instead."
+msgstr "Atributos vazios são mantidos."
+
+#: src/attrib.c:1043 src/attrib.c:1118
+msgid "No such attribute."
+msgstr "Atributos vazios são mantidos."
+
+#: src/bsd.c:4807 src/extchat.c:894
+msgid "No such channel."
+msgstr "Você precisa especificar um comando."
+
+#: src/command.c:1095
+msgid "No such command."
+msgstr "Você precisa especificar um comando."
+
+#: src/wiz.c:789
+msgid "No such connected player."
+msgstr "Você precisa especificar um comando."
+
+#: src/function.c:764
+msgid "No such function."
+msgstr "Você precisa especificar um comando."
+
+#: conf.c:962
+msgid "No such option."
+msgstr "Você precisa especificar um comando."
+
+#: src/wiz.c:155 src/wiz.c:729 src/wiz.c:1703
+msgid "No such player."
+msgstr "Você precisa especificar um comando."
+
+#: src/fundb.c:1424 src/look.c:1177 src/wiz.c:1553 src/wiz.c:1913
+msgid "Nothing found."
+msgstr "Você precisa especificar um comando."
+
+#: src/set.c:684
+msgid "Nothing to do."
+msgstr "Você precisa especificar um comando."
+
+#: src/set.c:526
+msgid "Only God can set himself!"
+msgstr "Eu não consigo encontrar isso."
+
+#: src/set.c:227
+msgid "Owner changed."
+msgstr "Atributos podem ser apagados."
+
+#: src/set.c:912
+msgid "Parent changed."
+msgstr "Atributos podem ser apagados."
+
+#: src/wiz.c:271
+msgid "Quotas not changed."
+msgstr "Atributos podem ser apagados."
+
+#: function.c:916
+msgid "Restore what?"
+msgstr "Criar o quê?"
+
+#: function.c:933
+msgid "Restored."
+msgstr "Criar o quê?"
+
+#: function.c:731
+msgid "Restrict what function?"
+msgstr "Criar o quê?"
+
+#: help.c:161
+msgid "Sorry, that command is temporarily unvailable."
+msgstr "@lock/drop está disponível."
+
+#: src/bsd.c:3081 src/bsd.c:3094 src/bsd.c:3099
+msgid "Sorry, that function is temporarily unavailable."
+msgstr "@lock/drop está disponível."
+
+#: src/rob.c:102
+msgid "Sorry, you can only kill players and objects."
+msgstr "Você só pode seguir jogadores e coisas."
+
+#: src/attrib.c:928
+msgid "That attribute cannot be changed by you."
+msgstr "Atributos não podem ser apagados."
+
+#: src/atr_tab.c:246 src/atr_tab.c:280 src/atr_tab.c:307
+msgid "That attribute isn't in the attribute table"
+msgstr "Atributos não podem ser apagados."
+
+#: atr_tab.c:198
+msgid "That attribute's permissions can not be changed."
+msgstr "Atributos não podem ser apagados."
+
+#: help.c:55
+msgid "That command is unavailable."
+msgstr "@lock/drop está disponível."
+
+#: function.c:928
+msgid "That function isn't deleted!"
+msgstr "Nome de função muito grande."
+
+#: src/extchat.c:1181
+msgid "That name is too long."
+msgstr "Nome de função muito grande."
+
+#: src/rob.c:109
+msgid "That object cannot be killed."
+msgstr "Atributos não podem ser apagados."
+
+#: src/set.c:957
+msgid "That object is protected."
+msgstr "Atributos não podem ser apagados."
+
+#: function.c:923
+msgid "That's not a builtin function."
+msgstr "Você não pode fazer isso enquanto estiver fixo."
+
+#: src/speech.c:1368
+msgid "There can't be anything in that!"
+msgstr "Eu não consigo encontrar isso."
+
+#: game.c:2097
+msgid "Time now"
+msgstr "Hora agora"
+
+#: game.c:2137
+msgid "Time until next @warnings"
+msgstr "Tempo até próximo @warnings"
+
+#: game.c:2120
+msgid "Time until next dbck check"
+msgstr "Tempo até próxima verificação dbck"
+
+#: game.c:2128
+msgid "Time until next purge"
+msgstr "Tempo até próxima limpeza"
+
+#: src/extchat.c:1358
+msgid "Title too long."
+msgstr "Nome de função muito grande."
+
+#: src/set.c:638
+#, c-format
+msgid "Unable to %s attribute."
+msgstr "** Impossível abrir arquivo %s"
+
+#: src/game.c:1239
+msgid "What command do you want to scan for?"
+msgstr "Qual comando você quer procurar?"
+
+#: src/speech.c:145
+msgid "What command do you want to teach?"
+msgstr "Qual comando você quer procurar?"
+
+#: src/speech.c:698
+msgid "What did you want to say?"
+msgstr "Qual sinal você quer ativar?"
+
+#: src/cmds.c:185
+msgid "What did you want to set?"
+msgstr "Qual sinal você quer ativar?"
+
+#: src/look.c:1294
+msgid "What do you want to @decompile?"
+msgstr "Qual sinal você quer ativar?"
+
+#: src/set.c:576
+msgid "What do you want to copy from?"
+msgstr "Qual comando você quer procurar?"
+
+#: src/set.c:610
+msgid "What do you want to copy to?"
+msgstr "Qual sinal você quer ativar?"
+
+#: src/predicat.c:849
+msgid "What do you want to do the verb?"
+msgstr "Qual sinal você quer ativar?"
+
+#: src/extchat.c:1082
+msgid "What do you want to do with the channel?"
+msgstr "Qual sinal você quer ativar?"
+
+#: src/game.c:1331
+msgid "What do you want to do with the list?"
+msgstr "Qual sinal você quer ativar?"
+
+#: src/predicat.c:843
+msgid "What do you want to do with the verb?"
+msgstr "Qual sinal você quer ativar?"
+
+#: src/extchat.c:1039
+msgid "What do you want to emit?"
+msgstr "Qual sinal você quer ativar?"
+
+#: src/extchat.c:981
+msgid "What do you want to say to that channel?"
+msgstr "Qual sinal você quer ativar?"
+
+#: src/wiz.c:196
+msgid "What do you want to set the quota to?"
+msgstr "Qual sinal você quer ativar?"
+
+#: src/set.c:491
+msgid "What flag do you want to set?"
+msgstr "Qual sinal você quer ativar?"
+
+#: src/set.c:583
+msgid "What object do you want to copy the attribute from?"
+msgstr "Qual comando você quer procurar?"
+
+#: src/predicat.c:1023
+msgid "What pattern do you want to grep for?"
+msgstr "Qual comando você quer procurar?"
+
+#: src/wiz.c:1980
+msgid "What site did you want to lock?"
+msgstr "Qual sinal você quer ativar?"
+
+#: src/predicat.c:837
+msgid "What was the victim of the verb?"
+msgstr "Qual sinal você quer ativar?"
+
+#: src/speech.c:359
+msgid "Whisper what?"
+msgstr "Criar o quê?"
+
+#: src/wiz.c:1991
+msgid "Who do you want to lock?"
+msgstr "Qual sinal você quer ativar?"
+
+#: src/warnings.c:267 src/warnings.c:443
+msgid "Why would you want to be warned about garbage?"
+msgstr "Qual sinal você quer ativar?"
+
+#: src/bsd.c:4297
+msgid "Why would you want to do that?"
+msgstr "Qual sinal você quer ativar?"
+
+#: src/lock.c:373
+msgid "Why would you want to lock garbage?"
+msgstr "Qual sinal você quer ativar?"
+
+#: src/move.c:512
+msgid "You already have that!"
+msgstr "Eu não consigo encontrar isso."
+
+#: src/extchat.c:1101
+msgid "You already own too many channels."
+msgstr "Você precisa especificar um comando."
+
+#: src/extmail.c:1131
+msgid "You annihilate the post office. All messages cleared."
+msgstr "Você aniquilou a agência de correio. Todas as mensagens foram apagadas."
+
+#: extchat.c:1430
+msgid "You are not on any channels."
+msgstr "Você precisa especificar um comando."
+
+#: attrib.c:1078
+msgid "You can only chown an attribute to yourself."
+msgstr "Atributos vazios são mantidos."
+
+#: src/move.c:749
+msgid "You can only follow players and things."
+msgstr "Você só pode seguir jogadores e coisas."
+
+#: src/wiz.c:234
+msgid "You can only set quotas to a positive number."
+msgstr "Você precisa especificar um comando."
+
+#: src/wiz.c:798
+msgid "You can't boot other people!"
+msgstr "Você não pode fazer isso enquanto estiver fixo."
+
+#: src/extchat.c:1112
+msgid "You can't create channels of that type."
+msgstr "Aparentemente você não pode largar coisas aqui."
+
+#: src/function.c:773
+msgid "You can't delete that @function."
+msgstr "Você não pode fazer isso enquanto estiver fixo."
+
+#: src/move.c:576
+msgid "You can't drop that."
+msgstr "Eu não consigo encontrar isso."
+
+#: src/wiz.c:584
+msgid "You can't force God!"
+msgstr "Eu não consigo encontrar isso."
+
+#: src/set.c:139
+msgid "You can't give a player that name."
+msgstr "Eu não consigo encontrar isso."
+
+#: src/rob.c:207
+msgid "You can't give that away."
+msgstr "Eu não consigo encontrar isso."
+
+#: src/rob.c:202
+msgid "You can't give yourself away!"
+msgstr "Eu não consigo encontrar isso."
+
+#: src/move.c:359 src/move.c:412 src/move.c:430
+msgid "You can't go that way."
+msgstr "Você não pode fazer isso enquanto estiver fixo."
+
+#: src/move.c:670
+msgid "You can't leave."
+msgstr "Eu não consigo encontrar isso."
+
+#: src/create.c:60
+msgid "You can't link to that."
+msgstr "Eu não consigo encontrar isso."
+
+#: src/lock.c:369
+msgid "You can't lock that!"
+msgstr "Eu não consigo encontrar isso."
+
+#: src/wiz.c:166
+msgid "You can't look at someone else's quota."
+msgstr "Você não pode fazer isso enquanto estiver fixo."
+
+#: src/look.c:572
+msgid "You can't look at that from here."
+msgstr "Você não pode fazer isso enquanto estiver fixo."
+
+#: src/wiz.c:1202
+msgid "You can't make admin into guests."
+msgstr "Aparentemente você não pode largar coisas aqui."
+
+#: src/extchat.c:1203
+msgid "You can't make channels that type."
+msgstr "Aparentemente você não pode largar coisas aqui."
+
+#: src/wiz.c:416
+msgid "You can't move an exit to someplace that's crumbling."
+msgstr "Você não pode fazer isso enquanto estiver fixo."
+
+#: src/move.c:537
+msgid "You can't pick that up."
+msgstr "Eu não consigo encontrar isso."
+
+#: src/move.c:541
+msgid "You can't pick up exits."
+msgstr "Eu não consigo encontrar isso."
+
+#: src/cmds.c:181
+msgid "You can't remake the world in your image."
+msgstr "Aparentemente você não pode largar coisas aqui."
+
+#: src/wiz.c:1934
+msgid "You can't see someone else's quota!"
+msgstr "Aparentemente você não pode largar coisas aqui."
+
+#: src/look.c:534
+msgid "You can't see through that."
+msgstr "Aparentemente você não pode largar coisas aqui."
+
+#: src/move.c:586
+msgid "You can't seem to drop things here."
+msgstr "Aparentemente você não pode largar coisas aqui."
+
+#: src/move.c:583
+msgid "You can't seem to get rid of that."
+msgstr "Aparentemente você não pode largar coisas aqui."
+
+#: src/move.c:502
+msgid "You can't take that from there."
+msgstr "Aparentemente você não pode largar coisas aqui."
+
+#: src/move.c:544
+msgid "You can't take that!"
+msgstr "Eu não consigo encontrar isso."
+
+#: src/wiz.c:359
+msgid "You can't teleport rooms."
+msgstr "Aparentemente você não pode largar coisas aqui."
+
+#: src/set.c:813
+msgid "You can't trigger God!"
+msgstr "Eu não consigo encontrar isso."
+
+#: src/create.c:213
+msgid "You can't unlink that!"
+msgstr "Eu não consigo encontrar isso."
+
+#: function.c:869
+msgid "You cannot change that built-in function."
+msgstr "Você não pode fazer isso enquanto estiver fixo."
+
+#: src/wiz.c:734
+msgid "You cannot change that player's password."
+msgstr "Você não pode fazer isso enquanto estiver fixo."
+
+#: src/command.c:1244
+msgid "You cannot do that while gagged."
+msgstr "Você não pode fazer isso enquanto estiver fixo."
+
+#: src/move.c:450
+msgid "You cannot modify exits in that room."
+msgstr "Eu não consigo encontrar isso."
+
+#: src/set.c:357
+msgid "You cannot move that object to that zone."
+msgstr "Você não pode fazer isso enquanto estiver fixo."
+
+#: src/rob.c:77
+msgid "You do not have such power."
+msgstr "Aparentemente você não pode largar coisas aqui."
+
+#: src/move.c:568 src/rob.c:191
+msgid "You don't have that!"
+msgstr "Eu não consigo encontrar isso."
+
+#: src/set.c:352
+msgid "You don't have the power to shift reality."
+msgstr "Aparentemente você não pode largar coisas aqui."
+
+#: src/bsd.c:3073
+msgid "You don't look like an admin to me."
+msgstr "Você não pode fazer isso enquanto estiver fixo."
+
+#: src/move.c:745
+msgid "You don't see that here."
+msgstr "Aparentemente você não pode largar coisas aqui."
+
+#: src/create.c:311
+msgid "You may not link something to itself."
+msgstr "Eu não consigo encontrar isso."
+
+#: src/set.c:535
+msgid "You may not set attributes."
+msgstr "Atributos vazios são mantidos."
+
+#: src/speech.c:132 src/speech.c:171 src/speech.c:644 src/speech.c:1342
+msgid "You may not speak here!"
+msgstr "Aparentemente você não pode largar coisas aqui."
+
+#: src/speech.c:218 src/speech.c:270 src/speech.c:1375 src/speech.c:1420
+msgid "You may not speak there!"
+msgstr "Eu não consigo encontrar isso."
+
+#: src/cque.c:913
+msgid "You may not use @halt obj=command on this object."
+msgstr "Você não pode fazer isso enquanto estiver fixo."
+
+#: src/extchat.c:922 src/extchat.c:1029
+msgid "You must be on that channel to speak on it."
+msgstr "Você precisa especificar um comando."
+
+#: set.c:210
+msgid "You must carry the object to @chown it."
+msgstr "Você precisa especificar um comando."
+
+#: src/extchat.c:1074 src/extchat.c:1247 src/extchat.c:1354
+msgid "You must specify a channel."
+msgstr "Você precisa especificar um comando."
+
+#: src/command.c:1090
+msgid "You must specify a command."
+msgstr "Você precisa especificar um comando."
+
+#: src/set.c:547
+msgid "You must specify a flag to set."
+msgstr "Você precisa especificar um comando."
+
+#: src/look.c:1044
+msgid "You must specify a valid player name."
+msgstr "Você precisa especificar um comando."
+
+#: src/function.c:672
+msgid "You must specify an object and an attribute."
+msgstr "Você precisa especificar um comando."
+
+#: src/attrib.c:985 src/attrib.c:989 src/attrib.c:1058 src/attrib.c:1062
+msgid "You need to give an object/attribute pair."
+msgstr "Você precisa especificar um comando."
+
+#: src/extchat.c:746
+msgid "You need to specify a channel."
+msgstr "Você precisa especificar um comando."
+
+#: src/bsd.c:4639
+msgid "You no longer appear on the WHO list."
+msgstr "Nome de função muito grande."
+
+#: src/bsd.c:4641
+msgid "You now appear on the WHO list."
+msgstr "Nome de função muito grande."
+
+#: src/look.c:412
+msgid "You see nothing special."
+msgstr "Você precisa especificar um comando."
+
+#: src/wiz.c:453
+msgid "You're in the Void. This is not a good thing."
+msgstr "Você está no Vazio. Isso não é bom."
+
+#: src/wiz.c:479
+msgid "You're in the void - sending you home."
+msgstr "Você está no Vazio. Isso não é bom."
+
+#: src/set.c:422
+msgid "Zone changed."
+msgstr "Atributos podem ser apagados."
+
+#: src/bsd.c:4683
+msgid ""
+"\n"
+"*** Inactivity limit reached. You are now HIDDEN. ***\n"
+msgstr ""
+"\n"
+"*** Limite de inatividade atingido. Você agora está OCULTO. ***\n"
+
+#: src/bsd.c:4673
+msgid ""
+"\n"
+"*** Inactivity timeout ***\n"
+msgstr ""
+"\n"
+"*** Limite de inatividade atingido. Você agora está OCULTO. ***\n"
+
+#: src/extmail.c:2507
+msgid ""
+"\n"
+"MAIL: You have no mail.\n"
+msgstr ""
+"\n"
+"CORREIO: Você não pode responder a uma mensagem inexistente.\n"
+

@@ -1,0 +1,2203 @@
+& help
+This is the index to the MUSH online help files.
+
+  For an explanation of the help system, type:    help newbie
+
+  For the list of MUSH commands, type:            help commands
+  For the list of MUSH topics, type:              help topics
+  For an alphabetical list of all help entries:   help entries 
+  For a list of entries that match a pattern:     help <wildcard>
+  For information about PennMUSH:                 help code
+  
+  For a list of flags:                            help flag list
+  For a list of functions:                        help function list 
+  For a list of attributes:                       help attribute list
+  To see the configuration of this MUSH:          @config
+
+  On many MUSHes, list local commands with:       +help
+
+  If there are any errors in the help text, please notify a wizard in
+  the game, or file a report at
+  http://code.google.com/p/pennmush/issues/list, which is the
+  bug-tracking site for PennMUSH (and its distributed help files) but
+  probably has no relation to this MUSH in particular.
+
+& newbie
+
+  If you are new to MUSHing, the help files may seem confusing. Most
+  of them are written in a specific style, however, and once you
+  understand it the files are extremely helpful.
+
+  The first line of a help file on a command or function will normally
+  be the syntax of the command. "Syntax" means the way the command
+  needs to be typed in. In the help files, when the syntax of a
+  command is described, square brackets [] mean that that part of the
+  command is optional and doesn't have to be typed in. Also, pointy
+  brackets <> mean that that part of the command needs to be replaced
+  with a specific piece of information.
+  
+  You should not type the [] or <> brackets when entering a command.
+  
+  Continued in 'help newbie2' -- type 'help newbie2' without the quotes.
+  
+& newbie2
+
+  For example, the syntax of the help command is:
+  
+  help [<topic>]
+  
+  What this means is that to get help, you would type first the word
+  "help" and then you could optionally type the name of a more
+  specific topic in order to get help on that topic. Just typing
+  "help" will work too (that's why the <topic> part is optional).
+  
+  Some common commands that you should look at help for are:
+  
+    look   say    go    page    pose    get     give    home
+  
+  Just type help <command> for help. Example: help page
+  
+  Continued in 'help newbie3'.
+& newbie3
+
+  There is help available on every standard MUSH command. If you see a
+  command or someone mentions one to you that you want to know more
+  about, try just typing: help <command name> -- that will most likely
+  bring up the help file on it.
+  
+  Please note that just because there is help available on a command
+  does not necessarily mean that the command can be used on this
+  MUSH. The siteadmin of the MUSH can choose to turn off some
+  commands. If there's something that you would like available, and it
+  isn't, please ask a wizard why not.
+  
+  It is also highly recommended that any new player read the MUSH manual,
+  written by Amberyl. It is available by anonymous FTP from:
+     ftp.pennmush.org
+  in the directory:
+     /pub/PennMUSH/Manuals
+  or by HTTP from:
+  http://download.pennmush.org/Manuals/
+
+& topics
+Help is available on the following topics:
+
+  ACTION LISTS             ANCESTORS                ANONYMOUS ATTRIBUTES
+  ATTRIB-OWNERSHIP         ATTRIBUTES               BEING KILLED
+  BOOLEAN VALUES           CHAT                     CLIENTS
+  CONTROL                  COPYRIGHT                COSTS
+  CREDITS                  DBREFS                   DROP-TO
+  ENACTOR                  EVALUATION               EXECUTOR
+  EXITS                    FAILURE                  FLAGS
+  FUNCTIONS                GENDER                   GLOBALS                  
+  HERE                     HOMES                    INTERIORS                
+  LINKING                  LISTENING                LISTS                    
+  LOOPING                  MASTER ROOM              MATCHING
+
+  Continued in 'help topics2'.
+& topics2
+  ME                       MONEY                    MUSHCODE
+  NON-STANDARD ATTRIBUTES  PARENTS                  POWERS
+  PUPPETS                  QUEUE                    REGEXPS
+  REGISTERS                SEMAPHORES               SETTING-ATTRIBUTES       
+  SPOOFING                 STACK                    STRINGS                  
+  SUBSTITUTIONS            SUCCESS                  SWITCHES                 
+  TYPES OF OBJECTS         USER-DEFINED COMMANDS    VERBS                    
+  WARNINGS                 WILDCARDS                ZONE MASTER ROOMS        
+  ZONE MASTERS             ZONES  
+  
+Type "help <topic name>" for help.
+& ACTION LISTS
+  An "action list" is simply a list of MUSH commands which are run together,
+  one after the other. Each command in the list is separated by a semicolon.
+  Action lists appear in many places: in user-defined commands, triggered in
+  @a-attributes by the MUSH, and even as arguments to other commands, like
+  @switch and @dolist.
+
+  If part of the command (such as the text in an @emit, for example) contains
+  a semi-colon, you may need to enclose that part in curly braces {}. You can
+  also nest action lists inside each other by enclosing each action list in
+  braces {}.
+
+  Substitution will be performed on the contents of action lists before
+  they are executed.
+
+  See 'help action2' for some examples.
+See also: @-ATTRIBUTES, VERBS, $-COMMANDS
+& ACTION2
+  Example 1:
+    > @asuccess Gift=@pemit %#={The box pops open; surprise!} ; 
+        @name me=New Toy ; @desc me=A shiny new toy, just for %n!
+    > take gift
+    The box pops open; surprise!
+    > look new toy
+    New Toy
+    A shiny new toy, just for Cyclonus!
+            
+  Example 2:
+    > &TEST me=$test:@emit {Testing; testing; one, two.} ; 
+        @dolist 1 2 3={think Test ##, success.}
+    > test
+    Testing; testing; one, two.
+    Test 1, success.
+    Test 2, success.
+    Test 3, success.
+
+See also: ATTRIBUTES, SUBSTITUTION, @asuccess, @dolist
+& ANCESTORS
+  ANCESTORS
+
+  Objects can inherit attributes and locks from other objects through the use
+  of parents. An object's parent, its parent's parent, its parent's parent's
+  parent, etc. constitute the object's "parent chain" and lookups work the 
+  way up the chain until an inheritance occurs.
+
+  Ancestors are "virtual parents" that are assumed to be last on every parent
+  chain. There is one ancestor for each object type (room, exit, thing,
+  player), and @config lists the dbref of each ancestor object (@config 
+  ancestor_room, etc). Under normal circumstances, if an attribute/lock can't
+  be retrieved from an object or any of its explicit parents, the attribute
+  will be looked for on the appropriate ancestor.  The ORPHAN flag may be set
+  on an object to cause lookups on that object to ignore ancestors (like the
+  pre-ancestor behavior).
+
+  Ancestors may themselves have parent chains, but these are (obviously) not 
+  virtually terminated by ancestors.
+
+  Note that the choice of which ancestor to look up is based on the type of 
+  the *child* object, as is the check of the ORPHAN flag. Also note that 
+  ancestors are *not* checked for $-commands or ^-commands; you should use 
+  the master room for global commands, instead.
+
+See also: PARENTS, ORPHAN
+& ANONYMOUS ATTRIBUTES
+& LAMBDA
+& #LAMBDA
+& #APPLY
+  In many cases where a function expects a object/attribute pair that
+  refers to an attribute to evaluate, you can use the form
+
+  #lambda/<code>
+
+  instead, and the code will be treated as an attribute's body.  The
+  code will normally be parsed twice, so special characters should be
+  escaped where needed.
+
+  If the #lambda just calls another function, the form
+
+  #apply[<number of arguments>]/<function name>
+
+  can be used instead. If the argument count is left out, it defaults
+  to 1.
+
+  These anonymous attributes should be used for short and simple
+  pieces of code. Anything long or complicated should go in an actual
+  attribute, for readability and maintainability.
+
+  See 'HELP ANONYMOUS2' for examples.
+& ANONYMOUS2
+& LAMBDA2
+& #LAMBDA2
+  A typical usage of anonymous attributes would be to convert
+  a list of dbrefs to names, as so:
+
+  > say map(#lambda/name(\%0), #3 #12 #23)
+  You say, "Joe Robert Sally"
+  
+  The following version uses #apply instead:
+
+  > say map(#apply/name, #3 #12 #23)
+
+  Because the code is parsed twice, you can actually build parts of it
+  in place, which is very convenient. Consider this implementation of
+  a lattrval function, which is like lattr() but it only returns
+  non-empty attributes:
+
+  > &lattrval me=
+     filter(#lambda/hasattrval([decompose(before(%0, /))], \%0), lattr(%0))
+  
+  The first time '#lambda/hasattrval([decompose(before(%0, /))], \%0)' is
+  parsed in a call like 'u(lattrval, #1234)', it is turned into
+  '#lambda/hasattrval(#1234, %0)', thus avoiding the need for a setq()
+  or the like to store the top-level %0 for use in a real attribute
+  called by filter(). However, this can lead to problems with
+  evaluating un-trusted code. Use decompose() where neccessary.
+
+  See 'HELP ANONYMOUS3' for more examples.
+& ANONYMOUS3
+& LAMBDA3
+& #LAMBDA3
+  
+  You can also use lit() to avoid having the code evaluated twice, if
+  needed. For example, this code, which returns all unlinked exits in
+  a room:
+
+  &lunlinked me=filter(lit(#lambda/strmatch(loc(%0), #-1)), lexits(%0))
+
+  This approach is useful both for security in making it harder to
+  evaluate a string that shouldn't be, and for making the code look
+  nicer by not having to escape percent signs, brackets, and other
+  special characters. However, it also makes it harder to build the
+  code string on the fly. Use what's most appropriate.
+     
+  Finally, a multiple argument example of #apply, which requires less
+  escaping than #lambda for cases where you're just calling another
+  function:
+
+  > think mix(#apply2/ansi, r g b, foo bar baz)
+
+  See 'HELP ANONYMOUS4' for a list of functions that support anonymous
+  attributes.
+& ANONYMOUS4
+& LAMBDA4
+& #LAMBDA4
+  The following functions support anonymous attributes:
+  
+  filter()    filterbool()   fold()      foreach()   map()      mapsql()
+  mix()       munge()        namelist()  sortby()    sortkey()  step()
+& ATTRIB-OWNERSHIP
+  ATTRIBUTE OWNERSHIP
+  
+  The latest person to set an attribute on an object is the owner of that 
+  attribute. If you lock an attribute, using the @atrlock command, only 
+  the person who owns the attribute will be able to alter the attribute. 
+  This allows you to create standard commands on objects and then @chown 
+  them to others without letting them alter them.
+
+  Attribute ownership is NOT changed when the object itself is @chown'ed. 
+  To change attribute ownership, you must use the @atrchown command.
+
+  You must control an object in order to set attributes on it.
+
+See also: @atrlock, @atrchown, ATTRIBUTES
+& ATTRIBUTES
+& ATTRIBUTES LIST
+& ATTRIBUTE LIST
+  Attributes with (*) after them are special, cannot be set by
+  players, and may only be visible to wizards or admin. For those
+  attributes, there is no @-command, so you can just type 'help
+  <attribute name>' for help.  For all other attributes, type 'help
+  @<attribute name>' for help.
+
+Standard Attributes: (see @list/attribs for the complete list)
+  AAHEAR        ACLONE        ACONNECT      ADEATH        ADESCRIBE
+  ADISCONNECT   ADROP         AEFAIL        AENTER        AFAILURE
+  AHEAR         ALEAVE        ALFAIL        AMHEAR        AMOVE
+  APAYMENT      ASUCCESS      AWAY          CHARGES       COST 
+  DEATH         DESCRIBE      DROP          EALIAS        EFAIL         
+  ENTER         FAILURE       FORWARDLIST   HAVEN         IDESCRIBE     
+  IDLE          LALIAS        LAST (*)      LASTIP (*)    LASTLOGOUT(*) 
+  LASTSITE (*)  LEAVE         LFAIL         LISTEN        MOVE          
+  ODEATH        ODESCRIBE     ODROP         OEFAIL        OENTER        
+  OFAILURE      OLEAVE        OLFAIL        OMOVE         OPAYMENT      
+  OSUCCESS      OXENTER       OXLEAVE       OXMOVE        PAYMENT       
+  QUEUE (*)     RQUOTA (*)    RUNOUT        SEX           STARTUP       
+  SUCCESS       TFPREFIX
+
+  Continued in 'help attributes2'.
+& ATTRIBUTES2
+  An attribute is part of the code on an object that makes it
+  unique. An attribute can contain any sort of text -- from a single
+  word, to a long paragraph, to a piece of MUSHcode. Some attributes
+  are standard in PennMUSH. That means that their effects are pre-set.
+
+  Standard attributes can be set using one of the following commands:
+    @<attribute name> <object>=<content>
+    @set <object>=<attribute name>:<content>
+    &<attribute name> <object>=<content>
+
+  It is also possible to have non-standard attributes, which can be
+  named anything you like. Please see 'help NON-STANDARD ATTRIBUTES'
+  for more information on those.
+
+  Continued in 'help attributes3'.
+& ATTRIBUTES3
+  Any attribute name can be shortened, but a shorter forms run the
+  risk of conflicting with other attribute names.  This could result
+  in you setting an unwanted attribute.
+
+  For example:
+    @adesc me=think %N looks at you.
+  will set your ADESCRIBE attribute just as
+    @adescribe me=think %N looks at you.
+  would.
+
+  To see the attributes that are set on you or on any of the objects
+  you own, you should use the "examine" command. See 'help examine'.
+  
+  Continued in 'help attributes4'.
+& ATTRIBUTES4
+  Attributes can be owned by someone other than the object they are
+  set on.  This allows the person to change the content of just that
+  attribute while not the rest of the object. Attributes can also be
+  locked, which prevents them from being changed by anyone.
+
+  In addition to the standard attributes with pre-set effects, there
+  are some special attributes that date from the days before you could
+  set non-standard attributes with any name you wanted. These are the
+  attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set
+  effects, and were just to allow players to store any text or
+  MUSHcode that they wished in those attributes. Now that non-standard
+  attributes are available, it is highly recommended that you instead
+  use them, since you can use longer and descriptive names for
+  attributes, which makes it much easier to examine and work on
+  objects.
+
+See also: ATTRIB-OWNERSHIP, @set, examine, @atrchown, @atrlock,
+  hasattr(), get(), v(), NON-STANDARD ATTRIBUTES, SETTING-ATTRIBUTES,
+  ATTRIBUTE TREES
+
+& BEING KILLED
+ 
+  Getting killed is no big deal. If you are killed, you return to your
+  home, and all things you carry return to their homes. You also
+  collect 50 pennies in insurance money (unless you have >= 10000
+  pennies or you were killed via the Wizard slay command). See
+  'MONEY'.  Generally, killing is not encouraged unless absolutely
+  necessary.  It can be extremely rude and annoying.
+
+  Many MUSHes choose to disable the kill command.
+
+See also: kill, slay, @death
+& BOOLEAN VALUES 
+
+  A boolean variable, for those of you not familiar with programming,
+  is a variable that is either true or false. Normally, a value of 1
+  is considered "true" and a value of 0 is considered "false". Many
+  MUSH functions return either 1 if they are true or 0 if false.  For
+  example, the hasflag() function tests to see if an object has a
+  certain flag set on it. If hasflag(<object>,<flag name>) is true
+  (the object has the flag), it will return 1. If it is false, it will
+  return 0.
+
+  Other functions expect to operate on boolean values. What they
+  consider "true" or "false", however, depends on the setting of the
+  "tiny_booleans" config option (@config tiny will show this).
+
+  Continued in 'help boolean2'.
+& BOOLEAN2 
+  If tiny_booleans is...
+  no                       FALSE: null string, 0, any negative db
+                           TRUE:  everything else
+  yes                      TRUE:  numbers other than 0
+                                  strings beginning with numbers other than 0
+                           FALSE: everything else 
+  
+  Or, put another way:
+  Value                 tiny_booleans=no        tiny_booleans=yes  Gotcha
+  0                     FALSE                   FALSE
+  non-zero number       TRUE                    TRUE 
+  #<non-negative>       TRUE                    FALSE               *
+  #<negative>           FALSE                   FALSE                
+
+  null string           FALSE                   FALSE
+  0<non-numbers..>      TRUE                    FALSE               *
+  <non-numbers...>      TRUE                    FALSE               *
+
+  Continued in 'help boolean3'.
+& BOOLEAN3
+
+  Examples (assuming tiny_booleans is "no"):     
+    not(foo) = 0  
+    not(<null string>) = 1
+    not(-66) = 0
+    not(0) = 1
+    not(#-1) = 1
+    not(#12) = 0
+  And so on...
+  (note: These rules only apply when a function expects a Boolean
+  value, not for strings that expect other values.)
+
+See also: BOOLEAN FUNCTIONS, not(), t()
+& CLIENTS
+  Clients are special software programs that you can use to connect to
+  MUSHes. They are usually much nicer to use than raw telnet and give
+  you many additional features, such as larger text buffers (so you
+  can type more), backscroll, history of previous commands, macros,
+  and so on.
+
+  Here is a list of common clients and the web sites where they can be
+  found.  Please note that the below sites are subject to change.  The
+  below are listed solely for your information and possible benefit.
+  The developers of PennMUSH have nothing to do with the clients.
+
+  OPERATING
+  SYSTEM          CLIENT      WEB SITE
+  -----------------------------------------------------------------------
+  UNIX            Tinyfugue   http://tinyfugue.sourceforge.net
+  WINDOWS         MUSHClient  http://www.mushclient.com
+                  SimpleMU    http://simplemu.onlineroleplay.com
+                  MuckClient  http://www.xcalibur.co.uk/MuckClient/
+  MAC OS X        Savitar     http://www.heynow.com/Savitar/
+                  Atlantis    http://www.riverdark.net/atlantis/
+                  Unix clients will also run on OS X.
+& CONTROL
+  Controlling an object basically means that you have the power to
+  change the object's characteristics such as flags and attributes. It
+  may also mean that you have the ability to destroy it.
+
+  These checks are performed, from top to bottom, to see if object O
+  controls object V:
+   1. If O and V are the same object, O controls V
+   2. If V is God, O does not control V
+   3. If O is a Wizard, O controls V
+   4. If V is a Wizard, O does not control V
+   5. If V is Royalty and O is not, O does not control V
+   6. If V is MISTRUST, O does not control V
+   7. If O and V are owned by the same player, and either:
+       a. V is not set TRUST, or
+       b. O is set TRUST
+      then O controls V
+   8. If V is a player, or set TRUST, O does not control V
+   9. If the zone_control_zmp_only @config option is set to 'No', V is on a
+      Zone, and O passes the Zone's @lock/zone, O controls V
+  10. If V is owned by a SHARED player, and O passes the owner's @lock/zone,
+      O controls V
+  11. If V has an @lock/control, and O passes the lock, O controls V
+  12. O does not control V
+
+See also: controls(), TRUST, MISTRUST, ZONES, SHARED PLAYERS
+& COSTS
+  Some things on the MUSH cost pennies. The default costs are shown below:
+  
+          kill: 10 pennies (or more, up to 100 pennies)
+          @dig: 10 pennies
+          @create: 10 pennies (or more)
+          @search: 100 pennies *
+          @link: 1 penny (if you  didn't already own it,
+                          +1 to the previous owner).
+          @open: 1 penny (2 pennies if linked at the same time)
+  
+  Type '@config/list costs' to get the costs for the MUSH you are on.
+
+See also: MONEY, money(), score
+& CREDITS
+  Maintainer: Raevnos [SW]
+  Developers: Ervin Hearn III [EEH], Greg Millam [GM], Mike Griffiths [MG],
+              Intrevis
+  Past Porters: Nick Gammon [NJG] (win32), Dan Williams [DW] (MacOS), 
+           Sylvia (OS/2)
+  Former developers: Rhyanna [RLM], Trivian [TN], Halatir [LdW], Talek [TAP],
+           Javelin
+ 
+  The original TinyMUSH 1.0 code was written by Lawrence Foard, and
+  was based upon James Aspnes' TinyMUD server. Since then, the code
+  has been modified by the programmers of MicroMUSE (then MicroMUSH),
+  and Joseph Traub (Moonchilde of PernMUSH).  From January 1992 to
+  January 1995, Lydia Leong (Amberyl of PernMUSH / Polgara of
+  Belgariad) maintained the code currently known as PennMUSH 1.50.
+  From January 1995 until July 2006, Alan Schwartz (Paul of DuneMUSH /
+  Javelin elsewhere) maintained this code, along with a development
+  team. From July 2006 on, Raevnos has been the maintainer.
+
+  Big thanks to the developers of TinyMUSH 2.0, 2.2 [2.2], 3.0 [3],
+  MUX2, and Rhost [Rhost] servers, as well as to the players of
+  Belgariad MUSH, DuneMUSH, and M*U*S*H, and everyone else using this
+  server!
+
+See also: help code, help license
+& DATABASE
+& DBREFS
+& DBREF NUMBER
+& DBREF #
+  You will find the term "dbref" or "dbref number" used frequently in
+  these help files and in MUSHcode. It is an abbreviation of "database
+  reference number".
+  
+  The database is the part of MUSH that stores all the information
+  about this particular MUSH. Players, things, rooms, and exits are
+  all objects in the database. Each object in the database has a
+  unique dbref number that is set when the object is created. You can
+  use the dbref number to refer to an object that is not in your
+  current location, and it is especially important for global code.
+
+  Using DBREFs is also faster than using names, even if the object is
+  in your location. This is because whenever you try to do something
+  with an object (such as look at it, take it, etc.), the MUSH first
+  has to locate the object. Since the dbref is unique, it can
+  immediately find the object rather than checking through all the
+  contents of your area to see if one matches the name.
+
+  Continued in 'help dbref2'.
+& DBREF2
+  
+  If you own or control an object, you will see its dbref number listed 
+  right after its name when you look at it (unless you are set MYOPIC).
+
+  Example:
+    > look me
+    Cyclonus(#3PWenAMc)
+    A very short desc.
+
+  The dbref number is indicated by the number/pound sign (#). Cyclonus's 
+  dbref is #3. The letters following the dbref are the abbreviations of the
+  flags set on the object. NOTE: the abbreviation of the OPAQUE flag is 'O'
+  (o), which looks like '0' (zero) on some clients. Make sure you have the
+  right number before using it in your code!
+
+See also: MYOPIC, OPAQUE, MUSHCODE, MATCHING, OBJIDS
+& OBJIDS
+& OBJECT IDS
+
+  When an object is destroyed, its dbref number will eventually be recycled
+  and given to a newly created object. This can cause problems in code,
+  particularly in database code which stores members of a group, as code
+  which was meant to refer to the old object ends up referring to the new one
+  by mistake.
+  
+  To avoid this problem, you can use the "object id", or objid, instead of
+  the dbref. An object id consists of the object's dbref, a colon, and then
+  the object's creation time. Objids can be used anywhere dbrefs can and,
+  because the creation time is different each time the dbref is recycled, the
+  objid is totally unique to each object.
+  
+  The objid() function returns the object id of an object, and the %:
+  substitution evaluates to the objid of the enactor. 
+  
+See also: objid(), @lock-objid, DBREFS
+& DROP-TOS
+& DROPTOS
+
+  When you use the @link command on a room, it sets another room or
+  object as the DROP-TO location. By default, any non-STICKY object
+  that someone drops in the room will automatically be transported to
+  the drop-to location, rather than staying in the room. Any STICKY
+  object dropped in the room will go to its home.
+
+  If the room is set STICKY, objects will stay in the room until the
+  last player leaves or disconnects, at which point they will be
+  transported as described above.
+
+  Drop-tos work on things and players alike.
+
+  If the room has a @lock/dropto set on it, only objects that pass the
+  lock will be transported (either immediately or when the last player
+  leaves if the room is STICKY). This can be used to prevent the
+  dropto from acting on, say, objects containing connected players.
+
+See also: @link, STICKY, LINK_OK, @lock
+& %#
+& %n
+& %~
+& %:
+& ENACTOR
+  The enactor is the object which causes something to happen. This is an 
+  important concept in MUSH, because the way many commands work will depend
+  on who enters the command (ie, who the enactor is). Note that while the
+  enactor is the object which -caused- code/a command to run, it is not
+  necessarily the object which is running the code (that's the executor).
+  Any type of object can be an enactor.
+
+  There are eight %-substitutions that involve the enactor:
+    %# = the enactor's dbref
+    %n = the enactor's name
+    %~ = the enactor's accented name
+    %: = the enactor's unique identifier, like objid(%#)
+    %a, %o, %p, %s = pronoun substitutions, based on the enactor's @sex.
+                     See 'help gender' for more information.
+
+  If, for example, you have an @osuccess on an object that includes the %n
+  subtitution, whenever someone picks up the object, that %n will evaluate to
+  the name of the enactor (the person who typed 'get <object>' in this case).
+  
+See also: EXECUTOR, CALLER, SUBSTITUTIONS, DBREF
+& %!
+& EXECUTOR
+  The executor of a command is the object actually carrying out the command
+  or running the code. This differs from the enactor, because the enactor is
+  the object that sets off the command. In some cases, the enactor and the
+  executor will be the same. The substitution %! evaluates to the dbref of
+  the executor of the code.
+
+  For example:
+    > @emit %n (%#) is the enactor and %! is the executor!
+    Cyclonus (#6) is the enactor and #6 is the executor!
+    > @create Box
+    Created: Object #10
+    > &EMIT box=$emit: @emit %n (%#) is the enactor and %! is the executor!
+    > emit
+    Cyclonus (#6) is the enactor and #10 is the executor!
+
+  In the first case, Cyclonus directly entered the command and was
+  therefore both the enactor and the executor. In the second, Cyclonus
+  set off the command on the box, so Cyclonus was still the enactor,
+  but the box was the object that was actually doing the @emit, and
+  was thus the executor.
+
+See also: ENACTOR, CALLER, SUBSTITUTIONS
+& %@
+& CALLER
+  The caller is the object which causes an attribute to be evaluated (for
+  instance, by using ufun() or a similar function). The substitution %@ 
+  evaluates to the caller's dbref. It's particularly useful for functions
+  with side-effects, to check that the object evaluating the function has
+  permission.
+  
+  Example:
+    > &cmd_test Foo=$test: @emit ufun(Bar/fun_test)
+    > &fun_test Bar=%n(%#) typed 'test', and [name(%@)](%@) ufun()'d this!
+    > test
+    Mike(#5) typed 'test', and Foo(#6) ufun()'d this!
+    
+    > &wizfun Foo=if(hasflag(%@, Wizard), ufun(wizfun2), #-1 Sorry)
+    
+See also: ENACTOR, EXECUTOR
+& EVALUATION ORDER
+  Whenever some text is entered by an object, the MUSH attempts to match it
+  against a valid game command in the following order of possible commands:
+
+    Socket commands (*): QUIT, SCREENWIDTH, etc
+    Single-token commands: ", :, ;, +, \, #
+    Exits in the room
+    &attribute setting
+    Regular game commands: get, inventory, @emit, etc
+    @attribute setting
+    Enter aliases
+    Leave aliases
+    User-defined commands on nearby objects. All such $-commands are matched
+      and executed.
+    If there are no user-defined commands nearby:
+      If the zone of the player's location is a zone master room,
+        Zone master room exits
+        Zone master room user-defined commands
+      Else
+        User-defined commands on the zone of the player's location
+
+  (*) Socket commands are only matched when the command is entered by a
+      player directly from their client.
+    
+  Continued in 'help evaluation2'.
+& EVALUATION2
+    If still nothing is matched:
+      User-defined commands on the player's personal zone
+    If nothing, including zone commands, has been matched:
+      Global exits
+      Global user-defined commands: all $-commands in the Master Room are
+        matched. Local commands are always checked first and ALWAYS negate
+        global commands.
+    If still nothing has matched, run huh_command to show a Huh? message
+
+  Because local $-commands overrule global $-commands, you can easily
+  prevent a global $-command from working in a specific room by setting
+  a copy of the global $-command in that room. Alternatively, if a global 
+  $-command is oddly not working in a room, you should check for copies of 
+  the command word in the room (using @scan). Wizards who want to ensure a
+  global $-command always takes precedence over a local one should use 
+  @command/add and @hook/override, to make the command run as a regular
+  game command instead of a softcoded global.
+  
+See also: @command, @hook, $-commands, huh_command
+& FAILURE
+  FAILURE  
+
+  A "failure" usually occurs when you try to do something that is governed 
+  by an @lock and you don't pass the lock. If you try to take a player or 
+  thing, or pass through an exit, and you don't pass its Basic @lock, you 
+  will set off their  @failure/@ofailure/@afailure attributes. A few failures
+  have special attributes, while others use <locktype>_LOCK`FAILURE,
+  <locktype>_LOCK`OFAILURE and <locktype>_LOCK`AFAILURE attributes.
+
+  See 'help failure2' for a list of failure verbs and when they're triggered.
+
+  See 'help @lock' and 'help locktypes' for more information on lock types.
+
+See also: verbs, @lock, @failure, @efail, @lfail
+
+& failure2
+  The following failures are defined in PennMUSH:
+  
+  Failure to...                                 Lock     Attribute
+  --------------------------------------------- -------- --------------------
+  "get" a player/thing, pass through an exit,   Basic    @failure
+    or "look" in a room
+  run an $-command on an object                 Command* COMMAND_LOCK`FAILURE
+  use zwho()                                    Zone     ZONE_LOCK`FAILURE
+  leave your current location                   Leave    @lfail
+  "take" from an object                         Take     TAKE_LOCK`FAILURE
+  "drop" a thing, or drop something in a room   Drop     DROP_LOCK_FAILURE
+   enter an object                              Enter    @efail
+  "follow" an object                            Follow   FOLLOW_LOCK`FAILURE
+  "give" an object away                         Give     GIVE_LOCK`FAILURE
+  "give" money to or "buy" from an object       Pay      PAY_LOCK`FAILURE
+  "@chzone" something to a zone                 Chzone   CHZONE_LOCK`FAILURE
+  "use" an object                               Use      @ufail
+  speak via say/pose/@*emit/teach in a room     Speech   SPEECH_LOCK`FAILURE
+  "page" or "@pemit" to an object               Page     PAGE_LOCK`FAILURE**
+  
+  
+  * The Use lock can also prevent you from running an $-command, but it will
+    still trigger COMMAND_LOCK`FAILURE.
+  ** @haven or @away will also be shown on failure to "page", if set
+  
+& GENDER
+& SEX
+  Gender on a MUSH is entirely up to you. You can set yourself (or any
+  of your objects) to be male, female, neuter, or plural. If whatever
+  is in the SEX attribute is not recognizable, the MUSH will assume
+  the object is neuter. Setting a gender attribute will enable pronoun
+  substitution by the MUSH. The SEX attribute is visual to anyone who
+  wants to see it.
+  
+  The obj(), subj(), poss() and aposs() functions return different pronouns
+  for an object based on its @sex, and the %o, %s, %p and %a substitutions
+  return the same pronouns for the enactor.
+
+See also: @sex, SUBSTITUTION
+& GLOBALS
+& GLOBAL COMMANDS
+  A command is "global" if it can be used anywhere in the world of the
+  MUSH. The standard/built-in MUSH commands are all global, so this term is
+  usually used to refer to user-defined commands on objects in the Master 
+  Room of the MUSH. Global commands very greatly from MUSH to MUSH, but you 
+  can usually find MUSH-specific help on them by typing "+help".
+
+See also: MASTER ROOM, USER-DEFINED COMMANDS, EVALUATION ORDER
+& HERE
+  The word 'here' refers to the room you are in. For example, to rename the 
+  room you're in (if you control it), you could use:
+
+    > @name here=<new name>
+    
+See also: MATCHING
+& HOMES
+& HOME
+  Every thing or player has a home, which is usually the room where it was
+  created. You can reset your home or the home of any object you own with
+  the @link command: @link [me | <object>]=<location>. You must
+  also control <location>, unless that location (room or thing) is set
+  ABODE or LINK_OK.
+
+  When a player types 'home', she is sent back to the home room. When a 
+  thing with the STICKY flag set on it is dropped, it also goes to its 
+  home location. Note that if the FIXED flag is set on a player, she cannot
+  use the 'home' command.
+
+  You can create an exit that sends players home by doing:
+        @link <exit name>=home
+  You can set the drop-to in a room to home by doing:
+        @link <room dbref or "here">=home
+        
+  The home of an exit is its source (the room it's located in). You can
+  change the home/source of an exit by @teleporting it to another room.
+
+  The home of a room is its drop-to.
+
+See also: DROP-TOS, @link, STICKY, LINK_OK, FIXED, EXITS, home(), loc()
+& INTERIORS
+  Here's a quick description of how to make things that can be
+  entered:
+        
+  @create Car
+  @desc Car=A shiny red car.
+  @idesc car=You are sitting inside a luxurious sportscar.
+  @set Car=enter_ok
+  @oxleave car=climbs out of the car.   { The 'ox' messages are shown to 
+  @oxenter car=climbs into the car.     { those OUTSIDE the object.
+  @oenter car=joins you inside the car. { The 'o' messages are shown to 
+  @oleave car=gets out of the car.      { those INSIDE the object
+  @enter car=You get into the car.      { The plain messages are shown to 
+  @leave car=You get out of the car.    { the one entering or leaving 
+       
+  Continued in 'help interiors2'.
+& INTERIORS2
+  Now, if you want people inside to be able to hear and communicate
+  with the outside, you also need to do the following.
+   
+  @set car=audible  (lets people outside hear what's being said in the car.
+  @listen car=*     (lets people inside hear what's being said outside.
+  @prefix car=From inside the car,
+  @inprefix car=From outside,
+  @filter car=* has arrived.,* has left.,joins you inside the car.,
+    gets out of the car.
+  @infilter car=* has arrived.,* has left.,* climbs out of the car.,
+    * climbs into the car.
+
+  (The filters will keep people on the outside from seeing the 'o'
+  messages and people on the inside from seeing the 'ox' messages
+  which is a good thing.)
+
+See also: enter, leave, @prefix, @filter, AUDIBLE, @listen
+& LAST & LASTLOGOUT
+& LAST
+& LASTLOGOUT
+  LAST and LASTLOGOUT
+
+  These attributes show the last times you connected and disconnected
+  from the MUSH.
+& LASTSITE
+& LASTIP 
+  LASTSITE and LASTIP
+
+  The LASTSITE attribute gives the name of the site you last connected
+  from.  The LASTIP attribute gives the IP address you last connected
+  from.  Mortals cannot set them.
+& LINKING  
+
+  You can link to a room if you control it, or if it is set LINK_OK or
+  ABODE. Being able to link means you can set the homes of objects or
+  yourself to that room if it is set ABODE, and can set the
+  destination of exits to that room if it is LINK_OK.
+
+See also: LINK_OK, ABODE, @link
+& LISTENING
+  
+  There are two basic ways to trigger action on the MUSH. The basic
+  way is to type in commands such as 'look' or '@emit'. These commands
+  are not seen or heard by other players, although the results of the
+  commands may be.
+
+  The other way is to "listen" for something said/emitted in your
+  hearing.  There are two ways to listen for something in a room. The
+  easiest way is to use a combination of @listen and
+  @ahear/@aahear/@amhear.
+
+  For example:
+    > @listen Welcome Mat=* has arrived.
+    > @ahear Welcome Mat="Welcome, %N!
+    Breaker has arrived.
+    Welcome Mat says, "Welcome, Breaker!"
+
+  Continued in 'help listening2'.
+& ^
+& ^-LISTENS
+& LISTENING2
+  If you need an object to "listen" for more than one pattern, you can
+  also use ^-patterns.  These work similar to user-defined commands,
+  using ^ instead of $. An object must be set MONITOR to have
+  ^-patterns activated.
+
+  Syntax:  &<attribute> <object> = ^<pattern>:<action list>
+
+  For example:
+  > @set Welcome Mat = MONITOR
+  > &greet Welcome Mat = ^* has arrived.:"Welcome, %N!
+  > &goodbye Welcome Mat = ^* has left.:POSE says as %N leaves, "Bye!"
+  Grimlock has arrived.
+  Welcome Mat says, "Welcome, Grimlock!"
+  Grimlock has left.
+  Welcome Mat says as Grimlock leaves, "Bye!"
+
+  Such attributes can also be @triggered as if the ^<pattern>: did not
+  exist.
+
+  Continued in 'help listening3'.
+& LISTENING3
+  By default, ^-patterns work like @ahear. To have them work like
+  @amhear, set the AMHEAR attribute flag on the attribute; to have
+  them work like @aahear, set the AAHEAR attribute flag on the
+  attribute (Note that the triggering object is whatever happens to be
+  %#, so, for example, when you @set an object MONITOR, you are %#
+  with regard to the "Object is now listening" message, and this
+  message can be picked up with an ^-pattern.)
+
+  Additionally, unlike $-commands, ^-patterns are NOT inherited via 
+  @parent, unless the LISTEN_PARENT flag is set on the listener.
+  @listen is never inherited.
+
+  Listen patterns are checked after the object's normal @listen
+  attribute.
+
+See also: @listen, @ahear, @amhear, @aahear, MONITOR, LISTEN_PARENT,
+  USER-DEFINED COMMANDS
+
+& LISTS
+  The word "list" is used in the help files to refer to a string that
+  is a series of smaller strings separated by one or more spaces. A
+  list can also have its elements separated by some other kind of
+  character -- the separating character is called the "delimiter".
+  For example, the following are all lists:
+
+    #6 #10 #14 #12
+    Rumble|Krystal|Bobatron|Rodimus Prime   ('|' is the delimiter here)
+    foo bar whee blarg 
+    -eek- .boing. yawp #5 7
+  
+  Lots of MUSHCode depends on lists and manipulating them. Normally, a
+  list is made up of similar items (so the fourth list in the example
+  is NOT a typical one).
+
+See also: STRINGS, List Functions
+& LOOPING
+  Looping in an object can have its good parts and its bad parts.  The
+  good part is when you activate part of a program multiple times to
+  exhaustively perform an operation.  This can be done like this:
+
+    &PART1 object=<action list> ; @trigger me/PART2
+    &PART2 object= @select <test for being done>=<false>,@trigger me/PART1
+
+  Looping can be a problem when it goes on without stopping.  The @ps
+  command can be used to see if you are looping.  Beware!  A looping
+  machine that isn't @halt'd will drain your pennies while you are
+  away from the mush!
+  
+  The @retry and @include commands, and %= substitution, can also be useful
+  for building code which needs to loop.
+
+See also: @ps, HALT, COSTS, @trigger, @retry, SUBSTITUTIONS3
+& MASTER ROOM
+  
+  The Master Room enables global commands and exits. Exits in the
+  Master Room may be used from any location on the MUSH. All objects
+  left in the Master Room are checked for user-defined
+  $commands. Those $commands are considered global, meaning that they
+  can be used anywhere on the MUSH.  Normally, only wizards will have
+  access to the Master Room; if you have a global command that you
+  would like to see enabled for the MUSH, speak to a wizard.
+  
+See also: EVALUATION, GLOBAL COMMANDS
+& ME
+  The word 'me' refers to yourself. Some things to do when 
+  starting out: 
+  1) give  yourself a description:      @desc me=<description>
+  2) check your desc.:                  look me
+  3) lock yourself:                     @lock me==me
+  4) set your gender:                   @sex me=<male|female|neuter|plural>
+
+See also: NEWBIE, @lock, @describe, @sex, MATCHING
+& MONEY
+  The MUSH has a built-in money system, which gives a starting amount
+  of money to new players and hands out a daily allowance thereafter.
+  MUSH money (the default name is "pennies", but this may be different
+  depending on the particular MUSH) is spent on some MUSH commands
+  that are computationally expensive or alter the database. In
+  addition, every time you "queue" a command, it costs you a certain
+  amount of money -- this prevents looping from getting out of
+  control, since when all your money is spent, you can't queue any
+  more commands.
+
+  The money system can also be used on player-created objects by setting 
+  @cost/@payment/@opayment/@apayment attributes and using the "give" command
+  to give pennies, or by setting @pricelist/@buy/@obuy/@abuy attributes and
+  buying items with the "buy" command. The Pay @lock on an object controls
+  who can give it pennies.
+  
+  The "score" command tells you how many pennies you have.
+
+See also: COSTS, give, @cost, @payment, @lock, buy, @buy, score, money()
+& MUSHCODE
+& SOFTCODE
+
+  MUSHcode is the programming language available within the MUSH
+  itself with which you can create user-defined commands and macros.
+  It is sometimes called "softcode" to distinguish it from "hardcode",
+  which is the language that the source code for the MUSH server is
+  written in. (Incidentally, hardcode is written in the C programming
+  language.)
+  
+  At its most basic, writing MUSHcode is just stringing together a
+  series of commands that you would otherwise just type in one at a
+  time.  You can store MUSHcode in attributes on any type of object
+  you own or control (including yourself!).  The series of commands
+  can be triggered by using a user-defined command or by using
+  @trigger.
+  
+  Continued in 'help mushcode2'.
+& MUSHCODE2
+
+  If you would like to learn more about mushcoding and how to create
+  macros for yourself, the following help files may be useful.
+  However, the best way to learn is by obtaining a copy of Amberyl's
+  MUSH manual and following the examples described there.  The manual
+  is available by anonymous FTP from: ftp.pennmush.org in the
+  directory /pub/PennMUSH/Manuals
+
+  Related Help Topics (in no particular order)
+  -------------------
+  ATTRIBUTES    SUBSTITUTION    NON-STANDARD ATTRIBUTES 
+  ENACTOR       EXECUTOR        USER-DEFINED COMMANDS
+  DBREFS        EVALUATION      TYPES OF OBJECTS
+  WILDCARDS     STRINGS         LISTS           
+  ACTION LISTS
+
+& NON-STANDARD ATTRIBUTES
+  While there are many standard attributes in MUSH, objects can also
+  have an unlimited number of attributes, with any name you wish to
+  use. In the past, you were limited to attributes named VA-VZ, WA-WZ,
+  XA-XZ; these are still available as standard attributes. However, it
+  is strongly recommended that you use non-standard attributes and
+  meaningful names in order to make maintaining your MUSHCode easier.
+
+  To set a non-standard attribute, you can use these formats:
+      &<attribute name> <obj> = <value>  OR
+      @_<attribute_name> <obj> = <value> OR
+      @set <obj> = <attribute_name>:<value>
+
+  You can get the value of attributes using the functions v(), get(),
+  and xget(). You can evaluate attributes using u(), eval(), and
+  get_eval().  All attributes can be used in attribute locks and can
+  be 'owned' independent of object ownership.
+  
+See also: ATTRIBUTES, ATTRIB-OWNERSHIP, Attribute Functions, ATTRIBUTE TREES,
+  ATTRIBUTE FLAGS
+& PARENT
+& PARENTS
+& OBJECT PARENTS
+  
+  Objects may have "parent" objects, from which they can inherit
+  attributes.  Once an object is given a parent, it may use the
+  attributes on the parent just as if the attributes were on the
+  object itself, including checking for $commands. Use the @parent
+  command to change the parent of an object.
+
+  Objects may have multiple levels of parents - thus, if #100 is the
+  parent of #101, which is the parent of #102, object #102 checks
+  itself, #101, and #100 for attributes. Attributes are checked on the
+  object itself first, followed by its parent, followed by that
+  parent's parent, and so forth. There is a (configurable) maximum
+  length of the parent chain for an object; the default is 10.
+
+  After the parent chain is exhausted, the type-specific ancestor is
+  also checked in similar fashion.  See 'help ANCESTORS' for more
+  about ancestors.
+
+  Continued in 'help parents2'.
+& PARENTS2
+ 
+  Note that the only properties inherited are attributes. In
+  particular, flags and exits are NOT inherited from the parent
+  object. Also, commands which walk the attribute list (such as
+  "examine", the LATTR() function, the HASATTR() function, @set, and
+  @edit) only affect attributes that are on the object itself.
+ 
+  There are some limitations to the use of @parent. The most important
+  is that ^-pattern checking is not done on the parent of an object,
+  unless the object is set LISTEN_PARENT. For the purposes of
+  automated game checks, the following attributes are not inherited:
+  CHARGES, EALIAS, LALIAS, LAST, LASTSITE, LISTEN, QUEUE, RQUOTA,
+  SEMAPHORE, and STARTUP.
+    
+  The attributes inherited from the parent are treated just like its
+  own attributes by the child. Thus, when a $-command or @trigger is
+  executed, "me", for example, refers to the child, not the parent,
+  and the $-command's associated actions are performed by the child.
+
+  Continued in 'help parents3'.
+& PARENTS3
+  Attributes with $-commands _are_ inherited from the parent and
+  previous generations. Conflicts are resolved not by the $-command
+  name, but by the attribute name. If two attributes are in
+  "conflict", the child's attribute is used.
+
+  For example:
+
+  > &TEST #10=$test:@emit I'm the parent
+  > &TEST #11=$check:@emit I'm the child
+  > @parent #11=#10
+  > test
+  (nothing happens)
+  > check
+  I'm the child
+
+  Continued in 'help parents4'.
+& PARENTS4
+  If a parent has the same $-command name in a different attribute,
+  however, BOTH the parent and child commands will execute:
+
+(continued from previous example)
+  > &CHECK #10=$check:@emit No, I'm the parent!
+
+  > check
+  I'm the child
+  No, I'm the parent!
+ 
+  @parent is most useful when several objects use common attributes.
+  It is slightly faster to have $commands on the child object which in
+  turn @trigger or otherwise retrieve attributes inherited from the
+  parent object, rather than having the $commands checked on the
+  parent object.
+
+  Continued in 'help parents5'.
+& PARENTS5
+ 
+  Parent-object $-command checking is at its most efficient when there
+  are few or no attributes on the child. Also, each additional level
+  of parents further reduces efficiency.  Finally, note that ancestors
+  are *not* checked for $-commands.
+ 
+  If you are "mass-marketing" your objects, you can create blank
+  copies, and @parent those copies to a template object. You can then
+  customize necessary attributes on the copy. When a buyer @chowns his
+  copy, the parent does not change, so unless you're putting data into
+  the parent that you want to make impossible to read, it's safe to
+  allow the purchasers of your object to @chown their copy.
+
+See also: @parent, $-COMMANDS, ATTRIBUTES, ANCESTORS, ORPHAN, pfun()
+& POWERS LIST
+  Powers can be granted only by wizards, using the @power command.
+  Powers cannot be granted to guest characters or players who are set
+  UNREGISTERED. Powers normally give the player the ability to use a
+  limited set of wizard/admin powers.
+
+  announce              Can use @wall command.  
+  boot                  Can use @boot command.
+  builder               Can use Builder commands.
+  chat_privs            Can use Admin channels.
+  debit                 Can use give with a negative amount.
+  functions             Can use @function command.
+  guest                 Guest. Restricted command set.
+  halt                  Can @halt others' objects and do @allhalt.
+  hide                  Can hide on the WHO list.
+  hook                  Can use the @hook command.
+  idle                  No inactivity timeout.
+  link_anywhere         Can @link an exit to anyplace.
+  login                 Not subject to login restrictions.
+  long_fingers          Can do things remotely, like "get".
+  many_attribs          Can exceed max_attrs_per_obj.
+
+  Continued in 'help powers2'.
+& POWERS2
+& POWERS LIST2
+  no_pay *              Doesn't need money for anything
+  no_quota *            Has an unlimited quota
+  open_anywhere         Can @open an exit from any room.
+  pemit_all             Can @pemit to HAVEN/ulocked players.
+  player_create         Can use @pcreate command.
+  poll                  Can use @poll command.
+  pueblo_send           Can use xch_cmd and send pueblo tags
+  queue                 Has queue limit equal to the size of the database.
+  quota                 Can use @quota commands on other players.
+  search                Can do @search, @stats, and @entrances on anything.
+  see_all               Sees everything as if it were Visual.
+  see_queue             Can do @ps on anyone, and @ps/all.
+  sql_ok                Can perform SQL queries
+  tport_anything        Can @teleport anything.
+  tport_anywhere        Can @teleport to anywhere.
+  unkillable *          Cannot be killed
+  can_spoof             Can use @ns*emit, ns*emit() and @*emit/spoof
+  can_dark              Can @set themselves dark
+  
+  * When these powers are set on a player, all the objects they own which
+    are not set MISTRUST are also considered to have the power.
+
+See also: help @power, and especially @power/list
+& PUPPETS
+  A thing is turned into a puppet by setting the PUPPET flag on it.  A
+  puppet object is an extension of its owner and relays everything it
+  sees and hears to its owner, except if it is in the same room as the
+  owner (a puppet with the VERBOSE flag will relay even if it's in the
+  same room). Things relayed by the puppet will be prefixed by the
+  name of the puppet.
+
+  Puppets are useful for keeping track of what is going on in two
+  rooms at once, as extensions of a player (such as a pet, for
+  example), or for testing code.
+
+  You can control your puppets using the @force command. It is
+  important to remember the DBREF numbers of your puppets so you can
+  control them even if they are not in the same room with you. You can
+  also have your puppets follow you by using the 'follow' command.
+
+(example in help puppets2)
+& PUPPETS2
+  An example of a puppet:
+
+  > @create Punch
+  Created: Object #18.
+  > drop Punch
+  Dropped.
+  > @set punch=puppet
+  Punch is now listening.
+  Flag set.
+  > @force punch=go north
+  Punch has left.
+  Punch> The Finishing Place
+  Punch> 
+  Punch> Obvious exits:
+  Punch> Door <S>  
+  #18 :waves hello
+  Punch> Punch waves hello
+  
+  To have an object relay things it hears to players other than it's
+  owner, use @forwardlist.
+
+See also: PUPPET, @force, DBREF
+& QUEUE
+  QUEUE
+
+  The queue is the waiting line for commands to be executed by the
+  MUSH.  Each time you enter a command, it goes into the queue and
+  stays there until its turn comes up, at which time the MUSH
+  processes the command and you see the results. The MUSH can execute
+  several commands every second, so normally you see results right
+  away. However, if there are too many commands in the queue, there
+  may be a delay, called lag. The more common cause of lag, however,
+  is network delays between you and the MUSH.
+
+  The QUEUE attribute is only visible to objects that control you
+  (wizards, you, and your objects) or unless you are VISUAL.  It
+  tracks how many active commands you have in the queue.
+
+See also: @ps, LOOPING
+& REGEXP
+& REGEXPS
+  (This help text is largely from TinyMUSH 2.2.4, with permission)
+
+  The majority of matching in MUSH is done with wildcard ("globbing")
+  patterns. There is a second type of matching, using regular
+  expressions, that is available in certain circumstances.
+ 
+  For attributes that are $-commands or ^-listen-patterns, setting
+  that attribute "regexp" (with '@set <object>/<attribute>=regexp')
+  causes patterns to be matched using regular expressions rather than
+  globbing. In addition, the function regmatch() performs regular
+  expression matching.
+ 
+  In a regular expression match, the substring of the string which
+  matched the regexp pattern is %0; %1 through %9 are the substrings
+  of the string which matched parenthesized expressions within the
+  regexp pattern.
+ 
+  Continued in 'help regexps2'.
+& REGEXPS2
+  Regular expressions are extremely useful when you want to enforce a
+  data type. For example, if you have a command where you want a
+  player to enter a string and a number ('+setnum <player>=<number>',
+  for example), you might do it like this:
+ 
+  &DO_NUM Command Object=$^\+setnum (.+)=([0-9]+)$: @va me=Data: %1 = %2
+  @set Command Object/DO_NUM = regexp
+ 
+  Then, '+setnum cookies=30' would set VA to "Data: cookies = 30".
+  This eliminates your having to check to see if the player entered a
+  number, since the regular expression matches only numbers.
+  Furthermore, the '+' guarantees that there needs to be at least one
+  character there, so a player can't enter '+setnum cookies=' or
+  '+setnum =10' or similarly malformed input.
+ 
+  The '+' sign in the command has to be escaped out, or it is taken as
+  a regexp token. Furthermore, the pattern-match has to be anchored
+  with ^ and $, or something like 'try +setnum cookies=30 now' would
+  also match.
+ 
+  Regular expression syntax is explained in 'help regexp syntax'.
+& REGEXP SYNTAX
+  PennMUSH uses PCRE for its regular expression engine.  PCRE is an
+  open source library of functions to support regular expressions
+  whose syntax and semantics are as close as possible to those of the
+  Perl 5 language.  The text below is excerpted from its man
+  page. PCRE was written by Philip Hazel <ph10@cam.ac.uk>, and is
+  Copyright (c) 1997-1999 University of Cambridge, England. You can
+  find it at ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/
+
+  (Note that in PennMUSH, if the regular expression is in an eval'd
+  context (like an argument to regmatch), you'll have to do a lot of
+  escaping to make things work right. One way to escape an argument
+  like %0 is: regeditall(%0,\\W,\\$0) or similar).
+
+  Regular expression matching in PennMUSH can be used on user-defined
+  command or listen patterns. In this usage, regular expressions are
+  matched case-insensitively unless the attribute has the CASE flag
+  set. Regular expressions can also be matched in MUSHcode using
+  regmatch(), regrab(), regedit, etc. function families, which usually
+  come in case-sensitive and case-insensitive versions.
+ (Cont'd in help regexp syntax2)
+& regexp syntax2
+  A regular expression is a pattern that is matched against a subject
+  string from left to right. Most characters stand for themselves in a
+  pattern, and match the corresponding characters in the subject. 
+
+  There are two different sets of meta-characters: those that are
+  recognized anywhere in the pattern except within square brackets,
+  and those that are recognized in square  brackets.  Outside square
+  brackets, the meta-characters are as follows:
+
+       \      general escape character with several uses
+       ^      assert start of subject
+       $      assert end of subject
+       .      match any character except newline
+       [      start character class definition
+       |      start of alternative branch ("or")
+       (      start subpattern
+       )      end subpattern
+       ?      0 or 1 quantifier (after a unit to quantify)
+              or, minimal match (after a quantifier)
+              or,  extends the meaning of ( after a ( 
+       *      0 or more quantifier
+       +      1 or more quantifier
+
+  (Cont'd in help regexp syntax3)
+& regexp syntax3
+  Part of a pattern that is in square  brackets  is  called  a
+  "character class". It matches any character listed in the class.
+  In a character class, the only metacharacters are:
+
+       \      general escape character
+       ^      negate the class, if the first character in the class
+       -      indicates character range (e.g. A-Z, 0-4)
+   [:NAME:]   A symbol for a group of characters that can vary 
+              according to the language the mush is using.
+              See 'help regexp classes' for more information.
+       ]      terminates the character class
+
+  A backslash will escape most metacharacters, and can turn
+  some normal characters into generic character types:
+
+       \d     any decimal digit
+       \D     any character that is not a decimal digit
+       \s     any whitespace character
+       \S     any character that is not a whitespace character
+       \w     any "word" character (letter, digit, or underscore)
+       \W     any "non-word" character
+ 
+  (Cont'd in help regexp syntax4)
+& regexp syntax4
+  A backlash can also be used for two useful assertions -- conditions that
+  must be met at a particular point in a match:
+
+       \b     word boundary
+       \B     not a word boundary
+
+  A word boundary is a position in the  subject  string  where the
+  current character and the previous character do not both match \w or
+  \W (i.e. one matches \w and  the  other  matches \W),  or the start
+  or end of the string if the first or last character matches \w,
+  respectively.
+
+  (Cont'd in help regexp syntax5)
+& regexp syntax5
+  Quantifiers specify repetition of characters. Three are available:
+       *    match 0 or more of whatever came before
+       +    match 1 or more of whatever came before
+       ?    match 0 or 1 of whatever came before
+
+  (In theory, you can match m-n of whatever came before with {m,n},
+  but the MUSH parser makes it difficult to use {}'s in functions unless
+  you store the regex pattern in an attribute and use v() to fetch it)
+
+  Quantifiers are usually greedy -- they match as much as possible.
+  Adding a ? after a quantifier causes it to match as little as
+  possible instead. 
+
+  (Cont'd in help regexp syntax6)
+& regexp syntax6
+  Outside a character class, a backslash followed by  a  digit greater
+  than  0  (and  possibly  further  digits) is a back reference to a
+  capturing subpattern  earlier  (i.e.  to  its left)  in  the  pattern,
+  provided there have been that many previous capturing left parentheses.
+  A back reference matches whatever actually matched the  capturing
+  subpattern in the current subject string, rather than anything matching
+  the subpattern itself. So the pattern
+
+    (sens|respons)e and \1ibility
+
+  matches "sense and sensibility" and "response and  responsibility", but
+  not "sense  and  responsibility". 
+
+  You can give names to subpatterns and refer to them that way instead of
+  using numbers.
+
+   (?P<NAME>subexpr) (Note: Literal <>'s) is a named capture, and
+   (?P=NAME) refers back to it. The above pattern might be written:
+  
+   (?P<word>sens|respons)e and (?P=word)ibility
+
+  (Cont'd in help regexp syntax7)
+& regexp syntax7
+  An assertion is  a  test  on  the  characters  following  or
+  preceding  the current matching point that does not actually consume
+  any characters.  There  are  two kinds:  those that look ahead of the
+  current position in the subject string, and those that look behind it.
+
+  An assertion subpattern is matched in the normal way, except that it
+  does not cause the current matching position to be
+  changed. Lookahead assertions start with (?= for positive assertions
+  and (?! for negative assertions. For example, Lookbehind assertions
+  start with (?<= for positive assertions and (?<! for negative
+  assertions.
+
+  Assertion subpatterns are not capturing subpatterns, and may not be
+  repeated, because it makes no sense to assert the same thing several
+  times. If an assertion contains capturing subpatterns within it,
+  these are always counted for the purposes of numbering the capturing
+  subpatterns in the whole pattern.
+
+  (Cont'd in help regexp syntax8)
+& regexp syntax8
+
+  PCRE's engine can also do conditional subpattern matching,
+  embedded comments in regexps, and a bunch of other things.
+  See a regexp book for details.
+& REGEXP CLASSES
+  In a character class, you can use a number of additional keywords 
+  that match certain types of characters. The keywords are enclosed in
+  [: and :], within the character class, so the whole thing looks like
+  [[:NAME:]].
+
+  These keywords can be mixed with other things in the character
+  class, like [ab[:digit:]], which will match 'a, 'b', or a
+  digit. [:^NAME:] reverses the meaning of NAME - it expands to
+  everything but characters that would match [:NAME:].
+
+  Some recognized NAMEs:
+   digit, for numbers. [[:digit:]] is the same as \d.
+    [[:^digit:]] is the same as \D.
+   alpha, for letters. 
+   alnum, for numbers and letters.
+   lower, for lower-case letters. 
+   upper, for upper-case letters.
+   word, for word characters. [[:word:]] is the same as \w.
+    [[:^word:]] is the same as \W.
+   space, for whitespace characters. [[:space:]] is the same as \s.
+    [[:^space:]] is the same as \S.
+
+Continued in 'help regexp classes2'
+& REGEXP CLASSES2
+ These keywords (Or the corresponding \codes) should be used instead of
+ explicit ranges where possible to improve portability. For example,
+ [A-Za-z] and [[:alpha:]] are not the same thing in languages with accented
+ characters. 
+
+  Examples:
+  > say regmatch(foo_bar, lit(^[[:word:]]+$))
+  You say "1"
+  > say regmatch(foo bar, lit(^[[:word:]]+$))
+  You say "0"  
+
+ Other, less useful, character class keywords include ascii, cntrl,
+ graph, print, punct, and xdigit.
+
+& REGEXP EXAMPLES
+  Topic: REGEXP EXAMPLES
+ 
+  The regexp pattern '.' is equivalent to the wildcard '?'; it matches
+  one and only one of an arbitrary character.
+ 
+  The regexp pattern '.*' is equivalent to the wildcard '*'; it matches
+  zero or more arbitrary characters. To match one or more arbitrary
+  characters, the regexp pattern is '.+'.
+ 
+  To match a string of numbers, use:       [0-9]+    or \d+
+  To match a string of letters only, use:  [A-Za-z]+ or \w+
+ 
+  See 'help regexp syntax' for a more detailed explanation.
+
+& REGISTERS
+  A register is essentially a little reserved piece of computer memory
+  that can hold some variable information that you want to pass on to
+  another command.  There are ten registers on the MUSH available via
+  %-substitution (%0 - %9) and thirty-six setq registers available via
+  %q- substitution (%q0 - %q9 and %qA - %qZ). 
+
+  The basic registers are filled with information that matches the 
+  wildcard pattern of the command trigger. (Before you say "Huh?", here's
+  an example.)
+
+  &COMMAND me=$command *+*:@emit %0 is in register 0 and %1 is in register 1.
+  > command whee+blert foo
+  whee is in register 0 and blert foo is in register 1.
+
+  Continued in 'help registers2'.
+& REGISTERS2
+  As you can see from the above example, the command trigger had two
+  wildcards separated by a "+" sign. When the user types in the
+  command with some words taking the place of the wildcards, the first
+  register (register 0) is filled with whatever part of the command
+  replaces the first wildcard (in this case, "whee") and the second
+  register is filled with whatever replaces the second ("blert foo").
+
+  They can also be filled with information that is passed by an
+  @trigger command:
+
+  &SOMECODE me=@emit %0 is in register 0 and %1 is in register 1.
+  @trigger me/somecode=whee,foo bar
+  > whee is in register 0 and foo bar is in register 1.
+
+  The registers can also be accessed using the V-function (v(0) through v(9)).
+
+  Please see 'help setq()' for more information about the setq registers.
+
+See also: SUBSTITUTIONS, @trigger, USER-DEFINED COMMANDS, setq()
+& RQUOTA
+  RQUOTA
+
+  This attribute tracks remaining building quota if it is implemented.  
+  It is settable in-game only by a wizard, and is only visible to wizards.
+
+See also: @quota, @squota
+& SEMAPHORES
+  The most complicated thing about semaphores is their name. Before
+  you try to use semaphores, you should first be familiar with the
+  "@wait" command.  If you are, then you know that normally, you type:
+
+    @wait <number of seconds>=<action> 
+
+  and the action takes place after that number of seconds has
+  passed. With a semaphore, you instead type:
+
+    @wait <object>=<action>
+    @wait <object>/<number of seconds before timeout>=<action>
+
+  and the action takes place after the object has been "notified" that
+  its time for it to happen. You can also set a timeout -- if the
+  object hasn't been notified by the time that number of seconds has
+  passed, the action will take place. Any object (player, thing, exit,
+  room) that you control or that is set LINK_OK can be used to wait
+  actions on.
+
+  Continued in 'help semaphores2'.
+& SEMAPHORES2
+
+  An object is notified using the "@notify" command.  When you type
+  "@wait <object>=<action>", you are adding one to the SEMAPHORE
+  attribute on the object. When you type "@notify <object>", you are
+  decreasing the SEMAPHORE attribute on the object by one. Whenever
+  the attribute decreases, one of the actions waiting on the object
+  takes place. The actions occur in the order they were added.
+
+  You can make the semaphore attribute of an object negative by
+  @notify-ing it more times than things have been @wait-ed on it. If
+  you do so, anything @wait-ed on the object will add one to the
+  SEMAPHORE attribute and the action will take place immediately. You
+  can also make all the actions waiting on an object take place right
+  away by using "@notify/all", or wipe all the commands out and clear
+  the SEMAPHORE attribute by using "@drain". Please note that all
+  SEMAPHORE attributes are cleared out whenever the MUSH is restarted.
+ 
+  Semaphores can be used to make sure that events occur in the right
+  order, or to make sure that two players can't use the same object at
+  the same time.
+
+  Continued in 'help semaphores3'.
+& SEMAPHORES3
+
+  It's important to remember that the actions will be carried out NOT
+  by the object that they are being @waited on, but by whichever
+  object entered the @wait.
+
+  Examples:
+  
+  > @wait semaphore=:tests.
+  > @notify semaphore
+  Wizard tests.
+  
+  > @wait timer/30=:waits 30 seconds.
+  [ 30 seconds passes. ]
+  Wizard waits 30 seconds.
+ 
+See also: @wait, @drain, @notify
+  Continued in 'help semaphores4'.
+& SEMAPHORES4
+  Semaphores can be used to enforce mutual exclusion - to prevent
+  the same object from being used simultaneously by two players.
+  The basic strategy is to ensure that the object always has a
+  SEMAPHORE of -1, to enclose commands in an @wait, and to
+  conclude the set of commands with an @notify me:
+
+  > &doit obj = $doit: @wait me={&doer me = %N; @tr me/report}
+  > &report obj = "[v(doer)] did it!; @notify me
+  > @startup obj = @drain me; @notify me
+  > @notify obj
+  > ex obj/SEMAPHORE
+  SEMAPHORE [#1ic+]: -1
+  > doit
+  obj says "Talek did it!
+  > ex obj/SEMAPHORE
+  SEMAPHORE [#1ic+]: -1
+
+  If a second player types doit as well, the second player's command
+  is put on the semaphore queue and not run until the @notify me at
+  the end of the REPORT attribute. Note the STARTUP attribute -
+  because semaphores are cleared when the MUSH starts up, you must
+  insure that the object gets @notify'd once when it starts up.
+  Continued in 'help semaphores5'.
+& SEMAPHORES5
+ Normally, semaphores use the SEMAPHORE attribute. However, other
+ attributes can be used, as long as they follow a few simple rules: If
+ the attribute is already set, it has to have the same owner (God) and
+ flags as the SEMAPHORE attribute would (typically no_inherit,
+ no_clone, and locked - see 'help @set' and '@atrlock'), and have a
+ numeric or empty value. If it's not set, it can't be one of the built
+ in attributes (See @list attribs) unless, naturally, it is SEMAPHORE.
+
+ See the help on @wait, @notify and @drain for details, but, briefly,
+ you can use named semaphores with <object>/<attribute> where you
+ would normally just use <object> in those commands. This means you
+ can't have a un-timed semaphore on an attribute with a numeric name.
+
+  Continued in 'help semaphores6'.
+& SEMAPHORES6
+ An example:
+ 
+  > @wait me/semtest=think blah
+  > ex me/semtest 
+  SEMTEST [#1ic+]: 1
+  > @ps
+  ...
+  Semaphore Queue:
+  [#8/SEMTEST]Raevnos(#8P):think blah
+  ...
+  > @notify me/semtest
+  Notified.
+  blah
+
+ This allows you to use one object to control many different things --
+ for example, fights in a turn-based combat sytem.
+& SETTING-ATTRIBUTES
+  
+  Standard attributes are set using @<attrib> <obj>=<value>
+  Nonstandard attributes are set using &<attrib> <obj>=<value>
+  Attributes may also be set using @set <obj>=<attrib>:<value> or the
+  attrib_set() or set() functions.
+  
+  Attributes are cleared using @<attrib> <obj> or &<attrib> <obj> or
+  with @wipe or wipe().
+  
+  Note that if the empty_attrs configuration option is set 
+  (@config empty_attrs to check), there is a difference between 
+  clearing an attribute and setting an attribute to a null value:
+    @va me       <--- wipes out my VA attribute
+    @va me=      <--- sets my VA attribute to be empty
+  
+  Empty attributes retain their flags and atrlock status. Wiped
+  attributes are gone forever.
+  
+See also: ATTRIBUTES, NON-STANDARD ATTRIBUTES, @set, @wipe, attrib_set(),
+  set(), wipe()
+& SPOOFING
+  Spoofing is the act of making other characters think that a person
+  said or did something that they did not.  This is very easy to
+  accomplish, and has some good effects, which is why it is allowed.
+  However, abusing it is very twinkish and will most likely get you in
+  hot water with your wizards. Note that if you are being spoofed and
+  want to know who is doing it, you can set yourself NOSPOOF and you
+  will be notified who is making the @emits.
+
+See also: @emit, @pemit, @remit, @oemit, NOSPOOF
+& STACK
+  For those unfamiliar with the term stack, it refers to a programming
+  data structure that follows a LIFO (Last-In-First-Out)
+  principle. The stack in MUSH holds the ten REGISTERS, which can be
+  accessed via the V-function (v(0) through v(9)) or via
+  %-substitution (%0 through %9).
+  
+See also: REGISTERS
+& STRINGS
+  A string is simply a bunch of characters. A word is a string that
+  begins and ends with the space character. A sentence is a string
+  made up of smaller substrings that are words. Please note that a
+  "word" or "sentence" in this technical sense does not have to make
+  sense in English (or in any other language, for that matter). As far
+  as mush functions and commands are concerned, this is a perfectly
+  good sentence:
+
+        Foozle 09blert bar baz foo.
+
+See also: string functions
+& %
+& SUBSTITUTIONS
+  The % symbol is used in MUSH commands to indicate a substitution -- some
+  other character(s) or words are substituted for whatever follows the % 
+  symbol. Some common substitutions are:
+
+     %b = a single space (just like [space(1)])
+     %r = a blank line
+     %t = A tab. Note that this may not look right on some screens.
+     %# = dbref of the ENACTOR (object that set off the command)
+     %n = the ENACTOR's name
+     %N = the ENACTOR's name, first letter capitalized
+     %~ = the ENACTOR's accented name
+     %: = the ENACTOR's unique identifier, like objid(%#)
+     %% = a literal %
+     
+  Case makes a difference in all substitutions; capitalizing the first
+  letter after the % will capitalize the first letter of the resulting
+  substitution.
+
+  Continued in 'help substitutions2'.
+& SUBSTITUTIONS2
+& %2
+  If the ENACTOR's gender is set, you can use these substitutions to get the
+  right pronoun for him/her:
+     %s = subjective pronoun: he, she, it, they. Same as subj(%#)
+     %o = objective pronoun: him, her, it, them. Same as obj(%#)
+     %p = possessive pronoun: his, her, its, their. Same as poss(%#).
+     %a = absolute possessive: his, hers, its, theirs. Same as aposs(%#).
+
+    Case makes a difference: %S will return He, She, It, They.
+
+  Some attributes can be retrieved via substitutions:
+     %va-%vz = the contents of the object's VA-VZ attributes, respectively
+     %wa-%wz, %xa-%xz = as above, for WA-WZ and XA-XZ
+  These are the equivilent of get(me/<attribute>).
+
+  Continued in 'help substitutions3'.
+& SUBSTITUTIONS3
+& %3
+  Other substitutions:
+    %0-%9   = the contents of the REGISTERS 0-9, respectively
+    %@ = the caller's dbref number. Initially same as %#, changes when 
+         something like a U-FUNCTION is called.
+    %! = the dbref number of the object the command is on (the EXECUTOR)
+    %L = the dbref of the ENACTOR's location
+    %c = text of the last command, _before_ evaluation
+    %u = text of the last command, after evaluation, available to locks/hooks
+    %? = The current function invocation and depth counts
+    %= = The dbref/attribute currently being evaluated
+    %+ = The number of arguments passed to the current ufun.
+    %qN = the equivalent of r(N), a register set by a setq() function.
+    %iN = equivilent of itext(N), the list element for iter()/@dolist.
+    %$N = equivilent of stext(N), the <string> in switch()/@switch.
+ 
+  See 'help substitutions4' for examples.
+See also: EVALUATION, ENACTOR, EXECUTOR, DBREFS, REGISTERS, v()
+& SUBSTITUTIONS4
+& %4
+  Example: 
+
+  @sex me=male
+  @drop box=%N just dropped %p box.
+  drop box
+  > Cyclonus just dropped his box.
+ 
+ Let's say that Cyclonus's dbref number is #10 and the box's dbref
+ number is #11. The dbref # of the room Cyclonus is standing in is
+ #13.  When Cyclonus dropped the box above, these were the values of
+ the following %-variables:
+    
+  %N = Cyclonus
+  %# = #10
+  %@ = #10
+  %! = #11
+  %L = #13
+
+& SUCCESS
+  A "success" normally occurs when you attempt to do something that is
+  restricted by an @lock and you pass the @lock. (Note that if no lock
+  is set, you automatically pass it.) For example, the "basic" lock
+  restricts who can pick up a player/thing or who can go through an
+  exit. Whenever you successfully do either of these things, you will
+  set off the basic success messages on the object whose lock you have
+  just successfully passed.
+
+  Many other actions can also be locked - see @lock and locktypes for
+  more information. Many of these actions have standard attributes
+  that you can set messages in for when someone succeeds.
+
+See also: FAILURE, @lock, VERBS, ATTRIBUTES, @success, @asuccess, @osuccess
+& SWITCHES
+  SWITCHES
+ 
+  Commands can have "switches" which modify the behavior of the
+  command. Switches are attached after the end of a command.
+  For example, most people are familiar with the command
+
+    @lock me==me
+
+  The "enter" switch to @lock allows you to lock who can enter:
+
+    @lock/enter me==me
+
+  A command may have multiple switches:
+
+    @pemit/noeval/silent me=Hi!
+
+  Help on the switches available for a command is available in the help
+  file for that command.
+  (If you are looking for information on @switch, see 'help @switch'.)
+& TYPES OF OBJECTS
+& TYPES
+& OBJECTS
+  
+  Everything on a MUSH is an object in the MUSH database. There are four 
+  types of objects: players, things (once called 'objects'), rooms and exits.
+  You can see the type of an object when you 'examine' it, or with the 
+  type() function.
+  
+  For more information on any of the types, see 'help <type>'.
+
+See also: type(), hastype()
+& PLAYERS
+
+  Players can be created at the login screen (or with @pcreate) and connected
+  to. They can also receive @mail, and have a number of attributes set on 
+  them by the MUSH automatically, including LAST, LASTSITE, etc. They can 
+  have multiple @aliases, and are checked for $-commands and ^-listens.
+  
+  @linking a player sets their home.
+
+See also: TYPES OF OBJECTS, type(), hastype(), @pcreate
+& ROOMS
+
+  Rooms are outermost-containers: they cannot be moved. They are created
+  with @dig. Rooms can contain exits. They are checked for $-commands and 
+  ^-listens. Rooms do not have aliases.
+  
+  @linking a room creates a drop-to. Rooms have no location; loc() on a room
+  returns its drop-to (as does home()).
+  
+See also: TYPES OF OBJECTS, type(), hastype(), @dig, DROP-TOS
+& THINGS
+  
+  Things are created with @create. They can move around the MUSH, be entered
+  and carried. They are checked for $-commands and ^-listens.  Things do not
+  have aliases.
+  
+  @linking a thing sets its home.
+  
+See also: TYPES OF OBJECTS, type(), hastype(), @create
+& EXITS
+
+  Exits are created with @open. They link rooms together, and can be used by
+  players and things to move from one room to another with the GOTO command.
+  Exits cannot move (though they can be @teleported to another room). They
+  can have multiple aliases as part of their @name. They are NOT checked for
+  $-commands or ^-listens.
+  
+  You can change the destination of an exit with the @link command. home()
+  returns the source room of an exit, and loc() returns its destination.
+  
+  Setting an exit CLOUDY and/or TRANSPARENT causes its destination's
+  description and/or contents to be shown after the exit's description when
+  looked at.
+  
+See also: TYPES OF OBJECTS, type(), hastype(), @open, @link
+& $-COMMANDS
+& MACROS
+& USER-DEFINED COMMANDS
+  User-defined commands can be created by setting $-commands on
+  players, things, and rooms. Exits cannot have $-commands. To set a
+  $-command:
+
+    &<attribute> <object>=$<command name>:<action list>
+  
+  Whenever someone in the same room as the object types the command
+  name, the action list is carried out by the object, as long as:
+
+  - the person typing the command passes the object's @lock/use
+    and @lock/command
+  - the object is not set NO_COMMAND or HALT
+
+  Such attributes can also be @triggered as if the $<command name>:
+  did not exist.
+
+  It is recommended that <command name> not begin with "@", as many
+  built-in commands start with "@". Conventionally, global commands
+  are often named with the "+" prefix, and local $-commands often have
+  a "+" or "." prefix.
+  
+  Continued in 'help user-defined2'.
+& $-COMMANDS2
+& MACROS2
+& USER-DEFINED2
+  Any number of *'s and ?'s may be in the command name. A * matches
+  any number of characters, and a ? matches any single character.
+  When the actions are executed, the values on the stack in %0-%9 are
+  the portions of what the user types that match the first ten *'s or
+  ?'s.  You can also match a regular expression rather than wildcards.
+  See 'help regexps' for details.
+
+  For example, to make a 'wave' command, you could do the following:
+    &DO_WAVE me=$wave *:pose {waves to %0.}
+  You could then type:
+        > wave Guest
+        Rhyanna waves to Guest.
+
+  If a command would match, but the enactor can't pass the lock, the
+  object may define generic failure behavior by setting the
+  COMMAND_LOCK`FAILURE, COMMAND_LOCK`OFAILURE, and/or
+  COMMAND_LOCK`AFAILURE attributes. These are triggered on all objects
+  with matching commands and failing locks, but only if no command
+  successfully matched, and take the place of the usual "Huh?"
+  message.
+
+  *BE SURE TO @LOCK/USE ME==ME IF YOU SET MACROS ON YOURSELF!*
+
+See also: STACK, SUBSTITUTIONS, @lock
+& VERBS
+  Verb attributes are ones which are shown (or triggered) when you use a 
+  particular command, or perform a certain action. There are normally three:
+  the 'verb' attribute (shown to the enactor), the 'overb' attribute (shown
+  to others in the enactor's location), and the 'averb' attribute (an action
+  list which is triggered). One example is @use, @ouse, and @ause, which are 
+  shown/triggered when the 'use' command is run on an object.
+  
+  Some verbs which involve movement have a fourth attribute, 'oxverb', shown
+  in the enactor's old location (for example, @oxmove), while some verbs have
+  less (for example, @oname/@aname are shown when an object's name changes,
+  but there is no @name attribute).
+  
+  You can create your own verbs for softcoded commands/actions with the
+  @verb command.
+  
+  Continued in 'help verbs2'.
+& VERBS2
+& NONAME
+& NOSPACE
+  Normally, the enactor's name and a space are prepended to the 'overb' and 
+  'oxverb' attributes automatically. The NOSPACE attribute flag prevents a
+  space being placed between the name and attribute value, and the NONAME
+  attribute flag stops the name being added at all.
+  
+  Example:
+    > @ouse Foo=has used Foo!
+    > use Foo
+    Sketch has used Foo!
+    
+    > @ouse Foo='s used Foo!
+    > @set Foo/ouse=nospace
+    > use Foo
+    Sketch's used Foo!
+    
+    > @ouse Foo=Foo has been used by %n!
+    > @set Foo/ouse=noname
+    > use Foo
+    Foo has been used by Sketch!
+  
+See also: @verb, attribute flags
+& WARNINGS
+
+  If the building warning system has been enabled in the source code,
+  players may receive regular warnings about potential building
+  problems on objects that they own, and will be able to check
+  individual objects for warnings.
+
+  For more information, see the following help topics:
+    @warnings        @wcheck         NO_WARN         warnings list
+    
+& WARNINGS LIST
+  The building warning system, supports the following types of warnings:
+
+  exit-unlinked         Warn on unlinked exits
+  exit-oneway           Warn on exits with no return exit
+  exit-multiple         Warn on multiple exits from A to B
+  exit-msgs             Warn on missing succ/osucc/odrop/fail
+  exit-desc             Warn on missing description
+  room-desc             Warn on missing description
+  thing-msgs            Warn on missing succ/osucc/odrop/fail
+  thing-desc            Warn on missing description
+  my-desc               Warn on missing player description
+  lock-checks           Warn on @lock problems
+
+  Continued in 'help warnings list2'.
+& WARNINGS LIST2
+  These warnings combine the functionality of multiple warnings above:
+
+  serious               exit-unlinked, thing-desc, room-desc, my-desc,
+                        lock-checks
+  normal                serious, exit-oneway, exit-multiple, exit-msgs
+  extra                 normal, thing-msgs
+  all                   all of the above
+
+  The warning "none" indicates no warnings.
+  You can exclude warnings from a larger list by using !<warning>
+  after the larger list. For example: @warnings me=all !exit-oneway
+& WILDCARDS
+  PennMUSH has two standard wildcards in user-defined commands: an
+  asterisk (*) matches any string, including an empty string, and a
+  question mark (?) matches a single character.  For example, let's
+  say that you want a command called
+  "supercalifragalisticexpealidocious" (don't ask me why), but you
+  don't want to force people to type the whole thing to trigger the
+  command. You could use a wildcard in the command trigger to match
+  substrings of it:
+
+  > &TOO_LONG_CMD object=$supercali*:@emit whee
+  > super
+  (nothing happens)
+  > supercali
+  whee
+  > supercalifra
+  whee
+  > supercalifragalisticexpealidocious
+  whee
+  > supercalifoobert
+  whee
+
+  A backslash (\) can be used to escape * and ? if you want to match 
+  a literal asterisk or question mark.
+  
+  The ** wildcard is also available for matching attribute names. See HELP
+  ATTRIBUTE TREES2 for more information.
+  
+See also: USER-DEFINED COMMANDS, REGEXP
+& ZONE MASTER ROOMS
+& ZMR
+  
+  Zone master rooms are a subset of zones. If a room is used as a zone
+  master, it is a zone master room (ZMR). ZMRs are like local "master"
+  rooms. Exits in the ZMR are global to that zone, and $-commands on
+  objects in the ZMR are global to that zone ($-commands on the ZMR
+  itself, like $-commands on the master room, are ignored). If a ZMR
+  is a player's personal zone, objects in the ZMR are checked for
+  commands that the player can use anywhere (but exits are not checked
+  unless the player is in a zoned room).
+
+  Zone master rooms are best used for very large zones which have a
+  lot of global exits, or for zones with restricted commands that can
+  go on a separate use-locked object from general ones.
+
+See also: ZONES, MASTER ROOM, EVALUATION
+& ZONE MASTERS
+& ZMP
+& SHARED PLAYERS
+  SHARED PLAYERS
+ 
+  Shared players are player objects which are used to mediate shared
+  control of objects. A shared player is an object of type PLAYER
+  which has the SHARED flag set. They are created like ordinary
+  players, and can connect, build, etc.  The only difference is that
+  objects owned by a shared player are controlled by anything that
+  passes the @lock/zone of the shared player.
+  
+  Anyone who passes the @lock/zone of the shared player can @chown
+  objects to it. This, however, does not refund the original creator's
+  money or quota, as does normal.
+
+  Shared players used to be known as Zone Masters.  The term was
+  changed to emphasize the fact that they are not related to zone
+  master objects, which are used to affect search order for
+  user-defined commands.
+
+  Continued in HELP SHARED PLAYERS2
+& SHARED PLAYERS2
+  Some suggested uses of shared players:
+  
+    1. If you are working on a building project with several people,
+       it may be useful to create a shared player and @lock/zone it to
+       all of you.  That way, all of the players working on the
+       project will be able to modify the building, as long as the
+       shared player owns all the objects being built.
+    
+    2. If local wizards are desired, a shared player may be created
+       and zone locked to the local wizards. Players building within
+       that zone should be @chowning to the shared player, or logged
+       in as it while creating objects. The local wizard will then be
+       able to control anything within that domain as long as the
+       object in question is owned by the shared player.
+       
+  See also: SHARED, @lock
+& ZONES  
+& ZONE OBJECTS
+& ZONE MASTER OBJECTS
+& ZMO
+& ZMT
+  Zones are areas of the MUSH that can have the same user-defined
+  commands without having to @parent every object in the zone or make
+  the commands mush-wide globals.
+
+  The default zone is NOTHING. Any building done by a player defaults
+  to belonging to the same zone that the player belongs to.  Every
+  zone is defined by a Zone Master Object (ZMO). The ZMO is an
+  ordinary MUSH object owned by some player. A wizard may change the
+  zone of an object or player to a ZMO.
+  
+  If the ZMO is a room, it is called a "zone master room." Most of the
+  statements about ZMOs also apply to zone master rooms; for details,
+  see the help topic ZONE MASTER ROOMS.
+  
+  See "help ZONES2" for more.
+& ZONES2
+  $-commands on a ZMO are treated as global within that zone.  The
+  game attempts to match $-commands for the ZMO of the player's
+  location, as well as $-commands for the player's own zone.
+
+  If you want restricted global commands defined over only a small
+  area, you can define that area to be part of a zone, and place the
+  desired $-commands upon the ZMO. If you want players to be able to
+  use special commands for a culture they belong to, the $-commands
+  should go on the ZMO, and the players @chzoned to it so they can use
+  the commands anywhere.
+
+See also: @chzone, SHARED PLAYERS
+& MATCHING
+  Matching is the process the MUSH uses to determine which object you
+  mean when you try to do something with an object. Different commands
+  do matching in different ways, but most will allow you to specify an
+  object as:
+    * its dbref (#7) or objid (#7:123456789)
+    * the string "me" (yourself)
+    * the string "here" (the room you're in)
+    * a '*' followed by a playername (*javelin)
+    * its full name (Box of chocolates)
+    * part of any word in its name, if nothing else shares that part (Box)
+  You can usually qualify an object with an adjective (English matching)
+  to help the MUSH determine which object you mean Adjectives include:
+    * my <obj> - an object you're carrying
+    * this <obj> - an object in your location (also: this here <obj>)
+    * toward <exit> - an exit in your location
+    * 1st, 2nd, etc. <obj> - one of a set of objects with the same names.
+      Objects are ordered in the order in which they're listed in your
+      inventory, room contents, and exit list (in that order). If there
+      aren't enough objects, this will fail.
+  You can use an adjective with an ordinal (my 1st <obj>, this 2nd <obj>, etc)
+& &HELP
+This is the AHELP index.
+& RESTRICT
+
+ Commands, functions and attributes can have their permission levels
+ controlled in the mush config files, or by wizards from the game via
+ @command, @function and @attribute.
+ 
+ In the config file, the syntax is:
+  restrict_command <command-name> <restriction> [" <error message>]
+  restrict_function <function-name> <restriction>
+  restrict_attribute <attribute-name> <restriction>
+
+ From the game:
+  @command/restrict <command-name>=<restriction> [" <error message>]
+  @function/restrict <function-name>=<restriction>
+  @attribute/access <attribute-name>=<restriction>
+ 
+ For commands, if <error message> is given, that message is sent to the
+ player who runs it instead of a generic, unhelpful error message.
+
+  Continued in 'help restrict2'.
+& RESTRICT2
+
+  For commands, <restriction> should be an @lock-style boolexp (though,
+  for backwards compatability, the restrictions below can be used, and will
+  be converted into an @lock automatically). For functions, <restriction>
+  should be any combination of the phrases below. For attributes, 
+  <restriction> is a list of attribute flags, or "none" to create a standard
+  attribute with no restrictions (see 'help attribute flags').
+
+   god        Command or function is usable only by God.
+   wizard     Usable only by wizards.
+   admin      Usable only by Wiz/Roy.
+   nogagged   Usable only by non-GAGGED objects.
+   nofixed    Usable only by non-FIXED objects.
+   noguest    Usable only by non-guest @powered objects.
+   nobody     Nothing can use it. Same as the /disable switch
+              to @command or @function.
+   logname    When used, log cmd/fun name, and who is using it
+   logargs    When used, log cmd/fun name and args, and who is using it
+              
+ Functions only:             
+   noparse    Function arguments are not evaluated. Only applies
+              to @functions.
+   localize   %q-registers are saved/restored when evaluating, as if
+              the @function were wrapped in localize().
+   userfn     Function can only be called from within an @function.
+   nosidefx   Don't allow side-effects for this function. See also the
+              function_side_effects @config option.
+
+  Commands only:
+   noplayer   Cannot be used by players.
+  Commands can also give any flag, power or type, to restrict to
+   objects with one of those flags or powers, or of one of those types.
+
+  Continued in 'help restrict3'.
+& RESTRICT3
+  In cases where there are a function and command that do the same
+  thing (like pemit() and @pemit), the command's restrictions are also
+  checked when the function is called, so to use pemit() you must also be
+  able to use @pemit. However, a function's restrictions are not checked
+  when a command is called, to allow disabling side-effect functions.
+
+  Some functions (like name()) have non-side-effect and side-effect
+  versions depending on how many arguments they're called with. The
+  side-effect version can be disabled while keeping the safe
+  non-side-effect form with the 'nosidefx' restriction. This can also
+  be used to disable pure side-effect functions.
+ 
+  Examples:
+  Only allow admin to use ansi():
+    > @function/restrict ansi=admin
+    
+  Don't let anyone set SUSPECT or GAGGED use @emit, and log the name of
+  anyone who uses it.
+    > @command/restrict @emit=logname
+    > @command/restrict @emit=!flag^suspect&!flag^gagged
+
+See also: @command, @function, @attribute, @lock
+

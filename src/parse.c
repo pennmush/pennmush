@@ -678,10 +678,12 @@ pe_regs_dump(PE_REGS *pe_regs, dbref who)
     }
     for (val = pe_regs->vals; val; val = val->next) {
       if (val->type & PE_REGS_STR) {
-        notify_format(who, " %.2X %-10s: %s", val->type & 0xFF,
+        notify_format(who, " %.2X(%.2X) %-10s: %s", val->type & 0xFF,
+                      (val->type & 0xFFFF00) >> 8,
                       val->name, val->val.sval);
       } else {
-        notify_format(who, " %.2X %-10s: %d", val->type & 0xFF,
+        notify_format(who, " %.2X(%.2X) %-10s: %d", val->type & 0xFF,
+                      (val->type & 0xFFFF00) >> 8,
                       val->name, val->val.ival);
       }
     }
@@ -826,7 +828,7 @@ pe_regs_restore(NEW_PE_INFO *pe_info, PE_REGS *pe_regs)
 #define FIND_PVAL(pval, key, type) \
   do { \
     if (!pval) break; \
-    if ((pval->type & type) && !strcmp(pval->name, key)) { \
+    if ((pval->type & type & PE_REGS_TYPE) && !strcmp(pval->name, key)) { \
       break; \
     } \
     pval = pval->next; \
@@ -989,14 +991,17 @@ void
 pe_regs_qcopy(PE_REGS *dst, PE_REGS *src)
 {
   PE_REG_VAL *val;
-  for (val = src->vals; val; val = val->next) {
-    if (val->type & PE_REGS_Q) {
-      if (val->type & PE_REGS_STR) {
-        pe_regs_set(dst, val->type, val->name, val->val.sval);
-      } else {
-        pe_regs_set_int(dst, val->type, val->name, val->val.ival);
+  while (src) {
+    for (val = src->vals; val; val = val->next) {
+      if (val->type & PE_REGS_Q) {
+        if (val->type & PE_REGS_STR) {
+          pe_regs_set(dst, val->type, val->name, val->val.sval);
+        } else {
+          pe_regs_set_int(dst, val->type, val->name, val->val.ival);
+        }
       }
     }
+    src = src->prev;
   }
 }
 
@@ -1436,34 +1441,26 @@ pi_regs_get_ilev(NEW_PE_INFO *pe_info, int type)
 const char *
 pe_regs_intname(int num)
 {
+  static char buff[8];
   if (num < 10 && num >= 0) {
     return envid[num];
   } else {
-    return tprintf("%d", num);
+    snprintf(buff, 8, "%d", num);
+    return buff;
   }
 }
 
 void
 pe_regs_setenv(PE_REGS *pe_regs, int num, const char *val)
 {
-  const char *name;
-  if (num < 10 && num >= 0) {
-    name = envid[num];
-  } else {
-    name = tprintf("%d", num);
-  }
+  const char *name = pe_regs_intname(num);
   pe_regs_set(pe_regs, PE_REGS_ARG, name, val);
 }
 
 void
 pe_regs_setenv_nocopy(PE_REGS *pe_regs, int num, const char *val)
 {
-  const char *name;
-  if (num < 10 && num >= 0) {
-    name = envid[num];
-  } else {
-    name = tprintf("%d", num);
-  }
+  const char *name = pe_regs_intname(num);
   pe_regs_set(pe_regs, PE_REGS_ARG | PE_REGS_NOCOPY, name, val);
 }
 
@@ -1472,14 +1469,8 @@ const char *
 pi_regs_get_env(NEW_PE_INFO *pe_info, int num)
 {
   PE_REGS *pe_regs;
-  const char *name;
+  const char *name = pe_regs_intname(num);
   const char *ret;
-
-  if (num < 10 && num >= 0) {
-    name = envid[num];
-  } else {
-    name = tprintf("%d", num);
-  }
 
   pe_regs = pe_info->regvals;
 

@@ -1041,8 +1041,9 @@ do_trigger(dbref player, char *object, char **argv, MQUE *queue_entry)
 
   pe_regs = pe_regs_create(PE_REGS_ARG | PE_REGS_Q, "do_trigger");
   for (i = 0; i < 10; i++) {
-    if (argv[i + 1])
+    if (argv[i + 1]) {
       pe_regs_setenv_nocopy(pe_regs, i, argv[i + 1]);
+    }
   }
   pe_regs_qcopy(pe_regs, queue_entry->pe_info->regvals);
 

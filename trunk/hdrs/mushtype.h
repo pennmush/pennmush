@@ -78,6 +78,7 @@ typedef struct debug_info Debug_Info;
 #define PE_REGS_ARG    0x10     /**< %0-%9 */
 #define PE_REGS_SYS    0x20     /**< %c, %z, %= */
 
+#define PE_REGS_TYPE   0xFF     /**< The type mask, everything over is flags. */
 #define PE_REGS_QUEUE  0xFF     /**< Every type for a queue. */
 
 /* Flags for _pe_regs_: */

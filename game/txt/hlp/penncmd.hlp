@@ -3674,11 +3674,12 @@ See also: say, pose, @emit, @chatformat, @pageformat
   can connect to an SQL server. You must be WIZARD or have the
   Sql_Ok power to use @sql.
 
-  Returned rows are passed to <obj>/<attr>, with Row number passed as %0
-  and the columns passed as %1-%9. Row numbers start at 1.
+  For each row returned by the query, the action list in <obj>/<attr>
+  is queued, with row number passed as %0 and the columns passed as
+  %1-%9. Row numbers start at 1.
 
-  The /notify switch causes @mapsql to do an "@notify me" at the end of
-  the list.
+  The /notify switch causes @mapsql to do an "@notify me" after all the
+  rows are processed.
 
   The /colnames switch causes @mapsql to first queue the obj/attr with
   row number 0 and %0-%9 being the column names.

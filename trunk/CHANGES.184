@@ -108,7 +108,9 @@ Fixes:
  * 'make clean' in game/txt no longer deletes the configure-generated
    compose.sh file. Suggested by Padraic. [SW]
  * The new q-register code wasn't passing registers on to new commands queued
-   by @wait, @trigger and @mapsql. [SW]
+   by @wait, @verb and @mapsql. [SW]
+ * Crash bug in unused code to reset hash tables fixed. Reported by Shendaras.
+   [SW]
 
 Functions:
  * Restrictions for the beep() function can now be modified with @function.

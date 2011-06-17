@@ -78,6 +78,8 @@ Minor Changes:
    new location as appropriate. Patch by Padraic.
 
 Fixes:
+ * Crashbug when players are in and homed to a room that is owned by a
+   player being @nuked fixed. Reported by Kimiko. [GM]
  * qregs, %0-%9 and $0-$9 would occasionally smash each other. Reported by
    Cheetah@M*U*S*H. [GM]
  * No_Pay was implicit if executor is #1, but was _not_ implicit if 

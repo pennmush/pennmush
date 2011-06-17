@@ -73,6 +73,8 @@ Minor Changes:
    new location as appropriate. Patch by Padraic.
 
 Fixes:
+ * Crashbug when players are in and homed to a room that is owned by a
+   player being @nuked fixed. Reported by Kimiko. [GM]
  * qregs, %0-%9 and $0-$9 would occasionally smash each other. Reported by
    Cheetah@M*U*S*H. [GM]
  * No_Pay was implicit if executor is #1, but was _not_ implicit if 
@@ -103,7 +105,9 @@ Fixes:
  * 'make clean' in game/txt no longer deletes the configure-generated
    compose.sh file. Suggested by Padraic. [SW]
  * The new q-register code wasn't passing registers on to new commands queued
-   by @wait, @trigger and @mapsql. [SW]
+   by @wait, @verb and @mapsql. [SW]
+ * Crash bug in unused code to reset hash tables fixed. Reported by Shendaras.
+   [SW]
 
 Functions:
  * Restrictions for the beep() function can now be modified with @function.

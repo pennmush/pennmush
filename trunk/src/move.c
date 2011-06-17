@@ -100,7 +100,7 @@ moveit(dbref what, dbref where, int nomovemsgs,
   /* now put what in where */
   PUSH(what, Contents(where));
 
-  oldSeeswhat = Can_Locate(old, what);
+  oldSeeswhat = (old < 0) || Can_Locate(old, what);
 
   Location(what) = where;
   absloc = absolute_room(what);

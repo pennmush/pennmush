@@ -658,7 +658,13 @@ render_string(unsigned char *message, int output_type)
       break;                    /* Skip over TAG_ENDs */
     case ESC_CHAR:
       /* After the ansi changes, I really hope we don't encounter this. */
-      ansifix += output_ansichange(states, &ansi_ptr, &p, buff, &bp);
+      if ((output_type & MSG_ANSI)) {
+        ansifix += output_ansichange(states, &ansi_ptr, &p, buff, &bp);
+      } else {
+        /* Skip over tag */
+        while (*p && *p != 'm')
+          p++;
+      }
       break;
     case '\r':
       break;

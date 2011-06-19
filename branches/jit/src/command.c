@@ -44,8 +44,6 @@ PTAB ptab_command_perms;        /**< Prefix table for command permissions */
 
 HASHTAB htab_reserved_aliases;  /**< Hash table for reserved command aliases */
 
-slab *command_slab = NULL; /**< slab for command_info structs */
-
 static const char *command_isattr(char *command);
 static int switch_find(COMMAND_INFO *cmd, const char *sw);
 static void strccat(char *buff, char **bp, const char *from);
@@ -65,10 +63,10 @@ enum command_load_state { CMD_LOAD_BUILTIN,
 static enum command_load_state command_state = CMD_LOAD_BUILTIN;
 static StrTree switch_names;
 
-int run_hook(dbref player, dbref cause, struct hook_data *hook,
+int run_hook(dbref executor, dbref enactor, struct hook_data *hook,
              NEW_PE_INFO *pe_info);
 
-int run_hook_override(COMMAND_INFO *cmd, dbref player, const char *commandraw,
+int run_hook_override(COMMAND_INFO *cmd, dbref executor, const char *commandraw,
                       MQUE *from_queue);
 
 const char *CommandLock = "CommandLock";
@@ -85,7 +83,8 @@ COMLIST commands[] = {
   {"@@", NULL, cmd_null, CMD_T_ANY | CMD_T_NOPARSE, 0, 0},
   {"@ALLHALT", NULL, cmd_allhalt, CMD_T_ANY, "WIZARD", "HALT"},
   {"@ALLQUOTA", "QUIET", cmd_allquota, CMD_T_ANY, "WIZARD", "QUOTA"},
-  {"@ASSERT", NULL, cmd_assert, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE, 0,
+  {"@ASSERT", NULL, cmd_assert,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_RS_BRACE, 0,
    0},
   {"@ATRLOCK", NULL, cmd_atrlock, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@ATRCHOWN", NULL, cmd_atrchown, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
@@ -93,7 +92,8 @@ COMLIST commands[] = {
   {"@ATTRIBUTE", "ACCESS DELETE RENAME RETROACTIVE LIMIT ENUM", cmd_attribute,
    CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@BOOT", "PORT ME SILENT", cmd_boot, CMD_T_ANY, 0, 0},
-  {"@BREAK", NULL, cmd_break, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE, 0,
+  {"@BREAK", NULL, cmd_break,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_RS_BRACE, 0,
    0},
   {"@CEMIT", "NOEVAL NOISY SILENT SPOOF", cmd_cemit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
@@ -139,12 +139,12 @@ COMLIST commands[] = {
   {"@DOING", "HEADER", cmd_doing,
    CMD_T_ANY | CMD_T_NOPARSE | CMD_T_NOGAGGED, 0, 0},
   {"@DOLIST", "NOTIFY DELIMIT", cmd_dolist,
-   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE, 0, 0},
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_RS_BRACE, 0, 0},
   {"@DRAIN", "ALL ANY", cmd_notify_drain,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
   {"@DUMP", "PARANOID DEBUG", cmd_dump, CMD_T_ANY, "WIZARD", 0},
 
-  {"@EDIT", "FIRST CHECK", cmd_edit,
+  {"@EDIT", "FIRST CHECK QUIET", cmd_edit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE |
    CMD_T_NOGAGGED, 0, 0},
   {"@ELOCK", NULL, cmd_elock, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED,
@@ -165,7 +165,7 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
 
   {"@FORCE", "NOEVAL INPLACE INLINE LOCALIZE CLEARREGS NOBREAK", cmd_force,
-   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED | CMD_T_RS_BRACE,
    0, 0},
   {"@FUNCTION",
    "ALIAS BUILTIN CLONE DELETE ENABLE DISABLE PRESERVE RESTORE RESTRICT",
@@ -209,7 +209,7 @@ COMLIST commands[] = {
    "SET CREATE DESTROY DESCRIBE RENAME STATS CHOWN NUKE ADD REMOVE LIST ALL WHO MEMBERS USEFLAG SEEFLAG",
    cmd_malias, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@MAPSQL", "NOTIFY COLNAMES", cmd_mapsql, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
-  {"@MESSAGE", "NOEVAL SPOOF", cmd_message,
+  {"@MESSAGE", "NOEVAL SPOOF NOSPOOF REMIT OEMIT", cmd_message,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
   {"@MOTD", "CONNECT LIST WIZARD DOWN FULL", cmd_motd,
    CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
@@ -222,19 +222,19 @@ COMLIST commands[] = {
    | CMD_T_RS_NOPARSE, "WIZARD", 0},
   {"@NOTIFY", "ALL ANY SETQ", cmd_notify_drain,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
-  {"@NSCEMIT", "NOEVAL NOISY SILENT SPOOF", cmd_cemit,
+  {"@NSCEMIT", "NOEVAL NOISY SILENT", cmd_cemit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
-  {"@NSEMIT", "ROOM NOEVAL SILENT SPOOF", cmd_emit, CMD_T_ANY | CMD_T_NOGAGGED,
+  {"@NSEMIT", "ROOM NOEVAL SILENT", cmd_emit, CMD_T_ANY | CMD_T_NOGAGGED,
    0, 0},
-  {"@NSLEMIT", "NOEVAL NOISY SILENT SPOOF", cmd_lemit,
+  {"@NSLEMIT", "NOEVAL NOISY SILENT", cmd_lemit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
-  {"@NSOEMIT", "NOEVAL SPOOF", cmd_oemit,
+  {"@NSOEMIT", "NOEVAL", cmd_oemit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@NSPEMIT", "LIST SILENT NOISY NOEVAL", cmd_pemit,
    CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@NSPROMPT", "SILENT NOISY NOEVAL", cmd_prompt,
    CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
-  {"@NSREMIT", "LIST NOEVAL NOISY SILENT SPOOF", cmd_remit,
+  {"@NSREMIT", "LIST NOEVAL NOISY SILENT", cmd_remit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@NSZEMIT", "NOISY SILENT", cmd_zemit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED,
@@ -259,7 +259,7 @@ COMLIST commands[] = {
    cmd_power, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
   {"@PROMPT", "SILENT NOISY NOEVAL SPOOF", cmd_prompt,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
-  {"@PS", "ALL SUMMARY COUNT QUICK", cmd_ps, CMD_T_ANY, 0, 0},
+  {"@PS", "ALL SUMMARY COUNT QUICK DEBUG", cmd_ps, CMD_T_ANY, 0, 0},
   {"@PURGE", NULL, cmd_purge, CMD_T_ANY, 0, 0},
   {"@QUOTA", "ALL SET", cmd_quota, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@READCACHE", NULL, cmd_readcache, CMD_T_ANY, "WIZARD", 0},
@@ -316,7 +316,8 @@ COMLIST commands[] = {
   {"@UUNLOCK", NULL, cmd_uunlock, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"@VERB", NULL, cmd_verb, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
   {"@VERSION", NULL, cmd_version, CMD_T_ANY, 0, 0},
-  {"@WAIT", "PID UNTIL", cmd_wait, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE,
+  {"@WAIT", "PID UNTIL", cmd_wait,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_RS_BRACE,
    0, 0},
   {"@WALL", "NOEVAL EMIT", cmd_wall, CMD_T_ANY, "WIZARD ROYALTY", "ANNOUNCE"},
 
@@ -512,7 +513,7 @@ make_command(const char *name, int type,
              const char *sw, command_func func)
 {
   COMMAND_INFO *cmd;
-  cmd = slab_malloc(command_slab, NULL);
+  cmd = mush_malloc(sizeof *cmd, "command");
   memset(cmd, 0, sizeof(COMMAND_INFO));
   cmd->name = name;
   cmd->cmdlock = TRUE_BOOLEXP;
@@ -649,9 +650,9 @@ cnf_add_command(char *name, char *opts)
   command = command_find(name);
   if (command || !ok_command_name(name))
     return 0;
-  command_add(mush_strdup(name, "command_add"), flags, NULL, 0,
+  command_add(mush_strdup(name, "command.name"), flags, NULL, 0,
               (flags & CMD_T_NOPARSE ? NULL : "NOEVAL"), cmd_unimplemented);
-  return (command_find(name) != NULL);
+  return command_find(name) != NULL;
 }
 
 /** Search for a command by (partial) name.
@@ -772,7 +773,6 @@ command_init_preconfig(void)
   for (sv = switch_list; sv->name; sv++)
     st_insert(sv->name, &switch_names);
 
-  command_slab = slab_create("commands", sizeof(COMMAND_INFO));
   reserve_aliases();
 
   ptab_start_inserts(&ptab_command);
@@ -930,10 +930,15 @@ command_argparse(dbref executor, dbref enactor, dbref caller,
 
   parse =
     (right_side) ? (cmd->type & CMD_T_RS_NOPARSE) : (cmd->type & CMD_T_NOPARSE);
-  if (parse || forcenoparse)
-    parse = PE_NOTHING;
-  else
+  if (parse || forcenoparse) {
+    if (right_side && (cmd->type & CMD_T_RS_BRACE)) {
+      parse = PE_COMMAND_BRACES;
+    } else {
+      parse = PE_NOTHING;
+    }
+  } else {
     parse = PE_DEFAULT | PE_COMMAND_BRACES | pe_flags;
+  }
 
   if (right_side)
     split = PT_NOTHING;
@@ -1438,12 +1443,13 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
 #undef command_parse_free_args
 
 int
-run_command(COMMAND_INFO *cmd, dbref player, dbref enactor,
+run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
             const char *commandraw, switch_mask sw, char switch_err[BUFFER_LEN],
             const char *string, char *swp, char *ap, char *ls,
             char *lsa[MAX_ARG], char *rs, char *rsa[MAX_ARG], MQUE *queue_entry)
 {
   NEW_PE_INFO *pe_info;
+  char huh_arg[BUFFER_LEN];
 
   if (!cmd)
     return 0;
@@ -1453,39 +1459,41 @@ run_command(COMMAND_INFO *cmd, dbref player, dbref enactor,
   strcpy(pe_info->cmd_evaled, commandraw);
   strcpy(pe_info->cmd_raw, string);
 
+  /* Done this way because another call to tprintf during
+   * run_hook_override will blitz the string */
+  strcpy(huh_arg, tprintf("HUH_COMMAND %s", ls));
 
-  if (!run_hook(player, enactor, &cmd->hooks.ignore, pe_info)) {
+  if (!run_hook(executor, enactor, &cmd->hooks.ignore, pe_info)) {
     free_pe_info(pe_info);
     return 0;
   }
 
   /* If we have a hook/override, we use that instead */
-  if (!run_hook_override(cmd, player, commandraw, queue_entry) &&
+  if (!run_hook_override(cmd, executor, commandraw, queue_entry) &&
       !(!strcmp(cmd->name, "HUH_COMMAND") &&
-        run_hook_override(cmd, player, tprintf("HUH_COMMAND %s", ls),
-                          queue_entry))) {
+        run_hook_override(cmd, executor, huh_arg, queue_entry))) {
     /* Otherwise, we do hook/before, the command, and hook/after */
     /* But first, let's see if we had an invalid switch */
     if (switch_err && *switch_err) {
-      notify(player, switch_err);
+      notify(executor, switch_err);
       free_pe_info(pe_info);
       return 1;
     }
-    run_hook(player, enactor, &cmd->hooks.before, pe_info);
-    cmd->func(cmd, player, enactor, enactor, sw, string, swp, ap, ls, lsa, rs,
+    run_hook(executor, enactor, &cmd->hooks.before, pe_info);
+    cmd->func(cmd, executor, enactor, enactor, sw, string, swp, ap, ls, lsa, rs,
               rsa, queue_entry);
-    run_hook(player, enactor, &cmd->hooks.after, pe_info);
+    run_hook(executor, enactor, &cmd->hooks.after, pe_info);
   }
   /* Either way, we might log */
   if (cmd->type & CMD_T_LOGARGS)
     if (cmd->func == cmd_password || cmd->func == cmd_newpassword
         || cmd->func == cmd_pcreate)
-      do_log(LT_CMD, player, enactor, "%s %s=***", cmd->name,
+      do_log(LT_CMD, executor, enactor, "%s %s=***", cmd->name,
              (cmd->func == cmd_password ? "***" : ls));
     else
-      do_log(LT_CMD, player, enactor, "%s", commandraw);
+      do_log(LT_CMD, executor, enactor, "%s", commandraw);
   else if (cmd->type & CMD_T_LOGNAME)
-    do_log(LT_CMD, player, enactor, "%s", cmd->name);
+    do_log(LT_CMD, executor, enactor, "%s", cmd->name);
 
   free_pe_info(pe_info);
   return 1;
@@ -1493,19 +1501,19 @@ run_command(COMMAND_INFO *cmd, dbref player, dbref enactor,
 }
 
 /** Execute the huh_command when no command is matched.
- * \param player the enactor.
- * \param cause dbref that caused the command to be executed.
+ * \param executor the executor running the command.
+ * \param enactor dbref that caused the command to be executed.
  * \param string the input given.
  * \param queue_entry the queue entry the invalid cmd was run from
  */
 void
-generic_command_failure(dbref player, dbref cause, char *string,
+generic_command_failure(dbref executor, dbref enactor, char *string,
                         MQUE *queue_entry)
 {
   COMMAND_INFO *cmd;
 
   if ((cmd = command_find("HUH_COMMAND")) && !(cmd->type & CMD_T_DISABLED)) {
-    run_command(cmd, player, cause, "HUH_COMMAND", NULL, NULL, string, NULL,
+    run_command(cmd, executor, enactor, "HUH_COMMAND", NULL, NULL, string, NULL,
                 NULL, string, NULL, NULL, NULL, queue_entry);
   }
 }
@@ -1858,7 +1866,7 @@ void
 do_command_delete(dbref player, char *name)
 {
   int acount;
-  char alias[BUFFER_LEN];
+  const char *alias;
   COMMAND_INFO *cptr;
   COMMAND_INFO *command;
 
@@ -1881,17 +1889,17 @@ do_command_delete(dbref player, char *name)
       return;
     } else {
       acount = 0;
-      cptr = ptab_firstentry_new(&ptab_command, alias);
+      cptr = ptab_firstentry_new(&ptab_command, &alias);
       while (cptr) {
         if (cptr == command) {
           ptab_delete(&ptab_command, alias);
           acount++;
-          cptr = ptab_firstentry_new(&ptab_command, alias);
+          cptr = ptab_firstentry_new(&ptab_command, &alias);
         } else
-          cptr = ptab_nextentry_new(&ptab_command, alias);
+          cptr = ptab_nextentry_new(&ptab_command, &alias);
       }
-      mush_free((void *) command->name, "command_add");
-      slab_free(command_slab, command);
+      mush_free((char *) command->name, "command.name");
+      mush_free(command, "command");
       if (acount > 1)
         notify_format(player, T("Removed %s and aliases from command table."),
                       name);
@@ -2003,6 +2011,8 @@ COMMAND(cmd_command)
     buff[0] = '\0';
     notify_format(executor, T("Lock       : %s"),
                   unparse_boolexp(executor, command->cmdlock, UB_DBREF));
+    if (command->restrict_message)
+      notify_format(executor, T("Failure Msg: %s"), command->restrict_message);
     if (command->sw.mask) {
       bp = buff;
       for (sw_val = dyn_switch_list; sw_val->name; sw_val++)
@@ -2169,15 +2179,15 @@ has_hook(struct hook_data *hook)
 
 /** Run a command hook.
  * This function runs a hook before or after a command execution.
- * \param player the enactor.
- * \param cause dbref that caused command to execute.
+ * \param executor the executor.
+ * \param enactor dbref that caused command to execute.
  * \param hook pointer to the hook.
  * \param pe_info pe_info to evaluate hook with
  * \retval 1 Hook doesn't exist, or evaluates to a non-false value
  * \retval 0 Hook exists and evaluates to a false value
  */
 int
-run_hook(dbref player, dbref cause, struct hook_data *hook,
+run_hook(dbref executor, dbref enactor, struct hook_data *hook,
          NEW_PE_INFO *pe_info)
 {
   ATTR *atr;
@@ -2201,7 +2211,7 @@ run_hook(dbref player, dbref cause, struct hook_data *hook,
   cp = code;
   bp = buff;
 
-  process_expression(buff, &bp, &cp, hook->obj, cause, player, PE_DEFAULT,
+  process_expression(buff, &bp, &cp, hook->obj, enactor, executor, PE_DEFAULT,
                      PT_DEFAULT, pe_info);
   *bp = '\0';
 
@@ -2211,13 +2221,13 @@ run_hook(dbref player, dbref cause, struct hook_data *hook,
 
 /** Run the \@hook/override for a command, if set
  * \param cmd the command with the hook
- * \param player the player running the command
+ * \param executor the player running the command
  * \param commandraw the evaluated command string to match against the hook
  * \param from_queue the queue entry the command is being executed in
  * \return 1 if the hook has been run successfully, 0 otherwise
  */
 int
-run_hook_override(COMMAND_INFO *cmd, dbref player, const char *commandraw,
+run_hook_override(COMMAND_INFO *cmd, dbref executor, const char *commandraw,
                   MQUE *from_queue)
 {
 
@@ -2225,13 +2235,13 @@ run_hook_override(COMMAND_INFO *cmd, dbref player, const char *commandraw,
     return 0;
 
   if (cmd->hooks.override.attrname) {
-    return one_comm_match(cmd->hooks.override.obj, player,
+    return one_comm_match(cmd->hooks.override.obj, executor,
                           cmd->hooks.override.attrname, commandraw,
                           from_queue, cmd->hooks.override.inplace);
   } else {
-    return atr_comm_match(cmd->hooks.override.obj, player, '$', ':', commandraw,
-                          0, 1, NULL, NULL, 0, NULL,
-                          from_queue, cmd->hooks.override.inplace);
+    return atr_comm_match(cmd->hooks.override.obj, executor, '$', ':',
+                          commandraw, 0, 1, NULL, NULL, 0, NULL, from_queue,
+                          cmd->hooks.override.inplace);
   }
 }
 
@@ -2456,8 +2466,8 @@ do_hook_list(dbref player, char *command)
       char inplace[BUFFER_LEN], *bp;
       bp = inplace;
       if (cmd->hooks.override.inplace & QUEUE_INPLACE) {
-        if ((cmd->hooks.
-             override.inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
+        if ((cmd->hooks.override.
+             inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
             (QUEUE_RECURSE | QUEUE_CLEAR_QREG))
           safe_str("/inplace", inplace, &bp);
         else {

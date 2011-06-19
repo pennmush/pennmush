@@ -1,6 +1,9 @@
-/* oldflags.h */
-
-/* The bit values we used to use for flags and toggles in the old days */
+/**
+ * \file oldflags.h
+ *
+ * \brief The bit values we used to use for flags and toggles in the old days
+ * For backwards compatability when loading old databases.
+ */
 
 #ifndef __OLDFLAGS_H
 #define __OLDFLAGS_H
@@ -43,7 +46,7 @@
 /* -- empty slot 0x8000, once your db is converted -- */
 #define MARKED          0x10000 /* flag used to trace db checking of room
                                  * linkages. */
-#define NOWARN          0x20000 /* Object will not cause warnings. 
+#define NOWARN          0x20000 /* Object will not cause warnings.
                                  * If set on a player, player will not
                                  * get warnings (independent of player's
                                  * @warning setting
@@ -51,11 +54,11 @@
 
 #define CHOWN_OK        0x40000 /* object can be 'stolen' and made yours */
 #define ENTER_OK        0x80000 /* object basically acts like a room with
-                                 * only one exit (leave), on players 
+                                 * only one exit (leave), on players
                                  * means that items can be given freely, AND
                                  * taken from!
                                  */
-#define VISUAL          0x100000        /* People other than owners can see 
+#define VISUAL          0x100000        /* People other than owners can see
                                          * property list of object.
                                          */
 #define LIGHT           0x200000        /* Visible in DARK rooms */
@@ -74,9 +77,9 @@
 #define SAFE            0x4000000       /* cannot be destroyed */
 #define STARTUP         0x8000000       /* Used for converting old dbs */
 /* -- empty slot 0x8000000, if your db is already converted -- */
-#define AUDIBLE         0x10000000      /* rooms are flagged as having emitter 
-                                         * exits. exits act like emitters, 
-                                         * sound propagates to the exit dest. 
+#define AUDIBLE         0x10000000      /* rooms are flagged as having emitter
+                                         * exits. exits act like emitters,
+                                         * sound propagates to the exit dest.
                                          */
 #define NO_COMMAND      0x20000000      /* don't check for $commands */
 
@@ -124,7 +127,7 @@
 #define THING_LISTEN    0x20    /* checks for ^ patterns */
 #define THING_NOLEAVE   0x40    /* Can't be left */
 #define THING_INHEARIT  0x80    /* checks parent chain for ^ patterns */
-#define THING_Z_TEL     0x100   /* If set on ZMO players may only @tel 
+#define THING_Z_TEL     0x100   /* If set on ZMO players may only @tel
                                    within the zone */
 
 /*--------------------------------------------------------------------------
@@ -144,7 +147,7 @@
 #define ROOM_LISTEN    0x100    /* checks for ^ patterns */
 #define ROOM_Z_TEL     0x200    /* If set on a room, players may
                                  * only @tel to another room in the
-                                 * same zone 
+                                 * same zone
                                  */
 #define ROOM_INHEARIT  0x400    /* checks parent chain for ^ patterns */
 

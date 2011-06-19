@@ -31,7 +31,7 @@ AC_PROG_LN_S
 AC_PATH_PROG(MAKE, make)
 
 AX_WITH_PERL
-if test "${PERL+set}" != "set"; then
+if test -z "${PERL}"; then
    AC_MSG_ERROR([perl is required to build and run PennMUSH])
 fi
 
@@ -47,9 +47,9 @@ AC_PATH_PROG(EXCTAGS, exctags)
 # and custom CFLAGS aren't being used.
 # Todo: Look into the warnings setting macros in the autoconf archive,
 # maybe use them instead?
-if test $DEFAULT_CFLAGS = yes; then
- if test "${GDB+set}" = "set"; then
-  if test "${ac_cv_c_compiler_gnu+set}" = "set"; then
+if test "${DEFAULT_CFLAGS}" = yes; then
+ if test -n "${GDB}"; then
+  if test "${ac_cv_c_compiler_gnu}" = yes; then
 CFLAGS="-ggdb $CFLAGS -W -Wall -pedantic -Wno-comment"
    else
 CFLAGS="-g $CFLAGS -W"
@@ -87,30 +87,30 @@ case "${build_os}" in
 esac
 
 
-if test "${CTAGS+set}" != "set" -a "${EXCTAGS+set}" = "set"; then
+if test -z "${CTAGS}" -a -n "${EXCTAGS}"; then
 	CTAGS=$EXCTAGS
 fi
 
-if test "${ETAGS+set}" != "set" -a "${EXCTAGS+set}" = "set"; then
+if test -z "${ETAGS}" -a -n "${EXCTAGS}"; then
 	ETAGS="$EXCTAGS -e"
 fi
 
 AC_PATH_PROG(UPTIME, uptime)
-if test "${UPTIME+set}" = "set"; then
+if test -n "${UPTIME}"; then
  AC_DEFINE([HAVE_UPTIME])
  AC_DEFINE_UNQUOTED([UPTIME], "$UPTIME")
 fi
 
 AC_ARG_VAR(SENDMAIL, [Path to sendmail])
 AC_PATH_PROG(SENDMAIL, sendmail)
-if test "${SENDMAIL+set}" = "set"; then
+if test -n "${SENDMAIL}"; then
  AC_DEFINE([HAVE_SENDMAIL])
  AC_DEFINE_UNQUOTED([SENDMAIL], "$SENDMAIL")
 fi
 
 AC_ARG_VAR(ED, [Path to ed])
 AC_PATH_PROG(ED, ed)
-if test "${ED+set}" = "set"; then
+if test -n "${ED}"; then
    AC_DEFINE([HAVE_ED])
    AC_DEFINE_UNQUOTED([ED_PATH], "$ED -s")
 fi
@@ -145,6 +145,7 @@ AC_CHECK_HEADER(sys/types.h, [AC_DEFINE(I_SYS_TYPES)])
 AC_CHECK_HEADERS([sys/un.h ieeefp.h sys/resource.h sys/event.h sys/uio.h])
 AC_CHECK_HEADERS([poll.h sys/epoll.h sys/select.h sys/inotify.h fam.h])
 AC_CHECK_HEADERS([zlib.h jit/jit.h])
+AC_CHECK_HEADERS([event.h event2/dns.h sys/prctl.h])
 
 ### C language support
 # Only need to check C99 and GNU extensions
@@ -188,6 +189,8 @@ AC_CHECK_LIB(crypt, crypt)
 LIB_SOCKET_NSL
 AC_CHECK_LIB(fam, FAMOpen)
 AC_CHECK_LIB(jit, jit_init)
+AC_CHECK_LIB(event, event_base_loop)
+AC_CHECK_LIB(event_openssl, bufferevent_openssl_socket_new)
 
 AC_ARG_ENABLE(zlib, AS_HELP_STRING([--disable-zlib], [Don't use zlib for database compression.]),
 		    enable_zlib=$enableval, enable_zlib=yes)
@@ -259,8 +262,8 @@ fi
 AC_CHECK_FUNCS([cbrt log2 round imaxdiv])
 AC_CHECK_FUNCS([getuid geteuid seteuid getpriority setpriority])
 AC_CHECK_FUNCS([socketpair sigaction sigprocmask posix_memalign writev])
-AC_CHECK_FUNCS([fcntl pselect poll ppoll pollts kqueue epoll_ctl inotify_init])
-AC_CHECK_FUNCS([pread pwrite])
+AC_CHECK_FUNCS([fcntl pselect poll ppoll pollts kqueue epoll_ctl inotify_init inotify_init1])
+AC_CHECK_FUNCS([pread pwrite prctl])
 # Some linux OSes (Old redhat, others?) will see these functions
 # through an AC_CHECK_FUNCS but not when it comes time to actually use
 # them in source. 
@@ -400,6 +403,13 @@ if test "$enable_info_slave" = yes; then
    AC_DEFINE(INFO_SLAVE)
 fi
 
+AC_ARG_ENABLE(ssl_slave, AS_HELP_STRING([--enable-ssl_slave],
+			 [Use a seperate process for SSL connections that will persist across restarts. (Experimental. Unix-only.)]))
+if test "$enable_ssl_slave" = yes -a "$HAVE_SSL" = yes; then
+   AC_SUBST(SSL_SLAVE_TARGET, ssl_slave)
+   AC_DEFINE(SSL_SLAVE)
+fi
+
 AC_ARG_ENABLE(sse2, AS_HELP_STRING([--enable-sse2],
   [Use SSE2 instructions (Requires a CPU that supports SSE2)]))
 AC_ARG_ENABLE(sse3, AS_HELP_STRING([--enable-sse3],
@@ -462,6 +472,11 @@ fi
 
 if test "$HAVE_SSL" = yes; then
  echo "* SSL support: Yes"
+ if test "$enable_ssl_slave" = yes; then
+    echo "* SSL connections will be maintained across restarts."
+ else
+    echo "* SSL connections will not persist across restarts."
+ fi
 else
  echo "* SSL support: No"
 fi

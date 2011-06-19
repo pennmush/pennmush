@@ -337,6 +337,9 @@ See also: @listen, LISTENING, ACTION LISTS
   message shown to others in <object>'s location when someone leaves it, and 
   the actions to be taken by <object> when someone leaves it, respectively.
   
+  The leaver's new location is passed in %0, if <object> has
+  permission to see it there.
+
 See also: leave, @oxleave, @lfail, ACTION LISTS, VERBS
 & @lfail
 & @olfail
@@ -402,6 +405,9 @@ See also: @quota, @squota
   to be taken when <object> moves, respectively. Please note that long 
   @omoves are frequently found annoying.
 
+  The <object>'s new location is in %0 and the old location it moved
+  from in %1.
+
   Example:
    > @move me=You moved! You are now in the room: [name(here)].
    > @omove me=stalks into the room wearing a malevolent expression.
@@ -422,6 +428,9 @@ See also: goto, @oxmove, ACTION LISTS, VERBS
   message shown to those in <object>'s location when someone enters it, and
   the actions to be taken by <object> when someone enters it, respectively.
   
+  The old location of the entering object is passed in %0, if <object>
+  had permission to see it there.
+
   Example:
     > @enter Sofa=You sit on the comfy sofa.
     > @oenter Sofa=sits with you on the sofa.
@@ -1039,7 +1048,7 @@ See also: look, @exitformat, @nameformat, @conformat, @descformat,
   accented characters directly in a name, which can make it harder for
   people to type.
   
-  The <accent template> is explained in 'help accent2'.
+  The <accent template> is explained in 'help accents'.
 
   If a container has both a @nameaccent and a @nameformat, the
   @nameformat is used.
@@ -1459,9 +1468,9 @@ See also: @shutdown
 See also: enter, leave, goto, ENTER_OK
 & @edit
 & @gedit
-  @edit[/first][/check] <object>/<attributes>=<search>, <replace> 
-  @edit[/check] <object>/<attributes> = $,<string to append>
-  @edit[/check] <object>/<attributes> = ^,<string to prepend>
+  @edit[/first][/check][/quiet] <object>/<attributes>=<search>, <replace> 
+  @edit[/check][/quiet] <object>/<attributes> = $,<string to append>
+  @edit[/check][/quiet] <object>/<attributes> = ^,<string to prepend>
 
   This command allows you to edit the contents of attributes, without having
   to retype the entire attribute.
@@ -1479,6 +1488,10 @@ See also: enter, leave, goto, ENTER_OK
   each attribute is replaced. If the /check switch is given, the attributes
   are not altered, you'll just be shown what would be changed (with the
   changes ansi-highlighted).
+  
+  If the /quiet switch is given, you won't be shown the modified text, you'll
+  just be told how many of the matching attributes were/weren't edited.
+  Useful when edited a lot of large/spammy attributes.
   
   <search> and <replace> are not evaluated, so you don't need to escape
   special characters. If either contains commas, however, you may need to
@@ -2721,26 +2734,36 @@ See also: @logwipe
 
 See also: @log
 & @message
-  @message[/switch] <player list>=<message>,<attribute>[,<arg1>,...]
+  @message[/<switches>] <recipients>=<message>,[<obj>/]<attr>
+                                  [,<arg0>[, ... , <arg9>]]]
 
   @message is designed for the use of *format messages, such as
-  @pageformat or @chatformat.
+  @pageformat or @chatformat. It is intended for use with @hooking page, 
+  @chat, or say/pose/emit, or for coding language systems.
 
-  It sends <message> to each player given in <player list> unless they
-  have <attribute> set.  If the executor can u() the player's attribute,
-  then instead of <message>, they will see the output that is identical
-  to:
+  For each of the given <recipients>, <obj>/<attr> is evaluated (with up to
+  ten arguments, as if it was ufun()'d), and the object is shown the result
+  via @pemit. If the attribute does not exist, they are shown <message>
+  instead.
+  
+  If <obj> is not given, or is given as "#-2", the attribute will be checked
+  on the recipient.
 
-      u(<player>/<attribute>,<arg1>,...)
+  If one of the arguments matches "##", it will be replaced with the dbref of
+  the recipient.
+  
+  Switches:
+    /noeval   -- none of @message's arguments will be evaluated
+    /spoof    -- the message will appear to be from the enactor, not the
+                 recipient. Requires the Can_Spoof @power.
+    /remit    -- Works like @remit, treating <recipients> as a list of rooms
+                 to send <message> to
+    /oemit    -- Works like @oemit, with <recipients> as a list of objects
+                 not to emit to. See 'help @oemit' for more info.
+    /nospoof  -- don't show nospoof info, as per @nspemit/@nsremit/@nsoemit
 
-  It is intended for use with @hooking page, @chat, or say/pose/emit.
-
-  Switches: NOEVAL and SPOOF. If the executor is either wizard or has
-  the NsPemit power, then SPOOF will make the message appear to be
-  from the enactor.
-
-  See 'help @message2' for an example.
-See also: message(), @chatformat, @pageformat
+  See 'help @message2' for examples.
+See also: message(), @chatformat, @pageformat, @oemit, @remit, speak()
 & @message2
 
   Example:
@@ -2762,6 +2785,27 @@ See also: message(), @chatformat, @pageformat
          cwho(%1)=setr(0,<%1> [speak(&[squish(ctitle(%1, %#) %n)], %2%3)]),
          CHATFORMAT, firstof(%2, "), %1, %3, %n, ctitle(%1, %#), %q0
     > @set Globals/cmd.chat=regexp
+
+  See 'help @message3' for more examples.
+& @message3
+
+  A (very) basic language system:
+    > &skill`spanish Juan=2
+    > &skill`spanish Bob=1
+    > &cmd.spanish Globals=$+spanish *: @nspemit %#=You say (Spanish), "%0";
+      @message/oemit/spoof %#=setr(0,%n says (Spanish)\, "%0"), 
+                        %!/TRANSLATE, ##, SPANISH, %q0
+    > &translate Globals=switch(default(%0/skill`%1, 2), 2, %2,
+          speak(%#, |%2,, %!/translate`some))
+    > &translate`some Globals="[iter(%0,if(rand(2),%i0,...))]"
+    > +spanish The rain in Spain falls mainly on the plain
+    
+  You see:
+    You say (Spanish), "The rain in Spain falls mainly on the plain"
+  Bob sees (something like):
+    Mike says (Spanish), "The rain ... ... falls ... ... ... ..."
+  Juan says:
+    Mike says (Spanish), "The rain in Spain falls mainly on the plain"
 
 & @motd
   @motd[/<switch>] [<message>]
@@ -2885,11 +2929,13 @@ See also: @password, checkpass()
   @nsoemit[/<switch>] [<room>/]<object> [<object>...]=<message>
   @nszemit <zone>=<message>
 
-  These commands work like @emit, @lemit, @pemit, @prompt, @remit, @oemit, 
-  and @zemit, respectively, but will not include nospoof information if used
-  by Wizards or someone with the Can_spoof @power. They are meant to be
-  used by commands in the master room where the nospoof information is just
-  useless noise. They take all switches of their respective commands.
+  These commands work like @emit, @lemit, @pemit, @prompt, @remit,
+  @oemit, and @zemit, respectively, but will not include nospoof
+  information if used by Wizards or someone with the Can_spoof
+  @power. They are meant to be used by commands in the master room
+  where the nospoof information is just useless noise. They take the
+  same switches as their respective commands, with a few exceptions
+  (/spoof, and for @nspemit, /contents and the admin-only /port).
 
 See also: @emit, @lemit, @pemit, @prompt, @remit, @oemit, @zemit, nsemit(),
   nslemit(), nspemit(), nsprompt(), nsremit(), nsoemit(), nszemit(),
@@ -3189,7 +3235,7 @@ See also: powers(), @flag
 See also: @inprefix, AUDIBLE, @listen
 & @ps
   @ps[/<switch>] [<player>]
-  @ps <pid>
+  @ps[/debug] <pid>
   
   @ps is a useful command for MUSHers.  It lists all commands currently on
   your 'to be executed' queue, thus allowing you to identify infinite (or
@@ -3207,7 +3253,10 @@ See also: @inprefix, AUDIBLE, @listen
   @ps/summary just displays the queue totals for the whole queue.
   @ps/quick displays the queue totals for just your queue.
   
-  With a <pid> argument, @ps shows information on a single queue entry.
+  With a <pid> argument, @ps shows information on a single queue
+  entry.  The /debug switch will also display the queue entry's
+  environment: Arguments, q registers, executor, enactor and caller
+  dbrefs.
 
   Each line includes the process id of the queue entry, the object
   and attribute being used as a semaphore (If any), the number of
@@ -3625,11 +3674,12 @@ See also: say, pose, @emit, @chatformat, @pageformat
   can connect to an SQL server. You must be WIZARD or have the
   Sql_Ok power to use @sql.
 
-  Returned rows are passed to <obj>/<attr>, with Row number passed as %0
-  and the columns passed as %1-%9. Row numbers start at 1.
+  For each row returned by the query, the action list in <obj>/<attr>
+  is queued, with row number passed as %0 and the columns passed as
+  %1-%9. Row numbers start at 1.
 
-  The /notify switch causes @mapsql to do an "@notify me" at the end of
-  the list.
+  The /notify switch causes @mapsql to do an "@notify me" after all the
+  rows are processed.
 
   The /colnames switch causes @mapsql to first queue the obj/attr with
   row number 0 and %0-%9 being the column names.
@@ -3754,7 +3804,7 @@ See also: @restart, @undestroy, ACTION LISTS, @function, @command, @hook,
               
   @switch/inplace is an alias for @switch/inline/nobreak/localize.
 
-  See 'help @switch2' for examples.
+  See 'help @switch3' for examples.
 See also: switch wildcards, switch(), @break, stext(), slev()
 & @switch3
   Examples: 
@@ -3795,34 +3845,45 @@ See also: switch wildcards, switch(), @break, stext(), slev()
     thing one
     thing after
 & @teleport
-  @teleport[/silent][/inside] [<object>=]<room>
+  @teleport[/silent][/inside] [<object>=]<destination>
 
-  Teleports <object> to <room>.  <object> must be a thing; if you do
-  not supply a thing, the object is assumed to be yourself. The
-  destination must be either JUMP_OK or controlled by you, and you
-  must either control <object> or <object>'s current location. Also,
-  the destination, if a room, cannot be teleport-locked against
-  <object>. Mortals cannot teleport HEAVY objects. If the target room
-  has a drop-to, <object> will go to the drop-to room instead.
+  Teleports <object> to <destination>. <object> can be a player, thing or
+  exit; if you do not supply an object, it is assumed to be yourself. The
+  destination must be either JUMP_OK or controlled by you, and you must
+  either control <object> or <object>'s current location. Also, the
+  destination, if a room, cannot be teleport-locked against <object>. Mortals
+  cannot teleport HEAVY objects. If the destination is a room with a drop-to,
+  <object> may go to the drop-to room instead.
+  
+  Admin and those with the tport_anything power can teleport an object even
+  if they don't control it. Those with tport_anywhere can teleport objects 
+  to any destination. You can also teleport an exit to any room if you have
+  the Open_Anywhere power.
 
-  Privileged players who teleport a player to another player send them
-  to the location of the target, unless the /inside switch is used, in
-  which case they are sent to the inventory of the target.
+  Privileged players who teleport a player to another player send them to 
+  the location of the target, unless the /inside switch is used, in which 
+  case they are sent to the inventory of the target.
+  
+  Continued in "help @teleport2".
+& @teleport2
+  Teleporting to an exit works the same as using "goto". If you don't control
+  the exit and don't have the tport_anywhere power, either you or <object>
+  must be nearby the exit.
 
   Teleportation from a room can be stopped by setting the NO_TEL flag.
-  Royalty and Wizards can _always_ teleport to any location,
-  regardless of NO_TEL or teleport locks.
+  Royalty and Wizards can _always_ teleport to any location, regardless of 
+  NO_TEL or teleport locks.
 
-  Teleportation triggers the @oxtport/@tport/@otport/@atport
-  attributes, unless <room> is an exit or the /silent switch is
-  given. With @oxtport, %0 is the dbref of the object causing the
-  dbref. The others, in addition to %0, get the former location of the
-  object that was teleported passed in %1.
+  Teleportation triggers the @oxtport/@tport/@otport/@atport attributes, 
+  unless <room> is an exit or the /silent switch is given. With @oxtport,
+  %0 is the dbref of the object causing the dbref. The others, in addition 
+  to %0, get the former location of the object that was teleported passed
+  in %1.
 
-  As a special case, using "home" as the <room> has the same effect as
-  the home command, and does not act like a normal teleport.
+  As a special case, using "home" as the <room> has the same effect as the 
+  home command, and does not act like a normal teleport.
 
-See also: JUMP_OK, NO_TEL, @oxtport, @tport, @otport, @atport, @lock
+See also: JUMP_OK, NO_TEL, Z_TEL, @tport, @lock
 & @trigger
   @trigger <object>/<attribute> [=<value 0>,<val. 1>,...,<val 9>]
 
@@ -3883,7 +3944,7 @@ See also: @lock, use, locktypes
   statistics.
 
   Continued in 'help @uptime2'.
-& @UPTIME2
+& @uptime2
   While the exact statistics displayed depends on the operating system
   of the game's server, typical things might include the process ID,
   the machine page size, the maximum resident set size utilized (in K),
@@ -3951,6 +4012,7 @@ See also: version(), numversion()
        or <victim> must be VISUAL.
   
   See 'help @verb3' for examples.
+See also: USER-DEFINED COMMANDS, STACK, VERBS, @trigger
 & @verb3
   Examples:
   
@@ -3986,8 +4048,6 @@ See also: version(), numversion()
   You test this fun example.
   [others see] You test Example.
   Example has been tested!
-
-See also: USER-DEFINED COMMANDS, STACK, VERBS, @trigger
 & @wait
   @wait[/until] <time> = <command_list>
   @wait <object> = <command_list>
@@ -4035,7 +4095,6 @@ See also: SEMAPHORES, @drain, @notify
   decrease the current time, or set a new absolute time in seconds.
 
   You must control the object doing the wait, or have the halt @power.
-
 & @wall
   @wall[/<switch>] <message>
 

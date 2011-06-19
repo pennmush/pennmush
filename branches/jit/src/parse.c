@@ -678,10 +678,12 @@ pe_regs_dump(PE_REGS *pe_regs, dbref who)
     }
     for (val = pe_regs->vals; val; val = val->next) {
       if (val->type & PE_REGS_STR) {
-        notify_format(who, " %.2X %-10s: %s", val->type & 0xFF,
+        notify_format(who, " %.2X(%.2X) %-10s: %s", val->type & 0xFF,
+                      (val->type & 0xFFFF00) >> 8,
                       val->name, val->val.sval);
       } else {
-        notify_format(who, " %.2X %-10s: %d", val->type & 0xFF,
+        notify_format(who, " %.2X(%.2X) %-10s: %d", val->type & 0xFF,
+                      (val->type & 0xFFFF00) >> 8,
                       val->name, val->val.ival);
       }
     }
@@ -710,7 +712,7 @@ pe_regs_create_real(int pr_flags, const char *name)
 }
 
 /* Delete the _value_ of a single val, leave its name alone */
-inline void
+void
 pe_reg_val_free_val(PE_REG_VAL *val)
 {
   /* Don't do anything if it's NOCOPY or if it's an integer. */
@@ -736,7 +738,7 @@ pe_reg_val_free(PE_REG_VAL *val)
 
 /** Free all values from a PE_REGS context.
  *
- * \param pe_wregs The pe_regs to clear
+ * \param pe_regs The pe_regs to clear
  */
 void
 pe_regs_clear(PE_REGS *pe_regs)
@@ -756,7 +758,7 @@ pe_regs_clear(PE_REGS *pe_regs)
 
 /** Free all values of a specific type from a PE_REGS context.
  *
- * \param pe_wregs The pe_regs to clear
+ * \param pe_regs The pe_regs to clear
  * \param type     The type(s) of pe_reg_vals to clear.
  */
 void
@@ -784,7 +786,7 @@ pe_regs_clear_type(PE_REGS *pe_regs, int type)
 
 /** Free a PE_REGS context.
  *
- * \param pe_wregs The pe_regs to free up.
+ * \param pe_regs The pe_regs to free up.
  */
 void
 pe_regs_free(PE_REGS *pe_regs)
@@ -799,6 +801,7 @@ pe_regs_free(PE_REGS *pe_regs)
  *
  * \param pe_info The pe_info to push the new PE_REGS into.
  * \param pr_flags PR_* flags, bitwise or'd.
+ * \param name name, used for memory checks
  */
 PE_REGS *
 pe_regs_localize_real(NEW_PE_INFO *pe_info, uint32_t pr_flags, const char *name)
@@ -825,7 +828,7 @@ pe_regs_restore(NEW_PE_INFO *pe_info, PE_REGS *pe_regs)
 #define FIND_PVAL(pval, key, type) \
   do { \
     if (!pval) break; \
-    if ((pval->type & type) && !strcmp(pval->name, key)) { \
+    if ((pval->type & type & PE_REGS_TYPE) && !strcmp(pval->name, key)) { \
       break; \
     } \
     pval = pval->next; \
@@ -839,7 +842,7 @@ pe_regs_restore(NEW_PE_INFO *pe_info, PE_REGS *pe_regs)
  *
  * \param pe_regs The pe_regs to set it in.
  * \param type The type (REG_QREG, REG-... etc) of the register to set.
- * \param key Register name
+ * \param lckey Register name
  * \param val Register value.
  * \param override If it already exists, then overwrite it.
  */
@@ -876,8 +879,8 @@ pe_regs_set_if(PE_REGS *pe_regs, int type,
     pe_regs->count++;
     if (type & PE_REGS_Q) {
       if (!((key[1] == '\0') &&
-          ((key[0] >= 'A' && key[0] <= 'Z') ||
-           (key[0] >= '0' && key[0] <= '9')))) {
+            ((key[0] >= 'A' && key[0] <= 'Z') ||
+             (key[0] >= '0' && key[0] <= '9')))) {
         pe_regs->qcount++;
       }
     }
@@ -900,9 +903,9 @@ pe_regs_set_if(PE_REGS *pe_regs, int type,
  *
  * \param pe_regs The pe_regs to set it in.
  * \param type The type (REG_QREG, REG-... etc) of the register to set.
- * \param key Register name
+ * \param lckey Register name
  * \param val Register value.
- * \param override If 1, then replace any extant value for <name>
+ * \param override If 1, then replace any extant value for the register
  */
 void
 pe_regs_set_int_if(PE_REGS *pe_regs, int type,
@@ -927,8 +930,8 @@ pe_regs_set_int_if(PE_REGS *pe_regs, int type,
     pe_regs->count++;
     if (type & PE_REGS_Q) {
       if (!((key[1] == '\0') &&
-          ((key[0] >= 'A' && key[0] <= 'Z') ||
-           (key[0] >= '0' && key[0] <= '9')))) {
+            ((key[0] >= 'A' && key[0] <= 'Z') ||
+             (key[0] >= '0' && key[0] <= '9')))) {
         pe_regs->qcount++;
       }
     }
@@ -960,7 +963,7 @@ pe_regs_get(PE_REGS *pe_regs, int type, const char *lckey)
  *
  * \param pe_regs The PE_REGS to fetch from.
  * \param type The type of the value to get
- * \param key Q-register name.
+ * \param lckey Q-register name.
  */
 int
 pe_regs_get_int(PE_REGS *pe_regs, int type, const char *lckey)
@@ -988,14 +991,17 @@ void
 pe_regs_qcopy(PE_REGS *dst, PE_REGS *src)
 {
   PE_REG_VAL *val;
-  for (val = src->vals; val; val = val->next) {
-    if (val->type & PE_REGS_Q) {
-      if (val->type & PE_REGS_STR) {
-        pe_regs_set(dst, val->type, val->name, val->val.sval);
-      } else {
-        pe_regs_set_int(dst, val->type, val->name, val->val.ival);
+  while (src) {
+    for (val = src->vals; val; val = val->next) {
+      if (val->type & PE_REGS_Q) {
+        if (val->type & PE_REGS_STR) {
+          pe_regs_set(dst, val->type, val->name, val->val.sval);
+        } else {
+          pe_regs_set_int(dst, val->type, val->name, val->val.ival);
+        }
       }
     }
+    src = src->prev;
   }
 }
 
@@ -1087,7 +1093,7 @@ pe_regs_copystack(PE_REGS *new_regs, PE_REGS *pe_regs,
   }
 }
 
-/** Does PE_REGS have a register stack of a given type, within the 
+/** Does PE_REGS have a register stack of a given type, within the
  * appropriate scope? This checks three things: For a PE_REGS with the
  * appropriate type, for a stopping pe_regs (NEWATTR, etc), and for
  * a value with the appropriate type.
@@ -1132,7 +1138,7 @@ pi_regs_has_type(NEW_PE_INFO *pe_info, int type)
 
 /** Is a string a valid name for a Q-register?
  *
- * \param key The key to check
+ * \param lckey The key to check
  * \return 0 not valid
  * \return 1 valid
  */
@@ -1435,34 +1441,26 @@ pi_regs_get_ilev(NEW_PE_INFO *pe_info, int type)
 const char *
 pe_regs_intname(int num)
 {
+  static char buff[8];
   if (num < 10 && num >= 0) {
     return envid[num];
   } else {
-    return tprintf("%d", num);
+    snprintf(buff, 8, "%d", num);
+    return buff;
   }
 }
 
 void
 pe_regs_setenv(PE_REGS *pe_regs, int num, const char *val)
 {
-  const char *name;
-  if (num < 10 && num >= 0) {
-    name = envid[num];
-  } else {
-    name = tprintf("%d", num);
-  }
+  const char *name = pe_regs_intname(num);
   pe_regs_set(pe_regs, PE_REGS_ARG, name, val);
 }
 
 void
 pe_regs_setenv_nocopy(PE_REGS *pe_regs, int num, const char *val)
 {
-  const char *name;
-  if (num < 10 && num >= 0) {
-    name = envid[num];
-  } else {
-    name = tprintf("%d", num);
-  }
+  const char *name = pe_regs_intname(num);
   pe_regs_set(pe_regs, PE_REGS_ARG | PE_REGS_NOCOPY, name, val);
 }
 
@@ -1471,12 +1469,7 @@ const char *
 pi_regs_get_env(NEW_PE_INFO *pe_info, int num)
 {
   PE_REGS *pe_regs;
-  const char *name;
-  if (num < 10 && num >= 0) {
-    name = envid[num];
-  } else {
-    name = tprintf("%d", num);
-  }
+  const char *name = pe_regs_intname(num);
   const char *ret;
 
   pe_regs = pe_info->regvals;
@@ -1600,8 +1593,7 @@ make_pe_info(char *name)
  ** from the existing pe_info into the new one
  * \param old_pe_info the original pe_info to use as a base for the new one
  * \param flags PE_INFO_* flags to determine exactly what to do
- * \param env environment vars (%0-%9) for the new pe_info, or NULL
- * \param qreg qreg values (%q*) for the new pe_info, or NULL
+ * \param pe_regs a pe_regs struct with environment for the new pe_info
  * \retval a new pe_info
  */
 NEW_PE_INFO *

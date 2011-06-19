@@ -1,3 +1,8 @@
+/**
+ * \file boolexp.h
+ *
+ */
+
 #ifndef BOOLEXP_H
 #define BOOLEXP_H
 
@@ -35,11 +40,14 @@ boolexp parse_boolexp_d(dbref player, const char *buf, lock_type ltype,
 void free_boolexp(boolexp b);
 boolexp getboolexp(PENNFILE *f, const char *ltype);
 void putboolexp(PENNFILE *f, boolexp b);
+/** Flags which set how an object in a boolexp is
+ * displayed to a player in various commands
+ */
 enum u_b_f {
   UB_ALL, /**< Use names of objects */
   UB_DBREF, /**< Use dbrefs */
   UB_MEREF /**< Use dbrefs or "me" if the object is the player arg
-              from unparse_boolexp.() For @decompile. */
+              from unparse_boolexp(). For \@decompile. */
 };
 
 char *unparse_boolexp(dbref player, boolexp b, enum u_b_f flag);

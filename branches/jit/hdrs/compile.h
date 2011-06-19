@@ -52,6 +52,10 @@
  */
 
 #ifdef WIN32SERVICES
+/*
+   Force stdlib.h to be included first so we don't mangle a system header.
+ */
+#include <stdlib.h>
 #define exit(arg) Win32_Exit (arg)
 void NORETURN WIN32_CDECL Win32_Exit(int exit_code);
 #endif

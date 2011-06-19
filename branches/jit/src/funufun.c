@@ -8,6 +8,8 @@
 
 #include "copyrite.h"
 
+#include <string.h>
+
 #include "config.h"
 #include "conf.h"
 #include "externs.h"
@@ -124,7 +126,7 @@ FUNCTION(fun_objeval)
                      PT_DEFAULT, pe_info);
 }
 
-/** Helper function for calling @functioned funs.
+/** Helper function for calling \@functioned funs.
  * \param buff string to store result of evaluation.
  * \param bp pointer into end of buff.
  * \param obj object on which the ufun is stored.
@@ -339,7 +341,7 @@ FUNCTION(fun_zfun)
 {
   ufun_attrib ufun;
   dbref zone;
-  char rbuff[BUFFER_LEN];
+  char rbuff[BUFFER_LEN], *rp;
   PE_REGS *pe_regs;
   int i;
 
@@ -350,9 +352,13 @@ FUNCTION(fun_zfun)
     return;
   }
 
+  rp = rbuff;
+  safe_dbref(zone, rbuff, &rp);
+  safe_chr('/', rbuff, &rp);
+  safe_str(args[0], rbuff, &rp);
+  *rp = '\0';
   /* find the user function attribute */
-  if (!fetch_ufun_attrib
-      (tprintf("#%d/%s", zone, args[0]), executor, &ufun, UFUN_OBJECT)) {
+  if (!fetch_ufun_attrib(rbuff, executor, &ufun, UFUN_OBJECT)) {
     safe_str(T(ufun.errmess), buff, bp);
     return;
   }

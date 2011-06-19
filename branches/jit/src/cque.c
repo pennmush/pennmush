@@ -43,6 +43,7 @@
 #include "dbdefs.h"
 #include "log.h"
 #include "intmap.h"
+#include "ptab.h"
 #include "confmagic.h"
 
 
@@ -61,18 +62,20 @@ static int add_to_sem(dbref player, int am, const char *name);
 static int queue_limit(dbref player);
 void free_qentry(MQUE *point);
 static int pay_queue(dbref player, const char *command);
-void wait_que(dbref player, int waittill, char *command, dbref cause, dbref sem,
-              const char *semattr, int until, MQUE *parent_queue);
+void wait_que(dbref executor, int waittill, char *command, dbref enactor,
+              dbref sem, const char *semattr, int until, MQUE *parent_queue);
 int que_next(void);
 
 static void show_queue(dbref player, dbref victim, int q_type,
                        int q_quiet, int q_all, MQUE *q_ptr,
                        int *tot, int *self, int *del);
 static void show_queue_single(dbref player, MQUE *q, int q_type);
+static void show_queue_env(dbref player, MQUE *q);
 static void do_raw_restart(dbref victim);
 static int waitable_attr(dbref thing, const char *atr);
 static void shutdown_a_queue(MQUE **head, MQUE **tail);
 static int do_entry(MQUE *entry, int include_recurses);
+static MQUE *new_queue_entry(NEW_PE_INFO *pe_info);
 
 extern sig_atomic_t cpu_time_limit_hit; /**< Have we used too much CPU? */
 
@@ -85,7 +88,7 @@ extern dbref report_dbref;
  */
 #define SEMAPHORE_FLAGS (AF_LOCKED | AF_PRIVATE | AF_NOCOPY | AF_NODUMP)
 
-/** Queue initializtion function. Must  be called before anything
+/** Queue initializtion function. Must be called before anything
  * is added to the queue.
  */
 void
@@ -94,7 +97,7 @@ init_queue(void)
   queue_map = im_new();
 }
 
-/* Returns true if the attribute on thing can be used as a semaphore.
+/** Returns true if the attribute on thing can be used as a semaphore.
  * atr should be given in UPPERCASE.
  */
 static int
@@ -123,6 +126,13 @@ waitable_attr(dbref thing, const char *atr)
   return 0;                     /* Not reached */
 }
 
+/** Incrememt an integer attribute.
+ * \param player the object the attribute is on
+ * \param am the amount to incrememnt by
+ * \param name the name of the attribute to increment
+ * \param flags the attribute flags to set on the attr
+ * \retval the new value of the attribute
+ */
 static int
 add_to_generic(dbref player, int am, const char *name, uint32_t flags)
 {
@@ -145,6 +155,11 @@ add_to_generic(dbref player, int am, const char *name, uint32_t flags)
   return num;
 }
 
+/** Wrapper for add_to_generic() to incremement a player's QUEUE attribute.
+ * \param player object whose QUEUE should be incremented
+ * \param am amount to increment the QUEUE by
+ * \retval new value of QUEUE
+ */
 static int
 add_to(dbref player, int am)
 {
@@ -153,17 +168,28 @@ add_to(dbref player, int am)
   return add_to_generic(player, am, "QUEUE", NOTHING);
 }
 
+/** Wrapper for add_to_generic() to incrememnt an attribute when a
+ * semaphore is queued.
+ * \param player object whose attribute should be incremented
+ * \param am amount to increment the attr by
+ * \param name attr to increment, or NULL to use the default (SEMAPHORE)
+ * \retval new value of attr
+ */
 static int
 add_to_sem(dbref player, int am, const char *name)
 {
   return add_to_generic(player, am, name ? name : "SEMAPHORE", SEMAPHORE_FLAGS);
 }
 
+/** Increment an object's queue by 1, and then return 1 if he has exceeded his
+ * queue limit.
+ * \param player objects whose queue should be incremented
+ * \retval 1 player has exceeded his queue limit
+ * \retval 0 player has not exceeded his queue limit
+ */
 static int
 queue_limit(dbref player)
 {
-  /* returns 1 if player has exceeded his queue limit, and always
-     increments QUEUE by one. */
   int nlimit;
 
   nlimit = add_to(player, 1);
@@ -271,8 +297,6 @@ next_pid(void)
   }
 }
 
-static MQUE *new_queue_entry(NEW_PE_INFO *pe_info);
-
 static MQUE *
 new_queue_entry(NEW_PE_INFO *pe_info)
 {
@@ -305,7 +329,11 @@ new_queue_entry(NEW_PE_INFO *pe_info)
   return entry;
 }
 
-#define DELIM_CHAR '\x11'
+/** A non-printing char used internally to delimit args for events during
+ * arg parsing
+ */
+#define EVENT_DELIM_CHAR '\x11'
+
 /** If EVENT_HANDLER config option is set to a valid dbref, try triggering
  * its handler attribute
  * \param enactor The enactor who caused it.
@@ -373,7 +401,7 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   if (*s)
     argcount++;                 /* At least one arg. */
   while ((s = strchr(s, ',')) != NULL) {
-    *(s++) = DELIM_CHAR;
+    *(s++) = EVENT_DELIM_CHAR;
     argcount++;
   }
 
@@ -390,7 +418,7 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
 
     len = strlen(buff);
     for (i = 0, s = buff; i < argcount && s; i++, s = snext) {
-      snext = strchr(s, DELIM_CHAR);
+      snext = strchr(s, EVENT_DELIM_CHAR);
       if ((snext ? (snext - s) : (len - (s - buff))) > BUFFER_LEN) {
         /* It's theoretically possible to have an arg that's longer than
          * BUFFER_LEN */
@@ -462,8 +490,6 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
 void
 insert_que(MQUE *queue_entry, MQUE *parent_queue)
 {
-  int pid = 0;
-
   if (!IsPlayer(queue_entry->executor) && (Halted(queue_entry->executor))) {
     free_qentry(queue_entry);
     return;
@@ -483,8 +509,8 @@ insert_que(MQUE *queue_entry, MQUE *parent_queue)
       free_qentry(queue_entry);
       return;
     }
-    pid = next_pid();
-    if (pid == 0) {
+    queue_entry->pid = next_pid();
+    if (queue_entry->pid == 0) {
       /* Too many queue entries */
       /* Should this be notifying the enactor instead? */
       notify(queue_entry->executor,
@@ -524,7 +550,7 @@ insert_que(MQUE *queue_entry, MQUE *parent_queue)
     }
     break;
   }
-  if (pid)
+  if (queue_entry->pid)
     im_insert(queue_map, queue_entry->pid, queue_entry);
 }
 
@@ -540,8 +566,7 @@ insert_que(MQUE *queue_entry, MQUE *parent_queue)
  * \param parent_queue the parent queue entry which caused this queueing, or NULL
  * \param flags a bitwise collection of PE_INFO_* flags that determine the environment for the new queue
  * \param queue_type bitwise collection of the QUEUE_* flags, to determine which queue this goes in
- * \param env The environment (%0-%9) to use for the new queue, or NULL
- * \param qreg The hash of qregisters to use for the new queue, or NULL
+ * \param pe_regs the pe_regs for the queue entry
  * \param fromattr The attribute the actionlist is queued from
  */
 void
@@ -680,7 +705,7 @@ queue_include_attribute(dbref thing, const char *atrname,
  * \param atrname attribute name.
  * \param enactor the enactor.
  * \param noparent if true, parents of executor are not checked for atrname.
- * \param env array of environment vars (%0-%9) to use for the queued attribute, or NULL for none
+ * \param pe_regs the pe_regs args for the queue entry
  * \retval 0 failure.
  * \retval 1 success.
  */
@@ -744,17 +769,17 @@ queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor, PE_REGS *pe_regs)
  * or the semaphore queue. Wait queue entries are sorted by when
  * they're due to expire; semaphore queue entries are just added
  * to the back of the queue.
- * \param player the enqueuing object.
+ * \param executor the enqueuing object.
  * \param waittill time to wait, or 0.
  * \param command command to enqueue.
- * \param cause object that caused command to be enqueued.
+ * \param enactor object that caused command to be enqueued.
  * \param sem object to serve as a semaphore, or NOTHING.
  * \param semattr attribute to serve as a semaphore, or NULL (to use SEMAPHORE).
  * \param until 1 if we wait until an absolute time.
  * \param parent_queue the queue entry the \@wait command was executed in
  */
 void
-wait_que(dbref player, int waittill, char *command, dbref cause, dbref sem,
+wait_que(dbref executor, int waittill, char *command, dbref enactor, dbref sem,
          const char *semattr, int until, MQUE *parent_queue)
 {
   MQUE *tmp;
@@ -763,15 +788,15 @@ wait_que(dbref player, int waittill, char *command, dbref cause, dbref sem,
   if (waittill == 0) {
     if (sem != NOTHING)
       add_to_sem(sem, -1, semattr);
-    new_queue_actionlist(player, cause, cause, command, parent_queue,
+    new_queue_actionlist(executor, enactor, enactor, command, parent_queue,
                          PE_INFO_CLONE, QUEUE_DEFAULT, NULL);
     return;
   }
-  if (!pay_queue(player, command))      /* make sure player can afford to do it */
+  if (!pay_queue(executor, command))    /* make sure player can afford to do it */
     return;
   pid = next_pid();
   if (pid == 0) {
-    notify(player, T("Queue entry table full. Try again later."));
+    notify(executor, T("Queue entry table full. Try again later."));
     return;
   }
   if (parent_queue)
@@ -781,9 +806,9 @@ wait_que(dbref player, int waittill, char *command, dbref cause, dbref sem,
   tmp = new_queue_entry(pe_info);
   tmp->action_list = mush_strdup(command, "mque.action_list");
   tmp->pid = pid;
-  tmp->executor = player;
-  tmp->enactor = cause;
-  tmp->caller = cause;
+  tmp->executor = executor;
+  tmp->enactor = enactor;
+  tmp->caller = enactor;
 
   if (until) {
     tmp->wait_until = (time_t) waittill;
@@ -1000,11 +1025,9 @@ do_entry(MQUE *entry, int include_recurses)
         if (tmp->queue_type & QUEUE_PRESERVE_QREG) {
           if (tmp->queue_type & QUEUE_CLEAR_QREG) {
             pe_regs = pe_regs_localize(entry->pe_info,
-                                       PE_REGS_QUEUE | PE_REGS_QSTOP,
-                                       "do_entry");
+                                       PE_REGS_Q | PE_REGS_QSTOP, "do_entry");
           } else {
-            pe_regs = pe_regs_localize(entry->pe_info, PE_REGS_QUEUE,
-                                       "do_entry");
+            pe_regs = pe_regs_localize(entry->pe_info, PE_REGS_Q, "do_entry");
           }
         } else {
           pe_regs = NULL;
@@ -1379,29 +1402,26 @@ COMMAND(cmd_notify_drain)
  * \verbatim
  * This is the top-level function for @wait.
  * \endverbatim
- * \param player the enactor
- * \param cause the object causing the command to be added.
+ * \param executor the executor
+ * \param enactor the object causing the command to be added.
  * \param arg1 the wait time, semaphore object/attribute, or both. Modified!
  * \param cmd command to queue.
  * \param until if 1, wait until an absolute time.
  * \param parent_queue the parent queue entry to take env/qreg from
  */
 void
-do_wait(dbref player, dbref cause, char *arg1, const char *cmd, bool until,
+do_wait(dbref executor, dbref enactor, char *arg1, const char *cmd, bool until,
         MQUE *parent_queue)
 {
   dbref thing;
   char *tcount = NULL, *aname = NULL;
   int waitfor, num;
   ATTR *a;
-  char *arg2;
 
-  arg2 = strip_braces(cmd);
   if (is_strict_integer(arg1)) {
     /* normal wait */
-    wait_que(player, parse_integer(arg1), arg2, cause, NOTHING, NULL, until,
-             parent_queue);
-    mush_free(arg2, "strip_braces.buff");
+    wait_que(executor, parse_integer(arg1), (char *) cmd, enactor, NOTHING,
+             NULL, until, parent_queue);
     return;
   }
   /* semaphore wait with optional timeout */
@@ -1411,8 +1431,7 @@ do_wait(dbref player, dbref cause, char *arg1, const char *cmd, bool until,
   if (aname)
     *aname++ = '\0';
   if ((thing =
-       noisy_match_result(player, arg1, NOTYPE, MAT_EVERYTHING)) == NOTHING) {
-    mush_free(arg2, "strip_braces.buff");
+       noisy_match_result(executor, arg1, NOTYPE, MAT_EVERYTHING)) == NOTHING) {
     return;
   }
 
@@ -1438,10 +1457,9 @@ do_wait(dbref player, dbref cause, char *arg1, const char *cmd, bool until,
     aname = (char *) "SEMAPHORE";
   }
 
-  if ((!controls(player, thing) && !LinkOk(thing))
+  if ((!controls(executor, thing) && !LinkOk(thing))
       || (aname && !waitable_attr(thing, aname))) {
-    notify(player, T("Permission denied."));
-    mush_free(arg2, "strip_braces.buff");
+    notify(executor, T("Permission denied."));
     return;
   }
   /* get timeout, default of -1 */
@@ -1459,8 +1477,8 @@ do_wait(dbref player, dbref cause, char *arg1, const char *cmd, bool until,
     thing = NOTHING;
     waitfor = -1;               /* just in case there was a timeout given */
   }
-  wait_que(player, waitfor, arg2, cause, thing, aname, until, parent_queue);
-  mush_free(arg2, "strip_braces.buff");
+  wait_que(executor, waitfor, (char *) cmd, enactor, thing, aname, until,
+           parent_queue);
 }
 
 /** Interface to \@wait/pid; modifies the wait times of queue
@@ -1782,6 +1800,76 @@ show_queue_single(dbref player, MQUE *q, int q_type)
   }
 }
 
+/* @ps/debug dump */
+static void
+show_queue_env(dbref player, MQUE *q)
+{
+  PE_REGS *regs;
+  int i = 0;
+  PTAB qregs;
+  const char *qreg_name;
+  char *qreg_val;
+  int level;
+
+  notify_format(player, "Environment:\n %%#: #%-8d %%!: #%-8d %%@: #%d",
+                q->enactor, q->executor, q->caller);
+
+  /* itext/inum for a @dolist-added queue entry. */
+  level = PE_Get_Ilev(q->pe_info);
+  if (level >= 0) {
+    for (i = 0; i <= level; i += 1)
+      notify_format(player, " %%i%d (Position %d) : %s", i,
+                    PE_Get_Inum(q->pe_info, i), PE_Get_Itext(q->pe_info, i));
+  }
+
+  /* stext for a @switch-added queue entry. */
+  level = PE_Get_Slev(q->pe_info);
+  if (level >= 0) {
+    for (i = 0; i <= level; i += 1)
+      notify_format(player, " %%$%d : %s", i, PE_Get_Stext(q->pe_info, i));
+  }
+
+  /* %0 - %9 */
+  if (pi_regs_get_envc(q->pe_info)) {
+    notify(player, "Arguments: ");
+    for (i = 0; i < 10; i += 1) {
+      const char *arg = pi_regs_get_env(q->pe_info, i);
+      if (arg)
+        notify_format(player, " %%%d : %s", i, arg);
+    }
+  }
+
+  /* Q registers */
+  ptab_init(&qregs);
+  ptab_start_inserts(&qregs);
+  for (regs = q->pe_info->regvals; regs; regs = regs->prev) {
+    PE_REG_VAL *val;
+    for (val = regs->vals; val; val = val->next) {
+      if ((val->type & PE_REGS_STR) && (val->type & PE_REGS_Q)
+          && *(val->val.sval))
+        ptab_insert(&qregs, val->name, (char *) val->val.sval);
+    }
+    if (regs->flags & PE_REGS_QSTOP)
+      break;
+  }
+  ptab_end_inserts(&qregs);
+
+  if (qregs.len) {
+    notify(player, "Registers:");
+    for (qreg_val = ptab_firstentry_new(&qregs, &qreg_name);
+         qreg_val; qreg_val = ptab_nextentry_new(&qregs, &qreg_name)) {
+      int len = strlen(qreg_name);
+      if (len > 1) {
+        int spacer = 19 - len;
+        notify_format(player, " %%q<%s>%-*c: %s", qreg_name, spacer, ' ',
+                      qreg_val);
+      } else
+        notify_format(player, " %%q%-20s : %s", qreg_name, qreg_val);
+    }
+  }
+  ptab_free(&qregs);
+}
+
 /** Display a player's queued commands.
  * \verbatim
  * This is the top-level function for @ps.
@@ -1857,10 +1945,11 @@ do_queue(dbref player, const char *what, enum queue_type flag)
  * This is the top-level function for @ps <pid>.
  * \endverbatim
  * \param player the enactor.
- * \param pidstr the pid for the queue entry to show
+ * \param pidstr the pid for the queue entry to show.
+ * \param debug true to display expanded queue environment information.
  */
 void
-do_queue_single(dbref player, char *pidstr)
+do_queue_single(dbref player, char *pidstr, bool debug)
 {
   uint32_t pid;
   MQUE *q;
@@ -1889,6 +1978,8 @@ do_queue_single(dbref player, char *pidstr)
   else
     show_queue_single(player, q, 0);
 
+  if (debug)
+    show_queue_env(player, q);
 }
 
 /** Halt an object, internal use.
@@ -1908,8 +1999,9 @@ do_halt(dbref owner, const char *ncom, dbref victim)
     player = owner;
   else
     player = victim;
-  quiet_notify(Owner(player),
-               tprintf("%s: %s(#%d).", T("Halted"), Name(player), player));
+  if (!Quiet(Owner(player)))
+    notify_format(Owner(player), "%s: %s(#%d)", T("Halted"), Name(player),
+                  player);
   for (tmp = qfirst; tmp; tmp = tmp->next)
     if (GoodObject(tmp->executor)
         && ((tmp->executor == player)

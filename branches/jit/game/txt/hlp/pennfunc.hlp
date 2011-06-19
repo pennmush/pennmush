@@ -65,9 +65,9 @@ See also: MUSHCODE
   get()          grep()         grepi()        hasattr()      hasattrp()
   hasattrval()   lattr()        nattr()        obj()          pfun()
   poss()         reglattr()     regrep()       regrepi()      regxattr()
-  subj()         udefault()     ufun()         uldefault()    ulocal()       
-  v()            wildgrep()     wildgrepi()    xattr()        xget()         
-  zfun()         
+  subj()         udefault()     ufun()         ulambda()      uldefault()    
+  ulocal()       v()            wildgrep()     wildgrepi()    xattr()        
+  xget()         zfun()         
 
 See also: ATTRIBUTES, NON-STANDARD ATTRIBUTES
 & Bitwise functions
@@ -100,14 +100,17 @@ See also: BOOLEAN VALUES, @config
   Communication functions are side-effect functions that send a message
   to an object or objects.
 
-  cemit()       emit()        lemit()       nsemit()      nslemit()
-  nsoemit()     nspemit()     nsprompt()    nsremit()     nszemit()
-  oemit()       pemit()       prompt()      remit()       zemit()
+  cemit()       emit()        lemit()       message()     nsemit()      
+  nslemit()     nsoemit()     nspemit()     nsprompt()    nsremit()     
+  nszemit()     oemit()       pemit()       prompt()      remit()       
+  zemit()
+  
+See also: Channel functions, Mail functions
 & Connection functions
   Connection functions return information about the connections open 
   on a game, or about specific connections.
 
-  cmds()        conn()        doing()       height()      hostname()
+  cmds()        conn()        doing()       height()      host()
   hidden()      idle()        ipaddr()      lports()      lwho()
   lwhoid()      mwho()        mwhoid()      nmwho()       nwho()
   player()      ports()       pueblo()      recv()        sent()
@@ -124,20 +127,22 @@ See also: BOOLEAN VALUES, @config
   num()         owner()       parent()      pmatch()      rloc()
   rnum()        room()        where()       zone()
 
-See also: DBREF
+See also: DBREF, Information functions
 & Information functions
   Information functions return values related to objects or the game.
 
-  alias()        andflags()     andlflags()    andlpowers()   config()
-  controls()     ctime()        elock()        findable()     flags()
-  fullalias()    fullname()     getpids()      hasattr()      hasattrp       
-  hasflag()      haspower()     hastype()      iname()        lflags()       
-  lock()         lpids()        lstats()       money()        mtime()        
-  mudname()      name()         nattr()        nearby()       objid()        
-  objmem()       orflags()      orlflags()     orlpowers()    pidinfo()
-  playermem()    poll()         powers()       quota()        restarts()     
-  type()         version()      visible()
+  accname()      alias()        andflags()     andlflags()    andlpowers()   
+  config()       controls()     csecs()        ctime()        elock()        
+  findable()     flags()        fullalias()    fullname()     getpids()      
+  hasattr()      hasattrp()     hasflag()      haspower()     hastype()      
+  iname()        lflags()       lock()         lockflags()    lockowner()    
+  locks()        lpids()        lstats()       money()        msecs()      
+  mtime()        mudname()      mudulr()       name()         nattr()        
+  nearby()       objid()        objmem()       orflags()      orlflags()     
+  orlpowers()    pidinfo()      playermem()    poll()         powers()       
+  quota()        restarts()     type()         version()      visible()
 
+See also: Dbref functions
 & List functions
   List functions take at least one list of elements and return
   transformed lists or one or more members of those lists. Most of
@@ -148,12 +153,12 @@ See also: DBREF
   element()     elements()    extract()     filter()      filterbool()
   first()       fold()        grab()        graball()     index()
   insert()      itemize()     items()       iter()        last()
-  ldelete()     map()         match()       matchall()    member()
-  mix()         munge()       namegrab()    namegraball() remove()
-  replace()     rest()        revwords()    setdiff()     setinter()
-  setunion()    shuffle()     sort()        sortby()      sortkey()
-  splice()      step()        table()       unique()      wordpos()
-  words()
+  ldelete()     lockfilter()  map()         match()       matchall()    
+  member()      mix()         munge()       namegrab()    namegraball() 
+  randword()    remove()      replace()     rest()        revwords()    
+  setdiff()     setinter()    setunion()    shuffle()     sort()        
+  sortby()      sortkey()     splice()      step()        table()       
+  unique()      wordpos()     words()
 
 See also: LISTS
 & Math functions
@@ -173,20 +178,24 @@ See also: LISTS
   dec()         div()         floordiv()    inc()         mod()
   remainder()
 
-See also: VECTOR FUNCTIONS
+See also: Vector Functions
 & Vector functions
   These functions operate on n-dimensional vectors. A vector
   is a delimiter-separated list of numbers (space-separated, by default):
+  
   vadd()        vcross()      vdim()        vdot()        vmag()
   vmax()        vmin()        vmul()        vsub()        vunit()
+
+See also: Math functions
 & Regular expression functions
   These functions take a regular expression (regexp, or re) and match
   it against assorted things.
 
-  regedit()     regeditall()   regeditalli()  regediti()    reglattr()
-  reglattrp()   regmatch()     regmatchi()    regrab()      regraball()    
-  regraballi()  regrabi()      regrep()       regrepi()     reswitch()     
-  reswitchall() reswitchalli() reswitchi()    regxattr()    regxattrp()
+  regedit()     regeditall()   regeditalli()  regediti()     reglattr()
+  reglattrp()   regmatch()     regmatchi()    regnattr()     regnattrp()
+  regrab()      regraball()    regraballi()   regrabi()      regrep()       
+  regrepi()     reswitch()     reswitchall()  reswitchalli() reswitchi()    
+  regxattr()    regxattrp()
 
 See also: string functions, regexp
 & SQL functions
@@ -203,18 +212,20 @@ See also: string functions, regexp
   accent()         after()          align()          alphamax()
   alphamin()       art()            before()         brackets()
   capstr()         case()           caseall()        cat()
-  center()         chr()            comp()           decode64()
-  decompose()      decrypt()        delete()         digest()
-  edit()           encode64()       encrypt()        escape()
-  foreach()        if()             ifelse()         lcstr()
-  left()           lit()            ljust()          lpos()
-  merge()          mid()            ord()            ordinal()
-  pos()            regedit()        regmatch()       repeat()
-  reverse()        right()          rjust()          scramble()
-  secure()         sha0()           space()          spellnum()
-  squish()         strcat()         strinsert()      stripaccents()
-  stripansi()      strlen()         strmatch()       strreplace()
-  switch()         trim()           ucstr()          wrap()
+  center()         chr()            comp()           cond()
+  condall()        decode64()       decompose()      decrypt()        
+  delete()         digest()         edit()           encode64()       
+  encrypt()        escape()         flip()           foreach()        
+  if()             ifelse()         lcstr()          left()           
+  lit()            ljust()          lpos()           merge()          
+  mid()            ord()            ordinal()        pos()            
+  regedit()        regmatch()       repeat()         right()          
+  rjust()          scramble()       secure()         sha0()           
+  space()          spellnum()       squish()         strallof()       
+  strcat()         strfirstof()     strinsert()      stripaccents()   
+  stripansi()      strlen()         strmatch()       strreplace()     
+  switch()         tr()             trim()           ucstr()          
+  wrap()
 
 See also: STRINGS
 & Time functions
@@ -230,14 +241,16 @@ See also: STRINGS
 
   allof()       ansi()        atrlock()     beep()        benchmark()
   checkpass()   clone()       create()      die()         dig()
-  firstof()     functions()   isdbref()     isint()       isnum()
-  isobjid()     isword()      letq()        localize()    link()
-  list()        listq()       lnum()        null()        numversion()
-  objeval()     open()        pcreate()     r()           rand()
-  s()           scan()        set()         setq()        setr()
-  soundex()     soundslike()  speak()       tel()         textentries()
-  textfile()    unsetq()      valid()       wipe()        @@()
-
+  endtag()      firstof()     functions()   fn()          html()        
+  ibreak()      ilev()        inum()        isdbref()     isint()       
+  isnum()       isobjid()     isword()      itext()       letq()        
+  localize()    link()        list()        listq()       lnum()        
+  lset()        null()        numversion()  objeval()     open()        
+  pcreate()     r()           rand()        s()           scan()        
+  set()         setq()        setr()        slev()        soundex()     
+  soundslike()  speak()       stext()       tag()         tagwrap()      
+  tel()         testlock()    textentries() textfile()    unsetq()      
+  valid()       wipe()        @@()
 & @@()
 & NULL()
   @@(<expression>)
@@ -267,23 +280,25 @@ See also: sign()
 & ACCENT()
   accent(<string>, <template>)
 
-  The accent() function will return <string>, with characters in it
-  possibly changed to accented ones according to <template>. Both
-  arguments must be the same size.
+  The accent() function will return <string>, with characters in it possibly
+  changed to accented ones according to <template>. Both arguments must be 
+  the same size.
 
-  Whether or not the resulting string is actually displayed correctly
-  is client-dependent. Some OSes uses different character sets than
-  the one assumed (ISO 8859-1), and some clients strip these 8-bit
-  characters.
+  Whether or not the resulting string is actually displayed correctly is 
+  client-dependent. Some OSes uses different character sets than the one 
+  assumed (ISO 8859-1), and some clients strip these 8-bit characters.
 
-  See 'HELP ACCENT2' for a description of the <template> argument.
+  For each character in <string>, the corresponding character of <template>
+  is checked according to the table in 'help accents', and a replacement 
+  done. If either the current <string> or <template> characters aren't in 
+  the table, the <string> character is passed through unchanged.
 
-See also: stripaccents(), NOACCENTS, @nameaccent, accname()
-& ACCENT2
-  For each character in <string>, the corresponding character of
-  <template> is checked according to the table below, and a replacement
-  done. If either the current <string> or <template> characters aren't
-  in the table, the <string> character is passed through unchanged.
+  See 'help accent2' for some examples.
+
+See also: stripaccents(), NOACCENTS, @nameaccent, accname(), ACCENTS
+& ACCENTS
+  Below is the table of possible accents which can be used with accent()
+  and @nameformat.
 
   Accent                         Template   String
   Name       Description         Character  Character
@@ -303,8 +318,8 @@ See also: stripaccents(), NOACCENTS, @nameaccent, accname()
   cedilla    Small tail below    ,          C,c
              letter
 
-  Continued in 'HELP ACCENT3'
-& ACCENT3
+  Continued in 'HELP ACCENTS2'
+& ACCENTS2
   These are non-accent special characters, mostly punctuation and
   non-roman letters.
 
@@ -321,8 +336,9 @@ See also: stripaccents(), NOACCENTS, @nameaccent, accname()
   Capital eth         -          D
   Lower-case eth      &          o
   
-  See 'HELP ACCENT4' for examples
-& ACCENT4
+  See 'HELP ACCENTS3' for examples
+& ACCENT2
+& ACCENTS3
   Some examples of accent() and their expected outputs:
 
     > think accent(Aule, ---:)
@@ -339,7 +355,7 @@ See also: stripaccents(), NOACCENTS, @nameaccent, accname()
   accname() returns the name of <object>, applying the object's
   @nameaccent, if any.
 
-See also: name(), fullname(), iname()
+See also: name(), fullname(), iname(), ACCENTS
 & ACOS()
   acos(<cosine>[, <angle type>])
  
@@ -1492,15 +1508,17 @@ See also: div(), mod()
   filter([<obj>/]<attr>, <list>[, <delimiter>[, <osep>]])
   filterbool([<obj>]/<attr>, <list>[, <delimiter>[, <osep>]])
 
-  This function returns the elements of <list> for which a
-  user-defined function evaluates to "1", or to a boolean true value
-  if filterbool() is used. That function is specified by the first
-  argument (just as with the ufun() function), and the element of the
-  list being tested is passed to that user-defined function as %0.
+  This function returns the elements of <list> for which a user-defined
+  function evaluates to "1", or to a boolean true value if filterbool() is 
+  used. That function is specified by the first argument (just as with the 
+  ufun() function), and the element of the list being tested is passed to 
+  that user-defined function as %0.
+  
+  <delimiter> defaults to a space, and <osep> defaults to <delimiter>.
   
   Thus, "filter(<obj>/<attr>, <list>)" is nearly equivalent to 
   "iter(<list>, switch(ufun(<obj>/<attr>, %i0),1,%i0,))" though the iter
-  version may have extra blank spaces.
+  version may have extra <osep>s.
   
   Example:
     > &IS_ODD test=mod(%0,2)
@@ -1772,10 +1790,10 @@ See also: @ps, @wait, lpids(), pidinfo(), SEMAPHORES
   regrab(<list>, <regexp>[, <delimiter>])
   regrabi(<list>, <regexp>[, <delimiter>])
   
-  These functions return the first word in <list> which matches the
-  pattern.  For grab(), <pattern> is a wildcard pattern ('help wildcards').
-  For regrab() and regrabi(), the pattern is a regular expression.
-  regrabi() is case-insensitive.
+  These functions return the first word in <list> which matches the pattern.
+  For grab(), <pattern> is a wildcard pattern ('help wildcards'). For
+  regrab() and regrabi(), the pattern is a regular expression. regrabi() is 
+  case-insensitive. <delimiter> defaults to a space.
   
   Basically, this is a much more efficient way to do:
     elements(<list>, match(<list>, <pattern>[, <delimiter>])[, <delimiter>])
@@ -1790,15 +1808,16 @@ See also: graball(), match(), extract(), element(), elements(), regmatch()
   regraballi(<list>, <regexp>[, <delim>[, <osep>]])
   
   These functions work identically to the grab() and regrab()/regrabi()
-  functions, except they return all matches, not just the first:
-  They return all words in the <list> which match <pattern>. If none
-  match, an empty string is returned.
+  functions, except they return all matches, not just the first: They return
+  all words in the <list> which match <pattern>. If none match, an empty
+  string is returned. <delim> defaults to a space, and <osep> defaults to
+  <delim>.
   
   Examples:
     > say graball(This is a test of a test,test)
     You say "test test"
-    > say graball(This is testing a test,tes*)
-    You say "testing test"
+    > say graball(This|is|testing|a|test,tes*,|)
+    You say "testing|test"
     > say regraball(This is testing a test,s$)
     You say "This is"
   
@@ -2121,8 +2140,8 @@ See also: words()
   For each word in <list>, iter() evaluates <pattern> once, and returns a
   list of the results of those evaluations. Words in <list> are separated
   by <delimiter>, if given, and spaces if not. Words in the resulting list
-  are separated by the given <ouput separator>, or the delimiter if no
-  output separator is used.
+  are separated by the given <ouput separator>, or a space if no output 
+  separator is given.
   
   Prior to each evaluation, every occurrence of the string "##" in <pattern>
   is replaced with the current word from <list>. However, because this 
@@ -2332,17 +2351,22 @@ See also: lexits(), lplayers(), lthings(), con(), next(), lvcon()
 
 See also: capstr(), ucstr()
 & LDELETE()
-  Ldelete(<list>, <position(s)>[, <delimiter>])
+  Ldelete(<list>, <position(s)>[, <delimiter>[, <osep>]])
   
-  This deletes the item(s) at <position(s)> in the list. If a delimiter is
-  not given, a space is assumed. Null items are counted, as in 'items()'.
-  Positions are numeric and must be separated by spaces.
+  This function deletes the element(s) of <list> at the given <position(s)>.
+  Elements of <list> are separated by <delimiter>, which defaults to a space.
+  Null items are counted, as in 'items()'. Elements of <position(s)> must be
+  numeric, and are always separated by a space, not by <delimiter>. Elements 
+  of the returned list are separated by <osep>, which defaults to the 
+  <delimiter>.
   
   Examples:
     > say ldelete(This is a long test string,4)
     You say, "This is a test string"
     > say ldelete(lemon|orange|pear|apple,2 3,|)
     You say, "lemon|apple"
+    > say ldelete(foo bar baz boing,3,,%b~%b)
+    You say, "foo ~ bar ~ boing"
 
 See also: delete(), remove(), insert()
 & LEFT()
@@ -3033,9 +3057,15 @@ See also: match(), grab(), comp(), strmatch()
 
 See also: splice(), tr()  
 & MESSAGE()
-  message(<player list>, <message>, <attribute>[, <arg1>[, ... , <arg10>]])
+  message(<recipients>, <message>, [<object>/]<attribute>
+                         [, <arg0>[, ... , <arg9>][, <switches>]])
 
-  message() is the function form of @message.
+  message() is the function form of @message, and sends a message, formatted
+  through an attribute, to a list of objects. See 'help @message' for more
+  information. <switches> is a space-separated list of one or more of
+  "nospoof", "spoof", "oemit" and "remit".
+  
+See also: @message, oemit(), remit(), speak()
 & MID()
   mid(<string>, <first>, <length>)
 
@@ -3846,6 +3876,27 @@ See also: @remit, pemit(), lemit()
   defaults to a space.
   
 See also: insert(), ldelete(), setdiff()
+& RENDER()
+  render(<string>, <formats>)
+  
+  This function renders the given <string> into a given format. Most useful
+  when coding bots, or inserting text into an SQL database to display on a
+  website. <formats> is a space-separated list of one or more of the
+  following:
+  
+    ansi      --  Convert colors to raw ANSI tags (requires Can_Spoof power)
+    html      --  Escape HTML entities (< to &lt;, etc) and convert Pueblo
+                  to HTML tags
+    noaccents --  Downgrade accented characters, as per stripaccents()
+    markup    --  Leave any markup not already converted by ansi/html as
+                  internal markup tags. Without this, unhandled markup
+                  will be stripped, as per stripansi()
+                  
+  Examples:
+    > say render(<Test 1> & [tagwrap(u,Test 2)], html)
+    You say, "&lt;Test 1&gt; &amp; <u>Test 2</u>"
+    
+See also: stripaccents(), stripansi(), Pueblo, @sql, tagwrap()
 & REPEAT()
   repeat(<string>, <number>)
   
@@ -4280,7 +4331,9 @@ See also: shl()
   shuffle(<list>[, <delimiter>[, <osep>]])
   
   This function shuffles the order of the items of a list, returning a
-  random permutation of its elements. 
+  random permutation of its elements.
+  
+  <delimiter> defaults to a space, and <osep> defaults to <delimiter>.
   
   Example:
     > say shuffle(foo bar baz gleep)
@@ -4885,13 +4938,13 @@ See also: delete(), insert(), strreplace()
   Returns the string with accented characters converted to non-accented. 
   As with the accent() function, this assumes the ISO 8859-1 character set.
   
-See also: accent(), @nameaccent, accname(), stripansi()
+See also: accent(), @nameaccent, accname(), stripansi(), render()
 & STRIPANSI()
   stripansi(<string>)
 
   Returns the string with all ansi and HTML codes removed.
   
-See also: stripaccents(), ansi(), tag()
+See also: stripaccents(), ansi(), tag(), render()
 & STRLEN()
   strlen(<string>)
 
@@ -5590,8 +5643,9 @@ See also: ufun(), setq(), letq(), r(), localize()
   unique() returns a copy of <list> with consecutive duplicate items removed.
   It does not sort the list. The optional <sort type> describes what type of
   data is in the list; see 'help sorting' for details. If no type is given,
-  the elements are compared as strings. The optional third and fourth 
-  arguments are the list delimiter and output seperator.
+  the elements are compared as strings. Elements of <list> are separated by
+  <delim>, which defaults to a space. Each element of the output is separated
+  by <osep>, which defaults to <delim>.
 
   Examples:
   > think unique(a b b c b)

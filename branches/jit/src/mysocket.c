@@ -38,6 +38,10 @@
 #endif
 #endif
 
+#ifdef HAVE_SYS_UN_H
+#include <sys/un.h>
+#endif
+
 #ifdef I_NETINET_TCP
 #include <netinet/tcp.h>
 #endif
@@ -110,8 +114,7 @@ extern int h_errno;
 static int connect_nonb
   (int sockfd, const struct sockaddr *saptr, socklen_t salen, bool nonb);
 
-
-#ifndef INFOSLAVE
+#ifndef SLAVE
 /** Given a sockaddr structure, try to look up and return hostname info.
  * If we can't get a hostname from DNS (or if we're not using DNS),
  * we settle for the IP address.
@@ -134,6 +137,7 @@ hostname_convert(struct sockaddr *host, int len)
   hi.port = port;
   return &hi;
 }
+#endif
 
 /** Given a sockaddr structure, try to look up and return ip address info.
  * \param host pointer to a sockaddr structure.
@@ -155,7 +159,6 @@ ip_convert(struct sockaddr *host, int len)
   hi.port = port;
   return &hi;
 }
-#endif                          /* INFOSLAVE */
 
 /** Open a connection to a given host and port. Basically
  * tcp_connect from UNPv1
@@ -341,6 +344,76 @@ make_socket(Port_t port, int socktype, union sockaddr_u *addr, socklen_t * len,
   return s;
 }
 
+#ifndef WIN32
+  /** Create a unix-domain socket .
+   * \param filename The name of the socket file.
+   * \param socktype The type of socket.
+   * \return a fd for the socket, or -1 on error.
+   */
+int
+make_unix_socket(const char *filename, int socktype)
+{
+  int s;
+  struct sockaddr_un addr;
+
+  memset(&addr, 0, sizeof addr);
+  addr.sun_family = AF_LOCAL;
+  strncpy(addr.sun_path, filename, sizeof(addr.sun_path) - 1);
+
+  unlink(filename);
+
+  if ((s = socket(AF_LOCAL, socktype, 0)) < 0) {
+    perror("socket");
+    return -1;
+  }
+
+  if (bind(s, (const struct sockaddr *) &addr, sizeof addr) < 0) {
+    perror("bind");
+    close(s);
+    return -1;
+  }
+
+  if (listen(s, 5) < 0) {
+    perror("listen");
+    close(s);
+    return -1;
+  }
+
+  fprintf(stderr, "Listening on socket file %s (fd %d)\n", filename, s);
+
+  return s;
+}
+
+/** Connect to a unix-domain socket 
+ * \param filename The name of the socket file.
+ * \param socktyp the type of socket
+ * \return a fd for the socket or -1 on error.
+ */
+int
+connect_unix_socket(const char *filename, int socktype)
+{
+  int s;
+  struct sockaddr_un addr;
+
+  memset(&addr, 0, sizeof addr);
+  addr.sun_family = AF_LOCAL;
+  strncpy(addr.sun_path, filename, sizeof(addr.sun_path) - 1);
+
+  if ((s = socket(AF_LOCAL, socktype, 0)) < 0) {
+    perror("socket");
+    return -1;
+  }
+
+  if (connect_nonb(s, (const struct sockaddr *) &addr, sizeof addr, 1) == 0)
+    return s;
+  else {
+    close(s);
+    return -1;
+  }
+}
+
+
+#endif
 
 /** Make a socket do nonblocking i/o.
  * \param s file descriptor of socket.
@@ -359,7 +432,7 @@ make_nonblocking(int s)
 
   if ((flags = fcntl(s, F_GETFL, 0)) == -1) {
     penn_perror("make_nonblocking: fcntl");
-#ifndef INFOSLAVE
+#ifndef SLAVE
     mush_panic("Fatal network error!");
 #else
     exit(1);
@@ -370,7 +443,7 @@ make_nonblocking(int s)
 
   if (fcntl(s, F_SETFL, flags) == -1) {
     penn_perror("make_nonblocking: fcntl");
-#ifndef INFOSLAVE
+#ifndef SLAVE
     mush_panic("Fatal network error!");
 #else
     exit(1);
@@ -396,7 +469,7 @@ make_blocking(int s)
 
   if ((flags = fcntl(s, F_GETFL, 0)) == -1) {
     penn_perror("make_blocking: fcntl");
-#ifndef INFOSLAVE
+#ifndef SLAVE
     mush_panic("Fatal network error!");
 #else
     exit(1);
@@ -406,7 +479,7 @@ make_blocking(int s)
   flags &= ~O_NDELAY;
   if (fcntl(s, F_SETFL, flags) == -1) {
     penn_perror("make_nonblocking: fcntl");
-#ifndef INFOSLAVE
+#ifndef SLAVE
     mush_panic("Fatal network error!");
 #else
     exit(1);
@@ -415,24 +488,22 @@ make_blocking(int s)
 #endif
 }
 
-#ifndef INFOSLAVE
 /** Enable TCP keepalive on the given socket if we can.
  * \param s socket.
  */
 /* ARGSUSED */
 void
-set_keepalive(int s __attribute__ ((__unused__)))
+set_keepalive(int s __attribute__ ((__unused__)), int keepidle
+              __attribute__ ((__unused__)))
 {
 #ifdef SO_KEEPALIVE
   int keepalive = 1;
-#if defined(TCP_KEEPIDLE) || defined(TCP_KEEPALIVE)
-  int keepidle = options.keepalive_timeout;
-#endif
 
   /* enable TCP keepalive */
   if (setsockopt(s, SOL_SOCKET, SO_KEEPALIVE,
                  (void *) &keepalive, sizeof(keepalive)) == -1)
-    fprintf(stderr, "[%d] could not set SO_KEEPALIVE: errno %d", s, errno);
+    fprintf(stderr, "[%d] could not set SO_KEEPALIVE: %s\n", s,
+            strerror(errno));
 
   /* And set the ping time to something reasonable instead of the
      default 2 hours. Linux and possibly others use TCP_KEEPIDLE to do
@@ -440,16 +511,17 @@ set_keepalive(int s __attribute__ ((__unused__)))
 #if defined(TCP_KEEPIDLE)
   if (setsockopt(s, IPPROTO_TCP, TCP_KEEPIDLE,
                  (void *) &keepidle, sizeof(keepidle)) == -1)
-    fprintf(stderr, "[%d] could not set TCP_KEEPIDLE: errno %d", s, errno);
+    fprintf(stderr, "[%d] could not set TCP_KEEPIDLE: %s\n", s,
+            strerror(errno));
 #elif defined(TCP_KEEPALIVE)
   if (setsockopt(s, IPPROTO_TCP, TCP_KEEPALIVE,
                  (void *) &keepidle, sizeof(keepidle)) == -1)
-    fprintf(stderr, "[%d] could not set TCP_KEEPALIVE: errno %d", s, errno);
+    fprintf(stderr, "[%d] could not set TCP_KEEPALIVE: %s\n", s,
+            strerror(errno));
 #endif
 #endif
   return;
 }
-#endif
 
 
 /** Connect a socket, possibly making it nonblocking first.
@@ -1025,8 +1097,8 @@ getnameinfo(const struct sockaddr *sa, socklen_t salen
 
 /* include ga1 */
 struct search {
-  const char *host;             /* hostname or address string */
-  int family;                   /* AF_xxx */
+  const char *host;             /**< hostname or address string */
+  int family;                   /**< AF_xxx */
 };
 
 static int ga_aistruct(struct addrinfo ***, const struct addrinfo *,

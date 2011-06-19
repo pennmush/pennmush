@@ -241,6 +241,30 @@ help_reindex(dbref player)
     do_rawlog(LT_WIZ, "Help files reindexed.");
 }
 
+/** Rebuild a single help file index. Used in inotify reindexing. 
+ * \param filename the name of the help file to reindex.
+ * \return true if a help file was reindexed, false otherwise.
+ */
+bool
+help_reindex_by_name(const char *filename)
+{
+  help_file *curr;
+  bool retval = 0;
+
+  for (curr = hash_firstentry(&help_files);
+       curr; curr = hash_nextentry(&help_files)) {
+    if (strcmp(curr->file, filename) == 0) {
+      if (curr->indx)
+        mush_free(curr->indx, "help_index");
+      curr->indx = NULL;
+      curr->entries = 0;
+      help_build_index(curr, curr->admin);
+      retval = 1;
+    }
+  }
+  return retval;
+}
+
 static void
 do_new_spitfile(dbref player, char *arg1, help_file *help_dat)
 {

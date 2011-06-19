@@ -225,10 +225,11 @@ warning_event(void *data __attribute__ ((__unused__)))
   return true;
 }
 
+/** Info on the events run for impending dbsaves */
 struct dbsave_warn_data {
-  int secs;
-  const char *event;
-  char *msg;
+  int secs;           /**< How many seconds before the dbsave to run */
+  const char *event;  /**< The name of the event to trigger */
+  char *msg;          /**< The \@config'd message to show */
 };
 
 struct dbsave_warn_data dbsave_5min =
@@ -272,6 +273,15 @@ dbsave_event(void *data __attribute__ ((__unused__)))
   return false;
 }
 
+static bool
+migrate_event(void *data __attribute__ ((__unused__)))
+{
+  migrate_stuff(CHUNK_MIGRATE_AMOUNT);
+  return false;
+}
+
+extern int file_watch_init(void);
+
 /** Handle events that may need handling.
  * This routine is polled from bsd.c. At any call, it can handle
  * the HUP and USR1 signals. At calls that are 'on the second',
@@ -280,7 +290,7 @@ dbsave_event(void *data __attribute__ ((__unused__)))
  * purge, dump, or inactivity checks.
  */
 static bool
-on_every_second(void *data __attribute__ ((__unused__)))
+check_signals(void *data __attribute__ ((__unused__)))
 {
 
   /* A HUP reloads configuration and reopens logs */
@@ -288,6 +298,7 @@ on_every_second(void *data __attribute__ ((__unused__)))
     do_rawlog(LT_ERR, "SIGHUP received: reloading .txt and .cnf files");
     config_file_startup(NULL, 0);
     config_file_startup(NULL, 1);
+    file_watch_init();
     fcache_load(NOTHING);
     help_reindex(NOTHING);
     read_access_file();
@@ -303,11 +314,14 @@ on_every_second(void *data __attribute__ ((__unused__)))
     usr1_triggered = 0;         /* But just in case */
   }
 
-  mudtime = time(NULL);
+  return false;
+}
 
+static bool
+on_every_second(void *data __attribute__ ((__unused__)))
+{
+  time(&mudtime);
   do_second();
-  migrate_stuff(CHUNK_MIGRATE_AMOUNT);
-
   return false;
 }
 
@@ -326,6 +340,10 @@ init_sys_events(void)
   reg_dbsave_warnings();
   if (DUMP_INTERVAL > 0)
     sq_register(mudtime + DUMP_INTERVAL, dbsave_event, NULL, NULL);
+  /* The chunk migration normally runs every 1 second. Slow it down a bit
+     to see what affect it has on CPU time */
+  sq_register_loop(5, migrate_event, NULL, NULL);
+  sq_register_loop(2, check_signals, NULL, NULL);
   sq_register_loop(1, on_every_second, NULL, NULL);
 }
 
@@ -500,11 +518,12 @@ sq_register_in(int n, sq_func f, void *d, const char *ev)
   sq_register(now + n, f, d, ev);
 }
 
+/** A timed event that runs on a loop */
 struct sq_loop {
-  sq_func fun;
-  void *data;
-  const char *event;
-  int secs;
+  sq_func fun;  /**< The function to run for the event */
+  void *data;   /**< The data for the event */
+  const char *event;  /**< The name of the event attr to trigger */
+  int secs;     /**< How often to run the event */
 };
 
 static bool

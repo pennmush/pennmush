@@ -3660,22 +3660,14 @@ do_who_session(dbref player, char *name)
                     Name(d->player), unparse_dbref(Location(d->player)),
                     time_format_1(now - d->connected_at),
                     time_format_2(now - d->last_time), d->cmds, d->descriptor,
-#ifdef HAS_OPENSSL
-                    d->ssl ? 'S' : ' ',
-#else
-                    ' ',
-#endif
+		    is_ssl_desc(d) ? 'S' : ' ',
                     d->input_chars, d->output_chars, d->output_size);
     } else {
       notify_format(player, "%-16s %6s %9s %5s %5d %3d%c %7lu %7lu %7d",
                     T("Connecting..."), "#-1",
                     time_format_1(now - d->connected_at),
                     time_format_2(now - d->last_time), d->cmds, d->descriptor,
-#ifdef HAS_OPENSSL
-                    d->ssl ? 'S' : ' ',
-#else
-                    ' ',
-#endif
+		    is_ssl_desc(d) ? 'S' : ' ',
                     d->input_chars, d->output_chars, d->output_size);
     }
   }

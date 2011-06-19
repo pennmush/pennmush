@@ -1,4 +1,8 @@
-/* htab.h - Structures and declarations needed for table hashing */
+/**
+ * \file htab.h
+ *
+ * \brief Structures and declarations needed for table hashing
+ */
 
 #ifndef __HTAB_H
 #define __HTAB_H
@@ -9,6 +13,7 @@ typedef struct hashtable HASHTAB;
 struct hash_bucket {
   const char *key;
   void *data;
+  int keylen;
 };
 
 /** A hash table.

@@ -449,7 +449,7 @@ slab_describe(dbref player, slab *sl)
 
 extern slab *attrib_slab, *boolexp_slab, *bvm_asmnode_slab,
   *bvm_strnode_slab, *lock_slab,
-  *command_slab, *channel_slab, *chanuser_slab, *chanlist_slab, *mail_slab,
+  *chanuser_slab, *chanlist_slab, *mail_slab,
   *text_block_slab, *function_slab, *memcheck_slab, *intmap_slab,
   *pe_reg_slab, *pe_reg_val_slab;
 
@@ -473,10 +473,8 @@ do_list_allocations(dbref player)
   slab_describe(player, bvm_asmnode_slab);
   slab_describe(player, bvm_strnode_slab);
 #endif
-  slab_describe(player, channel_slab);
   slab_describe(player, chanlist_slab);
   slab_describe(player, chanuser_slab);
-  slab_describe(player, command_slab);
   slab_describe(player, lock_slab);
   slab_describe(player, function_slab);
 #if COMPRESSION_TYPE == 1 || COMPRESSION_TYPE == 2

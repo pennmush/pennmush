@@ -1,5 +1,9 @@
-/* privtab.h */
-/* Defines a privilege table entry for general use */
+/**
+ * \file privtab.h
+ *
+ * \brief Defines a privilege table entry for general use
+ */
+
 
 #ifndef __PRIVTAB_H
 #define __PRIVTAB_H
@@ -22,10 +26,10 @@ struct priv_info {
   privbits bits_to_show;        /**< Bitflags required to see this privilege */
 };
 
-#define PrivName(x)     ((x)->name)
-#define PrivChar(x)     ((x)->letter)
-#define PrivSetBits(x)  ((x)->bits_to_set)
-#define PrivShowBits(x) ((x)->bits_to_show)
+#define PrivName(x)     ((x)->name) /**< Full name of priv */
+#define PrivChar(x)     ((x)->letter) /**< One-char abbreviation of priv */
+#define PrivSetBits(x)  ((x)->bits_to_set) /**< Bitflags required to set priv */
+#define PrivShowBits(x) ((x)->bits_to_show) /**< Bitflags required to see priv */
 
 privbits string_to_privs(PRIV *table, const char *str, privbits origprivs);
 privbits list_to_privs(PRIV *table, const char *str, privbits origprivs);

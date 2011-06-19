@@ -64,6 +64,7 @@ extern dbref find_player_by_desc(int port);
 #endif
 #endif
 
+/** \@search data */
 struct search_spec {
   dbref owner;  /**< Limit to this owner, if specified */
   int type;     /**< Limit to this type */
@@ -80,8 +81,8 @@ struct search_spec {
   int count;  /**< Limited results: return this many */
   int end;    /**< Limited results: return until this one.*/
   boolexp lock;  /**< Boolexp to check against the objects. */
-  char cmdstring[BUFFER_LEN];
-  char listenstring[BUFFER_LEN];
+  char cmdstring[BUFFER_LEN]; /**< Find objects who respond to this $-command */
+  char listenstring[BUFFER_LEN]; /**< Find objects who respond to this ^-listen */
 };
 
 static int tport_dest_ok(dbref player, dbref victim, dbref dest);
@@ -92,6 +93,7 @@ static int raw_search(dbref player, const char *owner, int nargs,
 static int fill_search_spec(dbref player, const char *owner, int nargs,
                             const char **args, struct search_spec *spec);
 static void
+
 
 
 
@@ -403,7 +405,7 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
       destination = Home(victim);
     }
   } else {
-    destination = match_result(player, to, TYPE_PLAYER, MAT_EVERYTHING);
+    destination = match_result(player, to, NOTYPE, MAT_EVERYTHING);
   }
 
   switch (destination) {
@@ -540,7 +542,7 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
 
       /* Now check the Z_TEL status of the victim's room.
        * Just like NO_TEL above, except that if the room (or its
-       * Zone Master Room, if any, is Z_TEL,
+       * Zone Master Room, if any) is Z_TEL,
        * the destination must also be a room in the same zone
        */
       if (GoodObject(Zone(absroom)) && (ZTel(absroom) || ZTel(Zone(absroom)))
@@ -579,17 +581,26 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
       return;
     } else {
       /* attempted teleport to an exit */
-      if (tport_control_ok(player, victim, Location(victim))
-          && (Tel_Anything(player) ||
-              (Tel_Anywhere(player) && (player == victim)) ||
-              (!Fixed(Owner(victim)) && !Fixed(player)))) {
-        do_move(victim, to, MOVE_NORMAL);
-      } else {
+      if (!tport_control_ok(player, victim, Location(victim))) {
         notify(player, T("Permission denied."));
         if (victim != player)
           notify_format(victim,
                         T("%s tries to impose his will on you and fails."),
                         Name(player));
+        return;
+      }
+      if (Fixed(Owner(victim)) || Fixed(player)) {
+        notify(player, T("Permission denied."));
+        return;
+      }
+      if (!Tel_Anywhere(player) && !controls(player, destination) &&
+          !nearby(player, destination) && !nearby(victim, destination)) {
+        notify(player, T("Permission denied."));
+        return;
+      } else {
+        char absdest[SBUF_LEN];
+        strcpy(absdest, tprintf("#%d", destination));
+        do_move(victim, absdest, MOVE_TELEPORT);
       }
     }
   }
@@ -771,14 +782,14 @@ do_stats(dbref player, const char *name)
  * \verbatim
  * This implements @newpassword.
  * \endverbatim
- * \param player the executor.
- * \param cause the enactor.
+ * \param executor the executor.
+ * \param enactor the enactor.
  * \param name the name of the player whose password is to be reset.
  * \param password the new password for the player.
  * \param queue_entry the queue entry the command was executed in
  */
 void
-do_newpassword(dbref player, dbref cause,
+do_newpassword(dbref executor, dbref enactor,
                const char *name, const char *password, MQUE *queue_entry)
 {
   dbref victim;
@@ -790,26 +801,26 @@ do_newpassword(dbref player, dbref cause,
 
     sp = password;
     bp = pass_eval;
-    process_expression(pass_eval, &bp, &sp, player, player, cause,
+    process_expression(pass_eval, &bp, &sp, executor, executor, enactor,
                        PE_DEFAULT, PT_DEFAULT, NULL);
     *bp = '\0';
     password = pass_eval;
   }
 
   if ((victim = lookup_player(name)) == NOTHING) {
-    notify(player, T("No such player."));
+    notify(executor, T("No such player."));
   } else if (*password != '\0' && !ok_password(password)) {
     /* Wiz can set null passwords, but not bad passwords */
-    notify(player, T("Bad password."));
-  } else if (God(victim) && !God(player)) {
-    notify(player, T("You cannot change that player's password."));
+    notify(executor, T("Bad password."));
+  } else if (God(victim) && !God(executor)) {
+    notify(executor, T("You cannot change that player's password."));
   } else {
     /* it's ok, do it */
     (void) atr_add(victim, "XYXXY", mush_crypt(password), GOD, 0);
-    notify_format(player, T("Password for %s changed."), Name(victim));
+    notify_format(executor, T("Password for %s changed."), Name(victim));
     notify_format(victim, T("Your password has been changed by %s."),
-                  Name(player));
-    do_log(LT_WIZ, player, victim, "*** NEWPASSWORD ***");
+                  Name(executor));
+    do_log(LT_WIZ, executor, victim, "*** NEWPASSWORD ***");
   }
 }
 

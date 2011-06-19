@@ -2013,14 +2013,18 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
       announceloc = Location(thing);
     }
     if (GoodObject(announceloc)) {
+      char *tbuf1, *bp;
+      bp = tbuf1 = GC_MALLOC_ATOMIC(BUFFER_LEN);
       if (!s && !was_listener && !Hearer(thing)) {
-        notify_except(announceloc, thing,
-                      tprintf(T("%s loses its ears and becomes deaf."),
-                              Name(thing)), NA_INTER_PRESENCE);
+        safe_format(tbuf1, &bp, T("%s loses its ears and becomes deaf."),
+                    Name(thing));
+        *bp = '\0';
+        notify_except(announceloc, thing, tbuf1, NA_INTER_PRESENCE);
       } else if (s && !was_hearer && !was_listener) {
-        notify_except(announceloc, thing,
-                      tprintf(T("%s grows ears and can now hear."),
-                              Name(thing)), NA_INTER_PRESENCE);
+        safe_format(tbuf1, &bp, T("%s grows ears and can now hear."),
+                    Name(thing));
+        *bp = '\0';
+        notify_except(announceloc, thing, tbuf1, NA_INTER_PRESENCE);
       }
     }
   }

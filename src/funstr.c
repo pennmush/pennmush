@@ -857,17 +857,13 @@ FUNCTION(fun_repeat)
 /* ARGSUSED */
 FUNCTION(fun_scramble)
 {
-  ansi_string *as, *dst;
+  ansi_string *as;
 
   if (!*args[0])
     return;
 
   as = parse_ansi_string(args[0]);
-  dst = scramble_ansi_string(as);
-  if (dst) {
-    free_ansi_string(as);
-    as = dst;
-  }
+  scramble_ansi_string(as);
 
   safe_ansi_string(as, 0, as->len, buff, bp);
   free_ansi_string(as);
@@ -1201,7 +1197,7 @@ FUNCTION(fun_trim)
   enum trim_style { TRIM_LEFT, TRIM_RIGHT, TRIM_BOTH } trim;
   int trim_style_arg, trim_char_arg;
   ansi_string *as;
-  int i;
+  int s, e;
   char *delims;
   char totrim[0x100];
 
@@ -1257,24 +1253,18 @@ FUNCTION(fun_trim)
    * same time we skip stuff.
    */
 
-  /* If necessary, skip over the leading stuff. */
   as = parse_ansi_string(args[0]);
+  s = 0;
+  e = as->len;
+  if (trim != TRIM_LEFT) {
+    while (e > 0 && totrim[(unsigned char) as->text[e - 1]])
+      e--;
+  }
   if (trim != TRIM_RIGHT) {
-    for (i = 0; i < as->len; i++) {
-      if (!totrim[(unsigned char) as->text[i]])
-        break;
-      as->text[i] = '\0';
-    }
+    while (s < e && totrim[(unsigned char) as->text[s]])
+      s++;
   }
-  /* Cut off the trailing stuff, if appropriate. */
-  if ((trim != TRIM_LEFT)) {
-    for (i = as->len - 1; i >= 0; i--) {
-      if (!totrim[(unsigned char) as->text[i]])
-        break;
-      as->text[i] = '\0';
-    }
-  }
-  safe_ansi_string(as, 0, as->len, buff, bp);
+  safe_ansi_string(as, s, e - s, buff, bp);
   free_ansi_string(as);
 }
 
@@ -1295,7 +1285,7 @@ FUNCTION(fun_squish)
    * never going to end up with a longer string.
    */
 
-  int i;
+  int i, j;
   char sep;
   int insep = 1;
   ansi_string *as;
@@ -1310,21 +1300,29 @@ FUNCTION(fun_squish)
    * them later.
    */
   for (i = as->len - 1; i >= 0; i--) {
-    if (as->text[i] == sep)
-      as->text[i] = '\0';
-    else
+    if (as->text[i] != sep)
       break;
   }
+  as->len = i + 1;
   /* Now trim leading and sequences */
-  for (i = 0; i < as->len; i++) {
+  for (i = 0, j = 0; i < as->len; i++) {
     if (as->text[i] == sep) {
       if (insep)
-        as->text[i] = '\0';
+        continue;
       insep = 1;
     } else {
       insep = 0;
     }
+    if (i != j) {
+      as->text[j] = as->text[i];
+      if (as->markup) {
+        as->markup[j] = as->markup[i];
+      }
+    }
+    j++;
   }
+  as->len = j;
+  as->text[j] = '\0';
   safe_ansi_string(as, 0, as->len, buff, bp);
   free_ansi_string(as);
 }
@@ -1362,7 +1360,7 @@ FUNCTION(fun_beep)
   } else
     k = 1;
 
-  if (!Hasprivs(executor) || (k <= 0) || (k > 5)) {
+  if ((k <= 0) || (k > 5)) {
     safe_str(T(e_perm), buff, bp);
     return;
   }
@@ -1454,13 +1452,15 @@ FUNCTION(fun_edit)
       search = orig->text;
       /* Find each occurrence */
       while ((ptr = strstr(search, needle)) != NULL) {
+        if ((ptr - orig->text) > orig->len)
+          break;
         /* Perform the replacement */
-        ansi_string_replace(orig, ptr - orig->text, nlen, repl);
+        if (ansi_string_replace(orig, ptr - orig->text, nlen, repl))
+          break;
         search = ptr + repl->len;
       }
     }
     free_ansi_string(repl);
-    optimize_ansi_string(orig);
   }
 
   safe_ansi_string(orig, 0, orig->len, buff, bp);
@@ -2256,4 +2256,42 @@ FUNCTION(fun_speak)
   if (end && *end)
     safe_str(end, buff, bp);
   pe_regs_free(pe_regs);
+}
+
+/* ARGSUSED */
+FUNCTION(fun_render)
+{
+  int flags = 0;
+  char *word, *list;
+
+  list = trim_space_sep(args[1], ' ');
+
+  do {
+    word = split_token(&list, ' ');
+    if (!word || !*word)
+      continue;
+    if (string_prefix("ansi", word)) {
+      if (Can_Nspemit(executor)) {
+        flags |= MSG_ANSI;
+      } else {
+        safe_str(T(e_perm), buff, bp);
+        return;
+      }
+    } else if (string_prefix("noaccents", word))
+      flags |= MSG_STRIPACCENTS;
+    else if (string_prefix("markup", word))
+      flags |= MSG_MARKUP;
+    else if (string_prefix("html", word))
+      flags |= MSG_PUEBLO;
+    else {
+      safe_str(T("#-1 INVALID SECOND ARGUMENT"), buff, bp);
+      return;
+    }
+  } while (list);
+
+  if (!flags)
+    safe_str(remove_markup(args[0], NULL), buff, bp);
+  else
+    safe_str((char *) render_string((unsigned char *) args[0], flags), buff,
+             bp);
 }

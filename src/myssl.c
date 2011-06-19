@@ -69,6 +69,7 @@ void shutdown_checkpoint(void);
 #ifdef I_UNISTD
 #include <unistd.h>
 #endif
+#include <stdio.h>
 
 #include <openssl/ssl.h>
 #include <openssl/err.h>
@@ -80,7 +81,6 @@ void shutdown_checkpoint(void);
 #include "mysocket.h"
 #include "externs.h"
 #include "myssl.h"
-#include "log.h"
 #include "parse.h"
 #include "SFMT.h"
 #include "confmagic.h"
@@ -116,7 +116,7 @@ ssl_init(char *private_key_file, char *ca_file, int req_client_cert)
 {
   const SSL_METHOD *meth;       /* If this const gives you a warning, you're
                                    using an old version of OpenSSL. Walker, this means you! */
-  unsigned char context[128];
+  /* unsigned char context[128]; */
   DH *dh;
   unsigned int reps = 1;
 
@@ -128,7 +128,9 @@ ssl_init(char *private_key_file, char *ca_file, int req_client_cert)
     bio_err = BIO_new_fp(stderr, BIO_NOCLOSE);
   }
 
-  do_rawlog(LT_ERR, "Seeding OpenSSL random number pool.");
+  lock_file(stderr);
+  fputs("Seeding OpenSSL random number pool.\n", stderr);
+  unlock_file(stderr);
   while (!RAND_status()) {
     /* At this point, a system with /dev/urandom or a EGD file in the usual
        places will have enough entropy. Otherwise, be lazy and use random numbers
@@ -144,8 +146,9 @@ ssl_init(char *private_key_file, char *ca_file, int req_client_cert)
     reps += 1;
   }
 
-  do_rawlog(LT_ERR, "Seeded after %u %s.", reps, reps > 1 ? "cycles" : "cycle");
-
+  lock_file(stderr);
+  fprintf(stderr, "Seeded after %u %s.\n", reps, reps > 1 ? "cycles" : "cycle");
+  unlock_file(stderr);
 
   /* Set up SIGPIPE handler here? */
 
@@ -199,11 +202,10 @@ ssl_init(char *private_key_file, char *ca_file, int req_client_cert)
   SSL_CTX_set_cipher_list(ctx, "ALL:ADH:RC4+RSA:+SSLv2:@STRENGTH");
 
   /* Set up session cache if we can */
-  strncpy((char *) context, MUDNAME, 128);
-  SSL_CTX_set_session_id_context(ctx, context, u_strlen(context));
-
-  /* Load hash algorithms */
-  OpenSSL_add_all_digests();
+  /*
+     strncpy((char *) context, MUDNAME, 128);
+     SSL_CTX_set_session_id_context(ctx, context, u_strlen(context));
+   */
 
   return ctx;
 }
@@ -221,12 +223,14 @@ client_verify_callback(int preverify_ok, X509_STORE_CTX * x509_ctx)
 
   X509_NAME_oneline(X509_get_subject_name(err_cert), buf, 256);
   if (!preverify_ok) {
-    do_log(LT_ERR, 0, 0, "verify error:num=%d:%s:depth=%d:%s\n", err,
-           X509_verify_cert_error_string(err), depth, buf);
+    lock_file(stderr);
+    fprintf(stderr, "verify error:num=%d:%s:depth=%d:%s\n", err,
+            X509_verify_cert_error_string(err), depth, buf);
     if (err == X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT) {
       X509_NAME_oneline(X509_get_issuer_name(x509_ctx->current_cert), buf, 256);
-      do_log(LT_ERR, 0, 0, "issuer= %s\n", buf);
+      fprintf(stderr, "issuer= %s\n", buf);
     }
+    unlock_file(stderr);
     return preverify_ok;
   }
   /* They've passed the preverification */
@@ -268,19 +272,29 @@ get_dh1024(void)
 
   dh->p = BN_bin2bn(dh1024_p, sizeof(dh1024_p), NULL);
   if (!dh->p) {
-    do_rawlog(LT_ERR, "Error in BN_bin2bn 1");
+    lock_file(stderr);
+    fputs("Error in BN_bin2bn 1!\n", stderr);
+    unlock_file(stderr);
     DH_free(dh);
     return NULL;
   }
 
   dh->g = BN_bin2bn(dh1024_g, sizeof(dh1024_g), NULL);
   if (!dh->g) {
-    do_rawlog(LT_ERR, "Error in BN_bin2bn 2");
+    lock_file(stderr);
+    fputs("Error in BN_bin2bn 2!\n", stderr);
+    unlock_file(stderr);
     DH_free(dh);
     return NULL;
   }
 
   return dh;
+}
+
+SSL *
+ssl_alloc_struct(void)
+{
+  return SSL_new(ctx);
 }
 
 /** Associate an SSL object with a socket and return it.
@@ -293,7 +307,7 @@ ssl_setup_socket(int sock)
   SSL *ssl;
   BIO *bio;
 
-  ssl = SSL_new(ctx);
+  ssl = ssl_alloc_struct();
   bio = BIO_new_socket(sock, BIO_NOCLOSE);
   BIO_set_nbio(bio, 1);
   SSL_set_bio(ssl, bio, bio);
@@ -313,8 +327,6 @@ ssl_close_connection(SSL * ssl)
   SSL_shutdown(ssl);
   SSL_free(ssl);
 }
-
-
 
 /** Given an accepted connection on the listening socket, set up SSL.
  * \param sock an accepted socket (returned by accept())
@@ -462,7 +474,9 @@ ssl_accept(SSL * ssl)
       if (SSL_get_verify_result(ssl) == X509_V_OK) {
         /* The client sent a certificate which verified OK */
         X509_NAME_oneline(X509_get_subject_name(peer), buf, 256);
-        do_log(LT_CONN, 0, 0, "SSL client certificate accepted: %s", buf);
+        lock_file(stderr);
+        fprintf(stderr, "SSL client certificate accepted: %s", buf);
+        unlock_file(stderr);
         state |= MYSSL_VERIFIED;
       }
     }
@@ -567,63 +581,12 @@ ssl_write(SSL * ssl, int state, int net_read_ready, int net_write_ready,
 static void
 ssl_errordump(const char *msg)
 {
-  fprintf(stderr, "%s\n", msg);
+  lock_file(stderr);
+  fputs(msg, stderr);
+  fputc('\n', stderr);
   ERR_print_errors(bio_err);
+  unlock_file(stderr);
 }
-
-#ifdef BROKEN
-
-/* The below were various attempts to serialize and save/restore 
- * SSL objects. It ain't pretty, and it don't work.
- */
-
-void
-ssl_write_session(FILE * fp, SSL * ssl)
-{
-  SSL_SESSION *s;
-  s = SSL_get_session(ssl);
-  PEM_write_SSL_SESSION(fp, s);
-}
-
-void
-ssl_read_session(FILE * fp)
-{
-  SSL_SESSION s;
-  PEM_read_SSL_SESSION(fp, &s, NULL, NULL);
-  SSL_CTX_add_session(ctx, &s);
-}
-
-void
-ssl_write_ssl(FILE * fp, SSL * ssl)
-{
-  BIO *bio;
-  SSL_CIPHER *cipher;
-  bio = SSL_get_rbio(ssl);
-  cipher = SSL_CIPHER_get_current_cipher(ssl);
-  fwrite(bio, sizeof(BIO), 1, fp);
-  fwrite(ssl->version, sizeof(ssl->version), 1, fp);
-  fwrite(ssl->type, sizeof(ssl->type), 1, fp);
-  fwrite(ssl->rwstate, sizeof(ssl->type), 1, fp);
-  fwrite(ssl->rstate, sizeof(ssl->type), 1, fp);
-  fwrite(ssl->state, sizeof(ssl->type), 1, fp);
-  fwrite(cipher, sizeof(cipher), 1, fp);
-}
-
-SSL *
-ssl_read_ssl(FILE * fp, int sock)
-{
-  SSL *ssl;
-  BIO *bio;
-
-  bio = BIO_new(BIO_s_socket());
-  fread(bio, sizeof(BIO), 1, fp);
-  ssl = SSL_new(ctx);
-  fread(ssl, sizeof(SSL), 1, fp);
-  SSL_set_ssl_method(ssl, SSLv23_server_method());
-  SSL_set_bio(ssl, bio, bio);
-  return ssl;
-}
-#endif                          /* BROKEN */
 
 
 #endif                          /* HAS_OPENSSL */

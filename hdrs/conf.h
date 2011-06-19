@@ -1,4 +1,9 @@
-/* conf.h */
+/**
+ * \file conf.h
+ *
+ * \brief Routines for Penn's \@config system, and options used in Penn's internals.
+ */
+
 #ifndef __PENNCONF_H
 #define __PENNCONF_H
 
@@ -15,32 +20,30 @@
 #include "mushtype.h"
 #include "htab.h"
 
-/* limit on player name length */
-#define PLAYER_NAME_LIMIT (options.player_name_len)
-/* limit on object name length */
-#define OBJECT_NAME_LIMIT 256
-/* Limit on attribute name length */
-#define ATTRIBUTE_NAME_LIMIT 1024
-/* Loose limit on command/function name length */
-#define COMMAND_NAME_LIMIT 64
+#define PLAYER_NAME_LIMIT (options.player_name_len) /**< limit on player name length */
+
+#define OBJECT_NAME_LIMIT 256 /**< limit on (non-player) object name length */
+
+#define ATTRIBUTE_NAME_LIMIT 1024 /**< Limit on attribute name length */
+
+#define COMMAND_NAME_LIMIT 64  /**< Loose limit on command/function name length */
 
 /* magic cookies */
-#define LOOKUP_TOKEN '*'
-#define NUMBER_TOKEN '#'
-#define ARG_DELIMITER '='
+#define LOOKUP_TOKEN '*'  /**< Token that denotes player name in object matching */
+#define NUMBER_TOKEN '#'  /**< Dbref token */
+#define ARG_DELIMITER '=' /**< No longer used */
 
 /* magic command cookies */
-#define SAY_TOKEN '"'
-#define POSE_TOKEN ':'
-#define SEMI_POSE_TOKEN ';'
-#define EMIT_TOKEN '\\'
-#define CHAT_TOKEN '+'
-#define NOEVAL_TOKEN ']'
+#define SAY_TOKEN '"'    /**< One-char alias for SAY command */
+#define POSE_TOKEN ':'   /**< One-char alias for POSE command */
+#define SEMI_POSE_TOKEN ';'   /**< One-char alias for SEMIPOSE command */
+#define EMIT_TOKEN '\\'   /**< One-char alias for @EMIT command */
+#define CHAT_TOKEN '+'   /**< One-char alias for @CHAT command */
+#define NOEVAL_TOKEN ']'   /**< Prefix that prevents cmd evaluation */
 
-/* delimiter for lists of exit aliases */
-#define EXIT_DELIMITER ';'
-/* delimiter for lists of player name aliases */
-#define ALIAS_DELIMITER ';'
+#define ALIAS_DELIMITER ';'  /**< Delimiter in player/exit aliases */
+/* No longer used, but kept for hackers */
+#define EXIT_DELIMITER ALIAS_DELIMITER
 
 #define QUIT_COMMAND "QUIT"
 #define WHO_COMMAND "WHO"
@@ -64,11 +67,11 @@
 #define PUEBLO_HELLO "This world is Pueblo 1.10 Enhanced.\r\n"
 
 
-/* How much pending outgoing text can be queued up on a socket before
+/** How much pending outgoing text can be queued up on a socket before
  * the dreaded 'Output flushed' message shows up? Used to be 16k, now 1m.
  */
 #define MAX_OUTPUT (1024*1024)
-/* How much output buffer space must be left before we flush the
+/** How much output buffer space must be left before we flush the
  * buffer? Reportedly, using '0' fixes problems with Win32 port,
  * and may be more efficient in network use. Using (MAX_OUTPUT / 2)
  * is how it's been done in the past. You get to pick.
@@ -79,8 +82,6 @@
 #define COMMAND_BURST_SIZE 100  /* commands allowed per user in a burst */
 #define COMMANDS_PER_TIME 1     /* commands per time slice after burst */
 
-
-/* From conf.c */
 
 /* From conf.c */
 bool config_file_startup(const char *conf, int restrictions);
@@ -103,8 +104,7 @@ typedef int (*config_func) (const char *opt, const char *val, void *loc,
  */
 typedef struct confparm {
   const char *name;             /**< name of option. */
-  /** the function handler. */
-  config_func handler;
+  config_func handler;          /**< the function handler. */
   void *loc;                    /**< place to put this option. */
   int max;                      /**< max: string length, integer value. */
   int flags;                    /**< Has the default been overridden? */
@@ -121,6 +121,7 @@ struct options_table {
   char mud_url[256];   /**< The name of the mush */
   int port;             /**< The port to listen for connections */
   int ssl_port;         /**< The port to listen for SSL connections */
+  char socket_file[256];  /**< The socket filename to use for SSL slave */
   char input_db[256];   /**< Name of the input database file */
   char output_db[256];  /**< Name of the output database file */
   char crash_db[256];   /**< Name of the panic database file */
@@ -292,10 +293,15 @@ struct options_table {
 };
 
 typedef struct mssp MSSP;
+/** MUD Server Status Protocol options
+ * Holds various bits of information about the MUSH which can be
+ * collected by bots/crawlers. See http://tintin.sourceforge.net/mssp/
+ * for details. Linked list.
+ */
 struct mssp {
-  char *name;
-  char *value;
-  MSSP *next;
+  char *name;  /**< Name of the MSSP option */
+  char *value; /**< Value of the MSSP option */
+  MSSP *next;  /**< Pointer to next MSSP option in linked list */
 };
 
 extern OPTTAB options;
@@ -323,9 +329,9 @@ int cf_time(const char *opt, const char *val, void *loc, int maxval,
             int from_cmd);
 
 /* Config group viewing permissions */
-#define CGP_GOD         0x1
-#define CGP_WIZARD      0x3
-#define CGP_ADMIN       0x7
+#define CGP_GOD         0x1  /**< Config group can only be seen by God */
+#define CGP_WIZARD      0x3  /**< Config group can only be seen by Wizards */
+#define CGP_ADMIN       0x7  /**< Config group can only be seen by Wiz/Roy */
 #define Can_View_Config_Group(p,g) \
         (!(g->viewperms) || (God(p) && (g->viewperms & CGP_GOD)) || \
          (Wizard(p) && (g->viewperms & CGP_WIZARD)) || \
@@ -473,10 +479,14 @@ int can_view_config_option(dbref player, PENNCONF *opt);
 
 typedef struct globals_table GLOBALTAB;
 
+/** State of the MUSH
+ * There is only ever one instance of this struct, which holds
+ * info on the current state of the MUSH in memory
+ */
 struct globals_table {
-  int database_loaded;         /**< True after the database has been read. */
-  char dumpfile[200];             /**< File name to dump database to */
-  time_t start_time;              /**< MUSH start time (since process exec'd) */
+  int database_loaded;        /**< True after the database has been read. */
+  char dumpfile[200];         /**< File name to dump database to */
+  time_t start_time;          /**< MUSH start time (since process exec'd) */
   time_t first_start_time;    /**< MUSH start time (since last shutdown) */
   time_t last_dump_time;      /**< Time of last successful db save */
   int reboot_count;           /**< Number of reboots so far */

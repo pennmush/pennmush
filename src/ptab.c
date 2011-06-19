@@ -377,33 +377,33 @@ ptab_insert_one(PTAB *tab, const char *key, void *data)
  * This function resets the 'current' index in the ptab to the start
  * of the table.
  * \param tab pointer to a ptab.
- * \param key memory location to store first key unless NULL is passed in.
+ * \param key If non-NULL, is set to the entry's key name.
  * \return void pointer to data from first entry, or NULL if none.
  */
 void *
-ptab_firstentry_new(PTAB *tab, char *key)
+ptab_firstentry_new(PTAB *tab, const char **key)
 {
   if (!tab || tab->len == 0)
     return NULL;
   tab->current = 1;
   if (key)
-    strcpy(key, tab->tab[0]->key);
+    *key = tab->tab[0]->key;
   return tab->tab[0]->data;
 }
 
 /** Return the data (and optionally the key) of the next entry in a ptab.
  * This function increments the 'current' index in the ptab.
  * \param tab pointer to a ptab.
- * \param key memory location to store next key unless NULL is passed in.
+ * \param key If non-NULL, is set to the entry's key name.
  * \return void pointer to data from next entry, or NULL if none.
  */
 void *
-ptab_nextentry_new(PTAB *tab, char *key)
+ptab_nextentry_new(PTAB *tab, const char **key)
 {
   if (!tab || tab->current >= tab->len)
     return NULL;
   if (key)
-    strcpy(key, tab->tab[tab->current]->key);
+    *key = tab->tab[tab->current]->key;
   return tab->tab[tab->current++]->data;
 }
 

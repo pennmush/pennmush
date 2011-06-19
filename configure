@@ -600,6 +600,7 @@ ac_includes_default="\
 #endif"
 
 ac_subst_vars='LTLIBOBJS
+SSL_SLAVE_TARGET
 INFO_SLAVE_TARGET
 LIBOBJS
 SQLITE3_VERSION
@@ -707,6 +708,7 @@ with_sqlite3
 enable_ipv6
 enable_nls
 enable_info_slave
+enable_ssl_slave
 enable_sse2
 enable_sse3
 enable_altivec
@@ -1343,6 +1345,8 @@ Optional Features:
   --disable-ipv6          Don't use IPv6 networking
   --disable-nls           Don't use message-translation
   --disable-info_slave    Don't use a separate process for hostname lookups
+  --enable-ssl_slave      Use a seperate process for SSL connections that will
+                          persist across restarts. (Experimental. Unix-only.)
   --enable-sse2           Use SSE2 instructions (Requires a CPU that supports
                           SSE2)
   --enable-sse3           Use SSE3 instructions (Requires a CPU that supports
@@ -4095,7 +4099,7 @@ fi
 
 
 
-if test "${PERL+set}" != "set"; then
+if test -z "${PERL}"; then
    as_fn_error $? "perl is required to build and run PennMUSH" "$LINENO" 5
 fi
 
@@ -4384,9 +4388,9 @@ fi
 # and custom CFLAGS aren't being used.
 # Todo: Look into the warnings setting macros in the autoconf archive,
 # maybe use them instead?
-if test $DEFAULT_CFLAGS = yes; then
- if test "${GDB+set}" = "set"; then
-  if test "${ac_cv_c_compiler_gnu+set}" = "set"; then
+if test "${DEFAULT_CFLAGS}" = yes; then
+ if test -n "${GDB}"; then
+  if test "${ac_cv_c_compiler_gnu}" = yes; then
 CFLAGS="-ggdb $CFLAGS -W -Wall -pedantic -Wno-comment"
    else
 CFLAGS="-g $CFLAGS -W"
@@ -4997,11 +5001,11 @@ fi
 esac
 
 
-if test "${CTAGS+set}" != "set" -a "${EXCTAGS+set}" = "set"; then
+if test -z "${CTAGS}" -a -n "${EXCTAGS}"; then
 	CTAGS=$EXCTAGS
 fi
 
-if test "${ETAGS+set}" != "set" -a "${EXCTAGS+set}" = "set"; then
+if test -z "${ETAGS}" -a -n "${EXCTAGS}"; then
 	ETAGS="$EXCTAGS -e"
 fi
 
@@ -5045,7 +5049,7 @@ $as_echo "no" >&6; }
 fi
 
 
-if test "${UPTIME+set}" = "set"; then
+if test -n "${UPTIME}"; then
  $as_echo "#define HAVE_UPTIME 1" >>confdefs.h
 
  cat >>confdefs.h <<_ACEOF
@@ -5095,7 +5099,7 @@ $as_echo "no" >&6; }
 fi
 
 
-if test "${SENDMAIL+set}" = "set"; then
+if test -n "${SENDMAIL}"; then
  $as_echo "#define HAVE_SENDMAIL 1" >>confdefs.h
 
  cat >>confdefs.h <<_ACEOF
@@ -5145,7 +5149,7 @@ $as_echo "no" >&6; }
 fi
 
 
-if test "${ED+set}" = "set"; then
+if test -n "${ED}"; then
    $as_echo "#define HAVE_ED 1" >>confdefs.h
 
    cat >>confdefs.h <<_ACEOF
@@ -5882,12 +5886,13 @@ fi
 
 done
 
-for ac_header in zlib.h
+for ac_header in zlib.h event.h event2/dns.h sys/prctl.h
 do :
-  ac_fn_c_check_header_mongrel "$LINENO" "zlib.h" "ac_cv_header_zlib_h" "$ac_includes_default"
-if test "x$ac_cv_header_zlib_h" = xyes; then :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
   cat >>confdefs.h <<_ACEOF
-#define HAVE_ZLIB_H 1
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
 _ACEOF
 
 fi
@@ -6929,6 +6934,95 @@ _ACEOF
 
 fi
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for event_base_loop in -levent" >&5
+$as_echo_n "checking for event_base_loop in -levent... " >&6; }
+if ${ac_cv_lib_event_event_base_loop+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-levent  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char event_base_loop ();
+int
+main ()
+{
+return event_base_loop ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_event_event_base_loop=yes
+else
+  ac_cv_lib_event_event_base_loop=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_event_event_base_loop" >&5
+$as_echo "$ac_cv_lib_event_event_base_loop" >&6; }
+if test "x$ac_cv_lib_event_event_base_loop" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBEVENT 1
+_ACEOF
+
+  LIBS="-levent $LIBS"
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for bufferevent_openssl_socket_new in -levent_openssl" >&5
+$as_echo_n "checking for bufferevent_openssl_socket_new in -levent_openssl... " >&6; }
+if ${ac_cv_lib_event_openssl_bufferevent_openssl_socket_new+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-levent_openssl  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char bufferevent_openssl_socket_new ();
+int
+main ()
+{
+return bufferevent_openssl_socket_new ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_event_openssl_bufferevent_openssl_socket_new=yes
+else
+  ac_cv_lib_event_openssl_bufferevent_openssl_socket_new=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_event_openssl_bufferevent_openssl_socket_new" >&5
+$as_echo "$ac_cv_lib_event_openssl_bufferevent_openssl_socket_new" >&6; }
+if test "x$ac_cv_lib_event_openssl_bufferevent_openssl_socket_new" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBEVENT_OPENSSL 1
+_ACEOF
+
+  LIBS="-levent_openssl $LIBS"
+
+fi
 
 
 # Check whether --enable-zlib was given.
@@ -8078,7 +8172,7 @@ _ACEOF
 fi
 done
 
-for ac_func in fcntl pselect poll ppoll pollts kqueue epoll_ctl inotify_init
+for ac_func in fcntl pselect poll ppoll pollts kqueue epoll_ctl inotify_init inotify_init1
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -8090,7 +8184,7 @@ _ACEOF
 fi
 done
 
-for ac_func in pread pwrite
+for ac_func in pread pwrite prctl
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -8606,6 +8700,18 @@ if test "$enable_info_slave" = yes; then
 
 fi
 
+# Check whether --enable-ssl_slave was given.
+if test "${enable_ssl_slave+set}" = set; then :
+  enableval=$enable_ssl_slave;
+fi
+
+if test "$enable_ssl_slave" = yes -a "$HAVE_SSL" = yes; then
+   SSL_SLAVE_TARGET=ssl_slave
+
+   $as_echo "#define SSL_SLAVE 1" >>confdefs.h
+
+fi
+
 # Check whether --enable-sse2 was given.
 if test "${enable_sse2+set}" = set; then :
   enableval=$enable_sse2;
@@ -8673,6 +8779,11 @@ fi
 
 if test "$HAVE_SSL" = yes; then
  echo "* SSL support: Yes"
+ if test "$enable_ssl_slave" = yes; then
+    echo "* SSL connections will be maintained across restarts."
+ else
+    echo "* SSL connections will not persist across restarts."
+ fi
 else
  echo "* SSL support: No"
 fi

@@ -3,6 +3,7 @@
  *
  * \brief Matching of object names.
  *
+ * \verbatim
  * These are the PennMUSH name-matching routines, fully re-entrant.
  *  match_result_relative(who,where,name,type,flags) return match, AMBIGUOUS or NOTHING
  *  match_result(who,name,type,flags) - return match, AMBIGUOUS, or NOTHING
@@ -47,6 +48,7 @@
  * MAT_LIMITED          - absolute,player,neighbor
  * MAT_CONTENTS         - only match objects located inside 'where'
  * MAT_OBJ_CONTENTS     - possession,player,absolute,english,contents
+ * \endverbatim
  */
 
 #include "copyrite.h"
@@ -417,11 +419,11 @@ match_result_internal(dbref who, dbref where, const char *xname, int type,
   }
 
   while (1) {
-    if (goodwhere
-        && ((flags & MAT_POSSESSION) || (flags & MAT_REMOTE_CONTENTS))) {
+    if (goodwhere && ((flags & (MAT_POSSESSION | MAT_REMOTE_CONTENTS)))) {
       MATCH_LIST(Contents(where));
     }
-    if (GoodObject(loc) && (flags & MAT_NEIGHBOR) && !(flags & MAT_CONTENTS)) {
+    if (GoodObject(loc) && (flags & MAT_NEIGHBOR) && !(flags & MAT_CONTENTS)
+        && loc != where) {
       MATCH_LIST(Contents(loc));
     }
     if ((type & TYPE_EXIT) || !(flags & MAT_TYPE)) {

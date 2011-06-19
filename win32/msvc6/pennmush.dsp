@@ -392,10 +392,6 @@ SOURCE=..\..\src\htab.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\ident.c
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\src\local.c
 # End Source File
 # Begin Source File

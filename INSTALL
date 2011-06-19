@@ -33,8 +33,9 @@ running MUSH are in the "game" directory, which includes
 subdirectories "data" (current databases), "txt" (text files and
 directories for building them), "log" (log files), and "save" (backup
 databases).  Finally, the "hints" directory is used during the
-installation process, the "po" directory holds translation message
-files.
+installation process, the "test" directory contains an automated
+regression testing suite, and the "po" directory holds translation
+message files.
 
  pennmush--+-> src
            +-> hdrs 
@@ -49,6 +50,7 @@ files.
            +-> hints 
            +-> po
            +-> utils 
+           +-> test
            \-> win32 
                
 
@@ -105,7 +107,9 @@ B. Installation from source
        b. --disable-nls: Turn off translation support if you don't need it.
        c. --disable-info_slave: Don't use an external process to do hostname
           lookups. This option is required on Windows.
-       c. --help: See all options.       
+       d. --enable-ssl_slave: Turn on an experimental proxy for keeping SSL
+          connections alive across reboots. See README.SSL for details.
+       e. --help: See all options.       
 
        Environment variables to customize search paths:
        CPPFLAGS=-I/path/to/extra/headers
@@ -133,7 +137,6 @@ Edit the file. It's liberally commented.
 
 Also, cp game/mushcnf.dst to game/mush.cnf and edit. 
 
-
 You should not need to change any of the other header files.
 
 4. Do a "make install". This will build all the necessary files, and
@@ -149,14 +152,13 @@ This is probably broken.
 
 6. Read game/README and follow those instructions. 
 
-A final thing you may want to think about is compiling announce.c or
-portmsg.c. These are port announcers; if your MUSH ever goes down, you
+A final thing you may want to think about is compiling portmsg.c (make
+portmsg). This is a port announcer; if your MUSH ever goes down, you
 can set one up, and a message will be given to a person attempting to
-connect to that port.  Read that file for details. It is not an
-official MUSH piece of code; rather, it is a freely distributable
-program available via anonymous FTP that is included in this code
-because it happens to be fairly useful.  Javelin suggests using
-portmsg - it appears to be more stable.
+connect to that port.  Read the comments in src/portmsg.c for
+details. It is not an official MUSH piece of code; rather, it is a
+freely distributable program available via anonymous FTP that is
+included in this code because it happens to be fairly useful.
 
 ============================================================================
 

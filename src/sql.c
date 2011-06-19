@@ -3,6 +3,7 @@
  *
  * \brief Code to support PennMUSH connection to SQL databases.
  *
+ * \verbatim
  * Each sql database we support must define its own set of the
  * following functions:
  *
@@ -22,6 +23,7 @@
  *  fun_mapsql
  *  cmd_sql
  *
+ * \endverbatim
  */
 
 #include "copyrite.h"
@@ -418,7 +420,7 @@ COMMAND(cmd_mapsql)
     goto finished;
   }
 
-  pe_regs = pe_regs_create(PE_REGS_ARG, "cmd_mapsql");
+  pe_regs = pe_regs_create(PE_REGS_ARG | PE_REGS_Q, "cmd_mapsql");
   for (rownum = 0; rownum < numrows; rownum++) {
 #ifdef HAVE_MYSQL
     MYSQL_ROW row_p = NULL;
@@ -484,6 +486,7 @@ COMMAND(cmd_mapsql)
       for (i = 0; i < (numfields + 1) && i < 10; i++) {
         pe_regs_setenv(pe_regs, i, cells[i]);
       }
+      pe_regs_qcopy(pe_regs, queue_entry->pe_info->regvals);
       queue_attribute_base(thing, s, executor, 0, pe_regs);
     } else {
       /* What to do if there are no fields? This should be an error?. */

@@ -173,6 +173,7 @@ See also: PARENTS, ORPHAN
 & ANONYMOUS ATTRIBUTES
 & LAMBDA
 & #LAMBDA
+& #APPLY
   In many cases where a function expects a object/attribute pair that
   refers to an attribute to evaluate, you can use the form
 
@@ -181,6 +182,13 @@ See also: PARENTS, ORPHAN
   instead, and the code will be treated as an attribute's body.  The
   code will normally be parsed twice, so special characters should be
   escaped where needed.
+
+  If the #lambda just calls another function, the form
+
+  #apply[<number of arguments>]/<function name>
+
+  can be used instead. If the argument count is left out, it defaults
+  to 1.
 
   These anonymous attributes should be used for short and simple
   pieces of code. Anything long or complicated should go in an actual
@@ -195,6 +203,10 @@ See also: PARENTS, ORPHAN
 
   > say map(#lambda/name(\%0), #3 #12 #23)
   You say, "Joe Robert Sally"
+  
+  The following version uses #apply instead:
+
+  > say map(#apply/name, #3 #12 #23)
 
   Because the code is parsed twice, you can actually build parts of it
   in place, which is very convenient. Consider this implementation of
@@ -211,7 +223,7 @@ See also: PARENTS, ORPHAN
   called by filter(). However, this can lead to problems with
   evaluating un-trusted code. Use decompose() where neccessary.
 
-  See 'HELP ANONYMOUS3' for another example.
+  See 'HELP ANONYMOUS3' for more examples.
 & ANONYMOUS3
 & LAMBDA3
 & #LAMBDA3
@@ -228,6 +240,12 @@ See also: PARENTS, ORPHAN
   special characters. However, it also makes it harder to build the
   code string on the fly. Use what's most appropriate.
      
+  Finally, a multiple argument example of #apply, which requires less
+  escaping than #lambda for cases where you're just calling another
+  function:
+
+  > think mix(#apply2/ansi, r g b, foo bar baz)
+
   See 'HELP ANONYMOUS4' for a list of functions that support anonymous
   attributes.
 & ANONYMOUS4
@@ -546,16 +564,16 @@ See also: objid(), @lock-objid, DBREFS
   the drop-to location, rather than staying in the room. Any STICKY
   object dropped in the room will go to its home.
 
-  If the room is set STICKY, objects dropped in the room will stay there 
-  until the last player leaves, at which point they will be transported 
-  as described above.
+  If the room is set STICKY, objects will stay in the room until the
+  last player leaves or disconnects, at which point they will be
+  transported as described above.
+
+  Drop-tos work on things and players alike.
 
   If the room has a @lock/dropto set on it, only objects that pass the
   lock will be transported (either immediately or when the last player
   leaves if the room is STICKY). This can be used to prevent the
   dropto from acting on, say, objects containing connected players.
-
-  Drop-tos are useful for keeping rooms uncluttered. 
 
 See also: @link, STICKY, LINK_OK, @lock
 & %#
@@ -1131,7 +1149,7 @@ See also: @parent, $-COMMANDS, ATTRIBUTES, ANCESTORS, ORPHAN, pfun()
 & POWERS LIST2
   no_pay *              Doesn't need money for anything
   no_quota *            Has an unlimited quota
-  open_anywhere         Can @open a link from any room.
+  open_anywhere         Can @open an exit from any room.
   pemit_all             Can @pemit to HAVEN/ulocked players.
   player_create         Can use @pcreate command.
   poll                  Can use @poll command.
@@ -1146,6 +1164,7 @@ See also: @parent, $-COMMANDS, ATTRIBUTES, ANCESTORS, ORPHAN, pfun()
   tport_anywhere        Can @teleport to anywhere.
   unkillable *          Cannot be killed
   can_spoof             Can use @ns*emit, ns*emit() and @*emit/spoof
+  can_dark              Can @set themselves dark
   
   * When these powers are set on a player, all the objects they own which
     are not set MISTRUST are also considered to have the power.

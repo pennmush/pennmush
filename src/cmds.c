@@ -121,14 +121,7 @@ COMMAND(cmd_break)
   if (parse_boolean(arg_left)) {
     queue_entry->queue_type |= QUEUE_BREAK;
     if (arg_right && *arg_right) {
-      char break_cmd[BUFFER_LEN];
-      char const *sp = arg_right;
-      char *bp = break_cmd;
-      process_expression(break_cmd, &bp, &sp,
-                         executor, caller, enactor,
-                         PE_COMMAND_BRACES, PT_DEFAULT, NULL);
-      *bp++ = '\0';
-      new_queue_actionlist(executor, enactor, caller, break_cmd, queue_entry,
+      new_queue_actionlist(executor, enactor, caller, arg_right, queue_entry,
                            PE_INFO_SHARE, QUEUE_INPLACE, NULL);
     }
   }
@@ -139,14 +132,7 @@ COMMAND(cmd_assert)
   if (!parse_boolean(arg_left)) {
     queue_entry->queue_type |= QUEUE_BREAK;
     if (arg_right && *arg_right) {
-      char break_cmd[BUFFER_LEN];
-      char const *sp = arg_right;
-      char *bp = break_cmd;
-      process_expression(break_cmd, &bp, &sp,
-                         executor, caller, enactor,
-                         PE_COMMAND_BRACES, PT_DEFAULT, NULL);
-      *bp++ = '\0';
-      new_queue_actionlist(executor, enactor, caller, break_cmd, queue_entry,
+      new_queue_actionlist(executor, enactor, caller, arg_right, queue_entry,
                            PE_INFO_SHARE, QUEUE_INPLACE, NULL);
     }
   }
@@ -368,9 +354,16 @@ COMMAND(cmd_dump)
 
 COMMAND(cmd_edit)
 {
-  do_gedit(executor, arg_left, args_right,
-           SW_ISSET(sw, SWITCH_FIRST) ? EDIT_FIRST : EDIT_ALL,
-           SW_ISSET(sw, SWITCH_CHECK) ? 0 : 1);
+  int type = EDIT_DEFAULT;
+
+  if (SW_ISSET(sw, SWITCH_FIRST))
+    type |= EDIT_FIRST;
+  if (SW_ISSET(sw, SWITCH_CHECK))
+    type |= EDIT_CHECK;
+  if (SW_ISSET(sw, SWITCH_QUIET))
+    type |= EDIT_QUIET;
+
+  do_gedit(executor, arg_left, args_right, type);
 }
 
 COMMAND(cmd_elock)
@@ -382,6 +375,7 @@ COMMAND(cmd_emit)
 {
   int spflags = (!strcmp(cmd->name, "@NSEMIT")
                  && Can_Nspemit(executor) ? PEMIT_SPOOF : 0);
+
   SPOOF(executor, enactor, sw);
 
   if (SW_ISSET(sw, SWITCH_ROOM))
@@ -823,11 +817,10 @@ COMMAND(cmd_message)
 {
   char *message;
   char *attrib;
-  unsigned int flags = 0;
+  unsigned int flags = PEMIT_LIST;
   int numargs, i;
   char *args[10];
-
-  SPOOF(executor, enactor, sw);
+  enum emit_type type;
 
   for (numargs = 1; args_right[numargs] && numargs < 13; numargs++) ;
 
@@ -844,6 +837,16 @@ COMMAND(cmd_message)
     return;
   }
 
+  if (SW_ISSET(sw, SWITCH_REMIT))
+    type = EMIT_REMIT;
+  else if (SW_ISSET(sw, SWITCH_OEMIT))
+    type = EMIT_OEMIT;
+  else
+    type = EMIT_PEMIT;
+
+  if (SW_ISSET(sw, SWITCH_NOSPOOF) && Can_Nspemit(executor))
+    flags |= PEMIT_SPOOF;
+
   message = args_right[1];
   attrib = args_right[2];
 
@@ -851,7 +854,9 @@ COMMAND(cmd_message)
     args[i] = args_right[i + 3];
   }
 
-  do_message_list(executor, enactor, arg_left, attrib, message, flags, i, args);
+  SPOOF(executor, enactor, sw);
+
+  do_message(executor, arg_left, attrib, message, type, flags, i, args);
 }
 
 COMMAND(cmd_motd)
@@ -895,7 +900,7 @@ COMMAND(cmd_oemit)
   int spflags = (!strcmp(cmd->name, "@NSOEMIT")
                  && Can_Nspemit(executor) ? PEMIT_SPOOF : 0);
   SPOOF(executor, enactor, sw);
-  do_oemit_list(executor, arg_left, arg_right, spflags);
+  do_oemit_list(executor, arg_left, arg_right, spflags, NULL);
 }
 
 COMMAND(cmd_open)
@@ -934,26 +939,32 @@ COMMAND(cmd_pemit)
     return;
   }
 
-  SPOOF(executor, enactor, sw);
-
   if (!strcmp(cmd->name, "@NSPEMIT") && Can_Nspemit(executor))
     flags |= PEMIT_SPOOF;
-  if (SW_ISSET(sw, SWITCH_LIST))
-    do_pemit_list(executor, arg_left, arg_right, flags);
-  else if (SW_ISSET(sw, SWITCH_CONTENTS))
-    do_remit(executor, arg_left, arg_right, flags);
-  else
-    do_pemit(executor, arg_left, arg_right, flags);
+
+  SPOOF(executor, enactor, sw);
+
+  if (SW_ISSET(sw, SWITCH_CONTENTS)) {
+    do_remit(executor, arg_left, arg_right, flags, NULL);
+    return;
+  }
+  if (SW_ISSET(sw, SWITCH_LIST)) {
+    flags |= PEMIT_LIST;
+    if (!SW_ISSET(sw, SWITCH_NOISY))
+      flags |= PEMIT_SILENT;
+  }
+  do_pemit(executor, arg_left, arg_right, flags, NULL);
 }
 
 COMMAND(cmd_prompt)
 {
-  int flags = SILENT_OR_NOISY(sw, SILENT_PEMIT) | PEMIT_PROMPT;
-  SPOOF(executor, enactor, sw);
+  int flags = SILENT_OR_NOISY(sw, SILENT_PEMIT) | PEMIT_PROMPT | PEMIT_LIST;
 
   if (!strcmp(cmd->name, "@NSPEMIT") && Can_Nspemit(executor))
     flags |= PEMIT_SPOOF;
-  do_pemit_list(executor, arg_left, arg_right, flags);
+
+  SPOOF(executor, enactor, sw);
+  do_pemit(executor, arg_left, arg_right, flags, NULL);
 }
 
 COMMAND(cmd_poll)
@@ -999,7 +1010,7 @@ COMMAND(cmd_ps)
   else if (SW_ISSET(sw, SWITCH_QUICK))
     do_queue(executor, arg_left, QUEUE_QUICK);
   else if (arg_left && *arg_left && is_uinteger(arg_left))
-    do_queue_single(executor, arg_left);
+    do_queue_single(executor, arg_left, SW_ISSET(sw, SWITCH_DEBUG));
   else
     do_queue(executor, arg_left, QUEUE_NORMAL);
 }
@@ -1027,13 +1038,14 @@ COMMAND(cmd_readcache)
 COMMAND(cmd_remit)
 {
   int flags = SILENT_OR_NOISY(sw, SILENT_PEMIT);
-  SPOOF(executor, enactor, sw);
 
   if (SW_ISSET(sw, SWITCH_LIST))
     flags |= PEMIT_LIST;
   if (!strcmp(cmd->name, "@NSREMIT") && Can_Nspemit(executor))
     flags |= PEMIT_SPOOF;
-  do_remit(executor, arg_left, arg_right, flags);
+
+  SPOOF(executor, enactor, sw);
+  do_remit(executor, arg_left, arg_right, flags, NULL);
 }
 
 COMMAND(cmd_rejectmotd)
@@ -1226,7 +1238,7 @@ COMMAND(cmd_include)
 
 COMMAND(cmd_trigger)
 {
-  do_trigger(executor, arg_left, args_right);
+  do_trigger(executor, arg_left, args_right, queue_entry);
 }
 
 COMMAND(cmd_ulock)
@@ -1264,7 +1276,7 @@ COMMAND(cmd_uunlock)
 
 COMMAND(cmd_verb)
 {
-  do_verb(executor, enactor, arg_left, args_right);
+  do_verb(executor, enactor, arg_left, args_right, queue_entry);
 }
 
 COMMAND(cmd_version)
@@ -1489,7 +1501,7 @@ COMMAND(cmd_slay)
 
 COMMAND(cmd_think)
 {
-  do_think(executor, arg_left);
+  notify(executor, arg_left);
 }
 
 COMMAND(cmd_whisper)

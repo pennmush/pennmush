@@ -214,7 +214,7 @@ FUNCTION(fun_munge)
    * routines.
    */
 
-  strcpy(list1, args[1]);
+  strcpy(list1, remove_markup(args[1], NULL));
 
   /* Break up the two lists into their respective elements. */
 
@@ -227,7 +227,7 @@ FUNCTION(fun_munge)
 
   if (!ptrs1 || !ptrs2)
     mush_panic("Unable to allocate memory in fun_munge");
-  nptrs1 = list2arr_ansi(ptrs1, MAX_SORTSIZE, args[1], sep, 1);
+  nptrs1 = list2arr_ansi(ptrs1, MAX_SORTSIZE, list1, sep, 1);
   nptrs2 = list2arr_ansi(ptrs2, MAX_SORTSIZE, args[2], sep, 1);
   memcpy(ptrs3, ptrs2, MAX_SORTSIZE * sizeof(char *));
 
@@ -242,12 +242,13 @@ FUNCTION(fun_munge)
   }
 
   /* Call the user function */
-  lp = list1;
+  lp = args[1];
   pe_regs = pe_regs_create(PE_REGS_ARG, "fun_munge");
   pe_regs_setenv_nocopy(pe_regs, 0, lp);
   pe_regs_setenv_nocopy(pe_regs, 1, isep);
   call_ufun(&ufun, rlist, executor, enactor, pe_info, pe_regs);
   pe_regs_free(pe_regs);
+  strcpy(rlist, remove_markup(rlist, NULL));
 
   /* Now that we have our result, put it back into array form. Search
    * through list1 until we find the element position, then copy the
@@ -288,7 +289,6 @@ FUNCTION(fun_elements)
   /* Given a list and a list of numbers, return the corresponding
    * elements of the list. elements(ack bar eep foof yay,2 4) = bar foof
    * A separator for the first list is allowed.
-   * This code modified slightly from the Tiny 2.2.1 distribution
    */
   int nwords, cur;
   char **ptrs;
@@ -630,7 +630,7 @@ FUNCTION(fun_sort)
   int nptrs;
   SortType sort_type;
   char sep;
-  char outsep[BUFFER_LEN];
+  char *osep, osepd[2] = { '\0', '\0' };
 
   if (!nargs || !*args[0])
     return;
@@ -639,15 +639,15 @@ FUNCTION(fun_sort)
     return;
 
   if (nargs < 4) {
-    outsep[0] = sep;
-    outsep[1] = '\0';
+    osepd[0] = sep;
+    osep = osepd;
   } else
-    strcpy(outsep, args[3]);
+    osep = args[3];
 
   nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, args[0], sep, 1);
   sort_type = get_list_type(args, nargs, 2, ptrs, nptrs);
   do_gensort(executor, ptrs, NULL, nptrs, sort_type);
-  arr2list(ptrs, nptrs, buff, bp, outsep);
+  arr2list(ptrs, nptrs, buff, bp, osep);
   freearr(ptrs, nptrs);
 }
 
@@ -660,7 +660,7 @@ FUNCTION(fun_sortkey)
   SortType sort_type;
   PE_REGS *pe_regs;
   char sep;
-  char outsep[BUFFER_LEN];
+  char *osep, osepd[2] = { '\0', '\0' };
   int i;
   char result[BUFFER_LEN];
   ufun_attrib ufun;
@@ -674,10 +674,10 @@ FUNCTION(fun_sortkey)
     return;
 
   if (nargs < 5) {
-    outsep[0] = sep;
-    outsep[1] = '\0';
+    osepd[0] = sep;
+    osep = osepd;
   } else
-    strcpy(outsep, args[4]);
+    osep = args[4];
 
   /* find our object and attribute */
   if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
@@ -698,7 +698,7 @@ FUNCTION(fun_sortkey)
 
   sort_type = get_list_type(args, nargs, 3, keys, nptrs);
   do_gensort(executor, keys, ptrs, nptrs, sort_type);
-  arr2list(ptrs, nptrs, buff, bp, outsep);
+  arr2list(ptrs, nptrs, buff, bp, osep);
   freearr(ptrs, nptrs);
   for (i = 0; i < nptrs; i++) {
     mush_free(keys[i], "sortkey");
@@ -2234,10 +2234,10 @@ FUNCTION(fun_map)
 
   /* Build our %0 args */
   pe_regs = pe_regs_create(PE_REGS_ARG, "fun_map");
+  pe_regs_setenv_nocopy(pe_regs, 1, place);
   for (i = 0; i < nptrs; i++) {
     pe_regs_setenv_nocopy(pe_regs, 0, ptrs[i]);
     snprintf(place, 16, "%d", i + 1);
-    pe_regs_setenv_nocopy(pe_regs, 1, place);
 
     funccount = pe_info->fun_invocations;
 
@@ -2881,7 +2881,8 @@ FUNCTION(fun_regrab)
   int offsets[99];
   int flags = 0, all = 0;
   char *osep, osepd[2] = { '\0', '\0' };
-
+  char **ptrs;
+  int nptrs, i;
   if (!delim_check(buff, bp, nargs, args, 3, &sep))
     return;
 
@@ -2922,17 +2923,22 @@ FUNCTION(fun_regrab)
     set_match_limit(extra);
   } else
     extra = default_match_limit();
-
-  do {
-    r = remove_markup(split_token(&s, sep), &rlen);
+  ptrs = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
+  if (!ptrs)
+    mush_panic("Unable to allocate memory in fun_regrab");
+  nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, s, sep, 1);
+  for (i = 0; i < nptrs; i++) {
+    r = remove_markup(ptrs[i], &rlen);
     if (pcre_exec(re, extra, r, rlen - 1, 0, 0, offsets, 99) >= 0) {
       if (all && *bp != b)
         safe_str(osep, buff, bp);
-      safe_str(r, buff, bp);
+      safe_str(ptrs[i], buff, bp);
       if (!all)
         break;
     }
-  } while (s);
+  }
+  freearr(ptrs, nptrs);
+  mush_free(ptrs, "ptrarray");
 
   mush_free(re, "pcre");
   if (study)

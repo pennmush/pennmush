@@ -3,9 +3,9 @@
  *
  * \brief Boolean expression parser.
  *
+ * \verbatim
  * This code implements a parser for boolean expressions of the form
  * used in locks. Summary of parsing rules, lowest to highest precedence:
- * \verbatim
  * E -> T; E -> T | E                   (or)
  * T -> F; T -> F & T                   (and)
  * F -> !F;F -> A                       (not)
@@ -15,7 +15,6 @@
  * O -> $Identifier ; O -> L            (owner)
  * L -> (E); L -> eval/attr/flag lock   (parens, special atoms)
  * L -> E, L is an object name or dbref or #t* or #f*   (simple atoms)
- * \endverbatim
  *
  * Previously, the boolexp code just used a parse tree of the
  * boolexp. Now, it turns the parse tree into bytecode that can be
@@ -53,7 +52,6 @@
  * complex.
  *
  * Future directions?
- * \verbatim
  * [Development] Raevnos is tempted in passing to re-write the boolexp parser in
  * lex and yacc.
  * [Development] Brazil laughs.
@@ -62,7 +60,6 @@
  * not? :)
  * [Development] Raevnos says, "Using the justification that it's a lot easier to
  * expand the langage by adding new key types that way."
- * \endverbatim
  *
  * So now you know who to blame if that particular item appears in a
  * changelog for Penn or MUX.
@@ -82,9 +79,10 @@
  * goes to that jump's destination.
  *
  * There's more useful room for improvement in the lock
- * \@warnings. Checking things like flag and power keys for valid flags
+ * @warnings. Checking things like flag and power keys for valid flags
  * comes to mind.
  *
+ * \endverbatim
  */
 
 #include "copyrite.h"

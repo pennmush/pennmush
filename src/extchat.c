@@ -84,7 +84,6 @@ const char *chan_mod_lock = "ChanModLock";      /**< Name of modify lock */
 const char *chan_see_lock = "ChanSeeLock";      /**< Name of see lock */
 const char *chan_hide_lock = "ChanHideLock";    /**< Name of hide lock */
 
-slab *channel_slab; /**< slab for 'struct channel' allocations */
 slab *chanlist_slab; /**< slab for 'struct chanlist' allocations */
 slab *chanuser_slab; /**< slab for 'struct chanuser' allocations */
 
@@ -204,7 +203,6 @@ init_chatdb(void)
   if (!init_called) {
     init_called = 1;
     num_channels = 0;
-    channel_slab = slab_create("channels", sizeof(struct channel));
     chanuser_slab = slab_create("channel users", sizeof(struct chanuser));
     chanlist_slab = slab_create("channel lists", sizeof(struct chanlist));
     slab_set_opt(chanuser_slab, SLAB_ALLOC_BEST_FIT, 1);
@@ -335,7 +333,7 @@ new_channel(void)
 {
   CHAN *ch;
 
-  ch = slab_malloc(channel_slab, NULL);
+  ch = mush_malloc(sizeof *ch, "channel");
   if (!ch)
     return NULL;
   ch->name[0] = '\0';
@@ -1495,6 +1493,7 @@ do_chat_by_name(dbref player, const char *name, const char *msg, int source)
 {
   CHAN *c;
   c = NULL;
+  enum cmatch_type res;
   if (!msg || !*msg) {
     if (source)
       notify(player, T("Don't you have anything to say?"));
@@ -1503,7 +1502,12 @@ do_chat_by_name(dbref player, const char *name, const char *msg, int source)
   /* First try to find a channel that the player's on. If that fails,
    * look for one that the player's not on.
    */
-  switch (find_channel_partial_on(name, &c, player)) {
+  res = find_channel_partial_on(name, &c, player);
+  if (source && res == CMATCH_NONE) {
+    /* Check for channels he's not on */
+    res = find_channel_partial(name, &c, player);
+  }
+  switch (res) {
   case CMATCH_AMBIG:
     if (!ChanUseFirstMatch(player)) {
       notify(player, T("CHAT: I don't know which channel you mean."));
@@ -1763,7 +1767,7 @@ do_chan_admin(dbref player, char *name, const char *perms, int flag)
     }
     key = parse_boolexp(player, tprintf("=#%d", player), chan_mod_lock);
     if (!key) {
-      slab_free(channel_slab, chan);
+      mush_free(chan, "channel");
       notify(player, T("CHAT: No more memory for channels!"));
       giveto(Owner(player), CHANNEL_COST);
       return;
@@ -2806,7 +2810,7 @@ do_chan_what(dbref player, const char *partname)
   cleanname = normalize_channel_name(partname);
   for (c = channels; c; c = c->next) {
     strcpy(cleanp, remove_markup(ChanName(c), NULL));
-    if (Chan_Can_See(c, player) && string_prefix(cleanp, cleanname)) {
+    if (string_prefix(cleanp, cleanname) && Chan_Can_See(c, player)) {
       notify(player, ChanName(c));
       notify_format(player, T("Description: %s"), ChanTitle(c));
       notify_format(player, T("Owner: %s"), Name(ChanCreator(c)));
@@ -3122,13 +3126,15 @@ chat_player_announce(dbref player, char *msg, int ungag)
 {
   DESC *d;
   CHAN *c;
-  CHANUSER *up, *uv;
+  CHANUSER *up = NULL, *uv;
   char buff[BUFFER_LEN], *bp;
   char buff2[BUFFER_LEN], *bp2;
   dbref viewer;
   bool shared = false;
   int na_flags = NA_INTER_LOCK | NA_SPOOF | NA_INTER_PRESENCE;
   intmap *seen;
+  struct format_msg format;
+  char *accname;
 
   /* Use the regular channel_send() for all non-combined players. */
   for (c = channels; c; c = c->next) {
@@ -3144,8 +3150,20 @@ chat_player_announce(dbref player, char *msg, int ungag)
       }
     }
   }
-  
+
   seen = im_new();
+  accname = mush_strdup(accented_name(player), "chat_announce.name");
+
+  format.thing = AMBIGUOUS;
+  format.attr = "CHATFORMAT";
+  format.checkprivs = 0;
+  format.numargs = 6;
+  format.targetarg = -1;
+  format.args[0] = "@";
+  format.args[1] = buff2;
+  /* args[2] and args[5] are set in the for loop below */
+  format.args[3] = accname;
+  format.args[4] = "";
 
   for (d = descriptor_list; d != NULL; d = d->next) {
     viewer = d->player;
@@ -3182,30 +3200,29 @@ chat_player_announce(dbref player, char *msg, int ungag)
       if (shared && !im_exists(seen, viewer)) {
         char defmsg[BUFFER_LEN], *dmp;
         char shrtmsg[BUFFER_LEN], *smp;
-        char *accname;
 
-	im_insert(seen, viewer, up);
+        im_insert(seen, viewer, up);
 
         dmp = defmsg;
         smp = shrtmsg;
 
-        accname = mush_strdup(accented_name(player), "chat_announce.name");
 
         safe_format(shrtmsg, &smp, "%s %s", accname, msg);
         *smp = '\0';
+        format.args[2] = shrtmsg;
 
         safe_format(defmsg, &dmp, "<%s> %s %s", buff, accname, msg);
         *dmp = '\0';
+        format.args[5] = defmsg;
 
-        if (!vmessageformat(viewer, "CHATFORMAT", player, na_flags, 6,
-                            "@", buff2, shrtmsg, accname, "", defmsg))
-          notify_anything(player, na_one, &viewer, ns_esnotify, na_flags,
-                          defmsg);
+        notify_anything(player, na_one, &viewer, NULL, na_flags, defmsg, NULL,
+                        AMBIGUOUS, &format);
 
-        mush_free(accname, "chat_announce.name");
       }
     }
   }
+  mush_free(accname, "chat_announce.name");
+
   im_destroy(seen);
 }
 
@@ -3481,23 +3498,11 @@ FUNCTION(fun_crecall)
       first = 0;
     else
       safe_chr(sep, buff, bp);
-    if (Nospoof(executor) && GoodObject(speaker)) {
-      char *nsmsg = ns_esnotify(speaker, na_one, &executor,
-                                Paranoid(executor) ? 1 : 0);
-      if (!showstamp)
-        safe_format(buff, bp, "%s %s", nsmsg, buf);
-      else {
-        stamp = show_time(timestamp, 0);
-        safe_format(buff, bp, "[%s] %s %s", stamp, nsmsg, buf);
-      }
-      mush_free(nsmsg, "string");
-    } else {
-      if (!showstamp)
-        safe_str(buf, buff, bp);
-      else {
-        stamp = show_time(timestamp, 0);
-        safe_format(buff, bp, "[%s] %s", stamp, buf);
-      }
+    if (!showstamp)
+      safe_str(buf, buff, bp);
+    else {
+      stamp = show_time(timestamp, 0);
+      safe_format(buff, bp, "[%s] %s", stamp, buf);
     }
     num_lines--;
   }
@@ -3595,37 +3600,10 @@ COMMAND(cmd_clock)
     notify(executor, T("You must specify a type of lock!"));
 }
 
-/** Find the next player on a channel to notify.
- * This function is a helper for notify_anything that is used to
- * notify all players on a channel.
- * \param current next dbref to notify (not used).
- * \param data pointer to structure containing channel and chanuser data.
- * \return next dbref to notify.
- */
-dbref
-na_channel(dbref current, void *data)
-{
-  struct na_cpass *nac = data;
-  CHANUSER *u, *nu;
-  int cont;
-
-  nu = nac->u;
-  do {
-    u = nu;
-    if (!u)
-      return NOTHING;
-    current = CUdbref(u);
-    nu = u->next;
-    cont = (!GoodObject(current) ||
-            (nac->checkquiet && Chanuser_Quiet(u)) ||
-            Chanuser_Gag(u) || (IsPlayer(current) && !Connected(current)));
-  } while (cont);
-  nac->u = nu;
-  return current;
-}
-
 /**
+ * \verbatim
  * Mogrify a value using u(<mogrifier>/<attrname>,<value>)
+ * \endverbatim
  *
  * \param mogrifier The object doing the mogrification
  * \param attrname The attribute on mogrifier to call.
@@ -3690,6 +3668,7 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
   static char message[BUFFER_LEN];
   static char buff[BUFFER_LEN];
   static char speechtext[BUFFER_LEN];
+  struct format_msg format;
 
   CHANUSER *u;
   CHANUSER *speaker;
@@ -3833,7 +3812,7 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
   /* @chatformat */
   if (flags & CB_PRESENCE) {
     snprintf(title, BUFFER_LEN, "%s", message);
-    snprintf(message, BUFFER_LEN, "%s %s", Name(player), title);
+    snprintf(message, BUFFER_LEN, "%s %s", playername, title);
     title[0] = '\0';
   }
 
@@ -3856,6 +3835,19 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
     na_flags |= NA_SPOOF;
   }
 
+  format.thing = AMBIGUOUS;
+  format.attr = "CHATFORMAT";
+  format.checkprivs = 0;
+  format.numargs = 6;
+  format.targetarg = -1;
+  format.args[0] = (char *) ctype;
+  format.args[1] = ChanName(channel);
+  format.args[2] = message;
+  format.args[3] = playername;
+  format.args[4] = title;
+  format.args[5] = buff;
+
+
   for (u = ChanUsers(channel); u; u = u->next) {
     current = CUdbref(u);
 
@@ -3864,15 +3856,8 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
     }
     if (!(((flags & CB_CHECKQUIET) && Chanuser_Quiet(u)) ||
           Chanuser_Gag(u) || (IsPlayer(current) && !Connected(current)))) {
-      if (override_chatformat
-          || !vmessageformat(current, "CHATFORMAT", player,
-                             na_flags,
-                             6,
-                             ctype,
-                             ChanName(channel),
-                             message, playername, title, buff)) {
-        notify_anything(player, na_one, &current, ns_esnotify, na_flags, buff);
-      }
+      notify_anything(player, na_one, &current, NULL, na_flags, buff, NULL,
+                      AMBIGUOUS, (override_chatformat ? NULL : &format));
     }
   }
 
@@ -3990,23 +3975,11 @@ do_chan_recall(dbref player, const char *name, char *lineinfo[], int quiet)
   }
   while ((buf = iter_bufferq(ChanBufferQ(chan), &p, &speaker, &type,
                              &timestamp)) && num_lines > 0) {
-    if (Nospoof(player) && GoodObject(speaker)) {
-      char *nsmsg = ns_esnotify(speaker, na_one, &player,
-                                Paranoid(player) ? 1 : 0);
-      if (quiet)
-        notify_format(player, "%s %s", nsmsg, buf);
-      else {
-        stamp = show_time(timestamp, 0);
-        notify_format(player, "[%s] %s %s", stamp, nsmsg, buf);
-      }
-      mush_free(nsmsg, "string");
-    } else {
-      if (quiet)
-        notify(player, buf);
-      else {
-        stamp = show_time(timestamp, 0);
-        notify_format(player, "[%s] %s", stamp, buf);
-      }
+    if (quiet)
+      notify(player, buf);
+    else {
+      stamp = show_time(timestamp, 0);
+      notify_format(player, "[%s] %s", stamp, buf);
     }
     num_lines--;
   }

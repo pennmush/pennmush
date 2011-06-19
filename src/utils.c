@@ -84,57 +84,6 @@ parse_attrib(dbref player, char *str, dbref *thing, ATTR **attrib)
   *attrib = (ATTR *) atr_get(*thing, upcasestr(name));
 }
 
-/** Parse an attribute or anonymous attribute into dbref and pointer.
- * \verbatim
- * This function takes a string which is of the format #lambda/code,
- * <obj>/<attr> or <attr>,  and returns the dbref of the object,
- * and a pointer to the attribute.
- * \endverbatim
- * \param player the executor, for permissions checks.
- * \param str string to parse.
- * \param thing pointer to address to return dbref parsed, or NOTHING
- * if none could be parsed.
- * \param attrib pointer to address to return ATTR * of attrib parsed,
- * or NULL if none could be parsed.
- */
-void
-parse_anon_attrib(dbref player, char *str, dbref *thing, ATTR **attrib)
-{
-
-  if (string_prefix(str, "#lambda/")) {
-    unsigned char *t;
-    str += 8;
-    if (!*str) {
-      *attrib = NULL;
-      *thing = NOTHING;
-    } else {
-      *attrib = mush_malloc(sizeof(ATTR), "anon_attr");
-      AL_CREATOR(*attrib) = player;
-      AL_NAME(*attrib) = mush_strdup("#lambda", "anon_attr.lambda");
-      t = compress(str);
-      (*attrib)->data = chunk_create(t, u_strlen(t), 0);
-      free(t);
-      AL_FLAGS(*attrib) = AF_ANON;
-      AL_NEXT(*attrib) = NULL;
-      *thing = player;
-    }
-    return;
-  }
-  parse_attrib(player, str, thing, attrib);
-}
-
-/** Free the memory allocated for an anonymous attribute.
- * \param attrib pointer to attribute.
- */
-void
-free_anon_attrib(ATTR *attrib)
-{
-  if (attrib && (AL_FLAGS(attrib) & AF_ANON)) {
-    mush_free((void *) AL_NAME(attrib), "anon_attr.lambda");
-    chunk_delete(attrib->data);
-    mush_free(attrib, "anon_attr");
-  }
-}
 
 /** Populate a ufun_attrib struct from an obj/attr pair.
  * \verbatim Given an attribute [<object>/]<name> pair (which may include #lambda),
@@ -148,7 +97,7 @@ free_anon_attrib(ATTR *attrib)
  * \return 0 on failure, true on success.
  */
 bool
-fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
+fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib *ufun,
                   int flags)
 {
   char *thingname, *attrname;
@@ -179,11 +128,40 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
     attrname = astring;
   }
 
-  if (thingname && (flags & UFUN_LAMBDA) && !strcasecmp(thingname, "#lambda")) {
+  if (thingname && (flags & UFUN_LAMBDA)
+      && (strcasecmp(thingname, "#lambda") == 0
+          || strncasecmp(thingname, "#apply", 6) == 0)) {
     /* It's a lambda. */
-    thingname = NULL;
+
     ufun->thing = executor;
-    mush_strncpy(ufun->contents, attrname, BUFFER_LEN);
+    if (strcasecmp(thingname, "#lambda") == 0)
+      mush_strncpy(ufun->contents, attrname, BUFFER_LEN);
+    else {                      /* #apply */
+      char *ucb = ufun->contents;
+      unsigned nargs = 1, n;
+
+      thingname += 6;
+
+      if (*thingname)
+        nargs = parse_uinteger(thingname);
+
+      /* Limit between 1 and 10 arguments (%0-%9) */
+      if (nargs == 0)
+        nargs = 1;
+      if (nargs > 10)
+        nargs = 10;
+
+      safe_str(attrname, ufun->contents, &ucb);
+      safe_chr('(', ufun->contents, &ucb);
+      for (n = 0; n < nargs; n++) {
+        if (n > 0)
+          safe_chr(',', ufun->contents, &ucb);
+        safe_format(ufun->contents, &ucb, "%%%u", n);
+      }
+      safe_chr(')', ufun->contents, &ucb);
+      *ucb = '\0';
+    }
+
     ufun->attrname[0] = '\0';
     return 1;
   }
@@ -245,13 +223,13 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
  * \param executor The executor.
  * \param enactor The enactor.
  * \param pe_info The pe_info passed to the FUNCTION
- * \param pe_regs Other arguments that may want to be added. This nests BELOW
+ * \param user_regs Other arguments that may want to be added. This nests BELOW
  *                the pe_regs created by call_ufun. (It is checked first)
  * \retval 0 success
  * \retval 1 process_expression failed. (CPU time limit)
  */
 bool
-call_ufun(ufun_attrib * ufun, char *ret, dbref executor, dbref enactor,
+call_ufun(ufun_attrib *ufun, char *ret, dbref executor, dbref enactor,
           NEW_PE_INFO *pe_info, PE_REGS *user_regs)
 {
   char rbuff[BUFFER_LEN];
@@ -339,12 +317,12 @@ call_ufun(ufun_attrib * ufun, char *ret, dbref executor, dbref enactor,
  * by ret, if given.
  * \param thing The thing that has the attribute to be called
  * \param attrname The name of the attribute to call.
- * \param wenv_args An array of string values for %0-%9
- * \param wenv_argc The number of wenv args to use.
  * \param ret If desired, a pointer to a buffer in which the results
  * of the process_expression are stored in.
  * \param enactor The enactor.
  * \param pe_info The pe_info passed to the FUNCTION
+ * \param pe_regs Other arguments that may want to be added. This nests BELOW
+ *                the pe_regs created by call_ufun. (It is checked first)
  * \retval 1 success
  * \retval 0 No such attribute, or failed.
  */

@@ -1,4 +1,9 @@
-/* atr_tab.h */
+/**
+ * \file access.h
+ *
+ * \brief Table of default attributes and their permissions
+ */
+
 
 #ifndef __ATR_TAB_H
 #define __ATR_TAB_H

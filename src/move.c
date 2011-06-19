@@ -42,7 +42,8 @@ static void del_follow(dbref follower, dbref leader, int noisy);
 static char *list_followers(dbref player);
 static char *list_following(dbref player);
 static int is_following(dbref follower, dbref leader);
-static void follower_command(dbref leader, dbref loc, const char *com);
+static void follower_command(dbref leader, dbref loc, const char *com,
+                             dbref towards);
 
 /** A convenience wrapper for enter_room().
  * \param what object to move.
@@ -70,10 +71,13 @@ moveit(dbref what, dbref where, int nomovemsgs,
 {
   dbref loc, old;
   dbref absloc, absold;
+  bool whereSeeswhat, oldSeeswhat;
 
   /* Don't move something into something it's holding */
   if (recursive_member(where, what, 0))
     return;
+
+  whereSeeswhat = Can_Locate(where, what);
 
   /* remove what from old loc */
   absold = absolute_room(what);
@@ -96,14 +100,22 @@ moveit(dbref what, dbref where, int nomovemsgs,
   /* now put what in where */
   PUSH(what, Contents(where));
 
+  oldSeeswhat = (old < 0) || Can_Locate(old, what);
+
   Location(what) = where;
   absloc = absolute_room(what);
   if (!WIZ_NOAENTER || !(Wizard(what) && DarkLegal(what)))
     if ((where != NOTHING) && (old != where)) {
-      did_it(what, what, NULL, NULL, "OXMOVE", NULL, NULL, old);
+      did_it_with(what, what, NULL, NULL, "OXMOVE", NULL,
+                  NULL, old, where, old, NA_INTER_HEAR);
       if (Hearer(what)) {
-        did_it_interact(what, old, "LEAVE", NULL, "OLEAVE", T("has left."),
-                        "ALEAVE", old, NA_INTER_PRESENCE);
+        if (GoodObject(where) && oldSeeswhat) {
+          did_it_with(what, old, "LEAVE", NULL, "OLEAVE", T("has left."),
+                      "ALEAVE", old, where, NOTHING, NA_INTER_PRESENCE);
+        } else {
+          did_it_interact(what, old, "LEAVE", NULL, "OLEAVE", T("has left."),
+                          "ALEAVE", old, NA_INTER_PRESENCE);
+        }
         /* If the player is leaving a zone, do zone messages */
         /* The tricky bit here is that we only care about the zone of
          * the outermost contents */
@@ -124,8 +136,14 @@ moveit(dbref what, dbref where, int nomovemsgs,
              (Zone(absloc) != Zone(absold))))
           did_it_interact(what, Zone(absloc), "ZENTER", NULL, "OZENTER", NULL,
                           "AZENTER", where, NA_INTER_SEE);
-        did_it_interact(what, where, "ENTER", NULL, "OENTER",
-                        T("has arrived."), "AENTER", where, NA_INTER_PRESENCE);
+        if (GoodObject(old) && whereSeeswhat) {
+          did_it_with(what, where, "ENTER", NULL, "OENTER", T("has arrived."),
+                      "AENTER", where, old, NOTHING, NA_INTER_PRESENCE);
+        } else {
+          did_it_interact(what, where, "ENTER", NULL, "OENTER",
+                          T("has arrived."), "AENTER", where,
+                          NA_INTER_PRESENCE);
+        }
       } else {
         /* non-listeners only trigger the actions not the messages */
         did_it(what, old, NULL, NULL, NULL, NULL, "ALEAVE", old);
@@ -141,8 +159,8 @@ moveit(dbref what, dbref where, int nomovemsgs,
       }
     }
   if (!nomovemsgs)
-    did_it_interact(what, what, "MOVE", NULL, "OMOVE", NULL,
-                    "AMOVE", where, NA_INTER_SEE);
+    did_it_with(what, what, "MOVE", NULL, "OMOVE", NULL,
+                "AMOVE", where, where, old, NA_INTER_SEE);
   queue_event(enactor, "OBJECT`MOVE", "%s,%s,%s,%d,%s",
               unparse_objid(what),
               unparse_objid(where),
@@ -395,9 +413,10 @@ do_move(dbref player, const char *direction, enum move_type type)
       return;
     }
     if ((loc = Location(player)) != NOTHING && !Dark(player) && !Dark(loc)) {
+      char msg[BUFFER_LEN];
+      sprintf(msg, T("%s goes home."), Name(player));
       /* tell everybody else */
-      notify_except(loc, player,
-                    tprintf(T("%s goes home."), Name(player)), NA_INTER_SEE);
+      notify_except(loc, player, msg, NA_INTER_SEE);
     }
     /* give the player the messages */
     notify(player, T("There's no place like home..."));
@@ -405,21 +424,18 @@ do_move(dbref player, const char *direction, enum move_type type)
     notify(player, T("There's no place like home..."));
     safe_tel(player, HOME, 0, player, "home");
   } else {
+    int matchtype;
     /* find the exit */
-    if (type == MOVE_GLOBAL)
-      exit_m =
-        match_result(player, direction, TYPE_EXIT,
-                     MAT_ENGLISH | MAT_EXIT | MAT_GLOBAL | MAT_CHECK_KEYS |
-                     MAT_TYPE);
-    else if (type == MOVE_ZONE)
-      exit_m =
-        match_result(player, direction, TYPE_EXIT,
-                     MAT_ENGLISH | MAT_EXIT | MAT_REMOTES | MAT_CHECK_KEYS |
-                     MAT_TYPE);
-    else
-      exit_m =
-        match_result(player, direction, TYPE_EXIT,
-                     MAT_ENGLISH | MAT_EXIT | MAT_CHECK_KEYS | MAT_TYPE);
+    if (type == MOVE_TELEPORT)
+      matchtype = MAT_ABSOLUTE | MAT_TYPE;
+    else {
+      matchtype = MAT_ENGLISH | MAT_EXIT | MAT_CHECK_KEYS | MAT_TYPE;
+      if (type == MOVE_GLOBAL)
+        matchtype |= MAT_GLOBAL;
+      else if (type == MOVE_ZONE)
+        matchtype |= MAT_REMOTES;
+    }
+    exit_m = match_result(player, direction, TYPE_EXIT, matchtype);
     switch (exit_m) {
     case NOTHING:
       /* try to force the object */
@@ -480,7 +496,7 @@ do_move(dbref player, const char *direction, enum move_type type)
           enter_room(player, var_dest, 0, player, "move");
           /* Move the followers if the leader is elsewhere */
           if (Location(player) != loc)
-            follower_command(player, loc, tprintf("%s #%d", "goto", exit_m));
+            follower_command(player, loc, "GOTO", exit_m);
           break;
         case TYPE_PLAYER:
         case TYPE_THING:
@@ -496,7 +512,7 @@ do_move(dbref player, const char *direction, enum move_type type)
           safe_tel(player, var_dest, 0, player, "move");
           /* Move the followers if the leader is elsewhere */
           if (Location(player) != loc)
-            follower_command(player, loc, tprintf("%s #%d", "goto", exit_m));
+            follower_command(player, loc, "GOTO", exit_m);
           break;
         case TYPE_EXIT:
           notify(player, T("This feature coming soon."));
@@ -878,7 +894,7 @@ do_enter(dbref player, const char *what)
 {
   dbref thing;
   dbref loc;
-  long match_flags = MAT_NEIGHBOR | MAT_ENGLISH;
+  long match_flags = MAT_NEIGHBOR | MAT_ENGLISH | MAT_EXIT;
 
   if (Hasprivs(player))
     match_flags |= MAT_ABSOLUTE;
@@ -887,9 +903,11 @@ do_enter(dbref player, const char *what)
     return;
   switch (Typeof(thing)) {
   case TYPE_ROOM:
-  case TYPE_EXIT:
     notify(player, T("Permission denied."));
-    break;
+    return;
+  case TYPE_EXIT:
+    do_move(player, what, MOVE_NORMAL);
+    return;
   default:
     /* Remember the current room */
     loc = Location(player);
@@ -914,7 +932,7 @@ do_enter(dbref player, const char *what)
     safe_tel(player, thing, 0, player, "enter");
     /* Move the followers if the leader is elsewhere */
     if (Location(player) != loc)
-      follower_command(player, loc, tprintf("%s #%d", "enter", thing));
+      follower_command(player, loc, "ENTER", thing);
     break;
   }
 }
@@ -936,7 +954,7 @@ do_leave(dbref player)
   }
   enter_room(player, Location(loc), 0, player, "leave");
   if (Location(player) != loc)
-    follower_command(player, loc, "leave");
+    follower_command(player, loc, "leave", NOTHING);
 }
 
 /** Is direction a global exit?
@@ -1101,7 +1119,7 @@ do_dismiss(dbref player, const char *arg)
       notify(player, T("I don't recognize who you want to dismiss."));
       return;
     }
-    /* Are we following them? */
+    /* Are we leading them? */
     if (!is_following(follower, player)) {
       notify_format(player, T("%s isn't following you."), Name(follower));
       return;
@@ -1398,7 +1416,7 @@ clear_following(dbref follower, int noisy)
  * leader, run the same command the leader just ran.
  */
 static void
-follower_command(dbref leader, dbref loc, const char *com)
+follower_command(dbref leader, dbref loc, const char *com, dbref toward)
 {
   dbref follower;
   ATTR *a;
@@ -1407,7 +1425,10 @@ follower_command(dbref leader, dbref loc, const char *com)
   char combuf[BUFFER_LEN];
   if (!com || !*com)
     return;
-  strcpy(combuf, com);
+  if (toward != NOTHING)
+    sprintf(combuf, "%s #%d", com, toward);
+  else
+    strcpy(combuf, com);
   a = atr_get_noparent(leader, "FOLLOWERS");
   if (!a)
     return;                     /* No followers */

@@ -120,7 +120,7 @@ dbref_comp(const void *s1, const void *s2)
 /** qsort() comparision routine used by sortby() */
 int
 u_comp(const void *s1, const void *s2, dbref executor, dbref enactor,
-       ufun_attrib * ufun, NEW_PE_INFO *pe_info)
+       ufun_attrib *ufun, NEW_PE_INFO *pe_info)
 {
   char result[BUFFER_LEN];
   int n;
@@ -164,7 +164,7 @@ u_comp(const void *s1, const void *s2, dbref executor, dbref enactor,
 
 void
 sane_qsort(void *array[], int left, int right, comp_func compare,
-           dbref executor, dbref enactor, ufun_attrib * ufun,
+           dbref executor, dbref enactor, ufun_attrib *ufun,
            NEW_PE_INFO *pe_info)
 {
 

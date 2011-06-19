@@ -1,3 +1,9 @@
+/**
+ * \file function.h
+ *
+ * \brief Stuff relating to softcode functions and \@function
+ */
+
 #ifndef _FUNCTIONS_H_
 #define _FUNCTIONS_H_
 

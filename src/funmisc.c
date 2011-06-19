@@ -26,9 +26,9 @@
 #include "command.h"
 #include "game.h"
 #include "attrib.h"
-#include "confmagic.h"
 #include "ansi.h"
 #include "strtree.h"
+#include "confmagic.h"
 
 #ifdef WIN32
 #include <windows.h>
@@ -93,7 +93,7 @@ FUNCTION(fun_pemit)
   if (is_strict_integer(args[0]))
     do_pemit_port(executor, args[0], args[1], flags);
   else
-    do_pemit_list(executor, args[0], args[1], flags);
+    do_pemit(executor, args[0], args[1], flags, NULL);
   orator = saved_orator;
 }
 
@@ -101,12 +101,39 @@ FUNCTION(fun_message)
 {
   int i;
   char *argv[10];
+  int flags = PEMIT_LIST;
+  enum emit_type type = EMIT_PEMIT;
 
-  for (i = 0; (i + 3) < nargs; i++) {
+  for (i = 0; (i + 3) < nargs && i < 10; i++) {
     argv[i] = args[i + 3];
   }
 
-  do_message_list(executor, executor, args[0], args[2], args[1], 0, i, argv);
+  orator = executor;
+
+  if (nargs == 14) {
+    char *word, *list;
+
+    list = trim_space_sep(args[13], ' ');
+
+    do {
+      word = split_token(&list, ' ');
+      if (!word || !*word)
+        continue;
+      if (string_prefix("nospoof", word)) {
+        if (Can_Nspemit(executor))
+          flags |= PEMIT_SPOOF;
+      } else if (string_prefix("spoof", word)) {
+        if (Can_Nspemit(executor) || controls(executor, enactor))
+          orator = enactor;
+      } else if (string_prefix("remit", word))
+        type = EMIT_REMIT;
+      else if (string_prefix("oemit", word))
+        type = EMIT_OEMIT;
+    } while (list);
+  }
+
+  do_message(executor, args[0], args[2], args[1], type, flags, i, argv);
+
 }
 
 /* ARGSUSED */
@@ -126,7 +153,7 @@ FUNCTION(fun_oemit)
     return;
   }
   orator = executor;
-  do_oemit_list(executor, args[0], args[1], flags);
+  do_oemit_list(executor, args[0], args[1], flags, NULL);
 }
 
 /* ARGSUSED */
@@ -169,7 +196,7 @@ FUNCTION(fun_remit)
     return;
   }
   orator = executor;
-  do_remit(executor, args[0], args[1], flags);
+  do_remit(executor, args[0], args[1], flags, NULL);
 }
 
 /* ARGSUSED */
@@ -231,7 +258,7 @@ FUNCTION(fun_prompt)
   orator = executor;
   if (ns)
     flags |= PEMIT_SPOOF;
-  do_pemit_list(executor, args[0], args[1], flags);
+  do_pemit(executor, args[0], args[1], flags, NULL);
 }
 
 /* ARGSUSED */
@@ -328,10 +355,11 @@ cleanup:
   }
 }
 
+/** Helper for listq() */
 struct st_qreg_data {
-  char *buff;
-  char **bp;
-  char *wild;
+  char *buff;  /** Buffer to write matching register names to */
+  char **bp;   /** Pointer into buff to write at */
+  char *wild;  /** Wildcard pattern of qregister names to list */
   int count;
 };
 
@@ -428,11 +456,12 @@ clear_allq(NEW_PE_INFO *pe_info)
   }
 }
 
+/** Helper function for unsetq() */
 struct st_unsetq_data {
-  char *buff;
-  char **bp;
-  char *wild;
-  NEW_PE_INFO *pe_info;
+  char *buff;  /**< Unused */
+  char **bp;   /**< Unused */
+  char *wild;  /**< Wildcard pattern of register names to unset */
+  NEW_PE_INFO *pe_info;  /**< pe_info to clear registers from */
 };
 
 static void
@@ -1147,33 +1176,29 @@ do_whichof(char *args[], int nargs, enum whichof_t flag,
 {
   int j;
   char tbuf[BUFFER_LEN], *tp;
-  char const *sp;
-  char sep = ' ';
+  char sep[BUFFER_LEN];
+  char const *ap;
   int first = 1;
   tbuf[0] = '\0';
   if (flag == DO_ALLOF) {
     /* The last arg is a delimiter. Parse it in place. */
-    char insep[BUFFER_LEN];
-    char *isep = insep;
+    char *sp = sep;
     const char *arglast = args[nargs - 1];
-    process_expression(insep, &isep, &arglast, executor,
+    process_expression(sep, &sp, &arglast, executor,
                        caller, enactor, PE_DEFAULT, PT_DEFAULT, pe_info);
-    *isep = '\0';
-    strcpy(args[nargs - 1], insep);
-    if (!delim_check(buff, bp, nargs, args, nargs, &sep))
-      return;
+    *sp = '\0';
     nargs--;
   }
 
   for (j = 0; j < nargs; j++) {
     tp = tbuf;
-    sp = args[j];
-    process_expression(tbuf, &tp, &sp, executor, caller,
+    ap = args[j];
+    process_expression(tbuf, &tp, &ap, executor, caller,
                        enactor, PE_DEFAULT, PT_DEFAULT, pe_info);
     *tp = '\0';
     if ((isbool && parse_boolean(tbuf)) || (!isbool && strlen(tbuf))) {
-      if (!first) {
-        safe_chr(sep, buff, bp);
+      if (!first && *sep) {
+        safe_str(sep, buff, bp);
       } else
         first = 0;
       safe_str(tbuf, buff, bp);
@@ -1227,6 +1252,8 @@ tsc_diff_to_microseconds(uint64_t start, uint64_t end)
 #endif
 }
 
+extern int global_fun_invocations;      /* From parse.c */
+
 /* ARGSUSED */
 FUNCTION(fun_benchmark)
 {
@@ -1261,9 +1288,7 @@ FUNCTION(fun_benchmark)
       safe_dbref(thing, buff, bp);
       return;
     }
-    if (!okay_pemit(executor, thing, 1,
-                    tprintf(T("I don't think #%d wants to hear from you."),
-                            thing))) {
+    if (!okay_pemit(executor, thing, 1, 1)) {
       safe_str("#-1", buff, bp);
       return;
     }
@@ -1294,11 +1319,21 @@ FUNCTION(fun_benchmark)
 
   if (thing != NOTHING) {
     safe_str(tbuf, buff, bp);
+    if (pe_info->fun_invocations >= FUNCTION_LIMIT
+        || (global_fun_invocations >= FUNCTION_LIMIT * 5))
+      notify(thing,
+             T
+             ("Function invocation limit reached. Benchmark timings may not be reliable."));
     notify_format(thing, T("Average: %.2f   Min: %u   Max: %u"),
                   ((double) total) / i, min, max);
   } else {
     safe_format(buff, bp, T("Average: %.2f   Min: %u   Max: %u"),
                 ((double) total) / i, min, max);
+    if (pe_info->fun_invocations >= FUNCTION_LIMIT
+        || (global_fun_invocations >= FUNCTION_LIMIT * 5))
+      safe_str(T
+               (" Note: Function invocation limit reached. Benchmark timings may not be reliable."),
+               buff, bp);
   }
 
   return;

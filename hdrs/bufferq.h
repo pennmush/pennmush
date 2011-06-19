@@ -12,6 +12,7 @@
 
 typedef struct bufferq BUFFERQ;
 
+/** A bufferq. */
 struct bufferq {
   char *buffer;         /**< Pointer to start of buffer */
   char *buffer_end;     /**< Pointer to insertion point in buffer */
@@ -21,10 +22,10 @@ struct bufferq {
   char last_type;       /**< Cache of type of last string inserted */
 };
 
-#define BufferQSize(b) ((b)->buffer_size)
-#define BufferQNum(b) ((b)->num_buffered)
-#define BufferQLast(b) ((b)->last_string)
-#define BufferQLastType(b) ((b)->last_type)
+#define BufferQSize(b) ((b)->buffer_size)    /**< Size of a bufferq, in bytes */
+#define BufferQNum(b) ((b)->num_buffered)    /**< Number of (variable-length) strings buffered */
+#define BufferQLast(b) ((b)->last_string)    /**< Last string inserted */
+#define BufferQLastType(b) ((b)->last_type)  /**< Type of last string inserted */
 
 BUFFERQ *allocate_bufferq(int lines);
 BUFFERQ *reallocate_bufferq(BUFFERQ *bq, int lines);

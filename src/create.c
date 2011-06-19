@@ -123,7 +123,7 @@ do_real_open(dbref player, const char *direction, const char *linkto,
       mush_free(alias, "name.newname");
     return NOTHING;
   }
-  if (!Open_Anywhere(player) && !controls(player, loc)) {
+  if (!can_open_from(player, loc)) {
     notify(player, T("Permission denied."));
   } else if (can_pay_fees(player, EXIT_COST)) {
     /* create the exit */
@@ -211,7 +211,8 @@ do_open(dbref player, const char *direction, char **links)
   }
 
   forward = do_real_open(player, direction, links[1], source);
-  if (links[2] && GoodObject(forward) && GoodObject(Location(forward))) {
+  if (links[2] && *links[2] && GoodObject(forward)
+      && GoodObject(Location(forward))) {
     char sourcestr[SBUF_LEN];   /* SBUF_LEN is the size used by unparse_dbref */
     if (!GoodObject(source)) {
       if (IsRoom(player)) {

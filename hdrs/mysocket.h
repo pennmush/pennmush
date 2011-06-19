@@ -1,8 +1,17 @@
-/* Define required structures and constants if they're needed. 
-* Most of these are in Posix 1001.g, but getnameinfo isn't (Though
-* it's in at least one RFC. Anyways, all this gives us IP version
-* independance.
-*/
+/**
+ * \file mysocket.h
+ *
+ * \brief Stuff relating to sockets.
+ *
+ * \verbatim
+ * Define required structures and constants if they're needed.
+ * Most of these are in Posix 1001.g, but getnameinfo isn't (though
+ * it's in at least one RFC). Anyways, all this gives us IP version
+ * independance.
+ * \endverbatim
+ */
+
+
 
 #ifndef __MYSOCKET_H
 #define __MYSOCKET_H
@@ -65,10 +74,14 @@ int make_socket
 int make_socket_conn(const char *host, int socktype,
                      struct sockaddr *myiterface, socklen_t myilen, Port_t port,
                      bool nonb);
+
+int make_unix_socket(const char *filename, int socktype);
+int connect_unix_socket(const char *filename, int socktype);
+
 int wait_for_connect(int, int);
 void make_nonblocking(int s);
 void make_blocking(int s);
-void set_keepalive(int s);
+void set_keepalive(int s, int timeout);
 /* Win32 uses closesocket() to close a socket, and so will we */
 #ifndef WIN32
 #define closesocket(s)  close(s)

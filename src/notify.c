@@ -87,8 +87,6 @@ extern CHAN *channels;
 #include "game.h"
 #include "confmagic.h"
 
-static int under_limit = 1;
-
 
 /* When the mush gets a new connection, it tries sending a telnet
  * option negotiation code for setting client-side line-editing mode
@@ -140,73 +138,207 @@ int queue_eol(DESC *d);
 void freeqs(DESC *d);
 int process_output(DESC *d);
 
-/** Types of text renderings we can do in notify_anything(). */
-enum na_type {
-  NA_ASCII = 0,                 /**< Plain old ascii. */
-  NA_ANSI,                      /**< ANSI flag */
-  NA_COLOR,                     /**< ANSI and COLOR flags */
-  NA_PUEBLO,                    /**< html */
-  NA_PASCII,                    /**< Player without any of the above */
-  NA_TANSI,                     /**< Like above with telnet-aware client */
-  NA_TCOLOR,                    /**< Like above with telnet-aware client */
-  NA_TPASCII,                   /**< Like above with telnet-aware client */
-  NA_NANSI,                     /**< ANSI and NOACCENTS */
-  NA_NCOLOR,                    /**< ANSI, COLOR, NOACCENTS */
-  NA_NPUEBLO,                   /**< html & NOACCENTS */
-  NA_NPASCII                    /**< NOACCENTS */
-};
-
-/** Number of possible message text renderings */
-#define MESSAGE_TYPES 12
-
-/* These should be removed. I can't imagine anyone uses them in hacks,
- * but I'm leaving them here just in case... */
-#define TA_BGC 0        /**< Text attribute background color */
-#define TA_FGC 1        /**< Text attribute foreground color */
-#define TA_BOLD 2       /**< Text attribute bold/hilite */
-#define TA_REV 3        /**< Text attribute reverse/inverse */
-#define TA_BLINK 4      /**< Text attribute blinking/flashing */
-#define TA_ULINE 5      /**< Text attribute underline */
-
-
-static int na_depth = 0;
-
-/** A place to store a rendered message. */
-struct notify_strings {
-  unsigned char *message;       /**< The message text. */
-  size_t len;                   /**< Length of message. */
-  int made;                     /**< True if message has been rendered. */
-};
-
-static enum na_type notify_type(DESC *d);
-static void free_strings(struct notify_strings messages[]);
-static void zero_strings(struct notify_strings messages[]);
+static int str_type(const char *str);
+static int notify_type(DESC *d);
 static int output_ansichange(ansi_data *states, int *ansi_ptr,
                              const unsigned char **ptr, char *buff, char **bp);
-static unsigned char *notify_makestring(const char *message,
-                                        struct notify_strings messages[],
-                                        enum na_type type, int flags);
 
-static void
-zero_strings(struct notify_strings messages[])
+static int na_depth = 0; /**< Counter to prevent too much notify_anything recursion */
+
+/** Complete list of possible groupings of MSG_* flags.
+ * These are all the different kinds of messages we may produce to send to a
+ * player. Note that we don't have any  MSG_PUEBLO | MSG_TELNET groups - the
+ * Telnet char is always escaped for Pueblo clients.
+ */
+#define MSGTYPE_ORIGINAL MSG_INTERNAL
+
+#define MSGTYPE_PASCII MSG_PLAYER
+
+#define MSGTYPE_ANSI (MSG_PLAYER | MSG_ANSI)
+#define MSGTYPE_PUEBLO (MSG_PLAYER | MSG_PUEBLO)
+#define MSGTYPE_PUEBLOANSI (MSG_PLAYER | MSG_PUEBLO | MSG_ANSI)
+
+#define MSGTYPE_TPASCII (MSG_PLAYER | MSG_TELNET)
+#define MSGTYPE_TANSI (MSG_PLAYER | MSG_ANSI | MSG_TELNET)
+
+#define MSGTYPE_NPASCII (MSG_PLAYER | MSG_STRIPACCENTS)
+#define MSGTYPE_NANSI (MSG_PLAYER | MSG_ANSI | MSG_STRIPACCENTS)
+#define MSGTYPE_NPUEBLO (MSG_PLAYER | MSG_PUEBLO | MSG_STRIPACCENTS)
+#define MSGTYPE_NPUEBLOANSI (MSG_PLAYER | MSG_PUEBLO | MSG_ANSI | MSG_STRIPACCENTS)
+
+#define MSGTYPE_TNPASCII (MSG_PLAYER | MSG_TELNET | MSG_STRIPACCENTS)
+#define MSGTYPE_TNANSI (MSG_PLAYER | MSG_ANSI | MSG_TELNET | MSG_STRIPACCENTS)
+
+/** Corresponding NA_* defines for each MSGTYPE_* with incrementing values */
+enum na_type {
+  NA_ORIGINAL = 0,    /**< String used internally. No chars stripped, internal markup */
+  NA_PASCII,          /**< CRLF lineendings, accents, no ansi */
+  NA_ANSI,            /**< CRLF lineendings, accents, ansi */
+  NA_PUEBLO,          /**< Pueblo, no ansi */
+  NA_PUEBLOANSI,      /**< Pueblo, with ansi */
+  NA_TPASCII,         /**< CRLF lineendings, accents, no ansi, Telnet-aware */
+  NA_TANSI,           /**< CRLF lineendings, accents, ansi, Telnet-aware */
+  NA_NPASCII,         /**< CRLF lineendings, no accents, no ansi */
+  NA_NANSI,           /**< CRLF lineendings, no accents, ansi */
+  NA_NPUEBLO,         /**< Pueblo, no accents, no ansi */
+  NA_NPUEBLOANSI,     /**< Pueblo, no accents, ansi */
+  NA_TNPASCII,        /**< CRLF lineendings, no accents, no ansi, telnet-aware */
+  NA_TNANSI           /**< CRLF lineendings, noaccents, ansi, telnet-aware */
+};
+
+static enum na_type msg_to_na(int output_type);
+
+/** Number of possible message text renderings */
+#define MESSAGE_TYPES 13
+
+/** A place to store a single rendering of a message. */
+struct notify_strings {
+  unsigned char *message;  /**< The message text. */
+  size_t len;              /**< Length of message. */
+  int made;                /**< True if message has been rendered. */
+};
+
+/** A message, in every possible rendering */
+struct notify_message {
+  struct notify_strings strs[MESSAGE_TYPES];  /**< The message, in a bunch of formats */
+  int type; /**< MSG_* flags for the types of chars possibly present in the original string */
+};
+
+/** Every possible rendering of a message, plus the nospoof and paranoid prefixes */
+struct notify_message_group {
+  struct notify_message messages;  /**< Message being notified */
+  struct notify_message nospoofs;  /**< Non-paranoid Nospoof prefix */
+  struct notify_message paranoids; /**< Paranoid Nospoof prefix */
+};
+
+static void init_notify_message_group(struct notify_message_group
+                                      *real_message);
+static void notify_anything_sub(dbref speaker, na_lookup func, void *fdata,
+                                dbref *skips, int flags,
+                                struct notify_message_group *message,
+                                const char *prefix, dbref loc,
+                                struct format_msg *format);
+
+static void notify_internal(dbref target, dbref speaker, dbref *skips,
+                            int flags, struct notify_message_group *message,
+                            struct notify_message *prefix, dbref loc,
+                            struct format_msg *format);
+static unsigned char *make_nospoof(dbref speaker, int paranoid);
+static void make_prefix_str(dbref thing, dbref enactor, const char *msg,
+                            char *tbuf1);
+
+static unsigned char *notify_makestring(struct notify_message *message,
+                                        int output_type);
+static unsigned char *notify_makestring_nocache(unsigned char *message,
+                                                int output_type);
+
+/** Check which kinds of markup or special characters a string may contain.
+ * This is used to avoid generating message types we don't need. For
+ * instance, if a string doesn't contain any ANSI, we don't need to
+ * waste time and memory creating a seperate copy for ANSI-aware players,
+ * since it won't look any different to the copy created for non-ANSI
+ * players.
+ * \param str the string to check
+ * \return a bitwise int of MSG_* flags possibly required for the msg
+ */
+#define CHECK_FOR_HTML
+static int
+str_type(const char *str)
 {
-  int n;
-  for (n = 0; n < MESSAGE_TYPES; n++) {
-    messages[n].message = NULL;
-    messages[n].len = 0;
-    messages[n].made = 0;
+  int type = MSG_ALL_PLAYER;
+#ifdef CHECK_FOR_HTML
+  char *p;
+  type = (MSG_ALL_PLAYER & ~(MSG_PUEBLO | MSG_STRIPACCENTS));
+#endif                          /* CHECK_FOR_HTML */
+
+  if (strstr(str, MARKUP_START "c") == NULL) {
+    /* No ANSI */
+    type &= ~MSG_ANSI;
   }
+#ifdef CHECK_FOR_HTML
+
+  /* I'm not sure whether checking for HTML entities/accented characters
+   * here will cost more time than it saves later (in not duplicating
+   * unnecessary additional string renderings). But here's the code,
+   * just in case.
+   */
+  p = (char *) str;
+  while (*p) {
+    if (*p == '\n')
+      type |= MSG_PUEBLO;
+    else if (accent_table[(unsigned char) *p].base) {
+      type |= MSG_PUEBLO | MSG_STRIPACCENTS;
+      break;
+    }
+    p++;
+  }
+  if (!(type & MSG_PUEBLO) && strstr(str, MARKUP_START "p") != NULL)
+    type |= MSG_PUEBLO;
+
+#endif                          /* CHECK_FOR_HTML */
+
+  if (strchr(str, IAC) == NULL) {
+    /* No Telnet IAC chars to be escaped */
+    type &= ~MSG_TELNET;
+  }
+
+  /* There's no point checking for \n and removing MSG_PLAYER - we'll never
+   * be caching values without MSG_PLAYER anyway */
+
+  return type;
 }
 
-static void
-free_strings(struct notify_strings messages[])
+/** Bitwise MSG_* flags of the type of message to send to a particular descriptor.
+ * Used by notify_makestring() to make a suitable string to send to the player.
+ * \param d descriptor to check
+ * \return bitwise MSG_* flags giving the type of message to send
+ */
+static int
+notify_type(DESC *d)
 {
-  int n;
-  for (n = 0; n < MESSAGE_TYPES; n++)
-    if (messages[n].message)
-      mush_free(messages[n].message, "string");
+  int type = MSG_PLAYER;
+
+  if (!d->connected) {
+    /* These are the settings used at, e.g., the connect screen,
+     * when there's no connected player yet.
+     */
+    type |= MSG_STRIPACCENTS;
+    if (d->conn_flags & CONN_HTML)
+      type |= MSG_PUEBLO;
+    else {
+      type |= MSG_ANSI;
+      if (d->conn_flags & CONN_TELNET)
+        type |= MSG_TELNET;
+    }
+    return type;
+  }
+
+  /* At this point, we have a connected player on the descriptor */
+  if (IS(d->player, TYPE_PLAYER, "NOACCENTS"))
+    type |= MSG_STRIPACCENTS;
+
+  if (d->conn_flags & CONN_HTML) {
+    type |= MSG_PUEBLO;
+  } else if (d->conn_flags & CONN_TELNET) {
+    type |= MSG_TELNET;
+  }
+
+  if (ShowAnsi(d->player)) {
+    type |= MSG_ANSI;
+  }
+
+  return type;
 }
 
+/** output the appropriate raw ansi tags when markup is found in a string.
+ * Used by render_string().
+ * \param states
+ * \param ansi_ptr
+ * \param ptr
+ * \param buff
+ * \param bp
+ * \return 0 if data was written successfully, 1 on failure
+ */
 static int
 output_ansichange(ansi_data *states, int *ansi_ptr,
                   const unsigned char **ptr, char *buff, char **bp)
@@ -259,258 +391,6 @@ output_ansichange(ansi_data *states, int *ansi_ptr,
   return retval;
 }
 
-static unsigned char *
-notify_makestring(const char *message, struct notify_strings messages[],
-                  enum na_type type, int flags)
-{
-  char *o;
-  const unsigned char *p;
-  char *t;
-  int strip = 0;
-  int pueblo = 0;
-  static char tbuf[BUFFER_LEN];
-  char *bp;
-
-  static ansi_data states[BUFFER_LEN];
-  int ansi_ptr, ansifix;
-  ansi_ptr = 0;
-  ansifix = 0;
-
-  /* Everything is explicitly off by default */
-  states[0].bits = 0;
-  states[0].offbits = 0;
-  states[0].fore = 0;
-  states[0].back = 0;
-
-  if (messages[type].made) {
-    if (flags & NA_PROMPT) {
-      bp = tbuf;
-      safe_str((char *) messages[type].message, tbuf, &bp);
-      safe_chr((char) IAC, tbuf, &bp);
-      safe_chr((char) GOAHEAD, tbuf, &bp);
-      *bp = '\0';
-      return (unsigned char *) tbuf;
-    } else
-      return messages[type].message;
-  }
-  messages[type].made = 1;
-
-  p = (unsigned char *) message;
-  o = tbuf;
-  t = o;
-
-  /* Since well over 50% is this type, we do it quick */
-  switch (type) {
-  case NA_ASCII:
-    while (*p) {
-      switch (*p) {
-      case TAG_START:
-        while (*p && *p != TAG_END)
-          p++;
-        break;
-      case '\r':
-      case BEEP_CHAR:
-        break;
-      case ESC_CHAR:
-        while (*p && *p != 'm')
-          p++;
-        break;
-      default:
-        safe_chr(*p, t, &o);
-      }
-      p++;
-    }
-    *o = '\0';
-    messages[type].message = (unsigned char *) mush_strdup(tbuf, "string");
-    messages[type].len = o - tbuf;
-    if (flags & NA_PROMPT) {
-      bp = tbuf;
-      safe_str((char *) messages[type].message, tbuf, &bp);
-      safe_chr((char) IAC, tbuf, &bp);
-      safe_chr((char) GOAHEAD, tbuf, &bp);
-      *bp = '\0';
-      return (unsigned char *) tbuf;
-    }
-    return messages[type].message;
-  case NA_NPASCII:
-    strip = 1;
-  case NA_PASCII:
-  case NA_TPASCII:
-    /* PLAYER Ascii. Different output. \n is \r\n */
-    if (type == NA_NPASCII)
-      strip = 1;
-    while (*p) {
-      switch (*p) {
-      case IAC:
-        if (type == NA_TPASCII)
-          safe_strl("\xFF\xFF", 2, t, &o);
-        else if (strip)
-          safe_str(accent_table[IAC].base, t, &o);
-        else
-          safe_chr((char) IAC, t, &o);
-        break;
-      case TAG_START:
-        while (*p && *p != TAG_END)
-          p++;
-        break;
-      case ESC_CHAR:
-        while (*p && *p != 'm')
-          p++;
-        break;
-      case '\r':
-        break;
-      case '\n':
-        safe_strl("\r\n", 2, t, &o);
-        break;
-      default:
-        if (strip && accent_table[(unsigned char) *p].base)
-          safe_str(accent_table[(unsigned char) *p].base, t, &o);
-        else
-          safe_chr(*p, t, &o);
-      }
-      p++;
-    }
-    *o = '\0';
-    messages[type].message = (unsigned char *) mush_strdup(tbuf, "string");
-    messages[type].len = o - tbuf;
-    if (flags & NA_PROMPT) {
-      bp = tbuf;
-      safe_str((char *) messages[type].message, tbuf, &bp);
-      safe_chr((char) IAC, tbuf, &bp);
-      safe_chr((char) GOAHEAD, tbuf, &bp);
-      *bp = '\0';
-      return (unsigned char *) tbuf;
-    }
-    return messages[type].message;
-
-  case NA_PUEBLO:
-  case NA_NPUEBLO:
-    pueblo = 1;
-    /* FALLTHROUGH */
-  case NA_COLOR:
-  case NA_TCOLOR:
-  case NA_NCOLOR:
-    /* FALLTHROUGH */
-  case NA_ANSI:
-  case NA_TANSI:
-  case NA_NANSI:
-    if (type == NA_NCOLOR || type == NA_NANSI || type == NA_NPUEBLO)
-      strip = 1;
-    while (*p) {
-      switch ((unsigned char) *p) {
-      case IAC:
-        if (type == NA_TANSI || type == NA_TCOLOR)
-          safe_strl("\xFF\xFF", 2, t, &o);
-        else if (pueblo)
-          safe_format(t, &o, "&#%d;", IAC);
-        else if (strip && accent_table[IAC].base)
-          safe_str(accent_table[IAC].base, t, &o);
-        else
-          safe_chr((char) IAC, t, &o);
-        break;
-      case TAG_START:
-        if (*(p + 1) == MARKUP_COLOR) {
-          ansifix += output_ansichange(states, &ansi_ptr, &p, t, &o);
-        } else if (pueblo && (*(p + 1) == MARKUP_HTML)) {
-          safe_chr('<', t, &o);
-          /* Skip over the 'p' for Pueblo */
-          p += 2;
-          while ((*p) && (*p != TAG_END)) {
-            safe_chr(*p, t, &o);
-            p++;
-          }
-          safe_chr('>', t, &o);
-        } else {
-          while (*p && *p != TAG_END)
-            p++;
-        }
-        break;
-      case TAG_END:
-        /* Should never be seen alone */
-        break;
-      case '\r':
-        break;
-      case ESC_CHAR:
-        /* After the ansi changes, I really hope we don't encounter this. */
-        ansifix += output_ansichange(states, &ansi_ptr, &p, t, &o);
-        break;
-      default:
-        if (pueblo) {
-          if (strip) {
-            /* Even if we're NOACCENTS, we must still translate a few things */
-            switch ((unsigned char) *p) {
-            case '\n':
-            case '&':
-            case '<':
-            case '>':
-            case '"':
-              safe_str(accent_table[(unsigned char) *p].entity, t, &o);
-              break;
-            default:
-              if (accent_table[(unsigned char) *p].base)
-                safe_str(accent_table[(unsigned char) *p].base, t, &o);
-              else
-                safe_chr(*p, t, &o);
-              break;
-            }
-          } else if (accent_table[(unsigned char) *p].entity)
-            safe_str(accent_table[(unsigned char) *p].entity, t, &o);
-          else
-            safe_chr(*p, t, &o);
-        } else {
-          /* Non-pueblo */
-          if ((unsigned char) *p == '\n')
-            safe_str("\r\n", t, &o);
-          else if (strip && accent_table[(unsigned char) *p].base)
-            safe_str(accent_table[(unsigned char) *p].base, t, &o);
-          else
-            safe_chr(*p, t, &o);
-        }
-      }
-      if (*p)
-        p++;
-    }
-    /* We possibly have some unclosed ansi. Force an
-     * ANSI_NORMAL for now. */
-    if (ansifix || (ansi_ptr && safe_str(ANSI_RAW_NORMAL, t, &o))) {
-      int sub = 7;
-      char *ptr;
-      int q;
-      if (flags & NA_PROMPT)
-        sub += 2;
-      ptr = t + BUFFER_LEN - sub;
-      for (q = 20; q > 0 && *ptr != ESC_CHAR; q--, ptr--) ;
-      if (pueblo) {
-        for (q = 20; q > 0 && *ptr != ESC_CHAR && *ptr != '<'; q--, ptr--) ;
-      } else {
-        for (q = 20; q > 0 && *ptr != ESC_CHAR; q--, ptr--) ;
-      }
-      if (q > 0) {
-        o = ptr;
-      } else {
-        o = t + BUFFER_LEN - sub;
-      }
-      safe_str(ANSI_RAW_NORMAL, t, &o);
-      *o = '\0';
-    }
-
-    break;
-  }
-
-  *o = '\0';
-  messages[type].message = (unsigned char *) mush_strdup(tbuf, "string");
-  messages[type].len = o - tbuf;
-  if (flags & NA_PROMPT) {
-    bp = tbuf;
-    safe_str((char *) messages[type].message, tbuf, &bp);
-    safe_chr((char) IAC, tbuf, &bp);
-    safe_chr((char) GOAHEAD, tbuf, &bp);
-    *bp = '\0';
-    return (unsigned char *) tbuf;
-  }
-  return messages[type].message;
-}
-
 /*--------------------------------------------------------------
  * Iterators for notify_anything.
  * notify_anything calls these functions repeatedly to get the
@@ -519,7 +399,7 @@ notify_makestring(const char *message, struct notify_strings messages[],
  * receives NOTHING back, it stops.
  */
 
-/** notify_anthing() iterator for a single dbref.
+/** notify_anything() iterator for a single dbref.
  * \param current last dbref from iterator.
  * \param data memory address containing first object in chain.
  * \return dbref of next object to notify, or NOTHING when done.
@@ -533,7 +413,7 @@ na_one(dbref current, void *data)
     return NOTHING;
 }
 
-/** notify_anthing() iterator for following a contents/exit chain.
+/** notify_anything() iterator for following a contents/exit chain.
  * \param current last dbref from iterator.
  * \param data memory address containing first object in chain.
  * \return dbref of next object to notify, or NOTHING when done.
@@ -547,7 +427,7 @@ na_next(dbref current, void *data)
     return Next(current);
 }
 
-/** notify_anthing() iterator for a location and its contents.
+/** notify_anything() iterator for a location and its contents.
  * \param current last dbref from iterator.
  * \param data memory address containing dbref of location.
  * \return dbref of next object to notify, or NOTHING when done.
@@ -564,456 +444,924 @@ na_loc(dbref current, void *data)
     return Next(current);
 }
 
-/** notify_anthing() iterator for a contents/exit chain, with a dbref to skip.
- * \param current last dbref from iterator.
- * \param data memory address containing array of two dbrefs: the start of the chain and the dbref to skip.
- * \return dbref of next object to notify, or NOTHING when done.
+/** Initialize a notify_message_group with NULL/zero values
  */
-dbref
-na_nextbut(dbref current, void *data)
+static void
+init_notify_message_group(struct notify_message_group *real_message)
 {
-  dbref *dbrefs = data;
+  int i;
 
-  do {
-    if (current == NOTHING)
-      current = dbrefs[0];
-    else
-      current = Next(current);
-  } while (current == dbrefs[1]);
-  return current;
-}
+  for (i = 0; i < MESSAGE_TYPES; i++) {
+    real_message->messages.strs[i].message = NULL;
+    real_message->messages.strs[i].made = 0;
+    real_message->messages.strs[i].len = 0;
 
-/** notify_anthing() iterator for a location and its contents, with a dbref to skip.
- * \param current last dbref from iterator.
- * \param data memory address containing array of two dbrefs: the location and the dbref to skip.
- * \return dbref of next object to notify, or NOTHING when done.
- */
-dbref
-na_except(dbref current, void *data)
-{
-  dbref *dbrefs = data;
+    real_message->nospoofs.strs[i].message = NULL;
+    real_message->nospoofs.strs[i].made = 0;
+    real_message->nospoofs.strs[i].len = 0;
 
-  do {
-    if (current == NOTHING)
-      current = dbrefs[0];
-    else if (current == dbrefs[0])
-      current = Contents(current);
-    else
-      current = Next(current);
-  } while (current == dbrefs[1]);
-  return current;
-}
-
-/** notify_anthing() iterator for a location and its contents, with 2 dbrefs to skip.
- * \param current last dbref from iterator.
- * \param data memory address containing array of three dbrefs: the location and the dbrefs to skip.
- * \return dbref of next object to notify, or NOTHING when done.
- */
-dbref
-na_except2(dbref current, void *data)
-{
-  dbref *dbrefs = data;
-
-  do {
-    if (current == NOTHING)
-      current = dbrefs[0];
-    else if (current == dbrefs[0])
-      current = Contents(current);
-    else
-      current = Next(current);
-  } while ((current == dbrefs[1]) || (current == dbrefs[2]));
-  return current;
-}
-
-/** notify_anthing() iterator for a location and its contents, with N dbrefs to skip.
- * \param current last dbref from iterator.
- * \param data memory address containing array of three or more values: the number of dbrefs to skip, the location, and the dbrefs to skip.
- * \return dbref of next object to notify, or NOTHING when done.
- */
-dbref
-na_exceptN(dbref current, void *data)
-{
-  dbref *dbrefs = data;
-  int i, check;
-
-  do {
-    if (current == NOTHING)
-      current = dbrefs[1];
-    else if (current == dbrefs[1])
-      current = Contents(current);
-    else
-      current = Next(current);
-    check = 0;
-    for (i = 2; i < dbrefs[0] + 2; i++)
-      if (current == dbrefs[i])
-        check = 1;
-  } while (check);
-  return current;
-}
-
-
-static enum na_type
-notify_type(DESC *d)
-{
-  enum na_type poutput;
-  int strip;
-
-  if (!d->connected) {
-    /* These are the settings used at, e.g., the connect screen,
-     * when there's no connected player yet. If you want to use accented
-     * characters, change NA_NPUEBLO and NA_NCOLOR to NA_PUEBLO and
-     * NA_COLOR, respectively.
-     */
-    return (d->conn_flags & CONN_HTML) ? NA_NPUEBLO : NA_NCOLOR;
+    real_message->paranoids.strs[i].message = NULL;
+    real_message->paranoids.strs[i].made = 0;
+    real_message->paranoids.strs[i].len = 0;
   }
+  real_message->messages.type = 0;
+  real_message->nospoofs.type = 0;
+  real_message->paranoids.type = 0;
+}
 
-  /* At this point, we have a connected player on the descriptor */
-  strip = IS(d->player, TYPE_PLAYER, "NOACCENTS");
+/** Evaluate an object's @prefix and store the result in a buffer.
+ * If the attribute doesn't exist, a default prefix is used.
+ * \param thing object with prefix attribute.
+ * \param enactor object causing the evaluation
+ * \param msg message.
+ * \param tbuf1 destination buffer.
+ */
+static void
+make_prefix_str(dbref thing, dbref enactor, const char *msg, char *tbuf1)
+{
+  char *bp;
+  PE_REGS *pe_regs;
+  tbuf1[0] = '\0';
 
-  if (d->conn_flags & CONN_HTML) {
-    poutput = strip ? NA_NPUEBLO : NA_PUEBLO;
-  } else if (ShowAnsi(d->player)) {
-    if (ShowAnsiColor(d->player)) {
-      if (strip)
-        poutput = NA_NCOLOR;
-      else
-        poutput = (d->conn_flags & CONN_TELNET) ? NA_TCOLOR : NA_COLOR;
-    } else {
-      if (strip)
-        poutput = NA_NANSI;
-      else
-        poutput = (d->conn_flags & CONN_TELNET) ? NA_TANSI : NA_ANSI;
-    }
+  pe_regs = pe_regs_create(PE_REGS_ARG, "make_prefix_str");
+  pe_regs_setenv_nocopy(pe_regs, 0, msg);
+
+  if (!call_attrib(thing, "PREFIX", tbuf1, enactor, NULL, pe_regs)
+      || *tbuf1 == '\0') {
+    bp = tbuf1;
+    safe_format(tbuf1, &bp, T("From %s, "),
+                Name(IsExit(thing) ? Source(thing) : thing));
+    *bp = '\0';
   } else {
-    if (strip)
-      poutput = NA_NPASCII;
-    else
-      poutput = (d->conn_flags & CONN_TELNET) ? NA_TPASCII : NA_PASCII;
+    bp = strchr(tbuf1, '\0');
+    safe_chr(' ', tbuf1, &bp);
+    *bp = '\0';
   }
-  return poutput;
+  pe_regs_free(pe_regs);
+
+  return;
 }
 
-/** Send a message to a series of dbrefs.
- * This key function takes a speaker's utterance and looks up each
- * object that should hear it. For each, it may need to render
- * the utterance in a different fashion (with or without ansi, html,
- * accents), but we cache each rendered version for efficiency.
- * \param speaker dbref of object producing the message.
- * \param func pointer to iterator function to look up each receiver.
- * \param fdata initial data to pass to func.
- * \param nsfunc function to call to do NOSPOOF formatting, or NULL.
- * \param flags flags to pass in (such as NA_INTERACT)
- * \param message message to render and transmit.
- * \param loc location the message was sent to.
+/** Return the appropriate NA_* flag for a bitwise group of MSG_* flags */
+static enum na_type
+msg_to_na(int output_type)
+{
+  switch (output_type) {
+  case MSGTYPE_ORIGINAL:
+    return NA_ORIGINAL;
+  case MSGTYPE_PASCII:
+    return NA_PASCII;
+  case MSGTYPE_ANSI:
+    return NA_ANSI;
+  case MSGTYPE_PUEBLO:
+  case (MSGTYPE_PUEBLO | MSG_TELNET):
+    return NA_PUEBLO;
+  case MSGTYPE_PUEBLOANSI:
+  case (MSGTYPE_PUEBLOANSI | MSG_TELNET):
+    return NA_PUEBLOANSI;
+  case MSGTYPE_TPASCII:
+    return NA_TPASCII;
+  case MSGTYPE_TANSI:
+    return NA_TANSI;
+  case MSGTYPE_NPASCII:
+    return NA_NPASCII;
+  case MSGTYPE_NANSI:
+    return NA_NANSI;
+  case MSGTYPE_NPUEBLO:
+  case (MSGTYPE_NPUEBLO | MSG_TELNET):
+    return NA_NPUEBLO;
+  case MSGTYPE_NPUEBLOANSI:
+  case (MSGTYPE_NPUEBLOANSI | MSG_TELNET):
+    return NA_NPUEBLOANSI;
+  case MSGTYPE_TNPASCII:
+    return NA_TNPASCII;
+  case MSGTYPE_TNANSI:
+    return NA_TNANSI;
+  }
+
+  /* we should never get here. */
+  do_rawlog(LT_ERR, "Invalid MSG_* flag setting '%d' in msg_to_na",
+            output_type);
+  return NA_PASCII;
+}
+
+/** Make a nospoof prefix for speaker, possibly for paranoid nospoof
+ * \param speaker the object speaking
+ * \param paranoid make a paranoid nospoof prefix, instead of regular nospoof?
+ * \return pointer to nospoof prefix
+ */
+static unsigned char *
+make_nospoof(dbref speaker, int paranoid)
+{
+  char *dest, *bp;
+  bp = dest = mush_malloc(BUFFER_LEN, "notify_str");
+
+  if (!GoodObject(speaker))
+    *dest = '\0';
+  else if (paranoid) {
+    if (speaker == Owner(speaker))
+      safe_format(dest, &bp, "[%s(#%d)] ", Name(speaker), speaker);
+    else
+      safe_format(dest, &bp, T("[%s(#%d)'s %s(#%d)] "), Name(Owner(speaker)),
+                  Owner(speaker), Name(speaker), speaker);
+  } else
+    safe_format(dest, &bp, "[%s:] ", spname(speaker));
+  *bp = '\0';
+  return (unsigned char *) dest;
+}
+
+/** Render a string to the given format. Returns pointer to a STATIC buffer.
+ * Used by notify_makestring() to render a string for output to a player's
+ * client, and by the softcode render() function.
+ * \param message the string to render
+ * \param output_type bitwise MSG_* flags for how to render the message
+ * \return pointer to static string
+ */
+unsigned char *
+render_string(unsigned char *message, int output_type)
+{
+  static char buff[BUFFER_LEN];
+  static char *bp;
+  const unsigned char *p;
+
+  static ansi_data states[BUFFER_LEN];
+  int ansi_ptr, ansifix;
+  ansi_ptr = 0;
+  ansifix = 0;
+
+  /* Everything is explicitly off by default */
+  states[0].bits = 0;
+  states[0].offbits = 0;
+  states[0].fore = 0;
+  states[0].back = 0;
+
+  bp = buff;
+
+  if (output_type == MSG_INTERNAL) {
+    strcpy(buff, (char *) message);
+    return (unsigned char *) buff;
+  }
+
+  for (p = message; *p; p++) {
+    switch (*p) {
+    case TAG_START:
+      if (*(p + 1) == MARKUP_COLOR) {
+        /* ANSI colors */
+        if ((output_type & MSG_ANSI)) {
+          /* Translate internal markup to ANSI tags */
+          ansifix += output_ansichange(states, &ansi_ptr, &p, buff, &bp);
+        } else if (output_type & MSG_MARKUP) {
+          /* Preserve internal markup */
+          while (*p && *p != TAG_END) {
+            safe_chr(*p, buff, &bp);
+            p++;
+          }
+          safe_chr(TAG_END, buff, &bp);
+        } else {
+          /* Strip ANSI */
+          while (*p && *p != TAG_END)
+            p++;
+        }
+      } else if (*(p + 1) == MARKUP_HTML) {
+        /* Pueblo markup */
+        if (output_type & MSG_PUEBLO) {
+          /* Output as HTML */
+          safe_chr('<', buff, &bp);
+          /* Skip over TAG_START and MARKUP_HTML */
+          p += 2;
+          while (*p && *p != TAG_END) {
+            safe_chr(*p, buff, &bp);
+            p++;
+          }
+          safe_chr('>', buff, &bp);
+        } else if (output_type & MSG_MARKUP) {
+          /* Preserve internal markup */
+          while (*p && *p != TAG_END) {
+            safe_chr(*p, buff, &bp);
+            p++;
+          }
+          safe_chr(TAG_END, buff, &bp);
+        } else {
+          /* Strip */
+          while (*p && *p != TAG_END)
+            p++;
+        }
+      } else {
+        /* Unknown markup type; strip */
+        while (*p && *p != TAG_END)
+          p++;
+      }
+      break;
+    case TAG_END:
+      if (output_type & MSG_MARKUP)
+        safe_chr(*p, buff, &bp);
+      break;                    /* Skip over TAG_ENDs */
+    case ESC_CHAR:
+      /* After the ansi changes, I really hope we don't encounter this. */
+      if ((output_type & MSG_ANSI)) {
+        ansifix += output_ansichange(states, &ansi_ptr, &p, buff, &bp);
+      } else {
+        /* Skip over tag */
+        while (*p && *p != 'm')
+          p++;
+      }
+      break;
+    case '\r':
+      break;
+    case IAC:
+      if (output_type & MSG_STRIPACCENTS) {
+        safe_str(accent_table[*p].base, buff, &bp);
+      } else if (output_type & MSG_PUEBLO) {
+        safe_str(accent_table[*p].entity, buff, &bp);
+      } else if (output_type & MSG_TELNET) {
+        safe_strl("\xFF\xFF", 2, buff, &bp);
+      } else {
+        safe_chr(*p, buff, &bp);
+      }
+      break;
+    default:
+      if (output_type & MSG_PUEBLO) {
+        if (output_type & MSG_STRIPACCENTS) {
+          switch (*p) {
+          case '\n':
+          case '&':
+          case '<':
+          case '>':
+          case '"':
+            safe_str(accent_table[*p].entity, buff, &bp);
+            break;
+          default:
+            if (accent_table[*p].base) {
+              safe_str(accent_table[*p].base, buff, &bp);
+            } else {
+              safe_chr(*p, buff, &bp);
+            }
+            break;
+          }
+        } else if (accent_table[*p].entity) {
+          safe_str(accent_table[*p].entity, buff, &bp);
+        } else {
+          safe_chr(*p, buff, &bp);
+        }
+      } else if (*p == '\n' && (output_type & MSG_PLAYER)) {
+        safe_strl("\r\n", 2, buff, &bp);
+      } else if (output_type & MSG_STRIPACCENTS && accent_table[*p].base) {
+        safe_str(accent_table[*p].base, buff, &bp);
+      } else {
+        safe_chr(*p, buff, &bp);
+      }
+      break;
+    }
+  }
+
+  *bp = '\0';
+
+  /* We possibly have some unclosed ansi. Force an
+   * ANSI_NORMAL for now. */
+  if (ansifix || (ansi_ptr && safe_str(ANSI_RAW_NORMAL, buff, &bp))) {
+    int sub = 7;
+    char *ptr;
+    int q;
+
+    ptr = buff + BUFFER_LEN - sub;
+    for (q = 20; q > 0 && *ptr != ESC_CHAR; q--, ptr--) ;
+    if (output_type & MSG_PUEBLO) {
+      for (q = 20; q > 0 && *ptr != ESC_CHAR && *ptr != '<'; q--, ptr--) ;
+    } else {
+      for (q = 20; q > 0 && *ptr != ESC_CHAR; q--, ptr--) ;
+    }
+    if (q > 0) {
+      bp = ptr;
+    } else {
+      bp = buff + BUFFER_LEN - sub;
+    }
+    safe_str(ANSI_RAW_NORMAL, buff, &bp);
+    *bp = '\0';
+  }
+
+  *bp = '\0';
+
+  return (unsigned char *) buff;
+
+}
+
+/** Render a message into a given format, if we haven't already done so, and cache the result.
+ * If we've already cached the string in the requested format, return that.
+ * Otherwise, render it, cache and return the newly cached version. Calls
+ * render_string() to actually do the rendering, and strdup()s the result.
+ * \param message a notify_message structure, with the original message and cached copies
+ * \param output_type MSG_* flags of how to render the message
+ * \return pointer to the cached, rendered string
+ */
+static unsigned char *
+notify_makestring(struct notify_message *message, int output_type)
+{
+  enum na_type msgtype;
+  unsigned char *newstr;
+
+  if (output_type & MSG_PLAYER)
+    output_type = (output_type & (message->type | MSG_PLAYER));
+
+  msgtype = msg_to_na(output_type);
+
+  if (message->strs[msgtype].made) {
+    return message->strs[msgtype].message;
+  }
+
+  /* Render the message */
+  newstr = render_string(message->strs[0].message, output_type);
+
+  /* Save the new message */
+  message->strs[msgtype].made = 1;
+  message->strs[msgtype].message =
+    (unsigned char *) mush_strdup((char *) newstr, "notify_str");
+  message->strs[msgtype].len = u_strlen(newstr);
+
+  return message->strs[msgtype].message;
+
+}
+
+/** Render a message in a given format and return the new message.
+ * Does not cache the results like notify_makestring() - used for messages
+ * which have been formatted through a ufun, and are thus different for
+ * every object which hears them.
+ * \param message the message to render
+ * \param output_type MSG_* flags of how to render the msg
+ * \return pointer to the newly rendered, strdup()'d string
+ */
+static unsigned char *
+notify_makestring_nocache(unsigned char *message, int output_type)
+{
+  return (unsigned char *) mush_strdup((char *)
+                                       render_string(message, output_type),
+                                       "notify_str");
+}
+
+/* notify_except() is #define'd to notify_except2() */
+
+/** Notify all objects in a location, except 2, and propagate the sound.
+ * \param loc where to emit the sound
+ * \param exc1 first object to not notify
+ * \param exc2 second object to not notify, or NOTHING
+ * \param msg the message to send
+ * \param flags NA_* flags
  */
 void
-notify_anything_loc(dbref speaker, na_lookup func,
-                    void *fdata, char *(*nsfunc) (dbref, na_lookup func, void *,
-                                                  int), int flags,
-                    const char *message, dbref loc)
+notify_except2(dbref loc, dbref exc1, dbref exc2, const char *msg, int flags)
 {
-  dbref target;
-  dbref passalong[3];
-  struct notify_strings messages[MESSAGE_TYPES];
-  struct notify_strings nospoofs[MESSAGE_TYPES];
-  struct notify_strings paranoids[MESSAGE_TYPES];
-  int i;
-  DESC *d;
-  enum na_type poutput;
-  unsigned char *pstring;
-  size_t plen;
-  char *bp;
-  ATTR *a;
-  char *asave;
-  char const *ap;
-  int havespoof = 0;
-  int havepara = 0;
-  char *tbuf1 = NULL, *nospoof = NULL, *paranoid = NULL, *msgbuf;
-  static dbref puppet = NOTHING;
-  int nsflags;
+  dbref skips[3];
 
-  if (!message || *message == '\0' || !func)
+  if (exc1 == NOTHING)
+    exc1 = exc2;
+
+  skips[0] = exc1;
+  skips[1] = exc2;
+  skips[2] = NOTHING;
+
+  notify_anything(orator, na_loc, &loc, (exc1 == NOTHING) ? NULL : skips,
+                  flags | NA_PROPAGATE, msg, NULL, loc, NULL);
+
+}
+
+/** Public function to notify one or more objects with a message.
+ * This function is a wrapper around notify_anything_sub, which prepares a char*
+ * message into a notify_message_group struct.
+ * \param speaker the object which created the message
+ * \param func lookup function to figure out who to tell
+ * \param fdata data to pass to func
+ * \param skips pointer to an array of dbrefs not to notify, or NULL
+ * \param flags NA_* flags to limit/modify how the message is sent
+ * \param message the message to send
+ * \param prefix a prefix to show before the message, or NULL
+ * \param loc where the sound is coming from, or AMBIGUOUS to use speaker's loc
+ * \param format a format_msg structure (obj/attr/args) to ufun to generate the message
+ */
+void
+notify_anything(dbref speaker, na_lookup func, void *fdata, dbref *skips,
+                int flags, const char *message, const char *prefix, dbref loc,
+                struct format_msg *format)
+{
+  struct notify_message_group real_message;
+  int i;
+
+  /* If we have no message, or noone to notify, do nothing */
+  if (!message || !*message || !func)
     return;
 
-  /* Depth check */
+  /* Don't recurse too much */
   if (na_depth > 7)
     return;
-  na_depth++;
 
-  /* Only allocate these buffers when needed */
+  /* Do it */
+  init_notify_message_group(&real_message);
+  real_message.messages.strs[0].message = (unsigned char *) message;
+  real_message.messages.strs[0].made = 1;
+  real_message.messages.strs[0].len = strlen(message);
+  real_message.messages.type = str_type(message);
+
+  if (loc == AMBIGUOUS)
+    loc = speech_loc(speaker);
+
+  notify_anything_sub(speaker, func, fdata, skips, flags, &real_message, prefix,
+                      loc, format);
+
+  /* Cleanup */
   for (i = 0; i < MESSAGE_TYPES; i++) {
-    messages[i].message = NULL;
-    messages[i].made = 0;
-    nospoofs[i].message = NULL;
-    nospoofs[i].made = 0;
-    paranoids[i].message = NULL;
-    paranoids[i].made = 0;
+    if (i && real_message.messages.strs[i].made)
+      mush_free(real_message.messages.strs[i].message, "notify_str");
+    if (real_message.nospoofs.strs[i].made)
+      mush_free(real_message.nospoofs.strs[i].message, "notify_str");
+    if (real_message.paranoids.strs[i].made)
+      mush_free(real_message.paranoids.strs[i].message, "notify_str");
   }
 
-  msgbuf = mush_strdup(message, "string");
-
-  target = NOTHING;
-
-  while ((target = func(target, fdata)) != NOTHING) {
-    if ((flags & NA_PONLY) && !IsPlayer(target))
-      continue;
-
-    if (IsPlayer(target)) {
-      if (!Connected(target) && options.login_allow && under_limit)
-        continue;
-
-      if (flags & NA_INTERACTION) {
-        int pass_interact = 1;
-        if ((flags & NA_INTER_SEE) &&
-            !can_interact(speaker, target, INTERACT_SEE))
-          pass_interact = 0;
-        if (pass_interact && (flags & NA_INTER_PRESENCE) &&
-            !can_interact(speaker, target, INTERACT_PRESENCE))
-          pass_interact = 0;
-        if (pass_interact && (flags & NA_INTER_HEAR) &&
-            !can_interact(speaker, target, INTERACT_HEAR))
-          pass_interact = 0;
-        if (pass_interact && (flags & NA_INTER_LOCK) &&
-            !Pass_Interact_Lock(speaker, target))
-          pass_interact = 0;
-        if (!pass_interact)
-          continue;
-      }
-
-      for (d = descriptor_list; d; d = d->next) {
-        if (d->connected && d->player == target) {
-          poutput = notify_type(d);
-
-          if ((flags & NA_PONLY) && (poutput != NA_PUEBLO))
-            continue;
-
-          if (!(flags & NA_SPOOF)
-              && (nsfunc && ((Nospoof(target)
-                              && ((target != speaker) || Paranoid(target)))
-                             || (flags & NA_NOSPOOF)))) {
-            if (Paranoid(target) || (flags & NA_PARANOID)) {
-              if (!havepara) {
-                paranoid = nsfunc(speaker, func, fdata, 1);
-                havepara = 1;
-              }
-              pstring = notify_makestring(paranoid, paranoids, poutput, flags);
-              plen = u_strlen(pstring);
-            } else {
-              if (!havespoof) {
-                nospoof = nsfunc(speaker, func, fdata, 0);
-                havespoof = 1;
-              }
-              pstring = notify_makestring(nospoof, nospoofs, poutput, flags);
-              plen = u_strlen(pstring);
-            }
-            queue_newwrite(d, pstring, plen);
-          }
-
-          pstring = notify_makestring(msgbuf, messages, poutput, flags);
-          plen = u_strlen(pstring);
-          if (pstring && *pstring)
-            queue_newwrite(d, pstring, plen);
-
-          if (!((flags & NA_NOENTER) || ((flags & NA_PROMPT)
-                                         && !(d->conn_flags &
-                                              CONN_PROMPT_NEWLINES)))) {
-            if ((poutput == NA_PUEBLO) || (poutput == NA_NPUEBLO)) {
-              if (flags & NA_NOPENTER)
-                queue_newwrite(d, (unsigned char *) "\n", 1);
-              else
-                queue_newwrite(d, (unsigned char *) "<BR>\n", 5);
-            } else {
-              queue_newwrite(d, (unsigned char *) "\r\n", 2);
-            }
-          }
-        }
-      }
-    } else if (Puppet(target) &&
-               ((Location(target) != Location(Owner(target))) ||
-                Verbose(target) ||
-                (flags & NA_MUST_PUPPET)) &&
-               ((flags & NA_PUPPET) || !(flags & NA_NORELAY))) {
-      dbref last = puppet;
-
-      if (flags & NA_INTERACTION) {
-        int pass_interact = 1;
-        if ((flags & NA_INTER_SEE) &&
-            !can_interact(speaker, target, INTERACT_SEE))
-          pass_interact = 0;
-        if (pass_interact && (flags & NA_INTER_PRESENCE) &&
-            !can_interact(speaker, target, INTERACT_PRESENCE))
-          pass_interact = 0;
-        if (pass_interact && (flags & NA_INTER_HEAR) &&
-            !can_interact(speaker, target, INTERACT_HEAR))
-          pass_interact = 0;
-        if (!pass_interact)
-          continue;
-      }
-
-      puppet = target;
-      if (!tbuf1)
-        tbuf1 = (char *) mush_malloc(BUFFER_LEN, "string");
-      bp = tbuf1;
-      safe_str(Name(target), tbuf1, &bp);
-      safe_str("> ", tbuf1, &bp);
-      *bp = '\0';
-      flags &= ~NA_PROMPT;      /* No prompts to puppets */
-      notify_anything(GOD, na_one, &Owner(target), NULL,
-                      NA_NOENTER | NA_PUPPET2 | NA_NORELAY | flags, tbuf1);
-
-      nsflags = 0;
-      if (!(flags & NA_SPOOF)) {
-        if (Nospoof(target))
-          nsflags |= NA_NOSPOOF;
-        if (Paranoid(target))
-          nsflags |= NA_PARANOID;
-      }
-      notify_anything(speaker, na_one, &Owner(target), ns_esnotify,
-                      flags | nsflags | NA_NORELAY | NA_PUPPET2, msgbuf);
-      puppet = last;
-    }
-    if ((flags & NA_NOLISTEN)
-        || (!PLAYER_LISTEN && IsPlayer(target))
-        || IsExit(target))
-      continue;
-
-    /* do @listen stuff */
-    a = atr_get_noparent(target, "LISTEN");
-    if (a) {
-      char match_space[BUFFER_LEN * 2];
-      ssize_t match_space_len = BUFFER_LEN * 2;
-      char *lenv[10];
-      int i;
-      PE_REGS *pe_regs;
-
-      if (!tbuf1)
-        tbuf1 = (char *) mush_malloc(BUFFER_LEN, "string");
-      strcpy(tbuf1, atr_value(a));
-      if (AF_Regexp(a)
-          ? regexp_match_case_r(tbuf1,
-                                (char *) notify_makestring(msgbuf, messages,
-                                                           NA_COLOR, 0),
-                                AF_Case(a), lenv, 10,
-                                match_space, match_space_len, NULL)
-          : wild_match_case_r(tbuf1,
-                              (char *) notify_makestring(msgbuf, messages,
-                                                         NA_COLOR, 0),
-                              AF_Case(a), lenv, 10,
-                              match_space, match_space_len, NULL)) {
-        if (eval_lock(speaker, target, Listen_Lock)) {
-          pe_regs = pe_regs_create(PE_REGS_ARG, "notify_anything_loc");
-          for (i = 0; i < 10; i++) {
-            if (lenv[i]) {
-              pe_regs_setenv_nocopy(pe_regs, i, lenv[i]);
-            }
-          }
-          if (PLAYER_AHEAR || (!IsPlayer(target))) {
-            if (speaker != target)
-              queue_attribute_base(target, "AHEAR", speaker, 0, pe_regs);
-            else
-              queue_attribute_base(target, "AMHEAR", speaker, 0, pe_regs);
-            queue_attribute_base(target, "AAHEAR", speaker, 0, pe_regs);
-          }
-          pe_regs_free(pe_regs);
-        }
-        if (!(flags & NA_NORELAY) && (loc != target) &&
-            !filter_found(target,
-                          (char *) notify_makestring(msgbuf, messages,
-                                                     NA_COLOR, 0), 1)) {
-          passalong[0] = target;
-          passalong[1] = target;
-          passalong[2] = Owner(target);
-          a = atr_get(target, "INPREFIX");
-          if (a) {
-            NEW_PE_INFO *pe_info = make_pe_info("pe_info-notify");
-            pe_regs_setenv_nocopy(pe_info->regvals, 0, msgbuf);
-            asave = safe_atr_value(a);
-            ap = asave;
-            bp = tbuf1;
-            process_expression(tbuf1, &bp, &ap, target, speaker, speaker,
-                               PE_DEFAULT, PT_DEFAULT, pe_info);
-            if (bp != tbuf1)
-              safe_chr(' ', tbuf1, &bp);
-            safe_str(msgbuf, tbuf1, &bp);
-            *bp = 0;
-            free_pe_info(pe_info);
-            free(asave);
-          }
-          notify_anything(speaker, Puppet(target) ? na_except2 : na_except,
-                          passalong, NULL, flags | NA_NORELAY | NA_PUPPET,
-                          (a) ? tbuf1 : msgbuf);
-        }
-      }
-    }
-    /* if object is flagged MONITOR, check for ^ listen patterns
-     *    * unlike normal @listen, don't pass the message on.
-     *    */
-
-    if (has_flag_by_name(target, "MONITOR", NOTYPE)
-        && eval_lock(speaker, target, Listen_Lock)
-      )
-      atr_comm_match(target, speaker, '^', ':',
-                     (char *) notify_makestring(msgbuf, messages, NA_COLOR, 0),
-                     0, 1, NULL, NULL, 0, NULL, NULL, QUEUE_DEFAULT);
-
-    /* If object is flagged AUDIBLE and has a @FORWARDLIST, send
-     *  stuff on */
-    if ((!(flags & NA_NORELAY) || (flags & NA_PUPPET)) && Audible(target)
-        && atr_get_noparent(target, "FORWARDLIST") != NULL
-        && !filter_found(target, msgbuf, 0)) {
-      notify_list(speaker, target, "FORWARDLIST", msgbuf, flags);
-
-    }
-  }
-
-  for (i = 0; i < MESSAGE_TYPES; i++) {
-    if (messages[i].message)
-      mush_free(messages[i].message, "string");
-    if (nospoofs[i].message)
-      mush_free(nospoofs[i].message, "string");
-    if (paranoids[i].message)
-      mush_free(paranoids[i].message, "string");
-  }
-  if (nospoof)
-    mush_free(nospoof, "string");
-  if (paranoid)
-    mush_free(paranoid, "string");
-  if (tbuf1)
-    mush_free(tbuf1, "string");
-  mush_free(msgbuf, "string");
-  na_depth--;
 }
 
-/** Send a message to a series of dbrefs.
- * This key function takes a speaker's utterance and looks up each
- * object that should hear it. For each, it may need to render
- * the utterance in a different fashion (with or without ansi, html,
- * accents), but we cache each rendered version for efficiency.
- * \param speaker dbref of object producing the message.
- * \param func pointer to iterator function to look up each receiver.
- * \param fdata initial data to pass to func.
- * \param nsfunc function to call to do NOSPOOF formatting, or NULL.
- * \param flags flags to pass in (such as NA_INTERACT)
- * \param message message to render and transmit.
+
+/** Notify one or more objects with a message.
+ * Calls an na_lookup func to figure out which objects to notify and, if the
+ * object isn't in 'skips', calls notify_internal to send the message.
+ * \param speaker the object which created the message
+ * \param func lookup function to figure out who to tell
+ * \param fdata data to pass to func
+ * \param skips pointer to an array of dbrefs not to notify, or NULL
+ * \param flags NA_* flags to limit/modify how the message is sent
+ * \param message the message to send
+ * \param prefix a prefix to show before the message, or NULL
+ * \param loc where the sound is coming from
+ * \param format a format_msg structure (obj/attr/args) to ufun to generate the message
  */
-void
-notify_anything(dbref speaker, na_lookup func,
-                void *fdata, char *(*nsfunc) (dbref, na_lookup func, void *,
-                                              int), int flags,
-                const char *message)
+static void
+notify_anything_sub(dbref speaker, na_lookup func, void *fdata, dbref *skips,
+                    int flags, struct notify_message_group *message,
+                    const char *prefix, dbref loc, struct format_msg *format)
 {
-  dbref loc;
+  dbref target = NOTHING;
+  struct notify_message *real_prefix = NULL;
 
-  if (GoodObject(speaker))
-    loc = Location(speaker);
-  else
-    loc = NOTHING;
+  /* Make sure we have a message and someone to tell */
+  if (!message || !func)
+    return;
 
-  notify_anything_loc(speaker, func, fdata, nsfunc, flags, message, loc);
+  /* Don't recurse too much */
+  if (na_depth > 7)
+    return;
+
+  na_depth++;
+  if (prefix && *prefix) {
+    int i;
+
+    real_prefix = mush_malloc(sizeof(struct notify_message), "notify_message");
+    real_prefix->strs[0].message = (unsigned char *) prefix;
+    real_prefix->strs[0].made = 1;
+    real_prefix->strs[0].len = strlen(prefix);
+    real_prefix->type = str_type(prefix);
+    for (i = 1; i < MESSAGE_TYPES; i++) {
+      real_prefix->strs[i].message = NULL;
+      real_prefix->strs[i].made = 0;
+      real_prefix->strs[i].len = 0;
+    }
+
+  }
+  /* Tell everyone */
+  while ((target = func(target, fdata)) != NOTHING) {
+    if (IsExit(target))
+      continue;                 /* Exits can't hear anything directly */
+    if (skips != NULL) {
+      int i;
+      for (i = 0; skips[i] != NOTHING && skips[i] != target; i++) ;
+
+      if (skips[i] != NOTHING)
+        continue;
+    }
+    notify_internal(target, speaker, skips, flags, message, real_prefix, loc,
+                    format);
+  }
+
+  if (real_prefix != NULL) {
+    int i;
+
+    for (i = 1; i < MESSAGE_TYPES; i++) {
+      if (real_prefix->strs[i].made)
+        mush_free(real_prefix->strs[i].message, "notify_str");
+    }
+    mush_free(real_prefix, "notify_message");
+  }
+
+  na_depth--;
+
 }
 
-/** Basic 'notify player with message */
-#define notify(p,m)           notify_anything(orator, na_one, &(p), NULL, 0, m)
+#define PUPPET_FLAGS(na_flags)  ((na_flags | NA_PUPPET_MSG | NA_NORELAY) & ~NA_PROMPT)
+#define RELAY_FLAGS(na_flags)  ((na_flags | NA_PUPPET_OK | NA_NORELAY) & ~NA_PROMPT)
+
+
+/** Notify a single object with a message. May recurse by calling itself or
+ * notify_anything[_sub] to do more notifications, for puppet, \@forwardlist,
+ * or to propagate the sound into an object's contents or through an audible
+ * exit. If format is non-NULL, all messages are passed through obj/attr with
+ * the given args prior to being displayed to a player, matched against
+ * \@listens or sent to a puppet (but NOT propagated to other locations).
+ * If format->obj is ambiguous (#-2), get the attr from the target, otherwise
+ * use the obj given. Transformed strings are not cached.
+ * \param target object to notify
+ * \param speaker object creating the sound
+ * \param skips array of dbrefs not to notify when propagating sound, or NULL
+ * \param flags NA_* flags for how to generate the sound
+ * \param message the message, with nospoof and paranoid prefixes
+ * \param prefix a prefix to show before the message
+ * \param loc the location the sound is generated
+ * \param format an obj/attr/args to format the message with
+ */
+static void
+notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
+                struct notify_message_group *message,
+                struct notify_message *prefix, dbref loc,
+                struct format_msg *format)
+{
+  int output_type = MSG_INTERNAL; /**< The way to render the message for the current target/descriptor */
+  int last_output_type = -1; /**< For players, the way the msg was rendered for the previous descriptor */
+  unsigned char *spoofstr = NULL; /**< Pointer to the rendered nospoof prefix to use */
+  int spooflen = 0; /**< Length of the rendered nospoof prefix */
+  unsigned char *msgstr = NULL; /**< Pointer to the rendered message */
+  int msglen = 0; /**< Length of the rendered message */
+  unsigned char *prefixstr = NULL;
+  int prefixlen = 0;
+  static char buff[BUFFER_LEN], *bp; /**< Buffer used for processing the format attr */
+  unsigned char *formatmsg = NULL; /**< Pointer to the rendered, formatted message. Must be free()d! */
+  int cache = 1; /**< Are we using a cached version of the message? */
+  int prompt = 0; /**< Show a prompt? */
+  int heard = 1; /**< After formatting, did this object hear something? */
+  DESC *d; /**< descriptor to loop through connected players */
+  int listen_lock_checked = 0, listen_lock_passed = 0; /**< Has the Listen \@lock been checked/passed? */
+  ATTR *a; /**< attr pointer, for \@listen and \@infilter */
+
+  /* Check interact locks */
+  if (flags & NA_INTERACTION) {
+    if ((flags & NA_INTER_SEE) && !can_interact(speaker, target, INTERACT_SEE))
+      return;
+    if ((flags & NA_INTER_PRESENCE) &&
+        !can_interact(speaker, target, INTERACT_PRESENCE))
+      return;
+    if ((flags & NA_INTER_HEAR) &&
+        !can_interact(speaker, target, INTERACT_HEAR))
+      return;
+    if ((flags & NA_INTER_LOCK) && !Pass_Interact_Lock(speaker, target))
+      return;
+  }
+
+  /* At this point, the message can definitely be heard by the object, so we need to figure out
+   * the correct message it should hear, possibly formatted through a ufun */
+  if (format != NULL
+      && (format->thing == AMBIGUOUS || RealGoodObject(format->thing))
+      && format->attr && *format->attr) {
+    /* Format the message through a ufun */
+    ufun_attrib ufun;
+    dbref src;
+
+    if (format->thing == AMBIGUOUS) {
+      src = target;
+    } else {
+      src = format->thing;
+    }
+    bp = buff;
+    safe_dbref(src, buff, &bp);
+    safe_chr('/', buff, &bp);
+    safe_str(format->attr, buff, &bp);
+    *bp = '\0';
+
+    if (fetch_ufun_attrib
+        (buff, speaker, &ufun,
+         (UFUN_OBJECT | UFUN_REQUIRE_ATTR |
+          (format->checkprivs ? 0 : UFUN_IGNORE_PERMS)))) {
+      PE_REGS *pe_regs = NULL;
+      int i;
+
+      cache = 0;
+      if (format->numargs || (format->targetarg >= 0 && format->targetarg < 10)) {
+        pe_regs = pe_regs_create(PE_REGS_ARG, "notify_internal");
+        for (i = 0; i < format->numargs && i < 10; i++) {
+          pe_regs_setenv_nocopy(pe_regs, i, format->args[i]);
+        }
+        if (format->targetarg >= 0 && format->targetarg < 10)
+          pe_regs_setenv(pe_regs, format->targetarg, unparse_dbref(target));
+      }
+
+      call_ufun(&ufun, buff, src, speaker, NULL, pe_regs);
+      if (pe_regs)
+        pe_regs_free(pe_regs);
+
+      /* Even if the format attr returns nothing, we must continue because the
+       * sound must still be propagated to other objects, which may hear
+       * something. We just don't display sound to the object or trigger
+       * its listen patterns, etc */
+      if (!*buff) {
+        heard = 0;
+      }
+    }
+  }
+
+
+  if (IsPlayer(target)) {
+    /* Make sure the player is connected, and we have something to show him */
+    if (Connected(target) && (heard || (flags & NA_PROMPT))) {
+      /* Send text to the player's descriptors */
+      for (d = descriptor_list; d; d = d->next) {
+        if (!d->connected || d->player != target)
+          continue;
+        output_type = notify_type(d);
+
+        if (heard && prefix != NULL) {
+          /* Figure out */
+          if (!prefixstr || output_type != last_output_type) {
+            prefixstr = notify_makestring(prefix, output_type);
+            prefixlen = u_strlen(prefixstr);
+          }
+        } else {
+          prefixlen = 0;
+        }
+
+        /* Figure out if the player needs to see a Nospoof prefix */
+        if (heard && !(flags & NA_SPOOF)
+            && ((flags & NA_NOSPOOF) || (Nospoof(target)
+                                         && ((target != speaker)
+                                             || Paranoid(target))))) {
+          if (Paranoid(target) || (flags & NA_PARANOID)) {
+            if (!message->paranoids.strs[0].made) {
+              message->paranoids.strs[0].message = make_nospoof(speaker, 1);
+              message->paranoids.strs[0].made = 1;
+              message->paranoids.strs[0].len =
+                u_strlen(message->paranoids.strs[0].message);
+              message->paranoids.type =
+                str_type((const char *) message->paranoids.strs[0].message);
+            }
+            spoofstr = notify_makestring(&message->paranoids, output_type);
+            spooflen = u_strlen(spoofstr);
+          } else {
+            if (!message->nospoofs.strs[0].made) {
+              message->nospoofs.strs[0].message = make_nospoof(speaker, 0);
+              message->nospoofs.strs[0].made = 1;
+              message->nospoofs.strs[0].len =
+                u_strlen(message->nospoofs.strs[0].message);
+              message->nospoofs.type =
+                str_type((const char *) message->nospoofs.strs[0].message);
+            }
+            spoofstr = notify_makestring(&message->nospoofs, output_type);
+            spooflen = u_strlen(spoofstr);
+          }
+        } else {
+          spooflen = 0;
+        }
+
+        /* No point re-rendering this string if we're outputting to an identical client */
+        if (heard) {
+          if (!msgstr || output_type != last_output_type) {
+            if (cache) {
+              msgstr = notify_makestring(&message->messages, output_type);
+            } else {
+              if (formatmsg)
+                mush_free(formatmsg, "notify_str");
+              msgstr = formatmsg =
+                notify_makestring_nocache((unsigned char *) buff, output_type);
+            }
+            msglen = u_strlen(msgstr);
+          }
+          last_output_type = output_type;
+
+          if (msglen) {
+            if (prefixlen)      /* send prefix */
+              queue_newwrite(d, prefixstr, prefixlen);
+            if (spooflen)       /* send nospoof prefix */
+              queue_newwrite(d, spoofstr, spooflen);
+            queue_newwrite(d, msgstr, msglen);  /* send message */
+          }
+        }
+
+        prompt = ((flags & NA_PROMPT) && (d->conn_flags & CONN_TELNET));
+        if (prompt) {           /* send prompt */
+          queue_newwrite(d, (unsigned char *) "\xFF\xF9", 2);
+        }
+
+        if ((!(flags & NA_NOENTER) && msglen && heard && !prompt)
+            || (prompt && (d->conn_flags & CONN_PROMPT_NEWLINES))) {
+          /* send lineending */
+          if ((output_type & MSG_PUEBLO)) {
+            if (flags & NA_NOPENTER)
+              queue_newwrite(d, (unsigned char *) "\n", 1);
+            else
+              queue_newwrite(d, (unsigned char *) "<BR>\n", 5);
+          } else {
+            queue_newwrite(d, (unsigned char *) "\r\n", 2);
+          }
+        }
+      }                         /* for loop */
+      if (formatmsg) {
+        mush_free(formatmsg, "notify_str");
+        formatmsg = NULL;
+      }
+    }                           /* Connected(target) */
+  } else if (heard && Puppet(target)
+             && ((flags & NA_MUST_PUPPET) || Verbose(target)
+                 || (Location(target) != Location(Owner(target))))
+             && ((flags & NA_PUPPET_OK) || !(flags & NA_NORELAY))) {
+    /* Puppet */
+    int nospoof_flags = 0;
+    char puppref[BUFFER_LEN];
+    char *pp = puppref;
+    safe_str(Name(target), puppref, &pp);
+    safe_str("> ", puppref, &pp);
+    *pp = '\0';
+
+    /* Show "Puppet> " prompt */
+    notify_anything(speaker, na_one, &Owner(target), NULL,
+                    PUPPET_FLAGS(flags) | NA_SPOOF | NA_NOENTER, puppref, NULL,
+                    loc, NULL);
+
+    if (Nospoof(target)) {
+      nospoof_flags |= NA_NOSPOOF;
+      if (Paranoid(target))
+        nospoof_flags |= NA_PARANOID;
+    }
+
+    /* And the message. If the puppet's message wasn't formatted through a
+     * ufun, use the already-generated cached version of the message to save
+     * time/memory. Otherwise, use the specific, formatted message the
+     * puppet saw */
+    if (cache) {
+      notify_internal(Owner(target), speaker, NULL,
+                      PUPPET_FLAGS(flags) | nospoof_flags, message, prefix, loc,
+                      NULL);
+    } else {
+      notify_anything(speaker, na_one, &Owner(target), NULL,
+                      PUPPET_FLAGS(flags) | nospoof_flags, buff,
+                      (prefix ? (char *) prefix->strs[0].message : NULL), loc,
+                      NULL);
+    }
+  }
+
+  if ((flags & NA_PROPAGATE)
+      || (!(flags & NA_NOLISTEN) && (PLAYER_LISTEN || !IsPlayer(target))
+          && !IsExit(target))) {
+    char *fullmsg, *fp = NULL;
+
+    /* Prompts aren't propagated */
+    flags &= ~NA_PROMPT;
+
+    /* Figure out which message to use for listens */
+    if (cache)
+      msgstr = notify_makestring(&message->messages, MSG_INTERNAL);
+    else
+      msgstr = formatmsg =
+        notify_makestring_nocache((unsigned char *) buff, MSG_INTERNAL);
+
+    if (prefix) {
+      /* Add the prefix to the beginning */
+      fullmsg = mush_malloc(BUFFER_LEN, "notify_str");
+      fp = fullmsg;
+      safe_str((char *) notify_makestring(prefix, MSG_INTERNAL), fullmsg, &fp);
+      safe_str((char *) msgstr, fullmsg, &fp);
+      *fp = '\0';
+    } else {
+      fullmsg = (char *) msgstr;
+    }
+
+    if (heard) {
+      /* Check @listen */
+      a = atr_get_noparent(target, "LISTEN");
+      if (a) {
+        char match_space[BUFFER_LEN * 2];
+        ssize_t match_space_len = BUFFER_LEN * 2;
+        char *lenv[10];
+        char *atrval;
+
+        atrval = safe_atr_value(a);
+
+        if (AF_Regexp(a)
+            ? regexp_match_case_r(atrval, fullmsg,
+                                  AF_Case(a), lenv, 10,
+                                  match_space, match_space_len, NULL)
+            : wild_match_case_r(atrval, fullmsg,
+                                AF_Case(a), lenv, 10,
+                                match_space, match_space_len, NULL)) {
+          if (!listen_lock_checked)
+            listen_lock_passed = eval_lock(speaker, target, Listen_Lock);
+          if (listen_lock_passed) {
+            int i;
+            PE_REGS *pe_regs;
+
+            pe_regs = pe_regs_create(PE_REGS_ARG, "notify");
+            for (i = 0; i < 10; i++) {
+              if (lenv[i]) {
+                pe_regs_setenv_nocopy(pe_regs, i, lenv[i]);
+              }
+            }
+            if (PLAYER_AHEAR || (!IsPlayer(target))) {
+              if (speaker != target)
+                queue_attribute_base(target, "AHEAR", speaker, 0, pe_regs);
+              else
+                queue_attribute_base(target, "AMHEAR", speaker, 0, pe_regs);
+              queue_attribute_base(target, "AAHEAR", speaker, 0, pe_regs);
+            }
+            pe_regs_free(pe_regs);
+          }
+          free(atrval);
+
+          if (!(flags & NA_NORELAY) && (loc != target) &&
+              Contents(target) != NOTHING
+              && !filter_found(target, fullmsg, 1)) {
+            /* Forward the sound to the object's contents */
+            char inprefix[BUFFER_LEN];
+
+            a = atr_get(target, "INPREFIX");
+            if (a) {
+              char const *ap;
+              char *ip = inprefix;
+              NEW_PE_INFO *pe_info = make_pe_info("pe_info-notify");
+
+              pe_regs_setenv_nocopy(pe_info->regvals, 0, (char *) msgstr);
+              atrval = safe_atr_value(a);
+              ap = atrval;
+              ip = inprefix;
+              process_expression(inprefix, &ip, &ap, target, speaker, speaker,
+                                 PE_DEFAULT, PT_DEFAULT, pe_info);
+              if (ip != inprefix)
+                safe_chr(' ', inprefix, &ip);
+              *ip = '\0';
+              free_pe_info(pe_info);
+              free(atrval);
+            }
+            notify_anything_sub(speaker, na_next,
+                                &Contents(target), skips,
+                                RELAY_FLAGS(flags), message,
+                                (a) ? inprefix : NULL, loc, format);
+          }
+        }
+      }
+
+      /* if object is flagged MONITOR, check for ^ listen patterns
+       * unlike normal @listen, don't pass the message on.
+       */
+
+      if (has_flag_by_name(target, "MONITOR", NOTYPE)) {
+        if (!listen_lock_checked)
+          listen_lock_passed = eval_lock(speaker, target, Listen_Lock);
+        if (listen_lock_passed) {
+          atr_comm_match(target, speaker, '^', ':',
+                         fullmsg, 0, 1, NULL, NULL, 0, NULL, NULL,
+                         QUEUE_DEFAULT);
+        }
+      }
+
+      /* If object is flagged AUDIBLE and has a @FORWARDLIST, send it on */
+      if ((!(flags & NA_NORELAY) || (flags & NA_PUPPET_OK)) && Audible(target)
+          && atr_get_noparent(target, "FORWARDLIST") != NULL
+          && !filter_found(target, fullmsg, 0)) {
+        notify_list(speaker, target, "FORWARDLIST", fullmsg, flags);
+      }
+    }
+
+    if ((flags & NA_PROPAGATE) && !(flags & NA_NORELAY) && Audible(target)) {
+      char propprefix[BUFFER_LEN];
+
+      /* Propagate sound */
+      if (IsRoom(target)) {
+        dbref exit;
+        DOLIST(exit, Exits(target)) {
+          if (Audible(exit)) {
+            loc = Location(exit);
+            if (!RealGoodObject(loc))
+              continue;         /* unlinked, variable dests, HOME */
+            if (filter_found(exit, fullmsg, 0))
+              continue;
+            /* Need to make the prefix for each exit */
+            make_prefix_str(exit, speaker, fullmsg, propprefix);
+            notify_anything_sub(speaker, na_next, &Contents(loc), skips,
+                                RELAY_FLAGS(flags), message, propprefix, loc,
+                                format);
+          }
+        }
+      } else if (target == loc && !filter_found(target, fullmsg, 0)) {
+        dbref pass[2];
+
+        pass[0] = target;
+        pass[1] = NOTHING;
+        loc = Location(target);
+        make_prefix_str(target, speaker, fullmsg, propprefix);
+        notify_anything_sub(speaker, na_next, &Contents(loc), pass,
+                            RELAY_FLAGS(flags), message, propprefix, loc,
+                            format);
+      }
+    }
+
+    if (fp != NULL) {
+      mush_free(fullmsg, "notify_str");
+    }
+  }
+
+  if (formatmsg)
+    mush_free(formatmsg, "notify_str");
+
+}
 
 /** Notify a player with a formatted string, easy version.
  * This is a safer replacement for notify(player, tprintf(fmt, ...))
@@ -1034,34 +1382,6 @@ notify_format(dbref player, const char *fmt, ...)
   notify(player, buff);
 }
 
-
-/** Notify a player with a formatted string, full version.
- * This is a safer replacement for notify(player, tprintf(fmt, ...))
- * \param speaker dbref of object producing the message.
- * \param func pointer to iterator function to look up each receiver.
- * \param fdata initial data to pass to func.
- * \param nsfunc function to call to do NOSPOOF formatting, or NULL.
- * \param flags flags to pass in (such as NA_INTERACT)
- * \param fmt format string.
- */
-void WIN32_CDECL
-notify_anything_format(dbref speaker, na_lookup func,
-                       void *fdata, char *(*nsfunc) (dbref, na_lookup func,
-                                                     void *, int), int flags,
-                       const char *fmt, ...)
-{
-  char buff[BUFFER_LEN];
-  va_list args;
-
-  va_start(args, fmt);
-  my_vsnprintf(buff, sizeof buff, fmt, args);
-  va_end(args);
-
-  notify_anything(speaker, func, fdata, nsfunc, flags, buff);
-}
-
-
-
 /** Send a message to a list of dbrefs on an attribute on an object.
  * Be sure we don't send a message to the object itself!
  * \param speaker message speaker
@@ -1075,10 +1395,9 @@ notify_list(dbref speaker, dbref thing, const char *atr, const char *msg,
             int flags)
 {
   char *fwdstr, *orig, *curr;
-  char tbuf1[BUFFER_LEN], *bp;
+  char tbuf1[BUFFER_LEN], *prefix = NULL;
   dbref fwd;
   ATTR *a;
-  int nsflags;
 
   a = atr_get(thing, atr);
   if (!a)
@@ -1086,47 +1405,37 @@ notify_list(dbref speaker, dbref thing, const char *atr, const char *msg,
   orig = safe_atr_value(a);
   fwdstr = trim_space_sep(orig, ' ');
 
-  bp = tbuf1;
-  nsflags = 0;
+  tbuf1[0] = '\0';
   if (!(flags & NA_NOPREFIX)) {
-    make_prefixstr(thing, msg, tbuf1);
+    make_prefix_str(thing, speaker, msg, tbuf1);
+    prefix = tbuf1;
     if (!(flags & NA_SPOOF)) {
       if (Nospoof(thing))
-        nsflags |= NA_NOSPOOF;
+        flags |= NA_NOSPOOF;
       if (Paranoid(thing))
-        nsflags |= NA_PARANOID;
+        flags |= NA_PARANOID;
     }
-  } else {
-    safe_str(msg, tbuf1, &bp);
-    *bp = 0;
   }
+
+  flags |= NA_NORELAY;
+  flags &= ~NA_PROPAGATE;
 
   while ((curr = split_token(&fwdstr, ' ')) != NULL) {
     if (is_objid(curr)) {
       fwd = parse_objid(curr);
-      if (GoodObject(fwd) && !IsGarbage(fwd) && (thing != fwd)
-          && Can_Forward(thing, fwd)) {
+      if (RealGoodObject(fwd) && (thing != fwd) && Can_Forward(thing, fwd)) {
         if (IsRoom(fwd)) {
-          notify_anything(speaker, na_loc, &fwd, ns_esnotify,
-                          flags | nsflags | NA_NORELAY, tbuf1);
+          notify_anything(speaker, na_loc, &fwd, NULL, flags, msg,
+                          prefix, AMBIGUOUS, NULL);
         } else {
-          notify_anything(speaker, na_one, &fwd, ns_esnotify,
-                          flags | nsflags | NA_NORELAY, tbuf1);
+          notify_anything(speaker, na_one, &fwd, NULL, flags, msg,
+                          prefix, AMBIGUOUS, NULL);
+
         }
       }
     }
   }
   free(orig);
-}
-
-/** Wrapper to notify a single player with a message, unconditionally.
- * \param player player to notify.
- * \param msg message to send.
- */
-void
-raw_notify(dbref player, const char *msg)
-{
-  notify_anything(GOD, na_one, &player, NULL, NA_NOLISTEN, msg);
 }
 
 /** Notify all connected players with the given flag(s).
@@ -1281,17 +1590,13 @@ int
 queue_write(DESC *d, const unsigned char *b, int n)
 {
   char buff[BUFFER_LEN];
-  struct notify_strings messages[MESSAGE_TYPES];
   unsigned char *s;
+  int output_type;
   PUEBLOBUFF;
   size_t len;
 
   if ((n == 2) && (b[0] == '\r') && (b[1] == '\n')) {
-    if ((d->conn_flags & CONN_HTML))
-      queue_newwrite(d, (unsigned char *) "<BR>\n", 5);
-    else
-      queue_newwrite(d, b, 2);
-    return n;
+    return queue_eol(d);
   }
   if (n > BUFFER_LEN)
     n = BUFFER_LEN;
@@ -1299,21 +1604,20 @@ queue_write(DESC *d, const unsigned char *b, int n)
   memcpy(buff, b, n);
   buff[n] = '\0';
 
-  zero_strings(messages);
+  output_type = notify_type(d);
 
-  if (d->conn_flags & CONN_HTML) {
+  if (output_type & MSG_PUEBLO) {
     PUSE;
     tag_wrap("SAMP", NULL, buff);
     PEND;
-    s = notify_makestring(pbuff, messages, NA_PUEBLO, 0);
-    len = messages[NA_PUEBLO].len;
+    s = render_string((unsigned char *) pbuff, output_type);
   } else {
-    s = notify_makestring(buff, messages, notify_type(d), 0);
-    len = messages[notify_type(d)].len;
+    s = render_string((unsigned char *) buff, output_type);
   }
+  len = u_strlen(s);
   queue_newwrite(d, s, len);
-  free_strings(messages);
-  return n;
+
+  return len;
 }
 
 /** Add text to the queue associated with a given descriptor.
@@ -1357,7 +1661,7 @@ queue_newwrite(DESC *d, const unsigned char *b, int n)
 int
 queue_eol(DESC *d)
 {
-  if (SUPPORT_PUEBLO && (d->conn_flags & CONN_HTML))
+  if ((d->conn_flags & CONN_HTML))
     return queue_newwrite(d, (unsigned char *) "<BR>\n", 5);
   else
     return queue_newwrite(d, (unsigned char *) "\r\n", 2);
@@ -1371,8 +1675,9 @@ queue_eol(DESC *d)
 int
 queue_string_eol(DESC *d, const char *s)
 {
-  queue_string(d, s);
-  return queue_eol(d);
+  int num = 0;
+  num = queue_string(d, s);
+  return num + queue_eol(d);
 }
 
 /** Add a string to a descriptor's text queue.
@@ -1383,18 +1688,14 @@ queue_string_eol(DESC *d, const char *s)
 int
 queue_string(DESC *d, const char *s)
 {
-  unsigned char *n;
-  enum na_type poutput;
-  struct notify_strings messages[MESSAGE_TYPES];
+  unsigned char *rendered;
+  int output_type;
   int ret;
 
-  zero_strings(messages);
+  output_type = notify_type(d);
+  rendered = render_string((unsigned char *) s, output_type);
+  ret = queue_newwrite(d, rendered, u_strlen(rendered));
 
-  poutput = notify_type(d);
-
-  n = notify_makestring(s, messages, poutput, 0);
-  ret = queue_newwrite(d, n, messages[poutput].len);
-  free_strings(messages);
   return ret;
 }
 
@@ -1435,32 +1736,4 @@ freeqs(DESC *d)
   }
   d->raw_input = 0;
   d->raw_input_at = 0;
-}
-
-/** A notify_anything function for formatting speaker data for NOSPOOF.
- * \param speaker the speaker.
- * \param func unused.
- * \param fdata unused.
- * \param para if 1, format for paranoid nospoof; if 0, normal nospoof.
- * \return formatted string.
- **/
-char *
-ns_esnotify(dbref speaker, na_lookup func __attribute__ ((__unused__)),
-            void *fdata __attribute__ ((__unused__)), int para)
-{
-  char *dest, *bp;
-  bp = dest = mush_malloc(BUFFER_LEN, "string");
-
-  if (!GoodObject(speaker))
-    *dest = '\0';
-  else if (para) {
-    if (speaker == Owner(speaker))
-      safe_format(dest, &bp, "[%s(#%d)] ", Name(speaker), speaker);
-    else
-      safe_format(dest, &bp, T("[%s(#%d)'s %s(#%d)] "), Name(Owner(speaker)),
-                  Owner(speaker), Name(speaker), speaker);
-  } else
-    safe_format(dest, &bp, "[%s:] ", spname(speaker));
-  *bp = '\0';
-  return dest;
 }

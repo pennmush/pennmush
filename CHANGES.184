@@ -16,7 +16,7 @@ chronological order (most recent first)
 
 ==========================================================================
 
-Version 1.8.4 patchlevel 5                                 Jun ??,  2012
+Version 1.8.4 patchlevel 5                                 Jun 19,  2011
 
 Major Changes:
 
@@ -25,54 +25,56 @@ Major Changes:
    restarts. Requires libevent v2.X. [SW]
  * info_slave, the sub-process used for resolving hostnames, now uses
    libevent if available. [SW]
-   
-Hardcode:
- * Rewrite of large portions of notify.c. The main public function there,
-   notify_anything(), now takes different arguments. notify_format() and
-   notify() are unchanged. Should be largely unnoticable for players. [MG]
+ * Rewrite of large portions of notify.c. The main public function
+   there, notify_anything(), now takes different arguments.
+   notify_format() and notify() are unchanged. Should be largely
+   unnoticable for players. [MG]
 
 Commands:
- * @edit/quiet edits attributes, but doesn't spam you with the modified
-   values, just gives you a count of modified attributes. Suggested by
-   Padraic. [MG]
- * You can now have more than one command (with the action list enclosed in
-   {curly braces}) in the rhs arg of @force/noeval. [MG]
- * @ps/debug <pid> will display extra information about a queue entry's
-   evaluation environment. [SW]
- * @pemit now acts as if /silent was given when the executor and target
-   are the same object, for consistency with other sound-producing commands
-   and to fix an issue with @pemit/spoof. [SW]
+ * @edit/quiet edits attributes, but doesn't spam you with the
+   modified values, just gives you a count of modified
+   attributes. Suggested by Padraic. [MG]
+ * You can now have more than one command (with the action list
+   enclosed in {curly braces}) in the rhs arg of @force/noeval. [MG]
+ * @ps/debug <pid> will display extra information about a queue
+   entry's evaluation environment. [SW]
+ * @pemit now acts as if /silent was given when the executor and
+   target are the same object, for consistency with other
+   sound-producing commands and to fix an issue with
+   @pemit/spoof. [SW]
  * @command now shows the failure message that can be set with
    restrict_command or @command/restrict. [SW]
- * @message now takes a /remit or /oemit switch, to make it work like those
-   commands instead of @pemit. Also takes a /nospoof switch to make it like
-   the @ns*emit versions. [MG]
+ * @message now takes a /remit or /oemit switch, to make it work like
+   those commands instead of @pemit. Also takes a /nospoof switch to
+   make it like the @ns*emit versions. [MG]
  * @pemit/list/noisy now shows a confirmation message. [MG]
 
 Powers:
- * can_dark power lets non-wizard players set themselves dark. Suggested by 
-   AnneLions. [GM]
+ * can_dark power lets non-wizard players set themselves dark.
+   Suggested by AnneLions. [GM]
 
 Minor Changes:
  * ansi_string has been rewritten to be much faster for non-marked up
-   strings, to take up considerably less memory, and has received general
-   all-around improvements in speed. Rewrite is in preparation for
-   256 color and 24 bit color ansi. [GM]
+   strings, to take up considerably less memory, and has received
+   general all-around improvements in speed. Rewrite is in preparation
+   for 256 color and 24 bit color ansi. [GM]
  * ansi_string no longer optimizes markup. In some pathological cases,
    buffer_len will be hit much earlier than it used to be. Use ansi()
    with wisdom! [GM]
- * @edit no longer shows the full value of attributes which aren't edited,
-   it just shows that they are unchanged. Suggested by Minion. [MG]
+ * @edit no longer shows the full value of attributes which aren't
+   edited, it just shows that they are unchanged. Suggested by
+   Minion. [MG]
  * @mail now shows the dbref of the sender for mail from non-players.
    Suggested by Minion. [MG]
  * Fix a potential buffer overflow in prefix table code. [SW]
  * "enter <exit>" now works the same as "goto". Suggested by [GM]. [MG]
  * Tweaks to the system queue introduced in the last patchlevel. [SW]
  * @pemit now uses the same nospoof header as other commands. [MG]
- * When creating a minimal db, the MUSH now respects the read_remote_desc
-   option, and may set @descs "nearby". Reported by Paige. [MG]
- * Exits now show accented names (via @nameaccent) in "look". Suggested by
-   Cheetah. [MG]
+ * When creating a minimal db, the MUSH now respects the
+   read_remote_desc option, and may set @descs "nearby". Reported by
+   Paige. [MG]
+ * Exits now show accented names (via @nameaccent) in "look". Suggested
+   by Cheetah. [MG]
  * @enter/@oenter/@aenter, @leave/@oleave/@aleave and
    @move/@omove/@oxmove/@amove get passed the moving object's original and/or
    new location as appropriate. Patch by Padraic.
@@ -80,9 +82,9 @@ Minor Changes:
 Fixes:
  * Crashbug when players are in and homed to a room that is owned by a
    player being @nuked fixed. Reported by Kimiko. [GM]
- * qregs, %0-%9 and $0-$9 would occasionally smash each other. Reported by
-   Cheetah@M*U*S*H. [GM]
- * No_Pay was implicit if executor is #1, but was _not_ implicit if 
+ * qregs, %0-%9 and $0-$9 would occasionally smash each other.
+   Reported by Cheetah@M*U*S*H. [GM]
+ * No_Pay was implicit if executor is #1, but was _not_ implicit if
    Owner(executor) was #1. Caused some obscure queue cost bugs.
    Discovered by Padraic@M*U*S*H. [GM]
  * %$-subs didn't work inside @switch's default case. Patch by Covenent.
@@ -92,8 +94,8 @@ Fixes:
  * The Open_Anywhere power didn't fully work as intended. Patch by Covenent.
  * regrab*() functions removed ansi. Reported by Covenent. [MG]
  * munge() didn't play nice with ansi. [MG]
- * @shutdown/reboot would hang unencrypted sockets for players with both
-   SSL and normal connections. Reported by Padraic. [SW]
+ * @shutdown/reboot would hang unencrypted sockets for players with
+   both SSL and normal connections. Reported by Padraic. [SW]
  * @chatformat sometimes received the player's name without accents by
    mistake. Reported by Sketch. [MG]
  * Bug in @wipe fixed by Padraic.
@@ -101,18 +103,19 @@ Fixes:
    location. Reported by Padraic.
  * Fixed an obscure bug in "say" when sound is propagated. From a report by
    Padraic@M*U*S*H. [MG]
- * Various help fixes. [MG]
+ * Various help fixes. [MG], [SW]
  * Prevent persistant 'Attempt to write to error log before it was started!'
    error in netmush.log [MG]
  * Rooms could not locate objects by name. Reported by Sketch. [MG]
- * Players using Pueblo who are not set ANSI will no longer see colors. [MG]
+ * Players using Pueblo who are not set ANSI will no longer see
+   colors. [MG]
  * The <inside> arg to tel() didn't work. Fixed by Padraic.
  * 'make clean' in game/txt no longer deletes the configure-generated
    compose.sh file. Suggested by Padraic. [SW]
- * The new q-register code wasn't passing registers on to new commands queued
-   by @wait, @verb and @mapsql. [SW]
- * Crash bug in unused code to reset hash tables fixed. Reported by Shendaras.
-   [SW]
+ * The new q-register code wasn't passing registers on to new commands
+   queued by @wait, @verb and @mapsql. [SW]
+ * Crash bug in unused code to reset hash tables fixed. Reported by
+   Trinisi.  [SW]
 
 Functions:
  * Restrictions for the beep() function can now be modified with @function.

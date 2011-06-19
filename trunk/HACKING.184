@@ -20,7 +20,7 @@ that have altered hardcode will appear here.
 
 ==========================================================================
 
-Version 1.8.4 patchlevel 5                                 Jun ??,  2011
+Version 1.8.4 patchlevel 5                                 Jun 19,  2011
   ansi_string has been heavily rewritten. as->text and as->len still
   work for accessing, everything else about ansi_string has been heavily
   modified.

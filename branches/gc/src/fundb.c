@@ -2330,7 +2330,7 @@ FUNCTION(fun_tel)
   if (nargs > 2)
     silent = parse_boolean(args[2]);
   if (nargs > 3)
-    silent = parse_boolean(args[3]);
+    inside = parse_boolean(args[3]);
   do_teleport(executor, args[0], args[1], silent, inside);
 }
 

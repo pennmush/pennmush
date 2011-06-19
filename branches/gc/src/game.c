@@ -108,8 +108,8 @@ int alias_list_check(dbref thing, const char *command, const char *type);
 int loc_alias_check(dbref loc, const char *command, const char *type);
 void do_poor(dbref player, char *arg1);
 void do_writelog(dbref player, char *str, int ltype);
-void bind_and_queue(dbref player, dbref cause, char *action, const char *arg,
-                    int num, MQUE *parent_queue);
+void bind_and_queue(dbref executor, dbref enactor, char *action,
+                    const char *arg, int num, MQUE *parent_queue);
 void do_list(dbref player, char *arg, int lc, int which);
 void do_uptime(dbref player, int mortal);
 static char *make_new_epoch_file(const char *basename, int the_epoch);
@@ -759,12 +759,16 @@ init_game_postdb(const char *conf)
   do_restart();
 #ifdef HAS_OPENSSL
   /* Set up ssl */
+#ifndef SSL_SLAVE
   if (!ssl_init
       (options.ssl_private_key_file, options.ssl_ca_file,
        options.ssl_require_client_cert)) {
     fprintf(stderr, "SSL initialization failure\n");
     options.ssl_port = 0;       /* Disable ssl */
   }
+#endif
+  /* Load hash algorithms */
+  OpenSSL_add_all_digests();
 #endif
 }
 
@@ -1146,11 +1150,12 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
              alias_list_check(Contents(check_loc), cptr,
                               "EALIAS")) != NOTHING) {
           if (command_check(executor, cmd, 1)) {
-            sprintf(temp, "#%d", i);
-            run_command(cmd, executor, queue_entry->enactor,
-                        tprintf("ENTER #%d", i), NULL, NULL,
-                        tprintf("ENTER #%d", i), NULL, NULL, temp, NULL, NULL,
-                        NULL, queue_entry);
+            char upd[SBUF_LEN];
+            sprintf(temp, "ENTER #%d", i);
+            sprintf(upd, "#%d", i);
+            run_command(cmd, executor, queue_entry->enactor, temp, NULL,
+                        NULL, temp, NULL, NULL, upd, NULL, NULL, NULL,
+                        queue_entry);
           }
           goto done;
         }
@@ -1193,9 +1198,10 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
             if (!Mobile(executor) || !command_check(executor, cmd, 1)) {
               goto done;
             } else {
+              sprintf(temp, "GOTO %s", cptr);
               run_command(cmd, executor, queue_entry->enactor,
-                          tprintf("GOTO %s", cptr), NULL, NULL,
-                          tprintf("GOTO %s", cptr), NULL, NULL, cptr, NULL,
+                          temp, NULL, NULL,
+                          temp, NULL, NULL, cptr, NULL,
                           NULL, NULL, queue_entry);
               goto done;
             }
@@ -1229,9 +1235,9 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
           if (!Mobile(executor) || !command_check(executor, cmd, 1))
             goto done;
           else {
+            sprintf(temp, "GOTO %s", cptr);
             run_command(cmd, executor, queue_entry->enactor,
-                        tprintf("GOTO %s", cptr), NULL, NULL, tprintf("GOTO %s",
-                                                                      cptr),
+                        temp, NULL, NULL, temp,
                         NULL, NULL, cptr, NULL, NULL, NULL, queue_entry);
             goto done;
           }
@@ -1325,15 +1331,15 @@ check_alias(const char *command, const char *list)
   const char *p;
   while (*list) {
     for (p = command; (*p && DOWNCASE(*p) == DOWNCASE(*list)
-                       && *list != EXIT_DELIMITER); p++, list++) ;
+                       && *list != ALIAS_DELIMITER); p++, list++) ;
     if (*p == '\0') {
       while (isspace((unsigned char) *list))
         list++;
-      if (*list == '\0' || *list == EXIT_DELIMITER)
+      if (*list == '\0' || *list == ALIAS_DELIMITER)
         return 1;               /* word matched */
     }
     /* didn't match. check next word in list */
-    while (*list && *list++ != EXIT_DELIMITER) ;
+    while (*list && *list++ != ALIAS_DELIMITER) ;
     while (isspace((unsigned char) *list))
       list++;
   }
@@ -1538,18 +1544,18 @@ do_writelog(dbref player, char *str, int ltype)
 }
 
 /** Bind occurences of '##' in "action" to "arg", then run "action".
- * \param player the enactor.
- * \param cause object that caused command to run.
+ * \param executor the executor.
+ * \param enactor object that caused command to run.
  * \param action command string which may contain tokens.
  * \param arg value for ## token.
- * \param placestr value for #@ token.
+ * \param num value for #@ token.
  * \param parent_queue the queue entry this is being run from
  */
 void
-bind_and_queue(dbref player, dbref cause, char *action,
+bind_and_queue(dbref executor, dbref enactor, char *action,
                const char *arg, int num, MQUE *parent_queue)
 {
-  char *repl, *command;
+  char *command;
   const char *replace[2];
   char placestr[10];
   PE_REGS *pe_regs;
@@ -1558,16 +1564,14 @@ bind_and_queue(dbref player, dbref cause, char *action,
   snprintf(placestr, 10, "%d", num);
   replace[1] = placestr;
 
-  repl = replace_string2(standard_tokens, replace, action);
-
-  command = strip_braces(repl);
+  command = replace_string2(standard_tokens, replace, action);
 
   /* Add the new iter context to the parent queue entry's pe_info... */
   pe_regs = pe_regs_create(PE_REGS_ITER, "bind_and_queue");
   pe_regs_set(pe_regs, PE_REGS_ITER, "t0", arg);
   pe_regs_set_int(pe_regs, PE_REGS_ITER, "n0", num);
   /* Then queue the new command, using a cloned pe_info... */
-  new_queue_actionlist(player, cause, cause, command, parent_queue,
+  new_queue_actionlist(executor, enactor, enactor, command, parent_queue,
                        PE_INFO_CLONE, QUEUE_DEFAULT, pe_regs);
   /* And then pop it off the parent pe_info again */
   pe_regs_free(pe_regs);
@@ -1862,7 +1866,7 @@ do_scan(dbref player, char *command, int flag)
  * \verbatim
  * This function implements @dolist.
  * \endverbatim
- * \param player the executor.
+ * \param executor the executor.
  * \param list string containing the list to iterate over.
  * \param command command to run for each list element.
  * \param enactor the enactor
@@ -1870,7 +1874,7 @@ do_scan(dbref player, char *command, int flag)
  * \param queue_entry the queue entry \@dolist is being run in
  */
 void
-do_dolist(dbref player, char *list, char *command, dbref enactor,
+do_dolist(dbref executor, char *list, char *command, dbref enactor,
           unsigned int flags, MQUE *queue_entry)
 {
   char *curr, *objstring;
@@ -1879,17 +1883,17 @@ do_dolist(dbref player, char *list, char *command, dbref enactor,
   int place;
   char delim = ' ';
   if (!command || !*command) {
-    notify(player, T("What do you want to do with the list?"));
+    notify(executor, T("What do you want to do with the list?"));
     if (flags & DOL_NOTIFY)
-      parse_que(player, enactor, "@notify me", NULL);
+      parse_que(executor, enactor, "@notify me", NULL);
     return;
   }
 
   if (flags & DOL_DELIM) {
     if (list[1] != ' ') {
-      notify(player, T("Separator must be one character."));
+      notify(executor, T("Separator must be one character."));
       if (flags & DOL_NOTIFY)
-        parse_que(player, enactor, "@notify me", NULL);
+        parse_que(executor, enactor, "@notify me", NULL);
       return;
     }
     delim = list[0];
@@ -1903,14 +1907,14 @@ do_dolist(dbref player, char *list, char *command, dbref enactor,
   if (objstring && !*objstring) {
     /* Blank list */
     if (flags & DOL_NOTIFY)
-      parse_que(player, enactor, "@notify me", NULL);
+      parse_que(executor, enactor, "@notify me", NULL);
     return;
   }
 
   while (objstring) {
     curr = split_token(&objstring, delim);
     place++;
-    bind_and_queue(player, enactor, command, curr, place, queue_entry);
+    bind_and_queue(executor, enactor, command, curr, place, queue_entry);
   }
 
   *bp = '\0';
@@ -1920,7 +1924,7 @@ do_dolist(dbref player, char *list, char *command, dbref enactor,
      *  directly, since we want the command to be queued
      *  _after_ the list has executed.
      */
-    parse_que(player, enactor, "@notify me", NULL);
+    parse_que(executor, enactor, "@notify me", NULL);
   }
 }
 

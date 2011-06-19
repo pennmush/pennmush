@@ -211,6 +211,10 @@ ssl_ca_file /usr/share/ssl/certs/ca-bundle.crt
 # make an SSL connection?
 ssl_require_client_cert no
 
+# Filename to use as a unix-domain socket for talking to the ssl
+# slave
+socket_file data/netmush.sock
+
 ###
 ### Limits, costs, and other constants
 ###

@@ -1,3 +1,9 @@
+/**
+ * \file case.h
+ *
+ * \brief Routines for upper/lower casing characters
+ */
+
 #ifndef CASE_H
 #define CASE_H
 #include <ctype.h>

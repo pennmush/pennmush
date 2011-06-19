@@ -1,4 +1,8 @@
-/* mail.h - header for Javelin's extended mailer */
+/**
+ * \file extmail.h
+ *
+ * \brief header for Javelin's extended mailer
+ */
 
 #ifndef _EXTMAIL_H
 #define _EXTMAIL_H

@@ -1,3 +1,9 @@
+/**
+ * \file command.h
+ *
+ * \brief Command-related prototypes and constants.
+ */
+
 #ifndef __COMMAND_H
 #define __COMMAND_H
 
@@ -14,58 +20,46 @@ bool SW_BY_NAME(switch_mask, const char *);
 #define SW_COPY(new,old) memcpy((new), (old), switch_bytes)
 
 /* These are type restrictors */
-#define CMD_T_ROOM      0x80000000
-#define CMD_T_THING     0x40000000
-#define CMD_T_EXIT      0x20000000
-#define CMD_T_PLAYER    0x10000000
-#define CMD_T_ANY       0xF0000000
-#define CMD_T_GOD       0x08000000
+#define CMD_T_ROOM       0x80000000  /**< Command can be used by rooms */
+#define CMD_T_THING      0x40000000  /**< Command can be used by things */
+#define CMD_T_EXIT       0x20000000  /**< Command can be used by exits */
+#define CMD_T_PLAYER     0x10000000  /**< Command can be used by players */
+#define CMD_T_ANY        0xF0000000  /**< Command can be used by any type of object */
+#define CMD_T_GOD        0x08000000  /**< Command can only be used by God */
 
-/* Any unknown or undefined switches will be passed in switches, instead of causing error */
-#define CMD_T_SWITCHES  0x02000000
+#define CMD_T_SWITCHES   0x02000000  /**< Any unknown or undefined switches will be passed in switches, instead of causing error */
 
-/* Command is disabled, set with @command */
-#define CMD_T_DISABLED  0x01000000
+#define CMD_T_DISABLED   0x01000000  /**< Command is disabled, set with \@command */
 
-/* Command will fail if object is gagged */
-#define CMD_T_NOGAGGED  0x00800000
+#define CMD_T_NOGAGGED   0x00800000  /**< Command will fail if object is gagged */
 
-/* Command will fail if object is a guest */
-#define CMD_T_NOGUEST   0x00400000
+#define CMD_T_NOGUEST    0x00400000  /**< Command will fail if object is a guest */
 
-/* Command will fail if object is fixed */
-#define CMD_T_NOFIXED   0x00200000
+#define CMD_T_NOFIXED    0x00200000  /**< Command will fail if object is fixed */
 
-/* INTERNAL : Command is listed in @list commands */
-#define CMD_T_LISTED    0x00080000
+#define CMD_T_LISTED     0x00080000  /**< INTERNAL : Command is listed in \@list commands. NO LONGER USED */
 
-/* INTERNAL : Command is an internal command, and shouldn't be matched
- * or aliased
- */
-#define CMD_T_INTERNAL  0x00040000
+#define CMD_T_INTERNAL   0x00040000  /**< INTERNAL : Command is an internal command, and shouldn't be matched or aliased */
 
-/* Logging for commands */
-#define CMD_T_LOGNAME   0x00020000
-#define CMD_T_LOGARGS   0x00010000
+#define CMD_T_LOGNAME    0x00020000  /**< Log when the command is used */
+#define CMD_T_LOGARGS    0x00010000  /**< Log when the command is used, and the args given */
 
-/* Split arguments at =, but don't abort if there's no = */
-#define CMD_T_EQSPLIT    0x0001
+#define CMD_T_EQSPLIT    0x00000001  /**< Split arguments at =, but don't abort if there's no = */
 
-/* Split into argv[] at ,s */
-#define CMD_T_ARGS       0x0010
+#define CMD_T_ARGS       0x00000010  /**< Split into argv[] at ,s */
 
-/* Split at spaces instead of commas. CMD_T_ARGS MUST also be defined */
-#define CMD_T_ARG_SPACE  0x0020
+#define CMD_T_ARG_SPACE  0x00000020  /**< Split at spaces instead of commas. CMD_T_ARGS MUST also be defined */
 
-/* Do NOT parse arguments */
-#define CMD_T_NOPARSE    0x0040
+#define CMD_T_NOPARSE    0x00000040  /**< Do NOT parse arguments */
+
+#define CMD_T_RS_BRACE   0x00000080  /**< Strip outer {} from the RHS arg, even if we normally wouldn't */
 
 #define CMD_T_LS_ARGS    CMD_T_ARGS
 #define CMD_T_LS_SPACE   CMD_T_ARG_SPACE
 #define CMD_T_LS_NOPARSE CMD_T_NOPARSE
-#define CMD_T_RS_ARGS    CMD_T_ARGS<<4
-#define CMD_T_RS_SPACE   CMD_T_ARG_SPACE<<4
-#define CMD_T_RS_NOPARSE CMD_T_NOPARSE<<4
+#define CMD_T_RS_ARGS    0x00000100     /*CMD_T_ARGS<<4 */
+#define CMD_T_RS_SPACE   0x00000200     /*CMD_T_ARG_SPACE<<4 */
+#define CMD_T_RS_NOPARSE 0x00000400     /*CMD_T_NOPARSE<<4 */
 
 /** COMMAND prototype.
  * \verbatim
@@ -231,7 +225,7 @@ void reserve_aliases(void);
 void local_commands(void);
 void do_command_add(dbref player, char *name, int flags);
 void do_command_delete(dbref player, char *name);
-int run_command(COMMAND_INFO *cmd, dbref player, dbref enactor,
+int run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
                 const char *commandraw, switch_mask sw,
                 char switch_err[BUFFER_LEN], const char *string, char *swp,
                 char *ap, char *ls, char *lsa[MAX_ARG], char *rs,

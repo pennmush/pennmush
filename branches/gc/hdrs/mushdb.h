@@ -33,7 +33,9 @@
 #define LookQueue(x)     (Hasprivs(x) || has_power_by_name(x,"SEE_QUEUE",NOTYPE))
 #define HaltAny(x)       (Wizard(x) || has_power_by_name(x,"HALT",NOTYPE))
 #define NoPay(x)         (God(x) || has_power_by_name(x,"NO_PAY",NOTYPE) || \
-                                ((!Mistrust(x) && has_power_by_name(Owner(x),"NO_PAY",NOTYPE))))
+                                (!Mistrust(x) && \
+                                  ((has_power_by_name(Owner(x),"NO_PAY",NOTYPE)) || \
+                                   God(Owner(x)))))
 #define Moneybags(x)    (NoPay(x) || Hasprivs(x))
 #define NoQuota(x)       (Hasprivs(x) || Hasprivs(Owner(x)) || \
                                 has_power_by_name(x,"NO_QUOTA",NOTYPE) || \
@@ -169,5 +171,8 @@ bool unfindable(dbref);
 #define RDBF_SCREENSIZE         0x01
 #define RDBF_TTYPE              0x02
 #define RDBF_PUEBLO_CHECKSUM    0x04
+#define RDBF_LOCAL_SOCKET       0x08
+#define RDBF_SSL_SLAVE          0x10
+#define RDBF_SOCKET_SRC         0x20
 
 #endif                          /* __DB_H */

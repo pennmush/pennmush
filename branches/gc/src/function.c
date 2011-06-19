@@ -121,6 +121,10 @@ typedef struct fun_tab {
   int flags;    /**< Flags to control how the function is parsed. */
 } FUNTAB;
 
+/** A hardcoded function alias.
+ * These are functions which used to be duplicated, but are now properly aliased.
+ * They're added here instead of alias.cnf to avoid breakage for people who
+ * don't update their alias.cnf immediately. */
 typedef struct fun_alias {
   const char *name;   /**< Name of function to alias */
   const char *alias;  /**< Name of alias to create */
@@ -134,6 +138,7 @@ FUNALIAS faliases[] = {
   {"UFUN", "U"},
   {"IDLE", "IDLESECS"},
   {"HOST", "HOSTNAME"},
+  {"FLIP", "REVERSE"},
   {NULL, NULL}
 };
 
@@ -160,7 +165,7 @@ FUNTAB flist[] = {
   {"ANDLPOWERS", fun_andlflags, 2, 2, FN_REG | FN_STRIPANSI},
   {"ANSI", fun_ansi, 2, -2, FN_REG},
 #ifdef ANSI_DEBUG
-  {"ANSIINSPECT", fun_ansiinspect, 1, 2, FN_REG},
+  {"ANSIGEN", fun_ansigen, 1, 1, FN_REG},
 #endif
   {"APOSS", fun_aposs, 1, 1, FN_REG | FN_STRIPANSI},
   {"ART", fun_art, 1, 1, FN_REG | FN_STRIPANSI},
@@ -168,7 +173,7 @@ FUNTAB flist[] = {
   {"ATTRIB_SET", fun_attrib_set, 1, -2, FN_REG},
   {"BAND", fun_band, 1, INT_MAX, FN_REG | FN_STRIPANSI},
   {"BASECONV", fun_baseconv, 3, 3, FN_REG | FN_STRIPANSI},
-  {"BEEP", fun_beep, 0, 1, FN_REG | FN_STRIPANSI},
+  {"BEEP", fun_beep, 0, 1, FN_REG | FN_ADMIN | FN_STRIPANSI},
   {"BEFORE", fun_before, 2, 2, FN_REG},
   {"BENCHMARK", fun_benchmark, 2, 3, FN_NOPARSE},
   {"BNAND", fun_bnand, 2, 2, FN_REG | FN_STRIPANSI},
@@ -314,7 +319,7 @@ FUNTAB flist[] = {
   {"LATTRP", fun_lattr, 1, 2, FN_REG | FN_STRIPANSI},
   {"LCON", fun_dbwalker, 1, 2, FN_REG | FN_STRIPANSI},
   {"LCSTR", fun_lcstr, 1, -1, FN_REG},
-  {"LDELETE", fun_ldelete, 2, 3, FN_REG},
+  {"LDELETE", fun_ldelete, 2, 4, FN_REG},
   {"LEFT", fun_left, 2, 2, FN_REG},
   {"LEMIT", fun_lemit, 1, -1, FN_REG},
   {"LETQ", fun_letq, 1, INT_MAX, FN_NOPARSE},
@@ -375,7 +380,7 @@ FUNTAB flist[] = {
   {"MEDIAN", fun_median, 1, INT_MAX, FN_REG | FN_STRIPANSI},
   {"MEMBER", fun_member, 2, 3, FN_REG | FN_STRIPANSI | FN_STRIPANSI},
   {"MERGE", fun_merge, 3, 3, FN_REG},
-  {"MESSAGE", fun_message, 3, 13, FN_REG},
+  {"MESSAGE", fun_message, 3, 14, FN_REG},
   {"MID", fun_mid, 3, 3, FN_REG},
   {"MIN", fun_min, 1, INT_MAX, FN_REG | FN_STRIPANSI},
   {"MIX", fun_mix, 3, 12, FN_REG},
@@ -485,12 +490,12 @@ FUNTAB flist[] = {
   {"REMAINDER", fun_remainder, 2, 2, FN_REG},
   {"REMIT", fun_remit, 2, -2, FN_REG},
   {"REMOVE", fun_remove, 2, 3, FN_REG},
+  {"RENDER", fun_render, 2, 2, FN_REG},
   {"REPEAT", fun_repeat, 2, 2, FN_REG},
   {"REPLACE", fun_replace, 3, 4, FN_REG},
   {"REST", fun_rest, 1, 2, FN_REG},
   {"RESTARTS", fun_restarts, 0, 0, FN_REG},
   {"RESTARTTIME", fun_restarttime, 0, 0, FN_REG},
-  {"REVERSE", fun_flip, 1, -1, FN_REG},
   {"REVWORDS", fun_revwords, 1, 3, FN_REG},
   {"RIGHT", fun_right, 2, 2, FN_REG},
   {"RJUST", fun_rjust, 2, 3, FN_REG},

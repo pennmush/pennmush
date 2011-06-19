@@ -120,11 +120,14 @@ lock_list lock_types[] = {
 
 HASHTAB htab_locks;
 
- /** Table of base attributes associated with success and failure of
+ /**
+  * \verbatim
+  * Table of base attributes associated with success and failure of
   * locks. These are the historical ones; we automatically generate
- * such attribute names for those that aren't in this table using
- * <lock>_LOCK`<message>
- */
+  * such attribute names for those that aren't in this table using
+  * <lock>_LOCK`<message>
+  * \endverbatim
+  */
 const LOCKMSGINFO lock_msgs[] = {
   {"Basic", "SUCCESS", "FAILURE"},
   {"Enter", "ENTER", "EFAIL"},
@@ -866,7 +869,13 @@ fail_lock(dbref player, dbref thing, lock_type ltype, const char *def,
   char atr[BUFFER_LEN];
   char oatr[BUFFER_LEN];
   char aatr[BUFFER_LEN];
+  char realdef[BUFFER_LEN];
   char *bp;
+
+  if (def)
+    strcpy(realdef, def);       /* Because a lot of default msgs use tprintf */
+  else
+    realdef[0] = '\0';
 
   /* Find the lock's failure attribute, if it's there */
   for (lm = lock_msgs; lm->type; lm++) {
@@ -898,7 +907,7 @@ fail_lock(dbref player, dbref thing, lock_type ltype, const char *def,
   upcasestr(atr);
   upcasestr(oatr);
   upcasestr(aatr);
-  return did_it(player, thing, atr, def, oatr, NULL, aatr, loc);
+  return did_it(player, thing, atr, realdef, oatr, NULL, aatr, loc);
 }
 
 

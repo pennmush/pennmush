@@ -428,6 +428,7 @@ hash_init(HASHTAB *htab, int size)
   htab->last_index = -1;
   htab->hashsize = size;
   htab->hashfunc_offset = 0;
+  htab->entries = 0;
   htab->buckets = GC_MALLOC(size * sizeof(struct hash_bucket));
 }
 
@@ -452,7 +453,8 @@ hash_find(HASHTAB *htab, const char *key)
     hash = hash_functions[hashindex];
     hval = hash(key, len) % htab->hashsize;
 
-    if (htab->buckets[hval].key && strcmp(htab->buckets[hval].key, key) == 0)
+    if (htab->buckets[hval].key && len == htab->buckets[hval].keylen &&
+        memcmp(htab->buckets[hval].key, key, len) == 0)
       return htab->buckets + hval;
   }
 
@@ -463,19 +465,18 @@ enum { BUMP_LIMIT = 10 };
 
 /** Do cuckoo hash cycling */
 static bool
-hash_insert(HASHTAB *htab, const char *key, void *data)
+hash_insert(HASHTAB *htab, const char *key, int keylen, void *data)
 {
   int loop = 0, n;
   struct hash_bucket bump;
 
   bump.key = key;
+  bump.keylen = keylen;
   bump.data = data;
 
   while (loop < BUMP_LIMIT) {
-    int hval, keylen;
+    int hval;
     struct hash_bucket temp;
-
-    keylen = strlen(bump.key);
 
     /* See if bump has any empty choices and use it */
     for (n = 0; n < NHASH_TRIES; n++) {
@@ -483,7 +484,7 @@ hash_insert(HASHTAB *htab, const char *key, void *data)
       int hashindex = (n + htab->hashfunc_offset) % NHASH_MOD;
 
       hash = hash_functions[hashindex];
-      hval = hash(bump.key, keylen) % htab->hashsize;
+      hval = hash(bump.key, bump.keylen) % htab->hashsize;
       if (htab->buckets[hval].key == NULL) {
         htab->buckets[hval] = bump;
         return true;
@@ -493,7 +494,7 @@ hash_insert(HASHTAB *htab, const char *key, void *data)
     /* None. Use a random func and bump the existing element */
     n = htab->hashfunc_offset + get_random32(0, NHASH_TRIES - 1);
     n %= NHASH_MOD;
-    hval = (hash_functions[n]) (bump.key, keylen) % htab->hashsize;
+    hval = (hash_functions[n]) (bump.key, bump.keylen) % htab->hashsize;
     temp = htab->buckets[hval];
     htab->buckets[hval] = bump;
     bump = temp;
@@ -555,7 +556,7 @@ real_hash_resize(HASHTAB *htab, int newsize, int hashfunc_offset)
   htab->hashfunc_offset = hashfunc_offset;
   for (i = 0; i < oldsize; i++) {
     if (oldarr[i].key) {
-      if (!hash_insert(htab, oldarr[i].key, oldarr[i].data)) {
+      if (!hash_insert(htab, oldarr[i].key, oldarr[i].keylen, oldarr[i].data)) {
         /* Couldn't fit an element in. Try with different hash functions. */
         htab->buckets = oldarr;
         htab->hashsize = oldsize;
@@ -599,18 +600,20 @@ bool
 hash_add(HASHTAB *htab, const char *key, void *hashdata)
 {
   char *keycopy;
+  int keylen;
 
   if (hash_find(htab, key) != NULL)
     return false;
 
   keycopy = GC_STRDUP(key);
+  keylen = strlen(keycopy);
 
   if (htab->entries == htab->hashsize)
     real_hash_resize(htab, next_prime_after(floor(htab->hashsize * 1.15)),
                      htab->hashfunc_offset);
 
   htab->entries += 1;
-  if (!hash_insert(htab, keycopy, hashdata)) {
+  if (!hash_insert(htab, keycopy, keylen, hashdata)) {
     first_offset = -1;
     resize_calls = 0;
     real_hash_resize(htab, htab->hashsize,
@@ -642,7 +645,7 @@ hash_flush(HASHTAB *htab, int size)
 {
   htab->entries = 0;
   size = next_prime_after(size);
-  htab->buckets = GC_MALLOC(size);
+  htab->buckets = GC_MALLOC(size * sizeof(struct hash_bucket));
   htab->hashsize = size;
 }
 

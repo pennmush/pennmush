@@ -159,7 +159,7 @@ make_info_slave(void)
     info_slave = socks[0];
     closesocket(socks[1]);
     do_rawlog(LT_ERR,
-              "Spawning info slave, communicating using socketpair, pid %d",
+              "Spawning info slave, communicating using socketpair, pid %d.",
               child);
 #endif
     make_nonblocking(info_slave);
@@ -201,7 +201,7 @@ make_info_slave(void)
   if (info_slave >= maxd)
     maxd = info_slave + 1;
 
-  lower_priority_by(info_slave, 4);
+  lower_priority_by(info_slave_pid, 4);
 
   for (n = 0; n < maxd; n++)
     if (FD_ISSET(n, &info_pending))
@@ -291,6 +291,8 @@ query_info_slave(int fd)
   info_slave_state = INFO_SLAVE_PENDING;
 }
 
+extern const char *source_to_s(conn_source);
+
 void
 reap_info_slave(void)
 {
@@ -298,6 +300,7 @@ reap_info_slave(void)
   ssize_t len;
   char hostname[BUFFER_LEN], *hp;
   int n, count;
+  conn_source source;
 
   if (info_slave_state != INFO_SLAVE_PENDING) {
     if (info_slave_state == INFO_SLAVE_DOWN)
@@ -349,11 +352,19 @@ reap_info_slave(void)
     return;
   }
 
-  do_log(LT_CONN, 0, 0, "[%d/%s/%s] Connection opened.", resp.fd,
-         hostname, resp.ipaddr);
-  set_keepalive(resp.fd);
-  initializesock(resp.fd, hostname, resp.ipaddr,
-                 (resp.connected_to == SSLPORT));
+  if (resp.connected_to == TINYPORT)
+    source = CS_IP_SOCKET;
+  else if (resp.connected_to == SSLPORT)
+    source = CS_OPENSSL_SOCKET;
+  else
+    source = CS_UNKNOWN;
+
+  do_log(LT_CONN, 0, 0, "[%d/%s/%s] Connection opened from %s.", resp.fd,
+         hostname, resp.ipaddr, source_to_s(source));
+  set_keepalive(resp.fd, options.keepalive_timeout);
+
+
+  initializesock(resp.fd, hostname, resp.ipaddr, source);
 }
 
 /** Kill the info_slave process, typically at shutdown.
@@ -368,14 +379,9 @@ kill_info_slave(void)
       do_rawlog(LT_ERR, "Terminating info_slave pid %d", info_slave_pid);
 
       block_a_signal(SIGCHLD);
-
       closesocket(info_slave);
-      kill(info_slave_pid, 15);
-      /* Have to wait long enough for the info_slave to actually
-         die. This will hopefully be enough time. */
-      usleep(100);
-
-      mush_wait(info_slave_pid, &my_stat, WNOHANG);
+      kill(info_slave_pid, SIGTERM);
+      mush_wait(info_slave_pid, &my_stat, 0);
       info_slave_pid = -1;
       unblock_a_signal(SIGCHLD);
     }

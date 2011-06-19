@@ -188,6 +188,8 @@ PENNCONF conftable[] = {
   ,
   {"ssl_port", cf_int, &options.ssl_port, 65535, 0, "net"}
   ,
+  {"socket_file", cf_str, &options.socket_file, 256, 0, "net"}
+  ,
   {"use_dns", cf_bool, &options.use_dns, 2, 0, "net"}
   ,
   {"logins", cf_bool, &options.login_allow, 2, 0, "net"}
@@ -297,8 +299,10 @@ PENNCONF conftable[] = {
   ,
   {"max_logins", cf_int, &options.max_logins, 128, 0, "limits"}
   ,
-  {"max_guests", cf_int, &options.max_guests, 128, 0, "limits"},
-  {"max_named_qregs", cf_int, &options.max_named_qregs, 8192, 0, "limits"},
+  {"max_guests", cf_int, &options.max_guests, 128, 0, "limits"}
+  ,
+  {"max_named_qregs", cf_int, &options.max_named_qregs, 8192, 0, "limits"}
+  ,
   {"connect_fail_limit", cf_int, &options.connect_fail_limit, 50, 0, "limits"}
   ,
   {"idle_timeout", cf_time, &options.idle_timeout, 100000, 0, "limits"}
@@ -682,9 +686,11 @@ cf_str(const char *opt, const char *val, void *loc, int maxval, int from_cmd)
 }
 
 /** Parse a dbref configuration option.
+ * \verbatim
  * dbrefs can be a raw number N or #N, even though # normally starts a comment
- * in the config file. #-1 is allowed. Limits are -1 to db_max for \@config,
+ * in the config file. #-1 is allowed. Limits are -1 to db_max for @config,
  * -1 to INT_MAX for reading mush.cnf (And validated elsewhere).
+ * \endverbatim
  * \param opt name of the configuration option.
  * \param val value of the option.
  * \param loc address to store the value.
@@ -1270,6 +1276,7 @@ conf_default_set(void)
   strcpy(options.mud_url, "");
   options.port = 4201;
   options.ssl_port = 0;
+  strcpy(options.socket_file, "data/netmush.sock");
   strcpy(options.input_db, "data/indb");
   strcpy(options.output_db, "data/outdb");
   strcpy(options.crash_db, "data/PANIC.db");
@@ -1910,6 +1917,10 @@ show_compile_options(dbref player)
 
 #ifdef HAVE_SSL
   notify(player, T(" The MUSH was compiled with SSL support."));
+#endif
+
+#ifdef SSL_SLAVE
+  notify(player, T(" SSL connections are handled by a slave process."));
 #endif
 
 #ifdef HAVE_MYSQL

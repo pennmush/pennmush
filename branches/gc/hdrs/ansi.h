@@ -1,7 +1,12 @@
-/* ansi.h */
-
-/* ANSI control codes for various neat-o terminal effects
-
+/**
+ * \file ansi.h
+ *
+ * \brief ANSI control codes for various neat-o terminal effects
+ *
+ * \verbatim
+ * Routines for dealing with ANSI and Pueblo, and the internal
+ * markup system Penn uses to handle them.
+ *
  * Some older versions of Ultrix don't appear to be able to
  * handle these escape sequences. If lowercase 'a's are being
  * stripped from @doings, and/or the output of the ANSI flag
@@ -11,13 +16,19 @@
  * To fix the problem with 'a's, replace all occurrences of '\a'
  * in the code with '\07'.
  *
+ * \endverbatim
  */
+
 
 #ifndef __ANSI_H
 #define __ANSI_H
 
+/* If we want to debug ansi stuff. */
+/* #define ANSI_DEBUG /**/
+
 #include "mushtype.h"
 #include "mypcre.h"
+#include "strtree.h"
 
 #define BEEP_CHAR     '\a'
 #define ESC_CHAR      '\x1B'
@@ -82,11 +93,12 @@ void init_ansi_codes(void);
 #include <stdint.h>
 #endif
 
+/** ANSI color data */
 typedef struct _ansi_data {
-  uint8_t bits;
-  uint8_t offbits;
-  char fore;
-  char back;
+  uint8_t bits;     /**< highlight/flash/invert/underline which are explicitly on */
+  uint8_t offbits;  /**< highlight/flash/invert/underline which are explicitly off */
+  char fore;        /**< Foreground color */
+  char back;        /**< Background color */
 } ansi_data;
 
 #define HAS_ANSI(adata) (adata.bits || adata.offbits || adata.fore || adata.back)
@@ -101,9 +113,10 @@ void nest_ansi_data(ansi_data *old, ansi_data *cur);
 
 #define MARKUP_COLOR 'c'
 #define MARKUP_COLOR_STR "c"
-#define MARKUP_COLOR_OLD 'a'
 #define MARKUP_HTML 'p'
 #define MARKUP_HTML_STR "p"
+#define MARKUP_OLDANSI     'o'
+#define MARKUP_OLDANSI_STR "o"
 
 /* Markup information necessary for ansi_string */
 
@@ -118,49 +131,68 @@ void nest_ansi_data(ansi_data *old, ansi_data *cur);
  * start = 1, end = 2. (Instead of end = 1)
  */
 
-typedef struct _markup_information {
-  char *start_code;
-  char *stop_code;
-  char type;
-  int start;
-  int end;
-  int priority;
-} markup_information;
+/** Holds the markup information for an ansi_string struct */
+typedef struct _new_markup_information {
+  int parentIdx;               /**< If this is nested, its parent */
+  char type;                   /**< MARKUP_foo type. */
+  char standalone;             /**< If this is a standalone tag. */
+  int start;                   /**< The start position of this tag.
+                                **  Only relevant for standalone tags. */
+  const char *start_code, *end_code; /**< Markup start and end codes. */
+  uint16_t idx;                /**< For parse_ansi_string: Index of this mi */
+} new_markup_information;
+
+#define NOMARKUP (-1) /**< Character has no markup */
+
+#define AS_OPTIMIZED    0x01  /**< If the markup has been optimized. */
+#define AS_HAS_MARKUP   0x02  /**< If the string has markup or not */
+#define AS_HAS_TAGS     0x04  /**< If the string has non-color tags. */
+#define AS_HAS_STANDALONE 0x08  /**< If the string has standalone tags.
+                                 ** (<IMG>, etc) */
 
 /** A string, with ansi attributes broken out from the text */
 typedef struct _ansi_string {
   char text[BUFFER_LEN];        /**< Text of the string */
-  ansi_data ansi[BUFFER_LEN];   /**< ANSI of the string */
-  markup_information markup[BUFFER_LEN]; /**< The markup_information list */
-  int nmarkups;         /**< Number of Pueblo markups */
-  int len;              /**< Length of text */
-  int optimized;              /**< Has this ansi_string been optimized? */
+  int len;                      /**< Length of the string */
+  char *source;                 /**< Original source of string */
+  uint32_t flags;               /**< Bitwise or of AS_<foo> flags */
+  int16_t *markup;              /**< Indexes of markup, if it has any. */
+  new_markup_information *mi;   /**< Markup information */
+  StrTree *tags;                /**< Tags. */
+  int micount;                  /**< # of used markup information in ->mi */
+  int misize;                   /**< Size of the malloc in ->mi */
 } ansi_string;
 
+#define AS_Text(as) (as->text) /**< Raw text in an ansi_string */
+#define AS_Len(as) (as->len)   /**< Length of the raw text in an ansi_string */
+#define AS_IS(as,flag) (as->flags & flag)
+#define AS_HasMarkup(as) AS_IS(as, AS_HAS_MARKUP) /**< Does the ansi_string have markup */
+#define AS_HasTags(as) AS_IS(as, AS_HAS_TAGS) /**< Does the ansi_string have non-color tags */
+#define AS_IsOptimized(as) AS_IS(as, AS_OPTIMIZED) /**< Has the ansi_string been optimized */
+
 int ansi_strcmp(const char *astr, const char *bstr);
-extern char *remove_markup(const char *orig, size_t * stripped_len);
-extern char *skip_leading_ansi(const char *p);
+char *remove_markup(const char *orig, size_t * stripped_len);
+char *skip_leading_ansi(const char *p);
 
 int has_markup(const char *test);
-extern ansi_string *
+ansi_string *
 parse_ansi_string(const char *src)
   __attribute_malloc__;
-    extern void flip_ansi_string(ansi_string *as);
-    extern void free_ansi_string(ansi_string *as);
+    void flip_ansi_string(ansi_string *as);
+    void free_ansi_string(ansi_string *as);
 
 /* Append X characters to the end of a string, taking ansi and html codes into
    account. */
-    extern int safe_ansi_string(ansi_string *as, int start, int len,
-                                char *buff, char **bp);
+    int safe_ansi_string(ansi_string *as, int start, int len,
+                         char *buff, char **bp);
 
 /* Modifying ansi strings */
-    ansi_string *real_parse_ansi_string(const char *src)
- __attribute_malloc__;
+    ansi_string *real_parse_ansi_string(const char *src) __attribute_malloc__;
     int ansi_string_delete(ansi_string *as, int start, int count);
     int ansi_string_insert(ansi_string *dst, int loc, ansi_string *src);
     int ansi_string_replace(ansi_string *dst, int loc, int size,
                             ansi_string *src);
-    ansi_string *scramble_ansi_string(ansi_string *as);
+    void scramble_ansi_string(ansi_string *as);
     void optimize_ansi_string(ansi_string *as);
 
 /* Dump the penn code required to recreate the ansi_string */
@@ -179,8 +211,8 @@ parse_ansi_string(const char *src)
 #define open_tag(x) tprintf("%c%c%s%c",TAG_START,MARKUP_HTML,x,TAG_END)
 #define close_tag(x) tprintf("%c%c/%s%c",TAG_START,MARKUP_HTML,x,TAG_END)
 #define wrap_tag(x,y) tprintf("%c%c%s%c%s%c%c/%s%c", \
-                              TAG_START,MARKUP_HTML,x,TAG_END, \
-                              y, TAG_START,MARKUP_HTML,x,TAG_END)
+    TAG_START,MARKUP_HTML,x,TAG_END, \
+    y, TAG_START,MARKUP_HTML,x,TAG_END)
     int safe_tag(char const *a_tag, char *buf, char **bp);
     int safe_tag_cancel(char const *a_tag, char *buf, char **bp);
     int safe_tag_wrap(char const *a_tag, char const *params,

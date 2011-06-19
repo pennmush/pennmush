@@ -330,7 +330,7 @@ See also: @teleport
   LOUD objects bypass all speech, channel speech, and interaction @locks.
   This flag can only be set by royalty or wizards.
 
-See also: can_spoof (help powers2)
+See also: can_spoof and pemit_all (help powers2)
 & INHERIT
 & TRUST
   Flag:  TRUST  (all types)
@@ -519,12 +519,10 @@ See also: warnings, @warnings, @wcheck
   When a player is set NOSPOOF or PARANOID, everything it owns is also
   treated as having the flag.
   
-  Note that NOSPOOF output can be spammy and that the output format of
-  NOSPOOF can mess up @listen and ^-patterns, giving unexpected results.
+  Note that NOSPOOF output can be spammy. Nospoof information is not matched
+  against @listen or ^-listen patterns.
   
-  For the @pemit command, the Nospoof tag is '[Source->Recipient]', or
-  '[Source(#dbref)->Recipient]' for Paranoid objects. For all other messages,
-  it's '[Source:]' for Nospoof, or '[Source(#dbref)]' for Paranoid objects.
+  The nospoof tag is [Source:], and the paranoid tag is [Source(#dbref)].
     
 See also: SPOOFING, @emit, @pemit, @remit, @oemit, @nspemit
 & ON-VACATION

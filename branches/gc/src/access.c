@@ -93,8 +93,8 @@ typedef struct a_acsflag acsflag;
  */
 struct a_acsflag {
   const char *name;             /**< Name of the access flag */
-  bool toggle;                   /**< Is this a negatable flag? */
-  uint32_t flag;                     /**< Bitmask of the flag */
+  bool toggle;                  /**< Is this a negatable flag? */
+  uint32_t flag;                /**< Bitmask of the flag */
 };
 static acsflag acslist[] = {
   {"connect", 1, ACS_CONNECT},
@@ -113,6 +113,7 @@ static acsflag acslist[] = {
 
 static struct access *access_top;
 
+/* from pcre */
 extern const unsigned char *tables;
 
 static struct access *

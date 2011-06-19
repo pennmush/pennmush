@@ -159,12 +159,12 @@ look_exits(dbref player, dbref loc, const char *exit_name)
   for (thing = Exits(loc); thing != NOTHING; thing = Next(thing)) {
     if ((Light(loc) || Light(thing) || (!DarkLegal(thing) && !Dark(loc)))
         && can_interact(thing, player, INTERACT_SEE)) {
-      strcpy(pbuff, Name(thing));
+      strcpy(pbuff, accented_name(thing));
       if ((p = strchr(pbuff, ';')))
         *p = '\0';
       p = nbuf;
-      safe_tag_wrap("A", tprintf("XCH_CMD=\"go #%d\"", thing), pbuff, nbuf, &p,
-                    NOTHING);
+      safe_tag_wrap("A", tprintf("XCH_CMD=\"goto #%d\"", thing), pbuff, nbuf,
+                    &p, NOTHING);
       *p = '\0';
       if (Transparented(loc) && !(Opaque(thing))) {
         if (SUPPORT_PUEBLO && !texits) {
@@ -186,6 +186,7 @@ look_exits(dbref player, dbref loc, const char *exit_name)
           safe_format(tbuf1, &s1, T("%s leads to %s."), nbuf,
                       Name(Location(thing)));
         }
+        safe_tag_cancel("LI", tbuf1, &s1);
         *s1 = '\0';
         notify_nopenter_by(loc, player, tbuf1);
       } else {
@@ -283,8 +284,9 @@ look_contents(dbref player, dbref loc, const char *contents_name)
           tag("LI");
           tag_wrap("A", tprintf("XCH_CMD=\"look #%d\"", thing),
                    unparse_object_myopic(player, thing));
+          tag_cancel("LI");
           PEND;
-          notify_by(loc, player, pbuff);
+          notify_nopenter_by(loc, player, pbuff);
         }
       }
       PUSE;

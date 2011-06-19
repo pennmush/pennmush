@@ -74,6 +74,8 @@
 
 #undef HAVE_SYS_INOTIFY_H
 
+#undef HAVE_SYS_PRCTL_H
+
 #undef HAVE_FAM_H
 
 #undef HAVE_LIBFAM
@@ -107,6 +109,19 @@
 #undef HAVE_PCRE_H
 
 #undef HAVE_PCRE
+
+#undef HAVE_EVENT_H
+
+#undef HAVE_EVENT2_DNS_H
+
+#if defined(HAVE_EVENT_H) && defined(HAVE_EVENT2_DNS_H)
+
+/* Only define if it looks like libevent2 is installed. (Debian and
+ * derived distros only have 1.X) */
+
+#undef HAVE_LIBEVENT
+
+#endif
 
 /* Types */
 
@@ -318,6 +333,8 @@ typedef bool _Bool;
 
 #undef HAVE_INOTIFY_INIT
 
+#undef HAVE_INOTIFY_INIT1
+
 #ifdef HAVE_INOTIFY_INIT
 #define HAVE_INOTIFY
 #endif
@@ -325,6 +342,8 @@ typedef bool _Bool;
 #undef HAVE_PREAD
 
 #undef HAVE_PWRITE
+
+#undef HAVE_PRCTL
 
 #undef HAVE_POSIX_FADVISE
 
@@ -351,6 +370,8 @@ typedef bool _Bool;
 #undef DONT_TRANSLATE
 
 #undef INFO_SLAVE
+
+#undef SSL_SLAVE
 
 #undef HAVE_UPTIME
 

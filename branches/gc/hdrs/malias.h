@@ -1,14 +1,18 @@
-/* malias.h - header file for global mailing aliases/lists */
+/**
+ * \file malias.h
+ *
+ * \brief header file for global mailing aliases/lists
+ */
 
 #ifndef _MALIAS_H
 #define _MALIAS_H
 
 
-#define MALIAS_TOKEN    '+'     /* Initial char for alias names */
+#define MALIAS_TOKEN    '+'     /**< Initial char for alias names */
 
-#define ALIAS_MEMBERS   0x1     /* Only those on the alias */
-#define ALIAS_ADMIN     0x2     /* Only admin/powered */
-#define ALIAS_OWNER     0x4     /* Only the owner */
+#define ALIAS_MEMBERS   0x1     /**< Only those on the alias */
+#define ALIAS_ADMIN     0x2     /**< Only admin/powered */
+#define ALIAS_OWNER     0x4     /**< Only the owner */
 
 /** A mail alias.
  * This structure represents a mail alias (or mailing list).

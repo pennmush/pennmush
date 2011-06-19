@@ -4,7 +4,7 @@
 
 Some of this Guide was written by Amberyl, and is used with permission.
 Most of it is by Paul/Javelin.  This most recent version has been
-updated by Alex/Talek and Javelin.
+updated by Alex/Talek, Javelin and Raevnos.
 
 Installation information can be found in the files INSTALL or
 UPGRADING, depending on whether it's a new install or an upgrade.
@@ -17,8 +17,7 @@ IV.   Miscellaneous
 V.    Comments
 
 You may also want to take a look at Javelin's Guide for PennMUSH Gods,
-at http://pennmush.org/~alansz/guide.html
-or by ftp from pennmush.org, /pub/PennMUSH/Guide
+at http://download.pennmush.org/Guide/
 ============================================================================
 
 I. Introduction and history
@@ -98,70 +97,58 @@ may be available at http://community.pennmush.org.
 
 II.  Getting Help, Reporting Bugs
 
-Here are some guidelines about where and how to report bugs or problems
-or generally look for help.
+Here are some guidelines about where and how to report bugs or
+problems or generally look for help.
 
 There are three places one could get help with a problem:
 
-1. pennmush@pennmush.org is the PennMUSH mailing list.
-   To subscribe, visit http://www.pennmush.org/mailman/listinfo/pennmush
-
-   The PennMUSH mailing list should only be used for problems,
-   bugs, suggestions, ideas, discussion, etc. that are OF GENERAL INTEREST.
-   It's often hard to say what's of general interest, but a good
-   rule of thumb is:
-
-     Anything that occurs before the MUSH process is running is
-     *not* of general interest
-
-   That is, don't report problems with downloading PennMUSH, compilation,
-   installation, restarts, or database corruption to the mailing list.
-   These are often system specific.
-
-   (If you don't want to hear these discussions, but do want to be
-   informed of new patches, subscribe to pennmush-announce instead,
-   at http://www.pennmush.org/mailman/listinfo/pennmush-announce)
-
-2. The PennMUSH bug-tracking site is
+1. The PennMUSH bug-tracking site is
    http://code.google.com/p/pennmush/issues/list To file a new report,
    click on the 'New issue' link. If you want to get emails about
    updates to the bug report, put your email address in the
    appropriate field. For 'type', please select the most appropriate
-   category: Bug, suggested feature, documetation issue,
+   category: Bug, suggested feature, documentation issue,
    build/compliation problems, etc. Be sure to include what version of
    PennMUSH you found the problem on.
 
-   If the problem resulted in a crash and a core dump, a stack trace of
-   the core dump (see the section above) should also be included.
+   If the problem resulted in a crash and a core dump, a stack trace
+   of the core dump (see the section above) should also be included.
 
-   If we need additional stuff (like a log of the Configure or make), we'll
-   ask for it, but if you know that it's relevant, you can send it along,
-   too.
+   If we need additional stuff (like a log of the Configure or make),
+   we'll ask for it, but if you know that it's relevant, you can send
+   it along, too.
 
-   You can also search to see if anyone else has already reported the issue,'
-   see what issues have been fixed for upcoming releases, and much more at
-   the site.
+   You can also search to see if anyone else has already reported the
+   issue,' see what issues have been fixed for upcoming releases, and
+   much more at the site.
+
+2. The PennMUSH community portal is at http://community.pennmush.org
+
+   There is documentation there about many aspects of working with
+   mushes, and after you create an account, you can make blog posts
+   asking for help.
+
+3. M*U*S*H, at mush.pennmush.org 4201 is where the devs and many other
+   talented folk hang out.
 
 ============================================================================
 
 III. Getting a .pennmush.org hostname and mailing lists
 
 Thanks to donations from the PennMUSH community, Javelin was able to
-register the pennmush.org domain name, and, if you're running a PennMUSH,
-you can have yourmush.pennmush.org assigned as a hostname for your MUSH,
-so players don't need to telnet to obscuresite.obscuredomain.com!
+register the pennmush.org domain name, and, if you're running a
+PennMUSH, you can have yourmush.pennmush.org assigned as a hostname
+for your MUSH, so players don't need to telnet to
+obscuresite.obscuredomain.com!
 
-NOTE: A hostname is not the same thing as a site. We don't have accounts
-for you to run your MUSH from. You must already have your MUSH
-running at someplace.edu or whatever -- we just provide a nice hostname
-that will resolve into your current site's IP address.
+NOTE: A hostname is not the same thing as a site. We don't have
+accounts for you to run your MUSH from. You must already have your
+MUSH running at someplace.edu or whatever -- we just provide a nice
+hostname that will resolve into your current site's IP address.
 
 How do you get a pennmush.org hostname? Go to
-http://services.pennmush.org/, and follow the instructions.
-It may take a day or two before the hostname will work.
-
-Thovald also has volunteered to host mailing lists for MUSHes in
-the pennmush.org domain. Details are on the same web page.
+http://services.pennmush.org/, and follow the instructions.  It may
+take a day or two before the hostname will work.
 
 ============================================================================
 
@@ -169,9 +156,9 @@ IV. Miscellaneous
 
 IV.a Announcing when a mush is down
 
-If your mush is no longer running on a given port or server and
-you want to and are able to leave a programming running listening
-on that port, you can tell people about a new location or other news.
+If your mush is no longer running on a given port or server and you
+want to and are able to leave a programming running listening on that
+port, you can tell people about a new location or other news.
 
 Run:
 

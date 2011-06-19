@@ -1,0 +1,14 @@
+The getdate.template file is used by the extended CONVTIME() (See
+@config compile for it's status) to match many date and time
+templates.
+
+The format is one template per line, using the same codes as
+TIMEFMT(), except with %-signs instead of $-signs. Plain text is
+matched exactly. The MUSH does not need to be rebooted after editing
+getdaily.template.
+
+DO NOT use '%c', '%x' or '%X', as they might crash the mush on a linux
+box, and possibly others.
+
+For more details on the format of the file, see your system
+documentation on the getdate() and strptime() C functions.

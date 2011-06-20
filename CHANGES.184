@@ -18,6 +18,10 @@ chronological order (most recent first)
 
 Version 1.8.4 patchlevel 6                                 ??? ??,  2011
 
+Functions:
+ * valid() can be used with the 'qreg' category to check if a string
+   is a valid q-register name.  [SW]
+
 Version 1.8.4 patchlevel 5                                 Jun 19,  2011
 
 Major Changes:

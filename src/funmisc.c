@@ -66,6 +66,8 @@ FUNCTION(fun_valid)
     safe_boolean(ok_function_name(upcasestr(args[1])), buff, bp);
   else if (!strcasecmp(args[0], "flag"))
     safe_boolean(good_flag_name(upcasestr(args[1])), buff, bp);
+  else if (!strcasecmp(args[0], "qreg"))
+    safe_boolean(ValidQregName(args[1]), buff, bp);
   else
     safe_str("#-1", buff, bp);
 }

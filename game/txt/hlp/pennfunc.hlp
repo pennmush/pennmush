@@ -5700,6 +5700,7 @@ See also: VECTOR FUNCTIONS
    command     Test for a valid command name for @command/add
    function    Test for a valid function name for @function
    flag        Test for a valid flag/power name for @flag/add and @power/add
+   qreg        Test for a valid name for a q-register.
 
   Note that, for "playername", valid() returns 0 if the name is valid but
   currently in use by a player other than the caller.

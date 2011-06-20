@@ -1689,10 +1689,10 @@ do_cemit(dbref player, const char *name, const char *msg, int flags)
  * \param player the enactor.
  * \param name the name of the channel.
  * \param perms the permissions to set on an added/priv'd channel, the newname for a renamed channel, or on/off for a quieted channel.
- * \param flag switch indicator: 0=add, 1=delete, 2=rename, 3=priv
+ * \param flag what to do with the channel.
  */
 void
-do_chan_admin(dbref player, char *name, const char *perms, int flag)
+do_chan_admin(dbref player, char *name, const char *perms, enum chan_admin_op flag)
 {
   CHAN *chan = NULL, *temp = NULL;
   privbits type;
@@ -1718,7 +1718,7 @@ do_chan_admin(dbref player, char *name, const char *perms, int flag)
   if (flag)
     test_channel(player, name, chan);
   switch (flag) {
-  case 0:
+  case CH_ADMIN_ADD:
     /* add a channel */
     if (num_channels == MAX_CHANNELS) {
       notify(player, T("No more room for channels."));
@@ -1782,7 +1782,7 @@ do_chan_admin(dbref player, char *name, const char *perms, int flag)
     insert_channel(&chan);
     notify_format(player, T("CHAT: Channel <%s> created."), ChanName(chan));
     break;
-  case 1:
+  case CH_ADMIN_DEL:
     /* remove a channel */
     /* Check permissions. Wizards and owners can remove */
     if (!Chan_Can_Nuke(chan, player)) {
@@ -1799,7 +1799,7 @@ do_chan_admin(dbref player, char *name, const char *perms, int flag)
     num_channels--;
     notify(player, T("Channel removed."));
     break;
-  case 2:
+  case CH_ADMIN_RENAME:
     /* rename a channel */
     /* Can the player do this? */
     if (!Chan_Can_Modify(chan, player)) {
@@ -1831,7 +1831,7 @@ do_chan_admin(dbref player, char *name, const char *perms, int flag)
                  CB_CHECKQUIET | CB_PRESENCE | CB_POSE, announcebuff);
     notify(player, T("Channel renamed."));
     break;
-  case 3:
+  case CH_ADMIN_PRIV:
     /* change the permissions on a channel */
     if (!Chan_Can_Modify(chan, player)) {
       notify(player, T("Permission denied."));
@@ -3526,15 +3526,15 @@ COMMAND(cmd_channel)
   if (SW_ISSET(sw, SWITCH_LIST))
     do_channel_list(executor, arg_left);
   else if (SW_ISSET(sw, SWITCH_ADD))
-    do_chan_admin(executor, arg_left, args_right[1], 0);
+    do_chan_admin(executor, arg_left, args_right[1], CH_ADMIN_ADD);
   else if (SW_ISSET(sw, SWITCH_DELETE))
-    do_chan_admin(executor, arg_left, args_right[1], 1);
+    do_chan_admin(executor, arg_left, args_right[1], CH_ADMIN_DEL);
   else if (SW_ISSET(sw, SWITCH_NAME))
-    do_chan_admin(executor, arg_left, args_right[1], 2);
+    do_chan_admin(executor, arg_left, args_right[1], CH_ADMIN_RENAME);
   else if (SW_ISSET(sw, SWITCH_RENAME))
-    do_chan_admin(executor, arg_left, args_right[1], 2);
+    do_chan_admin(executor, arg_left, args_right[1], CH_ADMIN_RENAME);
   else if (SW_ISSET(sw, SWITCH_PRIVS))
-    do_chan_admin(executor, arg_left, args_right[1], 3);
+    do_chan_admin(executor, arg_left, args_right[1], CH_ADMIN_PRIV);
   else if (SW_ISSET(sw, SWITCH_RECALL))
     do_chan_recall(executor, arg_left, args_right, SW_ISSET(sw, SWITCH_QUIET));
   else if (SW_ISSET(sw, SWITCH_DECOMPILE))

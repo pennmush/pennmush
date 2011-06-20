@@ -146,11 +146,6 @@ struct chanlist {
 #define CHANNEL_NOCEMIT 0x400U  /* Disallow @cemit */
 #define CHANNEL_INTERACT 0x800U /* Filter channel output through interactions */
 #define CHANNEL_DEFAULT_FLAGS   (CHANNEL_PLAYER)
-#define CL_JOIN 0x1
-#define CL_SPEAK 0x2
-#define CL_MOD 0x4
-#define CL_SEE 0x8
-#define CL_HIDE 0x10
 #define CHANNEL_COST (options.chan_cost)
 #define MAX_PLAYER_CHANS (options.max_player_chans)
 #define MAX_CHANNELS (options.max_channels)
@@ -220,7 +215,9 @@ struct chanlist {
 enum cmatch_type { CMATCH_NONE, CMATCH_EXACT, CMATCH_PARTIAL, CMATCH_AMBIG };
 #define CMATCHED(i) (((i) == CMATCH_EXACT) | ((i) == CMATCH_PARTIAL))
 
-     /* Some globals */
+enum clock_type { CLOCK_JOIN, CLOCK_SPEAK, CLOCK_SEE, CLOCK_HIDE, CLOCK_MOD };
+
+/* Some globals */
 extern int num_channels;
 CHANUSER *onchannel(dbref who, CHAN *c);
 void init_chatdb(void);
@@ -232,7 +229,7 @@ void do_chan_user_flags
   (dbref player, char *name, const char *isyn, int flag, int silent);
 void do_chan_wipe(dbref player, const char *name);
 void do_chan_lock
-  (dbref player, const char *name, const char *lockstr, int whichlock);
+  (dbref player, const char *name, const char *lockstr, enum clock_type whichlock);
 void do_chan_what(dbref player, const char *partname);
 void do_chan_desc(dbref player, const char *name, const char *title);
 void do_chan_title(dbref player, const char *name, const char *title);
@@ -256,7 +253,7 @@ void do_chan_decompile(dbref player, const char *name, int brief);
 void do_chan_chown(dbref player, const char *name, const char *newowner);
 const char *channel_description(dbref player);
 
-enum clock_type { CLOCK_JOIN, CLOCK_SPEAK, CLOCK_SEE, CLOCK_HIDE, CLOCK_MOD };
+
 int eval_chan_lock(CHAN *c, dbref p, enum clock_type type);
 
 /** Ways to match channels by partial name */

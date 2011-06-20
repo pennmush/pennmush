@@ -2707,7 +2707,7 @@ chan_chown(CHAN *c, dbref victim)
  * \param whichlock which lock is to be set.
  */
 void
-do_chan_lock(dbref player, const char *name, const char *lockstr, int whichlock)
+do_chan_lock(dbref player, const char *name, const char *lockstr, enum clock_type whichlock)
 {
   CHAN *c;
   boolexp key;
@@ -2722,19 +2722,19 @@ do_chan_lock(dbref player, const char *name, const char *lockstr, int whichlock)
   }
   /* Ok, let's do it */
   switch (whichlock) {
-  case CL_JOIN:
+  case CLOCK_JOIN:
     ltype = chan_join_lock;
     break;
-  case CL_MOD:
+  case CLOCK_MOD:
     ltype = chan_mod_lock;
     break;
-  case CL_SEE:
+  case CLOCK_SEE:
     ltype = chan_see_lock;
     break;
-  case CL_HIDE:
+  case CLOCK_HIDE:
     ltype = chan_hide_lock;
     break;
-  case CL_SPEAK:
+  case CLOCK_SPEAK:
     ltype = chan_speak_lock;
     break;
   default:
@@ -2752,35 +2752,35 @@ do_chan_lock(dbref player, const char *name, const char *lockstr, int whichlock)
     }
   }
   switch (whichlock) {
-  case CL_JOIN:
+  case CLOCK_JOIN:
     free_boolexp(ChanJoinLock(c));
     ChanJoinLock(c) = key;
     notify_format(player, (key == TRUE_BOOLEXP) ?
                   T("CHAT: Joinlock on <%s> reset.") :
                   T("CHAT: Joinlock on <%s> set."), ChanName(c));
     break;
-  case CL_SPEAK:
+  case CLOCK_SPEAK:
     free_boolexp(ChanSpeakLock(c));
     ChanSpeakLock(c) = key;
     notify_format(player, (key == TRUE_BOOLEXP) ?
                   T("CHAT: Speaklock on <%s> reset.") :
                   T("CHAT: Speaklock on <%s> set."), ChanName(c));
     break;
-  case CL_SEE:
+  case CLOCK_SEE:
     free_boolexp(ChanSeeLock(c));
     ChanSeeLock(c) = key;
     notify_format(player, (key == TRUE_BOOLEXP) ?
                   T("CHAT: Seelock on <%s> reset.") :
                   T("CHAT: Seelock on <%s> set."), ChanName(c));
     break;
-  case CL_HIDE:
+  case CLOCK_HIDE:
     free_boolexp(ChanHideLock(c));
     ChanHideLock(c) = key;
     notify_format(player, (key == TRUE_BOOLEXP) ?
                   T("CHAT: Hidelock on <%s> reset.") :
                   T("CHAT: Hidelock on <%s> set."), ChanName(c));
     break;
-  case CL_MOD:
+  case CLOCK_MOD:
     free_boolexp(ChanModLock(c));
     ChanModLock(c) = key;
     notify_format(player, (key == TRUE_BOOLEXP) ?
@@ -3337,19 +3337,19 @@ FUNCTION(fun_clock)
   }
 
   if (!strcasecmp(p, "JOIN")) {
-    which_lock = CL_JOIN;
+    which_lock = CLOCK_JOIN;
     lock_ptr = ChanJoinLock(c);
   } else if (!strcasecmp(p, "SPEAK")) {
-    which_lock = CL_SPEAK;
+    which_lock = CLOCK_SPEAK;
     lock_ptr = ChanSpeakLock(c);
   } else if (!strcasecmp(p, "MOD")) {
-    which_lock = CL_MOD;
+    which_lock = CLOCK_MOD;
     lock_ptr = ChanModLock(c);
   } else if (!strcasecmp(p, "SEE")) {
-    which_lock = CL_SEE;
+    which_lock = CLOCK_SEE;
     lock_ptr = ChanSeeLock(c);
   } else if (!strcasecmp(p, "HIDE")) {
-    which_lock = CL_HIDE;
+    which_lock = CLOCK_HIDE;
     lock_ptr = ChanHideLock(c);
   } else {
     safe_str(T("#-1 NO SUCH LOCK TYPE"), buff, bp);
@@ -3587,15 +3587,15 @@ COMMAND(cmd_chat)
 COMMAND(cmd_clock)
 {
   if (SW_ISSET(sw, SWITCH_JOIN))
-    do_chan_lock(executor, arg_left, arg_right, CL_JOIN);
+    do_chan_lock(executor, arg_left, arg_right, CLOCK_JOIN);
   else if (SW_ISSET(sw, SWITCH_SPEAK))
-    do_chan_lock(executor, arg_left, arg_right, CL_SPEAK);
+    do_chan_lock(executor, arg_left, arg_right, CLOCK_SPEAK);
   else if (SW_ISSET(sw, SWITCH_MOD))
-    do_chan_lock(executor, arg_left, arg_right, CL_MOD);
+    do_chan_lock(executor, arg_left, arg_right, CLOCK_MOD);
   else if (SW_ISSET(sw, SWITCH_SEE))
-    do_chan_lock(executor, arg_left, arg_right, CL_SEE);
+    do_chan_lock(executor, arg_left, arg_right, CLOCK_SEE);
   else if (SW_ISSET(sw, SWITCH_HIDE))
-    do_chan_lock(executor, arg_left, arg_right, CL_HIDE);
+    do_chan_lock(executor, arg_left, arg_right, CLOCK_HIDE);
   else
     notify(executor, T("You must specify a type of lock!"));
 }

@@ -21,6 +21,10 @@ Version 1.8.4 patchlevel 6                                 ??? ??,  2011
 Functions:
  * valid() can be used with the 'qreg' category to check if a string
    is a valid q-register name.  [SW]
+   
+Fixes:
+ * Wildcard matches on ANSI'd strings sometimes failed. Reported by Duckwa
+   and Paige. [MG]
 
 Version 1.8.4 patchlevel 5                                 Jun 19,  2011
 

@@ -28,6 +28,8 @@ Functions:
 Fixes:
  * Wildcard matches on ANSI'd strings sometimes failed. Reported by Duckwa
    and Paige. [MG]
+ * Bug in matching code when a room tries to locate an exit. Reported by
+   Sketch. [MG]
 
 Version 1.8.4 patchlevel 5                                 Jun 19,  2011
 

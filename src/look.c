@@ -796,7 +796,6 @@ do_examine(dbref player, const char *xname, enum exam_type flag, int all,
   char *r;
   dbref content;
   dbref exit_dbref;
-  const char *real_name = NULL;
   char *name = NULL;
   char *attrib_name = NULL;
   char *tp;
@@ -814,10 +813,9 @@ do_examine(dbref player, const char *xname, enum exam_type flag, int all,
       *attrib_name = '\0';
       attrib_name++;
     }
-    real_name = name;
     /* look it up */
     if ((thing =
-         noisy_match_result(player, real_name, NOTYPE,
+         noisy_match_result(player, name, NOTYPE,
                             MAT_EVERYTHING)) == NOTHING) {
       mush_free(name, "de.string");
       return;

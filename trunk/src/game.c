@@ -2442,6 +2442,9 @@ extern PTAB ptab_command;
 extern PTAB ptab_attrib;
 extern PTAB ptab_flag;
 extern intmap *queue_map, *descs_by_fd;
+#ifdef HAVE_INOTIFY
+extern intmap *watchtable;
+#endif
 
 /** Reports stats on various in-memory data structures.
  * \param player the enactor.
@@ -2474,6 +2477,9 @@ do_list_memstats(dbref player)
   im_stats_header(player);
   im_stats(player, queue_map, "Queue IDs");
   im_stats(player, descs_by_fd, "Connections");
+#ifdef HAVE_INOTIFY
+  im_stats(player, watchtable, "Inotify");
+#endif
 
 #if (COMPRESSION_TYPE >= 3) && defined(COMP_STATS)
   if (Wizard(player)) {

@@ -13,6 +13,9 @@ be read in 'help patchlevels'.
 
 Version 1.8.4 patchlevel 6                                 ??? ??,  2011
 
+Minor changes:
+ * Clean up the linux inotify file monitoring code a bit. [SW]
+
 Functions:
  * valid() can be used with the 'qreg' category to check if a string
    is a valid q-register name.  [SW]

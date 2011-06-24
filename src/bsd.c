@@ -5632,10 +5632,21 @@ file_watch_init_in(void)
   }
 
 #ifdef HAVE_INOTIFY_INIT1
-  watch_fd = inotify_init1(IN_NONBLOCK);
+  watch_fd = inotify_init1(IN_NONBLOCK | IN_CLOEXEC);
 #else
-  if ((watch_fd = inotify_init()) >= 0)
+  if ((watch_fd = inotify_init()) >= 0) {
+    int flags;
+
     make_nonblocking(watch_fd);
+    flags = fcntl(watch_fd, F_GETFD);
+    if (flags < 0) 
+      penn_perror("file_watch_init_in: fcntl F_GETFD");
+    else {
+      flags |= FD_CLOEXEC;
+      if (fcntl(watch_fd, F_SETFD, flags) < 0)
+	penn_perror("file_watch_init_in: fcntl F_SETFD");
+    }
+  }
 #endif
 
   if (watch_fd < 0) {
@@ -5654,25 +5665,42 @@ file_watch_init_in(void)
 static void
 file_watch_event_in(int fd)
 {
-  uint8_t raw[BUFFER_LEN];
+  uint8_t raw[BUFFER_LEN], *ptr;
+  int len, lastwd = -1;
 
-  while (read(fd, raw, sizeof raw) > 0) {
-    struct inotify_event *ev = (struct inotify_event *) raw;
-    const char *file = im_find(watchtable, ev->wd);
-    if (file) {
-      if (ev->mask != IN_IGNORED) {
-        do_rawlog(LT_ERR, "Got inotify status change for file '%s'", file);
-        if (fcache_read_one(file)) {
-          do_rawlog(LT_TRACE, "Updated cached copy of %s.", file);
-          WATCH(file);
-        } else if (help_reindex_by_name(file)) {
-          do_rawlog(LT_TRACE, "Reindexing help file %s.", file);
-          WATCH(file);
-        } else {
-          do_rawlog(LT_ERR,
-                    "Got status change for file '%s' but I don't know what to do with it!",
-                    file);
-        }
+  while ((len = read(fd, raw, sizeof raw)) > 0) {
+    ptr = raw;
+    while (len > 0) {
+      int thislen;
+      struct inotify_event *ev  = (struct inotify_event *)ptr;     
+      const char *file = im_find(watchtable, ev->wd);      
+
+      thislen = sizeof(struct inotify_event) + ev->len;      
+      len -= thislen;
+      ptr += thislen;
+
+      if (file) {
+	if (!(ev->mask & IN_IGNORED)) {
+	  do_rawlog(LT_TRACE, "Got inotify status change for file '%s': 0x%x", file, ev->mask);
+	  if (ev->mask & IN_DELETE_SELF) {
+	    inotify_rm_watch(fd, ev->wd);
+	    im_delete(watchtable, ev->wd);
+	  }
+	  if (lastwd == ev->wd) 
+	    continue;
+	  if (fcache_read_one(file)) {
+	    do_rawlog(LT_TRACE, "Updated cached copy of %s.", file);
+	    WATCH(file);
+	  } else if (help_reindex_by_name(file)) {
+	    do_rawlog(LT_TRACE, "Reindexing help file %s.", file);
+	    WATCH(file);
+	  } else {
+	    do_rawlog(LT_ERR,
+		      "Got status change for file '%s' but I don't know what to do with it!",
+		      file);
+	  }
+	lastwd = ev->wd;
+	}
       }
     }
   }

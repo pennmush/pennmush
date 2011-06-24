@@ -443,7 +443,7 @@ match_result_internal(dbref who, dbref where, const char *xname, int type,
       MATCH_LIST(loc);
     }
     if ((type & TYPE_EXIT) || !(flags & MAT_TYPE)) {
-      if ((flags & MAT_CARRIED_EXIT) && goodwhere && IsRoom(where)) {
+      if ((flags & MAT_CARRIED_EXIT) && goodwhere && IsRoom(where) ((loc != where) || !(flags & MAT_EXIT))) {
         MATCH_LIST(Exits(where));
       }
     }

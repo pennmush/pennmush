@@ -150,17 +150,22 @@ onchannel(dbref who, CHAN *ch)
   return NULL;
 }
 
+
 /** A macro to test if a channel exists and, if not, to notify. */
-#define test_channel(player,name,chan) \
+#define test_channel_fun(player,name,chan,buff,bp) \
    do { \
     chan = NULL; \
     switch (find_channel(name,&chan,player)) { \
     case CMATCH_NONE: \
       notify(player, T ("CHAT: I don't recognize that channel.")); \
+      if (buff) \
+        safe_str(T("#-1 NO SUCH CHANNEL"), buff, bp); \
       return; \
     case CMATCH_AMBIG: \
       notify(player, T("CHAT: I don't know which channel you mean.")); \
       list_partial_matches(player, name, PMATCH_ALL); \
+      if (buff) \
+        safe_str(T("#-2 AMBIGUOUS CHANNEL"), buff, bp); \
       return; \
     case CMATCH_EXACT: \
     case CMATCH_PARTIAL: \
@@ -168,6 +173,9 @@ onchannel(dbref who, CHAN *ch)
       break; \
      } \
     } while (0)
+
+#define test_channel(player,name,chan) test_channel_fun(player,name,chan,NULL,NULL);
+
 
 /** A macro to test if a channel exists and player's on it, and,
  * if not, to notify. */
@@ -3451,7 +3459,7 @@ FUNCTION(fun_crecall)
     return;
   }
 
-  test_channel(executor, name, chan);
+  test_channel_fun(executor, name, chan, buff, bp);
   if (!Chan_Can_See(chan, executor)) {
     if (onchannel(executor, chan))
       safe_str(T(e_perm), buff, bp);
@@ -3484,7 +3492,6 @@ FUNCTION(fun_crecall)
     start = BufferQNum(ChanBufferQ(chan)) - num_lines;
   if (isempty_bufferq(ChanBufferQ(chan))
       || BufferQNum(ChanBufferQ(chan)) <= start) {
-    safe_str(T(e_range), buff, bp);
     return;
   }
 

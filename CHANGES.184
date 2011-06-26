@@ -24,12 +24,16 @@ Minor changes:
 Functions:
  * valid() can be used with the 'qreg' category to check if a string
    is a valid q-register name.  [SW]
+ * crecall() now returns an error when given an invalid channel, and no
+   longer returns an error when used on a channel with nothing to recall.
+   Suggested by Trinsec. [MG]
    
 Fixes:
  * Wildcard matches on ANSI'd strings sometimes failed. Reported by Duckwa
    and Paige. [MG]
  * Bug in matching code when a room tries to locate an exit. Reported by
    Sketch. [MG]
+ * Help updates. [MG]
 
 Version 1.8.4 patchlevel 5                                 Jun 19,  2011
 

@@ -721,6 +721,9 @@ parse_tagname(const char *ptr)
 static const char *
 as_get_tag(ansi_string *as, const char *tag)
 {
+  if (!tag)
+    return NULL;
+
   if (*tag == '/' && *(tag + 1) == '\0') {
     return "/";
   }

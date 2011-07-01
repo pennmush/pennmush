@@ -34,6 +34,7 @@ Fixes:
  * Bug in matching code when a room tries to locate an exit. Reported by
    Sketch. [MG]
  * Help updates. [MG]
+ * Crash bug in dealing with Pueblo markup. Reported by Mercutio. [SW]
 
 Version 1.8.4 patchlevel 5                                 Jun 19,  2011
 

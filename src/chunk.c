@@ -517,7 +517,7 @@ ChunkLen(uint16_t region, uint16_t offset)
   return CPLen(ChunkPointer(region, offset));
 }
 
-static uint16_t
+static inline uint16_t
 CPFullLen(const unsigned char *cptr)
 {
   if (*cptr & CHUNK_TAG1_MASK) {

@@ -1053,7 +1053,7 @@ See also: ATTRIBUTES, ATTRIB-OWNERSHIP, Attribute Functions, ATTRIBUTE TREES,
   Continued in 'help parents2'.
 & PARENTS2
  
-  Note that the only properties inherited are attributes. In
+  Note that the only properties inherited are attributes and locks. In
   particular, flags and exits are NOT inherited from the parent
   object. Also, commands which walk the attribute list (such as
   "examine", the LATTR() function, the HASATTR() function, @set, and
@@ -1120,6 +1120,9 @@ See also: ATTRIBUTES, ATTRIB-OWNERSHIP, Attribute Functions, ATTRIBUTE TREES,
   copy, the parent does not change, so unless you're putting data into
   the parent that you want to make impossible to read, it's safe to
   allow the purchasers of your object to @chown their copy.
+
+  Locks can also be inherited, but are flagged no-inherit by default.
+  Use @lset to change that on a per-lock basis.
 
 See also: @parent, $-COMMANDS, ATTRIBUTES, ANCESTORS, ORPHAN, pfun()
 & POWERS LIST

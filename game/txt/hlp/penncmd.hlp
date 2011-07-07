@@ -1650,6 +1650,8 @@ See also: EXITS, @open, @link
   set, sound which matches any of the comma-separated list of wildcard
   patterns in this attribute is not propagated through the audible object.
 
+  @filter uses the type of matching described in HELP SWITCH WILDCARDS.
+
   If you need to use a comma in one of the patterns, put a \ before it,
   do not use {} curly braces.
 

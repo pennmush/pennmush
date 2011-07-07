@@ -3730,6 +3730,7 @@ See also: @restart, @undestroy, ACTION LISTS, @function, @command, @hook,
   @stats/chunks
   @stats/regions
   @stats/paging
+  @stats/freespace
 
   In its first form, display the number of objects in the game broken
   down by object types.  Wizards can supply a player name to count only

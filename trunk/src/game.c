@@ -2133,6 +2133,64 @@ win32_uptime(dbref player __attribute__ ((__unused__)))
 #endif
 }
 
+enum uptime_type {UPTIME_UPSINCE, UPTIME_REBOOT, UPTIME_LAST_SAVE, UPTIME_NEXT_SAVE, UPTIME_DBCK, UPTIME_PURGE, UPTIME_WARNING};
+/* ARGSUSED */
+FUNCTION(fun_uptime)
+{
+  enum uptime_type which = UPTIME_UPSINCE;
+
+  if (args[0] && *args[0]) {
+    if (string_prefix("upsince", args[0]))
+      which = UPTIME_UPSINCE;
+    else if (string_prefix("reboot", args[0]))
+      which = UPTIME_REBOOT;
+    else if (string_prefix("save", args[0]))
+      which = UPTIME_LAST_SAVE;
+    else if (string_prefix("nextsave", args[0]))
+      which = UPTIME_NEXT_SAVE;
+    else if (string_prefix("dbck", args[0]))
+      which = UPTIME_DBCK;
+    else if (string_prefix("purge", args[0]))
+      which = UPTIME_PURGE;
+    else if (string_prefix("warnings", args[0]))
+      which = UPTIME_WARNING;
+    else {
+      safe_str("#-1", buff, bp);
+      return;
+    }
+  }
+
+  switch (which) {
+    case UPTIME_UPSINCE:
+      safe_integer(globals.first_start_time, buff, bp);
+      break;
+    case UPTIME_REBOOT:
+      safe_integer(globals.start_time, buff, bp);
+      break;
+    case UPTIME_LAST_SAVE:
+      if (globals.last_dump_time > 0)
+        safe_integer(globals.last_dump_time, buff, bp);
+      else
+        safe_str("-1", buff, bp);
+      break;
+    case UPTIME_NEXT_SAVE:
+      safe_integer(options.dump_counter, buff, bp);
+      break;
+    case UPTIME_DBCK:
+      safe_integer(options.dbck_counter, buff, bp);
+      break;
+    case UPTIME_PURGE:
+      safe_integer(options.purge_counter, buff, bp);
+      break;
+    case UPTIME_WARNING:
+      if (options.warn_interval)
+        safe_integer(options.warn_counter, buff, bp);
+      else
+        safe_str("-1", buff, bp);
+      break;
+  }
+
+}
 
 /** Report on server uptime.
  * \verbatim
@@ -2219,9 +2277,6 @@ do_uptime(dbref player, int mortal)
   if (!Wizard(player) || mortal)
     return;
 
-  /* Mortals, go no further! */
-  if (!Wizard(player) || mortal)
-    return;
 #if defined(linux)
   linux_uptime(player);
 #elif defined(WIN32)

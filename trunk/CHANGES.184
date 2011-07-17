@@ -39,6 +39,8 @@ Fixes:
  * Crash bug in dealing with Pueblo markup. Reported by Mercutio. [SW]
  * Fix some issues in parsing flag/attribute/eval locks. Found by Padraic
    and Jules. [SW]
+ * @[out]pageformat could sometimes receive the wrong alias in %2. Reported
+   by Padraic. [MG]
 
 Version 1.8.4 patchlevel 5                                 Jun 19,  2011
 

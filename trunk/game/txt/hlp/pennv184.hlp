@@ -15,6 +15,8 @@ Version 1.8.4 patchlevel 6                                 ??? ??,  2011
 
 Minor changes:
  * Clean up the linux inotify file monitoring code a bit. [SW]
+ * @forwardlist can be inherited (But defaults to no-inherit). Suggested
+   by Padraic.
 
 Functions:
  * valid() can be used with the 'qreg' category to check if a string
@@ -28,8 +30,12 @@ Fixes:
    and Paige. [MG]
  * Bug in matching code when a room tries to locate an exit. Reported by
    Sketch. [MG]
- * Help updates. [MG]
+ * Help updates. [MG], [SW]
  * Crash bug in dealing with Pueblo markup. Reported by Mercutio. [SW]
+ * Fix some issues in parsing flag/attribute/eval locks. Found by Padraic
+   and Jules. [SW]
+ * @[out]pageformat could sometimes receive the wrong alias in %2. Reported
+   by Padraic. [MG]
 
 & 1.8.4p5
 Version 1.8.4 patchlevel 5                                 Jun 19,  2011

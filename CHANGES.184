@@ -22,6 +22,8 @@ Minor changes:
  * Clean up the linux inotify file monitoring code a bit. [SW]
  * @forwardlist can be inherited (But defaults to no-inherit). Suggested
    by Padraic.
+ * @pemit/port now takes the /list switch, to pemit multiple ports at once.
+   Suggested by Padraic. [MG]
 
 Functions:
  * valid() can be used with the 'qreg' category to check if a string

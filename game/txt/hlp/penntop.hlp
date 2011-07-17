@@ -1857,55 +1857,52 @@ See also: TYPES OF OBJECTS, type(), hastype(), @open, @link
 & $-COMMANDS
 & MACROS
 & USER-DEFINED COMMANDS
-  User-defined commands can be created by setting $-commands on
-  players, things, and rooms. Exits cannot have $-commands. To set a
-  $-command:
+  User-defined commands can be created by setting $-commands on players,
+  things, and rooms. Exits cannot have $-commands. To set a $-command:
 
     &<attribute> <object>=$<command name>:<action list>
   
-  Whenever someone in the same room as the object types the command
-  name, the action list is carried out by the object, as long as:
+  Whenever someone in the same room as the object types the command name, 
+  the action list is carried out by the object, as long as:
 
   - the person typing the command passes the object's @lock/use
     and @lock/command
   - the object is not set NO_COMMAND or HALT
 
-  Such attributes can also be @triggered as if the $<command name>:
-  did not exist.
+  Such attributes can also be @triggered as if the $<command name>: did not 
+  exist.
 
-  It is recommended that <command name> not begin with "@", as many
-  built-in commands start with "@". Conventionally, global commands
-  are often named with the "+" prefix, and local $-commands often have
-  a "+" or "." prefix.
+  It is recommended that <command name> not begin with "@", as many built-in
+  commands start with "@". Conventionally, global commands are often named 
+  with the "+" prefix, and local $-commands often have a "+" or "." prefix.
   
   Continued in 'help user-defined2'.
 & $-COMMANDS2
 & MACROS2
 & USER-DEFINED2
-  Any number of *'s and ?'s may be in the command name. A * matches
-  any number of characters, and a ? matches any single character.
-  When the actions are executed, the values on the stack in %0-%9 are
-  the portions of what the user types that match the first ten *'s or
-  ?'s.  You can also match a regular expression rather than wildcards.
-  See 'help regexps' for details.
+  Any number of *'s and ?'s may be in the command name. A * matches any 
+  number of characters, and a ? matches any single character. When the 
+  actions are executed, the values on the stack in %0-%9 are the portions
+  of what the user types that match the first ten *'s or ?'s.  You can also 
+  match a regular expression rather than wildcards. See 'help regexps' 
+  for details.
 
   For example, to make a 'wave' command, you could do the following:
-    &DO_WAVE me=$wave *:pose {waves to %0.}
+    &DO_WAVE me=$wave *: pose waves to %0.
   You could then type:
         > wave Guest
         Rhyanna waves to Guest.
 
-  If a command would match, but the enactor can't pass the lock, the
-  object may define generic failure behavior by setting the
-  COMMAND_LOCK`FAILURE, COMMAND_LOCK`OFAILURE, and/or
-  COMMAND_LOCK`AFAILURE attributes. These are triggered on all objects
-  with matching commands and failing locks, but only if no command
-  successfully matched, and take the place of the usual "Huh?"
-  message.
+  If a command would match, but the enactor can't pass the lock, the object 
+  may define generic failure behavior by setting the COMMAND_LOCK`FAILURE, 
+  COMMAND_LOCK`OFAILURE, and/or COMMAND_LOCK`AFAILURE attributes. These are 
+  triggered on all objects with matching commands and failing locks, but only
+  if no command successfully matched, and take the place of the usual 
+  "Huh?" message.
 
   *BE SURE TO @LOCK/USE ME==ME IF YOU SET MACROS ON YOURSELF!*
 
-See also: STACK, SUBSTITUTIONS, @lock
+See also: GLOBAL COMMANDS, EVALUATION ORDER, STACK, SUBSTITUTIONS, @lock
 & VERBS
   Verb attributes are ones which are shown (or triggered) when you use a 
   particular command, or perform a certain action. There are normally three:

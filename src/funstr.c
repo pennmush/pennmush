@@ -1710,7 +1710,13 @@ align_one_line(char *buff, char **bp, int ncols,
         continue;
       } else {
         if (!(calign[i] & AL_NOFILL)) {
+          if (HAS_ANSI(adata[i])) {
+            write_ansi_data(&adata[i], line, &lp);
+          }
           lp += cols[i];
+          if (HAS_ANSI(adata[i])) {
+            write_ansi_close(line, &lp);
+          }
         }
         if (i < (ncols - 1) && fslen)
           safe_str(fieldsep, line, &lp);

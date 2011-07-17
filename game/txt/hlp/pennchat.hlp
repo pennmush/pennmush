@@ -173,9 +173,9 @@ See also: CHAT, @chat, @cemit
   etc. 'help @channel list' explains the output in detail. If a <prefix> is
   given, only channels whose names begin with <prefix> are shown.
 
-  @channel/what shows the name, description, owner, priv flags and buffer
-  size for all channels, or all channels whose names begin with <prefix> if
-  one is given.
+  @channel/what shows the name, description, owner, priv flags, mogrifier and 
+  buffer size for all channels, or all channels whose names begin with
+  <prefix> if one is given.
 
   @channel/who lists all the players on the given channel.
 

@@ -31,6 +31,8 @@ Functions:
  * crecall() now returns an error when given an invalid channel, and no
    longer returns an error when used on a channel with nothing to recall.
    Suggested by Trinsec. [MG]
+ * Added uptime(), which returns much of the information from @uptime.
+   From a suggestion by Jules. [MG]
    
 Fixes:
  * Wildcard matches on ANSI'd strings sometimes failed. Reported by Duckwa

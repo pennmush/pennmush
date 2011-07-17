@@ -19,6 +19,11 @@ Minor changes:
    by Padraic.
  * @pemit/port now takes the /list switch, to pemit multiple ports at once.
    Suggested by Padraic. [MG]
+ * When you 'register' a character at the connect screen, you can re-use the
+   command to send a new password to the same email address, as long as you
+   haven't connected yet. Suggested by Minion. [MG]
+ * @odescribe/@adescribe are no longer triggered when a Terse player moves
+   into a room, as he doesn't see the @describe. Suggested by Padraic. [MG]
 
 Functions:
  * valid() can be used with the 'qreg' category to check if a string

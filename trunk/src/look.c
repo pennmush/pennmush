@@ -532,19 +532,13 @@ look_room(dbref player, dbref loc, enum look_type style)
       } else
         look_description(player, loc, NULL, "DESCRIBE", "DESCFORMAT");
     }
-  }
-  /* tell him the description */
-  else {
-    if (style == LOOK_NORMAL || style == LOOK_AUTO) {
-      if (style == LOOK_NORMAL || !Terse(player)) {
-        look_description(player, loc, NULL, "DESCRIBE", "DESCFORMAT");
-        did_it(player, loc, NULL, NULL, "ODESCRIBE", NULL,
-               "ADESCRIBE", NOTHING);
-      } else
-        did_it(player, loc, NULL, NULL, "ODESCRIBE", NULL, "ADESCRIBE",
-               NOTHING);
-    } else if (style != LOOK_CLOUDY)
+  } else if (style == LOOK_NORMAL || style == LOOK_AUTO) {
+    if (style == LOOK_NORMAL || !Terse(player)) {
       look_description(player, loc, NULL, "DESCRIBE", "DESCFORMAT");
+      did_it(player, loc, NULL, NULL, "ODESCRIBE", NULL, "ADESCRIBE", NOTHING);
+    }
+  } else if (style != LOOK_CLOUDY) {
+    did_it(player, loc, NULL, NULL, "ODESCRIBE", NULL, "ADESCRIBE", NOTHING);
   }
   /* tell him the appropriate messages if he has the key */
   if (IsRoom(loc) && (style == LOOK_NORMAL || style == LOOK_AUTO)) {

@@ -38,6 +38,8 @@ Fixes:
    and Jules. [SW]
  * @[out]pageformat could sometimes receive the wrong alias in %2. Reported
    by Padraic. [MG]
+ * align() didn't correctly apply ANSI to empty columns. Reported by
+   Padraic. [MG]
 
 & 1.8.4p5
 Version 1.8.4 patchlevel 5                                 Jun 19,  2011

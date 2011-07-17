@@ -935,6 +935,8 @@ COMMAND(cmd_pemit)
   int flags = SILENT_OR_NOISY(sw, SILENT_PEMIT);
 
   if (SW_ISSET(sw, SWITCH_PORT)) {
+    if (SW_ISSET(sw, SWITCH_LIST))
+      flags |= PEMIT_LIST;
     do_pemit_port(executor, arg_left, arg_right, flags);
     return;
   }

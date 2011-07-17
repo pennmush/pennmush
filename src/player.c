@@ -383,7 +383,8 @@ email_register_player(DESC *d, const char *name, const char *email,
   static char elems[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   int i, len;
-  dbref player;
+  int resend = 0;
+  dbref player = NOTHING;
   FILE *fp;
 
   if (!check_fails(ip)) {
@@ -391,67 +392,82 @@ email_register_player(DESC *d, const char *name, const char *email,
   }
 
   if (!ok_player_name(name, NOTHING, NOTHING)) {
-    do_log(LT_CONN, 0, 0, "Failed registration (bad name) from %s", host);
-    queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
-                d->descriptor, ip, mark_failed(ip), "register: bad name", name);
-    return NOTHING;
-  }
-  /* Make sure that the email address is valid. A valid address must
-   * contain either an @ or a !
-   * Also, to prevent someone from using the MUSH to mailbomb another site,
-   * let's make sure that the site to which the user wants the email
-   * sent is also allowed to use the register command.
-   * If there's an @, we check whatever's after the last @
-   * (since @foo.bar:user@host is a valid email)
-   * If not, we check whatever comes before the first !
-   */
-  if ((p = strrchr(email, '@'))) {
-    p++;
-    if (!Site_Can_Register(p)) {
-      if (!Deny_Silent_Site(p, AMBIGUOUS)) {
-        do_log(LT_CONN, 0, 0,
-               "Failed registration (bad site in email: %s) from %s",
-               email, host);
-        queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
-                    d->descriptor, ip, mark_failed(ip),
-                    "register: bad site in email", name);
+    /* Check for re-registration request */
+    player = lookup_player(name);
+    if (GoodObject(player)) {
+      ATTR *a;
+      a = atr_get(player, "LASTLOGOUT");
+      if (!a) {
+        a = atr_get(player, "REGISTERED_EMAIL");
+        if (a && !strcasecmp(atr_value(a), email))
+          resend = 1;
       }
-      return NOTHING;
     }
-  } else if ((p = strchr(email, '!'))) {
-    *p = '\0';
-    if (!Site_Can_Register(email)) {
-      if (!Deny_Silent_Site(email, AMBIGUOUS)) {
-        *p = '!';
-        do_log(LT_CONN, 0, 0,
-               "Failed registration (bad site in email: %s) from %s",
-               email, host);
-        queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
-                    d->descriptor, ip, mark_failed(ip),
-                    "register: bad site in email", name);
-      }
-      return NOTHING;
-    } else {
-      *p = '!';
-    }
-  } else {
-    if (!Deny_Silent_Site(host, AMBIGUOUS)) {
-      do_log(LT_CONN, 0, 0, "Failed registration (bad email: %s) from %s",
-             email, host);
+    if (!resend) {
+      do_log(LT_CONN, 0, 0, "Failed registration (bad name) from %s", host);
       queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
-                  d->descriptor, ip, mark_failed(ip),
-                  "register: sitelocked host", name);
+                  d->descriptor, ip, mark_failed(ip), "register: bad name", name);
+      return NOTHING;
     }
-    return NOTHING;
   }
+  if (!resend) {
+    /* Make sure that the email address is valid. A valid address must
+     * contain either an @ or a !
+     * Also, to prevent someone from using the MUSH to mailbomb another site,
+     * let's make sure that the site to which the user wants the email
+     * sent is also allowed to use the register command.
+     * If there's an @, we check whatever's after the last @
+     * (since @foo.bar:user@host is a valid email)
+     * If not, we check whatever comes before the first !
+     */
+    if ((p = strrchr(email, '@'))) {
+      p++;
+      if (!Site_Can_Register(p)) {
+        if (!Deny_Silent_Site(p, AMBIGUOUS)) {
+          do_log(LT_CONN, 0, 0,
+                 "Failed registration (bad site in email: %s) from %s",
+                 email, host);
+          queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
+                      d->descriptor, ip, mark_failed(ip),
+                      "register: bad site in email", name);
+        }
+        return NOTHING;
+      }
+    } else if ((p = strchr(email, '!'))) {
+      *p = '\0';
+      if (!Site_Can_Register(email)) {
+        if (!Deny_Silent_Site(email, AMBIGUOUS)) {
+          *p = '!';
+          do_log(LT_CONN, 0, 0,
+                 "Failed registration (bad site in email: %s) from %s",
+                 email, host);
+          queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
+                      d->descriptor, ip, mark_failed(ip),
+                      "register: bad site in email", name);
+        }
+        return NOTHING;
+      } else {
+        *p = '!';
+      }
+    } else {
+      if (!Deny_Silent_Site(host, AMBIGUOUS)) {
+        do_log(LT_CONN, 0, 0, "Failed registration (bad email: %s) from %s",
+               email, host);
+        queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
+                    d->descriptor, ip, mark_failed(ip),
+                    "register: sitelocked host", name);
+      }
+      return NOTHING;
+    }
 
-  if (DBTOP_MAX && (db_top >= DBTOP_MAX + 1) && (first_free == NOTHING)) {
-    /* Oops, out of db space! */
-    do_log(LT_CONN, 0, 0, "Failed registration (no db space) from %s", host);
-    queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
-                d->descriptor, ip, count_failed(ip),
-                "register: no db space left to create!", name);
-    return NOTHING;
+    if (DBTOP_MAX && (db_top >= DBTOP_MAX + 1) && (first_free == NOTHING)) {
+      /* Oops, out of db space! */
+      do_log(LT_CONN, 0, 0, "Failed registration (no db space) from %s", host);
+      queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
+                  d->descriptor, ip, count_failed(ip),
+                  "register: no db space left to create!", name);
+      return NOTHING;
+    }
   }
 
   /* Come up with a random password of length 7-12 chars */
@@ -499,11 +515,16 @@ email_register_player(DESC *d, const char *name, const char *email,
   pclose(fp);
   reserve_fd();
   /* Ok, all's well, make a player */
-  player = make_player(name, passwd, host, ip);
-  queue_event(SYSEVENT, "PLAYER`CREATE", "%s,%s,%s,%d",
-              unparse_objid(player), name, "register", d->descriptor);
-  (void) atr_add(player, "REGISTERED_EMAIL", email, GOD, 0);
-  return player;
+  if (resend) {
+    (void) atr_add(player, "XYXXY", mush_crypt(passwd), GOD, 0);
+    return player;
+  } else {
+    player = make_player(name, passwd, host, ip);
+    queue_event(SYSEVENT, "PLAYER`CREATE", "%s,%s,%s,%d",
+                unparse_objid(player), name, "register", d->descriptor);
+    (void) atr_add(player, "REGISTERED_EMAIL", email, GOD, 0);
+    return player;
+  }
 }
 #else
 dbref

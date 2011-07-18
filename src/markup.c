@@ -264,8 +264,10 @@ ansi_strcmp(const char *astr, const char *bstr)
     b = skip_leading_ansi(b);
     if (*a != *b)
       return (*a - *b);
-    b++;
-    a++;
+    if (*b)
+      b++;
+    if (*a)
+      a++;
   }
   if (*a)
     a = skip_leading_ansi(a);

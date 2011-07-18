@@ -528,7 +528,7 @@ email_register_player(DESC *d, const char *name, const char *email,
 }
 #else
 dbref
-email_register_player(DESC *d, const char *name, const char *email,
+email_register_player(DESC *d __attribute__ ((__unused__)), const char *name, const char *email,
                       const char *host, const char *ip
                       __attribute__ ((__unused__)))
 {

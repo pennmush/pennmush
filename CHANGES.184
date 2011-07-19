@@ -58,6 +58,8 @@ Fixes:
    Padraic. [MG]
  * Fix hardcode bug in ansi_strcmp, which affected the softcode splice()
    function. [MG]
+ * @chan/what failed to report when Admin channels also had the Player priv.
+   Reported by Padraic. [MG]
 
 Version 1.8.4 patchlevel 5                                 Jun 19,  2011
 

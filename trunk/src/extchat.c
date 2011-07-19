@@ -104,11 +104,13 @@ CHAN *channels;    /**< Pointer to channel list */
 
 extern int rhs_present;         /* from command.c */
 
+/* Player must come before Admin and Wizard, otherwise @chan/what
+ * will fail to report when Admin channels are also set Player */
 static PRIV priv_table[] = {
   {"Disabled", 'D', CHANNEL_DISABLED, CHANNEL_DISABLED},
+  {"Player", 'P', CHANNEL_PLAYER, CHANNEL_PLAYER},
   {"Admin", 'A', CHANNEL_ADMIN | CHANNEL_PLAYER, CHANNEL_ADMIN},
   {"Wizard", 'W', CHANNEL_WIZARD | CHANNEL_PLAYER, CHANNEL_WIZARD},
-  {"Player", 'P', CHANNEL_PLAYER, CHANNEL_PLAYER},
   {"Thing", 'T', CHANNEL_OBJECT, CHANNEL_OBJECT},
   {"Object", 'O', CHANNEL_OBJECT, CHANNEL_OBJECT},
   {"Quiet", 'Q', CHANNEL_QUIET, CHANNEL_QUIET},

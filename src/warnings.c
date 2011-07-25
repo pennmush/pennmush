@@ -201,7 +201,7 @@ ct_exit(dbref player, dbref i, warn_type flags)
 
   for (j = Exits(dst); GoodObject(j); j = Next(j)) {
     if (Location(j) == src)
-        count++;
+      count++;
   }
   for (j = Exits(MASTER_ROOM); GoodObject(j); j = Next(j)) {
     if (Location(j) == src) {
@@ -210,17 +210,20 @@ ct_exit(dbref player, dbref i, warn_type flags)
     }
   }
 
-  if (count <= 1 && flags & W_EXIT_ONEWAY) {    
+  if (count <= 1 && flags & W_EXIT_ONEWAY) {
     if (global_return)
-      complain(player, i, "exit-oneway", T("exit only has a global return exit"));
+      complain(player, i, "exit-oneway",
+               T("exit only has a global return exit"));
     else if (count == 0)
       complain(player, i, "exit-oneway", T("exit has no return exit"));
   } else if ((count > 1) && (flags & W_EXIT_MULTIPLE)) {
     if (global_return)
-      complain(player, i, "exit-multiple", T("exit has multiple (%d) return exits including global exits"), count);
+      complain(player, i, "exit-multiple",
+               T("exit has multiple (%d) return exits including global exits"),
+               count);
     else
       complain(player, i, "exit-multiple",
-	       T("exit has multiple (%d) return exits"), count);
+               T("exit has multiple (%d) return exits"), count);
   }
 }
 

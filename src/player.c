@@ -406,7 +406,8 @@ email_register_player(DESC *d, const char *name, const char *email,
     if (!resend) {
       do_log(LT_CONN, 0, 0, "Failed registration (bad name) from %s", host);
       queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
-                  d->descriptor, ip, mark_failed(ip), "register: bad name", name);
+                  d->descriptor, ip, mark_failed(ip), "register: bad name",
+                  name);
       return NOTHING;
     }
   }
@@ -528,8 +529,9 @@ email_register_player(DESC *d, const char *name, const char *email,
 }
 #else
 dbref
-email_register_player(DESC *d __attribute__ ((__unused__)), const char *name, const char *email,
-                      const char *host, const char *ip
+email_register_player(DESC *d
+                      __attribute__ ((__unused__)), const char *name,
+                      const char *email, const char *host, const char *ip
                       __attribute__ ((__unused__)))
 {
   do_log(LT_CONN, 0, 0, "Failed registration (no sendmail) from %s", host);

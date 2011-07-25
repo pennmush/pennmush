@@ -1044,7 +1044,7 @@ list_partial_matches(dbref player, const char *name, enum chan_match_type type)
     if (!Chan_Can_See(p, player))
       continue;
     if ((type == PMATCH_ALL) || ((type == PMATCH_ON)
-                                 ? !!onchannel(player, p)
+                                 ? ! !onchannel(player, p)
                                  : !onchannel(player, p))) {
       strcpy(cleanp, remove_markup(ChanName(p), NULL));
       if (string_prefix(cleanp, cleanname)) {
@@ -1702,7 +1702,8 @@ do_cemit(dbref player, const char *name, const char *msg, int flags)
  * \param flag what to do with the channel.
  */
 void
-do_chan_admin(dbref player, char *name, const char *perms, enum chan_admin_op flag)
+do_chan_admin(dbref player, char *name, const char *perms,
+              enum chan_admin_op flag)
 {
   CHAN *chan = NULL, *temp = NULL;
   privbits type;
@@ -2717,7 +2718,8 @@ chan_chown(CHAN *c, dbref victim)
  * \param whichlock which lock is to be set.
  */
 void
-do_chan_lock(dbref player, const char *name, const char *lockstr, enum clock_type whichlock)
+do_chan_lock(dbref player, const char *name, const char *lockstr,
+             enum clock_type whichlock)
 {
   CHAN *c;
   boolexp key;

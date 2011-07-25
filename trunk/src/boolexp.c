@@ -873,8 +873,7 @@ alloc_atr(const char *name, const char *s)
   else
     len = 1;
 
-  a = 
-    mush_malloc(sizeof(struct boolatr) - BUFFER_LEN + len, "boolatr");
+  a = mush_malloc(sizeof(struct boolatr) - BUFFER_LEN + len, "boolatr");
   if (!a)
     return NULL;
   a->name = st_insert(strupper(name), &atr_names);

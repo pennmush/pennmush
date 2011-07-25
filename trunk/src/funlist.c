@@ -1415,7 +1415,8 @@ FUNCTION(fun_remove)
 
   for (rem_counter = 0; rem_counter < rem_total; rem_counter++) {
     for (list_counter = 0; list_counter < list_total; list_counter++) {
-      if (!skip[list_counter] && !ansi_strcmp(rem[rem_counter], list[list_counter])) {
+      if (!skip[list_counter]
+          && !ansi_strcmp(rem[rem_counter], list[list_counter])) {
         skip[list_counter] = 1;
         break;
       }
@@ -2468,7 +2469,7 @@ FUNCTION(fun_table)
         safe_str("\n", buff, bp);
       else
         safe_str("\r\n", buff, bp);
-      col = field_width + !!osep;
+      col = field_width + ! !osep;
     } else {
       if (osep)
         safe_chr(osep, buff, bp);

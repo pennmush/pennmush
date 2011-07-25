@@ -809,8 +809,7 @@ do_examine(dbref player, const char *xname, enum exam_type flag, int all,
     }
     /* look it up */
     if ((thing =
-         noisy_match_result(player, name, NOTYPE,
-                            MAT_EVERYTHING)) == NOTHING) {
+         noisy_match_result(player, name, NOTYPE, MAT_EVERYTHING)) == NOTHING) {
       mush_free(name, "de.string");
       return;
     }

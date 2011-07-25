@@ -223,13 +223,13 @@ CHANUSER *onchannel(dbref who, CHAN *c);
 void init_chatdb(void);
 int load_chatdb(PENNFILE *fp);
 int save_chatdb(PENNFILE *fp);
-void do_cemit
-  (dbref player, const char *name, const char *msg, int flags);
+void do_cemit(dbref player, const char *name, const char *msg, int flags);
 void do_chan_user_flags
   (dbref player, char *name, const char *isyn, int flag, int silent);
 void do_chan_wipe(dbref player, const char *name);
 void do_chan_lock
-  (dbref player, const char *name, const char *lockstr, enum clock_type whichlock);
+  (dbref player, const char *name, const char *lockstr,
+   enum clock_type whichlock);
 void do_chan_what(dbref player, const char *partname);
 void do_chan_desc(dbref player, const char *name, const char *title);
 void do_chan_title(dbref player, const char *name, const char *title);
@@ -240,12 +240,12 @@ void init_chat(void);
 void do_channel
   (dbref player, const char *name, const char *target, const char *com);
 void do_chat(dbref player, CHAN *chan, const char *arg1);
-enum chan_admin_op { CH_ADMIN_ADD, CH_ADMIN_DEL, CH_ADMIN_RENAME, CH_ADMIN_PRIV };
-void do_chan_admin
-  (dbref player, char *name, const char *perms, enum chan_admin_op flag);
+enum chan_admin_op { CH_ADMIN_ADD, CH_ADMIN_DEL, CH_ADMIN_RENAME,
+    CH_ADMIN_PRIV };
+void do_chan_admin(dbref player, char *name, const char *perms,
+                   enum chan_admin_op flag);
 enum cmatch_type find_channel(const char *p, CHAN **chan, dbref player);
-enum cmatch_type find_channel_partial(const char *p, CHAN **chan,
-                                      dbref player);
+enum cmatch_type find_channel_partial(const char *p, CHAN **chan, dbref player);
 void do_channel_list(dbref player, const char *partname);
 int do_chat_by_name
   (dbref player, const char *name, const char *msg, int source);

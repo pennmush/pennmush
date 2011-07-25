@@ -69,18 +69,17 @@ ptab_free(PTAB *tab)
 void *
 ptab_find(PTAB *tab, const char *key)
 {
-  size_t nun;
-
   if (!tab || !key || !*key || tab->state)
     return NULL;
 
   if (tab->len < 10) {          /* Just do a linear search for small tables */
-    for (nun = 0; nun < tab->len; nun++) {
-      if (string_prefix(tab->tab[nun]->key, key)) {
-        if (nun + 1 < tab->len && string_prefix(tab->tab[nun + 1]->key, key))
+    size_t n;
+    for (n = 0; n < tab->len; n++) {
+      if (string_prefix(tab->tab[n]->key, key)) {
+        if (n + 1 < tab->len && string_prefix(tab->tab[n + 1]->key, key))
           return NULL;
         else
-          return tab->tab[nun]->data;
+          return tab->tab[n]->data;
       }
     }
   } else {                      /* Binary search of the index */
@@ -89,50 +88,50 @@ ptab_find(PTAB *tab, const char *key)
     size_t right = tab->len - 1;
 
     while (1) {
-      nun = (left + right) / 2;
+      size_t n = (left + right) / 2;
 
       if (left > right)
         break;
 
-      cmp = strcasecmp(key, tab->tab[nun]->key);
+      cmp = strcasecmp(key, tab->tab[n]->key);
 
       if (cmp == 0) {
-        return tab->tab[nun]->data;
+        return tab->tab[n]->data;
       } else if (cmp < 0) {
-        int mem;
-        size_t mem2;
+        int m;
+        size_t i;
         /* We need to catch the first unique prefix */
-        if (string_prefix(tab->tab[nun]->key, key)) {
-          for (mem = (int) nun - 1; mem >= 0; mem--) {
-            if (string_prefix(tab->tab[mem]->key, key)) {
-              if (strcasecmp(tab->tab[mem]->key, key) == 0)
-                return tab->tab[mem]->data;
+        if (string_prefix(tab->tab[n]->key, key)) {
+          for (m = (int) n - 1; m >= 0; m--) {
+            if (string_prefix(tab->tab[m]->key, key)) {
+              if (strcasecmp(tab->tab[m]->key, key) == 0)
+                return tab->tab[m]->data;
             } else
               break;
           }
           /* Non-unique prefix */
-          if (mem != (int) nun - 1)
+          if (m != (int) n - 1)
             return NULL;
-          for (mem2 = nun + 1; mem2 < tab->len; mem2++) {
-            if (string_prefix(tab->tab[mem2]->key, key)) {
-              if (strcasecmp(tab->tab[mem2]->key, key) == 0)
-                return tab->tab[mem2]->data;
+          for (i = n + 1; i < tab->len; i++) {
+            if (string_prefix(tab->tab[i]->key, key)) {
+              if (strcasecmp(tab->tab[i]->key, key) == 0)
+                return tab->tab[i]->data;
             } else
               break;
           }
-          if (mem2 != nun + 1)
+          if (i != n + 1)
             return NULL;
-          return tab->tab[nun]->data;
+          return tab->tab[n]->data;
         }
         if (left == right)
           break;
-        if (nun == 0)
+        if (n == 0)
           break;
-        right = nun - 1;
+        right = n - 1;
       } else {                  /* cmp > 0 */
         if (left == right)
           break;
-        left = nun + 1;
+        left = n + 1;
       }
     }
   }
@@ -149,28 +148,27 @@ ptab_find(PTAB *tab, const char *key)
 void *
 ptab_find_exact(PTAB *tab, const char *key)
 {
-  int nun;
-  nun = ptab_find_exact_nun(tab, key);
-  if (nun < 0)
+  int n = ptab_find_exact_nun(tab, key);
+  if (n < 0)
     return NULL;
   else
-    return tab->tab[nun]->data;
+    return tab->tab[n]->data;
 }
 
 static int
 ptab_find_exact_nun(PTAB *tab, const char *key)
 {
-  size_t nun;
+  size_t n;
 
   if (!tab || !key || tab->state)
     return -1;
 
   if (tab->len < 10) {          /* Just do a linear search for small tables */
     int cmp;
-    for (nun = 0; nun < tab->len; nun++) {
-      cmp = strcasecmp(tab->tab[nun]->key, key);
+    for (n = 0; n < tab->len; n++) {
+      cmp = strcasecmp(tab->tab[n]->key, key);
       if (cmp == 0)
-        return (int) nun;
+        return (int) n;
       else if (cmp > 0)
         return -1;
     }
@@ -180,23 +178,23 @@ ptab_find_exact_nun(PTAB *tab, const char *key)
     size_t right = tab->len - 1;
 
     while (1) {
-      nun = (left + right) / 2;
+      n = (left + right) / 2;
 
       if (left > right)
         break;
 
-      cmp = strcasecmp(key, tab->tab[nun]->key);
+      cmp = strcasecmp(key, tab->tab[n]->key);
 
       if (cmp == 0)
-        return (int) nun;
+        return (int) n;
       if (left == right)
         break;
       if (cmp < 0) {
-        if (nun == 0)
+        if (n == 0)
           break;
-        right = nun - 1;
+        right = n - 1;
       } else                    /* cmp > 0 */
-        left = nun + 1;
+        left = n + 1;
     }
   }
   return -1;
@@ -227,10 +225,9 @@ delete_entry(PTAB *tab, size_t n)
 void
 ptab_delete(PTAB *tab, const char *key)
 {
-  int nun;
-  nun = ptab_find_exact_nun(tab, key);
-  if (nun >= 0)
-    delete_entry(tab, (size_t) nun);
+  int n = ptab_find_exact_nun(tab, key);
+  if (n >= 0)
+    delete_entry(tab, (size_t) n);
   return;
 }
 
@@ -311,7 +308,7 @@ ptab_grow(PTAB *tab)
 void
 ptab_insert(PTAB *tab, const char *key, void *data)
 {
-  size_t lamed;
+  size_t klen;
 
   if (!tab || tab->state != 1)
     return;
@@ -319,12 +316,12 @@ ptab_insert(PTAB *tab, const char *key, void *data)
   if (tab->len >= tab->maxlen)
     ptab_grow(tab);
 
-  lamed = strlen(key) + 1;
+  klen = strlen(key) + 1;
 
-  tab->tab[tab->len] = mush_malloc(PTAB_SIZE + lamed, "ptab.entry");
+  tab->tab[tab->len] = mush_malloc(PTAB_SIZE + klen, "ptab.entry");
 
   tab->tab[tab->len]->data = data;
-  memcpy(tab->tab[tab->len]->key, key, lamed);
+  memcpy(tab->tab[tab->len]->key, key, klen);
   tab->len++;
 
 }
@@ -431,13 +428,13 @@ ptab_stats_header(dbref player)
 void
 ptab_stats(dbref player, PTAB *tab, const char *pname)
 {
-  size_t mem, nun;
+  size_t m, n;
 
-  mem = sizeof(struct ptab_entry *) * tab->maxlen;
+  m = sizeof(struct ptab_entry *) * tab->maxlen;
 
-  for (nun = 0; nun < tab->len; nun++)
-    mem += PTAB_SIZE + strlen(tab->tab[nun]->key) + 1;
+  for (n = 0; n < tab->len; n++)
+    m += PTAB_SIZE + strlen(tab->tab[n]->key) + 1;
 
   notify_format(player, "%-10s %7d %14.3f %39d", pname, (int) tab->len,
-                log((double) tab->len), (int) mem);
+                log((double) tab->len), (int) m);
 }

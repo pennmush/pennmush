@@ -2051,11 +2051,11 @@ unix_uptime(dbref player __attribute__ ((__unused__)))
   FILE *fp;
   char c;
   int i;
+  char tbuf1[BUFFER_LEN];
 #endif
 #ifdef HAS_GETRUSAGE
   struct rusage usage;
 #endif
-  char tbuf1[BUFFER_LEN];
   pid_t pid;
   int psize;
 

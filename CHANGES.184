@@ -29,6 +29,8 @@ Minor changes:
    haven't connected yet. Suggested by Minion. [MG]
  * @odescribe/@adescribe are no longer triggered when a Terse player moves
    into a room, as he doesn't see the @describe. Suggested by Padraic. [MG]
+ * exit-oneway and exit-multiple warning checks now take global exits
+   into account. Suggested by Padraic and qa'toq. [SW]
 
 Functions:
  * valid() can be used with the 'qreg' category to check if a string

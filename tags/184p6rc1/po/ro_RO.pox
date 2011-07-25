@@ -1,0 +1,867 @@
+# SOME DESCRIPTIVE TITLE.\nCopyright (C) YEAR Free Software Foundation, Inc.\nFIRST AUTHOR <EMAIL@ADDRESS>, YEAR.\n
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2004-11-04 13:52-0600\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=iso-8859-2\n"
+"Content-Transfer-Encoding: 8bit"
+
+#: conf.c:1044
+msgid " Attributes are 8-bit word compressed in memory."
+msgstr " Atributele sunt compresate in memorie prin metoda \"8-bit word \"."
+
+#: conf.c:1035
+msgid " Attributes are Huffman compressed in memory."
+msgstr " Atributele sunt compresate in memorie prin metoda Huffman."
+
+#: conf.c:1032
+msgid " Attributes are not compressed in memory."
+msgstr " Atributele nu sunt compresate in memorie."
+
+#: conf.c:1041
+msgid " Attributes are word compressed in memory."
+msgstr " Atributele sunt compresate in memorie prin metoda \"word \"."
+
+#: src/conf.c:980
+msgid " DNS and ident lookups are handled by a slave process."
+msgstr " Cautarile DNS si ident sunt realizate de procese slave."
+
+#: src/conf.c:982
+msgid " DNS and ident lookups are handled by the MUSH process."
+msgstr " Cautarile DNS si ident sunt realizate de procese MUSH."
+
+#: src/conf.c:1111
+msgid " Extended convtime() is supported."
+msgstr " Convtime() extins este suportat."
+
+#: wiz.c:1605
+#, c-format
+msgid " [location: %s]"
+msgstr " [locatia: %s]"
+
+#: src/conf.c:1113
+msgid " convtime() is stricter."
+msgstr " convtime () este mai strict."
+
+#: src/look.c:688 src/look.c:770
+msgid " is owned by "
+msgstr " este proprietatea lui "
+
+#: speech.c:1021
+msgid " pages"
+msgstr " trimite page"
+
+#: extchat.c:1503
+msgid "#-1 AMBIGUOUS CHANNEL NAME"
+msgstr "#-1 NUME DE CANAL AMBIGUU"
+
+#: src/fundb.c:784 src/fundb.c:1001
+msgid "#-1 ARG1 NOT FOUND"
+msgstr "#-1 ARG1 NU ESTE GASIT"
+
+#: src/fundb.c:786 src/fundb.c:1003
+msgid "#-1 ARG2 NOT FOUND"
+msgstr "#-1 ARG2 NU ESTE GASIT"
+
+#: src/funlist.c:1886 src/funlist.c:1905
+msgid "#-1 ARGUMENT MUST BE INTEGER"
+msgstr "#-1 ARGUMENTUL TREBUIE SA FIE INTREG"
+
+#: src/funstr.c:421
+msgid "#-1 ARGUMENT MUST BE NON-NEGATIVE INTEGER"
+msgstr "#-1 ARGUMENTUL TREBUIE SA FIE INTREG NE-NEGATIV"
+
+#: parse.c:89
+msgid "#-1 ARGUMENT MUST BE NUMBER"
+msgstr "#-1 ARGUMENTUL TREBUIE SA FIE NUMAR"
+
+#: src/fundb.c:1691 src/fundb.c:1695
+msgid "#-1 ARGUMENT MUST BE OBJ/ATTR"
+msgstr "#-1 ARGUMENTUL TREBUIE SA FIE OBJ/ATTR"
+
+#: parse.c:87
+msgid "#-1 ARGUMENT MUST BE POSITIVE INTEGER"
+msgstr "#-1 ARGUMENTUL TREBUIE SA FIE POZITIV INTREG"
+
+#: src/funmath.c:218 src/funmath.c:250
+msgid "#-1 ARGUMENT MUST END IN AN INTEGER"
+msgstr "#-1 ARGUMENTUL TREBUIE SA SE TERMINE INTR-UN NUMAR INTREG"
+
+#: src/funlist.c:1892 src/funlist.c:1911
+msgid "#-1 ARGUMENT OUT OF RANGE"
+msgstr "#-1 ARGUMENTUL ESTE IN AFARA LIMITEI"
+
+#: parse.c:86
+msgid "#-1 ARGUMENTS MUST BE INTEGERS"
+msgstr "#-1 ARGUMENTELE TREBUIE SA FIE INTREGI"
+
+#: parse.c:90
+msgid "#-1 ARGUMENTS MUST BE NUMBERS"
+msgstr "#-1 ARGUMENTELE TREBUIE SA FIE NUMERE"
+
+#: parse.c:88
+msgid "#-1 ARGUMENTS MUST BE POSITIVE INTEGERS"
+msgstr "#-1 ARGUMENTELE TREBUIE SA FIE INTREGI"
+
+#: src/fundb.c:61
+msgid "#-1 ATTRIBUTE LENGTH TOO LONG"
+msgstr "#-1 LONGIMEA ATRIBUTULUI PREA MARE"
+
+#: src/fundb.c:183
+msgid "#-1 BAD ARGUMENT FORMAT TO GET"
+msgstr "#-1 FORMAT NEPOTRIVIT DE ARGUMENT PENTRU GET"
+
+#: src/fundb.c:291
+msgid "#-1 BAD ARGUMENT FORMAT TO GET_EVAL"
+msgstr "#-1 FORMAT NEPOTRIVIT DE ARGUMENT PENTRU GET_EVAL"
+
+#: src/funmath.c:987
+msgid "#-1 BASE OUT OF RANGE"
+msgstr "#-1 BAZA ESTE IN AFARA LIMITEI"
+
+#: src/funlist.c:1456 src/funlist.c:1680
+msgid "#-1 CAN ONLY TEST ONE ELEMENT"
+msgstr "#-1 SE POATE TESTA NUMAI UN ELEMENT"
+
+#: src/funmath.c:754 src/funmath.c:1584 src/funmath.c:1628 src/funmath.c:1673\nsrc/funmath.c:1707 src/funmath.c:1751
+msgid "#-1 DIVISION BY ZERO"
+msgstr "#-1 IMPARTIRE LA ZERO"
+
+#: src/extmail.c:1496
+msgid "#-1 FOLDER MUST BE INTEGER"
+msgstr "#-1 DIRECTORUL TREBUIE SA FIE NUMAR INTREG"
+
+#: src/funmath.c:925
+msgid "#-1 FRACTIONAL POWER OF NEGATIVE"
+msgstr "#-1 PUTERE FRACTIONALA DE NUMAR NEGATIV"
+
+#: src/parse.c:671 src/parse.c:759
+msgid "#-1 FUNCTION ("
+msgstr "#-1 FUNCTIA  ("
+
+#: src/funmisc.c:406
+msgid "#-1 FUNCTION (SOUNDEX) REQUIRES A SINGLE WORD ARGUMENT"
+msgstr "#-1 FUNCTIA (SOUNDEX) NECESITA UN ARGUMENT DINTR-UN SINGUR CUVANT"
+
+#: src/funmisc.c:424
+msgid "#-1 FUNCTION (SOUNDLIKE) REQUIRES TWO ONE-WORD ARGUMENTS"
+msgstr "#-1 FUNCTIA (SOUNDLIKE) NECESITA DOUA ARGUMENTE DINTR-UN SINGUR CUVANT"
+
+#: src/fundb.c:959 src/fundb.c:1120 src/fundb.c:1145 src/fundb.c:1254\nsrc/fundb.c:1549 src/fundb.c:1555 src/fundb.c:1561 src/fundb.c:1567\nsrc/fundb.c:1573 src/fundb.c:1579 src/fundb.c:1585 src/fundb.c:1591\nsrc/fundb.c:1864 src/funstr.c:901
+msgid "#-1 FUNCTION DISABLED"
+msgstr "#-1 FUNCTIA ESTE DEZACTIVATA"
+
+#: parse.c:91
+msgid "#-1 FUNCTION INVOCATION LIMIT EXCEEDED"
+msgstr "#-1 LIMITA DE INVOCARE A FUNCTIEI ESTE DEPASITA"
+
+#: src/parse.c:790
+msgid "#-1 FUNCTION RECURSION LIMIT EXCEEDED"
+msgstr "#-1 LIMITA DE RECURENTA A FUNCTIEI ESTE DEPASITA"
+
+#: src/funmath.c:949 src/funmath.c:972
+msgid "#-1 INFINITY"
+msgstr "#-1 INFINIT"
+
+#: src/fundb.c:1618 src/funlist.c:2324 src/funlist.c:2367
+msgid "#-1 INVALID GREP PATTERN"
+msgstr "#-1 PATTERN GREP INVALID"
+
+#: src/fundb.c:657
+msgid "#-1 INVALID LOCATION"
+msgstr "#-1 LOCATIE INVALIDA"
+
+#: src/extmail.c:1549
+msgid "#-1 INVALID MESSAGE OR PLAYER"
+msgstr "#-1 MESAJ SAU JUCATOR INVALID"
+
+#: src/fundb.c:1890 src/fundb.c:1912 src/funufun.c:113 src/funufun.c:144
+msgid "#-1 INVALID OBJECT"
+msgstr "#-1 OBIECT INVALID"
+
+#: src/fundb.c:663 src/fundb.c:690
+msgid "#-1 INVALID SECOND ARGUMENT"
+msgstr "#-1 ARGUMENT SECUND INVALID"
+
+#: src/funufun.c:293
+msgid "#-1 INVALID ZONE"
+msgstr "#-1 ZONA INVALIDA"
+
+#: src/funlist.c:194 src/funlist.c:2088
+msgid "#-1 LISTS MUST BE OF EQUAL SIZE"
+msgstr "#-1 LISTELE TREBUIE SA FIE DE MARIME EGALA"
+
+#: src/funlist.c:1778
+msgid "#-1 NEED A WORD"
+msgstr "#-1 ARE NEVOIE DE UN CUVANT"
+
+#: extchat.c:1495
+msgid "#-1 NO CHANNEL GIVEN"
+msgstr "#-1 NICI UN CANAL SPECIFICAT"
+
+#: src/fundb.c:118 src/fundb.c:137 src/fundb.c:460 src/funstr.c:118\nsrc/funstr.c:131 src/funstr.c:144 src/funstr.c:157
+msgid "#-1 NO MATCH"
+msgstr "#-1 NICI O POTRIVIRE"
+
+#: src/fundb.c:767
+msgid "#-1 NO OBJECTS CONTROLLED"
+msgstr "#-1 NICI UN OBIECT CONTROLAT"
+
+#: src/fundb.c:63 src/fundb.c:69 src/fundb.c:72 src/fundb.c:273\nsrc/fundb.c:315 src/funlist.c:366 src/funlist.c:450 src/funufun.c:125\nsrc/funufun.c:158 src/funufun.c:307
+msgid "#-1 NO PERMISSION TO GET ATTRIBUTE"
+msgstr "#-1 NU EXISTA PERMISIUNE DE A EFECTUA GET ATTRIBUTE"
+
+#: src/bsd.c:4827
+msgid "#-1 NO PERMISSIONS FOR CHANNEL"
+msgstr "#-1 NU EXISTA PERMISIUNE PENTRU CANAL"
+
+#: src/fundb.c:1614 src/fundb.c:1762 src/funlist.c:2320 src/funlist.c:2363
+msgid "#-1 NO SUCH ATTRIBUTE"
+msgstr "#-1 NU EXISTA ASEMENEA ATRIBUT"
+
+#: src/fundb.c:1828
+msgid "#-1 NO SUCH CHANNEL"
+msgstr "#-1 NU EXISTA ASEMENEA CANAL"
+
+#: src/conf.c:926
+msgid "#-1 NO SUCH CONFIG OPTION"
+msgstr "#-1 NU EXISTA ASEMENEA OPTIUNE CONFIG"
+
+#: src/fundb.c:1851
+msgid "#-1 NO SUCH LOCK TYPE"
+msgstr "#-1 NU EXISTA ASEMENEA TIP DE INCUIETOARE"
+
+#: src/fundb.c:155 src/fundb.c:189 src/fundb.c:205 src/fundb.c:255\nsrc/fundb.c:297 src/fundb.c:1609 src/funlist.c:2315 src/funlist.c:2358
+msgid "#-1 NO SUCH OBJECT VISIBLE"
+msgstr "#-1 NU EXISTA ASEMENEA OBIECT VIZIBIL"
+
+#: src/extmail.c:1468 src/extmail.c:1489
+msgid "#-1 NO SUCH PLAYER"
+msgstr "#-1 NU EXISTA ASEMENEA JUCATOR"
+
+#: src/fundb.c:907
+msgid "#-1 NO SUCH TYPE"
+msgstr "#-1 NU EXISTA ASEMENEA TIP"
+
+#: src/bsd.c:4485 src/bsd.c:4498
+msgid "#-1 NOT CONNECTED"
+msgstr "#-1 NU ESTE CONECTAT"
+
+#: extchat.c:1525
+msgid "#-1 NOT ON CHANNEL"
+msgstr "#-1 NU ESTE PE CANAL"
+
+#: src/funlist.c:1786
+msgid "#-1 NUMBER OF WORDS MUST BE EQUAL"
+msgstr "#-1 NUMARUL DE CUVUNTE TREBUIE SA FIE EGAL"
+
+#: src/funlist.c:1179 src/funmisc.c:222
+msgid "#-1 NUMBER OUT OF RANGE"
+msgstr "#-1 NUMARUL IN AFARA LIMITEI"
+
+#: src/funmath.c:850 src/funmath.c:876 src/funmath.c:930 src/funmath.c:954\nsrc/funmath.c:977 src/funmath.c:1238 src/funstr.c:212 src/funstr.c:234\nsrc/funstr.c:254 src/funstr.c:281 src/funtime.c:152
+msgid "#-1 OUT OF RANGE"
+msgstr "#-1 IN AFARA LIMITEI"
+
+#: src/funmath.c:336 src/funmath.c:366
+msgid "#-1 OVERFLOW ERROR"
+msgstr "#-1 EROARE OVERFLOW"
+
+#: src/extmail.c:1471 src/extmail.c:1492 src/extmail.c:1531 src/fundb.c:122\nsrc/fundb.c:141 src/fundb.c:169 src/fundb.c:261 src/fundb.c:303\nsrc/fundb.c:341 src/fundb.c:789 src/fundb.c:953 src/fundb.c:1114\nsrc/fundb.c:1139 src/fundb.c:1248 src/fundb.c:1442 src/fundb.c:1456\nsrc/fundb.c:1466 src/fundb.c:1477 src/fundb.c:1487 src/fundb.c:1502\nsrc/fundb.c:1512 src/fundb.c:1522 src/fundb.c:1537 src/fundb.c:1651\nsrc/fundb.c:1737 src/fundb.c:1741 src/fundb.c:1748 src/fundb.c:1752\nsrc/fundb.c:1858 src/fundb.c:1872 src/funlist.c:1966 src/funmisc.c:60\nsrc/funmisc.c:72 src/funmisc.c:84 src/funmisc.c:96 src/funmisc.c:108\nsrc/funmisc.c:120 src/funmisc.c:134 src/funstr.c:778 src/funufun.c:118\nsrc/funufun.c:149 src/funufun.c:300 src/wiz.c:2155 src/wiz.c:2167\nsrc/wiz.c:2189 src/wiz.c:2202
+msgid "#-1 PERMISSION DENIED"
+msgstr "#-1 INTERZIS"
+
+#: src/funlist.c:2256 src/funlist.c:2335 src/funlist.c:2378 src/funlist.c:2437\nsrc/funlist.c:2478
+msgid "#-1 REGEXP ERROR: "
+msgstr "#-1 EROARE REGEXP: "
+
+#: src/function.c:118
+msgid "#-1 SEPARATOR MUST BE ONE CHARACTER"
+msgstr "#-1 SEPARATORUL TREBUIE SA FIE UN CARACTER"
+
+#: src/funlist.c:1943
+msgid "#-1 STEP OUT OF RANGE"
+msgstr "#-1 PAS IN AFARA LIMITEI"
+
+#: src/funstr.c:353
+msgid "#-1 STRING LENGTHS MUST BE EQUAL"
+msgstr "#-1 LUNGIMILE SIRURILOR TREBUIE SA FIE EGALE"
+
+#: src/funlist.c:1815
+msgid "#-1 TOO MANY ITERS"
+msgstr "#-1 PREA MULTE REPETARI"
+
+#: src/funlist.c:1782
+msgid "#-1 TOO MANY WORDS"
+msgstr "#-1 PREA MULTE CUVINTE"
+
+#: src/funmath.c:1385
+msgid "#-1 UNKNOWN OPERATION"
+msgstr "#-1 OPERATIE NECUNOSCUTA"
+
+#: src/funmath.c:420 src/funmath.c:462 src/funmath.c:501 src/funmath.c:540\nsrc/funmath.c:598 src/funmath.c:632
+msgid "#-1 VECTORS MUST BE SAME DIMENSIONS"
+msgstr "#-1 VECTORII TREBUIE SA AIBA ACELEASI DIMENSIUNI"
+
+#: src/funstr.c:1097
+msgid "#-1 WIDTH TOO SMALL"
+msgstr "#-1 LATIME PREA MICA"
+
+#: src/extmail.c:1641
+msgid "#-? fun_mailstats called with invalid called_as!"
+msgstr "#-?  fun_mailstats invocata cu called_as invalid"
+
+#: src/wiz.c:1044
+#, c-format
+msgid "%d commands executed."
+msgstr "%d comenzi executate."
+
+#: src/extmail.c:1379
+#, c-format
+msgid "%d messages received, %d unread, %d cleared, totalling %d characters."
+msgstr "%d mesaje primite, %d necitite, %d sterse, totalizand %d caractere."
+
+#: src/extmail.c:1370
+#, c-format
+msgid "%d messages received, %d unread, %d cleared."
+msgstr "%d mesaje primite, %d necitite, %d sterse."
+
+#: src/extmail.c:1375
+#, c-format
+msgid "%d messages sent, %d unread, %d cleared, totalling %d characters."
+msgstr "%d mesaje trimise, %d necitite, %d sterse, totalizand %d caractere."
+
+#: src/extmail.c:1368
+#, c-format
+msgid "%d messages sent, %d unread, %d cleared."
+msgstr "%d mesaje trimise, %d necitite, %d sterse."
+
+#: src/wiz.c:686
+#, c-format
+msgid "%d objects = %d rooms, %d exits, %d things, %d players, %d garbage."
+msgstr "%d obiecte = %d camere, %d iesiri, %d obiecte, %d jucatori, %d gunoi."
+
+#: src/wiz.c:692
+#, c-format
+msgid "%d objects = %d rooms, %d exits, %d things, %d players."
+msgstr "%d obiecte = %d camere, %d iesiri, %d obiecte, %d jucatori."
+
+#: src/bsd.c:3405
+#, c-format
+msgid "%ld failed connections since last login."
+msgstr "%ld conexiuni esuate de la ultima conectare."
+
+#: src/look.c:969
+#, c-format
+msgid "%s (this room) [broadcasting]."
+msgstr "%s (aceasta camera) [emitere]."
+
+#: src/look.c:967
+#, c-format
+msgid "%s (this room) [commands]."
+msgstr "%s (aceasta camera) [comenzi]."
+
+#: src/look.c:961
+#, c-format
+msgid "%s (this room) [speech]. (connected)"
+msgstr "%s (aceasta camera) [vorbire]. (conectat)."
+
+#: src/look.c:964
+#, c-format
+msgid "%s (this room) [speech]."
+msgstr "%s (aceasta camera) [vorbire]."
+
+#: src/atr_tab.c:226
+#, c-format
+msgid "%s -- Attribute permissions now: %s"
+msgstr "%s - Permisiuni de atribute acum : %s"
+
+#: src/look.c:954 src/look.c:979 src/look.c:1019
+#, c-format
+msgid "%s [owner: %s] is listening."
+msgstr "%s [proprietarul: %s ] asculta."
+
+#: destroy.c:353
+#, c-format
+msgid "%s and all their (non-SAFE) objects are scheduled to be destroyed."
+msgstr "%s si toate obiectele lor (non-SAFE) sunt programate pentru distrugere."
+
+#: src/destroy.c:352
+#, c-format
+msgid "%s and all their objects are scheduled to be destroyed."
+msgstr "%s si toate obiectele lor sunt programate pentru distrugere."
+
+#: src/move.c:862
+#, c-format
+msgid "%s begins following you."
+msgstr "%s incepe sa te urmeze."
+
+#: src/create.c:388
+#, c-format
+msgid "%s created with room number %d."
+msgstr "%s creata cu numarul de camera %d."
+
+#: src/bsd.c:3978
+#, c-format
+msgid "%s created."
+msgstr "%s creat."
+
+#: src/command.c:960
+#, c-format
+msgid "%s doesn't know switch %s."
+msgstr "%s nu cunoaste switchul %s"
+
+#: src/rob.c:213
+#, c-format
+msgid "%s gave you %s."
+msgstr "%s ti-a dat %s"
+
+#: src/rob.c:215
+#, c-format
+msgid "%s gave you to %s."
+msgstr "%s te-a oferit catre %s"
+
+#: src/rob.c:285
+#, c-format
+msgid "%s gives you %d %s."
+msgstr "%s iti da %d %s ."
+
+#: src/move.c:332
+#, c-format
+msgid "%s goes home."
+msgstr "%s pleaca acasa."
+
+#: src/attrib.c:953
+#, c-format
+msgid "%s grows ears and can now hear."
+msgstr "Lui %s  ii cresc urechi si poate auzi."
+
+#: src/extmail.c:1336
+#, c-format
+msgid "%s has %d messages."
+msgstr "%s are %d mesaje."
+
+#: src/destroy.c:414 src/destroy.c:510
+#, c-format
+msgid "%s has been spared from destruction."
+msgstr "%s a fost oprit de la distrugere."
+
+#: src/look.c:1060
+#, c-format
+msgid "%s has just located your position."
+msgstr "%s tocmai ti-a localizat pozitia."
+
+#: src/destroy.c:361 src/destroy.c:371 src/destroy.c:464
+#, c-format
+msgid "%s has scheduled your %s for destruction."
+msgstr "%s ti-a programat %s  pentru distrugere."
+
+#: src/destroy.c:344
+#, c-format
+msgid "%s has scheduled your room %s to be destroyed."
+msgstr "%s ti-a programat camera %s  pentru distrugere."
+
+#: src/extchat.c:803 src/extchat.c:835
+#, c-format
+msgid "%s is already on channel <%s>."
+msgstr "%s este deja pe canalul %s ."
+
+#: src/look.c:1057
+#, c-format
+msgid "%s is at: %s."
+msgstr "%s este la: %s ."
+
+#: look.c:205
+#, c-format
+msgid "%s is corrupt!"
+msgstr "%s este corupt!"
+
+#: src/flags.c:1067 src/flags.c:1073
+#, c-format
+msgid "%s is no longer listening."
+msgstr "%s nu mai asculta."
+
+#: src/extchat.c:865
+#, c-format
+msgid "%s is not on channel <%s>."
+msgstr "%s nu este pe canalul %s ."
+
+#: src/flags.c:1127 src/flags.c:1133
+#, c-format
+msgid "%s is now listening."
+msgstr "%s asculta acum."
+
+#: src/destroy.c:364 src/destroy.c:378
+#, c-format
+msgid "%s is scheduled to be destroyed."
+msgstr "%s este programat pentru distrugere."
+
+#: move.c:888
+#, c-format
+msgid "%s isn't following you, nor vice versa."
+msgstr "%s nu te urmeaza, nici vice versa."
+
+#: move.c:858
+#, c-format
+msgid "%s isn't following you."
+msgstr "%s nu te urmeaza."
+
+#: src/rob.c:134
+#, c-format
+msgid "%s killed you!"
+msgstr "%s te-a omorat!"
+
+#: look.c:200
+#, c-format
+msgid "%s leads home."
+msgstr "%s conduce acasa."
+
+#: look.c:198
+#, c-format
+msgid "%s leads nowhere."
+msgstr "%s nu conduce nicaieri."
+
+#: look.c:207
+#, c-format
+msgid "%s leads to %s."
+msgstr "%s conduce catre %s ."
+
+#: look.c:202
+#, c-format
+msgid "%s leads to a variable location."
+msgstr "%s conduce catre o locatie variabila."
+
+#: src/attrib.c:949
+#, c-format
+msgid "%s loses its ears and becomes deaf."
+msgstr "%s isi pierde urechile si devine surd."
+
+#: src/predicat.c:760
+#, c-format
+msgid "%s message from %s: %s"
+msgstr "%s mesaj de la %s : %s"
+
+#: src/player.c:486
+#, c-format
+msgid "%s on %s"
+msgstr "%s pe %s"
+
+#: help.c:256
+#, c-format
+msgid "%s output truncated."
+msgstr "%s output trunchiat."
+
+#: src/speech.c:179
+#, c-format
+msgid "%s says, \"%s\""
+msgstr "%s spune, \"%s \""
+
+#: speech.c:378
+#, c-format
+msgid "%s senses: %s%s%s"
+msgstr "\"%s simte: %s%s%s\""
+
+#: src/extmail.c:1335
+#, c-format
+msgid "%s sent %d messages."
+msgstr "%s a trimis %d mesaje."
+
+#: src/bsd.c:2100
+#, c-format
+msgid "%s sizes:  NewUser...%d  Connect...%d  Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  Register...%d  Down...%d  Full...%d"
+msgstr "Marimi %s:  NewUser...%d  Connect...%d  Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  Register...%d  Down...%d  Full...%d"
+
+#: src/move.c:918 src/move.c:1063
+#, c-format
+msgid "%s stops following you."
+msgstr "%s nu te mai urmeaza."
+
+#: src/rob.c:288
+#, c-format
+msgid "%s took %d %s from you!"
+msgstr "%s a luat %d %s de la tine!"
+
+#: src/rob.c:156
+#, c-format
+msgid "%s tried to kill you!"
+msgstr "%s a incercat sa te omoare!"
+
+#: src/look.c:1053
+#, c-format
+msgid "%s tried to locate you and failed."
+msgstr "%s a incercat sa te localizeze dar a esuat."
+
+#: src/wiz.c:548
+#, c-format
+msgid "%s tries to impose his will on you and fails."
+msgstr "%s incearca sa isi impuna vointa asupra ta dar esueaza."
+
+#: src/speech.c:151
+#, c-format
+msgid "%s types --> %s%s%s"
+msgstr "%s tipareste -->%s %s %s"
+
+#: src/move.c:495
+#, c-format
+msgid "%s was taken from you."
+msgstr "Ti-a fost luat %s"
+
+#: destroy.c:412
+#, c-format
+msgid "%s's %s has been spared from destruction."
+msgstr "%s al lui %s a fost oprit de la distrugere."
+
+#: src/destroy.c:357 src/destroy.c:374
+#, c-format
+msgid "%s's %s is scheduled to be destroyed."
+msgstr "%s al lui %s este programat pentru distrugere."
+
+#: src/extmail.c:1168
+#, c-format
+msgid "%s(#%d) has mail but is not a player."
+msgstr "%s (#%d) are mail dar nu este jucator."
+
+#: lock.c:603
+#, c-format
+msgid "%s(%s) - %s locked."
+msgstr "\"%s(%s) - %s incuiat.\""
+
+#: src/extmail.c:1260 src/extmail.c:1668 src/wiz.c:673 src/wiz.c:1277
+#, c-format
+msgid "%s: No such player."
+msgstr "%s: Nu exista asemenea jucator."
+
+#: src/bsd.c:559 src/bsd.c:761
+msgid "Ack!  Failed reopening stderr!"
+msgstr "Au! Redeschiderea stderr esuata!"
+
+#: src/destroy.c:405
+msgid "Alas, your efforts of mercy are in vain."
+msgstr "Eforturile tale de mila sunt in van."
+
+#: malias.c:269
+msgid "Alias Description"
+msgstr "Descrierea Alias"
+
+#: src/attrib.c:939
+msgid "Alias removed."
+msgstr "Alias sters."
+
+#: src/attrib.c:937
+msgid "Alias set."
+msgstr "Alias setat."
+
+#: src/cque.c:1045
+#, c-format
+msgid "All objects for %s are being restarted."
+msgstr "Toate obiectele pentru %s sunt restartate."
+
+#: src/cque.c:924
+#, c-format
+msgid "All objects for %s have been halted."
+msgstr "Toate obiectele pentru %s sunt oprite."
+
+#: src/cque.c:1048
+#, c-format
+msgid "All of your objects are being restarted by %s."
+msgstr "Toate obiectele tale sunt restartate de %s."
+
+#: src/cque.c:1059
+msgid "All of your objects are being restarted."
+msgstr "Toate obiectele tale sunt restartate."
+
+#: src/cque.c:927
+#, c-format
+msgid "All of your objects have been halted by %s."
+msgstr "Toate obiectele tale sunt oprite de %s."
+
+#: src/cque.c:922
+msgid "All of your objects have been halted."
+msgstr "Toate obiectele tale sunt oprite."
+
+#: src/wiz.c:273
+#, c-format
+msgid "All quotas changed to %d."
+msgstr "Toate cotele schimbate la %d."
+
+#: function.c:910
+#, c-format
+msgid "Arguments : %d %s"
+msgstr "Argumente: %d %s"
+
+#: function.c:914
+#, c-format
+msgid "Arguments : %d to %d %s"
+msgstr "Argumente: %d catre %d %s"
+
+#: function.c:912
+#, c-format
+msgid "Arguments : At least %d %s"
+msgstr "Argumente: Cel putin %d %s"
+
+#: src/game.c:851
+#, c-format
+msgid "Attempt to execute command by halted object #%d"
+msgstr "Incercare de executa comanda pe obiectul oprit #%d"
+
+#: src/set.c:633
+#, c-format
+msgid "Attribute %s (%d copies)"
+msgstr "Atribut %s (%d copiaza)"
+
+#: src/attrib.c:1031
+msgid "Attribute locked."
+msgstr "Atribut incuiat."
+
+#: src/attrib.c:1111
+msgid "Attribute owner changed."
+msgstr "Proprietarul atributului s-a schimbat."
+
+#: src/attrib.c:1035
+msgid "Attribute unlocked."
+msgstr "Atribut descuiat."
+
+#: src/flags.c:1147
+msgid "Audible exits in this room have been activated."
+msgstr "Iesirile audibile in aceasta camera au fost activate."
+
+#: src/flags.c:1086
+msgid "Audible exits in this room have been deactivated."
+msgstr "Iesirile audibile in aceasta camera au fost dezactivate."
+
+#: src/move.c:326 src/move.c:520 src/wiz.c:397 src/wiz.c:402 src/wiz.c:406
+msgid "Bad destination."
+msgstr "Destinatie necorespunzatoare."
+
+#: src/player.c:420
+msgid "Bad new password."
+msgstr "Parola noua necorespunzatoare."
+
+#: src/extmail.c:1166
+#, c-format
+msgid "Bad object #%d has mail."
+msgstr "Obiectul necorespunzator #%d are mail."
+
+#: extchat.c:1998
+#, c-format
+msgid "CHAT: Channel <%s> description cleared."
+msgstr "CHAT: Descrierea canalului %s stearsa."
+
+#: extchat.c:1578
+#, c-format
+msgid "CHAT: Speaklock on <%s> set."
+msgstr "CHAT: Speaklock pe <%s> setata."
+
+#: src/extchat.c:863
+#, c-format
+msgid "CHAT: You leave channel <%s>."
+msgstr "CHAT: Parasesti canalul <%s>."
+
+#: look.c:748
+msgid "Carrying:"
+msgstr "In inventar:"
+
+#: access.c:425
+msgid "Email registration is allowed"
+msgstr "\"Inregistrarea prin email este permisa.\""
+
+#: look.c:772
+msgid "Exits:"
+msgstr "Iesiri:"
+
+#: bsd.c:4032 bsd.c:4055 bsd.c:4058 bsd.c:4061 bsd.c:4234 bsd.c:4237\nbsd.c:4240
+msgid "GAME:"
+msgstr "JOC:"
+
+#: game.c:2091
+msgid "Last reboot"
+msgstr "Ultimul reboot"
+
+#: src/malias.c:107
+msgid "MAIL: Invalid malias command."
+msgstr "MAIL: Comanda malias invalida."
+
+#: src/destroy.c:543
+#, c-format
+msgid "The room %s has been spared from destruction."
+msgstr "Camera %s a fost salvata de la distrugere."
+
+#: flags.c:1542
+msgid "There are probably easier ways to crash your MUSH."
+msgstr "\"Probabil ca exista metode mai usoare de a-ti bloca MUSH ul.\""
+
+#: game.c:2097
+msgid "Time now"
+msgstr "Timpul actual"
+
+#: game.c:2137
+msgid "Time until next @warnings"
+msgstr "Timp ramas pana la urmatorul @warnings"
+
+#: game.c:2120
+msgid "Time until next dbck check"
+msgstr "Timp ramas pana la urmatoarea verificare dbck"
+
+#: game.c:2128
+msgid "Time until next purge"
+msgstr "Timp ramas pana la urmatoarea curatare"
+
+#: src/speech.c:402
+msgid "Too many people to whisper to."
+msgstr "Prea multe persoane catre care trebuie soptit."
+
+#: game.c:2087
+msgid "Up since"
+msgstr "Functionare neantrerupta din"
+
+#: warnings.c:227
+#, c-format
+msgid "Variable exit has no %s attribute"
+msgstr "\"Iesirea variabila nu are atributul %s\""
+
+#: src/extchat.c:1039
+msgid "What do you want to emit?"
+msgstr "Ce vrei sa emiti?"
+
+#: src/move.c:576
+msgid "You can't drop that."
+msgstr "Nu poti sa arunci acest obiect."
+
+#: wiz.c:1460
+msgid "You must give a list of flag names."
+msgstr "\"Trebuie sa specifici o lista de steaguri.\""
+
+#: cque.c:652
+msgid "You must specify an object to use for the semaphore."
+msgstr "\"Trebuie sa specifici un obiect de folosit pentru semafor.\""
+
+#: src/speech.c:616
+#, c-format
+msgid "You pemit \"%s\" to %s."
+msgstr "Trimiti un pemit continand \"%s\" catre %s."
+
+#: src/bsd.c:4683
+msgid ""
+"\n"
+"*** Inactivity limit reached. You are now HIDDEN. ***\n"
+msgstr ""
+"\n"
+"*** Limita de inactivitate a fost atinsa. Acum esti ASCUNS. ***\n"
+
+#: src/warnings.c:159
+msgid "possibly locked exit missing fail"
+msgstr "este posibil ca aceasta iesire incuiata sa nu aiba definit un mesaj de esuare."
+
+#: funstr.c:92
+msgid "pronoun:feminine,possessive"
+msgstr "\"pronume:feminin, posesiv\""
+
+#: funstr.c:101
+msgid "pronoun:masculine,absolute possessive"
+msgstr "\"pronume: masculin, posesiv absolut\""
+

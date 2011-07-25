@@ -1,0 +1,17 @@
+Penn will compile and run out of the box on NetBSD, including OpenSSL
+support, with the caveats below.
+
+* Mysql and Postgres should be detected if their packages have been
+  installed through pkgsrc or pkg_add and /usr/pkg/bin is in your
+  path. If you have the sqlite3 package installed and want to use it,
+  you need to tell configure to look in the /usr/pkg hierarchy for it:
+
+  % CPPFLAGS=-I/usr/pkg/include LDFLAGS=-L/usr/pkg/lib ./configure
+
+* If you're using an IPv6-enabled install and 'sysctl
+  net.inet6.ip6.v6only' prints out 1, you'll have to get a sysadmin to
+  change it to 0 or run configure with --disable-ipv6 to allow IPv4
+  connections.
+
+
+

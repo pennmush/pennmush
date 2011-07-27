@@ -587,7 +587,7 @@ eval_boolexp(dbref player, boolexp b, dbref target, NEW_PE_INFO *pe_info)
           dbref mydb;
 
           r = 0;
-          a = atr_get(target, (char *) bytecode + arg);
+          a = atr_get(target, strupper((char *) bytecode + arg));
           if (!a)
             break;
 

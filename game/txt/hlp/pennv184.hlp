@@ -59,6 +59,8 @@ Fixes:
    Reported by Padraic. [MG]
  * win32/config.h was lacking a definition for int16_t. Reported by Daniko.
    [SW]
+ * DBREFLIST locks required the attrname be given in upper-case. Reported by
+   Sketch. [MG]
 
 & 1.8.4p5
 Version 1.8.4 patchlevel 5                                 Jun 19,  2011

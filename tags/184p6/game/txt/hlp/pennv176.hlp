@@ -1,0 +1,355 @@
+& 1.7.6p16
+Version 1.7.6 patchlevel 16                     April 28, 2004
+
+Fixes:
+   * PCRE updated to 4.5 [SW]
+
+
+& 1.7.6p15
+Version 1.7.6 patchlevel 15                     January 25, 2004
+
+Fixes:
+   * Improved freebsd hints. [SW]
+   * Channel user memory allocation error corrected.
+
+
+& 1.7.6p14
+Version 1.7.6 patchlevel 14                     September 23, 2003
+
+Fixes:
+   * Fix to help @search2 by LeeLaLimaLLama@M*U*S*H.
+   * The max file descriptor could get stomped in some cases. [SW]
+   * Powers and toggles on destroyed objects are reset, as they 
+     caused anomalous lsearch/haspower behavior. Report by Mordie@M*U*S*H.
+   * Changing channel privs and loading channels with objects no longer
+     permitted could cause crashes. Report by Septimus@SW RP Forum.
+
+
+& 1.7.6p13
+Version 1.7.6 patchlevel 13                     August 11, 2003
+
+Fixes:
+   * Calling panic() while in the middle of a panic dump would cause a loop.
+     Reported by [EEH]. [SW] 
+   * Outdated mention of compose.csh removed from compose.sh.SH.
+     Reported by Cheetah@M*U*S*H.
+   * timestring() dealt wrongly with large arguments. Reported by
+     Jules@M*U*S*H. timefmt() had a similar problem, reported by
+     Luke@M*U*S*H.
+   * Better checking of db save failures. [SW]
+
+
+& 1.7.6p12
+Version 1.7.6 patchlevel 12                     June 23, 2003
+
+Minor changes:
+   * Users no longer see last connection information when they 
+     connect to Guests. Suggested by Jules@M*U*S*H.
+Fixes:
+   * Potential problem with ambigious names in the information functions 
+     fixed. [SW]
+   * The 'chat' config group is no longer displayed when CHAT_SYSTEM
+     isn't defined. Report by Mike Griffiths. [SW]
+   * cygwin install instructions changed to remove obsolete exim
+     version information. Suggested by Cheetah@M*U*S*H.
+   * Objects with user-defined locks had problems with finding built-in locks
+     on the object. Reported by Walker@M*U*S*H. [SW]
+
+
+& 1.7.6p11
+Version 1.7.6 patchlevel 11                     June 1, 2003
+
+Minor changes:
+   * The restart script now insures that GAMEDIR is a real directory
+     and CONF_FILE exists therein before proceeding. Suggested by
+     Philip Mak.
+   * Attribute flag setting messages are more verbose. Suggested by
+     Mike Griffiths
+   * See_All players may use the ports() function. Suggested by 
+     Mike Griffiths.
+Fixes:
+   * Wizards can no longer @chzone God. Report by Kevin@M*U*S*H.
+   * Help fixes by Mike Griffiths.
+
+& 1.7.6p10
+Version 1.7.6 patchlevel 10                     May 13, 2003
+
+Minor changes:
+   * PCRE (the regex matching engine we use) is updated to version 4.2. [SW]
+   * @mail/file now unclears the cleared bit when filing @mail.
+     Suggested by Philip Mak.
+Fixes:
+   * @edit is better with editing ansi. Reported by Trispis@M*U*S*H. [SW]
+   * Help file cleanup. [SW]
+   * @warnings about missing FAILURE messages were not correctly 
+     checked, causing false positives. Reported by Cheetah.
+   * Page message no longer ends in a period. Suggested by Time@M*U*S*H.
+   * Help fixes by Intrevis@M*U*S*H.
+   * BASE_ROOM can't be destroyed any more. Suggested by Philip Mak.
+
+
+& 1.7.6p9
+Version 1.7.6 patchlevel 9                      April 9, 2003
+
+Fixes:
+   * index-files.pl now produces a sensible warning for duplicate
+     help topics, rather than a perl warning. Suggested by Cheetah@M*U*S*H.
+   * Spellnum cosmetic bug with 'seventeen' fixed. Report by Jules@M*U*S*H.
+   * Another wrap() buglet tracked down and fixed. Probably the one
+     reported by Nymeria@M*U*S*H.
+   * Memory leak in flip() and scramble() fixed.
+   * Configure test for /dev/urandom from 1.7.5 got left out by mistake.
+   * Critical overflow bug in command argument parsing fixed.
+
+& 1.7.6p8
+Version 1.7.6 patchlevel 8                      March 21, 2003
+
+Minor changes:
+   * The CHANGES file has been renamed so that it always refers to
+     a version number, and utils/mkvershelp.pl now generates seperate
+     .hlp files for each CHANGES file. This will prevent patch hunk 
+     failures when two patchlevels of different versions are released
+     and both used to try to modify the same .hlp file.
+   * Channel names are restricted to printable characters, with no
+     leading or trailing spaces. Suggested by Letters@M*U*S*H.
+   * Calling time() with any argument other than 'utc' now generates
+     an error. Report by Time@M*U*S*H.
+Fixes:
+   * Some redundant code cleanup in look_exits suggested by Vadiv@M*U*S*H.
+   * Help file fixes by Ves@M*U*S*H, Jules@M*U*S*H, Cerekk@bDv.
+   * When page_aliases is on, there's a space between the player's
+     name and alias. Suggested by Saturn@M3.
+   * Command-checking for ZMR contents didn't function when a ZMR
+     was used as a player's personal zone. Reported by BlaZe@M*U*S*H.
+   * Default idle_timeout was different in code and mushcnf.dst.
+     Reported by James Bond@M*U*S*H. [SW]
+
+
+& 1.7.6p7
+Version 1.7.6 patchlevel 7                      February 20, 2003
+
+Fixes:
+   * Some sloppy coding in src/access.c could generate runtime 
+     debugging exceptions. Reported by BladedThoth@M*U*S*H.
+   * wrap() could behave incorrectly when a line was exactly the length
+     of the wrap width and the total input size was larger than 
+     any previously wrapped input. Reported by Liam@Firdeloth.
+   * Extra NUL characters were sent after telnet codes, which 
+     confused Mudnet and maybe some clients. Patch by Alierak.
+
+
+& 1.7.6p6
+Version 1.7.6 patchlevel 6                      January 23, 2003
+
+Minor changes:
+   * nearby() always works for see_all players. Reported by Sparta.
+   * findable() now requires that executor control either the object
+     or the victim or be see_all. Reported by Sparta.
+Fixes:
+   * POWER^ and CHANNEL^ locks tested the wrong object. [SW]
+   * @grep, @wipe, and @edit now report when no attributes are
+     matched. Suggested by Procyon@M3
+   * Changes to telnet negotiation strings to match those in
+     PennMUSH 1.7.7, which seems to fix some problems with display
+     of connect.txt in some clients. Report by Howie@NewFrontier.
+     Patch by Time@M*U*S*H.
+   * @mail/silent wasn't unless you used /send too. Report by
+     Moe@Chicago.
+   * Wizards could set attributes on garbage objects (which were useless,
+     but may have leaked memory needlessly). Reported by Taz@M*U*S*H.
+   * @chan/hide didn't check for hide permissions properly in some
+     cases. Reported by Tanaku@M*U*S*H.
+   * Better explanation of when regexp matching is case sensitive vs.
+     insensitive. Suggested by Jake@BrazilMUX, Brazil@BrazilMUX, and
+     Vadiv@M*U*S*H.
+
+
+& 1.7.6p5
+Version 1.7.6 patchlevel 5                      January 7, 2003
+
+Fixes:
+   * 1.7.6p4 broke 'go #dbref', which broke the ability of followers 
+     to follow. Reported by Ellis@M*U*S*H.
+
+
+& 1.7.6p4
+Version 1.7.6 patchlevel 4                      January 2, 2003
+
+Minor Changes:
+   * English-style matching now applies to exits in the room
+     (so '1st down' can match the first 'down' exit if you're not carrying
+     anything that matches 'down'). New english-style matching adjective
+     'toward' restricts the match to exits (so: 'look toward 1st down').
+Fixes:
+   * Code cleanup to fix several potential buffer overflows.
+   * The wildcard matcher had problems with backslash escapes in
+     some cases, making matching a : in a $command very hard.
+     Reported by Wayne@PDX.
+   * @chzone could cause crashes on some systems.  Reported by Wayne@PDX.
+   * When two exits match, one is no longer chosen at random.
+     Instead, the ambiguity should be reported as an error.
+     Reported by Intrevis@M*U*S*H.
+   * The dbref returned by locate when given the X parameter is
+     no longer random, but the last one found (as per the help).
+   * Serious bug in reading locks from the db on startup corrected.
+   * The profiling timer is turned off duing dumps, as some systems
+     (FreeBSD?) appear to continue to use it and interrupt dumps
+     due to cpu limiting. Reported by Nathan Schuette.
+
+
+& 1.7.6p3
+Version 1.7.6 patchlevel 3                      December 22, 2002
+
+Minor changes:
+   * call_limit now controls the maximum recursion in process_expression,
+     instead of maximum calls to p_e per command cycle. This still
+     limits stack size, but doesn't get in the way of massive code
+     nearly as much. People using a very high call_limit value should
+     probably lower it significantly. Patch by Philip Mak.
+   * Improved error messages for many database information functions.
+     Notably, several functions that require at least one argument,
+     now complain if they don't get it rather than returning silently.
+     Suggested by Intrevis@M*U*S*H. [SW]
+Fixes:
+   * @warnings are no longer shown on GOING objects. Suggested by
+     Philip Mak.
+   * Help fixes by Intrevis, Time, and Ambrosia@M*U*S*H
+   * Bug in @decomp/skipdefaults reported by Philip Mak. [SW]
+   * Tweaks to utils/mkcmds.sh [SW]
+   * home() on a room acts as described in the help. Reported by
+     Intrevis@M*U*S*H. [SW]
+   * whisper/noisy double-notified the whisperer. Reported by Philip Mak.
+   * Crash bug in @mail fixed. Reported by Titan@OtherSpace.
+
+
+& 1.7.6p2
+Version 1.7.6 patchlevel 2                      December 17, 2002
+
+Minor changes:
+   * An invalid range argument to @search/lsearch is now coerced
+     to be the lowest or highest dbref, as appropriate. The search
+     range is also now inclusive. And lsearch(<player>) works.
+     Suggested by Philip Mak.
+   * mushcnf.dst now includes a default value for call_limit.
+     Suggested by Philip Mak.
+   * Testing for whether the mush is already running in the
+     restart script has been improved by Philip Mak.
+Internationalization:
+   * Polish translation files (partial) are now being distributed.
+Fixes:
+   * Fix to win32 warnings. [EEH]
+   * Under Win32, a failed accept() call in bsd.c would not be
+     correctly handled. Report by BladedThoth@M*U*S*H.
+   * Help fixes by Luigi@8bitMUSH, Kyieren@M*U*S*H, Intrevis@M*U*S*H.
+   * @map crash bug repoted by Philip Mak, fixed by Walker@M*U*S*H.
+   * Modifiying locks now updates the object's modification time.
+     Reported by Philip Mak.
+
+
+& 1.7.6p1
+Version 1.7.6 patchlevel 1                      November 26, 2002
+
+Minor changes:
+   * When using @nuke to destroy a SAFE object when really_safe is "no",
+     provide a warning (but schedule destruction anyway). Suggested by
+     Cerekk@bDV.
+Fixes:
+   * VS.NET project file was defaulting to signed instead of unsigned
+     chars, causing crashes. Fixed by BladedThoth@M*U*S*H.
+     Several places where we should have cast things to unsigned to
+     avoid this kind of thing have been fixed. [SW]
+   * The *emit() functions now set the orator correctly.
+     Reported by Philip Mak.
+   * ccom and cplr are cleared after each command execution so they
+     can't be leaked as easily. Suggested by Philip Mak.
+   * Linting.
+   * If God gives the wrong password to @logwipe, provide some feedback.
+     Suggested by Cerekk@bDv.
+   * mkcmds.sh was needlessly rebuilding several autogenerated files.
+   * The rules for flag characters shown in object headers now allows
+     F_INTERNAL flags to be shown (like GOING), just the same as
+     when you get a full flag list on examine. Report by Philip Mak.
+   * Help fixes by Bird@M*U*S*H, Intrevis@M*U*S*H, Philip Mak.
+   * @search type=something would report an error AND match the entire
+     database when something wasn't object, player, exit or room. [SW]
+   * Cosmetic bug in @malias/list fixed. Report by Tanaku@M*U*S*H.
+   * The info_slave now properly obeys the use_dns setting in mush.cnf.
+     This requires a full shutdown to put into effect. Report by
+     BlaZe@M*U*S*H. [SW]
+
+
+& 1.7.6p0
+Version 1.7.6 patchlevel 0                      November 11, 2002
+
+License:
+ * PennMUSH 1.7.6 and later is now released under the Artistic
+   License. This is an OSI-compliant open source license. See the file
+   COPYRITE for the complete license text.
+
+   Notable changes from the old license:
+   * No restrictions on commercial use
+   * No requirement to inform developers of improvements or submit
+     modifications, though it's still a nice thing to do. Note, however
+     that if you redistribute a modified version of PennMUSH, you MUST
+     include source code.
+
+   The PennMUSH devteam thanks the copyright holders of TinyMUD,
+   TinyMUSH 2.0, TinyMUSH 2.2, and TinyMUSH 3.0 for their assistance
+   in making this possible.
+Documentation:
+   * The README file has been split into README, INSTALL, UPGRADING,
+     and I18N files.
+Minor Changes:
+   * Rooms now hear remits and lemits in them, and can be pemitted
+     to. This behavior now matches that of other MUSH servers.
+   * AUDIBLE objects now propagate sound @remit'd into them.
+     Report by [SW].
+   * Added @lock/destroy to limit who can destroy a DESTROY_OK 
+     object. Suggested by Luigi@8bit.
+   * PARANOID nospoof notification now includes the name of the object's
+     owner as well. Suggested by Philip Mak.
+   * room() no longer notifies the executor of permission errors out of
+     band. It now just returns the error instead, like loc(). Suggested by 
+     Philip Mak.
+   * Creation times are now public information via ctime(); permission to
+     examine is no longer required. This allows objects to use, e.g.,
+     %#@[ctime(%#)] as a historically unique identifier of an enactor.
+     Suggested by Philip Mak.
+   * The reboot.db is now versioned. This will make it possible to
+     @shutdown/reboot across patchlevels that change the reboot.db
+     format (in 1.7.7 and later versions).
+   * Rooms on an @forwardlist now receive the message as a remit,
+     rather than a pemit. Suggested by BladedThoth@M*U*S*H.
+Fixes:
+   * More work on the great table() bug. Looks like a fix. [SW]
+   * Improved VS.NET project files by BladedThoth.
+   * Plugged a memory leak in deleting @locks. [SW]
+   * Fixed @lock-related crash bug reported by Philip Mak. [SW]
+   * General linting.
+   * process_expression ignores the [ in ansi escapes. Reported in the
+     context of #$ by Philip Mak. [SW]
+   * Internal changes to compress(), which now returns an allocated
+     string. Under Huffman compression, it should no longer be possible
+     to overflow a buffer with a pathological compression tree. Initial
+     concern voiced by Eyal Sagi.
+   * Table and ansi didn't play well together. Reported by Ellis@M*U*S*H.
+   * Config file reading should be better on Macs. Patch by Philip Mak.
+   * Obsolete checks for OLD_ANSI are removed. [SW]
+   * Crash bug in @function fixed. Report by Dallimar@Hemlock.
+   * Change to message on failed attribute flag set, to make it more
+     generic to cover all the possible failures. Report by Cerekk@bDv.
+   * Translations to some languages were broken. Fixed now. Report by
+     Sbot@M*U*S*H.
+   * QUEUE is now visible if you control an object, as promised in the
+     help. Reported by Luigi@8bit.
+   * Help fixes by Mortimer@M*U*S*H, Bellemore@M*U*S*H, Hyacinth@8bit,
+     [EEH], BladedThoth@M*U*S*H, Moe@M*U*S*H, Viila@M*U*S*H, Walker@M*U*S*H.
+   * Comment in src/Makefile fixed by Vadiv@M*U*S*H.
+   * A weird crash on @shutdown/reboot, probably attributable to a
+     broken library or system call, is now worked-around. Report by
+     Solarius@SWWF.
+   * Audible objects with @forwardlist set are no longer concealed by
+     the DARK flag.
+   * Win32 project files no longer use the win32/ directory as an include
+     directory, which causes problems. Reported by Gepht.
+

@@ -1326,7 +1326,7 @@ na_zemit(dbref current, void *data)
     } else {
       current = Next(current);
     }
-  } while ((current == NOTHING));
+  } while (current == NOTHING);
   if (dbrefs[3] == current)
     dbrefs[3] = NOTHING;
   return current;

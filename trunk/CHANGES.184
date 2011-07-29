@@ -16,6 +16,12 @@ chronological order (most recent first)
 
 ==========================================================================
 
+Version 1.8.4 patchlevel 7                                 ??? ??, 2011
+
+Fixes:
+ * Verified that Penn compiles using the clang compiler, and fix a few
+   warnings it generated. [SW]
+
 Version 1.8.4 patchlevel 6                                 Jul 29,  2011
 
 Minor changes:

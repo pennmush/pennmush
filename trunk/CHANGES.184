@@ -42,6 +42,8 @@ Functions:
    From a suggestion by Jules. [MG]
  * quota() now accepts 'me' as an argument. Suggested by Padraic. [MG]
  * remove() is now ANSI-aware. [MG]
+ * money() now checks for an integer argument before checking for an object.
+   Suggested by qa'toq. [MG]
    
 Fixes:
  * Wildcard matches on ANSI'd strings sometimes failed. Reported by Duckwa

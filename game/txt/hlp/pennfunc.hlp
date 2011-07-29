@@ -3143,13 +3143,15 @@ See also: anonymous attributes, map(), step()
 
 See also: div(), fdiv(), lmath()
 & MONEY()
-  money(<object>)
   money(<integer>)
+  money(<object>)
 
-  The first form returns the amount of money <object> has. If <object> is
-  no_pay, the value of the 'max_pennies' @config option is returned. The
-  second form returns the name for a given amount of money, appropriately
-  inflected as singular or plural.
+  If given an integer, money() returns the appropriate name (either singular
+  or plural) for that amount of money, as set in the money_singular and
+  money_plural @config options.
+
+  Otherwise, it returns the amount of money <object> has. If <object> is
+  no_pay, the value of the 'max_pennies' @config option is returned. 
 
   Examples:
     > say money(Javelin)

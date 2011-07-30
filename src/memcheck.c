@@ -3,9 +3,23 @@
  *
  * \brief A simple memory allocation tracker for PennMUSH.
  *
- * This code isn't usually compiled in, but it's handy to debug
- * memory leaks sometimes.
+ * When mem_check is turned on in mush.cnf, every time mush_malloc or
+ * add_check is called, the name given to that allocation gets its
+ * reference count incremented, and every time mush_free or del_check
+ * is called, the count is decrememented. Non-0 counts can be see
+ * in-game via \@list allocations, and all counts are periodically
+ * dumped to log/trace.log. Negative counts or steadily growing counts
+ * without an obvious reason indicate problems. Choose allocation
+ * names wisely; 'string', for example, is used so much that it can be
+ * hard to track down a leak in it.
  *
+ * Reference counts used to be stored in a simple sorted linked list,
+ * but profiling showed that add_check() and del_check() were in the
+ * top 4 function calls. It's been rewritten to use a skip list, an
+ * interesting data structure that combines binary tree-like
+ * performance when looking up random entries (but with simpler code),
+ * and the ease of traversing a linked list. It'll be interesting to
+ * see what difference this makes the next time M*U*S*H gets profiled.
  *
  */
 #include "config.h"
@@ -14,27 +28,33 @@
 
 #include <stdlib.h>
 #include <string.h>
-
+#include <math.h>
+#include <stdio.h>
 
 #include "externs.h"
 #include "dbdefs.h"
 #include "mymalloc.h"
 #include "log.h"
+#include "SFMT.h"
 #include "confmagic.h"
 
-typedef struct mem_check MEM;
+typedef struct mem_check_node MEM;
 
-/* Length of longest check name */
-#define REF_NAME_LEN 64
+enum {
+  REF_NAME_LEN = 64, /**< Length of longest check name */
+  MAX_LINKS = 8 /**< Maximum number of links in a single skip list node */
+};
 
-/** A linked list for storing memory allocation counts */
-struct mem_check {
+/** A skip list for storing memory allocation counts */
+struct mem_check_node {
   int ref_count;                /**< Number of allocations of this type. */
-  MEM *next;                    /**< Pointer to next in linked list. */
+  int link_count;
+  MEM *links[MAX_LINKS];         /**< Pointer to next in linked list. */
   char ref_name[REF_NAME_LEN];    /**< Name of this allocation type. */
 };
 
-static MEM *my_check = NULL;
+static MEM memcheck_head_storage = { 0, MAX_LINKS, {NULL}, "" };
+static MEM *memcheck_head = &memcheck_head_storage;
 
 slab *memcheck_slab = NULL;
 
@@ -42,39 +62,180 @@ slab *memcheck_slab = NULL;
  *** AN INFINITE LOOP. DANGER, WILL ROBINSON!
  ***/
 
+/* Look up an entry in the skip list */
+static MEM *
+lookup_check(const char *ref)
+{
+  MEM **links;
+  int n;  
+
+  /* Empty list */
+  if (!memcheck_head->links[0])
+    return NULL;
+
+  for (n = memcheck_head->link_count - 1; n >= 0; n -= 1)
+    if (memcheck_head->links[n])
+      break;
+
+  links = memcheck_head->links;
+
+  while (n >= 0) {
+    MEM *chk;
+    int cmp;   
+
+    if (!links[n]) {
+      n -= 1;
+      continue;
+    }
+
+    chk = links[n];
+
+    cmp = strcmp(ref, chk->ref_name);
+    if (cmp == 0) { /* Found it */
+      return chk;
+    } else if (cmp > 0) { /* key is further down the chain */
+      links = chk->links;
+      n = chk->link_count - 1;
+    } else if (cmp < 0) { /* Went too far */
+      n -= 1;      
+    }
+  }
+  return NULL;
+}
+
+/* Cygwin has a log2 that configure doesn't detect. Macro, maybe? */
+#if !defined(HAVE_LOG2) && !defined(__CYGWIN__)
+static inline double
+log2(double x)
+{
+  return log(x) / log(2.0);
+}
+#endif
+
+/* Return the number of links to use for a new node. Result's range is
+   1..maxcount */
+static int
+pick_link_count(int maxcount)
+{
+  int lev = (int)floor(log2(genrand_real3()));
+  lev = -lev;
+  if (lev > maxcount)
+    return maxcount;
+  else
+    return lev;
+}
+
+/* Allocate a new reference count struct. Consider moving away from
+   slabs; the struct size is pretty big with the skip list fields
+   added. */
+static MEM *
+alloc_memcheck_node(const char *ref)
+{
+  MEM *newcheck;
+
+  if (!memcheck_slab)
+    memcheck_slab = slab_create("mem check references", sizeof(MEM));
+
+  newcheck = slab_malloc(memcheck_slab, NULL);
+  memset(newcheck, 0, sizeof *newcheck);
+  mush_strncpy(newcheck->ref_name, ref, REF_NAME_LEN);  
+  newcheck->link_count = pick_link_count(MAX_LINKS);
+  newcheck->ref_count = 1;
+  return newcheck;
+}
+
+static inline int
+min(int a, int b)
+{
+  if (a < b)
+    return a;
+  else if (a > b)
+    return b;
+  else
+    return a;
+}
+
+/* Update forward skip links for a new element of the list */
+static void
+update_links(MEM *src, MEM *newnode)
+{
+  int n = min(src->link_count, newnode->link_count) - 1;
+  
+  for (; n > 0; n -= 1) {
+    if (!src->links[n])
+      src->links[n] = newnode;
+    else {
+      int cmp = strcmp(src->links[n]->ref_name, newnode->ref_name);
+      if (cmp < 0) {
+	/* Advance along the skip list and adjust as needed. */
+	update_links(src->links[n], newnode);
+	return;
+      } else if (cmp > 0) {
+	/* Insert into skip chain */
+	newnode->links[n] = src->links[n];
+	src->links[n] = newnode;
+      }
+    }
+  }
+}
+
+/* Insert a new entry in the skip list. Bad things happen if you try to insert a duplicate. */
+static void
+insert_check(const char *ref)
+{
+  MEM *chk, *node, *prev;
+  int n;
+
+  chk = alloc_memcheck_node(ref);
+
+  /* Empty list */
+  if (!memcheck_head->links[0]) {
+    for (n = 0; n < chk->link_count; n += 1)
+      memcheck_head->links[n] = chk;
+    return;
+  }
+
+  /* Find where to insert the new node, using a simple linked list
+     walk. Ideally, this should be using a standard skip list
+     insertion algorithm to avoid O(N) performance, but insertions
+     occur infrequently once the mush is running, so I don't care that
+     much. */
+  for (node = memcheck_head->links[0], prev = NULL; node; prev = node, node = node->links[0]) {
+    if (strcmp(ref, node->ref_name) < 0) {
+      if (prev) {
+	chk->links[0] = node;
+	prev->links[0] = chk;       
+      } else {
+	/* First element */
+	chk->links[0] = memcheck_head->links[0];
+	memcheck_head->links[0] = chk;
+      }
+      break;
+    }
+  }
+  if (!node) /* Insert at end of list */
+    prev->links[0] = chk;
+
+  /* Now adjust forward pointers */
+  update_links(memcheck_head, chk);
+}
+
 /** Add an allocation check.
  * \param ref type of allocation.
  */
 void
 add_check(const char *ref)
 {
-  MEM *loop, *newcheck, *prev = NULL;
-  int cmp;
+  MEM *chk;
 
   if (!options.mem_check)
     return;
 
-  for (loop = my_check; loop; loop = loop->next) {
-    cmp = strcmp(ref, loop->ref_name);
-    if (cmp == 0) {
-      loop->ref_count++;
-      return;
-    } else if (cmp < 0)
-      break;
-    prev = loop;
-  }
-  if (!memcheck_slab)
-    memcheck_slab = slab_create("mem check references", sizeof(MEM));
-
-  newcheck = slab_malloc(memcheck_slab, prev);
-  mush_strncpy(newcheck->ref_name, ref, REF_NAME_LEN);
-  newcheck->ref_count = 1;
-  newcheck->next = loop;
-  if (prev)
-    prev->next = newcheck;
-  else
-    my_check = newcheck;
-  return;
+  chk = lookup_check(ref);
+  if (chk)
+    chk->ref_count += 1;
+  else 
+    insert_check(ref);    
 }
 
 /** Remove an allocation check.
@@ -85,42 +246,39 @@ add_check(const char *ref)
 void
 del_check(const char *ref, const char *filename, int line)
 {
-  MEM *loop;
+  MEM *chk;
 
   if (!options.mem_check)
     return;
 
-  for (loop = my_check; loop; loop = loop->next) {
-    int cmp = strcmp(ref, loop->ref_name);
-    if (cmp == 0) {
-      loop->ref_count--;
-      if (loop->ref_count < 0)
-        do_rawlog(LT_TRACE,
-                  "ERROR: Deleting a check with a negative count: %s (At %s:%d)",
-                  ref, filename, line);
-      return;
-    } else if (cmp < 0) {
+  chk = lookup_check(ref);
+
+  if (chk) {
+    chk->ref_count -= 1;
+    if (chk->ref_count < 0)
       do_rawlog(LT_TRACE,
-                "ERROR: Deleting a non-existant check: %s (At %s:%d)",
-                ref, filename, line);
-      break;
-    }
+		"ERROR: Deleting a check with a negative count: %s (At %s:%d)",
+		ref, filename, line);
+  } else {
+    do_rawlog(LT_TRACE,
+	      "ERROR: Deleting a non-existant check: %s (At %s:%d)",
+	      ref, filename, line);
   }
 }
 
-/** List allocations.
+/** List allocations in use.
  * \param player the enactor.
  */
 void
 list_mem_check(dbref player)
 {
-  MEM *loop;
+  MEM *chk;
 
   if (!options.mem_check)
     return;
-  for (loop = my_check; loop; loop = loop->next) {
-    if (loop->ref_count != 0)
-      notify_format(player, "%s : %d", loop->ref_name, loop->ref_count);
+  for (chk = memcheck_head->links[0]; chk; chk = chk->links[0]) {
+    if (chk->ref_count != 0)
+      notify_format(player, "%s : %d", chk->ref_name, chk->ref_count);
   }
 }
 
@@ -129,13 +287,73 @@ list_mem_check(dbref player)
 void
 log_mem_check(void)
 {
-  MEM *loop;
+  MEM *chk;
 
   if (!options.mem_check)
     return;
   do_rawlog(LT_TRACE, "MEMCHECK dump starts");
-  for (loop = my_check; loop; loop = loop->next) {
-    do_rawlog(LT_TRACE, "%s : %d", loop->ref_name, loop->ref_count);
+  for (chk = memcheck_head->links[0]; chk; chk = chk->links[0]) {
+    do_rawlog(LT_TRACE, "%s : %d", chk->ref_name, chk->ref_count);
   }
   do_rawlog(LT_TRACE, "MEMCHECK dump ends");
+}
+
+
+/** Dump a representation of the memcheck skip list into a file, using the dot language.
+ * Use from a debugger:
+ * \verbatim
+ * (gdb) print memcheck_dump_struct("memcheck.dot")
+ * \endverbatim
+ * and then turn into an image:
+ * \verbatim
+ * # dot -Tsvg -o memcheck.svg memcheck.dot
+ * \endverbatim
+ * (dot is part of the graphviz package)
+ * \param filename The output file name.
+ */
+void
+memcheck_dump_struct(const char *filename)
+{
+  FILE *fp;
+  MEM *chk;
+  int n;
+
+  fp = fopen(filename, "w");
+  if (!fp) {
+    penn_perror("fopen");
+    return;
+  }
+
+  fputs("digraph memcheck_skiplist {\n", fp);
+  fputs("rankdir=LR;\n", fp);
+  fputs("node [shape=record];\n", fp);
+  fputs("head [label=\"HEAD", fp);
+  for (n = 0; n < MAX_LINKS; n += 1) {
+    fprintf(fp, "|<l%d>", n);
+    if (!memcheck_head->links[n])
+      fputs(" (NULL)", fp);
+  }
+  fputs("\"];\n", fp);
+
+  for (n = 0; n < MAX_LINKS; n += 1) {
+    if (memcheck_head->links[n])
+      fprintf(fp, "head:l%d -> mc%p:l%d;\n", n, (void*) memcheck_head->links[n], n);
+  }
+      
+  for (chk = memcheck_head->links[0]; chk; chk = chk->links[0]) {
+    fprintf(fp, "mc%p [label=\"{%s|%d}", (void*)chk, chk->ref_name, chk->ref_count);
+    for (n = 0; n < chk->link_count; n += 1) {
+      fprintf(fp, "|<l%d>", n);
+      if (!chk->links[n]) 
+	fputs(" (NULL)", fp);
+    }
+    fputs("\"];\n", fp);   
+    for (n = 0; n < chk->link_count; n += 1) {
+      if (chk->links[n])
+	fprintf(fp, "mc%p:l%d -> mc%p:l%d;\n", (void*)chk, n, (void*)chk->links[n], n);
+    }
+  }
+
+  fputs("}\n", fp);
+  fclose(fp);
 }

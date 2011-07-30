@@ -18,6 +18,10 @@ chronological order (most recent first)
 
 Version 1.8.4 patchlevel 7                                 ??? ??, 2011
 
+Minor changes:
+ * Rewrite memcheck allocation tracking to use a more efficient data
+   structure. [SW]
+
 Fixes:
  * Verified that Penn compiles using the clang compiler, and fix a few
    warnings it generated. [SW]

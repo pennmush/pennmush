@@ -475,8 +475,6 @@ reverse(dbref list)
   return newlist;
 }
 
-
-
 /** Wrapper to choose a seed and initialize the Mersenne Twister PRNG.
  * The actual MT code lives in SFMT.c and hdrs/SFMT*.h */
 void
@@ -494,16 +492,15 @@ initialize_mt(void)
     int r = read(fd, buf, sizeof buf);
     close(fd);
     if (r <= 0) {
-      do_rawlog(LT_ERR,
-                "Couldn't read from /dev/urandom! Resorting to normal seeding method.");
+      fprintf(stderr, "Couldn't read from /dev/urandom! Resorting to normal seeding method.\n");
     } else {
-      do_rawlog(LT_ERR, "Seeded RNG from /dev/urandom");
+      fprintf(stderr, "Seeded RNG from /dev/urandom\n");
       init_by_array(buf, r / sizeof(uint32_t));
       return;
     }
   } else
-    do_rawlog(LT_ERR,
-              "Couldn't open /dev/urandom to seed random number generator. Resorting to normal seeding method.");
+    fprintf(stderr,
+              "Couldn't open /dev/urandom to seed random number generator. Resorting to normal seeding method.\n");
 
 #endif
   /* Default seeder. Pick a seed that's fairly random */
@@ -513,8 +510,6 @@ initialize_mt(void)
   init_gen_rand(getpid() | (time(NULL) << 16));
 #endif
 }
-
-
 
 /** Get a uniform random long between low and high values, inclusive.
  * Based on MUX's RandomINT32()

@@ -414,6 +414,8 @@ static char **saved_argv = NULL;
 int file_watch_init(void);
 void file_watch_event(int);
 
+void initialize_mt(void);
+
 #ifndef BOOLEXP_DEBUGGING
 #ifdef WIN32SERVICES
 /* Under WIN32, MUSH is a "service", so we just start a thread here.
@@ -553,6 +555,9 @@ main(int argc, char **argv)
 #endif
 
   time(&mudtime);
+
+  /* initialize random number generator */
+  initialize_mt();
 
   options.mem_check = 1;
 

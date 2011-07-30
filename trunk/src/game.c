@@ -92,8 +92,6 @@ static dbref *errdbtail = NULL;        /**< Pointer to end of errdblist */
 static int errdbsize = ERRDB_INITIAL_SIZE; /**< Current size of errdblist array */
 static void errdb_grow(void);
 
-
-extern void initialize_mt(void);
 extern const unsigned char *tables;
 extern void conf_default_set(void);
 static bool dump_database_internal(void);
@@ -684,9 +682,6 @@ init_game_config(const char *conf)
   pid_t mypid = -1;
 
   memset(report_cmd, 0, sizeof(report_cmd));
-
-  /* initialize random number generator */
-  initialize_mt();
 
   init_queue();
 

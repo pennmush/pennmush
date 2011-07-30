@@ -1307,6 +1307,7 @@ memcheck.o: ../hdrs/mypcre.h
 memcheck.o: ../hdrs/mymalloc.h
 memcheck.o: ../hdrs/log.h
 memcheck.o: ../hdrs/bufferq.h
+memcheck.o: ../hdrs/SFMT.h
 move.o: ../hdrs/copyrite.h
 move.o: ../config.h
 move.o: ../hdrs/conf.h

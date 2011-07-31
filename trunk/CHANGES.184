@@ -21,10 +21,12 @@ Version 1.8.4 patchlevel 7                                 ??? ??, 2011
 Minor changes:
  * Rewrite memcheck allocation tracking to use a more efficient data
    structure. [SW]
+ * Help file improvements. [SW]
 
 Fixes:
  * Verified that Penn compiles using the clang compiler, and fix a few
    warnings it generated. [SW]
+ * Better fix for the DBREFLIST issue fixed in p6. [SW]
 
 Version 1.8.4 patchlevel 6                                 Jul 29,  2011
 

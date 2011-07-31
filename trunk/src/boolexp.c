@@ -245,7 +245,7 @@ safe_get_bytecode(boolexp b)
     static uint8_t *get_bytecode(boolexp b, uint16_t * storelen);
     static struct boolexp_node *alloc_bool(void) __attribute_malloc__;
     static struct boolatr *alloc_atr(const char *name,
-                                     const char *s) __attribute_malloc__;
+                                     const char *s, bool upcase_s) __attribute_malloc__;
     static void skip_whitespace(void);
     static void free_bool(struct boolexp_node *b);
     static struct boolexp_node *test_atr(char *s, char c);
@@ -587,7 +587,7 @@ eval_boolexp(dbref player, boolexp b, dbref target, NEW_PE_INFO *pe_info)
           dbref mydb;
 
           r = 0;
-          a = atr_get(target, strupper((char *) bytecode + arg));
+          a = atr_get(target, (char *) bytecode + arg);
           if (!a)
             break;
 
@@ -863,15 +863,22 @@ static lock_type parse_ltype;
  * \return a newly allocated boolatr.
  */
 static struct boolatr *
-alloc_atr(const char *name, const char *s)
+alloc_atr(const char *name, const char *s, bool upcase_s)
 {
   struct boolatr *a;
   size_t len;
+  char buf[BUFFER_LEN];
 
-  if (s)
-    len = strlen(s) + 1;
-  else
+  if (s) {
+    if (upcase_s)
+      mush_strncpy(buf, strupper(s), sizeof buf);
+    else
+      mush_strncpy(buf, s, sizeof buf);
+    len = strlen(buf) + 1;
+  } else {
+    buf[0] = '\0';
     len = 1;
+  }
 
   a = mush_malloc(sizeof(struct boolatr) - BUFFER_LEN + len, "boolatr");
   if (!a)
@@ -882,7 +889,7 @@ alloc_atr(const char *name, const char *s)
     return NULL;
   }
   if (s)
-    memcpy(a->text, s, len);
+    memcpy(a->text, buf, len);
   else
     a->text[0] = '\0';
   return a;
@@ -1086,7 +1093,7 @@ test_atr(char *s, char c)
       b->type = BOOLEXP_FLAG;
     }
   }
-  b->data.atr_lock = alloc_atr(tbuf1, s);
+  b->data.atr_lock = alloc_atr(tbuf1, s, !strcmp(tbuf1, "DBREFLIST"));
   return b;
 }
 

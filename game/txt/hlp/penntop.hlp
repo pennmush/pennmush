@@ -1478,8 +1478,8 @@ Continued in 'help regexp classes2'
   A register is essentially a little reserved piece of computer memory
   that can hold some variable information that you want to pass on to
   another command.  There are ten registers on the MUSH available via
-  %-substitution (%0 - %9) and thirty-six setq registers available via
-  %q- substitution (%q0 - %q9 and %qA - %qZ). 
+  %-substitution (%0 - %9) and many setq registers available via
+  %q- substitution (%q0 - %q9, %qA - %qZ and arbitrary names). 
 
   The basic registers are filled with information that matches the 
   wildcard pattern of the command trigger. (Before you say "Huh?", here's

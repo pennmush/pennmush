@@ -2854,6 +2854,7 @@ See also: message(), @chatformat, @pageformat, @oemit, @remit, speak()
     Name set.
   
 See also: @alias, @oname, name(), fullname()
+Config options: player_name_spaces, player_name_len, only_ascii_in_names
 & @ONAME
 & @ANAME
   @oname <object>[=<message>]
@@ -2915,7 +2916,7 @@ See also: @password, checkpass()
   > @notify/setq me=0,Walker
   Hello, Walker!
 
-  See also: SEMAPHORES, @drain, @wait
+See also: SEMAPHORES, @drain, @wait, @halt
 & @nspemit
 & @nsemit
 & @nslemit

@@ -548,10 +548,8 @@ do_pemit(dbref player, char *target, const char *message, int flags,
   }
 
   do {
-    who =
-      match_result(player, p, NOTYPE,
-                   (one ? MAT_EVERYTHING | MAT_NOISY : MAT_EVERYTHING));
-    if (!GoodObject(who))
+    who = noisy_match_result(player, p, NOTYPE, MAT_EVERYTHING);
+    if (who == NOTHING)
       continue;
     if (!okay_pemit(player, who, 1, one))
       continue;

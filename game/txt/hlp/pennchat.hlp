@@ -1,6 +1,7 @@
 & CHAT
 & CHAT SYSTEM
 & comsys
+& CHANNELS
   CHAT SYSTEM
 
   PennMUSH has a built-in chat system which allows you to speak to other
@@ -82,7 +83,7 @@ See also: @chat, @pageformat, @message, speak(), mogrify
   Suppose you want it just like the old version, but anytime somebody
   says your name, you want it all in red:
 
-    @chatformat me=ansi(if(strmatch(%2,*[name(%!)]*),r,n),%5)
+    @chatformat me=ansi(switch(%2,*[name(%!)]*,r,n),%5)
 
   See 'help @chatformat3' for more examples.
 & @CHATFORMAT3
@@ -103,6 +104,10 @@ See also: @chat, @pageformat, @message, speak(), mogrify
 
     @chatformat me=CHAT:%1:[edit(switch(%0,@,%2,speak(if(%4,%4%b)%3,%0%2)),
            &,&amp;,<,&lt;,>,&gt;,%r,<BR>,%b%b,%b&nbsp;)]
+     or
+    @chatformat me=CHAT:%1:[render(switch(%0,@,%2,speak(if(%4,%4%b)%3,%0%2)),
+           html)]
+    
 & CHAN_USEFIRSTMATCH
   Flag:  CHAN_USEFIRSTMATCH  (any type)
 
@@ -173,9 +178,9 @@ See also: CHAT, @chat, @cemit
   etc. 'help @channel list' explains the output in detail. If a <prefix> is
   given, only channels whose names begin with <prefix> are shown.
 
-  @channel/what shows the name, description, owner, priv flags and buffer
-  size for all channels, or all channels whose names begin with <prefix> if
-  one is given.
+  @channel/what shows the name, description, owner, priv flags, mogrifier and 
+  buffer size for all channels, or all channels whose names begin with
+  <prefix> if one is given.
 
   @channel/who lists all the players on the given channel.
 
@@ -605,8 +610,14 @@ See also: @clock, @lock
 
   This function is the functional form of @channel/recall, and returns a
   string containing the recalled lines from the channel, separated by
-  <osep>. If <timestamps?> is a true value, the recalled lines will
-  include their timestamps; otherwise, they will not.
+  <osep> (which defaults to a space). If <timestamps?> is a true value, the
+  recalled lines will be prefixed with the timestamp; otherwise, timestamps
+  are omitted.
+  
+  <lines> can be either a number of lines (in which case that many lines will
+  be returned, starting from the <start line>th line), or a duration of time 
+  (for example, '5h' or '10m30s'), in which case all lines from the previous 
+  <lines> time are returned.
 
 See also: @channel/recall, cbufferadd()
 & CMOGRIFIER()

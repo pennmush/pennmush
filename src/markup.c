@@ -264,8 +264,10 @@ ansi_strcmp(const char *astr, const char *bstr)
     b = skip_leading_ansi(b);
     if (*a != *b)
       return (*a - *b);
-    b++;
-    a++;
+    if (*b)
+      b++;
+    if (*a)
+      a++;
   }
   if (*a)
     a = skip_leading_ansi(a);
@@ -721,6 +723,9 @@ parse_tagname(const char *ptr)
 static const char *
 as_get_tag(ansi_string *as, const char *tag)
 {
+  if (!tag)
+    return NULL;
+
   if (*tag == '/' && *(tag + 1) == '\0') {
     return "/";
   }

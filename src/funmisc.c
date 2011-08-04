@@ -66,6 +66,8 @@ FUNCTION(fun_valid)
     safe_boolean(ok_function_name(upcasestr(args[1])), buff, bp);
   else if (!strcasecmp(args[0], "flag"))
     safe_boolean(good_flag_name(upcasestr(args[1])), buff, bp);
+  else if (!strcasecmp(args[0], "qreg"))
+    safe_boolean(ValidQregName(args[1]), buff, bp);
   else
     safe_str("#-1", buff, bp);
 }
@@ -1214,7 +1216,7 @@ do_whichof(char *args[], int nargs, enum whichof_t flag,
 FUNCTION(fun_firstof)
 {
   do_whichof(args, nargs, DO_FIRSTOF, buff, bp, executor,
-             caller, enactor, pe_info, !!strcasecmp(called_as, "STRFIRSTOF"));
+             caller, enactor, pe_info, ! !strcasecmp(called_as, "STRFIRSTOF"));
 }
 
 
@@ -1222,7 +1224,7 @@ FUNCTION(fun_firstof)
 FUNCTION(fun_allof)
 {
   do_whichof(args, nargs, DO_ALLOF, buff, bp, executor,
-             caller, enactor, pe_info, !!strcasecmp(called_as, "STRALLOF"));
+             caller, enactor, pe_info, ! !strcasecmp(called_as, "STRALLOF"));
 }
 
 /* Returns a platform-specific timestamp with platform-dependent resolution. */

@@ -145,7 +145,11 @@
 /* All of these are in <stdint.h> if present. Otherwise autoconf
  guesses. */
 
+#undef int8_t
+
 #undef uint8_t
+
+#undef int16_t
 
 #undef uint16_t
 

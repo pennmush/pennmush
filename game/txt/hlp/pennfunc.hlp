@@ -234,7 +234,7 @@ See also: STRINGS
   convsecs()    convutcsecs() convtime()    convutctime() ctime()
   etimefmt()    isdaylight()  mtime()       restarttime() secs()
   starttime()   stringsecs()  time()        timefmt()     timestring()
-  utctime()
+  utctime()     uptime()
 
 & Utility functions
   These functions don't quite fit into any other category.
@@ -250,7 +250,7 @@ See also: STRINGS
   set()         setq()        setr()        slev()        soundex()     
   soundslike()  speak()       stext()       tag()         tagwrap()      
   tel()         testlock()    textentries() textfile()    unsetq()      
-  valid()       wipe()        @@()
+  valid()       wipe()        @@()          uptime()
 & @@()
 & NULL()
   @@(<expression>)
@@ -3143,13 +3143,15 @@ See also: anonymous attributes, map(), step()
 
 See also: div(), fdiv(), lmath()
 & MONEY()
-  money(<object>)
   money(<integer>)
+  money(<object>)
 
-  The first form returns the amount of money <object> has. If <object> is
-  no_pay, the value of the 'max_pennies' @config option is returned. The
-  second form returns the name for a given amount of money, appropriately
-  inflected as singular or plural.
+  If given an integer, money() returns the appropriate name (either singular
+  or plural) for that amount of money, as set in the money_singular and
+  money_plural @config options.
+
+  Otherwise, it returns the amount of money <object> has. If <object> is
+  no_pay, the value of the 'max_pennies' @config option is returned. 
 
   Examples:
     > say money(Javelin)
@@ -5700,6 +5702,7 @@ See also: VECTOR FUNCTIONS
    command     Test for a valid command name for @command/add
    function    Test for a valid function name for @function
    flag        Test for a valid flag/power name for @flag/add and @power/add
+   qreg        Test for a valid name for a q-register.
 
   Note that, for "playername", valid() returns 0 if the name is valid but
   currently in use by a player other than the caller.
@@ -6084,3 +6087,21 @@ See also: ufun(), get(), zone(), zemit(), zwho(), ZONES
   to <new zone> first.
   
 See also: @chzone, zfun(), zwho(), zemit() ZONES
+& UPTIME()
+  UPTIME([<type>])
+  
+  This function returns the time, as a number of seconds, that something
+  happend (or will happen). Exactly what is returned depends on the given
+  <type>, which should be one of:
+  
+    upsince   - The time the MUSH was started. This is the default.
+    reboot    - The time the MUSH was last rebooted.
+    save      - The time the MUSH last saved, or -1 if it hasn't.
+    nextsave  - The time of the next automatic save.
+    dbck      - The time of the next automatic dbck.
+    purge     - The time of the next automatic purge.
+    warnings  - The time of the next automatic warnings check, or -1 if
+                automated warnings are disabled.
+                 
+See also: @uptime, secs(), convsecs(), time(), starttime(), restarttime(), 
+  restarts(), @dbck, @purge, @warnings, @config, @dump, @shutdown

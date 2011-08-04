@@ -1761,21 +1761,22 @@ FUNCTION(fun_home)
 /* ARGSUSED */
 FUNCTION(fun_money)
 {
-  /* Are we asking about something's money? */
-  dbref it = match_result(executor, args[0], NOTYPE, MAT_EVERYTHING);
+  dbref it;
 
+  if (is_integer(args[0])) {
+    int a = parse_integer(args[0]);
+    if (abs(a) == 1)
+      safe_str(MONEY, buff, bp);
+    else
+      safe_str(MONIES, buff, bp);
+    return;
+  }
+  it = match_result(executor, args[0], NOTYPE, MAT_EVERYTHING);
+
+  /* Are we asking about something's money? */
   if (!GoodObject(it)) {
-    /* Well, are we asking for the plural/singular for some amount? */
-    if (is_integer(args[0])) {
-      int a = parse_integer(args[0]);
-      if (abs(a) == 1)
-        safe_str(MONEY, buff, bp);
-      else
-        safe_str(MONIES, buff, bp);
-    } else {
-      /* Guess we're just making a typo or something. */
-      safe_str("#-1", buff, bp);
-    }
+    /* Guess we're just making a typo or something. */
+    safe_str("#-1", buff, bp);
     return;
   }
   /* If the thing in question has unlimited money, respond with the

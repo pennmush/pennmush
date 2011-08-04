@@ -3049,34 +3049,55 @@ player_desc(dbref player)
 void
 do_pemit_port(dbref player, const char *pc, const char *message, int flags)
 {
-  DESC *d;
+  DESC *d = NULL, *last = NULL;
   int port;
+  int total = 0;
+  char *next;
 
   if (!Hasprivs(player)) {
     notify(player, T("Permission denied."));
     return;
   }
 
-  port = atoi(pc);
-  if (port <= 0) {
-    notify(player, T("That's not a port number."));
+  if (!message || !*message || !pc || !*pc)
     return;
-  }
 
-  if (!*message) {
+  next = (char *) pc;
+  do {
+    if (flags & PEMIT_LIST)
+      next = next_in_list(&pc);
+    port = atoi(next);
+
+    if (port <= 0) {
+      notify_format(player, T("'%s' is not a port number."), next);
+    } else {
+      d = port_desc(port);
+      if (!d) {
+        notify(player, T("That port is not active."));
+      } else {
+        queue_string_eol(d, message);
+        total++;
+        last = d;
+      }
+    }
+
+  } while ((flags & PEMIT_LIST) && pc && *pc);
+
+  if (!total)
     return;
-  }
 
-  d = port_desc(port);
-  if (!d) {
-    notify(player, T("That port is not active."));
-    return;
+  if (!(flags & PEMIT_SILENT)) {
+    if (total == 1) {
+      notify_format(player, T("You pemit \"%s\" to %s."), message,
+                    (last
+                     && last->connected ? Name(last->
+                                               player) :
+                     T("a connecting player")));
+    } else {
+      notify_format(player, T("You pemit \"%s\" to %d connections."), message,
+                    total);
+    }
   }
-
-  if (!(flags & PEMIT_SILENT))
-    notify_format(player, T("You pemit \"%s\" to %s."), message,
-                  (d->connected ? Name(d->player) : T("a connecting player")));
-  queue_string_eol(d, message);
 
 }
 
@@ -3667,22 +3688,14 @@ do_who_session(dbref player, char *name)
                     Name(d->player), unparse_dbref(Location(d->player)),
                     time_format_1(now - d->connected_at),
                     time_format_2(now - d->last_time), d->cmds, d->descriptor,
-#ifdef HAS_OPENSSL
-                    d->ssl ? 'S' : ' ',
-#else
-                    ' ',
-#endif
+                    is_ssl_desc(d) ? 'S' : ' ',
                     d->input_chars, d->output_chars, d->output_size);
     } else {
       notify_format(player, "%-16s %6s %9s %5s %5d %3d%c %7lu %7lu %7d",
                     T("Connecting..."), "#-1",
                     time_format_1(now - d->connected_at),
                     time_format_2(now - d->last_time), d->cmds, d->descriptor,
-#ifdef HAS_OPENSSL
-                    d->ssl ? 'S' : ' ',
-#else
-                    ' ',
-#endif
+                    is_ssl_desc(d) ? 'S' : ' ',
                     d->input_chars, d->output_chars, d->output_size);
     }
   }
@@ -5645,12 +5658,22 @@ file_watch_init_in(void)
     im_destroy(watchtable);
     watchtable = NULL;
   }
-
 #ifdef HAVE_INOTIFY_INIT1
-  watch_fd = inotify_init1(IN_NONBLOCK);
+  watch_fd = inotify_init1(IN_NONBLOCK | IN_CLOEXEC);
 #else
-  if ((watch_fd = inotify_init()) >= 0)
+  if ((watch_fd = inotify_init()) >= 0) {
+    int flags;
+
     make_nonblocking(watch_fd);
+    flags = fcntl(watch_fd, F_GETFD);
+    if (flags < 0)
+      penn_perror("file_watch_init_in: fcntl F_GETFD");
+    else {
+      flags |= FD_CLOEXEC;
+      if (fcntl(watch_fd, F_SETFD, flags) < 0)
+        penn_perror("file_watch_init_in: fcntl F_SETFD");
+    }
+  }
 #endif
 
   if (watch_fd < 0) {
@@ -5669,24 +5692,42 @@ file_watch_init_in(void)
 static void
 file_watch_event_in(int fd)
 {
-  uint8_t raw[BUFFER_LEN];
+  uint8_t raw[BUFFER_LEN], *ptr;
+  int len, lastwd = -1;
 
-  while (read(fd, raw, sizeof raw) > 0) {
-    struct inotify_event *ev = (struct inotify_event *) raw;
-    const char *file = im_find(watchtable, ev->wd);
-    if (file) {
-      if (ev->mask != IN_IGNORED) {
-        do_rawlog(LT_ERR, "Got inotify status change for file '%s'", file);
-        if (fcache_read_one(file)) {
-          do_rawlog(LT_TRACE, "Updated cached copy of %s.", file);
-          WATCH(file);
-        } else if (help_reindex_by_name(file)) {
-          do_rawlog(LT_TRACE, "Reindexing help file %s.", file);
-          WATCH(file);
-        } else {
-          do_rawlog(LT_ERR,
-                    "Got status change for file '%s' but I don't know what to do with it!",
-                    file);
+  while ((len = read(fd, raw, sizeof raw)) > 0) {
+    ptr = raw;
+    while (len > 0) {
+      int thislen;
+      struct inotify_event *ev = (struct inotify_event *) ptr;
+      const char *file = im_find(watchtable, ev->wd);
+
+      thislen = sizeof(struct inotify_event) + ev->len;
+      len -= thislen;
+      ptr += thislen;
+
+      if (file) {
+        if (!(ev->mask & IN_IGNORED)) {
+          do_rawlog(LT_TRACE, "Got inotify status change for file '%s': 0x%x",
+                    file, ev->mask);
+          if (ev->mask & IN_DELETE_SELF) {
+            inotify_rm_watch(fd, ev->wd);
+            im_delete(watchtable, ev->wd);
+          }
+          if (lastwd == ev->wd)
+            continue;
+          if (fcache_read_one(file)) {
+            do_rawlog(LT_TRACE, "Updated cached copy of %s.", file);
+            WATCH(file);
+          } else if (help_reindex_by_name(file)) {
+            do_rawlog(LT_TRACE, "Reindexing help file %s.", file);
+            WATCH(file);
+          } else {
+            do_rawlog(LT_ERR,
+                      "Got status change for file '%s' but I don't know what to do with it!",
+                      file);
+          }
+          lastwd = ev->wd;
         }
       }
     }

@@ -141,6 +141,7 @@ ct_exit(dbref player, dbref i, warn_type flags)
   dbref j, src, dst;
   int count = 0;
   int lt;
+  bool global_return = 0;
 
   /* i must be an exit, must be in a valid room, and must lead to a
    * different room
@@ -198,18 +199,32 @@ ct_exit(dbref player, dbref i, warn_type flags)
   if (!GoodObject(dst))
     return;
 
-  for (j = Exits(dst); GoodObject(j); j = Next(j))
+  for (j = Exits(dst); GoodObject(j); j = Next(j)) {
+    if (Location(j) == src)
+      count++;
+  }
+  for (j = Exits(MASTER_ROOM); GoodObject(j); j = Next(j)) {
     if (Location(j) == src) {
-      if (!(flags & W_EXIT_MULTIPLE))
-        return;
-      else
-        count++;
+      global_return = 1;
+      count++;
     }
-  if ((count == 0) && (flags & W_EXIT_ONEWAY))
-    complain(player, i, "exit-oneway", T("exit has no return exit"));
-  else if ((count > 1) && (flags & W_EXIT_MULTIPLE))
-    complain(player, i, "exit-multiple",
-             T("exit has multiple (%d) return exits"), count);
+  }
+
+  if (count <= 1 && flags & W_EXIT_ONEWAY) {
+    if (global_return)
+      complain(player, i, "exit-oneway",
+               T("exit only has a global return exit"));
+    else if (count == 0)
+      complain(player, i, "exit-oneway", T("exit has no return exit"));
+  } else if ((count > 1) && (flags & W_EXIT_MULTIPLE)) {
+    if (global_return)
+      complain(player, i, "exit-multiple",
+               T("exit has multiple (%d) return exits including global exits"),
+               count);
+    else
+      complain(player, i, "exit-multiple",
+               T("exit has multiple (%d) return exits"), count);
+  }
 }
 
 

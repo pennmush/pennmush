@@ -129,7 +129,7 @@ extern void do_cpattr
 #define EDIT_FIRST   1  /**< Only edit the first occurrence in each attribute. */
 #define EDIT_CHECK   2  /**< Don't actually edit the attr, just show what would happen if we did */
 #define EDIT_QUIET   4  /**< Don't show new values, just report total changes */
-//enum edit_type { EDIT_FIRST, EDIT_ALL };
+
 extern void do_gedit(dbref player, char *it, char **argv, int flags);
 extern void do_trigger(dbref player, char *object, char **argv,
                        MQUE *queue_entry);
@@ -152,10 +152,12 @@ void do_page(dbref executor, const char *arg1, const char *arg2,
 #define PEMIT_SILENT 0x1  /**< Don't show confirmation msg to speaker */
 #define PEMIT_LIST   0x2  /**< Recipient is a list of names */
 #define PEMIT_SPOOF  0x4  /**< Show sound as being from %#, not %! */
-#define PEMIT_PROMPT 0x8  /**< Add a telnet GOAHEAD to the end. \@prompt */
+#define PEMIT_PROMPT 0x8  /**< Add a telnet GOAHEAD to the end. For \@prompt */
 extern void do_emit(dbref player, const char *message, int flags);
 extern void do_pemit(dbref player, char *target, const char *message,
                      int flags, struct format_msg *format);
+#define do_pemit_list(player,target,message,flags) \
+        do_pemit(player,target,message,flags|PEMIT_LIST,NULL)
 extern void do_remit(dbref player, char *rooms, const char *message,
                      int flags, struct format_msg *format);
 extern void do_lemit(dbref player, const char *message, int flags);

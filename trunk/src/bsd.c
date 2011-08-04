@@ -3101,20 +3101,16 @@ do_pemit_port(dbref player, const char *pc, const char *message, int flags)
 
 /** Page a specified socket.
  * \param executor the executor.
- * \param enactor the enactor.
  * \param pc string containing port number to send message to.
  * \param message message to send.
- * \param eval_msg Should the message be evaluated?
  */
 void
-do_page_port(dbref executor, dbref enactor, const char *pc, const char *message,
-             bool eval_msg)
+do_page_port(dbref executor, const char *pc, const char *message)
 {
   int p, key;
   DESC *d;
   const char *gap;
   char tbuf[BUFFER_LEN], *tbp = tbuf;
-  char mbuf[BUFFER_LEN], *mbp = mbuf;
   dbref target = NOTHING;
 
   if (!Hasprivs(executor)) {
@@ -3122,38 +3118,24 @@ do_page_port(dbref executor, dbref enactor, const char *pc, const char *message,
     return;
   }
 
-  process_expression(tbuf, &tbp, &pc, executor, enactor, enactor, PE_DEFAULT,
-                     PT_DEFAULT, NULL);
-  *tbp = '\0';
-  p = atoi(tbuf);
-  tbp = tbuf;
+  p = atoi(pc);
 
   if (p <= 0) {
     notify(executor, T("That's not a port number."));
     return;
   }
 
-  if (!message) {
+  if (!message || !*message) {
     notify(executor, T("What do you want to page with?"));
     return;
   }
 
-  if (eval_msg) {
-    process_expression(mbuf, &mbp, &message, executor, enactor, enactor,
-                       PE_DEFAULT, PT_DEFAULT, NULL);
-    *mbp = '\0';
-    message = mbuf;
-  }
-
-  if (!*message) {
-    notify(executor, T("What do you want to page with?"));
-    return;
-  }
 
   gap = " ";
   switch (*message) {
   case SEMI_POSE_TOKEN:
     gap = "";
+    /* Fall through */
   case POSE_TOKEN:
     key = 1;
     break;

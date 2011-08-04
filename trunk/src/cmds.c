@@ -1469,11 +1469,10 @@ COMMAND(cmd_leave)
 COMMAND(cmd_page)
 {
   if (SW_ISSET(sw, SWITCH_PORT))
-    do_page_port(executor, enactor, arg_left, arg_right,
-                 !SW_ISSET(sw, SWITCH_NOEVAL));
+    do_page_port(executor, arg_left, arg_right);
   else
-    do_page(executor, arg_left, arg_right, enactor, SW_ISSET(sw, SWITCH_NOEVAL),
-            SW_ISSET(sw, SWITCH_OVERRIDE), rhs_present);
+    do_page(executor, arg_left, arg_right, SW_ISSET(sw, SWITCH_OVERRIDE),
+            rhs_present);
 }
 
 COMMAND(cmd_pose)

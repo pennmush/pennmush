@@ -355,8 +355,7 @@ COMLIST commands[] = {
   {"LEAVE", NULL, cmd_leave, CMD_T_PLAYER | CMD_T_THING, 0, 0},
 
   {"PAGE", "LIST NOEVAL PORT OVERRIDE", cmd_page,
-   CMD_T_ANY | CMD_T_RS_NOPARSE | CMD_T_NOPARSE | CMD_T_EQSPLIT |
-   CMD_T_NOGAGGED, 0, 0},
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"POSE", "NOEVAL NOSPACE", cmd_pose, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"SCORE", NULL, cmd_score, CMD_T_ANY, 0, 0},
   {"SAY", "NOEVAL", cmd_say, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},

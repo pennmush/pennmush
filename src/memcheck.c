@@ -48,12 +48,12 @@ enum {
 /** A skip list for storing memory allocation counts */
 struct mem_check_node {
   int ref_count;                /**< Number of allocations of this type. */
-  int link_count;
-  MEM *links[MAX_LINKS];         /**< Pointer to next in linked list. */
-  char ref_name[REF_NAME_LEN];    /**< Name of this allocation type. */
+  int link_count;               /**< Number of forward links */
+  char ref_name[REF_NAME_LEN];  /**< Name of this allocation type. */
+  MEM *links[MAX_LINKS];        /**< Forward links to further nodes in skiplist. */
 };
 
-static MEM memcheck_head_storage = { 0, MAX_LINKS, {NULL}, "" };
+static MEM memcheck_head_storage = { 0, MAX_LINKS, {'\0'}, {NULL} };
 static MEM *memcheck_head = &memcheck_head_storage;
 
 slab *memcheck_slab = NULL;
@@ -73,11 +73,8 @@ lookup_check(const char *ref)
   if (!memcheck_head->links[0])
     return NULL;
 
-  for (n = memcheck_head->link_count - 1; n >= 0; n -= 1)
-    if (memcheck_head->links[n])
-      break;
-
   links = memcheck_head->links;
+  n = memcheck_head->link_count - 1;
 
   while (n >= 0) {
     MEM *chk;

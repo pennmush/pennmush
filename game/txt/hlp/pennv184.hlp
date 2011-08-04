@@ -26,6 +26,8 @@ Fixes:
  * Better fix for the DBREFLIST issue fixed in p6. [SW]
  * @pemit/list stopped reporting when it failed to match an object in p5.
    Reported by Padraic. [MG]
+ * 'page' evaluated its args incorrectly when used in an $-command.
+   Reported by Invidia@Dune3. [MG]
 
 & 1.8.4p6
 Version 1.8.4 patchlevel 6                                 Jul 29,  2011

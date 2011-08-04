@@ -762,14 +762,11 @@ messageformat(dbref player, const char *attribute, dbref enactor, int flags,
  * \param executor the executor.
  * \param arg1 the list of players to page.
  * \param arg2 the message to page.
- * \param enactor the object that caused the command to run.
- * \param noeval if 1, page/noeval.
  * \param override if 1, page/override.
  * \param has_eq if 1, the command had an = in it.
  */
 void
-do_page(dbref executor, const char *arg1, const char *arg2, dbref enactor,
-        int noeval, int override, int has_eq)
+do_page(dbref executor, const char *arg1, const char *arg2, int override, int has_eq)
 {
   dbref target;
   const char *message;
@@ -780,7 +777,6 @@ do_page(dbref executor, const char *arg1, const char *arg2, dbref enactor,
   char *namebuf, *nbp;
   dbref good[100];
   int gcount = 0;
-  char *msgbuf, *mb;
   char *nsbuf = NULL, *tosend;
   char *head;
   char *hp = NULL;
@@ -800,11 +796,8 @@ do_page(dbref executor, const char *arg1, const char *arg2, dbref enactor,
   nbp = namebuf = (char *) mush_malloc(BUFFER_LEN, "page_buff");
 
   if (*arg1 && has_eq) {
-    /* page to=[msg]. Always evaluate to, maybe evaluate msg */
-    process_expression(tbuf2, &tp2, &arg1, executor, enactor, enactor,
-                       PE_DEFAULT, PT_DEFAULT, NULL);
-    *tp2 = '\0';
-    head = tbuf2;
+    /* page to=[msg] */
+    head = (char *) arg1;
     message = arg2;
   } else if (arg2 && *arg2) {
     /* page =msg */
@@ -913,16 +906,13 @@ do_page(dbref executor, const char *arg1, const char *arg2, dbref enactor,
     }
   }
 
-  /* Reset tbuf2 to use later */
-  tp2 = tbuf2;
-
   /* We now have an array of good[] dbrefs, a gcount of the good ones,
    * and a tbuf with bad ones.
    */
 
-  /* We don't know what the heck's going on here, but we're not paging
-   * anyone, this looks like a spam attack. */
   if (gcount == 99) {
+    /* We don't know what the heck's going on here, but we're not paging
+     * anyone, this looks like a spam attack. */
     notify(executor, T("You're trying to page too many people at once."));
     mush_free(tbuf, "page_buff");
     mush_free(tbuf2, "page_buff");
@@ -952,20 +942,6 @@ do_page(dbref executor, const char *arg1, const char *arg2, dbref enactor,
 
   /* Okay, we have a real page, the player can pay for it, and it's
    * actually going to someone. We're in this for keeps now. */
-
-  /* Evaluate the message if we need to. */
-  if (noeval) {
-    msgbuf = NULL;
-  } else {
-    mb = msgbuf = (char *) mush_malloc(BUFFER_LEN, "page_buff");
-    if (!msgbuf)
-      mush_panic("Unable to allocate memory in do_page");
-
-    process_expression(msgbuf, &mb, &message, executor, enactor, enactor,
-                       PE_DEFAULT, PT_DEFAULT, NULL);
-    *mb = '\0';
-    message = msgbuf;
-  }
 
   if (Haven(executor))
     notify(executor, T("You are set HAVEN and cannot receive pages."));
@@ -1099,8 +1075,6 @@ do_page(dbref executor, const char *arg1, const char *arg2, dbref enactor,
   mush_free(tbuf, "page_buff");
   mush_free(tbuf2, "page_buff");
   mush_free(namebuf, "page_buff");
-  if (msgbuf)
-    mush_free(msgbuf, "page_buff");
   if (nsbuf)
     mush_free(nsbuf, "page_buff");
   if (hp)

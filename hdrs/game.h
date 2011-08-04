@@ -34,8 +34,7 @@ void hide_player(dbref player, int hide, char *victim);
 enum motd_type { MOTD_MOTD, MOTD_WIZ, MOTD_DOWN, MOTD_FULL, MOTD_LIST };
 void do_motd(dbref player, enum motd_type key, const char *message);
 void do_poll(dbref player, const char *message, int clear);
-void do_page_port(dbref executor, dbref enactor, const char *pc,
-                  const char *msg, bool eval_msg);
+void do_page_port(dbref executor,const char *pc, const char *msg);
 void do_pemit_port(dbref player, const char *pc, const char *msg, int flags);
 /* From cque.c */
 void do_wait
@@ -148,7 +147,7 @@ enum wall_type { WALL_ALL, WALL_RW, WALL_WIZ };
 void do_wall(dbref player, const char *message, enum wall_type target,
              int emit);
 void do_page(dbref executor, const char *arg1, const char *arg2,
-             dbref enactor, int noeval, int override, int has_eq);
+             int override, int has_eq);
 #define PEMIT_SILENT 0x1  /**< Don't show confirmation msg to speaker */
 #define PEMIT_LIST   0x2  /**< Recipient is a list of names */
 #define PEMIT_SPOOF  0x4  /**< Show sound as being from %#, not %! */

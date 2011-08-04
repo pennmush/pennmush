@@ -532,19 +532,13 @@ look_room(dbref player, dbref loc, enum look_type style)
       } else
         look_description(player, loc, NULL, "DESCRIBE", "DESCFORMAT");
     }
-  }
-  /* tell him the description */
-  else {
-    if (style == LOOK_NORMAL || style == LOOK_AUTO) {
-      if (style == LOOK_NORMAL || !Terse(player)) {
-        look_description(player, loc, NULL, "DESCRIBE", "DESCFORMAT");
-        did_it(player, loc, NULL, NULL, "ODESCRIBE", NULL,
-               "ADESCRIBE", NOTHING);
-      } else
-        did_it(player, loc, NULL, NULL, "ODESCRIBE", NULL, "ADESCRIBE",
-               NOTHING);
-    } else if (style != LOOK_CLOUDY)
+  } else if (style == LOOK_NORMAL || style == LOOK_AUTO) {
+    if (style == LOOK_NORMAL || !Terse(player)) {
       look_description(player, loc, NULL, "DESCRIBE", "DESCFORMAT");
+      did_it(player, loc, NULL, NULL, "ODESCRIBE", NULL, "ADESCRIBE", NOTHING);
+    }
+  } else if (style != LOOK_CLOUDY) {
+    did_it(player, loc, NULL, NULL, "ODESCRIBE", NULL, "ADESCRIBE", NOTHING);
   }
   /* tell him the appropriate messages if he has the key */
   if (IsRoom(loc) && (style == LOOK_NORMAL || style == LOOK_AUTO)) {
@@ -796,7 +790,6 @@ do_examine(dbref player, const char *xname, enum exam_type flag, int all,
   char *r;
   dbref content;
   dbref exit_dbref;
-  const char *real_name = NULL;
   char *name = NULL;
   char *attrib_name = NULL;
   char *tp;
@@ -814,11 +807,9 @@ do_examine(dbref player, const char *xname, enum exam_type flag, int all,
       *attrib_name = '\0';
       attrib_name++;
     }
-    real_name = name;
     /* look it up */
     if ((thing =
-         noisy_match_result(player, real_name, NOTYPE,
-                            MAT_EVERYTHING)) == NOTHING) {
+         noisy_match_result(player, name, NOTYPE, MAT_EVERYTHING)) == NOTHING) {
       mush_free(name, "de.string");
       return;
     }

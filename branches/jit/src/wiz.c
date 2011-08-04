@@ -97,6 +97,7 @@ static void
 
 
 
+
 sitelock_player(dbref player, const char *name, dbref who, uint32_t can,
                 uint32_t cant);
 
@@ -1450,9 +1451,11 @@ FUNCTION(fun_quota)
   int owned;
   /* Tell us player's quota */
   dbref thing;
-  dbref who = lookup_player(args[0]);
+  dbref who;
+  who =
+    noisy_match_result(executor, args[0], TYPE_PLAYER,
+                       MAT_TYPE | MAT_PMATCH | MAT_ME);
   if ((who == NOTHING) || !IsPlayer(who)) {
-    notify(executor, T("Couldn't find that player."));
     safe_str("#-1", buff, bp);
     return;
   }

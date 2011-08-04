@@ -1395,22 +1395,49 @@ FUNCTION(fun_cat)
 FUNCTION(fun_remove)
 {
   char sep;
-  char lbuff[BUFFER_LEN];
-  char *r, *s;
+  char **list, **rem;
+  int list_counter, rem_counter, list_total, rem_total;
+  int skip[MAX_SORTSIZE];
+  int first = 1;
 
   /* zap word from string */
 
   if (!delim_check(buff, bp, nargs, args, 3, &sep))
     return;
-  r = lbuff;
-  safe_str(args[0], lbuff, &r);
-  *r = '\0';
 
-  s = args[1];
-  while ((r = split_token(&s, sep)) != NULL) {
-    memcpy(lbuff, remove_word(lbuff, r, sep), BUFFER_LEN);
+  list = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
+  rem = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
+
+  list_total = list2arr_ansi(list, MAX_SORTSIZE, args[0], sep, 1);
+  rem_total = list2arr_ansi(rem, MAX_SORTSIZE, args[1], sep, 1);
+
+  memset(skip, 0, sizeof(int) * MAX_SORTSIZE);
+
+  for (rem_counter = 0; rem_counter < rem_total; rem_counter++) {
+    for (list_counter = 0; list_counter < list_total; list_counter++) {
+      if (!skip[list_counter]
+          && !ansi_strcmp(rem[rem_counter], list[list_counter])) {
+        skip[list_counter] = 1;
+        break;
+      }
+    }
   }
-  safe_str(lbuff, buff, bp);
+
+  for (list_counter = 0; list_counter < list_total; list_counter++) {
+    if (skip[list_counter])
+      continue;
+    if (first)
+      first = 0;
+    else
+      safe_chr(sep, buff, bp);
+    safe_str(list[list_counter], buff, bp);
+  }
+
+  freearr(list, list_total);
+  freearr(rem, rem_total);
+  mush_free(list, "ptrarray");
+  mush_free(rem, "ptrarray");
+
 }
 
 /* ARGSUSED */
@@ -2442,7 +2469,7 @@ FUNCTION(fun_table)
         safe_str("\n", buff, bp);
       else
         safe_str("\r\n", buff, bp);
-      col = field_width + !!osep;
+      col = field_width + ! !osep;
     } else {
       if (osep)
         safe_chr(osep, buff, bp);

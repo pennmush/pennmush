@@ -130,36 +130,39 @@
  *                   30719 fill exact
  *                   69243 fill inexact
  * \endverbatim
+ *
  * First, the number of allocated chunks is given, along with their
- * total size and overhead.  Then, the allocated chunks are broken
- * up by size-range; short chunks (2 to 63 bytes) with two bytes of
- * overhead each, medium chunks (64 to 8191 bytes) with three bytes
- * of overhead each, and long chunks (8192 to ~64K bytes) with four
- * bytes of overhead each.  Rounding out the individual chunk statistics
- * is the number of free chunks, their total size, and the amount of
+ * total size and overhead.  Then, the allocated chunks are broken up
+ * by size-range; short chunks (2 to 63 bytes) with two bytes of
+ * overhead each, medium chunks (64 to 8191 bytes) with three bytes of
+ * overhead each, and long chunks (8192 to ~64K bytes) with four bytes
+ * of overhead each.  Rounding out the individual chunk statistics is
+ * the number of free chunks, their total size, and the amount of
  * fragmented free space (free space not in the largest free chunk for
  * its region is considered fragmented).
  *
- * Next comes statistics on regions: the number of regions in use
- * and the number held in the memory cache.  All regions not in the
- * cache are paged out to disk.  Paging statistics follow, listing
- * the number of times a region has been moved out of or into
- * memory cache.  After that, the total amount of storage (in memory
- * or on disk) used is given, along with the saturation rate (where
- * saturation is indicated by what fraction of the used space is
- * actually allocated in chunks).
+ * After that, the total amount of storage (in memory or on disk) used
+ * is given, along with the saturation rate (where saturation is
+ * indicated by what fraction of the used space is actually allocated
+ * in chunks).
+ *
+ * Next comes statistics on regions: the number of regions in use and
+ * the number held in the memory cache.  All regions not in the cache
+ * are paged out to disk.  Paging statistics follow, listing the
+ * number of times a region has been moved out of or into memory
+ * cache.
  *
  * Finally comes statistics on migration and the migration period.
  * The period number is listed, along with the total number of
  * dereferences in the period and how many chunks have the maximum
- * dereference count of 255.  Then the amount of migration movement
- * is listed, both in total and broken up by category.  Slides occur
- * when an allocation is shifted to the other side of a neighboring
- * free space.  Away moves are made when an allocation is extremely
- * unhappy where it is, and is pushed out to somewhere else.  Fills
- * are when an allocation is moved in order to fill in a free space;
- * the space can be either exactly filled by the move, or inexactly
- * filled (leaving some remaining free space).
+ * dereference count of 255.  Then the amount of migration movement is
+ * listed, both in total and broken up by category.  Slides occur when
+ * an allocation is shifted to the other side of a neighboring free
+ * space.  Away moves are made when an allocation is extremely unhappy
+ * where it is, and is pushed out to somewhere else.  Fills are when
+ * an allocation is moved in order to fill in a free space; the space
+ * can be either exactly filled by the move, or inexactly filled
+ * (leaving some remaining free space).
  *
  *
  * <h3>Histograms:</h3>
@@ -517,7 +520,7 @@ ChunkLen(uint16_t region, uint16_t offset)
   return CPLen(ChunkPointer(region, offset));
 }
 
-static uint16_t
+static inline uint16_t
 CPFullLen(const unsigned char *cptr)
 {
   if (*cptr & CHUNK_TAG1_MASK) {

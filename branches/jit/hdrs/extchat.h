@@ -146,11 +146,6 @@ struct chanlist {
 #define CHANNEL_NOCEMIT 0x400U  /* Disallow @cemit */
 #define CHANNEL_INTERACT 0x800U /* Filter channel output through interactions */
 #define CHANNEL_DEFAULT_FLAGS   (CHANNEL_PLAYER)
-#define CL_JOIN 0x1
-#define CL_SPEAK 0x2
-#define CL_MOD 0x4
-#define CL_SEE 0x8
-#define CL_HIDE 0x10
 #define CHANNEL_COST (options.chan_cost)
 #define MAX_PLAYER_CHANS (options.max_player_chans)
 #define MAX_CHANNELS (options.max_channels)
@@ -220,43 +215,46 @@ struct chanlist {
 enum cmatch_type { CMATCH_NONE, CMATCH_EXACT, CMATCH_PARTIAL, CMATCH_AMBIG };
 #define CMATCHED(i) (((i) == CMATCH_EXACT) | ((i) == CMATCH_PARTIAL))
 
-     /* Some globals */
+enum clock_type { CLOCK_JOIN, CLOCK_SPEAK, CLOCK_SEE, CLOCK_HIDE, CLOCK_MOD };
+
+/* Some globals */
 extern int num_channels;
-extern CHANUSER *onchannel(dbref who, CHAN *c);
-extern void init_chatdb(void);
+CHANUSER *onchannel(dbref who, CHAN *c);
+void init_chatdb(void);
 int load_chatdb(PENNFILE *fp);
 int save_chatdb(PENNFILE *fp);
-extern void do_cemit
-  (dbref player, const char *name, const char *msg, int flags);
-extern void do_chan_user_flags
+void do_cemit(dbref player, const char *name, const char *msg, int flags);
+void do_chan_user_flags
   (dbref player, char *name, const char *isyn, int flag, int silent);
-extern void do_chan_wipe(dbref player, const char *name);
-extern void do_chan_lock
-  (dbref player, const char *name, const char *lockstr, int whichlock);
-extern void do_chan_what(dbref player, const char *partname);
-extern void do_chan_desc(dbref player, const char *name, const char *title);
-extern void do_chan_title(dbref player, const char *name, const char *title);
-extern void do_chan_recall(dbref player, const char *name, char *lineinfo[],
-                           int quiet);
-extern void do_chan_buffer(dbref player, const char *name, const char *lines);
-extern void init_chat(void);
-extern void do_channel
+void do_chan_wipe(dbref player, const char *name);
+void do_chan_lock
+  (dbref player, const char *name, const char *lockstr,
+   enum clock_type whichlock);
+void do_chan_what(dbref player, const char *partname);
+void do_chan_desc(dbref player, const char *name, const char *title);
+void do_chan_title(dbref player, const char *name, const char *title);
+void do_chan_recall(dbref player, const char *name, char *lineinfo[],
+                    int quiet);
+void do_chan_buffer(dbref player, const char *name, const char *lines);
+void init_chat(void);
+void do_channel
   (dbref player, const char *name, const char *target, const char *com);
-extern void do_chat(dbref player, CHAN *chan, const char *arg1);
-extern void do_chan_admin
-  (dbref player, char *name, const char *perms, int flag);
-extern enum cmatch_type find_channel(const char *p, CHAN **chan, dbref player);
-extern enum cmatch_type find_channel_partial(const char *p, CHAN **chan,
-                                             dbref player);
-extern void do_channel_list(dbref player, const char *partname);
-extern int do_chat_by_name
+void do_chat(dbref player, CHAN *chan, const char *arg1);
+enum chan_admin_op { CH_ADMIN_ADD, CH_ADMIN_DEL, CH_ADMIN_RENAME,
+    CH_ADMIN_PRIV };
+void do_chan_admin(dbref player, char *name, const char *perms,
+                   enum chan_admin_op flag);
+enum cmatch_type find_channel(const char *p, CHAN **chan, dbref player);
+enum cmatch_type find_channel_partial(const char *p, CHAN **chan, dbref player);
+void do_channel_list(dbref player, const char *partname);
+int do_chat_by_name
   (dbref player, const char *name, const char *msg, int source);
-extern void do_chan_decompile(dbref player, const char *name, int brief);
-extern void do_chan_chown(dbref player, const char *name, const char *newowner);
-extern const char *channel_description(dbref player);
+void do_chan_decompile(dbref player, const char *name, int brief);
+void do_chan_chown(dbref player, const char *name, const char *newowner);
+const char *channel_description(dbref player);
 
-enum clock_type { CLOCK_JOIN, CLOCK_SPEAK, CLOCK_SEE, CLOCK_HIDE, CLOCK_MOD };
-extern int eval_chan_lock(CHAN *c, dbref p, enum clock_type type);
+
+int eval_chan_lock(CHAN *c, dbref p, enum clock_type type);
 
 /** Ways to match channels by partial name */
 enum chan_match_type {

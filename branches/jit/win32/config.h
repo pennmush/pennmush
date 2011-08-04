@@ -97,7 +97,11 @@
 
 #define socklen_t unsigned long
 
+#define int8_t __int8
+
 #define uint8_t unsigned __int8
+
+#define int16_t __int16
 
 #define uint16_t unsigned __int16
 

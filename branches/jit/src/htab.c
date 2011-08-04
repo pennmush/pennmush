@@ -663,7 +663,9 @@ hash_flush(HASHTAB *htab, int size)
   }
   htab->entries = 0;
   size = next_prime_after(size);
-  resized = mush_realloc(htab->buckets, sizeof(struct hash_bucket) * size, "hash.buckets");
+  resized =
+    mush_realloc(htab->buckets, sizeof(struct hash_bucket) * size,
+                 "hash.buckets");
   if (resized) {
     htab->buckets = resized;
     htab->hashsize = size;

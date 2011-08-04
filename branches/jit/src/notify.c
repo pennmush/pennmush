@@ -1314,7 +1314,7 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
 
       /* If object is flagged AUDIBLE and has a @FORWARDLIST, send it on */
       if ((!(flags & NA_NORELAY) || (flags & NA_PUPPET_OK)) && Audible(target)
-          && atr_get_noparent(target, "FORWARDLIST") != NULL
+          && atr_get(target, "FORWARDLIST") != NULL
           && !filter_found(target, fullmsg, 0)) {
         notify_list(speaker, target, "FORWARDLIST", fullmsg, flags);
       }

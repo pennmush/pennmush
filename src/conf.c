@@ -911,7 +911,7 @@ append_restriction(const char *r, const char *what, const char *opts)
    get changed -- but it'll catch most cases.
 */
 static void
-save_config_option(PENNCONF *cp)
+save_config_option(PENNCONF *cp __attribute__ ((__unused__)))
 {
 #if defined(HAVE_ED)
   FILE *ed;

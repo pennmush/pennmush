@@ -577,6 +577,7 @@ FUNTAB flist[] = {
   {"ULOCAL", fun_ufun, 1, 11, FN_REG | FN_LOCALIZE},
   {"UNIQUE", fun_unique, 1, 4, FN_REG},
   {"UNSETQ", fun_unsetq, 0, 1, FN_REG},
+  {"UPTIME", fun_uptime, 0, 1, FN_STRIPANSI},
   {"UTCTIME", fun_time, 0, 0, FN_REG},
   {"V", fun_v, 1, 1, FN_REG | FN_STRIPANSI},
   {"VALID", fun_valid, 2, 2, FN_REG},
@@ -1005,12 +1006,12 @@ apply_restrictions(unsigned int result, const char *xres)
 {
   int flag, clear = 0;
   char *tp;
-  char *restriction, *rsave;
+  char *restriction;
 
   if (!xres || !*xres)
     return 0;
 
-  rsave = restriction = GC_STRDUP(xres);
+  restriction = GC_STRDUP(xres);
 
   while (restriction && *restriction) {
     if ((tp = strchr(restriction, ' ')))

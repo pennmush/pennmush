@@ -681,7 +681,7 @@ empty_attrs yes
 ###
 
 # Should we treat a missing number as 0 in things like add(3,)?
-# For TinyMUSH compatibility, the answer is 'no'.
+# For MUX compatibility, the answer is 'yes'.
 null_eq_zero no
 
 # In PennMUSH, strings and db#s larger than #0 have traditionally

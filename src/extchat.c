@@ -104,11 +104,13 @@ CHAN *channels;    /**< Pointer to channel list */
 
 extern int rhs_present;         /* from command.c */
 
+/* Player must come before Admin and Wizard, otherwise @chan/what
+ * will fail to report when Admin channels are also set Player */
 static PRIV priv_table[] = {
   {"Disabled", 'D', CHANNEL_DISABLED, CHANNEL_DISABLED},
+  {"Player", 'P', CHANNEL_PLAYER, CHANNEL_PLAYER},
   {"Admin", 'A', CHANNEL_ADMIN | CHANNEL_PLAYER, CHANNEL_ADMIN},
   {"Wizard", 'W', CHANNEL_WIZARD | CHANNEL_PLAYER, CHANNEL_WIZARD},
-  {"Player", 'P', CHANNEL_PLAYER, CHANNEL_PLAYER},
   {"Thing", 'T', CHANNEL_OBJECT, CHANNEL_OBJECT},
   {"Object", 'O', CHANNEL_OBJECT, CHANNEL_OBJECT},
   {"Quiet", 'Q', CHANNEL_QUIET, CHANNEL_QUIET},
@@ -150,17 +152,22 @@ onchannel(dbref who, CHAN *ch)
   return NULL;
 }
 
+
 /** A macro to test if a channel exists and, if not, to notify. */
-#define test_channel(player,name,chan) \
+#define test_channel_fun(player,name,chan,buff,bp) \
    do { \
     chan = NULL; \
     switch (find_channel(name,&chan,player)) { \
     case CMATCH_NONE: \
       notify(player, T ("CHAT: I don't recognize that channel.")); \
+      if (buff) \
+        safe_str(T("#-1 NO SUCH CHANNEL"), buff, bp); \
       return; \
     case CMATCH_AMBIG: \
       notify(player, T("CHAT: I don't know which channel you mean.")); \
       list_partial_matches(player, name, PMATCH_ALL); \
+      if (buff) \
+        safe_str(T("#-2 AMBIGUOUS CHANNEL"), buff, bp); \
       return; \
     case CMATCH_EXACT: \
     case CMATCH_PARTIAL: \
@@ -168,6 +175,9 @@ onchannel(dbref who, CHAN *ch)
       break; \
      } \
     } while (0)
+
+#define test_channel(player,name,chan) test_channel_fun(player,name,chan,NULL,NULL);
+
 
 /** A macro to test if a channel exists and player's on it, and,
  * if not, to notify. */
@@ -1033,7 +1043,7 @@ list_partial_matches(dbref player, const char *name, enum chan_match_type type)
     if (!Chan_Can_See(p, player))
       continue;
     if ((type == PMATCH_ALL) || ((type == PMATCH_ON)
-                                 ? !!onchannel(player, p)
+                                 ? ! !onchannel(player, p)
                                  : !onchannel(player, p))) {
       cleanp = remove_markup(ChanName(p), NULL);
       if (string_prefix(cleanp, cleanname)) {
@@ -1688,10 +1698,11 @@ do_cemit(dbref player, const char *name, const char *msg, int flags)
  * \param player the enactor.
  * \param name the name of the channel.
  * \param perms the permissions to set on an added/priv'd channel, the newname for a renamed channel, or on/off for a quieted channel.
- * \param flag switch indicator: 0=add, 1=delete, 2=rename, 3=priv
+ * \param flag what to do with the channel.
  */
 void
-do_chan_admin(dbref player, char *name, const char *perms, int flag)
+do_chan_admin(dbref player, char *name, const char *perms,
+              enum chan_admin_op flag)
 {
   CHAN *chan = NULL, *temp = NULL;
   privbits type;
@@ -1717,7 +1728,7 @@ do_chan_admin(dbref player, char *name, const char *perms, int flag)
   if (flag)
     test_channel(player, name, chan);
   switch (flag) {
-  case 0:
+  case CH_ADMIN_ADD:
     /* add a channel */
     if (num_channels == MAX_CHANNELS) {
       notify(player, T("No more room for channels."));
@@ -1780,7 +1791,7 @@ do_chan_admin(dbref player, char *name, const char *perms, int flag)
     insert_channel(&chan);
     notify_format(player, T("CHAT: Channel <%s> created."), ChanName(chan));
     break;
-  case 1:
+  case CH_ADMIN_DEL:
     /* remove a channel */
     /* Check permissions. Wizards and owners can remove */
     if (!Chan_Can_Nuke(chan, player)) {
@@ -1797,7 +1808,7 @@ do_chan_admin(dbref player, char *name, const char *perms, int flag)
     num_channels--;
     notify(player, T("Channel removed."));
     break;
-  case 2:
+  case CH_ADMIN_RENAME:
     /* rename a channel */
     /* Can the player do this? */
     if (!Chan_Can_Modify(chan, player)) {
@@ -1829,7 +1840,7 @@ do_chan_admin(dbref player, char *name, const char *perms, int flag)
                  CB_CHECKQUIET | CB_PRESENCE | CB_POSE, announcebuff);
     notify(player, T("Channel renamed."));
     break;
-  case 3:
+  case CH_ADMIN_PRIV:
     /* change the permissions on a channel */
     if (!Chan_Can_Modify(chan, player)) {
       notify(player, T("Permission denied."));
@@ -2698,7 +2709,8 @@ chan_chown(CHAN *c, dbref victim)
  * \param whichlock which lock is to be set.
  */
 void
-do_chan_lock(dbref player, const char *name, const char *lockstr, int whichlock)
+do_chan_lock(dbref player, const char *name, const char *lockstr,
+             enum clock_type whichlock)
 {
   CHAN *c;
   boolexp key;
@@ -2713,19 +2725,19 @@ do_chan_lock(dbref player, const char *name, const char *lockstr, int whichlock)
   }
   /* Ok, let's do it */
   switch (whichlock) {
-  case CL_JOIN:
+  case CLOCK_JOIN:
     ltype = chan_join_lock;
     break;
-  case CL_MOD:
+  case CLOCK_MOD:
     ltype = chan_mod_lock;
     break;
-  case CL_SEE:
+  case CLOCK_SEE:
     ltype = chan_see_lock;
     break;
-  case CL_HIDE:
+  case CLOCK_HIDE:
     ltype = chan_hide_lock;
     break;
-  case CL_SPEAK:
+  case CLOCK_SPEAK:
     ltype = chan_speak_lock;
     break;
   default:
@@ -2743,35 +2755,35 @@ do_chan_lock(dbref player, const char *name, const char *lockstr, int whichlock)
     }
   }
   switch (whichlock) {
-  case CL_JOIN:
+  case CLOCK_JOIN:
     free_boolexp(ChanJoinLock(c));
     ChanJoinLock(c) = key;
     notify_format(player, (key == TRUE_BOOLEXP) ?
                   T("CHAT: Joinlock on <%s> reset.") :
                   T("CHAT: Joinlock on <%s> set."), ChanName(c));
     break;
-  case CL_SPEAK:
+  case CLOCK_SPEAK:
     free_boolexp(ChanSpeakLock(c));
     ChanSpeakLock(c) = key;
     notify_format(player, (key == TRUE_BOOLEXP) ?
                   T("CHAT: Speaklock on <%s> reset.") :
                   T("CHAT: Speaklock on <%s> set."), ChanName(c));
     break;
-  case CL_SEE:
+  case CLOCK_SEE:
     free_boolexp(ChanSeeLock(c));
     ChanSeeLock(c) = key;
     notify_format(player, (key == TRUE_BOOLEXP) ?
                   T("CHAT: Seelock on <%s> reset.") :
                   T("CHAT: Seelock on <%s> set."), ChanName(c));
     break;
-  case CL_HIDE:
+  case CLOCK_HIDE:
     free_boolexp(ChanHideLock(c));
     ChanHideLock(c) = key;
     notify_format(player, (key == TRUE_BOOLEXP) ?
                   T("CHAT: Hidelock on <%s> reset.") :
                   T("CHAT: Hidelock on <%s> set."), ChanName(c));
     break;
-  case CL_MOD:
+  case CLOCK_MOD:
     free_boolexp(ChanModLock(c));
     ChanModLock(c) = key;
     notify_format(player, (key == TRUE_BOOLEXP) ?
@@ -3327,19 +3339,19 @@ FUNCTION(fun_clock)
   }
 
   if (!strcasecmp(p, "JOIN")) {
-    which_lock = CL_JOIN;
+    which_lock = CLOCK_JOIN;
     lock_ptr = ChanJoinLock(c);
   } else if (!strcasecmp(p, "SPEAK")) {
-    which_lock = CL_SPEAK;
+    which_lock = CLOCK_SPEAK;
     lock_ptr = ChanSpeakLock(c);
   } else if (!strcasecmp(p, "MOD")) {
-    which_lock = CL_MOD;
+    which_lock = CLOCK_MOD;
     lock_ptr = ChanModLock(c);
   } else if (!strcasecmp(p, "SEE")) {
-    which_lock = CL_SEE;
+    which_lock = CLOCK_SEE;
     lock_ptr = ChanSeeLock(c);
   } else if (!strcasecmp(p, "HIDE")) {
-    which_lock = CL_HIDE;
+    which_lock = CLOCK_HIDE;
     lock_ptr = ChanHideLock(c);
   } else {
     safe_str(T("#-1 NO SUCH LOCK TYPE"), buff, bp);
@@ -3441,7 +3453,7 @@ FUNCTION(fun_crecall)
     return;
   }
 
-  test_channel(executor, name, chan);
+  test_channel_fun(executor, name, chan, buff, bp);
   if (!Chan_Can_See(chan, executor)) {
     if (onchannel(executor, chan))
       safe_str(T(e_perm), buff, bp);
@@ -3474,7 +3486,6 @@ FUNCTION(fun_crecall)
     start = BufferQNum(ChanBufferQ(chan)) - num_lines;
   if (isempty_bufferq(ChanBufferQ(chan))
       || BufferQNum(ChanBufferQ(chan)) <= start) {
-    safe_str(T(e_range), buff, bp);
     return;
   }
 
@@ -3516,15 +3527,15 @@ COMMAND(cmd_channel)
   if (SW_ISSET(sw, SWITCH_LIST))
     do_channel_list(executor, arg_left);
   else if (SW_ISSET(sw, SWITCH_ADD))
-    do_chan_admin(executor, arg_left, args_right[1], 0);
+    do_chan_admin(executor, arg_left, args_right[1], CH_ADMIN_ADD);
   else if (SW_ISSET(sw, SWITCH_DELETE))
-    do_chan_admin(executor, arg_left, args_right[1], 1);
+    do_chan_admin(executor, arg_left, args_right[1], CH_ADMIN_DEL);
   else if (SW_ISSET(sw, SWITCH_NAME))
-    do_chan_admin(executor, arg_left, args_right[1], 2);
+    do_chan_admin(executor, arg_left, args_right[1], CH_ADMIN_RENAME);
   else if (SW_ISSET(sw, SWITCH_RENAME))
-    do_chan_admin(executor, arg_left, args_right[1], 2);
+    do_chan_admin(executor, arg_left, args_right[1], CH_ADMIN_RENAME);
   else if (SW_ISSET(sw, SWITCH_PRIVS))
-    do_chan_admin(executor, arg_left, args_right[1], 3);
+    do_chan_admin(executor, arg_left, args_right[1], CH_ADMIN_PRIV);
   else if (SW_ISSET(sw, SWITCH_RECALL))
     do_chan_recall(executor, arg_left, args_right, SW_ISSET(sw, SWITCH_QUIET));
   else if (SW_ISSET(sw, SWITCH_DECOMPILE))
@@ -3577,15 +3588,15 @@ COMMAND(cmd_chat)
 COMMAND(cmd_clock)
 {
   if (SW_ISSET(sw, SWITCH_JOIN))
-    do_chan_lock(executor, arg_left, arg_right, CL_JOIN);
+    do_chan_lock(executor, arg_left, arg_right, CLOCK_JOIN);
   else if (SW_ISSET(sw, SWITCH_SPEAK))
-    do_chan_lock(executor, arg_left, arg_right, CL_SPEAK);
+    do_chan_lock(executor, arg_left, arg_right, CLOCK_SPEAK);
   else if (SW_ISSET(sw, SWITCH_MOD))
-    do_chan_lock(executor, arg_left, arg_right, CL_MOD);
+    do_chan_lock(executor, arg_left, arg_right, CLOCK_MOD);
   else if (SW_ISSET(sw, SWITCH_SEE))
-    do_chan_lock(executor, arg_left, arg_right, CL_SEE);
+    do_chan_lock(executor, arg_left, arg_right, CLOCK_SEE);
   else if (SW_ISSET(sw, SWITCH_HIDE))
-    do_chan_lock(executor, arg_left, arg_right, CL_HIDE);
+    do_chan_lock(executor, arg_left, arg_right, CLOCK_HIDE);
   else
     notify(executor, T("You must specify a type of lock!"));
 }

@@ -841,7 +841,6 @@ notify_anything(dbref speaker, na_lookup func, void *fdata, dbref *skips,
                 struct format_msg *format)
 {
   struct notify_message_group real_message;
-  int i;
 
   /* If we have no message, or noone to notify, do nothing */
   if (!message || !*message || !func)
@@ -1289,7 +1288,7 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
 
       /* If object is flagged AUDIBLE and has a @FORWARDLIST, send it on */
       if ((!(flags & NA_NORELAY) || (flags & NA_PUPPET_OK)) && Audible(target)
-          && atr_get_noparent(target, "FORWARDLIST") != NULL
+          && atr_get(target, "FORWARDLIST") != NULL
           && !filter_found(target, fullmsg, 0)) {
         notify_list(speaker, target, "FORWARDLIST", fullmsg, flags);
       }

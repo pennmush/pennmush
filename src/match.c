@@ -337,7 +337,7 @@ match_result_internal(dbref who, dbref where, const char *xname, int type,
   int exact = 0;                /* set to 1 when we've found an exact match, not just a partial one */
   int done = 0;                 /* set to 1 when we're using final, and have found the Xth object */
   int goodwhere = RealGoodObject(where);
-  char *name, *sname;           /* name contains the object name searched for, after english matching tokens are stripped from xname */
+  char *name;                  /* name contains the object name searched for, after english matching tokens are stripped from xname */
 
   if (!goodwhere)
     loc = NOTHING;
@@ -412,7 +412,7 @@ match_result_internal(dbref who, dbref where, const char *xname, int type,
     }
   }
 
-  sname = name = GC_STRDUP(xname);
+  name = GC_STRDUP(xname);
   if (flags & MAT_ENGLISH) {
     /* English-style matching */
     final = parse_english(&name, &flags);
@@ -444,7 +444,8 @@ match_result_internal(dbref who, dbref where, const char *xname, int type,
       MATCH_LIST(loc);
     }
     if ((type & TYPE_EXIT) || !(flags & MAT_TYPE)) {
-      if ((flags & MAT_CARRIED_EXIT) && goodwhere && IsRoom(where)) {
+      if ((flags & MAT_CARRIED_EXIT) && goodwhere && IsRoom(where)
+          && ((loc != where) || !(flags & MAT_EXIT))) {
         MATCH_LIST(Exits(where));
       }
     }

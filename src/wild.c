@@ -244,7 +244,7 @@ wild_match_test(const char *restrict pat, const char *restrict str, bool cs,
   bool globbing = 0;            /* Are we in a glob match right now? */
   int pbase = 0, sbase = 0;     /* Guaranteed matched so far. */
   int matchi = 0, mbase = 0;
-  int slen = strlen(str);
+  int slen;
   char pbuff[BUFFER_LEN];
   char tbuff[BUFFER_LEN];
 
@@ -259,6 +259,7 @@ wild_match_test(const char *restrict pat, const char *restrict str, bool cs,
   tbuff[BUFFER_LEN - 1] = '\0';
   pat = pbuff;
   str = tbuff;
+  slen = strlen(str);
 
   if (!cs) {
     upcasestr(pbuff);

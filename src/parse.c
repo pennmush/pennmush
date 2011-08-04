@@ -679,12 +679,10 @@ pe_regs_dump(PE_REGS *pe_regs, dbref who)
     for (val = pe_regs->vals; val; val = val->next) {
       if (val->type & PE_REGS_STR) {
         notify_format(who, " %.2X(%.2X) %-10s: %s", val->type & 0xFF,
-                      (val->type & 0xFFFF00) >> 8,
-                      val->name, val->val.sval);
+                      (val->type & 0xFFFF00) >> 8, val->name, val->val.sval);
       } else {
         notify_format(who, " %.2X(%.2X) %-10s: %d", val->type & 0xFF,
-                      (val->type & 0xFFFF00) >> 8,
-                      val->name, val->val.ival);
+                      (val->type & 0xFFFF00) >> 8, val->name, val->val.ival);
       }
     }
     pe_regs = pe_regs->prev;
@@ -1704,7 +1702,7 @@ process_expression(char *buff, char **bp, char const **str,
                    dbref executor, dbref caller, dbref enactor,
                    int eflags, int tflags, NEW_PE_INFO *pe_info)
 {
-  int debugging = 0, made_info = 0;
+  int debugging = 0;
   char *debugstr = NULL, *sourcestr = NULL;
   char *realbuff = NULL, *realbp = NULL;
   int gender = -1;
@@ -1746,7 +1744,6 @@ process_expression(char *buff, char **bp, char const **str,
     return 0;
 
   if (!pe_info) {
-    made_info = 1;
     pe_info = make_pe_info("pe_info-p_e");
   } else {
     old_debugging = pe_info->debugging;

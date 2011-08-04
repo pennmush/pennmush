@@ -1,4 +1,4 @@
-& 1.8.4p5
+& 1.8.4p6
 & changes
 This is a list of changes in this patchlevel which are probably of
 interest to players. More information about new commands and functions
@@ -11,6 +11,60 @@ help topics named for each release (e.g. 'help 1.7.2p30').
 A list of the patchlevels associated with each release can
 be read in 'help patchlevels'.
 
+Version 1.8.4 patchlevel 6                                 Jul 29,  2011
+
+Minor changes:
+ * Clean up the linux inotify file monitoring code a bit. [SW]
+ * @forwardlist can be inherited (But defaults to no-inherit). Suggested
+   by Padraic.
+ * @pemit/port now takes the /list switch, to pemit multiple ports at once.
+   Suggested by Padraic. [MG]
+ * When you 'register' a character at the connect screen, you can re-use the
+   command to send a new password to the same email address, as long as you
+   haven't connected yet. Suggested by Minion. [MG]
+ * @odescribe/@adescribe are no longer triggered when a Terse player moves
+   into a room, as he doesn't see the @describe. Suggested by Padraic. [MG]
+ * exit-oneway and exit-multiple warning checks now take global exits
+   into account. Suggested by Padraic and qa'toq. [SW]
+
+Functions:
+ * valid() can be used with the 'qreg' category to check if a string
+   is a valid q-register name.  [SW]
+ * crecall() now returns an error when given an invalid channel, and no
+   longer returns an error when used on a channel with nothing to recall.
+   Suggested by Trinsec. [MG]
+ * Added uptime(), which returns much of the information from @uptime.
+   From a suggestion by Jules. [MG]
+ * quota() now accepts 'me' as an argument. Suggested by Padraic. [MG]
+ * remove() is now ANSI-aware. [MG]
+ * money() now checks for an integer argument before checking for an object.
+   Suggested by qa'toq. [MG]
+   
+Fixes:
+ * Wildcard matches on ANSI'd strings sometimes failed. Reported by Duckwa
+   and Paige. [MG]
+ * Bug in matching code when a room tries to locate an exit. Reported by
+   Sketch. [MG]
+ * Help updates. [MG], [SW]
+ * Crash bug in dealing with Pueblo markup. Reported by Mercutio. [SW]
+ * Fix some issues in parsing flag/attribute/eval locks. Found by Padraic
+   and Jules. [SW]
+ * @[out]pageformat could sometimes receive the wrong alias in %2. Reported
+   by Padraic. [MG]
+ * align() didn't correctly apply ANSI to empty columns. Reported by
+   Padraic. [MG]
+ * Fix compile warning in player.c when sendmail is not enabled. Reported by
+   Padraic. [MG]
+ * Fix hardcode bug in ansi_strcmp, which affected the softcode splice()
+   function. [MG]
+ * @chan/what failed to report when Admin channels also had the Player priv.
+   Reported by Padraic. [MG]
+ * win32/config.h was lacking a definition for int16_t. Reported by Daniko.
+   [SW]
+ * DBREFLIST locks required the attrname be given in upper-case. Reported by
+   Sketch. [MG]
+
+& 1.8.4p5
 Version 1.8.4 patchlevel 5                                 Jun 19,  2011
 
 Major Changes:

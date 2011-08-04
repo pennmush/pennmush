@@ -791,7 +791,7 @@ do_page(dbref executor, const char *arg1, const char *arg2, dbref enactor,
   int fails_lock;
   int is_haven;
   ATTR *a;
-  char *alias;
+  char alias[BUFFER_LEN], *ap;
 
   tp2 = tbuf2 = GC_MALLOC_ATOMIC(BUFFER_LEN);
   if (!tbuf2)
@@ -995,11 +995,16 @@ do_page(dbref executor, const char *arg1, const char *arg2, dbref enactor,
   tp = tbuf;
 
   /* Figure out the 'name' of the player */
-  if ((alias = shortalias(executor)) && *alias && PAGE_ALIASES
-      && strcasecmp(alias, Name(executor)))
-    current = tprintf("%s (%s)", Name(executor), alias);
-  else
+  if ((ap = shortalias(executor)) && *ap) {
+    strcpy(alias, ap);
+    if (PAGE_ALIASES && strcasecmp(ap, Name(executor)))
+      current = tprintf("%s (%s)", Name(executor), alias);
+    else
+      current = (char *) Name(executor);
+  } else {
+    alias[0] = '\0';
     current = (char *) Name(executor);
+  }
 
   /* Now, build the thing we want to send to the pagees,
    * and put it in tbuf */
@@ -1045,7 +1050,7 @@ do_page(dbref executor, const char *arg1, const char *arg2, dbref enactor,
   }
   if (!vmessageformat(executor, "OUTPAGEFORMAT", executor, 0, 5, message,
                       (key == 1) ? (*gap ? ":" : ";") : "\"",
-                      (alias && *alias) ? alias : "", tbuf2, tosend)) {
+                      (*alias) ? alias : "", tbuf2, tosend)) {
     notify(executor, tosend);
   }
 
@@ -1060,7 +1065,7 @@ do_page(dbref executor, const char *arg1, const char *arg2, dbref enactor,
     }
     if (!vmessageformat(good[i], "PAGEFORMAT", executor, 0, 5, message,
                         (key == 1) ? (*gap ? ":" : ";") : "\"",
-                        (alias && *alias) ? alias : "", tbuf2, tbuf)) {
+                        (*alias) ? alias : "", tbuf2, tbuf)) {
       /* Player doesn't have Pageformat, or it eval'd to 0 */
       notify(good[i], tosend);
     }
@@ -1088,10 +1093,6 @@ filter_found(dbref thing, const char *msg, int flag)
   char *filter;
   ATTR *a;
   char *p, *bp;
-  char *temp;                   /* need this so we don't leak memory
-                                 * by failing to free the storage
-                                 * allocated by safe_uncompress
-                                 */
   int i;
   int matched = 0;
 
@@ -1103,7 +1104,6 @@ filter_found(dbref thing, const char *msg, int flag)
     return matched;
 
   filter = safe_atr_value(a);
-  temp = filter;
 
   for (i = 0; (i < MAX_ARG) && !matched; i++) {
     p = bp = filter;

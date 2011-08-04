@@ -584,7 +584,7 @@ eval_boolexp(dbref player, boolexp b, dbref target, NEW_PE_INFO *pe_info)
           dbref mydb;
 
           r = 0;
-          a = atr_get(target, (char *) bytecode + arg);
+          a = atr_get(target, strupper((char *) bytecode + arg));
           if (!a)
             break;
 
@@ -921,7 +921,7 @@ static struct boolexp_node *
 test_atr(char *s, char c)
 {
   int preserve;
-  char *tbp, *abp;
+  char *tbp;
   bool escaped;
   struct boolexp_node *b;
   char tbuf1[BUFFER_LEN];
@@ -929,17 +929,15 @@ test_atr(char *s, char c)
   test_atr_err = TAE_NONE;
 
   preserve = 0;
-  abp = NULL;
   escaped = 0;
 
   for (tbp = tbuf1; *s; s++) {
-    if (!abp && !escaped && *s == c) {
+    if (!escaped && *s == c) {
       if (tbp == tbuf1)
         return 0;
       safe_chr('\0', tbuf1, &tbp);
       if (!good_atr_name(tbuf1))
         return 0;
-      abp = tbp;
       if (c == FLAG_TOKEN) {
         const struct flag_lock_types *flag =
           is_allowed_bflag(tbuf1, strlen(tbuf1));
@@ -954,6 +952,8 @@ test_atr(char *s, char c)
         preserve = flag->preserve;
       } else if (c == ATR_TOKEN)
         preserve = 1;
+      s += 1;
+      break;
     } else if (!escaped && *s == '\\' && !preserve)
       escaped = 1;
     else {
@@ -963,7 +963,7 @@ test_atr(char *s, char c)
   }
 
   *tbp = '\0';
-  if (!abp) {
+  if (!*s) {
     test_atr_err = TAE_NONE;
     return NULL;
   }
@@ -1021,7 +1021,7 @@ test_atr(char *s, char c)
       b->type = BOOLEXP_FLAG;
     }
   }
-  b->data.atr_lock = alloc_atr(tbuf1, abp);
+  b->data.atr_lock = alloc_atr(tbuf1, s);
   return b;
 }
 

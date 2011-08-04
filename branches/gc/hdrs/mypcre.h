@@ -64,7 +64,7 @@ struct pcre_extra *default_match_limit(void);
 #define PCRE_DATE           05-Sep-2005
 
 #ifndef PCRE_DATA_SCOPE
-#  define PCRE_DATA_SCOPE     extern
+#define PCRE_DATA_SCOPE     extern
 #endif
 
 /* Have to include stdlib.h in order to ensure that size_t is defined;

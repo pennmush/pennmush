@@ -1535,7 +1535,7 @@ int
 restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
 {
   struct command_perms_t *c;
-  char *message, *restriction, *rsave;
+  char *message, *restriction;
   int clear;
   FLAG *f;
   char lockstr[BUFFER_LEN];
@@ -1554,7 +1554,7 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
   if (command->restrict_message) {
     command->restrict_message = NULL;
   }
-  rsave = restriction = GC_STRDUP(xrestriction);
+  restriction = GC_STRDUP(xrestriction);
   message = strchr(restriction, '"');
   if (message) {
     *(message++) = '\0';
@@ -2429,8 +2429,8 @@ do_hook_list(dbref player, char *command)
       char inplace[BUFFER_LEN], *bp;
       bp = inplace;
       if (cmd->hooks.override.inplace & QUEUE_INPLACE) {
-        if ((cmd->hooks.override.
-             inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
+        if ((cmd->hooks.
+             override.inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
             (QUEUE_RECURSE | QUEUE_CLEAR_QREG))
           safe_str("/inplace", inplace, &bp);
         else {

@@ -359,6 +359,7 @@ FUNCTION_PROTO(fun_udefault);
 FUNCTION_PROTO(fun_ufun);
 FUNCTION_PROTO(fun_unique);
 FUNCTION_PROTO(fun_unsetq);
+FUNCTION_PROTO(fun_uptime);
 FUNCTION_PROTO(fun_v);
 FUNCTION_PROTO(fun_vadd);
 FUNCTION_PROTO(fun_valid);

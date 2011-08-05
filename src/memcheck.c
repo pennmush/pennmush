@@ -324,11 +324,11 @@ memcheck_dump_struct(const char *filename)
   fputs("digraph memcheck_skiplist {\n", fp);
   fputs("rankdir=LR;\n", fp);
   fputs("node [shape=record];\n", fp);
-  fputs("head [label=\"HEAD", fp);
-  for (n = 0; n < MAX_LINKS; n += 1) {
-    fprintf(fp, "|<l%d>", n);
+  fputs("head [label=\"<l0>HEAD", fp);
+  for (n = 1; n < MAX_LINKS; n += 1) {
+    fprintf(fp, "|<l%d>%d", n, n);
     if (!memcheck_head->links[n])
-      fputs(" (NULL)", fp);
+      fputs("\\n(NULL)", fp);
   }
   fputs("\"];\n", fp);
 
@@ -338,14 +338,16 @@ memcheck_dump_struct(const char *filename)
   }
       
   for (chk = memcheck_head->links[0]; chk; chk = chk->links[0]) {
-    fprintf(fp, "mc%p [label=\"{%s|%d}", (void*)chk, chk->ref_name, chk->ref_count);
-    for (n = 0; n < chk->link_count; n += 1) {
+    fprintf(fp, "mc%p [label=\"{<l0>%s|<s0>%d}", (void*)chk, chk->ref_name, chk->ref_count);
+    for (n = 1; n < chk->link_count; n += 1) {
       fprintf(fp, "|<l%d>", n);
       if (!chk->links[n]) 
 	fputs(" (NULL)", fp);
     }
     fputs("\"];\n", fp);   
-    for (n = 0; n < chk->link_count; n += 1) {
+    if (chk->links[0])
+      fprintf(fp, "mc%p:s0 -> mc%p:l0\n", (void*)chk, (void*)chk->links[0]);
+    for (n = 1; n < chk->link_count; n += 1) {
       if (chk->links[n])
 	fprintf(fp, "mc%p:l%d -> mc%p:l%d;\n", (void*)chk, n, (void*)chk->links[n], n);
     }

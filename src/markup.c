@@ -73,9 +73,9 @@ FUNCTION(fun_stripansi)
 
 FUNCTION(fun_ansigen)
 {
+  char *ptr;
   if (nargs < 1)
     return;
-  char *ptr;
   for (ptr = args[0]; *ptr; ptr++) {
     switch (*ptr) {
     case '<':

@@ -1220,6 +1220,10 @@ See also: strreplace(), strinsert(), mid()
 
   This is a side-effect function and may not be enabled on some MUSHes.
 & DIGEST()
+& MD5
+& SHA1
+& CHECKSUM
+& HASH
   digest(<algorithm>, <string>)
 
   Returns a checksum (hash, digest, etc.) of <string> using the given

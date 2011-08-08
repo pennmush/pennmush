@@ -593,6 +593,10 @@ msgstr "#-1 TOESTEMMING GEWEIGERD"
 msgid "#-1 REGEXP ERROR: "
 msgstr "#-1 REGEXP FOUT "
 
+#: parse.c:109
+msgid "#-1 REGISTER NAME INVALID"
+msgstr "#-1 REGISTER NAAM ONGELDIG"
+
 #: funmath.c:1057
 msgid "#-1 ROOT OUT OF RANGE"
 msgstr "#-1 WORTEL BUITEN BEREIK"
@@ -637,6 +641,10 @@ msgstr "#-1 TEVEEL KOLOMMEN VOOR ALIGN"
 #: src/funlist.c:1815
 msgid "#-1 TOO MANY ITERS"
 msgstr "#-1 TEVEEL ITERS"
+
+#: parse.c:110
+msgid "#-1 TOO MANY REGISTERS"
+msgstr "#-1 TE VEEL REGISTERS"
 
 #: funmisc.c:495 funmisc.c:612
 msgid "#-1 TOO MANY SWITCHES"
@@ -5042,6 +5050,10 @@ msgstr "Om dit character te gebruiken, log in op %s en tik:\n"
 msgid "To channel %s: %s"
 msgstr "Naar kanaal %s: %s"
 
+#: game.c:1862
+msgid "Too many @dolists."
+msgstr "Te veel @dolists."
+
 #: set.c:88
 msgid "Too many aliases."
 msgstr "Teveel aliasen."
@@ -5069,6 +5081,10 @@ msgstr "Teveel mensen om naar te oemitten."
 #: src/speech.c:402
 msgid "Too many people to whisper to."
 msgstr "Teveel mensen om naar te fluisteren."
+
+#: predicat.c:1133
+msgid "Too many switches."
+msgstr "Te veel schakelopties."
 
 #: boolexp.c:245
 msgid "Too much recursion in lock!"
@@ -5675,6 +5691,10 @@ msgstr "Je kan quotas alleen als getal instellen."
 #: src/wiz.c:234
 msgid "You can only set quotas to a positive number."
 msgstr "Je kunt quota alleen op een positief nummer instellen."
+
+#: cmds.c:592
+msgid "You can only use /inplace and /inline with /override."
+msgstr "De opties /inplace en /inline kunnen alleen gebruikt worden in combinatie met /override."
 
 #: rob.c:326
 msgid "You can't afford that."

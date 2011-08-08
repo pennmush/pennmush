@@ -21,7 +21,7 @@ Version 1.8.4 patchlevel 7                                 ??? ??, 2011
 Minor changes:
  * Rewrite memcheck allocation tracking to use a more efficient data
    structure. [SW]
- * Help file improvements. [SW]
+ * Help file improvements, by Ender and others. [SW] [MG]
  * @decompile now uses '&attr obj=value', even for standard attributes, to
    avoid possible clashes with command names. Suggested by Mercutio. [MG]
  * Extended convtime understands timestamps of the form 'YYYY-MM-DD hh:mm:ss'.
@@ -35,6 +35,7 @@ Fixes:
    Reported by Padraic. [MG]
  * 'page' evaluated its args incorrectly when used in an $-command.
    Reported by Invidia@Dune3. [MG]
+ * Win32 compile fixes by Daniel Powell. [MG]
 
 Version 1.8.4 patchlevel 6                                 Jul 29,  2011
 

@@ -67,7 +67,7 @@ static MEM *
 lookup_check(const char *ref)
 {
   MEM **links;
-  int n;  
+  int n;
 
   /* Empty list */
   if (!memcheck_head->links[0])
@@ -78,7 +78,7 @@ lookup_check(const char *ref)
 
   while (n >= 0) {
     MEM *chk;
-    int cmp;   
+    int cmp;
 
     if (!links[n]) {
       n -= 1;
@@ -94,7 +94,7 @@ lookup_check(const char *ref)
       links = chk->links;
       n = chk->link_count - 1;
     } else if (cmp < 0) { /* Went too far */
-      n -= 1;      
+      n -= 1;
     }
   }
   return NULL;
@@ -135,11 +135,15 @@ alloc_memcheck_node(const char *ref)
 
   newcheck = slab_malloc(memcheck_slab, NULL);
   memset(newcheck, 0, sizeof *newcheck);
-  mush_strncpy(newcheck->ref_name, ref, REF_NAME_LEN);  
+  mush_strncpy(newcheck->ref_name, ref, REF_NAME_LEN);
   newcheck->link_count = pick_link_count(MAX_LINKS);
   newcheck->ref_count = 1;
   return newcheck;
 }
+
+#ifdef min
+#undef min
+#endif
 
 static inline int
 min(int a, int b)
@@ -157,7 +161,7 @@ static void
 update_links(MEM *src, MEM *newnode)
 {
   int n = min(src->link_count, newnode->link_count) - 1;
-  
+
   for (; n > 0; n -= 1) {
     if (!src->links[n])
       src->links[n] = newnode;
@@ -201,7 +205,7 @@ insert_check(const char *ref)
     if (strcmp(ref, node->ref_name) < 0) {
       if (prev) {
 	chk->links[0] = node;
-	prev->links[0] = chk;       
+	prev->links[0] = chk;
       } else {
 	/* First element */
 	chk->links[0] = memcheck_head->links[0];
@@ -231,8 +235,8 @@ add_check(const char *ref)
   chk = lookup_check(ref);
   if (chk)
     chk->ref_count += 1;
-  else 
-    insert_check(ref);    
+  else
+    insert_check(ref);
 }
 
 /** Remove an allocation check.
@@ -336,15 +340,15 @@ memcheck_dump_struct(const char *filename)
     if (memcheck_head->links[n])
       fprintf(fp, "head:l%d -> mc%p:l%d;\n", n, (void*) memcheck_head->links[n], n);
   }
-      
+
   for (chk = memcheck_head->links[0]; chk; chk = chk->links[0]) {
     fprintf(fp, "mc%p [label=\"{<l0>%s|<s0>%d}", (void*)chk, chk->ref_name, chk->ref_count);
     for (n = 1; n < chk->link_count; n += 1) {
       fprintf(fp, "|<l%d>", n);
-      if (!chk->links[n]) 
+      if (!chk->links[n])
 	fputs(" (NULL)", fp);
     }
-    fputs("\"];\n", fp);   
+    fputs("\"];\n", fp);
     if (chk->links[0])
       fprintf(fp, "mc%p:s0 -> mc%p:l0\n", (void*)chk, (void*)chk->links[0]);
     for (n = 1; n < chk->link_count; n += 1) {

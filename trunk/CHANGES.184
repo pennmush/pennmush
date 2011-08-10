@@ -37,6 +37,8 @@ Fixes:
    Reported by Invidia@Dune3. [MG]
  * Win32 compile fixes by Daniel Powell. [MG]
  * Fix an off-by-one error in wrap(). Report by Padraic, patch by Minion [MG]
+ * Sorting code didn't do proper objid checks, so setinter(#1:123, #1:456)
+   would return #1:123 instead of nothing. [MG]
 
 Version 1.8.4 patchlevel 6                                 Jul 29,  2011
 

@@ -1091,7 +1091,7 @@ FUNCTION(fun_randword)
   if (!s || !*s)                /* ran off the end of the string */
     return;
 
-  /* Chop off the end, tand copy. No length checking needed. */
+  /* Chop off the end, and copy. No length checking needed. */
   r = s;
   if (s && *s)
     (void) split_token(&s, sep);

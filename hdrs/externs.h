@@ -505,7 +505,7 @@ void do_message(dbref executor, char *list, char *attrname, char *message,
                 enum emit_type type, int flags, int numargs, char *argv[]);
 
 const char *spname(dbref thing);
-int filter_found(dbref thing, const char *msg, int flag);
+int filter_found(dbref thing, dbref speaker, const char *msg, int flag);
 
 /* From strutil.c */
 char *next_token(char *str, char sep);

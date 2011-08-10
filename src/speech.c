@@ -1084,13 +1084,14 @@ do_page(dbref executor, const char *arg1, const char *arg2, int override, int ha
 
 /** Does a message match a filter pattern on an object?
  * \param thing object with the filter.
+ * \param speaker object responsible for msg.
  * \param msg message to match.
  * \param flag if 0, filter; if 1, infilter.
  * \retval 1 message matches filter.
  * \retval 0 message does not match filter.
  */
 int
-filter_found(dbref thing, const char *msg, int flag)
+filter_found(dbref thing, dbref speaker, const char *msg, int flag)
 {
   char *filter;
   ATTR *a;
@@ -1102,10 +1103,24 @@ filter_found(dbref thing, const char *msg, int flag)
   int i;
   int matched = 0;
 
-  if (!flag)
-    a = atr_get(thing, "FILTER");
-  else
+  NEW_PE_INFO *pe_info = make_pe_info("pe_info-filter_found");
+  pe_regs_setenv(pe_info->regvals, 0, msg);
+
+  if (!flag) {
+    if(!eval_lock_with(speaker, thing, Filter_Lock, pe_info)) {
+       free_pe_info(pe_info);
+       return 1; /* thing's @lock/filter not passed */
+     }
+     a = atr_get(thing, "FILTER");
+  } else {
+    if(!eval_lock_with(speaker, thing, InFilter_Lock, pe_info)) {
+      free_pe_info(pe_info);
+      return 1; /* thing's @lock/infilter not passed */
+    }
     a = atr_get(thing, "INFILTER");
+  }
+  free_pe_info(pe_info);
+
   if (!a)
     return matched;
 

@@ -92,7 +92,7 @@ FUNCTION(fun_pemit)
   orator = executor;
   if (ns)
     flags |= PEMIT_SPOOF;
-  if (is_strict_integer(args[0]))
+  if (is_integer_list(args[0]))
     do_pemit_port(executor, args[0], args[1], flags);
   else
     do_pemit(executor, args[0], args[1], flags, NULL);

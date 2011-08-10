@@ -414,6 +414,7 @@ void check_lastfailed(dbref player, const char *host);
 bool is_number(const char *str);
 bool is_strict_number(const char *str);
 bool is_strict_integer(const char *str);
+bool is_integer_list(const char *str);
 #ifdef HAVE_ISNORMAL
 #define is_good_number(n) isnormal((n))
 #else

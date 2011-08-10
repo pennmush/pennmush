@@ -463,6 +463,36 @@ is_strict_integer(char const *str)
   return end > str;
 }
 
+/** Does a string contain a list of space-separated integers?
+ * Must contain at least one int.
+ * \param str string to check
+ * \retval 1 string is a list of integers
+ * \retval 0 string is empty, or contains a non-space, non-integer char
+ */
+bool
+is_integer_list(char const *str)
+{
+  char *start, *end;
+  long val;
+
+  if (!str || !*str)
+    return 0;
+
+  start = (char *) str;
+  do {
+    while (*start && *start == ' ')
+      start++;
+    if (!*start)
+      return 1;
+    val = strtol(start, &end, 10);
+    if (end == start)
+      return 0;
+    start = end;
+  } while (*start);
+
+  return 1;
+}
+
 /** Is string a number?
  * To TinyMUSH, any string is a number. To PennMUSH, a strict number is
  * a number, and a blank string is a number if NULL_EQ_ZERO is turned on.

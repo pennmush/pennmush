@@ -21,6 +21,8 @@ Minor changes:
    avoid possible clashes with command names. Suggested by Mercutio. [MG]
  * Extended convtime understands timestamps of the form 'YYYY-MM-DD hh:mm:ss'.
    Suggested by Padraic. [SW]
+ * pemit() now accepts a list of port numbers, to pemit to multiple ports
+   at once. Suggested by Padraic. [MG]
 
 Fixes:
  * Verified that Penn compiles using the clang compiler, and fix a few

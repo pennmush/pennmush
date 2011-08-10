@@ -36,6 +36,7 @@ Fixes:
  * 'page' evaluated its args incorrectly when used in an $-command.
    Reported by Invidia@Dune3. [MG]
  * Win32 compile fixes by Daniel Powell. [MG]
+ * Fix an off-by-one error in wrap(). Report by Padraic, patch by Minion [MG]
 
 Version 1.8.4 patchlevel 6                                 Jul 29,  2011
 

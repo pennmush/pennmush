@@ -130,5 +130,7 @@ extern lock_type Interact_Lock;
 extern lock_type MailForward_Lock;      /* Who can forward mail to me */
 extern lock_type Take_Lock;     /* Who can take from the contents of this object? */
 extern lock_type Open_Lock;     /* who can @open exits in this room? */
+extern lock_type Filter_Lock;   /* Who can be forwarded by audible objects */
+extern lock_type InFilter_Lock; /* Whose sound is played inside listening objects */
 
 #endif                          /* __LOCK_H */

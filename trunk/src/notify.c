@@ -1268,7 +1268,7 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
 
           if (!(flags & NA_NORELAY) && (loc != target) &&
               Contents(target) != NOTHING
-              && !filter_found(target, fullmsg, 1)) {
+              && !filter_found(target, speaker, fullmsg, 1)) {
             /* Forward the sound to the object's contents */
             char inprefix[BUFFER_LEN];
 
@@ -1315,7 +1315,7 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
       /* If object is flagged AUDIBLE and has a @FORWARDLIST, send it on */
       if ((!(flags & NA_NORELAY) || (flags & NA_PUPPET_OK)) && Audible(target)
           && atr_get(target, "FORWARDLIST") != NULL
-          && !filter_found(target, fullmsg, 0)) {
+          && !filter_found(target, speaker, fullmsg, 0)) {
         notify_list(speaker, target, "FORWARDLIST", fullmsg, flags);
       }
     }
@@ -1331,7 +1331,7 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
             loc = Location(exit);
             if (!RealGoodObject(loc))
               continue;         /* unlinked, variable dests, HOME */
-            if (filter_found(exit, fullmsg, 0))
+            if (filter_found(exit, speaker, fullmsg, 0))
               continue;
             /* Need to make the prefix for each exit */
             make_prefix_str(exit, speaker, fullmsg, propprefix);
@@ -1340,7 +1340,7 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
                                 format);
           }
         }
-      } else if (target == loc && !filter_found(target, fullmsg, 0)) {
+      } else if (target == loc && !filter_found(target, speaker, fullmsg, 0)) {
         dbref pass[2];
 
         pass[0] = target;

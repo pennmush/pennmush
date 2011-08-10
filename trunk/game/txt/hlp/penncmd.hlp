@@ -1659,6 +1659,9 @@ See also: EXITS, @open, @link
   expressions instead of wildcard patterns, and can set the case flag to make
   the patterns case-sensitive.
   
+  Sounds are only forwarded if the speaker also passes <object>'s
+  @lock/filter, which receives the sound heard as %0.
+  
   See 'help @filter2' for an example.
   
 See also: AUDIBLE, @infilter, attribute flags, LISTENING, @forwardlist,
@@ -1700,9 +1703,9 @@ See also: @search, lsearch(), @entrances
   @forwardlist <object>[=<list of dbrefs>]
 
   If <object> is set AUDIBLE, any sound it hears which passes its @filter
-  will be forwarded (prefixed with its @prefix) to each of the dbrefs given
-  in its @forwardlist attribute, in much the same way as puppets forward
-  sound to their owners.
+  and @lock/filter will be forwarded (prefixed with its @prefix) to each
+  of the dbrefs given  in its @forwardlist attribute, in much the same way
+  as puppets forward sound to their owners.
 
   In order to forward to an object, you must either control it, have the 
   pemit_all power, or pass its @lock/forward. (If you want to allow all
@@ -2230,7 +2233,10 @@ See also: @away, @haven
   of the patterns and prevents those inside the object from hearing them. 
   It does not stop the @ahear of the listening object from being triggered
   by things that match the @listen.
- 
+
+  Sounds are only forwarded if the speaker also passes <object>'s
+  @lock/infilter, which receives the sound heard as %0.
+
   For an explanation of infilter patterns, see the help for "@filter".
 
 See also: @filter, @listen, @inprefix, AUDIBLE, LISTENING
@@ -2346,7 +2352,8 @@ See also: EXITS, @open, @dig, DROP-TO, HOME
   Sets the object's listen pattern to <string>, which can have wildcards.
   Whenever something the object hears matches the pattern, the object's
   ahear/amhear/aahear attribute will be triggered. In addition, anything 
-  inside the object will hear it as well.
+  inside the object will hear it as well, if the speaker passes 
+  @lock/infilter.
 
   For example:
   > @listen Chair=*  
@@ -2690,6 +2697,8 @@ See also: @lock, locktypes, @clock, objid()
   @lock/examine         Who can examine this object if it's VISUAL
   @lock/chzone          Who can @chzone to this object if it's a ZMO
   @lock/forward         Who can @forwardlist a message to this object 
+  @lock/filter          Controls if the message %0 should be filtered
+  @lock/infilter        Controls if the message %0 should be infiltered
   @lock/control         Who can control this object (only if set; non-player)
   @lock/dropto          Who can trigger this container's drop-to.
   @lock/destroy         Who can destroy this object if it's DESTROY_OK

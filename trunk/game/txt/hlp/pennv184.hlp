@@ -24,6 +24,11 @@ Minor changes:
  * pemit() now accepts a list of port numbers, to pemit to multiple ports
    at once. Suggested by Padraic. [MG]
 
+Locks:
+ * New locks, @lock/filter and @lock/infilter, which must be passed (along
+   with any @filter/@infilter set) for an object to forward sound. Patch
+   by Padraic.
+
 Fixes:
  * Verified that Penn compiles using the clang compiler, and fix a few
    warnings it generated. [SW]

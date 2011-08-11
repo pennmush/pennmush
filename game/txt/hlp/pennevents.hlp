@@ -6,7 +6,7 @@
   event_handler object will then have attributes triggered, with arguments,
   on specified events.
 
-  To use the PennMUSH Event system:
+  To use the PennMUSH Event System:
 
   > @create Event Handler
   > @config/set event_handler=[num(Event Handler)]

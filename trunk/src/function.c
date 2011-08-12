@@ -565,7 +565,7 @@ FUNTAB flist[] = {
   {"TIMEFMT", fun_timefmt, 1, 2, FN_REG},
   {"TIMESTRING", fun_timestring, 1, 2, FN_REG | FN_STRIPANSI},
   {"TR", fun_tr, 3, 3, FN_REG},
-  {"TRIM", fun_trim, 1, 3, FN_REG},
+  {"TRIM", fun_trim, 1, 3, FN_REG | FN_DEPRECATED},
   {"TRIMPENN", fun_trim, 1, 3, FN_REG},
   {"TRIMTINY", fun_trim, 1, 3, FN_REG},
   {"TRUNC", fun_trunc, 1, 1, FN_REG},

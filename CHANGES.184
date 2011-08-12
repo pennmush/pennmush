@@ -28,11 +28,17 @@ Minor changes:
    Suggested by Padraic. [SW]
  * pemit() now accepts a list of port numbers, to pemit to multiple ports
    at once. Suggested by Padraic. [MG]
+ * Built in functions and commands can now be marked as being
+   deprecated.  Using one of these functions or commands results in a
+   warning to the owner of the object executing them. Deprecated
+   functions and commands might be removed in future patch levels;
+   code using them needs to be rewritten. [SW]
 
 Locks:
  * New locks, @lock/filter and @lock/infilter, which must be passed (along
    with any @filter/@infilter set) for an object to forward sound. Patch
    by Padraic.
+ * @elock, @eunlock, @ulock and @uunlock are deprecated. [SW]
 
 Fixes:
  * Verified that Penn compiles using the clang compiler, and fix a few

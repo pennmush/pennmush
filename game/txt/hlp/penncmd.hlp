@@ -1506,9 +1506,9 @@ See also: edit(), regedit(), ATTRIBUTES,
   @elock sets the Enter @lock for <object> to <key>, or clears the the lock
   if no <key. is given. @eunlock removes the Enter @lock for <object>.
   
-  @elock is an alias for
+  @elock and @eunlock are deprecated and uses of them should be replaced by
     @lock/enter <object>[=<key>]
-  and @eunlock is an alias for
+  and
     @lock/enter <object>
 
 See also: @lock, locktypes, enter, ENTER_OK
@@ -3931,11 +3931,12 @@ See also: @include, ufun()
   @uunlock <object>
 
   These commands set the Use lock for <object> to <key>, or clear the Use
-  lock. They are equivilent to
+  lock. They are deprecated, and should be replaced with 
+
     @lock/use <object>[=<key>]
   and
     @lock/use <object>
-    
+
   The Use lock determines who is allowed to "use" the object or trigger any
   $-commands or ^-listens on the object.
   
@@ -3943,8 +3944,8 @@ See also: @include, ufun()
   can trigger ^-listens, use @lock/listen.
 
   Example: if I want everyone but Bob to be able to use my toy, I would
-  "@ulock toy=!*Bob". If I want only Bob to be able to use it, I would
-  "@ulock toy==*Bob".
+  "@lock/use toy=!*Bob". If I want only Bob to be able to use it, I would
+  "@lock/use toy==*Bob".
 
 See also: @lock, use, locktypes
 & @uptime

@@ -61,6 +61,7 @@ bool SW_BY_NAME(switch_mask, const char *);
 #define CMD_T_RS_ARGS    0x00000100     /*CMD_T_ARGS<<4 */
 #define CMD_T_RS_SPACE   0x00000200     /*CMD_T_ARG_SPACE<<4 */
 #define CMD_T_RS_NOPARSE 0x00000400     /*CMD_T_NOPARSE<<4 */
+#define CMD_T_DEPRECATED 0x00000800
 
 /** COMMAND prototype.
  * \verbatim

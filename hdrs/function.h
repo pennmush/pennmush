@@ -44,6 +44,8 @@
 #define FN_USERFN     0x8000
 /* Strip ANSI/markup from function's arguments */
 #define FN_STRIPANSI  0x10000
+/* Function is obsolete and code that uses it should be re-written */
+#define FN_DEPRECATED 0x20000
 
 #ifndef HAVE_FUN_DEFINED
 typedef struct fun FUN;

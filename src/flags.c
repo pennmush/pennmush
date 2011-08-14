@@ -257,6 +257,7 @@ static FLAG_ALIAS power_alias_tab[] = {
   {"@cemit", "Cemit"},
   {"@wall", "Announce"},
   {"wall", "Announce"},
+  {"Can_nspemit", "Can_spoof"},
   {NULL, NULL}
 };
 
@@ -897,9 +898,13 @@ flag_add_additional(FLAGSPACE *n)
     if (!match_power("Use_SQL"))
       flag_add(flags, "Use_SQL", f);
     if ((f = match_power("Can_nspemit")) && !match_power("Can_spoof")) {
+      /* The "Can_nspemit" power was renamed "Can_spoof"... */
       mush_free((void *) f->name, "flag.name");
       f->name = mush_strdup("Can_spoof", "flag.name");
       flag_add(flags, "Can_spoof", f);
+    } else if ((f = match_power("Can_spoof")) && !match_power("Can_nspemit")) {
+      /* ... but make sure "Can_nspemit" remains as an alias */
+      flag_add(flags, "Can_nspemit", f);
     }
     add_power("Debit", '\0', NOTYPE, F_WIZARD | F_LOG, F_ANY);
     add_power("Pueblo_Send", '\0', NOTYPE, F_WIZARD | F_LOG, F_ANY);

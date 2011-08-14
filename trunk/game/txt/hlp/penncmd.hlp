@@ -1343,11 +1343,17 @@ See also: @destroy, GOING, @startup
 
 See also: @open, @link, EXITS, @create, DBREF, dig()
 & @doing
+  &doing me=<doing>
   @doing <message>
   @doing/header <message>
 
-  The first form of this command sets a message which shows up next to your
-  name in the output of the WHO/DOING commands.
+  The first syntax sets your DOING attribute to <doing>. The evaluated result
+  is shown next to your name in the WHO/DOING commands, and is returned by
+  the doing() function.
+  
+  @doing exists for backwards compatability, and sets your DOING attribute so 
+  that, when evaluated, it will return <message>. It is equivilent to:
+    @set me=DOING:[decompose(<message>)]
   
   @doing/header is an alias for @poll, and can only be used by Wizards or
   those with the Poll @power.

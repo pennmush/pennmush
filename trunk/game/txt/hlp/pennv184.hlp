@@ -13,21 +13,35 @@ be read in 'help patchlevels'.
 
 Version 1.8.4 patchlevel 7                                 ??? ??, 2011
 
+Major changes:
+ * DOING is now a standard attribute. Your @doing can be any length, and
+   doing() returns the whole string (though it will still be truncated when
+   displayed on WHO), can contain ANSI and will be evaluated each time it's 
+   displayed, allowing for random/rotating doings. The @doing command will
+   escape its input before setting into an attribute, for backwards
+   compatability; use &doing to store code. [MG]
+
 Minor changes:
  * Rewrite memcheck allocation tracking to use a more efficient data
    structure. [SW]
  * Help file improvements, by Ender and others. [SW] [MG]
  * @decompile now uses '&attr obj=value', even for standard attributes, to
    avoid possible clashes with command names. Suggested by Mercutio. [MG]
- * Extended convtime understands timestamps of the form 'YYYY-MM-DD hh:mm:ss'.
-   Suggested by Padraic. [SW]
+ * Extended convtime understands timestamps of the form 
+   'YYYY-MM-DD hh:mm:ss'. Suggested by Padraic. [SW]
  * pemit() now accepts a list of port numbers, to pemit to multiple ports
    at once. Suggested by Padraic. [MG]
+ * Built in functions and commands can now be marked as being
+   deprecated.  Using one of these functions or commands results in a
+   warning to the owner of the object executing them. Deprecated
+   functions and commands might be removed in future patch levels;
+   code using them needs to be rewritten. [SW]
 
 Locks:
  * New locks, @lock/filter and @lock/infilter, which must be passed (along
    with any @filter/@infilter set) for an object to forward sound. Patch
    by Padraic.
+ * @elock, @eunlock, @ulock and @uunlock are deprecated. [SW]
 
 Fixes:
  * Verified that Penn compiles using the clang compiler, and fix a few

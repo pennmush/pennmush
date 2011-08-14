@@ -416,6 +416,8 @@ void file_watch_event(int);
 
 void initialize_mt(void);
 
+static char *get_doing(dbref player, bool full);
+
 #ifndef BOOLEXP_DEBUGGING
 #ifdef WIN32SERVICES
 /* Under WIN32, MUSH is a "service", so we just start a thread here.
@@ -1663,7 +1665,6 @@ logout_sock(DESC *d)
   d->last_time = mudtime;
   d->cmds = 0;
   d->hide = 0;
-  d->doing[0] = '\0';
   welcome_user(d, 0);
 }
 
@@ -1759,7 +1760,6 @@ initializesock(int s, char *addr, char *ip, conn_source source)
   d->last_time = mudtime;
   d->cmds = 0;
   d->hide = 0;
-  d->doing[0] = '\0';
   mush_strncpy(d->addr, addr, 100);
   d->addr[99] = '\0';
   mush_strncpy(d->ip, ip, 100);
@@ -2597,7 +2597,6 @@ dump_messages(DESC *d, dbref player, int isnew)
   d->connected = 1;
   d->connected_at = mudtime;
   d->player = player;
-  d->doing[0] = '\0';
 
   login_number++;
   if (MAX_LOGINS) {
@@ -3488,7 +3487,7 @@ dump_users(DESC *call_by, char *match)
     sprintf(tbuf1, "%-16s %10s   %4s%c %s", Name(d->player),
             time_format_1(now - d->connected_at),
             time_format_2(now - d->last_time), (Dark(d->player) ? 'D' : ' ')
-            , d->doing);
+            , get_doing(d->player, 0));
     queue_string_eol(call_by, tbuf1);
   }
   switch (count) {
@@ -3542,7 +3541,7 @@ do_who_mortal(dbref player, char *name)
                   time_format_1(now - d->connected_at),
                   time_format_2(now - d->last_time),
                   (Dark(d->player) ? 'D' : (Hidden(d) ? 'H' : ' '))
-                  , d->doing);
+                  , get_doing(d->player, 0));
   }
   switch (count) {
   case 0:
@@ -4072,35 +4071,71 @@ do_motd(dbref player, enum motd_type key, const char *message)
 void
 do_doing(dbref player, const char *message)
 {
-  char buf[MAX_COMMAND_LEN];
-  DESC *d;
-  int i;
-
-  if (!Connected(player)) {
-    /* non-connected things have no need for a doing */
-    notify(player, T("Why would you want to do that?"));
-    return;
+  if (!message || !*message) {
+    /* Clear */
+    if (atr_clr(player, "DOING", GOD) == AE_OKAY)
+      notify(player, T("Doing cleared."));
+    else
+      notify(player, T("Unable to clear doing."));
+  } else {
+    if (atr_add(player, "DOING", decompose_str((char *) message), GOD, 0) == AE_OKAY)
+      notify(player, T("Doing set."));
+    else
+      notify(player, T("Unable to set doing."));
+    if (!strncasecmp(message, "me", 2) && (strlen(message) < 3 || message[2] == '='))
+      notify_format(player, T("Did you mean to use &DOING %s ?"), message);
   }
-  mush_strncpy(buf, remove_markup(message, NULL), DOING_LEN);
+}
 
-  /* now smash undesirable characters and truncate */
-  for (i = 0; i < DOING_LEN; i++) {
-    if ((buf[i] == '\r') || (buf[i] == '\n') ||
-        (buf[i] == '\t') || (buf[i] == BEEP_CHAR))
-      buf[i] = ' ';
+/** Return a player's \@doing.
+ * \param player the dbref of the player whose \@doing we want
+ * \param full Return the full doing, or limit to DOING_LEN chars for WHO?
+ * \return a pointer to a STATIC buffer with the doing in.
+ */
+static char *
+get_doing(dbref player, bool full)
+{
+  static char doing[BUFFER_LEN];
+  char *dp = doing;
+
+  doing[0] = '\0';
+
+  if (!GoodObject(player) || !IsPlayer(player)) {
+    /* No such player; probably used on an unconnected descriptor */
+    return "";
   }
-  buf[DOING_LEN - 1] = '\0';
 
-  /* set it */
-  for (d = descriptor_list; d; d = d->next)
-    if (d->connected && (d->player == player))
-      strcpy(d->doing, buf);
-  if (strlen(message) >= DOING_LEN) {
-    notify_format(player,
-                  T("Doing set. %d characters lost."),
-                  (int) strlen(message) - (DOING_LEN - 1));
-  } else
-    notify(player, T("Doing set."));
+  if (!call_attrib(player, "DOING", dp, player, NULL, NULL)) {
+    /* No DOING attribute */
+    return "";
+  }
+
+  if (!full) {
+    /* Truncate to display on WHO */
+    if (has_markup(doing)) {
+      /* Contains ANSI */
+      ansi_string *as;
+      dp = doing;
+      as = parse_ansi_string(doing);
+      safe_ansi_string(as, 0, DOING_LEN - 1, doing, &dp);
+      *dp = '\0';
+    } else {
+      /* Nice and easy */
+      doing[DOING_LEN - 1] = '\0';
+    }
+  }
+
+  /* Smash any undesirable characters */
+  dp = doing;
+  WALK_ANSI_STRING(dp) {
+    if (!isprint((int) *dp) || (*dp == '\n') || (*dp == '\r') ||
+        (*dp == '\t') || (*dp == BEEP_CHAR)) {
+      *dp = ' ';
+    }
+    dp++;
+  }
+
+  return doing;
 }
 
 /** Set a poll message (which replaces "Doing" in the DOING output).
@@ -4635,9 +4670,7 @@ FUNCTION(fun_doing)
   /* Gets a player's @doing */
   DESC *d = lookup_desc(executor, args[0]);
   if (d)
-    safe_str(d->doing, buff, bp);
-  else
-    safe_str("#-1", buff, bp);
+    safe_str(get_doing(d->player, 0), buff, bp);
 }
 
 /* ARGSUSED */
@@ -5205,7 +5238,7 @@ dump_reboot_db(void)
   PENNFILE *f;
   DESC *d;
   uint32_t flags =
-    RDBF_SCREENSIZE | RDBF_TTYPE | RDBF_PUEBLO_CHECKSUM | RDBF_SOCKET_SRC;
+    RDBF_SCREENSIZE | RDBF_TTYPE | RDBF_PUEBLO_CHECKSUM | RDBF_SOCKET_SRC | RDBF_NO_DOING;
 
 #ifdef LOCAL_SOCKET
   flags |= RDBF_LOCAL_SOCKET;
@@ -5260,7 +5293,6 @@ dump_reboot_db(void)
         putstring(f, "__NONE__");
       putstring(f, d->addr);
       putstring(f, d->ip);
-      putstring(f, d->doing);
       putref(f, d->conn_flags);
       putref(f, d->width);
       putref(f, d->height);
@@ -5349,7 +5381,8 @@ load_reboot_db(void)
         set_userstring(&d->output_suffix, temp);
       mush_strncpy(d->addr, getstring_noalloc(f), 100);
       mush_strncpy(d->ip, getstring_noalloc(f), 100);
-      mush_strncpy(d->doing, getstring_noalloc(f), DOING_LEN);
+      if (!(flags & RDBF_NO_DOING))
+        (void) getstring_noalloc(f);
       d->conn_flags = getref(f);
       if (flags & RDBF_SCREENSIZE) {
         d->width = getref(f);

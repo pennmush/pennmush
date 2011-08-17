@@ -6036,17 +6036,18 @@ See also: nthings(), lthings(), lvthings(), xplayers(), xexits()
 & XWHOID()
 & XMWHO()
 & XMWHOID()
-  xwho(<start>, <count>)
+  xwho([<looker>, ]<start>, <count>)
   xmwho(<start>, <count>)
-  xwhoid(<start>, <count>)
+  xwhoid([<looker>, ]<start>, <count>)
   xmwhoid(<start>, <count>)
 
   xwho() fetches <count> or fewer player dbrefs from the list of connected 
   players, starting at position <start>. It is useful when the number of 
   players connected causes lwho() or pemits in +who $-commands to exceed 
-  buffer limits. It is equivalent to:
+  buffer limits. If a <looker> is given, only includes players who <looker>
+  can see are online. It is equivalent to:
   
-    extract(lwho(), <start>, <count>)
+    extract(lwho([<looker>]), <start>, <count>)
 
   xmwho() does not include hidden players (like mwho()).
 

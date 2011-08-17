@@ -137,7 +137,7 @@ COMLIST commands[] = {
   {"@DISABLE", NULL, cmd_disable, CMD_T_ANY, "WIZARD", 0},
 
   {"@DOING", "HEADER", cmd_doing,
-   CMD_T_ANY | CMD_T_NOPARSE | CMD_T_NOGAGGED, 0, 0},
+   CMD_T_ANY | CMD_T_NOPARSE | CMD_T_NOGAGGED | CMD_T_DEPRECATED, 0, 0},
   {"@DOLIST", "NOTIFY DELIMIT", cmd_dolist,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_NOPARSE | CMD_T_RS_BRACE, 0, 0},
   {"@DRAIN", "ALL ANY", cmd_notify_drain,

@@ -24,7 +24,7 @@ Major changes:
    displayed on WHO), can contain ANSI and will be evaluated each time it's 
    displayed, allowing for random/rotating doings. The @doing command will
    escape its input before setting into an attribute, for backwards
-   compatability; use &doing to store code. [MG]
+   compatability, but is now deprecated; use &doing to store code. [MG]
 
 Minor changes:
  * Rewrite memcheck allocation tracking to use a more efficient data

@@ -1352,8 +1352,9 @@ See also: @open, @link, EXITS, @create, DBREF, dig()
   the doing() function.
   
   @doing exists for backwards compatability, and sets your DOING attribute so 
-  that, when evaluated, it will return <message>. It is equivilent to:
+  that, when evaluated, it will return <message>. It is equivalent to:
     @set me=DOING:[decompose(<message>)]
+  The @doing command is deprecated, and using it should be avoided.
   
   @doing/header is an alias for @poll, and can only be used by Wizards or
   those with the Poll @power.
@@ -2318,9 +2319,13 @@ See also: list(), @config, config(), functions(), @stats, @command,
 
   This command lists the current MOTD (message of the day) for the MUSH.
   If used by a wizard or admin, it will also include the wizard, full, and
-  down MOTDs to the user. Same as @list/motd.
+  down MOTDs to the user.
+  
+  There are two sets of MotDs: permanant ones defined in mush.cnf, and
+  temporary ones set in-game with @motd. Only the messages defined with
+  @motd are shown.
 
-See also: @list
+See also: @motd, @list
 & @link
   @link[/preserve] <object>=[<dbref> | here | home | variable]
 
@@ -2834,12 +2839,16 @@ See also: message(), @chatformat, @pageformat, @oemit, @remit, speak()
 
   Note that @motd by itself clears the message. Use @motd/list or
   @listmotd to see the current messages.
+  
+  These messages are shown in addition to the permanent MotDs which are
+  defined in mush.cnf (motd_file, wizmotd_file, etc).
  
   Other switches:
   /wizard : sets the message for wizards (like @wizmotd)
   /down   : sets the logins-off message (like @rejectmotd)
   /full   : sets the max-players-logged-in message
   /list   : list the MOTDs (like @listmotd, can be used by anyone)
+See also: @listmotd
 & @name
   @name <object>=<new name>
   @name <player|exit>=<new name>[;<alias1>[;<aliasN>]]

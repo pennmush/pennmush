@@ -4251,15 +4251,33 @@ FUNCTION(fun_xwho)
   int nwho;
   int first;
   int start, count;
-  int powered = (*(called_as + 1) != 'M');
+  int powered = (*(called_as + 1) != 'M') && Priv_Who(executor);
   int objid = (strchr(called_as, 'D') != NULL);
+  int firstnum = 0;
+  dbref victim;
 
-  if (!is_strict_integer(args[0]) || !is_strict_integer(args[1])) {
+  if (nargs > 2) {
+    firstnum = 1;
+    if ((victim = noisy_match_result(executor, args[0], NOTYPE,
+                                     MAT_EVERYTHING)) == NOTHING) {
+      safe_str(T(e_notvis), buff, bp);
+      return;
+    }
+    if (!powered && victim != executor) {
+      safe_str(T(e_perm), buff, bp);
+      return;
+    }
+    if (!Priv_Who(victim))
+      powered = 0;
+  }
+
+
+  if (!is_strict_integer(args[firstnum]) || !is_strict_integer(args[firstnum+1])) {
     safe_str(T(e_int), buff, bp);
     return;
   }
-  start = parse_integer(args[0]);
-  count = parse_integer(args[1]);
+  start = parse_integer(args[firstnum]);
+  count = parse_integer(args[firstnum+1]);
 
   if (start < 1 || count < 1) {
     safe_str(T(e_argrange), buff, bp);
@@ -4270,7 +4288,7 @@ FUNCTION(fun_xwho)
   first = 1;
 
   DESC_ITER_CONN(d) {
-    if (!Hidden(d) || (powered && Priv_Who(executor))) {
+    if (!Hidden(d) || (powered)) {
       nwho += 1;
       if (nwho >= start && nwho < (start + count)) {
         if (first)
@@ -4299,13 +4317,13 @@ FUNCTION(fun_nwho)
   if (nargs && args[0] && *args[0]) {
     /* An argument was given. Find the victim and choose the lowest
      * perms possible */
-    if (!powered) {
-      safe_str(T(e_perm), buff, bp);
-      return;
-    }
     if ((victim = noisy_match_result(executor, args[0], NOTYPE,
                                      MAT_EVERYTHING)) == NOTHING) {
       safe_str(T(e_notvis), buff, bp);
+      return;
+    }
+    if (!powered && victim != executor) {
+      safe_str(T(e_perm), buff, bp);
       return;
     }
     if (!Priv_Who(victim))
@@ -4334,13 +4352,13 @@ FUNCTION(fun_lwho)
   if (nargs && args[0] && *args[0]) {
     /* An argument was given. Find the victim and choose the lowest
      * perms possible */
-    if (!powered) {
-      safe_str(T(e_perm), buff, bp);
-      return;
-    }
     if ((victim = noisy_match_result(executor, args[0], NOTYPE,
                                      MAT_EVERYTHING)) == NOTHING) {
       safe_str(T(e_notvis), buff, bp);
+      return;
+    }
+    if (!powered && victim != executor) {
+      safe_str(T(e_perm), buff, bp);
       return;
     }
     if (!Priv_Who(victim))

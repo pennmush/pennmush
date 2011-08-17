@@ -416,7 +416,7 @@ void file_watch_event(int);
 
 void initialize_mt(void);
 
-static char *get_doing(dbref player, bool full);
+static char *get_doing(dbref player, dbref enactor, bool full);
 
 #ifndef BOOLEXP_DEBUGGING
 #ifdef WIN32SERVICES
@@ -3487,7 +3487,7 @@ dump_users(DESC *call_by, char *match)
     sprintf(tbuf1, "%-16s %10s   %4s%c %s", Name(d->player),
             time_format_1(now - d->connected_at),
             time_format_2(now - d->last_time), (Dark(d->player) ? 'D' : ' ')
-            , get_doing(d->player, 0));
+            , get_doing(d->player, NOTHING, 0));
     queue_string_eol(call_by, tbuf1);
   }
   switch (count) {
@@ -3541,7 +3541,7 @@ do_who_mortal(dbref player, char *name)
                   time_format_1(now - d->connected_at),
                   time_format_2(now - d->last_time),
                   (Dark(d->player) ? 'D' : (Hidden(d) ? 'H' : ' '))
-                  , get_doing(d->player, 0));
+                  , get_doing(d->player, player, 0));
   }
   switch (count) {
   case 0:
@@ -4073,12 +4073,12 @@ do_doing(dbref player, const char *message)
 {
   if (!message || !*message) {
     /* Clear */
-    if (atr_clr(player, "DOING", GOD) == AE_OKAY)
+    if (atr_clr(player, "DOING", player) == AE_OKAY)
       notify(player, T("Doing cleared."));
     else
       notify(player, T("Unable to clear doing."));
   } else {
-    if (atr_add(player, "DOING", decompose_str((char *) message), GOD, 0) == AE_OKAY)
+    if (atr_add(player, "DOING", decompose_str((char *) message), player, 0) == AE_OKAY)
       notify(player, T("Doing set."));
     else
       notify(player, T("Unable to set doing."));
@@ -4089,11 +4089,12 @@ do_doing(dbref player, const char *message)
 
 /** Return a player's \@doing.
  * \param player the dbref of the player whose \@doing we want
+ * \param enactor the enactor
  * \param full Return the full doing, or limit to DOING_LEN chars for WHO?
  * \return a pointer to a STATIC buffer with the doing in.
  */
 static char *
-get_doing(dbref player, bool full)
+get_doing(dbref player, dbref enactor, bool full)
 {
   static char doing[BUFFER_LEN];
   char *dp = doing;
@@ -4105,7 +4106,7 @@ get_doing(dbref player, bool full)
     return "";
   }
 
-  if (!call_attrib(player, "DOING", dp, player, NULL, NULL)) {
+  if (!call_attrib(player, "DOING", dp, enactor, NULL, NULL)) {
     /* No DOING attribute */
     return "";
   }
@@ -4688,7 +4689,7 @@ FUNCTION(fun_doing)
   /* Gets a player's @doing */
   DESC *d = lookup_desc(executor, args[0]);
   if (d)
-    safe_str(get_doing(d->player, 0), buff, bp);
+    safe_str(get_doing(d->player, executor, 0), buff, bp);
 }
 
 /* ARGSUSED */

@@ -36,6 +36,9 @@ Minor changes:
    warning to the owner of the object executing them. Deprecated
    functions and commands might be removed in future patch levels;
    code using them needs to be rewritten. [SW]
+ * Mortals can now use lwho(me). Allows for lwho(%#) on ancestors to be
+   used by all. Suggested by Minion. [MG]
+ * xwho() now takes an optional <looker> arg, like lwho(). [MG]
 
 Locks:
  * New locks, @lock/filter and @lock/infilter, which must be passed (along

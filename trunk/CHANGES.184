@@ -44,6 +44,8 @@ Minor changes:
  * Mortals can now use lwho(me). Allows for lwho(%#) on ancestors to be
    used by all. Suggested by Minion. [MG]
  * xwho() now takes an optional <looker> arg, like lwho(). [MG]
+ * rand() without an argument returns a floating point number greater than
+   or equal to 0 and less than 1. [SW]
 
 Locks:
  * New locks, @lock/filter and @lock/infilter, which must be passed (along

@@ -21,6 +21,30 @@
  * and the ease of traversing a linked list. It'll be interesting to
  * see what difference this makes the next time M*U*S*H gets profiled.
  *
+ * See http://en.wikipedia.org/wiki/Skip_list for more on them, or the
+ * original paper at ftp://ftp.cs.umd.edu/pub/skipLists/skiplists.pdf.
+ *
+ * A few notes about this implementation: 
+ *
+ * The probability used for calculating the number of skips in any
+ * given node is \f$\frac{1}{p}\f$, with \f$p = 2\f$: All nodes have
+ * at least one link. Half of those will have at least two. Half of
+ * those will have at least three, and so on up to our maximimum.
+ *
+ * The algorithm that's typically shown for picking the number of
+ * skips in a newly initialized node involves repeated generation of
+ * random numbers and comparing them to p (See Figure 5 in the linked
+ * paper.) We use a trick involving a logarithm to get the same
+ * distribution in one step, with a single random number.
+ * 
+ * <img src="http://raevnos.pennmush.org/images/skip_list.png" />
+ *
+ * The maximum number of levels links we deal with, \f$L(N)\f$, is
+ * based on the equation \f$\log_{\frac{1}{p}}N\f$. \f$N\f$ is the
+ * upper bound of the number of elements in the list. Based on
+ * M*U*S*H, it's around 180. The MAX_LINKS constant isn't going to
+ * have to be changed until it gets over 256.
+ * 
  */
 #include "config.h"
 #include "conf.h"
@@ -42,7 +66,9 @@ typedef struct mem_check_node MEM;
 
 enum {
   REF_NAME_LEN = 64, /**< Length of longest check name */
-  MAX_LINKS = 8 /**< Maximum number of links in a single skip list node */
+  MAX_LINKS = 8 /**< Maximum number of links in a single skip list
+		   node. log2(N), where N is the expected
+		   maximum length (~180). */
 };
 
 /** A skip list for storing memory allocation counts */
@@ -56,6 +82,8 @@ struct mem_check_node {
 static MEM memcheck_head_storage = { 0, MAX_LINKS, {'\0'}, {NULL} };
 static MEM *memcheck_head = &memcheck_head_storage;
 
+/* MEM structs are kind of large for a slab, but storing them in one
+   will boost cache locality when iterating/searching the list. */
 slab *memcheck_slab = NULL;
 
 /*** WARNING! DO NOT USE strcasecoll IN THESE FUNCTIONS OR YOU'LL CREATE
@@ -66,7 +94,7 @@ slab *memcheck_slab = NULL;
 static MEM *
 lookup_check(const char *ref)
 {
-  MEM **links;
+  MEM **links, *prev;
   int n;
 
   /* Empty list */
@@ -74,29 +102,36 @@ lookup_check(const char *ref)
     return NULL;
 
   links = memcheck_head->links;
+  prev = NULL;
   n = memcheck_head->link_count - 1;
 
   while (n >= 0) {
     MEM *chk;
     int cmp;
 
-    if (!links[n]) {
+    chk = links[n];
+
+    /* Skip nulls and avoid redoing a failed comparision when link n
+       and n+1 both point to the same node */
+    if (!chk || (prev && chk == prev)) {
       n -= 1;
       continue;
     }
 
-    chk = links[n];
-
     cmp = strcmp(ref, chk->ref_name);
     if (cmp == 0) { /* Found it */
       return chk;
-    } else if (cmp > 0) { /* key is further down the chain */
+    } else if (cmp > 0) { /* key is further down the chain, start over
+			     with chk as the new head */
       links = chk->links;
       n = chk->link_count - 1;
-    } else if (cmp < 0) { /* Went too far */
+      prev = NULL;
+    } else if (cmp < 0) { /* Went too far, try the next lowest link */
       n -= 1;
+      prev = chk;
     }
   }
+  /* Not found */
   return NULL;
 }
 
@@ -124,7 +159,7 @@ pick_link_count(int maxcount)
 
 /* Allocate a new reference count struct. Consider moving away from
    slabs; the struct size is pretty big with the skip list fields
-   added. */
+   added. But see comment for memcheck_slab's declaration. */
 static MEM *
 alloc_memcheck_node(const char *ref)
 {
@@ -148,12 +183,10 @@ alloc_memcheck_node(const char *ref)
 static inline int
 min(int a, int b)
 {
-  if (a < b)
+  if (a <= b)
     return a;
-  else if (a > b)
+  else /* a > b */
     return b;
-  else
-    return a;
 }
 
 /* Update forward skip links for a new element of the list */

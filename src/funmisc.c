@@ -28,6 +28,7 @@
 #include "attrib.h"
 #include "ansi.h"
 #include "strtree.h"
+#include "SFMT.h"
 #include "confmagic.h"
 
 #ifdef WIN32
@@ -579,6 +580,15 @@ FUNCTION(fun_rand)
 {
   uint32_t low, high, rand;
   int lowint, highint, offset = 0;
+
+  if (nargs == 0) {
+    /* Floating pont number in the range [0,1) */
+    safe_number(genrand_real2(), buff, bp);
+    return;
+  }
+
+  /* Otherwise, an integer in a user-supplied range */
+
   if (!is_strict_integer(args[0])) {
     safe_str(T(e_int), buff, bp);
     return;

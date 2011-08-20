@@ -1008,23 +1008,22 @@ strip_braces(const char *str)
 static int
 apply_restrictions(unsigned int result, const char *xres)
 {
-  int flag, clear = 0;
-  char *tp;
-  char *restriction, *rsave;
+  char *restriction, *rsave, *res;
 
   if (!xres || !*xres)
-    return 0;
+    return result;
 
-  rsave = restriction = mush_strdup(xres, "ar.string");
+  rsave = restriction = res = mush_strdup(xres, "ar.string");
 
-  while (restriction && *restriction) {
-    if ((tp = strchr(restriction, ' ')))
-      *tp++ = '\0';
+  while ((restriction = split_token(&res, ' '))) {
+    unsigned int flag = 0;
+    bool clear = 0;
+
     if (*restriction == '!') {
       restriction++;
       clear = 1;
     }
-    flag = 0;
+
     if (!strcasecmp(restriction, "nobody")) {
       flag = FN_DISABLED;
     } else if (string_prefix(restriction, "nogag")) {
@@ -1056,7 +1055,6 @@ apply_restrictions(unsigned int result, const char *xres)
       result &= ~flag;
     else
       result |= flag;
-    restriction = tp;
   }
   mush_free(rsave, "ar.string");
   return result;

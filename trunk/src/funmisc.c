@@ -1192,6 +1192,7 @@ do_whichof(char *args[], int nargs, enum whichof_t flag,
   char const *ap;
   int first = 1;
   tbuf[0] = '\0';
+
   if (flag == DO_ALLOF) {
     /* The last arg is a delimiter. Parse it in place. */
     char *sp = sep;
@@ -1200,7 +1201,8 @@ do_whichof(char *args[], int nargs, enum whichof_t flag,
                        caller, enactor, PE_DEFAULT, PT_DEFAULT, pe_info);
     *sp = '\0';
     nargs--;
-  }
+  } else
+    sep[0] = '\0';
 
   for (j = 0; j < nargs; j++) {
     tp = tbuf;

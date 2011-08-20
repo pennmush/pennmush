@@ -1601,7 +1601,7 @@ FUNCTION(fun_spellnum)
 
   char num[BUFFER_LEN];
   char *number,                 /* the whole number (without -/+ sign and leading zeros) */
-  *pnumber = args[0], *pnum1, *pnum2 = NULL;    /* part 1 and 2 of the number respectively */
+  *pnumber, *pnum1, *pnum2 = NULL;    /* part 1 and 2 of the number respectively */
   bool minus = 0;               /* is the number negative? */
   size_t len, m, dot = 0, len1, len2;   /* length of part 1 and 2 respectively */
   bool ordinal_mode;

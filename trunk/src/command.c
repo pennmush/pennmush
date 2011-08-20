@@ -709,7 +709,7 @@ switchmask(const char *switches)
   char *p, *s;
   int switchnum;
 
-  if (sm_bytes < switch_bytes) {
+  if (!sw || sm_bytes < switch_bytes) {
     sw = mush_realloc(sw, switch_bytes, "cmd.switch.vector");
     sm_bytes = switch_bytes;
   }
@@ -1073,8 +1073,8 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
   char *command, *swtch, *ls, *rs, *switches;
   static char commandraw[BUFFER_LEN];
   static char exit_command[BUFFER_LEN], *ec;
-  char *lsa[MAX_ARG];
-  char *rsa[MAX_ARG];
+  char *lsa[MAX_ARG] = {NULL};
+  char *rsa[MAX_ARG] = {NULL};
   char *ap, *swp;
   const char *attrib, *replacer;
   COMMAND_INFO *cmd;

@@ -306,6 +306,7 @@ FUNCTION(fun_udefault)
   /* We must now evaluate all the arguments from args[2] on and
    * pass them to the function */
   xargs = NULL;
+  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_udefault");
   if (nargs > 2) {
     xargs = mush_calloc(nargs - 2, sizeof(char *), "udefault.xargs");
     for (i = 0; i < nargs - 2; i++) {
@@ -315,13 +316,10 @@ FUNCTION(fun_udefault)
       process_expression(xargs[i], &dp, &sp, executor, caller, enactor,
                          PE_DEFAULT, PT_DEFAULT, pe_info);
       *dp = '\0';
+      pe_regs_setenv_nocopy(pe_regs, i, xargs[i]);
     }
   }
 
-  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_udefault");
-  for (i = 0; i < (nargs - 2); i++) {
-    pe_regs_setenv_nocopy(pe_regs, i, xargs[i]);
-  }
   call_ufun(&ufun, rbuff, executor, enactor, pe_info, pe_regs);
   pe_regs_free(pe_regs);
   safe_str(rbuff, buff, bp);

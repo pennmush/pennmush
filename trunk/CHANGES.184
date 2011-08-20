@@ -43,6 +43,7 @@ Minor changes:
    code using them needs to be rewritten. [SW]
  * Rewrite function restriction parsing and reporting to make it easier to
    add new restrictions. [SW]
+ * Code cleanup. [SW]
 
 Functions:
  * Mortals can now use lwho(me). Allows for lwho(%#) on ancestors to be

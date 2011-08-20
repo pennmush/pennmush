@@ -1570,13 +1570,14 @@ ssl_flush_queue(struct text_queue *q)
 #endif                          /* DEBUG */
       free_text_block(p);
     }
+    q->tail = &q->head->nxt;
+    /* Set up the flushed message if we can */
+    if (q->head->nchars + n < MAX_OUTPUT)
+      add_to_queue(q, (unsigned char *) flushed_message, n);
+    /* Return the total size of the message */
+    return q->head->nchars + n;
   }
-  q->tail = &q->head->nxt;
-  /* Set up the flushed message if we can */
-  if (q->head->nchars + n < MAX_OUTPUT)
-    add_to_queue(q, (unsigned char *) flushed_message, n);
-  /* Return the total size of the message */
-  return q->head->nchars + n;
+  return 0;
 }
 #endif
 

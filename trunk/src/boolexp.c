@@ -987,7 +987,6 @@ static enum test_atr_errs test_atr_err = TAE_NONE;
 static struct boolexp_node *
 test_atr(char *s, char c)
 {
-  int preserve;
   char *tbp;
   bool escaped;
   struct boolexp_node *b;
@@ -995,7 +994,6 @@ test_atr(char *s, char c)
 
   test_atr_err = TAE_NONE;
 
-  preserve = 0;
   escaped = 0;
 
   for (tbp = tbuf1; *s; s++) {
@@ -1016,12 +1014,10 @@ test_atr(char *s, char c)
           return NULL;
         }
 
-        preserve = flag->preserve;
-      } else if (c == ATR_TOKEN)
-        preserve = 1;
+      }
       s += 1;
       break;
-    } else if (!escaped && *s == '\\' && !preserve)
+    } else if (!escaped && *s == '\\')
       escaped = 1;
     else {
       safe_chr(UPCASE(*s), tbuf1, &tbp);

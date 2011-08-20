@@ -2010,6 +2010,8 @@ COMMAND(cmd_command)
       strccat(buff, &bp, "LogArgs");
     else if (command->type & CMD_T_LOGNAME)
       strccat(buff, &bp, "LogName");
+    if (command->type & CMD_T_DEPRECATED)
+      strccat(buff, &bp, "Deprecated");
     *bp = '\0';
     notify_format(executor, T("Flags      : %s"), buff);
     buff[0] = '\0';

@@ -82,7 +82,7 @@ struct fun {
    * is the absolute value of this variable.
    */
   int maxargs;
-  unsigned int flags;   /**< Bitflags of function */
+  uint32_t flags;   /**< Bitflags of function */
 };
 
 
@@ -103,10 +103,10 @@ void do_userfn(char *buff, char **bp,
 FUN *func_hash_lookup(const char *name);
 FUN *builtin_func_hash_lookup(const char *name);
 int check_func(dbref player, FUN *fp);
-int restrict_function(const char *name, const char *restrict);
+int restrict_function(const char *name, const char *restriction);
 int alias_function(dbref player, const char *function, const char *alias);
 void do_function_restrict(dbref player, const char *name,
-                          const char *restrict, int builtin);
+                          const char *restriction, int builtin);
 void do_function_restore(dbref player, const char *name);
 void do_list_functions(dbref player, int lc, char *type);
 char *list_functions(const char *);

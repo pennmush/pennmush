@@ -41,6 +41,10 @@ Minor changes:
    warning to the owner of the object executing them. Deprecated
    functions and commands might be removed in future patch levels;
    code using them needs to be rewritten. [SW]
+ * Rewrite function restriction parsing and reporting to make it easier to
+   add new restrictions. [SW]
+
+Functions:
  * Mortals can now use lwho(me). Allows for lwho(%#) on ancestors to be
    used by all. Suggested by Minion. [MG]
  * xwho() now takes an optional <looker> arg, like lwho(). [MG]
@@ -68,6 +72,8 @@ Fixes:
  * The Can_spoof power was only aliased to Can_nspemit (its original name)
    in upgraded dbs, not in new games created from minimal db. Reported by
    Ben Ramsey. [MG]
+ * Fix a crash bug in @function/restrict on malformed input. Reported by
+   Padraic. [SW]
 
 Version 1.8.4 patchlevel 6                                 Jul 29,  2011
 

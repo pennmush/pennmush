@@ -2611,7 +2611,6 @@ FUNCTION(fun_regreplace)
       extra = default_match_limit();
     }
 
-    search = 0;
     /* Do all the searches and replaces we can */
 
     start = prebuf;

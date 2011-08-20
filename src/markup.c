@@ -760,7 +760,14 @@ grow_mi(ansi_string *as, char type)
   return &as->mi[as->micount++];
 }
 
-#define MI_FOR(as, idx) (((idx) < 0) ? NULL : &as->mi[idx])
+static inline new_markup_information *
+MI_FOR(ansi_string *as, int idx)
+{
+  if (idx < 0)
+    return NULL;
+  else
+    return &as->mi[idx];
+}
 
 #define DOFREE_START   0x01
 #define DOFREE_END     0x02
@@ -1446,6 +1453,7 @@ safe_markup_change(ansi_string *as, int lastidx, int nextidx, int pos,
   new_markup_information *mil = NULL, *mir = NULL;
   int i = 0;
   new_markup_information *endbuff[BUFFER_LEN];
+  bool right_side = 0;
 
   if (lastidx >= 0) {
     lastmi = &as->mi[lastidx];
@@ -1470,20 +1478,24 @@ safe_markup_change(ansi_string *as, int lastidx, int nextidx, int pos,
       break;
   }
   /* Dump the end codes for everything from lastmi down to mil. */
-  for (; lastmi != mil; lastmi = MI_FOR(as, lastmi->parentIdx)) {
+  for (; lastmi && lastmi != mil; lastmi = MI_FOR(as, lastmi->parentIdx)) {
     if (safe_end_code(lastmi, buff, bp))
       return 1;
   }
   /* Now we do the start codes for everything on the right. We have to
    * do this from the bottom of the stack (or rmi)-up, though. */
-  i = 0;
-  for (i = 0; nextmi && nextmi != mir; nextmi = MI_FOR(as, nextmi->parentIdx)) {
-    endbuff[i++] = nextmi;
+  for (i = 0;
+       nextmi && nextmi != mir;
+       nextmi = MI_FOR(as, nextmi->parentIdx), i += 1) {
+    endbuff[i] = nextmi;
+    right_side = 1;
   }
-  while (i--) {
-    if (!(endbuff[i]->standalone && pos != endbuff[i]->start)) {
-      if (safe_start_code(endbuff[i], buff, bp))
-        return 1;
+  if (right_side) {
+    while (i--) {
+      if (!(endbuff[i]->standalone && pos != endbuff[i]->start)) {
+	if (safe_start_code(endbuff[i], buff, bp))
+	  return 1;
+      }
     }
   }
   return 0;
@@ -1502,7 +1514,7 @@ int
 safe_ansi_string(ansi_string *as, int start, int len, char *buff, char **bp)
 {
   int i;
-  int end = start + len;
+  int end;
   int retval = 0;
   int lastidx;
   char *buffend = buff + BUFFER_LEN;

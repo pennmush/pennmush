@@ -375,7 +375,7 @@ FUNCTION(fun_strinsert)
 FUNCTION(fun_delete)
 {
   ansi_string *as;
-  int pos, pos2, num;
+  int pos, num;
 
   if (!is_integer(args[1]) || !is_integer(args[2])) {
     safe_str(T(e_ints), buff, bp);
@@ -399,12 +399,10 @@ FUNCTION(fun_delete)
   }
 
   if (num < 0) {
-    pos2 = pos + 1;
-    pos = pos2 + num;
+    pos += num + 1;
     if (pos < 0)
       pos = 0;
-  } else
-    pos2 = pos + num;
+  }
 
   ansi_string_delete(as, pos, num);
   safe_ansi_string(as, 0, as->len, buff, bp);
@@ -2208,7 +2206,6 @@ FUNCTION(fun_speak)
     starting_fragment = 1;
   }
 
-  funccount = pe_info->fun_invocations;
   pe_regs = pe_regs_create(PE_REGS_ARG, "fun_speak");
   while (start && *start) {
     fragment++;

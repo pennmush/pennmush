@@ -1553,7 +1553,7 @@ config_file_startup(const char *conf, int restrictions)
   return 1;
 }
 
-/** Warn about config options that weren't set in the files read. */
+/** Warn about config options that weren't set in the files read, and about deprecated options. */
 void
 config_file_checks(void)
 {
@@ -1563,6 +1563,9 @@ config_file_checks(void)
       do_rawlog(LT_ERR,
                 "CONFIG: directive '%s' missing from cnf file, using default value.",
                 cp->name);
+    } else if (!strcmp(cp->name, "newline_one_char") && (*((int *) cp->loc) == 0)) {
+      do_rawlog(LT_ERR,
+                "CONFIG: directive 'newline_one_char' is deprecated, and should be set to 0'");
     }
   }
   for (cp = hash_firstentry(&local_options); cp;

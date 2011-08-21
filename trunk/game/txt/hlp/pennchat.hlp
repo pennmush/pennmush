@@ -452,7 +452,7 @@ See also: cflags(), clflags()
   @clock/mod <channel>[=<key>]
 
   The @clock command modifies the @lock-style lock on a chat channel. If no 
-  <key> is specified, the lock is removed. See "help lockkeys" for an
+  <key> is specified, the lock is removed. See 'help lockkeys' for an
   explaination of <key>.
 
   The "join" lock restricts who can join the channel.

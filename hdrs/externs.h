@@ -232,7 +232,7 @@ void generic_command_failure(dbref executor, dbref enactor, char *string,
 
 /* From compress.c */
 /* Define this to get some statistics on the attribute compression
- * in @stats/tables. Only for word-based compression (COMPRESSION_TYPE 3 or 4
+ * in @stats/tables. Only for word-based compression (COMPRESSION_TYPE 3 or 4)
  */
 /* #define COMP_STATS /* */
 #if (COMPRESSION_TYPE != 0)

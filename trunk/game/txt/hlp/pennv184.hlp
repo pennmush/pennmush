@@ -13,13 +13,20 @@ be read in 'help patchlevels'.
 
 Version 1.8.4 patchlevel 7                                 ??? ??, 2011
 
+Deprecation:
+ * @elock, @eunlock, @ulock and @uunlock are deprecated. [SW]
+ * @doing is now deprecated (see below).
+ * The "newline_one_char" mush.cnf option is now deprecated, and will soon
+   always be "Yes". If you have it set to No and have any code that assumes
+   strlen(%r) == 2, you should change it now. [MG]
+
 Major changes:
  * DOING is now a standard attribute. Your @doing can be any length, and
    doing() returns the whole string (though it will still be truncated when
    displayed on WHO), can contain ANSI and will be evaluated each time it's 
    displayed, allowing for random/rotating doings. The @doing command will
    escape its input before setting into an attribute, for backwards
-   compatability; use &doing to store code. [MG]
+   compatability, but is now deprecated; use &doing to store code. [MG]
 
 Minor changes:
  * Rewrite memcheck allocation tracking to use a more efficient data
@@ -44,7 +51,6 @@ Locks:
  * New locks, @lock/filter and @lock/infilter, which must be passed (along
    with any @filter/@infilter set) for an object to forward sound. Patch
    by Padraic.
- * @elock, @eunlock, @ulock and @uunlock are deprecated. [SW]
 
 Fixes:
  * Verified that Penn compiles using the clang compiler, and fix a few

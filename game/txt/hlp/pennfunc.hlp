@@ -17,8 +17,7 @@
     > say first(rest(v(va) [v(vb)]))
     You say, "is"
 
-  See "help FUNCTIONS2" for more.
-
+  See 'help functions2' for more.
 & FUNCTIONS2
   There are two types of functions, "built-in functions" and "global
   user functions", also known as "@functions". You can get a complete
@@ -27,7 +26,7 @@
   Built-in functions are written in the game hardcode, while @functions
   are written in softcode, and then made global with the "@function"
   command. Both are used in exactly the same manner. For more information
-  on @functions, see "help @function".
+  on @functions, see 'help @function'.
 
 See also: MUSHCODE
 & FUNCTION LIST
@@ -4164,7 +4163,7 @@ See also: attrib_set(), @set, wipe()
   elements in <list1> that aren't in <list2>. The list that is
   returned is sorted. Normally, alphabetic sorting is done. You can
   change this with the fourth argument, which is a sort type as
-  defined in "help sorting". If used with exactly four arguments where
+  defined in 'help sorting'. If used with exactly four arguments where
   the fourth is not a sort type, it's treated instead as the output
   separator.
 
@@ -4180,7 +4179,7 @@ See also: setinter(), setunion()
   elements that are in both <list1> and <list2>. The list that is
   returned is sorted. Normally, alphabetic sorting is done. You can
   change this with the fourth argument, which is a sort type as
-  defined in "help sorting". If used with exactly four arguments where
+  defined in 'help sorting'. If used with exactly four arguments where
   the fourth is not a sort type, it's treated instead as the output
   separator.
  
@@ -4307,7 +4306,7 @@ See also: setq(), letq(), r(), localize()
   This function returns the union of two sets -- i.e., all the elements of 
   both <list1> and <list2>, minus any duplicate elements. The list returned 
   is sorted. Normally, alphabetic sorting is done. You can change this with 
-  the fourth argument, which is a sort type as defined in "help sorting". 
+  the fourth argument, which is a sort type as defined in 'help sorting'. 
   If used with exactly four arguments where the fourth is not a sort type, 
   it's treated instead as the output
   separator.

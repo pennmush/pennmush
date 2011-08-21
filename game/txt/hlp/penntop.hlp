@@ -106,7 +106,8 @@ Help is available on the following topics:
   WARNINGS                 WILDCARDS                ZONE MASTER ROOMS        
   ZONE MASTERS             ZONES  
   
-Type "help <topic name>" for help.
+Type 'help <topic name>' for help.
+For a list of all topics, see 'help entries'.
 & ACTION LISTS
   An "action list" is simply a list of MUSH commands which are run together,
   one after the other. Each command in the list is separated by a semicolon.
@@ -2085,7 +2086,7 @@ See also: ZONES, MASTER ROOM, EVALUATION
   statements about ZMOs also apply to zone master rooms; for details,
   see the help topic ZONE MASTER ROOMS.
   
-  See "help ZONES2" for more.
+  See 'help ZONES2' for more.
 & ZONES2
   $-commands on a ZMO are treated as global within that zone.  The
   game attempts to match $-commands for the ZMO of the player's

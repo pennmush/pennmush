@@ -1547,7 +1547,7 @@ See also: @nsemit, emit(), @pemit, @remit, @oemit, @lemit, @zemit, @cemit,
   @disable <option>
 
   These wizard-only commands allow for any boolean @config options to
-  be changed (see "help @config paramaters" for a list).
+  be changed (see 'help @config paramaters' for a list).
 
   @enable <option> is the same thing as @config/set <option>=yes
   @disable <option> is the same thing as @config/set <option>=no
@@ -2405,28 +2405,26 @@ See also: LISTENING, @ahear, @amhear, @aahear
 & @lock
   @lock[/<switch>] <object>=<key> 
   
-  This command "locks" the object, specifying a key which determines
-  who or what can do certain things with the object. There are many
-  different types of locks, all of which are described in "help
-  locktypes" and which are designated by the switch. The "basic" lock
-  determines, for players and things, who can pick them up. For exits,
-  it determines who can go through the exit. All other locks can be
-  set the same way as the basic lock.
+  This command "locks" the object, specifying a key which determines who or
+  what can do certain things with the object. There are many different types
+  of locks, all of which are described in 'help locktypes' and which are 
+  designated by the switch. The "basic" lock determines, for players and 
+  things, who can pick them up. For exits, it determines who can go through 
+  the exit. All other locks can be set the same way as the basic lock.
 
-  Whenever you "pass" the basic lock, you succeed in doing something
-  with the object. This triggers the @success/@osuccess/@asuccess
-  messages and actions. If you fail to pass the basic lock, you
-  trigger the @failure/@ofailure/@afailure messages and actions. Other
-  locktypes may also have such success/failure messages: see "help
-  failure" for info.
+  Whenever you "pass" the basic lock, you succeed in doing something with 
+  the object. This triggers the @success/@osuccess/@asuccess messages and 
+  actions. If you fail to pass the basic lock, you trigger the 
+  @failure/@ofailure/@afailure messages and actions. Other locktypes may 
+  also have such success/failure messages: see 'help failure' for info.
 
   Just like attributes, locks can be inherited from parents. By default,
   locks are set no_inherit, but this flag can be cleared using @lset. More
-  details and a list of flags can be found in HELP @LSET.
+  details and a list of flags can be found in 'help @lset'.
 
-  A listing of lock types, such as pagelocks, look at "help locktypes".
+  A listing of lock types, such as pagelocks, look at 'help locktypes'.
   For the available key types, such as how to check an attribute on an
-  object trying to pass a lock, see "help lockkeys".
+  object trying to pass a lock, see 'help lockkeys'.
 
 See also: @lock-simple, locktypes, lockkeys, @clock, failure, success.
   elock(), lock(), @lset, @clock, testlock(), locks(), lockflags(),
@@ -2447,8 +2445,8 @@ SIMPLE LOCKS
      This locks the object "My Toy" to you and you alone. It is
      recommended that you @lock me == me in order to prevent anyone
      else from picking you up. The two = signs are NOT a typo! The
-     first is part of the @lock syntax (as shown at the top of "help
-     @lock") the second is a lock key that means "exactly this
+     first is part of the @lock syntax (as shown at the top of 'help
+     @lock') the second is a lock key that means "exactly this
      object".
   
   You can lock an object -against- another object as well, using the
@@ -2652,7 +2650,7 @@ See also: ipaddr(), hostname(), LASTSITE
   for examples.
 
   The types of keys are outlined below. Detailed help for each is available
-  by typing "help @lock-<key>", replacing <key> with the word on the left.
+  by typing 'help @lock-<key>', replacing <key> with the word on the left.
 
   Simple     - Always true, always false, or locking to an object.
   Objid      - Check if the object trying to pass the lock matches an objid.
@@ -3154,7 +3152,7 @@ See also: @prompt, prompt(), terminfo()
   are still at the login screen, or to send a message to just one of a
   player's connections when he's logged in multiple times.
 
-  See "help @pemit2" for more.
+  See 'help @pemit2' for more.
 & @pemit2
   The @pemit command can take the following additional switches:
     /contents  -- equivalent to @remit.
@@ -3191,8 +3189,8 @@ See also: MONEY, give
   @power <power>
   @power <object>=[!]<power>
   
-  @power/list lists the defined powers (see "help powers").  A list
-  of standard powers with explanations is given in "help powers list".
+  @power/list lists the defined powers (see 'help powers').  A list
+  of standard powers with explanations is given in 'help powers list'.
   When given a power name as an argument, @power displays information
   about a power.
 
@@ -3893,7 +3891,7 @@ See also: switch wildcards, switch(), @break, stext(), slev()
   the location of the target, unless the /inside switch is used, in which 
   case they are sent to the inventory of the target.
   
-  Continued in "help @teleport2".
+  Continued in 'help @teleport2.
 & @teleport2
   Teleporting to an exit works the same as using "goto". If you don't control
   the exit and don't have the tport_anywhere power, either you or <object>
@@ -4096,7 +4094,7 @@ See also: USER-DEFINED COMMANDS, STACK, VERBS, @trigger
   whichever happens first.
  
   More forms that support semaphores on arbitrary attributes are described in
-  "help @wait2".
+  'help @wait2'.
 
 See also: SEMAPHORES, @drain, @notify
 & @wait2
@@ -4104,7 +4102,7 @@ See also: SEMAPHORES, @drain, @notify
   in question. However, it is useful to be able to use other attributes as
   semaphores, so one object can be used as the blocker for multiple different
   things at once. Possible attribute names aren't completely arbitrary. See
-  "HELP SEMAPHORES5" for details.
+  'HELP SEMAPHORES5' for details.
 
   The syntax for these are:
  

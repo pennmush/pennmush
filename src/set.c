@@ -245,7 +245,7 @@ do_chown(dbref player, const char *name, const char *newobj, int preserve)
 static int
 chown_ok(dbref player, dbref thing, dbref newowner)
 {
-  /* Cant' touch garbage */
+  /* Can't touch garbage */
   if (IsGarbage(thing))
     return 0;
 

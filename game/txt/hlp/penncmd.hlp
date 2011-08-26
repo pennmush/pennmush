@@ -1066,7 +1066,7 @@ See also: accent(), @nameformat, accname(), stripaccents()
   
   Example:
     Show the room's zone after its name.
-    > @nameformat here = %1 [if(isdbref(zone(%0)),<[name(zone(%0))]>)]
+    > @nameformat here = %1 [if(zone(%0),<[name(zone(%0))]>)]
 
 See also: look, @exitformat, @conformat, @descformat, @nameaccent, 
     @invformat, @idescformat
@@ -1890,9 +1890,10 @@ See also: FLAGS, @set, @power, flag permissions
   how that function is parsed, and how many arguments it takes.
   
   <switch> can be one of:
-  /disable, to disable a built-in function.
+  /disable, to disable a function.
   /enable, to re-enable it.
-  /delete, to remove a user-defined function.
+  /delete, to remove a user-defined function or allow a built-in function
+           to be overriden by a user-defined one.
   /restrict, to change the restriction flags on an existing function.
   
   @function/alias creates an alias for the built-in function <function name>

@@ -32,6 +32,8 @@ Minor changes:
  * Rewrite memcheck allocation tracking to use a more efficient data
    structure. [SW]
  * Help file improvements, by Ender and others. [SW] [MG]
+ * Added a new 'getting started' helpfile, that gives a brief overview of
+   how to move, talk, use channels and @mail. Suggested by Wiggles. [MG]
  * @decompile now uses '&attr obj=value', even for standard attributes, to
    avoid possible clashes with command names. Suggested by Mercutio. [MG]
  * Extended convtime understands timestamps of the form 

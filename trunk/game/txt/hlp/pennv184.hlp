@@ -48,6 +48,8 @@ Minor changes:
  * Rewrite function restriction parsing and reporting to make it easier to
    add new restrictions. [SW]
  * Code cleanup. [SW]
+ * Channels are now ungagged on disconnect, instead of connect, so you'll
+   see your "<Foo> Bar has connected." message next time you log in. [MG]
 
 Functions:
  * Mortals can now use lwho(me). Allows for lwho(%#) on ancestors to be

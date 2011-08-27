@@ -3787,7 +3787,7 @@ announce_connect(DESC *d, int isnew, int num)
     flag_broadcast(0, "HEAR_CONNECT", "%s %s", T("GAME:"), tbuf1);
 
   if (ANNOUNCE_CONNECTS)
-    chat_player_announce(player, message, num == 1);
+    chat_player_announce(player, message, 0);
 
   loc = Location(player);
   if (!GoodObject(loc)) {
@@ -3990,7 +3990,7 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot)
     /* notify contents */
     notify_except(player, player, tbuf1, 0);
     /* notify channels */
-    chat_player_announce(player, message, 0);
+    chat_player_announce(player, message, num == 1);
   }
 
   /* Monitor broadcasts */

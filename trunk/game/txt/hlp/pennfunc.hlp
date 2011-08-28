@@ -61,12 +61,12 @@ See also: MUSHCODE
   stored in attributes on objects.
 
   aposs()        attrib_set()   default()      edefault()     eval()
-  get()          grep()         grepi()        hasattr()      hasattrp()
-  hasattrval()   lattr()        nattr()        obj()          pfun()
-  poss()         reglattr()     regrep()       regrepi()      regxattr()
-  subj()         udefault()     ufun()         ulambda()      uldefault()    
-  ulocal()       v()            wildgrep()     wildgrepi()    xattr()        
-  xget()         zfun()         
+  flags()        get()          grep()         grepi()        hasattr()
+  hasattrp()     hasattrval()   lattr()        lflags()       nattr()
+  obj()          pfun()         poss()         reglattr()     regrep()       
+  regrepi()      regxattr()     set()          subj()         udefault()     
+  ufun()         ulambda()      uldefault()    ulocal()       v()            
+  wildgrep()     wildgrepi()    xattr()        xget()         zfun()
 
 See also: ATTRIBUTES, NON-STANDARD ATTRIBUTES
 & Bitwise functions
@@ -2848,7 +2848,7 @@ See also: pos(), member(), match()
 
   Examples in 'help lsearch3'.
 
-See also: @search, @find, lparent()
+See also: @search, @find, lparent(), stats()
 & LSEARCH3
 & SEARCH3
   lsearch() Examples:
@@ -2870,16 +2870,17 @@ See also: @search, @find, lparent()
 & STATS()
   lstats(<player>)
  
-  This function returns the breakdown of objects in the database, in a
-  format similar to "@stats". If <player> is "all", a breakdown is
-  done for the entire database. Otherwise, the breakdown is returned
-  for that particular player.
+  This function returns the breakdown of objects in the database, in a format
+  similar to "@stats". If <player> is "all" (the default), a breakdown is
+  done for the entire database. Otherwise, the breakdown is returned for 
+  that particular player.
   
   Only wizards and those with the Search power can LSTATS() other players.
   The list returned is in the format: 
   <Total objects> <Rooms> <Exits> <Things> <Players> <Garbage>
 
   stats() is an alias for lstats().
+See also: nsearch()
 & LT()
   lt(<number1>, <number2>[, ... , <numberN>])
 

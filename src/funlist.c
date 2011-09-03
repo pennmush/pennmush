@@ -481,9 +481,8 @@ FUNCTION(fun_itemize)
   char sep = ' ';
   const char *lconj = "and";
   const char *punc = ",";
-  char *cp;
-  char *word, *nextword;
-  int pos;
+  int pos, n;
+  char *words[MAX_SORTSIZE];
 
   if (strcmp(called_as, "ELIST") == 0) {
     /* elist ordering */
@@ -504,18 +503,14 @@ FUNCTION(fun_itemize)
     if (nargs > 3)
       punc = args[3];
   }
-  cp = trim_space_sep(args[0], sep);
-  pos = 1;
-  word = split_token(&cp, sep);
-  while (word) {
-    nextword = split_token(&cp, sep);
-    safe_itemizer(pos, !(nextword), punc, lconj, outsep, buff, bp);
-    safe_str(word, buff, bp);
-    pos++;
-    word = nextword;
+  n = list2arr_ansi(words, MAX_SORTSIZE, args[0], sep, 1) - 1;
+  for (pos = 0; pos <= n; pos++) {
+    safe_itemizer(pos+1, pos == n, punc, lconj, outsep, buff, bp);
+    safe_str(words[pos], buff, bp);
   }
-}
+  freearr(words, n+1);
 
+}
 
 /* ARGSUSED */
 FUNCTION(fun_filter)

@@ -62,6 +62,7 @@ Functions:
  * xwho() now takes an optional <looker> arg, like lwho(). [MG]
  * rand() without an argument returns a floating point number greater than
    or equal to 0 and less than 1. [SW]
+ * itemize() is now more ANSI-aware. Reported by Jules. [MG]
 
 Locks:
  * New locks, @lock/filter and @lock/infilter, which must be passed (along

@@ -82,6 +82,7 @@ Fixes:
  * Fix a crash bug in @function/restrict on malformed input. Reported by
    Padraic. [SW]
  * Some fixes to the test suite. Reported by Covenent. [MG]
+ * @pageformat included nospoof information. Reported by Jules. [MG]
 
 & 1.8.4p6
 Version 1.8.4 patchlevel 6                                 Jul 29,  2011

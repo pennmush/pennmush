@@ -700,8 +700,12 @@ FUNCTION(fun_switch)
                      PE_DEFAULT, PT_DEFAULT, pe_info);
   *dp = '\0';
 
-  pe_regs = pe_regs_localize(pe_info, PE_REGS_SWITCH | PE_REGS_CAPTURE,
-                             "fun_switch");
+  if (exact)
+    pe_regs = pe_regs_localize(pe_info, PE_REGS_SWITCH,
+                               "fun_switch");
+  else
+    pe_regs = pe_regs_localize(pe_info, PE_REGS_SWITCH | PE_REGS_CAPTURE,
+                               "fun_switch");
   pe_regs_set(pe_regs, PE_REGS_NOCOPY | PE_REGS_SWITCH, "t0", mstr);
 
   /* try matching, return match immediately when found */

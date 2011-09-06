@@ -55,6 +55,8 @@ Minor changes:
  * Code cleanup. [SW]
  * Channels are now ungagged on disconnect, instead of connect, so you'll
    see your "<Foo> Bar has connected." message next time you log in. [MG]
+ * WARN_ON_MISSING can now be @hooked. Suggested by Padraic. Also, help has
+   been added for that and UNIMPLEMENTED_COMMAND. [MG]
 
 Functions:
  * Mortals can now use lwho(me). Allows for lwho(%#) on ancestors to be

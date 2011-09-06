@@ -2215,7 +2215,7 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
     Huh?  (Type "help" for help.)  (10 times)
     Announcement: Room Zero shouts, "Dunce wins his first typo trophy!"
 
-See also: @hook, EVALUATION ORDER
+See also: @hook, EVALUATION ORDER, warn_on_missing, unimplemented_command
 & @idle
   @idle <player>[=<message>]
 
@@ -4829,6 +4829,37 @@ See also: follow, dismiss, desert, followers(), @follow, @ofollow, @afollow
   see 'help @charges' for more information.
 
 See also: @use, @charges, @lock, @ufail
+& WARN_ON_MISSING
+
+  This internal command is run when someone attempts to run a command which
+  starts with a function, for example:
+    &test me=$test: [emit(test)]
+  By default it sends the owner of the offending object a message, so they
+  can fix the code to use a command instead of a function. The command must
+  be enabled (either in restrict.cnf or with @command/enable) in order to
+  be used. It can be @hooked to set custom behaviour.
+  
+  Example:
+    > @hook/override warn_on_missing=#0, wom
+    > &wom #0=$warn_on_missing: @pemit/list %# [owner(%!)]=[name(%!)] has
+         broken code in %=!
+         
+    > &wom #0=$warn_on_missing *: @pemit [owner(%!)]=[name(%!)] has broken
+         code in %= - attempted to run %0!
+         
+See also: huh_command, unimplemented_command
+& UNIMPLEMENTED_COMMAND
+
+  This internal command is run when someone attempts to use an unimplemented
+  command. Currently, this occurs either when @SQL is used but SQL support is
+  not enabled, or when a command has been added with @command/add but has not
+  been properly @hooked to run softcode. UNIMPLEMENTED_COMMAND cannot be run
+  directly.
+  
+  By default, the command just shows the message "This command has not been
+  implemented.", but you can @hook it to perform other actions.
+  
+See also: huh_command, warn_on_missing, @command, @hook, @sql
 & whisper 
   whisper <player>=<message>
   whisper/silent <player>=<message>

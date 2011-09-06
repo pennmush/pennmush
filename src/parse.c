@@ -2611,7 +2611,7 @@ process_expression(char *buff, char **bp, char const **str,
               global_fun_invocations++;
               pe_info->fun_invocations++;
               fp->where.fun(fp, buff, bp, nfargs, fargs, arglens, executor,
-                            caller, enactor, fp->name, pe_info);
+                            caller, enactor, fp->name, pe_info, ((eflags & ~PE_FUNCTION_MANDATORY) | PE_DEFAULT));
               if (fp->flags & FN_LOGARGS) {
                 char logstr[BUFFER_LEN];
                 char *logp;

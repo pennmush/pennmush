@@ -20,6 +20,27 @@ that have altered hardcode will appear here.
 
 ==========================================================================
 
+Version 1.8.4 patchlevel 7                                 ??? ??, 2011
+  Function defintions -- FUNCTION(fun_foo) {...} -- now receive an extra
+  argument, eflags. Useful for functions which do further evaluation
+  of their arguments after being called (particularly NOPARSE functions),
+  the variable contains the appropriate PE_* flags to be used when calling
+  process_expression. For example, the S() function previously used:
+  
+    process_expression(buff, bp, &p, executor, caller, enactor, PE_DEFAULT,
+                       PT_DEFAULT, pe_info);
+                       
+  and now uses
+  
+    process_expression(buff, bp, &p, executor, caller, enactor, eflags,
+                       PT_DEFAULT, pe_info);
+  
+  Ensures that PE_USERFN and PE_[NO]DEBUG are properly passed down. When
+  evaluating another attribute, you should continue to use PE_UDEFAULT
+  instead of eflags (or use a function like call_ufun to evaluate it).
+
+
+
 Version 1.8.4 patchlevel 5                                 Jun 19,  2011
   ansi_string has been heavily rewritten. as->text and as->len still
   work for accessing, everything else about ansi_string has been heavily

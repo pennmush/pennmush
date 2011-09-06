@@ -13,6 +13,11 @@ be read in 'help patchlevels'.
 
 Version 1.8.4 patchlevel 7                                 ??? ??, 2011
 
+Hardcode:
+ * Softcode functions are now passed an additional argument, eflags,
+   by the hardcode, which should be used when the function calls
+   process_expression(). See HACKING.184 for more info. [MG]
+ 
 Deprecation:
  * @elock, @eunlock, @ulock and @uunlock are deprecated. [SW]
  * @doing is now deprecated (see below).
@@ -52,6 +57,8 @@ Minor changes:
    see your "<Foo> Bar has connected." message next time you log in. [MG]
  * WARN_ON_MISSING can now be @hooked. Suggested by Padraic. Also, help has
    been added for that and UNIMPLEMENTED_COMMAND. [MG]
+ * fn() didn't always work correctly on a UserFn function, especially when
+   nested in another function. Reported by Padraic. [MG]
 
 Functions:
  * Mortals can now use lwho(me). Allows for lwho(%#) on ancestors to be

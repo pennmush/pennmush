@@ -89,6 +89,8 @@ Fixes:
  * Some fixes to the test suite. Reported by Covenent. [MG]
  * @pageformat included nospoof information. Reported by Jules. [MG]
  * case() clobbered $0-$9 subs. Reported by Jules. [MG]
+ * Named regexp captures -- (?P<NAME>pattern) -- were broken in a recent
+   patchlevel. Reported by Jules. [MG]
 
 Version 1.8.4 patchlevel 6                                 Jul 29,  2011
 

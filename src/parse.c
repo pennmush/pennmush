@@ -1299,6 +1299,8 @@ pe_regs_set_rx_context(PE_REGS *pe_regs,
     pcre_copy_substring(re_from, re_offsets, re_subpatterns,
                         num, buff, BUFFER_LEN);
     pe_regs_set(pe_regs, PE_REGS_REGEXP, pe_regs_intname(i), buff);
+    pe_regs_set(pe_regs, PE_REGS_REGEXP, (char *)entry+2, buff);
+
   }
 }
 
@@ -2553,9 +2555,9 @@ process_expression(char *buff, char **bp, char const **str,
           (*str)--;
 
 
-	/* Warn about deprecated functions */
-	if (fp->flags & FN_DEPRECATED)
-	  notify_format(Owner(executor), T("Deprecated function %s being used on object #%d."), fp->name, executor);
+    /* Warn about deprecated functions */
+    if (fp->flags & FN_DEPRECATED)
+      notify_format(Owner(executor), T("Deprecated function %s being used on object #%d."), fp->name, executor);
 
         /* See if this function is enabled */
         /* Can't do this check earlier, because of possible side effects

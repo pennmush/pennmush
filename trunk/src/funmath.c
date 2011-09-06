@@ -1424,7 +1424,7 @@ FUNCTION(fun_cand)
     tp = tbuf;
     sp = args[j];
     process_expression(tbuf, &tp, &sp, executor, caller, enactor,
-                       PE_DEFAULT, PT_DEFAULT, pe_info);
+                       eflags, PT_DEFAULT, pe_info);
     *tp = '\0';
     if (!parse_boolean(tbuf)) {
       safe_integer(negate, buff, bp);
@@ -1446,7 +1446,7 @@ FUNCTION(fun_cor)
     tp = tbuf;
     sp = args[j];
     process_expression(tbuf, &tp, &sp, executor, caller, enactor,
-                       PE_DEFAULT, PT_DEFAULT, pe_info);
+                       eflags, PT_DEFAULT, pe_info);
     *tp = '\0';
     if (parse_boolean(tbuf)) {
       safe_integer(!negate, buff, bp);

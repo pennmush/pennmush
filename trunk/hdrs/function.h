@@ -54,7 +54,7 @@ typedef struct fun FUN;
 
 typedef void (*function_func) (FUN *, char *, char **, int, char *[], int[],
                                dbref, dbref, dbref, const char *,
-                               NEW_PE_INFO *);
+                               NEW_PE_INFO *, int);
 
 typedef struct userfn_entry USERFN_ENTRY;
 
@@ -122,7 +122,7 @@ void function_init_postconfig(void);
 #define FUNCTION_PROTO(fun_name) \
   extern void fun_name (FUN *fun, char *buff, char **bp, int nargs, char *args[], \
                    int arglen[], dbref executor, dbref caller, dbref enactor, \
-                   char const *called_as, NEW_PE_INFO *pe_info)
+                   char const *called_as, NEW_PE_INFO *pe_info, int eflags)
 extern void function_add(const char *name, function_func fun, int minargs,
                          int maxargs, int ftype);
 

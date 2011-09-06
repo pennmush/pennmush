@@ -44,6 +44,7 @@
 #include "log.h"
 #include "intmap.h"
 #include "ptab.h"
+#include "ansi.h"
 #include "confmagic.h"
 
 
@@ -1016,7 +1017,12 @@ do_entry(MQUE *entry, int include_recurses)
     if (*s == ';')
       s++;
     /* process_command() destructively modifies the cmd, so we need to copy it */
-    strcpy(tbuf, entry->pe_info->cmd_raw);
+    if (has_markup(entry->pe_info->cmd_raw)) {
+      /* Remove any markup, as it can cause bleed when split by command_argparse() */
+      strcpy(tbuf, remove_markup(entry->pe_info->cmd_raw, NULL));
+    } else {
+      strcpy(tbuf, entry->pe_info->cmd_raw);
+    }
     process_command(executor, tbuf, entry);
     while (entry->inplace) {
       tmp = entry->inplace;

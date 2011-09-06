@@ -100,6 +100,8 @@ Fixes:
  * case() clobbered $0-$9 subs. Reported by Jules. [MG]
  * Named regexp captures -- (?P<NAME>pattern) -- were broken in a recent
    patchlevel. Reported by Jules. [MG]
+ * Markup wasn't stripped from queued commands, making it possible for
+   ANSI to bleed. Reported by Wiggles. [MG]
 
 Version 1.8.4 patchlevel 6                                 Jul 29,  2011
 

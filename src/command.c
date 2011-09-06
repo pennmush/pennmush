@@ -379,22 +379,22 @@ COMLIST commands[] = {
   {"SESSION", NULL, cmd_session, CMD_T_ANY, 0, 0},
 
 /* ATTRIB_SET is an undocumented command - it's sugar to make it possible
- * enable/disable attribute setting with &XX or @XX
+ * to enable/disable attribute setting with &XX or @XX
  */
   {"ATTRIB_SET", NULL, command_atrset,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED | CMD_T_INTERNAL, 0, 0},
 
 /* A way to stop people starting commands with functions */
   {"WARN_ON_MISSING", NULL, cmd_warn_on_missing,
-   CMD_T_ANY | CMD_T_NOPARSE | CMD_T_INTERNAL, 0, 0},
+   CMD_T_ANY | CMD_T_NOPARSE | CMD_T_INTERNAL| CMD_T_NOP, 0, 0},
 
 /* A way to let people override the Huh? message */
   {"HUH_COMMAND", NULL, cmd_huh_command,
-   CMD_T_ANY | CMD_T_NOPARSE | CMD_T_INTERNAL, 0, 0},
+   CMD_T_ANY | CMD_T_NOPARSE | CMD_T_INTERNAL | CMD_T_NOP, 0, 0},
 
 /* A way to let people override the unimplemented message */
   {"UNIMPLEMENTED_COMMAND", NULL, cmd_unimplemented,
-   CMD_T_ANY | CMD_T_NOPARSE | CMD_T_INTERNAL, 0, 0},
+   CMD_T_ANY | CMD_T_NOPARSE | CMD_T_INTERNAL | CMD_T_NOP, 0, 0},
 
   {NULL, NULL, NULL, 0, 0, 0}
 };
@@ -1115,13 +1115,11 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
   }
 
   if (*p == '[') {
-    if ((cmd = command_find("WARN_ON_MISSING"))) {
-      if (!(cmd->type & CMD_T_DISABLED)) {
-        cmd->func(cmd, player, queue_entry->enactor, queue_entry->caller, sw,
-                  string, NULL, NULL, ls, lsa, rs, rsa, queue_entry);
-        command_parse_free_args;
-        return NULL;
-      }
+    if ((cmd = command_find("WARN_ON_MISSING")) && !(cmd->type & CMD_T_DISABLED)) {
+      run_command(cmd, player, queue_entry->enactor, "WARN_ON_MISSING", NULL, NULL, string,
+                  NULL, string, string, NULL, NULL, NULL, queue_entry);
+      command_parse_free_args;
+      return NULL;
     }
   }
 
@@ -1441,14 +1439,30 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
 
 #undef command_parse_free_args
 
+/** Run a built-in command, with associated hooks
+ * \param cmd the command to run
+ * \param executor Dbref of object running command
+ * \param enactor Dbref of object which caused command to run
+ * \param cmd_evaled The evaluated command, for %u
+ * \param sw Switch mask
+ * \param switch_err Error message if invalid switches were used, or NULL/'\0' if not
+ * \param cmd_raw The unevaluated command, for %c
+ * \param swp Switches, as a char array (used for CMD_T_SWITCHES commands)
+ * \param ap Entire arg string (lhs, =, rhs)
+ * \param ls The leftside arg, if the command has a single left arg
+ * \param lsa Array of leftside args, if CMD_T_LS_ARGS
+ * \param rs The rightside arg, if the command has a single rhs arg
+ * \param rsa Array of rhs args, if CMD_T_RS_ARGS
+ * param queue_entry The queue entry the command is being run in
+ */
 int
 run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
-            const char *commandraw, switch_mask sw, char switch_err[BUFFER_LEN],
-            const char *string, char *swp, char *ap, char *ls,
+            const char *cmd_evaled, switch_mask sw, char switch_err[BUFFER_LEN],
+            const char *cmd_raw, char *swp, char *ap, char *ls,
             char *lsa[MAX_ARG], char *rs, char *rsa[MAX_ARG], MQUE *queue_entry)
 {
   NEW_PE_INFO *pe_info;
-  char huh_arg[BUFFER_LEN];
+  char nop_arg[BUFFER_LEN];
 
   if (!cmd)
     return 0;
@@ -1460,12 +1474,14 @@ run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
 
   /* Create a pe_info for the hooks, which share q-registers */
   pe_info = make_pe_info("pe_info-run_command");
-  strcpy(pe_info->cmd_evaled, commandraw);
-  strcpy(pe_info->cmd_raw, string);
+  strcpy(pe_info->cmd_evaled, cmd_evaled);
+  strcpy(pe_info->cmd_raw, cmd_raw);
 
-  /* Done this way because another call to tprintf during
-   * run_hook_override will blitz the string */
-  strcpy(huh_arg, tprintf("HUH_COMMAND %s", ls));
+  if (cmd->type & CMD_T_NOP) {
+    /* Done this way because another call to tprintf during
+     * run_hook_override will blitz the string */
+    strcpy(nop_arg, tprintf("%s %s", cmd->name, ap));
+  }
 
   if (!run_hook(executor, enactor, &cmd->hooks.ignore, pe_info)) {
     free_pe_info(pe_info);
@@ -1473,9 +1489,9 @@ run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
   }
 
   /* If we have a hook/override, we use that instead */
-  if (!run_hook_override(cmd, executor, commandraw, queue_entry) &&
-      !(!strcmp(cmd->name, "HUH_COMMAND") &&
-        run_hook_override(cmd, executor, huh_arg, queue_entry))) {
+  if (!run_hook_override(cmd, executor, cmd_evaled, queue_entry) &&
+      !((cmd->type & CMD_T_NOP) &&
+        run_hook_override(cmd, executor, nop_arg, queue_entry))) {
     /* Otherwise, we do hook/before, the command, and hook/after */
     /* But first, let's see if we had an invalid switch */
     if (switch_err && *switch_err) {
@@ -1484,7 +1500,7 @@ run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
       return 1;
     }
     run_hook(executor, enactor, &cmd->hooks.before, pe_info);
-    cmd->func(cmd, executor, enactor, enactor, sw, string, swp, ap, ls, lsa, rs,
+    cmd->func(cmd, executor, enactor, enactor, sw, cmd_raw, swp, ap, ls, lsa, rs,
               rsa, queue_entry);
     run_hook(executor, enactor, &cmd->hooks.after, pe_info);
   }
@@ -1495,7 +1511,7 @@ run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
       do_log(LT_CMD, executor, enactor, "%s %s=***", cmd->name,
              (cmd->func == cmd_password ? "***" : ls));
     else
-      do_log(LT_CMD, executor, enactor, "%s", commandraw);
+      do_log(LT_CMD, executor, enactor, "%s", cmd_evaled);
   else if (cmd->type & CMD_T_LOGNAME)
     do_log(LT_CMD, executor, enactor, "%s", cmd->name);
 
@@ -1518,7 +1534,7 @@ generic_command_failure(dbref executor, dbref enactor, char *string,
 
   if ((cmd = command_find("HUH_COMMAND")) && !(cmd->type & CMD_T_DISABLED)) {
     run_command(cmd, executor, enactor, "HUH_COMMAND", NULL, NULL, string, NULL,
-                NULL, string, NULL, NULL, NULL, queue_entry);
+                string, string, NULL, NULL, NULL, queue_entry);
   }
 }
 
@@ -1728,7 +1744,6 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
  */
 COMMAND(cmd_unimplemented)
 {
-
   if (strcmp(cmd->name, "UNIMPLEMENTED_COMMAND") != 0 &&
       (cmd = command_find("UNIMPLEMENTED_COMMAND")) &&
       !(cmd->type & CMD_T_DISABLED)) {

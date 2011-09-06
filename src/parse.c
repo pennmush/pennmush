@@ -2555,9 +2555,9 @@ process_expression(char *buff, char **bp, char const **str,
           (*str)--;
 
 
-    /* Warn about deprecated functions */
-    if (fp->flags & FN_DEPRECATED)
-      notify_format(Owner(executor), T("Deprecated function %s being used on object #%d."), fp->name, executor);
+        /* Warn about deprecated functions */
+        if (fp->flags & FN_DEPRECATED)
+          notify_format(Owner(executor), T("Deprecated function %s being used on object #%d."), fp->name, executor);
 
         /* See if this function is enabled */
         /* Can't do this check earlier, because of possible side effects

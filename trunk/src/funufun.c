@@ -67,10 +67,8 @@ FUNCTION(fun_fn)
   safe_chr(')', tbuf, &tp);
   *tp = '\0';
   p = tbuf;
-  notify_format(1, "Before...");
   process_expression(buff, bp, &p, executor, caller, enactor,
                      eflags | PE_BUILTINONLY, PT_DEFAULT, pe_info);
-  notify_format(1, "After...");
 }
 
 /* ARGSUSED */

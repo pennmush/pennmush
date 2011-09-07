@@ -4072,8 +4072,30 @@ See also: ceil(), floor(), bound(), trunc()
 
   To prevent deleted functions from being used with fn(), @function/disable
   them prior to deleting.
+  
+  Continued in 'help fn2'.
+& FN2
 
-See also: @function, RESTRICT
+  The built-in function is run as the object calling fn(), which means that
+  permissions may be checked for the wrong object. objeval() can be useful
+  in getting around this problem. 
+  
+  Example:
+    > &BRIGHT_PEMIT #10=objeval(%@,pemit(%0,-->[ansi(h,%1)]))
+    @@ Make sure the caller doesn't see debug information for the objeval()'d
+    @@ code, even if he's set DEBUG.
+    > @set #10/BRIGHT_PEMIT=no_debug
+    > @function/delete PEMIT
+    > @function PEMIT=#10, BRIGHT_PEMIT
+    > @lock/pemit *Mike=!=*Padraic
+    
+    (As Padraic)
+    > think pemit(me,test)
+    -->test  (in highlighted letters)
+    > think pemit(*Mike,test)
+    (nothing happens)
+
+See also: @function, RESTRICT, attribute flags
 & S()
 & S-FUNCTION
   s(<string>)

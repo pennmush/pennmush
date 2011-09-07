@@ -413,36 +413,36 @@ For more, see Entries-20
  flags                     flags list                flags()                  
  flags2                    flip()                    floating                 
  floor()                   floordiv()                fmod()                   
- fn()                      fold()                    fold2                    
- folderstats()             follow                    followers()              
- following()               foreach()                 foreach2                 
+ fn()                      fn2                       fold()                   
+ fold2                     folderstats()             follow                   
+ followers()               following()               foreach()                
 
 For more, see Entries-21
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-21
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- forwardlist               fraction()                fullalias()              
- fullname()                function list             functions                
- functions()               functions2                gagged                   
- gender                    get                       get()                    
- get_eval()                getpids()                 getting started          
- give                      global commands           globals                  
- go                        going                     going_twice              
- goto                      grab()                    graball()                
- grep()                    grepi()                   gs channels              
- gs chat                   gs chat2                  gs mail                  
- gs mail2                  gs moving                 gs moving2               
- gs talking                gs talking2               gt()                     
- gte()                     halt                      hasattr()                
- hasattrp()                hasattrpval()             hasattrval()             
- hasflag()                 hash                      haspower()               
- hastype()                 haven                     hear_connect             
+ foreach2                  forwardlist               fraction()               
+ fullalias()               fullname()                function list            
+ functions                 functions()               functions2               
+ gagged                    gender                    get                      
+ get()                     get_eval()                getpids()                
+ getting started           give                      global commands          
+ globals                   go                        going                    
+ going_twice               goto                      grab()                   
+ graball()                 grep()                    grepi()                  
+ gs channels               gs chat                   gs chat2                 
+ gs mail                   gs mail2                  gs moving                
+ gs moving2                gs talking                gs talking2              
+ gt()                      gte()                     halt                     
+ hasattr()                 hasattrp()                hasattrpval()            
+ hasattrval()              hasflag()                 hash                     
+ haspower()                hastype()                 haven                    
 
 For more, see Entries-22
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-22
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- heavy                     height()                  help                     
+ hear_connect              heavy                     height()                 
  here                      hidden()                  home                     
  home()                    homes                     host()                   
  hostname()                html                      html functions           

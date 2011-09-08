@@ -2868,7 +2868,7 @@ See also: @search, @find, lparent(), stats()
                                                don't have an @desc set
 & LSTATS()
 & STATS()
-  lstats(<player>)
+  lstats([<player>])
  
   This function returns the breakdown of objects in the database, in a format
   similar to "@stats". If <player> is "all" (the default), a breakdown is

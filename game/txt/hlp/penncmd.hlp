@@ -584,7 +584,8 @@ See also: get, goto, @lock, SUCCESS, FAILURE, @odrop, ACTION LISTS, VERBS
     @attribute/limit score=^\\d+$    <-- @score can only contain digits.
                                          (Remember, Penn parser eats a \)
 
-See also: ATTRIBUTEs, STANDARD ATTRIBUTES, attribute flags, @set, @atrchown
+See also: ATTRIBUTEs, STANDARD ATTRIBUTES, attribute flags, @set, @atrchown,
+  @atrlock, @list
 & @ause
 & @use
 & @ouse
@@ -3354,13 +3355,13 @@ See also: @motd, @list, @listmotd
 See also: @emit, @pemit, @oemit, SPOOFING, NOSPOOF, CONTROL.
 & @retry
   @retry <boolean>
-  @retry <boolean>=<arg1>[,...]
+  @retry <boolean>=<arg0>[,...[,<arg9>]]
 
   The @retry command restarts the current queue entry, enabling people to
   loop their command without requiring a wait for the next queue entry.
   It can be a little tricky to understand at first. It basically tells the
   parser: "If <boolean> is true, then go back to the beginning." It can also
-  modify %0-%9 with the arguments passed to it. (<arg1>,...).
+  replace %0-%9 with the arguments passed to it. (<arg0>,...).
 
   Please note: @retry only restarts the action list it is currently in.
   If you have: "@break 1=@retry 1=hello", then the action list is only

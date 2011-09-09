@@ -64,6 +64,8 @@ Minor changes:
    been added for that and UNIMPLEMENTED_COMMAND. [MG]
  * fn() didn't always work correctly on a UserFn function, especially when
    nested in another function. Reported by Padraic. [MG]
+ * Accents are no longer stripped from output sent to players who haven't
+   logged in (those at the connect screen). Suggested by geradon. [MG]
 
 Functions:
  * Mortals can now use lwho(me). Allows for lwho(%#) on ancestors to be

@@ -302,7 +302,6 @@ notify_type(DESC *d)
     /* These are the settings used at, e.g., the connect screen,
      * when there's no connected player yet.
      */
-    type |= MSG_STRIPACCENTS;
     type |= MSG_ANSI;
     if (d->conn_flags & CONN_HTML)
       type |= MSG_PUEBLO;

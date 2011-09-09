@@ -303,13 +303,11 @@ notify_type(DESC *d)
      * when there's no connected player yet.
      */
     type |= MSG_STRIPACCENTS;
+    type |= MSG_ANSI;
     if (d->conn_flags & CONN_HTML)
       type |= MSG_PUEBLO;
-    else {
-      type |= MSG_ANSI;
-      if (d->conn_flags & CONN_TELNET)
-        type |= MSG_TELNET;
-    }
+    else if (d->conn_flags & CONN_TELNET)
+      type |= MSG_TELNET;
     return type;
   }
 

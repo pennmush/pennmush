@@ -136,7 +136,7 @@ See also: DBREF, Information functions
   hasattr()      hasattrp()     hasflag()      haspower()     hastype()      
   iname()        lflags()       lock()         lockflags()    lockowner()    
   locks()        lpids()        lstats()       money()        msecs()      
-  mtime()        mudname()      mudulr()       name()         nattr()        
+  mtime()        mudname()      mudurl()       name()         nattr()        
   nearby()       objid()        objmem()       orflags()      orlflags()     
   orlpowers()    pidinfo()      playermem()    poll()         powers()       
   quota()        restarts()     type()         version()      visible()

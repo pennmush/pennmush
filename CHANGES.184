@@ -74,6 +74,8 @@ Functions:
  * rand() without an argument returns a floating point number greater than
    or equal to 0 and less than 1. [SW]
  * itemize() is now more ANSI-aware. Reported by Jules. [MG]
+ * fullalias() didn't include old-style exit aliases (which were a part of 
+   the exit name). [MG]
 
 Locks:
  * New locks, @lock/filter and @lock/infilter, which must be passed (along

@@ -567,12 +567,28 @@ fullalias(dbref it)
   static char n[BUFFER_LEN];    /* STATIC */
   ATTR *a = atr_get_noparent(it, "ALIAS");
 
-  if (!a) {
-    n[0] = '\0';
-    return n;
-  }
+  if (!IsExit(it)) {
+    if (!a) {
+      n[0] = '\0';
+      return n;
+   }
 
-  mush_strncpy(n, atr_value(a), BUFFER_LEN);
+    mush_strncpy(n, atr_value(a), BUFFER_LEN);
+  } else {
+    char *np = n;
+    char *sep;
+
+    if ((sep = strchr(Name(it), ';'))) {
+      sep++;
+      safe_str(sep, n, &np);
+    }
+    if (a) {
+      if (sep)
+        safe_chr(';', n, &np);
+      safe_str(atr_value(a), n, &np);
+    }
+    *np = '\0';
+  }
 
   return n;
 }

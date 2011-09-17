@@ -108,6 +108,8 @@ Fixes:
    ANSI to bleed. Reported by Wiggles. [MG]
  * Pueblo players couldn't see ANSI in connect screens. From a report
    by geradon. [MG]
+ * money() behaved incorrectly when the tiny_math config option was on.
+   Reported by Daniell Powell. [MG]
 
 Version 1.8.4 patchlevel 6                                 Jul 29,  2011
 

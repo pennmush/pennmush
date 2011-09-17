@@ -1763,7 +1763,7 @@ FUNCTION(fun_money)
 {
   dbref it;
 
-  if (is_integer(args[0])) {
+  if (is_strict_integer(args[0])) {
     int a = parse_integer(args[0]);
     if (abs(a) == 1)
       safe_str(MONEY, buff, bp);

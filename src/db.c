@@ -262,7 +262,7 @@ putstring(PENNFILE *f, const char *s)
       penn_fputc('\\', f);
       /* FALL THROUGH */
     default:
-      penn_fputc((unsigned char)*s, f);
+      penn_fputc((unsigned char) *s, f);
     }
     s++;
   }
@@ -1941,7 +1941,9 @@ create_minimal_db(void)
 /** Run a function, and jump if error */
 /* Uncomment the below line to help with debugging if needed. */
 /* static OUTPUT(int) __attribute__((noinline)); */
-static void OUTPUT(int r) {
+static void
+OUTPUT(int r)
+{
   if (r < 0)
     longjmp(db_err, 1);
 }

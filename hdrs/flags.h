@@ -54,7 +54,7 @@ struct flagspace {
 
 /* From flags.c */
 bool has_flag_in_space_by_name(const char *ns, dbref thing,
-                                     const char *flag, int type);
+                               const char *flag, int type);
 static inline bool
 has_flag_by_name(dbref thing, const char *flag, int type)
 {
@@ -69,8 +69,7 @@ has_power_by_name(dbref thing, const char *flag, int type)
 
 const char *unparse_flags(dbref thing, dbref player);
 const char *flag_description(dbref player, dbref thing);
-bool sees_flag(const char *ns, dbref privs, dbref thing,
-              const char *name);
+bool sees_flag(const char *ns, dbref privs, dbref thing, const char *name);
 void set_flag(dbref player, dbref thing, const char *flag, int negate,
               int hear, int listener);
 void set_power(dbref player, dbref thing, const char *flag, int negate);
@@ -91,37 +90,39 @@ object_flag_type new_flag_bitmask(const char *ns);
 object_flag_type clone_flag_bitmask(const char *ns,
                                     const object_flag_type given);
 void destroy_flag_bitmask(const char *ns, const object_flag_type bitmask);
-object_flag_type set_flag_bitmask_ns(FLAGSPACE *n, const object_flag_type  bitmask, int bit);
-object_flag_type set_flag_bitmask(const char *ns, const object_flag_type bitmask, int bit);
-object_flag_type clear_flag_bitmask_ns(FLAGSPACE *n, const object_flag_type bitmask, int bit);
-object_flag_type clear_flag_bitmask(const char *ns, const object_flag_type bitmask, int bit);
+object_flag_type set_flag_bitmask_ns(FLAGSPACE *n,
+                                     const object_flag_type bitmask, int bit);
+object_flag_type set_flag_bitmask(const char *ns,
+                                  const object_flag_type bitmask, int bit);
+object_flag_type clear_flag_bitmask_ns(FLAGSPACE *n,
+                                       const object_flag_type bitmask, int bit);
+object_flag_type clear_flag_bitmask(const char *ns,
+                                    const object_flag_type bitmask, int bit);
 bool has_bit(const object_flag_type bitmask, int bitpos);
 bool has_all_bits(const char *ns, const object_flag_type source,
-                 const object_flag_type bitmask);
+                  const object_flag_type bitmask);
 bool null_flagmask(const char *ns, const object_flag_type source);
 bool has_any_bits(const char *ns, const object_flag_type source,
-                 const object_flag_type bitmask);
+                  const object_flag_type bitmask);
 object_flag_type string_to_bits(const char *ns, const char *str);
 const char *bits_to_string(const char *ns, object_flag_type bitmask,
-                                  dbref privs, dbref thing);
+                           dbref privs, dbref thing);
 void flag_write_all(PENNFILE *, const char *);
 void flag_read_all(PENNFILE *, const char *);
 int type_from_old_flags(long old_flags);
 object_flag_type flags_from_old_flags(const char *ns, long old_flags,
                                       long old_toggles, int type);
 FLAG *add_flag_generic(const char *ns, const char *name,
-                              const char letter, int type, int perms,
-                              int negate_perms);
+                       const char letter, int type, int perms,
+                       int negate_perms);
 #define add_flag(n,l,t,p,x) add_flag_generic("FLAG",n,l,t,p,x)
 #define add_power(n,l,t,p,x) add_flag_generic("POWER",n,l,t,p,x)
-int alias_flag_generic(const char *ns, const char *name,
-                              const char *alias);
+int alias_flag_generic(const char *ns, const char *name, const char *alias);
 #define alias_flag(n,a) alias_flag_generic("FLAG",n,a);
 #define alias_power(n,a) alias_flag_generic("POWER",n,a);
 void do_list_flags(const char *ns, dbref player, const char *arg, int lc,
                    const char *label);
-char *list_all_flags(const char *ns, const char *name, dbref privs,
-                     int which);
+char *list_all_flags(const char *ns, const char *name, dbref privs, int which);
 void do_flag_info(const char *ns, dbref player, const char *name);
 void do_flag_delete(const char *ns, dbref player, const char *name);
 void do_flag_disable(const char *ns, dbref player, const char *name);

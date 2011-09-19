@@ -3087,8 +3087,7 @@ do_pemit_port(dbref player, const char *pc, const char *message, int flags)
     if (total == 1) {
       notify_format(player, T("You pemit \"%s\" to %s."), message,
                     (last
-                     && last->connected ? Name(last->
-                                               player) :
+                     && last->connected ? Name(last->player) :
                      T("a connecting player")));
     } else {
       notify_format(player, T("You pemit \"%s\" to %d connections."), message,
@@ -4078,11 +4077,13 @@ do_doing(dbref player, const char *message)
     else
       notify(player, T("Unable to clear doing."));
   } else {
-    if (atr_add(player, "DOING", decompose_str((char *) message), player, 0) == AE_OKAY)
+    if (atr_add(player, "DOING", decompose_str((char *) message), player, 0) ==
+        AE_OKAY)
       notify(player, T("Doing set."));
     else
       notify(player, T("Unable to set doing."));
-    if (!strncasecmp(message, "me", 2) && (strlen(message) < 3 || message[2] == '='))
+    if (!strncasecmp(message, "me", 2)
+        && (strlen(message) < 3 || message[2] == '='))
       notify_format(player, T("Did you mean to use &DOING %s ?"), message);
   }
 }
@@ -4273,12 +4274,13 @@ FUNCTION(fun_xwho)
   }
 
 
-  if (!is_strict_integer(args[firstnum]) || !is_strict_integer(args[firstnum+1])) {
+  if (!is_strict_integer(args[firstnum])
+      || !is_strict_integer(args[firstnum + 1])) {
     safe_str(T(e_int), buff, bp);
     return;
   }
   start = parse_integer(args[firstnum]);
-  count = parse_integer(args[firstnum+1]);
+  count = parse_integer(args[firstnum + 1]);
 
   if (start < 1 || count < 1) {
     safe_str(T(e_argrange), buff, bp);
@@ -5257,7 +5259,8 @@ dump_reboot_db(void)
   PENNFILE *f;
   DESC *d;
   uint32_t flags =
-    RDBF_SCREENSIZE | RDBF_TTYPE | RDBF_PUEBLO_CHECKSUM | RDBF_SOCKET_SRC | RDBF_NO_DOING;
+    RDBF_SCREENSIZE | RDBF_TTYPE | RDBF_PUEBLO_CHECKSUM | RDBF_SOCKET_SRC |
+    RDBF_NO_DOING;
 
 #ifdef LOCAL_SOCKET
   flags |= RDBF_LOCAL_SOCKET;

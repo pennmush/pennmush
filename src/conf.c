@@ -1563,7 +1563,8 @@ config_file_checks(void)
       do_rawlog(LT_ERR,
                 "CONFIG: directive '%s' missing from cnf file, using default value.",
                 cp->name);
-    } else if (!strcmp(cp->name, "newline_one_char") && (*((int *) cp->loc) == 0)) {
+    } else if (!strcmp(cp->name, "newline_one_char")
+               && (*((int *) cp->loc) == 0)) {
       do_rawlog(LT_ERR,
                 "CONFIG: directive 'newline_one_char' is deprecated, and should be set to 0'");
     }

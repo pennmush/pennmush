@@ -147,7 +147,8 @@ COMLIST commands[] = {
   {"@EDIT", "FIRST CHECK QUIET", cmd_edit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE |
    CMD_T_NOGAGGED, 0, 0},
-  {"@ELOCK", NULL, cmd_elock, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED | CMD_T_DEPRECATED,
+  {"@ELOCK", NULL, cmd_elock,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED | CMD_T_DEPRECATED,
    0, 0},
   {"@EMIT", "ROOM NOEVAL SILENT SPOOF", cmd_emit, CMD_T_ANY | CMD_T_NOGAGGED, 0,
    0},
@@ -155,7 +156,8 @@ COMLIST commands[] = {
 
   {"@ENTRANCES", "EXITS THINGS PLAYERS ROOMS", cmd_entrances,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
-  {"@EUNLOCK", NULL, cmd_eunlock, CMD_T_ANY | CMD_T_NOGAGGED | CMD_T_DEPRECATED, 0, 0},
+  {"@EUNLOCK", NULL, cmd_eunlock, CMD_T_ANY | CMD_T_NOGAGGED | CMD_T_DEPRECATED,
+   0, 0},
 
   {"@FIND", NULL, cmd_find,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
@@ -304,7 +306,8 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@TRIGGER", NULL, cmd_trigger,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
-  {"@ULOCK", NULL, cmd_ulock, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED | CMD_T_DEPRECATED,
+  {"@ULOCK", NULL, cmd_ulock,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED | CMD_T_DEPRECATED,
    0, 0},
   {"@UNDESTROY", NULL, cmd_undestroy, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"@UNLINK", NULL, cmd_unlink, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
@@ -313,7 +316,8 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_SWITCHES | CMD_T_NOGAGGED, 0, 0},
   {"@UNRECYCLE", NULL, cmd_undestroy, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"@UPTIME", "MORTAL", cmd_uptime, CMD_T_ANY, 0, 0},
-  {"@UUNLOCK", NULL, cmd_uunlock, CMD_T_ANY | CMD_T_NOGAGGED | CMD_T_DEPRECATED, 0, 0},
+  {"@UUNLOCK", NULL, cmd_uunlock, CMD_T_ANY | CMD_T_NOGAGGED | CMD_T_DEPRECATED,
+   0, 0},
   {"@VERB", NULL, cmd_verb, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
   {"@VERSION", NULL, cmd_version, CMD_T_ANY, 0, 0},
   {"@WAIT", "PID UNTIL", cmd_wait,
@@ -386,7 +390,7 @@ COMLIST commands[] = {
 
 /* A way to stop people starting commands with functions */
   {"WARN_ON_MISSING", NULL, cmd_warn_on_missing,
-   CMD_T_ANY | CMD_T_NOPARSE | CMD_T_INTERNAL| CMD_T_NOP, 0, 0},
+   CMD_T_ANY | CMD_T_NOPARSE | CMD_T_INTERNAL | CMD_T_NOP, 0, 0},
 
 /* A way to let people override the Huh? message */
   {"HUH_COMMAND", NULL, cmd_huh_command,
@@ -1073,8 +1077,8 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
   char *command, *swtch, *ls, *rs, *switches;
   static char commandraw[BUFFER_LEN];
   static char exit_command[BUFFER_LEN], *ec;
-  char *lsa[MAX_ARG] = {NULL};
-  char *rsa[MAX_ARG] = {NULL};
+  char *lsa[MAX_ARG] = { NULL };
+  char *rsa[MAX_ARG] = { NULL };
   char *ap, *swp;
   const char *attrib, *replacer;
   COMMAND_INFO *cmd;
@@ -1115,9 +1119,11 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
   }
 
   if (*p == '[') {
-    if ((cmd = command_find("WARN_ON_MISSING")) && !(cmd->type & CMD_T_DISABLED)) {
-      run_command(cmd, player, queue_entry->enactor, "WARN_ON_MISSING", NULL, NULL, string,
-                  NULL, string, string, NULL, NULL, NULL, queue_entry);
+    if ((cmd = command_find("WARN_ON_MISSING"))
+        && !(cmd->type & CMD_T_DISABLED)) {
+      run_command(cmd, player, queue_entry->enactor, "WARN_ON_MISSING", NULL,
+                  NULL, string, NULL, string, string, NULL, NULL, NULL,
+                  queue_entry);
       command_parse_free_args;
       return NULL;
     }
@@ -1468,8 +1474,9 @@ run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
     return 0;
 
   if (cmd->type & CMD_T_DEPRECATED) {
-    notify_format(Owner(executor), T("Deprecated command %s being used on object #%d."),
-		  cmd->name, executor);
+    notify_format(Owner(executor),
+                  T("Deprecated command %s being used on object #%d."),
+                  cmd->name, executor);
   }
 
   /* Create a pe_info for the hooks, which share q-registers */
@@ -1500,8 +1507,8 @@ run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
       return 1;
     }
     run_hook(executor, enactor, &cmd->hooks.before, pe_info);
-    cmd->func(cmd, executor, enactor, enactor, sw, cmd_raw, swp, ap, ls, lsa, rs,
-              rsa, queue_entry);
+    cmd->func(cmd, executor, enactor, enactor, sw, cmd_raw, swp, ap, ls, lsa,
+              rs, rsa, queue_entry);
     run_hook(executor, enactor, &cmd->hooks.after, pe_info);
   }
   /* Either way, we might log */
@@ -2487,8 +2494,8 @@ do_hook_list(dbref player, char *command)
       char inplace[BUFFER_LEN], *bp;
       bp = inplace;
       if (cmd->hooks.override.inplace & QUEUE_INPLACE) {
-        if ((cmd->hooks.
-             override.inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
+        if ((cmd->hooks.override.
+             inplace & (QUEUE_RECURSE | QUEUE_CLEAR_QREG)) ==
             (QUEUE_RECURSE | QUEUE_CLEAR_QREG))
           safe_str("/inplace", inplace, &bp);
         else {

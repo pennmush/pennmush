@@ -492,7 +492,8 @@ initialize_mt(void)
     int r = read(fd, buf, sizeof buf);
     close(fd);
     if (r <= 0) {
-      fprintf(stderr, "Couldn't read from /dev/urandom! Resorting to normal seeding method.\n");
+      fprintf(stderr,
+              "Couldn't read from /dev/urandom! Resorting to normal seeding method.\n");
     } else {
       fprintf(stderr, "Seeded RNG from /dev/urandom\n");
       init_by_array(buf, r / sizeof(uint32_t));
@@ -500,7 +501,7 @@ initialize_mt(void)
     }
   } else
     fprintf(stderr,
-              "Couldn't open /dev/urandom to seed random number generator. Resorting to normal seeding method.\n");
+            "Couldn't open /dev/urandom to seed random number generator. Resorting to normal seeding method.\n");
 
 #endif
   /* Default seeder. Pick a seed that's fairly random */
@@ -571,7 +572,7 @@ fullalias(dbref it)
     if (!a) {
       n[0] = '\0';
       return n;
-   }
+    }
 
     mush_strncpy(n, atr_value(a), BUFFER_LEN);
   } else {

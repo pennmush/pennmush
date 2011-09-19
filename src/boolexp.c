@@ -245,7 +245,8 @@ safe_get_bytecode(boolexp b)
     static uint8_t *get_bytecode(boolexp b, uint16_t * storelen);
     static struct boolexp_node *alloc_bool(void) __attribute_malloc__;
     static struct boolatr *alloc_atr(const char *name,
-                                     const char *s, bool upcase_s) __attribute_malloc__;
+                                     const char *s,
+                                     bool upcase_s) __attribute_malloc__;
     static void skip_whitespace(void);
     static void free_bool(struct boolexp_node *b);
     static struct boolexp_node *test_atr(char *s, char c);

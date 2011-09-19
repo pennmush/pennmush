@@ -34,7 +34,7 @@ void hide_player(dbref player, int hide, char *victim);
 enum motd_type { MOTD_MOTD, MOTD_WIZ, MOTD_DOWN, MOTD_FULL, MOTD_LIST };
 void do_motd(dbref player, enum motd_type key, const char *message);
 void do_poll(dbref player, const char *message, int clear);
-void do_page_port(dbref executor,const char *pc, const char *msg);
+void do_page_port(dbref executor, const char *pc, const char *msg);
 void do_pemit_port(dbref player, const char *pc, const char *msg, int flags);
 /* From cque.c */
 void do_wait

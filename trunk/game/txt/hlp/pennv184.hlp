@@ -106,6 +106,8 @@ Fixes:
    by geradon. [MG]
  * money() behaved incorrectly when the tiny_math config option was on.
    Reported by Daniell Powell. [MG]
+ * Databases with 8-bit characters couldn't be saved using the internal
+   gzip routines. [SW]
 
 & 1.8.4p6
 Version 1.8.4 patchlevel 6                                 Jul 29,  2011

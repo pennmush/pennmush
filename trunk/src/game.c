@@ -321,7 +321,7 @@ dump_database_internal(void)
   if (setjmp(db_err)) {
     /* The dump failed. Disk might be full or something went bad with the
        compression slave. Boo! */
-    do_rawlog(LT_ERR, "ERROR! Database save failed.");
+    do_rawlog(LT_ERR, "ERROR! Database save failed: %s", strerror(errno));
     queue_event(SYSEVENT, "DUMP`ERROR", "%s,%d,PERROR %s",
                 T("GAME: ERROR! Database save failed!"), 0, strerror(errno));
     flag_broadcast("WIZARD ROYALTY", 0,

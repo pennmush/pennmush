@@ -1168,6 +1168,8 @@ COMMAND(cmd_stats)
     chunk_stats(executor, CSTATS_PAGINGG);
   else if (SW_ISSET(sw, SWITCH_FREESPACE))
     chunk_stats(executor, CSTATS_FREESPACEG);
+  else if (SW_ISSET(sw, SWITCH_FLAGS))
+    flag_stats(executor);
   else
     do_stats(executor, arg_left);
 }

@@ -21,6 +21,13 @@ that have altered hardcode will appear here.
 ==========================================================================
 
 Version 1.8.4 patchlevel 7                                 ??? ??, 2011
+
+  The bitsets that store set flags and powers on objects are now
+  shared. All objects with the same flags or powers set share the same
+  bitset (Called a flagset in documentation). As a result, nobody
+  should be setting or clearing bits in those fields directly. Use the
+  API in flags.h instead, with things like set_flag_internal().
+
   Function defintions -- FUNCTION(fun_foo) {...} -- now receive an extra
   argument, eflags. Useful for functions which do further evaluation
   of their arguments after being called (particularly NOPARSE functions),

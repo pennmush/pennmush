@@ -80,6 +80,7 @@ struct mem_check_node {
 };
 
 static MEM memcheck_head_storage = { 0, MAX_LINKS, {'\0'}, {NULL} };
+
 static MEM *memcheck_head = &memcheck_head_storage;
 
 /* MEM structs are kind of large for a slab, but storing them in one
@@ -119,14 +120,14 @@ lookup_check(const char *ref)
     }
 
     cmp = strcmp(ref, chk->ref_name);
-    if (cmp == 0) { /* Found it */
+    if (cmp == 0) {             /* Found it */
       return chk;
-    } else if (cmp > 0) { /* key is further down the chain, start over
-			     with chk as the new head */
+    } else if (cmp > 0) {       /* key is further down the chain, start over
+                                   with chk as the new head */
       links = chk->links;
       n = chk->link_count - 1;
       prev = NULL;
-    } else if (cmp < 0) { /* Went too far, try the next lowest link */
+    } else if (cmp < 0) {       /* Went too far, try the next lowest link */
       n -= 1;
       prev = chk;
     }
@@ -149,7 +150,7 @@ log2(double x)
 static int
 pick_link_count(int maxcount)
 {
-  int lev = (int)floor(log2(genrand_real3()));
+  int lev = (int) floor(log2(genrand_real3()));
   lev = -lev;
   if (lev > maxcount)
     return maxcount;
@@ -185,7 +186,7 @@ min(int a, int b)
 {
   if (a <= b)
     return a;
-  else /* a > b */
+  else                          /* a > b */
     return b;
 }
 
@@ -201,13 +202,13 @@ update_links(MEM *src, MEM *newnode)
     else {
       int cmp = strcmp(src->links[n]->ref_name, newnode->ref_name);
       if (cmp < 0) {
-	/* Advance along the skip list and adjust as needed. */
-	update_links(src->links[n], newnode);
-	return;
+        /* Advance along the skip list and adjust as needed. */
+        update_links(src->links[n], newnode);
+        return;
       } else if (cmp > 0) {
-	/* Insert into skip chain */
-	newnode->links[n] = src->links[n];
-	src->links[n] = newnode;
+        /* Insert into skip chain */
+        newnode->links[n] = src->links[n];
+        src->links[n] = newnode;
       }
     }
   }
@@ -234,20 +235,21 @@ insert_check(const char *ref)
      insertion algorithm to avoid O(N) performance, but insertions
      occur infrequently once the mush is running, so I don't care that
      much. */
-  for (node = memcheck_head->links[0], prev = NULL; node; prev = node, node = node->links[0]) {
+  for (node = memcheck_head->links[0], prev = NULL; node;
+       prev = node, node = node->links[0]) {
     if (strcmp(ref, node->ref_name) < 0) {
       if (prev) {
-	chk->links[0] = node;
-	prev->links[0] = chk;
+        chk->links[0] = node;
+        prev->links[0] = chk;
       } else {
-	/* First element */
-	chk->links[0] = memcheck_head->links[0];
-	memcheck_head->links[0] = chk;
+        /* First element */
+        chk->links[0] = memcheck_head->links[0];
+        memcheck_head->links[0] = chk;
       }
       break;
     }
   }
-  if (!node) /* Insert at end of list */
+  if (!node)                    /* Insert at end of list */
     prev->links[0] = chk;
 
   /* Now adjust forward pointers */
@@ -291,12 +293,12 @@ del_check(const char *ref, const char *filename, int line)
     chk->ref_count -= 1;
     if (chk->ref_count < 0)
       do_rawlog(LT_TRACE,
-		"ERROR: Deleting a check with a negative count: %s (At %s:%d)",
-		ref, filename, line);
+                "ERROR: Deleting a check with a negative count: %s (At %s:%d)",
+                ref, filename, line);
   } else {
     do_rawlog(LT_TRACE,
-	      "ERROR: Deleting a non-existant check: %s (At %s:%d)",
-	      ref, filename, line);
+              "ERROR: Deleting a non-existant check: %s (At %s:%d)",
+              ref, filename, line);
   }
 }
 
@@ -371,22 +373,25 @@ memcheck_dump_struct(const char *filename)
 
   for (n = 0; n < MAX_LINKS; n += 1) {
     if (memcheck_head->links[n])
-      fprintf(fp, "head:l%d -> mc%p:l%d;\n", n, (void*) memcheck_head->links[n], n);
+      fprintf(fp, "head:l%d -> mc%p:l%d;\n", n,
+              (void *) memcheck_head->links[n], n);
   }
 
   for (chk = memcheck_head->links[0]; chk; chk = chk->links[0]) {
-    fprintf(fp, "mc%p [label=\"{<l0>%s|<s0>%d}", (void*)chk, chk->ref_name, chk->ref_count);
+    fprintf(fp, "mc%p [label=\"{<l0>%s|<s0>%d}", (void *) chk, chk->ref_name,
+            chk->ref_count);
     for (n = 1; n < chk->link_count; n += 1) {
       fprintf(fp, "|<l%d>", n);
       if (!chk->links[n])
-	fputs(" (NULL)", fp);
+        fputs(" (NULL)", fp);
     }
     fputs("\"];\n", fp);
     if (chk->links[0])
-      fprintf(fp, "mc%p:s0 -> mc%p:l0\n", (void*)chk, (void*)chk->links[0]);
+      fprintf(fp, "mc%p:s0 -> mc%p:l0\n", (void *) chk, (void *) chk->links[0]);
     for (n = 1; n < chk->link_count; n += 1) {
       if (chk->links[n])
-	fprintf(fp, "mc%p:l%d -> mc%p:l%d;\n", (void*)chk, n, (void*)chk->links[n], n);
+        fprintf(fp, "mc%p:l%d -> mc%p:l%d;\n", (void *) chk, n,
+                (void *) chk->links[n], n);
     }
   }
 

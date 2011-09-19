@@ -41,7 +41,7 @@ static void look_simple(dbref player, dbref thing);
 static void look_description(dbref player, dbref thing, const char *def,
                              const char *descname, const char *descformatname);
 
-enum decompile_attrflags {DECOMP_ALL, DECOMP_NODEFAULTS, DECOMP_NONE};
+enum decompile_attrflags { DECOMP_ALL, DECOMP_NODEFAULTS, DECOMP_NONE };
 
 static int decompile_helper(dbref player, dbref thing, dbref parent,
                             char const *pattern, ATTR *atr, void *args);
@@ -50,9 +50,10 @@ static int look_helper(dbref player, dbref thing, dbref parent,
 static int look_helper_veiled(dbref player, dbref thing, dbref parent,
                               char const *pattern, ATTR *atr, void *args);
 void decompile_atrs(dbref player, dbref thing, const char *name,
-                    const char *pattern, const char *prefix, enum decompile_attrflags skipflags);
-void decompile_locks(dbref player, dbref thing, const char *name,
-                     int skipdef, const char *prefix);
+                    const char *pattern, const char *prefix,
+                    enum decompile_attrflags skipflags);
+void decompile_locks(dbref player, dbref thing, const char *name, int skipdef,
+                     const char *prefix);
 static char *parent_chain(dbref player, dbref thing);
 
 extern PRIV attr_privs_view[];

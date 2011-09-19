@@ -327,20 +327,20 @@ dump_database_internal(void)
       switch (f->type) {
       case PFT_FILE:
       case PFT_PIPE:
-	errmsg = strerror(errno);
-	break;
+        errmsg = strerror(errno);
+        break;
       case PFT_GZFILE:
 #ifdef HAVE_LIBZ
-	{
-	  int errnum = 0;
-	  errmsg = gzerror(f->handle.g, &errnum);
-	  if (errnum == Z_ERRNO)
-	    errmsg = strerror(errno);
-	}
+        {
+          int errnum = 0;
+          errmsg = gzerror(f->handle.g, &errnum);
+          if (errnum == Z_ERRNO)
+            errmsg = strerror(errno);
+        }
 #endif
-	break;
+        break;
       }
-    } else 
+    } else
       errmsg = strerror(errno);
 
     do_rawlog(LT_ERR, "ERROR! Database save failed: %s", errmsg);
@@ -349,7 +349,7 @@ dump_database_internal(void)
     flag_broadcast("WIZARD ROYALTY", 0,
                    T("GAME: ERROR! Database save failed!"));
     if (f)
-      penn_fclose((PENNFILE*)f);
+      penn_fclose((PENNFILE *) f);
 #ifndef PROFILING
 #ifdef HAS_ITIMER
 #ifdef __CYGWIN__
@@ -377,19 +377,19 @@ dump_database_internal(void)
       switch (globals.paranoid_dump) {
       case 0:
 #ifdef ALWAYS_PARANOID
-        db_paranoid_write((PENNFILE *)f, 0);
+        db_paranoid_write((PENNFILE *) f, 0);
 #else
-        db_write((PENNFILE *)f, 0);
+        db_write((PENNFILE *) f, 0);
 #endif
         break;
       case 1:
-        db_paranoid_write((PENNFILE *)f, 0);
+        db_paranoid_write((PENNFILE *) f, 0);
         break;
       case 2:
-        db_paranoid_write((PENNFILE *)f, 1);
+        db_paranoid_write((PENNFILE *) f, 1);
         break;
       }
-      penn_fclose((PENNFILE *)f);
+      penn_fclose((PENNFILE *) f);
       if (rename_file(realtmpfl, realdumpfile) < 0) {
         penn_perror(realtmpfl);
         longjmp(db_err, 1);
@@ -403,8 +403,8 @@ dump_database_internal(void)
     sprintf(realtmpfl, "%s%s", tmpfl, options.compresssuff);
     if (mdb_top >= 0) {
       if ((f = db_open_write(tmpfl)) != NULL) {
-        dump_mail((PENNFILE *)f);
-        penn_fclose((PENNFILE *)f);
+        dump_mail((PENNFILE *) f);
+        penn_fclose((PENNFILE *) f);
         if (rename_file(realtmpfl, realdumpfile) < 0) {
           penn_perror(realtmpfl);
           longjmp(db_err, 1);
@@ -418,8 +418,8 @@ dump_database_internal(void)
     strcpy(tmpfl, make_new_epoch_file(options.chatdb, epoch));
     sprintf(realtmpfl, "%s%s", tmpfl, options.compresssuff);
     if ((f = db_open_write(tmpfl)) != NULL) {
-      save_chatdb((PENNFILE *)f);
-      penn_fclose((PENNFILE *)f);
+      save_chatdb((PENNFILE *) f);
+      penn_fclose((PENNFILE *) f);
       if (rename_file(realtmpfl, realdumpfile) < 0) {
         penn_perror(realtmpfl);
         longjmp(db_err, 1);
@@ -2151,7 +2151,8 @@ win32_uptime(dbref player __attribute__ ((__unused__)))
 }
 
 enum uptime_type { UPTIME_UPSINCE, UPTIME_REBOOT, UPTIME_LAST_SAVE,
-    UPTIME_NEXT_SAVE, UPTIME_DBCK, UPTIME_PURGE, UPTIME_WARNING };
+  UPTIME_NEXT_SAVE, UPTIME_DBCK, UPTIME_PURGE, UPTIME_WARNING
+};
 /* ARGSUSED */
 FUNCTION(fun_uptime)
 {

@@ -505,10 +505,10 @@ FUNCTION(fun_itemize)
   }
   n = list2arr_ansi(words, MAX_SORTSIZE, args[0], sep, 1) - 1;
   for (pos = 0; pos <= n; pos++) {
-    safe_itemizer(pos+1, pos == n, punc, lconj, outsep, buff, bp);
+    safe_itemizer(pos + 1, pos == n, punc, lconj, outsep, buff, bp);
     safe_str(words[pos], buff, bp);
   }
-  freearr(words, n+1);
+  freearr(words, n + 1);
 
 }
 

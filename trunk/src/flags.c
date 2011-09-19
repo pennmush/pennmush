@@ -538,14 +538,14 @@ realloc_object_flag_bitmasks(FLAGSPACE *n)
   numbytes = FlagBytes(n);
 
   oldcache = n->cache;
-  n->cache = new_flagcache(n, (double)oldcache->size * 1.1);
+  n->cache = new_flagcache(n, (double) oldcache->size * 1.1);
 
   flagpairs = slab_create("flagpairs", sizeof *migrate);
   migrate = slab_malloc(flagpairs, NULL);
   migrate->orig = oldcache->zero;
   migrate->grown = n->cache->zero;
   migrate->next = NULL;
-  
+
   /* Grow all current flagsets, and store the old/new locations */
   for (i = 0; i < n->cache->size; i += 1) {
     struct flagbucket *b;
@@ -569,15 +569,15 @@ realloc_object_flag_bitmasks(FLAGSPACE *n)
      big-O performance, but isn't done very often, so we can live with it. */
   for (it = 0; it < db_top; it += 1) {
     for (m = migrate; m; m = m->next) {
-          if (n->tab == &ptab_flag) {
-	    if (Flags(it) == m->orig) {
-	      Flags(it) = m->grown;
-	      break;
-	    } else if (Powers(it) == m->orig) {
-	      Powers(it) = m->grown;
-	      break;
-	    }
-	  }
+      if (n->tab == &ptab_flag) {
+        if (Flags(it) == m->orig) {
+          Flags(it) = m->grown;
+          break;
+        } else if (Powers(it) == m->orig) {
+          Powers(it) = m->grown;
+          break;
+        }
+      }
     }
   }
   slab_destroy(flagpairs);
@@ -1136,7 +1136,9 @@ new_flagcache(FLAGSPACE *n, int initial_size)
   cache->flagset_slab = slab_create("flagset", FlagBytes(n));
   cache->zero = slab_malloc(cache->flagset_slab, NULL);
   memset(cache->zero, 0, FlagBytes(n));
-  cache->buckets = mush_calloc(initial_size, sizeof(struct flagbucket*), "flagset.cache.bucketarray");
+  cache->buckets =
+    mush_calloc(initial_size, sizeof(struct flagbucket *),
+                "flagset.cache.bucketarray");
   return cache;
 }
 
@@ -1162,7 +1164,7 @@ fc_hash(const FLAGSPACE *n, const object_flag_type f)
 {
   uint32_t h = 0, i, len;
 
-  for (i = 0, len = FlagBytes(n); i < len; i += 1) 
+  for (i = 0, len = FlagBytes(n); i < len; i += 1)
     h = (h << 5) + h + f[i];
 
   return h;
@@ -1207,7 +1209,7 @@ flagcache_find_ns(FLAGSPACE *n, const object_flag_type f)
   b->next = n->cache->buckets[h];
   n->cache->entries += 1;
   n->cache->buckets[h] = b;
-  return f;						   
+  return f;
 }
 
 static object_flag_type
@@ -1230,28 +1232,28 @@ flagcache_delete(FLAGSPACE *n, const object_flag_type f)
     n->cache->zero_refcount -= 1;
     return;
   }
-  
+
   h %= n->cache->size;
 
   for (b = n->cache->buckets[h], p = NULL; b; p = b, b = b->next) {
     if (fc_eq(n, f, b->key)) {
       b->refcount -= 1;
       if (b->refcount == 0) {
-	/* Free the flagset */
-	if (!p) {
-	  /* First entry in chain */
-	  n->cache->buckets[h] = b->next;
-	  goto cleanup; /* Not evil */
-	} else {
-	  p->next = b->next;
-	  goto cleanup;
-	}
+        /* Free the flagset */
+        if (!p) {
+          /* First entry in chain */
+          n->cache->buckets[h] = b->next;
+          goto cleanup;         /* Not evil */
+        } else {
+          p->next = b->next;
+          goto cleanup;
+        }
       } else
-	break;
+        break;
     }
   }
   return;
- cleanup:
+cleanup:
   n->cache->entries -= 1;
   slab_free(n->cache->flagset_slab, b->key);
   slab_free(flagbucket_slab, b);
@@ -1262,30 +1264,39 @@ flag_stats(dbref player)
 {
   FLAGSPACE *n;
 
-  for (n = hash_firstentry(&htab_flagspaces); n; n = hash_nextentry(&htab_flagspaces)) {
+  for (n = hash_firstentry(&htab_flagspaces); n;
+       n = hash_nextentry(&htab_flagspaces)) {
     int maxref = 0, i, uniques = 0, maxlen = 0;
 
     notify_format(player, T("Stats for flagspace %s:"), n->name);
-    notify_format(player, T("  %d entries in flag table. Flagsets are %d bytes long."), n->flagbits, FlagBytes(n));
-    notify_format(player, T("  %d different cached flagsets. %d objects with no flags set."), n->cache->entries,
-		  n->cache->zero_refcount);
+    notify_format(player,
+                  T("  %d entries in flag table. Flagsets are %d bytes long."),
+                  n->flagbits, FlagBytes(n));
+    notify_format(player,
+                  T
+                  ("  %d different cached flagsets. %d objects with no flags set."),
+                  n->cache->entries, n->cache->zero_refcount);
     for (i = 0; i < n->cache->size; i += 1) {
       struct flagbucket *b;
       int len = 0;
       for (b = n->cache->buckets[i]; b; b = b->next) {
-	if (b->refcount > maxref)
-	  maxref = b->refcount;
-	if (b->refcount == 1)
-	  uniques += 1;
-	len += 1;
-      }    
+        if (b->refcount > maxref)
+          maxref = b->refcount;
+        if (b->refcount == 1)
+          uniques += 1;
+        len += 1;
+      }
       if (len > maxlen)
-	maxlen = len;
+        maxlen = len;
     }
-    notify_format(player, T("  %d objects share the most common set of flags.\n  %d objects have unique flagsets."), maxref, 
-		  uniques);
-    notify_format(player, T("  Cache hashtable has %d buckets. Longest collision chain is %d elements."),
-		  n->cache->size, maxlen);
+    notify_format(player,
+                  T
+                  ("  %d objects share the most common set of flags.\n  %d objects have unique flagsets."),
+                  maxref, uniques);
+    notify_format(player,
+                  T
+                  ("  Cache hashtable has %d buckets. Longest collision chain is %d elements."),
+                  n->cache->size, maxlen);
   }
 }
 
@@ -1299,7 +1310,7 @@ copy_flag_bitmask(FLAGSPACE *n, const object_flag_type orig)
   len = FlagBytes(n);
   copy = slab_malloc(n->cache->flagset_slab, NULL);
   memcpy(copy, orig, len);
-  
+
   return copy;
 }
 
@@ -1322,7 +1333,7 @@ object_flag_type
 new_flag_bitmask(const char *ns)
 {
   FLAGSPACE *n;
-  
+
   Flagspace_Lookup(n, ns);
   return new_flag_bitmask_ns(n);
 }
@@ -1346,7 +1357,7 @@ void
 destroy_flag_bitmask(const char *ns, const object_flag_type bitmask)
 {
   FLAGSPACE *n;
-  
+
   Flagspace_Lookup(n, ns);
   flagcache_delete(n, bitmask);
 }
@@ -1488,7 +1499,8 @@ has_bit(const object_flag_type flags, int bitpos)
  * \retval 0 at least one bit in bitmask is not set in source.
  */
 bool
-has_all_bits(const char *ns, const object_flag_type source, const object_flag_type bitmask)
+has_all_bits(const char *ns, const object_flag_type source,
+             const object_flag_type bitmask)
 {
   unsigned int i;
   int ok = 1;
@@ -1523,7 +1535,8 @@ null_flagmask(const char *ns, const object_flag_type source)
  * \retval 0 no bits in bitmask are set in source.
  */
 bool
-has_any_bits(const char *ns, const object_flag_type source, const object_flag_type bitmask)
+has_any_bits(const char *ns, const object_flag_type source,
+             const object_flag_type bitmask)
 {
   unsigned int i;
   int ok = 0;
@@ -1845,11 +1858,12 @@ twiddle_flag_internal(const char *ns, dbref thing, const char *flag, int negate)
   f = flag_hash_lookup(n, flag, Typeof(thing));
   if (f && (n->flag_table != type_table)) {
     if (n->tab == &ptab_flag) {
-      Flags(thing) = negate ? clear_flag_bitmask_ns(n, Flags(thing), f->bitpos) 
-	: set_flag_bitmask_ns(n, Flags(thing), f->bitpos);
+      Flags(thing) = negate ? clear_flag_bitmask_ns(n, Flags(thing), f->bitpos)
+        : set_flag_bitmask_ns(n, Flags(thing), f->bitpos);
     } else {
-      Powers(thing) = negate ? clear_flag_bitmask_ns(n, Powers(thing), f->bitpos)
-	: set_flag_bitmask_ns(n, Powers(thing), f->bitpos);
+      Powers(thing) =
+        negate ? clear_flag_bitmask_ns(n, Powers(thing), f->bitpos)
+        : set_flag_bitmask_ns(n, Powers(thing), f->bitpos);
     }
   }
 }
@@ -2050,7 +2064,7 @@ set_power(dbref player, dbref thing, const char *flag, int negate)
 
   current = sees_flag("POWER", player, thing, f->name);
 
-  if (negate) 
+  if (negate)
     Powers(thing) = clear_flag_bitmask_ns(n, Powers(thing), f->bitpos);
   else
     Powers(thing) = set_flag_bitmask_ns(n, Powers(thing), f->bitpos);
@@ -2896,7 +2910,7 @@ do_flag_delete(const char *ns, dbref player, const char *name)
   ptab_delete(n->tab, f->name);
   notify_format(player, T("%s %s deleted."), strinitial(ns), f->name);
   /* Free the flag. */
-  mush_free((void *)f->name, "flag.name");
+  mush_free((void *) f->name, "flag.name");
   slab_free(flag_slab, f);
 }
 

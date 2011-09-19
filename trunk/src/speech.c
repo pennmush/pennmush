@@ -768,7 +768,8 @@ messageformat(dbref player, const char *attribute, dbref enactor, int flags,
  * \param has_eq if 1, the command had an = in it.
  */
 void
-do_page(dbref executor, const char *arg1, const char *arg2, int override, int has_eq)
+do_page(dbref executor, const char *arg1, const char *arg2, int override,
+        int has_eq)
 {
   dbref target;
   const char *message;
@@ -1109,15 +1110,15 @@ filter_found(dbref thing, dbref speaker, const char *msg, int flag)
   pe_regs_setenv(pe_info->regvals, 0, msg);
 
   if (!flag) {
-    if(!eval_lock_with(speaker, thing, Filter_Lock, pe_info)) {
-       free_pe_info(pe_info);
-       return 1; /* thing's @lock/filter not passed */
-     }
-     a = atr_get(thing, "FILTER");
-  } else {
-    if(!eval_lock_with(speaker, thing, InFilter_Lock, pe_info)) {
+    if (!eval_lock_with(speaker, thing, Filter_Lock, pe_info)) {
       free_pe_info(pe_info);
-      return 1; /* thing's @lock/infilter not passed */
+      return 1;                 /* thing's @lock/filter not passed */
+    }
+    a = atr_get(thing, "FILTER");
+  } else {
+    if (!eval_lock_with(speaker, thing, InFilter_Lock, pe_info)) {
+      free_pe_info(pe_info);
+      return 1;                 /* thing's @lock/infilter not passed */
     }
     a = atr_get(thing, "INFILTER");
   }

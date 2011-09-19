@@ -1,0 +1,6 @@
+See the readme files in win32/
+
+README.txt for MSVC compilers.
+README.cygwin for Cygwin.
+README.mingw for MSys.
+

@@ -13,11 +13,6 @@ be read in 'help patchlevels'.
 
 Version 1.8.4 patchlevel 7                                 ??? ??, 2011
 
-Hardcode:
- * Softcode functions are now passed an additional argument, eflags,
-   by the hardcode, which should be used when the function calls
-   process_expression(). See HACKING.184 for more info. [MG]
- 
 Deprecation:
  * @elock, @eunlock, @ulock and @uunlock are deprecated. [SW]
  * @doing is now deprecated (see below).
@@ -32,6 +27,9 @@ Major changes:
    displayed, allowing for random/rotating doings. The @doing command will
    escape its input before setting into an attribute, for backwards
    compatability, but is now deprecated; use &doing to store code. [MG]
+ * All objects with the same flags or powers set share the same
+   storage for those flags. Large games should see slightly reduced memory
+   use. Suggested by [GM]. [SW]
 
 Minor changes:
  * Rewrite memcheck allocation tracking to use a more efficient data
@@ -61,6 +59,9 @@ Minor changes:
    nested in another function. Reported by Padraic. [MG]
  * Accents are no longer stripped from output sent to players who haven't
    logged in (those at the connect screen). Suggested by geradon. [MG]
+ * Softcode functions are now passed an additional argument, eflags,
+   by the hardcode, which should be used when the function calls
+   process_expression(). See HACKING.184 for more info. [MG]
 
 Functions:
  * Mortals can now use lwho(me). Allows for lwho(%#) on ancestors to be

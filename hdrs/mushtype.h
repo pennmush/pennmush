@@ -49,7 +49,7 @@ typedef uint32_t privbits;
 #define INTERACT_MATCH 0x4
 #define INTERACT_PRESENCE 0x8
 
-typedef unsigned char *object_flag_type;
+typedef uint8_t *object_flag_type;
 
 /* Boolexps and locks */
 typedef const char *lock_type;

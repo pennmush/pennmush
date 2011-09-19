@@ -543,7 +543,7 @@ extern slab *attrib_slab, *lock_slab, *boolexp_slab, *bvm_asmnode_slab,
   *bvm_strnode_slab, *flag_slab, *player_dbref_slab,
   *chanuser_slab, *chanlist_slab, *mail_slab,
   *text_block_slab, *function_slab, *memcheck_slab, *intmap_slab,
-  *pe_reg_slab, *pe_reg_val_slab;
+  *pe_reg_slab, *pe_reg_val_slab, *flagbucket_slab;
 
 #if COMPRESSION_TYPE == 1 || COMPRESSION_TYPE == 2
 extern slab *huffman_slab;
@@ -580,6 +580,7 @@ do_list_allocations(dbref player)
   slab_describe(player, intmap_slab);
   slab_describe(player, pe_reg_slab);
   slab_describe(player, pe_reg_val_slab);
+  slab_describe(player, flagbucket_slab);
 
   if (options.mem_check) {
     notify(player, "malloc allocations:");

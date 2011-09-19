@@ -3754,7 +3754,8 @@ See also: @restart, @undestroy, ACTION LISTS, @function, @command, @hook,
   @attribute
 & @stats
   @stats [<player>]
-  @stats/table
+  @stats/tables
+  @stats/flags
   @stats/chunks
   @stats/regions
   @stats/paging
@@ -3764,7 +3765,8 @@ See also: @restart, @undestroy, ACTION LISTS, @function, @command, @hook,
   down by object types.  Wizards can supply a player name to count only
   objects owned by that player.
 
-  In its second form, display statistics on internal tables.
+  @stats/tables displays statistics on internal tables.
+  @stats/flags displays statistics about the flag and power system.
 
   In the remaining forms, display statistics or histograms about the
   chunk (attribute) memory system.

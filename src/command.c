@@ -289,7 +289,7 @@ COMLIST commands[] = {
 #endif
   {"@SITELOCK", "BAN CHECK REGISTER REMOVE NAME PLAYER", cmd_sitelock,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, "WIZARD", 0},
-  {"@STATS", "CHUNKS FREESPACE PAGING REGIONS TABLES", cmd_stats,
+  {"@STATS", "CHUNKS FREESPACE PAGING REGIONS TABLES FLAGS", cmd_stats,
    CMD_T_ANY, 0, 0},
 
   {"@SWEEP", "CONNECTED HERE INVENTORY EXITS", cmd_sweep, CMD_T_ANY, 0, 0},
@@ -1637,14 +1637,14 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
       make_boolexp = 1;
       if (clear) {
         f = match_flag("ROYALTY");
-        clear_flag_bitmask(flags, f->bitpos);
+        flags = clear_flag_bitmask("FLAG", flags, f->bitpos);
         f = match_flag("WIZARD");
-        clear_flag_bitmask(flags, f->bitpos);
+        flags = clear_flag_bitmask("FLAG", flags, f->bitpos);
       } else {
         f = match_flag("ROYALTY");
-        set_flag_bitmask(flags, f->bitpos);
+        flags = set_flag_bitmask("FLAG", flags, f->bitpos);
         f = match_flag("WIZARD");
-        set_flag_bitmask(flags, f->bitpos);
+        flags = set_flag_bitmask("FLAG", flags, f->bitpos);
       }
     } else if ((c = ptab_find(&ptab_command_perms, restriction))) {
       if (clear)
@@ -1654,16 +1654,16 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
     } else if ((f = match_flag(restriction))) {
       make_boolexp = 1;
       if (clear)
-        clear_flag_bitmask(flags, f->bitpos);
+        flags = clear_flag_bitmask("FLAG", flags, f->bitpos);
       else {
-        set_flag_bitmask(flags, f->bitpos);
+        flags = set_flag_bitmask("FLAG", flags, f->bitpos);
       }
     } else if ((f = match_power(restriction))) {
       make_boolexp = 1;
       if (clear)
-        clear_flag_bitmask(powers, f->bitpos);
+        powers = clear_flag_bitmask("POWER", powers, f->bitpos);
       else {
-        set_flag_bitmask(powers, f->bitpos);
+        powers = set_flag_bitmask("POWER", powers, f->bitpos);
       }
     }
     restriction = tp;
@@ -1679,8 +1679,8 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
 
   /* And now format what we have into a lock string, if necessary */
   if (!make_boolexp) {
-    destroy_flag_bitmask(flags);
-    destroy_flag_bitmask(powers);
+    destroy_flag_bitmask("FLAG", flags);
+    destroy_flag_bitmask("POWER", powers);
     return 1;
   }
 
@@ -1731,8 +1731,8 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
   key = parse_boolexp(player, lockstr, CommandLock);
   command->cmdlock = key;
 
-  destroy_flag_bitmask(flags);
-  destroy_flag_bitmask(powers);
+  destroy_flag_bitmask("FLAG", flags);
+  destroy_flag_bitmask("POWER", powers);
   return 1;
 }
 

@@ -658,7 +658,7 @@ struct function_restrictions {
 };
 
 struct function_restrictions func_restrictions[] = {
-  {"Nobody", FN_DISABLED}, /* Should always be the first element */
+  {"Nobody", FN_DISABLED},      /* Should always be the first element */
   {"NoGagged", FN_NOGAGGED},
   {"NoFixed", FN_NOFIXED},
   {"NoGuest", FN_NOGUEST},
@@ -677,7 +677,7 @@ struct function_restrictions func_restrictions[] = {
   {NULL, 0}
 };
 
-static uint32_t 
+static uint32_t
 fn_restrict_to_bit(const char *r)
 {
   int i;
@@ -1686,9 +1686,9 @@ build_function_report(dbref player, FUN *fp)
   for (first = 1, i = 1; func_restrictions[i].name; i += 1) {
     if (fp->flags & func_restrictions[i].bit) {
       if (!first)
-	safe_strl(", ", 2, tbuf, &tp);
+        safe_strl(", ", 2, tbuf, &tp);
       else
-	first = 0;
+        first = 0;
       safe_str(func_restrictions[i].name, tbuf, &tp);
     }
   }

@@ -701,8 +701,7 @@ FUNCTION(fun_switch)
   *dp = '\0';
 
   if (exact)
-    pe_regs = pe_regs_localize(pe_info, PE_REGS_SWITCH,
-                               "fun_switch");
+    pe_regs = pe_regs_localize(pe_info, PE_REGS_SWITCH, "fun_switch");
   else
     pe_regs = pe_regs_localize(pe_info, PE_REGS_SWITCH | PE_REGS_CAPTURE,
                                "fun_switch");
@@ -1188,7 +1187,8 @@ enum whichof_t { DO_FIRSTOF, DO_ALLOF };
 static void
 do_whichof(char *args[], int nargs, enum whichof_t flag,
            char *buff, char **bp, dbref executor,
-           dbref caller, dbref enactor, NEW_PE_INFO *pe_info, int eflags, int isbool)
+           dbref caller, dbref enactor, NEW_PE_INFO *pe_info, int eflags,
+           int isbool)
 {
   int j;
   char tbuf[BUFFER_LEN], *tp;
@@ -1235,7 +1235,8 @@ do_whichof(char *args[], int nargs, enum whichof_t flag,
 FUNCTION(fun_firstof)
 {
   do_whichof(args, nargs, DO_FIRSTOF, buff, bp, executor,
-             caller, enactor, pe_info, eflags, ! !strcasecmp(called_as, "STRFIRSTOF"));
+             caller, enactor, pe_info, eflags, ! !strcasecmp(called_as,
+                                                             "STRFIRSTOF"));
 }
 
 
@@ -1243,7 +1244,8 @@ FUNCTION(fun_firstof)
 FUNCTION(fun_allof)
 {
   do_whichof(args, nargs, DO_ALLOF, buff, bp, executor,
-             caller, enactor, pe_info, eflags, ! !strcasecmp(called_as, "STRALLOF"));
+             caller, enactor, pe_info, eflags, ! !strcasecmp(called_as,
+                                                             "STRALLOF"));
 }
 
 /* Returns a platform-specific timestamp with platform-dependent resolution. */

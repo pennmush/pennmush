@@ -1299,7 +1299,7 @@ pe_regs_set_rx_context(PE_REGS *pe_regs,
     pcre_copy_substring(re_from, re_offsets, re_subpatterns,
                         num, buff, BUFFER_LEN);
     pe_regs_set(pe_regs, PE_REGS_REGEXP, pe_regs_intname(i), buff);
-    pe_regs_set(pe_regs, PE_REGS_REGEXP, (char *)entry+2, buff);
+    pe_regs_set(pe_regs, PE_REGS_REGEXP, (char *) entry + 2, buff);
 
   }
 }
@@ -2557,7 +2557,9 @@ process_expression(char *buff, char **bp, char const **str,
 
         /* Warn about deprecated functions */
         if (fp->flags & FN_DEPRECATED)
-          notify_format(Owner(executor), T("Deprecated function %s being used on object #%d."), fp->name, executor);
+          notify_format(Owner(executor),
+                        T("Deprecated function %s being used on object #%d."),
+                        fp->name, executor);
 
         /* See if this function is enabled */
         /* Can't do this check earlier, because of possible side effects
@@ -2611,7 +2613,8 @@ process_expression(char *buff, char **bp, char const **str,
               global_fun_invocations++;
               pe_info->fun_invocations++;
               fp->where.fun(fp, buff, bp, nfargs, fargs, arglens, executor,
-                            caller, enactor, fp->name, pe_info, ((eflags & ~PE_FUNCTION_MANDATORY) | PE_DEFAULT));
+                            caller, enactor, fp->name, pe_info,
+                            ((eflags & ~PE_FUNCTION_MANDATORY) | PE_DEFAULT));
               if (fp->flags & FN_LOGARGS) {
                 char logstr[BUFFER_LEN];
                 char *logp;

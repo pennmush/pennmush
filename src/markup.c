@@ -1493,8 +1493,8 @@ safe_markup_change(ansi_string *as, int lastidx, int nextidx, int pos,
   if (right_side) {
     while (i--) {
       if (!(endbuff[i]->standalone && pos != endbuff[i]->start)) {
-	if (safe_start_code(endbuff[i], buff, bp))
-	  return 1;
+        if (safe_start_code(endbuff[i], buff, bp))
+          return 1;
       }
     }
   }

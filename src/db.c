@@ -1941,7 +1941,7 @@ create_minimal_db(void)
 /** Run a function, and jump if error */
 /* Uncomment the below line to help with debugging if needed. */
 /* static OUTPUT(int) __attribute__((noinline)); */
-static void
+static inline void
 OUTPUT(int r)
 {
   if (r < 0)

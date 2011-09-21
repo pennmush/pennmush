@@ -317,6 +317,7 @@ is_objid(char const *str)
  * To TinyMUSH, any string is an integer. To PennMUSH, a string that
  * passes parse_int is an integer, and a blank string is an integer
  * if NULL_EQ_ZERO is turned on.
+ * **Checks TINY_MATH**. Use is_strict_integer() for internal checks.
  * \param str string to check.
  * \retval 1 string is an integer.
  * \retval 0 string is not an integer.
@@ -346,6 +347,7 @@ is_integer(char const *str)
  * To TinyMUSH, any string is an uinteger. To PennMUSH, a string that
  * passes parse_uint is an uinteger, and a blank string is an uinteger
  * if NULL_EQ_ZERO is turned on.
+ * **Checks TINY_MATH**. Use is_strict_uinteger() for internal checks.
  * \param str string to check.
  * \retval 1 string is an uinteger.
  * \retval 0 string is not an uinteger.
@@ -464,7 +466,7 @@ is_strict_integer(char const *str)
 }
 
 /** Does a string contain a list of space-separated integers?
- * Must contain at least one int.
+ * Must contain at least one int. For internal use; ignores TINY_MATH.
  * \param str string to check
  * \retval 1 string is a list of integers
  * \retval 0 string is empty, or contains a non-space, non-integer char

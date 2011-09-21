@@ -152,7 +152,7 @@ See also: @chat
 
   Help for @channel is split into a number of topics. Please see 'help 
   @channel <topic>' for more, where <topic> is one of the words below. For
-  help on a specific switch to @command, use 'help @channel/<switch>'.
+  help on a specific switch to @channel, use 'help @channel/<switch>'.
 
   Joining    - How to find, join, and leave channels
   Other      - Setting channel titles, recalling previous chat messages

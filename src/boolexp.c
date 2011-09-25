@@ -569,15 +569,19 @@ eval_boolexp(dbref player, boolexp b, dbref target, NEW_PE_INFO *pe_info)
       case OP_TTYPE:
         switch (bytecode[arg]) {
         case 'R':
+        case 'r':
           r = Typeof(player) == TYPE_ROOM;
           break;
         case 'E':
+        case 'e':
           r = Typeof(player) == TYPE_EXIT;
           break;
         case 'T':
+        case 't':
           r = Typeof(player) == TYPE_THING;
           break;
         case 'P':
+        case 'p':
           r = Typeof(player) == TYPE_PLAYER;
           break;
         }
@@ -978,7 +982,7 @@ skip_whitespace(void)
 
 
 enum test_atr_errs {
-  TAE_NONE,                     /*< Nt an attribute-type lock; continue parsing. */
+  TAE_NONE,                     /*< Not an attribute-type lock; continue parsing. */
   TAE_PARSE                     /*< Fatal parsing error. */
 };
 
@@ -1090,7 +1094,7 @@ test_atr(char *s, char c)
       b->type = BOOLEXP_FLAG;
     }
   }
-  b->data.atr_lock = alloc_atr(tbuf1, s, !strcmp(tbuf1, "DBREFLIST"));
+  b->data.atr_lock = alloc_atr(tbuf1, s, (b->type == BOOLEXP_FLAG));
   return b;
 }
 

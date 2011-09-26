@@ -16,7 +16,7 @@ chronological order (most recent first)
 
 ==========================================================================
 
-Version 1.8.4 patchlevel 7                                 Sep 24, 2011
+Version 1.8.4 patchlevel 7                                 Sep 25, 2011
 
 Deprecation:
  * @elock, @eunlock, @ulock and @uunlock are deprecated. [SW]

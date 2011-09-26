@@ -44,6 +44,8 @@
 #define FN_USERFN     0x8000
 /* Strip ANSI/markup from function's arguments */
 #define FN_STRIPANSI  0x10000
+/* Function is obsolete and code that uses it should be re-written */
+#define FN_DEPRECATED 0x20000
 
 #ifndef HAVE_FUN_DEFINED
 typedef struct fun FUN;
@@ -52,7 +54,7 @@ typedef struct fun FUN;
 
 typedef void (*function_func) (FUN *, char *, char **, int, char *[], int[],
                                dbref, dbref, dbref, const char *,
-                               NEW_PE_INFO *);
+                               NEW_PE_INFO *, int);
 
 typedef struct userfn_entry USERFN_ENTRY;
 
@@ -80,7 +82,7 @@ struct fun {
    * is the absolute value of this variable.
    */
   int maxargs;
-  unsigned int flags;   /**< Bitflags of function */
+  uint32_t flags;   /**< Bitflags of function */
 };
 
 
@@ -101,10 +103,10 @@ void do_userfn(char *buff, char **bp,
 FUN *func_hash_lookup(const char *name);
 FUN *builtin_func_hash_lookup(const char *name);
 int check_func(dbref player, FUN *fp);
-int restrict_function(const char *name, const char *restrict);
+int restrict_function(const char *name, const char *restriction);
 int alias_function(dbref player, const char *function, const char *alias);
 void do_function_restrict(dbref player, const char *name,
-                          const char *restrict, int builtin);
+                          const char *restriction, int builtin);
 void do_function_restore(dbref player, const char *name);
 void do_list_functions(dbref player, int lc, char *type);
 char *list_functions(const char *);
@@ -120,7 +122,7 @@ void function_init_postconfig(void);
 #define FUNCTION_PROTO(fun_name) \
   extern void fun_name (FUN *fun, char *buff, char **bp, int nargs, char *args[], \
                    int arglen[], dbref executor, dbref caller, dbref enactor, \
-                   char const *called_as, NEW_PE_INFO *pe_info)
+                   char const *called_as, NEW_PE_INFO *pe_info, int eflags)
 extern void function_add(const char *name, function_func fun, int minargs,
                          int maxargs, int ftype);
 

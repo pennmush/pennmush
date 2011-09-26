@@ -283,7 +283,7 @@ hash_func hash_functions[] = {
 enum { NHASH_TRIES = 3, NHASH_MOD = 8 };
 
 /* Return the next prime number after its arg */
-static unsigned int
+unsigned int
 next_prime_after(unsigned int val)
 {
 #ifdef HAS_OPENSSL

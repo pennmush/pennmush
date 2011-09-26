@@ -61,6 +61,8 @@ bool SW_BY_NAME(switch_mask, const char *);
 #define CMD_T_RS_ARGS    0x00000100     /*CMD_T_ARGS<<4 */
 #define CMD_T_RS_SPACE   0x00000200     /*CMD_T_ARG_SPACE<<4 */
 #define CMD_T_RS_NOPARSE 0x00000400     /*CMD_T_NOPARSE<<4 */
+#define CMD_T_DEPRECATED 0x00000800
+#define CMD_T_NOP        0x00001000  /**< A no-op command that exists for @hooks */
 
 /** COMMAND prototype.
  * \verbatim
@@ -227,13 +229,12 @@ void local_commands(void);
 void do_command_add(dbref player, char *name, int flags);
 void do_command_delete(dbref player, char *name);
 int run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
-                const char *commandraw, switch_mask sw,
-                char switch_err[BUFFER_LEN], const char *string, char *swp,
+                const char *cmd_evaled, switch_mask sw,
+                char switch_err[BUFFER_LEN], const char *cmd_raw, char *swp,
                 char *ap, char *ls, char *lsa[MAX_ARG], char *rs,
                 char *rsa[MAX_ARG], MQUE *queue_entry);
 int cnf_add_command(char *name, char *opts);
 int cnf_hook_command(char *name, char *opts);
-
 
 #define SILENT_OR_NOISY(switches, default_silent) (SW_ISSET(switches, SWITCH_SILENT) ? PEMIT_SILENT : (SW_ISSET(switches, SWITCH_NOISY) ? 0 : (default_silent ? PEMIT_SILENT : 0)))
 

@@ -6,7 +6,7 @@
   event_handler object will then have attributes triggered, with arguments,
   on specified events.
 
-  To use the PennMUSH Event system:
+  To use the PennMUSH Event System:
 
   > @create Event Handler
   > @config/set event_handler=[num(Event Handler)]
@@ -20,9 +20,9 @@
     1) The executor that caused it, or
     2) #-1 for system events without an executor.
 
-  For a list of events and their arguments, see "help event list".
+  For a list of events and their arguments, see 'help event list'.
 
-  For some examples of using events, see "help event examples".
+  For some examples of using events, see 'help event examples'.
 & EVENT EXAMPLES
   Suppose you want random dbsave messages:
   > &DUMP`COMPLETE Event Handler=
@@ -43,7 +43,7 @@
   Broadcast: [Event Handler]: On descriptor 3, from IP '127.0.0.1',
     a failed connect attempt to '#1': 'invalid password'
 
-  For more examples, see "help event examples2".
+  For more examples, see 'help event examples2'.
 & EVENT EXAMPLES2
   Suppose you want @pcreated players to be powered builder, set shared and
   zonelocked to roys, but players created at the connect screen to not be.
@@ -77,7 +77,7 @@
   <eventgroup>`<eventname> (What is passed as %0, %1, ... %9)
 
   The following event types and events have been added to PennMUSH. To see
-  the help for them, type "help event <type>".
+  the help for them, type 'help event <type>'.
 
   dump: dump`5min, dump`1min, dump`complete, dump`error
   db: db`dbck, db`purge, db`warnings

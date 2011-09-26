@@ -98,6 +98,7 @@ static void
 
 
 
+
 sitelock_player(dbref player, const char *name, dbref who, uint32_t can,
                 uint32_t cant);
 

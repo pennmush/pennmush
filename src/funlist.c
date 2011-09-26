@@ -481,9 +481,8 @@ FUNCTION(fun_itemize)
   char sep = ' ';
   const char *lconj = "and";
   const char *punc = ",";
-  char *cp;
-  char *word, *nextword;
-  int pos;
+  int pos, n;
+  char *words[MAX_SORTSIZE];
 
   if (strcmp(called_as, "ELIST") == 0) {
     /* elist ordering */
@@ -504,18 +503,14 @@ FUNCTION(fun_itemize)
     if (nargs > 3)
       punc = args[3];
   }
-  cp = trim_space_sep(args[0], sep);
-  pos = 1;
-  word = split_token(&cp, sep);
-  while (word) {
-    nextword = split_token(&cp, sep);
-    safe_itemizer(pos, !(nextword), punc, lconj, outsep, buff, bp);
-    safe_str(word, buff, bp);
-    pos++;
-    word = nextword;
+  n = list2arr_ansi(words, MAX_SORTSIZE, args[0], sep, 1) - 1;
+  for (pos = 0; pos <= n; pos++) {
+    safe_itemizer(pos + 1, pos == n, punc, lconj, outsep, buff, bp);
+    safe_str(words[pos], buff, bp);
   }
-}
+  freearr(words, n + 1);
 
+}
 
 /* ARGSUSED */
 FUNCTION(fun_filter)
@@ -1091,7 +1086,7 @@ FUNCTION(fun_randword)
   if (!s || !*s)                /* ran off the end of the string */
     return;
 
-  /* Chop off the end, tand copy. No length checking needed. */
+  /* Chop off the end, and copy. No length checking needed. */
   r = s;
   if (s && *s)
     (void) split_token(&s, sep);
@@ -1979,7 +1974,7 @@ FUNCTION(fun_iter)
     char *isep = insep;
     const char *arg3 = args[2];
     process_expression(insep, &isep, &arg3, executor, caller, enactor,
-                       PE_DEFAULT, PT_DEFAULT, pe_info);
+                       eflags, PT_DEFAULT, pe_info);
     *isep = '\0';
     strcpy(args[2], insep);
   }
@@ -1997,13 +1992,13 @@ FUNCTION(fun_iter)
     const char *arg4 = args[3];
     char *osep = outsep;
     process_expression(outsep, &osep, &arg4, executor, caller, enactor,
-                       PE_DEFAULT, PT_DEFAULT, pe_info);
+                       eflags, PT_DEFAULT, pe_info);
     *osep = '\0';
   }
   lp = list;
   sp = args[0];
   process_expression(list, &lp, &sp, executor, caller, enactor,
-                     PE_DEFAULT, PT_DEFAULT, pe_info);
+                     eflags, PT_DEFAULT, pe_info);
   *lp = '\0';
   lp = trim_space_sep(list, sep);
   if (!*lp) {
@@ -2031,7 +2026,7 @@ FUNCTION(fun_iter)
     tbuf2 = replace_string2(standard_tokens, replace, args[1]);
     sp = tbuf2;
     if (process_expression(buff, bp, &sp, executor, caller, enactor,
-                           PE_DEFAULT, PT_DEFAULT, pe_info)) {
+                           eflags, PT_DEFAULT, pe_info)) {
       mush_free(tbuf2, "replace_string.buff");
       break;
     }
@@ -2555,7 +2550,7 @@ FUNCTION(fun_regreplace)
   /* Build orig */
   postp = postbuf;
   r = args[0];
-  process_expression(postbuf, &postp, &r, executor, caller, enactor, PE_DEFAULT,
+  process_expression(postbuf, &postp, &r, executor, caller, enactor, eflags,
                      PT_DEFAULT, pe_info);
   *postp = '\0';
 
@@ -2575,7 +2570,7 @@ FUNCTION(fun_regreplace)
     /* Get the needle */
     tbp = tbuf;
     r = args[i];
-    process_expression(tbuf, &tbp, &r, executor, caller, enactor, PE_DEFAULT,
+    process_expression(tbuf, &tbp, &r, executor, caller, enactor, eflags,
                        PT_DEFAULT, pe_info);
     *tbp = '\0';
 
@@ -2611,7 +2606,6 @@ FUNCTION(fun_regreplace)
       extra = default_match_limit();
     }
 
-    search = 0;
     /* Do all the searches and replaces we can */
 
     start = prebuf;
@@ -2642,7 +2636,7 @@ FUNCTION(fun_regreplace)
       pe_regs_set_rx_context(pe_regs, re, offsets, subpatterns, prebuf);
 
       process_expression(postbuf, &postp, &obp, executor, caller, enactor,
-                         PE_DEFAULT | PE_DOLLAR, PT_DEFAULT, pe_info);
+                         eflags | PE_DOLLAR, PT_DEFAULT, pe_info);
       if ((*bp == (buff + BUFFER_LEN - 1))
           && (pe_info->fun_invocations == funccount))
         break;
@@ -2679,7 +2673,7 @@ FUNCTION(fun_regreplace)
       /* Get the needle */
       tbp = tbuf;
       r = args[i];
-      process_expression(tbuf, &tbp, &r, executor, caller, enactor, PE_DEFAULT,
+      process_expression(tbuf, &tbp, &r, executor, caller, enactor, eflags,
                          PT_DEFAULT, pe_info);
       *tbp = '\0';
 
@@ -2726,7 +2720,7 @@ FUNCTION(fun_regreplace)
           pe_regs_set_rx_context_ansi(pe_regs, re, offsets, subpatterns, orig);
           tbp = tbuf;
           process_expression(tbuf, &tbp, &r, executor, caller, enactor,
-                             PE_DEFAULT | PE_DOLLAR, PT_DEFAULT, pe_info);
+                             eflags | PE_DOLLAR, PT_DEFAULT, pe_info);
           *tbp = '\0';
           if (offsets[0] >= search) {
             repl = parse_ansi_string(tbuf);

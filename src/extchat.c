@@ -1501,8 +1501,7 @@ parse_chat(dbref player, char *command)
 int
 do_chat_by_name(dbref player, const char *name, const char *msg, int source)
 {
-  CHAN *c;
-  c = NULL;
+  CHAN *c = NULL;
   enum cmatch_type res;
   if (!msg || !*msg) {
     if (source)

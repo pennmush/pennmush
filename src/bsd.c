@@ -414,6 +414,10 @@ static char **saved_argv = NULL;
 int file_watch_init(void);
 void file_watch_event(int);
 
+void initialize_mt(void);
+
+static char *get_doing(dbref player, dbref enactor, bool full);
+
 #ifndef BOOLEXP_DEBUGGING
 #ifdef WIN32SERVICES
 /* Under WIN32, MUSH is a "service", so we just start a thread here.
@@ -564,6 +568,9 @@ main(int argc, char **argv)
 #endif
 
   time(&mudtime);
+
+  /* initialize random number generator */
+  initialize_mt();
 
   options.mem_check = 1;
 
@@ -1661,7 +1668,6 @@ logout_sock(DESC *d)
   d->last_time = mudtime;
   d->cmds = 0;
   d->hide = 0;
-  d->doing[0] = '\0';
   welcome_user(d, 0);
 }
 
@@ -1755,7 +1761,6 @@ initializesock(int s, char *addr, char *ip, conn_source source)
   d->last_time = mudtime;
   d->cmds = 0;
   d->hide = 0;
-  d->doing[0] = '\0';
   mush_strncpy(d->addr, addr, 100);
   d->addr[99] = '\0';
   mush_strncpy(d->ip, ip, 100);
@@ -2590,7 +2595,6 @@ dump_messages(DESC *d, dbref player, int isnew)
   d->connected = 1;
   d->connected_at = mudtime;
   d->player = player;
-  d->doing[0] = '\0';
 
   login_number++;
   if (MAX_LOGINS) {
@@ -3087,8 +3091,7 @@ do_pemit_port(dbref player, const char *pc, const char *message, int flags)
     if (total == 1) {
       notify_format(player, T("You pemit \"%s\" to %s."), message,
                     (last
-                     && last->connected ? Name(last->
-                                               player) :
+                     && last->connected ? Name(last->player) :
                      T("a connecting player")));
     } else {
       notify_format(player, T("You pemit \"%s\" to %d connections."), message,
@@ -3100,20 +3103,16 @@ do_pemit_port(dbref player, const char *pc, const char *message, int flags)
 
 /** Page a specified socket.
  * \param executor the executor.
- * \param enactor the enactor.
  * \param pc string containing port number to send message to.
  * \param message message to send.
- * \param eval_msg Should the message be evaluated?
  */
 void
-do_page_port(dbref executor, dbref enactor, const char *pc, const char *message,
-             bool eval_msg)
+do_page_port(dbref executor, const char *pc, const char *message)
 {
   int p, key;
   DESC *d;
   const char *gap;
   char tbuf[BUFFER_LEN], *tbp = tbuf;
-  char mbuf[BUFFER_LEN], *mbp = mbuf;
   dbref target = NOTHING;
 
   if (!Hasprivs(executor)) {
@@ -3121,38 +3120,24 @@ do_page_port(dbref executor, dbref enactor, const char *pc, const char *message,
     return;
   }
 
-  process_expression(tbuf, &tbp, &pc, executor, enactor, enactor, PE_DEFAULT,
-                     PT_DEFAULT, NULL);
-  *tbp = '\0';
-  p = atoi(tbuf);
-  tbp = tbuf;
+  p = atoi(pc);
 
   if (p <= 0) {
     notify(executor, T("That's not a port number."));
     return;
   }
 
-  if (!message) {
+  if (!message || !*message) {
     notify(executor, T("What do you want to page with?"));
     return;
   }
 
-  if (eval_msg) {
-    process_expression(mbuf, &mbp, &message, executor, enactor, enactor,
-                       PE_DEFAULT, PT_DEFAULT, NULL);
-    *mbp = '\0';
-    message = mbuf;
-  }
-
-  if (!*message) {
-    notify(executor, T("What do you want to page with?"));
-    return;
-  }
 
   gap = " ";
   switch (*message) {
   case SEMI_POSE_TOKEN:
     gap = "";
+    /* Fall through */
   case POSE_TOKEN:
     key = 1;
     break;
@@ -3505,7 +3490,7 @@ dump_users(DESC *call_by, char *match)
     sprintf(tbuf1, "%-16s %10s   %4s%c %s", Name(d->player),
             time_format_1(now - d->connected_at),
             time_format_2(now - d->last_time), (Dark(d->player) ? 'D' : ' ')
-            , d->doing);
+            , get_doing(d->player, NOTHING, 0));
     queue_string_eol(call_by, tbuf1);
   }
   switch (count) {
@@ -3559,7 +3544,7 @@ do_who_mortal(dbref player, char *name)
                   time_format_1(now - d->connected_at),
                   time_format_2(now - d->last_time),
                   (Dark(d->player) ? 'D' : (Hidden(d) ? 'H' : ' '))
-                  , d->doing);
+                  , get_doing(d->player, player, 0));
   }
   switch (count) {
   case 0:
@@ -3805,7 +3790,7 @@ announce_connect(DESC *d, int isnew, int num)
     flag_broadcast(0, "HEAR_CONNECT", "%s %s", T("GAME:"), tbuf1);
 
   if (ANNOUNCE_CONNECTS)
-    chat_player_announce(player, message, num == 1);
+    chat_player_announce(player, message, 0);
 
   loc = Location(player);
   if (!GoodObject(loc)) {
@@ -4008,7 +3993,7 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot)
     /* notify contents */
     notify_except(player, player, tbuf1, 0);
     /* notify channels */
-    chat_player_announce(player, message, 0);
+    chat_player_announce(player, message, num == 1);
   }
 
   /* Monitor broadcasts */
@@ -4089,35 +4074,74 @@ do_motd(dbref player, enum motd_type key, const char *message)
 void
 do_doing(dbref player, const char *message)
 {
-  char buf[MAX_COMMAND_LEN];
-  DESC *d;
-  int i;
-
-  if (!Connected(player)) {
-    /* non-connected things have no need for a doing */
-    notify(player, T("Why would you want to do that?"));
-    return;
+  if (!message || !*message) {
+    /* Clear */
+    if (atr_clr(player, "DOING", player) == AE_OKAY)
+      notify(player, T("Doing cleared."));
+    else
+      notify(player, T("Unable to clear doing."));
+  } else {
+    if (atr_add(player, "DOING", decompose_str((char *) message), player, 0) ==
+        AE_OKAY)
+      notify(player, T("Doing set."));
+    else
+      notify(player, T("Unable to set doing."));
+    if (!strncasecmp(message, "me", 2)
+        && (strlen(message) < 3 || message[2] == '='))
+      notify_format(player, T("Did you mean to use &DOING %s ?"), message);
   }
-  mush_strncpy(buf, remove_markup(message, NULL), DOING_LEN);
+}
 
-  /* now smash undesirable characters and truncate */
-  for (i = 0; i < DOING_LEN; i++) {
-    if ((buf[i] == '\r') || (buf[i] == '\n') ||
-        (buf[i] == '\t') || (buf[i] == BEEP_CHAR))
-      buf[i] = ' ';
+/** Return a player's \@doing.
+ * \param player the dbref of the player whose \@doing we want
+ * \param enactor the enactor
+ * \param full Return the full doing, or limit to DOING_LEN chars for WHO?
+ * \return a pointer to a STATIC buffer with the doing in.
+ */
+static char *
+get_doing(dbref player, dbref enactor, bool full)
+{
+  static char doing[BUFFER_LEN];
+  char *dp = doing;
+
+  doing[0] = '\0';
+
+  if (!GoodObject(player) || !IsPlayer(player)) {
+    /* No such player; probably used on an unconnected descriptor */
+    return "";
   }
-  buf[DOING_LEN - 1] = '\0';
 
-  /* set it */
-  for (d = descriptor_list; d; d = d->next)
-    if (d->connected && (d->player == player))
-      strcpy(d->doing, buf);
-  if (strlen(message) >= DOING_LEN) {
-    notify_format(player,
-                  T("Doing set. %d characters lost."),
-                  (int) strlen(message) - (DOING_LEN - 1));
-  } else
-    notify(player, T("Doing set."));
+  if (!call_attrib(player, "DOING", dp, enactor, NULL, NULL)) {
+    /* No DOING attribute */
+    return "";
+  }
+
+  if (!full) {
+    /* Truncate to display on WHO */
+    if (has_markup(doing)) {
+      /* Contains ANSI */
+      ansi_string *as;
+      dp = doing;
+      as = parse_ansi_string(doing);
+      safe_ansi_string(as, 0, DOING_LEN - 1, doing, &dp);
+      *dp = '\0';
+    } else {
+      /* Nice and easy */
+      doing[DOING_LEN - 1] = '\0';
+    }
+  }
+
+  /* Smash any undesirable characters */
+  dp = doing;
+  WALK_ANSI_STRING(dp) {
+    if (!isprint((int) *dp) || (*dp == '\n') || (*dp == '\r') ||
+        (*dp == '\t') || (*dp == BEEP_CHAR)) {
+      *dp = ' ';
+    }
+    dp++;
+  }
+
+  return doing;
 }
 
 /** Set a poll message (which replaces "Doing" in the DOING output).
@@ -4233,15 +4257,34 @@ FUNCTION(fun_xwho)
   int nwho;
   int first;
   int start, count;
-  int powered = (*(called_as + 1) != 'M');
+  int powered = (*(called_as + 1) != 'M') && Priv_Who(executor);
   int objid = (strchr(called_as, 'D') != NULL);
+  int firstnum = 0;
+  dbref victim;
 
-  if (!is_strict_integer(args[0]) || !is_strict_integer(args[1])) {
+  if (nargs > 2) {
+    firstnum = 1;
+    if ((victim = noisy_match_result(executor, args[0], NOTYPE,
+                                     MAT_EVERYTHING)) == NOTHING) {
+      safe_str(T(e_notvis), buff, bp);
+      return;
+    }
+    if (!powered && victim != executor) {
+      safe_str(T(e_perm), buff, bp);
+      return;
+    }
+    if (!Priv_Who(victim))
+      powered = 0;
+  }
+
+
+  if (!is_strict_integer(args[firstnum])
+      || !is_strict_integer(args[firstnum + 1])) {
     safe_str(T(e_int), buff, bp);
     return;
   }
-  start = parse_integer(args[0]);
-  count = parse_integer(args[1]);
+  start = parse_integer(args[firstnum]);
+  count = parse_integer(args[firstnum + 1]);
 
   if (start < 1 || count < 1) {
     safe_str(T(e_argrange), buff, bp);
@@ -4252,7 +4295,7 @@ FUNCTION(fun_xwho)
   first = 1;
 
   DESC_ITER_CONN(d) {
-    if (!Hidden(d) || (powered && Priv_Who(executor))) {
+    if (!Hidden(d) || (powered)) {
       nwho += 1;
       if (nwho >= start && nwho < (start + count)) {
         if (first)
@@ -4281,13 +4324,13 @@ FUNCTION(fun_nwho)
   if (nargs && args[0] && *args[0]) {
     /* An argument was given. Find the victim and choose the lowest
      * perms possible */
-    if (!powered) {
-      safe_str(T(e_perm), buff, bp);
-      return;
-    }
     if ((victim = noisy_match_result(executor, args[0], NOTYPE,
                                      MAT_EVERYTHING)) == NOTHING) {
       safe_str(T(e_notvis), buff, bp);
+      return;
+    }
+    if (!powered && victim != executor) {
+      safe_str(T(e_perm), buff, bp);
       return;
     }
     if (!Priv_Who(victim))
@@ -4316,13 +4359,13 @@ FUNCTION(fun_lwho)
   if (nargs && args[0] && *args[0]) {
     /* An argument was given. Find the victim and choose the lowest
      * perms possible */
-    if (!powered) {
-      safe_str(T(e_perm), buff, bp);
-      return;
-    }
     if ((victim = noisy_match_result(executor, args[0], NOTYPE,
                                      MAT_EVERYTHING)) == NOTHING) {
       safe_str(T(e_notvis), buff, bp);
+      return;
+    }
+    if (!powered && victim != executor) {
+      safe_str(T(e_perm), buff, bp);
       return;
     }
     if (!Priv_Who(victim))
@@ -4652,9 +4695,7 @@ FUNCTION(fun_doing)
   /* Gets a player's @doing */
   DESC *d = lookup_desc(executor, args[0]);
   if (d)
-    safe_str(d->doing, buff, bp);
-  else
-    safe_str("#-1", buff, bp);
+    safe_str(get_doing(d->player, executor, 0), buff, bp);
 }
 
 /* ARGSUSED */
@@ -5222,7 +5263,8 @@ dump_reboot_db(void)
   PENNFILE *f;
   DESC *d;
   uint32_t flags =
-    RDBF_SCREENSIZE | RDBF_TTYPE | RDBF_PUEBLO_CHECKSUM | RDBF_SOCKET_SRC;
+    RDBF_SCREENSIZE | RDBF_TTYPE | RDBF_PUEBLO_CHECKSUM | RDBF_SOCKET_SRC |
+    RDBF_NO_DOING;
 
 #ifdef LOCAL_SOCKET
   flags |= RDBF_LOCAL_SOCKET;
@@ -5277,7 +5319,6 @@ dump_reboot_db(void)
         putstring(f, "__NONE__");
       putstring(f, d->addr);
       putstring(f, d->ip);
-      putstring(f, d->doing);
       putref(f, d->conn_flags);
       putref(f, d->width);
       putref(f, d->height);
@@ -5366,7 +5407,8 @@ load_reboot_db(void)
         set_userstring(&d->output_suffix, temp);
       mush_strncpy(d->addr, getstring_noalloc(f), 100);
       mush_strncpy(d->ip, getstring_noalloc(f), 100);
-      mush_strncpy(d->doing, getstring_noalloc(f), DOING_LEN);
+      if (!(flags & RDBF_NO_DOING))
+        (void) getstring_noalloc(f);
       d->conn_flags = getref(f);
       if (flags & RDBF_SCREENSIZE) {
         d->width = getref(f);

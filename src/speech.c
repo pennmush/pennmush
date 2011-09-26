@@ -546,10 +546,8 @@ do_pemit(dbref player, char *target, const char *message, int flags,
   }
 
   do {
-    who =
-      match_result(player, p, NOTYPE,
-                   (one ? MAT_EVERYTHING | MAT_NOISY : MAT_EVERYTHING));
-    if (!GoodObject(who))
+    who = noisy_match_result(player, p, NOTYPE, MAT_EVERYTHING);
+    if (who == NOTHING)
       continue;
     if (!okay_pemit(player, who, 1, one))
       continue;
@@ -686,7 +684,7 @@ do_wall(dbref player, const char *message, enum wall_type target, int emit)
  * \param player The victim to call it on.
  * \param attribute The attribute on the player to call.
  * \param enactor The enactor who caused the message.
- * \param flags NA_INTER_HEAR and NA_SPOOF
+ * \param flags NA_* flags to send in addition to NA_INTER_HEAR and NA_SPOOF
  * \param numargs the number of arguments to the attribute
  * \param ... the arguments to the attribute
  * \retval 1 The player had the fooformat attribute.
@@ -723,7 +721,7 @@ vmessageformat(dbref player, const char *attribute, dbref enactor, int flags,
  * \param player The victim to call it on.
  * \param attribute The attribute on the player to call.
  * \param enactor The enactor who caused the message.
- * \param flags NA_INTER_HEAR and NA_SPOOF
+ * \param flags flags NA_* flags to send in addition to NA_INTER_HEAR and NA_SPOOF
  * \param numargs number of arguments in argv
  * \param argv array of arguments
  * \retval 1 The player had the fooformat attribute.
@@ -739,6 +737,8 @@ messageformat(dbref player, const char *attribute, dbref enactor, int flags,
   PE_REGS *pe_regs;
   int i;
   int ret;
+
+  flags |= NA_INTER_HEAR | NA_SPOOF;
 
   *messbuff = '\0';
   pe_regs = pe_regs_create(PE_REGS_ARG, "messageformat");
@@ -762,14 +762,12 @@ messageformat(dbref player, const char *attribute, dbref enactor, int flags,
  * \param executor the executor.
  * \param arg1 the list of players to page.
  * \param arg2 the message to page.
- * \param enactor the object that caused the command to run.
- * \param noeval if 1, page/noeval.
  * \param override if 1, page/override.
  * \param has_eq if 1, the command had an = in it.
  */
 void
-do_page(dbref executor, const char *arg1, const char *arg2, dbref enactor,
-        int noeval, int override, int has_eq)
+do_page(dbref executor, const char *arg1, const char *arg2, int override,
+        int has_eq)
 {
   dbref target;
   const char *message;
@@ -780,7 +778,6 @@ do_page(dbref executor, const char *arg1, const char *arg2, dbref enactor,
   char *namebuf, *nbp;
   dbref good[100];
   int gcount = 0;
-  char *msgbuf, *mb;
   char *nsbuf = NULL, *tosend;
   char *head;
   char *hp = NULL;
@@ -800,11 +797,8 @@ do_page(dbref executor, const char *arg1, const char *arg2, dbref enactor,
   nbp = namebuf = GC_MALLOC_ATOMIC(BUFFER_LEN);
 
   if (*arg1 && has_eq) {
-    /* page to=[msg]. Always evaluate to, maybe evaluate msg */
-    process_expression(tbuf2, &tp2, &arg1, executor, enactor, enactor,
-                       PE_DEFAULT, PT_DEFAULT, NULL);
-    *tp2 = '\0';
-    head = tbuf2;
+    /* page to=[msg] */
+    head = (char *) arg1;
     message = arg2;
   } else if (arg2 && *arg2) {
     /* page =msg */
@@ -907,16 +901,13 @@ do_page(dbref executor, const char *arg1, const char *arg2, dbref enactor,
     }
   }
 
-  /* Reset tbuf2 to use later */
-  tp2 = tbuf2;
-
   /* We now have an array of good[] dbrefs, a gcount of the good ones,
    * and a tbuf with bad ones.
    */
 
-  /* We don't know what the heck's going on here, but we're not paging
-   * anyone, this looks like a spam attack. */
   if (gcount == 99) {
+    /* We don't know what the heck's going on here, but we're not paging
+     * anyone, this looks like a spam attack. */
     notify(executor, T("You're trying to page too many people at once."));
     return;
   }
@@ -936,20 +927,6 @@ do_page(dbref executor, const char *arg1, const char *arg2, dbref enactor,
 
   /* Okay, we have a real page, the player can pay for it, and it's
    * actually going to someone. We're in this for keeps now. */
-
-  /* Evaluate the message if we need to. */
-  if (noeval) {
-    msgbuf = NULL;
-  } else {
-    mb = msgbuf = GC_MALLOC_ATOMIC(BUFFER_LEN);
-    if (!msgbuf)
-      mush_panic("Unable to allocate memory in do_page");
-
-    process_expression(msgbuf, &mb, &message, executor, enactor, enactor,
-                       PE_DEFAULT, PT_DEFAULT, NULL);
-    *mb = '\0';
-    message = msgbuf;
-  }
 
   if (Haven(executor))
     notify(executor, T("You are set HAVEN and cannot receive pages."));
@@ -1082,13 +1059,14 @@ do_page(dbref executor, const char *arg1, const char *arg2, dbref enactor,
 
 /** Does a message match a filter pattern on an object?
  * \param thing object with the filter.
+ * \param speaker object responsible for msg.
  * \param msg message to match.
  * \param flag if 0, filter; if 1, infilter.
  * \retval 1 message matches filter.
  * \retval 0 message does not match filter.
  */
 int
-filter_found(dbref thing, const char *msg, int flag)
+filter_found(dbref thing, dbref speaker, const char *msg, int flag)
 {
   char *filter;
   ATTR *a;
@@ -1096,10 +1074,24 @@ filter_found(dbref thing, const char *msg, int flag)
   int i;
   int matched = 0;
 
-  if (!flag)
+  NEW_PE_INFO *pe_info = make_pe_info("pe_info-filter_found");
+  pe_regs_setenv(pe_info->regvals, 0, msg);
+
+  if (!flag) {
+    if (!eval_lock_with(speaker, thing, Filter_Lock, pe_info)) {
+      free_pe_info(pe_info);
+      return 1;                 /* thing's @lock/filter not passed */
+    }
     a = atr_get(thing, "FILTER");
-  else
+  } else {
+    if (!eval_lock_with(speaker, thing, InFilter_Lock, pe_info)) {
+      free_pe_info(pe_info);
+      return 1;                 /* thing's @lock/infilter not passed */
+    }
     a = atr_get(thing, "INFILTER");
+  }
+  free_pe_info(pe_info);
+
   if (!a)
     return matched;
 
@@ -1289,7 +1281,7 @@ na_zemit(dbref current, void *data)
     } else {
       current = Next(current);
     }
-  } while ((current == NOTHING));
+  } while (current == NOTHING);
   if (dbrefs[3] == current)
     dbrefs[3] = NOTHING;
   return current;

@@ -29,7 +29,7 @@ FUNCTION(fun_s)
 {
   char const *p;
   p = args[0];
-  process_expression(buff, bp, &p, executor, caller, enactor, PE_DEFAULT,
+  process_expression(buff, bp, &p, executor, caller, enactor, eflags,
                      PT_DEFAULT, pe_info);
 }
 
@@ -68,7 +68,7 @@ FUNCTION(fun_fn)
   *tp = '\0';
   p = tbuf;
   process_expression(buff, bp, &p, executor, caller, enactor,
-                     PE_DEFAULT | PE_BUILTINONLY, PT_DEFAULT, pe_info);
+                     eflags | PE_BUILTINONLY, PT_DEFAULT, pe_info);
 }
 
 /* ARGSUSED */
@@ -80,7 +80,7 @@ FUNCTION(fun_localize)
   pe_regs = pe_regs_localize(pe_info, PE_REGS_Q, "fun_localize");
 
   p = args[0];
-  process_expression(buff, bp, &p, executor, caller, enactor, PE_DEFAULT,
+  process_expression(buff, bp, &p, executor, caller, enactor, eflags,
                      PT_DEFAULT, pe_info);
 
   pe_regs_restore(pe_info, pe_regs);
@@ -100,7 +100,7 @@ FUNCTION(fun_objeval)
    */
   s = name;
   p = args[0];
-  process_expression(name, &s, &p, executor, caller, enactor, PE_DEFAULT,
+  process_expression(name, &s, &p, executor, caller, enactor, eflags,
                      PT_DEFAULT, pe_info);
   *s = '\0';
 
@@ -122,7 +122,7 @@ FUNCTION(fun_objeval)
   }
 
   p = args[1];
-  process_expression(buff, bp, &p, obj, executor, enactor, PE_DEFAULT,
+  process_expression(buff, bp, &p, obj, executor, enactor, eflags,
                      PT_DEFAULT, pe_info);
 }
 
@@ -288,7 +288,7 @@ FUNCTION(fun_udefault)
   dp = mstr;
   sp = args[0];
   process_expression(mstr, &dp, &sp, executor, caller, enactor,
-                     PE_DEFAULT, PT_DEFAULT, pe_info);
+                     eflags, PT_DEFAULT, pe_info);
   *dp = '\0';
   if (!fetch_ufun_attrib
       (mstr, executor, &ufun, UFUN_OBJECT | UFUN_REQUIRE_ATTR)) {
@@ -296,7 +296,7 @@ FUNCTION(fun_udefault)
     sp = args[1];
 
     process_expression(buff, bp, &sp, executor, caller, enactor,
-                       PE_DEFAULT, PT_DEFAULT, pe_info);
+                       eflags, PT_DEFAULT, pe_info);
     return;
   }
 
@@ -304,6 +304,7 @@ FUNCTION(fun_udefault)
   /* We must now evaluate all the arguments from args[2] on and
    * pass them to the function */
   xargs = NULL;
+  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_udefault");
   if (nargs > 2) {
     xargs = GC_MALLOC((nargs - 2) * sizeof(char *));
     for (i = 0; i < nargs - 2; i++) {
@@ -311,15 +312,12 @@ FUNCTION(fun_udefault)
       dp = xargs[i];
       sp = args[i + 2];
       process_expression(xargs[i], &dp, &sp, executor, caller, enactor,
-                         PE_DEFAULT, PT_DEFAULT, pe_info);
+                         eflags, PT_DEFAULT, pe_info);
       *dp = '\0';
+      pe_regs_setenv_nocopy(pe_regs, i, xargs[i]);
     }
   }
 
-  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_udefault");
-  for (i = 0; i < (nargs - 2); i++) {
-    pe_regs_setenv_nocopy(pe_regs, i, xargs[i]);
-  }
   call_ufun(&ufun, rbuff, executor, enactor, pe_info, pe_regs);
   pe_regs_free(pe_regs);
   safe_str(rbuff, buff, bp);

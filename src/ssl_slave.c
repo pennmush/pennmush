@@ -30,6 +30,8 @@
 #include <event2/dns.h>
 #include <event2/bufferevent_ssl.h>
 
+#include <gc/gc.h>
+
 #include "conf.h"
 #include "externs.h"
 #include "myssl.h"
@@ -455,6 +457,8 @@ main(int argc, char **argv)
   struct timeval parent_timeout = {.tv_sec = 5,.tv_usec = 0 };
   struct event *ssl_listener;
   struct conn *c, *n;
+
+  GC_INIT();
 
   if (argc != 8) {
     errprintf(stderr, "ssl_slave expects 8 arguments, got %d!\n", argc - 1);

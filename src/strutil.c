@@ -984,7 +984,6 @@ char *
 copy_up_to(char *RESTRICT dest, const char *RESTRICT src, char c)
 {
   char *d;
-  d = dest;
 
   for (d = dest; *src && *src != c; src++)
     *d++ = *src;

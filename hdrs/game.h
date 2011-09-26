@@ -34,8 +34,7 @@ void hide_player(dbref player, int hide, char *victim);
 enum motd_type { MOTD_MOTD, MOTD_WIZ, MOTD_DOWN, MOTD_FULL, MOTD_LIST };
 void do_motd(dbref player, enum motd_type key, const char *message);
 void do_poll(dbref player, const char *message, int clear);
-void do_page_port(dbref executor, dbref enactor, const char *pc,
-                  const char *msg, bool eval_msg);
+void do_page_port(dbref executor, const char *pc, const char *msg);
 void do_pemit_port(dbref player, const char *pc, const char *msg, int flags);
 /* From cque.c */
 void do_wait
@@ -129,7 +128,7 @@ extern void do_cpattr
 #define EDIT_FIRST   1  /**< Only edit the first occurrence in each attribute. */
 #define EDIT_CHECK   2  /**< Don't actually edit the attr, just show what would happen if we did */
 #define EDIT_QUIET   4  /**< Don't show new values, just report total changes */
-//enum edit_type { EDIT_FIRST, EDIT_ALL };
+
 extern void do_gedit(dbref player, char *it, char **argv, int flags);
 extern void do_trigger(dbref player, char *object, char **argv,
                        MQUE *queue_entry);
@@ -148,14 +147,16 @@ enum wall_type { WALL_ALL, WALL_RW, WALL_WIZ };
 void do_wall(dbref player, const char *message, enum wall_type target,
              int emit);
 void do_page(dbref executor, const char *arg1, const char *arg2,
-             dbref enactor, int noeval, int override, int has_eq);
+             int override, int has_eq);
 #define PEMIT_SILENT 0x1  /**< Don't show confirmation msg to speaker */
 #define PEMIT_LIST   0x2  /**< Recipient is a list of names */
 #define PEMIT_SPOOF  0x4  /**< Show sound as being from %#, not %! */
-#define PEMIT_PROMPT 0x8  /**< Add a telnet GOAHEAD to the end. \@prompt */
+#define PEMIT_PROMPT 0x8  /**< Add a telnet GOAHEAD to the end. For \@prompt */
 extern void do_emit(dbref player, const char *message, int flags);
 extern void do_pemit(dbref player, char *target, const char *message,
                      int flags, struct format_msg *format);
+#define do_pemit_list(player,target,message,flags) \
+        do_pemit(player,target,message,flags|PEMIT_LIST,NULL)
 extern void do_remit(dbref player, char *rooms, const char *message,
                      int flags, struct format_msg *format);
 extern void do_lemit(dbref player, const char *message, int flags);

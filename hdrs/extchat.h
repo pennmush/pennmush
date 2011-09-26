@@ -241,7 +241,8 @@ void do_channel
   (dbref player, const char *name, const char *target, const char *com);
 void do_chat(dbref player, CHAN *chan, const char *arg1);
 enum chan_admin_op { CH_ADMIN_ADD, CH_ADMIN_DEL, CH_ADMIN_RENAME,
-    CH_ADMIN_PRIV };
+  CH_ADMIN_PRIV
+};
 void do_chan_admin(dbref player, char *name, const char *perms,
                    enum chan_admin_op flag);
 enum cmatch_type find_channel(const char *p, CHAN **chan, dbref player);

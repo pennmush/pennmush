@@ -32,7 +32,7 @@
 
 static void func_hash_insert(const char *name, FUN *func);
 extern void local_functions(void);
-static int apply_restrictions(unsigned int result, const char *restriction);
+static int apply_restrictions(uint32_t result, const char *restriction);
 static char *build_function_report(dbref player, FUN *fp);
 static FUN *user_func_hash_lookup(const char *name);
 static FUN *any_func_hash_lookup(const char *name);
@@ -462,7 +462,7 @@ FUNTAB flist[] = {
   {"PUEBLO", fun_pueblo, 1, 1, FN_REG | FN_STRIPANSI},
   {"QUOTA", fun_quota, 1, 1, FN_REG | FN_STRIPANSI},
   {"R", fun_r, 1, 1, FN_REG | FN_STRIPANSI},
-  {"RAND", fun_rand, 1, 2, FN_REG | FN_STRIPANSI},
+  {"RAND", fun_rand, 0, 2, FN_REG | FN_STRIPANSI},
   {"RANDWORD", fun_randword, 1, 2, FN_REG},
   {"RECV", fun_recv, 1, 1, FN_REG | FN_STRIPANSI},
   {"REGEDIT", fun_regreplace, 3, INT_MAX, FN_NOPARSE},
@@ -605,8 +605,8 @@ FUNTAB flist[] = {
   {"XVEXITS", fun_dbwalker, 3, 3, FN_REG | FN_STRIPANSI},
   {"XVPLAYERS", fun_dbwalker, 3, 3, FN_REG | FN_STRIPANSI},
   {"XVTHINGS", fun_dbwalker, 3, 3, FN_REG | FN_STRIPANSI},
-  {"XWHO", fun_xwho, 2, 2, FN_REG | FN_STRIPANSI},
-  {"XWHOID", fun_xwho, 2, 2, FN_REG | FN_STRIPANSI},
+  {"XWHO", fun_xwho, 2, 3, FN_REG | FN_STRIPANSI},
+  {"XWHOID", fun_xwho, 2, 3, FN_REG | FN_STRIPANSI},
   {"ZEMIT", fun_zemit, 2, -2, FN_REG},
   {"ZFUN", fun_zfun, 1, 11, FN_REG},
   {"ZONE", fun_zone, 1, 2, FN_REG | FN_STRIPANSI},
@@ -649,6 +649,58 @@ FUNTAB flist[] = {
   {"TAGWRAP", fun_tagwrap, 2, 3, FN_REG},
   {NULL, NULL, 0, 0, 0}
 };
+
+struct function_restrictions {
+  const char *name;
+  uint32_t bit;
+};
+
+struct function_restrictions func_restrictions[] = {
+  {"Nobody", FN_DISABLED},      /* Should always be the first element */
+  {"NoGagged", FN_NOGAGGED},
+  {"NoFixed", FN_NOFIXED},
+  {"NoGuest", FN_NOGUEST},
+  {"Admin", FN_ADMIN},
+  {"Wizard", FN_WIZARD},
+  {"God", FN_GOD},
+  {"NoSideFX", FN_NOSIDEFX},
+  {"LogArgs", FN_LOGARGS},
+  {"LogName", FN_LOGNAME},
+  {"NoParse", FN_NOPARSE},
+  {"Localize", FN_LOCALIZE},
+  {"Userfn", FN_USERFN},
+  {"StripAnsi", FN_STRIPANSI},
+  {"Literal", FN_LITERAL},
+  {"Deprecated", FN_DEPRECATED},
+  {NULL, 0}
+};
+
+static uint32_t
+fn_restrict_to_bit(const char *r)
+{
+  int i;
+
+  if (!r || !*r)
+    return 0;
+
+  for (i = 0; func_restrictions[i].name; i += 1) {
+    if (strcasecmp(func_restrictions[i].name, r) == 0)
+      return func_restrictions[i].bit;
+  }
+  return 0;
+}
+
+static const char *
+fn_restrict_to_str(uint32_t b)
+{
+  int i;
+  for (i = 0; func_restrictions[i].name; i += 1) {
+    if (func_restrictions[i].bit == b)
+      return func_restrictions[i].name;
+  }
+  return NULL;
+}
+
 
 /** List all functions.
  * \verbatim
@@ -1002,57 +1054,29 @@ strip_braces(const char *str)
  */
 
 static int
-apply_restrictions(unsigned int result, const char *xres)
+apply_restrictions(uint32_t result, const char *xres)
 {
-  int flag, clear = 0;
-  char *tp;
-  char *restriction;
+  char *restriction, *rsave, *res;
 
   if (!xres || !*xres)
-    return 0;
+    return result;
 
-  restriction = GC_STRDUP(xres);
+  rsave = restriction = res = GC_STRDUP(xres);
 
-  while (restriction && *restriction) {
-    if ((tp = strchr(restriction, ' ')))
-      *tp++ = '\0';
+  while ((restriction = split_token(&res, ' '))) {
+    uint32_t flag = 0;
+    bool clear = 0;
+
     if (*restriction == '!') {
       restriction++;
       clear = 1;
     }
-    flag = 0;
-    if (!strcasecmp(restriction, "nobody")) {
-      flag = FN_DISABLED;
-    } else if (string_prefix(restriction, "nogag")) {
-      flag = FN_NOGAGGED;
-    } else if (string_prefix(restriction, "nofix")) {
-      flag = FN_NOFIXED;
-    } else if (!strcasecmp(restriction, "noguest")) {
-      flag = FN_NOGUEST;
-    } else if (!strcasecmp(restriction, "admin")) {
-      flag = FN_ADMIN;
-    } else if (!strcasecmp(restriction, "wizard")) {
-      flag = FN_WIZARD;
-    } else if (!strcasecmp(restriction, "god")) {
-      flag = FN_GOD;
-    } else if (!strcasecmp(restriction, "nosidefx")) {
-      flag = FN_NOSIDEFX;
-    } else if (!strcasecmp(restriction, "logargs")) {
-      flag = FN_LOGARGS;
-    } else if (!strcasecmp(restriction, "logname")) {
-      flag = FN_LOGNAME;
-    } else if (!strcasecmp(restriction, "noparse")) {
-      flag = FN_NOPARSE;
-    } else if (!strcasecmp(restriction, "localize")) {
-      flag = FN_LOCALIZE;
-    } else if (!strcasecmp(restriction, "userfn")) {
-      flag = FN_USERFN;
-    }
+
+    flag = fn_restrict_to_bit(restriction);
     if (clear)
       result &= ~flag;
     else
       result |= flag;
-    restriction = tp;
   }
   return result;
 }
@@ -1108,7 +1132,7 @@ do_function_restrict(dbref player, const char *name, const char *restriction,
                      int builtin)
 {
   FUN *fp;
-  unsigned int flags;
+  uint32_t flags;
   char tbuf1[BUFFER_LEN];
   char *bp = tbuf1;
 
@@ -1622,8 +1646,9 @@ build_function_report(dbref player, FUN *fp)
   char *buff;
   char *bp;
   const char *state, *state2;
-  int first = 1;
+  bool first;
   int maxargs;
+  int i;
 
   buff = GC_MALLOC_ATOMIC(BUFFER_LEN);
   bp = buff;
@@ -1643,99 +1668,14 @@ build_function_report(dbref player, FUN *fp)
   safe_format(buff, &bp, T("Name      : %s() (%s%s)"), fp->name, state, state2);
   safe_chr('\n', buff, &bp);
 
-  tbuf[0] = '\0';
-  if (fp->flags & FN_NOPARSE) {
-    safe_str("Noparse", tbuf, &tp);
-    if (first)
-      first = 0;
-  }
-
-  if (fp->flags & FN_LOCALIZE) {
-    if (first == 0)
-      safe_strl(", ", 2, tbuf, &tp);
-    safe_str("Localize", tbuf, &tp);
-    first = 0;
-  }
-
-  if (fp->flags & FN_USERFN) {
-    if (first == 0)
-      safe_strl(", ", 2, tbuf, &tp);
-    safe_str("Userfn", tbuf, &tp);
-    first = 0;
-  }
-
-  if (fp->flags & FN_LITERAL) {
-    if (first == 0)
-      safe_strl(", ", 2, tbuf, &tp);
-    safe_str("Literal", tbuf, &tp);
-    first = 0;
-  }
-
-  if (fp->flags & FN_NOSIDEFX) {
-    if (first == 0)
-      safe_strl(", ", 2, tbuf, &tp);
-    safe_str("Nosidefx", tbuf, &tp);
-    first = 0;
-  }
-
-  if (fp->flags & FN_STRIPANSI) {
-    if (first == 0)
-      safe_strl(", ", 2, tbuf, &tp);
-    safe_str("Stripansi", tbuf, &tp);
-    first = 0;
-  }
-
-  if (fp->flags & FN_LOGARGS) {
-    if (first == 0)
-      safe_strl(", ", 2, tbuf, &tp);
-    safe_str("LogArgs", tbuf, &tp);
-    first = 0;
-  } else if (fp->flags & FN_LOGNAME) {
-    if (first == 0)
-      safe_strl(", ", 2, tbuf, &tp);
-    safe_str("LogName", tbuf, &tp);
-    first = 0;
-  }
-
-  if (fp->flags & FN_NOGAGGED) {
-    if (first == 0)
-      safe_strl(", ", 2, tbuf, &tp);
-    safe_str("Nogagged", tbuf, &tp);
-    first = 0;
-  }
-
-  if (fp->flags & FN_NOGUEST) {
-    if (first == 0)
-      safe_strl(", ", 2, tbuf, &tp);
-    safe_str("Noguest", tbuf, &tp);
-    first = 0;
-  }
-
-  if (fp->flags & FN_NOFIXED) {
-    if (first == 0)
-      safe_strl(", ", 2, tbuf, &tp);
-    safe_str("Nofixed", tbuf, &tp);
-    first = 0;
-  }
-
-  if (fp->flags & FN_WIZARD) {
-    if (first == 0)
-      safe_strl(", ", 2, tbuf, &tp);
-    safe_str("Wizard", tbuf, &tp);
-    first = 0;
-  }
-
-  if (fp->flags & FN_ADMIN) {
-    if (first == 0)
-      safe_strl(", ", 2, tbuf, &tp);
-    safe_str("Admin", tbuf, &tp);
-    first = 0;
-  }
-
-  if (fp->flags & FN_GOD) {
-    if (first == 0)
-      safe_strl(", ", 2, tbuf, &tp);
-    safe_str("God", tbuf, &tp);
+  for (first = 1, i = 1; func_restrictions[i].name; i += 1) {
+    if (fp->flags & func_restrictions[i].bit) {
+      if (!first)
+        safe_strl(", ", 2, tbuf, &tp);
+      else
+        first = 0;
+      safe_str(func_restrictions[i].name, tbuf, &tp);
+    }
   }
 
   *tp = '\0';

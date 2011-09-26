@@ -376,7 +376,7 @@ FUNCTION(fun_strinsert)
 FUNCTION(fun_delete)
 {
   ansi_string *as;
-  int pos, pos2, num;
+  int pos, num;
 
   if (!is_integer(args[1]) || !is_integer(args[2])) {
     safe_str(T(e_ints), buff, bp);
@@ -400,12 +400,10 @@ FUNCTION(fun_delete)
   }
 
   if (num < 0) {
-    pos2 = pos + 1;
-    pos = pos2 + num;
+    pos += num + 1;
     if (pos < 0)
       pos = 0;
-  } else
-    pos2 = pos + num;
+  }
 
   ansi_string_delete(as, pos, num);
   safe_ansi_string(as, 0, as->len, buff, bp);
@@ -1507,30 +1505,28 @@ FUNCTION(fun_brackets)
 static int
 wraplen(char *str, size_t maxlen)
 {
-  size_t i, length;
+  size_t i, last = -1;
 
-  /* If the remaining text is shorter than our chunk size (maxlen),
-   * try to return it all. Otherwise, scan the maximum allowable size,
-   * but account for a newline character. */
-  length = (strlen(str) <= maxlen) ? strlen(str) : maxlen + 1;
+  /* If there's a newline in the first maxlen chars, return its position.
+   * Otherwise, return the whole text if it's shorter than maxlen,
+   * the position of the last space before maxlen (if there is one) or,
+   * if all else fails, -1 to linewrap a word, hyphenated. */
 
-  /* If there's a newline in the chunk, wrap there. */
-  for (i = 0; i < length; i++)
-    if ((str[i] == '\n') || (str[i] == '\r'))
+  for (i = 0; i < maxlen; i++) {
+    if (!str[i])
       return i;
+    else if ((str[i] == '\n') || (str[i] == '\r'))
+      return i;
+    else if ((str[i] == ' '))
+      last = i;
+  }
 
-  /* No newlines, but the text we can grab will fit on one line */
-  if (length == strlen(str))
-    return length;
+  /* Check to make sure the text wasn't hard-wrapped at the end of
+   * this line anyway */
+  if ((str[i] == '\n'))
+    return i;
 
-  /* No return char was found, so find the last space in str. */
-  while (str[maxlen] != ' ' && maxlen > 0)
-    maxlen--;
-
-  if (maxlen > 0)
-    return (int) maxlen;
-  else
-    return -1;
+  return last;
 }
 
 /** The integer in string a will be stored in v,
@@ -1607,7 +1603,7 @@ FUNCTION(fun_wrap)
     ansiwidth = strlen(pstr);
     if (ansiwidth > linewidth)
       ansiwidth = linewidth;
-    ansilen = wraplen(pstr, ansiwidth);
+    ansilen = wraplen(pstr, linewidth);
 
     if (ansilen < 0) {
       /* word doesn't fit on one line, so cut it */
@@ -2207,7 +2203,6 @@ FUNCTION(fun_speak)
     starting_fragment = 1;
   }
 
-  funccount = pe_info->fun_invocations;
   pe_regs = pe_regs_create(PE_REGS_ARG, "fun_speak");
   while (start && *start) {
     fragment++;

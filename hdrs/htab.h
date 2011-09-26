@@ -49,4 +49,5 @@ const char *hash_firstentry_key(HASHTAB *htab);
 const char *hash_nextentry_key(HASHTAB *htab);
 void hash_stats_header(dbref player);
 void hash_stats(dbref player, HASHTAB *htab, const char *hashname);
+unsigned int next_prime_after(unsigned int);
 #endif

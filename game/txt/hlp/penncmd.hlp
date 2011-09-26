@@ -584,7 +584,8 @@ See also: get, goto, @lock, SUCCESS, FAILURE, @odrop, ACTION LISTS, VERBS
     @attribute/limit score=^\\d+$    <-- @score can only contain digits.
                                          (Remember, Penn parser eats a \)
 
-See also: ATTRIBUTEs, STANDARD ATTRIBUTES, attribute flags, @set, @atrchown
+See also: ATTRIBUTEs, STANDARD ATTRIBUTES, attribute flags, @set, @atrchown,
+  @atrlock, @list
 & @ause
 & @use
 & @ouse
@@ -1066,7 +1067,7 @@ See also: accent(), @nameformat, accname(), stripaccents()
   
   Example:
     Show the room's zone after its name.
-    > @nameformat here = %1 [if(isdbref(zone(%0)),<[name(zone(%0))]>)]
+    > @nameformat here = %1 [if(zone(%0),<[name(zone(%0))]>)]
 
 See also: look, @exitformat, @conformat, @descformat, @nameaccent, 
     @invformat, @idescformat
@@ -1343,11 +1344,18 @@ See also: @destroy, GOING, @startup
 
 See also: @open, @link, EXITS, @create, DBREF, dig()
 & @doing
+  &doing me=<doing>
   @doing <message>
   @doing/header <message>
 
-  The first form of this command sets a message which shows up next to your
-  name in the output of the WHO/DOING commands.
+  The first syntax sets your DOING attribute to <doing>. The evaluated result
+  is shown next to your name in the WHO/DOING commands, and is returned by
+  the doing() function.
+  
+  @doing exists for backwards compatability, and sets your DOING attribute so 
+  that, when evaluated, it will return <message>. It is equivalent to:
+    @set me=DOING:[decompose(<message>)]
+  The @doing command is deprecated, and using it should be avoided.
   
   @doing/header is an alias for @poll, and can only be used by Wizards or
   those with the Poll @power.
@@ -1506,9 +1514,9 @@ See also: edit(), regedit(), ATTRIBUTES,
   @elock sets the Enter @lock for <object> to <key>, or clears the the lock
   if no <key. is given. @eunlock removes the Enter @lock for <object>.
   
-  @elock is an alias for
+  @elock and @eunlock are deprecated and uses of them should be replaced by
     @lock/enter <object>[=<key>]
-  and @eunlock is an alias for
+  and
     @lock/enter <object>
 
 See also: @lock, locktypes, enter, ENTER_OK
@@ -1540,7 +1548,7 @@ See also: @nsemit, emit(), @pemit, @remit, @oemit, @lemit, @zemit, @cemit,
   @disable <option>
 
   These wizard-only commands allow for any boolean @config options to
-  be changed (see "help @config paramaters" for a list).
+  be changed (see 'help @config paramaters' for a list).
 
   @enable <option> is the same thing as @config/set <option>=yes
   @disable <option> is the same thing as @config/set <option>=no
@@ -1659,6 +1667,9 @@ See also: EXITS, @open, @link
   expressions instead of wildcard patterns, and can set the case flag to make
   the patterns case-sensitive.
   
+  Sounds are only forwarded if the speaker also passes <object>'s
+  @lock/filter, which receives the sound heard as %0.
+  
   See 'help @filter2' for an example.
   
 See also: AUDIBLE, @infilter, attribute flags, LISTENING, @forwardlist,
@@ -1700,9 +1711,9 @@ See also: @search, lsearch(), @entrances
   @forwardlist <object>[=<list of dbrefs>]
 
   If <object> is set AUDIBLE, any sound it hears which passes its @filter
-  will be forwarded (prefixed with its @prefix) to each of the dbrefs given
-  in its @forwardlist attribute, in much the same way as puppets forward
-  sound to their owners.
+  and @lock/filter will be forwarded (prefixed with its @prefix) to each
+  of the dbrefs given  in its @forwardlist attribute, in much the same way
+  as puppets forward sound to their owners.
 
   In order to forward to an object, you must either control it, have the 
   pemit_all power, or pass its @lock/forward. (If you want to allow all
@@ -1880,9 +1891,10 @@ See also: FLAGS, @set, @power, flag permissions
   how that function is parsed, and how many arguments it takes.
   
   <switch> can be one of:
-  /disable, to disable a built-in function.
+  /disable, to disable a function.
   /enable, to re-enable it.
-  /delete, to remove a user-defined function.
+  /delete, to remove a user-defined function or allow a built-in function
+           to be overriden by a user-defined one.
   /restrict, to change the restriction flags on an existing function.
   
   @function/alias creates an alias for the built-in function <function name>
@@ -2204,7 +2216,7 @@ See also: enter, @enter, ENTER_OK, @describe, look, @idescformat, VERBS
     Huh?  (Type "help" for help.)  (10 times)
     Announcement: Room Zero shouts, "Dunce wins his first typo trophy!"
 
-See also: @hook, EVALUATION ORDER
+See also: @hook, EVALUATION ORDER, warn_on_missing, unimplemented_command
 & @idle
   @idle <player>[=<message>]
 
@@ -2230,7 +2242,10 @@ See also: @away, @haven
   of the patterns and prevents those inside the object from hearing them. 
   It does not stop the @ahear of the listening object from being triggered
   by things that match the @listen.
- 
+
+  Sounds are only forwarded if the speaker also passes <object>'s
+  @lock/infilter, which receives the sound heard as %0.
+
   For an explanation of infilter patterns, see the help for "@filter".
 
 See also: @filter, @listen, @inprefix, AUDIBLE, LISTENING
@@ -2277,6 +2292,8 @@ See also: @ps, QUEUE
   The /spoof switch causes nospoof notifications to show the enactor's
     dbref instead of the executor's dbref, and requires control over
     the enactor or the Can_spoof power.
+
+See also: @remit, @nslemit
 & @list
   @list/<switch>
   @list[/lowercase] <switch>
@@ -2306,9 +2323,13 @@ See also: list(), @config, config(), functions(), @stats, @command,
 
   This command lists the current MOTD (message of the day) for the MUSH.
   If used by a wizard or admin, it will also include the wizard, full, and
-  down MOTDs to the user. Same as @list/motd.
+  down MOTDs to the user.
+  
+  There are two sets of MotDs: permanant ones defined in mush.cnf, and
+  temporary ones set in-game with @motd. Only the messages defined with
+  @motd are shown.
 
-See also: @list
+See also: @motd, @list
 & @link
   @link[/preserve] <object>=[<dbref> | here | home | variable]
 
@@ -2346,7 +2367,8 @@ See also: EXITS, @open, @dig, DROP-TO, HOME
   Sets the object's listen pattern to <string>, which can have wildcards.
   Whenever something the object hears matches the pattern, the object's
   ahear/amhear/aahear attribute will be triggered. In addition, anything 
-  inside the object will hear it as well.
+  inside the object will hear it as well, if the speaker passes 
+  @lock/infilter.
 
   For example:
   > @listen Chair=*  
@@ -2387,28 +2409,26 @@ See also: LISTENING, @ahear, @amhear, @aahear
 & @lock
   @lock[/<switch>] <object>=<key> 
   
-  This command "locks" the object, specifying a key which determines
-  who or what can do certain things with the object. There are many
-  different types of locks, all of which are described in "help
-  locktypes" and which are designated by the switch. The "basic" lock
-  determines, for players and things, who can pick them up. For exits,
-  it determines who can go through the exit. All other locks can be
-  set the same way as the basic lock.
+  This command "locks" the object, specifying a key which determines who or
+  what can do certain things with the object. There are many different types
+  of locks, all of which are described in 'help locktypes' and which are 
+  designated by the switch. The "basic" lock determines, for players and 
+  things, who can pick them up. For exits, it determines who can go through 
+  the exit. All other locks can be set the same way as the basic lock.
 
-  Whenever you "pass" the basic lock, you succeed in doing something
-  with the object. This triggers the @success/@osuccess/@asuccess
-  messages and actions. If you fail to pass the basic lock, you
-  trigger the @failure/@ofailure/@afailure messages and actions. Other
-  locktypes may also have such success/failure messages: see "help
-  failure" for info.
+  Whenever you "pass" the basic lock, you succeed in doing something with 
+  the object. This triggers the @success/@osuccess/@asuccess messages and 
+  actions. If you fail to pass the basic lock, you trigger the 
+  @failure/@ofailure/@afailure messages and actions. Other locktypes may 
+  also have such success/failure messages: see 'help failure' for info.
 
   Just like attributes, locks can be inherited from parents. By default,
   locks are set no_inherit, but this flag can be cleared using @lset. More
-  details and a list of flags can be found in HELP @LSET.
+  details and a list of flags can be found in 'help @lset'.
 
-  A listing of lock types, such as pagelocks, look at "help locktypes".
+  A listing of lock types, such as pagelocks, look at 'help locktypes'.
   For the available key types, such as how to check an attribute on an
-  object trying to pass a lock, see "help lockkeys".
+  object trying to pass a lock, see 'help lockkeys'.
 
 See also: @lock-simple, locktypes, lockkeys, @clock, failure, success.
   elock(), lock(), @lset, @clock, testlock(), locks(), lockflags(),
@@ -2429,8 +2449,8 @@ SIMPLE LOCKS
      This locks the object "My Toy" to you and you alone. It is
      recommended that you @lock me == me in order to prevent anyone
      else from picking you up. The two = signs are NOT a typo! The
-     first is part of the @lock syntax (as shown at the top of "help
-     @lock") the second is a lock key that means "exactly this
+     first is part of the @lock syntax (as shown at the top of 'help
+     @lock') the second is a lock key that means "exactly this
      object".
   
   You can lock an object -against- another object as well, using the
@@ -2634,7 +2654,7 @@ See also: ipaddr(), hostname(), LASTSITE
   for examples.
 
   The types of keys are outlined below. Detailed help for each is available
-  by typing "help @lock-<key>", replacing <key> with the word on the left.
+  by typing 'help @lock-<key>', replacing <key> with the word on the left.
 
   Simple     - Always true, always false, or locking to an object.
   Objid      - Check if the object trying to pass the lock matches an objid.
@@ -2690,6 +2710,8 @@ See also: @lock, locktypes, @clock, objid()
   @lock/examine         Who can examine this object if it's VISUAL
   @lock/chzone          Who can @chzone to this object if it's a ZMO
   @lock/forward         Who can @forwardlist a message to this object 
+  @lock/filter          Controls if the message %0 should be filtered
+  @lock/infilter        Controls if the message %0 should be infiltered
   @lock/control         Who can control this object (only if set; non-player)
   @lock/dropto          Who can trigger this container's drop-to.
   @lock/destroy         Who can destroy this object if it's DESTROY_OK
@@ -2819,12 +2841,16 @@ See also: message(), @chatformat, @pageformat, @oemit, @remit, speak()
 
   Note that @motd by itself clears the message. Use @motd/list or
   @listmotd to see the current messages.
+  
+  These messages are shown in addition to the permanent MotDs which are
+  defined in mush.cnf (motd_file, wizmotd_file, etc).
  
   Other switches:
   /wizard : sets the message for wizards (like @wizmotd)
   /down   : sets the logins-off message (like @rejectmotd)
   /full   : sets the max-players-logged-in message
   /list   : list the MOTDs (like @listmotd, can be used by anyone)
+See also: @listmotd
 & @name
   @name <object>=<new name>
   @name <player|exit>=<new name>[;<alias1>[;<aliasN>]]
@@ -2854,6 +2880,7 @@ See also: message(), @chatformat, @pageformat, @oemit, @remit, speak()
     Name set.
   
 See also: @alias, @oname, name(), fullname()
+Config options: player_name_spaces, player_name_len, only_ascii_in_names
 & @ONAME
 & @ANAME
   @oname <object>[=<message>]
@@ -2915,7 +2942,7 @@ See also: @password, checkpass()
   > @notify/setq me=0,Walker
   Hello, Walker!
 
-  See also: SEMAPHORES, @drain, @wait
+See also: SEMAPHORES, @drain, @wait, @halt
 & @nspemit
 & @nsemit
 & @nslemit
@@ -3129,7 +3156,7 @@ See also: @prompt, prompt(), terminfo()
   are still at the login screen, or to send a message to just one of a
   player's connections when he's logged in multiple times.
 
-  See "help @pemit2" for more.
+  See 'help @pemit2' for more.
 & @pemit2
   The @pemit command can take the following additional switches:
     /contents  -- equivalent to @remit.
@@ -3166,8 +3193,8 @@ See also: MONEY, give
   @power <power>
   @power <object>=[!]<power>
   
-  @power/list lists the defined powers (see "help powers").  A list
-  of standard powers with explanations is given in "help powers list".
+  @power/list lists the defined powers (see 'help powers').  A list
+  of standard powers with explanations is given in 'help powers list'.
   When given a power name as an argument, @power displays information
   about a power.
 
@@ -3240,11 +3267,10 @@ See also: @inprefix, AUDIBLE, @listen
   @ps[/<switch>] [<player>]
   @ps[/debug] <pid>
   
-  @ps is a useful command for MUSHers.  It lists all commands currently on
-  your 'to be executed' queue, thus allowing you to identify infinite (or
-  unnecessary) loops with-out putting in says or poses. It gives a count of
-  the total commands in each of the queues (Player, Object, Wait, and
-  Semaphore), displayed in the format:
+  @ps lists all commands currently on your 'to be executed' queue, thus 
+  allowing you to identify infinite (or unnecessary) loops with-out putting 
+  in says or poses. It gives a count of the total commands in each of the 
+  queues (Player, Object, Wait, and Semaphore), displayed in the format:
       <Number of your queued commands> / <Total number of queued commands>.
 
   Some of the queues also include a [Ndel] after the total. That number is
@@ -3256,16 +3282,19 @@ See also: @inprefix, AUDIBLE, @listen
   @ps/summary just displays the queue totals for the whole queue.
   @ps/quick displays the queue totals for just your queue.
   
-  With a <pid> argument, @ps shows information on a single queue
-  entry.  The /debug switch will also display the queue entry's
-  environment: Arguments, q registers, executor, enactor and caller
-  dbrefs.
+  Continued in 'help @ps2'.
+& @ps2
+  With a <pid> argument, @ps shows information on a single queue entry.
+  The /debug switch will also display the queue entry's environment: 
+  Arguments, q registers, executor, enactor and caller dbrefs.
 
-  Each line includes the process id of the queue entry, the object
-  and attribute being used as a semaphore (If any), the number of
-  seconds left before it executes (For waits and semaphores), the
-  object that is going to execute the entry, and the command.
-
+  Each line includes the process id of the queue entry, the object and 
+  attribute being used as a semaphore (if any), the number of seconds left
+  before it executes (for waits and semaphores), the object that is going 
+  to execute the entry, and the command. To halt a specific queue entry,
+  use @halt/pid.
+  
+See also: @wait, @halt, @notify, @drain, SEMAPHORES
 & @purge
   @purge is a wizard only command that calls the internal purge routine to 
   advance the clock of each object scheduled to be destroyed, and destroy 
@@ -3298,7 +3327,6 @@ See also: @dbck
  
   A site admin can achieve the same effect by sending the MUSH process
   a kill -1 or kill -HUP.
- 
 & @rejectmotd
   @rejectmotd <message>
 
@@ -3330,13 +3358,13 @@ See also: @motd, @list, @listmotd
 See also: @emit, @pemit, @oemit, SPOOFING, NOSPOOF, CONTROL.
 & @retry
   @retry <boolean>
-  @retry <boolean>=<arg1>[,...]
+  @retry <boolean>=<arg0>[,...[,<arg9>]]
 
   The @retry command restarts the current queue entry, enabling people to
   loop their command without requiring a wait for the next queue entry.
   It can be a little tricky to understand at first. It basically tells the
   parser: "If <boolean> is true, then go back to the beginning." It can also
-  modify %0-%9 with the arguments passed to it. (<arg1>,...).
+  replace %0-%9 with the arguments passed to it. (<arg0>,...).
 
   Please note: @retry only restarts the action list it is currently in.
   If you have: "@break 1=@retry 1=hello", then the action list is only
@@ -3379,7 +3407,7 @@ See also: ACTION LISTS, BOOLEAN VALUES, @break, @include
   all objects (see @allhalt) and restarts them, and can only be used
   by a wizard.
 
-See also: @halt, @startup
+See also: @halt, @startup, @shutdown
 & @rwall
   @rwall[/emit] <message>
 
@@ -3729,7 +3757,8 @@ See also: @restart, @undestroy, ACTION LISTS, @function, @command, @hook,
   @attribute
 & @stats
   @stats [<player>]
-  @stats/table
+  @stats/tables
+  @stats/flags
   @stats/chunks
   @stats/regions
   @stats/paging
@@ -3739,7 +3768,8 @@ See also: @restart, @undestroy, ACTION LISTS, @function, @command, @hook,
   down by object types.  Wizards can supply a player name to count only
   objects owned by that player.
 
-  In its second form, display statistics on internal tables.
+  @stats/tables displays statistics on internal tables.
+  @stats/flags displays statistics about the flag and power system.
 
   In the remaining forms, display statistics or histograms about the
   chunk (attribute) memory system.
@@ -3868,7 +3898,7 @@ See also: switch wildcards, switch(), @break, stext(), slev()
   the location of the target, unless the /inside switch is used, in which 
   case they are sent to the inventory of the target.
   
-  Continued in "help @teleport2".
+  Continued in 'help @teleport2.
 & @teleport2
   Teleporting to an exit works the same as using "goto". If you don't control
   the exit and don't have the tport_anywhere power, either you or <object>
@@ -3921,11 +3951,12 @@ See also: @include, ufun()
   @uunlock <object>
 
   These commands set the Use lock for <object> to <key>, or clear the Use
-  lock. They are equivilent to
+  lock. They are deprecated, and should be replaced with 
+
     @lock/use <object>[=<key>]
   and
     @lock/use <object>
-    
+
   The Use lock determines who is allowed to "use" the object or trigger any
   $-commands or ^-listens on the object.
   
@@ -3933,8 +3964,8 @@ See also: @include, ufun()
   can trigger ^-listens, use @lock/listen.
 
   Example: if I want everyone but Bob to be able to use my toy, I would
-  "@ulock toy=!*Bob". If I want only Bob to be able to use it, I would
-  "@ulock toy==*Bob".
+  "@lock/use toy=!*Bob". If I want only Bob to be able to use it, I would
+  "@lock/use toy==*Bob".
 
 See also: @lock, use, locktypes
 & @uptime
@@ -4070,7 +4101,7 @@ See also: USER-DEFINED COMMANDS, STACK, VERBS, @trigger
   whichever happens first.
  
   More forms that support semaphores on arbitrary attributes are described in
-  "help @wait2".
+  'help @wait2'.
 
 See also: SEMAPHORES, @drain, @notify
 & @wait2
@@ -4078,7 +4109,7 @@ See also: SEMAPHORES, @drain, @notify
   in question. However, it is useful to be able to use other attributes as
   semaphores, so one object can be used as the blocker for multiple different
   things at once. Possible attribute names aren't completely arbitrary. See
-  "HELP SEMAPHORES5" for details.
+  'HELP SEMAPHORES5' for details.
 
   The syntax for these are:
  
@@ -4804,6 +4835,37 @@ See also: follow, dismiss, desert, followers(), @follow, @ofollow, @afollow
   see 'help @charges' for more information.
 
 See also: @use, @charges, @lock, @ufail
+& WARN_ON_MISSING
+
+  This internal command is run when someone attempts to run a command which
+  starts with a function, for example:
+    &test me=$test: [emit(test)]
+  By default it sends the owner of the offending object a message, so they
+  can fix the code to use a command instead of a function. The command must
+  be enabled (either in restrict.cnf or with @command/enable) in order to
+  be used. It can be @hooked to set custom behaviour.
+  
+  Example:
+    > @hook/override warn_on_missing=#0, wom
+    > &wom #0=$warn_on_missing: @pemit/list %# [owner(%!)]=[name(%!)] has
+         broken code in %=!
+         
+    > &wom #0=$warn_on_missing *: @pemit [owner(%!)]=[name(%!)] has broken
+         code in %= - attempted to run %0!
+         
+See also: huh_command, unimplemented_command
+& UNIMPLEMENTED_COMMAND
+
+  This internal command is run when someone attempts to use an unimplemented
+  command. Currently, this occurs either when @SQL is used but SQL support is
+  not enabled, or when a command has been added with @command/add but has not
+  been properly @hooked to run softcode. UNIMPLEMENTED_COMMAND cannot be run
+  directly.
+  
+  By default, the command just shows the message "This command has not been
+  implemented.", but you can @hook it to perform other actions.
+  
+See also: huh_command, warn_on_missing, @command, @hook, @sql
 & whisper 
   whisper <player>=<message>
   whisper/silent <player>=<message>

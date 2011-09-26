@@ -740,7 +740,9 @@ free_object(dbref thing)
   }
 
   Type(thing) = TYPE_GARBAGE;
+  destroy_flag_bitmask("FLAG", Flags(thing));
   Flags(thing) = NULL;
+  destroy_flag_bitmask("POWER", Powers(thing));
   Powers(thing) = NULL;
   Location(thing) = NOTHING;
   set_name(thing, "Garbage");

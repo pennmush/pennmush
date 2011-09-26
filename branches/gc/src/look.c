@@ -41,6 +41,9 @@ static void mortal_look_atrs(dbref player, dbref thing, const char *mstr,
 static void look_simple(dbref player, dbref thing);
 static void look_description(dbref player, dbref thing, const char *def,
                              const char *descname, const char *descformatname);
+
+enum decompile_attrflags { DECOMP_ALL, DECOMP_NODEFAULTS, DECOMP_NONE };
+
 static int decompile_helper(dbref player, dbref thing, dbref parent,
                             char const *pattern, ATTR *atr, void *args);
 static int look_helper(dbref player, dbref thing, dbref parent,
@@ -48,9 +51,10 @@ static int look_helper(dbref player, dbref thing, dbref parent,
 static int look_helper_veiled(dbref player, dbref thing, dbref parent,
                               char const *pattern, ATTR *atr, void *args);
 void decompile_atrs(dbref player, dbref thing, const char *name,
-                    const char *pattern, const char *prefix, int skipflags);
-void decompile_locks(dbref player, dbref thing, const char *name,
-                     int skipdef, const char *prefix);
+                    const char *pattern, const char *prefix,
+                    enum decompile_attrflags skipflags);
+void decompile_locks(dbref player, dbref thing, const char *name, int skipdef,
+                     const char *prefix);
 static char *parent_chain(dbref player, dbref thing);
 
 extern PRIV attr_privs_view[];
@@ -1349,7 +1353,7 @@ do_entrances(dbref player, const char *where, char *argv[], int types)
 struct dh_args {
   char const *prefix;   /**< Decompile/tf prefix */
   char const *name;     /**< Decompile object name */
-  int skipdef;          /**< Skip default flags on attributes if true */
+  enum decompile_attrflags skipdef;          /**< Show all attrflags, none, or just skip defaults? */
 };
 
 char *
@@ -1398,11 +1402,12 @@ decompile_helper(dbref player, dbref thing __attribute__ ((__unused__)),
     safe_chr(':', msg, &bp);
     safe_str(decompose_str(avalue), msg, &bp);
   } else {
-    if (ptr && !strcmp(AL_NAME(atr), AL_NAME(ptr))) {
-      safe_chr('@', msg, &bp);
-    } else {
+    /* Always use &attr, even for standard attributes, to avoid
+     * clashing with @-commands, which take priority in the
+     * command parser */
+    safe_chr('&', msg, &bp);
+    if (!ptr || strcmp(AL_NAME(atr), AL_NAME(ptr))) {
       ptr = NULL;               /* To speed later checks */
-      safe_chr('&', msg, &bp);
     }
     safe_str(AL_NAME(atr), msg, &bp);
     safe_chr(' ', msg, &bp);
@@ -1413,10 +1418,10 @@ decompile_helper(dbref player, dbref thing __attribute__ ((__unused__)),
   *bp = '\0';
   notify(player, msg);
   /* Now deal with attribute flags, if not FugueEditing */
-  if (dh->skipdef < 2) {
+  if (dh->skipdef != DECOMP_NONE) {
     /* If skipdef is on, only show sets that aren't the defaults */
     const char *privs = NULL;
-    if (dh->skipdef && ptr) {
+    if (dh->skipdef == DECOMP_NODEFAULTS && ptr) {
       /* Standard attribute. Get the default perms, if any. */
       /* Are we different? If so, do as usual */
       uint32_t npmflags = AL_FLAGS(ptr) & (~AF_PREFIXMATCH) & (~AF_ROOT);
@@ -1438,11 +1443,11 @@ decompile_helper(dbref player, dbref thing __attribute__ ((__unused__)),
  * \param name name to refer to object by in decompile.
  * \param pattern pattern to match attributes to decompile.
  * \param prefix prefix to use for decompile/tf.
- * \param skipdef if 0, show attribute flags. If 1, skip default attr flags. If 2, skip all attr flags.
+ * \param skipdef Whether or not to print all attribute flags, none, or skip defaults
  */
 void
 decompile_atrs(dbref player, dbref thing, const char *name, const char *pattern,
-               const char *prefix, int skipdef)
+               const char *prefix, enum decompile_attrflags skipdef)
 {
   struct dh_args dh;
   dh.prefix = prefix;
@@ -1509,12 +1514,12 @@ do_decompile(dbref player, const char *xname, const char *prefix, int dec_type)
   char object[BUFFER_LEN];
   char *objp, *attrib, *attrname, *name;
 
-  int skipdef = 0;
+  enum decompile_attrflags skipdef = DECOMP_ALL;
 
   if (dec_type & DEC_TF)
-    skipdef = 2;
+    skipdef = DECOMP_NONE;
   else if (dec_type & DEC_SKIPDEF)
-    skipdef = 1;
+    skipdef = DECOMP_NODEFAULTS;
 
   /* @decompile must always have an argument */
   if (!xname || !*xname) {
@@ -1614,7 +1619,7 @@ do_decompile(dbref player, const char *xname, const char *prefix, int dec_type)
     notify_format(player, "%s@chzone %s = #%d", prefix, object, Zone(thing));
   if (GoodObject(Parent(thing)))
     notify_format(player, "%s@parent %s=#%d", prefix, object, Parent(thing));
-  decompile_locks(player, thing, object, skipdef, prefix);
+  decompile_locks(player, thing, object, (skipdef != DECOMP_ALL), prefix);
   decompile_flags(player, thing, object, prefix);
   decompile_powers(player, thing, object, prefix);
 

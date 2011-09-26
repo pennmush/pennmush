@@ -317,6 +317,7 @@ is_objid(char const *str)
  * To TinyMUSH, any string is an integer. To PennMUSH, a string that
  * passes parse_int is an integer, and a blank string is an integer
  * if NULL_EQ_ZERO is turned on.
+ * **Checks TINY_MATH**. Use is_strict_integer() for internal checks.
  * \param str string to check.
  * \retval 1 string is an integer.
  * \retval 0 string is not an integer.
@@ -346,6 +347,7 @@ is_integer(char const *str)
  * To TinyMUSH, any string is an uinteger. To PennMUSH, a string that
  * passes parse_uint is an uinteger, and a blank string is an uinteger
  * if NULL_EQ_ZERO is turned on.
+ * **Checks TINY_MATH**. Use is_strict_uinteger() for internal checks.
  * \param str string to check.
  * \retval 1 string is an uinteger.
  * \retval 0 string is not an uinteger.
@@ -461,6 +463,36 @@ is_strict_integer(char const *str)
   if (errno == ERANGE || *end != '\0')
     return 0;
   return end > str;
+}
+
+/** Does a string contain a list of space-separated integers?
+ * Must contain at least one int. For internal use; ignores TINY_MATH.
+ * \param str string to check
+ * \retval 1 string is a list of integers
+ * \retval 0 string is empty, or contains a non-space, non-integer char
+ */
+bool
+is_integer_list(char const *str)
+{
+  char *start, *end;
+  long val;
+
+  if (!str || !*str)
+    return 0;
+
+  start = (char *) str;
+  do {
+    while (*start && *start == ' ')
+      start++;
+    if (!*start)
+      return 1;
+    val = strtol(start, &end, 10);
+    if (end == start)
+      return 0;
+    start = end;
+  } while (*start);
+
+  return 1;
 }
 
 /** Is string a number?
@@ -1257,6 +1289,8 @@ pe_regs_set_rx_context(PE_REGS *pe_regs,
     pcre_copy_substring(re_from, re_offsets, re_subpatterns,
                         num, buff, BUFFER_LEN);
     pe_regs_set(pe_regs, PE_REGS_REGEXP, pe_regs_intname(i), buff);
+    pe_regs_set(pe_regs, PE_REGS_REGEXP, (char *) entry + 2, buff);
+
   }
 }
 
@@ -2492,6 +2526,14 @@ process_expression(char *buff, char **bp, char const **str,
         } while ((*str)[-1] == ',');
         if ((*str)[-1] != ')')
           (*str)--;
+
+
+        /* Warn about deprecated functions */
+        if (fp->flags & FN_DEPRECATED)
+          notify_format(Owner(executor),
+                        T("Deprecated function %s being used on object #%d."),
+                        fp->name, executor);
+
         /* See if this function is enabled */
         /* Can't do this check earlier, because of possible side effects
          * from the functions.  Bah. */
@@ -2543,7 +2585,8 @@ process_expression(char *buff, char **bp, char const **str,
               global_fun_invocations++;
               pe_info->fun_invocations++;
               fp->where.fun(fp, buff, bp, nfargs, fargs, arglens, executor,
-                            caller, enactor, fp->name, pe_info);
+                            caller, enactor, fp->name, pe_info,
+                            ((eflags & ~PE_FUNCTION_MANDATORY) | PE_DEFAULT));
               if (fp->flags & FN_LOGARGS) {
                 char logstr[BUFFER_LEN];
                 char *logp;

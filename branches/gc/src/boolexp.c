@@ -245,7 +245,8 @@ safe_get_bytecode(boolexp b)
     static uint8_t *get_bytecode(boolexp b, uint16_t * storelen);
     static struct boolexp_node *alloc_bool(void) __attribute_malloc__;
     static struct boolatr *alloc_atr(const char *name,
-                                     const char *s) __attribute_malloc__;
+                                     const char *s,
+                                     bool upcase_s) __attribute_malloc__;
     static void skip_whitespace(void);
     static struct boolexp_node *test_atr(char *s, char c);
     static struct boolexp_node *parse_boolexp_R(void);
@@ -565,15 +566,19 @@ eval_boolexp(dbref player, boolexp b, dbref target, NEW_PE_INFO *pe_info)
       case OP_TTYPE:
         switch (bytecode[arg]) {
         case 'R':
+        case 'r':
           r = Typeof(player) == TYPE_ROOM;
           break;
         case 'E':
+        case 'e':
           r = Typeof(player) == TYPE_EXIT;
           break;
         case 'T':
+        case 't':
           r = Typeof(player) == TYPE_THING;
           break;
         case 'P':
+        case 'p':
           r = Typeof(player) == TYPE_PLAYER;
           break;
         }
@@ -584,7 +589,7 @@ eval_boolexp(dbref player, boolexp b, dbref target, NEW_PE_INFO *pe_info)
           dbref mydb;
 
           r = 0;
-          a = atr_get(target, strupper((char *) bytecode + arg));
+          a = atr_get(target, (char *) bytecode + arg);
           if (!a)
             break;
 
@@ -859,15 +864,22 @@ static lock_type parse_ltype;
  * \return a newly allocated boolatr.
  */
 static struct boolatr *
-alloc_atr(const char *name, const char *s)
+alloc_atr(const char *name, const char *s, bool upcase_s)
 {
   struct boolatr *a;
   size_t len;
+  char buf[BUFFER_LEN];
 
-  if (s)
-    len = strlen(s) + 1;
-  else
+  if (s) {
+    if (upcase_s)
+      mush_strncpy(buf, strupper(s), sizeof buf);
+    else
+      mush_strncpy(buf, s, sizeof buf);
+    len = strlen(buf) + 1;
+  } else {
+    buf[0] = '\0';
     len = 1;
+  }
 
   a = GC_MALLOC(sizeof(struct boolatr) - BUFFER_LEN + len);
   if (!a)
@@ -877,7 +889,7 @@ alloc_atr(const char *name, const char *s)
     return NULL;
   }
   if (s)
-    memcpy(a->text, s, len);
+    memcpy(a->text, buf, len);
   else
     a->text[0] = '\0';
   return a;
@@ -910,7 +922,7 @@ skip_whitespace(void)
 
 
 enum test_atr_errs {
-  TAE_NONE,                     /*< Nt an attribute-type lock; continue parsing. */
+  TAE_NONE,                     /*< Not an attribute-type lock; continue parsing. */
   TAE_PARSE                     /*< Fatal parsing error. */
 };
 
@@ -920,7 +932,6 @@ static enum test_atr_errs test_atr_err = TAE_NONE;
 static struct boolexp_node *
 test_atr(char *s, char c)
 {
-  int preserve;
   char *tbp;
   bool escaped;
   struct boolexp_node *b;
@@ -928,7 +939,6 @@ test_atr(char *s, char c)
 
   test_atr_err = TAE_NONE;
 
-  preserve = 0;
   escaped = 0;
 
   for (tbp = tbuf1; *s; s++) {
@@ -949,12 +959,10 @@ test_atr(char *s, char c)
           return NULL;
         }
 
-        preserve = flag->preserve;
-      } else if (c == ATR_TOKEN)
-        preserve = 1;
+      }
       s += 1;
       break;
-    } else if (!escaped && *s == '\\' && !preserve)
+    } else if (!escaped && *s == '\\')
       escaped = 1;
     else {
       safe_chr(UPCASE(*s), tbuf1, &tbp);
@@ -1021,7 +1029,7 @@ test_atr(char *s, char c)
       b->type = BOOLEXP_FLAG;
     }
   }
-  b->data.atr_lock = alloc_atr(tbuf1, s);
+  b->data.atr_lock = alloc_atr(tbuf1, s, (b->type == BOOLEXP_FLAG));
   return b;
 }
 

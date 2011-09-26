@@ -107,7 +107,6 @@ COMMAND(cmd_helpcmd)
       int len = 0;
       int type = 0;
       pp = pattern;
-      sp = save;
       for (sp = save; *sp; sp++) {
         if (isspace((unsigned char) *sp)) {
           if (type) {

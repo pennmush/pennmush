@@ -110,7 +110,7 @@ typedef struct fun FUN;
   /* ARGSUSED */ /* try to keep lint happy */ \
   void fun_name (FUN *fun, char *buff, char **bp, int nargs, char *args[], \
                    int arglens[], dbref executor, dbref caller, dbref enactor, \
-                   char const *called_as, NEW_PE_INFO *pe_info); \
+                   char const *called_as, NEW_PE_INFO *pe_info, int eflags); \
   void fun_name(FUN *fun __attribute__ ((__unused__)), \
                 char *buff __attribute__ ((__unused__)), \
                 char **bp  __attribute__ ((__unused__)), \
@@ -121,7 +121,8 @@ typedef struct fun FUN;
                 dbref caller  __attribute__ ((__unused__)), \
                 dbref enactor  __attribute__ ((__unused__)), \
                 char const *called_as  __attribute__ ((__unused__)), \
-                NEW_PE_INFO *pe_info  __attribute__ ((__unused__)))
+                NEW_PE_INFO *pe_info  __attribute__ ((__unused__)), \
+                int eflags __attribute__ ((__unused__)))
 
 /* All results are returned in buff, at the point *bp.  *bp is likely
  * not equal to buff, so make no assumptions about writing at the
@@ -210,6 +211,7 @@ NEW_PE_INFO *pe_info_from(NEW_PE_INFO *old_pe_info, int flags,
 #define PE_UDEFAULT (PE_COMPRESS_SPACES | PE_STRIP_BRACES | \
                      PE_EVALUATE | PE_FUNCTION_CHECK)
 
+#define PE_PASS_ON (PE_DEBUG | PE_NODEBUG | PE_USERFN)
 /* PE_COMPRESS_SPACES strips leading and trailing spaces, and reduces sets
  * of internal spaces to one space.
  *

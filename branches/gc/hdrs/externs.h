@@ -232,7 +232,7 @@ void generic_command_failure(dbref executor, dbref enactor, char *string,
 
 /* From compress.c */
 /* Define this to get some statistics on the attribute compression
- * in @stats/tables. Only for word-based compression (COMPRESSION_TYPE 3 or 4
+ * in @stats/tables. Only for word-based compression (COMPRESSION_TYPE 3 or 4)
  */
 /* #define COMP_STATS /* */
 #if (COMPRESSION_TYPE != 0)
@@ -406,6 +406,7 @@ void check_lastfailed(dbref player, const char *host);
 bool is_number(const char *str);
 bool is_strict_number(const char *str);
 bool is_strict_integer(const char *str);
+bool is_integer_list(const char *str);
 #ifdef HAVE_ISNORMAL
 #define is_good_number(n) isnormal((n))
 #else
@@ -496,7 +497,7 @@ void do_message(dbref executor, char *list, char *attrname, char *message,
                 enum emit_type type, int flags, int numargs, char *argv[]);
 
 const char *spname(dbref thing);
-int filter_found(dbref thing, const char *msg, int flag);
+int filter_found(dbref thing, dbref speaker, const char *msg, int flag);
 
 /* From strutil.c */
 char *next_token(char *str, char sep);

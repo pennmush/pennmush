@@ -138,27 +138,22 @@ test('atree.parent.18', $mortal, '&foo`bar`baz child=boom', 'Set');
 test('atree.parent.19', $mortal, 'think -[get(child/foo)]-', '--');
 test('atree.parent.20', $mortal, 'think -[get(child/foo`bar)]-', '--');
 test('atree.parent.21', $mortal, '@wipe child/foo', 'wiped');
-# Setting no_inherit puts it back to the ancestor
-test('atree.parent.22', $mortal, '@set parent/foo=no_inherit', 'set');
-test('atree.parent.23', $mortal, 'think get(child/foo)', '!wibble');
-test('atree.parent.24', $god, 'think get(child/foo`bar)', '!gleep');
-test('atree.parent.25', $god, 'think get(child/foo)', 'urk');
-test('atree.parent.26', $god, 'think get(child/foo`bar)', 'urk');
+# Setting no_inherit stops us inheriting at all
+test('atree.parent.22', $mortal, '@set parent/foo`bar=no_inherit', 'set');
+test('atree.parent.23', $mortal, 'think get(child/foo)', 'wibble');
+test('atree.parent.24', $god, 'think get(child/foo`bar)', '^$');
+test('atree.parent.25', $god, 'think get(child/foo)', 'wibble');
+test('atree.parent.26', $god, 'think get(child/foo`bar)', '^$');
 
 # Mix permissions and parents
 # If parent is inheritable again, and mortal_dark,
 # then we can't see the ancestor through it
-test('atree.parentperms.1', $mortal, '@set parent/foo=!no_inherit', 'set');
+test('atree.parentperms.1', $mortal, '@set parent/foo`bar=!no_inherit', 'set');
 test('atree.parentperms.2', $god, '@set parent/foo`bar=mortal_dark', 'set');
 test('atree.parentperms.3', $mortal, 'think get(child/foo`bar`baz)', '!urk');
 # We can't see it, either
 test('atree.parentperms.4', $mortal, 'think get(child/foo`bar)', '!gleep');
 test('atree.parentperms.5', $mortal, '@set parent/foo=no_inherit', 'set');
-# no_inherit trumps mortal_dark
-test('atree.parentperms.6', $mortal, 'think get(child/foo`bar`baz)', 'urk');
-test('atree.parentperms.7', $mortal, 'think get(child/foo`bar)', 'urk');
-test('atree.parentperms.8', $god, '@set parent/foo=mortal_dark', 'set');
-test('atree.parentperms.9', $mortal, 'think get(child/foo`bar)', 'urk');
 
 # Command checks
 # Need explicit grandparent, because ancestors aren't checked for commands

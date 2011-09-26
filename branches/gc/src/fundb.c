@@ -297,7 +297,7 @@ FUNCTION(fun_default)
     mstr[0] = '\0';
     dp = mstr;
     sp = args[i - 1];
-    process_expression(mstr, &dp, &sp, executor, caller, enactor, PE_DEFAULT,
+    process_expression(mstr, &dp, &sp, executor, caller, enactor, eflags,
                        PT_DEFAULT, pe_info);
     *dp = '\0';
     parse_attrib(executor, mstr, &thing, &attrib);
@@ -311,7 +311,7 @@ FUNCTION(fun_default)
   /* We couldn't get it. Evaluate the last arg and return it */
   sp = args[nargs - 1];
   process_expression(buff, bp, &sp, executor, caller, enactor,
-                     PE_DEFAULT, PT_DEFAULT, pe_info);
+                     eflags, PT_DEFAULT, pe_info);
   return;
 }
 
@@ -338,7 +338,7 @@ FUNCTION(fun_eval)
     }
     tp = tbuf = safe_atr_value(a);
     process_expression(buff, bp, &tp, thing, executor, executor,
-                       PE_DEFAULT, PT_DEFAULT, pe_info);
+                       eflags, PT_DEFAULT, pe_info);
     return;
   } else if (a || !Can_Examine(executor, thing)) {
     safe_str(T(e_atrperm), buff, bp);
@@ -376,7 +376,7 @@ FUNCTION(fun_get_eval)
     }
     tp = tbuf = safe_atr_value(a);
     process_expression(buff, bp, &tp, thing, executor, executor,
-                       PE_DEFAULT, PT_DEFAULT, pe_info);
+                       eflags, PT_DEFAULT, pe_info);
     return;
   } else if (a || !Can_Examine(executor, thing)) {
     safe_str(T(e_atrperm), buff, bp);
@@ -400,7 +400,7 @@ FUNCTION(fun_edefault)
   dp = mstr;
   sp = args[0];
   process_expression(mstr, &dp, &sp, executor, caller, enactor,
-                     PE_DEFAULT, PT_DEFAULT, pe_info);
+                     eflags, PT_DEFAULT, pe_info);
   *dp = '\0';
   parse_attrib(executor, mstr, &thing, &attrib);
   if (GoodObject(thing) && attrib && Can_Read_Attr(executor, thing, attrib)) {
@@ -411,13 +411,13 @@ FUNCTION(fun_edefault)
     /* Ok, we've got it */
     sp = sbuf = safe_atr_value(attrib);
     process_expression(buff, bp, &sp, thing, executor, executor,
-                       PE_DEFAULT, PT_DEFAULT, pe_info);
+                       eflags, PT_DEFAULT, pe_info);
     return;
   }
   /* We couldn't get it. Evaluate args[1] and return it */
   sp = args[1];
   process_expression(buff, bp, &sp, executor, caller, enactor,
-                     PE_DEFAULT, PT_DEFAULT, pe_info);
+                     eflags, PT_DEFAULT, pe_info);
   return;
 }
 
@@ -1758,7 +1758,7 @@ FUNCTION(fun_money)
 {
   dbref it;
 
-  if (is_integer(args[0])) {
+  if (is_strict_integer(args[0])) {
     int a = parse_integer(args[0]);
     if (abs(a) == 1)
       safe_str(MONEY, buff, bp);

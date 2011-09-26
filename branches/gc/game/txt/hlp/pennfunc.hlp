@@ -17,8 +17,7 @@
     > say first(rest(v(va) [v(vb)]))
     You say, "is"
 
-  See "help FUNCTIONS2" for more.
-
+  See 'help functions2' for more.
 & FUNCTIONS2
   There are two types of functions, "built-in functions" and "global
   user functions", also known as "@functions". You can get a complete
@@ -27,7 +26,7 @@
   Built-in functions are written in the game hardcode, while @functions
   are written in softcode, and then made global with the "@function"
   command. Both are used in exactly the same manner. For more information
-  on @functions, see "help @function".
+  on @functions, see 'help @function'.
 
 See also: MUSHCODE
 & FUNCTION LIST
@@ -62,12 +61,12 @@ See also: MUSHCODE
   stored in attributes on objects.
 
   aposs()        attrib_set()   default()      edefault()     eval()
-  get()          grep()         grepi()        hasattr()      hasattrp()
-  hasattrval()   lattr()        nattr()        obj()          pfun()
-  poss()         reglattr()     regrep()       regrepi()      regxattr()
-  subj()         udefault()     ufun()         ulambda()      uldefault()    
-  ulocal()       v()            wildgrep()     wildgrepi()    xattr()        
-  xget()         zfun()         
+  flags()        get()          grep()         grepi()        hasattr()
+  hasattrp()     hasattrval()   lattr()        lflags()       nattr()
+  obj()          pfun()         poss()         reglattr()     regrep()       
+  regrepi()      regxattr()     set()          subj()         udefault()     
+  ufun()         ulambda()      uldefault()    ulocal()       v()            
+  wildgrep()     wildgrepi()    xattr()        xget()         zfun()
 
 See also: ATTRIBUTES, NON-STANDARD ATTRIBUTES
 & Bitwise functions
@@ -137,7 +136,7 @@ See also: DBREF, Information functions
   hasattr()      hasattrp()     hasflag()      haspower()     hastype()      
   iname()        lflags()       lock()         lockflags()    lockowner()    
   locks()        lpids()        lstats()       money()        msecs()      
-  mtime()        mudname()      mudulr()       name()         nattr()        
+  mtime()        mudname()      mudurl()       name()         nattr()        
   nearby()       objid()        objmem()       orflags()      orlflags()     
   orlpowers()    pidinfo()      playermem()    poll()         powers()       
   quota()        restarts()     type()         version()      visible()
@@ -476,11 +475,10 @@ See also: center(), ljust(), rjust(), table()
 & ALLOF()
   allof(<expr>[, ... , <exprN>], <osep>)
 
-  Evaluates every <expr> argument (including side-effects) and
-  returns the results of those which are true, in a list separated by
-  <osep>. The output separator argument is required and must be a
-  single character, or can be left empty, in which case a space will
-  be used to separate the results by default.
+  Evaluates every <expr> argument (including side-effects) and returns the 
+  results of those which are true, in a list separated by <osep>. The output
+  separator argument is required, and can be a string of any length
+  (including an empty string; use %b for a space).
 
   The meaning of true or false depends on configuration options as
   explained in the 'BOOLEAN VALUES' help topics.
@@ -491,6 +489,11 @@ See also: center(), ljust(), rjust(), table()
 
     > say allof(#-1,#101,#2970,,#-3,0,#319,null(This Doesn't Count),|)
     You say, "#101|#2970|#319"
+    
+    > say allof(foo, 0, #-1, bar, baz,)
+    You say, "foobarbaz"
+    > say allof(foo, 0, #-1, bar, baz,%b)
+    You say, "foo bar baz"
 
 See also: firstof(), BOOLEAN VALUES, strallof(), filter()
 & ALPHAMAX()
@@ -1220,6 +1223,10 @@ See also: strreplace(), strinsert(), mid()
 
   This is a side-effect function and may not be enabled on some MUSHes.
 & DIGEST()
+& MD5
+& SHA1
+& CHECKSUM
+& HASH
   digest(<algorithm>, <string>)
 
   Returns a checksum (hash, digest, etc.) of <string> using the given
@@ -1272,9 +1279,9 @@ See also: modulo(), fdiv()
 & DOING()
   doing(<player|descriptor>)
 
-  When given the name of a connected player or descriptor, doing()
-  returns the player's @doing. If <player> is offline, (or dark, and the
-  caller is mortal), doing() returns #-1.
+  When given the name of a player or descriptor, doing() returns the player's
+  @doing. If no matching player or descriptor is found, or the descriptor is
+  not yet connected to a player, an empty string is returned.
 
 See also: @poll, @doing, poll()
 & E()
@@ -2841,7 +2848,7 @@ See also: pos(), member(), match()
 
   Examples in 'help lsearch3'.
 
-See also: @search, @find, lparent()
+See also: @search, @find, lparent(), stats()
 & LSEARCH3
 & SEARCH3
   lsearch() Examples:
@@ -2861,18 +2868,19 @@ See also: @search, @find, lparent()
                                                don't have an @desc set
 & LSTATS()
 & STATS()
-  lstats(<player>)
+  lstats([<player>])
  
-  This function returns the breakdown of objects in the database, in a
-  format similar to "@stats". If <player> is "all", a breakdown is
-  done for the entire database. Otherwise, the breakdown is returned
-  for that particular player.
+  This function returns the breakdown of objects in the database, in a format
+  similar to "@stats". If <player> is "all" (the default), a breakdown is
+  done for the entire database. Otherwise, the breakdown is returned for 
+  that particular player.
   
   Only wizards and those with the Search power can LSTATS() other players.
   The list returned is in the format: 
   <Total objects> <Rooms> <Exits> <Things> <Players> <Garbage>
 
   stats() is an alias for lstats().
+See also: nsearch()
 & LT()
   lt(<number1>, <number2>[, ... , <numberN>])
 
@@ -3602,15 +3610,15 @@ See also: @parent, ancestors, pfun()
 & NSPEMIT()
 & PROMPT()
 & NSPROMPT()
-  pemit(<object list|port number>, <message>)
-  nspemit(<object list|port number>, <message>)
+  pemit(<object list|port numbers>, <message>)
+  nspemit(<object list|port numbers>, <message>)
   prompt(<object list>, <message>)
   nsprompt(<object list>, <message>)
 
   With an <object list>, pemit() will send each object on the list a message,
   as per the @pemit/list command. It returns nothing. It respects page-locks
-  and HAVEN flags on players. With a <port number>, pemit() sends the
-  message to the specified port only, like @pemit/port.
+  and HAVEN flags on players. With <port numbers>, pemit() sends the
+  message to the specified ports only, like @pemit/port/list.
 
   nspemit() works like @nspemit/list.
 
@@ -3773,14 +3781,18 @@ See also: @quota, @squota, @allquota
   
 See also: setq(), letq(), listq(), unsetq()
 & RAND()
+  rand()
   rand(<num>)
   rand(<min>, <max>)
   
   Return a random number.
   
-  The first form returns an integer between 0 and <num>-1, inclusive (or
-  between 0 and <num>+1, for negative <num>s).
-  The second returns an integer between <min> and <max>, inclusive.
+  The first form returns a floating-point number in the range 0 <= n < 1.
+
+  The second form returns an integer between 0 and <num>-1, inclusive
+  (or between 0 and <num>+1, for negative <num>s).
+
+  The third returns an integer between <min> and <max>, inclusive.
 
   If called with an invalid argument, rand() returns an error message
   beginning with #-1.
@@ -4060,8 +4072,30 @@ See also: ceil(), floor(), bound(), trunc()
 
   To prevent deleted functions from being used with fn(), @function/disable
   them prior to deleting.
+  
+  Continued in 'help fn2'.
+& FN2
 
-See also: @function, RESTRICT
+  The built-in function is run as the object calling fn(), which means that
+  permissions may be checked for the wrong object. objeval() can be useful
+  in getting around this problem. 
+  
+  Example:
+    > &BRIGHT_PEMIT #10=objeval(%@,pemit(%0,-->[ansi(h,%1)]))
+    @@ Make sure the caller doesn't see debug information for the objeval()'d
+    @@ code, even if he's set DEBUG.
+    > @set #10/BRIGHT_PEMIT=no_debug
+    > @function/delete PEMIT
+    > @function PEMIT=#10, BRIGHT_PEMIT
+    > @lock/pemit *Mike=!=*Padraic
+    
+    (As Padraic)
+    > think pemit(me,test)
+    -->test  (in highlighted letters)
+    > think pemit(*Mike,test)
+    (nothing happens)
+
+See also: @function, RESTRICT, attribute flags
 & S()
 & S-FUNCTION
   s(<string>)
@@ -4156,7 +4190,7 @@ See also: attrib_set(), @set, wipe()
   elements in <list1> that aren't in <list2>. The list that is
   returned is sorted. Normally, alphabetic sorting is done. You can
   change this with the fourth argument, which is a sort type as
-  defined in "help sorting". If used with exactly four arguments where
+  defined in 'help sorting'. If used with exactly four arguments where
   the fourth is not a sort type, it's treated instead as the output
   separator.
 
@@ -4172,7 +4206,7 @@ See also: setinter(), setunion()
   elements that are in both <list1> and <list2>. The list that is
   returned is sorted. Normally, alphabetic sorting is done. You can
   change this with the fourth argument, which is a sort type as
-  defined in "help sorting". If used with exactly four arguments where
+  defined in 'help sorting'. If used with exactly four arguments where
   the fourth is not a sort type, it's treated instead as the output
   separator.
  
@@ -4187,8 +4221,9 @@ See also: setdiff(), setunion()
   setr(<register1>, <string1>[, ... , <registerN>, <stringN>])
   
   The setq() and setr() functions are used to copy strings into local
-  registers. setq() returns a null string; it is a purely "side
-  effect" function. setr() returns the value stored. Multiple
+  registers assigned arbitrary names (Much like variables in other
+  programming languages.) setq() returns a null string; it is a purely
+  "side effect" function. setr() returns the value stored. Multiple
   registers can be assigned with a single setq() or setr(), with
   additional pairs of registers and values in the function's
   arguments. In this case, setr() returns the value stored in the
@@ -4196,30 +4231,34 @@ See also: setdiff(), setunion()
   registers are set; if you want to use the result of setting one
   register in setting another, use multiple setq()s.
 
-  Register names follow the same rules for attribute names, but they
-  must be shorter than 64 characters in length. 
+  Registers set via setq() or setr() can be accessed via the r()
+  function.  Single-character registers can also be accessed via the
+  %qN substitution, and ones with longer names via %q<NAME> (Note that
+  the <>'s are required.) Attempting to access a register that hasn't
+  been set results in an empty string.
 
-  Register names other than a-z or 0-9 have a per-localize limit,
-  defined with @config max_named_qregs. If setq or setr tries to
-  set a named q-register and it exceeds the limit, it will return
-  the string "#-1 TOO MANY REGISTERS". This is the only time
-  setq will return a string. setq() and setr() with registers a-z or
-  0-9 have nothing to worry about.
+  Register names are case insensitive: setq(A, foo) and setq(a, foo)
+  both set the same register, and %qA and %qa both fetch its value.
 
-  Register names are case insensitive.
-
-  See 'help setq2' for more.
+  See 'help setq2' for more on limits, or 'help setq3' for examples.
 See also: r(), listq(), unsetq(), letq(), localize(), ulocal()
 & SETQ2
+  Register names follow the same rules for attribute names, but they
+  must be shorter than 64 characters in length.
+
+  Register names other than a-z or 0-9 have a per-localize limit,
+  defined with @config max_named_qregs. If setq or setr tries to set a
+  named q-register and it exceeds the limit, it will return the string
+  "#-1 TOO MANY REGISTERS". This is the only time setq will return a
+  string. setq() and setr() with registers a-z or 0-9 have nothing to
+  worry about.
+
   The maximum number of q-registers you can have set is configured via
   @config max_attrs_per_obj. That number is for the total number of
   q-registers set in a queue entry: Including across localize()d calls.
   Beyond that count, you can only use single character registers (a-z 0-9).
   Attempts to create a new register will simply fail silently, with the
   exception of setq().
-
-  Registers set via setq() or setr() can be accessed via the r() function.
-  Single-character registers can be accessed via %qN substitution.
 
   See 'help setq3' for examples.
 & SETQ3
@@ -4242,8 +4281,8 @@ See also: r(), listq(), unsetq(), letq(), localize(), ulocal()
   Swapping the contents of registers can be done without writing to
   temporary registers by setting both registers at once, so the code:
 
-    > think setq(0,foo,1,bar)%q0%q1 - [setq(0,%q1,1,%q0)]%q0%q1
-    foobar - barfoo
+  > think setq(0,foo,one,bar)%q0%q<one> - [setq(0,r(one),one,%q0)]%q0%q<one>
+  foobar - barfoo
 
   See 'help setq4' for scoping rules of setq().
 & SETQ4
@@ -4254,7 +4293,7 @@ See also: r(), listq(), unsetq(), letq(), localize(), ulocal()
   @wait and @switch retain the register values from the time of the branch.
   
   Example:
-    > say setr(a,foo); @wait 0=say %qa; say setr(a,bar)
+    > say setr(what,foo); @wait 0=say %q<what>; say setr(what,bar)
     Object says "foo"
     Object says "bar"
     Object says "foo"
@@ -4294,7 +4333,7 @@ See also: setq(), letq(), r(), localize()
   This function returns the union of two sets -- i.e., all the elements of 
   both <list1> and <list2>, minus any duplicate elements. The list returned 
   is sorted. Normally, alphabetic sorting is done. You can change this with 
-  the fourth argument, which is a sort type as defined in "help sorting". 
+  the fourth argument, which is a sort type as defined in 'help sorting'. 
   If used with exactly four arguments where the fourth is not a sort type, 
   it's treated instead as the output
   separator.
@@ -6027,17 +6066,18 @@ See also: nthings(), lthings(), lvthings(), xplayers(), xexits()
 & XWHOID()
 & XMWHO()
 & XMWHOID()
-  xwho(<start>, <count>)
+  xwho([<looker>, ]<start>, <count>)
   xmwho(<start>, <count>)
-  xwhoid(<start>, <count>)
+  xwhoid([<looker>, ]<start>, <count>)
   xmwhoid(<start>, <count>)
 
   xwho() fetches <count> or fewer player dbrefs from the list of connected 
   players, starting at position <start>. It is useful when the number of 
   players connected causes lwho() or pemits in +who $-commands to exceed 
-  buffer limits. It is equivalent to:
+  buffer limits. If a <looker> is given, only includes players who <looker>
+  can see are online. It is equivalent to:
   
-    extract(lwho(), <start>, <count>)
+    extract(lwho([<looker>]), <start>, <count>)
 
   xmwho() does not include hidden players (like mwho()).
 

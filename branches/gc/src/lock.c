@@ -81,8 +81,10 @@ lock_type Dropto_Lock = "Dropto";   /**< Name of dropto lock */
 lock_type Destroy_Lock = "Destroy"; /**< Name of destroy lock */
 lock_type Interact_Lock = "Interact"; /**< Name of interaction lock */
 lock_type MailForward_Lock = "MailForward"; /**< Name of mailforward lock */
-lock_type Take_Lock = "Take"; /**< Name of take lock */
-lock_type Open_Lock = "Open"; /**< Name of open lock */
+lock_type Take_Lock = "Take";       /**< Name of take lock */
+lock_type Open_Lock = "Open";       /**< Name of open lock */
+lock_type Filter_Lock = "Filter";   /**< Name of filter lock */
+lock_type InFilter_Lock = "InFilter"; /**< Name of infilter lock */
 
  /** Table of lock names and permissions */
 lock_list lock_types[] = {
@@ -115,6 +117,8 @@ lock_list lock_types[] = {
   {"MailForward", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {"Take", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {"Open", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
+  {"Filter", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
+  {"InFitler", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {NULL, TRUE_BOOLEXP, GOD, 0, NULL}
 };
 

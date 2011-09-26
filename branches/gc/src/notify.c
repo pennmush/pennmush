@@ -302,14 +302,11 @@ notify_type(DESC *d)
     /* These are the settings used at, e.g., the connect screen,
      * when there's no connected player yet.
      */
-    type |= MSG_STRIPACCENTS;
+    type |= MSG_ANSI;
     if (d->conn_flags & CONN_HTML)
       type |= MSG_PUEBLO;
-    else {
-      type |= MSG_ANSI;
-      if (d->conn_flags & CONN_TELNET)
-        type |= MSG_TELNET;
-    }
+    else if (d->conn_flags & CONN_TELNET)
+      type |= MSG_TELNET;
     return type;
   }
 
@@ -1242,7 +1239,7 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
 
           if (!(flags & NA_NORELAY) && (loc != target) &&
               Contents(target) != NOTHING
-              && !filter_found(target, fullmsg, 1)) {
+              && !filter_found(target, speaker, fullmsg, 1)) {
             /* Forward the sound to the object's contents */
             char inprefix[BUFFER_LEN];
 
@@ -1289,7 +1286,7 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
       /* If object is flagged AUDIBLE and has a @FORWARDLIST, send it on */
       if ((!(flags & NA_NORELAY) || (flags & NA_PUPPET_OK)) && Audible(target)
           && atr_get(target, "FORWARDLIST") != NULL
-          && !filter_found(target, fullmsg, 0)) {
+          && !filter_found(target, speaker, fullmsg, 0)) {
         notify_list(speaker, target, "FORWARDLIST", fullmsg, flags);
       }
     }
@@ -1305,7 +1302,7 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
             loc = Location(exit);
             if (!RealGoodObject(loc))
               continue;         /* unlinked, variable dests, HOME */
-            if (filter_found(exit, fullmsg, 0))
+            if (filter_found(exit, speaker, fullmsg, 0))
               continue;
             /* Need to make the prefix for each exit */
             make_prefix_str(exit, speaker, fullmsg, propprefix);
@@ -1314,7 +1311,7 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
                                 format);
           }
         }
-      } else if (target == loc && !filter_found(target, fullmsg, 0)) {
+      } else if (target == loc && !filter_found(target, speaker, fullmsg, 0)) {
         dbref pass[2];
 
         pass[0] = target;
@@ -1533,13 +1530,14 @@ ssl_flush_queue(struct text_queue *q)
 #endif                          /* DEBUG */
       free_text_block(p);
     }
+    q->tail = &q->head->nxt;
+    /* Set up the flushed message if we can */
+    if (q->head->nchars + n < MAX_OUTPUT)
+      add_to_queue(q, (unsigned char *) flushed_message, n);
+    /* Return the total size of the message */
+    return q->head->nchars + n;
   }
-  q->tail = &q->head->nxt;
-  /* Set up the flushed message if we can */
-  if (q->head->nchars + n < MAX_OUTPUT)
-    add_to_queue(q, (unsigned char *) flushed_message, n);
-  /* Return the total size of the message */
-  return q->head->nchars + n;
+  return 0;
 }
 #endif
 

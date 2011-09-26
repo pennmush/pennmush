@@ -234,7 +234,7 @@ do_chown(dbref player, const char *name, const char *newobj, int preserve)
 static int
 chown_ok(dbref player, dbref thing, dbref newowner)
 {
-  /* Cant' touch garbage */
+  /* Can't touch garbage */
   if (IsGarbage(thing))
     return 0;
 
@@ -326,6 +326,7 @@ chown_object(dbref player, dbref thing, dbref newowner, int preserve)
     clear_flag_internal(thing, "ROYALTY");
     clear_flag_internal(thing, "TRUST");
     set_flag_internal(thing, "HALT");
+    destroy_flag_bitmask("POWER", Powers(thing));
     Powers(thing) = new_flag_bitmask("POWER");
     do_halt(thing, "", thing);
   } else {
@@ -465,6 +466,7 @@ do_chzone(dbref player, char const *name, char const *newobj, bool noisy,
     clear_flag_internal(thing, "WIZARD");
     clear_flag_internal(thing, "ROYALTY");
     clear_flag_internal(thing, "TRUST");
+    destroy_flag_bitmask("POWER", Powers(thing));
     Powers(thing) = new_flag_bitmask("POWER");
   } else {
     if (noisy && (zone != NOTHING)) {

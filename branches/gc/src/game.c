@@ -92,8 +92,6 @@ static dbref *errdbtail = NULL;        /**< Pointer to end of errdblist */
 static int errdbsize = ERRDB_INITIAL_SIZE; /**< Current size of errdblist array */
 static void errdb_grow(void);
 
-
-extern void initialize_mt(void);
 extern const unsigned char *tables;
 extern void conf_default_set(void);
 static bool dump_database_internal(void);
@@ -308,7 +306,7 @@ dump_database_internal(void)
   char realdumpfile[2048];
   char realtmpfl[2048];
   char tmpfl[2048];
-  PENNFILE *f = NULL;
+  volatile PENNFILE *f = NULL;
 
 #ifndef PROFILING
 #ifndef WIN32
@@ -323,13 +321,35 @@ dump_database_internal(void)
   if (setjmp(db_err)) {
     /* The dump failed. Disk might be full or something went bad with the
        compression slave. Boo! */
-    do_rawlog(LT_ERR, "ERROR! Database save failed.");
+    const char *errmsg;
+
+    if (f) {
+      switch (f->type) {
+      case PFT_FILE:
+      case PFT_PIPE:
+        errmsg = strerror(errno);
+        break;
+      case PFT_GZFILE:
+#ifdef HAVE_LIBZ
+        {
+          int errnum = 0;
+          errmsg = gzerror(f->handle.g, &errnum);
+          if (errnum == Z_ERRNO)
+            errmsg = strerror(errno);
+        }
+#endif
+        break;
+      }
+    } else
+      errmsg = strerror(errno);
+
+    do_rawlog(LT_ERR, "ERROR! Database save failed: %s", errmsg);
     queue_event(SYSEVENT, "DUMP`ERROR", "%s,%d,PERROR %s",
-                T("GAME: ERROR! Database save failed!"), 0, strerror(errno));
+                T("GAME: ERROR! Database save failed!"), 0, errmsg);
     flag_broadcast("WIZARD ROYALTY", 0,
                    T("GAME: ERROR! Database save failed!"));
     if (f)
-      penn_fclose(f);
+      penn_fclose((PENNFILE *) f);
 #ifndef PROFILING
 #ifdef HAS_ITIMER
 #ifdef __CYGWIN__
@@ -357,19 +377,19 @@ dump_database_internal(void)
       switch (globals.paranoid_dump) {
       case 0:
 #ifdef ALWAYS_PARANOID
-        db_paranoid_write(f, 0);
+        db_paranoid_write((PENNFILE *) f, 0);
 #else
-        db_write(f, 0);
+        db_write((PENNFILE *) f, 0);
 #endif
         break;
       case 1:
-        db_paranoid_write(f, 0);
+        db_paranoid_write((PENNFILE *) f, 0);
         break;
       case 2:
-        db_paranoid_write(f, 1);
+        db_paranoid_write((PENNFILE *) f, 1);
         break;
       }
-      penn_fclose(f);
+      penn_fclose((PENNFILE *) f);
       if (rename_file(realtmpfl, realdumpfile) < 0) {
         penn_perror(realtmpfl);
         longjmp(db_err, 1);
@@ -383,8 +403,8 @@ dump_database_internal(void)
     sprintf(realtmpfl, "%s%s", tmpfl, options.compresssuff);
     if (mdb_top >= 0) {
       if ((f = db_open_write(tmpfl)) != NULL) {
-        dump_mail(f);
-        penn_fclose(f);
+        dump_mail((PENNFILE *) f);
+        penn_fclose((PENNFILE *) f);
         if (rename_file(realtmpfl, realdumpfile) < 0) {
           penn_perror(realtmpfl);
           longjmp(db_err, 1);
@@ -398,8 +418,8 @@ dump_database_internal(void)
     strcpy(tmpfl, make_new_epoch_file(options.chatdb, epoch));
     sprintf(realtmpfl, "%s%s", tmpfl, options.compresssuff);
     if ((f = db_open_write(tmpfl)) != NULL) {
-      save_chatdb(f);
-      penn_fclose(f);
+      save_chatdb((PENNFILE *) f);
+      penn_fclose((PENNFILE *) f);
       if (rename_file(realtmpfl, realdumpfile) < 0) {
         penn_perror(realtmpfl);
         longjmp(db_err, 1);
@@ -684,9 +704,6 @@ init_game_config(const char *conf)
   pid_t mypid = -1;
 
   memset(report_cmd, 0, sizeof(report_cmd));
-
-  /* initialize random number generator */
-  initialize_mt();
 
   init_queue();
 
@@ -2132,7 +2149,8 @@ win32_uptime(dbref player __attribute__ ((__unused__)))
 }
 
 enum uptime_type { UPTIME_UPSINCE, UPTIME_REBOOT, UPTIME_LAST_SAVE,
-    UPTIME_NEXT_SAVE, UPTIME_DBCK, UPTIME_PURGE, UPTIME_WARNING };
+  UPTIME_NEXT_SAVE, UPTIME_DBCK, UPTIME_PURGE, UPTIME_WARNING
+};
 /* ARGSUSED */
 FUNCTION(fun_uptime)
 {

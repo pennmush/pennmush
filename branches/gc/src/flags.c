@@ -53,10 +53,10 @@
 #include "confmagic.h"
 
 
-static int can_set_flag(dbref player, dbref thing, FLAG *flagp, int negate);
+static bool can_set_flag(dbref player, dbref thing, FLAG *flagp, int negate);
 static FLAG *letter_to_flagptr(FLAGSPACE *n, char c, int type);
 static void flag_add(FLAGSPACE *n, const char *name, FLAG *f);
-static int has_flag_ns(FLAGSPACE *n, dbref thing, FLAG *f);
+static bool has_flag_ns(FLAGSPACE *n, dbref thing, FLAG *f);
 
 static FLAG *flag_read(PENNFILE *in);
 static FLAG *flag_read_oldstyle(PENNFILE *in);
@@ -69,6 +69,30 @@ static void flag_add_additional(FLAGSPACE *n);
 static char *list_aliases(FLAGSPACE *n, FLAG *given);
 static void realloc_object_flag_bitmasks(FLAGSPACE *n);
 static FLAG *match_flag_ns(FLAGSPACE *n, const char *name);
+
+/* Flag bitset cache data structures. All objects with the same flags
+   set share the same storage space. */
+
+struct flagbucket {
+  object_flag_type key;
+  int refcount;
+  struct flagbucket *next;
+};
+
+struct flagcache {
+  int size;
+  int zero_refcount;
+  int entries;
+  object_flag_type zero;
+  struct flagbucket **buckets;
+  slab *flagset_slab;
+};
+
+static struct flagcache *new_flagcache(FLAGSPACE *, int);
+static void free_flagcache(struct flagcache *);
+static object_flag_type flagcache_find_ns(FLAGSPACE *, object_flag_type);
+
+slab *flagbucket_slab = NULL;
 
 PTAB ptab_flag;                 /**< Table of flags by name, inc. aliases */
 PTAB ptab_power;                /**< Table of powers by name, inc. aliases */
@@ -256,6 +280,7 @@ static FLAG_ALIAS power_alias_tab[] = {
   {"@cemit", "Cemit"},
   {"@wall", "Announce"},
   {"wall", "Announce"},
+  {"Can_nspemit", "Can_spoof"},
   {NULL, NULL}
 };
 
@@ -274,8 +299,6 @@ static PRIV flag_privs[] = {
   {"log", '\0', F_LOG, F_LOG},
   {NULL, '\0', 0, 0}
 };
-
-
 
 /*---------------------------------------------------------------------------
  * Flag definition functions, including flag hash table handlers
@@ -441,24 +464,98 @@ flag_add(FLAGSPACE *n, const char *name, FLAG *f)
   }
 }
 
+/** Locate a specific byte given a bit position */
+static inline uint32_t
+FlagByte(uint32_t x)
+{
+  return x / 8;
+}
+
+/** Locate a specific bit within a byte given a bit position */
+static inline uint32_t
+FlagBit(uint32_t x)
+{
+  return 7 - (x % 8);
+}
+
+/** How many bytes do we need for a flag bitmask? */
+static inline uint32_t
+FlagBytes(const FLAGSPACE *n)
+{
+  return (n->flagbits + 7) / 8;
+}
+
+static object_flag_type
+extend_bitmask(FLAGSPACE *n, object_flag_type old, int oldlen)
+{
+  object_flag_type grown = slab_malloc(n->cache->flagset_slab, NULL);
+  memset(grown, 0, FlagBytes(n));
+  memcpy(grown, old, oldlen);
+  return grown;
+}
+
+struct flagpair {
+  object_flag_type orig;
+  object_flag_type grown;
+  struct flagpair *next;
+};
+
 static void
 realloc_object_flag_bitmasks(FLAGSPACE *n)
 {
   dbref it;
-  object_flag_type p;
-  int numbytes = (n->flagbits + 7) / 8;
+  struct flagcache *oldcache;
+  struct flagpair *migrate, *m;
+  slab *flagpairs;
+  int i, numbytes;
 
-  for (it = 0; it < db_top; it++) {
-    if (n->tab == &ptab_flag) {
-      Flags(it) = GC_REALLOC(Flags(it), numbytes);
-      p = Flags(it) + numbytes - 1;
-    } else {
-      Powers(it) = GC_REALLOC(Powers(it), numbytes);
-      p = Powers(it) + numbytes - 1;
+  numbytes = FlagBytes(n);
+
+  oldcache = n->cache;
+  n->cache = new_flagcache(n, (double) oldcache->size * 1.1);
+
+  flagpairs = slab_create("flagpairs", sizeof *migrate);
+  migrate = slab_malloc(flagpairs, NULL);
+  migrate->orig = oldcache->zero;
+  migrate->grown = n->cache->zero;
+  migrate->next = NULL;
+
+  /* Grow all current flagsets, and store the old/new locations */
+  for (i = 0; i < n->cache->size; i += 1) {
+    struct flagbucket *b;
+
+    for (b = n->cache->buckets[i]; b; b = b->next) {
+      object_flag_type grown;
+      struct flagpair *newpair;
+
+      grown = extend_bitmask(n, b->key, numbytes - 1);
+      flagcache_find_ns(n, grown);
+
+      newpair = slab_malloc(flagpairs, NULL);
+      newpair->orig = b->key;
+      newpair->grown = grown;
+      newpair->next = migrate;
+      migrate = newpair;
     }
-    /* Zero them out */
-    memset(p, 0, 1);
   }
+
+  /* Now adjust pointers in the db from old to new. This has poor
+     big-O performance, but isn't done very often, so we can live with it. */
+  for (it = 0; it < db_top; it += 1) {
+    for (m = migrate; m; m = m->next) {
+      if (n->tab == &ptab_flag) {
+        if (Flags(it) == m->orig) {
+          Flags(it) = m->grown;
+          break;
+        } else if (Powers(it) == m->orig) {
+          Powers(it) = m->grown;
+          break;
+        }
+      }
+    }
+  }
+  slab_destroy(flagpairs);
+  free_flagcache(oldcache);
 }
 
 
@@ -752,6 +849,7 @@ init_flagspaces(void)
   flags->flags = NULL;
   flags->flag_table = flag_table;
   flags->flag_alias_table = flag_alias_tab;
+  flags->cache = new_flagcache(flags, (sizeof flag_table / sizeof(FLAG)) * 4);
   hashadd("FLAG", (void *) flags, &htab_flagspaces);
   flags = GC_MALLOC(sizeof(FLAGSPACE));
   flags->name = GC_STRDUP("POWER");
@@ -761,6 +859,7 @@ init_flagspaces(void)
   flags->flags = NULL;
   flags->flag_table = power_table;
   flags->flag_alias_table = power_alias_tab;
+  flags->cache = new_flagcache(flags, (sizeof power_table / sizeof(FLAG)) * 2);
   hashadd("POWER", (void *) flags, &htab_flagspaces);
 }
 
@@ -865,8 +964,12 @@ flag_add_additional(FLAGSPACE *n)
     if (!match_power("Use_SQL"))
       flag_add(flags, "Use_SQL", f);
     if ((f = match_power("Can_nspemit")) && !match_power("Can_spoof")) {
+      /* The "Can_nspemit" power was renamed "Can_spoof"... */
       f->name = GC_STRDUP("Can_spoof");
       flag_add(flags, "Can_spoof", f);
+    } else if ((f = match_power("Can_spoof")) && !match_power("Can_nspemit")) {
+      /* ... but make sure "Can_nspemit" remains as an alias */
+      flag_add(flags, "Can_nspemit", f);
     }
     add_power("Debit", '\0', NOTYPE, F_WIZARD | F_LOG, F_ANY);
     add_power("Pueblo_Send", '\0', NOTYPE, F_WIZARD | F_LOG, F_ANY);
@@ -932,26 +1035,27 @@ flags_from_old_flags(const char *ns, long old_flags, long old_toggles, int type)
 {
   FLAG *f, *newf;
   FLAGSPACE *n;
-  object_flag_type bitmask = new_flag_bitmask(ns);
+  object_flag_type bitmask;
 
   Flagspace_Lookup(n, ns);
+  bitmask = new_flag_bitmask_ns(n);
   for (f = n->flag_table; f->name; f++) {
     if (f->type == NOTYPE) {
       if (f->bitpos & old_flags) {
         newf = match_flag_ns(n, f->name);
-        set_flag_bitmask(bitmask, newf->bitpos);
+        bitmask = set_flag_bitmask_ns(n, bitmask, newf->bitpos);
       }
     } else if (f->type & type) {
       if (f->bitpos & old_toggles) {
         newf = match_flag_ns(n, f->name);
-        set_flag_bitmask(bitmask, newf->bitpos);
+        bitmask = set_flag_bitmask_ns(n, bitmask, newf->bitpos);
       }
     }
   }
   for (f = hack_table; f->name; f++) {
     if ((f->type & type) && (f->bitpos & old_toggles)) {
       newf = match_flag_ns(n, f->name);
-      set_flag_bitmask(bitmask, newf->bitpos);
+      bitmask = set_flag_bitmask_ns(n, bitmask, newf->bitpos);
     }
   }
   return bitmask;
@@ -977,138 +1081,390 @@ letter_to_flagptr(FLAGSPACE *n, char c, int type)
 
 
 /*----------------------------------------------------------------------
- * Functions for managing bitmasks
+ * Functions for managing bitmasks. All flagsets in a given space are
+ * cached; objects with the same flags set share the same memory. Thus,
+ * they are read-only. Setting or clearing a flag results in a new
+ * bitmask, and a dereference of the old one. Copying a flag set in a
+ * @clone is just a matter of incrementing the refcount.
  */
 
-/** Locate a specific byte given a bit position */
-#define FlagByte(x) (x / 8)
-/** Locate a specific bit within a byte given a bit position */
-#define FlagBit(x) (7 - (x % 8))
-/** How many bytes do we need for a flag bitmask? */
-#define FlagBytes(n)  ((size_t)((n->flagbits + 7) / 8))
+static struct flagcache *
+new_flagcache(FLAGSPACE *n, int initial_size)
+{
+  struct flagcache *cache;
 
+  cache = GC_MALLOC(sizeof *cache);
 
-/** Allocate a new flag bitmask.
- * This function allocates a new flag bitmask of sufficient length
- * to include the current number of flags. It zeroes out the entire
- * bitmask and returns it.
- * \return a newly allocated zeroed flag bitmask.
+  initial_size = next_prime_after(initial_size);
+  cache->size = initial_size;
+  cache->entries = 0;
+  cache->zero_refcount = 0;
+
+  cache->flagset_slab = slab_create("flagset", FlagBytes(n));
+  cache->zero = slab_malloc(cache->flagset_slab, NULL);
+  memset(cache->zero, 0, FlagBytes(n));
+  cache->buckets =
+    GC_MALLOC(initial_size * sizeof(struct flagbucket *));
+  return cache;
+}
+
+static void
+free_flagcache(struct flagcache *cache)
+{
+  int i;
+  for (i = 0; i < cache->size; i += 1) {
+    struct flagbucket *b, *n;
+    for (b = cache->buckets[i]; b; b = n) {
+      n = b->next;
+      slab_free(flagbucket_slab, b);
+    }
+  }
+
+  slab_destroy(cache->flagset_slab);
+}
+
+static uint32_t
+fc_hash(const FLAGSPACE *n, const object_flag_type f)
+{
+  uint32_t h = 0, i, len;
+
+  for (i = 0, len = FlagBytes(n); i < len; i += 1)
+    h = (h << 5) + h + f[i];
+
+  return h;
+}
+
+static inline bool
+fc_eq(const FLAGSPACE *n, const object_flag_type f1, const object_flag_type f2)
+{
+  return memcmp(f1, f2, FlagBytes(n)) == 0;
+}
+
+/** Returns a pointer to the cached copy of this flag bitset. If the flagset isn't already in the cache, inserts it. */
+static object_flag_type
+flagcache_find_ns(FLAGSPACE *n, const object_flag_type f)
+{
+  uint32_t h;
+  struct flagbucket *b;
+
+  if (flagbucket_slab == NULL)
+    flagbucket_slab = slab_create("flagcache entries", sizeof *b);
+
+  h = fc_hash(n, f);
+
+  if (h == 0) {
+    n->cache->zero_refcount += 1;
+    return n->cache->zero;
+  }
+
+  h %= n->cache->size;
+
+  for (b = n->cache->buckets[h]; b; b = b->next) {
+    if (fc_eq(n, f, b->key)) {
+      b->refcount += 1;
+      return b->key;
+    }
+  }
+
+  /* Add new entry */
+  b = slab_malloc(flagbucket_slab, n->cache->buckets[h]);
+  b->refcount = 1;
+  b->key = f;
+  b->next = n->cache->buckets[h];
+  n->cache->entries += 1;
+  n->cache->buckets[h] = b;
+  return f;
+}
+
+static object_flag_type
+flagcache_find(const char *ns, const object_flag_type f)
+{
+  FLAGSPACE *n;
+  Flagspace_Lookup(n, ns);
+  return flagcache_find_ns(n, f);
+}
+
+static void
+flagcache_delete(FLAGSPACE *n, const object_flag_type f)
+{
+  uint32_t h;
+  struct flagbucket *b, *p;
+
+  h = fc_hash(n, f);
+
+  if (h == 0) {
+    n->cache->zero_refcount -= 1;
+    return;
+  }
+
+  h %= n->cache->size;
+
+  for (b = n->cache->buckets[h], p = NULL; b; p = b, b = b->next) {
+    if (fc_eq(n, f, b->key)) {
+      b->refcount -= 1;
+      if (b->refcount == 0) {
+        /* Free the flagset */
+        if (!p) {
+          /* First entry in chain */
+          n->cache->buckets[h] = b->next;
+          goto cleanup;         /* Not evil */
+        } else {
+          p->next = b->next;
+          goto cleanup;
+        }
+      } else
+        break;
+    }
+  }
+  return;
+cleanup:
+  n->cache->entries -= 1;
+  slab_free(n->cache->flagset_slab, b->key);
+  slab_free(flagbucket_slab, b);
+}
+
+void
+flag_stats(dbref player)
+{
+  FLAGSPACE *n;
+
+  for (n = hash_firstentry(&htab_flagspaces); n;
+       n = hash_nextentry(&htab_flagspaces)) {
+    int maxref = 0, i, uniques = 0, maxlen = 0;
+
+    notify_format(player, T("Stats for flagspace %s:"), n->name);
+    notify_format(player,
+                  T("  %d entries in flag table. Flagsets are %d bytes long."),
+                  n->flagbits, FlagBytes(n));
+    notify_format(player,
+                  T
+                  ("  %d different cached flagsets. %d objects with no flags set."),
+                  n->cache->entries, n->cache->zero_refcount);
+    for (i = 0; i < n->cache->size; i += 1) {
+      struct flagbucket *b;
+      int len = 0;
+      for (b = n->cache->buckets[i]; b; b = b->next) {
+        if (b->refcount > maxref)
+          maxref = b->refcount;
+        if (b->refcount == 1)
+          uniques += 1;
+        len += 1;
+      }
+      if (len > maxlen)
+        maxlen = len;
+    }
+    notify_format(player,
+                  T
+                  ("  %d objects share the most common set of flags.\n  %d objects have unique flagsets."),
+                  maxref, uniques);
+    notify_format(player,
+                  T
+                  ("  Cache hashtable has %d buckets. Longest collision chain is %d elements."),
+                  n->cache->size, maxlen);
+  }
+}
+
+/* Returns a newly allocated, unmanaged copy of the given flagset */
+static object_flag_type
+copy_flag_bitmask(FLAGSPACE *n, const object_flag_type orig)
+{
+  object_flag_type copy;
+  int len;
+
+  len = FlagBytes(n);
+  copy = slab_malloc(n->cache->flagset_slab, NULL);
+  memcpy(copy, orig, len);
+
+  return copy;
+}
+
+/** Return a zeroed out, managed flagset
+ * \param n the flagspace to use.
+ * \return a managed flagset with all bits set to zero.
+ */
+object_flag_type
+new_flag_bitmask_ns(FLAGSPACE *n)
+{
+  n->cache->zero_refcount += 1;
+  return n->cache->zero;
+}
+
+/** Return a zeroed out, managed flagset
+ * \param ns the name of the flagspace to use.
+ * \return a managed flagset with all bits set to zero.
  */
 object_flag_type
 new_flag_bitmask(const char *ns)
 {
-  object_flag_type bitmask;
   FLAGSPACE *n;
+
   Flagspace_Lookup(n, ns);
-  bitmask = GC_MALLOC_ATOMIC(FlagBytes(n));
-  if (!bitmask)
-    mush_panic("Unable to allocate memory for flag bitmask");
-  memset(bitmask, 0, FlagBytes(n));
-  return bitmask;
+  return new_flag_bitmask_ns(n);
 }
 
-/** Copy flag bitmask, allocating a new bitmask for the copy.
- * This function allocates a new flag bitmask of sufficient length
- * to include the current number of flags, and copies all the flags
- * from a given bitmask into the new bitmask.
- * \param ns name of namespace to search.
+/** Copy a managed flag bitmask.
+ * \param ns name of flagspace to use.
  * \param given a flag bitmask.
- * \return a newly allocated clone of the given bitmask.
+ * \return a managed clone of the given bitmask.
  */
 object_flag_type
-clone_flag_bitmask(const char *ns, object_flag_type given)
+clone_flag_bitmask(const char *ns, const object_flag_type given)
 {
-  object_flag_type bitmask;
-  FLAGSPACE *n;
-  Flagspace_Lookup(n, ns);
-  bitmask = GC_MALLOC_ATOMIC(FlagBytes(n));
-  if (!bitmask)
-    mush_panic("Unable to allocate memory for flag bitmask");
-  memcpy(bitmask, given, FlagBytes(n));
-  return bitmask;
+  return flagcache_find(ns, given);
 }
 
-/** Copy one flag bitmask into another (already allocated).
- * This is a convenience function - it's memcpy for flag bitmasks.
- * \param ns name of namespace to search.
- * \param dest destination bitmask for the given data.
- * \param given a flag bitmask to copy.
+/** Dereference a managed flagset and possibly deallocate it.
+ * \param ns the flagspace the flagset is in.
+ * \param bitmask the flagset
  */
-/* Copy a given bitmask to an already-allocated destination bitmask */
 void
-copy_flag_bitmask(const char *ns, object_flag_type dest, object_flag_type given)
+destroy_flag_bitmask(const char *ns, const object_flag_type bitmask)
 {
   FLAGSPACE *n;
+
   Flagspace_Lookup(n, ns);
-  memcpy((void *) dest, (void *) given, FlagBytes(n));
+  flagcache_delete(n, bitmask);
 }
 
-/** Add a bit into a bitmask.
- * This function sets a particular bit in a bitmask (e.g. bit 42),
- * by computing the appropriate byte, and the appropriate bit within the byte,
- * and setting it.
- * \param bitmask a flag bitmask.
+/** Add a flag into a flagset.
+ * This function sets a particular bit in a bitmask (e.g. bit 42), by
+ * computing the appropriate byte, and the appropriate bit within the
+ * byte, and setting it. It's used when replacing the current flagset
+ * on an obect, so it decrements the original's reference count and
+ * deletes it if needed.
+ *
+ * \param n the flagspace the flagset is in.
+ * \param bitmask a managed flagset.
  * \param bit the bit to set.
+ * \return A managed flagset with the new flag set.
  */
-void
-set_flag_bitmask(object_flag_type bitmask, int bit)
+object_flag_type
+set_flag_bitmask_ns(FLAGSPACE *n, const object_flag_type bitmask, int bit)
 {
-  int bytepos = FlagByte(bit);
-  int bitpos = FlagBit(bit);
+  int bytepos, bitpos;
+  object_flag_type copy, managed_copy;
+
   if (!bitmask)
-    return;
-  *(bitmask + bytepos) |= (1 << bitpos);
+    return NULL;
+
+  bytepos = FlagByte(bit);
+  bitpos = FlagBit(bit);
+  copy = copy_flag_bitmask(n, bitmask);
+  *(copy + bytepos) |= (1 << bitpos);
+  managed_copy = flagcache_find_ns(n, copy);
+  if (managed_copy != copy)
+    slab_free(n->cache->flagset_slab, copy);
+  flagcache_delete(n, bitmask);
+  return managed_copy;
 }
 
-/** Add a bit into a bitmask.
- * This function clears a particular bit in a bitmask (e.g. bit 42),
- * by computing the appropriate byte, and the appropriate bit within the byte,
- * and clearing it.
- * \param bitmask a flag bitmask.
- * \param bit the bit to clear.
+/** Add a flag into a flagset.
+ * This function sets a particular bit in a bitmask (e.g. bit 42), by
+ * computing the appropriate byte, and the appropriate bit within the
+ * byte, and setting it. It's used when replacing the current flagset
+ * on an obect, so it decrements the original's reference count and
+ * deletes it if needed.
+ *
+ * \param ns the name of the flagspace the flagset is in.
+ * \param bitmask a managed flagset.
+ * \param bit the bit to set.
+ * \return A managed flagset with the new flag set.
  */
-void
-clear_flag_bitmask(object_flag_type bitmask, int bit)
+object_flag_type
+set_flag_bitmask(const char *ns, const object_flag_type bitmask, int bit)
 {
-  int bytepos = FlagByte(bit);
-  int bitpos = FlagBit(bit);
-  if (!bitmask)
-    return;
-  *(bitmask + bytepos) &= ~(1 << bitpos);
+  FLAGSPACE *n;
+  Flagspace_Lookup(n, ns);
+  return set_flag_bitmask_ns(n, bitmask, bit);
 }
+
+/** Remove a flag from a flagset.
+ * This function clears a particular bit in a bitmask (e.g. bit 42),
+ * by computing the appropriate byte, and the appropriate bit within
+ * the byte, and clearing it. It's used hen replacing the current
+ * flagset on an object, so it decrements the original's reference
+ * count and deletes it if needed.
+ *
+ * \param n the flagspace the flagset is in.
+ * \param bitmask a managed flagset.
+ * \param bit the bit to clear.
+ * \return A managed flagset with the flag cleared
+ */
+object_flag_type
+clear_flag_bitmask_ns(FLAGSPACE *n, const object_flag_type bitmask, int bit)
+{
+  int bytepos, bitpos;
+  object_flag_type copy, managed_copy;
+
+  if (!bitmask)
+    return NULL;
+
+  bytepos = FlagByte(bit);
+  bitpos = FlagBit(bit);
+
+  copy = copy_flag_bitmask(n, bitmask);
+  *(copy + bytepos) &= ~(1 << bitpos);
+  managed_copy = flagcache_find_ns(n, copy);
+  if (managed_copy != copy)
+    slab_free(n->cache->flagset_slab, copy);
+  flagcache_delete(n, bitmask);
+  return managed_copy;
+}
+
+/** Remove a flag from a flagset.
+ * This function clears a particular bit in a bitmask (e.g. bit 42),
+ * by computing the appropriate byte, and the appropriate bit within
+ * the byte, and clearing it. It's used hen replacing the current
+ * flagset on an object, so it decrements the original's reference
+ * count and deletes it if needed.
+ *
+ * \param ns the name of the flagspace the flagset is in.
+ * \param bitmask a managed flagset.
+ * \param bit the bit to clear.
+ * \return A managed flagset with the flag cleared
+ */
+object_flag_type
+clear_flag_bitmask(const char *ns, const object_flag_type bitmask, int bit)
+{
+  FLAGSPACE *n;
+  Flagspace_Lookup(n, ns);
+  return clear_flag_bitmask_ns(n, bitmask, bit);
+}
+
 
 /** Test a bit in a bitmask.
  * This function tests a particular bit in a bitmask (e.g. bit 42),
  * by computing the appropriate byte, and the appropriate bit within the byte,
  * and testing it.
- * \param bitmask a flag bitmask.
+ * \param bitmask a flagset.
  * \param bitpos the bit to test.
  * \retval 1 bit is set.
  * \retval 0 bit is not set.
  */
-int
-has_bit(object_flag_type bitmask, int bitpos)
+bool
+has_bit(const object_flag_type flags, int bitpos)
 {
   int bytepos, bits_in_byte;
   /* Garbage objects, for example, have no bits set */
-  if (!bitmask)
+  if (!flags)
     return 0;
   bytepos = FlagByte(bitpos);
   bits_in_byte = FlagBit(bitpos);
-  return *(bitmask + bytepos) & (1 << bits_in_byte);
+  return *(flags + bytepos) & (1 << bits_in_byte);
 }
 
 /** Test a set of bits in one bitmask against all those in another.
  * This function determines if one bitmask contains (at least)
  * all of the bits set in another bitmask.
  * \param ns name of namespace to search.
- * \param source the bitmask to test.
- * \param bitmask the bitmask containing the bits to look for.
+ * \param source the flagset to test.
+ * \param bitmask the flagset containing the bits to look for.
  * \retval 1 all bits in bitmask are set in source.
  * \retval 0 at least one bit in bitmask is not set in source.
  */
-int
-has_all_bits(const char *ns, object_flag_type source, object_flag_type bitmask)
+bool
+has_all_bits(const char *ns, const object_flag_type source,
+             const object_flag_type bitmask)
 {
   unsigned int i;
   int ok = 1;
@@ -1125,16 +1481,12 @@ has_all_bits(const char *ns, object_flag_type source, object_flag_type bitmask)
  * \retval 1 all bits in bitmask are 0.
  * \retval 0 at least one bit in bitmask is 1.
  */
-int
-null_flagmask(const char *ns, object_flag_type source)
+bool
+null_flagmask(const char *ns, const object_flag_type source)
 {
-  unsigned int i;
-  int bad = 0;
   FLAGSPACE *n;
   Flagspace_Lookup(n, ns);
-  for (i = 0; i < FlagBytes(n); i++)
-    bad |= *(source + i);
-  return (!bad);
+  return n->cache->zero == source;
 }
 
 /** Test a set of bits in one bitmask against any of those in another.
@@ -1146,8 +1498,9 @@ null_flagmask(const char *ns, object_flag_type source)
  * \retval 1 at least one bit in bitmask is set in source.
  * \retval 0 no bits in bitmask are set in source.
  */
-int
-has_any_bits(const char *ns, object_flag_type source, object_flag_type bitmask)
+bool
+has_any_bits(const char *ns, const object_flag_type source,
+             const object_flag_type bitmask)
 {
   unsigned int i;
   int ok = 0;
@@ -1194,12 +1547,12 @@ bits_to_string(const char *ns, object_flag_type bitmask, dbref privs,
   return buf;
 }
 
-/** Convert a flag list string to a bitmask.
+/** Convert a flag list string to a flagset.
  * Given a space-separated list of flag names, convert them to
- * a bitmask array (which we malloc) and return it.
+ * a cached bitmask array and return it.
  * \param ns name of namespace to search.
  * \param str list of flag names.
- * \return a newly allocated flag bitmask.
+ * \return a managed flagset.
  */
 object_flag_type
 string_to_bits(const char *ns, const char *str)
@@ -1209,12 +1562,9 @@ string_to_bits(const char *ns, const char *str)
   FLAG *f;
   FLAGSPACE *n;
 
-  bitmask = new_flag_bitmask(ns);
-  if (!(n = (FLAGSPACE *) hashfind(ns, &htab_flagspaces))) {
-    do_rawlog(LT_ERR, "FLAG: Unable to locate flagspace %s.", ns);
-    return bitmask;
-  }
-  if (!str)
+  Flagspace_Lookup(n, ns);
+  bitmask = new_flag_bitmask_ns(n);
+  if (!str || !*str)
     return bitmask;             /* We're done, then */
   copy = GC_STRDUP(str);
   s = trim_space_sep(copy, ' ');
@@ -1223,7 +1573,7 @@ string_to_bits(const char *ns, const char *str)
     if (!(f = match_flag_ns(n, sp)))
       /* Now what do we do? Ignore it? */
       continue;
-    set_flag_bitmask(bitmask, f->bitpos);
+    bitmask = set_flag_bitmask_ns(n, bitmask, f->bitpos);
   }
   return bitmask;
 }
@@ -1244,7 +1594,7 @@ string_to_bits(const char *ns, const char *str)
  * \retval >0 object has the flag.
  * \retval 0 object does not have the flag.
  */
-int
+bool
 has_flag_in_space_by_name(const char *ns, dbref thing, const char *flag,
                           int type)
 {
@@ -1257,7 +1607,7 @@ has_flag_in_space_by_name(const char *ns, dbref thing, const char *flag,
   return has_flag_ns(n, thing, f);
 }
 
-static int
+static bool
 has_flag_ns(FLAGSPACE *n, dbref thing, FLAG *f)
 {
   if (!GoodObject(thing) || IsGarbage(thing))
@@ -1266,7 +1616,7 @@ has_flag_ns(FLAGSPACE *n, dbref thing, FLAG *f)
     has_bit(Flags(thing), f->bitpos) : has_bit(Powers(thing), f->bitpos);
 }
 
-static int
+static bool
 can_set_flag_generic(dbref player, dbref thing, FLAG *flagp, int negate)
 {
   int myperms;
@@ -1289,7 +1639,7 @@ can_set_flag_generic(dbref player, dbref thing, FLAG *flagp, int negate)
   return 1;
 }
 
-static int
+static bool
 can_set_power(dbref player, dbref thing, FLAG *flagp, int negate)
 {
   if (!can_set_flag_generic(player, thing, flagp, negate))
@@ -1303,7 +1653,7 @@ can_set_power(dbref player, dbref thing, FLAG *flagp, int negate)
 }
 
 
-static int
+static bool
 can_set_flag(dbref player, dbref thing, FLAG *flagp, int negate)
 {
   if (!can_set_flag_generic(player, thing, flagp, negate))
@@ -1462,14 +1812,23 @@ twiddle_flag_internal(const char *ns, dbref thing, const char *flag, int negate)
 {
   FLAG *f;
   FLAGSPACE *n;
+
   if (IsGarbage(thing))
     return;
   n = hashfind(ns, &htab_flagspaces);
   if (!n)
     return;
   f = flag_hash_lookup(n, flag, Typeof(thing));
-  if (f && (n->flag_table != type_table))
-    twiddle_flag(n, thing, f, negate);
+  if (f && (n->flag_table != type_table)) {
+    if (n->tab == &ptab_flag) {
+      Flags(thing) = negate ? clear_flag_bitmask_ns(n, Flags(thing), f->bitpos)
+        : set_flag_bitmask_ns(n, Flags(thing), f->bitpos);
+    } else {
+      Powers(thing) =
+        negate ? clear_flag_bitmask_ns(n, Powers(thing), f->bitpos)
+        : set_flag_bitmask_ns(n, Powers(thing), f->bitpos);
+    }
+  }
 }
 
 
@@ -1519,7 +1878,11 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
 
   current = sees_flag("FLAG", player, thing, f->name);
 
-  twiddle_flag(n, thing, f, negate);
+  if (negate)
+    Flags(thing) = clear_flag_bitmask_ns(n, Flags(thing), f->bitpos);
+  else
+    Flags(thing) = set_flag_bitmask_ns(n, Flags(thing), f->bitpos);
+
   if (negate) {
     /* log if necessary */
     if (f->perms & F_LOG)
@@ -1664,7 +2027,10 @@ set_power(dbref player, dbref thing, const char *flag, int negate)
 
   current = sees_flag("POWER", player, thing, f->name);
 
-  twiddle_flag(n, thing, f, negate);
+  if (negate)
+    Powers(thing) = clear_flag_bitmask_ns(n, Powers(thing), f->bitpos);
+  else
+    Powers(thing) = set_flag_bitmask_ns(n, Powers(thing), f->bitpos);
 
   if (!AreQuiet(player, thing)) {
     tp = tbuf1;
@@ -1888,7 +2254,7 @@ flaglist_check_long(const char *ns, dbref player, dbref it, const char *fstr,
  * \retval 1 object has the flag and looker can see it.
  * \retval 0 looker can not see flag on object.
  */
-int
+bool
 sees_flag(const char *ns, dbref privs, dbref thing, const char *name)
 {
   /* Does thing have the flag named name && can privs see it? */
@@ -2489,8 +2855,12 @@ do_flag_delete(const char *ns, dbref player, const char *name)
     }
   } while (got_one);
   /* Reset the flag on all objects */
-  for (i = 0; i < db_top; i++)
-    twiddle_flag(n, i, f, 1);
+  for (i = 0; i < db_top; i++) {
+    if (n->tab == &ptab_flag)
+      Flags(i) = clear_flag_bitmask_ns(n, Flags(i), f->bitpos);
+    else
+      Powers(i) = clear_flag_bitmask_ns(n, Powers(i), f->bitpos);
+  }
   /* Remove the flag's entry in flags */
   n->flags[f->bitpos] = NULL;
   /* Remove the flag from the ptab */

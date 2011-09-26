@@ -552,6 +552,7 @@ cque.o: ../hdrs/case.h
 cque.o: ../hdrs/log.h
 cque.o: ../hdrs/bufferq.h
 cque.o: ../hdrs/intmap.h
+cque.o: ../hdrs/ansi.h
 create.o: ../hdrs/copyrite.h
 create.o: ../config.h
 create.o: ../hdrs/conf.h
@@ -950,6 +951,7 @@ funmisc.o: ../hdrs/attrib.h
 funmisc.o: ../hdrs/mymalloc.h
 funmisc.o: ../hdrs/ansi.h
 funmisc.o: ../hdrs/strtree.h
+funmisc.o: ../hdrs/SFMT.h
 funstr.o: ../hdrs/copyrite.h
 funstr.o: ../config.h
 funstr.o: ../hdrs/conf.h
@@ -1292,6 +1294,7 @@ match.o: ../hdrs/match.h
 match.o: ../hdrs/parse.h
 match.o: ../hdrs/mymalloc.h
 match.o: ../hdrs/attrib.h
+memcheck.o: ../hdrs/SFMT.h
 move.o: ../hdrs/copyrite.h
 move.o: ../config.h
 move.o: ../hdrs/conf.h

@@ -543,11 +543,11 @@ dump_database(void)
  * may pause.
  * \param forking if 1, attempt a forking dump.
  */
-void
+bool
 fork_and_dump(int forking)
 {
   pid_t child;
-  bool nofork, status, split;
+  bool nofork, status = true, split;
   epoch++;
 
 #ifdef LOG_CHUNK_STATS
@@ -637,6 +637,7 @@ fork_and_dump(int forking)
 #ifdef LOG_CHUNK_STATS
   chunk_stats(NOTHING, 5);
 #endif
+  return status;
 }
 
 /** Start up the MUSH.

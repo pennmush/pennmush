@@ -20,7 +20,7 @@ that have altered hardcode will appear here.
 
 ==========================================================================
 
-Version 1.8.4 patchlevel 7                                 Sep 24, 2011
+Version 1.8.4 patchlevel 7                                 Sep 25, 2011
 
   The bitsets that store set flags and powers on objects are now
   shared. All objects with the same flags or powers set share the same

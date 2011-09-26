@@ -1,4 +1,4 @@
-& 1.8.4p6
+& 1.8.4p7
 & changes
 This is a list of changes in this patchlevel which are probably of
 interest to players. More information about new commands and functions
@@ -11,6 +11,107 @@ help topics named for each release (e.g. 'help 1.7.2p30').
 A list of the patchlevels associated with each release can
 be read in 'help patchlevels'.
 
+Version 1.8.4 patchlevel 7                                 Sep 25, 2011
+
+Deprecation:
+ * @elock, @eunlock, @ulock and @uunlock are deprecated. [SW]
+ * @doing is now deprecated (see below).
+ * The "newline_one_char" mush.cnf option is now deprecated, and will soon
+   always be "Yes". If you have it set to No and have any code that assumes
+   strlen(%r) == 2, you should change it now. [MG]
+
+Major changes:
+ * DOING is now a standard attribute. Your @doing can be any length, and
+   doing() returns the whole string (though it will still be truncated when
+   displayed on WHO), can contain ANSI and will be evaluated each time it's 
+   displayed, allowing for random/rotating doings. The @doing command will
+   escape its input before setting into an attribute, for backwards
+   compatability, but is now deprecated; use &doing to store code. [MG]
+ * All objects with the same flags or powers set share the same
+   storage for those flags. Large games should see slightly reduced memory
+   use. Suggested by [GM]. [SW]
+
+Minor changes:
+ * Rewrite memcheck allocation tracking to use a more efficient data
+   structure. [SW]
+ * Help file improvements, by Ender and others. [SW] [MG]
+ * Added a new 'getting started' helpfile, that gives a brief overview of
+   how to move, talk, use channels and @mail. Suggested by Wiggles. [MG]
+ * @decompile now uses '&attr obj=value', even for standard attributes, to
+   avoid possible clashes with command names. Suggested by Mercutio. [MG]
+ * Extended convtime understands timestamps of the form 
+   'YYYY-MM-DD hh:mm:ss'. Suggested by Padraic. [SW]
+ * pemit() now accepts a list of port numbers, to pemit to multiple ports
+   at once. Suggested by Padraic. [MG]
+ * Built in functions and commands can now be marked as being
+   deprecated.  Using one of these functions or commands results in a
+   warning to the owner of the object executing them. Deprecated
+   functions and commands might be removed in future patch levels;
+   code using them needs to be rewritten. [SW]
+ * Rewrite function restriction parsing and reporting to make it easier to
+   add new restrictions. [SW]
+ * Code cleanup. [SW]
+ * Channels are now ungagged on disconnect, instead of connect, so you'll
+   see your "<Foo> Bar has connected." message next time you log in. [MG]
+ * WARN_ON_MISSING can now be @hooked. Suggested by Padraic. Also, help has
+   been added for that and UNIMPLEMENTED_COMMAND. [MG]
+ * fn() didn't always work correctly on a UserFn function, especially when
+   nested in another function. Reported by Padraic. [MG]
+ * Accents are no longer stripped from output sent to players who haven't
+   logged in (those at the connect screen). Suggested by geradon. [MG]
+ * Softcode functions are now passed an additional argument, eflags,
+   by the hardcode, which should be used when the function calls
+   process_expression(). See HACKING.184 for more info. [MG]
+
+Functions:
+ * Mortals can now use lwho(me). Allows for lwho(%#) on ancestors to be
+   used by all. Suggested by Minion. [MG]
+ * xwho() now takes an optional <looker> arg, like lwho(). [MG]
+ * rand() without an argument returns a floating point number greater than
+   or equal to 0 and less than 1. [SW]
+ * itemize() is now more ANSI-aware. Reported by Jules. [MG]
+ * fullalias() didn't include old-style exit aliases (which were a part of 
+   the exit name). [MG]
+
+Locks:
+ * New locks, @lock/filter and @lock/infilter, which must be passed (along
+   with any @filter/@infilter set) for an object to forward sound. Patch
+   by Padraic.
+
+Fixes:
+ * Verified that Penn compiles using the clang compiler, and fix a few
+   warnings it generated. [SW]
+ * Better fix for the DBREFLIST issue fixed in p6. [SW]
+ * @pemit/list stopped reporting when it failed to match an object in p5.
+   Reported by Padraic. [MG]
+ * 'page' evaluated its args incorrectly when used in an $-command.
+   Reported by Invidia@Dune3. [MG]
+ * Win32 compile fixes by Daniel Powell. [MG]
+ * Fix an off-by-one error in wrap(). Report by Padraic, patch by Minion [MG]
+ * Sorting code didn't do proper objid checks, so setinter(#1:123, #1:456)
+   would return #1:123 instead of nothing. [MG]
+ * The Can_spoof power was only aliased to Can_nspemit (its original name)
+   in upgraded dbs, not in new games created from minimal db. Reported by
+   Ben Ramsey. [MG]
+ * Fix a crash bug in @function/restrict on malformed input. Reported by
+   Padraic. [SW]
+ * Some fixes to the test suite. Reported by Covenent. [MG]
+ * @pageformat included nospoof information. Reported by Jules. [MG]
+ * case() clobbered $0-$9 subs. Reported by Jules. [MG]
+ * Named regexp captures -- (?P<NAME>pattern) -- were broken in a recent
+   patchlevel. Reported by Jules. [MG]
+ * Markup wasn't stripped from queued commands, making it possible for
+   ANSI to bleed. Reported by Wiggles. [MG]
+ * Pueblo players couldn't see ANSI in connect screens. From a report
+   by geradon. [MG]
+ * money() behaved incorrectly when the tiny_math config option was on.
+   Reported by Daniell Powell. [MG]
+ * Databases with 8-bit characters couldn't be saved using the internal
+   libz compression routines. [SW]
+ * It was possible to create a player with a forbidden name from the login
+   screen. Reported by Andrew Bell. [MG]
+
+& 1.8.4p6
 Version 1.8.4 patchlevel 6                                 Jul 29,  2011
 
 Minor changes:

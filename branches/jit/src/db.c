@@ -262,7 +262,7 @@ putstring(PENNFILE *f, const char *s)
       penn_fputc('\\', f);
       /* FALL THROUGH */
     default:
-      penn_fputc(*s, f);
+      penn_fputc((unsigned char) *s, f);
     }
     s++;
   }
@@ -1939,7 +1939,14 @@ create_minimal_db(void)
 
 
 /** Run a function, and jump if error */
-#define OUTPUT(fun) do { if ((fun) < 0) longjmp(db_err, 1); } while (0)
+/* Uncomment the below line to help with debugging if needed. */
+/* static OUTPUT(int) __attribute__((noinline)); */
+static inline void
+OUTPUT(int r)
+{
+  if (r < 0)
+    longjmp(db_err, 1);
+}
 
 /* Wrapper for fopen for use in reboot code. */
 PENNFILE *
@@ -2015,6 +2022,7 @@ penn_fgets(char *buf, int len, PENNFILE *pf)
   return NULL;
 }
 
+/* c should not be a negative value or it'll screw up gzputc return value testing */
 int
 penn_fputc(int c, PENNFILE *f)
 {

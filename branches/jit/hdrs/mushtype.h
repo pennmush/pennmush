@@ -49,7 +49,7 @@ typedef uint32_t privbits;
 #define INTERACT_MATCH 0x4
 #define INTERACT_PRESENCE 0x8
 
-typedef unsigned char *object_flag_type;
+typedef uint8_t *object_flag_type;
 
 /* Boolexps and locks */
 typedef const char *lock_type;
@@ -350,7 +350,6 @@ struct descriptor_data {
   int quota;            /**< Quota of commands allowed */
   int cmds;             /**< Number of commands sent */
   int hide;             /**< Hide status */
-  char doing[DOING_LEN];        /**< Player's doing string */
   struct descriptor_data *next; /**< Next descriptor in linked list */
   struct descriptor_data *prev; /**< Previous descriptor in linked list */
   int conn_flags;       /**< Flags of connection (telnet status, etc.) */

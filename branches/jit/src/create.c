@@ -647,7 +647,7 @@ do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref)
   char dbnum[BUFFER_LEN];
 
   thing = noisy_match_result(player, name, NOTYPE, MAT_EVERYTHING);
-  if ((thing == NOTHING))
+  if (thing == NOTHING)
     return NOTHING;
 
   if (newname && *newname && !ok_name(newname, IsExit(thing))) {

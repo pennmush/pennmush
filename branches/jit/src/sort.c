@@ -343,7 +343,8 @@ GENRECORD(gen_magic)
 
 GENRECORD(gen_dbref)
 {
-  rec->memo.num = qparse_dbref(rec->val);
+  rec->memo.num =
+    (globals.database_loaded ? parse_objid(rec->val) : qparse_dbref(rec->val));
 }
 
 GENRECORD(gen_num)

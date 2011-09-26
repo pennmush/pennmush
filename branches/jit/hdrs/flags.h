@@ -9,6 +9,8 @@
 #include "mushtype.h"
 #include "ptab.h"
 #include "dbio.h"
+/* Remove when confmagic's inline #defines get shifted to config.h */
+#include "confmagic.h"
 
 typedef struct flag_info FLAG;
 
@@ -36,6 +38,7 @@ struct flag_alias {
 };
 
 typedef struct flagspace FLAGSPACE;
+struct flagcache;
 
 /** A flagspace.
  * A structure that contains all the information necessary to manage
@@ -48,107 +51,111 @@ struct flagspace {
   int flagbits;                 /**< Current length of the flags array */
   FLAG *flag_table;             /**< Pointer to flag table */
   FLAG_ALIAS *flag_alias_table; /**< Pointer to flag alias table */
+  struct flagcache *cache;      /**< Cache of all set flag bitsets */
 };
 
-
 /* From flags.c */
-extern int has_flag_in_space_by_name(const char *ns, dbref thing,
-                                     const char *flag, int type);
-#define has_flag_by_name(x,y,z) has_flag_in_space_by_name("FLAG",x,y,z)
-#define has_power_by_name(x,y,z) has_flag_in_space_by_name("POWER",x,y,z)
-extern const char *unparse_flags(dbref thing, dbref player);
-extern const char *flag_description(dbref player, dbref thing);
-extern int sees_flag(const char *ns, dbref privs, dbref thing,
-                     const char *name);
-extern void set_flag(dbref player, dbref thing, const char *flag, int negate,
-                     int hear, int listener);
-extern void set_power(dbref player, dbref thing, const char *flag, int negate);
-extern const char *power_description(dbref player, dbref thing);
-extern int flaglist_check(const char *ns, dbref player, dbref it,
-                          const char *fstr, int type);
-extern int flaglist_check_long(const char *ns, dbref player, dbref it,
-                               const char *fstr, int type);
-extern FLAG *match_flag(const char *name);
-extern FLAG *match_power(const char *name);
-extern const char *flag_list_to_lock_string(object_flag_type flags,
-                                            object_flag_type powers);
+bool has_flag_in_space_by_name(const char *ns, dbref thing,
+                               const char *flag, int type);
+static inline bool
+has_flag_by_name(dbref thing, const char *flag, int type)
+{
+  return has_flag_in_space_by_name("FLAG", thing, flag, type);
+}
 
-extern void twiddle_flag_internal(const char *ns, dbref thing, const char *flag,
-                                  int negate);
-extern object_flag_type new_flag_bitmask(const char *ns);
-extern object_flag_type clone_flag_bitmask(const char *ns,
-                                           object_flag_type given);
-extern void copy_flag_bitmask(const char *ns, object_flag_type dest,
-                              object_flag_type given);
-extern void destroy_flag_bitmask(object_flag_type bitmask);
-extern void set_flag_bitmask(object_flag_type bitmask, int bit);
-extern void clear_flag_bitmask(object_flag_type bitmask, int bit);
-extern int has_bit(object_flag_type bitmask, int bitpos);
-extern int has_all_bits(const char *ns, object_flag_type source,
-                        object_flag_type bitmask);
-extern int null_flagmask(const char *ns, object_flag_type source);
-extern int has_any_bits(const char *ns, object_flag_type source,
-                        object_flag_type bitmask);
-extern object_flag_type string_to_bits(const char *ns, const char *str);
-extern const char *bits_to_string(const char *ns, object_flag_type bitmask,
-                                  dbref privs, dbref thing);
+static inline bool
+has_power_by_name(dbref thing, const char *flag, int type)
+{
+  return has_flag_in_space_by_name("POWER", thing, flag, type);
+}
+
+const char *unparse_flags(dbref thing, dbref player);
+const char *flag_description(dbref player, dbref thing);
+bool sees_flag(const char *ns, dbref privs, dbref thing, const char *name);
+void set_flag(dbref player, dbref thing, const char *flag, int negate,
+              int hear, int listener);
+void set_power(dbref player, dbref thing, const char *flag, int negate);
+const char *power_description(dbref player, dbref thing);
+int flaglist_check(const char *ns, dbref player, dbref it,
+                   const char *fstr, int type);
+int flaglist_check_long(const char *ns, dbref player, dbref it,
+                        const char *fstr, int type);
+FLAG *match_flag(const char *name);
+FLAG *match_power(const char *name);
+const char *flag_list_to_lock_string(object_flag_type flags,
+                                     object_flag_type powers);
+
+void twiddle_flag_internal(const char *ns, dbref thing, const char *flag,
+                           int negate);
+object_flag_type new_flag_bitmask_ns(FLAGSPACE *);
+object_flag_type new_flag_bitmask(const char *ns);
+object_flag_type clone_flag_bitmask(const char *ns,
+                                    const object_flag_type given);
+void destroy_flag_bitmask(const char *ns, const object_flag_type bitmask);
+object_flag_type set_flag_bitmask_ns(FLAGSPACE *n,
+                                     const object_flag_type bitmask, int bit);
+object_flag_type set_flag_bitmask(const char *ns,
+                                  const object_flag_type bitmask, int bit);
+object_flag_type clear_flag_bitmask_ns(FLAGSPACE *n,
+                                       const object_flag_type bitmask, int bit);
+object_flag_type clear_flag_bitmask(const char *ns,
+                                    const object_flag_type bitmask, int bit);
+bool has_bit(const object_flag_type bitmask, int bitpos);
+bool has_all_bits(const char *ns, const object_flag_type source,
+                  const object_flag_type bitmask);
+bool null_flagmask(const char *ns, const object_flag_type source);
+bool has_any_bits(const char *ns, const object_flag_type source,
+                  const object_flag_type bitmask);
+object_flag_type string_to_bits(const char *ns, const char *str);
+const char *bits_to_string(const char *ns, object_flag_type bitmask,
+                           dbref privs, dbref thing);
 void flag_write_all(PENNFILE *, const char *);
 void flag_read_all(PENNFILE *, const char *);
-extern int type_from_old_flags(long old_flags);
-extern object_flag_type flags_from_old_flags(const char *ns, long old_flags,
-                                             long old_toggles, int type);
-extern FLAG *add_flag_generic(const char *ns, const char *name,
-                              const char letter, int type, int perms,
-                              int negate_perms);
+int type_from_old_flags(long old_flags);
+object_flag_type flags_from_old_flags(const char *ns, long old_flags,
+                                      long old_toggles, int type);
+FLAG *add_flag_generic(const char *ns, const char *name,
+                       const char letter, int type, int perms,
+                       int negate_perms);
 #define add_flag(n,l,t,p,x) add_flag_generic("FLAG",n,l,t,p,x)
 #define add_power(n,l,t,p,x) add_flag_generic("POWER",n,l,t,p,x)
-extern int alias_flag_generic(const char *ns, const char *name,
-                              const char *alias);
+int alias_flag_generic(const char *ns, const char *name, const char *alias);
 #define alias_flag(n,a) alias_flag_generic("FLAG",n,a);
 #define alias_power(n,a) alias_flag_generic("POWER",n,a);
-extern void do_list_flags(const char *ns, dbref player, const char *arg, int lc,
-                          const char *label);
-extern char *list_all_flags(const char *ns, const char *name, dbref privs,
-                            int which);
-extern void do_flag_info(const char *ns, dbref player, const char *name);
-extern void do_flag_delete(const char *ns, dbref player, const char *name);
-extern void do_flag_disable(const char *ns, dbref player, const char *name);
-extern void do_flag_alias(const char *ns, dbref player, const char *name,
-                          const char *alias);
-extern void do_flag_enable(const char *ns, dbref player, const char *name);
-extern void do_flag_restrict(const char *ns, dbref player, const char *name,
-                             char *args_right[]);
-extern void do_flag_type(const char *ns, dbref player, const char *name,
-                         char *type_string);
-extern void do_flag_add(const char *ns, dbref player, const char *name,
-                        char *args_right[]);
-extern void do_flag_letter(const char *ns, dbref player, const char *name,
-                           const char *letter);
-extern const char *power_to_string(int pwr);
-extern void decompile_flags_generic(dbref player, dbref thing, const char *name,
-                                    const char *ns, const char *command,
-                                    const char *prefix);
-extern int good_flag_name(char const *s);
+void do_list_flags(const char *ns, dbref player, const char *arg, int lc,
+                   const char *label);
+char *list_all_flags(const char *ns, const char *name, dbref privs, int which);
+void do_flag_info(const char *ns, dbref player, const char *name);
+void do_flag_delete(const char *ns, dbref player, const char *name);
+void do_flag_disable(const char *ns, dbref player, const char *name);
+void do_flag_alias(const char *ns, dbref player, const char *name,
+                   const char *alias);
+void do_flag_enable(const char *ns, dbref player, const char *name);
+void do_flag_restrict(const char *ns, dbref player, const char *name,
+                      char *args_right[]);
+void do_flag_type(const char *ns, dbref player, const char *name,
+                  char *type_string);
+void do_flag_add(const char *ns, dbref player, const char *name,
+                 char *args_right[]);
+void do_flag_letter(const char *ns, dbref player, const char *name,
+                    const char *letter);
+const char *power_to_string(int pwr);
+void decompile_flags_generic(dbref player, dbref thing, const char *name,
+                             const char *ns, const char *command,
+                             const char *prefix);
+int good_flag_name(char const *s);
 #define decompile_flags(p,t,n,r) decompile_flags_generic(p,t,n,"FLAG","@set",r)
 #define decompile_powers(p,t,n,r) decompile_flags_generic(p,t,n,"POWER","@power",r)
-
-#define twiddle_flag_bitmask(bm,b,neg) (neg ? clear_flag_bitmask(bm,b) : \
-                                                set_flag_bitmask(bm,b))
 #define has_all_flags_by_mask(x,bm) has_all_bits("FLAG",Flags(x),bm)
 #define has_any_flags_by_mask(x,bm) has_any_bits("FLAG",Flags(x),bm)
 #define has_all_powers_by_mask(x,bm) has_all_bits("POWER",Powers(x),bm)
 #define has_any_powers_by_mask(x,bm) has_any_bits("POWER",Powers(x),bm)
-#define twiddle_flag(n,thing,f,negate) \
-  do { \
-  if (n->tab == &ptab_flag) { \
-   twiddle_flag_bitmask(Flags(thing),f->bitpos,negate); \
-  } else { \
-   twiddle_flag_bitmask(Powers(thing),f->bitpos,negate); \
-  } } while (0)
 #define set_flag_internal(t,f) twiddle_flag_internal("FLAG",t,f,0)
 #define clear_flag_internal(t,f) twiddle_flag_internal("FLAG",t,f,1)
 #define set_power_internal(t,f) twiddle_flag_internal("POWER",t,f,0)
 #define clear_power_internal(t,f) twiddle_flag_internal("POWER",t,f,1)
+
+void flag_stats(dbref);
 
 /*---------------------------------------------------------------------
  * Object types (no longer part of the flags)

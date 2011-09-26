@@ -2,6 +2,7 @@
 This is the index to the MUSH online help files.
 
   For an explanation of the help system, type:    help newbie
+  For a walkthrough of PennMUSH systems, type:    help getting started
 
   For the list of MUSH commands, type:            help commands
   For the list of MUSH topics, type:              help topics
@@ -79,6 +80,169 @@ This is the index to the MUSH online help files.
   or by HTTP from:
   http://download.pennmush.org/Manuals/
 
+& Getting Started
+& Walkthrough
+  This helpfile is a quick walkthrough of some of PennMUSH's standard
+  systems. It uses the same syntax as the other helpfiles; if you're 
+  not familiar with the syntax of the PennMUSH helpfiles, please read 
+  'help newbie' first, as it's explained there.
+  
+  For help with getting around, please see 'help gs moving'.
+  
+  To talk to people in the room with you, see 'help gs talking'.
+  
+  For a brief guide to the PennMUSH chat system, see 'help gs chat'.
+  
+  For information on how to send and read mail using PennMUSH's built-in
+  mail system, @mail, please type 'help gs mail'.
+& GS MOVING
+  To see the room you're in, type 'look'. You'll probably see something
+  similar to this (though some MUSHes customize the appearance of rooms):
+  
+    Example Room
+    This is an example room. It has a rather boring description.
+    Contents:
+    Bob
+    Sports car
+    Obvious exits:
+    Next Room and Out
+    
+  The first line is the name of the room you're in, followed by the room's
+  description, a list of other people (and objects) in the room, and finally
+  a list of exits to other rooms.
+  
+  To move through one of the exits, you can simply type its name (Out), or
+  you can use the "goto" command (goto Out).
+ 
+  Continued in 'help gs moving2'.
+& GS MOVING2
+  All players on a MUSH have a "home", which is usually the room you started
+  in. You can go back to your home by just typing 'home', or 'goto home'.
+  Some MUSHes may also allow you to change your home to somewhere else; you
+  can do that by typing '@link me=here' when you're in the room.
+  
+  There may be some objects on the game that you can go inside (wagons or
+  cars, for instance). You can do that by typing 'enter <object>', and can
+  leave again by typing 'leave'. For instance, 'enter sports car'.
+  
+  It's also sometimes possible to teleport from one room to another, using
+  the '@teleport' command. However, most new players on a game probably won't
+  be able to do that - it's mentioned here only for completeness.
+  
+See also: goto, home, enter, leave, @teleport, @link
+& GS TALKING
+  You can talk to others in the room with you (those listed in the 'Contents'
+  of the room) in a number of ways. The easiest is to use the 'say' command. 
+  
+  For example, when you type:
+    say Hello!
+  you'll see:
+    You say, "Hello!"
+  and everyone else in the room will see:
+    Lisa says, "Hello!"
+  
+  You can abbreviate the command to just:
+    "Hello!
+  if you wish; it works exactly the same.
+
+  Continued in 'help gs talking2'.
+& GS TALKING2
+  You can also perform actions, using the 'pose' command, or ':' for short.
+  For example:
+    pose waves!   or
+    :waves!
+  will both show:
+    Lisa waves!
+  to everyone in the room (including yourself). If you don't want a space
+  after your name, use 'semipose' (or ';') instead:
+    ;'s waving!
+  will show:
+    Lisa's waving!
+    
+  If you don't want your name to be added at all, you can use the '@emit'
+  command, or '\' for short:
+    @emit Smiling, Lisa waves, "Hello!"
+  will show everyone in the room:
+    Smiling, Lisa waves, "Hello!"
+    
+  However, make sure you include your name somewhere, so people know who's
+  talking.
+  
+See also: GS CHAT, say, pose, semipose, @emit
+& GS CHAT
+& GS CHANNELS
+  PennMUSH has a built-in channel system, which allows you to talk with
+  players who are on the same channels as you, even if you're in different
+  rooms.
+  
+  Most games have a number of different channels, either for discussing
+  different subjects, or for different groups/factions of players to chat on.
+  
+  To see a list of channels, type '@channel/list'. This shows the names of
+  all the channels, whether or not you're on the channel, and some other
+  information (the rest is explained in 'help channel-list').
+  
+  To join a channel, type '@channel/on <channel>'. To leave it again, use
+  '@channel/leave <channel>'. If you want to stop hearing a channel for a
+  while without leaving it totally, use '@channel/gag <channel>'.
+  
+  Continued in 'help gs chat2'.
+& GS CHAT2
+  When you've joined a channel, you can chat on it in two ways:
+  
+    +<channel> <message>
+    @chat <channel>=<message>
+  
+  You don't need to type the entire channel name, just enough letters to
+  make it distinct from other channels. For instance, '+pub Hello'.
+  
+  When you talk on a channel, everyone who is on the channel will see
+  the channel name in '<>' angle brackets, then your name and the message.
+  For example, '+pub Hello' will show everyone
+    <Public> Skye says, "Hello"
+  If the <message> starts with a ':' or ';' it will be posed or semiposed,
+  respectively. For example, '+pub :waves' shows
+    <Public> Skye waves.
+    
+  Some games customize the appearance of channels a little (for instance,
+  adding color or using '[]' square brackets instead of angle brackets),
+  so it may look a little different.
+    
+  There's much more you can do with the channel system - see 'help @channel'
+  for the other commands.
+See also: GS TALKING, @channel, @chat
+& GS MAIL
+  PennMUSH has a built-in mail system that lets you send messages to players,
+  even if they aren't online. You can keep mail you receive for as long as
+  you like, and re-read it any time.
+  
+  To list all the messages you've received, type '@mail'. You'll see
+  something like:
+
+   -------------------------  MAIL (folder  0)  ----------------------------
+   [-----]  0:1    One           Welcome!                   Wed Dec 08 09:57
+   [-----]  0:2   *Mike          Example Mail               Sat Dec 11 07:55
+   -------------------------------------------------------------------------
+
+  The number after the ':' is the message number; to read that message, type
+  '@mail <number>'.
+
+  Continued in 'help gs mail2'.
+& GS MAIL2
+  To send mail to someone, type:
+    @mail <recipients>=[<subject>/]<message>
+    
+  You can send a message to more than one person at a time, just include the
+  names of all the people you want to send to in <recipients>. The <subject>
+  is optional. For example:
+  
+    @mail qa'toq anne=Test/Hi! This is a test message!
+    
+  You can do other, slightly more complex things with the mail system, too, 
+  like filing your messages into different folders. See 'help @mail' for
+  more information.
+  
+See also: @mail
 & topics
 Help is available on the following topics:
 
@@ -106,7 +270,8 @@ Help is available on the following topics:
   WARNINGS                 WILDCARDS                ZONE MASTER ROOMS        
   ZONE MASTERS             ZONES  
   
-Type "help <topic name>" for help.
+Type 'help <topic name>' for help.
+For a list of all topics, see 'help entries'.
 & ACTION LISTS
   An "action list" is simply a list of MUSH commands which are run together,
   one after the other. Each command in the list is separated by a semicolon.
@@ -1478,8 +1643,8 @@ Continued in 'help regexp classes2'
   A register is essentially a little reserved piece of computer memory
   that can hold some variable information that you want to pass on to
   another command.  There are ten registers on the MUSH available via
-  %-substitution (%0 - %9) and thirty-six setq registers available via
-  %q- substitution (%q0 - %q9 and %qA - %qZ). 
+  %-substitution (%0 - %9) and many setq registers available via
+  %q- substitution (%q0 - %q9, %qA - %qZ and arbitrary names). 
 
   The basic registers are filled with information that matches the 
   wildcard pattern of the command trigger. (Before you say "Huh?", here's
@@ -2085,7 +2250,7 @@ See also: ZONES, MASTER ROOM, EVALUATION
   statements about ZMOs also apply to zone master rooms; for details,
   see the help topic ZONE MASTER ROOMS.
   
-  See "help ZONES2" for more.
+  See 'help ZONES2' for more.
 & ZONES2
   $-commands on a ZMO are treated as global within that zone.  The
   game attempts to match $-commands for the ZMO of the player's

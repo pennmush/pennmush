@@ -28,6 +28,7 @@
 #include "attrib.h"
 #include "ansi.h"
 #include "strtree.h"
+#include "SFMT.h"
 #include "confmagic.h"
 
 #ifdef WIN32
@@ -92,7 +93,7 @@ FUNCTION(fun_pemit)
   orator = executor;
   if (ns)
     flags |= PEMIT_SPOOF;
-  if (is_strict_integer(args[0]))
+  if (is_integer_list(args[0]))
     do_pemit_port(executor, args[0], args[1], flags);
   else
     do_pemit(executor, args[0], args[1], flags, NULL);
@@ -324,7 +325,7 @@ FUNCTION(fun_letq)
       /* The register */
       nbp = nbuf;
       p = args[i];
-      process_expression(nbuf, &nbp, &p, executor, caller, enactor, PE_DEFAULT,
+      process_expression(nbuf, &nbp, &p, executor, caller, enactor, eflags,
                          PT_DEFAULT, pe_info);
       *nbp = '\0';
 
@@ -335,7 +336,7 @@ FUNCTION(fun_letq)
 
       tbp = tbuf;
       p = args[i + 1];
-      process_expression(tbuf, &tbp, &p, executor, caller, enactor, PE_DEFAULT,
+      process_expression(tbuf, &tbp, &p, executor, caller, enactor, eflags,
                          PT_DEFAULT, pe_info);
       *tbp = '\0';
       pe_regs_set(pe_regs, PE_REGS_Q, nbuf, tbuf);
@@ -347,7 +348,7 @@ FUNCTION(fun_letq)
   pe_info->regvals = pe_regs;
 
   p = args[nargs - 1];
-  process_expression(buff, bp, &p, executor, caller, enactor, PE_DEFAULT,
+  process_expression(buff, bp, &p, executor, caller, enactor, eflags,
                      PT_DEFAULT, pe_info);
 
   pe_info->regvals = pe_regs->prev;
@@ -579,6 +580,15 @@ FUNCTION(fun_rand)
 {
   uint32_t low, high, rand;
   int lowint, highint, offset = 0;
+
+  if (nargs == 0) {
+    /* Floating pont number in the range [0,1) */
+    safe_number(genrand_real2(), buff, bp);
+    return;
+  }
+
+  /* Otherwise, an integer in a user-supplied range */
+
   if (!is_strict_integer(args[0])) {
     safe_str(T(e_int), buff, bp);
     return;
@@ -687,11 +697,14 @@ FUNCTION(fun_switch)
   dp = mstr;
   sp = args[0];
   process_expression(mstr, &dp, &sp, executor, caller, enactor,
-                     PE_DEFAULT, PT_DEFAULT, pe_info);
+                     eflags, PT_DEFAULT, pe_info);
   *dp = '\0';
 
-  pe_regs = pe_regs_localize(pe_info, PE_REGS_SWITCH | PE_REGS_CAPTURE,
-                             "fun_switch");
+  if (exact)
+    pe_regs = pe_regs_localize(pe_info, PE_REGS_SWITCH, "fun_switch");
+  else
+    pe_regs = pe_regs_localize(pe_info, PE_REGS_SWITCH | PE_REGS_CAPTURE,
+                               "fun_switch");
   pe_regs_set(pe_regs, PE_REGS_NOCOPY | PE_REGS_SWITCH, "t0", mstr);
 
   /* try matching, return match immediately when found */
@@ -699,7 +712,7 @@ FUNCTION(fun_switch)
     dp = pstr;
     sp = args[j];
     process_expression(pstr, &dp, &sp, executor, caller, enactor,
-                       PE_DEFAULT, PT_DEFAULT, pe_info);
+                       eflags, PT_DEFAULT, pe_info);
     *dp = '\0';
 
     if (exact) {
@@ -722,7 +735,7 @@ FUNCTION(fun_switch)
 
       per = process_expression(buff, bp, &sp,
                                executor, caller, enactor,
-                               PE_DEFAULT, PT_DEFAULT, pe_info);
+                               eflags, PT_DEFAULT, pe_info);
       if (!exact)
         mush_free(tbuf1, "replace_string.buff");
       found = 1;
@@ -740,7 +753,7 @@ FUNCTION(fun_switch)
     } else
       sp = args[nargs - 1];
     process_expression(buff, bp, &sp, executor, caller, enactor,
-                       PE_DEFAULT, PT_DEFAULT, pe_info);
+                       eflags, PT_DEFAULT, pe_info);
     if (!exact)
       mush_free(tbuf1, "replace_string.buff");
   }
@@ -809,7 +822,7 @@ FUNCTION(fun_reswitch)
   dp = mstr;
   sp = args[0];
   process_expression(mstr, &dp, &sp, executor, caller, enactor,
-                     PE_DEFAULT, PT_DEFAULT, pe_info);
+                     eflags, PT_DEFAULT, pe_info);
   *dp = '\0';
   if (has_markup(mstr)) {
     mas = parse_ansi_string(mstr);
@@ -830,7 +843,7 @@ FUNCTION(fun_reswitch)
     dp = pstr;
     sp = args[j];
     process_expression(pstr, &dp, &sp, executor, caller, enactor,
-                       PE_DEFAULT, PT_DEFAULT, pe_info);
+                       eflags, PT_DEFAULT, pe_info);
     *dp = '\0';
 
     if ((re =
@@ -860,7 +873,7 @@ FUNCTION(fun_reswitch)
       }
       per = process_expression(buff, bp, &sp,
                                executor, caller, enactor,
-                               PE_DEFAULT | PE_DOLLAR, PT_DEFAULT, pe_info);
+                               eflags | PE_DOLLAR, PT_DEFAULT, pe_info);
       mush_free(tbuf1, "replace_string.buff");
       found = 1;
     }
@@ -874,7 +887,7 @@ FUNCTION(fun_reswitch)
     tbuf1 = replace_string("#$", mstr, args[nargs - 1]);
     sp = tbuf1;
     process_expression(buff, bp, &sp, executor, caller, enactor,
-                       PE_DEFAULT, PT_DEFAULT, pe_info);
+                       eflags, PT_DEFAULT, pe_info);
     mush_free(tbuf1, "replace_string.buff");
   }
 exit_sequence:
@@ -908,12 +921,12 @@ FUNCTION(fun_if)
     tp = tbuf;
     sp = args[i];
     process_expression(tbuf, &tp, &sp, executor, caller, enactor,
-                       PE_DEFAULT, PT_DEFAULT, pe_info);
+                       eflags, PT_DEFAULT, pe_info);
     *tp = '\0';
     if (parse_boolean(tbuf) == findtrue) {
       sp = args[i + 1];
       process_expression(buff, bp, &sp, executor, caller, enactor,
-                         PE_DEFAULT, PT_DEFAULT, pe_info);
+                         eflags, PT_DEFAULT, pe_info);
       if (!findall)
         return;
       found = 1;
@@ -923,7 +936,7 @@ FUNCTION(fun_if)
   if (!found && (nargs & 1)) {
     sp = args[nargs - 1];
     process_expression(buff, bp, &sp, executor, caller, enactor,
-                       PE_DEFAULT, PT_DEFAULT, pe_info);
+                       eflags, PT_DEFAULT, pe_info);
   }
 }
 
@@ -1174,7 +1187,8 @@ enum whichof_t { DO_FIRSTOF, DO_ALLOF };
 static void
 do_whichof(char *args[], int nargs, enum whichof_t flag,
            char *buff, char **bp, dbref executor,
-           dbref caller, dbref enactor, NEW_PE_INFO *pe_info, int isbool)
+           dbref caller, dbref enactor, NEW_PE_INFO *pe_info, int eflags,
+           int isbool)
 {
   int j;
   char tbuf[BUFFER_LEN], *tp;
@@ -1182,21 +1196,26 @@ do_whichof(char *args[], int nargs, enum whichof_t flag,
   char const *ap;
   int first = 1;
   tbuf[0] = '\0';
+
+  if (eflags <= 0)
+    eflags = PE_DEFAULT;
+
   if (flag == DO_ALLOF) {
     /* The last arg is a delimiter. Parse it in place. */
     char *sp = sep;
     const char *arglast = args[nargs - 1];
     process_expression(sep, &sp, &arglast, executor,
-                       caller, enactor, PE_DEFAULT, PT_DEFAULT, pe_info);
+                       caller, enactor, eflags, PT_DEFAULT, pe_info);
     *sp = '\0';
     nargs--;
-  }
+  } else
+    sep[0] = '\0';
 
   for (j = 0; j < nargs; j++) {
     tp = tbuf;
     ap = args[j];
     process_expression(tbuf, &tp, &ap, executor, caller,
-                       enactor, PE_DEFAULT, PT_DEFAULT, pe_info);
+                       enactor, eflags, PT_DEFAULT, pe_info);
     *tp = '\0';
     if ((isbool && parse_boolean(tbuf)) || (!isbool && strlen(tbuf))) {
       if (!first && *sep) {
@@ -1216,7 +1235,8 @@ do_whichof(char *args[], int nargs, enum whichof_t flag,
 FUNCTION(fun_firstof)
 {
   do_whichof(args, nargs, DO_FIRSTOF, buff, bp, executor,
-             caller, enactor, pe_info, ! !strcasecmp(called_as, "STRFIRSTOF"));
+             caller, enactor, pe_info, eflags, ! !strcasecmp(called_as,
+                                                             "STRFIRSTOF"));
 }
 
 
@@ -1224,7 +1244,8 @@ FUNCTION(fun_firstof)
 FUNCTION(fun_allof)
 {
   do_whichof(args, nargs, DO_ALLOF, buff, bp, executor,
-             caller, enactor, pe_info, ! !strcasecmp(called_as, "STRALLOF"));
+             caller, enactor, pe_info, eflags, ! !strcasecmp(called_as,
+                                                             "STRALLOF"));
 }
 
 /* Returns a platform-specific timestamp with platform-dependent resolution. */
@@ -1283,7 +1304,7 @@ FUNCTION(fun_benchmark)
     tp = tbuf;
     sp = args[2];
     process_expression(tbuf, &tp, &sp, executor, caller, enactor,
-                       PE_DEFAULT, PT_DEFAULT, pe_info);
+                       eflags, PT_DEFAULT, pe_info);
     *tp = '\0';
     thing = noisy_match_result(executor, tbuf, NOTYPE, MAT_EVERYTHING);
     if (!GoodObject(thing)) {
@@ -1304,7 +1325,7 @@ FUNCTION(fun_benchmark)
     start = get_tsc();
     ++i;
     if (process_expression(tbuf, &tp, &sp, executor, caller, enactor,
-                           PE_DEFAULT, PT_DEFAULT, pe_info)) {
+                           eflags, PT_DEFAULT, pe_info)) {
       *tp = '\0';
       break;
     }

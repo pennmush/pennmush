@@ -20,6 +20,8 @@ Version 1.8.4 patchlevel 8                                 ??? ??, 2011
 
 Fixes:
  * @lock/infilter, not @lock/infitler. [SW]
+ * @shutdown/reboot handles failed database saves much more gracefully.
+   [SW]
 
 Version 1.8.4 patchlevel 7                                 Sep 25, 2011
 

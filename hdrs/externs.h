@@ -343,7 +343,7 @@ int Commer(dbref thing);
 int Listener(dbref thing);
 extern dbref orator;
 int parse_chat(dbref player, char *command);
-void fork_and_dump(int forking);
+bool fork_and_dump(int forking);
 void reserve_fd(void);
 void release_fd(void);
 void do_scan(dbref player, char *command, int flag);

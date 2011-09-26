@@ -309,7 +309,7 @@ check_signals(void *data __attribute__ ((__unused__)))
   if (usr1_triggered) {
     if (!queue_event(SYSEVENT, "SIGNAL`USR1", "%s", "")) {
       do_rawlog(LT_ERR, "SIGUSR1 received. Rebooting.");
-      do_reboot(NOTHING, 0);    /* We don't return from this */
+      do_reboot(NOTHING, 0);    /* We don't return from this except in case of a failed db save */
     }
     usr1_triggered = 0;         /* But just in case */
   }

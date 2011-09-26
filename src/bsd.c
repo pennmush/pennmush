@@ -5562,9 +5562,13 @@ do_reboot(dbref player, int flag)
 #if defined(HAS_OPENSSL) && !defined(SSL_SLAVE)
   close_ssl_connections();
 #endif
+  if (!fork_and_dump(0)) {
+    /* Database save failed. Cancel the reboot */
+    flag_broadcast(0, 0, T("GAME: Reboot failed."));
+    return;
+  }
   sql_shutdown();
   shutdown_queues();
-  fork_and_dump(0);
 #ifndef PROFILING
 #ifndef WIN32
   /* Some broken libcs appear to retain the itimer across exec!

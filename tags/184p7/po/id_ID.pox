@@ -1,0 +1,265 @@
+# SOME DESCRIPTIVE TITLE.\nCopyright (C) YEAR Free Software Foundation, Inc.\nFIRST AUTHOR <EMAIL@ADDRESS>, YEAR.\n
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2004-11-04 13:52-0600\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=iso-8859-1\n"
+"Content-Transfer-Encoding: 8bit"
+
+#: extchat.c:1503
+msgid "#-1 AMBIGUOUS CHANNEL NAME"
+msgstr "#-1 NAMA JALUR AMBIGU"
+
+#: funtime.c:95
+msgid "#-1 INVALID TIME ZONE"
+msgstr "\"#-1 ZONA WAKTU TIDAK SAH\""
+
+#: src/fundb.c:1828
+msgid "#-1 NO SUCH CHANNEL"
+msgstr "#-1 CHANNEL TIDAK ADA"
+
+#: src/look.c:964
+#, c-format
+msgid "%s (this room) [speech]."
+msgstr "%s (ruang ini) [bicara]."
+
+#: look.c:954 look.c:979 look.c:1019
+#, c-format
+msgid "%s is listening."
+msgstr "\"%s sedang mendengarkan.\""
+
+#: bsd.c:4130
+#, c-format
+msgid "%s pages: %s"
+msgstr "\"%s memanggil: %s\""
+
+#: src/malias.c:471
+msgid "***** End of Mail Aliases *****"
+msgstr "***** Akhir dari alias Mail *****"
+
+#: extchat.c:1590
+msgid "All channels have been unmuted."
+msgstr "\"Semua saluran telah dihidupkan kembali suaranya.\""
+
+#: src/cque.c:922
+msgid "All of your objects have been halted."
+msgstr "Semua objek Anda telah dihentikan."
+
+#: extchat.c:1985
+msgid "CHAT: New description too long."
+msgstr "OBROL: Deskripsi baru terlalu panjang."
+
+#: extchat.c:1132 extchat.c:1139
+msgid "CHAT: No more memory for channels!"
+msgstr "OBROL: tidak ada lagi lebihan memori untuk saluran-saluran!"
+
+#: src/extchat.c:757
+#, c-format
+msgid "CHAT: You can't do that with channel <%s>."
+msgstr "OBROL: Anda tidak dapat melakukan hal tersebut dengan channel <%s>."
+
+#: src/extchat.c:863
+#, c-format
+msgid "CHAT: You leave channel <%s>."
+msgstr "OBROL: Anda meninggalkan saluran <%s>."
+
+#: version.c:47
+#, c-format
+msgid "Compiler: %s"
+msgstr "Compiler: %s"
+
+#: function.c:897
+#, c-format
+msgid "Flags     : %s"
+msgstr "Flag      : %s"
+
+#: src/wiz.c:363
+msgid "Garbage belongs in the garbage dump."
+msgstr "Sampah terletak di pembuangan sampah."
+
+#: src/extchat.c:793
+msgid "Guests are not allowed to join channels."
+msgstr "Tamu-tamu tidak diperbolehkan bergabung dengan saluran-saluran."
+
+#: cque.c:830 cque.c:934 cque.c:937
+msgid "Halted"
+msgstr "Dihentikan"
+
+#: help.c:122 help.c:126
+msgid "Help files reindexed."
+msgstr "File bantuan telah diindeks ulang."
+
+#: src/destroy.c:276
+msgid "How gruesome. You may not destroy players who are connected."
+msgstr "Kasarnya... Anda tidak boleh menghancurkan pemain-pemain yang sedang konek."
+
+#: move.c:883
+msgid "I don't recognize who you want to desert."
+msgstr "Siapa yang ingin Anda desersikan tidak dikenal."
+
+#: src/speech.c:611 src/speech.c:1371
+#, c-format
+msgid "I'm sorry, but %s wishes to be left alone now."
+msgstr "Maaf, tapi %s ingin sendirian dulu sekarang."
+
+#: extchat.c:2996
+msgid "Invalid buffer size."
+msgstr "\"Ukuran buffer tidak sah.\""
+
+#: src/wiz.c:1458 src/wiz.c:1465 src/wiz.c:1681 src/wiz.c:1689
+msgid "Invalid range argument"
+msgstr "Range argumen tidak valid"
+
+#: src/game.c:269
+msgid "It takes a God to make me panic."
+msgstr "Hanya Tuhan yang bisa membuat saya panik."
+
+#: game.c:2091
+msgid "Last reboot"
+msgstr "Terakhir kali boot ulang"
+
+#: src/malias.c:264
+#, c-format
+msgid "MAIL: Alias set '%s' defined."
+msgstr "MAIL: set alias '%s' telah didefinisikan."
+
+#: src/extmail.c:788
+msgid "MAIL: I can't figure out who you want to mail to."
+msgstr "MAIL: saya tidak dapat menemukan kepada siapa Anda mau mengirim mail."
+
+#: src/extmail.c:2509
+#, c-format
+msgid "MAIL: Warning! Limit on inbox messages is %d!"
+msgstr "MAIL: Perhatian! Batas pada kotak surat adalah %d!"
+
+#: src/malias.c:675
+#, c-format
+msgid "MAIL: player '%s' exists already in alias %s."
+msgstr "MAIL: pemain '%s' sudah ada dengan alias %s."
+
+#: function.c:1090
+#, c-format
+msgid "Name      : %s() (%s%s)"
+msgstr "Nama      : %s() (%s%s)"
+
+#: conf.c:962
+msgid "No such option."
+msgstr "Pilihan tersebut tidak ada."
+
+#: src/speech.c:679
+msgid "Posing as a wizard could be hazardous to your health."
+msgstr "Memasang penyihir dapat berbahaya bagi kesehatan Anda."
+
+#: src/destroy.c:926
+msgid "Sorry, you are a mortal."
+msgstr "Maaf, Anda hanya manusia biasa."
+
+#: src/move.c:643
+msgid "Sorry, you must remain beside yourself!"
+msgstr "Maaf, Anda harus tetap berada di samping diri Anda sendiri!"
+
+#: src/destroy.c:250
+msgid "That object does not belong to you. Use @nuke to destroy it."
+msgstr "Objek tersebut bukan milik Anda. Gunakan @nuke untuk menghancurkannya."
+
+#: src/extmail.c:1111
+msgid "The postal service issues a warrant for your arrest."
+msgstr "Kantor Pos meminta pengadilan untuk mengeluarkan surat perintah penangkapan bagi Anda."
+
+#: src/extmail.c:1281
+#, c-format
+msgid "There are %d messages in the mail spool."
+msgstr "Ada %d pesan mail buat Anda."
+
+#: game.c:2112
+msgid "Time until next database save"
+msgstr "Waktu hingga penyimpanan database berikutnya"
+
+#: game.c:2128
+msgid "Time until next purge"
+msgstr "Waktu hingga purge berikut"
+
+#: src/extchat.c:1358
+msgid "Title too long."
+msgstr "Judul terlalu panjang."
+
+#: src/player.c:301
+#, c-format
+msgid "To access this character, connect to %s and type:\n"
+msgstr "Untuk akses karakter ini, konek ke %s dan ketik:\n"
+
+#: boolexp.c:245
+msgid "Too much recursion in lock!"
+msgstr "\"Terlalu banyak rekursi pada lock!\""
+
+#: bsd.c:274
+msgid "Unable to register that player with that email address."
+msgstr "Tidak dapat mendaftarkan pemain tadi dengan alamat email tersebut."
+
+#: src/wiz.c:1825 src/wiz.c:1848
+msgid "Unknown type."
+msgstr "Tipe tidak dikenal."
+
+#: src/warnings.c:417
+msgid "Warning checks complete."
+msgstr "Perhatian pemeriksaan selesai."
+
+#: src/wiz.c:465
+msgid "What are you doing inside of yourself?"
+msgstr "Apa yang Anda lakukan di dalam diri Anda sendiri?"
+
+#: src/move.c:359 src/move.c:412 src/move.c:430
+msgid "You can't go that way."
+msgstr "Anda tidak dapat pergi ke arah sana."
+
+#: src/create.c:114
+msgid "You can't make an exit in a place that's crumbling."
+msgstr "Anda tidak dapat membuat jalan keluar pada tempat yang sedang meruntuh."
+
+#: src/cmds.c:181
+msgid "You can't remake the world in your image."
+msgstr "Anda tidak dapat mencipta ulang dunia seperti bayangan Anda."
+
+#: src/destroy.c:280
+msgid "You must use @nuke to destroy a player."
+msgstr "Anda harus menggunakan @nuke untuk menghancurkan seorang pemain."
+
+#: src/speech.c:616
+#, c-format
+msgid "You pemit \"%s\" to %s."
+msgstr "Anda membolehkan \"%s\" untuk %s."
+
+#: src/bsd.c:3419
+msgid "Your HAVEN flag is set. You cannot receive pages."
+msgstr "Flag HAVEN Anda diset. Anda tidak menerima panggilan-panggilan."
+
+#: src/flags.c:1092
+msgid "Your contents can no longer be heard from outside."
+msgstr "Pembicaraan kalian sekarang tidak lagi dapat didengar dari luar."
+
+#: src/cque.c:956
+#, c-format
+msgid "Your objects have been globally halted by %s"
+msgstr "Objek-objek Anda telah dihentikan secara global oleh %s"
+
+#: src/bsd.c:4683
+msgid ""
+"\n"
+"*** Inactivity limit reached. You are now HIDDEN. ***\n"
+msgstr ""
+"\n"
+"*** Batas ketidakaktifan terlampaui. sekarang Anda TERSEMBUNYI. ***\n"
+
+#: src/move.c:96
+msgid "has left."
+msgstr "telah pergi."
+
+#: src/warnings.c:157
+msgid "possibly unlocked exit missing succ/osucc/odrop"
+msgstr "kemungkinan keluar tanpa di-lock kekurangan succ/osucc/odrop"
+

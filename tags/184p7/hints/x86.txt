@@ -1,0 +1,24 @@
+x86 and x86-64 specific stuff:
+
+All this assumes you're using gcc as your compiler.
+
+Add -march=FOO to your CFLAGS, where FOO is your processor: athlon,
+athlon-xp, pentium4, core2, etc. (Not all gcc versions support all
+these; see the documentation for your installation.)
+
+For example (Requires gcc 4.3 or better):
+CFLAGS="-O -march=core2" ./configure -C
+
+On 32 bit systems, consider adding -momit-leaf-frame-pointer to your
+CFLAGS. (This might someday be done for you by configure).
+
+On Pentium-M and better, add --enable-sse2 to your configure options
+to get a SIMD version of the pseudo random number generator and
+some other code.
+
+On Prescott Pentium-4 and better, add --enable-sse3 to your configure
+options (Implies --enable-sse2).
+
+Better yet, pass the correct -march=FOO flag in CFLAGS and they'll be
+automatically configured.
+

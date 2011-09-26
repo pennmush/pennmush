@@ -118,7 +118,7 @@ lock_list lock_types[] = {
   {"Take", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {"Open", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {"Filter", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
-  {"InFitler", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
+  {"InFilter", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {NULL, TRUE_BOOLEXP, GOD, 0, NULL}
 };
 

@@ -16,6 +16,11 @@ chronological order (most recent first)
 
 ==========================================================================
 
+Version 1.8.4 patchlevel 8                                 ??? ??, 2011
+
+Fixes:
+ * @lock/infilter, not @lock/infitler. [SW]
+
 Version 1.8.4 patchlevel 7                                 Sep 25, 2011
 
 Deprecation:

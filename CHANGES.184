@@ -18,6 +18,11 @@ chronological order (most recent first)
 
 Version 1.8.4 patchlevel 8                                 ??? ??, 2011
 
+Major changes:
+ * ssl_slave is enabled by default by configure if OpenSSL and
+  libevent2 are present. Passing --disable-ssl_slave to configure will
+  still disable it. [SW]
+
 Fixes:
  * @lock/infilter, not @lock/infitler. [SW]
  * @shutdown/reboot handles failed database saves much more gracefully.

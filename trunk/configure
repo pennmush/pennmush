@@ -1345,7 +1345,7 @@ Optional Features:
   --disable-ipv6          Don't use IPv6 networking
   --disable-nls           Don't use message-translation
   --disable-info_slave    Don't use a separate process for hostname lookups
-  --enable-ssl_slave      Use a seperate process for SSL connections that will
+  --disable-ssl_slave     Use a seperate process for SSL connections that will
                           persist across restarts. (Experimental. Unix-only.)
   --enable-sse2           Use SSE2 instructions (Requires a CPU that supports
                           SSE2)
@@ -8724,14 +8724,19 @@ fi
 
 # Check whether --enable-ssl_slave was given.
 if test "${enable_ssl_slave+set}" = set; then :
-  enableval=$enable_ssl_slave;
+  enableval=$enable_ssl_slave; enable_ssl_slave=$enableval
+else
+  enable_ssl_slave=yes
 fi
 
-if test "$enable_ssl_slave" = yes -a "$HAVE_SSL" = yes; then
+if test "$enable_ssl_slave" = yes -a "$ac_cv_lib_event_openssl_bufferevent_openssl_socket_new" = yes -a "$HAVE_SSL" = yes; then
    SSL_SLAVE_TARGET=ssl_slave
 
    $as_echo "#define SSL_SLAVE 1" >>confdefs.h
 
+else
+   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: ssl_slave requested but OpenSSL and/or libevent2 weren't found." >&5
+$as_echo "$as_me: WARNING: ssl_slave requested but OpenSSL and/or libevent2 weren't found." >&2;}
 fi
 
 # Check whether --enable-sse2 was given.

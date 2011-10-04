@@ -28,6 +28,8 @@ Fixes:
  * @shutdown/reboot handles failed database saves much more gracefully.
    [SW]
  * Help fixes by Wiggles. [MG]
+ * Fix a few places that could trigger an integer division exception.
+   Reported by Ashen-Shugar. [SW]
 
 Version 1.8.4 patchlevel 7                                 Sep 25, 2011
 

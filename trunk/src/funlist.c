@@ -2965,3 +2965,17 @@ FUNCTION(fun_regrab)
   if (study)
     mush_free(study, "pcre.extra");
 }
+
+FUNCTION(fun_isregexp) {
+  pcre *re;
+  int flags = 0;
+  const char *errptr;
+  int erroffset;
+
+  if (!!(re = pcre_compile(args[0], flags, &errptr, &erroffset, tables))) {
+    mush_free(re, "pcre");
+    safe_chr('1', buff, bp);
+    return;
+  }
+  safe_chr('0', buff, bp);
+}

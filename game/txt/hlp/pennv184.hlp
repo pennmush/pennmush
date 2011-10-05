@@ -19,6 +19,9 @@ Fixes:
    [SW]
  * Help fixes by Wiggles. [MG]
 
+Functions:
+ * isregexp() to validate regexp patterns. Suggested by Padraic. [DC]
+
 & 1.8.4p7
 Version 1.8.4 patchlevel 7                                 Sep 25, 2011
 

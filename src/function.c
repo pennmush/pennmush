@@ -311,6 +311,7 @@ FUNTAB flist[] = {
   {"ISINT", fun_isint, 1, 1, FN_REG | FN_STRIPANSI},
   {"ISNUM", fun_isnum, 1, 1, FN_REG | FN_STRIPANSI},
   {"ISOBJID", fun_isobjid, 1, 1, FN_REG | FN_STRIPANSI},
+  {"ISREGEXP", fun_isregexp, 1, 1, FN_REG | FN_STRIPANSI},
   {"ISWORD", fun_isword, 1, 1, FN_REG | FN_STRIPANSI},
   {"ITER", fun_iter, 2, 4, FN_NOPARSE},
   {"ITEMS", fun_items, 2, 2, FN_REG | FN_STRIPANSI},

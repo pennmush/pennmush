@@ -242,14 +242,15 @@ See also: STRINGS
   checkpass()   clone()       create()      die()         dig()
   endtag()      firstof()     functions()   fn()          html()        
   ibreak()      ilev()        inum()        isdbref()     isint()       
-  isnum()       isobjid()     isword()      itext()       letq()        
-  localize()    link()        list()        listq()       lnum()        
-  lset()        null()        numversion()  objeval()     open()        
-  pcreate()     r()           rand()        s()           scan()        
-  set()         setq()        setr()        slev()        soundex()     
-  soundslike()  speak()       stext()       tag()         tagwrap()      
-  tel()         testlock()    textentries() textfile()    unsetq()      
-  valid()       wipe()        @@()          uptime()
+  isnum()       isobjid()     isregexp()    isword()      itext()
+  letq()        localize()    link()        list()        listq()
+  lnum()        lset()        null()        numversion()  objeval()
+  open()        pcreate()     r()           rand()        s()
+  scan()        set()         setq()        setr()        slev()
+  soundex()     soundslike()  speak()       stext()       tag()
+  tagwrap()     tel()         testlock()    textentries() textfile()
+  unsetq()      valid()       wipe()        @@()          uptime()
+
 & @@()
 & NULL()
   @@(<expression>)
@@ -2098,6 +2099,13 @@ See also: isint()
   the string is not a valid object id.
   
 See also: DBREFS, isdbref(), objid()
+& ISREGEXP()
+  isregexp(<string>)
+
+  This function returns 1 if <string> is a valid regular expression,
+  and 0 if it is not.
+
+See also: REGEXP
 & ISWORD()
   isword(<string>)
   

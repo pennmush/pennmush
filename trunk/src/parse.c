@@ -588,9 +588,9 @@ parse_int32(const char *s, char **end, int base)
 
 
 /** Convert a string containing an unsigned integer into an int.
- * Does not  do any format checking. Invalid strings will return 0.
+ * Does not do any format checking. Invalid strings will return 0.
  * Use this instead of strtoul() when storing to an int to avoid problems
- * where  sizeof(int) < sizeof(long).
+ * where sizeof(int) < sizeof(long).
  * \param s The string to convert
  * \param end pointer to store the first invalid char at, or NULL
  * \param base base for conversion

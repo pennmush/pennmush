@@ -1225,7 +1225,7 @@ cnf_add_function(char *name, char *opts)
   if (*one == '#')
     one++;
   /* Don't care if the attr exists, only if it /could/ exist */
-  if (!is_integer(one) || !good_atr_name(attrname))
+  if (!is_strict_integer(one) || !good_atr_name(attrname))
     return 0;
   thing = (dbref) parse_integer(one);
   if (!GoodObject(thing) || IsGarbage(thing))

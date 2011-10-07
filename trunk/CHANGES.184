@@ -38,6 +38,9 @@ Fixes:
  * Help fixes by Wiggles. [MG]
  * Fix a few places that could trigger an integer division exception.
    Reported by Ashen-Shugar. [SW]
+ * A number of places in the hardcode incorrectly took TINY_MATH into account
+   when deciding if something was a valid number or not. From a report by
+   Daniel Powell. [MG]
 
 Functions:
  * isregexp() to validate regexp patterns. Suggested by Padraic. [DC]

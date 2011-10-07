@@ -1675,7 +1675,7 @@ FUNCTION(fun_folderstats)
     count_mail(executor, player_folder(executor), &rc, &uc, &cc);
     break;
   case 1:
-    if (!is_integer(args[0])) {
+    if (!is_strict_integer(args[0])) {
       /* handle the case of wanting to count the number of messages */
       if ((player =
            noisy_match_result(executor, args[0], TYPE_PLAYER,

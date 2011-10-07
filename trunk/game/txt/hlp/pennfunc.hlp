@@ -3166,8 +3166,10 @@ See also: div(), fdiv(), lmath()
   or plural) for that amount of money, as set in the money_singular and
   money_plural @config options.
 
-  Otherwise, it returns the amount of money <object> has. If <object> is
-  no_pay, the value of the 'max_pennies' @config option is returned. 
+  Otherwise, it returns the amount of money <object> has. If <object> has
+  the no_pay power, the value of the 'max_pennies' @config option is
+  returned. <object> must have the power itself, rather than inheriting it
+  from its owner, in this case.
 
   Examples:
     > say money(Javelin)

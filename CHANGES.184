@@ -23,6 +23,10 @@ Major changes:
   libevent2 are present. Passing --disable-ssl_slave to configure will
   still disable it. [SW]
 
+Minor changes:
+ * crunch_code and crypt_code in funcrypt.c are no longer static. Requested
+   by qa'toq@M*U*S*H. [MG]
+
 Fixes:
  * @lock/infilter, not @lock/infitler. [SW]
  * @shutdown/reboot handles failed database saves much more gracefully.
@@ -30,6 +34,9 @@ Fixes:
  * Help fixes by Wiggles. [MG]
  * Fix a few places that could trigger an integer division exception.
    Reported by Ashen-Shugar. [SW]
+
+Functions:
+ * isregexp() to validate regexp patterns. Suggested by Padraic. [DC]
 
 Version 1.8.4 patchlevel 7                                 Sep 25, 2011
 

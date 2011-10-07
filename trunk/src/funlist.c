@@ -2460,10 +2460,7 @@ FUNCTION(fun_table)
   while (cp) {
     col += field_width + (osep != '\0');
     if (col > line_length) {
-      if (NEWLINE_ONE_CHAR)
-        safe_str("\n", buff, bp);
-      else
-        safe_str("\r\n", buff, bp);
+      safe_chr('\n', buff, bp);
       col = field_width + ! !osep;
     } else {
       if (osep)

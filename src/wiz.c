@@ -254,7 +254,7 @@ do_allquota(dbref player, const char *arg1, int quiet)
   }
   if (!arg1 || !*arg1) {
     limit = -1;
-  } else if (!is_integer(arg1)) {
+  } else if (!is_strict_integer(arg1)) {
     notify(player, T("You can only set quotas to a number."));
     return;
   } else {

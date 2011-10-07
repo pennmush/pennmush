@@ -3431,7 +3431,7 @@ FUNCTION(fun_crecall)
 
   if (!args[1] || !*args[1]) {
     num_lines = 10;             /* default */
-  } else if (is_integer(args[1])) {
+  } else if (is_strict_integer(args[1])) {
     num_lines = parse_integer(args[1]);
     if (num_lines == 0)
       num_lines = INT_MAX;
@@ -3922,7 +3922,7 @@ do_chan_recall(dbref player, const char *name, char *lineinfo[], int quiet)
     start = parse_integer(startpos) - 1;
   }
   if (lines && *lines) {
-    if (is_integer(lines)) {
+    if (is_strict_integer(lines)) {
       num_lines = parse_integer(lines);
       if (num_lines == 0)
         num_lines = INT_MAX;
@@ -4018,7 +4018,7 @@ do_chan_buffer(dbref player, const char *name, const char *lines)
     notify(player, T("You need to specify a channel."));
     return;
   }
-  if (!lines || !*lines || !is_integer(lines)) {
+  if (!lines || !*lines || !is_strict_integer(lines)) {
     notify(player, T("You need to specify the number of lines to buffer."));
     return;
   }

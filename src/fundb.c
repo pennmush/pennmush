@@ -934,7 +934,7 @@ FUNCTION(fun_entrances)
     types = NOTYPE;
 
   if (nargs > 2) {
-    if (is_integer(args[2])) {
+    if (is_strict_integer(args[2])) {
       low = parse_integer(args[2]);
     } else if (is_dbref(args[2])) {
       low = parse_dbref(args[2]);
@@ -944,7 +944,7 @@ FUNCTION(fun_entrances)
     }
   }
   if (nargs > 3) {
-    if (is_integer(args[3])) {
+    if (is_strict_integer(args[3])) {
       high = parse_integer(args[3]);
     } else if (is_dbref(args[3])) {
       high = parse_dbref(args[3]);

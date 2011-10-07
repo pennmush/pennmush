@@ -46,7 +46,7 @@ FUNCTION(fun_timefmt)
      * so we can't assign an unsigned int to it safely
      */
     if (!is_integer(args[1])) {
-      safe_str(T(e_uint), buff, bp);
+      safe_str(T(e_int), buff, bp);
       return;
     }
     tt = parse_integer(args[1]);

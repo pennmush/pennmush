@@ -23,6 +23,8 @@ Major changes:
 Minor changes:
  * crunch_code and crypt_code in funcrypt.c are no longer static. Requested
    by qa'toq@M*U*S*H. [MG]
+ * @dump now notifies the executor when the dump is complete. Suggested by
+   Padraic. [MG]
 
 Fixes:
  * @lock/infilter, not @lock/infitler. [SW]

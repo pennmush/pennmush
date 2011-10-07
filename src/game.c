@@ -214,6 +214,7 @@ do_dump(dbref player, char *num, enum dump_type flag)
     }
     fork_and_dump(1);
     globals.paranoid_dump = 0;
+    notify(player, T("Dump complete."));
   } else {
     notify(player, T("Sorry, you are in a no dumping zone."));
   }

@@ -1581,10 +1581,8 @@ FUNCTION(fun_wrap)
     initint(2, width1st, width);
   if (nargs > 3)
     linesep = args[3];
-  else if (NEWLINE_ONE_CHAR)
-    linesep = "\n";
   else
-    linesep = "\r\n";
+    linesep = "\n";
 
   if (width < 2 || width1st < 2) {
     safe_str(T("#-1 WIDTH TOO SMALL"), buff, bp);

@@ -2268,10 +2268,7 @@ process_expression(char *buff, char **bp, char const **str,
           break;
         case 'R':
         case 'r':              /* newline */
-          if (NEWLINE_ONE_CHAR)
-            safe_chr('\n', buff, bp);
-          else
-            safe_str("\r\n", buff, bp);
+          safe_chr('\n', buff, bp);
           break;
         case 'S':
         case 's':              /* enactor subjective pronoun */

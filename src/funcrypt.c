@@ -36,8 +36,8 @@
 #include "confmagic.h"
 
 
-static char *crunch_code(char *code);
-static char *crypt_code(char *code, char *text, int type);
+char *crunch_code(char *code);
+char *crypt_code(char *code, char *text, int type);
 static void safe_sha0(const char *text, size_t len, char *buff, char **bp);
 static void safe_hexchar(unsigned char c, char *buff, char **bp);
 
@@ -179,7 +179,7 @@ FUNCTION(fun_decode64)
 }
 
 /* Copy over only alphanumeric chars */
-static char *
+char *
 crunch_code(char *code)
 {
   char *in;
@@ -188,12 +188,7 @@ crunch_code(char *code)
 
   out = output;
   in = code;
-  while (*in) {
-    while (*in == ESC_CHAR) {
-      while (*in && *in != 'm')
-        in++;
-      in++;                     /* skip 'm' */
-    }
+  WALK_ANSI_STRING(in) {
     if ((*in >= 32) && (*in <= 126)) {
       *out++ = *in;
     }
@@ -203,7 +198,7 @@ crunch_code(char *code)
   return output;
 }
 
-static char *
+char *
 crypt_code(char *code, char *text, int type)
 {
   static char textbuff[BUFFER_LEN];

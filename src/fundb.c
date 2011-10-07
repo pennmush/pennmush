@@ -1785,7 +1785,7 @@ FUNCTION(fun_money)
    * if its owner is no_pay. Softcode can check money(owner(XX)) if
    * they want to allow objects to pay like their owners.
    */
-  if (NoPay(it))
+  if (God(it) || has_power_by_name(it,"NO_PAY",NOTYPE))
     safe_integer(MAX_PENNIES, buff, bp);
   else
     safe_integer(Pennies(it), buff, bp);

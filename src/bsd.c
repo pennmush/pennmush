@@ -235,7 +235,7 @@ static int handle_telnet(DESC *d, unsigned char **q, unsigned char *qend);
           if((d)->connected)
 
 #define DESC_ITER(d) \
-				for(d = descriptor_list;(d);d=(d)->next) \
+                for(d = descriptor_list;(d);d=(d)->next) \
 
 /** Is a descriptor hidden? */
 #define Hidden(d)        ((d->hide == 1))
@@ -1650,7 +1650,7 @@ logout_sock(DESC *d)
   }
   process_output(d);            /* flush our old output */
   /* pretend we have a new connection */
-  d->connected = 0;
+  d->connected = CONN_SCREEN;
   d->output_prefix = 0;
   d->output_suffix = 0;
   d->output_size = 0;
@@ -1680,7 +1680,7 @@ shutdownsock(DESC *d, const char *reason)
   if (d->connected) {
     do_rawlog(LT_CONN, "[%d/%s/%s] Logout by %s(#%d)",
               d->descriptor, d->addr, d->ip, Name(d->player), d->player);
-    if (d->connected != 2) {
+    if (d->connected != CONN_DENIED) {
       fcache_dump(d, fcache.quit_fcache, NULL);
       /* Player was not allowed to log in from the connect screen */
       announce_disconnect(d, reason, 0);
@@ -1743,7 +1743,7 @@ initializesock(int s, char *addr, char *ip, conn_source source)
   if (!d)
     mush_panic("Out of memory.");
   d->descriptor = s;
-  d->connected = 0;
+  d->connected = CONN_SCREEN;
   d->connected_at = mudtime;
   make_nonblocking(s);
   d->output_prefix = 0;
@@ -2594,7 +2594,7 @@ dump_messages(DESC *d, dbref player, int isnew)
   int num = 0;
   DESC *tmpd;
 
-  d->connected = 1;
+  d->connected = CONN_PLAYER;
   d->connected_at = mudtime;
   d->player = player;
 
@@ -2695,7 +2695,7 @@ check_connect(DESC *d, const char *msg)
                 d->descriptor, d->addr, d->ip, Name(player), player,
                 Name(Location(player)), Location(player));
       if ((dump_messages(d, player, 0)) == 0) {
-        d->connected = 2;
+        d->connected = CONN_DENIED;
         return 0;
       }
     }
@@ -2712,13 +2712,13 @@ check_connect(DESC *d, const char *msg)
                 d->descriptor, d->addr, d->ip, Name(player), player,
                 Name(Location(player)), Location(player));
       /* Set player dark */
-      d->connected = 1;
+      d->connected = CONN_PLAYER;
       if (Can_Hide(player))
         d->hide = 1;
       d->player = player;
       set_flag(player, player, "DARK", 0, 0, 0);
       if ((dump_messages(d, player, 0)) == 0) {
-        d->connected = 2;
+        d->connected = CONN_DENIED;
         return 0;
       }
     }
@@ -2734,11 +2734,11 @@ check_connect(DESC *d, const char *msg)
                 d->descriptor, d->addr, d->ip, Name(player), player,
                 Name(Location(player)), Location(player));
       /* Set player !dark */
-      d->connected = 1;
+      d->connected = CONN_PLAYER;
       d->player = player;
       set_flag(player, player, "DARK", 1, 0, 0);
       if ((dump_messages(d, player, 0)) == 0) {
-        d->connected = 2;
+        d->connected = CONN_DENIED;
         return 0;
       }
     }
@@ -2755,12 +2755,12 @@ check_connect(DESC *d, const char *msg)
                 d->descriptor, d->addr, d->ip, Name(player), player,
                 Name(Location(player)), Location(player));
       /* Set player hidden */
-      d->connected = 1;
+      d->connected = CONN_PLAYER;
       d->player = player;
       if (Can_Hide(player))
         d->hide = 1;
       if ((dump_messages(d, player, 0)) == 0) {
-        d->connected = 2;
+        d->connected = CONN_DENIED;
         return 0;
       }
     }
@@ -2817,7 +2817,7 @@ check_connect(DESC *d, const char *msg)
       do_rawlog(LT_CONN, "[%d/%s/%s] Created %s(#%d)",
                 d->descriptor, d->addr, d->ip, Name(player), player);
       if ((dump_messages(d, player, 1)) == 0) {
-        d->connected = 2;
+        d->connected = CONN_DENIED;
         return 0;
       }
     }                           /* successful player creation */
@@ -5078,7 +5078,7 @@ inactivity_check(void)
 
     /* If they've been idle for 60 seconds and are set KEEPALIVE and using
        a telnet-aware client, send a NOP */
-    if (d->connected && d->conn_flags & CONN_TELNET && idle_for >= 60
+    if (d->connected && (d->conn_flags & CONN_TELNET) && idle_for >= 60
         && IS(d->player, TYPE_PLAYER, "KEEPALIVE")) {
       const uint8_t nopmsg[2] = { IAC, NOP };
       queue_newwrite(d, nopmsg, 2);
@@ -5392,7 +5392,7 @@ load_reboot_db(void)
       d->cmds = getref(f);
       d->player = getref(f);
       d->last_time = getref(f);
-      d->connected = GoodObject(d->player) ? 1 : 0;
+      d->connected = GoodObject(d->player) ? CONN_PLAYER : CONN_SCREEN;
       temp = getstring_noalloc(f);
       d->output_prefix = NULL;
       if (strcmp(temp, "__NONE__"))
@@ -5459,7 +5459,7 @@ load_reboot_db(void)
         if (d->connected && GoodObject(d->player) && IsPlayer(d->player))
           set_flag_internal(d->player, "CONNECTED");
         else if ((!d->player || !GoodObject(d->player)) && d->connected) {
-          d->connected = 0;
+          d->connected = CONN_SCREEN;
           d->player = NOTHING;
         }
       }
@@ -5800,11 +5800,11 @@ file_watch_init_fam(void)
     return -1;
   }
 #define WATCH(name) do { \
-    const char *fullname = tprintf("%s/%s", gamedir, (name));	 \
-    do_rawlog(LT_TRACE, "Watching %s", fullname);			\
-    if (FAMMonitorFile(&famc, fullname, &famr, NULL) < 0)		\
+    const char *fullname = tprintf("%s/%s", gamedir, (name));    \
+    do_rawlog(LT_TRACE, "Watching %s", fullname);           \
+    if (FAMMonitorFile(&famc, fullname, &famr, NULL) < 0)       \
       do_rawlog(LT_TRACE, "file_watch_init:FAMMonitorFile(\"%s\"): %s", \
-		(name), FamErrlist[FAMErrno]);				\
+        (name), FamErrlist[FAMErrno]);              \
   } while (0)
 
   do_rawlog(LT_TRACE,

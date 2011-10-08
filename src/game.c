@@ -322,7 +322,7 @@ dump_database_internal(void)
   if (setjmp(db_err)) {
     /* The dump failed. Disk might be full or something went bad with the
        compression slave. Boo! */
-    const char *errmsg;
+    const char *errmsg = NULL;
 
     if (f) {
       switch (f->type) {

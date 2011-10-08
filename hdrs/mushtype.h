@@ -327,6 +327,12 @@ typedef enum conn_source {
   CS_UNKNOWN
 } conn_source;
 
+typedef enum conn_status {
+  CONN_SCREEN, /* not connected to a player */
+  CONN_PLAYER, /* connected */
+  CONN_DENIED  /* connection denied de to login limits/sitelock */
+} conn_status;
+
 typedef struct descriptor_data DESC;
 /** A player descriptor's data.
  * This structure associates a connection's socket (file descriptor)
@@ -334,7 +340,7 @@ typedef struct descriptor_data DESC;
  */
 struct descriptor_data {
   int descriptor;       /**< Connection socket (fd) */
-  int connected;        /**< Connection status. 0 = not connected to a player, 1 = connected, 2 = connection denied due to login limits/sitelock */
+  conn_status connected; /**< Connection status. 0 = not connected to a player, 1 = connected, 2 = connection denied due to login limits/sitelock */
   char addr[101];       /**< Hostname of connection source */
   char ip[101];         /**< IP address of connection source */
   dbref player;         /**< Dbref of player associated with connection, or NOTHING if not connected */

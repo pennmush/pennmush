@@ -8737,6 +8737,7 @@ if test "$enable_ssl_slave" = yes -a "$ac_cv_lib_event_openssl_bufferevent_opens
 else
    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: ssl_slave requested but OpenSSL and/or libevent2 weren't found." >&5
 $as_echo "$as_me: WARNING: ssl_slave requested but OpenSSL and/or libevent2 weren't found." >&2;}
+   enable_ssl_slave=no
 fi
 
 # Check whether --enable-sse2 was given.

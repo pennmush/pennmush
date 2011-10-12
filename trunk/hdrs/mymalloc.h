@@ -35,5 +35,6 @@ enum slab_options {
 };
 
 void slab_set_opt(slab *sl, enum slab_options opt, int val);
+void slab_describe(dbref player, slab *sl);
 
 #endif                          /* _MYMALLOC_H */

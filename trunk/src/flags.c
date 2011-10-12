@@ -1276,6 +1276,8 @@ flag_stats(dbref player)
                   T
                   ("  %d different cached flagsets. %d objects with no flags set."),
                   n->cache->entries, n->cache->zero_refcount);
+    notify(player, T(" Stats for flagset slab:"));
+    slab_describe(player, n->cache->flagset_slab);
     for (i = 0; i < n->cache->size; i += 1) {
       struct flagbucket *b;
       int len = 0;

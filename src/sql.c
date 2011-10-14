@@ -32,20 +32,24 @@
 #include <unistd.h>
 #endif
 #include <string.h>
+#include <stdlib.h>
 
 #ifdef WIN32
-#include <stdlib.h>
+#include <winsock.h>
 #define sleep Sleep
 #endif
+
 #ifdef HAVE_MYSQL
 #include <mysql.h>
 #include <errmsg.h>
 static MYSQL *mysql_connp = NULL;
 #endif
+
 #ifdef HAVE_POSTGRESQL
 #include <libpq-fe.h>
 static PGconn *postgres_connp = NULL;
 #endif
+
 #ifdef HAVE_SQLITE3
 #include <sqlite3.h>
 static sqlite3 *sqlite3_connp = NULL;

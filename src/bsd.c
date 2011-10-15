@@ -373,7 +373,8 @@ static int process_input(DESC *d, int output_ready);
 static void process_input_helper(DESC *d, char *tbuf1, int got);
 static void set_userstring(unsigned char **userstring, const char *command);
 static void process_commands(void);
-static int do_command(DESC *d, char *command);
+enum comm_res { CRES_OK, CRES_LOGOUT, CRES_QUIT, CRES_SITELOCK, CRES_HTTP };
+static enum comm_res do_command(DESC *d, char *command);
 static void parse_puebloclient(DESC *d, char *command);
 static int dump_messages(DESC *d, dbref player, int new);
 static int check_connect(DESC *d, const char *msg);
@@ -2458,8 +2459,8 @@ process_commands(void)
   int nprocessed;
   DESC *cdesc, *dnext;
   struct text_block *t;
-  int retval = 1;
-
+  enum comm_res retval = CRES_OK;
+enum comm_res { CRES_OK, CRES_LOGOUT, CRES_QUIT, CRES_SITELOCK, CRES_HTTP };
   do {
     nprocessed = 0;
     for (cdesc = descriptor_list; cdesc;
@@ -2471,15 +2472,20 @@ process_commands(void)
         start_cpu_timer();
         retval = do_command(cdesc, (char *) t->start);
         reset_cpu_timer();
-        if (retval == 0) {
+        switch (retval) {
+        case CRES_QUIT:
           shutdownsock(cdesc, "quit");
-        } else if (retval == -3) {
+          break;
+        case CRES_HTTP:
           shutdownsock(cdesc, "http disconnect");
-        } else if (retval == -2) {
+          break;
+        case CRES_SITELOCK:
           shutdownsock(cdesc, "sitelocked");
-        } else if (retval == -1) {
+          break;
+        case CRES_LOGOUT:
           logout_sock(cdesc);
-        } else {
+          break;
+        case CRES_OK:
           cdesc->input.head = t->nxt;
           if (!cdesc->input.head)
             cdesc->input.tail = &cdesc->input.head;
@@ -2489,6 +2495,7 @@ process_commands(void)
 #endif                          /* DEBUG */
             free_text_block(t);
           }
+          break;
         }
       }
     }
@@ -2518,7 +2525,7 @@ process_commands(void)
  * \retval -2 Attempt to login failed due to sitelock
  * \retval -3 Browser command (GET/POST)
  */
-static int
+static enum comm_res
 do_command(DESC *d, char *command)
 {
   int j;
@@ -2531,14 +2538,14 @@ do_command(DESC *d, char *command)
       queue_write(d, (unsigned char *) command + j, strlen(command) - j);
       queue_eol(d);
     }
-    return 1;
+    return CRES_OK;
   }
   d->last_time = mudtime;
   (d->cmds)++;
   if (!strcmp(command, QUIT_COMMAND)) {
-    return 0;
+    return CRES_QUIT;
   } else if (!strcmp(command, LOGOUT_COMMAND)) {
-    return -1;
+    return CRES_LOGOUT;
   } else if (!strcmp(command, INFO_COMMAND)) {
     send_prefix(d);
     dump_info(d);
@@ -2599,18 +2606,18 @@ do_command(DESC *d, char *command)
                  "</BODY></HEAD>", MUDNAME, MUDURL, MUDURL, MUDURL, MUDNAME);
         queue_write(d, (unsigned char *) buf, strlen(buf));
         queue_eol(d);
-        return -3;
+        return CRES_HTTP;
       }
       if (j) {
         send_prefix(d);
         dump_users(d, command + j);
         send_suffix(d);
       } else if (!check_connect(d, command)) {
-        return -2;
+        return CRES_SITELOCK;
       }
     }
   }
-  return 1;
+  return CRES_OK;
 }
 
 /** Parse a PUEBLOCLIENT [md5="checksum"] string

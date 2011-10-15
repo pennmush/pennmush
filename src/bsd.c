@@ -887,6 +887,7 @@ update_quotas(struct timeval *last, struct timeval *current)
 
 extern slab *text_block_slab;
 
+/** Is a descriptor using SSL? */
 static bool
 is_ssl_desc(DESC *d)
 {
@@ -1335,6 +1336,14 @@ clearstrings(DESC *d)
   }
 }
 
+/** Evaluate an attribute which is used in place of a cached text file,
+ * and dump it to a descriptor.
+ * \param d descriptor to show text to
+ * \param thing object to get attr from
+ * \param attr attribute to show
+ * \param html Is it an HTML fcache?
+ * \param prefix text to print before attr contents, or NULL
+ */
 static int
 fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
                  const unsigned char *prefix)
@@ -1387,7 +1396,7 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
 }
 
 
-/* Display a cached text file. If a prefix line was given,
+/** Display a cached text file. If a prefix line was given,
  * display that line before the text file, but only if we've
  * got a text file to display
  */
@@ -1421,7 +1430,10 @@ fcache_dump(DESC *d, FBLOCK fb[2], const unsigned char *prefix)
   }
 }
 
-
+/** Read in a single cached text file
+ * \param fb block to store text in
+ * \param filename file to read
+ */
 static int
 fcache_read(FBLOCK *fb, const char *filename)
 {
@@ -1583,7 +1595,7 @@ fcache_read_one(const char *filename)
 }
 
 /** Load all of the cached text files.
- * \param player the enactor.
+ * \param player the enactor, if done via \@readcache, or NOTHING.
  */
 void
 fcache_load(dbref player)
@@ -1622,6 +1634,10 @@ fcache_init(void)
   fcache_load(NOTHING);
 }
 
+/** Logout a descriptor from the player it's connected to,
+ * without dropping the connection. Run when a player uses LOGOUT
+ * \param d descriptor
+ */
 static void
 logout_sock(DESC *d)
 {
@@ -1993,6 +2009,10 @@ process_output(DESC *d)
   return 1;
 }
 
+/** Show the login screen for a descriptor.
+ * \param d descriptor
+ * \param telnet should we test for telnet support?
+ */
 static void
 welcome_user(DESC *d, int telnet)
 {
@@ -2021,6 +2041,8 @@ save_command(DESC *d, const unsigned char *command)
   add_to_queue(&d->input, command, u_strlen(command) + 1);
 }
 
+/** Send a telnet command to a descriptor to test for telnet support
+ */
 static void
 test_telnet(DESC *d)
 {
@@ -2035,6 +2057,8 @@ test_telnet(DESC *d)
   }
 }
 
+/** Turn on telnet support when a connection has shown it has support
+ */
 static void
 setup_telnet(DESC *d)
 {
@@ -2054,6 +2078,14 @@ setup_telnet(DESC *d)
   }
 }
 
+/** Parse a telnet code received from a connection.
+ * \param d descriptor
+ * \param q first char after the IAC
+ * \param qend end of the string
+ * \retval -1 Incomplete telnet code received
+ * \retval 0 Invalid telnet code (or IAC IAC) received
+ * \retval 1 Telnet code successfully handled
+ */
 static int
 handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
 {
@@ -2477,6 +2509,15 @@ process_commands(void)
     queue_eol(d); \
   }
 
+/** Parse a command entered at the socket.
+ * \param d descriptor
+ * \param command command to parse
+ * \retval 1 Command handled, no further action required
+ * \retval 0 Command was QUIT - close connection
+ * \retval -1 Command was LOGOUT
+ * \retval -2 Attempt to login failed due to sitelock
+ * \retval -3 Browser command (GET/POST)
+ */
 static int
 do_command(DESC *d, char *command)
 {
@@ -2572,6 +2613,10 @@ do_command(DESC *d, char *command)
   return 1;
 }
 
+/** Parse a PUEBLOCLIENT [md5="checksum"] string
+ * \param d descriptor
+ * \param command string to parse
+ */
 static void
 parse_puebloclient(DESC *d, char *command)
 {
@@ -2588,6 +2633,14 @@ parse_puebloclient(DESC *d, char *command)
   }
 }
 
+/** Show all the appropriate messages when a player
+ * attempts to log in.
+ * \param d descriptor
+ * \param player dbref of player
+ * \param isnew has the player just been created?
+ * \retval 0 player failed to log in
+ * \retval 1 player logged in successfully
+ */
 static int
 dump_messages(DESC *d, dbref player, int isnew)
 {
@@ -2669,6 +2722,13 @@ dump_messages(DESC *d, dbref player, int isnew)
   return 1;
 }
 
+/** Check if a string entered at the login screen is an attempt
+ * to connect to or create/register a player.
+ * \param d descriptor
+ * \param msg string to parse
+ * \retval 1 Connection successful, or failed due to too many incorrect pws
+ * \retval 0 Connection failed (sitelock, max connections reached, etc)
+ */
 static int
 check_connect(DESC *d, const char *msg)
 {
@@ -2865,6 +2925,13 @@ check_connect(DESC *d, const char *msg)
   return 1;
 }
 
+/** Attempt to parse a string entered at the connect screen
+ * as 'connect name password'.
+ * \param msg1 string to parse
+ * \param command pointer to store the first word in
+ * \param user pointer to store the username - possibly given in quotes - in
+ * \param pass pointer to store the password in
+ */
 static void
 parse_connect(const char *msg1, char *command, char *user, char *pass)
 {
@@ -2910,6 +2977,7 @@ parse_connect(const char *msg1, char *command, char *user, char *pass)
   *p = '\0';
 }
 
+/** Close all connections to the MUSH */
 static void
 close_sockets(void)
 {
@@ -3301,7 +3369,8 @@ reaper(int sig __attribute__ ((__unused__)))
 }
 #endif                          /* !(Mac or WIN32) */
 
-
+/** Return the number of connected players,
+ * possibly including Hidden connections */
 static int
 count_players(void)
 {
@@ -3321,6 +3390,7 @@ count_players(void)
   return count;
 }
 
+/** The INFO socket command */
 static void
 dump_info(DESC *call_by)
 {
@@ -3339,6 +3409,7 @@ dump_info(DESC *call_by)
   queue_string_eol(call_by, "### End INFO");
 }
 
+/** The MSSP socket command / telnet option */
 void
 report_mssp(DESC *d, char *buff, char **bp)
 {
@@ -3451,7 +3522,7 @@ guest_to_connect(dbref player)
   return player;
 }
 
-
+/** The connect-screen WHO command */
 static void
 dump_users(DESC *call_by, char *match)
 {
@@ -3505,6 +3576,7 @@ dump_users(DESC *call_by, char *match)
     queue_newwrite(call_by, (const unsigned char *) "</PRE>", 6);
 }
 
+/** The DOING command */
 void
 do_who_mortal(dbref player, char *name)
 {
@@ -3563,6 +3635,7 @@ do_who_mortal(dbref player, char *name)
 
 }
 
+/** The admin WHO command */
 void
 do_who_admin(dbref player, char *name)
 {
@@ -3635,6 +3708,7 @@ do_who_admin(dbref player, char *name)
 
 }
 
+/** The SESSION command */
 void
 do_who_session(dbref player, char *name)
 {

@@ -1664,10 +1664,13 @@ pe_info_from(NEW_PE_INFO *old_pe_info, int flags, PE_REGS *pe_regs)
     /* OK, copy everything over */
     /* Copy the Q-registers, @switch, @dol and env over to the new pe_info. */
     if (pe_regs) {
-      pe_regs->prev = old_pe_info->regvals;
+      if (old_pe_info)
+        pe_regs->prev = old_pe_info->regvals;
+      else
+        pe_regs->prev = NULL;
       pe_regs_copystack(pe_info->regvals, pe_regs, PE_REGS_QUEUE, 0);
       pe_regs->prev = NULL;
-    } else {
+    } else if (old_pe_info) {
       pe_regs_copystack(pe_info->regvals, old_pe_info->regvals,
                         PE_REGS_QUEUE, 0);
     }
@@ -1681,12 +1684,18 @@ pe_info_from(NEW_PE_INFO *old_pe_info, int flags, PE_REGS *pe_regs)
    * executor (@trigger) */
 
   pe_info = make_pe_info("pe_info-from_old-generic");
-  if (flags & PE_INFO_COPY_ENV) {
-    pe_regs_copystack(pe_info->regvals, old_pe_info->regvals, PE_REGS_ARG, 0);
-  }
-  /* Copy Q-registers. */
-  if (flags & PE_INFO_COPY_QREG) {
-    pe_regs_copystack(pe_info->regvals, old_pe_info->regvals, PE_REGS_Q, 0);
+  if (old_pe_info) {
+    if (flags & PE_INFO_COPY_ENV) {
+      pe_regs_copystack(pe_info->regvals, old_pe_info->regvals, PE_REGS_ARG, 0);
+    }
+    /* Copy Q-registers. */
+    if (flags & PE_INFO_COPY_QREG) {
+      pe_regs_copystack(pe_info->regvals, old_pe_info->regvals, PE_REGS_Q, 0);
+    }
+    if (flags & PE_INFO_COPY_CMDS) {
+      strcpy(pe_info->cmd_raw, old_pe_info->cmd_raw);
+      strcpy(pe_info->cmd_evaled, old_pe_info->cmd_evaled);
+    }
   }
 
   /* Whatever we do, we copy the passed pe_regs. */

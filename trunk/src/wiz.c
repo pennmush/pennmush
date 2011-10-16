@@ -2168,7 +2168,7 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
     if (*spec.powers
         && (flaglist_check_long("POWER", player, n, spec.powers, 1) != 1))
       continue;
-    if (spec.lock != TRUE_BOOLEXP && !eval_boolexp(n, spec.lock, player, NULL))
+    if (spec.lock != TRUE_BOOLEXP && !eval_boolexp(n, spec.lock, player, pe_info))
       continue;
     if (spec.cmdstring[0] &&
         !atr_comm_match(n, player, '$', ':', spec.cmdstring, 1, 0,

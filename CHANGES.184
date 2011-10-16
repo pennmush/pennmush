@@ -30,6 +30,15 @@ Minor changes:
    by qa'toq@M*U*S*H. [MG]
  * @dump now notifies the executor when the dump is complete. Suggested by
    Padraic. [MG]
+ * There is now a slight delay between a client connecting to the MUSH, and
+   the connect screen being shown. This means that the "<-- ... -->" HTML
+   comments are no longer needed around the connect screen when mud_url is
+   enabled, the HTML shown when someone connects to the MUSH with a browser
+   works better, and that Pueblo clients will usually only get the HTML
+   connect screen, instead of seeing both. Also, telnet negotiation should
+   complete before the screen is shown, making terminfo() and width() give
+   useful values for people using softcoded connect_files. Commands can
+   still be used before the connect screen is displayed. [MG]
 
 Fixes:
  * @lock/infilter, not @lock/infitler. [SW]

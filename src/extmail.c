@@ -2925,20 +2925,17 @@ filter_mail(dbref from, dbref player, char *subject,
             char *message, int mailnumber, mail_flag flags)
 {
   ATTR *f;
-  char buff[BUFFER_LEN], *bp, *asave;
+  char buff[BUFFER_LEN];
   char buf[FOLDER_NAME_LEN + 1];
-  int j;
-  char const *ap;
+  int j = 0;
   static char tbuf1[6];
-  NEW_PE_INFO *pe_info;
+  PE_REGS *pe_regs;
 
   /* Does the player have a @mailfilter? */
   f = atr_get(player, "MAILFILTER");
   if (!f)
     return;
 
-  /* Handle this now so it doesn't clutter code */
-  j = 0;
   if (flags & M_URGENT)
     tbuf1[j++] = 'U';
   if (flags & M_FORWARD)
@@ -2947,22 +2944,14 @@ filter_mail(dbref from, dbref player, char *subject,
     tbuf1[j++] = 'R';
   tbuf1[j] = '\0';
 
-  pe_info = make_pe_info("pe_info-filter_mail");
-  pe_regs_setenv(pe_info->regvals, 0, unparse_dbref(from));
-  pe_regs_setenv_nocopy(pe_info->regvals, 1, subject);
-  pe_regs_setenv_nocopy(pe_info->regvals, 2, message);
-  pe_regs_setenv_nocopy(pe_info->regvals, 3, tbuf1);
-  bp = pe_info->attrname;
-  safe_format(pe_info->attrname, &bp, "#%d/%s", player, "MAILFILTER");
-  *bp = '\0';
+  pe_regs = pe_regs_create(PE_REGS_ARG, "filter_mail");
+  pe_regs_setenv(pe_regs, 0, unparse_dbref(from));
+  pe_regs_setenv_nocopy(pe_regs, 1, subject);
+  pe_regs_setenv_nocopy(pe_regs, 2, message);
+  pe_regs_setenv_nocopy(pe_regs, 3, tbuf1);
+  call_attrib(player, "MAILFILTER", buff, from, NULL, pe_regs);
+  pe_regs_free(pe_regs);
 
-  ap = asave = safe_atr_value(f);
-  bp = buff;
-  process_expression(buff, &bp, &ap, player, player, player,
-                     PE_DEFAULT, PT_DEFAULT, pe_info);
-  *bp = '\0';
-  free(asave);
-  free_pe_info(pe_info);
   if (*buff) {
     sprintf(buf, "0:%d", mailnumber);
     do_mail_file(player, buf, buff);

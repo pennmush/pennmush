@@ -226,6 +226,7 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
   dbref preserve_orator = orator;
   int attribs_used = 0;
   NEW_PE_INFO *pe_info = NULL;
+  ufun_attrib ufun;
 
   if (!pe_info) {
     pe_info = make_pe_info("pe_info-real_did_it2");
@@ -242,47 +243,24 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
 
     /* message to player */
     if (what && *what) {
-      d = atr_get(thing, what);
-      if (d) {
+      if (fetch_ufun_attrib(what, thing, &ufun, UFUN_LOCALIZE | UFUN_REQUIRE_ATTR | UFUN_IGNORE_PERMS)) {
         attribs_used = 1;
-        asave = safe_atr_value(d);
-        ap = asave;
-        bp = buff;
-        process_expression(buff, &bp, &ap, thing, player, player,
-                           PE_DEFAULT, PT_DEFAULT, pe_info);
-        *bp = '\0';
-        notify_by(thing, player, buff);
-        free(asave);
+        if (!call_ufun(&ufun, buff, thing, player, pe_info, NULL) && buff[0])
+          notify_by(thing, player, buff);
       } else if (def && *def)
         notify_by(thing, player, def);
     }
     /* message to neighbors */
     if (!DarkLegal(player)) {
-      if (owhat && *owhat) {
-        d = atr_get(thing, owhat);
-        if (d) {
-          attribs_used = 1;
-          asave = safe_atr_value(d);
-          ap = asave;
-          bp = buff;
-          if (!((d)->flags & AF_NONAME)) {
-            safe_str(Name(player), buff, &bp);
-            if (!((d)->flags & AF_NOSPACE))
-              safe_chr(' ', buff, &bp);
-          }
-          sp = bp;
-          process_expression(buff, &bp, &ap, thing, player, player,
-                             PE_DEFAULT, PT_DEFAULT, pe_info);
-          *bp = '\0';
-          if (bp != sp)
-            notify_except2(loc, player, thing, buff, flags);
-          free(asave);
-        } else if (odef && *odef) {
-          bp = buff;
-          safe_format(buff, &bp, "%s %s", Name(player), odef);
-          *bp = '\0';
+      if (owhat && *owhat && fetch_ufun_attrib(owhat, thing, &ufun, UFUN_LOCALIZE | UFUN_REQUIRE_ATTR | UFUN_IGNORE_PERMS | UFUN_NAME)) {
+        attribs_used = 1;
+        if (!call_ufun(&ufun, buff, thing, player, pe_info, NULL) && buff[0])
           notify_except2(loc, player, thing, buff, flags);
-        }
+      } else if (odef && *odef) {
+        bp = buff;
+        safe_format(buff, &bp, "%s %s", Name(player), odef);
+        *bp = '\0';
+        notify_except2(loc, player, thing, buff, flags);
       }
     }
   }

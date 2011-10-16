@@ -1273,19 +1273,15 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
             if (a) {
               char const *ap;
               char *ip = inprefix;
-              NEW_PE_INFO *pe_info = make_pe_info("pe_info-notify");
+              PE_REGS *pe_regs = pe_regs_create(PE_REGS_ARG, "notify");
 
-              pe_regs_setenv_nocopy(pe_info->regvals, 0, (char *) msgstr);
-              atrval = safe_atr_value(a);
-              ap = atrval;
-              ip = inprefix;
-              process_expression(inprefix, &ip, &ap, target, speaker, speaker,
-                                 PE_DEFAULT, PT_DEFAULT, pe_info);
-              if (ip != inprefix)
+              pe_regs_setenv_nocopy(pe_regs, 0, (char *) msgstr);
+              if (call_attrib(target, "INPREFIX", inprefix, speaker, NULL, pe_regs)) {
+                ip = strchr(inprefix, '\0');
                 safe_chr(' ', inprefix, &ip);
-              *ip = '\0';
-              free_pe_info(pe_info);
-              free(atrval);
+                *ip = '\0';
+              }
+              pe_regs_free(pe_regs);
             }
             notify_anything_sub(speaker, na_next,
                                 &Contents(target), skips,

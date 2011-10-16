@@ -254,7 +254,7 @@ FUNCTION(fun_pfun)
   ufun.thing = executor;
   mush_strncpy(ufun.contents, atr_value(a), BUFFER_LEN);
   mush_strncpy(ufun.attrname, AL_NAME(a), ATTRIBUTE_NAME_LIMIT + 1);
-  ufun.pe_flags = pe_flags;
+  ufun.pe_flags = PE_UDEFAULT;
   ufun.errmess = (char *) "";
   ufun.ufun_flags = UFUN_NONE;
 

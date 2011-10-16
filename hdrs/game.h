@@ -9,6 +9,8 @@
 #ifndef __GAME_H
 #define __GAME_H
 
+#include "mushtype.h"
+
 /* @scan flags */
 #define CHECK_INVENTORY  0x010  /*<< Check player's inventory for $-commands */
 #define CHECK_NEIGHBORS  0x020  /*<< Check objects in player's location for $-commands, including player */
@@ -211,10 +213,10 @@ extern void do_destroy(dbref player, char *name, int confirm);
 void init_timer(void);
 void signal_cpu_limit(int signo);
 
-typedef bool(*sq_func) (void *);
-void sq_register(time_t w, sq_func f, void *d, const char *ev);
-void sq_register_in(int n, sq_func f, void *d, const char *ev);
+struct squeue * sq_register(time_t w, sq_func f, void *d, const char *ev);
+struct squeue * sq_register_in(int n, sq_func f, void *d, const char *ev);
 void sq_register_loop(int n, sq_func f, void *d, const char *ev);
+void sq_cancel(struct squeue *sq);
 bool sq_run_one(void);
 bool sq_run_all(void);
 

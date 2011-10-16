@@ -330,8 +330,18 @@ typedef enum conn_source {
 typedef enum conn_status {
   CONN_SCREEN, /* not connected to a player */
   CONN_PLAYER, /* connected */
-  CONN_DENIED  /* connection denied de to login limits/sitelock */
+  CONN_DENIED  /* connection denied due to login limits/sitelock */
 } conn_status;
+
+typedef bool(*sq_func) (void *);
+struct squeue {
+  sq_func fun;
+  void *data;
+  time_t when;
+  char *event;
+  struct squeue *next;
+};
+
 
 typedef struct descriptor_data DESC;
 /** A player descriptor's data.
@@ -340,7 +350,8 @@ typedef struct descriptor_data DESC;
  */
 struct descriptor_data {
   int descriptor;       /**< Connection socket (fd) */
-  conn_status connected; /**< Connection status. 0 = not connected to a player, 1 = connected, 2 = connection denied due to login limits/sitelock */
+  conn_status connected; /**< Connection status. */
+  struct squeue *conn_timer; /**< Timer event used during initial connection */
   char addr[101];       /**< Hostname of connection source */
   char ip[101];         /**< IP address of connection source */
   dbref player;         /**< Dbref of player associated with connection, or NOTHING if not connected */

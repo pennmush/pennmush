@@ -35,6 +35,14 @@ Minor changes:
    useful values for people using softcoded connect_files. Commands can
    still be used before the connect screen is displayed. [MG]
 
+Hardcode:
+ * Changed many things which were evaluating an attribute value manully to
+   use call_ufun() instead, for better %+ / %= values, among other 
+   benefits. [MG]
+ * fetch_ufun_attrib now takes a new flag, UFUN_NAME, which will add the
+   object's name to the beginning of the attr value (respect no_name and
+   no_space attr flags), for @o-* attrs. [MG]
+   
 Fixes:
  * @lock/infilter, not @lock/infitler. [SW]
  * @shutdown/reboot handles failed database saves much more gracefully.
@@ -45,6 +53,8 @@ Fixes:
  * A number of places in the hardcode incorrectly took TINY_MATH into account
    when deciding if something was a valid number or not. From a report by
    Daniel Powell. [MG]
+ * doing() now evaluates the DOING attribute with better values for %# and
+   %@. From a report by Padraic. [MG]
 
 Functions:
  * isregexp() to validate regexp patterns. Suggested by Padraic. [DC]

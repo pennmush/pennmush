@@ -1476,7 +1476,7 @@ FUNCTION(fun_lockfilter)
   while ((r = split_token(&s, delim)) != NULL) {
     victim = noisy_match_result(executor, r, NOTYPE, MAT_ABSOLUTE);
     if (victim != NOTHING && Can_Locate(executor, victim)) {
-      if (eval_boolexp(victim, elock, executor, NULL)) {
+      if (eval_boolexp(victim, elock, executor, pe_info)) {
         if (first) {
           first = 0;
         } else {
@@ -1508,7 +1508,7 @@ FUNCTION(fun_testlock)
     return;
   }
   if (Can_Locate(executor, victim)) {
-    safe_boolean(eval_boolexp(victim, elock, executor, NULL), buff, bp);
+    safe_boolean(eval_boolexp(victim, elock, executor, pe_info), buff, bp);
   } else {
     safe_str("#-1", buff, bp);
   }

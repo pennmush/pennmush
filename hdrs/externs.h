@@ -279,6 +279,7 @@ extern char ucbuff[];
 #define PE_INFO_CLONE       0x002       /**< Clone entire pe_info */
 #define PE_INFO_COPY_ENV    0x004       /**< Copy env-vars (%0-%9) from the parent */
 #define PE_INFO_COPY_QREG   0x008       /**< Copy q-registers (%q*) from the parent pe_info */
+#define PE_INFO_COPY_CMDS   0x010       /**< Copy values for %c and %u from the parent pe_info */
 
 
 struct _ansi_string;
@@ -681,10 +682,14 @@ mush_strndup(const char *src, size_t len, const char *check)
 #define UFUN_IGNORE_PERMS 0x08
 /* When calling the ufun, save and restore the Q-registers. */
 #define UFUN_LOCALIZE 0x10
+/* When calling the ufun, add the object's name to the beginning, respecting no_name */
+#define UFUN_NAME 0x20
+/* When calling ufun with UFUN_NAME, don't add a space after the name. Only to be used by call_ufun! */
+#define UFUN_NAME_NOSPACE 0x40
 #define UFUN_DEFAULT (UFUN_OBJECT | UFUN_LAMBDA)
     bool fetch_ufun_attrib(const char *attrstring, dbref executor,
                            ufun_attrib *ufun, int flags);
-    bool call_ufun(ufun_attrib *ufun, char *ret, dbref executor,
+    bool call_ufun(ufun_attrib *ufun, char *ret, dbref caller,
                    dbref enactor, NEW_PE_INFO *pe_info, PE_REGS *pe_regs);
     bool call_attrib(dbref thing, const char *attrname, char *ret,
                      dbref enactor, NEW_PE_INFO *pe_info, PE_REGS *pe_regs);

@@ -225,6 +225,8 @@ char errlog[BUFFER_LEN] = { '\0' };      /**< Name of the error log file */
 #define MSSP_VAL 2              /**< MSSP option value */
 static void test_telnet(DESC *d);
 static void setup_telnet(DESC *d);
+bool test_telnet_wrapper(void *data);
+bool welcome_user_wrapper(void *data);
 static int handle_telnet(DESC *d, unsigned char **q, unsigned char *qend);
 
 /** Iterate through a list of descriptors, and do something with those
@@ -1761,6 +1763,7 @@ initializesock(int s, char *addr, char *ip, conn_source source)
     mush_panic("Out of memory.");
   d->descriptor = s;
   d->connected = CONN_SCREEN;
+  d->conn_timer = NULL;
   d->connected_at = mudtime;
   make_nonblocking(s);
   d->output_prefix = 0;
@@ -1810,11 +1813,10 @@ initializesock(int s, char *addr, char *ip, conn_source source)
   }
 #endif
   im_insert(descs_by_fd, d->descriptor, d);
-  welcome_user(d, 1);
+  d->conn_timer = sq_register_in(1, test_telnet_wrapper, (void *)d, NULL);
   queue_event(SYSEVENT, "SOCKET`CONNECT", "%d,%s", d->descriptor, d->ip);
   return d;
 }
-
 
 /** Flush pending output for a descriptor.
  * This function actually sends the queued output over the descriptor's
@@ -2010,6 +2012,36 @@ process_output(DESC *d)
   return 1;
 }
 
+/** A wrapper around test_telnet(), which is called via the
+ * squeue system in timers.c
+ * \param data a descriptor, cast as a void pointer
+ * \param return false
+ */
+bool
+test_telnet_wrapper(void *data)
+{
+  DESC *d = (DESC *)data;
+
+  test_telnet(d);
+  d->conn_timer = sq_register_in(1, welcome_user_wrapper, (void *)d, NULL);
+  return false;
+}
+
+/** A wrapper around welcome_user(), which is called via the
+ * squeue system in timers.c
+ * \param data a descriptor, cast as a void pointer
+ * \param return false
+ */
+bool
+welcome_user_wrapper(void *data)
+{
+  DESC *d = (DESC *)data;
+
+  welcome_user(d, -1);
+  d->conn_timer = NULL;
+  return false;
+}
+
 /** Show the login screen for a descriptor.
  * \param d descriptor
  * \param telnet should we test for telnet support?
@@ -2017,23 +2049,12 @@ process_output(DESC *d)
 static void
 welcome_user(DESC *d, int telnet)
 {
-  /* If MUDURL exists, we send <!-- ... --> */
-  if (telnet) {
-    if (MUDURL[0]) {
-      queue_newwrite(d, (const unsigned char *) "<!--", 4);
-      queue_eol(d);
-    }
+  if (telnet == 1)
     test_telnet(d);
-  }
-  if (SUPPORT_PUEBLO && !(d->conn_flags & CONN_HTML))
+  else if (telnet == 0 && SUPPORT_PUEBLO && !(d->conn_flags & CONN_HTML))
     queue_newwrite(d, (const unsigned char *) PUEBLO_HELLO,
                    strlen(PUEBLO_HELLO));
   fcache_dump(d, fcache.connect_fcache, NULL);
-  if (telnet && MUDURL[0]) {
-    queue_eol(d);
-    queue_newwrite(d, (const unsigned char *) "-->", 3);
-    queue_eol(d);
-  }
 }
 
 static void
@@ -2042,7 +2063,8 @@ save_command(DESC *d, const unsigned char *command)
   add_to_queue(&d->input, command, u_strlen(command) + 1);
 }
 
-/** Send a telnet command to a descriptor to test for telnet support
+/** Send a telnet command to a descriptor to test for telnet support.
+ * Also sends the Pueblo test string.
  */
 static void
 test_telnet(DESC *d)
@@ -2054,6 +2076,9 @@ test_telnet(DESC *d)
     unsigned char query[3] = "\xFF\xFD\x22";
     queue_newwrite(d, query, 3);
     d->conn_flags |= CONN_TELNET_QUERY;
+    if (SUPPORT_PUEBLO && !(d->conn_flags & CONN_HTML))
+      queue_newwrite(d, (const unsigned char *) PUEBLO_HELLO,
+                     strlen(PUEBLO_HELLO));
     process_output(d);
   }
 }
@@ -2542,6 +2567,40 @@ do_command(DESC *d, char *command)
   }
   d->last_time = mudtime;
   (d->cmds)++;
+  if (!d->connected && (!strncmp(command, GET_COMMAND, strlen(GET_COMMAND)) ||
+                 !strncmp(command, POST_COMMAND, strlen(POST_COMMAND)))) {
+    char buf[BUFFER_LEN];
+    snprintf(buf, BUFFER_LEN,
+             "<HTML><HEAD>"
+             "<TITLE>Welcome to %s!</TITLE>"
+             "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\">"
+             "</HEAD><BODY>"
+             "<meta http-equiv=\"refresh\" content=\"0;%s\">"
+             "Please click <a href=\"%s\">%s</a> to go to the website for %s."
+             "</BODY></HEAD>", MUDNAME, MUDURL, MUDURL, MUDURL, MUDNAME);
+    queue_write(d, (unsigned char *) buf, strlen(buf));
+    queue_eol(d);
+    return CRES_HTTP;
+    } else if (SUPPORT_PUEBLO
+               && !strncmp(command, PUEBLO_COMMAND, strlen(PUEBLO_COMMAND))) {
+      parse_puebloclient(d, command);
+      if (!(d->conn_flags & CONN_HTML)) {
+        queue_newwrite(d, (unsigned const char *) PUEBLO_SEND,
+                       strlen(PUEBLO_SEND));
+        process_output(d);
+        do_rawlog(LT_CONN, "[%d/%s/%s] Switching to Pueblo mode.",
+                  d->descriptor, d->addr, d->ip);
+        d->conn_flags |= CONN_HTML;
+        if (!d->connected && !d->conn_timer)
+          welcome_user(d, 1);
+      }
+      return CRES_OK;
+  }
+  if (d->conn_timer) {
+    sq_cancel(d->conn_timer);
+    d->conn_timer = NULL;
+    welcome_user(d, 1);
+  }
   if (!strcmp(command, QUIT_COMMAND)) {
     return CRES_QUIT;
   } else if (!strcmp(command, LOGOUT_COMMAND)) {
@@ -2567,19 +2626,6 @@ do_command(DESC *d, char *command)
       d->conn_flags |= CONN_PROMPT_NEWLINES;
     else
       d->conn_flags &= ~CONN_PROMPT_NEWLINES;
-  } else if (SUPPORT_PUEBLO
-             && !strncmp(command, PUEBLO_COMMAND, strlen(PUEBLO_COMMAND))) {
-    parse_puebloclient(d, command);
-    if (!(d->conn_flags & CONN_HTML)) {
-      queue_newwrite(d, (unsigned const char *) PUEBLO_SEND,
-                     strlen(PUEBLO_SEND));
-      process_output(d);
-      do_rawlog(LT_CONN, "[%d/%s/%s] Switching to Pueblo mode.",
-                d->descriptor, d->addr, d->ip);
-      d->conn_flags |= CONN_HTML;
-      if (!d->connected)
-        welcome_user(d, 0);
-    }
   } else {
     if (d->connected) {
       send_prefix(d);
@@ -2593,20 +2639,6 @@ do_command(DESC *d, char *command)
         j = strlen(DOING_COMMAND);
       } else if (!strncmp(command, SESSION_COMMAND, strlen(SESSION_COMMAND))) {
         j = strlen(SESSION_COMMAND);
-      } else if (!strncmp(command, GET_COMMAND, strlen(GET_COMMAND)) ||
-                 !strncmp(command, POST_COMMAND, strlen(POST_COMMAND))) {
-        char buf[BUFFER_LEN];
-        snprintf(buf, BUFFER_LEN,
-                 "<HTML><HEAD>"
-                 "<TITLE>Welcome to %s!</TITLE>"
-                 "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\">"
-                 "</HEAD><BODY>"
-                 "<meta http-equiv=\"refresh\" content=\"0;%s\">"
-                 "Please click <a href=\"%s\">%s</a> to go to the website for %s."
-                 "</BODY></HEAD>", MUDNAME, MUDURL, MUDURL, MUDURL, MUDNAME);
-        queue_write(d, (unsigned char *) buf, strlen(buf));
-        queue_eol(d);
-        return CRES_HTTP;
       }
       if (j) {
         send_prefix(d);
@@ -5469,6 +5501,7 @@ load_reboot_db(void)
       d = mush_malloc(sizeof(DESC), "descriptor");
       d->descriptor = val;
       d->connected_at = getref(f);
+      d->conn_timer = NULL;
       d->hide = getref(f);
       d->cmds = getref(f);
       d->player = getref(f);

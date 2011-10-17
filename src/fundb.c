@@ -38,7 +38,7 @@ static int lattr_helper(dbref player, dbref thing, dbref parent,
                         char const *pattern, ATTR *atr, void *args);
 static dbref dbwalk(char *buff, char **bp, dbref executor, dbref enactor,
                     int type, dbref loc, dbref after, int skipdark,
-                    int start, int count, int listening, int *retcount);
+                    int start, int count, int listening, int *retcount, NEW_PE_INFO *pe_info);
 
 const char *
 do_get_attrib(dbref executor, dbref thing, const char *attrib)
@@ -658,7 +658,7 @@ FUNCTION(fun_rnum)
 static dbref
 dbwalk(char *buff, char **bp, dbref executor, dbref enactor,
        int type, dbref loc, dbref after, int skipdark,
-       int start, int count, int listening, int *retcount)
+       int start, int count, int listening, int *retcount, NEW_PE_INFO *pe_info)
 {
   dbref result;
   int first;
@@ -698,7 +698,7 @@ dbwalk(char *buff, char **bp, dbref executor, dbref enactor,
        *   use type == TYPE_PLAYER for this check. :-/.
        */
       if (!(Typeof(thing) & type) ||
-          !can_interact(thing, executor, INTERACT_SEE) ||
+          !can_interact(thing, executor, INTERACT_SEE, pe_info) ||
           (skipdark && Dark(thing) && !Light(thing) && !Light(loc)) ||
           ((type == TYPE_PLAYER) && skipdark && !Connected(thing)))
         continue;
@@ -813,7 +813,7 @@ FUNCTION(fun_dbwalker)
   }
 
   dbwalk(buffptr, bptr, executor, enactor, type, loc, NOTHING,
-         vis, start, count, listening, &result);
+         vis, start, count, listening, &result, pe_info);
 
   if (!buffptr) {
     safe_integer(result, buff, bp);
@@ -826,7 +826,7 @@ FUNCTION(fun_con)
   dbref loc = match_thing(executor, args[0]);
   safe_dbref(dbwalk
              (NULL, NULL, executor, enactor, TYPE_THING | TYPE_PLAYER, loc,
-              NOTHING, 0, 0, 0, 0, NULL), buff, bp);
+              NOTHING, 0, 0, 0, 0, NULL, pe_info), buff, bp);
 }
 
 /* ARGSUSED */
@@ -835,7 +835,7 @@ FUNCTION(fun_exit)
   dbref loc = match_thing(executor, args[0]);
   safe_dbref(dbwalk
              (NULL, NULL, executor, enactor, TYPE_EXIT, loc, NOTHING, 0, 0, 0,
-              0, NULL), buff, bp);
+              0, NULL, pe_info), buff, bp);
 }
 
 /* ARGSUSED */
@@ -848,13 +848,13 @@ FUNCTION(fun_next)
     case TYPE_EXIT:
       safe_dbref(dbwalk
                  (NULL, NULL, executor, enactor, TYPE_EXIT, Source(it), it, 0,
-                  0, 0, 0, NULL), buff, bp);
+                  0, 0, 0, NULL, pe_info), buff, bp);
       break;
     case TYPE_THING:
     case TYPE_PLAYER:
       safe_dbref(dbwalk
                  (NULL, NULL, executor, enactor, TYPE_THING | TYPE_PLAYER,
-                  Location(it), it, 0, 0, 0, 0, NULL), buff, bp);
+                  Location(it), it, 0, 0, 0, 0, NULL, pe_info), buff, bp);
       break;
     default:
       safe_str("#-1", buff, bp);
@@ -2121,14 +2121,14 @@ FUNCTION(fun_locate)
   if (GoodObject(loc)) {
     if (Can_Examine(executor, loc))
       safe_dbref(item, buff, bp);
-    else if (can_interact(item, executor, INTERACT_SEE)
-             && (!DarkLegal(item) || Light(loc) || Light(item)))
+    else if ((!DarkLegal(item) || Light(loc) || Light(item))
+             && can_interact(item, executor, INTERACT_SEE, pe_info))
       safe_dbref(item, buff, bp);
     else
       safe_dbref(NOTHING, buff, bp);
   } else {
-    if (can_interact(item, executor, INTERACT_SEE)
-        && (See_All(executor) || !DarkLegal(item) || Light(item)))
+    if ((See_All(executor) || !DarkLegal(item) || Light(item))
+        && can_interact(item, executor, INTERACT_SEE, pe_info))
       safe_dbref(item, buff, bp);
     else
       safe_dbref(NOTHING, buff, bp);
@@ -2212,7 +2212,7 @@ FUNCTION(fun_dig)
     safe_str(T(e_perm), buff, bp);
     return;
   }
-  safe_dbref(do_dig(executor, args[0], args, 0), buff, bp);
+  safe_dbref(do_dig(executor, args[0], args, 0, pe_info), buff, bp);
 }
 
 /* ARGSUSED */
@@ -2337,7 +2337,7 @@ FUNCTION(fun_tel)
     silent = parse_boolean(args[2]);
   if (nargs > 3)
     inside = parse_boolean(args[3]);
-  do_teleport(executor, args[0], args[1], silent, inside);
+  do_teleport(executor, args[0], args[1], silent, inside, pe_info);
 }
 
 

@@ -129,8 +129,8 @@ bool unfindable(dbref);
          eval_lock(p, x, MailForward_Lock))))
 
 /* Can from pass to's @lock/interact? */
-#define Pass_Interact_Lock(from,to) \
-  (Loud(from) || eval_lock(from, to, Interact_Lock))
+#define Pass_Interact_Lock(from,to, pe_info) \
+  (Loud(from) || eval_lock_with(from, to, Interact_Lock, pe_info))
 
 /* How many pennies can you have? */
 #define Max_Pennies(p) (Guest(p) ? MAX_GUEST_PENNIES : MAX_PENNIES)

@@ -307,7 +307,7 @@ first_visible(dbref player, dbref thing)
   ldark = IsPlayer(loc) ? Opaque(loc) : Dark(loc);
 
   while (GoodObject(thing)) {
-    if (can_interact(thing, player, INTERACT_SEE)) {
+    if (can_interact(thing, player, INTERACT_SEE, NULL)) {
       if (DarkLegal(thing) || (ldark && !Light(thing))) {
         if (!lck) {
           if (See_All(player) || (loc == player) || controls(player, loc))
@@ -337,7 +337,7 @@ first_visible(dbref player, dbref thing)
 int
 can_see(dbref player, dbref thing, int can_see_loc)
 {
-  if (!can_interact(thing, player, INTERACT_SEE))
+  if (!can_interact(thing, player, INTERACT_SEE, NULL))
     return 0;
 
   /*

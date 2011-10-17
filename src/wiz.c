@@ -85,7 +85,7 @@ struct search_spec {
   char listenstring[BUFFER_LEN]; /**< Find objects who respond to this ^-listen */
 };
 
-static int tport_dest_ok(dbref player, dbref victim, dbref dest);
+static int tport_dest_ok(dbref player, dbref victim, dbref dest, NEW_PE_INFO *pe_info);
 static int tport_control_ok(dbref player, dbref victim, dbref loc);
 static int mem_usage(dbref thing);
 static int raw_search(dbref player, const char *owner, int nargs,
@@ -303,7 +303,7 @@ do_allquota(dbref player, const char *arg1, int quiet)
 }
 
 static int
-tport_dest_ok(dbref player, dbref victim, dbref dest)
+tport_dest_ok(dbref player, dbref victim, dbref dest, NEW_PE_INFO *pe_info)
 {
   /* can player legitimately send something to dest */
 
@@ -321,7 +321,7 @@ tport_dest_ok(dbref player, dbref victim, dbref dest)
    * royalty, and the room is tport-locked against the victim, and the
    * victim does not control the room.
    */
-  if (!eval_lock(victim, dest, Tport_Lock))
+  if (!eval_lock_with(victim, dest, Tport_Lock, pe_info))
     return 0;
 
   if (JumpOk(dest))
@@ -361,10 +361,11 @@ tport_control_ok(dbref player, dbref victim, dbref loc)
  * \param arg2 the location to teleport to.
  * \param silent if 1, don't trigger teleport messagse.
  * \param inside if 1, always \@tel to inventory, even of a player
+ * \param pe_info
  */
 void
 do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
-            int inside)
+            int inside, NEW_PE_INFO *pe_info)
 {
   dbref victim;
   dbref destination;
@@ -536,7 +537,7 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
 
       /* Check leave lock on room, if necessary */
       if (!controls(player, absroom) && !Tel_Anywhere(player) &&
-          !eval_lock(player, absroom, Leave_Lock)) {
+          !eval_lock_with(player, absroom, Leave_Lock, pe_info)) {
         fail_lock(player, absroom, Leave_Lock,
                   T("Teleports are not allowed in this room."), NOTHING);
         return;
@@ -558,7 +559,7 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
 
     if (!IsExit(destination)) {
       if (tport_control_ok(player, victim, Location(victim)) &&
-          tport_dest_ok(player, victim, destination)
+          tport_dest_ok(player, victim, destination, pe_info)
           && (Tel_Anything(player) ||
               (Tel_Anywhere(player) && (player == victim)) ||
               (destination == Owner(victim)) ||
@@ -2118,7 +2119,7 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
      * they are considered to be able to examine everything of that player,
      * so do not need vis_only. */
     if (GoodObject(spec.owner) && ZMaster(spec.owner)) {
-      vis_only = !eval_lock(player, spec.owner, Zone_Lock);
+      vis_only = !eval_lock_with(player, spec.owner, Zone_Lock, pe_info);
     }
   }
 

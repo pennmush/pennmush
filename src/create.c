@@ -431,10 +431,11 @@ do_link(dbref player, const char *name, const char *room_name, int preserve)
  * \param argv array of additional arguments to command
  *             (exit forward,exit back,newdbref)
  * \param tport if 1, teleport the player to the new room.
+ * \param pe_info
  * \return dbref of new room, or NOTHING.
  */
 dbref
-do_dig(dbref player, const char *name, char **argv, int tport)
+do_dig(dbref player, const char *name, char **argv, int tport, NEW_PE_INFO *pe_info)
 {
   dbref room;
   char *flaglist, *flagname;
@@ -488,7 +489,7 @@ do_dig(dbref player, const char *name, char **argv, int tport)
        * and Z_TEL checking */
       char roomstr[MAX_COMMAND_LEN];
       sprintf(roomstr, "#%d", room);
-      do_teleport(player, "me", roomstr, 0, 0); /* if flag, move the player */
+      do_teleport(player, "me", roomstr, 0, 0, pe_info); /* if flag, move the player */
     }
     queue_event(player, "OBJECT`CREATE", "%s", unparse_objid(room));
     return room;

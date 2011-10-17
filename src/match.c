@@ -203,7 +203,7 @@ match_controlled(dbref player, const char *name)
       } else if (match == abs) { \
         /* absolute dbref match in list */ \
         MATCHED(1); \
-      } else if (!can_interact(match, who, INTERACT_MATCH)) { \
+      } else if (!can_interact(match, who, INTERACT_MATCH, NULL)) { \
         /* Not allowed to match this object */ \
         continue; \
       } else if (match_aliases(match, name) || (!IsExit(match) && !strcasecmp(Name(match), name))) { \

@@ -323,7 +323,7 @@ void shutdown_queues(void);
 
 
 /* From create.c */
-dbref do_dig(dbref player, const char *name, char **argv, int tport);
+dbref do_dig(dbref player, const char *name, char **argv, int tport, NEW_PE_INFO *pe_info);
 dbref do_create(dbref player, char *name, int cost, char *newdbref);
 dbref do_real_open(dbref player, const char *direction,
                    const char *linkto, dbref pseudo);
@@ -497,13 +497,13 @@ enum emit_type {
   EMIT_OEMIT  /**< emit to all objects in location except the given objects */
 };
 dbref speech_loc(dbref thing);
-int okay_pemit(dbref player, dbref target, int dofails, int def);
+int okay_pemit(dbref player, dbref target, int dofails, int def, NEW_PE_INFO *pe_info);
 int vmessageformat(dbref player, const char *attribute,
                    dbref executor, int flags, int nargs, ...);
 int messageformat(dbref player, const char *attribute,
                   dbref executor, int flags, int nargs, char *argv[]);
 void do_message(dbref executor, char *list, char *attrname, char *message,
-                enum emit_type type, int flags, int numargs, char *argv[]);
+                enum emit_type type, int flags, int numargs, char *argv[], NEW_PE_INFO *pe_info);
 
 const char *spname(dbref thing);
 int filter_found(dbref thing, dbref speaker, const char *msg, int flag);
@@ -713,7 +713,7 @@ mush_strndup(const char *src, size_t len, const char *check)
     char *shortalias(dbref it);
     char *shortname(dbref it);
     dbref absolute_room(dbref it);
-    int can_interact(dbref from, dbref to, int type);
+    int can_interact(dbref from, dbref to, int type, NEW_PE_INFO *pe_info);
 
 
 /* From warnings.c */

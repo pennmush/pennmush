@@ -103,7 +103,7 @@ look_exits(dbref player, dbref loc, const char *exit_name, NEW_PE_INFO *pe_info)
     bp = arg;
     DOLIST(thing, Exits(loc)) {
       if (((Light(loc) || Light(thing)) || !(Dark(loc) || Dark(thing)))
-          && can_interact(thing, player, INTERACT_SEE)) {
+          && can_interact(thing, player, INTERACT_SEE, pe_info)) {
         if (bp != arg)
           safe_chr(' ', arg, &bp);
         safe_dbref(thing, arg, &bp);
@@ -132,7 +132,7 @@ look_exits(dbref player, dbref loc, const char *exit_name, NEW_PE_INFO *pe_info)
     }
   } else if (Dark(loc)) {
     for (thing = Exits(loc); thing != NOTHING; thing = Next(thing)) {
-      if (Light(thing) && can_interact(thing, player, INTERACT_SEE)) {
+      if (Light(thing) && can_interact(thing, player, INTERACT_SEE, pe_info)) {
         total_count++;
         if (!Transparented(loc) || Opaque(thing))
           exit_count++;
@@ -141,7 +141,7 @@ look_exits(dbref player, dbref loc, const char *exit_name, NEW_PE_INFO *pe_info)
   } else {
     for (thing = Exits(loc); thing != NOTHING; thing = Next(thing)) {
       if ((Light(thing) || !DarkLegal(thing)) &&
-          can_interact(thing, player, INTERACT_SEE)) {
+          can_interact(thing, player, INTERACT_SEE, pe_info)) {
         total_count++;
         if (!Transparented(loc) || Opaque(thing))
           exit_count++;
@@ -163,7 +163,7 @@ look_exits(dbref player, dbref loc, const char *exit_name, NEW_PE_INFO *pe_info)
 
   for (thing = Exits(loc); thing != NOTHING; thing = Next(thing)) {
     if ((Light(loc) || Light(thing) || (!DarkLegal(thing) && !Dark(loc)))
-        && can_interact(thing, player, INTERACT_SEE)) {
+        && can_interact(thing, player, INTERACT_SEE, pe_info)) {
       strcpy(pbuff, accented_name(thing));
       if ((p = strchr(pbuff, ';')))
         *p = '\0';

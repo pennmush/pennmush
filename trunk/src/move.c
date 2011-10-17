@@ -281,7 +281,7 @@ enter_room(dbref player, dbref loc, int nomovemsgs,
 
 
   /* autolook */
-  look_room(player, loc, LOOK_AUTO);
+  look_room(player, loc, LOOK_AUTO, NULL);
   deep--;
 }
 

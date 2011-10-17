@@ -1460,7 +1460,7 @@ COMMAND(cmd_kill)
 
 COMMAND(cmd_look)
 {
-  do_look_at(executor, arg_left, (SW_ISSET(sw, SWITCH_OUTSIDE)));
+  do_look_at(executor, arg_left, (SW_ISSET(sw, SWITCH_OUTSIDE)), queue_entry->pe_info);
 }
 
 COMMAND(cmd_leave)

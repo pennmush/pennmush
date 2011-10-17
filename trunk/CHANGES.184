@@ -39,6 +39,9 @@ Minor changes:
    complete before the screen is shown, making terminfo() and width() give
    useful values for people using softcoded connect_files. Commands can
    still be used before the connect screen is displayed. [MG]
+ * When looking at an object, all its components (describe, descformat,
+   conformat and exitformat) now share registers: a q-register set in
+   the desc can be accessed in the conformat, and so on. [MG]
 
 Hardcode:
  * Changed many things which were evaluating an attribute value manully to

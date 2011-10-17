@@ -1352,39 +1352,28 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
                  const unsigned char *prefix)
 {
   ATTR *a;
-  char arg[BUFFER_LEN], *save, *buff, *bp;
+  char arg[SBUF_LEN], buff[BUFFER_LEN], *bp;
   char const *sp;
-  NEW_PE_INFO *pe_info;
+  PE_REGS *pe_regs;
+  ufun_attrib ufun;
 
   if (!GoodObject(thing) || IsGarbage(thing))
     return 0;
 
-  a = atr_get(thing, attr);
-  if (!a)
+  if (!fetch_ufun_attrib(attr, thing, &ufun, UFUN_LOCALIZE | UFUN_IGNORE_PERMS | UFUN_REQUIRE_ATTR))
     return -1;
 
   bp = arg;
-  safe_integer(d->descriptor, arg, &bp);
+  safe_integer_sbuf(d->descriptor, arg, &bp);
   *bp = '\0';
-  buff = (char *) mush_malloc(BUFFER_LEN, "string");
-  if (!buff) {
-    mush_panic("Unable to allocate memory in fcache_dump_attr");
-    return -2;
-  }
-  pe_info = make_pe_info("pe_info-fcache_dump_attr");
-  pe_regs_setenv_nocopy(pe_info->regvals, 0, arg);
-  bp = pe_info->attrname;
-  safe_format(pe_info->attrname, &bp, "#%d/%s", thing, attr);
-  *bp = '\0';
-  sp = save = safe_atr_value(a);
-  bp = buff;
-  process_expression(buff, &bp, &sp,
-                     thing, d->player, d->player, PE_DEFAULT, PT_DEFAULT,
-                     pe_info);
+
+  pe_regs = pe_regs_create(PE_REGS_ARG, "fcache_dump_attr");
+  pe_regs_setenv_nocopy(pe_regs, 0, arg);
+  call_ufun(&ufun, buff, thing, thing, NULL, pe_regs);
+  bp = strchr(buff, '\0');
   safe_chr('\n', buff, &bp);
   *bp = '\0';
-  free((void *) save);
-  free_pe_info(pe_info);
+  pe_regs_free(pe_regs);
   if (prefix) {
     queue_newwrite(d, prefix, u_strlen(prefix));
     queue_eol(d);
@@ -1393,7 +1382,6 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
     queue_newwrite(d, (unsigned char *) buff, strlen(buff));
   else
     queue_write(d, (unsigned char *) buff, strlen(buff));
-  mush_free((void *) buff, "string");
 
   return 1;
 }

@@ -1193,15 +1193,7 @@ page_return(dbref player, dbref target, const char *type,
   struct tm *ptr;
 
   if (message && *message) {
-    d = atr_get(target, message);
-    if (d) {
-      asave = safe_atr_value(d);
-      ap = asave;
-      bp = buff;
-      process_expression(buff, &bp, &ap, target, player, player,
-                         PE_DEFAULT, PT_DEFAULT, NULL);
-      *bp = '\0';
-      free(asave);
+    if (call_attrib(target, message, buff, player, NULL, NULL)) {
       if (*buff) {
         ptr = (struct tm *) localtime(&mudtime);
         notify_format(player, T("%s message from %s: %s"), type,

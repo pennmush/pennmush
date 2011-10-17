@@ -293,7 +293,7 @@ call_ufun(ufun_attrib *ufun, char *ret, dbref caller, dbref enactor,
   }
 
   if (ufun->ufun_flags & UFUN_NAME) {
-    safe_str(Name(ufun->thing), ret, &rp);
+    safe_str(Name(enactor), ret, &rp);
     if (!(ufun->ufun_flags & UFUN_NAME_NOSPACE))
       safe_chr(' ', ret, &rp);
     np = rp;

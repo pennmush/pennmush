@@ -362,35 +362,18 @@ find_var_dest(dbref player, dbref exit_obj)
   /* This is used to evaluate the u-function DESTINATION on an exit with
    * a VARIABLE (ambiguous) link.
    */
-
-  char *abuf;
-  const char *ap;
-  char buff[BUFFER_LEN], *bp;
-  ATTR *a;
-  dbref dest_room;
+  char buff[BUFFER_LEN];
   /* We'd like a DESTINATION attribute, but we'll settle for EXITTO,
    * for portability
    */
-  a = atr_get(exit_obj, "DESTINATION");
-  if (!a)
-    a = atr_get(exit_obj, "EXITTO");
-  if (!a)
+  if (!call_attrib(exit_obj, "DESTINATION", buff, player, NULL, NULL) &&
+      !call_attrib(exit_obj, "EXITTO", buff, player, NULL, NULL))
     return NOTHING;
-  abuf = safe_atr_value(a);
-  if (!abuf)
+
+  if (!buff[0])
     return NOTHING;
-  if (!*abuf) {
-    free(abuf);
-    return NOTHING;
-  }
-  ap = abuf;
-  bp = buff;
-  process_expression(buff, &bp, &ap, exit_obj, player, player,
-                     PE_DEFAULT, PT_DEFAULT, NULL);
-  *bp = '\0';
-  dest_room = parse_objid(buff);
-  free(abuf);
-  return (dest_room);
+
+  return parse_objid(buff);
 }
 
 

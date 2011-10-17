@@ -33,9 +33,9 @@
 
 static void look_exits(dbref player, dbref loc, const char *exit_name, NEW_PE_INFO *pe_info);
 static void look_contents(dbref player, dbref loc, const char *contents_name, NEW_PE_INFO *pe_info);
-static void look_atrs(dbref player, dbref thing, const char *mstr, int all,
+static void examine_atrs(dbref player, dbref thing, const char *mstr, int all,
                       int mortal, int parent);
-static void mortal_look_atrs(dbref player, dbref thing, const char *mstr,
+static void mortal_examine_atrs(dbref player, dbref thing, const char *mstr,
                              int all, int parent);
 static void look_simple(dbref player, dbref thing, NEW_PE_INFO *pe_info);
 static void look_description(dbref player, dbref thing, const char *def,
@@ -45,9 +45,9 @@ enum decompile_attrflags { DECOMP_ALL, DECOMP_NODEFAULTS, DECOMP_NONE };
 
 static int decompile_helper(dbref player, dbref thing, dbref parent,
                             char const *pattern, ATTR *atr, void *args);
-static int look_helper(dbref player, dbref thing, dbref parent,
+static int examine_helper(dbref player, dbref thing, dbref parent,
                        char const *pattern, ATTR *atr, void *args);
-static int look_helper_veiled(dbref player, dbref thing, dbref parent,
+static int examine_helper_veiled(dbref player, dbref thing, dbref parent,
                               char const *pattern, ATTR *atr, void *args);
 void decompile_atrs(dbref player, dbref thing, const char *name,
                     const char *pattern, const char *prefix,
@@ -308,7 +308,7 @@ look_contents(dbref player, dbref loc, const char *contents_name, NEW_PE_INFO *p
 
 /* Helper function for atr_iter_get, obeying VEILED attrflag */
 static int
-look_helper_veiled(dbref player, dbref thing __attribute__ ((__unused__)),
+examine_helper_veiled(dbref player, dbref thing __attribute__ ((__unused__)),
                    dbref parent __attribute__ ((__unused__)),
                    char const *pattern, ATTR *atr, void *args
                    __attribute__ ((__unused__)))
@@ -368,7 +368,7 @@ look_helper_veiled(dbref player, dbref thing __attribute__ ((__unused__)),
 
 /* Helper function for atr_iter_get(), ignoring VEILED attrflag */
 static int
-look_helper(dbref player, dbref thing __attribute__ ((__unused__)),
+examine_helper(dbref player, dbref thing __attribute__ ((__unused__)),
             dbref parent __attribute__ ((__unused__)),
             char const *pattern, ATTR *atr, void *args
             __attribute__ ((__unused__)))
@@ -413,40 +413,40 @@ look_helper(dbref player, dbref thing __attribute__ ((__unused__)),
  * \param parent include inherited attributes from @parent?
  */
 static void
-look_atrs(dbref player, dbref thing, const char *mstr, int all, int mortal,
+examine_atrs(dbref player, dbref thing, const char *mstr, int all, int mortal,
           int parent)
 {
   if (all || (mstr && *mstr && !wildcard((char *) mstr))) {
     if (parent) {
       if (!atr_iter_get_parent
-          (player, thing, mstr, mortal, 0, look_helper, NULL)
+          (player, thing, mstr, mortal, 0, examine_helper, NULL)
           && mstr)
         notify(player, T("No matching attributes."));
     } else {
-      if (!atr_iter_get(player, thing, mstr, mortal, 0, look_helper, NULL)
+      if (!atr_iter_get(player, thing, mstr, mortal, 0, examine_helper, NULL)
           && mstr)
         notify(player, T("No matching attributes."));
     }
   } else {
     if (parent) {
       if (!atr_iter_get_parent
-          (player, thing, mstr, mortal, 0, look_helper_veiled, NULL) && mstr)
+          (player, thing, mstr, mortal, 0, examine_helper_veiled, NULL) && mstr)
         notify(player, T("No matching attributes."));
     } else {
       if (!atr_iter_get
-          (player, thing, mstr, mortal, 0, look_helper_veiled, NULL)
+          (player, thing, mstr, mortal, 0, examine_helper_veiled, NULL)
           && mstr)
         notify(player, T("No matching attributes."));
     }
   }
 }
 
-/* Wrapper for look_atrs which only shows attrs visible to mortals */
+/* Wrapper for examine_atrs which only shows attrs visible to mortals */
 static void
-mortal_look_atrs(dbref player, dbref thing, const char *mstr, int all,
+mortal_examine_atrs(dbref player, dbref thing, const char *mstr, int all,
                  int parent)
 {
-  look_atrs(player, thing, mstr, all, 1, parent);
+  examine_atrs(player, thing, mstr, all, 1, parent);
 }
 
 static void
@@ -815,7 +815,7 @@ do_examine(dbref player, const char *xname, enum exam_type flag, int all,
   }
   /*  only look at some of the attributes */
   if (attrib_name && *attrib_name) {
-    look_atrs(player, thing, attrib_name, all, 0, parent);
+    examine_atrs(player, thing, attrib_name, all, 0, parent);
     if (name)
       mush_free(name, "de.string");
     return;
@@ -891,13 +891,13 @@ do_examine(dbref player, const char *xname, enum exam_type flag, int all,
   switch (flag) {
   case EXAM_NORMAL:            /* Standard */
     if (EX_PUBLIC_ATTRIBS || ok)
-      look_atrs(player, thing, NULL, all, 0, parent);
+      examine_atrs(player, thing, NULL, all, 0, parent);
     break;
   case EXAM_BRIEF:             /* Brief */
     break;
   case EXAM_MORTAL:            /* Mortal */
     if (EX_PUBLIC_ATTRIBS)
-      mortal_look_atrs(player, thing, NULL, all, parent);
+      mortal_examine_atrs(player, thing, NULL, all, parent);
     break;
   }
 

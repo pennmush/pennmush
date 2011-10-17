@@ -1367,7 +1367,7 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
 
   pe_regs = pe_regs_create(PE_REGS_ARG, "fcache_dump_attr");
   pe_regs_setenv_nocopy(pe_regs, 0, arg);
-  call_ufun(&ufun, buff, thing, thing, NULL, pe_regs);
+  call_ufun(&ufun, buff, d->player, d->player, NULL, pe_regs);
   bp = strchr(buff, '\0');
   safe_chr('\n', buff, &bp);
   *bp = '\0';

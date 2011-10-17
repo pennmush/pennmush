@@ -652,7 +652,7 @@ do_set(dbref player, const char *xname, char *flag)
   /* check for attribute set first */
   if ((p = strchr(flag, ':')) != NULL) {
     *p++ = '\0';
-    if (!command_check_byname(player, "ATTRIB_SET")) {
+    if (!command_check_byname(player, "ATTRIB_SET", NULL)) {
       notify(player, T("You may not set attributes."));
       return 0;
     }

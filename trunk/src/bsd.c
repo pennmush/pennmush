@@ -4747,7 +4747,7 @@ FUNCTION(fun_zwho)
   }
 
   if (!GoodObject(zone)
-      || (!Priv_Who(executor) && !eval_lock(victim, zone, Zone_Lock))) {
+      || (!Priv_Who(executor) && !eval_lock_with(victim, zone, Zone_Lock, pe_info))) {
     if (GoodObject(zone))
       fail_lock(victim, zone, Zone_Lock, NULL, NOTHING);
     safe_str(T(e_perm), buff, bp);

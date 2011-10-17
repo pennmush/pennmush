@@ -332,7 +332,7 @@ void do_link(dbref player, const char *name, const char *room_name,
              int preserve);
 void do_unlink(dbref player, const char *name);
 dbref do_clone(dbref player, char *name, char *newname, int preserve,
-               char *newdbref);
+               char *newdbref, NEW_PE_INFO *pe_info);
 
 /* From funtime.c */
 int etime_to_secs(char *str1, int *secs);

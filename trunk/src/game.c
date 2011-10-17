@@ -1166,7 +1166,7 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
             (i =
              alias_list_check(Contents(check_loc), cptr,
                               "EALIAS")) != NOTHING) {
-          if (command_check(executor, cmd, 1)) {
+          if (command_check_with(executor, cmd, 1, queue_entry->pe_info)) {
             char upd[SBUF_LEN];
             sprintf(temp, "ENTER #%d", i);
             sprintf(upd, "#%d", i);
@@ -1180,7 +1180,7 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
         if (!IsRoom(check_loc) && (cmd = command_find("LEAVE"))
             && !(cmd->type & CMD_T_DISABLED)
             && (loc_alias_check(check_loc, cptr, "LALIAS"))) {
-          if (command_check(executor, cmd, 1))
+          if (command_check_with(executor, cmd, 1, queue_entry->pe_info))
             run_command(cmd, executor, queue_entry->enactor, "LEAVE", NULL,
                         NULL, "LEAVE", NULL, NULL, NULL, NULL, NULL, NULL,
                         queue_entry);
@@ -1212,7 +1212,7 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
           /* check zone master room exits */
           if (remote_exit(executor, cptr) && (cmd = command_find("GOTO"))
               && !(cmd->type & CMD_T_DISABLED)) {
-            if (!Mobile(executor) || !command_check(executor, cmd, 1)) {
+            if (!Mobile(executor) || !command_check_with(executor, cmd, 1, queue_entry->pe_info)) {
               goto done;
             } else {
               sprintf(temp, "GOTO %s", cptr);
@@ -1249,7 +1249,7 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
       if ((!a) && (check_loc != MASTER_ROOM)) {
         if (global_exit(executor, cptr) && (cmd = command_find("GOTO"))
             && !(cmd->type & CMD_T_DISABLED)) {
-          if (!Mobile(executor) || !command_check(executor, cmd, 1))
+          if (!Mobile(executor) || !command_check_with(executor, cmd, 1, queue_entry->pe_info))
             goto done;
           else {
             sprintf(temp, "GOTO %s", cptr);

@@ -1050,7 +1050,7 @@ command_isattr(char *command)
 }
 
 /** A handy macro to free up the command_parse-allocated variables */
-#define command_parse_free_args	  \
+#define command_parse_free_args   \
     mush_free(command, "string_command"); \
     mush_free(swtch, "string_swtch"); \
     mush_free(ls, "string_ls"); \
@@ -1166,7 +1166,7 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
     /* parse_chat() destructively modifies the command to replace
      * the first space with a '=' if the command is an actual
      * chat command */
-    if (parse_chat(player, p + 1) && command_check_byname(player, "@CHAT")) {
+    if (parse_chat(player, p + 1) && command_check_byname(player, "@CHAT", queue_entry->pe_info)) {
       /* This is a "+chan foo" chat style
        * We set noevtoken to keep its noeval way, and
        * set the cmd to allow @hook. */
@@ -1254,7 +1254,7 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
     *c2 = '\0';
     command_parse_free_args;
     return commandraw;
-  } else if (!command_check(player, cmd, 1)) {
+  } else if (!command_check_with(player, cmd, 1, queue_entry->pe_info)) {
     /* No permission to use command, stop processing */
     command_parse_free_args;
     return NULL;
@@ -1497,7 +1497,7 @@ run_command(COMMAND_INFO *cmd, dbref executor, dbref enactor,
 
   /* If we have a hook/override, we use that instead */
   if (!run_hook_override(cmd, executor, cmd_evaled, queue_entry) &&
-      !((cmd->type & CMD_T_NOP) &&
+      !((cmd->type & CMD_T_NOP) && *ap &&
         run_hook_override(cmd, executor, nop_arg, queue_entry))) {
     /* Otherwise, we do hook/before, the command, and hook/after */
     /* But first, let's see if we had an invalid switch */
@@ -2140,14 +2140,14 @@ list_commands(int type)
  * 0 otherwise, and maybe be noisy about it.
  */
 int
-command_check(dbref player, COMMAND_INFO *cmd, int noisy)
+command_check_with(dbref player, COMMAND_INFO *cmd, int noisy, NEW_PE_INFO *pe_info)
 {
 
   /* If disabled, return silently */
   if (cmd->type & CMD_T_DISABLED)
     return 0;
 
-  if (eval_boolexp(player, cmd->cmdlock, player, NULL)) {
+  if (eval_boolexp(player, cmd->cmdlock, player, pe_info)) {
     return 1;
   } else {
     if (noisy) {
@@ -2169,13 +2169,13 @@ command_check(dbref player, COMMAND_INFO *cmd, int noisy)
  * \retval 1 player may use command.
  */
 int
-command_check_byname(dbref player, const char *name)
+command_check_byname(dbref player, const char *name, NEW_PE_INFO *pe_info)
 {
   COMMAND_INFO *cmd;
   cmd = command_find(name);
   if (!cmd)
     return 0;
-  return command_check(player, cmd, 1);
+  return command_check_with(player, cmd, 1, pe_info);
 }
 
 /** Determine whether a player can use a command.
@@ -2187,13 +2187,13 @@ command_check_byname(dbref player, const char *name)
  * \retval 1 player may use command.
  */
 int
-command_check_byname_quiet(dbref player, const char *name)
+command_check_byname_quiet(dbref player, const char *name, NEW_PE_INFO *pe_info)
 {
   COMMAND_INFO *cmd;
   cmd = command_find(name);
   if (!cmd)
     return 0;
-  return command_check(player, cmd, 0);
+  return command_check_with(player, cmd, 0, pe_info);
 }
 
 static int

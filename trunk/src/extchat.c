@@ -2340,7 +2340,7 @@ FUNCTION(fun_cbufferadd)
   }
 
   /* Person must be able to do nospoof cemits. */
-  if (!command_check_byname(executor, "@cemit") || fun->flags & FN_NOSIDEFX) {
+  if (!command_check_byname(executor, "@cemit", pe_info) || fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
     return;
   }
@@ -2359,7 +2359,7 @@ FUNCTION(fun_cbufferadd)
   /* Do we spoof somebody else? */
   if (nargs == 3 && parse_boolean(args[2])) {
     /* Person must be able to do nospoof cemits. */
-    if (!command_check_byname(executor, "@nscemit")) {
+    if (!command_check_byname(executor, "@nscemit", pe_info)) {
       safe_str(T(e_perm), buff, bp);
       return;
     }
@@ -3369,7 +3369,7 @@ FUNCTION(fun_clock)
 
   if (nargs == 2) {
     if (FUNCTION_SIDE_EFFECTS) {
-      if (!command_check_byname(executor, "@clock") || fun->flags & FN_NOSIDEFX) {
+      if (!command_check_byname(executor, "@clock", pe_info) || fun->flags & FN_NOSIDEFX) {
         safe_str(T(e_perm), buff, bp);
         return;
       }
@@ -3395,7 +3395,7 @@ FUNCTION(fun_cemit)
   int ns = (string_prefix(called_as, "NS") && Can_Nspemit(executor));
   int flags = PEMIT_SILENT;
   flags |= (ns ? PEMIT_SPOOF : 0);
-  if (!command_check_byname(executor, ns ? "@nscemit" : "@cemit") ||
+  if (!command_check_byname(executor, ns ? "@nscemit" : "@cemit", pe_info) ||
       fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
     return;

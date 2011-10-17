@@ -1178,8 +1178,6 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
 
   MAIL *newp, *mp;
   int rc, uc, cc;
-  char const *ms;
-  char *mailsig;
   char sbuf[BUFFER_LEN];
   ATTR *a;
   char *cp;
@@ -1244,7 +1242,6 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
     uint16_t len;
     unsigned char *text;
     char buff[BUFFER_LEN], newmsg[BUFFER_LEN], *nm = newmsg;
-    ufun_attrib ufun;
 
     safe_str(message, newmsg, &nm);
     if (!nosig && call_attrib(player, "MAILSIGNATURE", buff, player, NULL, NULL))

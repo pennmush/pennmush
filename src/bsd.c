@@ -1351,9 +1351,7 @@ static int
 fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
                  const unsigned char *prefix)
 {
-  ATTR *a;
   char arg[SBUF_LEN], buff[BUFFER_LEN], *bp;
-  char const *sp;
   PE_REGS *pe_regs;
   ufun_attrib ufun;
 

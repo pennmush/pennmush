@@ -1271,8 +1271,7 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
 
             a = atr_get(target, "INPREFIX");
             if (a) {
-              char const *ap;
-              char *ip = inprefix;
+              char *ip;
               PE_REGS *pe_regs = pe_regs_create(PE_REGS_ARG, "notify");
 
               pe_regs_setenv_nocopy(pe_regs, 0, (char *) msgstr);

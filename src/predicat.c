@@ -220,9 +220,7 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
             PE_REGS *pe_regs, int flags)
 {
 
-  ATTR *d;
-  char buff[BUFFER_LEN], *bp, *sp, *asave;
-  char const *ap;
+  char buff[BUFFER_LEN], *bp;
   dbref preserve_orator = orator;
   int attribs_used = 0;
   NEW_PE_INFO *pe_info = NULL;
@@ -1187,9 +1185,7 @@ void
 page_return(dbref player, dbref target, const char *type,
             const char *message, const char *def)
 {
-  ATTR *d;
-  char buff[BUFFER_LEN], *bp, *asave;
-  char const *ap;
+  char buff[BUFFER_LEN];
   struct tm *ptr;
 
   if (message && *message) {

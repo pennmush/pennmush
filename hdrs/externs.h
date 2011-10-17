@@ -355,9 +355,9 @@ void do_scan(dbref player, char *command, int flag);
 enum look_type { LOOK_NORMAL, LOOK_TRANS, LOOK_AUTO, LOOK_CLOUDYTRANS,
   LOOK_CLOUDY
 };
-void look_room(dbref player, dbref loc, enum look_type style);
+void look_room(dbref player, dbref loc, enum look_type style, NEW_PE_INFO *pe_info);
 void do_look_around(dbref player);
-void do_look_at(dbref player, const char *name, int key);
+void do_look_at(dbref player, const char *name, int key, NEW_PE_INFO *pe_info);
 char *decompose_str(char *what);
 
 /* From memcheck.c */

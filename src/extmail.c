@@ -1178,7 +1178,6 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
 
   MAIL *newp, *mp;
   int rc, uc, cc;
-  char *newmsg, *nm, *buff, *bp;
   char const *ms;
   char *mailsig;
   char sbuf[BUFFER_LEN];
@@ -1244,31 +1243,17 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
   } else {
     uint16_t len;
     unsigned char *text;
-    newmsg = mush_malloc(BUFFER_LEN, "string");
-    if (!newmsg)
-      mush_panic("Failed to allocate string in send_mail");
-    nm = newmsg;
+    char buff[BUFFER_LEN], newmsg[BUFFER_LEN], *nm = newmsg;
+    ufun_attrib ufun;
+
     safe_str(message, newmsg, &nm);
-    if (!nosig && ((a = atr_get_noparent(player, "MAILSIGNATURE")) != NULL)) {
-      /* Append the MAILSIGNATURE to the mail - Cordin@Dune's idea */
-      buff = mush_malloc(BUFFER_LEN, "string");
-      if (!buff)
-        mush_panic("Failed to allocate string in send_mail");
-      ms = mailsig = safe_atr_value(a);
-      bp = buff;
-      process_expression(buff, &bp, &ms, player, player, player,
-                         PE_DEFAULT, PT_DEFAULT, NULL);
-      *bp = '\0';
-      free(mailsig);
+    if (!nosig && call_attrib(player, "MAILSIGNATURE", buff, player, NULL, NULL))
       safe_str(buff, newmsg, &nm);
-      mush_free(buff, "string");
-    }
     *nm = '\0';
     text = compress(newmsg);
     len = u_strlen(text) + 1;
     newp->msgid = chunk_create(text, len, 1);
     free(text);
-    mush_free(newmsg, "string");
   }
 
   newp->time = mudtime;

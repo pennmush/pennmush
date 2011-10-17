@@ -316,7 +316,7 @@ COMMAND(cmd_destroy)
 
 COMMAND(cmd_dig)
 {
-  do_dig(executor, arg_left, args_right, (SW_ISSET(sw, SWITCH_TELEPORT)));
+  do_dig(executor, arg_left, args_right, (SW_ISSET(sw, SWITCH_TELEPORT)), queue_entry->pe_info);
 }
 
 COMMAND(cmd_disable)
@@ -380,9 +380,9 @@ COMMAND(cmd_emit)
 
   if (SW_ISSET(sw, SWITCH_ROOM))
     do_lemit(executor, arg_left,
-             (SW_ISSET(sw, SWITCH_SILENT) ? PEMIT_SILENT : 0) | spflags);
+             (SW_ISSET(sw, SWITCH_SILENT) ? PEMIT_SILENT : 0) | spflags, queue_entry->pe_info);
   else
-    do_emit(executor, arg_left, spflags);
+    do_emit(executor, arg_left, spflags, queue_entry->pe_info);
 }
 
 COMMAND(cmd_enable)
@@ -619,7 +619,7 @@ COMMAND(cmd_lemit)
     flags |= PEMIT_SPOOF;
 
   SPOOF(executor, enactor, sw);
-  do_lemit(executor, arg_left, flags);
+  do_lemit(executor, arg_left, flags, queue_entry->pe_info);
 }
 
 COMMAND(cmd_link)
@@ -856,7 +856,7 @@ COMMAND(cmd_message)
 
   SPOOF(executor, enactor, sw);
 
-  do_message(executor, arg_left, attrib, message, type, flags, i, args);
+  do_message(executor, arg_left, attrib, message, type, flags, i, args, queue_entry->pe_info);
 }
 
 COMMAND(cmd_motd)
@@ -900,7 +900,7 @@ COMMAND(cmd_oemit)
   int spflags = (!strcmp(cmd->name, "@NSOEMIT")
                  && Can_Nspemit(executor) ? PEMIT_SPOOF : 0);
   SPOOF(executor, enactor, sw);
-  do_oemit_list(executor, arg_left, arg_right, spflags, NULL);
+  do_oemit_list(executor, arg_left, arg_right, spflags, NULL, queue_entry->pe_info);
 }
 
 COMMAND(cmd_open)
@@ -947,7 +947,7 @@ COMMAND(cmd_pemit)
   SPOOF(executor, enactor, sw);
 
   if (SW_ISSET(sw, SWITCH_CONTENTS)) {
-    do_remit(executor, arg_left, arg_right, flags, NULL);
+    do_remit(executor, arg_left, arg_right, flags, NULL, queue_entry->pe_info);
     return;
   }
   if (SW_ISSET(sw, SWITCH_LIST)) {
@@ -955,7 +955,7 @@ COMMAND(cmd_pemit)
     if (!SW_ISSET(sw, SWITCH_NOISY))
       flags |= PEMIT_SILENT;
   }
-  do_pemit(executor, arg_left, arg_right, flags, NULL);
+  do_pemit(executor, arg_left, arg_right, flags, NULL, queue_entry->pe_info);
 }
 
 COMMAND(cmd_prompt)
@@ -966,7 +966,7 @@ COMMAND(cmd_prompt)
     flags |= PEMIT_SPOOF;
 
   SPOOF(executor, enactor, sw);
-  do_pemit(executor, arg_left, arg_right, flags, NULL);
+  do_pemit(executor, arg_left, arg_right, flags, NULL, queue_entry->pe_info);
 }
 
 COMMAND(cmd_poll)
@@ -1047,7 +1047,7 @@ COMMAND(cmd_remit)
     flags |= PEMIT_SPOOF;
 
   SPOOF(executor, enactor, sw);
-  do_remit(executor, arg_left, arg_right, flags, NULL);
+  do_remit(executor, arg_left, arg_right, flags, NULL, queue_entry->pe_info);
 }
 
 COMMAND(cmd_rejectmotd)
@@ -1222,7 +1222,7 @@ COMMAND(cmd_teleport)
     notify(executor, T("You can't teleport to nothing!"));
   else
     do_teleport(executor, arg_left, arg_right, (SW_ISSET(sw, SWITCH_SILENT)),
-                (SW_ISSET(sw, SWITCH_INSIDE)));
+                (SW_ISSET(sw, SWITCH_INSIDE)), queue_entry->pe_info);
 }
 
 COMMAND(cmd_include)
@@ -1474,17 +1474,17 @@ COMMAND(cmd_page)
     do_page_port(executor, arg_left, arg_right);
   else
     do_page(executor, arg_left, arg_right, SW_ISSET(sw, SWITCH_OVERRIDE),
-            rhs_present);
+            rhs_present, queue_entry->pe_info);
 }
 
 COMMAND(cmd_pose)
 {
-  do_pose(executor, arg_left, (SW_ISSET(sw, SWITCH_NOSPACE)));
+  do_pose(executor, arg_left, (SW_ISSET(sw, SWITCH_NOSPACE)), queue_entry->pe_info);
 }
 
 COMMAND(cmd_say)
 {
-  do_say(executor, arg_left);
+  do_say(executor, arg_left, queue_entry->pe_info);
 }
 
 COMMAND(cmd_score)
@@ -1494,7 +1494,7 @@ COMMAND(cmd_score)
 
 COMMAND(cmd_semipose)
 {
-  do_pose(executor, arg_left, 1);
+  do_pose(executor, arg_left, 1, queue_entry->pe_info);
 }
 
 COMMAND(cmd_slay)

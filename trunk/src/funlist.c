@@ -1184,7 +1184,7 @@ FUNCTION(fun_namegraball)
         continue;               /* Don't bother with garbage */
       if (!(string_match(Name(victim), args[1]) || (absolute == victim)))
         continue;
-      if (!can_interact(victim, executor, INTERACT_MATCH))
+      if (!can_interact(victim, executor, INTERACT_MATCH, pe_info))
         continue;
       /* It matches, and is interact-able */
       if (!first)
@@ -1200,7 +1200,7 @@ FUNCTION(fun_namegraball)
       victim = parse_objid(r);
       if (!RealGoodObject(victim))
         continue;               /* Don't bother with garbage */
-      if (!can_interact(victim, executor, INTERACT_MATCH))
+      if (!can_interact(victim, executor, INTERACT_MATCH, pe_info))
         continue;
       /* It's real, and is interact-able */
       if (!first)
@@ -1240,18 +1240,18 @@ FUNCTION(fun_namegrab)
     if (!RealGoodObject(victim))
       continue;                 /* Don't bother with garbage */
     /* Dbref match has top priority */
-    if ((absolute == victim) && can_interact(victim, executor, INTERACT_MATCH)) {
+    if ((absolute == victim) && can_interact(victim, executor, INTERACT_MATCH, pe_info)) {
       safe_str(r, buff, bp);
       return;
     }
     /* Exact match has second priority */
     if (!exact_res && !strcasecmp(Name(victim), args[1]) &&
-        can_interact(victim, executor, INTERACT_MATCH)) {
+        can_interact(victim, executor, INTERACT_MATCH, pe_info)) {
       exact_res = r;
     }
     /* Non-exact match. */
     if (!res && string_match(Name(victim), args[1]) &&
-        can_interact(victim, executor, INTERACT_MATCH)) {
+        can_interact(victim, executor, INTERACT_MATCH, pe_info)) {
       res = r;
     }
   } while (s);

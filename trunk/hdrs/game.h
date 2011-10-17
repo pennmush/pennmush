@@ -139,33 +139,33 @@ extern void do_parent(dbref player, char *name, char *parent_name);
 extern void do_wipe(dbref player, char *name);
 
 /* From speech.c */
-extern void do_say(dbref player, const char *message);
+extern void do_say(dbref player, const char *message, NEW_PE_INFO *pe_info);
 extern void do_whisper
   (dbref player, const char *arg1, const char *arg2, int noisy);
 extern void do_whisper_list
   (dbref player, const char *arg1, const char *arg2, int noisy);
-extern void do_pose(dbref player, const char *tbuf1, int nospace);
+extern void do_pose(dbref player, const char *tbuf1, int nospace, NEW_PE_INFO *pe_info);
 enum wall_type { WALL_ALL, WALL_RW, WALL_WIZ };
 void do_wall(dbref player, const char *message, enum wall_type target,
              int emit);
 void do_page(dbref executor, const char *arg1, const char *arg2,
-             int override, int has_eq);
+             int override, int has_eq, NEW_PE_INFO *pe_info);
 #define PEMIT_SILENT 0x1  /**< Don't show confirmation msg to speaker */
 #define PEMIT_LIST   0x2  /**< Recipient is a list of names */
 #define PEMIT_SPOOF  0x4  /**< Show sound as being from %#, not %! */
 #define PEMIT_PROMPT 0x8  /**< Add a telnet GOAHEAD to the end. For \@prompt */
-extern void do_emit(dbref player, const char *message, int flags);
+extern void do_emit(dbref player, const char *message, int flags, NEW_PE_INFO *pe_info);
 extern void do_pemit(dbref player, char *target, const char *message,
-                     int flags, struct format_msg *format);
-#define do_pemit_list(player,target,message,flags) \
-        do_pemit(player,target,message,flags|PEMIT_LIST,NULL)
+                     int flags, struct format_msg *format, NEW_PE_INFO *pe_info);
+#define do_pemit_list(player,target,message,flags,pe_info) \
+        do_pemit(player,target,message,flags|PEMIT_LIST,NULL,pe_info)
 extern void do_remit(dbref player, char *rooms, const char *message,
-                     int flags, struct format_msg *format);
-extern void do_lemit(dbref player, const char *message, int flags);
+                     int flags, struct format_msg *format, NEW_PE_INFO *pe_info);
+extern void do_lemit(dbref player, const char *message, int flags, NEW_PE_INFO *pe_info);
 extern void do_zemit(dbref player, const char *target, const char *message,
                      int flags);
 extern void do_oemit_list(dbref player, char *list, const char *message,
-                          int flags, struct format_msg *format);
+                          int flags, struct format_msg *format, NEW_PE_INFO *pe_info);
 extern void do_teach(dbref player, const char *tbuf1, int list,
                      MQUE *parent_queue);
 
@@ -181,7 +181,7 @@ extern void do_quota(dbref player, const char *arg1, const char *arg2,
                      int set_q);
 extern void do_allquota(dbref player, const char *arg1, int quiet);
 extern void do_teleport
-  (dbref player, const char *arg1, const char *arg2, int silent, int inside);
+  (dbref player, const char *arg1, const char *arg2, int silent, int inside, NEW_PE_INFO *pe_info);
 extern void do_force(dbref player, dbref caller, const char *what,
                      char *command, int queue_type, MQUE *queue_entry);
 extern void do_stats(dbref player, const char *name);

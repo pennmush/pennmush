@@ -96,7 +96,7 @@ FUNCTION(fun_pemit)
   if (is_integer_list(args[0]))
     do_pemit_port(executor, args[0], args[1], flags);
   else
-    do_pemit(executor, args[0], args[1], flags, NULL);
+    do_pemit(executor, args[0], args[1], flags, NULL, pe_info);
   orator = saved_orator;
 }
 
@@ -135,7 +135,7 @@ FUNCTION(fun_message)
     } while (list);
   }
 
-  do_message(executor, args[0], args[2], args[1], type, flags, i, argv);
+  do_message(executor, args[0], args[2], args[1], type, flags, i, argv, pe_info);
 
 }
 
@@ -156,7 +156,7 @@ FUNCTION(fun_oemit)
     return;
   }
   orator = executor;
-  do_oemit_list(executor, args[0], args[1], flags, NULL);
+  do_oemit_list(executor, args[0], args[1], flags, NULL, pe_info);
 }
 
 /* ARGSUSED */
@@ -176,7 +176,7 @@ FUNCTION(fun_emit)
     return;
   }
   orator = executor;
-  do_emit(executor, args[0], flags);
+  do_emit(executor, args[0], flags, pe_info);
 }
 
 /* ARGSUSED */
@@ -199,7 +199,7 @@ FUNCTION(fun_remit)
     return;
   }
   orator = executor;
-  do_remit(executor, args[0], args[1], flags, NULL);
+  do_remit(executor, args[0], args[1], flags, NULL, pe_info);
 }
 
 /* ARGSUSED */
@@ -219,7 +219,7 @@ FUNCTION(fun_lemit)
     return;
   }
   orator = executor;
-  do_lemit(executor, args[0], flags);
+  do_lemit(executor, args[0], flags, pe_info);
 }
 
 /* ARGSUSED */
@@ -261,7 +261,7 @@ FUNCTION(fun_prompt)
   orator = executor;
   if (ns)
     flags |= PEMIT_SPOOF;
-  do_pemit(executor, args[0], args[1], flags, NULL);
+  do_pemit(executor, args[0], args[1], flags, NULL, pe_info);
 }
 
 /* ARGSUSED */
@@ -1311,7 +1311,7 @@ FUNCTION(fun_benchmark)
       safe_dbref(thing, buff, bp);
       return;
     }
-    if (!okay_pemit(executor, thing, 1, 1)) {
+    if (!okay_pemit(executor, thing, 1, 1, pe_info)) {
       safe_str("#-1", buff, bp);
       return;
     }

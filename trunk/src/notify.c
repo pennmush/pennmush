@@ -995,15 +995,15 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
 
   /* Check interact locks */
   if (flags & NA_INTERACTION) {
-    if ((flags & NA_INTER_SEE) && !can_interact(speaker, target, INTERACT_SEE))
+    if ((flags & NA_INTER_SEE) && !can_interact(speaker, target, INTERACT_SEE, NULL))
       return;
     if ((flags & NA_INTER_PRESENCE) &&
-        !can_interact(speaker, target, INTERACT_PRESENCE))
+        !can_interact(speaker, target, INTERACT_PRESENCE, NULL))
       return;
     if ((flags & NA_INTER_HEAR) &&
-        !can_interact(speaker, target, INTERACT_HEAR))
+        !can_interact(speaker, target, INTERACT_HEAR, NULL))
       return;
-    if ((flags & NA_INTER_LOCK) && !Pass_Interact_Lock(speaker, target))
+    if ((flags & NA_INTER_LOCK) && !Pass_Interact_Lock(speaker, target, NULL))
       return;
   }
 

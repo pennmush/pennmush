@@ -708,7 +708,7 @@ absolute_room(dbref it)
  * \retval 0 to can not interact with from in this way.
  */
 int
-can_interact(dbref from, dbref to, int type)
+can_interact(dbref from, dbref to, int type, NEW_PE_INFO *pe_info)
 {
   int lci;
 
@@ -731,7 +731,7 @@ can_interact(dbref from, dbref to, int type)
   /* If it's an audible message, it must pass your Interact_Lock
    * (or be from a privileged speaker)
    */
-  if ((type == INTERACT_HEAR) && !Pass_Interact_Lock(from, to))
+  if ((type == INTERACT_HEAR) && !Pass_Interact_Lock(from, to, pe_info))
     return 0;
 
   /* You can interact with the object you are in or any objects

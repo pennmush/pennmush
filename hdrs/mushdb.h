@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include "flags.h"
 
-#define Builder(x)       (command_check_byname(x, "@dig"))
+#define Builder(x)       (command_check_byname(x, "@dig", NULL))
 #define Guest(x)         has_power_by_name(x,"GUEST",NOTYPE)
 #define Tel_Anywhere(x)  (Hasprivs(x) || has_power_by_name(x,"TPORT_ANYWHERE",NOTYPE))
 #define Tel_Anything(x)  (Hasprivs(x) || has_power_by_name(x,"TPORT_ANYTHING",NOTYPE))
@@ -47,7 +47,7 @@
 #define Global_Funcs(x)  (Hasprivs(x) || has_power_by_name(x,"FUNCTIONS",NOTYPE))
 #define Create_Player(x) (Wizard(x) || has_power_by_name(x,"PLAYER_CREATE",NOTYPE))
 #define Can_Announce(x)  (Wizard(x) || has_power_by_name(x,"ANNOUNCE",NOTYPE))
-#define Can_Cemit(x)     (command_check_byname(x, "@cemit"))
+#define Can_Cemit(x)     (command_check_byname(x, "@cemit", NULL))
 
 #define Pemit_All(x)    (Wizard(x) || has_power_by_name(x,"PEMIT_ALL",NOTYPE))
 #define Sql_Ok(x)       (Wizard(x) || has_power_by_name(x, "SQL_OK", NOTYPE))
@@ -66,7 +66,7 @@
 bool unfindable(dbref);
 #define Can_Locate(p,x) \
     (controls(p,x) || nearby(p,x) || See_All(p) \
-  || (command_check_byname(p, "@whereis") && (IsPlayer(x) && !Unfind(x) \
+  || (command_check_byname(p, "@whereis", NULL) && (IsPlayer(x) && !Unfind(x) \
                      && !unfindable(Location(x)))))
 
 

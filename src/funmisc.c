@@ -85,7 +85,7 @@ FUNCTION(fun_pemit)
     return;
   }
 
-  if (!command_check_byname(executor, ns ? "@nspemit" : "@pemit") ||
+  if (!command_check_byname(executor, ns ? "@nspemit" : "@pemit", pe_info) ||
       fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
     return;
@@ -150,7 +150,7 @@ FUNCTION(fun_oemit)
     return;
   }
 
-  if (!command_check_byname(executor, ns ? "@nsoemit" : "@oemit") ||
+  if (!command_check_byname(executor, ns ? "@nsoemit" : "@oemit", pe_info) ||
       fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
     return;
@@ -170,7 +170,7 @@ FUNCTION(fun_emit)
     return;
   }
 
-  if (!command_check_byname(executor, ns ? "@nsemit" : "@emit") ||
+  if (!command_check_byname(executor, ns ? "@nsemit" : "@emit", pe_info) ||
       fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
     return;
@@ -193,7 +193,7 @@ FUNCTION(fun_remit)
     return;
   }
 
-  if (!command_check_byname(executor, ns ? "@nsremit" : "@remit") ||
+  if (!command_check_byname(executor, ns ? "@nsremit" : "@remit", pe_info) ||
       fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
     return;
@@ -213,7 +213,7 @@ FUNCTION(fun_lemit)
     return;
   }
 
-  if (!command_check_byname(executor, ns ? "@nslemit" : "@lemit") ||
+  if (!command_check_byname(executor, ns ? "@nslemit" : "@lemit", pe_info) ||
       fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
     return;
@@ -233,7 +233,7 @@ FUNCTION(fun_zemit)
     return;
   }
 
-  if (!command_check_byname(executor, ns ? "@nszemit" : "@zemit") ||
+  if (!command_check_byname(executor, ns ? "@nszemit" : "@zemit", pe_info) ||
       fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
     return;
@@ -253,7 +253,7 @@ FUNCTION(fun_prompt)
     return;
   }
 
-  if (!command_check_byname(executor, ns ? "@nspemit" : "@pemit") ||
+  if (!command_check_byname(executor, ns ? "@nspemit" : "@pemit", pe_info) ||
       fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
     return;

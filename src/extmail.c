@@ -263,7 +263,7 @@ was_sender(dbref player, MAIL *mp)
 int
 can_mail(dbref player)
 {
-  return command_check_byname_quiet(player, "@MAIL");
+  return command_check_byname_quiet(player, "@MAIL", NULL);
 }
 
 /** Change folders or rename a folder.
@@ -842,7 +842,7 @@ do_mail_purge(dbref player)
     }
   }
   set_objdata(player, "MAIL", NULL);
-  if (command_check_byname(player, "@MAIL"))
+  if (command_check_byname(player, "@MAIL", NULL))
     notify(player, T("MAIL: Mailbox purged."));
   return;
 }
@@ -1102,7 +1102,7 @@ FUNCTION(fun_mailsend)
 {
   /* mailsend(<target>,[<subject>/]<message>) */
   if ((fun->flags & FN_NOSIDEFX) || Gagged(executor) ||
-      !command_check_byname(executor, "@MAIL"))
+      !command_check_byname(executor, "@MAIL", pe_info))
     safe_str(T(e_perm), buff, bp);
   else if (FUNCTION_SIDE_EFFECTS)
     do_mail_send(executor, args[0], args[1], 0, 1, 0);

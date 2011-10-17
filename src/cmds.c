@@ -259,9 +259,9 @@ COMMAND(cmd_create)
 COMMAND(cmd_clone)
 {
   if (SW_ISSET(sw, SWITCH_PRESERVE))
-    do_clone(executor, arg_left, args_right[1], SWITCH_PRESERVE, args_right[2]);
+    do_clone(executor, arg_left, args_right[1], SWITCH_PRESERVE, args_right[2], queue_entry->pe_info);
   else
-    do_clone(executor, arg_left, args_right[1], SWITCH_NONE, args_right[2]);
+    do_clone(executor, arg_left, args_right[1], SWITCH_NONE, args_right[2], queue_entry->pe_info);
 }
 
 COMMAND(cmd_dbck)

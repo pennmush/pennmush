@@ -98,7 +98,7 @@ do_real_open(dbref player, const char *direction, const char *linkto,
   char *name = NULL;
   char *alias = NULL;
 
-  if (!command_check_byname(player, "@dig")) {
+  if (!command_check_byname(player, "@dig", NULL)) {
     notify(player, T("Permission denied."));
     return NOTHING;
   }
@@ -638,10 +638,11 @@ clone_object(dbref player, dbref thing, const char *newname, int preserve)
  * \param newname the name to give the duplicate.
  * \param preserve if 1, preserve ownership and privileges on duplicate.
  * \param newdbref the (unparsed) dbref to give the object, or NULL to use the next free
+ * \param pe_info
  * \return dbref of the duplicate, or NOTHING.
  */
 dbref
-do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref)
+do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref, NEW_PE_INFO *pe_info)
 {
   dbref clone, thing;
   char dbnum[BUFFER_LEN];
@@ -656,9 +657,9 @@ do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref)
   }
 
   if (!controls(player, thing) || IsPlayer(thing) ||
-      (IsRoom(thing) && !command_check_byname(player, "@dig")) ||
-      (IsExit(thing) && !command_check_byname(player, "@open")) ||
-      (IsThing(thing) && !command_check_byname(player, "@create"))) {
+      (IsRoom(thing) && !command_check_byname(player, "@dig", pe_info)) ||
+      (IsExit(thing) && !command_check_byname(player, "@open", pe_info)) ||
+      (IsThing(thing) && !command_check_byname(player, "@create", pe_info))) {
     notify(player, T("Permission denied."));
     return NOTHING;
   }

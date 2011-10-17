@@ -178,6 +178,12 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib *ufun,
   }
 
   attrib = (ATTR *) atr_get(ufun->thing, upcasestr(attrname));
+  if (attrib && AF_Internal(attrib)) {
+    /* Regardless of whether we're doing permission checks, we should
+     * never be showing internal attributes here */
+    attrib = NULL;
+  }
+
   /* An empty attrib is the same as no attrib. */
   if (attrib == NULL) {
     if (flags & UFUN_REQUIRE_ATTR) {

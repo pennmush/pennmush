@@ -400,7 +400,7 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
      * treat a 'home' command
      */
     if (player == victim) {
-      if (command_check_byname(victim, "HOME"))
+      if (command_check_byname(victim, "HOME", NULL))
         safe_tel(victim, HOME, silent, player, "teleport");
       return;
     } else {
@@ -1393,7 +1393,7 @@ FUNCTION(fun_lsearch)
   dbref *results = NULL;
   int rev = !strcmp(called_as, "LSEARCHR");
 
-  if (!command_check_byname(executor, "@search")) {
+  if (!command_check_byname(executor, "@search", pe_info)) {
     safe_str(T(e_perm), buff, bp);
     return;
   }

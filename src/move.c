@@ -345,7 +345,7 @@ can_move(dbref player, const char *direction)
 {
   int ok;
   if (!strcasecmp(direction, "home")) {
-    ok = command_check_byname(player, "HOME");
+    ok = command_check_byname(player, "HOME", NULL);
   } else {
     /* otherwise match on exits - don't use GoodObject here! */
     ok =

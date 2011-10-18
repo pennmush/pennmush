@@ -255,10 +255,10 @@ choose_thing(const dbref who, const int preferred_type, long flags,
   }
 
   if (flags & MAT_CHECK_KEYS) {
-    key = could_doit(who, thing1);
-    if (!key && could_doit(who, thing2)) {
+    key = could_doit(who, thing1, NULL);
+    if (!key && could_doit(who, thing2, NULL)) {
       return thing2;
-    } else if (key && !could_doit(who, thing2)) {
+    } else if (key && !could_doit(who, thing2, NULL)) {
       return thing1;
     }
   }

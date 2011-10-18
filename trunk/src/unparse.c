@@ -145,7 +145,7 @@ real_unparse(dbref player, dbref loc, int obey_myopic, int use_nameformat,
       if ((p = strchr(tbuf1, ';')))
         *p = '\0';
     }
-    if ((Can_Examine(player, loc) || can_link_to(player, loc) ||
+    if ((Can_Examine(player, loc) || can_link_to(player, loc, NULL) ||
          JumpOk(loc) || ChownOk(loc) || DestOk(loc)) &&
         (!Myopic(player) || !obey_myopic)) {
       /* show everything */

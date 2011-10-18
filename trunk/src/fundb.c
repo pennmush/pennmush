@@ -1679,7 +1679,7 @@ FUNCTION(fun_zone)
       return;
     }
     if (FUNCTION_SIDE_EFFECTS)
-      (void) do_chzone(executor, args[0], args[1], 1, 0);
+      (void) do_chzone(executor, args[0], args[1], 1, 0, pe_info);
     else {
       safe_str(T(e_disabled), buff, bp);
       return;
@@ -1705,7 +1705,7 @@ FUNCTION(fun_parent)
       return;
     }
     if (FUNCTION_SIDE_EFFECTS)
-      do_parent(executor, args[0], args[1]);
+      do_parent(executor, args[0], args[1], pe_info);
     else {
       safe_str(T(e_disabled), buff, bp);
       return;
@@ -2197,7 +2197,7 @@ FUNCTION(fun_open)
     }
   }
   safe_dbref(do_real_open
-             (executor, args[0], (nargs > 1 ? args[1] : NULL), source), buff,
+             (executor, args[0], (nargs > 1 ? args[1] : NULL), source, pe_info), buff,
              bp);
 }
 
@@ -2250,7 +2250,7 @@ FUNCTION(fun_link)
   if (nargs > 2)
     preserve = parse_boolean(args[2]);
 
-  do_link(executor, args[0], args[1], preserve);
+  do_link(executor, args[0], args[1], preserve, pe_info);
 }
 
 /* ARGSUSED */

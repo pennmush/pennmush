@@ -326,10 +326,10 @@ void shutdown_queues(void);
 dbref do_dig(dbref player, const char *name, char **argv, int tport, NEW_PE_INFO *pe_info);
 dbref do_create(dbref player, char *name, int cost, char *newdbref);
 dbref do_real_open(dbref player, const char *direction,
-                   const char *linkto, dbref pseudo);
-void do_open(dbref player, const char *direction, char **links);
+                   const char *linkto, dbref pseudo, NEW_PE_INFO *pe_info);
+void do_open(dbref player, const char *direction, char **links, NEW_PE_INFO *pe_info);
 void do_link(dbref player, const char *name, const char *room_name,
-             int preserve);
+             int preserve, NEW_PE_INFO *pe_info);
 void do_unlink(dbref player, const char *name);
 dbref do_clone(dbref player, char *name, char *newname, int preserve,
                char *newdbref, NEW_PE_INFO *pe_info);
@@ -378,14 +378,14 @@ enum move_type { MOVE_NORMAL, /**< move through an exit in your location */
   MOVE_ZONE,                  /**< ZMR Exit */
   MOVE_TELEPORT                /**< \@tel'd into an exit */
 };
-void do_move(dbref player, const char *direction, enum move_type type);
+void do_move(dbref player, const char *direction, enum move_type type, NEW_PE_INFO *pe_info);
 void moveto(dbref what, dbref where, dbref enactor, const char *cause);
 void safe_tel(dbref player, dbref dest, int nomovemsgs,
               dbref enactor, const char *cause);
 int global_exit(dbref player, const char *direction);
 int remote_exit(dbref loc, const char *direction);
-void move_wrapper(dbref player, const char *command);
-void do_follow(dbref player, const char *arg);
+void move_wrapper(dbref player, const char *command, NEW_PE_INFO *pe_info);
+void do_follow(dbref player, const char *arg, NEW_PE_INFO *pe_info);
 void do_unfollow(dbref player, const char *arg);
 void do_desert(dbref player, const char *arg);
 void do_dismiss(dbref player, const char *arg);
@@ -434,7 +434,7 @@ void reset_player_list(dbref player, const char *oldname, const char *oldalias,
 char *WIN32_CDECL tprintf(const char *fmt, ...)
   __attribute__ ((__format__(__printf__, 1, 2)));
 
-int could_doit(dbref player, dbref thing);
+int could_doit(dbref player, dbref thing, NEW_PE_INFO *pe_info);
 int did_it(dbref player, dbref thing, const char *what,
            const char *def, const char *owhat, const char *odef,
            const char *awhat, dbref loc);

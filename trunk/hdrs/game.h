@@ -92,11 +92,11 @@ extern void do_decompile(dbref player, const char *name, const char *prefix,
                          int dec_type);
 
 /* From move.c */
-extern void do_get(dbref player, const char *what);
-extern void do_drop(dbref player, const char *name);
-extern void do_enter(dbref player, const char *what);
-extern void do_leave(dbref player);
-extern void do_empty(dbref player, const char *what);
+extern void do_get(dbref player, const char *what, NEW_PE_INFO *pe_info);
+extern void do_drop(dbref player, const char *name, NEW_PE_INFO *pe_info);
+extern void do_enter(dbref player, const char *what, NEW_PE_INFO *pe_info);
+extern void do_leave(dbref player, NEW_PE_INFO *pe_info);
+extern void do_empty(dbref player, const char *what, NEW_PE_INFO *pe_info);
 extern void do_firstexit(dbref player, const char **what);
 
 /* From player.c */
@@ -114,15 +114,15 @@ extern void do_grep(dbref player, char *obj, char *lookfor, int flag,
 
 /* From rob.c */
 extern void do_kill(dbref player, const char *what, int cost, int slay);
-extern void do_give(dbref player, char *recipient, char *amnt, int silent);
-extern void do_buy(dbref player, char *item, char *from, int price);
+extern void do_give(dbref player, char *recipient, char *amnt, int silent, NEW_PE_INFO *pe_info);
+extern void do_buy(dbref player, char *item, char *from, int price, NEW_PE_INFO *pe_info);
 
 /* From set.c */
 extern void do_name(dbref player, const char *name, char *newname);
 extern void do_chown
-  (dbref player, const char *name, const char *newobj, int preserve);
+  (dbref player, const char *name, const char *newobj, int preserve, NEW_PE_INFO *pe_info);
 extern int do_chzone(dbref player, const char *name, const char *newobj,
-                     bool noisy, bool preserve);
+                     bool noisy, bool preserve, NEW_PE_INFO *pe_info);
 extern int do_set(dbref player, const char *name, char *flag);
 extern void do_cpattr
   (dbref player, char *oldpair, char **newpair, int move, int noflagcopy);
@@ -134,16 +134,14 @@ extern void do_cpattr
 extern void do_gedit(dbref player, char *it, char **argv, int flags);
 extern void do_trigger(dbref player, char *object, char **argv,
                        MQUE *queue_entry);
-extern void do_use(dbref player, const char *what);
-extern void do_parent(dbref player, char *name, char *parent_name);
+extern void do_use(dbref player, const char *what, NEW_PE_INFO *pe_info);
+extern void do_parent(dbref player, char *name, char *parent_name, NEW_PE_INFO *pe_info);
 extern void do_wipe(dbref player, char *name);
 
 /* From speech.c */
 extern void do_say(dbref player, const char *message, NEW_PE_INFO *pe_info);
 extern void do_whisper
-  (dbref player, const char *arg1, const char *arg2, int noisy);
-extern void do_whisper_list
-  (dbref player, const char *arg1, const char *arg2, int noisy);
+  (dbref player, const char *arg1, const char *arg2, int noisy, NEW_PE_INFO *pe_info);
 extern void do_pose(dbref player, const char *tbuf1, int nospace, NEW_PE_INFO *pe_info);
 enum wall_type { WALL_ALL, WALL_RW, WALL_WIZ };
 void do_wall(dbref player, const char *message, enum wall_type target,
@@ -207,7 +205,7 @@ extern void do_reboot(dbref player, int flag);
 
 /* From destroy.c */
 extern void do_dbck(dbref player);
-extern void do_destroy(dbref player, char *name, int confirm);
+extern void do_destroy(dbref player, char *name, int confirm, NEW_PE_INFO *pe_info);
 
 /* From timer.c */
 void init_timer(void);

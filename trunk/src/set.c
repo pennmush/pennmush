@@ -39,7 +39,7 @@
 #include "game.h"
 #include "confmagic.h"
 
-static int chown_ok(dbref player, dbref thing, dbref newowner);
+static int chown_ok(dbref player, dbref thing, dbref newowner, NEW_PE_INFO *pe_info);
 void do_attrib_flags
   (dbref player, const char *obj, const char *atrname, const char *flag);
 static int af_helper(dbref player, dbref thing, dbref parent,
@@ -175,9 +175,10 @@ do_name(dbref player, const char *name, char *newname_)
  * \param name name of object to change owner of.
  * \param newobj name of new owner for object.
  * \param preserve if 1, preserve privileges and don't halt the object.
+ * \param pe_info
  */
 void
-do_chown(dbref player, const char *name, const char *newobj, int preserve)
+do_chown(dbref player, const char *name, const char *newobj, int preserve, NEW_PE_INFO *pe_info)
 {
   dbref thing;
   dbref newowner = NOTHING;
@@ -210,7 +211,7 @@ do_chown(dbref player, const char *name, const char *newobj, int preserve)
     return;
   }
   /* Permissions checking */
-  if (!chown_ok(player, thing, newowner)) {
+  if (!chown_ok(player, thing, newowner, pe_info)) {
     notify(player, T("Permission denied."));
     return;
   }
@@ -243,7 +244,7 @@ do_chown(dbref player, const char *name, const char *newobj, int preserve)
 }
 
 static int
-chown_ok(dbref player, dbref thing, dbref newowner)
+chown_ok(dbref player, dbref thing, dbref newowner, NEW_PE_INFO *pe_info)
 {
   /* Can't touch garbage */
   if (IsGarbage(thing))
@@ -274,7 +275,7 @@ chown_ok(dbref player, dbref thing, dbref newowner)
    * passes the lock?
    */
   if (!(controls(player, newowner) ||
-        (ZMaster(newowner) && eval_lock(player, newowner, Zone_Lock))))
+        (ZMaster(newowner) && eval_lock_with(player, newowner, Zone_Lock, pe_info))))
     return 0;
 
   /* Target player is legitimate. Does player control the object? */
@@ -282,7 +283,7 @@ chown_ok(dbref player, dbref thing, dbref newowner)
     return 1;
 
   if (controls(player, Owner(thing)) &&
-      ZMaster(newowner) && eval_lock(Owner(thing), newowner, Zone_Lock))
+      ZMaster(newowner) && eval_lock_with(Owner(thing), newowner, Zone_Lock, pe_info))
     return 1;
 
   if (ChownOk(thing) && (!IsThing(thing) || (Location(thing) == player)))
@@ -367,12 +368,13 @@ chown_object(dbref player, dbref thing, dbref newowner, int preserve)
  * \param newobj name of new ZMO.
  * \param noisy if 1, notify player about success and failure.
  * \param preserve was the /preserve switch given?
+ * \param pe_info
  * \retval 0 failed to change zone.
  * \retval 1 successfully changed zone.
  */
 int
 do_chzone(dbref player, char const *name, char const *newobj, bool noisy,
-          bool preserve)
+          bool preserve, NEW_PE_INFO *pe_info)
 {
   dbref thing;
   dbref zone;
@@ -412,7 +414,7 @@ do_chzone(dbref player, char const *name, char const *newobj, bool noisy,
    */
   has_lock = (getlock(zone, Chzone_Lock) != TRUE_BOOLEXP);
   if (!(Wizard(player) || (zone == NOTHING) || Owns(player, zone) ||
-        (has_lock && eval_lock(player, zone, Chzone_Lock)))) {
+        (has_lock && eval_lock_with(player, zone, Chzone_Lock, pe_info)))) {
     if (noisy) {
       if (has_lock) {
         fail_lock(player, zone, Chzone_Lock,
@@ -1107,7 +1109,7 @@ do_include(dbref executor, dbref enactor, char *object, char **argv,
  * \param what name of the object to use.
  */
 void
-do_use(dbref player, const char *what)
+do_use(dbref player, const char *what, NEW_PE_INFO *pe_info)
 {
   dbref thing;
 
@@ -1116,7 +1118,7 @@ do_use(dbref player, const char *what)
   if ((thing =
        noisy_match_result(player, what, TYPE_THING,
                           MAT_NEAR_THINGS | MAT_ENGLISH)) != NOTHING) {
-    if (!eval_lock(player, thing, Use_Lock)) {
+    if (!eval_lock_with(player, thing, Use_Lock, pe_info)) {
       fail_lock(player, thing, Use_Lock, T("Permission denied."), NOTHING);
       return;
     } else {
@@ -1135,7 +1137,7 @@ do_use(dbref player, const char *what)
  * \param parent_name the name of the new parent object.
  */
 void
-do_parent(dbref player, char *name, char *parent_name)
+do_parent(dbref player, char *name, char *parent_name, NEW_PE_INFO *pe_info)
 {
   dbref thing;
   dbref parent;
@@ -1166,7 +1168,7 @@ do_parent(dbref player, char *name, char *parent_name)
    * anyway, right?)]
    */
   if ((parent != NOTHING) && !controls(player, parent) &&
-      !(LinkOk(parent) && eval_lock(player, parent, Parent_Lock))) {
+      !(LinkOk(parent) && eval_lock_with(player, parent, Parent_Lock, pe_info))) {
     notify(player, T("Permission denied."));
     return;
   }

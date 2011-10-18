@@ -383,7 +383,7 @@ find_var_dest(dbref player, dbref exit_obj)
  * \param type type of motion to check (global, zone, neither).
  */
 void
-do_move(dbref player, const char *direction, enum move_type type)
+do_move(dbref player, const char *direction, enum move_type type, NEW_PE_INFO *pe_info)
 {
   dbref exit_m, loc, var_dest;
   if (!strcasecmp(direction, "home") && can_move(player, "home")) {
@@ -430,13 +430,13 @@ do_move(dbref player, const char *direction, enum move_type type)
     default:
       /* we got one */
       /* check to see if we're allowed to pass */
-      if (!eval_lock(player, Location(player), Leave_Lock)) {
+      if (!eval_lock_with(player, Location(player), Leave_Lock, pe_info)) {
         fail_lock(player, Location(player), Leave_Lock,
                   T("You can't go that way."), NOTHING);
         return;
       }
 
-      if (could_doit(player, exit_m)) {
+      if (could_doit(player, exit_m, pe_info)) {
         switch (Location(exit_m)) {
         case HOME:
           var_dest = Home(player);
@@ -444,7 +444,7 @@ do_move(dbref player, const char *direction, enum move_type type)
         case AMBIGUOUS:
           var_dest = find_var_dest(player, exit_m);
           /* Only allowed if the owner of the exit could link to var_dest */
-          if (!GoodObject(var_dest) || !can_link_to(exit_m, var_dest)) {
+          if (!GoodObject(var_dest) || !can_link_to(exit_m, var_dest, pe_info)) {
             notify_format(player,
                           T
                           ("Variable exit destination #%d is invalid or not permitted."),
@@ -547,7 +547,7 @@ do_firstexit(dbref player, const char **what)
  * \param what name of object to get.
  */
 void
-do_get(dbref player, const char *what)
+do_get(dbref player, const char *what, NEW_PE_INFO *pe_info)
 {
   dbref loc = Location(player);
   dbref thing;
@@ -589,13 +589,13 @@ do_get(dbref player, const char *what)
       /* to steal something, you have to be able to get it, and the
        * object must be ENTER_OK and not take-locked against you.
        */
-      if (could_doit(player, thing) &&
+      if (could_doit(player, thing, pe_info) &&
           (POSSGET_ON_DISCONNECTED ||
            (!IsPlayer(Location(thing)) ||
             Connected(Location(thing)))) &&
           (controls(player, thing) ||
            (EnterOk(Location(thing)) &&
-            eval_lock(player, Location(thing), Take_Lock)))) {
+            eval_lock_with(player, Location(thing), Take_Lock, pe_info)))) {
         notify_format(Location(thing),
                       T("%s was taken from you."), Name(thing));
         notify_format(thing, T("%s took you."), Name(player));
@@ -641,12 +641,12 @@ do_get(dbref player, const char *what)
           notify(player, T("You cannot get yourself!"));
           return;
         }
-        if (!eval_lock(player, Location(thing), Take_Lock)) {
+        if (!eval_lock_with(player, Location(thing), Take_Lock, pe_info)) {
           fail_lock(player, Location(thing), Take_Lock,
                     T("You can't take that from there."), NOTHING);
           return;
         }
-        if (could_doit(player, thing)) {
+        if (could_doit(player, thing, pe_info)) {
           moveto(thing, player, player, "get");
           notify_format(thing, T("%s took you."), Name(player));
           tp = tbuf1;
@@ -680,7 +680,7 @@ do_get(dbref player, const char *what)
  * \param name name of object to drop.
  */
 void
-do_drop(dbref player, const char *name)
+do_drop(dbref player, const char *name, NEW_PE_INFO *pe_info)
 {
   dbref loc;
   dbref thing;
@@ -704,11 +704,11 @@ do_drop(dbref player, const char *name)
     } else if (IsExit(thing)) {
       notify(player, T("Sorry, you can't drop exits."));
       return;
-    } else if (!eval_lock(player, thing, Drop_Lock)) {
+    } else if (!eval_lock_with(player, thing, Drop_Lock, pe_info)) {
       fail_lock(player, thing, Drop_Lock,
                 T("You can't seem to get rid of that."), NOTHING);
       return;
-    } else if (IsRoom(loc) && !eval_lock(player, loc, Drop_Lock)) {
+    } else if (IsRoom(loc) && !eval_lock_with(player, loc, Drop_Lock, pe_info)) {
       fail_lock(player, loc, Drop_Lock,
                 T("You can't seem to drop things here."), NOTHING);
       return;
@@ -716,7 +716,7 @@ do_drop(dbref player, const char *name)
       notify(thing, T("Dropped."));
       safe_tel(thing, HOME, 0, player, "drop");
     } else if ((Location(loc) != NOTHING) && IsRoom(loc) && !Sticky(loc)
-               && eval_lock(thing, loc, Dropto_Lock)) {
+               && eval_lock_with(thing, loc, Dropto_Lock, pe_info)) {
       /* location has immediate dropto */
       notify_format(thing, T("%s drops you."), Name(player));
       moveto(thing, Location(loc), player, "drop");
@@ -758,7 +758,7 @@ do_drop(dbref player, const char *name)
  * \param what the name of the object to empty.
  */
 void
-do_empty(dbref player, const char *what)
+do_empty(dbref player, const char *what, NEW_PE_INFO *pe_info)
 {
   dbref player_loc;
   dbref thing, thing_loc;
@@ -789,15 +789,15 @@ do_empty(dbref player, const char *what)
     empty_ok = 0;
     if (player == thing) {
       /* empty me: You don't need to get what's in your inventory already */
-      if (eval_lock(player, item, Drop_Lock) &&
-          (!IsRoom(thing_loc) || eval_lock(player, thing_loc, Drop_Lock)))
+      if (eval_lock_with(player, item, Drop_Lock, pe_info) &&
+          (!IsRoom(thing_loc) || eval_lock_with(player, thing_loc, Drop_Lock, pe_info)))
         empty_ok = 1;
     }
     /* Check that player can get stuff from thing */
     else if (controls(player, thing) ||
-             (EnterOk(thing) && eval_lock(player, thing, Enter_Lock))) {
+             (EnterOk(thing) && eval_lock_with(player, thing, Enter_Lock, pe_info))) {
       /* Check that player can get item */
-      if (!could_doit(player, item)) {
+      if (!could_doit(player, item, pe_info)) {
         /* Send failure message if set, otherwise be quiet */
         fail_lock(player, thing, Basic_Lock, NULL, NOTHING);
         continue;
@@ -807,8 +807,8 @@ do_empty(dbref player, const char *what)
       if (thing_loc == player)
         empty_ok = 1;
       /* Thing is in player's location - player must also be able to drop */
-      else if (eval_lock(player, item, Drop_Lock) &&
-               (!IsRoom(thing_loc) || eval_lock(player, thing_loc, Drop_Lock)))
+      else if (eval_lock_with(player, item, Drop_Lock, pe_info) &&
+               (!IsRoom(thing_loc) || eval_lock_with(player, thing_loc, Drop_Lock, pe_info)))
         empty_ok = 1;
     }
     /* Now do the work, if we should. That includes triggering messages */
@@ -840,7 +840,7 @@ do_empty(dbref player, const char *what)
           safe_tel(thing, HOME, 0, player, "empty");
         } else if ((Location(thing_loc) != NOTHING) && IsRoom(thing_loc)
                    && !Sticky(thing_loc)
-                   && eval_lock(item, thing_loc, Dropto_Lock)) {
+                   && eval_lock_with(item, thing_loc, Dropto_Lock, pe_info)) {
           /* location has immediate dropto */
           notify_format(item, T("%s drops you."), Name(player));
           moveto(item, Location(thing_loc), player, "empty");
@@ -873,7 +873,7 @@ do_empty(dbref player, const char *what)
  * \param what name of object to enter.
  */
 void
-do_enter(dbref player, const char *what)
+do_enter(dbref player, const char *what, NEW_PE_INFO *pe_info)
 {
   dbref thing;
   dbref loc;
@@ -889,7 +889,7 @@ do_enter(dbref player, const char *what)
     notify(player, T("Permission denied."));
     return;
   case TYPE_EXIT:
-    do_move(player, what, MOVE_NORMAL);
+    do_move(player, what, MOVE_NORMAL, pe_info);
     return;
   default:
     /* Remember the current room */
@@ -902,7 +902,7 @@ do_enter(dbref player, const char *what)
     /* the object must pass the lock. Also, the thing being entered */
     /* has to be controlled, or must be enter_ok */
     if (!((EnterOk(thing) || controls(player, thing)) &&
-          (eval_lock(player, thing, Enter_Lock))
+          (eval_lock_with(player, thing, Enter_Lock, pe_info))
         )) {
       fail_lock(player, thing, Enter_Lock, T("Permission denied."), NOTHING);
       return;
@@ -924,13 +924,13 @@ do_enter(dbref player, const char *what)
  * \param player the enactor.
  */
 void
-do_leave(dbref player)
+do_leave(dbref player, NEW_PE_INFO *pe_info)
 {
   dbref loc;
   loc = Location(player);
   if (IsRoom(loc) || IsGarbage(loc) || IsGarbage(Location(loc))
       || NoLeave(loc)
-      || !eval_lock(player, loc, Leave_Lock)
+      || !eval_lock_with(player, loc, Leave_Lock, pe_info)
     ) {
     fail_lock(player, loc, Leave_Lock, T("You can't leave."), NOTHING);
     return;
@@ -973,19 +973,19 @@ remote_exit(dbref player, const char *direction)
  * \param command direction to move.
  */
 void
-move_wrapper(dbref player, const char *command)
+move_wrapper(dbref player, const char *command, NEW_PE_INFO *pe_info)
 {
   if (!Mobile(player))
     return;
   if (can_move(player, command))
-    do_move(player, command, MOVE_NORMAL);
+    do_move(player, command, MOVE_NORMAL, pe_info);
   else if ((Zone(Location(player)) != NOTHING) && remote_exit(player, command))
-    do_move(player, command, MOVE_ZONE);
+    do_move(player, command, MOVE_ZONE, pe_info);
   else if ((Location(player) != MASTER_ROOM)
            && global_exit(player, command))
-    do_move(player, command, MOVE_GLOBAL);
+    do_move(player, command, MOVE_GLOBAL, pe_info);
   else
-    do_move(player, command, MOVE_NORMAL);
+    do_move(player, command, MOVE_NORMAL, pe_info);
 }
 
 /* Routines for dealing with the follow commands */
@@ -999,7 +999,7 @@ move_wrapper(dbref player, const char *command)
  * \param arg name of object to follow.
  */
 void
-do_follow(dbref player, const char *arg)
+do_follow(dbref player, const char *arg, NEW_PE_INFO *pe_info)
 {
   dbref leader;
   if (arg && *arg) {
@@ -1031,7 +1031,7 @@ do_follow(dbref player, const char *arg)
       return;
     }
     /* Ok, are we allowed to follow them? */
-    if (!eval_lock(player, leader, Follow_Lock)) {
+    if (!eval_lock_with(player, leader, Follow_Lock, pe_info)) {
       fail_lock(player, leader, Follow_Lock,
                 T("You're not allowed to follow."), Location(player));
       return;

@@ -1028,7 +1028,6 @@ check_zone_lock(dbref player, dbref zone, int noisy)
   }
 }
 
-
 void
 purge_locks(void)
 {

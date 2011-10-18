@@ -455,7 +455,7 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
        * or have the open_anywhere power
        */
       if (!tport_control_ok(player, victim, loc) ||
-          !can_open_from(player, destination)) {
+          !can_open_from(player, destination, pe_info)) {
         notify(player, T("Permission denied."));
         return;
       }
@@ -491,7 +491,7 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
        * if home is valid before sending them there. */
       if (!GoodObject(Home(victim)))
         Home(victim) = PLAYER_START;
-      do_move(victim, "home", MOVE_NORMAL);
+      do_move(victim, "home", MOVE_NORMAL, pe_info);
       return;
     } else {
       /* valid location, perform other checks */
@@ -501,7 +501,7 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
         notify(player, T("What are you doing inside of yourself?"));
         if (Home(victim) == absroom)
           Home(victim) = PLAYER_START;
-        do_move(victim, "home", MOVE_NORMAL);
+        do_move(victim, "home", MOVE_NORMAL, pe_info);
         return;
       }
       /* find the "absolute" room */
@@ -511,7 +511,7 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
         notify(victim, T("You're in the void - sending you home."));
         if (Home(victim) == Location(victim))
           Home(victim) = PLAYER_START;
-        do_move(victim, "home", MOVE_NORMAL);
+        do_move(victim, "home", MOVE_NORMAL, pe_info);
         return;
       }
       /* if there are a lot of containers, send him home */
@@ -519,7 +519,7 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
         notify(victim, T("You're in too many containers."));
         if (Home(victim) == Location(victim))
           Home(victim) = PLAYER_START;
-        do_move(victim, "home", MOVE_NORMAL);
+        do_move(victim, "home", MOVE_NORMAL, pe_info);
         return;
       }
       /* note that we check the NO_TEL status of the victim rather
@@ -603,7 +603,7 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
       } else {
         char absdest[SBUF_LEN];
         strcpy(absdest, tprintf("#%d", destination));
-        do_move(victim, absdest, MOVE_TELEPORT);
+        do_move(victim, absdest, MOVE_TELEPORT, pe_info);
       }
     }
   }
@@ -1025,7 +1025,7 @@ do_chzoneall(dbref player, const char *name, const char *target, bool preserve)
    * consistency on things like flag resetting, etc... */
   for (i = 0; i < db_top; i++) {
     if (Owner(i) == victim && Zone(i) != zone) {
-      count += do_chzone(player, unparse_dbref(i), target, 0, preserve);
+      count += do_chzone(player, unparse_dbref(i), target, 0, preserve, NULL);
     }
   }
   notify_format(player, T("Zone changed for %d objects."), count);

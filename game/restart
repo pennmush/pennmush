@@ -22,7 +22,7 @@ PIDFILE=netmush.pid
 # Uncomment the line below to attempt to allow crashes to produce
 # core dumps. If you're getting crashes, this is the best way
 # to debug them.
-#ulimit -c unlimited
+ulimit -c unlimited
 
 # Internationalization stuff
 # Set LANG here to get international character sets and, if someone's

@@ -78,7 +78,7 @@
 
 dbref first_free = NOTHING;   /**< Object at top of free list */
 
-static dbref what_to_destroy(dbref player, char *name, int confirm);
+static dbref what_to_destroy(dbref player, char *name, int confirm, NEW_PE_INFO *pe_info);
 static void pre_destroy(dbref player, dbref thing);
 static void free_object(dbref thing);
 static void empty_contents(dbref thing);
@@ -205,7 +205,7 @@ extern struct db_stat_info current_state;
  * return NOTHING.
  */
 static dbref
-what_to_destroy(dbref player, char *name, int confirm)
+what_to_destroy(dbref player, char *name, int confirm, NEW_PE_INFO *pe_info)
 {
   dbref thing;
 
@@ -230,7 +230,7 @@ what_to_destroy(dbref player, char *name, int confirm)
       !(IsExit(thing) &&
         (controls(player, Destination(thing)) ||
          controls(player, Source(thing)))) &&
-      !(DestOk(thing) && eval_lock(player, thing, Destroy_Lock))) {
+      !(DestOk(thing) && eval_lock_with(player, thing, Destroy_Lock, pe_info))) {
     notify(player, T("Permission denied."));
     return NOTHING;
   }
@@ -315,10 +315,10 @@ what_to_destroy(dbref player, char *name, int confirm)
  * \param confirm if 1, called with /override (or nuke).
  */
 void
-do_destroy(dbref player, char *name, int confirm)
+do_destroy(dbref player, char *name, int confirm, NEW_PE_INFO *pe_info)
 {
   dbref thing;
-  thing = what_to_destroy(player, name, confirm);
+  thing = what_to_destroy(player, name, confirm, pe_info);
   if (!GoodObject(thing))
     return;
 

@@ -544,11 +544,11 @@ look_room(dbref player, dbref loc, enum look_type style, NEW_PE_INFO *pe_info)
   /* tell him the appropriate messages if he has the key */
   if (IsRoom(loc) && (style == LOOK_NORMAL || style == LOOK_AUTO)) {
     if (style == LOOK_AUTO && Terse(player)) {
-      if (could_doit(player, loc))
+      if (could_doit(player, loc, pe_info))
         did_it(player, loc, NULL, NULL, "OSUCCESS", NULL, "ASUCCESS", NOTHING);
       else
         did_it(player, loc, NULL, NULL, "OFAILURE", NULL, "AFAILURE", NOTHING);
-    } else if (could_doit(player, loc))
+    } else if (could_doit(player, loc, pe_info))
       did_it(player, loc, "SUCCESS", NULL, "OSUCCESS", NULL, "ASUCCESS",
              NOTHING);
     else

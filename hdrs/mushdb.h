@@ -76,17 +76,17 @@ bool unfindable(dbref);
                         (IsExit(x) && (Location(x) == NOTHING)))
 
 /* Can p link an exit to x? */
-#define can_link_to(p,x) \
+#define can_link_to(p,x,pe_info) \
      (GoodObject(x) \
    && (controls(p,x) || Link_Anywhere(p) || \
-       (LinkOk(x) && eval_lock(p,x,Link_Lock))) \
+       (LinkOk(x) && eval_lock_with(p,x,Link_Lock,pe_info))) \
    && (!NO_LINK_TO_OBJECT || IsRoom(x)))
 
 /* can p open an exit in r? */
-#define can_open_from(p,r) \
+#define can_open_from(p,r,pe_info) \
      (GoodObject(r) && IsRoom(r) \
    && (controls(p,r) || Open_Anywhere(p) || \
-       (OpenOk(r) && eval_lock(p,r,Open_Lock))))
+       (OpenOk(r) && eval_lock_with(p,r,Open_Lock,pe_info))))
 
 /* can p access attribute a on object x? */
 #define Can_Read_Attr(p,x,a)   \

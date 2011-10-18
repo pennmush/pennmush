@@ -69,15 +69,16 @@ tprintf(const char *fmt, ...)
  * the purposes of picking up an object or moving through an exit.
  * \param player to check against lock.
  * \param thing thing to check the basic lock on.
+ * \param pe_info
  * \retval 1 player passes lock.
  * \retval 0 player fails lock.
  */
 int
-could_doit(dbref player, dbref thing)
+could_doit(dbref player, dbref thing, NEW_PE_INFO *pe_info)
 {
   if (!IsRoom(thing) && Location(thing) == NOTHING)
     return 0;
-  return (eval_lock(player, thing, Basic_Lock));
+  return (eval_lock_with(player, thing, Basic_Lock, pe_info));
 }
 
 /** Check for CHARGES on thing and, if present, lower.

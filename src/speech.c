@@ -154,6 +154,7 @@ do_teach(dbref player, const char *tbuf1, int list, MQUE *parent_queue)
 /** The say command.
  * \param player the enactor.
  * \param message the message to say.
+ * \param pe_info
  */
 void
 do_say(dbref player, const char *message, NEW_PE_INFO *pe_info)
@@ -204,6 +205,7 @@ do_say(dbref player, const char *message, NEW_PE_INFO *pe_info)
  * \param message the message to emit.
  * \param flags PEMIT_* flags.
  * \param format a format_msg structure to pass to notify_anything() from \@message
+ * \param pe_info
  */
 void
 do_oemit_list(dbref player, char *list, const char *message, int flags,
@@ -324,9 +326,10 @@ do_oemit_list(dbref player, char *list, const char *message, int flags,
  * \param arg1 name of the object to whisper to.
  * \param arg2 message to whisper.
  * \param noisy if 1, others overhear that a whisper has occurred.
+ * \param pe_info
  */
 void
-do_whisper(dbref player, const char *arg1, const char *arg2, int noisy)
+do_whisper(dbref player, const char *arg1, const char *arg2, int noisy, NEW_PE_INFO *pe_info)
 {
   dbref who;
   int key;
@@ -350,7 +353,7 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy)
   }
   tp = tbuf = (char *) mush_malloc(BUFFER_LEN, "string");
   if (!tbuf)
-    mush_panic("Unable to allocate memory in do_whisper_list");
+    mush_panic("Unable to allocate memory in do_whisper");
 
   overheard = 0;
   head = arg1;
@@ -375,7 +378,7 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy)
     current = next_in_list(start);
     who = match_result(player, current, TYPE_PLAYER, MAT_NEAR_THINGS |
                        MAT_CONTAINER);
-    if (!GoodObject(who) || !can_interact(player, who, INTERACT_HEAR, NULL)) {
+    if (!GoodObject(who) || !can_interact(player, who, INTERACT_HEAR, pe_info)) {
       safe_chr(' ', tbuf, &tp);
       safe_str_space(current, tbuf, &tp);
       if (GoodObject(who))
@@ -459,6 +462,7 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy)
  * \param flags PEMIT_* flags
  * \param numargs The number of arguments for the ufun.
  * \param argv The arguments for the ufun.
+ * \param pe_info
  */
 
 void
@@ -520,6 +524,7 @@ do_message(dbref executor, char *list, char *attrname,
  * \param message the message to pemit.
  * \param flags PEMIT_* flags.
  * \param format a format_msg structure to pass to notify_anything() from \@message
+ * \param pe_info
  */
 void
 do_pemit(dbref player, char *target, const char *message, int flags,
@@ -575,6 +580,7 @@ do_pemit(dbref player, char *target, const char *message, int flags,
  * \param player the enactor.
  * \param tbuf1 the message to pose.
  * \param nospace if 1, omit space between name and pose (semipose); if 0, include space (pose)
+ * \param pe_info
  */
 void
 do_pose(dbref player, const char *tbuf1, int nospace, NEW_PE_INFO *pe_info)
@@ -767,6 +773,7 @@ messageformat(dbref player, const char *attribute, dbref enactor, int flags,
  * \param arg2 the message to page.
  * \param override if 1, page/override.
  * \param has_eq if 1, the command had an = in it.
+ * \param pe_info
  */
 void
 do_page(dbref executor, const char *arg1, const char *arg2, int override,
@@ -1158,6 +1165,7 @@ filter_found(dbref thing, dbref speaker, const char *msg, int flag)
  * \param player the enactor.
  * \param message the message to emit.
  * \param flags bitmask of notification flags.
+ * \param pe_info
  */
 void
 do_emit(dbref player, const char *message, int flags, NEW_PE_INFO *pe_info)
@@ -1198,6 +1206,7 @@ do_emit(dbref player, const char *message, int flags, NEW_PE_INFO *pe_info)
  * \param target string containing dbref of room to remit in.
  * \param msg message to emit.
  * \param flags PEMIT_* flags
+ * \param pe_info
  */
 static void
 do_one_remit(dbref player, const char *target, const char *msg, int flags,
@@ -1239,6 +1248,7 @@ do_one_remit(dbref player, const char *target, const char *msg, int flags,
  * \param message message to emit.
  * \param flags for remit.
  * \param format a format_msg structure to pass to notify_anything() from \@message
+ * \param pe_info
  */
 void
 do_remit(dbref player, char *rooms, const char *message, int flags,
@@ -1259,6 +1269,7 @@ do_remit(dbref player, char *rooms, const char *message, int flags,
  * \param player the enactor.
  * \param message message to emit.
  * \param flags bitmask of notification flags.
+ * \param pe_info
  */
 void
 do_lemit(dbref player, const char *message, int flags, NEW_PE_INFO *pe_info)

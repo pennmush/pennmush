@@ -1712,6 +1712,10 @@ shutdownsock(DESC *d, const char *reason)
               reason, d->input_chars, d->output_chars, d->cmds);
   process_output(d);
   clearstrings(d);
+  if (d->conn_timer) {
+    sq_cancel(d->conn_timer);
+    d->conn_timer = NULL;
+  }
   shutdown(d->descriptor, 2);
   closesocket(d->descriptor);
   if (d->prev)

@@ -772,7 +772,7 @@ next_parent(dbref thing, dbref current, int *parent_count, int *use_ancestor)
 {
   dbref next;
 
-  if ((*parent_count) > MAX_PARENTS)
+  if ((*parent_count) > MAX_PARENTS || (use_ancestor && *use_ancestor == 2))
     next = NOTHING;
   else
     next = Parent(current);

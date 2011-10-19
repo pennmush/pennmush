@@ -517,7 +517,7 @@ look_room(dbref player, dbref loc, enum look_type style, NEW_PE_INFO *pe_info)
       }
     }
     tag("HR");
-    tag_wrap("FONT", "SIZE=+2", unparse_room(player, loc));
+    tag_wrap("FONT", "SIZE=+2", unparse_room(player, loc, pe_info));
     PEND;
     notify_by(loc, player, pbuff);
   }

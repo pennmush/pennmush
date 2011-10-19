@@ -1921,7 +1921,7 @@ FUNCTION(fun_iname)
       return;
     }
     if (nameformat(executor, it, tbuf1,
-                   IsExit(it) ? shortname(it) : (char *) accented_name(it)))
+                   IsExit(it) ? shortname(it) : (char *) accented_name(it), 1, pe_info))
       safe_str(tbuf1, buff, bp);
     else if (IsExit(it))
       safe_str(shortname(it), buff, bp);

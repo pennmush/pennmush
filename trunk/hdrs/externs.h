@@ -641,14 +641,14 @@ mush_strndup(const char *src, size_t len, const char *check)
 /* From unparse.c */
     const char *real_unparse
       (dbref player, dbref loc, int obey_myopic, int use_nameformat,
-       int use_nameaccent);
+       int use_nameaccent, NEW_PE_INFO *pe_info);
     extern const char *unparse_objid(dbref thing);
     extern const char *unparse_object(dbref player, dbref loc);
 /** For back compatibility, an alias for unparse_object */
 #define object_header(p,l) unparse_object(p,l)
     const char *unparse_object_myopic(dbref player, dbref loc);
-    const char *unparse_room(dbref player, dbref loc);
-    int nameformat(dbref player, dbref loc, char *tbuf1, char *defname);
+    const char *unparse_room(dbref player, dbref loc, NEW_PE_INFO *pe_info);
+    int nameformat(dbref player, dbref loc, char *tbuf1, char *defname, bool localize, NEW_PE_INFO *pe_info);
     const char *accented_name(dbref thing);
 
 /* From utils.c */

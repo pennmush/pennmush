@@ -45,6 +45,8 @@ Minor changes:
  * When you fail to @mail a player because you don't pass their @lock/mail,
    the MAIL_FAILURE verbs will be triggered, as per 'help failure'. 
    Suggested by Cheetah. [MG]
+ * When using channels() on an object, the permission checks now resemble 
+   those for cwho() / @channel/who. Based on a patch by Padraic. [MG]
 
 Hardcode:
  * Changed many things which were evaluating an attribute value manully to

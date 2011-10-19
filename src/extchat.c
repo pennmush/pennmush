@@ -3271,7 +3271,7 @@ FUNCTION(fun_channels)
   CHAN *c;
   CHANLIST *cl;
   CHANUSER *u;
-  int can_ex;
+  int can_ex, priv_who;
 
   /* There are these possibilities:
    *  no args - just a list of all channels
@@ -3290,9 +3290,10 @@ FUNCTION(fun_channels)
       if (!delim_check(buff, bp, nargs, args, 2, &sep))
         return;
       can_ex = Can_Examine(executor, it);
+      priv_who = Priv_Who(executor);
       for (cl = Chanlist(it); cl; cl = cl->next) {
-        if (can_ex || ((u = onchannel(it, cl->chan)) && !Chanuser_Hide(u)
-                       && onchannel(executor, cl->chan))) {
+        if (can_ex || (Chan_Can_See(cl->chan, executor)
+            && (u = onchannel(it, cl->chan)) && (priv_who || !Chanuser_Hide(u)))) {
           if (!first)
             safe_chr(sep, buff, bp);
           safe_str(ChanName(cl->chan), buff, bp);

@@ -592,11 +592,11 @@ See also: cstatus()
   object, it returns a space-separated list of channels to which the object
   is listening. If not, it's treated as a no-argument case with a delimiter.
 
-  If you don't have permission to examine the object, you only see those
-  channels to which the object belong for which you have permission to join
-  (or are joined to).
+  If you can examine the object, the function returns all the channels it's
+  on. Otherwise, it will only return those channels you can see that <object>
+  is a member of with @channel/who.
   
-See also: @channel/list
+See also: @channel/list, @channel/who, cwho()
 & CLOCK()
   clock(<channel>[/<locktype>][, <new lock>])
 

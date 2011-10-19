@@ -375,7 +375,7 @@ static int process_input(DESC *d, int output_ready);
 static void process_input_helper(DESC *d, char *tbuf1, int got);
 static void set_userstring(unsigned char **userstring, const char *command);
 static void process_commands(void);
-enum comm_res { CRES_OK, CRES_LOGOUT, CRES_QUIT, CRES_SITELOCK, CRES_HTTP };
+enum comm_res { CRES_OK = 0, CRES_LOGOUT, CRES_QUIT, CRES_SITELOCK, CRES_HTTP };
 static enum comm_res do_command(DESC *d, char *command);
 static void parse_puebloclient(DESC *d, char *command);
 static int dump_messages(DESC *d, dbref player, int new);
@@ -2460,21 +2460,26 @@ static void
 process_commands(void)
 {
   int nprocessed;
-  DESC *cdesc, *dnext;
-  struct text_block *t;
-  enum comm_res retval = CRES_OK;
-enum comm_res { CRES_OK, CRES_LOGOUT, CRES_QUIT, CRES_SITELOCK, CRES_HTTP };
+
   do {
+    DESC *cdesc, *dnext = NULL;
+
     nprocessed = 0;
     for (cdesc = descriptor_list; cdesc;
-         cdesc = (nprocessed > 0 && retval > 0) ? cdesc->next : dnext) {
+         cdesc = dnext) {
+      struct text_block *t;
+
       dnext = cdesc->next;
-      if (cdesc->quota > 0 && (t = cdesc->input.head)) {
-        cdesc->quota--;
-        nprocessed++;
+
+      if (cdesc->quota > 0 && (t = cdesc->input.head) != NULL) {
+	enum comm_res retval;
+
+        cdesc->quota -= 1;
+        nprocessed += 1;
         start_cpu_timer();
         retval = do_command(cdesc, (char *) t->start);
         reset_cpu_timer();
+
         switch (retval) {
         case CRES_QUIT:
           shutdownsock(cdesc, "quit");
@@ -2491,13 +2496,11 @@ enum comm_res { CRES_OK, CRES_LOGOUT, CRES_QUIT, CRES_SITELOCK, CRES_HTTP };
         case CRES_OK:
           cdesc->input.head = t->nxt;
           if (!cdesc->input.head)
-            cdesc->input.tail = &cdesc->input.head;
-          if (t) {
+            cdesc->input.tail = NULL;
 #ifdef DEBUG
-            do_rawlog(LT_TRACE, "free_text_block(%p) at 5.", (void *) t);
+	  do_rawlog(LT_TRACE, "free_text_block(%p) at 5.", (void *) t);
 #endif                          /* DEBUG */
-            free_text_block(t);
-          }
+	  free_text_block(t);
           break;
         }
       }

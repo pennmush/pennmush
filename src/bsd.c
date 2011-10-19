@@ -309,7 +309,7 @@ int main(int argc, char **argv);
 #endif
 #endif
 void set_signals(void);
-static struct timeval *timeval_sub(struct timeval *now, struct timeval *then);
+static struct timeval timeval_sub(struct timeval now, struct timeval then);
 #ifdef WIN32
 /** Windows doesn't have gettimeofday(), so we implement it here */
 #define our_gettimeofday(now) win_gettimeofday((now))
@@ -318,9 +318,9 @@ static void win_gettimeofday(struct timeval *now);
 /** A wrapper for gettimeofday() in case the system doesn't have it */
 #define our_gettimeofday(now) gettimeofday((now), (struct timezone *)NULL)
 #endif
-static long int msec_diff(struct timeval *now, struct timeval *then);
-static struct timeval *msec_add(struct timeval *t, int x);
-static void update_quotas(struct timeval *last, struct timeval *current);
+static long int msec_diff(struct timeval now, struct timeval then);
+static struct timeval msec_add(struct timeval t, int x);
+static void update_quotas(struct timeval last, struct timeval current);
 
 int how_many_fds(void);
 static void shovechars(Port_t port, Port_t sslport);
@@ -809,20 +809,17 @@ win_gettimeofday(struct timeval *now)
  * \param then pointer to the timeval to subtract.
  * \return pointer to a statically allocated timeval of the difference.
  */
-static struct timeval *
-timeval_sub(struct timeval *now, struct timeval *then)
+static struct timeval
+timeval_sub(struct timeval now, struct timeval then)
 {
-  static struct timeval mytime;
-  mytime.tv_sec = now->tv_sec;
-  mytime.tv_usec = now->tv_usec;
-
-  mytime.tv_sec -= then->tv_sec;
-  mytime.tv_usec -= then->tv_usec;
+  struct timeval mytime = now;
+  mytime.tv_sec -= then.tv_sec;
+  mytime.tv_usec -= then.tv_usec;
   if (mytime.tv_usec < 0) {
     mytime.tv_usec += 1000000;
     mytime.tv_sec--;
   }
-  return &mytime;
+  return mytime;
 }
 
 /** Return the difference between two timeval structs in milliseconds.
@@ -831,15 +828,15 @@ timeval_sub(struct timeval *now, struct timeval *then)
  * \return milliseconds of difference between them.
  */
 static long int
-msec_diff(struct timeval *now, struct timeval *then)
+msec_diff(struct timeval now, struct timeval then)
 {
-  long int secs = now->tv_sec - then->tv_sec;
+  long int secs = now.tv_sec - then.tv_sec;
   if (secs == 0)
-    return (now->tv_usec - then->tv_usec) / 1000;
+    return (now.tv_usec - then.tv_usec) / 1000;
   else if (secs == 1)
-    return (now->tv_usec + (1000000 - then->tv_usec)) / 100;
+    return (now.tv_usec + (1000000 - then.tv_usec)) / 100;
   else if (secs > 1)
-    return (secs * 1000) + ((now->tv_usec + (1000000 - then->tv_usec)) / 1000);
+    return (secs * 1000) + ((now.tv_usec + (1000000 - then.tv_usec)) / 1000);
   else
     return 0;
 }
@@ -849,19 +846,17 @@ msec_diff(struct timeval *now, struct timeval *then)
  * \param x number of milliseconds to add to t.
  * \return address of static timeval struct representing the sum.
  */
-static struct timeval *
-msec_add(struct timeval *t, int x)
+static struct timeval
+msec_add(struct timeval t, int x)
 {
-  static struct timeval mytime;
-  mytime.tv_sec = t->tv_sec;
-  mytime.tv_usec = t->tv_usec;
+  struct timeval mytime = t;
   mytime.tv_sec += x / 1000;
   mytime.tv_usec += (x % 1000) * 1000;
   if (mytime.tv_usec >= 1000000) {
     mytime.tv_sec += mytime.tv_usec / 1000000;
     mytime.tv_usec = mytime.tv_usec % 1000000;
   }
-  return &mytime;
+  return mytime;
 }
 
 /** Update each descriptor's allowed rate of issuing commands.
@@ -873,7 +868,7 @@ msec_add(struct timeval *t, int x)
  * \param current pointer to timeval struct of current time.
  */
 static void
-update_quotas(struct timeval *last, struct timeval *current)
+update_quotas(struct timeval last, struct timeval current)
 {
   int nslices;
   DESC *d;
@@ -923,7 +918,7 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
   fd_set input_set, output_set;
   time_t now;
   struct timeval last_slice, current_time, then;
-  struct timeval next_slice, *returned_time;
+  struct timeval next_slice;
   struct timeval timeout, slice_timeout;
   int found;
   int queue_timeout;
@@ -951,8 +946,6 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
 #endif
   }
 
-  our_gettimeofday(&last_slice);
-
   avail_descriptors = how_many_fds() - 5;
 #ifdef INFO_SLAVE
   avail_descriptors -= 2;       /* reserve some more for setting up the slave */
@@ -965,18 +958,17 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
   notify_fd = file_watch_init();
 
   our_gettimeofday(&then);
+  last_slice = then;
 
   while (shutdown_flag == 0) {
     our_gettimeofday(&current_time);
 
-    update_quotas(&last_slice, &current_time);
-    last_slice.tv_sec = current_time.tv_sec;
-    last_slice.tv_usec = current_time.tv_usec;
+    update_quotas(last_slice, current_time);
+    last_slice = current_time;
 
-    if (msec_diff(&current_time, &then) >= 1000) {
+    if (msec_diff(current_time, then) >= 1000) {
       globals.on_second = 1;
-      then.tv_sec = current_time.tv_sec;
-      then.tv_usec = current_time.tv_usec;
+      then = current_time;
     }
 
     process_commands();
@@ -1061,16 +1053,12 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
      * signal every second, so we're reduced to what's below:
      */
     queue_timeout = que_next();
+    /* timeout = { .tv_sec = queue_timeout ? 1 : 0, .tv_usec = 0 }; */
     timeout.tv_sec = queue_timeout ? 1 : 0;
     timeout.tv_usec = 0;
 
-    returned_time = msec_add(&last_slice, COMMAND_TIME_MSEC);
-    next_slice.tv_sec = returned_time->tv_sec;
-    next_slice.tv_usec = returned_time->tv_usec;
-
-    returned_time = timeval_sub(&next_slice, &current_time);
-    slice_timeout.tv_sec = returned_time->tv_sec;
-    slice_timeout.tv_usec = returned_time->tv_usec;
+    next_slice = msec_add(last_slice, COMMAND_TIME_MSEC);
+    slice_timeout = timeval_sub(next_slice, current_time);
     /* Make sure slice_timeout cannot have a negative time. Better
        safe than sorry. */
     if (slice_timeout.tv_sec < 0)

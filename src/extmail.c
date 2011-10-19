@@ -1193,10 +1193,14 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
     return 0;
   }
   if (!(Hasprivs(player) || eval_lock(player, target, Mail_Lock))) {
-    if (!silent)
-      notify_format(player,
-                    T("MAIL: %s is not accepting mail from you right now."),
-                    Name(target));
+    if (!silent) {
+      cp = sbuf;
+      safe_format(sbuf, &cp, T("MAIL: %s is not accepting mail from you right now."), Name(target));
+      *cp = '\0';
+    } else {
+      cp = NULL;
+    }
+    fail_lock(player, target, Mail_Lock, cp, NOTHING);
     return 0;
   }
   count_mail(target, 0, &rc, &uc, &cc);

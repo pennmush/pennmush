@@ -888,7 +888,7 @@ See also: verbs, @lock, @failure, @efail, @lfail
   "use" an object                               Use      @ufail
   speak via say/pose/@*emit/teach in a room     Speech   SPEECH_LOCK`FAILURE
   "page" or "@pemit" to an object               Page     PAGE_LOCK`FAILURE**
-  
+  "@mail" a player                              Mail     MAIL_LOCK`FAILURE
   
   * The Use lock can also prevent you from running an $-command, but it will
     still trigger COMMAND_LOCK`FAILURE.

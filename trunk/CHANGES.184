@@ -42,6 +42,9 @@ Minor changes:
  * When looking at an object, all its components (describe, descformat,
    conformat and exitformat) now share registers: a q-register set in
    the desc can be accessed in the conformat, and so on. [MG]
+ * When you fail to @mail a player because you don't pass their @lock/mail,
+   the MAIL_FAILURE verbs will be triggered, as per 'help failure'. 
+   Suggested by Cheetah. [MG]
 
 Hardcode:
  * Changed many things which were evaluating an attribute value manully to

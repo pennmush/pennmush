@@ -6,6 +6,7 @@
 #ifndef __FLAGS_H
 #define __FLAGS_H
 
+#include "confmagic.h"
 #include "mushtype.h"
 #include "ptab.h"
 #include "dbio.h"

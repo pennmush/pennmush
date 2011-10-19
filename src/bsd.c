@@ -2250,7 +2250,7 @@ handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
       fprintf(stderr, "Setting linemode options.\n");
 #endif
     } else if (**q == TN_TTYPE) {
-      /* Ask for terminal type id: IAC SB TERMINAL-TYPE SEND IAC SEC */
+      /* Ask for terminal type id: IAC SB TERMINAL-TYPE SEND IAC SE */
       unsigned char reply[6] = "\xFF\xFA\x18\x01\xFF\xF0";
       queue_newwrite(d, reply, 6);
     } else if (**q == TN_SGA || **q == TN_NAWS) {

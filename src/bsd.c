@@ -1950,13 +1950,14 @@ network_send_writev(DESC *d)
 #endif
 
 static int
-
 network_send(DESC *d)
 {
   int written = 0;
   struct text_block *cur;
 
 #ifdef HAVE_WRITEV
+  /* If there's multiple pending blocks of text to send, use writev() if
+     possible. */
   if (d->output.head->nxt) 
     return network_send_writev(d);
 #endif
@@ -2009,13 +2010,9 @@ int
 process_output(DESC *d)
 {
 #ifdef HAS_OPENSSL
-    if (d->ssl) {
-#ifdef HAVE_SSL_SLAVE
-      return network_send(d);
-#else
+    if (d->ssl)
       return network_send_ssl(d);
-#endif
-    } else
+    else
 #endif
       return network_send(d);
 }

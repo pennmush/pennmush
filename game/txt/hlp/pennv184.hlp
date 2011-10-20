@@ -42,6 +42,8 @@ Minor changes:
    Suggested by Cheetah. [MG]
  * When using channels() on an object, the permission checks now resemble 
    those for cwho() / @channel/who. Based on a patch by Padraic. [MG]
+ * Guests no longer control anything, including themselves, and can't ever 
+   build, create or destroy objects. Suggested by [SW]. [MG]
 
 Hardcode:
  * Changed many things which were evaluating an attribute value manully to

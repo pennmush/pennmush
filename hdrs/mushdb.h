@@ -72,19 +72,19 @@ bool unfindable(dbref);
 
 #define Can_Examine(p,x)    (controls(p,x) || See_All(p) || \
         (Visual(x) && eval_lock(p,x,Examine_Lock)))
-#define can_link(p,x)  (controls(p,x) || \
-                        (IsExit(x) && (Location(x) == NOTHING)))
+#define can_link(p,x)  (!Guest(p) && (controls(p,x) || \
+                        (IsExit(x) && (Location(x) == NOTHING))))
 
 /* Can p link an exit to x? */
 #define can_link_to(p,x,pe_info) \
      (GoodObject(x) \
    && (controls(p,x) || Link_Anywhere(p) || \
-       (LinkOk(x) && eval_lock_with(p,x,Link_Lock,pe_info))) \
+       (!Guest(p) && LinkOk(x) && eval_lock_with(p,x,Link_Lock,pe_info))) \
    && (!NO_LINK_TO_OBJECT || IsRoom(x)))
 
 /* can p open an exit in r? */
 #define can_open_from(p,r,pe_info) \
-     (GoodObject(r) && IsRoom(r) \
+     (GoodObject(r) && IsRoom(r) && !Guest(p) \
    && (controls(p,r) || Open_Anywhere(p) || \
        (OpenOk(r) && eval_lock_with(p,r,Open_Lock,pe_info))))
 

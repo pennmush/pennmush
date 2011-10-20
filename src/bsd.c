@@ -1954,10 +1954,13 @@ network_send(DESC *d)
   int written = 0;
   struct text_block *cur;
 
+  if (!d || !d->output.head)
+    return 1;
+
 #ifdef HAVE_WRITEV
   /* If there's multiple pending blocks of text to send, use writev() if
      possible. */
-  if (d->output.head && d->output.head->nxt)
+  if (d->output.head->nxt)
     return network_send_writev(d);
 #endif
 

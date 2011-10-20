@@ -1803,7 +1803,7 @@ network_send_ssl(DESC *d)
   if (!d->ssl)
     return 0;
 
-  /* Insure that we're not in a state where we need an SSL_handshake() */
+  /* Ensure that we're not in a state where we need an SSL_handshake() */
   if (ssl_need_handshake(d->ssl_state)) {
     d->ssl_state = ssl_handshake(d->ssl);
     if (d->ssl_state < 0) {
@@ -1817,7 +1817,7 @@ network_send_ssl(DESC *d)
       return 1;
     }
   }
-  /* Insure that we're not in a state where we need an SSL_accept() */
+  /* Ensure that we're not in a state where we need an SSL_accept() */
   if (ssl_need_accept(d->ssl_state)) {
     d->ssl_state = ssl_accept(d->ssl);
     if (d->ssl_state < 0) {
@@ -1912,7 +1912,7 @@ network_send_writev(DESC *d)
 
     cnt = writev(d->descriptor, lines, n);
     if (cnt < 0) {
-      if (errno == EWOULDBLOCK 
+      if (errno == EWOULDBLOCK
 #ifdef EAGAIN
 	  || errno == EAGAIN
 #endif
@@ -1922,7 +1922,6 @@ network_send_writev(DESC *d)
 	return 0;
     }
     written += cnt;
-    
     while (cnt > 0) {
       cur = d->output.head;
       if (cur->nchars <= cnt) {
@@ -1958,18 +1957,18 @@ network_send(DESC *d)
 #ifdef HAVE_WRITEV
   /* If there's multiple pending blocks of text to send, use writev() if
      possible. */
-  if (d->output.head->nxt) 
+  if (d->output.head && d->output.head->nxt)
     return network_send_writev(d);
 #endif
-  
+
   while ((cur = d->output.head) != NULL) {
     int cnt = send(d->descriptor, cur->start, cur->nchars, 0);
 
     if (cnt < 0) {
 #ifdef WIN32
-      if (cnt == SOCKET_ERROR && WSAGetLastError() == WSAEWOULDBLOCK) 
+      if (cnt == SOCKET_ERROR && WSAGetLastError() == WSAEWOULDBLOCK)
 #else
-	if (errno == EWOULDBLOCK 
+	if (errno == EWOULDBLOCK
 #ifdef EAGAIN
 	    || errno == EAGAIN
 #endif
@@ -1979,7 +1978,7 @@ network_send(DESC *d)
       return 0;
     }
     written += cnt;
-    
+
     if (cnt == cur->nchars) {
       /* Wrote a complete block */
       d->output.head = cur->nxt;
@@ -2405,7 +2404,7 @@ process_input(DESC *d, int output_ready __attribute__ ((__unused__)))
 
 #ifdef HAS_OPENSSL
   if (d->ssl) {
-    /* Insure that we're not in a state where we need an SSL_handshake() */
+    /* Ensure that we're not in a state where we need an SSL_handshake() */
     if (ssl_need_handshake(d->ssl_state)) {
       d->ssl_state = ssl_handshake(d->ssl);
       if (d->ssl_state < 0) {
@@ -2419,7 +2418,7 @@ process_input(DESC *d, int output_ready __attribute__ ((__unused__)))
         return 1;
       }
     }
-    /* Insure that we're not in a state where we need an SSL_accept() */
+    /* Ensure that we're not in a state where we need an SSL_accept() */
     if (ssl_need_accept(d->ssl_state)) {
       d->ssl_state = ssl_accept(d->ssl);
       if (d->ssl_state < 0) {
@@ -2492,14 +2491,13 @@ process_commands(void)
     DESC *cdesc, *dnext = NULL;
 
     nprocessed = 0;
-    for (cdesc = descriptor_list; cdesc;
-         cdesc = dnext) {
+    for (cdesc = descriptor_list; cdesc; cdesc = dnext) {
       struct text_block *t;
 
       dnext = cdesc->next;
 
       if (cdesc->quota > 0 && (t = cdesc->input.head) != NULL) {
-	enum comm_res retval;
+        enum comm_res retval;
 
         cdesc->quota -= 1;
         nprocessed += 1;
@@ -2527,7 +2525,7 @@ process_commands(void)
 #ifdef DEBUG
 	  do_rawlog(LT_TRACE, "free_text_block(%p) at 5.", (void *) t);
 #endif                          /* DEBUG */
-	  free_text_block(t);
+          free_text_block(t);
           break;
         }
       }
@@ -2552,11 +2550,7 @@ process_commands(void)
 /** Parse a command entered at the socket.
  * \param d descriptor
  * \param command command to parse
- * \retval 1 Command handled, no further action required
- * \retval 0 Command was QUIT - close connection
- * \retval -1 Command was LOGOUT
- * \retval -2 Attempt to login failed due to sitelock
- * \retval -3 Browser command (GET/POST)
+ * \return CRES_* enum
  */
 static enum comm_res
 do_command(DESC *d, char *command)

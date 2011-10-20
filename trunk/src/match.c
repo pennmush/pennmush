@@ -360,7 +360,10 @@ match_result_internal(dbref who, dbref where, const char *xname, int type,
   match = where;
   if (goodwhere && MATCH_TYPE && (flags & MAT_ME) && !(flags & MAT_CONTENTS)
       && !strcasecmp(xname, "me")) {
-    return match;
+    if (MATCH_CONTROLS)
+      return match;
+    else
+      nocontrol = 1;
   }
 
   /* match "here" */

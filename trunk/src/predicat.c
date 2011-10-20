@@ -387,6 +387,9 @@ controls(dbref who, dbref what)
   if (!GoodObject(what))
     return 0;
 
+  if (Guest(who))
+    return 0;
+
   if (what == who)
     return 1;
 
@@ -437,6 +440,12 @@ controls(dbref who, dbref what)
 int
 can_pay_fees(dbref who, int pennies)
 {
+
+  if (Guest(who)) {
+    notify(who, T("Sorry, you aren't allowed to build."));
+    return 0;
+  }
+
   /* check database size -- EVERYONE is subject to this! */
   if (DBTOP_MAX && (db_top >= DBTOP_MAX + 1) && (first_free == NOTHING)) {
     notify(who, T("Sorry, there is no more room in the database."));

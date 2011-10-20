@@ -1486,7 +1486,7 @@ make_text_block(const unsigned char *s, int n)
   memcpy(p->buf, s, n);
   p->nchars = n;
   p->start = p->buf;
-  p->nxt = 0;
+  p->nxt = NULL;
   return p;
 }
 
@@ -1503,6 +1503,17 @@ free_text_block(struct text_block *t)
   }
 }
 
+/** Initialize a text_queue structure.
+ */
+void
+init_text_queue(struct text_queue *q)
+{
+  if (!q)
+    return;
+  q->head = q->tail = NULL;
+  return;
+}
+
 /** Add a new chunk of text to a player's output queue.
  * \param q pointer to text_queue to add the chunk to.
  * \param b text to add to the queue.
@@ -1513,36 +1524,45 @@ add_to_queue(struct text_queue *q, const unsigned char *b, int n)
 {
   struct text_block *p;
 
-  if (n == 0)
+  if (n == 0 || !q)
     return;
 
   p = make_text_block(b, n);
-  p->nxt = 0;
-  *q->tail = p;
-  q->tail = &p->nxt;
+
+  if (!q->head) {
+    q->head = q->tail = p;
+  } else {
+    q->tail->nxt = p;
+    q->tail = p;
+  }
 }
 
 static int
 flush_queue(struct text_queue *q, int n)
 {
   struct text_block *p;
-  int really_flushed = 0;
-  n += strlen(flushed_message);
+  int really_flushed = 0, flen;
+
+  flen = strlen(flushed_message);
+  n += flen;
+
   while (n > 0 && (p = q->head)) {
     n -= p->nchars;
     really_flushed += p->nchars;
     q->head = p->nxt;
+    if (q->tail == p)
+      q->tail = NULL;
 #ifdef DEBUG
     do_rawlog(LT_ERR, "free_text_block(0x%x) at 1.", p);
 #endif                          /* DEBUG */
     free_text_block(p);
   }
   p =
-    make_text_block((unsigned char *) flushed_message, strlen(flushed_message));
+    make_text_block((unsigned char *) flushed_message, flen);
   p->nxt = q->head;
   q->head = p;
-  if (!p->nxt)
-    q->tail = &p->nxt;
+  if (!q->tail)
+    q->tail = p;
   really_flushed -= p->nchars;
   return really_flushed;
 }
@@ -1562,7 +1582,7 @@ ssl_flush_queue(struct text_queue *q)
 #endif                          /* DEBUG */
       free_text_block(p);
     }
-    q->tail = &q->head->nxt;
+    q->tail = q->head;
     /* Set up the flushed message if we can */
     if (q->head->nchars + n < MAX_OUTPUT)
       add_to_queue(q, (unsigned char *) flushed_message, n);
@@ -1700,33 +1720,27 @@ void
 freeqs(DESC *d)
 {
   struct text_block *cur, *next;
-  cur = d->output.head;
-  while (cur) {
+
+  for (cur = d->output.head; cur; cur = next) {
     next = cur->nxt;
 #ifdef DEBUG
     do_rawlog(LT_ERR, "free_text_block(0x%x) at 3.", cur);
 #endif                          /* DEBUG */
     free_text_block(cur);
-    cur = next;
   }
-  d->output.head = 0;
-  d->output.tail = &d->output.head;
+  d->output.head = d->output.tail = NULL;
 
-  cur = d->input.head;
-  while (cur) {
+  for (cur = d->input.head; cur; cur = next) {
     next = cur->nxt;
 #ifdef DEBUG
     do_rawlog(LT_ERR, "free_text_block(0x%x) at 4.", cur);
 #endif                          /* DEBUG */
     free_text_block(cur);
-    cur = next;
   }
-  d->input.head = 0;
-  d->input.tail = &d->input.head;
+  d->input.head = d->input.tail = NULL;
 
-  if (d->raw_input) {
+  if (d->raw_input)
     mush_free(d->raw_input, "descriptor_raw_input");
-  }
   d->raw_input = 0;
   d->raw_input_at = 0;
 }

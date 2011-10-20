@@ -359,14 +359,15 @@ static void shutdownsock(DESC *d, const char *reason);
 DESC *initializesock(int s, char *addr, char *ip, conn_source source);
 int process_output(DESC *d);
 /* Notify.c */
-extern void free_text_block(struct text_block *t);
-extern void add_to_queue(struct text_queue *q, const unsigned char *b, int n);
-extern int queue_write(DESC *d, const unsigned char *b, int n);
-extern int queue_eol(DESC *d);
-extern int queue_newwrite(DESC *d, const unsigned char *b, int n);
-extern int queue_string(DESC *d, const char *s);
-extern int queue_string_eol(DESC *d, const char *s);
-extern void freeqs(DESC *d);
+void free_text_block(struct text_block *t);
+void init_text_queue(struct text_queue *);
+void add_to_queue(struct text_queue *q, const unsigned char *b, int n);
+int queue_write(DESC *d, const unsigned char *b, int n);
+int queue_eol(DESC *d);
+int queue_newwrite(DESC *d, const unsigned char *b, int n);
+int queue_string(DESC *d, const char *s);
+int queue_string_eol(DESC *d, const char *s);
+void freeqs(DESC *d);
 static void welcome_user(DESC *d, int telnet);
 static int count_players(void);
 static void dump_info(DESC *call_by);
@@ -1084,8 +1085,7 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
 #endif
     for (d = descriptor_list; d; d = d->next) {
       if (d->input.head) {
-        timeout.tv_sec = slice_timeout.tv_sec;
-        timeout.tv_usec = slice_timeout.tv_usec;
+	timeout = slice_timeout;
       } else
         FD_SET(d->descriptor, &input_set);
       if (d->output.head)
@@ -1647,11 +1647,9 @@ logout_sock(DESC *d)
   d->output_prefix = 0;
   d->output_suffix = 0;
   d->output_size = 0;
-  d->output.head = 0;
   d->player = NOTHING;
-  d->output.tail = &d->output.head;
-  d->input.head = 0;
-  d->input.tail = &d->input.head;
+  init_text_queue(&d->input);
+  init_text_queue(&d->output);
   d->raw_input = 0;
   d->raw_input_at = 0;
   d->quota = COMMAND_BURST_SIZE;
@@ -1747,11 +1745,9 @@ initializesock(int s, char *addr, char *ip, conn_source source)
   d->output_prefix = 0;
   d->output_suffix = 0;
   d->output_size = 0;
-  d->output.head = 0;
+  init_text_queue(&d->input);
+  init_text_queue(&d->output);
   d->player = NOTHING;
-  d->output.tail = &d->output.head;
-  d->input.head = 0;
-  d->input.tail = &d->input.head;
   d->raw_input = 0;
   d->raw_input_at = 0;
   d->quota = COMMAND_BURST_SIZE;
@@ -1796,25 +1792,19 @@ initializesock(int s, char *addr, char *ip, conn_source source)
   return d;
 }
 
-/** Flush pending output for a descriptor.
- * This function actually sends the queued output over the descriptor's
- * socket.
- * \param d pointer to descriptor to send output to.
- * \retval 1 successfully flushed at least some output.
- * \retval 0 something failed, and the descriptor should probably be closed.
- */
-int
-process_output(DESC *d)
-{
-  struct text_block **qp, *cur;
-  int cnt;
 #ifdef HAS_OPENSSL
-  int input_ready = 0;
-#endif
+static int
+network_send_ssl(DESC *d)
+{
+  int input_ready, written = 0;
+  bool need_write = 0;
+  struct text_block *cur;
 
-#if defined(HAS_OPENSSL) && !defined(SSL_SLAVE)
+  if (!d->ssl)
+    return 0;
+
   /* Insure that we're not in a state where we need an SSL_handshake() */
-  if (d->ssl && (ssl_need_handshake(d->ssl_state))) {
+  if (ssl_need_handshake(d->ssl_state)) {
     d->ssl_state = ssl_handshake(d->ssl);
     if (d->ssl_state < 0) {
       /* Fatal error */
@@ -1828,7 +1818,7 @@ process_output(DESC *d)
     }
   }
   /* Insure that we're not in a state where we need an SSL_accept() */
-  if (d->ssl && (ssl_need_accept(d->ssl_state))) {
+  if (ssl_need_accept(d->ssl_state)) {
     d->ssl_state = ssl_accept(d->ssl);
     if (d->ssl_state < 0) {
       /* Fatal error */
@@ -1841,12 +1831,12 @@ process_output(DESC *d)
       return 1;
     }
   }
-  if (d->ssl) {
-    /* process_output, alas, gets called from all kinds of places.
-     * We need to know if the descriptor is waiting on input, though.
-     * So let's find out
-     */
 
+  /* process_output, alas, gets called from all kinds of places.
+   * We need to know if the descriptor is waiting on input, though.
+   * So let's find out
+   */
+  {
 #ifdef HAVE_POLL
     struct pollfd p;
 
@@ -1864,130 +1854,170 @@ process_output(DESC *d)
     FD_SET(d->descriptor, &input_set);
     input_ready = select(d->descriptor + 1, &input_set, NULL, NULL, &pad);
 #endif
-    if (input_ready < 0) {
-      /* Well, shoot, we have no idea. Guess and proceed. */
-      penn_perror("select in process_output");
-      input_ready = 0;
+  }
+
+  if (input_ready < 0) {
+    /* Well, shoot, we have no idea. Guess and proceed. */
+    penn_perror("select in process_output");
+    input_ready = 0;
+  }
+
+  while ((cur = d->output.head) != NULL) {
+    int cnt = 0;
+    need_write = 0;
+    d->ssl_state =
+      ssl_write(d->ssl, d->ssl_state, input_ready, 1, cur->start,
+		cur->nchars, &cnt);
+    if (ssl_want_write(d->ssl_state)) {
+      need_write = 1;
+      break;             /* Need to retry */
+    }
+    written += cnt;
+    if (cnt == cur->nchars) {
+      /* Wrote a complete block */
+      d->output.head = cur->nxt;
+      free_text_block(cur);
+    } else {
+      cur->start += cnt;
+      cur->nchars -= cnt;
+      break;
     }
   }
+
+  if (!d->output.head)
+    d->output.tail = NULL;
+  d->output_size -= written;
+  d->output_chars += written;
+
+  return written + need_write;
+}
 #endif
 
-  for (qp = &d->output.head; ((cur = *qp) != NULL);) {
 #ifdef HAVE_WRITEV
-    if (cur->nxt
-#ifdef HAS_OPENSSL
-        && !d->ssl
-#endif
-      ) {
-      /* If there's more than one pending block, try to send up to 10
-         at once with writev(). Doesn't work for SSL connections, and
-         if there's only one block waiting to go out, just use
-         send(). */
-      struct iovec lines[10];
-      struct text_block *block = cur, *next = NULL;
-      int n;
-      cnt = 0;
-      for (n = 0; block && n < 10; block = block->nxt) {
-        lines[n].iov_base = block->start;
-        lines[n].iov_len = block->nchars;
-        cnt += block->nchars;
-        n += 1;
-      }
-#ifdef DEBUG
-      do_rawlog(LT_TRACE, "Sending %d bytes in %d blocks to socket %d",
-                cnt, n, d->descriptor);
-#endif
-      cnt = writev(d->descriptor, lines, n);
-#ifdef DEBUG
-      do_rawlog(LT_TRACE, "writev() returned %d", cnt);
-#endif
-      if (cnt < 0) {
-#ifdef WIN32
-        if (cnt == SOCKET_ERROR && WSAGetLastError() == WSAEWOULDBLOCK)
-#else
+static int
+network_send_writev(DESC *d)
+{
+  int written = 0;
+
+  while (d->output.head) {
+    int cnt, n;
+    struct iovec lines[10];
+    struct text_block *cur = d->output.head;
+
+    for (n = 0; cur && n < 10; cur = cur->nxt) {
+      lines[n].iov_base = cur->start;
+      lines[n].iov_len = cur->nchars;
+      n += 1;
+    }
+
+    cnt = writev(d->descriptor, lines, n);
+    if (cnt < 0) {
+      if (errno == EWOULDBLOCK 
 #ifdef EAGAIN
-        if ((errno == EWOULDBLOCK) || (errno == EAGAIN) || errno == EINTR)
+	  || errno == EAGAIN
+#endif
+	  || errno == EINTR)
+	return 1;
+      else
+	return 0;
+    }
+    written += cnt;
+    
+    while (cnt > 0) {
+      cur = d->output.head;
+      if (cur->nchars <= cnt) {
+	/* Wrote a full block */
+	cnt -= cur->nchars;
+	d->output.head = cur->nxt;
+	free_text_block(cur);
+      } else {
+	/* Wrote a partial block */
+	cur->start += cnt;
+	cur->nchars -= cnt;
+	goto output_done;
+      }
+    }
+  }
+
+ output_done:
+  if (!d->output.head)
+    d->output.tail = NULL;
+  d->output_size -= written;
+  d->output_chars += written;
+
+  return written;
+}
+#endif
+
+static int
+
+network_send(DESC *d)
+{
+  int written = 0;
+  struct text_block *cur;
+
+#ifdef HAVE_WRITEV
+  if (d->output.head->nxt) 
+    return network_send_writev(d);
+#endif
+  
+  while ((cur = d->output.head) != NULL) {
+    int cnt = send(d->descriptor, cur->start, cur->nchars, 0);
+
+    if (cnt < 0) {
+#ifdef WIN32
+      if (cnt == SOCKET_ERROR && WSAGetLastError() == WSAEWOULDBLOCK) 
 #else
-        if (errno == EWOULDBLOCK || errno = EINTR)
+	if (errno == EWOULDBLOCK 
+#ifdef EAGAIN
+	    || errno == EAGAIN
 #endif
+	    || errno == EINTR)
 #endif
-          return 1;
-        return 0;
-      }
-
-      d->output_size -= cnt;
-      d->output_chars += cnt;
-
-      for (block = cur; block && cnt > 0; block = next) {
-        next = block->nxt;
-        if (cnt >= block->nchars) {
-          if (!block->nxt)
-            d->output.tail = qp;
-          *qp = block->nxt;
-          cnt -= block->nchars;
-#ifdef DEBUG
-          do_rawlog(LT_TRACE, "free_text_block(%p) at writev", (void *) block);
-#endif
-          free_text_block(block);
-        } else {
-#ifdef DEBUG
-          do_rawlog(LT_TRACE,
-                    "Incomplete write of block. nchars = %d, cnt = %d",
-                    block->nchars, cnt);
-#endif
-          block->nchars -= cnt;
-          block->start += cnt;
-          break;
-        }
-      }
+	  return 1;
+      return 0;
+    }
+    written += cnt;
+    
+    if (cnt == cur->nchars) {
+      /* Wrote a complete block */
+      d->output.head = cur->nxt;
+      free_text_block(cur);
     } else {
-#endif                          /* HAVE_WRITEV */
-#ifdef HAS_OPENSSL
-      if (d->ssl) {
-        cnt = 0;
-        d->ssl_state =
-          ssl_write(d->ssl, d->ssl_state, input_ready, 1, cur->start,
-                    cur->nchars, &cnt);
-        if (ssl_want_write(d->ssl_state))
-          return 1;             /* Need to retry */
-      } else
-#endif                          /* HAS_OPENSSL */
-      {
-        cnt = send(d->descriptor, cur->start, cur->nchars, 0);
-        if (cnt < 0) {
-#ifdef WIN32
-          if (cnt == SOCKET_ERROR && WSAGetLastError() == WSAEWOULDBLOCK)
-#else
-#ifdef EAGAIN
-          if ((errno == EWOULDBLOCK) || (errno == EAGAIN) || errno == EINTR)
-#else
-          if (errno == EWOULDBLOCK || errno == EINTR)
-#endif
-#endif
-            return 1;
-          return 0;
-        }
-      }
-      d->output_size -= cnt;
-      d->output_chars += cnt;
-      if (cnt == cur->nchars) {
-        if (!cur->nxt)
-          d->output.tail = qp;
-        *qp = cur->nxt;
-#ifdef DEBUG
-        do_rawlog(LT_TRACE, "free_text_block(%p) at 2.", (void *) cur);
-#endif                          /* DEBUG */
-        free_text_block(cur);
-        continue;               /* do not adv ptr */
-      }
+      /* Partial */
       cur->nchars -= cnt;
       cur->start += cnt;
       break;
-#ifdef HAVE_WRITEV
     }
-#endif
   }
-  return 1;
+
+  if (!d->output.head)
+    d->output.tail = NULL;
+  d->output_size -= written;
+  d->output_chars += written;
+  return written;
+}
+
+/** Flush pending output for a descriptor.
+ * This function actually sends the queued output over the descriptor's
+ * socket.
+ * \param d pointer to descriptor to send output to.
+ * \retval 1 successfully flushed at least some output.
+ * \retval 0 something failed, and the descriptor should probably be closed.
+ */
+int
+process_output(DESC *d)
+{
+#ifdef HAS_OPENSSL
+    if (d->ssl) {
+#ifdef HAVE_SSL_SLAVE
+      return network_send(d);
+#else
+      return network_send_ssl(d);
+#endif
+    } else
+#endif
+      return network_send(d);
 }
 
 /** A wrapper around test_telnet(), which is called via the
@@ -5525,10 +5555,8 @@ load_reboot_db(void)
       d->input_chars = 0;
       d->output_chars = 0;
       d->output_size = 0;
-      d->output.head = 0;
-      d->output.tail = &d->output.head;
-      d->input.head = 0;
-      d->input.tail = &d->input.head;
+      init_text_queue(&d->input);
+      init_text_queue(&d->output);
       d->raw_input = NULL;
       d->raw_input_at = NULL;
       d->quota = options.starting_quota;

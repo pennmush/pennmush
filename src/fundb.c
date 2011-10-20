@@ -713,9 +713,10 @@ dbwalk(char *buff, char **bp, dbref executor, dbref enactor,
         if (buff) {
           if (first)
             first = 0;
-          else
-            safe_chr(' ', buff, bp);
-          safe_dbref(thing, buff, bp);
+          else if (safe_chr(' ', buff, bp))
+	    break;
+          if (safe_dbref(thing, buff, bp))
+	    break;
         }
       }
       if (result == NOTHING) {
@@ -728,15 +729,19 @@ dbwalk(char *buff, char **bp, dbref executor, dbref enactor,
         *retcount = nthing;
     }
   } else if (buff)
-    safe_str("#-1", buff, bp);
+    safe_strl("#-1", 3, buff, bp);
+  
+  /* Kill a trailing space at the end of the buffer */
+  if (*bp > buff && *(*bp - 1) == ' ') 
+    *bp -= 1;
+
   return result;
 }
 
 /* ARGSUSED */
 FUNCTION(fun_dbwalker)
 {
-  dbref loc = match_thing(executor, args[0]);
-  int start, count;
+  int start = 0, count = 0;
   int vis = 0;
   int type = 0;
   int result = 0;
@@ -744,10 +749,7 @@ FUNCTION(fun_dbwalker)
   const char *ptr = called_as;
   char *buffptr = buff;
   char **bptr = bp;
-
-  start = count = 0;
-  buffptr = buff;
-  bptr = bp;
+  dbref loc = match_thing(executor, args[0]);
 
   if (!strcmp(called_as, "LCON") && nargs == 2) {
     if (string_prefix("player", args[1])) {

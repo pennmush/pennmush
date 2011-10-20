@@ -475,7 +475,6 @@ bool
 is_integer_list(char const *str)
 {
   char *start, *end;
-  long val;
 
   if (!str || !*str)
     return 0;
@@ -486,7 +485,7 @@ is_integer_list(char const *str)
       start++;
     if (!*start)
       return 1;
-    val = strtol(start, &end, 10);
+    strtol(start, &end, 10);
     if (end == start)
       return 0;
     start = end;
@@ -1824,7 +1823,7 @@ process_expression(char *buff, char **bp, char const **str,
     if (((*bp) - buff) > (BUFFER_LEN - SBUF_LEN)) {
       realbuff = buff;
       realbp = *bp;
-      buff = (char *) mush_malloc(BUFFER_LEN,
+      buff = mush_malloc(BUFFER_LEN,
                                   "process_expression.buffer_extension");
       *bp = buff;
       startpos = buff;
@@ -2185,7 +2184,6 @@ process_expression(char *buff, char **bp, char const **str,
           (*str)++;
           itmp = PE_Get_Slev(pe_info);
           if (itmp >= 0) {
-            inum_this = -1;
             if (nextc == 'l' || nextc == 'L') {
               inum_this = itmp;
             } else if (!isdigit((unsigned char) nextc)) {
@@ -2514,7 +2512,7 @@ process_expression(char *buff, char **bp, char const **str,
         temp_tflags = PT_COMMA | PT_PAREN;
         nfargs = 0;
         onearg =
-          (char *) mush_malloc(BUFFER_LEN,
+          mush_malloc(BUFFER_LEN,
                                "process_expression.single_function_argument");
         do {
           char *argp;
@@ -2539,7 +2537,7 @@ process_expression(char *buff, char **bp, char const **str,
             arglens = narglens;
             args_alloced += 10;
           }
-          fargs[nfargs] = (char *) mush_malloc(BUFFER_LEN,
+          fargs[nfargs] = mush_malloc(BUFFER_LEN,
                                                "process_expression.function_argument");
           argp = onearg;
           if (process_expression(onearg, &argp, str,
@@ -2609,6 +2607,8 @@ process_expression(char *buff, char **bp, char const **str,
             safe_str(T(" ARGUMENTS BUT GOT "), buff, bp);
             safe_integer(nfargs, buff, bp);
           } else {
+	    char *fbuff, *fbp;
+
             global_fun_recursions++;
             pe_info->fun_recursions++;
             if (fp->flags & FN_LOCALIZE) {
@@ -2617,10 +2617,19 @@ process_expression(char *buff, char **bp, char const **str,
             } else {
               pe_regs = NULL;
             }
+	    
+	    if (realbuff) {
+	      fbuff = realbuff;
+	      fbp = realbp;
+	    } else {
+	      fbuff = buff;
+	      fbp = *bp;
+	    }
+
             if (fp->flags & FN_BUILTIN) {
               global_fun_invocations++;
               pe_info->fun_invocations++;
-              fp->where.fun(fp, buff, bp, nfargs, fargs, arglens, executor,
+              fp->where.fun(fp, fbuff, &fbp, nfargs, fargs, arglens, executor,
                             caller, enactor, fp->name, pe_info,
                             ((eflags & ~PE_FUNCTION_MANDATORY) | PE_DEFAULT));
               if (fp->flags & FN_LOGARGS) {
@@ -2659,10 +2668,15 @@ process_expression(char *buff, char **bp, char const **str,
                 safe_str(fp->where.ufun->name, buff, bp);
                 safe_chr(')', buff, bp);
               } else {
-                do_userfn(buff, bp, thing, attrib, nfargs, fargs,
+                do_userfn(fbuff, &fbp, thing, attrib, nfargs, fargs,
                           executor, caller, enactor, pe_info, PE_USERFN);
               }
             }
+	    if (realbuff)
+	      realbp = fbp;
+	    else
+	      *bp = fbp;
+
             if (pe_regs) {
               pe_regs_restore(pe_info, pe_regs);
               pe_regs_free(pe_regs);
@@ -2767,9 +2781,10 @@ exit_sequence:
       mush_free(debugstr, "process_expression.debug_source");
     }
     if (realbuff) {
+      size_t blen = *bp - buff;
       **bp = '\0';
       *bp = realbp;
-      safe_str(buff, realbuff, bp);
+      safe_strl(buff, blen, realbuff, bp);
       mush_free(buff, "process_expression.buffer_extension");
     }
   }

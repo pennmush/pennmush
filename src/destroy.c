@@ -209,6 +209,11 @@ what_to_destroy(dbref player, char *name, int confirm, NEW_PE_INFO *pe_info)
 {
   dbref thing;
 
+  if (Guest(player)) {
+    notify(player, T("I'm sorry, Dave, I'm afraid I can't do that."));
+    return NOTHING;
+  }
+
   thing = noisy_match_result(player, name, NOTYPE, MAT_EVERYTHING);
   if (thing == NOTHING)
     return NOTHING;

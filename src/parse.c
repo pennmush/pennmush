@@ -465,7 +465,7 @@ is_strict_integer(char const *str)
   return end > str;
 }
 
-/** Does a string contain a list of space-separated integers?
+/** Does a string contain a list of space-separated valid signed integers?
  * Must contain at least one int. For internal use; ignores TINY_MATH.
  * \param str string to check
  * \retval 1 string is a list of integers
@@ -485,8 +485,8 @@ is_integer_list(char const *str)
       start++;
     if (!*start)
       return 1;
-    strtol(start, &end, 10);
-    if (end == start)
+    (void) strtol(start, &end, 10);
+    if (!(*end == '\0' || *end == ' '))
       return 0;
     start = end;
   } while (*start);

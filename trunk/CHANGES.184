@@ -51,7 +51,8 @@ Minor changes:
    resemble those for cwho() / @channel/who. Based on a patch by
    Padraic. [MG]
  * Guests no longer control anything, including themselves, and can't
-   ever build, create or destroy objects. Suggested by [SW]. [MG]
+   ever build, create or destroy objects. They can still examine themselves,
+   for backwards compatability. Suggested by [SW]. [MG]
  * Changed many things which were evaluating an attribute value
    manually to use call_ufun() instead, for better %+ / %= values,
    among other benefits. [MG]

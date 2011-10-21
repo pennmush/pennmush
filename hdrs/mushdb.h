@@ -70,7 +70,7 @@ bool unfindable(dbref);
                      && !unfindable(Location(x)))))
 
 
-#define Can_Examine(p,x)    (controls(p,x) || See_All(p) || \
+#define Can_Examine(p,x)    ((p == x) || controls(p,x) || See_All(p) || \
         (Visual(x) && eval_lock(p,x,Examine_Lock)))
 #define can_link(p,x)  (!Guest(p) && (controls(p,x) || \
                         (IsExit(x) && (Location(x) == NOTHING))))

@@ -17,54 +17,60 @@ Major changes:
  * ssl_slave is enabled by default by configure if OpenSSL and
   libevent2 are present. Passing --disable-ssl_slave to configure will
   still disable it. [SW]
- * The newline_one_char config option has been removed -- %r now always 
-   returns a single-char newline (\n). [MG]
+ * The newline_one_char config option has been removed -- %r now
+   always returns a single-char newline (\n). [MG]
 
 Minor changes:
- * crunch_code and crypt_code in funcrypt.c are no longer static. Requested
-   by qa'toq@M*U*S*H. [MG]
- * @dump now notifies the executor when the dump is complete. Suggested by
+ * crunch_code and crypt_code in funcrypt.c are no longer
+   static. Requested by qa'toq@M*U*S*H. [MG]
+ * @dump now notifies the executor when the dump is
+   complete. Suggested by Padraic. [MG]
+ * There is now a slight delay between a client connecting to the
+   MUSH, and the connect screen being shown. This means that the "<--
+   ... -->" HTML comments are no longer needed around the connect
+   screen when mud_url is enabled, the HTML shown when someone
+   connects to the MUSH with a browser works better, and that Pueblo
+   clients will usually only get the HTML connect screen, instead of
+   seeing both. Also, telnet negotiation should complete before the
+   screen is shown, making terminfo() and width() give useful values
+   for people using softcoded connect_files. Commands can still be
+   used before the connect screen is displayed. [MG]
+ * When looking at an object, all its components (describe,
+   descformat, conformat and exitformat) now share registers: a
+   q-register set in the desc can be accessed in the conformat, and so
+   on. [MG]
+ * When you fail to @mail a player because you don't pass their
+   @lock/mail, the MAIL_FAILURE verbs will be triggered, as per 'help
+   failure'.  Suggested by Cheetah. [MG]
+ * When using channels() on an object, the permission checks now
+   resemble those for cwho() / @channel/who. Based on a patch by
    Padraic. [MG]
- * There is now a slight delay between a client connecting to the MUSH, and
-   the connect screen being shown. This means that the "<-- ... -->" HTML
-   comments are no longer needed around the connect screen when mud_url is
-   enabled, the HTML shown when someone connects to the MUSH with a browser
-   works better, and that Pueblo clients will usually only get the HTML
-   connect screen, instead of seeing both. Also, telnet negotiation should
-   complete before the screen is shown, making terminfo() and width() give
-   useful values for people using softcoded connect_files. Commands can
-   still be used before the connect screen is displayed. [MG]
- * When looking at an object, all its components (describe, descformat,
-   conformat and exitformat) now share registers: a q-register set in
-   the desc can be accessed in the conformat, and so on. [MG]
- * When you fail to @mail a player because you don't pass their @lock/mail,
-   the MAIL_FAILURE verbs will be triggered, as per 'help failure'. 
-   Suggested by Cheetah. [MG]
- * When using channels() on an object, the permission checks now resemble 
-   those for cwho() / @channel/who. Based on a patch by Padraic. [MG]
- * Guests no longer control anything, including themselves, and can't ever 
-   build, create or destroy objects. Suggested by [SW]. [MG]
-
-Hardcode:
- * Changed many things which were evaluating an attribute value manully to
-   use call_ufun() instead, for better %+ / %= values, among other 
-   benefits. [MG]
- * fetch_ufun_attrib now takes a new flag, UFUN_NAME, which will add the
-   object's name to the beginning of the attr value (respect no_name and
-   no_space attr flags), for @o-* attrs. [MG]
+ * Guests no longer control anything, including themselves, and can't
+   ever build, create or destroy objects. They can still examine themselves,
+   for backwards compatability. Suggested by [SW]. [MG]
+ * Changed many things which were evaluating an attribute value
+   manually to use call_ufun() instead, for better %+ / %= values,
+   among other benefits. [MG]
+ * fetch_ufun_attrib now takes a new flag, UFUN_NAME, which will add
+   the object's name to the beginning of the attr value (respecting
+   no_name and no_space attr flags), for @o-* attrs. [MG]
+ * Clean up the functions that send data across the network to 
+   connections. [SW]
    
 Fixes:
  * @lock/infilter, not @lock/infitler. [SW]
- * @shutdown/reboot handles failed database saves much more gracefully.
-   [SW]
+ * @shutdown/reboot handles failed database saves much more
+   gracefully.  [SW]
  * Help fixes by Wiggles. [MG]
  * Fix a few places that could trigger an integer division exception.
    Reported by Ashen-Shugar. [SW]
- * A number of places in the hardcode incorrectly took TINY_MATH into account
-   when deciding if something was a valid number or not. From a report by
-   Daniel Powell. [MG]
- * doing() now evaluates the DOING attribute with better values for %# and
-   %@. From a report by Padraic. [MG]
+ * A number of places in the hardcode incorrectly took TINY_MATH into
+   account when deciding if something was a valid number or not. From
+   a report by Daniel Powell. [MG]
+ * doing() now evaluates the DOING attribute with better values for %#
+   and %@. From a report by Padraic. [MG]
+ * Fix some cases where functions like lcon() could return partial
+   dbrefs at the end of a long output string. [SW]
 
 Functions:
  * isregexp() to validate regexp patterns. Suggested by Padraic. [DC]

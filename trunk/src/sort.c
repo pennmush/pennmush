@@ -491,6 +491,21 @@ s_comp(const void *s1, const void *s2)
   return Compare(res, sr1, sr2) * sort_order;
 }
 
+static int
+m_comp(const void *s1, const void *s2)
+{
+  const s_rec *sr1 = (const s_rec *) s1;
+  const s_rec *sr2 = (const s_rec *) s2;
+  int res = 0, ret;
+  res = strcoll(sr1->memo.str.s, sr2->memo.str.s);
+  ret = Compare(res, sr1, sr2);
+  if (ret == 0) {
+    res = strcoll(sr1->val, sr2->val);
+    ret = Compare(res, sr1, sr2);
+  }
+  return ret * sort_order;
+}
+
 int
 attr_comp(const void *s1, const void *s2)
 {
@@ -598,7 +613,7 @@ ListTypeInfo ltypelist[] = {
   {DBREF_LIST, NULL, 0, gen_dbref, i_comp, 0},
   {NUMERIC_LIST, NULL, 0, gen_num, i_comp, 0},
   {FLOAT_LIST, NULL, 0, gen_float, f_comp, 0},
-  {MAGIC_LIST, NULL, 0, gen_magic, s_comp, IS_STRING | IS_CASE_INSENS},
+  {MAGIC_LIST, NULL, 0, gen_magic, m_comp, IS_STRING | IS_CASE_INSENS},
   {DBREF_NAME_LIST, NULL, 0, gen_db_name, s_comp, IS_DB | IS_STRING},
   {DBREF_NAMEI_LIST, NULL, 0, gen_db_name, s_comp,
    IS_DB | IS_STRING | IS_CASE_INSENS},

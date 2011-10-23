@@ -71,6 +71,9 @@ Fixes:
    and %@. From a report by Padraic. [MG]
  * Fix some cases where functions like lcon() could return partial
    dbrefs at the end of a long output string. [SW]
+ * When magic-sorting strings with embedded dbrefs, setunion() no longer
+   treats different objects with the same name as being identical. Reported
+   by Minion. [MG] [GM]
 
 Functions:
  * isregexp() to validate regexp patterns. Suggested by Padraic. [DC]

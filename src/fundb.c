@@ -714,9 +714,9 @@ dbwalk(char *buff, char **bp, dbref executor, dbref enactor,
           if (first)
             first = 0;
           else if (safe_chr(' ', buff, bp))
-	    break;
+            break;
           if (safe_dbref(thing, buff, bp))
-	    break;
+            break;
         }
       }
       if (result == NOTHING) {
@@ -730,9 +730,9 @@ dbwalk(char *buff, char **bp, dbref executor, dbref enactor,
     }
   } else if (buff)
     safe_strl("#-1", 3, buff, bp);
-  
+
   /* Kill a trailing space at the end of the buffer */
-  if (*bp > buff && *(*bp - 1) == ' ') 
+  if (*bp > buff && *(*bp - 1) == ' ')
     *bp -= 1;
 
   return result;
@@ -1078,11 +1078,17 @@ FUNCTION(fun_visible)
 /* ARGSUSED */
 FUNCTION(fun_type)
 {
-  dbref it = match_thing(executor, args[0]);
+  dbref it = NOTHING;
+  /* Special check for dbref to allow for type() to return GARBAGE */
+  if (is_dbref(args[0]))
+    it = qparse_dbref(args[0]);
+  if (!GoodObject(it))
+    it = match_thing(executor, args[0]);
   if (!GoodObject(it)) {
     safe_str(T(e_notvis), buff, bp);
     return;
   }
+
   switch (Typeof(it)) {
   case TYPE_PLAYER:
     safe_str("PLAYER", buff, bp);
@@ -1134,7 +1140,12 @@ FUNCTION(fun_hastype)
 {
   char *r, *s;
   int found = 0;
-  dbref it = match_thing(executor, args[0]);
+  dbref it = NOTHING;
+  /* Special check for dbref to allow for hastype(#12345, garbage) */
+  if (is_dbref(args[0]))
+    it = qparse_dbref(args[0]);
+  if (!GoodObject(it))
+    it = match_thing(executor, args[0]);
   if (!GoodObject(it)) {
     safe_str(T(e_notvis), buff, bp);
     return;

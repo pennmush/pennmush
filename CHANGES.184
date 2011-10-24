@@ -79,6 +79,8 @@ Fixes:
  * When magic-sorting strings with embedded dbrefs, setunion() no longer
    treats different objects with the same name as being identical. Reported
    by Minion. [MG] [GM]
+ * type() and hastype() claimed to work on GARBAGE objects, but actually
+   returned #-1 NO SUCH MATCH. Reported by Jules. [MG]
 
 Functions:
  * isregexp() to validate regexp patterns. Suggested by Padraic. [DC]

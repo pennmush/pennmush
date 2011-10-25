@@ -1892,6 +1892,7 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
   char *tp;
   FLAGSPACE *n;
   int current;
+  dbref safe_orator = orator;
 
   n = hashfind("FLAG", &htab_flagspaces);
   if (!n) {
@@ -1921,6 +1922,8 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
     Flags(thing) = clear_flag_bitmask_ns(n, Flags(thing), f->bitpos);
   else
     Flags(thing) = set_flag_bitmask_ns(n, Flags(thing), f->bitpos);
+
+  orator = thing;
 
   if (negate) {
     /* log if necessary */
@@ -2026,6 +2029,8 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
       notify(player, tbuf1);
     }
   }
+
+  orator = safe_orator;
 }
 
 

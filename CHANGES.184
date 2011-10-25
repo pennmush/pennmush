@@ -81,6 +81,8 @@ Fixes:
    by Minion. [MG] [GM]
  * type() and hastype() claimed to work on GARBAGE objects, but actually
    returned #-1 NO SUCH MATCH. Reported by Jules. [MG]
+ * A few messages were sent with incorrect nospoof data. Reported by 
+   Jules. [MG]
 
 Functions:
  * isregexp() to validate regexp patterns. Suggested by Padraic. [DC]

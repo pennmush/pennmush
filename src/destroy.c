@@ -345,7 +345,7 @@ do_destroy(dbref player, char *name, int confirm, NEW_PE_INFO *pe_info)
   case TYPE_ROOM:
     /* wait until dbck */
     notify_except(thing, NOTHING,
-                  T("The room shakes and begins to crumble."), 0);
+                  T("The room shakes and begins to crumble."), NA_SPOOF);
     if (Owns(player, thing))
       notify_format(player,
                     T("You will be rewarded shortly for %s."),
@@ -774,7 +774,7 @@ empty_contents(dbref thing)
   notify_except(thing, NOTHING,
                 T
                 ("The floor disappears under your feet, you fall through NOTHINGness and then:"),
-                0);
+                NA_SPOOF);
   first = Contents(thing);
   Contents(thing) = NOTHING;
   /* send all objects to nowhere */

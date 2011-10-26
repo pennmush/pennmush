@@ -24,6 +24,7 @@ Major changes:
   still disable it. [SW]
  * The newline_one_char config option has been removed -- %r now
    always returns a single-char newline (\n). [MG]
+ * Microsoft Visual Studio 2010 project files contributed by Daniko.
 
 Minor changes:
  * crunch_code and crypt_code in funcrypt.c are no longer

@@ -62,6 +62,8 @@ Minor changes:
    no_name and no_space attr flags), for @o-* attrs. [MG]
  * Clean up the functions that send data across the network to 
    connections. [SW]
+ * Updated intructions for compiling with MySQL support on Windows
+   contributed by Daniko.
    
 Fixes:
  * @lock/infilter, not @lock/infitler. [SW]

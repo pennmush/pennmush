@@ -290,7 +290,7 @@ struct text_block {
  */
 struct text_queue {
   struct text_block *head;      /**< Pointer to the head of the queue */
-  struct text_block *tail;     /**< Pointer to pointer to tail of the queue */
+  struct text_block *tail;      /**< Pointer to pointer to tail of the queue */
 };
 
 /* Descriptor foo */

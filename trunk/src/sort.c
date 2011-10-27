@@ -500,7 +500,15 @@ m_comp(const void *s1, const void *s2)
   res = strcoll(sr1->memo.str.s, sr2->memo.str.s);
   ret = Compare(res, sr1, sr2);
   if (ret == 0) {
-    res = strcoll(sr1->val, sr2->val);
+    if (has_markup(sr1->val) || has_markup(sr2->val)) {
+      char v1[BUFFER_LEN];
+      char v2[BUFFER_LEN];
+      strcpy(v1, remove_markup(sr1->val, NULL));
+      strcpy(v2, remove_markup(sr2->val, NULL));
+      res = strcoll(v1, v2);
+    } else {
+      res = strcoll(sr1->val, sr2->val);
+    }
     ret = Compare(res, sr1, sr2);
   }
   return ret * sort_order;

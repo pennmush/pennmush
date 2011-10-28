@@ -64,6 +64,7 @@ Minor changes:
    connections. [SW]
  * Updated intructions for compiling with MySQL support on Windows
    contributed by Daniko.
+ * Improve ssl_slave cleanup code on lost connections and shutdowns. [SW]
    
 Fixes:
  * @lock/infilter, not @lock/infitler. [SW]
@@ -86,6 +87,8 @@ Fixes:
    returned #-1 NO SUCH MATCH. Reported by Jules. [MG]
  * A few messages were sent with incorrect nospoof data. Reported by 
    Jules. [MG]
+ * Fix a harmless but annoying race condition when making a SSL connection 
+   to a game in the middle of starting. [SW]
 
 Functions:
  * isregexp() to validate regexp patterns. Suggested by Padraic. [DC]

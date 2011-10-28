@@ -620,12 +620,6 @@ main(int argc, char **argv)
     restarting = 1;
     fclose(newerr);
   }
-#ifdef SSL_SLAVE
-  if (!restarting && SSLPORT) {
-    if (make_ssl_slave() < 0)
-      do_rawlog(LT_ERR, "Unable to start ssl_slave");
-  }
-#endif
 #ifdef LOCAL_SOCKET
   if (!restarting) {
     localsock = make_unix_socket(options.socket_file, SOCK_STREAM);
@@ -934,15 +928,22 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
   int notify_fd = -1;
 
   if (!restarting) {
+
     sock = make_socket(port, SOCK_STREAM, NULL, NULL, MUSH_IP_ADDR);
     if (sock >= maxd)
       maxd = sock + 1;
-#if defined(HAS_OPENSSL) && !defined(SSL_SLAVE)
+
+#ifdef HAS_OPENSSL
     if (sslport) {
-      sslsock = make_socket(sslport, SOCK_STREAM, NULL, NULL, SSL_IP_ADDR);
-      ssl_master_socket = ssl_setup_socket(sslsock);
-      if (sslsock >= maxd)
-        maxd = sslsock + 1;
+#ifdef SSL_SLAVE
+    if (make_ssl_slave() < 0)
+      do_rawlog(LT_ERR, "Unable to start ssl_slave");
+#else
+    sslsock = make_socket(sslport, SOCK_STREAM, NULL, NULL, SSL_IP_ADDR);
+    ssl_master_socket = ssl_setup_socket(sslsock);
+    if (sslsock >= maxd)
+      maxd = sslsock + 1;
+#endif
     }
 #endif
   }

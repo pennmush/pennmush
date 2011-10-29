@@ -70,7 +70,7 @@ Fixes:
  * @lock/infilter, not @lock/infitler. [SW]
  * @shutdown/reboot handles failed database saves much more
    gracefully.  [SW]
- * Help fixes by Wiggles. [MG]
+ * Help fixes by Wiggles and Trelane. [MG]
  * Fix a few places that could trigger an integer division exception.
    Reported by Ashen-Shugar. [SW]
  * A number of places in the hardcode incorrectly took TINY_MATH into

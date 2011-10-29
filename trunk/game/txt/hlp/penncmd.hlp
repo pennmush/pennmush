@@ -2903,6 +2903,9 @@ See also: @name, name(), VERBS
   This wizard-only command changes <player>'s password. If <player> is 
   connected, she will be informed that the password was changed and who by,
   but not what it was changed to.
+  
+  Note that, unlike @password, @newpassword evaluates its arguments, so
+  any special characters need to be escaped.
 
 See also: @password, checkpass()
 & @notify

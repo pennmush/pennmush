@@ -19,6 +19,7 @@ Major changes:
   still disable it. [SW]
  * The newline_one_char config option has been removed -- %r now
    always returns a single-char newline (\n). [MG]
+ * Microsoft Visual Studio 2010 project files contributed by Daniko.
 
 Minor changes:
  * crunch_code and crypt_code in funcrypt.c are no longer
@@ -56,12 +57,15 @@ Minor changes:
    no_name and no_space attr flags), for @o-* attrs. [MG]
  * Clean up the functions that send data across the network to 
    connections. [SW]
+ * Updated intructions for compiling with MySQL support on Windows
+   contributed by Daniko.
+ * Improve ssl_slave cleanup code on lost connections and shutdowns. [SW]
    
 Fixes:
  * @lock/infilter, not @lock/infitler. [SW]
  * @shutdown/reboot handles failed database saves much more
    gracefully.  [SW]
- * Help fixes by Wiggles. [MG]
+ * Help fixes by Wiggles and Trelane. [MG]
  * Fix a few places that could trigger an integer division exception.
    Reported by Ashen-Shugar. [SW]
  * A number of places in the hardcode incorrectly took TINY_MATH into
@@ -78,6 +82,8 @@ Fixes:
    returned #-1 NO SUCH MATCH. Reported by Jules. [MG]
  * A few messages were sent with incorrect nospoof data. Reported by 
    Jules. [MG]
+ * Fix a harmless but annoying race condition when making a SSL connection 
+   to a game in the middle of starting. [SW]
 
 Functions:
  * isregexp() to validate regexp patterns. Suggested by Padraic. [DC]

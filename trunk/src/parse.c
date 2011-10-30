@@ -1595,7 +1595,7 @@ make_pe_info(char *name)
 {
   NEW_PE_INFO *pe_info;
 
-  pe_info = (NEW_PE_INFO *) mush_malloc(sizeof(NEW_PE_INFO), name);
+  pe_info = mush_malloc(sizeof(NEW_PE_INFO), name);
 
   pe_info->fun_invocations = 0;
   pe_info->fun_recursions = 0;
@@ -1855,7 +1855,7 @@ process_expression(char *buff, char **bp, char const **str,
       char const *mark;
       Debug_Info *node;
 
-      debugstr = (char *) mush_malloc(BUFFER_LEN,
+      debugstr = mush_malloc(BUFFER_LEN,
                                       "process_expression.debug_source");
       debugp = debugstr;
       safe_dbref(executor, debugstr, &debugp);
@@ -1872,7 +1872,7 @@ process_expression(char *buff, char **bp, char const **str,
         while ((debugp > sourcestr) && (debugp[-1] == ' '))
           debugp--;
       *debugp = '\0';
-      node = (Debug_Info *) mush_malloc(sizeof(Debug_Info),
+      node = mush_malloc(sizeof(Debug_Info),
                                         "process_expression.debug_node");
       node->string = debugstr;
       node->executor = executor;

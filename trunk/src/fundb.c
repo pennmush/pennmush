@@ -295,8 +295,9 @@ FUNCTION(fun_default)
     mstr[0] = '\0';
     dp = mstr;
     sp = args[i - 1];
-    process_expression(mstr, &dp, &sp, executor, caller, enactor, eflags,
-                       PT_DEFAULT, pe_info);
+    if (process_expression(mstr, &dp, &sp, executor, caller, enactor, eflags,
+			   PT_DEFAULT, pe_info))
+      return;
     *dp = '\0';
     parse_attrib(executor, mstr, &thing, &attrib);
     if (GoodObject(thing) && attrib && Can_Read_Attr(executor, thing, attrib)) {
@@ -402,8 +403,9 @@ FUNCTION(fun_edefault)
   /* find our object and attribute */
   dp = mstr;
   sp = args[0];
-  process_expression(mstr, &dp, &sp, executor, caller, enactor,
-                     eflags, PT_DEFAULT, pe_info);
+  if (process_expression(mstr, &dp, &sp, executor, caller, enactor,
+			 eflags, PT_DEFAULT, pe_info))
+    return;
   *dp = '\0';
   parse_attrib(executor, mstr, &thing, &attrib);
   if (GoodObject(thing) && attrib && Can_Read_Attr(executor, thing, attrib)) {

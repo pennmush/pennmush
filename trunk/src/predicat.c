@@ -1101,8 +1101,11 @@ do_switch(dbref executor, char *expression, char **argv, dbref enactor,
     /* eval expression */
     ap = argv[a];
     bp = buff;
-    process_expression(buff, &bp, &ap, executor, enactor, enactor,
-                       PE_DEFAULT, PT_DEFAULT, queue_entry->pe_info);
+    if (process_expression(buff, &bp, &ap, executor, enactor, enactor,
+			   PE_DEFAULT, PT_DEFAULT, queue_entry->pe_info)) {
+      pe_regs_free(pe_regs);
+      return;
+    }
     *bp = '\0';
     /* check for a match */
     pe_regs_clear_type(pe_regs, PE_REGS_CAPTURE);

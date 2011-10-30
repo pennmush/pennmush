@@ -156,8 +156,11 @@ COMMAND(cmd_retry)
       sp = args_right[a + 1];
       if (sp) {
         bp = buff;
-        process_expression(buff, &bp, &sp, executor, caller, enactor,
-                           PE_DEFAULT, PT_DEFAULT, queue_entry->pe_info);
+        if (process_expression(buff, &bp, &sp, executor, caller, enactor,
+			       PE_DEFAULT, PT_DEFAULT, queue_entry->pe_info)) {
+	  pe_regs_free(pe_regs);
+	  return;
+	}
         *bp = '\0';
         pe_regs_setenv(pe_regs, a, buff);
       }

@@ -772,10 +772,11 @@ do_look_at(dbref player, const char *name, int key, NEW_PE_INFO *pe_info)
  * \param flag if 1, a brief examination. if 2, a mortal examination.
  * \param all if 1, include veiled attributes.
  * \param parent if 1, include parent attributes
+ * \param opaque if 1, don't show contents list
  */
 void
 do_examine(dbref player, const char *xname, enum exam_type flag, int all,
-           int parent)
+           int parent, int opaque)
 {
   dbref thing;
   ATTR *a;
@@ -902,7 +903,7 @@ do_examine(dbref player, const char *xname, enum exam_type flag, int all,
   }
 
   /* show contents */
-  if ((Contents(thing) != NOTHING) &&
+  if (!opaque && (Contents(thing) != NOTHING) &&
       (ok || (!IsRoom(thing) && !Opaque(thing)))) {
     DOLIST_VISIBLE(content, Contents(thing), (ok) ? GOD : player) {
       if (!listed) {

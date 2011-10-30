@@ -4390,7 +4390,7 @@ See: @enter, @efail, @ealias, leave, @lock, @idescribe, INTERIORS
 
 See also: news, help
 & examine
-  examine[/<switch>] <object>[/<attribute>] 
+  examine[/<switches>] <object>[/<attribute>] 
   
   Displays all available information about <object>.  <object> may be an 
   object, 'me' or 'here'. You must control the object to examine it.  If 
@@ -4405,8 +4405,8 @@ See also: news, help
   ex <object>/v**
   
   The /brief switch is equivalent to the 'brief' command.
-  The /debug switch is wizard-only and shows raw values for certa
-    in fields in an object. 
+  The /debug switch is wizard-only and shows raw values for certain fields 
+    in an object. 
   The /mortal switch shows an object as if you were a mortal other than
     the object's owner and is primarily useful to admins. This switch
     ignores the object's VISUAL flag (but not its attribute flags)
@@ -4414,8 +4414,9 @@ See also: news, help
     object's parents, if you have permission to examine the attributes
     on the parent.
   The /all switch shows the values of VEILED attributes.
+  The /opaque switch omits contents listings.
 
-See also: ATTRIBUTE TREES
+See also: ATTRIBUTE TREES, brief, lattr()
 & follow
   follow <object>
 

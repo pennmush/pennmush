@@ -627,15 +627,17 @@ do_password(dbref executor, dbref enactor, const char *old, const char *newobj,
 
     sp = old;
     bp = old_eval;
-    process_expression(old_eval, &bp, &sp, executor, executor, enactor,
-                       PE_DEFAULT, PT_DEFAULT, NULL);
+    if (process_expression(old_eval, &bp, &sp, executor, executor, enactor,
+			   PE_DEFAULT, PT_DEFAULT, NULL))
+      return;
     *bp = '\0';
     old = old_eval;
 
     sp = newobj;
     bp = new_eval;
-    process_expression(new_eval, &bp, &sp, executor, executor, enactor,
-                       PE_DEFAULT, PT_DEFAULT, NULL);
+    if (process_expression(new_eval, &bp, &sp, executor, executor, enactor,
+			   PE_DEFAULT, PT_DEFAULT, NULL))
+      return;
     *bp = '\0';
     newobj = new_eval;
   }

@@ -1423,8 +1423,9 @@ FUNCTION(fun_cand)
   for (j = 0; j < nargs; j++) {
     tp = tbuf;
     sp = args[j];
-    process_expression(tbuf, &tp, &sp, executor, caller, enactor,
-                       eflags, PT_DEFAULT, pe_info);
+    if (process_expression(tbuf, &tp, &sp, executor, caller, enactor,
+			   eflags, PT_DEFAULT, pe_info))
+      return;
     *tp = '\0';
     if (!parse_boolean(tbuf)) {
       safe_integer(negate, buff, bp);
@@ -1445,8 +1446,9 @@ FUNCTION(fun_cor)
   for (j = 0; j < nargs; j++) {
     tp = tbuf;
     sp = args[j];
-    process_expression(tbuf, &tp, &sp, executor, caller, enactor,
-                       eflags, PT_DEFAULT, pe_info);
+    if (process_expression(tbuf, &tp, &sp, executor, caller, enactor,
+			   eflags, PT_DEFAULT, pe_info))
+      return;
     *tp = '\0';
     if (parse_boolean(tbuf)) {
       safe_integer(!negate, buff, bp);

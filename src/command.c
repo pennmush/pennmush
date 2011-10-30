@@ -1413,13 +1413,6 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
       }
     }
   }
-#ifdef NEVER
-  /* We used to do this, but we're not sure why */
-  process_expression(commandraw, &c2, (const char **) &p, player, caller,
-                     cause, noevtoken ? PE_NOTHING :
-                     ((PE_DEFAULT & ~PE_EVALUATE) |
-                      PE_COMMAND_BRACES), PT_DEFAULT, NULL);
-#endif
   *c2 = '\0';
   mush_strncpy(queue_entry->pe_info->cmd_evaled, commandraw, BUFFER_LEN);
 

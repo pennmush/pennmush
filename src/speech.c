@@ -1140,8 +1140,9 @@ filter_found(dbref thing, dbref speaker, const char *msg, int flag)
 
   for (i = 0; (i < MAX_ARG) && !matched; i++) {
     p = bp = filter;
-    process_expression(p, &bp, (char const **) &filter, 0, 0, 0,
-                       PE_NOTHING, PT_COMMA, NULL);
+    if (process_expression(p, &bp, (char const **) &filter, 0, 0, 0,
+			   PE_NOTHING, PT_COMMA, NULL))
+      break;
     if (*filter == ',')
       *filter++ = '\0';
     if (*p == '\0' && *filter == '\0')  /* No more filters */

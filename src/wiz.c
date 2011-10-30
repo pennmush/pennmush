@@ -2197,13 +2197,16 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
       const char *ebuf2;
       char tbuf1[BUFFER_LEN];
       char *bp;
+      int per;
 
       ebuf1 = replace_string("##", unparse_dbref(n), spec.eval);
       ebuf2 = ebuf1;
       bp = tbuf1;
-      process_expression(tbuf1, &bp, &ebuf2, player, player, player,
+      per = process_expression(tbuf1, &bp, &ebuf2, player, player, player,
                          PE_DEFAULT, PT_DEFAULT, pe_info);
       mush_free(ebuf1, "replace_string.buff");
+      if (per) 
+	goto exit_sequence;
       *bp = '\0';
       if (!parse_boolean(tbuf1))
         continue;
@@ -2230,6 +2233,7 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
     (*result)[nresults++] = (dbref) n;
   }
 
+ exit_sequence:
   if (spec.lock != TRUE_BOOLEXP)
     free_boolexp(spec.lock);
   return (int) nresults;

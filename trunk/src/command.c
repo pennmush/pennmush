@@ -336,11 +336,11 @@ COMLIST commands[] = {
    0, 0},
 
   {"BUY", NULL, cmd_buy, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
-  {"BRIEF", NULL, cmd_brief, CMD_T_ANY, 0, 0},
+  {"BRIEF", "OPAQUE", cmd_brief, CMD_T_ANY, 0, 0},
   {"DESERT", NULL, cmd_desert, CMD_T_PLAYER | CMD_T_THING, 0, 0},
   {"DISMISS", NULL, cmd_dismiss, CMD_T_PLAYER | CMD_T_THING, 0, 0},
   {"DROP", NULL, cmd_drop, CMD_T_PLAYER | CMD_T_THING, 0, 0},
-  {"EXAMINE", "ALL BRIEF DEBUG MORTAL PARENT", cmd_examine, CMD_T_ANY, 0, 0},
+  {"EXAMINE", "ALL BRIEF DEBUG MORTAL OPAQUE PARENT", cmd_examine, CMD_T_ANY, 0, 0},
   {"EMPTY", NULL, cmd_empty, CMD_T_PLAYER | CMD_T_THING | CMD_T_NOGAGGED, 0, 0},
   {"ENTER", NULL, cmd_enter, CMD_T_ANY, 0, 0},
 

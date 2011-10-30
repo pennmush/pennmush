@@ -1347,7 +1347,7 @@ COMMAND(cmd_zemit)
 
 COMMAND(cmd_brief)
 {
-  do_examine(executor, arg_left, EXAM_BRIEF, 0, 0);
+  do_examine(executor, arg_left, EXAM_BRIEF, 0, 0, SW_ISSET(sw, SWITCH_OPAQUE));
 }
 
 COMMAND(cmd_drop)
@@ -1359,14 +1359,15 @@ COMMAND(cmd_examine)
 {
   int all = SW_ISSET(sw, SWITCH_ALL);
   int parent = SW_ISSET(sw, SWITCH_PARENT);
+  int opaque = SW_ISSET(sw, SWITCH_OPAQUE);
   if (SW_ISSET(sw, SWITCH_BRIEF))
-    do_examine(executor, arg_left, EXAM_BRIEF, all, 0);
+    do_examine(executor, arg_left, EXAM_BRIEF, all, 0, opaque);
   else if (SW_ISSET(sw, SWITCH_DEBUG))
     do_debug_examine(executor, arg_left);
   else if (SW_ISSET(sw, SWITCH_MORTAL))
-    do_examine(executor, arg_left, EXAM_MORTAL, all, parent);
+    do_examine(executor, arg_left, EXAM_MORTAL, all, parent, opaque);
   else
-    do_examine(executor, arg_left, EXAM_NORMAL, all, parent);
+    do_examine(executor, arg_left, EXAM_NORMAL, all, parent, opaque);
 }
 
 COMMAND(cmd_empty)

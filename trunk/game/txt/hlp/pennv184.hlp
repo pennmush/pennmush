@@ -87,6 +87,10 @@ Fixes:
 
 Functions:
  * isregexp() to validate regexp patterns. Suggested by Padraic. [DC]
+ 
+Commands:
+ * 'examine' and 'brief' now take an /opaque switch, which omits contents
+   listings. Useful for spammy objects like the player_start room. [MG]
 
 & 1.8.4p7
 Version 1.8.4 patchlevel 7                                 Sep 25, 2011

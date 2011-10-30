@@ -77,7 +77,7 @@ extern void do_dolist(dbref executor, char *list, char *command,
 /* From look.c */
 enum exam_type { EXAM_NORMAL, EXAM_BRIEF, EXAM_MORTAL };
 extern void do_examine(dbref player, const char *name, enum exam_type flag,
-                       int all, int parent);
+                       int all, int parent, int opaque);
 extern void do_inventory(dbref player);
 extern void do_find(dbref player, const char *name, char **argv);
 extern void do_whereis(dbref player, const char *name);

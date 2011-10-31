@@ -304,7 +304,8 @@ new_queue_entry(NEW_PE_INFO *pe_info)
   MQUE *entry;
 
   entry = mush_malloc(sizeof *entry, "mque");
-
+  if (!entry)
+    mush_panic("Unable to allocate memory in new_queue_entry");
   entry->executor = NOTHING;
   entry->enactor = NOTHING;
   entry->caller = NOTHING;

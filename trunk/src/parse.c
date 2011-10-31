@@ -1596,6 +1596,8 @@ make_pe_info(char *name)
   NEW_PE_INFO *pe_info;
 
   pe_info = mush_malloc(sizeof(NEW_PE_INFO), name);
+  if (!pe_info)
+    mush_panic("Unable to allocate memory in make_pe_info");
 
   pe_info->fun_invocations = 0;
   pe_info->fun_recursions = 0;
@@ -2617,7 +2619,7 @@ process_expression(char *buff, char **bp, char const **str,
             } else {
               pe_regs = NULL;
             }
-	    
+
 	    if (realbuff) {
 	      fbuff = realbuff;
 	      fbp = realbp;

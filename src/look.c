@@ -1384,6 +1384,7 @@ struct dh_args {
   enum decompile_attrflags skipdef;          /**< Show all attrflags, none, or just skip defaults? */
 };
 
+/* **DESTRUCTIVELY MODIFIES** the original string! Beware! */
 char *
 decompose_str(char *what)
 {

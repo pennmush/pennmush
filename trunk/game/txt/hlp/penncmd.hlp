@@ -94,11 +94,35 @@ These '@' commands are only usable by wizards or privileged players:
 
   > ]"[add(1,1)]
   You say, "[add(1,1)]"
-  
+
   This can be used to pass unevaluated MUSHcode to softcoded commands
   without having to escape every special character, or to help objects
   set attributes to contain unevaluated code.
 
+  See 'help ]2' for more examples.
+
+See also: lit(), decompose(), escape(), @command
+& ]2
+  Using ']' with $-commands:
+  
+  > &test Tester=$test *: @pemit %#=I got: %0
+  
+  Normal evaluation:
+    > test My name is %n.
+    I got: My name is Wiggles.
+  
+  Preventing the user input from being evaluated:
+    > ]test My name is %n.
+    I got: My name is %n.
+
+  Preventing evaluation of code inside the $-command:  
+    > &test Tester=$test *: ]@pemit %#=I got: %0
+    > test My name is %n.
+    I got: %0
+
+  In the last example, '%0' would evaluate to 'My name is Wiggles.' (because
+  the string entered by the user was evaluated), but the @pemit has been told
+  not to evaluate its arguments.
 & @@
   @@ [<text>]
  

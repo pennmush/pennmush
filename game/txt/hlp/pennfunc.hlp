@@ -1136,7 +1136,7 @@ See also: inc(), sub()
     > think decompose(This is \[a [ansi(y,test)]\][space(3)])
     This is \[a%b[ansi(y,test)]\] %b%b
 
-See also: @decompile2, escape(), secure()
+See also: @decompile2, escape(), secure(), ]
 & DECODE64()
   decode64(<string>)
 
@@ -1451,7 +1451,7 @@ See also: neq()
   function preserves the original string, it is, in most cases, a better
   choice than secure(), but decompose() is often better still.
 
-See also: decompose(), secure()
+See also: decompose(), secure(), ]
 & EVAL()
 & GET_EVAL()
   eval(<object>, <attribute>)

@@ -300,150 +300,150 @@ For more, see Entries-15
  @warnings3                @wcheck                   @whereis                 
  @wipe                     @wizmotd                  @wizwall                 
  @zemit                    @zenter                   @zleave                  
- \                         ]                         ^                        
- ^-listens                 `                         `2                       
- `3                        `4                        abode                    
- abs()                     accent()                  accent2                  
- accents                   accents2                  accents3                 
- accname()                 acos()                    action lists             
- action2                   add()                     after()                  
- ahelp                     alias()                   align()                  
- align2                    align3                    align4                   
- allof()                   alphamax()                alphamin()               
- ancestors                 and()                     andflags()               
+ \                         ]                         ]2                       
+ ^                         ^-listens                 `                        
+ `2                        `3                        `4                       
+ abode                     abs()                     accent()                 
+ accent2                   accents                   accents2                 
+ accents3                  accname()                 acos()                   
+ action lists              action2                   add()                    
+ after()                   ahelp                     alias()                  
+ align()                   align2                    align3                   
+ align4                    allof()                   alphamax()               
+ alphamin()                ancestors                 and()                    
 
 For more, see Entries-16
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-16
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- andlflags()               andlpowers()              anews                    
- angles                    anonymous attributes      anonymous2               
- anonymous3                anonymous4                ansi                     
- ansi()                    aposs()                   art()                    
- asin()                    atan()                    atan2()                  
- atrlock()                 attr trees                attr trees2              
- attr trees3               attr trees4               attrcnt()                
- attrib trees              attrib trees2             attrib trees3            
- attrib trees4             attrib-ownership          attrib_set()             
- attribute flags           attribute flags2          attribute flags3         
- attribute functions       attribute list            attribute trees          
- attribute trees2          attribute trees3          attribute trees4         
- attributes                attributes list           attributes2              
- attributes3               attributes4               attrpcnt()               
- audible                   band()                    baseconv()               
- beep()                    before()                  being killed             
+ andflags()                andlflags()               andlpowers()             
+ anews                     angles                    anonymous attributes     
+ anonymous2                anonymous3                anonymous4               
+ ansi                      ansi()                    aposs()                  
+ art()                     asin()                    atan()                   
+ atan2()                   atrlock()                 attr trees               
+ attr trees2               attr trees3               attr trees4              
+ attrcnt()                 attrib trees              attrib trees2            
+ attrib trees3             attrib trees4             attrib-ownership         
+ attrib_set()              attribute flags           attribute flags2         
+ attribute flags3          attribute functions       attribute list           
+ attribute trees           attribute trees2          attribute trees3         
+ attribute trees4          attributes                attributes list          
+ attributes2               attributes3               attributes4              
+ attrpcnt()                audible                   band()                   
+ baseconv()                beep()                    before()                 
 
 For more, see Entries-17
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-17
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- benchmark()               bitwise functions         bnand()                  
- bnot()                    boolean functions         boolean values           
- boolean2                  boolean3                  bor()                    
- bound()                   brackets()                brief                    
- builder                   buy                       bxor()                   
- caller                    cand()                    capstr()                 
- case()                    caseall()                 cat()                    
- cbuffer()                 cbufferadd()              cd                       
- cdesc()                   ceil()                    cemit()                  
- center()                  cflags()                  ch                       
- chan_usefirstmatch        changes                   channel functions        
- channel-list              channel-privs             channels                 
- channels()                charges2                  chat                     
- chat mogrifying           chat system               checkpass()              
- checksum                  children()                chown_ok                 
- chr()                     clflags()                 clients                  
+ being killed              benchmark()               bitwise functions        
+ bnand()                   bnot()                    boolean functions        
+ boolean values            boolean2                  boolean3                 
+ bor()                     bound()                   brackets()               
+ brief                     builder                   buy                      
+ bxor()                    caller                    cand()                   
+ capstr()                  case()                    caseall()                
+ cat()                     cbuffer()                 cbufferadd()             
+ cd                        cdesc()                   ceil()                   
+ cemit()                   center()                  cflags()                 
+ ch                        chan_usefirstmatch        changes                  
+ channel functions         channel-list              channel-privs            
+ channels                  channels()                charges2                 
+ chat                      chat mogrifying           chat system              
+ checkpass()               checksum                  children()               
+ chown_ok                  chr()                     clflags()                
 
 For more, see Entries-18
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-18
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- clock()                   clone()                   cloudy                   
- cmds()                    cmogrifier()              cmsgs()                  
- code                      color                     commands                 
- communication functions   comp()                    comsys                   
- con()                     cond()                    condall()                
- config()                  conn()                    connected                
- connection functions      contact                   control                  
- controls()                convsecs()                convtime()               
- convutcsecs()             convutctime()             copyright                
- copyrite                  cor()                     cos()                    
- costs                     cowner()                  create()                 
- crecall()                 credits                   csecs()                  
- cstatus()                 ctime()                   ctitle()                 
- ctu()                     cusers()                  cv                       
- cwho()                    dark                      database                 
- dbref #                   dbref functions           dbref number             
+ clients                   clock()                   clone()                  
+ cloudy                    cmds()                    cmogrifier()             
+ cmsgs()                   code                      color                    
+ commands                  communication functions   comp()                   
+ comsys                    con()                     cond()                   
+ condall()                 config()                  conn()                   
+ connected                 connection functions      contact                  
+ control                   controls()                convsecs()               
+ convtime()                convutcsecs()             convutctime()            
+ copyright                 copyrite                  cor()                    
+ cos()                     costs                     cowner()                 
+ create()                  crecall()                 credits                  
+ csecs()                   cstatus()                 ctime()                  
+ ctitle()                  ctu()                     cusers()                 
+ cv                        cwho()                    dark                     
+ database                  dbref #                   dbref functions          
 
 For more, see Entries-19
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-19
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- dbref2                    dbrefs                    debug                    
- debug2                    debugforwardlist          dec()                    
- decode64()                decompose()               decrypt()                
- default()                 delete()                  desert                   
- destroy_ok                die()                     dig()                    
- digest()                  dismiss                   dist2d()                 
- dist3d()                  div()                     doing                    
- doing()                   download                  drop                     
- drop-tos                  droptos                   dynhelp()                
- e()                       edefault()                edit()                   
- element()                 elements()                elist()                  
- elock()                   emit()                    empty                    
- enactor                   encode64()                encrypt()                
- endtag()                  enter                     enter_ok                 
- entrances()               eq()                      escape()                 
- etimefmt()                etimefmt2                 etimefmt3                
+ dbref number              dbref2                    dbrefs                   
+ debug                     debug2                    debugforwardlist         
+ dec()                     decode64()                decompose()              
+ decrypt()                 default()                 delete()                 
+ desert                    destroy_ok                die()                    
+ dig()                     digest()                  dismiss                  
+ dist2d()                  dist3d()                  div()                    
+ doing                     doing()                   download                 
+ drop                      drop-tos                  droptos                  
+ dynhelp()                 e()                       edefault()               
+ edit()                    element()                 elements()               
+ elist()                   elock()                   emit()                   
+ empty                     enactor                   encode64()               
+ encrypt()                 endtag()                  enter                    
+ enter_ok                  entrances()               eq()                     
+ escape()                  etimefmt()                etimefmt2                
 
 For more, see Entries-20
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-20
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- eval()                    evaluation order          evaluation2              
- event                     event db                  event dump               
- event examples            event examples2           event list               
- event object              event player              event signal             
- event socket              event sql                 events                   
- examine                   executor                  exit()                   
- exits                     exp()                     extract()                
- failure                   failure2                  fdiv()                   
- filter()                  filterbool()              findable()               
- first()                   firstof()                 fixed                    
- flag list                 flag permissions          flags                    
- flags list                flags()                   flags2                   
- flip()                    floating                  floor()                  
- floordiv()                fmod()                    fn()                     
- fn2                       fold()                    fold2                    
- folderstats()             follow                    followers()              
+ etimefmt3                 eval()                    evaluation order         
+ evaluation2               event                     event db                 
+ event dump                event examples            event examples2          
+ event list                event object              event player             
+ event signal              event socket              event sql                
+ events                    examine                   executor                 
+ exit()                    exits                     exp()                    
+ extract()                 failure                   failure2                 
+ fdiv()                    filter()                  filterbool()             
+ findable()                first()                   firstof()                
+ fixed                     flag list                 flag permissions         
+ flags                     flags list                flags()                  
+ flags2                    flip()                    floating                 
+ floor()                   floordiv()                fmod()                   
+ fn()                      fn2                       fold()                   
+ fold2                     folderstats()             follow                   
 
 For more, see Entries-21
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-21
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- following()               foreach()                 foreach2                 
- forwardlist               fraction()                fullalias()              
- fullname()                function list             functions                
- functions()               functions2                gagged                   
- gender                    get                       get()                    
- get_eval()                getpids()                 getting started          
- give                      global commands           globals                  
- go                        going                     going_twice              
- goto                      grab()                    graball()                
- grep()                    grepi()                   gs channels              
- gs chat                   gs chat2                  gs mail                  
- gs mail2                  gs moving                 gs moving2               
- gs talking                gs talking2               gt()                     
- gte()                     halt                      hasattr()                
- hasattrp()                hasattrpval()             hasattrval()             
- hasflag()                 hash                      haspower()               
+ followers()               following()               foreach()                
+ foreach2                  forwardlist               fraction()               
+ fullalias()               fullname()                function list            
+ functions                 functions()               functions2               
+ gagged                    gender                    get                      
+ get()                     get_eval()                getpids()                
+ getting started           give                      global commands          
+ globals                   go                        going                    
+ going_twice               goto                      grab()                   
+ graball()                 grep()                    grepi()                  
+ gs channels               gs chat                   gs chat2                 
+ gs mail                   gs mail2                  gs moving                
+ gs moving2                gs talking                gs talking2              
+ gt()                      gte()                     halt                     
+ hasattr()                 hasattrp()                hasattrpval()            
+ hasattrval()              hasflag()                 hash                     
 
 For more, see Entries-22
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 & Entries-22
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
- hastype()                 haven                     hear_connect             
- heavy                     height()                  help                     
+ haspower()                hastype()                 haven                    
+ hear_connect              heavy                     height()                 
  here                      hidden()                  home                     
  home()                    homes                     host()                   
  hostname()                html                      html functions           

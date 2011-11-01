@@ -89,6 +89,11 @@ Fixes:
    Jules. [MG]
  * Fix a harmless but annoying race condition when making a SSL connection 
    to a game in the middle of starting. [SW]
+ * Fixed minor memory leak in chat system. [MG]
+ * @channel/decompile didn't recreate the ANSI in a channel's name. [MG]
+ * Channel names can now contain any amount of ANSI, as long as the visible
+   name is 30 chars or less in length. Suggested by Kimiko Muffin. [MG]
+ * @channel/rename allowed you to give channels invalid names. [MG]
 
 Functions:
  * isregexp() to validate regexp patterns. Suggested by Padraic. [DC]

@@ -72,7 +72,8 @@ static void channel_join_self(dbref player, const char *name);
 static void channel_leave_self(dbref player, const char *name);
 static void do_channel_who(dbref player, CHAN *chan);
 void chat_player_announce(dbref player, char *msg, int ungag);
-static int ok_channel_name(const char *n);
+enum ok_name {NAME_OK = 0, NAME_INVALID, NAME_TOO_LONG, NAME_NOT_UNIQUE};
+static enum ok_name ok_channel_name(const char *n, CHAN *unique);
 static void channel_send(CHAN *channel, dbref player, int flags,
                          const char *origmessage);
 static void list_partial_matches(dbref player, const char *name,
@@ -346,7 +347,7 @@ new_channel(void)
   ch = mush_malloc(sizeof *ch, "channel");
   if (!ch)
     return NULL;
-  ch->name[0] = '\0';
+  ch->name = NULL;
   ch->title[0] = '\0';
   ChanType(ch) = CHANNEL_DEFAULT_FLAGS;
   ChanCreator(ch) = NOTHING;
@@ -396,12 +397,15 @@ free_channel(CHAN *c)
   free_boolexp(ChanHideLock(c));
   free_boolexp(ChanSeeLock(c));
   free_boolexp(ChanModLock(c));
+  if (ChanName(c))
+    mush_free(ChanName(c), "channel.name");
   u = ChanUsers(c);
   while (u) {
     unext = u->next;
     free_user(u);
     u = unext;
   }
+  mush_free(c, "channel");
   return;
 }
 
@@ -419,7 +423,7 @@ free_user(CHANUSER *u)
 static int
 load_channel(PENNFILE *fp, CHAN *ch)
 {
-  mush_strncpy(ChanName(ch), getstring_noalloc(fp), CHAN_NAME_LEN);
+  ChanName(ch) = mush_strdup(getstring_noalloc(fp), "channel.name");
   if (penn_feof(fp))
     return 0;
   mush_strncpy(ChanTitle(ch), getstring_noalloc(fp), CHAN_TITLE_LEN);
@@ -453,7 +457,7 @@ load_labeled_channel(PENNFILE *fp, CHAN *ch, int dbflags)
   char *label, *value;
 
   db_read_this_labeled_string(fp, "name", &tmp);
-  mush_strncpy(ChanName(ch), tmp, CHAN_NAME_LEN);
+  ChanName(ch) = mush_strdup(tmp, "channel.name");
   db_read_this_labeled_string(fp, "description", &tmp);
   mush_strncpy(ChanTitle(ch), tmp, CHAN_TITLE_LEN);
   db_read_this_labeled_int(fp, "flags", &i);
@@ -1704,11 +1708,10 @@ void
 do_chan_admin(dbref player, char *name, const char *perms,
               enum chan_admin_op flag)
 {
-  CHAN *chan = NULL, *temp = NULL;
+  CHAN *chan = NULL;
   privbits type;
-  int res;
   boolexp key;
-  char old[CHAN_NAME_LEN];
+  char old[BUFFER_LEN];
   char announcebuff[BUFFER_LEN];
 
   if (!name || !*name) {
@@ -1734,21 +1737,21 @@ do_chan_admin(dbref player, char *name, const char *perms,
       notify(player, T("No more room for channels."));
       return;
     }
-    if (strlen(name) > CHAN_NAME_LEN - 1) {
-      notify(player, T("The channel needs a shorter name."));
-      return;
-    }
-    if (!ok_channel_name(name)) {
+    switch (ok_channel_name(name, NULL)) {
+    case NAME_INVALID:
       notify(player, T("Invalid name for a channel."));
       return;
+    case NAME_TOO_LONG:
+      notify(player, T("The channel needs a shorter name."));
+      return;
+    case NAME_NOT_UNIQUE:
+      notify(player, T("The channel needs a more unique name."));
+      return;
+    case NAME_OK:
+      break;
     }
     if (!Hasprivs(player) && !canstilladd(player)) {
       notify(player, T("You already own too many channels."));
-      return;
-    }
-    res = find_channel(name, &chan, GOD);
-    if (res != CMATCH_NONE) {
-      notify(player, T("CHAT: The channel needs a more unique name."));
       return;
     }
     /* get the permissions. Invalid specs default to the default */
@@ -1788,7 +1791,7 @@ do_chan_admin(dbref player, char *name, const char *perms,
       ChanType(chan) = type;
     ChanCreator(chan) = Owner(player);
     ChanMogrifier(chan) = NOTHING;
-    mush_strncpy(ChanName(chan), name, CHAN_NAME_LEN);
+    ChanName(chan) = mush_strdup(name, "channel.name");
     insert_channel(&chan);
     notify_format(player, T("CHAT: Channel <%s> created."), ChanName(chan));
     break;
@@ -1816,24 +1819,26 @@ do_chan_admin(dbref player, char *name, const char *perms,
       notify(player, T("Permission denied."));
       return;
     }
-    /* make sure the channel name is unique */
-    if (find_channel(perms, &temp, GOD)) {
-      /* But allow renaming a channel to a differently-cased version of
-       * itself
-       */
-      if (temp != chan) {
-        notify(player, T("The channel needs a more unique new name."));
-        return;
-      }
-    }
-    if (strlen(perms) > CHAN_NAME_LEN - 1) {
-      notify(player, T("That name is too long."));
+    switch (ok_channel_name(perms, chan)) {
+    case NAME_INVALID:
+      notify(player, T("Invalid name for a channel."));
       return;
+    case NAME_TOO_LONG:
+      notify(player, T("The channel needs a shorter name."));
+      return;
+    case NAME_NOT_UNIQUE:
+      notify(player, T("The channel needs a more unique name."));
+      return;
+    case NAME_OK:
+      break;
     }
+
     /* When we rename a channel, we actually remove it and re-insert it */
     strcpy(old, ChanName(chan));
     remove_channel(chan);
-    strcpy(ChanName(chan), perms);
+    if (ChanName(chan))
+      mush_free(ChanName(chan), "channel.name");
+    ChanName(chan) = mush_strdup(perms, "channel.name");
     insert_channel(&chan);
     snprintf(announcebuff, BUFFER_LEN, T("has renamed %s to %s."),
              old, ChanName(chan));
@@ -1869,34 +1874,48 @@ do_chan_admin(dbref player, char *name, const char *perms,
   }
 }
 
-static int
-ok_channel_name(const char *n)
+static enum ok_name
+ok_channel_name(const char *n, CHAN *unique)
 {
   /* is name valid for a channel? */
   const char *p;
   char name[BUFFER_LEN];
+  CHAN *check;
+  int res;
 
   if (!n || !*n)
-    return 0;
+    return NAME_INVALID;
 
   mush_strncpy(name, remove_markup(n, NULL), BUFFER_LEN);
 
   /* No leading spaces */
   if (isspace((unsigned char) *name))
-    return 0;
+    return NAME_INVALID;
 
   /* only printable characters */
   for (p = name; p && *p; p++) {
     if (!isprint((unsigned char) *p) || *p == '|')
-      return 0;
+      return NAME_INVALID;
   }
 
   /* No trailing spaces */
   p--;
   if (isspace((unsigned char) *p))
-    return 0;
+    return NAME_INVALID;
 
-  return 1;
+  if (strlen(name) > CHAN_NAME_LEN - 1)
+    return NAME_TOO_LONG;
+
+  res = find_channel(name, &check, GOD);
+  if (res != CMATCH_NONE) {
+    if (unique == NULL) {
+      return NAME_NOT_UNIQUE; /* Name must be totally unique */
+    } else if (check != unique) {
+      return NAME_NOT_UNIQUE;
+    }
+  }
+
+  return NAME_OK;
 }
 
 
@@ -2146,8 +2165,8 @@ do_channel_list(dbref player, const char *partname)
   CHANUSER *u;
   char numusers[BUFFER_LEN];
   char cleanname[CHAN_NAME_LEN];
-  char blanks[CHAN_NAME_LEN];
-  size_t len;
+  char dispname[BUFFER_LEN];
+  char *dp;
   int numblanks;
 
   if (SUPPORT_PUEBLO)
@@ -2173,21 +2192,15 @@ do_channel_list(dbref player, const char *partname)
        * blanks we add by the (actual length-30) because our
        * %-30s is going to overflow as well.
        */
-      len = strlen(ChanName(c));
-      numblanks = len - strlen(cleanname);
-      if (numblanks > 0 && numblanks < CHAN_NAME_LEN) {
-        memset(blanks, ' ', CHAN_NAME_LEN - 1);
-        if (len > 30)
-          numblanks -= (len - 30);
-        if (numblanks < 0)
-          numblanks = 0;
-        blanks[numblanks] = '\0';
-      } else {
-        blanks[0] = '\0';
-      }
+      dp = dispname;
+      safe_str(ChanName(c), dispname, &dp);
+      numblanks = 30 - strlen(cleanname);
+      if (numblanks > 0)
+        safe_fill(' ', numblanks, dispname, &dp);
+      *dp = '\0';
       notify_format(player,
-                    "%-30s%s %s %8ld [%c%c%c%c%c%c%c %c%c%c%c%c%c] [%-3s %c%c%c] %3d",
-                    ChanName(c), blanks, numusers, ChanNumMsgs(c),
+                    "%s %s %8ld [%c%c%c%c%c%c%c %c%c%c%c%c%c] [%-3s %c%c%c] %3d",
+                    dispname, numusers, ChanNumMsgs(c),
                     Channel_Disabled(c) ? 'D' : '-',
                     Channel_Player(c) ? 'P' : '-',
                     Channel_Object(c) ? 'T' : '-',
@@ -2863,6 +2876,7 @@ do_chan_decompile(dbref player, const char *name, int brief)
   int found;
   char cleanname[BUFFER_LEN];
   char cleanp[CHAN_NAME_LEN];
+  char rawp[BUFFER_LEN];
 
   found = 0;
   strcpy(cleanname, remove_markup(name, NULL));
@@ -2878,43 +2892,44 @@ do_chan_decompile(dbref player, const char *name, int brief)
                         ChanName(c));
         continue;
       }
-      notify_format(player, "@channel/add %s = %s", ChanName(c),
+      strcpy(rawp, ChanName(c)); /* Because decompose_str is destructive */
+      notify_format(player, "@channel/add %s = %s", decompose_str(rawp),
                     privs_to_string(priv_table, ChanType(c)));
-      notify_format(player, "@channel/chown %s = %s", ChanName(c),
+      notify_format(player, "@channel/chown %s = %s", cleanp,
                     Name(ChanCreator(c)));
       if (ChanMogrifier(c) != NOTHING) {
-        notify_format(player, "@channel/mogrifier %s = #%d", ChanName(c),
+        notify_format(player, "@channel/mogrifier %s = #%d", cleanp,
                       ChanMogrifier(c));
       }
       if (ChanModLock(c) != TRUE_BOOLEXP)
-        notify_format(player, "@clock/mod %s = %s", ChanName(c),
+        notify_format(player, "@clock/mod %s = %s", cleanp,
                       unparse_boolexp(player, ChanModLock(c), UB_MEREF));
       if (ChanHideLock(c) != TRUE_BOOLEXP)
-        notify_format(player, "@clock/hide %s = %s", ChanName(c),
+        notify_format(player, "@clock/hide %s = %s", cleanp,
                       unparse_boolexp(player, ChanHideLock(c), UB_MEREF));
       if (ChanJoinLock(c) != TRUE_BOOLEXP)
-        notify_format(player, "@clock/join %s = %s", ChanName(c),
+        notify_format(player, "@clock/join %s = %s", cleanp,
                       unparse_boolexp(player, ChanJoinLock(c), UB_MEREF));
       if (ChanSpeakLock(c) != TRUE_BOOLEXP)
-        notify_format(player, "@clock/speak %s = %s", ChanName(c),
+        notify_format(player, "@clock/speak %s = %s", cleanp,
                       unparse_boolexp(player, ChanSpeakLock(c), UB_MEREF));
       if (ChanSeeLock(c) != TRUE_BOOLEXP)
-        notify_format(player, "@clock/see %s = %s", ChanName(c),
+        notify_format(player, "@clock/see %s = %s", cleanp,
                       unparse_boolexp(player, ChanSeeLock(c), UB_MEREF));
       if (ChanTitle(c))
-        notify_format(player, "@channel/desc %s = %s", ChanName(c),
+        notify_format(player, "@channel/desc %s = %s", cleanp,
                       ChanTitle(c));
       if (ChanBufferQ(c))
-        notify_format(player, "@channel/buffer %s = %d", ChanName(c),
+        notify_format(player, "@channel/buffer %s = %d", cleanp,
                       bufferq_blocks(ChanBufferQ(c)));
       if (!brief) {
         for (u = ChanUsers(c); u; u = u->next) {
           if (!Chanuser_Hide(u) || Priv_Who(player)) {
             if (IsPlayer(CUdbref(u))) {
-              notify_format(player, "@channel/on %s = *%s", ChanName(c),
+              notify_format(player, "@channel/on %s = *%s", cleanp,
                             Name(CUdbref(u)));
             } else {
-              notify_format(player, "@channel/on %s = #%d", ChanName(c),
+              notify_format(player, "@channel/on %s = #%d", cleanp,
                             CUdbref(u));
             }
           }

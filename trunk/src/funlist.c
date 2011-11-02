@@ -1240,7 +1240,8 @@ FUNCTION(fun_namegrab)
     if (!RealGoodObject(victim))
       continue;                 /* Don't bother with garbage */
     /* Dbref match has top priority */
-    if ((absolute == victim) && can_interact(victim, executor, INTERACT_MATCH, pe_info)) {
+    if ((absolute == victim)
+        && can_interact(victim, executor, INTERACT_MATCH, pe_info)) {
       safe_str(r, buff, bp);
       return;
     }
@@ -1974,7 +1975,7 @@ FUNCTION(fun_iter)
     char *isep = insep;
     const char *arg3 = args[2];
     if (process_expression(insep, &isep, &arg3, executor, caller, enactor,
-			   eflags, PT_DEFAULT, pe_info))
+                           eflags, PT_DEFAULT, pe_info))
       return;
     *isep = '\0';
     strcpy(args[2], insep);
@@ -1999,7 +2000,7 @@ FUNCTION(fun_iter)
   lp = list;
   sp = args[0];
   per = process_expression(list, &lp, &sp, executor, caller, enactor,
-                     eflags, PT_DEFAULT, pe_info);
+                           eflags, PT_DEFAULT, pe_info);
   *lp = '\0';
   lp = trim_space_sep(list, sep);
   if (per || !*lp) {
@@ -2548,7 +2549,7 @@ FUNCTION(fun_regreplace)
   postp = postbuf;
   r = args[0];
   if (process_expression(postbuf, &postp, &r, executor, caller, enactor, eflags,
-			 PT_DEFAULT, pe_info))
+                         PT_DEFAULT, pe_info))
     return;
   *postp = '\0';
 
@@ -2569,7 +2570,7 @@ FUNCTION(fun_regreplace)
     tbp = tbuf;
     r = args[i];
     if (process_expression(tbuf, &tbp, &r, executor, caller, enactor, eflags,
-			   PT_DEFAULT, pe_info))
+                           PT_DEFAULT, pe_info))
       goto exit_sequence;
     *tbp = '\0';
 
@@ -2635,11 +2636,11 @@ FUNCTION(fun_regreplace)
       pe_regs_set_rx_context(pe_regs, re, offsets, subpatterns, prebuf);
 
       if (process_expression(postbuf, &postp, &obp, executor, caller, enactor,
-			     eflags | PE_DOLLAR, PT_DEFAULT, pe_info)) {
-	mush_free(re, "pcre");
-	if (study)
-	  mush_free(study, "pcre.extra");
-	goto exit_sequence;
+                             eflags | PE_DOLLAR, PT_DEFAULT, pe_info)) {
+        mush_free(re, "pcre");
+        if (study)
+          mush_free(study, "pcre.extra");
+        goto exit_sequence;
       }
       if ((*bp == (buff + BUFFER_LEN - 1))
           && (pe_info->fun_invocations == funccount))
@@ -2676,9 +2677,9 @@ FUNCTION(fun_regreplace)
       tbp = tbuf;
       r = args[i];
       if (process_expression(tbuf, &tbp, &r, executor, caller, enactor, eflags,
-			     PT_DEFAULT, pe_info))
-	goto exit_sequence;
-	
+                             PT_DEFAULT, pe_info))
+        goto exit_sequence;
+
       *tbp = '\0';
 
       if ((re = pcre_compile(remove_markup(tbuf, &searchlen),
@@ -2724,12 +2725,12 @@ FUNCTION(fun_regreplace)
           pe_regs_set_rx_context_ansi(pe_regs, re, offsets, subpatterns, orig);
           tbp = tbuf;
           if (process_expression(tbuf, &tbp, &r, executor, caller, enactor,
-				 eflags | PE_DOLLAR, PT_DEFAULT, pe_info)) {
-	    mush_free(re, "pcre");
-	    if (study)
-	      mush_free(study, "pcre.extra");
-	    goto exit_sequence;
-	  }
+                                 eflags | PE_DOLLAR, PT_DEFAULT, pe_info)) {
+            mush_free(re, "pcre");
+            if (study)
+              mush_free(study, "pcre.extra");
+            goto exit_sequence;
+          }
           *tbp = '\0';
           if (offsets[0] >= search) {
             repl = parse_ansi_string(tbuf);
@@ -2975,13 +2976,14 @@ FUNCTION(fun_regrab)
     mush_free(study, "pcre.extra");
 }
 
-FUNCTION(fun_isregexp) {
+FUNCTION(fun_isregexp)
+{
   pcre *re;
   int flags = 0;
   const char *errptr;
   int erroffset;
 
-  if (!!(re = pcre_compile(args[0], flags, &errptr, &erroffset, tables))) {
+  if (! !(re = pcre_compile(args[0], flags, &errptr, &erroffset, tables))) {
     mush_free(re, "pcre");
     safe_chr('1', buff, bp);
     return;

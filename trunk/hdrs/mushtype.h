@@ -328,9 +328,9 @@ typedef enum conn_source {
 } conn_source;
 
 typedef enum conn_status {
-  CONN_SCREEN, /* not connected to a player */
-  CONN_PLAYER, /* connected */
-  CONN_DENIED  /* connection denied due to login limits/sitelock */
+  CONN_SCREEN,                  /* not connected to a player */
+  CONN_PLAYER,                  /* connected */
+  CONN_DENIED                   /* connection denied due to login limits/sitelock */
 } conn_status;
 
 typedef bool(*sq_func) (void *);

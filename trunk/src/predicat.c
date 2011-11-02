@@ -242,7 +242,9 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
 
     /* message to player */
     if (what && *what) {
-      if (fetch_ufun_attrib(what, thing, &ufun, UFUN_LOCALIZE | UFUN_REQUIRE_ATTR | UFUN_IGNORE_PERMS)) {
+      if (fetch_ufun_attrib
+          (what, thing, &ufun,
+           UFUN_LOCALIZE | UFUN_REQUIRE_ATTR | UFUN_IGNORE_PERMS)) {
         attribs_used = 1;
         if (!call_ufun(&ufun, buff, thing, player, pe_info, NULL) && buff[0])
           notify_by(thing, player, buff);
@@ -251,7 +253,10 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
     }
     /* message to neighbors */
     if (!DarkLegal(player)) {
-      if (owhat && *owhat && fetch_ufun_attrib(owhat, thing, &ufun, UFUN_LOCALIZE | UFUN_REQUIRE_ATTR | UFUN_IGNORE_PERMS | UFUN_NAME)) {
+      if (owhat && *owhat
+          && fetch_ufun_attrib(owhat, thing, &ufun,
+                               UFUN_LOCALIZE | UFUN_REQUIRE_ATTR |
+                               UFUN_IGNORE_PERMS | UFUN_NAME)) {
         attribs_used = 1;
         if (!call_ufun(&ufun, buff, thing, player, pe_info, NULL) && buff[0])
           notify_except2(loc, player, thing, buff, flags);
@@ -731,7 +736,8 @@ ok_player_name(const char *name, dbref player, dbref thing)
 
   /* A player may only change to a forbidden name if they're already
      using that name. */
-  if (forbidden_name(name) && !(GoodObject(player) && (Wizard(player) || (lookup == thing))))
+  if (forbidden_name(name)
+      && !(GoodObject(player) && (Wizard(player) || (lookup == thing))))
     return 0;
 
   return ((lookup == NOTHING) || (lookup == thing));
@@ -1102,7 +1108,7 @@ do_switch(dbref executor, char *expression, char **argv, dbref enactor,
     ap = argv[a];
     bp = buff;
     if (process_expression(buff, &bp, &ap, executor, enactor, enactor,
-			   PE_DEFAULT, PT_DEFAULT, queue_entry->pe_info)) {
+                           PE_DEFAULT, PT_DEFAULT, queue_entry->pe_info)) {
       pe_regs_free(pe_regs);
       return;
     }

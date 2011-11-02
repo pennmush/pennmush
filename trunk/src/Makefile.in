@@ -167,23 +167,23 @@ indent:
 	-T CHAN -T CHANLIST -T CHANUSER -T chunk_reference_t -T CNode \
 	-T COMLIST -T command_func -T COMMAND_INFO -T comp_func \
 	-T compile_data -T COMSORTSTRUC -T config_func -T conn_source \
-	-T CType -T dbref -T Debug_Info -T DESC -T dfa_match_data \
-	-T eptrblock -T Fail_Info -T FBLOCK -T fd_type -T FLAG \
-	-T FLAG_ALIAS -T FLAGSPACE -T folder_array -T FUN -T FUNALIAS \
-	-T function_func -T FUNTAB -T GLOBALTAB -T hash_func -T HASHENT \
-	-T HASHTAB -T heapframe -T help_file -T help_indx -T im_key \
-	-T imaxdiv_t -T intmap -T IVAL -T ListTypeInfo -T lock_list \
-	-T lock_type -T LOCKMSGINFO -T LONG -T ltype -T MAIL -T mail_flag \
-	-T makerecord -T match_data -T MATH -T MEM -T MQUE -T MSSP \
-	-T na_lookup -T new_markup_information -T NEW_PE_INFO -T NVAL \
-	-T object_flag_type -T OPTTAB -T patricia -T pcre_study_data \
-	-T pcre_uint16 -T pcre_uint32 -T PE_REG_VAL -T PE_REGS \
-	-T PENNCONF -T PENNCONFGROUP -T PENNFILE -T Port_t -T PRIV \
-	-T privbits -T PTAB -T ptab_entry -T qsort_func -T real_pcre \
-	-T recursion_info -T Region -T RegionHeader -T s_rec -T SHS_INFO \
-	-T slab -T SortType -T sq_func -T sqlplatform -T STFunc \
-	-T StrNode -T StrTree -T switch_mask -T SWITCH_VALUE -T tcheck \
-	-T tlist -T ucp_type_table -T ufun_attrib -T UIVAL -T uschar \
+	-T conn_status -T CType -T dbref -T Debug_Info -T DESC \
+	-T dfa_match_data -T eptrblock -T Fail_Info -T FBLOCK -T fd_type \
+	-T FLAG -T FLAG_ALIAS -T FLAGSPACE -T folder_array -T FUN \
+	-T FUNALIAS -T function_func -T FUNTAB -T GLOBALTAB -T hash_func \
+	-T HASHENT -T HASHTAB -T heapframe -T help_file -T help_indx \
+	-T im_key -T imaxdiv_t -T intmap -T IVAL -T ListTypeInfo \
+	-T lock_list -T lock_type -T LOCKMSGINFO -T LONG -T ltype -T MAIL \
+	-T mail_flag -T makerecord -T match_data -T MATH -T MEM -T MQUE \
+	-T MSSP -T na_lookup -T new_markup_information -T NEW_PE_INFO \
+	-T NVAL -T object_flag_type -T OPTTAB -T patricia \
+	-T pcre_study_data -T pcre_uint16 -T pcre_uint32 -T PE_REG_VAL \
+	-T PE_REGS -T PENNCONF -T PENNCONFGROUP -T PENNFILE -T Port_t \
+	-T PRIV -T privbits -T PTAB -T ptab_entry -T qsort_func \
+	-T real_pcre -T recursion_info -T Region -T RegionHeader -T s_rec \
+	-T SHS_INFO -T slab -T SortType -T sq_func -T sqlplatform \
+	-T STFunc -T StrNode -T StrTree -T switch_mask -T SWITCH_VALUE \
+	-T tcheck -T tlist -T ucp_type_table -T UIVAL -T uschar \
 	-T UsedAttr -T USERFN_ENTRY -T w128_t -T WAIT_TYPE -T warn_type \
 	$$file ; done)
 

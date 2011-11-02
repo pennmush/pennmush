@@ -72,7 +72,7 @@ static void channel_join_self(dbref player, const char *name);
 static void channel_leave_self(dbref player, const char *name);
 static void do_channel_who(dbref player, CHAN *chan);
 void chat_player_announce(dbref player, char *msg, int ungag);
-enum ok_name {NAME_OK = 0, NAME_INVALID, NAME_TOO_LONG, NAME_NOT_UNIQUE};
+enum ok_name { NAME_OK = 0, NAME_INVALID, NAME_TOO_LONG, NAME_NOT_UNIQUE };
 static enum ok_name ok_channel_name(const char *n, CHAN *unique);
 static void channel_send(CHAN *channel, dbref player, int flags,
                          const char *origmessage);
@@ -1909,7 +1909,7 @@ ok_channel_name(const char *n, CHAN *unique)
   res = find_channel(name, &check, GOD);
   if (res != CMATCH_NONE) {
     if (unique == NULL) {
-      return NAME_NOT_UNIQUE; /* Name must be totally unique */
+      return NAME_NOT_UNIQUE;   /* Name must be totally unique */
     } else if (check != unique) {
       return NAME_NOT_UNIQUE;
     }
@@ -2353,7 +2353,8 @@ FUNCTION(fun_cbufferadd)
   }
 
   /* Person must be able to do nospoof cemits. */
-  if (!command_check_byname(executor, "@cemit", pe_info) || fun->flags & FN_NOSIDEFX) {
+  if (!command_check_byname(executor, "@cemit", pe_info)
+      || fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
     return;
   }
@@ -2892,7 +2893,7 @@ do_chan_decompile(dbref player, const char *name, int brief)
                         ChanName(c));
         continue;
       }
-      strcpy(rawp, ChanName(c)); /* Because decompose_str is destructive */
+      strcpy(rawp, ChanName(c));        /* Because decompose_str is destructive */
       notify_format(player, "@channel/add %s = %s", decompose_str(rawp),
                     privs_to_string(priv_table, ChanType(c)));
       notify_format(player, "@channel/chown %s = %s", cleanp,
@@ -2917,8 +2918,7 @@ do_chan_decompile(dbref player, const char *name, int brief)
         notify_format(player, "@clock/see %s = %s", cleanp,
                       unparse_boolexp(player, ChanSeeLock(c), UB_MEREF));
       if (ChanTitle(c))
-        notify_format(player, "@channel/desc %s = %s", cleanp,
-                      ChanTitle(c));
+        notify_format(player, "@channel/desc %s = %s", cleanp, ChanTitle(c));
       if (ChanBufferQ(c))
         notify_format(player, "@channel/buffer %s = %d", cleanp,
                       bufferq_blocks(ChanBufferQ(c)));
@@ -2929,8 +2929,7 @@ do_chan_decompile(dbref player, const char *name, int brief)
               notify_format(player, "@channel/on %s = *%s", cleanp,
                             Name(CUdbref(u)));
             } else {
-              notify_format(player, "@channel/on %s = #%d", cleanp,
-                            CUdbref(u));
+              notify_format(player, "@channel/on %s = #%d", cleanp, CUdbref(u));
             }
           }
         }
@@ -3308,7 +3307,10 @@ FUNCTION(fun_channels)
       priv_who = Priv_Who(executor);
       for (cl = Chanlist(it); cl; cl = cl->next) {
         if (can_ex || (Chan_Can_See(cl->chan, executor)
-            && (u = onchannel(it, cl->chan)) && (priv_who || !Chanuser_Hide(u)))) {
+                       && (u = onchannel(it, cl->chan)) && (priv_who
+                                                            ||
+                                                            !Chanuser_Hide(u))))
+        {
           if (!first)
             safe_chr(sep, buff, bp);
           safe_str(ChanName(cl->chan), buff, bp);
@@ -3385,7 +3387,8 @@ FUNCTION(fun_clock)
 
   if (nargs == 2) {
     if (FUNCTION_SIDE_EFFECTS) {
-      if (!command_check_byname(executor, "@clock", pe_info) || fun->flags & FN_NOSIDEFX) {
+      if (!command_check_byname(executor, "@clock", pe_info)
+          || fun->flags & FN_NOSIDEFX) {
         safe_str(T(e_perm), buff, bp);
         return;
       }

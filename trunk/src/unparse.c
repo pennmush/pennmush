@@ -169,7 +169,8 @@ real_unparse(dbref player, dbref loc, int obey_myopic, int use_nameformat,
  * \retval 0 no NAMEFORMAT on loc, tbuf1 is undefined.
  */
 int
-nameformat(dbref player, dbref loc, char *tbuf1, char *defname, bool localize, NEW_PE_INFO *pe_info)
+nameformat(dbref player, dbref loc, char *tbuf1, char *defname, bool localize,
+           NEW_PE_INFO *pe_info)
 {
   ufun_attrib ufun;
   PE_REGS *pe_regs;

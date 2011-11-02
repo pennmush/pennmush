@@ -78,7 +78,8 @@
 
 dbref first_free = NOTHING;   /**< Object at top of free list */
 
-static dbref what_to_destroy(dbref player, char *name, int confirm, NEW_PE_INFO *pe_info);
+static dbref what_to_destroy(dbref player, char *name, int confirm,
+                             NEW_PE_INFO *pe_info);
 static void pre_destroy(dbref player, dbref thing);
 static void free_object(dbref thing);
 static void empty_contents(dbref thing);
@@ -234,8 +235,10 @@ what_to_destroy(dbref player, char *name, int confirm, NEW_PE_INFO *pe_info)
   if (!controls(player, thing) &&
       !(IsExit(thing) &&
         (controls(player, Destination(thing)) ||
-         controls(player, Source(thing)))) &&
-      !(DestOk(thing) && eval_lock_with(player, thing, Destroy_Lock, pe_info))) {
+         controls(player, Source(thing)))) && !(DestOk(thing)
+                                                && eval_lock_with(player, thing,
+                                                                  Destroy_Lock,
+                                                                  pe_info))) {
     notify(player, T("Permission denied."));
     return NOTHING;
   }

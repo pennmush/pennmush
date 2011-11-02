@@ -1825,8 +1825,7 @@ process_expression(char *buff, char **bp, char const **str,
     if (((*bp) - buff) > (BUFFER_LEN - SBUF_LEN)) {
       realbuff = buff;
       realbp = *bp;
-      buff = mush_malloc(BUFFER_LEN,
-                                  "process_expression.buffer_extension");
+      buff = mush_malloc(BUFFER_LEN, "process_expression.buffer_extension");
       *bp = buff;
       startpos = buff;
     }
@@ -1857,8 +1856,7 @@ process_expression(char *buff, char **bp, char const **str,
       char const *mark;
       Debug_Info *node;
 
-      debugstr = mush_malloc(BUFFER_LEN,
-                                      "process_expression.debug_source");
+      debugstr = mush_malloc(BUFFER_LEN, "process_expression.debug_source");
       debugp = debugstr;
       safe_dbref(executor, debugstr, &debugp);
       safe_chr('!', debugstr, &debugp);
@@ -1874,8 +1872,7 @@ process_expression(char *buff, char **bp, char const **str,
         while ((debugp > sourcestr) && (debugp[-1] == ' '))
           debugp--;
       *debugp = '\0';
-      node = mush_malloc(sizeof(Debug_Info),
-                                        "process_expression.debug_node");
+      node = mush_malloc(sizeof(Debug_Info), "process_expression.debug_node");
       node->string = debugstr;
       node->executor = executor;
       node->prev = pe_info->debug_strings;
@@ -2515,7 +2512,7 @@ process_expression(char *buff, char **bp, char const **str,
         nfargs = 0;
         onearg =
           mush_malloc(BUFFER_LEN,
-                               "process_expression.single_function_argument");
+                      "process_expression.single_function_argument");
         do {
           char *argp;
           if ((fp->maxargs < 0) && ((nfargs + 1) >= -fp->maxargs))
@@ -2540,7 +2537,7 @@ process_expression(char *buff, char **bp, char const **str,
             args_alloced += 10;
           }
           fargs[nfargs] = mush_malloc(BUFFER_LEN,
-                                               "process_expression.function_argument");
+                                      "process_expression.function_argument");
           argp = onearg;
           if (process_expression(onearg, &argp, str,
                                  executor, caller, enactor,
@@ -2609,7 +2606,7 @@ process_expression(char *buff, char **bp, char const **str,
             safe_str(T(" ARGUMENTS BUT GOT "), buff, bp);
             safe_integer(nfargs, buff, bp);
           } else {
-	    char *fbuff, *fbp;
+            char *fbuff, *fbp;
 
             global_fun_recursions++;
             pe_info->fun_recursions++;
@@ -2620,13 +2617,13 @@ process_expression(char *buff, char **bp, char const **str,
               pe_regs = NULL;
             }
 
-	    if (realbuff) {
-	      fbuff = realbuff;
-	      fbp = realbp;
-	    } else {
-	      fbuff = buff;
-	      fbp = *bp;
-	    }
+            if (realbuff) {
+              fbuff = realbuff;
+              fbp = realbp;
+            } else {
+              fbuff = buff;
+              fbp = *bp;
+            }
 
             if (fp->flags & FN_BUILTIN) {
               global_fun_invocations++;
@@ -2674,10 +2671,10 @@ process_expression(char *buff, char **bp, char const **str,
                           executor, caller, enactor, pe_info, PE_USERFN);
               }
             }
-	    if (realbuff)
-	      realbp = fbp;
-	    else
-	      *bp = fbp;
+            if (realbuff)
+              realbp = fbp;
+            else
+              *bp = fbp;
 
             if (pe_regs) {
               pe_regs_restore(pe_info, pe_regs);

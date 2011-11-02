@@ -1424,7 +1424,7 @@ FUNCTION(fun_cand)
     tp = tbuf;
     sp = args[j];
     if (process_expression(tbuf, &tp, &sp, executor, caller, enactor,
-			   eflags, PT_DEFAULT, pe_info))
+                           eflags, PT_DEFAULT, pe_info))
       return;
     *tp = '\0';
     if (!parse_boolean(tbuf)) {
@@ -1447,7 +1447,7 @@ FUNCTION(fun_cor)
     tp = tbuf;
     sp = args[j];
     if (process_expression(tbuf, &tp, &sp, executor, caller, enactor,
-			   eflags, PT_DEFAULT, pe_info))
+                           eflags, PT_DEFAULT, pe_info))
       return;
     *tp = '\0';
     if (parse_boolean(tbuf)) {

@@ -85,7 +85,8 @@ struct search_spec {
   char listenstring[BUFFER_LEN]; /**< Find objects who respond to this ^-listen */
 };
 
-static int tport_dest_ok(dbref player, dbref victim, dbref dest, NEW_PE_INFO *pe_info);
+static int tport_dest_ok(dbref player, dbref victim, dbref dest,
+                         NEW_PE_INFO *pe_info);
 static int tport_control_ok(dbref player, dbref victim, dbref loc);
 static int mem_usage(dbref thing);
 static int raw_search(dbref player, const char *owner, int nargs,
@@ -93,6 +94,8 @@ static int raw_search(dbref player, const char *owner, int nargs,
 static int fill_search_spec(dbref player, const char *owner, int nargs,
                             const char **args, struct search_spec *spec);
 static void
+
+
 
 
 
@@ -2169,7 +2172,8 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
     if (*spec.powers
         && (flaglist_check_long("POWER", player, n, spec.powers, 1) != 1))
       continue;
-    if (spec.lock != TRUE_BOOLEXP && !eval_boolexp(n, spec.lock, player, pe_info))
+    if (spec.lock != TRUE_BOOLEXP
+        && !eval_boolexp(n, spec.lock, player, pe_info))
       continue;
     if (spec.cmdstring[0] &&
         !atr_comm_match(n, player, '$', ':', spec.cmdstring, 1, 0,
@@ -2203,10 +2207,10 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
       ebuf2 = ebuf1;
       bp = tbuf1;
       per = process_expression(tbuf1, &bp, &ebuf2, player, player, player,
-                         PE_DEFAULT, PT_DEFAULT, pe_info);
+                               PE_DEFAULT, PT_DEFAULT, pe_info);
       mush_free(ebuf1, "replace_string.buff");
-      if (per) 
-	goto exit_sequence;
+      if (per)
+        goto exit_sequence;
       *bp = '\0';
       if (!parse_boolean(tbuf1))
         continue;
@@ -2233,7 +2237,7 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
     (*result)[nresults++] = (dbref) n;
   }
 
- exit_sequence:
+exit_sequence:
   if (spec.lock != TRUE_BOOLEXP)
     free_boolexp(spec.lock);
   return (int) nresults;

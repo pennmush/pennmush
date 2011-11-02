@@ -420,7 +420,8 @@ void file_watch_event(int);
 
 void initialize_mt(void);
 
-static char *get_doing(dbref player, dbref caller, dbref enactor, NEW_PE_INFO *pe_info, bool full);
+static char *get_doing(dbref player, dbref caller, dbref enactor,
+                       NEW_PE_INFO *pe_info, bool full);
 
 #ifndef BOOLEXP_DEBUGGING
 #ifdef WIN32SERVICES
@@ -936,13 +937,13 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
 #ifdef HAS_OPENSSL
     if (sslport) {
 #ifdef SSL_SLAVE
-    if (make_ssl_slave() < 0)
-      do_rawlog(LT_ERR, "Unable to start ssl_slave");
+      if (make_ssl_slave() < 0)
+        do_rawlog(LT_ERR, "Unable to start ssl_slave");
 #else
-    sslsock = make_socket(sslport, SOCK_STREAM, NULL, NULL, SSL_IP_ADDR);
-    ssl_master_socket = ssl_setup_socket(sslsock);
-    if (sslsock >= maxd)
-      maxd = sslsock + 1;
+      sslsock = make_socket(sslport, SOCK_STREAM, NULL, NULL, SSL_IP_ADDR);
+      ssl_master_socket = ssl_setup_socket(sslsock);
+      if (sslsock >= maxd)
+        maxd = sslsock + 1;
 #endif
     }
 #endif
@@ -1086,7 +1087,7 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
 #endif
     for (d = descriptor_list; d; d = d->next) {
       if (d->input.head) {
-	timeout = slice_timeout;
+        timeout = slice_timeout;
       } else
         FD_SET(d->descriptor, &input_set);
       if (d->output.head)
@@ -1347,7 +1348,9 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
   if (!GoodObject(thing) || IsGarbage(thing))
     return 0;
 
-  if (!fetch_ufun_attrib(attr, thing, &ufun, UFUN_LOCALIZE | UFUN_IGNORE_PERMS | UFUN_REQUIRE_ATTR))
+  if (!fetch_ufun_attrib
+      (attr, thing, &ufun,
+       UFUN_LOCALIZE | UFUN_IGNORE_PERMS | UFUN_REQUIRE_ATTR))
     return -1;
 
   bp = arg;
@@ -1788,7 +1791,7 @@ initializesock(int s, char *addr, char *ip, conn_source source)
   }
 #endif
   im_insert(descs_by_fd, d->descriptor, d);
-  d->conn_timer = sq_register_in(1, test_telnet_wrapper, (void *)d, NULL);
+  d->conn_timer = sq_register_in(1, test_telnet_wrapper, (void *) d, NULL);
   queue_event(SYSEVENT, "SOCKET`CONNECT", "%d,%s", d->descriptor, d->ip);
   return d;
 }
@@ -1868,10 +1871,10 @@ network_send_ssl(DESC *d)
     need_write = 0;
     d->ssl_state =
       ssl_write(d->ssl, d->ssl_state, input_ready, 1, cur->start,
-		cur->nchars, &cnt);
+                cur->nchars, &cnt);
     if (ssl_want_write(d->ssl_state)) {
       need_write = 1;
-      break;             /* Need to retry */
+      break;                    /* Need to retry */
     }
     written += cnt;
     if (cnt == cur->nchars) {
@@ -1915,31 +1918,31 @@ network_send_writev(DESC *d)
     if (cnt < 0) {
       if (errno == EWOULDBLOCK
 #ifdef EAGAIN
-	  || errno == EAGAIN
+          || errno == EAGAIN
 #endif
-	  || errno == EINTR)
-	return 1;
+          || errno == EINTR)
+        return 1;
       else
-	return 0;
+        return 0;
     }
     written += cnt;
     while (cnt > 0) {
       cur = d->output.head;
       if (cur->nchars <= cnt) {
-	/* Wrote a full block */
-	cnt -= cur->nchars;
-	d->output.head = cur->nxt;
-	free_text_block(cur);
+        /* Wrote a full block */
+        cnt -= cur->nchars;
+        d->output.head = cur->nxt;
+        free_text_block(cur);
       } else {
-	/* Wrote a partial block */
-	cur->start += cnt;
-	cur->nchars -= cnt;
-	goto output_done;
+        /* Wrote a partial block */
+        cur->start += cnt;
+        cur->nchars -= cnt;
+        goto output_done;
       }
     }
   }
 
- output_done:
+output_done:
   if (!d->output.head)
     d->output.tail = NULL;
   d->output_size -= written;
@@ -1972,13 +1975,13 @@ network_send(DESC *d)
 #ifdef WIN32
       if (cnt == SOCKET_ERROR && WSAGetLastError() == WSAEWOULDBLOCK)
 #else
-	if (errno == EWOULDBLOCK
+      if (errno == EWOULDBLOCK
 #ifdef EAGAIN
-	    || errno == EAGAIN
+          || errno == EAGAIN
 #endif
-	    || errno == EINTR)
+          || errno == EINTR)
 #endif
-	  return 1;
+        return 1;
       return 0;
     }
     written += cnt;
@@ -2013,11 +2016,11 @@ int
 process_output(DESC *d)
 {
 #ifdef HAS_OPENSSL
-    if (d->ssl)
-      return network_send_ssl(d);
-    else
+  if (d->ssl)
+    return network_send_ssl(d);
+  else
 #endif
-      return network_send(d);
+    return network_send(d);
 }
 
 /** A wrapper around test_telnet(), which is called via the
@@ -2028,10 +2031,10 @@ process_output(DESC *d)
 bool
 test_telnet_wrapper(void *data)
 {
-  DESC *d = (DESC *)data;
+  DESC *d = (DESC *) data;
 
   test_telnet(d);
-  d->conn_timer = sq_register_in(1, welcome_user_wrapper, (void *)d, NULL);
+  d->conn_timer = sq_register_in(1, welcome_user_wrapper, (void *) d, NULL);
   return false;
 }
 
@@ -2043,7 +2046,7 @@ test_telnet_wrapper(void *data)
 bool
 welcome_user_wrapper(void *data)
 {
-  DESC *d = (DESC *)data;
+  DESC *d = (DESC *) data;
 
   welcome_user(d, -1);
   d->conn_timer = NULL;
@@ -2527,7 +2530,7 @@ process_commands(void)
           if (!cdesc->input.head)
             cdesc->input.tail = NULL;
 #ifdef DEBUG
-	  do_rawlog(LT_TRACE, "free_text_block(%p) at 5.", (void *) t);
+          do_rawlog(LT_TRACE, "free_text_block(%p) at 5.", (void *) t);
 #endif                          /* DEBUG */
           free_text_block(t);
           break;
@@ -2574,7 +2577,8 @@ do_command(DESC *d, char *command)
   d->last_time = mudtime;
   (d->cmds)++;
   if (!d->connected && (!strncmp(command, GET_COMMAND, strlen(GET_COMMAND)) ||
-                 !strncmp(command, POST_COMMAND, strlen(POST_COMMAND)))) {
+                        !strncmp(command, POST_COMMAND,
+                                 strlen(POST_COMMAND)))) {
     char buf[BUFFER_LEN];
     snprintf(buf, BUFFER_LEN,
              "<HTML><HEAD>"
@@ -2587,20 +2591,20 @@ do_command(DESC *d, char *command)
     queue_write(d, (unsigned char *) buf, strlen(buf));
     queue_eol(d);
     return CRES_HTTP;
-    } else if (SUPPORT_PUEBLO
-               && !strncmp(command, PUEBLO_COMMAND, strlen(PUEBLO_COMMAND))) {
-      parse_puebloclient(d, command);
-      if (!(d->conn_flags & CONN_HTML)) {
-        queue_newwrite(d, (unsigned const char *) PUEBLO_SEND,
-                       strlen(PUEBLO_SEND));
-        process_output(d);
-        do_rawlog(LT_CONN, "[%d/%s/%s] Switching to Pueblo mode.",
-                  d->descriptor, d->addr, d->ip);
-        d->conn_flags |= CONN_HTML;
-        if (!d->connected && !d->conn_timer)
-          welcome_user(d, 1);
-      }
-      return CRES_OK;
+  } else if (SUPPORT_PUEBLO
+             && !strncmp(command, PUEBLO_COMMAND, strlen(PUEBLO_COMMAND))) {
+    parse_puebloclient(d, command);
+    if (!(d->conn_flags & CONN_HTML)) {
+      queue_newwrite(d, (unsigned const char *) PUEBLO_SEND,
+                     strlen(PUEBLO_SEND));
+      process_output(d);
+      do_rawlog(LT_CONN, "[%d/%s/%s] Switching to Pueblo mode.",
+                d->descriptor, d->addr, d->ip);
+      d->conn_flags |= CONN_HTML;
+      if (!d->connected && !d->conn_timer)
+        welcome_user(d, 1);
+    }
+    return CRES_OK;
   }
   if (d->conn_timer) {
     sq_cancel(d->conn_timer);
@@ -4215,7 +4219,8 @@ do_doing(dbref player, const char *message)
  * \return a pointer to a STATIC buffer with the doing in.
  */
 static char *
-get_doing(dbref player, dbref caller, dbref enactor, NEW_PE_INFO *pe_info, bool full)
+get_doing(dbref player, dbref caller, dbref enactor, NEW_PE_INFO *pe_info,
+          bool full)
 {
   static char doing[BUFFER_LEN];
   char *dp = doing;
@@ -4228,8 +4233,10 @@ get_doing(dbref player, dbref caller, dbref enactor, NEW_PE_INFO *pe_info, bool 
     return "";
   }
 
-  if (!fetch_ufun_attrib("DOING", player, &ufun, UFUN_LOCALIZE | UFUN_REQUIRE_ATTR | UFUN_IGNORE_PERMS))
-    return ""; /* No DOING attribute */
+  if (!fetch_ufun_attrib
+      ("DOING", player, &ufun,
+       UFUN_LOCALIZE | UFUN_REQUIRE_ATTR | UFUN_IGNORE_PERMS))
+    return "";                  /* No DOING attribute */
 
   call_ufun(&ufun, doing, caller, enactor, pe_info, NULL);
   if (!doing[0])
@@ -4767,7 +4774,8 @@ FUNCTION(fun_zwho)
   }
 
   if (!GoodObject(zone)
-      || (!Priv_Who(executor) && !eval_lock_with(victim, zone, Zone_Lock, pe_info))) {
+      || (!Priv_Who(executor)
+          && !eval_lock_with(victim, zone, Zone_Lock, pe_info))) {
     if (GoodObject(zone))
       fail_lock(victim, zone, Zone_Lock, NULL, NOTHING);
     safe_str(T(e_perm), buff, bp);

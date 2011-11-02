@@ -24,7 +24,8 @@
 #include "command.h"
 #include "confmagic.h"
 
-static dbref parse_linkable_room(dbref player, const char *room_name, NEW_PE_INFO *pe_info);
+static dbref parse_linkable_room(dbref player, const char *room_name,
+                                 NEW_PE_INFO *pe_info);
 static dbref check_var_link(const char *dest_name);
 static dbref clone_object(dbref player, dbref thing, const char *newname,
                           int preserve);
@@ -290,7 +291,8 @@ do_unlink(dbref player, const char *name)
  * \param preserve if 1, preserve ownership and zone data on exit relink.
  */
 void
-do_link(dbref player, const char *name, const char *room_name, int preserve, NEW_PE_INFO *pe_info)
+do_link(dbref player, const char *name, const char *room_name, int preserve,
+        NEW_PE_INFO *pe_info)
 {
   /* Use this to link to a room that you own.
    * It usually seizes ownership of the exit and costs 1 penny,
@@ -435,7 +437,8 @@ do_link(dbref player, const char *name, const char *room_name, int preserve, NEW
  * \return dbref of new room, or NOTHING.
  */
 dbref
-do_dig(dbref player, const char *name, char **argv, int tport, NEW_PE_INFO *pe_info)
+do_dig(dbref player, const char *name, char **argv, int tport,
+       NEW_PE_INFO *pe_info)
 {
   dbref room;
   char *flaglist, *flagname;
@@ -489,7 +492,7 @@ do_dig(dbref player, const char *name, char **argv, int tport, NEW_PE_INFO *pe_i
        * and Z_TEL checking */
       char roomstr[MAX_COMMAND_LEN];
       sprintf(roomstr, "#%d", room);
-      do_teleport(player, "me", roomstr, 0, 0, pe_info); /* if flag, move the player */
+      do_teleport(player, "me", roomstr, 0, 0, pe_info);        /* if flag, move the player */
     }
     queue_event(player, "OBJECT`CREATE", "%s", unparse_objid(room));
     return room;
@@ -643,7 +646,8 @@ clone_object(dbref player, dbref thing, const char *newname, int preserve)
  * \return dbref of the duplicate, or NOTHING.
  */
 dbref
-do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref, NEW_PE_INFO *pe_info)
+do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref,
+         NEW_PE_INFO *pe_info)
 {
   dbref clone, thing;
   char dbnum[BUFFER_LEN];

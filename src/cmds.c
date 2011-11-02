@@ -157,10 +157,10 @@ COMMAND(cmd_retry)
       if (sp) {
         bp = buff;
         if (process_expression(buff, &bp, &sp, executor, caller, enactor,
-			       PE_DEFAULT, PT_DEFAULT, queue_entry->pe_info)) {
-	  pe_regs_free(pe_regs);
-	  return;
-	}
+                               PE_DEFAULT, PT_DEFAULT, queue_entry->pe_info)) {
+          pe_regs_free(pe_regs);
+          return;
+        }
         *bp = '\0';
         pe_regs_setenv(pe_regs, a, buff);
       }
@@ -186,7 +186,8 @@ COMMAND(cmd_chownall)
 
 COMMAND(cmd_chown)
 {
-  do_chown(executor, arg_left, arg_right, SW_ISSET(sw, SWITCH_PRESERVE), queue_entry->pe_info);
+  do_chown(executor, arg_left, arg_right, SW_ISSET(sw, SWITCH_PRESERVE),
+           queue_entry->pe_info);
 }
 
 COMMAND(cmd_chzoneall)
@@ -196,7 +197,8 @@ COMMAND(cmd_chzoneall)
 
 COMMAND(cmd_chzone)
 {
-  do_chzone(executor, arg_left, arg_right, 1, SW_ISSET(sw, SWITCH_PRESERVE), queue_entry->pe_info);
+  do_chzone(executor, arg_left, arg_right, 1, SW_ISSET(sw, SWITCH_PRESERVE),
+            queue_entry->pe_info);
 }
 
 COMMAND(cmd_config)
@@ -262,9 +264,11 @@ COMMAND(cmd_create)
 COMMAND(cmd_clone)
 {
   if (SW_ISSET(sw, SWITCH_PRESERVE))
-    do_clone(executor, arg_left, args_right[1], SWITCH_PRESERVE, args_right[2], queue_entry->pe_info);
+    do_clone(executor, arg_left, args_right[1], SWITCH_PRESERVE, args_right[2],
+             queue_entry->pe_info);
   else
-    do_clone(executor, arg_left, args_right[1], SWITCH_NONE, args_right[2], queue_entry->pe_info);
+    do_clone(executor, arg_left, args_right[1], SWITCH_NONE, args_right[2],
+             queue_entry->pe_info);
 }
 
 COMMAND(cmd_dbck)
@@ -314,12 +318,14 @@ COMMAND(cmd_teach)
 
 COMMAND(cmd_destroy)
 {
-  do_destroy(executor, arg_left, (SW_ISSET(sw, SWITCH_OVERRIDE)), queue_entry->pe_info);
+  do_destroy(executor, arg_left, (SW_ISSET(sw, SWITCH_OVERRIDE)),
+             queue_entry->pe_info);
 }
 
 COMMAND(cmd_dig)
 {
-  do_dig(executor, arg_left, args_right, (SW_ISSET(sw, SWITCH_TELEPORT)), queue_entry->pe_info);
+  do_dig(executor, arg_left, args_right, (SW_ISSET(sw, SWITCH_TELEPORT)),
+         queue_entry->pe_info);
 }
 
 COMMAND(cmd_disable)
@@ -383,7 +389,8 @@ COMMAND(cmd_emit)
 
   if (SW_ISSET(sw, SWITCH_ROOM))
     do_lemit(executor, arg_left,
-             (SW_ISSET(sw, SWITCH_SILENT) ? PEMIT_SILENT : 0) | spflags, queue_entry->pe_info);
+             (SW_ISSET(sw, SWITCH_SILENT) ? PEMIT_SILENT : 0) | spflags,
+             queue_entry->pe_info);
   else
     do_emit(executor, arg_left, spflags, queue_entry->pe_info);
 }
@@ -627,7 +634,8 @@ COMMAND(cmd_lemit)
 
 COMMAND(cmd_link)
 {
-  do_link(executor, arg_left, arg_right, SW_ISSET(sw, SWITCH_PRESERVE), queue_entry->pe_info);
+  do_link(executor, arg_left, arg_right, SW_ISSET(sw, SWITCH_PRESERVE),
+          queue_entry->pe_info);
 }
 
 COMMAND(cmd_listmotd)
@@ -859,7 +867,8 @@ COMMAND(cmd_message)
 
   SPOOF(executor, enactor, sw);
 
-  do_message(executor, arg_left, attrib, message, type, flags, i, args, queue_entry->pe_info);
+  do_message(executor, arg_left, attrib, message, type, flags, i, args,
+             queue_entry->pe_info);
 }
 
 COMMAND(cmd_motd)
@@ -903,7 +912,8 @@ COMMAND(cmd_oemit)
   int spflags = (!strcmp(cmd->name, "@NSOEMIT")
                  && Can_Nspemit(executor) ? PEMIT_SPOOF : 0);
   SPOOF(executor, enactor, sw);
-  do_oemit_list(executor, arg_left, arg_right, spflags, NULL, queue_entry->pe_info);
+  do_oemit_list(executor, arg_left, arg_right, spflags, NULL,
+                queue_entry->pe_info);
 }
 
 COMMAND(cmd_open)
@@ -1444,7 +1454,8 @@ COMMAND(cmd_buy)
 
 COMMAND(cmd_give)
 {
-  do_give(executor, arg_left, arg_right, (SW_ISSET(sw, SWITCH_SILENT)), queue_entry->pe_info);
+  do_give(executor, arg_left, arg_right, (SW_ISSET(sw, SWITCH_SILENT)),
+          queue_entry->pe_info);
 }
 
 COMMAND(cmd_goto)
@@ -1464,7 +1475,8 @@ COMMAND(cmd_kill)
 
 COMMAND(cmd_look)
 {
-  do_look_at(executor, arg_left, (SW_ISSET(sw, SWITCH_OUTSIDE)), queue_entry->pe_info);
+  do_look_at(executor, arg_left, (SW_ISSET(sw, SWITCH_OUTSIDE)),
+             queue_entry->pe_info);
 }
 
 COMMAND(cmd_leave)
@@ -1483,7 +1495,8 @@ COMMAND(cmd_page)
 
 COMMAND(cmd_pose)
 {
-  do_pose(executor, arg_left, (SW_ISSET(sw, SWITCH_NOSPACE)), queue_entry->pe_info);
+  do_pose(executor, arg_left, (SW_ISSET(sw, SWITCH_NOSPACE)),
+          queue_entry->pe_info);
 }
 
 COMMAND(cmd_say)
@@ -1514,8 +1527,9 @@ COMMAND(cmd_think)
 COMMAND(cmd_whisper)
 {
   do_whisper(executor, arg_left, arg_right,
-             (SW_ISSET(sw, SWITCH_NOISY) ||
-              (!SW_ISSET(sw, SWITCH_SILENT) && NOISY_WHISPER)), queue_entry->pe_info);
+             (SW_ISSET(sw, SWITCH_NOISY) || (!SW_ISSET(sw, SWITCH_SILENT)
+                                             && NOISY_WHISPER)),
+             queue_entry->pe_info);
 }
 
 COMMAND(cmd_use)

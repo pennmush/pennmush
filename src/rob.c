@@ -28,7 +28,8 @@
 #include "confmagic.h"
 #include "case.h"
 
-static void do_give_to(dbref player, char *arg, int silent, NEW_PE_INFO *pe_info);
+static void do_give_to(dbref player, char *arg, int silent,
+                       NEW_PE_INFO *pe_info);
 
 /** Set an object's money value, with limit-checking.
  * \param thing dbref of object.
@@ -359,7 +360,8 @@ do_buy(dbref player, char *item, char *from, int price, NEW_PE_INFO *pe_info)
  * \param silent if 1, hush the usual messages.
  */
 void
-do_give(dbref player, char *recipient, char *amnt, int silent, NEW_PE_INFO *pe_info)
+do_give(dbref player, char *recipient, char *amnt, int silent,
+        NEW_PE_INFO *pe_info)
 {
   dbref who;
   int amount;
@@ -485,7 +487,9 @@ do_give(dbref player, char *recipient, char *amnt, int silent, NEW_PE_INFO *pe_i
     bool has_cost;
     ufun_attrib ufun;
 
-    has_cost = fetch_ufun_attrib("COST", who, &ufun, UFUN_LOCALIZE | UFUN_REQUIRE_ATTR | UFUN_IGNORE_PERMS);
+    has_cost =
+      fetch_ufun_attrib("COST", who, &ufun,
+                        UFUN_LOCALIZE | UFUN_REQUIRE_ATTR | UFUN_IGNORE_PERMS);
     if (!has_cost && !IsPlayer(who)) {
       notify_format(player, T("%s refuses your money."), Name(who));
       giveto(player, amount);

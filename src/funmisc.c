@@ -135,7 +135,8 @@ FUNCTION(fun_message)
     } while (list);
   }
 
-  do_message(executor, args[0], args[2], args[1], type, flags, i, argv, pe_info);
+  do_message(executor, args[0], args[2], args[1], type, flags, i, argv,
+             pe_info);
 
 }
 
@@ -326,8 +327,8 @@ FUNCTION(fun_letq)
       nbp = nbuf;
       p = args[i];
       if (process_expression(nbuf, &nbp, &p, executor, caller, enactor, eflags,
-			     PT_DEFAULT, pe_info))
-	goto cleanup;
+                             PT_DEFAULT, pe_info))
+        goto cleanup;
       *nbp = '\0';
 
       if (!ValidQregName(nbuf)) {
@@ -338,8 +339,8 @@ FUNCTION(fun_letq)
       tbp = tbuf;
       p = args[i + 1];
       if (process_expression(tbuf, &tbp, &p, executor, caller, enactor, eflags,
-			     PT_DEFAULT, pe_info))
-	goto cleanup;
+                             PT_DEFAULT, pe_info))
+        goto cleanup;
       *tbp = '\0';
       pe_regs_set(pe_regs, PE_REGS_Q, nbuf, tbuf);
     }
@@ -699,7 +700,7 @@ FUNCTION(fun_switch)
   dp = mstr;
   sp = args[0];
   if (process_expression(mstr, &dp, &sp, executor, caller, enactor,
-			 eflags, PT_DEFAULT, pe_info))
+                         eflags, PT_DEFAULT, pe_info))
     return;
   *dp = '\0';
 
@@ -715,7 +716,7 @@ FUNCTION(fun_switch)
     dp = pstr;
     sp = args[j];
     if (process_expression(pstr, &dp, &sp, executor, caller, enactor,
-			   eflags, PT_DEFAULT, pe_info))
+                           eflags, PT_DEFAULT, pe_info))
       goto exit_sequence;
     *dp = '\0';
 
@@ -826,7 +827,7 @@ FUNCTION(fun_reswitch)
   dp = mstr;
   sp = args[0];
   if (process_expression(mstr, &dp, &sp, executor, caller, enactor,
-			 eflags, PT_DEFAULT, pe_info))
+                         eflags, PT_DEFAULT, pe_info))
     return;
   *dp = '\0';
   if (has_markup(mstr)) {
@@ -848,7 +849,7 @@ FUNCTION(fun_reswitch)
     dp = pstr;
     sp = args[j];
     if (process_expression(pstr, &dp, &sp, executor, caller, enactor,
-			   eflags, PT_DEFAULT, pe_info))
+                           eflags, PT_DEFAULT, pe_info))
       goto exit_sequence;
     *dp = '\0';
 
@@ -927,14 +928,14 @@ FUNCTION(fun_if)
     tp = tbuf;
     sp = args[i];
     if (process_expression(tbuf, &tp, &sp, executor, caller, enactor,
-			   eflags, PT_DEFAULT, pe_info))
+                           eflags, PT_DEFAULT, pe_info))
       return;
     *tp = '\0';
     if (parse_boolean(tbuf) == findtrue) {
       sp = args[i + 1];
       if (process_expression(buff, bp, &sp, executor, caller, enactor,
-			     eflags, PT_DEFAULT, pe_info))
-	return;
+                             eflags, PT_DEFAULT, pe_info))
+        return;
       if (!findall)
         return;
       found = 1;
@@ -1213,7 +1214,7 @@ do_whichof(char *args[], int nargs, enum whichof_t flag,
     char *sp = sep;
     const char *arglast = args[nargs - 1];
     if (process_expression(sep, &sp, &arglast, executor,
-			   caller, enactor, eflags, PT_DEFAULT, pe_info))
+                           caller, enactor, eflags, PT_DEFAULT, pe_info))
       return;
     *sp = '\0';
     nargs--;
@@ -1224,7 +1225,7 @@ do_whichof(char *args[], int nargs, enum whichof_t flag,
     tp = tbuf;
     ap = args[j];
     if (process_expression(tbuf, &tp, &ap, executor, caller,
-			   enactor, eflags, PT_DEFAULT, pe_info))
+                           enactor, eflags, PT_DEFAULT, pe_info))
       return;
     *tp = '\0';
     if ((isbool && parse_boolean(tbuf)) || (!isbool && strlen(tbuf))) {
@@ -1314,7 +1315,7 @@ FUNCTION(fun_benchmark)
     tp = tbuf;
     sp = args[2];
     if (process_expression(tbuf, &tp, &sp, executor, caller, enactor,
-			   eflags, PT_DEFAULT, pe_info))
+                           eflags, PT_DEFAULT, pe_info))
       return;
     *tp = '\0';
     thing = noisy_match_result(executor, tbuf, NOTYPE, MAT_EVERYTHING);

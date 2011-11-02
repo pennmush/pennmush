@@ -383,7 +383,8 @@ find_var_dest(dbref player, dbref exit_obj)
  * \param type type of motion to check (global, zone, neither).
  */
 void
-do_move(dbref player, const char *direction, enum move_type type, NEW_PE_INFO *pe_info)
+do_move(dbref player, const char *direction, enum move_type type,
+        NEW_PE_INFO *pe_info)
 {
   dbref exit_m, loc, var_dest;
   if (!strcasecmp(direction, "home") && can_move(player, "home")) {
@@ -790,12 +791,15 @@ do_empty(dbref player, const char *what, NEW_PE_INFO *pe_info)
     if (player == thing) {
       /* empty me: You don't need to get what's in your inventory already */
       if (eval_lock_with(player, item, Drop_Lock, pe_info) &&
-          (!IsRoom(thing_loc) || eval_lock_with(player, thing_loc, Drop_Lock, pe_info)))
+          (!IsRoom(thing_loc)
+           || eval_lock_with(player, thing_loc, Drop_Lock, pe_info)))
         empty_ok = 1;
     }
     /* Check that player can get stuff from thing */
-    else if (controls(player, thing) ||
-             (EnterOk(thing) && eval_lock_with(player, thing, Enter_Lock, pe_info))) {
+    else if (controls(player, thing) || (EnterOk(thing)
+                                         && eval_lock_with(player, thing,
+                                                           Enter_Lock,
+                                                           pe_info))) {
       /* Check that player can get item */
       if (!could_doit(player, item, pe_info)) {
         /* Send failure message if set, otherwise be quiet */
@@ -808,7 +812,8 @@ do_empty(dbref player, const char *what, NEW_PE_INFO *pe_info)
         empty_ok = 1;
       /* Thing is in player's location - player must also be able to drop */
       else if (eval_lock_with(player, item, Drop_Lock, pe_info) &&
-               (!IsRoom(thing_loc) || eval_lock_with(player, thing_loc, Drop_Lock, pe_info)))
+               (!IsRoom(thing_loc)
+                || eval_lock_with(player, thing_loc, Drop_Lock, pe_info)))
         empty_ok = 1;
     }
     /* Now do the work, if we should. That includes triggering messages */

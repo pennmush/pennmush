@@ -1195,7 +1195,9 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
   if (!(Hasprivs(player) || eval_lock(player, target, Mail_Lock))) {
     if (!silent) {
       cp = sbuf;
-      safe_format(sbuf, &cp, T("MAIL: %s is not accepting mail from you right now."), Name(target));
+      safe_format(sbuf, &cp,
+                  T("MAIL: %s is not accepting mail from you right now."),
+                  Name(target));
       *cp = '\0';
     } else {
       cp = NULL;
@@ -1248,7 +1250,8 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
     char buff[BUFFER_LEN], newmsg[BUFFER_LEN], *nm = newmsg;
 
     safe_str(message, newmsg, &nm);
-    if (!nosig && call_attrib(player, "MAILSIGNATURE", buff, player, NULL, NULL))
+    if (!nosig
+        && call_attrib(player, "MAILSIGNATURE", buff, player, NULL, NULL))
       safe_str(buff, newmsg, &nm);
     *nm = '\0';
     text = compress(newmsg);

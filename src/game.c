@@ -1212,7 +1212,8 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
           /* check zone master room exits */
           if (remote_exit(executor, cptr) && (cmd = command_find("GOTO"))
               && !(cmd->type & CMD_T_DISABLED)) {
-            if (!Mobile(executor) || !command_check_with(executor, cmd, 1, queue_entry->pe_info)) {
+            if (!Mobile(executor)
+                || !command_check_with(executor, cmd, 1, queue_entry->pe_info)) {
               goto done;
             } else {
               sprintf(temp, "GOTO %s", cptr);
@@ -1249,7 +1250,8 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
       if ((!a) && (check_loc != MASTER_ROOM)) {
         if (global_exit(executor, cptr) && (cmd = command_find("GOTO"))
             && !(cmd->type & CMD_T_DISABLED)) {
-          if (!Mobile(executor) || !command_check_with(executor, cmd, 1, queue_entry->pe_info))
+          if (!Mobile(executor)
+              || !command_check_with(executor, cmd, 1, queue_entry->pe_info))
             goto done;
           else {
             sprintf(temp, "GOTO %s", cptr);

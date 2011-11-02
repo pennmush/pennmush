@@ -39,9 +39,10 @@
 #include "game.h"
 #include "confmagic.h"
 
-static int chown_ok(dbref player, dbref thing, dbref newowner, NEW_PE_INFO *pe_info);
-void do_attrib_flags
-  (dbref player, const char *obj, const char *atrname, const char *flag);
+static int chown_ok(dbref player, dbref thing, dbref newowner,
+                    NEW_PE_INFO *pe_info);
+void do_attrib_flags(dbref player, const char *obj, const char *atrname,
+                     const char *flag);
 static int af_helper(dbref player, dbref thing, dbref parent,
                      char const *pattern, ATTR *atr, void *args);
 static int gedit_helper(dbref player, dbref thing, dbref parent,
@@ -178,7 +179,8 @@ do_name(dbref player, const char *name, char *newname_)
  * \param pe_info
  */
 void
-do_chown(dbref player, const char *name, const char *newobj, int preserve, NEW_PE_INFO *pe_info)
+do_chown(dbref player, const char *name, const char *newobj, int preserve,
+         NEW_PE_INFO *pe_info)
 {
   dbref thing;
   dbref newowner = NOTHING;
@@ -274,16 +276,17 @@ chown_ok(dbref player, dbref thing, dbref newowner, NEW_PE_INFO *pe_info)
   /* Does player control newowner, or is newowner a Zone Master and player
    * passes the lock?
    */
-  if (!(controls(player, newowner) ||
-        (ZMaster(newowner) && eval_lock_with(player, newowner, Zone_Lock, pe_info))))
+  if (!(controls(player, newowner) || (ZMaster(newowner)
+                                       && eval_lock_with(player, newowner,
+                                                         Zone_Lock, pe_info))))
     return 0;
 
   /* Target player is legitimate. Does player control the object? */
   if (Owns(player, thing))
     return 1;
 
-  if (controls(player, Owner(thing)) &&
-      ZMaster(newowner) && eval_lock_with(Owner(thing), newowner, Zone_Lock, pe_info))
+  if (controls(player, Owner(thing)) && ZMaster(newowner)
+      && eval_lock_with(Owner(thing), newowner, Zone_Lock, pe_info))
     return 1;
 
   if (ChownOk(thing) && (!IsThing(thing) || (Location(thing) == player)))
@@ -1167,8 +1170,12 @@ do_parent(dbref player, char *name, char *parent_name, NEW_PE_INFO *pe_info)
    * control check (wich does those things
    * anyway, right?)]
    */
-  if ((parent != NOTHING) && !controls(player, parent) &&
-      !(LinkOk(parent) && eval_lock_with(player, parent, Parent_Lock, pe_info))) {
+  if ((parent != NOTHING) && !controls(player, parent) && !(LinkOk(parent)
+                                                            &&
+                                                            eval_lock_with
+                                                            (player, parent,
+                                                             Parent_Lock,
+                                                             pe_info))) {
     notify(player, T("Permission denied."));
     return;
   }

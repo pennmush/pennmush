@@ -31,24 +31,27 @@
 #include "confmagic.h"
 #include "log.h"
 
-static void look_exits(dbref player, dbref loc, const char *exit_name, NEW_PE_INFO *pe_info);
-static void look_contents(dbref player, dbref loc, const char *contents_name, NEW_PE_INFO *pe_info);
+static void look_exits(dbref player, dbref loc, const char *exit_name,
+                       NEW_PE_INFO *pe_info);
+static void look_contents(dbref player, dbref loc, const char *contents_name,
+                          NEW_PE_INFO *pe_info);
 static void examine_atrs(dbref player, dbref thing, const char *mstr, int all,
-                      int mortal, int parent);
+                         int mortal, int parent);
 static void mortal_examine_atrs(dbref player, dbref thing, const char *mstr,
-                             int all, int parent);
+                                int all, int parent);
 static void look_simple(dbref player, dbref thing, NEW_PE_INFO *pe_info);
 static void look_description(dbref player, dbref thing, const char *def,
-                             const char *descname, const char *descformatname, NEW_PE_INFO *pe_info);
+                             const char *descname, const char *descformatname,
+                             NEW_PE_INFO *pe_info);
 
 enum decompile_attrflags { DECOMP_ALL, DECOMP_NODEFAULTS, DECOMP_NONE };
 
 static int decompile_helper(dbref player, dbref thing, dbref parent,
                             char const *pattern, ATTR *atr, void *args);
 static int examine_helper(dbref player, dbref thing, dbref parent,
-                       char const *pattern, ATTR *atr, void *args);
+                          char const *pattern, ATTR *atr, void *args);
 static int examine_helper_veiled(dbref player, dbref thing, dbref parent,
-                              char const *pattern, ATTR *atr, void *args);
+                                 char const *pattern, ATTR *atr, void *args);
 void decompile_atrs(dbref player, dbref thing, const char *name,
                     const char *pattern, const char *prefix,
                     enum decompile_attrflags skipflags);
@@ -91,7 +94,8 @@ look_exits(dbref player, dbref loc, const char *exit_name, NEW_PE_INFO *pe_info)
   texits = exit_count = total_count = 0;
   this_exit = 1;
 
-  if (fetch_ufun_attrib("EXITFORMAT", loc, &ufun, UFUN_IGNORE_PERMS | UFUN_REQUIRE_ATTR)) {
+  if (fetch_ufun_attrib
+      ("EXITFORMAT", loc, &ufun, UFUN_IGNORE_PERMS | UFUN_REQUIRE_ATTR)) {
     char *arg, *buff, *bp;
     PE_REGS *pe_regs = pe_regs_create(PE_REGS_ARG, "look_exits");
 
@@ -227,7 +231,8 @@ look_exits(dbref player, dbref loc, const char *exit_name, NEW_PE_INFO *pe_info)
  * \param pe_info
  */
 static void
-look_contents(dbref player, dbref loc, const char *contents_name, NEW_PE_INFO *pe_info)
+look_contents(dbref player, dbref loc, const char *contents_name,
+              NEW_PE_INFO *pe_info)
 {
   dbref thing;
   dbref can_see_loc;
@@ -240,7 +245,8 @@ look_contents(dbref player, dbref loc, const char *contents_name, NEW_PE_INFO *p
    */
   can_see_loc = !Dark(loc);
 
-  if (fetch_ufun_attrib("CONFORMAT", loc, &ufun, UFUN_IGNORE_PERMS | UFUN_REQUIRE_ATTR)) {
+  if (fetch_ufun_attrib
+      ("CONFORMAT", loc, &ufun, UFUN_IGNORE_PERMS | UFUN_REQUIRE_ATTR)) {
     char *arg, *buff, *bp;
     char *arg2, *bp2;
     PE_REGS *pe_regs = pe_regs_create(PE_REGS_ARG, "look_contents");
@@ -309,9 +315,9 @@ look_contents(dbref player, dbref loc, const char *contents_name, NEW_PE_INFO *p
 /* Helper function for atr_iter_get, obeying VEILED attrflag */
 static int
 examine_helper_veiled(dbref player, dbref thing __attribute__ ((__unused__)),
-                   dbref parent __attribute__ ((__unused__)),
-                   char const *pattern, ATTR *atr, void *args
-                   __attribute__ ((__unused__)))
+                      dbref parent __attribute__ ((__unused__)),
+                      char const *pattern, ATTR *atr, void *args
+                      __attribute__ ((__unused__)))
 {
   char fbuf[BUFFER_LEN];
   char *r;
@@ -369,9 +375,9 @@ examine_helper_veiled(dbref player, dbref thing __attribute__ ((__unused__)),
 /* Helper function for atr_iter_get(), ignoring VEILED attrflag */
 static int
 examine_helper(dbref player, dbref thing __attribute__ ((__unused__)),
-            dbref parent __attribute__ ((__unused__)),
-            char const *pattern, ATTR *atr, void *args
-            __attribute__ ((__unused__)))
+               dbref parent __attribute__ ((__unused__)),
+               char const *pattern, ATTR *atr, void *args
+               __attribute__ ((__unused__)))
 {
   char fbuf[BUFFER_LEN];
   char *r;
@@ -414,7 +420,7 @@ examine_helper(dbref player, dbref thing __attribute__ ((__unused__)),
  */
 static void
 examine_atrs(dbref player, dbref thing, const char *mstr, int all, int mortal,
-          int parent)
+             int parent)
 {
   if (all || (mstr && *mstr && !wildcard((char *) mstr))) {
     if (parent) {
@@ -444,7 +450,7 @@ examine_atrs(dbref player, dbref thing, const char *mstr, int all, int mortal,
 /* Wrapper for examine_atrs which only shows attrs visible to mortals */
 static void
 mortal_examine_atrs(dbref player, dbref thing, const char *mstr, int all,
-                 int parent)
+                    int parent)
 {
   examine_atrs(player, thing, mstr, all, 1, parent);
 }
@@ -524,9 +530,10 @@ look_room(dbref player, dbref loc, enum look_type style, NEW_PE_INFO *pe_info)
   if (!IsRoom(loc)) {
     if (style != LOOK_AUTO || !Terse(player)) {
       if (atr_get(loc, "IDESCRIBE")) {
-        look_description(player, loc, NULL, "IDESCRIBE", "IDESCFORMAT", pe_info);
-        did_it(player, loc, NULL, NULL, "OIDESCRIBE", NULL,
-               "AIDESCRIBE", NOTHING);
+        look_description(player, loc, NULL, "IDESCRIBE", "IDESCFORMAT",
+                         pe_info);
+        did_it(player, loc, NULL, NULL, "OIDESCRIBE", NULL, "AIDESCRIBE",
+               NOTHING);
       } else if (atr_get(loc, "IDESCFORMAT")) {
         look_description(player, loc, NULL, "DESCRIBE", "IDESCFORMAT", pe_info);
       } else
@@ -567,7 +574,8 @@ look_room(dbref player, dbref loc, enum look_type style, NEW_PE_INFO *pe_info)
 
 static void
 look_description(dbref player, dbref thing, const char *def,
-                 const char *descname, const char *descformatname, NEW_PE_INFO *pe_info)
+                 const char *descname, const char *descformatname,
+                 NEW_PE_INFO *pe_info)
 {
   /* Show thing's description to player, obeying DESCFORMAT if set */
   char buff[BUFFER_LEN], fbuff[BUFFER_LEN];
@@ -576,12 +584,14 @@ look_description(dbref player, dbref thing, const char *def,
 
   if (!GoodObject(player) || !GoodObject(thing))
     return;
-  if (fetch_ufun_attrib(descname, thing, &ufun, UFUN_REQUIRE_ATTR | UFUN_IGNORE_PERMS))
+  if (fetch_ufun_attrib
+      (descname, thing, &ufun, UFUN_REQUIRE_ATTR | UFUN_IGNORE_PERMS))
     call_ufun(&ufun, buff, player, player, pe_info, NULL);
   else
     bp = NULL;
 
-  if (fetch_ufun_attrib(descformatname, thing, &ufun, UFUN_REQUIRE_ATTR | UFUN_IGNORE_PERMS)) {
+  if (fetch_ufun_attrib
+      (descformatname, thing, &ufun, UFUN_REQUIRE_ATTR | UFUN_IGNORE_PERMS)) {
     PE_REGS *pe_regs = NULL;
     if (bp) {
       pe_regs = pe_regs_create(PE_REGS_ARG, "look_desc");
@@ -612,7 +622,7 @@ do_look_around(dbref player)
 
   if ((loc = Location(player)) == NOTHING)
     return;
-  look_room(player, loc, LOOK_AUTO, NULL);    /* auto-look. Obey TERSE. */
+  look_room(player, loc, LOOK_AUTO, NULL);      /* auto-look. Obey TERSE. */
 }
 
 /** Look at something.

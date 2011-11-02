@@ -995,7 +995,8 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
 
   /* Check interact locks */
   if (flags & NA_INTERACTION) {
-    if ((flags & NA_INTER_SEE) && !can_interact(speaker, target, INTERACT_SEE, NULL))
+    if ((flags & NA_INTER_SEE)
+        && !can_interact(speaker, target, INTERACT_SEE, NULL))
       return;
     if ((flags & NA_INTER_PRESENCE) &&
         !can_interact(speaker, target, INTERACT_PRESENCE, NULL))
@@ -1275,7 +1276,8 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
               PE_REGS *pe_regs = pe_regs_create(PE_REGS_ARG, "notify");
 
               pe_regs_setenv_nocopy(pe_regs, 0, (char *) msgstr);
-              if (call_attrib(target, "INPREFIX", inprefix, speaker, NULL, pe_regs)) {
+              if (call_attrib
+                  (target, "INPREFIX", inprefix, speaker, NULL, pe_regs)) {
                 ip = strchr(inprefix, '\0');
                 safe_chr(' ', inprefix, &ip);
                 *ip = '\0';
@@ -1557,8 +1559,7 @@ flush_queue(struct text_queue *q, int n)
 #endif                          /* DEBUG */
     free_text_block(p);
   }
-  p =
-    make_text_block((unsigned char *) flushed_message, flen);
+  p = make_text_block((unsigned char *) flushed_message, flen);
   p->nxt = q->head;
   q->head = p;
   if (!q->tail)

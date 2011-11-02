@@ -48,7 +48,7 @@ FUNCTION(fun_fn)
   /* Evaluate first argument */
   p = args[0];
   if (process_expression(tbuf, &tp, &p, executor, caller,
-			 enactor, PE_DEFAULT, PT_DEFAULT, pe_info))
+                         enactor, PE_DEFAULT, PT_DEFAULT, pe_info))
     return;
   *tp = '\0';
   /* Make sure a builtin function with the name actually exists */
@@ -102,7 +102,7 @@ FUNCTION(fun_objeval)
   s = name;
   p = args[0];
   if (process_expression(name, &s, &p, executor, caller, enactor, eflags,
-			 PT_DEFAULT, pe_info))
+                         PT_DEFAULT, pe_info))
     return;
   *s = '\0';
 
@@ -292,7 +292,7 @@ FUNCTION(fun_udefault)
   dp = mstr;
   sp = args[0];
   if (process_expression(mstr, &dp, &sp, executor, caller, enactor,
-			 eflags, PT_DEFAULT, pe_info))
+                         eflags, PT_DEFAULT, pe_info))
     return;
   *dp = '\0';
   if (!fetch_ufun_attrib
@@ -317,8 +317,8 @@ FUNCTION(fun_udefault)
       dp = xargs[i];
       sp = args[i + 2];
       if (process_expression(xargs[i], &dp, &sp, executor, caller, enactor,
-			     eflags, PT_DEFAULT, pe_info))
-	goto cleanup;
+                             eflags, PT_DEFAULT, pe_info))
+        goto cleanup;
       *dp = '\0';
       pe_regs_setenv_nocopy(pe_regs, i, xargs[i]);
     }
@@ -328,12 +328,12 @@ FUNCTION(fun_udefault)
   safe_str(rbuff, buff, bp);
 
   /* Free the xargs */
- cleanup:
+cleanup:
   pe_regs_free(pe_regs);
   if (nargs > 2) {
     for (i = 0; i < nargs - 2; i++) {
       if (xargs[i])
-	mush_free(xargs[i], "udefault");
+        mush_free(xargs[i], "udefault");
     }
     mush_free(xargs, "udefault.xargs");
   }

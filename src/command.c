@@ -340,7 +340,8 @@ COMLIST commands[] = {
   {"DESERT", NULL, cmd_desert, CMD_T_PLAYER | CMD_T_THING, 0, 0},
   {"DISMISS", NULL, cmd_dismiss, CMD_T_PLAYER | CMD_T_THING, 0, 0},
   {"DROP", NULL, cmd_drop, CMD_T_PLAYER | CMD_T_THING, 0, 0},
-  {"EXAMINE", "ALL BRIEF DEBUG MORTAL OPAQUE PARENT", cmd_examine, CMD_T_ANY, 0, 0},
+  {"EXAMINE", "ALL BRIEF DEBUG MORTAL OPAQUE PARENT", cmd_examine, CMD_T_ANY, 0,
+   0},
   {"EMPTY", NULL, cmd_empty, CMD_T_PLAYER | CMD_T_THING | CMD_T_NOGAGGED, 0, 0},
   {"ENTER", NULL, cmd_enter, CMD_T_ANY, 0, 0},
 
@@ -1166,7 +1167,8 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
     /* parse_chat() destructively modifies the command to replace
      * the first space with a '=' if the command is an actual
      * chat command */
-    if (parse_chat(player, p + 1) && command_check_byname(player, "@CHAT", queue_entry->pe_info)) {
+    if (parse_chat(player, p + 1)
+        && command_check_byname(player, "@CHAT", queue_entry->pe_info)) {
       /* This is a "+chan foo" chat style
        * We set noevtoken to keep its noeval way, and
        * set the cmd to allow @hook. */
@@ -2133,7 +2135,8 @@ list_commands(int type)
  * 0 otherwise, and maybe be noisy about it.
  */
 int
-command_check_with(dbref player, COMMAND_INFO *cmd, int noisy, NEW_PE_INFO *pe_info)
+command_check_with(dbref player, COMMAND_INFO *cmd, int noisy,
+                   NEW_PE_INFO *pe_info)
 {
 
   /* If disabled, return silently */

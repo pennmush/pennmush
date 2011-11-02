@@ -323,11 +323,13 @@ void shutdown_queues(void);
 
 
 /* From create.c */
-dbref do_dig(dbref player, const char *name, char **argv, int tport, NEW_PE_INFO *pe_info);
+dbref do_dig(dbref player, const char *name, char **argv, int tport,
+             NEW_PE_INFO *pe_info);
 dbref do_create(dbref player, char *name, int cost, char *newdbref);
 dbref do_real_open(dbref player, const char *direction,
                    const char *linkto, dbref pseudo, NEW_PE_INFO *pe_info);
-void do_open(dbref player, const char *direction, char **links, NEW_PE_INFO *pe_info);
+void do_open(dbref player, const char *direction, char **links,
+             NEW_PE_INFO *pe_info);
 void do_link(dbref player, const char *name, const char *room_name,
              int preserve, NEW_PE_INFO *pe_info);
 void do_unlink(dbref player, const char *name);
@@ -355,7 +357,8 @@ void do_scan(dbref player, char *command, int flag);
 enum look_type { LOOK_NORMAL, LOOK_TRANS, LOOK_AUTO, LOOK_CLOUDYTRANS,
   LOOK_CLOUDY
 };
-void look_room(dbref player, dbref loc, enum look_type style, NEW_PE_INFO *pe_info);
+void look_room(dbref player, dbref loc, enum look_type style,
+               NEW_PE_INFO *pe_info);
 void do_look_around(dbref player);
 void do_look_at(dbref player, const char *name, int key, NEW_PE_INFO *pe_info);
 char *decompose_str(char *what);
@@ -378,7 +381,8 @@ enum move_type { MOVE_NORMAL, /**< move through an exit in your location */
   MOVE_ZONE,                  /**< ZMR Exit */
   MOVE_TELEPORT                /**< \@tel'd into an exit */
 };
-void do_move(dbref player, const char *direction, enum move_type type, NEW_PE_INFO *pe_info);
+void do_move(dbref player, const char *direction, enum move_type type,
+             NEW_PE_INFO *pe_info);
 void moveto(dbref what, dbref where, dbref enactor, const char *cause);
 void safe_tel(dbref player, dbref dest, int nomovemsgs,
               dbref enactor, const char *cause);
@@ -497,13 +501,15 @@ enum emit_type {
   EMIT_OEMIT  /**< emit to all objects in location except the given objects */
 };
 dbref speech_loc(dbref thing);
-int okay_pemit(dbref player, dbref target, int dofails, int def, NEW_PE_INFO *pe_info);
-int vmessageformat(dbref player, const char *attribute,
-                   dbref executor, int flags, int nargs, ...);
-int messageformat(dbref player, const char *attribute,
-                  dbref executor, int flags, int nargs, char *argv[]);
+int okay_pemit(dbref player, dbref target, int dofails, int def,
+               NEW_PE_INFO *pe_info);
+int vmessageformat(dbref player, const char *attribute, dbref executor,
+                   int flags, int nargs, ...);
+int messageformat(dbref player, const char *attribute, dbref executor,
+                  int flags, int nargs, char *argv[]);
 void do_message(dbref executor, char *list, char *attrname, char *message,
-                enum emit_type type, int flags, int numargs, char *argv[], NEW_PE_INFO *pe_info);
+                enum emit_type type, int flags, int numargs, char *argv[],
+                NEW_PE_INFO *pe_info);
 
 const char *spname(dbref thing);
 int filter_found(dbref thing, dbref speaker, const char *msg, int flag);
@@ -648,7 +654,8 @@ mush_strndup(const char *src, size_t len, const char *check)
 #define object_header(p,l) unparse_object(p,l)
     const char *unparse_object_myopic(dbref player, dbref loc);
     const char *unparse_room(dbref player, dbref loc, NEW_PE_INFO *pe_info);
-    int nameformat(dbref player, dbref loc, char *tbuf1, char *defname, bool localize, NEW_PE_INFO *pe_info);
+    int nameformat(dbref player, dbref loc, char *tbuf1, char *defname,
+                   bool localize, NEW_PE_INFO *pe_info);
     const char *accented_name(dbref thing);
 
 /* From utils.c */

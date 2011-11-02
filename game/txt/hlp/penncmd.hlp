@@ -962,7 +962,10 @@ See also: @@, @@()
   are passed to the attribute as %0 (you can use lcon(me) for a full contents
   list). A list of the names of these objects as they would appear in the
   default contents list is passed as %1, |-delimited.
-  
+
+  Q-registers (set via setq() and similar functions) are inherited from the
+  @descformat, and passed on to the @exitformat.
+
   Examples:
     Show the normal contents list, but in upper-case:
     > @conformat here=edit(ucstr(%1), |, %r)
@@ -1037,6 +1040,9 @@ See also: inventory, @conformat, @exitformat, @nameformat, @descformat,
   that this object is only used with @describe - to format the @idescribe, 
   use @idescformat.
   
+  Q-registers (set via setq() and similar functions) are inherited from the
+  @nameformat, and passed on to the @conformat.
+  
   Example:
     > @descformat Room Parent=repeat(=, width(%#))%r%0[repeat(=, width(%#))]
 
@@ -1058,6 +1064,9 @@ See also: look, @exitformat, @nameformat, @conformat, @idescformat,
   "look" for each object's @idescribe, without having to place formatting
   into every @idescribe.
   
+  Q-registers (set via setq() and similar functions) are inherited from the
+  @nameformat, and passed on to the @conformat.
+
   Example:
     > @idescribe Vehicle Parent=repeat(*, width(%#))%r%0
 
@@ -1088,6 +1097,10 @@ See also: accent(), @nameformat, accname(), stripaccents()
   @nameformat set) is passed as %1.
   
   @nameformat is not used when people who are outside the object look at it.
+  
+  Q-registers (set via setq() and similar functions) are passed on from the
+  nameformat to the other @*format attributes used for formatting "look"
+  output. Use localize() if you don't want this behaviour.
   
   Example:
     Show the room's zone after its name.
@@ -1648,6 +1661,9 @@ See also: @link, @search, entrances()
   of object.) The dbrefs of the exits which would appear in the default
   "Obvious exits" list is passed to the attribute as %0 as a space-separated
   list; you can use lexits(me) to get all the exits in the room.
+
+  Q-registers (set via setq() and similar functions) are inherited from the
+  @conformat.
 
   Example:
     > @exitformat here=Exits: [itemize(iter(%0, name(%i0)))]

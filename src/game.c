@@ -957,6 +957,9 @@ init_game_dbs(void)
   return 0;
 }
 
+/* From bsd.c */
+int file_watch_init(void);
+
 /** Read cached text files.
  * \verbatim
  * This implements the @readcache function.
@@ -972,6 +975,7 @@ do_readcache(dbref player)
   }
   fcache_load(player);
   help_reindex(player);
+  file_watch_init();
 }
 
 /** Check each attribute on each object in x for a $command matching cptr */

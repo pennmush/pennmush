@@ -1,0 +1,4527 @@
+# SOME DESCRIPTIVE TITLE.\nCopyright (C) YEAR Free Software Foundation, Inc.\nFIRST AUTHOR <EMAIL@ADDRESS>, YEAR.\n
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2004-11-04 13:52-0600\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=iso-8859-2\n"
+"Content-Transfer-Encoding: 8bit"
+
+#: speech.c:856
+msgid " (to "
+msgstr " (cél "
+
+#: conf.c:1044
+msgid " Attributes are 8-bit word compressed in memory."
+msgstr " Az attribútumok 8-bit word tömörítettek a memóriában."
+
+#: conf.c:1035
+msgid " Attributes are Huffman compressed in memory."
+msgstr " Az attribútumok Huffman tömörítettek a memóriában."
+
+#: conf.c:1032
+msgid " Attributes are not compressed in memory."
+msgstr " Az attribútumok nem tömörítettek a memóriában."
+
+#: conf.c:1041
+msgid " Attributes are word compressed in memory."
+msgstr " Az attribútumok word tömörítettek a memóriában."
+
+#: conf.c:1498
+msgid " CPU usage limiting is NOT supported."
+msgstr " A CPU használat korlátozás NEM támogatott."
+
+#: conf.c:1496
+msgid " CPU usage limiting is supported."
+msgstr " A CPU használat korlátozás támogatott."
+
+#: src/conf.c:980
+msgid " DNS and ident lookups are handled by a slave process."
+msgstr " A DNS és ident azonosítások slave processz segítségével történnek."
+
+#: src/conf.c:982
+msgid " DNS and ident lookups are handled by the MUSH process."
+msgstr " DNS és ident azonosítás kezelése a MUSH processz által történik."
+
+#: src/conf.c:1111
+msgid " Extended convtime() is supported."
+msgstr " A kibõvített convtime() támogatott."
+
+#: flags.c:917
+msgid " Flags: "
+msgstr " Jelzõk: "
+
+#: wiz.c:1605
+#, c-format
+msgid " [location: %s]"
+msgstr " [hely: %s]"
+
+#: src/conf.c:1113
+msgid " convtime() is stricter."
+msgstr " a convtime() ennél szigorúbb."
+
+#: src/look.c:688 src/look.c:770
+msgid " is owned by "
+msgstr " tulajdonosa "
+
+#: speech.c:1021
+msgid " pages"
+msgstr " azt üzeni"
+
+#: flags.c:764
+msgid " reset."
+msgstr " törölve."
+
+#: flags.c:831
+msgid " set."
+msgstr " beállítva."
+
+#: extchat.c:1503
+msgid "#-1 AMBIGUOUS CHANNEL NAME"
+msgstr "#-1 NEM EGYÉRTELMÛ CSATORNANÉV"
+
+#: src/fundb.c:784 src/fundb.c:1001
+msgid "#-1 ARG1 NOT FOUND"
+msgstr "#-1 ARG1 NEM ISMERT"
+
+#: src/fundb.c:786 src/fundb.c:1003
+msgid "#-1 ARG2 NOT FOUND"
+msgstr "#-1 ARG2 HIÁNYZIK"
+
+#: src/funlist.c:1886 src/funlist.c:1905
+msgid "#-1 ARGUMENT MUST BE INTEGER"
+msgstr "#-1 EGÉSZ SZÁM ARGUMENTUM KELL"
+
+#: src/funstr.c:421
+msgid "#-1 ARGUMENT MUST BE NON-NEGATIVE INTEGER"
+msgstr "#-1 NEM NEGATÍV EGÉSZ SZÁM ARGUMENTUM KELL"
+
+#: parse.c:89
+msgid "#-1 ARGUMENT MUST BE NUMBER"
+msgstr "#-1 SZÁM ARGUMENTUM KELL"
+
+#: src/fundb.c:1691 src/fundb.c:1695
+msgid "#-1 ARGUMENT MUST BE OBJ/ATTR"
+msgstr "#-1 OBJ/ATTR ARGUMENTUM KELL"
+
+#: parse.c:87
+msgid "#-1 ARGUMENT MUST BE POSITIVE INTEGER"
+msgstr "#-1 POZITÍV SZÁM ARGUMENTUM KELL"
+
+#: src/funmath.c:218 src/funmath.c:250
+msgid "#-1 ARGUMENT MUST END IN AN INTEGER"
+msgstr "#-1 EGÉSZ SZÁMMAL KELL VÉGZÕDNIE"
+
+#: src/funlist.c:1892 src/funlist.c:1911
+msgid "#-1 ARGUMENT OUT OF RANGE"
+msgstr "#-1 ARGUMENTUM HATÁRON KÍVÜL"
+
+#: parse.c:86
+msgid "#-1 ARGUMENTS MUST BE INTEGERS"
+msgstr "#-1 SZÁM ARGUMENTUMOK KELLENEK"
+
+#: parse.c:90
+msgid "#-1 ARGUMENTS MUST BE NUMBERS"
+msgstr "#-1 SZÁM ARGUMENTUMOK KELLENEK"
+
+#: parse.c:88
+msgid "#-1 ARGUMENTS MUST BE POSITIVE INTEGERS"
+msgstr "#-1 POZITÍV SZÁM ARGUMENTUM KELL"
+
+#: src/fundb.c:61
+msgid "#-1 ATTRIBUTE LENGTH TOO LONG"
+msgstr "#-1 ATTRIBÚTUM TÚL HOSSZÚ"
+
+#: src/fundb.c:183
+msgid "#-1 BAD ARGUMENT FORMAT TO GET"
+msgstr "#-1 ARGUMENTUM FORMÁTUMA HIBÁS GET-HEZ"
+
+#: src/fundb.c:291
+msgid "#-1 BAD ARGUMENT FORMAT TO GET_EVAL"
+msgstr "#-1 HIBÁS ARGUMENTUM FORMÁTUM A GET_EVAL-HOZ"
+
+#: src/funmath.c:987
+msgid "#-1 BASE OUT OF RANGE"
+msgstr "#-1 ALAP HATÁRON KÍVÜL"
+
+#: parse.c:83
+msgid "#-1 CALL LIMIT EXCEEDED"
+msgstr "#-1 HÍVÁS HATÁR TÚLLÉPVE"
+
+#: src/funlist.c:1456 src/funlist.c:1680
+msgid "#-1 CAN ONLY TEST ONE ELEMENT"
+msgstr "#-1 CSAK EGY ELEM TESZTELHETÕ"
+
+#: src/funmath.c:754 src/funmath.c:1584 src/funmath.c:1628 src/funmath.c:1673\nsrc/funmath.c:1707 src/funmath.c:1751
+msgid "#-1 DIVISION BY ZERO"
+msgstr "#-1 NULLÁVAL OSZTÁS"
+
+#: src/extmail.c:1496
+msgid "#-1 FOLDER MUST BE INTEGER"
+msgstr "#-1 A MAPPA SZÁM KELL LEGYEN"
+
+#: src/funmath.c:925
+msgid "#-1 FRACTIONAL POWER OF NEGATIVE"
+msgstr "#-1 NEGATÍV SZÁM TÖRTKITEVÕS HATVÁNYA"
+
+#: src/parse.c:671 src/parse.c:759
+msgid "#-1 FUNCTION ("
+msgstr "#-1 A FUNKCIÓ ("
+
+#: src/funmisc.c:406
+msgid "#-1 FUNCTION (SOUNDEX) REQUIRES A SINGLE WORD ARGUMENT"
+msgstr "#-1 A FUNKCIÓ (SOUNDEX) EGY SZAVAS ARGUMENTUMOT IGÉNYEL"
+
+#: src/funmisc.c:424
+msgid "#-1 FUNCTION (SOUNDLIKE) REQUIRES TWO ONE-WORD ARGUMENTS"
+msgstr "#-1 A FUNKCIÓ (SOUNDLIKE) KÉT EGY-SZAVAS ARGUMENTUMOT IGÉNYEL"
+
+#: src/fundb.c:959 src/fundb.c:1120 src/fundb.c:1145 src/fundb.c:1254\nsrc/fundb.c:1549 src/fundb.c:1555 src/fundb.c:1561 src/fundb.c:1567\nsrc/fundb.c:1573 src/fundb.c:1579 src/fundb.c:1585 src/fundb.c:1591\nsrc/fundb.c:1864 src/funstr.c:901
+msgid "#-1 FUNCTION DISABLED"
+msgstr "#-1 FUNKCIÓ HATÁSTALANÍTVA"
+
+#: parse.c:91
+msgid "#-1 FUNCTION INVOCATION LIMIT EXCEEDED"
+msgstr "#-1 FUNKCIÓ INVOKÁCIÓS HATÁR TÚLLÉPÉSE"
+
+#: src/parse.c:790
+msgid "#-1 FUNCTION RECURSION LIMIT EXCEEDED"
+msgstr "#-1 FUNKCIÓ ÚJRAHÍVÁSI HATÁR MEGHALADVA"
+
+#: bsd.c:4955 bsd.c:4966
+msgid "#-1 FUNCTION REQUIRES ONE ARGUMENT"
+msgstr "#-1 a FÜGGVÉNY EGY PARAMÉTERT VÁR"
+
+#: funmath.c:1033 funmath.c:1066
+msgid "#-1 IMAGINARY NUMBER"
+msgstr "#-1 KÉPZETES SZÁM"
+
+#: src/funmath.c:949 src/funmath.c:972
+msgid "#-1 INFINITY"
+msgstr "#-1 VÉGTELEN"
+
+#: funmath.c:73
+msgid "#-1 INVALID ANGLE TYPE"
+msgstr "#-1 ÉRVÉNYTELEN SZÖG TÍPUS"
+
+#: funstr.c:418
+msgid "#-1 INVALID DBREF"
+msgstr "#-1 ÉRVÉNYTELEN DBREF"
+
+#: help.c:454
+msgid "#-1 INVALID ENTRY"
+msgstr "#-1 ÉRVÉNYTELEN BEJEGYZÉS"
+
+#: funtime.c:55
+#, c-format
+msgid "#-1 INVALID ESCAPE CODE '$%c'"
+msgstr "#-1 ÉRVÉNYTELEN ESCAPE KÓD '$%c'"
+
+#: src/fundb.c:1618 src/funlist.c:2324 src/funlist.c:2367
+msgid "#-1 INVALID GREP PATTERN"
+msgstr "#-1 HIBÁS GREP MINTA"
+
+#: src/fundb.c:657
+msgid "#-1 INVALID LOCATION"
+msgstr "#-1 ÉRVÉNYTELEN HELY"
+
+#: src/extmail.c:1549
+msgid "#-1 INVALID MESSAGE OR PLAYER"
+msgstr "#-1 ÉRVÉNYTELEN ÜZENET VAGY JÁTÉKOS"
+
+#: src/fundb.c:1890 src/fundb.c:1912 src/funufun.c:113 src/funufun.c:144
+msgid "#-1 INVALID OBJECT"
+msgstr "#-1 ÉRVÉNYTELEN OBJEKTUM"
+
+#: src/fundb.c:663 src/fundb.c:690
+msgid "#-1 INVALID SECOND ARGUMENT"
+msgstr "#-1 ÉRVÉNYTELEN MÁSODIK ARGUMENTUM"
+
+#: funstr.c:369 funstr.c:425
+msgid "#-1 INVALID THIRD ARGUMENT"
+msgstr "#-1 ÉRVÉNYTELEN HARMADIK PARAMÉTER"
+
+#: funtime.c:95
+msgid "#-1 INVALID TIME ZONE"
+msgstr "#-1 ÉRVÉNYTELEN IDÕZÓNA"
+
+#: src/funufun.c:293
+msgid "#-1 INVALID ZONE"
+msgstr "#-1 HIBÁS ZÓNA"
+
+#: src/funlist.c:194 src/funlist.c:2088
+msgid "#-1 LISTS MUST BE OF EQUAL SIZE"
+msgstr "#-1 A LISTÁK HOSSZA MEG KELL EGYEZZEN"
+
+#: src/funlist.c:1778
+msgid "#-1 NEED A WORD"
+msgstr "#-1 EGY SZÓRA VAN SZÜKSÉGEM"
+
+#: extchat.c:1495
+msgid "#-1 NO CHANNEL GIVEN"
+msgstr "#-1 NINCS MEGADVA CSATORNA"
+
+#: game.c:1352
+msgid "#-1 NO COMMAND"
+msgstr "#-1 NINCS PARANCS"
+
+#: help.c:512
+msgid "#-1 NO ENTRY"
+msgstr "#-1 NINCS BEJEGYZÉS"
+
+#: help.c:464
+msgid "#-1 NO INDEX FOR FILE"
+msgstr "#-1 NINCS INDEX A FILEHOZ"
+
+#: src/fundb.c:118 src/fundb.c:137 src/fundb.c:460 src/funstr.c:118\nsrc/funstr.c:131 src/funstr.c:144 src/funstr.c:157
+msgid "#-1 NO MATCH"
+msgstr "#-1 NINCS EGYEZÉS"
+
+#: src/fundb.c:767
+msgid "#-1 NO OBJECTS CONTROLLED"
+msgstr "#-1 NINCS IRÁNYÍTOTT OBJEKTUM"
+
+#: src/fundb.c:63 src/fundb.c:69 src/fundb.c:72 src/fundb.c:273\nsrc/fundb.c:315 src/funlist.c:366 src/funlist.c:450 src/funufun.c:125\nsrc/funufun.c:158 src/funufun.c:307
+msgid "#-1 NO PERMISSION TO GET ATTRIBUTE"
+msgstr "#-1 ATTRIBÚTUM MEGSZERZÉSÉRE NINCS ENGEDÉLY"
+
+#: src/bsd.c:4827
+msgid "#-1 NO PERMISSIONS FOR CHANNEL"
+msgstr "#-1 A CSATORNA HOZZÁFÉRÉSE HIÁNYZIK"
+
+#: src/fundb.c:1614 src/fundb.c:1762 src/funlist.c:2320 src/funlist.c:2363
+msgid "#-1 NO SUCH ATTRIBUTE"
+msgstr "#-1 NINCS ILYEN ATTRIBÚTUM"
+
+#: src/fundb.c:1828
+msgid "#-1 NO SUCH CHANNEL"
+msgstr "#-1 NINCs ILYEN CSATORNA"
+
+#: src/conf.c:926
+msgid "#-1 NO SUCH CONFIG OPTION"
+msgstr "#-1 NINCS ILYEN BEÁLLÍTÁSI OPCIÓ"
+
+#: help.c:429
+msgid "#-1 NO SUCH FILE"
+msgstr "#-1 NINCS ILYEN FILE"
+
+#: src/fundb.c:1851
+msgid "#-1 NO SUCH LOCK TYPE"
+msgstr "#-1 NINCS ILYEN ZÁRTIPUS"
+
+#: src/fundb.c:155 src/fundb.c:189 src/fundb.c:205 src/fundb.c:255\nsrc/fundb.c:297 src/fundb.c:1609 src/funlist.c:2315 src/funlist.c:2358
+msgid "#-1 NO SUCH OBJECT VISIBLE"
+msgstr "#-1 NINCS ILYEN LÁTHATÓ TÁRGY"
+
+#: src/extmail.c:1468 src/extmail.c:1489
+msgid "#-1 NO SUCH PLAYER"
+msgstr "#-1 NINCS ILYEN JÁTÉKOS"
+
+#: src/fundb.c:907
+msgid "#-1 NO SUCH TYPE"
+msgstr "#-1 NINCS ILYEN TÍPUS"
+
+#: src/bsd.c:4485 src/bsd.c:4498
+msgid "#-1 NOT CONNECTED"
+msgstr "#-1 NINCS KAPCSOLÓDVA"
+
+#: extchat.c:1525
+msgid "#-1 NOT ON CHANNEL"
+msgstr "#-1 NINCS A CSATORNÁN"
+
+#: src/funlist.c:1786
+msgid "#-1 NUMBER OF WORDS MUST BE EQUAL"
+msgstr "#-1 A SZAVAK SZÁMA NEM EGYEZIK"
+
+#: src/funlist.c:1179 src/funmisc.c:222
+msgid "#-1 NUMBER OUT OF RANGE"
+msgstr "#-1 HATÁRON KÍVÜLI SZÁM"
+
+#: src/funmath.c:850 src/funmath.c:876 src/funmath.c:930 src/funmath.c:954\nsrc/funmath.c:977 src/funmath.c:1238 src/funstr.c:212 src/funstr.c:234\nsrc/funstr.c:254 src/funstr.c:281 src/funtime.c:152
+msgid "#-1 OUT OF RANGE"
+msgstr "#-1 HATÁRON KÍVÜL"
+
+#: src/funmath.c:336 src/funmath.c:366
+msgid "#-1 OVERFLOW ERROR"
+msgstr "#-1 TÚLCSORDULÁSI HIBA"
+
+#: src/extmail.c:1471 src/extmail.c:1492 src/extmail.c:1531 src/fundb.c:122\nsrc/fundb.c:141 src/fundb.c:169 src/fundb.c:261 src/fundb.c:303\nsrc/fundb.c:341 src/fundb.c:789 src/fundb.c:953 src/fundb.c:1114\nsrc/fundb.c:1139 src/fundb.c:1248 src/fundb.c:1442 src/fundb.c:1456\nsrc/fundb.c:1466 src/fundb.c:1477 src/fundb.c:1487 src/fundb.c:1502\nsrc/fundb.c:1512 src/fundb.c:1522 src/fundb.c:1537 src/fundb.c:1651\nsrc/fundb.c:1737 src/fundb.c:1741 src/fundb.c:1748 src/fundb.c:1752\nsrc/fundb.c:1858 src/fundb.c:1872 src/funlist.c:1966 src/funmisc.c:60\nsrc/funmisc.c:72 src/funmisc.c:84 src/funmisc.c:96 src/funmisc.c:108\nsrc/funmisc.c:120 src/funmisc.c:134 src/funstr.c:778 src/funufun.c:118\nsrc/funufun.c:149 src/funufun.c:300 src/wiz.c:2155 src/wiz.c:2167\nsrc/wiz.c:2189 src/wiz.c:2202
+msgid "#-1 PERMISSION DENIED"
+msgstr "#-1 HOZZÁFÉRÉS MEGTAGADVA"
+
+#: src/funlist.c:2256 src/funlist.c:2335 src/funlist.c:2378 src/funlist.c:2437\nsrc/funlist.c:2478
+msgid "#-1 REGEXP ERROR: "
+msgstr "#-1 REGEXP HIBA: "
+
+#: funmath.c:1057
+msgid "#-1 ROOT OUT OF RANGE"
+msgstr "#-1 HATÁRON kÍVÜL"
+
+#: src/function.c:118
+msgid "#-1 SEPARATOR MUST BE ONE CHARACTER"
+msgstr "#-1 AZ ELVÁLASZTÓJEL EGY BETÛ"
+
+#: src/funlist.c:1943
+msgid "#-1 STEP OUT OF RANGE"
+msgstr "#-1 A LÉPÉSKÖZ HATÁRON KÍVÜL"
+
+#: src/funstr.c:353
+msgid "#-1 STRING LENGTHS MUST BE EQUAL"
+msgstr "#-1 A SZTRINGHOSSZAK MEG KELL EGYEZZENEK"
+
+#: funstr.c:1034
+msgid "#-1 THIS ISN'T UNICODE"
+msgstr "#-1 EZ NEM UNICODE"
+
+#: src/funlist.c:1815
+msgid "#-1 TOO MANY ITERS"
+msgstr "#-1 TÚL SOK ITER"
+
+#: src/funlist.c:1782
+msgid "#-1 TOO MANY WORDS"
+msgstr "#-1 TÚL SOK SZÓ"
+
+#: help.c:516 help.c:519
+msgid "#-1 UNAVAILABLE"
+msgstr "#-1 ELÉRHETETLEN"
+
+#: src/funmath.c:1385
+msgid "#-1 UNKNOWN OPERATION"
+msgstr "#-1 ISMERETLEN OPERÁCIÓ"
+
+#: funstr.c:1021 funstr.c:1038
+msgid "#-1 UNPRINTABLE CHARACTER"
+msgstr "#-1 NEM MEGJELENÍTHETÕ BETÛ"
+
+#: src/funmath.c:420 src/funmath.c:462 src/funmath.c:501 src/funmath.c:540\nsrc/funmath.c:598 src/funmath.c:632
+msgid "#-1 VECTORS MUST BE SAME DIMENSIONS"
+msgstr "#-1 A VEKTOROK DIMENZIÓSZÁMA NEM EGYEZIK"
+
+#: src/funstr.c:1097
+msgid "#-1 WIDTH TOO SMALL"
+msgstr "#-1 TÚL KESKENY"
+
+#: src/extmail.c:1641
+msgid "#-? fun_mailstats called with invalid called_as!"
+msgstr "#-? fun_mailstats meghívva érvénytelen called_as-al!"
+
+#: src/wiz.c:1044
+#, c-format
+msgid "%d commands executed."
+msgstr "%d parancs végrehajtva."
+
+#: src/extmail.c:1379
+#, c-format
+msgid "%d messages received, %d unread, %d cleared, totalling %d characters."
+msgstr "%d üzenet érkezett, %d olvasatlan, %d törölt, összesen %d betû."
+
+#: src/extmail.c:1370
+#, c-format
+msgid "%d messages received, %d unread, %d cleared."
+msgstr "%d üzenet érkezett, %d olvasatlan, %d törölt."
+
+#: src/extmail.c:1375
+#, c-format
+msgid "%d messages sent, %d unread, %d cleared, totalling %d characters."
+msgstr "%d üzenet elküldve, %d olvasatlan, %d törölt, összesen %d betû."
+
+#: src/extmail.c:1368
+#, c-format
+msgid "%d messages sent, %d unread, %d cleared."
+msgstr "%d üzenet elküldve, %d olvasatlan, %d törölt."
+
+#: src/wiz.c:686
+#, c-format
+msgid "%d objects = %d rooms, %d exits, %d things, %d players, %d garbage."
+msgstr "%d objektum = %d szoba, %d kijárat, %d tárgy, %d játékos, %d szemét."
+
+#: src/wiz.c:692
+#, c-format
+msgid "%d objects = %d rooms, %d exits, %d things, %d players."
+msgstr "%d objektum = %d szoba, %d kijárat, %d tárgy, %d játékos."
+
+#: wiz.c:1745
+#, c-format
+msgid "%d sitelocks removed."
+msgstr "%d cím-zár eltávolítva."
+
+#: src/bsd.c:3405
+#, c-format
+msgid "%ld failed connections since last login."
+msgstr "%ld hibás kapcsolat történt az utolsó kapcsolat óta."
+
+#: src/look.c:969
+#, c-format
+msgid "%s (this room) [broadcasting]."
+msgstr "%s (szobában) [közvetít]"
+
+#: src/look.c:967
+#, c-format
+msgid "%s (this room) [commands]."
+msgstr "%s (szobában) [parancsok]."
+
+#: src/look.c:961
+#, c-format
+msgid "%s (this room) [speech]. (connected)"
+msgstr "%s (szobában) [beszéd]. (játékban)"
+
+#: src/look.c:964
+#, c-format
+msgid "%s (this room) [speech]."
+msgstr "%s (szobában) [beszéd]."
+
+#: src/atr_tab.c:226
+#, c-format
+msgid "%s -- Attribute permissions now: %s"
+msgstr "%s -- attribútum jogok mostantól: %s"
+
+#: look.c:706
+#, c-format
+msgid "%s Lock [#%d%s]: %s"
+msgstr "%s Zár [#%d%s]: %s"
+
+#: src/look.c:954 src/look.c:979 src/look.c:1019
+#, c-format
+msgid "%s [owner: %s] is listening."
+msgstr "%s [tulajdonos: %s] hallgatózik."
+
+#: destroy.c:353
+#, c-format
+msgid "%s and all their (non-SAFE) objects are scheduled to be destroyed."
+msgstr "%s és minden (nem VÉDETT) objektumának megsemisítése beütemezve."
+
+#: src/destroy.c:352
+#, c-format
+msgid "%s and all their objects are scheduled to be destroyed."
+msgstr "%s, és minden objektuma meg fog semmisülni."
+
+#: src/move.c:862
+#, c-format
+msgid "%s begins following you."
+msgstr "%s követni kezd téged."
+
+#: src/create.c:388
+#, c-format
+msgid "%s created with room number %d."
+msgstr "%s elkészítve, száma: %d."
+
+#: src/bsd.c:3978
+#, c-format
+msgid "%s created."
+msgstr "%s elkészítve."
+
+#: src/command.c:960
+#, c-format
+msgid "%s doesn't know switch %s."
+msgstr "A %s parancs nem ismeri a %s kapcsolót."
+
+#: move.c:641 move.c:644
+#, c-format
+msgid "%s drops you."
+msgstr "%s letesz."
+
+#: src/rob.c:213
+#, c-format
+msgid "%s gave you %s."
+msgstr "%s ad neked %s-t."
+
+#: src/rob.c:215
+#, c-format
+msgid "%s gave you to %s."
+msgstr "%s átadott téged %s részére."
+
+#: src/rob.c:285
+#, c-format
+msgid "%s gives you %d %s."
+msgstr "%s ad neked %d %st."
+
+#: src/move.c:332
+#, c-format
+msgid "%s goes home."
+msgstr "%s hazamegy."
+
+#: src/attrib.c:953
+#, c-format
+msgid "%s grows ears and can now hear."
+msgstr "%s füleket növeszt, és mostantól hall."
+
+#: src/extmail.c:1336
+#, c-format
+msgid "%s has %d messages."
+msgstr "%s %d üzenettel rendelkezik."
+
+#: src/destroy.c:414 src/destroy.c:510
+#, c-format
+msgid "%s has been spared from destruction."
+msgstr "%s megmenekült a megsemmisüléstõl."
+
+#: src/look.c:1060
+#, c-format
+msgid "%s has just located your position."
+msgstr "%s behatárolta a pozíciódat."
+
+#: src/destroy.c:361 src/destroy.c:371 src/destroy.c:464
+#, c-format
+msgid "%s has scheduled your %s for destruction."
+msgstr "%s eltervezte %s objektumod megsemmisítését."
+
+#: src/destroy.c:344
+#, c-format
+msgid "%s has scheduled your room %s to be destroyed."
+msgstr "%s eltervezte a szobád (%s) elpusztítását."
+
+#: src/extchat.c:803 src/extchat.c:835
+#, c-format
+msgid "%s is already on channel <%s>."
+msgstr "%s már rajta van a <%s> csatornán."
+
+#: src/look.c:1057
+#, c-format
+msgid "%s is at: %s."
+msgstr "%s a %s helyen."
+
+#: look.c:205
+#, c-format
+msgid "%s is corrupt!"
+msgstr "%s szennyezett!"
+
+#: look.c:954 look.c:979 look.c:1019
+#, c-format
+msgid "%s is listening."
+msgstr "%s hallgat."
+
+#: src/flags.c:1067 src/flags.c:1073
+#, c-format
+msgid "%s is no longer listening."
+msgstr "%s már nem hallgatózik."
+
+#: speech.c:708
+#, c-format
+msgid "%s is not accepting any pages."
+msgstr "%s nem fogadja az üzeneteket."
+
+#: speech.c:713
+#, c-format
+msgid "%s is not accepting your pages."
+msgstr "%s nem fogadja az üzeneteidet."
+
+#: speech.c:703
+#, c-format
+msgid "%s is not connected."
+msgstr "%s nincs kapcsolódva."
+
+#: src/extchat.c:865
+#, c-format
+msgid "%s is not on channel <%s>."
+msgstr "%s nincs a <%s> csatorán."
+
+#: src/flags.c:1127 src/flags.c:1133
+#, c-format
+msgid "%s is now listening."
+msgstr "%s mostantól hallgatózik."
+
+#: src/destroy.c:364 src/destroy.c:378
+#, c-format
+msgid "%s is scheduled to be destroyed."
+msgstr "%s elpusztítása folyamatban."
+
+#: move.c:888
+#, c-format
+msgid "%s isn't following you, nor vice versa."
+msgstr "%s nem követ téged, és te sem õt."
+
+#: move.c:858
+#, c-format
+msgid "%s isn't following you."
+msgstr "%s nem követ téged."
+
+#: src/rob.c:134
+#, c-format
+msgid "%s killed you!"
+msgstr "%s megölt téged!"
+
+#: look.c:200
+#, c-format
+msgid "%s leads home."
+msgstr "%s, mely haza vezet."
+
+#: look.c:198
+#, c-format
+msgid "%s leads nowhere."
+msgstr "%s, mely a semmibe vezet."
+
+#: look.c:207
+#, c-format
+msgid "%s leads to %s."
+msgstr "%s, mely a %s helyre vezet."
+
+#: look.c:202
+#, c-format
+msgid "%s leads to a variable location."
+msgstr "%s, mely valahova vezet."
+
+#: warnings.c:162
+#, c-format
+msgid "%s lock has eval-lock that uses a nonexistant attribute '%s'."
+msgstr "%s zár olyen kiértékelõ zárral rendelkezik, mely a nem létezõ '%s' attribútumot használja."
+
+#: warnings.c:173
+#, c-format
+msgid "%s lock has indirect lock to %s/%s that it can't read"
+msgstr "%s zár indirekt zárral rendelkezik %s/%s irányban, amit nem tud olvasni"
+
+#: warnings.c:145 warnings.c:169
+#, c-format
+msgid "%s lock refers to garbage object"
+msgstr "%s zár egy szemét objektumra hivatkozik"
+
+#: src/attrib.c:949
+#, c-format
+msgid "%s loses its ears and becomes deaf."
+msgstr "%s elveszti fülét, és süket lesz."
+
+#: src/predicat.c:760
+#, c-format
+msgid "%s message from %s: %s"
+msgstr "%s üzenet %s részérõl: \"%s\""
+
+#: src/player.c:486
+#, c-format
+msgid "%s on %s"
+msgstr "%s helyrõl, %s idõben"
+
+#: help.c:256
+#, c-format
+msgid "%s output truncated."
+msgstr "%s output csonkolva."
+
+#: bsd.c:4130
+#, c-format
+msgid "%s pages: %s"
+msgstr "%s üzeni: %s"
+
+#: src/speech.c:179
+#, c-format
+msgid "%s says, \"%s\""
+msgstr "%s mondja, \"%s\""
+
+#: speech.c:378
+#, c-format
+msgid "%s senses: %s%s%s"
+msgstr "%s érzékeli: %s%s%s"
+
+#: src/extmail.c:1335
+#, c-format
+msgid "%s sent %d messages."
+msgstr "%s %d üzenetet küldött."
+
+#: src/bsd.c:2100
+#, c-format
+msgid "%s sizes:  NewUser...%d  Connect...%d  Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  Register...%d  Down...%d  Full...%d"
+msgstr "%s méretek: Újonc...%d Kapcsolat...%d Vendég...%d Motd...%d Wizmotd...%d Kilépés...%d Regisztrálás...%d Lent...%d Tele...%d"
+
+#: src/move.c:918 src/move.c:1063
+#, c-format
+msgid "%s stops following you."
+msgstr "%s nem követ tovább."
+
+#: src/rob.c:288
+#, c-format
+msgid "%s took %d %s from you!"
+msgstr "%s elvett tõled %d %st!"
+
+#: move.c:526 move.c:572
+#, c-format
+msgid "%s took you."
+msgstr "%s felvesz."
+
+#: src/rob.c:156
+#, c-format
+msgid "%s tried to kill you!"
+msgstr "%s megpróbált megölni téged!"
+
+#: src/look.c:1053
+#, c-format
+msgid "%s tried to locate you and failed."
+msgstr "%s megpróbálta behatárolni a pozíciódat, és kudarcot vallott."
+
+#: src/wiz.c:548
+#, c-format
+msgid "%s tries to impose his will on you and fails."
+msgstr "%s megpróbálja ráderõltetni akaratát, de kudarcot vall."
+
+#: src/speech.c:151
+#, c-format
+msgid "%s types --> %s%s%s"
+msgstr "%s írja -> %s%s%s"
+
+#: src/move.c:495
+#, c-format
+msgid "%s was taken from you."
+msgstr "%s el lett véve tõled."
+
+#: destroy.c:412
+#, c-format
+msgid "%s's %s has been spared from destruction."
+msgstr "%s %s tulajdona megmenekült a pusztulástól."
+
+#: src/destroy.c:357 src/destroy.c:374
+#, c-format
+msgid "%s's %s is scheduled to be destroyed."
+msgstr "A %s tulajdonában levõ %s meg fog semmisülni."
+
+#: src/extmail.c:1168
+#, c-format
+msgid "%s(#%d) has mail but is not a player."
+msgstr "%s(#%d) postaládája nem üres, de nem játékos."
+
+#: lock.c:541
+#, c-format
+msgid "%s(%s) - %s (already) unlocked."
+msgstr "%s(%s) - %s (már) kinyitva."
+
+#: lock.c:603
+#, c-format
+msgid "%s(%s) - %s locked."
+msgstr "%s(%s) - %s zárva."
+
+#: lock.c:544
+#, c-format
+msgid "%s(%s) - %s unlocked."
+msgstr "%s(%s) - %s kinyitva."
+
+#: set.c:482
+#, c-format
+msgid "%s/%s - %s reset."
+msgstr "%s/%s - %s törölve."
+
+#: set.c:487
+#, c-format
+msgid "%s/%s - %s set."
+msgstr "%s/%s - %s beállítva."
+
+#: src/extmail.c:1260 src/extmail.c:1668 src/wiz.c:673 src/wiz.c:1277
+#, c-format
+msgid "%s: No such player."
+msgstr "%s: Nincs ilyen játékos."
+
+#: function.c:905
+msgid "(Commas okay in last argument)"
+msgstr "(Az utolsó paraméterben használható vesszõ)"
+
+#: src/extmail.c:211 src/extmail.c:810 src/extmail.c:1004
+msgid "(no subject)"
+msgstr "(nincs témakör)"
+
+#: src/look.c:911
+#, c-format
+msgid "*** %d objects found ***"
+msgstr "*** %d objektumot találtam ***"
+
+#: src/malias.c:300
+msgid "*****  End of Mail Aliases *****"
+msgstr "*****  Posta Becenevek Vége  *****"
+
+#: src/malias.c:471
+msgid "***** End of Mail Aliases *****"
+msgstr "***** Posta Aliasok Vége *****"
+
+#: unparse.c:105
+msgid "*HOME*"
+msgstr "*HAZA*"
+
+#: unparse.c:98 unparse.c:101
+msgid "*NOTHING*"
+msgstr "*SEMMI*"
+
+#: unparse.c:103
+msgid "*VARIABLE*"
+msgstr "*VÁLTOZÓ*"
+
+#: src/access.c:476
+msgid "---- @sitelock will add sites immediately below this line ----"
+msgstr "---- A @sitelock közvetlenül ezen vonal alá írja az új siteokat ----"
+
+#: src/look.c:1180
+msgid "----------  Entrances Done  ----------"
+msgstr "---------- Bejáratok vége ----------"
+
+#: src/wiz.c:1606
+msgid "----------  Search Done  ----------"
+msgstr "----------  Keresés vége  ----------"
+
+#: src/cque.c:807
+msgid "------------  Queue Done  ------------"
+msgstr "------------  Sor vége  ------------"
+
+#: extmail.c:543
+#, c-format
+msgid "---------------------------  MAIL (folder %2d)  ------------------------------"
+msgstr "---------------------------  POSTA (%2d mappa)  ------------------------------"
+
+#: src/command.c:1118
+msgid "@command is ALWAYS enabled."
+msgstr "A @command MINDÍG engedélyezett."
+
+#: src/warnings.c:450
+msgid "@wcheck complete."
+msgstr "@wcheck befejezve."
+
+#: src/set.c:894
+msgid "A thing cannot be its own ancestor!"
+msgstr "Egy tárgy nem lehet önmaga õse!"
+
+#: src/bsd.c:559 src/bsd.c:761
+msgid "Ack!  Failed reopening stderr!"
+msgstr "Oppsz! stderr újramegnyitása sikertelen!"
+
+#: src/destroy.c:405
+msgid "Alas, your efforts of mercy are in vain."
+msgstr "A jótakarásod önmagában még nem elég."
+
+#: malias.c:269
+msgid "Alias Description"
+msgstr "Alias Leírás"
+
+#: src/attrib.c:939
+msgid "Alias removed."
+msgstr "Becenév törölve."
+
+#: src/attrib.c:937
+msgid "Alias set."
+msgstr "Alias beállítva."
+
+#: access.c:410
+msgid "All but God"
+msgstr "Mindenki kivéve Istent"
+
+#: access.c:406
+msgid "All but admin"
+msgstr "Mindenki kivéve az adminokat"
+
+#: access.c:408
+msgid "All but wizards"
+msgstr "Mindenki kivéve az isteneket"
+
+#: extchat.c:1597
+msgid "All channels have been gagged."
+msgstr "Minden csatorna csendesítve."
+
+#: extchat.c:1589
+msgid "All channels have been muted."
+msgstr "Minden csatorna elnémítva."
+
+#: extchat.c:1598
+msgid "All channels have been ungagged."
+msgstr "Minden csatorna némítása megszûnt."
+
+#: extchat.c:1590
+msgid "All channels have been unmuted."
+msgstr "Minden csatorna csendesítése megszûnt."
+
+#: src/cque.c:1045
+#, c-format
+msgid "All objects for %s are being restarted."
+msgstr "%s minden objektuma újraindul."
+
+#: src/cque.c:924
+#, c-format
+msgid "All objects for %s have been halted."
+msgstr "%s minden objektuma leállítva."
+
+#: src/cque.c:1048
+#, c-format
+msgid "All of your objects are being restarted by %s."
+msgstr "%s minden objektumodat újraindította."
+
+#: src/cque.c:1059
+msgid "All of your objects are being restarted."
+msgstr "Minden objektumod újraindult."
+
+#: src/cque.c:927
+#, c-format
+msgid "All of your objects have been halted by %s."
+msgstr "%s leállította minden objektumod."
+
+#: src/cque.c:922
+msgid "All of your objects have been halted."
+msgstr "Minden objektumod leállítva."
+
+#: src/wiz.c:273
+#, c-format
+msgid "All quotas changed to %d."
+msgstr "Minden kvóta %d értékre állítva."
+
+#: access.c:412
+msgid "All"
+msgstr "Mindenki"
+
+#: function.c:910
+#, c-format
+msgid "Arguments : %d %s"
+msgstr "Argumentum: %d %s"
+
+#: function.c:914
+#, c-format
+msgid "Arguments : %d to %d %s"
+msgstr "Argumentum: %d-%d %s"
+
+#: function.c:912
+#, c-format
+msgid "Arguments : At least %d %s"
+msgstr "Argumentum: Legalább %d %s"
+
+#: src/game.c:851
+#, c-format
+msgid "Attempt to execute command by halted object #%d"
+msgstr "Kisérlet parancs végrehajtására a leállított #%d objektum részérõl."
+
+#: src/set.c:633
+#, c-format
+msgid "Attribute %s (%d copies)"
+msgstr "%s attribútum (%d másolat)"
+
+#: src/attrib.c:1031
+msgid "Attribute locked."
+msgstr "Attribútum zárva."
+
+#: src/attrib.c:1111
+msgid "Attribute owner changed."
+msgstr "Attribútum tulajdonosa megváltoztatva."
+
+#: src/attrib.c:1035
+msgid "Attribute unlocked."
+msgstr "Attribútum kinyitva."
+
+#: src/flags.c:1147
+msgid "Audible exits in this room have been activated."
+msgstr "A szoba áthalló kijáratai aktiválva."
+
+#: src/flags.c:1086
+msgid "Audible exits in this room have been deactivated."
+msgstr "A szobában levõ áthallható kijáratok hatástalanítva."
+
+#: src/move.c:326 src/move.c:520 src/wiz.c:397 src/wiz.c:402 src/wiz.c:406
+msgid "Bad destination."
+msgstr "Hibás célpont."
+
+#: src/player.c:420
+msgid "Bad new password."
+msgstr "Hibás új jelszó."
+
+#: src/extmail.c:1166
+#, c-format
+msgid "Bad object #%d has mail."
+msgstr "A #%d hibás objektumnak levele van."
+
+#: src/wiz.c:1096
+msgid "Bad object type."
+msgstr "Hibás objektum tipus."
+
+#: src/wiz.c:732
+msgid "Bad password."
+msgstr "Hibás jelszó."
+
+#: src/set.c:147
+#, c-format
+msgid "Broadcast: Suspect %s changed name to %s."
+msgstr "Bejelentés: Gyanús %s új neve: %s."
+
+#: src/rob.c:99
+#, c-format
+msgid "Broadcast: Suspect %s tried to kill %s(#%d)."
+msgstr "Bejelentés: Gyanús %s megpróbálkozott %s(#%d) meggyilkolásával."
+
+#: src/version.c:44 src/version.c:46
+#, c-format
+msgid "Build date: %s"
+msgstr "Fordítás ideje: %s"
+
+#: src/extchat.c:1443
+#, c-format
+msgid "CHAT: %s has removed all users from <%s>."
+msgstr "CSATI: %s minden játékost eltávolított a <%s> csatornáról."
+
+#: src/extchat.c:821
+#, c-format
+msgid "CHAT: %s joins you to channel <%s>."
+msgstr "CSATI: %s belépett a <%s> csatornára."
+
+#: src/extchat.c:856
+#, c-format
+msgid "CHAT: %s removes you from channel <%s>."
+msgstr "CSATI: %s eltávolít a <%s> csatornáról."
+
+#: extchat.c:3027
+#, c-format
+msgid "CHAT: Buffering enabled on channel <%s>."
+msgstr "CSATI: Bufferelés engedélyezett a <%s> csatornán."
+
+#: extchat.c:1150
+#, c-format
+msgid "CHAT: Channel <%s> created."
+msgstr "CSATI: A <%s> csatorna elkészült."
+
+#: extchat.c:1998
+#, c-format
+msgid "CHAT: Channel <%s> description cleared."
+msgstr "CSATI: A <%s> csatorna leírása törölve."
+
+#: extchat.c:2001
+#, c-format
+msgid "CHAT: Channel <%s> description set."
+msgstr "CSATI: A <%s> csatorna leírása beállítva."
+
+#: src/extchat.c:1496
+#, c-format
+msgid "CHAT: Channel <%s> now owned by %s."
+msgstr "CSATI: A <%s> csatorna tulajdonosa mostantól %s."
+
+#: extchat.c:1548
+#, c-format
+msgid "CHAT: Channel <%s> resists."
+msgstr "CSATI: A <%s> csatorna ellenáll."
+
+#: extchat.c:1742
+#, c-format
+msgid "CHAT: Channel <%s> wiped."
+msgstr "CSATI: A <%s> csatorna törölve."
+
+#: extchat.c:3014
+#, c-format
+msgid "CHAT: Channel buffering already disabled for channel <%s>."
+msgstr "CSATI: A bufferelés már le van tiltva a <%s> csatornán."
+
+#: extchat.c:3009
+#, c-format
+msgid "CHAT: Channel buffering disabled for channel <%s>."
+msgstr "CSATI: A bufferelés letiltva a <%s> csatornán."
+
+#: extchat.c:2969
+msgid "CHAT: End recall"
+msgstr "CSATI: Visszahívás vége"
+
+#: extchat.c:1595
+#, c-format
+msgid "CHAT: Hidelock on <%s> reset."
+msgstr "CSATI: A <%s> retés-zárja törölve."
+
+#: extchat.c:1596
+#, c-format
+msgid "CHAT: Hidelock on <%s> set."
+msgstr "CSATI: A <%s> rejtés-zárja beállítva."
+
+#: extchat.c:955 extchat.c:1008
+msgid "CHAT: I don't know which channel you mean."
+msgstr "CSATI: Nem tudom, melyik csatornára gondolsz."
+
+#: src/extchat.c:760 src/extchat.c:1015 src/extchat.c:1635
+msgid "CHAT: I don't recognize that channel."
+msgstr "CSATI: Nem ismerem ezt a csatornát."
+
+#: src/extchat.c:1554
+msgid "CHAT: I don't understand that key."
+msgstr "CSATI: Nem értem ezt a kulcsot."
+
+#: src/extchat.c:1488
+msgid "CHAT: Invalid owner."
+msgstr "CSATI: Érvénytelen tulajdonos."
+
+#: extchat.c:1568
+#, c-format
+msgid "CHAT: Joinlock on <%s> reset."
+msgstr "CSATI: A <%s> csatorna beszéd-zárja törölve."
+
+#: extchat.c:1569
+#, c-format
+msgid "CHAT: Joinlock on <%s> set."
+msgstr "CSATI: A <%s> csatlakozás-zárja beállítva."
+
+#: extchat.c:1604
+#, c-format
+msgid "CHAT: Modlock on <%s> reset."
+msgstr "CSATI: A <%s> módosítás-zárja törölve."
+
+#: extchat.c:1605
+#, c-format
+msgid "CHAT: Modlock on <%s> set."
+msgstr "CSATI: A <%s> módosítás-zárja beállítva."
+
+#: extchat.c:1985
+msgid "CHAT: New description too long."
+msgstr "CSATI: Az új leírás túl hosszú."
+
+#: src/extchat.c:1703
+msgid "CHAT: No channel matches that string."
+msgstr "CSATI: Nincs a sztringhez passzoló csatorna."
+
+#: extchat.c:1132 extchat.c:1139
+msgid "CHAT: No more memory for channels!"
+msgstr "CSATI: Nincs elég memória a csatornákhoz!"
+
+#: extchat.c:2943
+msgid "CHAT: Nothing to recall."
+msgstr "CSATI: Nincs mit visszahívni."
+
+#: src/extchat.c:1481
+msgid "CHAT: Only a Wizard can do that."
+msgstr "CSATI: Ezt csak egy varázsló teheti."
+
+#: extchat.c:2958
+#, c-format
+msgid "CHAT: Recall from channel <%s>"
+msgstr "CSATI: Visszahívás a <%s> csatornán"
+
+#: extchat.c:3021
+#, c-format
+msgid "CHAT: Resizing buffer of channel <%s>"
+msgstr "CSATI: A <%s> csatorna bufferének újraméretezése"
+
+#: extchat.c:1586
+#, c-format
+msgid "CHAT: Seelock on <%s> reset."
+msgstr "CSATI: A <%s> látás-zárja törölve."
+
+#: extchat.c:1587
+#, c-format
+msgid "CHAT: Seelock on <%s> set."
+msgstr "CSATI: A <%s> látás-zárja beállítva."
+
+#: extchat.c:1577
+#, c-format
+msgid "CHAT: Speaklock on <%s> reset."
+msgstr "CSATI: A <%s> csatorna beszéd-zárja törölve."
+
+#: extchat.c:1578
+#, c-format
+msgid "CHAT: Speaklock on <%s> set."
+msgstr "CSATI: A <%s> csatorna beszéd-zárja beállítva."
+
+#: extchat.c:2939
+msgid "CHAT: That channel doesn't have a recall buffer."
+msgstr "CSATI: Ez a csatona nem rendelkezik visszahívási bufferrel."
+
+#: src/extchat.c:1106
+msgid "CHAT: The channel needs a more unique name."
+msgstr "CSATI: A csatorna egyedibb nevet igényel."
+
+#: src/extchat.c:1461
+msgid "CHAT: Wipe that silly grin off your face instead."
+msgstr "CSATI: Inkább a hülye vigyort töröld az arcodról."
+
+#: src/extchat.c:757
+#, c-format
+msgid "CHAT: You can't do that with channel <%s>."
+msgstr "CSATI: Ezt nem teheted a <%s> csatornával."
+
+#: src/extchat.c:824
+#, c-format
+msgid "CHAT: You join %s to channel <%s>."
+msgstr "CSATI: %s csatlakozik a <%s> csatornához."
+
+#: src/extchat.c:827
+#, c-format
+msgid "CHAT: You join channel <%s>."
+msgstr "CSATI: Belépsz a <%s> csatornára."
+
+#: src/extchat.c:863
+#, c-format
+msgid "CHAT: You leave channel <%s>."
+msgstr "CSATI: Elhagyod a <%s> csatornát."
+
+#: src/extchat.c:859
+#, c-format
+msgid "CHAT: You remove %s from channel <%s>."
+msgstr "CSATI: %s eltávolítva a <%s> csatornáról."
+
+#: parse.c:301
+msgid "CPU usage exceeded."
+msgstr "CPU felhasználás túllépve."
+
+#: src/create.c:322
+msgid "Can't set home to home."
+msgstr "Az objektum már oda van kötve."
+
+#: look.c:748
+msgid "Carrying:"
+msgstr "Nála van:"
+
+#: src/extchat.c:1047
+#, c-format
+msgid "Cemit to channel %s: %s"
+msgstr "Cemit a <%s> csatornára: \"%s\""
+
+#: src/extchat.c:1387
+msgid "Chan Type"
+msgstr "Csati típus"
+
+#: src/extchat.c:1161
+msgid "Channel removed."
+msgstr "Csatorna eltávolítva."
+
+#: src/extchat.c:1192
+msgid "Channel renamed."
+msgstr "Csatorna átnevezve."
+
+#: look.c:616
+msgid "Channels: *NONE*"
+msgstr "Csatornák: *NINCS*"
+
+#: look.c:612
+msgid "Channels:"
+msgstr "Csatornák:"
+
+#: extmail.c:2473
+msgid "Cleared "
+msgstr "Törölve "
+
+#: attrib.c:942
+msgid "Cleared"
+msgstr "Törölve"
+
+#: create.c:680
+#, c-format
+msgid "Cloned: Exit #%d."
+msgstr "Klónozva: #%d kijárat."
+
+#: create.c:565
+#, c-format
+msgid "Cloned: Object %s."
+msgstr "Klónozva: %s tárgy."
+
+#: create.c:628
+#, c-format
+msgid "Cloned: Room #%d."
+msgstr "Klónozva: #%d szoba."
+
+#: bsd.c:3855 bsd.c:3859
+msgid "Cmds"
+msgstr "Par"
+
+#: access.c:400
+#, c-format
+msgid "Comment: %s"
+msgstr "Megjegyzés: %s"
+
+#: src/version.c:48
+#, c-format
+msgid "Compilation flags: %s"
+msgstr "Fordítási jelzõk: %s"
+
+#: version.c:47
+#, c-format
+msgid "Compiler: %s"
+msgstr "Fordító: %s"
+
+#: bsd.c:4386 bsd.c:4395
+msgid "Connecting..."
+msgstr "Kapcsolódás..."
+
+#: access.c:402
+msgid "Connections allowed by: "
+msgstr "Kapcsolódások engedélyezése: "
+
+#: look.c:494 look.c:750
+msgid "Contents:"
+msgstr "Tartalma:"
+
+#: src/wiz.c:1635 src/wiz.c:1929
+msgid "Couldn't find that player."
+msgstr "Nem találom ezt a játékost."
+
+#: src/create.c:431
+msgid "Create what?"
+msgstr "Mit készítsek?"
+
+#: look.c:730
+#, c-format
+msgid "Created: %s"
+msgstr "Elkészítve: %s"
+
+#: access.c:420
+msgid "Creation is NOT allowed"
+msgstr "A teremtés NEM engedélyezett"
+
+#: access.c:422
+msgid "Creation is allowed"
+msgstr "A teremtés engedélyezett"
+
+#: extchat.c:1626 extchat.c:1636
+msgid "Creator"
+msgstr "Készítõ"
+
+#: src/game.c:188
+#, c-format
+msgid "Debug dumping, checkpoint interval %d."
+msgstr "Debug mentés, ellenõrzõpont %d idõközönként."
+
+#: access.c:429
+msgid "Denied connections are not logged"
+msgstr "Az elutasított kapcsolatok nem logolódnak"
+
+#: extchat.c:2186
+#, c-format
+msgid "Description: %s"
+msgstr "Leírás: %s"
+
+#: look.c:828
+#, c-format
+msgid "Destination: %s"
+msgstr "Célpont: %s"
+
+#: look.c:824
+msgid "Destination: *HOME*"
+msgstr "Célpont: *HAZA*"
+
+#: look.c:821
+msgid "Destination: *UNLINKED*"
+msgstr "Célpont: *KÖTETLEN*"
+
+#: destroy.c:320
+msgid "Destroyed."
+msgstr "Megsemmisítve."
+
+#: src/destroy.c:216
+msgid "Destroying God would be blasphemous."
+msgstr "Isten örönnönvaló."
+
+#: src/destroy.c:212
+msgid "Destroying that again is hardly necessary."
+msgstr "Újra megsemmisíteni ezt közel lehetetlen."
+
+#: src/create.c:374
+msgid "Dig what?"
+msgstr "Mit ássak?"
+
+#: wiz.c:1011
+msgid "Disabled."
+msgstr "Hatástalanítva."
+
+#: function.c:735
+msgid "Do what with the function?"
+msgstr "Mit akarsz csinálni a funkcióval?"
+
+#: src/bsd.c:4316
+#, c-format
+msgid "Doing set. %d characters lost."
+msgstr "Tevékenység beállítva. %d betû törölve."
+
+#: src/bsd.c:4319
+msgid "Doing set."
+msgstr "Tevékenység beállítva."
+
+#: src/extchat.c:889
+msgid "Don't you have anything to say?"
+msgstr "Nincs valami mondanivalód?"
+
+#: src/bsd.c:4280
+#, c-format
+msgid "Down MOTD: %s"
+msgstr "Leállási motd: %s"
+
+#: cque.c:710
+msgid "Drained."
+msgstr "Lecsapolva."
+
+#: src/look.c:789
+#, c-format
+msgid "Dropped objects go to: %s"
+msgstr "Az eldobott objektumok célhelye: %s"
+
+#: move.c:596 move.c:600 move.c:603 move.c:609
+msgid "Dropped."
+msgstr "Eldobva."
+
+#: src/create.c:210
+msgid "Dropto removed."
+msgstr "Dropto eltávolítva."
+
+#: src/create.c:341
+msgid "Dropto set."
+msgstr "Dropto beállítva."
+
+#: bsd.c:272
+msgid "Either that player does not exist, or has a different password."
+msgstr "A játékos nem létezik, vagy más a jelszava."
+
+#: bsd.c:273
+msgid "Either there is already a player with that name, or that name is illegal."
+msgstr "Vagy létezik már valaki ilyen néven, vagy a név a tiltott listán szerepel."
+
+#: access.c:425
+msgid "Email registration is allowed"
+msgstr "Email regisztráció engedélyezve"
+
+#: wiz.c:1013
+msgid "Enabled."
+msgstr "Engedélyezve."
+
+#: src/game.c:1465
+msgid "Error -- cannot execute uptime."
+msgstr "Hiba -- az uptime nem végrehajtható."
+
+#: src/destroy.c:271
+msgid "Even you can't do that!"
+msgstr "Ezt még te sem teheted meg!"
+
+#: src/flags.c:1080
+#, c-format
+msgid "Exit %s is no longer broadcasting."
+msgstr "A %s kijárat mostantól nem közvetít."
+
+#: src/flags.c:1141
+#, c-format
+msgid "Exit %s is now broadcasting."
+msgstr "A %s kijárat közvetít."
+
+#: src/move.c:386 src/move.c:390
+msgid "Exit destination is invalid."
+msgstr "Kijárat célpont érvénytelen."
+
+#: src/wiz.c:412
+msgid "Exits can only be teleported to other rooms."
+msgstr "A kijáratok csak más szobákba teleportálhatók."
+
+#: look.c:772
+msgid "Exits:"
+msgstr "Kijáratok:"
+
+#: wiz.c:109
+#, c-format
+msgid "Failure creating '%s' (bad name)"
+msgstr "Sikertelen készítés: '%s' (Hibás név)"
+
+#: wiz.c:113
+#, c-format
+msgid "Failure creating '%s' (bad password)"
+msgstr "Készítés sikertelen: '%s' (hibás jelszó)"
+
+#: src/rob.c:254
+msgid "Feeling poor today?"
+msgstr "Szegénynek érzed magad a mai napon?"
+
+#: src/extmail.c:1182
+#, c-format
+msgid "Fixing mail for #%d."
+msgstr "#%d postájának kijavítása."
+
+#: function.c:897
+#, c-format
+msgid "Flags     : %s"
+msgstr "Jelzõk    : %s"
+
+#: wiz.c:936
+#, c-format
+msgid "Flags value: %s"
+msgstr "Jelzõ érték: %s"
+
+#: flags.c:1284
+#, c-format
+msgid "Flags: %s"
+msgstr "Jelzõ: %s"
+
+#: extmail.c:462 extmail.c:465
+msgid "Folder:"
+msgstr "Mappa:"
+
+#: src/speech.c:1010
+msgid "From afar"
+msgstr "Távolról"
+
+#: bsd.c:4123
+#, c-format
+msgid "From afar, %s%s%s"
+msgstr "Távolról, %s%s%s"
+
+#: extmail.c:471
+#, c-format
+msgid ""
+"From: %-55s %s\n"
+"Date: %-25s   %s %2d   Message: %d\n"
+"Status: %s"
+msgstr ""
+"Küldte: %-55s %s\n"
+"Dátum: %-25s   %s %2d  Üzenet: %d\n"
+"Állapot: %s"
+
+#: src/bsd.c:4281
+#, c-format
+msgid "Full MOTD: %s"
+msgstr "Tele MOTD: %s"
+
+#: src/function.c:633
+msgid "Function Name                   Dbref #    Attrib"
+msgstr "Funkció neve    Absz #    Attrib"
+
+#: src/function.c:725
+msgid "Function added."
+msgstr "Funkció hozzáadva."
+
+#: src/function.c:802
+msgid "Function deleted."
+msgstr "Funkció törölve."
+
+#: src/function.c:741
+msgid "Function updated."
+msgstr "Funkció frissítve."
+
+#: extmail.c:2479
+msgid "Fwd "
+msgstr "Fwd "
+
+#: src/destroy.c:1325
+msgid "GAME: Database consistency check complete."
+msgstr "JÁTÉK: Adatbázis érvényességi teszt befejezve."
+
+#: game.c:311
+msgid "GAME: ERROR! Database save failed!"
+msgstr "JÁTÉK: HIBA! Adatbázis mentés nem sikerült!"
+
+#: bsd.c:4244
+msgid "GAME: ERROR! Forking database save failed!"
+msgstr "JÁTÉK: HIBA! A párhuzamos adatbázis mentés sikertelen!"
+
+#: src/bsd.c:5057
+msgid "GAME: Error writing reboot database!"
+msgstr "JÁTÉK: Hiba újraindítási adatbázis írása közben!"
+
+#: src/services.c:257
+msgid "GAME: Game shutdown by system operator"
+msgstr "JÁTÉK: Játék leállítás a rendszeroperátor által"
+
+#: src/destroy.c:1322
+msgid "GAME: Performing database consistency check."
+msgstr "JÁTÉK: Adatbázis érvényesség ellenõrzés."
+
+#: src/bsd.c:5185
+msgid "GAME: Reboot finished."
+msgstr "JÁTÉK: Újraindítás befejezve."
+
+#: src/wiz.c:2295
+#, c-format
+msgid "GAME: Reboot w/o disconnect by %s, please wait."
+msgstr "JÁTÉK: Kilépés nélküli újraindítás %s által, kérlek várj."
+
+#: src/wiz.c:2289
+msgid "GAME: Reboot w/o disconnect from game account, please wait."
+msgstr "JÁTÉK: Kilépés nélküli újraindítás. Kérlek, várj."
+
+#: src/game.c:273
+#, c-format
+msgid "GAME: Shutdown by %s"
+msgstr "JÁTÉK: Leállítás %s által"
+
+#: src/bsd.c:1748
+msgid "GAME: Shutdown by external signal"
+msgstr "JÁTÉK: Külsõ szignál miatti leállás"
+
+#: bsd.c:4064
+#, c-format
+msgid "GAME: Suspect %s created."
+msgstr "JÁTÉK: Gyanús %s elkészítve."
+
+#: bsd.c:4081 bsd.c:4259
+#, c-format
+msgid "GAME: Suspect %s"
+msgstr "JÀTÉK: Gyanús %s"
+
+#: bsd.c:4032 bsd.c:4055 bsd.c:4058 bsd.c:4061 bsd.c:4234 bsd.c:4237\nbsd.c:4240
+msgid "GAME:"
+msgstr "JÁTÉK:"
+
+#: src/wiz.c:363
+msgid "Garbage belongs in the garbage dump."
+msgstr "A szemét a szeméthalomba tartozik."
+
+#: src/look.c:667 src/look.c:1306
+msgid "Garbage is garbage."
+msgstr "A szemét az szemét."
+
+#: src/set.c:82
+msgid "Give it what new name?"
+msgstr "Milyen új nevet adjak neki?"
+
+#: src/rob.c:177
+msgid "Give to whom?"
+msgstr "Kinek adod?"
+
+#: src/extmail.c:1147
+msgid "Go get some bugspray."
+msgstr "Menj, hozz egy kis rovarirtót."
+
+#: src/wiz.c:1180
+msgid "God is already all-powerful."
+msgstr "Isten már most is mindenható."
+
+#: bsd.c:276
+msgid "Going down - Bye"
+msgstr "Szerver leállás - Bye"
+
+#: access.c:415
+msgid "Guest connections are NOT allowed"
+msgstr "A Vendég kapcsolatok jelenleg nincsenek engedélyezve"
+
+#: access.c:417
+msgid "Guest connections are allowed"
+msgstr "A Vendég kapcsoaltok engedélyezve vannak"
+
+#: player.c:154
+msgid "Guest connections not allowed."
+msgstr "Vendég kapcsolatok nem engedélyezettek."
+
+#: src/extchat.c:793
+msgid "Guests are not allowed to join channels."
+msgstr "Vendégek nem léphetnek be csatornákra."
+
+#: extchat.c:1000
+msgid "Guests are not allowed to leave channels."
+msgstr "Vendégek nem hagyhatják el a csatornákat."
+
+#: src/extchat.c:846
+msgid "Guests may not leave channels."
+msgstr "A vendégek nem léphetnek le csatornákról."
+
+#: src/extchat.c:1078
+msgid "Guests may not modify channels."
+msgstr "A vendégek a csatornákat nem módosíthatják."
+
+#: cque.c:830 cque.c:934 cque.c:937
+msgid "Halted"
+msgstr "Leállítva"
+
+#: help.c:122 help.c:126
+msgid "Help files reindexed."
+msgstr "A súgó fileok újraindexelése megtörtént."
+
+#: src/bsd.c:3065
+msgid "Help topics don't start with '&'."
+msgstr "A súgó cikkek nem keydõdnek '&' jellel."
+
+#: src/create.c:326
+msgid "Home set."
+msgstr "Haza beállítva."
+
+#: look.c:787
+#, c-format
+msgid "Home: %s"
+msgstr "Haza: %s"
+
+#: command.c:1352
+#, c-format
+msgid "Hook removed from %s."
+msgstr "Kitérõ eltávolítva a %s parancsról."
+
+#: command.c:1375
+#, c-format
+msgid "Hook set for %s"
+msgstr "Kitérõ bejegyezve a %s parancsra."
+
+#: command.c:1480
+msgid "Hooks not allowed with that command."
+msgstr "Az eltérítés erre a parancsra nem engedélyezett."
+
+#: src/command.c:1109
+msgid "How do you want to restrict the command?"
+msgstr "Hogy akarod korlátozni a parancsot?"
+
+#: src/destroy.c:276
+msgid "How gruesome. You may not destroy players who are connected."
+msgstr "Mily merész. Játékban levõ játékosokat nem törölhetsz."
+
+#: src/wiz.c:1033
+msgid "How many commands do you want to execute?"
+msgstr "Hány parancsot szeretnél végrehajtani?"
+
+#: extchat.c:2914 extchat.c:2919
+msgid "How many lines did you want to recall?"
+msgstr "Hány sort akarsz visszahívni?"
+
+#: src/game.c:999
+msgid "Huh?  (Type \"help\" for help.)"
+msgstr "Huh? (Segítség kérése a \"sugo\" paranccsal)"
+
+#: src/attrib.c:1076
+msgid "I can't find that player"
+msgstr "Nem találok ilyen játékost."
+
+#: src/speech.c:209 src/speech.c:265
+msgid "I can't find that room."
+msgstr "Nem találom azt a szobát."
+
+#: src/speech.c:1365
+msgid "I can't find that."
+msgstr "Ezt nem találom."
+
+#: speech.c:686
+#, c-format
+msgid "I can't find who you're trying to page with: %s"
+msgstr "Nem találom az üzenet célpontját: %s"
+
+#: src/fundb.c:1795 src/match.c:271
+msgid "I can't see that here."
+msgstr "Itt nem látok ilyet."
+
+#: src/wiz.c:941
+msgid "I can't seem to find that."
+msgstr "Nem találok ilyet."
+
+#: src/bsd.c:4810
+msgid "I can't tell which channel you mean."
+msgstr "Nem értem melyik csatornára gondolsz."
+
+#: move.c:785
+msgid "I can't tell which one to follow."
+msgstr "Nem tudom, melyiket kövessem."
+
+#: move.c:837
+msgid "I can't tell which one to stop following."
+msgstr "Nem tudom, melyik követését hagyjam abba."
+
+#: src/look.c:576
+msgid "I can't tell which one you mean."
+msgstr "Nem tudom melyikre gondolsz."
+
+#: src/cque.c:775 src/set.c:199
+msgid "I couldn't find that player."
+msgstr "Nem találom ezt a játékost."
+
+#: src/boolexp.c:265
+#, c-format
+msgid "I don't know which %s you mean!"
+msgstr "Nem tudom melyik az a %s, amelyikre gondolsz!"
+
+#: src/extchat.c:1011
+msgid "I don't know which channel you mean."
+msgstr "Nem értem melyik csatornára gondolsz."
+
+#: src/wiz.c:389
+msgid "I don't know which destination you mean!"
+msgstr "Nem tudom melyik célpontra gondolsz!"
+
+#: src/create.c:197 src/match.c:274 src/wiz.c:944
+msgid "I don't know which one you mean!"
+msgstr "Nem tudom melyikre gondolsz!"
+
+#: src/look.c:554 src/warnings.c:259 src/warnings.c:435
+msgid "I don't know which one you mean."
+msgstr "Nem tudom, melyikre gondolsz."
+
+#: src/lock.c:365
+msgid "I don't know which one you want to lock!"
+msgstr "Nem tudom melyiket szeretnéd zárni!"
+
+#: src/fundb.c:1797
+msgid "I don't know which thing you mean."
+msgstr "Nem tudom melyik tárgyra gondolsz."
+
+#: src/move.c:362
+msgid "I don't know which way you mean!"
+msgstr "Nem értem melyikre gondolsz!"
+
+#: src/move.c:571 src/rob.c:194
+msgid "I don't know which you mean!"
+msgstr "Nem tudom, melyikre gondolsz!"
+
+#: src/cque.c:778 src/rob.c:41 src/rob.c:180 src/speech.c:602
+msgid "I don't know who you mean!"
+msgstr "Nem tudom kire gondolsz!"
+
+#: src/extchat.c:1008
+msgid "I don't recognize that channel."
+msgstr "Nem ismerem ezt a csatornát."
+
+#: move.c:883
+msgid "I don't recognize who you want to desert."
+msgstr "Nem azonosítható, kit akarsz elhagyni."
+
+#: move.c:853
+msgid "I don't recognize who you want to dismiss."
+msgstr "Nem tudom azonosítani, kit kívánsz elbocsájtani."
+
+#: src/boolexp.c:261
+#, c-format
+msgid "I don't see %s here."
+msgstr "Itt nincs %s."
+
+#: src/fundb.c:1327 src/look.c:551 src/look.c:566 src/move.c:482\nsrc/move.c:505 src/rob.c:91 src/speech.c:599
+msgid "I don't see that here."
+msgstr "Itt nincs ilyen."
+
+#: src/warnings.c:256 src/warnings.c:432
+msgid "I don't see that object."
+msgstr "Nem látom ezt az objektumot."
+
+#: src/lock.c:362
+msgid "I don't see what you want to lock!"
+msgstr "Nem látom mit akarsz zárni!"
+
+#: attrib.c:935
+#, c-format
+msgid "I don't think #%d wants to hear from you."
+msgstr "Nem hiszem, hogy #%d szívesen hall feloled."
+
+#: src/fundb.c:1412
+#, c-format
+msgid "I don't understand switch '%c'."
+msgstr "Nem értem a '%c' kapcsolót."
+
+#: src/lock.c:383
+msgid "I don't understand that key."
+msgstr "Nem értem ezt a kulcsot."
+
+#: flags.c:1405
+msgid "I don't understand the list of types."
+msgstr "Nem ismerem ezt a típust."
+
+#: src/atr_tab.c:189
+msgid "I don't understand those permissions."
+msgstr "Nem értem ezeket a szabályokat."
+
+#: src/game.c:1606 src/game.c:1616
+msgid "I don't understand what you want to @list."
+msgstr "Nem értem mit szeretnél listázni."
+
+#: src/extchat.c:870
+msgid "I don't understand what you want to do."
+msgstr "Nem értem mit szeretnél."
+
+#: src/set.c:798
+msgid "I need to know what attribute to trigger."
+msgstr "Nem tudom, melyik attribútumot szeretnéd aktiválni."
+
+#: src/set.c:667 src/set.c:673
+msgid "I need to know what you want to edit."
+msgstr "Tudnom kell mit szeretnél szerkeszteni."
+
+#: src/conf.c:779
+msgid "I only know the following types of options:"
+msgstr "Csak a következõ opció-típusokat ismerem:"
+
+#: src/fundb.c:1304
+msgid "I'm not sure who you mean."
+msgstr "Nem vagyok benne biztos, mit szeretnél."
+
+#: speech.c:692
+#, c-format
+msgid "I'm not sure who you want to page with: %s"
+msgstr "Nem tudom, kinek üzenjem: %s"
+
+#: src/speech.c:611 src/speech.c:1371
+#, c-format
+msgid "I'm sorry, but %s wishes to be left alone now."
+msgstr "Bocs, de %s most szeretne egyedül maradni."
+
+#: bsd.c:3848 bsd.c:3851 bsd.c:3855 bsd.c:3859
+msgid "Idle"
+msgstr "Henye"
+
+#: extchat.c:2996
+msgid "Invalid buffer size."
+msgstr "Érvénytelen buffer-méret."
+
+#: extchat.c:1598
+msgid "Invalid character in title."
+msgstr "Érvénytelen betû a címben."
+
+#: src/game.c:860
+#, c-format
+msgid "Invalid location on command execution: %s(#%d)"
+msgstr "Érvénytelen hely parancs-végrehajtásnál: %s(#%d)"
+
+#: src/extmail.c:1590
+msgid "Invalid message specification"
+msgstr "Hibás üzenetmegadás."
+
+#: extchat.c:1389
+msgid "Invalid name for a channel."
+msgstr "Hibás csatorna név."
+
+#: extchat.c:1359
+#, c-format
+msgid "Invalid or same permissions on channel <%s>. No changes made."
+msgstr "Érvénytelen, vagy ugyanazon engedélyek a <%s> csatornán. Nem történt változás."
+
+#: src/look.c:941
+msgid "Invalid parameter."
+msgstr "Helytelen paraméter."
+
+#: src/wiz.c:1458 src/wiz.c:1465 src/wiz.c:1681 src/wiz.c:1689
+msgid "Invalid range argument"
+msgstr "Helytelen intervallum argumentum"
+
+#: src/attrib.c:1038
+msgid "Invalid status on atrlock.. Notify god."
+msgstr "Hibás státusz az atrlock-on... Értesits egy istent."
+
+#: src/extchat.c:782 src/extchat.c:797 src/extchat.c:842
+msgid "Invalid target."
+msgstr "Érvénytelen célpont."
+
+#: src/speech.c:1475
+msgid "Invalid zone."
+msgstr "Ismeretlen zóna."
+
+#: src/create.c:265 src/create.c:279
+#, c-format
+msgid "It costs %d %s to link this exit."
+msgstr "%d %sba kerül, hogy kösd ezt a kijáratot."
+
+#: src/game.c:269
+msgid "It takes a God to make me panic."
+msgstr "Istent kíván, hogy bepánikoljak."
+
+#: src/destroy.c:1225
+msgid "It was destroyed."
+msgstr "Megsemmisült."
+
+#: src/destroy.c:1210 src/destroy.c:1218
+#, c-format
+msgid "It was moved to %s."
+msgstr "A %s helyre került."
+
+#: src/move.c:516
+msgid "It's all around you!"
+msgstr "Körülötted van!"
+
+#: src/player.c:460
+#, c-format
+msgid "Last FAILED connect was from %s."
+msgstr "Utolsó HIBÁS kapcsolat a következõ helyrõl: %s."
+
+#: src/look.c:743
+#, c-format
+msgid "Last Modification: %s"
+msgstr "Utolsó módosítás: %s"
+
+#: src/player.c:452
+#, c-format
+msgid "Last connect was from %s on %s."
+msgstr "Utolsó kapcsolat: %s, %s."
+
+#: src/extmail.c:1384
+#, c-format
+msgid "Last is dated %s"
+msgstr "Utolsó üzenet idõpontja: %s"
+
+#: game.c:2091
+msgid "Last reboot"
+msgstr "Utolsó újraindítás"
+
+#: src/version.c:37
+#, c-format
+msgid "Last restarted: %s"
+msgstr "Utolsó újraindítás: %s"
+
+#: create.c:156 create.c:296
+#, c-format
+msgid "Linked exit #%d to #%d"
+msgstr "A #%d kijárat a #%d irányba van kötve."
+
+#: src/look.c:996
+msgid "Listening EXITS:"
+msgstr "Áthalló KIJÁRATOK:"
+
+#: src/look.c:946
+msgid "Listening in ROOM:"
+msgstr "A SZOBÁBAN hall:"
+
+#: src/look.c:1010
+msgid "Listening in your INVENTORY:"
+msgstr "A LELTÁRban hall:"
+
+#: bsd.c:3855 bsd.c:3859
+msgid "Loc #"
+msgstr "Hely #"
+
+#: look.c:791
+#, c-format
+msgid "Location: %s"
+msgstr "Helyszín: %s"
+
+#: src/log.c:358
+msgid "Log wiped."
+msgstr "Log törölve."
+
+#: bsd.c:4125
+#, c-format
+msgid "Long distance to %s: %s%s%s"
+msgstr "Távolra %s részére: %s%s%s"
+
+#: src/extmail.c:763
+#, c-format
+msgid "MAIL: %d messages forwarded."
+msgstr "POSTA: %d üzenet továbbküldve."
+
+#: src/extmail.c:2504
+#, c-format
+msgid "MAIL: %d messages in folder %d [%s] (%d unread, %d cleared)."
+msgstr "POSTA: %d üzenet a %d [%s] mappában (%d olvasatlan, %d törölt)."
+
+#: src/malias.c:223 src/malias.c:679
+#, c-format
+msgid "MAIL: %s added to alias %s"
+msgstr "POSTA: %s hozzáadva a %s aliashoz."
+
+#: src/extmail.c:984
+#, c-format
+msgid "MAIL: %s is not accepting mail from you right now."
+msgstr "POSTA: %s épen nem fogad tõled levelet."
+
+#: src/malias.c:782
+#, c-format
+msgid "MAIL: %s removed from alias %s"
+msgstr "POSTA: %s eltávolítva a %s aliasból"
+
+#: src/extmail.c:990
+#, c-format
+msgid "MAIL: %s's mailbox is full. Can't send."
+msgstr "POSTA: %s levelesládája tele van. Nem üzenhetsz neki."
+
+#: malias.c:315
+#, c-format
+msgid "MAIL: Alias %c%s: "
+msgstr "POSTA: Alias %c%s: "
+
+#: src/malias.c:348 src/malias.c:370
+#, c-format
+msgid "MAIL: Alias %s not found."
+msgstr "POSTA: A %s becenév nem ismert."
+
+#: src/malias.c:316
+#, c-format
+msgid "MAIL: Alias '%s' not found."
+msgstr "POSTA: A '%s' alias nem ismert."
+
+#: src/malias.c:438
+msgid "MAIL: Alias Destroyed."
+msgstr "POSTA: Alias megsemmisítve."
+
+#: src/malias.c:239 src/malias.c:696
+msgid "MAIL: Alias list is restricted to maximal 100 entries!"
+msgstr "POSTA: A becenév lista 100 bejegyzésre korlátozott!"
+
+#: malias.c:518
+msgid "MAIL: Alias list set."
+msgstr "POSTA: Alias lista beállítva."
+
+#: src/malias.c:264
+#, c-format
+msgid "MAIL: Alias set '%s' defined."
+msgstr "POSTA: '%s' becenév készlet definiálva."
+
+#: src/malias.c:711 src/malias.c:794
+#, c-format
+msgid "MAIL: Alias set '%s' redefined."
+msgstr "POSTA: A '%s' alias készlet újra lett definiálva."
+
+#: src/malias.c:148
+#, c-format
+msgid "MAIL: All Mail aliases must begin with '%c'."
+msgstr "POSTA: A posta aliasok '%c' betûvel kezdõdnek."
+
+#: src/malias.c:513
+msgid "MAIL: All mail aliases destroyed!"
+msgstr "POSTA: Minden posta-alias törölve!"
+
+#: src/extmail.c:432
+#, c-format
+msgid "MAIL: All messages filed in folder %d [%s]"
+msgstr "POSTA: Minden üzenet rögzítve a %d [%s] mappában"
+
+#: src/malias.c:485
+#, c-format
+msgid "MAIL: Allocated slots %d"
+msgstr "POSTA: %d lefoglalt hely"
+
+#: src/malias.c:403
+#, c-format
+msgid "MAIL: Bad alias. Aliases must start with '%c'."
+msgstr "POSTA: Hibás alias. Az aliasoknak '%c'-vel kell kezdõdniük."
+
+#: src/extmail.c:233
+#, c-format
+msgid "MAIL: Current folder is %d [%s]."
+msgstr "POSTA: Jelenlegi mappa: %d [%s]."
+
+#: src/extmail.c:260
+#, c-format
+msgid "MAIL: Current folder set to %d [%s]."
+msgstr "POSTA: Az aktuális mappa %d [%s]-re lett állítva."
+
+#: src/malias.c:353
+msgid "MAIL: Description changed."
+msgstr "POSTA: Leírás megváltozott."
+
+#: src/extmail.c:283
+#, c-format
+msgid "MAIL: Folder %d now has no name"
+msgstr "POSTA: A %d mappának mostantól nincs neve"
+
+#: src/extmail.c:255
+#, c-format
+msgid "MAIL: Folder %d now named '%s'"
+msgstr "POSTA: A %d. mappa új neve '%s'"
+
+#: src/extmail.c:245
+msgid "MAIL: Folder name too long"
+msgstr "POSTA: A mappa neve túl hosszú"
+
+#: src/extmail.c:792
+msgid "MAIL: I can't figure out what you want to send."
+msgstr "POSTA: Nem értem mit szeretnél küldeni."
+
+#: src/extmail.c:788
+msgid "MAIL: I can't figure out who you want to mail to."
+msgstr "POSTA: Nem találom kinek szeretnél üzenni."
+
+#: src/malias.c:398 src/malias.c:529 src/malias.c:555
+msgid "MAIL: I cannot find that alias!"
+msgstr "POSTA: Nem találom ezt az aliast!"
+
+#: src/malias.c:378
+msgid "MAIL: I cannot find that player."
+msgstr "POSTA: Nem találom ezt a játékost."
+
+#: src/extmail.c:250
+msgid "MAIL: Illegal folder name"
+msgstr "POSTA: A mappa neve nem megfelelõ"
+
+#: src/extmail.c:2345 src/extmail.c:2355 src/extmail.c:2362 src/extmail.c:2372\nsrc/extmail.c:2379 src/extmail.c:2389
+msgid "MAIL: Invalid age"
+msgstr "POSTA: Érvénytelen kor"
+
+#: src/malias.c:158
+msgid "MAIL: Invalid character in mail alias."
+msgstr "POSTA: Helytelen betû a posta aliasban."
+
+#: src/extmail.c:2395 src/extmail.c:2400
+msgid "MAIL: Invalid dbref #"
+msgstr "POSTA: Érvénytelen absz #"
+
+#: src/extmail.c:415
+msgid "MAIL: Invalid folder specification"
+msgstr "POSTA: Érvénytelen mappa megadás"
+
+#: src/extmail.c:1407
+msgid "MAIL: Invalid mail command."
+msgstr "POSTA: Érvénytelen parancs."
+
+#: src/malias.c:107
+msgid "MAIL: Invalid malias command."
+msgstr "POSTA: Érvénytelen malias parancs."
+
+#: src/extmail.c:2337 src/extmail.c:2434
+msgid "MAIL: Invalid message specification"
+msgstr "POSTA: Hibás üzenetmegadás"
+
+#: src/extmail.c:2407 src/extmail.c:2412
+msgid "MAIL: Invalid player"
+msgstr "POSTA: Érvénytelen játékos"
+
+#: src/malias.c:164
+#, c-format
+msgid "MAIL: Mail Alias '%s' already exists."
+msgstr "POSTA: A '%s' alias már létezik."
+
+#: src/malias.c:629 src/malias.c:732
+#, c-format
+msgid "MAIL: Mail Alias '%s' not found."
+msgstr "POSTA: A '%s' postai alias nem ismert."
+
+#: src/malias.c:418
+msgid "MAIL: Mail Alias renamed."
+msgstr "POSTA: Posta alias átnevezve."
+
+#: src/extmail.c:668
+msgid "MAIL: Mailbox purged."
+msgstr "POSTA: Levelesláda kiürítve."
+
+#: src/extmail.c:2349 src/extmail.c:2366 src/extmail.c:2383
+msgid "MAIL: Message ages must be integers"
+msgstr "POSTA: Az üzenet kora egész szám kell legyen"
+
+#: extmail.c:362
+#, c-format
+msgid "MAIL: Msg #%d:%d cleared."
+msgstr "POSTA: A #%d:%d üzenet törölve."
+
+#: extmail.c:361
+#, c-format
+msgid "MAIL: Msg #%d:%d uncleared."
+msgstr "POSTA: A #%d:%d üzenet megmentve."
+
+#: src/extmail.c:438
+#, c-format
+msgid "MAIL: Msg %d:%d filed in folder %d [%s]"
+msgstr "POSTA: A %d:%d üzenet eltárolva a %d [%s] mappában."
+
+#: src/malias.c:220 src/malias.c:671 src/malias.c:774
+#, c-format
+msgid "MAIL: No such player '%s'."
+msgstr "POSTA: Nincs '%s' játékos."
+
+#: src/malias.c:242 src/malias.c:699
+msgid "MAIL: No valid recipients for alias-list!"
+msgstr "POSTA: Nincs érvényes célpont a becenév-listához!"
+
+#: malias.c:450
+#, c-format
+msgid "MAIL: Not a valid alias. Remember to prefix the alias name with %c."
+msgstr "POSTA: Nem megfelelõ alias. Az aliasok prefixe %c."
+
+#: src/malias.c:484
+#, c-format
+msgid "MAIL: Number of mail aliases defined: %d"
+msgstr "POSTA: %d postai alias definiált."
+
+#: src/malias.c:497
+msgid "MAIL: Only god can do that!"
+msgstr "POSTA: Csak Isten tehet ilyet!"
+
+#: src/malias.c:139
+msgid "MAIL: Only players may create mail aliases."
+msgstr "POSTA: Csak játékosok készíthetnek postai aliasokat."
+
+#: src/malias.c:382
+msgid "MAIL: Owner changed for alias."
+msgstr "POSTA: Az alias tulajdonosa megváltozott."
+
+#: src/malias.c:443
+msgid "MAIL: Permission denied!"
+msgstr "POSTA: Hozzáférés megtagadva!"
+
+#: src/malias.c:324 src/malias.c:355 src/malias.c:412 src/malias.c:482\nsrc/malias.c:533 src/malias.c:559
+msgid "MAIL: Permission denied."
+msgstr "POSTA: Hozzáférés megtagadva."
+
+#: src/malias.c:539
+#, c-format
+msgid "MAIL: Permission to see/use alias '%s' changed to %s"
+msgstr "POSTA: A '%s' alias megtekintéséhez, használatához %s értékre változott"
+
+#: src/malias.c:408
+msgid "MAIL: That name already exists!"
+msgstr "POSTA: A név már létezik!"
+
+#: src/extmail.c:1294
+#, c-format
+msgid "MAIL: There are %d msgs in the mail spool, %d unread, %d cleared."
+msgstr "POSTA: A levéltárban %d üzenet található, %d olvasatlan, %d törölt."
+
+#: src/extmail.c:1316
+#, c-format
+msgid "MAIL: There are %d new msgs in the mail spool, totalling %d characters."
+msgstr "POSTA: A levéltárban %d új üzenet található, összesen %d betû."
+
+#: src/extmail.c:1312
+#, c-format
+msgid "MAIL: There are %d old msgs in the mail spool, totalling %d characters."
+msgstr "POSTA: %d régi üzenet van a levéltárban, összesen %d betû."
+
+#: src/extmail.c:695
+msgid "MAIL: To whom should I forward?"
+msgstr "POSTA: Kinek továbbítsam?"
+
+#: src/extmail.c:378
+#, c-format
+msgid "MAIL: Unread Msg #%d:%d cleared! Use @mail/unclear %d:%d to recover."
+msgstr "POSTA: A #%d:%d olvasatlan levél törölve! Használd a @mail/unclear %d:%d parancsot a helyreállításhoz."
+
+#: src/extmail.c:2509
+#, c-format
+msgid "MAIL: Warning! Limit on inbox messages is %d!"
+msgstr "POSTA: Figyelem! A bejövõ mappa üzeneteinek maximális száma %d!"
+
+#: src/extmail.c:239 src/extmail.c:279
+msgid "MAIL: What folder is that?"
+msgstr "POSTA: Ez melyik mappa?"
+
+#: src/extmail.c:726
+msgid "MAIL: You can't reply to nonexistant mail."
+msgstr "POSTA: Nem létezõ levélre nem tudsz válaszolni."
+
+#: src/extmail.c:826
+msgid "MAIL: You can't reply to nonexistent mail."
+msgstr "POSTA: Nem létezõ levélre nem válaszolhatsz."
+
+#: src/malias.c:374
+msgid "MAIL: You cannot do that!"
+msgstr "POSTA: Ezt nem teheted!"
+
+#: src/extmail.c:975
+msgid "MAIL: You cannot send mail to non-existent people."
+msgstr "POSTA: Nem létezó személynek nem küldhetsz levelet."
+
+#: src/extmail.c:393 src/extmail.c:446
+msgid "MAIL: You don't have any matching messages!"
+msgstr "POSTA: Nincs ilyen üzeneted!"
+
+#: src/extmail.c:518
+msgid "MAIL: You don't have that many matching messages!"
+msgstr "POSTA: Nincs ennyi megfelelõ üzeneted!"
+
+#: src/extmail.c:1091
+#, c-format
+msgid "MAIL: You have a new message (%d) from %s."
+msgstr "POSTA: Új üzenetet kaptál (%d) %s játékostól."
+
+#: src/extmail.c:705
+msgid "MAIL: You have no messages to forward."
+msgstr "POSTA: Nincs továbbküldhetõ üzeneted."
+
+#: malias.c:447
+msgid "MAIL: You must set the alias to a non-empty list."
+msgstr "POSTA: Az aliast egy nem üres listára kell állítanod."
+
+#: src/extmail.c:274
+msgid "MAIL: You must specify a folder name or number"
+msgstr "POSTA: Meg kell adnod egy mappanevet, vagy számot."
+
+#: src/extmail.c:979
+msgid "MAIL: You probably don't wanna send mail saying 'clear'."
+msgstr "POSTA: Valószínûleg nem akarsz olyan levelet küldeni, aminek tartalma: 'clear'."
+
+#: src/extmail.c:1090
+#, c-format
+msgid "MAIL: You sent your message to %s."
+msgstr "POSTA: Elküldted a leveled %s részére."
+
+#: src/malias.c:675
+#, c-format
+msgid "MAIL: player '%s' exists already in alias %s."
+msgstr "POSTA: A '%s' játékos már létezik %s alias alatt."
+
+#: src/malias.c:777
+#, c-format
+msgid "MAIL: player '%s' is not in alias %s."
+msgstr "POSTA: A '%s' játékos nincs benne a '%s' aliasban."
+
+#: src/extmail.c:1161
+#, c-format
+msgid "Mail cleared for %s(#%d)."
+msgstr "%s(#%d) postaládája kitisztítva."
+
+#: src/extmail.c:1174
+#, c-format
+msgid "Mail database top is %d, actual message count is %d. Fixing."
+msgstr "Posta adatbázis top: %d, Üzenetek száma %d. Javítva."
+
+#: src/extmail.c:1178
+msgid "Mail sanity check completed."
+msgstr "Posta értelmességi teszt befejezõdött."
+
+#: src/extmail.c:1216
+msgid "Mail sanity fix completed."
+msgstr "Posta érvényességi ellenõrzés befejezõdött."
+
+#: src/extmail.c:1365
+#, c-format
+msgid "Mail statistics for %s:"
+msgstr "%s posta-statisztikái:"
+
+#: extmail.c:2477
+msgid "Mass "
+msgstr "Bomba "
+
+#: src/game.c:1253
+#, c-format
+msgid "Matched here: %s  [%d:%s]"
+msgstr "Helybeni egyezések: %s [%d:%s]"
+
+#: access.c:397
+#, c-format
+msgid "Matched line %d: %s %s"
+msgstr "Talált sor %d: %s %s"
+
+#: src/game.c:1296
+#, c-format
+msgid "Matched personal zone: %s  [%d:%s]"
+msgstr "Egyezés a személyez zónában: %s [%d:%s]"
+
+#: src/game.c:1267
+#, c-format
+msgid "Matched self: %s  [%d:%s]"
+msgstr "Egyezések önmagadon: %s [%d:%s]"
+
+#: src/game.c:1288
+#, c-format
+msgid "Matched zone of location: %s  [%d:%s]"
+msgstr "Egyezés a hely zónáján: %s [%d:%s]"
+
+#: src/predicat.c:1051
+#, c-format
+msgid "Matches of '%s' on %s(#%d): %s"
+msgstr "A '%s' egyezései %s(#%d)-n: %s"
+
+#: src/game.c:1258
+msgid "Matches on carried objects:"
+msgstr "Cipelt objektumokon levõ egyezések:"
+
+#: src/game.c:1243
+msgid "Matches on contents of this room:"
+msgstr "Egyezések a szoba tartalmán:"
+
+#: src/game.c:1306
+msgid "Matches on objects in the Master Room:"
+msgstr "A mester szobában levõ objektumokon levõ egyezések:"
+
+#: game.c:1535
+msgid "Matches on personal zone master room:"
+msgstr "A saját zóna mester szoba találatai:"
+
+#: src/game.c:1276
+msgid "Matches on zone master room of location:"
+msgstr "A helyszín zóna mester szobájában levõ egyezések:"
+
+#: extchat.c:2007
+#, c-format
+msgid "Members of channel <%s> are:"
+msgstr "A <%s> csatorna tagjai:"
+
+#: function.c:1090
+#, c-format
+msgid "Name      : %s() (%s%s)"
+msgstr "Név       : %s() (%s%s)"
+
+#: src/wiz.c:2069
+msgid "Name removed."
+msgstr "Név eltávolítva."
+
+#: src/set.c:152 src/set.c:163
+msgid "Name set."
+msgstr "Név beállítva."
+
+#: malias.c:269
+msgid "Name"
+msgstr "Név"
+
+#: src/wiz.c:131
+#, c-format
+msgid "New player '%s' (#%d) created with password '%s'"
+msgstr "Új játékos: '%s' (#%d) elkészítve, '%s' jelszóval"
+
+#: set.c:525
+msgid "No attribute found to change."
+msgstr "Nem találtam meg a megváltoztatandó attríbútumot."
+
+#: src/bsd.c:3090
+#, c-format
+msgid "No entry for '%s'."
+msgstr "Nincs '%s' bejegyzés."
+
+#: src/look.c:785
+msgid "No exits."
+msgstr "Nincs kijárat."
+
+#: src/function.c:626
+msgid "No global user-defined functions exist."
+msgstr "Nincs globális felhasználó-készítette funkció."
+
+#: lock.c:600
+msgid "No lock name given."
+msgstr "Nem adtál meg zár-nevet."
+
+#: src/create.c:303 src/fundb.c:1281 src/fundb.c:1300 src/wiz.c:386
+msgid "No match."
+msgstr "Nincs egyezés."
+
+#: access.c:431
+msgid "No matching access rule"
+msgstr "Nincs megfelelõ elérési szabály"
+
+#: src/look.c:395
+msgid "No matching attributes."
+msgstr "Nincs attribútum egyezés."
+
+#: src/set.c:973
+msgid "No matching command."
+msgstr "Nincs ilyen parancs."
+
+#: src/extchat.c:1093
+msgid "No more room for channels."
+msgstr "Nincs több hely a csatornához."
+
+#: access.c:404
+msgid "No one"
+msgstr "Senki"
+
+#: src/function.c:687
+msgid "No permission to examine object."
+msgstr "Nincs engedélyed az objektum megvizsgálásához."
+
+#: src/set.c:596
+msgid "No such attribute to copy from."
+msgstr "Nincs honnan másolni az attribútumot."
+
+#: src/attrib.c:931
+msgid "No such attribute to reset."
+msgstr "Nincs ilyen beállítható attribútum."
+
+#: src/set.c:711
+msgid "No such attribute, try set instead."
+msgstr "Nincs ilyen attribútum, inkább állítsd be."
+
+#: src/attrib.c:1043 src/attrib.c:1118
+msgid "No such attribute."
+msgstr "Nincs ilyen attribútum."
+
+#: src/bsd.c:4807 src/extchat.c:894
+msgid "No such channel."
+msgstr "Nincs ilyen csatorna."
+
+#: src/command.c:1095
+msgid "No such command."
+msgstr "Nincs ilyen parancs."
+
+#: src/wiz.c:789
+msgid "No such connected player."
+msgstr "Nincs ilyen játékban levõ karakter."
+
+#: src/function.c:764
+msgid "No such function."
+msgstr "Nincs ilyen funkció."
+
+#: lock.c:620
+msgid "No such lock."
+msgstr "Nincs ilyen zár."
+
+#: conf.c:962
+msgid "No such option."
+msgstr "Nincs ilyen opció."
+
+#: src/wiz.c:155 src/wiz.c:729 src/wiz.c:1703
+msgid "No such player."
+msgstr "Nincs ilyen játékos."
+
+#: src/extmail.c:747 src/extmail.c:859
+#, c-format
+msgid "No such unique player: %s."
+msgstr "Nincs ilyen játékos: %s."
+
+#: src/rob.c:83
+msgid "No suicide allowed."
+msgstr "Az öngyilkosság nem megengedett."
+
+#: src/wiz.c:1985
+msgid "No valid options found."
+msgstr "Nem találtam érvényes opciót."
+
+#: src/wiz.c:933
+msgid "No zone specified."
+msgstr "Nincs zóna megadva."
+
+#: src/fundb.c:1424 src/look.c:1177 src/wiz.c:1553 src/wiz.c:1913
+msgid "Nothing found."
+msgstr "Nem találtam semmit."
+
+#: src/set.c:684
+msgid "Nothing to do."
+msgstr "Nincs mit tennem."
+
+#: cque.c:712
+msgid "Notified."
+msgstr "Értesítve."
+
+#: src/wiz.c:1039
+msgid "Number out of range."
+msgstr "Szám határon túl."
+
+#: src/cque.c:795
+msgid "Object Queue:"
+msgstr "Objektum sor:"
+
+#: wiz.c:175 wiz.c:181 wiz.c:195
+#, c-format
+msgid "Objects: %d   Limit: %d"
+msgstr "Objektumok: %d  Határ: %d"
+
+#: wiz.c:166
+#, c-format
+msgid "Objects: %d   Limit: UNLIMITED"
+msgstr "Objektumok: %d  Határ: VÉGTELEN"
+
+#: src/look.c:505 src/look.c:767
+msgid "Obvious exits:"
+msgstr "Látható kijáratok:"
+
+#: bsd.c:3848 bsd.c:3851 bsd.c:3855 bsd.c:3859
+msgid "On For"
+msgstr "Játszik"
+
+#: src/game.c:1155
+msgid "Only God can cause financial ruin."
+msgstr "Csak Isten okozhat pénzügyi zavart."
+
+#: src/set.c:526
+msgid "Only God can set himself!"
+msgstr "Csak Isten állíthatja át saját magát!"
+
+#: src/wiz.c:162
+msgid "Only wizards may change a quota."
+msgstr "A kvótát csak istenek változtathatják meg."
+
+#: src/wiz.c:1168
+msgid "Only wizards may grant powers."
+msgstr "Csak varázslók adhatnak hatalmat."
+
+#: src/create.c:118
+msgid "Open where?"
+msgstr "Hova nyissam?"
+
+#: create.c:140
+#, c-format
+msgid "Opened exit %s"
+msgstr "A %s kijárat megnyitva"
+
+#: src/cmds.c:195
+msgid "Option set."
+msgstr "Opció beállítva."
+
+#: src/set.c:227
+msgid "Owner changed."
+msgstr "Tulajdonos megváltozott."
+
+#: malias.c:269
+msgid "Owner"
+msgstr "Tulajdonos"
+
+#: look.c:704
+#, c-format
+msgid "Owner: %s  Zone: %s  %s: %d"
+msgstr "Tulajdonos: %s  Zóna: %s  %s: %d"
+
+#: src/wiz.c:910
+#, c-format
+msgid "Ownership changed for %d objects."
+msgstr "%d objektum tulajdonosa megváltoztatva."
+
+#: src/game.c:182
+#, c-format
+msgid "Paranoid dumping, checkpoint interval %d."
+msgstr "Paranoid mentés, ellenõrzõpont %d helyközönként."
+
+#: src/set.c:912
+msgid "Parent changed."
+msgstr "Szülõ megváltoztatva."
+
+#: look.c:707
+#, c-format
+msgid "Parent: %s"
+msgstr "Szülõ: %s"
+
+#: wiz.c:724
+#, c-format
+msgid "Password for %s changed."
+msgstr "%s jelszava megváltozott."
+
+#: src/extmail.c:1584
+msgid "Permission denied"
+msgstr "Hozzáférés megtagadva."
+
+#: src/game.c:171
+msgid "Permission denied. Invalid checkpoint interval."
+msgstr "Hozzáférés megtagadva. Érvénytelen ellenõrzõpont távolság."
+
+#: src/bsd.c:4589 src/bsd.c:4627 src/command.c:1288 src/cque.c:611\nsrc/cque.c:669 src/cque.c:909 src/cque.c:1040 src/create.c:125\nsrc/create.c:201 src/create.c:252 src/create.c:259 src/create.c:316\nsrc/create.c:320 src/create.c:337 src/create.c:491 src/destroy.c:228\nsrc/extchat.c:1150 src/extchat.c:1167 src/extchat.c:1197 src/flags.c:1021\nsrc/flags.c:1027 src/flags.c:1033 src/function.c:664 src/function.c:759\nsrc/fundb.c:1080 src/fundb.c:1332 src/game.c:771 src/game.c:1177\nsrc/log.c:295 src/look.c:1093 src/look.c:1333 src/malias.c:633\nsrc/malias.c:736 src/match.c:158 src/move.c:471 src/move.c:630\nsrc/move.c:638 src/predicat.c:865 src/predicat.c:1037 src/rob.c:219\nsrc/set.c:210 src/set.c:680 src/set.c:809 src/set.c:872 src/set.c:889\nsrc/set.c:952 src/speech.c:1479 src/warnings.c:263 src/warnings.c:439\nsrc/wiz.c:428 src/wiz.c:538 src/wiz.c:1029 src/wiz.c:1059 src/wiz.c:1630\nsrc/wiz.c:1855
+msgid "Permission denied."
+msgstr "Hozzáférés megtagadva."
+
+#: src/extchat.c:814
+msgid "Permission to join denied."
+msgstr "A csatlakozás joga megtagadva."
+
+#: src/set.c:601
+msgid "Permission to read attribute denied."
+msgstr "Attribútum olvasásához a hozzáférés megtagadva."
+
+#: src/extchat.c:1210
+#, c-format
+msgid "Permissions on channel <%s> changed."
+msgstr "A <%s> csatorna hozzáférési jogai megváltoztak."
+
+#: bsd.c:3848 bsd.c:3851 bsd.c:3855 bsd.c:3859
+msgid "Player Name"
+msgstr "Játékos neve"
+
+#: src/cque.c:791
+msgid "Player Queue:"
+msgstr "Játékos Sor:"
+
+#: player.c:164
+msgid "Player connections not allowed."
+msgstr "Játékos kapcsolódás nem engedélyezett."
+
+#: src/set.c:205
+msgid "Players always own themselves."
+msgstr "A játékos mindíg a saját tulajdona."
+
+#: access.c:427
+msgid "Players connecting are set SUSPECT"
+msgstr "A kapcsolódó játékosok GYANÚSra lesznek állítva"
+
+#: src/speech.c:679
+msgid "Posing as a wizard could be hazardous to your health."
+msgstr "Varázslónak mutatkozni veszélyes lehet az egészségedre nézve."
+
+#: look.c:716
+#, c-format
+msgid "Powers: %s"
+msgstr "Hatalom: %s"
+
+#: src/destroy.c:257
+msgid "Programs don't kill people; people kill people!"
+msgstr "A programok nem ölnek embert. Az emberek ölnek embert!"
+
+#: src/destroy.c:924
+msgid "Purge complete."
+msgstr "Törlés befejezve."
+
+#: src/cque.c:786
+#, c-format
+msgid "Queue for : %s"
+msgstr "Sor a következõre: %s"
+
+#: src/cque.c:784
+msgid "Queue for : all"
+msgstr "Sor mindenkire"
+
+#: src/wiz.c:271
+msgid "Quotas not changed."
+msgstr "A kvóta nem változott."
+
+#: extmail.c:2469
+msgid "Read "
+msgstr "Olvasott "
+
+#: extchat.c:2192
+#, c-format
+msgid "Recall buffer: %dk, with %d lines stored."
+msgstr "Visszahívási buffer: %dk, %d sor tárolva."
+
+#: bsd.c:275
+msgid "Registration successful! You will receive your password by email."
+msgstr "Sikeres regisztráció. A jelszavadat e-mailben kapod meg."
+
+#: src/atr_tab.c:252
+#, c-format
+msgid "Removed %s from attribute table."
+msgstr "A %s elávolítva az attribútum táblából."
+
+#: src/atr_tab.c:288
+#, c-format
+msgid "Renamed %s to %s in attribute table."
+msgstr "Az attribútum táblában %s %s névre változott."
+
+#: function.c:916
+msgid "Restore what?"
+msgstr "Mit állítsak vissza?"
+
+#: function.c:933
+msgid "Restored."
+msgstr "Visszaállítva."
+
+#: src/command.c:1114
+msgid "Restrict attempt failed."
+msgstr "Korlátozási kisérlet sikertelen."
+
+#: function.c:731
+msgid "Restrict what function?"
+msgstr "Milyen funkciót szeretnél korlátozni?"
+
+#: function.c:863
+msgid "Restrictions modified."
+msgstr "A korlátozások módosítva."
+
+#: cque.c:201
+#, c-format
+msgid "Runaway object: %s(%s). Commands halted."
+msgstr "Elszabadult objektum: %s(%s). Leállítva."
+
+#: src/warnings.c:415
+msgid "Running database topology warning checks"
+msgstr "Adatbázis topológiai ellenõrzésének futtatása"
+
+#: src/wiz.c:1471
+#, c-format
+msgid "Searches cost %d %s."
+msgstr "A keresés %d %sba kerül."
+
+#: src/cque.c:803
+msgid "Semaphore Queue:"
+msgstr "Szemafor sor:"
+
+#: game.c:1408
+msgid "Separator must be one character."
+msgstr "Az elválasztójel egy karakter kell legyen."
+
+#: attrib.c:942
+msgid "Set"
+msgstr "Beállítva"
+
+#: src/wiz.c:1999
+#, c-format
+msgid "Site %s access options for %s(%s) set to %s"
+msgstr "A %2$s(%3$s) site %1$s elérési opcióinak új értéke %4$s"
+
+#: src/wiz.c:2004
+#, c-format
+msgid "Site %s access options set to %s"
+msgstr "A %s site elérési opcióinak új értéke %s"
+
+#: src/wiz.c:2026
+#, c-format
+msgid "Site %s locked"
+msgstr "a %s site letiltva."
+
+#: src/destroy.c:266
+msgid "Sorry, no suicide allowed."
+msgstr "Bocs, az öngyilkosság nem megengedett."
+
+#: help.c:161
+msgid "Sorry, that command is temporarily unvailable."
+msgstr "Bocs, a parancs ideiglenesen nem használható."
+
+#: src/bsd.c:3081 src/bsd.c:3094 src/bsd.c:3099
+msgid "Sorry, that function is temporarily unavailable."
+msgstr "Bocs, ez a funkció ideiglenesen nem elérhetõ."
+
+#: src/predicat.c:364
+msgid "Sorry, there is no more room in the database."
+msgstr "Bocs, nincs több hely az adatbázisban."
+
+#: src/extchat.c:787
+#, c-format
+msgid "Sorry, wrong type of thing for channel <%s>."
+msgstr "Bocs, hibás tárgy tipus a <%s> csatornához."
+
+#: src/destroy.c:926
+msgid "Sorry, you are a mortal."
+msgstr "Bocs, te halandó vagy."
+
+#: src/game.c:206
+msgid "Sorry, you are in a no dumping zone."
+msgstr "Bocs, egy nem mentett zónában vagy."
+
+#: src/game.c:1235
+msgid "Sorry, you are in an invalid location."
+msgstr "Bocs, érvénytelen helyen állsz."
+
+#: src/rob.c:102
+msgid "Sorry, you can only kill players and objects."
+msgstr "Bocs, csak játékosokat és tárgyakat ölhetsz meg."
+
+#: src/predicat.c:369
+#, c-format
+msgid "Sorry, you don't have enough %s."
+msgstr "Bocs, nincs nálad elég %s."
+
+#: src/move.c:643
+msgid "Sorry, you must remain beside yourself!"
+msgstr "Bocs, magad mellett kell maradnod!"
+
+#: src/extchat.c:927 src/extchat.c:1034
+#, c-format
+msgid "Sorry, you're not allowed to speak on channel <%s>."
+msgstr "Bocs, nem beszélhetsz a <%s> csatornán."
+
+#: src/extchat.c:916 src/extchat.c:1021
+#, c-format
+msgid "Sorry, you're not the right type to be on channel <%s>."
+msgstr "Bocs, a tipusod nem megfelelõ a <%s> csatornához."
+
+#: src/predicat.c:375
+msgid "Sorry, your building quota has run out."
+msgstr "Bocs, az építési kvótád elfogyott."
+
+#: look.c:815
+#, c-format
+msgid "Source: %s"
+msgstr "Forrás: %s"
+
+#: extmail.c:482
+#, c-format
+msgid "Subject: %s"
+msgstr "Témakör: %s"
+
+#: extmail.c:2481
+msgid "Tagged"
+msgstr "Jelölt"
+
+#: wiz.c:423 wiz.c:522
+msgid "Teleported."
+msgstr "Teleportálva."
+
+#: src/wiz.c:503
+msgid "Teleports are not allowed in this room."
+msgstr "Ebben a szobában nem teleportálhatsz."
+
+#: src/attrib.c:928
+msgid "That attribute cannot be changed by you."
+msgstr "Ez az attribútum általad nem megváltoztatható."
+
+#: src/attrib.c:1022
+#, c-format
+msgid "That attribute is %slocked."
+msgstr "Az attribútum %szárt."
+
+#: src/atr_tab.c:246 src/atr_tab.c:280 src/atr_tab.c:307
+msgid "That attribute isn't in the attribute table"
+msgstr "Ez az attribútum nem szerepel az attribútum-táblában"
+
+#: atr_tab.c:198
+msgid "That attribute's permissions can not be changed."
+msgstr "Ezen attribútum hozzáférése nem megváltoztatható."
+
+#: help.c:55
+msgid "That command is unavailable."
+msgstr "Ez a parancs jelenleg nem elérhetõ."
+
+#: function.c:928
+msgid "That function isn't deleted!"
+msgstr "Ez a funkció nem törölt!"
+
+#: src/create.c:307
+msgid "That is an exit."
+msgstr "Ez egy kijárat."
+
+#: src/extmail.c:1218
+msgid "That is not a debugging option."
+msgstr "Ez nem debuggolási opció."
+
+#: src/set.c:156
+msgid "That is not a reasonable name."
+msgstr "Ez nem értelmes név."
+
+#: src/create.c:333
+msgid "That is not a room!"
+msgstr "Ez nem szoba!"
+
+#: src/extchat.c:1003
+msgid "That is not a valid channel."
+msgstr "Ez nem egy érvényes csatorna."
+
+#: lock.c:326
+msgid "That is not a valid lock name."
+msgstr "Ez nem egy érvényes zár-név."
+
+#: src/create.c:54
+msgid "That is not a valid object."
+msgstr "Ez nem egy érvényes objektum."
+
+#: src/destroy.c:232
+msgid "That is too special to be destroyed."
+msgstr "Ez az objektum túl speciális a megsemmisítéshez."
+
+#: src/extchat.c:1181
+msgid "That name is too long."
+msgstr "A név túl hosszú."
+
+#: src/rob.c:109
+msgid "That object cannot be killed."
+msgstr "Ez az objektum nem megölhetõ."
+
+#: src/destroy.c:250
+msgid "That object does not belong to you. Use @nuke to destroy it."
+msgstr "Az objektum nem a te tulajdonod. Használd a @nuke-ot a megsemmisítéséhez."
+
+#: set.c:330
+msgid "That object is already in that zone."
+msgstr "Az objektum már része a zónának."
+
+#: src/destroy.c:243
+msgid "That object is marked SAFE. Use @nuke to destroy it."
+msgstr "Ez az objektum SAFE-ként van megjelölve. Megsemmisíteni a @nuke-al tudod."
+
+#: src/set.c:957
+msgid "That object is protected."
+msgstr "Az objektum védett."
+
+#: src/destroy.c:238
+msgid "That object is set SAFE. You must set it !SAFE before destroying it."
+msgstr "Az objektum SAFE-re van állítva. Megsemmisítés elõtt !SAFE-re kell állítanod."
+
+#: src/destroy.c:287
+msgid "That object is set WIZARD. You must use @nuke to destroy it."
+msgstr "Az objektum WIZARD, csak @nuke-al lehet megsemmisíteni."
+
+#: src/look.c:1048
+msgid "That player does not seem to exist."
+msgstr "Ilyen játékos nem létezik."
+
+#: set.c:214
+msgid "That player doesn't have enough money or quota to receive that object."
+msgstr "A játékos nem rendelkezik elég pénzzel, vagy kvótával a tárgy fogadásához."
+
+#: src/look.c:1052
+msgid "That player wishes to have some privacy."
+msgstr "Ez a játékos szeretne némi magánéletet."
+
+#: bsd.c:4116
+msgid "That port's not active."
+msgstr "A megadott port nem aktív."
+
+#: src/create.c:57
+msgid "That room is being destroyed. Sorry."
+msgstr "Ez a szoba megsemmisül. Bocs."
+
+#: src/create.c:376
+msgid "That's a silly name for a room!"
+msgstr "Ez bugyuta név egy szobának!"
+
+#: src/create.c:434
+msgid "That's a silly name for a thing!"
+msgstr "Idétlen név ez egy tárgynak!"
+
+#: src/create.c:121
+msgid "That's a strange name for an exit!"
+msgstr "Furcsa név ez egy kijáratnak!"
+
+#: function.c:923
+msgid "That's not a builtin function."
+msgstr "Ez nem beépített funkció."
+
+#: bsd.c:4093
+msgid "That's not a port number."
+msgstr "Ez nem port szám."
+
+#: attrib.c:930
+msgid "That's not a very good name for an attribute."
+msgstr "Nem egy túl jó név ez egy attribútumnak."
+
+#: src/extchat.c:1176
+msgid "The channel needs a more unique new name."
+msgstr "A csatorna egyedi nevet igényel."
+
+#: src/extchat.c:1097
+msgid "The channel needs a shorter name."
+msgstr "A csatorna rövidebb nevet igényel."
+
+#: src/lock.c:307
+msgid "The character '|' may not be used in lock names."
+msgstr "A '|' betû a zárnevekben nem használható."
+
+#: src/destroy.c:705
+msgid "The floor disappears under your feet, you fall through NOTHINGness and then:"
+msgstr "A talaj eltünik a lábad alól, keresztülesel a SEMMIn, majd utána:"
+
+#: src/game.c:1163
+#, c-format
+msgid "The money supply of all players has been reset to %d %s."
+msgstr "Minden játékos vagyona mostantól %d %s."
+
+#: src/atr_tab.c:273
+#, c-format
+msgid "The name %s is already used in the attribute table."
+msgstr "A %s név már használt az attribútum táblában."
+
+#: wiz.c:694
+#, c-format
+msgid "The next object to be created will be #%d."
+msgstr "A k¨vetkezõ elkészített objektum száma #%d lesz."
+
+#: src/player.c:299
+#, c-format
+msgid "The password is %s\n"
+msgstr "A jelszó %s\n"
+
+#: src/extmail.c:1264 src/extmail.c:1672
+msgid "The post office protects privacy!"
+msgstr "A postahivatal védi a személyi jogokat!"
+
+#: src/extmail.c:1111
+msgid "The postal service issues a warrant for your arrest."
+msgstr "A postaszolgálat körözvényt ad ki ellened."
+
+#: src/destroy.c:548
+#, c-format
+msgid "The room %s has been spared from destruction by %s."
+msgstr "A %s szobát %s megmentette a pusztulástól."
+
+#: src/destroy.c:543
+#, c-format
+msgid "The room %s has been spared from destruction."
+msgstr "A %s szoba megmenekült a megsemmisüléstõl."
+
+#: src/destroy.c:333
+msgid "The room shakes and begins to crumble."
+msgstr "A szoba megrázkódik, és elkezd összeomlani."
+
+#: cque.c:694
+msgid "The semaphore count must be an integer."
+msgstr "A szemafor számláló szám kell, hogy legyen."
+
+#: src/destroy.c:341
+#, c-format
+msgid "The wrecking ball is on its way for %s's %s and its exits."
+msgstr "A falbontó elindul %s %s-e és kijáratai felé."
+
+#: src/extmail.c:1281
+#, c-format
+msgid "There are %d messages in the mail spool."
+msgstr "A levéltárban %d üzenet van."
+
+#: bsd.c:3925
+#, c-format
+msgid "There are %d players connected."
+msgstr "%d játékos van játékban."
+
+#: src/bsd.c:4788
+msgid "There are no connected players on that channel."
+msgstr "Nincs aktív játékos a csatornán."
+
+#: bsd.c:3919
+msgid "There are no players connected."
+msgstr "Nincs játékos játékban."
+
+#: flags.c:1542
+msgid "There are probably easier ways to crash your MUSH."
+msgstr "Valószínûleg vannak egyszerûbb módjai is annak, hogy tönkretedd a MUSHt."
+
+#: src/speech.c:1368
+msgid "There can't be anything in that!"
+msgstr "Ebben nem lehet semmi!"
+
+#: bsd.c:3922
+msgid "There is 1 player connected."
+msgstr "1 játékos van játékban."
+
+#: src/move.c:335 src/move.c:336 src/move.c:337
+msgid "There's no place like home..."
+msgstr "Mindenhol jó, de legjobb otthon..."
+
+#: src/create.c:496
+msgid "There's nothing left of it to clone!"
+msgstr "Nem maradt belõle semmi a klónozáshoz!"
+
+#: src/move.c:426
+msgid "This feature coming soon."
+msgstr "Ez a fejlesztés nemsokára várható."
+
+#: src/player.c:296
+msgid "This is an automated message.\n"
+msgstr "Ez egy automatikus üzenet.\n"
+
+#: src/flags.c:1091
+msgid "This room is no longer broadcasting."
+msgstr "A szoba többé nem közvetít."
+
+#: src/flags.c:1151
+msgid "This room is now broadcasting."
+msgstr "A szoba mostantól közvetít."
+
+#: game.c:2097
+msgid "Time now"
+msgstr "Idõ"
+
+#: game.c:2103
+msgid "Time of last database save"
+msgstr "Utolsó mentés"
+
+#: game.c:2137
+msgid "Time until next @warnings"
+msgstr "A következõ @warning-ig levõ idõ"
+
+#: game.c:2112
+msgid "Time until next database save"
+msgstr "Következõ mentésig lévõ idõ"
+
+#: game.c:2120
+msgid "Time until next dbck check"
+msgstr "A következõ db-ellenõrzésig levõ idõ"
+
+#: game.c:2128
+msgid "Time until next purge"
+msgstr "A következõ purge-ig levõ idõ"
+
+#: src/extchat.c:1358
+msgid "Title too long."
+msgstr "A cím túl hosszú."
+
+#: src/player.c:301
+#, c-format
+msgid "To access this character, connect to %s and type:\n"
+msgstr "A karakter használatához csatlakozz a %s játékhoz, és írd be:\n"
+
+#: src/set.c:906
+msgid "Too many ancestors."
+msgstr "Túl sok leszármazás."
+
+#: src/fundb.c:1073 src/speech.c:1416
+msgid "Too many containers."
+msgstr "Túl sok tároló."
+
+#: player.c:183
+msgid "Too many guests are connected now."
+msgstr "Túl sok vendég van kapcsolódva."
+
+#: src/speech.c:302
+msgid "Too many people to oemit to."
+msgstr "Túl sok célpont az @oemithez."
+
+#: src/speech.c:402
+msgid "Too many people to whisper to."
+msgstr "Túl sok embernek szeretnél súgni."
+
+#: boolexp.c:245
+msgid "Too much recursion in lock!"
+msgstr "Túl sok rekurzió a zár-ban!"
+
+#: game.c:2093
+msgid "Total reboots"
+msgstr "Össz. újraindítás"
+
+#: src/wiz.c:878
+msgid "Try asking them first!"
+msgstr "Elõbb kérdezd meg õket!"
+
+#: src/create.c:147
+msgid "Trying to link..."
+msgstr "Kötni próbálom..."
+
+#: flags.c:688
+msgid "Type: "
+msgstr "Típus: "
+
+#: src/set.c:638
+#, c-format
+msgid "Unable to %s attribute."
+msgstr "Attribútum %s sikertelen."
+
+#: src/wiz.c:2073 src/wiz.c:2076 src/wiz.c:2080
+msgid "Unable to delete name."
+msgstr "Név törlése sikertelen."
+
+#: src/bsd.c:758
+#, c-format
+msgid "Unable to open %s. Error output continues to stderr.\n"
+msgstr "%s megnyítása sikertelen. Hibakimenet átirányítása az stderr-re.\n"
+
+#: src/wiz.c:2036 src/wiz.c:2056
+msgid "Unable to open names file."
+msgstr "A név-file megnyitása sikertelen."
+
+#: speech.c:745
+#, c-format
+msgid "Unable to page:%s"
+msgstr "Nem tudom elküldeni:%s"
+
+#: bsd.c:274
+msgid "Unable to register that player with that email address."
+msgstr "A játékos regisztrálása ezzel az e-maillel sikertelen."
+
+#: speech.c:355
+#, c-format
+msgid "Unable to whisper to:%s"
+msgstr "Nem tudom súgni:%s"
+
+#: src/access.c:547
+#, c-format
+msgid "Unknown access option: %s"
+msgstr "Ismeretlen hozzáférési opció: %s"
+
+#: flags.c:1492
+msgid "Unknown failure adding alias."
+msgstr "Ismeretlen hiba alias hozzáadása során."
+
+#: command.c:1349 command.c:1368
+msgid "Unknown hook type"
+msgstr "Ismeretlen horog típus"
+
+#: src/lock.c:297 src/lock.c:303
+msgid "Unknown lock type."
+msgstr "Ismeretlen zártipus."
+
+#: wiz.c:1413
+msgid "Unknown owner."
+msgstr "Ismeretlen tulajdonos."
+
+#: src/wiz.c:1349 src/wiz.c:1772
+msgid "Unknown parent."
+msgstr "Ismeretlen szülõ."
+
+#: wiz.c:1503
+msgid "Unknown search class."
+msgstr "Ismeretlen keresési osztály."
+
+#: src/wiz.c:1825 src/wiz.c:1848
+msgid "Unknown type."
+msgstr "Ismeretlen típus."
+
+#: src/warnings.c:301
+#, c-format
+msgid "Unknown warning: %s"
+msgstr "Ismeretlen figyelmeztetés: %s"
+
+#: src/wiz.c:1435 src/wiz.c:1837
+msgid "Unknown zone."
+msgstr "Ismeretlen zóna."
+
+#: src/create.c:194
+msgid "Unlink what?"
+msgstr "Minek a kötését oldjam fel?"
+
+#: extmail.c:2471
+msgid "Unread "
+msgstr "Olvasatlan "
+
+#: src/set.c:498
+msgid "Unrecognized attribute flag."
+msgstr "Felismerhetetlen attribútum jelzõ."
+
+#: lock.c:620
+msgid "Unrecognized lock flag."
+msgstr "Azonosíthatatlan zár jelzõ."
+
+#: game.c:2087
+msgid "Up since"
+msgstr "Mûködési idõ"
+
+#: extmail.c:2475
+msgid "Urgent "
+msgstr "Sürgõs "
+
+#: malias.c:269
+msgid "Use See"
+msgstr "Alk Lát"
+
+#: src/conf.c:799
+msgid "Use: @config/list <type of options> where type is one of:"
+msgstr "Használat: @config/list <tipus>, ahol a tipus lehet:"
+
+#: src/function.c:644
+msgid "User functions:"
+msgstr "Felhasználói funkciók:"
+
+#: warnings.c:232
+#, c-format
+msgid "Variable exit has empty %s attribute"
+msgstr "Változó kijárat üres %s attribútummal"
+
+#: warnings.c:227
+#, c-format
+msgid "Variable exit has no %s attribute"
+msgstr "Változó kijárat hiányzó %s attribútummal"
+
+#: src/cque.c:799
+msgid "Wait Queue:"
+msgstr "Várakozó sor:"
+
+#: warnings.c:119
+#, c-format
+msgid "Warning '%s' for %s:"
+msgstr "Figyelmeztetés: '%s' %s részére:"
+
+#: src/warnings.c:417
+msgid "Warning checks complete."
+msgstr "Figyelmeztetés ellenõrzés befejezõdött."
+
+#: src/create.c:547
+msgid "Warning: @CLONE/PRESERVE on an object with WIZ, ROY, @powers, or @warnings."
+msgstr "Figyelem: @CLONE/PRESERVE WIZ, ROY, @power vagy @warning-os tárgyon."
+
+#: src/set.c:417
+msgid "Warning: @chzoning a privileged player."
+msgstr "Figyelem: Privilegizált játékos @chzone-olása."
+
+#: src/set.c:396
+msgid "Warning: @chzoning admin-owned object!"
+msgstr "Figyelem: admin-tulajdonosú objektum @chown-olása!"
+
+#: flags.c:1049
+msgid "Warning: Setting trust flag on zoned object"
+msgstr "Vigyázat: Zónában levõ objektumon bizalmi jelzõ beállítása"
+
+#: src/extchat.c:1116
+msgid "Warning: channel will be created disabled."
+msgstr "Figyelem: A csatorna letiltva jön létre."
+
+#: src/extchat.c:1207
+msgid "Warning: channel will be disabled."
+msgstr "Figyelem: A csatorna hatástalanítva."
+
+#: src/look.c:733
+#, c-format
+msgid "Warnings checked: %s"
+msgstr "Ellenõrzött figyelmeztetések: %s"
+
+#: bsd.c:3796
+msgid "Welcome back from vacation! Don't forget to unset your ON-VACATION flag"
+msgstr "Isten hozott a nyaralásról! Ne felejtsd el a VAKÁCIÓ jelzõ törlését"
+
+#: src/wiz.c:465
+msgid "What are you doing inside of yourself?"
+msgstr "Mit csinálsz önmagadban?"
+
+#: src/game.c:1239
+msgid "What command do you want to scan for?"
+msgstr "Milyen parancsot szeretnél fürkészni?"
+
+#: src/speech.c:145
+msgid "What command do you want to teach?"
+msgstr "Melyik parancsot szeretnéd tanítani?"
+
+#: src/speech.c:698
+msgid "What did you want to say?"
+msgstr "Mit szerettél volna mondani?"
+
+#: src/cmds.c:185
+msgid "What did you want to set?"
+msgstr "Mit szeretnél beállítani?"
+
+#: src/look.c:1294
+msgid "What do you want to @decompile?"
+msgstr "Mit akarsz @decompile-olni?"
+
+#: src/set.c:576
+msgid "What do you want to copy from?"
+msgstr "Honnan szeretnél másolni?"
+
+#: src/set.c:610
+msgid "What do you want to copy to?"
+msgstr "Hova akarod másolni?"
+
+#: src/predicat.c:849
+msgid "What do you want to do the verb?"
+msgstr "Mit szeretnél ezzel az igével csinálni?"
+
+#: src/extchat.c:1082
+msgid "What do you want to do with the channel?"
+msgstr "Mit kívánsz tenni ezzel a csatornával?"
+
+#: src/game.c:1331
+msgid "What do you want to do with the list?"
+msgstr "Mit szeretnél ezzel a listával csinálni?"
+
+#: src/predicat.c:843
+msgid "What do you want to do with the verb?"
+msgstr "Mit szeretnél ezzel az igével csinálni?"
+
+#: src/extchat.c:1039
+msgid "What do you want to emit?"
+msgstr "Mit akarsz @emit-elni?"
+
+#: bsd.c:4098
+msgid "What do you want to page with?"
+msgstr "Kinek akarsz üzenni?"
+
+#: src/extchat.c:981
+msgid "What do you want to say to that channel?"
+msgstr "Mit szeretnél mondani ezen a csatornán?"
+
+#: src/wiz.c:196
+msgid "What do you want to set the quota to?"
+msgstr "Mennyire szeretnéd állítani a kvótát?"
+
+#: src/set.c:491
+msgid "What flag do you want to set?"
+msgstr "Melyik jelzõt szeretnéd beállítani?"
+
+#: rob.c:210
+msgid "What is this, a holdup?"
+msgstr "Mi ez? Akadály?"
+
+#: src/set.c:583
+msgid "What object do you want to copy the attribute from?"
+msgstr "Melyik objektumról szeretnéd átmásolni az attribútumot?"
+
+#: src/predicat.c:1023
+msgid "What pattern do you want to grep for?"
+msgstr "Milyen mintát szeretnél grep-elni?"
+
+#: src/wiz.c:1980
+msgid "What site did you want to lock?"
+msgstr "Melyik siteot szeretnéd zárolni?"
+
+#: src/predicat.c:837
+msgid "What was the victim of the verb?"
+msgstr "Ki a cselekvés célpontja?"
+
+#: src/atr_tab.c:184 src/atr_tab.c:239 src/atr_tab.c:300
+msgid "Which attribute do you mean?"
+msgstr "Melyik attribútumra gondolsz?"
+
+#: src/atr_tab.c:264
+msgid "Which attributes do you mean?"
+msgstr "Melyik attribútumra gondolsz?"
+
+#: src/speech.c:355
+msgid "Whisper to whom?"
+msgstr "Kinek súgsz?"
+
+#: src/speech.c:359
+msgid "Whisper what?"
+msgstr "Mit súgsz?"
+
+#: src/wiz.c:223
+msgid "Who do you think you are, GOD?"
+msgstr "Mit gondolsz, ki vagy, talán Isten?"
+
+#: src/bsd.c:4330
+msgid "Who do you think you are, Gallup?"
+msgstr "Mit gondolsz, ki vagy?"
+
+#: src/wiz.c:1991
+msgid "Who do you want to lock?"
+msgstr "Kinek a zárját szeretnéd beállítani?"
+
+#: src/warnings.c:267 src/warnings.c:443
+msgid "Why would you want to be warned about garbage?"
+msgstr "Miért szeretnéd, hogy a szemét figyelmeztetéseit megkapd?"
+
+#: src/bsd.c:4297
+msgid "Why would you want to do that?"
+msgstr "Miért tennéd ezt?"
+
+#: src/lock.c:373
+msgid "Why would you want to lock garbage?"
+msgstr "Miért akarsz szemetet zárni?"
+
+#: src/bsd.c:4279
+#, c-format
+msgid "Wiz MOTD: %s"
+msgstr "Wiz MOTD: %s"
+
+#: src/move.c:512
+msgid "You already have that!"
+msgstr "Már megvan!"
+
+#: src/extchat.c:1101
+msgid "You already own too many channels."
+msgstr "Már túl sok csatornád van."
+
+#: src/extmail.c:1131
+msgid "You annihilate the post office. All messages cleared."
+msgstr "Megsemmisíted a postát. Minden üzenet törölve."
+
+#: src/look.c:865
+msgid "You are carrying:"
+msgstr "Nálad van:"
+
+#: src/version.c:33
+#, c-format
+msgid "You are connected to %s"
+msgstr "Beléptél %s világába."
+
+#: src/move.c:771
+#, c-format
+msgid "You are followed by: %s"
+msgstr "Követ téged: %s"
+
+#: src/move.c:770
+#, c-format
+msgid "You are following: %s"
+msgstr "Követed: %s"
+
+#: src/set.c:901
+msgid "You are not allowed to be your own ancestor!"
+msgstr "Nem lehetsz saját õsöd!"
+
+#: extchat.c:1430
+msgid "You are not on any channels."
+msgstr "Egyetlen csatornának sem vagy tagja."
+
+#: src/extchat.c:1254 src/extchat.c:1364
+#, c-format
+msgid "You are not on channel <%s>."
+msgstr "Nem vagy a <%s> csatornán."
+
+#: src/extchat.c:1291
+#, c-format
+msgid "You are not permitted to hide on channel <%s>."
+msgstr "Nem rejtõzködhetsz a <%s> csatornán."
+
+#: src/bsd.c:4015
+msgid "You are nowhere!"
+msgstr "Sehol nem vagy!"
+
+#: src/wiz.c:836
+msgid "You are politely shown to the door."
+msgstr "Udvariasan megmutatják neked az ajtót."
+
+#: src/speech.c:857
+msgid "You are set HAVEN and cannot receive pages."
+msgstr "HAVENen vagy, nem kapod meg az üzen-eket."
+
+#: src/look.c:863
+msgid "You aren't carrying anything."
+msgstr "Nem cipelsz semmit."
+
+#: src/move.c:861
+#, c-format
+msgid "You begin following %s."
+msgstr "Elkezded követni %s személyt."
+
+#: src/wiz.c:833
+msgid "You boot an idle self."
+msgstr "Kirúgod egy henyélõ önmagadat."
+
+#: src/wiz.c:835
+#, c-format
+msgid "You booted %s off!"
+msgstr "Kirúgtad %s játékost a játékból!"
+
+#: wiz.c:776
+#, c-format
+msgid "You booted unconnected port %s!"
+msgstr "Kirúgtad a %s kapcsolatlan portot!"
+
+#: attrib.c:1078
+msgid "You can only chown an attribute to yourself."
+msgstr "Csak saját magadnak chownolhatsz attribútumot."
+
+#: src/move.c:749
+msgid "You can only follow players and things."
+msgstr "Csak játékosokat és tárgyakat tudsz követni."
+
+#: src/wiz.c:229
+msgid "You can only set quotas to a number."
+msgstr "A kvótát csak számértékre állíthatod."
+
+#: src/wiz.c:234
+msgid "You can only set quotas to a positive number."
+msgstr "A kvóta csak pozitív szám lehet."
+
+#: src/extchat.c:1119
+#, c-format
+msgid "You can't afford the %d %s."
+msgstr "Nem engedheted meg magadnak a %d %s költséget."
+
+#: src/wiz.c:798
+msgid "You can't boot other people!"
+msgstr "Nem rúghatsz ki másokat!"
+
+#: src/extchat.c:1112
+msgid "You can't create channels of that type."
+msgstr "Ilyen típusú csatornát nem készíthetsz."
+
+#: src/function.c:773
+msgid "You can't delete that @function."
+msgstr "Ez a @funkció nem törölhetõ."
+
+#: src/move.c:576
+msgid "You can't drop that."
+msgstr "Ezt nem dobhatod el."
+
+#: src/wiz.c:584
+msgid "You can't force God!"
+msgstr "Isten nem irányítható!"
+
+#: src/set.c:139
+msgid "You can't give a player that name."
+msgstr "Nem adhatsz egy karakternek ilyen nevet."
+
+#: src/rob.c:207
+msgid "You can't give that away."
+msgstr "Ezt nem adhatod át."
+
+#: src/rob.c:202
+msgid "You can't give yourself away!"
+msgstr "Magadat nem adhatod át!"
+
+#: src/move.c:359 src/move.c:412 src/move.c:430
+msgid "You can't go that way."
+msgstr "Nem mehetsz arra."
+
+#: src/wiz.c:1175
+msgid "You can't grant powers to unregistered players."
+msgstr "Nem adhatsz hatalmat regisztrálatlan játékosoknak."
+
+#: src/move.c:670
+msgid "You can't leave."
+msgstr "Nem távozhatsz."
+
+#: src/create.c:60
+msgid "You can't link to that."
+msgstr "Nem köthetsz ehhez."
+
+#: src/lock.c:369
+msgid "You can't lock that!"
+msgstr "Ezt nem zárhatod!"
+
+#: src/wiz.c:166
+msgid "You can't look at someone else's quota."
+msgstr "Más kvótáját nem láthatod."
+
+#: src/look.c:572
+msgid "You can't look at that from here."
+msgstr "Innen nem nézhetsz arra."
+
+#: src/wiz.c:1202
+msgid "You can't make admin into guests."
+msgstr "Adminból nem lehet vendég."
+
+#: src/create.c:114
+msgid "You can't make an exit in a place that's crumbling."
+msgstr "Összeomló helyen nem készíthetsz kijáratot."
+
+#: src/extchat.c:1203
+msgid "You can't make channels that type."
+msgstr "Ilyen típusú csatornát nem készíthetsz."
+
+#: set.c:391
+msgid "You can't make circular zones!"
+msgstr "Nem készíthetsz körkörös zónát!"
+
+#: src/wiz.c:416
+msgid "You can't move an exit to someplace that's crumbling."
+msgstr "Összeomló helyre nem mozgathatsz kijáratot."
+
+#: src/move.c:537
+msgid "You can't pick that up."
+msgstr "Ezt nem veheted fel."
+
+#: src/move.c:541
+msgid "You can't pick up exits."
+msgstr "Nem veheted fel a kijáratokat."
+
+#: src/cmds.c:181
+msgid "You can't remake the world in your image."
+msgstr "Nem készítheted el a teljes világ képét az elmédben."
+
+#: src/wiz.c:1934
+msgid "You can't see someone else's quota!"
+msgstr "Más kvótájat nem nézheted meg!"
+
+#: src/look.c:534
+msgid "You can't see through that."
+msgstr "Ezen nem látsz keresztül."
+
+#: src/move.c:586
+msgid "You can't seem to drop things here."
+msgstr "Itt nem dobhatsz el semmit."
+
+#: src/move.c:583
+msgid "You can't seem to get rid of that."
+msgstr "Nem tudsz megszabadulni ettõl."
+
+#: src/move.c:502
+msgid "You can't take that from there."
+msgstr "Ezt onnan nem veheted fel."
+
+#: src/move.c:544
+msgid "You can't take that!"
+msgstr "Ezt nem veheted fel!"
+
+#: src/wiz.c:359
+msgid "You can't teleport rooms."
+msgstr "Szobákat nem teleportálhatsz."
+
+#: cmds.c:835
+msgid "You can't teleport to nothing!"
+msgstr "Nem teleportálhatsz a semmibe!"
+
+#: src/set.c:813
+msgid "You can't trigger God!"
+msgstr "Isten triggerelése nem lehetséges!"
+
+#: src/create.c:213
+msgid "You can't unlink that!"
+msgstr "A kötést nem szüntetheted meg!"
+
+#: src/set.c:214
+msgid "You cannot @CHOWN/PRESERVE. Use normal @CHOWN."
+msgstr "A @CHOWN/PRESERVE nem használható. Használd helyette a @CHOWN-t."
+
+#: function.c:869
+msgid "You cannot change that built-in function."
+msgstr "Ezt a beépített funkciót nem változtathatod meg."
+
+#: set.c:474
+#, c-format
+msgid "You cannot change that flag on %s/%s"
+msgstr "Nem állíthatod a %s/%s jelzõjét"
+
+#: src/wiz.c:734
+msgid "You cannot change that player's password."
+msgstr "A játékos jelszavát nem állíthatod át."
+
+#: src/command.c:1244
+msgid "You cannot do that while gagged."
+msgstr "Ezt nem teheted, amíg el vagy némítva."
+
+#: src/move.c:527
+msgid "You cannot get yourself!"
+msgstr "Magadat nem feheted fel."
+
+#: src/move.c:450
+msgid "You cannot modify exits in that room."
+msgstr "Az ebben a szobában levõ kijáratokat nem módosíthatod."
+
+#: src/set.c:357
+msgid "You cannot move that object to that zone."
+msgstr "Ezt az objektumot abba a zónába nem mozgathatod."
+
+#: src/set.c:469
+#, c-format
+msgid "You cannot set attrib flags on %s/%s"
+msgstr "Az attribútum jelzõk %s/%s helyen nem állíthatók."
+
+#: src/move.c:753
+msgid "You chase your tail for a while and feel silly."
+msgstr "Egy ideig saját farkad kergeted, majd hülyének érzed magad."
+
+#: move.c:899
+msgid "You desert everyone you're leading or following."
+msgstr "Elhagysz mindenkit aki követ, s akit követsz."
+
+#: move.c:866
+msgid "You dismiss all your followers."
+msgstr "Elbocsájtod minden követõdet."
+
+#: src/rob.c:77
+msgid "You do not have such power."
+msgstr "Nincs ilyen hatalmad."
+
+#: src/wiz.c:117
+msgid "You do not have the power over body and mind!"
+msgstr "Nincs hatalmad test és elme fölött!"
+
+#: src/cque.c:950
+msgid "You do not have the power to bring the world to a halt."
+msgstr "Nincs hatalmad megállítani a világot."
+
+#: src/wiz.c:925
+msgid "You do not have the power to change reality."
+msgstr "Nincs hatalmad a valóság megváltoztatására."
+
+#: src/cque.c:972
+msgid "You do not have the power to restart the world."
+msgstr "Nincs hatalmad a világ újraindításához."
+
+#: src/create.c:152
+#, c-format
+msgid "You don't have enough %s to link."
+msgstr "Nincs nálad elég %s a kötéshez."
+
+#: src/rob.c:120 src/speech.c:935
+#, c-format
+msgid "You don't have enough %s."
+msgstr "Nincs nálad elég %s."
+
+#: flags.c:1319 flags.c:1374
+msgid "You don't have enough magic for that."
+msgstr "Nincs elég mágiád ehhez."
+
+#: src/rob.c:246
+#, c-format
+msgid "You don't have that many %s to give!"
+msgstr "Nincs nálad elég %s, hogy átadd!"
+
+#: src/move.c:568 src/rob.c:191
+msgid "You don't have that!"
+msgstr "Nincs nálad ilyen!"
+
+#: src/attrib.c:1114
+msgid "You don't have the permission to chown that."
+msgstr "Nincs engedélyed, hogy ezt @chown-old."
+
+#: src/set.c:352
+msgid "You don't have the power to shift reality."
+msgstr "Nincs hatalmad meghajlítani a valóságot."
+
+#: flags.c:1455 flags.c:1504 flags.c:1533 flags.c:1579
+msgid "You don't look like God."
+msgstr "Nem úgy nézel ki, mint egy Isten."
+
+#: src/bsd.c:3073
+msgid "You don't look like an admin to me."
+msgstr "Nem tûnsz adminnak."
+
+#: src/move.c:745
+msgid "You don't see that here."
+msgstr "Ilyent itt nem látsz."
+
+#: move.c:649
+#, c-format
+msgid "You drop %s."
+msgstr "%s eldobva."
+
+#: move.c:1128
+#, c-format
+msgid "You follow %s."
+msgstr "Követed %s-t."
+
+#: rob.c:182
+#, c-format
+msgid "You gave %s to %s."
+msgstr "%s átadva %s részére."
+
+#: src/rob.c:261
+#, c-format
+msgid "You get %d in change."
+msgstr "Visszakapsz %d aprót."
+
+#: src/destroy.c:759
+#, c-format
+msgid "You get your %d %s deposit back for %s."
+msgstr "Visszakapod a %d %s letétedet %s miatt."
+
+#: src/rob.c:276
+#, c-format
+msgid "You give %d %s to %s."
+msgstr "Átadsz %d %st %s számára."
+
+#: src/look.c:853
+#, c-format
+msgid "You have %d %s."
+msgstr "Erszényedben van: %d %s."
+
+#: src/destroy.c:514
+#, c-format
+msgid "You have been spared from destruction by %s."
+msgstr "%s által megmenekültél a pusztulástól."
+
+#: src/destroy.c:517
+msgid "You have been spared from destruction."
+msgstr "Megmenekültél a pusztulástól."
+
+#: src/speech.c:832
+msgid "You haven't paged anyone since connecting."
+msgstr "Kapcsolódás óta még nem üzentél senkinek."
+
+#: extchat.c:1593
+msgid "You hide on all the channels you can."
+msgstr "Elrejtõzöl az összes olyan csatornán, ahol tudsz."
+
+#: src/rob.c:127
+#, c-format
+msgid "You killed %s!"
+msgstr "Megölted %s-t!"
+
+#: src/speech.c:842
+#, c-format
+msgid "You last paged %s."
+msgstr "Utoljára %s részére üzentél."
+
+#: src/speech.c:1424
+#, c-format
+msgid "You lemit: \"%s\""
+msgstr "A @lemit parancsot használod: \"%s\""
+
+#: src/bsd.c:4256
+msgid "You may get 15 minutes of fame and glory in life, but not right now."
+msgstr "Kaphatsz 15 perc sikert és ismertséget az életben, de nem most."
+
+#: src/create.c:311
+msgid "You may not link something to itself."
+msgstr "Nem köthetsz valamit saját magához."
+
+#: src/set.c:535
+msgid "You may not set attributes."
+msgstr "Nem állíthatsz át attribútumokat."
+
+#: src/speech.c:132 src/speech.c:171 src/speech.c:644 src/speech.c:1342
+msgid "You may not speak here!"
+msgstr "itt nem beszélhetsz!"
+
+#: src/speech.c:218 src/speech.c:270 src/speech.c:1375 src/speech.c:1420
+msgid "You may not speak there!"
+msgstr "Itt nem beszélhetsz!"
+
+#: cque.c:662
+msgid "You may not specify a semaphore attribute with the ANY switch."
+msgstr "Nem adhatsz meg szemafor attribútumot MINDEGY kapcsolóval."
+
+#: cque.c:690
+msgid "You may not specify a semaphore count with the ALL switch."
+msgstr "Nem adhatsz meg szemafor számlálót MIND kapcsolóval."
+
+#: src/wiz.c:514
+msgid "You may not teleport out of the zone from this room."
+msgstr "Nem teleportálhatsz zónán kívülre ebbõl a szobából."
+
+#: src/cque.c:913
+msgid "You may not use @halt obj=command on this object."
+msgstr "Nem használhatod a @halt objektum=parancs parancsot ezen a tárgyon."
+
+#: src/flags.c:595
+msgid "You must @lock/zone before you can set a player ZONE"
+msgstr "A @lock/zone parancsot kell használnod, mielõtt a játékost ZONE-ra állítod"
+
+#: src/extchat.c:922 src/extchat.c:1029
+msgid "You must be on that channel to speak on it."
+msgstr "A csatornán kell lenned, hogy beszélhess rajta."
+
+#: set.c:210
+msgid "You must carry the object to @chown it."
+msgstr "A tárgy @chown-olásához magadhoz kell azt venni."
+
+#: wiz.c:1460
+msgid "You must give a list of flag names."
+msgstr "Meg kell adnod egy attribútum-név listát."
+
+#: wiz.c:1453
+msgid "You must give a string of flag characters."
+msgstr "Egy jelzõ betûkbõl álló szöveget kell megadnod."
+
+#: command.c:1357
+msgid "You must give both an object and attribute."
+msgstr "Meg kell adnod egy objektumot és egy attribútumot is."
+
+#: flags.c:1459
+msgid "You must provide a name for the alias."
+msgstr "Meg kell adnod egy alias nevet."
+
+#: src/extchat.c:1074 src/extchat.c:1247 src/extchat.c:1354
+msgid "You must specify a channel."
+msgstr "Meg kell adnod egy csatornát."
+
+#: src/command.c:1090
+msgid "You must specify a command."
+msgstr "Meg kell adnod egy parancsot."
+
+#: src/set.c:547
+msgid "You must specify a flag to set."
+msgstr "Meg kell adnod a beállítandó jelzõt."
+
+#: src/rob.c:230
+#, c-format
+msgid "You must specify a positive number of %s."
+msgstr "Pozitív mennyiségû %st kell megadnod."
+
+#: src/look.c:1044
+msgid "You must specify a valid player name."
+msgstr "Érvényes játékos nevet kell megadnod."
+
+#: src/function.c:672
+msgid "You must specify an object and an attribute."
+msgstr "Meg kell adnod egy objektumot és egy attribútumot."
+
+#: cque.c:652
+msgid "You must specify an object to use for the semaphore."
+msgstr "Meg kell adnod egy objektumot a szemaforhoz való használatra."
+
+#: extchat.c:1171 extchat.c:1266
+msgid "You must stop gagging that channel to speak on it."
+msgstr "Ki kell kapcsolnod a csatorna csendességét, hogy beszélhess rajta."
+
+#: src/destroy.c:280
+msgid "You must use @nuke to destroy a player."
+msgstr "Játékos megsemmisítéséhez használd a @nuke parancsot."
+
+#: src/wiz.c:678 src/wiz.c:1451
+msgid "You need a search warrant to do that!"
+msgstr "Körözvényre lenne ehhez szükséged!"
+
+#: attrib.c:1017
+msgid "You need to be able to set the attribute to change its lock."
+msgstr "Kell, hogy tudd állítani az attribútumot, hogy a zárján változtass."
+
+#: src/set.c:715
+msgid "You need to control an attribute to edit it."
+msgstr "Hogy egy attribútumot szerkeszthess, irányítanod kell."
+
+#: src/attrib.c:985 src/attrib.c:989 src/attrib.c:1058 src/attrib.c:1062
+msgid "You need to give an object/attribute pair."
+msgstr "Objektum/attribútum párt kell megadnod."
+
+#: src/extchat.c:746
+msgid "You need to specify a channel."
+msgstr "Meg kell adnod egy csatornát."
+
+#: extchat.c:2991
+msgid "You need to specify the number of lines to buffer."
+msgstr "Meg kell adnod a bufferelendõ sorok számát."
+
+#: src/extchat.c:1298
+#, c-format
+msgid "You no longer appear on channel <%s>'s who list."
+msgstr "Mostantól nem jelensz meg a <%s> csatorna kik listáján."
+
+#: src/bsd.c:4639
+msgid "You no longer appear on the WHO list."
+msgstr "Mostantól nem látszol a KIK listán."
+
+#: src/extchat.c:1305
+#, c-format
+msgid "You now appear on channel <%s>'s who list."
+msgstr "Mostantól megjelensz a <%s> csatorna kik listáján."
+
+#: src/bsd.c:4641
+msgid "You now appear on the WHO list."
+msgstr "Mostantól megjelensz a KIK listán."
+
+#: src/destroy.c:1103
+#, c-format
+msgid "You own a disconnected room, %s"
+msgstr "Van egy kapcsolatlan szobád, %s"
+
+#: src/destroy.c:1181
+#, c-format
+msgid "You own an object %s that was 'orphaned'."
+msgstr "Az egyik objektumod, %s 'elárvult'."
+
+#: destroy.c:1170
+#, c-format
+msgid "You own an object in a circular zone chain: %s"
+msgstr "A körkörös zóna láncolatban rendelkezel objektummal: %s"
+
+#: destroy.c:1143
+#, c-format
+msgid "You own an object without a @lock/zone being used as a zone: %s"
+msgstr "Van egy tárgyad ami @lock/zone nélkül zónaként van használva: %s"
+
+#: src/rob.c:263
+#, c-format
+msgid "You paid %d %s."
+msgstr "Fizetsz %d %st."
+
+#: src/speech.c:616
+#, c-format
+msgid "You pemit \"%s\" to %s."
+msgstr "@pemiteled %2$s-nek, hogy: \"%1$s\"."
+
+#: src/speech.c:1383
+#, c-format
+msgid "You remit, \"%s\" in %s"
+msgstr "Azt @remit-eled %2$s helyen, \"%1$s\""
+
+#: src/speech.c:177
+#, c-format
+msgid "You say, \"%s\""
+msgstr "Azt mondod, \"%s\""
+
+#: src/look.c:412
+msgid "You see nothing special."
+msgstr "Nem látsz semmi különlegeset."
+
+#: extmail.c:2685
+#, c-format
+msgid "You sent your message to the '%s' alias"
+msgstr "Elküldted az üzenetet a '%s' alias részére."
+
+#: src/set.c:367
+msgid "You shouldn't zone objects to themselves!"
+msgstr "Nem szabadna az objektum zónáját önmagára állítanod!"
+
+#: src/create.c:240
+msgid "You somehow wound up in a exit. No biscuit."
+msgstr "Valahogy egy kijáratba kerültél. Nincs csoki."
+
+#: src/move.c:917 src/move.c:1036
+#, c-format
+msgid "You stop following %s."
+msgstr "Abbahagyod %s követését."
+
+#: move.c:835
+msgid "You stop following anyone."
+msgstr "Abbahagyod a követést."
+
+#: move.c:527
+#, c-format
+msgid "You take %s from %s."
+msgstr "%s kivéve %s zsebébõl."
+
+#: move.c:573
+#, c-format
+msgid "You take %s."
+msgstr "%s felvéve."
+
+#: src/rob.c:279
+#, c-format
+msgid "You took %d %s from %s!"
+msgstr "Elvettél %d %st %s erszényébõl!"
+
+#: extchat.c:1594
+msgid "You unhide on all channels."
+msgstr "Megszünteted minden csatornán a rejtõzködést."
+
+#: src/destroy.c:336
+#, c-format
+msgid "You will be rewarded shortly for %s."
+msgstr "Meg leszel jutalmazva %s miatt."
+
+#: src/extchat.c:1266
+#, c-format
+msgid "You will no longer hear connection messages on channel <%s>."
+msgstr "Mostantól nem hallod a <%s> csatorna kapcsolati üzeneteit."
+
+#: src/extchat.c:1322
+#, c-format
+msgid "You will no longer hear messages on channel <%s>."
+msgstr "Mostantól nem hallod a <%s> csatornát."
+
+#: src/extchat.c:1274
+#, c-format
+msgid "You will now hear connection messages on channel <%s>."
+msgstr "Mostantól hallod a <%s> csatorna kapcsolódási üzeneteit."
+
+#: src/extchat.c:1329
+#, c-format
+msgid "You will now hear messages on channel <%s>."
+msgstr "Mostantól újra hallasz a <%s> csatornán."
+
+#: src/speech.c:1488
+#, c-format
+msgid "You zemit, \"%s\" in zone %s"
+msgstr "A %2$s zónába zemiteled: \"%1$s\""
+
+#: src/warnings.c:412
+msgid "You'd better check your wizbit first."
+msgstr "Elõbb szedj össze egy kis manát."
+
+#: move.c:788
+#, c-format
+msgid "You're already following %s."
+msgstr "Már követed %s-t."
+
+#: src/wiz.c:453
+msgid "You're in the Void. This is not a good thing."
+msgstr "A Semmiben lebegsz. Ez nem egy jó dolog."
+
+#: src/wiz.c:479
+msgid "You're in the void - sending you home."
+msgstr "A semmiben lebegsz - hazaküldelek."
+
+#: src/wiz.c:487
+msgid "You're in too many containers."
+msgstr "Túl sok tárolóban vagy."
+
+#: move.c:845
+#, c-format
+msgid "You're not following %s."
+msgstr "%s követése abbahagyva."
+
+#: speech.c:733
+msgid "You're trying to page too many people at once."
+msgstr "Túl sok embernek próbálsz egyszerre üzenni."
+
+#: src/destroy.c:410
+#, c-format
+msgid "Your %s has been spared from destruction."
+msgstr "%s tulajdonod megmenekült a pusztulástól."
+
+#: src/bsd.c:3419
+msgid "Your HAVEN flag is set. You cannot receive pages."
+msgstr "A HAVEN be van rajtad állítva. Nem fogadsz üzeneteket."
+
+#: timer.c:158
+msgid "Your ON-VACATION flag is set! If you're back, clear it."
+msgstr "Be van állítva a VAKÁCIÓ jelzõd! Ha visszajössz, töröld."
+
+#: src/flags.c:1092
+msgid "Your contents can no longer be heard from outside."
+msgstr "A nálad levõk többé nem hallatszanak kívülrõl."
+
+#: src/flags.c:1152
+msgid "Your contents can now be heard from outside."
+msgstr "A nálad levõk mostantól hallhatóak kívülrõl."
+
+#: src/wiz.c:1971
+msgid "Your delusions of grandeur have been noted."
+msgstr "Hatalmi érzékcsalódásod feljegyeztetett."
+
+#: src/rob.c:147
+msgid "Your insurance policy has been revoked."
+msgstr "Biztosításod visszavonatott."
+
+#: src/rob.c:143
+#, c-format
+msgid "Your insurance policy pays %d %s."
+msgstr "A szabályok %d %st fizetnek."
+
+#: src/rob.c:155
+msgid "Your murder attempt failed."
+msgstr "Gyilkossági kísérleted sikertelennek bizonyult."
+
+#: src/cque.c:988
+#, c-format
+msgid "Your objects are being globally restarted by %s"
+msgstr "Az objektumaid globálisan újraindítja %s."
+
+#: src/cque.c:956
+#, c-format
+msgid "Your objects have been globally halted by %s"
+msgstr "Az objektumaid %s leállította"
+
+#: src/wiz.c:739
+#, c-format
+msgid "Your password has been changed by %s."
+msgstr "A jelszavad %s megváltoztatta."
+
+#: src/player.c:298
+#, c-format
+msgid "Your requested player, %s, has been created.\n"
+msgstr "Az igényelt karaktered, %s elkészült.\n"
+
+#: src/wiz.c:959
+#, c-format
+msgid "Zone changed for %d objects."
+msgstr "%d objektum zónája megváltozott."
+
+#: src/set.c:422
+msgid "Zone changed."
+msgstr "Zóna megváltoztatva."
+
+#: src/predicat.c:764
+#, c-format
+msgid "[%d:%02d] %s message sent to %s."
+msgstr "[%d:%02d] %s üzenet %s részére elküldve."
+
+#: src/bsd.c:4683
+msgid ""
+"\n"
+"*** Inactivity limit reached. You are now HIDDEN. ***\n"
+msgstr ""
+"\n"
+"***  Inaktivitási határ túllépve, mostantól rejtett vagy. ***\n"
+
+#: src/bsd.c:4673
+msgid ""
+"\n"
+"*** Inactivity timeout ***\n"
+msgstr ""
+"\n"
+"*** Idõntúli inaktivitás ***\n"
+
+#: src/extmail.c:2507
+msgid ""
+"\n"
+"MAIL: You have no mail.\n"
+msgstr ""
+"\n"
+"POSTA: Nincs új leveled.\n"
+
+#: bsd.c:4127 bsd.c:4133
+msgid "a connecting player"
+msgstr "kapcsolódó játékos"
+
+#: extchat.c:2150 look.c:209 speech.c:372 speech.c:806
+msgid "and"
+msgstr "és"
+
+#: src/log.c:273
+msgid "bad object"
+msgstr "hibás objektum"
+
+#: extchat.c:1377
+msgid "cleared"
+msgstr "törölve"
+
+#: move.c:608
+#, c-format
+msgid "drops %s."
+msgstr "eldobja %st."
+
+#: src/warnings.c:183
+msgid "exit has no return exit"
+msgstr "kijárat csak egy irányban létezik"
+
+#: src/warnings.c:163
+msgid "exit is missing description"
+msgstr "kijárat leírása hiányzik"
+
+#: src/warnings.c:148
+msgid "exit is unlinked; anyone can steal it"
+msgstr "a kijárat kötetlen; akárki ellophatja"
+
+#: src/move.c:101
+msgid "has arrived."
+msgstr "megérkezett."
+
+#: src/move.c:96
+msgid "has left."
+msgstr "távozott."
+
+#: lock.c:685
+msgid "lock flags set"
+msgstr "zár jelzõ beállítva"
+
+#: lock.c:685
+msgid "lock flags unset"
+msgstr "zár jelzõ törölve"
+
+#: src/warnings.c:202
+msgid "player is missing description"
+msgstr "a játékos @leírása hiányzik"
+
+#: src/warnings.c:159
+msgid "possibly locked exit missing fail"
+msgstr "valószínûleg zárt kijárat @fail nélkül"
+
+#: src/warnings.c:229
+msgid "possibly locked thing missing fail"
+msgstr "valószínûleg zárt objektum @fail nélkül"
+
+#: src/warnings.c:157
+msgid "possibly unlocked exit missing succ/osucc/odrop"
+msgstr "valószínûleg nyitott kijárat @succ/@osucc/@odrop nélkül"
+
+#: src/warnings.c:227
+msgid "possibly unlocked thing missing succ/osucc/drop/odrop"
+msgstr "valószínûleg nyitott tárgy @succ/@osucc/@drop/@odrop nélkül"
+
+#: funstr.c:100
+msgid "pronoun:feminine,absolute possessive"
+msgstr "fõnév: nõi, abszolút birtokos"
+
+#: funstr.c:88
+msgid "pronoun:feminine,objective"
+msgstr "õt"
+
+#: funstr.c:92
+msgid "pronoun:feminine,possessive"
+msgstr "fõnév: nõi, birtokos"
+
+#: funstr.c:88
+msgid "pronoun:feminine,subjective"
+msgstr "fõnév: nõi, alanyi"
+
+#: funstr.c:101
+msgid "pronoun:masculine,absolute possessive"
+msgstr "fõnév: férfi, abszolút birtokos"
+
+#: funstr.c:97
+msgid "pronoun:masculine,objective"
+msgstr "fõnév: férfi, tárgyi"
+
+#: funstr.c:89
+msgid "pronoun:masculine,subjective"
+msgstr "fõnév: férfi, alanyi"
+
+#: funstr.c:91
+msgid "pronoun:neuter,absolute possessive"
+msgstr "övé"
+
+#: funstr.c:91
+msgid "pronoun:neuter,possessive"
+msgstr "fõnév: semleges, birtokos"
+
+#: funstr.c:87
+msgid "pronoun:neuter,subjective"
+msgstr "fõnév: semleges, alanyi"
+
+#: funstr.c:94
+msgid "pronoun:plural,absolute possessive "
+msgstr "övék "
+
+#: funstr.c:98
+msgid "pronoun:plural,objective"
+msgstr "fõnév: többes, tárgyi"
+
+#: src/warnings.c:126
+msgid "room has no description"
+msgstr "szoba @leírása hiányzik"
+
+#: extchat.c:1377
+msgid "set"
+msgstr "beállítva"
+
+#: move.c:529
+#, c-format
+msgid "takes %s from %s."
+msgstr "elveszi %s-t %s zsebébõl."
+
+#: move.c:492 move.c:534
+#, c-format
+msgid "takes %s."
+msgstr "felveszi %st."
+
+#: src/warnings.c:219
+msgid "thing is missing description"
+msgstr "tárgy @leírása hiányzik"
+

@@ -1,0 +1,4 @@
+#!/bin/sh
+
+exec @PERL@ runtest.pl $@ test*.pl
+

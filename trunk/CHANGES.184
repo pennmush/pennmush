@@ -65,6 +65,7 @@ Minor changes:
  * Updated intructions for compiling with MySQL support on Windows
    contributed by Daniko.
  * Improve ssl_slave cleanup code on lost connections and shutdowns. [SW]
+ * @list locks and list(locks) sort their results. [SW]
    
 Fixes:
  * @lock/infilter, not @lock/infitler. [SW]

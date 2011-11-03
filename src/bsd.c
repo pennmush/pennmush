@@ -1663,6 +1663,9 @@ logout_sock(DESC *d)
   welcome_user(d, 0);
 }
 
+/* Has to be file scope because of interactions with @boot */
+static DESC *pc_dnext = NULL;
+
 /** Disconnect a descriptor.
  * This sends appropriate disconnection text, flushes output, and
  * then closes the associated socket.
@@ -1708,6 +1711,8 @@ shutdownsock(DESC *d, const char *reason)
   }
   shutdown(d->descriptor, 2);
   closesocket(d->descriptor);
+  if (pc_dnext == d) 
+    pc_dnext = d->next;
   if (d->prev)
     d->prev->next = d->next;
   else                          /* d was the first one! */
@@ -2490,9 +2495,6 @@ set_userstring(unsigned char **userstring, const char *command)
     *userstring = (unsigned char *) mush_strdup(command, "userstring");
 }
 
-/* Has to be file scope because of interactions with @boot */
-static DESC *pc_dnext = NULL;
-
 static void
 process_commands(void)
 {
@@ -3110,8 +3112,6 @@ boot_player(dbref player, int idleonly, int silent)
 
   DESC_ITER_CONN(d) {
     if (boot) {
-      if (pc_dnext == boot)
-	pc_dnext = pc_dnext->next;
       boot_desc(boot, "boot");
       boot = NULL;
     }
@@ -3123,11 +3123,10 @@ boot_player(dbref player, int idleonly, int silent)
       boot = d;
     }
   }
-  if (boot) {
-    if (pc_dnext == boot)
-      pc_dnext = pc_dnext->next;
+
+  if (boot)
     boot_desc(boot, "boot");
-  }
+
   if (count && idleonly) {
     if (count == 1)
       notify(player, T("You boot an idle self."));

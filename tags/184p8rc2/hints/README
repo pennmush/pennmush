@@ -1,0 +1,16 @@
+The files in this directory contains additional information about
+configuring PennMUSH on various operating systems. If there isn't
+one for your OS, and you need to pass special options and/or set
+the CPPFLAGS and LDFLAGS environment variables to add directories
+to the search patch for libraries (Or if you had to do something
+beyond what's in the provided hint file), please file a report at
+http://dev.pennmush.org telling us  what you had to do so the hints
+can be added to the next release.
+
+For Windows hints and directions see the win32 directory. There are
+instructions there for Microsoft compilers, cygwin, and mingw.
+
+The OS.txt files are the current ones. OS.sh files are hints from the
+old configure system that we haven't updated yet. Please file a bug
+report at the URL above if you have access to one of those systems and
+are willing to help update hints for it.

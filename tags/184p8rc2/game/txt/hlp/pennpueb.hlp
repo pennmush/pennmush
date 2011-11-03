@@ -1,0 +1,136 @@
+& PUEBLO
+& PUEBLO()
+Pueblo is a client made by Chaco (a now defunct company).
+It attempts to mix HTML with MUSH, and does a decent job at it.
+There are other clients (notably MUSHclient) that also offer Pueblo 
+features.  If compiled into the MUSH, PennMUSH offers support for
+the enhanced features of Pueblo.
+
+PennMUSH will automatically detect a Pueblo client (rather, the 
+client will announce itself and PennMUSH will detect that), and
+set up that connection for Pueblo use. 
+
+The PUEBLO() function returns 1 for players connected with Pueblo, 
+0 for players with other clients, and #-1 NOT CONNECTED for
+players who aren't connected. It uses the most recently active
+connection if a player is multiply logged in.
+
+For more information, see 'Pueblo features', 'HTML' and
+'HTML Functions'. 
+
+& PUEBLO FEATURES
+PennMUSH makes the following enhancements visible to Pueblo users, if
+Pueblo support has been enabled in the server (check @config):
+
+- Object/Room names are highlighted
+- Support for VRML graphics
+- Unordered list for contents and transparent exits
+- Contents and links have links (Click an exit to walk through it)
+- Object lists (like the ones found in 'examine') have links
+- Conversion of ANSI sequences to <FONT> tags.
+
+See also: 'HTML', 'HTML Functions' and '@VRML_URL' for more help.
+
+& @VRML_URL
+& VRML
+@VRML_URL Object=<URL>
+
+This provides an object (usually a room) with a VRML world. When a 
+Pueblo-user enters this object, the VRML World listed in @VRML_URL
+will be loaded.
+
+Example:
+@VRML_URL here=http://www.pennmush.org/pennmush.vrml
+
+To learn about the VRML Format, have a look at the Pueblo Help, which
+mentions several good sites for learning.
+
+See also: 'HTML'.
+
+& HTML
+Hyper Text Markup Language (http://www.w3.org)
+
+The only HTML implementation supported by the MUSH is the one
+supported by Pueblo (See 'Pueblo'). To utilize HTML, use
+one of the MUSH HTML Functions. (See 'HTML Functions').
+
+HTML tags are stripped when sent to non-HTML capable players.
+
+See also: 'HTML Functions'.
+& HTML FUNCTIONS
+HTML Functions are used to output HTML tags to HTML capable
+users. These tags will be stripped by the system for anything
+non-HTML related. These functions will not be available if
+the server is compiled without Pueblo support (check @config).
+
+html()
+tag()
+endtag()
+tagwrap()
+
+Examples:
+  [html(A HREF="http://www.pennmush.org")]PennMUSH[html(/A)]
+  [tag(A,HREF="http://www.pennmush.org")]PennMUSH[endtag(A)]
+  [tagwrap(A,HREF="http://www.pennmush.org",PennMUSH)]
+Each of these produces the HTML output:
+  <A HREF="http://www.pennmush.org">PennMUSH</A>
+
+Mortals are restricted in the tags they may use. Most standard HTML
+tags are ok; protocol-specific tags like SEND and XCH_CMD can only be
+sent by Wizards. In addition, the html() function is Wizard-only.
+& HTML()
+Function: html(<string>)
+
+This wizard-only function will output string as a HTML Tag.
+
+Example:
+  html(b)
+
+Will output (in HTML):
+  <b>
+
+Non-wizards should see the tag(), endtag(), and tagwrap() functions.
+& TAG()
+  tag(<name>[, <param1>[, ... , <paramN>]])
+
+  This function outputs the named HTML/Pueblo tag with the given paramaters.
+
+  Example:
+   tag(img,src="http://www.pennmush.org/image.jpg",align="left",width="300")
+
+Will output (in HTML):
+  <img src="http://www.pennmush.org/image.jpg" align="left" width="300">
+
+See also: endtag(), tagwrap(), html()
+& ENDTAG()
+  endtag(<name>)
+
+
+  Outputs a closing HTML/Pueblo tag for the named tag.
+
+  Example:
+   endtag(img)
+
+Will output (in HTML):
+ </img>
+
+See also: tag(), tagwrap(), html()
+& TAGWRAP()
+Function: tagwrap(<name>[,<parameters>],<string>)
+
+  This function outputs <string>, wrapped in the <name> HTML/Pueblo tag
+  with the specified paramaters.
+
+  Example:
+   tagwrap(a,href="http://download.pennmush.org",PennMUSH Downloads)]
+Will output (in HTML):
+ <a href="http://download.pennmush.org">PennMUSH Downloads</a>
+
+  A particularly important use of this function is tagwrap(pre, <string>).
+  Because Pueblo works like an html browser, spaces and tabs are compressed
+  to a single space. If you have code (a +who function, for example) that
+  relies on exact spacing, surround its output with a tagwrap(pre,...)
+  so that Pueblo will render it as "preformatted" text.
+  
+See also: tag(), endtag(), html()
+

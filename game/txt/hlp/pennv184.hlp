@@ -89,6 +89,9 @@ Fixes:
  * Channel names can now contain any amount of ANSI, as long as the visible
    name is 30 chars or less in length. Suggested by Kimiko Muffin. [MG]
  * @channel/rename allowed you to give channels invalid names. [MG]
+ * @readcache rebuilds the linux file watch list, allowing deleted
+   files to be watched for changes again when re-created. [SW]
+ * Crash bug in @boot/me. Reported by Minion. [SW]
 
 Functions:
  * isregexp() to validate regexp patterns. Suggested by Padraic. [DC]

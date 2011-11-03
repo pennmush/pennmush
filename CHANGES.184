@@ -96,6 +96,7 @@ Fixes:
  * @channel/rename allowed you to give channels invalid names. [MG]
  * @readcache rebuilds the linux file watch list, allowing deleted
    files to be watched for changes again when re-created. [SW]
+ * Crash bug in @boot/me. Reported by Minion. [SW]
 
 Functions:
  * isregexp() to validate regexp patterns. Suggested by Padraic. [DC]

@@ -1727,6 +1727,7 @@ shutdownsock(DESC *d, const char *reason)
   {
     freeqs(d);
     mush_free(d->ttype, "terminal description");
+    memset(d, 0xFF, sizeof *d);
     mush_free(d, "descriptor");
   }
 
@@ -2489,19 +2490,24 @@ set_userstring(unsigned char **userstring, const char *command)
     *userstring = (unsigned char *) mush_strdup(command, "userstring");
 }
 
+/* Has to be file scope because of interactions with @boot */
+static DESC *pc_dnext = NULL;
+
 static void
 process_commands(void)
 {
   int nprocessed;
 
-  do {
-    DESC *cdesc, *dnext = NULL;
+  pc_dnext = NULL;
 
+  do {
+    DESC *cdesc;
+   
     nprocessed = 0;
-    for (cdesc = descriptor_list; cdesc; cdesc = dnext) {
+    for (cdesc = descriptor_list; cdesc; cdesc = pc_dnext) {
       struct text_block *t;
 
-      dnext = cdesc->next;
+      pc_dnext = cdesc->next;
 
       if (cdesc->quota > 0 && (t = cdesc->input.head) != NULL) {
         enum comm_res retval;
@@ -2537,6 +2543,7 @@ process_commands(void)
         }
       }
     }
+    pc_dnext = NULL;
   } while (nprocessed > 0);
 }
 
@@ -3103,6 +3110,8 @@ boot_player(dbref player, int idleonly, int silent)
 
   DESC_ITER_CONN(d) {
     if (boot) {
+      if (pc_dnext == boot)
+	pc_dnext = pc_dnext->next;
       boot_desc(boot, "boot");
       boot = NULL;
     }
@@ -3114,8 +3123,11 @@ boot_player(dbref player, int idleonly, int silent)
       boot = d;
     }
   }
-  if (boot)
+  if (boot) {
+    if (pc_dnext == boot)
+      pc_dnext = pc_dnext->next;
     boot_desc(boot, "boot");
+  }
   if (count && idleonly) {
     if (count == 1)
       notify(player, T("You boot an idle self."));

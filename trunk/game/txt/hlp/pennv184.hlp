@@ -96,6 +96,8 @@ Fixes:
 
 Functions:
  * isregexp() to validate regexp patterns. Suggested by Padraic. [DC]
+ * sqlescape() doesn't need to have commas escaped. Suggested by Daniko
+   and Padraic. [SW]
  
 Commands:
  * 'examine' and 'brief' now take an /opaque switch, which omits contents

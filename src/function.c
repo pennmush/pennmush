@@ -534,7 +534,7 @@ FUNTAB flist[] = {
   {"SPELLNUM", fun_spellnum, 1, 1, FN_REG | FN_STRIPANSI},
   {"SPLICE", fun_splice, 3, 4, FN_REG},
   {"SQL", fun_sql, 1, 4, FN_REG},
-  {"SQLESCAPE", fun_sql_escape, 1, 1, FN_REG},
+  {"SQLESCAPE", fun_sql_escape, 1, -1, FN_REG},
   {"SQUISH", fun_squish, 1, 2, FN_REG},
   {"SSL", fun_ssl, 1, 1, FN_REG | FN_STRIPANSI},
   {"STARTTIME", fun_starttime, 0, 0, FN_REG},

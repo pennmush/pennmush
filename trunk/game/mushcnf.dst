@@ -791,15 +791,6 @@ page_aliases no
 # the @*wall and say commands.
 chat_strip_quote yes
 
-
-# Should strlen(%r) be 1 or 2? Turning this option on will allow %r to be
-# used as a list delimiter, but might break ancient formatting softcode that 
-# depends on its length being 2. This option is deprecated, and will soon be
-# removed; you should leave it turned on, and rewrite any code that relies on
-# it being off.
-newline_one_char yes
-
-
 # Should object names be restricted to just ascii characters, or can
 # non-ascii (Accented letters, for example) be used as well if the
 # mush'es locale permits? Not reccomended except for

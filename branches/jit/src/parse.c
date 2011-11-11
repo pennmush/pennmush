@@ -465,7 +465,7 @@ is_strict_integer(char const *str)
   return end > str;
 }
 
-/** Does a string contain a list of space-separated integers?
+/** Does a string contain a list of space-separated valid signed integers?
  * Must contain at least one int. For internal use; ignores TINY_MATH.
  * \param str string to check
  * \retval 1 string is a list of integers
@@ -475,7 +475,6 @@ bool
 is_integer_list(char const *str)
 {
   char *start, *end;
-  long val;
 
   if (!str || !*str)
     return 0;
@@ -486,8 +485,8 @@ is_integer_list(char const *str)
       start++;
     if (!*start)
       return 1;
-    val = strtol(start, &end, 10);
-    if (end == start)
+    (void) strtol(start, &end, 10);
+    if (!(*end == '\0' || *end == ' '))
       return 0;
     start = end;
   } while (*start);
@@ -588,9 +587,9 @@ parse_int32(const char *s, char **end, int base)
 
 
 /** Convert a string containing an unsigned integer into an int.
- * Does not  do any format checking. Invalid strings will return 0.
+ * Does not do any format checking. Invalid strings will return 0.
  * Use this instead of strtoul() when storing to an int to avoid problems
- * where  sizeof(int) < sizeof(long).
+ * where sizeof(int) < sizeof(long).
  * \param s The string to convert
  * \param end pointer to store the first invalid char at, or NULL
  * \param base base for conversion
@@ -1596,7 +1595,9 @@ make_pe_info(char *name)
 {
   NEW_PE_INFO *pe_info;
 
-  pe_info = (NEW_PE_INFO *) mush_malloc(sizeof(NEW_PE_INFO), name);
+  pe_info = mush_malloc(sizeof(NEW_PE_INFO), name);
+  if (!pe_info)
+    mush_panic("Unable to allocate memory in make_pe_info");
 
   pe_info->fun_invocations = 0;
   pe_info->fun_recursions = 0;
@@ -1664,10 +1665,13 @@ pe_info_from(NEW_PE_INFO *old_pe_info, int flags, PE_REGS *pe_regs)
     /* OK, copy everything over */
     /* Copy the Q-registers, @switch, @dol and env over to the new pe_info. */
     if (pe_regs) {
-      pe_regs->prev = old_pe_info->regvals;
+      if (old_pe_info)
+        pe_regs->prev = old_pe_info->regvals;
+      else
+        pe_regs->prev = NULL;
       pe_regs_copystack(pe_info->regvals, pe_regs, PE_REGS_QUEUE, 0);
       pe_regs->prev = NULL;
-    } else {
+    } else if (old_pe_info) {
       pe_regs_copystack(pe_info->regvals, old_pe_info->regvals,
                         PE_REGS_QUEUE, 0);
     }
@@ -1681,12 +1685,18 @@ pe_info_from(NEW_PE_INFO *old_pe_info, int flags, PE_REGS *pe_regs)
    * executor (@trigger) */
 
   pe_info = make_pe_info("pe_info-from_old-generic");
-  if (flags & PE_INFO_COPY_ENV) {
-    pe_regs_copystack(pe_info->regvals, old_pe_info->regvals, PE_REGS_ARG, 0);
-  }
-  /* Copy Q-registers. */
-  if (flags & PE_INFO_COPY_QREG) {
-    pe_regs_copystack(pe_info->regvals, old_pe_info->regvals, PE_REGS_Q, 0);
+  if (old_pe_info) {
+    if (flags & PE_INFO_COPY_ENV) {
+      pe_regs_copystack(pe_info->regvals, old_pe_info->regvals, PE_REGS_ARG, 0);
+    }
+    /* Copy Q-registers. */
+    if (flags & PE_INFO_COPY_QREG) {
+      pe_regs_copystack(pe_info->regvals, old_pe_info->regvals, PE_REGS_Q, 0);
+    }
+    if (flags & PE_INFO_COPY_CMDS) {
+      strcpy(pe_info->cmd_raw, old_pe_info->cmd_raw);
+      strcpy(pe_info->cmd_evaled, old_pe_info->cmd_evaled);
+    }
   }
 
   /* Whatever we do, we copy the passed pe_regs. */
@@ -1815,8 +1825,7 @@ process_expression(char *buff, char **bp, char const **str,
     if (((*bp) - buff) > (BUFFER_LEN - SBUF_LEN)) {
       realbuff = buff;
       realbp = *bp;
-      buff = (char *) mush_malloc(BUFFER_LEN,
-                                  "process_expression.buffer_extension");
+      buff = mush_malloc(BUFFER_LEN, "process_expression.buffer_extension");
       *bp = buff;
       startpos = buff;
     }
@@ -1847,8 +1856,7 @@ process_expression(char *buff, char **bp, char const **str,
       char const *mark;
       Debug_Info *node;
 
-      debugstr = (char *) mush_malloc(BUFFER_LEN,
-                                      "process_expression.debug_source");
+      debugstr = mush_malloc(BUFFER_LEN, "process_expression.debug_source");
       debugp = debugstr;
       safe_dbref(executor, debugstr, &debugp);
       safe_chr('!', debugstr, &debugp);
@@ -1864,8 +1872,7 @@ process_expression(char *buff, char **bp, char const **str,
         while ((debugp > sourcestr) && (debugp[-1] == ' '))
           debugp--;
       *debugp = '\0';
-      node = (Debug_Info *) mush_malloc(sizeof(Debug_Info),
-                                        "process_expression.debug_node");
+      node = mush_malloc(sizeof(Debug_Info), "process_expression.debug_node");
       node->string = debugstr;
       node->executor = executor;
       node->prev = pe_info->debug_strings;
@@ -2176,7 +2183,6 @@ process_expression(char *buff, char **bp, char const **str,
           (*str)++;
           itmp = PE_Get_Slev(pe_info);
           if (itmp >= 0) {
-            inum_this = -1;
             if (nextc == 'l' || nextc == 'L') {
               inum_this = itmp;
             } else if (!isdigit((unsigned char) nextc)) {
@@ -2268,10 +2274,7 @@ process_expression(char *buff, char **bp, char const **str,
           break;
         case 'R':
         case 'r':              /* newline */
-          if (NEWLINE_ONE_CHAR)
-            safe_chr('\n', buff, bp);
-          else
-            safe_str("\r\n", buff, bp);
+          safe_chr('\n', buff, bp);
           break;
         case 'S':
         case 's':              /* enactor subjective pronoun */
@@ -2508,8 +2511,8 @@ process_expression(char *buff, char **bp, char const **str,
         temp_tflags = PT_COMMA | PT_PAREN;
         nfargs = 0;
         onearg =
-          (char *) mush_malloc(BUFFER_LEN,
-                               "process_expression.single_function_argument");
+          mush_malloc(BUFFER_LEN,
+                      "process_expression.single_function_argument");
         do {
           char *argp;
           if ((fp->maxargs < 0) && ((nfargs + 1) >= -fp->maxargs))
@@ -2533,8 +2536,8 @@ process_expression(char *buff, char **bp, char const **str,
             arglens = narglens;
             args_alloced += 10;
           }
-          fargs[nfargs] = (char *) mush_malloc(BUFFER_LEN,
-                                               "process_expression.function_argument");
+          fargs[nfargs] = mush_malloc(BUFFER_LEN,
+                                      "process_expression.function_argument");
           argp = onearg;
           if (process_expression(onearg, &argp, str,
                                  executor, caller, enactor,
@@ -2603,6 +2606,8 @@ process_expression(char *buff, char **bp, char const **str,
             safe_str(T(" ARGUMENTS BUT GOT "), buff, bp);
             safe_integer(nfargs, buff, bp);
           } else {
+            char *fbuff, *fbp;
+
             global_fun_recursions++;
             pe_info->fun_recursions++;
             if (fp->flags & FN_LOCALIZE) {
@@ -2611,10 +2616,19 @@ process_expression(char *buff, char **bp, char const **str,
             } else {
               pe_regs = NULL;
             }
+
+            if (realbuff) {
+              fbuff = realbuff;
+              fbp = realbp;
+            } else {
+              fbuff = buff;
+              fbp = *bp;
+            }
+
             if (fp->flags & FN_BUILTIN) {
               global_fun_invocations++;
               pe_info->fun_invocations++;
-              fp->where.fun(fp, buff, bp, nfargs, fargs, arglens, executor,
+              fp->where.fun(fp, fbuff, &fbp, nfargs, fargs, arglens, executor,
                             caller, enactor, fp->name, pe_info,
                             ((eflags & ~PE_FUNCTION_MANDATORY) | PE_DEFAULT));
               if (fp->flags & FN_LOGARGS) {
@@ -2653,10 +2667,15 @@ process_expression(char *buff, char **bp, char const **str,
                 safe_str(fp->where.ufun->name, buff, bp);
                 safe_chr(')', buff, bp);
               } else {
-                do_userfn(buff, bp, thing, attrib, nfargs, fargs,
+                do_userfn(fbuff, &fbp, thing, attrib, nfargs, fargs,
                           executor, caller, enactor, pe_info, PE_USERFN);
               }
             }
+            if (realbuff)
+              realbp = fbp;
+            else
+              *bp = fbp;
+
             if (pe_regs) {
               pe_regs_restore(pe_info, pe_regs);
               pe_regs_free(pe_regs);
@@ -2761,9 +2780,10 @@ exit_sequence:
       mush_free(debugstr, "process_expression.debug_source");
     }
     if (realbuff) {
+      size_t blen = *bp - buff;
       **bp = '\0';
       *bp = realbp;
-      safe_str(buff, realbuff, bp);
+      safe_strl(buff, blen, realbuff, bp);
       mush_free(buff, "process_expression.buffer_extension");
     }
   }

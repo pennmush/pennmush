@@ -24,7 +24,8 @@
 #include "command.h"
 #include "confmagic.h"
 
-static dbref parse_linkable_room(dbref player, const char *room_name);
+static dbref parse_linkable_room(dbref player, const char *room_name,
+                                 NEW_PE_INFO *pe_info);
 static dbref check_var_link(const char *dest_name);
 static dbref clone_object(dbref player, dbref thing, const char *newname,
                           int preserve);
@@ -33,7 +34,7 @@ struct db_stat_info current_state; /**< Current stats for database */
 
 /* utility for open and link */
 static dbref
-parse_linkable_room(dbref player, const char *room_name)
+parse_linkable_room(dbref player, const char *room_name, NEW_PE_INFO *pe_info)
 {
   dbref room;
 
@@ -53,7 +54,7 @@ parse_linkable_room(dbref player, const char *room_name)
   } else if (Going(room)) {
     notify(player, T("That room is being destroyed. Sorry."));
     return NOTHING;
-  } else if (!can_link_to(player, room)) {
+  } else if (!can_link_to(player, room, pe_info)) {
     notify(player, T("You can't link to that."));
     return NOTHING;
   } else {
@@ -85,7 +86,7 @@ check_var_link(const char *dest_name)
  */
 dbref
 do_real_open(dbref player, const char *direction, const char *linkto,
-             dbref pseudo)
+             dbref pseudo, NEW_PE_INFO *pe_info)
 {
   dbref loc =
     (pseudo !=
@@ -98,7 +99,7 @@ do_real_open(dbref player, const char *direction, const char *linkto,
   char *name = NULL;
   char *alias = NULL;
 
-  if (!command_check_byname(player, "@dig")) {
+  if (!command_check_byname(player, "@dig", NULL)) {
     notify(player, T("Permission denied."));
     return NOTHING;
   }
@@ -123,7 +124,7 @@ do_real_open(dbref player, const char *direction, const char *linkto,
       mush_free(alias, "name.newname");
     return NOTHING;
   }
-  if (!can_open_from(player, loc)) {
+  if (!can_open_from(player, loc, pe_info)) {
     notify(player, T("Permission denied."));
   } else if (can_pay_fees(player, EXIT_COST)) {
     /* create the exit */
@@ -161,7 +162,7 @@ do_real_open(dbref player, const char *direction, const char *linkto,
     if (linkto && *linkto != '\0') {
       notify(player, T("Trying to link..."));
       if ((loc = check_var_link(linkto)) == NOTHING)
-        loc = parse_linkable_room(player, linkto);
+        loc = parse_linkable_room(player, linkto, pe_info);
       if (loc != NOTHING) {
         if (!payfor(player, LINK_COST)) {
           notify_format(player, T("You don't have enough %s to link."), MONIES);
@@ -196,7 +197,7 @@ do_real_open(dbref player, const char *direction, const char *linkto,
  * and room to open initial exit from.
  */
 void
-do_open(dbref player, const char *direction, char **links)
+do_open(dbref player, const char *direction, char **links, NEW_PE_INFO *pe_info)
 {
   dbref forward;
   dbref source = NOTHING;
@@ -210,7 +211,7 @@ do_open(dbref player, const char *direction, char **links)
     }
   }
 
-  forward = do_real_open(player, direction, links[1], source);
+  forward = do_real_open(player, direction, links[1], source, pe_info);
   if (links[2] && *links[2] && GoodObject(forward)
       && GoodObject(Location(forward))) {
     char sourcestr[SBUF_LEN];   /* SBUF_LEN is the size used by unparse_dbref */
@@ -224,7 +225,7 @@ do_open(dbref player, const char *direction, char **links)
       }
     }
     strcpy(sourcestr, unparse_dbref(source));
-    do_real_open(player, links[2], sourcestr, Location(forward));
+    do_real_open(player, links[2], sourcestr, Location(forward), pe_info);
   }
 }
 
@@ -290,7 +291,8 @@ do_unlink(dbref player, const char *name)
  * \param preserve if 1, preserve ownership and zone data on exit relink.
  */
 void
-do_link(dbref player, const char *name, const char *room_name, int preserve)
+do_link(dbref player, const char *name, const char *room_name, int preserve,
+        NEW_PE_INFO *pe_info)
 {
   /* Use this to link to a room that you own.
    * It usually seizes ownership of the exit and costs 1 penny,
@@ -315,10 +317,10 @@ do_link(dbref player, const char *name, const char *room_name, int preserve)
     switch (Typeof(thing)) {
     case TYPE_EXIT:
       if ((room = check_var_link(room_name)) == NOTHING)
-        room = parse_linkable_room(player, room_name);
+        room = parse_linkable_room(player, room_name, pe_info);
       if (room == NOTHING)
         return;
-      if (GoodObject(room) && !can_link_to(player, room)) {
+      if (GoodObject(room) && !can_link_to(player, room, pe_info)) {
         notify(player, T("Permission denied."));
         break;
       }
@@ -327,7 +329,7 @@ do_link(dbref player, const char *name, const char *room_name, int preserve)
        */
       if (!(controls(player, thing)
             || ((Location(thing) == NOTHING)
-                && eval_lock(player, thing, Link_Lock)))) {
+                && eval_lock_with(player, thing, Link_Lock, pe_info)))) {
         notify(player, T("Permission denied."));
         return;
       }
@@ -399,7 +401,7 @@ do_link(dbref player, const char *name, const char *room_name, int preserve)
       }
       break;
     case TYPE_ROOM:
-      if ((room = parse_linkable_room(player, room_name)) == NOTHING)
+      if ((room = parse_linkable_room(player, room_name, pe_info)) == NOTHING)
         return;
       if ((room != HOME) && (!IsRoom(room))) {
         notify(player, T("That is not a room!"));
@@ -431,10 +433,12 @@ do_link(dbref player, const char *name, const char *room_name, int preserve)
  * \param argv array of additional arguments to command
  *             (exit forward,exit back,newdbref)
  * \param tport if 1, teleport the player to the new room.
+ * \param pe_info
  * \return dbref of new room, or NOTHING.
  */
 dbref
-do_dig(dbref player, const char *name, char **argv, int tport)
+do_dig(dbref player, const char *name, char **argv, int tport,
+       NEW_PE_INFO *pe_info)
 {
   dbref room;
   char *flaglist, *flagname;
@@ -476,10 +480,10 @@ do_dig(dbref player, const char *name, char **argv, int tport)
     if (argv[1] && *argv[1]) {
       char nbuff[MAX_COMMAND_LEN];
       sprintf(nbuff, "#%d", room);
-      do_real_open(player, argv[1], nbuff, NOTHING);
+      do_real_open(player, argv[1], nbuff, NOTHING, pe_info);
     }
     if (argv[2] && *argv[2]) {
-      do_real_open(player, argv[2], "here", room);
+      do_real_open(player, argv[2], "here", room, pe_info);
     }
     current_state.rooms++;
     local_data_create(room);
@@ -488,7 +492,7 @@ do_dig(dbref player, const char *name, char **argv, int tport)
        * and Z_TEL checking */
       char roomstr[MAX_COMMAND_LEN];
       sprintf(roomstr, "#%d", room);
-      do_teleport(player, "me", roomstr, 0, 0); /* if flag, move the player */
+      do_teleport(player, "me", roomstr, 0, 0, pe_info);        /* if flag, move the player */
     }
     queue_event(player, "OBJECT`CREATE", "%s", unparse_objid(room));
     return room;
@@ -638,10 +642,12 @@ clone_object(dbref player, dbref thing, const char *newname, int preserve)
  * \param newname the name to give the duplicate.
  * \param preserve if 1, preserve ownership and privileges on duplicate.
  * \param newdbref the (unparsed) dbref to give the object, or NULL to use the next free
+ * \param pe_info
  * \return dbref of the duplicate, or NOTHING.
  */
 dbref
-do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref)
+do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref,
+         NEW_PE_INFO *pe_info)
 {
   dbref clone, thing;
   char dbnum[BUFFER_LEN];
@@ -656,9 +662,9 @@ do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref)
   }
 
   if (!controls(player, thing) || IsPlayer(thing) ||
-      (IsRoom(thing) && !command_check_byname(player, "@dig")) ||
-      (IsExit(thing) && !command_check_byname(player, "@open")) ||
-      (IsThing(thing) && !command_check_byname(player, "@create"))) {
+      (IsRoom(thing) && !command_check_byname(player, "@dig", pe_info)) ||
+      (IsExit(thing) && !command_check_byname(player, "@open", pe_info)) ||
+      (IsThing(thing) && !command_check_byname(player, "@create", pe_info))) {
     notify(player, T("Permission denied."));
     return NOTHING;
   }
@@ -725,9 +731,9 @@ do_clone(dbref player, char *name, char *newname, int preserve, char *newdbref)
       strcpy(dbnum, unparse_dbref(Location(thing)));
     }
     if (newname && *newname)
-      clone = do_real_open(player, newname, dbnum, NOTHING);
+      clone = do_real_open(player, newname, dbnum, NOTHING, pe_info);
     else
-      clone = do_real_open(player, Name(thing), dbnum, NOTHING);
+      clone = do_real_open(player, Name(thing), dbnum, NOTHING, pe_info);
     if (!GoodObject(clone)) {
       return NOTHING;
     } else {

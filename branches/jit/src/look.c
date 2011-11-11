@@ -31,24 +31,27 @@
 #include "confmagic.h"
 #include "log.h"
 
-static void look_exits(dbref player, dbref loc, const char *exit_name);
-static void look_contents(dbref player, dbref loc, const char *contents_name);
-static void look_atrs(dbref player, dbref thing, const char *mstr, int all,
-                      int mortal, int parent);
-static void mortal_look_atrs(dbref player, dbref thing, const char *mstr,
-                             int all, int parent);
-static void look_simple(dbref player, dbref thing);
+static void look_exits(dbref player, dbref loc, const char *exit_name,
+                       NEW_PE_INFO *pe_info);
+static void look_contents(dbref player, dbref loc, const char *contents_name,
+                          NEW_PE_INFO *pe_info);
+static void examine_atrs(dbref player, dbref thing, const char *mstr, int all,
+                         int mortal, int parent);
+static void mortal_examine_atrs(dbref player, dbref thing, const char *mstr,
+                                int all, int parent);
+static void look_simple(dbref player, dbref thing, NEW_PE_INFO *pe_info);
 static void look_description(dbref player, dbref thing, const char *def,
-                             const char *descname, const char *descformatname);
+                             const char *descname, const char *descformatname,
+                             NEW_PE_INFO *pe_info);
 
 enum decompile_attrflags { DECOMP_ALL, DECOMP_NODEFAULTS, DECOMP_NONE };
 
 static int decompile_helper(dbref player, dbref thing, dbref parent,
                             char const *pattern, ATTR *atr, void *args);
-static int look_helper(dbref player, dbref thing, dbref parent,
-                       char const *pattern, ATTR *atr, void *args);
-static int look_helper_veiled(dbref player, dbref thing, dbref parent,
-                              char const *pattern, ATTR *atr, void *args);
+static int examine_helper(dbref player, dbref thing, dbref parent,
+                          char const *pattern, ATTR *atr, void *args);
+static int examine_helper_veiled(dbref player, dbref thing, dbref parent,
+                                 char const *pattern, ATTR *atr, void *args);
 void decompile_atrs(dbref player, dbref thing, const char *name,
                     const char *pattern, const char *prefix,
                     enum decompile_attrflags skipflags);
@@ -63,17 +66,18 @@ extern int real_decompose_str(char *str, char *buff, char **bp);
  * \param player The player looking
  * \param loc room whose exits we're showing
  * \param exit_name "Obvious Exits" string
+ * \param pe_info
  */
 static void
-look_exits(dbref player, dbref loc, const char *exit_name)
+look_exits(dbref player, dbref loc, const char *exit_name, NEW_PE_INFO *pe_info)
 {
   dbref thing;
   char *tbuf1, *tbuf2, *nbuf;
   char *s1, *s2;
   char *p;
   int exit_count, this_exit, total_count;
-  ATTR *a;
   int texits;
+  ufun_attrib ufun;
   PUEBLOBUFF;
 
   /* make sure location is a room */
@@ -90,38 +94,31 @@ look_exits(dbref player, dbref loc, const char *exit_name)
   texits = exit_count = total_count = 0;
   this_exit = 1;
 
-  a = atr_get(loc, "EXITFORMAT");
-  if (a) {
-    char *arg, *buff, *bp, *save;
-    char const *sp;
-    NEW_PE_INFO *pe_info;
+  if (fetch_ufun_attrib
+      ("EXITFORMAT", loc, &ufun, UFUN_IGNORE_PERMS | UFUN_REQUIRE_ATTR)) {
+    char *arg, *buff, *bp;
+    PE_REGS *pe_regs = pe_regs_create(PE_REGS_ARG, "look_exits");
 
     arg = (char *) mush_malloc(BUFFER_LEN, "string");
     buff = (char *) mush_malloc(BUFFER_LEN, "string");
     if (!arg || !buff)
       mush_panic("Unable to allocate memory in look_exits");
 
-    pe_info = make_pe_info("pe_info-look_exits");
-
     bp = arg;
     DOLIST(thing, Exits(loc)) {
       if (((Light(loc) || Light(thing)) || !(Dark(loc) || Dark(thing)))
-          && can_interact(thing, player, INTERACT_SEE)) {
+          && can_interact(thing, player, INTERACT_SEE, pe_info)) {
         if (bp != arg)
           safe_chr(' ', arg, &bp);
         safe_dbref(thing, arg, &bp);
       }
     }
     *bp = '\0';
+    pe_regs_setenv_nocopy(pe_regs, 0, arg);
 
-    sp = save = safe_atr_value(a);
-    bp = buff;
-    pe_regs_setenv_nocopy(pe_info->regvals, 0, arg);
-    process_expression(buff, &bp, &sp, loc, player, player,
-                       PE_DEFAULT, PT_DEFAULT, pe_info);
-    *bp = '\0';
-    free_pe_info(pe_info);
-    free(save);
+    call_ufun(&ufun, buff, player, player, pe_info, pe_regs);
+
+    pe_regs_free(pe_regs);
     notify_by(loc, player, buff);
     mush_free(tbuf1, "string");
     mush_free(tbuf2, "string");
@@ -139,7 +136,7 @@ look_exits(dbref player, dbref loc, const char *exit_name)
     }
   } else if (Dark(loc)) {
     for (thing = Exits(loc); thing != NOTHING; thing = Next(thing)) {
-      if (Light(thing) && can_interact(thing, player, INTERACT_SEE)) {
+      if (Light(thing) && can_interact(thing, player, INTERACT_SEE, pe_info)) {
         total_count++;
         if (!Transparented(loc) || Opaque(thing))
           exit_count++;
@@ -148,7 +145,7 @@ look_exits(dbref player, dbref loc, const char *exit_name)
   } else {
     for (thing = Exits(loc); thing != NOTHING; thing = Next(thing)) {
       if ((Light(thing) || !DarkLegal(thing)) &&
-          can_interact(thing, player, INTERACT_SEE)) {
+          can_interact(thing, player, INTERACT_SEE, pe_info)) {
         total_count++;
         if (!Transparented(loc) || Opaque(thing))
           exit_count++;
@@ -170,7 +167,7 @@ look_exits(dbref player, dbref loc, const char *exit_name)
 
   for (thing = Exits(loc); thing != NOTHING; thing = Next(thing)) {
     if ((Light(loc) || Light(thing) || (!DarkLegal(thing) && !Dark(loc)))
-        && can_interact(thing, player, INTERACT_SEE)) {
+        && can_interact(thing, player, INTERACT_SEE, pe_info)) {
       strcpy(pbuff, accented_name(thing));
       if ((p = strchr(pbuff, ';')))
         *p = '\0';
@@ -231,13 +228,15 @@ look_exits(dbref player, dbref loc, const char *exit_name)
  * \param player object looking
  * \param object looked at
  * \param contents_name String to show before contents list. "Contents" for rooms, "Carrying" for players/things
+ * \param pe_info
  */
 static void
-look_contents(dbref player, dbref loc, const char *contents_name)
+look_contents(dbref player, dbref loc, const char *contents_name,
+              NEW_PE_INFO *pe_info)
 {
   dbref thing;
   dbref can_see_loc;
-  ATTR *a;
+  ufun_attrib ufun;
   PUEBLOBUFF;
   /* check to see if he can see the location */
   /*
@@ -246,12 +245,11 @@ look_contents(dbref player, dbref loc, const char *contents_name)
    */
   can_see_loc = !Dark(loc);
 
-  a = atr_get(loc, "CONFORMAT");
-  if (a) {
-    char *arg, *buff, *bp, *save;
+  if (fetch_ufun_attrib
+      ("CONFORMAT", loc, &ufun, UFUN_IGNORE_PERMS | UFUN_REQUIRE_ATTR)) {
+    char *arg, *buff, *bp;
     char *arg2, *bp2;
-    char const *sp;
-    NEW_PE_INFO *pe_info;
+    PE_REGS *pe_regs = pe_regs_create(PE_REGS_ARG, "look_contents");
 
     arg = (char *) mush_malloc(BUFFER_LEN, "string");
     arg2 = (char *) mush_malloc(BUFFER_LEN, "string");
@@ -272,16 +270,13 @@ look_contents(dbref player, dbref loc, const char *contents_name)
     }
     *bp = '\0';
     *bp2 = '\0';
-    pe_info = make_pe_info("pe_info-look_contents");
-    pe_regs_setenv_nocopy(pe_info->regvals, 0, arg);
-    pe_regs_setenv_nocopy(pe_info->regvals, 1, arg2);
-    sp = save = safe_atr_value(a);
-    bp = buff;
-    process_expression(buff, &bp, &sp, loc, player, player,
-                       PE_DEFAULT, PT_DEFAULT, pe_info);
-    *bp = '\0';
-    free_pe_info(pe_info);
-    free(save);
+    pe_regs_setenv_nocopy(pe_regs, 0, arg);
+    pe_regs_setenv_nocopy(pe_regs, 1, arg2);
+
+    call_ufun(&ufun, buff, player, player, pe_info, pe_regs);
+
+    pe_regs_free(pe_regs);
+
     notify_by(loc, player, buff);
     mush_free(arg, "string");
     mush_free(arg2, "string");
@@ -319,10 +314,10 @@ look_contents(dbref player, dbref loc, const char *contents_name)
 
 /* Helper function for atr_iter_get, obeying VEILED attrflag */
 static int
-look_helper_veiled(dbref player, dbref thing __attribute__ ((__unused__)),
-                   dbref parent __attribute__ ((__unused__)),
-                   char const *pattern, ATTR *atr, void *args
-                   __attribute__ ((__unused__)))
+examine_helper_veiled(dbref player, dbref thing __attribute__ ((__unused__)),
+                      dbref parent __attribute__ ((__unused__)),
+                      char const *pattern, ATTR *atr, void *args
+                      __attribute__ ((__unused__)))
 {
   char fbuf[BUFFER_LEN];
   char *r;
@@ -379,10 +374,10 @@ look_helper_veiled(dbref player, dbref thing __attribute__ ((__unused__)),
 
 /* Helper function for atr_iter_get(), ignoring VEILED attrflag */
 static int
-look_helper(dbref player, dbref thing __attribute__ ((__unused__)),
-            dbref parent __attribute__ ((__unused__)),
-            char const *pattern, ATTR *atr, void *args
-            __attribute__ ((__unused__)))
+examine_helper(dbref player, dbref thing __attribute__ ((__unused__)),
+               dbref parent __attribute__ ((__unused__)),
+               char const *pattern, ATTR *atr, void *args
+               __attribute__ ((__unused__)))
 {
   char fbuf[BUFFER_LEN];
   char *r;
@@ -424,44 +419,44 @@ look_helper(dbref player, dbref thing __attribute__ ((__unused__)),
  * \param parent include inherited attributes from @parent?
  */
 static void
-look_atrs(dbref player, dbref thing, const char *mstr, int all, int mortal,
-          int parent)
+examine_atrs(dbref player, dbref thing, const char *mstr, int all, int mortal,
+             int parent)
 {
   if (all || (mstr && *mstr && !wildcard((char *) mstr))) {
     if (parent) {
       if (!atr_iter_get_parent
-          (player, thing, mstr, mortal, 0, look_helper, NULL)
+          (player, thing, mstr, mortal, 0, examine_helper, NULL)
           && mstr)
         notify(player, T("No matching attributes."));
     } else {
-      if (!atr_iter_get(player, thing, mstr, mortal, 0, look_helper, NULL)
+      if (!atr_iter_get(player, thing, mstr, mortal, 0, examine_helper, NULL)
           && mstr)
         notify(player, T("No matching attributes."));
     }
   } else {
     if (parent) {
       if (!atr_iter_get_parent
-          (player, thing, mstr, mortal, 0, look_helper_veiled, NULL) && mstr)
+          (player, thing, mstr, mortal, 0, examine_helper_veiled, NULL) && mstr)
         notify(player, T("No matching attributes."));
     } else {
       if (!atr_iter_get
-          (player, thing, mstr, mortal, 0, look_helper_veiled, NULL)
+          (player, thing, mstr, mortal, 0, examine_helper_veiled, NULL)
           && mstr)
         notify(player, T("No matching attributes."));
     }
   }
 }
 
-/* Wrapper for look_atrs which only shows attrs visible to mortals */
+/* Wrapper for examine_atrs which only shows attrs visible to mortals */
 static void
-mortal_look_atrs(dbref player, dbref thing, const char *mstr, int all,
-                 int parent)
+mortal_examine_atrs(dbref player, dbref thing, const char *mstr, int all,
+                    int parent)
 {
-  look_atrs(player, thing, mstr, all, 1, parent);
+  examine_atrs(player, thing, mstr, all, 1, parent);
 }
 
 static void
-look_simple(dbref player, dbref thing)
+look_simple(dbref player, dbref thing, NEW_PE_INFO *pe_info)
 {
   enum look_type flag = LOOK_NORMAL;
   PUEBLOBUFF;
@@ -471,7 +466,7 @@ look_simple(dbref player, dbref thing)
   PEND;
   notify_by(thing, player, pbuff);
   look_description(player, thing, T("You see nothing special."), "DESCRIBE",
-                   "DESCFORMAT");
+                   "DESCFORMAT", pe_info);
   did_it(player, thing, NULL, NULL, "ODESCRIBE", NULL, "ADESCRIBE", NOTHING);
   if (IsExit(thing) && Transparented(thing)) {
     if (Cloudy(thing))
@@ -482,9 +477,9 @@ look_simple(dbref player, dbref thing)
     flag = LOOK_CLOUDY;
   if (flag) {
     if (Location(thing) == HOME)
-      look_room(player, Home(player), flag);
+      look_room(player, Home(player), flag, pe_info);
     else if (GoodObject(thing) && GoodObject(Destination(thing)))
-      look_room(player, Destination(thing), flag);
+      look_room(player, Destination(thing), flag, pe_info);
   }
 }
 
@@ -499,15 +494,22 @@ look_simple(dbref player, dbref thing)
  * \param style how the room is being looked at.
  */
 void
-look_room(dbref player, dbref loc, enum look_type style)
+look_room(dbref player, dbref loc, enum look_type style, NEW_PE_INFO *pe_info)
 {
 
   PUEBLOBUFF;
   ATTR *a;
+  bool made_pe_info = 0;
 
   if (loc == NOTHING)
     return;
 
+  if (!pe_info) {
+    made_pe_info = 1;
+    pe_info = make_pe_info("look_room");
+    strcpy(pe_info->cmd_raw, "LOOK");
+    strcpy(pe_info->cmd_evaled, "LOOK");
+  }
   /* don't give the unparse if looking through Transparent exit */
   if (style == LOOK_NORMAL || style == LOOK_AUTO) {
     PUSE;
@@ -521,93 +523,87 @@ look_room(dbref player, dbref loc, enum look_type style)
       }
     }
     tag("HR");
-    tag_wrap("FONT", "SIZE=+2", unparse_room(player, loc));
+    tag_wrap("FONT", "SIZE=+2", unparse_room(player, loc, pe_info));
     PEND;
     notify_by(loc, player, pbuff);
   }
   if (!IsRoom(loc)) {
     if (style != LOOK_AUTO || !Terse(player)) {
       if (atr_get(loc, "IDESCRIBE")) {
-        look_description(player, loc, NULL, "IDESCRIBE", "IDESCFORMAT");
-        did_it(player, loc, NULL, NULL, "OIDESCRIBE", NULL,
-               "AIDESCRIBE", NOTHING);
+        look_description(player, loc, NULL, "IDESCRIBE", "IDESCFORMAT",
+                         pe_info);
+        did_it(player, loc, NULL, NULL, "OIDESCRIBE", NULL, "AIDESCRIBE",
+               NOTHING);
       } else if (atr_get(loc, "IDESCFORMAT")) {
-        look_description(player, loc, NULL, "DESCRIBE", "IDESCFORMAT");
+        look_description(player, loc, NULL, "DESCRIBE", "IDESCFORMAT", pe_info);
       } else
-        look_description(player, loc, NULL, "DESCRIBE", "DESCFORMAT");
+        look_description(player, loc, NULL, "DESCRIBE", "DESCFORMAT", pe_info);
     }
   } else if (style == LOOK_NORMAL || style == LOOK_AUTO) {
     if (style == LOOK_NORMAL || !Terse(player)) {
-      look_description(player, loc, NULL, "DESCRIBE", "DESCFORMAT");
+      look_description(player, loc, NULL, "DESCRIBE", "DESCFORMAT", pe_info);
       did_it(player, loc, NULL, NULL, "ODESCRIBE", NULL, "ADESCRIBE", NOTHING);
     }
   } else if (style != LOOK_CLOUDY) {
     did_it(player, loc, NULL, NULL, "ODESCRIBE", NULL, "ADESCRIBE", NOTHING);
   }
+
   /* tell him the appropriate messages if he has the key */
   if (IsRoom(loc) && (style == LOOK_NORMAL || style == LOOK_AUTO)) {
     if (style == LOOK_AUTO && Terse(player)) {
-      if (could_doit(player, loc))
+      if (could_doit(player, loc, pe_info))
         did_it(player, loc, NULL, NULL, "OSUCCESS", NULL, "ASUCCESS", NOTHING);
       else
         did_it(player, loc, NULL, NULL, "OFAILURE", NULL, "AFAILURE", NOTHING);
-    } else if (could_doit(player, loc))
+    } else if (could_doit(player, loc, pe_info))
       did_it(player, loc, "SUCCESS", NULL, "OSUCCESS", NULL, "ASUCCESS",
              NOTHING);
     else
       fail_lock(player, loc, Basic_Lock, NULL, NOTHING);
   }
+
   /* tell him the contents */
   if (style != LOOK_CLOUDYTRANS)
-    look_contents(player, loc, T("Contents:"));
+    look_contents(player, loc, T("Contents:"), pe_info);
   if (style == LOOK_NORMAL || style == LOOK_AUTO) {
-    look_exits(player, loc, T("Obvious exits:"));
+    look_exits(player, loc, T("Obvious exits:"), pe_info);
   }
+  if (made_pe_info)
+    free_pe_info(pe_info);
 }
 
 static void
 look_description(dbref player, dbref thing, const char *def,
-                 const char *descname, const char *descformatname)
+                 const char *descname, const char *descformatname,
+                 NEW_PE_INFO *pe_info)
 {
   /* Show thing's description to player, obeying DESCFORMAT if set */
-  ATTR *a, *f;
   char buff[BUFFER_LEN], fbuff[BUFFER_LEN];
-  char *bp, *fbp, *asave;
-  char const *ap;
+  ufun_attrib ufun;
+  char *bp = buff;
 
   if (!GoodObject(player) || !GoodObject(thing))
     return;
-  a = atr_get(thing, descname);
-  if (a) {
-    /* We have a DESCRIBE, evaluate it into buff */
-    asave = safe_atr_value(a);
-    ap = asave;
-    bp = buff;
-    process_expression(buff, &bp, &ap, thing, player, player,
-                       PE_DEFAULT, PT_DEFAULT, NULL);
-    *bp = '\0';
-    free(asave);
-  }
-  f = atr_get(thing, descformatname);
-  if (f) {
-    NEW_PE_INFO *pe_info = NULL;
-    if (a) {
-      pe_info = make_pe_info("pe_info-look_desc");
-      pe_regs_setenv_nocopy(pe_info->regvals, 0, buff);
+  if (fetch_ufun_attrib
+      (descname, thing, &ufun, UFUN_REQUIRE_ATTR | UFUN_IGNORE_PERMS))
+    call_ufun(&ufun, buff, player, player, pe_info, NULL);
+  else
+    bp = NULL;
+
+  if (fetch_ufun_attrib
+      (descformatname, thing, &ufun, UFUN_REQUIRE_ATTR | UFUN_IGNORE_PERMS)) {
+    PE_REGS *pe_regs = NULL;
+    if (bp) {
+      pe_regs = pe_regs_create(PE_REGS_ARG, "look_desc");
+      pe_regs_setenv_nocopy(pe_regs, 0, buff);
     }
     /* We have a DESCFORMAT, evaluate it into fbuff and use it */
     /* If we have a DESCRIBE, pass the evaluated version as %0 */
-    asave = safe_atr_value(f);
-    ap = asave;
-    fbp = fbuff;
-    process_expression(fbuff, &fbp, &ap, thing, player, player,
-                       PE_DEFAULT, PT_DEFAULT, pe_info);
-    if (pe_info)
-      free_pe_info(pe_info);
-    *fbp = '\0';
-    free(asave);
+    call_ufun(&ufun, fbuff, player, player, pe_info, pe_regs);
+    if (pe_regs)
+      pe_regs_free(pe_regs);
     notify_by(thing, player, fbuff);
-  } else if (a) {
+  } else if (bp) {
     /* DESCRIBE only */
     notify_by(thing, player, buff);
   } else if (def) {
@@ -623,18 +619,20 @@ void
 do_look_around(dbref player)
 {
   dbref loc;
+
   if ((loc = Location(player)) == NOTHING)
     return;
-  look_room(player, loc, LOOK_AUTO);    /* auto-look. Obey TERSE. */
+  look_room(player, loc, LOOK_AUTO, NULL);      /* auto-look. Obey TERSE. */
 }
 
 /** Look at something.
  * \param player the looker.
  * \param name name of object to look at.
  * \param key 0 for normal look, 1 for look/outside.
+ * \param pe_info
  */
 void
-do_look_at(dbref player, const char *name, int key)
+do_look_at(dbref player, const char *name, int key, NEW_PE_INFO *pe_info)
 {
   dbref thing;
   dbref loc;
@@ -656,7 +654,7 @@ do_look_at(dbref player, const char *name, int key)
 
     /* look at location of location */
     if (*name == '\0') {
-      look_room(player, loc, LOOK_NORMAL);
+      look_room(player, loc, LOOK_NORMAL, pe_info);
       return;
     }
     thing =
@@ -672,7 +670,7 @@ do_look_at(dbref player, const char *name, int key)
     near = (loc == Location(thing));
   } else {                      /* regular look */
     if (*name == '\0') {
-      look_room(player, Location(player), LOOK_NORMAL);
+      look_room(player, Location(player), LOOK_NORMAL, pe_info);
       return;
     }
     /* look at a thing in location */
@@ -715,7 +713,7 @@ do_look_at(dbref player, const char *name, int key)
           notify(player, T("I don't see that here."));
           return;
         }
-        look_simple(player, thing);
+        look_simple(player, thing, pe_info);
         return;
       }
       thing =
@@ -749,7 +747,7 @@ do_look_at(dbref player, const char *name, int key)
    * while inside an object.
    */
   if (Location(player) == thing) {
-    look_room(player, thing, LOOK_NORMAL);
+    look_room(player, thing, LOOK_NORMAL, pe_info);
     return;
   } else if (!near && !Long_Fingers(player) && !See_All(player)) {
     ATTR *desc;
@@ -763,16 +761,16 @@ do_look_at(dbref player, const char *name, int key)
 
   switch (Typeof(thing)) {
   case TYPE_ROOM:
-    look_room(player, thing, LOOK_NORMAL);
+    look_room(player, thing, LOOK_NORMAL, pe_info);
     break;
   case TYPE_THING:
   case TYPE_PLAYER:
-    look_simple(player, thing);
+    look_simple(player, thing, pe_info);
     if (!(Opaque(thing)))
-      look_contents(player, thing, T("Carrying:"));
+      look_contents(player, thing, T("Carrying:"), pe_info);
     break;
   default:
-    look_simple(player, thing);
+    look_simple(player, thing, pe_info);
     break;
   }
 }
@@ -784,10 +782,11 @@ do_look_at(dbref player, const char *name, int key)
  * \param flag if 1, a brief examination. if 2, a mortal examination.
  * \param all if 1, include veiled attributes.
  * \param parent if 1, include parent attributes
+ * \param opaque if 1, don't show contents list
  */
 void
 do_examine(dbref player, const char *xname, enum exam_type flag, int all,
-           int parent)
+           int parent, int opaque)
 {
   dbref thing;
   ATTR *a;
@@ -827,7 +826,7 @@ do_examine(dbref player, const char *xname, enum exam_type flag, int all,
   }
   /*  only look at some of the attributes */
   if (attrib_name && *attrib_name) {
-    look_atrs(player, thing, attrib_name, all, 0, parent);
+    examine_atrs(player, thing, attrib_name, all, 0, parent);
     if (name)
       mush_free(name, "de.string");
     return;
@@ -903,18 +902,18 @@ do_examine(dbref player, const char *xname, enum exam_type flag, int all,
   switch (flag) {
   case EXAM_NORMAL:            /* Standard */
     if (EX_PUBLIC_ATTRIBS || ok)
-      look_atrs(player, thing, NULL, all, 0, parent);
+      examine_atrs(player, thing, NULL, all, 0, parent);
     break;
   case EXAM_BRIEF:             /* Brief */
     break;
   case EXAM_MORTAL:            /* Mortal */
     if (EX_PUBLIC_ATTRIBS)
-      mortal_look_atrs(player, thing, NULL, all, parent);
+      mortal_examine_atrs(player, thing, NULL, all, parent);
     break;
   }
 
   /* show contents */
-  if ((Contents(thing) != NOTHING) &&
+  if (!opaque && (Contents(thing) != NOTHING) &&
       (ok || (!IsRoom(thing) && !Opaque(thing)))) {
     DOLIST_VISIBLE(content, Contents(thing), (ok) ? GOD : player) {
       if (!listed) {
@@ -930,7 +929,7 @@ do_examine(dbref player, const char *xname, enum exam_type flag, int all,
   if (!ok) {
     /* if not examinable, just show obvious exits and name and owner */
     if (IsRoom(thing))
-      look_exits(player, thing, T("Obvious exits:"));
+      look_exits(player, thing, T("Obvious exits:"), NULL);
     tp = tbuf;
     safe_str(object_header(player, thing), tbuf, &tp);
     safe_str(T(" is owned by "), tbuf, &tp);
@@ -1395,6 +1394,7 @@ struct dh_args {
   enum decompile_attrflags skipdef;          /**< Show all attrflags, none, or just skip defaults? */
 };
 
+/* **DESTRUCTIVELY MODIFIES** the original string! Beware! */
 char *
 decompose_str(char *what)
 {

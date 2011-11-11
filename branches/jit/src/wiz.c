@@ -85,7 +85,8 @@ struct search_spec {
   char listenstring[BUFFER_LEN]; /**< Find objects who respond to this ^-listen */
 };
 
-static int tport_dest_ok(dbref player, dbref victim, dbref dest);
+static int tport_dest_ok(dbref player, dbref victim, dbref dest,
+                         NEW_PE_INFO *pe_info);
 static int tport_control_ok(dbref player, dbref victim, dbref loc);
 static int mem_usage(dbref thing);
 static int raw_search(dbref player, const char *owner, int nargs,
@@ -93,6 +94,8 @@ static int raw_search(dbref player, const char *owner, int nargs,
 static int fill_search_spec(dbref player, const char *owner, int nargs,
                             const char **args, struct search_spec *spec);
 static void
+
+
 
 
 
@@ -254,7 +257,7 @@ do_allquota(dbref player, const char *arg1, int quiet)
   }
   if (!arg1 || !*arg1) {
     limit = -1;
-  } else if (!is_integer(arg1)) {
+  } else if (!is_strict_integer(arg1)) {
     notify(player, T("You can only set quotas to a number."));
     return;
   } else {
@@ -303,7 +306,7 @@ do_allquota(dbref player, const char *arg1, int quiet)
 }
 
 static int
-tport_dest_ok(dbref player, dbref victim, dbref dest)
+tport_dest_ok(dbref player, dbref victim, dbref dest, NEW_PE_INFO *pe_info)
 {
   /* can player legitimately send something to dest */
 
@@ -321,7 +324,7 @@ tport_dest_ok(dbref player, dbref victim, dbref dest)
    * royalty, and the room is tport-locked against the victim, and the
    * victim does not control the room.
    */
-  if (!eval_lock(victim, dest, Tport_Lock))
+  if (!eval_lock_with(victim, dest, Tport_Lock, pe_info))
     return 0;
 
   if (JumpOk(dest))
@@ -361,10 +364,11 @@ tport_control_ok(dbref player, dbref victim, dbref loc)
  * \param arg2 the location to teleport to.
  * \param silent if 1, don't trigger teleport messagse.
  * \param inside if 1, always \@tel to inventory, even of a player
+ * \param pe_info
  */
 void
 do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
-            int inside)
+            int inside, NEW_PE_INFO *pe_info)
 {
   dbref victim;
   dbref destination;
@@ -400,7 +404,7 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
      * treat a 'home' command
      */
     if (player == victim) {
-      if (command_check_byname(victim, "HOME"))
+      if (command_check_byname(victim, "HOME", NULL))
         safe_tel(victim, HOME, silent, player, "teleport");
       return;
     } else {
@@ -454,7 +458,7 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
        * or have the open_anywhere power
        */
       if (!tport_control_ok(player, victim, loc) ||
-          !can_open_from(player, destination)) {
+          !can_open_from(player, destination, pe_info)) {
         notify(player, T("Permission denied."));
         return;
       }
@@ -490,7 +494,7 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
        * if home is valid before sending them there. */
       if (!GoodObject(Home(victim)))
         Home(victim) = PLAYER_START;
-      do_move(victim, "home", MOVE_NORMAL);
+      do_move(victim, "home", MOVE_NORMAL, pe_info);
       return;
     } else {
       /* valid location, perform other checks */
@@ -500,7 +504,7 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
         notify(player, T("What are you doing inside of yourself?"));
         if (Home(victim) == absroom)
           Home(victim) = PLAYER_START;
-        do_move(victim, "home", MOVE_NORMAL);
+        do_move(victim, "home", MOVE_NORMAL, pe_info);
         return;
       }
       /* find the "absolute" room */
@@ -510,7 +514,7 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
         notify(victim, T("You're in the void - sending you home."));
         if (Home(victim) == Location(victim))
           Home(victim) = PLAYER_START;
-        do_move(victim, "home", MOVE_NORMAL);
+        do_move(victim, "home", MOVE_NORMAL, pe_info);
         return;
       }
       /* if there are a lot of containers, send him home */
@@ -518,7 +522,7 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
         notify(victim, T("You're in too many containers."));
         if (Home(victim) == Location(victim))
           Home(victim) = PLAYER_START;
-        do_move(victim, "home", MOVE_NORMAL);
+        do_move(victim, "home", MOVE_NORMAL, pe_info);
         return;
       }
       /* note that we check the NO_TEL status of the victim rather
@@ -536,7 +540,7 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
 
       /* Check leave lock on room, if necessary */
       if (!controls(player, absroom) && !Tel_Anywhere(player) &&
-          !eval_lock(player, absroom, Leave_Lock)) {
+          !eval_lock_with(player, absroom, Leave_Lock, pe_info)) {
         fail_lock(player, absroom, Leave_Lock,
                   T("Teleports are not allowed in this room."), NOTHING);
         return;
@@ -558,7 +562,7 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
 
     if (!IsExit(destination)) {
       if (tport_control_ok(player, victim, Location(victim)) &&
-          tport_dest_ok(player, victim, destination)
+          tport_dest_ok(player, victim, destination, pe_info)
           && (Tel_Anything(player) ||
               (Tel_Anywhere(player) && (player == victim)) ||
               (destination == Owner(victim)) ||
@@ -602,7 +606,7 @@ do_teleport(dbref player, const char *arg1, const char *arg2, int silent,
       } else {
         char absdest[SBUF_LEN];
         strcpy(absdest, tprintf("#%d", destination));
-        do_move(victim, absdest, MOVE_TELEPORT);
+        do_move(victim, absdest, MOVE_TELEPORT, pe_info);
       }
     }
   }
@@ -1024,7 +1028,7 @@ do_chzoneall(dbref player, const char *name, const char *target, bool preserve)
    * consistency on things like flag resetting, etc... */
   for (i = 0; i < db_top; i++) {
     if (Owner(i) == victim && Zone(i) != zone) {
-      count += do_chzone(player, unparse_dbref(i), target, 0, preserve);
+      count += do_chzone(player, unparse_dbref(i), target, 0, preserve, NULL);
     }
   }
   notify_format(player, T("Zone changed for %d objects."), count);
@@ -1393,7 +1397,7 @@ FUNCTION(fun_lsearch)
   dbref *results = NULL;
   int rev = !strcmp(called_as, "LSEARCHR");
 
-  if (!command_check_byname(executor, "@search")) {
+  if (!command_check_byname(executor, "@search", pe_info)) {
     safe_str(T(e_perm), buff, bp);
     return;
   }
@@ -2118,7 +2122,7 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
      * they are considered to be able to examine everything of that player,
      * so do not need vis_only. */
     if (GoodObject(spec.owner) && ZMaster(spec.owner)) {
-      vis_only = !eval_lock(player, spec.owner, Zone_Lock);
+      vis_only = !eval_lock_with(player, spec.owner, Zone_Lock, pe_info);
     }
   }
 
@@ -2168,7 +2172,8 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
     if (*spec.powers
         && (flaglist_check_long("POWER", player, n, spec.powers, 1) != 1))
       continue;
-    if (spec.lock != TRUE_BOOLEXP && !eval_boolexp(n, spec.lock, player, NULL))
+    if (spec.lock != TRUE_BOOLEXP
+        && !eval_boolexp(n, spec.lock, player, pe_info))
       continue;
     if (spec.cmdstring[0] &&
         !atr_comm_match(n, player, '$', ':', spec.cmdstring, 1, 0,
@@ -2196,13 +2201,16 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
       const char *ebuf2;
       char tbuf1[BUFFER_LEN];
       char *bp;
+      int per;
 
       ebuf1 = replace_string("##", unparse_dbref(n), spec.eval);
       ebuf2 = ebuf1;
       bp = tbuf1;
-      process_expression(tbuf1, &bp, &ebuf2, player, player, player,
-                         PE_DEFAULT, PT_DEFAULT, pe_info);
+      per = process_expression(tbuf1, &bp, &ebuf2, player, player, player,
+                               PE_DEFAULT, PT_DEFAULT, pe_info);
       mush_free(ebuf1, "replace_string.buff");
+      if (per)
+        goto exit_sequence;
       *bp = '\0';
       if (!parse_boolean(tbuf1))
         continue;
@@ -2229,6 +2237,7 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
     (*result)[nresults++] = (dbref) n;
   }
 
+exit_sequence:
   if (spec.lock != TRUE_BOOLEXP)
     free_boolexp(spec.lock);
   return (int) nresults;

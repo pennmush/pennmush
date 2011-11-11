@@ -101,7 +101,7 @@ struct chanuser {
  * into a sorted linked list.
  */
 struct channel {
-  char name[CHAN_NAME_LEN];     /**< Channel name */
+  char *name;                   /**< Channel name */
   char title[CHAN_TITLE_LEN];   /**< Channel description */
   privbits type;                /**< Channel flags */
   int cost;             /**< What it cost to make this channel */

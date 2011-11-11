@@ -311,6 +311,7 @@ FUNTAB flist[] = {
   {"ISINT", fun_isint, 1, 1, FN_REG | FN_STRIPANSI},
   {"ISNUM", fun_isnum, 1, 1, FN_REG | FN_STRIPANSI},
   {"ISOBJID", fun_isobjid, 1, 1, FN_REG | FN_STRIPANSI},
+  {"ISREGEXP", fun_isregexp, 1, 1, FN_REG | FN_STRIPANSI},
   {"ISWORD", fun_isword, 1, 1, FN_REG | FN_STRIPANSI},
   {"ITER", fun_iter, 2, 4, FN_NOPARSE},
   {"ITEMS", fun_items, 2, 2, FN_REG | FN_STRIPANSI},
@@ -533,7 +534,7 @@ FUNTAB flist[] = {
   {"SPELLNUM", fun_spellnum, 1, 1, FN_REG | FN_STRIPANSI},
   {"SPLICE", fun_splice, 3, 4, FN_REG},
   {"SQL", fun_sql, 1, 4, FN_REG},
-  {"SQLESCAPE", fun_sql_escape, 1, 1, FN_REG},
+  {"SQLESCAPE", fun_sql_escape, 1, -1, FN_REG},
   {"SQUISH", fun_squish, 1, 2, FN_REG},
   {"SSL", fun_ssl, 1, 1, FN_REG | FN_STRIPANSI},
   {"STARTTIME", fun_starttime, 0, 0, FN_REG},
@@ -1034,7 +1035,7 @@ strip_braces(const char *str)
   char *buff;
   char *bufc;
 
-  buff = (char *) mush_malloc(BUFFER_LEN, "strip_braces.buff");
+  buff = mush_malloc(BUFFER_LEN, "strip_braces.buff");
   bufc = buff;
 
   while (isspace((unsigned char) *str)) /* eat spaces at the beginning */
@@ -1224,7 +1225,7 @@ cnf_add_function(char *name, char *opts)
   if (*one == '#')
     one++;
   /* Don't care if the attr exists, only if it /could/ exist */
-  if (!is_integer(one) || !good_atr_name(attrname))
+  if (!is_strict_integer(one) || !good_atr_name(attrname))
     return 0;
   thing = (dbref) parse_integer(one);
   if (!GoodObject(thing) || IsGarbage(thing))

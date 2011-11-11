@@ -12,8 +12,6 @@
 #ifndef _confmagic_h_
 #define _confmagic_h_
 
-#define inline __inline
-
 /*
  * (which isn't exportable from the U.S.), then don't encrypt
  */

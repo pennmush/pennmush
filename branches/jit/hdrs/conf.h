@@ -261,7 +261,6 @@ struct options_table {
   time_t dbck_counter;  /**< Time since last automatic dbck */
   int max_attrcount;    /**< Maximum number of attributes per object */
   int float_precision;  /**< Precision of floating point display */
-  int newline_one_char; /**< Should a newline be counted as 1 character or 2? */
   int player_name_len;  /**< Maximum length of player names */
   int queue_entry_cpu_time;     /**< Maximum cpu time allowed per queue entry */
   int ascii_names;      /**< Are object names restricted to ascii characters? */
@@ -454,7 +453,6 @@ int can_view_config_option(dbref player, PENNCONF *opt);
 #define FUNCTION_LIMIT (options.func_invk_lim)
 #define CALL_LIMIT (options.call_lim)
 #define TINY_MATH (options.tiny_math)
-#define NEWLINE_ONE_CHAR (options.newline_one_char)
 #define ONLY_ASCII_NAMES (options.ascii_names)
 #define USE_QUOTA (options.use_quota)
 #define EMPTY_ATTRS (options.empty_attrs)

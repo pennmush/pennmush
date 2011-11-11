@@ -27,8 +27,6 @@
 #include "parse.h"
 #include "confmagic.h"
 
-/* Hack added by Thorvald for object_header Pueblo */
-static int couldunparse;
 
 /** Format an object's name (and dbref and flags).
  * This is a wrapper for real_unparse() that conditionally applies
@@ -41,17 +39,7 @@ static int couldunparse;
 const char *
 unparse_object(dbref player, dbref loc)
 {
-  static PUEBLOBUFF;
-  const char *result;
-  result = real_unparse(player, loc, 0, 0, 0);
-  if (couldunparse) {
-    PUSE;
-    tag_wrap("A", tprintf("XCH_CMD=\"examine #%d\"", loc), result);
-    PEND;
-    return pbuff;
-  } else {
-    return result;
-  }
+  return real_unparse(player, loc, 0, 0, 0, NULL);
 }
 
 /** Format an object's name, obeying MYOPIC/ownership rules.
@@ -65,17 +53,7 @@ unparse_object(dbref player, dbref loc)
 const char *
 unparse_object_myopic(dbref player, dbref loc)
 {
-  static PUEBLOBUFF;
-  const char *result;
-  result = real_unparse(player, loc, 1, 0, 1);
-  if (couldunparse) {
-    PUSE;
-    tag_wrap("A", tprintf("XCH_CMD=\"examine #%d\"", loc), result);
-    PEND;
-    return pbuff;
-  } else {
-    return result;
-  }
+  return real_unparse(player, loc, 1, 0, 1, NULL);
 }
 
 /** Format an object's name, obeying MYOPIC/ownership and NAMEFORMAT.
@@ -87,22 +65,13 @@ unparse_object_myopic(dbref player, dbref loc)
  * \endverbatim
  * \param player the looker.
  * \param loc the object being looked at.
+ * \param pe_info
  * \return static formatted object name string.
  */
 const char *
-unparse_room(dbref player, dbref loc)
+unparse_room(dbref player, dbref loc, NEW_PE_INFO *pe_info)
 {
-  static PUEBLOBUFF;
-  const char *result;
-  result = real_unparse(player, loc, 1, 1, 1);
-  if (couldunparse) {
-    PUSE;
-    tag_wrap("A", tprintf("XCH_CMD=\"examine #%d\"", loc), result);
-    PEND;
-    return pbuff;
-  } else {
-    return result;
-  }
+  return real_unparse(player, loc, 1, 1, 1, pe_info);
 }
 
 /** Format an object's name in several ways.
@@ -115,17 +84,18 @@ unparse_room(dbref player, dbref loc)
  * do so if player is MYOPIC or doesn't own loc.
  * \param use_nameformat if 1, apply a NAMEFORMAT attribute if available.
  * \param use_nameaccent if 1, apply a NAMEACCENT attribute if available.
+ * \param pe_info
  * \return address of a static buffer containing the formatted name.
  */
 const char *
 real_unparse(dbref player, dbref loc, int obey_myopic, int use_nameformat,
-             int use_nameaccent)
+             int use_nameaccent, NEW_PE_INFO *pe_info)
 {
   static char buf[BUFFER_LEN], *bp;
   static char tbuf1[BUFFER_LEN];
+  static PUEBLOBUFF;
   char *p;
 
-  couldunparse = 0;
   if (!(GoodObject(loc) || (loc == NOTHING) || (loc == AMBIGUOUS) ||
         (loc == HOME)))
     return T("*NOTHING*");
@@ -145,12 +115,10 @@ real_unparse(dbref player, dbref loc, int obey_myopic, int use_nameformat,
       if ((p = strchr(tbuf1, ';')))
         *p = '\0';
     }
-    if ((Can_Examine(player, loc) || can_link_to(player, loc) ||
+    if ((Can_Examine(player, loc) || can_link_to(player, loc, pe_info) ||
          JumpOk(loc) || ChownOk(loc) || DestOk(loc)) &&
         (!Myopic(player) || !obey_myopic)) {
       /* show everything */
-      if (SUPPORT_PUEBLO)
-        couldunparse = 1;
       bp = buf;
       if (ANSI_NAMES && ShowAnsi(player))
         safe_format(buf, &bp, "%s%s%s(#%d%s)", ANSI_HILITE, tbuf1,
@@ -172,10 +140,19 @@ real_unparse(dbref player, dbref loc, int obey_myopic, int use_nameformat,
   /* buf now contains the default formatting of the name. If we
    * have @nameaccent, though, we might change to that.
    */
-  if (use_nameformat && nameformat(player, loc, tbuf1, buf))
-    return tbuf1;
+  if (use_nameformat && nameformat(player, loc, tbuf1, buf, 0, pe_info))
+    p = tbuf1;
   else
-    return buf;
+    p = buf;
+
+  if (SUPPORT_PUEBLO) {
+    PUSE;
+    tag_wrap("A", tprintf("XCH_CMD=\"examine #%d\"", loc), p);
+    PEND;
+    return pbuff;
+  } else {
+    return p;
+  }
 }
 
 /** Build the name of loc as seen by a player inside it, but only
@@ -186,33 +163,32 @@ real_unparse(dbref player, dbref loc, int obey_myopic, int use_nameformat,
  * \param loc dbref of location being looked at.
  * \param tbuf1 address to store formatted name of loc.
  * \param defname the name as it would be formatted without NAMEFORMAT.
+ * \param localize should q-registers be preserved when evaluating the attr?
+ * \param pe_info
  * \retval 1 a NAMEFORMAT was found, and tbuf1 contains formatted name.
  * \retval 0 no NAMEFORMAT on loc, tbuf1 is undefined.
  */
 int
-nameformat(dbref player, dbref loc, char *tbuf1, char *defname)
+nameformat(dbref player, dbref loc, char *tbuf1, char *defname, bool localize,
+           NEW_PE_INFO *pe_info)
 {
-  ATTR *a;
-  char *bp, *save;
-  char const *sp;
+  ufun_attrib ufun;
+  PE_REGS *pe_regs;
+  int flags = UFUN_IGNORE_PERMS | UFUN_REQUIRE_ATTR;
 
-  a = atr_get(loc, "NAMEFORMAT");
-  if (a) {
-    NEW_PE_INFO *pe_info = make_pe_info("pe_info-nameformat");
-    pe_regs_setenv(pe_info->regvals, 0, unparse_dbref(loc));
-    pe_regs_setenv_nocopy(pe_info->regvals, 1, defname);
-    sp = save = safe_atr_value(a);
-    bp = tbuf1;
-    process_expression(tbuf1, &bp, &sp, loc, player, player,
-                       PE_DEFAULT, PT_DEFAULT, pe_info);
-    *bp = '\0';
-    free(save);
-    free_pe_info(pe_info);
-    return 1;
-  } else {
-    /* No @nameformat attribute */
+  if (localize)
+    flags |= UFUN_LOCALIZE;
+
+  if (!fetch_ufun_attrib("NAMEFORMAT", loc, &ufun, flags))
     return 0;
-  }
+
+  pe_regs = pe_regs_create(PE_REGS_ARG, "nameformat");
+  pe_regs_setenv(pe_regs, 0, unparse_dbref(loc));
+  pe_regs_setenv_nocopy(pe_regs, 1, defname);
+
+  call_ufun(&ufun, tbuf1, player, player, pe_info, pe_regs);
+  pe_regs_free(pe_regs);
+  return 1;
 }
 
 /** Give a string representation of a dbref.

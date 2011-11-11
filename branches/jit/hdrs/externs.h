@@ -279,6 +279,7 @@ extern char ucbuff[];
 #define PE_INFO_CLONE       0x002       /**< Clone entire pe_info */
 #define PE_INFO_COPY_ENV    0x004       /**< Copy env-vars (%0-%9) from the parent */
 #define PE_INFO_COPY_QREG   0x008       /**< Copy q-registers (%q*) from the parent pe_info */
+#define PE_INFO_COPY_CMDS   0x010       /**< Copy values for %c and %u from the parent pe_info */
 
 
 struct _ansi_string;
@@ -322,16 +323,18 @@ void shutdown_queues(void);
 
 
 /* From create.c */
-dbref do_dig(dbref player, const char *name, char **argv, int tport);
+dbref do_dig(dbref player, const char *name, char **argv, int tport,
+             NEW_PE_INFO *pe_info);
 dbref do_create(dbref player, char *name, int cost, char *newdbref);
 dbref do_real_open(dbref player, const char *direction,
-                   const char *linkto, dbref pseudo);
-void do_open(dbref player, const char *direction, char **links);
+                   const char *linkto, dbref pseudo, NEW_PE_INFO *pe_info);
+void do_open(dbref player, const char *direction, char **links,
+             NEW_PE_INFO *pe_info);
 void do_link(dbref player, const char *name, const char *room_name,
-             int preserve);
+             int preserve, NEW_PE_INFO *pe_info);
 void do_unlink(dbref player, const char *name);
 dbref do_clone(dbref player, char *name, char *newname, int preserve,
-               char *newdbref);
+               char *newdbref, NEW_PE_INFO *pe_info);
 
 /* From funtime.c */
 int etime_to_secs(char *str1, int *secs);
@@ -343,7 +346,7 @@ int Commer(dbref thing);
 int Listener(dbref thing);
 extern dbref orator;
 int parse_chat(dbref player, char *command);
-void fork_and_dump(int forking);
+bool fork_and_dump(int forking);
 void reserve_fd(void);
 void release_fd(void);
 void do_scan(dbref player, char *command, int flag);
@@ -354,9 +357,10 @@ void do_scan(dbref player, char *command, int flag);
 enum look_type { LOOK_NORMAL, LOOK_TRANS, LOOK_AUTO, LOOK_CLOUDYTRANS,
   LOOK_CLOUDY
 };
-void look_room(dbref player, dbref loc, enum look_type style);
+void look_room(dbref player, dbref loc, enum look_type style,
+               NEW_PE_INFO *pe_info);
 void do_look_around(dbref player);
-void do_look_at(dbref player, const char *name, int key);
+void do_look_at(dbref player, const char *name, int key, NEW_PE_INFO *pe_info);
 char *decompose_str(char *what);
 
 /* From memcheck.c */
@@ -377,14 +381,15 @@ enum move_type { MOVE_NORMAL, /**< move through an exit in your location */
   MOVE_ZONE,                  /**< ZMR Exit */
   MOVE_TELEPORT                /**< \@tel'd into an exit */
 };
-void do_move(dbref player, const char *direction, enum move_type type);
+void do_move(dbref player, const char *direction, enum move_type type,
+             NEW_PE_INFO *pe_info);
 void moveto(dbref what, dbref where, dbref enactor, const char *cause);
 void safe_tel(dbref player, dbref dest, int nomovemsgs,
               dbref enactor, const char *cause);
 int global_exit(dbref player, const char *direction);
 int remote_exit(dbref loc, const char *direction);
-void move_wrapper(dbref player, const char *command);
-void do_follow(dbref player, const char *arg);
+void move_wrapper(dbref player, const char *command, NEW_PE_INFO *pe_info);
+void do_follow(dbref player, const char *arg, NEW_PE_INFO *pe_info);
 void do_unfollow(dbref player, const char *arg);
 void do_desert(dbref player, const char *arg);
 void do_dismiss(dbref player, const char *arg);
@@ -433,7 +438,7 @@ void reset_player_list(dbref player, const char *oldname, const char *oldalias,
 char *WIN32_CDECL tprintf(const char *fmt, ...)
   __attribute__ ((__format__(__printf__, 1, 2)));
 
-int could_doit(dbref player, dbref thing);
+int could_doit(dbref player, dbref thing, NEW_PE_INFO *pe_info);
 int did_it(dbref player, dbref thing, const char *what,
            const char *def, const char *owhat, const char *odef,
            const char *awhat, dbref loc);
@@ -496,13 +501,15 @@ enum emit_type {
   EMIT_OEMIT  /**< emit to all objects in location except the given objects */
 };
 dbref speech_loc(dbref thing);
-int okay_pemit(dbref player, dbref target, int dofails, int def);
-int vmessageformat(dbref player, const char *attribute,
-                   dbref executor, int flags, int nargs, ...);
-int messageformat(dbref player, const char *attribute,
-                  dbref executor, int flags, int nargs, char *argv[]);
+int okay_pemit(dbref player, dbref target, int dofails, int def,
+               NEW_PE_INFO *pe_info);
+int vmessageformat(dbref player, const char *attribute, dbref executor,
+                   int flags, int nargs, ...);
+int messageformat(dbref player, const char *attribute, dbref executor,
+                  int flags, int nargs, char *argv[]);
 void do_message(dbref executor, char *list, char *attrname, char *message,
-                enum emit_type type, int flags, int numargs, char *argv[]);
+                enum emit_type type, int flags, int numargs, char *argv[],
+                NEW_PE_INFO *pe_info);
 
 const char *spname(dbref thing);
 int filter_found(dbref thing, dbref speaker, const char *msg, int flag);
@@ -640,14 +647,15 @@ mush_strndup(const char *src, size_t len, const char *check)
 /* From unparse.c */
     const char *real_unparse
       (dbref player, dbref loc, int obey_myopic, int use_nameformat,
-       int use_nameaccent);
+       int use_nameaccent, NEW_PE_INFO *pe_info);
     extern const char *unparse_objid(dbref thing);
     extern const char *unparse_object(dbref player, dbref loc);
 /** For back compatibility, an alias for unparse_object */
 #define object_header(p,l) unparse_object(p,l)
     const char *unparse_object_myopic(dbref player, dbref loc);
-    const char *unparse_room(dbref player, dbref loc);
-    int nameformat(dbref player, dbref loc, char *tbuf1, char *defname);
+    const char *unparse_room(dbref player, dbref loc, NEW_PE_INFO *pe_info);
+    int nameformat(dbref player, dbref loc, char *tbuf1, char *defname,
+                   bool localize, NEW_PE_INFO *pe_info);
     const char *accented_name(dbref thing);
 
 /* From utils.c */
@@ -681,10 +689,14 @@ mush_strndup(const char *src, size_t len, const char *check)
 #define UFUN_IGNORE_PERMS 0x08
 /* When calling the ufun, save and restore the Q-registers. */
 #define UFUN_LOCALIZE 0x10
+/* When calling the ufun, add the object's name to the beginning, respecting no_name */
+#define UFUN_NAME 0x20
+/* When calling ufun with UFUN_NAME, don't add a space after the name. Only to be used by call_ufun! */
+#define UFUN_NAME_NOSPACE 0x40
 #define UFUN_DEFAULT (UFUN_OBJECT | UFUN_LAMBDA)
     bool fetch_ufun_attrib(const char *attrstring, dbref executor,
                            ufun_attrib *ufun, int flags);
-    bool call_ufun(ufun_attrib *ufun, char *ret, dbref executor,
+    bool call_ufun(ufun_attrib *ufun, char *ret, dbref caller,
                    dbref enactor, NEW_PE_INFO *pe_info, PE_REGS *pe_regs);
     bool call_attrib(dbref thing, const char *attrname, char *ret,
                      dbref enactor, NEW_PE_INFO *pe_info, PE_REGS *pe_regs);
@@ -708,7 +720,7 @@ mush_strndup(const char *src, size_t len, const char *check)
     char *shortalias(dbref it);
     char *shortname(dbref it);
     dbref absolute_room(dbref it);
-    int can_interact(dbref from, dbref to, int type);
+    int can_interact(dbref from, dbref to, int type, NEW_PE_INFO *pe_info);
 
 
 /* From warnings.c */

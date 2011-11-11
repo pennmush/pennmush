@@ -69,15 +69,16 @@ tprintf(const char *fmt, ...)
  * the purposes of picking up an object or moving through an exit.
  * \param player to check against lock.
  * \param thing thing to check the basic lock on.
+ * \param pe_info
  * \retval 1 player passes lock.
  * \retval 0 player fails lock.
  */
 int
-could_doit(dbref player, dbref thing)
+could_doit(dbref player, dbref thing, NEW_PE_INFO *pe_info)
 {
   if (!IsRoom(thing) && Location(thing) == NOTHING)
     return 0;
-  return (eval_lock(player, thing, Basic_Lock));
+  return (eval_lock_with(player, thing, Basic_Lock, pe_info));
 }
 
 /** Check for CHARGES on thing and, if present, lower.
@@ -220,12 +221,11 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
             PE_REGS *pe_regs, int flags)
 {
 
-  ATTR *d;
-  char buff[BUFFER_LEN], *bp, *sp, *asave;
-  char const *ap;
+  char buff[BUFFER_LEN], *bp;
   dbref preserve_orator = orator;
   int attribs_used = 0;
   NEW_PE_INFO *pe_info = NULL;
+  ufun_attrib ufun;
 
   if (!pe_info) {
     pe_info = make_pe_info("pe_info-real_did_it2");
@@ -242,47 +242,29 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
 
     /* message to player */
     if (what && *what) {
-      d = atr_get(thing, what);
-      if (d) {
+      if (fetch_ufun_attrib
+          (what, thing, &ufun,
+           UFUN_LOCALIZE | UFUN_REQUIRE_ATTR | UFUN_IGNORE_PERMS)) {
         attribs_used = 1;
-        asave = safe_atr_value(d);
-        ap = asave;
-        bp = buff;
-        process_expression(buff, &bp, &ap, thing, player, player,
-                           PE_DEFAULT, PT_DEFAULT, pe_info);
-        *bp = '\0';
-        notify_by(thing, player, buff);
-        free(asave);
+        if (!call_ufun(&ufun, buff, thing, player, pe_info, NULL) && buff[0])
+          notify_by(thing, player, buff);
       } else if (def && *def)
         notify_by(thing, player, def);
     }
     /* message to neighbors */
     if (!DarkLegal(player)) {
-      if (owhat && *owhat) {
-        d = atr_get(thing, owhat);
-        if (d) {
-          attribs_used = 1;
-          asave = safe_atr_value(d);
-          ap = asave;
-          bp = buff;
-          if (!((d)->flags & AF_NONAME)) {
-            safe_str(Name(player), buff, &bp);
-            if (!((d)->flags & AF_NOSPACE))
-              safe_chr(' ', buff, &bp);
-          }
-          sp = bp;
-          process_expression(buff, &bp, &ap, thing, player, player,
-                             PE_DEFAULT, PT_DEFAULT, pe_info);
-          *bp = '\0';
-          if (bp != sp)
-            notify_except2(loc, player, thing, buff, flags);
-          free(asave);
-        } else if (odef && *odef) {
-          bp = buff;
-          safe_format(buff, &bp, "%s %s", Name(player), odef);
-          *bp = '\0';
+      if (owhat && *owhat
+          && fetch_ufun_attrib(owhat, thing, &ufun,
+                               UFUN_LOCALIZE | UFUN_REQUIRE_ATTR |
+                               UFUN_IGNORE_PERMS | UFUN_NAME)) {
+        attribs_used = 1;
+        if (!call_ufun(&ufun, buff, thing, player, pe_info, NULL) && buff[0])
           notify_except2(loc, player, thing, buff, flags);
-        }
+      } else if (odef && *odef) {
+        bp = buff;
+        safe_format(buff, &bp, "%s %s", Name(player), odef);
+        *bp = '\0';
+        notify_except2(loc, player, thing, buff, flags);
       }
     }
   }
@@ -331,7 +313,7 @@ first_visible(dbref player, dbref thing)
   ldark = IsPlayer(loc) ? Opaque(loc) : Dark(loc);
 
   while (GoodObject(thing)) {
-    if (can_interact(thing, player, INTERACT_SEE)) {
+    if (can_interact(thing, player, INTERACT_SEE, NULL)) {
       if (DarkLegal(thing) || (ldark && !Light(thing))) {
         if (!lck) {
           if (See_All(player) || (loc == player) || controls(player, loc))
@@ -361,7 +343,7 @@ first_visible(dbref player, dbref thing)
 int
 can_see(dbref player, dbref thing, int can_see_loc)
 {
-  if (!can_interact(thing, player, INTERACT_SEE))
+  if (!can_interact(thing, player, INTERACT_SEE, NULL))
     return 0;
 
   /*
@@ -408,6 +390,9 @@ controls(dbref who, dbref what)
   boolexp c;
 
   if (!GoodObject(what))
+    return 0;
+
+  if (Guest(who))
     return 0;
 
   if (what == who)
@@ -460,6 +445,12 @@ controls(dbref who, dbref what)
 int
 can_pay_fees(dbref who, int pennies)
 {
+
+  if (Guest(who)) {
+    notify(who, T("Sorry, you aren't allowed to build."));
+    return 0;
+  }
+
   /* check database size -- EVERYONE is subject to this! */
   if (DBTOP_MAX && (db_top >= DBTOP_MAX + 1) && (first_free == NOTHING)) {
     notify(who, T("Sorry, there is no more room in the database."));
@@ -745,7 +736,8 @@ ok_player_name(const char *name, dbref player, dbref thing)
 
   /* A player may only change to a forbidden name if they're already
      using that name. */
-  if (forbidden_name(name) && !(GoodObject(player) && (Wizard(player) || (lookup == thing))))
+  if (forbidden_name(name)
+      && !(GoodObject(player) && (Wizard(player) || (lookup == thing))))
     return 0;
 
   return ((lookup == NOTHING) || (lookup == thing));
@@ -1115,8 +1107,11 @@ do_switch(dbref executor, char *expression, char **argv, dbref enactor,
     /* eval expression */
     ap = argv[a];
     bp = buff;
-    process_expression(buff, &bp, &ap, executor, enactor, enactor,
-                       PE_DEFAULT, PT_DEFAULT, queue_entry->pe_info);
+    if (process_expression(buff, &bp, &ap, executor, enactor, enactor,
+                           PE_DEFAULT, PT_DEFAULT, queue_entry->pe_info)) {
+      pe_regs_free(pe_regs);
+      return;
+    }
     *bp = '\0';
     /* check for a match */
     pe_regs_clear_type(pe_regs, PE_REGS_CAPTURE);
@@ -1209,21 +1204,11 @@ void
 page_return(dbref player, dbref target, const char *type,
             const char *message, const char *def)
 {
-  ATTR *d;
-  char buff[BUFFER_LEN], *bp, *asave;
-  char const *ap;
+  char buff[BUFFER_LEN];
   struct tm *ptr;
 
   if (message && *message) {
-    d = atr_get(target, message);
-    if (d) {
-      asave = safe_atr_value(d);
-      ap = asave;
-      bp = buff;
-      process_expression(buff, &bp, &ap, target, player, player,
-                         PE_DEFAULT, PT_DEFAULT, NULL);
-      *bp = '\0';
-      free(asave);
+    if (call_attrib(target, message, buff, player, NULL, NULL)) {
       if (*buff) {
         ptr = (struct tm *) localtime(&mudtime);
         notify_format(player, T("%s message from %s: %s"), type,

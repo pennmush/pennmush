@@ -116,7 +116,7 @@ waitable_attr(dbref thing, const char *atr)
   } else {                      /* Attribute is set. Check for proper owner and flags and value */
     if ((AL_CREATOR(a) == GOD) && (AL_FLAGS(a) == SEMAPHORE_FLAGS)) {
       char *v = atr_value(a);
-      if (!*v || is_integer(v))
+      if (!*v || is_strict_integer(v))
         return 1;
       else
         return 0;
@@ -304,7 +304,8 @@ new_queue_entry(NEW_PE_INFO *pe_info)
   MQUE *entry;
 
   entry = mush_malloc(sizeof *entry, "mque");
-
+  if (!entry)
+    mush_panic("Unable to allocate memory in new_queue_entry");
   entry->executor = NOTHING;
   entry->enactor = NOTHING;
   entry->caller = NOTHING;
@@ -1380,7 +1381,7 @@ COMMAND(cmd_notify_drain)
                T("You may not specify a semaphore count with the ALL switch."));
         return;
       }
-      if (!is_uinteger(args_right[1])) {
+      if (!is_strict_uinteger(args_right[1])) {
         notify(executor, T("The semaphore count must be an integer."));
         return;
       }

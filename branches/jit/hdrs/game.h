@@ -9,6 +9,8 @@
 #ifndef __GAME_H
 #define __GAME_H
 
+#include "mushtype.h"
+
 /* @scan flags */
 #define CHECK_INVENTORY  0x010  /*<< Check player's inventory for $-commands */
 #define CHECK_NEIGHBORS  0x020  /*<< Check objects in player's location for $-commands, including player */
@@ -75,7 +77,7 @@ extern void do_dolist(dbref executor, char *list, char *command,
 /* From look.c */
 enum exam_type { EXAM_NORMAL, EXAM_BRIEF, EXAM_MORTAL };
 extern void do_examine(dbref player, const char *name, enum exam_type flag,
-                       int all, int parent);
+                       int all, int parent, int opaque);
 extern void do_inventory(dbref player);
 extern void do_find(dbref player, const char *name, char **argv);
 extern void do_whereis(dbref player, const char *name);
@@ -90,11 +92,11 @@ extern void do_decompile(dbref player, const char *name, const char *prefix,
                          int dec_type);
 
 /* From move.c */
-extern void do_get(dbref player, const char *what);
-extern void do_drop(dbref player, const char *name);
-extern void do_enter(dbref player, const char *what);
-extern void do_leave(dbref player);
-extern void do_empty(dbref player, const char *what);
+extern void do_get(dbref player, const char *what, NEW_PE_INFO *pe_info);
+extern void do_drop(dbref player, const char *name, NEW_PE_INFO *pe_info);
+extern void do_enter(dbref player, const char *what, NEW_PE_INFO *pe_info);
+extern void do_leave(dbref player, NEW_PE_INFO *pe_info);
+extern void do_empty(dbref player, const char *what, NEW_PE_INFO *pe_info);
 extern void do_firstexit(dbref player, const char **what);
 
 /* From player.c */
@@ -112,15 +114,18 @@ extern void do_grep(dbref player, char *obj, char *lookfor, int flag,
 
 /* From rob.c */
 extern void do_kill(dbref player, const char *what, int cost, int slay);
-extern void do_give(dbref player, char *recipient, char *amnt, int silent);
-extern void do_buy(dbref player, char *item, char *from, int price);
+extern void do_give(dbref player, char *recipient, char *amnt, int silent,
+                    NEW_PE_INFO *pe_info);
+extern void do_buy(dbref player, char *item, char *from, int price,
+                   NEW_PE_INFO *pe_info);
 
 /* From set.c */
 extern void do_name(dbref player, const char *name, char *newname);
 extern void do_chown
-  (dbref player, const char *name, const char *newobj, int preserve);
+  (dbref player, const char *name, const char *newobj, int preserve,
+   NEW_PE_INFO *pe_info);
 extern int do_chzone(dbref player, const char *name, const char *newobj,
-                     bool noisy, bool preserve);
+                     bool noisy, bool preserve, NEW_PE_INFO *pe_info);
 extern int do_set(dbref player, const char *name, char *flag);
 extern void do_cpattr
   (dbref player, char *oldpair, char **newpair, int move, int noflagcopy);
@@ -132,38 +137,43 @@ extern void do_cpattr
 extern void do_gedit(dbref player, char *it, char **argv, int flags);
 extern void do_trigger(dbref player, char *object, char **argv,
                        MQUE *queue_entry);
-extern void do_use(dbref player, const char *what);
-extern void do_parent(dbref player, char *name, char *parent_name);
+extern void do_use(dbref player, const char *what, NEW_PE_INFO *pe_info);
+extern void do_parent(dbref player, char *name, char *parent_name,
+                      NEW_PE_INFO *pe_info);
 extern void do_wipe(dbref player, char *name);
 
 /* From speech.c */
-extern void do_say(dbref player, const char *message);
+extern void do_say(dbref player, const char *message, NEW_PE_INFO *pe_info);
 extern void do_whisper
-  (dbref player, const char *arg1, const char *arg2, int noisy);
-extern void do_whisper_list
-  (dbref player, const char *arg1, const char *arg2, int noisy);
-extern void do_pose(dbref player, const char *tbuf1, int nospace);
+  (dbref player, const char *arg1, const char *arg2, int noisy,
+   NEW_PE_INFO *pe_info);
+extern void do_pose(dbref player, const char *tbuf1, int nospace,
+                    NEW_PE_INFO *pe_info);
 enum wall_type { WALL_ALL, WALL_RW, WALL_WIZ };
 void do_wall(dbref player, const char *message, enum wall_type target,
              int emit);
 void do_page(dbref executor, const char *arg1, const char *arg2,
-             int override, int has_eq);
+             int override, int has_eq, NEW_PE_INFO *pe_info);
 #define PEMIT_SILENT 0x1  /**< Don't show confirmation msg to speaker */
 #define PEMIT_LIST   0x2  /**< Recipient is a list of names */
 #define PEMIT_SPOOF  0x4  /**< Show sound as being from %#, not %! */
 #define PEMIT_PROMPT 0x8  /**< Add a telnet GOAHEAD to the end. For \@prompt */
-extern void do_emit(dbref player, const char *message, int flags);
-extern void do_pemit(dbref player, char *target, const char *message,
-                     int flags, struct format_msg *format);
-#define do_pemit_list(player,target,message,flags) \
-        do_pemit(player,target,message,flags|PEMIT_LIST,NULL)
+extern void do_emit(dbref player, const char *message, int flags,
+                    NEW_PE_INFO *pe_info);
+extern void do_pemit(dbref player, char *target, const char *message, int flags,
+                     struct format_msg *format, NEW_PE_INFO *pe_info);
+#define do_pemit_list(player,target,message,flags,pe_info) \
+        do_pemit(player,target,message,flags|PEMIT_LIST,NULL,pe_info)
 extern void do_remit(dbref player, char *rooms, const char *message,
-                     int flags, struct format_msg *format);
-extern void do_lemit(dbref player, const char *message, int flags);
+                     int flags, struct format_msg *format,
+                     NEW_PE_INFO *pe_info);
+extern void do_lemit(dbref player, const char *message, int flags,
+                     NEW_PE_INFO *pe_info);
 extern void do_zemit(dbref player, const char *target, const char *message,
                      int flags);
 extern void do_oemit_list(dbref player, char *list, const char *message,
-                          int flags, struct format_msg *format);
+                          int flags, struct format_msg *format,
+                          NEW_PE_INFO *pe_info);
 extern void do_teach(dbref player, const char *tbuf1, int list,
                      MQUE *parent_queue);
 
@@ -179,7 +189,8 @@ extern void do_quota(dbref player, const char *arg1, const char *arg2,
                      int set_q);
 extern void do_allquota(dbref player, const char *arg1, int quiet);
 extern void do_teleport
-  (dbref player, const char *arg1, const char *arg2, int silent, int inside);
+  (dbref player, const char *arg1, const char *arg2, int silent, int inside,
+   NEW_PE_INFO *pe_info);
 extern void do_force(dbref player, dbref caller, const char *what,
                      char *command, int queue_type, MQUE *queue_entry);
 extern void do_stats(dbref player, const char *name);
@@ -205,16 +216,17 @@ extern void do_reboot(dbref player, int flag);
 
 /* From destroy.c */
 extern void do_dbck(dbref player);
-extern void do_destroy(dbref player, char *name, int confirm);
+extern void do_destroy(dbref player, char *name, int confirm,
+                       NEW_PE_INFO *pe_info);
 
 /* From timer.c */
 void init_timer(void);
 void signal_cpu_limit(int signo);
 
-typedef bool(*sq_func) (void *);
-void sq_register(time_t w, sq_func f, void *d, const char *ev);
-void sq_register_in(int n, sq_func f, void *d, const char *ev);
+struct squeue *sq_register(time_t w, sq_func f, void *d, const char *ev);
+struct squeue *sq_register_in(int n, sq_func f, void *d, const char *ev);
 void sq_register_loop(int n, sq_func f, void *d, const char *ev);
+void sq_cancel(struct squeue *sq);
 bool sq_run_one(void);
 bool sq_run_all(void);
 

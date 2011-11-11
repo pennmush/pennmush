@@ -6,11 +6,10 @@
 #ifndef __FLAGS_H
 #define __FLAGS_H
 
+#include "confmagic.h"
 #include "mushtype.h"
 #include "ptab.h"
 #include "dbio.h"
-/* Remove when confmagic's inline #defines get shifted to config.h */
-#include "confmagic.h"
 
 typedef struct flag_info FLAG;
 

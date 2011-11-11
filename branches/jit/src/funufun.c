@@ -47,8 +47,9 @@ FUNCTION(fun_fn)
     return;                     /* No function name */
   /* Evaluate first argument */
   p = args[0];
-  process_expression(tbuf, &tp, &p, executor, caller,
-                     enactor, PE_DEFAULT, PT_DEFAULT, pe_info);
+  if (process_expression(tbuf, &tp, &p, executor, caller,
+                         enactor, PE_DEFAULT, PT_DEFAULT, pe_info))
+    return;
   *tp = '\0';
   /* Make sure a builtin function with the name actually exists */
   if (!builtin_func_hash_lookup(tbuf)) {
@@ -100,8 +101,9 @@ FUNCTION(fun_objeval)
    */
   s = name;
   p = args[0];
-  process_expression(name, &s, &p, executor, caller, enactor, eflags,
-                     PT_DEFAULT, pe_info);
+  if (process_expression(name, &s, &p, executor, caller, enactor, eflags,
+                         PT_DEFAULT, pe_info))
+    return;
   *s = '\0';
 
   if (FUNCTION_SIDE_EFFECTS) {
@@ -254,7 +256,7 @@ FUNCTION(fun_pfun)
   ufun.thing = executor;
   mush_strncpy(ufun.contents, atr_value(a), BUFFER_LEN);
   mush_strncpy(ufun.attrname, AL_NAME(a), ATTRIBUTE_NAME_LIMIT + 1);
-  ufun.pe_flags = pe_flags;
+  ufun.pe_flags = PE_UDEFAULT;
   ufun.errmess = (char *) "";
   ufun.ufun_flags = UFUN_NONE;
 
@@ -289,8 +291,9 @@ FUNCTION(fun_udefault)
   /* find our object and attribute */
   dp = mstr;
   sp = args[0];
-  process_expression(mstr, &dp, &sp, executor, caller, enactor,
-                     eflags, PT_DEFAULT, pe_info);
+  if (process_expression(mstr, &dp, &sp, executor, caller, enactor,
+                         eflags, PT_DEFAULT, pe_info))
+    return;
   *dp = '\0';
   if (!fetch_ufun_attrib
       (mstr, executor, &ufun, UFUN_OBJECT | UFUN_REQUIRE_ATTR)) {
@@ -313,24 +316,27 @@ FUNCTION(fun_udefault)
       xargs[i] = mush_malloc(BUFFER_LEN, "udefault");
       dp = xargs[i];
       sp = args[i + 2];
-      process_expression(xargs[i], &dp, &sp, executor, caller, enactor,
-                         eflags, PT_DEFAULT, pe_info);
+      if (process_expression(xargs[i], &dp, &sp, executor, caller, enactor,
+                             eflags, PT_DEFAULT, pe_info))
+        goto cleanup;
       *dp = '\0';
       pe_regs_setenv_nocopy(pe_regs, i, xargs[i]);
     }
   }
 
   call_ufun(&ufun, rbuff, executor, enactor, pe_info, pe_regs);
-  pe_regs_free(pe_regs);
   safe_str(rbuff, buff, bp);
 
   /* Free the xargs */
+cleanup:
+  pe_regs_free(pe_regs);
   if (nargs > 2) {
-    for (i = 0; i < nargs - 2; i++)
-      mush_free(xargs[i], "udefault");
+    for (i = 0; i < nargs - 2; i++) {
+      if (xargs[i])
+        mush_free(xargs[i], "udefault");
+    }
     mush_free(xargs, "udefault.xargs");
   }
-  return;
 }
 
 

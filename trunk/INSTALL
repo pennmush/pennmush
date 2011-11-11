@@ -78,12 +78,9 @@ B. Installation from source
     development packages required to compile programs (Linux
     distributions that don't come with gcc in the base install often
     need a package named glibc-dev)
-1c. A version of the PCRE regular expression library managed by your
-    OS's package manager is highly recommended. Penn comes with an
-    older version, but a global library will be more likely to be up
-    to date and can be shared among many different programs that use
-    it. In the next patchlevel, PCRE will be a mandatory, required 
-    library. If you don't already have it, talk to your sysadmin.
+1c. A version of the PCRE regular expression library and any related
+    development packages. (Debian and Ubuntu call them libpcre3 and
+    libpcre3-dev).
 1d. OpenSSL is also a strongly suggested library; most OSes these days
     come with it out of the box, but some might require a development
     package as well (openssl-dev or some such name). In the next

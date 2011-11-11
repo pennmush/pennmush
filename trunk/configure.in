@@ -209,6 +209,8 @@ AX_PATH_LIB_PCRE()
 AC_CHECK_HEADERS([pcre.h])
 if test "${PCRE_LIBS+set}" = "set" -a "x${ac_cv_header_pcre_h}" = "xyes"; then
    AC_DEFINE(HAVE_PCRE)
+else
+   AC_MSG_ERROR([The PCRE library must be installed to run PennMUSH.])
 fi
 
 ### Databases
@@ -439,17 +441,11 @@ fi
 
 ### Output
 
-if test ${PCRE_LIBS+set} = set; then
-   which_pcre="System"
-else
-   which_pcre="Local (Consider getting your sysadmin to install pcre)"
-fi
-
 
 echo "Configuration summary:"
 echo "* Compiler: $CC"
 echo "* Compiler flags: $CFLAGS"
-echo "* PCRE: $which_pcre"
+
 if test "$enable_sql" = yes; then
  sql_servers=""
  if test "$found_mysql" = yes; then

@@ -26,6 +26,7 @@
 #include "ansi.h"
 #include "mymalloc.h"
 #include "log.h"
+#include "mypcre.h"
 #include "confmagic.h"
 
 int format_long(intmax_t val, char *buff, char **bp, int maxlen, int base);
@@ -1598,4 +1599,27 @@ show_tm(struct tm *when)
     buffer[8] = '0';
 
   return buffer;
+}
+
+/** Return a default pcre_extra pointer pointing to a static region
+    set up to use a fairly low match-limit setting.
+*/
+struct pcre_extra *
+default_match_limit(void)
+{
+  static struct pcre_extra ex;
+  memset(&ex, 0, sizeof ex);
+  set_match_limit(&ex);
+  return &ex;
+}
+
+
+/** Set a low match-limit setting in an existing pcre_extra struct. */
+void
+set_match_limit(struct pcre_extra *ex)
+{
+  if (!ex)
+    return;
+  ex->flags |= PCRE_EXTRA_MATCH_LIMIT;
+  ex->match_limit = PENN_MATCH_LIMIT;
 }

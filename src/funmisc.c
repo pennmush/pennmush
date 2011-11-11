@@ -86,7 +86,7 @@ FUNCTION(fun_pemit)
     return;
   }
 
-  if (!command_check_byname(executor, ns ? "@nspemit" : "@pemit") ||
+  if (!command_check_byname(executor, ns ? "@nspemit" : "@pemit", pe_info) ||
       fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
     return;
@@ -97,7 +97,7 @@ FUNCTION(fun_pemit)
   if (is_integer_list(args[0]))
     do_pemit_port(executor, args[0], args[1], flags);
   else
-    do_pemit(executor, args[0], args[1], flags, NULL);
+    do_pemit(executor, args[0], args[1], flags, NULL, pe_info);
   orator = saved_orator;
 }
 
@@ -136,7 +136,8 @@ FUNCTION(fun_message)
     } while (list);
   }
 
-  do_message(executor, args[0], args[2], args[1], type, flags, i, argv);
+  do_message(executor, args[0], args[2], args[1], type, flags, i, argv,
+             pe_info);
 
 }
 
@@ -151,13 +152,13 @@ FUNCTION(fun_oemit)
     return;
   }
 
-  if (!command_check_byname(executor, ns ? "@nsoemit" : "@oemit") ||
+  if (!command_check_byname(executor, ns ? "@nsoemit" : "@oemit", pe_info) ||
       fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
     return;
   }
   orator = executor;
-  do_oemit_list(executor, args[0], args[1], flags, NULL);
+  do_oemit_list(executor, args[0], args[1], flags, NULL, pe_info);
 }
 
 /* ARGSUSED */
@@ -171,13 +172,13 @@ FUNCTION(fun_emit)
     return;
   }
 
-  if (!command_check_byname(executor, ns ? "@nsemit" : "@emit") ||
+  if (!command_check_byname(executor, ns ? "@nsemit" : "@emit", pe_info) ||
       fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
     return;
   }
   orator = executor;
-  do_emit(executor, args[0], flags);
+  do_emit(executor, args[0], flags, pe_info);
 }
 
 /* ARGSUSED */
@@ -194,13 +195,13 @@ FUNCTION(fun_remit)
     return;
   }
 
-  if (!command_check_byname(executor, ns ? "@nsremit" : "@remit") ||
+  if (!command_check_byname(executor, ns ? "@nsremit" : "@remit", pe_info) ||
       fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
     return;
   }
   orator = executor;
-  do_remit(executor, args[0], args[1], flags, NULL);
+  do_remit(executor, args[0], args[1], flags, NULL, pe_info);
 }
 
 /* ARGSUSED */
@@ -214,13 +215,13 @@ FUNCTION(fun_lemit)
     return;
   }
 
-  if (!command_check_byname(executor, ns ? "@nslemit" : "@lemit") ||
+  if (!command_check_byname(executor, ns ? "@nslemit" : "@lemit", pe_info) ||
       fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
     return;
   }
   orator = executor;
-  do_lemit(executor, args[0], flags);
+  do_lemit(executor, args[0], flags, pe_info);
 }
 
 /* ARGSUSED */
@@ -234,7 +235,7 @@ FUNCTION(fun_zemit)
     return;
   }
 
-  if (!command_check_byname(executor, ns ? "@nszemit" : "@zemit") ||
+  if (!command_check_byname(executor, ns ? "@nszemit" : "@zemit", pe_info) ||
       fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
     return;
@@ -254,7 +255,7 @@ FUNCTION(fun_prompt)
     return;
   }
 
-  if (!command_check_byname(executor, ns ? "@nspemit" : "@pemit") ||
+  if (!command_check_byname(executor, ns ? "@nspemit" : "@pemit", pe_info) ||
       fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
     return;
@@ -262,7 +263,7 @@ FUNCTION(fun_prompt)
   orator = executor;
   if (ns)
     flags |= PEMIT_SPOOF;
-  do_pemit(executor, args[0], args[1], flags, NULL);
+  do_pemit(executor, args[0], args[1], flags, NULL, pe_info);
 }
 
 /* ARGSUSED */
@@ -326,8 +327,9 @@ FUNCTION(fun_letq)
       /* The register */
       nbp = nbuf;
       p = args[i];
-      process_expression(nbuf, &nbp, &p, executor, caller, enactor, eflags,
-                         PT_DEFAULT, pe_info);
+      if (process_expression(nbuf, &nbp, &p, executor, caller, enactor, eflags,
+                             PT_DEFAULT, pe_info))
+        goto cleanup;
       *nbp = '\0';
 
       if (!ValidQregName(nbuf)) {
@@ -337,8 +339,9 @@ FUNCTION(fun_letq)
 
       tbp = tbuf;
       p = args[i + 1];
-      process_expression(tbuf, &tbp, &p, executor, caller, enactor, eflags,
-                         PT_DEFAULT, pe_info);
+      if (process_expression(tbuf, &tbp, &p, executor, caller, enactor, eflags,
+                             PT_DEFAULT, pe_info))
+        goto cleanup;
       *tbp = '\0';
       pe_regs_set(pe_regs, PE_REGS_Q, nbuf, tbuf);
     }
@@ -697,8 +700,9 @@ FUNCTION(fun_switch)
 
   dp = mstr;
   sp = args[0];
-  process_expression(mstr, &dp, &sp, executor, caller, enactor,
-                     eflags, PT_DEFAULT, pe_info);
+  if (process_expression(mstr, &dp, &sp, executor, caller, enactor,
+                         eflags, PT_DEFAULT, pe_info))
+    return;
   *dp = '\0';
 
   if (exact)
@@ -712,8 +716,9 @@ FUNCTION(fun_switch)
   for (j = 1; j < (nargs - 1); j += 2) {
     dp = pstr;
     sp = args[j];
-    process_expression(pstr, &dp, &sp, executor, caller, enactor,
-                       eflags, PT_DEFAULT, pe_info);
+    if (process_expression(pstr, &dp, &sp, executor, caller, enactor,
+                           eflags, PT_DEFAULT, pe_info))
+      goto exit_sequence;
     *dp = '\0';
 
     if (exact) {
@@ -818,8 +823,9 @@ FUNCTION(fun_reswitch)
 
   dp = mstr;
   sp = args[0];
-  process_expression(mstr, &dp, &sp, executor, caller, enactor,
-                     eflags, PT_DEFAULT, pe_info);
+  if (process_expression(mstr, &dp, &sp, executor, caller, enactor,
+                         eflags, PT_DEFAULT, pe_info))
+    return;
   *dp = '\0';
   if (has_markup(mstr)) {
     mas = parse_ansi_string(mstr);
@@ -839,8 +845,9 @@ FUNCTION(fun_reswitch)
   for (j = 1; j < (nargs - 1); j += 2) {
     dp = pstr;
     sp = args[j];
-    process_expression(pstr, &dp, &sp, executor, caller, enactor,
-                       eflags, PT_DEFAULT, pe_info);
+    if (process_expression(pstr, &dp, &sp, executor, caller, enactor,
+                           eflags, PT_DEFAULT, pe_info))
+      goto exit_sequence;
     *dp = '\0';
 
     if ((re =
@@ -899,9 +906,9 @@ FUNCTION(fun_if)
   char const *sp;
   /* Since this may be used as COND(), NCOND(), CONDALL() or NCONDALL,
    * we check for that. */
-  int findtrue = 1;
-  int findall = 0;
-  int found = 0;
+  bool findtrue = 1;
+  bool findall = 0;
+  bool found = 0;
   int i;
 
   if (called_as[0] == 'N')
@@ -913,13 +920,15 @@ FUNCTION(fun_if)
   for (i = 0; i < nargs - 1; i += 2) {
     tp = tbuf;
     sp = args[i];
-    process_expression(tbuf, &tp, &sp, executor, caller, enactor,
-                       eflags, PT_DEFAULT, pe_info);
+    if (process_expression(tbuf, &tp, &sp, executor, caller, enactor,
+                           eflags, PT_DEFAULT, pe_info))
+      return;
     *tp = '\0';
     if (parse_boolean(tbuf) == findtrue) {
       sp = args[i + 1];
-      process_expression(buff, bp, &sp, executor, caller, enactor,
-                         eflags, PT_DEFAULT, pe_info);
+      if (process_expression(buff, bp, &sp, executor, caller, enactor,
+                             eflags, PT_DEFAULT, pe_info))
+        return;
       if (!findall)
         return;
       found = 1;
@@ -1202,8 +1211,9 @@ do_whichof(char *args[], int nargs, enum whichof_t flag,
     /* The last arg is a delimiter. Parse it in place. */
     char *sp = sep;
     const char *arglast = args[nargs - 1];
-    process_expression(sep, &sp, &arglast, executor,
-                       caller, enactor, eflags, PT_DEFAULT, pe_info);
+    if (process_expression(sep, &sp, &arglast, executor,
+                           caller, enactor, eflags, PT_DEFAULT, pe_info))
+      return;
     *sp = '\0';
     nargs--;
   } else
@@ -1212,8 +1222,9 @@ do_whichof(char *args[], int nargs, enum whichof_t flag,
   for (j = 0; j < nargs; j++) {
     tp = tbuf;
     ap = args[j];
-    process_expression(tbuf, &tp, &ap, executor, caller,
-                       enactor, eflags, PT_DEFAULT, pe_info);
+    if (process_expression(tbuf, &tp, &ap, executor, caller,
+                           enactor, eflags, PT_DEFAULT, pe_info))
+      return;
     *tp = '\0';
     if ((isbool && parse_boolean(tbuf)) || (!isbool && strlen(tbuf))) {
       if (!first && *sep) {
@@ -1301,15 +1312,16 @@ FUNCTION(fun_benchmark)
     /* Evaluate <sendto> argument */
     tp = tbuf;
     sp = args[2];
-    process_expression(tbuf, &tp, &sp, executor, caller, enactor,
-                       eflags, PT_DEFAULT, pe_info);
+    if (process_expression(tbuf, &tp, &sp, executor, caller, enactor,
+                           eflags, PT_DEFAULT, pe_info))
+      return;
     *tp = '\0';
     thing = noisy_match_result(executor, tbuf, NOTYPE, MAT_EVERYTHING);
     if (!GoodObject(thing)) {
       safe_dbref(thing, buff, bp);
       return;
     }
-    if (!okay_pemit(executor, thing, 1, 1)) {
+    if (!okay_pemit(executor, thing, 1, 1, pe_info)) {
       safe_str("#-1", buff, bp);
       return;
     }

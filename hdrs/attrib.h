@@ -108,20 +108,20 @@ safe_atr_value(ATTR *atr)
 /* possible attribute flags */
 #define AF_ODARK        0x1U    /**< OBSOLETE! Leave here but don't use */
 #define AF_INTERNAL     0x2U    /**< no one can see it or set it */
-#define AF_WIZARD       0x4U    /**< Wizard only can change it */
+#define AF_WIZARD       0x4U    /**< Only wizards can change it */
 #define AF_NUKED        0x8U    /**< OBSOLETE! Leave here but don't use */
 #define AF_LOCKED       0x10U   /**< Only creator of attrib can change it. */
-#define AF_NOPROG       0x20U   /**< won't be searched for $ commands. */
+#define AF_NOPROG       0x20U   /**< Won't be searched for $-commands. */
 #define AF_MDARK        0x40U   /**< Only wizards can see it */
 #define AF_PRIVATE      0x80U   /**< Children don't inherit it */
 #define AF_NOCOPY       0x100U  /**< atr_cpy (for \@clone) doesn't copy it */
 #define AF_VISUAL       0x200U  /**< Everyone can see this attribute */
 #define AF_REGEXP       0x400U  /**< Match $/^ patterns using regexps */
-#define AF_CASE         0x800U  /**< Match $/^ patterns case-sensitive */
+#define AF_CASE         0x800U  /**< Match $/^ patterns case-sensitively */
 #define AF_SAFE         0x1000U /**< This attribute may not be modified */
-#define AF_ROOT         0x2000U /**< Root of an attribute tree */
-#define AF_RLIMIT       0x4000U /**< Undefined; reserved for a future flag */
-#define AF_ENUM         0x8000U /**< Undefined; reserved for a future flag */
+#define AF_ROOT         0x2000U /**< INTERNAL: Root of an attribute tree */
+#define AF_RLIMIT       0x4000U /**< Attr value must match a regular expression */
+#define AF_ENUM         0x8000U /**< Attr value must be one of a given set */
 #define AF_STATIC       0x10000U        /**< OBSOLETE! Leave here but don't use */
 #define AF_COMMAND      0x20000U        /**< INTERNAL: value starts with $ */
 #define AF_LISTEN       0x40000U        /**< INTERNAL: value starts with ^ */

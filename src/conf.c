@@ -290,8 +290,6 @@ PENNCONF conftable[] = {
   ,
   {"chat_strip_quote", cf_bool, &options.chat_strip_quote, 2, 0, "cosmetic"}
   ,
-  {"newline_one_char", cf_bool, &options.newline_one_char, 2, 0, "cosmetic"}
-  ,
 
   {"max_dbref", cf_dbref, &options.max_dbref, -1, 0, "limits"}
   ,
@@ -1427,7 +1425,6 @@ conf_default_set(void)
   options.dbck_interval = 599;
   options.max_attrcount = 2048;
   options.float_precision = 6;
-  options.newline_one_char = 1;
   options.player_name_len = 16;
   options.queue_entry_cpu_time = 1500;
   options.ascii_names = 1;
@@ -1569,10 +1566,6 @@ config_file_checks(void)
       do_rawlog(LT_ERR,
                 "CONFIG: directive '%s' missing from cnf file, using default value.",
                 cp->name);
-    } else if (!strcmp(cp->name, "newline_one_char")
-               && (*((int *) cp->loc) == 0)) {
-      do_rawlog(LT_ERR,
-                "CONFIG: directive 'newline_one_char' is deprecated, and should be set to 0'");
     }
   }
   for (cp = hash_firstentry(&local_options); cp;

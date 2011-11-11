@@ -20,6 +20,13 @@ that have altered hardcode will appear here.
 
 ==========================================================================
 
+Version 1.8.4 patchlevel 8                                 ??? ??, 2011
+
+  command_check_byname() and command_check_byname_quiet() now both take
+  an additional NEW_PE_INFO *pe_info arg, used for evaluating the
+  command boolexp lock. command_check() is now an #define'd wrapper for
+  a new command_check_with() function, which also takes a pe_info. [MG]
+  
 Version 1.8.4 patchlevel 7                                 Sep 25, 2011
 
   The bitsets that store set flags and powers on objects are now

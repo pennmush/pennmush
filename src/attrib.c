@@ -499,7 +499,7 @@ can_edit_attr(dbref player, dbref thing, const char *attrname)
 #define set_default_flags(atr,flags) \
   do { \
     ATTR *std = atr_match(AL_NAME((atr))); \
-    if (std && !strcmp(AL_NAME(std), AL_NAME((atr)))) {	\
+    if (std && !strcmp(AL_NAME(std), AL_NAME((atr)))) { \
       AL_FLAGS(atr) = AL_FLAGS(std) | flags; \
     } else { \
         AL_FLAGS(atr) = flags; \
@@ -2015,6 +2015,7 @@ do_set_atr(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
     if (GoodObject(announceloc)) {
       char *tbuf1, *bp;
       bp = tbuf1 = GC_MALLOC_ATOMIC(BUFFER_LEN);
+      orator = thing;
       if (!s && !was_listener && !Hearer(thing)) {
         safe_format(tbuf1, &bp, T("%s loses its ears and becomes deaf."),
                     Name(thing));

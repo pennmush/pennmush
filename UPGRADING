@@ -25,8 +25,9 @@ MUSH directories before you try an upgrade. You were warned.
 
 A. Vanilla upgrade
 
-You have basically two choices here: upgrade with patch files, or
-build a whole new distribution.
+You have basically three choices here: upgrade with patch files, track
+the master subversion source code version control repository, or build
+a whole new distribution.
 
 A.1. Upgrading with patch files
 
@@ -55,7 +56,27 @@ instructions, you should be good to go. In most cases, you can simply
 @shutdown/reboot after the final successful compile. If
 @shutdown/reboot crashes, you'll have to restart again.
 
-A.2. Building a new distribution
+A.2 Using subversion
+
+If you don't want to download and install patch files by hand, you can
+automate the process by checking out a copy of the master subversion
+tree. When you're first setting up a game, instead of downloading the
+source to the latest version as a tarball, get it from svn:
+
+% svn checkout http://pennmush.googlecode.com/svn/tags/184p7 pennmush/
+
+Later, when a new patchlevel is released, go to the pennmush directory
+and update with:
+
+% svn merge http://pennmush.googlecode.com/svn/tags/184p7 \
+            http://pennmush.googlecode.com/svn/tags/184p8
+
+Every time a new patch is released, do the same, bumping version
+numbers in the paths. You can also track the latest, unstable
+development version by checking out .../svn/trunk and doing regular
+'svn up's. Do so at your own risk.
+
+A.3. Building a new distribution
 
 When you're upgrading across release and no patchlevel is provided to
 make the upgrade (e.g. from 1.7.4p3 to 1.8.0p0), it's often easier to
@@ -71,7 +92,7 @@ so this is no longer necessary.
 All of the steps below should be taken before running ./configure for
 the new version:
 
-A.2.a. options.h and game/*.cnf
+A.3.a. options.h and game/*.cnf
 
 You can copy the options.h file and game/mush.cnf file from your old
 version to the new version. The 'make update' command (run after
@@ -98,14 +119,14 @@ should compare them to the new versions, as restrictions and aliases
 that may formerly have been compiled into the server may now be 
 specified in the .cnf files instead.
 
-A.2.b. src/*local.c
+A.3.b. src/*local.c
 
 You should copy local.c, cmdlocal.c, and funlocal.c from oldpenn/src
 to pennmush/src if you want to retain this local code. Of course, it
 may not still work, but it's quite likely that it will. If you don't
 have any such code, you can skip this step.
 
-A.2.c. Databases
+A.3.c. Databases
 
 This MUSH version should read databases along the main branch of MUSH
 evolution -- TinyMUD, vanilla TinyMUSH up to 2.0, MicroMUSH, and all

@@ -225,6 +225,8 @@ char errlog[BUFFER_LEN] = { '\0' };      /**< Name of the error log file */
 #define MSSP_VAL 2              /**< MSSP option value */
 static void test_telnet(DESC *d);
 static void setup_telnet(DESC *d);
+bool test_telnet_wrapper(void *data);
+bool welcome_user_wrapper(void *data);
 static int handle_telnet(DESC *d, unsigned char **q, unsigned char *qend);
 
 /** Iterate through a list of descriptors, and do something with those
@@ -235,7 +237,7 @@ static int handle_telnet(DESC *d, unsigned char **q, unsigned char *qend);
           if((d)->connected)
 
 #define DESC_ITER(d) \
-				for(d = descriptor_list;(d);d=(d)->next) \
+                for(d = descriptor_list;(d);d=(d)->next) \
 
 /** Is a descriptor hidden? */
 #define Hidden(d)        ((d->hide == 1))
@@ -307,7 +309,7 @@ int main(int argc, char **argv);
 #endif
 #endif
 void set_signals(void);
-static struct timeval *timeval_sub(struct timeval *now, struct timeval *then);
+static struct timeval timeval_sub(struct timeval now, struct timeval then);
 #ifdef WIN32
 /** Windows doesn't have gettimeofday(), so we implement it here */
 #define our_gettimeofday(now) win_gettimeofday((now))
@@ -316,9 +318,9 @@ static void win_gettimeofday(struct timeval *now);
 /** A wrapper for gettimeofday() in case the system doesn't have it */
 #define our_gettimeofday(now) gettimeofday((now), (struct timezone *)NULL)
 #endif
-static long int msec_diff(struct timeval *now, struct timeval *then);
-static struct timeval *msec_add(struct timeval *t, int x);
-static void update_quotas(struct timeval *last, struct timeval *current);
+static long int msec_diff(struct timeval now, struct timeval then);
+static struct timeval msec_add(struct timeval t, int x);
+static void update_quotas(struct timeval last, struct timeval current);
 
 int how_many_fds(void);
 static void shovechars(Port_t port, Port_t sslport);
@@ -357,14 +359,15 @@ static void shutdownsock(DESC *d, const char *reason);
 DESC *initializesock(int s, char *addr, char *ip, conn_source source);
 int process_output(DESC *d);
 /* Notify.c */
-extern void free_text_block(struct text_block *t);
-extern void add_to_queue(struct text_queue *q, const unsigned char *b, int n);
-extern int queue_write(DESC *d, const unsigned char *b, int n);
-extern int queue_eol(DESC *d);
-extern int queue_newwrite(DESC *d, const unsigned char *b, int n);
-extern int queue_string(DESC *d, const char *s);
-extern int queue_string_eol(DESC *d, const char *s);
-extern void freeqs(DESC *d);
+void free_text_block(struct text_block *t);
+void init_text_queue(struct text_queue *);
+void add_to_queue(struct text_queue *q, const unsigned char *b, int n);
+int queue_write(DESC *d, const unsigned char *b, int n);
+int queue_eol(DESC *d);
+int queue_newwrite(DESC *d, const unsigned char *b, int n);
+int queue_string(DESC *d, const char *s);
+int queue_string_eol(DESC *d, const char *s);
+void freeqs(DESC *d);
 static void welcome_user(DESC *d, int telnet);
 static int count_players(void);
 static void dump_info(DESC *call_by);
@@ -373,7 +376,8 @@ static int process_input(DESC *d, int output_ready);
 static void process_input_helper(DESC *d, char *tbuf1, int got);
 static void set_userstring(unsigned char **userstring, const char *command);
 static void process_commands(void);
-static int do_command(DESC *d, char *command);
+enum comm_res { CRES_OK = 0, CRES_LOGOUT, CRES_QUIT, CRES_SITELOCK, CRES_HTTP };
+static enum comm_res do_command(DESC *d, char *command);
 static void parse_puebloclient(DESC *d, char *command);
 static int dump_messages(DESC *d, dbref player, int new);
 static int check_connect(DESC *d, const char *msg);
@@ -416,7 +420,8 @@ void file_watch_event(int);
 
 void initialize_mt(void);
 
-static char *get_doing(dbref player, dbref enactor, bool full);
+static char *get_doing(dbref player, dbref caller, dbref enactor,
+                       NEW_PE_INFO *pe_info, bool full);
 
 #ifndef BOOLEXP_DEBUGGING
 #ifdef WIN32SERVICES
@@ -627,12 +632,6 @@ main(int argc, char **argv)
     restarting = 1;
     fclose(newerr);
   }
-#ifdef SSL_SLAVE
-  if (!restarting && SSLPORT) {
-    if (make_ssl_slave() < 0)
-      do_rawlog(LT_ERR, "Unable to start ssl_slave");
-  }
-#endif
 #ifdef LOCAL_SOCKET
   if (!restarting) {
     localsock = make_unix_socket(options.socket_file, SOCK_STREAM);
@@ -820,20 +819,17 @@ win_gettimeofday(struct timeval *now)
  * \param then pointer to the timeval to subtract.
  * \return pointer to a statically allocated timeval of the difference.
  */
-static struct timeval *
-timeval_sub(struct timeval *now, struct timeval *then)
+static struct timeval
+timeval_sub(struct timeval now, struct timeval then)
 {
-  static struct timeval mytime;
-  mytime.tv_sec = now->tv_sec;
-  mytime.tv_usec = now->tv_usec;
-
-  mytime.tv_sec -= then->tv_sec;
-  mytime.tv_usec -= then->tv_usec;
+  struct timeval mytime = now;
+  mytime.tv_sec -= then.tv_sec;
+  mytime.tv_usec -= then.tv_usec;
   if (mytime.tv_usec < 0) {
     mytime.tv_usec += 1000000;
     mytime.tv_sec--;
   }
-  return &mytime;
+  return mytime;
 }
 
 /** Return the difference between two timeval structs in milliseconds.
@@ -842,15 +838,15 @@ timeval_sub(struct timeval *now, struct timeval *then)
  * \return milliseconds of difference between them.
  */
 static long int
-msec_diff(struct timeval *now, struct timeval *then)
+msec_diff(struct timeval now, struct timeval then)
 {
-  long int secs = now->tv_sec - then->tv_sec;
+  long int secs = now.tv_sec - then.tv_sec;
   if (secs == 0)
-    return (now->tv_usec - then->tv_usec) / 1000;
+    return (now.tv_usec - then.tv_usec) / 1000;
   else if (secs == 1)
-    return (now->tv_usec + (1000000 - then->tv_usec)) / 100;
+    return (now.tv_usec + (1000000 - then.tv_usec)) / 100;
   else if (secs > 1)
-    return (secs * 1000) + ((now->tv_usec + (1000000 - then->tv_usec)) / 1000);
+    return (secs * 1000) + ((now.tv_usec + (1000000 - then.tv_usec)) / 1000);
   else
     return 0;
 }
@@ -860,19 +856,17 @@ msec_diff(struct timeval *now, struct timeval *then)
  * \param x number of milliseconds to add to t.
  * \return address of static timeval struct representing the sum.
  */
-static struct timeval *
-msec_add(struct timeval *t, int x)
+static struct timeval
+msec_add(struct timeval t, int x)
 {
-  static struct timeval mytime;
-  mytime.tv_sec = t->tv_sec;
-  mytime.tv_usec = t->tv_usec;
+  struct timeval mytime = t;
   mytime.tv_sec += x / 1000;
   mytime.tv_usec += (x % 1000) * 1000;
   if (mytime.tv_usec >= 1000000) {
     mytime.tv_sec += mytime.tv_usec / 1000000;
     mytime.tv_usec = mytime.tv_usec % 1000000;
   }
-  return &mytime;
+  return mytime;
 }
 
 /** Update each descriptor's allowed rate of issuing commands.
@@ -884,7 +878,7 @@ msec_add(struct timeval *t, int x)
  * \param current pointer to timeval struct of current time.
  */
 static void
-update_quotas(struct timeval *last, struct timeval *current)
+update_quotas(struct timeval last, struct timeval current)
 {
   int nslices;
   DESC *d;
@@ -901,6 +895,7 @@ update_quotas(struct timeval *last, struct timeval *current)
 
 extern slab *text_block_slab;
 
+/** Is a descriptor using SSL? */
 static bool
 is_ssl_desc(DESC *d)
 {
@@ -933,7 +928,7 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
   fd_set input_set, output_set;
   time_t now;
   struct timeval last_slice, current_time, then;
-  struct timeval next_slice, *returned_time;
+  struct timeval next_slice;
   struct timeval timeout, slice_timeout;
   int found;
   int queue_timeout;
@@ -948,20 +943,25 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
   int notify_fd = -1;
 
   if (!restarting) {
+
     sock = make_socket(port, SOCK_STREAM, NULL, NULL, MUSH_IP_ADDR);
     if (sock >= maxd)
       maxd = sock + 1;
-#if defined(HAS_OPENSSL) && !defined(SSL_SLAVE)
+
+#ifdef HAS_OPENSSL
     if (sslport) {
+#ifdef SSL_SLAVE
+      if (make_ssl_slave() < 0)
+        do_rawlog(LT_ERR, "Unable to start ssl_slave");
+#else
       sslsock = make_socket(sslport, SOCK_STREAM, NULL, NULL, SSL_IP_ADDR);
       ssl_master_socket = ssl_setup_socket(sslsock);
       if (sslsock >= maxd)
         maxd = sslsock + 1;
+#endif
     }
 #endif
   }
-
-  our_gettimeofday(&last_slice);
 
   avail_descriptors = how_many_fds() - 5;
 #ifdef INFO_SLAVE
@@ -975,18 +975,17 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
   notify_fd = file_watch_init();
 
   our_gettimeofday(&then);
+  last_slice = then;
 
   while (shutdown_flag == 0) {
     our_gettimeofday(&current_time);
 
-    update_quotas(&last_slice, &current_time);
-    last_slice.tv_sec = current_time.tv_sec;
-    last_slice.tv_usec = current_time.tv_usec;
+    update_quotas(last_slice, current_time);
+    last_slice = current_time;
 
-    if (msec_diff(&current_time, &then) >= 1000) {
+    if (msec_diff(current_time, then) >= 1000) {
       globals.on_second = 1;
-      then.tv_sec = current_time.tv_sec;
-      then.tv_usec = current_time.tv_usec;
+      then = current_time;
     }
 
     process_commands();
@@ -1071,16 +1070,12 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
      * signal every second, so we're reduced to what's below:
      */
     queue_timeout = que_next();
+    /* timeout = { .tv_sec = queue_timeout ? 1 : 0, .tv_usec = 0 }; */
     timeout.tv_sec = queue_timeout ? 1 : 0;
     timeout.tv_usec = 0;
 
-    returned_time = msec_add(&last_slice, COMMAND_TIME_MSEC);
-    next_slice.tv_sec = returned_time->tv_sec;
-    next_slice.tv_usec = returned_time->tv_usec;
-
-    returned_time = timeval_sub(&next_slice, &current_time);
-    slice_timeout.tv_sec = returned_time->tv_sec;
-    slice_timeout.tv_usec = returned_time->tv_usec;
+    next_slice = msec_add(last_slice, COMMAND_TIME_MSEC);
+    slice_timeout = timeval_sub(next_slice, current_time);
     /* Make sure slice_timeout cannot have a negative time. Better
        safe than sorry. */
     if (slice_timeout.tv_sec < 0)
@@ -1106,8 +1101,7 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
 #endif
     for (d = descriptor_list; d; d = d->next) {
       if (d->input.head) {
-        timeout.tv_sec = slice_timeout.tv_sec;
-        timeout.tv_usec = slice_timeout.tv_usec;
+        timeout = slice_timeout;
       } else
         FD_SET(d->descriptor, &input_set);
       if (d->output.head)
@@ -1347,43 +1341,42 @@ clearstrings(DESC *d)
   }
 }
 
+/** Evaluate an attribute which is used in place of a cached text file,
+ * and dump it to a descriptor.
+ * \param d descriptor to show text to
+ * \param thing object to get attr from
+ * \param attr attribute to show
+ * \param html Is it an HTML fcache?
+ * \param prefix text to print before attr contents, or NULL
+ */
 static int
 fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
                  const unsigned char *prefix)
 {
-  ATTR *a;
-  char arg[BUFFER_LEN], *save, *buff, *bp;
-  char const *sp;
-  NEW_PE_INFO *pe_info;
+  char arg[SBUF_LEN], buff[BUFFER_LEN], *bp;
+  PE_REGS *pe_regs;
+  ufun_attrib ufun;
 
   if (!GoodObject(thing) || IsGarbage(thing))
     return 0;
 
-  a = atr_get(thing, attr);
-  if (!a)
+  if (!fetch_ufun_attrib
+      (attr, thing, &ufun,
+       UFUN_LOCALIZE | UFUN_IGNORE_PERMS | UFUN_REQUIRE_ATTR))
     return -1;
 
   bp = arg;
-  safe_integer(d->descriptor, arg, &bp);
+  safe_integer_sbuf(d->descriptor, arg, &bp);
   *bp = '\0';
-  buff = GC_MALLOC_ATOMIC(BUFFER_LEN);
-  if (!buff) {
-    mush_panic("Unable to allocate memory in fcache_dump_attr");
-    return -2;
-  }
-  pe_info = make_pe_info("pe_info-fcache_dump_attr");
-  pe_regs_setenv_nocopy(pe_info->regvals, 0, arg);
-  bp = pe_info->attrname;
-  safe_format(pe_info->attrname, &bp, "#%d/%s", thing, attr);
-  *bp = '\0';
-  sp = save = safe_atr_value(a);
-  bp = buff;
-  process_expression(buff, &bp, &sp,
-                     thing, d->player, d->player, PE_DEFAULT, PT_DEFAULT,
-                     pe_info);
+
+  pe_regs = pe_regs_create(PE_REGS_ARG, "fcache_dump_attr");
+  pe_regs_setenv_nocopy(pe_regs, 0, arg);
+  call_ufun(&ufun, buff, d->player, d->player, NULL, pe_regs);
+  bp = strchr(buff, '\0');
+
   safe_chr('\n', buff, &bp);
   *bp = '\0';
-  free_pe_info(pe_info);
+  pe_regs_free(pe_regs);
   if (prefix) {
     queue_newwrite(d, prefix, u_strlen(prefix));
     queue_eol(d);
@@ -1397,7 +1390,7 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
 }
 
 
-/* Display a cached text file. If a prefix line was given,
+/** Display a cached text file. If a prefix line was given,
  * display that line before the text file, but only if we've
  * got a text file to display
  */
@@ -1431,7 +1424,10 @@ fcache_dump(DESC *d, FBLOCK fb[2], const unsigned char *prefix)
   }
 }
 
-
+/** Read in a single cached text file
+ * \param fb block to store text in
+ * \param filename file to read
+ */
 static int
 fcache_read(FBLOCK *fb, const char *filename)
 {
@@ -1586,7 +1582,7 @@ fcache_read_one(const char *filename)
 }
 
 /** Load all of the cached text files.
- * \param player the enactor.
+ * \param player the enactor, if done via \@readcache, or NOTHING.
  */
 void
 fcache_load(dbref player)
@@ -1625,6 +1621,10 @@ fcache_init(void)
   fcache_load(NOTHING);
 }
 
+/** Logout a descriptor from the player it's connected to,
+ * without dropping the connection. Run when a player uses LOGOUT
+ * \param d descriptor
+ */
 static void
 logout_sock(DESC *d)
 {
@@ -1653,15 +1653,13 @@ logout_sock(DESC *d)
   }
   process_output(d);            /* flush our old output */
   /* pretend we have a new connection */
-  d->connected = 0;
+  d->connected = CONN_SCREEN;
   d->output_prefix = 0;
   d->output_suffix = 0;
   d->output_size = 0;
-  d->output.head = 0;
   d->player = NOTHING;
-  d->output.tail = &d->output.head;
-  d->input.head = 0;
-  d->input.tail = &d->input.head;
+  init_text_queue(&d->input);
+  init_text_queue(&d->output);
   d->raw_input = 0;
   d->raw_input_at = 0;
   d->quota = COMMAND_BURST_SIZE;
@@ -1670,6 +1668,9 @@ logout_sock(DESC *d)
   d->hide = 0;
   welcome_user(d, 0);
 }
+
+/* Has to be file scope because of interactions with @boot */
+static DESC *pc_dnext = NULL;
 
 /** Disconnect a descriptor.
  * This sends appropriate disconnection text, flushes output, and
@@ -1683,7 +1684,7 @@ shutdownsock(DESC *d, const char *reason)
   if (d->connected) {
     do_rawlog(LT_CONN, "[%d/%s/%s] Logout by %s(#%d)",
               d->descriptor, d->addr, d->ip, Name(d->player), d->player);
-    if (d->connected != 2) {
+    if (d->connected != CONN_DENIED) {
       fcache_dump(d, fcache.quit_fcache, NULL);
       /* Player was not allowed to log in from the connect screen */
       announce_disconnect(d, reason, 0);
@@ -1710,8 +1711,14 @@ shutdownsock(DESC *d, const char *reason)
               reason, d->input_chars, d->output_chars, d->cmds);
   process_output(d);
   clearstrings(d);
+  if (d->conn_timer) {
+    sq_cancel(d->conn_timer);
+    d->conn_timer = NULL;
+  }
   shutdown(d->descriptor, 2);
   closesocket(d->descriptor);
+  if (pc_dnext == d) 
+    pc_dnext = d->next;
   if (d->prev)
     d->prev->next = d->next;
   else                          /* d was the first one! */
@@ -1744,17 +1751,16 @@ initializesock(int s, char *addr, char *ip, conn_source source)
   if (!d)
     mush_panic("Out of memory.");
   d->descriptor = s;
-  d->connected = 0;
+  d->connected = CONN_SCREEN;
+  d->conn_timer = NULL;
   d->connected_at = mudtime;
   make_nonblocking(s);
   d->output_prefix = 0;
   d->output_suffix = 0;
   d->output_size = 0;
-  d->output.head = 0;
+  init_text_queue(&d->input);
+  init_text_queue(&d->output);
   d->player = NOTHING;
-  d->output.tail = &d->output.head;
-  d->input.head = 0;
-  d->input.tail = &d->input.head;
   d->raw_input = 0;
   d->raw_input_at = 0;
   d->quota = COMMAND_BURST_SIZE;
@@ -1794,31 +1800,24 @@ initializesock(int s, char *addr, char *ip, conn_source source)
   }
 #endif
   im_insert(descs_by_fd, d->descriptor, d);
-  welcome_user(d, 1);
+  d->conn_timer = sq_register_in(1, test_telnet_wrapper, (void *) d, NULL);
   queue_event(SYSEVENT, "SOCKET`CONNECT", "%d,%s", d->descriptor, d->ip);
   return d;
 }
 
-
-/** Flush pending output for a descriptor.
- * This function actually sends the queued output over the descriptor's
- * socket.
- * \param d pointer to descriptor to send output to.
- * \retval 1 successfully flushed at least some output.
- * \retval 0 something failed, and the descriptor should probably be closed.
- */
-int
-process_output(DESC *d)
-{
-  struct text_block **qp, *cur;
-  int cnt;
 #ifdef HAS_OPENSSL
-  int input_ready = 0;
-#endif
+static int
+network_send_ssl(DESC *d)
+{
+  int input_ready, written = 0;
+  bool need_write = 0;
+  struct text_block *cur;
 
-#if defined(HAS_OPENSSL) && !defined(SSL_SLAVE)
-  /* Insure that we're not in a state where we need an SSL_handshake() */
-  if (d->ssl && (ssl_need_handshake(d->ssl_state))) {
+  if (!d->ssl)
+    return 0;
+
+  /* Ensure that we're not in a state where we need an SSL_handshake() */
+  if (ssl_need_handshake(d->ssl_state)) {
     d->ssl_state = ssl_handshake(d->ssl);
     if (d->ssl_state < 0) {
       /* Fatal error */
@@ -1831,8 +1830,8 @@ process_output(DESC *d)
       return 1;
     }
   }
-  /* Insure that we're not in a state where we need an SSL_accept() */
-  if (d->ssl && (ssl_need_accept(d->ssl_state))) {
+  /* Ensure that we're not in a state where we need an SSL_accept() */
+  if (ssl_need_accept(d->ssl_state)) {
     d->ssl_state = ssl_accept(d->ssl);
     if (d->ssl_state < 0) {
       /* Fatal error */
@@ -1845,12 +1844,12 @@ process_output(DESC *d)
       return 1;
     }
   }
-  if (d->ssl) {
-    /* process_output, alas, gets called from all kinds of places.
-     * We need to know if the descriptor is waiting on input, though.
-     * So let's find out
-     */
 
+  /* process_output, alas, gets called from all kinds of places.
+   * We need to know if the descriptor is waiting on input, though.
+   * So let's find out
+   */
+  {
 #ifdef HAVE_POLL
     struct pollfd p;
 
@@ -1868,152 +1867,214 @@ process_output(DESC *d)
     FD_SET(d->descriptor, &input_set);
     input_ready = select(d->descriptor + 1, &input_set, NULL, NULL, &pad);
 #endif
-    if (input_ready < 0) {
-      /* Well, shoot, we have no idea. Guess and proceed. */
-      penn_perror("select in process_output");
-      input_ready = 0;
+  }
+
+  if (input_ready < 0) {
+    /* Well, shoot, we have no idea. Guess and proceed. */
+    penn_perror("select in process_output");
+    input_ready = 0;
+  }
+
+  while ((cur = d->output.head) != NULL) {
+    int cnt = 0;
+    need_write = 0;
+    d->ssl_state =
+      ssl_write(d->ssl, d->ssl_state, input_ready, 1, cur->start,
+                cur->nchars, &cnt);
+    if (ssl_want_write(d->ssl_state)) {
+      need_write = 1;
+      break;                    /* Need to retry */
+    }
+    written += cnt;
+    if (cnt == cur->nchars) {
+      /* Wrote a complete block */
+      d->output.head = cur->nxt;
+      free_text_block(cur);
+    } else {
+      cur->start += cnt;
+      cur->nchars -= cnt;
+      break;
     }
   }
+
+  if (!d->output.head)
+    d->output.tail = NULL;
+  d->output_size -= written;
+  d->output_chars += written;
+
+  return written + need_write;
+}
 #endif
 
-  for (qp = &d->output.head; ((cur = *qp) != NULL);) {
 #ifdef HAVE_WRITEV
-    if (cur->nxt
-#ifdef HAS_OPENSSL
-        && !d->ssl
-#endif
-      ) {
-      /* If there's more than one pending block, try to send up to 10
-         at once with writev(). Doesn't work for SSL connections, and
-         if there's only one block waiting to go out, just use
-         send(). */
-      struct iovec lines[10];
-      struct text_block *block = cur, *next = NULL;
-      int n;
-      cnt = 0;
-      for (n = 0; block && n < 10; block = block->nxt) {
-        lines[n].iov_base = block->start;
-        lines[n].iov_len = block->nchars;
-        cnt += block->nchars;
-        n += 1;
-      }
-#ifdef DEBUG
-      do_rawlog(LT_TRACE, "Sending %d bytes in %d blocks to socket %d",
-                cnt, n, d->descriptor);
-#endif
-      cnt = writev(d->descriptor, lines, n);
-#ifdef DEBUG
-      do_rawlog(LT_TRACE, "writev() returned %d", cnt);
-#endif
-      if (cnt < 0) {
-#ifdef WIN32
-        if (cnt == SOCKET_ERROR && WSAGetLastError() == WSAEWOULDBLOCK)
-#else
+static int
+network_send_writev(DESC *d)
+{
+  int written = 0;
+
+  while (d->output.head) {
+    int cnt, n;
+    struct iovec lines[10];
+    struct text_block *cur = d->output.head;
+
+    for (n = 0; cur && n < 10; cur = cur->nxt) {
+      lines[n].iov_base = cur->start;
+      lines[n].iov_len = cur->nchars;
+      n += 1;
+    }
+
+    cnt = writev(d->descriptor, lines, n);
+    if (cnt < 0) {
+      if (errno == EWOULDBLOCK
 #ifdef EAGAIN
-        if ((errno == EWOULDBLOCK) || (errno == EAGAIN) || errno == EINTR)
-#else
-        if (errno == EWOULDBLOCK || errno = EINTR)
+          || errno == EAGAIN
 #endif
-#endif
-          return 1;
+          || errno == EINTR)
+        return 1;
+      else
         return 0;
-      }
-
-      d->output_size -= cnt;
-      d->output_chars += cnt;
-
-      for (block = cur; block && cnt > 0; block = next) {
-        next = block->nxt;
-        if (cnt >= block->nchars) {
-          if (!block->nxt)
-            d->output.tail = qp;
-          *qp = block->nxt;
-          cnt -= block->nchars;
-#ifdef DEBUG
-          do_rawlog(LT_TRACE, "free_text_block(%p) at writev", (void *) block);
-#endif
-          free_text_block(block);
-        } else {
-#ifdef DEBUG
-          do_rawlog(LT_TRACE,
-                    "Incomplete write of block. nchars = %d, cnt = %d",
-                    block->nchars, cnt);
-#endif
-          block->nchars -= cnt;
-          block->start += cnt;
-          break;
-        }
-      }
-    } else {
-#endif                          /* HAVE_WRITEV */
-#ifdef HAS_OPENSSL
-      if (d->ssl) {
-        cnt = 0;
-        d->ssl_state =
-          ssl_write(d->ssl, d->ssl_state, input_ready, 1, cur->start,
-                    cur->nchars, &cnt);
-        if (ssl_want_write(d->ssl_state))
-          return 1;             /* Need to retry */
-      } else
-#endif                          /* HAS_OPENSSL */
-      {
-        cnt = send(d->descriptor, cur->start, cur->nchars, 0);
-        if (cnt < 0) {
-#ifdef WIN32
-          if (cnt == SOCKET_ERROR && WSAGetLastError() == WSAEWOULDBLOCK)
-#else
-#ifdef EAGAIN
-          if ((errno == EWOULDBLOCK) || (errno == EAGAIN) || errno == EINTR)
-#else
-          if (errno == EWOULDBLOCK || errno == EINTR)
-#endif
-#endif
-            return 1;
-          return 0;
-        }
-      }
-      d->output_size -= cnt;
-      d->output_chars += cnt;
-      if (cnt == cur->nchars) {
-        if (!cur->nxt)
-          d->output.tail = qp;
-        *qp = cur->nxt;
-#ifdef DEBUG
-        do_rawlog(LT_TRACE, "free_text_block(%p) at 2.", (void *) cur);
-#endif                          /* DEBUG */
+    }
+    written += cnt;
+    while (cnt > 0) {
+      cur = d->output.head;
+      if (cur->nchars <= cnt) {
+        /* Wrote a full block */
+        cnt -= cur->nchars;
+        d->output.head = cur->nxt;
         free_text_block(cur);
-        continue;               /* do not adv ptr */
+      } else {
+        /* Wrote a partial block */
+        cur->start += cnt;
+        cur->nchars -= cnt;
+        goto output_done;
       }
+    }
+  }
+
+output_done:
+  if (!d->output.head)
+    d->output.tail = NULL;
+  d->output_size -= written;
+  d->output_chars += written;
+
+  return written;
+}
+#endif
+
+static int
+network_send(DESC *d)
+{
+  int written = 0;
+  struct text_block *cur;
+
+  if (!d || !d->output.head)
+    return 1;
+
+#ifdef HAVE_WRITEV
+  /* If there's multiple pending blocks of text to send, use writev() if
+     possible. */
+  if (d->output.head->nxt)
+    return network_send_writev(d);
+#endif
+
+  while ((cur = d->output.head) != NULL) {
+    int cnt = send(d->descriptor, cur->start, cur->nchars, 0);
+
+    if (cnt < 0) {
+#ifdef WIN32
+      if (cnt == SOCKET_ERROR && WSAGetLastError() == WSAEWOULDBLOCK)
+#else
+      if (errno == EWOULDBLOCK
+#ifdef EAGAIN
+          || errno == EAGAIN
+#endif
+          || errno == EINTR)
+#endif
+        return 1;
+      return 0;
+    }
+    written += cnt;
+
+    if (cnt == cur->nchars) {
+      /* Wrote a complete block */
+      d->output.head = cur->nxt;
+      free_text_block(cur);
+    } else {
+      /* Partial */
       cur->nchars -= cnt;
       cur->start += cnt;
       break;
-#ifdef HAVE_WRITEV
     }
-#endif
   }
-  return 1;
+
+  if (!d->output.head)
+    d->output.tail = NULL;
+  d->output_size -= written;
+  d->output_chars += written;
+  return written;
 }
 
+/** Flush pending output for a descriptor.
+ * This function actually sends the queued output over the descriptor's
+ * socket.
+ * \param d pointer to descriptor to send output to.
+ * \retval 1 successfully flushed at least some output.
+ * \retval 0 something failed, and the descriptor should probably be closed.
+ */
+int
+process_output(DESC *d)
+{
+#ifdef HAS_OPENSSL
+  if (d->ssl)
+    return network_send_ssl(d);
+  else
+#endif
+    return network_send(d);
+}
+
+/** A wrapper around test_telnet(), which is called via the
+ * squeue system in timers.c
+ * \param data a descriptor, cast as a void pointer
+ * \param return false
+ */
+bool
+test_telnet_wrapper(void *data)
+{
+  DESC *d = (DESC *) data;
+
+  test_telnet(d);
+  d->conn_timer = sq_register_in(1, welcome_user_wrapper, (void *) d, NULL);
+  return false;
+}
+
+/** A wrapper around welcome_user(), which is called via the
+ * squeue system in timers.c
+ * \param data a descriptor, cast as a void pointer
+ * \param return false
+ */
+bool
+welcome_user_wrapper(void *data)
+{
+  DESC *d = (DESC *) data;
+
+  welcome_user(d, -1);
+  d->conn_timer = NULL;
+  return false;
+}
+
+/** Show the login screen for a descriptor.
+ * \param d descriptor
+ * \param telnet should we test for telnet support?
+ */
 static void
 welcome_user(DESC *d, int telnet)
 {
-  /* If MUDURL exists, we send <!-- ... --> */
-  if (telnet) {
-    if (MUDURL[0]) {
-      queue_newwrite(d, (const unsigned char *) "<!--", 4);
-      queue_eol(d);
-    }
+  if (telnet == 1)
     test_telnet(d);
-  }
-  if (SUPPORT_PUEBLO && !(d->conn_flags & CONN_HTML))
+  else if (telnet == 0 && SUPPORT_PUEBLO && !(d->conn_flags & CONN_HTML))
     queue_newwrite(d, (const unsigned char *) PUEBLO_HELLO,
                    strlen(PUEBLO_HELLO));
   fcache_dump(d, fcache.connect_fcache, NULL);
-  if (telnet && MUDURL[0]) {
-    queue_eol(d);
-    queue_newwrite(d, (const unsigned char *) "-->", 3);
-    queue_eol(d);
-  }
 }
 
 static void
@@ -2022,6 +2083,9 @@ save_command(DESC *d, const unsigned char *command)
   add_to_queue(&d->input, command, u_strlen(command) + 1);
 }
 
+/** Send a telnet command to a descriptor to test for telnet support.
+ * Also sends the Pueblo test string.
+ */
 static void
 test_telnet(DESC *d)
 {
@@ -2032,10 +2096,15 @@ test_telnet(DESC *d)
     unsigned char query[3] = "\xFF\xFD\x22";
     queue_newwrite(d, query, 3);
     d->conn_flags |= CONN_TELNET_QUERY;
+    if (SUPPORT_PUEBLO && !(d->conn_flags & CONN_HTML))
+      queue_newwrite(d, (const unsigned char *) PUEBLO_HELLO,
+                     strlen(PUEBLO_HELLO));
     process_output(d);
   }
 }
 
+/** Turn on telnet support when a connection has shown it has support
+ */
 static void
 setup_telnet(DESC *d)
 {
@@ -2055,6 +2124,14 @@ setup_telnet(DESC *d)
   }
 }
 
+/** Parse a telnet code received from a connection.
+ * \param d descriptor
+ * \param q first char after the IAC
+ * \param qend end of the string
+ * \retval -1 Incomplete telnet code received
+ * \retval 0 Invalid telnet code (or IAC IAC) received
+ * \retval 1 Telnet code successfully handled
+ */
 static int
 handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
 {
@@ -2202,7 +2279,7 @@ handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
       fprintf(stderr, "Setting linemode options.\n");
 #endif
     } else if (**q == TN_TTYPE) {
-      /* Ask for terminal type id: IAC SB TERMINAL-TYPE SEND IAC SEC */
+      /* Ask for terminal type id: IAC SB TERMINAL-TYPE SEND IAC SE */
       unsigned char reply[6] = "\xFF\xFA\x18\x01\xFF\xF0";
       queue_newwrite(d, reply, 6);
     } else if (**q == TN_SGA || **q == TN_NAWS) {
@@ -2341,7 +2418,7 @@ process_input(DESC *d, int output_ready __attribute__ ((__unused__)))
 
 #ifdef HAS_OPENSSL
   if (d->ssl) {
-    /* Insure that we're not in a state where we need an SSL_handshake() */
+    /* Ensure that we're not in a state where we need an SSL_handshake() */
     if (ssl_need_handshake(d->ssl_state)) {
       d->ssl_state = ssl_handshake(d->ssl);
       if (d->ssl_state < 0) {
@@ -2355,7 +2432,7 @@ process_input(DESC *d, int output_ready __attribute__ ((__unused__)))
         return 1;
       }
     }
-    /* Insure that we're not in a state where we need an SSL_accept() */
+    /* Ensure that we're not in a state where we need an SSL_accept() */
     if (ssl_need_accept(d->ssl_state)) {
       d->ssl_state = ssl_accept(d->ssl);
       if (d->ssl_state < 0) {
@@ -2422,42 +2499,53 @@ static void
 process_commands(void)
 {
   int nprocessed;
-  DESC *cdesc, *dnext;
-  struct text_block *t;
-  int retval = 1;
+
+  pc_dnext = NULL;
 
   do {
+    DESC *cdesc;
+   
     nprocessed = 0;
-    for (cdesc = descriptor_list; cdesc;
-         cdesc = (nprocessed > 0 && retval > 0) ? cdesc->next : dnext) {
-      dnext = cdesc->next;
-      if (cdesc->quota > 0 && (t = cdesc->input.head)) {
-        cdesc->quota--;
-        nprocessed++;
+    for (cdesc = descriptor_list; cdesc; cdesc = pc_dnext) {
+      struct text_block *t;
+
+      pc_dnext = cdesc->next;
+
+      if (cdesc->quota > 0 && (t = cdesc->input.head) != NULL) {
+        enum comm_res retval;
+
+        cdesc->quota -= 1;
+        nprocessed += 1;
         start_cpu_timer();
         retval = do_command(cdesc, (char *) t->start);
         reset_cpu_timer();
-        if (retval == 0) {
+
+        switch (retval) {
+        case CRES_QUIT:
           shutdownsock(cdesc, "quit");
-        } else if (retval == -3) {
+          break;
+        case CRES_HTTP:
           shutdownsock(cdesc, "http disconnect");
-        } else if (retval == -2) {
+          break;
+        case CRES_SITELOCK:
           shutdownsock(cdesc, "sitelocked");
-        } else if (retval == -1) {
+          break;
+        case CRES_LOGOUT:
           logout_sock(cdesc);
-        } else {
+          break;
+        case CRES_OK:
           cdesc->input.head = t->nxt;
           if (!cdesc->input.head)
-            cdesc->input.tail = &cdesc->input.head;
-          if (t) {
+            cdesc->input.tail = NULL;
 #ifdef DEBUG
-            do_rawlog(LT_TRACE, "free_text_block(%p) at 5.", (void *) t);
+          do_rawlog(LT_TRACE, "free_text_block(%p) at 5.", (void *) t);
 #endif                          /* DEBUG */
-            free_text_block(t);
-          }
+          free_text_block(t);
+          break;
         }
       }
     }
+    pc_dnext = NULL;
   } while (nprocessed > 0);
 }
 
@@ -2475,7 +2563,12 @@ process_commands(void)
     queue_eol(d); \
   }
 
-static int
+/** Parse a command entered at the socket.
+ * \param d descriptor
+ * \param command command to parse
+ * \return CRES_* enum
+ */
+static enum comm_res
 do_command(DESC *d, char *command)
 {
   int j;
@@ -2488,14 +2581,49 @@ do_command(DESC *d, char *command)
       queue_write(d, (unsigned char *) command + j, strlen(command) - j);
       queue_eol(d);
     }
-    return 1;
+    return CRES_OK;
   }
   d->last_time = mudtime;
   (d->cmds)++;
+  if (!d->connected && (!strncmp(command, GET_COMMAND, strlen(GET_COMMAND)) ||
+                        !strncmp(command, POST_COMMAND,
+                                 strlen(POST_COMMAND)))) {
+    char buf[BUFFER_LEN];
+    snprintf(buf, BUFFER_LEN,
+             "<HTML><HEAD>"
+             "<TITLE>Welcome to %s!</TITLE>"
+             "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\">"
+             "</HEAD><BODY>"
+             "<meta http-equiv=\"refresh\" content=\"0;%s\">"
+             "Please click <a href=\"%s\">%s</a> to go to the website for %s."
+             "</BODY></HEAD>", MUDNAME, MUDURL, MUDURL, MUDURL, MUDNAME);
+    queue_write(d, (unsigned char *) buf, strlen(buf));
+    queue_eol(d);
+    return CRES_HTTP;
+  } else if (SUPPORT_PUEBLO
+             && !strncmp(command, PUEBLO_COMMAND, strlen(PUEBLO_COMMAND))) {
+    parse_puebloclient(d, command);
+    if (!(d->conn_flags & CONN_HTML)) {
+      queue_newwrite(d, (unsigned const char *) PUEBLO_SEND,
+                     strlen(PUEBLO_SEND));
+      process_output(d);
+      do_rawlog(LT_CONN, "[%d/%s/%s] Switching to Pueblo mode.",
+                d->descriptor, d->addr, d->ip);
+      d->conn_flags |= CONN_HTML;
+      if (!d->connected && !d->conn_timer)
+        welcome_user(d, 1);
+    }
+    return CRES_OK;
+  }
+  if (d->conn_timer) {
+    sq_cancel(d->conn_timer);
+    d->conn_timer = NULL;
+    welcome_user(d, 1);
+  }
   if (!strcmp(command, QUIT_COMMAND)) {
-    return 0;
+    return CRES_QUIT;
   } else if (!strcmp(command, LOGOUT_COMMAND)) {
-    return -1;
+    return CRES_LOGOUT;
   } else if (!strcmp(command, INFO_COMMAND)) {
     send_prefix(d);
     dump_info(d);
@@ -2517,19 +2645,6 @@ do_command(DESC *d, char *command)
       d->conn_flags |= CONN_PROMPT_NEWLINES;
     else
       d->conn_flags &= ~CONN_PROMPT_NEWLINES;
-  } else if (SUPPORT_PUEBLO
-             && !strncmp(command, PUEBLO_COMMAND, strlen(PUEBLO_COMMAND))) {
-    parse_puebloclient(d, command);
-    if (!(d->conn_flags & CONN_HTML)) {
-      queue_newwrite(d, (unsigned const char *) PUEBLO_SEND,
-                     strlen(PUEBLO_SEND));
-      process_output(d);
-      do_rawlog(LT_CONN, "[%d/%s/%s] Switching to Pueblo mode.",
-                d->descriptor, d->addr, d->ip);
-      d->conn_flags |= CONN_HTML;
-      if (!d->connected)
-        welcome_user(d, 0);
-    }
   } else {
     if (d->connected) {
       send_prefix(d);
@@ -2543,33 +2658,23 @@ do_command(DESC *d, char *command)
         j = strlen(DOING_COMMAND);
       } else if (!strncmp(command, SESSION_COMMAND, strlen(SESSION_COMMAND))) {
         j = strlen(SESSION_COMMAND);
-      } else if (!strncmp(command, GET_COMMAND, strlen(GET_COMMAND)) ||
-                 !strncmp(command, POST_COMMAND, strlen(POST_COMMAND))) {
-        char buf[BUFFER_LEN];
-        snprintf(buf, BUFFER_LEN,
-                 "<HTML><HEAD>"
-                 "<TITLE>Welcome to %s!</TITLE>"
-                 "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\">"
-                 "</HEAD><BODY>"
-                 "<meta http-equiv=\"refresh\" content=\"0;%s\">"
-                 "Please click <a href=\"%s\">%s</a> to go to the website for %s."
-                 "</BODY></HEAD>", MUDNAME, MUDURL, MUDURL, MUDURL, MUDNAME);
-        queue_write(d, (unsigned char *) buf, strlen(buf));
-        queue_eol(d);
-        return -3;
       }
       if (j) {
         send_prefix(d);
         dump_users(d, command + j);
         send_suffix(d);
       } else if (!check_connect(d, command)) {
-        return -2;
+        return CRES_SITELOCK;
       }
     }
   }
-  return 1;
+  return CRES_OK;
 }
 
+/** Parse a PUEBLOCLIENT [md5="checksum"] string
+ * \param d descriptor
+ * \param command string to parse
+ */
 static void
 parse_puebloclient(DESC *d, char *command)
 {
@@ -2586,13 +2691,21 @@ parse_puebloclient(DESC *d, char *command)
   }
 }
 
+/** Show all the appropriate messages when a player
+ * attempts to log in.
+ * \param d descriptor
+ * \param player dbref of player
+ * \param isnew has the player just been created?
+ * \retval 0 player failed to log in
+ * \retval 1 player logged in successfully
+ */
 static int
 dump_messages(DESC *d, dbref player, int isnew)
 {
   int num = 0;
   DESC *tmpd;
 
-  d->connected = 1;
+  d->connected = CONN_PLAYER;
   d->connected_at = mudtime;
   d->player = player;
 
@@ -2667,6 +2780,13 @@ dump_messages(DESC *d, dbref player, int isnew)
   return 1;
 }
 
+/** Check if a string entered at the login screen is an attempt
+ * to connect to or create/register a player.
+ * \param d descriptor
+ * \param msg string to parse
+ * \retval 1 Connection successful, or failed due to too many incorrect pws
+ * \retval 0 Connection failed (sitelock, max connections reached, etc)
+ */
 static int
 check_connect(DESC *d, const char *msg)
 {
@@ -2693,7 +2813,7 @@ check_connect(DESC *d, const char *msg)
                 d->descriptor, d->addr, d->ip, Name(player), player,
                 Name(Location(player)), Location(player));
       if ((dump_messages(d, player, 0)) == 0) {
-        d->connected = 2;
+        d->connected = CONN_DENIED;
         return 0;
       }
     }
@@ -2710,13 +2830,13 @@ check_connect(DESC *d, const char *msg)
                 d->descriptor, d->addr, d->ip, Name(player), player,
                 Name(Location(player)), Location(player));
       /* Set player dark */
-      d->connected = 1;
+      d->connected = CONN_PLAYER;
       if (Can_Hide(player))
         d->hide = 1;
       d->player = player;
       set_flag(player, player, "DARK", 0, 0, 0);
       if ((dump_messages(d, player, 0)) == 0) {
-        d->connected = 2;
+        d->connected = CONN_DENIED;
         return 0;
       }
     }
@@ -2732,11 +2852,11 @@ check_connect(DESC *d, const char *msg)
                 d->descriptor, d->addr, d->ip, Name(player), player,
                 Name(Location(player)), Location(player));
       /* Set player !dark */
-      d->connected = 1;
+      d->connected = CONN_PLAYER;
       d->player = player;
       set_flag(player, player, "DARK", 1, 0, 0);
       if ((dump_messages(d, player, 0)) == 0) {
-        d->connected = 2;
+        d->connected = CONN_DENIED;
         return 0;
       }
     }
@@ -2753,12 +2873,12 @@ check_connect(DESC *d, const char *msg)
                 d->descriptor, d->addr, d->ip, Name(player), player,
                 Name(Location(player)), Location(player));
       /* Set player hidden */
-      d->connected = 1;
+      d->connected = CONN_PLAYER;
       d->player = player;
       if (Can_Hide(player))
         d->hide = 1;
       if ((dump_messages(d, player, 0)) == 0) {
-        d->connected = 2;
+        d->connected = CONN_DENIED;
         return 0;
       }
     }
@@ -2815,7 +2935,7 @@ check_connect(DESC *d, const char *msg)
       do_rawlog(LT_CONN, "[%d/%s/%s] Created %s(#%d)",
                 d->descriptor, d->addr, d->ip, Name(player), player);
       if ((dump_messages(d, player, 1)) == 0) {
-        d->connected = 2;
+        d->connected = CONN_DENIED;
         return 0;
       }
     }                           /* successful player creation */
@@ -2863,6 +2983,13 @@ check_connect(DESC *d, const char *msg)
   return 1;
 }
 
+/** Attempt to parse a string entered at the connect screen
+ * as 'connect name password'.
+ * \param msg1 string to parse
+ * \param command pointer to store the first word in
+ * \param user pointer to store the username - possibly given in quotes - in
+ * \param pass pointer to store the password in
+ */
 static void
 parse_connect(const char *msg1, char *command, char *user, char *pass)
 {
@@ -2908,6 +3035,7 @@ parse_connect(const char *msg1, char *command, char *user, char *pass)
   *p = '\0';
 }
 
+/** Close all connections to the MUSH */
 static void
 close_sockets(void)
 {
@@ -3001,8 +3129,10 @@ boot_player(dbref player, int idleonly, int silent)
       boot = d;
     }
   }
+
   if (boot)
     boot_desc(boot, "boot");
+
   if (count && idleonly) {
     if (count == 1)
       notify(player, T("You boot an idle self."));
@@ -3305,7 +3435,8 @@ reaper(int sig __attribute__ ((__unused__)))
 }
 #endif                          /* !(Mac or WIN32) */
 
-
+/** Return the number of connected players,
+ * possibly including Hidden connections */
 static int
 count_players(void)
 {
@@ -3325,6 +3456,7 @@ count_players(void)
   return count;
 }
 
+/** The INFO socket command */
 static void
 dump_info(DESC *call_by)
 {
@@ -3343,6 +3475,7 @@ dump_info(DESC *call_by)
   queue_string_eol(call_by, "### End INFO");
 }
 
+/** The MSSP socket command / telnet option */
 void
 report_mssp(DESC *d, char *buff, char **bp)
 {
@@ -3455,7 +3588,7 @@ guest_to_connect(dbref player)
   return player;
 }
 
-
+/** The connect-screen WHO command */
 static void
 dump_users(DESC *call_by, char *match)
 {
@@ -3490,7 +3623,7 @@ dump_users(DESC *call_by, char *match)
     sprintf(tbuf1, "%-16s %10s   %4s%c %s", Name(d->player),
             time_format_1(now - d->connected_at),
             time_format_2(now - d->last_time), (Dark(d->player) ? 'D' : ' ')
-            , get_doing(d->player, NOTHING, 0));
+            , get_doing(d->player, NOTHING, NOTHING, NULL, 0));
     queue_string_eol(call_by, tbuf1);
   }
   switch (count) {
@@ -3509,6 +3642,7 @@ dump_users(DESC *call_by, char *match)
     queue_newwrite(call_by, (const unsigned char *) "</PRE>", 6);
 }
 
+/** The DOING command */
 void
 do_who_mortal(dbref player, char *name)
 {
@@ -3544,7 +3678,7 @@ do_who_mortal(dbref player, char *name)
                   time_format_1(now - d->connected_at),
                   time_format_2(now - d->last_time),
                   (Dark(d->player) ? 'D' : (Hidden(d) ? 'H' : ' '))
-                  , get_doing(d->player, player, 0));
+                  , get_doing(d->player, player, player, NULL, 0));
   }
   switch (count) {
   case 0:
@@ -3567,6 +3701,7 @@ do_who_mortal(dbref player, char *name)
 
 }
 
+/** The admin WHO command */
 void
 do_who_admin(dbref player, char *name)
 {
@@ -3639,6 +3774,7 @@ do_who_admin(dbref player, char *name)
 
 }
 
+/** The SESSION command */
 void
 do_who_session(dbref player, char *name)
 {
@@ -4094,15 +4230,18 @@ do_doing(dbref player, const char *message)
 
 /** Return a player's \@doing.
  * \param player the dbref of the player whose \@doing we want
+ * \param caller
  * \param enactor the enactor
  * \param full Return the full doing, or limit to DOING_LEN chars for WHO?
  * \return a pointer to a STATIC buffer with the doing in.
  */
 static char *
-get_doing(dbref player, dbref enactor, bool full)
+get_doing(dbref player, dbref caller, dbref enactor, NEW_PE_INFO *pe_info,
+          bool full)
 {
   static char doing[BUFFER_LEN];
   char *dp = doing;
+  ufun_attrib ufun;
 
   doing[0] = '\0';
 
@@ -4111,10 +4250,14 @@ get_doing(dbref player, dbref enactor, bool full)
     return "";
   }
 
-  if (!call_attrib(player, "DOING", dp, enactor, NULL, NULL)) {
-    /* No DOING attribute */
+  if (!fetch_ufun_attrib
+      ("DOING", player, &ufun,
+       UFUN_LOCALIZE | UFUN_REQUIRE_ATTR | UFUN_IGNORE_PERMS))
+    return "";                  /* No DOING attribute */
+
+  call_ufun(&ufun, doing, caller, enactor, pe_info, NULL);
+  if (!doing[0])
     return "";
-  }
 
   if (!full) {
     /* Truncate to display on WHO */
@@ -4648,7 +4791,8 @@ FUNCTION(fun_zwho)
   }
 
   if (!GoodObject(zone)
-      || (!Priv_Who(executor) && !eval_lock(victim, zone, Zone_Lock))) {
+      || (!Priv_Who(executor)
+          && !eval_lock_with(victim, zone, Zone_Lock, pe_info))) {
     if (GoodObject(zone))
       fail_lock(victim, zone, Zone_Lock, NULL, NOTHING);
     safe_str(T(e_perm), buff, bp);
@@ -4695,7 +4839,7 @@ FUNCTION(fun_doing)
   /* Gets a player's @doing */
   DESC *d = lookup_desc(executor, args[0]);
   if (d)
-    safe_str(get_doing(d->player, executor, 0), buff, bp);
+    safe_str(get_doing(d->player, executor, enactor, pe_info, 0), buff, bp);
 }
 
 /* ARGSUSED */
@@ -5082,7 +5226,7 @@ inactivity_check(void)
 
     /* If they've been idle for 60 seconds and are set KEEPALIVE and using
        a telnet-aware client, send a NOP */
-    if (d->connected && d->conn_flags & CONN_TELNET && idle_for >= 60
+    if (d->connected && (d->conn_flags & CONN_TELNET) && idle_for >= 60
         && IS(d->player, TYPE_PLAYER, "KEEPALIVE")) {
       const uint8_t nopmsg[2] = { IAC, NOP };
       queue_newwrite(d, nopmsg, 2);
@@ -5392,11 +5536,12 @@ load_reboot_db(void)
       d = GC_MALLOC(sizeof(DESC));
       d->descriptor = val;
       d->connected_at = getref(f);
+      d->conn_timer = NULL;
       d->hide = getref(f);
       d->cmds = getref(f);
       d->player = getref(f);
       d->last_time = getref(f);
-      d->connected = GoodObject(d->player) ? 1 : 0;
+      d->connected = GoodObject(d->player) ? CONN_PLAYER : CONN_SCREEN;
       temp = getstring_noalloc(f);
       d->output_prefix = NULL;
       if (strcmp(temp, "__NONE__"))
@@ -5430,10 +5575,8 @@ load_reboot_db(void)
       d->input_chars = 0;
       d->output_chars = 0;
       d->output_size = 0;
-      d->output.head = 0;
-      d->output.tail = &d->output.head;
-      d->input.head = 0;
-      d->input.tail = &d->input.head;
+      init_text_queue(&d->input);
+      init_text_queue(&d->output);
       d->raw_input = NULL;
       d->raw_input_at = NULL;
       d->quota = options.starting_quota;
@@ -5463,7 +5606,7 @@ load_reboot_db(void)
         if (d->connected && GoodObject(d->player) && IsPlayer(d->player))
           set_flag_internal(d->player, "CONNECTED");
         else if ((!d->player || !GoodObject(d->player)) && d->connected) {
-          d->connected = 0;
+          d->connected = CONN_SCREEN;
           d->player = NOTHING;
         }
       }
@@ -5560,9 +5703,13 @@ do_reboot(dbref player, int flag)
 #if defined(HAS_OPENSSL) && !defined(SSL_SLAVE)
   close_ssl_connections();
 #endif
+  if (!fork_and_dump(0)) {
+    /* Database save failed. Cancel the reboot */
+    flag_broadcast(0, 0, T("GAME: Reboot failed."));
+    return;
+  }
   sql_shutdown();
   shutdown_queues();
-  fork_and_dump(0);
 #ifndef PROFILING
 #ifndef WIN32
   /* Some broken libcs appear to retain the itimer across exec!
@@ -5793,11 +5940,11 @@ file_watch_init_fam(void)
     return -1;
   }
 #define WATCH(name) do { \
-    const char *fullname = tprintf("%s/%s", gamedir, (name));	 \
-    do_rawlog(LT_TRACE, "Watching %s", fullname);			\
-    if (FAMMonitorFile(&famc, fullname, &famr, NULL) < 0)		\
+    const char *fullname = tprintf("%s/%s", gamedir, (name));    \
+    do_rawlog(LT_TRACE, "Watching %s", fullname);           \
+    if (FAMMonitorFile(&famc, fullname, &famr, NULL) < 0)       \
       do_rawlog(LT_TRACE, "file_watch_init:FAMMonitorFile(\"%s\"): %s", \
-		(name), FamErrlist[FAMErrno]);				\
+        (name), FamErrlist[FAMErrno]);              \
   } while (0)
 
   do_rawlog(LT_TRACE,

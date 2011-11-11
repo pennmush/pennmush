@@ -72,7 +72,8 @@ static void channel_join_self(dbref player, const char *name);
 static void channel_leave_self(dbref player, const char *name);
 static void do_channel_who(dbref player, CHAN *chan);
 void chat_player_announce(dbref player, char *msg, int ungag);
-static int ok_channel_name(const char *n);
+enum ok_name { NAME_OK = 0, NAME_INVALID, NAME_TOO_LONG, NAME_NOT_UNIQUE };
+static enum ok_name ok_channel_name(const char *n, CHAN *unique);
 static void channel_send(CHAN *channel, dbref player, int flags,
                          const char *origmessage);
 static void list_partial_matches(dbref player, const char *name,
@@ -346,7 +347,7 @@ new_channel(void)
   ch = GC_MALLOC(sizeof *ch);
   if (!ch)
     return NULL;
-  ch->name[0] = '\0';
+  ch->name = NULL;
   ch->title[0] = '\0';
   ChanType(ch) = CHANNEL_DEFAULT_FLAGS;
   ChanCreator(ch) = NOTHING;
@@ -402,7 +403,6 @@ free_channel(CHAN *c)
     free_user(u);
     u = unext;
   }
-  return;
 }
 
 /* Free memory from a channel user */
@@ -419,7 +419,7 @@ free_user(CHANUSER *u)
 static int
 load_channel(PENNFILE *fp, CHAN *ch)
 {
-  mush_strncpy(ChanName(ch), getstring_noalloc(fp), CHAN_NAME_LEN);
+  ChanName(ch) = GC_STRDUP(getstring_noalloc(fp));
   if (penn_feof(fp))
     return 0;
   mush_strncpy(ChanTitle(ch), getstring_noalloc(fp), CHAN_TITLE_LEN);
@@ -453,7 +453,7 @@ load_labeled_channel(PENNFILE *fp, CHAN *ch, int dbflags)
   char *label, *value;
 
   db_read_this_labeled_string(fp, "name", &tmp);
-  mush_strncpy(ChanName(ch), tmp, CHAN_NAME_LEN);
+  ChanName(ch) = GC_STRDUP(tmp);
   db_read_this_labeled_string(fp, "description", &tmp);
   mush_strncpy(ChanTitle(ch), tmp, CHAN_TITLE_LEN);
   db_read_this_labeled_int(fp, "flags", &i);
@@ -1703,11 +1703,10 @@ void
 do_chan_admin(dbref player, char *name, const char *perms,
               enum chan_admin_op flag)
 {
-  CHAN *chan = NULL, *temp = NULL;
+  CHAN *chan = NULL;
   privbits type;
-  int res;
   boolexp key;
-  char old[CHAN_NAME_LEN];
+  char old[BUFFER_LEN];
   char announcebuff[BUFFER_LEN];
 
   if (!name || !*name) {
@@ -1733,21 +1732,21 @@ do_chan_admin(dbref player, char *name, const char *perms,
       notify(player, T("No more room for channels."));
       return;
     }
-    if (strlen(name) > CHAN_NAME_LEN - 1) {
-      notify(player, T("The channel needs a shorter name."));
-      return;
-    }
-    if (!ok_channel_name(name)) {
+    switch (ok_channel_name(name, NULL)) {
+    case NAME_INVALID:
       notify(player, T("Invalid name for a channel."));
       return;
+    case NAME_TOO_LONG:
+      notify(player, T("The channel needs a shorter name."));
+      return;
+    case NAME_NOT_UNIQUE:
+      notify(player, T("The channel needs a more unique name."));
+      return;
+    case NAME_OK:
+      break;
     }
     if (!Hasprivs(player) && !canstilladd(player)) {
       notify(player, T("You already own too many channels."));
-      return;
-    }
-    res = find_channel(name, &chan, GOD);
-    if (res != CMATCH_NONE) {
-      notify(player, T("CHAT: The channel needs a more unique name."));
       return;
     }
     /* get the permissions. Invalid specs default to the default */
@@ -1786,7 +1785,7 @@ do_chan_admin(dbref player, char *name, const char *perms,
       ChanType(chan) = type;
     ChanCreator(chan) = Owner(player);
     ChanMogrifier(chan) = NOTHING;
-    mush_strncpy(ChanName(chan), name, CHAN_NAME_LEN);
+    ChanName(chan) = GC_STRDUP(name);
     insert_channel(&chan);
     notify_format(player, T("CHAT: Channel <%s> created."), ChanName(chan));
     break;
@@ -1814,24 +1813,24 @@ do_chan_admin(dbref player, char *name, const char *perms,
       notify(player, T("Permission denied."));
       return;
     }
-    /* make sure the channel name is unique */
-    if (find_channel(perms, &temp, GOD)) {
-      /* But allow renaming a channel to a differently-cased version of
-       * itself
-       */
-      if (temp != chan) {
-        notify(player, T("The channel needs a more unique new name."));
-        return;
-      }
-    }
-    if (strlen(perms) > CHAN_NAME_LEN - 1) {
-      notify(player, T("That name is too long."));
+    switch (ok_channel_name(perms, chan)) {
+    case NAME_INVALID:
+      notify(player, T("Invalid name for a channel."));
       return;
+    case NAME_TOO_LONG:
+      notify(player, T("The channel needs a shorter name."));
+      return;
+    case NAME_NOT_UNIQUE:
+      notify(player, T("The channel needs a more unique name."));
+      return;
+    case NAME_OK:
+      break;
     }
+
     /* When we rename a channel, we actually remove it and re-insert it */
     strcpy(old, ChanName(chan));
     remove_channel(chan);
-    strcpy(ChanName(chan), perms);
+    ChanName(chan) = GC_STRDUP(perms);
     insert_channel(&chan);
     snprintf(announcebuff, BUFFER_LEN, T("has renamed %s to %s."),
              old, ChanName(chan));
@@ -1867,34 +1866,48 @@ do_chan_admin(dbref player, char *name, const char *perms,
   }
 }
 
-static int
-ok_channel_name(const char *n)
+static enum ok_name
+ok_channel_name(const char *n, CHAN *unique)
 {
   /* is name valid for a channel? */
   const char *p;
   char *name;
+  CHAN *check;
+  int res;
 
   if (!n || !*n)
-    return 0;
+    return NAME_INVALID;
 
   name = remove_markup(n, NULL);
 
   /* No leading spaces */
   if (isspace((unsigned char) *name))
-    return 0;
+    return NAME_INVALID;
 
   /* only printable characters */
   for (p = name; p && *p; p++) {
     if (!isprint((unsigned char) *p) || *p == '|')
-      return 0;
+      return NAME_INVALID;
   }
 
   /* No trailing spaces */
   p--;
   if (isspace((unsigned char) *p))
-    return 0;
+    return NAME_INVALID;
 
-  return 1;
+  if (strlen(name) > CHAN_NAME_LEN - 1)
+    return NAME_TOO_LONG;
+
+  res = find_channel(name, &check, GOD);
+  if (res != CMATCH_NONE) {
+    if (unique == NULL) {
+      return NAME_NOT_UNIQUE;   /* Name must be totally unique */
+    } else if (check != unique) {
+      return NAME_NOT_UNIQUE;
+    }
+  }
+
+  return NAME_OK;
 }
 
 
@@ -2139,8 +2152,8 @@ do_channel_list(dbref player, const char *partname)
   CHANUSER *u;
   char *numusers;
   char *cleanname;
-  char blanks[CHAN_NAME_LEN];
-  size_t len;
+  char dispname[BUFFER_LEN];
+  char *dp;
   int numblanks;
 
   if (SUPPORT_PUEBLO)
@@ -2165,21 +2178,15 @@ do_channel_list(dbref player, const char *partname)
        * blanks we add by the (actual length-30) because our
        * %-30s is going to overflow as well.
        */
-      len = strlen(ChanName(c));
-      numblanks = len - strlen(cleanname);
-      if (numblanks > 0 && numblanks < CHAN_NAME_LEN) {
-        memset(blanks, ' ', CHAN_NAME_LEN - 1);
-        if (len > 30)
-          numblanks -= (len - 30);
-        if (numblanks < 0)
-          numblanks = 0;
-        blanks[numblanks] = '\0';
-      } else {
-        blanks[0] = '\0';
-      }
+      dp = dispname;
+      safe_str(ChanName(c), dispname, &dp);
+      numblanks = 30 - strlen(cleanname);
+      if (numblanks > 0)
+        safe_fill(' ', numblanks, dispname, &dp);
+      *dp = '\0';
       notify_format(player,
-                    "%-30s%s %s %8ld [%c%c%c%c%c%c%c %c%c%c%c%c%c] [%-3s %c%c%c] %3d",
-                    ChanName(c), blanks, numusers, ChanNumMsgs(c),
+                    "%s %s %8ld [%c%c%c%c%c%c%c %c%c%c%c%c%c] [%-3s %c%c%c] %3d",
+                    dispname, numusers, ChanNumMsgs(c),
                     Channel_Disabled(c) ? 'D' : '-',
                     Channel_Player(c) ? 'P' : '-',
                     Channel_Object(c) ? 'T' : '-',
@@ -2331,7 +2338,8 @@ FUNCTION(fun_cbufferadd)
   }
 
   /* Person must be able to do nospoof cemits. */
-  if (!command_check_byname(executor, "@cemit") || fun->flags & FN_NOSIDEFX) {
+  if (!command_check_byname(executor, "@cemit", pe_info)
+      || fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
     return;
   }
@@ -2350,7 +2358,7 @@ FUNCTION(fun_cbufferadd)
   /* Do we spoof somebody else? */
   if (nargs == 3 && parse_boolean(args[2])) {
     /* Person must be able to do nospoof cemits. */
-    if (!command_check_byname(executor, "@nscemit")) {
+    if (!command_check_byname(executor, "@nscemit", pe_info)) {
       safe_str(T(e_perm), buff, bp);
       return;
     }
@@ -2854,6 +2862,7 @@ do_chan_decompile(dbref player, const char *name, int brief)
   int found;
   char *cleanname;
   char *cleanp;
+  char rawp[BUFFER_LEN];
 
   found = 0;
   cleanname = remove_markup(name, NULL);
@@ -2869,44 +2878,43 @@ do_chan_decompile(dbref player, const char *name, int brief)
                         ChanName(c));
         continue;
       }
-      notify_format(player, "@channel/add %s = %s", ChanName(c),
+      strcpy(rawp, ChanName(c));        /* Because decompose_str is destructive */
+      notify_format(player, "@channel/add %s = %s", decompose_str(rawp),
                     privs_to_string(priv_table, ChanType(c)));
-      notify_format(player, "@channel/chown %s = %s", ChanName(c),
+      notify_format(player, "@channel/chown %s = %s", cleanp,
                     Name(ChanCreator(c)));
       if (ChanMogrifier(c) != NOTHING) {
-        notify_format(player, "@channel/mogrifier %s = #%d", ChanName(c),
+        notify_format(player, "@channel/mogrifier %s = #%d", cleanp,
                       ChanMogrifier(c));
       }
       if (ChanModLock(c) != TRUE_BOOLEXP)
-        notify_format(player, "@clock/mod %s = %s", ChanName(c),
+        notify_format(player, "@clock/mod %s = %s", cleanp,
                       unparse_boolexp(player, ChanModLock(c), UB_MEREF));
       if (ChanHideLock(c) != TRUE_BOOLEXP)
-        notify_format(player, "@clock/hide %s = %s", ChanName(c),
+        notify_format(player, "@clock/hide %s = %s", cleanp,
                       unparse_boolexp(player, ChanHideLock(c), UB_MEREF));
       if (ChanJoinLock(c) != TRUE_BOOLEXP)
-        notify_format(player, "@clock/join %s = %s", ChanName(c),
+        notify_format(player, "@clock/join %s = %s", cleanp,
                       unparse_boolexp(player, ChanJoinLock(c), UB_MEREF));
       if (ChanSpeakLock(c) != TRUE_BOOLEXP)
-        notify_format(player, "@clock/speak %s = %s", ChanName(c),
+        notify_format(player, "@clock/speak %s = %s", cleanp,
                       unparse_boolexp(player, ChanSpeakLock(c), UB_MEREF));
       if (ChanSeeLock(c) != TRUE_BOOLEXP)
-        notify_format(player, "@clock/see %s = %s", ChanName(c),
+        notify_format(player, "@clock/see %s = %s", cleanp,
                       unparse_boolexp(player, ChanSeeLock(c), UB_MEREF));
       if (ChanTitle(c))
-        notify_format(player, "@channel/desc %s = %s", ChanName(c),
-                      ChanTitle(c));
+        notify_format(player, "@channel/desc %s = %s", cleanp, ChanTitle(c));
       if (ChanBufferQ(c))
-        notify_format(player, "@channel/buffer %s = %d", ChanName(c),
+        notify_format(player, "@channel/buffer %s = %d", cleanp,
                       bufferq_blocks(ChanBufferQ(c)));
       if (!brief) {
         for (u = ChanUsers(c); u; u = u->next) {
           if (!Chanuser_Hide(u) || Priv_Who(player)) {
             if (IsPlayer(CUdbref(u))) {
-              notify_format(player, "@channel/on %s = *%s", ChanName(c),
+              notify_format(player, "@channel/on %s = *%s", cleanp,
                             Name(CUdbref(u)));
             } else {
-              notify_format(player, "@channel/on %s = #%d", ChanName(c),
-                            CUdbref(u));
+              notify_format(player, "@channel/on %s = #%d", cleanp, CUdbref(u));
             }
           }
         }
@@ -3261,7 +3269,7 @@ FUNCTION(fun_channels)
   CHAN *c;
   CHANLIST *cl;
   CHANUSER *u;
-  int can_ex;
+  int can_ex, priv_who;
 
   /* There are these possibilities:
    *  no args - just a list of all channels
@@ -3280,9 +3288,13 @@ FUNCTION(fun_channels)
       if (!delim_check(buff, bp, nargs, args, 2, &sep))
         return;
       can_ex = Can_Examine(executor, it);
+      priv_who = Priv_Who(executor);
       for (cl = Chanlist(it); cl; cl = cl->next) {
-        if (can_ex || ((u = onchannel(it, cl->chan)) && !Chanuser_Hide(u)
-                       && onchannel(executor, cl->chan))) {
+        if (can_ex || (Chan_Can_See(cl->chan, executor)
+                       && (u = onchannel(it, cl->chan)) && (priv_who
+                                                            ||
+                                                            !Chanuser_Hide(u))))
+        {
           if (!first)
             safe_chr(sep, buff, bp);
           safe_str(ChanName(cl->chan), buff, bp);
@@ -3359,7 +3371,8 @@ FUNCTION(fun_clock)
 
   if (nargs == 2) {
     if (FUNCTION_SIDE_EFFECTS) {
-      if (!command_check_byname(executor, "@clock") || fun->flags & FN_NOSIDEFX) {
+      if (!command_check_byname(executor, "@clock", pe_info)
+          || fun->flags & FN_NOSIDEFX) {
         safe_str(T(e_perm), buff, bp);
         return;
       }
@@ -3385,7 +3398,7 @@ FUNCTION(fun_cemit)
   int ns = (string_prefix(called_as, "NS") && Can_Nspemit(executor));
   int flags = PEMIT_SILENT;
   flags |= (ns ? PEMIT_SPOOF : 0);
-  if (!command_check_byname(executor, ns ? "@nscemit" : "@cemit") ||
+  if (!command_check_byname(executor, ns ? "@nscemit" : "@cemit", pe_info) ||
       fun->flags & FN_NOSIDEFX) {
     safe_str(T(e_perm), buff, bp);
     return;
@@ -3421,7 +3434,7 @@ FUNCTION(fun_crecall)
 
   if (!args[1] || !*args[1]) {
     num_lines = 10;             /* default */
-  } else if (is_integer(args[1])) {
+  } else if (is_strict_integer(args[1])) {
     num_lines = parse_integer(args[1]);
     if (num_lines == 0)
       num_lines = INT_MAX;
@@ -3910,7 +3923,7 @@ do_chan_recall(dbref player, const char *name, char *lineinfo[], int quiet)
     start = parse_integer(startpos) - 1;
   }
   if (lines && *lines) {
-    if (is_integer(lines)) {
+    if (is_strict_integer(lines)) {
       num_lines = parse_integer(lines);
       if (num_lines == 0)
         num_lines = INT_MAX;
@@ -4006,7 +4019,7 @@ do_chan_buffer(dbref player, const char *name, const char *lines)
     notify(player, T("You need to specify a channel."));
     return;
   }
-  if (!lines || !*lines || !is_integer(lines)) {
+  if (!lines || !*lines || !is_strict_integer(lines)) {
     notify(player, T("You need to specify the number of lines to buffer."));
     return;
   }

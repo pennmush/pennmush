@@ -1425,8 +1425,9 @@ FUNCTION(fun_cand)
   for (j = 0; j < nargs; j++) {
     tp = tbuf;
     sp = args[j];
-    process_expression(tbuf, &tp, &sp, executor, caller, enactor,
-                       eflags, PT_DEFAULT, pe_info);
+    if (process_expression(tbuf, &tp, &sp, executor, caller, enactor,
+                           eflags, PT_DEFAULT, pe_info))
+      return;
     *tp = '\0';
     if (!parse_boolean(tbuf)) {
       safe_integer(negate, buff, bp);
@@ -1447,8 +1448,9 @@ FUNCTION(fun_cor)
   for (j = 0; j < nargs; j++) {
     tp = tbuf;
     sp = args[j];
-    process_expression(tbuf, &tp, &sp, executor, caller, enactor,
-                       eflags, PT_DEFAULT, pe_info);
+    if (process_expression(tbuf, &tp, &sp, executor, caller, enactor,
+                           eflags, PT_DEFAULT, pe_info))
+      return;
     *tp = '\0';
     if (parse_boolean(tbuf)) {
       safe_integer(!negate, buff, bp);
@@ -2135,6 +2137,8 @@ MATH_FUNC(math_div)
 
   for (n = 1; n < nptr; n++) {
     IVAL temp;
+    div_t q;
+
     if (!is_ival(ptr[n])) {
       safe_str(T(e_ints), buff, bp);
       return;
@@ -2146,17 +2150,13 @@ MATH_FUNC(math_div)
       return;
     }
 
-    if (divresult < 0) {
-      if (temp < 0)
-        divresult = -divresult / -temp;
-      else
-        divresult = -(-divresult / temp);
-    } else {
-      if (temp < 0)
-        divresult = -(divresult / -temp);
-      else
-        divresult = divresult / temp;
+    if (divresult == INT_MIN && temp == -1) {
+      safe_str(T("#-1 DOMAIN ERROR"), buff, bp);
+      return;
     }
+
+    q = div(divresult, temp);
+    divresult = q.quot;
   }
   safe_integer(divresult, buff, bp);
 }
@@ -2188,6 +2188,11 @@ MATH_FUNC(math_floordiv)
 
     if (temp == 0) {
       safe_str(T("#-1 DIVISION BY ZERO"), buff, bp);
+      return;
+    }
+
+    if (divresult == INT_MIN && temp == -1) {
+      safe_str(T("#-1 DOMAIN ERROR"), buff, bp);
       return;
     }
 
@@ -2271,6 +2276,11 @@ MATH_FUNC(math_modulo)
       return;
     }
 
+    if (divresult == INT_MIN && temp == -1) {
+      safe_str(T("#-1 DOMAIN ERROR"), buff, bp);
+      return;
+    }
+
     if (divresult < 0) {
       if (temp < 0)
         divresult = -(-divresult % -temp);
@@ -2305,6 +2315,8 @@ MATH_FUNC(math_remainder)
 
   for (n = 1; n < nptr; n++) {
     IVAL temp;
+    div_t r;
+
     if (!is_ival(ptr[n])) {
       safe_str(T(e_ints), buff, bp);
       return;
@@ -2316,17 +2328,13 @@ MATH_FUNC(math_remainder)
       return;
     }
 
-    if (divresult < 0) {
-      if (temp < 0)
-        divresult = -(-divresult % -temp);
-      else
-        divresult = -(-divresult % temp);
-    } else {
-      if (temp < 0)
-        divresult = divresult % -temp;
-      else
-        divresult = divresult % temp;
+    if (divresult == INT_MIN && temp == -1) {
+      safe_str(T("#-1 DOMAIN ERROR"), buff, bp);
+      return;
     }
+
+    r = div(divresult, temp);
+    divresult = r.rem;
   }
   safe_integer(divresult, buff, bp);
 }

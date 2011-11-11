@@ -650,7 +650,7 @@ parse_access_options(const char *opts, dbref *who, uint32_t * can,
 
     if (first && who) {         /* Check for a character */
       first = 0;
-      if (is_integer(w)) {      /* We have a dbref */
+      if (is_strict_integer(w)) {       /* We have a dbref */
         *who = parse_integer(w);
         if (*who != AMBIGUOUS && !GoodObject(*who))
           *who = AMBIGUOUS;

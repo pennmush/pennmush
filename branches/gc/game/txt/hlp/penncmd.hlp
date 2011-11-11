@@ -94,11 +94,35 @@ These '@' commands are only usable by wizards or privileged players:
 
   > ]"[add(1,1)]
   You say, "[add(1,1)]"
-  
+
   This can be used to pass unevaluated MUSHcode to softcoded commands
   without having to escape every special character, or to help objects
   set attributes to contain unevaluated code.
 
+  See 'help ]2' for more examples.
+
+See also: lit(), decompose(), escape(), @command
+& ]2
+  Using ']' with $-commands:
+  
+  > &test Tester=$test *: @pemit %#=I got: %0
+  
+  Normal evaluation:
+    > test My name is %n.
+    I got: My name is Wiggles.
+  
+  Preventing the user input from being evaluated:
+    > ]test My name is %n.
+    I got: My name is %n.
+
+  Preventing evaluation of code inside the $-command:  
+    > &test Tester=$test *: ]@pemit %#=I got: %0
+    > test My name is %n.
+    I got: %0
+
+  In the last example, '%0' would evaluate to 'My name is Wiggles.' (because
+  the string entered by the user was evaluated), but the @pemit has been told
+  not to evaluate its arguments.
 & @@
   @@ [<text>]
  
@@ -889,14 +913,14 @@ See also: @hook, RESTRICT, EVALUATION ORDER
   Examples:
     > @create Dining Machine
     > &eat dining=$eat *:@remit %L=%n takes a bite of %0.
-    > @command/add/noeval eat
+    > @command/add/noparse eat
     > @hook/override eat=dining machine,eat
     > eat meat loaf
     Walker takes a bite of meat loaf.
     > eat randword(apple tomato pear)
     Walker takes a bite of randword(apple tomato pear)
 
-    > &drink dining=$^drink(/noeval)? (.*)$:@remit %L=%n drinks %1.
+    > &drink dining=$^drink(/noeval)? (.*)$:@remit %L=%n drinks %2.
     > @set dining/drink=regexp
     > @command/add drink
     > @hook/override drink=dining machine,drink
@@ -938,7 +962,10 @@ See also: @@, @@()
   are passed to the attribute as %0 (you can use lcon(me) for a full contents
   list). A list of the names of these objects as they would appear in the
   default contents list is passed as %1, |-delimited.
-  
+
+  Q-registers (set via setq() and similar functions) are inherited from the
+  @descformat, and passed on to the @exitformat.
+
   Examples:
     Show the normal contents list, but in upper-case:
     > @conformat here=edit(ucstr(%1), |, %r)
@@ -1013,6 +1040,9 @@ See also: inventory, @conformat, @exitformat, @nameformat, @descformat,
   that this object is only used with @describe - to format the @idescribe, 
   use @idescformat.
   
+  Q-registers (set via setq() and similar functions) are inherited from the
+  @nameformat, and passed on to the @conformat.
+  
   Example:
     > @descformat Room Parent=repeat(=, width(%#))%r%0[repeat(=, width(%#))]
 
@@ -1034,6 +1064,9 @@ See also: look, @exitformat, @nameformat, @conformat, @idescformat,
   "look" for each object's @idescribe, without having to place formatting
   into every @idescribe.
   
+  Q-registers (set via setq() and similar functions) are inherited from the
+  @nameformat, and passed on to the @conformat.
+
   Example:
     > @idescribe Vehicle Parent=repeat(*, width(%#))%r%0
 
@@ -1064,6 +1097,10 @@ See also: accent(), @nameformat, accname(), stripaccents()
   @nameformat set) is passed as %1.
   
   @nameformat is not used when people who are outside the object look at it.
+  
+  Q-registers (set via setq() and similar functions) are passed on from the
+  nameformat to the other @*format attributes used for formatting "look"
+  output. Use localize() if you don't want this behaviour.
   
   Example:
     Show the room's zone after its name.
@@ -1624,6 +1661,9 @@ See also: @link, @search, entrances()
   of object.) The dbrefs of the exits which would appear in the default
   "Obvious exits" list is passed to the attribute as %0 as a space-separated
   list; you can use lexits(me) to get all the exits in the room.
+
+  Q-registers (set via setq() and similar functions) are inherited from the
+  @conformat.
 
   Example:
     > @exitformat here=Exits: [itemize(iter(%0, name(%i0)))]
@@ -2903,6 +2943,9 @@ See also: @name, name(), VERBS
   This wizard-only command changes <player>'s password. If <player> is 
   connected, she will be informed that the password was changed and who by,
   but not what it was changed to.
+  
+  Note that, unlike @password, @newpassword evaluates its arguments, so
+  any special characters need to be escaped.
 
 See also: @password, checkpass()
 & @notify
@@ -4387,7 +4430,7 @@ See: @enter, @efail, @ealias, leave, @lock, @idescribe, INTERIORS
 
 See also: news, help
 & examine
-  examine[/<switch>] <object>[/<attribute>] 
+  examine[/<switches>] <object>[/<attribute>] 
   
   Displays all available information about <object>.  <object> may be an 
   object, 'me' or 'here'. You must control the object to examine it.  If 
@@ -4402,8 +4445,8 @@ See also: news, help
   ex <object>/v**
   
   The /brief switch is equivalent to the 'brief' command.
-  The /debug switch is wizard-only and shows raw values for certa
-    in fields in an object. 
+  The /debug switch is wizard-only and shows raw values for certain fields 
+    in an object. 
   The /mortal switch shows an object as if you were a mortal other than
     the object's owner and is primarily useful to admins. This switch
     ignores the object's VISUAL flag (but not its attribute flags)
@@ -4411,8 +4454,9 @@ See also: news, help
     object's parents, if you have permission to examine the attributes
     on the parent.
   The /all switch shows the values of VEILED attributes.
+  The /opaque switch omits contents listings.
 
-See also: ATTRIBUTE TREES
+See also: ATTRIBUTE TREES, brief, lattr()
 & follow
   follow <object>
 

@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include "flags.h"
 
-#define Builder(x)       (command_check_byname(x, "@dig"))
+#define Builder(x)       (command_check_byname(x, "@dig", NULL))
 #define Guest(x)         has_power_by_name(x,"GUEST",NOTYPE)
 #define Tel_Anywhere(x)  (Hasprivs(x) || has_power_by_name(x,"TPORT_ANYWHERE",NOTYPE))
 #define Tel_Anything(x)  (Hasprivs(x) || has_power_by_name(x,"TPORT_ANYTHING",NOTYPE))
@@ -47,7 +47,7 @@
 #define Global_Funcs(x)  (Hasprivs(x) || has_power_by_name(x,"FUNCTIONS",NOTYPE))
 #define Create_Player(x) (Wizard(x) || has_power_by_name(x,"PLAYER_CREATE",NOTYPE))
 #define Can_Announce(x)  (Wizard(x) || has_power_by_name(x,"ANNOUNCE",NOTYPE))
-#define Can_Cemit(x)     (command_check_byname(x, "@cemit"))
+#define Can_Cemit(x)     (command_check_byname(x, "@cemit", NULL))
 
 #define Pemit_All(x)    (Wizard(x) || has_power_by_name(x,"PEMIT_ALL",NOTYPE))
 #define Sql_Ok(x)       (Wizard(x) || has_power_by_name(x, "SQL_OK", NOTYPE))
@@ -66,27 +66,27 @@
 bool unfindable(dbref);
 #define Can_Locate(p,x) \
     (controls(p,x) || nearby(p,x) || See_All(p) \
-  || (command_check_byname(p, "@whereis") && (IsPlayer(x) && !Unfind(x) \
+  || (command_check_byname(p, "@whereis", NULL) && (IsPlayer(x) && !Unfind(x) \
                      && !unfindable(Location(x)))))
 
 
-#define Can_Examine(p,x)    (controls(p,x) || See_All(p) || \
+#define Can_Examine(p,x)    ((p == x) || controls(p,x) || See_All(p) || \
         (Visual(x) && eval_lock(p,x,Examine_Lock)))
-#define can_link(p,x)  (controls(p,x) || \
-                        (IsExit(x) && (Location(x) == NOTHING)))
+#define can_link(p,x)  (!Guest(p) && (controls(p,x) || \
+                        (IsExit(x) && (Location(x) == NOTHING))))
 
 /* Can p link an exit to x? */
-#define can_link_to(p,x) \
+#define can_link_to(p,x,pe_info) \
      (GoodObject(x) \
    && (controls(p,x) || Link_Anywhere(p) || \
-       (LinkOk(x) && eval_lock(p,x,Link_Lock))) \
+       (!Guest(p) && LinkOk(x) && eval_lock_with(p,x,Link_Lock,pe_info))) \
    && (!NO_LINK_TO_OBJECT || IsRoom(x)))
 
 /* can p open an exit in r? */
-#define can_open_from(p,r) \
-     (GoodObject(r) && IsRoom(r) \
+#define can_open_from(p,r,pe_info) \
+     (GoodObject(r) && IsRoom(r) && !Guest(p) \
    && (controls(p,r) || Open_Anywhere(p) || \
-       (OpenOk(r) && eval_lock(p,r,Open_Lock))))
+       (OpenOk(r) && eval_lock_with(p,r,Open_Lock,pe_info))))
 
 /* can p access attribute a on object x? */
 #define Can_Read_Attr(p,x,a)   \
@@ -129,8 +129,8 @@ bool unfindable(dbref);
          eval_lock(p, x, MailForward_Lock))))
 
 /* Can from pass to's @lock/interact? */
-#define Pass_Interact_Lock(from,to) \
-  (Loud(from) || eval_lock(from, to, Interact_Lock))
+#define Pass_Interact_Lock(from,to, pe_info) \
+  (Loud(from) || eval_lock_with(from, to, Interact_Lock, pe_info))
 
 /* How many pennies can you have? */
 #define Max_Pennies(p) (Guest(p) ? MAX_GUEST_PENNIES : MAX_PENNIES)

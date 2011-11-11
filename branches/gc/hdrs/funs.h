@@ -152,6 +152,7 @@ FUNCTION_PROTO(fun_isdbref);
 FUNCTION_PROTO(fun_isint);
 FUNCTION_PROTO(fun_isnum);
 FUNCTION_PROTO(fun_isobjid);
+FUNCTION_PROTO(fun_isregexp);
 FUNCTION_PROTO(fun_isword);
 FUNCTION_PROTO(fun_itemize);
 FUNCTION_PROTO(fun_items);

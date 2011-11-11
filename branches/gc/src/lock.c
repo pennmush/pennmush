@@ -118,7 +118,7 @@ lock_list lock_types[] = {
   {"Take", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {"Open", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {"Filter", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
-  {"InFitler", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
+  {"InFilter", TRUE_BOOLEXP, GOD, LF_PRIVATE, NULL},
   {NULL, TRUE_BOOLEXP, GOD, 0, NULL}
 };
 
@@ -165,6 +165,13 @@ static void free_lock(lock_list *ll);
 
 extern int unparsing_boolexp;
 
+static int
+lock_compare(const void *a, const void *b)
+{
+  const lock_list *la = *(lock_list * const *)a, *lb = *(lock_list * const *)b;
+  return strcmp(la->type, lb->type);
+}
+
 /** Return a list of all available locks
  * \param buff the buffer
  * \param bp a pointer to the current position in the buffer.
@@ -173,27 +180,30 @@ extern int unparsing_boolexp;
 void
 list_locks(char *buff, char **bp, const char *name)
 {
-  char rbuff[BUFFER_LEN];
-  char *rp;
-  int first = 1;
-  const lock_list *ptr;
-  rp = rbuff;
-  for (ptr = hash_firstentry(&htab_locks);
-       ptr; ptr = hash_nextentry(&htab_locks)) {
+  lock_list **locks, *lk;
+  bool first = 1;
+  int nlocks = 0, n;
+
+  locks = GC_MALLOC(htab_locks.entries * sizeof(lock_list));
+
+  for (lk = hash_firstentry(&htab_locks);
+       lk; lk = hash_nextentry(&htab_locks)) {
     /* Skip those that don't match */
-    if (name && !string_prefix(ptr->type, name))
+    if (name && !string_prefix(lk->type, name))
       continue;
+    locks[nlocks++] = lk;
+  }
+
+  qsort(locks, nlocks, sizeof lk, lock_compare);
+
+  for (n = 0; n < nlocks; n += 1) {
     if (first) {
       first = 0;
     } else {
-      safe_chr(' ', rbuff, &rp);
+      safe_chr(' ', buff, bp);
     }
-    safe_str(ptr->type, rbuff, &rp);
+    safe_str(strupper(locks[n]->type), buff, bp);
   }
-  *rp = '\0';
-  /* We strupper it for consistency with the other
-   * @list/foo and list(foo)s. */
-  safe_str(strupper(rbuff), buff, bp);
 }
 
 /** User interface to list locks.
@@ -1027,7 +1037,6 @@ check_zone_lock(dbref player, dbref zone, int noisy)
     }
   }
 }
-
 
 void
 purge_locks(void)

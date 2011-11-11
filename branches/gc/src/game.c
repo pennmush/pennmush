@@ -214,6 +214,7 @@ do_dump(dbref player, char *num, enum dump_type flag)
     }
     fork_and_dump(1);
     globals.paranoid_dump = 0;
+    notify(player, T("Dump complete."));
   } else {
     notify(player, T("Sorry, you are in a no dumping zone."));
   }
@@ -321,7 +322,7 @@ dump_database_internal(void)
   if (setjmp(db_err)) {
     /* The dump failed. Disk might be full or something went bad with the
        compression slave. Boo! */
-    const char *errmsg;
+    const char *errmsg = NULL;
 
     if (f) {
       switch (f->type) {
@@ -543,11 +544,11 @@ dump_database(void)
  * may pause.
  * \param forking if 1, attempt a forking dump.
  */
-void
+bool
 fork_and_dump(int forking)
 {
   pid_t child;
-  bool nofork, status, split;
+  bool nofork, status = true, split;
   epoch++;
 
 #ifdef LOG_CHUNK_STATS
@@ -637,6 +638,7 @@ fork_and_dump(int forking)
 #ifdef LOG_CHUNK_STATS
   chunk_stats(NOTHING, 5);
 #endif
+  return status;
 }
 
 /** Start up the MUSH.
@@ -956,6 +958,9 @@ init_game_dbs(void)
   return 0;
 }
 
+/* From bsd.c */
+int file_watch_init(void);
+
 /** Read cached text files.
  * \verbatim
  * This implements the @readcache function.
@@ -971,6 +976,7 @@ do_readcache(dbref player)
   }
   fcache_load(player);
   help_reindex(player);
+  file_watch_init();
 }
 
 /** Check each attribute on each object in x for a $command matching cptr */
@@ -1166,7 +1172,7 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
             (i =
              alias_list_check(Contents(check_loc), cptr,
                               "EALIAS")) != NOTHING) {
-          if (command_check(executor, cmd, 1)) {
+          if (command_check_with(executor, cmd, 1, queue_entry->pe_info)) {
             char upd[SBUF_LEN];
             sprintf(temp, "ENTER #%d", i);
             sprintf(upd, "#%d", i);
@@ -1180,7 +1186,7 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
         if (!IsRoom(check_loc) && (cmd = command_find("LEAVE"))
             && !(cmd->type & CMD_T_DISABLED)
             && (loc_alias_check(check_loc, cptr, "LALIAS"))) {
-          if (command_check(executor, cmd, 1))
+          if (command_check_with(executor, cmd, 1, queue_entry->pe_info))
             run_command(cmd, executor, queue_entry->enactor, "LEAVE", NULL,
                         NULL, "LEAVE", NULL, NULL, NULL, NULL, NULL, NULL,
                         queue_entry);
@@ -1212,7 +1218,8 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
           /* check zone master room exits */
           if (remote_exit(executor, cptr) && (cmd = command_find("GOTO"))
               && !(cmd->type & CMD_T_DISABLED)) {
-            if (!Mobile(executor) || !command_check(executor, cmd, 1)) {
+            if (!Mobile(executor)
+                || !command_check_with(executor, cmd, 1, queue_entry->pe_info)) {
               goto done;
             } else {
               sprintf(temp, "GOTO %s", cptr);
@@ -1249,7 +1256,8 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
       if ((!a) && (check_loc != MASTER_ROOM)) {
         if (global_exit(executor, cptr) && (cmd = command_find("GOTO"))
             && !(cmd->type & CMD_T_DISABLED)) {
-          if (!Mobile(executor) || !command_check(executor, cmd, 1))
+          if (!Mobile(executor)
+              || !command_check_with(executor, cmd, 1, queue_entry->pe_info))
             goto done;
           else {
             sprintf(temp, "GOTO %s", cptr);

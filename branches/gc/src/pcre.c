@@ -1271,6 +1271,8 @@ int
 
 
 
+
+
 pcre_get_substring_list(const char *subject, int *ovector, int stringcount,
                         const char ***listptr);
 
@@ -1376,6 +1378,8 @@ int
 
 
 
+
+
 pcre_get_substring(const char *subject, int *ovector, int stringcount,
                    int stringnumber, const char **stringptr);
 
@@ -1427,6 +1431,8 @@ Returns:         if successful:
 */
 
 int
+
+
 
 
 
@@ -2321,6 +2327,8 @@ static const unsigned char ebcdic_chartab[] = { /* chartable partial dup */
 /* Definition to allow mutual recursion */
 
 static BOOL
+
+
 
 
 

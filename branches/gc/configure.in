@@ -403,12 +403,16 @@ if test "$enable_info_slave" = yes; then
    AC_DEFINE(INFO_SLAVE)
 fi
 
-AC_ARG_ENABLE(ssl_slave, AS_HELP_STRING([--enable-ssl_slave],
-			 [Use a seperate process for SSL connections that will persist across restarts. (Experimental. Unix-only.)]))
-if test "$enable_ssl_slave" = yes -a "$HAVE_SSL" = yes; then
-   AC_SUBST(SSL_SLAVE_TARGET, ssl_slave)
+AC_ARG_ENABLE(ssl_slave, AS_HELP_STRING([--disable-ssl_slave],
+			 [Use a seperate process for SSL connections that will persist across restarts. (Experimental. Unix-only.)]),
+			 enable_ssl_slave=$enableval, enable_ssl_slave=yes)
+if test "$enable_ssl_slave" = yes -a "$ac_cv_lib_event_openssl_bufferevent_openssl_socket_new" = yes -a "$HAVE_SSL" = yes; then
+   AC_SUBST(SSL_SLAVE_TARGET, ssl_slave)						       
    AC_DEFINE(SSL_SLAVE)
-fi
+else
+   AC_MSG_WARN([ssl_slave requested but OpenSSL and/or libevent2 weren't found.])
+   enable_ssl_slave=no
+fi   
 
 AC_ARG_ENABLE(sse2, AS_HELP_STRING([--enable-sse2],
   [Use SSE2 instructions (Requires a CPU that supports SSE2)]))

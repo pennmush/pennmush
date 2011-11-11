@@ -306,7 +306,7 @@ check_signals(void *data __attribute__ ((__unused__)))
   if (usr1_triggered) {
     if (!queue_event(SYSEVENT, "SIGNAL`USR1", "%s", "")) {
       do_rawlog(LT_ERR, "SIGUSR1 received. Rebooting.");
-      do_reboot(NOTHING, 0);    /* We don't return from this */
+      do_reboot(NOTHING, 0);    /* We don't return from this except in case of a failed db save */
     }
     usr1_triggered = 0;         /* But just in case */
   }
@@ -451,23 +451,16 @@ reset_cpu_timer(void)
 /** System queue stuff. Timed events like dbcks and purges are handled
  *  through this system. */
 
-struct squeue {
-  sq_func fun;
-  void *data;
-  time_t when;
-  char *event;
-  struct squeue *next;
-};
-
 struct squeue *sq_head = NULL;
 
 /** Register a callback function to be executed at a certain time.
- *  \param w when to run the event
- *  \param f the callback function
- *  \param d data to pass to the callback
- *  \param ev Softcode event to trigger at the same time.
+ * \param w when to run the event
+ * \param f the callback function
+ * \param d data to pass to the callback
+ * \param ev Softcode event to trigger at the same time.
+ * \return pointer to the newly added squeue
  */
-void
+struct squeue *
 sq_register(time_t w, sq_func f, void *d, const char *ev)
 {
   struct squeue *sq;
@@ -494,10 +487,36 @@ sq_register(time_t w, sq_func f, void *d, const char *ev)
       if (difftime(w, c->when) <= 0) {
         sq->next = c;
         prev->next = sq;
-        return;
+        return sq;
       }
     }
     prev->next = sq;
+  }
+
+  return sq;
+}
+
+/** Cancel an entry in the system queue.
+ * \param sq systen queue entry to cancel
+ */
+void
+sq_cancel(struct squeue *sq)
+{
+  struct squeue *tmp, *prev = NULL;
+
+  if (!sq)
+    return;
+
+  /* Remove from list */
+  for (tmp = sq_head; tmp; tmp = tmp->next) {
+    if (tmp == sq) {
+      if (prev)
+        prev->next = tmp->next;
+      else
+        sq_head = tmp->next;
+      return;
+    }
+    prev = tmp;
   }
 }
 
@@ -506,13 +525,14 @@ sq_register(time_t w, sq_func f, void *d, const char *ev)
  * \param f the callback function.
  * \param d data to pass to the callback.
  * \param ev softcode event to trigger at the same time.
+ * \return pointer to the newly added squeue
  */
-void
+struct squeue *
 sq_register_in(int n, sq_func f, void *d, const char *ev)
 {
   time_t now;
   time(&now);
-  sq_register(now + n, f, d, ev);
+  return sq_register(now + n, f, d, ev);
 }
 
 /** A timed event that runs on a loop */

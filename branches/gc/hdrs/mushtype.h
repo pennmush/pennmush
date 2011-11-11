@@ -290,7 +290,7 @@ struct text_block {
  */
 struct text_queue {
   struct text_block *head;      /**< Pointer to the head of the queue */
-  struct text_block **tail;     /**< Pointer to pointer to tail of the queue */
+  struct text_block *tail;      /**< Pointer to pointer to tail of the queue */
 };
 
 /* Descriptor foo */
@@ -327,6 +327,22 @@ typedef enum conn_source {
   CS_UNKNOWN
 } conn_source;
 
+typedef enum conn_status {
+  CONN_SCREEN,                  /* not connected to a player */
+  CONN_PLAYER,                  /* connected */
+  CONN_DENIED                   /* connection denied due to login limits/sitelock */
+} conn_status;
+
+typedef bool(*sq_func) (void *);
+struct squeue {
+  sq_func fun;
+  void *data;
+  time_t when;
+  char *event;
+  struct squeue *next;
+};
+
+
 typedef struct descriptor_data DESC;
 /** A player descriptor's data.
  * This structure associates a connection's socket (file descriptor)
@@ -334,7 +350,8 @@ typedef struct descriptor_data DESC;
  */
 struct descriptor_data {
   int descriptor;       /**< Connection socket (fd) */
-  int connected;        /**< Connection status. 0 = not connected to a player, 1 = connected, 2 = connection denied due to login limits/sitelock */
+  conn_status connected; /**< Connection status. */
+  struct squeue *conn_timer; /**< Timer event used during initial connection */
   char addr[101];       /**< Hostname of connection source */
   char ip[101];         /**< IP address of connection source */
   dbref player;         /**< Dbref of player associated with connection, or NOTHING if not connected */

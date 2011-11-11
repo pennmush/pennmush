@@ -82,11 +82,15 @@ B. Installation from source
     OS's package manager is highly recommended. Penn comes with an
     older version, but a global library will be more likely to be up
     to date and can be shared among many different programs that use
-    it.
+    it. In the next patchlevel, PCRE will be a mandatory, required 
+    library. If you don't already have it, talk to your sysadmin.
 1d. OpenSSL is also a strongly suggested library; most OSes these days
     come with it out of the box, but some might require a development
-    package as well (openssl-dev or some such name).
-2. Run ./configure or some variant
+    package as well (openssl-dev or some such name). In the next
+    patchlevel, OpenSSL will be a mandatory, required library. If you
+    don't already have it, talk to your sysadmin.
+2. Run ./configure with any desired options (See ./configure --help or
+   read below)
 3. create options.h, or make update
 4. make install
 5. possibly make customize
@@ -107,9 +111,7 @@ B. Installation from source
        b. --disable-nls: Turn off translation support if you don't need it.
        c. --disable-info_slave: Don't use an external process to do hostname
           lookups. This option is required on Windows.
-       d. --enable-ssl_slave: Turn on an experimental proxy for keeping SSL
-          connections alive across reboots. See README.SSL for details.
-       e. --help: See all options.       
+       d. --help: See all options.       
 
        Environment variables to customize search paths:
        CPPFLAGS=-I/path/to/extra/headers

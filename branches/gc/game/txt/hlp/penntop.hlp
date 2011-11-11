@@ -603,23 +603,24 @@ See also: BOOLEAN FUNCTIONS, not(), t()
 
   These checks are performed, from top to bottom, to see if object O
   controls object V:
-   1. If O and V are the same object, O controls V
-   2. If V is God, O does not control V
-   3. If O is a Wizard, O controls V
-   4. If V is a Wizard, O does not control V
-   5. If V is Royalty and O is not, O does not control V
-   6. If V is MISTRUST, O does not control V
-   7. If O and V are owned by the same player, and either:
+   1. If O has the Guest power, O does not control V
+   2. If O and V are the same object, O controls V
+   3. If V is God, O does not control V
+   4. If O is a Wizard, O controls V
+   5. If V is a Wizard, O does not control V
+   6. If V is Royalty and O is not, O does not control V
+   7. If V is MISTRUST, O does not control V
+   8. If O and V are owned by the same player, and either:
        a. V is not set TRUST, or
        b. O is set TRUST
       then O controls V
-   8. If V is a player, or set TRUST, O does not control V
-   9. If the zone_control_zmp_only @config option is set to 'No', V is on a
+   9. If V is a player, or set TRUST, O does not control V
+  10. If the zone_control_zmp_only @config option is set to 'No', V is on a
       Zone, and O passes the Zone's @lock/zone, O controls V
-  10. If V is owned by a SHARED player, and O passes the owner's @lock/zone,
+  11. If V is owned by a SHARED player, and O passes the owner's @lock/zone,
       O controls V
-  11. If V has an @lock/control, and O passes the lock, O controls V
-  12. O does not control V
+  12. If V has an @lock/control, and O passes the lock, O controls V
+  13. O does not control V
 
 See also: controls(), TRUST, MISTRUST, ZONES, SHARED PLAYERS
 & COSTS
@@ -888,7 +889,7 @@ See also: verbs, @lock, @failure, @efail, @lfail
   "use" an object                               Use      @ufail
   speak via say/pose/@*emit/teach in a room     Speech   SPEECH_LOCK`FAILURE
   "page" or "@pemit" to an object               Page     PAGE_LOCK`FAILURE**
-  
+  "@mail" a player                              Mail     MAIL_LOCK`FAILURE
   
   * The Use lock can also prevent you from running an $-command, but it will
     still trigger COMMAND_LOCK`FAILURE.

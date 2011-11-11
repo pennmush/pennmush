@@ -28,7 +28,8 @@
 #include "confmagic.h"
 #include "case.h"
 
-static void do_give_to(dbref player, char *arg, int silent);
+static void do_give_to(dbref player, char *arg, int silent,
+                       NEW_PE_INFO *pe_info);
 
 /** Set an object's money value, with limit-checking.
  * \param thing dbref of object.
@@ -156,7 +157,7 @@ do_kill(dbref player, const char *what, int cost, int slay)
  * \param price the price to pay for it, or -1 for any price
  */
 void
-do_buy(dbref player, char *item, char *from, int price)
+do_buy(dbref player, char *item, char *from, int price, NEW_PE_INFO *pe_info)
 {
   dbref vendor;
   dbref failvendor = NOTHING;
@@ -284,7 +285,7 @@ do_buy(dbref player, char *item, char *from, int price)
             /* No point checking the lock before this point, as
                we don't try and give them money if they aren't
                selling what we're buying */
-            if (!eval_lock(player, vendor, Pay_Lock)) {
+            if (!eval_lock_with(player, vendor, Pay_Lock, pe_info)) {
               boughtit = 0;
               if (failvendor == NOTHING)
                 failvendor = vendor;
@@ -359,7 +360,8 @@ do_buy(dbref player, char *item, char *from, int price)
  * \param silent if 1, hush the usual messages.
  */
 void
-do_give(dbref player, char *recipient, char *amnt, int silent)
+do_give(dbref player, char *recipient, char *amnt, int silent,
+        NEW_PE_INFO *pe_info)
 {
   dbref who;
   int amount;
@@ -370,7 +372,7 @@ do_give(dbref player, char *recipient, char *amnt, int silent)
    * 'give <amnt> to <recipient>' instead of 'give <recipient>=<amount>'
    */
   if (recipient && *recipient && (!amnt || !*amnt)) {
-    do_give_to(player, recipient, silent);
+    do_give_to(player, recipient, silent, pe_info);
     return;
   }
 
@@ -418,19 +420,19 @@ do_give(dbref player, char *recipient, char *amnt, int silent)
         notify(player, T("You can't give an object to itself!"));
         return;
       }
-      if (!eval_lock(player, thing, Give_Lock)) {
+      if (!eval_lock_with(player, thing, Give_Lock, pe_info)) {
         fail_lock(player, thing, Give_Lock,
                   T("You can't give that away."), NOTHING);
         return;
       }
 
-      if (!eval_lock(player, who, From_Lock)) {
+      if (!eval_lock_with(player, who, From_Lock, pe_info)) {
         notify_format(player, T("%s doesn't want anything from you."),
                       Name(who));
         return;
       }
 
-      if (!eval_lock(thing, who, Receive_Lock)) {
+      if (!eval_lock_with(thing, who, Receive_Lock, pe_info)) {
         notify_format(player, T("%s doesn't want that."), Name(who));
         return;
       }
@@ -482,47 +484,44 @@ do_give(dbref player, char *recipient, char *amnt, int silent)
     notify_format(player, T("You don't have that many %s to give!"), MONIES);
   } else {
     char paid[SBUF_LEN], *pb;
-    ATTR *a;
+    bool has_cost;
+    ufun_attrib ufun;
 
-    a = atr_get(who, "COST");
-    if (!a && !IsPlayer(who)) {
+    has_cost =
+      fetch_ufun_attrib("COST", who, &ufun,
+                        UFUN_LOCALIZE | UFUN_REQUIRE_ATTR | UFUN_IGNORE_PERMS);
+    if (!has_cost && !IsPlayer(who)) {
       notify_format(player, T("%s refuses your money."), Name(who));
       giveto(player, amount);
       return;
-    } else if (a && (amount > 0 || !IsPlayer(who))) {
+    } else if (has_cost && (amount > 0 || !IsPlayer(who))) {
       /* give pennies to object with COST */
       int cost = 0;
       char fbuff[BUFFER_LEN];
-      char *fbp, *asave;
-      char const *ap;
-      NEW_PE_INFO *pe_info = make_pe_info("pe_info-do_give");
-      PE_REGS *pe_regs;
+      PE_REGS *pe_regs = pe_regs_create(PE_REGS_ARG, "do_give");
 
-      asave = safe_atr_value(a);
-      ap = asave;
-      fbp = fbuff;
       pb = paid;
       safe_integer_sbuf(amount, paid, &pb);
       *pb = '\0';
-      pe_regs_setenv_nocopy(pe_info->regvals, 0, paid);
-      process_expression(fbuff, &fbp, &ap, who, player, player,
-                         PE_DEFAULT, PT_DEFAULT, pe_info);
-      *fbp = '\0';
-      free_pe_info(pe_info);
+      pe_regs_setenv_nocopy(pe_regs, 0, paid);
+      call_ufun(&ufun, fbuff, player, player, pe_info, pe_regs);
       if (amount < (cost = atoi(fbuff))) {
         notify(player, T("Feeling poor today?"));
         giveto(player, amount);
+        pe_regs_free(pe_regs);
         return;
       }
       if (cost < 0) {
         notify_format(player, T("%s refuses your money."), Name(who));
         giveto(player, amount);
+        pe_regs_free(pe_regs);
         return;
       }
-      if (!eval_lock(player, who, Pay_Lock)) {
+      if (!eval_lock_with(player, who, Pay_Lock, pe_info)) {
         giveto(player, amount);
         fail_lock(player, who, Pay_Lock,
                   tprintf(T("%s refuses your money."), Name(who)), NOTHING);
+        pe_regs_free(pe_regs);
         return;
       }
       if ((amount - cost) > 0) {
@@ -533,11 +532,6 @@ do_give(dbref player, char *recipient, char *amnt, int silent)
       }
       giveto(player, amount - cost);
       giveto(who, cost);
-      pb = paid;
-      safe_integer_sbuf(cost, paid, &pb);
-      *pb = '\0';
-      pe_regs = pe_regs_create(PE_REGS_ARG, "do_give");
-      pe_regs_setenv_nocopy(pe_regs, 0, paid);
       real_did_it(player, who, "PAYMENT", NULL, "OPAYMENT", NULL, "APAYMENT",
                   NOTHING, pe_regs, NA_INTER_SEE);
       pe_regs_free(pe_regs);
@@ -545,7 +539,7 @@ do_give(dbref player, char *recipient, char *amnt, int silent)
     } else {
       PE_REGS *pe_regs;
       /* give pennies to a player with no @cost, or "give" a negative amount to a player */
-      if (!Wizard(player) && !eval_lock(player, who, Pay_Lock)) {
+      if (!Wizard(player) && !eval_lock_with(player, who, Pay_Lock, pe_info)) {
         giveto(player, amount);
         fail_lock(player, who, Pay_Lock,
                   tprintf(T("%s refuses your money."), Name(who)), NOTHING);
@@ -587,7 +581,7 @@ do_give(dbref player, char *recipient, char *amnt, int silent)
  * \param silent if 1, hush the usual messages.
  */
 static void
-do_give_to(dbref player, char *arg, int silent)
+do_give_to(dbref player, char *arg, int silent, NEW_PE_INFO *pe_info)
 {
   char *s;
 
@@ -621,6 +615,6 @@ do_give_to(dbref player, char *arg, int silent)
     notify(player, T("I don't know what you mean."));
     return;
   }
-  do_give(player, s, arg, silent);
+  do_give(player, s, arg, silent, pe_info);
   return;
 }

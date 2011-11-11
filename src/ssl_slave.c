@@ -117,6 +117,10 @@ void
 delete_conn(struct conn *c)
 {
   struct conn *curr, *nxt;
+
+  if (c->ssl)
+    SSL_shutdown(c->ssl);
+
   for (curr = connections; curr; curr = nxt) {
     nxt = curr->next;
     if (curr == c) {
@@ -320,7 +324,7 @@ event_cb(struct bufferevent *bev, short e, void *data)
     } else {
       ssl_connected(c);
     }
-  } else if (e & (error_conditions)) {
+  } else if (e & error_conditions) {
     if (c->local_bev == bev) {
       /* Mush side of the connection went away. Flush SSL buffer and shut down. */
 #if SSL_DEBUG_LEVEL > 0
@@ -503,8 +507,12 @@ main(int argc, char **argv)
 
   close(ssl_sock);
 
+  evdns_base_free(resolver, 0);
+
   for (c = connections; c; c = n) {
     n = c->next;
+    if (c->ssl)
+      SSL_shutdown(c->ssl);
     free_conn(c);
   }
 

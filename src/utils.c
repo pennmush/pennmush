@@ -133,6 +133,7 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib *ufun,
           || strncasecmp(thingname, "#apply", 6) == 0)) {
     /* It's a lambda. */
 
+    ufun->ufun_flags &= ~UFUN_NAME;
     ufun->thing = executor;
     if (strcasecmp(thingname, "#lambda") == 0)
       mush_strncpy(ufun->contents, attrname, BUFFER_LEN);
@@ -177,6 +178,12 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib *ufun,
   }
 
   attrib = (ATTR *) atr_get(ufun->thing, upcasestr(attrname));
+  if (attrib && AF_Internal(attrib)) {
+    /* Regardless of whether we're doing permission checks, we should
+     * never be showing internal attributes here */
+    attrib = NULL;
+  }
+
   /* An empty attrib is the same as no attrib. */
   if (attrib == NULL) {
     if (flags & UFUN_REQUIRE_ATTR) {
@@ -205,6 +212,13 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib *ufun,
   else if (AF_Debug(attrib))
     ufun->pe_flags |= PE_DEBUG;
 
+  if (flags & UFUN_NAME) {
+    if (attrib->flags & AF_NONAME)
+      ufun->ufun_flags &= ~UFUN_NAME;
+    else if (attrib->flags & AF_NOSPACE)
+      ufun->ufun_flags |= UFUN_NAME_NOSPACE;
+  }
+
   /* Populate the ufun object */
   mush_strncpy(ufun->contents, atr_value(attrib), BUFFER_LEN);
   mush_strncpy(ufun->attrname, AL_NAME(attrib), ATTRIBUTE_NAME_LIMIT + 1);
@@ -220,8 +234,8 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib *ufun,
  * \param ufun The ufun_attrib that was initialized by fetch_ufun_attrib
  * \param ret If desired, a pointer to a buffer in which the results
  *            of the process_expression are stored in.
- * \param executor The executor.
- * \param enactor The enactor.
+ * \param caller The caller (%@).
+ * \param enactor The enactor. (%#)
  * \param pe_info The pe_info passed to the FUNCTION
  * \param user_regs Other arguments that may want to be added. This nests BELOW
  *                the pe_regs created by call_ufun. (It is checked first)
@@ -229,11 +243,11 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib *ufun,
  * \retval 1 process_expression failed. (CPU time limit)
  */
 bool
-call_ufun(ufun_attrib *ufun, char *ret, dbref executor, dbref enactor,
+call_ufun(ufun_attrib *ufun, char *ret, dbref caller, dbref enactor,
           NEW_PE_INFO *pe_info, PE_REGS *user_regs)
 {
   char rbuff[BUFFER_LEN];
-  char *rp;
+  char *rp, *np = NULL;
   int pe_ret;
   char const *ap;
   char old_attr[BUFFER_LEN];
@@ -284,11 +298,24 @@ call_ufun(ufun_attrib *ufun, char *ret, dbref executor, dbref enactor,
     pe_info->regvals = user_regs;
   }
 
+  if (ufun->ufun_flags & UFUN_NAME) {
+    safe_str(Name(enactor), ret, &rp);
+    if (!(ufun->ufun_flags & UFUN_NAME_NOSPACE))
+      safe_chr(' ', ret, &rp);
+    np = rp;
+  }
+
+
   /* And now, make the call! =) */
   ap = ufun->contents;
-  pe_ret = process_expression(ret, &rp, &ap, ufun->thing, executor,
+  pe_ret = process_expression(ret, &rp, &ap, ufun->thing, caller,
                               enactor, ufun->pe_flags, PT_DEFAULT, pe_info);
   *rp = '\0';
+
+  if ((ufun->ufun_flags & UFUN_NAME) && np == rp) {
+    /* Attr was empty, so we take off the name again */
+    *ret = '\0';
+  }
 
   /* Restore call_ufun's pe_regs */
   if (user_regs) {
@@ -681,7 +708,7 @@ absolute_room(dbref it)
  * \retval 0 to can not interact with from in this way.
  */
 int
-can_interact(dbref from, dbref to, int type)
+can_interact(dbref from, dbref to, int type, NEW_PE_INFO *pe_info)
 {
   int lci;
 
@@ -704,7 +731,7 @@ can_interact(dbref from, dbref to, int type)
   /* If it's an audible message, it must pass your Interact_Lock
    * (or be from a privileged speaker)
    */
-  if ((type == INTERACT_HEAR) && !Pass_Interact_Lock(from, to))
+  if ((type == INTERACT_HEAR) && !Pass_Interact_Lock(from, to, pe_info))
     return 0;
 
   /* You can interact with the object you are in or any objects
@@ -745,7 +772,7 @@ next_parent(dbref thing, dbref current, int *parent_count, int *use_ancestor)
 {
   dbref next;
 
-  if ((*parent_count) > MAX_PARENTS)
+  if ((*parent_count) > MAX_PARENTS || (use_ancestor && *use_ancestor == 2))
     next = NOTHING;
   else
     next = Parent(current);

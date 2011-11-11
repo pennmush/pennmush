@@ -1997,42 +1997,16 @@ static int
 check_attrib_lock(dbref player, dbref target,
                   const char *atrname, const char *str, NEW_PE_INFO *pe_info)
 {
-
-  ATTR *a;
-  char *asave;
-  const char *ap;
-  char buff[BUFFER_LEN], *bp;
-  char save_attrname[BUFFER_LEN];
-  int made_pe_info = 0;
+  char buff[BUFFER_LEN];
+  ufun_attrib ufun;
 
   if (!atrname || !*atrname || !str || !*str)
     return 0;
-  /* fail if there's no matching attribute */
-  a = atr_get(target, strupper(atrname));
-  if (!a)
-    return 0;
-  if (!Can_Read_Attr(target, target, a))
-    return 0;
-  asave = safe_atr_value(a);
-  /* perform pronoun substitution */
-  bp = buff;
-  ap = asave;
-  if (!pe_info) {
-    pe_info = make_pe_info("check_attrib_lock");
-    made_pe_info = 1;
-  } else {
-    strcpy(save_attrname, pe_info->attrname);
-  }
-  strcpy(pe_info->attrname, atrname);
-  process_expression(buff, &bp, &ap, target, player,
-                     player, PE_DEFAULT, PT_DEFAULT, pe_info);
-  *bp = '\0';
-  free(asave);
+  if (!fetch_ufun_attrib
+      (atrname, target, &ufun, UFUN_LOCALIZE | UFUN_REQUIRE_ATTR))
+    return 0;                   /* fail if there's no matching attribute */
 
-  if (made_pe_info)
-    free_pe_info(pe_info);
-  else
-    strcpy(pe_info->attrname, save_attrname);
+  call_ufun(&ufun, buff, player, player, pe_info, NULL);
 
   return !strcasecmp(buff, str);
 }

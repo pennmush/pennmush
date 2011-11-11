@@ -203,7 +203,7 @@ match_controlled(dbref player, const char *name)
       } else if (match == abs) { \
         /* absolute dbref match in list */ \
         MATCHED(1); \
-      } else if (!can_interact(match, who, INTERACT_MATCH)) { \
+      } else if (!can_interact(match, who, INTERACT_MATCH, NULL)) { \
         /* Not allowed to match this object */ \
         continue; \
       } else if (match_aliases(match, name) || (!IsExit(match) && !strcasecmp(Name(match), name))) { \
@@ -255,10 +255,10 @@ choose_thing(const dbref who, const int preferred_type, long flags,
   }
 
   if (flags & MAT_CHECK_KEYS) {
-    key = could_doit(who, thing1);
-    if (!key && could_doit(who, thing2)) {
+    key = could_doit(who, thing1, NULL);
+    if (!key && could_doit(who, thing2, NULL)) {
       return thing2;
-    } else if (key && !could_doit(who, thing2)) {
+    } else if (key && !could_doit(who, thing2, NULL)) {
       return thing1;
     }
   }
@@ -360,7 +360,10 @@ match_result_internal(dbref who, dbref where, const char *xname, int type,
   match = where;
   if (goodwhere && MATCH_TYPE && (flags & MAT_ME) && !(flags & MAT_CONTENTS)
       && !strcasecmp(xname, "me")) {
-    return match;
+    if (MATCH_CONTROLS)
+      return match;
+    else
+      nocontrol = 1;
   }
 
   /* match "here" */

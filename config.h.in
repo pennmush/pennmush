@@ -404,6 +404,8 @@ typedef bool _Bool;
 #undef restrict
 #undef inline
 
+#define inline __inline
+
 #ifdef _MSC_VER
 #define WIN32_CDECL __cdecl
 #else

@@ -517,7 +517,7 @@ email_register_player(DESC *d, const char *name, const char *email,
   reserve_fd();
   /* Ok, all's well, make a player */
   if (resend) {
-    (void) atr_add(player, "XYXXY", mush_crypt(passwd), GOD, 0);
+    (void) atr_add(player, pword_attr, mush_crypt(passwd), GOD, 0);
     return player;
   } else {
     player = make_player(name, passwd, host, ip);
@@ -573,7 +573,7 @@ make_player(const char *name, const char *password, const char *host,
   set_initial_warnings(player);
   /* Modtime tracks login failures */
   ModTime(player) = (time_t) 0;
-  (void) atr_add(player, "XYXXY", mush_crypt(password), GOD, 0);
+  (void) atr_add(player, pword_attr, mush_crypt(password), GOD, 0);
   giveto(player, START_BONUS);  /* starting bonus */
   (void) atr_add(player, "LAST", show_time(mudtime, 0), GOD, 0);
   (void) atr_add(player, "LASTSITE", host, GOD, 0);
@@ -627,15 +627,17 @@ do_password(dbref executor, dbref enactor, const char *old, const char *newobj,
 
     sp = old;
     bp = old_eval;
-    process_expression(old_eval, &bp, &sp, executor, executor, enactor,
-                       PE_DEFAULT, PT_DEFAULT, NULL);
+    if (process_expression(old_eval, &bp, &sp, executor, executor, enactor,
+                           PE_DEFAULT, PT_DEFAULT, NULL))
+      return;
     *bp = '\0';
     old = old_eval;
 
     sp = newobj;
     bp = new_eval;
-    process_expression(new_eval, &bp, &sp, executor, executor, enactor,
-                       PE_DEFAULT, PT_DEFAULT, NULL);
+    if (process_expression(new_eval, &bp, &sp, executor, executor, enactor,
+                           PE_DEFAULT, PT_DEFAULT, NULL))
+      return;
     *bp = '\0';
     newobj = new_eval;
   }
@@ -645,7 +647,7 @@ do_password(dbref executor, dbref enactor, const char *old, const char *newobj,
   } else if (!ok_password(newobj)) {
     notify(executor, T("Bad new password."));
   } else {
-    (void) atr_add(executor, "XYXXY", mush_crypt(newobj), GOD, 0);
+    (void) atr_add(executor, pword_attr, mush_crypt(newobj), GOD, 0);
     notify(executor, T("You have changed your password."));
   }
 }

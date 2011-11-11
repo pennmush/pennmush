@@ -242,14 +242,15 @@ See also: STRINGS
   checkpass()   clone()       create()      die()         dig()
   endtag()      firstof()     functions()   fn()          html()        
   ibreak()      ilev()        inum()        isdbref()     isint()       
-  isnum()       isobjid()     isword()      itext()       letq()        
-  localize()    link()        list()        listq()       lnum()        
-  lset()        null()        numversion()  objeval()     open()        
-  pcreate()     r()           rand()        s()           scan()        
-  set()         setq()        setr()        slev()        soundex()     
-  soundslike()  speak()       stext()       tag()         tagwrap()      
-  tel()         testlock()    textentries() textfile()    unsetq()      
-  valid()       wipe()        @@()          uptime()
+  isnum()       isobjid()     isregexp()    isword()      itext()
+  letq()        localize()    link()        list()        listq()
+  lnum()        lset()        null()        numversion()  objeval()
+  open()        pcreate()     r()           rand()        s()
+  scan()        set()         setq()        setr()        slev()
+  soundex()     soundslike()  speak()       stext()       tag()
+  tagwrap()     tel()         testlock()    textentries() textfile()
+  unsetq()      valid()       wipe()        @@()          uptime()
+
 & @@()
 & NULL()
   @@(<expression>)
@@ -1135,7 +1136,7 @@ See also: inc(), sub()
     > think decompose(This is \[a [ansi(y,test)]\][space(3)])
     This is \[a%b[ansi(y,test)]\] %b%b
 
-See also: @decompile2, escape(), secure()
+See also: @decompile2, escape(), secure(), ]
 & DECODE64()
   decode64(<string>)
 
@@ -1450,7 +1451,7 @@ See also: neq()
   function preserves the original string, it is, in most cases, a better
   choice than secure(), but decompose() is often better still.
 
-See also: decompose(), secure()
+See also: decompose(), secure(), ]
 & EVAL()
 & GET_EVAL()
   eval(<object>, <attribute>)
@@ -2098,6 +2099,13 @@ See also: isint()
   the string is not a valid object id.
   
 See also: DBREFS, isdbref(), objid()
+& ISREGEXP()
+  isregexp(<string>)
+
+  This function returns 1 if <string> is a valid regular expression,
+  and 0 if it is not.
+
+See also: REGEXP
 & ISWORD()
   isword(<string>)
   
@@ -2172,10 +2180,10 @@ See also: itext(), inum(), ilev(), ibreak(), map(), @dolist
     > say iter(This is a test string., strlen(%i0))
     You say, "4 2 1 4 7"
   
-    > say iter(lnum(5), mul(add(##,#@),2))
+    > say iter(lnum(5), mul(add(%i0,#@),2))
     You say, "2 6 10 14 18"
   
-    > say iter(lexits(here), name(##) (owned by [name(owner(##))]))
+    > say iter(lexits(here), name(%i0) (owned by [name(owner(%i0))]))
     You say, "South (owned by Claudia) North (owned by Roy)"
   
     > &STRLEN_FN me=strlen(%0)
@@ -2185,7 +2193,7 @@ See also: itext(), inum(), ilev(), ibreak(), map(), @dolist
   This example could be replaced by the use of map() like so:
     > say map(strlen_fun, This is a test string.)
 
-    > say iter(lnum(3), ##, ,%r)
+    > say iter(lnum(3), %i0, ,%r)
     You say, "0
     1
     2"
@@ -3158,8 +3166,10 @@ See also: div(), fdiv(), lmath()
   or plural) for that amount of money, as set in the money_singular and
   money_plural @config options.
 
-  Otherwise, it returns the amount of money <object> has. If <object> is
-  no_pay, the value of the 'max_pennies' @config option is returned. 
+  Otherwise, it returns the amount of money <object> has. If <object> has
+  the no_pay power, the value of the 'max_pennies' @config option is
+  returned. <object> must have the power itself, rather than inheriting it
+  from its owner, in this case.
 
   Examples:
     > say money(Javelin)

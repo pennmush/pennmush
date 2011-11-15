@@ -753,4 +753,132 @@ See also: ZONE MASTERS, @lock
   as on the object.
 
 See also: MONITOR, LISTENING
+& POWERS LIST
+  Powers can be granted only by wizards, using the @power command. Powers 
+  cannot be granted to players who are set UNREGISTERED. Powers normally 
+  give the player the ability to use a limited set of wizard/admin powers. 
+  See 'help <power> power' for more info on any power.
 
+  announce              Can use @wall command.  
+  boot                  Can use @boot command.
+  builder               Can use Builder commands.
+  chat_privs            Can use Admin channels.
+  debit                 Can use give with a negative amount.
+  functions             Can use @function command.
+  guest                 Guest. Restricted command set.
+  halt                  Can @halt others' objects and do @allhalt.
+  hide                  Can hide on the WHO list.
+  hook                  Can use the @hook command.
+  idle                  No inactivity timeout.
+  link_anywhere         Can @link an exit to anyplace.
+  login                 Not subject to login restrictions.
+  long_fingers          Can do things remotely, like "get".
+  many_attribs          Can exceed max_attrs_per_obj.
+
+  Continued in 'help powers2'.
+& POWERS2
+& POWERS LIST2
+  no_pay *              Doesn't need money for anything
+  no_quota *            Has an unlimited quota
+  open_anywhere         Can @open an exit from any room.
+  pemit_all             Can @pemit to HAVEN/ulocked players.
+  player_create         Can use @pcreate command.
+  poll                  Can use @poll command.
+  pueblo_send           Can use xch_cmd and send pueblo tags
+  queue                 Has queue limit equal to the size of the database.
+  quota                 Can use @quota commands on other players.
+  search                Can do @search, @stats, and @entrances on anything.
+  see_all               Sees everything as if it were Visual.
+  see_queue             Can do @ps on anyone, and @ps/all.
+  sql_ok                Can perform SQL queries
+  tport_anything        Can @teleport anything.
+  tport_anywhere        Can @teleport to anywhere.
+  unkillable *          Cannot be killed
+  can_spoof             Can use @ns*emit, ns*emit() and @*emit/spoof
+  can_dark              Can @set themselves dark
+  
+  * When these powers are set on a player, all the objects they own which
+    are not set MISTRUST are also considered to have the power.
+
+See also: help @power, and especially @power/list
+& ANNOUNCE POWER
+
+  The Annouce @power lets objects set the Message of the Day via @motd,
+  and use the @wall command to send a message to all connected players.
+  Wizards have the power implicitly.
+  
+See also: @wall, @motd, chat_privs, loud, can_spoof
+& BOOT POWER
+
+  Objects with the Boot power can @boot other players from the MUSH. Wizards
+  have the power implicitly.
+  
+See also: @boot
+& BUILDER POWER
+
+  The Builder power has no built-in meaning, but many MUSHes choose to
+  restrict building and/or object creation to objects with this power.
+  
+See also: @dig, @open, @create, @link, player_create
+& CHAT_PRIVS POWER
+
+  The Chat_Privs power allows non-wizard, non-royalty objects to use channels
+  which have been restricted to 'Admin' with @channel/priv.
+  
+See also: @channel
+& DEBIT POWER
+
+  The Debit power lets objects take pennies from players with the 'give'
+  command. Wizards have this power implicitly.
+  
+See also: give, money
+& FUNCTIONS POWER
+
+  The Functions power allows an object to use the @function command to add
+  or delete functions. Wizards and royalty have this power implicitly.
+  
+See also: @function
+& GUEST POWER
+
+  Objects set Guest are very limited: they cannot control anything in the
+  database (including themselves), which prevents them from setting flags or
+  attributes, etc (though, for backwards compatability, they can still 
+  examine themselves). They cannot join channels, or create objects. MUSHes
+  often restrict other commands so that guests cannot use them.
+  
+  It's also possible to connect to a Guest player without using a password,
+  allowing them to be used by newcomers to visit a game without making a
+  character.
+  
+  Guests also have (and receive) a different amount of pennies to normal
+  players (determined by the max_guest_pennies and guest_paycheck @config
+  options).  They receive a different message when they connect (set via
+  the guest_file config option). The way Guest connections work can be
+  controlled via the max_guests @config option, and Guest logins can be
+  disabled entirely with the guests @config option.
+& HALT POWER
+& HIDE POWER
+& HOOK POWER
+& IDLE POWER
+& LINK_ANYWHERE
+& LOGIN POWER
+& LONG_FINGERS POWER
+& MANY_ATTRIBS POWER
+& NO_PAY POWER
+& NO_QUOTA POWER
+& OPEN_ANYWHERE POWER
+& PEMIT_ALL POWER
+& PLAYER_CREATE POWER
+& POLL POWER
+& PUEBLO_SEND POWER
+& QUEUE POWER
+& QUOTA POWER
+& SEARCH POWER
+& SEE_ALL POWER
+& SEE_QUEUE POWER
+& SQL_OK POWER
+& TPORT_ANYTHING POWER
+& TPORT_ANYWHERE POWER
+& UNKILLABLE POWER
+& CAN_SPOOF POWER
+& CAN_DARK POWER

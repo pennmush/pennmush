@@ -1291,54 +1291,6 @@ See also: ATTRIBUTES, ATTRIB-OWNERSHIP, Attribute Functions, ATTRIBUTE TREES,
   Use @lset to change that on a per-lock basis.
 
 See also: @parent, $-COMMANDS, ATTRIBUTES, ANCESTORS, ORPHAN, pfun()
-& POWERS LIST
-  Powers can be granted only by wizards, using the @power command.
-  Powers cannot be granted to guest characters or players who are set
-  UNREGISTERED. Powers normally give the player the ability to use a
-  limited set of wizard/admin powers.
-
-  announce              Can use @wall command.  
-  boot                  Can use @boot command.
-  builder               Can use Builder commands.
-  chat_privs            Can use Admin channels.
-  debit                 Can use give with a negative amount.
-  functions             Can use @function command.
-  guest                 Guest. Restricted command set.
-  halt                  Can @halt others' objects and do @allhalt.
-  hide                  Can hide on the WHO list.
-  hook                  Can use the @hook command.
-  idle                  No inactivity timeout.
-  link_anywhere         Can @link an exit to anyplace.
-  login                 Not subject to login restrictions.
-  long_fingers          Can do things remotely, like "get".
-  many_attribs          Can exceed max_attrs_per_obj.
-
-  Continued in 'help powers2'.
-& POWERS2
-& POWERS LIST2
-  no_pay *              Doesn't need money for anything
-  no_quota *            Has an unlimited quota
-  open_anywhere         Can @open an exit from any room.
-  pemit_all             Can @pemit to HAVEN/ulocked players.
-  player_create         Can use @pcreate command.
-  poll                  Can use @poll command.
-  pueblo_send           Can use xch_cmd and send pueblo tags
-  queue                 Has queue limit equal to the size of the database.
-  quota                 Can use @quota commands on other players.
-  search                Can do @search, @stats, and @entrances on anything.
-  see_all               Sees everything as if it were Visual.
-  see_queue             Can do @ps on anyone, and @ps/all.
-  sql_ok                Can perform SQL queries
-  tport_anything        Can @teleport anything.
-  tport_anywhere        Can @teleport to anywhere.
-  unkillable *          Cannot be killed
-  can_spoof             Can use @ns*emit, ns*emit() and @*emit/spoof
-  can_dark              Can @set themselves dark
-  
-  * When these powers are set on a player, all the objects they own which
-    are not set MISTRUST are also considered to have the power.
-
-See also: help @power, and especially @power/list
 & PUPPETS
   A thing is turned into a puppet by setting the PUPPET flag on it.  A
   puppet object is an extension of its owner and relays everything it

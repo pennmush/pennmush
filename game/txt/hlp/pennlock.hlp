@@ -394,7 +394,25 @@ See also: @lock, locktypes, lockkeys
 & @lock/pay
 & @lock/receive
 & @lock/take
-
+  @lock/drop
+    For rooms, controls who can drop objects in the room. For players and
+      things, controls who can drop the object. Has no meaning for exits.
+    See also: drop, empty
+  
+  @lock/give
+    For players and things, controls who may give the object away.
+    Has no meaning for rooms or exits.
+  
+  @lock/from
+    Controls who may give items to this object.
+  
+  @lock/receive
+    Controls what may be given to this object.
+  
+  @lock/take
+    Controls who can take this object.
+  
+See also: give, @lock/basic, @lock/enter
 & @lock/filter
 & @lock/infilter
   @lock/filter
@@ -403,7 +421,6 @@ See also: @lock, locktypes, lockkeys
       who fails to pass the lock will have their speech filtered. The sound
       being made is passed to evaluation locks as %0.
   See also: @filter, @infilter
-
 & @lock/control
 & @lock/destroy
 & @lock/examine
@@ -442,12 +459,11 @@ See also: @lock, locktypes, lockkeys
   @lock/link
     Controls who can @link this unlinked exit, or who can @link an exit to
       this LINK_OK room/thing.
-  See also: @link, LINK_OK, LINK_ANYWHERE
+  See also: @link, LINK_OK, LINK_ANYWHERE POWER
   
   @lock/open
     Controls who can @open an exit from this OPEN_OK room.
-  See also: @open, @dig, OPEN_OK, OPEN_ANYWHERE
-
+  See also: @open, @dig, OPEN_OK, OPEN_ANYWHERE POWER
 & @lock/user
 & @lock/user:<name>
 

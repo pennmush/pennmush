@@ -509,7 +509,7 @@ m_comp(const void *s1, const void *s2)
     if (has_markup(sr2->val))
       strcpy(v2, remove_markup(sr2->val, NULL));
     else
-      strcpy(v2, sr1->val);
+      strcpy(v2, sr2->val);
     upcasestr(v1);
     upcasestr(v2);
     res = strcoll(v1, v2);

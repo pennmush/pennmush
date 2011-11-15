@@ -13,6 +13,10 @@ be read in 'help patchlevels'.
 
 Version 1.8.4 patchlevel 9                                 ??? ??, 201?
 
+Minor changes:
+ * Added a new event, OBJECT`FLAG, triggered when a flag/power with the
+   "event" restriction is set or cleared. Suggested by [SW]. [MG]
+
 Fixes:
  * lit() didn't properly handle '\'s. Reported by Wiggles. [MG]
 

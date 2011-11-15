@@ -25,6 +25,8 @@ Minor changes:
 
 Fixes:
  * lit() didn't properly handle '\'s. Reported by Wiggles. [MG]
+ * listq() incorrectly returned all registers (including %0-%9, %i0, etc),
+   not just %q-registers. Reported by Wiggles. [MG]
 
 Version 1.8.4 patchlevel 8                                 Nov 11, 2011
 

@@ -186,6 +186,7 @@ void flag_stats(dbref);
 #define F_ODARK         0x2000U  /**< owner/admin/God can see this flag */
 #define F_DISABLED      0x4000U  /**< flag can't be used */
 #define F_LOG           0x8000U  /**< Log when the flag is set/cleared */
+#define F_EVENT         0x10000U /**< Trigger an event wen a flag is set/cleared */
 
 #define F_MAX           0x00800000U /**< Largest allowed flag bit */
 

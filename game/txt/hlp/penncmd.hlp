@@ -1911,6 +1911,9 @@ See also: FLAGS, @set, @power, flag permissions
   
   log          Log when the flag is set or cleared. Only meaningful in
                <setperms>.
+  event        Trigger the OBJECT`FLAG event when this flag is set or
+               cleared. Only meaningful in <setperms>. See 'help events'
+               for more information.
 
 & @function
   @function [<function name>]
@@ -3294,7 +3297,7 @@ See also: powers(), @flag
   is dumped, and do not need to be re-added at startup. They are
   treated exactly as any other power in the server.
 & @prefix
-  @prefix <object> = <message>
+  @prefix <object>[=<message>]
  
   This attribute is meant to be used in conjunction with the AUDIBLE
   flag. The @prefix of the object is prepended to messages propagated

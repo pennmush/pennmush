@@ -163,7 +163,6 @@ did_it_with(dbref player, dbref thing, const char *what, const char *def,
   if (env1 != NOTHING) {
     pe_regs_setenv(pe_regs, 1, unparse_dbref(env1));
   }
-
   retval = real_did_it(player, thing, what, def, owhat, odef, awhat, loc,
                        pe_regs, flags);
 
@@ -230,10 +229,6 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
   if (!pe_info) {
     pe_info = make_pe_info("pe_info-real_did_it2");
   }
-  if (pe_regs) {
-    pe_regs->prev = pe_info->regvals;
-    pe_info->regvals = pe_regs;
-  }
 
   loc = (loc == NOTHING) ? Location(player) : loc;
   orator = player;
@@ -246,7 +241,7 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
           (what, thing, &ufun,
            UFUN_LOCALIZE | UFUN_REQUIRE_ATTR | UFUN_IGNORE_PERMS)) {
         attribs_used = 1;
-        if (!call_ufun(&ufun, buff, thing, player, pe_info, NULL) && buff[0])
+        if (!call_ufun(&ufun, buff, thing, player, pe_info, pe_regs) && buff[0])
           notify_by(thing, player, buff);
       } else if (def && *def)
         notify_by(thing, player, def);
@@ -258,7 +253,7 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
                                UFUN_LOCALIZE | UFUN_REQUIRE_ATTR |
                                UFUN_IGNORE_PERMS | UFUN_NAME)) {
         attribs_used = 1;
-        if (!call_ufun(&ufun, buff, thing, player, pe_info, NULL) && buff[0])
+        if (!call_ufun(&ufun, buff, thing, player, pe_info, pe_regs) && buff[0])
           notify_except2(loc, player, thing, buff, flags);
       } else if (odef && *odef) {
         bp = buff;
@@ -267,9 +262,6 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
         notify_except2(loc, player, thing, buff, flags);
       }
     }
-  }
-  if (pe_regs) {
-    pe_info->regvals = pe_regs->prev;
   }
   if (pe_info) {
     free_pe_info(pe_info);

@@ -786,7 +786,7 @@ See also: MONITOR, LISTENING
   poll                  Can use @poll command.
   pueblo_send           Can use xch_cmd and send pueblo tags
   queue                 Has queue limit equal to the size of the database.
-  quota                 Can use @quota commands on other players.
+  quotas                Can use @quota commands on other players.
   search                Can do @search, @stats, and @entrances on anything.
   see_all               Sees everything as if it were Visual.
   see_queue             Can do @ps on anyone, and @ps/all.
@@ -807,7 +807,7 @@ See also: help @power, and especially @power/list
   and use the @wall command to send a message to all connected players.
   Wizards have the power implicitly.
   
-See also: @wall, @motd, chat_privs, loud, can_spoof
+See also: @wall, @motd, CHAT_PRIVS POWER, loud, CAN_SPOOF POWER
 & BOOT POWER
 
   Objects with the Boot power can @boot other players from the MUSH. Wizards
@@ -819,7 +819,7 @@ See also: @boot
   The Builder power has no built-in meaning, but many MUSHes choose to
   restrict building and/or object creation to objects with this power.
   
-See also: @dig, @open, @create, @link, player_create
+See also: @dig, @open, @create, @link, PLAYER_CREATE POWER
 & CHAT_PRIVS POWER
 
   The Chat_Privs power allows non-wizard, non-royalty objects to use channels
@@ -831,7 +831,7 @@ See also: @channel
   The Debit power lets objects take pennies from players with the 'give'
   command. Wizards have this power implicitly.
   
-See also: give, money
+See also: give, money, NO_PAY POWER
 & FUNCTIONS POWER
 
   The Functions power allows an object to use the @function command to add
@@ -857,28 +857,183 @@ See also: @function
   controlled via the max_guests @config option, and Guest logins can be
   disabled entirely with the guests @config option.
 & HALT POWER
+
+  The Halt power allows an object to @restart any object, @halt any object
+  or pid, and to use @halt/all and @restart/all. Wizards have the power
+  implicitly.
+
+See also: @halt, @restart, @wait, QUEUE POWER, SEE_QUEUE POWER
 & HIDE POWER
+
+  The Hide power allows players to use the @hide command, as well as the
+  'ch' command at the login screen. Players who have both this power and
+  the Idle power will be set Hidden automatically when their connection
+  reaches the idle time limit.
+  
+  Wizards have this power implicitly.
+  
+See also: @hide, hidden(), ch, IDLE POWER
 & HOOK POWER
+
+  Objects with the Hook @power can use the @hook command to hook built-in
+  commands. Intended for startup objects which don't need to be wizard.
+  Wizards have this power implicitly.
+  
+See also: @hook, @command
 & IDLE POWER
+
+  The Idle power stops a player from being disconnected when he has been idle
+  for the idle_timeout. Instead, you will be hidden (if you also have the
+  Hide power), or will simply remain connected. Wizards and Royalty have the
+  power implicitly.
+  
+See also: HIDE POWER
 & LINK_ANYWHERE
+
+  The Link_Anywhere power allows an object to link exits to any location.
+  Can be useful for variable exits. Wizards and Royalty have the power
+  implicitly.
+  
+See also: LINK_OK, OPEN_ANYWHERE POWER, @link
 & LOGIN POWER
+
+  The Login power allows a player to connect to the MUSH, even when logins
+  have been disabled (via the "logins" @config option). Wizards and royalty
+  have the power implicitly.
+  
+See also: @sitelock
 & LONG_FINGERS POWER
+
+  The Long_Fingers power allows objects to run a number of commands 
+  (including "look", "with", "get" and others) on objects which they are not
+  nearby. Wizards and Royalty have the power implicitly.
 & MANY_ATTRIBS POWER
+
+  The Many_Attribs power allows a player to have up to a million attributes,
+  rather than the usual limit set in the max_attrs_per_object @config option.
+  Useful for database objects.
 & NO_PAY POWER
+
+  The No_Pay power gives an object infinite pennies; it will never run out.
+  Use carefully! Pennies are intended to prevent runaway code (infinite 
+  loops) which can lag the game. It's recommended that, instead of setting
+  objects no_pay, you regularly give them large amounts of money instead, as
+  this will allow them to function correctly without letting them loop
+  indefinitely.
+  
+  Wizards used to have this power implicitly, but no longer do, for the
+  reasons given above. (Wizards can still give infinite numbers of pennies
+  to others, however.)
+  
+  God is implicitly no_pay and, if you have the power and are not set
+  MISTRUST, your objects are implicitly no_pay.
+  
+See also: give, DEBIT POWER
 & NO_QUOTA POWER
+
+  The No_Quota power lets you create an unlimited number of objects,
+  regardless of @quota settings. Wizards, Royalty, and their objects have
+  this power implicitly.
+  
+  If you have this power, and are not set MISTRUST, your objects have the
+  power implicitly.
+  
+See also: QUOTA POWER, @quota
 & OPEN_ANYWHERE POWER
+
+  The Open_Anywhere power lets you @open exits from any location. Wizards
+  and Royalty have the power implicitly.
+  
+See also: @open, OPEN_OK, @lock/open
 & PEMIT_ALL POWER
+
+  The Pemit_All power lets you page or @pemit any object, regardless of their
+  @lock/page. Wizards have this power implicitly.
+  
+See also: LOUD, page, @pemit, @lock/page, CAN_SPOOF POWE
 & PLAYER_CREATE POWER
+
+  This power allows objects to use @pcreate. Wizards have the power implicitly.
+  
+See also: @pcreate
 & POLL POWER
+
+  Allows objects to change the @poll. Wizards have the power implicitly.
+  
+See also: @poll
 & PUEBLO_SEND POWER
+
+  Allows objects to send potentially unsafe Pueblo/HTML strings via tag()
+  and similar functions. Wizards have the power implicitly.
+  
+See also: Pueblo, tag(), tagwrap(), html()
 & QUEUE POWER
-& QUOTA POWER
+
+  Normally, the number of action lists an object can queue is limited by the
+  queue_quota @config option. Objects with this power can queue additional
+  action lists, equal to the number of objects in the database. Wizards have
+  the power implicitly.
+  
+See also: SEE_QUEUE POWER
+& QUOTAS POWER
+
+  Objects with this power can see and change anyones quotas. Wizards have
+  the power implicitly.
+  
+See also: QUOTA, NO_QUOTA POWER, @quota
 & SEARCH POWER
+
+  The Search power allows someone to use @search and @stats on objects they 
+  can't examine. It also allows them to use the objmem() and playermem()
+  functions.
+  
+See also: SEE_ALL POWER, @search, @stats, objmem(), playermem(), lsearch()
 & SEE_ALL POWER
+
+  The See_All power allows an object to examine anything in the database.
+  Wizards and Royalty have the power implicitly.
 & SEE_QUEUE POWER
+
+  The See_Queue power allows an object to use @ps, lpids() and related 
+  functions on any object/queue.
+  
+See also: @ps, lpids(), getpids(), pidinfo()
 & SQL_OK POWER
+
+  This power lets an object use @sql, sql() and related commands and
+  functions, if the MUSH is connected to an SQL server. Wizards have the
+  power implicitly.
+  
+See also: @sql, sql(), @mapsql, mapsql(), sqlescape()
 & TPORT_ANYTHING POWER
 & TPORT_ANYWHERE POWER
+
+  The Tport_Anything power allows an object to teleport any object to a
+  location they are allowed to teleport to.
+  
+  Tport_Anywhere allows an object to teleporting anything it is allowed
+  to teleport to any location.
+  
+See also: HEAVY, @teleport, NO_TEL, Z_TEL
 & UNKILLABLE POWER
+
+  Objects with the Unkillable power cannot be "kill"ed by a non-wizard.
+  If a player has this power and is not set MISTRUST, his objects have the
+  power implicitly.
+  
+See also: kill, slay, MISTRUST
 & CAN_SPOOF POWER
+
+  The Can_Spoof power lets you use the @ns*emit commands and ns*emit()
+  functions, which show messages without nospoof information. It also lets
+  you use the /spoof switch to various @*emit commands, which shows nospoof
+  information as the enactor rather than the executor. Wizards have this
+  power implicitly.
+  
+See also: @nspemit, @pemit
 & CAN_DARK POWER
+
+  Objects with this power can set themselves DARK, and use the "cd" command
+  at the connection screen to connect set dark.
+  
+See also: DARK, @hide, HIDE POWER

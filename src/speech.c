@@ -1112,10 +1112,7 @@ filter_found(dbref thing, dbref speaker, const char *msg, int flag)
   char *filter;
   ATTR *a;
   char *p, *bp;
-  char *temp;                   /* need this so we don't leak memory
-                                 * by failing to free the storage
-                                 * allocated by safe_uncompress
-                                 */
+  char *temp;
   int i;
   int matched = 0;
 
@@ -1140,8 +1137,7 @@ filter_found(dbref thing, dbref speaker, const char *msg, int flag)
   if (!a)
     return matched;
 
-  filter = safe_atr_value(a);
-  temp = filter;
+  temp = filter = safe_atr_value(a);
 
   for (i = 0; (i < MAX_ARG) && !matched; i++) {
     p = bp = filter;

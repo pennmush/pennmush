@@ -1711,7 +1711,7 @@ shutdownsock(DESC *d, const char *reason)
   }
   shutdown(d->descriptor, 2);
   closesocket(d->descriptor);
-  if (pc_dnext == d) 
+  if (pc_dnext == d)
     pc_dnext = d->next;
   if (d->prev)
     d->prev->next = d->next;
@@ -2504,7 +2504,7 @@ process_commands(void)
 
   do {
     DESC *cdesc;
-   
+
     nprocessed = 0;
     for (cdesc = descriptor_list; cdesc; cdesc = pc_dnext) {
       struct text_block *t;
@@ -2590,13 +2590,19 @@ do_command(DESC *d, char *command)
                                  strlen(POST_COMMAND)))) {
     char buf[BUFFER_LEN];
     snprintf(buf, BUFFER_LEN,
+             "HTTP/1.1 200 OK\r\n"
+             "Content-Type: text/html; charset:iso-8859-1\r\n"
+             "Pragma: no-cache\r\n"
+             "\r\n"
+             "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\""
+             " \"http://www.w3.org/TR/html4/loose.dtd\">"
              "<HTML><HEAD>"
              "<TITLE>Welcome to %s!</TITLE>"
              "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\">"
              "</HEAD><BODY>"
              "<meta http-equiv=\"refresh\" content=\"0;%s\">"
              "Please click <a href=\"%s\">%s</a> to go to the website for %s."
-             "</BODY></HEAD>", MUDNAME, MUDURL, MUDURL, MUDURL, MUDNAME);
+             "</BODY></HEAD></HTML>", MUDNAME, MUDURL, MUDURL, MUDURL, MUDNAME);
     queue_write(d, (unsigned char *) buf, strlen(buf));
     queue_eol(d);
     return CRES_HTTP;

@@ -2713,6 +2713,12 @@ process_expression(char *buff, char **bp, char const **str,
       break;
       /* Escape character */
     case '\\':
+      if (eflags & PE_LITERAL) {
+        /* Show literal backslash in lit() */
+        safe_chr('\\', buff, bp);
+        (*str)++;
+        break;
+      }
       if (!(eflags & PE_EVALUATE))
         safe_chr('\\', buff, bp);
       (*str)++;

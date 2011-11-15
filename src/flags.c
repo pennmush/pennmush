@@ -1710,12 +1710,12 @@ can_set_flag(dbref player, dbref thing, FLAG *flagp, int negate)
       return 1;
   }
 
-  /* Checking for the ZONE flag. If you set this, the player had
+  /* Checking for the SHARED flag. If you set this, the player had
    * better be zone-locked!
    */
-  if (!negate && is_flag(flagp, "ZONE") &&
+  if (!negate && is_flag(flagp, "SHARED") &&
       (getlock(thing, Zone_Lock) == TRUE_BOOLEXP)) {
-    notify(player, T("You must @lock/zone before you can set a player ZONE"));
+    notify(player, T("You must @lock/zone before you can set a player SHARED."));
     return 0;
   }
 

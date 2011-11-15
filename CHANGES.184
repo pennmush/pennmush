@@ -16,6 +16,11 @@ chronological order (most recent first)
 
 ==========================================================================
 
+Version 1.8.4 patchlevel 9                                 ??? ??, 201?
+
+Fixes:
+ * lit() didn't properly handle '\'s. Reported by Wiggles. [MG]
+
 Version 1.8.4 patchlevel 8                                 Nov 11, 2011
 
 Major changes:

@@ -268,7 +268,7 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
   }
 
   if (awhat && *awhat)
-    attribs_used = queue_attribute_base(thing, awhat, player, 0, pe_regs)
+    attribs_used = queue_attribute_base(thing, awhat, player, 0, pe_regs, 0)
       || attribs_used;
   orator = preserve_orator;
   return attribs_used;
@@ -1339,7 +1339,7 @@ do_verb(dbref executor, dbref enactor, char *arg1, char **argv,
   /* Now we copy our args into the stack, and do the command. */
 
   if (argv[6] && *argv[6])
-    queue_attribute_base(victim, upcasestr(argv[6]), actor, 0, pe_regs);
+    queue_attribute_base(victim, upcasestr(argv[6]), actor, 0, pe_regs, 0);
 
   pe_regs_free(pe_regs);
 }

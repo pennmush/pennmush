@@ -3963,23 +3963,23 @@ announce_connect(DESC *d, int isnew, int num)
   pe_regs_setenv(pe_regs, 1, unparse_integer(num));
 
   /* do the person's personal connect action */
-  (void) queue_attribute_base(player, "ACONNECT", player, 0, pe_regs);
+  (void) queue_attribute_base(player, "ACONNECT", player, 0, pe_regs, 0);
   if (ROOM_CONNECTS) {
     /* Do the room the player connected into */
     if (IsRoom(loc) || IsThing(loc)) {
-      (void) queue_attribute_base(loc, "ACONNECT", player, 0, pe_regs);
+      (void) queue_attribute_base(loc, "ACONNECT", player, 0, pe_regs, 0);
     }
   }
   /* do the zone of the player's location's possible aconnect */
   if ((zone = Zone(loc)) != NOTHING) {
     switch (Typeof(zone)) {
     case TYPE_THING:
-      (void) queue_attribute_base(zone, "ACONNECT", player, 0, pe_regs);
+      (void) queue_attribute_base(zone, "ACONNECT", player, 0, pe_regs, 0);
       break;
     case TYPE_ROOM:
       /* check every object in the room for a connect action */
       DOLIST(obj, Contents(zone)) {
-        (void) queue_attribute_base(obj, "ACONNECT", player, 0, pe_regs);
+        (void) queue_attribute_base(obj, "ACONNECT", player, 0, pe_regs, 0);
       }
       break;
     default:
@@ -3990,7 +3990,7 @@ announce_connect(DESC *d, int isnew, int num)
   }
   /* now try the master room */
   DOLIST(obj, Contents(MASTER_ROOM)) {
-    (void) queue_attribute_base(obj, "ACONNECT", player, 0, pe_regs);
+    (void) queue_attribute_base(obj, "ACONNECT", player, 0, pe_regs, 0);
   }
   pe_regs_free(pe_regs);
 }
@@ -4052,14 +4052,14 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot)
               (int) difftime(mudtime, saved->last_time),
               saved->input_chars, saved->output_chars, saved->cmds);
 
-  (void) queue_attribute_base(player, "ADISCONNECT", player, 0, pe_regs);
+  (void) queue_attribute_base(player, "ADISCONNECT", player, 0, pe_regs, 0);
   if (ROOM_CONNECTS)
     if (IsRoom(loc) || IsThing(loc)) {
       a = queue_attribute_getatr(loc, "ADISCONNECT", 0);
       if (a) {
         if (!Priv_Who(loc) && !Can_Examine(loc, player))
           pe_regs_setenv_nocopy(pe_regs, 1, "");
-        (void) queue_attribute_useatr(loc, a, player, pe_regs);
+        (void) queue_attribute_useatr(loc, a, player, pe_regs, 0);
         if (!Priv_Who(loc) && !Can_Examine(loc, player))
           pe_regs_setenv(pe_regs, 1, unparse_integer(num - 1));
       }
@@ -4072,7 +4072,7 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot)
       if (a) {
         if (!Priv_Who(zone) && !Can_Examine(zone, player))
           pe_regs_setenv_nocopy(pe_regs, 1, "");
-        (void) queue_attribute_useatr(zone, a, player, pe_regs);
+        (void) queue_attribute_useatr(zone, a, player, pe_regs, 0);
         if (!Priv_Who(zone) && !Can_Examine(zone, player))
           pe_regs_setenv(pe_regs, 1, unparse_integer(num - 1));
       }
@@ -4084,7 +4084,7 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot)
         if (a) {
           if (!Priv_Who(obj) && !Can_Examine(obj, player))
             pe_regs_setenv_nocopy(pe_regs, 1, "");
-          (void) queue_attribute_useatr(obj, a, player, pe_regs);
+          (void) queue_attribute_useatr(obj, a, player, pe_regs, 0);
           if (!Priv_Who(obj) && !Can_Examine(obj, player))
             pe_regs_setenv(pe_regs, 1, unparse_integer(num - 1));
         }
@@ -4102,7 +4102,7 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot)
     if (a) {
       if (!Priv_Who(obj) && !Can_Examine(obj, player))
         pe_regs_setenv_nocopy(pe_regs, 1, "");
-      (void) queue_attribute_useatr(obj, a, player, pe_regs);
+      (void) queue_attribute_useatr(obj, a, player, pe_regs, 0);
       if (!Priv_Who(obj) && !Can_Examine(obj, player))
         pe_regs_setenv(pe_regs, 1, unparse_integer(num - 1));
     }

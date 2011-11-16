@@ -25,7 +25,7 @@
 
   See also the following topics:    mail-sending   mail-reading   
       mail-folders   mail-forward   mail-other     mail-admin     
-      @malias
+      @malias        mail-reviewing
 & mail-reading
 
   @mail <msg #>
@@ -259,6 +259,15 @@ See help @malias5 for more.
 number of aliases and members of aliases in use.
 @malias/chown is a wizard-only command that changes the owner of an alias.
 @malias/nuke is a God-only command that destroys all aliases.
+& mail-reviewing
+  @mail/review <player>
+        Reviews the messages you have sent to <player>.
+ 
+  @mail/review <player>=<msglist>
+        Reads the messages you have sent to <player>.
+ 
+  @mail/retract <player>=<msglist>
+        Retracts (deletes) unread messages you have sent to <player>.
 & Mail functions
   Mail functions work with @mail.
 

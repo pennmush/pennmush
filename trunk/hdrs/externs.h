@@ -269,6 +269,7 @@ extern char ucbuff[];
 #define QUEUE_RETRY            0x0800   /**< Set by @retry, restart current queue entry from beginning, without recalling do_entry */
 #define QUEUE_DEBUG            0x1000   /**< Show DEBUG info for queue (queued from a DEBUG attribute) */
 #define QUEUE_NODEBUG          0x2000   /**< Don't show DEBUG info for queue (queued from a NO_DEBUG attribute) */
+#define QUEUE_PRIORITY         0x4000   /**< Add to the priority (player) queue, even if from a non-player. For @startups */
 
 #define QUEUE_RECURSE (QUEUE_INPLACE | QUEUE_NO_BREAKS | QUEUE_PRESERVE_QREG)
 
@@ -304,19 +305,19 @@ void new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
         new_queue_actionlist_int(executor,enactor,caller,actionlist,parent_queue,flags,queue_type,regs,NULL)
 
 int queue_attribute_base(dbref executor, const char *atrname, dbref enactor,
-                         int noparent, PE_REGS *pe_regs);
+                         int noparent, PE_REGS *pe_regs, int flags);
 ATTR *queue_attribute_getatr(dbref executor, const char *atrname, int noparent);
 int queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor,
-                           PE_REGS *pe_regs);
+                           PE_REGS *pe_regs, int flags);
 int queue_include_attribute(dbref thing, const char *atrname, dbref executor,
                             dbref cause, dbref caller, char **args, int recurse,
                             MQUE *parent_queue);
 void run_user_input(dbref player, int port, char *input);
 
 /** Queue the code in an attribute, including parent objects */
-#define queue_attribute(a,b,c) queue_attribute_base(a,b,c,0,NULL)
+#define queue_attribute(a,b,c) queue_attribute_base(a,b,c,0,NULL,0)
 /** Queue the code in an attribute, excluding parent objects */
-#define queue_attribute_noparent(a,b,c) queue_attribute_base(a,b,c,1,NULL)
+#define queue_attribute_noparent(a,b,c) queue_attribute_base(a,b,c,1,NULL,0)
 void dequeue_semaphores(dbref thing, char const *aname, int count,
                         int all, int drain);
 void shutdown_queues(void);

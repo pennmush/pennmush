@@ -1052,7 +1052,7 @@ do_trigger(dbref player, char *object, char **argv, MQUE *queue_entry)
   }
   pe_regs_qcopy(pe_regs, queue_entry->pe_info->regvals);
 
-  if (queue_attribute_base(thing, upcasestr(s), player, 0, pe_regs)) {
+  if (queue_attribute_base(thing, upcasestr(s), player, 0, pe_regs, 0)) {
     if (!AreQuiet(player, thing))
       notify_format(player, T("%s - Triggered."), Name(thing));
   } else {

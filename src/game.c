@@ -683,7 +683,7 @@ do_restart(void)
       }
     }
     if (STARTUPS && !IsGarbage(thing) && !(Halted(thing))) {
-      (void) queue_attribute_noparent(thing, "STARTUP", thing);
+      queue_attribute_base(thing, "STARTUP", thing, 1, NULL, QUEUE_PRIORITY);
       do_top(5);
     }
   }

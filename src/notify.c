@@ -1255,10 +1255,10 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
             }
             if (PLAYER_AHEAR || (!IsPlayer(target))) {
               if (speaker != target)
-                queue_attribute_base(target, "AHEAR", speaker, 0, pe_regs);
+                queue_attribute_base(target, "AHEAR", speaker, 0, pe_regs, 0);
               else
-                queue_attribute_base(target, "AMHEAR", speaker, 0, pe_regs);
-              queue_attribute_base(target, "AAHEAR", speaker, 0, pe_regs);
+                queue_attribute_base(target, "AMHEAR", speaker, 0, pe_regs, 0);
+              queue_attribute_base(target, "AAHEAR", speaker, 0, pe_regs, 0);
             }
             pe_regs_free(pe_regs);
           }

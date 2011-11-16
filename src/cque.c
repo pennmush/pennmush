@@ -583,8 +583,8 @@ new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
 
   if (!(queue_type & QUEUE_INPLACE)) {
     /* Remove all QUEUE_* flags which aren't safe for non-inplace queues */
-    queue_type = (queue_type & (QUEUE_NODEBUG | QUEUE_DEBUG | QUEUE_NOLIST));
-    queue_type |= (IsPlayer(enactor) ? QUEUE_PLAYER : QUEUE_OBJECT);
+    queue_type = (queue_type & (QUEUE_NODEBUG | QUEUE_DEBUG | QUEUE_NOLIST | QUEUE_PRIORITY));
+    queue_type |= ((IsPlayer(enactor) || (queue_type & QUEUE_PRIORITY)) ? QUEUE_PLAYER : QUEUE_OBJECT);
     if (flags & PE_INFO_SHARE) {
       /* You can only share the pe_info for an inplace queue entry. Since you've asked us
        * to share for a fully queued entry, you're an idiot, because it will crash. I know;
@@ -713,14 +713,14 @@ queue_include_attribute(dbref thing, const char *atrname,
  */
 int
 queue_attribute_base(dbref executor, const char *atrname, dbref enactor,
-                     int noparent, PE_REGS *pe_regs)
+                     int noparent, PE_REGS *pe_regs, int flags)
 {
   ATTR *a;
 
   a = queue_attribute_getatr(executor, atrname, noparent);
   if (!a)
     return 0;
-  queue_attribute_useatr(executor, a, enactor, pe_regs);
+  queue_attribute_useatr(executor, a, enactor, pe_regs, flags);
   return 1;
 }
 
@@ -732,10 +732,10 @@ queue_attribute_getatr(dbref executor, const char *atrname, int noparent)
 }
 
 int
-queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor, PE_REGS *pe_regs)
+queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor, PE_REGS *pe_regs, int flags)
 {
   char *start, *command;
-  int queue_type = QUEUE_DEFAULT;
+  int queue_type = QUEUE_DEFAULT | flags;
 
   start = safe_atr_value(a);
   command = start;
@@ -2216,7 +2216,7 @@ do_allrestart(dbref player)
   do_allhalt(player);
   for (thing = 0; thing < db_top; thing++) {
     if (!IsGarbage(thing) && !(Halted(thing))) {
-      (void) queue_attribute_noparent(thing, "STARTUP", thing);
+      (void) queue_attribute_base(thing, "STARTUP", thing, 1, NULL, QUEUE_PRIORITY);
       do_top(5);
     }
     if (IsPlayer(thing)) {

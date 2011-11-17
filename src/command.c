@@ -730,7 +730,7 @@ switchmask(const char *switches)
     if (!switchnum)
       return NULL;
     else {
-      if (switchnum < max_switch)
+      if (switchnum <= max_switch)
 	switch_list[switchnum - 1].used = 1;
       SW_SET(sw, switchnum);
     }

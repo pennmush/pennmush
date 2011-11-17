@@ -729,8 +729,10 @@ switchmask(const char *switches)
     switchnum = switch_find(NULL, s);
     if (!switchnum)
       return NULL;
-    else
+    else {
+      switch_list[switchnum - 1].used = 1;
       SW_SET(sw, switchnum);
+    }
   }
   return sw;
 }
@@ -836,13 +838,13 @@ build_switch_table(const char *sw, int count __attribute__ ((__unused__)),
 /** Initialize commands (after reading config file).
  * This function performs command initialization that should take place
  * after the configuration file has been read.
- * Currently, there isn't any.
  */
 void
 command_init_postconfig(void)
 {
   struct bst_data sw_data;
   COMMAND_INFO *c;
+  SWITCH_VALUE *s;
 
   command_state = CMD_LOAD_DONE;
 
@@ -867,6 +869,12 @@ command_init_postconfig(void)
       c->sw.mask = SW_ALLOC();
       SW_COPY(c->sw.mask, switchmask(switchstr));
     }
+  }
+
+  /* Warn about unused switch names */
+  for (s = switch_list; s->name; s++) {
+    if (!s->used)
+      do_rawlog(LT_CMD, T("Warning: Switch '%s' is defined but not used."), s->name);
   }
 
   return;

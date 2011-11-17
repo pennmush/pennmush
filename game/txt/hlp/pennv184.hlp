@@ -17,6 +17,13 @@ Minor changes:
  * Added a new event, OBJECT`FLAG, triggered when a flag/power with the
    "event" restriction is set or cleared. Suggested by [SW]. [MG]
  * Expanded help on lock types and @powers. [MG]
+ * @startups are now processed in db order (#0, #1, etc) on reboot instead
+   of giving priority to player objects. [MG]
+ * Switch names that are defined but not used by any commands are
+   warned about on startup, and several unused ones have been removed
+   from the master list. [SW]
+ * Tweak utils/mkcmds.pl for the above change and to remove references
+   to generating the obsolete patches.h. [SW]
  
 Commands:
  * Added @mail/review for reading mail you've sent, and @mail/retract for

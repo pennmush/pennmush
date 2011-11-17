@@ -171,6 +171,7 @@ typedef struct switch_value SWITCH_VALUE;
 struct switch_value {
   const char *name;     /**< Name of the switch */
   int value;            /**< Number of the switch */
+  bool used;             /**< True if a command uses this switch */
 };
 
 typedef struct com_sort_struc COMSORTSTRUC;

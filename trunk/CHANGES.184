@@ -44,6 +44,7 @@ Fixes:
    a change in p8. Reported by Padraic. [MG]
  * Fix really stupid copy-and-paste error in magic sorts on strings with
    ANSI, which broke setinter() and friends. Reported by Minion. [MG]
+ * Help fixes by Wiggles. [MG]
 
 Version 1.8.4 patchlevel 8                                 Nov 11, 2011
 

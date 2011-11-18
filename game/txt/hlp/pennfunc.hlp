@@ -88,7 +88,7 @@ See also: ATTRIBUTES, NON-STANDARD ATTRIBUTES
   which case non-zero numbers, non-negative db#'s, and strings are all
   considered "true" when passed to these functions.  Alternatively,
   your MUSH may be using TinyMUSH 2.2 booleans, in which case only
-  non-zero numbers are "true".
+  non-zero numbers are "true". Check @config tiny_booleans.
 
   and()         cand()        cor()         eq()          gt()
   gte()         lt()          lte()         nand()        neq()
@@ -176,6 +176,9 @@ See also: LISTS
   numbers, they will return an error or misbehave):
   dec()         div()         floordiv()    inc()         mod()
   remainder()
+
+  Math functions are affected by a number of @config options, including the
+  TinyMUSH compatability options null_eq_zero and tiny_math.
 
 See also: Vector Functions
 & Vector functions
@@ -1123,6 +1126,10 @@ See also: acos(), asin(), atan(), cos(), sin(), tan()
 
   Note especially the last example, which will trip you up if you use
   floating point numbers with dec() and expect it to work like sub().
+  
+  If the null_eq_zero @config option is on, using dec() on a string which
+  does not end in an integer will return <string>-1. When null_eq_zero is
+  turned off, it will return an error.
 
 See also: inc(), sub()
 & DECOMPOSE()
@@ -2016,6 +2023,10 @@ See also: @nameformat, @nameaccent, name(), fullname(), accname()
 
   Note especially the last example, which will trip you up if you use
   floating point numbers with inc() and expect it to work like add().
+  
+  If the null_eq_zero @config option is on, using inc() on a string which
+  does not end in an integer will return <string>1. When null_eq_zero is
+  turned off, it will return an error.
 
 See also: dec(), add(), sub()
 & INDEX()
@@ -3783,7 +3794,7 @@ See also: @quota, @squota, @allquota
   r(<register>)
   
   The r() function is used to access "local registers", as set by the setq(),
-  setr() orletq() functions, and returns the contents of the specified
+  setr() or letq() functions, and returns the contents of the specified
   register. Available register names can be found with the listq() function.
  
   The '%q<register>' percent-substitution can also be used to access these

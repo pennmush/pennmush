@@ -568,6 +568,8 @@ main(int argc, char **argv)
 
   options.mem_check = 1;
 
+  init_game_config(confname);
+
   /* If we have setlocale, call it to set locale info
    * from environment variables
    */
@@ -606,7 +608,6 @@ main(int argc, char **argv)
   /* Build the locale-dependant tables used by PCRE */
   tables = pcre_maketables();
 
-  init_game_config(confname);
 
   /* save a file descriptor */
   reserve_fd();

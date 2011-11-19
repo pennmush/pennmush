@@ -1352,12 +1352,8 @@ atr_cpy(dbref dest, dbref source)
   for (ptr = List(source); ptr; ptr = AL_NEXT(ptr))
     if (!AF_Nocopy(ptr)
         && (AttrCount(dest) < max_attrs)) {
-      do_rawlog(LT_ERR, "Preparing to copy %s. AttrCount is %d...",
-                AL_NAME(ptr), AttrCount(dest));
       atr_new_add(dest, AL_NAME(ptr), atr_value(ptr), AL_CREATOR(ptr),
                   AL_FLAGS(ptr), AL_DEREFS(ptr), 0);
-      do_rawlog(LT_ERR, "Copied %s. AttrCount is %d...", AL_NAME(ptr),
-                AttrCount(dest));
     }
 }
 

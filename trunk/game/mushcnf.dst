@@ -14,9 +14,9 @@
 # Name of your MUSH. Please change this.
 mud_name PennMUSH
 
-# The web address of your MUSH. If this is nonempty, then all login
-# screens will be prefixed with <!--  and suffixed with -->
-# Any HTTP clients trying to access it will be redirected to this url.
+# The web address of your MUSH. If this is nonempty, people attemping to
+# connect to your MUSH with a web browser will be redirected to this
+# URL. Set to the address of a web client, or your MUSH's website.
 # mud_url http://www.pennmush.org
 mud_url
 

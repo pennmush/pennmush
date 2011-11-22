@@ -736,7 +736,7 @@ dbwalk(char *buff, char **bp, dbref executor, dbref enactor,
     safe_strl("#-1", 3, buff, bp);
 
   /* Kill a trailing space at the end of the buffer */
-  if (*bp > buff && *(*bp - 1) == ' ')
+  if (buff && *bp > buff && *(*bp - 1) == ' ')
     *bp -= 1;
 
   return result;

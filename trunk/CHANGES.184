@@ -20,6 +20,7 @@ Version 1.8.4 patchlevel 9                                 ??? ??, 201?
 
 Fixes:
  * Memory leak in ldelete() fixed. [MG]
+ * Fix a crashbug reported by Minion. [MG]
 
 Minor changes:
  * Added a new event, OBJECT`FLAG, triggered when a flag/power with the

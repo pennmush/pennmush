@@ -653,6 +653,11 @@ main(int argc, char **argv)
     load_reboot_db();
   }
 
+  /* Call Local Startup */
+  local_startup();
+  /* everything else ok. Restart all objects. */
+  do_restart();
+
   init_sys_events();
 
   shovechars(TINYPORT, SSLPORT);

@@ -23,6 +23,9 @@ Minor changes:
  * Expanded help on lock types and @powers. [MG]
  * @startups are now processed in db order (#0, #1, etc) on reboot instead
    of giving priority to player objects. [MG]
+ * @startups (and local_startup() in local.c) are now triggered slightly
+   later, ensuring that the db is fully loaded, and that the connected player
+   list is loaded on @shutdown/reboot. Suggested by Padraic. [MG]
  * Switch names that are defined but not used by any commands are
    warned about on startup, and several unused ones have been removed
    from the master list. [SW]

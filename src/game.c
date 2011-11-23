@@ -771,10 +771,6 @@ init_game_postdb(const char *conf)
   /* Load further restrictions from config file */
   config_file_startup(conf, 1);
   validate_config();
-  /* Call Local Startup */
-  local_startup();
-  /* everything else ok. Restart all objects. */
-  do_restart();
 #ifdef HAS_OPENSSL
   /* Set up ssl */
 #ifndef SSL_SLAVE

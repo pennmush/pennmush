@@ -5,11 +5,9 @@
 ; using in the indent rule for src/Makefile. Requires chicken scheme.
 ; http://call-with-current-continuation.org or your package manager.
 ;
-; Also works with guile 1.8
-;
 ; Written by Raevnos <shawnw@speakeasy.org> for PennMUSH.
 ;
-; Version 0.9.2
+; Version 1.0
 ;
 ; Usage:
 ; % csc -O2 -heap-initial-size 768k -o typedefs utils/typedefs.scm
@@ -22,8 +20,6 @@
 ;
 ; You can also use it as an interpreted script:
 ; % csi -script utils/typedefs.scm < src/TAGS > indent.defs
-; or
-; % guile -s utils/typedefs.scm < src/TAGS > indent.defs
 ; or
 ; % chmod +x typedefs.scm
 ; % ./typedefs.scm < TAGS
@@ -46,30 +42,12 @@
    (block)
    (usual-integrations)
    (disable-interrupts)
-   (lambda-lift)
    (no-procedure-checks-for-usual-bindings)
-   (bound-to-procedure string-between/shared process-line read-typedefs
-		       copy-typedef emit-typedef)
    (uses utils srfi-1 srfi-13)))
  ((and chicken csi)
   (require-extension utils)
   (require-extension srfi-1)
-  (require-extension srfi-13))
- (guile
-  (use-modules (srfi srfi-1) (srfi srfi-13) (ice-9 rdelim)
-	       (ice-9 format))
-  (define fx>= >=)
-  (define fx+ +)
-  (define fx= =)
-  (define signal throw)
-  (define-macro (handle-exceptions exn handler body)
-    `(catch #t
-	    (lambda () ,body)
-	    (lambda (,exn) ,handler)))
-  (define-macro (printf fmtstr . args)
-    `(format #t ,fmtstr ,@args))
-  (define-macro (define-constant sym val)
-    `(define ,sym ,val))))
+  (require-extension srfi-13)))
 
 (define (for-each-line f in-port)
   (let loop ((line (read-line in-port)))
@@ -81,16 +59,22 @@
 ; Return what's between the first occurance of fc and the last of lc in
 ; a string. Raises an error if index(fc) > index(lc) or one of the two
 ; doesn't exist.
-(define (string-between/shared str fc lc)
-  (let ((first-index (string-index str fc))
-	(last-index (string-index-right str lc)))
-    (cond
-     ((not (and (integer? first-index) (integer? last-index)))
-       (signal 'out-of-range))
-     ((fx>= first-index last-index)
-      (signal 'out-of-range))
-     (else
-      (substring/shared str (fx+ first-index 1) last-index)))))
+(define-syntax define-typename-extractor
+  (syntax-rules ()
+    ((_ (name) fif lif)
+     (define (name str fc lc)
+       (let ((first-index (fif str fc))
+	     (last-index (lif str lc)))
+	 (if (and (integer? first-index)
+		  (integer? last-index)
+		  (< first-index last-index))
+	     (substring/shared str (+ first-index 1) last-index)
+	     (signal 'out-of-range)))))))
+
+(define-typename-extractor (string-between/shared-ctags)
+  string-index string-index-right)
+(define-typename-extractor (string-between/shared-emacs)
+  string-index-right string-index-right)
 
 ; The special characters that mark the start and end of an identifier
 (define-constant type-start (integer->char 127))
@@ -98,59 +82,64 @@
 
 ; Either return a typedef name or a symbol : 'line-did-not-match or
 ; 'read-more-lines
-(define process-line #f)
-(let*
-    ((in-struct-typedef? #f)
-     (in-enum-typedef? #f)
-     (copy-typedef (lambda (str)
-		     (string-between/shared str type-start type-end)))
-     (pl (lambda (line)
-	   (handle-exceptions
-	    exn (if (eq? exn 'out-of-range)
-		    (begin
-		      (display
-		       (format "Unable to extract typedef name from line: ~A\n"
-			       line) (current-error-port))
-		      'line-did-not-match)
-		    (abort exn))
-	    (cond
-	     (in-struct-typedef?
-	      (if (char=? (string-ref line 0) #\})
-		  (begin
-		    (set! in-struct-typedef? #f)
-		    (copy-typedef line))
-		  'read-more-lines))
-	     (in-enum-typedef?
-	      (if (char=? (string-ref line 0) #\})
-		  (begin
-		    (set! in-enum-typedef? #f)
-		    (copy-typedef line))
-		  'read-more-lines))
-	     ((string-prefix? "typedef struct " line)		     
-	      (if (string-index line #\;)
-		  (copy-typedef line)
-		  (begin
-		    ; If the struct is defined here the typedef name
-		    ; is on the next line starting with }. There are 
-		    ; optional structure member lines between.
-		    (set! in-struct-typedef? #t)
-		    'read-more-lines)))
-	     ((string-prefix? "typedef enum " line)
-	      (if (string-index line #\;)
-		  (copy-typedef line)
-		  (begin
-		    ; Skip enum values
-		    (set! in-enum-typedef? #t)
-		    'read-more-lines)))
-	     ((string-prefix? "typedef " line)
-	      (copy-typedef line))
-	     ((string-prefix? "} " line)
-	      ; We get this with a typedef of an anonymous struct.
-	      ; If it then starts an array, some versions of etags
-              ; won't record the typedef name and you'll get a warning.
-	      (copy-typedef line))
-	     (else 'line-did-not-match))))))
-  (set! process-line pl))
+(define process-line
+  (let*
+      ((in-struct-typedef? #f)
+       (in-enum-typedef? #f)
+       (copy-typedef-ctags
+	(cut string-between/shared-ctags <> type-start type-end))
+       (copy-typedef-emacs 
+	(cut string-between/shared-emacs <> #\space #\;))
+       (copy-typedef
+	(lambda (str)
+	  (if (string-index str type-end) 
+	      (copy-typedef-ctags str)
+	      (copy-typedef-emacs str)))))
+    (lambda (line)
+      (handle-exceptions
+       exn (if (eq? exn 'out-of-range)
+	       (begin
+		 (format (current-error-port) "Unable to extract typedef name from line: ~A\n"
+			 line)
+		 'line-did-not-match)
+	       (abort exn))
+       (cond
+	(in-struct-typedef?
+	 (if (char=? (string-ref line 0) #\})
+	     (begin
+	       (set! in-struct-typedef? #f)
+	       (copy-typedef line))
+	     'read-more-lines))
+	(in-enum-typedef?
+	 (if (char=? (string-ref line 0) #\})
+	     (begin
+	       (set! in-enum-typedef? #f)
+	       (copy-typedef line))
+	     'read-more-lines))
+	((string-prefix? "typedef struct " line)		     
+	 (if (string-index line #\;)
+	     (copy-typedef line)
+	     (begin
+	       ;; If the struct is defined here the typedef name
+	       ;; is on the next line starting with }. There are 
+	       ;; optional structure member lines between.
+	       (set! in-struct-typedef? #t)
+	       'read-more-lines)))
+	((string-prefix? "typedef enum " line)
+	 (if (string-index line #\;)
+	     (copy-typedef line)
+	     (begin
+	       ;; Skip enum values
+	       (set! in-enum-typedef? #t)
+	       'read-more-lines)))
+	((string-prefix? "typedef " line)
+	 (copy-typedef line))
+	((string-prefix? "} " line)
+	 ;; We get this with a typedef of an anonymous struct.
+	 ;; If it then starts an array, some versions of etags
+	 ;; won't record the typedef name and you'll get a warning.
+	 (copy-typedef line))
+	(else 'line-did-not-match))))))
 
 ; Read all typedefs from an inchannel or filename.
 (define (read-typedefs from)
@@ -167,23 +156,22 @@
 (define-constant tab-stop 8)
 
 ; Print out one typedef to stdout, formated as indent args.
-(define emit-typedef #f)
-(let*
-    ((column tab-stop)
-     (et (lambda (typedef)
-	   (let* ((start-of-line? (fx= column tab-stop))
-		  (len (fx+ (string-length typedef)
-			   (if start-of-line? 3 4))))
-	     (if (fx>= (fx+ column len) max-column-width)
-		 (begin 
-		   (display " \\\n\t")
-		   (set! column tab-stop)
-		   (set! start-of-line? #t)))
-	     (if start-of-line?
-		 (printf "-T ~A" typedef)
-		 (printf " -T ~A" typedef))
-	     (set! column (fx+ column len))))))
-  (set! emit-typedef et))
+(define emit-typedef 
+  (let
+      ((column tab-stop))
+    (lambda (typedef)
+      (let* ((start-of-line? (= column tab-stop))
+	     (len (+ (string-length typedef)
+		     (if start-of-line? 3 4))))
+	(if (>= (+ column len) max-column-width)
+	    (begin 
+	      (display " \\\n\t")
+	      (set! column tab-stop)
+	      (set! start-of-line? #t)))
+	(if start-of-line?
+	    (printf "-T ~A" typedef)
+	    (printf " -T ~A" typedef))
+	(set! column (+ column len))))))
 
 ; main
 (let ((typedefs (read-typedefs (current-input-port))))

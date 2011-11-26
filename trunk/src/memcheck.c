@@ -27,9 +27,10 @@
  * A few notes about this implementation: 
  *
  * The probability used for calculating the number of skips in any
- * given node is \f$\frac{1}{p}\f$, with \f$p = 2\f$: All nodes have
- * at least one link. Half of those will have at least two. Half of
- * those will have at least three, and so on up to our maximimum.
+ * given node is \f$\frac{1}{p}\f$. For example, with \f$p = 2\f$: All
+ * nodes have at least one link. Half of those will have at least
+ * two. Half of those will have at least three, and so on up to our
+ * maximimum. 
  *
  * The algorithm that's typically shown for picking the number of
  * skips in a newly initialized node involves repeated generation of
@@ -44,7 +45,10 @@
  * upper bound of the number of elements in the list. Based on
  * M*U*S*H, it's around 180. The MAX_LINKS constant isn't going to
  * have to be changed until it gets over 256.
- * 
+ *
+ * We use \f$p = 4\f$ in this version, which works out to an average
+ * of 1.33 links per node and around 17.5 nodes checked in a typical
+ * search.
  */
 #include "config.h"
 #include "conf.h"
@@ -65,10 +69,12 @@
 typedef struct mem_check_node MEM;
 
 enum {
-  REF_NAME_LEN = 64, /**< Length of longest check name */
-  MAX_LINKS = 8 /**< Maximum number of links in a single skip list
-		   node. log2(N), where N is the expected
-		   maximum length (~180). */
+  P = 4, /**< 1/P is the probability that a node with N links will
+	    have N+1 links, up to... */
+  MAX_LINKS = 4, /**< Maximum number of links in a single skip list
+		   node. log(1/p)(N), where N is the expected maximum
+		   length (~180). p == 1/2 is 8, p == 1/4 is 4 */
+  REF_NAME_LEN = 64 /**< Length of longest check name */
 };
 
 /** A skip list for storing memory allocation counts */
@@ -84,7 +90,11 @@ static MEM memcheck_head_storage = { 0, MAX_LINKS, {'\0'}, {NULL} };
 static MEM *memcheck_head = &memcheck_head_storage;
 
 /* MEM structs are kind of large for a slab, but storing them in one
-   will boost cache locality when iterating/searching the list. */
+   will boost cache locality when iterating/searching the list. 
+   
+   TODO: Consider storing nodes with different skip link counts in
+   different slabs. Probably overkill when dealing with < 200
+   elements, though. We can live with the wasted space.  */
 slab *memcheck_slab = NULL;
 
 /*** WARNING! DO NOT USE strcasecoll IN THESE FUNCTIONS OR YOU'LL CREATE
@@ -136,21 +146,12 @@ lookup_check(const char *ref)
   return NULL;
 }
 
-/* Cygwin has a log2 that configure doesn't detect. Macro, maybe? */
-#if !defined(HAVE_LOG2) && !defined(__CYGWIN__)
-static inline double
-log2(double x)
-{
-  return log(x) / log(2.0);
-}
-#endif
-
 /* Return the number of links to use for a new node. Result's range is
    1..maxcount */
 static int
 pick_link_count(int maxcount)
 {
-  int lev = (int) floor(log2(genrand_real3()));
+  int lev = (int) floor(log(genrand_real3()) / log(P));
   lev = -lev;
   if (lev > maxcount)
     return maxcount;

@@ -17,11 +17,21 @@
    (usual-integrations)
    (fixnum)
    (disable-interrupts)
+   (no-procedure-checks-for-usual-bindings)
+   (safe-globals)
    (always-bound path-regexp)
-   (uses utils regex)))
+   (uses utils)))
  ((and chicken csi)
   ; Load the appropriate libraries in the interpeter
-  (use utils regex)))
+  (use utils)))
+
+(require-extension regex)
+
+(define (for-each-line f)
+  (let loop ((line (read-line)))
+    (unless (eof-object? line)
+	    (f line)
+	    (loop (read-line)))))
 
 ;;; Two ways of doing it.
 
@@ -47,7 +57,7 @@
 ;      line))
 
 ;; The driver, equivalent to perl's behavior when invoked with -p
-(for-each-argv-line (compose print fix-paths))
+(for-each-line (compose print fix-paths))
 
 ;;; As an exercise, compare with the following idiomatic perl equivalent:
 
@@ -65,4 +75,4 @@
 ; I think the scheme version is far more readable, with only a few
 ; more lines of actual code (Ignoring all the boilerplate stuff in the
 ; cond-expand. It's just hints to the compiler and loading libraries).
-
+; Well, now that chicken removed for-each-line, it's longer...

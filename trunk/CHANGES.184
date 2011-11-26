@@ -18,10 +18,6 @@ chronological order (most recent first)
 
 Version 1.8.4 patchlevel 9                                 ??? ??, 201?
 
-Fixes:
- * Memory leak in ldelete() fixed. [MG]
- * Fix a crashbug reported by Minion. [MG]
-
 Minor changes:
  * Added a new event, OBJECT`FLAG, triggered when a flag/power with the
    "event" restriction is set or cleared. Suggested by [SW]. [MG]
@@ -38,7 +34,10 @@ Minor changes:
    to generating the obsolete patches.h. [SW]
  * Tweak the parameters of the skip list used to store memcheck counts
    to save some memory. [SW]
- 
+ * Bring the scheme scripts in utils up to date with current versions
+   of chicken scheme (The implementation of the language they're
+   written for.) [SW]
+
 Commands:
  * Added @mail/review for reading mail you've sent, and @mail/retract for
    deleting unread mail that you sent. Idea from MUX. Patch by Minion.
@@ -54,6 +53,8 @@ Fixes:
  * Fix really stupid copy-and-paste error in magic sorts on strings with
    ANSI, which broke setinter() and friends. Reported by Minion. [MG]
  * Help fixes by Wiggles. [MG]
+ * Memory leak in ldelete() fixed. [MG]
+ * Fix a crashbug reported by Minion. [MG]
 
 Version 1.8.4 patchlevel 8                                 Nov 11, 2011
 

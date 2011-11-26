@@ -43,18 +43,16 @@
    (usual-integrations)
    (disable-interrupts)
    (no-procedure-checks-for-usual-bindings)
+   (safe-globals)
    (uses utils srfi-1 srfi-13)))
  ((and chicken csi)
-  (require-extension utils)
-  (require-extension srfi-1)
-  (require-extension srfi-13)))
+  (require-extension utils srfi-1 srfi-13)))
 
-(define (for-each-line f in-port)
-  (let loop ((line (read-line in-port)))
-    (if (not (eof-object? line))
-	(begin
-	  (f line)
-	  (loop (read-line in-port))))))
+(define (for-each-line f)
+  (let loop ((line (read-line)))
+    (unless (eof-object? line)
+	    (f line)
+	    (loop (read-line)))))
 
 ; Return what's between the first occurance of fc and the last of lc in
 ; a string. Raises an error if index(fc) > index(lc) or one of the two
@@ -67,8 +65,8 @@
 	     (last-index (lif str lc)))
 	 (if (and (integer? first-index)
 		  (integer? last-index)
-		  (< first-index last-index))
-	     (substring/shared str (+ first-index 1) last-index)
+		  (fx< first-index last-index))
+	     (substring/shared str (fx+ first-index 1) last-index)
 	     (signal 'out-of-range)))))))
 
 (define-typename-extractor (string-between/shared-ctags)
@@ -141,14 +139,14 @@
 	 (copy-typedef line))
 	(else 'line-did-not-match))))))
 
-; Read all typedefs from an inchannel or filename.
-(define (read-typedefs from)
+; Read all typedefs from an inchannel
+(define (read-typedefs)
   (let*
       ((typedefs '())
        (fl-proc (lambda (line) 
 		  (let ((res (process-line line)))
 		    (if (string? res) (set! typedefs (cons res typedefs)))))))
-    (for-each-line fl-proc from)
+    (for-each-line fl-proc)
     (delete-duplicates (sort typedefs string-ci<) string-ci=)))
 
 ; Control pretty-printing of the typedefs.
@@ -160,10 +158,10 @@
   (let
       ((column tab-stop))
     (lambda (typedef)
-      (let* ((start-of-line? (= column tab-stop))
-	     (len (+ (string-length typedef)
+      (let* ((start-of-line? (fx= column tab-stop))
+	     (len (fx+ (string-length typedef)
 		     (if start-of-line? 3 4))))
-	(if (>= (+ column len) max-column-width)
+	(if (fx>= (fx+ column len) max-column-width)
 	    (begin 
 	      (display " \\\n\t")
 	      (set! column tab-stop)
@@ -171,10 +169,10 @@
 	(if start-of-line?
 	    (printf "-T ~A" typedef)
 	    (printf " -T ~A" typedef))
-	(set! column (+ column len))))))
+	(set! column (fx+ column len))))))
 
 ; main
-(let ((typedefs (read-typedefs (current-input-port))))
+(let ((typedefs (read-typedefs)))
   (write-char #\tab)
   (for-each emit-typedef typedefs)
   (newline))

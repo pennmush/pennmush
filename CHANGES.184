@@ -36,6 +36,8 @@ Minor changes:
    from the master list. [SW]
  * Tweak utils/mkcmds.pl for the above change and to remove references
    to generating the obsolete patches.h. [SW]
+ * Tweak the parameters of the skip list used to store memcheck counts
+   to save some memory. [SW]
  
 Commands:
  * Added @mail/review for reading mail you've sent, and @mail/retract for

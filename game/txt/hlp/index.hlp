@@ -495,7 +495,7 @@ For more, see Entries-24
  ldelete()                 leave                     left()                   
  lemit()                   letq()                    lexits()                 
  lflags()                  license                   light                    
- link()                    link_anywhere             link_ok                  
+ link()                    link_anywhere power       link_ok                  
  linking                   list functions            list()                   
  listen_parent             listening                 listening2               
  listening3                listq()                   lists                    

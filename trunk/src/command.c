@@ -2083,7 +2083,7 @@ COMMAND(cmd_command)
       *bp = '\0';
       notify_format(executor, T("Arguments  : %s"), buff);
     }
-    do_hook_list(executor, arg_left);
+    do_hook_list(executor, arg_left, 0);
   }
 }
 
@@ -2452,16 +2452,17 @@ do_hook(dbref player, char *command, char *obj, char *attrname,
  * \param command command to list hooks on.
  */
 void
-do_hook_list(dbref player, char *command)
+do_hook_list(dbref player, char *command, bool verbose)
 {
   COMMAND_INFO *cmd;
+  int count = 0;
 
   if (!command || !*command) {
     /* Show all commands with hooks */
     char *ptrs[BUFFER_LEN / 2];
     static char buff[BUFFER_LEN];
     char *bp;
-    int i, count = 0;
+    int i;
 
     for (cmd = (COMMAND_INFO *) ptab_firstentry(&ptab_command); cmd;
          cmd = (COMMAND_INFO *) ptab_nextentry(&ptab_command)) {
@@ -2515,19 +2516,31 @@ do_hook_list(dbref player, char *command)
       }
       *bp = '\0';
 
-      if (GoodObject(cmd->hooks.before.obj))
+      if (GoodObject(cmd->hooks.before.obj)) {
+        count++;
         notify_format(player, "@hook/before: #%d/%s",
                       cmd->hooks.before.obj, cmd->hooks.before.attrname);
-      if (GoodObject(cmd->hooks.after.obj))
+      }
+      if (GoodObject(cmd->hooks.after.obj)) {
+        count++;
         notify_format(player, "@hook/after: #%d/%s", cmd->hooks.after.obj,
                       cmd->hooks.after.attrname);
-      if (GoodObject(cmd->hooks.ignore.obj))
+      }
+      if (GoodObject(cmd->hooks.ignore.obj)) {
+        count++;
         notify_format(player, "@hook/ignore: #%d/%s",
                       cmd->hooks.ignore.obj, cmd->hooks.ignore.attrname);
-      if (GoodObject(cmd->hooks.override.obj))
+      }
+      if (GoodObject(cmd->hooks.override.obj)) {
+        count++;
         notify_format(player, "@hook/override%s: #%d/%s",
                       inplace,
                       cmd->hooks.override.obj, cmd->hooks.override.attrname);
+      }
+      if (!count && verbose)
+        notify(player, T("That command has no hooks."));
+    } else if (verbose) {
+      notify(player, T("Permission denied."));
     }
   }
 }

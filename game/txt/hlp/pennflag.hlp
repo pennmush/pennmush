@@ -583,6 +583,10 @@ See: @force, PUPPETS, @forwardlist
   
   Only Wizards can set players royalty, though players who are already set
   royalty can set their own objects royalty as well.
+  
+  Royalty grants the following @powers implicitly: functions, idle,
+  link_anywhere, login, long_fingers, no_quota, open_anywhere  and see_all.
+  See 'help <power> power' for more info.
 
 See also: WIZARD, @power
 & SAFE
@@ -886,21 +890,21 @@ See also: @hook, @command
   for the idle_timeout. Instead, you will be hidden (if you also have the
   Hide power), or will simply remain connected. Wizards and Royalty have the
   power implicitly.
-  
+
 See also: HIDE POWER
-& LINK_ANYWHERE
+& LINK_ANYWHERE POWER
 
   The Link_Anywhere power allows an object to link exits to any location.
   Can be useful for variable exits. Wizards and Royalty have the power
   implicitly.
-  
+
 See also: LINK_OK, OPEN_ANYWHERE POWER, @link
 & LOGIN POWER
 
   The Login power allows a player to connect to the MUSH, even when logins
   have been disabled (via the "logins" @config option). Wizards and royalty
   have the power implicitly.
-  
+
 See also: @sitelock
 & LONG_FINGERS POWER
 
@@ -953,7 +957,8 @@ See also: @open, OPEN_OK, @lock/open
 See also: LOUD, page, @pemit, @lock/page, CAN_SPOOF POWE
 & PLAYER_CREATE POWER
 
-  This power allows objects to use @pcreate. Wizards have the power implicitly.
+  This power allows objects to use @pcreate. Wizards have the power
+  implicitly.
   
 See also: @pcreate
 & POLL POWER

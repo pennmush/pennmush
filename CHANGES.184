@@ -37,6 +37,9 @@ Minor changes:
  * Bring the scheme scripts in utils up to date with current versions
    of chicken scheme (The implementation of the language they're
    written for.) [SW]
+ * @hook/list now shows error messages if you don't have permission to use
+   it, or if a command has no hooks, instead of failing silently. Suggested
+   by Padraic. [MG]
 
 Commands:
  * Added @mail/review for reading mail you've sent, and @mail/retract for

@@ -58,6 +58,8 @@ Fixes:
  * Help fixes by Wiggles. [MG]
  * Memory leak in ldelete() fixed. [MG]
  * Fix a crashbug reported by Minion. [MG]
+ * Sorting functions now ignore ANSI when sorting a string as a number
+   or dbref. From report by Mouvar. [MG]
 
 Version 1.8.4 patchlevel 8                                 Nov 11, 2011
 

@@ -343,18 +343,19 @@ GENRECORD(gen_magic)
 
 GENRECORD(gen_dbref)
 {
+  char *val = remove_markup(rec->val, NULL);
   rec->memo.num =
-    (globals.database_loaded ? parse_objid(rec->val) : qparse_dbref(rec->val));
+    (globals.database_loaded ? parse_objid(val) : qparse_dbref(val));
 }
 
 GENRECORD(gen_num)
 {
-  rec->memo.num = parse_integer(rec->val);
+  rec->memo.num = parse_integer(remove_markup(rec->val, NULL));
 }
 
 GENRECORD(gen_float)
 {
-  rec->memo.numval = parse_number(rec->val);
+  rec->memo.numval = parse_number(remove_markup(rec->val, NULL));
 }
 
 GENRECORD(gen_db_name)

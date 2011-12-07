@@ -1186,15 +1186,22 @@ ansi_string_insert(ansi_string *dst, int loc, ansi_string *src)
 int
 ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
 {
-  int len = dst->len + src->len - count;
-  int oldlen = dst->len;
-  int dstleft = dst->len - (loc + count);
-  int srclen = src->len;
-  int srcend = loc + srclen;
+  int len, oldlen, srclen, srcend, dstleft;
   int idx, sidx, baseidx;
   int i, j;
   int truncated = 0;
   new_markup_information *basemi, *mis, *mi, *mie;
+
+  oldlen = dst->len;
+  srclen = src->len;
+  srcend = loc + srclen;
+  len = oldlen + srclen;
+
+  if (loc + count > oldlen)
+    count = oldlen - loc;
+
+  dstleft = oldlen - (loc + count);
+  len -= count;
 
   if (len >= BUFFER_LEN) {
     if (loc >= BUFFER_LEN - 1) {
@@ -1209,6 +1216,7 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
       dstleft = len - srcend;
     }
   }
+   
   /* Nothing to copy? */
   if (src->len < 1) {
     if (count > 0) {

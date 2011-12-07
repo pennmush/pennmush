@@ -115,6 +115,8 @@ sub test {
       $matchpattern =~ s/^=//o;
     }
 
+    $result =~ s/\s+$//o;
+
     if ($negate) {
       $verdict = 0 if $result =~ /$matchpattern/;
     } else {

@@ -40,6 +40,8 @@ Minor changes:
  * @hook/list now shows error messages if you don't have permission to use
    it, or if a command has no hooks, instead of failing silently. Suggested
    by Padraic. [MG]
+ * The test harness code strips trailing whitespace before attempting to match
+   against expected results, making it easier to use bounded regexps. [SW]
 
 Commands:
  * Added @mail/review for reading mail you've sent, and @mail/retract for

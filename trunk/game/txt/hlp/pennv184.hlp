@@ -54,7 +54,7 @@ Fixes:
    a change in p8. Reported by Padraic. [MG]
  * Fix really stupid copy-and-paste error in magic sorts on strings with
    ANSI, which broke setinter() and friends. Reported by Minion. [MG]
- * Help fixes by Wiggles. [MG]
+ * Help fixes by Wiggles, Mouvar and others. [MG]
  * Memory leak in ldelete() fixed. [MG]
  * Fix a crashbug reported by Minion. [MG]
  * Sorting functions now ignore ANSI when sorting a string as a number

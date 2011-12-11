@@ -42,6 +42,8 @@ Minor changes:
    by Padraic. [MG]
  * The test harness code strips trailing whitespace before attempting to match
    against expected results, making it easier to use bounded regexps. [SW]
+ * @destination (for variable exits) is now a standard attribute, and has
+   a helpfile. [MG]
 
 Commands:
  * Added @mail/review for reading mail you've sent, and @mail/retract for

@@ -2425,6 +2425,9 @@ See also: EXITS, @open, @dig, DROP-TO, HOME
   check for an EXITTO attribute, for cross-platform compatability. It works
   exactly the same as the DESTINATION attribute.
   
+  Note that, unlike most attributes, @destination cannot be abbreviated and
+  must be typed in full.
+  
   Example:
     > @open Random Exit;re
     > @link re=variable

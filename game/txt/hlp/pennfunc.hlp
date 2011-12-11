@@ -1185,7 +1185,8 @@ See also: encrypt(), encode64(), decode64()
     > say default(me/Test, No fruits!)
     You say "No fruits!"
  
-See also: get(), hasattr(), ufun(), edefault(), udefault(), uldefault()
+See also: get(), hasattr(), ufun(), edefault(), udefault(), uldefault(),
+  strfirstof()
 & DELETE()
   delete(<string>, <first>, <len>)
  
@@ -4979,7 +4980,7 @@ See also: mean(), median()
     > say strallof(,  ,foo,@@(Nothing),%b,bar|baz,#-1,|)
     You say, "foo| |bar|baz|#-1"
   
-See also: allof(), firstof(), first(), strlen(), cat()
+See also: allof(), firstof(), first(), strlen(), cat(), default()
 & STRINSERT()
   strinsert(<string>, <position>, <insert>)
 

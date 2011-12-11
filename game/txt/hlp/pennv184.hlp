@@ -35,6 +35,10 @@ Minor changes:
  * @hook/list now shows error messages if you don't have permission to use
    it, or if a command has no hooks, instead of failing silently. Suggested
    by Padraic. [MG]
+ * The test harness code strips trailing whitespace before attempting to match
+   against expected results, making it easier to use bounded regexps. [SW]
+ * @destination (for variable exits) is now a standard attribute, and has
+   a helpfile. [MG]
 
 Commands:
  * Added @mail/review for reading mail you've sent, and @mail/retract for
@@ -53,6 +57,10 @@ Fixes:
  * Help fixes by Wiggles. [MG]
  * Memory leak in ldelete() fixed. [MG]
  * Fix a crashbug reported by Minion. [MG]
+ * Sorting functions now ignore ANSI when sorting a string as a number
+   or dbref. From report by Mouvar. [MG]
+ * strreplace() was broken for overly long length arguments. Reported
+   by Ashen-Shugar.  [SW]
 
 & 1.8.4p8
 Version 1.8.4 patchlevel 8                                 Nov 11, 2011

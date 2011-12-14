@@ -1216,7 +1216,7 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
       dstleft = len - srcend;
     }
   }
-   
+
   /* Nothing to copy? */
   if (src->len < 1) {
     if (count > 0) {
@@ -1338,7 +1338,7 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
     }
   }
 
-  // Move markup as necessary.
+  /* Move markup as necessary. */
   if (dstleft > 0) {
     memmove(dst->markup + srcend,
             dst->markup + (loc + count), dstleft * sizeof(int16_t));

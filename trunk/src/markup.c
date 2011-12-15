@@ -763,7 +763,7 @@ grow_mi(ansi_string *as, char type)
 static inline new_markup_information *
 MI_FOR(ansi_string *as, int idx)
 {
-  if (idx < 0)
+  if (idx < 0 || idx > as->misize)
     return NULL;
   else
     return &as->mi[idx];
@@ -1311,6 +1311,7 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
     for (i = 0; i < srclen; i++) {
       src->markup[i] = NOMARKUP;
     }
+    src->flags |= AS_HAS_MARKUP;
   }
 
   /* Save the markup info pointers for loc and loc-1 */

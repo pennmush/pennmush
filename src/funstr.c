@@ -336,42 +336,6 @@ FUNCTION(fun_right)
 }
 
 /* ARGSUSED */
-FUNCTION(fun_strinsert)
-{
-  /* Insert a string into another */
-  ansi_string *dst, *src;
-  int pos;
-
-  if (!is_integer(args[1])) {
-    safe_str(e_int, buff, bp);
-    return;
-  }
-
-  pos = parse_integer(args[1]);
-  if (pos < 0) {
-    safe_str(T(e_range), buff, bp);
-    return;
-  }
-
-  dst = parse_ansi_string(args[0]);
-  if (pos > dst->len) {
-    safe_strl(args[0], arglens[0], buff, bp);
-    safe_strl(args[2], arglens[0], buff, bp);
-    free_ansi_string(dst);
-    return;
-  }
-
-  src = parse_ansi_string(args[2]);
-
-  ansi_string_insert(dst, pos, src);
-
-  safe_ansi_string(dst, 0, dst->len, buff, bp);
-
-  free_ansi_string(dst);
-  free_ansi_string(src);
-}
-
-/* ARGSUSED */
 FUNCTION(fun_delete)
 {
   ansi_string *as;
@@ -410,26 +374,41 @@ FUNCTION(fun_delete)
 }
 
 /* ARGSUSED */
-FUNCTION(fun_strreplace)
+FUNCTION(fun_str_rep_or_ins)
 {
   ansi_string *dst, *src;
-  int start, len;
+  int start = 0, len = 0;
+  int srcarg;
 
-  if (!is_integer(args[1]) || !is_integer(args[2])) {
+  if (!is_integer(args[1])) {
     safe_str(T(e_ints), buff, bp);
     return;
   }
-
   start = parse_integer(args[1]);
-  len = parse_integer(args[2]);
 
-  if (start < 0 || len < 0) {
-    safe_str(T(e_range), buff, bp);
-    return;
+  if (!strcmp(called_as, "STRREPLACE")) {
+    /* strreplace - arg 2 is a length, arg
+     * 3 is the string to add */
+    if (!is_integer(args[2])) {
+      safe_str(T(e_ints), buff, bp);
+      return;
+    }
+    srcarg = 3;
+  } else {
+    /* strinsert() has no length, arg 2 is
+     * the string to add */
+    srcarg = 2;
   }
 
   dst = parse_ansi_string(args[0]);
-  src = parse_ansi_string(args[3]);
+  if (start > dst->len) {
+    safe_strl(args[0], arglens[0], buff, bp);
+    safe_strl(args[srcarg], arglens[srcarg], buff, bp);
+    free_ansi_string(dst);
+    return;
+  }
+
+  src = parse_ansi_string(args[srcarg]);
 
   ansi_string_replace(dst, start, len, src);
 

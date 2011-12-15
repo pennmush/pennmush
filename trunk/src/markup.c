@@ -1194,11 +1194,19 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
 
   oldlen = dst->len;
   srclen = src->len;
-  srcend = loc + srclen;
-  len = oldlen + srclen;
+
+  if (loc > oldlen) {
+    /* If the dst string isn't long enough, we don't replace, we just
+     * insert at the end of the existing string */
+    loc = dst->len;
+    count = 0;
+  }
 
   if (loc + count > oldlen)
     count = oldlen - loc;
+
+  srcend = loc + srclen;
+  len = oldlen + srclen;
 
   dstleft = oldlen - (loc + count);
   len -= count;

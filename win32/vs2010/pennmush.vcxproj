@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -177,7 +177,6 @@ echo Don%27t forget to customize mush.cnf!
     <ClCompile Include="..\..\src\myssl.c" />
     <ClCompile Include="..\..\src\notify.c" />
     <ClCompile Include="..\..\src\parse.c" />
-    <ClCompile Include="..\..\src\pcre.c" />
     <ClCompile Include="..\..\src\player.c" />
     <ClCompile Include="..\..\src\plyrlist.c" />
     <ClCompile Include="..\..\src\predicat.c" />

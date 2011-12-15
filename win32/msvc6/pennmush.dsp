@@ -452,10 +452,6 @@ SOURCE=..\..\src\parse.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\pcre.c
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\src\player.c
 # End Source File
 # Begin Source File

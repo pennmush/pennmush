@@ -21,6 +21,7 @@ Version 1.8.4 patchlevel 9                                 ??? ??, 201?
 Major changes:
  * The PCRE library is now required to build Penn, instead of falling
    back to an old, buggy version formerly bundled with the MUSH. [SW]
+   Daniko assisted greatly with Windows changes and documentation.
 
 Minor changes:
  * Added a new event, OBJECT`FLAG, triggered when a flag/power with the

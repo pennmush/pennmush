@@ -374,10 +374,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\pcre.c"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\player.c"
 				>
 			</File>

@@ -91,6 +91,11 @@
 #define HAS_OPENSSL
 #endif
 
+/* You MUST have the PCRE library installed. See
+   win32/README_PCRE.txt */
+#define HAVE_PCRE
+#define HAVE_PCRE_H
+
 /* Types */
 
 #undef HAVE__BOOL

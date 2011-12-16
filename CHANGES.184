@@ -73,6 +73,7 @@ Fixes:
    or dbref. From report by Mouvar. [MG]
  * strreplace() was broken for overly long length arguments. Reported
    by Ashen-Shugar.  [SW]
+ * Compile errors on Windows with OpenSSL. Reported by Minion. 
 
 Version 1.8.4 patchlevel 8                                 Nov 11, 2011
 

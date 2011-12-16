@@ -379,6 +379,7 @@ FUNCTION(fun_str_rep_or_ins)
   ansi_string *dst, *src;
   int start = 0, len = 0;
   int srcarg;
+  bool inserting = 1;
 
   if (!is_integer(args[1])) {
     safe_str(T(e_ints), buff, bp);
@@ -404,6 +405,7 @@ FUNCTION(fun_str_rep_or_ins)
       return;
     }
     srcarg = 3;
+    inserting = 0;
   } else {
     /* strinsert() has no length, arg 2 is
      * the string to add */
@@ -413,7 +415,9 @@ FUNCTION(fun_str_rep_or_ins)
   dst = parse_ansi_string(args[0]);
   if (start > dst->len) {
     safe_strl(args[0], arglens[0], buff, bp);
-    safe_strl(args[srcarg], arglens[srcarg], buff, bp);
+    if (inserting)
+      safe_strl(args[srcarg], arglens[srcarg], buff, bp);
+
     free_ansi_string(dst);
     return;
   }

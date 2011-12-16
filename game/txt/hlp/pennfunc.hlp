@@ -4984,9 +4984,12 @@ See also: allof(), firstof(), first(), strlen(), cat(), default()
 & STRINSERT()
   strinsert(<string>, <position>, <insert>)
 
-  This function returns <string>, with <insert> added before the <position>
-  character in <string>. Note that the first character in <string> is
-  numbered 0, not 1.
+  This function returns <string>, with <insert> added before the
+  <position> character in <string>. Note that the first character in
+  <string> is numbered 0, not 1.
+
+  If <position> is less than 0, an error is returned. If <position> is
+  greater than the length of <string>, <insert> is appended to it.
 
   Examples:
   > think strinsert(barbaz, 0, foo)
@@ -5049,6 +5052,9 @@ See also: comp(), match(), setq(), r()
   Returns <string> with the <length> characters starting at <start>
   replaced by <text>. As with most other string functions, the first
   character is at position 0.
+
+  If <start> is less than 0, an error is returned, and if <start> is
+  greater than the length of <string>, <string> is returned.
 
   Example:
   > think strreplace(Fix teh typo, 4, 3, the)

@@ -1322,9 +1322,12 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
         dbref exit;
         DOLIST(exit, Exits(target)) {
           if (Audible(exit)) {
-            loc = Location(exit);
+	    if (VariableExit(exit))
+	      loc = find_var_dest(speaker, exit);
+	    else
+	      loc = Destination(exit);
             if (!RealGoodObject(loc))
-              continue;         /* unlinked, variable dests, HOME */
+              continue;         /* unlinked, variable dests that resolve to bad things, HOME */
             if (filter_found(exit, speaker, fullmsg, 0))
               continue;
             /* Need to make the prefix for each exit */

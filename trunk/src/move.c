@@ -32,7 +32,6 @@ void moveit(dbref what, dbref where, int nomovemsgs,
             dbref enactor, const char *cause);
 static void send_contents(dbref loc, dbref dest);
 static void maybe_dropto(dbref loc, dbref dropto);
-static dbref find_var_dest(dbref player, dbref exit_obj);
 static void add_follower(dbref leader, dbref follower);
 static void add_following(dbref follower, dbref leader);
 static void add_follow(dbref leader, dbref follower, int noisy);
@@ -356,7 +355,7 @@ can_move(dbref player, const char *direction)
   return ok;                    /* Written like this due to overeager compiler */
 }
 
-static dbref
+dbref
 find_var_dest(dbref player, dbref exit_obj)
 {
   /* This is used to evaluate the u-function DESTINATION on an exit with
@@ -438,7 +437,7 @@ do_move(dbref player, const char *direction, enum move_type type,
       }
 
       if (could_doit(player, exit_m, pe_info)) {
-        switch (Location(exit_m)) {
+        switch (Destination(exit_m)) {
         case HOME:
           var_dest = Home(player);
           break;
@@ -454,7 +453,7 @@ do_move(dbref player, const char *direction, enum move_type type,
           }
           break;
         default:
-          var_dest = Location(exit_m);
+          var_dest = Destination(exit_m);
         }
 
         if (!GoodObject(var_dest)) {

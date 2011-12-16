@@ -183,17 +183,17 @@ look_exits(dbref player, dbref loc, const char *exit_name, NEW_PE_INFO *pe_info)
         s1 = tbuf1;
         safe_tag("LI", tbuf1, &s1);
         safe_chr(' ', tbuf1, &s1);
-        if (Location(thing) == NOTHING)
+        if (Destination(thing) == NOTHING)
           safe_format(tbuf1, &s1, T("%s leads nowhere."), nbuf);
-        else if (Location(thing) == HOME)
+        else if (HomeExit(thing))
           safe_format(tbuf1, &s1, T("%s leads home."), nbuf);
-        else if (Location(thing) == AMBIGUOUS)
+        else if (VariableExit(thing))
           safe_format(tbuf1, &s1, T("%s leads to a variable location."), nbuf);
         else if (!GoodObject(thing))
           safe_format(tbuf1, &s1, T("%s is corrupt!"), nbuf);
         else {
           safe_format(tbuf1, &s1, T("%s leads to %s."), nbuf,
-                      Name(Location(thing)));
+                      Name(Destination(thing)));
         }
         safe_tag_cancel("LI", tbuf1, &s1);
         *s1 = '\0';

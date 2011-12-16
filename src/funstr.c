@@ -386,6 +386,11 @@ FUNCTION(fun_str_rep_or_ins)
   }
   start = parse_integer(args[1]);
 
+  if (start < 0) {
+    safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
+    return;
+  }
+
   if (!strcmp(called_as, "STRREPLACE")) {
     /* strreplace - arg 2 is a length, arg
      * 3 is the string to add */
@@ -394,6 +399,10 @@ FUNCTION(fun_str_rep_or_ins)
       return;
     }
     len = parse_integer(args[2]);
+    if (len < 0) {
+      safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
+      return;
+    }
     srcarg = 3;
   } else {
     /* strinsert() has no length, arg 2 is

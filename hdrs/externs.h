@@ -396,6 +396,7 @@ void do_desert(dbref player, const char *arg);
 void do_dismiss(dbref player, const char *arg);
 void clear_followers(dbref leader, int noisy);
 void clear_following(dbref follower, int noisy);
+dbref find_var_dest(dbref player, dbref exit_obj);
 
 /* From mycrypt.c */
 char *mush_crypt(const char *key);

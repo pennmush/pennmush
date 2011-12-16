@@ -122,6 +122,9 @@ extern dbref first_free;        /* pointer to free list */
 
 /******* Exit toggles */
 #define Cloudy(x)       (IS(x, TYPE_EXIT, "CLOUDY"))    /* 0x8 */
+/* These must be passed exit dbrefs */
+#define HomeExit(x)     (Destination(x) == HOME)
+#define VariableExit(x) (Destination(x) == AMBIGUOUS)
 
 /* Flags anything can have */
 

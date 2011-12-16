@@ -393,6 +393,7 @@ FUNCTION(fun_str_rep_or_ins)
       safe_str(T(e_ints), buff, bp);
       return;
     }
+    len = parse_integer(args[2]);
     srcarg = 3;
   } else {
     /* strinsert() has no length, arg 2 is

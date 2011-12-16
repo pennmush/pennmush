@@ -636,7 +636,7 @@ do_look_at(dbref player, const char *name, int key, NEW_PE_INFO *pe_info)
 {
   dbref thing;
   dbref loc;
-  int near = 0;
+  int nearthis = 0;
 
   if (!GoodObject(Location(player)))
     return;
@@ -667,7 +667,7 @@ do_look_at(dbref player, const char *name, int key, NEW_PE_INFO *pe_info)
       notify(player, T("I don't know which one you mean."));
       return;
     }
-    near = (loc == Location(thing));
+    nearthis = (loc == Location(thing));
   } else {                      /* regular look */
     if (*name == '\0') {
       look_room(player, Location(player), LOOK_NORMAL, pe_info);
@@ -731,12 +731,12 @@ do_look_at(dbref player, const char *name, int key, NEW_PE_INFO *pe_info)
         notify(player, T("You can't look at that from here."));
         return;
       }
-      near = nearby(player, box) && nearby(box, thing);
+      nearthis = nearby(player, box) && nearby(box, thing);
     } else if (thing == AMBIGUOUS) {
       notify(player, T("I can't tell which one you mean."));
       return;
     }
-    near = near || nearby(player, thing);
+    nearthis = nearthis || nearby(player, thing);
   }
 
   /* once we've determined the object to look at, it doesn't matter whether
@@ -749,7 +749,7 @@ do_look_at(dbref player, const char *name, int key, NEW_PE_INFO *pe_info)
   if (Location(player) == thing) {
     look_room(player, thing, LOOK_NORMAL, pe_info);
     return;
-  } else if (!near && !Long_Fingers(player) && !See_All(player)) {
+  } else if (!nearthis && !Long_Fingers(player) && !See_All(player)) {
     ATTR *desc;
 
     desc = atr_get(thing, "DESCRIBE");

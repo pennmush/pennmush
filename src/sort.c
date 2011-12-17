@@ -394,6 +394,12 @@ GENRECORD(gen_db_ctime)
     rec->memo.tm = CreTime(rec->db);
 }
 
+GENRECORD(gen_db_mtime)
+{
+  if (RealGoodObject(rec->db))
+    rec->memo.tm = ModTime(rec->db);
+}
+
 GENRECORD(gen_db_owner)
 {
   if (RealGoodObject(rec->db))
@@ -611,6 +617,7 @@ char DBREF_NAMEI_LIST[] = "NAMEI";
 char DBREF_IDLE_LIST[] = "IDLE";
 char DBREF_CONN_LIST[] = "CONN";
 char DBREF_CTIME_LIST[] = "CTIME";
+char DBREF_MTIME_LIST[] = "MTIME";
 char DBREF_OWNER_LIST[] = "OWNER";
 char DBREF_LOCATION_LIST[] = "LOC";
 char DBREF_ATTR_LIST[] = "ATTR";
@@ -633,6 +640,7 @@ ListTypeInfo ltypelist[] = {
   {DBREF_IDLE_LIST, NULL, 0, gen_db_idle, i_comp, IS_DB},
   {DBREF_CONN_LIST, NULL, 0, gen_db_conn, i_comp, IS_DB},
   {DBREF_CTIME_LIST, NULL, 0, gen_db_ctime, tm_comp, IS_DB},
+  {DBREF_MTIME_LIST, NULL, 0, gen_db_ctime, tm_comp, IS_DB},
   {DBREF_OWNER_LIST, NULL, 0, gen_db_owner, i_comp, IS_DB},
   {DBREF_LOCATION_LIST, NULL, 0, gen_db_loc, i_comp, IS_DB},
   {DBREF_ATTR_LIST, NULL, 0, gen_db_attr, s_comp, IS_DB | IS_STRING},

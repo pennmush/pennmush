@@ -80,7 +80,9 @@ Fixes:
    or dbref. From report by Mouvar. [MG]
  * strreplace() was broken for overly long length arguments. Reported
    by Ashen-Shugar.  [SW]
- * Compile errors on Windows with OpenSSL. Reported by Daniko. 
+ * Compile errors on Windows with OpenSSL. Reported by Daniko.
+ * @uptime could report negative times for the first dump, purge, etc after
+   a game was started. Reported by Cooee. [MG]
 
 Version 1.8.4 patchlevel 8                                 Nov 11, 2011
 

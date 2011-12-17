@@ -4510,6 +4510,7 @@ See also: anonymous attributes, sorting, sortby()
    owner   Sorts dbrefs by their owner dbrefs.
    loc     Sorts dbrefs by their location dbref.
    ctime   Sorts dbrefs by their creation time.
+   mtime   Sorts dbrefs by their modification time.
    lattr   Sorts attribute names.
 
   The special sort key attr:<aname> or attri:<aname> will sort dbrefs

@@ -1340,13 +1340,13 @@ See also: PUPPET, @force, DBREF
   stays there until its turn comes up, at which time the MUSH
   processes the command and you see the results. The MUSH can execute
   several commands every second, so normally you see results right
-  away. However, if there are too many commands in the queue, there
-  may be a delay, called lag. The more common cause of lag, however,
-  is network delays between you and the MUSH.
+  away.
 
-  The QUEUE attribute is only visible to objects that control you
-  (wizards, you, and your objects) or unless you are VISUAL.  It
-  tracks how many active commands you have in the queue.
+  However, if there are too many commands in the queue, there may be a
+  delay, called lag. The more common cause of lag, however, is network
+  delays between you and the MUSH. Commands that were queued by
+  another command (Like @switch, @force, @wait, etc.) also have a
+  small delay before they run.
 
 See also: @ps, LOOPING
 & REGEXP

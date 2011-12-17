@@ -13,6 +13,11 @@ be read in 'help patchlevels'.
 
 Version 1.8.4 patchlevel 9                                 ??? ??, 201?
 
+Major changes:
+ * The PCRE library is now required to build Penn, instead of falling
+   back to an old, buggy version formerly bundled with the MUSH. [SW]
+   Daniko assisted greatly with Windows changes and documentation.
+
 Minor changes:
  * Added a new event, OBJECT`FLAG, triggered when a flag/power with the
    "event" restriction is set or cleared. Suggested by [SW]. [MG]
@@ -39,6 +44,11 @@ Minor changes:
    against expected results, making it easier to use bounded regexps. [SW]
  * @destination (for variable exits) is now a standard attribute, and has
    a helpfile. [MG]
+ * Sound is now propagated through audible variable exits. Suggested by 
+   Mercutio. [SW]
+ * The internal QUEUE attribute is no longer used to track the number
+   of action lists an object has queued; the objdata system is used
+   instead.  [SW]
 
 Commands:
  * Added @mail/review for reading mail you've sent, and @mail/retract for
@@ -61,6 +71,7 @@ Fixes:
    or dbref. From report by Mouvar. [MG]
  * strreplace() was broken for overly long length arguments. Reported
    by Ashen-Shugar.  [SW]
+ * Compile errors on Windows with OpenSSL. Reported by Daniko. 
 
 & 1.8.4p8
 Version 1.8.4 patchlevel 8                                 Nov 11, 2011

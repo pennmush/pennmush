@@ -164,9 +164,28 @@ add_to_generic(dbref player, int am, const char *name, uint32_t flags)
 static int
 add_to(dbref player, int am)
 {
+#if SIZEOF_VOID_P == 4
+  typedef int32_t pint_t;
+#else
+  typedef int64_t pint_t;
+#endif
+  pint_t count;
+  void *d;
+
   if (QUEUE_PER_OWNER)
     player = Owner(player);
-  return add_to_generic(player, am, "QUEUE", NOTHING);
+
+  d = get_objdata(player, "QUEUE");
+  if (!d)
+    count = 0;
+  else
+    count = (pint_t)d;
+  
+  count += am;
+  
+  set_objdata(player, "QUEUE", (void*)count);
+  
+  return count;
 }
 
 /** Wrapper for add_to_generic() to incrememnt an attribute when a

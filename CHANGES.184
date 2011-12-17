@@ -51,6 +51,9 @@ Minor changes:
    a helpfile. [MG]
  * Sound is now propagated through audible variable exits. Suggested by 
    Mercutio. [SW]
+ * The internal QUEUE attribute is no longer used to track the number
+   of action lists an object has queued; the objdata system is used
+   instead.  [SW]
 
 Commands:
  * Added @mail/review for reading mail you've sent, and @mail/retract for

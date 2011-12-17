@@ -4538,7 +4538,7 @@ FUNCTION(fun_lwho)
       return;
     }
     if (offline && !powered) {
-      safe_str(T("#-1 PERMISSION DENIED"), buff, bp);
+      safe_str(T(e_perm), buff, bp);
       return;
     }
   }
@@ -5059,7 +5059,7 @@ FUNCTION(fun_lports)
       return;
     }
     if (offline && !powered) {
-      safe_str(T("#-1 PERMISSION DENIED"), buff, bp);
+      safe_str(T(e_perm), buff, bp);
       return;
     }
   }

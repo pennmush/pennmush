@@ -388,7 +388,7 @@ FUNCTION(fun_str_rep_or_ins)
   start = parse_integer(args[1]);
 
   if (start < 0) {
-    safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
+    safe_str(T(e_argrange), buff, bp);
     return;
   }
 
@@ -401,7 +401,7 @@ FUNCTION(fun_str_rep_or_ins)
     }
     len = parse_integer(args[2]);
     if (len < 0) {
-      safe_str(T("#-1 ARGUMENT OUT OF RANGE"), buff, bp);
+      safe_str(T(e_argrange), buff, bp);
       return;
     }
     srcarg = 3;

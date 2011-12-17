@@ -81,7 +81,7 @@ encode_base64(const char *input, int len, char *buff, char **bp)
 
   return true;
 #else
-  safe_str(T("#-1 FUNCTION DISABLED"), buff, bp);
+  safe_str(T(e_disabled), buff, bp);
   return false;
 #endif
 }
@@ -161,7 +161,7 @@ decode_base64(char *encoded, int len, char *buff, char **bp)
 
   return true;
 #else
-  safe_str(T("#-1 FUNCTION DISABLED"), buff, bp);
+  safe_str(T(e_disabled), buff, bp);
   return false;
 #endif
 }

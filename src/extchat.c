@@ -2443,12 +2443,12 @@ FUNCTION(fun_ctitle)
       if (can_ex || ok)
         safe_str(T("#-1 NOT ON CHANNEL"), buff, bp);
       else
-        safe_str(T("#-1 PERMISSION DENIED"), buff, bp);
+        safe_str(T(e_perm), buff, bp);
       return;
     }
     ok &= !Chanuser_Hide(u);
     if (!(can_ex || ok)) {
-      safe_str(T("#-1 PERMISSION DENIED"), buff, bp);
+      safe_str(T(e_perm), buff, bp);
       return;
     }
     if (CUtitle(u))

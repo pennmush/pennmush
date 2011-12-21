@@ -166,6 +166,9 @@ Fixes:
  * @readcache rebuilds the linux file watch list, allowing deleted
    files to be watched for changes again when re-created. [SW]
  * Crash bug in @boot/me. Reported by Minion. [SW]
+ * Fix in handling clients like putty that send telnet commands right
+   away instead of waiting for the mush to send them first. Reported
+   by Time. [SW]
 
 Functions:
  * isregexp() to validate regexp patterns. Suggested by Padraic. [DC]

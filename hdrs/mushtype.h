@@ -308,8 +308,10 @@ struct text_queue {
 /** Player would like to receive newlines after prompts, because
  *  their client mucks up output after a GOAHEAD */
 #define CONN_PROMPT_NEWLINES 0x20
+/* Client hasn't sent any data yet */
+#define CONN_AWAITING_FIRST_DATA 0x40
 /** Default connection, nothing special */
-#define CONN_DEFAULT (CONN_PROMPT_NEWLINES)
+#define CONN_DEFAULT (CONN_PROMPT_NEWLINES | CONN_AWAITING_FIRST_DATA)
 
 /** Maximum \@doing length */
 #define DOING_LEN 40

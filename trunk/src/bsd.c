@@ -183,7 +183,7 @@ char confname[BUFFER_LEN] = { '\0' };    /**< Name of the config file */
 char errlog[BUFFER_LEN] = { '\0' };      /**< Name of the error log file */
 
 /** Is this descriptor connected to a telnet-compatible terminal? */
-#define TELNET_ABLE(d) ((d)->conn_flags & (CONN_TELNET | CONN_TELNET_QUERY))
+#define TELNET_ABLE(d) ((d)->conn_flags & (CONN_TELNET | CONN_TELNET_QUERY | CONN_AWAITING_FIRST_DATA))
 
 
 /* When the mush gets a new connection, it tries sending a telnet
@@ -2410,6 +2410,8 @@ process_input_helper(DESC *d, char *tbuf1, int got)
     d->raw_input = 0;
     d->raw_input_at = 0;
   }
+
+  d->conn_flags &= ~CONN_AWAITING_FIRST_DATA;
 }
 
 /* ARGSUSED */

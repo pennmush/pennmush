@@ -210,10 +210,11 @@ See also: LIGHT, @hide
   cleared afterwards.
   
   There's also a DEBUG attribute flag, which only affects a single attribute;
-  see 'help attribute flags' for more information.
+  see 'help attribute flags' for more information. You can also use the "}"
+  command prefix to run a command with DEBUG output just once.
   
   See 'help debug2' for an example.
-See also: VERBOSE, PUPPET
+See also: VERBOSE, PUPPET, }
 & DEBUG2
 
   > @create Test

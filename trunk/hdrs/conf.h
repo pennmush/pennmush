@@ -40,6 +40,7 @@
 #define EMIT_TOKEN '\\'   /**< One-char alias for @EMIT command */
 #define CHAT_TOKEN '+'   /**< One-char alias for @CHAT command */
 #define NOEVAL_TOKEN ']'   /**< Prefix that prevents cmd evaluation */
+#define DEBUG_TOKEN '}'   /**< Prefix that enables debug for the queue entry */
 
 #define ALIAS_DELIMITER ';'  /**< Delimiter in player/exit aliases */
 /* No longer used, but kept for hackers */

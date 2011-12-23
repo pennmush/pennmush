@@ -1012,6 +1012,7 @@ do_gedit(dbref player, char *it, char **argv, int flags)
  * \param player the enactor.
  * \param object the object/attribute pair.
  * \param argv array of arguments.
+ * \param queue_entry parent queue entry
  */
 void
 do_trigger(dbref player, char *object, char **argv, MQUE *queue_entry)

@@ -949,6 +949,7 @@ ok_command_name(const char *name)
   case EMIT_TOKEN:
   case NOEVAL_TOKEN:
   case NUMBER_TOKEN:
+  case DEBUG_TOKEN:
   case '&':
   case '[':
     return 0;

@@ -364,7 +364,7 @@ tport_control_ok(dbref player, dbref victim, dbref loc)
  * \param arg2 the location to teleport to.
  * \param silent if 1, don't trigger teleport messagse.
  * \param inside if 1, always \@tel to inventory, even of a player
- * \param pe_info
+ * \param pe_info the pe_info for lock checks, etc
  */
 void
 do_teleport(dbref player, const char *arg1, const char *arg2, int silent,

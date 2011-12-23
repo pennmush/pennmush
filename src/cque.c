@@ -180,11 +180,11 @@ add_to(dbref player, int am)
     count = 0;
   else
     count = (pint_t)d;
-  
+
   count += am;
-  
+
   set_objdata(player, "QUEUE", (void*)count);
-  
+
   return count;
 }
 
@@ -570,6 +570,12 @@ insert_que(MQUE *queue_entry, MQUE *parent_queue)
       parent_queue->inplace = queue_entry;
     }
     break;
+  default:
+    /* Oops. This shouldn't happen; make sure we don't leave
+     * a queue entry in limbo... */
+    do_rawlog(LT_ERR, "Queue entry with invalid type!");
+    free_qentry(queue_entry);
+    return;
   }
   if (queue_entry->pid)
     im_insert(queue_map, queue_entry->pid, queue_entry);
@@ -602,7 +608,7 @@ new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
 
   if (!(queue_type & QUEUE_INPLACE)) {
     /* Remove all QUEUE_* flags which aren't safe for non-inplace queues */
-    queue_type = (queue_type & (QUEUE_NODEBUG | QUEUE_DEBUG | QUEUE_NOLIST | QUEUE_PRIORITY));
+    queue_type = (queue_type & (QUEUE_NODEBUG | QUEUE_DEBUG | QUEUE_DEBUG_PRIVS| QUEUE_NOLIST | QUEUE_PRIORITY));
     queue_type |= ((IsPlayer(enactor) || (queue_type & QUEUE_PRIORITY)) ? QUEUE_PLAYER : QUEUE_OBJECT);
     if (flags & PE_INFO_SHARE) {
       /* You can only share the pe_info for an inplace queue entry. Since you've asked us
@@ -644,11 +650,13 @@ new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
 
 void
 parse_que_attr(dbref executor, dbref enactor, char *actionlist,
-               PE_REGS *pe_regs, ATTR *a)
+               PE_REGS *pe_regs, ATTR *a, bool force_debug)
 {
   int flags = QUEUE_DEFAULT;
 
-  if (AF_NoDebug(a))
+  if (force_debug)
+    flags |= QUEUE_DEBUG;
+  else if (AF_NoDebug(a))
     flags |= QUEUE_NODEBUG;
   else if (AF_Debug(a))
     flags |= QUEUE_DEBUG;
@@ -978,7 +986,6 @@ void
 run_user_input(dbref player, int port, char *input)
 {
   MQUE *entry;
-
 
   entry = new_queue_entry(NULL);
   entry->action_list = mush_strdup(input, "mque.action_list");

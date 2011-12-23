@@ -731,7 +731,7 @@ switchmask(const char *switches)
       return NULL;
     else {
       if (switchnum <= max_switch)
-	switch_list[switchnum - 1].used = 1;
+        switch_list[switchnum - 1].used = 1;
       SW_SET(sw, switchnum);
     }
   }
@@ -1139,7 +1139,9 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
     }
   }
 
-  if (queue_entry->queue_type & QUEUE_NODEBUG)
+  if (queue_entry->queue_type & QUEUE_DEBUG_PRIVS)
+    pe_flags = PE_DEBUG;
+  else if (queue_entry->queue_type & QUEUE_NODEBUG)
     pe_flags = PE_NODEBUG;
   else if (queue_entry->queue_type & QUEUE_DEBUG)
     pe_flags = PE_DEBUG;
@@ -2263,18 +2265,22 @@ int
 run_hook_override(COMMAND_INFO *cmd, dbref executor, const char *commandraw,
                   MQUE *from_queue)
 {
+  int queue_type = cmd->hooks.override.inplace;
 
   if (!has_hook(&cmd->hooks.override))
     return 0;
 
+  if (from_queue && (from_queue->queue_type & QUEUE_DEBUG_PRIVS))
+    queue_type |= QUEUE_DEBUG_PRIVS;
+
   if (cmd->hooks.override.attrname) {
     return one_comm_match(cmd->hooks.override.obj, executor,
                           cmd->hooks.override.attrname, commandraw,
-                          from_queue, cmd->hooks.override.inplace);
+                          from_queue, queue_type);
   } else {
     return atr_comm_match(cmd->hooks.override.obj, executor, '$', ':',
                           commandraw, 0, 1, NULL, NULL, 0, NULL, from_queue,
-                          cmd->hooks.override.inplace);
+                          queue_type);
   }
 }
 
@@ -2287,7 +2293,7 @@ cnf_hook_command(char *command, char *opts)
   enum hook_type flag;
   COMMAND_INFO *cmd;
   struct hook_data *h;
-  int inplace = 0;
+  int inplace = QUEUE_DEFAULT;
 
   if (!opts || !*opts)
     return 0;
@@ -2309,7 +2315,7 @@ cnf_hook_command(char *command, char *opts)
   } else if (string_prefix("override/inplace", one)) {
     flag = HOOK_OVERRIDE;
     h = &cmd->hooks.override;
-    inplace = 1;
+    inplace = QUEUE_INPLACE;
   } else if (string_prefix("override", one)) {
     flag = HOOK_OVERRIDE;
     h = &cmd->hooks.override;

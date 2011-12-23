@@ -17,6 +17,9 @@ Major changes:
  * The PCRE library is now required to build Penn, instead of falling
    back to an old, buggy version formerly bundled with the MUSH. [SW]
    Daniko assisted greatly with Windows changes and documentation.
+ * A new command prefix, "}", enables debug for a single execution of the
+   command  - }think foo, }+who, etc. See 'help }' for more info. Suggested
+   by Wiggles and [GM]. [MG]
 
 Minor changes:
  * Added a new event, OBJECT`FLAG, triggered when a flag/power with the
@@ -81,6 +84,7 @@ Fixes:
  * Compile errors on Windows with OpenSSL. Reported by Daniko.
  * @uptime could report negative times for the first dump, purge, etc after
    a game was started. Reported by Cooee. [MG]
+ * override/inplace hooks from .cnf files didn't work correctly. [MG]
 
 & 1.8.4p8
 Version 1.8.4 patchlevel 8                                 Nov 11, 2011

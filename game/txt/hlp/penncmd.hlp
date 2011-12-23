@@ -101,7 +101,7 @@ These '@' commands are only usable by wizards or privileged players:
 
   See 'help ]2' for more examples.
 
-See also: lit(), decompose(), escape(), @command
+See also: lit(), decompose(), escape(), @command, }
 & ]2
   Using ']' with $-commands:
   
@@ -123,6 +123,17 @@ See also: lit(), decompose(), escape(), @command
   In the last example, '%0' would evaluate to 'My name is Wiggles.' (because
   the string entered by the user was evaluated), but the @pemit has been told
   not to evaluate its arguments.
+& }
+  "}" is a special prefix which can be used before any command. It causes the
+  MUSH to show debug information when evaluating that command (the same as if
+  you had the DEBUG flag set), and for any $-commands which are triggered by
+  the command.
+  
+  In order for debug to be shown for triggered $-commands, you must either
+  control the object(s) the matching $-commands are on, or be in the object's
+  DEBUGFORWARDLIST attribute. 
+  
+See also: DEBUG, ]
 & @@
   @@ [<text>]
  

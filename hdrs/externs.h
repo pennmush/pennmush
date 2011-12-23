@@ -270,6 +270,7 @@ extern char ucbuff[];
 #define QUEUE_DEBUG            0x1000   /**< Show DEBUG info for queue (queued from a DEBUG attribute) */
 #define QUEUE_NODEBUG          0x2000   /**< Don't show DEBUG info for queue (queued from a NO_DEBUG attribute) */
 #define QUEUE_PRIORITY         0x4000   /**< Add to the priority (player) queue, even if from a non-player. For @startups */
+#define QUEUE_DEBUG_PRIVS      0x8000   /**< Show DEBUG info for queue if on an object %# can see debug from (queued via %-prefix) */
 
 #define QUEUE_RECURSE (QUEUE_INPLACE | QUEUE_NO_BREAKS | QUEUE_PRESERVE_QREG)
 
@@ -293,7 +294,7 @@ void do_halt(dbref owner, const char *ncom, dbref victim);
 bool queue_event(dbref enactor, const char *event, const char *fmt, ...)
   __attribute__ ((__format__(__printf__, 3, 4)));
 void parse_que_attr(dbref executor, dbref enactor, char *actionlist,
-                    PE_REGS *pe_regs, ATTR *a);
+                    PE_REGS *pe_regs, ATTR *a, bool force_debug);
 void insert_que(MQUE *queue_entry, MQUE *parent_queue);
 
 void new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,

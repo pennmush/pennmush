@@ -2384,7 +2384,7 @@ FUNCTION(fun_isdbref)
 /* ARGSUSED */
 FUNCTION(fun_isobjid)
 {
-  safe_boolean(is_objid(args[0]), buff, bp);
+  safe_boolean(real_parse_objid(args[0], 1) != NOTHING, buff, bp);
 }
 
 /* ARGSUSED */

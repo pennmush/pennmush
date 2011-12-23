@@ -66,7 +66,7 @@ extern int real_decompose_str(char *str, char *buff, char **bp);
  * \param player The player looking
  * \param loc room whose exits we're showing
  * \param exit_name "Obvious Exits" string
- * \param pe_info
+ * \param pe_info the pe_info to use for evaluating EXITFORMAT and interact locks
  */
 static void
 look_exits(dbref player, dbref loc, const char *exit_name, NEW_PE_INFO *pe_info)
@@ -228,7 +228,7 @@ look_exits(dbref player, dbref loc, const char *exit_name, NEW_PE_INFO *pe_info)
  * \param player object looking
  * \param object looked at
  * \param contents_name String to show before contents list. "Contents" for rooms, "Carrying" for players/things
- * \param pe_info
+ * \param pe_info the pe_info to use for evaluating CONFORMAT and interact locks
  */
 static void
 look_contents(dbref player, dbref loc, const char *contents_name,
@@ -629,7 +629,7 @@ do_look_around(dbref player)
  * \param player the looker.
  * \param name name of object to look at.
  * \param key 0 for normal look, 1 for look/outside.
- * \param pe_info
+ * \param pe_info the pe_info for the *FORMAT attrs, lock checks, etc
  */
 void
 do_look_at(dbref player, const char *name, int key, NEW_PE_INFO *pe_info)

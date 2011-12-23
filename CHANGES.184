@@ -51,6 +51,9 @@ Minor changes:
  * The internal QUEUE attribute is no longer used to track the number
    of action lists an object has queued; the objdata system is used
    instead.  [SW]
+ * isobjid() now requires a full object id (with :ctime), and will return 0
+   for simple dbrefs, or objids of destroyed/invalid objects. isdbref() still
+   matches both dbrefs and objids. Suggested by Covenent. [MG]
 
 Commands:
  * Added @mail/review for reading mail you've sent, and @mail/retract for

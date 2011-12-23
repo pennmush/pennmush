@@ -180,11 +180,12 @@ unparse_objid(dbref thing)
 
 /** Given a string, parse out an object id or dbref.
  * \param str string to parse.
+ * \param strict Require a full objid (with :ctime) instead of a plain dbref?
  * \return dbref of object referenced by string, or NOTHING if not a valid
  * string or not an existing dbref.
  */
 dbref
-parse_objid(char const *str)
+real_parse_objid(char const *str, bool strict)
 {
   const char *p;
   if ((p = strchr(str, ':'))) {
@@ -202,8 +203,11 @@ parse_objid(char const *str)
       return (CreTime(it) == matchtime) ? it : NOTHING;
     } else
       return NOTHING;
-  } else
+  } else if (strict) {
+    return NOTHING;
+  } else {
     return parse_dbref(str);
+  }
 }
 
 

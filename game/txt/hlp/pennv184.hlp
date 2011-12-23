@@ -46,6 +46,9 @@ Minor changes:
  * The internal QUEUE attribute is no longer used to track the number
    of action lists an object has queued; the objdata system is used
    instead.  [SW]
+ * isobjid() now requires a full object id (with :ctime), and will return 0
+   for simple dbrefs, or objids of destroyed/invalid objects. isdbref() still
+   matches both dbrefs and objids. Suggested by Covenent. [MG]
 
 Commands:
  * Added @mail/review for reading mail you've sent, and @mail/retract for
@@ -162,6 +165,9 @@ Fixes:
  * @readcache rebuilds the linux file watch list, allowing deleted
    files to be watched for changes again when re-created. [SW]
  * Crash bug in @boot/me. Reported by Minion. [SW]
+ * Fix in handling clients like putty that send telnet commands right
+   away instead of waiting for the mush to send them first. Reported
+   by Time. [SW]
 
 Functions:
  * isregexp() to validate regexp patterns. Suggested by Padraic. [DC]

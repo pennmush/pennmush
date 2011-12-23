@@ -2081,12 +2081,41 @@ See also: replace(), ldelete(), strinsert()
   Returns 1 if it's daylight savings time in the MUSH time zone,
   otherwise 0.
 & ISDBREF()
+& ISOBJID()
   isdbref(<string>)
+  isobjid(<string>)
  
-  This function returns 1 if <string> is a valid object dbref (or
-  object id), and 0 if the string is not a valid object dbref/objid.
- 
-See also: DBREFS, isobjid()
+  isobjid() returns 1 if <string> is the object id of an existing object.
+  If <string> is not a full objid, or is the objid of a garbage object,
+  it returns 0.
+  
+  isdbref() functions the same, but will also return 1 if <string> is the
+  dbref of an existing (or garbage) object.
+  
+  Examples:
+    > @stats
+    100 objects = 20 rooms, 20 exits, 20 things, 20 players, 20 garbage.
+    The next object to be created will be #33.
+    
+    > think isdbref(#33)
+    1
+    > think isobjid(#33:1234567890)
+    0
+    
+    > think csecs(#1)
+    1324654503
+    > think isdbref(#1)
+    1
+    > think isobjid(#)
+    0
+    > think isdbref(#1:1324654503)
+    1
+    > think isobjid(#1:1324654503)
+    1
+    > think isobjid(#1:9876543210)
+    0
+
+See also: DBREFS, OBJECT IDS, num(), objid()
 & ISINT()
   isint(<string>)
 
@@ -2104,13 +2133,6 @@ See also: isnum()
   point.
 
 See also: isint()
-& ISOBJID()
-  isobjid(<string>)
-
-  This function returns 1 if the string is a valid object id, and 0 if
-  the string is not a valid object id.
-  
-See also: DBREFS, isdbref(), objid()
 & ISREGEXP()
   isregexp(<string>)
 

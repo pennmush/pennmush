@@ -69,7 +69,7 @@ tprintf(const char *fmt, ...)
  * the purposes of picking up an object or moving through an exit.
  * \param player to check against lock.
  * \param thing thing to check the basic lock on.
- * \param pe_info
+ * \param pe_info the pe_info for Basic lock evaluation
  * \retval 1 player passes lock.
  * \retval 0 player fails lock.
  */

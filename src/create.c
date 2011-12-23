@@ -433,7 +433,7 @@ do_link(dbref player, const char *name, const char *room_name, int preserve,
  * \param argv array of additional arguments to command
  *             (exit forward,exit back,newdbref)
  * \param tport if 1, teleport the player to the new room.
- * \param pe_info
+ * \param pe_info the pe_info to use for lock checks
  * \return dbref of new room, or NOTHING.
  */
 dbref
@@ -642,7 +642,7 @@ clone_object(dbref player, dbref thing, const char *newname, int preserve)
  * \param newname the name to give the duplicate.
  * \param preserve if 1, preserve ownership and privileges on duplicate.
  * \param newdbref the (unparsed) dbref to give the object, or NULL to use the next free
- * \param pe_info
+ * \param pe_info The pe_info to use for lock and @command priv checks
  * \return dbref of the duplicate, or NOTHING.
  */
 dbref

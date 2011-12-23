@@ -176,7 +176,7 @@ do_name(dbref player, const char *name, char *newname_)
  * \param name name of object to change owner of.
  * \param newobj name of new owner for object.
  * \param preserve if 1, preserve privileges and don't halt the object.
- * \param pe_info
+ * \param pe_info the pe_info for lock checks
  */
 void
 do_chown(dbref player, const char *name, const char *newobj, int preserve,
@@ -371,7 +371,7 @@ chown_object(dbref player, dbref thing, dbref newowner, int preserve)
  * \param newobj name of new ZMO.
  * \param noisy if 1, notify player about success and failure.
  * \param preserve was the /preserve switch given?
- * \param pe_info
+ * \param pe_info the pe_info for lock and permission checks
  * \retval 0 failed to change zone.
  * \retval 1 successfully changed zone.
  */

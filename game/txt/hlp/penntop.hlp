@@ -1623,11 +1623,12 @@ Continued in 'help regexp classes2'
   @trigger me/somecode=whee,foo bar
   > whee is in register 0 and foo bar is in register 1.
 
-  The registers can also be accessed using the V-function (v(0) through v(9)).
+  The registers can also be accessed using the V-function (v(0) to v(9)).
 
   Please see 'help setq()' for more information about the setq registers.
 
-See also: SUBSTITUTIONS, @trigger, USER-DEFINED COMMANDS, setq()
+See also: SUBSTITUTIONS, @trigger, USER-DEFINED COMMANDS, setq(), v(), r(),
+          registers(), listq()
 & RQUOTA
   RQUOTA
 
@@ -1785,11 +1786,10 @@ See also: ATTRIBUTES, NON-STANDARD ATTRIBUTES, @set, @wipe, attrib_set(),
 
 See also: @emit, @pemit, @remit, @oemit, NOSPOOF
 & STACK
-  For those unfamiliar with the term stack, it refers to a programming
-  data structure that follows a LIFO (Last-In-First-Out)
-  principle. The stack in MUSH holds the ten REGISTERS, which can be
-  accessed via the V-function (v(0) through v(9)) or via
-  %-substitution (%0 through %9).
+  For those unfamiliar with the term stack, it refers to a programming data 
+  structure that follows a LIFO (Last-In-First-Out) principle. The stack in 
+  MUSH holds the ten REGISTERS, which can be accessed via the V-function 
+  (v(0) through v(9)) or via %-substitution (%0 through %9).
   
 See also: REGISTERS
 & STRINGS
@@ -1896,8 +1896,7 @@ See also: EVALUATION, ENACTOR, EXECUTOR, DBREFS, REGISTERS, v()
 
 See also: FAILURE, @lock, VERBS, ATTRIBUTES, @success, @asuccess, @osuccess
 & SWITCHES
-  SWITCHES
- 
+
   Commands can have "switches" which modify the behavior of the
   command. Switches are attached after the end of a command.
   For example, most people are familiar with the command

@@ -490,6 +490,7 @@ FUNTAB flist[] = {
   {"RESWITCHALL", fun_reswitch, 3, INT_MAX, FN_NOPARSE},
   {"RESWITCHALLI", fun_reswitch, 3, INT_MAX, FN_NOPARSE},
   {"RESWITCHI", fun_reswitch, 3, INT_MAX, FN_NOPARSE},
+  {"REGISTERS", fun_listq, 0, 3, FN_REG | FN_STRIPANSI},
   {"REMAINDER", fun_remainder, 2, 2, FN_REG},
   {"REMIT", fun_remit, 2, -2, FN_REG},
   {"REMOVE", fun_remove, 2, 3, FN_REG},

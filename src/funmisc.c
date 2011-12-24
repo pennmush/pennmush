@@ -366,7 +366,8 @@ struct st_qreg_data {
   char *buff;  /** Buffer to write matching register names to */
   char **bp;   /** Pointer into buff to write at */
   char *wild;  /** Wildcard pattern of qregister names to list */
-  int count;
+  char *osep;  /** Output separator between register names */
+  int count;   /** Number of matched registers so far */
 };
 
 static void
@@ -374,12 +375,15 @@ listq_walk(const char *cur, int count __attribute__ ((__unused__)),
            void *userdata)
 {
   struct st_qreg_data *st_data = (struct st_qreg_data *) userdata;
+  char *name;
 
-  if (!st_data->wild || quick_wild(st_data->wild, cur)) {
+  name = (char *) cur + 1;
+
+  if (!st_data->wild || quick_wild(st_data->wild, name)) {
     if (st_data->count++) {
-      safe_chr(' ', st_data->buff, st_data->bp);
+      safe_str(st_data->osep, st_data->buff, st_data->bp);
     }
-    safe_str(cur, st_data->buff, st_data->bp);
+    safe_str(name, st_data->buff, st_data->bp);
   }
 }
 
@@ -396,15 +400,52 @@ FUNCTION(fun_listq)
   st_data.bp = bp;
   st_data.wild = NULL;
   st_data.count = 0;
+  st_data.osep = " ";
+  int types = 0;
+  char regname[BUFFER_LEN];
+  char *rp;
 
-  /* Quick check: No q-regs */
+
+  /* Quick check: No registers */
   if (pe_info->regvals == NULL) {
     return;
   }
 
-  if (nargs >= 1) {
+  if (nargs >= 1 && args[0] && *args[0]) {
     st_data.wild = args[0];
   }
+  if (nargs >= 2) {
+    char *list, *item;
+    list = trim_space_sep(args[1], ' ');
+    while ((item = split_token(&list, ' '))) {
+      if (!*item)
+        continue;
+      if (string_prefix("qregisters", item))
+        types |= PE_REGS_Q;
+      else if (string_prefix("regexp", item))
+        types |= PE_REGS_REGEXP;
+      else if (strlen(item) > 1 && string_prefix("switch", item))
+        types |= PE_REGS_SWITCH;
+      else if (string_prefix("iter", item))
+        types |= PE_REGS_ITER;
+      else if (string_prefix("args", item) || (strlen(item) > 1 && string_prefix("stack", item)))
+        types |= PE_REGS_ARG;
+      else {
+        safe_str("#-1", buff, bp);
+        return;
+      }
+    }
+  }
+  if (!types) {
+    if (!strcmp(called_as, "LISTQ")) {
+      types = PE_REGS_Q;
+    } else {
+      types = PE_REGS_TYPE & ~PE_REGS_SYS;
+    }
+  }
+
+  if (nargs >= 3)
+    st_data.osep = args[2];
 
   st_init(&qregs, "ListQTree");
   st_init(&blanks, "BlankQTree");
@@ -413,23 +454,56 @@ FUNCTION(fun_listq)
   while (pe_regs) {
     val = pe_regs->vals;
     while (val) {
-      if (!(val->type & PE_REGS_Q)) {
+      if (!(val->type & types)) {
         val = val->next;
-        continue; /* not a q-register */
+        continue; /* not the right type of register */
       }
+      rp = regname;
+      switch (val->type & PE_REGS_TYPE) {
+      case PE_REGS_Q:
+        safe_chr('Q', regname, &rp);
+        break;
+      case PE_REGS_REGEXP:
+        safe_chr('R', regname, &rp);
+        break;
+      case PE_REGS_SWITCH:
+      case PE_REGS_ITER:
+        /* Do nothing; they're stored with a leading 'T' */
+        break;
+      case PE_REGS_ARG:
+        safe_chr('A', regname, &rp);
+        break;
+      default:
+        val = val->next;
+        continue;
+      }
+
+      safe_str(val->name, regname, &rp);
+      *rp = '\0';
+
+      if (val->type & PE_REGS_SWITCH) {
+        regname[0] = 'S'; /* to differentiate stext and itext */
+      }
+
       /* Insert it into the tree if it's non-blank. */
       if ((val->type & PE_REGS_STR) && *(val->val.sval)
-          && !st_find(val->name, &blanks)) {
-        st_insert(val->name, &qregs);
+          && !st_find(regname, &blanks)) {
+        st_insert(regname, &qregs);
       } else {
-        st_insert(val->name, &blanks);
+        st_insert(regname, &blanks);
       }
       val = val->next;
     }
-    /* If it's a QSTOP, we stop. */
     if (pe_regs->flags & PE_REGS_QSTOP) {
-      break;
+      /* Remove q-registers */
+      types &= ~ PE_REGS_Q;
     }
+    if (pe_regs->flags & PE_REGS_NEWATTR) {
+      /* Remove iter, switch, regexp and %0-%9 context */
+      types &= ~(PE_REGS_ITER | PE_REGS_SWITCH | PE_REGS_REGEXP | PE_REGS_ARG);
+    }
+    if (!types)
+      break; /* nothing left */
     pe_regs = pe_regs->prev;
   }
   st_walk(&qregs, listq_walk, &st_data);

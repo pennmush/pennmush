@@ -68,6 +68,9 @@ Commands:
 Functions:
  * Functions that take a sort type argument now accept 'mtime' for
    sorting based on object's modification time. Patch by Minion.
+ * New registers() function, like listq() but returns all kinds of registers
+   (q-registers, %0-%9 args, iter/switch context, regexp captures). Also
+   takes an output separator arg. Suggested by Wiggles. [MG]
 
 Fixes:
  * lit() didn't properly handle '\'s. Reported by Wiggles. [MG]

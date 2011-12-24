@@ -395,16 +395,16 @@ FUNCTION(fun_listq)
   PE_REGS *pe_regs;
   StrTree qregs;
   StrTree blanks;
+  int types = 0;
+  char regname[BUFFER_LEN];
+  char *rp;
   struct st_qreg_data st_data;
+
   st_data.buff = buff;
   st_data.bp = bp;
   st_data.wild = NULL;
   st_data.count = 0;
   st_data.osep = " ";
-  int types = 0;
-  char regname[BUFFER_LEN];
-  char *rp;
-
 
   /* Quick check: No registers */
   if (pe_info->regvals == NULL) {

@@ -1919,12 +1919,19 @@ See also: FAILURE, @lock, VERBS, ATTRIBUTES, @success, @asuccess, @osuccess
 & TYPES
 & OBJECTS
   
-  Everything on a MUSH is an object in the MUSH database. There are four 
+  Everything on a MUSH is an object in the MUSH database. There are four main
   types of objects: players, things (once called 'objects'), rooms and exits.
   You can see the type of an object when you 'examine' it, or with the 
   type() function.
   
+  There is also a 'garbage' type, used for objects which have been created
+  and then @destroyed. Garbage objects cannot be used in any way, and their
+  dbrefs will be recycled (with a new objid) when something new is created.
+  
   For more information on any of the types, see 'help <type>'.
+  
+  The @stats command lists how many objects of each type currently exits in
+  the database.
 
 See also: type(), hastype()
 & PLAYERS
@@ -1972,7 +1979,24 @@ See also: TYPES OF OBJECTS, type(), hastype(), @create
   description and/or contents to be shown after the exit's description when
   looked at.
   
-See also: TYPES OF OBJECTS, type(), hastype(), @open, @link, @destination
+  Sound is propagated through exits which are set AUDIBLE, as long as their
+  source room (home) is also set AUDIBLE.
+  
+See also: TYPES OF OBJECTS, type(), hastype(), @open, @link, @destination,
+          AUDIBLE
+& GARBAGE
+
+  Garbage objects previously existed as one of the four main types (player,
+  thing, exit or room) but were destroyed with @destroy/@nuke. They exist
+  only as placeholders in the database; you can do nothing with them. The
+  dbrefs of garbage objects will be reused when new objects are destroyed
+  (but with a different creation time/object id).
+  
+  The total number of garbage objects, and the next garbage object to be
+  recycled, is shown in @stats. You can use lsearch(all,type,garbage) to get
+  a list of all garbage dbrefs.
+  
+See also: @destroy, @stats
 & $-COMMANDS
 & MACROS
 & USER-DEFINED COMMANDS

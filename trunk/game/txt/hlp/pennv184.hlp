@@ -44,8 +44,8 @@ Minor changes:
    against expected results, making it easier to use bounded regexps. [SW]
  * @destination (for variable exits) is now a standard attribute, and has
    a helpfile. [MG]
- * Sound is now propagated through audible variable exits. Suggested by 
-   Mercutio. [SW]
+ * Sound is now propagated through audible variable exits, and exits @linked
+   to 'home'. Suggested by Mercutio. [SW]
  * The internal QUEUE attribute is no longer used to track the number
    of action lists an object has queued; the objdata system is used
    instead.  [SW]

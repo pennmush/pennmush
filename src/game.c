@@ -771,7 +771,6 @@ init_game_postdb(const char *conf)
   /* Load further restrictions from config file */
   config_file_startup(conf, 1);
   validate_config();
-#ifdef HAS_OPENSSL
   /* Set up ssl */
 #ifndef SSL_SLAVE
   if (!ssl_init
@@ -783,7 +782,6 @@ init_game_postdb(const char *conf)
 #endif
   /* Load hash algorithms */
   OpenSSL_add_all_digests();
-#endif
 }
 
 extern int dbline;

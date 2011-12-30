@@ -7,9 +7,7 @@
 #ifndef MUSH_TYPES_H
 #define MUSH_TYPES_H
 #include "copyrite.h"
-#ifdef HAS_OPENSSL
 #include <openssl/ssl.h>
-#endif
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
 #endif
@@ -377,10 +375,8 @@ struct descriptor_data {
   int width;                    /**< Screen width */
   int height;                   /**< Screen height */
   char *ttype;                  /**< Terminal type */
-#ifdef HAS_OPENSSL
   SSL *ssl;                     /**< SSL object */
   int ssl_state;                /**< Keep track of state of SSL object */
-#endif
   conn_source source;           /**< Where the connection came from. */
   char checksum[PUEBLO_CHECKSUM_LEN + 1];       /**< Pueblo checksum */
 };

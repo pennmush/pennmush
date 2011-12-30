@@ -21,8 +21,8 @@ C_FILES=access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c chunk.c	\
 	markup.c match.c memcheck.c move.c mycrypt.c mymalloc.c		\
 	mysocket.c myrlimit.c myssl.c notify.c parse.c			\
 	player.c plyrlist.c predicat.c privtab.c info_master.c ptab.c	\
-	rob.c services.c set.c SFMT.c shs.c sig.c sort.c speech.c	\
-	sql.c ssl_master.c strdup.c strtree.c strutil.c tables.c		\
+	rob.c services.c set.c SFMT.c sig.c sort.c speech.c		\
+	sql.c ssl_master.c strdup.c strtree.c strutil.c tables.c	\
 	timer.c unparse.c utils.c version.c wait.c warnings.c wild.c	\
 	wiz.c
 
@@ -37,8 +37,8 @@ O_FILES=access.o atr_tab.o attrib.o boolexp.o bsd.o bufferq.o chunk.o	\
 	markup.o match.o memcheck.o move.o mycrypt.o mymalloc.o		\
 	mysocket.o myrlimit.o myssl.o notify.o parse.o			\
 	player.o plyrlist.o info_master.o predicat.o privtab.o ptab.o	\
-	rob.o services.o set.o SFMT.o shs.o sig.o sort.o speech.o	\
-	sql.o ssl_master.o strdup.o strtree.o strutil.o tables.o		\
+	rob.o services.o set.o SFMT.o sig.o sort.o speech.o		\
+	sql.o ssl_master.o strdup.o strtree.o strutil.o tables.o	\
 	timer.o unparse.o utils.o version.o wait.o warnings.o wild.o	\
 	wiz.o
 
@@ -1664,8 +1664,6 @@ SFMT.o: ../config.h
 SFMT.o: ../hdrs/SFMT.h
 SFMT.o: ../hdrs/SFMT-params.h
 SFMT.o: ../hdrs/SFMT-params19937.h
-shs.o: ../hdrs/copyrite.h
-shs.o: ../config.h
 sig.o: ../config.h
 sig.o: ../hdrs/conf.h
 sig.o: ../hdrs/copyrite.h

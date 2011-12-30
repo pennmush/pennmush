@@ -488,10 +488,6 @@ SOURCE=..\..\src\SFMT.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\shs.c
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\src\sig.c
 # End Source File
 # Begin Source File

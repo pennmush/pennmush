@@ -337,6 +337,7 @@ bsd.o: ../hdrs/command.h
 bsd.o: ../hdrs/switches.h
 bsd.o: ../hdrs/version.h
 bsd.o: ../hdrs/mysocket.h
+bsd.o: ../hdrs/wait.h
 bsd.o: ../hdrs/lookup.h
 bsd.o: ../hdrs/ssl_slave.h
 bsd.o: ../hdrs/log.h
@@ -1058,6 +1059,7 @@ game.o: ../hdrs/log.h
 game.o: ../hdrs/lock.h
 game.o: ../hdrs/function.h
 game.o: ../hdrs/help.h
+game.o: ../hdrs/wait.h
 game.o: ../hdrs/ansi.h
 help.o: ../config.h
 help.o: ../hdrs/conf.h
@@ -1479,8 +1481,6 @@ parse.o: ../hdrs/attrib.h
 parse.o: ../hdrs/log.h
 parse.o: ../hdrs/bufferq.h
 parse.o: ../hdrs/mymalloc.h
-pcre.o: ../config.h
-pcre.o: ../hdrs/mypcre.h
 player.o: ../hdrs/copyrite.h
 player.o: ../config.h
 player.o: ../hdrs/conf.h
@@ -1589,6 +1589,7 @@ info_master.o: ../hdrs/mysocket.h
 info_master.o: ../hdrs/lookup.h
 info_master.o: ../hdrs/log.h
 info_master.o: ../hdrs/bufferq.h
+info_master.o: ../hdrs/wait.h
 ptab.o: ../config.h
 ptab.o: ../hdrs/copyrite.h
 ptab.o: ../hdrs/conf.h
@@ -1777,6 +1778,7 @@ ssl_master.o: ../hdrs/bufferq.h
 ssl_master.o: ../hdrs/mysocket.h
 ssl_master.o: ../hdrs/ssl_slave.h
 ssl_master.o: ../hdrs/parse.h
+ssl_master.o: ../hdrs/wait.h
 strdup.o: ../config.h
 strdup.o: ../hdrs/conf.h
 strdup.o: ../hdrs/copyrite.h
@@ -1923,6 +1925,7 @@ version.o: ../hdrs/version.h
 version.o: ../hdrs/buildinf.h
 version.o: ../hdrs/svninfo.h
 wait.o: ../config.h
+wait.o: ../hdrs/wait.h
 warnings.o: ../config.h
 warnings.o: ../hdrs/copyrite.h
 warnings.o: ../hdrs/conf.h
@@ -2011,6 +2014,7 @@ info_slave.o: ../hdrs/ptab.h
 info_slave.o: ../hdrs/dbio.h
 info_slave.o: ../hdrs/chunk.h
 info_slave.o: ../hdrs/mypcre.h
+info_slave.o: ../hdrs/wait.h
 info_slave.o: ../hdrs/mysocket.h
 info_slave.o: ../hdrs/lookup.h
 ssl_slave.o: ../hdrs/copyrite.h

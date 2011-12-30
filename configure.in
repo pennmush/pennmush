@@ -199,10 +199,10 @@ if test "$enable_zlib" = "yes"; then
 fi
 
 # with_ssl=set
-CHECK_SSL
-if test "$HAVE_SSL" = "yes"; then
-   AC_DEFINE(HAVE_SSL)
-fi
+AX_CHECK_OPENSSL(
+ AC_DEFINE(HAVE_SSL),
+ AC_MSG_ERROR([The OpenSSL library must be installed to run PennMUSH.])
+)
 
 # system libpcre
 AX_PATH_LIB_PCRE()
@@ -462,15 +462,10 @@ else
  echo "* SQL support: No"
 fi
 
-if test "$HAVE_SSL" = yes; then
- echo "* SSL support: Yes"
- if test "$enable_ssl_slave" = yes; then
-    echo "* SSL connections will be maintained across restarts."
- else
-    echo "* SSL connections will not persist across restarts."
- fi
+if test "$enable_ssl_slave" = yes; then
+   echo "* SSL connections will be maintained across restarts."
 else
- echo "* SSL support: No"
+   echo "* SSL connections will not persist across restarts."
 fi
 
 if test "$enable_info_slave" = yes; then

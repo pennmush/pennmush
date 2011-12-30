@@ -9,8 +9,6 @@
 
 #include "copyrite.h"
 
-#ifdef HAS_OPENSSL
-
 SSL_CTX *ssl_init(char *private_key_file, char *ca_file, int req_client_cert);
 SSL *ssl_setup_socket(int sock);
 void ssl_close_connection(SSL * ssl);
@@ -31,6 +29,4 @@ void ssl_read_session(FILE * fp);
 void ssl_write_ssl(FILE * fp, SSL * ssl);
 SSL *ssl_read_ssl(FILE * fp, int sock);
 
-
-#endif                          /* HAS_OPENSSL */
 #endif                          /* _MYSSL_H */

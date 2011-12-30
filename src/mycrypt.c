@@ -12,11 +12,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "conf.h"
-#ifdef HAS_OPENSSL
 #include <openssl/sha.h>
-#else
-#include "shs.h"
-#endif
 #include "confmagic.h"
 
 char *mush_crypt(const char *key);
@@ -29,8 +25,6 @@ char *
 mush_crypt(const char *key)
 {
   static char crypt_buff[70];
-
-#ifdef HAS_OPENSSL
   unsigned char hash[SHA_DIGEST_LENGTH];
   unsigned int a, b;
 
@@ -48,16 +42,6 @@ mush_crypt(const char *key)
   }
 
   sprintf(crypt_buff, "XX%u%u", a, b);
-
-#else
-  SHS_INFO shsInfo;
-
-  shsInfo.reverse_wanted = (BYTE) options.reverse_shs;
-  shsInit(&shsInfo);
-  shsUpdate(&shsInfo, (const BYTE *) key, strlen(key));
-  shsFinal(&shsInfo);
-  sprintf(crypt_buff, "XX%lu%lu", shsInfo.digest[0], shsInfo.digest[1]);
-#endif
 
   return crypt_buff;
 }

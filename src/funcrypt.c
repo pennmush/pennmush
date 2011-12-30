@@ -26,25 +26,19 @@
 #include "attrib.h"
 #include "ansi.h"
 #include "match.h"
-#ifdef HAS_OPENSSL
 #include <openssl/sha.h>
 #include <openssl/evp.h>
 #include <openssl/bio.h>
-#else
-#include "shs.h"
-#endif
 #include "confmagic.h"
 
 
 char *crunch_code(char *code);
 char *crypt_code(char *code, char *text, int type);
-static void safe_sha0(const char *text, size_t len, char *buff, char **bp);
 static void safe_hexchar(unsigned char c, char *buff, char **bp);
 
 static bool
 encode_base64(const char *input, int len, char *buff, char **bp)
 {
-#ifdef HAVE_SSL
   BIO *bio, *b64, *bmem;
   char *membuf;
 
@@ -80,10 +74,6 @@ encode_base64(const char *input, int len, char *buff, char **bp)
   BIO_free_all(bio);
 
   return true;
-#else
-  safe_str(T(e_disabled), buff, bp);
-  return false;
-#endif
 }
 
 extern char valid_ansi_codes[UCHAR_MAX + 1];
@@ -91,7 +81,6 @@ extern char valid_ansi_codes[UCHAR_MAX + 1];
 static bool
 decode_base64(char *encoded, int len, char *buff, char **bp)
 {
-#ifdef HAVE_SSL
   BIO *bio, *b64, *bmem;
   char *sbp;
 
@@ -160,10 +149,6 @@ decode_base64(char *encoded, int len, char *buff, char **bp)
   BIO_free_all(bio);
 
   return true;
-#else
-  safe_str(T(e_disabled), buff, bp);
-  return false;
-#endif
 }
 
 /* Encode a string in base64 */
@@ -239,29 +224,6 @@ crypt_code(char *code, char *text, int type)
   return textbuff;
 }
 
-static void
-safe_sha0(const char *text, size_t len, char *buff, char **bp)
-{
-#ifdef HAS_OPENSSL
-  unsigned char hash[SHA_DIGEST_LENGTH];
-  int n;
-
-  SHA((unsigned char *) text, len, hash);
-
-  for (n = 0; n < SHA_DIGEST_LENGTH; n++)
-    safe_hexchar(hash[n], buff, bp);
-#else
-  SHS_INFO shsInfo;
-  shsInfo.reverse_wanted = (BYTE) options.reverse_shs;
-  shsInit(&shsInfo);
-  shsUpdate(&shsInfo, (const BYTE *) text, len);
-  shsFinal(&shsInfo);
-  safe_format(buff, bp, "%0x%0x%0x%0x%0x", shsInfo.digest[0],
-              shsInfo.digest[1], shsInfo.digest[2], shsInfo.digest[3],
-              shsInfo.digest[4]);
-#endif
-}
-
 FUNCTION(fun_encrypt)
 {
   char tbuff[BUFFER_LEN], *tp;
@@ -332,12 +294,17 @@ FUNCTION(fun_checkpass)
 
 FUNCTION(fun_sha0)
 {
-  safe_sha0(args[0], arglens[0], buff, bp);
+  unsigned char hash[SHA_DIGEST_LENGTH];
+  int n;
+
+  SHA((unsigned char *) args[0], arglens[0], hash);
+
+  for (n = 0; n < SHA_DIGEST_LENGTH; n++)
+    safe_hexchar(hash[n], buff, bp);
 }
 
 FUNCTION(fun_digest)
 {
-#ifdef HAS_OPENSSL
   EVP_MD_CTX ctx;
   const EVP_MD *mp;
   unsigned char md[EVP_MAX_MD_SIZE];
@@ -355,14 +322,6 @@ FUNCTION(fun_digest)
   for (n = 0; n < len; n++) {
     safe_hexchar(md[n], buff, bp);
   }
-
-#else
-  if (strcmp(args[0], "sha") == 0) {
-    safe_sha0(args[1], arglens[1], buff, bp);
-  } else {
-    safe_str(T("#-1 UNSUPPORTED DIGEST TYPE"), buff, bp);
-  }
-#endif
 }
 
 static void

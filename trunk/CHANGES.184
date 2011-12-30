@@ -22,6 +22,8 @@ Major changes:
  * The PCRE library is now required to build Penn, instead of falling
    back to an old, buggy version formerly bundled with the MUSH. [SW]
    Daniko assisted greatly with Windows changes and documentation.
+ * The OpenSSL library is now required to build Penn. Again, Daniko has
+   provided instructions for installing on Windows. [SW]
  * A new command prefix, "}", enables debug for a single execution of the
    command  - }think foo, }+who, etc. See 'help }' for more info. Suggested
    by Wiggles and [GM]. [MG]

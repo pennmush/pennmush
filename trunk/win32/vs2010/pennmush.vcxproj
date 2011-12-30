@@ -186,7 +186,6 @@ echo Don%27t forget to customize mush.cnf!
     <ClCompile Include="..\..\src\services.c" />
     <ClCompile Include="..\..\src\set.c" />
     <ClCompile Include="..\..\src\SFMT.c" />
-    <ClCompile Include="..\..\src\shs.c" />
     <ClCompile Include="..\..\src\sig.c" />
     <ClCompile Include="..\..\src\sort.c" />
     <ClCompile Include="..\..\src\speech.c" />
@@ -252,7 +251,6 @@ echo Don%27t forget to customize mush.cnf!
     <ClInclude Include="..\..\hdrs\privtab.h" />
     <ClInclude Include="..\..\hdrs\ptab.h" />
     <ClInclude Include="..\..\hdrs\pueblo.h" />
-    <ClInclude Include="..\..\hdrs\shs.h" />
     <ClInclude Include="..\..\hdrs\sort.h" />
     <ClInclude Include="..\..\hdrs\strtree.h" />
     <ClInclude Include="..\..\hdrs\switches.h" />

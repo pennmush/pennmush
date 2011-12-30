@@ -124,9 +124,7 @@
 #include "strtree.h"
 #include "log.h"
 #include "mypcre.h"
-#ifdef HAS_OPENSSL
 #include "myssl.h"
-#endif
 #include "mymalloc.h"
 #include "extmail.h"
 #include "attrib.h"
@@ -279,12 +277,10 @@ DESC *descriptor_list = NULL;   /**< The linked list of descriptors */
 intmap *descs_by_fd = NULL; /**< Map of ports to DESC* objects */
 
 static int sock;
-#ifdef HAS_OPENSSL
 static int sslsock = 0;
 SSL *ssl_master_socket = NULL;  /**< Master SSL socket for ssl port */
 static const char *ssl_shutdown_message __attribute__ ((__unused__)) =
   "GAME: SSL connections must be dropped, sorry.";
-#endif
 #ifdef LOCAL_SOCKET
 static int localsock = 0;
 #endif
@@ -913,6 +909,28 @@ setup_desc(int sock, conn_source source)
 }
 
 static void
+got_new_connection(int sock, conn_source source)
+{
+  union sockaddr_u addr;
+  socklen_t addr_len;
+  int newsock;
+
+  if (!info_slave_halted) {
+    addr_len = sizeof(addr);
+    newsock = accept(sock, (struct sockaddr *) &addr, &addr_len);
+    if (newsock < 0) {
+      if (test_connection(newsock) < 0)
+	return;
+    }
+    ndescriptors++;
+    query_info_slave(newsock);
+    if (newsock >= maxd)
+      maxd = newsock + 1;
+  } else
+    setup_desc(sock, source);
+}
+
+static void
 shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
 {
   /* this is the main game loop */
@@ -926,11 +944,6 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
   int queue_timeout;
   DESC *d, *dnext;
   int avail_descriptors;
-#ifdef INFO_SLAVE
-  union sockaddr_u addr;
-  socklen_t addr_len;
-  int newsock;
-#endif
   unsigned long input_ready, output_ready;
   int notify_fd = -1;
 
@@ -940,7 +953,6 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
     if (sock >= maxd)
       maxd = sock + 1;
 
-#ifdef HAS_OPENSSL
     if (sslport) {
 #ifdef SSL_SLAVE
       if (make_ssl_slave() < 0)
@@ -952,7 +964,6 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
         maxd = sslsock + 1;
 #endif
     }
-#endif
   }
 
   avail_descriptors = how_many_fds() - 5;
@@ -1079,10 +1090,8 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
     FD_ZERO(&output_set);
     if (ndescriptors < avail_descriptors)
       FD_SET(sock, &input_set);
-#ifdef HAS_OPENSSL
     if (sslsock)
       FD_SET(sslsock, &input_set);
-#endif
 #ifdef LOCAL_SOCKET
     if (localsock)
       FD_SET(localsock, &input_set);
@@ -1138,38 +1147,10 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
         update_pending_info_slaves();
       }
 
-      if (FD_ISSET(sock, &input_set)) {
-        if (!info_slave_halted) {
-          addr_len = sizeof(addr);
-          newsock = accept(sock, (struct sockaddr *) &addr, &addr_len);
-          if (newsock < 0) {
-            if (test_connection(newsock) < 0)
-              continue;         /* this should _not_ be return. */
-          }
-          ndescriptors++;
-          query_info_slave(newsock);
-          if (newsock >= maxd)
-            maxd = newsock + 1;
-        } else
-          setup_desc(sock, CS_IP_SOCKET);
-      }
-#ifdef HAS_OPENSSL
-      if (sslsock && FD_ISSET(sslsock, &input_set)) {
-        if (!info_slave_halted) {
-          addr_len = sizeof(addr);
-          newsock = accept(sslsock, (struct sockaddr *) &addr, &addr_len);
-          if (newsock < 0) {
-            if (test_connection(newsock) < 0)
-              continue;         /* this should _not_ be return. */
-          }
-          ndescriptors++;
-          query_info_slave(newsock);
-          if (newsock >= maxd)
-            maxd = newsock + 1;
-        } else
-          setup_desc(sslsock, CS_OPENSSL_SOCKET);
-      }
-#endif
+      if (FD_ISSET(sock, &input_set)) 
+	got_new_connection(sock, CS_IP_SOCKET);
+      if (sslsock && FD_ISSET(sslsock, &input_set)) 
+	got_new_connection(sock, CS_OPENSSL_SOCKET);
 #ifdef LOCAL_SOCKET
       if (localsock && FD_ISSET(localsock, &input_set))
         setup_desc(localsock, CS_LOCAL_SOCKET);
@@ -1177,10 +1158,8 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
 #else                           /* INFO_SLAVE */
       if (FD_ISSET(sock, &input_set))
         setup_desc(sock, CS_IP_SOCKET);
-#ifdef HAS_OPENSSL
       if (sslsock && FD_ISSET(sslsock, &input_set))
         setup_desc(sslsock, CS_OPENSSL_SOCKET);
-#endif
 #ifdef LOCAL_SOCKET
       if (localsock && FD_ISSET(localsock, &input_set))
         setup_desc(localsock, CS_LOCAL_SOCKET);
@@ -1728,12 +1707,10 @@ shutdownsock(DESC *d, const char *reason)
 
   im_delete(descs_by_fd, d->descriptor);
 
-#ifdef HAS_OPENSSL
   if (sslsock && d->ssl) {
     ssl_close_connection(d->ssl);
     d->ssl = NULL;
   }
-#endif
 
   {
     freeqs(d);
@@ -1781,17 +1758,14 @@ initializesock(int s, char *addr, char *ip, conn_source source)
   d->height = 24;
   d->ttype = mush_strdup("unknown", "terminal description");
   d->checksum[0] = '\0';
-#ifdef HAS_OPENSSL
   d->ssl = NULL;
   d->ssl_state = 0;
-#endif
   d->source = source;
   if (descriptor_list)
     descriptor_list->prev = d;
   d->next = descriptor_list;
   d->prev = NULL;
   descriptor_list = d;
-#ifdef HAS_OPENSSL
   if (source == CS_OPENSSL_SOCKET) {
     d->ssl = ssl_listen(d->descriptor, &d->ssl_state);
     if (d->ssl_state < 0) {
@@ -1801,14 +1775,12 @@ initializesock(int s, char *addr, char *ip, conn_source source)
       d->ssl_state = 0;
     }
   }
-#endif
   im_insert(descs_by_fd, d->descriptor, d);
   d->conn_timer = sq_register_in(1, test_telnet_wrapper, (void *) d, NULL);
   queue_event(SYSEVENT, "SOCKET`CONNECT", "%d,%s", d->descriptor, d->ip);
   return d;
 }
 
-#ifdef HAS_OPENSSL
 static int
 network_send_ssl(DESC *d)
 {
@@ -1907,7 +1879,6 @@ network_send_ssl(DESC *d)
 
   return written + need_write;
 }
-#endif
 
 #ifdef HAVE_WRITEV
 static int
@@ -2027,11 +1998,9 @@ network_send(DESC *d)
 int
 process_output(DESC *d)
 {
-#ifdef HAS_OPENSSL
   if (d->ssl)
     return network_send_ssl(d);
   else
-#endif
     return network_send(d);
 }
 
@@ -2423,7 +2392,6 @@ process_input(DESC *d, int output_ready __attribute__ ((__unused__)))
 
   errno = 0;
 
-#ifdef HAS_OPENSSL
   if (d->ssl) {
     /* Ensure that we're not in a state where we need an SSL_handshake() */
     if (ssl_need_handshake(d->ssl_state)) {
@@ -2465,7 +2433,6 @@ process_input(DESC *d, int output_ready __attribute__ ((__unused__)))
       return 0;
     }
   } else {
-#endif
     got = recv(d->descriptor, tbuf1, sizeof tbuf1, 0);
     if (got <= 0) {
       /* At this point, select() says there's data waiting to be read from
@@ -2481,9 +2448,7 @@ process_input(DESC *d, int output_ready __attribute__ ((__unused__)))
       else
         return 0;
     }
-#ifdef HAS_OPENSSL
   }
-#endif
 
   process_input_helper(d, tbuf1, got);
 
@@ -3063,9 +3028,7 @@ close_sockets(void)
 
   for (d = descriptor_list; d; d = dnext) {
     dnext = d->next;
-#ifdef HAS_OPENSSL
     if (!d->ssl) {
-#endif
 #ifdef HAVE_WRITEV
       struct iovec byebye[2];
       byebye[0].iov_base = (char *) shutmsg;
@@ -3077,7 +3040,6 @@ close_sockets(void)
       send(d->descriptor, shutmsg, shutlen, 0);
       send(d->descriptor, (char *) "\r\n", 2, 0);
 #endif
-#ifdef HAS_OPENSSL
     } else {
       int offset;
       offset = 0;
@@ -3089,7 +3051,6 @@ close_sockets(void)
       d->ssl = NULL;
       d->ssl_state = 0;
     }
-#endif
     if (d->source != CS_LOCAL_SOCKET && shutdown(d->descriptor, 2) < 0)
       penn_perror("shutdown");
     closesocket(d->descriptor);
@@ -5375,7 +5336,7 @@ f_close(stream)
 #define fclose(x) f_close(x)
 #endif                          /* SUN_OS */
 
-#if defined(HAS_OPENSSL) && !defined(SSL_SLAVE)
+#ifndef SSL_SLAVE
 /** Take down all SSL client connections and close the SSL server socket.
  * Typically, this is in preparation for a shutdown/reboot.
  */
@@ -5588,10 +5549,8 @@ load_reboot_db(void)
       d->raw_input = NULL;
       d->raw_input_at = NULL;
       d->quota = options.starting_quota;
-#ifdef HAS_OPENSSL
       d->ssl = NULL;
       d->ssl_state = 0;
-#endif
 
       if (d->conn_flags & CONN_CLOSE_READY) {
         /* This isn't really an open descriptor, we're just tracking
@@ -5624,7 +5583,7 @@ load_reboot_db(void)
     globals.first_start_time = getref(f);
     globals.reboot_count = getref(f) + 1;
 
-#if defined(HAS_OPENSSL) && !defined(SSL_SLAVE)
+#ifndef SSL_SLAVE
     if (SSLPORT) {
       sslsock = make_socket(SSLPORT, SOCK_STREAM, NULL, NULL, SSL_IP_ADDR);
       ssl_master_socket = ssl_setup_socket(sslsock);
@@ -5714,7 +5673,7 @@ do_reboot(dbref player, int flag)
     if (globals.paranoid_checkpt < 1)
       globals.paranoid_checkpt = 1;
   }
-#if defined(HAS_OPENSSL) && !defined(SSL_SLAVE)
+#ifndef SSL_SLAVE
   close_ssl_connections();
 #endif
   if (!fork_and_dump(0)) {

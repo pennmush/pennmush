@@ -13,7 +13,6 @@
 #include "copyrite.h"
 #include "config.h"
 
-#ifdef HAS_OPENSSL
 #include <stdio.h>
 #include <stdarg.h>
 #ifdef I_SYS_TYPES
@@ -588,5 +587,3 @@ ssl_errordump(const char *msg)
   unlock_file(stderr);
 }
 
-
-#endif                          /* HAS_OPENSSL */

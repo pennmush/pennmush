@@ -81,7 +81,7 @@ typedef enum { SQL_PLATFORM_DISABLED = -1,
   if (!qres) { \
     if (affected_rows >= 0) { \
     } else if (!sql_connected()) { \
-      safe_str(T("#-1 SQL ERROR: NO DATABASE CONNECTED"), buff, bp);	\
+      safe_str(T("#-1 SQL ERROR: NO DATABASE CONNECTED"), buff, bp); \
     } else { \
       safe_format(buff, bp, T("#-1 SQL ERROR: %s"), sql_error()); \
     } \

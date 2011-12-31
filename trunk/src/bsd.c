@@ -908,6 +908,7 @@ setup_desc(int sock, conn_source source)
   }
 }
 
+#ifdef INFO_SLAVE
 static void
 got_new_connection(int sock, conn_source source)
 {
@@ -920,7 +921,7 @@ got_new_connection(int sock, conn_source source)
     newsock = accept(sock, (struct sockaddr *) &addr, &addr_len);
     if (newsock < 0) {
       if (test_connection(newsock) < 0)
-	return;
+        return;
     }
     ndescriptors++;
     query_info_slave(newsock);
@@ -929,6 +930,7 @@ got_new_connection(int sock, conn_source source)
   } else
     setup_desc(sock, source);
 }
+#endif
 
 static void
 shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
@@ -1147,10 +1149,10 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
         update_pending_info_slaves();
       }
 
-      if (FD_ISSET(sock, &input_set)) 
-	got_new_connection(sock, CS_IP_SOCKET);
-      if (sslsock && FD_ISSET(sslsock, &input_set)) 
-	got_new_connection(sock, CS_OPENSSL_SOCKET);
+      if (FD_ISSET(sock, &input_set))
+        got_new_connection(sock, CS_IP_SOCKET);
+      if (sslsock && FD_ISSET(sslsock, &input_set))
+        got_new_connection(sock, CS_OPENSSL_SOCKET);
 #ifdef LOCAL_SOCKET
       if (localsock && FD_ISSET(localsock, &input_set))
         setup_desc(localsock, CS_LOCAL_SOCKET);

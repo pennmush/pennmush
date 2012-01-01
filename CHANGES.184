@@ -59,6 +59,8 @@ Minor changes:
  * isobjid() now requires a full object id (with :ctime), and will return 0
    for simple dbrefs, or objids of destroyed/invalid objects. isdbref() still
    matches both dbrefs and objids. Suggested by Covenent. [MG]
+ * @entrances and entrances() now use the same internal routines as @search,
+   and have similar (and saner) privs. From a suggestion by Sketch. [MG]
 
 Commands:
  * Added @mail/review for reading mail you've sent, and @mail/retract for

@@ -70,6 +70,7 @@ struct search_spec {
   int type;     /**< Limit to this type */
   dbref parent; /**< Limit to children of this parent */
   dbref zone;   /**< Limit to those in this zone */
+  dbref entrances;           /**< Objects linked here, for \@entrances */
   char flags[BUFFER_LEN];    /**< Limit to those with these flags */
   char lflags[BUFFER_LEN];    /**< Limit to those with these flags */
   char powers[BUFFER_LEN];   /**< Limit to those with these powers */
@@ -89,8 +90,9 @@ static int tport_dest_ok(dbref player, dbref victim, dbref dest,
                          NEW_PE_INFO *pe_info);
 static int tport_control_ok(dbref player, dbref victim, dbref loc);
 static int mem_usage(dbref thing);
-static int raw_search(dbref player, const char *owner, int nargs,
-                      const char **args, dbref **result, NEW_PE_INFO *pe_info);
+static int raw_search(dbref player, struct search_spec *spec,
+                      dbref **result, NEW_PE_INFO *pe_info);
+static void init_search_spec(struct search_spec *spec);
 static int fill_search_spec(dbref player, const char *owner, int nargs,
                             const char **args, struct search_spec *spec);
 static void
@@ -1198,6 +1200,7 @@ do_search(dbref player, const char *arg1, char **arg3)
   dbref *results = NULL;
   char *s;
   int nresults;
+  struct search_spec spec;
 
   /* parse first argument into two */
   if (!arg1 || *arg1 == '\0')
@@ -1252,8 +1255,15 @@ do_search(dbref player, const char *arg1, char **arg3)
         myargs[j++] = arg3[i];
       }
     }
-    nresults = raw_search(player, tbuf, j, myargs, &results, NULL);
+    if (fill_search_spec(player, tbuf, j, myargs, &spec) < 0) {
+      if (spec.lock != TRUE_BOOLEXP)
+        free_boolexp(spec.lock);
+      return;
+    }
+
+    nresults = raw_search(player, &spec, &results, NULL);
   }
+
 
   if (nresults == 0) {
     notify(player, T("Nothing found."));
@@ -1396,6 +1406,7 @@ FUNCTION(fun_lsearch)
   int return_count = 0;
   dbref *results = NULL;
   int rev = !strcmp(called_as, "LSEARCHR");
+  struct search_spec spec;
 
   if (!command_check_byname(executor, "@search", pe_info)) {
     safe_str(T(e_perm), buff, bp);
@@ -1411,16 +1422,27 @@ FUNCTION(fun_lsearch)
     const char *myargs[2];
     myargs[0] = "PARENT";
     myargs[1] = args[0];
-    nresults = raw_search(executor, NULL, 2, myargs, &results, pe_info);
+    if (fill_search_spec(executor, NULL, 2, myargs, &spec) < 0) {
+      if (spec.lock != TRUE_BOOLEXP)
+        free_boolexp(spec.lock);
+      safe_str("#-1", buff, bp);
+      return;
+    }
+
+    nresults = raw_search(executor, &spec, &results, pe_info);
   } else {
-    nresults =
-      raw_search(executor, args[0], nargs - 1, (const char **) (args + 1),
-                 &results, pe_info);
+    if (fill_search_spec(executor, args[0], nargs - 1,
+                         (const char **) (args + 1), &spec) < 0) {
+      if (spec.lock != TRUE_BOOLEXP)
+        free_boolexp(spec.lock);
+      safe_str("#-1", buff, bp);
+      return;
+    }
+
+    nresults = raw_search(executor, &spec, &results, pe_info);
   }
 
-  if (nresults < 0) {
-    safe_str("#-1", buff, bp);
-  } else if (return_count) {
+  if (return_count) {
     safe_integer(nresults, buff, bp);
   } else if (nresults == 0) {
     notify(executor, T("Nothing found."));
@@ -1448,6 +1470,194 @@ FUNCTION(fun_lsearch)
   }
   if (results)
     mush_free(results, "search_results");
+}
+
+/** Find the entrances to a room.
+ * \verbatim
+ * This implements @entrances, which finds things linked to an object
+ * (typically exits, but can be any type).
+ * \endverbatim
+ * \param player the enactor.
+ * \param where name of object to find entrances on.
+ * \param argv array of arguments for dbref range limitation.
+ * \param types what type of 'entrances' to find.
+ */
+void
+do_entrances(dbref player, const char *where, char *argv[], int types)
+{
+  dbref place;
+  struct search_spec spec;
+  int rooms, things, exits, players;
+  int nresults, n;
+  dbref *results = NULL;
+
+  rooms = things = exits = players = 0;
+
+  if (!where || !*where) {
+    place = speech_loc(player);
+  } else {
+    place = noisy_match_result(player, where, NOTYPE, MAT_EVERYTHING);
+  }
+  if (!GoodObject(place))
+    return;
+
+  init_search_spec(&spec);
+  spec.entrances = place;
+
+  /* determine range */
+  if (argv[1] && *argv[1])
+    spec.low = atoi(argv[1]);
+  if (spec.low < 0)
+    spec.low = 0;
+  if (argv[2] && *argv[2])
+    spec.high = atoi(argv[2]) + 1;
+  if (spec.high > db_top)
+    spec.high = db_top;
+
+  spec.type = types;
+
+  nresults = raw_search(controls(player, place) ? GOD : player, &spec, &results, NULL);
+  for (n = 0; n < nresults; n++) {
+    switch (Typeof(results[n])) {
+    case TYPE_EXIT:
+      notify_format(player,
+                    T("%s [from: %s]"), object_header(player, results[n]),
+                    object_header(player, Source(results[n])));
+      exits++;
+      break;
+    case TYPE_ROOM:
+      notify_format(player, T("%s [dropto]"), object_header(player, results[n]));
+      rooms++;
+      break;
+    case TYPE_THING:
+    case TYPE_PLAYER:
+      notify_format(player, T("%s [home]"), object_header(player, results[n]));
+      if (IsThing(results[n]))
+        things++;
+      else
+        players++;
+      break;
+    }
+  }
+
+  if (results)
+    mush_free(results, "search_results");
+
+  if (!nresults)
+    notify(player, T("Nothing found."));
+  else {
+    notify(player, T("----------  Entrances Done  ----------"));
+    notify_format(player,
+                  T
+                  ("Totals: Rooms...%d  Exits...%d  Things...%d  Players...%d"),
+                  rooms, exits, things, players);
+  }
+}
+
+/* ARGSUSED */
+FUNCTION(fun_entrances)
+{
+  /* All args are optional.
+   * The first argument is the dbref to check (default = this room)
+   * The second argument to this function is a set of characters:
+   * (a)ll (default), (e)xits, (t)hings, (p)layers, (r)ooms
+   * The third and fourth args limit the range of dbrefs (default=0,db_top)
+   */
+  dbref where = Location(executor);
+  struct search_spec spec;
+  int nresults, n;
+  dbref *results = NULL;
+  char *p;
+
+  if (!command_check_byname(executor, "@entrances", pe_info)) {
+    safe_str(T(e_perm), buff, bp);
+    return;
+  }
+
+  init_search_spec(&spec);
+
+  if (nargs > 0)
+    where = match_result(executor, args[0], NOTYPE, MAT_EVERYTHING);
+  else
+    where = speech_loc(executor);
+  if (!GoodObject(where)) {
+    safe_str(T("#-1 INVALID LOCATION"), buff, bp);
+    return;
+  }
+  spec.entrances = where;
+  spec.type = 0;
+  if (nargs > 1 && args[1] && *args[1]) {
+    p = args[1];
+    while (*p) {
+      switch (*p) {
+      case 'a':
+      case 'A':
+        spec.type = NOTYPE;
+        break;
+      case 'e':
+      case 'E':
+        spec.type |= TYPE_EXIT;
+        break;
+      case 't':
+      case 'T':
+        spec.type |= TYPE_THING;
+        break;
+      case 'p':
+      case 'P':
+        spec.type |= TYPE_PLAYER;
+        break;
+      case 'r':
+      case 'R':
+        spec.type |= TYPE_ROOM;
+        break;
+      default:
+        safe_str(T("#-1 INVALID SECOND ARGUMENT"), buff, bp);
+        return;
+      }
+      p++;
+    }
+  }
+  if (!spec.type)
+    spec.type = NOTYPE;
+
+  if (nargs > 2) {
+    if (is_strict_integer(args[2])) {
+      spec.low = parse_integer(args[2]);
+    } else if (is_dbref(args[2])) {
+      spec.low = parse_dbref(args[2]);
+    } else {
+      safe_str(T(e_ints), buff, bp);
+      return;
+    }
+  }
+  if (nargs > 3) {
+    if (is_strict_integer(args[3])) {
+      spec.high = parse_integer(args[3]);
+    } else if (is_dbref(args[3])) {
+      spec.high = parse_dbref(args[3]);
+    } else {
+      safe_str(T(e_ints), buff, bp);
+      return;
+    }
+  }
+  if (!GoodObject(spec.low))
+    spec.low = 0;
+  if (!GoodObject(spec.high))
+    spec.high = db_top - 1;
+
+  nresults = raw_search(controls(executor, where) ? GOD : executor, &spec, &results, pe_info);
+  for (n = 0; n < nresults; n++) {
+    if (n) {
+      if (safe_chr(' ', buff, bp))
+        break;
+    }
+    if (safe_dbref(results[n], buff, bp))
+      break;
+  }
+
+  if (results)
+    mush_free(results, "search_results");
+
 }
 
 /* ARGSUSED */
@@ -1866,14 +2076,11 @@ FUNCTION(fun_playermem)
   safe_integer(tot, buff, bp);
 }
 
-static int
-fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
-                 struct search_spec *spec)
+/** Initialize a search_spec struct with blank/default values */
+static void
+init_search_spec(struct search_spec *spec)
 {
-  int n;
-  const char *class, *restriction;
-
-  spec->zone = spec->parent = spec->owner = ANY_OWNER;
+  spec->zone = spec->parent = spec->owner = spec->entrances = ANY_OWNER;
   spec->type = NOTYPE;
   strcpy(spec->flags, "");
   strcpy(spec->lflags, "");
@@ -1887,6 +2094,16 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
   spec->lock = TRUE_BOOLEXP;
   strcpy(spec->cmdstring, "");
   strcpy(spec->listenstring, "");
+}
+
+static int
+fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
+                 struct search_spec *spec)
+{
+  int n;
+  const char *class, *restriction;
+
+  init_search_spec(spec);
 
   /* set limits on who we search */
   if (!owner || !*owner)
@@ -2090,51 +2307,44 @@ fill_search_spec(dbref player, const char *owner, int nargs, const char **args,
 
 /* Does the actual searching */
 static int
-raw_search(dbref player, const char *owner, int nargs, const char **args,
+raw_search(dbref player, struct search_spec *spec,
            dbref **result, NEW_PE_INFO *pe_info)
 {
   size_t result_size;
   size_t nresults = 0;
   int n;
   int is_wiz;
-  struct search_spec spec;
   int count = 0;
   int ret = 0;
   int vis_only = 0;
   ATTR *a;
   char lbuff[BUFFER_LEN];
 
-  if (fill_search_spec(player, owner, nargs, args, &spec) < 0) {
-    if (spec.lock != TRUE_BOOLEXP)
-      free_boolexp(spec.lock);
-    return -1;
-  }
-
   is_wiz = Search_All(player) || See_All(player);
 
   /* vis_only: @searcher doesn't have see_all, and can only examine
    * objects that they pass the CanExamine() check for.
    */
-  if (!is_wiz && spec.owner != Owner(player)) {
+  if (!is_wiz && spec->owner != Owner(player)) {
     vis_only = 1;
 
     /* For Zones: If the player passes the zone lock on a shared player,
      * they are considered to be able to examine everything of that player,
      * so do not need vis_only. */
-    if (GoodObject(spec.owner) && ZMaster(spec.owner)) {
-      vis_only = !eval_lock_with(player, spec.owner, Zone_Lock, pe_info);
+    if (GoodObject(spec->owner) && ZMaster(spec->owner)) {
+      vis_only = !eval_lock_with(player, spec->owner, Zone_Lock, pe_info);
     }
   }
 
   /* make sure player has money to do the search -
    * But only if this does an eval or lock search. */
-  if (((spec.lock != TRUE_BOOLEXP) && is_eval_lock(spec.lock)) ||
-      spec.cmdstring[0] || spec.listenstring[0] || spec.eval[0]) {
+  if (((spec->lock != TRUE_BOOLEXP) && is_eval_lock(spec->lock)) ||
+      spec->cmdstring[0] || spec->listenstring[0] || spec->eval[0]) {
     if (!payfor(player, FIND_COST)) {
       notify_format(player, T("Searches cost %d %s."), FIND_COST,
                     ((FIND_COST == 1) ? MONEY : MONIES));
-      if (spec.lock != TRUE_BOOLEXP)
-        free_boolexp(spec.lock);
+      if (spec->lock != TRUE_BOOLEXP)
+        free_boolexp(spec->lock);
       return -1;
     }
   }
@@ -2144,66 +2354,70 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
   if (!*result)
     mush_panic("Couldn't allocate memory in search!");
 
-  if (spec.low < 0) {
-    spec.low = 0;
+  if (spec->low < 0) {
+    spec->low = 0;
   }
-  if (spec.high >= db_top)
-    spec.high = db_top - 1;
-  for (n = spec.low; n <= spec.high && n < db_top; n++) {
-    if (IsGarbage(n) && spec.type != TYPE_GARBAGE)
+  if (spec->high >= db_top)
+    spec->high = db_top - 1;
+  for (n = spec->low; n <= spec->high && n < db_top; n++) {
+    if (IsGarbage(n) && spec->type != TYPE_GARBAGE)
       continue;
-    if (spec.owner != ANY_OWNER && Owner(n) != spec.owner)
+    if (spec->owner != ANY_OWNER && Owner(n) != spec->owner)
       continue;
     if (vis_only && !Can_Examine(player, n))
       continue;
-    if (spec.type != NOTYPE && Typeof(n) != spec.type)
+    if (spec->type != NOTYPE && Typeof(n) != spec->type)
       continue;
-    if (spec.zone != ANY_OWNER && Zone(n) != spec.zone)
+    if (spec->zone != ANY_OWNER && Zone(n) != spec->zone)
       continue;
-    if (spec.parent != ANY_OWNER && Parent(n) != spec.parent)
+    if (spec->parent != ANY_OWNER && Parent(n) != spec->parent)
       continue;
-    if (*spec.name && !string_match(Name(n), spec.name))
+    if (spec->entrances != ANY_OWNER) {
+      if ((Mobile(n) ? Home(n) : Location(n)) != spec->entrances)
+        continue;
+    }
+    if (*spec->name && !string_match(Name(n), spec->name))
       continue;
-    if (*spec.flags && (flaglist_check("FLAG", player, n, spec.flags, 1) != 1))
+    if (*spec->flags && (flaglist_check("FLAG", player, n, spec->flags, 1) != 1))
       continue;
-    if (*spec.lflags
-        && (flaglist_check_long("FLAG", player, n, spec.lflags, 1) != 1))
+    if (*spec->lflags
+        && (flaglist_check_long("FLAG", player, n, spec->lflags, 1) != 1))
       continue;
-    if (*spec.powers
-        && (flaglist_check_long("POWER", player, n, spec.powers, 1) != 1))
+    if (*spec->powers
+        && (flaglist_check_long("POWER", player, n, spec->powers, 1) != 1))
       continue;
-    if (spec.lock != TRUE_BOOLEXP
-        && !eval_boolexp(n, spec.lock, player, pe_info))
+    if (spec->lock != TRUE_BOOLEXP
+        && !eval_boolexp(n, spec->lock, player, pe_info))
       continue;
-    if (spec.cmdstring[0] &&
-        !atr_comm_match(n, player, '$', ':', spec.cmdstring, 1, 0,
+    if (spec->cmdstring[0] &&
+        !atr_comm_match(n, player, '$', ':', spec->cmdstring, 1, 0,
                         NULL, NULL, 0, NULL, NULL, QUEUE_DEFAULT))
       continue;
-    if (spec.listenstring[0]) {
+    if (spec->listenstring[0]) {
       ret = 0;
       /* do @listen stuff */
       a = atr_get_noparent(n, "LISTEN");
       if (a) {
         strcpy(lbuff, atr_value(a));
         ret = AF_Regexp(a)
-          ? regexp_match_case_r(lbuff, spec.listenstring,
+          ? regexp_match_case_r(lbuff, spec->listenstring,
                                 AF_Case(a), NULL, 0, NULL, 0, NULL)
-          : wild_match_case_r(lbuff, spec.listenstring,
+          : wild_match_case_r(lbuff, spec->listenstring,
                               AF_Case(a), NULL, 0, NULL, 0, NULL);
       }
       if (!ret &&
-          !atr_comm_match(n, player, '^', ':', spec.listenstring, 1, 0,
+          !atr_comm_match(n, player, '^', ':', spec->listenstring, 1, 0,
                           NULL, NULL, 0, NULL, NULL, QUEUE_DEFAULT))
         continue;
     }
-    if (*spec.eval) {
+    if (*spec->eval) {
       char *ebuf1;
       const char *ebuf2;
       char tbuf1[BUFFER_LEN];
       char *bp;
       int per;
 
-      ebuf1 = replace_string("##", unparse_dbref(n), spec.eval);
+      ebuf1 = replace_string("##", unparse_dbref(n), spec->eval);
       ebuf2 = ebuf1;
       bp = tbuf1;
       per = process_expression(tbuf1, &bp, &ebuf2, player, player, player,
@@ -2218,10 +2432,10 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
 
     /* Only include the matching dbrefs from start to start+count */
     count++;
-    if (count < spec.start) {
+    if (count < spec->start) {
       continue;
     }
-    if (spec.count && count >= spec.end) {
+    if (spec->count && count >= spec->end) {
       continue;
     }
 
@@ -2238,7 +2452,7 @@ raw_search(dbref player, const char *owner, int nargs, const char **args,
   }
 
 exit_sequence:
-  if (spec.lock != TRUE_BOOLEXP)
-    free_boolexp(spec.lock);
+  if (spec->lock != TRUE_BOOLEXP)
+    free_boolexp(spec->lock);
   return (int) nresults;
 }

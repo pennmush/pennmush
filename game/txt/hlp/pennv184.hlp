@@ -17,6 +17,8 @@ Major changes:
  * The PCRE library is now required to build Penn, instead of falling
    back to an old, buggy version formerly bundled with the MUSH. [SW]
    Daniko assisted greatly with Windows changes and documentation.
+ * The OpenSSL library is now required to build Penn. Again, Daniko has
+   provided instructions for installing on Windows. [SW]
  * A new command prefix, "}", enables debug for a single execution of the
    command  - }think foo, }+who, etc. See 'help }' for more info. Suggested
    by Wiggles and [GM]. [MG]
@@ -52,6 +54,8 @@ Minor changes:
  * isobjid() now requires a full object id (with :ctime), and will return 0
    for simple dbrefs, or objids of destroyed/invalid objects. isdbref() still
    matches both dbrefs and objids. Suggested by Covenent. [MG]
+ * @entrances and entrances() now use the same internal routines as @search,
+   and have similar (and saner) privs. From a suggestion by Sketch. [MG]
 
 Commands:
  * Added @mail/review for reading mail you've sent, and @mail/retract for

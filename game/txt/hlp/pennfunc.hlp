@@ -1432,8 +1432,9 @@ See also: decrypt(), encode64()
         r        rooms
 
   You can also limit the range of the dbrefs searched by giving <begin> and 
-  <end>. If you don't control <object>, you must have the Search_All power,
-  and will only see objects you control.
+  <end>. If you 't control <object>, or have the Search or See_All powers,
+  all objects linked to <object> are returned. Otherwise, only objects you
+  can examine will be included.
   
 See also: lsearch(), @entrances
 & EQ()
@@ -2864,7 +2865,7 @@ See also: pos(), member(), match()
   fulfill all restrictions. See 'help @search' for information about them.
 
   children() is exactly the same as lsearch([me|all], parent, <object>),
-  using "all" for See_All/Search_All players and "me" for others.
+  using "all" for See_All/Search players and "me" for others.
 
   nlsearch(...) and nchildren(...) return the count of results that
   would be returned by lsearch() or children() with the same args.

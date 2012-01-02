@@ -198,7 +198,7 @@ test_compress: comp_h.c
 	$(CC) $(CFLAGS) -o test_compress -DSTANDALONE comp_h.c
 
 portmsg: portmsg.c mysocket.c sig.o wait.o 
-	$(CC) $(CCFLAGS) -DINFOSLAVE -o portmsg portmsg.c mysocket.c sig.o \
+	$(CC) $(CCFLAGS) -DSLAVE -o portmsg portmsg.c mysocket.c sig.o \
 	wait.o $(LDFLAGS) $(LIBS)
 
 # Some dependencies that make depend doesn't handle well

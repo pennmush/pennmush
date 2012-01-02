@@ -97,6 +97,8 @@ Fixes:
  * @uptime could report negative times for the first dump, purge, etc after
    a game was started. Reported by Cooee. [MG]
  * override/inplace hooks from .cnf files didn't work correctly. [MG]
+ * The portmsg announcer daemon was broken. Reported by Minion. [SW]
+
 
 Version 1.8.4 patchlevel 8                                 Nov 11, 2011
 

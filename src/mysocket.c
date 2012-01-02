@@ -425,7 +425,11 @@ make_nonblocking(int s)
   unsigned long arg = 1;
   if (ioctlsocket(s, FIONBIO, &arg) == -1) {
     penn_perror("make_nonblocking: ioctlsocket");
+#ifndef SLAVE
     mush_panic("Fatal network error!");
+#else
+    exit(1);
+#endif
   }
 #else
   int flags;
@@ -462,7 +466,11 @@ make_blocking(int s)
   unsigned long arg = 0;
   if (ioctlsocket(s, FIONBIO, &arg) == -1) {
     penn_perror("make_blocking: ioctlsocket");
+#ifndef SLAVE
     mush_panic("Fatal network error");
+#else
+    exit(1);
+#endif
   }
 #else
   int flags;

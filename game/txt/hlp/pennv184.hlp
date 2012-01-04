@@ -56,6 +56,9 @@ Minor changes:
    matches both dbrefs and objids. Suggested by Covenent. [MG]
  * @entrances and entrances() now use the same internal routines as @search,
    and have similar (and saner) privs. From a suggestion by Sketch. [MG]
+ * Connection messages that are evaluated from an attribute instead of
+   read from a file get the dbref of the connected player as %1, as
+   long as they're ones shown post-connection (motd_file, etc.) [SW]
 
 Commands:
  * Added @mail/review for reading mail you've sent, and @mail/retract for
@@ -92,6 +95,10 @@ Fixes:
  * @uptime could report negative times for the first dump, purge, etc after
    a game was started. Reported by Cooee. [MG]
  * override/inplace hooks from .cnf files didn't work correctly. [MG]
+ * The portmsg announcer daemon was broken. Reported by Minion. [SW]
+ * A change in p8 broke the sending of the Pueblo hello string in some cases.
+   Reported by Mercutio. [MG]
+
 
 & 1.8.4p8
 Version 1.8.4 patchlevel 8                                 Nov 11, 2011

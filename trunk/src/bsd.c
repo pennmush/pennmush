@@ -1328,7 +1328,7 @@ static int
 fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
                  const unsigned char *prefix)
 {
-  char arg[SBUF_LEN], buff[BUFFER_LEN], *bp;
+  char descarg[SBUF_LEN], dbrefarg[SBUF_LEN], buff[BUFFER_LEN], *bp;
   PE_REGS *pe_regs;
   ufun_attrib ufun;
 
@@ -1340,12 +1340,17 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
        UFUN_LOCALIZE | UFUN_IGNORE_PERMS | UFUN_REQUIRE_ATTR))
     return -1;
 
-  bp = arg;
-  safe_integer_sbuf(d->descriptor, arg, &bp);
+  bp = descarg;
+  safe_integer_sbuf(d->descriptor, descarg, &bp);
+  *bp = '\0';
+  
+  bp = dbrefarg;
+  safe_dbref(d->player, dbrefarg, &bp);
   *bp = '\0';
 
   pe_regs = pe_regs_create(PE_REGS_ARG, "fcache_dump_attr");
-  pe_regs_setenv_nocopy(pe_regs, 0, arg);
+  pe_regs_setenv_nocopy(pe_regs, 0, descarg);
+  pe_regs_setenv_nocopy(pe_regs, 1, dbrefarg);
   call_ufun(&ufun, buff, d->player, d->player, NULL, pe_regs);
   bp = strchr(buff, '\0');
   safe_chr('\n', buff, &bp);

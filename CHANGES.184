@@ -61,6 +61,9 @@ Minor changes:
    matches both dbrefs and objids. Suggested by Covenent. [MG]
  * @entrances and entrances() now use the same internal routines as @search,
    and have similar (and saner) privs. From a suggestion by Sketch. [MG]
+ * Connection messages that are evaluated from an attribute instead of
+   read from a file get the dbref of the connected player as %1, as
+   long as they're ones shown post-connection (motd_file, etc.) [SW]
 
 Commands:
  * Added @mail/review for reading mail you've sent, and @mail/retract for

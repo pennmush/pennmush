@@ -475,12 +475,13 @@ forking_dump yes
 ### Filenames
 ###
 
-# Text files shown on connection, as message of the day,
-# as wizard message of the day, on quit, to newly created players,
-# when logins are disabled, when player creation is disabled,
-# and when a guest logs in. These must either be the path to
-# a text file, or a #dbref/attrname to be evaluated and shown.
-# dbref/attrs are passed the port/descriptor as %0.
+# Text files shown on connection, as message of the day, as wizard
+# message of the day, on quit, to newly created players, when logins
+# are disabled, when player creation is disabled, and when a guest
+# logs in. These must either be the path to a text file, or a
+# #dbref/attrname to be evaluated and shown.  dbref/attrs are passed
+# the port/descriptor as %0. If it's a message shown to a connected
+# player, their dbref is also passed as %1.
 connect_file txt/connect.txt
 motd_file txt/motd.txt
 wizmotd_file txt/wizmotd.txt

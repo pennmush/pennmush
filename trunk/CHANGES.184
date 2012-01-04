@@ -101,6 +101,8 @@ Fixes:
    a game was started. Reported by Cooee. [MG]
  * override/inplace hooks from .cnf files didn't work correctly. [MG]
  * The portmsg announcer daemon was broken. Reported by Minion. [SW]
+ * A change in p8 broke the sending of the Pueblo hello string in some cases.
+   Reported by Mercutio. [MG]
 
 
 Version 1.8.4 patchlevel 8                                 Nov 11, 2011

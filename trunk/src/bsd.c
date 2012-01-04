@@ -181,7 +181,8 @@ char confname[BUFFER_LEN] = { '\0' };    /**< Name of the config file */
 char errlog[BUFFER_LEN] = { '\0' };      /**< Name of the error log file */
 
 /** Is this descriptor connected to a telnet-compatible terminal? */
-#define TELNET_ABLE(d) ((d)->conn_flags & (CONN_TELNET | CONN_TELNET_QUERY | CONN_AWAITING_FIRST_DATA))
+#define TELNET_ABLE(d) ((d)->conn_flags & (CONN_TELNET | CONN_TELNET_QUERY))
+#define MAYBE_TELNET_ABLE(d) ((d)->conn_flags & (CONN_TELNET | CONN_TELNET_QUERY | CONN_AWAITING_FIRST_DATA))
 
 
 /* When the mush gets a new connection, it tries sending a telnet
@@ -1343,7 +1344,7 @@ fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
   bp = descarg;
   safe_integer_sbuf(d->descriptor, descarg, &bp);
   *bp = '\0';
-  
+
   bp = dbrefarg;
   safe_dbref(d->player, dbrefarg, &bp);
   *bp = '\0';
@@ -2371,7 +2372,7 @@ process_input_helper(DESC *d, char *tbuf1, int got)
       if (q >= qend)
         break;
       q++;
-      if (!TELNET_ABLE(d) || handle_telnet(d, &q, qend) == 0) {
+      if (!MAYBE_TELNET_ABLE(d) || handle_telnet(d, &q, qend) == 0) {
         if (p < pend && isprint(*q))
           *p++ = *q;
       }

@@ -109,7 +109,7 @@ complain(dbref player, dbref i, const char *name, const char *desc, ...)
   va_list args;
 
   va_start(args, desc);
-  my_vsnprintf(buff, sizeof buff, desc, args);
+  mush_vsnprintf(buff, sizeof buff, desc, args);
   va_end(args);
 
   notify_format(player, T("Warning '%s' for %s:"),

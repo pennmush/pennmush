@@ -64,6 +64,9 @@ Minor changes:
  * Connection messages that are evaluated from an attribute instead of
    read from a file get the dbref of the connected player as %1, as
    long as they're ones shown post-connection (motd_file, etc.) [SW]
+ * The my_vsnprintf function in the hardcode has been renamed to
+   mush_vsnprintf to avoid a conflict with MySQL. Reported by Balerion @ 
+   Blood of Dragons. [MG]
 
 Commands:
  * Added @mail/review for reading mail you've sent, and @mail/retract for

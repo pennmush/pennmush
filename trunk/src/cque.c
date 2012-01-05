@@ -433,7 +433,7 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   if (argcount > 0) {
     /* Build the arguments. */
     va_start(args, fmt);
-    my_vsnprintf(buff, sizeof buff, myfmt, args);
+    mush_vsnprintf(buff, sizeof buff, myfmt, args);
     buff[(BUFFER_LEN * 4) - 1] = '\0';
     va_end(args);
 

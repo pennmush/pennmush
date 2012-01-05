@@ -2092,7 +2092,7 @@ penn_fprintf(PENNFILE *f, const char *fmt, ...)
       char line[BUFFER_LEN * 2];
 
       va_start(ap, fmt);
-      r = my_vsnprintf(line, sizeof line, fmt, ap);
+      r = mush_vsnprintf(line, sizeof line, fmt, ap);
       va_end(ap, fmt);
       if (r > -1)
         OUTPUT(gzputs(f->handle.g, line));

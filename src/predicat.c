@@ -59,7 +59,7 @@ tprintf(const char *fmt, ...)
   va_list args;
 
   va_start(args, fmt);
-  my_vsnprintf(buff, sizeof buff, fmt, args);
+  mush_vsnprintf(buff, sizeof buff, fmt, args);
   va_end(args);
 
   return buff;

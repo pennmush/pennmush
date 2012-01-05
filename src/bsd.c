@@ -2905,7 +2905,7 @@ check_connect(DESC *d, const char *msg)
                   "create: max login count reached", user);
       return 0;
     }
-    player = create_player(d, user, password, d->addr, d->ip);
+    player = create_player(d, NOTHING, user, password, d->addr, d->ip);
     if (player == NOTHING) {
       queue_string_eol(d, T(create_fail));
       do_rawlog(LT_CONN,

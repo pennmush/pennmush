@@ -411,7 +411,7 @@ int password_check(dbref player, const char *password);
 dbref lookup_player(const char *name);
 dbref lookup_player_name(const char *name);
 /* from player.c */
-dbref create_player(DESC *d, const char *name, const char *password,
+dbref create_player(DESC *d, dbref executor, const char *name, const char *password,
                     const char *host, const char *ip);
 dbref connect_player(DESC *d, const char *name, const char *password,
                      const char *host, const char *ip, char *errbuf);

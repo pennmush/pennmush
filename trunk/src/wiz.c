@@ -142,7 +142,7 @@ do_pcreate(dbref creator, const char *player_name, const char *player_password,
     return NOTHING;
   }
 
-  player = create_player(NULL, player_name, player_password, "None", "None");
+  player = create_player(NULL, creator, player_name, player_password, "None", "None");
   if (player == NOTHING) {
     notify_format(creator, T("Failure creating '%s' (bad name)"), player_name);
     return NOTHING;

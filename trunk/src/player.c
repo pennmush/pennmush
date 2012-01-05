@@ -309,7 +309,8 @@ connect_player(DESC *d, const char *name, const char *password,
 }
 
 /** Attempt to create a new player object.
- * \param d DESC the creation attempt is being made on
+ * \param d DESC the creation attempt is being made on (if from connect screen)
+ * \dbref executor dbref of the object attempting to create a player (if \@pcreate)
  * \param name name of player to create.
  * \param password initial password of created player.
  * \param host host from which creation is attempted.
@@ -318,10 +319,10 @@ connect_player(DESC *d, const char *name, const char *password,
  *  password.
  */
 dbref
-create_player(DESC *d, const char *name, const char *password,
+create_player(DESC *d, dbref executor, const char *name, const char *password,
               const char *host, const char *ip)
 {
-  if (!ok_player_name(name, NOTHING, NOTHING)) {
+  if (!ok_player_name(name, executor, NOTHING)) {
     do_log(LT_CONN, 0, 0, "Failed creation (bad name) from %s", host);
     if (d) {
       queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",

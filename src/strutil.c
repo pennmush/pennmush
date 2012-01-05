@@ -95,7 +95,7 @@ sane_snprintf_s(char *str, size_t len, const char *fmt, ...)
 
 /* Wrapper for systems without vsnprintf. */
 int
-my_vsnprintf(char *str, size_t len, const char *fmt, va_list ap)
+mush_vsnprintf(char *str, size_t len, const char *fmt, va_list ap)
 {
   int ret;
 
@@ -667,7 +667,7 @@ safe_format(char *buff, char **bp, const char *RESTRICT fmt, ...)
   va_list args;
 
   va_start(args, fmt);
-  my_vsnprintf(c, sizeof c, fmt, args);
+  mush_vsnprintf(c, sizeof c, fmt, args);
   va_end(args);
 
   APPEND_TO_BUF;
@@ -1024,7 +1024,7 @@ replace_string2(const char *old[2], const char *newbits[2],
 /* Copy a string up until a specific character (Or end of string.)
  * Replaces the strcpy()/strchr()/*p=0 pattern.
  * Input and output buffers shouldn't overlap.
- * 
+ *
  * \param dest buffer to copy into.
  * \param src string to copy from.
  * \param c character to stop at.

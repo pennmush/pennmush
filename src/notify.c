@@ -1376,7 +1376,7 @@ notify_format(dbref player, const char *fmt, ...)
   va_list args;
 
   va_start(args, fmt);
-  my_vsnprintf(buff, sizeof buff, fmt, args);
+  mush_vsnprintf(buff, sizeof buff, fmt, args);
   va_end(args);
 
   notify(player, buff);
@@ -1456,7 +1456,7 @@ flag_broadcast(const char *flag1, const char *flag2, const char *fmt, ...)
   int ok;
 
   va_start(args, fmt);
-  my_vsnprintf(tbuf1, sizeof tbuf1, fmt, args);
+  mush_vsnprintf(tbuf1, sizeof tbuf1, fmt, args);
   va_end(args);
 
   DESC_ITER_CONN(d) {

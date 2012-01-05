@@ -514,7 +514,7 @@ mush_panicf(const char *msg, ...)
 
   va_start(args, msg);
 
-  my_vsnprintf(c, sizeof c, msg, args);
+  mush_vsnprintf(c, sizeof c, msg, args);
   va_end(args);
 
   mush_panic(c);

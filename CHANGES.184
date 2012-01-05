@@ -71,6 +71,9 @@ Commands:
  * @hook/list now shows error messages if you don't have permission to use
    it, or if a command has no hooks, instead of failing silently. Suggested
    by Padraic. [MG]
+ * Wizards can now @pcreate players with restricted names, as well as being
+   able to rename existing players to forbidden names. Suggested by Nymeria @
+   Blood of Dragons. [MG]
 
 Functions:
  * Functions that take a sort type argument now accept 'mtime' for

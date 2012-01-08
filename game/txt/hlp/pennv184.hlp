@@ -62,6 +62,9 @@ Minor changes:
  * The my_vsnprintf function in the hardcode has been renamed to
    mush_vsnprintf to avoid a conflict with MySQL. Reported by Balerion @ 
    Blood of Dragons. [MG]
+ * The enactor (%#) for the PLAYER`DISCONNECT event is now more useful,
+   instead of always being set to the dbref of the player disconnecting (%0).
+   Suggested by Padraic. [MG]
 
 Commands:
  * Added @mail/review for reading mail you've sent, and @mail/retract for

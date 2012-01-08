@@ -352,7 +352,7 @@ static int fcache_dump_attr(DESC *d, dbref thing, const char *attr, int html,
                             const unsigned char *prefix);
 static int fcache_read(FBLOCK *cp, const char *filename);
 static void logout_sock(DESC *d);
-static void shutdownsock(DESC *d, const char *reason);
+static void shutdownsock(DESC *d, const char *reason, dbref executor);
 DESC *initializesock(int s, char *addr, char *ip, conn_source source);
 int process_output(DESC *d);
 /* Notify.c */
@@ -403,7 +403,7 @@ static void dump_users(DESC *call_by, char *match);
 static const char *time_format_1(time_t dt);
 static const char *time_format_2(time_t dt);
 static void announce_connect(DESC *d, int isnew, int num);
-static void announce_disconnect(DESC *saved, const char *reason, bool reboot);
+static void announce_disconnect(DESC *saved, const char *reason, bool reboot, dbref executor);
 bool inactivity_check(void);
 void reopen_logs(void);
 void load_reboot_db(void);
@@ -1178,13 +1178,13 @@ shovechars(Port_t port, Port_t sslport __attribute__ ((__unused__)))
         output_ready = FD_ISSET(d->descriptor, &output_set);
         if (input_ready) {
           if (!process_input(d, output_ready)) {
-            shutdownsock(d, "disconnect");
+            shutdownsock(d, "disconnect", d->player);
             continue;
           }
         }
         if (output_ready) {
           if (!process_output(d)) {
-            shutdownsock(d, "disconnect");
+            shutdownsock(d, "disconnect", d->player);
           }
         }
       }
@@ -1620,7 +1620,7 @@ logout_sock(DESC *d)
     do_rawlog(LT_CONN,
               "[%d/%s/%s] Logout by %s(#%d) <Connection not dropped>",
               d->descriptor, d->addr, d->ip, Name(d->player), d->player);
-    announce_disconnect(d, "logout", 0);
+    announce_disconnect(d, "logout", 0, d->player);
     if (can_mail(d->player)) {
       do_mail_purge(d->player);
     }
@@ -1664,9 +1664,10 @@ static DESC *pc_dnext = NULL;
  * then closes the associated socket.
  * \param d pointer to descriptor to disconnect.
  * \param reason reason for the descriptor being disconnected, used for events
+ * \param executor dbref of the object which caused the disconnect
  */
 static void
-shutdownsock(DESC *d, const char *reason)
+shutdownsock(DESC *d, const char *reason, dbref executor)
 {
   if (d->connected) {
     do_rawlog(LT_CONN, "[%d/%s/%s] Logout by %s(#%d)",
@@ -1674,7 +1675,7 @@ shutdownsock(DESC *d, const char *reason)
     if (d->connected != CONN_DENIED) {
       fcache_dump(d, fcache.quit_fcache, NULL);
       /* Player was not allowed to log in from the connect screen */
-      announce_disconnect(d, reason, 0);
+      announce_disconnect(d, reason, 0, executor);
       if (can_mail(d->player)) {
         do_mail_purge(d->player);
       }
@@ -2503,13 +2504,13 @@ process_commands(void)
 
         switch (retval) {
         case CRES_QUIT:
-          shutdownsock(cdesc, "quit");
+          shutdownsock(cdesc, "quit", cdesc->player);
           break;
         case CRES_HTTP:
-          shutdownsock(cdesc, "http disconnect");
+          shutdownsock(cdesc, "http disconnect", NOTHING);
           break;
         case CRES_SITELOCK:
-          shutdownsock(cdesc, "sitelocked");
+          shutdownsock(cdesc, "sitelocked", NOTHING);
           break;
         case CRES_LOGOUT:
           logout_sock(cdesc);
@@ -3081,10 +3082,11 @@ emergency_shutdown(void)
  * \param player the player being booted
  * \param idleonly only boot idle connections?
  * \param silent suppress notice to player that he's being booted?
+ * \param booter the dbref of the player doing the booting
  * \return number of descriptors booted
  */
 int
-boot_player(dbref player, int idleonly, int silent)
+boot_player(dbref player, int idleonly, int silent, dbref booter)
 {
   DESC *d, *ignore = NULL, *boot = NULL;
   int count = 0;
@@ -3095,7 +3097,7 @@ boot_player(dbref player, int idleonly, int silent)
 
   DESC_ITER_CONN(d) {
     if (boot) {
-      boot_desc(boot, "boot");
+      boot_desc(boot, "boot", booter);
       boot = NULL;
     }
     if (d->player == player
@@ -3108,7 +3110,7 @@ boot_player(dbref player, int idleonly, int silent)
   }
 
   if (boot)
-    boot_desc(boot, "boot");
+    boot_desc(boot, "boot", booter);
 
   if (count && idleonly) {
     if (count == 1)
@@ -3124,11 +3126,12 @@ boot_player(dbref player, int idleonly, int silent)
 /** Disconnect a descriptor.
  * \param d pointer to descriptor to disconnect.
  * \param cause the reason for the descriptor being disconnected, used for events
+ * \param executor object causing the boot
  */
 void
-boot_desc(DESC *d, const char *cause)
+boot_desc(DESC *d, const char *cause, dbref executor)
 {
-  shutdownsock(d, cause);
+  shutdownsock(d, cause, executor);
 }
 
 /** Given a player dbref, return the player's first connected descriptor.
@@ -3973,7 +3976,7 @@ announce_connect(DESC *d, int isnew, int num)
 }
 
 static void
-announce_disconnect(DESC *saved, const char *reason, bool reboot)
+announce_disconnect(DESC *saved, const char *reason, bool reboot, dbref executor)
 {
   dbref loc;
   int num;
@@ -4017,7 +4020,7 @@ announce_disconnect(DESC *saved, const char *reason, bool reboot)
   /* Eww. Unwieldy.
    * (objid, count, hidden, cause, ip, descriptor, conn,
    * idle, recv/sent/commands)  */
-  queue_event(player, "PLAYER`DISCONNECT",
+  queue_event(executor, "PLAYER`DISCONNECT",
               "%s,%d,%d,%s,%s,%d,%d,%d,%lu/%lu/%d",
               unparse_objid(player),
               num - 1,
@@ -5213,7 +5216,7 @@ inactivity_check(void)
     if ((d->connected) ? (idle_for > idle) : (idle_for > unconnected_idle)) {
 
       if (!d->connected) {
-        shutdownsock(d, "idle");
+        shutdownsock(d, "idle", NOTHING);
         booted = true;
       } else if (!Can_Idle(d->player)) {
 
@@ -5221,7 +5224,7 @@ inactivity_check(void)
         do_rawlog(LT_CONN,
                   "[%d/%s/%s] Logout by %s(#%d) <Inactivity Timeout>",
                   d->descriptor, d->addr, d->ip, Name(d->player), d->player);
-        boot_desc(d, "idle");
+        boot_desc(d, "idle", NOTHING);
         booted = true;
       } else if (Unfind(d->player)) {
 
@@ -5624,7 +5627,7 @@ load_reboot_db(void)
   /* Now announce disconnects of everyone who's not really here */
   while (closed) {
     nextclosed = closed->next;
-    announce_disconnect(closed, "disconnect", 1);
+    announce_disconnect(closed, "disconnect", 1, NOTHING);
     mush_free(closed->ttype, "terminal description");
     if (closed->output_prefix)
       mush_free(closed->output_prefix, "userstring");

@@ -908,12 +908,12 @@ do_boot(dbref player, const char *name, enum boot_type flag, int silent,
       notify_format(player, T("You booted unconnected port %s!"), name);
     }
     do_log(LT_WIZ, player, victim, "*** BOOT ***");
-    boot_desc(d, "boot");
+    boot_desc(d, "boot", player);
     return;
   }
 
   /* Doing @boot <player>, or @boot/me */
-  count = boot_player(victim, (flag == BOOT_SELF), silent);
+  count = boot_player(victim, (flag == BOOT_SELF), silent, player);
   if (count) {
     if (flag != BOOT_SELF) {
       do_log(LT_WIZ, player, victim, "*** BOOT ***");

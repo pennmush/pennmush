@@ -40,7 +40,7 @@ parse_linkable_room(dbref player, const char *room_name, NEW_PE_INFO *pe_info)
 
   /* parse room */
   if (!strcasecmp(room_name, "here")) {
-    room = IsExit(player) ? Source(player) : Location(player);
+    room = speech_loc(player);
   } else if (!strcasecmp(room_name, "home")) {
     return HOME;                /* HOME is always linkable */
   } else {
@@ -88,11 +88,7 @@ dbref
 do_real_open(dbref player, const char *direction, const char *linkto,
              dbref pseudo, NEW_PE_INFO *pe_info)
 {
-  dbref loc =
-    (pseudo !=
-     NOTHING) ? pseudo : (IsExit(player) ? Source(player) : (IsRoom(player) ?
-                                                             player :
-                                                             Location(player)));
+  dbref loc = (pseudo != NOTHING) ? pseudo : speech_loc(player);
   dbref new_exit;
   char *flaglist, *flagname;
   char flagbuff[BUFFER_LEN];
@@ -216,13 +212,7 @@ do_open(dbref player, const char *direction, char **links, NEW_PE_INFO *pe_info)
       && GoodObject(Location(forward))) {
     char sourcestr[SBUF_LEN];   /* SBUF_LEN is the size used by unparse_dbref */
     if (!GoodObject(source)) {
-      if (IsRoom(player)) {
-        source = player;
-      } else if (IsExit(player)) {
-        source = Home(player);
-      } else {
-        source = Location(player);
-      }
+      source = speech_loc(player);
     }
     strcpy(sourcestr, unparse_dbref(source));
     do_real_open(player, links[2], sourcestr, Location(forward), pe_info);
@@ -566,10 +556,7 @@ do_create(dbref player, char *name, int cost, char *newdbref)
     }
 
     /* link it in */
-    if (!IsExit(player))
-      PUSH(thing, Contents(player));
-    else
-      PUSH(thing, Contents(Source(player)));
+    PUSH(thing, Location(thing));
 
     /* and we're done */
     notify_format(player, T("Created: Object %s."), unparse_dbref(thing));

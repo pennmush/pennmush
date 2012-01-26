@@ -95,19 +95,20 @@ okay_pemit(dbref player, dbref target, int dofails, int def,
   return 1;
 }
 
+/** This is the place where speech, poses, and @emits by thing should be
+ *  heard. For things and players, it's the loc; for rooms, it's the room
+ *  itself; for exits, it's the source.
+ */
 dbref
 speech_loc(dbref thing)
 {
-  /* This is the place where speech, poses, and @emits by thing should be
-   * heard. For things and players, it's the loc; For rooms, it's the room
-   * itself; for exits, it's the source. */
   if (!RealGoodObject(thing))
     return NOTHING;
   switch (Typeof(thing)) {
   case TYPE_ROOM:
     return thing;
   case TYPE_EXIT:
-    return Home(thing);
+    return Source(thing);
   default:
     return Location(thing);
   }
@@ -1367,12 +1368,7 @@ do_zemit(dbref player, const char *target, const char *message, int flags)
   pass[0] = 0;
   pass[1] = zone;
   pass[2] = player;
-  if (IsRoom(player))
-    pass[3] = player;
-  else if (IsExit(player))
-    pass[3] = Source(player);
-  else
-    pass[3] = Location(player);
+  pass[3] = speech_loc(player);
   if (flags & PEMIT_SPOOF)
     na_flags |= NA_SPOOF;
   notify_anything(player, na_zemit, &pass, NULL, na_flags, message, NULL,

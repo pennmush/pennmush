@@ -1110,9 +1110,7 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
   /* Players, things, and exits should not have invalid locations. This check
    * must be done _after_ the destroyed-object check.
    */
-  check_loc =
-    IsExit(executor) ? Source(executor) : (IsRoom(executor) ? executor :
-                                           Location(executor));
+  check_loc = speech_loc(executor);
   if (!GoodObject(check_loc) || IsGarbage(check_loc)) {
     notify_format(Owner(executor),
                   T("Invalid location on command execution: %s(#%d)"),

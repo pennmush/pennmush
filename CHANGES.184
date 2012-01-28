@@ -70,6 +70,8 @@ Minor changes:
  * The enactor (%#) for the PLAYER`DISCONNECT event is now more useful,
    instead of always being set to the dbref of the player disconnecting (%0).
    Suggested by Padraic. [MG]
+ * The SOCKET`LOGINFAIL event now gets passed the name that was entered as
+   %5 when no matching player is found. Suggested by Daniel Powell. [MG]
 
 Commands:
  * Added @mail/review for reading mail you've sent, and @mail/retract for

@@ -208,13 +208,14 @@ No arguments are passed to these events.
       Triggered when a socket disconnects. Using this and player`disconnect
       could be spammy.
 
-  socket`loginfail (descriptor, IP, count, reason, playerobjid)
+  socket`loginfail (descriptor, IP, count, reason, playerobjid, name)
       Triggered when a connection attempt fails. 'count' is the number of
       fails in the past 10 minutes. If used in conjuction with the config
       option connect_fail_limit, then any failures after the limit is reached
-      will NOT trigger player`fail. If the connect is a failed attempt to log
-      into a valid player, playerobjid will be set to that objid. Otherwise it
-      will be set to #-1
+      will NOT trigger socket`loginfail. If the connect is a failed attempt 
+      to log into a valid player, playerobjid will be set to that objid. 
+      Otherwise it will be set to #-1 'name' is the name the connection
+      attempted to connect with, and is only set with 'playerobjid' is #-1.
 
   socket`createfail (descriptor, ip, count, reason, name)
       Triggered when a player create attempt fails. <count> is the # of

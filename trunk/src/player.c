@@ -232,15 +232,15 @@ connect_player(DESC *d, const char *name, const char *password,
   if ((player = lookup_player(name)) == NOTHING) {
     /* Invalid player names are failures, too. */
     count = mark_failed(ip);
-    queue_event(SYSEVENT, "SOCKET`LOGINFAIL", "%d,%s,%d,%s,#%d",
-                d->descriptor, ip, count, "invalid player", -1);
+    queue_event(SYSEVENT, "SOCKET`LOGINFAIL", "%d,%s,%d,%s,#%d,%s",
+                d->descriptor, ip, count, "invalid player", -1, name);
     return NOTHING;
   }
 
   /* See if player is allowed to connect like this */
   if (Going(player) || Going_Twice(player)) {
     do_log(LT_CONN, 0, 0,
-           "Connection to GOING player %s not allowed from %s (%s)", name,
+           "Connection to GOING player %s not allowed from %s (%s)", Name(player),
            host, ip);
     queue_event(SYSEVENT, "SOCKET`LOGINFAIL", "%d,%s,%d,%s,#%d",
                 d->descriptor, ip, count_failed(ip), "player is going", player);

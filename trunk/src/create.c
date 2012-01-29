@@ -556,7 +556,7 @@ do_create(dbref player, char *name, int cost, char *newdbref)
     }
 
     /* link it in */
-    PUSH(thing, Location(thing));
+    PUSH(thing, Contents(Location(thing)));
 
     /* and we're done */
     notify_format(player, T("Created: Object %s."), unparse_dbref(thing));

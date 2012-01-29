@@ -2291,7 +2291,7 @@ handle_telnet(DESC *d, unsigned char **q, unsigned char *qend)
        */
       d->conn_flags |= CONN_PROMPT_NEWLINES;
 #ifdef DEBUG_TELNET
-      fprintf(stderr, "GOT IAC DO SGA, sending IAC WILL SGA IAG DO SGA\n");
+      fprintf(stderr, "GOT IAC DO SGA, sending IAC WILL SGA IAC DO SGA\n");
 #endif
     } else if (**q == TN_MSSP) {
       /* IAC SB MSSP MSSP_VAR "variable" MSSP_VAL "value" ... IAC SE */

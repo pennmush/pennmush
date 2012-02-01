@@ -1249,7 +1249,9 @@ See also: strreplace(), strinsert(), mid()
 
   Depending on the host's OpenSSL version and how it was configured,
   there might be more (or less) available. digest(list) returns the
-  methods a particular server understands. For portable code, stick
+  methods a particular server understands if the OpenSSL library
+  version being used is recent enough (1.0.0 and higher), or '#-1
+  LISTING NOT SUPPORTED' on older versions. For portable code, stick
   with MD5 and the SHA family.
 
   digest(sha, whatever) is equivalent to sha0(whatever).

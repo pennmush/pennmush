@@ -305,6 +305,10 @@ FUNCTION(fun_sha0)
 int safe_hash_byname(const char *algo, const char *plaintext, int len,
 		     char *buff, char **bp, bool inplace_err);
 
+
+#if OPENSSL_VERSION_NUMBER > 0x10000000L
+#define CAN_LIST_DIGESTS
+
 static void
 list_dgst_populate(const EVP_MD *m, const char *from __attribute__((__unused__)),
 		   const char *to __attribute__((__unused__)), void *data) 
@@ -314,9 +318,12 @@ list_dgst_populate(const EVP_MD *m, const char *from __attribute__((__unused__))
     hash_add(digests, EVP_MD_name(m), "foo");
 }
 
+#endif
+
 FUNCTION(fun_digest)
 {
   if (nargs == 1 && strcmp(args[0], "list") == 0) {
+#ifdef CAN_LIST_DIGESTS
     HASHTAB digests_tab;
     const char **digests;
     const char *d;
@@ -341,6 +348,9 @@ FUNCTION(fun_digest)
 
     mush_free(digests, "digest.list");
     hashfree(&digests_tab);
+#else
+    safe-str(T("#-1 LISTING NOT SUPPORTED"), buff, bp);
+#endif
   } else if (nargs == 2) 
     safe_hash_byname(args[0], args[1], arglens[1], buff, bp, 1);
   else 

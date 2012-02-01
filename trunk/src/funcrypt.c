@@ -349,7 +349,7 @@ FUNCTION(fun_digest)
     mush_free(digests, "digest.list");
     hashfree(&digests_tab);
 #else
-    safe-str(T("#-1 LISTING NOT SUPPORTED"), buff, bp);
+    safe_str(T("#-1 LISTING NOT SUPPORTED"), buff, bp);
 #endif
   } else if (nargs == 2) 
     safe_hash_byname(args[0], args[1], arglens[1], buff, bp, 1);

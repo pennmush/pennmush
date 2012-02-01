@@ -399,15 +399,12 @@ void clear_followers(dbref leader, int noisy);
 void clear_following(dbref follower, int noisy);
 dbref find_var_dest(dbref player, dbref exit_obj);
 
-/* From mycrypt.c */
-char *mush_crypt(const char *key);
-
 /* From player.c */
 extern const char *connect_fail_limit_exceeded;
 int mark_failed(const char *ipaddr);
 int count_failed(const char *ipaddr);
 int check_fails(const char *ipaddr);
-int password_check(dbref player, const char *password);
+bool password_check(dbref player, const char *password);
 dbref lookup_player(const char *name);
 dbref lookup_player_name(const char *name);
 /* from player.c */
@@ -605,9 +602,16 @@ mush_strndup(const char *src, size_t len, const char *check)
     int safe_str_space(const char *s, char *buff, char **bp);
 /* Append len characters of a string to a buffer */
     int safe_strl(const char *s, size_t len, char *buff, char **bp);
+/* Append a base16 encoded block of bytes to a buffer */
+int safe_hexstr(uint8_t *data, int len, char *buff, char **bp);
 /** Append a boolean to the end of a string */
 #define safe_boolean(x, buf, bufp) \
                 safe_chr((x) ? '1' : '0', (buf), (bufp))
+static inline int
+safe_time_t(time_t t, char *buff, char **bp)
+{
+  return safe_integer((intmax_t) t, buff, bp);
+}
 /* Append N copies of the character X to the end of a string */
     int safe_fill(char x, size_t n, char *buff, char **bp);
 /* Append an accented string */

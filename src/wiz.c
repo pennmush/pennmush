@@ -53,9 +53,10 @@
 
 #include "confmagic.h"
 
-extern dbref find_entrance(dbref door);
+dbref find_entrance(dbref door);
 struct db_stat_info *get_stats(dbref owner);
-extern dbref find_player_by_desc(int port);
+dbref find_player_by_desc(int port);
+char *password_hash(const char *password, const char *algo);
 
 
 #ifndef WIN32
@@ -824,7 +825,7 @@ do_newpassword(dbref executor, dbref enactor,
     notify(executor, T("You cannot change that player's password."));
   } else {
     /* it's ok, do it */
-    (void) atr_add(victim, "XYXXY", mush_crypt(password), GOD, 0);
+    (void) atr_add(victim, "XYXXY", password_hash(password, NULL), GOD, 0);
     notify_format(executor, T("Password for %s changed."), Name(victim));
     notify_format(victim, T("Your password has been changed by %s."),
                   Name(executor));

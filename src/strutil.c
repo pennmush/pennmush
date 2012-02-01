@@ -861,6 +861,29 @@ safe_fill(char x, size_t n, char *buff, char **bp)
   return ret;
 }
 
+static int
+safe_hexchar(unsigned char c, char *buff, char **bp)
+{
+  const char *digits = "0123456789abcdef";
+  if (safe_chr(digits[c >> 4], buff, bp))
+    return 1;
+  if (safe_chr(digits[c & 0x0F], buff, bp))
+    return 1;
+  return 0;
+}
+
+int
+safe_hexstr(uint8_t *bytes, int len, char *buff, char **bp)
+{
+  int n;
+
+  for (n = 0; n < len; n += 1) 
+    if (safe_hexchar(bytes[n], buff, bp))
+      return 1;
+
+  return 0;
+}
+
 #undef APPEND_ARGS
 #undef APPEND_TO_BUF
 

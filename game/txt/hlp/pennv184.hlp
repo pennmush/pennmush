@@ -11,7 +11,7 @@ help topics named for each release (e.g. 'help 1.7.2p30').
 A list of the patchlevels associated with each release can
 be read in 'help patchlevels'.
 
-Version 1.8.4 patchlevel 9                                 ??? ??, 201?
+Version 1.8.4 patchlevel 9                                 ??? ??, 2012
 
 Major changes:
  * The PCRE library is now required to build Penn, instead of falling
@@ -59,6 +59,12 @@ Minor changes:
  * Connection messages that are evaluated from an attribute instead of
    read from a file get the dbref of the connected player as %1, as
    long as they're ones shown post-connection (motd_file, etc.) [SW]
+ * Passwords are, thanks to OpenSSL digest routines, now stored in a
+   less error prone, more secure, flexible and extendable
+   format. Existing player passwords will be upgraded automatically on
+   login. [SW]
+ * New script in utils/ for manipulating player passwords in an offline
+   database. Useful if you forget God's password. [SW]
  * The my_vsnprintf function in the hardcode has been renamed to
    mush_vsnprintf to avoid a conflict with MySQL. Reported by Balerion @ 
    Blood of Dragons. [MG]
@@ -84,6 +90,8 @@ Functions:
  * New registers() function, like listq() but returns all kinds of registers
    (q-registers, %0-%9 args, iter/switch context, regexp captures). Also
    takes an output separator arg. Suggested by Wiggles. [MG]
+ * digest(list) returns all message digest algorithms the server supports. [SW]
+ * sha0() has been deprecated in favor of digest(). [SW]
 
 Fixes:
  * lit() didn't properly handle '\'s. Reported by Wiggles. [MG]

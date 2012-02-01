@@ -581,12 +581,10 @@ guests yes
 # or disable creation but enable registration for everyone.
 player_creation yes
 
-# If you use the shs password system, and your database was created
-# on a little-endian hardware architecture (such as an intel PC),
-# set this to 'yes'. If your database was created on a big-endian
-# hardware architecture (most non-intel systems), set this to 'no'.
-# If you port a db with shs passwords between systems, and the
-# passwords don't work, try changing this setting.
+# For 1.8.3p9 and later, this option is used to indicate the endianess
+# of the host system for password upgrades. If people aren't able to
+# log in with it set to yes, try changing to no. If that doesn't work,
+# just use @newpassword.
 reverse_shs yes
 
 # trigger @aconnect/@adisconnect in a connecting player's location

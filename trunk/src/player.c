@@ -51,6 +51,12 @@ extern char *crypt(const char *, const char *);
 #include "extmail.h"
 #include "confmagic.h"
 
+
+/* From mycrypt.c */
+char *mush_crypt_sha0(const char *key);
+char *password_hash(const char *key, const char *algo);
+bool password_comp(const char *saved, const char *pass);
+
 dbref email_register_player
   (DESC *d, const char *name, const char *email, const char *host,
    const char *ip);
@@ -158,17 +164,24 @@ mark_failed(const char *ipaddr)
 
 
 /** Check a player's password against a given string.
+ *
+ *  First checks new-style formatted password strings
+ *  If that doesn't match, tries old-style SHA0 password
+ *  strings, and upgrades the stored password.
+ *  If that doesn't match, tries really-old-style crypt(3)
+ *  password strings, and upgrades the stored password.
+ *  If that doesn't work, you lose.
+ *
  * \param player dbref of player.
  * \param password plaintext password string to check.
  * \retval 1 password matches (or player has no password).
  * \retval 0 password fails to match.
  */
-int
+bool
 password_check(dbref player, const char *password)
 {
   ATTR *a;
   char *saved;
-  char *passwd;
 
   /* read the password and compare it */
   if (!(a = atr_get_noparent(player, pword_attr)))
@@ -179,27 +192,31 @@ password_check(dbref player, const char *password)
   if (!saved)
     return 0;
 
-  passwd = mush_crypt(password);
-
-  if (strcmp(passwd, saved) != 0) {
-    /* Nope. Try non-SHS. */
+  if (!password_comp(saved, password)) {
+    /* Nope. Try SHA0. */
+    char *passwd = mush_crypt_sha0(password);
+    if (strcmp(saved, passwd) != 0) {
+      /* Not SHA0 either. Try old-school crypt(); */
 #ifdef HAS_CRYPT
-    /* shs encryption didn't match. Try crypt(3) */
-    if (strcmp(crypt(password, "XX"), saved) != 0)
-      /* Nope */
+      if (strcmp(crypt(password, "XX"), saved) != 0) {
+	/* Nope */
 #endif                          /* HAS_CRYPT */
-      /* crypt() didn't work. Try plaintext, being sure to not
-       * allow unencrypted entry of encrypted password */
-      if ((strcmp(saved, password) != 0)
-          || (strlen(password) < 4)
-          || ((password[0] == 'X') && (password[1] == 'X'))) {
-        /* Nothing worked. You lose. */
-        free(saved);
-        return 0;
+	/* crypt() didn't work. Try plaintext, being sure to not
+	 * allow unencrypted entry of encrypted password */
+	if ((strcmp(saved, password) != 0)
+	    || (strlen(password) < 4)
+	    || ((password[0] == 'X') && (password[1] == 'X'))) {
+	  /* Nothing worked. You lose. */
+	  free(saved);
+	  return 0;
+	}
       }
+    }
     /* Something worked. Change password to SHS-encrypted */
-    (void) atr_add(player, pword_attr, passwd, GOD, 0);
+    do_rawlog(LT_CONN, "Updating password format for player #%d", player);
+    (void) atr_add(player, pword_attr, password_hash(password, NULL), GOD, 0);
   }
+  /* Success! */
   free(saved);
   return 1;
 }
@@ -518,7 +535,7 @@ email_register_player(DESC *d, const char *name, const char *email,
   reserve_fd();
   /* Ok, all's well, make a player */
   if (resend) {
-    (void) atr_add(player, pword_attr, mush_crypt(passwd), GOD, 0);
+    (void) atr_add(player, pword_attr, password_hash(passwd, NULL), GOD, 0);
     return player;
   } else {
     player = make_player(name, passwd, host, ip);
@@ -574,7 +591,7 @@ make_player(const char *name, const char *password, const char *host,
   set_initial_warnings(player);
   /* Modtime tracks login failures */
   ModTime(player) = (time_t) 0;
-  (void) atr_add(player, pword_attr, mush_crypt(password), GOD, 0);
+  (void) atr_add(player, pword_attr, password_hash(password, NULL), GOD, 0);
   giveto(player, START_BONUS);  /* starting bonus */
   (void) atr_add(player, "LAST", show_time(mudtime, 0), GOD, 0);
   (void) atr_add(player, "LASTSITE", host, GOD, 0);
@@ -648,7 +665,7 @@ do_password(dbref executor, dbref enactor, const char *old, const char *newobj,
   } else if (!ok_password(newobj)) {
     notify(executor, T("Bad new password."));
   } else {
-    (void) atr_add(executor, pword_attr, mush_crypt(newobj), GOD, 0);
+    (void) atr_add(executor, pword_attr, password_hash(newobj, NULL), GOD, 0);
     notify(executor, T("You have changed your password."));
   }
 }

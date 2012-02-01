@@ -26,6 +26,7 @@
 #include "attrib.h"
 #include "ansi.h"
 #include "match.h"
+#include "sort.h"
 #include <openssl/sha.h>
 #include <openssl/evp.h>
 #include <openssl/bio.h>
@@ -34,7 +35,6 @@
 
 char *crunch_code(char *code);
 char *crypt_code(char *code, char *text, int type);
-static void safe_hexchar(unsigned char c, char *buff, char **bp);
 
 static bool
 encode_base64(const char *input, int len, char *buff, char **bp)
@@ -295,45 +295,55 @@ FUNCTION(fun_checkpass)
 FUNCTION(fun_sha0)
 {
   unsigned char hash[SHA_DIGEST_LENGTH];
-  int n;
 
   SHA((unsigned char *) args[0], arglens[0], hash);
 
-  for (n = 0; n < SHA_DIGEST_LENGTH; n++)
-    safe_hexchar(hash[n], buff, bp);
+  safe_hexstr(hash, SHA_DIGEST_LENGTH, buff, bp);
+}
+
+/* From mycrypt.c */
+int safe_hash_byname(const char *algo, const char *plaintext, int len,
+		     char *buff, char **bp, bool inplace_err);
+
+static void
+list_dgst_populate(const EVP_MD *m, const char *from __attribute__((__unused__)),
+		   const char *to __attribute__((__unused__)), void *data) 
+{
+  HASHTAB *digests = data;
+  if (m)
+    hash_add(digests, EVP_MD_name(m), "foo");
 }
 
 FUNCTION(fun_digest)
 {
-  EVP_MD_CTX ctx;
-  const EVP_MD *mp;
-  unsigned char md[EVP_MAX_MD_SIZE];
-  unsigned int n, len = 0;
+  if (nargs == 1 && strcmp(args[0], "list") == 0) {
+    HASHTAB digests_tab;
+    const char **digests;
+    const char *d;
+    int m, n;
 
-  if ((mp = EVP_get_digestbyname(args[0])) == NULL) {
-    safe_str(T("#-1 UNSUPPORTED DIGEST TYPE"), buff, bp);
-    return;
-  }
+    hashinit(&digests_tab, 100);
+    EVP_MD_do_all(list_dgst_populate, &digests_tab);    
+    digests = mush_calloc(digests_tab.entries, sizeof(char *), "digest.list");
+    
+    for (n = 0, d = hash_firstentry_key(&digests_tab);
+	 d;
+	 n += 1, d = hash_nextentry_key(&digests_tab))
+      digests[n] = d;
 
-  EVP_DigestInit(&ctx, mp);
-  EVP_DigestUpdate(&ctx, args[1], arglens[1]);
-  EVP_DigestFinal(&ctx, md, &len);
+    qsort(digests, n, sizeof(char *), stri_comp);
 
-  for (n = 0; n < len; n++) {
-    safe_hexchar(md[n], buff, bp);
-  }
+    for (m = 0; m < n; m += 1) {
+      if (m > 0) 
+	safe_chr(' ', buff, bp);
+      safe_str(digests[m], buff, bp);
+    }
+
+    mush_free(digests, "digest.list");
+    hashfree(&digests_tab);
+  } else if (nargs == 2) 
+    safe_hash_byname(args[0], args[1], arglens[1], buff, bp, 1);
+  else 
+    safe_str(T("#-1 INVALID ARGUMENT"), buff, bp);
 }
 
-static void
-safe_hexchar(unsigned char c, char *buff, char **bp)
-{
-  const char *digits = "0123456789abcdef";
-  if (*bp - buff < BUFFER_LEN - 1) {
-    **bp = digits[c >> 4];
-    (*bp)++;
-  }
-  if (*bp - buff < BUFFER_LEN - 1) {
-    **bp = digits[c & 0x0F];
-    (*bp)++;
-  }
-}

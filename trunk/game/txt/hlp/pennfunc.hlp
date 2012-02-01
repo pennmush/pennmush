@@ -1236,21 +1236,36 @@ See also: strreplace(), strinsert(), mid()
 & SHA1
 & CHECKSUM
 & HASH
+  digest(list)
   digest(<algorithm>, <string>)
 
   Returns a checksum (hash, digest, etc.) of <string> using the given
-  <algorithm>. If the mush is compiled with SSL support (See @config
-  compile), <algorithm> can be one of:
+  <algorithm>. The result is a unique large number represented in base
+  16.
 
-  dss1 md2 md4 md5 ripemd160 sha sha1 sha256 sha384 sha512 whirlpool
+  Typically at least the following algorithms are supported:
 
-  Not all checksum algorithms are supported on all games, depending on
-  the host's OpenSSL version and how it was configured.
+  md4 md5 ripemd160 sha sha1 sha224 sha256 sha384 sha512 whirlpool
 
-  Without SSL, only the sha algorithm is enabled. In both cases, sha
-  returns the same thing as the sha0() function.
+  Depending on the host's OpenSSL version and how it was configured,
+  there might be more (or less) available. digest(list) returns the
+  methods a particular server understands. For portable code, stick
+  with MD5 and the SHA family.
 
-See also: sha0()
+  digest(sha, whatever) is equivalent to sha0(whatever).
+
+  Example:
+   > think iter(digest(list), %i0(foo) => [digest(%i0, foo)], %b, %r)
+   ...
+   MD4(foo) => 0ac6700c491d70fb8650940b1ca1e4b2
+   MD5(foo) => acbd18db4cc2f85cedef654fccc4a4d8
+   MDC2(foo) => 5da2a8f36bf237c84fddf81b67bd0afc
+   RIPEMD160(foo) => 42cfa211018ea492fdee45ac637b7972a0ad6873
+   SHA(foo) => 752678a483e77799a3651face01d064f9ca86779
+   SHA1(foo) => 0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33
+   SHA224(foo) => 0808f64e60d58979fcb676c96ec938270dea42445aeefcd3a4e6f8db
+   ...
+  
 & DIST2D()
   dist2d(<x1>, <y1>, <x2>, <y2>)
 
@@ -4419,8 +4434,11 @@ See also: setdiff(), setinter()
 & SHA0()
   sha0(<string>)
 
-  Returns the SHA cryptographic hash of the string. See RFC 3174 for
-  more information.
+  Returns the SHA-0 cryptographic hash of the string. See RFC 3174 for
+  more information. Deprecated; use digest() and higher strength algorithms
+  instead.
+
+See also: digest().
 & SHL()
   shl(<number>, <count>)
 

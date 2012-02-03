@@ -44,9 +44,9 @@
    (disable-interrupts)
    (no-procedure-checks-for-usual-bindings)
    (safe-globals)
-   (uses utils srfi-1 srfi-13)))
+   (uses utils srfi-1 srfi-13 srfi-69)))
  ((and chicken csi)
-  (require-extension utils srfi-1 srfi-13)))
+  (require-extension utils srfi-1 srfi-13 srfi-69)))
 
 (define (for-each-line f)
   (let loop ((line (read-line)))
@@ -142,12 +142,13 @@
 ; Read all typedefs from an inchannel
 (define (read-typedefs)
   (let*
-      ((typedefs '())
+      ((typedefs (make-hash-table #:hash string-hash #:test string=?))
        (fl-proc (lambda (line) 
 		  (let ((res (process-line line)))
-		    (if (string? res) (set! typedefs (cons res typedefs)))))))
+		    (if (string? res) (hash-table-set! typedefs res #t))))))
     (for-each-line fl-proc)
-    (delete-duplicates (sort typedefs string-ci<) string-ci=)))
+    typedefs))
+
 
 ; Control pretty-printing of the typedefs.
 (define-constant max-column-width 75)
@@ -171,8 +172,34 @@
 	    (printf " -T ~A" typedef))
 	(set! column (fx+ column len))))))
 
+
+(define (list->hash-table lst . args)
+  (let ((pairs (map (cut cons <> #t) lst)))
+    (apply alist->hash-table pairs args)))
+
+; Predefined typedefs
+(define *standard-typedefs* 
+  (list->hash-table
+	'("int8_t" "uint8_t" "int16_t" "uint16_t"
+	  "int32_t" "uint32_t" "int64_t" "uint64_t"
+	  "intmax_t" "uintmax_t"
+	  "size_t" "ssize_t" "sig_atomic_t" "time_t"
+	  "pid_t" "socklen_t" "ptrdiff_t" "sigset_t"
+	  "ldiv_t" "bool" "BOOL"
+	  "BIO" "EVP_MD" "SSL_CTX" "SSL_METHOD" "X509_STORE_CTX"
+	  "X509" "DH" "SSL"
+	  "MYSQL_RES" "MYSQL_FIELD" "PGresult" "sqlite3_stmt")
+   #:test string=? #:hash string-hash))
+   
+; structs that contain anonymous structs or unions sometimes confuse things.
+(define *false-positives* '("str" "val" "data" "sub" "sw" "memo" "hooks" "handle"))
+					     
 ; main
-(let ((typedefs (read-typedefs)))
-  (write-char #\tab)
-  (for-each emit-typedef typedefs)
-  (newline))
+(define typedef-table (read-typedefs))
+(for-each (cut hash-table-delete! typedef-table <>) *false-positives*)
+(define typedefs
+  (sort (hash-table-keys (hash-table-merge typedef-table *standard-typedefs*)) string-ci<))
+
+(write-char #\tab)
+(for-each emit-typedef typedefs)
+(newline)

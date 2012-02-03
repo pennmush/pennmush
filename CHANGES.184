@@ -122,6 +122,7 @@ Fixes:
  * The portmsg announcer daemon was broken. Reported by Minion. [SW]
  * A change in p8 broke the sending of the Pueblo hello string in some cases.
    Reported by Mercutio. [MG]
+ * Fix crash bug in @sitelock/remove [SW]
 
 
 Version 1.8.4 patchlevel 8                                 Nov 11, 2011

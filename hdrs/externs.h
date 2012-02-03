@@ -765,7 +765,7 @@ replace_string2(const char *old[2], const char *newbits[2],
                              PE_REGS *pe_regs);
     bool quick_regexp_match(const char *restrict s,
                             const char *restrict d, bool cs);
-    bool qcomp_regexp_match(const pcre * re, const char *s);
+bool qcomp_regexp_match(const pcre * re, pcre_extra *study, const char *s);
 /** Default (case-insensitive) local wildcard match */
 #define local_wild_match(s,d,p) local_wild_match_case(s, d, 0, p)
 

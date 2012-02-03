@@ -3426,6 +3426,7 @@ See also: GENDER, subj(), poss(), aposs(), obj()
   If the /player switch is given, <host-pattern> is treated as a player name,
   and sitelock rules are added for that player's LASTIP and LASTSITE, if set.
 
+Continued in 'help @sitelock2'
 & @sitelock2
 
   Sitelock allow/deny options:
@@ -3452,6 +3453,8 @@ See also: GENDER, subj(), poss(), aposs(), obj()
    deny_silent -- don't log failed access attempts from this site.
    regexp      -- Treat the hostname pattern as a regular expression
                   instead of a wildcard pattern.
+
+Continued in 'help @sitelock3'
 & @sitelock3
   If you specify a character name after the options, the options
   are only checked if the host pattern matches, AND the character

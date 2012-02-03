@@ -252,9 +252,11 @@ static void
 reg_dbsave_warnings(void)
 {
   if (DUMP_INTERVAL > dbsave_5min.secs)
-    sq_register_in(DUMP_INTERVAL - dbsave_5min.secs, dbsave_warn_event, &dbsave_5min, NULL);
+    sq_register_in(DUMP_INTERVAL - dbsave_5min.secs, dbsave_warn_event,
+                   &dbsave_5min, NULL);
   if (DUMP_INTERVAL > dbsave_1min.secs)
-    sq_register_in(DUMP_INTERVAL - dbsave_1min.secs, dbsave_warn_event, &dbsave_1min, NULL);
+    sq_register_in(DUMP_INTERVAL - dbsave_1min.secs, dbsave_warn_event,
+                   &dbsave_1min, NULL);
 }
 
 static bool

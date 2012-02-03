@@ -105,6 +105,12 @@ static void
 
 
 
+
+
+
+
+
+
 sitelock_player(dbref player, const char *name, dbref who, uint32_t can,
                 uint32_t cant);
 
@@ -143,7 +149,8 @@ do_pcreate(dbref creator, const char *player_name, const char *player_password,
     return NOTHING;
   }
 
-  player = create_player(NULL, creator, player_name, player_password, "None", "None");
+  player =
+    create_player(NULL, creator, player_name, player_password, "None", "None");
   if (player == NOTHING) {
     notify_format(creator, T("Failure creating '%s' (bad name)"), player_name);
     return NOTHING;
@@ -1517,7 +1524,8 @@ do_entrances(dbref player, const char *where, char *argv[], int types)
 
   spec.type = types;
 
-  nresults = raw_search(controls(player, place) ? GOD : player, &spec, &results, NULL);
+  nresults =
+    raw_search(controls(player, place) ? GOD : player, &spec, &results, NULL);
   for (n = 0; n < nresults; n++) {
     switch (Typeof(results[n])) {
     case TYPE_EXIT:
@@ -1527,7 +1535,8 @@ do_entrances(dbref player, const char *where, char *argv[], int types)
       exits++;
       break;
     case TYPE_ROOM:
-      notify_format(player, T("%s [dropto]"), object_header(player, results[n]));
+      notify_format(player, T("%s [dropto]"),
+                    object_header(player, results[n]));
       rooms++;
       break;
     case TYPE_THING:
@@ -1646,7 +1655,9 @@ FUNCTION(fun_entrances)
   if (!GoodObject(spec.high))
     spec.high = db_top - 1;
 
-  nresults = raw_search(controls(executor, where) ? GOD : executor, &spec, &results, pe_info);
+  nresults =
+    raw_search(controls(executor, where) ? GOD : executor, &spec, &results,
+               pe_info);
   for (n = 0; n < nresults; n++) {
     if (n) {
       if (safe_chr(' ', buff, bp))
@@ -2379,7 +2390,8 @@ raw_search(dbref player, struct search_spec *spec,
     }
     if (*spec->name && !string_match(Name(n), spec->name))
       continue;
-    if (*spec->flags && (flaglist_check("FLAG", player, n, spec->flags, 1) != 1))
+    if (*spec->flags
+        && (flaglist_check("FLAG", player, n, spec->flags, 1) != 1))
       continue;
     if (*spec->lflags
         && (flaglist_check_long("FLAG", player, n, spec->lflags, 1) != 1))

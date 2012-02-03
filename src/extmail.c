@@ -786,7 +786,7 @@ do_mail_reviewread(dbref player, dbref target, const char *msglist)
   MAIL *mp;
   char tbuf1[BUFFER_LEN];
   struct mail_selector ma, ms;
-  int i, j; 
+  int i, j;
 
   /* Initialize listing mail selector for all messages from player */
   ma.low = 0;
@@ -821,8 +821,7 @@ do_mail_reviewread(dbref player, dbref target, const char *msglist)
                               && Connected(mp->from)
                               && (!hidden(mp->from)
                                   || Priv_Who(player))) ? T(" (Conn)") :
-                      "      ", show_time(mp->time, 0),
-                      i, status_string(mp));
+                      "      ", show_time(mp->time, 0), i, status_string(mp));
         notify_format(player, T("Subject: %s"), get_subject(mp));
         notify(player, DASH_LINE);
         if (SUPPORT_PUEBLO)
@@ -883,8 +882,7 @@ do_mail_reviewlist(dbref player, dbref target)
                        tprintf
                        ("%c%cA XCH_CMD=\"@mail/review %s=%d\" XCH_HINT=\"Read message %d sent to %s\"%c",
                         TAG_START, MARKUP_HTML, Name(target),
-                        i, i, Name(target),
-                        TAG_END));
+                        i, i, Name(target), TAG_END));
       strcpy(subj, chopstr(get_subject(mp), 28));
       strcpy(sender, chopstr(get_sender(mp, 0), 12));
       notify_format(player, "[%s]    %-3d %c%-12s  %-*s %s",
@@ -919,7 +917,8 @@ do_mail_review(dbref player, const char *name, const char *msglist)
   dbref target;
 
   if (!name || !*name) {
-    notify(player, T("MAIL: I can't figure out whose mail you want to review."));
+    notify(player,
+           T("MAIL: I can't figure out whose mail you want to review."));
     return;
   }
   if ((target = lookup_player(name)) == NOTHING) {
@@ -932,7 +931,7 @@ do_mail_review(dbref player, const char *name, const char *msglist)
     do_mail_reviewread(player, target, msglist);
   }
   return;
-}  
+}
 
 /** Retract specified mail.
  * \verbatim
@@ -947,11 +946,12 @@ do_mail_retract(dbref player, const char *name, const char *msglist)
 {
   MAIL *mp, *nextp;
   struct mail_selector ma, ms;
-  int i, j; 
+  int i, j;
   dbref target;
 
   if (!name || !*name) {
-    notify(player, T("MAIL: I can't figure out whose mail you want to retract."));
+    notify(player,
+           T("MAIL: I can't figure out whose mail you want to retract."));
     return;
   }
   if ((target = lookup_player(name)) == NOTHING) {

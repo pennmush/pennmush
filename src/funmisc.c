@@ -428,7 +428,8 @@ FUNCTION(fun_listq)
         types |= PE_REGS_SWITCH;
       else if (string_prefix("iter", item))
         types |= PE_REGS_ITER;
-      else if (string_prefix("args", item) || (strlen(item) > 1 && string_prefix("stack", item)))
+      else if (string_prefix("args", item)
+               || (strlen(item) > 1 && string_prefix("stack", item)))
         types |= PE_REGS_ARG;
       else {
         safe_str("#-1", buff, bp);
@@ -456,7 +457,7 @@ FUNCTION(fun_listq)
     while (val) {
       if (!(val->type & types)) {
         val = val->next;
-        continue; /* not the right type of register */
+        continue;               /* not the right type of register */
       }
       rp = regname;
       switch (val->type & PE_REGS_TYPE) {
@@ -482,7 +483,7 @@ FUNCTION(fun_listq)
       *rp = '\0';
 
       if (val->type & PE_REGS_SWITCH) {
-        regname[0] = 'S'; /* to differentiate stext and itext */
+        regname[0] = 'S';       /* to differentiate stext and itext */
       }
 
       /* Insert it into the tree if it's non-blank. */
@@ -496,14 +497,14 @@ FUNCTION(fun_listq)
     }
     if (pe_regs->flags & PE_REGS_QSTOP) {
       /* Remove q-registers */
-      types &= ~ PE_REGS_Q;
+      types &= ~PE_REGS_Q;
     }
     if (pe_regs->flags & PE_REGS_NEWATTR) {
       /* Remove iter, switch, regexp and %0-%9 context */
       types &= ~(PE_REGS_ITER | PE_REGS_SWITCH | PE_REGS_REGEXP | PE_REGS_ARG);
     }
     if (!types)
-      break; /* nothing left */
+      break;                    /* nothing left */
     pe_regs = pe_regs->prev;
   }
   st_walk(&qregs, listq_walk, &st_data);

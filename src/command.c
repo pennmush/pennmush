@@ -875,7 +875,8 @@ command_init_postconfig(void)
   /* Warn about unused switch names */
   for (s = switch_list; s->name; s++) {
     if (!s->used)
-      do_rawlog(LT_CMD, T("Warning: Switch '%s' is defined but not used."), s->name);
+      do_rawlog(LT_CMD, T("Warning: Switch '%s' is defined but not used."),
+                s->name);
   }
 
   return;

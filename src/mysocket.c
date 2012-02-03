@@ -251,7 +251,7 @@ make_socket_conn(const char *host, int socktype, struct sockaddr *myiterface,
  * \return file descriptor of listening socket, or -1 for failure.
  */
 int
-make_socket(Port_t port, int socktype, union sockaddr_u *addr, socklen_t * len,
+make_socket(Port_t port, int socktype, union sockaddr_u *addr, socklen_t *len,
             const char *host)
 {
   int s, opt, ipv = 4;

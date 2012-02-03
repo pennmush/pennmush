@@ -1,0 +1,260 @@
+# SOME DESCRIPTIVE TITLE.\nCopyright (C) YEAR Free Software Foundation, Inc.\nFIRST AUTHOR <EMAIL@ADDRESS>, YEAR.\n
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2004-11-04 13:52-0600\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=iso-8859-5\n"
+"Content-Transfer-Encoding: 8bit"
+
+#: parse.c:87
+msgid "#-1 ARGUMENT MUST BE POSITIVE INTEGER"
+msgstr "#-1 АРГУМЕНТ ДОЛЖЕН БЫТЬ ПОЛОЖИТЕЛЬНЫМ ЦЕЛЫМ"
+
+#: src/funmath.c:218 src/funmath.c:250
+msgid "#-1 ARGUMENT MUST END IN AN INTEGER"
+msgstr "#-1 АРГУМЕНТ ДОЛЖЕН ЗАКАНЧИВАТСЯ ЦЕЛЫМ"
+
+#: src/fundb.c:61
+msgid "#-1 ATTRIBUTE LENGTH TOO LONG"
+msgstr "#-1 ДЛИНА АТТРИБУТА СЛИШКОМ БОЛЬШАЯ"
+
+#: src/parse.c:671 src/parse.c:759
+msgid "#-1 FUNCTION ("
+msgstr "#-1 ФУНКЦИЯ ("
+
+#: src/fundb.c:663 src/fundb.c:690
+msgid "#-1 INVALID SECOND ARGUMENT"
+msgstr "#-1 НЕВЕРЕН ВТОРОЙ АРГУМЕНТ"
+
+#: src/fundb.c:118 src/fundb.c:137 src/fundb.c:460 src/funstr.c:118\nsrc/funstr.c:131 src/funstr.c:144 src/funstr.c:157
+msgid "#-1 NO MATCH"
+msgstr "#-1 НЕТ СОВПАДЕНИЙ"
+
+#: src/fundb.c:1828
+msgid "#-1 NO SUCH CHANNEL"
+msgstr "#-1 НЕТ ТАКОГО КАНАЛА"
+
+#: src/fundb.c:907
+msgid "#-1 NO SUCH TYPE"
+msgstr "#-1 НЕТ ТАКОГО ТИПА"
+
+#: src/bsd.c:4485 src/bsd.c:4498
+msgid "#-1 NOT CONNECTED"
+msgstr "#-1 НЕТ СОЕДИНЕНИЯ"
+
+#: src/funmath.c:1385
+msgid "#-1 UNKNOWN OPERATION"
+msgstr "#-1 НЕИЗВЕСТНАЯ ОПЕРАЦИЯ"
+
+#: src/funmath.c:420 src/funmath.c:462 src/funmath.c:501 src/funmath.c:540\nsrc/funmath.c:598 src/funmath.c:632
+msgid "#-1 VECTORS MUST BE SAME DIMENSIONS"
+msgstr "#-1 ВЕКТОРЫ ДОЛЖНЫ БЫТЬ РАВНОМАССИВНЫМИ"
+
+#: src/wiz.c:1044
+#, c-format
+msgid "%d commands executed."
+msgstr "выполнено %d комманд."
+
+#: src/extmail.c:1370
+#, c-format
+msgid "%d messages received, %d unread, %d cleared."
+msgstr "%d сообщений получено, %d не прочитано, %d подготовлено к удалению."
+
+#: src/bsd.c:3405
+#, c-format
+msgid "%ld failed connections since last login."
+msgstr "%ld разорванных соединений со времени последнего входа."
+
+#: src/destroy.c:352
+#, c-format
+msgid "%s and all their objects are scheduled to be destroyed."
+msgstr "%s и принадлежащие ему объекты будут уничтожены в соответствии со значениями таймера."
+
+#: src/bsd.c:3978
+#, c-format
+msgid "%s created."
+msgstr "Создано: %s."
+
+#: src/move.c:332
+#, c-format
+msgid "%s goes home."
+msgstr "%s уходит домой."
+
+#: src/attrib.c:953
+#, c-format
+msgid "%s grows ears and can now hear."
+msgstr "У %s выросли уши, теперь он может слышать."
+
+#: src/destroy.c:344
+#, c-format
+msgid "%s has scheduled your room %s to be destroyed."
+msgstr "%s установил таймер на уничтожение комнаты %s."
+
+#: src/look.c:1057
+#, c-format
+msgid "%s is at: %s."
+msgstr "%s находится в: %s."
+
+#: src/predicat.c:760
+#, c-format
+msgid "%s message from %s: %s"
+msgstr "%s сообщение от %s: %s"
+
+#: src/rob.c:288
+#, c-format
+msgid "%s took %d %s from you!"
+msgstr "%s забрал %d %s у тебя!"
+
+#: src/rob.c:156
+#, c-format
+msgid "%s tried to kill you!"
+msgstr "%s попытался убить тебя!"
+
+#: src/look.c:1053
+#, c-format
+msgid "%s tried to locate you and failed."
+msgstr "%s попытался вас обнаружить и не преуспел."
+
+#: src/extmail.c:1260 src/extmail.c:1668 src/wiz.c:673 src/wiz.c:1277
+#, c-format
+msgid "%s: No such player."
+msgstr "%s: Нет такого игрока."
+
+#: src/look.c:911
+#, c-format
+msgid "*** %d objects found ***"
+msgstr "*** %d объектов найдено ***"
+
+#: src/extchat.c:1443
+#, c-format
+msgid "CHAT: %s has removed all users from <%s>."
+msgstr "%s удалил всех пользователей из <%s>"
+
+#: create.c:565
+#, c-format
+msgid "Cloned: Object %s."
+msgstr "Клонирован: объект %s."
+
+#: src/boolexp.c:261
+#, c-format
+msgid "I don't see %s here."
+msgstr "Не видно здесь %s."
+
+#: src/extmail.c:990
+#, c-format
+msgid "MAIL: %s's mailbox is full. Can't send."
+msgstr "ПОЧТА: Почтовый ящик %s полон. Невозможно послать сообщение."
+
+#: src/malias.c:264
+#, c-format
+msgid "MAIL: Alias set '%s' defined."
+msgstr "ПОЧТА: Псевдоним '%s' создан."
+
+#: src/extmail.c:1316
+#, c-format
+msgid "MAIL: There are %d new msgs in the mail spool, totalling %d characters."
+msgstr "ПОЧТА: Всего %d новых сообщений от %d героев."
+
+#: src/extmail.c:378
+#, c-format
+msgid "MAIL: Unread Msg #%d:%d cleared! Use @mail/unclear %d:%d to recover."
+msgstr "Непрочитанное сообщение #%d:%d удалено! Используйте @mail/unclear %d:%d для восстановления."
+
+#: src/extmail.c:1365
+#, c-format
+msgid "Mail statistics for %s:"
+msgstr "Почтовая статистика для %s:"
+
+#: src/wiz.c:131
+#, c-format
+msgid "New player '%s' (#%d) created with password '%s'"
+msgstr "Создан новый игрок '%s' (#%d) с паролем '%s'"
+
+#: src/extmail.c:747 src/extmail.c:859
+#, c-format
+msgid "No such unique player: %s."
+msgstr "Нет такого игрока: %s."
+
+#: look.c:815
+#, c-format
+msgid "Source: %s"
+msgstr "Источник: %s"
+
+#: src/destroy.c:238
+msgid "That object is set SAFE. You must set it !SAFE before destroying it."
+msgstr "Этот объект установлен как SAFE. Перед уничтожением его необходимо разблокировать с помщью !SAFE."
+
+#: src/atr_tab.c:273
+#, c-format
+msgid "The name %s is already used in the attribute table."
+msgstr "Имя %s уже используется в таблице аттрибутов."
+
+#: src/access.c:547
+#, c-format
+msgid "Unknown access option: %s"
+msgstr "Неизвестная опция доступа: %s"
+
+#: src/move.c:771
+#, c-format
+msgid "You are followed by: %s"
+msgstr "За тобой следует: %s"
+
+#: src/extchat.c:1119
+#, c-format
+msgid "You can't afford the %d %s."
+msgstr "Ты не можешь позволить себе %d %s."
+
+#: src/attrib.c:1114
+msgid "You don't have the permission to chown that."
+msgstr "У вас нет прав на использование команды chown."
+
+#: src/rob.c:276
+#, c-format
+msgid "You give %d %s to %s."
+msgstr "Ты даешь %d %s %s."
+
+#: look.c:959
+#, c-format
+msgid "You may give unlimited %s"
+msgstr "Вы можете дать неограниченный/ную/ное/ные %s\""
+
+#: src/rob.c:230
+#, c-format
+msgid "You must specify a positive number of %s."
+msgstr "Вы должны указать положительное число %s."
+
+#: src/extchat.c:1305
+#, c-format
+msgid "You now appear on channel <%s>'s who list."
+msgstr "Теперь ты в списке присутствующих в канале <%s>."
+
+#: src/destroy.c:1103
+#, c-format
+msgid "You own a disconnected room, %s"
+msgstr "У вас в подчинении отключенная комната %s."
+
+#: src/extchat.c:1322
+#, c-format
+msgid "You will no longer hear messages on channel <%s>."
+msgstr "С данного момента вы не будете читать сообщения в канале <%s>."
+
+#: src/rob.c:143
+#, c-format
+msgid "Your insurance policy pays %d %s."
+msgstr "По страховке вам выплачено %d %s."
+
+#: src/player.c:298
+#, c-format
+msgid "Your requested player, %s, has been created.\n"
+msgstr "Твой персонаж, %s, был создан.\n"
+
+#: move.c:608
+#, c-format
+msgid "drops %s."
+msgstr "кладет %s."
+

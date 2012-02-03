@@ -124,7 +124,7 @@ sitelock_free(struct access *ap)
   if (ap->comment)
     mush_free(ap->comment, "sitelock.rule.comment");
   if (ap->re)
-    free(ap);
+    free(ap->re);
   if (ap->study) {
 #ifdef PCRE_CONFIG_JIT
     pcre_free_study(ap->study);
@@ -172,10 +172,11 @@ sitelock_alloc(const char *host, dbref who,
       sitelock_free(tmp);
       return NULL;
     }
-  } else
+    tmp->study = pcre_study(tmp->re, PCRE_STUDY_JIT_COMPILE, errptr);
+  } else {
     tmp->re = NULL;
-
-  tmp->study = pcre_study(tmp->re, PCRE_STUDY_JIT_COMPILE, errptr);
+    tmp->study = NULL;
+  }
 
   return tmp;
 }

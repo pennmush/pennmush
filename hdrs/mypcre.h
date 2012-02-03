@@ -52,6 +52,11 @@ struct pcre_extra *default_match_limit(void);
 
 #ifdef HAVE_PCRE_H
 #include <pcre.h>
+
+#ifndef PCRE_STUDY_JIT_COMPILE
+#define PCRE_STUDY_JIT_COMPILE 0
+#endif
+
 #else
 #error "You appear to have a system PCRE library but not the pcre.h header. Install it or re-run configure with --without-pcre"
 #endif

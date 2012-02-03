@@ -125,6 +125,14 @@ sitelock_free(struct access *ap)
     mush_free(ap->comment, "sitelock.rule.comment");
   if (ap->re)
     free(ap);
+  if (ap->study) {
+#ifdef PCRE_CONFIG_JIT
+    pcre_free_study(ap->study);
+#else
+    free(ap->study);
+#endif
+  }
+  
   mush_free(ap, "sitelock.rule");
 }
 
@@ -166,6 +174,8 @@ sitelock_alloc(const char *host, dbref who,
     }
   } else
     tmp->re = NULL;
+
+  tmp->study = pcre_study(tmp->re, PCRE_STUDY_JIT_COMPILE, errptr);
 
   return tmp;
 }
@@ -356,7 +366,7 @@ site_can_access(const char *hname, uint32_t flag, dbref who)
     if (ap->can & ACS_SITELOCK)
       continue;
     if (((ap->can & ACS_REGEXP)
-         ? qcomp_regexp_match(ap->re, hname)
+         ? qcomp_regexp_match(ap->re, ap->study, hname)
          : quick_wild(ap->host, hname))
         && (ap->who == AMBIGUOUS || ap->who == who)) {
       /* Got one */
@@ -411,7 +421,7 @@ site_check_access(const char *hname, dbref who, int *rulenum)
     if (ap->can & ACS_SITELOCK)
       continue;
     if (((ap->can & ACS_REGEXP)
-         ? qcomp_regexp_match(ap->re, hname)
+         ? qcomp_regexp_match(ap->re, ap->study, hname)
          : quick_wild(ap->host, hname))
         && (ap->who == AMBIGUOUS || ap->who == who)) {
       /* Got one */

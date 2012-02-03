@@ -18,6 +18,7 @@ struct access {
   uint32_t can;        /**< Bitflags of what the host can do */
   uint32_t cant;       /**< Bitflags of what the host can't do */
   pcre *re;            /**< Compiled regexp */
+  pcre_extra *study;   /**< Optimization information about the re */
   struct access *next; /**< Pointer to next rule in the list */
 };
 

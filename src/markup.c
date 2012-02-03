@@ -307,7 +307,7 @@ ansi_isnull(const ansi_data a)
  * \return pointer to static buffer containing stripped string.
  */
 char *
-remove_markup(const char *orig, size_t * s_len)
+remove_markup(const char *orig, size_t *s_len)
 {
   static char buff[BUFFER_LEN];
   char *bp = buff;

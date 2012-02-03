@@ -333,7 +333,7 @@ typedef enum conn_status {
   CONN_DENIED                   /* connection denied due to login limits/sitelock */
 } conn_status;
 
-typedef bool(*sq_func) (void *);
+typedef bool (*sq_func) (void *);
 struct squeue {
   sq_func fun;
   void *data;

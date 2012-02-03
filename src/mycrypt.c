@@ -62,19 +62,22 @@ mush_crypt_sha0(const char *key)
  * \return 1 on failure, 0 on success.
  */
 int
-safe_hash_byname(const char *algo, const char *plaintext, int len, char *buff, char **bp, bool inplace_err)
+safe_hash_byname(const char *algo, const char *plaintext, int len, char *buff,
+                 char **bp, bool inplace_err)
 {
   EVP_MD_CTX ctx;
   const EVP_MD *md;
   uint8_t hash[EVP_MAX_MD_SIZE];
   unsigned int rlen = EVP_MAX_MD_SIZE;
-  
+
   md = EVP_get_digestbyname(algo);
   if (!md) {
     if (inplace_err)
       safe_str(T("#-1 UNSUPPORTED DIGEST TYPE"), buff, bp);
     else
-      do_rawlog(LT_ERR, T("safe_hash_byname: Unknown password hash function: %s"), algo);
+      do_rawlog(LT_ERR,
+                T("safe_hash_byname: Unknown password hash function: %s"),
+                algo);
     return 1;
   }
 
@@ -146,7 +149,8 @@ password_comp(const char *saved, const char *pass)
     int erroffset = 0;
     passwd_re = pcre_compile(re, 0, &errptr, &erroffset, tables);
     if (!passwd_re) {
-      do_rawlog(LT_ERR, "Unable to compile password regexp: %s, at '%c'", errptr, re[erroffset]);
+      do_rawlog(LT_ERR, "Unable to compile password regexp: %s, at '%c'",
+                errptr, re[erroffset]);
       return 0;
     }
   }
@@ -161,7 +165,7 @@ password_comp(const char *saved, const char *pass)
 
   pcre_get_substring(saved, ovec, c, 1, &algo);
   pcre_get_substring(saved, ovec, c, 2, &shash);
-  
+
   /* Hash the plaintext password using the right digest */
   bp = buff;
   if (safe_hash_byname(algo, pass, len, buff, &bp, 0)) {

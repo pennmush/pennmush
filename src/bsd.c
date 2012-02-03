@@ -403,7 +403,8 @@ static void dump_users(DESC *call_by, char *match);
 static const char *time_format_1(time_t dt);
 static const char *time_format_2(time_t dt);
 static void announce_connect(DESC *d, int isnew, int num);
-static void announce_disconnect(DESC *saved, const char *reason, bool reboot, dbref executor);
+static void announce_disconnect(DESC *saved, const char *reason, bool reboot,
+                                dbref executor);
 bool inactivity_check(void);
 void reopen_logs(void);
 void load_reboot_db(void);
@@ -3976,7 +3977,8 @@ announce_connect(DESC *d, int isnew, int num)
 }
 
 static void
-announce_disconnect(DESC *saved, const char *reason, bool reboot, dbref executor)
+announce_disconnect(DESC *saved, const char *reason, bool reboot,
+                    dbref executor)
 {
   dbref loc;
   int num;

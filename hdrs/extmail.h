@@ -96,7 +96,8 @@ extern void do_mail_unfolder(dbref player, char *fld);
 extern void do_mail_list(dbref player, const char *msglist);
 extern void do_mail_read(dbref player, char *msglist);
 extern void do_mail_review(dbref player, const char *name, const char *msglist);
-extern void do_mail_retract(dbref player, const char *name, const char *msglist);
+extern void do_mail_retract(dbref player, const char *name,
+                            const char *msglist);
 extern void do_mail_clear(dbref player, const char *msglist);
 extern void do_mail_unclear(dbref player, const char *msglist);
 extern void do_mail_unread(dbref player, const char *msglist);

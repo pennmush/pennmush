@@ -16,7 +16,7 @@ chronological order (most recent first)
 
 ==========================================================================
 
-Version 1.8.4 patchlevel 9                                 ??? ??, 2012
+Version 1.8.4 patchlevel 9                                 Feb 05, 2012
 
 Major changes:
  * The PCRE library is now required to build Penn, instead of falling

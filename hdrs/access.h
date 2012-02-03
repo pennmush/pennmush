@@ -63,6 +63,6 @@ bool add_access_sitelock(dbref player, const char *host, dbref who,
 int remove_access_sitelock(const char *pattern);
 void do_list_access(dbref player);
 int parse_access_options
-  (const char *opts, dbref *who, uint32_t * can, uint32_t * cant, dbref player);
+  (const char *opts, dbref *who, uint32_t *can, uint32_t *cant, dbref player);
 
 #endif                          /* __ACCESS_H */

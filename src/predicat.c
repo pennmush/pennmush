@@ -729,7 +729,8 @@ ok_player_name(const char *name, dbref player, dbref thing)
   /* A player may only change to a forbidden name if they're already
      using that name. */
   if (forbidden_name(name)) {
-    if (!((GoodObject(player) && Wizard(player)) || (GoodObject(thing) && lookup == thing))) {
+    if (!((GoodObject(player) && Wizard(player))
+          || (GoodObject(thing) && lookup == thing))) {
       return 0;
     }
   }

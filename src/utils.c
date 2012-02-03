@@ -97,7 +97,7 @@ parse_attrib(dbref player, char *str, dbref *thing, ATTR **attrib)
  * \return 0 on failure, true on success.
  */
 bool
-fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib *ufun,
+fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib * ufun,
                   int flags)
 {
   char *thingname, *attrname;
@@ -243,7 +243,7 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib *ufun,
  * \retval 1 process_expression failed. (CPU time limit)
  */
 bool
-call_ufun(ufun_attrib *ufun, char *ret, dbref caller, dbref enactor,
+call_ufun(ufun_attrib * ufun, char *ret, dbref caller, dbref enactor,
           NEW_PE_INFO *pe_info, PE_REGS *user_regs)
 {
   char rbuff[BUFFER_LEN];

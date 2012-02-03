@@ -90,14 +90,14 @@ typedef enum { SQL_PLATFORM_DISABLED = -1,
 
 #ifdef HAVE_MYSQL
 static MYSQL_RES *penn_mysql_sql_query(const char *, int *);
-static void penn_mysql_free_sql_query(MYSQL_RES * qres);
+static void penn_mysql_free_sql_query(MYSQL_RES *qres);
 static int penn_mysql_sql_init(void);
 static void penn_mysql_sql_shutdown(void);
 static int penn_mysql_sql_connected(void);
 #endif
 #ifdef HAVE_POSTGRESQL
 static PGresult *penn_pg_sql_query(const char *, int *);
-static void penn_pg_free_sql_query(PGresult * qres);
+static void penn_pg_free_sql_query(PGresult *qres);
 static int penn_pg_sql_init(void);
 static void penn_pg_sql_shutdown(void);
 static int penn_pg_sql_connected(void);
@@ -1078,7 +1078,7 @@ penn_mysql_sql_query(const char *q_string, int *affected_rows)
 }
 
 static void
-penn_mysql_free_sql_query(MYSQL_RES * qres)
+penn_mysql_free_sql_query(MYSQL_RES *qres)
 {
   while (mysql_fetch_row(qres)) ;
   mysql_free_result(qres);
@@ -1210,7 +1210,7 @@ penn_pg_sql_query(const char *q_string, int *affected_rows)
 }
 
 static void
-penn_pg_free_sql_query(PGresult * qres)
+penn_pg_free_sql_query(PGresult *qres)
 {
   PQclear(qres);
 }
@@ -1279,7 +1279,7 @@ penn_sqlite3_sql_query(const char *query, int *affected_rows)
 }
 
 static void
-penn_sqlite3_free_sql_query(sqlite3_stmt * stmt)
+penn_sqlite3_free_sql_query(sqlite3_stmt *stmt)
 {
   sqlite3_finalize(stmt);
 }

@@ -156,6 +156,12 @@ add_to_generic(dbref player, int am, const char *name, uint32_t flags)
   return num;
 }
 
+#if SIZEOF_VOID_P == 4
+typedef int32_t pint_t;
+#else
+typedef int64_t pint_t;
+#endif
+
 /** Wrapper for add_to_generic() to incremement a player's QUEUE attribute.
  * \param player object whose QUEUE should be incremented
  * \param am amount to increment the QUEUE by
@@ -164,11 +170,6 @@ add_to_generic(dbref player, int am, const char *name, uint32_t flags)
 static int
 add_to(dbref player, int am)
 {
-#if SIZEOF_VOID_P == 4
-  typedef int32_t pint_t;
-#else
-  typedef int64_t pint_t;
-#endif
   pint_t count;
   void *d;
 
@@ -179,11 +180,11 @@ add_to(dbref player, int am)
   if (!d)
     count = 0;
   else
-    count = (pint_t)d;
+    count = (pint_t) d;
 
   count += am;
 
-  set_objdata(player, "QUEUE", (void*)count);
+  set_objdata(player, "QUEUE", (void *) count);
 
   return count;
 }
@@ -608,8 +609,13 @@ new_queue_actionlist_int(dbref executor, dbref enactor, dbref caller,
 
   if (!(queue_type & QUEUE_INPLACE)) {
     /* Remove all QUEUE_* flags which aren't safe for non-inplace queues */
-    queue_type = (queue_type & (QUEUE_NODEBUG | QUEUE_DEBUG | QUEUE_DEBUG_PRIVS| QUEUE_NOLIST | QUEUE_PRIORITY));
-    queue_type |= ((IsPlayer(enactor) || (queue_type & QUEUE_PRIORITY)) ? QUEUE_PLAYER : QUEUE_OBJECT);
+    queue_type =
+      (queue_type &
+       (QUEUE_NODEBUG | QUEUE_DEBUG | QUEUE_DEBUG_PRIVS | QUEUE_NOLIST |
+        QUEUE_PRIORITY));
+    queue_type |= ((IsPlayer(enactor)
+                    || (queue_type & QUEUE_PRIORITY)) ? QUEUE_PLAYER :
+                   QUEUE_OBJECT);
     if (flags & PE_INFO_SHARE) {
       /* You can only share the pe_info for an inplace queue entry. Since you've asked us
        * to share for a fully queued entry, you're an idiot, because it will crash. I know;
@@ -759,7 +765,8 @@ queue_attribute_getatr(dbref executor, const char *atrname, int noparent)
 }
 
 int
-queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor, PE_REGS *pe_regs, int flags)
+queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor, PE_REGS *pe_regs,
+                       int flags)
 {
   char *start, *command;
   int queue_type = QUEUE_DEFAULT | flags;
@@ -2242,7 +2249,8 @@ do_allrestart(dbref player)
   do_allhalt(player);
   for (thing = 0; thing < db_top; thing++) {
     if (!IsGarbage(thing) && !(Halted(thing))) {
-      (void) queue_attribute_base(thing, "STARTUP", thing, 1, NULL, QUEUE_PRIORITY);
+      (void) queue_attribute_base(thing, "STARTUP", thing, 1, NULL,
+                                  QUEUE_PRIORITY);
       do_top(5);
     }
     if (IsPlayer(thing)) {

@@ -877,7 +877,7 @@ safe_hexstr(uint8_t *bytes, int len, char *buff, char **bp)
 {
   int n;
 
-  for (n = 0; n < len; n += 1) 
+  for (n = 0; n < len; n += 1)
     if (safe_hexchar(bytes[n], buff, bp))
       return 1;
 

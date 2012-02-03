@@ -303,15 +303,16 @@ FUNCTION(fun_sha0)
 
 /* From mycrypt.c */
 int safe_hash_byname(const char *algo, const char *plaintext, int len,
-		     char *buff, char **bp, bool inplace_err);
+                     char *buff, char **bp, bool inplace_err);
 
 
-#if OPENSSL_VERSION_NUMBER > 0x10000000L
+#if OPENSSL_VERSION_NUMBER >= 0x10000000L
 #define CAN_LIST_DIGESTS
 
 static void
-list_dgst_populate(const EVP_MD *m, const char *from __attribute__((__unused__)),
-		   const char *to __attribute__((__unused__)), void *data) 
+list_dgst_populate(const EVP_MD *m, const char *from
+                   __attribute__ ((__unused__)), const char *to
+                   __attribute__ ((__unused__)), void *data)
 {
   HASHTAB *digests = data;
   if (m)
@@ -330,19 +331,18 @@ FUNCTION(fun_digest)
     int m, n;
 
     hashinit(&digests_tab, 100);
-    EVP_MD_do_all(list_dgst_populate, &digests_tab);    
+    EVP_MD_do_all(list_dgst_populate, &digests_tab);
     digests = mush_calloc(digests_tab.entries, sizeof(char *), "digest.list");
-    
+
     for (n = 0, d = hash_firstentry_key(&digests_tab);
-	 d;
-	 n += 1, d = hash_nextentry_key(&digests_tab))
+         d; n += 1, d = hash_nextentry_key(&digests_tab))
       digests[n] = d;
 
     qsort(digests, n, sizeof(char *), stri_comp);
 
     for (m = 0; m < n; m += 1) {
-      if (m > 0) 
-	safe_chr(' ', buff, bp);
+      if (m > 0)
+        safe_chr(' ', buff, bp);
       safe_str(digests[m], buff, bp);
     }
 
@@ -351,9 +351,8 @@ FUNCTION(fun_digest)
 #else
     safe_str(T("#-1 LISTING NOT SUPPORTED"), buff, bp);
 #endif
-  } else if (nargs == 2) 
+  } else if (nargs == 2)
     safe_hash_byname(args[0], args[1], arglens[1], buff, bp, 1);
-  else 
+  else
     safe_str(T("#-1 INVALID ARGUMENT"), buff, bp);
 }
-

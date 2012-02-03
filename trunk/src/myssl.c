@@ -100,7 +100,7 @@ void shutdown_checkpoint(void);
 #endif
 
 static void ssl_errordump(const char *msg);
-static int client_verify_callback(int preverify_ok, X509_STORE_CTX * x509_ctx);
+static int client_verify_callback(int preverify_ok, X509_STORE_CTX *x509_ctx);
 static DH *get_dh1024(void);
 
 
@@ -210,7 +210,7 @@ ssl_init(char *private_key_file, char *ca_file, int req_client_cert)
 }
 
 static int
-client_verify_callback(int preverify_ok, X509_STORE_CTX * x509_ctx)
+client_verify_callback(int preverify_ok, X509_STORE_CTX *x509_ctx)
 {
   char buf[256];
   X509 *err_cert;
@@ -321,7 +321,7 @@ ssl_setup_socket(int sock)
  * be better.
  */
 void
-ssl_close_connection(SSL * ssl)
+ssl_close_connection(SSL *ssl)
 {
   SSL_shutdown(ssl);
   SSL_free(ssl);
@@ -366,7 +366,7 @@ ssl_resume(int sock, int *state)
  * \return resulting state of the object.
  */
 int
-ssl_handshake(SSL * ssl)
+ssl_handshake(SSL *ssl)
 {
   int ret;
   int state = 0;
@@ -439,7 +439,7 @@ ssl_want_write(int state)
  * \return ssl state flags indicating success, pending, or failure.
  */
 int
-ssl_accept(SSL * ssl)
+ssl_accept(SSL *ssl)
 {
   int ret;
   int state = 0;
@@ -496,7 +496,7 @@ ssl_accept(SSL * ssl)
  * \return new state of SSL object, or -1 if the connection closed.
  */
 int
-ssl_read(SSL * ssl, int state, int net_read_ready, int net_write_ready,
+ssl_read(SSL *ssl, int state, int net_read_ready, int net_write_ready,
          char *buf, int bufsize, int *bytes_read)
 {
   if ((net_read_ready && !(state & MYSSL_WBOR)) ||
@@ -544,7 +544,7 @@ ssl_read(SSL * ssl, int state, int net_read_ready, int net_write_ready,
  * \return new state of SSL object, or -1 if the connection closed.
  */
 int
-ssl_write(SSL * ssl, int state, int net_read_ready, int net_write_ready,
+ssl_write(SSL *ssl, int state, int net_read_ready, int net_write_ready,
           unsigned char *buf, int bufsize, int *offset)
 {
   int r;
@@ -586,4 +586,3 @@ ssl_errordump(const char *msg)
   ERR_print_errors(bio_err);
   unlock_file(stderr);
 }
-

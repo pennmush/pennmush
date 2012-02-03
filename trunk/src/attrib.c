@@ -1698,7 +1698,9 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
                                      tprintf("#%d/%s", thing, AL_NAME(ptr)));
           } else {
             /* Normal queue */
-            parse_que_attr(thing, player, s, pe_regs, ptr, (queue_type & QUEUE_DEBUG_PRIVS ? can_debug(player, thing) : 0));
+            parse_que_attr(thing, player, s, pe_regs, ptr,
+                           (queue_type & QUEUE_DEBUG_PRIVS ?
+                            can_debug(player, thing) : 0));
           }
           pe_regs_free(pe_regs);
         }
@@ -1842,7 +1844,9 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
                                  tprintf("#%d/%s", thing, AL_NAME(ptr)));
       } else {
         /* Normal queue */
-        parse_que_attr(thing, player, s, pe_regs, ptr, (queue_type & QUEUE_DEBUG_PRIVS ? can_debug(player, thing) : 0));
+        parse_que_attr(thing, player, s, pe_regs, ptr,
+                       (queue_type & QUEUE_DEBUG_PRIVS ?
+                        can_debug(player, thing) : 0));
       }
       pe_regs_free(pe_regs);
     }

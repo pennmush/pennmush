@@ -1715,7 +1715,8 @@ can_set_flag(dbref player, dbref thing, FLAG *flagp, int negate)
    */
   if (!negate && is_flag(flagp, "SHARED") &&
       (getlock(thing, Zone_Lock) == TRUE_BOOLEXP)) {
-    notify(player, T("You must @lock/zone before you can set a player SHARED."));
+    notify(player,
+           T("You must @lock/zone before you can set a player SHARED."));
     return 0;
   }
 
@@ -1931,7 +1932,8 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
     if (f->perms & F_LOG)
       do_log(LT_WIZ, player, thing, "%s FLAG CLEARED", f->name);
     if (f->perms & F_EVENT)
-      queue_event(player, "OBJECT`FLAG", "%s,%s,%s,%d,%s", unparse_objid(thing), f->name, "FLAG", 0, "CLEARED");
+      queue_event(player, "OBJECT`FLAG", "%s,%s,%s,%d,%s", unparse_objid(thing),
+                  f->name, "FLAG", 0, "CLEARED");
     /* notify the area if something stops listening, but only if it
        was listening before */
     if (!IsPlayer(thing) && (hear || listener) &&
@@ -1984,7 +1986,8 @@ set_flag(dbref player, dbref thing, const char *flag, int negate,
     if (f->perms & F_LOG)
       do_log(LT_WIZ, player, thing, "%s FLAG SET", f->name);
     if (f->perms & F_EVENT)
-      queue_event(player, "OBJECT`FLAG", "%s,%s,%s,%d,%s", unparse_objid(thing), f->name, "FLAG", 1, "SET");
+      queue_event(player, "OBJECT`FLAG", "%s,%s,%s,%d,%s", unparse_objid(thing),
+                  f->name, "FLAG", 1, "SET");
     if (is_flag(f, "TRUST") && GoodObject(Zone(thing)))
       notify(player, T("Warning: Setting trust flag on zoned object"));
     if (is_flag(f, "SHARED"))

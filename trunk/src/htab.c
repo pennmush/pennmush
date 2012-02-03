@@ -265,7 +265,7 @@ penn_hash(const char *key, int len)
   return hash;
 }
 
-typedef uint32_t(*hash_func) (const char *, int);
+typedef uint32_t (*hash_func) (const char *, int);
 
 hash_func hash_functions[] = {
   hsieh_hash,

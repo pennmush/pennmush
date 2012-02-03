@@ -171,7 +171,7 @@ typedef struct _ansi_string {
 #define AS_IsOptimized(as) AS_IS(as, AS_OPTIMIZED) /**< Has the ansi_string been optimized */
 
 int ansi_strcmp(const char *astr, const char *bstr);
-char *remove_markup(const char *orig, size_t * stripped_len);
+char *remove_markup(const char *orig, size_t *stripped_len);
 char *skip_leading_ansi(const char *p);
 
 int has_markup(const char *test);

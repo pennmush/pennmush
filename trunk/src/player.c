@@ -199,17 +199,17 @@ password_check(dbref player, const char *password)
       /* Not SHA0 either. Try old-school crypt(); */
 #ifdef HAS_CRYPT
       if (strcmp(crypt(password, "XX"), saved) != 0) {
-	/* Nope */
+        /* Nope */
 #endif                          /* HAS_CRYPT */
-	/* crypt() didn't work. Try plaintext, being sure to not
-	 * allow unencrypted entry of encrypted password */
-	if ((strcmp(saved, password) != 0)
-	    || (strlen(password) < 4)
-	    || ((password[0] == 'X') && (password[1] == 'X'))) {
-	  /* Nothing worked. You lose. */
-	  free(saved);
-	  return 0;
-	}
+        /* crypt() didn't work. Try plaintext, being sure to not
+         * allow unencrypted entry of encrypted password */
+        if ((strcmp(saved, password) != 0)
+            || (strlen(password) < 4)
+            || ((password[0] == 'X') && (password[1] == 'X'))) {
+          /* Nothing worked. You lose. */
+          free(saved);
+          return 0;
+        }
       }
     }
     /* Something worked. Change password to SHS-encrypted */
@@ -257,10 +257,10 @@ connect_player(DESC *d, const char *name, const char *password,
   /* See if player is allowed to connect like this */
   if (Going(player) || Going_Twice(player)) {
     do_log(LT_CONN, 0, 0,
-           "Connection to GOING player %s not allowed from %s (%s)", Name(player),
-           host, ip);
-    queue_event(SYSEVENT, "SOCKET`LOGINFAIL", "%d,%s,%d,%s,#%d",
-                d->descriptor, ip, count_failed(ip), "player is going", player);
+           "Connection to GOING player %s not allowed from %s (%s)",
+           Name(player), host, ip);
+    queue_event(SYSEVENT, "SOCKET`LOGINFAIL", "%d,%s,%d,%s,#%d", d->descriptor,
+                ip, count_failed(ip), "player is going", player);
     return NOTHING;
   }
   /* Check sitelock patterns */

@@ -162,29 +162,32 @@ indent:
 	(set +e; for file in *.dst *.c  ../hdrs/*.h ; do echo $$file; \
 	@INDENT@ -npro -kr -ci2 -ss -psl -ip4 -i2 -cs -l80 -lc75 -nut \
 	-T accent_info -T acsflag -T aig_func -T ALIST -T ansi_data \
-	-T ansi_string -T atr_err -T ATRALIAS -T ATTR -T BOOL -T boolexp \
-	-T boolexp_type -T branch_chain -T BUFFERQ -T bvm_opcode -T BYTE \
+	-T ansi_string -T atr_err -T ATRALIAS -T ATTR -T BIO -T BOOL \
+	-T bool -T boolexp -T boolexp_type -T BUFFERQ -T bvm_opcode \
 	-T CHAN -T CHANLIST -T CHANUSER -T chunk_reference_t -T CNode \
 	-T COMLIST -T command_func -T COMMAND_INFO -T comp_func \
-	-T compile_data -T COMSORTSTRUC -T config_func -T conn_source \
-	-T conn_status -T CType -T dbref -T Debug_Info -T DESC \
-	-T dfa_match_data -T eptrblock -T Fail_Info -T FBLOCK -T fd_type \
-	-T FLAG -T FLAG_ALIAS -T FLAGSPACE -T folder_array -T FUN \
-	-T FUNALIAS -T function_func -T FUNTAB -T GLOBALTAB -T hash_func \
-	-T HASHENT -T HASHTAB -T heapframe -T help_file -T help_indx \
-	-T im_key -T imaxdiv_t -T intmap -T IVAL -T ListTypeInfo \
-	-T lock_list -T lock_type -T LOCKMSGINFO -T LONG -T ltype -T MAIL \
-	-T mail_flag -T makerecord -T match_data -T MATH -T MEM -T MQUE \
-	-T MSSP -T na_lookup -T new_markup_information -T NEW_PE_INFO \
-	-T NVAL -T object_flag_type -T OPTTAB -T patricia \
-	-T PE_REG_VAL \
-	-T PE_REGS -T PENNCONF -T PENNCONFGROUP -T PENNFILE -T Port_t \
-	-T PRIV -T privbits -T PTAB -T ptab_entry -T qsort_func \
-	-T recursion_info -T Region -T RegionHeader -T s_rec \
-	-T SHS_INFO -T slab -T SortType -T sq_func -T sqlplatform \
+	-T COMSORTSTRUC -T config_func -T conn_source -T conn_status \
+	-T CType -T dbref -T Debug_Info -T DESC -T DH -T EVP_MD \
+	-T Fail_Info -T FBLOCK -T fd_type -T FLAG -T FLAG_ALIAS \
+	-T FLAGSPACE -T folder_array -T FUN -T FUNALIAS -T function_func \
+	-T FUNTAB -T GLOBALTAB -T hash_func -T HASHENT -T HASHTAB \
+	-T help_file -T help_indx -T im_key -T imaxdiv_t -T int16_t \
+	-T int32_t -T int64_t -T int8_t -T intmap -T intmax_t -T IVAL \
+	-T ldiv_t -T ListTypeInfo -T lock_list -T lock_type \
+	-T LOCKMSGINFO -T ltype -T MAIL -T mail_flag -T makerecord \
+	-T MATH -T MEM -T MQUE -T MSSP -T MYSQL_FIELD -T MYSQL_RES \
+	-T na_lookup -T new_markup_information -T NEW_PE_INFO -T NVAL \
+	-T object_flag_type -T OPTTAB -T patricia -T PE_REG_VAL \
+	-T PE_REGS -T PENNCONF -T PENNCONFGROUP -T PENNFILE -T PGresult \
+	-T pid_t -T pint_t -T Port_t -T PRIV -T privbits -T PTAB \
+	-T ptab_entry -T ptrdiff_t -T qsort_func -T Region \
+	-T RegionHeader -T s_rec -T sig_atomic_t -T sigset_t -T size_t \
+	-T slab -T socklen_t -T SortType -T sq_func -T sqlite3_stmt \
+	-T sqlplatform -T ssize_t -T SSL -T SSL_CTX -T SSL_METHOD \
 	-T STFunc -T StrNode -T StrTree -T switch_mask -T SWITCH_VALUE \
-	-T tcheck -T tlist -T ucp_type_table -T UIVAL -T uschar \
-	-T UsedAttr -T USERFN_ENTRY -T w128_t -T WAIT_TYPE -T warn_type \
+	-T tcheck -T time_t -T tlist -T uint16_t -T uint32_t -T uint64_t \
+	-T uint8_t -T uintmax_t -T UIVAL -T UsedAttr -T USERFN_ENTRY \
+	-T w128_t -T WAIT_TYPE -T warn_type -T X509 -T X509_STORE_CTX \
 	$$file ; done)
 
 clean:
@@ -800,6 +803,7 @@ funcrypt.o: ../hdrs/attrib.h
 funcrypt.o: ../hdrs/ansi.h
 funcrypt.o: ../hdrs/strtree.h
 funcrypt.o: ../hdrs/match.h
+funcrypt.o: ../hdrs/sort.h
 function.o: ../hdrs/copyrite.h
 function.o: ../config.h
 function.o: ../hdrs/conf.h
@@ -1345,7 +1349,18 @@ mycrypt.o: ../hdrs/copyrite.h
 mycrypt.o: ../options.h
 mycrypt.o: ../hdrs/mushtype.h
 mycrypt.o: ../hdrs/htab.h
+mycrypt.o: ../hdrs/externs.h
+mycrypt.o: ../hdrs/compile.h
+mycrypt.o: ../hdrs/dbdefs.h
+mycrypt.o: ../hdrs/mushdb.h
+mycrypt.o: ../hdrs/flags.h
 mycrypt.o: ../confmagic.h
+mycrypt.o: ../hdrs/ptab.h
+mycrypt.o: ../hdrs/dbio.h
+mycrypt.o: ../hdrs/chunk.h
+mycrypt.o: ../hdrs/mypcre.h
+mycrypt.o: ../hdrs/log.h
+mycrypt.o: ../hdrs/bufferq.h
 mymalloc.o: ../config.h
 mymalloc.o: ../options.h
 mymalloc.o: ../hdrs/conf.h

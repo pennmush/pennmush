@@ -188,7 +188,8 @@
 	  "ldiv_t" "bool" "BOOL"
 	  "BIO" "EVP_MD" "SSL_CTX" "SSL_METHOD" "X509_STORE_CTX"
 	  "X509" "DH" "SSL"
-	  "MYSQL_RES" "MYSQL_FIELD" "PGresult" "sqlite3_stmt")
+	  "MYSQL_RES" "MYSQL_FIELD" "PGresult" "sqlite3_stmt"
+	  "pcre" "pcre_extra")
    #:test string=? #:hash string-hash))
    
 ; structs that contain anonymous structs or unions sometimes confuse things.

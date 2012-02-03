@@ -613,7 +613,7 @@ quick_regexp_match(const char *restrict s, const char *restrict d, bool cs)
  * \return true or false
  */
 bool
-qcomp_regexp_match(const pcre * re, const char *subj)
+qcomp_regexp_match(const pcre *re, pcre_extra *study, const char *subj)
 {
   int len;
   int offsets[99];
@@ -622,8 +622,14 @@ qcomp_regexp_match(const pcre * re, const char *subj)
   if (!re || !subj)
     return false;
 
+  if (study) {
+    extra = study;
+    set_match_limit(extra);
+  } else 
+    extra = default_match_limit();    
+
   len = strlen(subj);
-  extra = default_match_limit();
+
   return pcre_exec(re, extra, subj, len, 0, 0, offsets, 99) >= 0;
 }
 

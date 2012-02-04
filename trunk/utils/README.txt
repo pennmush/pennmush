@@ -5,6 +5,9 @@ various things that don't change often.
 Detailed information about how to use the scripts can usually be found
 in comments in them Here's a quick overview of what they're for:
 
+change2html.pl: Script that HTML-ifies changelog entries for release
+ announcements.
+
 clwrapper.sh: A wrapper around the cl compiler from Microsoft.
 
 columnize.scm: Script to format the tables of functions/commands/etc.

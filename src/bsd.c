@@ -5412,7 +5412,7 @@ dump_reboot_db(void)
       exit(0);
     }
     /* Write out the reboot db flags here */
-    penn_fprintf(f, "V%u\n", flags);
+    penn_fprintf(f, "V%u\n", (unsigned int) flags);
     putref(f, sock);
 #ifdef LOCAL_SOCKET
     putref(f, localsock);

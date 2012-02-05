@@ -107,7 +107,7 @@ start_log(struct log_stream *log)
   static int ht_initialized = 0;
   FILE *f;
 
-  if (!log->filename || !log->filename) {
+  if (!log->filename || !*log->filename) {
     log->fp = stderr;
   } else {
     if (!ht_initialized) {
@@ -145,7 +145,7 @@ start_all_logs(void)
     start_log(logs + n);
 }
 
-/** Redirect stderr to a error log file and close stdout and stdin.
+/** Redirect stderr to an error log file and close stdout and stdin.
  * Should be called after start_all_logs().
  */
 void

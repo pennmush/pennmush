@@ -210,7 +210,9 @@ password_check(dbref player, const char *password)
           free(saved);
           return 0;
         }
+#ifdef HAS_CRYPT
       }
+#endif
     }
     /* Something worked. Change password to SHS-encrypted */
     do_rawlog(LT_CONN, "Updating password format for player #%d", player);

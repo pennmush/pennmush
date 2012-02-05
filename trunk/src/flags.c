@@ -1272,7 +1272,7 @@ flag_stats(dbref player)
     notify_format(player, T("Stats for flagspace %s:"), n->name);
     notify_format(player,
                   T("  %d entries in flag table. Flagsets are %d bytes long."),
-                  n->flagbits, FlagBytes(n));
+                  n->flagbits, (int) FlagBytes(n));
     notify_format(player,
                   T
                   ("  %d different cached flagsets. %d objects with no flags set."),

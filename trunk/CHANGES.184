@@ -123,6 +123,8 @@ Fixes:
  * A change in p8 broke the sending of the Pueblo hello string in some cases.
    Reported by Mercutio. [MG]
  * Fix crash bug in @sitelock/remove [SW]
+ * ssl_slave would drop connections if it couldn't resolve a valid hostname
+   for the connecting IP address. [SW]
 
 
 Version 1.8.4 patchlevel 8                                 Nov 11, 2011

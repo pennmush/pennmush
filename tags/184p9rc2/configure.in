@@ -1,0 +1,496 @@
+### autoconf file for PennMUSH
+### This file uses tests from the Autoconf Macro Archive.
+### It is available at http://autoconf-archive.cryp.to/ 
+### The actual tests used are in ./aclocal.m4. DO NOT AUTO-GENERATE
+### that file with aclocal.
+
+AC_INIT(configure.in)
+AC_CONFIG_HEADERS(config.h)
+AC_CANONICAL_BUILD
+
+if test "x$CFLAGS" = "x"; then
+CFLAGS="-O"
+DEFAULT_CFLAGS=yes
+else
+DEFAULT_CFLAGS=no
+fi
+
+AC_LANG(C)
+
+### Programs
+
+AC_PATH_PROG(CAT, cat)
+AC_PROG_CC
+AC_PROG_CC_C99
+AC_PATH_PROG(GDB, gdb)
+AC_PATH_PROG(CHMOD, chmod)
+AC_PATH_PROG(CP, cp)
+AC_PATH_PROG(ECHO, echo)
+AC_PROG_INSTALL
+AC_PROG_LN_S
+AC_PATH_PROG(MAKE, make)
+
+AX_WITH_PERL
+if test -z "${PERL}"; then
+   AC_MSG_ERROR([perl is required to build and run PennMUSH])
+fi
+
+AC_PATH_PROG(TEST, test)
+AC_PATH_PROG(TOUCH, touch)
+AC_PATH_PROG(RM, rm)
+AC_PATH_PROG(INDENT, indent)
+AC_PATH_PROG(CTAGS, ctags)
+AC_PATH_PROG(ETAGS, etags)
+AC_PATH_PROG(EXCTAGS, exctags)
+
+# Set good debug and warning options if using gcc
+# and custom CFLAGS aren't being used.
+# Todo: Look into the warnings setting macros in the autoconf archive,
+# maybe use them instead?
+if test "${DEFAULT_CFLAGS}" = yes; then
+ if test -n "${GDB}"; then
+  if test "${ac_cv_c_compiler_gnu}" = yes; then
+CFLAGS="-ggdb $CFLAGS -W -Wall -pedantic -Wno-comment"
+   else
+CFLAGS="-g $CFLAGS -W"
+  fi
+ else
+CFLAGS="-g $CFLAGS -W"
+ fi
+fi
+
+# Reduce the size of the binary on PowerPC OS X 
+case "${build_cpu}-${build_os}" in
+  powerpc*-darwin*) 
+   AX_GCC_OPTION([-mdynamic-no-pic], [], [], [
+      CFLAGS="$CFLAGS -mdynamic-no-pic"
+   ], [])
+  ;;
+esac
+
+
+# Some useful security-related compiler, assembler and linker options
+AX_GCC_OPTION([-fstack-protector], [], [], [
+   CFLAGS="$CFLAGS -fstack-protector"
+], [])
+case "${build_os}" in
+     *linux*)
+     # These might be linux-specific and aren't always caught as not
+     # supported by configure
+     AX_LD_CHECK_FLAG([-Wl,-z,noexecstack], [], [], [
+        LDFLAGS="$LDFLAGS -Wl,-z,noexecstack"
+	], [])
+	AX_LD_CHECK_FLAG([-Wa,--noexecstack], [], [], [
+	   CFLAGS="$CFLAGS -Wa,--noexecstack"
+	   ], [])
+	   ;;
+esac
+
+
+if test -z "${CTAGS}" -a -n "${EXCTAGS}"; then
+	CTAGS=$EXCTAGS
+fi
+
+if test -z "${ETAGS}" -a -n "${EXCTAGS}"; then
+	ETAGS="$EXCTAGS -e"
+fi
+
+AC_PATH_PROG(UPTIME, uptime)
+if test -n "${UPTIME}"; then
+ AC_DEFINE([HAVE_UPTIME])
+ AC_DEFINE_UNQUOTED([UPTIME], "$UPTIME")
+fi
+
+AC_ARG_VAR(SENDMAIL, [Path to sendmail])
+AC_PATH_PROG(SENDMAIL, sendmail)
+if test -n "${SENDMAIL}"; then
+ AC_DEFINE([HAVE_SENDMAIL])
+ AC_DEFINE_UNQUOTED([SENDMAIL], "$SENDMAIL")
+fi
+
+AC_ARG_VAR(ED, [Path to ed])
+AC_PATH_PROG(ED, ed)
+if test -n "${ED}"; then
+   AC_DEFINE([HAVE_ED])
+   AC_DEFINE_UNQUOTED([ED_PATH], "$ED -s")
+fi
+
+### Headers
+# Usually there's no need to check for standard C89 headers.
+
+# <stdint.h> is checked by this.
+AC_HEADER_STDC
+AC_HEADER_STDBOOL
+AC_HEADER_SYS_WAIT
+AC_HEADER_TIME
+AC_CHECK_HEADER(sys/time.h, [AC_DEFINE(I_SYS_TIME)])
+AC_CHECK_HEADER(arpa/inet.h, [AC_DEFINE(I_ARPA_INET)])
+AC_CHECK_HEADER(arpa/nameser.h, [AC_DEFINE(I_ARPA_NAMESER)])
+AC_CHECK_HEADER(fcntl.h, [AC_DEFINE(I_FCNTL)])
+AC_CHECK_HEADER(floatingpoint.h, [AC_DEFINE(I_FLOATINGPOINT)])
+AC_CHECK_HEADER(libintl.h, [AC_DEFINE(I_LIBINTL)])
+AC_CHECK_HEADER(malloc.h, [AC_DEFINE(I_MALLOC)])
+AC_CHECK_HEADER(netdb.h, [AC_DEFINE(I_NETDB)])
+AC_CHECK_HEADER(netinet/in.h, [AC_DEFINE(I_NETINET_IN)])
+AC_CHECK_HEADER(netinet/tcp.h, [AC_DEFINE(I_NETINET_TCP)])
+AC_CHECK_HEADER(sys/errno.h, [AC_DEFINE(I_SYS_ERRNO)])
+AC_CHECK_HEADER(sys/file.h, [AC_DEFINE(I_SYS_FILE)])
+AC_CHECK_HEADER(sys/in.h, [AC_DEFINE(I_SYS_IN)])
+AC_CHECK_HEADER(sys/mman.h, [AC_DEFINE(I_SYS_MMAN)])
+AC_CHECK_HEADER(sys/page.h, [AC_DEFINE(I_SYS_PAGE)])
+AC_CHECK_HEADER(sys/param.h, [AC_DEFINE(I_SYS_PARAM)])
+AC_CHECK_HEADER(sys/socket.h, [AC_DEFINE(I_SYS_SOCKET)])
+AC_CHECK_HEADER(sys/stat.h, [AC_DEFINE(I_SYS_STAT)])
+AC_CHECK_HEADER(sys/types.h, [AC_DEFINE(I_SYS_TYPES)])
+AC_CHECK_HEADERS([sys/un.h ieeefp.h sys/resource.h sys/event.h sys/uio.h])
+AC_CHECK_HEADERS([poll.h sys/epoll.h sys/select.h sys/inotify.h fam.h])
+AC_CHECK_HEADERS([zlib.h event.h event2/dns.h sys/prctl.h])
+
+### C language support
+# Only need to check C99 and GNU extensions
+
+AC_C_RESTRICT
+AC_C_INLINE
+AX_C___ATTRIBUTE__
+
+if test "$ax_cv___attribute__" = "yes"; then
+ AX_GCC_MALLOC_CALL
+fi
+
+### Types
+# Again, no need to check for standard C89 types.
+
+AC_TYPE_SSIZE_T
+AC_TYPE_PID_T
+TYPE_SOCKLEN_T
+AC_TYPE_INT8_T
+AC_TYPE_UINT8_T
+AC_TYPE_INT16_T
+AC_TYPE_UINT16_T
+AC_TYPE_INT32_T
+AC_TYPE_UINT32_T
+AC_TYPE_INT64_T
+AC_TYPE_UINT64_T
+AC_TYPE_INTMAX_T
+AC_TYPE_UINTMAX_T
+
+AC_CHECK_TYPES([imaxdiv_t])
+
+AC_CHECK_SIZEOF([int])
+AC_CHECK_SIZEOF([long])
+AC_CHECK_SIZEOF([int64_t])
+AC_CHECK_SIZEOF([intmax_t])
+AC_CHECK_SIZEOF([time_t])
+AC_CHECK_SIZEOF([void *])
+
+### Libraries
+AC_CHECK_LIB(m, sin)
+AC_CHECK_LIB(intl, gettext)
+AC_CHECK_LIB(crypt, crypt)
+LIB_SOCKET_NSL
+AC_CHECK_LIB(fam, FAMOpen)
+AC_CHECK_LIB(event, event_base_loop)
+AC_CHECK_LIB(event_openssl, bufferevent_openssl_socket_new)
+
+AC_ARG_ENABLE(zlib, AS_HELP_STRING([--disable-zlib], [Don't use zlib for database compression.]),
+		    enable_zlib=$enableval, enable_zlib=yes)
+if test "$enable_zlib" = "yes"; then
+ AC_CHECK_LIB(z, gzungetc)
+fi
+
+# with_ssl=set
+AX_CHECK_OPENSSL(
+ AC_DEFINE(HAVE_SSL),
+ AC_MSG_ERROR([The OpenSSL library must be installed to run PennMUSH.])
+)
+
+# system libpcre
+AX_PATH_LIB_PCRE()
+AC_CHECK_HEADERS([pcre.h])
+if test "${PCRE_LIBS+set}" = "set" -a "x${ac_cv_header_pcre_h}" = "xyes"; then
+   AC_DEFINE(HAVE_PCRE)
+else
+   AC_MSG_ERROR([The PCRE library must be installed to run PennMUSH.])
+fi
+
+### Databases
+
+AC_ARG_ENABLE(sql, AS_HELP_STRING([--disable-sql],
+[Don't use SQL support]), enable_sql=$enableval, enable_sql=yes)
+
+if test "$enable_sql" = "yes"; then
+AC_MSG_NOTICE([Looking for supported SQL servers])
+AX_LIB_MYSQL()
+AX_LIB_POSTGRESQL()
+AX_LIB_SQLITE3()
+else
+AC_MSG_NOTICE([Skipping SQL server checks])
+fi
+
+### Functions
+AC_CHECK_FUNC(bindtextdomain, [AC_DEFINE(HAS_BINDTEXTDOMAIN)])
+AC_CHECK_FUNC(crypt, [AC_DEFINE(HAS_CRYPT)])
+AC_CHECK_FUNCS([fpsetmask fpsetround])
+AC_MSG_CHECKING([for isnormal])
+AC_LINK_IFELSE([
+AC_LANG_SOURCE([
+#include <math.h>
+int main(void) {
+ return !isnormal(1.0);
+}
+])
+], 
+[AC_MSG_RESULT(yes)]
+[AC_DEFINE(HAVE_ISNORMAL)],
+AC_MSG_RESULT(no))
+
+AC_CHECK_FUNC(gai_strerror, [AC_DEFINE(HAS_GAI_STRERROR)])
+AC_CHECK_FUNC(getaddrinfo, [AC_DEFINE(HAS_GETADDRINFO)])
+AC_CHECK_FUNC(getdate, [AC_DEFINE(HAS_GETDATE)])
+AC_CHECK_FUNC(gethostbyname2, [AC_DEFINE(HAS_GETHOSTBYNAME2)])
+AC_CHECK_FUNC(getnameinfo, [AC_DEFINE(HAS_GETNAMEINFO)])
+AC_CHECK_FUNC(getpagesize, [AC_DEFINE(HAS_GETPAGESIZE)])
+AC_CHECK_FUNC(getrlimit, [AC_DEFINE(HAS_GETRLIMIT)])
+AC_CHECK_FUNC(getrusage, [AC_DEFINE(HAS_GETRUSAGE)])
+AC_CHECK_FUNCS([gettext getpid getppid])
+AC_CHECK_FUNC(inet_pton, [AC_DEFINE(HAS_INET_PTON)])
+AC_CHECK_FUNC(setitimer, [AC_DEFINE(HAS_ITIMER)])
+AC_CHECK_FUNC(setlocale, [AC_DEFINE(HAS_SETLOCALE)])
+AC_FUNC_FORK
+AC_CHECK_FUNCS([setsid setpgid setpgrp])
+if test $ac_cv_func_setpgrp = yes; then
+AC_FUNC_SETPGRP
+fi
+AC_CHECK_FUNCS([cbrt log2 round imaxdiv])
+AC_CHECK_FUNCS([getuid geteuid seteuid getpriority setpriority])
+AC_CHECK_FUNCS([socketpair sigaction sigprocmask posix_memalign writev])
+AC_CHECK_FUNCS([fcntl pselect poll ppoll pollts kqueue epoll_ctl inotify_init inotify_init1])
+AC_CHECK_FUNCS([pread pwrite prctl])
+# Some linux OSes (Old redhat, others?) will see these functions
+# through an AC_CHECK_FUNCS but not when it comes time to actually use
+# them in source. 
+AC_MSG_CHECKING([for posix_fallocate])
+AC_LINK_IFELSE([
+AC_LANG_SOURCE([
+#define _XOPEN_SOURCE 600
+#include <fcntl.h>
+
+int
+main(void)
+{
+ posix_fallocate(0, 0, 100);
+ return 0;
+}
+])
+],
+[AC_MSG_RESULT(yes)]
+[AC_DEFINE(HAVE_POSIX_FALLOCATE)],
+AC_MSG_RESULT(no))
+AC_MSG_CHECKING([for posix_fadvise and associated constants])
+AC_LINK_IFELSE([
+AC_LANG_SOURCE([
+#define _XOPEN_SOURCE 600
+#include <fcntl.h>
+
+int
+main(void)
+{
+  posix_fadvise(0, 0, 0, POSIX_FADV_SEQUENTIAL);
+  return 0;
+}
+])
+],
+[AC_MSG_RESULT(yes)]
+[AC_DEFINE(HAVE_POSIX_FADVISE)],
+AC_MSG_RESULT(no))
+
+AC_FUNC_SNPRINTF
+if test "x$ac_cv_have_working_snprintf" = xyes; then
+AC_DEFINE(HAS_SNPRINTF)
+fi
+if test "x$ac_cv_have_working_vsnprintf" = xyes; then
+AC_DEFINE(HAS_VSNPRINTF)
+fi
+AC_CHECK_FUNCS([_vsnprintf_s vasprintf])
+
+AC_CHECK_FUNCS([strcasecmp strncasecmp _stricmp _strnicmp strdup])
+AC_FUNC_STRCOLL
+AC_CHECK_FUNCS([strxfrm _strncoll _stricoll _strnicoll strchrnul])
+AC_CHECK_FUNC(sysconf, [AC_DEFINE(HAS_SYSCONF)])
+AC_CHECK_FUNC(textdomain, [AC_DEFINE(HAS_TEXTDOMAIN)])
+
+AC_CHECK_FUNCS(waitpid)
+
+if test $ac_cv_func_waitpid = no; then
+
+AC_CHECK_FUNCS([wait3 wait])
+AC_MSG_CHECKING([for union wait])
+AC_CHECK_TYPES([union wait], [AC_DEFINE(UNION_WAIT)
+ AC_MSG_RESULT(yes)], AC_MSG_RESULT(no),
+ [AC_INCLUDES_DEFAULT
+ #ifdef I_SYS_WAIT
+ #include <sys/wait.h>
+ #endif
+ ])
+
+fi
+
+
+### Variables, constants, defines and other misc. stuff
+
+AC_CHECK_DECLS(h_errno, [AC_DEFINE(HAVE_H_ERRNO)],,[AC_INCLUDES_DEFAULT
+#ifdef I_NETDB
+#include <netdb.h>
+#endif
+])
+
+AC_CHECK_TYPES([struct sockaddr_in6], [AC_DEFINE(HAVE_SOCKADDR_IN6)],,
+[AC_INCLUDES_DEFAULT
+#ifdef I_NETINET_IN
+#include <netinet/in.h>
+#endif
+])
+
+# Will toupper()ing an already uppercase character be a problem?
+AC_MSG_CHECKING([if it is safe to toupper uppers])
+AC_TRY_COMPILE(
+[#include <ctype.h>],
+[
+if (toupper('A') == 'A')
+	return 0;
+else
+	return 1;
+], ac_safe_toupper=yes, ac_safe_toupper=no)
+AC_MSG_RESULT([$ac_safe_toupper])
+if test "x$ac_safe_toupper" = xyes; then
+	AC_DEFINE(HAVE_SAFE_TOUPPER)
+fi
+
+
+
+# Which flavor of child killing to use? Prefer SIGCHLD.
+
+AC_CHECK_DECLS(SIGCHLD, [AC_DEFINE(HAVE_SIGCHLD)],,[AC_INCLUDES_DEFAULT
+#include <signal.h>
+])
+
+AC_CHECK_DECLS(SIGCLD, [AC_DEFINE(HAVE_SIGCLD)],,[AC_INCLUDES_DEFAULT
+#include <signal.h>
+])
+
+
+### Files
+AC_CHECK_FILE(/dev/urandom, [AC_DEFINE(HAS_DEV_URANDOM)])
+
+### Misc features
+AC_ARG_ENABLE(ipv6,  AS_HELP_STRING([--disable-ipv6],
+      [Don't use IPv6 networking]), enable_ipv6=$enableval, enable_ipv6=yes)
+
+if test "$enable_ipv6" = "no"; then
+AC_DEFINE(FORCE_IPV4)
+fi
+
+AC_ARG_ENABLE(nls, AS_HELP_STRING([--disable-nls],
+  [Don't use message-translation]), enable_nls=$enableval, enable_nls=yes)
+
+if test "$enable_nls" = "no"; then
+AC_DEFINE(DONT_TRANSLATE)
+fi
+
+AC_ARG_ENABLE(info_slave, AS_HELP_STRING([--disable-info_slave],
+			  [Don't use a separate process for hostname lookups]),
+			  enable_info_slave=$enableval, enable_info_slave=yes)
+if test "$enable_info_slave" = yes; then
+   AC_SUBST(INFO_SLAVE_TARGET, info_slave)
+   AC_DEFINE(INFO_SLAVE)
+fi
+
+AC_ARG_ENABLE(ssl_slave, AS_HELP_STRING([--disable-ssl_slave],
+			 [Use a seperate process for SSL connections that will persist across restarts. (Experimental. Unix-only.)]),
+			 enable_ssl_slave=$enableval, enable_ssl_slave=yes)
+if test "$enable_ssl_slave" = yes -a "$ac_cv_lib_event_openssl_bufferevent_openssl_socket_new" = yes; then
+   AC_SUBST(SSL_SLAVE_TARGET, ssl_slave)						       
+   AC_DEFINE(SSL_SLAVE)
+else
+   AC_MSG_WARN([ssl_slave requested but OpenSSL and/or libevent2 weren't found.])
+   enable_ssl_slave=no
+fi
+
+AC_ARG_ENABLE(sse2, AS_HELP_STRING([--enable-sse2],
+  [Use SSE2 instructions (Requires a CPU that supports SSE2)]))
+AC_ARG_ENABLE(sse3, AS_HELP_STRING([--enable-sse3],
+  [Use SSE3 instructions (Requires a CPU that supports SSE3)]))
+AC_ARG_ENABLE(altivec, AS_HELP_STRING([--enable-altivec],
+  [Use PowerPC Altivec instructions (Requires a CPU that supports Altivec)]))
+
+if test "$enable_sse2" = yes; then
+   AC_DEFINE(HAVE_SSE2)
+   CFLAGS="$CFLAGS -msse2"
+fi
+
+if test "$enable_sse3" = yes; then
+   AC_DEFINE(HAVE_SSE2)
+   AC_DEFINE(HAVE_SSE3)
+   CFLAGS="$CFLAGS -msse2 -msse3"
+fi
+
+if test "$enable_altivec" = yes; then
+   AC_DEFINE(HAVE_ALTIVEC)
+   CFLAGS="$CFLAGS -maltivec -faltivec"
+fi
+
+### Output
+
+
+echo "Configuration summary:"
+echo "* Compiler: $CC"
+echo "* Compiler flags: $CFLAGS"
+
+if test "$enable_sql" = yes; then
+ sql_servers=""
+ if test "$found_mysql" = yes; then
+  sql_servers="MySQL "
+ fi
+ if test "$found_postgresql" = yes; then
+  sql_servers="${sql_servers} Postgres "
+ fi
+ if test "$found_sqlite" = yes; then
+  sql_servers="${sql_servers} Sqlite3 "
+ fi
+ echo "* SQL support: ${sql_servers:-No}"
+else
+ echo "* SQL support: No"
+fi
+
+if test "$enable_ssl_slave" = yes; then
+   echo "* SSL connections will be maintained across restarts."
+else
+   echo "* SSL connections will not persist across restarts."
+fi
+
+if test "$enable_info_slave" = yes; then
+   echo "* Info slave will be used for hostname lookups."
+else
+   echo "* Hostname lookups will be done by the mush process."
+fi
+
+if test "$enable_nls" = yes -a "${ac_cv_lib_intl_gettext:+set}" = set; then
+   echo "* Translation support: Yes"
+else
+   echo "* Translation support: No"
+fi
+
+if test "$enable_ipv6" = yes; then
+  echo "* IPv6 sockets will be used if possible."
+else
+  echo "* Sockets are limited to IPv4"
+fi
+
+
+
+AC_CONFIG_FILES([Makefile src/Makefile])
+AC_CONFIG_FILES([game/txt/compose.sh], [chmod +x game/txt/compose.sh])
+AC_CONFIG_FILES([test/alltests.sh], [chmod +x test/alltests.sh])
+AC_OUTPUT
+
+

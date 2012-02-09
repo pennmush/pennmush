@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
 
 # Script for manipulating passwords in Penn database files.
+# Run with --help for details, or look at the end.
 
 use strict;
 use warnings;
@@ -11,28 +12,32 @@ use Digest::SHA;
 use IO::Compress::Gzip qw/$GzipError/;
 use IO::Uncompress::Gunzip qw/$GunzipError/;
 use Pod::Text::Termcap;
+use constant TYPE_PLAYER => 0x8;
 
 our %sha_algos = ( 1 => 1, 224 => 2, 256 => 2, 384 => 2, 512 => 2 );
-our $sha_bits = 256;
 
 sub format_password {
-  my $sha = Digest::SHA->new($sha_bits);
-  # Shouldn't happen, but fail gracefully if the constructor doesn't.
-  die "Invalid digest SHA-$sha_bits\n" unless defined $sha;
-
-  $sha->add(shift);
-  my $hashed = $sha->hexdigest;
+  my $bits = shift;
   my $time = time;
-  return "1:sha$sha_bits:$hashed:$time";
+  my $sha = Digest::SHA->new($bits);
+
+  # Shouldn't happen, but fail gracefully if the constructor doesn't.
+  die "Invalid digest SHA-$bits\n" unless defined $sha;
+
+  foreach (@_) { $sha->add($_) }
+  my $hashed = $sha->hexdigest;
+
+  return "1:sha${bits}:${hashed}:${time}";
 }
 
 sub parse_dbref_spec {
   my $d = shift;
-  return qr/^\s*!(\d+)/ if $d eq "all";
-  return qr/^\s*!($d)/ if $d =~ /^\d+$/;
+  return qr/^!(\d+)/ if $d eq "all";
+  return qr/^!($d)\Z/ if $d =~ /^\d+$/;
   die "Invalid dbref '$d'\n";
 }
 
+our $sha_bits = 256;
 our $backup_extension = ".bak";
 our $wipe = -1;
 our $set = -1;
@@ -61,16 +66,15 @@ if ($help) {
 
 if (($set == -1 && $wipe == -1)
     || ($set != -1 && $wipe != -1)) {
-  die "Either --set or --wipe must be given.";
+  die "Either --set or --wipe must be given.\n";
 }
 
 if ($set > -1 && $password eq "") {
-  my $default_password = "youreallyshouldchangethis";
-  warn "Using default password '$default_password'\n";
-  $password = $default_password;
+  $password = "youreallyshouldchangethis";
+  warn "Using default password '$password'\n";
 }
 
-die "Invalid digest SHA-$sha_bits\n" unless defined $sha_algos{$sha_bits};
+die "Invalid digest SHA-$sha_bits\n" unless exists $sha_algos{$sha_bits};
 
 our $dbref;
 
@@ -104,55 +108,62 @@ if ($gzip) {
 }
 
 our $in_obj = 0;
-our $passwd = format_password $password;
+our $passwd = format_password $sha_bits, $password;
 
 OBJECT:
-while (my $line = <$ifh>) {
-  $in_obj = $1 if $line =~ /$dbref/;
-  if ($in_obj && $line =~/^\s*attrcount (\d+)/) {
+while (<$ifh>) {
+  $in_obj = $1 if /$dbref/;
+  if ($in_obj && /^\s*type (\d+)/) {
+    # Skip non-player objects.
+    $in_obj = 0 unless ($1 & TYPE_PLAYER) == TYPE_PLAYER;
+    print $ofh $_;
+  } elsif ($in_obj && /^\s*attrcount (\d+)/) {
+    # Start looking at the player's attributes for a current password
+    # attribute.
     my $nattrs = $1;
     my @buffer;
-    while ($line = <$ifh>) {
-      if ($line =~ /^\s*name "XYXXY"/) {
+    while (<$ifh>) {
+      if (/^\s*name "XYXXY"/) {
 	my $owner = <$ifh>;
 	my $flags = <$ifh>;
 	my $derefs = <$ifh>;
 	my $value = <$ifh>;
 	if ($set != -1) {
-	  print "Changing password for object $in_obj.\n";
+	  print "Changing password for object #$in_obj.\n";
 	  print $ofh "attrcount $nattrs\n", @buffer;
-	  print $ofh $line, $owner, $flags, $derefs;
+	  print $ofh $_, $owner, $flags, $derefs;
 	  print $ofh "  value \"$passwd\"\n";
 	} else {
-	  print "Clearing password from object $in_obj.\n";
+	  print "Clearing password from object #$in_obj.\n";
 	  $nattrs -= 1;
 	  print $ofh "attrcount $nattrs\n", @buffer;
 	}
 	$in_obj = 0;
 	next OBJECT;
-      } elsif ($line =~ /^\s*!\d+/) {
+      } elsif (/^!\d+/) {
 	if ($set != -1) {
 	  # Object doesn't have a password attribute. Add one.
-	  print "Adding password to object $in_obj.\n";
+	  print "Adding password to object #$in_obj.\n";
 	  $nattrs += 1;
 	  print $ofh "attrcount $nattrs\n", @buffer;
-	  print $ofh
-	    " name \"XYXXY\"\n",
-	      "  owner #1\n",
-		"  flags \"no_command wizard locked internal\"\n",
-		  "  derefs 1\n",
-		    "  value \"$passwd\"\n";
+	  print $ofh <<ATTR;
+ name "XYXXY"
+  owner #1
+  flags "no_command wizard locked internal"
+  derefs 1
+  value "$passwd"
+ATTR
 	} else {
 	  print $ofh "attrcount $nattrs\n", @buffer;
 	}
 	$in_obj = 0;
 	redo OBJECT;
       } else {
-	push @buffer, $line;
+	push @buffer, $_;
       }
     }
   } else {
-    print $ofh $line;
+    print $ofh $_;
   }
 }
 

@@ -117,6 +117,11 @@ Fixes:
  * The portmsg announcer daemon was broken. Reported by Minion. [SW]
  * A change in p8 broke the sending of the Pueblo hello string in some cases.
    Reported by Mercutio. [MG]
+ * Fix crash bug in @sitelock/remove [SW]
+ * ssl_slave would drop connections if it couldn't resolve a valid hostname
+   for the connecting IP address. [SW]
+ * Non-matching regexp captures ($0, $<foo>, etc) sometimes had the value
+   of the previous matching capture. From a report by Sketch. [MG]
 
 
 & 1.8.4p8

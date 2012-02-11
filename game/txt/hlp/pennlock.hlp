@@ -372,7 +372,7 @@ See also: @lock, locktypes, lockkeys
   @lock/page
     For players, things and rooms, you must pass this lock to page or @pemit
       to the object, or @remit inside it. Meaningless for exits. 
-  See also: FAILURE
+  See also: FAILURE, @haven
   
   @lock/speech
     Controls who can speak (via say, pose, @*emit or teach) inside an object.
@@ -386,6 +386,12 @@ See also: @lock, locktypes, lockkeys
   @lock/mailforward
     Controls who can forward @mail to this object via @mailforward.
   See also: @mail, @mailforward, @lock/forward
+  
+  @lock/interact
+    Controls who can send sound of any kind (page, say, channels, etc) to
+    you. Note that players who fail to pass your interact lock will not be
+    informed you're not receiving their messages, so you may also wish to
+    @lock/page them and set a haven message.
   
 See also: @lock, locktypes, lockkeys
 & @lock/drop

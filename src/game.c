@@ -1021,6 +1021,7 @@ passwd_filter(const char *cmd)
   }
 
   cmdlen = strlen(cmd);
+  buff[0] = '\0';
 
   if ((matched = pcre_exec(pass_ptn, NULL, cmd, cmdlen, 0, 0, ovec, 20)) > 0) {
     /* It's a password */

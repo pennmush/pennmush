@@ -1280,6 +1280,7 @@ pe_regs_set_rx_context(PE_REGS *pe_regs,
   /* We assume every captured pattern is used. */
   /* Copy all the numbered captures over */
   for (i = 0; i < re_subpatterns && i < 1000; i++) {
+    buff[0] = '\0';
     pcre_copy_substring(re_from, re_offsets, re_subpatterns,
                         i, buff, BUFFER_LEN);
     pe_regs_set(pe_regs, PE_REGS_REGEXP, pe_regs_intname(i), buff);
@@ -1301,6 +1302,7 @@ pe_regs_set_rx_context(PE_REGS *pe_regs,
   for (i = 0; i < namecount; i++) {
     entry = nametable + (entrysize * i);
     num = (entry[0] << 8) + entry[1];
+    buff[0] = '\0';
     pcre_copy_substring(re_from, re_offsets, re_subpatterns,
                         num, buff, BUFFER_LEN);
     pe_regs_set(pe_regs, PE_REGS_REGEXP, pe_regs_intname(i), buff);

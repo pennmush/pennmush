@@ -843,14 +843,21 @@ clear_player(dbref thing)
   dbref i;
   ATTR *atemp;
   char alias[BUFFER_LEN + 1];
+  dbref probate;
 
   /* Clear out mail. */
   do_mail_clear(thing, NULL);
   do_mail_purge(thing);
   malias_cleanup(thing);
 
+  probate = options.probate_judge;
+  if (!(GoodObject(probate) && IsPlayer(probate))) {
+    do_rawlog(LT_ERR, T("probate_judge config option is set to an invalid object."));
+    probate = GOD;
+  }
+
   /* Chown any chat channels they own to God */
-  chan_chownall(thing, GOD);
+  chan_chownall(thing, probate);
 
   /* Clear out names from the player list */
   delete_player(thing, NULL);
@@ -861,11 +868,12 @@ clear_player(dbref thing)
   /* Do all the thing-esque manipulations. */
   clear_thing(thing);
 
+
   /* Deal with objects owned by the player. */
   for (i = 0; i < db_top; i++) {
     if (Owner(i) == thing && i != thing) {
       if (DESTROY_POSSESSIONS ? (REALLY_SAFE ? Safe(i) : 0) : 1) {
-        chown_object(GOD, i, GOD, 0);
+        chown_object(GOD, i, probate, 0);
       } else {
         free_object(i);
       }

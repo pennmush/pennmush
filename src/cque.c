@@ -380,10 +380,20 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   int i, len;
   MQUE *tmp;
   int pid;
+  static bool recur = 0;
+
+
+  /* Stop loops caused by logging triggering events triggering logging
+     triggering ... */
+  if (recur)
+    return 0;
+  else
+    recur = 1;
 
   /* Make sure we have an event to call, first. */
   if (!GoodObject(EVENT_HANDLER) || IsGarbage(EVENT_HANDLER) ||
       Halted(EVENT_HANDLER)) {
+    recur = 0;
     return 0;
   }
 
@@ -396,11 +406,13 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   a = atr_get_noparent(EVENT_HANDLER, event);
   if (!(a && AL_STR(a) && *AL_STR(a))) {
     /* Nonexistant or empty attrib. */
+    recur = 0;
     return 0;
   }
 
   /* Because Event is so easy to run away. */
   if (!pay_queue(EVENT_HANDLER, event)) {
+    recur = 0;
     return 0;
   }
 
@@ -409,6 +421,7 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   if (pid == 0) {
     /* Too many queue entries */
     notify(Owner(EVENT_HANDLER), T("Queue entry table full. Try again later."));
+    recur = 0;
     return 0;
   }
 
@@ -499,6 +512,8 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
 
   /* All good! */
   im_insert(queue_map, tmp->pid, tmp);
+
+  recur = 0;
   return 1;
 }
 

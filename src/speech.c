@@ -1151,7 +1151,7 @@ filter_found(dbref thing, dbref speaker, const char *msg, int flag)
     if (*p == '\0')             /* Empty filter */
       continue;
     if (AF_Regexp(a))
-      matched = quick_regexp_match(p, msg, AF_Case(a));
+      matched = quick_regexp_match(p, msg, AF_Case(a), NULL);
     else
       matched = local_wild_match_case(p, msg, AF_Case(a), NULL);
   }

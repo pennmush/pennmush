@@ -2801,7 +2801,7 @@ FUNCTION(fun_regmatch)
   char *qregs[NUMQ], *holder[NUMQ];
   pcre *re;
   pcre_extra *extra;
-  const char *errptr;
+  const char *errptr = NULL;
   int erroffset;
   int offsets[99];
   int subpatterns;
@@ -2820,7 +2820,13 @@ FUNCTION(fun_regmatch)
   as = parse_ansi_string(args[0]);
   txt = as->text;
   if (nargs == 2) {             /* Don't care about saving sub expressions */
-    safe_boolean(quick_regexp_match(needle, txt, flags ? 0 : 1), buff, bp);
+    bool match = quick_regexp_match(needle, txt, flags ? 0 : 1, &errptr);
+    if (errptr == NULL) {
+      safe_boolean(match, buff, bp);
+    } else {
+      safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
+      safe_str(errptr, buff, bp);
+    }
     free_ansi_string(as);
     return;
   }

@@ -1151,7 +1151,7 @@ atr_iter_get(dbref player, dbref thing, const char *name, int mortal,
       ptr = *indirect;
       if ((mortal ? Is_Visible_Attr(thing, ptr)
            : Can_Read_Attr(player, thing, ptr))
-          && (regexp ? quick_regexp_match(name, AL_NAME(ptr), 0) :
+          && (regexp ? quick_regexp_match(name, AL_NAME(ptr), 0, NULL) :
               atr_wild(name, AL_NAME(ptr))))
         result += func(player, thing, NOTHING, name, ptr, args);
       if (ptr == *indirect)
@@ -1220,7 +1220,7 @@ atr_pattern_count(dbref player, dbref thing, const char *name,
           if ((parent == thing) || !AF_Private(ptr)) {
             if ((mortal ? Is_Visible_Attr(parent, ptr)
                  : Can_Read_Attr(player, parent, ptr))
-                && (regexp ? quick_regexp_match(name, AL_NAME(ptr), 0) :
+                && (regexp ? quick_regexp_match(name, AL_NAME(ptr), 0, NULL) :
                     atr_wild(name, AL_NAME(ptr))))
               result += 1;
           }
@@ -1290,7 +1290,7 @@ atr_iter_get_parent(dbref player, dbref thing, const char *name, int mortal,
           if ((parent == thing) || !AF_Private(ptr)) {
             if ((mortal ? Is_Visible_Attr(parent, ptr)
                  : Can_Read_Attr(player, parent, ptr))
-                && (regexp ? quick_regexp_match(name, AL_NAME(ptr), 0) :
+                && (regexp ? quick_regexp_match(name, AL_NAME(ptr), 0, NULL) :
                     atr_wild(name, AL_NAME(ptr))))
               result += func(player, thing, parent, name, ptr, args);
           }

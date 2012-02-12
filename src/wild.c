@@ -567,7 +567,7 @@ regexp_match_case_r(const char *restrict s, const char *restrict val, bool cs,
  * \retval 0 d doesn't match s.
  */
 bool
-quick_regexp_match(const char *restrict s, const char *restrict d, bool cs)
+quick_regexp_match(const char *restrict s, const char *restrict d, bool cs, const char **report_err)
 {
   pcre *re;
   pcre_extra *extra;
@@ -591,6 +591,9 @@ quick_regexp_match(const char *restrict s, const char *restrict d, bool cs)
      * errptr that we can ignore, since we're doing
      * command-matching.
      */
+    if (report_err != NULL) {
+      *report_err = errptr;
+    }
     return 0;
   }
   add_check("pcre");
@@ -625,8 +628,8 @@ qcomp_regexp_match(const pcre *re, pcre_extra *study, const char *subj)
   if (study) {
     extra = study;
     set_match_limit(extra);
-  } else 
-    extra = default_match_limit();    
+  } else
+    extra = default_match_limit();
 
   len = strlen(subj);
 

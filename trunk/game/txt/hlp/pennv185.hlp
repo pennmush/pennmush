@@ -1,4 +1,4 @@
-& 1.8.5p0
+& 1.8.5p1
 & changes
 This is a list of changes in this patchlevel which are probably of
 interest to players. More information about new commands and functions
@@ -11,6 +11,13 @@ help topics named for each release (e.g. 'help 1.7.2p30').
 A list of the patchlevels associated with each release can
 be read in 'help patchlevels'.
 
+Version 1.8.5 patchlevel 1                                 ??? ??, 2012
+
+Minor changes:
+ * Logged messages now have events in the LOG tree. Suggested by
+   Padraic. [SW]
+
+& 1.8.5p0
 Version 1.8.5 patchlevel 0                                 Feb 12, 2012
 
 Major changes:

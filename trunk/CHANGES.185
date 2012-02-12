@@ -15,6 +15,12 @@ chronological order (most recent first)
 
 ==========================================================================
 
+Version 1.8.5 patchlevel 1                                 ??? ??, 2012
+
+Minor changes:
+ * Logged messages now have events in the LOG tree. Suggested by
+   Padraic. [SW]
+
 Version 1.8.5 patchlevel 0                                 Feb 12, 2012
 
 Major changes:

@@ -17,6 +17,11 @@ chronological order (most recent first)
 
 Version 1.8.5 patchlevel 1                                 ??? ??, 2012
 
+Fixes:
+ * When regexp matching an ansi'd string, named captures weren't set at all.
+   For non-ansi'd strings, non-named (numeric) captures were sometimes 
+   overwritten with the values of named captures. Reported by Sketch. [MG]
+
 Minor changes:
  * Logged messages now have events in the LOG tree. Suggested by
    Padraic. [SW]

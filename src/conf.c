@@ -432,6 +432,7 @@ PENNCONF conftable[] = {
   {"destroy_possessions", cf_bool, &options.destroy_possessions, 2, 0,
    "cmds"}
   ,
+  {"probate_judge", cf_dbref, &options.probate_judge, 2, 0, "cmds"},
 
   {"null_eq_zero", cf_bool, &options.null_eq_zero, 2, 0, "tiny"}
   ,
@@ -1367,6 +1368,7 @@ conf_default_set(void)
   options.possessive_get_d = 1;
   options.really_safe = 1;
   options.destroy_possessions = 1;
+  options.probate_judge = 1;
   options.null_eq_zero = 0;
   options.tiny_booleans = 0;
   options.tiny_math = 0;

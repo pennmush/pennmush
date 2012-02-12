@@ -22,7 +22,7 @@ Fixes:
    For non-ansi'd strings, non-named (numeric) captures were sometimes 
    overwritten with the values of named captures. Reported by Sketch. [MG]
  * The configure script incorrectly reported that ssl_slave was unavailable
-   when told to disable it via --disable-ssl_slave. Reported by Cheeta. [MG]
+   when told to disable it via --disable-ssl_slave. Reported by Cheetah. [MG]
 
 Minor changes:
  * Logged messages now have events in the LOG tree. Suggested by

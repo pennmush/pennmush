@@ -18,7 +18,7 @@ struct access {
   uint32_t can;        /**< Bitflags of what the host can do */
   uint32_t cant;       /**< Bitflags of what the host can't do */
   pcre *re;            /**< Compiled regexp */
-  pcre_extra *study;   /**< Optimization information about the re */
+  pcre_extra *study;   /**< Optimization information for regexp */
   struct access *next; /**< Pointer to next rule in the list */
 };
 
@@ -64,6 +64,6 @@ bool add_access_sitelock(dbref player, const char *host, dbref who,
 int remove_access_sitelock(const char *pattern);
 void do_list_access(dbref player);
 int parse_access_options
-  (const char *opts, dbref *who, uint32_t * can, uint32_t * cant, dbref player);
+  (const char *opts, dbref *who, uint32_t *can, uint32_t *cant, dbref player);
 
 #endif                          /* __ACCESS_H */

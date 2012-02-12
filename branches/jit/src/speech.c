@@ -59,7 +59,7 @@ spname(dbref thing)
  * \param target target dbref to pemit to.
  * \param dofails If nonzero, send failure message 'def' or run fail_lock()
  * \param def show a default message if there is no appropriate failure message?
- * \param pe_info
+ * \param pe_info the pe_info for page lock evaluation
  * \retval 1 player may pemit to target.
  * \retval 0 player may not pemit to target.
  */
@@ -95,19 +95,20 @@ okay_pemit(dbref player, dbref target, int dofails, int def,
   return 1;
 }
 
+/** This is the place where speech, poses, and @emits by thing should be
+ *  heard. For things and players, it's the loc; for rooms, it's the room
+ *  itself; for exits, it's the source.
+ */
 dbref
 speech_loc(dbref thing)
 {
-  /* This is the place where speech, poses, and @emits by thing should be
-   * heard. For things and players, it's the loc; For rooms, it's the room
-   * itself; for exits, it's the source. */
   if (!RealGoodObject(thing))
     return NOTHING;
   switch (Typeof(thing)) {
   case TYPE_ROOM:
     return thing;
   case TYPE_EXIT:
-    return Home(thing);
+    return Source(thing);
   default:
     return Location(thing);
   }
@@ -157,7 +158,7 @@ do_teach(dbref player, const char *tbuf1, int list, MQUE *parent_queue)
 /** The say command.
  * \param player the enactor.
  * \param message the message to say.
- * \param pe_info
+ * \param pe_info pe_info to eval speechmod with
  */
 void
 do_say(dbref player, const char *message, NEW_PE_INFO *pe_info)
@@ -208,7 +209,7 @@ do_say(dbref player, const char *message, NEW_PE_INFO *pe_info)
  * \param message the message to emit.
  * \param flags PEMIT_* flags.
  * \param format a format_msg structure to pass to notify_anything() from \@message
- * \param pe_info
+ * \param pe_info the pe_info to use for evaluating speech locks
  */
 void
 do_oemit_list(dbref player, char *list, const char *message, int flags,
@@ -329,7 +330,7 @@ do_oemit_list(dbref player, char *list, const char *message, int flags,
  * \param arg1 name of the object to whisper to.
  * \param arg2 message to whisper.
  * \param noisy if 1, others overhear that a whisper has occurred.
- * \param pe_info
+ * \param pe_info the pe_info for evaluating interact locks
  */
 void
 do_whisper(dbref player, const char *arg1, const char *arg2, int noisy,
@@ -466,9 +467,8 @@ do_whisper(dbref player, const char *arg1, const char *arg2, int noisy,
  * \param flags PEMIT_* flags
  * \param numargs The number of arguments for the ufun.
  * \param argv The arguments for the ufun.
- * \param pe_info
+ * \param pe_info the pe_info for lock checks, etc
  */
-
 void
 do_message(dbref executor, char *list, char *attrname,
            char *message, enum emit_type type, int flags, int numargs,
@@ -528,7 +528,7 @@ do_message(dbref executor, char *list, char *attrname,
  * \param message the message to pemit.
  * \param flags PEMIT_* flags.
  * \param format a format_msg structure to pass to notify_anything() from \@message
- * \param pe_info
+ * \param pe_info the pe_info for lock checks, etc
  */
 void
 do_pemit(dbref player, char *target, const char *message, int flags,
@@ -584,7 +584,7 @@ do_pemit(dbref player, char *target, const char *message, int flags,
  * \param player the enactor.
  * \param tbuf1 the message to pose.
  * \param nospace if 1, omit space between name and pose (semipose); if 0, include space (pose)
- * \param pe_info
+ * \param pe_info the pe_info for speechmod, lock checks, etc
  */
 void
 do_pose(dbref player, const char *tbuf1, int nospace, NEW_PE_INFO *pe_info)
@@ -777,7 +777,7 @@ messageformat(dbref player, const char *attribute, dbref enactor, int flags,
  * \param arg2 the message to page.
  * \param override if 1, page/override.
  * \param has_eq if 1, the command had an = in it.
- * \param pe_info
+ * \param pe_info the pe_info to use when evaluating locks, idle/away/haven msg, etc
  */
 void
 do_page(dbref executor, const char *arg1, const char *arg2, int override,
@@ -1112,10 +1112,7 @@ filter_found(dbref thing, dbref speaker, const char *msg, int flag)
   char *filter;
   ATTR *a;
   char *p, *bp;
-  char *temp;                   /* need this so we don't leak memory
-                                 * by failing to free the storage
-                                 * allocated by safe_uncompress
-                                 */
+  char *temp;
   int i;
   int matched = 0;
 
@@ -1140,8 +1137,7 @@ filter_found(dbref thing, dbref speaker, const char *msg, int flag)
   if (!a)
     return matched;
 
-  filter = safe_atr_value(a);
-  temp = filter;
+  temp = filter = safe_atr_value(a);
 
   for (i = 0; (i < MAX_ARG) && !matched; i++) {
     p = bp = filter;
@@ -1171,7 +1167,7 @@ filter_found(dbref thing, dbref speaker, const char *msg, int flag)
  * \param player the enactor.
  * \param message the message to emit.
  * \param flags bitmask of notification flags.
- * \param pe_info
+ * \param pe_info pe_info for lock checks, speechmod, etc
  */
 void
 do_emit(dbref player, const char *message, int flags, NEW_PE_INFO *pe_info)
@@ -1212,7 +1208,7 @@ do_emit(dbref player, const char *message, int flags, NEW_PE_INFO *pe_info)
  * \param target string containing dbref of room to remit in.
  * \param msg message to emit.
  * \param flags PEMIT_* flags
- * \param pe_info
+ * \param pe_info pe_info for locks/permission checks
  */
 static void
 do_one_remit(dbref player, const char *target, const char *msg, int flags,
@@ -1255,7 +1251,7 @@ do_one_remit(dbref player, const char *target, const char *msg, int flags,
  * \param message message to emit.
  * \param flags for remit.
  * \param format a format_msg structure to pass to notify_anything() from \@message
- * \param pe_info
+ * \param pe_info pe_info for locks/permission checks
  */
 void
 do_remit(dbref player, char *rooms, const char *message, int flags,
@@ -1276,7 +1272,7 @@ do_remit(dbref player, char *rooms, const char *message, int flags,
  * \param player the enactor.
  * \param message message to emit.
  * \param flags bitmask of notification flags.
- * \param pe_info
+ * \param pe_info pe_info for locks/permission checks
  */
 void
 do_lemit(dbref player, const char *message, int flags, NEW_PE_INFO *pe_info)
@@ -1372,12 +1368,7 @@ do_zemit(dbref player, const char *target, const char *message, int flags)
   pass[0] = 0;
   pass[1] = zone;
   pass[2] = player;
-  if (IsRoom(player))
-    pass[3] = player;
-  else if (IsExit(player))
-    pass[3] = Source(player);
-  else
-    pass[3] = Location(player);
+  pass[3] = speech_loc(player);
   if (flags & PEMIT_SPOOF)
     na_flags |= NA_SPOOF;
   notify_anything(player, na_zemit, &pass, NULL, na_flags, message, NULL,

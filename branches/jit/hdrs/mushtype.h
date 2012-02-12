@@ -7,9 +7,7 @@
 #ifndef MUSH_TYPES_H
 #define MUSH_TYPES_H
 #include "copyrite.h"
-#ifdef HAS_OPENSSL
 #include <openssl/ssl.h>
-#endif
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
 #endif
@@ -308,8 +306,10 @@ struct text_queue {
 /** Player would like to receive newlines after prompts, because
  *  their client mucks up output after a GOAHEAD */
 #define CONN_PROMPT_NEWLINES 0x20
+/* Client hasn't sent any data yet */
+#define CONN_AWAITING_FIRST_DATA 0x40
 /** Default connection, nothing special */
-#define CONN_DEFAULT (CONN_PROMPT_NEWLINES)
+#define CONN_DEFAULT (CONN_PROMPT_NEWLINES | CONN_AWAITING_FIRST_DATA)
 
 /** Maximum \@doing length */
 #define DOING_LEN 40
@@ -333,7 +333,7 @@ typedef enum conn_status {
   CONN_DENIED                   /* connection denied due to login limits/sitelock */
 } conn_status;
 
-typedef bool(*sq_func) (void *);
+typedef bool (*sq_func) (void *);
 struct squeue {
   sq_func fun;
   void *data;
@@ -375,10 +375,8 @@ struct descriptor_data {
   int width;                    /**< Screen width */
   int height;                   /**< Screen height */
   char *ttype;                  /**< Terminal type */
-#ifdef HAS_OPENSSL
   SSL *ssl;                     /**< SSL object */
   int ssl_state;                /**< Keep track of state of SSL object */
-#endif
   conn_source source;           /**< Where the connection came from. */
   char checksum[PUEBLO_CHECKSUM_LEN + 1];       /**< Pueblo checksum */
 };

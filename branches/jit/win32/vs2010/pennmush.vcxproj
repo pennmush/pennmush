@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -177,7 +177,6 @@ echo Don%27t forget to customize mush.cnf!
     <ClCompile Include="..\..\src\myssl.c" />
     <ClCompile Include="..\..\src\notify.c" />
     <ClCompile Include="..\..\src\parse.c" />
-    <ClCompile Include="..\..\src\pcre.c" />
     <ClCompile Include="..\..\src\player.c" />
     <ClCompile Include="..\..\src\plyrlist.c" />
     <ClCompile Include="..\..\src\predicat.c" />
@@ -187,7 +186,6 @@ echo Don%27t forget to customize mush.cnf!
     <ClCompile Include="..\..\src\services.c" />
     <ClCompile Include="..\..\src\set.c" />
     <ClCompile Include="..\..\src\SFMT.c" />
-    <ClCompile Include="..\..\src\shs.c" />
     <ClCompile Include="..\..\src\sig.c" />
     <ClCompile Include="..\..\src\sort.c" />
     <ClCompile Include="..\..\src\speech.c" />
@@ -253,7 +251,6 @@ echo Don%27t forget to customize mush.cnf!
     <ClInclude Include="..\..\hdrs\privtab.h" />
     <ClInclude Include="..\..\hdrs\ptab.h" />
     <ClInclude Include="..\..\hdrs\pueblo.h" />
-    <ClInclude Include="..\..\hdrs\shs.h" />
     <ClInclude Include="..\..\hdrs\sort.h" />
     <ClInclude Include="..\..\hdrs\strtree.h" />
     <ClInclude Include="..\..\hdrs\switches.h" />

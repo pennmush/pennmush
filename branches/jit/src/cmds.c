@@ -589,7 +589,7 @@ COMMAND(cmd_hook)
   else if (SW_ISSET(sw, SWITCH_OVERRIDE))
     flags = HOOK_OVERRIDE;
   else if (SW_ISSET(sw, SWITCH_LIST)) {
-    do_hook_list(executor, arg_left);
+    do_hook_list(executor, arg_left, 1);
     return;
   } else {
     notify(executor, T("You must give a switch for @hook."));
@@ -755,6 +755,10 @@ COMMAND(cmd_mail)
     do_mail_read(executor, arg_left);
   else if (SW_ISSET(sw, SWITCH_UNREAD))
     do_mail_unread(executor, arg_left);
+  else if (SW_ISSET(sw, SWITCH_REVIEW))
+    do_mail_review(executor, arg_left, arg_right);
+  else if (SW_ISSET(sw, SWITCH_RETRACT))
+    do_mail_retract(executor, arg_left, arg_right);
   else if (SW_ISSET(sw, SWITCH_STATUS))
     do_mail_status(executor, arg_left, arg_right);
   else if (SW_ISSET(sw, SWITCH_CLEAR))

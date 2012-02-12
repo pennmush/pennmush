@@ -153,106 +153,131 @@ dnl            AC_MSG_RESULT([no])
     AC_SUBST([MYSQL_LDFLAGS])
 ])
 
+# ===========================================================================
+#     http://www.gnu.org/software/autoconf-archive/ax_check_openssl.html
+# ===========================================================================
 #
 # SYNOPSIS
 #
-#   CHECK_SSL
+#   AX_CHECK_OPENSSL([action-if-found[, action-if-not-found]])
 #
 # DESCRIPTION
 #
-#   This macro will check various standard spots for OpenSSL including
-#   a user-supplied directory. The user uses '--with-ssl' or
-#   '--with-ssl=/path/to/ssl' as arguments to configure.
+#   Look for OpenSSL in a number of default spots, or in a user-selected
+#   spot (via --with-openssl).  Sets
 #
-#   If OpenSSL is found the include directory gets added to CFLAGS and
-#   CXXFLAGS as well as '-DHAVE_SSL', '-lssl' & '-lcrypto' get added to
-#   LIBS, and the libraries location gets added to LDFLAGS. Finally
-#   'HAVE_SSL' gets set to 'yes' for use in your Makefile.in I use it
-#   like so (valid for gmake):
+#     OPENSSL_INCLUDES to the include directives required
+#     OPENSSL_LIBS to the -l directives required
+#     OPENSSL_LDFLAGS to the -L or -R flags required
 #
-#       HAVE_SSL = @HAVE_SSL@
-#       ifeq ($(HAVE_SSL),yes)
-#           SRCS+= @srcdir@/my_file_that_needs_ssl.c
-#       endif
+#   and calls ACTION-IF-FOUND or ACTION-IF-NOT-FOUND appropriately
 #
-#   For bsd 'bmake' use:
+#   This macro sets OPENSSL_INCLUDES such that source files should use the
+#   openssl/ directory in include directives:
 #
-#       .if ${HAVE_SSL} == "yes"
-#           SRCS+= @srcdir@/my_file_that_needs_ssl.c
-#       .endif
+#     #include <openssl/hmac.h>
 #
-# LAST MODIFICATION
+# LICENSE
 #
-#   2003-01-28
+#   Copyright (c) 2009,2010 Zmanda Inc. <http://www.zmanda.com/>
+#   Copyright (c) 2009,2010 Dustin J. Mitchell <dustin@zmanda.com>
 #
-# COPYLEFT
-#
-#   Copyright (c) 2003 Mark Ethan Trostler <trostler@juniper.net>
-#
-#   Copying and distribution of this file, with or without
-#   modification, are permitted in any medium without royalty provided
-#   the copyright notice and this notice are preserved.
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved. This file is offered as-is, without any
+#   warranty.
 
-AC_DEFUN(CHECK_SSL,
-[AC_ARG_WITH(ssl,
+#serial 8
 
-[
-AC_HELP_STRING([--with-ssl=@<:@DIR@:>@], [look for OpenSSL in DIR (Use when it's not found with the default search path)])
-],
+AU_ALIAS([CHECK_SSL], [AX_CHECK_OPENSSL])
+AC_DEFUN([AX_CHECK_OPENSSL], [
+    found=false
+    AC_ARG_WITH([openssl],
+        [AS_HELP_STRING([--with-openssl=DIR],
+            [root of the OpenSSL directory])],
+        [
+            case "$withval" in
+            "" | y | ye | yes | n | no)
+            AC_MSG_ERROR([Invalid --with-openssl value])
+              ;;
+            *) ssldirs="$withval"
+              ;;
+            esac
+        ], [
+            # if pkg-config is installed and openssl has installed a .pc file,
+            # then use that information and don't search ssldirs
+            AC_PATH_PROG([PKG_CONFIG], [pkg-config])
+            if test x"$PKG_CONFIG" != x""; then
+                OPENSSL_LDFLAGS=`$PKG_CONFIG openssl --libs-only-L 2>/dev/null`
+                if test $? = 0; then
+                    OPENSSL_LIBS=`$PKG_CONFIG openssl --libs-only-l 2>/dev/null`
+                    OPENSSL_INCLUDES=`$PKG_CONFIG openssl --cflags-only-I 2>/dev/null`
+                    found=true
+                fi
+            fi
 
-[ AS_IF([test "x$with_ssl" != xno],
- [  AC_MSG_CHECKING([for OpenSSL])
-    for dir in $with_ssl /usr/local/ssl /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /usr; do
-        ssldir="$dir"
-        if test -f "$dir/include/openssl/ssl.h"; then
-            found_ssl="yes";
-            CFLAGS="$CFLAGS -I$ssldir/include/";
-            break;
-        fi
-        if test -f "$dir/include/ssl.h"; then
-            found_ssl="yes";
-            CFLAGS="$CFLAGS -I$ssldir/include/";
-            break;
-        fi
-    done
-    if test x_$found_ssl != x_yes; then
-        AC_MSG_RESULT(no)
-    else
-        AC_MSG_RESULT(yes)
-        LIBS="$LIBS -lssl -lcrypto";
-        LDFLAGS="$LDFLAGS -L$ssldir/lib";
-        HAVE_SSL="yes";
-        AC_SUBST(HAVE_SSL)	
+            # no such luck; use some default ssldirs
+            if ! $found; then
+                ssldirs="/usr/local/ssl /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /usr"
+            fi
+        ]
+        )
+
+
+    # note that we #include <openssl/foo.h>, so the OpenSSL headers have to be in
+    # an 'openssl' subdirectory
+
+    if ! $found; then
+        OPENSSL_INCLUDES=
+        for ssldir in $ssldirs; do
+            AC_MSG_CHECKING([for openssl/ssl.h in $ssldir])
+            if test -f "$ssldir/include/openssl/ssl.h"; then
+                OPENSSL_INCLUDES="-I$ssldir/include"
+                OPENSSL_LDFLAGS="-L$ssldir/lib"
+                OPENSSL_LIBS="-lssl -lcrypto"
+                found=true
+                AC_MSG_RESULT([yes])
+                break
+            else
+                AC_MSG_RESULT([no])
+            fi
+        done
+
+        # if the file wasn't found, well, go ahead and try the link anyway -- maybe
+        # it will just work!
     fi
- ],
- AC_MSG_NOTICE([ssl support disabled])
-)],
-[
-   AC_MSG_CHECKING([for OpenSSL]) 
-   for dir in /usr/local/ssl /usr/lib/ssl /usr/ssl /usr/pkg /usr/local /usr; do
-        ssldir="$dir"
-        if test -f "$dir/include/openssl/ssl.h"; then
-            found_ssl="yes";
-            CFLAGS="$CFLAGS -I$ssldir/include/";
-            break;
-        fi
-        if test -f "$dir/include/ssl.h"; then
-            found_ssl="yes";
-            CFLAGS="$CFLAGS -I$ssldir/include/";
-            break;
-        fi
-    done
-    if test x_$found_ssl != x_yes; then
-        AC_MSG_RESULT(no)
-    else
-        AC_MSG_RESULT(yes)
-        LIBS="$LIBS -lssl -lcrypto";
-        LDFLAGS="$LDFLAGS -L$ssldir/lib";
-        HAVE_SSL="yes";
-        AC_SUBST(HAVE_SSL)
-    fi
+
+    # try the preprocessor and linker with our new flags,
+    # being careful not to pollute the global LIBS, LDFLAGS, and CPPFLAGS
+
+    AC_MSG_CHECKING([whether compiling and linking against OpenSSL works])
+    echo "Trying link with OPENSSL_LDFLAGS=$OPENSSL_LDFLAGS;" \
+        "OPENSSL_LIBS=$OPENSSL_LIBS; OPENSSL_INCLUDES=$OPENSSL_INCLUDES" >&AS_MESSAGE_LOG_FD
+
+    save_LIBS="$LIBS"
+    save_LDFLAGS="$LDFLAGS"
+    save_CPPFLAGS="$CPPFLAGS"
+    LDFLAGS="$LDFLAGS $OPENSSL_LDFLAGS"
+    LIBS="$OPENSSL_LIBS $LIBS"
+    CPPFLAGS="$OPENSSL_INCLUDES $CPPFLAGS"
+    AC_LINK_IFELSE(
+        [AC_LANG_PROGRAM([#include <openssl/ssl.h>], [SSL_new(NULL)])],
+        [
+            AC_MSG_RESULT([yes])
+            $1
+        ], [
+            AC_MSG_RESULT([no])
+            $2
+        ])
+    CPPFLAGS="$save_CPPFLAGS"
+    LDFLAGS="$save_LDFLAGS"
+    LIBS="$save_LIBS"
+
+    AC_SUBST([OPENSSL_INCLUDES])
+    AC_SUBST([OPENSSL_LIBS])
+    AC_SUBST([OPENSSL_LDFLAGS])
 ])
-])
+
 
 # ===========================================================================
 #             http://autoconf-archive.cryp.to/type_socklen_t.html

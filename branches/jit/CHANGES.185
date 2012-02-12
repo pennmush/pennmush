@@ -1,0 +1,130 @@
+This is the most current changes file for PennMUSH. Please look it
+over; each version contains new things which might significantly
+affect the function of your server.  Changes are reported in reverse
+chronological order (most recent first)
+
+[SW] is Shawn Wagner, a PennMUSH developer (aka Raevnos), also
+ responsible for most unattributed changes.
+[EEH] is Ervin Hearn III, a PennMUSH developer (aka Noltar)
+[GM] is Greg Millam, a PennMUSH developer (aka Walker)
+[MG] is Mike Griffiths, a PennMUSH developer (aka Talvo)
+[TAP] is T. Alexander Popiel, a former PennMUSH developer (aka Talek)
+[3] refers to code by (or inspired by) TinyMUSH 3.0
+[MUX] refers to code by (or inspired by) TinyMUX 2.x
+[Rhost] refers to code by (or inspired by) RhostMUSH
+
+==========================================================================
+
+Version 1.8.5 patchlevel 0                                 Feb 12, 2012
+
+Major changes:
+ * The PCRE library is now required to build Penn, instead of falling
+   back to an old, buggy version formerly bundled with the MUSH. [SW]
+   Daniko assisted greatly with Windows changes and documentation.
+ * The OpenSSL library is now required to build Penn. Again, Daniko has
+   provided instructions for installing on Windows. [SW]
+ * A new command prefix, "}", enables debug for a single execution of the
+   command  - }think foo, }+who, etc. See 'help }' for more info. Suggested
+   by Wiggles and [GM]. [MG]
+
+Minor changes:
+ * Added a new event, OBJECT`FLAG, triggered when a flag/power with the
+   "event" restriction is set or cleared. Suggested by [SW]. [MG]
+ * Expanded help on lock types and @powers. [MG]
+ * @startups are now processed in db order (#0, #1, etc) on reboot instead
+   of giving priority to player objects. [MG]
+ * @startups (and local_startup() in local.c) are now triggered slightly
+   later, ensuring that the db is fully loaded, and that the connected player
+   list is loaded on @shutdown/reboot. Suggested by Padraic. [MG]
+ * Switch names that are defined but not used by any commands are
+   warned about on startup, and several unused ones have been removed
+   from the master list. [SW]
+ * Tweak utils/mkcmds.pl for the above change and to remove references
+   to generating the obsolete patches.h. [SW]
+ * Tweak the parameters of the skip list used to store memcheck counts
+   to save some memory. [SW]
+ * Bring the scheme scripts in utils up to date with current versions
+   of chicken scheme (The implementation of the language they're
+   written for.) [SW]
+ * The test harness code strips trailing whitespace before attempting to match
+   against expected results, making it easier to use bounded regexps. [SW]
+ * @destination (for variable exits) is now a standard attribute, and has
+   a helpfile. [MG]
+ * Sound is now propagated through audible variable exits, and exits @linked
+   to 'home'. Suggested by Mercutio. [SW]
+ * The internal QUEUE attribute is no longer used to track the number
+   of action lists an object has queued; the objdata system is used
+   instead.  [SW]
+ * isobjid() now requires a full object id (with :ctime), and will return 0
+   for simple dbrefs, or objids of destroyed/invalid objects. isdbref() still
+   matches both dbrefs and objids. Suggested by Covenent. [MG]
+ * @entrances and entrances() now use the same internal routines as @search,
+   and have similar (and saner) privs. From a suggestion by Sketch. [MG]
+ * Connection messages that are evaluated from an attribute instead of
+   read from a file get the dbref of the connected player as %1, as
+   long as they're ones shown post-connection (motd_file, etc.) [SW]
+ * Passwords are, thanks to OpenSSL digest routines, now stored in a
+   less error prone, more secure, flexible and extendable
+   format. Existing player passwords will be upgraded automatically on
+   login. [SW]
+ * New script in utils/ for manipulating player passwords in an offline
+   database. Useful if you forget God's password. [SW]
+ * The my_vsnprintf function in the hardcode has been renamed to
+   mush_vsnprintf to avoid a conflict with MySQL. Reported by Balerion @ 
+   Blood of Dragons. [MG]
+ * The enactor (%#) for the PLAYER`DISCONNECT event is now more useful,
+   instead of always being set to the dbref of the player disconnecting (%0).
+   Suggested by Padraic. [MG]
+ * The SOCKET`LOGINFAIL event now gets passed the name that was entered as
+   %5 when no matching player is found. Suggested by Daniel Powell. [MG]
+
+Commands:
+ * Added @mail/review for reading mail you've sent, and @mail/retract for
+   deleting unread mail that you sent. Idea from MUX. Patch by Minion.
+ * @hook/list now shows error messages if you don't have permission to use
+   it, or if a command has no hooks, instead of failing silently. Suggested
+   by Padraic. [MG]
+ * Wizards can now @pcreate players with restricted names, as well as being
+   able to rename existing players to forbidden names. Suggested by Nymeria @
+   Blood of Dragons. [MG]
+
+Functions:
+ * Functions that take a sort type argument now accept 'mtime' for
+   sorting based on object's modification time. Patch by Minion.
+ * New registers() function, like listq() but returns all kinds of registers
+   (q-registers, %0-%9 args, iter/switch context, regexp captures). Also
+   takes an output separator arg. Suggested by Wiggles. [MG]
+ * digest(list) returns all message digest algorithms the server supports. [SW]
+ * sha0() has been deprecated in favor of digest(). [SW]
+
+Fixes:
+ * lit() didn't properly handle '\'s. Reported by Wiggles. [MG]
+ * listq() incorrectly returned all registers (including %0-%9, %i0, etc),
+   not just %q-registers. Reported by Wiggles. [MG]
+ * The mud_url code didn't always work correctly in Firefox because http
+   headers weren't sent. [MG]
+ * %0 and %1 arguments weren't properly passed through verb attributes after
+   a change in p8. Reported by Padraic. [MG]
+ * Fix really stupid copy-and-paste error in magic sorts on strings with
+   ANSI, which broke setinter() and friends. Reported by Minion. [MG]
+ * Help fixes by Wiggles, Mouvar and others. [MG]
+ * Memory leak in ldelete() fixed. [MG]
+ * Fix a crashbug reported by Minion. [MG]
+ * Sorting functions now ignore ANSI when sorting a string as a number
+   or dbref. From report by Mouvar. [MG]
+ * strreplace() was broken for overly long length arguments. Reported
+   by Ashen-Shugar.  [SW]
+ * Compile errors on Windows with OpenSSL. Reported by Daniko.
+ * @uptime could report negative times for the first dump, purge, etc after
+   a game was started. Reported by Cooee. [MG]
+ * override/inplace hooks from .cnf files didn't work correctly. [MG]
+ * The portmsg announcer daemon was broken. Reported by Minion. [SW]
+ * A change in p8 broke the sending of the Pueblo hello string in some cases.
+   Reported by Mercutio. [MG]
+ * Fix crash bug in @sitelock/remove [SW]
+ * ssl_slave would drop connections if it couldn't resolve a valid hostname
+   for the connecting IP address. [SW]
+ * Non-matching regexp captures ($0, $<foo>, etc) sometimes had the value
+   of the previous matching capture. From a report by Sketch. [MG]
+
+

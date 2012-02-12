@@ -247,7 +247,7 @@ struct bvm_asm {
 static uint8_t *
 safe_get_bytecode(boolexp b)
   __attribute_malloc__;
-    static uint8_t *get_bytecode(boolexp b, uint16_t * storelen);
+    static uint8_t *get_bytecode(boolexp b, uint16_t *storelen);
     static struct boolexp_node *alloc_bool(void) __attribute_malloc__;
     static struct boolatr *alloc_atr(const char *name,
                                      const char *s,
@@ -325,7 +325,7 @@ safe_get_bytecode(boolexp b)
  * \return a static copy of the bytecode.
  */
 static uint8_t *
-get_bytecode(boolexp b, uint16_t * storelen)
+get_bytecode(boolexp b, uint16_t *storelen)
 {
   static uint8_t bytecode[BUFFER_LEN * 2];
   uint16_t len;

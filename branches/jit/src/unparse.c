@@ -65,7 +65,7 @@ unparse_object_myopic(dbref player, dbref loc)
  * \endverbatim
  * \param player the looker.
  * \param loc the object being looked at.
- * \param pe_info
+ * \param pe_info pe_info used for evaluating NAMEFORMAT
  * \return static formatted object name string.
  */
 const char *
@@ -84,7 +84,7 @@ unparse_room(dbref player, dbref loc, NEW_PE_INFO *pe_info)
  * do so if player is MYOPIC or doesn't own loc.
  * \param use_nameformat if 1, apply a NAMEFORMAT attribute if available.
  * \param use_nameaccent if 1, apply a NAMEACCENT attribute if available.
- * \param pe_info
+ * \param pe_info pe_info used for evaluating NAMEFORMAT
  * \return address of a static buffer containing the formatted name.
  */
 const char *
@@ -164,7 +164,7 @@ real_unparse(dbref player, dbref loc, int obey_myopic, int use_nameformat,
  * \param tbuf1 address to store formatted name of loc.
  * \param defname the name as it would be formatted without NAMEFORMAT.
  * \param localize should q-registers be preserved when evaluating the attr?
- * \param pe_info
+ * \param pe_info pe_info used for evaluating NAMEFORMAT
  * \retval 1 a NAMEFORMAT was found, and tbuf1 contains formatted name.
  * \retval 0 no NAMEFORMAT on loc, tbuf1 is undefined.
  */

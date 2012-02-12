@@ -64,6 +64,7 @@ static atr_err can_create_attr(dbref player, dbref obj, char const *atr_name,
 static ATTR *find_atr_in_list(ATTR *atr, char const *name);
 static ATTR *atr_get_with_parent(dbref obj, char const *atrname, dbref *parent,
                                  int cmd);
+static bool can_debug(dbref player, dbref victim);
 
 /*======================================================================*/
 
@@ -1352,12 +1353,8 @@ atr_cpy(dbref dest, dbref source)
   for (ptr = List(source); ptr; ptr = AL_NEXT(ptr))
     if (!AF_Nocopy(ptr)
         && (AttrCount(dest) < max_attrs)) {
-      do_rawlog(LT_ERR, "Preparing to copy %s. AttrCount is %d...",
-                AL_NAME(ptr), AttrCount(dest));
       atr_new_add(dest, AL_NAME(ptr), atr_value(ptr), AL_CREATOR(ptr),
                   AL_FLAGS(ptr), AL_DEREFS(ptr), 0);
-      do_rawlog(LT_ERR, "Copied %s. AttrCount is %d...", AL_NAME(ptr),
-                AttrCount(dest));
     }
 }
 
@@ -1427,6 +1424,37 @@ use_attr(UsedAttr **prev, char const *name, uint32_t no_prog)
   /* do_rawlog(LT_TRACE, "Recorded %s: %d -> %d", name,
      no_prog, prev[0]->no_prog); */
   return &prev[0]->next;
+}
+
+static bool
+can_debug(dbref player, dbref victim)
+{
+  ATTR *a;
+  char *aval, *dfl, *curr;
+  dbref member;
+  int success = 0;
+
+  if (controls(player, victim)) {
+    return 1;
+  }
+
+  a = atr_get(victim, "DEBUGFORWARDLIST");
+  if (!a) {
+    return 0;
+  }
+  aval = safe_atr_value(a);
+  dfl = trim_space_sep(aval, ' ');
+  while ((curr = split_token(&dfl, ' ')) != NULL) {
+    if (!is_objid(curr))
+      continue;
+    member = parse_objid(curr);
+    if (member == player) {
+      success = 1;
+      break;
+    }
+  }
+  free(aval);
+  return success;
 }
 
 /** Match input against a $command or ^listen attribute.
@@ -1507,7 +1535,6 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
   pe_info = make_pe_info("pe_info-atr_comm_match");
   strcpy(pe_info->cmd_raw, str);
   strcpy(pe_info->cmd_evaled, str);
-
 
   skipcount = 0;
   do {
@@ -1639,7 +1666,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
               pe_regs_setenv_nocopy(pe_regs, i, args[i]);
             }
           }
-          if (from_queue && queue_type != QUEUE_DEFAULT) {
+          if (from_queue && (queue_type & ~QUEUE_DEBUG_PRIVS) != QUEUE_DEFAULT) {
             int pe_flags = PE_INFO_DEFAULT;
             if (!(queue_type & QUEUE_CLEAR_QREG)) {
               /* Copy parent q-registers into new queue */
@@ -1671,7 +1698,9 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
                                      tprintf("#%d/%s", thing, AL_NAME(ptr)));
           } else {
             /* Normal queue */
-            parse_que_attr(thing, player, s, pe_regs, ptr);
+            parse_que_attr(thing, player, s, pe_regs, ptr,
+                           (queue_type & QUEUE_DEBUG_PRIVS ?
+                            can_debug(player, thing) : 0));
           }
           pe_regs_free(pe_regs);
         }
@@ -1755,7 +1784,7 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
     int success = 1;
     NEW_PE_INFO *pe_info;
 
-    if (from_queue && queue_type != QUEUE_DEFAULT) {
+    if (from_queue && (queue_type & ~QUEUE_DEBUG_PRIVS) != QUEUE_DEFAULT) {
       pe_info = from_queue->pe_info;
       /* Save and reset %c/%u */
       strcpy(save_cmd_raw, from_queue->pe_info->cmd_raw);
@@ -1768,7 +1797,7 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
     if (!eval_lock_clear(player, thing, Command_Lock, pe_info)
         || !eval_lock_clear(player, thing, Use_Lock, pe_info))
       success = 0;
-    if (from_queue && queue_type != QUEUE_DEFAULT) {
+    if (from_queue && (queue_type & ~QUEUE_DEBUG_PRIVS) != QUEUE_DEFAULT) {
       /* Restore */
       strcpy(from_queue->pe_info->cmd_raw, save_cmd_raw);
       strcpy(from_queue->pe_info->cmd_evaled, save_cmd_evaled);
@@ -1782,7 +1811,7 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
           pe_regs_setenv_nocopy(pe_regs, i, args[i]);
         }
       }
-      if (from_queue && queue_type != QUEUE_DEFAULT) {
+      if (from_queue && (queue_type & ~QUEUE_DEBUG_PRIVS) != QUEUE_DEFAULT) {
         /* inplace queue */
         int pe_flags = PE_INFO_DEFAULT;
         if (!(queue_type & QUEUE_CLEAR_QREG)) {
@@ -1815,7 +1844,9 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
                                  tprintf("#%d/%s", thing, AL_NAME(ptr)));
       } else {
         /* Normal queue */
-        parse_que_attr(thing, player, s, pe_regs, ptr);
+        parse_que_attr(thing, player, s, pe_regs, ptr,
+                       (queue_type & QUEUE_DEBUG_PRIVS ?
+                        can_debug(player, thing) : 0));
       }
       pe_regs_free(pe_regs);
     }

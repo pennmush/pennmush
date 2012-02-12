@@ -82,7 +82,7 @@
   dump: dump`5min, dump`1min, dump`complete, dump`error
   db: db`dbck, db`purge, db`warnings
   object: object`create, object`destroy, object`move, object`rename,
-          object`kill
+          object`kill, object`flag
   sql: sql`connect, sql`connectfail, sql`disconnect
   signal: signal`usr1, signal`usr2
   player: player`create, player`connect, player`disconnect
@@ -143,6 +143,16 @@
 
   object`rename  (objid, new name, old name)
       Triggered when any object is renamed.
+      
+  object`flag  (objid of object with flag, flag name, type, setbool, setstr)
+      Triggered when a flag or power which has the "event" restriction is 
+      set or cleared. "type" is one of FLAG or POWER. setbool is 1 if the
+      flag/power is being set, and 0 if it's being cleared. setstr is either
+      "SET" or "CLEARED".
+    Example:
+      &OBJECT`FLAG event handler=@cemit Admin=capstr(lcstr(%2)) %1 
+                                    [lcstr(%4)] on [name(%0)] by %n.
+
 & EVENT SQL
   sql`connect (platform)
       Triggered on successful connect to the SQL database.
@@ -198,13 +208,14 @@ No arguments are passed to these events.
       Triggered when a socket disconnects. Using this and player`disconnect
       could be spammy.
 
-  socket`loginfail (descriptor, IP, count, reason, playerobjid)
+  socket`loginfail (descriptor, IP, count, reason, playerobjid, name)
       Triggered when a connection attempt fails. 'count' is the number of
       fails in the past 10 minutes. If used in conjuction with the config
       option connect_fail_limit, then any failures after the limit is reached
-      will NOT trigger player`fail. If the connect is a failed attempt to log
-      into a valid player, playerobjid will be set to that objid. Otherwise it
-      will be set to #-1
+      will NOT trigger socket`loginfail. If the connect is a failed attempt 
+      to log into a valid player, playerobjid will be set to that objid. 
+      Otherwise it will be set to #-1 'name' is the name the connection
+      attempted to connect with, and is only set with 'playerobjid' is #-1.
 
   socket`createfail (descriptor, ip, count, reason, name)
       Triggered when a player create attempt fails. <count> is the # of

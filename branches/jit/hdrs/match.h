@@ -60,24 +60,19 @@
 
 
 /* Functions we can call */
-extern dbref
+dbref
  match_result(dbref who, const char *xname, int type, long flags);
-extern dbref
-
-
-
-
-
-match_result_relative(dbref who, dbref where, const char *xname, int type,
+dbref
+ match_result_relative(dbref who, dbref where, const char *xname, int type,
                       long flags);
-extern dbref noisy_match_result(const dbref who, const char *name,
-                                const int type, const long flags);
-extern dbref last_match_result(const dbref who, const char *name,
-                               const int type, const long flags);
-extern dbref match_controlled(dbref player, const char *name);
+dbref noisy_match_result(const dbref who, const char *name,
+                         const int type, const long flags);
+dbref last_match_result(const dbref who, const char *name,
+                        const int type, const long flags);
+dbref match_controlled(dbref player, const char *name);
 
 
-extern int match_aliases(dbref match, const char *name);
+int match_aliases(dbref match, const char *name);
 
 #define match_thing(player,name) \
   noisy_match_result((player), (name), NOTYPE, MAT_EVERYTHING)

@@ -669,8 +669,8 @@ do_list_access(dbref player)
  * This makes a copy of the options string, so it's not modified.
  */
 int
-parse_access_options(const char *opts, dbref *who, uint32_t * can,
-                     uint32_t * cant, dbref player)
+parse_access_options(const char *opts, dbref *who, uint32_t *can,
+                     uint32_t *cant, dbref player)
 {
   char myopts[BUFFER_LEN];
   char *p;

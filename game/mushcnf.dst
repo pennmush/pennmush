@@ -650,10 +650,16 @@ really_safe yes
 # Highly recomended.
 zone_control_zmp_only yes
 
-# When a player is nuked, his SAFE objects are @chowned to God.
-# If this is set to "yes", his non-safe objects are destroyed
-# If this is set to "no", they are chowned to God
+# When a player is nuked, his SAFE objects are @chowned to a player
+# dbref controlled by the probate_judge option.  If this is set to
+# "yes", his non-safe objects are destroyed If this is set to "no",
+# they are chowned to probate_judge
 destroy_possessions yes
+
+# This is the dbref of the player that objects and channels belonging
+# to a nuked player are chowned to. If this is an invalid or
+# non-player dbref, GOD is used. See destroy_posessions.
+probate_judge 1
 
 # Can we @link to an object?
 link_to_object yes

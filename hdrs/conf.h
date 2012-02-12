@@ -203,6 +203,7 @@ struct options_table {
   int possessive_get_d; /**< Can possessive get be used on disconnected players? */
   int really_safe;      /**< Does the SAFE flag protect objects from nuke */
   int destroy_possessions;      /**< Are the possessions of a nuked player nuked? */
+  dbref probate_judge;    /**< Who owns the possessions if they're not? */
   int null_eq_zero;     /**< Is null string treated as 0 in math functions? */
   int tiny_booleans;    /**< Do strings and db#'s evaluate as false, like TinyMUSH? */
   int tiny_trim_fun;    /**< Does the trim function take arguments in TinyMUSH order? */

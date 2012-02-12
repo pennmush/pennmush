@@ -1,0 +1,180 @@
+============================================================================
+                   Installation Guide to PennMUSH 1.8.x
+============================================================================
+This file explains how to install PennMUSH. It comes in three parts:
+  A. Important background
+  B. Installation from source (recommended)
+  C. Installation of precompiled binaries (only for Windows platforms)
+
+If you are upgrading from a previous PennMUSH release, this is
+probably not the file you want to start with. Read the UPGRADING file
+first.
+
+DISCLAIMER: Before attempting to run a MUD of any sort, you should
+have some reasonable knowledge of UNIX and C.  If you do not, it is
+_strongly_ suggested that you learn UNIX and C to some reasonable
+level of competency before attempting to set up a MUSH.  (Note that
+even people using the Windows ports are encouraged to know UNIX,
+because that's the paradigm that PennMUSH was built with, and most
+resources will be written with UNIX is mind.)
+
+You may also want to take a look at the Managing PennMUSH book at
+http://community.pennmush.org and at Javelin's Guide for PennMUSH
+Gods, at http://javelin.pennmush.org/~alansz/guide.html or by ftp from
+pennmush.org, /pub/PennMUSH/Guide
+============================================================================
+ 
+A. Important background
+
+Here's a quick picture of the organization of the MUSH directory tree.
+The "src" directory contains C source code.  The "hdrs" directory
+contains header files for the source code.  The files used by a
+running MUSH are in the "game" directory, which includes
+subdirectories "data" (current databases), "txt" (text files and
+directories for building them), "log" (log files), and "save" (backup
+databases).  Finally, the "hints" directory is used during the
+installation process, the "test" directory contains an automated
+regression testing suite, and the "po" directory holds translation
+message files.
+
+ pennmush--+-> src
+           +-> hdrs 
+           +-> game ------+-> data 
+           |              |   
+           |              +-> txt -------+-> nws 
+           |              |              +-> evt 
+           |              |              \-> hlp 
+           |              |                  
+           |              +-> log 
+           |              \-> save 
+           +-> hints 
+           +-> po
+           +-> utils 
+           +-> test
+           \-> win32 
+               
+
+PennMUSH has been tested on a fairly wide variety of machines and
+operating systems including at least:
+
+	GNU/Linux, NetBSD, FreeBSD on many architectures
+        Mac OS X
+        Microsoft Windows
+         
+There's no real reason why PennMUSH shouldn't compile on any 32-bit or
+better BSD, System V, or POSIX operating system.  Development is
+primarily done on GNU/Linux and Mac OS X systems.
+
+Mac OS 9 and earlier ("Classic"), and OS/2 are not supported.
+
+============================================================================
+
+B. Installation from source
+
+     The quickstart version of the installation is:
+
+1a. On win32 only, install proper tools or read win32/README*.
+1b. On Unix systems, you need: A C compiler, perl, the minimum
+    development packages required to compile programs (Linux
+    distributions that don't come with gcc in the base install often
+    need a package named glibc-dev).
+1c. A version of the PCRE regular expression library and any related
+    development packages. (Debian and Ubuntu call them libpcre3 and
+    libpcre3-dev).
+1d. A version of the OpenSSL library; most OSes these days come with
+    it out of the box, but some might require a development package as
+    well (openssl-dev or some such name).
+2. Run ./configure with any desired options (See ./configure --help or
+   read below)
+3. create options.h, or make update
+4. make install
+5. possibly make customize
+6. Read game/README and follow those instructions
+
+     Here's the process in detail:
+
+1. If you're running on win32, read one of the win32/README* files
+   for information on how to compile with various compilers.
+
+2. On Unix systems, unpack the code and:
+        % cd pennmush
+	% ./configure 
+
+   Useful arguments to configure:
+       a. --disable-sql: Don't compile in SQL support. See README.SQL for more sql-related
+          config options.
+       b. --disable-nls: Turn off translation support if you don't need it.
+       c. --disable-info_slave: Don't use an external process to do hostname
+          lookups. This option is required on Windows.
+       d. --help: See all options.       
+
+       Environment variables to customize search paths:
+       CPPFLAGS=-I/path/to/extra/headers
+       LDFLAGS=-L/path/to/extra/libraries
+       CFLAGS=-Optimization and -Warning options.
+
+       VAR=arg ... ./configure
+
+       See hints/your-os.txt and hints/your-processor if present for
+       more details and system-specific help, and README.SQL for help
+       with detecting a SQL server.
+	
+
+3. EITHER:
+
+Type 'make update', and answer all the questions about which MUSH
+options you want.
+
+OR
+
+Copy options.h.dist to options.h. Note that these files stay in the
+pennmush directory.
+
+Edit the file. It's liberally commented. 
+
+Also, cp game/mushcnf.dst to game/mush.cnf and edit. 
+
+You should not need to change any of the other header files.
+
+4. Do a "make install". This will build all the necessary files, and
+set up some symbolic links for the restart script.  You will probably
+receive a few compilation warnings, which can generally be ignored.
+
+5. If you plan to run multiple MUSHes, you may want to do a "make
+customize" which will run a script to help set up a separate
+customized game subdirectory for each MUSH (run it once per MUSH you
+plan to run).  Files in these subdirectories will already be
+customized in many ways, so what follows may be slightly different. :)
+This is probably broken.
+
+6. Read game/README and follow those instructions. 
+
+A final thing you may want to think about is compiling portmsg.c (make
+portmsg). This is a port announcer; if your MUSH ever goes down, you
+can set one up, and a message will be given to a person attempting to
+connect to that port.  Read the comments in src/portmsg.c for
+details. It is not an official MUSH piece of code; rather, it is a
+freely distributable program available via anonymous FTP that is
+included in this code because it happens to be fairly useful.
+
+============================================================================
+
+C. Installation of precompiled binaries (only for Windows platforms)
+
+A pre-built binary is frequently available for win32 users who don't
+want to customize their MUSH server, and don't feel like compiling it
+themselves.  This binary distribution may not contain the src, hdrs,
+or hints directories and may be missing several key files (like
+Configure) from the pennmush directory.  It does include the options.h
+that it was built with, as an aid to those who decide later that they
+want to customize the server; they are useful as a baseline to work
+from.
+
+Using the pre-built binary is fairly simple; adjust your configuration
+file as in game/README, then go to the game directory and run
+PennMUSH.exe (you may need to use PennMUSH /run or PennMUSH /start).
+Alternately, if you want the MUSH to automatically start each time you
+turn on your machine, you can install it as a system service by
+running 'PennMUSH /install'.  PennMUSH can be removed from service
+status via 'PennMUSH /remove'.
+

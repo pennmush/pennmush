@@ -1,0 +1,39 @@
+Bugs that aren't our fault, but might bite people:
+
+Modern: 
+
+* You might experience crashes because the default executable stack
+  size is too small. An 8 megabyte stack is more than ample. On unix,
+  it can be raised with 'ulimit -s 8192'. On Windows, you must use the
+  editbin progam that comes with MS development environments to raise
+  the stack on a per-executable basis, via 'editbin /STACK:8388608
+  netmush.exe'
+
+* Some IPv6-enabled systems are not configured out of the box to
+  tunnel IPv4 connection attempts on the same port to the IPv6 socket
+  that is listening. If you can connect to a local game via ::1 but
+  not 127.0.0.1 this is likely the issue. On unix systems, a user with
+  root privileges can do 'sysctl -w net.inet6.ip6.v6only=0', after
+  which you'll have to do a complete shutdown and restart of the mush
+  for the change to take effect. The file /etc/sysctl.conf will have
+  to be changed too so the change persists across server reboots.
+  If that's not practical, you can get an IPv4-only mush by doing
+  the following:
+  
+   % ./configure --disable-ipv6
+   % make
+   
+  Then do a full @shutdown of the game and run restart.
+
+* The configure script sometimes detects functions that aren't seen
+  when the mush itself is compiled. Some linux distributions seem to
+  be very prone to this, probably due to customizations of their glibc
+  packages. For now, just comment out the relevant HAVE_FOO lines from
+  config.h. You'll have to redo this every time you re-run
+  configure. If you can figure out how to make the relevant prototypes
+  and macros visible to Penn, let us know! Some functions known to
+  cause this include posix_fadvise() and posix_fallocate().
+
+You can browse the bug and suggestion database at
+http://code.google.com/p/pennmush/issues/list to see more.
+

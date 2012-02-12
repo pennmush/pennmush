@@ -14,9 +14,9 @@
 # Name of your MUSH. Please change this.
 mud_name PennMUSH
 
-# The web address of your MUSH. If this is nonempty, then all login
-# screens will be prefixed with <!--  and suffixed with -->
-# Any HTTP clients trying to access it will be redirected to this url.
+# The web address of your MUSH. If this is nonempty, people attemping to
+# connect to your MUSH with a web browser will be redirected to this
+# URL. Set to the address of a web client, or your MUSH's website.
 # mud_url http://www.pennmush.org
 mud_url
 
@@ -475,12 +475,13 @@ forking_dump yes
 ### Filenames
 ###
 
-# Text files shown on connection, as message of the day,
-# as wizard message of the day, on quit, to newly created players,
-# when logins are disabled, when player creation is disabled,
-# and when a guest logs in. These must either be the path to
-# a text file, or a #dbref/attrname to be evaluated and shown.
-# dbref/attrs are passed the port/descriptor as %0.
+# Text files shown on connection, as message of the day, as wizard
+# message of the day, on quit, to newly created players, when logins
+# are disabled, when player creation is disabled, and when a guest
+# logs in. These must either be the path to a text file, or a
+# #dbref/attrname to be evaluated and shown.  dbref/attrs are passed
+# the port/descriptor as %0. If it's a message shown to a connected
+# player, their dbref is also passed as %1.
 connect_file txt/connect.txt
 motd_file txt/motd.txt
 wizmotd_file txt/wizmotd.txt
@@ -580,12 +581,10 @@ guests yes
 # or disable creation but enable registration for everyone.
 player_creation yes
 
-# If you use the shs password system, and your database was created
-# on a little-endian hardware architecture (such as an intel PC),
-# set this to 'yes'. If your database was created on a big-endian
-# hardware architecture (most non-intel systems), set this to 'no'.
-# If you port a db with shs passwords between systems, and the
-# passwords don't work, try changing this setting.
+# For 1.8.3p9 and later, this option is used to indicate the endianess
+# of the host system for password upgrades. If people aren't able to
+# log in with it set to yes, try changing to no. If that doesn't work,
+# just use @newpassword.
 reverse_shs yes
 
 # trigger @aconnect/@adisconnect in a connecting player's location
@@ -764,7 +763,7 @@ exits_connect_rooms no
 # wall_prefix Announcement:
 
 # Should we announce connections/disconnections to rooms and on channels?
-# If this is disabled, only MONITOR players will see connect/disconnect.
+# If this is disabled, only HEAR_CONNECT players will see connect/disconnect.
 # @aconnect/@adisconnect, however, are still triggered, so you can
 # softcode whatever connection monitor you like. Players will probably
 # object if you don't at least show them when someone connects in 

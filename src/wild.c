@@ -83,6 +83,9 @@ quick_wild_new(const char *restrict tstr, const char *restrict dstr, bool cs)
 }
 
 static bool
+
+
+
 real_atr_wild(const char *restrict tstr,
               const char *restrict dstr, int *invokes, char sep);
 /** Do an attribute name wildcard match.
@@ -610,7 +613,7 @@ quick_regexp_match(const char *restrict s, const char *restrict d, bool cs)
  * \return true or false
  */
 bool
-qcomp_regexp_match(const pcre * re, pcre_extra *study, const char *subj)
+qcomp_regexp_match(const pcre *re, pcre_extra *study, const char *subj)
 {
   int len;
   int offsets[99];
@@ -619,6 +622,12 @@ qcomp_regexp_match(const pcre * re, pcre_extra *study, const char *subj)
   if (!re || !subj)
     return false;
 
+  if (study) {
+    extra = study;
+    set_match_limit(extra);
+  } else 
+    extra = default_match_limit();    
+
   len = strlen(subj);
 
   if (study) {
@@ -626,6 +635,7 @@ qcomp_regexp_match(const pcre * re, pcre_extra *study, const char *subj)
     set_match_limit(extra);
   } else
     extra = default_match_limit();
+
   return pcre_exec(re, extra, subj, len, 0, 0, offsets, 99) >= 0;
 }
 

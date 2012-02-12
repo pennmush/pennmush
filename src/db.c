@@ -474,7 +474,7 @@ db_read_labeled_int(PENNFILE *f, char **label, int *value)
  * \param value pointer to update to the number that was read.
  */
 void
-db_read_this_labeled_uint32(PENNFILE *f, const char *label, uint32_t * value)
+db_read_this_labeled_uint32(PENNFILE *f, const char *label, uint32_t *value)
 {
   char *readlabel;
   char *readvalue;
@@ -498,7 +498,7 @@ db_read_this_labeled_uint32(PENNFILE *f, const char *label, uint32_t * value)
  * \param value pointer to update to the number that was read.
  */
 void
-db_read_labeled_uint32(PENNFILE *f, char **label, uint32_t * value)
+db_read_labeled_uint32(PENNFILE *f, char **label, uint32_t *value)
 {
   char *readvalue;
   db_read_labeled_string(f, label, &readvalue);
@@ -2092,7 +2092,7 @@ penn_fprintf(PENNFILE *f, const char *fmt, ...)
       char line[BUFFER_LEN * 2];
 
       va_start(ap, fmt);
-      r = my_vsnprintf(line, sizeof line, fmt, ap);
+      r = mush_vsnprintf(line, sizeof line, fmt, ap);
       va_end(ap, fmt);
       if (r > -1)
         OUTPUT(gzputs(f->handle.g, line));

@@ -66,7 +66,7 @@ extern int real_decompose_str(char *str, char *buff, char **bp);
  * \param player The player looking
  * \param loc room whose exits we're showing
  * \param exit_name "Obvious Exits" string
- * \param pe_info
+ * \param pe_info the pe_info to use for evaluating EXITFORMAT and interact locks
  */
 static void
 look_exits(dbref player, dbref loc, const char *exit_name, NEW_PE_INFO *pe_info)
@@ -183,17 +183,17 @@ look_exits(dbref player, dbref loc, const char *exit_name, NEW_PE_INFO *pe_info)
         s1 = tbuf1;
         safe_tag("LI", tbuf1, &s1);
         safe_chr(' ', tbuf1, &s1);
-        if (Location(thing) == NOTHING)
+        if (Destination(thing) == NOTHING)
           safe_format(tbuf1, &s1, T("%s leads nowhere."), nbuf);
-        else if (Location(thing) == HOME)
+        else if (HomeExit(thing))
           safe_format(tbuf1, &s1, T("%s leads home."), nbuf);
-        else if (Location(thing) == AMBIGUOUS)
+        else if (VariableExit(thing))
           safe_format(tbuf1, &s1, T("%s leads to a variable location."), nbuf);
         else if (!GoodObject(thing))
           safe_format(tbuf1, &s1, T("%s is corrupt!"), nbuf);
         else {
           safe_format(tbuf1, &s1, T("%s leads to %s."), nbuf,
-                      Name(Location(thing)));
+                      Name(Destination(thing)));
         }
         safe_tag_cancel("LI", tbuf1, &s1);
         *s1 = '\0';
@@ -228,7 +228,7 @@ look_exits(dbref player, dbref loc, const char *exit_name, NEW_PE_INFO *pe_info)
  * \param player object looking
  * \param object looked at
  * \param contents_name String to show before contents list. "Contents" for rooms, "Carrying" for players/things
- * \param pe_info
+ * \param pe_info the pe_info to use for evaluating CONFORMAT and interact locks
  */
 static void
 look_contents(dbref player, dbref loc, const char *contents_name,
@@ -629,14 +629,14 @@ do_look_around(dbref player)
  * \param player the looker.
  * \param name name of object to look at.
  * \param key 0 for normal look, 1 for look/outside.
- * \param pe_info
+ * \param pe_info the pe_info for the *FORMAT attrs, lock checks, etc
  */
 void
 do_look_at(dbref player, const char *name, int key, NEW_PE_INFO *pe_info)
 {
   dbref thing;
   dbref loc;
-  int near = 0;
+  int nearthis = 0;
 
   if (!GoodObject(Location(player)))
     return;
@@ -667,7 +667,7 @@ do_look_at(dbref player, const char *name, int key, NEW_PE_INFO *pe_info)
       notify(player, T("I don't know which one you mean."));
       return;
     }
-    near = (loc == Location(thing));
+    nearthis = (loc == Location(thing));
   } else {                      /* regular look */
     if (*name == '\0') {
       look_room(player, Location(player), LOOK_NORMAL, pe_info);
@@ -731,12 +731,12 @@ do_look_at(dbref player, const char *name, int key, NEW_PE_INFO *pe_info)
         notify(player, T("You can't look at that from here."));
         return;
       }
-      near = nearby(player, box) && nearby(box, thing);
+      nearthis = nearby(player, box) && nearby(box, thing);
     } else if (thing == AMBIGUOUS) {
       notify(player, T("I can't tell which one you mean."));
       return;
     }
-    near = near || nearby(player, thing);
+    nearthis = nearthis || nearby(player, thing);
   }
 
   /* once we've determined the object to look at, it doesn't matter whether
@@ -749,7 +749,7 @@ do_look_at(dbref player, const char *name, int key, NEW_PE_INFO *pe_info)
   if (Location(player) == thing) {
     look_room(player, thing, LOOK_NORMAL, pe_info);
     return;
-  } else if (!near && !Long_Fingers(player) && !See_All(player)) {
+  } else if (!nearthis && !Long_Fingers(player) && !See_All(player)) {
     ATTR *desc;
 
     desc = atr_get(thing, "DESCRIBE");
@@ -1292,99 +1292,6 @@ do_whereis(dbref player, const char *name)
     notify_format(thing, T("%s has just located your position."), Name(player));
   return;
 
-}
-
-/** Find the entrances to a room.
- * \verbatim
- * This implements @entrances, which finds things linked to an object
- * (typically exits, but can be any type).
- * \endverbatim
- * \param player the enactor.
- * \param where name of object to find entrances on.
- * \param argv array of arguments for dbref range limitation.
- * \param types what type of 'entrances' to find.
- */
-void
-do_entrances(dbref player, const char *where, char *argv[], int types)
-{
-  dbref place;
-  dbref counter;
-  int rooms, things, exits, players;
-  int bot = 0;
-  int top = db_top;
-  int controlsplace;
-
-  rooms = things = exits = players = 0;
-
-  if (!where || !*where) {
-    if ((place = Location(player)) == NOTHING)
-      return;
-  } else {
-    if ((place = noisy_match_result(player, where, NOTYPE, MAT_EVERYTHING))
-        == NOTHING)
-      return;
-  }
-
-  controlsplace = controls(player, place);
-  if (!controlsplace && !Search_All(player)) {
-    notify(player, T("Permission denied."));
-    return;
-  }
-
-  /* determine range */
-  if (argv[1] && *argv[1])
-    bot = atoi(argv[1]);
-  if (bot < 0)
-    bot = 0;
-  if (argv[2] && *argv[2])
-    top = atoi(argv[2]) + 1;
-  if (top > db_top)
-    top = db_top;
-
-  for (counter = bot; counter < top; counter++) {
-    if (controlsplace || controls(player, counter)) {
-      if (!(types & Typeof(counter)))
-        continue;
-      switch (Typeof(counter)) {
-      case TYPE_EXIT:
-        if (Location(counter) == place) {
-          notify_format(player,
-                        T("%s(#%d) [from: %s(#%d)]"), Name(counter),
-                        counter, Name(Source(counter)), Source(counter));
-          exits++;
-        }
-        break;
-      case TYPE_ROOM:
-        if (Location(counter) == place) {
-          notify_format(player, T("%s(#%d) [dropto]"), Name(counter), counter);
-          rooms++;
-        }
-        break;
-      case TYPE_THING:
-      case TYPE_PLAYER:
-        if (Home(counter) == place) {
-          notify_format(player, T("%s(#%d) [home]"), Name(counter), counter);
-          if (IsThing(counter))
-            things++;
-          else
-            players++;
-        }
-        break;
-      }
-    }
-  }
-
-  if (!exits && !things && !players && !rooms) {
-    notify(player, T("Nothing found."));
-    return;
-  } else {
-    notify(player, T("----------  Entrances Done  ----------"));
-    notify_format(player,
-                  T
-                  ("Totals: Rooms...%d  Exits...%d  Things...%d  Players...%d"),
-                  rooms, exits, things, players);
-    return;
-  }
 }
 
 /** Store arguments for decompile_helper() */

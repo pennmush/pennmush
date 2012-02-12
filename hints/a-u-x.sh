@@ -1,2 +1,0 @@
-ccflags="-ZB"
-libs="-lbsd"

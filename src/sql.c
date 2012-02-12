@@ -81,7 +81,7 @@ typedef enum { SQL_PLATFORM_DISABLED = -1,
   if (!qres) { \
     if (affected_rows >= 0) { \
     } else if (!sql_connected()) { \
-      safe_str(T("#-1 SQL ERROR: NO DATABASE CONNECTED"), buff, bp);	\
+      safe_str(T("#-1 SQL ERROR: NO DATABASE CONNECTED"), buff, bp); \
     } else { \
       safe_format(buff, bp, T("#-1 SQL ERROR: %s"), sql_error()); \
     } \
@@ -90,14 +90,14 @@ typedef enum { SQL_PLATFORM_DISABLED = -1,
 
 #ifdef HAVE_MYSQL
 static MYSQL_RES *penn_mysql_sql_query(const char *, int *);
-static void penn_mysql_free_sql_query(MYSQL_RES * qres);
+static void penn_mysql_free_sql_query(MYSQL_RES *qres);
 static int penn_mysql_sql_init(void);
 static void penn_mysql_sql_shutdown(void);
 static int penn_mysql_sql_connected(void);
 #endif
 #ifdef HAVE_POSTGRESQL
 static PGresult *penn_pg_sql_query(const char *, int *);
-static void penn_pg_free_sql_query(PGresult * qres);
+static void penn_pg_free_sql_query(PGresult *qres);
 static int penn_pg_sql_init(void);
 static void penn_pg_sql_shutdown(void);
 static int penn_pg_sql_connected(void);
@@ -480,7 +480,7 @@ COMMAND(cmd_mapsql)
         for (i = 0; i < (numfields + 1) && i < 10; i++) {
           pe_regs_setenv(pe_regs, i, names[i]);
         }
-        queue_attribute_base(thing, s, executor, 0, pe_regs);
+        queue_attribute_base(thing, s, executor, 0, pe_regs, 0);
       }
 
       /* Queue the rest. */
@@ -491,7 +491,7 @@ COMMAND(cmd_mapsql)
         pe_regs_setenv(pe_regs, i, cells[i]);
       }
       pe_regs_qcopy(pe_regs, queue_entry->pe_info->regvals);
-      queue_attribute_base(thing, s, executor, 0, pe_regs);
+      queue_attribute_base(thing, s, executor, 0, pe_regs, 0);
     } else {
       /* What to do if there are no fields? This should be an error?. */
       /* notify_format(executor, T("Row %d: NULL"), rownum + 1); */
@@ -1078,7 +1078,7 @@ penn_mysql_sql_query(const char *q_string, int *affected_rows)
 }
 
 static void
-penn_mysql_free_sql_query(MYSQL_RES * qres)
+penn_mysql_free_sql_query(MYSQL_RES *qres)
 {
   while (mysql_fetch_row(qres)) ;
   mysql_free_result(qres);
@@ -1210,7 +1210,7 @@ penn_pg_sql_query(const char *q_string, int *affected_rows)
 }
 
 static void
-penn_pg_free_sql_query(PGresult * qres)
+penn_pg_free_sql_query(PGresult *qres)
 {
   PQclear(qres);
 }
@@ -1279,7 +1279,7 @@ penn_sqlite3_sql_query(const char *query, int *affected_rows)
 }
 
 static void
-penn_sqlite3_free_sql_query(sqlite3_stmt * stmt)
+penn_sqlite3_free_sql_query(sqlite3_stmt *stmt)
 {
   sqlite3_finalize(stmt);
 }

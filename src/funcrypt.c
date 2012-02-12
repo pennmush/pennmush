@@ -26,25 +26,19 @@
 #include "attrib.h"
 #include "ansi.h"
 #include "match.h"
-#ifdef HAS_OPENSSL
+#include "sort.h"
 #include <openssl/sha.h>
 #include <openssl/evp.h>
 #include <openssl/bio.h>
-#else
-#include "shs.h"
-#endif
 #include "confmagic.h"
 
 
 char *crunch_code(char *code);
 char *crypt_code(char *code, char *text, int type);
-static void safe_sha0(const char *text, size_t len, char *buff, char **bp);
-static void safe_hexchar(unsigned char c, char *buff, char **bp);
 
 static bool
 encode_base64(const char *input, int len, char *buff, char **bp)
 {
-#ifdef HAVE_SSL
   BIO *bio, *b64, *bmem;
   char *membuf;
 
@@ -80,10 +74,6 @@ encode_base64(const char *input, int len, char *buff, char **bp)
   BIO_free_all(bio);
 
   return true;
-#else
-  safe_str(T("#-1 FUNCTION DISABLED"), buff, bp);
-  return false;
-#endif
 }
 
 extern char valid_ansi_codes[UCHAR_MAX + 1];
@@ -91,7 +81,6 @@ extern char valid_ansi_codes[UCHAR_MAX + 1];
 static bool
 decode_base64(char *encoded, int len, char *buff, char **bp)
 {
-#ifdef HAVE_SSL
   BIO *bio, *b64, *bmem;
   char *sbp;
 
@@ -160,10 +149,6 @@ decode_base64(char *encoded, int len, char *buff, char **bp)
   BIO_free_all(bio);
 
   return true;
-#else
-  safe_str(T("#-1 FUNCTION DISABLED"), buff, bp);
-  return false;
-#endif
 }
 
 /* Encode a string in base64 */
@@ -239,29 +224,6 @@ crypt_code(char *code, char *text, int type)
   return textbuff;
 }
 
-static void
-safe_sha0(const char *text, size_t len, char *buff, char **bp)
-{
-#ifdef HAS_OPENSSL
-  unsigned char hash[SHA_DIGEST_LENGTH];
-  int n;
-
-  SHA((unsigned char *) text, len, hash);
-
-  for (n = 0; n < SHA_DIGEST_LENGTH; n++)
-    safe_hexchar(hash[n], buff, bp);
-#else
-  SHS_INFO shsInfo;
-  shsInfo.reverse_wanted = (BYTE) options.reverse_shs;
-  shsInit(&shsInfo);
-  shsUpdate(&shsInfo, (const BYTE *) text, len);
-  shsFinal(&shsInfo);
-  safe_format(buff, bp, "%0x%0x%0x%0x%0x", shsInfo.digest[0],
-              shsInfo.digest[1], shsInfo.digest[2], shsInfo.digest[3],
-              shsInfo.digest[4]);
-#endif
-}
-
 FUNCTION(fun_encrypt)
 {
   char tbuff[BUFFER_LEN], *tp;
@@ -332,49 +294,65 @@ FUNCTION(fun_checkpass)
 
 FUNCTION(fun_sha0)
 {
-  safe_sha0(args[0], arglens[0], buff, bp);
+  unsigned char hash[SHA_DIGEST_LENGTH];
+
+  SHA((unsigned char *) args[0], arglens[0], hash);
+
+  safe_hexstr(hash, SHA_DIGEST_LENGTH, buff, bp);
 }
+
+/* From mycrypt.c */
+int safe_hash_byname(const char *algo, const char *plaintext, int len,
+                     char *buff, char **bp, bool inplace_err);
+
+
+#if OPENSSL_VERSION_NUMBER >= 0x10000000L
+#define CAN_LIST_DIGESTS
+
+static void
+list_dgst_populate(const EVP_MD *m, const char *from
+                   __attribute__ ((__unused__)), const char *to
+                   __attribute__ ((__unused__)), void *data)
+{
+  HASHTAB *digests = data;
+  if (m)
+    hash_add(digests, EVP_MD_name(m), "foo");
+}
+
+#endif
 
 FUNCTION(fun_digest)
 {
-#ifdef HAS_OPENSSL
-  EVP_MD_CTX ctx;
-  const EVP_MD *mp;
-  unsigned char md[EVP_MAX_MD_SIZE];
-  unsigned int n, len = 0;
+  if (nargs == 1 && strcmp(args[0], "list") == 0) {
+#ifdef CAN_LIST_DIGESTS
+    HASHTAB digests_tab;
+    const char **digests;
+    const char *d;
+    int m, n;
 
-  if ((mp = EVP_get_digestbyname(args[0])) == NULL) {
-    safe_str(T("#-1 UNSUPPORTED DIGEST TYPE"), buff, bp);
-    return;
-  }
+    hashinit(&digests_tab, 100);
+    EVP_MD_do_all(list_dgst_populate, &digests_tab);
+    digests = mush_calloc(digests_tab.entries, sizeof(char *), "digest.list");
 
-  EVP_DigestInit(&ctx, mp);
-  EVP_DigestUpdate(&ctx, args[1], arglens[1]);
-  EVP_DigestFinal(&ctx, md, &len);
+    for (n = 0, d = hash_firstentry_key(&digests_tab);
+         d; n += 1, d = hash_nextentry_key(&digests_tab))
+      digests[n] = d;
 
-  for (n = 0; n < len; n++) {
-    safe_hexchar(md[n], buff, bp);
-  }
+    qsort(digests, n, sizeof(char *), stri_comp);
 
+    for (m = 0; m < n; m += 1) {
+      if (m > 0)
+        safe_chr(' ', buff, bp);
+      safe_str(digests[m], buff, bp);
+    }
+
+    mush_free(digests, "digest.list");
+    hashfree(&digests_tab);
 #else
-  if (strcmp(args[0], "sha") == 0) {
-    safe_sha0(args[1], arglens[1], buff, bp);
-  } else {
-    safe_str(T("#-1 UNSUPPORTED DIGEST TYPE"), buff, bp);
-  }
+    safe_str(T("#-1 LISTING NOT SUPPORTED"), buff, bp);
 #endif
-}
-
-static void
-safe_hexchar(unsigned char c, char *buff, char **bp)
-{
-  const char *digits = "0123456789abcdef";
-  if (*bp - buff < BUFFER_LEN - 1) {
-    **bp = digits[c >> 4];
-    (*bp)++;
-  }
-  if (*bp - buff < BUFFER_LEN - 1) {
-    **bp = digits[c & 0x0F];
-    (*bp)++;
-  }
+  } else if (nargs == 2)
+    safe_hash_byname(args[0], args[1], arglens[1], buff, bp, 1);
+  else
+    safe_str(T("#-1 INVALID ARGUMENT"), buff, bp);
 }

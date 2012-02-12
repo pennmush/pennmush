@@ -59,7 +59,7 @@ tprintf(const char *fmt, ...)
   va_list args;
 
   va_start(args, fmt);
-  my_vsnprintf(buff, sizeof buff, fmt, args);
+  mush_vsnprintf(buff, sizeof buff, fmt, args);
   va_end(args);
 
   return buff;
@@ -69,7 +69,7 @@ tprintf(const char *fmt, ...)
  * the purposes of picking up an object or moving through an exit.
  * \param player to check against lock.
  * \param thing thing to check the basic lock on.
- * \param pe_info
+ * \param pe_info the pe_info for Basic lock evaluation
  * \retval 1 player passes lock.
  * \retval 0 player fails lock.
  */
@@ -163,7 +163,6 @@ did_it_with(dbref player, dbref thing, const char *what, const char *def,
   if (env1 != NOTHING) {
     pe_regs_setenv(pe_regs, 1, unparse_dbref(env1));
   }
-
   retval = real_did_it(player, thing, what, def, owhat, odef, awhat, loc,
                        pe_regs, flags);
 
@@ -230,10 +229,6 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
   if (!pe_info) {
     pe_info = make_pe_info("pe_info-real_did_it2");
   }
-  if (pe_regs) {
-    pe_regs->prev = pe_info->regvals;
-    pe_info->regvals = pe_regs;
-  }
 
   loc = (loc == NOTHING) ? Location(player) : loc;
   orator = player;
@@ -246,7 +241,7 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
           (what, thing, &ufun,
            UFUN_LOCALIZE | UFUN_REQUIRE_ATTR | UFUN_IGNORE_PERMS)) {
         attribs_used = 1;
-        if (!call_ufun(&ufun, buff, thing, player, pe_info, NULL) && buff[0])
+        if (!call_ufun(&ufun, buff, thing, player, pe_info, pe_regs) && buff[0])
           notify_by(thing, player, buff);
       } else if (def && *def)
         notify_by(thing, player, def);
@@ -258,7 +253,7 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
                                UFUN_LOCALIZE | UFUN_REQUIRE_ATTR |
                                UFUN_IGNORE_PERMS | UFUN_NAME)) {
         attribs_used = 1;
-        if (!call_ufun(&ufun, buff, thing, player, pe_info, NULL) && buff[0])
+        if (!call_ufun(&ufun, buff, thing, player, pe_info, pe_regs) && buff[0])
           notify_except2(loc, player, thing, buff, flags);
       } else if (odef && *odef) {
         bp = buff;
@@ -268,15 +263,12 @@ real_did_it(dbref player, dbref thing, const char *what, const char *def,
       }
     }
   }
-  if (pe_regs) {
-    pe_info->regvals = pe_regs->prev;
-  }
   if (pe_info) {
     free_pe_info(pe_info);
   }
 
   if (awhat && *awhat)
-    attribs_used = queue_attribute_base(thing, awhat, player, 0, pe_regs)
+    attribs_used = queue_attribute_base(thing, awhat, player, 0, pe_regs, 0)
       || attribs_used;
   orator = preserve_orator;
   return attribs_used;
@@ -736,9 +728,12 @@ ok_player_name(const char *name, dbref player, dbref thing)
 
   /* A player may only change to a forbidden name if they're already
      using that name. */
-  if (forbidden_name(name)
-      && !(GoodObject(player) && (Wizard(player) || (lookup == thing))))
-    return 0;
+  if (forbidden_name(name)) {
+    if (!((GoodObject(player) && Wizard(player))
+          || (GoodObject(thing) && lookup == thing))) {
+      return 0;
+    }
+  }
 
   return ((lookup == NOTHING) || (lookup == thing));
 }
@@ -957,6 +952,7 @@ ok_command_name(const char *name)
   case EMIT_TOKEN:
   case NOEVAL_TOKEN:
   case NUMBER_TOKEN:
+  case DEBUG_TOKEN:
   case '&':
   case '[':
     return 0;
@@ -1347,7 +1343,7 @@ do_verb(dbref executor, dbref enactor, char *arg1, char **argv,
   /* Now we copy our args into the stack, and do the command. */
 
   if (argv[6] && *argv[6])
-    queue_attribute_base(victim, upcasestr(argv[6]), actor, 0, pe_regs);
+    queue_attribute_base(victim, upcasestr(argv[6]), actor, 0, pe_regs, 0);
 
   pe_regs_free(pe_regs);
 }

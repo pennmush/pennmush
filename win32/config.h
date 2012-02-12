@@ -85,11 +85,18 @@
 
 #undef HAVE_SQLITE3
 
-#undef HAVE_SSL
+/* You MUST have the OpenSSL library installed. See
+   win32/README_OPENSSL.txt */
+#define HAVE_SSL 1
 
 #ifdef HAVE_SSL
 #define HAS_OPENSSL
 #endif
+
+/* You MUST have the PCRE library installed. See
+   win32/README_PCRE.txt */
+#define HAVE_PCRE
+#define HAVE_PCRE_H
 
 /* Types */
 

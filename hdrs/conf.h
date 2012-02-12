@@ -40,6 +40,7 @@
 #define EMIT_TOKEN '\\'   /**< One-char alias for @EMIT command */
 #define CHAT_TOKEN '+'   /**< One-char alias for @CHAT command */
 #define NOEVAL_TOKEN ']'   /**< Prefix that prevents cmd evaluation */
+#define DEBUG_TOKEN '}'   /**< Prefix that enables debug for the queue entry */
 
 #define ALIAS_DELIMITER ';'  /**< Delimiter in player/exit aliases */
 /* No longer used, but kept for hackers */
@@ -269,11 +270,9 @@ struct options_table {
   int chunk_cache_memory;       /**< Memory to use for the attribute cache */
   int chunk_migrate_amount;     /**< Number of attrs to migrate each second */
   int read_remote_desc; /**< Can players read DESCRIBE attribute remotely? */
-#ifdef HAS_OPENSSL
   char ssl_private_key_file[256];       /**< File to load the server's cert from */
   char ssl_ca_file[256];        /**< File to load the CA certs from */
   int ssl_require_client_cert;  /**< Are clients required to present certs? */
-#endif
   int mem_check;        /**< Turn on the memory allocation checker? */
   int use_quota;        /**< Are quotas enabled? */
   int empty_attrs;      /**< Are empty attributes preserved? */

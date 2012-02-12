@@ -77,7 +77,7 @@ static w128_t sfmt[N];
 static uint32_t *psfmt32 = &sfmt[0].u[0];
 #if !defined(BIG_ENDIAN64) || defined(ONLY64)
 /** the 64bit integer pointer to the 128-bit internal state array */
-static uint64_t *psfmt64 = (uint64_t *) & sfmt[0].u[0];
+static uint64_t *psfmt64 = (uint64_t *) &sfmt[0].u[0];
 #endif
 /** index counter to the 32-bit internal state array */
 static int idx;
@@ -518,7 +518,7 @@ gen_rand64(void)
  * returns the pointer to the aligned memory block.
  */
 void
-fill_array32(uint32_t * array, int size)
+fill_array32(uint32_t *array, int size)
 {
   assert(initialized);
   assert(idx == N32);
@@ -556,7 +556,7 @@ fill_array32(uint32_t * array, int size)
  * returns the pointer to the aligned memory block.
  */
 void
-fill_array64(uint64_t * array, int size)
+fill_array64(uint64_t *array, int size)
 {
   assert(initialized);
   assert(idx == N32);
@@ -600,7 +600,7 @@ init_gen_rand(uint32_t seed)
  * @param key_length the length of init_key.
  */
 void
-init_by_array(uint32_t * init_key, int key_length)
+init_by_array(uint32_t *init_key, int key_length)
 {
   int i, j, count;
   uint32_t r;

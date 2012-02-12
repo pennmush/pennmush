@@ -107,7 +107,7 @@ start_log(struct log_stream *log)
   static int ht_initialized = 0;
   FILE *f;
 
-  if (!log->filename || !log->filename) {
+  if (!log->filename || !*log->filename) {
     log->fp = stderr;
   } else {
     if (!ht_initialized) {
@@ -145,7 +145,7 @@ start_all_logs(void)
     start_log(logs + n);
 }
 
-/** Redirect stderr to a error log file and close stdout and stdin.
+/** Redirect stderr to an error log file and close stdout and stdin.
  * Should be called after start_all_logs().
  */
 void
@@ -223,7 +223,7 @@ do_rawlog(enum log_type logtype, const char *fmt, ...)
   va_list args;
 
   va_start(args, fmt);
-  my_vsnprintf(tbuf1, sizeof tbuf1, fmt, args);
+  mush_vsnprintf(tbuf1, sizeof tbuf1, fmt, args);
   va_end(args);
 
   time(&mudtime);
@@ -267,7 +267,7 @@ do_log(enum log_type logtype, dbref player, dbref object, const char *fmt, ...)
   char unp1[BUFFER_LEN], unp2[BUFFER_LEN];
 
   va_start(args, fmt);
-  my_vsnprintf(tbuf1, sizeof tbuf1, fmt, args);
+  mush_vsnprintf(tbuf1, sizeof tbuf1, fmt, args);
   va_end(args);
 
   switch (logtype) {

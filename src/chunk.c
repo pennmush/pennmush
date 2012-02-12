@@ -820,7 +820,7 @@ debug_dump_region(uint16_t region, FILE * fp)
   rhp = rp->in_memory;
 
   fprintf(fp, "region: id:%04x period:%-8x deref:%-8x (%-2x per chunk)\n",
-          region, rp->period_last_touched, rp->total_derefs,
+          region, (unsigned int) rp->period_last_touched, (unsigned int) rp->total_derefs,
           RegionDerefs(region));
   fprintf(fp, "        #used:%-4x #free:%-4x fbytes:%-4x hole:%-4x ",
           rp->used_count, rp->free_count, rp->free_bytes,
@@ -906,7 +906,7 @@ region_is_valid(uint16_t region)
 
   if (region >= region_count) {
     do_rawlog(LT_ERR, "region 0x%04x is not valid: region_count is 0x%04x",
-              region, region_count);
+              region, (unsigned int) region_count);
     return 0;
   }
   result = 1;
@@ -1018,7 +1018,7 @@ region_is_valid(uint16_t region)
     do_rawlog(LT_ERR,
               "region 0x%04x is not valid: total derefs is wrong:"
               " 0x%04x should be 0x%04x",
-              region, rp->total_derefs, total_derefs);
+              region, (unsigned int) rp->total_derefs, total_derefs);
     result = 0;
   }
   if (rp->free_count != free_count) {
@@ -2111,7 +2111,7 @@ migrate_slide(uint16_t region, uint16_t offset, int which)
     struct log_stream *trace;
     do_rawlog(LT_TRACE, "Invalid region after migrate_slide!");
     do_rawlog(LT_TRACE, "Was moving %04x%04x to %04x%04x (became %08x)...",
-              region, o_oth, region, o_off, m_references[which][0]);
+              region, o_oth, region, o_off, (unsigned int) m_references[which][0]);
     do_rawlog(LT_TRACE, "Chunk length %04x into hole length %04x", o_len, len);
     trace = lookup_log(LT_TRACE);
     debug_dump_region(region, trace->fp);

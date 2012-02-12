@@ -68,7 +68,7 @@ struct hostname_info *ip_convert(struct sockaddr *host, int len);
 
 /* Open a socket for listening */
 int make_socket
-  (Port_t port, int socktype, union sockaddr_u *addr, socklen_t * len,
+  (Port_t port, int socktype, union sockaddr_u *addr, socklen_t *len,
    const char *host);
 /* Connect somewhere using TCP */
 int make_socket_conn(const char *host, int socktype,

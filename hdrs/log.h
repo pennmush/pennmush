@@ -28,6 +28,7 @@ struct log_stream {
   const char *filename;  /**< Filename to log to */
   FILE *fp;              /**< Pointer returned by fopen() to write to */
   BUFFERQ *buffer;       /**< bufferq to store recently logged strings in */
+  const char *event;     /**< name of an event attribute to queue with the message. */
 };
 
 

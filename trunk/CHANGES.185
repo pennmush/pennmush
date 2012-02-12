@@ -30,6 +30,8 @@ Minor changes:
  * Objects belonging to destroyed players now get chowned to a
    configurable player (probate_judge in mush.cnf) instead of
    God. [SW]
+ * regmatch() now returns an error for invalid regexps, whether you're
+   storing subpattern matches or not. Reported by Sketch. [MG]
 
 Version 1.8.5 patchlevel 0                                 Feb 12, 2012
 

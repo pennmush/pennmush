@@ -951,6 +951,7 @@ notify_anything_sub(dbref speaker, na_lookup func, void *fdata, dbref *skips,
 
 #define PUPPET_FLAGS(na_flags)  ((na_flags | NA_PUPPET_MSG | NA_NORELAY) & ~NA_PROMPT)
 #define RELAY_FLAGS(na_flags)  ((na_flags | NA_PUPPET_OK | NA_NORELAY) & ~NA_PROMPT)
+#define PROPAGATE_FLAGS(na_flags)  ((na_flags | NA_PUPPET_OK | (na_flags & (NA_RELAY_ONCE | NA_NORELAY) ? NA_NORELAY : NA_RELAY_ONCE)) & ~NA_PROMPT)
 
 
 /** Notify a single object with a message. May recurse by calling itself or
@@ -1223,7 +1224,7 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
       fullmsg = (char *) msgstr;
     }
 
-    if (heard) {
+    if (heard && !(flags & NA_NORELAY)) {
       /* Check @listen */
       a = atr_get_noparent(target, "LISTEN");
       if (a) {
@@ -1336,7 +1337,7 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
             /* Need to make the prefix for each exit */
             make_prefix_str(exit, speaker, fullmsg, propprefix);
             notify_anything_sub(speaker, na_next, &Contents(loc), skips,
-                                RELAY_FLAGS(flags), message, propprefix, loc,
+                                PROPAGATE_FLAGS(flags), message, propprefix, loc,
                                 format);
           }
         }
@@ -1348,7 +1349,7 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
         loc = Location(target);
         make_prefix_str(target, speaker, fullmsg, propprefix);
         notify_anything_sub(speaker, na_next, &Contents(loc), pass,
-                            RELAY_FLAGS(flags), message, propprefix, loc,
+                            PROPAGATE_FLAGS(flags), message, propprefix, loc,
                             format);
       }
     }

@@ -141,6 +141,7 @@ void sql_shutdown(void);
 #define NA_INTERACTION  (NA_INTER_HEAR|NA_INTER_SEE|NA_INTER_PRESENCE|NA_INTER_LOCK)    /**< Message follows interaction rules */
 #define NA_PROMPT       0x20000  /**< Message is a prompt, add GOAHEAD */
 #define NA_PROPAGATE    0x40000  /**< Propagate this sound through audible exits/things */
+#define NA_RELAY_ONCE   0x80000  /**< Relay a propagated sound just once */
 
 /* notify.c */
 

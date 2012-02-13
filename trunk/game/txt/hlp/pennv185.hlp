@@ -19,6 +19,9 @@ Fixes:
    overwritten with the values of named captures. Reported by Sketch. [MG]
  * The configure script incorrectly reported that ssl_slave was unavailable
    when told to disable it via --disable-ssl_slave. Reported by Cheetah. [MG]
+ * Sound from an AUDIBLE wagon object used to propagate into other wagon
+   objects in the same location with an @listen of *. It now does so again.
+   Reported by Xeero and Padraic. [MG]
 
 Minor changes:
  * Logged messages now have events in the LOG tree. Suggested by
@@ -26,6 +29,8 @@ Minor changes:
  * Objects belonging to destroyed players now get chowned to a
    configurable player (probate_judge in mush.cnf) instead of
    God. [SW]
+ * regmatch() now returns an error for invalid regexps, whether you're
+   storing subpattern matches or not. Reported by Sketch. [MG]
 
 & 1.8.5p0
 Version 1.8.5 patchlevel 0                                 Feb 12, 2012

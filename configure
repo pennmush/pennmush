@@ -8813,15 +8813,15 @@ else
 fi
 
 if test "$enable_ssl_slave" = yes; then
-   if "$ac_cv_lib_event_openssl_bufferevent_openssl_socket_new" = yes; then
+   if test "$ac_cv_lib_event_openssl_bufferevent_openssl_socket_new" = yes; then
       SSL_SLAVE_TARGET=ssl_slave
 
-   $as_echo "#define SSL_SLAVE 1" >>confdefs.h
+      $as_echo "#define SSL_SLAVE 1" >>confdefs.h
 
    else
       { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: ssl_slave requested but OpenSSL and/or libevent2 weren't found." >&5
-   $as_echo "$as_me: WARNING: ssl_slave requested but OpenSSL and/or libevent2 weren't found." >&2;}
-   enable_ssl_slave=no
+$as_echo "$as_me: WARNING: ssl_slave requested but OpenSSL and/or libevent2 weren't found." >&2;}
+      enable_ssl_slave=no
    fi
 fi
 

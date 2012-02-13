@@ -23,6 +23,9 @@ Fixes:
    overwritten with the values of named captures. Reported by Sketch. [MG]
  * The configure script incorrectly reported that ssl_slave was unavailable
    when told to disable it via --disable-ssl_slave. Reported by Cheetah. [MG]
+ * Sound from an AUDIBLE wagon object used to propagate into other wagon
+   objects in the same location with an @listen of *. It now does so again.
+   Reported by Xeero and Padraic. [MG]
 
 Minor changes:
  * Logged messages now have events in the LOG tree. Suggested by

@@ -204,7 +204,7 @@ COMLIST commands[] = {
   {"@LSET", NULL, cmd_lset,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@MAIL",
-   "NOEVAL NOSIG STATS DSTATS FSTATS DEBUG NUKE FOLDERS UNFOLDER LIST READ UNREAD CLEAR UNCLEAR STATUS PURGE FILE TAG UNTAG FWD FORWARD SEND SILENT URGENT",
+   "NOEVAL NOSIG STATS DSTATS FSTATS DEBUG NUKE FOLDERS UNFOLDER LIST READ UNREAD CLEAR UNCLEAR STATUS PURGE FILE TAG UNTAG FWD FORWARD SEND SILENT URGENT REVIEW RETRACT",
    cmd_mail, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@MALIAS",
    "SET CREATE DESTROY DESCRIBE RENAME STATS CHOWN NUKE ADD REMOVE LIST ALL WHO MEMBERS USEFLAG SEEFLAG",
@@ -729,8 +729,11 @@ switchmask(const char *switches)
     switchnum = switch_find(NULL, s);
     if (!switchnum)
       return NULL;
-    else
+    else {
+      if (switchnum <= max_switch)
+        switch_list[switchnum - 1].used = 1;
       SW_SET(sw, switchnum);
+    }
   }
   return sw;
 }
@@ -836,13 +839,13 @@ build_switch_table(const char *sw, int count __attribute__ ((__unused__)),
 /** Initialize commands (after reading config file).
  * This function performs command initialization that should take place
  * after the configuration file has been read.
- * Currently, there isn't any.
  */
 void
 command_init_postconfig(void)
 {
   struct bst_data sw_data;
   COMMAND_INFO *c;
+  SWITCH_VALUE *s;
 
   command_state = CMD_LOAD_DONE;
 
@@ -866,6 +869,13 @@ command_init_postconfig(void)
       c->sw.mask = SW_ALLOC();
       SW_COPY(c->sw.mask, switchmask(switchstr));
     }
+  }
+
+  /* Warn about unused switch names */
+  for (s = switch_list; s->name; s++) {
+    if (!s->used)
+      do_rawlog(LT_CMD, T("Warning: Switch '%s' is defined but not used."),
+                s->name);
   }
 
   return;
@@ -1119,7 +1129,9 @@ command_parse(dbref player, char *string, MQUE *queue_entry)
     }
   }
 
-  if (queue_entry->queue_type & QUEUE_NODEBUG)
+  if (queue_entry->queue_type & QUEUE_DEBUG_PRIVS)
+    pe_flags = PE_DEBUG;
+  else if (queue_entry->queue_type & QUEUE_NODEBUG)
     pe_flags = PE_NODEBUG;
   else if (queue_entry->queue_type & QUEUE_DEBUG)
     pe_flags = PE_DEBUG;
@@ -2052,7 +2064,7 @@ COMMAND(cmd_command)
       *bp = '\0';
       notify_format(executor, T("Arguments  : %s"), buff);
     }
-    do_hook_list(executor, arg_left);
+    do_hook_list(executor, arg_left, 0);
   }
 }
 
@@ -2230,18 +2242,22 @@ int
 run_hook_override(COMMAND_INFO *cmd, dbref executor, const char *commandraw,
                   MQUE *from_queue)
 {
+  int queue_type = cmd->hooks.override.inplace;
 
   if (!has_hook(&cmd->hooks.override))
     return 0;
 
+  if (from_queue && (from_queue->queue_type & QUEUE_DEBUG_PRIVS))
+    queue_type |= QUEUE_DEBUG_PRIVS;
+
   if (cmd->hooks.override.attrname) {
     return one_comm_match(cmd->hooks.override.obj, executor,
                           cmd->hooks.override.attrname, commandraw,
-                          from_queue, cmd->hooks.override.inplace);
+                          from_queue, queue_type);
   } else {
     return atr_comm_match(cmd->hooks.override.obj, executor, '$', ':',
                           commandraw, 0, 1, NULL, NULL, 0, NULL, from_queue,
-                          cmd->hooks.override.inplace);
+                          queue_type);
   }
 }
 
@@ -2254,7 +2270,7 @@ cnf_hook_command(char *command, char *opts)
   enum hook_type flag;
   COMMAND_INFO *cmd;
   struct hook_data *h;
-  int inplace = 0;
+  int inplace = QUEUE_DEFAULT;
 
   if (!opts || !*opts)
     return 0;
@@ -2276,7 +2292,7 @@ cnf_hook_command(char *command, char *opts)
   } else if (string_prefix("override/inplace", one)) {
     flag = HOOK_OVERRIDE;
     h = &cmd->hooks.override;
-    inplace = 1;
+    inplace = QUEUE_INPLACE;
   } else if (string_prefix("override", one)) {
     flag = HOOK_OVERRIDE;
     h = &cmd->hooks.override;
@@ -2410,16 +2426,17 @@ do_hook(dbref player, char *command, char *obj, char *attrname,
  * \param command command to list hooks on.
  */
 void
-do_hook_list(dbref player, char *command)
+do_hook_list(dbref player, char *command, bool verbose)
 {
   COMMAND_INFO *cmd;
+  int count = 0;
 
   if (!command || !*command) {
     /* Show all commands with hooks */
     char *ptrs[BUFFER_LEN / 2];
     static char buff[BUFFER_LEN];
     char *bp;
-    int i, count = 0;
+    int i;
 
     for (cmd = (COMMAND_INFO *) ptab_firstentry(&ptab_command); cmd;
          cmd = (COMMAND_INFO *) ptab_nextentry(&ptab_command)) {
@@ -2473,19 +2490,31 @@ do_hook_list(dbref player, char *command)
       }
       *bp = '\0';
 
-      if (GoodObject(cmd->hooks.before.obj))
+      if (GoodObject(cmd->hooks.before.obj)) {
+        count++;
         notify_format(player, "@hook/before: #%d/%s",
                       cmd->hooks.before.obj, cmd->hooks.before.attrname);
-      if (GoodObject(cmd->hooks.after.obj))
+      }
+      if (GoodObject(cmd->hooks.after.obj)) {
+        count++;
         notify_format(player, "@hook/after: #%d/%s", cmd->hooks.after.obj,
                       cmd->hooks.after.attrname);
-      if (GoodObject(cmd->hooks.ignore.obj))
+      }
+      if (GoodObject(cmd->hooks.ignore.obj)) {
+        count++;
         notify_format(player, "@hook/ignore: #%d/%s",
                       cmd->hooks.ignore.obj, cmd->hooks.ignore.attrname);
-      if (GoodObject(cmd->hooks.override.obj))
+      }
+      if (GoodObject(cmd->hooks.override.obj)) {
+        count++;
         notify_format(player, "@hook/override%s: #%d/%s",
                       inplace,
                       cmd->hooks.override.obj, cmd->hooks.override.attrname);
+      }
+      if (!count && verbose)
+        notify(player, T("That command has no hooks."));
+    } else if (verbose) {
+      notify(player, T("Permission denied."));
     }
   }
 }

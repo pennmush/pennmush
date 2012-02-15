@@ -1157,7 +1157,7 @@ check_fields(void)
         }
         /* This must come last */
         if (!GoodObject(home) || !IsRoom(home)) {
-          /* If our source is destroyed, just destroy the exit. */
+          /* If our home is destroyed, just destroy the exit. */
           do_rawlog(LT_ERR,
                     "ERROR: Exit %s leading from invalid room #%d destroyed.",
                     unparse_object(GOD, thing), home);

@@ -121,7 +121,7 @@ dbref_comp(const void *s1, const void *s2)
 /** qsort() comparision routine used by sortby() */
 int
 u_comp(const void *s1, const void *s2, dbref executor, dbref enactor,
-       ufun_attrib *ufun, NEW_PE_INFO *pe_info)
+       ufun_attrib * ufun, NEW_PE_INFO *pe_info)
 {
   char result[BUFFER_LEN];
   int n;
@@ -165,7 +165,7 @@ u_comp(const void *s1, const void *s2, dbref executor, dbref enactor,
 
 void
 sane_qsort(void *array[], int left, int right, comp_func compare,
-           dbref executor, dbref enactor, ufun_attrib *ufun,
+           dbref executor, dbref enactor, ufun_attrib * ufun,
            NEW_PE_INFO *pe_info)
 {
 
@@ -321,7 +321,7 @@ GENRECORD(gen_magic)
         if (GoodObject(victim)) {
           safe_str(Name(victim), buff, &bp);
         } else {
-          safe_str(T("#-1 NO SUCH OBJECT VISIBLE"), buff, &bp);
+          safe_str(T(e_notvis), buff, &bp);
         }
         break;
       }
@@ -343,18 +343,19 @@ GENRECORD(gen_magic)
 
 GENRECORD(gen_dbref)
 {
+  char *val = remove_markup(rec->val, NULL);
   rec->memo.num =
-    (globals.database_loaded ? parse_objid(rec->val) : qparse_dbref(rec->val));
+    (globals.database_loaded ? parse_objid(val) : qparse_dbref(val));
 }
 
 GENRECORD(gen_num)
 {
-  rec->memo.num = parse_integer(rec->val);
+  rec->memo.num = parse_integer(remove_markup(rec->val, NULL));
 }
 
 GENRECORD(gen_float)
 {
-  rec->memo.numval = parse_number(rec->val);
+  rec->memo.numval = parse_number(remove_markup(rec->val, NULL));
 }
 
 GENRECORD(gen_db_name)
@@ -391,6 +392,12 @@ GENRECORD(gen_db_ctime)
 {
   if (RealGoodObject(rec->db))
     rec->memo.tm = CreTime(rec->db);
+}
+
+GENRECORD(gen_db_mtime)
+{
+  if (RealGoodObject(rec->db))
+    rec->memo.tm = ModTime(rec->db);
 }
 
 GENRECORD(gen_db_owner)
@@ -509,7 +516,7 @@ m_comp(const void *s1, const void *s2)
     if (has_markup(sr2->val))
       strcpy(v2, remove_markup(sr2->val, NULL));
     else
-      strcpy(v2, sr1->val);
+      strcpy(v2, sr2->val);
     upcasestr(v1);
     upcasestr(v2);
     res = strcoll(v1, v2);
@@ -610,6 +617,7 @@ char DBREF_NAMEI_LIST[] = "NAMEI";
 char DBREF_IDLE_LIST[] = "IDLE";
 char DBREF_CONN_LIST[] = "CONN";
 char DBREF_CTIME_LIST[] = "CTIME";
+char DBREF_MTIME_LIST[] = "MTIME";
 char DBREF_OWNER_LIST[] = "OWNER";
 char DBREF_LOCATION_LIST[] = "LOC";
 char DBREF_ATTR_LIST[] = "ATTR";
@@ -632,6 +640,7 @@ ListTypeInfo ltypelist[] = {
   {DBREF_IDLE_LIST, NULL, 0, gen_db_idle, i_comp, IS_DB},
   {DBREF_CONN_LIST, NULL, 0, gen_db_conn, i_comp, IS_DB},
   {DBREF_CTIME_LIST, NULL, 0, gen_db_ctime, tm_comp, IS_DB},
+  {DBREF_MTIME_LIST, NULL, 0, gen_db_ctime, tm_comp, IS_DB},
   {DBREF_OWNER_LIST, NULL, 0, gen_db_owner, i_comp, IS_DB},
   {DBREF_LOCATION_LIST, NULL, 0, gen_db_loc, i_comp, IS_DB},
   {DBREF_ATTR_LIST, NULL, 0, gen_db_attr, s_comp, IS_DB | IS_STRING},

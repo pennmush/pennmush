@@ -1229,10 +1229,10 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
             }
             if (PLAYER_AHEAR || (!IsPlayer(target))) {
               if (speaker != target)
-                queue_attribute_base(target, "AHEAR", speaker, 0, pe_regs);
+                queue_attribute_base(target, "AHEAR", speaker, 0, pe_regs, 0);
               else
-                queue_attribute_base(target, "AMHEAR", speaker, 0, pe_regs);
-              queue_attribute_base(target, "AAHEAR", speaker, 0, pe_regs);
+                queue_attribute_base(target, "AMHEAR", speaker, 0, pe_regs, 0);
+              queue_attribute_base(target, "AAHEAR", speaker, 0, pe_regs, 0);
             }
             pe_regs_free(pe_regs);
           }
@@ -1296,9 +1296,15 @@ notify_internal(dbref target, dbref speaker, dbref *skips, int flags,
         dbref exit;
         DOLIST(exit, Exits(target)) {
           if (Audible(exit)) {
-            loc = Location(exit);
+            if (VariableExit(exit))
+              loc = find_var_dest(speaker, exit);
+            else if (HomeExit(exit))
+              loc = Home(speaker);
+            else
+              loc = Destination(exit);
+
             if (!RealGoodObject(loc))
-              continue;         /* unlinked, variable dests, HOME */
+              continue;         /* unlinked, variable dests that resolve to bad things */
             if (filter_found(exit, speaker, fullmsg, 0))
               continue;
             /* Need to make the prefix for each exit */
@@ -1336,7 +1342,7 @@ notify_format(dbref player, const char *fmt, ...)
   va_list args;
 
   va_start(args, fmt);
-  my_vsnprintf(buff, sizeof buff, fmt, args);
+  mush_vsnprintf(buff, sizeof buff, fmt, args);
   va_end(args);
 
   notify(player, buff);
@@ -1415,7 +1421,7 @@ flag_broadcast(const char *flag1, const char *flag2, const char *fmt, ...)
   int ok;
 
   va_start(args, fmt);
-  my_vsnprintf(tbuf1, sizeof tbuf1, fmt, args);
+  mush_vsnprintf(tbuf1, sizeof tbuf1, fmt, args);
   va_end(args);
 
   DESC_ITER_CONN(d) {

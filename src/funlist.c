@@ -33,7 +33,6 @@
 enum itemfun_op { IF_DELETE, IF_REPLACE, IF_INSERT };
 static void do_itemfuns(char *buff, char **bp, char *str, char *num,
                         char *word, char *sep, enum itemfun_op flag);
-
 extern const unsigned char *tables;
 
 /** Convert list to array.
@@ -143,8 +142,7 @@ list2arr(char *r[], int max, char *list, char sep, int nullok)
 void
 arr2list(char *r[], int max, char *list, char **lp, const char *sep)
 {
-  int i;
-  int seplen = 0;
+  int i = 0, j = 0, seplen = 0;
 
   if (!max)
     return;
@@ -152,14 +150,17 @@ arr2list(char *r[], int max, char *list, char **lp, const char *sep)
   if (sep && *sep)
     seplen = strlen(sep);
 
-  safe_str(r[0], list, lp);
-  for (i = 1; i < max; i++) {
-    safe_strl(sep, seplen, list, lp);
-    safe_str(r[i], list, lp);
+  for (i = 0; i < max; i++) {
+    if (r[i]) {
+      if (j) {
+        safe_strl(sep, seplen, list, lp);
+      }
+      safe_str(r[i], list, lp);
+      j++;
+    }
   }
   **lp = '\0';
 }
-
 
 /* ARGSUSED */
 FUNCTION(fun_munge)

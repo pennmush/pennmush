@@ -20,7 +20,7 @@ the best location. C:\cygwin is the usual default.
 	gcc
 	gcc-core
 	make
-   From Libs, if you want SSL:
+   From Libs:
 	openssl
 	openssl-devel
    From Perl:

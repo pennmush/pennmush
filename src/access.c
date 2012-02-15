@@ -151,8 +151,11 @@ sitelock_alloc(const char *host, dbref who,
     tmp->re = pcre_compile(host, 0, errptr, &erroffset, tables);
     if (!tmp->re)
       return NULL;
-  } else
+    tmp->study = pcre_study(tmp->re, 0, errptr);
+  } else {
     tmp->re = NULL;
+    tmp->study = NULL;
+  }
 
   return tmp;
 }
@@ -343,7 +346,7 @@ site_can_access(const char *hname, uint32_t flag, dbref who)
     if (ap->can & ACS_SITELOCK)
       continue;
     if (((ap->can & ACS_REGEXP)
-         ? qcomp_regexp_match(ap->re, hname)
+         ? qcomp_regexp_match(ap->re, ap->study, hname)
          : quick_wild(ap->host, hname))
         && (ap->who == AMBIGUOUS || ap->who == who)) {
       /* Got one */
@@ -398,7 +401,7 @@ site_check_access(const char *hname, dbref who, int *rulenum)
     if (ap->can & ACS_SITELOCK)
       continue;
     if (((ap->can & ACS_REGEXP)
-         ? qcomp_regexp_match(ap->re, hname)
+         ? qcomp_regexp_match(ap->re, ap->study, hname)
          : quick_wild(ap->host, hname))
         && (ap->who == AMBIGUOUS || ap->who == who)) {
       /* Got one */
@@ -628,8 +631,8 @@ do_list_access(dbref player)
  * This makes a copy of the options string, so it's not modified.
  */
 int
-parse_access_options(const char *opts, dbref *who, uint32_t * can,
-                     uint32_t * cant, dbref player)
+parse_access_options(const char *opts, dbref *who, uint32_t *can,
+                     uint32_t *cant, dbref player)
 {
   char myopts[BUFFER_LEN];
   char *p;

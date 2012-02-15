@@ -147,7 +147,7 @@ FUNCTION(fun_time)
 /* ARGSUSED */
 FUNCTION(fun_secs)
 {
-  safe_integer(mudtime, buff, bp);
+  safe_time_t(mudtime, buff, bp);
 }
 
 /* ARGSUSED */

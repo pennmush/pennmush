@@ -101,7 +101,7 @@ These '@' commands are only usable by wizards or privileged players:
 
   See 'help ]2' for more examples.
 
-See also: lit(), decompose(), escape(), @command
+See also: lit(), decompose(), escape(), @command, }
 & ]2
   Using ']' with $-commands:
   
@@ -123,6 +123,17 @@ See also: lit(), decompose(), escape(), @command
   In the last example, '%0' would evaluate to 'My name is Wiggles.' (because
   the string entered by the user was evaluated), but the @pemit has been told
   not to evaluate its arguments.
+& }
+  "}" is a special prefix which can be used before any command. It causes the
+  MUSH to show debug information when evaluating that command (the same as if
+  you had the DEBUG flag set), and for any $-commands which are triggered by
+  the command.
+  
+  In order for debug to be shown for triggered $-commands, you must either
+  control the object(s) the matching $-commands are on, or be in the object's
+  DEBUGFORWARDLIST attribute. 
+  
+See also: DEBUG, ]
 & @@
   @@ [<text>]
  
@@ -1649,8 +1660,9 @@ See also: @zenter, ZONES, @zemit, zwho(), VERBS
     /players     show only players who have their homes in <object>
     /rooms       show only rooms which have a drop-to of <object>
     
-  If you don't control <object>, you must have the Search_All power, and will
-  only see objects you control.
+  If you 't control <object>, or have the Search or See_All powers, all 
+  objects linked to <object> are listed. Otherwise, only objects which you 
+  can examine will be shown.
     
 See also: @link, @search, entrances()
 & @exitformat
@@ -1911,6 +1923,9 @@ See also: FLAGS, @set, @power, flag permissions
   
   log          Log when the flag is set or cleared. Only meaningful in
                <setperms>.
+  event        Trigger the OBJECT`FLAG event when this flag is set or
+               cleared. Only meaningful in <setperms>. See 'help events'
+               for more information.
 
 & @function
   @function [<function name>]
@@ -2401,6 +2416,37 @@ See also: @motd, @list
   @parented to them.
 
 See also: EXITS, @open, @dig, DROP-TO, HOME
+& @destination
+& @exitto
+& Variable Exits
+  @destination <exit>[=<destination>]
+  @exitto <exit>[=<destination>]
+  
+  The DESTINATION attribute is used by variable exits. To make a variable
+  exit, you create it in the usual way (with @open), then @link it to
+  "variable" instead of a dbref. When someone attempts to pass through the
+  exit, the DESTINATION attribute will be evaluated, and should return a
+  dbref; the dbref will be used as the location for the person to go to.
+  
+  The exit must be able to @link itself to the dbref returned by the
+  attribute. This means the exit must control the destination, the
+  destination must be set LINK_OK, or the exit must have the Link_Anywhere
+  @power.
+  
+  If no DESTINATION attribute is set on a variable exit, the MUSH will also
+  check for an EXITTO attribute, for cross-platform compatability. It works
+  exactly the same as the DESTINATION attribute.
+  
+  Note that, unlike most attributes, @destination cannot be abbreviated and
+  must be typed in full.
+  
+  Example:
+    > @open Random Exit;re
+    > @link re=variable
+    > @power re=link_anywhere
+    > @destination re=pickrand(#5 #123 #999 [home(%#)] %L)
+  
+See also: EXITS, @link, @open, LINK_OK, Link_Anywhere Power
 & @listen
   @listen <object> = <string>
 
@@ -2473,292 +2519,6 @@ See also: LISTENING, @ahear, @amhear, @aahear
 See also: @lock-simple, locktypes, lockkeys, @clock, failure, success.
   elock(), lock(), @lset, @clock, testlock(), locks(), lockflags(),
   lockowner(), clock(), llocks()
-& @lock-simple
-& @lock-objid
-SIMPLE LOCKS
-
-  You can lock an object in several different ways. The simplest lock
-  is one that always succeeds (#true) or always fails (#false), or
-  that matches one other object by prefixing it with a '=', signifying
-  a dbref match:
-
-   @lock My Toy = #false
-     This lock will always fail.
-
-   @lock My Toy = = me
-     This locks the object "My Toy" to you and you alone. It is
-     recommended that you @lock me == me in order to prevent anyone
-     else from picking you up. The two = signs are NOT a typo! The
-     first is part of the @lock syntax (as shown at the top of 'help
-     @lock') the second is a lock key that means "exactly this
-     object".
-  
-  You can lock an object -against- another object as well, using the
-  '!'  symbol before any other key:
-    @lock Shared Toy = !=Vector Sigma
-      This locks the object "Shared Toy" to everyone -except- Vector
-      Sigma.  Everyone except Vector will be able to pick up the
-      object.
-
-  The above locks take the form @lock <object>= =<dbref>, but you can
-  also test for an object id, instead of a dbref, with:
-    @lock <object>=objid^<object id>
-
-  This is turned into =<dbref>, which works because when an object is
-  deleted, references to it in locks are turned into #false.
-& @lock-owner
-& @lock-carry
-OWNER LOCK
-
-  An "owner" lock allows you to lock something to anything owned by
-  the same player:
-    @lock Box = $My Toy
-  This locks "Box" to anything owned by the owner of "My Toy"
-   (since players own themselves, that includes the owner as well).
-
-CARRY LOCK
-  You can lock an object to something that has to be carried:
-    @lock Door = +Secret Door Key
-      This locks the exit "Door" to someone carrying the object "Secret Door
-      Key". Anyone carrying that object will be able to go through the exit.
-
-  You can lock an object to -either- an object or to someone carrying the
-  object with:
-    @lock Disneyworld Entrance = Child
-      This locks the exit "Disneyworld Entrance" to either the object 
-      "Child" -or- to someone carrying the object "Child". (OK, so it's
-      a weird example.)
-      
-  This is the same as @lock Entrance=+Child|=Child.
-
-& @lock-attribute
-ATTRIBUTE LOCKS
-  You can lock an object to an attribute on the person trying to pass
-  the lock (as long as the object can "see" that attribute):
-
-    @lock <object>=<attribute>:<value>
-
-  <value> can contain wildcards (*), greater than (>) or less than (<)
-  symbols.
-
-  For example:
-    @lock Men's Room = sex:m*
-      This would lock the exit "Men's Room" to anyone with a SEX
-      attribute starting with the letter "m".
-    @lock A-F = icname:<g
-      This would lock the exit "A-F" to anyone with a ICNAME attribute
-      starting with a letter "less than" the letter "g". This assumes
-      that ICNAME is visual or the object with the lock can see it.
-
-& @lock-complex
-COMPLEX LOCKS
-  You can combine or reverse locks very easily using the following
-  BOOLEAN symbols and parentheses () to group them:
-    &      - "and"
-    |      - "or"
-
-  For example:
-   @lock My Toy = =*Marissa & +Toy Box Key
-      This locks "My Toy" to the player Marissa, who needs to be
-      carrying the object "Toy Box Key".
-   @lock My Toy= =*Chromia | ( =*Marissa & +Toy Box Key )
-      This locks it to Chromia, OR to Marissa if she is carrying the Key.
-   @lock My Toy = =me | (!=*Chromia & +Toy Box Key)
-      This locks "My Toy" to me, or to anyone -except- the player Chromia
-      who is carrying the object "Toy Box Key".
-
-& @lock-evaluation
-EVALUATION LOCK
-  An evaluation lock is set using this format:
-
-    @lock <object>=<attribute>/<value>
-
-  The difference between this and an attribute lock is that the
-  <attribute> is taken from <object> rather than from the person
-  trying to pass the lock. When someone tries, <attribute> is
-  evaluated, and the result is compared to <value>. If it matches,
-  then the person passes the lock.
-
-  The person trying to pass the lock is %# and <object> is %! when the
-  evaluation takes place. The evaluation is done with the powers of
-  <object>. If you try to do something (like [get(%#/<attribute>)])
-  and <object> doesn't have permission to do that, the person will
-  automatically fail to pass the lock.
-
-  Continued in 'help @lock-eval2'.
-& @lock-eval2
-& @lock-evaluation2
-
-  Example:
-    @lock Thursday Cafe = whichday/Thu
-    &whichday Thursday Cafe = first(time())
-      This locks the object "Thursday Cafe" (probably an exit) unless today
-      is Thursday.
-
-      Whenever someone tries to pass through the exit, the attribute
-      "whichday" will be evaluated, extracting the first word returned from
-      time() (the day of the week). The result is compared with the value in
-      the lock ("Thu"), and the lock will only be passable when the strings
-      match--Only on Thursdays.
-
-  If you have an evaluation lock that just does [hasflag(%#,FLAGNAME)],
-  you should probably use a bit lock instead.
-
-See also: @lock-bit
-& @lock-name
-NAME LOCKS
-  You can test for objects matching a given name by using the below format
-
-    @lock <object>=name^<pattern>
-
-  It is similar to performing strmatch(%n,<pattern>), though will also match
-  for a player/exit with <pattern> as one of its @aliases.
-
-  For example, to lock "Bob's Tools" to only people with a name beginning
-  with Bob:
-    @lock/use Bob's Tools=name^bob*
-
-& @lock-bit
-& @lock-flag
-& @lock-type
-& @lock-power
-& @lock-channel
-BIT LOCKS
-  You can test for set flags, powers, or object types in a lock
-  directly, without using an evaluation lock, with these formats:
-
-    @lock <object>=flag^<flag>
-    @lock <object>=type^<type>
-    @lock <object>=power^<power>
-
-  These locks act like the object the lock is on does a hasflag(%#,
-  <flag>), hastype(%#, <type>), or haspower(%#, <power>) succeeding if
-  the flag is set.
-
-  For example,
-    @lock/use Admin Commands=flag^wizard|flag^royalty
-
-  You can also test for channel membership with:
-
-    @lock <object>=channel^<channel>
-
-& @lock-list
-LIST LOCK
-  You can test to see if the enactor is a member of a space-separated
-  list of dbrefs or objids on an attribute on the object, with:
-
-    @lock <object>=dbreflist^<attributename>
-
-  For example,
-    &allow Commands = #1 #7 #23 #200:841701384
-    &deny commands = #200 #1020
-    @lock/use commands = !dbreflist^deny & dbreflist^allow 
-
-& @lock-indirect
-INDIRECT LOCKS
-  An "indirect" lock allows you to lock something to the same thing as
-  another object (very useful in setting channel locks; see help
-  @clock):
-    @lock Second Puppet = @First Puppet
-      This locks the object "Second Puppet" to whatever the object
-      "First Puppet" is locked to. Normally, the lock type that is
-      checked is the same as the lock on the first. You can specify a
-      different lock type with @object/LOCKNAME. For example:
-    @lock Second Puppet = @First Puppet/Use
-      Second Puppet's basic lock now checks First Puppet's use lock.
-
-& @lock-host
-HOST LOCKS
-
-  You can check to make sure an object is owned by a player connected from 
-  a specific host or IP address using the following:
-  
-    @lock <object>=ip^<ipaddress>
-    @lock <object>=hostname^<hostname>
-    
-  <ipaddress> and <hostname> can contain wildcards. <object> must be able
-  to see the LASTIP attribute (for ip locks) or LASTSITE attribute (for
-  hostname locks) on the enactor's owner.
-  
-  For example:
-    @lock <object>=ip^127.0.0.1
-      This locks <object> to players (and the objects of players) currently
-      connected from the computer the MUSH is running on.
-      
-See also: ipaddr(), hostname(), LASTSITE
-& lockkeys
-& lock keys
-
-  There are many key types, and it is also possible to form more complex
-  locks by using boolean symbols and grouping. See HELP @LOCK-COMPLEX
-  for examples.
-
-  The types of keys are outlined below. Detailed help for each is available
-  by typing 'help @lock-<key>', replacing <key> with the word on the left.
-
-  Simple     - Always true, always false, or locking to an object.
-  Objid      - Check if the object trying to pass the lock matches an objid.
-  Name       - Check the name of the object attempting to pass the lock.
-  Owner      - Lock to objects owned by the owner of an object.
-  Carry      - Lock to someone carrying an object such as a key.
-  Indirect   - Use the result of a lock on another object.
-  Attribute  - Check an attribute on the object trying to pass the lock.
-  Evaluation - Evaluate an attribute on the object the lock is on.
-  Bit        - Check for a flag, type, power, or channel membership.
-  List       - Check if the object trying to pass the lock is part of a list.
-  Host       - Check for players connecting from a particular host/ip.
-
-  Complex    - Combine other lock keys using groups and boolean operators.
-
-See also: @lock, locktypes, @clock, objid()
-& locktypes
-& locklist
-& lock types
-& lock list
-  These are the standard lock types supported by PennMUSH:
-
-  @lock/basic           Who can pick up the player/object, or go through
-                        the exit.
-  @lock/enter           Who can enter the player/object (aka @elock)
-  @lock/teleport        Who can teleport to the room
-  @lock/use             Who can use the object (aka @ulock)
-  @lock/page            Who can page/@pemit the player
-  @lock/zone            Who can control objects on this zone
-  @lock/parent          Who can @parent something to this object/room
-  @lock/link            Who can @link something to this object/room
-                        or who can @link this unlinked exit.
-  @link/open            Who can @open an exit from this room
-  @lock/mail            Who can @mail the player
-  @lock/user:<name>     User-defined. No built-in function of this lock,
-                        but users can test it with elock()
-
-  Continued in 'help locktypes2'.
-& lock types2
-& locktypes2
-  More standard lock types:
-
-  @lock/speech          Who can speak/pose/emit in this room
-  @lock/listen          Who can trigger my @ahear/^-pattern actions
-  @lock/command         Who can trigger my $-pattern commands
-  @lock/leave           Who can leave this object (or room, via exits/@tel)
-  @lock/drop            Who can drop this object or in this room
-  @lock/give            Who can give this object
-  @lock/from            Who can give things to this object
-  @lock/pay             Who can give pennies to/buy from this object
-  @lock/receive         What things can be given to this object
-  @lock/follow          Who can follow this object
-  @lock/examine         Who can examine this object if it's VISUAL
-  @lock/chzone          Who can @chzone to this object if it's a ZMO
-  @lock/forward         Who can @forwardlist a message to this object 
-  @lock/filter          Controls if the message %0 should be filtered
-  @lock/infilter        Controls if the message %0 should be infiltered
-  @lock/control         Who can control this object (only if set; non-player)
-  @lock/dropto          Who can trigger this container's drop-to.
-  @lock/destroy         Who can destroy this object if it's DESTROY_OK
-  @lock/interact        Who can send sound (say/pose/emit/etc) to this object
-  @lock/take            Who can get things contained in this object
-
-See also: @lock, @lset, @clock, FAILURE
 & @lset
   @lset <object>/<lock type>=[!]<flag>
 
@@ -3294,7 +3054,7 @@ See also: powers(), @flag
   is dumped, and do not need to be re-added at startup. They are
   treated exactly as any other power in the server.
 & @prefix
-  @prefix <object> = <message>
+  @prefix <object>[=<message>]
  
   This attribute is meant to be used in conjunction with the AUDIBLE
   flag. The @prefix of the object is prepended to messages propagated
@@ -3666,6 +3426,7 @@ See also: GENDER, subj(), poss(), aposs(), obj()
   If the /player switch is given, <host-pattern> is treated as a player name,
   and sitelock rules are added for that player's LASTIP and LASTSITE, if set.
 
+Continued in 'help @sitelock2'
 & @sitelock2
 
   Sitelock allow/deny options:
@@ -3692,6 +3453,8 @@ See also: GENDER, subj(), poss(), aposs(), obj()
    deny_silent -- don't log failed access attempts from this site.
    regexp      -- Treat the hostname pattern as a regular expression
                   instead of a wildcard pattern.
+
+Continued in 'help @sitelock3'
 & @sitelock3
   If you specify a character name after the options, the options
   are only checked if the host pattern matches, AND the character

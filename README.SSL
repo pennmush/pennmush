@@ -13,6 +13,9 @@ features are supported:
   * Use of digest routines in the crytpo library for encrypting
     passwords and the digest() function.
 
+As of version 1.8.4p9, OpenSSL is a required, not just optional
+library.
+
 This document explains how to use SSL with PennMUSH, and covers
 the following issues:
 
@@ -53,13 +56,8 @@ II. Compiling with OpenSSL
 II.a. What to install
 
   The configure script distributed with PennMUSH automatically detects
-  the OpenSSL libraries (libssl and libcrypto) and attempts to link
-  them into the executable, defining HAVE_SSL and HAS_OPENSSL in
-  config.h. If you have SSL libraries but wish to avoid linking with
-  them, give the --without-ssl argument to configure when you run
-  it. This is not recommended -- even if you don't use SSL
-  connections, routines in the libraries are used by other parts of
-  the mush, such as the digest() softcode function.
+  the OpenSSL libraries (libssl and libcrypto) and sets up the proper
+  compiler flags to use them. 
 
   You can compile the OpenSSL libraries yourself from source code at
   http://www.openssl.org. If you install it through your operating
@@ -112,6 +110,10 @@ III. Mush configuration overview
   connections. Any port number other than the MUSH's ordinary
   listening port can be chosen (subject, of course, to other system
   restrictions on choosing port numbers).
+
+  If left blank, SSL connections will not be enabled. However, other
+  parts of the mush, such as the digest() softcode function, and
+  password encryption, will still use OpenSSL library routines.
 
   ssl_private_key_file specifies the name of the file (relative to the
   game/ directory if it's not an absolute path) that contains the MUSH

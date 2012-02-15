@@ -32,7 +32,7 @@ BUFFERQ *reallocate_bufferq(BUFFERQ *bq, int lines);
 void free_bufferq(BUFFERQ *bq);
 void add_to_bufferq(BUFFERQ *bq, int type, dbref player, const char *msg);
 char *iter_bufferq(BUFFERQ *bq, char **p, dbref *player, int *type,
-                   time_t * timestamp);
+                   time_t *timestamp);
 int bufferq_lines(BUFFERQ *bq);
 int bufferq_blocks(BUFFERQ *bq);
 bool isempty_bufferq(BUFFERQ *bq);

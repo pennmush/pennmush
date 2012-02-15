@@ -161,6 +161,8 @@ int mdb_top = 0;                /**< total number of messages in mail db */
  * do_mail_send - sending mail
  * do_mail_read - read messages
  * do_mail_list - list messages
+ * do_mail_review - read messages sent to others
+ * do_mail_retract - delete unread messages sent to others
  * do_mail_flags - tagging, untagging, clearing, unclearing of messages
  * do_mail_file - files messages into a new folder
  * do_mail_fwd - forward messages to another player(s)
@@ -773,6 +775,249 @@ FUNCTION(fun_maillist)
       }
     }
   }
+}
+
+/** Review mail messages.  
+ * This displays the contents of a set of mail messages sent by one player to another
+ * \param player the enactor.
+ * \param target the player to review.
+ * \param msglist list of messages to read.
+ */
+void
+do_mail_reviewread(dbref player, dbref target, const char *msglist)
+{
+  MAIL *mp;
+  char tbuf1[BUFFER_LEN];
+  struct mail_selector ma, ms;
+  int i, j;
+
+  /* Initialize listing mail selector for all messages from player */
+  ma.low = 0;
+  ma.high = 0;
+  ma.flags = 0x00FF | M_ALL;
+  ma.days = -1;
+  ma.day_comp = 0;
+  ma.player = player;
+  /* Initialize another mail selector with msglist */
+  if (!parse_msglist(msglist, &ms, player)) {
+    return;
+  }
+  /* Switch mail selector to player, all folders */
+  ms.player = player;
+  ms.flags = M_ALL;
+  /* Initialize i (message index), j (messages read) */
+  i = j = 0;
+  for (mp = find_exact_starting_point(target);
+       mp && (mp->to == target); mp = mp->next) {
+    if (mail_match(player, mp, ma, 0)) {
+      /* This was a listed message */
+      i++;
+      if (mail_match(player, mp, ms, i)) {
+        /* Read it */
+        j++;
+        notify(player, DASH_LINE);
+        mush_strncpy(tbuf1, get_sender(mp, 1), BUFFER_LEN);
+        notify_format(player,
+                      T
+                      ("From: %-55s %s\nDate: %-25s   Folder: NA   Message: %d\nStatus: %s"),
+                      tbuf1, ((*tbuf1 != '!') && IsPlayer(mp->from)
+                              && Connected(mp->from)
+                              && (!hidden(mp->from)
+                                  || Priv_Who(player))) ? T(" (Conn)") :
+                      "      ", show_time(mp->time, 0), i, status_string(mp));
+        notify_format(player, T("Subject: %s"), get_subject(mp));
+        notify(player, DASH_LINE);
+        if (SUPPORT_PUEBLO)
+          notify_noenter(player, close_tag("SAMP"));
+        strcpy(tbuf1, get_message(mp));
+        notify(player, tbuf1);
+        if (SUPPORT_PUEBLO)
+          notify(player, wrap_tag("SAMP", DASH_LINE));
+        else
+          notify(player, DASH_LINE);
+      }
+    }
+  }
+  if (!j) {
+    /* ran off the end of the list without finding anything */
+    notify(player, T("MAIL: No matching messages."));
+  }
+  return;
+}
+
+/** List the flags, number, sender, subject, and date of another
+ * player's messages in a concise format. (Hacked from do_mail_list.)
+ * \param player the enactor.
+ * \param target the player to review.
+ * \param msglist list of messages to list.
+ */
+void
+do_mail_reviewlist(dbref player, dbref target)
+{
+  char subj[30];
+  char sender[30];
+  MAIL *mp;
+  struct mail_selector ms;
+  int i;
+
+  /* Initialize mail selector */
+  ms.low = 0;
+  ms.high = 0;
+  ms.flags = 0x00FF | M_ALL;
+  ms.days = -1;
+  ms.day_comp = 0;
+  ms.player = player;
+  /* Initialize i (messages found) */
+  i = 0;
+  if (SUPPORT_PUEBLO)
+    notify_noenter(player, open_tag("SAMP"));
+  notify_format(player,
+                T
+                ("--------------------   MAIL: %-27s   ------------------"),
+                Name(target));
+  for (mp = find_exact_starting_point(target); mp && (mp->to == target);
+       mp = mp->next) {
+    if (mail_match(player, mp, ms, i)) {
+      /* list it */
+      i++;
+      if (SUPPORT_PUEBLO)
+        notify_noenter(player,
+                       tprintf
+                       ("%c%cA XCH_CMD=\"@mail/review %s=%d\" XCH_HINT=\"Read message %d sent to %s\"%c",
+                        TAG_START, MARKUP_HTML, Name(target),
+                        i, i, Name(target), TAG_END));
+      strcpy(subj, chopstr(get_subject(mp), 28));
+      strcpy(sender, chopstr(get_sender(mp, 0), 12));
+      notify_format(player, "[%s]    %-3d %c%-12s  %-*s %s",
+                    status_chars(mp), i,
+                    ((*sender != '!') && (Connected(mp->from) &&
+                                          (!hidden(mp->from)
+                                           || Priv_Who(player)))
+                     ? '*' : ' '), sender, 30, subj,
+                    mail_list_time(show_time(mp->time, 0), 1));
+      if (SUPPORT_PUEBLO)
+        notify_noenter(player, tprintf("%c%c/A%c", TAG_START,
+                                       MARKUP_HTML, TAG_END));
+    }
+  }
+  notify(player, DASH_LINE);
+  if (SUPPORT_PUEBLO)
+    notify(player, close_tag("SAMP"));
+  return;
+}
+
+/** Review mail.
+ * \verbatim
+ * This implements @mail/review.
+ * \endverbatim
+ * \param player the enactor.
+ * \param name name of player whose mail to review.
+ * \param msglist list of messages.
+ */
+void
+do_mail_review(dbref player, const char *name, const char *msglist)
+{
+  dbref target;
+
+  if (!name || !*name) {
+    notify(player,
+           T("MAIL: I can't figure out whose mail you want to review."));
+    return;
+  }
+  if ((target = lookup_player(name)) == NOTHING) {
+    notify(player, T("MAIL: I couldn't find that player."));
+    return;
+  }
+  if (!msglist || !*msglist) {
+    do_mail_reviewlist(player, target);
+  } else {
+    do_mail_reviewread(player, target, msglist);
+  }
+  return;
+}
+
+/** Retract specified mail.
+ * \verbatim
+ * This implements @mail/retract.
+ * \endverbatim
+ * \param player the enactor.
+ * \param name name of player whose mail to retract.
+ * \param msglist list of messages.
+ */
+void
+do_mail_retract(dbref player, const char *name, const char *msglist)
+{
+  MAIL *mp, *nextp;
+  struct mail_selector ma, ms;
+  int i, j;
+  dbref target;
+
+  if (!name || !*name) {
+    notify(player,
+           T("MAIL: I can't figure out whose mail you want to retract."));
+    return;
+  }
+  if ((target = lookup_player(name)) == NOTHING) {
+    notify(player, T("MAIL: I couldn't find that player."));
+    return;
+  }
+
+  /* Initialize mail selector for all messages */
+  ma.low = 0;
+  ma.high = 0;
+  ma.flags = 0x00FF | M_ALL;
+  ma.days = -1;
+  ma.day_comp = 0;
+  ma.player = player;
+  /* Initialize another mail selector with msglist */
+  if (!parse_msglist(msglist, &ms, player)) {
+    return;
+  }
+  /* Switch mail selector to target, all folders */
+  ms.player = player;
+  ms.flags = M_ALL;
+  /* Initialize i (messages listed), and j (messages retracted) */
+  i = j = 0;
+  for (mp = find_exact_starting_point(target);
+       mp && (mp->to == target); mp = nextp) {
+    nextp = mp->next;
+    if (mail_match(player, mp, ma, 0)) {
+      /* was in message list */
+      i++;
+      if (mail_match(player, mp, ms, i)) {
+        /* matches msglist, retract if unread */
+        j++;
+        if (Read(mp)) {
+          notify_format(player, T("MAIL: Message %d has been read."), i);
+        } else {
+          /* Delete this one */
+          /* head and tail of the list are special */
+          if (mp == HEAD)
+            HEAD = mp->next;
+          else if (mp == TAIL)
+            TAIL = mp->prev;
+          /* relink the list */
+          if (mp->prev != NULL)
+            mp->prev->next = mp->next;
+          if (mp->next != NULL)
+            mp->next->prev = mp->prev;
+          /* save the pointer */
+          nextp = mp->next;
+          /* then wipe */
+          notify_format(player, T("MAIL: Message %d has been retracted."), i);
+          mdb_top--;
+          free(mp->subject);
+          chunk_delete(mp->msgid);
+          slab_free(mail_slab, mp);
+        }
+      }
+    }
+  }
+  if (!j) {
+    /* ran off the end of the list without finding anything */
+    notify(player, T("MAIL: No matching messages."));
+  }
+  return;
 }
 
 static char *

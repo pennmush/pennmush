@@ -5523,7 +5523,7 @@ load_reboot_db(void)
       d->cmds = getref(f);
       d->player = getref(f);
       d->last_time = getref(f);
-      d->connected = GoodObject(d->player) ? CONN_PLAYER : CONN_SCREEN;
+      d->connected = (GoodObject(d->player) && IsPlayer(d->player)) ? CONN_PLAYER : CONN_SCREEN;
       temp = getstring_noalloc(f);
       d->output_prefix = NULL;
       if (strcmp(temp, "__NONE__"))
@@ -5612,7 +5612,7 @@ load_reboot_db(void)
 
 #ifdef SSL_SLAVE
     ssl_slave_pid = val;
-    if (ssl_slave_pid == -1 && SSLPORT) {
+    if (SSLPORT && (ssl_slave_pid == -1 || kill(ssl_slave_pid, 0) != 0)) {
       /* Attempt to restart a missing ssl_slave on reboot */
       do_rawlog(LT_ERR,
                 "ssl_slave does not appear to be running on reboot. Restarting the slave.");

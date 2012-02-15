@@ -26,6 +26,7 @@ Fixes:
  * Sound from an AUDIBLE wagon object used to propagate into other wagon
    objects in the same location with an @listen of *. It now does so again.
    Reported by Xeero and Padraic. [MG]
+ * Loading a reboot db is more robust. Inspired by Padraic. [SW]
 
 Minor changes:
  * Logged messages now have events in the LOG tree. Suggested by
